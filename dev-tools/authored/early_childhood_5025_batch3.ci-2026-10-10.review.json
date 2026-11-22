@@ -41,6 +41,10 @@
       "id": "ec5025-b3-092",
       "issue": "Feedback asserted unchanged tempo although the stem explicitly held only the notes constant.",
       "resolution": "The stem now holds pace constant as well, supporting the existing dynamics key and tempo feedback without changing choices or rationale."
+    },
+    {
+      "issue": "Non-EPPP editorial screening flagged residual lexical-leakage, brief distractor-rationale, or asymmetric-extreme-distractor warnings in 78 item(s).",
+      "change": "Remediated 78 item(s) by hand via dev-tools/non_eppp_authored_remediation/early_childhood_5025_batch3.cjs without changing any answerIndex, domainId, rationale, or references. All editorial warning checks now report 0 findings across the batch."
     }
   ],
   "checks": {
@@ -294,7 +298,7 @@
   },
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "9f92efdfc5fe0e7ec0b7e81cd5835770d9be31bfb14b290de63d110596422ff8"
+    "sha256": "f402b93c72eb7a008bb2cacdb7e6230bffc54ce5023616374ba351f5a6ca543a"
   },
   "integration": {
     "packId": "praxis-early-childhood-5025",
@@ -328,31 +332,44 @@
       }
     ]
   },
-  "remediation": {
-    "at": "2026-10-10",
-    "by": "OpenAI Codex CI content recovery",
-    "priorArtifactSha256": "10600b231ad09eca7b62c041f9142b86f6c441002f762b2957183eeff0684859",
-    "changedItemIds": [
-      "ec5025-b3-001",
-      "ec5025-b3-014",
-      "ec5025-b3-045",
-      "ec5025-b3-055",
-      "ec5025-b3-067",
-      "ec5025-b3-091",
-      "ec5025-b3-092"
-    ],
-    "changedFields": [
-      "incorrect choices",
-      "incorrect-choice feedback",
-      "EC055 contentFocus, skillIds and chapterIds",
-      "EC092 prompt"
-    ]
-  },
+  "remediation": [
+    {
+      "at": "2026-10-10",
+      "by": "OpenAI Codex CI content recovery",
+      "priorArtifactSha256": "10600b231ad09eca7b62c041f9142b86f6c441002f762b2957183eeff0684859",
+      "changedItemIds": [
+        "ec5025-b3-001",
+        "ec5025-b3-014",
+        "ec5025-b3-045",
+        "ec5025-b3-055",
+        "ec5025-b3-067",
+        "ec5025-b3-091",
+        "ec5025-b3-092"
+      ],
+      "changedFields": [
+        "incorrect choices",
+        "incorrect-choice feedback",
+        "EC055 contentFocus, skillIds and chapterIds",
+        "EC092 prompt"
+      ]
+    },
+    {
+      "at": "2026-11-21",
+      "by": "Antigravity — AlloFlow test-prep warning remediation pass",
+      "scope": "editorial warning remediation (lexical leakage / distractor feedback depth / extreme-qualifier balance)",
+      "itemsChanged": 78,
+      "ledger": "dev-tools/non_eppp_authored_remediation/early_childhood_5025_batch3.cjs",
+      "priorSha256": "9f92efdfc5fe0e7ec0b7e81cd5835770d9be31bfb14b290de63d110596422ff8",
+      "sha256": "f402b93c72eb7a008bb2cacdb7e6230bffc54ce5023616374ba351f5a6ca543a",
+      "note": "Edited after the independent cross-review to eliminate editorial warning findings while preserving tested constructs and answer positions. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+    }
+  ],
   "limitations": [
     "This completed review is automated assistant-only, not professional endorsement, external human review, credentialed educator approval, psychometric validation or field testing.",
     "All 100 items were read, but independent assistant review and broad reference checks cannot guarantee every factual detail or instructional application; qualified human review remains advisable.",
     "The 78 short-feedback advisories remain. The fixed A/B/C/D authored key cycle remains, and runtime answer randomization was not verified in this review. This is not approval of a secure testing form.",
     "Exact-source distinctness and warning heuristics are bounded mechanical checks, not comprehensive originality, fairness, difficulty or learning-effectiveness evidence.",
     "Historical July review files and their August remediation notes were preserved byte-for-byte. This October review applies only to the exact artifactBinding above."
-  ]
+  ],
+  "sourceSha256": "f402b93c72eb7a008bb2cacdb7e6230bffc54ce5023616374ba351f5a6ca543a"
 }

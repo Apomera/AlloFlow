@@ -2,23 +2,23 @@
   "note": "Semantic concept-duplicate ratchet for the non-EPPP credential packs. Mirrors audit_eppp_distractor_quality.cjs so scores are comparable. hiddenPairs are semantically duplicate but kernel-distinct, so each one inflates distinctContentKernels and understates the authoring gap; those are the number to drive down. Rates may fall, never rise.",
   "packs": {
     "audiology_5343": {
-      "pairs": 69,
-      "hiddenPairs": 19,
+      "pairs": 60,
+      "hiddenPairs": 13,
       "hiddenSameBank": 2
     },
     "early_childhood_5025": {
-      "pairs": 72,
-      "hiddenPairs": 9,
-      "hiddenSameBank": 6
+      "pairs": 66,
+      "hiddenPairs": 5,
+      "hiddenSameBank": 4
     },
     "educational_leadership_5412": {
-      "pairs": 53,
-      "hiddenPairs": 7,
+      "pairs": 36,
+      "hiddenPairs": 6,
       "hiddenSameBank": 0
     },
     "esol_5362": {
-      "pairs": 42,
-      "hiddenPairs": 1,
+      "pairs": 27,
+      "hiddenPairs": 0,
       "hiddenSameBank": 0
     },
     "parapro": {
@@ -57,18 +57,18 @@
       "hiddenSameBank": 0
     },
     "school_counselor_5422": {
-      "pairs": 32,
+      "pairs": 22,
       "hiddenPairs": 0,
       "hiddenSameBank": 0
     },
     "school_librarian_5312": {
-      "pairs": 554,
+      "pairs": 512,
       "hiddenPairs": 0,
       "hiddenSameBank": 0
     },
     "school_psychologist_5403": {
-      "pairs": 45,
-      "hiddenPairs": 1,
+      "pairs": 32,
+      "hiddenPairs": 0,
       "hiddenSameBank": 0
     },
     "special_education_5355": {
@@ -102,7 +102,7 @@
       "hiddenSameBank": 1
     },
     "speech_language_pathology_5331": {
-      "pairs": 41,
+      "pairs": 27,
       "hiddenPairs": 0,
       "hiddenSameBank": 0
     },

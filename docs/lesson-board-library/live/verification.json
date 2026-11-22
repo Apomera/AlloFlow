@@ -1,7 +1,7 @@
 {
   "passed": true,
   "transport": "Production Class Mailbox adapter and Code.gs sandbox",
-  "mailboxVersion": 24,
+  "mailboxVersion": 32,
   "browsers": 4,
   "sharing": {
     "privateNoSharedWrites": true,
@@ -39,7 +39,7 @@
   },
   "ai": "Fixture provider; invalid then repaired JSON",
   "writes": 37,
-  "completedDocumentChars": 9077,
+  "completedDocumentChars": 8983,
   "scans": [
     {
       "label": "import review",

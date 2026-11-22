@@ -11,12 +11,18 @@ const parts = [
   require('./part3.cjs'),
 ];
 
+const enrichmentParts = [
+  require('../ap_statistics_choice_overrides/feedback_enrichment_p1.cjs'),
+  require('../ap_statistics_choice_overrides/feedback_enrichment_p2.cjs'),
+  require('../ap_statistics_choice_overrides/feedback_enrichment_p3.cjs'),
+];
+
 const AP_STATISTICS_DISTRACTOR_FEEDBACK = {};
 parts.forEach((part) => {
   Object.keys(part).forEach((shortId) => {
     const fullId = shortId.startsWith(PACK_ID) ? shortId : PACK_ID + '-' + shortId;
     if (AP_STATISTICS_DISTRACTOR_FEEDBACK[fullId]) throw new Error('Duplicate distractor feedback entry for ' + fullId);
-    AP_STATISTICS_DISTRACTOR_FEEDBACK[fullId] = part[shortId];
+    AP_STATISTICS_DISTRACTOR_FEEDBACK[fullId] = { ...part[shortId] };
   });
 });
 
@@ -25,6 +31,19 @@ parts.forEach((part) => {
 function normalizeChoiceText(value) {
   return String(value || '').replace(/[‘’]/g, "'").replace(/[−–]/g, '-').replace(/\s+/g, ' ').trim();
 }
+
+enrichmentParts.forEach((enrichment) => {
+  Object.entries(enrichment).forEach(([fullId, overrides]) => {
+    const entry = AP_STATISTICS_DISTRACTOR_FEEDBACK[fullId];
+    if (!entry) throw new Error('Unknown AP Statistics feedback enrichment item: ' + fullId);
+    Object.entries(overrides).forEach(([choiceText, enrichedNote]) => {
+      const wanted = normalizeChoiceText(choiceText);
+      const existingKey = Object.keys(entry).find((candidate) => normalizeChoiceText(candidate) === wanted);
+      if (!existingKey) throw new Error('Unmatched AP Statistics feedback enrichment key for ' + fullId + ': ' + choiceText);
+      entry[existingKey] = enrichedNote;
+    });
+  });
+});
 
 function distractorFeedbackFor(itemId, choiceText) {
   const entry = AP_STATISTICS_DISTRACTOR_FEEDBACK[itemId];

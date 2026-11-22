@@ -3693,6 +3693,41 @@ window.StemLab = window.StemLab || {
       }, []);
 
       var canvasRef = React.useRef(null);
+      // Pre-allocated zero-GC impact micro-burst pool (18 dust/turf/chalk particles)
+      var impactPoolRef = React.useRef(null);
+      var impactSeenRef = React.useRef(null);
+      var impactSnapRef = React.useRef(null);
+      if (!impactPoolRef.current) {
+        var _pool = [];
+        for (var _pi = 0; _pi < 18; _pi++) {
+          _pool.push({ vx: 0, vy: 0, size: 1.8, alpha: 0.5, shade: 0, phase: (_pi / 18) * Math.PI * 2 });
+        }
+        impactPoolRef.current = _pool;
+      }
+      function _tlIsReducedMotion() {
+        try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; }
+      }
+      function _tlIsHighContrast(node) {
+        try {
+          var root = document.documentElement;
+          if (root && (root.classList.contains('theme-contrast') || root.getAttribute('data-theme') === 'high-contrast')) return true;
+          if (node && typeof node.closest === 'function' && node.closest('.theme-contrast,[data-theme="high-contrast"]')) return true;
+          if (document.querySelector && document.querySelector('main.theme-contrast')) return true;
+          return !!(window.matchMedia && window.matchMedia('(forced-colors: active)').matches);
+        } catch (e) { return false; }
+      }
+      function _tlSafeEllipse(ctx, x, y, rx, ry, rot, sa, ea) {
+        if (typeof ctx.ellipse === 'function') {
+          ctx.ellipse(x, y, Math.max(0.1, rx), Math.max(0.1, ry), rot || 0, sa || 0, ea == null ? Math.PI * 2 : ea);
+        } else {
+          ctx.save();
+          ctx.translate(x, y);
+          if (rot) ctx.rotate(rot);
+          ctx.scale(Math.max(0.1, rx), Math.max(0.1, ry));
+          ctx.arc(0, 0, 1, sa || 0, ea == null ? Math.PI * 2 : ea);
+          ctx.restore();
+        }
+      }
       function closeScenarioIntro(focusCanvas) {
         setScenarioIntro(null);
         scheduleTl(function() {
@@ -3743,35 +3778,42 @@ window.StemLab = window.StemLab || {
       // existing draw code operates in CSS px (no math changes needed).
       function _tlSetupHiDPI(canvas, logicalW, logicalH) {
         var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-        if (canvas._tlDpr === dpr && canvas._tlLogicalW === logicalW && canvas._tlLogicalH === logicalH) return;
-        canvas.width = Math.round(logicalW * dpr);
-        canvas.height = Math.round(logicalH * dpr);
-        // ★ Cap at the logical size instead of PINNING it. The element's own
-        // style prop already says `width:'100%', height:'auto'` (the author
-        // wanted a responsive canvas); pinning `style.width = '640px'` here
-        // overrode that, so on a 640px viewport the canvas painted at 640
-        // inside a 592px shell and spilled 38px past the tool column. On any
-        // screen wide enough this is identical to before (max-width = 640);
-        // below that the bitmap scales down uniformly, aspect kept. Safe: the
-        // trajectory canvas is keyboard-driven and the 3D canvas drags by
-        // clientX/clientY DELTAS, so neither maps pointer px to bitmap px.
-        canvas.style.width = '100%';
-        canvas.style.maxWidth = logicalW + 'px';
-        canvas.style.height = 'auto';
-        canvas.style.aspectRatio = logicalW + ' / ' + logicalH;
-        canvas._tlDpr = dpr;
-        canvas._tlLogicalW = logicalW;
-        canvas._tlLogicalH = logicalH;
+        if (!(canvas._tlDpr === dpr && canvas._tlLogicalW === logicalW && canvas._tlLogicalH === logicalH)) {
+          canvas.width = Math.round(logicalW * dpr);
+          canvas.height = Math.round(logicalH * dpr);
+          // ★ Cap at the logical size instead of PINNING it. The element's own
+          // style prop already says `width:'100%', height:'auto'` (the author
+          // wanted a responsive canvas); pinning `style.width = '640px'` here
+          // overrode that, so on a 640px viewport the canvas painted at 640
+          // inside a 592px shell and spilled 38px past the tool column. On any
+          // screen wide enough this is identical to before (max-width = 640);
+          // below that the bitmap scales down uniformly, aspect kept. Safe: the
+          // trajectory canvas is keyboard-driven and the 3D canvas drags by
+          // clientX/clientY DELTAS, so neither maps pointer px to bitmap px.
+          canvas.style.width = '100%';
+          canvas.style.maxWidth = logicalW + 'px';
+          canvas.style.height = 'auto';
+          canvas.style.aspectRatio = logicalW + ' / ' + logicalH;
+          canvas._tlDpr = dpr;
+          canvas._tlLogicalW = logicalW;
+          canvas._tlLogicalH = logicalH;
+        }
+        var ctx = null;
+        try { ctx = canvas.getContext('2d'); } catch (e) { ctx = null; }
+        if (!ctx) return null;
+        if (typeof ctx.setTransform === 'function') ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.imageSmoothingEnabled = true;
+        if ('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'high';
+        return ctx;
       }
       React.useEffect(function() {
         var canvas = canvasRef.current; if (!canvas) return;
-        _tlSetupHiDPI(canvas, 640, 360);
-        var gfx = canvas.getContext('2d');
-        gfx.setTransform(canvas._tlDpr, 0, 0, canvas._tlDpr, 0, 0);
-        gfx.imageSmoothingEnabled = true;
-        if ('imageSmoothingQuality' in gfx) gfx.imageSmoothingQuality = 'high';
+        var gfx = _tlSetupHiDPI(canvas, 640, 360);
+        if (!gfx) return;
         var W = canvas._tlLogicalW;
         var H = canvas._tlLogicalH;
+        var tlReduced = _tlIsReducedMotion();
+        var tlHC = _tlIsHighContrast(canvas);
         gfx.clearRect(0, 0, W, H);
 
         var modeMeta = MODES[d.mode] || MODES.pitching;
@@ -4110,7 +4152,7 @@ window.StemLab = window.StemLab || {
           // Tee + ball spot at z=0
           var teePts = worldToCanvas(0, 0);
           gfx.fillStyle = '#fef3c7';
-          gfx.beginPath(); gfx.ellipse(teePts[0], teePts[1], 6, 3, 0, 0, Math.PI * 2); gfx.fill();
+          gfx.beginPath(); _tlSafeEllipse(gfx, teePts[0], teePts[1], 6, 3, 0, 0, Math.PI * 2); gfx.fill();
           // Goalposts: vertical uprights at fgGoalZ rising to (canvas) above crossbar.
           // Side view: only one upright is visible from the side, but we draw a small
           // depth offset so both posts read as a "Y" frame.
@@ -4267,7 +4309,7 @@ window.StemLab = window.StemLab || {
           var greenCenter = worldToCanvas(golfTargetZ, 0);
           gfx.fillStyle = '#86efac';
           gfx.beginPath();
-          gfx.ellipse(greenCenter[0], greenCenter[1], 14, 5, 0, 0, Math.PI * 2);
+          _tlSafeEllipse(gfx, greenCenter[0], greenCenter[1], 14, 5, 0, 0, Math.PI * 2);
           gfx.fill();
           // Flagstick (vertical pole with red triangular flag)
           var flagBase = worldToCanvas(golfTargetZ, 0);
@@ -4490,11 +4532,13 @@ window.StemLab = window.StemLab || {
           gfx.setLineDash([]);
         }
 
-        // Actual trajectory — glowing spin-colored Magnus ribbon, airflow vortex wake & impact burst
+        // Actual trajectory — glowing spin-colored Magnus ribbon, multi-lane Karman-vortex wake, spin-coupled ball & zero-GC impact burst
+        var burstRafId = null;
         if (lr) {
           var trajColor = outcomeColor(lr.location);
           var spinRpmVal = Number(displayTrial.spinRpm) || 0;
           var spinAxisVal = ((Number(displayTrial.spinAxisDeg) || 0) % 360 + 360) % 360;
+          var spinNorm = Math.min(1, spinRpmVal / 2600);
           // Spin-colored Magnus accent: cyan = backspin/lift, magenta = topspin/drop, violet = curve/sidespin, gold = low-spin
           var spinGlowCol = spinRpmVal < 200 ? '#fbbf24'
             : (spinAxisVal <= 45 || spinAxisVal >= 315) ? '#38bdf8'
@@ -4509,7 +4553,7 @@ window.StemLab = window.StemLab || {
           }
 
           // Translucent glowing Magnus deflection ribbon between curved path & no-spin path
-          if (noSpinRef && noSpinRef.samples && noSpinRef.samples.length > 2 && visPts.length > 2 && spinRpmVal >= 120) {
+          if (!tlHC && noSpinRef && noSpinRef.samples && noSpinRef.samples.length > 2 && visPts.length > 2 && spinRpmVal >= 120) {
             var nsPts = [];
             for (var ni = 0; ni < noSpinRef.samples.length; ni++) {
               var ns = noSpinRef.samples[ni];
@@ -4517,12 +4561,16 @@ window.StemLab = window.StemLab || {
               nsPts.push(worldToCanvas(ns.z, sampleB(ns)));
             }
             if (nsPts.length > 2) {
-              var ribGrad = gfx.createLinearGradient(visPts[0].p[0], visPts[0].p[1], visPts[visPts.length - 1].p[0], visPts[visPts.length - 1].p[1]);
-              ribGrad.addColorStop(0, spinGlowCol + '08');
-              ribGrad.addColorStop(0.5, spinGlowCol + '22');
-              ribGrad.addColorStop(1, spinGlowCol + '3d');
               gfx.save();
-              gfx.fillStyle = ribGrad;
+              if (typeof gfx.createLinearGradient === 'function') {
+                var ribGrad = gfx.createLinearGradient(visPts[0].p[0], visPts[0].p[1], visPts[visPts.length - 1].p[0], visPts[visPts.length - 1].p[1]);
+                ribGrad.addColorStop(0, spinGlowCol + '08');
+                ribGrad.addColorStop(0.5, spinGlowCol + '24');
+                ribGrad.addColorStop(1, spinGlowCol + '42');
+                gfx.fillStyle = ribGrad;
+              } else {
+                gfx.fillStyle = spinGlowCol + '24';
+              }
               gfx.beginPath();
               gfx.moveTo(visPts[0].p[0], visPts[0].p[1]);
               for (var vi = 1; vi < visPts.length; vi++) gfx.lineTo(visPts[vi].p[0], visPts[vi].p[1]);
@@ -4537,122 +4585,356 @@ window.StemLab = window.StemLab || {
           if (visPts.length > 1) {
             gfx.save();
             gfx.lineCap = 'round'; gfx.lineJoin = 'round';
-            // Outer Magnus ribbon glow
-            gfx.strokeStyle = spinGlowCol;
-            gfx.globalAlpha = 0.28;
-            gfx.lineWidth = 8.5;
-            gfx.beginPath();
-            visPts.forEach(function(pt, idx) { if (idx === 0) gfx.moveTo(pt.p[0], pt.p[1]); else gfx.lineTo(pt.p[0], pt.p[1]); });
-            gfx.stroke();
+            // Outer Magnus ribbon glow (bypassed in high-contrast)
+            if (!tlHC) {
+              gfx.strokeStyle = spinGlowCol;
+              gfx.globalAlpha = 0.24 + spinNorm * 0.14;
+              gfx.lineWidth = 8 + spinNorm * 3;
+              gfx.beginPath();
+              for (var r0 = 0; r0 < visPts.length; r0++) { if (r0 === 0) gfx.moveTo(visPts[r0].p[0], visPts[r0].p[1]); else gfx.lineTo(visPts[r0].p[0], visPts[r0].p[1]); }
+              gfx.stroke();
+            }
             // Mid luminous core
             gfx.globalAlpha = 0.96;
             gfx.strokeStyle = trajColor;
-            gfx.lineWidth = 2.8;
-            gfx.shadowColor = spinGlowCol;
-            gfx.shadowBlur = 8;
+            gfx.lineWidth = tlHC ? 3.2 : 2.8;
+            if (!tlHC) {
+              gfx.shadowColor = spinGlowCol;
+              gfx.shadowBlur = 8;
+            }
             gfx.beginPath();
-            visPts.forEach(function(pt, idx) { if (idx === 0) gfx.moveTo(pt.p[0], pt.p[1]); else gfx.lineTo(pt.p[0], pt.p[1]); });
+            for (var r1 = 0; r1 < visPts.length; r1++) { if (r1 === 0) gfx.moveTo(visPts[r1].p[0], visPts[r1].p[1]); else gfx.lineTo(visPts[r1].p[0], visPts[r1].p[1]); }
             gfx.stroke();
             gfx.shadowBlur = 0;
             // Subtle specular inner filament along the ribbon
-            gfx.strokeStyle = 'rgba(255,255,255,0.45)';
-            gfx.lineWidth = 1;
-            gfx.beginPath();
-            visPts.forEach(function(pt, idx) { if (idx === 0) gfx.moveTo(pt.p[0], pt.p[1]); else gfx.lineTo(pt.p[0], pt.p[1]); });
-            gfx.stroke();
-            gfx.restore();
-          }
-
-          // Crisp target impact rings & deterministic turf/chalk dust burst at trajectory end
-          var atImpactEnd = visPts.length > 1 && (!d.replayActive || renderUpTo >= lr.samples.length - 1);
-          if (atImpactEnd) {
-            var impPt = visPts[visPts.length - 1];
-            var ix = impPt.p[0], iy = impPt.p[1];
-            gfx.save();
-            // Concentric target impact rings (elliptical perspective on ground/pitch, circular in strike zone)
-            var isGroundImpact = isTopDown || impPt.s.y <= 0.35;
-            var rx1 = isGroundImpact ? 14 : 11, ry1 = isGroundImpact ? 5.5 : 11;
-            var rx2 = isGroundImpact ? 24 : 18, ry2 = isGroundImpact ? 9.5 : 18;
-            gfx.strokeStyle = trajColor;
-            gfx.globalAlpha = 0.72; gfx.lineWidth = 1.8;
-            gfx.beginPath(); gfx.ellipse(ix, iy, rx1, ry1, 0, 0, Math.PI * 2); gfx.stroke();
-            gfx.globalAlpha = 0.36; gfx.lineWidth = 1.2;
-            gfx.beginPath(); gfx.ellipse(ix, iy, rx2, ry2, 0, 0, Math.PI * 2); gfx.stroke();
-            // Deterministic chalk/turf dust burst puffs around impact point
-            var dustCol = isTopDown || d.mode === 'golf' || d.mode === 'fieldgoal' ? '#d9f99d'
-              : d.mode === 'pitching' || d.mode === 'bowling' ? '#fde68a' : '#e0f2fe';
-            for (var dp = 0; dp < 8; dp++) {
-              var da = (dp / 8) * Math.PI * 2 + ((ix + iy) % 1.2);
-              var dr = 8 + (dp % 3) * 5;
-              var dpx = ix + Math.cos(da) * dr * (isGroundImpact ? 1.25 : 0.9);
-              var dpy = iy + Math.sin(da) * dr * (isGroundImpact ? 0.48 : 0.9) - (isGroundImpact && !isTopDown ? 3 : 0);
-              gfx.fillStyle = dustCol;
-              gfx.globalAlpha = 0.38 - (dp % 3) * 0.08;
-              gfx.beginPath(); gfx.arc(dpx, dpy, 2.4 - (dp % 2) * 0.6, 0, Math.PI * 2); gfx.fill();
+            if (!tlHC) {
+              gfx.strokeStyle = 'rgba(255,255,255,0.48)';
+              gfx.lineWidth = 1;
+              gfx.beginPath();
+              for (var r2 = 0; r2 < visPts.length; r2++) { if (r2 === 0) gfx.moveTo(visPts[r2].p[0], visPts[r2].p[1]); else gfx.lineTo(visPts[r2].p[0], visPts[r2].p[1]); }
+              gfx.stroke();
             }
             gfx.restore();
           }
 
-          // Ball at the leading edge + curved airflow vortex wake streamlines around the spinning ball
-          if (visPts.length > 0) {
-            var lastVis = visPts[visPts.length - 1];
-            var prevVis = visPts.length > 2 ? visPts[visPts.length - 3] : visPts[0];
-            var bp = lastVis.p;
-            var velAng = Math.atan2(bp[1] - prevVis.p[1], bp[0] - prevVis.p[0]);
-            var wakeDir = velAng + Math.PI; // upstream behind ball
-            var perpAng = velAng + Math.PI / 2;
-            var magnusSign = (spinAxisVal > 90 && spinAxisVal < 270) ? 1 : -1;
-            // Airflow vortex wake streamlines curving past the spinning ball
-            if (visPts.length > 2) {
-              gfx.save();
-              gfx.lineCap = 'round';
-              [-1, 0, 1].forEach(function(lane) {
-                var off = lane * 7.5;
-                var asym = lane === magnusSign ? 0.72 : 1.18;
-                var startX = bp[0] + Math.cos(velAng) * 7 + Math.cos(perpAng) * off * asym;
-                var startY = bp[1] + Math.sin(velAng) * 7 + Math.sin(perpAng) * off * asym;
-                var midX = bp[0] + Math.cos(wakeDir) * 14 + Math.cos(perpAng) * (off * 1.15);
-                var midY = bp[1] + Math.sin(wakeDir) * 14 + Math.sin(perpAng) * (off * 1.15);
-                var curlShift = (spinRpmVal >= 200 ? magnusSign * 6 : 0) + lane * 4;
-                var endX = bp[0] + Math.cos(wakeDir) * 32 + Math.cos(perpAng) * (off + curlShift);
-                var endY = bp[1] + Math.sin(wakeDir) * 32 + Math.sin(perpAng) * (off + curlShift);
-                gfx.strokeStyle = lane === 0 ? 'rgba(224,242,254,0.48)' : (spinGlowCol + (lane === magnusSign ? '88' : '48'));
-                gfx.lineWidth = lane === magnusSign ? 1.6 : 1.1;
-                gfx.beginPath();
-                gfx.moveTo(startX, startY);
-                gfx.quadraticCurveTo(midX, midY, endX, endY);
-                gfx.stroke();
-              });
-              // Trailing vortex eddy curl when spin is significant
-              if (spinRpmVal >= 400) {
-                var vx = bp[0] + Math.cos(wakeDir) * 20 + Math.cos(perpAng) * (magnusSign * 5);
-                var vy = bp[1] + Math.sin(wakeDir) * 20 + Math.sin(perpAng) * (magnusSign * 5);
+          var atImpactEnd = visPts.length > 1 && (!d.replayActive || renderUpTo >= lr.samples.length - 1);
+          if (!atImpactEnd) {
+            impactSeenRef.current = null;
+          }
+
+          // Compute ball kinematics once for Karman-vortex wake, vectors & spin-coupled ball
+          var lastVis = visPts.length > 0 ? visPts[visPts.length - 1] : null;
+          var prevVis = visPts.length > 2 ? visPts[visPts.length - 3] : (visPts.length > 0 ? visPts[0] : null);
+          var bp = lastVis ? lastVis.p : null;
+          var velAng = (bp && prevVis) ? Math.atan2(bp[1] - prevVis.p[1], bp[0] - prevVis.p[0]) : 0;
+          var wakeDir = velAng + Math.PI;
+          var perpAng = velAng + Math.PI / 2;
+          var magnusSign = (spinAxisVal > 90 && spinAxisVal < 270) ? 1 : -1;
+          var flightTime = lastVis ? (Number(lastVis.s.t) || 0) : 0;
+
+          // Multi-lane Karman-vortex swirling wake trails bending smoothly with Magnus force
+          if (bp && visPts.length > 2) {
+            gfx.save();
+            gfx.lineCap = 'round';
+            var wakeLen = 28 + spinNorm * 22;
+            var magnusBend = spinRpmVal >= 160 ? magnusSign * (5 + spinNorm * 11) : 0;
+            var laneOffsets = [-2, -1, 0, 1, 2];
+            for (var li = 0; li < laneOffsets.length; li++) {
+              var lane = laneOffsets[li];
+              var off = lane * 5.2;
+              var isLowP = (lane * magnusSign) > 0;
+              var asym = isLowP ? 0.68 : (lane === 0 ? 1 : 1.18);
+              var startX = bp[0] + Math.cos(velAng) * 6.5 + Math.cos(perpAng) * (off * asym);
+              var startY = bp[1] + Math.sin(velAng) * 6.5 + Math.sin(perpAng) * (off * asym);
+              var swirlOsc = tlReduced ? 0 : Math.sin(flightTime * (9 + spinNorm * 10) + lane * 1.15) * (1.4 + spinNorm * 2.1);
+              var cp1X = bp[0] + Math.cos(wakeDir) * (wakeLen * 0.42) + Math.cos(perpAng) * (off * 1.08 + magnusBend * 0.35 + swirlOsc);
+              var cp1Y = bp[1] + Math.sin(wakeDir) * (wakeLen * 0.42) + Math.sin(perpAng) * (off * 1.08 + magnusBend * 0.35 + swirlOsc);
+              var cp2X = bp[0] + Math.cos(wakeDir) * (wakeLen * 0.78) + Math.cos(perpAng) * (off * 1.24 + magnusBend * 0.82 - swirlOsc * 0.8);
+              var cp2Y = bp[1] + Math.sin(wakeDir) * (wakeLen * 0.78) + Math.sin(perpAng) * (off * 1.24 + magnusBend * 0.82 - swirlOsc * 0.8);
+              var endX = bp[0] + Math.cos(wakeDir) * wakeLen + Math.cos(perpAng) * (off * 1.38 + magnusBend + lane * 2.2);
+              var endY = bp[1] + Math.sin(wakeDir) * wakeLen + Math.sin(perpAng) * (off * 1.38 + magnusBend + lane * 2.2);
+              if (tlHC) {
+                gfx.strokeStyle = lane === 0 ? '#ffffff' : '#ffff00';
+                gfx.globalAlpha = Math.abs(lane) === 2 ? 0.35 : 0.7;
+              } else {
+                gfx.strokeStyle = lane === 0 ? 'rgba(224,242,254,0.52)' : (spinGlowCol + (isLowP ? '99' : '50'));
+                gfx.globalAlpha = Math.abs(lane) === 2 ? (0.42 + spinNorm * 0.22) : 0.85;
+              }
+              gfx.lineWidth = isLowP ? 1.55 : (lane === 0 ? 1.15 : 0.95);
+              gfx.beginPath();
+              gfx.moveTo(startX, startY);
+              gfx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, endX, endY);
+              gfx.stroke();
+            }
+            // Alternating Karman vortex street eddies shedding along the wake (static arc under reduced motion)
+            if (spinRpmVal >= 320 && !tlHC) {
+              var eddyCount = tlReduced ? 1 : (spinRpmVal >= 1200 ? 4 : 3);
+              for (var ei = 0; ei < eddyCount; ei++) {
+                var eFrac = (ei + 1) / (eddyCount + 0.5);
+                var eDist = 14 + eFrac * (wakeLen * 0.88);
+                var sideAlt = (ei % 2 === 0 ? 1 : -1) * magnusSign;
+                var eLat = sideAlt * (4.2 + eFrac * 4.5) + magnusBend * eFrac * 0.72;
+                var ex = bp[0] + Math.cos(wakeDir) * eDist + Math.cos(perpAng) * eLat;
+                var ey = bp[1] + Math.sin(wakeDir) * eDist + Math.sin(perpAng) * eLat;
+                var eR = (3.2 + eFrac * 3.1) * (0.85 + spinNorm * 0.35);
+                var eSpin = tlReduced ? wakeDir : (wakeDir + sideAlt * (flightTime * (8 + spinNorm * 12) + ei * 1.4));
                 gfx.strokeStyle = spinGlowCol;
-                gfx.globalAlpha = 0.52;
-                gfx.lineWidth = 1.1;
+                gfx.globalAlpha = Math.max(0.14, (0.58 - eFrac * 0.38) * (0.7 + spinNorm * 0.4));
+                gfx.lineWidth = Math.max(0.75, 1.35 - eFrac * 0.5);
                 gfx.beginPath();
-                gfx.arc(vx, vy, 4.5, wakeDir, wakeDir + Math.PI * 1.45);
+                gfx.arc(ex, ey, eR, eSpin, eSpin + Math.PI * 1.45);
+                gfx.stroke();
+                // Inner vortex spiral hook
+                gfx.beginPath();
+                gfx.arc(ex, ey, eR * 0.52, eSpin + Math.PI * 0.45, eSpin + Math.PI * 1.65);
                 gfx.stroke();
               }
-              gfx.restore();
             }
-            // Ball halo + crisp spinning ball with seam arc
-            if (typeof gfx.createRadialGradient === 'function') {
-              var bGlow = gfx.createRadialGradient(bp[0], bp[1], 1, bp[0], bp[1], 14);
-              bGlow.addColorStop(0, spinGlowCol + '88');
+            gfx.restore();
+          }
+
+          // Crisp dynamic 2D velocity / spin / Magnus vector bloom when physics overlay is enabled
+          if (bp && d.showPhysics && visPts.length > 2) {
+            var draw2DVector = function(ox, oy, dx, dy, col, lbl) {
+              var len = Math.hypot(dx, dy);
+              if (len < 6) return;
+              var ang = Math.atan2(dy, dx);
+              var ex2 = ox + dx, ey2 = oy + dy;
+              gfx.save();
+              gfx.lineCap = 'round';
+              if (!tlHC) {
+                gfx.strokeStyle = col;
+                gfx.globalAlpha = 0.28;
+                gfx.lineWidth = 6;
+                gfx.beginPath(); gfx.moveTo(ox, oy); gfx.lineTo(ex2, ey2); gfx.stroke();
+              }
+              gfx.globalAlpha = 0.96;
+              gfx.strokeStyle = col;
+              gfx.fillStyle = col;
+              gfx.lineWidth = 2.1;
+              gfx.beginPath(); gfx.moveTo(ox, oy); gfx.lineTo(ex2, ey2); gfx.stroke();
+              gfx.beginPath();
+              gfx.moveTo(ex2, ey2);
+              gfx.lineTo(ex2 - 7.5 * Math.cos(ang - 0.44), ey2 - 7.5 * Math.sin(ang - 0.44));
+              gfx.lineTo(ex2 - 7.5 * Math.cos(ang + 0.44), ey2 - 7.5 * Math.sin(ang + 0.44));
+              gfx.closePath();
+              gfx.fill();
+              if (lbl) {
+                gfx.font = '800 9.5px system-ui, sans-serif';
+                gfx.textAlign = 'left';
+                var lx = Math.max(8, Math.min(W - 44, ex2 + 5));
+                var ly = Math.max(14, Math.min(H - 8, ey2 - 4));
+                gfx.fillText(lbl, lx, ly);
+              }
+              gfx.restore();
+            };
+            // Velocity vector along flight tangent
+            draw2DVector(bp[0], bp[1], Math.cos(velAng) * 32, Math.sin(velAng) * 32, '#22d3ee', 'v');
+            // Magnus force vector perpendicular to velocity (scaled with spin rate)
+            if (spinRpmVal >= 180) {
+              var mLen = 14 + spinNorm * 22;
+              var mDir = perpAng + (magnusSign > 0 ? 0 : Math.PI);
+              draw2DVector(bp[0], bp[1], Math.cos(mDir) * mLen, Math.sin(mDir) * mLen, '#c084fc', 'Fₘ');
+            }
+          }
+
+          // Helper: render spin-rate-coupled rotating ball with 3D specular highlight & spin blur
+          var drawSpinningBall = function() {
+            if (!bp) return;
+            gfx.save();
+            // Outer spin-tinted bloom halo (bypassed in High-Contrast)
+            if (!tlHC && typeof gfx.createRadialGradient === 'function') {
+              var haloR = 13 + spinNorm * 5;
+              var bGlow = gfx.createRadialGradient(bp[0], bp[1], 1, bp[0], bp[1], haloR);
+              bGlow.addColorStop(0, spinGlowCol + (spinNorm > 0.35 ? '9a' : '7a'));
               bGlow.addColorStop(0.5, trajColor + '33');
               bGlow.addColorStop(1, 'rgba(0,0,0,0)');
               gfx.fillStyle = bGlow;
-              gfx.beginPath(); gfx.arc(bp[0], bp[1], 14, 0, Math.PI * 2); gfx.fill();
+              gfx.beginPath(); gfx.arc(bp[0], bp[1], haloR, 0, Math.PI * 2); gfx.fill();
             }
-            gfx.fillStyle = '#fafafa';
-            gfx.beginPath(); gfx.arc(bp[0], bp[1], 5.4, 0, Math.PI * 2); gfx.fill();
-            gfx.strokeStyle = '#dc2626'; gfx.lineWidth = 1.2; gfx.stroke();
-            // Subtle curved seam indicating ball rotation
-            gfx.strokeStyle = 'rgba(220,38,38,0.75)'; gfx.lineWidth = 0.9;
-            gfx.beginPath(); gfx.arc(bp[0] - 1.2, bp[1], 3.2, -0.7, 0.7); gfx.stroke();
+            // Spin-rate specular motion-blur orbit ring around fast-spinning ball
+            var spinAngle = tlReduced ? 0.35 : (magnusSign * flightTime * (spinRpmVal / 60) * Math.PI * 0.55);
+            if (!tlHC && !tlReduced && spinRpmVal >= 350) {
+              gfx.strokeStyle = spinGlowCol;
+              gfx.globalAlpha = 0.28 + spinNorm * 0.42;
+              gfx.lineWidth = 1.25 + spinNorm * 0.85;
+              gfx.beginPath();
+              gfx.arc(bp[0], bp[1], 7.4, spinAngle, spinAngle + Math.PI * (0.75 + spinNorm * 0.6));
+              gfx.stroke();
+              gfx.globalAlpha = 0.16 + spinNorm * 0.22;
+              gfx.beginPath();
+              gfx.arc(bp[0], bp[1], 7.4, spinAngle + Math.PI, spinAngle + Math.PI * (1.55 + spinNorm * 0.35));
+              gfx.stroke();
+              gfx.globalAlpha = 1;
+            }
+            // 3D specular shaded ball body
+            var ballR = 5.6;
+            if (!tlHC && typeof gfx.createRadialGradient === 'function') {
+              var bodyGrad = gfx.createRadialGradient(bp[0] - 1.8, bp[1] - 1.8, 0.6, bp[0], bp[1], ballR);
+              bodyGrad.addColorStop(0, '#ffffff');
+              bodyGrad.addColorStop(0.65, '#f1f5f9');
+              bodyGrad.addColorStop(1, '#cbd5e1');
+              gfx.fillStyle = bodyGrad;
+            } else {
+              gfx.fillStyle = '#fafafa';
+            }
+            gfx.beginPath(); gfx.arc(bp[0], bp[1], ballR, 0, Math.PI * 2); gfx.fill();
+            gfx.strokeStyle = tlHC ? '#ffff00' : '#dc2626'; gfx.lineWidth = 1.15; gfx.stroke();
+            // Rotating spin-coupled dual curved seams with motion-blur ghost at high RPM
+            gfx.save();
+            gfx.beginPath(); gfx.arc(bp[0], bp[1], ballR - 0.5, 0, Math.PI * 2); gfx.clip();
+            gfx.translate(bp[0], bp[1]);
+            gfx.rotate(spinAngle);
+            if (!tlHC && !tlReduced && spinNorm > 0.25) {
+              // Subtle trailing specular seam motion-blur smear
+              gfx.strokeStyle = 'rgba(220,38,38,' + (0.22 + spinNorm * 0.22).toFixed(3) + ')';
+              gfx.lineWidth = 2.0;
+              gfx.beginPath(); gfx.arc(-2.6, 0, 3.6, -0.85, 0.85); gfx.stroke();
+              gfx.beginPath(); gfx.arc(2.6, 0, 3.6, Math.PI - 0.85, Math.PI + 0.85); gfx.stroke();
+            }
+            gfx.strokeStyle = tlHC ? '#000000' : 'rgba(220,38,38,0.86)';
+            gfx.lineWidth = 0.95;
+            gfx.beginPath(); gfx.arc(-2.4, 0, 3.5, -0.85, 0.85); gfx.stroke();
+            gfx.beginPath(); gfx.arc(2.4, 0, 3.5, Math.PI - 0.85, Math.PI + 0.85); gfx.stroke();
+            gfx.restore();
+            // Crisp upper-left specular glint
+            if (!tlHC) {
+              gfx.fillStyle = 'rgba(255,255,255,0.82)';
+              gfx.beginPath(); gfx.arc(bp[0] - 1.9, bp[1] - 1.9, 1.35, 0, Math.PI * 2); gfx.fill();
+            }
+            gfx.restore();
+          };
+
+          // Helper: render pre-allocated zero-GC impact shockwave & turf/dust micro-burst particles
+          var drawImpactBurst = function(burstT, isLive) {
+            if (!atImpactEnd) return;
+            var impPt = visPts[visPts.length - 1];
+            var ix = impPt.p[0], iy = impPt.p[1];
+            var isGroundImpact = isTopDown || impPt.s.y <= 0.35;
+            var dustCol = isTopDown || d.mode === 'golf' || d.mode === 'fieldgoal' ? '#d9f99d'
+              : d.mode === 'pitching' || d.mode === 'bowling' ? '#fde68a' : '#e0f2fe';
+            var dustCol2 = isTopDown || d.mode === 'golf' || d.mode === 'fieldgoal' ? '#86efac'
+              : d.mode === 'pitching' || d.mode === 'bowling' ? '#fbbf24' : '#bae6fd';
+            gfx.save();
+            // Concentric target impact shockwave rings (guarded ellipse)
+            var ease = 1 - Math.pow(1 - Math.max(0, Math.min(1, burstT)), 3);
+            var rx1 = (isGroundImpact ? 14 : 11) * (isLive ? (0.45 + ease * 0.72) : 1);
+            var ry1 = (isGroundImpact ? 5.5 : 11) * (isLive ? (0.45 + ease * 0.72) : 1);
+            var rx2 = (isGroundImpact ? 24 : 18) * (isLive ? (0.35 + ease * 1.05) : 1);
+            var ry2 = (isGroundImpact ? 9.5 : 18) * (isLive ? (0.35 + ease * 1.05) : 1);
+            if (!tlHC && isLive && burstT < 0.75 && typeof gfx.createRadialGradient === 'function') {
+              var swR = Math.max(rx2, 16);
+              var swG = gfx.createRadialGradient(ix, iy, 1, ix, iy, swR);
+              swG.addColorStop(0, trajColor + Math.round((1 - burstT / 0.75) * 95).toString(16).padStart(2, '0'));
+              swG.addColorStop(1, trajColor + '00');
+              gfx.fillStyle = swG;
+              gfx.beginPath(); _tlSafeEllipse(gfx, ix, iy, swR, isGroundImpact ? swR * 0.42 : swR, 0, 0, Math.PI * 2); gfx.fill();
+            }
+            gfx.strokeStyle = trajColor;
+            gfx.globalAlpha = isLive ? Math.max(0.55, 0.92 - burstT * 0.25) : 0.72;
+            gfx.lineWidth = isLive ? (2.4 - burstT * 0.7) : 1.8;
+            gfx.beginPath(); _tlSafeEllipse(gfx, ix, iy, rx1, ry1, 0, 0, Math.PI * 2); gfx.stroke();
+            gfx.globalAlpha = isLive ? Math.max(0.28, (1 - burstT * 0.62) * 0.72) : 0.36;
+            gfx.lineWidth = 1.2;
+            gfx.beginPath(); _tlSafeEllipse(gfx, ix, iy, rx2, ry2, 0, 0, Math.PI * 2); gfx.stroke();
+            // Pre-allocated zero-GC turf/chalk/dust micro-burst particles
+            var pool = impactPoolRef.current;
+            if (isLive && pool) {
+              var fade = Math.max(0, 1 - Math.pow(burstT, 1.5));
+              for (var pp = 0; pp < pool.length; pp++) {
+                var pt = pool[pp];
+                var dragT = 1 - Math.exp(-burstT * 2.6);
+                var px2 = ix + pt.vx * dragT;
+                var py2 = iy + pt.vy * dragT + (isGroundImpact && !isTopDown ? (burstT * burstT * 18) : 0);
+                var pRad = Math.max(0.5, pt.size * (1 - burstT * 0.45));
+                gfx.fillStyle = pt.shade === 0 ? dustCol : dustCol2;
+                gfx.globalAlpha = Math.max(0.06, pt.alpha * fade + (burstT > 0.85 ? 0.14 : 0));
+                gfx.beginPath(); gfx.arc(px2, py2, pRad, 0, Math.PI * 2); gfx.fill();
+              }
+            } else {
+              // Crisp static settled turf/chalk dust puffs (reduced motion or post-burst)
+              for (var dp = 0; dp < 8; dp++) {
+                var da = (dp / 8) * Math.PI * 2 + ((ix + iy) % 1.2);
+                var dr = 8 + (dp % 3) * 5;
+                var dpx = ix + Math.cos(da) * dr * (isGroundImpact ? 1.25 : 0.9);
+                var dpy = iy + Math.sin(da) * dr * (isGroundImpact ? 0.48 : 0.9) - (isGroundImpact && !isTopDown ? 3 : 0);
+                gfx.fillStyle = dp % 2 === 0 ? dustCol : dustCol2;
+                gfx.globalAlpha = 0.38 - (dp % 3) * 0.08;
+                gfx.beginPath(); gfx.arc(dpx, dpy, 2.4 - (dp % 2) * 0.6, 0, Math.PI * 2); gfx.fill();
+              }
+            }
+            gfx.restore();
+          };
+
+          // Trigger a bounded 650ms canvas-only impact shockwave & turf/dust micro-burst on fresh impact
+          var shouldAnimateBurst = atImpactEnd && !tlReduced && !tlHC && impactSeenRef.current !== lr && typeof requestAnimationFrame === 'function';
+          var snapOk = false;
+          if (shouldAnimateBurst && typeof document !== 'undefined' && typeof gfx.drawImage === 'function' && canvas.width > 0 && canvas.height > 0) {
+            try {
+              var snap = impactSnapRef.current;
+              if (!snap) {
+                snap = document.createElement('canvas');
+                impactSnapRef.current = snap;
+              }
+              if (snap.width !== canvas.width || snap.height !== canvas.height) {
+                snap.width = canvas.width;
+                snap.height = canvas.height;
+              }
+              var snapCtx = snap.getContext('2d');
+              if (snapCtx && typeof snapCtx.drawImage === 'function') {
+                snapCtx.clearRect(0, 0, snap.width, snap.height);
+                snapCtx.drawImage(canvas, 0, 0);
+                snapOk = true;
+              }
+            } catch (e) { snapOk = false; }
+          }
+
+          if (shouldAnimateBurst && snapOk) {
+            impactSeenRef.current = lr;
+            // Seed pre-allocated zero-GC particle pool in-place
+            var poolRef = impactPoolRef.current;
+            var impSeedPt = visPts[visPts.length - 1];
+            var isGroundSeed = isTopDown || impSeedPt.s.y <= 0.35;
+            var seedHash = Math.abs(Math.sin(impSeedPt.p[0] * 0.13 + impSeedPt.p[1] * 0.29 + spinRpmVal * 0.01));
+            for (var sp = 0; sp < poolRef.length; sp++) {
+              var pObj = poolRef[sp];
+              var ang = (sp / poolRef.length) * Math.PI * 2 + seedHash * 1.7 + (sp % 3) * 0.18;
+              var spd = 12 + ((sp * 7) % 15) + spinNorm * 8;
+              pObj.vx = Math.cos(ang) * spd * (isGroundSeed ? 1.35 : 0.95);
+              pObj.vy = isGroundSeed && !isTopDown
+                ? (-Math.abs(Math.sin(ang)) * spd * 0.72 - 5)
+                : (Math.sin(ang) * spd * (isGroundSeed ? 0.55 : 0.95));
+              pObj.size = 1.4 + (sp % 4) * 0.48;
+              pObj.alpha = 0.52 + (sp % 3) * 0.14;
+              pObj.shade = sp % 2;
+            }
+            var burstStart = typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
+            var burstDur = 640;
+            drawImpactBurst(0.05, true);
+            drawSpinningBall();
+            var stepBurst = function(nowTs) {
+              var elapsedMs = (nowTs || Date.now()) - burstStart;
+              var bT = Math.max(0, Math.min(1, elapsedMs / burstDur));
+              gfx.clearRect(0, 0, W, H);
+              gfx.drawImage(impactSnapRef.current, 0, 0, W, H);
+              drawImpactBurst(bT, bT < 1);
+              drawSpinningBall();
+              if (bT < 1) {
+                burstRafId = requestAnimationFrame(stepBurst);
+              } else {
+                burstRafId = null;
+              }
+            };
+            burstRafId = requestAnimationFrame(stepBurst);
+          } else {
+            if (atImpactEnd) impactSeenRef.current = lr;
+            drawImpactBurst(1, false);
+            drawSpinningBall();
           }
         }
+        return function() {
+          if (burstRafId && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(burstRafId);
+        };
       }, [
         d.lastResult, d.replayActive, d.replayT,
         d.speedMph, d.releaseHeight, d.aimDegV, d.aimDegH,
@@ -4670,11 +4952,18 @@ window.StemLab = window.StemLab || {
         var W = 640, H = 340;
         var gfx = _tlSetupHiDPI(canvas, W, H);
         if (!gfx) return;
+        var immReduced = _tlIsReducedMotion();
+        var immHC = _tlIsHighContrast(canvas);
         gfx.clearRect(0, 0, W, H);
-        var bg = gfx.createLinearGradient(0, 0, 0, H);
-        bg.addColorStop(0, '#050d1f'); bg.addColorStop(0.42, '#0f2342'); bg.addColorStop(0.66, '#383a56'); bg.addColorStop(0.76, '#183726'); bg.addColorStop(1, '#0d2217');
-        gfx.fillStyle = bg; gfx.fillRect(0, 0, W, H);
-        if (typeof gfx.createRadialGradient === 'function') {
+        if (!immHC && typeof gfx.createLinearGradient === 'function') {
+          var bg = gfx.createLinearGradient(0, 0, 0, H);
+          bg.addColorStop(0, '#050d1f'); bg.addColorStop(0.42, '#0f2342'); bg.addColorStop(0.66, '#383a56'); bg.addColorStop(0.76, '#183726'); bg.addColorStop(1, '#0d2217');
+          gfx.fillStyle = bg;
+        } else {
+          gfx.fillStyle = immHC ? '#000000' : '#0f2342';
+        }
+        gfx.fillRect(0, 0, W, H);
+        if (!immHC && typeof gfx.createRadialGradient === 'function') {
           [[W * 0.22, 24], [W * 0.78, 24]].forEach(function(fl) {
             var fg = gfx.createRadialGradient(fl[0], fl[1], 4, fl[0], fl[1], 200);
             fg.addColorStop(0, 'rgba(254, 249, 195, 0.20)');
@@ -4807,12 +5096,25 @@ window.StemLab = window.StemLab || {
           if(current&&visible>0){
             var ball=samples[Math.min(visible-1,samples.length-1)],bp=project({x:Number(ball.x)||0,y:Math.max(0,Number(ball.y)||0),z:Number(ball.z)||0});
             if(bp){
-              if(typeof gfx.createRadialGradient==='function'){
-                var bg3=gfx.createRadialGradient(bp[0],bp[1],1,bp[0],bp[1],13);
-                bg3.addColorStop(0,color+'88');bg3.addColorStop(1,'rgba(0,0,0,0)');
-                gfx.fillStyle=bg3;gfx.beginPath();gfx.arc(bp[0],bp[1],13,0,Math.PI*2);gfx.fill();
+              var immSpinRpm=Number(immersiveTrial.spinRpm)||0;
+              var immSpinNorm=Math.min(1,immSpinRpm/2600);
+              var immSpinAng=immReduced?0.3:((Number(ball.t)||0)*(immSpinRpm/60)*Math.PI*0.55);
+              if(!immHC&&typeof gfx.createRadialGradient==='function'){
+                var bg3=gfx.createRadialGradient(bp[0],bp[1],1,bp[0],bp[1],14+immSpinNorm*4);
+                bg3.addColorStop(0,color+'96');bg3.addColorStop(1,'rgba(0,0,0,0)');
+                gfx.fillStyle=bg3;gfx.beginPath();gfx.arc(bp[0],bp[1],14+immSpinNorm*4,0,Math.PI*2);gfx.fill();
               }
-              gfx.fillStyle='#fff';gfx.strokeStyle=color;gfx.lineWidth=2;gfx.beginPath();gfx.arc(bp[0],bp[1],5.2,0,Math.PI*2);gfx.fill();gfx.stroke();
+              if(!immHC&&!immReduced&&immSpinRpm>=350){
+                gfx.save();gfx.strokeStyle=color;gfx.globalAlpha=0.32+immSpinNorm*0.38;gfx.lineWidth=1.3;
+                gfx.beginPath();gfx.arc(bp[0],bp[1],7.4,immSpinAng,immSpinAng+Math.PI*0.95);gfx.stroke();gfx.restore();
+              }
+              gfx.fillStyle='#fff';gfx.strokeStyle=immHC?'#ffff00':color;gfx.lineWidth=1.8;gfx.beginPath();gfx.arc(bp[0],bp[1],5.4,0,Math.PI*2);gfx.fill();gfx.stroke();
+              gfx.save();gfx.beginPath();gfx.arc(bp[0],bp[1],4.8,0,Math.PI*2);gfx.clip();
+              gfx.translate(bp[0],bp[1]);gfx.rotate(immSpinAng);
+              gfx.strokeStyle=immHC?'#000':'rgba(220,38,38,0.82)';gfx.lineWidth=0.95;
+              gfx.beginPath();gfx.arc(-2.3,0,3.4,-0.8,0.8);gfx.stroke();
+              gfx.beginPath();gfx.arc(2.3,0,3.4,Math.PI-0.8,Math.PI+0.8);gfx.stroke();
+              gfx.restore();
             }
             if(!d.replayActive||visible>=samples.length-1){
               var endS=samples[samples.length-1];
@@ -4854,8 +5156,28 @@ window.StemLab = window.StemLab || {
         }
         function drawVectorArrow(origin, vector, color, label) {
           var end={x:origin.x+vector.x,y:origin.y+vector.y,z:origin.z+vector.z},a=project(origin),b=project(end);if(!a||!b)return;
-          gfx.save();gfx.strokeStyle=color;gfx.fillStyle=color;gfx.lineWidth=2.5;gfx.beginPath();gfx.moveTo(a[0],a[1]);gfx.lineTo(b[0],b[1]);gfx.stroke();
-          var angle=Math.atan2(b[1]-a[1],b[0]-a[0]);gfx.beginPath();gfx.moveTo(b[0],b[1]);gfx.lineTo(b[0]-9*Math.cos(angle-0.45),b[1]-9*Math.sin(angle-0.45));gfx.lineTo(b[0]-9*Math.cos(angle+0.45),b[1]-9*Math.sin(angle+0.45));gfx.closePath();gfx.fill();gfx.font='800 10px system-ui, sans-serif';gfx.fillText(label,b[0]+6,b[1]-6);gfx.restore();
+          var angle=Math.atan2(b[1]-a[1],b[0]-a[0]);
+          gfx.save();
+          gfx.lineCap='round';
+          // Crisp luminous vector bloom underlay (bypassed in High-Contrast)
+          if(!immHC){
+            gfx.strokeStyle=color;gfx.globalAlpha=0.28;gfx.lineWidth=6.5;
+            gfx.beginPath();gfx.moveTo(a[0],a[1]);gfx.lineTo(b[0],b[1]);gfx.stroke();
+            if(typeof gfx.createRadialGradient==='function'){
+              var tipG=gfx.createRadialGradient(b[0],b[1],1,b[0],b[1],12);
+              tipG.addColorStop(0,color+'88');tipG.addColorStop(1,'rgba(0,0,0,0)');
+              gfx.globalAlpha=1;gfx.fillStyle=tipG;gfx.beginPath();gfx.arc(b[0],b[1],12,0,Math.PI*2);gfx.fill();
+            }
+          }
+          gfx.globalAlpha=1;gfx.strokeStyle=color;gfx.fillStyle=color;gfx.lineWidth=2.5;
+          gfx.beginPath();gfx.moveTo(a[0],a[1]);gfx.lineTo(b[0],b[1]);gfx.stroke();
+          gfx.beginPath();gfx.moveTo(b[0],b[1]);gfx.lineTo(b[0]-9.5*Math.cos(angle-0.44),b[1]-9.5*Math.sin(angle-0.44));gfx.lineTo(b[0]-9.5*Math.cos(angle+0.44),b[1]-9.5*Math.sin(angle+0.44));gfx.closePath();gfx.fill();
+          // Subtle white inner filament for vector crispness
+          if(!immHC){
+            gfx.strokeStyle='rgba(255,255,255,0.55)';gfx.lineWidth=0.9;
+            gfx.beginPath();gfx.moveTo(a[0],a[1]);gfx.lineTo(b[0]-6*Math.cos(angle),b[1]-6*Math.sin(angle));gfx.stroke();
+          }
+          gfx.font='800 10px system-ui, sans-serif';gfx.fillText(label,b[0]+6,b[1]-6);gfx.restore();
         }
         function drawPhysicsVectors(result) {
           if(!result||!result.samples||!result.samples.length)return;

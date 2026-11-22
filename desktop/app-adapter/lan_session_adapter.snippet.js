@@ -35,8 +35,29 @@ function _alloLanConfig() {
     if (raw) {
       const parsed = JSON.parse(raw);
       const mode = parsed && parsed.mode;
-      const base = parsed && typeof parsed.lanApiBase === 'string'
-        ? parsed.lanApiBase.replace(/\/+$/, '') : '';
+      const rawBase = parsed && typeof parsed.lanApiBase === 'string'
+        ? parsed.lanApiBase.trim().replace(/\/+$/, '') : '';
+      let base = '';
+      if (rawBase) {
+        try {
+          const parsedUrl = new URL(rawBase);
+          const host = String(parsedUrl.hostname || '').toLowerCase();
+          const isLoopback = host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '[::1]';
+          const pageOrigin = typeof window !== 'undefined' && window.location && window.location.origin ? window.location.origin : '';
+          const allowedOrigin = mode === 'schoolbox-lan'
+            ? (isLoopback || (pageOrigin && parsedUrl.origin === pageOrigin))
+            : true;
+          if (
+            (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:')
+            && !parsedUrl.username && !parsedUrl.password
+            && !parsedUrl.search && !parsedUrl.hash
+            && (parsedUrl.pathname === '/' || parsedUrl.pathname === '')
+            && allowedOrigin
+          ) {
+            base = parsedUrl.origin;
+          }
+        } catch (_) { base = ''; }
+      }
       // firestoreAllowed !== true keeps explicit cloud opt-ins (byo-firebase,
       // demo cloud) on Firestore even if a stale lanApiBase lingers.
       if ((mode === 'schoolbox-lan' || mode === 'district-server') && base && parsed.firestoreAllowed !== true) {
@@ -59,8 +80,16 @@ function _alloLanBridgeUser() {
   if (!/^lan-[a-z0-9_-]{6,80}$/i.test(uid)) {
     var isStudent = false;
     try { isStudent = new URLSearchParams(window.location.search || '').has('allo_lan_join'); } catch (_) {}
+    var randPart = '';
+    try {
+      if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+        var bytes = new Uint8Array(8);
+        crypto.getRandomValues(bytes);
+        randPart = Array.from(bytes, function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+      }
+    } catch (_) {}
     uid = 'lan-' + (isStudent ? 'student-' : 'teacher-')
-      + Math.random().toString(36).slice(2, 10);
+      + (randPart || Math.random().toString(36).slice(2, 10));
     try { window.sessionStorage.setItem(storageKey, uid); } catch (_) {}
   }
   return { uid: uid, isAnonymous: true, __alloLanUser: true, getIdToken: async () => '' };
@@ -107,17 +136,18 @@ async function _alloLanFetch(pathname, init) {
 }
 async function _alloLanOrganizerRequest(code, method = 'GET', body = null, signal) {
   const cfg = _alloLanConfig();
-  if (!cfg || !code) throw new Error('Join a LAN class before using reflections.');
+  const safeCode = typeof code === 'string' ? code.trim() : '';
+  if (!cfg || !/^[A-Za-z0-9_-]{1,64}$/.test(safeCode)) throw new Error('Join a LAN class before using reflections.');
   const controller = new AbortController();
   const cancel = () => controller.abort();
   if (signal?.aborted) controller.abort(); else signal?.addEventListener('abort', cancel, { once: true });
   const timeout = setTimeout(cancel, 20000);
   try {
-    const response = await fetch(cfg.base + '/api/lan-sessions/' + encodeURIComponent(code) + '/reflections', {
+    const response = await fetch(cfg.base + '/api/lan-sessions/' + encodeURIComponent(safeCode) + '/reflections', {
       method, signal: controller.signal, headers: { ...(cfg.token ? { Authorization: 'Bearer ' + cfg.token } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}),
     });
     let value; try { value = await response.json(); } catch (_) { throw new Error('This desktop version does not support reflection review. Update the teacher desktop and retry.'); }
-    if (!response.ok) { const error = new Error(value.error || 'The reflection request failed. Try again.'); error.status = response.status; throw error; }
+    if (!response.ok) { const error = new Error((value && typeof value === 'object' && value.error) || 'The reflection request failed. Try again.'); error.status = response.status; throw error; }
     return value;
   } catch (error) {
     if (error.name === 'AbortError' && !signal?.aborted) throw new Error('The reflection request timed out. Your draft is still saved; try again.');
@@ -171,8 +201,9 @@ function _applyLanSessionAdapter() {
   };
   updateDoc = async (ref, payload) => {
     if (!ref || !ref.__alloLanRef) return baseUpdateDoc(ref, payload);
-    const updates = {};
+    const updates = Object.create(null);
     Object.keys(payload || {}).forEach((key) => {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
       const value = payload[key];
       if (value === undefined) return;
       updates[key] = _alloLanIsDeleteSentinel(value) ? { __op: 'deleteField' } : value;

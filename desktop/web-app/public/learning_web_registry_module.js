@@ -47,7 +47,7 @@
     try { return JSON.parse(JSON.stringify(value)); } catch (_) { return null; }
   }
 
-  var BLOCKED_KEYS = { '__proto__': 1, constructor: 1, prototype: 1 };
+  var BLOCKED_KEYS = Object.assign(Object.create(null), { '__proto__': 1, constructor: 1, prototype: 1 });
 
   // Registry imports and history reconciliation are schema boundaries. Keep
   // metadata useful, but never let one small graph smuggle unbounded strings,
@@ -110,7 +110,8 @@
     if (!candidate || !/^https:\/\//i.test(candidate)) return '';
     try {
       var parsed = new URL(candidate);
-      return parsed.protocol === 'https:' ? candidate : '';
+      if (parsed.protocol !== 'https:' || parsed.username || parsed.password || !parsed.hostname) return '';
+      return candidate;
     } catch (_) {
       return '';
     }
@@ -155,7 +156,7 @@
 
   function normalizeResourceRefs(values) {
     var list = Array.isArray(values) ? values : [];
-    var seen = {};
+    var seen = Object.create(null);
     var out = [];
     for (var i = 0; i < list.length && out.length < MAX_RESOURCES; i++) {
       var ref = normalizeResourceRef(list[i], i);
@@ -187,7 +188,7 @@
       }, 1, budget);
       if (next !== undefined) graph[key] = next;
     });
-    var nodeIds = {};
+    var nodeIds = Object.create(null);
     graph.nodes = raw.nodes.map(function (rawNode) {
       if (!isObject(rawNode)) return null;
       var id = text(rawNode.id, 240);
@@ -237,7 +238,7 @@
 
   function normalizeGraphKind(value) {
     var kind = text(value, 100).toLowerCase();
-    var aliases = {
+    var aliases = Object.assign(Object.create(null), {
       alignment: GRAPH_KINDS.ALIGNMENT,
       'alignment-map': GRAPH_KINDS.ALIGNMENT,
       'alignment-graph': GRAPH_KINDS.ALIGNMENT,
@@ -256,7 +257,7 @@
       'project-resources': GRAPH_KINDS.RESOURCES,
       unified: GRAPH_KINDS.UNIFIED,
       'learning-web': GRAPH_KINDS.UNIFIED
-    };
+    });
     return aliases[kind] || kind;
   }
 
@@ -381,7 +382,7 @@
     var source = isObject(raw) ? raw : {};
     if (source.version !== undefined && source.version !== VERSION) return null;
     var values = Array.isArray(source.graphs) ? source.graphs : [];
-    var byId = {};
+    var byId = Object.create(null);
     var graphs = [];
     for (var i = 0; i < values.length; i++) {
       var entry = normalizeEntry(values[i]);
@@ -450,17 +451,17 @@
   // each collision group in lexical composite order. Reversing input therefore
   // produces byte-identical graph IDs.
   function createEntryNamespaceAllocator(entries) {
-    var tokenByComposite = {};
+    var tokenByComposite = Object.create(null);
     (Array.isArray(entries) ? entries : []).forEach(function (entry) {
       tokenByComposite[entryCompositeKey(entry)] = entryNamespaceToken(entry);
     });
-    var groups = {};
+    var groups = Object.create(null);
     Object.keys(tokenByComposite).sort().forEach(function (composite) {
       var token = tokenByComposite[composite];
       if (!groups[token]) groups[token] = [];
       groups[token].push(composite);
     });
-    var namespaces = {};
+    var namespaces = Object.create(null);
     Object.keys(groups).sort().forEach(function (token) {
       var group = groups[token].sort();
       group.forEach(function (composite, index) {
@@ -500,7 +501,7 @@
   // character output bound itself. Canonical IDs are reserved and still merge
   // intentionally; generic full composites never do.
   function createNodeIdentityAllocator(entries, namespaceForEntry) {
-    var canonicalIds = {}, recordsByComposite = {};
+    var canonicalIds = Object.create(null), recordsByComposite = Object.create(null);
     (Array.isArray(entries) ? entries : []).forEach(function (entry) {
       (entry.graph && Array.isArray(entry.graph.nodes) ? entry.graph.nodes : []).forEach(function (node) {
         var canonical = canonicalNodeBaseId(node, entry);
@@ -514,13 +515,13 @@
         }
       });
     });
-    var groups = {};
+    var groups = Object.create(null);
     Object.keys(recordsByComposite).sort().forEach(function (composite) {
       var record = recordsByComposite[composite];
       if (!groups[record.base]) groups[record.base] = [];
       groups[record.base].push(record);
     });
-    var allocated = {}, used = {};
+    var allocated = Object.create(null), used = Object.create(null);
     Object.keys(canonicalIds).forEach(function (id) { used[id] = 'canonical'; });
     Object.keys(groups).sort().forEach(function (base) {
       var group = groups[base].sort(function (a, b) { return a.composite.localeCompare(b.composite); });
@@ -551,12 +552,19 @@
     return identityId(entryNamespace(entry), rawId || stableHash(stableSemanticString(node, 12000)));
   }
 
+  function boundedLimit(raw, min, max, fallback) {
+    if (raw === undefined || raw === null || raw === '') return fallback;
+    var parsed = Number(raw);
+    if (!Number.isFinite(parsed)) return fallback;
+    return Math.max(min, Math.min(max, Math.floor(parsed)));
+  }
+
   function createGraphBuilder(options) {
     var opts = isObject(options) ? options : {};
     return {
-      maxNodes: Math.max(1, Math.min(MAX_NODES, Number(opts.maxNodes) || MAX_NODES)),
-      maxEdges: Math.max(0, Math.min(MAX_EDGES, Number(opts.maxEdges) || MAX_EDGES)),
-      nodes: [], edges: [], nodeById: {}, edgeByKey: {}, truncatedNodes: 0, truncatedEdges: 0
+      maxNodes: boundedLimit(opts.maxNodes, 1, MAX_NODES, MAX_NODES),
+      maxEdges: boundedLimit(opts.maxEdges, 0, MAX_EDGES, MAX_EDGES),
+      nodes: [], edges: [], nodeById: Object.create(null), edgeByKey: Object.create(null), truncatedNodes: 0, truncatedEdges: 0
     };
   }
 
@@ -681,7 +689,7 @@
   function appendGraph(builder, graph, sourceEntry, resourceId) {
     var normalized = normalizeGraph(graph);
     if (!normalized) return;
-    var aliases = {};
+    var aliases = Object.create(null);
     normalized.nodes.slice().sort(function (a, b) { return String(a.id).localeCompare(String(b.id)); }).forEach(function (node) {
       var id = canonicalNodeId(node, sourceEntry);
       aliases[node.id] = id;
@@ -706,7 +714,7 @@
     var rootRaw = focus && aliases[focus] ? focus : '';
     if (!rootRaw) {
       var candidates = normalized.nodes.slice().sort(function (a, b) {
-        var rank = { audit: 0, main: 1, unit: 2, root: 3, standard: 4 };
+        var rank = Object.assign(Object.create(null), { audit: 0, main: 1, unit: 2, root: 3, standard: 4 });
         var ar = rank[text(a.type, 100).toLowerCase()]; if (ar === undefined) ar = 9;
         var br = rank[text(b.type, 100).toLowerCase()]; if (br === undefined) br = 9;
         return ar - br || String(a.id).localeCompare(String(b.id));
@@ -732,7 +740,7 @@
     var standards = isObject(comprehensive.standards) ? comprehensive.standards : {};
     var candidates = [resource && resource.standardsContext, data.standardsContext, comprehensive.standardsContext, standards.standardsContext];
     if (isObject(data.blueprint)) candidates.push(data.blueprint.standardsContext);
-    var seen = {};
+    var seen = Object.create(null);
     return candidates.filter(function (candidate) {
       if (!isObject(candidate) || text(candidate.resolutionStatus, 40).toLowerCase() !== 'resolved' || !Array.isArray(candidate.standards)) return false;
       var key = text(candidate.provider, 160) + '|' + text(candidate.datasetVersion, 160) + '|' + candidate.standards.map(function (record) { return text(record && (record.id || record.code), 240); }).join(',');
@@ -864,7 +872,7 @@
           { graph: data.lexicalGraph, kind: GRAPH_KINDS.LEXICAL, key: 'lexical' },
           { graph: data.conceptGraph, kind: GRAPH_KINDS.CONCEPT, key: 'concept' }
         );
-        var seenGraphs = {};
+        var seenGraphs = Object.create(null);
         candidates.forEach(function (candidate) {
           var graph = normalizeGraph(candidate.graph);
           if (!graph) return;
@@ -980,7 +988,7 @@
     var direct = edgeSourceDetail(entry, sourceEdge);
     if (direct) candidates.push(direct);
 
-    var byExactDetail = {};
+    var byExactDetail = Object.create(null);
     candidates.sort(function (a, b) { return sourceDetailSortKey(a).localeCompare(sourceDetailSortKey(b)); });
     var unique = candidates.filter(function (detail) {
       var key = JSON.stringify(detail);
@@ -990,7 +998,7 @@
     });
     // Keep at least one record per contributing entry before secondary evidence
     // variants, so truncation never makes a retained source id unverifiable.
-    var primaryBySource = {}, primary = [], secondary = [];
+    var primaryBySource = Object.create(null), primary = [], secondary = [];
     unique.forEach(function (detail) {
       var key = detail.entryId + '|' + detail.graphKind;
       if (!primaryBySource[key]) { primaryBySource[key] = true; primary.push(detail); }
@@ -1005,7 +1013,7 @@
         stringLimit: MAX_TEXT, arrayLimit: 80, keyLimit: 48
       }, 0, budget);
     }).filter(isObject);
-    var ids = {}, kinds = {};
+    var ids = Object.create(null), kinds = Object.create(null);
     selected.forEach(function (detail) { ids[detail.entryId] = true; kinds[detail.graphKind] = true; });
     target.learningWeb = Object.assign({}, prior, {
       sourceEntryIds: Object.keys(ids).sort(),
@@ -1020,7 +1028,7 @@
   function rankedEntryNodes(entry) {
     var nodes = entry && entry.graph && Array.isArray(entry.graph.nodes) ? entry.graph.nodes.slice() : [];
     var focus = text(entry && entry.graph && entry.graph.meta && (entry.graph.meta.focusId || (entry.graph.meta.lexicalGraph && entry.graph.meta.lexicalGraph.focusId)), 240);
-    var rank = { audit: 0, main: 1, unit: 2, root: 3, standard: 4, resource: 5 };
+    var rank = Object.assign(Object.create(null), { audit: 0, main: 1, unit: 2, root: 3, standard: 4, resource: 5 });
     nodes.sort(function (a, b) {
       if (focus && a.id === focus && b.id !== focus) return -1;
       if (focus && b.id === focus && a.id !== focus) return 1;
@@ -1045,7 +1053,7 @@
   }
 
   function seedFairKindNodes(builder, entries, nodeIdentityFor) {
-    var byKind = {}, kindOrder = [];
+    var byKind = Object.create(null), kindOrder = [];
     entries.forEach(function (entry) {
       if (!entry.graph.nodes.length) return;
       if (!byKind[entry.graphKind]) { byKind[entry.graphKind] = []; kindOrder.push(entry.graphKind); }
@@ -1081,7 +1089,7 @@
       if (!entry || entry.scopeId !== scopeId || entry.graphKind === GRAPH_KINDS.UNIFIED) return false;
       return !kinds.length || kinds.indexOf(entry.graphKind) >= 0;
     });
-    var priority = {};
+    var priority = Object.create(null);
     priority[GRAPH_KINDS.RESOURCES] = 0; priority[GRAPH_KINDS.ALIGNMENT] = 1;
     priority[GRAPH_KINDS.UNIT] = 2; priority[GRAPH_KINDS.CONCEPT] = 3; priority[GRAPH_KINDS.LEXICAL] = 4;
     entries.sort(function (a, b) {
@@ -1104,7 +1112,7 @@
       if (node) linkedEntries.forEach(function (entry) { mergeSourceTag(node, entry); });
     });
     entries.forEach(function (entry) {
-      var aliases = {};
+      var aliases = Object.create(null);
       var sortedNodes = entry.graph.nodes.slice().sort(function (a, b) { return String(a.id).localeCompare(String(b.id)); });
       sortedNodes.forEach(function (node) {
         var id = canonicalNodeId(node, entry, nodeIdentityFor);
@@ -1131,7 +1139,7 @@
       if (entry.graphKind === GRAPH_KINDS.RESOURCES) return;
       var focus = text(entry.graph.meta && (entry.graph.meta.focusId || (entry.graph.meta.lexicalGraph && entry.graph.meta.lexicalGraph.focusId)), 240);
       var candidates = sortedNodes.slice().sort(function (a, b) {
-        var rank = { audit: 0, main: 1, unit: 2, root: 3, standard: 4 };
+        var rank = Object.assign(Object.create(null), { audit: 0, main: 1, unit: 2, root: 3, standard: 4 });
         var ar = rank[text(a.type, 100).toLowerCase()]; if (ar === undefined) ar = 9;
         var br = rank[text(b.type, 100).toLowerCase()]; if (br === undefined) br = 9;
         return ar - br || String(a.id).localeCompare(String(b.id));
@@ -1153,9 +1161,9 @@
     builder.edges.forEach(function (edge) { if (edge.learningWeb) { edge.learningWeb.sourceEntryIds.sort(); edge.learningWeb.sourceGraphKinds.sort(); } });
     builder.nodes.sort(function (a, b) { return String(a.id).localeCompare(String(b.id)); });
     builder.edges.sort(function (a, b) { return (String(a.fromId) + '|' + String(a.toId) + '|' + String(a.type) + '|' + String(a.relationType)).localeCompare(String(b.fromId) + '|' + String(b.toId) + '|' + String(b.type) + '|' + String(b.relationType)); });
-    var categories = {};
+    var categories = Object.create(null);
     builder.nodes.forEach(function (node) { var category = text(node.category, 160); if (category) categories[category] = true; });
-    var contributedIds = {};
+    var contributedIds = Object.create(null);
     builder.nodes.concat(builder.edges).forEach(function (item) {
       var learningWeb = isObject(item.learningWeb) ? item.learningWeb : {};
       (Array.isArray(learningWeb.sourceEntryIds) ? learningWeb.sourceEntryIds : []).forEach(function (id) { contributedIds[id] = true; });
@@ -1173,7 +1181,7 @@
       meta: { learningWeb: {
         version: VERSION, graphKind: GRAPH_KINDS.UNIFIED, scopeId: scopeId,
         sourceEntryIds: contributingEntries.map(function (entry) { return entry.id; }),
-        graphKinds: Object.keys(contributingEntries.reduce(function (out, entry) { out[entry.graphKind] = true; return out; }, {})).sort(),
+        graphKinds: Object.keys(contributingEntries.reduce(function (out, entry) { out[entry.graphKind] = true; return out; }, Object.create(null))).sort(),
         resourceRefs: contributingRefs, sources: sourceSummaries,
         counts: { entries: contributingEntries.length, selectedEntries: entries.length, nodes: builder.nodes.length, edges: builder.edges.length },
         truncated: { nodes: builder.truncatedNodes > 0, edges: builder.truncatedEdges > 0 }
@@ -1182,7 +1190,7 @@
   }
 
   function normalizeGraphKinds(values) {
-    var seen = {};
+    var seen = Object.create(null);
     return (Array.isArray(values) ? values : []).map(normalizeGraphKind).filter(function (kind) {
       if (!kind || seen[kind]) return false;
       seen[kind] = true;
@@ -1215,8 +1223,8 @@
     // durable storage. A per-entry journal prevents a retry from replaying an
     // entire stale snapshot over another tab's additions or deletions.
     var memoryDirty = false;
-    var pendingRegistryMutations = {};
-    var guardedDeletionConflicts = {};
+    var pendingRegistryMutations = Object.create(null);
+    var guardedDeletionConflicts = Object.create(null);
     var generationSequence = 0;
     var generationSeed = stableHash([
       String(clock()), String(Date.now()), String(Math.random())
@@ -1232,7 +1240,7 @@
     }
 
     function entryMap(snapshot) {
-      var map = {};
+      var map = Object.create(null);
       (snapshot && Array.isArray(snapshot.graphs) ? snapshot.graphs : []).forEach(function (entry) {
         map[registryEntryKey(entry.id, entry.scopeId)] = entry;
       });
@@ -1282,7 +1290,7 @@
     function queueSnapshotMutations(previous, next) {
       var before = entryMap(previous);
       var after = entryMap(next);
-      var keys = {};
+      var keys = Object.create(null);
       Object.keys(before).forEach(function (key) { keys[key] = true; });
       Object.keys(after).forEach(function (key) { keys[key] = true; });
       Object.keys(keys).sort().forEach(function (key) {
@@ -1308,7 +1316,7 @@
     function applyPendingMutations(baseSnapshot) {
       var base = normalizeSnapshot(baseSnapshot) || emptySnapshot();
       var byKey = entryMap(base);
-      var results = {};
+      var results = Object.create(null);
       Object.keys(pendingRegistryMutations).sort().forEach(function (key) {
         var mutation = pendingRegistryMutations[key];
         var current = byKey[key] || null;
@@ -1425,7 +1433,7 @@
     }
 
     function getLatestForResources(resourceIds, kind, scopeId) {
-      var wanted = {};
+      var wanted = Object.create(null);
       (Array.isArray(resourceIds) ? resourceIds : []).forEach(function (id) {
         var normalized = text(id, 240);
         if (normalized) wanted[normalized] = true;
@@ -1442,10 +1450,10 @@
       var kind = normalizeGraphKind(reconcile.kind || reconcile.graphKind);
       var now = clock();
       var current = read();
-      var existingByKey = {};
+      var existingByKey = Object.create(null);
       current.graphs.forEach(function (entry) { existingByKey[entry.scopeId + '|' + entry.id] = entry; });
       var incoming = [];
-      var incomingIds = {};
+      var incomingIds = Object.create(null);
       (Array.isArray(values) ? values : []).forEach(function (value) {
         if (!isObject(value)) return;
         var entry = normalizeEntry(value, { scopeId: scopeId, now: now, generationId: nextEntryGeneration() });
@@ -1499,7 +1507,7 @@
       filter.scopeId = text(filter.scopeId, 240) || DEFAULT_SCOPE;
       var entries = listGraphs({ scopeId: filter.scopeId, kinds: filter.kinds || filter.graphKinds || (filter.kind ? [filter.kind] : []) });
       if (Array.isArray(filter.entryIds) && filter.entryIds.length) {
-        var wanted = {};
+        var wanted = Object.create(null);
         filter.entryIds.forEach(function (id) { var value = text(id, 240); if (value) wanted[value] = true; });
         entries = entries.filter(function (entry) { return !!wanted[entry.id]; });
       }

@@ -124,21 +124,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _lanT = (ctx && ctx.theme) || {};
       var _lanHC = !!_lanT.isContrast, _lanL = !_lanHC && !_lanT.isDark;
-      var _lan_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _lan_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#0ea5e9':'#000000'};
-      var _lan_FGL = {'#cbd5e1':'#334155','#86efac':'#166534','#94a3b8':'#64748b','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#fbbf24':'#854d0e','#7dd3fc':'#075985','#fde68a':'#92400e','#fca5a5':'#991b1b','#fecaca':'#b91c1c','#c4b5fd':'#5b21b6','#38bdf8':'#0369a1'}, _lan_FGH = {'#cbd5e1':'#ffff00','#86efac':'#ffff00','#94a3b8':'#ffff00','#e9d5ff':'#ffff00','#a855f7':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#fbbf24':'#ffff00','#7dd3fc':'#ffff00','#fde68a':'#ffff00','#16a34a':'#ffff00','#0ea5e9':'#ffff00','#fca5a5':'#ffff00','#fecaca':'#ffff00','#c4b5fd':'#ffff00','#bae6fd':'#ffff00','#fff':'#ffff00','#38bdf8':'#ffff00'};
-      var _lan_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _lan_BDH = {'#334155':'#ffff00','#a855f7':'#ffff00','#86efac':'#ffff00','#1e293b':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#0ea5e9':'#ffff00','#16a34a':'#ffff00','#a78bfa':'#ffff00','#38bdf8':'#ffff00','#475569':'#ffff00'};
+      var _lan_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _lan_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#0ea5e9':'#000000','#0369a1':'#000000'};
+      var _lan_FGL = {'#cbd5e1':'#334155','#86efac':'#166534','#bbf7d0':'#166534','#94a3b8':'#475569','#e9d5ff':'#581c87','#a855f7':'#6b21a8','#e2e8f0':'#1e293b','#fbbf24':'#854d0e','#7dd3fc':'#075985','#bae6fd':'#075985','#fde68a':'#92400e','#16a34a':'#15803d','#0ea5e9':'#0369a1','#fca5a5':'#991b1b','#fecaca':'#b91c1c','#c4b5fd':'#5b21b6','#38bdf8':'#0369a1'}, _lan_FGH = {'#cbd5e1':'#ffff00','#86efac':'#ffff00','#94a3b8':'#ffff00','#e9d5ff':'#ffff00','#a855f7':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#fbbf24':'#ffff00','#7dd3fc':'#ffff00','#fde68a':'#ffff00','#16a34a':'#ffff00','#0ea5e9':'#ffff00','#fca5a5':'#ffff00','#fecaca':'#ffff00','#c4b5fd':'#ffff00','#bae6fd':'#ffff00','#fff':'#ffff00','#38bdf8':'#ffff00'};
+      var _lan_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#94a3b8'}, _lan_BDH = {'#334155':'#ffff00','#a855f7':'#ffff00','#86efac':'#ffff00','#1e293b':'#ffff00','#f59e0b':'#ffff00','#ef4444':'#ffff00','#0ea5e9':'#ffff00','#16a34a':'#ffff00','#a78bfa':'#ffff00','#38bdf8':'#ffff00','#475569':'#ffff00','#fbbf24':'#ffff00'};
       var _lanBg = function(h){ return _lanHC ? (_lan_BGH[h]||h) : (_lanL ? (_lan_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
       // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
       // lighter shade of the SAME hue; backgrounds and borders are untouched.
-      var _lan_FGD = {'#a855f7':'#c084fc'};
+      var _lan_FGD = {'#a855f7':'#c084fc','#16a34a':'#4ade80','#0ea5e9':'#38bdf8'};
       var _lanFg = function(h){ return _lanHC ? (_lan_FGH[h]||h) : (_lanL ? (_lan_FGL[h]||h) : (_lan_FGD[h]||h)); };
       var _lanBd = function(h){ return _lanHC ? (_lan_BDH[h]||h) : (_lanL ? (_lan_BDL[h]||h) : h); };
       // white text needs a 700-weight fill (1.4.3)
-      var _lanSolid = function(c){ return _lanHC ? c : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
+      var _lanSolid = function(c){ return _lanHC ? '#000000' : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
+      var labToolData = (ctx && ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
       var setLabToolData = ctx.setToolData;
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
@@ -146,11 +146,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var _lanBand = (ctx && ctx.gradeBand) || 'high';
 
-      var d = labToolData.landPlace || defaultState();
-      function setLP(patch) {
+      var rawLP = (labToolData.landPlace && typeof labToolData.landPlace === 'object' && !Array.isArray(labToolData.landPlace)) ? labToolData.landPlace : {};
+      var d = Object.assign(defaultState(), rawLP);
+      d.threadNotes = (rawLP.threadNotes && typeof rawLP.threadNotes === 'object' && !Array.isArray(rawLP.threadNotes)) ? Object.assign({ history: '', ecology: '', present: '' }, rawLP.threadNotes) : { history: '', ecology: '', present: '' };
+      d.ack = (rawLP.ack && typeof rawLP.ack === 'object' && !Array.isArray(rawLP.ack)) ? Object.assign({ where: '', whose: '', honesty: '', commit: '' }, rawLP.ack) : { where: '', whose: '', honesty: '', commit: '' };
+      d.journal = Array.isArray(rawLP.journal) ? rawLP.journal.filter(function(item) { return item && typeof item === 'object' && !Array.isArray(item); }).map(function(item) { return { date: typeof item.date === 'string' ? item.date : '', text: typeof item.text === 'string' ? item.text : String(item.text || '') }; }) : [];
+      var VALID_VIEWS = ['overview', 'threads', 'build', 'beyond', 'journal'];
+      function setLP(patchOrFn) {
+        if (typeof setLabToolData !== 'function') return;
         setLabToolData(function(prev) {
-          var prior = (prev && prev.landPlace) || defaultState();
-          return Object.assign({}, prev, { landPlace: Object.assign({}, prior, patch) });
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var rawPrior = (safePrev.landPlace && typeof safePrev.landPlace === 'object' && !Array.isArray(safePrev.landPlace)) ? safePrev.landPlace : {};
+          var prior = Object.assign(defaultState(), rawPrior);
+          var patch = typeof patchOrFn === 'function' ? patchOrFn(prior) : patchOrFn;
+          return Object.assign({}, safePrev, { landPlace: Object.assign({}, prior, patch) });
         });
       }
       function scanLandText(text) {
@@ -179,14 +188,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
         return blocked;
       }
 
-      var view = d.view || 'overview';
-      function goto(v) { setLP({ view: v }); }
+      var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'overview';
+      function goto(v) { setLP({ view: VALID_VIEWS.indexOf(v) !== -1 ? v : 'overview' }); }
 
       // ─── Header + nav ───
       function header() {
-        return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
+        return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _lanFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid ' + _lanBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _lanFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _lanFg('#86efac'), fontSize: 22, fontWeight: 900 } }, '🌱 Land & Place: Stewardship Studio'),
             h('div', { style: { fontSize: 12, color: _lanFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A practice for ongoing relationship with the land you live on. Not a template to recite.')
@@ -202,14 +211,28 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
           { id: 'beyond', label: 'Beyond acknowledgment', icon: '🚶' },
           { id: 'journal', label: 'Reflection journal', icon: '📓' }
         ];
-        return h('div', { role: 'tablist', 'aria-label': 'Land & Place sections',
+        return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Land & Place sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
+            return h('button', { key: t.id, id: 'landplace-tab-' + t.id, 'aria-controls': 'landplace-panel-' + t.id,
+              tabIndex: active ? 0 : -1,
+              onClick: function() { goto(t.id); },
+              onKeyDown: function(e) {
+                var nextIdx = idx;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+                else if (e.key === 'Home') nextIdx = 0;
+                else if (e.key === 'End') nextIdx = tabs.length - 1;
+                else return;
+                e.preventDefault();
+                goto(tabs[nextIdx].id);
+                var target = document.getElementById('landplace-tab-' + tabs[nextIdx].id);
+                if (target && typeof target.focus === 'function') target.focus();
+              },
               role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _lanFg('#86efac') : '#334155'),
-                background: active ? 'rgba(134,239,172,0.18)' : _lanBg('#1e293b'),
+              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _lanBd('#86efac') : _lanBd('#334155')),
+                background: active ? (_lanHC ? '#000000' : 'rgba(134,239,172,0.18)') : _lanBg('#1e293b'),
                 color: active ? _lanFg('#bbf7d0') : _lanFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -218,8 +241,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
 
       // ─── Soft pointer at the bottom of every view ───
       function authoritativeVoicePointer() {
-        return h('div', {
-          style: { marginTop: 18, padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.08)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 12.5, color: _lanFg('#e9d5ff'), lineHeight: 1.55 }
+        return h('div', { className: 'no-print',
+          style: { marginTop: 18, padding: 12, borderRadius: 10, background: _lanHC ? '#000000' : 'rgba(168,85,247,0.08)', borderTop: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(168,85,247,0.3)'), borderRight: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(168,85,247,0.3)'), borderBottom: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(168,85,247,0.3)'), borderLeft: '3px solid ' + _lanBd('#a855f7'), fontSize: 12.5, color: _lanFg('#e9d5ff'), lineHeight: 1.55 }
         },
           h('strong', { style: { color: _lanFg('#a855f7') } }, '🪶 This tool is a learning scaffold, not an authoritative voice. '),
           'For real understanding of Wabanaki nations, follow and learn directly from Wabanaki Public Health and Wellness, Maine Indian Basketmakers Alliance, the Penobscot Nation Cultural and Historic Preservation Department, the Passamaquoddy Cultural Heritage Museum, First Light Learning Journey, and the University of Maine Wabanaki Center.'
@@ -238,7 +261,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
           ),
 
           // Self-locate prompt
-          h('div', { style: { padding: 12, borderRadius: 10, background: _lanBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 14 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _lanBg('#0f172a'), border: '1px solid ' + _lanBd('#1e293b'), marginBottom: 14 } },
             h('div', { style: { fontSize: 12, color: _lanFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '🧭 Self-locate'),
             h('p', { style: { margin: 0, color: _lanFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.6 } },
               'Right now, in this moment, you are reading this from a specific place. ',
@@ -259,7 +282,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 8 } },
               WABANAKI_NATIONS.map(function(n) {
-                return h('div', { key: n.id, style: { padding: 10, borderRadius: 8, background: _lanBg('#0f172a'), border: '1px solid #1e293b' } },
+                return h('div', { key: n.id, style: { padding: 10, borderRadius: 8, background: _lanBg('#0f172a'), border: '1px solid ' + _lanBd('#1e293b') } },
                   h('div', { style: { fontWeight: 700, color: _lanFg('#86efac'), fontSize: 13, marginBottom: 4 } }, n.name),
                   h('div', { style: { fontSize: 11.5, color: _lanFg('#cbd5e1'), lineHeight: 1.5, marginBottom: 6 } }, n.territory),
                   h('div', { style: { fontSize: 11, color: _lanFg('#fbbf24'), fontStyle: 'italic' } }, n.languageNote),
@@ -285,7 +308,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       function renderThreads() {
         var threads = [
           {
-            id: 'history', icon: '📜', color: _lanFg('#fbbf24'), label: 'History',
+            id: 'history', icon: '📜', color: '#fbbf24', label: 'History',
             framing: 'What has happened in this specific place? Indigenous nations have lived here for at least 11,000 years. Colonization arrived in the 1600s with disease, war, and dispossession. Treaties were signed and violated. Boarding schools and the Indian Child Welfare crisis happened in living memory. Look up the specific history of YOUR town or watershed.',
             prompts: [
               'What is the Indigenous name for this place? If you can not find one quickly, what does that absence tell you?',
@@ -295,7 +318,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
             ]
           },
           {
-            id: 'ecology', icon: '🌲', color: _lanFg('#16a34a'), label: 'Ecology',
+            id: 'ecology', icon: '🌲', color: '#16a34a', label: 'Ecology',
             framing: 'What grows, swims, walks, and flies in this place? What used to live here that no longer does? What is recovering? The land you are on is a living community. Indigenous stewardship shaped it for millennia before European arrival; modern conservation is often re-learning what was already known.',
             prompts: [
               'What tree species dominate the forest where you live? Which are native, which are introduced?',
@@ -305,7 +328,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
             ]
           },
           {
-            id: 'present', icon: '🏘️', color: _lanFg('#0ea5e9'), label: 'Present',
+            id: 'present', icon: '🏘️', color: '#0ea5e9', label: 'Present',
             framing: 'Who lives here now? What communities, organizations, and leaders shape this place today? Wabanaki nations are not historic; they are present, sovereign, and active. Other communities (immigrant, Black, working-class, queer, disabled) also shape this place. Recognize the full present.',
             prompts: [
               'Who are the Wabanaki nations and communities active in your watershed today?',
@@ -317,16 +340,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
         ];
 
         function updateNote(threadId, text) {
-          var notes = Object.assign({}, d.threadNotes || {}, { [threadId]: text });
-          setLP({ threadNotes: notes });
+          setLP(function(prior) {
+            var priorNotes = (prior.threadNotes && typeof prior.threadNotes === 'object' && !Array.isArray(prior.threadNotes)) ? prior.threadNotes : {};
+            var nextNotes = Object.assign({}, priorNotes);
+            nextNotes[threadId] = text;
+            return { threadNotes: nextNotes };
+          });
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(134,239,172,0.10)', borderTop: '1px solid rgba(134,239,172,0.3)', borderRight: '1px solid rgba(134,239,172,0.3)', borderBottom: '1px solid rgba(134,239,172,0.3)', borderLeft: '3px solid #86efac', marginBottom: 14, fontSize: 13, color: _lanFg('#bbf7d0'), lineHeight: 1.55 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _lanHC ? '#000000' : 'rgba(134,239,172,0.10)', borderTop: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(134,239,172,0.3)'), borderRight: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(134,239,172,0.3)'), borderBottom: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(134,239,172,0.3)'), borderLeft: '3px solid ' + _lanBd('#86efac'), marginBottom: 14, fontSize: 13, color: _lanFg('#bbf7d0'), lineHeight: 1.55 } },
             '🧵 Three threads of relationship with place. Work through them at your own pace. None of these has a quick answer; that is the point.'
           ),
           threads.map(function(t) {
-            return h('div', { key: t.id, style: { padding: 14, borderRadius: 10, background: _lanBg('#0f172a'), borderLeft: '3px solid ' + t.color, marginBottom: 12 } },
+            var threadInputId = 'land-thread-' + t.id;
+            return h('div', { key: t.id, style: { padding: 14, borderRadius: 10, background: _lanBg('#0f172a'), borderTop: '1px solid ' + _lanBd('#1e293b'), borderRight: '1px solid ' + _lanBd('#1e293b'), borderBottom: '1px solid ' + _lanBd('#1e293b'), borderLeft: '3px solid ' + _lanBd(t.color), marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                 h('span', { style: { fontSize: 24 } }, t.icon),
                 h('div', null,
@@ -334,19 +362,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
                   h('div', { style: { fontSize: 12, color: _lanFg('#94a3b8'), lineHeight: 1.5, marginTop: 2 } }, t.framing)
                 )
               ),
-              h('div', { style: { marginTop: 10, paddingLeft: 12, borderLeft: '2px dashed ' + t.color + '66' } },
+              h('div', { style: { marginTop: 10, paddingLeft: 12, borderLeft: '2px dashed ' + (_lanHC ? '#ffff00' : _lanBd(t.color) + '66') } },
                 h('div', { style: { fontSize: 11, color: _lanFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, fontWeight: 700 } }, 'Prompts'),
                 t.prompts.map(function(p, i) {
                   return h('div', { key: i, style: { fontSize: 12.5, color: _lanFg('#cbd5e1'), marginBottom: 4, lineHeight: 1.5 } }, '· ' + p);
                 })
               ),
-              h('label', { style: { display: 'block', marginTop: 10, marginBottom: 4, fontSize: 11, color: _lanFg('#94a3b8'), fontWeight: 700 } }, 'Your notes on ' + t.label.toLowerCase()),
+              h('label', { htmlFor: threadInputId, style: { display: 'block', marginTop: 10, marginBottom: 4, fontSize: 11, color: _lanFg('#94a3b8'), fontWeight: 700 } }, 'Your notes on ' + t.label.toLowerCase()),
               h('textarea', {
-                value: (d.threadNotes || {})[t.id] || '',
+                id: threadInputId,
+                value: d.threadNotes[t.id] || '',
                 onChange: function(e) { updateNote(t.id, e.target.value); },
                 onBlur: function(e) { scanLandText(e.target.value); },
                 placeholder: 'Write what you have learned, what you do not know yet, what you want to keep finding out.',
-                style: { width: '100%', minHeight: 80, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
+                style: { width: '100%', minHeight: 80, padding: 8, borderRadius: 6, border: '1px solid ' + _lanBd('#334155'), background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.5, resize: 'vertical' }
               })
             );
           }),
@@ -358,9 +387,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       // VIEW 3: BUILD ACKNOWLEDGMENT — with critical framing
       // ═══════════════════════════════════════════════════════
       function renderBuild() {
-        var ack = d.ack || { where: '', whose: '', honesty: '', commit: '' };
+        var ack = d.ack;
         function updateAck(field, value) {
-          setLP({ ack: Object.assign({}, ack, { [field]: value }) });
+          setLP(function(prior) {
+            var priorAck = (prior.ack && typeof prior.ack === 'object' && !Array.isArray(prior.ack)) ? prior.ack : { where: '', whose: '', honesty: '', commit: '' };
+            var nextAck = Object.assign({}, priorAck);
+            nextAck[field] = value;
+            return { ack: nextAck };
+          });
         }
         var composed = (ack.where || '[where you are]') + '. ' +
           (ack.whose ? 'This is the ancestral homeland of ' + ack.whose + '. ' : '') +
@@ -424,7 +458,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
           ),
 
           // Composed preview
-          h('div', { style: { padding: 14, borderRadius: 10, background: _lanBg('#0f172a'), border: '1px solid #334155', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _lanBg('#0f172a'), border: '1px solid ' + _lanBd('#334155'), marginBottom: 14 } },
             h('div', { style: { fontSize: 11, color: _lanFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, '✏ Your acknowledgment, drafted'),
             h('p', { style: { margin: 0, color: _lanFg('#e2e8f0'), fontSize: 14, lineHeight: 1.7, fontStyle: ack.where || ack.whose || ack.honesty || ack.commit ? 'normal' : 'italic' } },
               ack.where || ack.whose || ack.honesty || ack.commit
@@ -434,7 +468,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
           ),
 
           // Worked example, collapsible
-          h('details', { style: { padding: 10, background: 'rgba(15,23,42,0.5)', border: '1px solid #1e293b', borderRadius: 8, marginBottom: 14 } },
+          h('details', { style: { padding: 10, background: _lanBg('#0f172a'), border: '1px solid ' + _lanBd('#1e293b'), borderRadius: 8, marginBottom: 14 } },
             h('summary', { style: { cursor: 'pointer', fontSize: 12, fontWeight: 700, color: _lanFg('#94a3b8') } }, '📖 See a worked example (do not copy)'),
             h('p', { style: { margin: '8px 0 0', color: _lanFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.7 } }, EXAMPLE_ACKNOWLEDGMENT),
             h('div', { style: { marginTop: 8, fontSize: 11, color: _lanFg('#fbbf24'), fontStyle: 'italic' } },
@@ -500,54 +534,62 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
       // VIEW 5: REFLECTION JOURNAL — ongoing personal reflection
       // ═══════════════════════════════════════════════════════
       function renderJournal() {
-        var journal = d.journal || [];
+        var journal = d.journal;
         function addEntry() {
           var text = document.getElementById('landplace-new-entry');
           if (!text || !text.value.trim()) { if (typeof addToast === 'function') addToast('Write something first, then press the button again.', 'info'); return; }
           var entry = { date: new Date().toISOString().split('T')[0], text: text.value.trim() };
-          setLP({ journal: journal.concat([entry]) });
+          scanLandText(entry.text);
+          setLP(function(prior) {
+            var priorJournal = Array.isArray(prior.journal) ? prior.journal.filter(function(item) { return item && typeof item === 'object' && !Array.isArray(item); }) : [];
+            return { journal: priorJournal.concat([entry]) };
+          });
           text.value = '';
           if (announceToSR) announceToSR('Journal entry saved.');
           if (addToast) addToast('Saved.', 'success');
         }
         function deleteEntry(index) {
-          var newJournal = journal.slice();
-          newJournal.splice(index, 1);
-          setLP({ journal: newJournal });
+          setLP(function(prior) {
+            var priorJournal = Array.isArray(prior.journal) ? prior.journal.filter(function(item) { return item && typeof item === 'object' && !Array.isArray(item); }) : [];
+            if (index < 0 || index >= priorJournal.length) return {};
+            var newJournal = priorJournal.slice();
+            newJournal.splice(index, 1);
+            return { journal: newJournal };
+          });
         }
 
         return h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(56,189,248,0.10)', borderTop: '1px solid rgba(56,189,248,0.3)', borderRight: '1px solid rgba(56,189,248,0.3)', borderBottom: '1px solid rgba(56,189,248,0.3)', borderLeft: '3px solid #38bdf8', marginBottom: 14, fontSize: 13, color: _lanFg('#bae6fd'), lineHeight: 1.55 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _lanHC ? '#000000' : 'rgba(56,189,248,0.10)', borderTop: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(56,189,248,0.3)'), borderRight: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(56,189,248,0.3)'), borderBottom: '1px solid ' + (_lanHC ? '#ffff00' : 'rgba(56,189,248,0.3)'), borderLeft: '3px solid ' + _lanBd('#38bdf8'), marginBottom: 14, fontSize: 13, color: _lanFg('#bae6fd'), lineHeight: 1.55 } },
             '📓 An ongoing journal for what you are noticing, learning, getting confused about. Date-stamped. Private to you.'
           ),
 
           // New entry
-          h('div', { style: { padding: 12, borderRadius: 10, background: _lanBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 14 } },
-            h('label', { style: { display: 'block', fontSize: 12, color: _lanFg('#94a3b8'), fontWeight: 700, marginBottom: 6 } }, 'New entry'),
+          h('div', { style: { padding: 12, borderRadius: 10, background: _lanBg('#0f172a'), border: '1px solid ' + _lanBd('#1e293b'), marginBottom: 14 } },
+            h('label', { htmlFor: 'landplace-new-entry', style: { display: 'block', fontSize: 12, color: _lanFg('#94a3b8'), fontWeight: 700, marginBottom: 6 } }, 'New entry'),
             h('textarea', { id: 'landplace-new-entry',
               placeholder: 'What did you notice this week about the place you live? What did you learn? What are you still confused about?',
               onBlur: function(e) { scanLandText(e.target.value); },
-              style: { width: '100%', minHeight: 100, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', marginBottom: 8 }
+              style: { width: '100%', minHeight: 100, padding: 8, borderRadius: 6, border: '1px solid ' + _lanBd('#334155'), background: _lanBg('#1e293b'), color: _lanFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', marginBottom: 8 }
             }),
             h('button', { onClick: addEntry, 'aria-label': 'Save journal entry',
-              style: { padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _lanBg(_lanSolid('#0ea5e9')), color: _lanFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Save entry')
+              style: { padding: '8px 16px', borderRadius: 8, border: _lanHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _lanBg(_lanSolid('#0ea5e9')), color: _lanFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Save entry')
           ),
 
           // Existing entries (newest first)
           journal.length > 0 ? h('div', null,
-            h('div', { style: { fontSize: 12, color: _lanFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, journal.length + ' entries'),
+            h('div', { style: { fontSize: 12, color: _lanFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, journal.length + (journal.length === 1 ? ' entry' : ' entries')),
             journal.slice().reverse().map(function(entry, ri) {
               var realIdx = journal.length - 1 - ri;
-              return h('div', { key: realIdx, style: { padding: 12, borderRadius: 8, background: _lanBg('#0f172a'), borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
+              return h('div', { key: realIdx, style: { padding: 12, borderRadius: 8, background: _lanBg('#0f172a'), borderTop: '1px solid ' + _lanBd('#1e293b'), borderRight: '1px solid ' + _lanBd('#1e293b'), borderBottom: '1px solid ' + _lanBd('#1e293b'), borderLeft: '3px solid ' + _lanBd('#38bdf8'), marginBottom: 8 } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                   h('div', { style: { fontSize: 11, color: _lanFg('#38bdf8'), fontWeight: 700, fontFamily: 'ui-monospace, monospace' } }, entry.date),
-                  h('button', { onClick: function() { deleteEntry(realIdx); }, 'aria-label': 'Delete entry from ' + entry.date,
-                    style: { marginLeft: 'auto', background: 'transparent', border: '1px solid #475569', color: _lanFg('#94a3b8'), borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                  h('button', { onClick: function() { deleteEntry(realIdx); }, 'aria-label': 'Delete entry from ' + (entry.date || 'journal'),
+                    style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + _lanBd('#475569'), color: _lanFg('#94a3b8'), borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
                 ),
                 h('p', { style: { margin: 0, color: _lanFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, entry.text)
               );
             })
-          ) : h('div', { style: { padding: 18, borderRadius: 10, background: _lanBg('#0f172a'), textAlign: 'center', color: _lanFg('#94a3b8'), fontSize: 13 } },
+          ) : h('div', { style: { padding: 18, borderRadius: 10, background: _lanBg('#0f172a'), border: '1px solid ' + _lanBd('#1e293b'), textAlign: 'center', color: _lanFg('#94a3b8'), fontSize: 13 } },
             'No entries yet. Save one above to start the practice.'
           ),
 
@@ -569,7 +611,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
         navTabs(),
         (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
           ? window.SelHub.renderCrisisResources(h, _lanBand) : null,
-        body
+        h('div', { role: 'tabpanel', id: 'landplace-panel-' + view, 'aria-labelledby': 'landplace-tab-' + view }, body)
       );
     }
   });

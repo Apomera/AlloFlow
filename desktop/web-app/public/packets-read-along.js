@@ -115,6 +115,8 @@
   function svgToDataUri(svg) {
     if (typeof svg !== 'string' || !svg.trim()) return '';
     try {
+      var refuser = (win.AlloPacketBuilder && win.AlloPacketBuilder.svgRefusal) || (win.AlloPacketMyWords && win.AlloPacketMyWords.svgRefusal);
+      if (typeof refuser === 'function' && refuser(svg)) return '';
       var bytes = typeof win.TextEncoder === 'function' ? new win.TextEncoder().encode(svg) : null;
       if (bytes) {
         var bin = '';
@@ -252,9 +254,14 @@
       if (symbolBank && Array.isArray(symbolBank.shards) && !(symbolBank.ready && symbolBank.ready()) && typeof win.fetch === 'function') {
         var urls = symbolBank.shards.map(function (sh) { return sh.url; }).filter(function (u) { return !loadedPicShards[u]; });
         urls.forEach(function (u) {
-          tasks.push(win.fetch(u).then(function (r) { return r && r.ok ? r.json() : null; }).then(function (data) {
+          var ctrl = typeof win.AbortController === 'function' ? new win.AbortController() : null;
+          var timer = ctrl ? win.setTimeout(function () { try { ctrl.abort(); } catch (_) {} }, 15000) : null;
+          var req = ctrl ? win.fetch(u, { signal: ctrl.signal }) : win.fetch(u);
+          tasks.push(req.then(function (r) { return r && r.ok ? r.text() : null; }).then(function (txt) {
+            if (!txt || txt.length > 8 * 1024 * 1024) return;
+            var data = JSON.parse(txt, function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
             if (data && symbolBank) { symbolBank.add(data); loadedPicShards[u] = true; }
-          }, function () {}));
+          }, function () {}).finally(function () { if (timer !== null) win.clearTimeout(timer); }));
         });
       }
       return Promise.all(tasks).then(function () { return true; });
@@ -1480,7 +1487,7 @@
         return;
       }
       if (target.getAttribute('data-pic-restore-all')) {
-        state.hiddenPics = {};
+        state.hiddenPics = Object.create(null);
         state.unsaved = true;
         refreshFile();
       }

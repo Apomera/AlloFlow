@@ -19,6 +19,7 @@
       var builderParameters = [];
       var activeCaseId = '';
       var draft = null;
+      var renderedDraft = null;
       var captureSource = 'typed';
       var recognition = null;
       var voiceStatus = { state: 'idle', engine: '', engineLabel: '', privacy: '', message: '', reason: '' };
@@ -120,9 +121,16 @@
           remove.dataset.parameterIndex = String(index);
           remove.setAttribute('aria-label', 'Remove ' + parameter.label + ' parameter');
           remove.addEventListener('click', function () {
-            builderParameters.splice(Number(remove.dataset.parameterIndex), 1);
+            var removedIndex = Number(remove.dataset.parameterIndex);
+            builderParameters.splice(removedIndex, 1);
             setSelectedTemplate('');
             renderBuilderParameters();
+            var remainingButtons = list.querySelectorAll('button[data-parameter-index]');
+            if (remainingButtons.length) {
+              remainingButtons[Math.min(removedIndex, remainingButtons.length - 1)].focus();
+            } else if (byId('casebookParameterLabel')) {
+              byId('casebookParameterLabel').focus();
+            }
             announce(parameter.label + ' removed from the casebook draft.');
           });
           header.appendChild(remove);
@@ -245,6 +253,7 @@
           if (typeof host.confirmReplacement === 'function' && !host.confirmReplacement()) return;
           var tables = Model.buildTables(definition, new Date().toISOString());
           draft = null;
+          renderedDraft = null;
           captureSource = 'typed';
           activeCaseId = tables[1].records[0].id;
           host.installCasebook(tables, definition);
@@ -441,15 +450,29 @@
         });
       }
 
-      function renderDraft(book) {
+      function syncDraftErrorDescribedBy(hasError) {
+        var container = byId('casebookDraftFields');
+        if (!container) return;
+        container.querySelectorAll('[data-casebook-parameter-key]').forEach(function (control) {
+          var ids = [];
+          if (control.dataset.hintId) ids.push(control.dataset.hintId);
+          if (hasError) ids.push('casebookDraftError');
+          if (ids.length) control.setAttribute('aria-describedby', ids.join(' '));
+          else control.removeAttribute('aria-describedby');
+        });
+      }
+
+      function renderDraft(book, options) {
         var panel = byId('casebookDraftReview');
         var container = byId('casebookDraftFields');
         clear(container);
         if (!draft) {
+          renderedDraft = null;
           panel.hidden = true;
           updateDraftLock();
           return;
         }
+        renderedDraft = draft;
         text(byId('casebookDraftCaseLabel'), book.definition.caseLabel + ' target');
         var targetSelect = byId('casebookDraftCaseSelect');
         clear(targetSelect);
@@ -470,7 +493,7 @@
         var draftTime = byId('casebookDraftObservedAt');
         draftTime.dateTime = draft.observedAt;
         text(draftTime, safeDateLabel(draft.observedAt));
-        book.parameters.forEach(function (parameter) {
+        book.parameters.forEach(function (parameter, paramIndex) {
           var wrapper = make('div', null, 'casebook-draft-field');
           var label = document.createElement('label');
           label.textContent = parameter.label + (parameter.unit ? ' (' + parameter.unit + ')' : '');
@@ -502,7 +525,16 @@
           control.dataset.casebookParameterKey = parameter.key;
           control.dataset.casebookParameterType = parameter.type;
           control.dataset.casebookParameterLabel = parameter.label;
-          control.setAttribute('aria-describedby', 'casebookDraftError');
+          var syncControlToDraft = function () {
+            if (!draft) return;
+            if (parameter.type === 'boolean') {
+              draft.values[parameter.key] = control.value === 'true' ? true : control.value === 'false' ? false : null;
+            } else {
+              draft.values[parameter.key] = control.value;
+            }
+          };
+          control.addEventListener('input', syncControlToDraft);
+          control.addEventListener('change', syncControlToDraft);
           label.appendChild(control);
           wrapper.appendChild(label);
           var details = [];
@@ -511,16 +543,25 @@
             details.push('Expected context: ' + (parameter.minimum === null ? 'any' : parameter.minimum)
               + ' to ' + (parameter.maximum === null ? 'any' : parameter.maximum));
           }
-          if (details.length) wrapper.appendChild(make('p', details.join(' '), 'field-hint'));
+          if (details.length) {
+            var hintEl = make('p', details.join(' '), 'field-hint');
+            hintEl.id = 'casebookDraftHint_' + paramIndex;
+            control.dataset.hintId = hintEl.id;
+            control.setAttribute('aria-describedby', hintEl.id);
+            wrapper.appendChild(hintEl);
+          }
           container.appendChild(wrapper);
         });
         byId('casebookDraftNote').value = draft.note || '';
         byId('casebookDraftInterpretation').value = draft.interpretation || '';
         renderDraftWarnings(book);
         clearError('casebookDraftError');
+        syncDraftErrorDescribedBy(false);
         panel.hidden = false;
         updateDraftLock();
-        byId('casebookDraftTitle').focus();
+        if (!options || !options.preserveFocus) {
+          byId('casebookDraftTitle').focus();
+        }
       }
 
       function draftObservation(event) {
@@ -568,8 +609,10 @@
 
       function discardDraft() {
         draft = null;
+        renderedDraft = null;
         byId('casebookDraftReview').hidden = true;
         clearError('casebookDraftError');
+        syncDraftErrorDescribedBy(false);
         updateDraftLock();
         byId('casebookNarrative').focus();
         announce('Observation draft discarded. No entry was recorded.');
@@ -579,6 +622,7 @@
         var book = currentBook();
         if (!book || !draft) return;
         clearError('casebookDraftError');
+        syncDraftErrorDescribedBy(false);
         try {
           var reviewedCaseId = String(byId('casebookDraftCaseSelect').value || '');
           var reviewedCase = book.cases.find(function (item) { return item.id === reviewedCaseId; });
@@ -613,6 +657,7 @@
           activeCaseId = draft.caseId;
           host.appendRecord(Model.tableIds.observations, record, 'observation');
           draft = null;
+          renderedDraft = null;
           captureSource = 'typed';
           byId('casebookNarrative').value = '';
           byId('casebookDraftReview').hidden = true;
@@ -628,6 +673,7 @@
           byId('casebookNarrative').focus();
           announce('Reviewed observation recorded locally.');
         } catch (error) {
+          syncDraftErrorDescribedBy(true);
           setError('casebookDraftError', String(error && error.message || error));
         }
       }
@@ -1230,6 +1276,7 @@
       function resetForWorkspace() {
         abortVoice('workspace-replaced');
         draft = null;
+        renderedDraft = null;
         activeCaseId = '';
         captureSource = 'typed';
         contextDirty = false;
@@ -1262,6 +1309,7 @@
         if (!book) {
           if (draft) {
             draft = null;
+            renderedDraft = null;
             byId('casebookDraftReview').hidden = true;
             updateDraftLock();
           }
@@ -1302,7 +1350,15 @@
         renderParameterHistory(book);
         renderReflections(book);
         renderComparison(book);
-        if (draft) renderDraft(book);
+        if (draft) {
+          var draftPanel = byId('casebookDraftReview');
+          if (renderedDraft !== draft || (draftPanel && draftPanel.hidden)) {
+            renderDraft(book, { preserveFocus: true });
+          } else {
+            renderDraftWarnings(book);
+            updateDraftLock();
+          }
+        }
         updateVoiceButton();
         return true;
       }
@@ -1383,6 +1439,12 @@
         byId('casebookStartAnotherButton').addEventListener('click', startAnotherObservation);
         byId('saveCasebookObservationButton').addEventListener('click', saveObservation);
         byId('discardCasebookDraftButton').addEventListener('click', discardDraft);
+        byId('casebookDraftNote').addEventListener('input', function () {
+          if (draft) draft.note = this.value;
+        });
+        byId('casebookDraftInterpretation').addEventListener('input', function () {
+          if (draft) draft.interpretation = this.value;
+        });
         byId('casebookDraftCaseSelect').addEventListener('change', function () {
           if (!draft) return;
           var book = currentBook();

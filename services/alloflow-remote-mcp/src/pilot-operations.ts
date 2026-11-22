@@ -3,6 +3,7 @@ import { getContainer } from "@cloudflare/containers";
 import {
   beginCancel,
   beginDelete,
+  claimExpiredUploadForDeletion,
   clearJobCheckpoint,
   clearDispatchPending,
   clearTerminalArtifacts,
@@ -540,7 +541,9 @@ export async function cleanupInstitutionPilot(
   let uploadsCleaned = 0;
   let jobsRedispatched = 0;
 
-  for (const job of await listDispatchPendingJobs(env)) {
+  // Redispatch pending queued jobs BEFORE expiring unstarted jobs so a valid
+  // job whose initial workflow trigger failed gets its dispatch attempt first.
+  for (const job of await listDispatchPendingJobs(env, config)) {
     if (await dispatchWorkflow(env, job)) {
       jobsRedispatched += 1;
     }
@@ -614,6 +617,9 @@ export async function cleanupInstitutionPilot(
 
   for (const upload of await listExpiredUploads(env)) {
     try {
+      if (!(await claimExpiredUploadForDeletion(env, upload.id))) {
+        continue;
+      }
       if (env.DOCUMENTS) {
         await env.DOCUMENTS.delete(upload.object_key);
       }

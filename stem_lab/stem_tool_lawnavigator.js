@@ -334,6 +334,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
     document.body.appendChild(lr);
   })();
 
+  // ── Scoped dignified live-motion SVG craft (GPU-composited; zero flicker) ──
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-lawnav-motion-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-lawnav-motion-css';
+    st.textContent = [
+      '@keyframes lnPathFlow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -20; } }',
+      '@keyframes lnHaloDrift { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -18; } }',
+      '@keyframes lnScalePoise { 0%, 100% { transform: rotate(-1.4deg); } 50% { transform: rotate(1.4deg); } }',
+      '@keyframes lnMilestonePulse { 0%, 100% { opacity: 0.18; transform: scale(0.92); } 50% { opacity: 0.48; transform: scale(1.22); } }',
+      '@keyframes lnGlintSweep { 0%, 66% { transform: translateX(-70px) skewX(-20deg); opacity: 0; } 76% { opacity: 0.8; } 90% { opacity: 0.55; } 100% { transform: translateX(170px) skewX(-20deg); opacity: 0; } }',
+      '.ln-path-flow { animation: lnPathFlow 2.8s linear infinite; }',
+      '.ln-halo-drift { animation: lnHaloDrift 9s linear infinite; }',
+      '.ln-scale-poise { animation: lnScalePoise 6.8s ease-in-out infinite; transform-box: view-box; transform-origin: 24px 14.6px; }',
+      '.ln-milestone-pulse { animation: lnMilestonePulse 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }',
+      '.ln-glint-sweep { animation: lnGlintSweep 7.2s ease-in-out infinite; pointer-events: none; }',
+      '@media (prefers-reduced-motion: reduce) { .ln-path-flow, .ln-halo-drift, .ln-scale-poise, .ln-milestone-pulse, .ln-glint-sweep { animation: none !important; transform: none !important; } .ln-glint-sweep { opacity: 0 !important; } .ln-milestone-pulse { opacity: 0.25 !important; } }',
+      '.theme-contrast .ln-deco-glow, .theme-contrast .ln-glint-sweep, [data-lawnav-contrast="true"] .ln-deco-glow, [data-lawnav-contrast="true"] .ln-glint-sweep { display: none !important; }',
+      '.theme-contrast .ln-path-flow, .theme-contrast .ln-halo-drift, .theme-contrast .ln-scale-poise, .theme-contrast .ln-milestone-pulse, [data-lawnav-contrast="true"] .ln-path-flow, [data-lawnav-contrast="true"] .ln-halo-drift, [data-lawnav-contrast="true"] .ln-scale-poise, [data-lawnav-contrast="true"] .ln-milestone-pulse { animation: none !important; transform: none !important; }',
+      '@media (forced-colors: active) { .ln-deco-glow, .ln-glint-sweep { display: none !important; } .ln-path-flow, .ln-halo-drift, .ln-scale-poise, .ln-milestone-pulse { animation: none !important; transform: none !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   window.StemLab.registerTool('lawNavigator', {
     icon: '⚖️',
     label: 'Education Law Navigator',
@@ -639,6 +663,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
         var codexFill = isContrast ? '#000000' : (isDark ? 'rgba(99,102,241,0.22)' : 'rgba(67,56,202,0.1)');
         return h('svg', {
           width: 44, height: 44, viewBox: '0 0 48 48', 'aria-hidden': 'true',
+          'data-lawnav-contrast': isContrast ? 'true' : undefined,
           className: 'shrink-0',
           style: {
             borderRadius: 12,
@@ -661,30 +686,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
             h('linearGradient', { id: 'ln-brass-pan', x1: '0', y1: '0', x2: '0', y2: '1' },
               h('stop', { offset: '0%', stopColor: '#fde68a' }),
               h('stop', { offset: '100%', stopColor: '#b45309' })
+            ),
+            h('linearGradient', { id: 'ln-brass-glint', x1: '0', y1: '0', x2: '1', y2: '0' },
+              h('stop', { offset: '0%', stopColor: '#fffbeb', stopOpacity: '0' }),
+              h('stop', { offset: '50%', stopColor: '#fef08a', stopOpacity: '0.26' }),
+              h('stop', { offset: '100%', stopColor: '#fffbeb', stopOpacity: '0' })
+            ),
+            h('clipPath', { id: 'ln-emblem-clip' },
+              h('rect', { x: 0, y: 0, width: 48, height: 48, rx: 12 })
             )
           ) : null,
-          !isContrast ? h('rect', { x: 0, y: 0, width: 48, height: 48, rx: 12, fill: 'url(#ln-aura)' }) : null,
-          !isContrast ? h('circle', { cx: 24, cy: 19, r: 15, fill: 'none', stroke: isDark ? 'rgba(251,191,36,0.2)' : 'rgba(180,83,9,0.18)', strokeWidth: 0.9, strokeDasharray: '2 2.5' }) : null,
+          !isContrast ? h('rect', { className: 'ln-deco-glow', x: 0, y: 0, width: 48, height: 48, rx: 12, fill: 'url(#ln-aura)' }) : null,
+          !isContrast ? h('circle', { className: 'ln-halo-drift ln-deco-glow', cx: 24, cy: 19, r: 15, fill: 'none', stroke: isDark ? 'rgba(251,191,36,0.24)' : 'rgba(180,83,9,0.2)', strokeWidth: 0.9, strokeDasharray: '2.5 2.5' }) : null,
           // Pillar, pedestal & finial
           h('line', { x1: 24, y1: 10, x2: 24, y2: 33, stroke: brassMain, strokeWidth: 2.3, strokeLinecap: 'round' }),
+          !isContrast ? h('circle', { className: 'ln-milestone-pulse ln-deco-glow', cx: 24, cy: 8.8, r: 5.2, fill: isDark ? '#fef08a' : '#f59e0b' }) : null,
           h('circle', { cx: 24, cy: 8.8, r: 2.6, fill: brassMain }),
           !isContrast ? h('circle', { cx: 23.2, cy: 8.1, r: 0.9, fill: '#fffbeb' }) : null,
           h('line', { x1: 19.5, y1: 32.5, x2: 28.5, y2: 32.5, stroke: brassMain, strokeWidth: 2, strokeLinecap: 'round' }),
-          // Sculpted balance beam
-          h('path', { d: 'M10.5 15.2 Q17.2 13.6 24 14.5 Q30.8 13.6 37.5 15.2', fill: 'none', stroke: brassMain, strokeWidth: 2.1, strokeLinecap: 'round' }),
-          h('circle', { cx: 24, cy: 14.6, r: 1.7, fill: isContrast ? '#00ffff' : '#fef3c7' }),
-          // Left pan & suspension chains
-          h('line', { x1: 12.5, y1: 15.2, x2: 9, y2: 24, stroke: brassPan, strokeWidth: 1.3 }),
-          h('line', { x1: 12.5, y1: 15.2, x2: 16, y2: 24, stroke: brassPan, strokeWidth: 1.3 }),
-          h('path', { d: 'M7.8 24 Q12.5 29.2 17.2 24 Z', fill: brassPan, stroke: isContrast ? '#ffff00' : '#fef3c7', strokeWidth: 0.6 }),
-          // Right pan & suspension chains
-          h('line', { x1: 35.5, y1: 15.2, x2: 32, y2: 24, stroke: brassPan, strokeWidth: 1.3 }),
-          h('line', { x1: 35.5, y1: 15.2, x2: 39, y2: 24, stroke: brassPan, strokeWidth: 1.3 }),
-          h('path', { d: 'M30.8 24 Q35.5 29.2 40.2 24 Z', fill: brassPan, stroke: isContrast ? '#ffff00' : '#fef3c7', strokeWidth: 0.6 }),
+          // Sculpted balance beam & suspended pans (calm, dignified poise)
+          h('g', { className: !isContrast ? 'ln-scale-poise' : undefined },
+            h('path', { d: 'M10.5 15.2 Q17.2 13.6 24 14.5 Q30.8 13.6 37.5 15.2', fill: 'none', stroke: brassMain, strokeWidth: 2.1, strokeLinecap: 'round' }),
+            h('circle', { cx: 24, cy: 14.6, r: 1.7, fill: isContrast ? '#00ffff' : '#fef3c7' }),
+            // Left pan & suspension chains
+            h('line', { x1: 12.5, y1: 15.2, x2: 9, y2: 24, stroke: brassPan, strokeWidth: 1.3 }),
+            h('line', { x1: 12.5, y1: 15.2, x2: 16, y2: 24, stroke: brassPan, strokeWidth: 1.3 }),
+            h('path', { d: 'M7.8 24 Q12.5 29.2 17.2 24 Z', fill: brassPan, stroke: isContrast ? '#ffff00' : '#fef3c7', strokeWidth: 0.6 }),
+            // Right pan & suspension chains
+            h('line', { x1: 35.5, y1: 15.2, x2: 32, y2: 24, stroke: brassPan, strokeWidth: 1.3 }),
+            h('line', { x1: 35.5, y1: 15.2, x2: 39, y2: 24, stroke: brassPan, strokeWidth: 1.3 }),
+            h('path', { d: 'M30.8 24 Q35.5 29.2 40.2 24 Z', fill: brassPan, stroke: isContrast ? '#ffff00' : '#fef3c7', strokeWidth: 0.6 })
+          ),
           // Open beveled statute codex at base
           h('path', { d: 'M9.5 34.8 Q16.8 31.8 24 35 Q31.2 31.8 38.5 34.8 L38.5 40.5 Q31.2 37.5 24 40.5 Q16.8 37.5 9.5 40.5 Z', fill: codexFill, stroke: codexStroke, strokeWidth: 1.75, strokeLinejoin: 'round' }),
           h('line', { x1: 24, y1: 35, x2: 24, y2: 40.5, stroke: codexStroke, strokeWidth: 1.3 }),
-          !isContrast ? h('path', { d: 'M13 36.2 Q17.5 35.2 21 36.6 M27 36.6 Q30.5 35.2 35 36.2', fill: 'none', stroke: codexStroke, strokeOpacity: 0.55, strokeWidth: 0.9, strokeLinecap: 'round' }) : null
+          !isContrast ? h('path', { d: 'M13 36.2 Q17.5 35.2 21 36.6 M27 36.6 Q30.5 35.2 35 36.2', fill: 'none', stroke: codexStroke, strokeOpacity: 0.55, strokeWidth: 0.9, strokeLinecap: 'round' }) : null,
+          !isContrast ? h('g', { clipPath: 'url(#ln-emblem-clip)' },
+            h('rect', { className: 'ln-glint-sweep', x: 0, y: 0, width: 16, height: 48, fill: 'url(#ln-brass-glint)' })
+          ) : null
         );
       }
 
@@ -734,6 +773,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
           ),
           h('svg', {
             viewBox: '0 0 640 124', width: '100%', role: 'img',
+            'data-lawnav-contrast': isContrast ? 'true' : undefined,
             'aria-label': __alloT('stem.lawNav.arch_aria', 'Diagram showing Federal Floor regulations (IDEA Part B and Section 504) supporting State Protections that can add requirements above the federal baseline'),
             style: { display: 'block', maxHeight: 140 }
           },
@@ -759,6 +799,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
                 h('stop', { offset: '55%', stopColor: isDark ? '#fbbf24' : '#d97706' }),
                 h('stop', { offset: '100%', stopColor: isDark ? '#38bdf8' : '#0369a1' })
               ),
+              h('linearGradient', { id: 'ln-pill-glint', x1: '0', y1: '0', x2: '1', y2: '0' },
+                h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: '0' }),
+                h('stop', { offset: '50%', stopColor: isDark ? '#fef08a' : '#6366f1', stopOpacity: isDark ? '0.2' : '0.16' }),
+                h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: '0' })
+              ),
+              h('clipPath', { id: 'ln-pill-clip' },
+                h('rect', { x: 260, y: 22, width: 118, height: 28, rx: 14 })
+              ),
               h('pattern', { id: 'ln-dots', width: 16, height: 16, patternUnits: 'userSpaceOnUse' },
                 h('circle', { cx: 8, cy: 8, r: 0.9, fill: isDark ? 'rgba(148,163,184,0.16)' : 'rgba(71,85,105,0.14)' })
               )
@@ -776,16 +824,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
             h('text', { x: 34, y: 76, fontSize: 11, fontWeight: 600, fill: pal.text }, __alloT('stem.lawNav.svg_fed_l2', 'Section 504 · 34 CFR 104')),
             h('text', { x: 34, y: 96, fontSize: 10.5, fontWeight: 700, fill: pal.muted }, fedList.length + ' ' + __alloT('stem.lawNav.svg_fed_stat', 'federal corpora') + ' · ' + fedSecTotal + ' §'),
             // Dual-pass luminous statutory-pathway flow connector & safeguard milestone nodes
-            !isContrast ? h('line', { x1: 244, y1: 62, x2: 382, y2: 62, stroke: 'url(#ln-flow-grad)', strokeWidth: 7, strokeOpacity: 0.22, strokeLinecap: 'round' }) : null,
-            h('line', { x1: 246, y1: 62, x2: 380, y2: 62, stroke: isContrast ? pal.svgStroke : 'url(#ln-flow-grad)', strokeWidth: 2.3, strokeDasharray: '6 4', strokeLinecap: 'round' }),
+            !isContrast ? h('line', { className: 'ln-deco-glow', x1: 244, y1: 62, x2: 382, y2: 62, stroke: 'url(#ln-flow-grad)', strokeWidth: 7, strokeOpacity: 0.22, strokeLinecap: 'round' }) : null,
+            h('line', { className: !isContrast ? 'ln-path-flow' : undefined, x1: 246, y1: 62, x2: 380, y2: 62, stroke: isContrast ? pal.svgStroke : 'url(#ln-flow-grad)', strokeWidth: 2.3, strokeDasharray: '6 4', strokeLinecap: 'round' }),
             h('polygon', { points: '379,56 392,62 379,68', fill: isContrast ? pal.svgStroke : pal.svgAccent2 }),
             // Departure & arrival safeguard milestone nodes
-            !isContrast ? h('circle', { cx: 241, cy: 62, r: 7.5, fill: pal.svgStroke, fillOpacity: 0.2 }) : null,
+            !isContrast ? h('circle', { className: 'ln-milestone-pulse ln-deco-glow', cx: 241, cy: 62, r: 8.2, fill: pal.svgStroke }) : null,
             h('circle', { cx: 241, cy: 62, r: 4.2, fill: pal.svgCard, stroke: pal.svgStroke, strokeWidth: 2 }),
-            !isContrast ? h('circle', { cx: 397, cy: 62, r: 7.5, fill: pal.svgAccent2, fillOpacity: 0.2 }) : null,
+            !isContrast ? h('circle', { className: 'ln-milestone-pulse ln-deco-glow', cx: 397, cy: 62, r: 8.2, fill: pal.svgAccent2, style: { animationDelay: '1.1s' } }) : null,
             h('circle', { cx: 397, cy: 62, r: 4.2, fill: pal.svgCard, stroke: pal.svgAccent2, strokeWidth: 2 }),
             // Center milestone pill
             h('rect', { x: 260, y: 22, width: 118, height: 28, rx: 14, fill: pal.badgeBg, stroke: isContrast ? '#ffff00' : pal.border, strokeWidth: isContrast ? 1.6 : 1.2 }),
+            !isContrast ? h('g', { clipPath: 'url(#ln-pill-clip)' },
+              h('rect', { className: 'ln-glint-sweep', x: 260, y: 22, width: 34, height: 28, fill: 'url(#ln-pill-glint)' })
+            ) : null,
             !isContrast ? h('line', { x1: 274, y1: 24, x2: 364, y2: 24, stroke: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.85)', strokeWidth: 1, strokeLinecap: 'round' }) : null,
             h('text', { x: 319, y: 40, fontSize: 10.5, fontWeight: 800, textAnchor: 'middle', fill: pal.badgeText }, __alloT('stem.lawNav.svg_bridge', '+ State Layer')),
             h('text', { x: 319, y: 84, fontSize: 10, fontWeight: 600, textAnchor: 'middle', fill: pal.muted }, __alloT('stem.lawNav.svg_rule1', 'May add rights,')),

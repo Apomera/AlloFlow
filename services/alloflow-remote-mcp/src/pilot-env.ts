@@ -29,6 +29,7 @@ export type RemediationWorkflowParams = {
 export interface PilotEnv extends Partial<PilotDeploymentEnv> {
   PILOT_ACCEPTANCE_VERSION?: string;
   CHATGPT_REDIRECT_URI?: string;
+  GEMINI_FALLBACK_MODEL?: string;
   OAUTH_PROVIDER?: {
     parseAuthRequest(request: Request): Promise<OAuthAuthorizationRequest>;
     lookupClient(clientId: string): Promise<OAuthClientInfo | null>;
@@ -40,6 +41,7 @@ export interface PilotEnv extends Partial<PilotDeploymentEnv> {
       props: PilotPrincipal;
       revokeExistingGrants?: boolean;
     }): Promise<{ redirectTo: string }>;
+    revokeGrant?(grantId: string, userId: string): Promise<void>;
   };
 }
 
@@ -226,6 +228,24 @@ export function getPilotConfig(env: PilotEnv): PilotConfig {
     throw new Error("invalid_pilot_configuration");
   }
 
+  const uploadTtlSeconds = boundedInteger(
+    env.UPLOAD_TTL_SECONDS,
+    DEFAULTS.uploadTtlSeconds,
+    60,
+    30 * 60,
+  );
+  const unstartedInputTtlSeconds = boundedInteger(
+    env.UNSTARTED_INPUT_TTL_SECONDS,
+    DEFAULTS.unstartedInputTtlSeconds,
+    // Queue admission is intentionally more patient than the five-minute
+    // running idle lease; throttled active work must not consume this clock.
+    10 * 60,
+    24 * 60 * 60,
+  );
+  if (unstartedInputTtlSeconds < uploadTtlSeconds) {
+    throw new Error("invalid_pilot_configuration");
+  }
+
   return {
     origin: parsedOrigin.origin,
     institutionId: env.INSTITUTION_ID,
@@ -238,20 +258,8 @@ export function getPilotConfig(env: PilotEnv): PilotConfig {
       1024,
       25 * 1024 * 1024,
     ),
-    uploadTtlSeconds: boundedInteger(
-      env.UPLOAD_TTL_SECONDS,
-      DEFAULTS.uploadTtlSeconds,
-      60,
-      30 * 60,
-    ),
-    unstartedInputTtlSeconds: boundedInteger(
-      env.UNSTARTED_INPUT_TTL_SECONDS,
-      DEFAULTS.unstartedInputTtlSeconds,
-      // Queue admission is intentionally more patient than the five-minute
-      // running idle lease; throttled active work must not consume this clock.
-      10 * 60,
-      24 * 60 * 60,
-    ),
+    uploadTtlSeconds,
+    unstartedInputTtlSeconds,
     outputTtlSeconds: boundedInteger(
       env.OUTPUT_TTL_SECONDS,
       DEFAULTS.outputTtlSeconds,

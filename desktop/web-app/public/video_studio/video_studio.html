@@ -25,8 +25,8 @@
 -->
 <style>
   :root {
-    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
-    --text: #e2e8f0; --dim: #94a3b8; --accent: #6366f1; --accent2: #818cf8;
+    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155; --control-border: #64748b;
+    --text: #e2e8f0; --dim: #cbd5e1; --accent: #6366f1; --accent2: #a5b4fc;
     --ok: #4ade80; --warn: #fbbf24; --bad: #f87171; --rec: #ef4444;
     color-scheme: dark;
   }
@@ -36,8 +36,8 @@
   .skip-link { position: fixed; left: 10px; top: -64px; z-index: 1000; padding: 10px 14px; border-radius: 8px; background: #fff; color: #0f172a; font-weight: 700; text-decoration: none; border: 2px solid #4f46e5; }
   .skip-link:focus { top: 10px; }
   :focus-visible { outline: 3px solid #a5b4fc; outline-offset: 2px; }
-  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
-  @media (forced-colors: active) { :root { color-scheme: light dark; } body, header, main, .card, .tabs button, button.quiet, button.action, button.danger, input, select, textarea, .ferpa, .inspector-empty, .finish-step, .edit-map-item { background: Canvas; color: CanvasText; border-color: CanvasText; } :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+  @media (forced-colors: active) { :root { color-scheme: light dark; --bg: Canvas; --panel: Canvas; --panel2: Canvas; --line: CanvasText; --control-border: CanvasText; --text: CanvasText; --dim: CanvasText; --accent: Highlight; --accent2: LinkText; --ok: CanvasText; --warn: CanvasText; --bad: CanvasText; --rec: Highlight; } body, header, header .sub, main, .card, .card h2, label, .stage, .stage .placeholder, .tabs button, button.quiet, button.action, button.danger, input, select, textarea, .ferpa, .inspector-empty, .finish-step, .edit-map-item, .scene-row, .take, .choice-card, .transcript-line, .restore-summary, .scene-check, .demo-goal-composer { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; } a, a:visited { color: LinkText !important; } button.action:disabled { color: GrayText !important; border-color: GrayText !important; } button[aria-pressed="true"], .tabs button[aria-selected="true"] { background: Highlight !important; color: HighlightText !important; border-color: Highlight !important; } :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; } }
   header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line); }
   header h1 { font-size: 16px; margin: 0; font-weight: 700; }
   header .sub { color: var(--dim); font-size: 12px; }
@@ -50,12 +50,12 @@
   button.action { background: #4f46e5; color: #fff; border: none; border-radius: 9px; padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
   button.action:hover { background: #4338ca; }
   button.action:disabled { background: #3f3f5a; color: #7d7da0; cursor: not-allowed; }
-  button.quiet { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 9px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+  button.quiet { background: var(--panel2); color: var(--text); border: 1px solid var(--control-border); border-radius: 9px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
   button.quiet:hover { border-color: var(--accent); }
   button.danger { background: transparent; border: 1px solid var(--bad); color: var(--bad); border-radius: 9px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
   button[aria-pressed="true"] { border-color: var(--accent); background: rgba(99,102,241,0.18); color: #fff; }
   label { font-size: 13px; color: var(--dim); }
-  input[type="text"], input[type="number"], input[type="search"], input[type="url"], select, textarea { background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 7px; padding: 7px 9px; font-size: 13px; }
+  input[type="text"], input[type="number"], input[type="search"], input[type="url"], select, textarea { background: var(--bg); border: 1px solid var(--control-border); color: var(--text); border-radius: 7px; padding: 7px 9px; font-size: 13px; }
   input[type="range"] { accent-color: var(--accent); }
   a { color:var(--accent2); text-underline-offset:3px; }
   a:visited { color:#c4b5fd; }
@@ -242,7 +242,6 @@
   .word-ripple-word[aria-pressed="true"] { border-color: #f87171; background: rgba(248,113,113,0.16); color: #fecaca; }
   .privacy-flag { display: inline-block; margin: 3px 4px 3px 0; border: 1px solid rgba(251,191,36,0.45); background: rgba(251,191,36,0.12); color: #fde68a; border-radius: 999px; padding: 3px 8px; font-size: 11px; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
-  button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
   @media (max-width: 640px) { .project-row { grid-template-columns: 1fr; } .project-row .row { justify-content: flex-start !important; } .demo-goal-actions { align-items: stretch; flex-direction: column; } #demoPlanBtn { width: 100%; } }
   @media (prefers-reduced-motion: reduce) { .recdot { animation: none; } }
   /* Keep the main path readable on narrow windows and at browser zoom. */
@@ -284,7 +283,7 @@
 </style>
 </head>
 <body>
-<a class="skip-link" href="#main" style="position:absolute;left:-9999px;top:8px;z-index:9999;background:#1e293b;color:#f8fafc;padding:8px 14px;border-radius:8px;border:2px solid #facc15;font-weight:700;text-decoration:none;" onfocus="this.style.left='8px'" onblur="this.style.left='-9999px'">Skip to Video Studio</a>
+<a class="skip-link" href="#main">Skip to Video Studio</a>
 <header>
   <span style="font-size:22px" aria-hidden="true">🎥</span>
   <div>
@@ -368,7 +367,7 @@
         <button class="quiet" id="refreshProjectsBtn">Refresh saved drafts</button>
         <span class="status" id="projectStatus" role="status" aria-live="polite" aria-atomic="true" style="margin-top:0">Local drafts autosave in this browser. .allopack files are portable project bundles.</span>
       </div>
-      <div id="projectShelf" class="project-list" aria-live="polite"></div>
+      <div id="projectShelf" class="project-list"></div>
     </div>
     <div class="card">
       <h2>Sources</h2>
@@ -431,7 +430,7 @@
           <label><input type="checkbox" id="demoOpeningCardChk" checked> Opening title</label>
           <input type="text" id="demoOpeningTitle" maxlength="120" size="28" placeholder="Uses the tutorial goal when blank" aria-label="Opening title text">
           <label for="demoTransitionStyle">Step transitions</label>
-          <select id="demoTransitionStyle" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+          <select id="demoTransitionStyle" aria-label="Step transitions" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
             <option value="smooth" selected>Smooth fade</option>
             <option value="none">None</option>
           </select>
@@ -486,9 +485,9 @@
         <button class="quiet" id="demoPreflightCancelBtn" type="button" hidden>Cancel preflight</button>
         <span class="status" id="demoPreflightStatus" role="status" aria-live="polite" aria-atomic="true" style="margin-top:0">Load or draft a plan to run preflight checks.</span>
       </div>
-      <div id="demoPreflightList" class="scene-readiness" role="region" aria-label="Demo recording preflight checks" aria-live="polite"></div>
+      <div id="demoPreflightList" class="scene-readiness" role="region" aria-label="Demo recording preflight checks"></div>
       <div id="demoPlanList" role="group" aria-label="Demo plan steps"></div>
-      <div class="row" style="margin:7px 0" aria-label="Demo narration assistant">
+      <div class="row" role="group" style="margin:7px 0" aria-label="Demo narration assistant">
         <label for="demoScriptStyle">Script tone</label>
         <select id="demoScriptStyle" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
           <option value="teacher" selected>Teacher walkthrough</option>
@@ -549,7 +548,7 @@
         </div>
         <div class="status" style="margin-top:6px">The recording is paused, so this pause will not appear in the video. If you do nothing, the demo stops on its own in about 4 minutes.</div>
       </div>
-      <div id="demoObjectiveCard" hidden style="border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0" aria-live="polite">
+      <div id="demoObjectiveCard" hidden style="border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0">
         <div style="font-weight:800">🎯 Objective check</div>
         <div class="status" id="demoObjectiveStatus" style="margin-top:6px"></div>
         <ul id="demoObjectiveMissing" style="margin:6px 0 0 18px;padding:0"></ul>
@@ -651,7 +650,7 @@
           <h2>Timeline</h2>
           <div class="row" style="margin-bottom:10px"><label for="previewSpeed">Preview speed</label><select id="previewSpeed"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1× (normal)</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select><span class="status" style="margin:0">Does not change export speed.</span></div>
           <div class="row" id="previewAudioFeedback" hidden><span class="status" id="previewAudioStatus" role="status" aria-live="polite"></span><button class="quiet" id="previewAudioRetryBtn" type="button">Retry preview audio</button></div>
-          <canvas id="waveCanvas" style="width:100%;height:84px;display:block;background:#0b1220;border-radius:8px;cursor:pointer" height="84" role="slider" tabindex="0" aria-label="Audio timeline — click or use arrow keys to move the playhead; Home and End jump to the beginning and end"></canvas>
+          <canvas id="waveCanvas" style="width:100%;height:84px;display:block;background:#0b1220;border-radius:8px;cursor:pointer" height="84" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" aria-label="Audio timeline — click or use arrow keys to move the playhead; Home and End jump to the beginning and end"></canvas>
           <div class="status" id="waveStatus" role="status" aria-live="polite" aria-atomic="true">Silences you add show red, zooms indigo, captions amber. Click anywhere to jump. Shortcuts: Space play/pause · I / O trim start/end to playhead · C caption at playhead · [ and ] previous/next edit.</div>
           <div class="row edit-nav">
             <button class="quiet" id="prevEditBtn">Previous edit</button>
@@ -957,7 +956,7 @@
           </div>
           <div id="aiNarrList" style="margin-top:8px"></div>
           <div class="row" id="aiNarrActions" hidden style="margin-top:8px">
-            <button class="action" id="narrAsTtsBtn" style="background:#059669">🔊 Generate spoken narration</button>
+            <button class="action" id="narrAsTtsBtn" style="background:#047857">🔊 Generate spoken narration</button>
             <button class="quiet" id="narrAsCapsBtn">Add as captions</button>
             <button class="quiet" id="narrAddLineBtn">Add line at playhead</button>
             <button class="quiet" id="narrRedistributeBtn">Redistribute timing</button>
@@ -1087,12 +1086,12 @@
             <button class="quiet" id="transcriptCopyPlanBtn">Copy edit plan</button>
           </div>
           <div class="status" id="transcriptStatus" role="status" aria-live="polite" aria-atomic="true">Search captions, click a line to jump the video, or scan for possible names and private details before export.</div>
-          <div id="transcriptDecisionPanel" class="transcript-decision-panel" aria-live="polite">
+          <div id="transcriptDecisionPanel" class="transcript-decision-panel">
             <strong id="transcriptDecisionTitle">Transcript edit plan</strong>
             <div class="status" id="transcriptDecisionSummary" role="status" aria-live="polite" aria-atomic="true">Select transcript lines to preview document-style video edits.</div>
             <div id="transcriptDecisionList" class="transcript-decision-list"></div>
           </div>
-          <div id="wordRipplePanel" class="word-ripple-panel" aria-live="polite">
+          <div id="wordRipplePanel" class="word-ripple-panel">
             <strong>Word ripple editor</strong>
             <div class="status" id="wordRippleStatus" role="status" aria-live="polite" aria-atomic="true">Select transcript lines above, then choose words to remove from a ripple-cut scene.</div>
             <div id="wordRippleList" class="word-ripple-list"></div>
@@ -1103,7 +1102,7 @@
               <button class="quiet" id="wordRippleClearBtn">Clear words</button>
             </div>
           </div>
-          <div id="wordCleanupPanel" class="word-ripple-panel" aria-live="polite">
+          <div id="wordCleanupPanel" class="word-ripple-panel">
             <strong>Global cleanup queue</strong>
             <div class="status" id="wordCleanupStatus" role="status" aria-live="polite" aria-atomic="true">Scan the whole transcript for filler words and quick repeats, then approve what should become one ripple-cut scene.</div>
             <div class="row" style="margin-top:8px">
@@ -1366,7 +1365,7 @@
         </label>
         <span class="status caption-note" id="captionA11yStatus"></span>
       </div>
-      <div class="export-plan" id="exportPlan" aria-live="polite">
+      <div class="export-plan" id="exportPlan">
         <strong>Export plan</strong>
         <span id="exportPlanSummary">Choose a take to see the export plan.</span>
         <span id="exportPlanDetail"></span>
@@ -1404,7 +1403,7 @@
         <button class="quiet" id="downloadAccessPacketBtn">Accessibility packet (.zip)</button>
         <button class="quiet" id="downloadProjectResultBtn">Finished-video bundle (.allopack)</button>
         <button class="quiet" id="cancelProjectBundleResultBtn" type="button" hidden>Cancel bundle</button>
-        <button class="action" id="sendBtn" style="background:#059669">📤 Send to AlloFlow</button>
+        <button class="action" id="sendBtn" style="background:#047857">📤 Send to AlloFlow</button>
         <span class="status" id="resultStatus" role="status" aria-live="polite" aria-atomic="true"></span>
       </div>
       <div class="thumb-tools" id="thumbTools">
@@ -1466,7 +1465,7 @@
     var n = 0;
     for (var i = 0; i < list.length; i++) {
       var c = list[i] || {};
-      var text = String(c.text || '').replace(/[\r\n]+/g, ' ').trim();
+      var text = String(c.text || '').replace(/[\r\n]+/g, ' ').replace(/-->/g, '->').trim();
       var start = Number(c.start), end = Number(c.end);
       if (!text || !isFinite(start) || !isFinite(end)) continue;
       if (end <= start) end = start + 0.5;
@@ -1483,14 +1482,14 @@
   // numeric cue identifiers, and cue settings after the end timestamp.
   function vsParseVtt(text) {
     var cues = [];
-    if (typeof text !== 'string') return cues;
+    if (typeof text !== 'string' || text.length > 2 * 1024 * 1024) return cues;
     var toSec = function (ts) {
       var m = /^(?:(\d+):)?(\d{1,2}):(\d{2})[.,](\d{3})$/.exec(ts.trim());
       if (!m) return null;
       return (Number(m[1] || 0) * 3600) + (Number(m[2]) * 60) + Number(m[3]) + (Number(m[4]) / 1000);
     };
     var blocks = text.replace(/\r/g, '').split(/\n\n+/);
-    for (var i = 0; i < blocks.length; i++) {
+    for (var i = 0; i < blocks.length && cues.length < 5000; i++) {
       var lines = blocks[i].split('\n').filter(function (l) { return l.trim() !== ''; });
       for (var j = 0; j < lines.length; j++) {
         var tm = /^(\S+)\s+-->\s+(\S+)/.exec(lines[j]);
@@ -1885,6 +1884,7 @@
     for (var n = 0; n < count; n++) {
       if (p + 46 > u8.length || rd32(p) !== 0x02014b50) break;
       var method = rd16(p + 10), size = rd32(p + 24), nameLen = rd16(p + 28), extraLen = rd16(p + 30), commentLen = rd16(p + 32), lho = rd32(p + 42);
+      if (p + 46 + nameLen + extraLen + commentLen > u8.length) break;
       var name = '';
       for (var c2 = 0; c2 < nameLen; c2++) name += String.fromCharCode(u8[p + 46 + c2]);
       if (method === 0 && lho + 30 <= u8.length && rd32(lho) === 0x04034b50) {
@@ -2048,12 +2048,12 @@
 
   function vsAudioPolishPreset(key) {
     var k = String(key || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'voice_balanced';
-    var map = {
+    var map = Object.assign(Object.create(null), {
       voice_balanced: { key: 'voice_balanced', label: 'Voice balanced', description: 'Slight voice lift with cautious volume; good default for teacher recordings.', audio: { volume: 1.08, removeAll: false }, music: { volume: 0.24, fadeIn: 1.2, fadeOut: 2.2, duck: true } },
       quiet_voice: { key: 'quiet_voice', label: 'Quiet voice lift', description: 'Raises a quiet recording without pushing past the distortion warning zone.', audio: { volume: 1.25, removeAll: false }, music: { volume: 0.18, fadeIn: 1.5, fadeOut: 2.5, duck: true } },
       music_under: { key: 'music_under', label: 'Music under speech', description: 'Keeps background music low, faded, and ducked under speech.', audio: { volume: 1, removeAll: false }, music: { volume: 0.16, fadeIn: 2, fadeOut: 3, duck: true } },
       voiceover_replace: { key: 'voiceover_replace', label: 'Voiceover replaces original', description: 'Mutes the source audio so narration or interpreter clips can carry the lesson.', audio: { volume: 1, removeAll: true }, music: { volume: 0.18, fadeIn: 1.5, fadeOut: 2.5, duck: true } }
-    };
+    });
     return map[k] || map.voice_balanced;
   }
 
@@ -2842,7 +2842,7 @@
     var source = String(text || '').slice(0, 12000);
     var entries = Array.isArray(rawGlossary) ? rawGlossary : vsParsePronunciationGlossary(rawGlossary);
     if (!source || !entries.length) return source;
-    var map = {};
+    var map = Object.create(null);
     entries.forEach(function (entry) { map[String(entry.term).toLowerCase()] = String(entry.spoken); });
     var pattern = entries.map(function (entry) { return String(entry.term).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|');
     if (!pattern) return source;
@@ -2899,7 +2899,7 @@
     var dur = Math.max(0.1, Number(duration) || 0.1);
     var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.descriptions) ? raw.descriptions : (raw && Array.isArray(raw.segments) ? raw.segments : []));
     var out = [];
-    var basisMap = {
+    var basisMap = Object.assign(Object.create(null), {
       observed: 'observed',
       inference: 'inferred',
       inferred: 'inferred',
@@ -2909,7 +2909,7 @@
       'needs-review': 'needs-review',
       review: 'needs-review',
       uncertain: 'needs-review'
-    };
+    });
     function confidence(v) {
       var n = Number(v);
       if (isFinite(n)) return n >= 0.75 ? 'high' : (n >= 0.45 ? 'medium' : 'low');
@@ -3321,7 +3321,7 @@
       if (!text && type !== 'sticker' && type !== 'visual_card' && type !== 'image_overlay') continue;
       var note = String(s.note || s.subtext || s.prompt || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 240);
       var imageSrc = String(s.imageSrc || s.image || s.src || '').trim();
-      if (imageSrc && imageSrc.indexOf('data:image/') !== 0) imageSrc = '';
+      if (imageSrc && (!/^data:image\/(?:png|jpe?g|webp|gif|avif|bmp);base64,/i.test(imageSrc) || imageSrc.length > 4 * 1024 * 1024)) imageSrc = '';
       if (type === 'image_overlay' && !imageSrc) continue;
       var motion = String(s.motion || '').toLowerCase().replace(/[\s-]+/g, '_');
       var style = String(s.style || s.calloutStyle || '').toLowerCase().replace(/[\s-]+/g, '_');
@@ -3362,7 +3362,7 @@
     var clean = function (v, n) { return String(v || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n); };
     var safeImg = function (v) {
       v = String(v || '').trim();
-      return (v.indexOf('data:image/') === 0 && v.length <= 1200000) ? v : '';
+      return (/^data:image\/(?:png|jpe?g|webp|gif|avif|bmp);base64,/i.test(v) && v.length <= 1200000) ? v : '';
     };
     var push = function (cue) {
       if (!cue || out.length >= max) return;
@@ -3468,7 +3468,7 @@
   var dur = Math.max(0.1, Number(duration) || 0.1);
   var list = Array.isArray(raw) ? raw : (raw && (Array.isArray(raw.suggestions) ? raw.suggestions : (Array.isArray(raw.items) ? raw.items : (Array.isArray(raw.plan) ? raw.plan : (Array.isArray(raw.lessonPlan) ? raw.lessonPlan : [])))));
   var out = [];
-  var typeMap = {
+  var typeMap = Object.assign(Object.create(null), {
   title: 'title_card',
   title_card: 'title_card',
   chapter: 'chapter',
@@ -3489,8 +3489,8 @@
   motion_sticker: 'motion_sticker',
   gif: 'motion_sticker',
   gif_prompt: 'motion_sticker'
-  };
-  var styleMap = { label: 'label', box: 'box', spotlight: 'spotlight', arrow: 'arrow' };
+  });
+  var styleMap = Object.assign(Object.create(null), { label: 'label', box: 'box', spotlight: 'spotlight', arrow: 'arrow' });
   function clean(v, max) { return String(v || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max); }
   function clamp01(v, fallback) {
   v = Number(v);
@@ -3557,7 +3557,7 @@
       return isFinite(v) ? Math.max(0, Math.min(dur, v)) : fallback;
     };
     var styleKey = String(src.style || src.mode || 'natural').toLowerCase().replace(/[\s-]+/g, '_');
-    var styleMap = { literal: 'literal', natural: 'natural', classroom: 'natural', interpreter: 'interpreter', interpretation: 'interpreter', family: 'family', simplified: 'family', bilingual: 'bilingual' };
+    var styleMap = Object.assign(Object.create(null), { literal: 'literal', natural: 'natural', classroom: 'natural', interpreter: 'interpreter', interpretation: 'interpreter', family: 'family', simplified: 'family', bilingual: 'bilingual' });
     var draft = {
       id: clean(src.id, 40) || ('loc' + Math.random().toString(36).slice(2, 8)),
       targetLanguage: clean(src.targetLanguage || src.language || src.locale, 80) || 'Target language',
@@ -4346,11 +4346,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function vsSanitizeCoachChat(result, opts) {
     opts = opts || {};
     var raw = result;
+    var safeParse = function (str) {
+      return JSON.parse(str, function (k, v) {
+        return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+      });
+    };
     if (!raw || typeof raw !== 'object' || typeof raw.guidance !== 'string') {
       var text = typeof result === 'string' ? result : result && (result.text || result.output) || '';
-      try { raw = JSON.parse(text); } catch (_) {
+      try { raw = safeParse(text); } catch (_) {
         var match = /\{[\s\S]*\}/.exec(String(text));
-        try { raw = match ? JSON.parse(match[0]) : {}; } catch (_2) { raw = {}; }
+        try { raw = match ? safeParse(match[0]) : {}; } catch (_2) { raw = {}; }
       }
     }
     raw = raw && typeof raw === 'object' ? raw : {};
@@ -4903,7 +4908,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (_) {}
       return fromHash;
     }
-    return bridgeParams.get('allo_bridge') || '';   // legacy: remove once builds have rolled
+    var fromQuery = bridgeParams.get('allo_bridge') || '';
+    if (fromQuery) {
+      try {
+        var cleanParams = new URLSearchParams(window.location.search || '');
+        cleanParams.delete('allo_bridge');
+        var nextSearch = cleanParams.toString();
+        history.replaceState(null, '', window.location.pathname + (nextSearch ? '?' + nextSearch : ''));
+      } catch (_) {}
+    }
+    return fromQuery;   // legacy: remove once builds have rolled
   })();
   function originFromUrl(url) {
     try {
@@ -4929,7 +4943,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     try {
       var u = new URL(origin);
       var h = (u.hostname || '').toLowerCase();
-      if (h === 'localhost' || h === '127.0.0.1') return true;
+      if ((u.protocol === 'http:' || u.protocol === 'https:') && (h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || h === '::1')) return true;
       if (u.protocol !== 'https:') return false;
       return h === 'alloflow-cdn.pages.dev'
         || h.endsWith('.alloflow-cdn.pages.dev')
@@ -4973,15 +4987,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
   function isOpenerMessage(ev, type, id) {
     if (!opener || ev.source !== opener || !ev.data || ev.data.type !== type) return false;
-    if (!openerOrigin && ev.origin && ev.origin !== 'null') openerOrigin = ev.origin;
-    if (openerOrigin && ev.origin && ev.origin !== openerOrigin) return false;
-    if (bridgeToken && ev.data.bridge !== bridgeToken) return false;
+    if (!ev.origin || ev.origin === 'null') return false;
+    if (!bridgeToken || ev.data.bridge !== bridgeToken) return false;
+    if (!openerOrigin) openerOrigin = ev.origin;
+    if (ev.origin !== openerOrigin) return false;
     return id == null || ev.data.id === id;
   }
   function postToOpener(msg) {
     try {
       var target = openerTargetOrigin();
-      if (opener && target) {
+      if (opener && target && bridgeToken) {
         opener.postMessage(withBridge(msg), target);
         return true;
       }
@@ -5008,7 +5023,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   window.addEventListener('beforeunload', function (ev) {
     try {
       var recordingActive = typeof rec !== 'undefined' && rec && rec.state !== 'inactive';
-      var exportActive = typeof exportInFlight !== 'undefined' && exportInFlight;
+      var exportActive = (typeof exportInFlight !== 'undefined' && exportInFlight) || (typeof sceneExportInFlight !== 'undefined' && sceneExportInFlight);
       var bundleActive = typeof projectBundleInFlight !== 'undefined' && projectBundleInFlight;
       if (recordingActive || exportActive || bundleActive || pendingVideoImports > 0 || narrationStarting || narrationSession) {
         if (recordingActive) flushRecordingCheckpoint();
@@ -5022,7 +5037,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // teacher CANCELS the prompt above, and announcing 'allostudio-closed' there
   // would tear the bridge down under a window that is still alive.
   window.addEventListener('pagehide', function () {
+    flushDebouncedDraft();
     stopNarrationRecording(true, 'Window closed.');
+    try { if (typeof clipRec !== 'undefined' && clipRec && clipRec.state !== 'inactive') clipRec.stop(); } catch (_) {}
+    try { if (typeof stopCoachWatch === 'function') stopCoachWatch(); } catch (_) {}
+    try { if (typeof stopCoachAuto === 'function') stopCoachAuto(); } catch (_) {}
+    try { if (typeof stopCoachPip === 'function') stopCoachPip(); } catch (_) {}
     resetPreviewAudio();
     flushRecordingCheckpoint();
     try { if (typeof demoState !== 'undefined' && demoState && demoState.running) postToOpener({ type: 'allostudio-demostop' }); } catch (_) {}
@@ -5095,6 +5115,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     showTab(order[next]);
     $(order[next]).focus();
   });
+  function prefersReducedMotion() {
+    try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (_) { return false; }
+  }
+  function scrollIntoViewRespectingMotion(el, block) {
+    if (!el || typeof el.scrollIntoView !== 'function') return;
+    try { el.scrollIntoView({ block: block || 'center', behavior: prefersReducedMotion() ? 'auto' : 'smooth' }); } catch (_) { try { el.scrollIntoView(); } catch (__) {} }
+  }
   function focusStudioTarget(tabId, targetId) {
     if (tabId && $(tabId)) showTab(tabId);
     setTimeout(function () {
@@ -5102,7 +5129,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (!target && tabId && $(tabId)) target = $(tabId);
       if (!target) return;
       if (tabId === 'tabEdit' && target.closest('.vs-workflow-hidden')) setEditorFocusMode('all', false);
-      try { target.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) { target.scrollIntoView(); }
+      scrollIntoViewRespectingMotion(target, 'center');
+      if (target.tabIndex < 0 && !/^(A|BUTTON|INPUT|SELECT|TEXTAREA|SUMMARY)$/.test(target.tagName)) {
+        target.setAttribute('tabindex', '-1');
+      }
       try { target.focus({ preventScroll: true }); } catch (_) { try { target.focus(); } catch (__) {} }
     }, 30);
   }
@@ -5471,6 +5501,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var captureSurface = '', captureTrackLabel = '';
   var audioCtx = null;
   var pipRaf = 0;
+  var pipCleanupVideos = [];
+  var recordingStarting = false;
+  var recStopFallbackTimer = 0;
   var elapsed = 0, tickTimer = 0, lastTickAt = 0, paused = false;
   var recog = null, recogCueStart = null, cuesLive = [];
 
@@ -5570,9 +5603,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     if (srcMode === 'pip') {
       var screenVideo = document.createElement('video');
       screenVideo.srcObject = new MediaStream(videoTrackStream.getVideoTracks());
-      screenVideo.muted = true; await screenVideo.play();
+      screenVideo.muted = true;
+      pipCleanupVideos.push(screenVideo);
+      await screenVideo.play();
       var camVideo = document.createElement('video');
-      camVideo.srcObject = camStream; camVideo.muted = true; await camVideo.play();
+      camVideo.srcObject = camStream; camVideo.muted = true;
+      pipCleanupVideos.push(camVideo);
+      await camVideo.play();
       var cv = $('pipCanvas');
       var w = Math.min(1920, screenVideo.videoWidth || 1280);
       var hgt = Math.round(w * (screenVideo.videoHeight || 720) / (screenVideo.videoWidth || 1280));
@@ -5621,7 +5658,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         pipRaf = requestAnimationFrame(draw);
       };
       draw();
-      videoTrack = cv.captureStream(30).getVideoTracks()[0];
+      var pipCanvasStream = cv.captureStream(30);
+      recStreams.push(pipCanvasStream);
+      videoTrack = pipCanvasStream.getVideoTracks()[0];
       $('previewVideo').hidden = true;
     } else {
       videoTrack = videoTrackStream.getVideoTracks()[0];
@@ -5644,7 +5683,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
 
   async function startRecording() {
-    if (rec && rec.state !== 'inactive') return;
+    if (recordingStarting || (rec && rec.state !== 'inactive')) return;
+    recordingStarting = true;
     recordingMicWarning = '';
     $('startBtn').disabled = true;
     setStatus($('recStatus'), 'Choose what to share in the picker…');
@@ -5654,6 +5694,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     try {
       stream = await buildStream();
     } catch (e) {
+      recordingStarting = false;
       $('startBtn').disabled = false;
       teardownStreams();
       if (e && (e.name === 'NotAllowedError' || e.name === 'AbortError')) {
@@ -5669,12 +5710,21 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       announce('Recording starts in ' + c);
       await new Promise(function (res) { setTimeout(res, 800); });
     }
+    var liveVideoTrack = stream && stream.getVideoTracks && stream.getVideoTracks()[0];
+    if (!liveVideoTrack || liveVideoTrack.readyState === 'ended') {
+      recordingStarting = false;
+      teardownStreams();
+      $('startBtn').disabled = false;
+      setStatus($('recStatus'), 'Screen sharing ended before recording started.', 'warn');
+      return;
+    }
     var mime = pickMime();
     recChunks = []; recBytes = 0; elapsed = 0; paused = false; cuesLive = []; recogCueStart = null;
     recordingCheckpointFailed = false;
     try {
       rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 2500000 } : undefined);
     } catch (e) {
+      recordingStarting = false;
       teardownStreams();
       $('startBtn').disabled = false;
       setStatus($('recStatus'), 'MediaRecorder failed: ' + (e && e.message || e), 'bad');
@@ -5686,17 +5736,22 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         persistRecordingCheckpointChunk(ev.data);
       }
     };
+    rec.onerror = function () {
+      try { if (rec && rec.state !== 'inactive') rec.stop(); else finalizeTake(); } catch (_) { finalizeTake(); }
+    };
     rec.onstop = finalizeTake;
     await checkRecordingCheckpointStorage();
     recordingCheckpointId = 'rc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
     recordingCheckpointSeq = 0;
     beginRecordingCheckpoint(mime || 'video/webm');
     try { rec.start(1000); } catch (e) {
+      recordingStarting = false;
       clearRecordingCheckpoint(recordingCheckpointId); recordingCheckpointId = null;
       rec = null; teardownStreams(); $('startBtn').disabled = false;
       setStatus($('recStatus'), 'MediaRecorder failed: ' + (e && e.message || e), 'bad');
       return;
     }
+    recordingStarting = false;
     startTick();
     startCaptions();
     $('pauseBtn').hidden = false; $('stopBtn').hidden = false;
@@ -5742,11 +5797,19 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     }
     stopCaptions();
     clearInterval(tickTimer);
-    try { rec.stop(); } catch (_) {}
+    clearTimeout(recStopFallbackTimer);
+    var stoppingRec = rec;
+    recStopFallbackTimer = setTimeout(function () {
+      if (rec === stoppingRec) finalizeTake();
+    }, 3000);
+    try { rec.stop(); } catch (_) { finalizeTake(); }
   }
 
   function teardownStreams() {
     cancelAnimationFrame(pipRaf); pipRaf = 0;
+    pipCleanupVideos.splice(0).forEach(function (pvEl) {
+      try { pvEl.pause(); pvEl.srcObject = null; pvEl.removeAttribute('src'); pvEl.load(); } catch (_) {}
+    });
     // Capture is gone: the coach has nothing to watch or point at.
     try { stopCoachAuto(); hideCoachOverlay(); stopCoachPip(); } catch (_) {}
     recStreams.forEach(function (s) { try { s.getTracks().forEach(function (t) { t.stop(); }); } catch (_) {} });
@@ -5761,9 +5824,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   }
 
   function finalizeTake() {
-    var dur = elapsed;
-    var rawType = (rec && rec.mimeType) || 'video/webm';
-    var checkpointIdForTake = recordingCheckpointId;
+    clearTimeout(recStopFallbackTimer); recStopFallbackTimer = 0;
+    if (!rec && !recChunks.length) return;
+    var dur = elapsed, rawType = (rec && rec.mimeType) || 'video/webm', checkpointIdForTake = recordingCheckpointId;
+    rec = null;
     var raw = new Blob(recChunks, { type: rawType });
     recChunks = [];
     teardownStreams();
@@ -5849,6 +5913,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         setEditorFocusMode('narrate', false);
         addDemoNarrationToTake(take, demoCuesForVoice, autoNarrationVoice);
       }
+    }).catch(function (err) {
+      setStatus($('recStatus'), 'Could not finalize take: ' + String((err && err.message) || err || 'unknown error').slice(0, 140), 'bad');
     });
   }
 
@@ -5880,7 +5946,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     return new Promise(function (resolve) {
       var v = document.createElement('video');
       var done = false;
-      var finish = function (dur, err) { if (done) return; done = true; resolve({ duration: dur, error: !!err }); v.removeAttribute('src'); };
+      var timer = 0;
+      var finish = function (dur, err) {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        resolve({ duration: dur, error: !!err });
+        try { v.removeAttribute('src'); v.load(); } catch (_) {}
+      };
       v.preload = 'metadata'; v.muted = true; v.src = url;
       v.addEventListener('loadedmetadata', function () {
         if (isFinite(v.duration) && v.duration > 0) { finish(v.duration); return; }
@@ -5891,7 +5964,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         try { v.currentTime = 1e7; } catch (_) { finish(0); }
       });
       v.addEventListener('error', function () { finish(0, true); });
-      setTimeout(function () { finish(0, true); }, 10000);
+      timer = setTimeout(function () { finish(0, true); }, 10000);
     });
   }
 
@@ -6030,11 +6103,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     });
   }
 
+  var MAX_VIDEO_IMPORT_BYTES = 1024 * 1024 * 1024;
+  var MAX_AUDIO_IMPORT_BYTES = 64 * 1024 * 1024;
   function importVideoFile(file) {
     if (!file) return;
     if (/\.allopack$/i.test(file.name || '')) { return importBundleFile(file); }
     var looksVideo = /^video\//.test(file.type || '') || /\.(mp4|webm|mov|m4v|mkv)$/i.test(file.name || '');
     if (!looksVideo) { clearImportSummaryPanel(); setStatus($('importStatus'), 'That doesn’t look like a video file (' + (file.type || file.name) + ').', 'warn'); return; }
+    if (Number(file.size) > MAX_VIDEO_IMPORT_BYTES) { clearImportSummaryPanel(); setStatus($('importStatus'), 'Video file exceeds the 1 GB browser safety limit.', 'bad'); return; }
     return addImportedTake(file, file.name, file.type);
   }
 
@@ -6109,13 +6185,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var visualDescriptions = [];
       if (visualText) { try { var rawVisual = vsSafeJsonParse(visualText); visualDescriptions = vsSanitizeVisualDescriptions(rawVisual, bundleDuration).map(function (s, idx) { s.checked = !!((Array.isArray(rawVisual) ? rawVisual : rawVisual.descriptions || [])[idx] && (Array.isArray(rawVisual) ? rawVisual : rawVisual.descriptions || [])[idx].checked); return s; }); } catch (_) {} }
       var chapters = [];
-      if (chapterText) { try { chapters = (vsSafeJsonParse(chapterText) || []).filter(function (c) { return c && isFinite(Number(c.start)) && String(c.title || '').trim(); }).map(function (c) { return { start: Math.max(0, Number(c.start) || 0), title: String(c.title || '').slice(0, 80) }; }); } catch (_) {} }
+      if (chapterText) { try { var rawChapters = vsSafeJsonParse(chapterText); chapters = (Array.isArray(rawChapters) ? rawChapters : []).slice(0, 64).filter(function (c) { return c && isFinite(Number(c.start)) && String(c.title || '').trim(); }).map(function (c) { return { start: Math.max(0, Number(c.start) || 0), title: String(c.title || '').slice(0, 80) }; }); } catch (_) {} }
       var inserts = [];
       if (insertText) { try { inserts = vsSanitizeTeachingInserts(vsSafeJsonParse(insertText), bundleDuration); } catch (_) {} }
       var visualPrompts = [];
-      if (promptText) { try { visualPrompts = (vsSafeJsonParse(promptText) || []).filter(function (p) { return p && String(p.prompt || '').trim(); }).map(function (p) { return { id: String(p.id || ('vp' + Date.now().toString(36))).slice(0, 40), start: Math.max(0, Number(p.start) || 0), type: String(p.type || 'image_prompt').slice(0, 40), label: String(p.label || 'Visual support').slice(0, 90), prompt: String(p.prompt || '').slice(0, 600), source: String(p.source || '').slice(0, 40) }; }); } catch (_) {} }
+      if (promptText) { try { var rawPrompts = vsSafeJsonParse(promptText); visualPrompts = (Array.isArray(rawPrompts) ? rawPrompts : []).slice(0, 64).filter(function (p) { return p && String(p.prompt || '').trim(); }).map(function (p) { return { id: String(p.id || ('vp' + Date.now().toString(36))).slice(0, 40), start: Math.max(0, Number(p.start) || 0), type: String(p.type || 'image_prompt').slice(0, 40), label: String(p.label || 'Visual support').slice(0, 90), prompt: String(p.prompt || '').slice(0, 600), source: String(p.source || '').slice(0, 40) }; }); } catch (_) {} }
       var localizations = [];
-      if (localText) { try { localizations = (vsSafeJsonParse(localText) || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, bundleDuration); }); } catch (_) {} }
+      if (localText) { try { var rawLocs = vsSafeJsonParse(localText); localizations = (Array.isArray(rawLocs) ? rawLocs : []).slice(0, 24).map(function (loc) { return vsSanitizeLocalizedDraft(loc, bundleDuration); }); } catch (_) {} }
       var scenePlan = null;
       if (scenePlanText) { try { scenePlan = vsSafeJsonParse(scenePlanText); } catch (_) { scenePlan = null; } }
       var demoRunReport = null;
@@ -6622,7 +6698,10 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   async function loadAsr(modelId, onProgress, signal) {
     if (signal && signal.aborted) throw asrAbortError();
     if (_asrPipelines[modelId]) { if (signal && signal.aborted) throw asrAbortError(); return _asrPipelines[modelId]; }
-    if (window._isDesktopBundledApp === true) {
+    var isDesktopOffline = window._isDesktopBundledApp === true ||
+      (typeof window.alloflowDesktop === 'object' && window.alloflowDesktop !== null) ||
+      (/^(localhost|127\.0\.0\.1|::1|\[::1\])$/i.test(window.location.hostname || '') && /^\/app\//i.test(window.location.pathname || ''));
+    if (isDesktopOffline) {
       throw new Error('Offline desktop mode does not fetch external captioning models from the web.');
     }
     var lib = await import(TRANSFORMERS_URL);
@@ -6707,7 +6786,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var selectedEditItem = null;
   var inspectorPreviewStop = null;
   function insertTypeLabel(type) {
-    var map = { title_card: 'Title card', pause_prompt: 'Pause prompt', callout: 'Callout', sticker: 'Sticker', visual_card: 'Visual card', image_overlay: 'Image overlay' };
+    var map = Object.assign(Object.create(null), { title_card: 'Title card', pause_prompt: 'Pause prompt', callout: 'Callout', sticker: 'Sticker', visual_card: 'Visual card', image_overlay: 'Image overlay' });
     return map[type] || 'Insert';
   }
   function selectedEditObject(t) {
@@ -7289,7 +7368,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       // and that is what got burned into the exported video.
       row.addEventListener('keydown', function (ev) { if (ev.target !== row) return; if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); selectEditItem('insert', ins.id); } });
       var type = document.createElement('select');
-      type.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px 7px';
+      type.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--control-border);border-radius:7px;padding:5px 7px';
+      type.setAttribute('aria-label', 'Insert ' + (idx + 1) + ' type');
       [['title_card', 'Title card'], ['pause_prompt', 'Pause'], ['callout', 'Callout'], ['sticker', 'Sticker'], ['visual_card', 'Visual'], ['image_overlay', 'Image overlay']].forEach(function (pair) {
         var o = document.createElement('option'); o.value = pair[0]; o.textContent = pair[1]; if (ins.type === pair[0]) o.selected = true; type.appendChild(o);
       });
@@ -7306,11 +7386,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       row.appendChild(mkNum('Dur', Math.max(0.6, ins.end - ins.start), function (v) { ins.end = ins.start + Math.max(0.6, v); }, 20));
       var txt = document.createElement('input');
       txt.type = 'text'; txt.value = ins.text || ''; txt.placeholder = 'Text'; txt.style.minWidth = '150px'; txt.style.flex = '1';
+      txt.setAttribute('aria-label', 'Insert ' + (idx + 1) + ' text');
       txt.addEventListener('change', function () { ins.text = txt.value; saveInsertList(t); });
       row.appendChild(txt);
       if (ins.type === 'title_card' || ins.type === 'pause_prompt') {
         var layoutSel = document.createElement('select');
-        layoutSel.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px 7px';
+        layoutSel.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--control-border);border-radius:7px;padding:5px 7px';
         [['center-card', 'center card'], ['lower-banner', 'lower banner'], ['split-panel', 'split panel']].forEach(function (pair) {
           var o = document.createElement('option'); o.value = pair[0]; o.textContent = pair[1]; if ((ins.layout || 'center-card') === pair[0]) o.selected = true; layoutSel.appendChild(o);
         });
@@ -7329,7 +7410,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       }
       if (ins.type === 'callout') {
         var styleSel = document.createElement('select');
-        styleSel.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px 7px';
+        styleSel.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--control-border);border-radius:7px;padding:5px 7px';
+        styleSel.setAttribute('aria-label', 'Callout style for insert ' + (idx + 1));
         [['arrow', 'arrow'], ['spotlight', 'spotlight'], ['box', 'box'], ['label', 'label']].forEach(function (pair) {
           var o = document.createElement('option'); o.value = pair[0]; o.textContent = pair[1]; if ((ins.style || 'arrow') === pair[0]) o.selected = true; styleSel.appendChild(o);
         });
@@ -7339,7 +7421,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (ins.type === 'image_overlay') {
         row.appendChild(mkNum('Size%', Math.round((ins.width || 0.28) * 100), function (v) { ins.width = Math.max(0.08, Math.min(0.9, v / 100)); }, 100));
         var motion = document.createElement('select');
-        motion.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px 7px';
+        motion.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--control-border);border-radius:7px;padding:5px 7px';
+        motion.setAttribute('aria-label', 'Motion for insert ' + (idx + 1));
         [['fade', 'fade'], ['slide_left', 'slide left'], ['slide_right', 'slide right'], ['slide_up', 'slide up'], ['slide_down', 'slide down'], ['drift_right', 'drift right'], ['drift_left', 'drift left'], ['zoom_in', 'zoom in'], ['none', 'none']].forEach(function (pair) {
           var o = document.createElement('option'); o.value = pair[0]; o.textContent = pair[1]; if ((ins.motion || 'fade') === pair[0]) o.selected = true; motion.appendChild(o);
         });
@@ -7347,13 +7430,15 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         row.appendChild(motion);
       }
       var theme = document.createElement('select');
-      theme.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:5px 7px';
+      theme.style.cssText = 'background:var(--bg);color:var(--text);border:1px solid var(--control-border);border-radius:7px;padding:5px 7px';
+      theme.setAttribute('aria-label', 'Color theme for insert ' + (idx + 1));
       ['blue', 'green', 'amber', 'pink', 'slate'].forEach(function (v) { var o = document.createElement('option'); o.value = v; o.textContent = v; if (ins.theme === v) o.selected = true; theme.appendChild(o); });
       theme.addEventListener('change', function () { ins.theme = theme.value; saveInsertList(t); });
       row.appendChild(theme);
       if (ins.type === 'sticker') {
         var anim = document.createElement('select');
         anim.style.cssText = theme.style.cssText;
+        anim.setAttribute('aria-label', 'Animation for insert ' + (idx + 1));
         ['pulse', 'bounce', 'sparkle', 'none'].forEach(function (v) { var o = document.createElement('option'); o.value = v; o.textContent = v; if (ins.animation === v) o.selected = true; anim.appendChild(o); });
         anim.addEventListener('change', function () { ins.animation = anim.value; saveInsertList(t); });
         row.appendChild(anim);
@@ -7367,7 +7452,14 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       row.appendChild(play);
       var del = document.createElement('button'); del.className = 'danger'; del.textContent = '✕';
       del.setAttribute('aria-label', 'Delete insert ' + (idx + 1));
-      del.addEventListener('click', function (ev) { ev.stopPropagation(); t.inserts.splice(t.inserts.indexOf(ins), 1); if (selectedEditItem && selectedEditItem.kind === 'insert' && selectedEditItem.id === ins.id) selectedEditItem = null; saveInsertList(t); });
+      del.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        t.inserts.splice(t.inserts.indexOf(ins), 1);
+        if (selectedEditItem && selectedEditItem.kind === 'insert' && selectedEditItem.id === ins.id) selectedEditItem = null;
+        saveInsertList(t);
+        var nextFocus = host.querySelector('[data-edit-kind="insert"]') || $('addInsertBtn');
+        if (nextFocus) { try { nextFocus.focus(); } catch (_) {} }
+      });
       row.appendChild(del);
       host.appendChild(row);
     });
@@ -7778,7 +7870,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     jump.addEventListener('click', function () { $('editVideo').currentTime = m.start || 0; });
     row.appendChild(jump);
     var del = document.createElement('button'); del.className = 'danger'; del.textContent = 'X'; del.setAttribute('aria-label', 'Remove background music');
-    del.addEventListener('click', function () { if (!t) return; t.musicBed = null; saveDraft(t); resetPreviewAudio(); renderMusicBed(); });
+    del.addEventListener('click', function () {
+      if (!t) return;
+      t.musicBed = null; saveDraft(t); resetPreviewAudio(); renderMusicBed();
+      if ($('addMusicBtn')) { try { $('addMusicBtn').focus(); } catch (_) {} }
+    });
     row.appendChild(del);
     host.appendChild(row);
     drawWave();
@@ -7789,6 +7885,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     $('musicFileInput').value = '';
     if (!t || !f) return;
     if (!/^audio\//.test(f.type || '') && !/\.(mp3|wav|ogg|m4a|webm)$/i.test(f.name || '')) { setStatus($('musicStatus'), 'Choose an audio file for background music.', 'warn'); return; }
+    if (Number(f.size) > MAX_AUDIO_IMPORT_BYTES) { setStatus($('musicStatus'), 'Background music file exceeds the 64 MB safety limit.', 'bad'); return; }
     t.musicBed = vsSanitizeMusicBed({ id: 'music' + Date.now().toString(36), name: f.name, fileName: f.name, mimeType: f.type || 'audio/webm', blob: f, start: 0, end: t.duration || 0, volume: 0.28, loop: true, fadeIn: 1.5, fadeOut: 2, duck: true }, t.duration || 0);
     saveDraft(t); resetPreviewAudio(); renderMusicBed();
     setStatus($('musicStatus'), 'Background music added. Adjust volume, fades, looping, and ducking before export.', 'ok');
@@ -7909,6 +8006,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         saveDraft(t);
         renderMediaCredits();
         renderFinishChecklist();
+        var nextFocus = host.querySelector('button.danger') || $('mediaCreditTitle');
+        if (nextFocus) { try { nextFocus.focus(); } catch (_) {} }
       });
       actions.appendChild(del);
       row.appendChild(actions);
@@ -8274,7 +8373,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var t = currentTake(); if (!t || !t.narration) { $('narrVolLabel').textContent = Math.round(Number($('narrVol').value) * 100) + '%'; return; }
     t.narration.volume = Number($('narrVol').value);
     $('narrVolLabel').textContent = Math.round(t.narration.volume * 100) + '%';
-    saveDraft(t);
+    saveDraftSoon(t);
   });
 
   function renderClips() {
@@ -8298,7 +8397,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var vol = document.createElement('input'); vol.type = 'range'; vol.min = '0'; vol.max = '2'; vol.step = '0.05'; vol.style.width = '80px';
       vol.value = String(c.volume != null ? c.volume : 1);
       vol.setAttribute('aria-label', 'Volume of clip ' + (idx + 1));
-      vol.addEventListener('input', function () { c.volume = Number(vol.value); saveDraft(t); });
+      vol.addEventListener('input', function () { c.volume = Number(vol.value); saveDraftSoon(t); });
       row.appendChild(vol);
       var prev = document.createElement('button'); prev.className = 'quiet'; prev.textContent = '▶';
       prev.setAttribute('aria-label', 'Preview clip ' + (idx + 1));
@@ -8327,7 +8426,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       }
       var del = document.createElement('button'); del.className = 'danger'; del.textContent = '✕';
       del.setAttribute('aria-label', 'Delete clip ' + (idx + 1));
-      del.addEventListener('click', function () { t.audioClips.splice(t.audioClips.indexOf(c), 1); saveDraft(t); resetPreviewAudio(); renderClips(); });
+      del.addEventListener('click', function () {
+        t.audioClips.splice(t.audioClips.indexOf(c), 1); saveDraft(t); resetPreviewAudio(); renderClips();
+        var nextFocus = host.querySelector('button.danger') || $('addClipFileBtn');
+        if (nextFocus) { try { nextFocus.focus(); } catch (_) {} }
+      });
       row.appendChild(del);
       host.appendChild(row);
     });
@@ -8341,30 +8444,52 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var t = currentTake(); var f = $('clipFileInput').files[0];
     $('clipFileInput').value = '';
     if (!t || !f) return;
+    if (!/^audio\//.test(f.type || '') && !/\.(mp3|wav|ogg|m4a|webm)$/i.test(f.name || '')) { setStatus($('clipPreviewStatus'), 'Choose an audio file for sound clips.', 'warn'); return; }
+    if (Number(f.size) > MAX_AUDIO_IMPORT_BYTES) { setStatus($('clipPreviewStatus'), 'Audio clip file exceeds the 64 MB safety limit.', 'bad'); return; }
     (t.audioClips = t.audioClips || []).push({ id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: f.name, blob: f, t: $('editVideo').currentTime || 0, volume: 1 });
     saveDraft(t); resetPreviewAudio(); renderClips();
   });
   var clipRec = null;
+  var clipRecStarting = false;
   $('recClipBtn').addEventListener('click', async function () {
     var t = currentTake(); if (!t) return;
     if (clipRec) { try { clipRec.stop(); } catch (_) {} return; }
+    if (clipRecStarting) return;
+    clipRecStarting = true;
     var mic;
-    try { mic = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e) { return; }
+    try { mic = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch (e) { clipRecStarting = false; setStatus($('clipPreviewStatus'), 'Microphone unavailable for sound clip recording.', 'warn'); return; }
+    if (takes.indexOf(t) < 0 || currentTake() !== t) {
+      clipRecStarting = false;
+      mic.getTracks().forEach(function (tr) { tr.stop(); });
+      return;
+    }
     var chunks = [], atTime = $('editVideo').currentTime || 0;
-    try { clipRec = new MediaRecorder(mic); } catch (e) { mic.getTracks().forEach(function (tr) { tr.stop(); }); return; }
-    clipRec.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
-    clipRec.onstop = function () {
+    try { clipRec = new MediaRecorder(mic); } catch (e) { clipRecStarting = false; mic.getTracks().forEach(function (tr) { tr.stop(); }); return; }
+    clipRecStarting = false;
+    var finished = false;
+    var finishClip = function (hadError) {
+      if (finished) return;
+      finished = true;
       mic.getTracks().forEach(function (tr) { tr.stop(); });
       clipRec = null;
       $('recClipBtn').textContent = '🎙 Record clip at playhead';
+      if (hadError) { setStatus($('clipPreviewStatus'), 'Sound clip recording failed.', 'bad'); return; }
       var blob = new Blob(chunks, { type: 'audio/webm' });
-      if (blob.size > 200) {
+      if (blob.size > 200 && takes.indexOf(t) >= 0) {
         (t.audioClips = t.audioClips || []).push({ id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: 'mic clip', blob: blob, t: atTime, volume: 1 });
         saveDraft(t); resetPreviewAudio(); renderClips();
       }
     };
-    clipRec.start(500);
-    $('recClipBtn').textContent = '⏹ Stop clip';
+    clipRec.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
+    clipRec.onerror = function () { finishClip(true); };
+    clipRec.onstop = function () { finishClip(false); };
+    try {
+      clipRec.start(500);
+      $('recClipBtn').textContent = '⏹ Stop clip';
+    } catch (_) {
+      finishClip(true);
+    }
   });
 
   // ── AI narration: contact sheet → Gemini vision → editable script → TTS ──
@@ -10173,11 +10298,17 @@ function buildContactSheet(t, count, shouldCancel) {
       var del = document.createElement('button'); del.className = 'danger'; del.textContent = 'Delete'; del.setAttribute('aria-label', 'Delete ' + t.name);
       del.addEventListener('click', function (ev) {
         ev.stopPropagation();
+        if (exportInFlight || sceneExportInFlight) {
+          setStatus($('exportStatus'), 'Wait for or cancel the active export before deleting a take.', 'warn');
+          return;
+        }
         // Deleting a take also discards its draft — confirm like every other
-        // destructive replace in this file does.
-        var sure = true;
-        try { sure = window.confirm('Delete "' + t.name + '"? This removes the take and its saved draft from this device. Files you already exported or bundled are not affected.'); } catch (_) {}
+        // destructive replace in this file does. Fail closed if confirm throws.
+        var sure = false;
+        try { sure = !!window.confirm('Delete "' + t.name + '"? This removes the take and its saved draft from this device. Files you already exported or bundled are not affected.'); } catch (_) { sure = false; }
         if (!sure) return;
+        if (asrJob && asrJob.take === t) cancelAsrJob();
+        if (clipRec && currentTake() === t) { try { clipRec.stop(); } catch (_) {} }
         if (narrationSession && narrationSession.take === t) stopNarrationRecording(true);
         takes = takes.filter(function (x) { return x.id !== t.id; });
         deleteDraft(t.id);
@@ -10188,7 +10319,8 @@ function buildContactSheet(t, count, shouldCancel) {
           if (takes.length) { selectTake(takes[takes.length - 1].id); }
           else {
             // Last take gone: clear every editor panel so nothing stale lingers.
-            $('editVideo').src = '';
+            $('editVideo').removeAttribute('src');
+            try { $('editVideo').load(); } catch (_) {}
             aiNarrSegments = [];
             resetPreviewAudio();
             renderCues(); renderZooms(); renderAudio(); renderMusicBed(); renderNarration(); renderClips(); renderTeachingInserts(); renderAiNarr(); renderVisualDescriptions(); renderLocalization(); renderFinishChecklist(); renderResultReadiness(); refreshExportDecisionPreview(); renderSelectedInspector(); drawWave(); updateEditOverlayPreview();
@@ -10196,7 +10328,7 @@ function buildContactSheet(t, count, shouldCancel) {
         }
         renderTakes();
         var nextName = list.querySelector('.nm');
-        if (nextName) nextName.focus(); else $('studioEmptyEdit').querySelector('button').focus();
+        if (nextName) nextName.focus(); else if ($('studioEmptyEdit') && $('studioEmptyEdit').querySelector('button')) $('studioEmptyEdit').querySelector('button').focus();
       });
       row.addEventListener('click', function () { if (selectedTakeId !== t.id) selectTake(t.id); renderTakes(); });
       nm.addEventListener('keydown', function (ev) {
@@ -11231,10 +11363,17 @@ function buildContactSheet(t, count, shouldCancel) {
     }
     ctx.restore();
   }
+  var lastSceneProgressAnnouncedPct = -1;
+  var lastSceneProgressAnnouncedAt = 0;
   function sceneSetExportProgress(done, local, total) {
     var pct = total ? Math.min(100, Math.round((done + Math.max(0, local || 0)) / total * 100)) : 0;
     if ($('exportProgress')) { $('exportProgress').hidden = false; $('exportProgress').value = pct; }
-    setStatus($('sceneStatus'), 'Preparing scene export... ' + pct + '%', 'warn');
+    var now = Date.now();
+    if (pct === 0 || pct === 100 || pct - lastSceneProgressAnnouncedPct >= 10 || now - lastSceneProgressAnnouncedAt >= 2000) {
+      lastSceneProgressAnnouncedPct = pct;
+      lastSceneProgressAnnouncedAt = now;
+      setStatus($('sceneStatus'), 'Preparing scene export... ' + pct + '%', 'warn');
+    }
   }
   function sceneAudioGainAt(mode, fadeEdges, local, duration) {
     if (mode === 'mute') return 0;
@@ -11246,7 +11385,7 @@ function buildContactSheet(t, count, shouldCancel) {
     return gain;
   }
   async function exportSceneMontage() {
-    if (sceneExportInFlight) return;
+    if (sceneExportInFlight || exportInFlight) return;
     if (!sceneItems.length) { setStatus($('sceneStatus'), 'Add at least one clip or card before preparing a scene export.', 'warn'); return; }
     var pendingNarration = sceneItems.filter(function (item) { var take = item.type === 'clip' ? sceneItemTake(item) : null; return !!(take && take.demoNarrationPending); });
     if (pendingNarration.length) { setStatus($('sceneStatus'), 'Automatic narration is still being generated for a scene clip. Wait for it to finish before exporting.', 'warn'); return; }
@@ -11273,6 +11412,8 @@ function buildContactSheet(t, count, shouldCancel) {
     var cancelBtn = $('sceneExportCancelBtn');
     sceneExportCancelRequested = false;
     sceneExportInFlight = true;
+    lastSceneProgressAnnouncedPct = -1;
+    lastSceneProgressAnnouncedAt = 0;
     if (btn) btn.disabled = true;
     if (cancelBtn) { cancelBtn.hidden = false; cancelBtn.disabled = false; }
     var exportItems = sceneItems.map(function (item, idx) {
@@ -11280,27 +11421,29 @@ function buildContactSheet(t, count, shouldCancel) {
       if (idx === 0) copy.transition = 'cut';
       return copy;
     });
-    var cv = document.createElement('canvas');
-    var sceneOutputFormat = exportCanvasSizeFor(currentExportFormatKey(), 1280, 720);
-    var sceneOutputContainer = currentExportContainer();
-    var sceneMimeInfo = chooseExportMime(sceneOutputContainer);
-    cv.width = sceneOutputFormat.width;
-    cv.height = sceneOutputFormat.height;
-    var ctx = cv.getContext('2d');
-    var stream = cv.captureStream(30);
-    var canvasTrack = stream.getVideoTracks()[0] || null;
-    var sceneAudioMode = sanitizeSceneAudioMode($('sceneAudioMode') ? $('sceneAudioMode').value : 'keep');
-    var sceneAudioFade = !$('sceneAudioFade') || $('sceneAudioFade').checked;
-    var sceneFraming = sceneFramingMode();
+    var cv = null, ctx = null, stream = null, canvasTrack = null;
     var ac = null, dest = null;
     var sceneMixUrls = []; // object URLs for the per-clip narration/music mix; revoked in finally
+    var mr = null;
     try {
-      ac = new (window.AudioContext || window.webkitAudioContext)();
-      dest = ac.createMediaStreamDestination();
-      await ac.resume();
-    } catch (_) { ac = null; dest = null; }
-    sceneExportEnsureActive();
-    try {
+      cv = document.createElement('canvas');
+      var sceneOutputFormat = exportCanvasSizeFor(currentExportFormatKey(), 1280, 720);
+      var sceneOutputContainer = currentExportContainer();
+      var sceneMimeInfo = chooseExportMime(sceneOutputContainer);
+      cv.width = sceneOutputFormat.width;
+      cv.height = sceneOutputFormat.height;
+      ctx = cv.getContext('2d');
+      stream = cv.captureStream(30);
+      canvasTrack = stream.getVideoTracks()[0] || null;
+      var sceneAudioMode = sanitizeSceneAudioMode($('sceneAudioMode') ? $('sceneAudioMode').value : 'keep');
+      var sceneAudioFade = !$('sceneAudioFade') || $('sceneAudioFade').checked;
+      var sceneFraming = sceneFramingMode();
+      try {
+        ac = new (window.AudioContext || window.webkitAudioContext)();
+        dest = ac.createMediaStreamDestination();
+        await ac.resume();
+      } catch (_) { ac = null; dest = null; }
+      sceneExportEnsureActive();
       for (var i = 0; i < exportItems.length; i++) {
         sceneExportEnsureActive();
         var item = exportItems[i];
@@ -11390,12 +11533,14 @@ function buildContactSheet(t, count, shouldCancel) {
       scenePlan.captions = sceneCues;
       scenePlan.chapters = sceneChapters;
       scenePlan.visual = Object.assign({}, scenePlan.visual || {}, { outputFormat: sceneOutputFormat, outputContainer: sceneOutputContainer });
-      var mr = new MediaRecorder(stream, sceneMimeInfo.mime ? { mimeType: sceneMimeInfo.mime, videoBitsPerSecond: exportVideoBitrate(cv.width, cv.height) } : undefined);
+      mr = new MediaRecorder(stream, sceneMimeInfo.mime ? { mimeType: sceneMimeInfo.mime, videoBitsPerSecond: exportVideoBitrate(cv.width, cv.height) } : undefined);
       sceneExportRecorder = mr;
       var chunks = [];
-      var recorded = new Promise(function (resolve) {
+      var recSettled = false;
+      var recorded = new Promise(function (resolve, reject) {
         mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
-        mr.onstop = function () { resolve(new Blob(chunks, { type: mr.mimeType || sceneMimeInfo.mime || 'video/webm' })); };
+        mr.onerror = function (ev) { if (!recSettled) { recSettled = true; reject((ev && ev.error) || new Error('Scene MediaRecorder failed')); } };
+        mr.onstop = function () { if (!recSettled) { recSettled = true; resolve(new Blob(chunks, { type: mr.mimeType || sceneMimeInfo.mime || 'video/webm' })); } };
       });
       ctx.fillStyle = '#020617';
       ctx.fillRect(0, 0, cv.width, cv.height);
@@ -11466,7 +11611,11 @@ function buildContactSheet(t, count, shouldCancel) {
       await new Promise(function (resolve) { setTimeout(resolve, 420); });
       sceneExportEnsureActive();
       try { mr.stop(); } catch (_) {}
-      var raw = await recorded;
+      var stopTimeout = 0;
+      var raw = await Promise.race([
+        recorded,
+        new Promise(function (_, reject) { stopTimeout = setTimeout(function () { reject(new Error('Scene recorder timed out while finalizing')); }, 10000); })
+      ]).finally(function () { clearTimeout(stopTimeout); });
       sceneExportEnsureActive();
       var patched = await finalizeRecordedVideoBlob(raw, totalDur);
       sceneExportEnsureActive();
@@ -11523,6 +11672,7 @@ function buildContactSheet(t, count, shouldCancel) {
         setStatus($('exportStatus'), 'Scene export failed - ' + (e && e.message || e), 'bad');
       }
     } finally {
+      try { if (mr && mr.state !== 'inactive') mr.stop(); } catch (_) {}
       if ($('exportProgress')) $('exportProgress').hidden = true;
       exportItems.forEach(function (item) { try { if (item._video) { item._video.pause(); item._video.removeAttribute('src'); item._video.load(); } } catch (_) {} });
       // Tear the per-clip mix down on EVERY exit path, including cancel and error.
@@ -11539,7 +11689,7 @@ function buildContactSheet(t, count, shouldCancel) {
       sceneExportCancelRequested = false;
       if (cancelBtn) { cancelBtn.hidden = true; cancelBtn.disabled = false; }
       try { if (ac) ac.close(); } catch (_) {}
-      try { stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
+      try { if (stream) stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
       if (btn) btn.disabled = false;
       renderSceneBuilder();
     }
@@ -11781,8 +11931,8 @@ function buildContactSheet(t, count, shouldCancel) {
       try { $('editVideo').currentTime = start; } catch (_) {}
       var row = idx >= 0 ? $('cueRow' + idx) : null;
       if (row) {
-        try { row.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) { row.scrollIntoView(); }
-        var textInput = row.querySelector('input[type="text"]');
+        scrollIntoViewRespectingMotion(row, 'center');
+        var textInput = row.querySelector('textarea, input[type="text"]');
         try { (textInput || row).focus({ preventScroll: true }); } catch (_) { try { (textInput || row).focus(); } catch (__) {} }
         try { if (textInput) textInput.select(); } catch (_) {}
       } else {
@@ -14770,6 +14920,21 @@ function buildContactSheet(t, count, shouldCancel) {
   $('demoJunctureRetryBtn').addEventListener('click', function () { sendDemoJunctureChoice('retry'); });
   $('demoJunctureSkipBtn').addEventListener('click', function () { sendDemoJunctureChoice('skip'); });
   $('demoJunctureStopBtn').addEventListener('click', function () { sendDemoJunctureChoice('stop'); });
+  $('demoJuncturePanel').addEventListener('keydown', function (ev) {
+    if ($('demoJuncturePanel').hidden) return;
+    if (ev.key === 'Escape') {
+      ev.preventDefault();
+      sendDemoJunctureChoice('stop');
+      return;
+    }
+    if (ev.key === 'Tab') {
+      var btns = Array.prototype.slice.call($('demoJuncturePanel').querySelectorAll('button:not([disabled])'));
+      if (!btns.length) return;
+      var first = btns[0], last = btns[btns.length - 1];
+      if (ev.shiftKey && document.activeElement === first) { ev.preventDefault(); last.focus(); }
+      else if (!ev.shiftKey && document.activeElement === last) { ev.preventDefault(); first.focus(); }
+    }
+  });
   window.addEventListener('message', function (ev) {
     if (!isOpenerMessage(ev, 'allostudio-demodecision-request')) return;
     var token = String(ev.data.token || '');
@@ -15142,11 +15307,19 @@ function buildContactSheet(t, count, shouldCancel) {
   // saved, frames leave only when a suggestion is requested. The browser's
   // "sharing this screen" bar is the always-visible truth signal, and its
   // Stop-sharing button ends the watch (track.onended).
+  var coachWatchStarting = false;
+  var coachPipOpening = false;
   async function startCoachWatch() {
     if (rec && rec.state !== 'inactive') { setStatus($('coachStatus'), 'Recording is already capturing — the coach is watching that take.', 'ok'); return; }
     if (coachWatchStream) { stopCoachWatch(); return; }
+    if (coachWatchStarting) return;
+    coachWatchStarting = true;
     try {
       var s = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+      if (rec && rec.state !== 'inactive') {
+        try { s.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {}
+        return;
+      }
       coachWatchStream = s;
       var v = $('previewVideo');
       v.srcObject = s;
@@ -15159,6 +15332,8 @@ function buildContactSheet(t, count, shouldCancel) {
       announce('Screen Coach is watching — nothing is being recorded');
     } catch (e) {
       setStatus($('coachStatus'), 'Could not start watching: ' + ((e && e.name) || 'error') + '. Pick a tab or window in the share dialog.', 'warn');
+    } finally {
+      coachWatchStarting = false;
     }
   }
   function stopCoachWatch() {
@@ -15181,8 +15356,10 @@ function buildContactSheet(t, count, shouldCancel) {
   // the annotated view hovers over the user's real browsing while they act.
   async function toggleCoachPip() {
     if (coachPipWin) { stopCoachPip(); return; }
+    if (coachPipOpening) return;
     if (!window.documentPictureInPicture) { setStatus($('coachStatus'), 'Floating mode needs a Chromium browser with Document Picture-in-Picture.', 'warn'); return; }
     if (!coachCaptureActive()) { setStatus($('coachStatus'), 'Start watching or recording first — the floating window mirrors the capture.', 'warn'); return; }
+    coachPipOpening = true;
     try {
       var w = await window.documentPictureInPicture.requestWindow({ width: 480, height: 340 });
       coachPipWin = w;
@@ -15195,7 +15372,7 @@ function buildContactSheet(t, count, shouldCancel) {
       w.document.body.appendChild(pc);
       w.document.body.appendChild(bar);
       coachPipWin.__coachBar = bar;
-      w.addEventListener('pagehide', function () { coachPipWin = null; });
+      w.addEventListener('pagehide', function () { coachPipWin = null; cancelAnimationFrame(coachPipRaf); });
       var draw = function () {
         if (!coachPipWin) return;
         var v = $('previewVideo');
@@ -15217,6 +15394,8 @@ function buildContactSheet(t, count, shouldCancel) {
     } catch (e) {
       coachPipWin = null;
       setStatus($('coachStatus'), 'Floating window failed: ' + String((e && e.message) || e).slice(0, 120), 'warn');
+    } finally {
+      coachPipOpening = false;
     }
   }
   function stopCoachPip() {
@@ -15290,16 +15469,22 @@ function buildContactSheet(t, count, shouldCancel) {
     if (!frame) { setStatus($('coachStatus'), 'Could not read a frame from the capture.', 'warn'); return; }
     coachBusy = true;
     setStatus($('coachStatus'), 'Asking the coach…');
-    var resp = await bridgeRequest('allostudio-coach-request', {
-      goal: String($('coachGoal').value || '').slice(0, 300),
-      imageBase64: frame,
-      mimeType: 'image/jpeg',
-      history: coachHistory.slice(-3).join('\n'),
-      posture: coachPosture
-    }, 45000);
-    coachBusy = false;
-    if (resp.error) {
-      setStatus($('coachStatus'), 'Coach unavailable: ' + String(resp.error).slice(0, 140), 'warn');
+    var resp;
+    try {
+      resp = await bridgeRequest('allostudio-coach-request', {
+        goal: String($('coachGoal').value || '').slice(0, 300),
+        imageBase64: frame,
+        mimeType: 'image/jpeg',
+        history: coachHistory.slice(-3).join('\n'),
+        posture: coachPosture
+      }, 45000);
+    } catch (err) {
+      resp = { error: String((err && err.message) || err || 'request failed') };
+    } finally {
+      coachBusy = false;
+    }
+    if (!resp || resp.error) {
+      setStatus($('coachStatus'), 'Coach unavailable: ' + String((resp && resp.error) || 'no response').slice(0, 140), 'warn');
       return;
     }
     var guidance = String(resp.guidance || '').slice(0, 400);
@@ -15473,7 +15658,7 @@ function buildContactSheet(t, count, shouldCancel) {
   }
   function restoreExportPrefs() {
     var prefs = null;
-    try { prefs = JSON.parse(localStorage.getItem(VS_EXPORT_PREFS_KEY) || 'null'); } catch (_) {}
+    try { prefs = vsSafeJsonParse(localStorage.getItem(VS_EXPORT_PREFS_KEY) || 'null'); } catch (_) {}
     applyExportControls(prefs, exportPrefControls());
     newTakeExportSettings = readExportControls(takeExportControls());
     refreshTakeExportSettings();
@@ -15487,7 +15672,7 @@ function buildContactSheet(t, count, shouldCancel) {
   restoreExportPrefs();
 
   async function doExport() {
-    if (exportInFlight) return;
+    if (exportInFlight || sceneExportInFlight) return;
     var t = currentTake();
     if (!t) { setStatus($('exportStatus'), 'Record (or select) a take first.', 'warn'); return; }
     if (t.demoNarrationPending) { setStatus($('exportStatus'), 'Automatic narration is still being generated. Wait for it to finish before exporting.', 'warn'); return; }
@@ -15605,13 +15790,13 @@ function buildContactSheet(t, count, shouldCancel) {
     ctx.closePath();
   }
   function insertTheme(theme) {
-    var map = {
+    var map = Object.assign(Object.create(null), {
       blue: { bg: '#1d4ed8', fg: '#ffffff', accent: '#bfdbfe' },
       green: { bg: '#047857', fg: '#ffffff', accent: '#bbf7d0' },
       amber: { bg: '#92400e', fg: '#ffffff', accent: '#fde68a' },
       pink: { bg: '#be185d', fg: '#ffffff', accent: '#fbcfe8' },
       slate: { bg: '#0f172a', fg: '#f8fafc', accent: '#cbd5e1' }
-    };
+    });
     return map[theme] || map.blue;
   }
   function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
@@ -16289,24 +16474,31 @@ function buildContactSheet(t, count, shouldCancel) {
       },
       error: function (e) { encError = e; }
     });
-    aenc.configure({ codec: 'opus', sampleRate: sr, numberOfChannels: 2, bitrate: 128000 });
-    var frames = rendered.length, FR = 960; // 20ms Opus frames
-    var chL = rendered.getChannelData(0);
-    var chR = rendered.numberOfChannels > 1 ? rendered.getChannelData(1) : chL;
-    for (var off = 0; off < frames; off += FR) {
-      // Long takes are tens of thousands of 20ms frames; check periodically so a
-      // cancel does not have to wait for the whole Opus pass.
-      if ((off / FR) % 200 === 0) abortIfAsked();
-      var nn = Math.min(FR, frames - off);
-      var data = new Float32Array(nn * 2);
-      data.set(chL.subarray(off, off + nn), 0);
-      data.set(chR.subarray(off, off + nn), nn);
-      var ad = new AudioData({ format: 'f32-planar', sampleRate: sr, numberOfFrames: nn, numberOfChannels: 2, timestamp: Math.round(off / sr * 1e6), data: data });
-      aenc.encode(ad);
-      ad.close();
+    try {
+      aenc.configure({ codec: 'opus', sampleRate: sr, numberOfChannels: 2, bitrate: 128000 });
+      var frames = rendered.length, FR = 960; // 20ms Opus frames
+      var chL = rendered.getChannelData(0);
+      var chR = rendered.numberOfChannels > 1 ? rendered.getChannelData(1) : chL;
+      for (var off = 0; off < frames; off += FR) {
+        // Long takes are tens of thousands of 20ms frames; check periodically so a
+        // cancel does not have to wait for the whole Opus pass.
+        if ((off / FR) % 200 === 0) abortIfAsked();
+        if (encError) throw encError;
+        var nn = Math.min(FR, frames - off);
+        var data = new Float32Array(nn * 2);
+        data.set(chL.subarray(off, off + nn), 0);
+        data.set(chR.subarray(off, off + nn), nn);
+        var ad = new AudioData({ format: 'f32-planar', sampleRate: sr, numberOfFrames: nn, numberOfChannels: 2, timestamp: Math.round(off / sr * 1e6), data: data });
+        try {
+          aenc.encode(ad);
+        } finally {
+          ad.close();
+        }
+      }
+      await aenc.flush();
+    } finally {
+      try { if (aenc.state !== 'closed') aenc.close(); } catch (_) {}
     }
-    await aenc.flush();
-    aenc.close();
     if (encError) throw encError;
     return { codec: 'opus', sampleRate: sr, channels: 2, chunks: chunks };
   }
@@ -16370,8 +16562,11 @@ function buildContactSheet(t, count, shouldCancel) {
           function encodeCanvasFrame(tsSec, keyHint) {
             var key = !!keyHint || framesSinceKey >= fps * 4;
             var f = new VideoFrame(cv, { timestamp: Math.round(tsSec * 1e6), duration: Math.round(1e6 / fps) });
-            venc.encode(f, { keyFrame: key });
-            f.close();
+            try {
+              venc.encode(f, { keyFrame: key });
+            } finally {
+              f.close();
+            }
             framesSinceKey = key ? 0 : framesSinceKey + 1;
           }
           if (cardDur) {
@@ -16389,6 +16584,7 @@ function buildContactSheet(t, count, shouldCancel) {
           var lastTsUs = -1;
           await new Promise(function (res, rej) {
             var done = false;
+            var drainActive = false;
             function finish() { if (done) return; done = true; try { v.pause(); } catch (_) {} res(); }
             function fail(err) { if (done) return; done = true; try { v.pause(); } catch (_) {} rej(err); }
             function step(now, meta) {
@@ -16416,10 +16612,11 @@ function buildContactSheet(t, count, shouldCancel) {
                 setReencodeUi(true, 'Fast export: ' + Math.round(doneFrac * 100) + '%' + (speed > 0.1 ? ' — encoding at ' + (Math.round(speed * 10) / 10) + 'x real time' : '') + '.');
               }
               // Backpressure: pause decode while the encoder queue drains.
-              if (venc.encodeQueueSize > 24 && !v.paused) {
+              if (venc.encodeQueueSize > 24 && !v.paused && !drainActive) {
+                drainActive = true;
                 try { v.pause(); } catch (_) {}
                 var drain = setInterval(function () {
-                  if (done) { clearInterval(drain); return; }
+                  if (done) { clearInterval(drain); drainActive = false; return; }
                   // Cancelling DURING a drain used to clear this interval and
                   // return without settling the promise. The video is paused, so
                   // no further frame callback runs and 'ended' never fires — the
@@ -16428,8 +16625,10 @@ function buildContactSheet(t, count, shouldCancel) {
                   // only turned into a rejection inside the frame callback, so it
                   // has to be raised here too.
                   if (canceled) { clearInterval(drain); fail(exportAbortError('Export canceled')); return; }
+                  if (vErr || !venc || venc.state === 'closed') { clearInterval(drain); drainActive = false; fail(vErr || new Error('VideoEncoder closed unexpectedly')); return; }
                   if (venc.encodeQueueSize <= 8) {
                     clearInterval(drain);
+                    drainActive = false;
                     v.play().catch(function () { fail(new Error('playback blocked')); });
                   }
                 }, 40);
@@ -16475,7 +16674,7 @@ function buildContactSheet(t, count, shouldCancel) {
           reject(e);
         } finally {
           activeReencodeCancel = null;
-          try { v.pause(); } catch (_) {}
+          try { v.pause(); v.removeAttribute('src'); v.load(); } catch (_) {}
           try { if (venc && venc.state !== 'closed') venc.close(); } catch (_) {}
           setReencodeUi(false);
           $('exportProgress').hidden = true;
@@ -16932,6 +17131,7 @@ function buildContactSheet(t, count, shouldCancel) {
             resolve(dbConn);
           };
           req.onerror = function () { dbOpening = null; reject(req.error || new Error('storage unavailable')); };
+          req.onblocked = function () { dbOpening = null; reject(new Error('storage upgrade blocked by another Video Studio tab')); };
         } catch (e) { dbOpening = null; reject(e); }
       });
     }
@@ -17044,13 +17244,20 @@ function buildContactSheet(t, count, shouldCancel) {
     });
     if (id === recordingCheckpointId) recordingCheckpointId = null;
   }
+  var recoveringCheckpoint = false;
   function recoverRecordingCheckpoint(meta) {
-    if (!meta || !meta.id) return;
+    if (!meta || !meta.id || recoveringCheckpoint) return;
+    recoveringCheckpoint = true;
     withDb(function (db) {
       try {
         var tx = db.transaction(CHECKPOINT_CHUNK_STORE, 'readonly');
         var req = tx.objectStore(CHECKPOINT_CHUNK_STORE).index('checkpointId').getAll(IDBKeyRange.only(meta.id));
+        req.onerror = function () {
+          recoveringCheckpoint = false;
+          setStatus($('recordingRecoverText'), 'Could not read interrupted recording slices.', 'bad');
+        };
         req.onsuccess = function () {
+          recoveringCheckpoint = false;
           var rows = (req.result || []).sort(function (a, b) { return (a.seq || 0) - (b.seq || 0); });
           var parts = rows.map(function (row) { return row.blob; }).filter(Boolean);
           if (!parts.length) { setStatus($('recordingRecoverText'), 'The interrupted recording has no durable video slices left.', 'warn'); return; }
@@ -17080,21 +17287,27 @@ function buildContactSheet(t, count, shouldCancel) {
           setStatus($('recStatus'), 'Recovered ' + (demo.active ? 'demo' : 'recording') + ' from the last durable checkpoint. Review it before sharing.', 'ok');
         };
       } catch (e) {
+        recoveringCheckpoint = false;
         setStatus($('recordingRecoverText'), 'Could not recover the interrupted recording: ' + String((e && (e.message || e.name)) || e || 'storage unavailable').slice(0, 120), 'bad');
       }
     }, function (e) {
+      recoveringCheckpoint = false;
       setStatus($('recordingRecoverText'), 'Could not recover the interrupted recording: ' + String((e && (e.message || e.name)) || e || 'storage unavailable').slice(0, 120), 'bad');
     });
   }
   function pruneRecordingCheckpoints(rows) {
     var list = Array.isArray(rows) ? rows : [];
     var now = Date.now();
-    var keep = list.slice(0, CHECKPOINT_MAX_COUNT).map(function (row) { return row && row.id; }).filter(Boolean);
+    var kept = 0;
     var remove = [];
-    list.forEach(function (row, index) {
-      if (!row || !row.id || row.id === recordingCheckpointId || keep.indexOf(row.id) >= 0) return;
+    list.forEach(function (row) {
+      if (!row || !row.id || row.id === recordingCheckpointId) return;
       var age = row.updatedAt ? now - Number(row.updatedAt) : CHECKPOINT_MAX_AGE_MS + 1;
-      if (index >= CHECKPOINT_MAX_COUNT || age > CHECKPOINT_MAX_AGE_MS) remove.push(row.id);
+      if (age > CHECKPOINT_MAX_AGE_MS || kept >= CHECKPOINT_MAX_COUNT) {
+        remove.push(row.id);
+      } else {
+        kept += 1;
+      }
     });
     Array.from(new Set(remove)).forEach(function (id) { clearRecordingCheckpoint(id); });
   }
@@ -17139,6 +17352,27 @@ function buildContactSheet(t, count, shouldCancel) {
       setStatus($('projectStatus'), 'Autosave FAILED (' + msg.slice(0, 80) + '). This take is not being saved to this device — use Download or Save .allopack before closing this window.', 'bad');
     }
   }
+  var draftDebounceTimer = 0;
+  var draftDebounceTake = null;
+  function saveDraftSoon(take) {
+    if (!take) return;
+    draftDebounceTake = take;
+    clearTimeout(draftDebounceTimer);
+    draftDebounceTimer = setTimeout(function () {
+      var pending = draftDebounceTake;
+      draftDebounceTake = null;
+      draftDebounceTimer = 0;
+      if (pending && takes.indexOf(pending) >= 0) saveDraft(pending);
+    }, 350);
+  }
+  function flushDebouncedDraft() {
+    if (!draftDebounceTimer) return;
+    clearTimeout(draftDebounceTimer);
+    draftDebounceTimer = 0;
+    var pending = draftDebounceTake;
+    draftDebounceTake = null;
+    if (pending && takes.indexOf(pending) >= 0) saveDraft(pending);
+  }
   function saveDraft(take, afterSave) {
     rememberCaptionState(take);
     captureTakeExportSettings(take);
@@ -17181,7 +17415,9 @@ function buildContactSheet(t, count, shouldCancel) {
           $('recoverBanner').hidden = false;
           $('recoverBtn').onclick = function () {
             rows.forEach(function (r) {
-              takes.push(inflateDraft(r));
+              if (!takes.some(function (existing) { return existing && existing.id === r.id; })) {
+                takes.push(inflateDraft(r));
+              }
             });
             renderTakes();
             if (takes.length) { selectTake(takes[takes.length - 1].id); renderTakes(); showTab('tabEdit'); }

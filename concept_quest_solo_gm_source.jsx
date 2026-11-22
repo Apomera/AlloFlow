@@ -125,9 +125,14 @@ const ConceptQuestSoloGMHelpers = (() => {
         ...(ctx.room?.challenge?.evidenceOptions || []),
         ...(ctx.room?.challenge?.principleOptions || []),
         ...(ctx.room?.challenge?.candidatePartners || []),
+        ...(Array.isArray(ctx.room?.challenge?.acceptableAlternatives) ? ctx.room.challenge.acceptableAlternatives : []),
         ctx.room?.challenge?.expectedFill,
         ctx.room?.challenge?.expectedAnswer,
+        ctx.room?.challenge?.correctAnswer,
+        ctx.room?.challenge?.correctEvidence,
+        ctx.room?.challenge?.orderingPrinciple,
         ctx.room?.challenge?.correctPartnerForWrong,
+        ctx.room?.challenge?.correctValue != null ? String(ctx.room.challenge.correctValue) : null,
         ctx.room?.challenge?.expectedNumber != null ? String(ctx.room.challenge.expectedNumber) : null,
       ];
       for (const option of rawCandidates) {

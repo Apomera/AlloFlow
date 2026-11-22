@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-const fs=require('fs'),path=require('path'),banks=require('./school_librarian_5312/item_content.cjs'),root=path.resolve(__dirname,'..');
+const fs=require('fs'),path=require('path'),{applyChoiceOverrides}=require('./school_librarian_5312/choice_overrides/index.cjs'),banks=applyChoiceOverrides(require('./school_librarian_5312/item_content.cjs')),root=path.resolve(__dirname,'..');
 const diagnostic={'program-administration':20,'organization-access':19,'information-access-learning-environment':20,'teaching-learning':29,'professional-development-leadership-advocacy':12};
 const official={'program-administration':24,'organization-access':23,'information-access-learning-environment':24,'teaching-learning':35,'professional-development-leadership-advocacy':14};
 const additions=Object.fromEntries(Object.keys(official).map(id=>[id,official[id]-diagnostic[id]]));
@@ -25,9 +25,10 @@ function learningLink(bank,q){
 }
 function makeItem(bank,q,batch,pos){
   const answerIndex=(pos-1)%4,choices=[],choiceRationales=[],link=learningLink(bank,q);let d=0;
+  if(!Array.isArray(q.distractorNotes)||q.distractorNotes.length!==3)throw Error(`Missing authored distractorNotes for ${bank.id} pos ${pos}`);
   for(let i=0;i<4;i++){
     if(i===answerIndex){choices.push(q.correct);choiceRationales.push('Correct. '+q.rationale)}
-    else{const wrong=q.distractors[d++];choices.push(wrong);choiceRationales.push('Not the best answer. "'+wrong+'" substitutes a narrow, unsupported, inequitable, or procedurally weak action for the evidence-based approach. '+q.rationale)}
+    else{const idx=d++;choices.push(q.distractors[idx]);choiceRationales.push(q.distractorNotes[idx])}
   }
   return{id:'sl5312-b'+batch+'-'+String(pos).padStart(3,'0'),type:'single-choice',domainId:bank.id,difficulty:q.difficulty,prompt:batch===1?q.promptA:q.promptB,choices,answerIndex,rationale:q.rationale,references:bank.references.slice(),reviewStatus:'source-reviewed',qaStatus:'qa-passed',qaReviewedAt:'2026-07-16',choiceRationales,skillIds:[link.skillId],chapterIds:[link.chapterId]}
 }

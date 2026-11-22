@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-11-21T01:00:20.780Z
+Generated: 2026-11-21T21:57:39.448Z
 
 ## Scope
 
@@ -19,7 +19,7 @@ Generated: 2026-11-21T01:00:20.780Z
 | Review notices | 7 |
 | Tools with any finding | 10 |
 | Tools with high-confidence errors | 0 |
-| Tools with canvas surfaces | 43 |
+| Tools with canvas surfaces | 44 |
 
 ## Top Findings
 
@@ -48,7 +48,7 @@ Generated: 2026-11-21T01:00:20.780Z
 | `alloBotSage` AlloBot: Starbound Sage | Games | standard | 82 | 0 | 0 | 0 | 0 | 0 |  |
 | `alphaFoldExplorer` AlphaFold Explorer | science | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
 | `anatomy` Human Anatomy Explorer | science | standard | 90 | 5 | 1 | 0 | 0 | 0 |  |
-| `appLab` AppLab | technology | standard | 12 | 7 | 0 | 0 | 0 | 0 |  |
+| `appLab` AppLab | technology | standard | 12 | 7 | 1 | 0 | 0 | 0 |  |
 | `aquacultureLab` AquacultureLab: Mussel Farm Sim | science | standard | 182 | 6 | 0 | 0 | 0 | 0 |  |
 | `aquarium` Aquarium Lab | science | standard | 37 | 3 | 0 | 0 | 0 | 0 |  |
 | `arccity` Arc City | strategy | standard | 28 | 0 | 0 | 0 | 0 | 0 |  |
@@ -58,7 +58,7 @@ Generated: 2026-11-21T01:00:20.780Z
 | `arithmeticStudio` Arithmetic Strategy Studio | math | standard | 31 | 3 | 0 | 0 | 0 | 0 |  |
 | `artStudio` Art & Design Studio | creative | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
 | `assessmentLiteracy` Assessment Literacy Lab | Literacy | standard | 15 | 0 | 0 | 0 | 0 | 0 |  |
-| `astronomy` Night Sky & Astronomy | science | standard | 32 | 4 | 0 | 0 | 0 | 0 |  |
+| `astronomy` Night Sky & Astronomy | science | standard | 32 | 3 | 0 | 0 | 0 | 0 |  |
 | `atcTower` ATC Tower | applied | standard | 12 | 2 | 0 | 0 | 0 | 0 |  |
 | `autoRepair` Auto Repair Shop | life-skills | standard | 61 | 1 | 0 | 0 | 0 | 0 |  |
 | `bakingScience` Baking Lab | science | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |

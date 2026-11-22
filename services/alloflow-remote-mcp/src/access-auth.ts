@@ -136,9 +136,26 @@ function authHtml(body: string, nonce: string, cookie?: string): Response {
   );
 }
 
+function isAllowedRedirectUri(value: string, env: PilotEnv): boolean {
+  if (!value) {
+    return false;
+  }
+  const allowLocal = env.ALLOW_LOCAL_OAUTH === "true";
+  const chatGptRedirectUri = getPilotConfig(env).chatGptRedirectUri;
+  const allowedRedirectUris = new Set([
+    ...CLAUDE_REDIRECT_URIS,
+    ...(chatGptRedirectUri ? [chatGptRedirectUri] : []),
+  ]);
+  return (
+    allowedRedirectUris.has(value) ||
+    (allowLocal && isLocalRedirect(value))
+  );
+}
+
 function validateAuthRequest(
   request: OAuthAuthorizationRequest,
   origin: string,
+  env: PilotEnv,
 ): PilotScope[] {
   if (
     request.responseType !== "code" ||
@@ -146,6 +163,12 @@ function validateAuthRequest(
     request.codeChallengeMethod !== "S256"
   ) {
     throw new PilotError("pkce_s256_required", 400);
+  }
+  if (
+    typeof request.redirectUri !== "string" ||
+    !isAllowedRedirectUri(request.redirectUri, env)
+  ) {
+    throw new PilotError("invalid_redirect_uri", 400);
   }
   if (
     request.scope.length === 0 ||
@@ -217,7 +240,7 @@ async function beginAuthorization(
     }
     throw new PilotError("invalid_request", 400);
   }
-  const scopes = validateAuthRequest(oauthRequest, config.origin);
+  const scopes = validateAuthRequest(oauthRequest, config.origin, env);
   const client = await helpers.lookupClient(oauthRequest.clientId);
   if (!client || !env.OAUTH_KV) {
     throw new PilotError("invalid_client", 400);
@@ -284,7 +307,7 @@ async function continueAuthorization(
   ) {
     throw new PilotError("authorization_state_invalid", 400);
   }
-  validateAuthRequest(stored.oauthRequest, config.origin);
+  validateAuthRequest(stored.oauthRequest, config.origin, env);
 
   const state = randomToken();
   const verifier = randomToken(48);
@@ -541,13 +564,14 @@ async function finishAuthorization(
   await env.OAUTH_KV.delete(stateKey("access", state));
   if (
     !stored ||
+    !stored.nonce ||
     !browserBind ||
     !stored.browserBindHash ||
     !constantTimeEqual(await sha256Base64Url(browserBind), stored.browserBindHash)
   ) {
     throw new PilotError("authorization_state_invalid", 400);
   }
-  const scopes = validateAuthRequest(stored.oauthRequest, config.origin);
+  const scopes = validateAuthRequest(stored.oauthRequest, config.origin, env);
   const token = await exchangeAccessCode(env, code, stored.verifier);
   const { subject } = await verifyAccessIdToken(
     env,
@@ -776,9 +800,68 @@ async function refreshAccessToken(
   };
 }
 
+async function revokeGrantBestEffort(
+  env: PilotEnv,
+  grantId: string | undefined,
+  userId: string | undefined,
+  revokeGrantFn?: (grantId: string, userId: string) => Promise<void>,
+): Promise<void> {
+  if (!grantId || !userId) {
+    return;
+  }
+  try {
+    if (revokeGrantFn) {
+      await revokeGrantFn(grantId, userId);
+      return;
+    }
+    if (env.OAUTH_PROVIDER?.revokeGrant) {
+      await env.OAUTH_PROVIDER.revokeGrant(grantId, userId);
+      return;
+    }
+    if (env.OAUTH_KV) {
+      await env.OAUTH_KV.delete(`grant:${userId}:${grantId}`);
+      if (typeof env.OAUTH_KV.list === "function") {
+        let cursor: string | undefined;
+        for (let page = 0; page < 10; page += 1) {
+          const listed = await env.OAUTH_KV.list({
+            prefix: `token:${userId}:${grantId}:`,
+            cursor,
+          });
+          await Promise.all(
+            listed.keys.map((entry) => env.OAUTH_KV!.delete(entry.name)),
+          );
+          if (listed.list_complete || !listed.cursor) {
+            break;
+          }
+          cursor = listed.cursor;
+        }
+      }
+    }
+  } catch {
+    console.warn(
+      JSON.stringify({
+        event: "oauth_grant_revocation_failed",
+      }),
+    );
+  }
+}
+
+function accessTokenPropsFor(
+  principal: PilotPrincipal,
+  scopes: PilotScope[],
+): PilotPrincipal {
+  return {
+    institutionId: principal.institutionId,
+    ownerId: principal.ownerId,
+    upstreamSubject: principal.upstreamSubject,
+    scopes,
+  };
+}
+
 export async function revalidateAccessGrant(
   options: TokenExchangeCallbackOptions,
   env: PilotEnv,
+  revokeGrantFn?: (grantId: string, userId: string) => Promise<void>,
 ): Promise<TokenExchangeCallbackResult> {
   try {
     assertAccessConfiguration(env);
@@ -789,18 +872,36 @@ export async function revalidateAccessGrant(
     });
   }
   const principal = principalFromProps(options.props);
-  if (!(await principalIsBoundToEnvironment(principal, env))) {
+  if (
+    !options.userId ||
+    !constantTimeEqual(principal.ownerId, options.userId) ||
+    !(await principalIsBoundToEnvironment(principal, env))
+  ) {
+    await revokeGrantBestEffort(env, options.grantId, options.userId, revokeGrantFn);
     throw new OAuthError("invalid_grant", {
       description: "Institution authorization must be renewed.",
     });
   }
+  const requestedScope = Array.isArray(options.requestedScope)
+    ? options.requestedScope
+    : [];
+  if (
+    requestedScope.length === 0 ||
+    requestedScope.some(
+      (scope) =>
+        !PILOT_SCOPES.includes(scope as PilotScope) ||
+        !principal.scopes.includes(scope as PilotScope),
+    )
+  ) {
+    throw new OAuthError("invalid_scope", {
+      description: "Requested scope is invalid or outside the authorized grant.",
+    });
+  }
+  const validatedScopes = requestedScope as PilotScope[];
   if (options.grantType === "authorization_code") {
     return {
       newProps: principal,
-      accessTokenProps: {
-        ...principal,
-        scopes: options.requestedScope as PilotScope[],
-      },
+      accessTokenProps: accessTokenPropsFor(principal, validatedScopes),
       accessTokenTTL: Math.min(
         ACCESS_TOKEN_TTL_SECONDS,
         Math.max(
@@ -812,16 +913,26 @@ export async function revalidateAccessGrant(
       refreshTokenTTL: principal.upstreamRefreshToken
         ? REFRESH_TOKEN_TTL_SECONDS
         : 0,
-      accessTokenScope: options.requestedScope,
+      accessTokenScope: validatedScopes,
     };
   }
-  const refreshed = await refreshAccessToken(env, principal);
+  if (options.grantType !== "refresh_token") {
+    throw new OAuthError("unsupported_grant_type", {
+      description: "Unsupported OAuth grant type.",
+    });
+  }
+  let refreshed: PilotPrincipal;
+  try {
+    refreshed = await refreshAccessToken(env, principal);
+  } catch (error) {
+    if (error instanceof OAuthError && error.code === "invalid_grant") {
+      await revokeGrantBestEffort(env, options.grantId, options.userId, revokeGrantFn);
+    }
+    throw error;
+  }
   return {
     newProps: refreshed,
-    accessTokenProps: {
-      ...refreshed,
-      scopes: options.requestedScope as PilotScope[],
-    },
+    accessTokenProps: accessTokenPropsFor(refreshed, validatedScopes),
     accessTokenTTL: Math.min(
       ACCESS_TOKEN_TTL_SECONDS,
       Math.max(
@@ -830,7 +941,7 @@ export async function revalidateAccessGrant(
           Math.floor(Date.now() / 1000),
       ),
     ),
-    accessTokenScope: options.requestedScope,
+    accessTokenScope: validatedScopes,
   };
 }
 

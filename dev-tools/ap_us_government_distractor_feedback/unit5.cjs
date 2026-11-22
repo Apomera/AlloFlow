@@ -3,14 +3,14 @@
 // distractors (political participation). See unit1.cjs for the format.
 module.exports = {
   'ap-usg-u5-076': {
-    'The Seventeenth Amendment': 'The Seventeenth Amendment provides for direct election of senators, not the voting age.',
+    'The Seventeenth Amendment': 'Direct election of senators is established by the Seventeenth Amendment rather than changing the voting age.',
     'The Nineteenth Amendment': 'The Nineteenth Amendment extended the vote to women; it did not change the voting age.',
-    'The Twenty-Fourth Amendment': 'The Twenty-Fourth Amendment abolished poll taxes in federal elections; the voting age came later.',
+    'The Twenty-Fourth Amendment': 'Poll taxes in federal elections were abolished by the Twenty-Fourth Amendment; lowering the voting age came later.',
   },
   'ap-usg-u5-077': {
-    'Turnout is always identical across age groups.': 'Turnout differs markedly by age; older citizens vote at consistently higher rates.',
+    'Turnout stays uniform across every age cohort.': 'Turnout differs markedly by age; older citizens vote at consistently higher rates.',
     'Young citizens vote at higher rates in every election than older citizens.': 'The observed pattern is the reverse; younger citizens typically turn out less.',
-    'Turnout is determined only by the number of political parties.': 'Turnout depends on age, education, registration rules, and mobilization, not merely the number of parties.',
+    'Turnout depends strictly on the number of active parties.': 'Turnout depends on age, education, registration rules, and mobilization, not merely the number of parties.',
   },
   'ap-usg-u5-078': {
     'They replace the Constitution with a set of private rules written by party officials.': 'Parties operate within the Constitution and cannot replace it.',
@@ -33,9 +33,9 @@ module.exports = {
     'Issuing a written judicial opinion on behalf of a federal appellate court': 'Only judges issue opinions; groups may file briefs but do not decide cases.',
   },
   'ap-usg-u5-082': {
-    'Influence is determined only by the total number of people who hold membership in the group.': 'Resources, expertise, intensity, and access all matter; membership size is only one factor.',
+    'Influence depends strictly on the total number of people who hold membership in the group.': 'Resources, expertise, intensity, and access all matter; membership size is only one factor.',
     'Small groups are constitutionally barred from using the courts or the news media at all.': 'Groups of any size may litigate and communicate with the public.',
-    'A small group automatically controls the outcome of every election that is held in its state.': 'No group controls elections; influence over policy is not the same as electoral control.',
+    'A small group routinely controls the outcome of every election that is held in its state.': 'No group controls elections; influence over policy is not the same as electoral control.',
   },
   'ap-usg-u5-083': {
     'It directly writes the campaign platforms that are adopted by each of the major parties.': 'Platforms are written by party conventions; the Electoral College has no part in them.',
@@ -53,9 +53,9 @@ module.exports = {
     'Campaigns are decided by the federal courts long before any of the voters participate.': 'Elections are decided by voters; courts resolve only specific legal disputes.',
   },
   'ap-usg-u5-086': {
-    'A traditional political action committee may never communicate with voters or with any federal candidate.': 'Traditional PACs may communicate with voters; the difference lies in contribution limits and coordination rules.',
+    'A traditional political action committee is barred from communicating with voters or federal candidates.': 'Traditional PACs may communicate with voters; the difference lies in contribution limits and coordination rules.',
     'An independent-expenditure-only committee operates as an official branch of the Supreme Court itself.': 'Such committees are private organizations, not part of any court.',
-    'Both kinds of organization are entirely exempt from all disclosure requirements and campaign-finance rules.': 'Both must disclose spending and follow federal rules; they differ in what they may do, not in being exempt.',
+    'Both kinds of organization are wholly exempt from federal disclosure requirements and campaign-finance rules.': 'Both must disclose spending and follow federal rules; they differ in what they may do, not in being exempt.',
   },
   'ap-usg-u5-087': {
     'The appointment function': 'Journalists appoint no one; exposing misconduct is the watchdog role.',
@@ -64,8 +64,8 @@ module.exports = {
   },
   'ap-usg-u5-088': {
     'All citizens now receive exactly the same news coverage, because a single national source supplies it.': 'Fragmentation means the opposite: citizens draw on many different sources.',
-    'Media fragmentation eliminates political participation entirely by making news too difficult to follow.': 'Fragmented media change how people are informed; they do not end participation.',
-    'A larger number of media choices guarantees that every claim that citizens encounter has been verified.': 'More outlets increase the volume of claims, including inaccurate ones; choice does not ensure accuracy.',
+    'Media fragmentation halts political participation broadly by making news too difficult to follow.': 'Fragmented media change how people are informed; they do not end participation.',
+    'A larger number of media choices ensures that every claim citizens encounter has been verified.': 'More outlets increase the volume of claims, including inaccurate ones; choice does not ensure accuracy.',
   },
   'ap-usg-u5-089': {
     'Prospective voting': 'Prospective voting looks at what candidates promise to do; judging a record already compiled is retrospective.',
@@ -108,13 +108,13 @@ module.exports = {
     'Selection by the Supreme Court’s annual docket': 'The Court plays no role in awarding electoral votes.',
   },
   'ap-usg-u5-097': {
-    'A guarantee that all incumbents will win future elections': 'A higher win rate in past cycles is a tendency, not a guarantee about the future.',
+    'Certainty that sitting members will win future races': 'A higher win rate in past cycles is a tendency, not a guarantee about the future.',
     'Evidence that challengers cannot raise funds': 'The graph shows win rates, not fundraising, and challengers do raise money.',
-    'A proof that voters never evaluate policy positions': 'Win rates do not reveal voters’ reasoning; incumbents can win on policy as well as recognition.',
+    'Proof that voters disregard policy platforms in races': 'Win rates do not reveal voters’ reasoning; incumbents can win on policy as well as recognition.',
   },
   'ap-usg-u5-098': {
-    'They guarantee that voters will support the candidate regardless of which policy positions a campaign takes up.': 'Consultants improve strategy but cannot guarantee votes, and policy still matters to voters.',
-    'They make political parties and organized interest groups entirely irrelevant to the conduct of modern elections.': 'Parties and groups remain central to funding and mobilization even in consultant-driven campaigns.',
+    'They assure voter backing for the candidate regardless of which policy positions a campaign takes up.': 'Consultants improve strategy but cannot guarantee votes, and policy still matters to voters.',
+    'They render political parties and organized interest groups wholly irrelevant to the conduct of modern elections.': 'Parties and groups remain central to funding and mobilization even in consultant-driven campaigns.',
     'They eliminate any need for the candidate to communicate with citizens at any point during the campaign season.': 'Consultants shape how candidates communicate; they do not replace the communication itself.',
   },
   'ap-usg-u5-099': {
@@ -133,9 +133,9 @@ module.exports = {
     'Randomized judicial review': 'This is not a voting model, and judicial review is a court power.',
   },
   'ap-usg-u5-177': {
-    'Local elections are always unconstitutional for the residents who are eligible to vote.': 'Local elections are lawful and common; the turnout gap comes from attention and perceived stakes.',
+    'Local elections are routinely unconstitutional for residents who are eligible to vote.': 'Local elections are lawful and common; the turnout gap comes from attention and perceived stakes.',
     'Presidential elections eliminate all of the voter registration requirements in a county.': 'Registration rules apply to all elections; they do not disappear in presidential years.',
-    'Turnout is determined only by the number of candidates who appear on the local ballot.': 'Turnout depends on mobilization, media attention, and stakes, not simply the number of candidates.',
+    'Turnout depends strictly on the number of candidates who appear on the local ballot.': 'Turnout depends on mobilization, media attention, and stakes, not simply the number of candidates.',
   },
   'ap-usg-u5-178': {
     'Replacing the federal judiciary with a party-run tribunal': 'Parties do not replace courts; recruiting candidates and organizing legislators is linkage work.',
@@ -159,13 +159,13 @@ module.exports = {
   },
   'ap-usg-u5-182': {
     'Interest groups can require every citizen to join them under the Constitution.': 'Membership in private groups is voluntary; the Constitution gives groups no power to compel it.',
-    'A public good is available only to the organizations that helped to pay for it.': 'A public good is defined by the difficulty of excluding nonpayers; that is why free riding occurs.',
-    'Nonmembers of the group automatically receive extra votes in the next election.': 'Every citizen has one vote; policy benefits do not change voting rights.',
+    'A public good is restricted strictly to organizations that helped to pay for it.': 'A public good is defined by the difficulty of excluding nonpayers; that is why free riding occurs.',
+    'Nonmembers of the group routinely receive extra votes in the next election.': 'Every citizen has one vote; policy benefits do not change voting rights.',
   },
   'ap-usg-u5-183': {
     'The candidate receives every one of the electoral votes cast in the entire country during that election.': 'Winning one state yields only that state’s electoral votes, not the nation’s.',
-    'The candidate is automatically elected president before any of the other states report their results.': 'Election requires a majority of all electoral votes, which depends on results from every state.',
-    'The candidate loses the state’s electoral votes because only Congress is allowed to count the votes.': 'Congress counts electoral votes as certified by the states; it does not take them from the state winner.',
+    'The candidate becomes president-elect before any of the other states report their results.': 'Election requires a majority of all electoral votes, which depends on results from every state.',
+    'The candidate forfeits the state’s electoral votes because Congress handles the final tally alone.': 'Congress counts electoral votes as certified by the states; it does not take them from the state winner.',
   },
   'ap-usg-u5-184': {
     'Treaty ratification through a two-thirds Senate vote': 'Treaties concern foreign relations and have nothing to do with drawing districts.',
@@ -284,8 +284,8 @@ module.exports = {
   },
   'ap-usg-u5-254': {
     'Coalitions require every participating group to share identical long-term goals.': 'The groups had different priorities and still coordinated, which contradicts this claim.',
-    'Only political parties may legally coordinate messages about public policy.': 'Interest groups coordinate lawfully all the time; no law reserves it to parties.',
-    'A coalition guarantees that the proposal will be enacted without opposition.': 'Coalitions improve prospects; they do not guarantee passage or silence opponents.',
+    'Political parties alone may legally coordinate messages about public policy.': 'Interest groups coordinate lawfully all the time; no law reserves it to parties.',
+    'A coalition ensures that the proposal will be enacted without opposition.': 'Coalitions improve prospects; they do not guarantee passage or silence opponents.',
   },
   'ap-usg-u5-255': {
     'The Electoral College assigns every state exactly the same number of electoral votes each year.': 'Electoral votes equal each state’s House seats plus two senators, so they vary widely.',

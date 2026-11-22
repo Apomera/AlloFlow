@@ -373,7 +373,7 @@ function offlineIssueText(t, issue, sceneNumber) {
   return where + offlineText(t, 'issue_' + issue.code, fallback);
 }
 
-var OFFLINE_BUTTON = 'min-h-11 inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] disabled:opacity-50 disabled:cursor-not-allowed';
+var OFFLINE_BUTTON = 'min-h-11 inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] disabled:opacity-50 disabled:cursor-not-allowed';
 var OFFLINE_SECONDARY = OFFLINE_BUTTON + ' border-[var(--av-control)] bg-[var(--av-surface)] text-[var(--av-ink)] hover:bg-[var(--av-wash)]';
 var OFFLINE_PRIMARY = OFFLINE_BUTTON + ' border-[var(--av-accent)] bg-[var(--av-accent)] text-[var(--av-surface)] hover:underline';
 var OFFLINE_FIELD = 'w-full min-h-11 rounded-lg border border-[var(--av-control)] bg-[var(--av-surface)] px-3 py-2 text-sm text-[var(--av-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)]';
@@ -395,13 +395,16 @@ function AdventureOfflineReflection(props) {
     if (props.onSave(text) !== false) setSaved(true);
   };
   return <div data-offline-reflection className="mt-5 grid gap-2 rounded-2xl border border-[var(--av-line)] bg-[var(--av-wash)] p-3">
-    <label htmlFor={fieldId} className="text-sm font-bold">{offlineText(t, 'reflect_prompt', 'Think about this ending. What did you learn, and what would you choose differently?')}</label>
-    <textarea id={fieldId} rows={3} maxLength={OFFLINE_REFLECT_MAX} value={text} onChange={function (e) { setText(e.target.value); setSaved(false); }} className={OFFLINE_FIELD} />
+    <div className="flex flex-wrap items-baseline justify-between gap-2">
+      <label htmlFor={fieldId} className="text-sm font-bold">{offlineText(t, 'reflect_prompt', 'Think about this ending. What did you learn, and what would you choose differently?')}</label>
+      <span id={fieldId + '-count'} data-offline-reflection-count="true" className="text-xs font-semibold tabular-nums text-[var(--av-muted)]">{text.length} / {OFFLINE_REFLECT_MAX}</span>
+    </div>
+    <textarea id={fieldId} rows={3} maxLength={OFFLINE_REFLECT_MAX} value={text} aria-describedby={fieldId + '-count'} onChange={function (e) { setText(e.target.value); setSaved(false); }} onKeyDown={function (e) { if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return; if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && text.trim() && !saved) { e.preventDefault(); save(); } }} className={OFFLINE_FIELD} />
     <div className="flex flex-wrap items-center gap-3">
       <button type="button" data-offline-reflection-save disabled={!text.trim() || saved} onClick={save} className={OFFLINE_SECONDARY}>
         <Flag size={14} aria-hidden="true" /> {offlineText(t, 'student_save', 'Save to my work')}
       </button>
-      <p role="status" aria-live="polite" className="m-0 text-sm font-semibold">{saved ? offlineText(t, 'reflect_saved', 'Saved to your work.') : ''}</p>
+      <p role="status" aria-live="polite" aria-atomic="true" className="m-0 text-sm font-semibold">{saved ? offlineText(t, 'reflect_saved', 'Saved to your work.') : ''}</p>
     </div>
   </div>;
 }
@@ -411,6 +414,7 @@ function AdventureOfflinePlayer(props) {
   var story = props.story;
   var t = props.t;
   var [path, setPath] = React.useState([story.start]);
+  var [exploredIds, setExploredIds] = React.useState(function () { return story && story.start ? [story.start] : []; });
   var headingRef = React.useRef(null);
   var firstRender = React.useRef(true);
   var mountedStoryRef = React.useRef(story);
@@ -420,17 +424,44 @@ function AdventureOfflinePlayer(props) {
     if (mountedStoryRef.current === story) return;
     mountedStoryRef.current = story;
     setPath([story.start]);
+    setExploredIds(story && story.start ? [story.start] : []);
   }, [story]);
   React.useEffect(function () {
     if (firstRender.current) { firstRender.current = false; return; }
     try { headingRef.current && headingRef.current.focus({ preventScroll: false }); } catch (_) {}
   }, [path.length, scene && scene.id]);
   if (!scene) return null;
-  var go = function (to) { if (byId[to]) setPath(function (prev) { return prev.concat([to]); }); };
+  var go = function (to) {
+    if (!byId[to]) return;
+    setPath(function (prev) { return prev.concat([to]); });
+    setExploredIds(function (prev) { return prev.indexOf(to) === -1 ? prev.concat([to]) : prev; });
+  };
   var stepLabel = offlineText(t, 'step_n', 'Step {n}', { n: path.length });
-  return <section data-adventure-offline-player aria-label={story.title || offlineText(t, 'title', 'Offline adventure')} style={adventureVisualTokens(props.theme)}
+  var totalScenes = Math.max(1, (story.scenes && story.scenes.length) || 1);
+  var visitedCount = Math.min(totalScenes, Math.max(1, exploredIds.length));
+  var visitedPct = Math.round((visitedCount / totalScenes) * 100);
+  var onPlayerKeyDown = function (e) {
+    if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
+    if (e.altKey || e.ctrlKey || e.metaKey || scene.ending) return;
+    var tag = e.target && e.target.tagName ? e.target.tagName.toUpperCase() : '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target && e.target.isContentEditable)) return;
+    var num = parseInt(e.key, 10);
+    if (num >= 1 && num <= scene.choices.length) {
+      e.preventDefault();
+      go(scene.choices[num - 1].to);
+    }
+  };
+  return <section data-adventure-offline-player aria-label={story.title || offlineText(t, 'title', 'Offline adventure')} onKeyDown={onPlayerKeyDown} style={adventureVisualTokens(props.theme)}
     className="w-full max-w-3xl mx-auto my-auto rounded-3xl border border-[var(--av-line)] bg-[var(--av-surface)] p-4 sm:p-6 text-[var(--av-ink)] shadow-[var(--av-shadow)]">
-    {story.title && <p className="m-0 mb-1 text-xs font-bold uppercase tracking-wide text-[var(--av-muted)]">{story.title}</p>}
+    <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+      {story.title ? <p className="m-0 text-xs font-bold uppercase tracking-wide text-[var(--av-muted)]">{story.title}</p> : <span />}
+      <span className="text-xs font-bold tabular-nums text-[var(--av-muted)]">{offlineText(t, 'explored_n_of_m', '{visited} of {total} scenes explored', { visited: visitedCount, total: totalScenes })}</span>
+    </div>
+    <div data-offline-journey-progress="true" role="progressbar" aria-label={offlineText(t, 'progress_aria', 'Story exploration progress')} aria-valuemin={1} aria-valuemax={totalScenes} aria-valuenow={visitedCount} aria-valuetext={offlineText(t, 'progress_valuetext', '{step}: {visited} of {total} scenes explored', { step: scene.ending ? offlineText(t, 'the_end', 'The end') : stepLabel, visited: visitedCount, total: totalScenes })}
+      className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-[var(--av-line)]">
+      <div className="h-full rounded-full bg-[var(--av-accent)] transition-all duration-300 motion-reduce:transition-none" style={{ width: visitedPct + '%' }} />
+    </div>
+    <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">{scene.ending ? offlineText(t, 'the_end', 'The end') : stepLabel}</p>
     <h3 ref={headingRef} tabIndex={-1} data-offline-scene={scene.id} className="m-0 mb-3 text-lg font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] rounded">
       {scene.ending ? offlineText(t, 'the_end', 'The end') : stepLabel}
     </h3>
@@ -439,7 +470,10 @@ function AdventureOfflinePlayer(props) {
     {!scene.ending && <div role="group" aria-label={offlineText(t, 'choices', 'Choices')} className="mt-5 grid gap-2">
       {scene.choices.map(function (choice, index) {
         return <button key={index} type="button" data-offline-choice={choice.to} onClick={function () { go(choice.to); }}
-          className={OFFLINE_SECONDARY + ' w-full justify-start text-left text-base border-2 rounded-2xl px-4 py-3'}>{choice.label}</button>;
+          className={OFFLINE_SECONDARY + ' w-full justify-start text-left text-base border-2 rounded-2xl px-4 py-3'}>
+          <span aria-hidden="true" className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[var(--av-control)] text-xs font-black">{index + 1}</span>
+          <span>{choice.label}</span>
+        </button>;
       })}
     </div>}
     {scene.ending && typeof props.onReflect === 'function' && <AdventureOfflineReflection key={scene.id} sceneId={scene.id} t={t}
@@ -498,11 +532,11 @@ function AdventureOfflineEditor(props) {
       </ul>}
     </div>
     <details data-offline-map className="rounded-xl border border-[var(--av-line)] px-3 py-2">
-      <summary className="min-h-11 cursor-pointer py-2 text-sm font-bold rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)]">{offlineText(t, 'outline', 'Story map')}</summary>
+      <summary className="min-h-11 cursor-pointer py-2 text-sm font-bold rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)]">{offlineText(t, 'outline', 'Story map')} <span className="ml-1 text-xs font-semibold tabular-nums text-[var(--av-muted)]">({story.scenes.length} / {OFFLINE_LIMITS.maxScenes})</span></summary>
       <ol className="m-0 grid gap-1 pl-0 list-none text-sm">
         {outline.map(function (row) {
           return <li key={row.id} style={{ paddingLeft: Math.min(row.depth == null ? 0 : row.depth, 8) * 12 }}>
-            <span className="font-bold">{numberOf(row.id)}</span>{row.id === story.start ? ' ▶' : ''}{row.ending ? ' ■ ' + offlineText(t, 'ending', 'Ending') : ' → ' + row.to.map(numberOf).join(', ')}{row.depth == null ? ' ⚠' : ''}
+            <span className="font-bold">{numberOf(row.id)}</span>{row.id === story.start ? <><span aria-hidden="true"> ▶</span><span className="sr-only"> (Start)</span></> : ''}{row.ending ? <><span aria-hidden="true"> ■ </span>{offlineText(t, 'ending', 'Ending')}</> : <><span aria-hidden="true"> → </span>{row.to.map(numberOf).join(', ')}</>}{row.depth == null ? <><span aria-hidden="true"> ⚠</span><span className="sr-only"> (Unreachable)</span></> : ''}
           </li>;
         })}
       </ol>
@@ -512,8 +546,12 @@ function AdventureOfflineEditor(props) {
         var label = offlineText(t, 'scene_n', 'Scene {n}', { n: index + 1 });
         return <li key={scene.id} data-offline-scene-editor={scene.id} className="rounded-2xl border border-[var(--av-line)] bg-[var(--av-surface)] p-3">
           <fieldset className="m-0 grid gap-2 border-0 p-0 min-w-0">
-            <legend className="text-sm font-black">{label}{scene.id === story.start ? ' ▶' : ''}</legend>
-            <label className="grid gap-1 text-xs font-bold">{offlineText(t, 'scene_text', 'Scene text')}
+            <legend className="text-sm font-black">{label}{scene.id === story.start ? <><span aria-hidden="true"> ▶</span><span className="sr-only"> (Start)</span></> : ''}</legend>
+            <label className="grid gap-1 text-xs font-bold">
+              <span className="flex items-center justify-between gap-2">
+                <span>{offlineText(t, 'scene_text', 'Scene text')}</span>
+                <span data-offline-scene-char-count="true" className="font-semibold tabular-nums text-[var(--av-muted)]">{(scene.text || '').length} / {OFFLINE_LIMITS.maxText}</span>
+              </span>
               <textarea value={scene.text} rows={3} maxLength={OFFLINE_LIMITS.maxText} onChange={function (e) { var v = e.target.value; update(function (s) { s.scenes[index].text = v; }); }} className={OFFLINE_FIELD + ' text-sm leading-relaxed'} />
             </label>
             <label className="flex min-h-11 items-center gap-2 text-sm font-bold">
@@ -835,6 +873,10 @@ function AdventureOfflinePanel(props) {
     setDraft(null); setDirty(false); setPreviewing(false); setNotice('');
   };
   var titleId = studentMode ? 'adventure-student-story-dialog-title' : 'adventure-offline-dialog-title';
+  var rawClose = '';
+  try { rawClose = typeof t === 'function' ? t('common.close') : ''; } catch (_) { rawClose = ''; }
+  var closeLabel = (rawClose && rawClose !== 'common.close') ? rawClose : offlineText(t, 'close', 'Close');
+  var checkedSelfCount = STUDENT_STORY_CHECKS.filter(function (row) { return selfCheck[row[0]] === true; }).length;
   return <div role="presentation" style={{ zIndex: 10100 }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 p-2 sm:p-4" onMouseDown={function (e) { backdropDownRef.current = e.target === e.currentTarget; }} onClick={function (e) { var shouldClose = backdropDownRef.current && e.target === e.currentTarget; backdropDownRef.current = false; if (shouldClose) close(); }}>
     <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby={titleId} data-adventure-offline-panel data-adventure-student-story={studentMode ? '' : undefined} style={adventureVisualTokens(props.theme)}
       className="relative w-full max-w-4xl max-h-[calc(100vh-1rem)] overflow-y-auto rounded-2xl border border-[var(--av-line)] bg-[var(--av-wash)] p-4 sm:p-6 text-[var(--av-ink)] shadow-2xl">
@@ -845,7 +887,7 @@ function AdventureOfflinePanel(props) {
             ? offlineText(t, 'student_intro', 'Write a scene, then add choices. Each choice leads to a new scene. Finish with at least one ending.')
             : offlineText(t, 'intro', 'A fixed branching story students can play without AI. Review it before students get it.')}</p>
         </div>
-        <button ref={closeRef} type="button" aria-label={t('common.close')} onClick={close} className={OFFLINE_SECONDARY + ' min-w-11 shrink-0'}><X size={16} aria-hidden="true" /></button>
+        <button ref={closeRef} type="button" aria-label={closeLabel} title={closeLabel} onClick={close} className={OFFLINE_SECONDARY + ' min-w-11 shrink-0'}><X size={16} aria-hidden="true" /></button>
       </div>
       <div className="mb-4 flex flex-wrap items-center gap-2">
         {!studentMode && <button type="button" data-offline-make-ai onClick={makeWithAi} disabled={!aiReady || busy} aria-busy={busy} title={door && door.disabled ? door.title : undefined} className={OFFLINE_PRIMARY}>
@@ -864,7 +906,7 @@ function AdventureOfflinePanel(props) {
         ? <AdventureOfflinePlayer story={draft} t={t} theme={props.theme} onExit={function () { setPreviewing(false); setTimeout(function () { try { previewBtnRef.current && previewBtnRef.current.focus({ preventScroll: true }); } catch (_) {} }, 0); }} />
         : <AdventureOfflineEditor story={draft} t={t} studentMode={studentMode} onChange={function (next) { aiEpochRef.current++; setBusy(false); setConfirmRemove(false); setDraft(next); setDirty(true); }} />)}
       {draft && studentMode && <fieldset data-student-story-self-check className="m-0 mt-4 grid gap-1 rounded-xl border border-[var(--av-line)] px-3 py-2">
-        <legend className="px-1 text-sm font-black">{offlineText(t, 'student_check_title', 'Check your story')}</legend>
+        <legend className="px-1 text-sm font-black">{offlineText(t, 'student_check_title', 'Check your story')} <span data-student-story-check-progress="true" role="status" aria-live="polite" className="ml-1 text-xs font-semibold tabular-nums text-[var(--av-muted)]">({checkedSelfCount} / {STUDENT_STORY_CHECKS.length})</span></legend>
         {STUDENT_STORY_CHECKS.map(function (row) {
           return <label key={row[0]} className="flex min-h-11 items-center gap-2 text-sm font-bold">
             <input type="checkbox" data-student-story-check={row[0]} checked={selfCheck[row[0]]} onChange={function (e) { var v = e.target.checked; setSelfCheck(function (prev) { var next = Object.assign({}, prev); next[row[0]] = v; return next; }); setDirty(true); }} className="h-5 w-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)]" />

@@ -32,7 +32,9 @@ li{margin:0 0 10px}
 strong{color:var(--ink)}
 a{color:var(--indigo)}
 a:focus-visible{outline:3px solid var(--indigo);outline-offset:2px;border-radius:3px}
-.cta{display:block;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;margin:0 0 10px;text-decoration:none;color:inherit;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+.cta{display:block;min-height:44px;background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:24px;margin:0 0 10px;text-decoration:none;color:inherit;box-shadow:0 1px 3px rgba(15,23,42,.08);transition:border-color .15s,box-shadow .15s}
+.cta:hover{border-color:var(--indigo);box-shadow:0 4px 14px rgba(67,56,202,.12)}
+.cta:focus-visible{outline:3px solid var(--indigo);outline-offset:3px;border-color:var(--indigo)}
 .cta strong{display:block;font-size:20px;color:var(--indigo);margin-bottom:4px}
 .cta span{display:block;font-size:14.5px;color:var(--soft)}
 .meta{font-size:13.5px;color:var(--soft);margin:0 0 26px}
@@ -43,6 +45,8 @@ a:focus-visible{outline:3px solid var(--indigo);outline-offset:2px;border-radius
 .quote{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;color:var(--ink);margin:0 0 12px}
 footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:var(--soft);font-size:13px}
 @media(max-width:600px){.wrap{padding:24px 16px 60px}h1{font-size:26px}}
+@media(prefers-reduced-motion:reduce){.cta{transition:none}}
+@media(forced-colors:active){.cta,.warn,.ok,.quote{border:2px solid CanvasText}}
 .skip-link{position:absolute;left:-9999px;top:8px;z-index:999;background:#1e1b4b;color:#fff;padding:10px 16px;border-radius:8px;font-weight:700;text-decoration:none;}.skip-link:focus{left:12px;outline:3px solid #facc15;outline-offset:2px;}
 </style>
 </head>
@@ -52,7 +56,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
 <h1>Download AlloFlow Desktop</h1>
 <p class="lede">One file, a normal installer, and no account. Everything runs on your own computer.</p>
 
-<a class="cta" href="https://github.com/Apomera/AlloFlow/releases/latest">
+<a class="cta" href="https://github.com/Apomera/AlloFlow/releases/latest" rel="noopener noreferrer">
   <strong>Download for Windows</strong>
   <span>Works on Windows 10 and 11, including ARM laptops. About 440 MB.</span>
 </a>

@@ -188,7 +188,15 @@ function _PdfWorkspaceBatchStatus({ item, t }) {
   const result = item.result || {};
   const done = item.status === 'done';
   const status = done ? say('processed', 'Processed') : item.status === 'failed' ? say('failed', 'Failed') : item.status === 'processing' ? say('running', 'Running') : say('queued', 'Queued');
-  const verification = _pdfWorkspaceBatchVerified(item) ? say('verified', 'Verification complete') : result.verificationState === 'partial' ? say('partial', 'Verification partial') : result.verificationState === 'review-required' ? say('needs_review', 'Needs review') : say('unverified', 'Verification unconfirmed');
+  const verification = _pdfWorkspaceBatchVerified(item)
+    ? say('verified', 'Verification complete')
+    : result.verificationState === 'complete-for-tested-scope'
+      ? say('tested_scope', 'Complete (static scope)')
+      : result.verificationState === 'partial'
+        ? say('partial', 'Verification partial')
+        : result.verificationState === 'review-required'
+          ? say('needs_review', 'Needs review')
+          : say('unverified', 'Verification unconfirmed');
   return <span className="pdf-workspace-batch-status"><strong>{status}</strong>{done && <span>{verification}</span>}</span>;
 }
 

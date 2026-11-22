@@ -10,6 +10,10 @@ const { AP_FRAMEWORK_TOPIC_IDS, frameworkSourceFor } = require('./ap_framework_t
 const { AP_CHEMISTRY_UNIT_SECTIONS } = require('./ap_chemistry_lesson_sections.cjs');
 const { AP_CHEMISTRY_WORKSHOPS: SPECS, AP_CHEMISTRY_WORKSHOP_REVIEW_NOTE } = require('./ap_chemistry_workshops.cjs');
 const { buildApChemistryDiagrams } = require('./ap_chemistry_diagrams.cjs');
+const {
+  applyApChemChoiceOverride,
+  applyApChemLibraryCheckOverride,
+} = require('./ap_chemistry_choice_overrides/index.cjs');
 
 // Which lesson section an item routes to, by its framework topic. Section 01 is
 // the original unit lesson; sections 02 and 03 are split out by topic.
@@ -950,7 +954,10 @@ const chapterChecks = [
   { prompt: 'In a galvanic cell, where does oxidation occur?', choices: ['At the anode', 'At the cathode only', 'In the salt bridge only', 'At whichever electrode is labeled positive in every cell'], answerIndex: 0, rationale: 'Oxidation occurs at the anode in both galvanic and electrolytic cells; electrode signs depend on the cell type.' },
 ];
 
-function buildItem(spec, index) {
+function buildItem(rawSpec, index) {
+  const itemNumber = String(index + 1).padStart(3, '0');
+  const itemId = `ap-chem-u${rawSpec.unit}-${itemNumber}`;
+  const spec = applyApChemChoiceOverride(itemId, rawSpec);
   const unit = units[spec.unit - 1];
   const objective = objectiveByTopic.get(spec.topicId);
   const answerIndex = index % 4;
@@ -958,9 +965,8 @@ function buildItem(spec, index) {
   const choiceRationales = spec.wrongReasons.map((reason) => `This option is not the best answer because ${reason}`);
   choices.splice(answerIndex, 0, spec.answer);
   choiceRationales.splice(answerIndex, 0, spec.rationale);
-  const itemNumber = String(index + 1).padStart(3, '0');
   return {
-    id: `ap-chem-u${spec.unit}-${itemNumber}`,
+    id: itemId,
     templateVersion: 1,
     itemSchemaVersion: 2,
     type: 'single-choice',
@@ -1175,7 +1181,7 @@ function buildLibrary() {
         references: unitReferences(unit.number),
         reviewStatus: 'source-reviewed-editorial-pass',
         reviewNote: 'Original section retrieval check; AP Chemistry subject-expert and psychometric review remain pending.',
-      }))),
+      }))).map(applyApChemLibraryCheckOverride),
       contentComplete: true,
       foundationPrototype: true,
     };

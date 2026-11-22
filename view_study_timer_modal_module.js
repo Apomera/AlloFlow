@@ -13,15 +13,16 @@
 
 function StudyTimerModal(props) {
   const noop = () => null;
-  const Clock = window.Clock || noop;
-  const Pause = window.Pause || noop;
-  const Play = window.Play || noop;
-  const RefreshCw = window.RefreshCw || noop;
-  const X = window.X || noop;
+  const _w = typeof window !== "undefined" ? window : {};
+  const Clock = _w.Clock || noop;
+  const Pause = _w.Pause || noop;
+  const Play = _w.Play || noop;
+  const RefreshCw = _w.RefreshCw || noop;
+  const X = _w.X || noop;
   const {
     ConfettiExplosion,
     customTimerMinutes,
-    formatTime,
+    formatTime: rawFormatTime,
     handleSetShowStudyTimerModalToFalse,
     isStudyTimerRunning,
     setCustomTimerMinutes,
@@ -34,8 +35,31 @@ function StudyTimerModal(props) {
     studyTaskLabel,
     studyTimeLeft,
     studyTimerRef,
-    t
-  } = props;
+    t: rawT
+  } = props || {};
+  const t = typeof rawT === "function" ? rawT : ((k) => k);
+  const formatTime = typeof rawFormatTime === "function" ? rawFormatTime : ((secs) => {
+    const s = Math.max(0, Math.floor(Number.isFinite(Number(secs)) ? Number(secs) : 0));
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  });
+  const safeClose = () => {
+    if (typeof handleSetShowStudyTimerModalToFalse === "function") handleSetShowStudyTimerModalToFalse();
+  };
+  const safeSetDuration = (v) => {
+    if (typeof setStudyDuration === "function") setStudyDuration(v);
+  };
+  const safeSetTimeLeft = (v) => {
+    if (typeof setStudyTimeLeft === "function") setStudyTimeLeft(v);
+  };
+  const safeSetCustomMins = (v) => {
+    if (typeof setCustomTimerMinutes === "function") setCustomTimerMinutes(v);
+  };
+  const safeSetRunning = (v) => {
+    if (typeof setIsStudyTimerRunning === "function") setIsStudyTimerRunning(v);
+  };
+  const safeSetTaskLabel = (v) => {
+    if (typeof setStudyTaskLabel === "function") setStudyTaskLabel(v);
+  };
   const dialogRef = React.useRef(null);
   React.useEffect(() => {
     const dialog = dialogRef.current;
@@ -83,9 +107,10 @@ function StudyTimerModal(props) {
       const topTrap = trapStack && trapStack[trapStack.length - 1];
       if (topTrap && topTrap !== trap && !(topTrap.root && typeof topTrap.root.contains === "function" && topTrap.root.contains(dialog))) return;
       if (event.key === "Escape") {
+        if (event.ctrlKey || event.metaKey || event.altKey) return;
         event.preventDefault();
         event.stopPropagation();
-        handleSetShowStudyTimerModalToFalse();
+        safeClose();
         return;
       }
       if (event.key !== "Tab") return;
@@ -136,46 +161,48 @@ function StudyTimerModal(props) {
       if (wasTop && previousFocus && previousFocus !== document.body && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
   }, [handleSetShowStudyTimerModalToFalse]);
-  const completionPercent = studyDuration > 0 ? Math.max(0, Math.min(100, Math.round((studyDuration - studyTimeLeft) / studyDuration * 100))) : 0;
-  const clockLabel = `${t("timer.title")}: ${formatTime(studyTimeLeft)}`;
+  const safeDuration = Number.isFinite(Number(studyDuration)) ? Math.max(0, Number(studyDuration)) : 0;
+  const safeTimeLeft = Number.isFinite(Number(studyTimeLeft)) ? Math.max(0, Number(studyTimeLeft)) : 0;
+  const completionPercent = safeDuration > 0 ? Math.max(0, Math.min(100, Math.round((safeDuration - safeTimeLeft) / safeDuration * 100))) : 0;
+  const clockLabel = `${t("timer.title")}: ${formatTime(safeTimeLeft)}`;
   const completionLabel = `${completionPercent}% \xB7 ${t("common.progress")}`;
   const timerTx = (key, fallback) => {
     const v = typeof t === "function" ? t(key) : "";
     return v && v !== key ? v : fallback;
   };
   const [timerStatus, setTimerStatus] = React.useState("");
-  const prevTimerRef = React.useRef({ running: !!isStudyTimerRunning, timeLeft: studyTimeLeft });
+  const prevTimerRef = React.useRef({ running: !!isStudyTimerRunning, timeLeft: safeTimeLeft });
   const extendTimerByMinutes = (mins) => {
     const added = mins * 60;
-    const nextLeft = Math.max(0, Number(studyTimeLeft) || 0) + added;
-    const nextDuration = Math.max(nextLeft, (Number(studyDuration) || 0) + added);
-    setStudyDuration(nextDuration);
-    setStudyTimeLeft(nextLeft);
+    const nextLeft = Math.max(0, safeTimeLeft) + added;
+    const nextDuration = Math.max(nextLeft, safeDuration + added);
+    safeSetDuration(nextDuration);
+    safeSetTimeLeft(nextLeft);
     setTimerStatus(`${t("timer.title")}: +${mins}m \u2014 ${formatTime(nextLeft)}`);
   };
   React.useEffect(() => {
     const prev = prevTimerRef.current;
     const running = !!isStudyTimerRunning;
     if (!prev.running && running) {
-      setTimerStatus(`${t("timer.title")}: ${t("timer.start")} \u2014 ${formatTime(studyTimeLeft)}`);
-    } else if (prev.running && !running && studyTimeLeft > 0) {
-      setTimerStatus(`${t("timer.title")}: ${t("timer.pause")} \u2014 ${formatTime(studyTimeLeft)}`);
-    } else if (prev.timeLeft > 0 && studyTimeLeft === 0 && studyDuration > 0) {
+      setTimerStatus(`${t("timer.title")}: ${t("timer.start")} \u2014 ${formatTime(safeTimeLeft)}`);
+    } else if (prev.running && !running && safeTimeLeft > 0) {
+      setTimerStatus(`${t("timer.title")}: ${t("timer.pause")} \u2014 ${formatTime(safeTimeLeft)}`);
+    } else if (prev.timeLeft > 0 && safeTimeLeft === 0 && safeDuration > 0) {
       setTimerStatus(`${t("timer.title")}: ${formatTime(0)}`);
-    } else if (running && prev.timeLeft !== studyTimeLeft && (studyTimeLeft === 300 || studyTimeLeft === 60)) {
-      setTimerStatus(`${t("timer.title")}: ${formatTime(studyTimeLeft)}`);
+    } else if (running && prev.timeLeft !== safeTimeLeft && (safeTimeLeft === 300 || safeTimeLeft === 60)) {
+      setTimerStatus(`${t("timer.title")}: ${formatTime(safeTimeLeft)}`);
     }
-    prevTimerRef.current = { running, timeLeft: studyTimeLeft };
-  }, [isStudyTimerRunning, studyTimeLeft, studyDuration, formatTime, t]);
+    prevTimerRef.current = { running, timeLeft: safeTimeLeft };
+  }, [isStudyTimerRunning, safeTimeLeft, safeDuration, formatTime, t]);
   const applyCustomMinutes = () => {
     if (isStudyTimerRunning) return;
     const parsed = parseInt(customTimerMinutes, 10);
     if (!Number.isFinite(parsed)) return;
     const mins = Math.max(1, Math.min(180, parsed));
-    setCustomTimerMinutes(String(mins));
-    setStudyDuration(mins * 60);
-    setStudyTimeLeft(mins * 60);
-    setIsStudyTimerRunning(true);
+    safeSetCustomMins(String(mins));
+    safeSetDuration(mins * 60);
+    safeSetTimeLeft(mins * 60);
+    safeSetRunning(true);
     setTimerStatus(`${t("timer.title")}: ${t("timer.start")} \u2014 ${formatTime(mins * 60)}`);
   };
   return /* @__PURE__ */ React.createElement(
@@ -184,9 +211,9 @@ function StudyTimerModal(props) {
       ref: studyTimerRef,
       role: "presentation",
       className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300 motion-reduce:animate-none",
-      onClick: handleSetShowStudyTimerModalToFalse
+      onClick: safeClose
     },
-    showTimerConfetti && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none z-50 flex items-center justify-center motion-reduce:hidden", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(ConfettiExplosion, null)),
+    showTimerConfetti && typeof ConfettiExplosion === "function" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none z-50 flex items-center justify-center motion-reduce:hidden", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(ConfettiExplosion, null)),
     /* @__PURE__ */ React.createElement(
       "div",
       {
@@ -204,7 +231,7 @@ function StudyTimerModal(props) {
           type: "button",
           "aria-label": t("common.close_study_timer"),
           "data-help-key": "timer_close_btn",
-          onClick: handleSetShowStudyTimerModalToFalse,
+          onClick: safeClose,
           className: "absolute top-4 right-4 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors motion-reduce:transition-none"
         },
         /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" })
@@ -216,11 +243,12 @@ function StudyTimerModal(props) {
           id: "study-timer-task",
           "data-help-key": "timer_task_input",
           type: "text",
-          value: studyTaskLabel,
-          onChange: (e) => setStudyTaskLabel(e.target.value),
+          maxLength: 120,
+          value: studyTaskLabel ?? "",
+          onChange: (e) => safeSetTaskLabel(e.target.value),
           disabled: isStudyTimerRunning,
           placeholder: t("timer.placeholder"),
-          className: "w-full text-sm p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white"
+          className: "w-full text-sm p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-1 transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white"
         }
       ), !isStudyTimerRunning && !String(studyTaskLabel || "").trim() && /* @__PURE__ */ React.createElement("div", { "data-timer-task-presets": true, role: "group", "aria-label": timerTx("timer.quick_tasks_aria", "Quick focus goals"), className: "mt-2 flex flex-wrap gap-1.5" }, [
         timerTx("timer.preset_reading", "Reading"),
@@ -233,7 +261,7 @@ function StudyTimerModal(props) {
           key: idx,
           type: "button",
           "data-timer-task-preset": idx,
-          onClick: () => setStudyTaskLabel(preset),
+          onClick: () => safeSetTaskLabel(preset),
           className: "min-h-11 rounded-lg border border-slate-300 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-800 transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2"
         },
         preset
@@ -247,13 +275,13 @@ function StudyTimerModal(props) {
           disabled: isStudyTimerRunning,
           "aria-pressed": studyDuration === min * 60 && !customTimerMinutes,
           onClick: () => {
-            setStudyDuration(min * 60);
-            setStudyTimeLeft(min * 60);
-            setCustomTimerMinutes("");
-            setIsStudyTimerRunning(false);
+            safeSetDuration(min * 60);
+            safeSetTimeLeft(min * 60);
+            safeSetCustomMins("");
+            safeSetRunning(false);
             setTimerStatus(`${t("timer.title")}: ${min}m`);
           },
-          className: "min-h-11 px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold transition-colors border border-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className: "min-h-11 px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold transition-colors border border-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2"
         },
         min,
         "m"
@@ -265,8 +293,8 @@ function StudyTimerModal(props) {
           type: "number",
           min: "1",
           max: "180",
-          value: customTimerMinutes,
-          onChange: (e) => setCustomTimerMinutes(e.target.value),
+          value: customTimerMinutes ?? "",
+          onChange: (e) => safeSetCustomMins(e.target.value),
           onKeyDown: (e) => {
             if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229) return;
             if (e.key !== "Enter" || isStudyTimerRunning || !customTimerMinutes) return;
@@ -275,7 +303,7 @@ function StudyTimerModal(props) {
           },
           placeholder: t("common.placeholder_custom_min"),
           disabled: isStudyTimerRunning,
-          className: "w-24 min-h-11 p-2 text-xs border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-center font-bold text-slate-700"
+          className: "w-24 min-h-11 p-2 text-xs border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-1 text-center font-bold text-slate-700"
         }
       ), /* @__PURE__ */ React.createElement(
         "button",
@@ -283,17 +311,17 @@ function StudyTimerModal(props) {
           type: "button",
           onClick: applyCustomMinutes,
           disabled: !customTimerMinutes || isStudyTimerRunning,
-          className: "min-h-11 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className: "min-h-11 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2"
         },
         t("timer.set_btn") || "Set"
       )),
-      /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6 relative" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-slate-700 font-mono tracking-wider", role: "timer", "aria-live": "off", "aria-label": clockLabel }, formatTime(studyTimeLeft)), studyDuration > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 mx-auto max-w-[200px]" }, /* @__PURE__ */ React.createElement("div", { className: "h-2 bg-slate-200 rounded-full overflow-hidden", role: "progressbar", "aria-label": t("common.progress"), "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": completionPercent, "aria-valuetext": completionLabel }, /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6 relative" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-slate-700 font-mono tracking-wider", role: "timer", "aria-live": "off", "aria-label": clockLabel }, formatTime(safeTimeLeft)), safeDuration > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 mx-auto max-w-[200px]" }, /* @__PURE__ */ React.createElement("div", { className: "h-2 bg-slate-200 rounded-full overflow-hidden", role: "progressbar", "aria-label": t("common.progress"), "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": completionPercent, "aria-valuetext": completionLabel }, /* @__PURE__ */ React.createElement(
         "div",
         {
           className: "h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-1000 ease-linear motion-reduce:transition-none",
           style: { width: `${completionPercent}%` }
         }
-      )), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1 font-medium" }, completionLabel)), studyDuration > 0 && studyTimeLeft > 0 && /* @__PURE__ */ React.createElement("div", { "data-timer-extend-controls": true, className: "mt-3 flex items-center justify-center gap-2" }, [1, 5].map((mins) => /* @__PURE__ */ React.createElement(
+      )), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1 font-medium" }, completionLabel)), safeDuration > 0 && safeTimeLeft > 0 && /* @__PURE__ */ React.createElement("div", { "data-timer-extend-controls": true, className: "mt-3 flex items-center justify-center gap-2" }, [1, 5].map((mins) => /* @__PURE__ */ React.createElement(
         "button",
         {
           key: mins,
@@ -314,18 +342,18 @@ function StudyTimerModal(props) {
           "aria-label": isStudyTimerRunning ? t("timer.pause") : t("timer.start"),
           onClick: () => {
             if (isStudyTimerRunning) {
-              setIsStudyTimerRunning(false);
+              safeSetRunning(false);
             } else {
-              if (studyTimeLeft === 0) {
-                setStudyTimeLeft(25 * 60);
-                setStudyDuration(25 * 60);
+              if (safeTimeLeft === 0) {
+                safeSetTimeLeft(25 * 60);
+                safeSetDuration(25 * 60);
               }
-              setIsStudyTimerRunning(true);
+              safeSetRunning(true);
             }
           },
-          className: `flex-1 py-3 rounded-xl font-black text-white shadow-lg transition-all transform active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 ${isStudyTimerRunning ? "bg-amber-700 hover:bg-amber-800" : "bg-green-700 hover:bg-green-800"}`
+          className: `flex-1 py-3 rounded-xl font-black text-white shadow-lg transition-all transform active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 ${isStudyTimerRunning ? "bg-amber-700 hover:bg-amber-800" : "bg-green-700 hover:bg-green-800"}`
         },
-        isStudyTimerRunning ? /* @__PURE__ */ React.createElement(Pause, { size: 20, className: "fill-current" }) : /* @__PURE__ */ React.createElement(Play, { size: 20, className: "fill-current" }),
+        isStudyTimerRunning ? /* @__PURE__ */ React.createElement(Pause, { size: 20, className: "fill-current", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Play, { size: 20, className: "fill-current", "aria-hidden": "true" }),
         isStudyTimerRunning ? t("timer.pause") : t("timer.start")
       ), /* @__PURE__ */ React.createElement(
         "button",
@@ -334,16 +362,16 @@ function StudyTimerModal(props) {
           "aria-label": t("timer.reset"),
           "data-help-key": "timer_reset_btn",
           onClick: () => {
-            setIsStudyTimerRunning(false);
-            setStudyTimeLeft(0);
-            setStudyDuration(0);
-            setCustomTimerMinutes("");
+            safeSetRunning(false);
+            safeSetTimeLeft(0);
+            safeSetDuration(0);
+            safeSetCustomMins("");
             setTimerStatus(`${t("timer.title")}: ${t("timer.reset")}`);
           },
-          className: "px-4 py-3 bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-red-500 rounded-xl font-bold transition-colors",
+          className: "px-4 py-3 bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-red-700 rounded-xl font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2",
           title: t("timer.reset")
         },
-        /* @__PURE__ */ React.createElement(RefreshCw, { size: 20 })
+        /* @__PURE__ */ React.createElement(RefreshCw, { size: 20, "aria-hidden": "true" })
       )),
       /* @__PURE__ */ React.createElement("div", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, timerStatus)
     )

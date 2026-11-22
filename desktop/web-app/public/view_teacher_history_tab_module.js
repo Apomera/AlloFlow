@@ -39,11 +39,14 @@ function TeacherHistoryTab({
   const [quickLanguage, setQuickLanguage] = React.useState("");
   const [quickMessage, setQuickMessage] = React.useState(null);
   const [quickSaving, setQuickSaving] = React.useState(false);
+  const [appliedGroupId, setAppliedGroupId] = React.useState("");
   const quickSavingRef = React.useRef(false);
   const quickSaveEpochRef = React.useRef(0);
   const quickToggleRef = React.useRef(null);
   const quickNameRef = React.useRef(null);
-  const hasGroups = Object.keys(rosterKey?.groups || {}).length > 0;
+  const groupEntries = Object.entries(rosterKey?.groups || {});
+  const hasGroups = groupEntries.length > 0;
+  const appliedGroupEntry = appliedGroupId ? groupEntries.find(([gid]) => String(gid) === String(appliedGroupId)) || null : null;
   const canQuickAdd = typeof onQuickAddGroup === "function" && gradeOptions.length > 0 && languageOptions.length > 0;
   const classId = rosterKey?.classId || "";
   React.useEffect(() => {
@@ -51,6 +54,7 @@ function TeacherHistoryTab({
     setQuickName("");
     setQuickMessage(null);
     setQuickSaving(false);
+    setAppliedGroupId("");
     quickSavingRef.current = false;
     return () => {
       quickSaveEpochRef.current++;
@@ -105,19 +109,36 @@ function TeacherHistoryTab({
   const Settings = icon("Settings");
   const Layers = icon("Layers");
   const Plus = icon("Plus");
-  return /* @__PURE__ */ React.createElement("div", { id: "ui-roster-strip", "data-help-key": "class_groups_strip", className: "bg-white rounded-lg border border-slate-400 overflow-hidden shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-indigo-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 16, "aria-hidden": "true" }), " ", t("roster.strip_title") || "Class Groups"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setIsRosterKeyOpen(true), className: "min-h-11 min-w-11 p-1.5 rounded-md hover:bg-indigo-100 text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1", title: t("roster.title") || "Manage Roster", "aria-label": label("roster.title", "Manage Roster"), "data-help-key": "roster_manage_button" }, /* @__PURE__ */ React.createElement(Settings, { size: 14, "aria-hidden": "true" })))), /* @__PURE__ */ React.createElement("div", { className: "p-3" }, hasGroups ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" }, Object.entries(rosterKey.groups).map(([gid, g]) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      key: gid,
-      onClick: () => handleApplyRosterGroup(gid),
-      className: "min-h-11 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold text-slate-800 transition-all motion-reduce:transition-none hover:scale-105 motion-reduce:hover:scale-100 border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
-      style: { backgroundColor: (g.color || "#6366f1") + "20", borderColor: g.color && g.color !== "#f5f5f5" ? g.color + "80" : "#94a3b8" },
-      title: `${g.name} \xB7 ${g.profile?.gradeLevel || "No grade"} \xB7 ${g.profile?.leveledTextLanguage || "English"}`
-    },
-    /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full mr-1.5 align-middle", "aria-hidden": "true", style: { backgroundColor: g.color || "#6366f1" } }),
-    g.name
-  ))), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { id: "ui-roster-strip", "data-help-key": "class_groups_strip", className: "bg-white rounded-lg border border-slate-400 overflow-hidden shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-indigo-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 16, "aria-hidden": "true" }), " ", t("roster.strip_title") || "Class Groups", hasGroups && /* @__PURE__ */ React.createElement("span", { "data-roster-group-count": "true", className: "rounded-full bg-white border border-indigo-200 px-2 py-0.5 text-[11px] font-black text-indigo-800" }, groupEntries.length)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setIsRosterKeyOpen(true), className: "min-h-11 min-w-11 p-1.5 rounded-md hover:bg-indigo-100 text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1", title: t("roster.title") || "Manage Roster", "aria-label": label("roster.title", "Manage Roster"), "data-help-key": "roster_manage_button" }, /* @__PURE__ */ React.createElement(Settings, { size: 14, "aria-hidden": "true" })))), /* @__PURE__ */ React.createElement("div", { className: "p-3" }, hasGroups ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" }, groupEntries.map(([gid, g]) => {
+    const isApplied = String(appliedGroupId) === String(gid);
+    const gGrade = g.profile?.gradeLevel || g.grade || "";
+    const gLang = g.profile?.leveledTextLanguage || g.language || "English";
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        key: gid,
+        "data-roster-group-pill": String(gid),
+        "aria-pressed": isApplied,
+        onClick: () => {
+          setAppliedGroupId(String(gid));
+          handleApplyRosterGroup(gid);
+        },
+        className: `min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-slate-800 transition-all motion-reduce:transition-none hover:scale-105 motion-reduce:hover:scale-100 border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${isApplied ? "ring-2 ring-indigo-600/40 shadow-sm" : ""}`,
+        style: { backgroundColor: (g.color || "#6366f1") + "20", borderColor: isApplied ? "#4f46e5" : g.color && g.color !== "#f5f5f5" ? g.color + "80" : "#94a3b8" },
+        title: `${g.name} \xB7 ${gGrade || "No grade"} \xB7 ${gLang}`
+      },
+      /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full align-middle", "aria-hidden": "true", style: { backgroundColor: g.color || "#6366f1" } }),
+      /* @__PURE__ */ React.createElement("span", null, g.name),
+      isApplied && /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "text-indigo-800" }, "\u2713")
+    );
+  })), appliedGroupEntry && (() => {
+    const g = appliedGroupEntry[1] || {};
+    const gGrade = g.profile?.gradeLevel || g.grade || "";
+    const gLang = g.profile?.leveledTextLanguage || g.language || "English";
+    const meta = [gGrade ? gradeLabel(gGrade) : "", gLang === "English" ? label("languages.english", "English") : gLang].filter(Boolean).join(" \xB7 ");
+    return /* @__PURE__ */ React.createElement("p", { "data-roster-applied-status": "true", role: "status", "aria-live": "polite", className: "mb-2 rounded-lg border border-indigo-200 bg-indigo-50/70 px-2.5 py-1.5 text-xs font-semibold text-indigo-900" }, label("roster.applied_group_prefix", "Applied"), ": ", /* @__PURE__ */ React.createElement("strong", null, g.name), meta ? " \xB7 " + meta : "");
+  })(), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -128,7 +149,16 @@ function TeacherHistoryTab({
     /* @__PURE__ */ React.createElement(Layers, { size: 14, "aria-hidden": "true" }),
     " ",
     t("roster.batch_generate") || "Differentiate by Group"
-  )) : /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, label("roster.strip_empty_groups", "No groups yet.")), canQuickAdd && /* @__PURE__ */ React.createElement("button", { ref: quickToggleRef, type: "button", onClick: toggleQuickGroup, disabled: quickSaving, "aria-expanded": quickOpen, "aria-controls": "roster-quick-group-form", className: "mt-2 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }, /* @__PURE__ */ React.createElement(Plus, { size: 14, "aria-hidden": "true" }), " ", label("roster.quick_add", "Add group")), quickOpen && canQuickAdd && /* @__PURE__ */ React.createElement("form", { id: "roster-quick-group-form", onSubmit: submitQuickGroup, className: "mt-2 grid gap-2 border-t border-slate-200 pt-3", "aria-busy": quickSaving, "aria-label": label("roster.quick_add", "Add group") }, /* @__PURE__ */ React.createElement("label", { className: "grid gap-1 text-xs font-semibold text-slate-700" }, label("roster.quick_name", "Group name"), /* @__PURE__ */ React.createElement("input", { ref: quickNameRef, value: quickName, disabled: quickSaving, onChange: (event) => {
+  )) : /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, label("roster.strip_empty_groups", "No groups yet.")), canQuickAdd && /* @__PURE__ */ React.createElement("button", { ref: quickToggleRef, type: "button", onClick: toggleQuickGroup, disabled: quickSaving, "aria-expanded": quickOpen, "aria-controls": "roster-quick-group-form", className: "mt-2 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }, /* @__PURE__ */ React.createElement(Plus, { size: 14, "aria-hidden": "true" }), " ", label("roster.quick_add", "Add group")), quickOpen && canQuickAdd && /* @__PURE__ */ React.createElement("form", { id: "roster-quick-group-form", onSubmit: submitQuickGroup, onKeyDown: (event) => {
+    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+    if (event.key === "Escape" && !quickSaving) {
+      event.preventDefault();
+      event.stopPropagation();
+      setQuickOpen(false);
+      setQuickMessage(null);
+      if (quickToggleRef.current?.isConnected) quickToggleRef.current.focus();
+    }
+  }, className: "mt-2 grid gap-2 border-t border-slate-200 pt-3", "aria-busy": quickSaving, "aria-label": label("roster.quick_add", "Add group") }, /* @__PURE__ */ React.createElement("label", { className: "grid gap-1 text-xs font-semibold text-slate-700" }, label("roster.quick_name", "Group name"), /* @__PURE__ */ React.createElement("input", { ref: quickNameRef, value: quickName, disabled: quickSaving, onChange: (event) => {
     setQuickName(event.target.value);
     setQuickMessage(null);
   }, maxLength: 60, className: "min-h-11 min-w-0 rounded-lg border border-slate-400 bg-white px-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" })), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "grid min-w-0 gap-1 text-xs font-semibold text-slate-700" }, label("roster.quick_grade", "Grade"), /* @__PURE__ */ React.createElement("select", { value: quickGrade, disabled: quickSaving, onChange: (event) => setQuickGrade(event.target.value), className: "min-h-11 min-w-0 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }, gradeOptions.map((grade) => /* @__PURE__ */ React.createElement("option", { key: grade, value: grade }, gradeLabel(grade))))), /* @__PURE__ */ React.createElement("label", { className: "grid min-w-0 gap-1 text-xs font-semibold text-slate-700" }, label("roster.quick_language", "Language"), /* @__PURE__ */ React.createElement("select", { value: quickLanguage, disabled: quickSaving, onChange: (event) => setQuickLanguage(event.target.value), className: "min-h-11 min-w-0 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }, languageOptions.map((language) => /* @__PURE__ */ React.createElement("option", { key: language, value: language }, language === "English" ? label("languages.english", "English") : language))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "submit", disabled: quickSaving, className: "min-h-11 rounded-lg bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }, quickSaving ? label("common.saving", "Saving...") : label("roster.quick_add", "Add group")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: quickSaving, onClick: () => {

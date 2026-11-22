@@ -15,6 +15,20 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     document.head.appendChild(st);
   })();
 
+  // Algebra CAS motion-craft keyframes (reduced-motion guarded)
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-algebracas-motion-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-algebracas-motion-css';
+    st.textContent =
+      '@keyframes casBeaconPulse{0%,100%{opacity:0.22}50%{opacity:0.62}}' +
+      '@keyframes casStepRipple{0%{transform:scale(0.65);opacity:0.8}100%{transform:scale(1.65);opacity:0}}' +
+      '.cas-beacon-pulse{animation:casBeaconPulse 2.1s ease-in-out infinite}' +
+      '.cas-step-ripple{animation:casStepRipple 560ms ease-out forwards;transform-box:fill-box;transform-origin:center}' +
+      '@media (prefers-reduced-motion: reduce){.cas-beacon-pulse,.cas-step-ripple{animation:none!important}}';
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-algebraCAS')) return;
@@ -1368,11 +1382,36 @@ onSpeak: function(formats) {
         };
 
         /* -- AI Tutor -- */
+        var casSafetyGate = function(text) {
+          var msg = String(text || '').trim();
+          if (!msg) return 'continue';
+          var onFlag = typeof ctx.onSafetyFlag === 'function' ? ctx.onSafetyFlag : null;
+          if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+            try {
+              var r = window.SelHub.safeRehearseCheck(msg, { toolId: 'algebraCAS_tutor', onSafetyFlag: onFlag });
+              if (r && r.action) return r.action;
+            } catch (_) {}
+          }
+          var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+          var flags = null;
+          try { flags = (checker && checker.check) ? checker.check(msg) : null; } catch (_) { flags = null; }
+          if (!Array.isArray(flags) || !flags.length) return 'continue';
+          var rank = { low: 1, medium: 2, high: 3, critical: 4 };
+          var top = flags.reduce(function(a, f) { return (f && (rank[f.severity] || 0) > (rank[a.severity] || 0)) ? f : a; }, flags[0] || {});
+          if (onFlag) { try { onFlag(Object.assign({}, top, { source: 'stem_algebraCAS_tutor', context: msg.slice(0, 100), aiGenerated: false })); } catch (_) {} }
+          return top.severity === 'critical' ? 'block' : (top.severity === 'high' ? 'nudge' : 'continue');
+        };
         var handleTutorSend = function() {
           if (!tutorInput.trim() || !callGemini || isLoading) return;
           SOUNDS.aiTutor();
           var question = tutorInput.trim();
           var msgs = tutorChat.concat([{ role: 'user', text: question }]);
+          var gate = casSafetyGate(question);
+          if (gate === 'block') {
+            var pauseMsg = 'I want to pause the algebra for a second. What you typed sounds heavy, and you matter more than this question. If any of this is real for you right now, please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). You are not alone.';
+            updMulti({ tutorChat: msgs.concat([{ role: 'ai', text: pauseMsg }]), tutorInput: '', isLoading: false });
+            return;
+          }
           updMulti({ tutorChat: msgs, tutorInput: '', isLoading: true });
           var aq = (d._aiQuestions || 0) + 1;
           upd('_aiQuestions', aq);
@@ -1385,7 +1424,8 @@ onSpeak: function(formats) {
           var prompt = 'You are a friendly algebra tutor for a grade ' + (gradeLevel || 5) + ' student.\n' + context +
             'Student asks: ' + question + '\nGive a clear, encouraging explanation. Use examples. Keep it concise (2-4 sentences).';
           callGemini(prompt).then(function(res) {
-            var updated = msgs.concat([{ role: 'ai', text: res || 'I could not generate a response.' }]);
+            var reply = (res || 'I could not generate a response.') + (gate === 'nudge' ? '\n\n(If anything you typed is close to something real for you, talking to a trusted adult is always an option.)' : '');
+            var updated = msgs.concat([{ role: 'ai', text: reply }]);
             updMulti({ tutorChat: updated, isLoading: false });
             checkBadges(Object.assign({}, d, { _aiQuestions: aq }));
           }).catch(function() {
@@ -1741,18 +1781,22 @@ onSpeak: function(formats) {
                     y0px >= pY && y0px <= VH - pY && h('line', { x1: pX, y1: y0px, x2: VW - pX, y2: y0px, stroke: axisCol, strokeWidth: 1.4, strokeDasharray: '3 3' }),
                     !isContrast && x0px >= pX && x0px <= VW - pX && y0px >= pY && y0px <= VH - pY && h('circle', { cx: x0px, cy: y0px, r: 3.5, fill: 'none', stroke: axisCol, strokeWidth: 1.1, opacity: 0.65 }),
                     h('g', { clipPath: 'url(#cas-plot-clip)' },
-                      !isContrast && h('line', { x1: gx(xMin), y1: gy(mL * xMin + bL), x2: gx(xMax), y2: gy(mL * xMax + bL), stroke: colL, strokeWidth: 6.5, strokeLinecap: 'round', opacity: isDark ? 0.24 : 0.14 }),
-                      h('line', { x1: gx(xMin), y1: gy(mL * xMin + bL), x2: gx(xMax), y2: gy(mL * xMax + bL), stroke: colL, strokeWidth: 2.6, strokeLinecap: 'round' }),
-                      !isContrast && h('line', { x1: gx(xMin), y1: gy(mL * xMin + bL), x2: gx(xMax), y2: gy(mL * xMax + bL), stroke: '#ffffff', strokeWidth: 0.8, strokeLinecap: 'round', opacity: isDark ? 0.52 : 0.36 }),
-                      !isContrast && h('line', { x1: gx(xMin), y1: gy(mR * xMin + bR), x2: gx(xMax), y2: gy(mR * xMax + bR), stroke: colR, strokeWidth: 6.5, strokeLinecap: 'round', opacity: isDark ? 0.24 : 0.14 }),
-                      h('line', { x1: gx(xMin), y1: gy(mR * xMin + bR), x2: gx(xMax), y2: gy(mR * xMax + bR), stroke: colR, strokeWidth: 2.6, strokeLinecap: 'round', strokeDasharray: work.kind === 'identity' ? '6 4' : 'none' }),
-                      !isContrast && work.kind !== 'identity' && h('line', { x1: gx(xMin), y1: gy(mR * xMin + bR), x2: gx(xMax), y2: gy(mR * xMax + bR), stroke: '#ffffff', strokeWidth: 0.8, strokeLinecap: 'round', opacity: isDark ? 0.52 : 0.36 })
+                      !isContrast && h('line', { x1: gx(xMin), y1: gy(mL * xMin + bL), x2: gx(xMax), y2: gy(mL * xMax + bL), stroke: colL, strokeWidth: 10, strokeLinecap: 'round', opacity: isDark ? 0.14 : 0.09 }),
+                      !isContrast && h('line', { x1: gx(xMin), y1: gy(mL * xMin + bL), x2: gx(xMax), y2: gy(mL * xMax + bL), stroke: colL, strokeWidth: 5.5, strokeLinecap: 'round', opacity: isDark ? 0.28 : 0.18 }),
+                      h('line', { x1: gx(xMin), y1: gy(mL * xMin + bL), x2: gx(xMax), y2: gy(mL * xMax + bL), stroke: colL, strokeWidth: isContrast ? 3 : 2.6, strokeLinecap: 'round' }),
+                      !isContrast && h('line', { x1: gx(xMin), y1: gy(mL * xMin + bL), x2: gx(xMax), y2: gy(mL * xMax + bL), stroke: '#ffffff', strokeWidth: 0.9, strokeLinecap: 'round', opacity: isDark ? 0.58 : 0.42 }),
+                      !isContrast && h('line', { x1: gx(xMin), y1: gy(mR * xMin + bR), x2: gx(xMax), y2: gy(mR * xMax + bR), stroke: colR, strokeWidth: 10, strokeLinecap: 'round', opacity: isDark ? 0.14 : 0.09 }),
+                      !isContrast && h('line', { x1: gx(xMin), y1: gy(mR * xMin + bR), x2: gx(xMax), y2: gy(mR * xMax + bR), stroke: colR, strokeWidth: 5.5, strokeLinecap: 'round', opacity: isDark ? 0.28 : 0.18 }),
+                      h('line', { x1: gx(xMin), y1: gy(mR * xMin + bR), x2: gx(xMax), y2: gy(mR * xMax + bR), stroke: colR, strokeWidth: isContrast ? 3 : 2.6, strokeLinecap: 'round', strokeDasharray: work.kind === 'identity' ? '6 4' : 'none' }),
+                      !isContrast && work.kind !== 'identity' && h('line', { x1: gx(xMin), y1: gy(mR * xMin + bR), x2: gx(xMax), y2: gy(mR * xMax + bR), stroke: '#ffffff', strokeWidth: 0.9, strokeLinecap: 'round', opacity: isDark ? 0.58 : 0.42 })
                     ),
                     work.kind === 'unique' && h('g', null,
                       h('line', { x1: sxPx, y1: syPx, x2: sxPx, y2: VH - pY, stroke: isContrast ? '#ffff00' : '#f59e0b', strokeWidth: 1.4, strokeDasharray: '3 2' }),
                       !isContrast && h('line', { x1: pX, y1: syPx, x2: sxPx, y2: syPx, stroke: '#f59e0b', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.55 }),
-                      !isContrast && h('path', { d: 'M' + (sxPx - 11) + ' ' + syPx + 'H' + (sxPx + 11) + 'M' + sxPx + ' ' + (syPx - 11) + 'V' + (syPx + 11), stroke: 'rgba(245,158,11,0.55)', strokeWidth: 1 }),
-                      !isContrast && h('circle', { cx: sxPx, cy: syPx, r: 10.5, fill: '#f59e0b', opacity: isDark ? 0.24 : 0.16 }),
+                      !isContrast && h('path', { d: 'M' + (sxPx - 12) + ' ' + syPx + 'H' + (sxPx + 12) + 'M' + sxPx + ' ' + (syPx - 12) + 'V' + (syPx + 12), stroke: 'rgba(245,158,11,0.58)', strokeWidth: 1 }),
+                      !isContrast && h('circle', { key: 'cas-rip-' + expression + '-' + work.answer, className: 'cas-step-ripple', cx: sxPx, cy: syPx, r: 12, fill: 'none', stroke: '#fbbf24', strokeWidth: 2 }),
+                      !isContrast && h('circle', { className: 'cas-beacon-pulse', cx: sxPx, cy: syPx, r: 14, fill: '#f59e0b', opacity: isDark ? 0.24 : 0.18 }),
+                      !isContrast && h('circle', { cx: sxPx, cy: syPx, r: 9.5, fill: '#f59e0b', opacity: isDark ? 0.28 : 0.2 }),
                       h('circle', { cx: sxPx, cy: syPx, r: 5.5, fill: isContrast ? '#00ff00' : '#f59e0b', stroke: isContrast ? '#000000' : '#ffffff', strokeWidth: 1.8, style: { filter: isContrast ? 'none' : 'drop-shadow(0 0 4px rgba(245,158,11,0.8))' } }),
                       !isContrast && h('circle', { cx: sxPx - 1.4, cy: syPx - 1.4, r: 1.4, fill: '#ffffff', opacity: 0.85 }),
                       h('text', { x: Math.max(pX + 26, Math.min(VW - pX - 26, sxPx)), y: Math.max(pY + 12, syPx - 11), textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: isContrast ? '#ffff00' : TEXT }, 'x = ' + work.answer)
@@ -2062,17 +2106,50 @@ onSpeak: function(formats) {
               c.strokeStyle = 'rgba(255,255,255,0.68)'; c.lineWidth = 1;
               c.beginPath(); c.moveTo(-armLen + 4, -2); c.lineTo(0, -4); c.lineTo(armLen - 4, -2); c.stroke();
             }
-            // End pivot hooks/knobs
-            [-armLen, armLen].forEach(function(ex) {
+            // End pivot hooks/knobs (zero-GC direct draw)
+            for (var ei = 0; ei < 2; ei++) {
+              var ex = ei === 0 ? -armLen : armLen;
               c.beginPath(); c.arc(ex, 0, 4.2, 0, Math.PI * 2);
               c.fillStyle = isContrast ? '#000000' : '#e2e8f0'; c.fill();
               c.strokeStyle = beamCol; c.lineWidth = 1.6; c.stroke();
-            });
+            }
             c.restore();
+
+            // Zero-GC transformation ripples when algebraic steps simplify/solve
+            var ripBuf = canvas._casRipples;
+            if (!isContrast && ripBuf && ripBuf.length >= 4) {
+              for (var rpi = 0; rpi < 2; rpi++) {
+                var rpVal = ripBuf[rpi * 2];
+                if (rpVal > 0.005) {
+                  var rpProg = 1 - rpVal;
+                  var rpRad = 12 + rpProg * 58;
+                  var rpCol = ripBuf[rpi * 2 + 1] > 0.5 ? '#34d399' : '#818cf8';
+                  c.save();
+                  c.strokeStyle = rpCol;
+                  c.globalAlpha = rpVal * 0.68;
+                  c.lineWidth = 1.2 + rpVal * 2.2;
+                  c.beginPath(); c.arc(cx, pivotY, rpRad, 0, Math.PI * 2); c.stroke();
+                  c.restore();
+                }
+              }
+            }
+
+            // Equilibrium lock halo around central jewel pivot bearing when level/solved
+            var isLevel = Math.abs(tilt) < 0.008;
+            if (!isContrast && isLevel && typeof c.createRadialGradient === 'function') {
+              var eqR = scaleSolved ? 24 : 16;
+              var eqG = c.createRadialGradient(cx, pivotY, 3, cx, pivotY, eqR);
+              if (eqG && typeof eqG.addColorStop === 'function') {
+                eqG.addColorStop(0, scaleSolved ? 'rgba(52,211,153,0.48)' : 'rgba(129,140,248,0.32)');
+                eqG.addColorStop(1, 'rgba(0,0,0,0)');
+                c.fillStyle = eqG;
+                c.beginPath(); c.arc(cx, pivotY, eqR, 0, Math.PI * 2); c.fill();
+              }
+            }
 
             // Central jewel pivot bearing
             c.save();
-            c.shadowColor = beamCol; c.shadowBlur = isContrast ? 0 : 10;
+            c.shadowColor = beamCol; c.shadowBlur = isContrast ? 0 : (scaleSolved ? 14 : 10);
             c.beginPath(); c.arc(cx, pivotY, 7, 0, Math.PI * 2);
             c.fillStyle = isContrast ? '#000000' : '#1e293b'; c.fill();
             c.strokeStyle = beamCol; c.lineWidth = 2.4; c.stroke();
@@ -2157,20 +2234,56 @@ onSpeak: function(formats) {
           };
 
           var scaleObserver = null, scaleFrame = null;
+          var scaleStepSig = String(scaleEq || '') + '|' + String(scaleSteps.length) + '|' + (scaleSolved ? '1' : '0');
           var scaleCanvasRef = function(canvas) {
             if (scaleObserver) { scaleObserver.disconnect(); scaleObserver = null; }
             if (scaleFrame !== null) { window.cancelAnimationFrame(scaleFrame); scaleFrame = null; }
             if (!canvas) return;
-            // The beam eases toward its target tilt. Reduced motion is read on EVERY frame, so
-            // turning it on mid-swing jumps straight to the end position.
+            if (!canvas._casRipples) canvas._casRipples = new Float32Array(4);
+            var reduceInit = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+            if (canvas._casStepSig && canvas._casStepSig !== scaleStepSig && !reduceInit && !isContrast) {
+              // Trigger a zero-GC transformation ripple + gentle spring impulse on step/solve
+              var slot = (canvas._casRipples[0] <= 0.01) ? 0 : 2;
+              canvas._casRipples[slot] = 1.0;
+              canvas._casRipples[slot + 1] = scaleSolved ? 1.0 : 0.0;
+              canvas._casVel = (typeof canvas._casVel === 'number' ? canvas._casVel : 0) + (scaleSolved ? 0.014 : 0.009);
+            }
+            canvas._casStepSig = scaleStepSig;
+            // Zero-GC spring-damped equilibrium physics (stiffness + damping). Reduced motion is read
+            // on EVERY frame, so turning it on mid-swing jumps straight to the settled position.
             var frame = function() {
               scaleFrame = null;
               var current = typeof canvas._casTilt === 'number' ? canvas._casTilt : 0;
+              var vel = typeof canvas._casVel === 'number' ? canvas._casVel : 0;
+              var rip = canvas._casRipples;
               var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-              current = reduce || Math.abs(beamTarget - current) < 0.003 ? beamTarget : current + (beamTarget - current) * 0.18;
+              var anyRipple = false;
+              if (reduce) {
+                current = beamTarget;
+                vel = 0;
+                if (rip) { rip[0] = 0; rip[2] = 0; }
+              } else {
+                var force = (beamTarget - current) * 0.16;
+                vel = (vel + force) * 0.78;
+                current += vel;
+                if (Math.abs(beamTarget - current) < 0.0015 && Math.abs(vel) < 0.001) {
+                  current = beamTarget;
+                  vel = 0;
+                }
+                if (rip) {
+                  for (var ri = 0; ri < 2; ri++) {
+                    var idx = ri * 2;
+                    if (rip[idx] > 0) {
+                      rip[idx] = Math.max(0, rip[idx] - 0.036);
+                      if (rip[idx] > 0.005) anyRipple = true;
+                    }
+                  }
+                }
+              }
               canvas._casTilt = current;
+              canvas._casVel = vel;
               drawScale(canvas, current);
-              if (current !== beamTarget) scaleFrame = window.requestAnimationFrame(frame);
+              if (current !== beamTarget || vel !== 0 || anyRipple) scaleFrame = window.requestAnimationFrame(frame);
             };
             var scheduleScaleDraw = function() {
               if (scaleFrame !== null) window.cancelAnimationFrame(scaleFrame);
@@ -2217,10 +2330,11 @@ onSpeak: function(formats) {
                     h('line', {x1:28,y1:y,x2:512,y2:y,stroke:MUTED,strokeWidth:2}),
                     [28,149,270,391,512].map(function(x) { return h('line', {key:x,x1:x,y1:y-(x===270||x===28||x===512?6:3.5),x2:x,y2:y+(x===270||x===28||x===512?6:3.5),stroke:MUTED,strokeWidth:x===270||x===28||x===512?2:1.2}); })
                   ); }),
-                  h('line', {x1:point(trial.leftNumber),y1:30,x2:point(trial.rightNumber),y2:74,stroke:trial.relation==='='?'#22c55e':MUTED,strokeWidth:trial.relation==='='?2:1.2,strokeDasharray:'3 4'}),
-                  !isContrast && h('circle', {cx:point(trial.leftNumber),cy:30,r:12,fill:inkLeft,opacity:0.2}),
+                  !isContrast && trial.relation==='=' && h('line', {x1:point(trial.leftNumber),y1:22,x2:point(trial.rightNumber),y2:82,stroke:'#22c55e',strokeWidth:8,strokeOpacity:0.18,strokeLinecap:'round'}),
+                  h('line', {x1:point(trial.leftNumber),y1:30,x2:point(trial.rightNumber),y2:74,stroke:trial.relation==='='?(isContrast?'#00ff00':'#22c55e'):MUTED,strokeWidth:trial.relation==='='?2.4:1.2,strokeDasharray:'3 4'}),
+                  !isContrast && h('circle', {className:trial.relation==='='?'cas-beacon-pulse':undefined,cx:point(trial.leftNumber),cy:30,r:trial.relation==='='?14:12,fill:trial.relation==='='?'#22c55e':inkLeft,opacity:0.22}),
                   h('rect', {'data-trial-left-point':true,x:point(trial.leftNumber)-7,y:23,width:14,height:14,rx:2.5,fill:inkLeft,stroke:TEXT,strokeWidth:1.2}),
-                  !isContrast && h('circle', {cx:point(trial.rightNumber),cy:74,r:12,fill:inkRight,opacity:0.2}),
+                  !isContrast && h('circle', {className:trial.relation==='='?'cas-beacon-pulse':undefined,cx:point(trial.rightNumber),cy:74,r:trial.relation==='='?14:12,fill:trial.relation==='='?'#22c55e':inkRight,opacity:0.22}),
                   h('circle', {'data-trial-right-point':true,cx:point(trial.rightNumber),cy:74,r:7,fill:inkRight,stroke:TEXT,strokeWidth:1.2})
                 ),
                 h('div', {'aria-hidden':'true',style:{display:'flex',justifyContent:'space-between',gap:8,fontSize:12,color:TEXT,margin:'0 5%'}},h('span',null,tickText(-extent)),h('span',null,'0'),h('span',null,tickText(extent))),

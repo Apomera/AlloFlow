@@ -232,10 +232,10 @@
           "id": "esol5362-ch-01-check-01",
           "prompt": "A learner says \"sip\" for \"ship\" and does not distinguish the two words when listening. Which linguistic analysis best identifies the instructional need?",
           "choices": [
-            "Contrast the target and produced phonemes by place and manner, provide perception before production practice, and monitor meaning in context.",
-            "Assign spelling copying without listening.",
-            "Treat the pattern as evidence of low intelligence.",
-            "Correct every accent feature even when meaning is clear."
+            "Contrast the two phonemes by place and manner, build perception before production, and check meaning in context.",
+            "Assign repeated spelling copying of ship and sip so the learner sees the letters without any listening practice.",
+            "Treat the substitution as a sign of limited cognitive ability and lower the academic demands in other subjects.",
+            "Correct each accent feature in the learner’s speech, including features that never interfere with meaning."
           ],
           "answerIndex": 0,
           "rationale": "A minimal contrast involving meaningful words calls for phonological perception and production work tied to communication, not decontextualized punishment or deficit inference.",
@@ -252,10 +252,10 @@
           "id": "esol5362-ch-01-check-02",
           "prompt": "A student pronounces the plural endings in cats, dogs, and buses differently while reading aloud. Which concept most directly explains the pattern?",
           "choices": [
-            "Each word contains a different plural or tense rule with no pattern.",
-            "The grammatical morpheme has predictable allomorphs conditioned by the surrounding sounds.",
-            "The learner is changing the word class.",
-            "Written punctuation determines the ending."
+            "Each of the three words follows its own separate plural rule, so the endings show no predictable pattern at all.",
+            "The plural morpheme has predictable allomorphs conditioned by the final sound of the word it attaches to.",
+            "The learner is shifting the word class of each noun, turning it into a verb when the ending is pronounced differently.",
+            "Written punctuation and spelling conventions determine how the ending is pronounced when the text is read aloud."
           ],
           "answerIndex": 1,
           "rationale": "English inflectional morphemes have phonologically conditioned surface forms; recognizing the pattern supports explicit, efficient instruction.",
@@ -272,10 +272,10 @@
           "id": "esol5362-ch-01-check-03",
           "prompt": "A learner understands \"The dog chased the cat\" but misinterprets \"The cat was chased by the dog.\" What should the teacher highlight?",
           "choices": [
-            "Teach only the individual nouns.",
-            "Tell the learner that English word order never changes.",
-            "Show how word order and passive morphology signal who performed and received the action, using matched active-passive examples.",
-            "Avoid passive forms in academic texts."
+            "Teach the individual nouns in each sentence, since knowing dog and cat is enough to recover who did the action.",
+            "Tell the learner that English word order is fixed, so the first noun in the sentence is the doer of the action.",
+            "Show how word order and passive morphology signal agent and recipient, using matched active–passive examples.",
+            "Avoid passive forms in academic texts so the learner encounters active sentences until reading is fully fluent."
           ],
           "answerIndex": 2,
           "rationale": "The difficulty concerns syntax and grammatical role assignment; paired forms make the relationship between morphology, order, and meaning visible.",
@@ -292,10 +292,10 @@
           "id": "esol5362-ch-01-check-04",
           "prompt": "A student writes \"two informations\" after learning that plural nouns often take -s. Which explanation is most accurate?",
           "choices": [
-            "The form shows no underlying rule.",
-            "The learner should memorize the entire dictionary.",
-            "The error proves the learner cannot understand plurality.",
-            "The learner is productively overgeneralizing a rule to a noncount noun and needs examples of countability and appropriate quantity expressions."
+            "The form shows no underlying rule, so the error is random and should be ignored until the learner self-corrects.",
+            "The learner should memorize long lists of nouns from the dictionary to learn which ones can take a plural ending.",
+            "The error demonstrates that the learner does not understand plurality and should repeat beginning noun lessons.",
+            "The learner is overgeneralizing a plural rule to a noncount noun and needs countability and quantity examples."
           ],
           "answerIndex": 3,
           "rationale": "Rule-governed overgeneralization is developmental evidence; contrastive examples such as pieces of information clarify lexical countability.",
@@ -312,10 +312,10 @@
           "id": "esol5362-ch-01-check-05",
           "prompt": "A learner uses the simple present in a narrative where completed past events should be sequenced. Which instructional response targets the form-function relationship?",
           "choices": [
-            "Use a timeline and meaningful retelling to connect past morphology with completed events and sequence, then elicit the form in a new context.",
-            "Assign an unrelated vocabulary list.",
-            "Explain that verb tense is optional in English.",
-            "Correct spelling but ignore time reference."
+            "Use a timeline and meaningful retelling to link past forms with finished events, then elicit them in a new context.",
+            "Assign a vocabulary list of new words for the narrative unit so the learner has more content to include in stories.",
+            "Explain that verb tense is flexible in English narratives, so present forms are acceptable for past events.",
+            "Correct the spelling errors in the narrative and leave the time reference unchanged so the learner is not overloaded."
           ],
           "answerIndex": 0,
           "rationale": "Grammar instruction is stronger when form, meaning, and communicative use are connected and then practiced beyond the original example.",
@@ -432,12 +432,12 @@
           "id": "esol5362-ch-02-check-01",
           "prompt": "A student interprets \"Can you open the window?\" only as a question about physical ability. Which concept is illustrated?",
           "choices": [
-            "The literal form is a question, while the pragmatic function in context is an indirect request.",
-            "The utterance has no communicative function.",
-            "The speaker is testing verb conjugation only.",
-            "The response shows a phonemic contrast."
+            "The response shows a phonemic contrast problem between can and could that changes the speaker’s meaning.",
+            "Its literal form is an interrogative, whereas its pragmatic function here is an indirect request.",
+            "The utterance has no communicative function beyond checking whether the learner hears the speaker clearly.",
+            "The speaker is testing the learner’s knowledge of modal verb conjugation in a casual classroom exchange."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Pragmatic competence includes inferring speaker intent from form, relationship, setting, and shared conventions.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -452,12 +452,12 @@
           "id": "esol5362-ch-02-check-02",
           "prompt": "A learner gives a technically correct answer that seems abrupt during a formal conference. What is the best instructional focus?",
           "choices": [
-            "Teach that one register is morally superior in every context.",
-            "Compare register choices across relationships and settings without portraying one community variety as inherently deficient.",
-            "Ignore audience and purpose.",
-            "Require the learner to abandon home-language identities."
+            "Require the learner to abandon home-language identities so that formal speech becomes natural in every setting.",
+            "Teach that formal register is morally superior and should replace casual speech with family and friends as well.",
+            "Compare register choices across relationships and settings without portraying any variety as deficient.",
+            "Focus on grammatical accuracy and set aside audience and purpose, since the answer was technically correct."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Sociolinguistic competence involves choosing language suited to context while treating linguistic variation as systematic and identity-linked.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -472,12 +472,12 @@
           "id": "esol5362-ch-02-check-03",
           "prompt": "A teacher says, \"That is an interesting choice,\" intending gentle criticism, but the learner hears praise. Which analysis best explains the misunderstanding?",
           "choices": [
-            "The words have no meaning.",
-            "The learner must be unable to read.",
-            "The learner needs support interpreting indirect stance, mitigation, and contextual cues rather than vocabulary alone.",
-            "Only pronunciation can explain implied stance."
+            "Pronunciation features alone explain how implied stance is communicated, so intonation drills will resolve it.",
+            "The words in the comment carry no meaning by themselves, so the learner could not have interpreted the remark.",
+            "The learner must have difficulty decoding print, which would explain why the spoken comment was misunderstood.",
+            "The learner needs support interpreting indirect stance, mitigation, and contextual cues, not vocabulary alone."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Meaning extends beyond dictionary definitions to implicature, politeness, prosody, relationship, and discourse context.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -492,12 +492,12 @@
           "id": "esol5362-ch-02-check-04",
           "prompt": "A student essay lists relevant sentences but rarely uses pronoun reference, repetition of key terms, or logical connectors. Which feature creates cohesion?",
           "choices": [
-            "Add more unrelated facts.",
-            "Correct handwriting only.",
-            "Require every sentence to begin with the same word.",
-            "Teach how reference, lexical ties, substitution, and connectors link ideas across sentences into a coherent discourse."
+            "Teach how pronouns, lexical ties, substitution, and conjunctions link ideas across sentences into connected text.",
+            "Add more relevant facts to each paragraph so the essay feels complete even if the sentences remain unconnected.",
+            "Focus feedback on handwriting legibility, since neater writing helps readers follow the relationships between ideas.",
+            "Require each sentence in the paragraph to begin with the same transition word so the ideas appear clearly linked."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Cohesion uses linguistic ties across clauses and sentences, while coherence depends on an interpretable overall organization and relationship among ideas.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -512,12 +512,12 @@
           "id": "esol5362-ch-02-check-05",
           "prompt": "A learner knows that \"bank\" can mean a financial institution or the side of a river. Which distinction is most useful?",
           "choices": [
-            "Use context and semantic fields to select among polysemous meanings while noting the related or conventional uses of the form.",
-            "Assume every word has exactly one meaning.",
-            "Choose the longest dictionary entry regardless of context.",
-            "Treat multiple meanings as spelling errors."
+            "Treat the multiple meanings of the word as spelling errors that the learner should correct during proofreading.",
+            "Use context and semantic fields to select among a word’s multiple meanings while noting its conventional uses.",
+            "Assume that each English word has one core meaning and teach that meaning before introducing other senses later.",
+            "Choose the longest dictionary entry for the word regardless of context, since it includes the most common sense."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Lexical meaning is context-sensitive; instruction should help learners use surrounding syntax, topic, collocation, and semantic relationships.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -632,12 +632,12 @@
           "id": "esol5362-ch-03-check-01",
           "prompt": "A newcomer has a silent period in whole-class discussion but follows routines and responds through drawing and pointing. Which response is most consistent with language-development evidence?",
           "choices": [
-            "Provide comprehensible, engaging input and low-risk opportunities for increasingly productive language while monitoring growth across modes.",
-            "Force an unprepared public speech as proof of learning.",
-            "Assume silence means no learning is occurring.",
-            "Exclude the learner from grade-level content."
+            "Assume that the student’s silence means little language learning is occurring and refer for further evaluation.",
+            "Exclude the learner from grade-level content until spoken English emerges during whole-class discussions.",
+            "Provide comprehensible input and low-risk chances for increasingly productive language while monitoring growth.",
+            "Require a prepared public speech within the first weeks to show that the newcomer is learning English in class."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Receptive development and participation can precede extended production; instruction should preserve access and invite, not coerce, meaningful output.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -652,12 +652,12 @@
           "id": "esol5362-ch-03-check-02",
           "prompt": "A student chats fluently with peers but struggles to explain evidence in a science report. Which distinction best guides expectations?",
           "choices": [
-            "Social fluency proves all academic language is mastered.",
-            "Conversational fluency can develop before the language needed for cognitively demanding academic tasks, so academic language requires explicit sustained support.",
-            "Academic difficulty shows the student has no English.",
-            "Content reasoning should wait until pronunciation is accent free."
+            "Difficulty with the science report shows that the student has very limited English despite fluent peer chatting.",
+            "Content reasoning instruction should wait until the student’s pronunciation sounds like a native speaker’s.",
+            "Fluent social conversation shows that the student has mastered academic language and needs no further support.",
+            "Conversational fluency often develops before academic language, which needs explicit and sustained support."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Language demands vary by purpose, mode, discipline, abstraction, and context; visible social fluency does not erase academic-language needs.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -672,12 +672,12 @@
           "id": "esol5362-ch-03-check-03",
           "prompt": "Students must infer a water-cycle process from a dense oral explanation with no visual support. Which scaffold best aligns with comprehensible input?",
           "choices": [
-            "Replace the lesson with unrelated easy vocabulary.",
-            "Speak much louder using the same unsupported wording.",
-            "Maintain the grade-level concept while adding visuals, gestures, modeling, selected language support, checks for understanding, and purposeful interaction.",
-            "Remove all cognitive challenge permanently."
+            "Keep the grade-level concept while adding visuals, gestures, modeling, language frames, and comprehension checks.",
+            "Remove the inference demand from the lesson and give students the completed process diagram to copy instead.",
+            "Replace the water-cycle lesson with easier vocabulary from an unrelated unit until the students can follow lectures.",
+            "Repeat the same explanation at a louder volume, keeping the wording unchanged so that the content stays rigorous."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Comprehensible input makes meaning accessible through context and support without reducing the intended concept or opportunity to reason.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -692,12 +692,12 @@
           "id": "esol5362-ch-03-check-04",
           "prompt": "Learners can answer a map task with one-word labels, so they never need to clarify relationships. Which activity most directly promotes pushed output?",
           "choices": [
-            "Provide all answers before interaction.",
-            "Allow one student to speak for the group every time.",
-            "Grade only silence and neatness.",
-            "Design an information gap or explanation task that requires precise language, negotiation of meaning, and revision after listener feedback."
+            "Grade the activity on neatness and quiet work habits so that students focus carefully on completing the map.",
+            "An information-gap explanation task requiring precise language, negotiation, and revision after feedback.",
+            "Provide the answer key before interaction so partners can confirm the labels quickly and finish the map on time.",
+            "Allow one confident student to report for the group during every task so the others can listen to good models."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Communicative pressure to make meaning clear can prompt learners to notice gaps, test forms, and refine output through feedback.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -712,12 +712,12 @@
           "id": "esol5362-ch-03-check-05",
           "prompt": "During a fluency discussion, a student makes a minor article error that does not affect meaning, then later repeats a target verb error. How should corrective feedback be selected?",
           "choices": [
-            "Match feedback timing and explicitness to the objective, error pattern, learner readiness, and communicative impact, while preserving participation.",
-            "Interrupt every sentence for every difference.",
-            "Never respond to language form.",
-            "Use public ridicule to make the correction memorable."
+            "Avoid responding to language form during fluency work, since any correction may reduce willingness to participate.",
+            "Correct the student publicly with emphasis so that the repeated verb error becomes memorable for the whole class.",
+            "Match response timing and explicitness to the objective, error pattern, and impact while preserving participation.",
+            "Interrupt each sentence to correct every difference from standard forms, including errors that do not affect meaning."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Feedback is most useful when selective, goal-aligned, understandable, and followed by an opportunity to notice and revise.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -832,12 +832,12 @@
           "id": "esol5362-ch-04-check-01",
           "prompt": "A Spanish-speaking learner uses a cognate to infer the meaning of \"predictable\" but misreads a false cognate in another text. Which interpretation best uses cross-linguistic knowledge?",
           "choices": [
-            "Teach strategic cognate use while explicitly checking meaning, form, and false cognates in context.",
-            "Ban use of the first language during reading.",
-            "Assume every similar-looking word has the same meaning.",
-            "Treat cross-language connections as cheating."
+            "Ban use of the first language during reading so the learner stops relying on cross-language connections.",
+            "Assume that similar-looking words share the same meaning across both languages, including false cognates.",
+            "Treat cross-language connections as a shortcut that avoids real learning and discourage them in class.",
+            "Teach strategic use of cognates while explicitly checking meaning, form, and false cognates in context."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Prior-language knowledge can accelerate learning when used strategically and verified; transfer may be positive or misleading.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -852,12 +852,12 @@
           "id": "esol5362-ch-04-check-02",
           "prompt": "Students plan a complex explanation using all available languages before producing an English presentation. Which response treats multilingualism as an asset?",
           "choices": [
-            "Require learners to suppress all known languages before thinking.",
-            "Permit purposeful use of the full linguistic repertoire to develop ideas and metalinguistic awareness while maintaining the English-language outcome.",
-            "Grade home-language use as misconduct.",
-            "Replace the English objective with translation only."
+            "Permit purposeful use of the full linguistic repertoire to develop ideas while keeping the English outcome.",
+            "Record home-language use during planning as off-task behavior that lowers the participation grade for the day.",
+            "Replace the English presentation objective with a translation task completed in the students’ home languages.",
+            "Require learners to set aside all known languages before planning so English becomes the language of thought."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Strategic multilingual practices can support cognition, identity, collaboration, and transfer while instruction still targets clear English outcomes.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -872,12 +872,12 @@
           "id": "esol5362-ch-04-check-03",
           "prompt": "A learner places adjectives after nouns in English based on a familiar pattern in another language. Which analysis best explains transfer?",
           "choices": [
-            "Assume the learner cannot understand syntax.",
-            "Correct the pattern without examples or explanation.",
-            "Compare the relevant language systems and use the pattern as evidence for targeted contrastive noticing, not as a global deficit.",
-            "Attribute every error to first-language transfer."
+            "Correct the adjective position each time it appears without giving examples or explaining the English pattern.",
+            "Compare the language systems and use the pattern for targeted contrastive noticing, not as a global deficit.",
+            "Attribute each error in the learner’s writing to first-language transfer and plan instruction around that view.",
+            "Conclude that the learner does not understand syntax and needs to restart basic sentence-structure lessons."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Cross-linguistic influence can explain some systematic patterns, but teachers verify rather than presume the source and teach the specific contrast.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -892,12 +892,12 @@
           "id": "esol5362-ch-04-check-04",
           "prompt": "A bilingual child knows some concepts mainly in one language and others in both, so a single-language vocabulary count appears low. Which conclusion about bilingual development is most accurate?",
           "choices": [
-            "Add the two vocabularies without checking duplicate concepts and call it an official score.",
-            "Assume distributed knowledge is confusion.",
-            "Assess only the less familiar context.",
-            "Evaluate knowledge across languages and contexts when appropriate because distributed competence may not appear in one-language measures alone."
+            "Interpret the distributed knowledge as confusion between languages that slows the child’s overall development.",
+            "Assess vocabulary in the child’s less familiar context alone, since that shows the child’s weakest area clearly.",
+            "Evaluate knowledge across languages and contexts, since distributed competence may not appear in isolation.",
+            "Add the vocabulary counts from both languages without checking for duplicate concepts and report it as official."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Bilingual knowledge can be distributed by person, setting, topic, and language; interpretation should match the construct and purpose of assessment.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -912,12 +912,12 @@
           "id": "esol5362-ch-04-check-05",
           "prompt": "A student resists a unit that portrays the home community only through problems. Which classroom response best supports identity investment?",
           "choices": [
-            "Use accurate, non-tokenizing representation, invite meaningful expertise and choice, and connect new participation identities with rigorous learning.",
-            "Assign students to speak for an entire culture.",
-            "Avoid all reference to learner experience.",
-            "Celebrate food and festivals while ignoring stereotypes in materials."
+            "Ask the student to speak for the entire home culture so classmates gain an authentic perspective on the community.",
+            "Avoid references to learners’ experiences in the unit so no student feels that their community is being judged.",
+            "Hold a celebration of food and festivals from the community while leaving stereotypes in the unit materials as is.",
+            "Use accurate, non-tokenizing representation, invite expertise and choice, and connect identities with rigor."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Learners invest in language practices when identities are respected, possible identities are expanded, and participation carries authentic value and agency.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -1042,10 +1042,10 @@
           "id": "esol5362-ch-05-check-01",
           "prompt": "Students will study language for comparing two ecosystem models. Which objective is most useful for lesson planning and assessment?",
           "choices": [
-            "Students will use specified comparison or causal connectors and evidence phrases to produce an oral and written explanation that meets defined content and language criteria.",
-            "Students will understand everything about the topic.",
-            "Students will complete the worksheet.",
-            "Students will learn English."
+            "Students will use comparison connectors and evidence phrases to explain the models orally and in writing.",
+            "Students will understand the ecosystem models deeply and appreciate how scientists compare different environments.",
+            "Students will complete the comparison worksheet on ecosystem models with partners during the class period.",
+            "Students will learn English vocabulary related to ecosystems so they can participate more in science discussions."
           ],
           "answerIndex": 0,
           "rationale": "A usable objective names an observable language function, relevant forms or discourse features, meaningful content context, and evidence of performance.",
@@ -1064,10 +1064,10 @@
           "id": "esol5362-ch-05-check-02",
           "prompt": "A science objective requires students to justify which material best reduces heat transfer. Which planning step best integrates content and language?",
           "choices": [
-            "Teach vocabulary for several weeks before allowing content reasoning.",
-            "Analyze the disciplinary task for concepts, language functions, discourse, sentence patterns, and vocabulary, then plan supports and interaction without reducing rigor.",
-            "Replace the content standard with conversational practice.",
-            "Assume the content objective contains no language demands."
+            "Teach heat-transfer vocabulary for several weeks before allowing students to begin reasoning about the materials.",
+            "Analyze the task’s concepts, language functions, and vocabulary, then plan supports without reducing rigor.",
+            "Replace the justification task with conversational practice so students build confidence before content work.",
+            "Treat the content objective as free of language demands, since the science concepts are the same for all students."
           ],
           "answerIndex": 1,
           "rationale": "Integrated planning begins with grade-level disciplinary goals and makes the language required to participate, reason, and demonstrate learning explicit.",
@@ -1086,10 +1086,10 @@
           "id": "esol5362-ch-05-check-03",
           "prompt": "Learners share the same geometry reasoning goal but vary in English proficiency and familiarity with diagrams. Which differentiation is most defensible?",
           "choices": [
-            "Give beginning learners an unrelated lower-grade goal.",
-            "Use one scaffold for every learner indefinitely.",
-            "Keep the core construct and meaningful challenge while varying input supports, response modes, grouping, modeling, language frames, and degree of independence.",
-            "Remove all productive language from the task."
+            "Assign beginning learners an unrelated lower-grade math goal so they can experience success with simpler content.",
+            "Provide the same scaffold to each learner for the entire unit so that support remains consistent and predictable.",
+            "Keep the core reasoning goal while varying input supports, response modes, grouping, frames, and independence.",
+            "Remove productive language from the task so learners demonstrate geometry reasoning by selecting answers only."
           ],
           "answerIndex": 2,
           "rationale": "Differentiation adjusts access and support based on evidence while preserving the intended content and language learning opportunity.",
@@ -1108,10 +1108,10 @@
           "id": "esol5362-ch-05-check-04",
           "prompt": "A textbook chapter contains dense nominalizations, unfamiliar examples, and few visuals. What should the teacher do before choosing materials?",
           "choices": [
-            "Reject every authentic or grade-level material.",
-            "Select materials only by page length.",
-            "Translate everything and remove the English text.",
-            "Analyze content goals, linguistic and cultural demands, accessibility, bias, and learner assets, then adapt supports while retaining essential ideas."
+            "Reject the grade-level textbook and other authentic materials in favor of simplified texts with fewer ideas.",
+            "Select replacement materials by page length, choosing the shortest available text that covers the same topic.",
+            "Translate the chapter into students’ home languages and remove the English text from the reading assignment.",
+            "Analyze content goals, linguistic and cultural demands, accessibility, bias, and assets, then adapt supports."
           ],
           "answerIndex": 3,
           "rationale": "Materials evaluation connects learner evidence and objectives with language load, representation, cultural positioning, accessibility, and opportunities for meaningful use.",
@@ -1130,10 +1130,10 @@
           "id": "esol5362-ch-05-check-05",
           "prompt": "A unit on water policy assumes knowledge of local government and regional drought patterns. Which sequence most effectively builds background without stereotyping?",
           "choices": [
-            "Elicit varied prior knowledge, provide concise multimodal context, connect relevant experiences without assigning identities, and revisit background as understanding develops.",
-            "Ask one student to represent an entire culture.",
-            "Assume every learner lacks background knowledge.",
-            "Preteach every possible fact before reading."
+            "Elicit varied prior schemas, give concise multimodal context, link experiences, and revisit background.",
+            "Ask one student from the region to represent the entire culture’s experience with drought and water policy.",
+            "Assume that each learner lacks relevant background and present the same lengthy lecture on local government.",
+            "Preteach every possible fact about government and drought before students are allowed to open the reading."
           ],
           "answerIndex": 0,
           "rationale": "Background building should be diagnostic, relevant, multimodal, and nonessentializing; learners bring diverse knowledge even within shared language groups.",
@@ -1262,12 +1262,12 @@
           "id": "esol5362-ch-06-check-01",
           "prompt": "Students understand a science model but produce disconnected labels rather than a causal explanation. Which teacher move best scaffolds a complex explanation?",
           "choices": [
-            "Model the target discourse, jointly construct an example, provide a temporary organizer or language frame, elicit rehearsal, and fade support based on performance.",
-            "Supply a permanent completed paragraph.",
-            "Lower the task to copying definitions.",
-            "Correct only handwriting."
+            "Focus feedback on handwriting and neatness so students present their labeled diagrams more clearly to readers.",
+            "Model the discourse, jointly construct an example, offer a temporary frame, and fade support with performance.",
+            "Supply a completed model paragraph for students to keep using whenever they write explanations in the unit.",
+            "Lower the task to copying definitions of the labels so students can show their knowledge of the science model."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Effective scaffolding is contingent, explicit, and temporary; it supports the intended reasoning and language before responsibility shifts to learners.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -1284,12 +1284,12 @@
           "id": "esol5362-ch-06-check-02",
           "prompt": "The teacher asks rapid questions, accepts one-word answers from the same volunteers, and immediately evaluates each response. Which interaction pattern gives the strongest evidence of learning?",
           "choices": [
-            "Call only on the fastest speakers.",
-            "Use extended wait time, varied participation structures, open and probing questions, student-to-student uptake, and prompts for explanation and clarification.",
-            "Treat choral volume as proof of individual understanding.",
-            "Answer each question before students respond."
+            "Answer each question yourself after a short pause so students hear an accurate model of the expected response.",
+            "Call on the fastest speakers in the class so the lesson keeps moving and other students hear correct answers.",
+            "Extended wait time, varied participation routines, probing queries, peer uptake, and prompts to explain.",
+            "Treat strong choral responses as proof that each student understands the content being reviewed in the lesson."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Interaction supports development when learners have equitable time and responsibility to formulate, extend, negotiate, and respond to ideas.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -1306,12 +1306,12 @@
           "id": "esol5362-ch-06-check-03",
           "prompt": "After a dense direction, the teacher asks \"Do you understand?\" and the class nods. Which response best checks comprehension?",
           "choices": [
-            "Repeat the same yes-no question louder.",
-            "Assume silence confirms understanding.",
-            "Ask learners to restate, sequence, demonstrate, select an example, or begin the task while the teacher observes evidence and reteaches as needed.",
-            "Wait until the final test."
+            "Wait until the unit test to find out whether students understood the directions given during the lesson.",
+            "Repeat the question about understanding more loudly so that each student responds clearly and confidently.",
+            "Treat the silence and nodding as confirmation that the class understands the direction and can start work.",
+            "Ask learners to restate, sequence, demonstrate, or begin the task while observing evidence and reteaching."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Comprehension checks require observable evidence aligned to the meaning or action, not self-report under social pressure.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -1328,12 +1328,12 @@
           "id": "esol5362-ch-06-check-04",
           "prompt": "A learner writes a well-reasoned paragraph with unclear reference words and one recurring sentence-boundary error. Which feedback most supports revision?",
           "choices": [
-            "Mark every difference without priority.",
-            "Replace the learner's entire response with the teacher's version.",
-            "Praise effort but give no information.",
-            "Acknowledge successful meaning, identify one or two goal-relevant patterns with examples, prompt self-correction, and provide a chance to revise and reuse the language."
+            "Acknowledge the meaning, target one or two patterns, prompt self-correction, and allow redrafting.",
+            "Mark every language difference in the paragraph with equal weight so the learner sees all errors at once.",
+            "Rewrite the learner’s paragraph in the teacher’s own words to model how the ideas should be expressed.",
+            "Praise the learner’s effort warmly while leaving out specific information about the language patterns."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Actionable feedback is selective, specific, connected to objectives, and followed by learner processing and another performance opportunity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -1350,12 +1350,12 @@
           "id": "esol5362-ch-06-check-05",
           "prompt": "Students repeatedly fill \"I think ___ because ___\" even when comparing sources requires more precise relationships. Which use of a language frame is strongest?",
           "choices": [
-            "Offer function-specific options, model flexible use, invite expansion and variation, and fade the frame as learners control the discourse independently.",
-            "Require identical wording permanently.",
-            "Use frames instead of teaching meaning.",
-            "Remove all frames before learners can participate."
+            "Remove frames before learners can participate in source comparisons so they develop independent language.",
+            "Offer function-specific options, model flexible use, invite expansion, and fade frames as control develops.",
+            "Require identical wording of the frame in each response so writing remains consistent across the unit.",
+            "Use the frame in place of teaching the meaning of comparisons, since filling blanks shows understanding."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Frames can open access but should reflect disciplinary function, preserve agency, and evolve rather than become a ceiling on language.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -1482,12 +1482,12 @@
           "id": "esol5362-ch-07-check-01",
           "prompt": "A teacher wants to identify current listening strategies before a new unit. Which assessment best matches the stated purpose?",
           "choices": [
-            "Use a brief task eliciting the target performance and analyze the evidence diagnostically or formatively to plan the next instructional step.",
-            "Use a high-stakes summative score from an unrelated construct.",
-            "Assess only attendance.",
-            "Wait until the course ends."
+            "An attendance record from the previous unit, used as an indicator of students’ listening engagement.",
+            "An end-of-course listening exam, given after the unit so results reflect the full range of strategies.",
+            "A brief task eliciting the target listening performance, analyzed formatively to plan the next step.",
+            "A high-stakes summative score from last year’s test, which measured a different construct than listening."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Assessment design begins with purpose, construct, evidence, and intended use; formative evidence must be timely enough to guide instruction.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -1504,12 +1504,12 @@
           "id": "esol5362-ch-07-check-02",
           "prompt": "A vocabulary test requires complex cultural trivia unrelated to the words being measured. Which issue is primarily about validity?",
           "choices": [
-            "The test has too many sharpened pencils.",
-            "The score may reflect irrelevant knowledge or language demands rather than the intended construct.",
-            "The classroom clock is analog.",
-            "Students use different seat colors."
+            "The classroom clock is analog, so some students may misjudge how much testing time remains in the session.",
+            "Students sit in chairs of different colors, which could distract some learners during the test session.",
+            "The test administration may run out of sharpened pencils, slowing students down during the timed sections.",
+            "The score may reflect irrelevant background knowledge rather than the target lexical construct assessed."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Validity concerns whether evidence supports the intended interpretation and use; construct-irrelevant barriers can distort what scores mean.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -1526,12 +1526,12 @@
           "id": "esol5362-ch-07-check-03",
           "prompt": "Two raters assign very different scores to the same oral sample using vague criteria. Which issue is primarily about reliability?",
           "choices": [
-            "The task measures exactly the intended construct.",
-            "The score report uses a clear label.",
-            "Inconsistent scoring reduces dependability, so raters need clear criteria, exemplars, training, and checks for agreement.",
-            "The learner has multiple language resources."
+            "Inconsistent scoring lowers dependability, so raters need clear rubrics, exemplars, calibration, and checks.",
+            "The learner draws on multiple language resources, which explains why the two raters reached different scores.",
+            "The task measures exactly the intended oral construct, so differences in scores reflect the learner’s variability.",
+            "The score report uses a clear label for each level, so readers can interpret the results consistently."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Reliability concerns consistency across raters, occasions, forms, or items; scoring procedures can strengthen dependability.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -1548,12 +1548,12 @@
           "id": "esol5362-ch-07-check-04",
           "prompt": "A score report places a learner at one level overall, but speaking and writing samples show different strengths. Which interpretation of proficiency levels is strongest?",
           "choices": [
-            "Assume the level defines every skill and future outcome.",
-            "Use the level as an intelligence category.",
-            "Ignore classroom evidence.",
-            "Treat levels as broad evidence within a multidimensional profile, examine domain and task performance, and avoid fixed labels or unsupported predictions."
+            "Set aside classroom samples when they conflict with the score report, since standardized results are stronger.",
+            "Treat bands as broad evidence within a multidimensional profile and examine domain and task performance.",
+            "Assume the overall level defines each skill and predicts the learner’s future academic outcomes accurately.",
+            "Use the proficiency level as an indicator of the learner’s intelligence when planning course placements."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Language proficiency varies by mode, purpose, context, genre, topic, and support; composite levels cannot replace detailed evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -1570,12 +1570,12 @@
           "id": "esol5362-ch-07-check-05",
           "prompt": "A report compares a learner with a reference group and also describes whether specified language expectations were met. Which choice best distinguishes norm- and criterion-referenced interpretations?",
           "choices": [
-            "The norm-referenced result describes relative standing; the criterion-referenced result describes performance against defined expectations.",
-            "Both results are raw counts only.",
-            "Criterion referencing ranks students from highest to lowest.",
-            "Norm referencing proves mastery of each standard."
+            "Criterion-referenced results rank students from highest to lowest relative to a representative group.",
+            "Norm-referenced results show mastery of each standard, while criterion results compare learners with peers.",
+            "Norm-referenced results show relative standing; criterion-referenced results show progress toward targets.",
+            "Both results report raw counts of correct items, so they differ only in how the totals are formatted."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "The reference frame determines meaning: comparison with others differs from judgment against specified knowledge or performance criteria.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -1702,12 +1702,12 @@
           "id": "esol5362-ch-08-check-01",
           "prompt": "Students are learning to justify comparisons with textual evidence. Which formative assessment provides the best next-step evidence?",
           "choices": [
-            "Collect a brief performance using the target function, analyze recurring strengths and needs with clear criteria, and plan a responsive reteach or extension.",
-            "Record only completion.",
-            "Give an unrelated spelling quiz.",
-            "Average scores without examining responses."
+            "A completion checklist recording which students turned in the comparison task by the end of the lesson.",
+            "A spelling quiz on unit vocabulary, used to estimate how well students justify comparisons with evidence.",
+            "An average of quiz scores from the unit, calculated without examining the reasoning in student responses.",
+            "A brief performance using the target function, analyzed with clear criteria to plan a reteach or extension."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Formative assessment must elicit the intended learning and yield interpretable evidence that changes instruction or learner strategy.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -1724,12 +1724,12 @@
           "id": "esol5362-ch-08-check-02",
           "prompt": "A folder contains only polished final products selected by the teacher. Which portfolio practice is strongest?",
           "choices": [
-            "Treat file quantity as proficiency.",
-            "Include purposeful samples across time and modes, common criteria, learner reflection, feedback, revision, and a clear interpretation purpose.",
-            "Remove evidence of growth and revision.",
-            "Use the portfolio for every decision without validation."
+            "Purposeful samples across time and modes with common criteria, reflection, feedback, and a clear purpose.",
+            "A set of polished final products, with drafts and revisions removed so the folder shows the learner’s best.",
+            "A folder used for each placement and exit decision without validating it for those high-stakes purposes.",
+            "A large collection of files, with the number of pieces treated as an indicator of the learner’s proficiency."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Portfolios can show development and performance breadth when evidence is systematically selected, contextualized, evaluated, and interpreted.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -1746,12 +1746,12 @@
           "id": "esol5362-ch-08-check-03",
           "prompt": "A speaking rubric uses only \"good,\" \"fair,\" and \"poor.\" Which rubric design best supports useful feedback?",
           "choices": [
-            "Use personality traits as criteria.",
-            "Hide the criteria until after scoring.",
-            "Define observable, task-aligned criteria with distinct performance descriptions and exemplars, then train users to apply them consistently.",
-            "Change standards for each student without documentation."
+            "Criteria kept private until after scoring so that students focus on speaking naturally during the task.",
+            "Observable, task-aligned criteria with clear performance descriptions and exemplars, applied consistently.",
+            "Standards adjusted informally for each student’s situation without documentation of the changes made.",
+            "Criteria based on personality traits such as confidence and friendliness that the teacher observes in class."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Transparent analytic criteria improve alignment, feedback specificity, learner self-assessment, and scoring consistency.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -1768,12 +1768,12 @@
           "id": "esol5362-ch-08-check-04",
           "prompt": "Several learners omit articles, but the patterns differ by noun type, task, and level of attention. Which analysis best uses error data?",
           "choices": [
-            "Count every difference as the same error.",
-            "Infer motivation from one response.",
-            "Teach an unrelated rule.",
-            "Classify patterns by form, function, context, frequency, communicative effect, and developmental evidence before choosing instruction."
+            "Infer each learner’s motivation from a single response and assign extra practice to those who seem careless.",
+            "Teach a rule about verb tense, since the omissions suggest a general weakness in English grammar overall.",
+            "Classify omissions by form, function, context, frequency, meaning impact, and development before teaching.",
+            "Count each article omission as the same error and give all learners the identical review lesson on articles."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Error analysis becomes instructionally useful when it identifies systematic conditions and the language function rather than merely tallying differences.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -1790,12 +1790,12 @@
           "id": "esol5362-ch-08-check-05",
           "prompt": "A listening quiz uses one unfamiliar regional accent even though the construct is broad academic comprehension. Which response best protects assessment fairness?",
           "choices": [
-            "Review representation, language and cultural load, accessibility, scoring, opportunity to learn, and construct relevance; revise barriers not essential to the target.",
-            "Remove all authentic variation from every task.",
-            "Assume identical administration guarantees validity.",
-            "Lower expectations for one identity group."
+            "Remove authentic accent variation from listening tasks so recordings use one standardized broadcast voice.",
+            "Assume that identical administration for each student ensures that scores are fair and valid for all groups.",
+            "Lower comprehension expectations for students from one identity group to compensate for the unfamiliar accent.",
+            "Review representation, language load, accessibility, and skill relevance, removing nonessential barriers."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Fairness requires access to the intended construct and scrutiny of irrelevant barriers, while authentic variation may remain when it is part of the construct.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -1922,10 +1922,10 @@
           "id": "esol5362-ch-09-check-01",
           "prompt": "A curriculum mentions a student community only in a unit about poverty and conflict. Which response is most culturally sustaining?",
           "choices": [
-            "Include varied, accurate, contemporary and historical perspectives, examine power and representation, and invite learners to connect expertise without requiring personal disclosure.",
-            "Avoid the community entirely.",
-            "Ask one learner to correct every representation.",
-            "Add a festival image but retain the deficit narrative."
+            "Include varied, accurate perspectives, examine power and representation, and invite optional learner expertise.",
+            "Remove the community from the curriculum to avoid portraying it negatively in any future classroom units.",
+            "Ask one learner from the community to correct each representation in the curriculum for the class.",
+            "Add a festival image to the unit while leaving the poverty and conflict narrative unchanged in the materials."
           ],
           "answerIndex": 0,
           "rationale": "Culturally sustaining practice avoids tokenism and essentialism while expanding rigorous knowledge, representation, agency, and critical examination.",
@@ -1944,10 +1944,10 @@
           "id": "esol5362-ch-09-check-02",
           "prompt": "Two students who share a home language prefer different participation structures and family roles. Which interpretation best avoids stereotyping?",
           "choices": [
-            "Assign identical preferences to everyone from one group.",
-            "Treat culture as dynamic and intersectional, learn about individuals and contexts, and test instructional assumptions through relationship and evidence.",
-            "Ignore culture because variation exists.",
-            "Use nationality as a complete learner profile."
+            "Assign the same participation preferences to each student who shares a home language or national background.",
+            "Treat culture as dynamic and intersectional, learn about individuals, and test assumptions through evidence.",
+            "Set aside culture in planning, since variation within groups shows that culture has little classroom impact.",
+            "Use nationality as a complete profile of each learner’s preferences, values, and family expectations."
           ],
           "answerIndex": 1,
           "rationale": "Cultural patterns can inform inquiry but never replace knowledge of the individual, community, history, power, and changing context.",
@@ -1966,10 +1966,10 @@
           "id": "esol5362-ch-09-check-03",
           "prompt": "A student rarely makes direct eye contact during adult conversation, and the teacher initially reads this as disengagement. Which teacher response best supports cross-cultural interpretation?",
           "choices": [
-            "Punish the behavior immediately as disrespect.",
-            "Assume all members of the culture behave alike.",
-            "Suspend judgment, gather contextual evidence, explain classroom participation expectations explicitly, and create multiple respectful ways to demonstrate engagement.",
-            "Eliminate participation expectations."
+            "Address the behavior right away with a consequence for disrespect, so classroom norms stay clear for all.",
+            "Assume that members of the student’s culture share this behavior and adjust expectations for the group.",
+            "Suspend judgment, gather context, explain expectations, and offer multiple ways to show engagement.",
+            "Remove participation expectations for the student so the behavior no longer causes tension in class."
           ],
           "answerIndex": 2,
           "rationale": "Observable behavior can carry different meanings across settings; educators investigate rather than pathologize and make hidden school norms transparent.",
@@ -1988,10 +1988,10 @@
           "id": "esol5362-ch-09-check-04",
           "prompt": "Students disagree about whether direct debate shows engagement or disrespect. Which classroom discussion norm is strongest?",
           "choices": [
-            "Let the dominant interaction style remain unnamed.",
-            "Require every learner to speak in the same way and amount immediately.",
-            "Avoid all disagreement.",
-            "Co-construct explicit norms for listening, entry, disagreement, evidence, wait time, and repair, then revisit how participation and power are distributed."
+            "Let the dominant interaction style continue without naming it, so discussions feel natural to most students.",
+            "Require each learner to contribute in the same way and amount starting with the next class discussion.",
+            "Avoid disagreement in discussions so that no student feels that their participation style is disrespected.",
+            "Co-construct explicit norms for listening, entry, disagreement, evidence, and repair, and revisit participation."
           ],
           "answerIndex": 3,
           "rationale": "Inclusive norms make interactional expectations teachable, allow varied entry points, preserve intellectual challenge, and monitor equitable participation.",
@@ -2010,10 +2010,10 @@
           "id": "esol5362-ch-09-check-05",
           "prompt": "A worksheet depicts multilingual families as needing rescue and monolingual institutions as the sole experts. Which response best addresses bias in materials?",
           "choices": [
-            "Analyze whose knowledge and language are centered, revise deficit framing, add counternarratives and evidence, and teach critical language awareness.",
-            "Keep the material because published texts are neutral.",
-            "Remove every difficult topic without discussion.",
-            "Ask marginalized students to defend themselves."
+            "Analyze whose knowledge is centered, revise deficit framing, and add counternarratives and critical awareness.",
+            "Keep the worksheet as published, since commercial materials undergo review and present neutral content.",
+            "Remove difficult topics from the unit without discussion so students are not exposed to biased framing.",
+            "Ask multilingual students to explain why the worksheet is wrong about their families during class."
           ],
           "answerIndex": 0,
           "rationale": "Materials communicate ideologies about language, identity, and power; critical selection and instruction can challenge inequitable representations.",
@@ -2142,12 +2142,12 @@
           "id": "esol5362-ch-10-check-01",
           "prompt": "A school must explain an important placement process to caregivers who request communication in another language. Which family communication practice is most appropriate?",
           "choices": [
-            "Use qualified accessible interpretation or translation through approved procedures, address caregivers directly, verify understanding, invite questions, and protect confidentiality.",
-            "Use a young child as interpreter.",
-            "Send an unreviewed machine translation only.",
-            "Assume repeated English messages provide meaningful access."
+            "Repeat the English explanation more slowly at the meeting, assuming this gives the caregivers meaningful access.",
+            "Use qualified accessible interpretation or translation through approved procedures and verify understanding.",
+            "Ask the family’s young child to interpret the placement meeting, since the child speaks both languages well.",
+            "Send a machine translation of the placement notice without review, since it arrives quickly in the language."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Consequential communication requires meaningful language access, accuracy, confidentiality, direct respect, and two-way participation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2164,12 +2164,12 @@
           "id": "esol5362-ch-10-check-02",
           "prompt": "Families attend few evening events scheduled without consultation, and staff conclude they do not value education. Which engagement plan is most reciprocal?",
           "choices": [
-            "Increase blame-based reminders.",
-            "Investigate access, schedules, communication preferences, prior experiences, and goals; offer varied accessible channels and co-design meaningful roles and follow-up.",
-            "Use attendance at one event as the measure of caring.",
-            "Invite families only when problems occur."
+            "Invite families to school when academic or behavior problems arise, so contacts focus on urgent needs.",
+            "Send more reminders emphasizing that families who skip events are not supporting their children’s education.",
+            "Investigate access, schedules, and preferences, then offer varied channels and co-design meaningful roles.",
+            "Use attendance at the next evening event as the measure of how much each family cares about school."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Family engagement is relational and two-way; institutions examine their own barriers and value family expertise rather than equating visibility with commitment.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2186,12 +2186,12 @@
           "id": "esol5362-ch-10-check-03",
           "prompt": "Students bring expertise about local businesses, caregiving, agriculture, art, and multilingual media. Which use of community knowledge best supports instruction?",
           "choices": [
-            "Use community stories only as decoration.",
-            "Require private family information.",
-            "Elicit and connect funds of knowledge to rigorous objectives with consent and reciprocity, without treating learners as cultural exhibits.",
-            "Assume school knowledge and community knowledge cannot interact."
+            "Keep school knowledge and community knowledge separate, since academic standards define the curriculum.",
+            "Use community stories as decoration for bulletin boards without connecting them to the unit’s objectives.",
+            "Require students to share private family information so lessons reflect each household’s experiences.",
+            "Connect funds of knowledge to rigorous objectives with consent and reciprocity, without exhibiting learners."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Funds-of-knowledge approaches build on historically accumulated household and community expertise while preserving dignity, choice, and academic purpose.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2208,12 +2208,12 @@
           "id": "esol5362-ch-10-check-04",
           "prompt": "A family interprets a teacher's concise feedback as rejection, while the teacher intended efficiency. Which response best handles a cultural misunderstanding?",
           "choices": [
-            "Insist that intent is the only issue.",
-            "Attribute the conflict to one culture's deficiency.",
-            "Avoid future communication.",
-            "Clarify intent and interpretation respectfully, invite the other perspective, use accessible communication, repair impact, and establish a clearer shared process."
+            "Clarify intent and interpretation respectfully, invite their view, repair impact, and set a clearer process.",
+            "Explain that the teacher’s intent was efficiency, so the family should reinterpret the feedback accordingly.",
+            "Attribute the conflict to the family’s cultural expectations, which differ from the school’s practices.",
+            "Limit future communication with the family to written notices so misunderstandings are less likely."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Cross-cultural repair requires curiosity, attention to impact and power, explicit meaning, and a reciprocal communication plan.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2230,12 +2230,12 @@
           "id": "esol5362-ch-10-check-05",
           "prompt": "A community organization offers tutoring and requests names, proficiency scores, immigration histories, and family contacts. Which partnership safeguard is most important?",
           "choices": [
-            "Define purpose and roles, use authorized consent or legal authority, minimize and secure data, vet and train partners, ensure accessibility, and evaluate benefit and risk.",
-            "Share everything because the service is free.",
-            "Let the partner decide school privacy rules.",
-            "Use a verbal promise instead of approved procedures."
+            "Accept the organization’s verbal promise of confidentiality instead of following approved data procedures.",
+            "Define purpose, use authorized consent, minimize and secure data, vet partners, and evaluate benefit and risk.",
+            "Share all requested student information because the tutoring program is free and intended to help learners.",
+            "Allow the community partner to set its own privacy rules for handling student data during the program."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Community partnership does not remove privacy, consent, safety, role, accessibility, data minimization, oversight, or evaluation obligations.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2362,12 +2362,12 @@
           "id": "esol5362-ch-11-check-01",
           "prompt": "An ESOL teacher receives the science plan after instruction and is asked to simplify it. Which collaboration best integrates language and content?",
           "choices": [
-            "Co-plan the content and language objectives, analyze discourse demands, share learner evidence, coordinate scaffolds and assessment, and review outcomes together.",
-            "Make the ESOL teacher responsible for all content remediation.",
-            "Remove the learner from content collaboration.",
-            "Use identical support without examining the task."
+            "Pull the learner out of science collaboration for separate language lessons during content instruction.",
+            "Apply the same simplification to each science task without examining the specific language demands involved.",
+            "Co-design content and language objectives, analyze discourse demands, align scaffolds, and review outcomes.",
+            "Make the ESOL teacher responsible for reteaching the science content after each lesson has been delivered."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Effective collaboration begins before instruction and combines complementary expertise around shared goals, evidence, access, implementation, and review.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2384,12 +2384,12 @@
           "id": "esol5362-ch-11-check-02",
           "prompt": "A teacher notices that group discussions repeatedly marginalize beginning speakers. Which professional-learning step is strongest?",
           "choices": [
-            "Adopt a popular strategy without defining the problem.",
-            "Frame a focused question, examine learner work and interaction evidence, consult credible research and colleagues, test a feasible change, and evaluate effects.",
-            "Blame learners and keep instruction unchanged.",
-            "Treat one anecdote as final proof."
+            "Attribute the pattern to the beginning speakers’ reluctance and continue instruction without changes.",
+            "Treat one memorable discussion as conclusive proof of the problem and redesign the course around it.",
+            "Adopt a popular discussion strategy from social media without first defining the problem being solved.",
+            "Frame a focused question, examine interaction evidence, consult research and colleagues, and test a change."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Reflective inquiry links a specific problem, evidence, research, implementation, and outcome review rather than chasing techniques.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2406,12 +2406,12 @@
           "id": "esol5362-ch-11-check-03",
           "prompt": "A teacher suspects a language disorder from classroom errors and tells the family the student has a disability. Which response respects professional boundaries?",
           "choices": [
-            "Delay any referral until English is perfect.",
-            "Diagnose from an English sample alone.",
-            "Share specific educational observations, implement and monitor language supports, collaborate in the qualified multidisciplinary process, and avoid diagnosis or eligibility claims outside role.",
-            "Assume language learning excludes disability."
+            "Share specific observations, monitor language supports, and join the qualified team process without diagnosing.",
+            "Reassure the family that language learning explains the errors, ruling out the possibility of a disability.",
+            "Postpone any referral until the student’s English is fully developed, so language cannot explain the errors.",
+            "Confirm the disability diagnosis using the classroom English sample, since the error patterns are consistent."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Educators contribute evidence and support while disability evaluation and eligibility require authorized, nondiscriminatory multidisciplinary procedures.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2428,12 +2428,12 @@
           "id": "esol5362-ch-11-check-04",
           "prompt": "A teacher discusses a student's proficiency and family situation in a public hallway. Which privacy practice is strongest?",
           "choices": [
-            "Share records with any employee who asks.",
-            "Remove the student name but retain obvious identifiers.",
-            "Post results to motivate improvement.",
-            "Share only information needed for legitimate professional responsibility through approved secure channels, and follow current privacy and record procedures."
+            "Post proficiency results publicly in the classroom to motivate students to improve their scores.",
+            "Share only what legitimate professional duty requires, through secure, approved confidential channels.",
+            "Share student records with any school employee who asks, since all staff work toward student success.",
+            "Remove the student’s name from shared notes while keeping details that make the student easy to identify."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Professional collaboration requires purpose-limited, secure handling of personally identifiable information and respect for family and student privacy.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2450,12 +2450,12 @@
           "id": "esol5362-ch-11-check-05",
           "prompt": "A vendor claims a program guarantees fluency in twelve weeks but provides no independent evidence. Which use of research is most defensible?",
           "choices": [
-            "Evaluate study design, participants, measures, comparison, effect and limitations; consider fit and equity; pilot responsibly; and monitor local outcomes.",
-            "Adopt the claim because it is confident.",
-            "Reject all research because contexts differ.",
-            "Use testimonials as causal proof."
+            "Reject educational research entirely, since findings from other contexts rarely apply to local schools.",
+            "Use teacher testimonials from the vendor’s website as causal proof that the program improves fluency.",
+            "Evaluate design, participants, measures, and limits; consider fit and equity; pilot and monitor outcomes.",
+            "Adopt the program because the vendor’s confident claim suggests strong results in other districts."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Evidence-informed practice combines critical appraisal with professional expertise, learner context, feasibility, equity, and local evaluation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2582,12 +2582,12 @@
           "id": "esol5362-ch-12-check-01",
           "prompt": "English learners are placed in grade-level classes but receive no language assistance and cannot participate in instruction. Which response best supports meaningful access?",
           "choices": [
-            "Provide an educationally sound, adequately resourced language-assistance program and meaningful access to core and extracurricular opportunities, then evaluate effectiveness.",
-            "Wait for students to acquire English without services.",
-            "Offer access only after reclassification.",
-            "Use identical materials without needed language support as proof of equality."
+            "Allow students time to acquire English through exposure in grade-level classes before adding services.",
+            "Offer access to core classes and extracurriculars after students are reclassified as English proficient.",
+            "Provide identical materials without language support, treating equal materials as proof of equal access.",
+            "Provide an educationally sound, resourced language program with equitable access to core opportunities."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Equal opportunity requires effective language assistance and meaningful participation, not merely physical placement or formally identical treatment.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2604,12 +2604,12 @@
           "id": "esol5362-ch-12-check-02",
           "prompt": "Data show multilingual learners are underrepresented in advanced coursework because screening occurs only through teacher nomination. Which advocacy approach is strongest?",
           "choices": [
-            "Accuse individuals without evidence or a remedy.",
-            "Document the barrier, center learner and family perspectives, analyze policy and data, propose feasible equitable changes, build collaboration, and monitor access and outcomes.",
-            "Speak for families without inviting them.",
-            "Lower program standards instead of removing irrelevant barriers."
+            "Document the barrier, center family voices, review policy and evidence, propose changes, and track access.",
+            "Speak on behalf of multilingual families in meetings without inviting them to share their own perspectives.",
+            "Lower the entry standards for advanced courses instead of removing the nomination barrier itself.",
+            "Publicly accuse individual teachers of bias without gathering evidence or proposing a workable remedy."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Effective advocacy is evidence-based, participatory, role-aware, solution-focused, and accountable for both access and outcomes.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2626,12 +2626,12 @@
           "id": "esol5362-ch-12-check-03",
           "prompt": "A district declares its ESOL program successful because students enjoy one annual celebration. Which program-evaluation design is most useful?",
           "choices": [
-            "Use only the number of students exited.",
-            "Select the easiest positive indicator.",
-            "Examine language growth, content access and outcomes, participation, staffing, implementation, subgroup patterns, family input, exit and monitoring data, and unintended effects over time.",
-            "Avoid examining whether services were implemented."
+            "Choose the easiest positive indicator, such as celebration attendance, to report program effectiveness.",
+            "Examine language growth, content outcomes, implementation, subgroups, and family input over time.",
+            "Skip checking whether services were implemented and focus on end-of-year test scores in the report.",
+            "Count the students exited from services each year as the single measure of the program’s success."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Program evaluation requires multiple aligned outcomes and process evidence, disaggregation, stakeholder perspectives, longitudinal patterns, and response to findings.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2648,12 +2648,12 @@
           "id": "esol5362-ch-12-check-04",
           "prompt": "English learners spend most of the day in a separate room even after language instruction ends, with limited access to peers and electives. Which response best addresses unnecessary segregation?",
           "choices": [
-            "Assume separation is always safer.",
-            "End all targeted language instruction regardless of need.",
-            "Use scheduling convenience as the sole justification.",
-            "Review whether separation is educationally justified, limited, effective, and regularly reevaluated while expanding meaningful integration and access with appropriate support."
+            "End targeted language instruction for the students regardless of need so they can join general classes.",
+            "Justify the separate placement by scheduling convenience, since moving students would complicate timetables.",
+            "Review whether separation is justified, temporary, effective, and reevaluated while expanding integration.",
+            "Assume that a separate classroom is the safer setting for English learners and maintain the current schedule."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Language services may require targeted support, but exclusion should not exceed what is educationally justified and must not deny meaningful opportunities.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2670,12 +2670,12 @@
           "id": "esol5362-ch-12-check-05",
           "prompt": "Caregivers opt out of the offered program and staff plan to provide no language support or monitoring. Which response best serves a family that declines a particular EL service?",
           "choices": [
-            "Explain options and consequences accessibly, honor applicable rights and procedures, continue meeting language-access obligations through appropriate means, and monitor progress.",
-            "Retaliate by removing all support.",
-            "Force the family to accept one model.",
-            "Treat opt-out as permanent proof that no need exists."
+            "Remove language support entirely after the opt-out, since the family declined the offered program.",
+            "Insist that the family accept the offered program model, since it is the district’s standard service.",
+            "Treat the opt-out as permanent evidence that the student no longer needs language support or monitoring.",
+            "Explain options accessibly, honor rights, keep meeting language-access duties, and monitor progress."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Declining a particular service does not erase the school's responsibility to provide meaningful access, communicate rights, and monitor whether the learner is progressing.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2700,7 +2700,7 @@
       "domainId": "foundations-linguistics",
       "domain": "Foundations of Linguistics",
       "front": "A learner says \"sip\" for \"ship\" and does not distinguish the two words when listening. Which linguistic analysis best identifies the instructional need?",
-      "back": "Contrast the target and produced phonemes by place and manner, provide perception before production practice, and monitor meaning in context.",
+      "back": "Contrast the two phonemes by place and manner, build perception before production, and check meaning in context.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2717,7 +2717,7 @@
       "domainId": "foundations-linguistics",
       "domain": "Foundations of Linguistics",
       "front": "A student pronounces the plural endings in cats, dogs, and buses differently while reading aloud. Which concept most directly explains the pattern?",
-      "back": "The grammatical morpheme has predictable allomorphs conditioned by the surrounding sounds.",
+      "back": "The plural morpheme has predictable allomorphs conditioned by the final sound of the word it attaches to.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2734,7 +2734,7 @@
       "domainId": "foundations-linguistics",
       "domain": "Foundations of Linguistics",
       "front": "A learner understands \"The dog chased the cat\" but misinterprets \"The cat was chased by the dog.\" What should the teacher highlight?",
-      "back": "Show how word order and passive morphology signal who performed and received the action, using matched active-passive examples.",
+      "back": "Show how word order and passive morphology signal agent and recipient, using matched active–passive examples.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2751,7 +2751,7 @@
       "domainId": "foundations-linguistics",
       "domain": "Foundations of Linguistics",
       "front": "A student writes \"two informations\" after learning that plural nouns often take -s. Which explanation is most accurate?",
-      "back": "The learner is productively overgeneralizing a rule to a noncount noun and needs examples of countability and appropriate quantity expressions.",
+      "back": "The learner is overgeneralizing a plural rule to a noncount noun and needs countability and quantity examples.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2768,7 +2768,7 @@
       "domainId": "foundations-linguistics",
       "domain": "Foundations of Linguistics",
       "front": "A learner uses the simple present in a narrative where completed past events should be sequenced. Which instructional response targets the form-function relationship?",
-      "back": "Use a timeline and meaningful retelling to connect past morphology with completed events and sequence, then elicit the form in a new context.",
+      "back": "Use a timeline and meaningful retelling to link past forms with completed events, then elicit them in a new context.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2785,7 +2785,7 @@
       "domainId": "foundations-linguistics",
       "domain": "Foundations of Linguistics",
       "front": "A notice says, \"Students who finish early may leave books on the table,\" and readers disagree about what may be left. Which analysis best explains the ambiguity?",
-      "back": "The phrase can attach to more than one constituent, so revising word order or repeating the intended noun can remove structural ambiguity.",
+      "back": "The phrase can attach to more than one constituent, so reordering or repeating the noun removes the ambiguity.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2802,7 +2802,7 @@
       "domainId": "foundations-linguistics",
       "domain": "Foundations of Linguistics",
       "front": "A student interprets \"Can you open the window?\" only as a question about physical ability. Which concept is illustrated?",
-      "back": "The literal form is a question, while the pragmatic function in context is an indirect request.",
+      "back": "The literal form is a question, while its pragmatic function in this context is an indirect request.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2819,7 +2819,7 @@
       "domainId": "foundations-linguistics",
       "domain": "Foundations of Linguistics",
       "front": "A learner gives a technically correct answer that seems abrupt during a formal conference. What is the best instructional focus?",
-      "back": "Compare register choices across relationships and settings without portraying one community variety as inherently deficient.",
+      "back": "Compare register choices across relationships and settings without portraying any variety as deficient.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2836,7 +2836,7 @@
       "domainId": "foundations-linguistics",
       "domain": "Foundations of Linguistics",
       "front": "A teacher says, \"That is an interesting choice,\" intending gentle criticism, but the learner hears praise. Which analysis best explains the misunderstanding?",
-      "back": "The learner needs support interpreting indirect stance, mitigation, and contextual cues rather than vocabulary alone.",
+      "back": "The learner needs support interpreting indirect stance, mitigation, and contextual cues, not vocabulary alone.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2853,7 +2853,7 @@
       "domainId": "foundations-linguistics",
       "domain": "Foundations of Linguistics",
       "front": "A student essay lists relevant sentences but rarely uses pronoun reference, repetition of key terms, or logical connectors. Which feature creates cohesion?",
-      "back": "Teach how reference, lexical ties, substitution, and connectors link ideas across sentences into a coherent discourse.",
+      "back": "Teach how reference, lexical ties, substitution, and connectors link ideas across sentences into connected text.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2870,7 +2870,7 @@
       "domainId": "foundations-linguistics",
       "domain": "Foundations of Linguistics",
       "front": "A learner knows that \"bank\" can mean a financial institution or the side of a river. Which distinction is most useful?",
-      "back": "Use context and semantic fields to select among polysemous meanings while noting the related or conventional uses of the form.",
+      "back": "Use context and semantic fields to select among a word’s multiple meanings while noting its conventional uses.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2887,7 +2887,7 @@
       "domainId": "foundations-linguistics",
       "domain": "Foundations of Linguistics",
       "front": "A student writes \"make a research\" and \"strong rain\" using combinations transferred from another language. Which teaching move best develops collocational knowledge?",
-      "back": "Use corpus-informed or authentic examples to notice common word partnerships, compare alternatives, and practice them in meaningful chunks.",
+      "back": "Use authentic or corpus examples to notice common word partnerships, compare options, and practice them in chunks.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2904,7 +2904,7 @@
       "domainId": "foundations-language-learning",
       "domain": "Foundations of Language Learning",
       "front": "A newcomer has a silent period in whole-class discussion but follows routines and responds through drawing and pointing. Which response is most consistent with language-development evidence?",
-      "back": "Provide comprehensible, engaging input and low-risk opportunities for increasingly productive language while monitoring growth across modes.",
+      "back": "Provide comprehensible input and low-risk chances for increasingly productive language while monitoring growth.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2921,7 +2921,7 @@
       "domainId": "foundations-language-learning",
       "domain": "Foundations of Language Learning",
       "front": "A student chats fluently with peers but struggles to explain evidence in a science report. Which distinction best guides expectations?",
-      "back": "Conversational fluency can develop before the language needed for cognitively demanding academic tasks, so academic language requires explicit sustained support.",
+      "back": "Conversational fluency often develops before academic language, which needs explicit and sustained support.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2938,7 +2938,7 @@
       "domainId": "foundations-language-learning",
       "domain": "Foundations of Language Learning",
       "front": "Students must infer a water-cycle process from a dense oral explanation with no visual support. Which scaffold best aligns with comprehensible input?",
-      "back": "Maintain the grade-level concept while adding visuals, gestures, modeling, selected language support, checks for understanding, and purposeful interaction.",
+      "back": "Keep the grade-level concept while adding visuals, gestures, modeling, language support, and comprehension checks.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2955,7 +2955,7 @@
       "domainId": "foundations-language-learning",
       "domain": "Foundations of Language Learning",
       "front": "Learners can answer a map task with one-word labels, so they never need to clarify relationships. Which activity most directly promotes pushed output?",
-      "back": "Design an information gap or explanation task that requires precise language, negotiation of meaning, and revision after listener feedback.",
+      "back": "An information-gap explanation task requiring precise language, negotiation, and revision after feedback.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2972,7 +2972,7 @@
       "domainId": "foundations-language-learning",
       "domain": "Foundations of Language Learning",
       "front": "During a fluency discussion, a student makes a minor article error that does not affect meaning, then later repeats a target verb error. How should corrective feedback be selected?",
-      "back": "Match feedback timing and explicitness to the objective, error pattern, learner readiness, and communicative impact, while preserving participation.",
+      "back": "Match feedback timing and explicitness to the objective, error pattern, and impact while preserving participation.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -2989,7 +2989,7 @@
       "domainId": "foundations-language-learning",
       "domain": "Foundations of Language Learning",
       "front": "A student alternates between correct irregular past forms and overgeneralized forms such as goed. Which interpretation of learner language is strongest?",
-      "back": "Interlanguage is systematic yet variable and develops as learners test, revise, and automatize hypotheses about the new language.",
+      "back": "Interlanguage is systematic yet variable, developing as learners test, revise, and automatize hypotheses.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3023,7 +3023,7 @@
       "domainId": "foundations-language-learning",
       "domain": "Foundations of Language Learning",
       "front": "Students plan a complex explanation using all available languages before producing an English presentation. Which response treats multilingualism as an asset?",
-      "back": "Permit purposeful use of the full linguistic repertoire to develop ideas and metalinguistic awareness while maintaining the English-language outcome.",
+      "back": "Permit purposeful use of the full linguistic repertoire to develop ideas while keeping the English outcome.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3040,7 +3040,7 @@
       "domainId": "foundations-language-learning",
       "domain": "Foundations of Language Learning",
       "front": "A learner places adjectives after nouns in English based on a familiar pattern in another language. Which analysis best explains transfer?",
-      "back": "Compare the relevant language systems and use the pattern as evidence for targeted contrastive noticing, not as a global deficit.",
+      "back": "Compare the language systems and use the pattern for targeted contrastive noticing, not as a global deficit.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3057,7 +3057,7 @@
       "domainId": "foundations-language-learning",
       "domain": "Foundations of Language Learning",
       "front": "A bilingual child knows some concepts mainly in one language and others in both, so a single-language vocabulary count appears low. Which conclusion about bilingual development is most accurate?",
-      "back": "Evaluate knowledge across languages and contexts when appropriate because distributed competence may not appear in one-language measures alone.",
+      "back": "Evaluate knowledge across languages and contexts, since distributed competence may not show in one language.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3074,7 +3074,7 @@
       "domainId": "foundations-language-learning",
       "domain": "Foundations of Language Learning",
       "front": "A student resists a unit that portrays the home community only through problems. Which classroom response best supports identity investment?",
-      "back": "Use accurate, non-tokenizing representation, invite meaningful expertise and choice, and connect new participation identities with rigorous learning.",
+      "back": "Use accurate, non-tokenizing representation, invite expertise and choice, and connect identities with rigor.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3091,7 +3091,7 @@
       "domainId": "foundations-language-learning",
       "domain": "Foundations of Language Learning",
       "front": "A multilingual learner struggles on an English-only task but demonstrates the underlying concept through another language and supported performance. Which analysis distinguishes language from disability?",
-      "back": "Compare development across languages, opportunities, peers, tasks, and response to instruction before using qualified multidisciplinary evaluation procedures.",
+      "back": "Compare development across languages, peers, opportunities, and instruction before qualified team evaluation.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3108,7 +3108,7 @@
       "domainId": "planning-implementing-instruction",
       "domain": "Planning and Implementing Instruction",
       "front": "Students will study language for comparing two ecosystem models. Which objective is most useful for lesson planning and assessment?",
-      "back": "Students will use specified comparison or causal connectors and evidence phrases to produce an oral and written explanation that meets defined content and language criteria.",
+      "back": "Students will use comparison connectors and evidence phrases to explain the models orally and in writing.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3127,7 +3127,7 @@
       "domainId": "planning-implementing-instruction",
       "domain": "Planning and Implementing Instruction",
       "front": "A science objective requires students to justify which material best reduces heat transfer. Which planning step best integrates content and language?",
-      "back": "Analyze the disciplinary task for concepts, language functions, discourse, sentence patterns, and vocabulary, then plan supports and interaction without reducing rigor.",
+      "back": "Analyze the task’s concepts, language functions, and vocabulary, then plan supports without reducing rigor.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3146,7 +3146,7 @@
       "domainId": "planning-implementing-instruction",
       "domain": "Planning and Implementing Instruction",
       "front": "Learners share the same geometry reasoning goal but vary in English proficiency and familiarity with diagrams. Which differentiation is most defensible?",
-      "back": "Keep the core construct and meaningful challenge while varying input supports, response modes, grouping, modeling, language frames, and degree of independence.",
+      "back": "Keep the core reasoning goal while varying input supports, response modes, grouping, frames, and independence.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3165,7 +3165,7 @@
       "domainId": "planning-implementing-instruction",
       "domain": "Planning and Implementing Instruction",
       "front": "A textbook chapter contains dense nominalizations, unfamiliar examples, and few visuals. What should the teacher do before choosing materials?",
-      "back": "Analyze content goals, linguistic and cultural demands, accessibility, bias, and learner assets, then adapt supports while retaining essential ideas.",
+      "back": "Analyze content goals, linguistic and cultural demands, accessibility, bias, and assets, then adapt supports.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3184,7 +3184,7 @@
       "domainId": "planning-implementing-instruction",
       "domain": "Planning and Implementing Instruction",
       "front": "A unit on water policy assumes knowledge of local government and regional drought patterns. Which sequence most effectively builds background without stereotyping?",
-      "back": "Elicit varied prior knowledge, provide concise multimodal context, connect relevant experiences without assigning identities, and revisit background as understanding develops.",
+      "back": "Elicit varied prior knowledge, give concise multimodal context, connect experiences, and revisit background.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3203,7 +3203,7 @@
       "domainId": "planning-implementing-instruction",
       "domain": "Planning and Implementing Instruction",
       "front": "A unit includes high-utility words, discipline-specific terms, and many low-frequency details. Which planning move best supports academic vocabulary?",
-      "back": "Prioritize words central to the concept and recurring academic work, teach them in networks and contexts, and plan repeated receptive and productive encounters.",
+      "back": "Prioritize words central to the concept, teach them in networks and contexts, and plan repeated encounters.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3222,7 +3222,7 @@
       "domainId": "planning-implementing-instruction",
       "domain": "Planning and Implementing Instruction",
       "front": "Students understand a science model but produce disconnected labels rather than a causal explanation. Which teacher move best scaffolds a complex explanation?",
-      "back": "Model the target discourse, jointly construct an example, provide a temporary organizer or language frame, elicit rehearsal, and fade support based on performance.",
+      "back": "Model the discourse, jointly construct an example, offer a temporary frame, and fade support with performance.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3241,7 +3241,7 @@
       "domainId": "planning-implementing-instruction",
       "domain": "Planning and Implementing Instruction",
       "front": "The teacher asks rapid questions, accepts one-word answers from the same volunteers, and immediately evaluates each response. Which interaction pattern gives the strongest evidence of learning?",
-      "back": "Use extended wait time, varied participation structures, open and probing questions, student-to-student uptake, and prompts for explanation and clarification.",
+      "back": "Extended wait time, varied participation structures, probing questions, peer uptake, and prompts to explain.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3260,7 +3260,7 @@
       "domainId": "planning-implementing-instruction",
       "domain": "Planning and Implementing Instruction",
       "front": "After a dense direction, the teacher asks \"Do you understand?\" and the class nods. Which response best checks comprehension?",
-      "back": "Ask learners to restate, sequence, demonstrate, select an example, or begin the task while the teacher observes evidence and reteaches as needed.",
+      "back": "Ask learners to restate, sequence, demonstrate, or begin the task while observing evidence and reteaching.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3279,7 +3279,7 @@
       "domainId": "planning-implementing-instruction",
       "domain": "Planning and Implementing Instruction",
       "front": "A learner writes a well-reasoned paragraph with unclear reference words and one recurring sentence-boundary error. Which feedback most supports revision?",
-      "back": "Acknowledge successful meaning, identify one or two goal-relevant patterns with examples, prompt self-correction, and provide a chance to revise and reuse the language.",
+      "back": "Acknowledge the meaning, target one or two patterns, prompt self-correction, and allow revision.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3298,7 +3298,7 @@
       "domainId": "planning-implementing-instruction",
       "domain": "Planning and Implementing Instruction",
       "front": "Students repeatedly fill \"I think ___ because ___\" even when comparing sources requires more precise relationships. Which use of a language frame is strongest?",
-      "back": "Offer function-specific options, model flexible use, invite expansion and variation, and fade the frame as learners control the discourse independently.",
+      "back": "Offer function-specific options, model flexible use, invite expansion, and fade frames as control develops.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3317,7 +3317,7 @@
       "domainId": "planning-implementing-instruction",
       "domain": "Planning and Implementing Instruction",
       "front": "A learner's word stress makes key technical terms difficult for listeners, while other accent features do not affect meaning. Which response best supports pronunciation for intelligibility?",
-      "back": "Prioritize the feature affecting comprehensibility, use perception and meaningful production with feedback, and respect accent identity rather than demanding imitation of one native norm.",
+      "back": "Prioritize the stress feature affecting comprehension through perception and production work, respecting accent.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3336,7 +3336,7 @@
       "domainId": "assessment-evaluation",
       "domain": "Assessment and Evaluation",
       "front": "A teacher wants to identify current listening strategies before a new unit. Which assessment best matches the stated purpose?",
-      "back": "Use a brief task eliciting the target performance and analyze the evidence diagnostically or formatively to plan the next instructional step.",
+      "back": "A brief task eliciting the target listening performance, analyzed formatively to plan the next step.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3355,7 +3355,7 @@
       "domainId": "assessment-evaluation",
       "domain": "Assessment and Evaluation",
       "front": "A vocabulary test requires complex cultural trivia unrelated to the words being measured. Which issue is primarily about validity?",
-      "back": "The score may reflect irrelevant knowledge or language demands rather than the intended construct.",
+      "back": "The score may reflect irrelevant cultural knowledge rather than the vocabulary construct being measured.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3374,7 +3374,7 @@
       "domainId": "assessment-evaluation",
       "domain": "Assessment and Evaluation",
       "front": "Two raters assign very different scores to the same oral sample using vague criteria. Which issue is primarily about reliability?",
-      "back": "Inconsistent scoring reduces dependability, so raters need clear criteria, exemplars, training, and checks for agreement.",
+      "back": "Inconsistent scoring reduces dependability, so raters need clear criteria, exemplars, training, and agreement checks.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3393,7 +3393,7 @@
       "domainId": "assessment-evaluation",
       "domain": "Assessment and Evaluation",
       "front": "A score report places a learner at one level overall, but speaking and writing samples show different strengths. Which interpretation of proficiency levels is strongest?",
-      "back": "Treat levels as broad evidence within a multidimensional profile, examine domain and task performance, and avoid fixed labels or unsupported predictions.",
+      "back": "Treat levels as broad evidence within a multidimensional profile and examine domain and task performance.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3412,7 +3412,7 @@
       "domainId": "assessment-evaluation",
       "domain": "Assessment and Evaluation",
       "front": "A report compares a learner with a reference group and also describes whether specified language expectations were met. Which choice best distinguishes norm- and criterion-referenced interpretations?",
-      "back": "The norm-referenced result describes relative standing; the criterion-referenced result describes performance against defined expectations.",
+      "back": "Norm-referenced results show relative standing; criterion-referenced results show performance against expectations.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3431,7 +3431,7 @@
       "domainId": "assessment-evaluation",
       "domain": "Assessment and Evaluation",
       "front": "The objective is to explain a scientific claim orally using evidence and respond to a question. Which assessment is most authentic for the construct?",
-      "back": "Elicit the actual or closely representative communicative performance and score content-language criteria aligned to the objective.",
+      "back": "Elicit the actual oral explanation and response, scoring content and language criteria from the objective.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3450,7 +3450,7 @@
       "domainId": "assessment-evaluation",
       "domain": "Assessment and Evaluation",
       "front": "Students are learning to justify comparisons with textual evidence. Which formative assessment provides the best next-step evidence?",
-      "back": "Collect a brief performance using the target function, analyze recurring strengths and needs with clear criteria, and plan a responsive reteach or extension.",
+      "back": "A brief performance using the target function, analyzed with clear criteria to plan a reteach or extension.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3469,7 +3469,7 @@
       "domainId": "assessment-evaluation",
       "domain": "Assessment and Evaluation",
       "front": "A folder contains only polished final products selected by the teacher. Which portfolio practice is strongest?",
-      "back": "Include purposeful samples across time and modes, common criteria, learner reflection, feedback, revision, and a clear interpretation purpose.",
+      "back": "Purposeful samples across time and modes with common criteria, reflection, feedback, and a clear purpose.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3488,7 +3488,7 @@
       "domainId": "assessment-evaluation",
       "domain": "Assessment and Evaluation",
       "front": "A speaking rubric uses only \"good,\" \"fair,\" and \"poor.\" Which rubric design best supports useful feedback?",
-      "back": "Define observable, task-aligned criteria with distinct performance descriptions and exemplars, then train users to apply them consistently.",
+      "back": "Observable, task-aligned criteria with clear performance descriptions and exemplars, applied consistently.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3507,7 +3507,7 @@
       "domainId": "assessment-evaluation",
       "domain": "Assessment and Evaluation",
       "front": "Several learners omit articles, but the patterns differ by noun type, task, and level of attention. Which analysis best uses error data?",
-      "back": "Classify patterns by form, function, context, frequency, communicative effect, and developmental evidence before choosing instruction.",
+      "back": "Classify patterns by form, function, context, frequency, communicative effect, and development before teaching.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3526,7 +3526,7 @@
       "domainId": "assessment-evaluation",
       "domain": "Assessment and Evaluation",
       "front": "A listening quiz uses one unfamiliar regional accent even though the construct is broad academic comprehension. Which response best protects assessment fairness?",
-      "back": "Review representation, language and cultural load, accessibility, scoring, opportunity to learn, and construct relevance; revise barriers not essential to the target.",
+      "back": "Review representation, language load, accessibility, and construct relevance, revising barriers not essential.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3545,7 +3545,7 @@
       "domainId": "assessment-evaluation",
       "domain": "Assessment and Evaluation",
       "front": "A team reviews language-proficiency results, classroom work, content assessments, attendance, and instructional history. Which data conversation is most defensible?",
-      "back": "Triangulate converging and conflicting evidence, name uncertainty and purpose, involve relevant educators and families, and avoid decisions beyond the data.",
+      "back": "Triangulate converging and conflicting evidence, name uncertainty, involve families, and stay within the data.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3564,7 +3564,7 @@
       "domainId": "culture",
       "domain": "Culture",
       "front": "A curriculum mentions a student community only in a unit about poverty and conflict. Which response is most culturally sustaining?",
-      "back": "Include varied, accurate, contemporary and historical perspectives, examine power and representation, and invite learners to connect expertise without requiring personal disclosure.",
+      "back": "Include varied, accurate perspectives, examine power and representation, and invite optional learner expertise.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3583,7 +3583,7 @@
       "domainId": "culture",
       "domain": "Culture",
       "front": "Two students who share a home language prefer different participation structures and family roles. Which interpretation best avoids stereotyping?",
-      "back": "Treat culture as dynamic and intersectional, learn about individuals and contexts, and test instructional assumptions through relationship and evidence.",
+      "back": "Treat culture as dynamic and intersectional, learn about individuals, and test assumptions through evidence.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3602,7 +3602,7 @@
       "domainId": "culture",
       "domain": "Culture",
       "front": "A student rarely makes direct eye contact during adult conversation, and the teacher initially reads this as disengagement. Which teacher response best supports cross-cultural interpretation?",
-      "back": "Suspend judgment, gather contextual evidence, explain classroom participation expectations explicitly, and create multiple respectful ways to demonstrate engagement.",
+      "back": "Suspend judgment, gather context, explain expectations, and offer multiple ways to show engagement.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3621,7 +3621,7 @@
       "domainId": "culture",
       "domain": "Culture",
       "front": "Students disagree about whether direct debate shows engagement or disrespect. Which classroom discussion norm is strongest?",
-      "back": "Co-construct explicit norms for listening, entry, disagreement, evidence, wait time, and repair, then revisit how participation and power are distributed.",
+      "back": "Co-construct explicit norms for listening, entry, disagreement, evidence, and repair, and revisit participation.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3640,7 +3640,7 @@
       "domainId": "culture",
       "domain": "Culture",
       "front": "A worksheet depicts multilingual families as needing rescue and monolingual institutions as the sole experts. Which response best addresses bias in materials?",
-      "back": "Analyze whose knowledge and language are centered, revise deficit framing, add counternarratives and evidence, and teach critical language awareness.",
+      "back": "Analyze whose knowledge is centered, revise deficit framing, and add counternarratives and critical awareness.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3659,7 +3659,7 @@
       "domainId": "culture",
       "domain": "Culture",
       "front": "A newcomer is learning unfamiliar school routines while maintaining strong community and language ties. Which practice best supports acculturation without assimilation pressure?",
-      "back": "Teach institutional routines and choices explicitly, build reciprocal relationships, preserve home-language and cultural assets, and avoid defining belonging as cultural replacement.",
+      "back": "Teach routines explicitly, build reciprocal relationships, and preserve home-language and cultural assets.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3678,7 +3678,7 @@
       "domainId": "culture",
       "domain": "Culture",
       "front": "A school must explain an important placement process to caregivers who request communication in another language. Which family communication practice is most appropriate?",
-      "back": "Use qualified accessible interpretation or translation through approved procedures, address caregivers directly, verify understanding, invite questions, and protect confidentiality.",
+      "back": "Use qualified accessible interpretation or translation through approved procedures and verify understanding.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3697,7 +3697,7 @@
       "domainId": "culture",
       "domain": "Culture",
       "front": "Families attend few evening events scheduled without consultation, and staff conclude they do not value education. Which engagement plan is most reciprocal?",
-      "back": "Investigate access, schedules, communication preferences, prior experiences, and goals; offer varied accessible channels and co-design meaningful roles and follow-up.",
+      "back": "Investigate access, schedules, and preferences, then offer varied channels and co-design meaningful roles.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3716,7 +3716,7 @@
       "domainId": "culture",
       "domain": "Culture",
       "front": "Students bring expertise about local businesses, caregiving, agriculture, art, and multilingual media. Which use of community knowledge best supports instruction?",
-      "back": "Elicit and connect funds of knowledge to rigorous objectives with consent and reciprocity, without treating learners as cultural exhibits.",
+      "back": "Connect funds of knowledge to rigorous objectives with consent and reciprocity, without exhibiting learners.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3735,7 +3735,7 @@
       "domainId": "culture",
       "domain": "Culture",
       "front": "A family interprets a teacher's concise feedback as rejection, while the teacher intended efficiency. Which response best handles a cultural misunderstanding?",
-      "back": "Clarify intent and interpretation respectfully, invite the other perspective, use accessible communication, repair impact, and establish a clearer shared process.",
+      "back": "Clarify intent and interpretation respectfully, invite their view, repair impact, and set a clearer process.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3754,7 +3754,7 @@
       "domainId": "culture",
       "domain": "Culture",
       "front": "A community organization offers tutoring and requests names, proficiency scores, immigration histories, and family contacts. Which partnership safeguard is most important?",
-      "back": "Define purpose and roles, use authorized consent or legal authority, minimize and secure data, vet and train partners, ensure accessibility, and evaluate benefit and risk.",
+      "back": "Define purpose, use authorized consent, minimize and secure data, vet partners, and evaluate benefit and risk.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3773,7 +3773,7 @@
       "domainId": "professionalism-advocacy",
       "domain": "Professionalism and Advocacy",
       "front": "An ESOL teacher receives the science plan after instruction and is asked to simplify it. Which collaboration best integrates language and content?",
-      "back": "Co-plan the content and language objectives, analyze discourse demands, share learner evidence, coordinate scaffolds and assessment, and review outcomes together.",
+      "back": "Co-plan content and language objectives, analyze discourse demands, coordinate scaffolds, and review outcomes.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3792,7 +3792,7 @@
       "domainId": "professionalism-advocacy",
       "domain": "Professionalism and Advocacy",
       "front": "A teacher notices that group discussions repeatedly marginalize beginning speakers. Which professional-learning step is strongest?",
-      "back": "Frame a focused question, examine learner work and interaction evidence, consult credible research and colleagues, test a feasible change, and evaluate effects.",
+      "back": "Frame a focused question, examine interaction evidence, consult research and colleagues, and test a change.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3811,7 +3811,7 @@
       "domainId": "professionalism-advocacy",
       "domain": "Professionalism and Advocacy",
       "front": "A teacher suspects a language disorder from classroom errors and tells the family the student has a disability. Which response respects professional boundaries?",
-      "back": "Share specific educational observations, implement and monitor language supports, collaborate in the qualified multidisciplinary process, and avoid diagnosis or eligibility claims outside role.",
+      "back": "Share specific observations, monitor language supports, and join the qualified team process without diagnosing.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3830,7 +3830,7 @@
       "domainId": "professionalism-advocacy",
       "domain": "Professionalism and Advocacy",
       "front": "A teacher discusses a student's proficiency and family situation in a public hallway. Which privacy practice is strongest?",
-      "back": "Share only information needed for legitimate professional responsibility through approved secure channels, and follow current privacy and record procedures.",
+      "back": "Share only what legitimate professional responsibility requires, through secure approved privacy channels.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3849,7 +3849,7 @@
       "domainId": "professionalism-advocacy",
       "domain": "Professionalism and Advocacy",
       "front": "A vendor claims a program guarantees fluency in twelve weeks but provides no independent evidence. Which use of research is most defensible?",
-      "back": "Evaluate study design, participants, measures, comparison, effect and limitations; consider fit and equity; pilot responsibly; and monitor local outcomes.",
+      "back": "Evaluate design, participants, measures, and limits; consider fit and equity; pilot and monitor outcomes.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3868,7 +3868,7 @@
       "domainId": "professionalism-advocacy",
       "domain": "Professionalism and Advocacy",
       "front": "A student does not want personal migration history used as a class example. Which ethical response best supports student agency?",
-      "back": "Respect the boundary, provide alternative participation or qualified language support, avoid coercion, and protect the learner from being assigned adult institutional roles.",
+      "back": "Respect the boundary, provide alternative participation, avoid coercion, and avoid assigning adult roles.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3887,7 +3887,7 @@
       "domainId": "professionalism-advocacy",
       "domain": "Professionalism and Advocacy",
       "front": "English learners are placed in grade-level classes but receive no language assistance and cannot participate in instruction. Which response best supports meaningful access?",
-      "back": "Provide an educationally sound, adequately resourced language-assistance program and meaningful access to core and extracurricular opportunities, then evaluate effectiveness.",
+      "back": "Provide an educationally sound, resourced language program with meaningful access to core opportunities.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3906,7 +3906,7 @@
       "domainId": "professionalism-advocacy",
       "domain": "Professionalism and Advocacy",
       "front": "Data show multilingual learners are underrepresented in advanced coursework because screening occurs only through teacher nomination. Which advocacy approach is strongest?",
-      "back": "Document the barrier, center learner and family perspectives, analyze policy and data, propose feasible equitable changes, build collaboration, and monitor access and outcomes.",
+      "back": "Document the barrier, center family perspectives, analyze policy and data, propose changes, and monitor access.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3925,7 +3925,7 @@
       "domainId": "professionalism-advocacy",
       "domain": "Professionalism and Advocacy",
       "front": "A district declares its ESOL program successful because students enjoy one annual celebration. Which program-evaluation design is most useful?",
-      "back": "Examine language growth, content access and outcomes, participation, staffing, implementation, subgroup patterns, family input, exit and monitoring data, and unintended effects over time.",
+      "back": "Examine language growth, content outcomes, implementation, subgroups, and family input over time.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3944,7 +3944,7 @@
       "domainId": "professionalism-advocacy",
       "domain": "Professionalism and Advocacy",
       "front": "English learners spend most of the day in a separate room even after language instruction ends, with limited access to peers and electives. Which response best addresses unnecessary segregation?",
-      "back": "Review whether separation is educationally justified, limited, effective, and regularly reevaluated while expanding meaningful integration and access with appropriate support.",
+      "back": "Review whether separation is justified, limited, effective, and reevaluated while expanding integration.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",
@@ -3963,7 +3963,7 @@
       "domainId": "professionalism-advocacy",
       "domain": "Professionalism and Advocacy",
       "front": "Caregivers opt out of the offered program and staff plan to provide no language support or monitoring. Which response best serves a family that declines a particular EL service?",
-      "back": "Explain options and consequences accessibly, honor applicable rights and procedures, continue meeting language-access obligations through appropriate means, and monitor progress.",
+      "back": "Explain options accessibly, honor rights, keep meeting language-access duties, and monitor progress.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5362.pdf",

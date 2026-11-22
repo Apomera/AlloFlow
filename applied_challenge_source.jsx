@@ -2535,11 +2535,34 @@ function AppliedChallengeView(props) {
     if (data.coachHint) commitField('coachHint', '');
   }, [commitField, data.supports, data.family, data.coachHint]);
 
+  // Safety gate: check only the student's own workspace text (never the lesson
+  // brief or source excerpt) for self-harm disclosures before calling AI.
+  const checkAppliedChallengeSelfHarm = (val, surface) => {
+    if (!val || typeof window === 'undefined') return false;
+    const ws = val.workspace || {};
+    const msg = [ws.workingQuestion, ws.possibilities, ws.evidence, ws.assumptions, ws.tradeoffs, ws.response]
+      .filter(v => typeof v === 'string' && v.trim()).join(' ').trim();
+    if (!msg) return false;
+    const checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+    let flags = null;
+    try { flags = (checker && typeof checker.check === 'function') ? checker.check(msg) : null; } catch (_) { flags = null; }
+    const hit = Array.isArray(flags) && flags.find(f => f && f.category === 'self_harm' && f.severity === 'critical');
+    if (!hit) return false;
+    const onFlag = typeof props.onSafetyFlag === 'function' ? props.onSafetyFlag : null;
+    if (onFlag) { try { onFlag(Object.assign({}, hit, { source: 'applied_challenge_' + surface, context: msg.slice(0, 100), aiGenerated: false })); } catch (_) {} }
+    addToast(tx('applied_challenge.toast.self_harm_pause', 'We paused AI coaching for a moment because what you wrote sounds heavy. Please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). You are not alone.'), 'warn');
+    if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+      try { window.SelHub.showCrisisModal({ toolName: 'Applied Challenge Studio', contentSnippet: msg.slice(0, 200) }); } catch (_) {}
+    }
+    return true;
+  };
+
   const requestHint = async () => {
     if (typeof callGemini !== 'function') {
       addToast(tx('applied_challenge.toast.no_ai_coaching', 'AI coaching is not available yet.'), 'info');
       return;
     }
+    if (checkAppliedChallengeSelfHarm(data, 'hint')) return;
     const requestedPhase = hintPhase;
     const requestToken = ++requestTokenRef.current;
     const requestFingerprint = appliedChallengeRequestFingerprint(data, 'hint', {
@@ -2582,6 +2605,7 @@ function AppliedChallengeView(props) {
       addToast(tx('applied_challenge.toast.no_ai_stress', 'AI stress testing is not available yet.'), 'info');
       return;
     }
+    if (checkAppliedChallengeSelfHarm(data, 'stress-test')) return;
     const requestToken = ++requestTokenRef.current;
     const requestFingerprint = appliedChallengeRequestFingerprint(data, 'stress-test', { resourceId });
     setBusy('stress-test');
@@ -2624,6 +2648,7 @@ function AppliedChallengeView(props) {
       addToast(tx('applied_challenge.toast.no_ai_feedback', 'AI feedback is not available yet.'), 'info');
       return;
     }
+    if (checkAppliedChallengeSelfHarm(data, 'feedback')) return;
     const feedbackSourceExcerpt = data.sourceExcerpt;
     const feedbackGradeLevel = gradeLevel || data.lessonRef.gradeLevel;
     const requestToken = ++requestTokenRef.current;

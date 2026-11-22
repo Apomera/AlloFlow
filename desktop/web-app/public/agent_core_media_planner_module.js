@@ -92,7 +92,8 @@
     }
     var requests = [];
     var seen = Object.create(null);
-    (Array.isArray(input.requests) ? input.requests : []).forEach(function (request, index) {
+    var boundedRequests = Array.isArray(input.requests) ? input.requests.slice(0, MAX_ITEMS) : [];
+    boundedRequests.forEach(function (request, index) {
       var report = contracts.validateMediaRequest(request);
       if (!report.ok) {
         report.errors.forEach(function (item) {
@@ -148,7 +149,9 @@
       var bModel = b.model === policy.preferredModel ? 1 : 0;
       if (aModel !== bModel) return bModel - aModel;
       var rank = { included: 0, 'local-resource': 1, metered: 2, unknown: 3 };
-      return (rank[a.billing] || 0) - (rank[b.billing] || 0);
+      var aRank = Object.prototype.hasOwnProperty.call(rank, a.billing) ? rank[a.billing] : 3;
+      var bRank = Object.prototype.hasOwnProperty.call(rank, b.billing) ? rank[b.billing] : 3;
+      return aRank - bRank;
     });
     return candidates;
   }
@@ -163,7 +166,12 @@
     if (typeof estimateOperation !== 'function') {
       return { ok: false, code: 'pricing-estimate-required', message: 'A current runtime pricing estimator is required for metered capability.' };
     }
-    var estimate = estimateOperation({ role: role, selection: selection, request: request });
+    var estimate;
+    try {
+      estimate = estimateOperation({ role: role, selection: selection, request: request });
+    } catch (_) {
+      return { ok: false, code: 'pricing-estimate-invalid', message: 'Runtime estimator threw an error while calculating bounds.' };
+    }
     if (!estimate || !Number.isFinite(estimate.upperBoundUsd) || estimate.upperBoundUsd < 0 ||
         !Number.isInteger(estimate.operations) || estimate.operations < 1) {
       return { ok: false, code: 'pricing-estimate-invalid', message: 'Runtime estimator returned an invalid cost or operation bound.' };
@@ -315,15 +323,22 @@
     };
   }
 
+  function stripControlAndBidi(value) {
+    return String(value == null ? '' : value).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\u202A-\u202E\u2066-\u2069]/g, '');
+  }
+
   function slug(value, fallback) {
-    var result = String(value || '').trim().replace(/[^A-Za-z0-9._:-]+/g, '-').replace(/^[^A-Za-z0-9]+|-+$/g, '').slice(0, 80);
-    return result || fallback;
+    var trimmed = stripControlAndBidi(value).trim();
+    if (!trimmed || trimmed === '__proto__' || trimmed === 'constructor' || trimmed === 'prototype') return fallback;
+    var result = trimmed.replace(/[^A-Za-z0-9._:-]+/g, '-').replace(/^[^A-Za-z0-9]+|-+$/g, '').slice(0, 80);
+    if (!result || result === '__proto__' || result === 'constructor' || result === 'prototype') return fallback;
+    return result;
   }
 
   function createGlossaryMediaBatch(input) {
     var source = input || {};
     var planId = slug(source.planId, 'glossary-media-plan');
-    var entries = Array.isArray(source.entries) ? source.entries : [];
+    var entries = Array.isArray(source.entries) ? source.entries.slice(0, MAX_ITEMS) : [];
     var providerPolicy = source.providerPolicy || {};
     var output = source.output || { width: 1024, height: 1024, mimeType: 'image/png', quality: 'standard' };
     var usedRequestIds = Object.create(null);
@@ -345,9 +360,9 @@
           }
         }
         usedRequestIds[reqId] = true;
-        var term = String(entry && entry.term || '').trim();
-        var definition = String(entry && entry.definition || '').trim();
-        var suppliedPrompt = String(entry && entry.prompt || '').trim();
+        var term = stripControlAndBidi(entry && entry.term || '').trim();
+        var definition = stripControlAndBidi(entry && entry.definition || '').trim();
+        var suppliedPrompt = stripControlAndBidi(entry && entry.prompt || '').trim();
         var prompt = suppliedPrompt || ('Create a clear, age-appropriate instructional illustration for the glossary term "' + term + '". Definition: ' + definition + '. Avoid decorative text and make the central concept visually unambiguous.');
         var request = {
           schemaVersion: SCHEMA_VERSION,
@@ -366,7 +381,7 @@
     };
   }
 
-  var API = {
+  var API = Object.freeze({
     MAX_ITEMS: MAX_ITEMS,
     validateBatch: function (input, injectedContracts) {
       var contracts = getContracts(injectedContracts);
@@ -375,7 +390,7 @@
     },
     planMediaBatch: planMediaBatch,
     createGlossaryMediaBatch: createGlossaryMediaBatch
-  };
+  });
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   if (typeof window !== 'undefined') {

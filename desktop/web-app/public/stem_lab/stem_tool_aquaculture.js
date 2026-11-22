@@ -24,15 +24,17 @@
 // Category: science (aquaculture + place-based + vocational)
 // ═══════════════════════════════════════════════════════════════
 
-window.StemLab = window.StemLab || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
-};
+if (typeof window !== 'undefined') {
+  window.StemLab = window.StemLab || {
+    _registry: {}, _order: [],
+    registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
+    isRegistered: function(id) { return !!this._registry[id]; },
+    getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
+    renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
+  };
+}
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab'))) {
+if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab'))) {
 
 (function() {
   // Translator reachable from module scope, IIFE-private so it is not a global.
@@ -49,7 +51,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
   // ─── Live region (ARIA) ───
   (function() {
-    if (document.getElementById('allo-live-aq')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-aq')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-aq';
     lr.setAttribute('aria-live', 'polite');
@@ -59,14 +61,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(lr);
   })();
+  var _aqAnnounceTimer = null;
   function aqAnnounce(msg) {
+    if (typeof document === 'undefined') return;
     var lr = document.getElementById('allo-live-aq');
-    if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 30); }
+    if (lr) {
+      lr.textContent = '';
+      if (_aqAnnounceTimer !== null) clearTimeout(_aqAnnounceTimer);
+      _aqAnnounceTimer = setTimeout(function() { _aqAnnounceTimer = null; if (lr && lr.isConnected) lr.textContent = msg; }, 30);
+    }
   }
 
   // ─── Tool-scoped CSS ───
   (function() {
-    if (document.getElementById('aquaculturelab-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('aquaculturelab-css')) return;
     var s = document.createElement('style');
     s.id = 'aquaculturelab-css';
     s.textContent = [
@@ -8558,10 +8566,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
   var AQ_KEY = 'aquacultureLab.state.v1';
   // Failed writes remain recoverable in this page session; exports use the same state.
   var aqPendingState = null;
+  function _aqSafeJsonParse(raw) {
+    return JSON.parse(raw, function(k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+  }
   function loadState() {
     try {
       var raw = aqPendingState !== null ? aqPendingState : window.localStorage.getItem(AQ_KEY);
-      var s = raw ? JSON.parse(raw) : {};
+      var parsed = raw ? _aqSafeJsonParse(raw) : {};
+      var s = (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {};
       return Object.assign({
         region: DEFAULT_REGION,
         completedMissions: {},
@@ -8634,17 +8648,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     // no way back. preventDefault is required or the context can never be restored;
     // then hand the component the same threeError path creation failure already uses,
     // which renders the alert and its retry button.
-    if (!canvas._aqLossBound) {
-      canvas._aqLossBound = true;
-      canvas.addEventListener('webglcontextlost', function (ev) {
-        // releaseGl force-loses a canvas after teardown removes it; that is a
-        // normal exit, not a failure. A real loss happens on a canvas still on the page.
-        if (!canvas.isConnected) return;
-        ev.preventDefault();
-        console.warn('[Aquaculture] WebGL context lost — offering the 2D fallback and retry');
-        if (opts && typeof opts.onContextLost === 'function') opts.onContextLost();
-      });
+    var onWebGLContextLost = function (ev) {
+      // releaseGl force-loses a canvas after teardown removes it; that is a
+      // normal exit, not a failure. A real loss happens on a canvas still on the page.
+      if (!canvas.isConnected) return;
+      ev.preventDefault();
+      console.warn('[Aquaculture] WebGL context lost — offering the 2D fallback and retry');
+      if (opts && typeof opts.onContextLost === 'function') opts.onContextLost();
+    };
+    if (canvas._aqOnContextLost) {
+      canvas.removeEventListener('webglcontextlost', canvas._aqOnContextLost);
     }
+    canvas._aqOnContextLost = onWebGLContextLost;
+    canvas._aqLossBound = true;
+    canvas.addEventListener('webglcontextlost', onWebGLContextLost);
     var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
     renderer.setPixelRatio(dpr);
     renderer.setSize(W, H, false);
@@ -9432,6 +9449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var actionRequests = {};
     var suspended = !!document.hidden;
     function onKeyDown(e) {
+      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       var target = e.target;
       if (target && target.matches && target.matches('input, textarea, select, button, [contenteditable="true"]')) return;
       if (target !== canvas) return;
@@ -9459,11 +9477,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       actionRequests = {};
     }
     function onWindowBlur() { suspended = true; clearKeys(); }
-    function onWindowFocus() { suspended = !!document.hidden; lastT = performance.now(); }
+    function onWindowFocus() {
+      suspended = !!document.hidden;
+      lastT = performance.now();
+      if (!suspended && alive && !raf) raf = requestAnimationFrame(tick);
+    }
     function onVisibilityChange() {
       suspended = !!document.hidden;
       lastT = performance.now();
-      if (suspended) clearKeys();
+      if (suspended) {
+        clearKeys();
+        if (raf) { cancelAnimationFrame(raf); raf = null; }
+      } else if (alive && !raf) {
+        raf = requestAnimationFrame(tick);
+      }
     }
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
@@ -9542,7 +9569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var now = performance.now();
       if (suspended) {
         lastT = now;
-        raf = requestAnimationFrame(tick);
+        raf = null;
         return;
       }
       var dt = Math.min(0.08, (now - lastT) / 1000);
@@ -9946,7 +9973,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       },
       dispose: function() {
         alive = false;
-        if (raf) cancelAnimationFrame(raf);
+        if (raf) { cancelAnimationFrame(raf); raf = null; }
+        if (canvas._aqOnContextLost) {
+          canvas.removeEventListener('webglcontextlost', canvas._aqOnContextLost);
+          canvas._aqOnContextLost = null;
+          canvas._aqLossBound = false;
+        }
         window.removeEventListener('keydown', onKeyDown);
         window.removeEventListener('keyup', onKeyUp);
         window.removeEventListener('blur', onWindowBlur);
@@ -9994,7 +10026,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     document.head.appendChild(st);
   })();
 
-  window.StemLab.registerTool('aquacultureLab', {
+  if (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.registerTool === 'function') window.StemLab.registerTool('aquacultureLab', {
     label: 'AquacultureLab: Mussel Farm Sim',
     title: 'AquacultureLab: Mussel Farm Sim',
     icon: '🦪',
@@ -10137,7 +10169,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     }, [comfortableReading]);
     useEffect(function() {
       function onLabNavigationKeyDown(event) {
-        if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.defaultPrevented || event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
         var target = event.target;
         var isTyping = target && target.matches && target.matches('input, textarea, select, [contenteditable="true"]');
         // WCAG 2.1.4: "/" acts only while focus is inside the lab.
@@ -11167,6 +11199,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     }
 
     function handleFieldMissionScenarioKeyDown(event, index) {
+      if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
       var handled = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
       if (handled.indexOf(event.key) < 0 || sim.active || sim.loading || guidedMission.active) return;
       event.preventDefault();
@@ -11799,7 +11832,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var reader = new FileReader();
       reader.onload = function() {
         try {
-          var payload = JSON.parse(String(reader.result || ''));
+          var payload = _aqSafeJsonParse(String(reader.result || ''));
           var currentState = loadState();
           var importPlan = aqPlanLearningPortfolioImport(currentState, payload, allTopicIds);
           var mergedState = importPlan.state;
@@ -12052,6 +12085,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                   'aria-describedby': 'aq-topic-search-help', 'aria-keyshortcuts': 'Escape',
                   onChange: function(event) { setNavSearch(event.target.value); },
                   onKeyDown: function(event) {
+                    if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
                     if (event.key === 'Escape' && navSearch) {
                       event.preventDefault();
                       setNavSearch('');
@@ -25097,6 +25131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var predictionMatches = musselPrediction === assessment.priorityFactor.id || (musselPrediction === 'none' && assessment.priorityFactor.id === 'none');
       var currentStepIndex = musselAssessmentRevealed ? 4 : (musselPrediction ? 2 : 1);
       function handleMusselPresetKeyDown(event, index) {
+        if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         var handledKeys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
         if (handledKeys.indexOf(event.key) < 0) return;
         event.preventDefault();

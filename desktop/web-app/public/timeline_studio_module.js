@@ -694,7 +694,11 @@
       }
       var w = null;
       try {
-        w = window.open(withParam(withParam(TIMELINE_STUDIO_URL, 'lang', lang), 'theme', hostTheme()), 'alloflow-timeline-studio', 'width=1200,height=800');
+        var popupUrl = withParam(withParam(TIMELINE_STUDIO_URL, 'lang', lang), 'theme', hostTheme());
+        if (window.location && window.location.origin && window.location.origin !== 'null') {
+          popupUrl = withParam(popupUrl, 'host', window.location.origin);
+        }
+        w = window.open(popupUrl, 'alloflow-timeline-studio', 'width=1200,height=800');
       } catch (_) {
         w = null;
       }

@@ -1760,7 +1760,11 @@
     '  float minimumSize = mix(1.65, 1.6, isCloud) * u_dpr;',
     '  float projectedSize = angularSize * u_height * lens / max(camera.z, 0.03);',
     '  float maximumSize = min(mix(120.0, 60.0, isCloud) * u_dpr, u_pointMax);',
-    '  gl_PointSize = clamp(projectedSize, min(minimumSize, maximumSize), maximumSize);',
+    // Relativistic transverse aberration warp bloom for unresolved starlight during high-beta flight (zero effect at rest).
+    '  float transverseR = length(apparent.xy);',
+    '  float warpStretch = (1.0 - isCloud) * smoothstep(0.05, 0.92, u_beta) * smoothstep(0.14, 0.95, transverseR);',
+    '  float warpSized = projectedSize * (1.0 + 0.24 * warpStretch * (1.0 - smoothstep(10.0, 22.0, projectedSize / u_dpr)));',
+    '  gl_PointSize = clamp(warpSized, min(minimumSize, maximumSize), maximumSize);',
     // Only the three authored nearby stars enter the stellar quad path.
     // Exact Float32 centers keep all other stellar sprites unchanged.
     '  float quadBlend = 0.0;',
@@ -1847,15 +1851,23 @@
     '  }',
     // RGB and tone mapping are deliberate visual approximations, not a spectral camera.
     '  float exposure = clamp(pow(D, 1.5), 0.012, 4.0);',
+    // Subtle relativistic aberration / Einstein-ring caustic halo shimmer around the forward headlight cone (vanishes at rest).
+    '  float einsteinRing = smoothstep(0.10, 0.88, u_beta) * exp(-pow((transverseR - (0.36 - 0.14 * u_beta)) * 4.8, 2.0));',
+    '  if (einsteinRing > 0.001) {',
+    '    v_color = mix(v_color, mix(vec3(0.62, 0.82, 1.0), vec3(0.84, 0.72, 1.0), 0.35), einsteinRing * 0.22);',
+    '  }',
     // Subpixel clouds fade with projected area instead of becoming a bright
     // minimum-size dot. The diffuse surface carries their collective light.
     '  float coverage = min(1.0, pow(projectedSize / minimumSize, 2.0));',
     '  float magBoost = mix(1.0 + 0.18 * smoothstep(0.45, 1.25, a_light), 1.0, isCloud);',
-    '  v_light = a_light * magBoost * bandGain * u_exposure * exposure * mix(1.0, coverage, isCloud) * mix(1.0 - quadBlend, quadBlend, max(u_stellarQuad, u_cloudQuad));',
+    '  float ringGain = 1.0 + 0.26 * einsteinRing;',
+    '  v_light = a_light * magBoost * ringGain * bandGain * u_exposure * exposure * mix(1.0, coverage, isCloud) * mix(1.0 - quadBlend, quadBlend, max(u_stellarQuad, u_cloudQuad));',
     // Nearby generated wisps fade through the observer instead of filling the
     // view with a capped billboard. This is an emission approximation.
     '  if (a_cloud >= 5.0) v_light *= smoothstep(0.35, 2.8, distance / max(a_size, 0.00001));',
-    '  v_cloudRelief = vec2(dot(n,normalize(vec3(0.83,0.21,0.51))),dot(n,normalize(vec3(-0.31,0.93,0.20)))) * 0.22;',
+    // Deepen layered volumetric nebula dust parallax relief as observer approaches nearby emission clouds.
+    '  float reliefGain = mix(0.22, 0.34, cloudDetail);',
+    '  v_cloudRelief = vec2(dot(n,normalize(vec3(0.83,0.21,0.51))),dot(n,normalize(vec3(-0.31,0.93,0.20)))) * reliefGain;',
     '  v_cloud = isCloud;',
     '  float rotation = fract(a_cloud) * 6.28318530718;',
     '  v_cloudProfile = vec3(mod(max(0.0, floor(a_cloud) - 1.0), 4.0), cos(rotation), sin(rotation));',

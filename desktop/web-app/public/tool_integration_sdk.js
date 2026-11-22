@@ -46,7 +46,8 @@
     var c = (contract && typeof contract === 'object' && !Array.isArray(contract)) ? contract : {};
     var errors = [];
     var warnings = [];
-    var now = options && options.now ? new Date(options.now).getTime() : Date.now();
+    var now = options && options.now !== undefined ? new Date(options.now).getTime() : Date.now();
+    if (options && options.now !== undefined && !isFinite(now)) errors.push('review clock is invalid');
     if (c.schemaVersion !== 1) errors.push('schemaVersion must be 1');
     if (!/^[a-z0-9][a-z0-9_-]{1,79}$/.test(String(c.id || ''))) errors.push('id must be a stable lowercase identifier');
     ['name', 'version', 'reviewedAt', 'reviewAfter'].forEach(function (field) {
@@ -104,7 +105,7 @@
     if (typeof options.buildCapture !== 'function') throw new Error('buildCapture(payload) is required');
     if (contract.privacy && contract.privacy.sanitizerRequired === true && typeof options.sanitizeCapture !== 'function') throw new Error('sanitizeCapture(capture) is required by this contract');
 
-    var preparedCaptures = typeof WeakSet === 'function' ? new WeakSet() : null;
+    var preparedCaptures = typeof WeakMap === 'function' ? new WeakMap() : null;
 
     function finalizeCapture(rawCapture) {
       var capture = clone(rawCapture, MAX_CAPTURE_CHARS);
@@ -122,7 +123,9 @@
       if (!capture.summary) return { ok: false, reason: 'A bounded artifact summary is required.' };
       var receiptCheck = validateReceipt(capture.reproducibilityReceipt, contract);
       if (!receiptCheck.ok) return { ok: false, reason: receiptCheck.errors.join('; ') };
-      if (preparedCaptures) preparedCaptures.add(capture);
+      if (preparedCaptures) {
+        try { preparedCaptures.set(capture, JSON.stringify(capture)); } catch (_) {}
+      }
       return { ok: true, capture: capture };
     }
 
@@ -150,7 +153,11 @@
 
     function download(payload, filename) {
       var prepared;
+      var unchangedPrepared = false;
       if (payload && typeof payload === 'object' && !Array.isArray(payload) && preparedCaptures && preparedCaptures.has(payload)) {
+        try { unchangedPrepared = JSON.stringify(payload) === preparedCaptures.get(payload); } catch (_) { unchangedPrepared = false; }
+      }
+      if (unchangedPrepared) {
         prepared = { ok: true, capture: clone(payload, MAX_CAPTURE_CHARS) };
         if (!prepared.capture) return { ok: false, reason: 'Prepared artifact could not be serialized.' };
       } else if (payload && typeof payload === 'object' && !Array.isArray(payload) && payload.sourceToolId === contract.id) {

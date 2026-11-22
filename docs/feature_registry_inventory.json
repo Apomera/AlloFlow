@@ -8,11 +8,11 @@
     "stemTools": 152,
     "selTools": 72,
     "alloPacks": 67,
-    "hubCards": 73,
+    "hubCards": 77,
     "appsScripts": 6,
     "modules": 222,
     "langPacks": 63,
-    "unitTestFiles": 9601,
+    "unitTestFiles": 9654,
     "e2eSpecs": 1956
   },
   "commands": [
@@ -3630,8 +3630,16 @@
       "hub": "Leadership Hub",
       "cards": [
         {
+          "id": "all",
+          "title": "All tools"
+        },
+        {
           "id": "announcements",
           "title": "Family Announcements"
+        },
+        {
+          "id": "coaching",
+          "title": "Instruction & Coaching"
         },
         {
           "id": "diagnosisEligibility",
@@ -3640,6 +3648,10 @@
         {
           "id": "dispro",
           "title": "Disproportionality Analyzer"
+        },
+        {
+          "id": "equity",
+          "title": "MTSS & Equity"
         },
         {
           "id": "evaluation",
@@ -3660,6 +3672,10 @@
         {
           "id": "rewards",
           "title": "School Rewards & Store"
+        },
+        {
+          "id": "sped",
+          "title": "SpEd, Meetings & Family"
         },
         {
           "id": "timelines",
@@ -4200,7 +4216,7 @@
     "yoruba"
   ],
   "tests": {
-    "unit": 9601,
+    "unit": 9654,
     "e2e": 1956
   }
 }

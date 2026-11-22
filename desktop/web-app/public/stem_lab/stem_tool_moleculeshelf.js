@@ -28,6 +28,31 @@
   'use strict';
   if (typeof window === 'undefined' || !window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
+  (function () {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-moleculeshelf-motion-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-moleculeshelf-motion-css';
+    st.textContent = [
+      '@keyframes msOrbitDrift{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}',
+      '@keyframes msOrbitCounter{from{transform:rotate(360deg)}to{transform:rotate(0deg)}}',
+      '@keyframes msBondPulse{0%{stroke-dashoffset:0;opacity:.22}50%{stroke-dashoffset:-36;opacity:.78}100%{stroke-dashoffset:-72;opacity:.22}}',
+      '@keyframes msDashDrift{from{stroke-dashoffset:0}to{stroke-dashoffset:-24}}',
+      '@keyframes msCatchlight{0%,100%{opacity:.58;transform:scale(.88)}50%{opacity:1;transform:scale(1.18)}}',
+      '@keyframes msAtomAura{0%,100%{opacity:.14;transform:scale(.92)}50%{opacity:.34;transform:scale(1.18)}}',
+      '.ms-orbit-spin{transform-box:fill-box;transform-origin:center;animation:msOrbitDrift 26s linear infinite;pointer-events:none;}',
+      '.ms-orbit-spin-rev{transform-box:fill-box;transform-origin:center;animation:msOrbitCounter 18s linear infinite;pointer-events:none;}',
+      '.ms-bond-glint{fill:none;stroke:#e0f2fe;stroke-linecap:round;stroke-dasharray:18 54;animation:msBondPulse 4.4s ease-in-out infinite;pointer-events:none;}',
+      '.ms-dash-drift{animation:msDashDrift 4.8s linear infinite;}',
+      '.ms-catchlight{transform-box:fill-box;transform-origin:center;animation:msCatchlight 3.4s ease-in-out infinite;pointer-events:none;}',
+      '.ms-atom-aura{transform-box:fill-box;transform-origin:center;animation:msAtomAura 3.8s ease-in-out infinite;pointer-events:none;}',
+      '@media(prefers-reduced-motion:reduce){.ms-orbit-spin,.ms-orbit-spin-rev,.ms-bond-glint,.ms-dash-drift,.ms-catchlight,.ms-atom-aura{animation:none!important;}}',
+      '.theme-contrast .ms-orbit-spin,.theme-contrast .ms-orbit-spin-rev,.theme-contrast .ms-bond-glint,.theme-contrast .ms-catchlight,.theme-contrast .ms-atom-aura{display:none!important;}',
+      '.theme-contrast .ms-dash-drift{animation:none!important;}',
+      '@media(forced-colors:active){.ms-orbit-spin,.ms-orbit-spin-rev,.ms-bond-glint,.ms-catchlight,.ms-atom-aura{display:none!important;}.ms-dash-drift{animation:none!important;}}'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   var MOLECULE_SHELF_CDN_URL = 'https://alloflow-cdn.pages.dev/molecule_shelf/molecule_shelf.html?v=1';
   function companionUrl(path, cdnUrl) {
     try {
@@ -317,11 +342,12 @@
 
       // Structural motif SVG tailored to selected PDB specimen (radial 3D CPK atom spheres & specular bonds, zero textbook spoiler)
       var shape = selectedStarter.shape;
-      var cpkSphere = function (k, cx, cy, r, gradId, fallbackCol) {
+      var cpkSphere = function (k, cx, cy, r, gradId, fallbackCol, delayIdx) {
+        var delayStyle = delayIdx ? { animationDelay: (delayIdx * 0.42) + 's' } : undefined;
         return h('g', { key: k },
-          !isContrast && h('circle', { cx: cx, cy: cy, r: r + 3.5, fill: fallbackCol, opacity: 0.2 }),
+          !isContrast && h('circle', { className: 'ms-atom-aura', cx: cx, cy: cy, r: r + 3.8, fill: fallbackCol, opacity: 0.22, style: delayStyle }),
           h('circle', { cx: cx, cy: cy, r: r, fill: isContrast ? fallbackCol : ('url(#' + gradId + ')'), stroke: isContrast ? '#000000' : '#ffffff', strokeWidth: 0.9, strokeOpacity: isContrast ? 1 : 0.72 }),
-          !isContrast && h('circle', { cx: cx - r * 0.3, cy: cy - r * 0.3, r: Math.max(1.1, r * 0.28), fill: '#ffffff', opacity: 0.85 })
+          !isContrast && h('circle', { className: 'ms-catchlight', cx: cx - r * 0.3, cy: cy - r * 0.3, r: Math.max(1.15, r * 0.29), fill: '#ffffff', opacity: 0.86, style: delayStyle })
         );
       };
       var motifNodes = [];
@@ -329,75 +355,83 @@
         motifNodes.push(
           !isContrast && h('path', { key: 'd1g', d: 'M40 44 C78 20, 114 114, 152 44 C190 20, 226 114, 264 44', fill: 'none', stroke: pal.ribbonA, strokeWidth: 8, opacity: 0.2, strokeLinecap: 'round' }),
           h('path', { key: 'd1', d: 'M40 44 C78 20, 114 114, 152 44 C190 20, 226 114, 264 44', fill: 'none', stroke: pal.ribbonA, strokeWidth: 3.5, strokeLinecap: 'round' }),
+          !isContrast && h('path', { key: 'd1s', className: 'ms-bond-glint', d: 'M40 44 C78 20, 114 114, 152 44 C190 20, 226 114, 264 44', strokeWidth: 1.5 }),
           !isContrast && h('path', { key: 'd2g', d: 'M40 96 C78 120, 114 26, 152 96 C190 120, 226 26, 264 96', fill: 'none', stroke: pal.ribbonB, strokeWidth: 8, opacity: 0.2, strokeLinecap: 'round' }),
           h('path', { key: 'd2', d: 'M40 96 C78 120, 114 26, 152 96 C190 120, 226 26, 264 96', fill: 'none', stroke: pal.ribbonB, strokeWidth: 3.5, strokeLinecap: 'round' }),
+          !isContrast && h('path', { key: 'd2s', className: 'ms-bond-glint', d: 'M40 96 C78 120, 114 26, 152 96 C190 120, 226 26, 264 96', strokeWidth: 1.5, style: { animationDelay: '-2.2s' } }),
           h('line', { key: 'r1', x1: 68, y1: 42, x2: 68, y2: 98, stroke: pal.accent, strokeWidth: 2.2 }),
           h('line', { key: 'r2', x1: 112, y1: 68, x2: 112, y2: 72, stroke: pal.accent, strokeWidth: 2.2 }),
           h('line', { key: 'r3', x1: 152, y1: 46, x2: 152, y2: 94, stroke: pal.accent, strokeWidth: 2.2 }),
           h('line', { key: 'r4', x1: 224, y1: 46, x2: 224, y2: 94, stroke: pal.accent, strokeWidth: 2.2 }),
-          cpkSphere('da1', 68, 42, 4.4, 'ms-cpk-a', pal.ribbonA),
-          cpkSphere('da2', 68, 98, 4.4, 'ms-cpk-b', pal.ribbonB),
-          cpkSphere('da3', 152, 46, 4.4, 'ms-cpk-a', pal.ribbonA),
-          cpkSphere('da4', 152, 94, 4.4, 'ms-cpk-b', pal.ribbonB),
-          cpkSphere('da5', 224, 46, 4.4, 'ms-cpk-a', pal.ribbonA),
-          cpkSphere('da6', 224, 94, 4.4, 'ms-cpk-b', pal.ribbonB)
+          cpkSphere('da1', 68, 42, 4.4, 'ms-cpk-a', pal.ribbonA, 0),
+          cpkSphere('da2', 68, 98, 4.4, 'ms-cpk-b', pal.ribbonB, 1),
+          cpkSphere('da3', 152, 46, 4.4, 'ms-cpk-a', pal.ribbonA, 2),
+          cpkSphere('da4', 152, 94, 4.4, 'ms-cpk-b', pal.ribbonB, 3),
+          cpkSphere('da5', 224, 46, 4.4, 'ms-cpk-a', pal.ribbonA, 4),
+          cpkSphere('da6', 224, 94, 4.4, 'ms-cpk-b', pal.ribbonB, 5)
         );
       } else if (shape === 'tetramer') {
         motifNodes.push(
           !isContrast && h('circle', { key: 't1g', cx: 118, cy: 52, r: 22, fill: 'none', stroke: pal.ribbonA, strokeWidth: 7, opacity: 0.18 }),
           h('circle', { key: 't1', cx: 118, cy: 52, r: 22, fill: isContrast ? 'none' : 'rgba(56,189,248,0.1)', stroke: pal.ribbonA, strokeWidth: 3 }),
+          !isContrast && h('circle', { key: 't1s', className: 'ms-bond-glint', cx: 118, cy: 52, r: 22, strokeWidth: 1.4 }),
           !isContrast && h('circle', { key: 't2g', cx: 178, cy: 52, r: 22, fill: 'none', stroke: pal.ribbonB, strokeWidth: 7, opacity: 0.18 }),
           h('circle', { key: 't2', cx: 178, cy: 52, r: 22, fill: isContrast ? 'none' : 'rgba(192,132,252,0.1)', stroke: pal.ribbonB, strokeWidth: 3 }),
+          !isContrast && h('circle', { key: 't2s', className: 'ms-bond-glint', cx: 178, cy: 52, r: 22, strokeWidth: 1.4, style: { animationDelay: '-1.1s' } }),
           h('circle', { key: 't3', cx: 118, cy: 90, r: 22, fill: isContrast ? 'none' : 'rgba(192,132,252,0.1)', stroke: pal.ribbonB, strokeWidth: 3 }),
           h('circle', { key: 't4', cx: 178, cy: 90, r: 22, fill: isContrast ? 'none' : 'rgba(56,189,248,0.1)', stroke: pal.ribbonA, strokeWidth: 3 }),
-          cpkSphere('h1', 118, 52, 6.2, 'ms-cpk-c', pal.accent),
-          cpkSphere('h2', 178, 52, 6.2, 'ms-cpk-c', pal.accent),
-          cpkSphere('h3', 118, 90, 6.2, 'ms-cpk-c', pal.accent),
-          cpkSphere('h4', 178, 90, 6.2, 'ms-cpk-c', pal.accent)
+          cpkSphere('h1', 118, 52, 6.2, 'ms-cpk-c', pal.accent, 0),
+          cpkSphere('h2', 178, 52, 6.2, 'ms-cpk-c', pal.accent, 1),
+          cpkSphere('h3', 118, 90, 6.2, 'ms-cpk-c', pal.accent, 2),
+          cpkSphere('h4', 178, 90, 6.2, 'ms-cpk-c', pal.accent, 3)
         );
       } else if (shape === 'antibody') {
         motifNodes.push(
           !isContrast && h('path', { key: 'ab1g', d: 'M148 112 L148 70 L98 34', fill: 'none', stroke: pal.ribbonA, strokeWidth: 9.5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.2 }),
           h('path', { key: 'ab1', d: 'M148 112 L148 70 L98 34', fill: 'none', stroke: pal.ribbonA, strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+          !isContrast && h('path', { key: 'ab1s', className: 'ms-bond-glint', d: 'M148 112 L148 70 L98 34', strokeWidth: 1.6 }),
           !isContrast && h('path', { key: 'ab2g', d: 'M148 70 L198 34', fill: 'none', stroke: pal.ribbonA, strokeWidth: 9.5, strokeLinecap: 'round', opacity: 0.2 }),
           h('path', { key: 'ab2', d: 'M148 70 L198 34', fill: 'none', stroke: pal.ribbonA, strokeWidth: 5, strokeLinecap: 'round' }),
+          !isContrast && h('path', { key: 'ab2s', className: 'ms-bond-glint', d: 'M148 70 L198 34', strokeWidth: 1.6, style: { animationDelay: '-1.5s' } }),
           h('line', { key: 'ab3', x1: 112, y1: 60, x2: 88, y2: 43, stroke: pal.ribbonB, strokeWidth: 4, strokeLinecap: 'round' }),
           h('line', { key: 'ab4', x1: 184, y1: 60, x2: 208, y2: 43, stroke: pal.ribbonB, strokeWidth: 4, strokeLinecap: 'round' }),
-          cpkSphere('ab5', 98, 34, 5.8, 'ms-cpk-c', pal.accent),
-          cpkSphere('ab6', 198, 34, 5.8, 'ms-cpk-c', pal.accent),
-          cpkSphere('ab7', 148, 70, 5.2, 'ms-cpk-a', pal.ribbonA)
+          cpkSphere('ab5', 98, 34, 5.8, 'ms-cpk-c', pal.accent, 0),
+          cpkSphere('ab6', 198, 34, 5.8, 'ms-cpk-c', pal.accent, 2),
+          cpkSphere('ab7', 148, 70, 5.2, 'ms-cpk-a', pal.ribbonA, 1)
         );
       } else if (shape === 'barrel' || shape === 'pore') {
         motifNodes.push(
           !isContrast && h('ellipse', { key: 'bp1g', cx: 150, cy: 70, rx: 46, ry: 34, fill: 'none', stroke: pal.ribbonA, strokeWidth: 8, opacity: 0.2 }),
           h('ellipse', { key: 'bp1', cx: 150, cy: 70, rx: 46, ry: 34, fill: isContrast ? 'none' : 'rgba(56,189,248,0.08)', stroke: pal.ribbonA, strokeWidth: 3.5 }),
-          h('ellipse', { key: 'bp2', cx: 150, cy: 70, rx: 28, ry: 20, fill: 'none', stroke: pal.ribbonB, strokeWidth: 2.5, strokeDasharray: '6 4' }),
-          cpkSphere('bp3', 150, 70, 8.5, 'ms-cpk-c', pal.accent)
+          !isContrast && h('ellipse', { key: 'bp1s', className: 'ms-bond-glint', cx: 150, cy: 70, rx: 46, ry: 34, strokeWidth: 1.5 }),
+          h('ellipse', { key: 'bp2', className: 'ms-dash-drift', cx: 150, cy: 70, rx: 28, ry: 20, fill: 'none', stroke: pal.ribbonB, strokeWidth: 2.5, strokeDasharray: '6 4' }),
+          cpkSphere('bp3', 150, 70, 8.5, 'ms-cpk-c', pal.accent, 1)
         );
       } else if (shape === 'trimer') {
         motifNodes.push(
-          h('polygon', { key: 'tr1', points: '150,38 186,94 114,94', fill: isContrast ? 'none' : 'rgba(192,132,252,0.08)', stroke: pal.ribbonB, strokeWidth: 2.4, strokeDasharray: '4 3' }),
+          h('polygon', { key: 'tr1', className: 'ms-dash-drift', points: '150,38 186,94 114,94', fill: isContrast ? 'none' : 'rgba(192,132,252,0.08)', stroke: pal.ribbonB, strokeWidth: 2.4, strokeDasharray: '4 3' }),
           !isContrast && h('circle', { key: 'tr2g', cx: 150, cy: 38, r: 16, fill: 'none', stroke: pal.ribbonA, strokeWidth: 6.5, opacity: 0.18 }),
           h('circle', { key: 'tr2', cx: 150, cy: 38, r: 16, fill: 'none', stroke: pal.ribbonA, strokeWidth: 3 }),
           h('circle', { key: 'tr3', cx: 186, cy: 94, r: 16, fill: 'none', stroke: pal.ribbonA, strokeWidth: 3 }),
           h('circle', { key: 'tr4', cx: 114, cy: 94, r: 16, fill: 'none', stroke: pal.ribbonA, strokeWidth: 3 }),
-          cpkSphere('tr2c', 150, 38, 5, 'ms-cpk-a', pal.ribbonA),
-          cpkSphere('tr3c', 186, 94, 5, 'ms-cpk-a', pal.ribbonA),
-          cpkSphere('tr4c', 114, 94, 5, 'ms-cpk-a', pal.ribbonA),
-          cpkSphere('tr5', 150, 74, 6.5, 'ms-cpk-c', pal.accent)
+          cpkSphere('tr2c', 150, 38, 5, 'ms-cpk-a', pal.ribbonA, 0),
+          cpkSphere('tr3c', 186, 94, 5, 'ms-cpk-a', pal.ribbonA, 1),
+          cpkSphere('tr4c', 114, 94, 5, 'ms-cpk-a', pal.ribbonA, 2),
+          cpkSphere('tr5', 150, 74, 6.5, 'ms-cpk-c', pal.accent, 3)
         );
       } else {
         // Default / Crambin / Lysozyme specular ribbon + beta-arrow fold + 3D CPK terminal spheres
         motifNodes.push(
           !isContrast && h('path', { key: 'f1g', d: 'M54 88 C68 38, 92 38, 106 88 C120 118, 144 38, 158 68 C172 98, 198 98, 224 54', fill: 'none', stroke: pal.ribbonA, strokeWidth: 9, strokeLinecap: 'round', opacity: 0.22 }),
           h('path', { key: 'f1', d: 'M54 88 C68 38, 92 38, 106 88 C120 118, 144 38, 158 68 C172 98, 198 98, 224 54', fill: 'none', stroke: pal.ribbonA, strokeWidth: 4, strokeLinecap: 'round' }),
-          !isContrast && h('path', { key: 'f1sh', d: 'M54 87 C68 37, 92 37, 106 87 C120 117, 144 37, 158 67 C172 97, 198 97, 224 53', fill: 'none', stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.45 }),
+          !isContrast && h('path', { key: 'f1sh', className: 'ms-bond-glint', d: 'M54 87 C68 37, 92 37, 106 87 C120 117, 144 37, 158 67 C172 97, 198 97, 224 53', strokeWidth: 1.6 }),
           !isContrast && h('path', { key: 'f2g', d: 'M92 98 L194 98', stroke: pal.ribbonB, strokeWidth: 9, opacity: 0.22 }),
           h('path', { key: 'f2', d: 'M92 98 L194 98', stroke: pal.ribbonB, strokeWidth: 5 }),
+          !isContrast && h('path', { key: 'f2sh', className: 'ms-bond-glint', d: 'M92 98 L194 98', strokeWidth: 1.4, style: { animationDelay: '-1.8s' } }),
           h('polygon', { key: 'f3', points: '192,90 212,98 192,106', fill: pal.ribbonB }),
-          cpkSphere('f4', 224, 54, 6.5, 'ms-cpk-c', pal.accent),
-          cpkSphere('f5', 54, 88, 5.5, 'ms-cpk-b', pal.ribbonB),
-          cpkSphere('f6', 158, 68, 4.8, 'ms-cpk-a', pal.ribbonA)
+          cpkSphere('f4', 224, 54, 6.5, 'ms-cpk-c', pal.accent, 0),
+          cpkSphere('f5', 54, 88, 5.5, 'ms-cpk-b', pal.ribbonB, 1),
+          cpkSphere('f6', 158, 68, 4.8, 'ms-cpk-a', pal.ribbonA, 2)
         );
       }
 
@@ -477,16 +511,23 @@
               ),
               h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: isContrast ? '#000000' : 'url(#ms-emb-bg)', stroke: isContrast ? '#ffff00' : '#a78bfa', strokeWidth: 1.6 }),
               !isContrast && h('path', { d: 'M10 5.5 H38', stroke: '#e0e7ff', strokeWidth: 0.9, opacity: 0.4, strokeLinecap: 'round' }),
+              !isContrast && h('g', { className: 'ms-orbit-spin-rev' },
+                h('circle', { cx: 24, cy: 24, r: 16.5, fill: 'none', stroke: 'rgba(165,180,252,0.28)', strokeWidth: 0.9, strokeDasharray: '4 6' }),
+                h('circle', { cx: 40.5, cy: 24, r: 1.6, fill: '#7dd3fc' })
+              ),
               !isContrast && h('path', { d: 'M12 14 C22 14, 26 34, 36 34', fill: 'none', stroke: '#38bdf8', strokeWidth: 5.5, opacity: 0.22, strokeLinecap: 'round' }),
               h('path', { d: 'M12 14 C22 14, 26 34, 36 34', fill: 'none', stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 2.5, strokeLinecap: 'round' }),
+              !isContrast && h('path', { className: 'ms-bond-glint', d: 'M12 14 C22 14, 26 34, 36 34', strokeWidth: 1.2 }),
               !isContrast && h('path', { d: 'M12 34 C22 34, 26 14, 36 14', fill: 'none', stroke: '#c084fc', strokeWidth: 5.5, opacity: 0.22, strokeLinecap: 'round' }),
               h('path', { d: 'M12 34 C22 34, 26 14, 36 14', fill: 'none', stroke: isContrast ? '#ffff00' : '#c084fc', strokeWidth: 2.5, strokeLinecap: 'round' }),
+              !isContrast && h('path', { className: 'ms-bond-glint', d: 'M12 34 C22 34, 26 14, 36 14', strokeWidth: 1.2, style: { animationDelay: '-2.2s' } }),
               h('circle', { cx: 12, cy: 14, r: 3.4, fill: isContrast ? '#00ffff' : 'url(#ms-emb-a)', stroke: '#ffffff', strokeWidth: 0.7 }),
               h('circle', { cx: 36, cy: 14, r: 3.4, fill: isContrast ? '#ffff00' : 'url(#ms-emb-b)', stroke: '#ffffff', strokeWidth: 0.7 }),
               h('circle', { cx: 12, cy: 34, r: 3.4, fill: isContrast ? '#ffff00' : 'url(#ms-emb-b)', stroke: '#ffffff', strokeWidth: 0.7 }),
               h('circle', { cx: 36, cy: 34, r: 3.4, fill: isContrast ? '#00ffff' : 'url(#ms-emb-a)', stroke: '#ffffff', strokeWidth: 0.7 }),
+              !isContrast && h('circle', { className: 'ms-atom-aura', cx: 24, cy: 24, r: 7.2, fill: '#34d399', opacity: 0.22 }),
               h('circle', { cx: 24, cy: 24, r: 4.1, fill: isContrast ? '#66ff66' : 'url(#ms-emb-c)', stroke: '#ffffff', strokeWidth: 0.8 }),
-              !isContrast && h('circle', { cx: 22.8, cy: 22.8, r: 1.1, fill: '#ffffff', opacity: 0.88 })
+              !isContrast && h('circle', { className: 'ms-catchlight', cx: 22.8, cy: 22.8, r: 1.15, fill: '#ffffff', opacity: 0.88 })
             ),
             h('div', { className: 'min-w-0 flex-1' },
               h('span', {
@@ -549,9 +590,13 @@
                   h('stop', { offset: '100%', stopColor: '#0f132e' })
                 )
               ),
-              // Recessed lab-slate framing & optical spotlight
+              // Recessed lab-slate framing & optical spotlight with gentle orbital electron ring
               !isContrast && h('rect', { x: 4, y: 4, width: 632, height: 136, rx: 10, fill: 'url(#ms-stage-bg)', stroke: 'rgba(165,180,252,0.22)', strokeWidth: 1 }),
-              !isContrast && h('circle', { cx: 150, cy: 70, r: 58, fill: 'none', stroke: 'rgba(165,180,252,0.12)', strokeWidth: 1, strokeDasharray: '3 5' }),
+              !isContrast && h('g', { className: 'ms-orbit-spin' },
+                h('circle', { cx: 150, cy: 70, r: 58, fill: 'none', stroke: 'rgba(165,180,252,0.18)', strokeWidth: 1, strokeDasharray: '4 6' }),
+                h('circle', { cx: 208, cy: 70, r: 2.3, fill: '#7dd3fc', opacity: 0.9 }),
+                h('circle', { cx: 92, cy: 70, r: 1.8, fill: '#c084fc', opacity: 0.78 })
+              ),
               h('line', { x1: 16, y1: 126, x2: 624, y2: 126, stroke: pal.grid, strokeWidth: 1 }),
               h('line', { x1: 16, y1: 18, x2: 624, y2: 18, stroke: pal.grid, strokeWidth: 1, strokeDasharray: '4 4' }),
               motifNodes,

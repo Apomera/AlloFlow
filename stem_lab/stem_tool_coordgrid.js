@@ -1294,12 +1294,25 @@ window.StemLab = window.StemLab || {
       'rect.allo-cg-sq:focus { outline: none; stroke: #1e3a8a; stroke-width: 4px; }',
       '@keyframes allo-cg-walk-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }',
       '@keyframes allo-cg-walk-show { from { opacity: 0; } to { opacity: 1; } }',
+      '@keyframes allo-cg-drop-ripple { 0% { opacity: 0.78; transform: scale(0.55); stroke-width: 2.8; } 100% { opacity: 0; transform: scale(2.35); stroke-width: 0.6; } }',
+      '@keyframes allo-cg-flow-dash { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -18; } }',
+      '@keyframes allo-cg-beacon-pulse { 0% { opacity: 0.68; transform: scale(0.78); } 65% { opacity: 0.14; transform: scale(1.68); } 100% { opacity: 0; transform: scale(1.95); } }',
+      '@keyframes allo-cg-mirror-shimmer { 0%, 100% { opacity: 0.14; } 50% { opacity: 0.30; } }',
+      '@keyframes allo-cg-origin-breath { 0%, 100% { opacity: 0.14; transform: scale(0.92); } 50% { opacity: 0.30; transform: scale(1.24); } }',
       '.allo-cg-walk-a { stroke-dasharray: 1; animation: allo-cg-walk-draw 0.6s ease-out both; }',
       '.allo-cg-walk-b { stroke-dasharray: 1; animation: allo-cg-walk-draw 0.6s ease-out 0.6s both; }',
       '.allo-cg-walk-ha { animation: allo-cg-walk-show 0.2s ease-out 0.5s both; }',
       '.allo-cg-walk-hb { animation: allo-cg-walk-show 0.2s ease-out 1.1s both; }',
+      '.allo-cg-drop-ripple { transform-box: fill-box; transform-origin: center; animation: allo-cg-drop-ripple 0.72s cubic-bezier(0.16, 0.84, 0.44, 1) forwards; pointer-events: none; }',
+      '.allo-cg-flow-dash { animation: allo-cg-flow-dash 1.8s linear infinite; pointer-events: none; }',
+      '.allo-cg-beacon-pulse { transform-box: fill-box; transform-origin: center; animation: allo-cg-beacon-pulse 2.3s cubic-bezier(0.22, 0.61, 0.36, 1) infinite; pointer-events: none; }',
+      '.allo-cg-mirror-shimmer { animation: allo-cg-mirror-shimmer 2.8s ease-in-out infinite; pointer-events: none; }',
+      '.allo-cg-origin-breath { transform-box: fill-box; transform-origin: center; animation: allo-cg-origin-breath 3.2s ease-in-out infinite; pointer-events: none; }',
+      '.allo-cg-quad-bloom { transition: opacity 0.28s ease; pointer-events: none; }',
+      '.theme-contrast .allo-cg-drop-ripple, .theme-contrast .allo-cg-flow-dash, .theme-contrast .allo-cg-beacon-pulse, .theme-contrast .allo-cg-mirror-shimmer, .theme-contrast .allo-cg-origin-breath { animation: none !important; }',
+      '.theme-contrast .allo-cg-drop-ripple, .theme-contrast .allo-cg-beacon-pulse, .theme-contrast .allo-cg-quad-bloom { display: none !important; }',
       '@media (prefers-reduced-motion: reduce) { .allo-cg-walk-a, .allo-cg-walk-b, .allo-cg-walk-ha, .allo-cg-walk-hb { animation: none !important; stroke-dashoffset: 0; opacity: 1; } }',
-      '@media (prefers-reduced-motion: reduce) { .allo-cg-walker, .allo-cg-fill { transition: none !important; } .allo-cg-pop, .allo-cg-point-pulse { animation: none !important; } }'
+      '@media (prefers-reduced-motion: reduce) { .allo-cg-walker, .allo-cg-fill, .allo-cg-quad-bloom { transition: none !important; } .allo-cg-pop, .allo-cg-point-pulse, .allo-cg-drop-ripple, .allo-cg-flow-dash, .allo-cg-beacon-pulse, .allo-cg-mirror-shimmer, .allo-cg-origin-breath { animation: none !important; } .allo-cg-drop-ripple { opacity: 0 !important; } .allo-cg-beacon-pulse { opacity: 0.24; } }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -3488,6 +3501,14 @@ window.StemLab = window.StemLab || {
           )
         ));
         gridElements.push(h('rect', { key: 'cg-mat', x: 0, y: 0, width: gridW, height: gridH, fill: 'url(#cg-studio-bg)' }));
+        // Subtle active quadrant highlight bloom in free explore mode (zero quiz spoilers)
+        if (!gridChallenge && viewRange.min < 0 && viewRange.max > 0 && coordinateInputX !== 0 && coordinateInputY !== 0) {
+          var qbx = coordinateInputX > 0 ? axisX0 : 0;
+          var qby = coordinateInputY > 0 ? 0 : axisY0;
+          var qbw = coordinateInputX > 0 ? (gridW - axisX0) : axisX0;
+          var qbh = coordinateInputY > 0 ? axisY0 : (gridH - axisY0);
+          gridElements.push(h('rect', { key: 'cg-qbloom', className: 'allo-cg-quad-bloom', x: qbx, y: qby, width: Math.max(0, qbw), height: Math.max(0, qbh), fill: GP.accent, fillOpacity: isDark ? 0.08 : 0.055 }));
+        }
       }
       for (var gi = 0; gi <= range; gi++) {
         var v = viewRange.min + gi;
@@ -3521,7 +3542,7 @@ window.StemLab = window.StemLab || {
       // Subtle glowing origin beacon + axis arrowheads
       if (!isContrast && viewRange.min <= 0 && viewRange.max >= 0) {
         gridElements.push(
-          h('circle', { key: 'orig-halo', cx: axisX0, cy: axisY0, r: 5.5, fill: GP.accent, fillOpacity: 0.16 }),
+          h('circle', { key: 'orig-halo', className: 'allo-cg-origin-breath', cx: axisX0, cy: axisY0, r: 6.5, fill: GP.accent, fillOpacity: 0.18 }),
           h('circle', { key: 'orig-dot', cx: axisX0, cy: axisY0, r: 2.2, fill: GP.axis }),
           h('polygon', { key: 'axarr-x', points: gridW + ',' + axisY0 + ' ' + (gridW - 7) + ',' + (axisY0 - 3.5) + ' ' + (gridW - 7) + ',' + (axisY0 + 3.5), fill: GP.axis }),
           h('polygon', { key: 'axarr-y', points: axisX0 + ',0 ' + (axisX0 - 3.5) + ',7 ' + (axisX0 + 3.5) + ',7', fill: GP.axis })
@@ -3543,12 +3564,16 @@ window.StemLab = window.StemLab || {
         var runY = toSvg(ln.from.y, 'y');
         var mLabel = 'm=' + (ln.slope.display === 'undefined' ? t('stem.coordgrid.slope_undefined', 'undefined') : ln.slope.display);
         var bw = Math.max(48, mLabel.length * 7 + 10);
+        var x1L = toSvg(ln.from.x, 'x'), y1L = toSvg(ln.from.y, 'y'), x2L = toSvg(ln.to.x, 'x'), y2L = toSvg(ln.to.y, 'y');
         return h(React.Fragment, { key: 'ln' + li },
-          h('line', { x1: toSvg(ln.from.x, 'x'), y1: toSvg(ln.from.y, 'y'), x2: toSvg(ln.to.x, 'x'), y2: toSvg(ln.to.y, 'y'), stroke: GP.line, strokeWidth: 2.5, strokeDasharray: '6,3' }),
-          h('line', { x1: riseX, y1: runY, x2: riseX, y2: toSvg(ln.to.y, 'y'), stroke: GP.rise, strokeWidth: 1.5, strokeDasharray: '3,2' }),
+          !isContrast && ln.slope.rise !== 0 && ln.slope.run !== 0 && h('polygon', { points: x1L + ',' + y1L + ' ' + riseX + ',' + runY + ' ' + x2L + ',' + y2L, fill: GP.line, fillOpacity: isDark ? 0.12 : 0.08, pointerEvents: 'none' }),
+          !isContrast && h('line', { x1: x1L, y1: y1L, x2: x2L, y2: y2L, stroke: GP.line, strokeWidth: 6.5, strokeOpacity: isDark ? 0.22 : 0.14, strokeLinecap: 'round', pointerEvents: 'none' }),
+          h('line', { className: isContrast ? undefined : 'allo-cg-flow-dash', x1: x1L, y1: y1L, x2: x2L, y2: y2L, stroke: GP.line, strokeWidth: 2.5, strokeDasharray: '6,3' }),
+          h('line', { className: isContrast ? undefined : 'allo-cg-flow-dash', x1: riseX, y1: runY, x2: riseX, y2: y2L, stroke: GP.rise, strokeWidth: 1.5, strokeDasharray: '3,2' }),
           ln.slope.rise !== 0 && h('text', { x: riseX + 10, y: midY + 3, fontSize: 11, fontWeight: 'bold', fill: GP.rise }, 'Δy=' + fmt(ln.slope.rise)),
-          h('line', { x1: toSvg(ln.from.x, 'x'), y1: runY, x2: riseX, y2: runY, stroke: GP.run, strokeWidth: 1.5, strokeDasharray: '3,2' }),
+          h('line', { className: isContrast ? undefined : 'allo-cg-flow-dash', x1: x1L, y1: runY, x2: riseX, y2: runY, stroke: GP.run, strokeWidth: 1.5, strokeDasharray: '3,2' }),
           ln.slope.run !== 0 && h('text', { x: midX, y: runY - 6, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: GP.run }, 'Δx=' + fmt(ln.slope.run)),
+          !isContrast && h('circle', { className: 'allo-cg-beacon-pulse', cx: midX, cy: midY, r: 9, fill: 'none', stroke: GP.line, strokeWidth: 1.4 }),
           h('rect', { x: midX - bw / 2, y: midY - 10, width: bw, height: 18, rx: 5, fill: GP.line }),
           h('text', { x: midX, y: midY + 3, textAnchor: 'middle', fill: GP.bg, style: { fontSize: '11px', fontWeight: 'bold' } }, mLabel),
           h('text', { x: midX, y: midY + 20, textAnchor: 'middle', fontSize: 11, fontFamily: 'monospace', fill: GP.line }, eq)
@@ -3570,18 +3595,21 @@ window.StemLab = window.StemLab || {
         return h('text', { key: key, x: x, y: y, fontSize: 12, fontWeight: 'bold', fill: color, style: { paintOrder: 'stroke', stroke: GP.surface, strokeWidth: 3 } }, text);
       };
 
-      // Slope challenge segment with rise and run guides
+      // Slope challenge segment with rise and run guides (zero spoilers)
       var slopeChallengeElements = taskType === 'slope'
         ? (function() {
             var p1 = gridChallenge.p1, p2 = gridChallenge.p2;
-            var rMidY = (toSvg(p1.y, 'y') + toSvg(p2.y, 'y')) / 2;
-            var rMidX = (toSvg(p1.x, 'x') + toSvg(p2.x, 'x')) / 2;
+            var sx1 = toSvg(p1.x, 'x'), sy1 = toSvg(p1.y, 'y'), sx2 = toSvg(p2.x, 'x'), sy2 = toSvg(p2.y, 'y');
+            var rMidY = (sy1 + sy2) / 2;
+            var rMidX = (sx1 + sx2) / 2;
             return h(React.Fragment, null,
-              h('line', { x1: toSvg(p1.x, 'x'), y1: toSvg(p1.y, 'y'), x2: toSvg(p2.x, 'x'), y2: toSvg(p2.y, 'y'), stroke: GP.mystery, strokeWidth: 2.5 }),
-              h('line', { x1: toSvg(p2.x, 'x'), y1: toSvg(p1.y, 'y'), x2: toSvg(p2.x, 'x'), y2: toSvg(p2.y, 'y'), stroke: GP.rise, strokeWidth: 1.5, strokeDasharray: '4,2' }),
-              h('text', { x: Math.min(gridW - 30, toSvg(p2.x, 'x') + 12), y: rMidY + 3, fontSize: 11, fontWeight: 'bold', fill: GP.rise }, t('stem.coordgrid.svg_rise', 'rise')),
-              h('line', { x1: toSvg(p1.x, 'x'), y1: toSvg(p1.y, 'y'), x2: toSvg(p2.x, 'x'), y2: toSvg(p1.y, 'y'), stroke: GP.run, strokeWidth: 1.5, strokeDasharray: '4,2' }),
-              h('text', { x: rMidX, y: toSvg(p1.y, 'y') - 6, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: GP.run }, t('stem.coordgrid.svg_run', 'run')),
+              !isContrast && h('polygon', { points: sx1 + ',' + sy1 + ' ' + sx2 + ',' + sy1 + ' ' + sx2 + ',' + sy2, fill: GP.mystery, fillOpacity: isDark ? 0.11 : 0.07, pointerEvents: 'none' }),
+              !isContrast && h('line', { x1: sx1, y1: sy1, x2: sx2, y2: sy2, stroke: GP.mystery, strokeWidth: 6, strokeOpacity: 0.18, strokeLinecap: 'round', pointerEvents: 'none' }),
+              h('line', { x1: sx1, y1: sy1, x2: sx2, y2: sy2, stroke: GP.mystery, strokeWidth: 2.5 }),
+              h('line', { className: isContrast ? undefined : 'allo-cg-flow-dash', x1: sx2, y1: sy1, x2: sx2, y2: sy2, stroke: GP.rise, strokeWidth: 1.6, strokeDasharray: '4,2' }),
+              h('text', { x: Math.min(gridW - 30, sx2 + 12), y: rMidY + 3, fontSize: 11, fontWeight: 'bold', fill: GP.rise }, t('stem.coordgrid.svg_rise', 'rise')),
+              h('line', { className: isContrast ? undefined : 'allo-cg-flow-dash', x1: sx1, y1: sy1, x2: sx2, y2: sy1, stroke: GP.run, strokeWidth: 1.6, strokeDasharray: '4,2' }),
+              h('text', { x: rMidX, y: sy1 - 6, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: GP.run }, t('stem.coordgrid.svg_run', 'run')),
               tag('s1', p1, t('stem.coordgrid.svg_first', 'start'), GP.mystery, 9, 16),
               dot('sp1', p1, GP.mystery), dot('sp2', p2, GP.mystery)
             );
@@ -3601,10 +3629,11 @@ window.StemLab = window.StemLab || {
             var legMidY = (toSvg(corner.y, 'y') + toSvg(p2.y, 'y')) / 2;
             var mid = calcMidpoint(p1, p2);
             return h(React.Fragment, null,
-              showLegs && h('line', { x1: toSvg(p1.x, 'x'), y1: toSvg(p1.y, 'y'), x2: toSvg(corner.x, 'x'), y2: toSvg(corner.y, 'y'), stroke: GP.run, strokeWidth: 1.5, strokeDasharray: '4 3' }),
+              showLegs && h('line', { className: isContrast ? undefined : 'allo-cg-flow-dash', x1: toSvg(p1.x, 'x'), y1: toSvg(p1.y, 'y'), x2: toSvg(corner.x, 'x'), y2: toSvg(corner.y, 'y'), stroke: GP.run, strokeWidth: 1.5, strokeDasharray: '4 3' }),
               showLegs && h('text', { x: legMidX, y: toSvg(p1.y, 'y') - 6, textAnchor: 'middle', fontSize: 11, fontWeight: 'bold', fill: GP.run }, 'Δx = ' + Math.abs(dx)),
-              showLegs && h('line', { x1: toSvg(corner.x, 'x'), y1: toSvg(corner.y, 'y'), x2: toSvg(p2.x, 'x'), y2: toSvg(p2.y, 'y'), stroke: GP.rise, strokeWidth: 1.5, strokeDasharray: '4 3' }),
+              showLegs && h('line', { className: isContrast ? undefined : 'allo-cg-flow-dash', x1: toSvg(corner.x, 'x'), y1: toSvg(corner.y, 'y'), x2: toSvg(p2.x, 'x'), y2: toSvg(p2.y, 'y'), stroke: GP.rise, strokeWidth: 1.5, strokeDasharray: '4 3' }),
               showLegs && h('text', { x: Math.min(gridW - 40, toSvg(corner.x, 'x') + 8), y: legMidY + 3, textAnchor: 'start', fontSize: 11, fontWeight: 'bold', fill: GP.rise }, 'Δy = ' + Math.abs(dy)),
+              !isContrast && h('line', { x1: toSvg(p1.x, 'x'), y1: toSvg(p1.y, 'y'), x2: toSvg(p2.x, 'x'), y2: toSvg(p2.y, 'y'), stroke: GP.poly, strokeWidth: 6, strokeOpacity: 0.18, strokeLinecap: 'round', pointerEvents: 'none' }),
               h('line', { x1: toSvg(p1.x, 'x'), y1: toSvg(p1.y, 'y'), x2: toSvg(p2.x, 'x'), y2: toSvg(p2.y, 'y'), stroke: GP.poly, strokeWidth: 2.5 }),
               dot('dp1', p1, GP.poly), dot('dp2', p2, GP.poly),
               answerShown || taskSolved ? tag('dans', mid, 'd = ' + (gridChallenge.kind === 'axis' ? fmt(gridChallenge.distance) : gridChallenge.distance.toFixed(1)), GP.poly, 8, -12) : null
@@ -3616,11 +3645,13 @@ window.StemLab = window.StemLab || {
       // (translate), the student's prediction, and the image once the item is done.
       var taskElements = [];
       if (taskType === 'plot' && answerShown) {
+        if (!isContrast) taskElements.push(h('circle', { key: 'tgt-p', className: 'allo-cg-beacon-pulse', cx: toSvg(gridChallenge.target.x, 'x'), cy: toSvg(gridChallenge.target.y, 'y'), r: 10, fill: 'none', stroke: GP.good, strokeWidth: 1.8 }));
         taskElements.push(h('circle', { key: 'tgt', cx: toSvg(gridChallenge.target.x, 'x'), cy: toSvg(gridChallenge.target.y, 'y'), r: 10, fill: 'none', stroke: GP.good, strokeWidth: 3 }));
         taskElements.push(tag('tgtl', gridChallenge.target, pairText(gridChallenge.target), GP.good));
       }
       if (taskType === 'name' && inView(gridChallenge.target)) {
         var tx = toSvg(gridChallenge.target.x, 'x'), ty = toSvg(gridChallenge.target.y, 'y');
+        if (!isContrast) taskElements.push(h('circle', { key: 'mys-p', className: 'allo-cg-beacon-pulse', cx: tx, cy: ty, r: 10, fill: 'none', stroke: GP.mystery, strokeWidth: 1.6 }));
         taskElements.push(h('rect', { key: 'mys', x: tx - 7, y: ty - 7, width: 14, height: 14, transform: 'rotate(45 ' + tx + ' ' + ty + ')', fill: GP.mystery, stroke: GP.pointStroke, strokeWidth: 2 }));
         if (taskSolved || answerShown) taskElements.push(tag('mysl', gridChallenge.target, pairText(gridChallenge.target), GP.mystery));
       }
@@ -3628,13 +3659,13 @@ window.StemLab = window.StemLab || {
         var P = gridChallenge.p;
         if (taskType === 'reflect') {
           if (gridChallenge.axis === 'x') {
-            if (!isContrast) taskElements.push(h('line', { key: 'mirg', x1: 0, y1: toSvg(0, 'y'), x2: gridW, y2: toSvg(0, 'y'), stroke: GP.image, strokeWidth: 10, opacity: 0.18 }));
+            if (!isContrast) taskElements.push(h('line', { key: 'mirg', className: 'allo-cg-mirror-shimmer', x1: 0, y1: toSvg(0, 'y'), x2: gridW, y2: toSvg(0, 'y'), stroke: GP.image, strokeWidth: 10, opacity: 0.18 }));
             taskElements.push(h('line', { key: 'mir', x1: 0, y1: toSvg(0, 'y'), x2: gridW, y2: toSvg(0, 'y'), stroke: GP.image, strokeWidth: 3.5, strokeDasharray: '8 4', opacity: 0.9 }));
           } else if (gridChallenge.axis === 'y') {
-            if (!isContrast) taskElements.push(h('line', { key: 'mirg', x1: toSvg(0, 'x'), y1: 0, x2: toSvg(0, 'x'), y2: gridH, stroke: GP.image, strokeWidth: 10, opacity: 0.18 }));
+            if (!isContrast) taskElements.push(h('line', { key: 'mirg', className: 'allo-cg-mirror-shimmer', x1: toSvg(0, 'x'), y1: 0, x2: toSvg(0, 'x'), y2: gridH, stroke: GP.image, strokeWidth: 10, opacity: 0.18 }));
             taskElements.push(h('line', { key: 'mir', x1: toSvg(0, 'x'), y1: 0, x2: toSvg(0, 'x'), y2: gridH, stroke: GP.image, strokeWidth: 3.5, strokeDasharray: '8 4', opacity: 0.9 }));
           } else {
-            if (!isContrast) taskElements.push(h('circle', { key: 'mirg', cx: toSvg(0, 'x'), cy: toSvg(0, 'y'), r: 12, fill: GP.image, fillOpacity: 0.16 }));
+            if (!isContrast) taskElements.push(h('circle', { key: 'mirg', className: 'allo-cg-mirror-shimmer', cx: toSvg(0, 'x'), cy: toSvg(0, 'y'), r: 12, fill: GP.image, fillOpacity: 0.16 }));
             taskElements.push(h('circle', { key: 'mir', cx: toSvg(0, 'x'), cy: toSvg(0, 'y'), r: 7, fill: 'none', stroke: GP.image, strokeWidth: 3 }));
           }
         }
@@ -3649,11 +3680,14 @@ window.StemLab = window.StemLab || {
           var A = gridChallenge.answer;
           if (taskType === 'translate') {
             var mid2 = { x: A.x, y: P.y };
-            taskElements.push(h('polyline', { key: 'path', points: toSvg(P.x, 'x') + ',' + toSvg(P.y, 'y') + ' ' + toSvg(mid2.x, 'x') + ',' + toSvg(mid2.y, 'y') + ' ' + toSvg(A.x, 'x') + ',' + toSvg(A.y, 'y'), fill: 'none', stroke: GP.image, strokeWidth: 2.2, strokeDasharray: '6 3', className: 'allo-cg-trail' }));
+            var trPts = toSvg(P.x, 'x') + ',' + toSvg(P.y, 'y') + ' ' + toSvg(mid2.x, 'x') + ',' + toSvg(mid2.y, 'y') + ' ' + toSvg(A.x, 'x') + ',' + toSvg(A.y, 'y');
+            if (!isContrast) taskElements.push(h('polyline', { key: 'pathg', points: trPts, fill: 'none', stroke: GP.image, strokeWidth: 7, strokeOpacity: 0.16, strokeLinejoin: 'round', strokeLinecap: 'round', pointerEvents: 'none' }));
+            taskElements.push(h('polyline', { key: 'path', points: trPts, fill: 'none', stroke: GP.image, strokeWidth: 2.4, strokeDasharray: '6 3', className: isContrast ? 'allo-cg-trail' : 'allo-cg-flow-dash' }));
           } else {
             if (!isContrast) taskElements.push(h('line', { key: 'pathg', x1: toSvg(P.x, 'x'), y1: toSvg(P.y, 'y'), x2: toSvg(A.x, 'x'), y2: toSvg(A.y, 'y'), stroke: GP.image, strokeWidth: 6, opacity: 0.16 }));
-            taskElements.push(h('line', { key: 'path', x1: toSvg(P.x, 'x'), y1: toSvg(P.y, 'y'), x2: toSvg(A.x, 'x'), y2: toSvg(A.y, 'y'), stroke: GP.image, strokeWidth: 1.8, strokeDasharray: '4 3', className: 'allo-cg-trail' }));
+            taskElements.push(h('line', { key: 'path', x1: toSvg(P.x, 'x'), y1: toSvg(P.y, 'y'), x2: toSvg(A.x, 'x'), y2: toSvg(A.y, 'y'), stroke: GP.image, strokeWidth: 1.8, strokeDasharray: '4 3', className: isContrast ? 'allo-cg-trail' : 'allo-cg-flow-dash' }));
           }
+          if (!isContrast) taskElements.push(h('circle', { key: 'pi-rip', className: 'allo-cg-drop-ripple', cx: toSvg(A.x, 'x'), cy: toSvg(A.y, 'y'), r: 8, fill: 'none', stroke: GP.image, strokeWidth: 2 }));
           taskElements.push(dot('Pi', A, GP.image, 7, { className: 'allo-cg-pop' }));
           taskElements.push(tag('Pil', A, 'P′ ' + pairText(A), GP.image));
         }
@@ -3724,12 +3758,18 @@ window.StemLab = window.StemLab || {
         });
         walkElements = h('g', { key: 'walk', 'aria-hidden': 'true', 'data-coordgrid-walk-svg': walkKind }, wKids.concat(wLabels));
       }
-      // The keyboard cursor (shown while the grid has focus).
-      var cursorElements = gridFocused && cgTab === 'explore' ? h('g', { key: 'cursor', 'aria-hidden': 'true' },
-        h('circle', { cx: toSvg(coordinateInputX, 'x'), cy: toSvg(coordinateInputY, 'y'), r: 11, fill: 'none', stroke: GP.cursor, strokeWidth: 3 }),
-        h('line', { x1: toSvg(coordinateInputX, 'x') - 16, y1: toSvg(coordinateInputY, 'y'), x2: toSvg(coordinateInputX, 'x') + 16, y2: toSvg(coordinateInputY, 'y'), stroke: GP.cursor, strokeWidth: 1.5 }),
-        h('line', { x1: toSvg(coordinateInputX, 'x'), y1: toSvg(coordinateInputY, 'y') - 16, x2: toSvg(coordinateInputX, 'x'), y2: toSvg(coordinateInputY, 'y') + 16, stroke: GP.cursor, strokeWidth: 1.5 })
-      ) : null;
+      // The keyboard cursor (shown while the grid has focus), with luminous axis projection bloom.
+      var cursorElements = gridFocused && cgTab === 'explore' ? (function () {
+        var cxP = toSvg(coordinateInputX, 'x'), cyP = toSvg(coordinateInputY, 'y');
+        return h('g', { key: 'cursor', 'aria-hidden': 'true' },
+          !isContrast && h('line', { x1: cxP, y1: axisY0, x2: cxP, y2: cyP, stroke: GP.cursor, strokeWidth: 1.2, strokeDasharray: '3 3', strokeOpacity: 0.42 }),
+          !isContrast && h('line', { x1: axisX0, y1: cyP, x2: cxP, y2: cyP, stroke: GP.cursor, strokeWidth: 1.2, strokeDasharray: '3 3', strokeOpacity: 0.42 }),
+          !isContrast && h('circle', { className: 'allo-cg-beacon-pulse', cx: cxP, cy: cyP, r: 12, fill: 'none', stroke: GP.cursor, strokeWidth: 1.5 }),
+          h('circle', { cx: cxP, cy: cyP, r: 11, fill: 'none', stroke: GP.cursor, strokeWidth: 3 }),
+          h('line', { x1: cxP - 16, y1: cyP, x2: cxP + 16, y2: cyP, stroke: GP.cursor, strokeWidth: 1.5 }),
+          h('line', { x1: cxP, y1: cyP - 16, x2: cxP, y2: cyP + 16, stroke: GP.cursor, strokeWidth: 1.5 })
+        );
+      })() : null;
 
       // ── Function polylines (y = f(x), sampled across the grid range) ──
       var funcElements = [];
@@ -3772,9 +3812,18 @@ window.StemLab = window.StemLab || {
           }
           if (current.length > 1) segments.push(current);
           segments.forEach(function(seg, segIdx) {
+            var pts = seg.join(' ');
+            if (!isContrast) {
+              funcElements.push(h('path', {
+                key: 'fsegg-' + f.id + '-' + segIdx,
+                d: 'M' + seg.join(' L'),
+                fill: 'none', stroke: funcInk(f.color), strokeWidth: 7, opacity: isDark ? 0.22 : 0.14,
+                strokeLinejoin: 'round', strokeLinecap: 'round', pointerEvents: 'none'
+              }));
+            }
             funcElements.push(h('polyline', {
               key: 'fseg-' + f.id + '-' + segIdx,
-              points: seg.join(' '),
+              points: pts,
               fill: 'none', stroke: funcInk(f.color), strokeWidth: 2.5, opacity: 0.85,
               strokeLinejoin: 'round', strokeLinecap: 'round'
             }));
@@ -3793,13 +3842,14 @@ window.StemLab = window.StemLab || {
         });
       }
 
-      // Plotted points (only those inside the visible range) with luminous vertex beacons
+      // Plotted points (only those inside the visible range) with glowing drop impact ripples & vertex beacons
       var pointElements = [], labelElements = [];
       gridPoints.forEach(function(p, i) {
         if (!inView(p)) return;
         var ptCol = connectFirst === i ? GP.line : GP.point;
         var pcx = toSvg(p.x, 'x'), pcy = toSvg(p.y, 'y');
         if (!isContrast) {
+          pointElements.push(h('circle', { key: 'ptr' + p.x + '_' + p.y, className: 'allo-cg-drop-ripple', cx: pcx, cy: pcy, r: 8, fill: 'none', stroke: ptCol, strokeWidth: 2 }));
           pointElements.push(h('circle', { key: 'pth' + p.x + '_' + p.y, cx: pcx, cy: pcy, r: 10, fill: ptCol, fillOpacity: 0.18, pointerEvents: 'none' }));
         }
         pointElements.push(h('circle', { key: 'pt' + p.x + '_' + p.y, cx: pcx, cy: pcy, r: 6, fill: ptCol, stroke: GP.pointStroke, strokeWidth: 2, className: 'cursor-pointer allo-cg-pop' }));
@@ -3978,9 +4028,11 @@ window.StemLab = window.StemLab || {
           ];
           refs.forEach(function(r, ri) {
             var rx = toSvg(r.p.x, 'x'), ry = toSvg(r.p.y, 'y');
-            reflectionEls.push(h('line', { key: 'refl-' + ri, x1: mainPx, y1: mainPy, x2: rx, y2: ry, stroke: r.color, strokeWidth: 1, strokeDasharray: '4 3', opacity: 0.35 }));
+            if (!isContrast) reflectionEls.push(h('line', { key: 'reflg-' + ri, x1: mainPx, y1: mainPy, x2: rx, y2: ry, stroke: r.color, strokeWidth: 4.5, opacity: 0.14, pointerEvents: 'none' }));
+            reflectionEls.push(h('line', { key: 'refl-' + ri, className: isContrast ? undefined : 'allo-cg-flow-dash', x1: mainPx, y1: mainPy, x2: rx, y2: ry, stroke: r.color, strokeWidth: 1.4, strokeDasharray: '4 3', opacity: 0.55 }));
             reflectionEls.push(h('g', { key: 'refp-' + ri },
-              h('circle', { cx: rx, cy: ry, r: 6, fill: r.color, opacity: 0.55, stroke: '#fff', strokeWidth: 1.5 }),
+              !isContrast && h('circle', { cx: rx, cy: ry, r: 9.5, fill: r.color, fillOpacity: 0.16, pointerEvents: 'none' }),
+              h('circle', { cx: rx, cy: ry, r: 6, fill: r.color, opacity: 0.65, stroke: '#fff', strokeWidth: 1.5 }),
               h('text', { x: Math.min(gridW - 50, rx + 8), y: Math.max(12, ry - 8), fontSize: 11, fontWeight: 'bold', fill: r.color, style: { paintOrder: 'stroke', stroke: GP.surface, strokeWidth: 3 } }, pairText(r.p))
             ));
           });
@@ -3993,6 +4045,7 @@ window.StemLab = window.StemLab || {
           className: 'allo-cg-walker',
           style: { transform: 'translate(' + (wPx - mainPx) + 'px, ' + (wPy - mainPy) + 'px)' }
         },
+          !isContrast && h('circle', { className: 'allo-cg-beacon-pulse', cx: mainPx, cy: mainPy, r: 10, fill: 'none', stroke: GP.point, strokeWidth: 1.5 }),
           h('circle', { cx: mainPx, cy: mainPy, r: 9, fill: GP.point, stroke: GP.pointStroke, strokeWidth: 2.5 }),
           h('circle', { cx: mainPx, cy: mainPy, r: 4, fill: GP.pointStroke })
         ) : null;
@@ -4004,8 +4057,9 @@ window.StemLab = window.StemLab || {
         var xAxisPx = toSvg(qtPointX, 'x');  // x coord on the x-axis (y=0)
         if (qtWalkPhase >= 1) {
           // Horizontal leg: origin → (qtPointX, 0)
+          if (!isContrast) trailEls.push(h('line', { key: 'trail-hg', x1: originPx, y1: originPy, x2: xAxisPx, y2: originPy, stroke: GP.point, strokeWidth: 6.5, strokeOpacity: 0.16, strokeLinecap: 'round', pointerEvents: 'none' }));
           trailEls.push(h('line', {
-            key: 'trail-h', className: 'allo-cg-trail',
+            key: 'trail-h', className: isContrast ? 'allo-cg-trail' : 'allo-cg-flow-dash',
             x1: originPx, y1: originPy, x2: xAxisPx, y2: originPy,
             stroke: GP.point, strokeWidth: 2.5, strokeDasharray: '6 3'
           }));
@@ -4018,8 +4072,9 @@ window.StemLab = window.StemLab || {
         }
         if (qtWalkPhase >= 2) {
           // Vertical leg: (qtPointX, 0) → (qtPointX, qtPointY)
+          if (!isContrast) trailEls.push(h('line', { key: 'trail-vg', x1: xAxisPx, y1: originPy, x2: mainPx, y2: mainPy, stroke: GP.point, strokeWidth: 6.5, strokeOpacity: 0.16, strokeLinecap: 'round', pointerEvents: 'none' }));
           trailEls.push(h('line', {
-            key: 'trail-v', className: 'allo-cg-trail',
+            key: 'trail-v', className: isContrast ? 'allo-cg-trail' : 'allo-cg-flow-dash',
             x1: xAxisPx, y1: originPy, x2: mainPx, y2: mainPy,
             stroke: GP.point, strokeWidth: 2.5, strokeDasharray: '6 3'
           }));
@@ -5308,6 +5363,7 @@ window.StemLab = window.StemLab || {
         var cx = F.sx(p.x), cy = F.sy(p.y), rad = r || 5;
         if (isContrast) return h('circle', { key: key, cx: cx, cy: cy, r: rad, fill: color, stroke: GP.pointStroke, strokeWidth: 1.5 });
         return h('g', { key: key },
+          h('circle', { className: 'allo-cg-drop-ripple', cx: cx, cy: cy, r: rad + 2.5, fill: 'none', stroke: color, strokeWidth: 1.6 }),
           h('circle', { cx: cx, cy: cy, r: rad + 3.5, fill: color, fillOpacity: 0.20, pointerEvents: 'none' }),
           h('circle', { cx: cx, cy: cy, r: rad, fill: color, stroke: GP.pointStroke, strokeWidth: 1.5 }),
           h('circle', { cx: cx - rad * 0.28, cy: cy - rad * 0.28, r: Math.max(1.1, rad * 0.24), fill: 'rgba(255,255,255,0.78)', pointerEvents: 'none' })
@@ -5337,10 +5393,12 @@ window.StemLab = window.StemLab || {
         return out;
       };
       var fCursor = function (F, p) {
+        var cx = F.sx(p.x), cy = F.sy(p.y);
         return h('g', { key: 'cursor', 'aria-hidden': 'true' },
-          h('circle', { cx: F.sx(p.x), cy: F.sy(p.y), r: 11, fill: 'none', stroke: GP.cursor, strokeWidth: 3 }),
-          h('line', { x1: F.sx(p.x) - 16, y1: F.sy(p.y), x2: F.sx(p.x) + 16, y2: F.sy(p.y), stroke: GP.cursor, strokeWidth: 1.5 }),
-          h('line', { x1: F.sx(p.x), y1: F.sy(p.y) - 16, x2: F.sx(p.x), y2: F.sy(p.y) + 16, stroke: GP.cursor, strokeWidth: 1.5 }));
+          !isContrast && h('circle', { className: 'allo-cg-beacon-pulse', cx: cx, cy: cy, r: 12, fill: 'none', stroke: GP.cursor, strokeWidth: 1.5 }),
+          h('circle', { cx: cx, cy: cy, r: 11, fill: 'none', stroke: GP.cursor, strokeWidth: 3 }),
+          h('line', { x1: cx - 16, y1: cy, x2: cx + 16, y2: cy, stroke: GP.cursor, strokeWidth: 1.5 }),
+          h('line', { x1: cx, y1: cy - 16, x2: cx, y2: cy + 16, stroke: GP.cursor, strokeWidth: 1.5 }));
       };
       // One Tab stop per grid; arrows move the cursor (Shift: 5, Page Up/Down: 10),
       // Home goes to the origin, Enter acts, Space marks (where offered).
@@ -5713,7 +5771,8 @@ window.StemLab = window.StemLab || {
             if (tk.done && (tfFb.correct || tfFb.revealed)) {
               var rotR = Math.hypot(F.sx(tk.p.x) - F.sx(tk.c.x), F.sy(tk.p.y) - F.sy(tk.c.y));
               if (!isContrast && rotR > 4) {
-                kids.push(h('circle', { key: 'tfr-orbit', cx: F.sx(tk.c.x), cy: F.sy(tk.c.y), r: rotR, fill: 'none', stroke: GP.image, strokeWidth: 1.4, strokeDasharray: '5 4', opacity: 0.55 }));
+                kids.push(h('circle', { key: 'tfr-orbit-g', cx: F.sx(tk.c.x), cy: F.sy(tk.c.y), r: rotR, fill: 'none', stroke: GP.image, strokeWidth: 5, strokeOpacity: 0.14, pointerEvents: 'none' }));
+                kids.push(h('circle', { key: 'tfr-orbit', className: 'allo-cg-flow-dash', cx: F.sx(tk.c.x), cy: F.sy(tk.c.y), r: rotR, fill: 'none', stroke: GP.image, strokeWidth: 1.6, strokeDasharray: '5 4', opacity: 0.68 }));
               }
               kids.push(fLine(F, 'tfr1', tk.c, tk.p, GP.image, '4 3', 1.8), fLine(F, 'tfr2', tk.c, tk.answer, GP.image, '4 3', 1.8), fDot(F, 'tfpi', tk.answer, GP.image, 6), fTag(F, 'tfpil', tk.answer, 'P′ ' + pairText(tk.answer), GP.image));
             }
@@ -5721,7 +5780,12 @@ window.StemLab = window.StemLab || {
             kids.push(h('circle', { key: 'tfo', cx: F.sx(0), cy: F.sy(0), r: 6, fill: GP.mystery, stroke: GP.pointStroke, strokeWidth: 1.5 }));
             kids = kids.concat(fTri(F, 'tfA', tk.A, VN1, GP.point, null));
             if (tk.type === 'scale' || (tk.done && (tfFb.correct || tfFb.revealed))) {
-              tk.image.forEach(function (q, i) { kids.push(fLine(F, 'ray' + i, { x: 0, y: 0 }, q, GP.minor, '3 3', 1.2)); });
+              tk.image.forEach(function (q, i) {
+                var aPt = tk.A && tk.A[i] ? tk.A[i] : q;
+                var farPt = Math.hypot(q.x, q.y) >= Math.hypot(aPt.x, aPt.y) ? q : aPt;
+                if (!isContrast) kids.push(h('line', { key: 'rayg' + i, x1: F.sx(0), y1: F.sy(0), x2: F.sx(farPt.x), y2: F.sy(farPt.y), stroke: GP.image, strokeWidth: 4.5, strokeOpacity: 0.14, pointerEvents: 'none' }));
+                kids.push(h('line', { key: 'ray' + i, className: isContrast ? undefined : 'allo-cg-flow-dash', x1: F.sx(0), y1: F.sy(0), x2: F.sx(farPt.x), y2: F.sy(farPt.y), stroke: isContrast ? GP.minor : GP.image, strokeWidth: 1.4, strokeDasharray: '4 3', opacity: isContrast ? 1 : 0.65 }));
+              });
               kids = kids.concat(fTri(F, 'tfI', tk.image, VNP, GP.image, null, '6 3'));
             }
           }
@@ -5729,7 +5793,17 @@ window.StemLab = window.StemLab || {
             var px0 = readInt(tfFb.ansX), py0 = readInt(tfFb.ansY);
             if (px0 !== null && py0 !== null && F.has({ x: px0, y: py0 })) kids.push(h('circle', { key: 'tfpred', cx: F.sx(px0), cy: F.sy(py0), r: 8, fill: 'none', stroke: GP.cursor, strokeWidth: 2.5, strokeDasharray: '3 2' }), fTag(F, 'tfpredl', { x: px0, y: py0 }, t('stem.coordgrid.svg_prediction', 'your prediction'), GP.cursor, true, 18));
           }
-          if (shownImage && shownImage.every(function (q) { return F.has(q); })) kids = kids.concat(fTri(F, 'tfS', shownImage, shownNames, GP.image, null, '2 3'));
+          if (shownImage && shownImage.every(function (q) { return F.has(q); })) {
+            if (!isContrast && tk && tk.A && tk.A.length === shownImage.length) {
+              shownImage.forEach(function (q, qi) {
+                var orig = tk.A[qi];
+                if (orig && F.has(orig)) {
+                  kids.push(h('line', { key: 'tfghost-' + qi, className: 'allo-cg-flow-dash', x1: F.sx(orig.x), y1: F.sy(orig.y), x2: F.sx(q.x), y2: F.sy(q.y), stroke: GP.image, strokeWidth: 1.4, strokeDasharray: '4 4', opacity: 0.48, pointerEvents: 'none' }));
+                }
+              });
+            }
+            kids = kids.concat(fTri(F, 'tfS', shownImage, shownNames, GP.image, null, '2 3'));
+          }
         }
         var svgLabel = tk ? tfPrompt(tk) : t('stem.coordgrid.tf_grid_empty', 'Empty coordinate grid. Choose a challenge to start.');
         var describeRows = [];

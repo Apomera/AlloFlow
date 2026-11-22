@@ -179,7 +179,10 @@ function createEvidenceProvenance(input) {
   var lanes = {};
   var timestamps = [input.capturedAt, input.auditAt, input.runAt, input.completedAt, input.updatedAt, input.lastReviewedAt];
   selectedProfile.requiredEvidence.forEach(function (lane) {
-    var raw = rawEvidence[lane] || input[lane] || null;
+    var laneAlias = lane === 'ai' ? 'verificationAudit'
+      : (lane === 'axe' ? 'axeAudit'
+        : (lane === 'equalAccess' ? 'secondEngineAudit' : null));
+    var raw = rawEvidence[lane] || input[lane] || (laneAlias ? (rawEvidence[laneAlias] || input[laneAlias]) : null) || null;
     raw = raw && typeof raw === 'object' ? raw : null;
     if (!raw) {
       lanes[lane] = null;
@@ -531,7 +534,6 @@ function deriveProfileVerificationState(input, profile) {
   return attachEvidenceProvenance({
     evidenceSchemaVersion: ACCESSIBILITY_EVIDENCE_SCHEMA_VERSION,
     evidenceProfile: selectedProfile.id,
-    evidenceProvenance: createEvidenceProvenance(Object.assign({}, input, { profile: selectedProfile.id })),
     profile: selectedProfile.id,
     standard: selectedProfile.standard,
     verificationScope: selectedProfile.scope,
@@ -545,7 +547,7 @@ function deriveProfileVerificationState(input, profile) {
     reviewCount: reviewCount,
     coverage: lanes,
     reasons: reasons,
-  }, input, selectedProfile.id);
+  }, input, selectedProfile);
 }
 
 // Document remediation uses this same policy as the compatibility VerificationPolicy facade.
@@ -553,9 +555,10 @@ function deriveProfileVerificationState(input, profile) {
 
 function deriveDocumentVerificationState(input) {
   input = input || {};
-  var ai = input.ai || input.verificationAudit || null;
-  var axe = input.axe || input.axeAudit || null;
-  var ea = input.equalAccess || input.secondEngineAudit || null;
+  var rawEv = input.evidence && typeof input.evidence === 'object' ? input.evidence : null;
+  var ai = input.ai || input.verificationAudit || (rawEv && (rawEv.ai || rawEv.verificationAudit)) || null;
+  var axe = input.axe || input.axeAudit || (rawEv && (rawEv.axe || rawEv.axeAudit)) || null;
+  var ea = input.equalAccess || input.secondEngineAudit || (rawEv && (rawEv.equalAccess || rawEv.secondEngineAudit)) || null;
   var reasons = [];
   var _finite = function (v) { return typeof v === 'number' && Number.isFinite(v); };
   var _count = function (v) { return _finite(v) ? Math.max(0, Math.floor(v)) : null; };
@@ -721,7 +724,6 @@ function deriveDocumentVerificationState(input) {
   var result = {
     evidenceSchemaVersion: ACCESSIBILITY_EVIDENCE_SCHEMA_VERSION,
     evidenceProfile: 'document-remediation',
-    evidenceProvenance: createEvidenceProvenance(Object.assign({}, input, { profile: 'document-remediation' })),
     verificationCoverage: coverage,
     coverage: coverage,
     verificationState: verificationState,
@@ -740,7 +742,9 @@ function deriveDocumentVerificationState(input) {
     scoreEvidence: scoreEvidence,
     reasons: reasons
   };
-  return attachEvidenceProvenance(result, input, 'document-remediation');
+  return attachEvidenceProvenance(result, Object.assign({}, input, {
+    evidence: Object.assign({}, rawEv || {}, { ai: ai, axe: axe, equalAccess: ea }),
+  }), 'document-remediation');
 }
 
 

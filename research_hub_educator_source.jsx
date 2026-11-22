@@ -50,6 +50,68 @@
   if (!React) { console.error('[ResearchHubEducator] React not found'); return; }
   var useState = React.useState;
   var useMemo = React.useMemo;
+  var useRef = React.useRef;
+  var useEffect = React.useEffect;
+
+  function buildInquirySummaryText(j) {
+    var snaps = (j.modelSnapshots || []).length;
+    var builds = (j.buildLog || []).length;
+    var failLoops = (j.failureLog || []).length;
+    var links = (j.claimEvidenceLinks || []).length;
+    var sources = (j.sources || []).length;
+    var loops = (j.loopBacks || []).length;
+    var aiHist = j.aiHistory || [];
+    var aiBlocked = aiHist.filter(function (h) { return h && h.blocked; }).length;
+    var aiDone = aiHist.length - aiBlocked;
+    var lines = [
+      'Inquiry Health Summary (Read-Only Trajectory)',
+      'Question: ' + (j.questionTitle ? clip(j.questionTitle, 120) : '(not authored yet)'),
+      'Lane: ' + laneLabel(j.activeLane) + ' | Approach: ' + methodPackLabel(j.activeMethodPack) + (j.activeStage ? ' | Stage: ' + j.activeStage : ''),
+      'Loop-backs: ' + loops + ' | Model snapshots: ' + snaps + ' | Builds: ' + builds + ' (' + failLoops + ' failure loops)',
+      'Sources: ' + sources + ' | Claim-evidence links: ' + links + ' | Approved tool artifacts: ' + (j.capturedArtifacts || []).length,
+      'AI scaffolding: ' + aiDone + ' completed, ' + aiBlocked + ' gated (student-first)',
+      'Note: Grade inquiry trajectories (revisions, loop-backs, and source vetting), not surface polish.'
+    ];
+    return lines.join('\n');
+  }
+
+  function copyTextSafely(text) {
+    var value = String(text || '');
+    if (!value) return Promise.resolve(false);
+    if (typeof window !== 'undefined' && typeof window.alloCopyText === 'function') {
+      try { return Promise.resolve(window.alloCopyText(value)).then(function (ok) { return !!ok; }, function () { return false; }); } catch (_) {}
+    }
+    if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      return navigator.clipboard.writeText(value).then(function () { return true; }, function () {
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = value;
+          ta.setAttribute('readonly', '');
+          ta.setAttribute('aria-hidden', 'true');
+          ta.setAttribute('aria-label', 'Clipboard copy helper');
+          ta.style.cssText = 'position:fixed;left:-9999px;top:0';
+          document.body.appendChild(ta);
+          ta.select();
+          var ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          return !!ok;
+        } catch (_) { return false; }
+      });
+    }
+    try {
+      var ta2 = document.createElement('textarea');
+      ta2.value = value;
+      ta2.setAttribute('readonly', '');
+      ta2.setAttribute('aria-hidden', 'true');
+      ta2.setAttribute('aria-label', 'Clipboard copy helper');
+      ta2.style.cssText = 'position:fixed;left:-9999px;top:0';
+      document.body.appendChild(ta2);
+      ta2.select();
+      var ok2 = document.execCommand('copy');
+      document.body.removeChild(ta2);
+      return Promise.resolve(!!ok2);
+    } catch (_) { return Promise.resolve(false); }
+  }
 
   // ───────────────────────────────────────────────────────────────────────
   // Small helpers
@@ -563,10 +625,10 @@
       <div style={{ padding: '12px 14px', borderRadius: '12px',
         background: '#fff', border: '1px solid #e2e8f0' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap' }}>
-          <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 800, color: '#1e293b' }}>
+          <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#1e293b' }}>
             {props.title}
           </h4>
-          {props.subtitle && (<span style={{ fontSize: '10px', color: '#64748b', fontStyle: 'italic' }}>{props.subtitle}</span>)}
+          {props.subtitle && (<span style={{ fontSize: '11px', color: '#475569', fontStyle: 'italic' }}>{props.subtitle}</span>)}
         </div>
         <div style={{ marginTop: '8px' }}>{props.children}</div>
       </div>
@@ -574,17 +636,17 @@
   }
   function Pill(props) {
     return (
-      <span style={{ padding: '2px 8px', borderRadius: '999px',
+      <span style={{ padding: '2px 9px', borderRadius: '999px',
         background: props.color + '22', color: props.color, border: '1px solid ' + props.color,
-        fontSize: '10px', fontWeight: 700 }}>
+        fontSize: '11px', fontWeight: 700 }}>
         {props.label}
       </span>
     );
   }
   function Note(props) {
     return (
-      <p style={{ margin: '6px 0 0', fontSize: props.small ? '9px' : '10px',
-        color: '#64748b', fontStyle: 'italic', lineHeight: 1.5 }}>
+      <p style={{ margin: '6px 0 0', fontSize: props.small ? '11px' : '12px',
+        color: '#475569', fontStyle: 'italic', lineHeight: 1.5 }}>
         {props.children}
       </p>
     );
@@ -592,7 +654,7 @@
   function EmptyTrajectory(title, body) {
     return (
       <Panel title={title}>
-        <p style={{ margin: 0, fontSize: '11px', color: '#475569', fontStyle: 'italic' }}>{body}</p>
+        <p style={{ margin: 0, fontSize: '12px', color: '#475569', fontStyle: 'italic' }}>{body}</p>
       </Panel>
     );
   }
@@ -700,19 +762,94 @@
     var j = ctx.journal;
     var onExit = ctx.onExit;
     var lane = j.activeLane;
+    var _copied = useState(false);
+    var copiedSummary = _copied[0];
+    var setCopiedSummary = _copied[1];
+    var mountedRef = useRef(true);
+    var copyTimerRef = useRef(null);
+    useEffect(function () {
+      mountedRef.current = true;
+      return function () {
+        mountedRef.current = false;
+        if (copyTimerRef.current) { clearTimeout(copyTimerRef.current); copyTimerRef.current = null; }
+      };
+    }, []);
+
+    var scorecard = useMemo(function () {
+      var loopCount = (j.loopBacks || []).length;
+      var revisionCount = (j.modelSnapshots || []).length + (j.buildLog || []).length + (j.failureLog || []).length;
+      (j.claimEvidenceLinks || []).forEach(function (l) {
+        revisionCount += (l.qualifierRevisionLog || []).length + (l.warrantRevisionLog || []).length;
+      });
+      var evidenceCount = (j.sources || []).length + (j.capturedArtifacts || []).length + (j.claimEvidenceLinks || []).length;
+      var aiHist = j.aiHistory || [];
+      var aiBlocked = aiHist.filter(function (h) { return h && h.blocked; }).length;
+      return {
+        loopCount: loopCount,
+        revisionCount: revisionCount,
+        evidenceCount: evidenceCount,
+        aiDone: aiHist.length - aiBlocked,
+        aiBlocked: aiBlocked,
+      };
+    }, [j]);
+
+    var handleCopySummary = function () {
+      copyTextSafely(buildInquirySummaryText(j)).then(function (ok) {
+        if (!ok || !mountedRef.current) return;
+        setCopiedSummary(true);
+        if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+        copyTimerRef.current = setTimeout(function () {
+          copyTimerRef.current = null;
+          if (mountedRef.current) setCopiedSummary(false);
+        }, 2200);
+      });
+    };
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <DashboardHeader journal={j} />
-        <button type="button" onClick={onExit}
-          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
-          style={{ alignSelf: 'flex-start',
-            minHeight: '44px', display: 'inline-flex', alignItems: 'center',
-            padding: '8px 16px', borderRadius: '999px',
-            background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1',
-            fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
-          {'\u{2190} '}{t('research_hub.educator_view_exit') || 'Return to student view'}
-        </button>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+          <button type="button" onClick={onExit}
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
+            style={{
+              minHeight: '44px', display: 'inline-flex', alignItems: 'center',
+              padding: '8px 16px', borderRadius: '999px',
+              background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1',
+              fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
+            {'\u{2190} '}{t('research_hub.educator_view_exit') || 'Return to student view'}
+          </button>
+          <button type="button" onClick={handleCopySummary}
+            data-educator-copy-summary="true"
+            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
+            style={{
+              minHeight: '44px', display: 'inline-flex', alignItems: 'center', gap: '6px',
+              padding: '8px 16px', borderRadius: '999px',
+              background: copiedSummary ? '#ecfdf5' : '#ffffff',
+              color: copiedSummary ? '#065f46' : '#1e293b',
+              border: '1px solid ' + (copiedSummary ? '#34d399' : '#cbd5e1'),
+              fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
+            {copiedSummary ? '✓ Copied summary' : '📋 Copy inquiry summary'}
+          </button>
+        </div>
+
+        <div data-educator-scorecard="true" role="group" aria-label="Inquiry health snapshot" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+          <div style={{ padding: '10px 12px', borderRadius: '10px', background: '#f5f3ff', border: '1px solid #ddd6fe' }}>
+            <div style={{ fontSize: '18px', fontWeight: 800, color: '#5b21b6' }}>{scorecard.loopCount}</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#4c1d95' }}>Loop-backs</div>
+          </div>
+          <div style={{ padding: '10px 12px', borderRadius: '10px', background: '#ecfeff', border: '1px solid #a5f3fc' }}>
+            <div style={{ fontSize: '18px', fontWeight: 800, color: '#155e75' }}>{scorecard.revisionCount}</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#164e63' }}>Revisions & builds</div>
+          </div>
+          <div style={{ padding: '10px 12px', borderRadius: '10px', background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+            <div style={{ fontSize: '18px', fontWeight: 800, color: '#166534' }}>{scorecard.evidenceCount}</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#14532d' }}>Sources & artifacts</div>
+          </div>
+          <div style={{ padding: '10px 12px', borderRadius: '10px', background: '#f8fafc', border: '1px solid #cbd5e1' }}>
+            <div style={{ fontSize: '18px', fontWeight: 800, color: '#1e293b' }}>{scorecard.aiDone}{scorecard.aiBlocked > 0 ? ' / ' + scorecard.aiBlocked + ' gated' : ''}</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>AI scaffolding</div>
+          </div>
+        </div>
 
         <GradingPrincipleBanner />
         <MethodProvenancePanel journal={j} />

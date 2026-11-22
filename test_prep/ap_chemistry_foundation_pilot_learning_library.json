@@ -3602,7 +3602,7 @@
           "type": "single-choice",
           "prompt": "A photoelectron spectrum shows a peak for an element’s 1s electrons at much higher binding energy than for its 2s electrons. Which statement best explains the difference?",
           "choices": [
-            "The 2s electrons are shielded from the nucleus by the 1s electrons and experience a smaller effective nuclear charge",
+            "1s shielding lowers effective nuclear charge on 2s",
             "There are more 2s electrons than 1s electrons",
             "The 1s electrons are farther from the nucleus",
             "The 2s electrons have been removed by the instrument first"
@@ -4582,7 +4582,7 @@
           "prompt": "Which pair of properties is best explained by the presence of delocalized electrons in a solid?",
           "choices": [
             "High melting point and brittleness",
-            "Electrical conductivity in the solid state and malleability",
+            "Electrical conductivity in pure form and malleability",
             "Solubility in water and low density",
             "Conductivity only when dissolved and a fixed crystal shape"
           ],
@@ -5502,7 +5502,7 @@
           "choices": [
             "Moles of gas decrease automatically",
             "The gas becomes a solid at every temperature",
-            "Pressure increases as particle collisions become more energetic",
+            "Pressure rises as collisions grow harder",
             "The ideal-gas constant changes for the sample"
           ],
           "answerIndex": 2,
@@ -5524,7 +5524,7 @@
           "choices": [
             "The xenon exerts higher pressure because its atoms are heavier",
             "The helium atoms have higher average kinetic energy",
-            "The two gases exert the same pressure and have the same average kinetic energy",
+            "Both gases have identical pressure and average kinetic energy",
             "The helium exerts higher pressure because its atoms move faster"
           ],
           "answerIndex": 2,
@@ -6506,7 +6506,7 @@
             "Zn, because it loses electrons",
             "Zn2+, because it is the product of oxidation",
             "Cu, because it is a metal",
-            "Cu2+, because it gains electrons and is reduced"
+            "Cu2+, because it gains electrons"
           ],
           "answerIndex": 3,
           "rationale": "The oxidizing agent accepts electrons and is itself reduced; Cu2+ gains two electrons to become Cu.",
@@ -7420,7 +7420,7 @@
           "type": "single-choice",
           "prompt": "What does a catalyst change in a reaction?",
           "choices": [
-            "The reaction pathway and activation energy",
+            "The mechanistic pathway and activation energy",
             "The equilibrium constant at a fixed temperature",
             "The total amount of product at equilibrium",
             "The identity of the limiting reactant in every mixture"
@@ -8402,7 +8402,7 @@
           "prompt": "A 50.0 g sample of a metal at 90.0 degrees Celsius is placed in 100.0 g of water at 20.0 degrees Celsius, and both reach 22.0 degrees Celsius. Which conclusion is best supported?",
           "choices": [
             "The metal has a higher specific heat than water",
-            "The metal released the same amount of heat that the water absorbed",
+            "Heat lost by the metal equals heat gained",
             "The water released heat to the metal",
             "The metal and water exchanged no energy"
           ],
@@ -9363,10 +9363,10 @@
           "type": "single-choice",
           "prompt": "For the reaction A ⇌ 2 B, K = 4.0 at a certain temperature. What is K for the reaction 2 B ⇌ A at the same temperature?",
           "choices": [
-            "4.0",
+            "4.00",
             "0.25",
-            "2.0",
-            "16"
+            "2.00",
+            "16.00"
           ],
           "answerIndex": 1,
           "rationale": "Reversing a reaction gives the reciprocal of K, and 1 divided by 4.0 is 0.25.",
@@ -9386,7 +9386,7 @@
           "prompt": "Solid barium sulfate is in equilibrium with its ions in water. Sodium sulfate is then dissolved in the solution. Which change is expected?",
           "choices": [
             "Ksp of barium sulfate increases",
-            "The concentration of dissolved barium ions decreases",
+            "Aqueous Ba2+ molarity decreases",
             "More barium sulfate dissolves",
             "The solution becomes unsaturated"
           ],
@@ -10326,7 +10326,7 @@
           "choices": [
             "exactly 7, because the moles of acid and base are equal",
             "below 7, because excess acid remains",
-            "above 7, because the conjugate base of the weak acid is present",
+            "above 7, due to hydrolysis of the conjugate base",
             "equal to the pKa of the acid"
           ],
           "answerIndex": 2,
@@ -10346,7 +10346,7 @@
           "type": "single-choice",
           "prompt": "A buffer contains 0.20 M acetic acid and 0.20 M sodium acetate; the pKa of acetic acid is 4.76. A second buffer contains 0.020 M of each. Which statement is correct?",
           "choices": [
-            "The two buffers have the same pH but the first has greater capacity",
+            "Same pH, but the first buffer has higher capacity",
             "The first buffer has a higher pH because it is more concentrated",
             "The second buffer has greater capacity because it is dilute",
             "The two buffers have different pH values and equal capacity"
@@ -11264,8 +11264,8 @@
           "prompt": "In a galvanic cell, where does oxidation occur?",
           "choices": [
             "At the anode",
-            "At the cathode only",
-            "In the salt bridge only",
+            "At the cathode",
+            "In the salt bridge",
             "At whichever electrode is labeled positive in every cell"
           ],
           "answerIndex": 0,
@@ -11287,7 +11287,7 @@
           "choices": [
             "The reaction is fast at room temperature",
             "The reaction goes to completion with no reactant remaining",
-            "K is greater than 1 and products are favored at equilibrium",
+            "K > 1, favoring products at equilibrium",
             "K is less than 1 and reactants are favored at equilibrium"
           ],
           "answerIndex": 2,
@@ -11308,7 +11308,7 @@
           "prompt": "In an operating galvanic cell, which statement correctly describes the flow of charge?",
           "choices": [
             "Electrons move through the salt bridge from cathode to anode",
-            "Electrons move through the external wire from anode to cathode, and ions move through the salt bridge",
+            "Electrons move anode to cathode in wire; ions cross bridge",
             "Cations move through the wire toward the anode",
             "Electrons move through the external wire from cathode to anode"
           ],

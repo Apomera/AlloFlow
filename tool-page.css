@@ -30,10 +30,10 @@
     scroll-margin-top: 88px;
 }
 .skip-link {
-    position: absolute;
+    position: fixed;
     left: -9999px;
     top: 0;
-    z-index: 100;
+    z-index: 1000;
     padding: 12px 18px;
     background: #fff;
     color: #3730a3;
@@ -42,6 +42,7 @@
 }
 .skip-link:focus {
     left: 0;
+    transform: none;
 }
 
 .tool-page-crumbs {
@@ -119,6 +120,22 @@
 .tool-page .tool-page-open:visited {
     color: #fff;
 }
+.tool-page .tool-page-manual {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 10px 18px;
+    background: #eef2ff;
+    color: #3730a3;
+    border: 1px solid #c7d2fe;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 8px;
+}
+.tool-page .tool-page-manual:hover {
+    background: #e0e7ff;
+    border-color: #818cf8;
+}
 .tool-page-note {
     font-size: .92rem;
     color: #475569;
@@ -150,6 +167,36 @@
     color: #0f172a;
     overflow-wrap: anywhere;
 }
+.tool-page-url-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    margin-top: 10px;
+}
+.tool-page-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 16px;
+    background: #fff;
+    color: #3730a3;
+    border: 1px solid #a5b4fc;
+    border-radius: 8px;
+    font: inherit;
+    font-size: .92rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+.tool-page-copy-btn:hover {
+    background: #eef2ff;
+    border-color: #4f46e5;
+}
+.tool-page-copy-status {
+    font-size: .88rem;
+    font-weight: 600;
+    color: #1e293b;
+}
 
 .tool-page-footer {
     max-width: 760px;
@@ -163,10 +210,27 @@
 }
 
 .tool-page a:focus-visible,
+.tool-page button:focus-visible,
 .tool-page-footer a:focus-visible,
 .skip-link:focus-visible {
-    outline: 2px solid #3730a3;
+    outline: 3px solid #3730a3;
     outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tool-page *, .tool-page-footer * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+@media (forced-colors: active) {
+    .tool-page .tool-page-open,
+    .tool-page .tool-page-manual,
+    .tool-page-copy-btn,
+    .tool-page-url code {
+        border: 2px solid CanvasText;
+    }
 }
 
 @media (max-width: 600px) {

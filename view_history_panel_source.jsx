@@ -166,9 +166,11 @@ const HISTORY_PANEL_THEME_CSS = `
   #tour-history-panel .bg-slate-200 { background-color: var(--rp-border) !important; }
   #tour-history-panel .bg-indigo-50,
   #tour-history-panel [class~="bg-indigo-50/70"],
-  #tour-history-panel [class~="bg-indigo-50/80"] { background-color: var(--rp-accent-soft) !important; }
+  #tour-history-panel [class~="bg-indigo-50/80"],
+  #tour-history-panel .bg-blue-50 { background-color: var(--rp-accent-soft) !important; }
   #tour-history-panel .bg-indigo-100 { background-color: var(--rp-accent-hover) !important; }
   #tour-history-panel .bg-indigo-700 { background-color: var(--rp-primary) !important; }
+  #tour-history-panel .bg-amber-50 { background-color: var(--rp-warning-soft) !important; }
   #tour-history-panel .bg-emerald-50,
   #tour-history-panel .bg-emerald-100 { background-color: var(--rp-success-soft) !important; }
   #tour-history-panel .bg-violet-50,
@@ -183,20 +185,29 @@ const HISTORY_PANEL_THEME_CSS = `
   #tour-history-panel .text-slate-500 { color: var(--rp-muted) !important; }
   #tour-history-panel .text-slate-400 { color: var(--rp-faint) !important; }
   #tour-history-panel .text-indigo-600,
-  #tour-history-panel .text-indigo-700 { color: var(--rp-accent) !important; }
+  #tour-history-panel .text-indigo-700,
+  #tour-history-panel .text-blue-800 { color: var(--rp-accent) !important; }
   #tour-history-panel .text-emerald-700,
   #tour-history-panel .text-emerald-800 { color: var(--rp-success) !important; }
-  #tour-history-panel .text-amber-700 { color: var(--rp-warning) !important; }
+  #tour-history-panel .text-amber-700,
+  #tour-history-panel .text-amber-900 { color: var(--rp-warning) !important; }
   #tour-history-panel .text-red-700 { color: var(--rp-danger) !important; }
-  #tour-history-panel .text-violet-700 { color: var(--rp-violet) !important; }
+  #tour-history-panel .text-violet-700,
+  #tour-history-panel .text-violet-800 { color: var(--rp-violet) !important; }
   #tour-history-panel .text-pink-700 { color: var(--rp-sel) !important; }
   #tour-history-panel .text-white { color: var(--rp-on-primary) !important; }
+  #tour-history-panel .bg-red-600 { background-color: #b91c1c !important; color: #ffffff !important; }
+  #tour-history-panel [class~="hover:bg-red-700"]:hover { background-color: #991b1b !important; color: #ffffff !important; }
+  #tour-history-panel[data-history-theme="contrast"] .bg-red-600 { background-color: #ff6666 !important; color: #000000 !important; border: 2px solid #ffffff !important; }
+  #tour-history-panel[data-history-theme="contrast"] [class~="hover:bg-red-700"]:hover { background-color: #ffffff !important; color: #000000 !important; }
   #tour-history-panel input::placeholder { color: var(--rp-faint) !important; opacity: 1; }
 
   #tour-history-panel .border-slate-200 { border-color: var(--rp-border) !important; }
   #tour-history-panel .border-slate-300 { border-color: var(--rp-border-strong) !important; }
   #tour-history-panel .border-indigo-200,
-  #tour-history-panel .border-indigo-300 { border-color: var(--rp-accent-border) !important; }
+  #tour-history-panel .border-indigo-300,
+  #tour-history-panel .border-blue-200 { border-color: var(--rp-accent-border) !important; }
+  #tour-history-panel .border-amber-300 { border-color: var(--rp-warning) !important; }
   #tour-history-panel .border-indigo-700 { border-color: var(--rp-primary) !important; }
   #tour-history-panel .border-violet-200,
   #tour-history-panel .border-violet-300 { border-color: var(--rp-violet-border) !important; }
@@ -393,7 +404,8 @@ function HistoryPanel(props) {
     activeSelStation = null,
     setActiveSelStation = (() => {}),
   } = props;
-  const units = Array.isArray(rawUnits) ? rawUnits : [];
+  const units = Array.isArray(rawUnits) ? rawUnits.filter(u => u && typeof u === 'object') : [];
+  const safeSanitize = typeof sanitizeString === 'function' ? sanitizeString : (v => (v == null ? '' : String(v)));
   const historyThemeContext = React.useContext(window.AlloThemeContext || HistoryThemeFallbackContext);
   const historyTheme = historyThemeContext && (historyThemeContext.theme === 'dark' || historyThemeContext.theme === 'contrast')
     ? historyThemeContext.theme
@@ -608,7 +620,7 @@ function HistoryPanel(props) {
           items: cleanedItems
         }
       }));
-      setIsCommunityCatalogOpen(true);
+      if (typeof setIsCommunityCatalogOpen === 'function') setIsCommunityCatalogOpen(true);
     } catch (err) {
       addToast && addToast(_hpCopy(t, 'history.submit_form_open_failed', 'Could not open submission form: {error}').replace('{error}', String((err && err.message) || '')), 'error');
     }
@@ -630,8 +642,10 @@ function HistoryPanel(props) {
     setLessonPartColors(on);
     try { window.localStorage.setItem('alloflow_history_phase_colors', on ? 'on' : 'off'); } catch (_) {}
   };
-  const lessonPartLabel = phase => resourceUiText('lesson_headers.teacher.' + phase, { hook: 'Hook / Engagement', directInstruction: 'Direct Instruction',
-    guidedPractice: 'Guided Practice', independentPractice: 'Independent Practice', closure: 'Closure & Assessment' }[phase] || phase);
+  const _lessonPartNames = { hook: 'Hook / Engagement', directInstruction: 'Direct Instruction',
+    guidedPractice: 'Guided Practice', independentPractice: 'Independent Practice', closure: 'Closure & Assessment' };
+  const lessonPartLabel = phase => resourceUiText('lesson_headers.teacher.' + phase,
+    (phase && Object.prototype.hasOwnProperty.call(_lessonPartNames, phase)) ? _lessonPartNames[phase] : phase);
   const lessonPartOf = item => {
     try {
       const api = window.AlloModules && window.AlloModules.UtilsPure;
@@ -758,9 +772,11 @@ function HistoryPanel(props) {
     const itemType = getSafeRowText(getSafeArtifactField(item, 'type'), '', 100);
     if (resourceTypeFilter !== 'all' && itemType !== resourceTypeFilter) return false;
     if (!normalizedResourceSearch) return true;
+    let fallbackDefaultTitle = 'Resource';
+    try { fallbackDefaultTitle = getDefaultTitle(itemType); } catch (_) {}
     const itemTitle = getHistoryDisplayTitle(itemType,
       getSafeArtifactField(item, 'title'),
-      getSafeRowText(getDefaultTitle(itemType), 'Resource', 240)
+      getSafeRowText(fallbackDefaultTitle, 'Resource', 240)
     );
     const rawMeta = getSafeArtifactField(item, 'meta');
     const itemMeta = getHistoryDisplayMeta(itemType, rawMeta);
@@ -819,7 +835,7 @@ function HistoryPanel(props) {
     if (!handleMoveAllToUnit(ids, moveAllTargetId)) return;
     setMoveAllTarget('');
     // Every shown row leaves this view, so the bar unmounts; keep focus in the panel.
-    window.requestAnimationFrame(() => panel?.querySelector('[data-help-key="history_filter_unit_select"]')?.focus());
+    scheduleFrame(() => panel?.querySelector('[data-help-key="history_filter_unit_select"]')?.focus());
   };
   const createUnit = () => handleCreateUnit(canMoveInBulk && moveUnfiledOnCreate && unfiledCount > 0
     ? { moveUncategorized: true } : undefined);
@@ -828,6 +844,15 @@ function HistoryPanel(props) {
   const movePanelRef = React.useRef(null);
   const moveMenuEdgeRef = React.useRef('first');
   const moveFocusFrameRef = React.useRef(null);
+  const pendingFramesRef = React.useRef(new Set());
+  const scheduleFrame = (cb) => {
+    if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') return;
+    const id = window.requestAnimationFrame(() => {
+      pendingFramesRef.current.delete(id);
+      cb();
+    });
+    pendingFramesRef.current.add(id);
+  };
   const focusMoveItem = (edge = 'first') => {
     const items = moveMenuRef.current?.querySelectorAll('[role="menuitem"]:not(:disabled)');
     (edge === 'last' ? items?.[items.length - 1] : items?.[0])?.focus();
@@ -874,6 +899,7 @@ function HistoryPanel(props) {
       return;
     }
     if (!items.length) return;
+    if (event.ctrlKey || event.altKey || event.metaKey) return;
     if (event.key === 'ArrowDown') next = (current + 1) % items.length;
     else if (event.key === 'ArrowUp') next = (current - 1 + items.length) % items.length;
     else if (event.key === 'Home') next = 0;
@@ -913,10 +939,12 @@ function HistoryPanel(props) {
   }, [movingItemId]);
   React.useEffect(() => () => {
     if (moveFocusFrameRef.current !== null) window.cancelAnimationFrame(moveFocusFrameRef.current);
+    pendingFramesRef.current.forEach(id => window.cancelAnimationFrame(id));
+    pendingFramesRef.current.clear();
   }, []);
 
   const focusMoreAction = (edge = 'first') => {
-    window.requestAnimationFrame(() => {
+    scheduleFrame(() => {
       const menuItems = moreActionsMenuRef.current
         ? Array.from(moreActionsMenuRef.current.querySelectorAll('[role="menuitem"]:not(:disabled)'))
         : [];
@@ -931,7 +959,7 @@ function HistoryPanel(props) {
   const closeMoreActions = (restoreFocus = false) => {
     setIsMoreActionsOpen(false);
     if (restoreFocus) {
-      window.requestAnimationFrame(() => {
+      scheduleFrame(() => {
         if (moreActionsButtonRef.current) moreActionsButtonRef.current.focus();
       });
     }
@@ -940,6 +968,7 @@ function HistoryPanel(props) {
     const menuItems = Array.from(e.currentTarget.querySelectorAll('[role="menuitem"]:not(:disabled)'));
     const currentIndex = menuItems.indexOf(document.activeElement);
     let nextIndex = currentIndex;
+    if (e.ctrlKey || e.altKey || e.metaKey) return;
     if (e.key === 'ArrowDown') nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % menuItems.length;
     else if (e.key === 'ArrowUp') nextIndex = currentIndex < 0 ? menuItems.length - 1 : (currentIndex - 1 + menuItems.length) % menuItems.length;
     else if (e.key === 'Home') nextIndex = 0;
@@ -947,6 +976,7 @@ function HistoryPanel(props) {
     else if (e.key === 'Escape') {
       if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
       e.preventDefault();
+      e.stopPropagation();
       closeMoreActions(true);
       return;
     } else if (e.key === 'Tab') {
@@ -972,8 +1002,9 @@ function HistoryPanel(props) {
 
   const finishResourceRename = (event, itemInstanceId, cancel = false) => {
     if (cancel) handleCancelEdit(event); else handleSaveEdit(event);
-    window.requestAnimationFrame(() => document.getElementById('history-actions-trigger-' + itemInstanceId)?.focus());
+    scheduleFrame(() => document.getElementById('history-actions-trigger-' + itemInstanceId)?.focus());
   };
+  const safeLastSaved = getSafeRowDate(lastSaved);
 
   // SEL tool links: a #sel-hub/<toolId> link anywhere in rendered text is handled by
   // sel_hub_module.js (window.SelHub.toolLinks), which loads at boot but only mounts
@@ -991,13 +1022,26 @@ function HistoryPanel(props) {
   }, [setShowSelHub, setSelHubTab]);
 
   return (
-            <div id="tour-history-panel" data-help-key="history_panel" data-history-theme={historyTheme} className={`allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 ${isHistoryMaximized ? 'fixed inset-4 z-[190] h-auto' : (!isTeacherMode ? 'h-full' : 'flex-grow min-h-[500px]')}`}>
+            <div
+                id="tour-history-panel"
+                data-help-key="history_panel"
+                data-history-theme={historyTheme}
+                onKeyDown={(e) => {
+                    if (e.defaultPrevented || e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+                    if (e.key === 'Escape' && isHistoryMaximized && !isMoreActionsOpen && !isUnitModalOpen && !movingItemId && editingId === null && !resourceSearch && typeof handleToggleIsHistoryMaximized === 'function') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleToggleIsHistoryMaximized();
+                    }
+                }}
+                className={`allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 motion-reduce:transition-none ${isHistoryMaximized ? 'fixed inset-4 z-[190] h-auto' : (!isTeacherMode ? 'h-full' : 'flex-grow min-h-[500px]')}`}
+            >
                 <style>{HISTORY_PANEL_THEME_CSS}</style>
                 <div className="flex flex-col gap-3 mb-3 shrink-0">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="flex min-w-0 flex-col">
                             <h3 className="font-bold text-base text-slate-950 flex items-center gap-2">
-                                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-700"><History size={16}/></span>
+                                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-700" aria-hidden="true"><History size={16} aria-hidden="true"/></span>
                                 <span className="min-w-0 truncate">{isTeacherMode ? t('sidebar.resource_pack_history') : t('sidebar.my_resources')}</span>
                                 <span
                                     className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700"
@@ -1019,7 +1063,7 @@ function HistoryPanel(props) {
                                     onClick={onOpenDeviceRecovery}
                                     className={'flex min-h-11 items-center gap-1 rounded-lg px-2 text-left transition-colors hover:bg-slate-100 ' + (canvasRecoverySaveStatus === 'error' ? 'text-red-700' : canvasRecoverySaveStatus === 'locked' ? 'text-amber-700' : (canvasRecoverySaveStatus === 'saved' ? 'text-emerald-700' : 'text-slate-500'))}
                                     title={canvasRecoverySaveStatus === 'locked' ? 'Protected recovery workspaces are locked in this tab. Open the manager to unlock.' : String(canvasRecoverySnapshotCount) + ' saved ' + (canvasRecoverySnapshotCount === 1 ? 'workspace' : 'workspaces') + ' on this device. Open saved work manager.'}
-                                    aria-label={(canvasRecoverySaveStatus === 'error' ? 'Device save needs attention' : canvasRecoverySaveStatus === 'locked' ? 'Protected recovery workspaces locked, ' + canvasRecoverySnapshotCount + ' workspaces' : canvasRecoverySaveStatus === 'idle' ? 'Current workspace is not saved yet' : (lastSaved ? 'Saved on this device at ' + lastSaved.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'On-device saved work')) + '. Open saved work manager.'}
+                                    aria-label={(canvasRecoverySaveStatus === 'error' ? 'Device save needs attention' : canvasRecoverySaveStatus === 'locked' ? 'Protected recovery workspaces locked, ' + canvasRecoverySnapshotCount + ' workspaces' : canvasRecoverySaveStatus === 'idle' ? 'Current workspace is not saved yet' : (safeLastSaved ? 'Saved on this device at ' + safeLastSaved.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'On-device saved work')) + '. Open saved work manager.'}
                                     data-help-key="history_device_storage">
                                     {(canvasRecoverySaveStatus === 'checking' || canvasRecoverySaveStatus === 'saving' || canvasRecoverySaveStatus === 'restoring') ? (
                                         <RefreshCw size={10} className="animate-spin motion-reduce:animate-none" aria-hidden="true" />
@@ -1043,45 +1087,45 @@ function HistoryPanel(props) {
                                                             ? 'Protected recovery workspaces locked · ' + canvasRecoverySnapshotCount + (canvasRecoverySnapshotCount === 1 ? ' workspace' : ' workspaces')
                                                         : canvasRecoverySaveStatus === 'idle'
                                                             ? (canvasRecoverySnapshotCount > 0 ? 'Current workspace not saved yet' : 'Not saved on this device yet')
-                                                            : lastSaved
-                                                            ? 'Saved on this device · ' + lastSaved.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                                                            : safeLastSaved
+                                                            ? 'Saved on this device · ' + safeLastSaved.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
                                                             : 'Saved on this device'}
                                     </span>
                                 </button>
                             ) : isStorageDisabled ? (
                                 <span className="text-red-700 flex items-center gap-1">
-                                    <AlertCircle size={10} /> {t('status.storage_disabled')}
+                                    <AlertCircle size={10} aria-hidden="true" /> {t('status.storage_disabled')}
                                 </span>
                             ) : isCloudSyncEnabled ? (
                                 <>
                                         {cloudSyncStatus === 'syncing' && (
                                             <span className="text-slate-500 flex items-center gap-1">
-                                                <RefreshCw size={10} className="animate-spin motion-reduce:animate-none" /> {t('status.syncing')}
+                                                <RefreshCw size={10} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> {t('status.syncing')}
                                             </span>
                                         )}
                                         {cloudSyncStatus === 'error' && (
                                             <span className="text-red-700 flex items-center gap-1">
-                                                <AlertCircle size={10} /> {t('status.sync_error')}
+                                                <AlertCircle size={10} aria-hidden="true" /> {t('status.sync_error')}
                                             </span>
                                         )}
                                         {(cloudSyncStatus === 'saved' || cloudSyncStatus === 'idle') && (
                                             <span className="text-emerald-700 flex items-center gap-1">
-                                                <Cloud size={10} /> {t('status.cloud_saved')}
+                                                <Cloud size={10} aria-hidden="true" /> {t('status.cloud_saved')}
                                             </span>
                                         )}
                                     </>
                                 ) : (
                                     pendingSync ? (
                                         <span className="text-amber-700 flex items-center gap-1">
-                                            <CloudOff size={10} /> {t('status.unsaved')}
+                                            <CloudOff size={10} aria-hidden="true" /> {t('status.unsaved')}
                                         </span>
-                                    ) : lastSaved ? (
+                                    ) : safeLastSaved ? (
                                         <span className="text-emerald-700 flex items-center gap-1">
-                                            <Cloud size={10} /> {t('status.autosaved', { time: lastSaved.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) })}
+                                            <Cloud size={10} aria-hidden="true" /> {t('status.autosaved', { time: safeLastSaved.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) })}
                                         </span>
                                     ) : (
                                         <span className="text-slate-500 flex items-center gap-1">
-                                            <RefreshCw size={10} className="animate-spin motion-reduce:animate-none" /> {t('status.syncing')}
+                                            <RefreshCw size={10} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> {t('status.syncing')}
                                         </span>
                                     )
                                 )}
@@ -1089,12 +1133,26 @@ function HistoryPanel(props) {
                         </div>
                         <div className="flex items-center gap-1">
                             <input aria-label={t('common.upload_file')} type="file" ref={projectFileInputRef} onChange={handleLoadProject} className="hidden" accept=".json" />
+                            {isHistoryMaximized && typeof handleToggleIsHistoryMaximized === 'function' && (
+                                <button
+                                    type="button"
+                                    data-history-exit-maximize=""
+                                    onClick={handleToggleIsHistoryMaximized}
+                                    className="min-h-11 rounded-lg border border-indigo-200 bg-indigo-50 px-3 text-xs font-bold text-indigo-700 shadow-sm transition-colors motion-reduce:transition-none hover:bg-indigo-100 flex items-center gap-1.5"
+                                    aria-label={resourceUiText('history.minimize', 'Minimize')}
+                                    title={resourceUiText('history.minimize', 'Minimize')}
+                                >
+                                    <Minimize size={14} aria-hidden="true" />
+                                    <span>{resourceUiText('history.minimize', 'Minimize')}</span>
+                                </button>
+                            )}
                             <div className="relative">
                                 <button
                                     ref={moreActionsButtonRef}
                                     type="button"
                                     onClick={() => isMoreActionsOpen ? closeMoreActions(false) : openMoreActions('first')}
                                     onKeyDown={(e) => {
+                                        if (e.ctrlKey || e.altKey || e.metaKey) return;
                                         if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
                                             e.preventDefault();
                                             openMoreActions(e.key === 'ArrowUp' ? 'last' : 'first');
@@ -1261,7 +1319,7 @@ function HistoryPanel(props) {
                     </div>
                     {isTeacherMode && !isIndependentMode && (
                         <div className="rounded-xl border border-slate-200 bg-slate-50/90 p-2 flex items-center gap-2">
-                            <FolderOpen size={16} className="text-slate-500 shrink-0" />
+                            <FolderOpen size={16} className="text-slate-500 shrink-0" aria-hidden="true" />
                             <select
                                 value={activeUnitId}
                                 data-help-key="history_filter_unit_select"
@@ -1278,31 +1336,31 @@ function HistoryPanel(props) {
                             <button type="button"
                                 data-help-key="history_create_unit_btn"
                                 onClick={handleSetIsUnitModalOpenToTrue}
-                                className="min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-indigo-700 transition-colors hover:bg-indigo-50"
+                                className="min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-indigo-700 transition-colors motion-reduce:transition-none hover:bg-indigo-50"
                                 title={t('history.create_unit_tooltip')}
                                 aria-label={t('history.create_unit_tooltip')}
                             >
-                                <FolderPlus size={14}/>
+                                <FolderPlus size={14} aria-hidden="true"/>
                             </button>
                             {activeUnitId !== 'all' && activeUnitId !== 'uncategorized' && typeof onVisualizeUnit === 'function' && (
                                 <button type="button"
                                     onClick={() => onVisualizeUnit(activeUnitId)}
-                                    className="min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-amber-700 transition-colors hover:bg-amber-50"
+                                    className="min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-amber-700 transition-colors motion-reduce:transition-none hover:bg-amber-50"
                                     title={t('history.visualize_unit_tooltip') || 'Open this unit in Learning Web: Unit Path'}
                                     aria-label={t('history.visualize_unit_tooltip') || 'Open this unit in Learning Web: Unit Path'}
                                 >
-                                    <span style={{fontSize:'13px',lineHeight:1}}>🧭</span>
+                                    <span style={{fontSize:'13px',lineHeight:1}} aria-hidden="true">🧭</span>
                                 </button>
                             )}
                             {activeUnitId !== 'all' && activeUnitId !== 'uncategorized' && (
                                 <button type="button"
                                     data-help-key="history_delete_unit_btn"
                                     onClick={handleDeleteUnit}
-                                    className="min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-red-700 transition-colors hover:bg-red-50"
+                                    className="min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-red-700 transition-colors motion-reduce:transition-none hover:bg-red-50"
                                     title={t('history.delete_unit_tooltip')}
                                     aria-label={t('history.delete_unit_tooltip')}
                                 >
-                                    <Trash2 size={14}/>
+                                    <Trash2 size={14} aria-hidden="true"/>
                                 </button>
                             )}
                         </div>
@@ -1311,7 +1369,22 @@ function HistoryPanel(props) {
                         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm shadow-slate-900/5" role="search" aria-label={t('history.find_resources_aria')}>
                             <div className="relative min-w-[150px] flex-1">
                                 <Search size={14} aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600" />
-                                <input type="search" value={resourceSearch} onChange={(e) => setResourceSearch(e.target.value)} placeholder={t('history.search_resources_placeholder')} aria-label={t('history.search_resources_aria')} className="min-h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-8 pr-9 text-xs text-slate-800 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+                                <input
+                                    type="search"
+                                    value={resourceSearch}
+                                    onChange={(e) => setResourceSearch(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+                                        if (e.key === 'Escape' && resourceSearch) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setResourceSearch('');
+                                        }
+                                    }}
+                                    placeholder={t('history.search_resources_placeholder')}
+                                    aria-label={t('history.search_resources_aria')}
+                                    className="min-h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-8 pr-9 text-xs text-slate-800 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                />
                                 {resourceSearch && (
                                     <button type="button" onClick={() => setResourceSearch('')} aria-label={t('history.clear_resource_search_aria')} className="absolute right-0 top-0 min-h-11 min-w-11 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900">
                                         <X size={14} className="mx-auto" aria-hidden="true" />
@@ -1376,9 +1449,9 @@ function HistoryPanel(props) {
                     )}
                     {isUnitModalOpen && (
                         <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-3 animate-in motion-reduce:animate-none slide-in-from-top-2">
-                            <label className="block text-xs font-bold text-slate-700 mb-1">{t('history.new_unit_label')}</label>
+                            <label htmlFor="history-new-unit-input" className="block text-xs font-bold text-slate-700 mb-1">{t('history.new_unit_label')}</label>
                             <div className="flex flex-wrap gap-2">
-                                <input aria-label={t('common.enter_new_unit_name')}
+                                <input id="history-new-unit-input" aria-label={t('common.enter_new_unit_name')}
                                     type="text"
                                     value={newUnitName}
                                     data-help-key="history_unit_name_input"
@@ -1414,7 +1487,8 @@ function HistoryPanel(props) {
                     // Read during render: storage that is blocked or holds bad JSON must not take the panel down.
                     let stations = [];
                     try { stations = JSON.parse(localStorage.getItem('alloflow_stem_stations') || '[]'); } catch (_) {}
-                    if (!Array.isArray(stations) || stations.length === 0) return null;
+                    stations = Array.isArray(stations) ? stations.filter(st => st && typeof st === 'object') : [];
+                    if (stations.length === 0) return null;
                     /* Reuse component's filteredHistory snapshot; keep nested callbacks consistent throughout this render. */
 
   return (
@@ -1429,6 +1503,7 @@ function HistoryPanel(props) {
                                 {stations.map((st) => {
                                     const delKey = 'stem:' + st.id;
                                     const confirming = confirmDeleteStationKey === delKey;
+                                    const toolList = Array.isArray(st.tools) ? st.tools : [];
                                     return (
                                     <div
                                         key={st.id}
@@ -1440,14 +1515,14 @@ function HistoryPanel(props) {
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                setActiveStation(st);
-                                                setShowStemLab(true);
+                                                setActiveStation && setActiveStation(st);
+                                                setShowStemLab && setShowStemLab(true);
                                                 setStemLabTab && setStemLabTab('explore');
                                             }}
                                             className="min-h-11 min-w-0 flex-grow rounded-lg text-left"
                                         >
                                             <span className="block text-sm font-bold text-slate-800 truncate">{st.name}</span>
-                                            <span className="block text-xs text-slate-600">{(st.tools || []).length} tool{(st.tools || []).length !== 1 ? 's' : ''}</span>
+                                            <span className="block text-xs text-slate-600">{toolList.length} tool{toolList.length !== 1 ? 's' : ''}</span>
                                         </button>
                                         {isTeacherMode && (
                                         <button type="button"
@@ -1456,12 +1531,19 @@ function HistoryPanel(props) {
                                                 setConfirmDeleteStationKey('');
                                                 const updated = stations.filter(s => s.id !== st.id);
                                                 try { localStorage.setItem('alloflow_stem_stations', JSON.stringify(updated)); } catch (_) {}
-                                                if (activeStation && activeStation.id === st.id) setActiveStation(null);
+                                                if (activeStation && activeStation.id === st.id && typeof setActiveStation === 'function') setActiveStation(null);
                                                 setStationListTick(n => n + 1);
                                                 addToast && addToast(_hpCopy(t, 'history.station_removed', 'Station removed'));
                                             }}
                                             onBlur={() => { if (confirming) setConfirmDeleteStationKey(''); }}
-                                            className={`min-h-11 min-w-11 px-2 inline-flex items-center justify-center rounded-lg text-xs font-bold transition-colors ${confirming ? 'bg-red-600 text-white hover:bg-red-700' : 'text-red-700 hover:bg-red-50'}`}
+                                            onKeyDown={(e) => {
+                                                if (confirming && e.key === 'Escape' && !(e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229)) {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    setConfirmDeleteStationKey('');
+                                                }
+                                            }}
+                                            className={`min-h-11 min-w-11 px-2 inline-flex items-center justify-center rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none ${confirming ? 'bg-red-600 text-white hover:bg-red-700' : 'text-red-700 hover:bg-red-50'}`}
                                             aria-label={confirming ? `Confirm delete station ${st.name}` : (t('history.delete_station_aria') || 'Delete station')}
                                         >
                                             {confirming ? 'Delete?' : <X size={12} aria-hidden="true" />}
@@ -1480,7 +1562,8 @@ function HistoryPanel(props) {
                     let stations = [];
                     try { stations = JSON.parse(localStorage.getItem('alloflow_sel_stations') || '[]'); } catch (_) {}
                     if ((!Array.isArray(stations) || !stations.length) && Array.isArray(window.__alloflowSelStations)) stations = window.__alloflowSelStations;
-                    if (!Array.isArray(stations) || stations.length === 0) return null;
+                    stations = Array.isArray(stations) ? stations.filter(st => st && typeof st === 'object') : [];
+                    if (stations.length === 0) return null;
                     /* Reuse component's filteredHistory snapshot; keep nested callbacks consistent throughout this render. */
 
   return (
@@ -1495,6 +1578,8 @@ function HistoryPanel(props) {
                                 {stations.map((st) => {
                                     const delKey = 'sel:' + st.id;
                                     const confirming = confirmDeleteStationKey === delKey;
+                                    const toolList = Array.isArray(st.tools) ? st.tools : [];
+                                    const questList = Array.isArray(st.quests) ? st.quests : [];
                                     return (
                                     <div
                                         key={st.id}
@@ -1506,14 +1591,14 @@ function HistoryPanel(props) {
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                setActiveSelStation(st);
-                                                setShowSelHub(true);
+                                                setActiveSelStation && setActiveSelStation(st);
+                                                setShowSelHub && setShowSelHub(true);
                                                 setSelHubTab && setSelHubTab('explore');
                                             }}
                                             className="min-h-11 min-w-0 flex-grow rounded-lg text-left"
                                         >
                                             <span className="block text-sm font-bold text-slate-800 truncate">{st.name}</span>
-                                            <span className="block text-xs text-slate-600">{(st.tools || []).length} tool{(st.tools || []).length !== 1 ? 's' : ''}{(st.quests || []).length > 0 ? ` · ${st.quests.length} quest${st.quests.length !== 1 ? 's' : ''}` : ''}</span>
+                                            <span className="block text-xs text-slate-600">{toolList.length} tool{toolList.length !== 1 ? 's' : ''}{questList.length > 0 ? ` · ${questList.length} quest${questList.length !== 1 ? 's' : ''}` : ''}</span>
                                         </button>
                                         {isTeacherMode && (
                                         <button type="button"
@@ -1525,12 +1610,19 @@ function HistoryPanel(props) {
                                                 if (typeof window !== 'undefined' && Array.isArray(window.__alloflowSelStations)) {
                                                     window.__alloflowSelStations = updated;
                                                 }
-                                                if (activeSelStation && activeSelStation.id === st.id) setActiveSelStation(null);
+                                                if (activeSelStation && activeSelStation.id === st.id && typeof setActiveSelStation === 'function') setActiveSelStation(null);
                                                 setStationListTick(n => n + 1);
                                                 addToast && addToast(_hpCopy(t, 'history.sel_station_removed', 'SEL Station removed'));
                                             }}
                                             onBlur={() => { if (confirming) setConfirmDeleteStationKey(''); }}
-                                            className={`min-h-11 min-w-11 px-2 inline-flex items-center justify-center rounded-lg text-xs font-bold transition-colors ${confirming ? 'bg-red-600 text-white hover:bg-red-700' : 'text-red-700 hover:bg-red-50'}`}
+                                            onKeyDown={(e) => {
+                                                if (confirming && e.key === 'Escape' && !(e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229)) {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    setConfirmDeleteStationKey('');
+                                                }
+                                            }}
+                                            className={`min-h-11 min-w-11 px-2 inline-flex items-center justify-center rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none ${confirming ? 'bg-red-600 text-white hover:bg-red-700' : 'text-red-700 hover:bg-red-50'}`}
                                             aria-label={confirming ? `Confirm delete SEL Station ${st.name}` : `Delete SEL Station ${st.name}`}
                                         >
                                             {confirming ? 'Delete?' : <X size={12} aria-hidden="true" />}
@@ -1572,7 +1664,7 @@ function HistoryPanel(props) {
                         const safeItemTitle = getHistoryDisplayTitle(itemType, getSafeArtifactField(item, 'title'), defaultItemTitle);
                         const itemTitle = (isTeacherMode && !isIndependentMode)
                             ? safeItemTitle
-                            : sanitizeString(safeItemTitle);
+                            : safeSanitize(safeItemTitle);
                         const rawItemMeta = getSafeArtifactField(item, 'meta');
                         const itemMeta = getHistoryDisplayMeta(itemType, rawItemMeta);
                         const itemTypeLabel = getResourceTypeLabel(itemType);
@@ -1701,7 +1793,7 @@ function HistoryPanel(props) {
                                                 e.stopPropagation();
                                                 if (isCurrent || isOpening) return;
                                                 if (isSyncMode) {
-                                                    addToast(t('session.teacher_control_warning'), "info");
+                                                    addToast && addToast(t('session.teacher_control_warning'), "info");
                                                     return;
                                                 }
                                                 handleRestoreView(item);
@@ -1718,7 +1810,7 @@ function HistoryPanel(props) {
                                                 itemDateLabel,
                                                 itemUnit ? itemUnitName : '',
                                                 itemFromDA ? ('DA' + (itemDaItemIndex !== null ? ` · #${itemDaItemIndex + 1}` : '')) : '',
-                                                itemMeta ? ((isTeacherMode && !isIndependentMode) ? itemMeta : sanitizeString(itemMeta)) : '',
+                                                itemMeta ? ((isTeacherMode && !isIndependentMode) ? itemMeta : safeSanitize(itemMeta)) : '',
                                                 (itemType === 'word-sounds' && itemConfigSummary) ? itemConfigSummary : '',
                                             ].filter(Boolean).join(' ') + `. ${isCurrent ? currentLabel : openLabel}` + (itemPhaseLabel ? `. ${resourceUiText('history.lesson_part', 'Lesson part')}: ${itemPhaseLabel}` : '')}
                                             aria-current={isCurrent ? 'page' : undefined}
@@ -1776,7 +1868,7 @@ function HistoryPanel(props) {
                                                             </span>
                                                         )}
                                                         {itemFromDA && itemMeta && ' '}
-                                                        {itemMeta && <span>{(isTeacherMode && !isIndependentMode) ? itemMeta : sanitizeString(itemMeta)}</span>}
+                                                        {itemMeta && <span>{(isTeacherMode && !isIndependentMode) ? itemMeta : safeSanitize(itemMeta)}</span>}
                                                     </div>
                                                 )}
                                                 {' '}
@@ -1873,6 +1965,7 @@ function HistoryPanel(props) {
                                             aria-controls={movingItemId === itemInstanceId ? `history-move-menu-${itemInstanceId}` : undefined}
                                             onClick={(event) => movingItemId === itemInstanceId ? closeMoveMenu(true) : openMoveMenu(event, itemInstanceId)}
                                             onKeyDown={(event) => {
+                                                if (event.ctrlKey || event.altKey || event.metaKey) return;
                                                 if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
                                                     event.preventDefault();
                                                     openMoveMenu(event, itemInstanceId, event.key === 'ArrowUp' ? 'last' : 'first');

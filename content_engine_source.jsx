@@ -1624,6 +1624,7 @@ var createContentEngine = function(deps) {
     // Publish only a usable result; restoring a captured old value on failure
     // could overwrite edits made while the provider was running.
     const publishSource = function(text) {
+        if (sourceGenerationOwners.get(generationSetter) !== generationOwner) return;
         if (overrides?.isCurrent && !overrides.isCurrent()) return;
         let liveText = sourceTextAtStart;
         try { const live = _s().inputText; if (typeof live === 'string') liveText = live; } catch (_) {}
@@ -2486,11 +2487,10 @@ FALLBACK MODE: Web search is unavailable for this section. Do not invent citatio
            fullDocument = cleanSourceMetaCommentary(fullDocument);
            fullDocument = repairSourceMarkdown(fullDocument);
            fullDocument = finishOwnResearch(fullDocument);
+           if (sourceGenerationOwners.get(generationSetter) !== generationOwner) return;
            recordGeneratedSource(fullDocument);
            publishSource(fullDocument);
            addToast(t('input.success_long_form'), "success");
-           setIsGeneratingSource(false);
-           flyToElement('tour-source-input');
            return;
       }
       const minParagraphs = Math.max(3, Math.ceil(targetWords / 60));
@@ -2765,15 +2765,21 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
                 Text to Fix:
                 ${rawWithCitations}
               `;
+              let optTimer = null;
               try {
                   const _optTimeoutMs = (window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.contentEngineOptimizeMs) || 90000;
-                  const timeoutPromise = new Promise((_, reject) =>
-                      setTimeout(() => reject(new Error("Optimization timed out")), _optTimeoutMs)
-                  );
-                  const cleaned = await Promise.race([
-                      callGemini(cleanupPrompt),
-                      timeoutPromise
-                  ]);
+                  const timeoutPromise = new Promise((_, reject) => {
+                      optTimer = setTimeout(() => reject(new Error("Optimization timed out")), _optTimeoutMs);
+                  });
+                  let cleaned;
+                  try {
+                      cleaned = await Promise.race([
+                          callGemini(cleanupPrompt),
+                          timeoutPromise
+                      ]);
+                  } finally {
+                      if (optTimer !== null) { clearTimeout(optTimer); optTimer = null; }
+                  }
                   if (!cleaned) throw new Error("Cleanup returned empty");
                   const rawCitCount = (rawWithCitations.match(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g) || []).length;
                   const cleanedCitCount = (cleaned.match(/\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g) || []).length;
@@ -2942,6 +2948,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       text = ensureTitleHeading(text);
       text = repairSourceMarkdown(text);
       text = finishOwnResearch(text);
+      if (sourceGenerationOwners.get(generationSetter) !== generationOwner) return;
       recordGeneratedSource(text);
       publishSource(text);
     } catch (err) {
@@ -3033,6 +3040,8 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
   const handleDownloadImage = () => {
     if (generatedContent?.type !== 'image' || !generatedContent?.data?.imageUrl) return;
     const downloadWithLabels = (imgUrl, labels, filename) => {
+        if (typeof imgUrl !== 'string' || !/^(?:data:image\/(?:png|jpeg|jpg|webp|gif);base64,|blob:|https?:\/\/)/i.test(imgUrl.trim())) return;
+        const safeImgUrl = imgUrl.trim();
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
@@ -3041,6 +3050,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
             canvas.width = img.naturalWidth;
             canvas.height = img.naturalHeight;
             const ctx = canvas.getContext('2d');
+            if (!ctx) return;
             ctx.drawImage(img, 0, 0);
             if (labels && labels.length > 0) {
                 ctx.font = 'bold 14px Inter, Segoe UI, system-ui, sans-serif';
@@ -3064,6 +3074,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
                 });
             }
             canvas.toBlob(blob => {
+                if (!blob) return;
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
@@ -3071,18 +3082,18 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                URL.revokeObjectURL(url);
+                setTimeout(() => { try { URL.revokeObjectURL(url); } catch (_) {} }, 1000);
             }, 'image/png');
         };
         img.onerror = () => {
             const link = document.createElement('a');
-            link.href = imgUrl;
+            link.href = safeImgUrl;
             link.download = filename;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         };
-        img.src = imgUrl;
+        img.src = safeImgUrl;
     };
     if (generatedContent?.data.visualPlan && generatedContent?.data.visualPlan.panels.length > 1) {
         const labelsHidden = document.querySelector('[data-labels-hidden]');
@@ -3442,7 +3453,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
           if (addToast) addToast(__alloT('content_engine.only_teachers_revise', 'Only teachers can revise the passage text.'), 'info');
           return;
       }
-      if (['simplify', 'custom', 'custom-input'].includes(action) && _isOriginalReading(deps.getState().generatedContent)) {
+      if (['simplify', 'custom', 'custom-input'].includes(action) && _isOriginalReading(_s().generatedContent)) {
           addToast(__alloT('content_engine.create_adapted_copy', 'Create an adapted copy to change the wording of an original.'), 'info');
           return;
       }

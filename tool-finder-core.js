@@ -2,22 +2,35 @@
     'use strict';
 
     var tools = Array.isArray(window.ALLOFLOW_PUBLIC_TOOLS) ? window.ALLOFLOW_PUBLIC_TOOLS : [];
-    var sourceLabels = {
+    var sourceLabels = Object.assign(Object.create(null), {
         none: 'No source needed',
         optional: 'Source optional',
         raw: 'Bring text or a file',
         analyzed: 'Analyzed source needed'
-    };
-    var aiLabels = {
+    });
+    var aiLabels = Object.assign(Object.create(null), {
         none: 'Works without AI',
         optional: 'AI optional',
         required: 'AI required'
-    };
-    var accessLabels = {
+    });
+    var accessLabels = Object.assign(Object.create(null), {
         gemini: 'Gemini Canvas',
         desktop: 'Desktop',
         byok: 'Hosted / BYOK'
-    };
+    });
+
+    function safeDetailHref(raw) {
+        var s = String(raw == null ? '' : raw).trim();
+        if (!s || /[\u0000-\u001f\u007f\\]/.test(s) || s.indexOf('//') === 0) return '';
+        try {
+            var base = (typeof window !== 'undefined' && window.location && window.location.href) ? window.location.href : 'https://alloflow.dev/';
+            var parsed = new URL(s, base);
+            if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return '';
+            return s;
+        } catch (_) {
+            return '';
+        }
+    }
 
     function normalize(value) {
         return String(value || '')
@@ -108,9 +121,10 @@
         launch.href = launchHref(tool);
         launch.setAttribute('aria-label', 'Launch with guidance for ' + tool.name);
         actions.appendChild(launch);
-        if (tool.detailHref) {
+        var safeDetail = safeDetailHref(tool.detailHref);
+        if (safeDetail) {
             var details = createElement('a', 'tool-detail-link', 'Related details');
-            details.href = tool.detailHref;
+            details.href = safeDetail;
             details.setAttribute('aria-label', 'View related details for ' + tool.name);
             actions.appendChild(details);
         }
@@ -137,17 +151,19 @@
         var params = new URLSearchParams(window.location.search);
 
         var categories = Array.from(new Set(tools.map(function (tool) { return tool.category; }))).sort();
-        categories.forEach(function (value) {
-            var option = createElement('option', '', value);
-            option.value = value;
-            category.appendChild(option);
-        });
+        if (category) {
+            categories.forEach(function (value) {
+                var option = createElement('option', '', value);
+                option.value = value;
+                category.appendChild(option);
+            });
+        }
 
         search.value = params.get('q') || '';
-        if (params.get('category')) category.value = params.get('category');
-        if (params.get('source')) source.value = params.get('source');
-        if (params.get('ai')) ai.value = params.get('ai');
-        if (params.get('access')) access.value = params.get('access');
+        if (category && params.get('category')) category.value = params.get('category');
+        if (source && params.get('source')) source.value = params.get('source');
+        if (ai && params.get('ai')) ai.value = params.get('ai');
+        if (access && params.get('access')) access.value = params.get('access');
 
         function sourceMatches(tool, value) {
             if (!value) return true;
@@ -157,42 +173,48 @@
         }
 
         function render() {
+            var catVal = category ? category.value : '';
+            var srcVal = source ? source.value : '';
+            var aiVal = ai ? ai.value : '';
+            var accVal = access ? access.value : '';
             var filtered = tools.filter(function (tool) {
                 return matchesQuery(tool, search.value) &&
-                    (!category.value || tool.category === category.value) &&
-                    sourceMatches(tool, source.value) &&
-                    (!ai.value || tool.ai === ai.value) &&
-                    (!access.value || (tool.access || []).indexOf(access.value) !== -1);
+                    (!catVal || tool.category === catVal) &&
+                    sourceMatches(tool, srcVal) &&
+                    (!aiVal || tool.ai === aiVal) &&
+                    (!accVal || (tool.access || []).indexOf(accVal) !== -1);
             });
 
             results.replaceChildren();
             filtered.forEach(function (tool) { results.appendChild(createToolCard(tool)); });
-            count.textContent = filtered.length + (filtered.length === 1 ? ' tool found' : ' tools found');
-            empty.hidden = filtered.length !== 0;
+            if (count) count.textContent = filtered.length + (filtered.length === 1 ? ' tool found' : ' tools found');
+            if (empty) empty.hidden = filtered.length !== 0;
 
             var nextParams = new URLSearchParams();
             if (search.value.trim()) nextParams.set('q', search.value.trim());
-            if (category.value) nextParams.set('category', category.value);
-            if (source.value) nextParams.set('source', source.value);
-            if (ai.value) nextParams.set('ai', ai.value);
-            if (access.value) nextParams.set('access', access.value);
+            if (catVal) nextParams.set('category', catVal);
+            if (srcVal) nextParams.set('source', srcVal);
+            if (aiVal) nextParams.set('ai', aiVal);
+            if (accVal) nextParams.set('access', accVal);
             var query = nextParams.toString();
             var nextUrl = window.location.pathname + (query ? '?' + query : '') + window.location.hash;
-            window.history.replaceState(null, '', nextUrl);
+            try { window.history.replaceState(null, '', nextUrl); } catch (_) {}
         }
 
         [search, category, source, ai, access].forEach(function (control) {
-            control.addEventListener(control === search ? 'input' : 'change', render);
+            if (control) control.addEventListener(control === search ? 'input' : 'change', render);
         });
-        clear.addEventListener('click', function () {
-            search.value = '';
-            category.value = '';
-            source.value = '';
-            ai.value = '';
-            access.value = '';
-            render();
-            search.focus();
-        });
+        if (clear) {
+            clear.addEventListener('click', function () {
+                search.value = '';
+                if (category) category.value = '';
+                if (source) source.value = '';
+                if (ai) ai.value = '';
+                if (access) access.value = '';
+                render();
+                search.focus();
+            });
+        }
         render();
     }
 
@@ -205,8 +227,8 @@
         copy.appendChild(createElement('strong', '', tool.name));
         copy.appendChild(createElement('span', '', tool.summary));
         var state = createElement('span', 'home-tool-result-state');
-        state.appendChild(createBadge(sourceLabels[tool.source], 'source'));
-        state.appendChild(createBadge(aiLabels[tool.ai], 'ai'));
+        state.appendChild(createBadge(sourceLabels[tool.source] || 'Check source needs', 'source'));
+        state.appendChild(createBadge(aiLabels[tool.ai] || 'Check AI needs', 'ai'));
         copy.appendChild(state);
         link.appendChild(icon);
         link.appendChild(copy);
@@ -225,6 +247,10 @@
                 return query.trim() ? matchesQuery(tool, query) : tool.featured;
             }).slice(0, 4);
             results.replaceChildren();
+            if (!matches.length) {
+                results.appendChild(createElement('p', 'home-tool-empty', 'No matching tools found. Try different keywords or browse the full tool finder.'));
+                return;
+            }
             matches.forEach(function (tool) { results.appendChild(createCompactResult(tool)); });
         }
 
@@ -237,8 +263,14 @@
         render();
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    function bootFinders() {
         initFullFinder();
         initHomeFinder();
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootFinders, { once: true });
+    } else {
+        bootFinders();
+    }
 })();

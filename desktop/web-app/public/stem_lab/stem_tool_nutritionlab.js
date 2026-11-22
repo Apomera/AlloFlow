@@ -10,6 +10,7 @@
 // ═══════════════════════════════════════════
 
 function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
@@ -17,8 +18,9 @@ window.StemLab = window.StemLab || {
   getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
 };
+}
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab'))) {
+if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab'))) {
 
 (function() {
   'use strict';
@@ -33,7 +35,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     document.head.appendChild(st);
   })();
   (function() {
-    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
@@ -42,13 +44,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
 
   var _prefersReducedMotion = (function() {
     try {
-      return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      return typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     } catch (e) { return false; }
   })();
 
   // Print stylesheet
   (function() {
-    if (document.getElementById('nutritionlab-print-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('nutritionlab-print-css')) return;
     var st = document.createElement('style');
     st.id = 'nutritionlab-print-css';
     st.textContent = [
@@ -66,7 +68,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
 
   // Visual flair CSS — emerald/teal theme, gated by global motion-reduce
   (function() {
-    if (document.getElementById('nutritionlab-flair-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('nutritionlab-flair-css')) return;
     var st = document.createElement('style');
     st.id = 'nutritionlab-flair-css';
     st.textContent = [
@@ -149,17 +151,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       '.nl-starter-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 13px; border-radius: 10px; background: rgba(2,44,34,0.72); border: 1px solid rgba(110,231,183,0.38); color: #ecfdf5; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 140ms ease, border-color 140ms ease; }',
       '.nl-starter-chip:hover:not(:disabled) { background: rgba(16,185,129,0.34); border-color: #bef264; color: #ffffff; }',
       '.nl-starter-chip:focus-visible, .nl-hero-deck button:focus-visible { outline: 2px solid #bef264; outline-offset: 2px; }',
+      '@keyframes nl-pathway-flow { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }',
+      '@keyframes nl-arc-orbit { from { stroke-dashoffset: 32; } to { stroke-dashoffset: 0; } }',
+      '@keyframes nl-bevel-shimmer { 0%, 100% { opacity: 0.16; } 50% { opacity: 0.48; } }',
+      '@keyframes nl-dv-halo { 0% { transform: scale(0.85); opacity: 0.72; } 75% { transform: scale(1.65); opacity: 0; } 100% { transform: scale(1.65); opacity: 0; } }',
+      '@keyframes nl-phosphor-glow { 0%, 100% { opacity: 0.20; } 50% { opacity: 0.48; } }',
+      '@keyframes nl-beacon-breathe { 0%, 100% { transform: scale(0.92); opacity: 0.80; } 50% { transform: scale(1.16); opacity: 1; } }',
+      '@keyframes nl-wave-drift { 0%, 100% { transform: translateX(-2px); } 50% { transform: translateX(2px); } }',
+      '.nl-anim-flow { animation: nl-pathway-flow 1.9s linear infinite; }',
+      '.nl-anim-orbit { animation: nl-arc-orbit 5.2s linear infinite; }',
+      '.nl-anim-shimmer { animation: nl-bevel-shimmer 2.8s ease-in-out infinite; }',
+      '.nl-anim-dv-halo { transform-box: fill-box; transform-origin: center; animation: nl-dv-halo 2.5s ease-out infinite; }',
+      '.nl-anim-glow { animation: nl-phosphor-glow 2.7s ease-in-out infinite; }',
+      '.nl-anim-beacon { transform-box: fill-box; transform-origin: center; animation: nl-beacon-breathe 2.2s ease-in-out infinite; }',
+      '.nl-anim-wave { animation: nl-wave-drift 3.4s ease-in-out infinite; }',
       '.theme-contrast [data-stem-tool-shell="nutritionLab"] .nl-hero-deck { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; }',
       '.theme-contrast [data-stem-tool-shell="nutritionLab"] .nl-emblem-box, .theme-contrast [data-stem-tool-shell="nutritionLab"] .nl-subject-badge, .theme-contrast [data-stem-tool-shell="nutritionLab"] .nl-telemetry-pill, .theme-contrast [data-stem-tool-shell="nutritionLab"] .nl-pathway-strip { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
       '.theme-contrast [data-stem-tool-shell="nutritionLab"] .nl-starter-label { color: #ffff00 !important; }',
-      '.theme-contrast [data-stem-tool-shell="nutritionLab"] .nl-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }'
+      '.theme-contrast [data-stem-tool-shell="nutritionLab"] .nl-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
+      '.theme-contrast [data-stem-tool-shell="nutritionLab"] :is(.nl-anim-flow, .nl-anim-orbit, .nl-anim-shimmer, .nl-anim-dv-halo, .nl-anim-glow, .nl-anim-beacon, .nl-anim-wave) { animation: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="nutritionLab"] .nl-svg-fx { display: none !important; }',
+      '@media (prefers-reduced-motion: reduce) { .nl-anim-flow, .nl-anim-orbit, .nl-anim-shimmer, .nl-anim-dv-halo, .nl-anim-glow, .nl-anim-beacon, .nl-anim-wave { animation: none !important; } }'
     ].join('\n');
     document.head.appendChild(st);
   })();
 
   // Live region (WCAG 4.1.3)
   (function() {
-    if (document.getElementById('allo-live-nutritionlab')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-nutritionlab')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-nutritionlab';
     lr.setAttribute('aria-live', 'polite');
@@ -19196,7 +19215,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               tabIndex: 0,
               'aria-label': __alloT('stem.nutritionlab.print_this_module_page_includes_teache', 'Print this module page (includes Teacher Notes)'),
               onClick: function(e) { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} },
-              onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} } },
+              onKeyDown: function(e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} } },
               className: 'nutritionlab-no-print text-xs font-semibold normal-case px-2 py-1 rounded bg-white border border-amber-300 hover:bg-amber-100 text-amber-800'
             }, __alloT('stem.nutritionlab.print', '🖨️ Print'))
           ),
@@ -19445,13 +19464,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               // Bespoke Nutritional Physiology SVG Emblem
               h('div', { className: 'nl-emblem-box', 'aria-hidden': 'true' },
                 h('svg', { width: 40, height: 40, viewBox: '0 0 48 48', 'aria-hidden': 'true' },
-                  h('circle', { cx: 24, cy: 24, r: 21, fill: 'rgba(2,44,34,0.72)', stroke: '#6ee7b7', strokeWidth: 1.4, strokeDasharray: '4 3' }),
+                  h('circle', { cx: 24, cy: 24, r: 21, fill: 'rgba(2,44,34,0.72)', stroke: '#6ee7b7', strokeWidth: 1.4, strokeDasharray: '4 3', className: 'nl-anim-orbit' }),
                   // Balanced nutrient ring arcs (carbs, protein, healthy fats, fiber/micros)
                   h('circle', { cx: 24, cy: 24, r: 13, fill: 'none', stroke: '#34d399', strokeWidth: 4, strokeDasharray: '26 56', strokeDashoffset: '0' }),
                   h('circle', { cx: 24, cy: 24, r: 13, fill: 'none', stroke: '#38bdf8', strokeWidth: 4, strokeDasharray: '22 60', strokeDashoffset: '-28' }),
                   h('circle', { cx: 24, cy: 24, r: 13, fill: 'none', stroke: '#fbbf24', strokeWidth: 4, strokeDasharray: '18 64', strokeDashoffset: '-52' }),
+                  h('circle', { cx: 24, cy: 24, r: 14.5, fill: 'none', stroke: '#ffffff', strokeWidth: 1, strokeOpacity: 0.35, className: 'nl-svg-fx nl-anim-shimmer' }),
                   // Cellular ATP / botanical leaf spark center
-                  h('path', { d: 'M24 15 C29 18 30 25 24 31 C18 25 19 18 24 15 Z', fill: '#a7f3d0', stroke: '#064e3b', strokeWidth: 1.2 }),
+                  h('circle', { cx: 24, cy: 24, r: 8.5, fill: '#34d399', opacity: 0.2, className: 'nl-svg-fx nl-anim-glow' }),
+                  h('path', { d: 'M24 15 C29 18 30 25 24 31 C18 25 19 18 24 15 Z', fill: '#a7f3d0', stroke: '#064e3b', strokeWidth: 1.2, className: 'nl-anim-beacon' }),
                   h('line', { x1: 24, y1: 18, x2: 24, y2: 30, stroke: '#065f46', strokeWidth: 1.4, strokeLinecap: 'round' })
                 )
               ),
@@ -19478,15 +19499,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 'aria-label': __alloT('stem.nutritionlab.a11y_nutrient_pathway_diagram', 'Physiology-first nutrient pathway: Macronutrients for fuel and repair flow through digestion and absorption into micronutrients and cellular ATP supporting brain, muscle, and blood'),
                 style: { width: '100%', maxHeight: 68, height: 'auto', display: 'block' }
               },
-                h('line', { x1: 168, y1: 32, x2: 204, y2: 32, stroke: '#6ee7b7', strokeWidth: 2 }),
-                h('line', { x1: 356, y1: 32, x2: 392, y2: 32, stroke: '#7dd3fc', strokeWidth: 2 }),
+                h('line', { x1: 168, y1: 32, x2: 204, y2: 32, stroke: '#34d399', strokeWidth: 6, strokeOpacity: 0.22, className: 'nl-svg-fx nl-anim-glow' }),
+                h('line', { x1: 168, y1: 32, x2: 204, y2: 32, stroke: '#6ee7b7', strokeWidth: 2, strokeDasharray: '5 4', className: 'nl-anim-flow' }),
+                h('line', { x1: 356, y1: 32, x2: 392, y2: 32, stroke: '#38bdf8', strokeWidth: 6, strokeOpacity: 0.22, className: 'nl-svg-fx nl-anim-glow', style: { animationDelay: '0.6s' } }),
+                h('line', { x1: 356, y1: 32, x2: 392, y2: 32, stroke: '#7dd3fc', strokeWidth: 2, strokeDasharray: '5 4', className: 'nl-anim-flow', style: { animationDelay: '0.4s' } }),
+                h('circle', { cx: 186, cy: 32, r: 4.5, fill: 'none', stroke: '#6ee7b7', strokeWidth: 1.2, className: 'nl-svg-fx nl-anim-dv-halo' }),
+                h('circle', { cx: 374, cy: 32, r: 4.5, fill: 'none', stroke: '#7dd3fc', strokeWidth: 1.2, className: 'nl-svg-fx nl-anim-dv-halo', style: { animationDelay: '0.8s' } }),
                 h('rect', { x: 8, y: 10, width: 160, height: 44, rx: 10, fill: 'rgba(16,185,129,0.20)', stroke: '#34d399', strokeWidth: 1.4 }),
+                h('rect', { x: 14, y: 12, width: 148, height: 2.5, rx: 1.2, fill: '#a7f3d0', className: 'nl-svg-fx nl-anim-shimmer' }),
                 h('text', { x: 88, y: 28, textAnchor: 'middle', fill: '#ecfdf5', fontSize: 11.5, fontWeight: 800 }, 'Macronutrients'),
                 h('text', { x: 88, y: 44, textAnchor: 'middle', fill: '#a7f3d0', fontSize: 10.5 }, 'Carbs · Protein · Fat · Fiber'),
                 h('rect', { x: 204, y: 10, width: 152, height: 44, rx: 10, fill: 'rgba(56,189,248,0.18)', stroke: '#38bdf8', strokeWidth: 1.4 }),
+                h('rect', { x: 210, y: 12, width: 140, height: 2.5, rx: 1.2, fill: '#bae6fd', className: 'nl-svg-fx nl-anim-shimmer', style: { animationDelay: '0.5s' } }),
                 h('text', { x: 280, y: 28, textAnchor: 'middle', fill: '#f0f9ff', fontSize: 11.5, fontWeight: 800 }, 'Digestion & Transport'),
                 h('text', { x: 280, y: 44, textAnchor: 'middle', fill: '#bae6fd', fontSize: 10.5 }, 'Enzymes · Gut · Circulation'),
                 h('rect', { x: 392, y: 10, width: 160, height: 44, rx: 10, fill: 'rgba(251,191,36,0.18)', stroke: '#fbbf24', strokeWidth: 1.4 }),
+                h('rect', { x: 398, y: 12, width: 148, height: 2.5, rx: 1.2, fill: '#fde68a', className: 'nl-svg-fx nl-anim-shimmer', style: { animationDelay: '1s' } }),
                 h('text', { x: 472, y: 28, textAnchor: 'middle', fill: '#fefce8', fontSize: 11.5, fontWeight: 800 }, 'Cellular ATP & Organs'),
                 h('text', { x: 472, y: 44, textAnchor: 'middle', fill: '#fde68a', fontSize: 10.5 }, 'Brain · Muscle · Oxygen · Bone')
               )
@@ -19732,8 +19760,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 h('radialGradient', { id: 'nl-plate-well', cx: '45%', cy: '40%', r: '60%' },
                   h('stop', { offset: '0%', stopColor: '#ffffff' }), h('stop', { offset: '100%', stopColor: '#f1f5f9' }))
               ),
-              h('circle', { cx: cx, cy: cy, r: rOuter + 5, fill: 'none', stroke: '#e2e8f0', strokeWidth: 2 }),
+              h('circle', { cx: cx, cy: cy, r: rOuter + 5, fill: 'none', stroke: '#cbd5e1', strokeWidth: 1.6, strokeDasharray: '6 5', className: 'nl-svg-fx nl-anim-orbit' }),
+              h('circle', { cx: cx, cy: cy, r: rOuter + 5, fill: 'none', stroke: '#e2e8f0', strokeWidth: 2, opacity: 0.55 }),
               paths,
+              h('circle', { cx: cx, cy: cy, r: rOuter - 3, fill: 'none', stroke: '#ffffff', strokeWidth: 2.4, className: 'nl-svg-fx nl-anim-shimmer', style: { pointerEvents: 'none' } }),
               h('circle', { cx: cx, cy: cy, r: rInner - 2, fill: 'url(#nl-plate-well)', stroke: '#e2e8f0', strokeWidth: 1.5 }),
               h('text', { x: cx, y: cy - 4, textAnchor: 'middle', fontSize: 22, fontWeight: 800, fill: '#1e293b' }, total.toFixed(0)),
               h('text', { x: cx, y: cy + 16, textAnchor: 'middle', fontSize: 12, fill: '#475569' }, __alloT('stem.nutritionlab.kcal_in_plate', 'kcal in plate'))
@@ -19799,12 +19829,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 // Daily target band (faded, behind the value bar)
                 h('rect', { x: pad.l, y: y - barH / 2 + lane, width: targetX - pad.l, height: barH - lane, fill: '#cbd5e1', opacity: 0.45, rx: 5 }),
                 // Tick at exactly the target
-                h('line', { x1: targetX, y1: y - barH / 2 + lane - 2, x2: targetX, y2: y + barH / 2 + 2, stroke: '#475569', strokeWidth: 1.6, strokeDasharray: '3 3' }),
+                h('line', { x1: targetX, y1: y - barH / 2 + lane - 2, x2: targetX, y2: y + barH / 2 + 2, stroke: '#475569', strokeWidth: 1.6, strokeDasharray: '3 3', className: 'nl-anim-flow' }),
+                h('circle', { cx: targetX, cy: y - barH / 2 + lane, r: 5.5, fill: 'none', stroke: '#10b981', strokeWidth: 1.4, className: 'nl-svg-fx nl-anim-dv-halo', style: { animationDelay: (i * 0.35) + 's' } }),
                 h('circle', { cx: targetX, cy: y - barH / 2 + lane, r: 2.5, fill: '#475569' }),
                 h('text', { x: targetX, y: y - barH / 2 + lane - 4, textAnchor: 'middle', fontSize: 12, fill: '#334155', fontWeight: 700 }, '~' + r.target + r.unit + ' / day'),
                 // Actual value bar with subtle top highlight sheen
                 h('rect', { x: pad.l, y: y - barH / 2 + lane + 2, width: barW, height: barH - lane - 4, fill: barFill, rx: 4 }),
-                barW > 8 && h('rect', { x: pad.l + 2, y: y - barH / 2 + lane + 3.5, width: Math.max(0, barW - 4), height: 3, fill: '#ffffff', opacity: 0.24, rx: 1.5 }),
+                barW > 8 && h('rect', { x: pad.l + 2, y: y - barH / 2 + lane + 3.5, width: Math.max(0, barW - 4), height: 3, fill: '#ffffff', opacity: 0.24, rx: 1.5, className: 'nl-svg-fx nl-anim-shimmer', style: { animationDelay: (i * 0.28) + 's' } }),
                 // Value annotation
                 h('text', { x: Math.max(valueX, pad.l + 30), y: y + lane / 2 + 4, fontSize: 12, fontWeight: 700, fill: '#fff', textAnchor: 'end', dx: -4 },
                   r.value.toFixed(0) + r.unit
@@ -19891,9 +19922,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 h('text', { x: midX, y: yMid + 4, textAnchor: 'middle', fontSize: 12, fontWeight: 800, fill: '#334155' }, r.label),
                 // Food A bar (left, growing toward left)
                 h('rect', { x: midX - 36 - aW, y: yMid - barH / 2 + 4, width: Math.max(2, aW), height: barH - 8, fill: '#0d9488', rx: 3 }),
+                aW > 8 && h('rect', { x: midX - 36 - aW + 2, y: yMid - barH / 2 + 5.5, width: Math.max(0, aW - 4), height: 2.5, fill: '#ffffff', rx: 1.2, className: 'nl-svg-fx nl-anim-shimmer', style: { animationDelay: (i * 0.25) + 's' } }),
                 h('text', { x: midX - 38 - aW - 4, y: yMid + 4, textAnchor: 'end', fontSize: 12, fill: '#115e59', fontWeight: 700, fontFamily: 'monospace' }, aVal + r.unit),
                 // Food B bar (right, growing toward right)
                 h('rect', { x: midX + 36, y: yMid - barH / 2 + 4, width: Math.max(2, bW), height: barH - 8, fill: '#9f1239', rx: 3 }),
+                bW > 8 && h('rect', { x: midX + 38, y: yMid - barH / 2 + 5.5, width: Math.max(0, bW - 4), height: 2.5, fill: '#ffffff', rx: 1.2, className: 'nl-svg-fx nl-anim-shimmer', style: { animationDelay: (i * 0.25 + 0.15) + 's' } }),
                 h('text', { x: midX + 38 + bW + 4, y: yMid + 4, fontSize: 12, fill: '#9f1239', fontWeight: 700, fontFamily: 'monospace' }, bVal + r.unit)
               );
             })
@@ -20152,6 +20185,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var current = tabs.filter(function(t) { return t.id === tab; })[0] || tabs[0];
 
         function micronutrientTabKeyDown(e, index) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var nextIndex = index;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % tabs.length;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + tabs.length) % tabs.length;
@@ -20714,6 +20748,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           announce(lab.questions[qi].answer === ci ? text('label_correct', 'Correct — read the explanation.') : text('label_retry', 'Keep exploring — read the explanation, then try again.'));
         }
         function radioKey(event, qi, ci) {
+          if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
           var count = lab.questions[qi].choices.length, target = ci;
           if (event.key === 'ArrowRight' || event.key === 'ArrowDown') target = (ci + 1) % count;
           else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') target = (ci + count - 1) % count;
@@ -20904,6 +20939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         ];
 
         function energyTabKeyDown(e, index) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var nextIndex = index;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % tabs.length;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + tabs.length) % tabs.length;
@@ -21315,6 +21351,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var stage = DIGESTION_STAGES[stageIdx];
 
         function digestionStageTabKeyDown(e, index) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var nextIndex = index;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % DIGESTION_STAGES.length;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + DIGESTION_STAGES.length) % DIGESTION_STAGES.length;
@@ -21389,6 +21426,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 },
                   h('rect', { x: padX, y: 43, width: W - padX * 2, height: 6, rx: 3, fill: '#cbd5e1' }),
                   h('rect', { x: padX, y: 43, width: step * stageIdx, height: 6, rx: 3, fill: accent, className: 'nutritionlab-journey-fill' }),
+                  stageIdx > 0 && h('line', { x1: padX + 4, y1: 46, x2: padX + step * stageIdx - 2, y2: 46, stroke: '#fecdd3', strokeWidth: 2, strokeDasharray: '6 6', strokeLinecap: 'round', className: 'nl-svg-fx nl-anim-flow' }),
                   DIGESTION_STAGES.map(function(s, i) {
                     var x = padX + step * i;
                     var done = i <= stageIdx;
@@ -21396,6 +21434,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     var label = String(s.name);
                     if (label.length > 18) label = label.slice(0, 17) + '…';
                     return h('g', { key: s.id },
+                      cur && h('circle', { cx: x, cy: 46, r: 19, fill: 'none', stroke: accent, strokeWidth: 2, className: 'nl-svg-fx nl-anim-dv-halo' }),
                       h('circle', { cx: x, cy: 46, r: cur ? 15 : 11, fill: done ? accent : '#ffffff', stroke: done ? accent : '#94a3b8', strokeWidth: 3 }),
                       h('text', { x: x, y: 51, textAnchor: 'middle', fontSize: cur ? 15 : 12, fontWeight: 800, fill: done ? '#ffffff' : '#334155' }, String(i + 1)),
                       h('text', { x: x, y: 86, textAnchor: 'middle', fontSize: 12, fontWeight: cur ? 800 : 600, fill: cur ? '#9f1239' : '#334155' }, label)
@@ -21403,6 +21442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   }),
                   h('g', { className: 'nutritionlab-bolus', style: { transform: 'translateX(' + markerX + 'px)' } },
                     h('text', { x: 0, y: 12, textAnchor: 'middle', fontSize: 12, fontWeight: 800, fill: '#92400e' }, 'food'),
+                    h('circle', { cx: 0, cy: 23, r: 10.5, fill: '#f59e0b', opacity: 0.28, className: 'nl-svg-fx nl-anim-beacon' }),
                     h('circle', { cx: 0, cy: 23, r: 7, fill: '#f59e0b', stroke: '#92400e', strokeWidth: 2 })
                   )
                 ),
@@ -22072,6 +22112,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         ];
 
         function handleSectionKeyDown(e, index) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var nextIndex = index;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % sections.length;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + sections.length) % sections.length;
@@ -22406,6 +22447,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         ];
 
         function maineTabKeyDown(e, index) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var nextIndex = index;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % tabs.length;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + tabs.length) % tabs.length;
@@ -22658,6 +22700,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         ];
 
         function careerTabKeyDown(e, index) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var nextIndex = index;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % tabs.length;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + tabs.length) % tabs.length;
@@ -23478,8 +23521,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           highcarb: { label: 'High-carb', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.nutritionlab.carbs_55_75_the_55_65_segment_is_squar', 'Carbs 55–75%. The 55–65% segment is squarely within the DGA AMDR. The 65–75% segment is the endurance-athlete or traditional Asian-rice-based pattern; fine with fiber + protein.') },
           sugarheavy: { label: 'Sugar-heavy', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.nutritionlab.carbs_75_with_low_fiber_high_glycemic_', 'Carbs >75% with low fiber → high glycemic load. Common in heavily-processed snack-dominated days, but well above the US average (NHANES puts US carb intake at ~46–50%).') }
         })[state];
-        // SVG: stacked bar + macro pie
-        var cy = 80;
+        // SVG: stacked bar + macro pie + live glycemic/metabolic waveform
+        var cy = 66;
         function arc(start, end, r, ir) {
           var a0 = start * 2 * Math.PI - Math.PI / 2;
           var a1 = end * 2 * Math.PI - Math.PI / 2;
@@ -23490,6 +23533,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           var large = (end - start) > 0.5 ? 1 : 0;
           return 'M' + x0 + ',' + y0 + ' A' + r + ',' + r + ' 0 ' + large + ',1 ' + x1 + ',' + y1 + ' L' + x1i + ',' + y1i + ' A' + ir + ',' + ir + ' 0 ' + large + ',0 ' + x0i + ',' + y0i + ' Z';
         }
+        var giPeakY = 152 - Math.round((fiberAdjGI / 100) * 26);
+        var giPeakX = Math.round(64 + (1 - fiberAdjGI / 100) * 32);
+        var giCurveD = 'M 14 152 C 34 152 ' + (giPeakX - 18) + ' ' + giPeakY + ' ' + giPeakX + ' ' + giPeakY + ' C ' + (giPeakX + 26) + ' ' + giPeakY + ' 148 150 186 152';
         return h('div', { className: 'p-4' },
           h(BackBar, { icon: '🔬', title: __alloT('stem.nutritionlab.macro_inquiry_predict_the_energy_state', 'Macro Inquiry — Explore the Energy State') }),
           h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5', maxWidth: 720, margin: '0 auto' } },
@@ -23498,12 +23544,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · ' + (pC * 100).toFixed(0) + '% carb / ' + (pP * 100).toFixed(0) + '% protein / ' + (pF * 100).toFixed(0) + '% fat'),
             h('p', { style: { margin: '0 0 10px', fontSize: 12, opacity: 0.8 } }, sm.desc),
             h('div', { style: { display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 } },
-              h('svg', { width: 200, height: 160, viewBox: '0 0 200 160', 'aria-hidden': 'true', focusable: 'false', style: { background: '#0a0a1a', borderRadius: 6, flex: '0 0 200px' } },
-                pC > 0.001 && h('path', { d: arc(0, pC, 55, 28), fill: '#22d3ee', opacity: 0.85 }),
-                pP > 0.001 && h('path', { d: arc(pC, pC + pP, 55, 28), fill: '#4ade80', opacity: 0.85 }),
-                pF > 0.001 && h('path', { d: arc(pC + pP, 1, 55, 28), fill: '#fb923c', opacity: 0.85 }),
-                h('text', { x: 100, y: 80, textAnchor: 'middle', fill: sm.color, fontSize: 14, fontWeight: 800 }, total + 'g'),
-                h('text', { x: 100, y: 96, textAnchor: 'middle', fill: '#94a3b8', fontSize: 12 }, __alloT('stem.nutritionlab.total_macros', 'total macros'))
+              h('svg', { width: 200, height: 164, viewBox: '0 0 200 164', 'aria-hidden': 'true', focusable: 'false', style: { background: '#0a0a1a', borderRadius: 6, flex: '0 0 200px' } },
+                h('circle', { cx: 100, cy: cy, r: 54, fill: 'none', stroke: sm.color, strokeWidth: 1, strokeDasharray: '4 5', opacity: 0.42, className: 'nl-svg-fx nl-anim-orbit' }),
+                pC > 0.001 && h('path', { d: arc(0, pC, 48, 25), fill: '#22d3ee', opacity: 0.88 }),
+                pP > 0.001 && h('path', { d: arc(pC, pC + pP, 48, 25), fill: '#4ade80', opacity: 0.88 }),
+                pF > 0.001 && h('path', { d: arc(pC + pP, 1, 48, 25), fill: '#fb923c', opacity: 0.88 }),
+                h('circle', { cx: 100, cy: cy, r: 46, fill: 'none', stroke: '#ffffff', strokeWidth: 1.8, className: 'nl-svg-fx nl-anim-shimmer' }),
+                h('text', { x: 100, y: cy + 1, textAnchor: 'middle', fill: sm.color, fontSize: 14, fontWeight: 800 }, total + 'g'),
+                h('text', { x: 100, y: cy + 15, textAnchor: 'middle', fill: '#94a3b8', fontSize: 10.5 }, __alloT('stem.nutritionlab.total_macros', 'total macros')),
+                // Live glycemic/metabolic energy curve with phosphor glow & tracking beacon
+                h('line', { x1: 14, y1: 152, x2: 186, y2: 152, stroke: '#334155', strokeWidth: 1 }),
+                h('path', { d: giCurveD, fill: 'none', stroke: sm.color, strokeWidth: 5.5, strokeLinecap: 'round', className: 'nl-svg-fx nl-anim-glow' }),
+                h('path', { d: giCurveD, fill: 'none', stroke: sm.color, strokeWidth: 1.8, strokeLinecap: 'round' }),
+                h('path', { d: giCurveD, fill: 'none', stroke: '#ffffff', strokeWidth: 1.1, strokeDasharray: '4 10', strokeLinecap: 'round', opacity: 0.65, className: 'nl-svg-fx nl-anim-flow' }),
+                h('circle', { cx: giPeakX, cy: giPeakY, r: 6.5, fill: 'none', stroke: sm.color, strokeWidth: 1.4, className: 'nl-svg-fx nl-anim-dv-halo' }),
+                h('circle', { cx: giPeakX, cy: giPeakY, r: 2.8, fill: '#ffffff', stroke: sm.color, strokeWidth: 1.4 })
               ),
               h('div', { style: { flex: '1 1 auto', fontSize: 12 } },
                 h('div', { style: { marginBottom: 6 } }, h('span', { style: { display: 'inline-block', width: 10, height: 10, background: '#22d3ee', marginRight: 6, verticalAlign: 'middle' } }), 'Carbs: ', h('b', null, iq.carbs + 'g')),
@@ -23624,6 +23679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         ];
 
         function hydrationTabKeyDown(e, index) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var nextIndex = index;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % TABS.length;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + TABS.length) % TABS.length;
@@ -23672,6 +23728,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 width: bottleW - 32, height: ((bottleH - 34) * pct / 100),
                 fill: '#38bdf8', opacity: 0.85
               }),
+              pct > 2 && h('path', {
+                d: 'M 17 ' + (bottleH - 10 - ((bottleH - 34) * pct / 100)).toFixed(1) + ' Q 28 ' + (bottleH - 13 - ((bottleH - 34) * pct / 100)).toFixed(1) + ' 40 ' + (bottleH - 10 - ((bottleH - 34) * pct / 100)).toFixed(1) + ' T 63 ' + (bottleH - 10 - ((bottleH - 34) * pct / 100)).toFixed(1),
+                fill: 'none', stroke: '#e0f2fe', strokeWidth: 2, strokeLinecap: 'round', className: 'nl-svg-fx nl-anim-wave'
+              }),
+              h('rect', { x: 20, y: 28, width: 4, height: bottleH - 44, rx: 2, fill: '#ffffff', opacity: 0.25, className: 'nl-svg-fx nl-anim-shimmer' }),
               // Percent label
               h('text', { x: bottleW / 2, y: bottleH / 2, textAnchor: 'middle', fontSize: 16, fontWeight: 800, fill: '#0c4a6e' }, pct + '%')
             ),
@@ -24055,6 +24116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             (sets.shared.length === 1 ? '' : 's') + '.');
         }
         function bmKeys(e) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var k = e.key;
           if (k === 'ArrowLeft') NUTRI_BODY3D.nudge(-0.16, 0);
           else if (k === 'ArrowRight') NUTRI_BODY3D.nudge(0.16, 0);

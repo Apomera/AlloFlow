@@ -28,6 +28,7 @@
  */
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.MemoryPalace) {
     console.log('[MemoryPalace] Already loaded, skipping');
     return;
@@ -375,8 +376,10 @@
     roomKeys.forEach(function (k) { extrasByRoom[k] = []; });
     extraLoci.forEach(function (e) {
       if (!e || !e.id) return;
+      var eid = String(e.id);
+      if (_mpUnsafeKey(eid)) return;
       var key = String(e.room == null ? '' : e.room);
-      if (!extrasByRoom[key]) key = roomKeys[0];
+      if (_mpUnsafeKey(key) || !extrasByRoom[key]) key = roomKeys[0];
       if (!key || !extrasByRoom[key]) return;                 // no rooms at all ⇒ nothing to hang it on
       extrasByRoom[key].push(e);
     });
@@ -483,9 +486,9 @@
       // The content at this id changed since the student's work was saved, so
       // their image belongs to a different fact — show it as stale, never as if
       // they had written it about this one.
-      var mark = locusMarks ? locusMarks[l.id] : null;
+      var mark = (locusMarks && Object.prototype.hasOwnProperty.call(locusMarks, l.id)) ? locusMarks[l.id] : null;
       l.contentChanged = !!(mark && String(mark) !== fingerprintLabel(l.label));
-      var own = ownMnemonics ? ownMnemonics[l.id] : null;
+      var own = (ownMnemonics && Object.prototype.hasOwnProperty.call(ownMnemonics, l.id)) ? ownMnemonics[l.id] : null;
       var ownText = (typeof own === 'string') ? own.trim() : '';
       if (ownText && l.id !== '__entry' && !l.contentChanged) { l.mnemonic = ownText; l.mnemonicSource = 'self'; }
       else l.mnemonicSource = l.mnemonic ? 'ai' : '';
@@ -509,7 +512,7 @@
         var label = typeof rawConnection === 'object' && rawConnection && rawConnection.label != null ? String(rawConnection.label).trim() : '';
         if (!label && target === sourceIdx + 1) return;
         var a = Math.min(sourceIdx, target), b = Math.max(sourceIdx, target), key = a + '|' + b;
-        if (roomLinkSeen[key]) return;
+        if (Object.prototype.hasOwnProperty.call(roomLinkSeen, key)) return;
         roomLinkSeen[key] = true;
         roomLinks.push({ fromRoomIdx: sourceIdx + 1, toRoomIdx: target + 1, label: label });
       });
@@ -763,7 +766,7 @@
   // owns callGemini. Pedagogy: generation effect + prompt-craft literacy + a safety gate.
   function _mpSanitizeUntrusted(value, maxLen) {
     return String(value == null ? '' : value)
-      .replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, '')
+      .replace(/<\s*\/?\s*UNTRUSTED_[A-Z0-9_]*[^>]*>/gi, '')
       .slice(0, maxLen || 600);
   }
   function _mpFenceUntrusted(tag, value, maxLen) {
@@ -816,7 +819,7 @@
   // implementation now lives in Prim3D (so the sculpting primitive is reusable);
   // delegate to it, with an inline fallback if Prim3D isn't loaded.
   function buildRefinePrompt(recipe, instruction, opts) {
-    var P = window.AlloModules && window.AlloModules.Prim3D;
+    var P = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.Prim3D;
     if (P && typeof P.buildRefinePrompt === 'function') return P.buildRefinePrompt(recipe, instruction, opts);
     var json = '';
     try { json = JSON.stringify(recipe); } catch (e) { json = '{}'; }
@@ -1026,8 +1029,12 @@
 
   function isWebGLAvailable() {
     try {
+      if (typeof document === 'undefined' || typeof window === 'undefined' || !window.WebGLRenderingContext) return false;
       var c = document.createElement('canvas');
-      return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+      var gl = c.getContext('webgl') || c.getContext('experimental-webgl');
+      if (!gl) return false;
+      try { var ext = gl.getExtension && gl.getExtension('WEBGL_lose_context'); if (ext && ext.loseContext) ext.loseContext(); } catch (_) {}
+      return true;
     } catch (e) { return false; }
   }
 
@@ -1092,8 +1099,9 @@
         s.referrerPolicy = 'no-referrer';
         if (typeof window.__alloConfigureTrustedScript === 'function') {
           window.__alloConfigureTrustedScript(s, srcUrl);
+        } else {
+          s.src = srcUrl;
         }
-        s.src = srcUrl;
         s.async = true;
         s.onload = function () { window.THREE ? finish(null, window.THREE) : finish(new Error('three.js loaded but window.THREE missing')); };
         s.onerror = function () { finish(new Error('failed to load three.js')); };
@@ -5201,6 +5209,7 @@
     var previousWalkFrame = null;
     function tick() {
       if (state.disposed) return;
+      if (!state.xrActive && typeof document !== 'undefined' && document.hidden) { state.loopPaused = true; state.raf = 0; return; }
       var frameNow = window.performance && window.performance.now ? window.performance.now() : Date.now();
       var elapsed = previousWalkFrame == null ? 1000 / 60 : Math.max(0, Math.min(50, frameNow - previousWalkFrame));
       previousWalkFrame = frameNow;
@@ -5260,7 +5269,8 @@
       // actually stops the loop (cancelling state.raf alone would race the tail).
       state.raf = state.loopPaused ? 0 : (window.requestAnimationFrame || function () { return 0; })(tick);
     }
-    tick();
+    if (typeof document !== 'undefined' && document.hidden) state.loopPaused = true;
+    else tick();
     announce(curIdx);
 
     // ── Pause the render loop when the palace is off-screen or the tab is hidden ──
@@ -5322,7 +5332,8 @@
         state.cleanup.push(function () { try { _ro.disconnect(); } catch (e) {} });
       }
     } catch (e) {}
-    (window.requestAnimationFrame || function (f) { return f(); })(function () { if (!state.disposed && state.onResize) state.onResize(); });
+    var _refitRaf = (window.requestAnimationFrame || function (f) { f(); return 0; })(function () { _refitRaf = 0; if (!state.disposed && state.onResize) state.onResize(); });
+    state.cleanup.push(function () { if (_refitRaf) { try { (window.cancelAnimationFrame || function () {})(_refitRaf); } catch (e) {} _refitRaf = 0; } });
 
     state.goTo = function (idx) { goTo(idx); };
     state.setTourPace = function (multiplier) {

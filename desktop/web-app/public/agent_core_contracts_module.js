@@ -108,7 +108,7 @@
   // 10, not 8: a real AlloPack nests envelope > data > history[i] > data > visualPlan > panels[i] > labels[i] (9 levels).
   var MAX_SCAN_DEPTH = 10;
   var MAX_SCAN_NODES = 10000;
-  var MAX_SCAN_ERRORS = 100;
+  var MAX_SCAN_ERRORS = 101;
 
   // ── small helpers ──────────────────────────────────────────────────────
 

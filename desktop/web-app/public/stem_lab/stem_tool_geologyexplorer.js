@@ -20,7 +20,7 @@
  * retain the learning core.
  */
 (function () {
-  if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
+  if (typeof window === 'undefined' || !window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
   if (window.StemLab.isRegistered && window.StemLab.isRegistered('geologyExplorer')) return;
 
   var ENGINE_KEY = '__alloGeologyEngine';
@@ -328,7 +328,29 @@
     Hard:        { band: 2300, q: 1.7, dur: 0.055, thud: 164, ring: 1180, gain: 0.18 }
   };
   function geoDigSound(label) { return GEO_DIG_SOUND[label] || GEO_DIG_SOUND.Dense; }
-  function geoAppMuted() { try { return typeof localStorage !== 'undefined' && localStorage.getItem('alloflow-global-muted') === 'true'; } catch (e) { return false; } }
+  function geoAppMuted() {
+    if (typeof window !== 'undefined') {
+      try {
+        if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+        if (window.__alloGlobalMuted || window._alloGlobalMute || window.__alloMuted) return true;
+      } catch (e) {}
+    }
+    try {
+      if (typeof localStorage !== 'undefined') {
+        if (localStorage.getItem('alloflow-global-muted') === 'true' || localStorage.getItem('alloflow_global_mute') === 'true') return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+  if (typeof window !== 'undefined' && window.addEventListener && !window._geoExplorerMuteListenerAttached) {
+    window._geoExplorerMuteListenerAttached = true;
+    window.addEventListener('alloflow-mute-changed', function (ev) {
+      var muted = (ev && ev.detail && typeof ev.detail.muted === 'boolean') ? ev.detail.muted : geoAppMuted();
+      if (muted && geoSfxCtx && typeof geoSfxCtx.suspend === 'function') {
+        try { geoSfxCtx.suspend(); } catch (e) {}
+      }
+    });
+  }
   function geoAudio() {
     if (geoSfxMuted || geoAppMuted()) return null;
     if (!geoSfxCtx) {
@@ -8900,6 +8922,7 @@ function updateCoreRig3d(dt3d) {
     }
     function pick(ev) {
       var rect = cnv.getBoundingClientRect();
+      if (!rect || !(rect.width > 0) || !(rect.height > 0)) return;
       pointer.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
       pointer.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
@@ -8928,6 +8951,7 @@ function updateCoreRig3d(dt3d) {
       var now = (window.performance && performance.now) ? performance.now() : 0;
       if (now - lastHover < 40) return; lastHover = now;
       var rect = cnv.getBoundingClientRect();
+      if (!rect || !(rect.width > 0) || !(rect.height > 0)) return;
       pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1; pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
       var v = orbitHitCell3d();
@@ -9113,7 +9137,9 @@ function updateCoreRig3d(dt3d) {
       scene.fog.color.copy(fogBaseColor3d).lerp(fogCaveColor3d, underground3d);
     }
     function loop() {
-      if (eng.disposed) return; raf = requestAnimationFrame(loop); t += 0.016;
+      if (eng.disposed) return; raf = requestAnimationFrame(loop);
+      if (typeof document !== 'undefined' && document.hidden) { fpLastFrameAt = 0; return; }
+      t += 0.016;
       var fpFrameAt = (window.performance && performance.now) ? performance.now() : 0;
       var fpDt = (fpFrameAt && fpLastFrameAt) ? Math.min(0.05, Math.max(0.001, (fpFrameAt - fpLastFrameAt) / 1000)) : 0.016;
       fpLastFrameAt = fpFrameAt;
@@ -9456,7 +9482,19 @@ function updateCoreRig3d(dt3d) {
       var isDark = !!ctx.isDark || isContrast;
       var _rawGeo = (ctx && ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData.geologyExplorer : null;
       var d = (_rawGeo && typeof _rawGeo === 'object' && !Array.isArray(_rawGeo)) ? _rawGeo : {};
-      var ttsAvailable = typeof ctx.callTTS === 'function' || !!(window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function');
+      var _geoAiTtsBlocked = (function () {
+        if (ctx.aiAvailable === false) return true;
+        if (typeof window === 'undefined') return false;
+        try {
+          if (window._alloQrBlocked || window.__alloStudentAiDisabled || window.__alloAiSecretsLocked || window.__alloQrStudentMode) return true;
+          if (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable()) return true;
+          var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+          if (mp && (mp.disabled === true || mp.aiEnabled === false || mp.allowAi === false || mp.locked === true)) return true;
+        } catch (_) {}
+        return false;
+      })();
+      var _geoCloudTts = (!_geoAiTtsBlocked && typeof ctx.callTTS === 'function') ? ctx.callTTS : null;
+      var ttsAvailable = !!_geoCloudTts || !!(window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function');
       var setStemLabTool = ctx.setStemLabTool;
       var addToast = ctx.addToast || function () {};
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
@@ -10037,6 +10075,7 @@ function updateCoreRig3d(dt3d) {
       function browserReadAloud(text, expectedSession) {
         if (expectedSession != null && expectedSession !== ttsSessionRef.current) return;
         stopReadAloud();
+        if (geoAppMuted() || (typeof window !== 'undefined' && window._alloQrBlocked)) { setTtsSpeaking(false); return; }
         if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') {
           setTtsSpeaking(false); announce(t('stem.geology.sr.read_aloud_is_not_available_in_this_browser', 'Read aloud is not available in this browser.'));
           return;
@@ -10052,7 +10091,7 @@ function updateCoreRig3d(dt3d) {
         } catch (e) { setTtsSpeaking(false); announce(t('stem.geology.sr.read_aloud_could_not_start', 'Read aloud could not start.')); }
       }
       function playGeneratedTts(url, text, expectedSession) {
-        if (!url || expectedSession !== ttsSessionRef.current || typeof window.Audio !== 'function') return false;
+        if (geoAppMuted() || !url || expectedSession !== ttsSessionRef.current || typeof window.Audio !== 'function') return false;
         var audio;
         try { audio = new window.Audio(url); } catch (e) { return false; }
         ttsAudioRef.current = audio;
@@ -10074,11 +10113,12 @@ function updateCoreRig3d(dt3d) {
         var clean = String(text || '').replace(/\s+/g, ' ').trim().slice(0, 1800);
         if (!clean) return;
         stopReadAloud();
+        if (geoAppMuted()) return;
         var session = ttsSessionRef.current;
-        if (typeof ctx.callTTS === 'function') {
+        if (typeof _geoCloudTts === 'function') {
           setTtsSpeaking(true);
           try {
-            var result = ctx.callTTS(clean, null, null, { force: true });
+            var result = _geoCloudTts(clean, null, null, { force: true });
             if (result && typeof result.then === 'function') {
               result.then(function (url) {
                 if (!url) { browserReadAloud(clean, session); return; }
@@ -10318,6 +10358,7 @@ function updateCoreRig3d(dt3d) {
           (fsToggleRef.current || dialog).focus();
         };
         function onKey(event) {
+          if (event.isComposing || event.keyCode === 229) return;
           if (event.key === 'Escape') {
             // First-person mode stops Escape at the viewport; otherwise Escape
             // reaches this listener and closes fullscreen.
@@ -10506,6 +10547,8 @@ function updateCoreRig3d(dt3d) {
         function pushMove() { try { if (window[ENGINE_KEY]) window[ENGINE_KEY].fpInput('move', { fwd: ax.fwd, strafe: ax.strafe, vert: ax.vert, jump: ax.jump, sprint: ax.sprint }); } catch (e) {} }
         function pushLook() { try { if (window[ENGINE_KEY]) window[ENGINE_KEY].fpInput('look', { yaw: lk.yaw, pitch: lk.pitch }); } catch (e) {} }
         function set(e, on) {
+          if (e.isComposing || e.keyCode === 229) return;
+          if (on && (e.ctrlKey || e.metaKey || e.altKey)) return;
           var key = (e.key || '').toLowerCase();
           if (key === 'escape') { if (on) { try { e.preventDefault(); e.stopPropagation(); } catch (x) {} setFpOn(false); } return; }   // exit FP only — don't also collapse fullscreen
           if (key === 'x') {
@@ -13094,6 +13137,7 @@ function updateCoreRig3d(dt3d) {
       var geoLocked = !!(ctx && (ctx.teacherLock || ctx.lockMode || ctx.locked || (ctx.teacherMode && ctx.teacherMode.locked)));
       var GEOLOGY_SCENE_ORDER = Object.keys(SCENES);
       var geologySceneTabKeyDown = function(e, index) {
+        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         var nextIndex = -1;
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % GEOLOGY_SCENE_ORDER.length;
         else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + GEOLOGY_SCENE_ORDER.length - 1) % GEOLOGY_SCENE_ORDER.length;

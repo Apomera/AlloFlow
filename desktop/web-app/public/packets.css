@@ -104,7 +104,7 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 /* The proof line: always on the page, opens the exact details. It sits inside the header (so it is in a landmark);
    the header's own bottom line closes it. */
 .proof { border-top: 1px solid var(--line); background: var(--bg); font-size: 0.9375rem; }
-.proof summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.75rem; padding-top: 0.7rem; padding-bottom: 0.7rem; cursor: pointer; list-style: none; color: var(--ink); }
+.proof summary { display: flex; flex-wrap: wrap; align-items: center; gap: 0.15rem 0.75rem; min-height: 2.75rem; padding-top: 0.7rem; padding-bottom: 0.7rem; cursor: pointer; list-style: none; color: var(--ink); }
 .proof summary::-webkit-details-marker { display: none; }
 .proof-line { font-weight: 600; }
 .proof-open { color: var(--accent); text-decoration: underline; text-underline-offset: 0.18em; }

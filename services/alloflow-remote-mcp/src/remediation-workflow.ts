@@ -15,6 +15,7 @@ import {
   finalizeInputDeletion,
   getInternalJob,
   getJobCheckpoint,
+  jobArtifactKeysForAttempt,
   jobCheckpointPrefix,
   markJobRunning,
   markJobThrottleWait,
@@ -48,6 +49,7 @@ type PublicRunnerFailure =
   | "active_content_requires_review"
   | "active_content_scan_unavailable"
   | "checkpoint_snapshot_too_large"
+  | "model_quota_exhausted"
   | "model_throttled";
 
 type RunnerVerificationState =
@@ -92,6 +94,7 @@ const PUBLIC_RUNNER_FAILURES = new Set<PublicRunnerFailure>([
   "active_content_requires_review",
   "active_content_scan_unavailable",
   "checkpoint_snapshot_too_large",
+  "model_quota_exhausted",
   "model_throttled",
 ]);
 
@@ -660,7 +663,7 @@ function runnerResult(
   }
   const score = (value: unknown): number | undefined =>
     typeof value === "number" &&
-    Number.isInteger(value) &&
+    Number.isFinite(value) &&
     value >= 0 &&
     value <= 100
       ? value
@@ -1147,16 +1150,27 @@ export class RemediationWorkflow extends WorkflowEntrypoint<
               return { cleaned: false, preserved: true };
             }
             if (this.env.DOCUMENTS) {
-              await this.env.DOCUMENTS.delete(
+              const keySet = new Set<string>(
                 [
                   job.input_key,
                   job.result_key,
                   job.report_key,
                   job.checkpoint_key,
-                ].filter(
-                  (key): key is string => Boolean(key),
-                ),
+                ].filter((key): key is string => Boolean(key)),
               );
+              const maxAttempt = Math.max(
+                0,
+                Math.min(50, Number(job.attempt_number) || 0),
+              );
+              for (let attempt = 1; attempt <= maxAttempt; attempt += 1) {
+                const attemptKeys = jobArtifactKeysForAttempt(job, attempt);
+                keySet.add(attemptKeys.resultKey);
+                keySet.add(attemptKeys.reportKey);
+              }
+              const keys = [...keySet];
+              if (keys.length > 0) {
+                await this.env.DOCUMENTS.delete(keys);
+              }
               await deleteCheckpointObjects(this.env, job);
             }
             await finalizeInputDeletion(

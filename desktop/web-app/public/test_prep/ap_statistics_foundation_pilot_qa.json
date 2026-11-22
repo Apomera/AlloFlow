@@ -98,7 +98,7 @@
     "testWiseness": {
       "keyedItemCount": 240,
       "keyCycleSharePercent": 100,
-      "keyLongestSharePercent": 43.3,
+      "keyLongestSharePercent": 0.8,
       "keyLongerByQuarterSharePercent": 0,
       "distractorRationaleCount": 720,
       "distinctDistractorRationaleCount": 720,
@@ -198,8 +198,8 @@
     "nativeLearningRoutes": 240
   },
   "inputs": {
-    "packSha256": "bcf6a5ec42979afafbbceb491a25b964cbde7f87680043b3e554880be7fd8207",
-    "learningLibrarySha256": "ce65e23e6f6735c9c8a5508049558864a853278c89abc52119bc7a7282947744",
+    "packSha256": "905eece1f28583275233ae422bf78cdb250b042a1c8b764cb3a2a459add49ead",
+    "learningLibrarySha256": "2a7efc3b3ed043a1d2e4a2014bd2027c2e3129f796a5442b5177153fca820465",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
     "reviewedAt": "2026-08-20"
   },

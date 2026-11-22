@@ -101,10 +101,39 @@
   var STAGE_KEYS = STAGES.map(function(s) {
     return s.key;
   });
-  var STAGE_BY_KEY = {};
+  var STAGE_BY_KEY = /* @__PURE__ */ Object.create(null);
   STAGES.forEach(function(s) {
     STAGE_BY_KEY[s.key] = s;
   });
+  function _stageByKey(k) {
+    return k && Object.prototype.hasOwnProperty.call(STAGE_BY_KEY, k) ? STAGE_BY_KEY[k] : null;
+  }
+  function _isScientificAiAllowed() {
+    if (typeof window === "undefined") return true;
+    if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return false;
+    if (typeof window.__alloAiUsable === "function") {
+      try {
+        if (window.__alloAiUsable("text") === false) return false;
+      } catch (_) {
+      }
+    }
+    return true;
+  }
+  function _hasSciCrisis(text) {
+    if (!text || typeof text !== "string" || typeof window === "undefined") return false;
+    var scan = window.AlloModules && window.AlloModules.SelSafety && window.AlloModules.SelSafety.scanForCrisis || window.AlloModules && window.AlloModules.AiCore && window.AlloModules.AiCore.scanForCrisis || window.scanForCrisis;
+    if (typeof scan === "function") {
+      try {
+        var r = scan(text);
+        return !!(r && (r === true || r.triggered || r.flagged || r.isCrisis || r.matched));
+      } catch (_) {
+      }
+    }
+    return false;
+  }
+  function _escapeRegExp(str) {
+    return String(str).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
   var LOOPBACK_CHIPS = [
     { id: "new_evidence", label: "New evidence changed my mind", icon: "\u{1F4DD}" },
     { id: "assumption_surfaced", label: "I noticed my model assumed something", icon: "\u{1F50D}" },
@@ -207,6 +236,7 @@
     }
   ];
   function wonderSorterGate(journal) {
+    journal = journal && typeof journal === "object" ? journal : {};
     var titleCheck = isPlausibleProse(journal.questionTitle, 10, { minTokens: 2 });
     if (!titleCheck.ok) {
       return {
@@ -218,12 +248,24 @@
     var devLevel = journal.devLevel || "6_8";
     var minPerW = devLevel === "k2" ? 8 : 15;
     var floor = devLevel === "k2" ? 3 : devLevel === "3_5" ? 4 : 5;
-    var wonderings = Array.isArray(journal.wonderings) ? journal.wonderings : [];
+    var wonderings = Array.isArray(journal.wonderings) ? journal.wonderings.filter(function(w2) {
+      return w2 && typeof w2 === "object";
+    }) : [];
+    var crisisText = [journal.questionTitle || ""].concat(wonderings.map(function(w2) {
+      return w2.text || "";
+    })).join("\n");
+    if (_hasSciCrisis(crisisText)) {
+      return {
+        ok: false,
+        reason: "It sounds like you may be going through a difficult time. Please talk to a trusted adult, school counselor, or call/text 988 (US) for free, confidential support.",
+        bypass_signals: ["crisis_safety"]
+      };
+    }
     var valid = [];
     var signals = [];
     for (var i = 0; i < wonderings.length; i++) {
       var w = wonderings[i];
-      var text = w && w.text || "";
+      var text = w && typeof w.text === "string" && w.text || "";
       if (w && w.durationS && (!text || text.length < 3)) {
         if (w.durationS < 5) {
           signals.push("voice_too_short");
@@ -273,13 +315,23 @@
     return { ok: true };
   }
   function modelSurfacerGate(journal) {
-    var snaps = Array.isArray(journal.modelSnapshots) ? journal.modelSnapshots : [];
+    journal = journal && typeof journal === "object" ? journal : {};
+    var snaps = Array.isArray(journal.modelSnapshots) ? journal.modelSnapshots.filter(function(s) {
+      return s && typeof s === "object";
+    }) : [];
     var latest = snaps.length ? snaps[snaps.length - 1] : null;
     if (!latest || typeof latest.text !== "string") {
       return {
         ok: false,
         reason: "Write a first-draft model before AI can help surface assumptions.",
         bypass_signals: ["no_snapshot"]
+      };
+    }
+    if (_hasSciCrisis([journal.questionTitle || "", latest.text || "", latest.knownUnknowns || ""].join("\n"))) {
+      return {
+        ok: false,
+        reason: "It sounds like you may be going through a difficult time. Please talk to a trusted adult, school counselor, or call/text 988 (US) for free, confidential support.",
+        bypass_signals: ["crisis_safety"]
       };
     }
     var devLevel = journal.devLevel || "6_8";
@@ -299,7 +351,7 @@
     var lower = normalizeForCompare(latest.text);
     if (devLevel !== "k2") {
       var hasMechVerb = MECHANISM_VERBS.some(function(v) {
-        return new RegExp("\\b" + v + "\\b").test(lower);
+        return typeof v === "string" && v && new RegExp("\\b" + _escapeRegExp(v) + "\\b").test(lower);
       });
       if (!hasMechVerb) {
         return {
@@ -332,11 +384,19 @@
     return { ok: true };
   }
   function steelmanSecondPassGate(journal) {
+    journal = journal && typeof journal === "object" ? journal : {};
     var note = (journal.stageNotes || {}).interpret_argue || {};
-    var ownReading = (note.text || "").trim();
-    var ownSteelman = (note.steelmanText || "").trim();
+    var ownReading = (typeof note.text === "string" ? note.text : "").trim();
+    var ownSteelman = (typeof note.steelmanText === "string" ? note.steelmanText : "").trim();
     var ownAssumps = Array.isArray(note.studentSideAssumptionsRequired) ? note.studentSideAssumptionsRequired : [];
     var ownDiscs = Array.isArray(note.studentSideDisconfirmers) ? note.studentSideDisconfirmers : [];
+    if (_hasSciCrisis([journal.questionTitle || "", ownReading, ownSteelman].join("\n"))) {
+      return {
+        ok: false,
+        reason: "It sounds like you may be going through a difficult time. Please talk to a trusted adult, school counselor, or call/text 988 (US) for free, confidential support.",
+        bypass_signals: ["crisis_safety"]
+      };
+    }
     var readingCheck = isPlausibleProse(ownReading, 40, { minTokens: 7 });
     if (!readingCheck.ok) {
       return {
@@ -382,8 +442,8 @@
         bypass_signals: ["too_few_own_disconfirmers"]
       };
     }
-    var evidence = (journal.evidenceCards || []).filter(function(c) {
-      return c.tag !== "wondering";
+    var evidence = (Array.isArray(journal.evidenceCards) ? journal.evidenceCards : []).filter(function(c) {
+      return c && typeof c === "object" && c.tag !== "wondering";
     });
     if (evidence.length < 2) {
       return { ok: false, reason: "Log at least 2 evidence cards before interpreting.", bypass_signals: ["too_few_evidence"] };
@@ -395,19 +455,31 @@
     return { ok: true };
   }
   function honestUncertaintyGate(journal) {
+    journal = journal && typeof journal === "object" ? journal : {};
     var claims = Array.isArray(journal.claims) ? journal.claims : [];
     if (claims.length < 2) {
       return { ok: false, reason: "Write at least 2 claims first.", bypass_signals: ["too_few_claims"] };
     }
     var validLabels = /* @__PURE__ */ new Set(["supported", "overreach", "still_unknown"]);
-    var evidence = (journal.evidenceCards || []).filter(function(c2) {
-      return c2.tag !== "wondering";
+    var evidence = (Array.isArray(journal.evidenceCards) ? journal.evidenceCards : []).filter(function(c2) {
+      return c2 && typeof c2 === "object" && c2.tag !== "wondering";
     });
     var evidenceCorpus = normalizeForCompare(evidence.map(function(c2) {
       return c2.text || "";
     }).join(" "));
-    var snaps = journal.modelSnapshots || [];
+    var snaps = Array.isArray(journal.modelSnapshots) ? journal.modelSnapshots.filter(function(s) {
+      return s && typeof s === "object";
+    }) : [];
     var latestSnap = snaps.length ? normalizeForCompare(snaps[snaps.length - 1].text || "") : "";
+    if (_hasSciCrisis(claims.map(function(c2) {
+      return c2 && c2.text || "";
+    }).concat([snaps.length ? snaps[snaps.length - 1].text || "" : ""]).join("\n"))) {
+      return {
+        ok: false,
+        reason: "It sounds like you may be going through a difficult time. Please talk to a trusted adult, school counselor, or call/text 988 (US) for free, confidential support.",
+        bypass_signals: ["crisis_safety"]
+      };
+    }
     var signals = [];
     var stop = H.SHARED_STOP_WORDS || /* @__PURE__ */ new Set();
     for (var i = 0; i < claims.length; i++) {
@@ -469,12 +541,25 @@
     return { ok: true };
   }
   var stripUntrustedSci = function(v) {
-    return String(v == null ? "" : v).replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, "");
+    var s = String(v == null ? "" : v).replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, "");
+    if (typeof window !== "undefined") {
+      var scrub = window.AlloModules && window.AlloModules.UtilsPure && window.AlloModules.UtilsPure.scrubPii || window.scrubPII;
+      if (typeof scrub === "function") {
+        try {
+          var cleaned = scrub(s);
+          if (typeof cleaned === "string") s = cleaned;
+          else if (cleaned && typeof cleaned.scrubbed === "string") s = cleaned.scrubbed;
+        } catch (_) {
+        }
+      }
+    }
+    return s;
   };
   function wonderSorterPrompt(journal) {
+    journal = journal && typeof journal === "object" ? journal : {};
     var devLevel = journal.devLevel || "6_8";
     var taxonomy = devLevel === "k2" ? ["what", "why", "how", "what_if"] : devLevel === "3_5" || devLevel === "6_8" ? ["descriptive", "causal", "mechanistic", "comparative", "classificatory"] : ["descriptive", "causal", "mechanistic", "comparative", "classificatory", "historical", "normative"];
-    var wonderings = (journal.wonderings || []).map(function(w, i) {
+    var wonderings = (Array.isArray(journal.wonderings) ? journal.wonderings : []).filter(Boolean).map(function(w, i) {
       return i + 1 + ". " + stripUntrustedSci(w.text || "[voice note " + (w.durationS || "?") + "s]");
     }).join("\n");
     return [
@@ -497,8 +582,9 @@
     ].join("\n");
   }
   function modelSurfacerPrompt(journal) {
+    journal = journal && typeof journal === "object" ? journal : {};
     var devLevel = journal.devLevel || "6_8";
-    var snaps = journal.modelSnapshots || [];
+    var snaps = Array.isArray(journal.modelSnapshots) ? journal.modelSnapshots.filter(Boolean) : [];
     var latest = snaps[snaps.length - 1] || {};
     var knownUnknowns = stripUntrustedSci(latest.knownUnknowns || ((journal.stageNotes || {}).model_it || {}).text || "none stated");
     return [
@@ -521,13 +607,14 @@
     ].join("\n");
   }
   function steelmanSecondPassPrompt(journal) {
+    journal = journal && typeof journal === "object" ? journal : {};
     var devLevel = journal.devLevel || "6_8";
     var note = (journal.stageNotes || {}).interpret_argue || {};
-    var evidence = (journal.evidenceCards || []).filter(function(c) {
-      return c.tag !== "wondering";
+    var evidence = (Array.isArray(journal.evidenceCards) ? journal.evidenceCards : []).filter(function(c) {
+      return c && typeof c === "object" && c.tag !== "wondering";
     });
     var evidenceList = evidence.map(function(c) {
-      return "- id=" + stripUntrustedSci(c.id) + " tag=" + stripUntrustedSci(c.tag || "evidence") + ' text="' + stripUntrustedSci((c.text || "").slice(0, 200)) + '"';
+      return "- id=" + stripUntrustedSci(c.id) + " tag=" + stripUntrustedSci(c.tag || "evidence") + ' text="' + stripUntrustedSci(String(c.text || "").slice(0, 200)) + '"';
     }).join("\n");
     return [
       'SYSTEM: You are an inquiry coach offering ONE additional reading of evidence \u2014 explicitly framed as "another reading worth considering", NEVER as "the alternative" and NEVER as "better than" the student.',
@@ -551,17 +638,18 @@
     ].join("\n");
   }
   function honestUncertaintyPrompt(journal) {
+    journal = journal && typeof journal === "object" ? journal : {};
     var devLevel = journal.devLevel || "6_8";
-    var claims = (journal.claims || []).map(function(c, i) {
+    var claims = (Array.isArray(journal.claims) ? journal.claims : []).filter(Boolean).map(function(c, i) {
       return i + 1 + '. "' + stripUntrustedSci(c.text || "") + '" [student label: ' + stripUntrustedSci(c.label || "unlabeled") + "]";
     }).join("\n");
-    var evidence = (journal.evidenceCards || []).filter(function(c) {
-      return c.tag !== "wondering";
+    var evidence = (Array.isArray(journal.evidenceCards) ? journal.evidenceCards : []).filter(function(c) {
+      return c && typeof c === "object" && c.tag !== "wondering";
     });
     var evidenceList = evidence.map(function(c) {
-      return "- id=" + stripUntrustedSci(c.id) + ' text="' + stripUntrustedSci((c.text || "").slice(0, 200)) + '"';
+      return "- id=" + stripUntrustedSci(c.id) + ' text="' + stripUntrustedSci(String(c.text || "").slice(0, 200)) + '"';
     }).join("\n");
-    var snaps = journal.modelSnapshots || [];
+    var snaps = Array.isArray(journal.modelSnapshots) ? journal.modelSnapshots.filter(Boolean) : [];
     var prev = stripUntrustedSci(snaps.length >= 2 ? snaps[snaps.length - 2].text || "" : "");
     var curr = stripUntrustedSci(snaps.length >= 1 ? snaps[snaps.length - 1].text || "" : "");
     return [
@@ -587,12 +675,13 @@
     ].join("\n");
   }
   function wonderSorterValidate(out, journal) {
-    var atts = [];
+    journal = journal && typeof journal === "object" ? journal : {};
     if (!out || !Array.isArray(out.sorted)) return { __rejected: true, rejectReason: "missing_sorted", attemptedShapeKeys: Object.keys(out || {}) };
-    var wonderings = journal.wonderings || [];
+    var wonderings = Array.isArray(journal.wonderings) ? journal.wonderings : [];
     if (out.sorted.length !== wonderings.length) return { __rejected: true, rejectReason: "sorted_length_mismatch", attemptedShapeKeys: ["sorted"] };
     for (var i = 0; i < out.sorted.length; i++) {
       var s = out.sorted[i];
+      if (!s || typeof s !== "object") return { __rejected: true, rejectReason: "sorted_item_invalid", attemptedShapeKeys: ["sorted"] };
       var w = wonderings[s.index - 1] || wonderings[i];
       if (!w) return { __rejected: true, rejectReason: "sorted_index_out_of_range", attemptedShapeKeys: ["sorted"] };
       if (normalizeForCompare(s.verbatim) !== normalizeForCompare(w.text || "")) {
@@ -602,7 +691,8 @@
     return out;
   }
   function modelSurfacerValidate(out, journal) {
-    var snaps = journal.modelSnapshots || [];
+    journal = journal && typeof journal === "object" ? journal : {};
+    var snaps = Array.isArray(journal.modelSnapshots) ? journal.modelSnapshots.filter(Boolean) : [];
     var latest = snaps[snaps.length - 1] || {};
     var latestNorm = normalizeForCompare(latest.text || "");
     if (!out || !Array.isArray(out.quoted_phrases_inventory)) {
@@ -610,6 +700,7 @@
     }
     for (var i = 0; i < out.quoted_phrases_inventory.length; i++) {
       var qp = out.quoted_phrases_inventory[i];
+      if (!qp || typeof qp !== "object") return { __rejected: true, rejectReason: "quoted_phrase_invalid", attemptedShapeKeys: ["quoted_phrases_inventory"] };
       var phraseNorm = normalizeForCompare(qp.quoted_phrase || "");
       if (!phraseNorm || latestNorm.indexOf(phraseNorm) === -1) {
         return { __rejected: true, rejectReason: "quoted_phrase_not_in_model", attemptedShapeKeys: ["quoted_phrases_inventory"] };
@@ -618,18 +709,20 @@
     return out;
   }
   function steelmanValidate(out, journal) {
-    if (!out || !out.another_reading) return { __rejected: true, rejectReason: "missing_another_reading", attemptedShapeKeys: Object.keys(out || {}) };
+    journal = journal && typeof journal === "object" ? journal : {};
+    if (!out || !out.another_reading || typeof out.another_reading !== "object") return { __rejected: true, rejectReason: "missing_another_reading", attemptedShapeKeys: Object.keys(out || {}) };
     var ar = out.another_reading;
     if (!Array.isArray(ar.cited_evidence) || ar.cited_evidence.length < 2) {
       return { __rejected: true, rejectReason: "too_few_cited_evidence", attemptedShapeKeys: ["cited_evidence"] };
     }
-    var byId = {};
-    (journal.evidenceCards || []).forEach(function(c) {
-      byId[c.id] = c;
+    var byId = /* @__PURE__ */ Object.create(null);
+    (Array.isArray(journal.evidenceCards) ? journal.evidenceCards : []).forEach(function(c) {
+      if (c && typeof c === "object" && c.id != null) byId[String(c.id)] = c;
     });
     for (var i = 0; i < ar.cited_evidence.length; i++) {
       var ce = ar.cited_evidence[i];
-      var card = byId[ce.card_id];
+      if (!ce || typeof ce !== "object" || ce.card_id == null) return { __rejected: true, rejectReason: "cited_card_not_found", attemptedShapeKeys: ["cited_evidence"] };
+      var card = Object.prototype.hasOwnProperty.call(byId, String(ce.card_id)) ? byId[String(ce.card_id)] : null;
       if (!card) return { __rejected: true, rejectReason: "cited_card_not_found", attemptedShapeKeys: ["cited_evidence"] };
       var snipNorm = normalizeForCompare(ce.quoted_snippet || "");
       var cardNorm = normalizeForCompare(card.text || "");
@@ -637,28 +730,33 @@
         return { __rejected: true, rejectReason: "quoted_snippet_not_in_card", attemptedShapeKeys: ["cited_evidence"] };
       }
     }
-    var fn = (out.framing_note || "").toLowerCase();
+    var fn = String(out.framing_note || "").toLowerCase();
     if (!/another|additional/.test(fn) || /the alternative|the correct|should instead|better than|more likely/.test(fn)) {
       return { __rejected: true, rejectReason: "framing_note_directive", attemptedShapeKeys: ["framing_note"] };
     }
     return out;
   }
   function honestUncertaintyValidate(out, journal) {
+    journal = journal && typeof journal === "object" ? journal : {};
     if (!out || !Array.isArray(out.per_claim)) return { __rejected: true, rejectReason: "missing_per_claim", attemptedShapeKeys: Object.keys(out || {}) };
-    var claims = journal.claims || [];
+    var claims = Array.isArray(journal.claims) ? journal.claims : [];
     if (out.per_claim.length !== claims.length) return { __rejected: true, rejectReason: "per_claim_length_mismatch", attemptedShapeKeys: ["per_claim"] };
     var validFlags = /* @__PURE__ */ new Set(["over-confident", "under-confident", "worth-reexamining"]);
-    var byId = {};
-    (journal.evidenceCards || []).forEach(function(c) {
-      byId[c.id] = c;
+    var byId = /* @__PURE__ */ Object.create(null);
+    (Array.isArray(journal.evidenceCards) ? journal.evidenceCards : []).forEach(function(c) {
+      if (c && typeof c === "object" && c.id != null) byId[String(c.id)] = c;
     });
     for (var i = 0; i < out.per_claim.length; i++) {
       var pc = out.per_claim[i];
-      if (pc.student_label !== claims[i].label) return { __rejected: true, rejectReason: "student_label_modified", attemptedShapeKeys: ["per_claim"] };
+      if (!pc || typeof pc !== "object") return { __rejected: true, rejectReason: "per_claim_invalid", attemptedShapeKeys: ["per_claim"] };
+      if (!claims[i] || pc.student_label !== claims[i].label) return { __rejected: true, rejectReason: "student_label_modified", attemptedShapeKeys: ["per_claim"] };
       if (!validFlags.has(pc.calibration_flag)) return { __rejected: true, rejectReason: "invalid_calibration_flag", attemptedShapeKeys: ["per_claim"] };
       if (Array.isArray(pc.evidence_cited)) {
         for (var k = 0; k < pc.evidence_cited.length; k++) {
-          if (!byId[pc.evidence_cited[k].card_id]) return { __rejected: true, rejectReason: "cited_card_not_found", attemptedShapeKeys: ["per_claim", "evidence_cited"] };
+          var ec = pc.evidence_cited[k];
+          if (!ec || typeof ec !== "object" || ec.card_id == null || !Object.prototype.hasOwnProperty.call(byId, String(ec.card_id))) {
+            return { __rejected: true, rejectReason: "cited_card_not_found", attemptedShapeKeys: ["per_claim", "evidence_cited"] };
+          }
         }
       }
     }
@@ -780,6 +878,23 @@
     var onJump = props.onJump;
     var journalStageNotes = props.journalStageNotes || {};
     var modelSnapshotCount = props.modelSnapshotCount || 0;
+    var tabRefs = useRef([]);
+    var handleTabKeyDown = function(e, idx) {
+      if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229) return;
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+      var nextIdx = -1;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") nextIdx = (idx + 1) % STAGES.length;
+      else if (e.key === "ArrowLeft" || e.key === "ArrowUp") nextIdx = (idx - 1 + STAGES.length) % STAGES.length;
+      else if (e.key === "Home") nextIdx = 0;
+      else if (e.key === "End") nextIdx = STAGES.length - 1;
+      if (nextIdx >= 0) {
+        e.preventDefault();
+        if (typeof onJump === "function") onJump(STAGES[nextIdx].key);
+        if (tabRefs.current[nextIdx] && typeof tabRefs.current[nextIdx].focus === "function") {
+          tabRefs.current[nextIdx].focus();
+        }
+      }
+    };
     return /* @__PURE__ */ React.createElement(
       "div",
       {
@@ -802,9 +917,18 @@
           "button",
           {
             key: s.key,
+            id: "sci-tab-" + s.key,
+            ref: function(el) {
+              tabRefs.current[idx] = el;
+            },
             type: "button",
             role: "tab",
             "aria-selected": isActive,
+            "aria-controls": "sci-stage-panel",
+            tabIndex: isActive ? 0 : -1,
+            onKeyDown: function(e) {
+              handleTabKeyDown(e, idx);
+            },
             onClick: function() {
               if (typeof onJump === "function") onJump(s.key);
             },
@@ -854,6 +978,14 @@
         role: "dialog",
         "aria-modal": "true",
         "aria-label": t("scientific.loopback_modal_title") || "Why are you looping back?",
+        onKeyDown: function(e) {
+          if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229) return;
+          if (e.key === "Escape") {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof onCancel === "function") onCancel();
+          }
+        },
         style: {
           position: "fixed",
           inset: 0,
@@ -866,7 +998,7 @@
           padding: "20px"
         },
         onClick: function(e) {
-          if (e.target === e.currentTarget) onCancel();
+          if (e.target === e.currentTarget && typeof onCancel === "function") onCancel();
         }
       },
       /* @__PURE__ */ React.createElement(
@@ -885,7 +1017,7 @@
           }
         },
         /* @__PURE__ */ React.createElement("h3", { style: { margin: 0, fontSize: "15px", fontWeight: 800, color: "#1e293b" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F501} "), t("scientific.loopback_modal_title") || "Why are you looping back?"),
-        /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 12px", fontSize: "11px", color: "#64748b", lineHeight: 1.5 } }, t("scientific.loopback_modal_help") || "Loops are evidence of thinking change \u2014 not setbacks. Your downstream work stays; you can return to where you were."),
+        /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 12px", fontSize: "11px", color: "#475569", lineHeight: 1.5 } }, t("scientific.loopback_modal_help") || "Loops are evidence of thinking change \u2014 not setbacks. Your downstream work stays; you can return to where you were."),
         /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "8px" } }, LOOPBACK_CHIPS.map(function(c) {
           var selected = chipId === c.id;
           return /* @__PURE__ */ React.createElement(
@@ -933,6 +1065,8 @@
               boxSizing: "border-box",
               padding: "8px 10px",
               borderRadius: "8px",
+              background: "#ffffff",
+              color: "#0f172a",
               border: "1px solid #cbd5e1",
               fontFamily: "inherit",
               fontSize: "12px"
@@ -969,7 +1103,7 @@
               minHeight: "44px",
               padding: "8px 14px",
               borderRadius: "999px",
-              background: canCommit ? "#7c3aed" : "#64748b",
+              background: canCommit ? "#7c3aed" : "#475569",
               color: "#fff",
               border: "none",
               fontWeight: 800,
@@ -979,7 +1113,7 @@
           },
           t("scientific.loopback_commit") || "Loop back to ",
           " ",
-          STAGE_BY_KEY[toStage] ? STAGE_BY_KEY[toStage].label : toStage
+          _stageByKey(toStage) ? _stageByKey(toStage).label : toStage
         ))
       )
     );
@@ -1004,7 +1138,7 @@
     var expandedIdx = _expanded[0];
     var setExpandedIdx = _expanded[1];
     if (!snaps.length) {
-      return /* @__PURE__ */ React.createElement("p", { style: { margin: "8px 0", fontSize: "11px", color: "#64748b", fontStyle: "italic" } }, t("scientific.no_snapshots_yet") || "No model snapshots yet. Save one to start the trajectory.");
+      return /* @__PURE__ */ React.createElement("p", { style: { margin: "8px 0", fontSize: "11px", color: "#475569", fontStyle: "italic" } }, t("scientific.no_snapshots_yet") || "No model snapshots yet. Save one to start the trajectory.");
     }
     return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { style: { margin: "6px 0", fontSize: "12px", fontWeight: 800, color: "#1e293b" } }, t("scientific.timeline_label") || "Model trajectory"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "6px" } }, snaps.map(function(s, i) {
       var prev = i > 0 ? snaps[i - 1] : null;
@@ -1031,7 +1165,7 @@
           }
         },
         /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", color: "#7c3aed", fontWeight: 800 } }, "v", s.v, hasLoopOrigin && /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { marginLeft: "4px" } }, "\u{1F501}")),
-        /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", color: "#64748b", marginTop: "2px" } }, new Date(s.ts || 0).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), " \xB7 ", s.confidence || "?", " conf."),
+        /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", color: "#475569", marginTop: "2px" } }, new Date(s.ts || 0).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), " \xB7 ", s.confidence || "?", " conf."),
         /* @__PURE__ */ React.createElement("div", { style: {
           marginTop: "4px",
           fontSize: "11px",
@@ -1051,7 +1185,7 @@
       border: "1px solid #cbd5e1",
       fontSize: "12px",
       color: "#1e293b"
-    } }, /* @__PURE__ */ React.createElement("strong", null, "v", snaps[expandedIdx].v, " (", snaps[expandedIdx].confidence || "?", " confidence)"), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", lineHeight: 1.6 } }, snaps[expandedIdx].text), snaps[expandedIdx].knownUnknowns && /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px", color: "#475569" } }, /* @__PURE__ */ React.createElement("em", null, t("scientific.timeline_unknowns_at_v") || "Known unknowns at this version:", " "), snaps[expandedIdx].knownUnknowns), snaps[expandedIdx].loopBackOrigin && /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px", color: "#7c3aed" } }, /* @__PURE__ */ React.createElement("em", null, t("scientific.timeline_revision_after_loop") || "Revision after looping back from: ", " "), STAGE_BY_KEY[snaps[expandedIdx].loopBackOrigin.fromStage] ? STAGE_BY_KEY[snaps[expandedIdx].loopBackOrigin.fromStage].label : snaps[expandedIdx].loopBackOrigin.fromStage)));
+    } }, /* @__PURE__ */ React.createElement("strong", null, "v", snaps[expandedIdx].v, " (", snaps[expandedIdx].confidence || "?", " confidence)"), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", lineHeight: 1.6 } }, snaps[expandedIdx].text), snaps[expandedIdx].knownUnknowns && /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px", color: "#475569" } }, /* @__PURE__ */ React.createElement("em", null, t("scientific.timeline_unknowns_at_v") || "Known unknowns at this version:", " "), snaps[expandedIdx].knownUnknowns), snaps[expandedIdx].loopBackOrigin && /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0", fontSize: "11px", color: "#7c3aed" } }, /* @__PURE__ */ React.createElement("em", null, t("scientific.timeline_revision_after_loop") || "Revision after looping back from: ", " "), _stageByKey(snaps[expandedIdx].loopBackOrigin.fromStage) ? _stageByKey(snaps[expandedIdx].loopBackOrigin.fromStage).label : snaps[expandedIdx].loopBackOrigin.fromStage)));
   }
   function ExemplarGate(props) {
     var t = props.t;
@@ -1219,21 +1353,21 @@
     function renderQuestions(arr, label) {
       if (!Array.isArray(arr) || !arr.length) return null;
       return /* @__PURE__ */ React.createElement("div", { style: { marginTop: "6px" } }, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#5b21b6" } }, label), /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "20px", fontSize: "12px", color: "#1e293b", lineHeight: 1.6 } }, arr.map(function(q, i) {
-        return /* @__PURE__ */ React.createElement("li", { key: i }, q);
+        return /* @__PURE__ */ React.createElement("li", { key: i }, aiScalarText(q));
       })));
     }
-    var sorted = Array.isArray(data.sorted) ? data.sorted : null;
-    var pairs = Array.isArray(data.quoted_phrases_inventory) ? data.quoted_phrases_inventory : null;
-    var another = data.another_reading;
-    var perClaim = Array.isArray(data.per_claim) ? data.per_claim : null;
+    var sorted = Array.isArray(data.sorted) ? data.sorted.filter(Boolean) : null;
+    var pairs = Array.isArray(data.quoted_phrases_inventory) ? data.quoted_phrases_inventory.filter(Boolean) : null;
+    var another = data.another_reading && typeof data.another_reading === "object" ? data.another_reading : null;
+    var perClaim = Array.isArray(data.per_claim) ? data.per_claim.filter(Boolean) : null;
     return /* @__PURE__ */ React.createElement("div", null, sorted && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#5b21b6" } }, t("scientific.sorted_label") || "Your wonderings sorted"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "18px", fontSize: "12px", lineHeight: 1.6 } }, sorted.map(function(s, i) {
-      return /* @__PURE__ */ React.createElement("li", { key: i }, /* @__PURE__ */ React.createElement("em", null, s.kind), ': "', s.verbatim, '"', s.why_this_kind_question && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#7c3aed" } }, s.why_this_kind_question));
+      return /* @__PURE__ */ React.createElement("li", { key: i }, /* @__PURE__ */ React.createElement("em", null, aiScalarText(s.kind)), ': "', aiScalarText(s.verbatim), '"', s.why_this_kind_question && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#7c3aed" } }, aiScalarText(s.why_this_kind_question)));
     }))), pairs && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#5b21b6" } }, t("scientific.assumption_probes_label") || "Questions about phrases from your model"), pairs.map(function(p, i) {
-      return /* @__PURE__ */ React.createElement("div", { key: i, style: { marginTop: "4px", fontSize: "12px" } }, /* @__PURE__ */ React.createElement("em", null, '"', p.quoted_phrase, '"'), renderQuestions(p.assumption_probe_questions, ""));
-    }), data.entities_question && /* @__PURE__ */ React.createElement("p", { style: { marginTop: "6px", fontSize: "12px", color: "#1e293b" } }, aiScalarText(data.entities_question)), data.relationships_question && /* @__PURE__ */ React.createElement("p", { style: { marginTop: "4px", fontSize: "12px", color: "#1e293b" } }, aiScalarText(data.relationships_question))), another && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#5b21b6" } }, t("scientific.another_reading_label") || "AI offers another reading (additional, not the alternative)"), another.cited_evidence && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#475569" } }, /* @__PURE__ */ React.createElement("strong", null, "Cites: "), another.cited_evidence.map(function(ce, i) {
-      return /* @__PURE__ */ React.createElement("div", { key: i }, "\xB7 #", ce.card_id, ' \u2014 "', ce.quoted_snippet, '"');
-    })), renderQuestions(another.assumptions_required_questions, t("scientific.assumptions_required_label") || "Questions about what would have to hold:"), renderQuestions(another.disconfirmer_questions, t("scientific.disconfirmer_label") || "Questions about what would disconfirm this:"), renderQuestions(data.comparison_prompt_questions, t("scientific.comparison_label") || "Compare the readings:"), data.framing_note && /* @__PURE__ */ React.createElement("p", { style: { marginTop: "6px", fontSize: "11px", color: "#7c3aed", fontStyle: "italic" } }, data.framing_note)), perClaim && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#5b21b6" } }, t("scientific.per_claim_label") || "Questions about your labels"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "18px", fontSize: "12px", lineHeight: 1.6 } }, perClaim.map(function(pc, i) {
-      return /* @__PURE__ */ React.createElement("li", { key: i }, /* @__PURE__ */ React.createElement("strong", null, "Claim ", pc.claim_index || i + 1), " [", pc.student_label, ", AI flag: ", pc.calibration_flag, "]", renderQuestions(pc.label_probe_questions, ""));
+      return /* @__PURE__ */ React.createElement("div", { key: i, style: { marginTop: "4px", fontSize: "12px" } }, /* @__PURE__ */ React.createElement("em", null, '"', aiScalarText(p.quoted_phrase), '"'), renderQuestions(p.assumption_probe_questions, ""));
+    }), data.entities_question && /* @__PURE__ */ React.createElement("p", { style: { marginTop: "6px", fontSize: "12px", color: "#1e293b" } }, aiScalarText(data.entities_question)), data.relationships_question && /* @__PURE__ */ React.createElement("p", { style: { marginTop: "4px", fontSize: "12px", color: "#1e293b" } }, aiScalarText(data.relationships_question))), another && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#5b21b6" } }, t("scientific.another_reading_label") || "AI offers another reading (additional, not the alternative)"), Array.isArray(another.cited_evidence) && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#475569" } }, /* @__PURE__ */ React.createElement("strong", null, "Cites: "), another.cited_evidence.filter(Boolean).map(function(ce, i) {
+      return /* @__PURE__ */ React.createElement("div", { key: i }, "\xB7 #", aiScalarText(ce.card_id), ' \u2014 "', aiScalarText(ce.quoted_snippet), '"');
+    })), renderQuestions(another.assumptions_required_questions, t("scientific.assumptions_required_label") || "Questions about what would have to hold:"), renderQuestions(another.disconfirmer_questions, t("scientific.disconfirmer_label") || "Questions about what would disconfirm this:"), renderQuestions(data.comparison_prompt_questions, t("scientific.comparison_label") || "Compare the readings:"), data.framing_note && /* @__PURE__ */ React.createElement("p", { style: { marginTop: "6px", fontSize: "11px", color: "#7c3aed", fontStyle: "italic" } }, aiScalarText(data.framing_note))), perClaim && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("strong", { style: { fontSize: "11px", color: "#5b21b6" } }, t("scientific.per_claim_label") || "Questions about your labels"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "4px 0 0", paddingLeft: "18px", fontSize: "12px", lineHeight: 1.6 } }, perClaim.map(function(pc, i) {
+      return /* @__PURE__ */ React.createElement("li", { key: i }, /* @__PURE__ */ React.createElement("strong", null, "Claim ", aiScalarText(pc.claim_index || i + 1)), " [", aiScalarText(pc.student_label), ", AI flag: ", aiScalarText(pc.calibration_flag), "]", renderQuestions(pc.label_probe_questions, ""));
     })), renderQuestions(data.revision_observation_questions, t("scientific.revision_obs_label") || "Questions about what changed:")), renderQuestions(data.questions_to_consider, t("scientific.questions_to_consider_label") || "More questions to consider:"), renderQuestions(data.coverage_questions, t("scientific.coverage_questions_label") || "Questions about coverage:"));
   }
   function NoticeWonderStage(props) {
@@ -1252,7 +1386,23 @@
     var _busy = useState(false);
     var busy = _busy[0];
     var setBusy = _busy[1];
-    var wonderings = journal.wonderings || [];
+    var mountedRef = useRef(true);
+    var abortRef = useRef(null);
+    useEffect(function() {
+      mountedRef.current = true;
+      return function() {
+        mountedRef.current = false;
+        if (abortRef.current) {
+          try {
+            abortRef.current.abort();
+          } catch (_) {
+          }
+          abortRef.current = null;
+        }
+      };
+    }, []);
+    var aiAllowed = _isScientificAiAllowed();
+    var wonderings = Array.isArray(journal.wonderings) ? journal.wonderings.filter(Boolean) : [];
     var devLevel = journal.devLevel || "6_8";
     var floor = devLevel === "k2" ? 3 : devLevel === "3_5" ? 4 : 5;
     var addWondering = function(text, opts) {
@@ -1273,19 +1423,33 @@
       setJournal(function(prev) {
         var next = Object.assign({}, prev);
         next.wonderings = (prev.wonderings || []).filter(function(w) {
-          return w.id !== id;
+          return w && w.id !== id;
         });
         return next;
       });
     };
     var askSort = async function() {
+      if (!aiAllowed || busy) return;
+      if (abortRef.current) {
+        try {
+          abortRef.current.abort();
+        } catch (_) {
+        }
+      }
+      var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+      abortRef.current = ctrl;
       setBusy(true);
       setAiResult(null);
       try {
-        var res = await ctx.ask(TOUCHPOINTS.wonder_sorter, ctx);
-        setAiResult(res);
+        var res = await ctx.ask(TOUCHPOINTS.wonder_sorter, ctx, ctrl ? ctrl.signal : void 0);
+        if (mountedRef.current) setAiResult(res);
+      } catch (err) {
+        if (mountedRef.current && (!err || err.name !== "AbortError")) {
+          setAiResult({ blocked: true, detail: err && err.message || "AI couldn't help with that right now." });
+        }
       } finally {
-        setBusy(false);
+        if (abortRef.current === ctrl) abortRef.current = null;
+        if (mountedRef.current) setBusy(false);
       }
     };
     return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "12px" } }, /* @__PURE__ */ React.createElement(
@@ -1298,7 +1462,7 @@
         primitives,
         pair: EXEMPLAR_PAIRS.notice_wonder
       }
-    ), /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: "0 0 8px", fontSize: "13px", fontWeight: 800, color: "#1e293b" } }, t("scientific.wonderings_title") || "Your wonderings", /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "8px", fontSize: "11px", fontWeight: 700, color: floor > wonderings.length ? "#b45309" : "#15803d" } }, "(", wonderings.length, "/", floor, ")")), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px", fontSize: "11px", color: "#64748b", lineHeight: 1.5 } }, t("scientific.wonderings_help") || "List at least " + floor + " wonderings of your own. Each one is its own line. AI will sort them by kind \u2014 never invent them for you."), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "4px" } }, wonderings.map(function(w) {
+    ), /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: "0 0 8px", fontSize: "13px", fontWeight: 800, color: "#1e293b" } }, t("scientific.wonderings_title") || "Your wonderings", /* @__PURE__ */ React.createElement("span", { style: { marginLeft: "8px", fontSize: "11px", fontWeight: 700, color: floor > wonderings.length ? "#b45309" : "#15803d" } }, "(", wonderings.length, "/", floor, ")")), /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 8px", fontSize: "11px", color: "#475569", lineHeight: 1.5 } }, t("scientific.wonderings_help") || "List at least " + floor + " wonderings of your own. Each one is its own line. AI will sort them by kind \u2014 never invent them for you."), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "4px" } }, wonderings.map(function(w) {
       return /* @__PURE__ */ React.createElement("li", { key: w.id, style: {
         display: "flex",
         gap: "8px",
@@ -1324,7 +1488,7 @@
             justifyContent: "center",
             background: "transparent",
             border: "none",
-            color: "#64748b",
+            color: "#475569",
             cursor: "pointer",
             fontSize: "14px"
           }
@@ -1351,6 +1515,8 @@
           minHeight: "44px",
           padding: "8px 10px",
           borderRadius: "8px",
+          background: "#ffffff",
+          color: "#0f172a",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
           fontFamily: "inherit"
@@ -1385,8 +1551,9 @@
       "button",
       {
         type: "button",
-        disabled: busy,
+        disabled: busy || !aiAllowed,
         onClick: askSort,
+        title: !aiAllowed ? "AI helper is currently unavailable." : void 0,
         style: {
           alignSelf: "flex-start",
           minHeight: "44px",
@@ -1395,16 +1562,16 @@
           gap: "4px",
           padding: "10px 18px",
           borderRadius: "999px",
-          background: busy ? "#64748b" : "#0f766e",
+          background: busy || !aiAllowed ? "#475569" : "#0f766e",
           color: "#fff",
           border: "none",
           fontWeight: 800,
           fontSize: "12px",
-          cursor: busy ? "wait" : "pointer"
+          cursor: busy ? "wait" : !aiAllowed ? "not-allowed" : "pointer"
         }
       },
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F916} "),
-      busy ? t("scientific.sorting") || "Sorting\u2026" : t("scientific.sort_button") || "Sort my wonderings"
+      !aiAllowed ? "AI helper unavailable" : busy ? t("scientific.sorting") || "Sorting\u2026" : t("scientific.sort_button") || "Sort my wonderings"
     ), aiResult && aiResult.blocked && /* @__PURE__ */ React.createElement(BlockedNote, { t, reason: aiResult.detail || aiResult.blockedReason }), aiResult && !aiResult.blocked && aiResult.data && /* @__PURE__ */ React.createElement(AiResultPanel, { t, data: aiResult.data, primitives }));
   }
   function ModelItStage(props) {
@@ -1430,6 +1597,22 @@
     var _busy = useState(false);
     var busy = _busy[0];
     var setBusy = _busy[1];
+    var mountedRef = useRef(true);
+    var abortRef = useRef(null);
+    useEffect(function() {
+      mountedRef.current = true;
+      return function() {
+        mountedRef.current = false;
+        if (abortRef.current) {
+          try {
+            abortRef.current.abort();
+          } catch (_) {
+          }
+          abortRef.current = null;
+        }
+      };
+    }, []);
+    var aiAllowed = _isScientificAiAllowed();
     var canSave = draft.trim().length >= 30 && ["low", "medium", "high"].includes(conf);
     var saveSnapshot = function() {
       if (!canSave) return;
@@ -1450,13 +1633,27 @@
       });
     };
     var askSurface = async function() {
+      if (!aiAllowed || busy) return;
+      if (abortRef.current) {
+        try {
+          abortRef.current.abort();
+        } catch (_) {
+        }
+      }
+      var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+      abortRef.current = ctrl;
       setBusy(true);
       setAiResult(null);
       try {
-        var res = await ctx.ask(TOUCHPOINTS.model_surfacer, ctx);
-        setAiResult(res);
+        var res = await ctx.ask(TOUCHPOINTS.model_surfacer, ctx, ctrl ? ctrl.signal : void 0);
+        if (mountedRef.current) setAiResult(res);
+      } catch (err) {
+        if (mountedRef.current && (!err || err.name !== "AbortError")) {
+          setAiResult({ blocked: true, detail: err && err.message || "AI couldn't help with that right now." });
+        }
       } finally {
-        setBusy(false);
+        if (abortRef.current === ctrl) abortRef.current = null;
+        if (mountedRef.current) setBusy(false);
       }
     };
     return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "12px" } }, /* @__PURE__ */ React.createElement(
@@ -1485,6 +1682,8 @@
           boxSizing: "border-box",
           padding: "10px",
           borderRadius: "8px",
+          background: "#ffffff",
+          color: "#0f172a",
           border: "1px solid #cbd5e1",
           fontSize: "13px",
           fontFamily: "inherit",
@@ -1492,11 +1691,13 @@
           minHeight: "80px"
         }
       }
-    ), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "8px", display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: "#475569", fontWeight: 700 } }, t("scientific.confidence_label") || "Confidence:"), ["low", "medium", "high"].map(function(c) {
+    ), /* @__PURE__ */ React.createElement("fieldset", { style: { marginTop: "8px", padding: 0, border: "none", display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("legend", { style: { fontSize: "11px", color: "#475569", fontWeight: 700, float: "left", marginRight: "8px", lineHeight: "44px" } }, t("scientific.confidence_label") || "Confidence:"), ["low", "medium", "high"].map(function(c) {
       return /* @__PURE__ */ React.createElement("label", { key: c, style: {
         display: "inline-flex",
         alignItems: "center",
         gap: "4px",
+        minHeight: "44px",
+        padding: "0 4px",
         fontSize: "11px",
         color: "#475569",
         cursor: "pointer"
@@ -1528,6 +1729,8 @@
           boxSizing: "border-box",
           padding: "8px 10px",
           borderRadius: "8px",
+          background: "#ffffff",
+          color: "#0f172a",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
           fontWeight: 400,
@@ -1548,7 +1751,7 @@
           borderRadius: "999px",
           display: "inline-flex",
           alignItems: "center",
-          background: canSave ? "#7c3aed" : "#64748b",
+          background: canSave ? "#7c3aed" : "#475569",
           color: "#fff",
           border: "none",
           fontWeight: 800,
@@ -1561,8 +1764,9 @@
       "button",
       {
         type: "button",
-        disabled: busy,
+        disabled: busy || !aiAllowed,
         onClick: askSurface,
+        title: !aiAllowed ? "AI helper is currently unavailable." : void 0,
         style: {
           minHeight: "44px",
           padding: "8px 14px",
@@ -1570,16 +1774,16 @@
           display: "inline-flex",
           alignItems: "center",
           gap: "4px",
-          background: busy ? "#64748b" : "#0f766e",
+          background: busy || !aiAllowed ? "#475569" : "#0f766e",
           color: "#fff",
           border: "none",
           fontWeight: 800,
           fontSize: "12px",
-          cursor: busy ? "wait" : "pointer"
+          cursor: busy ? "wait" : !aiAllowed ? "not-allowed" : "pointer"
         }
       },
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F916} "),
-      busy ? t("scientific.surfacing") || "Surfacing\u2026" : t("scientific.surface_button") || "Surface my model"
+      !aiAllowed ? "AI helper unavailable" : busy ? t("scientific.surfacing") || "Surfacing\u2026" : t("scientific.surface_button") || "Surface my model"
     ))), aiResult && aiResult.blocked && /* @__PURE__ */ React.createElement(BlockedNote, { t, reason: aiResult.detail || aiResult.blockedReason }), aiResult && !aiResult.blocked && aiResult.data && /* @__PURE__ */ React.createElement(AiResultPanel, { t, data: aiResult.data, primitives }));
   }
   function PlanStage(props) {
@@ -1600,6 +1804,8 @@
     var setCantTell = _cant[1];
     useEffect(function() {
       setJournal(function(prev) {
+        var cur = (prev && prev.stageNotes || {}).plan || {};
+        if ((cur.method || "") === method && (cur.text || "") === whyFits && (cur.cantTell || "") === cantTell) return prev;
         var next = Object.assign({}, prev);
         next.stageNotes = Object.assign({}, prev.stageNotes || {});
         next.stageNotes.plan = Object.assign({}, next.stageNotes.plan || {}, {
@@ -1666,6 +1872,8 @@
           padding: "10px",
           borderRadius: "8px",
           border: "1px solid #cbd5e1",
+          background: "#ffffff",
+          color: "#0f172a",
           fontSize: "12px",
           fontWeight: 400,
           fontFamily: "inherit",
@@ -1689,13 +1897,15 @@
           padding: "10px",
           borderRadius: "8px",
           border: "1px solid #cbd5e1",
+          background: "#ffffff",
+          color: "#0f172a",
           fontSize: "12px",
           fontWeight: 400,
           fontFamily: "inherit",
           resize: "vertical"
         }
       }
-    ))), /* @__PURE__ */ React.createElement("p", { style: { margin: "6px 0 0", fontSize: "11px", color: "#64748b", fontStyle: "italic" } }, t("scientific.plan_no_ai_note") || "There's no AI helper on this stage by design \u2014 picking a method is your call."));
+    ))), /* @__PURE__ */ React.createElement("p", { style: { margin: "6px 0 0", fontSize: "11px", color: "#475569", fontStyle: "italic" } }, t("scientific.plan_no_ai_note") || "There's no AI helper on this stage by design \u2014 picking a method is your call."));
   }
   function GatherStage(props) {
     var t = props.t;
@@ -1704,8 +1914,8 @@
     var setJournal = ctx.setJournal;
     var primitives = ctx.primitives;
     var VoiceNoteBlock = primitives.VoiceNoteBlock;
-    var evidence = (journal.evidenceCards || []).filter(function(c) {
-      return c.tag !== "wondering";
+    var evidence = (Array.isArray(journal.evidenceCards) ? journal.evidenceCards : []).filter(function(c) {
+      return c && typeof c === "object" && c.tag !== "wondering";
     });
     var _adding = useState({ text: "", surprise: false });
     var addingDraft = _adding[0];
@@ -1770,6 +1980,8 @@
           boxSizing: "border-box",
           padding: "8px 10px",
           borderRadius: "8px",
+          background: "#ffffff",
+          color: "#0f172a",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
           fontFamily: "inherit"
@@ -1812,7 +2024,7 @@
     var t = props.t;
     var cards = props.cards || [];
     var accent = props.accent || "#475569";
-    return /* @__PURE__ */ React.createElement("div", { style: { padding: "10px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("h5", { style: { margin: "0 0 6px", fontSize: "11px", fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: "0.4px" } }, /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", width: "8px", height: "8px", background: accent, borderRadius: "50%", marginRight: "6px" }, "aria-hidden": "true" }), props.title, " ", /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 700, color: "#64748b", textTransform: "none" } }, "(", cards.length, ")")), cards.length === 0 ? /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "11px", color: "#64748b", fontStyle: "italic" } }, t("scientific.no_evidence_yet") || "Nothing yet.") : /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "6px" } }, cards.map(function(c) {
+    return /* @__PURE__ */ React.createElement("div", { style: { padding: "10px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("h5", { style: { margin: "0 0 6px", fontSize: "11px", fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: "0.4px" } }, /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", width: "8px", height: "8px", background: accent, borderRadius: "50%", marginRight: "6px" }, "aria-hidden": "true" }), props.title, " ", /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 700, color: "#475569", textTransform: "none" } }, "(", cards.length, ")")), cards.length === 0 ? /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "11px", color: "#475569", fontStyle: "italic" } }, t("scientific.no_evidence_yet") || "Nothing yet.") : /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "6px" } }, cards.map(function(c) {
       return /* @__PURE__ */ React.createElement("li", { key: c.id, style: {
         padding: "6px 8px",
         borderRadius: "8px",
@@ -1822,7 +2034,7 @@
         display: "flex",
         gap: "6px",
         alignItems: "flex-start"
-      } }, /* @__PURE__ */ React.createElement("span", { style: { flex: 1, lineHeight: 1.5 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", color: "#64748b" } }, new Date(c.ts || 0).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })), " ", c.text), /* @__PURE__ */ React.createElement(
+      } }, /* @__PURE__ */ React.createElement("span", { style: { flex: 1, lineHeight: 1.5 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", color: "#475569" } }, new Date(c.ts || 0).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })), " ", c.text), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -1830,7 +2042,7 @@
             props.onRemove(c.id);
           },
           "aria-label": "Remove evidence card",
-          style: { minWidth: "44px", minHeight: "44px", display: "inline-flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", color: "#64748b", cursor: "pointer" }
+          style: { minWidth: "44px", minHeight: "44px", display: "inline-flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", color: "#475569", cursor: "pointer" }
         },
         "\u2715"
       ));
@@ -1864,6 +2076,22 @@
     var _aiResult = useState(null);
     var aiResult = _aiResult[0];
     var setAiResult = _aiResult[1];
+    var mountedRef = useRef(true);
+    var abortRef = useRef(null);
+    useEffect(function() {
+      mountedRef.current = true;
+      return function() {
+        mountedRef.current = false;
+        if (abortRef.current) {
+          try {
+            abortRef.current.abort();
+          } catch (_) {
+          }
+          abortRef.current = null;
+        }
+      };
+    }, []);
+    var aiAllowed = _isScientificAiAllowed();
     useEffect(function() {
       var assumpsArr = asA.split("\n").map(function(s) {
         return s.trim();
@@ -1872,6 +2100,10 @@
         return s.trim();
       }).filter(Boolean);
       setJournal(function(prev) {
+        var cur = (prev && prev.stageNotes || {}).interpret_argue || {};
+        var curA = Array.isArray(cur.studentSideAssumptionsRequired) ? cur.studentSideAssumptionsRequired.join("\n") : "";
+        var curD = Array.isArray(cur.studentSideDisconfirmers) ? cur.studentSideDisconfirmers.join("\n") : "";
+        if ((cur.text || "") === reading && (cur.steelmanText || "") === steelman && curA === assumpsArr.join("\n") && curD === discsArr.join("\n") && (cur.comparisonText || "") === comp) return prev;
         var next = Object.assign({}, prev);
         next.stageNotes = Object.assign({}, prev.stageNotes || {});
         next.stageNotes.interpret_argue = Object.assign({}, next.stageNotes.interpret_argue || {}, {
@@ -1886,13 +2118,27 @@
       });
     }, [reading, steelman, asA, disC, comp]);
     var askAnother = async function() {
+      if (!aiAllowed || busy) return;
+      if (abortRef.current) {
+        try {
+          abortRef.current.abort();
+        } catch (_) {
+        }
+      }
+      var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+      abortRef.current = ctrl;
       setBusy(true);
       setAiResult(null);
       try {
-        var res = await ctx.ask(TOUCHPOINTS.steelman_second_pass, ctx);
-        setAiResult(res);
+        var res = await ctx.ask(TOUCHPOINTS.steelman_second_pass, ctx, ctrl ? ctrl.signal : void 0);
+        if (mountedRef.current) setAiResult(res);
+      } catch (err) {
+        if (mountedRef.current && (!err || err.name !== "AbortError")) {
+          setAiResult({ blocked: true, detail: err && err.message || "AI couldn't help with that right now." });
+        }
       } finally {
-        setBusy(false);
+        if (abortRef.current === ctrl) abortRef.current = null;
+        if (mountedRef.current) setBusy(false);
       }
     };
     var canAsk = reading.trim().length >= 40 && steelman.trim().length >= 50 && asA.split("\n").filter(function(s) {
@@ -1958,8 +2204,9 @@
       "button",
       {
         type: "button",
-        disabled: busy || !canAsk,
+        disabled: busy || !canAsk || !aiAllowed,
         onClick: askAnother,
+        title: !aiAllowed ? "AI helper is currently unavailable." : void 0,
         style: {
           alignSelf: "flex-start",
           minHeight: "44px",
@@ -1968,16 +2215,16 @@
           gap: "4px",
           padding: "10px 18px",
           borderRadius: "999px",
-          background: busy || !canAsk ? "#64748b" : "#15803d",
+          background: busy || !canAsk || !aiAllowed ? "#475569" : "#15803d",
           color: "#fff",
           border: "none",
           fontWeight: 800,
           fontSize: "12px",
-          cursor: busy || !canAsk ? "not-allowed" : "pointer"
+          cursor: busy || !canAsk || !aiAllowed ? "not-allowed" : "pointer"
         }
       },
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F916} "),
-      busy ? t("scientific.asking") || "Asking\u2026" : t("scientific.ask_another_button") || "Show me another reading"
+      !aiAllowed ? "AI helper unavailable" : busy ? t("scientific.asking") || "Asking\u2026" : t("scientific.ask_another_button") || "Show me another reading"
     ), aiResult && aiResult.blocked && /* @__PURE__ */ React.createElement(BlockedNote, { t, reason: aiResult.detail || aiResult.blockedReason }), aiResult && !aiResult.blocked && aiResult.data && /* @__PURE__ */ React.createElement(AiResultPanel, { t, data: aiResult.data, primitives }), (aiResult && !aiResult.blocked || (journal.aiHistory || []).some(function(h) {
       return h && h.touchpoint === "steelman_second_pass" && !h.blocked;
     }) || !!(comp && comp.trim())) && /* @__PURE__ */ React.createElement(
@@ -2010,6 +2257,8 @@
           padding: "10px",
           borderRadius: "8px",
           border: "1px solid #cbd5e1",
+          background: "#ffffff",
+          color: "#0f172a",
           fontSize: "12px",
           fontWeight: 400,
           fontFamily: "inherit",
@@ -2049,8 +2298,26 @@
     var _adding = useState("");
     var adding = _adding[0];
     var setAdding = _adding[1];
+    var mountedRef = useRef(true);
+    var abortRef = useRef(null);
+    useEffect(function() {
+      mountedRef.current = true;
+      return function() {
+        mountedRef.current = false;
+        if (abortRef.current) {
+          try {
+            abortRef.current.abort();
+          } catch (_) {
+          }
+          abortRef.current = null;
+        }
+      };
+    }, []);
+    var aiAllowed = _isScientificAiAllowed();
     useEffect(function() {
       setJournal(function(prev) {
+        var cur = (prev && prev.stageNotes || {}).revise_share || {};
+        if ((cur.revisionReflection || "") === refl) return prev;
         var next = Object.assign({}, prev);
         next.stageNotes = Object.assign({}, prev.stageNotes || {});
         next.stageNotes.revise_share = Object.assign({}, next.stageNotes.revise_share || {}, {
@@ -2095,7 +2362,7 @@
       setJournal(function(prev) {
         var next = Object.assign({}, prev);
         next.claims = (prev.claims || []).map(function(c) {
-          if (c.id !== id) return c;
+          if (!c || c.id !== id) return c;
           return Object.assign({}, c, { label, staleLabel: false });
         });
         return next;
@@ -2105,22 +2372,37 @@
       setJournal(function(prev) {
         var next = Object.assign({}, prev);
         next.claims = (prev.claims || []).filter(function(c) {
-          return c.id !== id;
+          return c && c.id !== id;
         });
         return next;
       });
     };
     var askQuestion = async function() {
+      if (!aiAllowed || busy) return;
+      if (abortRef.current) {
+        try {
+          abortRef.current.abort();
+        } catch (_) {
+        }
+      }
+      var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+      abortRef.current = ctrl;
       setBusy(true);
       setAiResult(null);
       try {
-        var res = await ctx.ask(TOUCHPOINTS.honest_uncertainty, ctx);
-        setAiResult(res);
+        var res = await ctx.ask(TOUCHPOINTS.honest_uncertainty, ctx, ctrl ? ctrl.signal : void 0);
+        if (mountedRef.current) setAiResult(res);
+      } catch (err) {
+        if (mountedRef.current && (!err || err.name !== "AbortError")) {
+          setAiResult({ blocked: true, detail: err && err.message || "AI couldn't help with that right now." });
+        }
       } finally {
-        setBusy(false);
+        if (abortRef.current === ctrl) abortRef.current = null;
+        if (mountedRef.current) setBusy(false);
       }
     };
-    var canAsk = claims.length >= 2 && claims.every(function(c) {
+    var safeClaims = Array.isArray(claims) ? claims.filter(Boolean) : [];
+    var canAsk = safeClaims.length >= 2 && safeClaims.every(function(c) {
       return c.text && c.text.length >= 25 && ["supported", "overreach", "still_unknown"].includes(c.label);
     });
     return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "12px" } }, /* @__PURE__ */ React.createElement(
@@ -2148,17 +2430,19 @@
           boxSizing: "border-box",
           padding: "10px",
           borderRadius: "8px",
+          background: "#ffffff",
+          color: "#0f172a",
           border: "1px solid #cbd5e1",
           fontSize: "13px",
           fontFamily: "inherit",
           resize: "vertical"
         }
       }
-    ), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "6px", display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: "#475569", fontWeight: 700 } }, "Confidence:"), ["low", "medium", "high"].map(function(c) {
-      return /* @__PURE__ */ React.createElement("label", { key: c, style: { display: "inline-flex", alignItems: "center", gap: "3px", fontSize: "11px", color: "#475569", cursor: "pointer" } }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "rev-conf", value: c, checked: revConf === c, onChange: function() {
+    ), /* @__PURE__ */ React.createElement("div", { style: { marginTop: "6px", display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" } }, /* @__PURE__ */ React.createElement("fieldset", { style: { padding: 0, margin: 0, border: "none", display: "inline-flex", gap: "8px", flexWrap: "wrap", alignItems: "center" } }, /* @__PURE__ */ React.createElement("legend", { style: { fontSize: "11px", color: "#475569", fontWeight: 700, float: "left", marginRight: "6px", lineHeight: "44px" } }, "Confidence:"), ["low", "medium", "high"].map(function(c) {
+      return /* @__PURE__ */ React.createElement("label", { key: c, style: { display: "inline-flex", alignItems: "center", gap: "3px", minHeight: "44px", padding: "0 4px", fontSize: "11px", color: "#475569", cursor: "pointer" } }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "rev-conf", value: c, checked: revConf === c, onChange: function() {
         setRevConf(c);
       } }), c);
-    }), /* @__PURE__ */ React.createElement(
+    })), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -2170,7 +2454,7 @@
           borderRadius: "999px",
           display: "inline-flex",
           alignItems: "center",
-          background: revised.trim().length < 30 || !revConf ? "#64748b" : "#7c3aed",
+          background: revised.trim().length < 30 || !revConf ? "#475569" : "#7c3aed",
           color: "#fff",
           border: "none",
           fontWeight: 700,
@@ -2195,6 +2479,8 @@
           width: "100%",
           boxSizing: "border-box",
           padding: "8px 10px",
+          background: "#ffffff",
+          color: "#0f172a",
           borderRadius: "8px",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
@@ -2232,6 +2518,8 @@
           minHeight: "44px",
           padding: "8px 10px",
           borderRadius: "8px",
+          background: "#ffffff",
+          color: "#0f172a",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
           fontFamily: "inherit"
@@ -2260,7 +2548,7 @@
         }
       },
       "+"
-    )), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "8px" } }, claims.map(function(c, idx) {
+    )), /* @__PURE__ */ React.createElement("ul", { style: { margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "8px" } }, safeClaims.map(function(c, idx) {
       return /* @__PURE__ */ React.createElement("li", { key: c.id, style: {
         padding: "8px 10px",
         borderRadius: "10px",
@@ -2277,6 +2565,7 @@
           {
             key: opt.k,
             type: "button",
+            "aria-pressed": selected,
             onClick: function() {
               setClaimLabel(c.id, opt.k);
             },
@@ -2304,7 +2593,7 @@
             removeClaim(c.id);
           },
           "aria-label": "Remove claim",
-          style: { marginLeft: "auto", minWidth: "44px", minHeight: "44px", display: "inline-flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", color: "#64748b", cursor: "pointer", fontSize: "12px" }
+          style: { marginLeft: "auto", minWidth: "44px", minHeight: "44px", display: "inline-flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", color: "#475569", cursor: "pointer", fontSize: "12px" }
         },
         "\u2715"
       )));
@@ -2312,8 +2601,9 @@
       "button",
       {
         type: "button",
-        disabled: busy || !canAsk,
+        disabled: busy || !canAsk || !aiAllowed,
         onClick: askQuestion,
+        title: !aiAllowed ? "AI helper is currently unavailable." : void 0,
         style: {
           alignSelf: "flex-start",
           minHeight: "44px",
@@ -2322,16 +2612,16 @@
           gap: "4px",
           padding: "10px 18px",
           borderRadius: "999px",
-          background: busy || !canAsk ? "#64748b" : "#4338ca",
+          background: busy || !canAsk || !aiAllowed ? "#475569" : "#4338ca",
           color: "#fff",
           border: "none",
           fontWeight: 800,
           fontSize: "12px",
-          cursor: busy || !canAsk ? "not-allowed" : "pointer"
+          cursor: busy || !canAsk || !aiAllowed ? "not-allowed" : "pointer"
         }
       },
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F916} "),
-      busy ? t("scientific.questioning") || "Questioning\u2026" : t("scientific.question_my_labels") || "Question my labels"
+      !aiAllowed ? "AI helper unavailable" : busy ? t("scientific.questioning") || "Questioning\u2026" : t("scientific.question_my_labels") || "Question my labels"
     ), aiResult && aiResult.blocked && /* @__PURE__ */ React.createElement(BlockedNote, { t, reason: aiResult.detail || aiResult.blockedReason }), aiResult && !aiResult.blocked && aiResult.data && /* @__PURE__ */ React.createElement(AiResultPanel, { t, data: aiResult.data, primitives }));
   }
   function BlockedNote(props) {
@@ -2370,9 +2660,10 @@
       setJournal(function(prev) {
         return Object.assign({}, prev, { activeStage: toStage });
       });
-      announce((t("scientific.sr_now_on") || "Now on: ") + (STAGE_BY_KEY[toStage] && STAGE_BY_KEY[toStage].label || toStage), "polite");
+      announce((t("scientific.sr_now_on") || "Now on: ") + (_stageByKey(toStage) && _stageByKey(toStage).label || toStage), "polite");
     }, [activeStage]);
     var commitLoopBack = useCallback(function(payload) {
+      if (!loopback) return;
       var fromStage = loopback.fromStage;
       var toStage = loopback.toStage;
       setJournal(function(prev) {
@@ -2404,7 +2695,7 @@
         return next;
       });
       setLoopback(null);
-      announce((t("scientific.sr_looped_back") || "Looped back to ") + (STAGE_BY_KEY[toStage] && STAGE_BY_KEY[toStage].label || toStage) + ". " + (t("scientific.sr_work_preserved") || "Your earlier work is preserved; you can return to where you were."), "polite");
+      announce((t("scientific.sr_looped_back") || "Looped back to ") + (_stageByKey(toStage) && _stageByKey(toStage).label || toStage) + ". " + (t("scientific.sr_work_preserved") || "Your earlier work is preserved; you can return to where you were."), "polite");
     }, [loopback]);
     var returnToOrigin = useCallback(function() {
       if (!journal.pendingLoopReturn) return;
@@ -2467,7 +2758,7 @@
         journalStageNotes: journal.stageNotes || {},
         modelSnapshotCount: (journal.modelSnapshots || []).length
       }
-    ), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: "200px" } }, /* @__PURE__ */ React.createElement("h3", { style: { margin: 0, fontSize: "17px", fontWeight: 800, color: "#1e293b" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, STAGE_BY_KEY[activeStage].icon + " "), STAGE_BY_KEY[activeStage].label), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 0", fontSize: "12px", color: "#64748b", lineHeight: 1.5 } }, t("scientific.stage_intro_" + activeStage) || ""))), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: "200px" } }, /* @__PURE__ */ React.createElement("h3", { style: { margin: 0, fontSize: "17px", fontWeight: 800, color: "#1e293b" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, _stageByKey(activeStage) ? _stageByKey(activeStage).icon + " " : ""), _stageByKey(activeStage) ? _stageByKey(activeStage).label : activeStage), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 0", fontSize: "12px", color: "#475569", lineHeight: 1.5 } }, t("scientific.stage_intro_" + activeStage) || ""))), /* @__PURE__ */ React.createElement(
       StageChipStrip,
       {
         activeStage,
@@ -2525,8 +2816,8 @@
         }
       },
       /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u21AA\uFE0F "),
-      (t("scientific.return_to_where_i_was") || "Return to where I was: ") + (STAGE_BY_KEY[journal.pendingLoopReturn.fromStage] ? STAGE_BY_KEY[journal.pendingLoopReturn.fromStage].label : "")
-    ), activeStage === "notice_wonder" && /* @__PURE__ */ React.createElement(NoticeWonderStage, { t, ctx: laneCtx }), activeStage === "model_it" && /* @__PURE__ */ React.createElement(ModelItStage, { t, ctx: laneCtx }), activeStage === "plan" && /* @__PURE__ */ React.createElement(PlanStage, { t, ctx: laneCtx }), activeStage === "gather" && /* @__PURE__ */ React.createElement(GatherStage, { t, ctx: laneCtx }), activeStage === "interpret_argue" && /* @__PURE__ */ React.createElement(InterpretArgueStage, { t, ctx: laneCtx }), activeStage === "revise_share" && /* @__PURE__ */ React.createElement(ReviseShareStage, { t, ctx: laneCtx }), /* @__PURE__ */ React.createElement("details", { style: {
+      (t("scientific.return_to_where_i_was") || "Return to where I was: ") + (_stageByKey(journal.pendingLoopReturn.fromStage) ? _stageByKey(journal.pendingLoopReturn.fromStage).label : "")
+    ), /* @__PURE__ */ React.createElement("div", { role: "tabpanel", id: "sci-stage-panel", "aria-labelledby": "sci-tab-" + activeStage }, activeStage === "notice_wonder" && /* @__PURE__ */ React.createElement(NoticeWonderStage, { t, ctx: laneCtx }), activeStage === "model_it" && /* @__PURE__ */ React.createElement(ModelItStage, { t, ctx: laneCtx }), activeStage === "plan" && /* @__PURE__ */ React.createElement(PlanStage, { t, ctx: laneCtx }), activeStage === "gather" && /* @__PURE__ */ React.createElement(GatherStage, { t, ctx: laneCtx }), activeStage === "interpret_argue" && /* @__PURE__ */ React.createElement(InterpretArgueStage, { t, ctx: laneCtx }), activeStage === "revise_share" && /* @__PURE__ */ React.createElement(ReviseShareStage, { t, ctx: laneCtx })), primitives && primitives.ExemplarPair && /* @__PURE__ */ React.createElement("details", { style: {
       padding: "10px 14px",
       borderRadius: "12px",
       background: "#f5f3ff",

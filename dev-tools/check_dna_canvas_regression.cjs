@@ -91,7 +91,7 @@ async function canvasTick(locator, key) {
     assert.deepStrictEqual(pageErrors, [], 'Translation canvas threw: ' + pageErrors.join(' | '));
 
     await setDNA(page, { tab: 'replicate', replStep: 0, replPlaying: true, speed: 0.25 });
-    const replication = page.locator('canvas[aria-label^="Replication:"]');
+    const replication = page.locator('#dna-repl-canvas, canvas[aria-label^="Replication"]');
     await replication.waitFor();
     await replication.scrollIntoViewIfNeeded();
     await page.waitForTimeout(180);
@@ -138,7 +138,7 @@ async function canvasTick(locator, key) {
 
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await setDNA(page, { tab: 'forensics', forensicCase: 0, forensicGelRun: true });
-    const gel = page.locator('canvas[aria-label="Gel electrophoresis results"]');
+    const gel = page.locator('canvas[aria-label^="Gel electrophoresis results"]');
     await gel.waitFor();
     await gel.scrollIntoViewIfNeeded();
     await page.waitForTimeout(3250);
@@ -155,7 +155,7 @@ async function canvasTick(locator, key) {
       crisprScanPos: 0,
       speed: 1
     });
-    const crispr = page.locator('canvas[aria-label^="CRISPR:"]');
+    const crispr = page.locator('#dna-crispr-canvas, canvas[aria-label^="CRISPR"]');
     await crispr.waitFor();
     await crispr.scrollIntoViewIfNeeded();
     await page.waitForTimeout(150);

@@ -8,6 +8,10 @@
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const { distractorFeedbackFor } = require('./ap_us_government_distractor_feedback/index.cjs');
+const {
+  applyApUsGovChoiceOverride,
+  AP_US_GOVERNMENT_LIBRARY_CHECKS,
+} = require('./ap_us_government_choice_overrides/index.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_us_government_foundation_pilot.json');
@@ -523,7 +527,9 @@ function buildObjectiveCatalog() {
   });
 }
 
-function buildItem(spec, index, objectiveCatalog) {
+function buildItem(rawSpec, index, objectiveCatalog) {
+  const itemId = 'ap-usg-u' + rawSpec.unit + '-' + String(index + 1).padStart(3, '0');
+  const spec = applyApUsGovChoiceOverride(itemId, rawSpec);
   const unit = unitByNumber.get(spec.unit);
   const topic = topicById.get(spec.topicId);
   const objective = objectiveCatalog.find((candidate) => candidate.topicId === spec.topicId);
@@ -535,7 +541,6 @@ function buildItem(spec, index, objectiveCatalog) {
   for (let choiceIndex = 0; choiceIndex < 4; choiceIndex += 1) {
     choices[choiceIndex] = choiceIndex === answerIndex ? spec.answer : baseChoices[1 + distractorIndex++];
   }
-  const itemId = 'ap-usg-u' + spec.unit + '-' + String(index + 1).padStart(3, '0');
   // Every distractor carries its own explanation, authored per item in
   // ap_us_government_distractor_feedback/. A missing entry fails the build
   // rather than falling back to a generic sentence.
@@ -991,25 +996,24 @@ function buildLibrary(objectiveCatalog) {
       };
     });
     const chapterObjective = objectiveCatalog.find((objective) => objective.domainId === unit.id);
-    const knowledgeChecks = sections.map((section, sectionIndex) => ({
-      id: section.id + '-check',
-      chapterId,
-      sectionId: section.id,
-      type: 'single-choice',
-      prompt: 'Which study move best supports accurate reasoning in ' + unit.shortLabel + '?',
-      choices: [
-        'Identify the governing concept, connect it to evidence, and state the limit of the conclusion.',
-        'Choose the longest option because length guarantees constitutional accuracy.',
-        'Treat every political claim as equally supported without checking the evidence.',
-        'Memorize a label without identifying the institution or process involved.',
-      ],
-      answerIndex: 0,
-      rationale: 'AP U.S. Government reasoning improves when the learner names the concept, links it to evidence, and avoids claims broader than the evidence.',
-      references: [CED_URL, COURSE_URL, OPENSTAX_URL],
-      reviewStatus: 'source-reviewed-editorial-pass',
-      reviewNote: 'Original retrieval check; independent subject-expert and psychometric review remain pending.',
-      skillId: chapterObjective ? chapterObjective.skillIds[sectionIndex % chapterObjective.skillIds.length] : '1.A',
-    }));
+    const knowledgeChecks = sections.map((section, sectionIndex) => {
+      const checkSpec = AP_US_GOVERNMENT_LIBRARY_CHECKS[section.id];
+      assert(checkSpec, 'Missing section knowledge check for ' + section.id);
+      return {
+        id: section.id + '-check',
+        chapterId,
+        sectionId: section.id,
+        type: 'single-choice',
+        prompt: checkSpec.prompt,
+        choices: checkSpec.choices,
+        answerIndex: checkSpec.answerIndex,
+        rationale: checkSpec.rationale,
+        references: [CED_URL, COURSE_URL, OPENSTAX_URL],
+        reviewStatus: 'source-reviewed-editorial-pass',
+        reviewNote: 'Original retrieval check; independent subject-expert and psychometric review remain pending.',
+        skillId: chapterObjective ? chapterObjective.skillIds[sectionIndex % chapterObjective.skillIds.length] : '1.A',
+      };
+    });
     return {
       id: chapterId,
       title: unit.label,

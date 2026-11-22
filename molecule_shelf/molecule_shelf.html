@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net blob:; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: blob:; font-src 'self' https://cdn.jsdelivr.net data:; connect-src 'self' blob: data: https://files.rcsb.org https://models.rcsb.org https://data.rcsb.org https://www.ebi.ac.uk https://cdn.jsdelivr.net; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none';">
 <title>AlloFlow Molecule Shelf</title>
 <!--
   AlloFlow Molecule Shelf — Mol* viewer + Notice-Wonder coach (companion window).
@@ -38,37 +39,91 @@
     document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
     return theme;
   }
+  var params = new URLSearchParams(window.location.search);
+  var declaredHostOrigin = (function () {
+    var raw = params.get('host');
+    if (!raw) return '';
+    try {
+      var u = new URL(raw);
+      return u.protocol === 'https:' || u.protocol === 'http:' ? u.origin : '';
+    } catch (_) { return ''; }
+  })();
+  function isTrustedThemeOrigin(origin) {
+    var o = String(origin || '');
+    if (!o || o === 'null') return false;
+    try {
+      if (window.location && window.location.origin && o === window.location.origin) return true;
+      var u = new URL(o);
+      var host = (u.hostname || '').toLowerCase();
+      if ((u.protocol === 'http:' || u.protocol === 'https:') && /^(localhost|127\.0\.0\.1|\[::1\]|::1)$/.test(host)) return true;
+      if (u.protocol !== 'https:') return false;
+      if (host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
+          host === 'alloflow.org' || /\.alloflow\.org$/.test(host)) return true;
+      if (/\.usercontent\.goog$/.test(host) && declaredHostOrigin && u.origin === declaredHostOrigin) return true;
+      return false;
+    } catch (_) { return false; }
+  }
   window.applyAlloFlowTheme = applyAlloFlowTheme;
-  applyAlloFlowTheme(new URLSearchParams(window.location.search).get('theme'));
+  applyAlloFlowTheme(params.get('theme'));
+  window.addEventListener('message', function (event) {
+    if (!event || !window.opener || event.source !== window.opener) return;
+    if (!isTrustedThemeOrigin(event.origin)) return;
+    var data = event.data;
+    if (!data || data.type !== 'alloflow-theme-change') return;
+    applyAlloFlowTheme(data.theme);
+  });
 })();
 </script>
 <style>
   :root {
-    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
-    --text: #e2e8f0; --dim: #94a3b8; --accent: #818cf8; --accent2: #6366f1; --ok: #4ade80; --warn: #fbbf24;
+    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #475569;
+    --text: #f1f5f9; --dim: #cbd5e1; --heading: #c7d2fe; --focus: #a5b4fc;
+    --accent: #a5b4fc; --accent2: #4f46e5; --btn-fg: #ffffff;
+    --tab-active-bg: #312e81; --tab-active-fg: #e0e7ff;
+    --backbar-bg: rgba(15, 23, 42, 0.92); --backbar-fg: #f8fafc;
+    --ok: #4ade80; --warn: #fbbf24; --err: #fca5a5;
   }
   :root[data-theme="light"] {
     --bg: #f8fafc; --panel: #ffffff; --panel2: #f1f5f9; --stage: #e2e8f0;
-    --line: #64748b; --line2: #475569; --text: #0f172a; --dim: #475569;
-    --muted: #475569; --soft: #334155; --accent: #1d4ed8; --accent2: #4338ca;
+    --line: #64748b; --line2: #475569; --text: #0f172a; --dim: #334155;
+    --heading: #312e81; --focus: #1d4ed8; --btn-fg: #ffffff;
+    --tab-active-bg: #312e81; --tab-active-fg: #ffffff;
+    --backbar-bg: rgba(255, 255, 255, 0.96); --backbar-fg: #0f172a;
+    --muted: #334155; --soft: #334155; --accent: #1d4ed8; --accent2: #4338ca;
     --teal: #0f766e; --teal2: #115e59; --sky: #0369a1; --amber: #92400e;
-    --red: #b91c1c; --green: #047857; --violet: #6d28d9; --ok: #047857; --warn: #92400e;
+    --red: #b91c1c; --green: #047857; --violet: #6d28d9; --ok: #047857; --warn: #92400e; --err: #b91c1c;
   }
   :root[data-theme="contrast"] {
     --bg: #000000; --panel: #000000; --panel2: #0a0a0a; --stage: #000000;
     --line: #fbbf24; --line2: #ffff00; --text: #ffffff; --dim: #ffffff;
+    --heading: #ffff00; --focus: #ffff00; --btn-fg: #000000;
+    --tab-active-bg: #fbbf24; --tab-active-fg: #000000;
+    --backbar-bg: #000000; --backbar-fg: #ffffff;
     --muted: #ffffff; --soft: #ffffff; --accent: #fbbf24; --accent2: #fbbf24;
     --teal: #00ffff; --teal2: #00ffff; --sky: #00ffff; --amber: #ffff00;
-    --red: #ff6b6b; --green: #00ff66; --violet: #ffff00; --ok: #00ff66; --warn: #ffff00;
+    --red: #ff6b6b; --green: #00ff66; --violet: #ffff00; --ok: #00ff66; --warn: #ffff00; --err: #ff6b6b;
   }
   :root[data-theme="contrast"] * { box-shadow: none !important; text-shadow: none !important; }
   :root[data-theme="contrast"] button,
   :root[data-theme="contrast"] input,
   :root[data-theme="contrast"] select,
-  :root[data-theme="contrast"] textarea { border-color: var(--line) !important; }
-  :focus-visible { outline: 3px solid var(--line); outline-offset: 2px; }
+  :root[data-theme="contrast"] textarea { border: 1px solid var(--line) !important; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   @media (forced-colors: active) {
+    :root, :root[data-theme] {
+      --bg: Canvas; --panel: Canvas; --panel2: Canvas; --stage: Canvas;
+      --line: CanvasText; --line2: CanvasText; --text: CanvasText; --dim: CanvasText;
+      --heading: CanvasText; --focus: Highlight; --accent: LinkText; --accent2: Highlight;
+      --btn-fg: HighlightText; --tab-active-bg: Highlight; --tab-active-fg: HighlightText;
+      --backbar-bg: Canvas; --backbar-fg: CanvasText; --ok: CanvasText; --warn: CanvasText; --err: CanvasText;
+    }
+    .loadmsg { background: Canvas !important; color: CanvasText !important; border: 1px solid CanvasText; }
+    button.go, .skip-link:focus { background: Highlight !important; color: HighlightText !important; border: 1px solid Highlight !important; }
     button, input, select, textarea, a { forced-color-adjust: auto; }
+    :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -76,29 +131,32 @@
   header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; flex-wrap: wrap; }
   header h1 { font-size: 15px; margin: 0; font-weight: 700; }
   header .sub { color: var(--dim); font-size: 11.5px; }
-  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 13px; max-width: 46vw; }
+  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; min-height: 36px; font-size: 13px; max-width: 46vw; }
   .wrap { flex: 1 1 auto; display: flex; min-height: 0; }
   .coach { flex: 0 0 330px; display: flex; flex-direction: column; background: var(--panel); border-right: 1px solid var(--line); min-width: 0; overflow-y: auto; }
-  .coach h2 { font-size: 12px; margin: 0; padding: 10px 12px 4px; color: #c7d2fe; text-transform: uppercase; letter-spacing: 0.06em; }
+  .coach h2 { font-size: 12px; margin: 0; padding: 10px 12px 4px; color: var(--heading); text-transform: uppercase; letter-spacing: 0.06em; }
   .ai-state { padding: 0 12px 6px; font-size: 11.5px; color: var(--dim); }
   .ai-state .on { color: var(--ok); font-weight: 700; }
   .ai-state .off { color: var(--warn); font-weight: 700; }
   .steps { display: flex; gap: 4px; padding: 4px 12px 8px; }
-  .steps button { flex: 1; background: var(--panel2); color: var(--dim); border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; font-size: 11.5px; font-weight: 700; cursor: pointer; }
-  .steps button[aria-selected="true"] { background: #312e81; color: #e0e7ff; border-color: var(--accent); }
+  .steps button { flex: 1; background: var(--panel2); color: var(--dim); border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; min-height: 36px; font-size: 11.5px; font-weight: 700; cursor: pointer; }
+  .steps button[aria-selected="true"] { background: var(--tab-active-bg); color: var(--tab-active-fg); border-color: var(--accent); }
   .steps button.done { color: var(--ok); }
+  .steps button.done[aria-selected="true"] { color: var(--tab-active-fg); }
   .body { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
   .qcard { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; font-size: 13px; line-height: 1.5; }
   textarea { width: 100%; min-height: 84px; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical; }
-  button.go { background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
-  button.go:disabled { background: #3f3f5a; color: #7d7da0; cursor: not-allowed; }
-  .locked { background: rgba(129, 140, 248, 0.10); border: 1px solid rgba(129, 140, 248, 0.35); border-radius: 10px; padding: 8px 11px; font-size: 12.5px; white-space: pre-wrap; }
+  button.go { background: var(--accent2); color: var(--btn-fg); border: 1px solid transparent; border-radius: 8px; padding: 9px 14px; min-height: 40px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  button.go:disabled { opacity: 0.65; cursor: not-allowed; }
+  .locked { background: rgba(129, 140, 248, 0.12); border: 1px solid var(--line); border-radius: 10px; padding: 8px 11px; font-size: 12.5px; white-space: pre-wrap; }
   .locked b { color: var(--accent); }
+  .field-err { color: var(--err); font-size: 12px; font-weight: 600; }
   ul.hints { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--dim); line-height: 1.6; }
-  .feedback { background: var(--panel2); border: 1px solid #4c1d95; border-radius: 10px; padding: 9px 11px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
-  .privacy { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 10.5px; color: #94a3b8; line-height: 1.45; margin-top: auto; }
+  .feedback { background: var(--panel2); border: 1px solid var(--accent); border-radius: 10px; padding: 9px 11px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+  .privacy { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 11px; color: var(--dim); line-height: 1.45; margin-top: auto; }
   .stage { flex: 1 1 auto; min-width: 0; background: #000; position: relative; }
   #molstar { position: absolute; inset: 0; }
+  #molstar[hidden] { display: none; }
   .picker { position: absolute; inset: 0; overflow-y: auto; background: var(--bg); padding: 16px; z-index: 4; }
   .picker h2 { font-size: 14px; margin: 0 0 10px; color: var(--dim); }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
@@ -108,23 +166,23 @@
   .simcard .name { font-weight: 700; font-size: 13px; margin: 6px 0 3px; }
   .simcard .meta { font-size: 11px; color: var(--dim); line-height: 1.4; }
   .backbar { position: absolute; top: 8px; left: 8px; z-index: 6; }
-  .backbar button { background: rgba(15,23,42,0.85); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
-  .loadmsg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--dim); font-size: 13px; z-index: 3; text-align: center; padding: 20px; }
+  .backbar button { background: var(--backbar-bg); color: var(--backbar-fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; min-height: 36px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .loadmsg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #f1f5f9; background: rgba(15, 23, 42, 0.72); font-size: 13px; z-index: 3; text-align: center; padding: 20px; }
   @media (max-width: 760px) { .wrap { flex-direction: column; } .coach { flex: 0 0 46%; border-right: 0; border-bottom: 1px solid var(--line); } }
   /* Described view — an AI-generated spoken description of the current 3-D view,
      for learners who cannot see the WebGL canvas (screen readers see nothing there). */
-  .described { margin: 0 12px 8px; border: 1px solid #3730a3; background: rgba(79,70,229,0.10); border-radius: 10px; padding: 9px 10px; }
-  .described-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11.5px; font-weight: 700; color: #c7d2fe; text-transform: uppercase; letter-spacing: 0.05em; }
-  .ra-toggle { display: inline-flex; align-items: center; gap: 4px; text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--dim); cursor: pointer; }
-  button.describe-go { width: 100%; margin-top: 8px; background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 10px 12px; font-size: 13px; font-weight: 700; cursor: pointer; min-height: 44px; }
-  button.describe-go:disabled { background: #3f3f5a; color: #8a8ab0; cursor: not-allowed; }
-  button.describe-go:focus-visible, .ra-toggle input:focus-visible, .ask-form input:focus-visible, .ask-form button:focus-visible { outline: 2px solid #a5b4fc; outline-offset: 2px; }
+  .described { margin: 0 12px 8px; border: 1px solid var(--line); background: rgba(79,70,229,0.10); border-radius: 10px; padding: 9px 10px; }
+  .described-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11.5px; font-weight: 700; color: var(--heading); text-transform: uppercase; letter-spacing: 0.05em; }
+  .ra-toggle { display: inline-flex; align-items: center; gap: 4px; text-transform: none; letter-spacing: 0; font-weight: 600; color: var(--dim); cursor: pointer; min-height: 32px; }
+  button.describe-go { width: 100%; margin-top: 8px; background: var(--accent2); color: var(--btn-fg); border: 1px solid transparent; border-radius: 8px; padding: 10px 12px; font-size: 13px; font-weight: 700; cursor: pointer; min-height: 44px; }
+  button.describe-go:disabled { opacity: 0.65; cursor: not-allowed; }
+  button.describe-go:focus-visible, .ra-toggle input:focus-visible, .ask-form input:focus-visible, .ask-form button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .described-out { margin-top: 8px; font-size: 13px; line-height: 1.55; color: var(--text); white-space: pre-wrap; }
   .described-out:empty { display: none; }
   .described-out.busy { color: var(--dim); font-style: italic; }
-  .described-note { margin-top: 6px; font-size: 11px; color: #8a8ab0; line-height: 1.4; }
+  .described-note { margin-top: 6px; font-size: 11px; color: var(--dim); line-height: 1.4; }
   .ask-form { display: flex; gap: 6px; margin-top: 8px; }
-  .ask-form input { flex: 1 1 auto; min-width: 0; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; }
+  .ask-form input { flex: 1 1 auto; min-width: 0; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; min-height: 44px; font-size: 13px; font-family: inherit; }
   .ask-form button { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 700; cursor: pointer; min-height: 44px; }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
   .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 10000; }
@@ -141,9 +199,9 @@
 <div class="wrap">
   <aside class="coach" aria-label="Notice and Wonder coach">
     <h2>Observation coach</h2>
-    <div class="ai-state" id="aiState">Connecting to AlloFlow…</div>
+    <div class="ai-state" id="aiState" role="status" aria-live="polite">Connecting to AlloFlow…</div>
     <section class="described" id="described" aria-labelledby="describedHead" hidden>
-      <div class="described-head"><span id="describedHead">👁 Described view</span>
+      <div class="described-head"><span id="describedHead"><span aria-hidden="true">👁</span> Described view</span>
         <label class="ra-toggle"><input type="checkbox" id="raToggle" checked> Read aloud</label></div>
       <button id="describeBtn" class="describe-go" type="button">Describe what's on screen</button>
       <div class="described-out" id="describedOut" role="status" aria-live="polite" aria-atomic="true"></div>
@@ -155,19 +213,19 @@
       </form>
     </section>
     <div class="steps" role="tablist" aria-label="Observation steps">
-      <button id="tabNotice" role="tab" aria-selected="true">1 · Notice</button>
-      <button id="tabWonder" role="tab" aria-selected="false">2 · Wonder</button>
-      <button id="tabCoach" role="tab" aria-selected="false">3 · Coach</button>
+      <button id="tabNotice" type="button" role="tab" aria-selected="true" aria-controls="coachBody" tabindex="0">1 · Notice</button>
+      <button id="tabWonder" type="button" role="tab" aria-selected="false" aria-controls="coachBody" tabindex="-1">2 · Wonder</button>
+      <button id="tabCoach" type="button" role="tab" aria-selected="false" aria-controls="coachBody" tabindex="-1">3 · Coach</button>
     </div>
-    <div class="body" id="coachBody">
+    <div class="body" id="coachBody" role="tabpanel" aria-labelledby="tabNotice">
       <div class="qcard">Pick a structure to start. Rotate it with your mouse, then write down what you <b>notice</b> — shapes, patterns, repeats, symmetry.</div>
     </div>
     <div class="privacy">Your notes live in this window only — nothing is saved or graded. AI feedback flows only when your teacher has AI hints on, and only when you ask for it.</div>
   </aside>
   <main id="main" tabindex="-1" class="stage" aria-label="Molecular structure viewer">
     <div class="backbar" id="backbar" style="display:none"><button id="backBtn" type="button">← Structures</button></div>
-    <div id="molstar"></div>
-    <div class="loadmsg" id="loadmsg" style="display:none"></div>
+    <div id="molstar" hidden></div>
+    <div class="loadmsg" id="loadmsg" role="status" aria-live="polite" aria-atomic="true" style="display:none"></div>
     <div class="picker" id="picker">
       <h2>Pick a structure — each is a real molecule solved by scientists. Rotate it, then notice and wonder.</h2>
       <div class="grid" id="pickerGrid"></div>
@@ -230,11 +288,13 @@
 
   // ── State (in-memory only) ──────────────────────────────────────────
   var current = null;
-  var perStruct = {};           // pdb → {notice, wonder, feedback}
+  var perStruct = Object.create(null); // pdb → {notice, wonder, feedback}
   var step = 'notice';
   var aiAvailable = false, openerOk = false, busy = false;
   var visionAvailable = false, describing = false;
   var viewer = null, viewerPromise = null;
+  var loadSeq = 0, describeSeq = 0, askSeq = 0;
+  var lastPickerTrigger = null;
 
   var picker = document.getElementById('picker');
   var pickerGrid = document.getElementById('pickerGrid');
@@ -244,6 +304,8 @@
   var backbar = document.getElementById('backbar');
   var backBtn = document.getElementById('backBtn');
   var loadmsg = document.getElementById('loadmsg');
+  var molstarEl = document.getElementById('molstar');
+  var tabOrder = ['notice', 'wonder', 'coach'];
   var tabs = { notice: document.getElementById('tabNotice'), wonder: document.getElementById('tabWonder'), coach: document.getElementById('tabCoach') };
   var describedEl = document.getElementById('described');
   var describeBtn = document.getElementById('describeBtn');
@@ -256,6 +318,14 @@
   // ── Opener AI bridge ─────────────────────────────────────────────────
   var pending = Object.create(null);
   var verifiedOpenerOrigin = '';
+  var declaredHostOrigin = (function () {
+    var raw = params.get('host');
+    if (!raw) return '';
+    try {
+      var u = new URL(raw);
+      return u.protocol === 'https:' || u.protocol === 'http:' ? u.origin : '';
+    } catch (_) { return ''; }
+  })();
   function isTrustedOrigin(origin) {
     var o = String(origin || '');
     if (!o || o === 'null') return false;
@@ -263,11 +333,12 @@
       if (window.location && window.location.origin && o === window.location.origin) return true;
       var u = new URL(o);
       var host = (u.hostname || '').toLowerCase();
-      if (/^(localhost|127\.0\.0\.1)$/.test(host)) return true;
+      if ((u.protocol === 'http:' || u.protocol === 'https:') && /^(localhost|127\.0\.0\.1|\[::1\]|::1)$/.test(host)) return true;
       if (u.protocol !== 'https:') return false;
-      return host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
-             host === 'alloflow.org' || /\.alloflow\.org$/.test(host) ||
-             /\.usercontent\.goog$/.test(host);
+      if (host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
+          host === 'alloflow.org' || /\.alloflow\.org$/.test(host)) return true;
+      if (/\.usercontent\.goog$/.test(host) && declaredHostOrigin && u.origin === declaredHostOrigin) return true;
+      return false;
     } catch (_) { return false; }
   }
   function isTrustedOpenerMessage(event) {
@@ -374,17 +445,19 @@
     if (describing || !describeAvailable()) return;
     var target = current;
     if (!target) return;
+    var seq = ++describeSeq;
     describing = true; describeBtn.disabled = true; stopSpeak();
     describedOut.classList.add('busy');
     describedOut.textContent = question ? 'Thinking about your question…' : 'Looking at the current view…';
     captureView().then(function (uri) {
-      if (!current || current.pdb !== target.pdb) return null;
+      if (seq !== describeSeq || !current || current.pdb !== target.pdb) return null;
       var base64 = uri ? String(uri).replace(/^data:image\/[a-z0-9.+-]+;base64,/i, '') : null;
       return bridgeRequest({
         mode: 'describe', structure: target.name, pdb: target.pdb, meta: target.meta,
         question: question || null, image: base64, mime: 'image/png'
       }, 30000);
     }).then(function (res) {
+      if (seq !== describeSeq) return;
       describing = false;
       describedOut.classList.remove('busy');
       if (!current || current.pdb !== target.pdb) { refreshDescribe(); return; }
@@ -400,6 +473,7 @@
       }
       refreshDescribe();
     }).catch(function () {
+      if (seq !== describeSeq) return;
       describing = false;
       describedOut.classList.remove('busy');
       if (current && current.pdb === target.pdb) {
@@ -408,7 +482,7 @@
       refreshDescribe();
     });
   }
-  function resetDescribed() { stopSpeak(); describedOut.textContent = ''; describedOut.classList.remove('busy'); askForm.hidden = true; }
+  function resetDescribed() { describeSeq += 1; describing = false; stopSpeak(); describedOut.textContent = ''; describedOut.classList.remove('busy'); askForm.hidden = true; }
 
   // ── Coach panel rendering ───────────────────────────────────────────
   function el(tag, attrs, text) {
@@ -417,9 +491,15 @@
     if (text != null) node.textContent = text;
     return node;
   }
-  function setStep(next) {
+  function setStep(next, moveFocus) {
     step = next;
-    Object.keys(tabs).forEach(function (k) { tabs[k].setAttribute('aria-selected', String(k === next)); });
+    tabOrder.forEach(function (k) {
+      var selected = k === next;
+      tabs[k].setAttribute('aria-selected', String(selected));
+      tabs[k].setAttribute('tabindex', selected ? '0' : '-1');
+    });
+    if (tabs[next]) coachBody.setAttribute('aria-labelledby', tabs[next].id);
+    if (moveFocus && tabs[next]) { try { tabs[next].focus(); } catch (_) {} }
     renderCoach();
   }
   function renderCoach() {
@@ -437,7 +517,7 @@
       ta.value = mem.notice;
       ta.addEventListener('input', function () { mem.notice = ta.value; });
       coachBody.appendChild(ta);
-      var toWonder = el('button', { class: 'go' }, 'On to Wonder →');
+      var toWonder = el('button', { class: 'go', type: 'button' }, 'On to Wonder →');
       toWonder.addEventListener('click', function () {
         if (mem.notice.trim()) toOpener({ type: 'allocmol-noticed' });
         setStep('wonder');
@@ -451,39 +531,68 @@
       coachBody.appendChild(ta2);
       if (mem.notice.trim()) {
         var remind = el('div', { class: 'locked' });
-        remind.innerHTML = '<b>You noticed:</b>\n';
-        remind.appendChild(document.createTextNode(mem.notice));
+        remind.appendChild(el('b', null, 'You noticed:'));
+        remind.appendChild(document.createTextNode('\n' + mem.notice));
         coachBody.appendChild(remind);
       }
-      var toCoach = el('button', { class: 'go' }, 'Take it to the coach →');
+      var toCoach = el('button', { class: 'go', type: 'button' }, 'Take it to the coach →');
       toCoach.addEventListener('click', function () { setStep('coach'); });
       coachBody.appendChild(toCoach);
     } else {
-      var askBtn = el('button', { class: 'go', id: 'coachBtn' }, aiAvailable && openerOk ? '✨ What does the coach think?' : '🤔 Give me an observation prompt');
+      var errEl = el('div', { class: 'field-err', role: 'alert' });
+      var askBtn = el('button', { class: 'go', id: 'coachBtn', type: 'button' }, aiAvailable && openerOk ? '✨ What does the coach think?' : '🤔 Give me an observation prompt');
+      askBtn.disabled = busy;
       askBtn.addEventListener('click', function () {
         if (busy) return;
+        errEl.textContent = '';
         if (!(aiAvailable && openerOk)) { mem.feedback = nextReflect(); renderCoach(); return; }
-        if (!mem.notice.trim()) { setStep('notice'); return; }
+        if (!mem.notice.trim()) {
+          errEl.textContent = 'Write at least one thing you noticed first before asking the coach.';
+          setStep('notice');
+          var noticeInput = document.getElementById('noticeText');
+          if (noticeInput) { try { noticeInput.focus(); } catch (_) {} }
+          return;
+        }
+        var target = current;
+        var reqSeq = ++askSeq;
         busy = true; askBtn.disabled = true; askBtn.textContent = 'thinking…';
-        askAi(current.name, mem.notice, mem.wonder).then(function (res) {
+        askAi(target.name, mem.notice, mem.wonder).then(function (res) {
+          if (reqSeq !== askSeq) return;
           var text = res && !res.error && res.text ? String(res.text).trim() : '';
           mem.feedback = text || ('The AI coach didn’t answer' + (res && res.error ? ' (' + res.error + ')' : '') + '. Meanwhile: ' + nextReflect());
+        }).catch(function () {
+          if (reqSeq !== askSeq) return;
+          mem.feedback = 'The AI coach could not be reached right now. Meanwhile: ' + nextReflect();
+        }).finally(function () {
+          if (reqSeq !== askSeq) return;
           busy = false;
           renderCoach();
         });
       });
       coachBody.appendChild(askBtn);
+      coachBody.appendChild(errEl);
       if (mem.notice.trim()) {
         var rem2 = el('div', { class: 'locked' });
-        rem2.innerHTML = '<b>You noticed:</b>\n';
-        rem2.appendChild(document.createTextNode(mem.notice + (mem.wonder.trim() ? '\n\nYou wondered:\n' + mem.wonder : '')));
+        rem2.appendChild(el('b', null, 'You noticed:'));
+        rem2.appendChild(document.createTextNode('\n' + mem.notice + (mem.wonder.trim() ? '\n\nYou wondered:\n' + mem.wonder : '')));
         coachBody.appendChild(rem2);
       }
-      if (mem.feedback) coachBody.appendChild(el('div', { class: 'feedback' }, mem.feedback));
+      if (mem.feedback) coachBody.appendChild(el('div', { class: 'feedback', role: 'status', 'aria-live': 'polite' }, mem.feedback));
     }
   }
-  Object.keys(tabs).forEach(function (k) {
+  tabOrder.forEach(function (k, idx) {
     tabs[k].addEventListener('click', function () { if (current) setStep(k); });
+    tabs[k].addEventListener('keydown', function (e) {
+      if (!current) return;
+      var nextIdx = idx;
+      if (e.key === 'ArrowRight') nextIdx = (idx + 1) % tabOrder.length;
+      else if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + tabOrder.length) % tabOrder.length;
+      else if (e.key === 'Home') nextIdx = 0;
+      else if (e.key === 'End') nextIdx = tabOrder.length - 1;
+      else return;
+      e.preventDefault();
+      setStep(tabOrder[nextIdx], true);
+    });
   });
 
   // ── Mol* viewer ──────────────────────────────────────────────────────
@@ -508,41 +617,71 @@
     });
     return viewerPromise;
   }
-  function loadStructure(pdb) {
-    current = STRUCTURES.find(function (s) { return s.pdb === pdb; }) || null;
-    if (!current) return;
+  function loadStructure(pdb, triggerEl) {
+    var target = STRUCTURES.find(function (s) { return s.pdb === pdb; }) || null;
+    if (!target) return;
+    current = target;
+    if (triggerEl) lastPickerTrigger = triggerEl;
+    askSeq += 1;
+    busy = false;
+    var seq = ++loadSeq;
     picker.style.display = 'none';
+    molstarEl.hidden = false;
     backbar.style.display = 'block';
-    molSelect.value = current.pdb;
-    document.title = 'AlloFlow Molecule Shelf — ' + current.name;
-    loadmsg.textContent = 'Loading ' + current.name + ' (' + current.pdb + ') from the Protein Data Bank…';
+    molSelect.value = target.pdb;
+    document.title = 'AlloFlow Molecule Shelf — ' + target.name;
+    loadmsg.textContent = 'Loading ' + target.name + ' (' + target.pdb + ') from the Protein Data Bank…';
     loadmsg.style.display = 'flex';
     ensureViewer().then(function (v) {
-      return v.loadPdb(current.pdb);
+      if (seq !== loadSeq) return null;
+      var clearPromise = v && v.plugin && typeof v.plugin.clear === 'function' ? Promise.resolve(v.plugin.clear()) : Promise.resolve();
+      return clearPromise.then(function () {
+        if (seq !== loadSeq) return null;
+        return v.loadPdb(target.pdb);
+      });
     }).then(function () {
+      if (seq !== loadSeq) return;
       loadmsg.style.display = 'none';
     }).catch(function (e) {
-      loadmsg.textContent = 'Could not load ' + current.pdb + '. Check your internet connection and try again. (' + String((e && e.message) || e).slice(0, 80) + ')';
+      if (seq !== loadSeq) return;
+      loadmsg.textContent = 'Could not load ' + target.pdb + '. Check your internet connection and try again. (' + String((e && e.message) || e).slice(0, 80) + ')';
       loadmsg.style.display = 'flex';
     });
-    toOpener({ type: 'allocmol-structopened', structure: current.pdb });
+    toOpener({ type: 'allocmol-structopened', structure: target.pdb });
     resetDescribed();
     refreshDescribe();
     setStep('notice');
+    if (backBtn) { try { backBtn.focus(); } catch (_) {} }
   }
-  function showPicker() { picker.style.display = 'block'; backbar.style.display = 'none'; current = null; resetDescribed(); describedEl.hidden = true; }
+  function showPicker() {
+    loadSeq += 1;
+    askSeq += 1;
+    busy = false;
+    picker.style.display = 'block';
+    molstarEl.hidden = true;
+    backbar.style.display = 'none';
+    loadmsg.style.display = 'none';
+    current = null;
+    molSelect.value = '';
+    document.title = 'AlloFlow Molecule Shelf';
+    resetDescribed();
+    describedEl.hidden = true;
+    renderCoach();
+    var focusTarget = lastPickerTrigger && lastPickerTrigger.isConnected ? lastPickerTrigger : pickerGrid.querySelector('button');
+    if (focusTarget) { try { focusTarget.focus(); } catch (_) {} }
+  }
 
   STRUCTURES.forEach(function (s) {
     var opt = el('option', { value: s.pdb }, s.emoji + ' ' + s.name);
     molSelect.appendChild(opt);
     var card = el('button', { class: 'simcard', type: 'button' });
-    card.appendChild(el('div', { class: 'emoji' }, s.emoji));
+    card.appendChild(el('div', { class: 'emoji', 'aria-hidden': 'true' }, s.emoji));
     card.appendChild(el('div', { class: 'name' }, s.name));
     card.appendChild(el('div', { class: 'meta' }, s.meta + ' · PDB ' + s.pdb));
-    card.addEventListener('click', function () { loadStructure(s.pdb); });
+    card.addEventListener('click', function () { loadStructure(s.pdb, card); });
     pickerGrid.appendChild(card);
   });
-  molSelect.addEventListener('change', function () { if (molSelect.value) loadStructure(molSelect.value); });
+  molSelect.addEventListener('change', function () { if (molSelect.value) loadStructure(molSelect.value, molSelect); });
   backBtn.addEventListener('click', showPicker);
   describeBtn.addEventListener('click', function () { describeView(null); });
   askForm.addEventListener('submit', function (e) {
@@ -559,9 +698,16 @@
   if (requested && STRUCTURES.some(function (s) { return s.pdb === requested; })) loadStructure(requested);
   var hello = function () { toOpener({ type: 'allocmol-hello' }); };
   hello();
-  setTimeout(hello, 900);
-  setTimeout(renderAiState, 2600);
+  var helloTimer = setTimeout(hello, 900);
+  var aiStateTimer = setTimeout(renderAiState, 2600);
   window.addEventListener('beforeunload', function () {
+    clearTimeout(helloTimer);
+    clearTimeout(aiStateTimer);
+    Object.keys(pending).forEach(function (id) {
+      clearTimeout(pending[id].timer);
+      delete pending[id];
+    });
+    stopSpeak();
     toOpener({ type: 'allocmol-closed' });
     if (viewer && typeof viewer.dispose === 'function') { try { viewer.dispose(); } catch (_) {} }
   });

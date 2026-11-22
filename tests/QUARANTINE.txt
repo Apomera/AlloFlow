@@ -34,6 +34,8 @@
 #   just taken from the gate): brain_atlas_golden, lumen_render_golden, stem_tool_golden.
 # 2026-09-03 - +2 released (verified in the 356-file pipeline baseline run AND again in isolation:
 #   2 files, 42 assertions, 0 failures): deep_dive_batch3_fixes, individual_remediation_polish.
+# 2026-11-21 (Wave BI) - +2 released (verified twice consecutively in isolation, --maxWorkers=1:
+#   2 files, 18 assertions, 0 failures): k5_family_mode_gate, titration_i18n_coverage.
 
 
 # ── FLAKY UNDER FULL-SUITE LOAD (not deterministic failures) ──
@@ -57,10 +59,8 @@ tests/non_eppp_eppp_guided_qa.test.js  # 2 failing - OWNER: parapro independent 
 tests/standards_snapshot_shipped.test.js  # 3 failing - OWNER: CCSS snapshots grew ~4x in c6842c34c (ELA 5.3 MB > 3 MB cap) without re-QA
 tests/answer_length_clue_ratchet.test.js  # 3 failing - CONTENT: 08-03 padding phrase back in 21 licensure packs since b271b1835 (~2,300 choices); authoring job
 tests/tool_answer_length_clue_ratchet.test.js  # 1 failing - CONTENT: 13 STEM quiz banks regressed + geologyexplorer missing from baseline; authoring job
-tests/k5_family_mode_gate.test.js  # 1 failing - OWNER: f3c6402f3 gate lets a parent open BehaviorLens and closes it to independent learners; confirm policy
 tests/sel_hub_shell_i18n.test.js  # 1 failing - TRANSLATION: arabic lacks 34 sel.hub.framework keys (docs/i18n_debt_2026-10-16.md)
 tests/i18n_cli_tools.test.js  # 1 failing - TRANSLATION: guided.export_resources_missing + guided.export_scope_label missing in 63 packs
 tests/ui_strings_fallback_drift.test.js  # 1 failing - OWNER: 206 shipped-vs-fallback wording differences in 36 namespaces; choose wording
 tests/stem_i18n_keys_registered.test.js  # 1 failing - TRANSLATION: 41 tools call keys absent from ui_strings; extraction pass
-tests/titration_i18n_coverage.test.js  # 3 failing - TRANSLATION: 23 new titration keys need extraction + 56 packs
 tests/nuclearlab_axe_a11y.test.js  # SLOW, not broken: the landmark-unique finding this line named is FIXED (0 such violations). The file times out under load — one slow surface used to strand axe and fail 25 others with "Axe is already running"; runAxeGuarded now stops that cascade, so a bad run is one honest timeout. Remove once the per-scan cost is brought down.

@@ -41,7 +41,18 @@ app.config["MAX_CONTENT_LENGTH"] = 256 * 1024
 MAX_MESSAGE_CHARS = 64000
 MAX_MESSAGES = 128
 MAX_REQUESTED_TOKENS = 65536
-GENERATION_TIMEOUT_SECONDS = max(5.0, float(os.environ.get("ALLOFLOW_NPU_GENERATION_TIMEOUT_SECONDS", "120") or 120))
+def _parse_generation_timeout():
+    raw = os.environ.get("ALLOFLOW_NPU_GENERATION_TIMEOUT_SECONDS", "120") or "120"
+    try:
+        val = float(raw)
+    except (TypeError, ValueError):
+        return 120.0
+    if not math.isfinite(val):
+        return 120.0
+    return max(5.0, min(600.0, val))
+
+
+GENERATION_TIMEOUT_SECONDS = _parse_generation_timeout()
 _generation_lock = threading.Lock()
 _session = None
 _tokenizer = None
@@ -141,8 +152,9 @@ def guard_browser_origin():
         return api_error("Browser origin is not allowed; configure ALLOFLOW_NPU_ALLOWED_ORIGINS for your school app.", 403)
     if request.method != "OPTIONS" and request.path != "/health":
         expected_token = os.environ.get("ALLOFLOW_NPU_API_TOKEN", "").strip()
-        if _require_api_token and len(expected_token) < 32:
-            return api_error("Server misconfigured: ALLOFLOW_NPU_API_TOKEN (>=32 chars) is required for non-loopback binds.", 503)
+        extra_origins = [v.strip() for v in os.environ.get("ALLOFLOW_NPU_ALLOWED_ORIGINS", "").split(",") if v.strip()]
+        if ((_require_api_token or extra_origins or expected_token) and len(expected_token) < 32):
+            return api_error("Server misconfigured: ALLOFLOW_NPU_API_TOKEN (>=32 chars) is required when configured, for non-loopback binds, or when extra origins are enabled.", 503)
         if expected_token:
             auth = request.headers.get("Authorization", "")
             prefix = "Bearer "
@@ -296,6 +308,14 @@ def generate(messages, max_tokens=512, temperature=0.7):
     generated = []
     deadline = time.monotonic() + GENERATION_TIMEOUT_SECONDS
 
+    raw_eos = getattr(_tokenizer, "eos_token_id", None)
+    if isinstance(raw_eos, (list, tuple, set)):
+        eos_ids = {int(x) for x in raw_eos if isinstance(x, int)}
+    elif isinstance(raw_eos, int):
+        eos_ids = {raw_eos}
+    else:
+        eos_ids = set()
+
     for step in range(max_tokens):
         if time.monotonic() >= deadline:
             raise GenerationTimeoutError("AI generation timed out; try a shorter prompt or lower max_tokens.")
@@ -306,17 +326,28 @@ def generate(messages, max_tokens=512, temperature=0.7):
             feeds["position_ids"] = np.arange(input_ids.shape[1], dtype="int64").reshape(1, -1)
 
         outputs = _session.run(None, feeds)
-        logits = outputs[0][:, -1, :]
+        logits = np.asarray(outputs[0][:, -1, :], dtype=np.float64)
 
         if temperature > 0.01:
-            logits = logits / temperature
-            probs = np.exp(logits - np.max(logits, axis=-1, keepdims=True))
-            probs = probs / probs.sum(axis=-1, keepdims=True)
-            next_id = int(np.random.choice(probs.shape[-1], p=probs[0]))
+            scaled = logits / float(temperature)
+            finite_mask = np.isfinite(scaled)
+            if not np.any(finite_mask):
+                next_id = int(np.argmax(np.nan_to_num(logits[0], nan=-1e9, neginf=-1e9, posinf=1e9)))
+            else:
+                safe_scaled = np.where(finite_mask, scaled, -np.inf)
+                shifted = safe_scaled - np.max(safe_scaled, axis=-1, keepdims=True)
+                probs = np.exp(shifted)
+                total = float(probs.sum())
+                if not math.isfinite(total) or total <= 0.0:
+                    next_id = int(np.argmax(safe_scaled[0]))
+                else:
+                    p = probs[0] / total
+                    p = p / float(p.sum())
+                    next_id = int(np.random.choice(p.shape[-1], p=p))
         else:
-            next_id = int(np.argmax(logits[0]))
+            next_id = int(np.argmax(np.nan_to_num(logits[0], nan=-1e9, neginf=-1e9, posinf=1e9)))
 
-        if next_id == _tokenizer.eos_token_id:
+        if next_id in eos_ids:
             break
         generated.append(next_id)
         input_ids = np.concatenate([input_ids, np.array([[next_id]], dtype="int64")], axis=1)
@@ -405,11 +436,12 @@ def main(argv=None):
     parser.add_argument("--no-model-swap", action="store_true",
                         help="Lock the active model against runtime swap requests (default)")
     args = parser.parse_args(argv)
+    require_api_token = args.host not in ("127.0.0.1", "localhost", "::1")
+    if require_api_token and len(os.environ.get("ALLOFLOW_NPU_API_TOKEN", "").strip()) < 32:
+        raise SystemExit("Refusing to bind non-loopback host without ALLOFLOW_NPU_API_TOKEN (>=32 chars).")
     _allow_model_swap = bool(args.allow_model_swap and not args.no_model_swap)
     _bound_host = args.host
-    _require_api_token = args.host not in ("127.0.0.1", "localhost", "::1")
-    if _require_api_token and len(os.environ.get("ALLOFLOW_NPU_API_TOKEN", "").strip()) < 32:
-        raise SystemExit("Refusing to bind non-loopback host without ALLOFLOW_NPU_API_TOKEN (>=32 chars).")
+    _require_api_token = require_api_token
 
     print("""
     ╔══════════════════════════════════════════╗

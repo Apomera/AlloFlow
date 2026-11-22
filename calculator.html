@@ -101,7 +101,7 @@
         .savings-label {
             font-size: 0.8rem;
             font-weight: 700;
-            color: #64748b;
+            color: #cbd5e1;
             text-transform: uppercase;
             letter-spacing: 0.08em;
         }
@@ -110,17 +110,17 @@
             font-family: 'Outfit', sans-serif;
             font-size: 2rem;
             font-weight: 900;
-            color: #22c55e;
+            color: #4ade80;
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .savings-amount.zero {
-            color: #64748b;
+            color: #cbd5e1;
         }
 
         .savings-subtitle {
-            font-size: 0.75rem;
-            color: #64748b;
+            font-size: 0.8rem;
+            color: #cbd5e1;
             margin-top: 2px;
         }
 
@@ -128,15 +128,45 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .savings-action-btn {
+            min-height: 44px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(165, 180, 252, 0.45);
+            background: rgba(99, 102, 241, 0.18);
+            color: #e0e7ff;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.15s, border-color 0.15s;
+        }
+
+        .savings-action-btn:hover:not(:disabled) {
+            background: rgba(99, 102, 241, 0.32);
+            border-color: #c7d2fe;
+        }
+
+        .savings-action-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .savings-action-btn:focus-visible {
+            outline: 3px solid #fbbf24;
+            outline-offset: 2px;
         }
 
         .selected-count {
             font-size: 0.8rem;
             font-weight: 700;
-            color: #a5b4fc;
-            background: rgba(99, 102, 241, 0.15);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            padding: 6px 14px;
+            color: #e0e7ff;
+            background: rgba(99, 102, 241, 0.22);
+            border: 1px solid rgba(165, 180, 252, 0.4);
+            padding: 8px 14px;
             border-radius: 999px;
         }
 
@@ -167,21 +197,38 @@
         }
 
         .config-group input {
-            width: 80px;
+            width: 88px;
+            min-height: 44px;
             padding: 8px 12px;
-            border: 2px solid #e2e8f0;
+            border: 2px solid #cbd5e1;
             border-radius: 10px;
             font-family: 'Outfit', sans-serif;
             font-size: 1rem;
             font-weight: 700;
             color: var(--indigo);
             text-align: center;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        .config-group input:focus {
-            outline: none;
+        .config-group input:focus-visible {
+            outline: 3px solid var(--indigo);
+            outline-offset: 2px;
             border-color: var(--indigo);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .product-card:focus-visible {
+            outline: 3px solid var(--indigo);
+            outline-offset: 3px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .savings-bar, .savings-amount, .product-card, .product-check, .product-check svg, .config-group input {
+                transition: none !important;
+            }
+            .product-card:hover {
+                transform: none !important;
+            }
         }
 
         /* Product Cards */
@@ -281,8 +328,8 @@
         }
 
         .product-price-note {
-            font-size: 0.7rem;
-            color: #64748b;
+            font-size: 0.75rem;
+            color: #475569;
             font-weight: 600;
         }
 
@@ -298,11 +345,11 @@
         }
 
         .parity-title {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            color: #64748b;
+            color: #475569;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
@@ -403,7 +450,7 @@
     <nav class="navbar" aria-label="Primary">
         <div class="navbar-inner">
             <a href="./" class="nav-logo">
-                <i data-lucide="layers" style="width:28px;height:28px"></i>
+                <i data-lucide="layers" aria-hidden="true" style="width:28px;height:28px"></i>
                 AlloFlow
             </a>
             <div class="nav-links" data-site-nav="primary">
@@ -417,7 +464,7 @@
                 <a href="launch.html" class="cta-btn"><i data-lucide="rocket" aria-hidden="true" style="width:16px;height:16px"></i> Launch AlloFlow</a>
             </div>
             <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
-                aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
+                aria-label="Open menu"><i data-lucide="menu" aria-hidden="true" style="width:24px;height:24px"></i></button>
         </div>
     </nav>
     <!-- shared mobile nav:start -->
@@ -452,9 +499,9 @@
     <header class="calc-hero">
         <div
             style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:999px;margin-bottom:20px">
-            <i data-lucide="calculator" style="width:14px;height:14px;color:#a5b4fc"></i>
+            <i data-lucide="calculator" aria-hidden="true" style="width:14px;height:14px;color:#c7d2fe"></i>
             <span
-                style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#a5b4fc">Interactive
+                style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#c7d2fe">Interactive
                 Cost Scenario Planner</span>
         </div>
         <h1>Model Your Current<br>EdTech <span
@@ -464,15 +511,17 @@
     </header>
 
     <!-- Sticky Savings Bar -->
-    <div class="savings-bar" id="savingsBar">
+    <div class="savings-bar" id="savingsBar" role="region" aria-label="Illustrative annual subscription summary">
         <div class="savings-inner">
-            <div>
+            <div role="status" aria-live="polite" aria-atomic="true">
                 <div class="savings-label">Illustrative Annual Subscription Total</div>
                 <div class="savings-amount zero" id="savingsAmount">$0</div>
                 <div class="savings-subtitle" id="savingsSubtitle">Select tools to model a scenario</div>
             </div>
             <div class="savings-cta">
                 <span class="selected-count" id="selectedCount">0 tools selected</span>
+                <button type="button" class="savings-action-btn" id="selectAllBtn" onclick="selectAll()">Select all</button>
+                <button type="button" class="savings-action-btn" id="clearSelectionBtn" onclick="clearSelection()" disabled>Clear selection</button>
             </div>
         </div>
     </div>
@@ -480,25 +529,28 @@
     <!-- School Configuration -->
     <div class="school-config">
         <div class="config-group">
-            <label for="studentCount"><i data-lucide="users" style="width:14px;height:14px;color:#64748b"></i>
+            <label for="studentCount"><i data-lucide="users" aria-hidden="true" style="width:14px;height:14px;color:#475569"></i>
                 Students</label>
             <input type="number" id="studentCount" value="400" min="50" max="5000" step="50">
         </div>
         <div class="config-group">
-            <label for="teacherCount"><i data-lucide="graduation-cap" style="width:14px;height:14px;color:#64748b"></i>
+            <label for="teacherCount"><i data-lucide="graduation-cap" aria-hidden="true" style="width:14px;height:14px;color:#475569"></i>
                 Teachers</label>
             <input type="number" id="teacherCount" value="30" min="5" max="500" step="5">
         </div>
         <div
-            style="font-size:0.7rem;color:#475569;font-weight:600;background:#f1f5f9;padding:6px 14px;border-radius:8px;border:1px solid #e2e8f0">
-            💡 Adjust to match your school — costs recalculate automatically
+            style="font-size:0.75rem;color:#334155;font-weight:600;background:#f1f5f9;padding:8px 14px;border-radius:8px;border:1px solid #cbd5e1">
+            <span aria-hidden="true">💡</span> Adjust to match your school — costs recalculate automatically
         </div>
     </div>
 
     <!-- Product Cards -->
-    <div class="product-grid" id="productGrid">
-        <!-- Cards are rendered by JavaScript -->
-    </div>
+    <section aria-labelledby="products-heading">
+        <h2 id="products-heading" style="max-width:1200px;margin:28px auto 0;padding:0 24px;font-size:1.25rem;font-weight:800;color:var(--slate-900);text-align:center">Select tools to include in your scenario</h2>
+        <div class="product-grid" id="productGrid">
+            <!-- Cards are rendered by JavaScript -->
+        </div>
+    </section>
 
     <!-- Fine Print -->
     <div class="fine-print">
@@ -514,11 +566,12 @@
         <p>AlloFlow brings many overlapping capabilities into one open-source platform with no AlloFlow software license fee. Local-first paths do not
             require student accounts by default, and PII handling should be governed by district configuration.</p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-            <button type="button" onclick="copyCanvasLink()" class="btn-primary"><i data-lucide="link"
+            <button type="button" onclick="copyCanvasLink()" class="btn-primary"><i data-lucide="link" aria-hidden="true"
                     style="width:18px;height:18px"></i> <span>Copy Canvas Link</span></button>
-            <a href="features.html" class="btn-secondary"><i data-lucide="sparkles" style="width:18px;height:18px"></i>
+            <a href="features.html" class="btn-secondary"><i data-lucide="sparkles" aria-hidden="true" style="width:18px;height:18px"></i>
                 View 400+ Documented Capabilities</a>
         </div>
+        <p id="copyLinkStatus" role="status" aria-live="polite" style="margin-top:12px;font-size:0.85rem;color:#0f766e;font-weight:700;min-height:1.2em"></p>
     </section>
 
     </main>
@@ -526,7 +579,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-inner">
-            <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
+            <div class="footer-logo"><i data-lucide="layers" aria-hidden="true" style="width:22px;height:22px;color:var(--indigo)"></i>
                 AlloFlow</div>
             <p>An open-source project for educators. Not affiliated with Google.</p>
             <p>Released under the <strong>AGPL v3 License</strong>. &copy; <span id="year">2026</span></p>
@@ -543,7 +596,7 @@
     </footer>
 
     <script>
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
         document.getElementById('year').innerText = new Date().getFullYear();
 
         const PRODUCTS = [
@@ -714,6 +767,11 @@
                 count === 1 ? '1 tool selected' :
                     count + ' tools selected';
 
+            const selectAllBtn = document.getElementById('selectAllBtn');
+            const clearBtn = document.getElementById('clearSelectionBtn');
+            if (selectAllBtn) selectAllBtn.disabled = count === PRODUCTS.length;
+            if (clearBtn) clearBtn.disabled = count === 0;
+
             if (total === 0) {
                 subtitleEl.textContent = 'Select tools to model a scenario';
             } else {
@@ -741,7 +799,7 @@
         function renderProducts() {
             const grid = document.getElementById('productGrid');
             grid.innerHTML = PRODUCTS.map(p => `
-                <div class="product-card" data-product="${p.id}" role="checkbox" aria-checked="false" tabindex="0" onclick="toggleProduct('${p.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleProduct('${p.id}')}">
+                <div class="product-card" data-product="${p.id}" role="checkbox" aria-checked="false" tabindex="0" onclick="toggleProduct('${p.id}')" onkeydown="if(!event.isComposing && event.keyCode!==229 && (event.key==='Enter'||event.key===' ')){event.preventDefault();toggleProduct('${p.id}')}">
                     <div class="product-header">
                         <div class="product-check">
                             <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -749,7 +807,7 @@
                         <div class="product-info" style="flex:1">
                             <span class="product-category" style="color:${p.categoryColor};background:${p.categoryBg}">${p.category}</span>
                             <h3>${p.name}</h3>
-                            <p style="font-size:0.8rem;color:#64748b;line-height:1.5;margin-bottom:12px">${p.whatTheyDo}</p>
+                            <p style="font-size:0.8rem;color:#475569;line-height:1.5;margin-bottom:12px">${p.whatTheyDo}</p>
                             <div class="product-price" style="color:${p.categoryColor}" id="cost-${p.id}">${formatCurrency(calculateCost(p))}</div>
                             <div class="product-price-note">${p.priceNote}</div>
                         </div>
@@ -757,7 +815,7 @@
                     <div class="product-body">
                         <div class="parity-section">
                             <div class="parity-title">
-                                <i data-lucide="layers" style="width:12px;height:12px"></i>
+                                <i data-lucide="layers" aria-hidden="true" style="width:12px;height:12px"></i>
                                 Potentially Overlapping AlloFlow Capabilities
                             </div>
                             <ul class="parity-list">
@@ -769,15 +827,24 @@
             `).join('');
 
             // Re-init Lucide icons inside cards
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        // Select All / Deselect All
+        // Select All / Clear Selection
         function selectAll() {
             PRODUCTS.forEach(p => {
                 selectedProducts.add(p.id);
                 const card = document.querySelector(`[data-product="${p.id}"]`);
                 if (card) { card.classList.add('selected'); card.setAttribute('aria-checked', 'true'); }
+            });
+            updateSavingsDisplay();
+        }
+
+        function clearSelection() {
+            selectedProducts.clear();
+            PRODUCTS.forEach(p => {
+                const card = document.querySelector(`[data-product="${p.id}"]`);
+                if (card) { card.classList.remove('selected'); card.setAttribute('aria-checked', 'false'); }
             });
             updateSavingsDisplay();
         }
@@ -793,9 +860,16 @@
         // Copy Link
         function copyCanvasLink() {
             const link = new URL("/launch.html", window.location.href).href;
-            navigator.clipboard.writeText(link).then(() => {
-                document.querySelectorAll('.btn-primary span').forEach(s => { const orig = s.textContent; s.textContent = "Copied!"; setTimeout(() => s.textContent = orig, 2000); });
-            }).catch(() => alert("Failed to copy. Check permissions."));
+            const statusEl = document.getElementById('copyLinkStatus');
+            const reportStatus = (msg) => { if (statusEl) statusEl.textContent = msg; };
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                navigator.clipboard.writeText(link).then(() => {
+                    document.querySelectorAll('.btn-primary span').forEach(s => { const orig = s.textContent; s.textContent = "Copied!"; setTimeout(() => s.textContent = orig, 2000); });
+                    reportStatus('Copied AlloFlow launch link to clipboard.');
+                }).catch(() => reportStatus('Could not copy automatically. Launch link: ' + link));
+            } else {
+                reportStatus('Launch link: ' + link);
+            }
         }
     </script>
 </body>

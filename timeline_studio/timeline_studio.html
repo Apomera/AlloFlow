@@ -31,25 +31,56 @@
     document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
     return theme;
   }
+  var params = new URLSearchParams(window.location.search);
+  var declaredHostOrigin = (function () {
+    var raw = params.get('host');
+    if (!raw) return '';
+    try {
+      var u = new URL(raw);
+      return u.protocol === 'https:' || u.protocol === 'http:' ? u.origin : '';
+    } catch (_) { return ''; }
+  })();
+  function isTrustedThemeOrigin(origin) {
+    var o = String(origin || '');
+    if (!o || o === 'null') return false;
+    try {
+      if (window.location && window.location.origin && o === window.location.origin) return true;
+      var u = new URL(o);
+      var host = (u.hostname || '').toLowerCase();
+      if ((u.protocol === 'http:' || u.protocol === 'https:') && /^(localhost|127\.0\.0\.1|\[::1\]|::1)$/.test(host)) return true;
+      if (u.protocol !== 'https:') return false;
+      if (host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
+          host === 'alloflow.org' || /\.alloflow\.org$/.test(host)) return true;
+      if (/\.usercontent\.goog$/.test(host) && declaredHostOrigin && u.origin === declaredHostOrigin) return true;
+      return false;
+    } catch (_) { return false; }
+  }
   window.applyAlloFlowTheme = applyAlloFlowTheme;
-  applyAlloFlowTheme(new URLSearchParams(window.location.search).get('theme'));
+  applyAlloFlowTheme(params.get('theme'));
+  window.addEventListener('message', function (event) {
+    if (!event || !window.opener || event.source !== window.opener) return;
+    if (!isTrustedThemeOrigin(event.origin)) return;
+    var data = event.data;
+    if (!data || data.type !== 'alloflow-theme-change') return;
+    applyAlloFlowTheme(data.theme);
+  });
 })();
 </script>
 <style>
   :root {
-    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
-    --text: #e2e8f0; --dim: #94a3b8; --accent: #fb7185; --accent2: #f43f5e; --ok: #4ade80;
+    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155; --control-line: #64748b;
+    --text: #e2e8f0; --dim: #94a3b8; --accent: #fb7185; --accent2: #be123c; --ok: #4ade80;
   }
   :root[data-theme="light"] {
     --bg: #f8fafc; --panel: #ffffff; --panel2: #f1f5f9; --stage: #e2e8f0;
-    --line: #64748b; --line2: #475569; --text: #0f172a; --dim: #475569;
+    --line: #64748b; --control-line: #64748b; --line2: #475569; --text: #0f172a; --dim: #475569;
     --muted: #475569; --soft: #334155; --accent: #1d4ed8; --accent2: #4338ca;
     --teal: #0f766e; --teal2: #115e59; --sky: #0369a1; --amber: #92400e;
     --red: #b91c1c; --green: #047857; --violet: #6d28d9; --ok: #047857; --warn: #92400e;
   }
   :root[data-theme="contrast"] {
     --bg: #000000; --panel: #000000; --panel2: #0a0a0a; --stage: #000000;
-    --line: #fbbf24; --line2: #ffff00; --text: #ffffff; --dim: #ffffff;
+    --line: #fbbf24; --control-line: #fbbf24; --line2: #ffff00; --text: #ffffff; --dim: #ffffff;
     --muted: #ffffff; --soft: #ffffff; --accent: #fbbf24; --accent2: #fbbf24;
     --teal: #00ffff; --teal2: #00ffff; --sky: #00ffff; --amber: #ffff00;
     --red: #ff6b6b; --green: #00ff66; --violet: #ffff00; --ok: #00ff66; --warn: #ffff00;
@@ -59,12 +90,19 @@
   :root[data-theme="contrast"] input,
   :root[data-theme="contrast"] select,
   :root[data-theme="contrast"] textarea { border-color: var(--line) !important; }
+  :root[data-theme="contrast"] button.go { background: var(--accent2); color: #000; }
   :focus-visible { outline: 3px solid #facc15 !important; outline-offset: 2px; }
   :root[data-theme="light"] :focus-visible { outline-color: #1d4ed8 !important; }
   .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 9999; background: #1e293b; color: #f8fafc; padding: 8px 14px; border-radius: 8px; border: 2px solid #facc15; font-weight: 700; text-decoration: none; }
   .skip-link:focus { left: 8px; }
   @media (forced-colors: active) {
+    :root, :root[data-theme] {
+      --bg: Canvas; --panel: Canvas; --panel2: Canvas; --stage: Canvas; --line: CanvasText; --control-line: CanvasText; --line2: CanvasText;
+      --text: CanvasText; --dim: CanvasText; --muted: CanvasText; --soft: CanvasText; --accent: LinkText; --accent2: ButtonFace; --ok: CanvasText;
+    }
     button, input, select, textarea, a { forced-color-adjust: auto; }
+    button.go, .skip-link { background: ButtonFace; color: ButtonText; border: 1px solid ButtonText; }
+    :focus-visible { outline: 3px solid Highlight !important; }
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -73,7 +111,7 @@
   header h1 { font-size: 15px; margin: 0; font-weight: 700; }
   header .sub { color: var(--dim); font-size: 11.5px; }
   header .spacer { margin-left: auto; }
-  header button { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  header button { background: var(--panel2); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
   header button:hover { border-color: var(--accent); }
   #timeline-embed { flex: 1 1 auto; min-height: 0; background: #fff; }
   .empty { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; color: var(--dim); text-align: center; padding: 24px; }
@@ -82,13 +120,13 @@
   .drawer { position: fixed; top: 0; right: 0; height: 100%; width: 340px; max-width: 88vw; background: var(--panel); border-left: 1px solid var(--line); transform: translateX(100%); visibility: hidden; transition: transform 0.2s, visibility 0s linear 0.2s; z-index: 50; display: flex; flex-direction: column; overflow-y: auto; }
   .drawer.open { transform: translateX(0); visibility: visible; transition: transform 0.2s; }
   @media (prefers-reduced-motion: reduce) { .drawer, .drawer.open { transition: none; } }
-  .drawer h2 { font-size: 13px; margin: 0; padding: 12px 14px 4px; color: #fecdd3; }
+  .drawer h2 { font-size: 13px; margin: 0; padding: 12px 14px 4px; color: var(--text); }
   .drawer .drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-right: 10px; }
-  .drawer .drawer-close { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; min-width: 44px; min-height: 44px; font-size: 16px; font-weight: 700; cursor: pointer; }
+  .drawer .drawer-close { background: var(--panel2); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; min-width: 44px; min-height: 44px; font-size: 16px; font-weight: 700; cursor: pointer; }
   .drawer .drawer-close:hover { border-color: var(--accent); }
   .drawer .body { padding: 6px 14px 16px; display: flex; flex-direction: column; gap: 8px; }
   .drawer label { font-size: 11px; color: var(--dim); font-weight: 700; }
-  .drawer input, .drawer textarea { width: 100%; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 7px 9px; font-size: 13px; font-family: inherit; }
+  .drawer input, .drawer textarea { width: 100%; background: var(--bg); border: 1px solid var(--control-line); color: var(--text); border-radius: 8px; padding: 7px 9px; font-size: 13px; font-family: inherit; }
   .drawer textarea { resize: vertical; min-height: 60px; }
   .row { display: flex; gap: 6px; }
   .row > div { flex: 1; }
@@ -137,12 +175,13 @@
       <textarea id="mText" placeholder="One or two sentences about what happened."></textarea>
     </div>
     <button class="go" id="addEventBtn" type="button">＋ Add to timeline</button>
+    <div id="drawerStatus" class="privacy" style="border-top:0;padding:0;margin:0" role="status" aria-live="polite"></div>
     <div class="evlist" id="evList"></div>
   </div>
   <div class="privacy">Nothing here is saved — the timeline lives in this window only.</div>
 </aside>
 
-<footer class="credit">Timeline rendering by <a href="https://timeline.knightlab.com" target="_blank" rel="noopener noreferrer" style="color:#cbd5e1">TimelineJS · Knight Lab</a> (MPL). Thank you.</footer>
+<footer class="credit">Timeline rendering by <a href="https://timeline.knightlab.com" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">TimelineJS · Knight Lab</a> (MPL). Thank you.</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@knight-lab/timelinejs@3.9.2/dist/js/timeline.js" integrity="sha384-GCqlJpX2zGMsRRDed2w8YgTIUQRYGVn26rZKsDZ5wcKDyLZtAEGQMeCwUuq7jlNa" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
@@ -200,6 +239,19 @@
     }
   }
 
+  function plainTimelineLabel(raw) {
+    var s = String(raw == null ? '' : raw);
+    if (!s) return '(untitled)';
+    try {
+      if (typeof DOMParser === 'function') {
+        var doc = new DOMParser().parseFromString('<!DOCTYPE html><body>' + s, 'text/html');
+        var t = String((doc.body && doc.body.textContent) || '').trim();
+        if (t) return t;
+      }
+    } catch (_) {}
+    return s;
+  }
+
   function refreshEvList() {
     var d = ensureData();
     if (!d.events.length) { evList.innerHTML = '<div class="ev">No events yet.</div>'; return; }
@@ -208,7 +260,7 @@
       var div = document.createElement('div');
       div.className = 'ev';
       var yr = (e.start_date && e.start_date.year) || '?';
-      div.textContent = yr + ' — ' + ((e.text && e.text.headline) || '(untitled)');
+      div.textContent = yr + ' — ' + plainTimelineLabel(e.text && e.text.headline);
       evList.appendChild(div);
     });
   }
@@ -227,9 +279,18 @@
       var host = (u.hostname || '').toLowerCase();
       if (/^(localhost|127\.0\.0\.1)$/.test(host) && (u.protocol === 'http:' || u.protocol === 'https:')) return true;
       if (u.protocol !== 'https:') return false;
-      return host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
-             host === 'alloflow.org' || /\.alloflow\.org$/.test(host) ||
-             /\.usercontent\.goog$/.test(host);
+      if (host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
+          host === 'alloflow.org' || /\.alloflow\.org$/.test(host)) return true;
+      if (/\.usercontent\.goog$/.test(host)) {
+        var declaredHost = '';
+        try {
+          if (window.location && window.location.search && typeof URLSearchParams === 'function') {
+            declaredHost = new URLSearchParams(window.location.search).get('host') || '';
+          }
+        } catch (_) {}
+        return !!declaredHost && o === declaredHost;
+      }
+      return false;
     } catch (_) { return false; }
   }
   function isTrustedOpenerMessage(event) {
@@ -395,17 +456,23 @@
     if (ev.key === 'Escape' && drawer.classList.contains('open')) { ev.preventDefault(); setDrawer(false); }
   });
   addEventBtn.addEventListener('click', function () {
+    var drawerStatus = document.getElementById('drawerStatus');
     var headline = document.getElementById('mHeadline').value.trim();
     var year = document.getElementById('mYear').value.trim();
     var month = document.getElementById('mMonth').value.trim();
     var day = document.getElementById('mDay').value.trim();
     var text = document.getElementById('mText').value.trim();
     if (!headline || !year) {
-      if (!year) document.getElementById('mYear').focus(); else document.getElementById('mHeadline').focus();
+      if (drawerStatus) drawerStatus.textContent = !headline ? 'Enter an event headline before adding to the timeline.' : 'Enter a numeric year before adding to the timeline.';
+      if (!headline) document.getElementById('mHeadline').focus(); else document.getElementById('mYear').focus();
       return;
     }
     var parsedYear = parseInt(year, 10);
-    if (!isFinite(parsedYear)) { document.getElementById('mYear').focus(); return; }
+    if (!isFinite(parsedYear)) {
+      if (drawerStatus) drawerStatus.textContent = 'Enter a valid numeric year (for example, 1969).';
+      document.getElementById('mYear').focus();
+      return;
+    }
     var d = ensureData();
     var sd = { year: parsedYear };
     if (month) { var parsedMonth = parseInt(month, 10); if (isFinite(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12) sd.month = parsedMonth; }
@@ -424,6 +491,7 @@
     document.getElementById('mMonth').value = '';
     document.getElementById('mDay').value = '';
     document.getElementById('mText').value = '';
+    if (drawerStatus) drawerStatus.textContent = 'Added "' + headline + '" (' + parsedYear + ') to the timeline.';
     document.getElementById('mHeadline').focus();
     render();
     refreshEvList();

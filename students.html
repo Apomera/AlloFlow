@@ -42,7 +42,7 @@
     <nav class="navbar" aria-label="Primary">
         <div class="navbar-inner">
             <a href="./" class="nav-logo">
-                <i data-lucide="layers" style="width:28px;height:28px"></i>
+                <i data-lucide="layers" aria-hidden="true" style="width:28px;height:28px"></i>
                 AlloFlow
                 <span
                     style="font-size:0.6rem;font-weight:400;color:#475569;background:#f1f5f9;padding:2px 8px;border-radius:4px;border:1px solid #e2e8f0;margin-left:4px"><span data-release-version>v1.19</span></span>
@@ -59,7 +59,7 @@
             </div>
             <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
                 aria-label="Open menu">
-                <i data-lucide="menu" style="width:24px;height:24px"></i>
+                <i data-lucide="menu" aria-hidden="true" style="width:24px;height:24px"></i>
             </button>
         </div>
     </nav>
@@ -99,7 +99,7 @@
         <div style="position:relative;z-index:1;max-width:680px;margin:0 auto">
             <div
                 style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:#fff;border:1px solid #e0e7ff;border-radius:999px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
-                <span style="font-size:1.1rem">🎮</span>
+                <span aria-hidden="true" style="font-size:1.1rem">🎮</span>
                 <span
                     style="font-size:0.7rem;font-weight:700;color:#312e81;text-transform:uppercase;letter-spacing:0.1em">Student
                     Guide</span>
@@ -108,7 +108,7 @@
                 style="font-size:clamp(2rem,5vw,3.5rem);font-weight:900;line-height:1.1;margin-bottom:16px;letter-spacing:-0.02em">
                 Welcome to <span class="gradient-text">AlloFlow</span>
             </h1>
-            <p style="font-size:1.05rem;color:#64748b;max-width:540px;margin:0 auto;line-height:1.7">
+            <p style="font-size:1.05rem;color:#475569;max-width:540px;margin:0 auto;line-height:1.7">
                 Your guide to joining live sessions, earning XP, and getting the most out of every activity.
             </p>
         </div>
@@ -809,21 +809,39 @@
     </footer>
 
     <!-- Back to Top -->
-    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
-        <i data-lucide="chevron-up" style="width:20px;height:20px"></i>
+    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})" aria-label="Back to top">
+        <i data-lucide="chevron-up" aria-hidden="true" style="width:20px;height:20px"></i>
     </button>
 
     <script>
         if (window.lucide) lucide.createIcons();
         document.getElementById('year').innerText = new Date().getFullYear();
 
-        // Scroll Reveal
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(e => {
-                if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+        const prefersReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+        // Scroll Reveal (respects prefers-reduced-motion)
+        if (prefersReducedMotion || typeof IntersectionObserver !== 'function') {
+            document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+        } else {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        }
+
+        // Active section tracking on jump navigation
+        const jumpLinks = Array.from(document.querySelectorAll('.jump-nav a[href^="#"]'));
+        function setActiveJump(id) {
+            jumpLinks.forEach(link => {
+                if (link.getAttribute('href') === '#' + id) link.setAttribute('aria-current', 'location');
+                else link.removeAttribute('aria-current');
             });
-        }, { threshold: 0.1 });
-        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        }
+        jumpLinks.forEach(link => {
+            link.addEventListener('click', () => setActiveJump(link.getAttribute('href').slice(1)));
+        });
 
         // Back to Top
         const backBtn = document.querySelector('.back-to-top');

@@ -124,7 +124,11 @@
   var MAX_SCAN_CASES = 2000;  // rows scanned to compute summaries
   var MAX_CELL_CHARS = 40;    // per-cell truncation
 
-  function round3(n) { return Math.round(n * 1000) / 1000; }
+  function round3(n) {
+    if (!Number.isFinite(n)) return null;
+    var scaled = n * 1000;
+    return Number.isFinite(scaled) ? Math.round(scaled) / 1000 : n;
+  }
 
   // CODAP has returned cases as either { case: { values } } or { values }
   // depending on version; accept both rather than trusting one shape.
@@ -157,16 +161,16 @@
     }
     var out = { name: name, n: raw.length, missing: missing };
     if (present > 0 && nums.length >= present * 0.8) {
-      var min = nums[0], max = nums[0], sum = 0;
+      var min = nums[0], max = nums[0], mean = 0;
       for (var j = 0; j < nums.length; j++) {
         if (nums[j] < min) min = nums[j];
         if (nums[j] > max) max = nums[j];
-        sum += nums[j];
+        mean += (nums[j] - mean) / (j + 1);
       }
       out.type = 'numeric';
       out.min = round3(min);
       out.max = round3(max);
-      out.mean = round3(sum / nums.length);
+      out.mean = round3(mean);
     } else {
       out.type = 'categorical';
       out.distinct = distinct;
@@ -191,9 +195,23 @@
         if (!collName) continue;
         var attrs = valuesOf(await codapCall({ action: 'get', resource: 'dataContext[' + ctxName + '].collection[' + collName + '].attributeList' })) || [];
         var countRes = valuesOf(await codapCall({ action: 'get', resource: 'dataContext[' + ctxName + '].collection[' + collName + '].caseCount' }));
-        var attrNames = attrs.slice(0, 30)
-          .map(function (a) { return String((a && (a.name || a.title)) || '').slice(0, 50); })
-          .filter(Boolean);
+        var attrSpecs = [];
+        var seenAttrLabels = Object.create(null);
+        attrs.slice(0, 30).forEach(function (a) {
+          var rawName = String((a && (a.name || a.title)) || '');
+          if (!rawName) return;
+          var baseLabel = rawName.slice(0, 50);
+          var label = baseLabel;
+          var dup = 2;
+          while (seenAttrLabels[label]) {
+            var suffix = ' (' + dup + ')';
+            label = baseLabel.slice(0, Math.max(1, 50 - suffix.length)) + suffix;
+            dup += 1;
+          }
+          seenAttrLabels[label] = true;
+          attrSpecs.push({ raw: rawName, label: label });
+        });
+        var attrNames = attrSpecs.map(function (spec) { return spec.label; });
         var entry = {
           name: String(collName).slice(0, 60),
           caseCount: (typeof countRes === 'number') ? countRes : null,
@@ -209,27 +227,27 @@
             resource: 'dataContext[' + ctxName + '].collection[' + collName + '].allCases'
           }));
           var cases = (allRes && Array.isArray(allRes.cases)) ? allRes.cases : [];
-          if (cases.length && attrNames.length) {
+          if (cases.length && attrSpecs.length) {
             var scan = cases.slice(0, MAX_SCAN_CASES);
             var byAttr = Object.create(null);
-            attrNames.forEach(function (n) { byAttr[n] = []; });
+            attrSpecs.forEach(function (spec) { byAttr[spec.label] = []; });
             var sample = [];
             for (var c = 0; c < scan.length; c++) {
               var vals = caseValues(scan[c]) || {};
-              attrNames.forEach(function (n) {
-                var val = Object.prototype.hasOwnProperty.call(vals, n) ? vals[n] : undefined;
-                byAttr[n].push(val);
+              attrSpecs.forEach(function (spec) {
+                var val = Object.prototype.hasOwnProperty.call(vals, spec.raw) ? vals[spec.raw] : undefined;
+                byAttr[spec.label].push(val);
               });
               if (sample.length < MAX_SAMPLE_ROWS) {
                 var row = Object.create(null);
-                attrNames.forEach(function (n) {
-                  var val = Object.prototype.hasOwnProperty.call(vals, n) ? vals[n] : undefined;
-                  row[n] = cellText(val);
+                attrSpecs.forEach(function (spec) {
+                  var val = Object.prototype.hasOwnProperty.call(vals, spec.raw) ? vals[spec.raw] : undefined;
+                  row[spec.label] = cellText(val);
                 });
                 sample.push(row);
               }
             }
-            entry.summaries = attrNames.map(function (n) { return summarizeAttribute(n, byAttr[n]); });
+            entry.summaries = attrSpecs.map(function (spec) { return summarizeAttribute(spec.label, byAttr[spec.label]); });
             entry.sample = sample;
             entry.scanned = scan.length;
             entry.sampleTruncated = cases.length > sample.length;
@@ -334,9 +352,10 @@
   // plugin made earlier. The context must already exist; names are re-checked.
   async function addItems(input) {
     var target = dsText(input && input.contextName, 60);
+    if (!target || /[[\]]/.test(target)) return { ok: false, error: 'no-context' };
     var list = valuesOf(await codapCall({ action: 'get', resource: 'dataContextList' })) || [];
     var exists = list.some(function (c) { return c && c.name === target; });
-    if (!target || !exists) return { ok: false, error: 'no-context' };
+    if (!exists) return { ok: false, error: 'no-context' };
     var prepared = prepareDataset({ title: target, attributes: input.attributes, rows: input.rows }, []);
     if (!prepared || !prepared.items.length) return { ok: false, error: 'invalid-rows' };
     var added = await codapCall({ action: 'create', resource: 'dataContext[' + target + '].item', values: prepared.items.slice(0, 500) });
@@ -379,7 +398,7 @@
       if (window.location && window.location.origin && o === window.location.origin) return true;
       var u = new URL(o);
       var host = (u.hostname || '').toLowerCase();
-      if (/^(localhost|127\.0\.0\.1|data-lab\.test)$/.test(host)) return true;
+      if ((u.protocol === 'http:' || u.protocol === 'https:') && /^(localhost|127\.0\.0\.1|\[::1\]|data-lab\.test)$/.test(host)) return true;
       if (u.protocol !== 'https:') return false;
       return host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
              host === 'alloflow.org' || /\.alloflow\.org$/.test(host) ||
@@ -431,8 +450,8 @@
         });
       return;
     }
-    Promise.resolve()
-      .then(buildSnapshot)
+    registration
+      .then(function () { return connected ? buildSnapshot() : null; })
       .then(function (snapshot) {
         window.top.postMessage({ type: 'allodatalab-snapshot', id: requestId, ok: connected, snapshot: snapshot }, responseOrigin);
       })

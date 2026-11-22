@@ -31,6 +31,47 @@ var Sparkles = _lazyIcon('Sparkles');
 var Unlock = _lazyIcon('Unlock');
 var Unplug = _lazyIcon('Unplug');
 var X = _lazyIcon('X');
+function _vrCheckStudentPromptSafety(text, surface, addToast, onSafetyFlag) {
+  const msg = String(text || "").trim();
+  if (!msg || typeof window === "undefined") return false;
+  const onFlag = typeof onSafetyFlag === "function" ? onSafetyFlag : null;
+  let blocked = false;
+  if (window.SelHub && typeof window.SelHub.safeRehearseCheck === "function") {
+    try {
+      const r = window.SelHub.safeRehearseCheck(msg, { toolId: "view_renderers_" + surface, onSafetyFlag: onFlag });
+      if (r && r.action === "block") blocked = true;
+    } catch (_) {
+    }
+  } else {
+    const checker = window.__alloShared && window.__alloShared.SafetyContentChecker || window.SafetyContentChecker || null;
+    let flags = null;
+    try {
+      flags = checker && typeof checker.check === "function" ? checker.check(msg) : null;
+    } catch (_) {
+      flags = null;
+    }
+    const crit = Array.isArray(flags) && flags.find((f) => f && f.severity === "critical");
+    if (crit) {
+      blocked = true;
+      if (onFlag) {
+        try {
+          onFlag(Object.assign({}, crit, { source: "view_renderers_" + surface, context: msg.slice(0, 100), aiGenerated: false }));
+        } catch (_) {
+        }
+      }
+    }
+  }
+  if (blocked) {
+    if (typeof addToast === "function") addToast("We paused generating that cue for a moment. Your wellbeing matters more than any project \u2014 please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line).", "warn");
+    if (window.SelHub && typeof window.SelHub.showCrisisModal === "function") {
+      try {
+        window.SelHub.showCrisisModal({ toolName: "Memory Palace / Concept Space", contentSnippet: msg.slice(0, 200) });
+      } catch (_) {
+      }
+    }
+  }
+  return blocked;
+}
 function _vrCopy(t, key, fallback) {
   try {
     const fn = typeof t === "function" ? t : typeof window !== "undefined" && typeof window.__alloT === "function" ? window.__alloT : null;
@@ -2161,6 +2202,7 @@ const renderOutlineContentCore = (deps) => {
         title: main,
         t,
         addToast: deps.addToast,
+        onSafetyFlag: deps.handleAiSafetyFlag,
         onPersist: _organizerPersist,
         callImagen: deps.callImagen,
         playSound,
@@ -2189,6 +2231,7 @@ const renderOutlineContentCore = (deps) => {
         title: main,
         t,
         addToast: deps.addToast,
+        onSafetyFlag: deps.handleAiSafetyFlag,
         callImagen: deps.callImagen,
         onPersist: _organizerPersist,
         playSound,
@@ -2682,7 +2725,7 @@ function openConceptMap3D(opts) {
   });
   return destroy;
 }
-const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, recallArmed, challengeLiveReadiness, recallLiveReadiness, onChallengeArm, onChallengeClose, onRecallArm, onRecallClose, onActivityReady, onActivityFailed }) => {
+const ConceptSpace3DView = ({ data, title, t, addToast, onSafetyFlag, callImagen, onPersist, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, recallArmed, challengeLiveReadiness, recallLiveReadiness, onChallengeArm, onChallengeClose, onRecallArm, onRecallClose, onActivityReady, onActivityFailed }) => {
   const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
   const hostRef = React.useRef(null);
   const handleRef = React.useRef(null);
@@ -3132,6 +3175,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     if (!cur || directBusy || !_alloRuntimeAiAvailable()) return;
     const userPrompt = directPrompt.trim();
     if (!userPrompt) return;
+    if (_vrCheckStudentPromptSafety(userPrompt, "concept_space_art", addToast, onSafetyFlag)) return;
     const MP = window.AlloModules && window.AlloModules.MemoryPalace;
     if (!MP || !MP.buildPromptEvalPrompt || !MP.parsePromptEval) {
       handleArtGenerate(userPrompt);
@@ -3179,6 +3223,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     const art = artRef.current && artRef.current[cur.id];
     const instr = refinePrompt.trim();
     if (!art || art.type !== "sculpture" || !art.recipe || !instr) return;
+    if (_vrCheckStudentPromptSafety(instr, "concept_space_refine", addToast, onSafetyFlag)) return;
     const rec = art.recipe;
     setRefineBusy(true);
     Promise.resolve(window.callGemini(P3D.buildRefinePrompt(rec, instr), true)).then((res) => {
@@ -4076,7 +4121,7 @@ const _mpTourPaces = Object.freeze({
   standard: { label: "Standard", dwell: 5100, camera: 1, speech: 1 },
   brisk: { label: "Brisk", dwell: 3200, camera: 1.38, speech: 1.12 }
 });
-const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, liveRecallReadiness, onRecallArm, onRecallClose, onActivityReady, onActivityFailed }) => {
+const MemoryPalaceView = ({ data, title, t, addToast, onSafetyFlag, onPersist, callImagen, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, liveRecallReadiness, onRecallArm, onRecallClose, onActivityReady, onActivityFailed }) => {
   const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
   const hostRef = React.useRef(null);
   const presentationRef = React.useRef(null);
@@ -5247,6 +5292,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     if (directType === "image" ? !canImagen : !window.AlloModules?.Prim3D) return;
     const userPrompt = typeof promptOverride === "string" && promptOverride.trim() ? promptOverride.trim() : directPrompt.trim();
     if (!userPrompt) return;
+    if (_vrCheckStudentPromptSafety(userPrompt, "memory_palace_art", addToast, onSafetyFlag)) return;
     const job = _beginArtJob("checking", cur);
     if (!job) return;
     const context = { locus: { ...cur }, type: directType, relief: reliefOn, target: _artTarget(cur) };
@@ -5461,6 +5507,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const rec = mpRef.current && mpRef.current.objects && mpRef.current.objects[cur.id];
     const instr = refinePrompt.trim();
     if (!rec || !instr || rec.glbItem) return;
+    if (_vrCheckStudentPromptSafety(instr, "memory_palace_refine", addToast, onSafetyFlag)) return;
     const job = _beginArtJob("refine", cur);
     if (!job) return;
     const target = _artTarget(cur);

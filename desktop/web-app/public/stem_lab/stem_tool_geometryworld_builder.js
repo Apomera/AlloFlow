@@ -1631,7 +1631,7 @@
       description=(operation==='move'?'Move ':'Make a copy offset ')+offset+'.'+(operation==='duplicate'?' Original blocks stay in place.':'');
     }
     if(operation==='repeat')description='Create '+values.total+' total instances along '+values.axis.toUpperCase()+' in the '+(values.direction===1?'positive':'negative')+' direction, with a '+values.gap+'-cell gap. Original and copied blocks will be selected.';
-    if(operation==='recolor')description='Change block material to '+BLOCK_TYPES.find(function(type){return type.id===values.type;}).name+'.';
+    if(operation==='recolor'){var _recolorType=BLOCK_TYPES.find(function(type){return type.id===values.type;});description='Change block material to '+(_recolorType?_recolorType.name:String(values.type||'block'))+'.';}
     var facts=previewChangeFacts({additions:plan.additions,frameBlocks:plan.selection}),after=plan.selection || plan.additions;
     return description+' After Apply, '+after.length+' block'+(after.length===1?'':'s')+' will be selected ('+before.length+' currently).'+
       (facts?' Resulting grid span is '+facts.width+' wide (X), '+facts.depth+' deep (Z), '+facts.height+' high (Y).':'');
@@ -5893,8 +5893,10 @@
         if (result.ok) {
           var facts = previewChangeFacts(result);
           var block = result.additions[0];
-          var material = BLOCK_TYPES.find(function (item) { return item.id === block.type; }).name.toLowerCase();
-          var shape = BLOCK_SHAPES.find(function (item) { return item.id === block.shape; }).name.toLowerCase();
+          var _matItem = BLOCK_TYPES.find(function (item) { return item.id === block.type; });
+          var _shpItem = BLOCK_SHAPES.find(function (item) { return item.id === block.shape; });
+          var material = (_matItem ? _matItem.name : String(block.type || 'block')).toLowerCase();
+          var shape = (_shpItem ? _shpItem.name : String(block.shape || 'cube')).toLowerCase();
           var ranges = ['x', 'y', 'z'].map(function (axis) {
             var first = facts.min[axis], last = facts.max[axis] - 1;
             return axis.toUpperCase() + ' ' + first + (first === last ? '' : ' to ' + last);

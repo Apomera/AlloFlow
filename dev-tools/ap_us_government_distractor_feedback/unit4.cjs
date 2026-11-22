@@ -18,14 +18,14 @@ module.exports = {
     'Social factors eliminate the role of political events in shaping beliefs.': 'Social factors and events both shape beliefs; neither cancels the other.',
   },
   'ap-usg-u4-067': {
-    'It automatically causes every citizen in the country to adopt one identical ideology.': 'Crises shift priorities in different directions for different people; they do not produce uniform views.',
+    'It uniformly leads every citizen in the country to adopt one identical ideology.': 'Crises shift priorities in different directions for different people; they do not produce uniform views.',
     'It prevents political parties from responding in any way to shifts in public opinion.': 'Parties usually respond quickly to crises; a crisis does not disable them.',
-    'It affects only local elections and never reaches the national policy debates that follow.': 'National crises shape national debates about security, liberty, and government’s role.',
+    'It shapes local elections without influencing the national policy debates that follow.': 'National crises shape national debates about security, liberty, and government’s role.',
   },
   'ap-usg-u4-068': {
     'A voluntary online poll promoted mainly to the strongest supporters of one side': 'A self-selected sample recruited from one side cannot represent the population.',
-    'A sample made up entirely of the pollster’s own friends, family, and neighbors': 'A convenience sample of acquaintances has no known relationship to the target population.',
-    'A question asked only of people who already agree with the poll’s conclusion': 'Selecting respondents by their answer builds the conclusion into the sample and measures nothing.',
+    'A sample drawn strictly from the pollster’s own friends, family, and neighbors': 'A convenience sample of acquaintances has no known relationship to the target population.',
+    'A question posed specifically to people who already share the poll’s conclusion': 'Selecting respondents by their answer builds the conclusion into the sample and measures nothing.',
   },
   'ap-usg-u4-069': {
     'Exactly 51 percent of all citizens in the population support the policy as written.': 'A poll estimates the population value with uncertainty; it cannot establish an exact figure for everyone.',
@@ -64,8 +64,8 @@ module.exports = {
   },
   'ap-usg-u4-164': {
     'The survey proves that all of the respondents hold an identical set of ideological views.': 'Vague wording hides differences; it cannot show respondents agree.',
-    'The wording guarantees a representative sample regardless of how respondents were selected.': 'Question wording and sampling are separate; no wording can make a sample representative.',
-    'The survey can measure only voting turnout and cannot measure any policy attitude at all.': 'The question asks about a preference, so it measures an attitude, however imprecisely.',
+    'The wording ensures a representative sample regardless of how respondents were selected.': 'Question wording and sampling are separate; no wording can make a sample representative.',
+    'The survey tracks voting turnout without measuring any underlying policy attitude.': 'The question asks about a preference, so it measures an attitude, however imprecisely.',
   },
   'ap-usg-u4-165': {
     'Judicial review': 'Judicial review is a court power over laws, not a process of learning civic norms.',
@@ -143,9 +143,9 @@ module.exports = {
     'The change proves that party identification has now disappeared entirely from the American electorate.': 'The surveys measured policy support, not party identification, and say nothing about it disappearing.',
   },
   'ap-usg-u4-242': {
-    'A probability sample guarantees that every respondent answers honestly.': 'Sampling governs who is asked, not whether they answer truthfully.',
+    'A probability sample ensures that every respondent answers honestly.': 'Sampling governs who is asked, not whether they answer truthfully.',
     'A probability sample eliminates the need to report question wording.': 'Wording still shapes answers and must be reported regardless of sampling quality.',
-    'A probability sample includes only people who volunteer after seeing an advertisement.': 'Volunteers recruited by advertisement form a self-selected sample, the opposite of probability sampling.',
+    'A probability sample draws strictly from people who volunteer after seeing an ad.': 'Volunteers recruited by advertisement form a self-selected sample, the opposite of probability sampling.',
   },
   'ap-usg-u4-243': {
     'The poll proves that exactly 52 percent of all citizens support the policy as stated.': 'A sample estimate with a margin of error cannot establish an exact population figure.',

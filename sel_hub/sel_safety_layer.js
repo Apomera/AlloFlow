@@ -748,7 +748,7 @@
     return s;
   }
 
-  var _CRISIS_TERMS = /\b(suicide|suicidal|kill myself|killing myself|end my life|ending my life|want to die|wanna die|don'?t want to (?:live|be here)|hurt myself|hurting myself|self.?harm|cut myself|cutting myself|overdose|no reason to live|better off dead|being abused|he hits me|she hits me|they hit me|touched me)\b/i;
+  var _CRISIS_TERMS = /\b(suicide|suicidal|kill myself|killing myself|end my life|ending my life|end it all|take my (?:own )?life|want to die|wanna die|wish i (?:were|was) dead|don'?t want to (?:live|be alive|be here)|do not want to (?:live|be alive|be here)|hurt myself|hurting myself|harm myself|self.?harm|cut myself|cutting myself|slit my wrists|overdose|no reason to live|better off dead|being abused|he hits me|she hits me|they hit me|touched me)\b/i;
 
   window.SelHub.scanForCrisis = function(text) {
     var out = { triggered: false, matchedTerm: null };

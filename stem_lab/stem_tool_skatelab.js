@@ -3260,9 +3260,170 @@ window.StemLab = window.StemLab || {
     return { ctx: ctx, width: width, height: height };
   }
 
-  function drawArrow(ctx, x1, y1, x2, y2, color, label) {
+  // Pre-allocated zero-allocation ribbon buffer shared across 2D/3D skate scenes.
+  var SK_TRAIL_BUF = [];
+  for (var _skbi = 0; _skbi < 20; _skbi++) {
+    SK_TRAIL_BUF.push({ x: 0, y: 0, ke: 0, fade: 0 });
+  }
+
+  function skKeRibbonRGB(norm) {
+    var t = clamp(finite(norm, 0), 0, 1);
+    // Speed-coupled kinetic energy ramp: cyan (#38dbf8) -> amber (#fbbf24) -> magenta (#ec4899)
+    if (t < 0.5) {
+      var u = t * 2;
+      return [
+        Math.round(56 + (251 - 56) * u),
+        Math.round(219 + (191 - 219) * u),
+        Math.round(248 + (36 - 248) * u)
+      ];
+    }
+    var v = (t - 0.5) * 2;
+    return [
+      Math.round(251 + (236 - 251) * v),
+      Math.round(191 + (72 - 191) * v),
+      Math.round(36 + (153 - 36) * v)
+    ];
+  }
+
+  function drawEnergyRibbon(ctx, pts, count, highContrast, reducedMotion) {
+    if (count < 2) return;
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (highContrast) {
+      ctx.strokeStyle = '#ffff00';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (var hc = 1; hc < count; hc++) ctx.lineTo(pts[hc].x, pts[hc].y);
+      ctx.stroke();
+      ctx.restore();
+      return;
+    }
+    for (var s = 1; s < count; s++) {
+      var a = pts[s - 1], b = pts[s];
+      var rgb = skKeRibbonRGB(a.ke);
+      // Soft outer kinetic energy glow aura
+      ctx.strokeStyle = 'rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',' + (0.16 * a.fade).toFixed(3) + ')';
+      ctx.lineWidth = 5.4 + a.fade * 7.2;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      // Crisp inner speed-gradient ribbon core
+      ctx.strokeStyle = 'rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',' + (0.64 * a.fade).toFixed(3) + ')';
+      ctx.lineWidth = 2.0 + a.fade * 4.0;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      // Subtle hot leading specular filament at high KE
+      if (!reducedMotion && s <= 4 && a.ke > 0.55) {
+        ctx.strokeStyle = 'rgba(255,252,240,' + (0.48 * a.fade * a.ke).toFixed(3) + ')';
+        ctx.lineWidth = 1.1 + a.fade * 0.9;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawThermalFrictionSparks(ctx, x, y, dirX, dirY, speed, rollingMu, phaseT, highContrast, reducedMotion) {
+    if (highContrast || !(rollingMu > 0) || !(speed > 0.35)) return;
+    var heatIntensity = clamp((rollingMu / 0.018) * clamp(speed / 7.5, 0, 1.35), 0.12, 1);
+    var normLen = Math.max(0.0001, Math.sqrt(dirX * dirX + dirY * dirY));
+    var tx = dirX / normLen, ty = dirY / normLen;
+    var nx = ty, ny = -tx; // upward track normal in screen coords when moving right
+    if (ny > 0) { nx = -nx; ny = -ny; }
+    ctx.save();
+    // Glowing heated track-contact sheen right along the wheel contact zone
+    var sheenLen = 14 + heatIntensity * 18;
+    if (typeof ctx.createRadialGradient === 'function') {
+      var contactGlow = ctx.createRadialGradient(x - tx * 4, y + 2, 1, x - tx * 6, y + 2, sheenLen);
+      contactGlow.addColorStop(0, 'rgba(255,236,179,' + (0.52 * heatIntensity).toFixed(3) + ')');
+      contactGlow.addColorStop(0.42, 'rgba(251,146,60,' + (0.34 * heatIntensity).toFixed(3) + ')');
+      contactGlow.addColorStop(1, 'rgba(239,68,68,0)');
+      ctx.fillStyle = contactGlow;
+      ctx.beginPath();
+      if (typeof ctx.ellipse === 'function') {
+        ctx.ellipse(x - tx * 5, y + 2, sheenLen, 4.5 + heatIntensity * 3, Math.atan2(ty, tx), 0, Math.PI * 2);
+      } else {
+        ctx.arc(x - tx * 5, y + 2, sheenLen * 0.6, 0, Math.PI * 2);
+      }
+      ctx.fill();
+    }
+    ctx.strokeStyle = 'rgba(251,146,60,' + (0.58 * heatIntensity).toFixed(3) + ')';
+    ctx.lineWidth = 2.2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x + tx * 4, y + 2);
+    ctx.lineTo(x - tx * (10 + heatIntensity * 14), y + 2 - ty * (10 + heatIntensity * 14));
+    ctx.stroke();
+
+    // Deterministic phase-driven warm thermal wheel sparks (gated by reducedMotion)
+    if (!reducedMotion) {
+      var sparkCount = Math.min(7, Math.max(3, Math.round(3 + heatIntensity * 4)));
+      var prevComp = ctx.globalCompositeOperation;
+      try { ctx.globalCompositeOperation = 'lighter'; } catch (e) {}
+      for (var k = 0; k < sparkCount; k++) {
+        var frac = ((phaseT * (2.6 + k * 0.45) + k * 0.37) % 1 + 1) % 1;
+        var dist = (4 + frac * (16 + heatIntensity * 16));
+        var lift = (1 - frac * 0.55) * frac * (10 + (k % 3) * 4.5) - frac * frac * 5;
+        var sx = x - tx * dist + nx * Math.max(-2, lift);
+        var sy = y + 1 - ty * dist + ny * Math.max(-2, lift);
+        var tail = 4.2 + (1 - frac) * 4.5;
+        var alpha = (1 - frac) * (0.45 + 0.5 * heatIntensity);
+        ctx.strokeStyle = frac < 0.35
+          ? 'rgba(255,248,214,' + alpha.toFixed(3) + ')'
+          : 'rgba(251,146,60,' + (alpha * 0.9).toFixed(3) + ')';
+        ctx.lineWidth = 1.1 + (1 - frac) * 1.1;
+        ctx.beginPath();
+        ctx.moveTo(sx + tx * tail, sy + ty * tail);
+        ctx.lineTo(sx, sy);
+        ctx.stroke();
+      }
+      try { ctx.globalCompositeOperation = prevComp; } catch (e) {}
+    }
+    ctx.restore();
+  }
+
+  function drawAltitudeShadow2D(ctx, x, y, altitudeM, tiltDeg, highContrast) {
+    var alt = Math.max(0, finite(altitudeM, 0));
+    var scale = clamp(1 / (1 + alt * 0.42), 0.34, 1);
+    var rx = 15.5 * scale + 2.5;
+    var ry = 3.8 * scale + 0.9;
+    var alpha = highContrast ? clamp(0.45 * scale, 0.14, 0.45) : clamp(0.44 * scale, 0.10, 0.44);
+    ctx.save();
+    ctx.translate(x, y + 3);
+    if (tiltDeg) ctx.rotate(tiltDeg * Math.PI / 180);
+    if (!highContrast && typeof ctx.createRadialGradient === 'function') {
+      var shGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, rx);
+      shGrad.addColorStop(0, 'rgba(2,7,18,' + (alpha * 1.15).toFixed(3) + ')');
+      shGrad.addColorStop(0.65, 'rgba(2,7,18,' + (alpha * 0.6).toFixed(3) + ')');
+      shGrad.addColorStop(1, 'rgba(2,7,18,0)');
+      ctx.fillStyle = shGrad;
+    } else {
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = '#020712';
+    }
+    ctx.beginPath();
+    if (typeof ctx.ellipse === 'function') {
+      ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+    } else {
+      ctx.arc(0, 0, rx * 0.65, 0, Math.PI * 2);
+    }
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawArrow(ctx, x1, y1, x2, y2, color, label, highContrast) {
     var angle = Math.atan2(y2 - y1, x2 - x1);
     ctx.save();
+    if (!highContrast) {
+      ctx.save();
+      ctx.globalAlpha = 0.24;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.restore();
+    }
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
     ctx.lineWidth = 2;
@@ -3283,37 +3444,103 @@ window.StemLab = window.StemLab || {
     ctx.restore();
   }
 
-  function drawBackdrop(ctx, width, height, title, subtitle) {
+  function drawBackdrop(ctx, width, height, title, subtitle, config) {
     var compact = width < 520;
+    var highContrast = !!(config && config.highContrast);
+    var reducedMotion = !!(config && config.reducedMotion);
+    var horizon = Math.round(height * 0.56);
+    if (highContrast) {
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, width, height);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,255,0,0.28)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, horizon);
+      ctx.lineTo(width, horizon);
+      ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = '#ffff00';
+      ctx.font = '800 14px ui-sans-serif, system-ui';
+      ctx.fillText(title, 18, 25);
+      if (!compact) {
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '500 11px ui-sans-serif, system-ui';
+        ctx.fillText(subtitle, 18, 43);
+      }
+      return;
+    }
+
     var sky = ctx.createLinearGradient(0, 0, 0, height);
-    sky.addColorStop(0, '#040d1d');
-    sky.addColorStop(0.38, '#102644');
-    sky.addColorStop(0.56, '#233b59');
-    sky.addColorStop(0.76, '#142238');
+    sky.addColorStop(0, '#07142b');
+    sky.addColorStop(0.28, '#132f54');
+    sky.addColorStop(0.50, '#2c4c70');
+    sky.addColorStop(0.58, '#46586e');
+    sky.addColorStop(0.76, '#142338');
     sky.addColorStop(1, '#07101d');
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, width, height);
 
-    var horizon = Math.round(height * 0.56);
-    // Warm dusk horizon atmospheric glow & distant mountain ridge silhouette.
+    // Crisp sunlit golden-hour skatepark atmosphere bloom, aerial perspective & diagonal light shafts.
     ctx.save();
+    var sunX = width * 0.74, sunY = horizon - Math.min(46, height * 0.11);
     if (typeof ctx.createRadialGradient === 'function') {
-      var horGlow = ctx.createRadialGradient(width * 0.68, horizon, 6, width * 0.68, horizon, Math.max(width * 0.45, 180));
-      horGlow.addColorStop(0, 'rgba(246,184,63,0.16)');
-      horGlow.addColorStop(0.5, 'rgba(114,220,232,0.06)');
-      horGlow.addColorStop(1, 'rgba(8,17,31,0)');
-      ctx.fillStyle = horGlow;
-      ctx.fillRect(0, 0, width, horizon + 20);
+      var sunHalo = ctx.createRadialGradient(sunX, sunY, 4, sunX, sunY, Math.max(width * 0.48, 210));
+      sunHalo.addColorStop(0, 'rgba(254,240,178,0.34)');
+      sunHalo.addColorStop(0.18, 'rgba(251,191,36,0.20)');
+      sunHalo.addColorStop(0.48, 'rgba(249,115,22,0.08)');
+      sunHalo.addColorStop(0.75, 'rgba(56,189,248,0.05)');
+      sunHalo.addColorStop(1, 'rgba(8,17,31,0)');
+      ctx.fillStyle = sunHalo;
+      ctx.fillRect(0, 0, width, horizon + 28);
+      // Warm solar disc behind atmospheric haze
+      var sunCore = ctx.createRadialGradient(sunX, sunY, 1, sunX, sunY, compact ? 16 : 22);
+      sunCore.addColorStop(0, 'rgba(255,252,230,0.72)');
+      sunCore.addColorStop(0.5, 'rgba(253,224,130,0.28)');
+      sunCore.addColorStop(1, 'rgba(251,191,36,0)');
+      ctx.fillStyle = sunCore;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, compact ? 16 : 22, 0, Math.PI * 2);
+      ctx.fill();
     }
-    // Subtle twilight stars overhead.
-    ctx.fillStyle = 'rgba(226,240,255,0.45)';
-    for (var st = 0; st < (compact ? 10 : 20); st++) {
+    // Subtle sunlit diagonal atmosphere shafts across the skatepark sky
+    var rayShift = reducedMotion ? 0 : Math.sin(((config && config.progress) || 0) * Math.PI * 4) * 6;
+    for (var ray = 0; ray < 3; ray++) {
+      var rxTop = sunX - 24 - ray * (compact ? 42 : 68) + rayShift;
+      var rayGrad = ctx.createLinearGradient(rxTop, 0, rxTop - 90, horizon);
+      rayGrad.addColorStop(0, 'rgba(254,243,199,0.075)');
+      rayGrad.addColorStop(0.65, 'rgba(251,191,36,0.032)');
+      rayGrad.addColorStop(1, 'rgba(251,191,36,0)');
+      ctx.fillStyle = rayGrad;
+      ctx.beginPath();
+      ctx.moveTo(rxTop, 0);
+      ctx.lineTo(rxTop + (compact ? 22 : 34), 0);
+      ctx.lineTo(rxTop - 68, horizon);
+      ctx.lineTo(rxTop - 104, horizon);
+      ctx.closePath();
+      ctx.fill();
+    }
+    // High-altitude twilight stars in the upper zenith only.
+    ctx.fillStyle = 'rgba(226,240,255,0.34)';
+    for (var st = 0; st < (compact ? 8 : 14); st++) {
       var stx = ((st * 137 + 41) % 97) / 97 * width;
-      var sty = ((st * 73 + 19) % 53) / 53 * (horizon * 0.58);
-      ctx.fillRect(stx, sty, st % 3 === 0 ? 1.8 : 1.1, st % 3 === 0 ? 1.8 : 1.1);
+      var sty = ((st * 73 + 19) % 53) / 53 * (horizon * 0.42);
+      ctx.fillRect(stx, sty, st % 3 === 0 ? 1.6 : 1.0, st % 3 === 0 ? 1.6 : 1.0);
     }
-    // Distant ridge behind the urban skatepark skyline.
-    ctx.fillStyle = 'rgba(12,27,48,0.68)';
+    // Far aerial-perspective mountain ridge (hazy sunlit slate)
+    ctx.fillStyle = 'rgba(30,52,78,0.52)';
+    ctx.beginPath();
+    ctx.moveTo(0, horizon);
+    for (var frk = 0; frk <= 12; frk++) {
+      var frx = width * (frk / 12);
+      var fry = horizon - 38 - Math.sin(frk * 0.95 + 1.1) * 18 - Math.cos(frk * 1.9) * 9;
+      ctx.lineTo(frx, fry);
+    }
+    ctx.lineTo(width, horizon);
+    ctx.closePath();
+    ctx.fill();
+    // Mid distant ridge behind the urban skatepark skyline.
+    ctx.fillStyle = 'rgba(12,27,48,0.72)';
     ctx.beginPath();
     ctx.moveTo(0, horizon);
     for (var rk = 0; rk <= 14; rk++) {
@@ -3324,6 +3551,13 @@ window.StemLab = window.StemLab || {
     ctx.lineTo(width, horizon);
     ctx.closePath();
     ctx.fill();
+    // Subtle sunlit horizon mist band separating distant ridges from skatepark foreground
+    var mistGrad = ctx.createLinearGradient(0, horizon - 20, 0, horizon + 8);
+    mistGrad.addColorStop(0, 'rgba(253,224,148,0)');
+    mistGrad.addColorStop(0.7, 'rgba(253,224,148,0.09)');
+    mistGrad.addColorStop(1, 'rgba(12,24,42,0)');
+    ctx.fillStyle = mistGrad;
+    ctx.fillRect(0, horizon - 20, width, 28);
     ctx.restore();
 
     ctx.save();
@@ -3334,6 +3568,9 @@ window.StemLab = window.StemLab || {
       var buildingX = building * blockWidth;
       var buildingH = 18 + ((building * 17 + 31) % 42);
       ctx.fillRect(buildingX, horizon - buildingH, blockWidth - 4, buildingH);
+      // Warm sunlit rooftop rim highlight facing the sun
+      ctx.fillStyle = 'rgba(253,224,148,0.22)';
+      ctx.fillRect(buildingX, horizon - buildingH, blockWidth - 4, 1.5);
       ctx.fillStyle = 'rgba(246,184,63,.30)';
       if (building % 3 === 0) ctx.fillRect(buildingX + 8, horizon - buildingH + 10, 4, 3);
       if (building % 4 === 1) ctx.fillRect(buildingX + 16, horizon - buildingH + 18, 4, 3);
@@ -3897,7 +4134,7 @@ window.StemLab = window.StemLab || {
 
   function drawHalfpipe2D(ctx, width, height, sim, sample, config) {
     drawBackdrop(ctx, width, height, __alloT('stem.skatelab.canvas_halfpipe_title', 'HALFPIPE | SIDE ELEVATION'),
-      __alloT('stem.skatelab.canvas_halfpipe_subtitle', 'Drop in from rest: gravity, rolling friction, pumping, and flight'));
+      __alloT('stem.skatelab.canvas_halfpipe_subtitle', 'Drop in from rest: gravity, rolling friction, pumping, and flight'), config);
     var comparisonHalf2D = config.compareSim && config.compareSim.mode === 'halfpipe'
       ? config.compareSim
       : null;
@@ -4101,10 +4338,8 @@ window.StemLab = window.StemLab || {
     }
 
     if (config.showTrail) {
-      ctx.save();
-      var trailCount = width < 520 ? 8 : 14;
-      var trailStep = Math.min(0.016, 0.36 / Math.max(0.35, sim.motionDuration));
-      var trailPts = [];
+      var trailCount = Math.min(SK_TRAIL_BUF.length, width < 520 ? 10 : 16);
+      var trailStep = Math.min(0.014, 0.36 / Math.max(0.35, sim.motionDuration));
       for (var trail = 0; trail < trailCount; trail++) {
         var pp = Math.max(0, config.progress - trail * trailStep);
         var ghost = sampleHalfpipe(sim, pp);
@@ -4112,42 +4347,26 @@ window.StemLab = window.StemLab || {
         var keShare = ghost.energy && ghost.energy.total > 0.001
           ? clamp(ghost.energy.kinetic / ghost.energy.total, 0, 1)
           : clamp(1 - ghost.y / Math.max(0.5, sim.rampDepthM), 0, 1);
-        trailPts.push({ x: gp.x, y: gp.y - 14, ke: keShare, fade: 1 - trail / trailCount });
+        var slot = SK_TRAIL_BUF[trail];
+        slot.x = gp.x;
+        slot.y = gp.y - 14;
+        slot.ke = keShare;
+        slot.fade = 1 - trail / trailCount;
       }
-      ctx.lineCap = 'round';
-      for (var ts = 1; ts < trailPts.length; ts++) {
-        var aPt = trailPts[ts - 1], bPt = trailPts[ts];
-        var trR = Math.round(96 + aPt.ke * 155);
-        var trG = Math.round(215 - aPt.ke * 32);
-        var trB = Math.round(245 - aPt.ke * 182);
-        ctx.strokeStyle = 'rgba(' + trR + ',' + trG + ',' + trB + ',' + (0.42 * aPt.fade).toFixed(3) + ')';
-        ctx.lineWidth = 2.2 + aPt.fade * 4.4;
-        ctx.beginPath(); ctx.moveTo(aPt.x, aPt.y); ctx.lineTo(bPt.x, bPt.y); ctx.stroke();
-      }
-      // Subtle high-speed deck spark glint when kinetic energy dominates near bottom transition (reduced-motion safe).
-      var reducedMotion2D = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (!reducedMotion2D && trailPts.length > 2 && trailPts[0].ke > 0.72 && !sample.airborne) {
-        ctx.fillStyle = 'rgba(255,232,150,0.75)';
-        for (var spk = 0; spk < 3; spk++) {
-          var sxOff = -8 - spk * 6;
-          ctx.beginPath();
-          ctx.arc(trailPts[0].x + sxOff, trailPts[0].y + 11 - spk * 1.4, 1.8 - spk * 0.35, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-      ctx.restore();
+      drawEnergyRibbon(ctx, SK_TRAIL_BUF, trailCount, config.highContrast, config.reducedMotion);
     }
 
     var p = map(sample.x, sample.y);
     var surfaceY = Math.abs(sample.x) >= 3.98 ? sim.rampDepthM : halfpipeY(sample.x, sim.rampDepthM);
     var shadow = map(sample.x, surfaceY);
-    ctx.save();
-    ctx.globalAlpha = clamp(0.34 - Math.max(0, sample.y - surfaceY) * 0.07, 0.08, 0.34);
-    ctx.fillStyle = '#020712';
-    ctx.beginPath();
-    ctx.arc(shadow.x, shadow.y + 3, 12, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+    var altM = Math.max(0, sample.y - surfaceY);
+    drawAltitudeShadow2D(ctx, shadow.x, shadow.y, altM, sample.airborne ? 0 : sample.rotation, config.highContrast);
+
+    // Warm thermal-friction wheel sparks & heated track-contact sheen when friction > 0 and on-surface
+    if (!sample.airborne && sim.rollingMu > 0) {
+      var speed2D = Math.sqrt(sample.vx * sample.vx + sample.vy * sample.vy);
+      drawThermalFrictionSparks(ctx, p.x, p.y, sample.vx || 1, -(sample.vy || 0), speed2D, sim.rollingMu, sample.time || config.progress * 6, config.highContrast, config.reducedMotion);
+    }
 
     drawSkater2D(ctx, p.x, p.y, sample.rotation, sim.vehicle.id, sim.bodyPosition.id,
       sample.loadSquat, width < 520 ? 1.16 : 1.08, sample.spinDeg);
@@ -4155,7 +4374,7 @@ window.StemLab = window.StemLab || {
       drawOutcomeMarker(ctx, p.x, p.y - 42, sim, width);
     }
     if (config.showVectors) {
-      drawArrow(ctx, p.x, p.y - 18, p.x + clamp(sample.vx * 5, -52, 52), p.y - 18 - clamp(sample.vy * 5, -52, 52), '#4ed7e8', 'v');
+      drawArrow(ctx, p.x, p.y - 18, p.x + clamp(sample.vx * 5, -52, 52), p.y - 18 - clamp(sample.vy * 5, -52, 52), '#4ed7e8', 'v', config.highContrast);
       drawHalfpipeForces(ctx, sample, p.x + 17, p.y - 18, forcePixelsPerNewton(sim, width));
     }
     if (config.showEnergy && !config.predictionLocked) drawEnergyHud(ctx, sim, sample, width);
@@ -4213,7 +4432,7 @@ window.StemLab = window.StemLab || {
   function drawGap2D(ctx, width, height, sim, sample, config) {
     drawBackdrop(ctx, width, height, __alloT('stem.skatelab.canvas_gap_title', 'GAP JUMP | SIDE ELEVATION'), sim.airDrag
       ? __alloT('stem.skatelab.canvas_gap_subtitle_drag', 'Quadratic drag, wind, and terrain-aware contact')
-      : __alloT('stem.skatelab.canvas_gap_subtitle_ideal', 'Ideal flight with terrain-aware contact'));
+      : __alloT('stem.skatelab.canvas_gap_subtitle_ideal', 'Ideal flight with terrain-aware contact'), config);
     var comparisonGap2D = config.compareSim && config.compareSim.mode === 'gap'
       ? config.compareSim
       : null;
@@ -4430,32 +4649,30 @@ window.StemLab = window.StemLab || {
 
     var p = map(sample.x, sample.y);
     if (config.showTrail) {
-      ctx.save();
-      var trailCount = width < 520 ? 5 : 9;
+      var trailCount = Math.min(SK_TRAIL_BUF.length, width < 520 ? 8 : 14);
+      var gapRefSpeed = Math.max(2, sim.launchSpeedMps || 8);
       for (var trail = 0; trail < trailCount; trail++) {
-        var pp = Math.max(0, config.progress - trail * 0.022);
+        var pp = Math.max(0, config.progress - trail * 0.016);
         var ghost = sampleGapJump(sim, pp);
         var gp = map(ghost.x, ghost.y);
-        ctx.globalAlpha = 0.25 * (1 - trail / 10);
-        ctx.fillStyle = '#72dce8';
-        ctx.beginPath();
-        ctx.arc(gp.x, gp.y - 13, 4.2, 0, Math.PI * 2);
-        ctx.fill();
+        var gSpd = Math.sqrt(ghost.vx * ghost.vx + ghost.vy * ghost.vy);
+        var gSlot = SK_TRAIL_BUF[trail];
+        gSlot.x = gp.x;
+        gSlot.y = gp.y - 13;
+        gSlot.ke = clamp((gSpd * gSpd) / (gapRefSpeed * gapRefSpeed * 1.15), 0, 1);
+        gSlot.fade = 1 - trail / trailCount;
       }
-      ctx.restore();
+      drawEnergyRibbon(ctx, SK_TRAIL_BUF, trailCount, config.highContrast, config.reducedMotion);
     }
 
     var supportedShadow = sample.x <= 0.000001 ||
       (sample.x >= sim.gapM && Math.abs(sample.z) <= sim.platformHalfM && sample.y >= 0);
     if (supportedShadow) {
       var groundX = clamp(p.x, 10, width - 20);
-      ctx.save();
-      ctx.globalAlpha = clamp(0.34 - Math.max(0, sample.y) * 0.08, 0.08, 0.34);
-      ctx.fillStyle = '#020712';
-      ctx.beginPath();
-      ctx.arc(groundX, baseY + 3, 12, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+      drawAltitudeShadow2D(ctx, groundX, baseY, Math.max(0, sample.y), 0, config.highContrast);
+    }
+    if (!config.predictionLocked && isLandingContactPhase(sample.phase) && (sim.rollingMu > 0 || sample.vx > 0.4)) {
+      drawThermalFrictionSparks(ctx, p.x, baseY - 2, sample.vx || 1, 0, Math.abs(sample.vx || 0), Math.max(0.012, sim.rollingMu || 0.012), sample.time || config.progress * 6, config.highContrast, config.reducedMotion);
     }
 
     if (!config.predictionLocked && isLandingContactPhase(sample.phase)) {
@@ -4717,13 +4934,30 @@ window.StemLab = window.StemLab || {
     };
   }
 
-  function drawShadow3D(ctx, width, height, camera, point, lift) {
+  function drawShadow3D(ctx, width, height, camera, point, lift, highContrast) {
     var shadow = project3D(point, camera, width, height);
+    var alt = Math.max(0, finite(lift, 0));
+    var scale = clamp(1 / (1 + alt * 0.4), 0.36, 1);
+    var rx = 14.5 * scale + 2;
+    var ry = 5.2 * scale + 1.1;
+    var alpha = clamp(0.42 * scale, 0.09, 0.42);
     ctx.save();
-    ctx.globalAlpha = clamp(0.32 - finite(lift, 0) * 0.07, 0.07, 0.32);
-    ctx.fillStyle = '#020712';
+    if (!highContrast && typeof ctx.createRadialGradient === 'function') {
+      var sh3 = ctx.createRadialGradient(shadow.x, shadow.y + 3, 1, shadow.x, shadow.y + 3, rx);
+      sh3.addColorStop(0, 'rgba(2,7,18,' + (alpha * 1.1).toFixed(3) + ')');
+      sh3.addColorStop(0.65, 'rgba(2,7,18,' + (alpha * 0.55).toFixed(3) + ')');
+      sh3.addColorStop(1, 'rgba(2,7,18,0)');
+      ctx.fillStyle = sh3;
+    } else {
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = '#020712';
+    }
     ctx.beginPath();
-    ctx.arc(shadow.x, shadow.y + 3, 11, 0, Math.PI * 2);
+    if (typeof ctx.ellipse === 'function') {
+      ctx.ellipse(shadow.x, shadow.y + 3, rx, ry, 0, 0, Math.PI * 2);
+    } else {
+      ctx.arc(shadow.x, shadow.y + 3, rx * 0.65, 0, Math.PI * 2);
+    }
     ctx.fill();
     ctx.restore();
   }
@@ -4744,7 +4978,7 @@ window.StemLab = window.StemLab || {
   }
   function drawHalfpipe3D(ctx, width, height, sim, sample, config) {
     drawBackdrop(ctx, width, height, __alloT('stem.skatelab.canvas_halfpipe_3d_title', 'HALFPIPE | 3D ORBIT'),
-      __alloT('stem.skatelab.canvas_halfpipe_3d_subtitle', 'Board pitch follows terrain through supported motion, flight, and contact'));
+      __alloT('stem.skatelab.canvas_halfpipe_3d_subtitle', 'Board pitch follows terrain through supported motion, flight, and contact'), config);
     drawGround3D(ctx, width, height, config.camera);
     var comparisonHalf3D = config.compareSim && config.compareSim.mode === 'halfpipe'
       ? config.compareSim
@@ -4840,20 +5074,22 @@ window.StemLab = window.StemLab || {
     }
 
     if (config.showTrail) {
-      ctx.save();
-      var trailCount = width < 520 ? 5 : 9;
-      var trailStep = Math.min(0.022, 0.35 / Math.max(0.35, sim.motionDuration));
+      var trailCount = Math.min(SK_TRAIL_BUF.length, width < 520 ? 8 : 14);
+      var trailStep = Math.min(0.018, 0.35 / Math.max(0.35, sim.motionDuration));
       for (var trail = 0; trail < trailCount; trail++) {
         var ghostProgress = Math.max(0, config.progress - trail * trailStep);
         var ghostSample = sampleHalfpipe(sim, ghostProgress);
         var ghostProjection = project3D(ghostSample, config.camera, width, height);
-        ctx.globalAlpha = 0.25 * (1 - trail / 10);
-        ctx.fillStyle = '#72dce8';
-        ctx.beginPath();
-        ctx.arc(ghostProjection.x, ghostProjection.y - 8, 4, 0, Math.PI * 2);
-        ctx.fill();
+        var keShare3D = ghostSample.energy && ghostSample.energy.total > 0.001
+          ? clamp(ghostSample.energy.kinetic / ghostSample.energy.total, 0, 1)
+          : clamp(1 - ghostSample.y / Math.max(0.5, sim.rampDepthM), 0, 1);
+        var hSlot = SK_TRAIL_BUF[trail];
+        hSlot.x = ghostProjection.x;
+        hSlot.y = ghostProjection.y - 8;
+        hSlot.ke = keShare3D;
+        hSlot.fade = 1 - trail / trailCount;
       }
-      ctx.restore();
+      drawEnergyRibbon(ctx, SK_TRAIL_BUF, trailCount, config.highContrast, config.reducedMotion);
     }
 
     var surfacePoint = {
@@ -4861,9 +5097,14 @@ window.StemLab = window.StemLab || {
       y: Math.abs(sample.x) >= 3.98 ? sim.rampDepthM : halfpipeY(sample.x, sim.rampDepthM),
       z: 0
     };
-    drawShadow3D(ctx, width, height, config.camera, surfacePoint, Math.max(0, sample.y - surfacePoint.y));
+    drawShadow3D(ctx, width, height, config.camera, surfacePoint, Math.max(0, sample.y - surfacePoint.y), config.highContrast);
     var riderAnchors3D = drawSkater3D(ctx, width, height, config.camera, sample, sample.rotation, sim.vehicle.id, sim.bodyPosition.id, sample.loadSquat, 'side', sample.spinDeg);
     var center = riderAnchors3D.board;
+    if (!sample.airborne && sim.rollingMu > 0) {
+      var speed3D = Math.sqrt(sample.vx * sample.vx + sample.vy * sample.vy);
+      var aheadProj = project3D({ x: sample.x + sample.vx * 0.08, y: sample.y + sample.vy * 0.08, z: 0 }, config.camera, width, height);
+      drawThermalFrictionSparks(ctx, center.x, center.y + 3, aheadProj.x - center.x, aheadProj.y - center.y, speed3D, sim.rollingMu, sample.time || config.progress * 6, config.highContrast, config.reducedMotion);
+    }
     if (halfpipeOutcomeVisible(sim, sample)) {
       drawOutcomeMarker(ctx, center.x, center.y - 36, sim, width);
     }
@@ -4896,7 +5137,7 @@ window.StemLab = window.StemLab || {
 
   function drawGap3D(ctx, width, height, sim, sample, config) {
     drawBackdrop(ctx, width, height, __alloT('stem.skatelab.canvas_gap_3d_title', 'GAP JUMP | 3D ORBIT'),
-      __alloT('stem.skatelab.canvas_gap_3d_subtitle', 'Depth, drift, terrain contact, and support-load response'));
+      __alloT('stem.skatelab.canvas_gap_3d_subtitle', 'Depth, drift, terrain contact, and support-load response'), config);
     drawGround3D(ctx, width, height, config.camera);
     var comparisonGap3D = config.compareSim && config.compareSim.mode === 'gap'
       ? config.compareSim
@@ -4982,20 +5223,21 @@ window.StemLab = window.StemLab || {
     }
 
     if (config.showTrail) {
-      ctx.save();
       var trailCount = width < 520 ? 5 : 9;
+      var gapRef3D = Math.max(2, sim.launchSpeedMps || 8);
       for (var trail = 0; trail < trailCount; trail++) {
-        var ghostProgress = Math.max(0, config.progress - trail * 0.022);
+        var ghostProgress = Math.max(0, config.progress - trail * 0.016);
         var ghostSample = sampleGapJump(sim, ghostProgress);
         var ghostPoint = { x: lipX + ghostSample.x * k, y: 0.5 + ghostSample.y, z: ghostSample.z };
         var ghostProjection = project3D(ghostPoint, config.camera, width, height);
-        ctx.globalAlpha = 0.25 * (1 - trail / 10);
-        ctx.fillStyle = '#72dce8';
-        ctx.beginPath();
-        ctx.arc(ghostProjection.x, ghostProjection.y - 7, 4, 0, Math.PI * 2);
-        ctx.fill();
+        var gSpd3 = Math.sqrt(ghostSample.vx * ghostSample.vx + ghostSample.vy * ghostSample.vy);
+        var gSlot3 = SK_TRAIL_BUF[trail];
+        gSlot3.x = ghostProjection.x;
+        gSlot3.y = ghostProjection.y - 7;
+        gSlot3.ke = clamp((gSpd3 * gSpd3) / (gapRef3D * gapRef3D * 1.15), 0, 1);
+        gSlot3.fade = 1 - trail / trailCount;
       }
-      ctx.restore();
+      drawEnergyRibbon(ctx, SK_TRAIL_BUF, trailCount, config.highContrast, config.reducedMotion);
     }
 
     var skaterPoint = { x: lipX + sample.x * k, y: 0.5 + sample.y, z: sample.z };
@@ -5003,7 +5245,7 @@ window.StemLab = window.StemLab || {
       (sample.x >= sim.gapM && Math.abs(sample.z) <= sim.platformHalfM && sample.y >= 0);
     if (supportedShadow) {
       drawShadow3D(ctx, width, height, config.camera,
-        { x: skaterPoint.x, y: 0.52, z: skaterPoint.z }, Math.max(0, sample.y));
+        { x: skaterPoint.x, y: 0.52, z: skaterPoint.z }, Math.max(0, sample.y), config.highContrast);
     }
     if (!config.predictionLocked && isLandingContactPhase(sample.phase)) {
       var supportProjection = project3D({
@@ -5162,7 +5404,7 @@ window.StemLab = window.StemLab || {
   function drawFlat2D(ctx, width, height, sim, sample, config) {
     drawBackdrop(ctx, width, height,
       __alloT('stem.skatelab.canvas_flat_title', 'FLAT GROUND | SIDE ELEVATION'),
-      __alloT('stem.skatelab.canvas_flat_subtitle', 'One push, then coasting: rolling friction is the force that stops you'));
+      __alloT('stem.skatelab.canvas_flat_subtitle', 'One push, then coasting: rolling friction is the force that stops you'), config);
     var compact = width < 520;
     var comparisonFlat = config.compareSim && config.compareSim.mode === 'flat' ? config.compareSim : null;
     var left = compact ? 30 : 48;
@@ -5252,12 +5494,48 @@ window.StemLab = window.StemLab || {
     }
 
     var riderX = mapX(sample.x);
+    if (config.showTrail && sample.x > 0.05) {
+      var flatTrailCount = Math.min(SK_TRAIL_BUF.length, compact ? 8 : 14);
+      var flatTopSpeed = Math.max(1, sim.topSpeedMps || 4);
+      for (var ft = 0; ft < flatTrailCount; ft++) {
+        var fpp = Math.max(0, config.progress - ft * 0.018);
+        var fGhost = sampleFlat(sim, fpp);
+        var fSlot = SK_TRAIL_BUF[ft];
+        fSlot.x = mapX(fGhost.x);
+        fSlot.y = baseY - 18;
+        fSlot.ke = clamp((fGhost.vx * fGhost.vx) / (flatTopSpeed * flatTopSpeed), 0, 1);
+        fSlot.fade = 1 - ft / flatTrailCount;
+      }
+      drawEnergyRibbon(ctx, SK_TRAIL_BUF, flatTrailCount, config.highContrast, config.reducedMotion);
+    }
+    // Heated track-contact thermal ribbon along concrete surface showing rolling friction heat
+    if (!config.highContrast && sim.rollingMu > 0 && sample.x > 0.05 && sample.phase !== 'not moving') {
+      var heatSpanStart = mapX(Math.max(0, sample.x - Math.min(sample.x, 3.2)));
+      ctx.save();
+      var heatGrad = ctx.createLinearGradient(heatSpanStart, baseY, riderX, baseY);
+      var heatAlpha = clamp((sim.rollingMu / 0.025) * 0.62, 0.16, 0.65);
+      heatGrad.addColorStop(0, 'rgba(239,68,68,0)');
+      heatGrad.addColorStop(0.65, 'rgba(251,146,60,' + (heatAlpha * 0.72).toFixed(3) + ')');
+      heatGrad.addColorStop(1, 'rgba(254,240,138,' + heatAlpha.toFixed(3) + ')');
+      ctx.strokeStyle = heatGrad;
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(heatSpanStart, baseY - 0.5);
+      ctx.lineTo(riderX, baseY - 0.5);
+      ctx.stroke();
+      ctx.restore();
+    }
+    drawAltitudeShadow2D(ctx, riderX, baseY - 2, 0, 0, config.highContrast);
+    if (sim.rollingMu > 0 && sample.vx > 0.3) {
+      drawThermalFrictionSparks(ctx, riderX, baseY - 3, 1, 0, sample.vx, sim.rollingMu, sample.time || config.progress * 6, config.highContrast, config.reducedMotion);
+    }
     drawSkater2D(ctx, riderX, baseY - 4, 0, sim.vehicle.id, 'neutral', 0, compact ? 1.16 : 1.08, 0);
     if (sample.phase === 'stopped' || sample.phase === 'not moving') {
       drawOutcomeMarker(ctx, riderX, baseY - 52, sim, width);
     }
     if (config.showVectors) {
-      drawArrow(ctx, riderX, baseY - 40, riderX + clamp(sample.vx * 12, 0, 60), baseY - 40, '#4ed7e8', 'v');
+      drawArrow(ctx, riderX, baseY - 40, riderX + clamp(sample.vx * 12, 0, 60), baseY - 40, '#4ed7e8', 'v', config.highContrast);
       drawFlatForces(ctx, sim, sample, riderX + 2, baseY - 18, forcePixelsPerNewton(sim, width));
       // Newton's third law partner: the foot pushes the ground backward.
       if (sample.pushForceN > 0) {
@@ -5279,7 +5557,7 @@ window.StemLab = window.StemLab || {
   function drawFlat3D(ctx, width, height, sim, sample, config) {
     drawBackdrop(ctx, width, height,
       __alloT('stem.skatelab.canvas_flat_title_3d', 'FLAT GROUND | 3D ORBIT'),
-      __alloT('stem.skatelab.canvas_flat_subtitle', 'One push, then coasting: rolling friction is the force that stops you'));
+      __alloT('stem.skatelab.canvas_flat_subtitle', 'One push, then coasting: rolling friction is the force that stops you'), config);
     drawGround3D(ctx, width, height, config.camera);
     var comparisonFlat3D = config.compareSim && config.compareSim.mode === 'flat' ? config.compareSim : null;
     var span = flatWorldSpan(sim, config);
@@ -5303,9 +5581,13 @@ window.StemLab = window.StemLab || {
       path3D(ctx, [{ x: previousStopWorldX, y: 0.03, z: -0.9 }, { x: previousStopWorldX, y: 0.03, z: 0.9 }], config.camera, width, height, '#c4b5fd', 2, [3, 4]);
     }
     var riderPoint = { x: startX + sample.x * k, y: 0.02, z: 0 };
-    drawShadow3D(ctx, width, height, config.camera, riderPoint, 0);
+    drawShadow3D(ctx, width, height, config.camera, riderPoint, 0, config.highContrast);
     var anchors = drawSkater3D(ctx, width, height, config.camera, riderPoint, 0, sim.vehicle.id, 'neutral', 0, 'side', 0);
     var center = anchors.board;
+    if (sim.rollingMu > 0 && sample.vx > 0.3) {
+      var aheadFlat3D = project3D({ x: riderPoint.x + 0.4, y: riderPoint.y, z: 0 }, config.camera, width, height);
+      drawThermalFrictionSparks(ctx, center.x, center.y + 3, aheadFlat3D.x - center.x, aheadFlat3D.y - center.y, sample.vx, sim.rollingMu, sample.time || config.progress * 6, config.highContrast, config.reducedMotion);
+    }
     if (sample.phase === 'stopped' || sample.phase === 'not moving') {
       drawOutcomeMarker(ctx, center.x, center.y - 40, sim, width);
     }
@@ -5316,7 +5598,7 @@ window.StemLab = window.StemLab || {
       var forwardLength = Math.max(0.000001, Math.sqrt(forwardDx * forwardDx + forwardDy * forwardDy));
       var forwardScreen = { x: forwardDx / forwardLength, y: forwardDy / forwardLength };
       drawArrow(ctx, center.x, center.y - 34, center.x + forwardScreen.x * clamp(sample.vx * 12, 0, 60),
-        center.y - 34 - forwardScreen.y * clamp(sample.vx * 12, 0, 60), '#4ed7e8', 'v');
+        center.y - 34 - forwardScreen.y * clamp(sample.vx * 12, 0, 60), '#4ed7e8', 'v', config.highContrast);
       drawFlatForces(ctx, sim, sample, center.x, center.y - 14, forcePixelsPerNewton(sim, width), forwardScreen);
     }
     if (config.showEnergy && !config.predictionLocked) drawEnergyHud(ctx, sim, sample, width);
@@ -5329,6 +5611,19 @@ window.StemLab = window.StemLab || {
     var frame = canvasFrame(canvas);
     if (!frame) return;
     config = config || {};
+    var isHC = false;
+    var isRM = false;
+    try {
+      if (canvas && typeof canvas.closest === 'function') {
+        isHC = !!canvas.closest('.theme-contrast');
+        isRM = !!canvas.closest('.reduce-motion');
+      }
+      if (!isRM && typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+        isRM = !!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      }
+    } catch (e) {}
+    config.highContrast = isHC;
+    config.reducedMotion = isRM;
     progress = config.predictionLocked
       ? 0
       : clamp(finite(progress, 0), 0, 1);

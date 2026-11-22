@@ -11,9 +11,13 @@
  */
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.VoiceConfig) {
     console.log('[CDN] VoiceConfigModule already loaded, skipping');
     return;
+  }
+  function freezeCatalog(list) {
+    return Object.freeze(list.map(function (entry) { return Object.freeze(entry); }));
   }
 
 const GEMINI_VOICES = [
@@ -106,23 +110,26 @@ const EDGE_TTS_VOICES = [
   { id: "id",      label: "🇮🇩 Gadis (Indonesian)" },
   { id: "ms",      label: "🇲🇾 Yasmin (Malay)" },
 ];
-const AVAILABLE_VOICES = GEMINI_VOICES.map(v => v.id);
+const AVAILABLE_VOICES = Object.freeze(GEMINI_VOICES.map(v => v.id));
+const FROZEN_GEMINI_VOICES = freezeCatalog(GEMINI_VOICES);
+const FROZEN_KOKORO_VOICES = freezeCatalog(KOKORO_VOICES);
+const FROZEN_EDGE_TTS_VOICES = freezeCatalog(EDGE_TTS_VOICES);
 
   // Mirror to window for any consumer that reads window.GEMINI_VOICES etc.
   if (typeof window !== 'undefined') {
-    window.GEMINI_VOICES = GEMINI_VOICES;
-    window.KOKORO_VOICES = KOKORO_VOICES;
-    window.EDGE_TTS_VOICES = EDGE_TTS_VOICES;
+    window.GEMINI_VOICES = FROZEN_GEMINI_VOICES;
+    window.KOKORO_VOICES = FROZEN_KOKORO_VOICES;
+    window.EDGE_TTS_VOICES = FROZEN_EDGE_TTS_VOICES;
     window.AVAILABLE_VOICES = AVAILABLE_VOICES;
   }
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.VoiceConfig = {
-    GEMINI_VOICES: GEMINI_VOICES,
-    KOKORO_VOICES: KOKORO_VOICES,
-    EDGE_TTS_VOICES: EDGE_TTS_VOICES,
+  window.AlloModules.VoiceConfig = Object.freeze({
+    GEMINI_VOICES: FROZEN_GEMINI_VOICES,
+    KOKORO_VOICES: FROZEN_KOKORO_VOICES,
+    EDGE_TTS_VOICES: FROZEN_EDGE_TTS_VOICES,
     AVAILABLE_VOICES: AVAILABLE_VOICES
-  };
+  });
 
   if (typeof window._upgradeVoiceConfig === 'function') {
     try { window._upgradeVoiceConfig(); } catch (e) { console.warn('[VoiceConfig] upgrade hook failed', e); }

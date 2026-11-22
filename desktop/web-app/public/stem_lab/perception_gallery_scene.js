@@ -102,6 +102,18 @@
       } catch (e) { return false; }
     }
 
+    function isHighContrast(el) {
+      try {
+        if (el && el.closest && (el.closest('.theme-contrast') || el.closest('[data-theme="contrast"]') || el.closest('[data-theme="high-contrast"]'))) return true;
+        var root = typeof document !== 'undefined' && document.documentElement;
+        if (root && (root.classList.contains('theme-contrast') || root.getAttribute('data-theme') === 'contrast' || root.getAttribute('data-theme') === 'high-contrast')) return true;
+        if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-contrast')) return true;
+        if (typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
+            (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches)) return true;
+      } catch (e) {}
+      return false;
+    }
+
     function disposeGalleryTextures() {
       if (!galleryTextures) return;
       Object.keys(galleryTextures).forEach(function (key) {
@@ -245,7 +257,44 @@
       var open = m.view === 'inspect';
       var materials = {}, pickables = [], exhibit = null;
       var tex = ensureGalleryTextures(THREE);
-      var dustPoints = null, dustBase = null, dustSeeds = null;
+      var dustPoints = null;
+      var galleryTimeUniforms = [], galleryDecorMeshes = [], gallerySheenUniforms = [];
+      var STATIC_BEAUTY_TIME = 3.2;
+      var hcInitial = isHighContrast(S.renderer && S.renderer.domElement);
+
+      function applyFloorSheen(mat, baseStrength, tintHex, cacheId) {
+        if (!mat || typeof mat.onBeforeCompile !== 'function' || mat.userData.gallerySheenApplied) return mat;
+        mat.userData.gallerySheenApplied = true;
+        var strengthUniform = { value: hcInitial ? 0.0 : baseStrength };
+        var tintColor = new THREE.Color(tintHex);
+        if (typeof tintColor.convertSRGBToLinear === 'function') tintColor.convertSRGBToLinear();
+        var tintUniform = { value: tintColor };
+        gallerySheenUniforms.push({ uniform: strengthUniform, base: baseStrength });
+        var prevCompile = mat.onBeforeCompile;
+        var prevKey = mat.customProgramCacheKey;
+        mat.onBeforeCompile = function (shader, rCtx) {
+          if (typeof prevCompile === 'function') prevCompile.call(this, shader, rCtx);
+          shader.uniforms.uGallerySheenStrength = strengthUniform;
+          shader.uniforms.uGallerySheenColor = tintUniform;
+          shader.fragmentShader = shader.fragmentShader
+            .replace('#include <common>', '#include <common>\nuniform float uGallerySheenStrength;\nuniform vec3 uGallerySheenColor;')
+            .replace('#include <dithering_fragment>', [
+              'if (uGallerySheenStrength > 0.001) {',
+              '  vec3 pgN = normalize(normal);',
+              '  vec3 pgV = normalize(vViewPosition);',
+              '  float pgFres = pow(1.0 - clamp(dot(pgN, pgV), 0.0, 1.0), 3.2);',
+              '  float pgSky = 0.50 + 0.50 * clamp(pgN.y * 0.5 + 0.5, 0.0, 1.0);',
+              '  gl_FragColor.rgb += uGallerySheenColor * pgFres * pgSky * uGallerySheenStrength;',
+              '}',
+              '#include <dithering_fragment>'
+            ].join('\n'));
+        };
+        mat.customProgramCacheKey = function () {
+          var base = typeof prevKey === 'function' ? prevKey.call(this) : '';
+          return (base ? base + '|' : '') + 'gallery-sheen-' + cacheId;
+        };
+        return mat;
+      }
 
       function tagExhibit(mesh) {
         if (exhibit) {
@@ -275,6 +324,9 @@
           // r128 expects linear material colors when the renderer outputs sRGB.
           materials[key].color.convertSRGBToLinear();
           if (extra && extra.emissive != null && materials[key].emissive) materials[key].emissive.convertSRGBToLinear();
+          if (extra && extra.sheen) {
+            applyFloorSheen(materials[key], extra.sheen.strength, extra.sheen.color, extra.sheen.id || tag || 'std');
+          }
         }
         return materials[key];
       }
@@ -347,9 +399,9 @@
       }
 
       function architecture() {
-        var floorMat = { tag: 'oak-floor', map: tex.floorMap, bumpMap: tex.floorBump, bumpScale: 0.014, roughness: 0.48, metalness: 0.06, receiveShadow: true };
+        var floorMat = { tag: 'oak-floor', map: tex.floorMap, bumpMap: tex.floorBump, bumpScale: 0.014, roughness: 0.44, metalness: 0.08, receiveShadow: true, sheen: { strength: 0.20, color: 0xfff7e4, id: 'oak-floor' } };
         var wallMat = { tag: 'gallery-wall', map: tex.wallMap, roughness: 0.86, metalness: 0.02, receiveShadow: true };
-        var plinthMat = { tag: 'plinth-stone', map: tex.plinthMap, roughness: 0.58, metalness: 0.05, receiveShadow: true };
+        var plinthMat = { tag: 'plinth-stone', map: tex.plinthMap, roughness: 0.56, metalness: 0.05, receiveShadow: true, sheen: { strength: 0.09, color: 0xf7fbf9, id: 'plinth' } };
         var trackMat = { tag: 'track-metal', roughness: 0.32, metalness: 0.68 };
         var lensMat = { tag: 'spot-lens', roughness: 0.15, metalness: 0.1, emissive: 0xfff2cf, emissiveIntensity: 1.1 };
 
@@ -376,9 +428,45 @@
           box(sx, 8.0, 1.55, 0.055, 0.72, 0.055, 0x2c3a3e, null, trackMat);
         });
 
-        var coneOpacity = (overview || open) ? 0.15 : 0.035;
+        var coneOpacity = (overview || open) ? 0.14 : 0.028;
         var beamMat = null;
-        if (THREE.ConeGeometry && THREE.MeshBasicMaterial) {
+        if (typeof THREE.ShaderMaterial === 'function' && typeof THREE.ConeGeometry === 'function') {
+          var coneTime = { value: STATIC_BEAUTY_TIME };
+          galleryTimeUniforms.push(coneTime);
+          beamMat = new THREE.ShaderMaterial({
+            transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, toneMapped: false,
+            blending: THREE.AdditiveBlending || THREE.NormalBlending,
+            uniforms: {
+              uTime: coneTime,
+              uColor: { value: new THREE.Color(0xfff4d8) },
+              uOpacity: { value: coneOpacity }
+            },
+            vertexShader: [
+              'varying vec2 vUv; varying vec3 vViewNormal; varying vec3 vViewDir; varying float vWorldX;',
+              'void main(){',
+              '  vUv = uv;',
+              '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+              '  vWorldX = wp.x;',
+              '  vec4 mv = viewMatrix * wp;',
+              '  vViewNormal = normalize(normalMatrix * normal);',
+              '  vViewDir = normalize(-mv.xyz);',
+              '  gl_Position = projectionMatrix * mv;',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform float uTime; uniform vec3 uColor; uniform float uOpacity;',
+              'varying vec2 vUv; varying vec3 vViewNormal; varying vec3 vViewDir; varying float vWorldX;',
+              'void main(){',
+              '  float fres = pow(abs(dot(normalize(vViewNormal), normalize(vViewDir))), 1.55);',
+              '  float vFade = smoothstep(0.0, 0.36, vUv.y) * smoothstep(1.0, 0.65, vUv.y);',
+              '  float shimmer = 0.84 + 0.16 * sin(vUv.x * 12.56637 + uTime * 0.42 + vWorldX * 0.25);',
+              '  float alpha = fres * vFade * shimmer * uOpacity;',
+              '  if (alpha < 0.001) discard;',
+              '  gl_FragColor = vec4(uColor, alpha);',
+              '}'
+            ].join('\n')
+          });
+        } else if (typeof THREE.ConeGeometry === 'function' && typeof THREE.MeshBasicMaterial === 'function') {
           beamMat = new THREE.MeshBasicMaterial({
             color: 0xfff5dc,
             map: tex.beamMap || null,
@@ -387,6 +475,46 @@
             depthWrite: false,
             side: THREE.DoubleSide,
             blending: THREE.AdditiveBlending || THREE.NormalBlending
+          });
+        }
+
+        // GLSL ES 1.00 angled sunlit gallery skylight volumetric god-ray curtains (overview/inspect only; bypassed in High-Contrast).
+        var godRayMat = null;
+        if ((overview || open) && typeof THREE.ShaderMaterial === 'function' && typeof THREE.PlaneGeometry === 'function') {
+          var rayTime = { value: STATIC_BEAUTY_TIME };
+          galleryTimeUniforms.push(rayTime);
+          godRayMat = new THREE.ShaderMaterial({
+            transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, toneMapped: false,
+            blending: THREE.AdditiveBlending || THREE.NormalBlending,
+            uniforms: {
+              uTime: rayTime,
+              uColor: { value: new THREE.Color(0xfff6dd) },
+              uOpacity: { value: overview ? 0.115 : 0.085 }
+            },
+            vertexShader: [
+              'varying vec2 vUv; varying float vWorldX;',
+              'void main(){',
+              '  vUv = uv;',
+              '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+              '  vWorldX = wp.x;',
+              '  gl_Position = projectionMatrix * viewMatrix * wp;',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform float uTime; uniform vec3 uColor; uniform float uOpacity;',
+              'varying vec2 vUv; varying float vWorldX;',
+              'void main(){',
+              '  float shear = vUv.x + (1.0 - vUv.y) * 0.28;',
+              '  float s1 = 0.5 + 0.5 * sin(shear * 22.0 + uTime * 0.28 + vWorldX * 0.19);',
+              '  float s2 = 0.5 + 0.5 * sin(shear * 37.0 - uTime * 0.19 + vWorldX * 0.31);',
+              '  float rays = pow(s1 * 0.62 + s2 * 0.38, 2.2);',
+              '  float hMask = smoothstep(0.0, 0.24, vUv.x) * smoothstep(1.0, 0.76, vUv.x);',
+              '  float vMask = smoothstep(0.0, 0.55, vUv.y) * smoothstep(1.0, 0.86, vUv.y);',
+              '  float alpha = (0.28 + 0.72 * rays) * hMask * vMask * uOpacity;',
+              '  if (alpha < 0.001) discard;',
+              '  gl_FragColor = vec4(uColor, alpha);',
+              '}'
+            ].join('\n')
           });
         }
 
@@ -402,7 +530,7 @@
           for (var dot = 0; dot <= index; dot++) sphere(cx + (dot - index / 2) * 0.35, 6.35, -7.02, 0.095, color, null, { tag: 'pip-' + index, roughness: 0.34, metalness: 0.2 });
 
           // Architectural track spotlight canister aimed at each exhibit center.
-          if (THREE.CylinderGeometry) {
+          if (typeof THREE.CylinderGeometry === 'function') {
             var lampGroup = new THREE.Group();
             lampGroup.position.set(cx, 7.42, 1.55);
             lampGroup.rotation.x = 0.24;
@@ -415,52 +543,112 @@
           }
 
           // Volumetric translucent museum spotlight cone descending onto plinth.
-          if (beamMat && THREE.ConeGeometry) {
+          if (beamMat && typeof THREE.ConeGeometry === 'function') {
             var coneHeight = 6.9;
             var coneGeo = new THREE.ConeGeometry(3.45, coneHeight, 24, 1, true);
             var cone = new THREE.Mesh(coneGeo, beamMat);
             cone.position.set(cx, 7.22 - coneHeight * 0.5, 0.65);
             cone.rotation.x = 0.20;
             cone.renderOrder = 3;
+            cone.visible = !hcInitial;
+            galleryDecorMeshes.push(cone);
             S.model.add(cone);
+          }
+
+          // Angled skylight volumetric god-ray curtain behind upper bay (crystal-clear exhibit foreground).
+          if (godRayMat && typeof THREE.PlaneGeometry === 'function') {
+            var curtain = new THREE.Mesh(new THREE.PlaneGeometry(7.2, 6.6), godRayMat);
+            curtain.position.set(cx + 0.4, 4.95, -5.65);
+            curtain.rotation.set(0.14, 0, -0.18);
+            curtain.renderOrder = 2;
+            curtain.visible = !hcInitial;
+            galleryDecorMeshes.push(curtain);
+            S.model.add(curtain);
           }
         });
 
-        // Subtle sunlit museum air dust motes drifting inside the spotlight cones.
-        if (THREE.Points && THREE.PointsMaterial && (overview || open)) {
-          var moteCount = 90;
+        // Subtle sunlit museum air dust motes drifting inside the spotlight cones (GPU ShaderMaterial; bypassed in High-Contrast).
+        if (typeof THREE.Points === 'function' && typeof THREE.BufferGeometry === 'function' && (overview || open)) {
+          var moteCount = 110;
           var pos = new Float32Array(moteCount * 3);
-          dustBase = new Float32Array(moteCount * 3);
-          dustSeeds = new Float32Array(moteCount);
+          var seeds = new Float32Array(moteCount);
+          var sizes = new Float32Array(moteCount);
           for (var di = 0; di < moteCount; di++) {
             var bayCx = CENTERS[['room', 'triangle', 'shape'][di % 3]];
             var hA = Math.sin(di * 12.9898 + 4.14) * 43758.5453; hA -= Math.floor(hA);
             var hB = Math.sin(di * 78.233 + 1.73) * 43758.5453; hB -= Math.floor(hB);
             var hC = Math.sin(di * 39.425 + 9.21) * 43758.5453; hC -= Math.floor(hC);
-            var r = Math.sqrt(hA) * 2.75, ang = hB * Math.PI * 2;
-            var mx = bayCx + Math.cos(ang) * r;
-            var my = 1.0 + hC * 5.6;
-            var mz = 0.25 + Math.sin(ang) * r * 0.85;
-            pos[di * 3] = dustBase[di * 3] = mx;
-            pos[di * 3 + 1] = dustBase[di * 3 + 1] = my;
-            pos[di * 3 + 2] = dustBase[di * 3 + 2] = mz;
-            dustSeeds[di] = hA * 6.283 + hB * 3.14;
+            var r = Math.sqrt(hA) * 2.85, ang = hB * Math.PI * 2;
+            pos[di * 3] = bayCx + Math.cos(ang) * r;
+            pos[di * 3 + 1] = 1.0 + hC * 5.7;
+            pos[di * 3 + 2] = 0.25 + Math.sin(ang) * r * 0.85;
+            seeds[di] = hA * 6.28318 + hB * 3.14159;
+            sizes[di] = 0.75 + hC * 1.05;
           }
           var dustGeo = new THREE.BufferGeometry();
           dustGeo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-          var dustMat = new THREE.PointsMaterial({
-            color: 0xfff5d8,
-            map: tex.dustMap || null,
-            size: 0.085,
-            sizeAttenuation: true,
-            transparent: true,
-            opacity: 0.42,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending || THREE.NormalBlending
-          });
-          dustPoints = new THREE.Points(dustGeo, dustMat);
-          dustPoints.renderOrder = 4;
-          S.model.add(dustPoints);
+          dustGeo.setAttribute('aSeed', new THREE.Float32BufferAttribute(seeds, 1));
+          dustGeo.setAttribute('aSize', new THREE.Float32BufferAttribute(sizes, 1));
+          var dustMat = null;
+          if (typeof THREE.ShaderMaterial === 'function') {
+            var dustTime = { value: STATIC_BEAUTY_TIME };
+            galleryTimeUniforms.push(dustTime);
+            var dpr = (S.renderer && typeof S.renderer.getPixelRatio === 'function') ? Math.min(2, S.renderer.getPixelRatio() || 1) : 1;
+            dustMat = new THREE.ShaderMaterial({
+              transparent: true, depthWrite: false, fog: false, toneMapped: false,
+              blending: THREE.AdditiveBlending || THREE.NormalBlending,
+              uniforms: {
+                uTime: dustTime,
+                uPixelRatio: { value: dpr },
+                uColor: { value: new THREE.Color(0xfff5d8) }
+              },
+              vertexShader: [
+                'attribute float aSeed; attribute float aSize;',
+                'uniform float uTime; uniform float uPixelRatio;',
+                'varying float vTwinkle;',
+                'void main(){',
+                '  vec3 p = position;',
+                '  float t = uTime * 0.45;',
+                '  p.x += sin(t + aSeed) * 0.16;',
+                '  p.y += sin(t * 0.70 + aSeed * 1.3) * 0.12;',
+                '  p.z += cos(t * 0.85 + aSeed * 0.8) * 0.14;',
+                '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
+                '  float dist = max(1.0, -mv.z);',
+                '  gl_PointSize = clamp(aSize * uPixelRatio * (64.0 / dist), 1.6, 12.0);',
+                '  vTwinkle = 0.55 + 0.45 * sin(uTime * 1.2 + aSeed * 2.4);',
+                '  gl_Position = projectionMatrix * mv;',
+                '}'
+              ].join('\n'),
+              fragmentShader: [
+                'uniform vec3 uColor; varying float vTwinkle;',
+                'void main(){',
+                '  vec2 c = gl_PointCoord - vec2(0.5);',
+                '  float r2 = dot(c, c);',
+                '  if (r2 > 0.25) discard;',
+                '  float glow = exp(-r2 * 13.5);',
+                '  gl_FragColor = vec4(uColor, glow * vTwinkle * 0.44);',
+                '}'
+              ].join('\n')
+            });
+          } else if (typeof THREE.PointsMaterial === 'function') {
+            dustMat = new THREE.PointsMaterial({
+              color: 0xfff5d8,
+              map: tex.dustMap || null,
+              size: 0.085,
+              sizeAttenuation: true,
+              transparent: true,
+              opacity: 0.42,
+              depthWrite: false,
+              blending: THREE.AdditiveBlending || THREE.NormalBlending
+            });
+          }
+          if (dustMat) {
+            dustPoints = new THREE.Points(dustGeo, dustMat);
+            dustPoints.renderOrder = 4;
+            dustPoints.visible = !hcInitial;
+            galleryDecorMeshes.push(dustPoints);
+            S.model.add(dustPoints);
+          }
         }
 
         // Architectural bay divider pilasters and ceiling beams.
@@ -584,19 +772,15 @@
       S.galleryPickables = pickables;
       S.gallery = { station: station, view: m.view || 'illusion', objects: objects, beams: beams, fragments: fragments,
         referenceEye: { x: center, y: EYE_Y, z: EYE_Z }, center: center };
-      S.tick = dustPoints ? function (now) {
-        if ((S.data && S.data.static) || prefersReducedMotion()) return;
-        var attr = dustPoints.geometry && dustPoints.geometry.attributes && dustPoints.geometry.attributes.position;
-        if (!attr || !dustBase || !dustSeeds) return;
-        var t = (now || 0) * 0.00045;
-        var arr = attr.array;
-        for (var i = 0; i < dustSeeds.length; i++) {
-          var s = dustSeeds[i], j = i * 3;
-          arr[j] = dustBase[j] + Math.sin(t + s) * 0.14;
-          arr[j + 1] = dustBase[j + 1] + Math.sin(t * 0.7 + s * 1.3) * 0.11;
-          arr[j + 2] = dustBase[j + 2] + Math.cos(t * 0.85 + s * 0.8) * 0.12;
+      S.tick = (galleryTimeUniforms.length || galleryDecorMeshes.length || gallerySheenUniforms.length) ? function (now) {
+        var hc = isHighContrast(S.renderer && S.renderer.domElement);
+        for (var di = 0; di < galleryDecorMeshes.length; di++) galleryDecorMeshes[di].visible = !hc;
+        for (var si = 0; si < gallerySheenUniforms.length; si++) {
+          gallerySheenUniforms[si].uniform.value = hc ? 0.0 : gallerySheenUniforms[si].base;
         }
-        attr.needsUpdate = true;
+        var frozen = (S.data && S.data.static) || prefersReducedMotion();
+        var t = frozen ? STATIC_BEAUTY_TIME : (now || 0) * 0.001;
+        for (var ui = 0; ui < galleryTimeUniforms.length; ui++) galleryTimeUniforms[ui].value = t;
       } : null;
       S.target.set(overview ? 0 : center, overview ? 2.5 : EYE_Y, overview ? -1 : 0);
       S.fitPts = [];

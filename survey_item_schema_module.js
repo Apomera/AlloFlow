@@ -58,15 +58,47 @@
     // router already refuses aggregations shorter than this.
     const RESEARCH_MIN_ITEMS = 2;
 
-    const TYPES = ['likert', 'choice', 'freetext', 'numeric'];
+    const TYPES = Object.freeze(['likert', 'choice', 'freetext', 'numeric']);
     const MAX_STEPS = 50;
     const MAX_CELLS = 50;
     const MAX_INSTRUMENT_ITEMS = 200;
     const MAX_IMAGE_DATA_CHARS = 750 * 1024;
+    const hasOwn = Object.prototype.hasOwnProperty;
+
+    function own(obj, key) {
+        return isObject(obj) && hasOwn.call(obj, key) ? obj[key] : undefined;
+    }
+
+    function safeInt(value) {
+        if (typeof value === 'number') return Number.isFinite(value) ? Math.trunc(value) : NaN;
+        if (typeof value === 'string') {
+            const trimmed = value.trim();
+            if (!trimmed) return NaN;
+            return parseInt(trimmed, 10);
+        }
+        return NaN;
+    }
+
+    function safeNum(value) {
+        if (typeof value === 'number') return Number.isFinite(value) ? value : NaN;
+        if (typeof value === 'string') {
+            const trimmed = value.trim();
+            if (!trimmed) return NaN;
+            const parsed = Number(trimmed);
+            return Number.isFinite(parsed) ? parsed : NaN;
+        }
+        return NaN;
+    }
 
     function text(value, limit) {
         if (value === null || value === undefined) return '';
-        return String(value).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, limit || 240);
+        let raw = '';
+        if (typeof value === 'string') raw = value;
+        else if (typeof value === 'number' || typeof value === 'boolean') raw = String(value);
+        else return '';
+        const maxLen = limit || 240;
+        const bounded = raw.length > maxLen * 4 ? raw.slice(0, maxLen * 4) : raw;
+        return bounded.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, maxLen);
     }
 
     function isObject(value) {
@@ -85,9 +117,10 @@
     function cell(value) {
         if (typeof value === 'string') return { text: text(value, 120), image: null };
         if (!isObject(value)) return { text: '', image: null };
+        const rawText = own(value, 'text') != null ? own(value, 'text') : own(value, 'label');
         return {
-            text: text(value.text != null ? value.text : value.label, 120),
-            image: safeRasterDataUrl(value.image)
+            text: text(rawText, 120),
+            image: safeRasterDataUrl(own(value, 'image'))
         };
     }
 
@@ -110,16 +143,19 @@
      */
     function normalizeItem(raw, index) {
         const source = isObject(raw) ? raw : {};
-        const type = TYPES.indexOf(source.type) >= 0 ? source.type : 'likert';
+        const rawType = own(source, 'type');
+        const type = TYPES.indexOf(rawType) >= 0 ? rawType : 'likert';
+        const safeIndex = (Number.isInteger(index) && index >= 0) ? index : 0;
+        const rawText = own(source, 'text') != null ? own(source, 'text') : own(source, 'prompt');
         const item = {
-            id: text(source.id, 60) || ('q' + ((index || 0) + 1)),
-            text: text(source.text != null ? source.text : source.prompt, 400),
+            id: text(own(source, 'id'), 60) || ('q' + (safeIndex + 1)),
+            text: text(rawText, 400),
             type: type,
-            required: source.required === true
+            required: own(source, 'required') === true
         };
         if (type === 'likert') {
-            const labels = cells(source.labels, true);
-            const declared = parseInt(source.steps, 10);
+            const labels = cells(own(source, 'labels'), true);
+            const declared = safeInt(own(source, 'steps'));
             // Labels are the stronger signal: if an author wrote five of them,
             // the scale has five steps whatever a stale `steps` field says.
             const rawSteps = labels.length >= 2 ? labels.length
@@ -127,10 +163,10 @@
             item.steps = Math.min(MAX_STEPS, Math.max(2, rawSteps));
             item.labels = labels;
         } else if (type === 'choice') {
-            item.options = cells(source.options);
+            item.options = cells(own(source, 'options'));
         } else if (type === 'numeric') {
-            const min = source.min == null || String(source.min).trim() === '' ? NaN : Number(source.min);
-            const max = source.max == null || String(source.max).trim() === '' ? NaN : Number(source.max);
+            const min = safeNum(own(source, 'min'));
+            const max = safeNum(own(source, 'max'));
             item.min = isFinite(min) ? min : null;
             item.max = isFinite(max) ? max : null;
         }
@@ -172,17 +208,20 @@
     // The richest of the three: per-step labels carrying images. Canonical
     // form is a superset, so this round-trips without loss.
     function fromResearchSuite(questions) {
-        return normalizeInstrument((Array.isArray(questions) ? questions : []).map((q) => {
+        return normalizeInstrument((Array.isArray(questions) ? questions.slice(0, MAX_INSTRUMENT_ITEMS) : []).map((q) => {
             const source = isObject(q) ? q : {};
-            const kind = source.type === 'mcq' ? 'choice'
-                : (source.type === 'freetext' || source.type === 'numeric') ? source.type
+            const rawType = own(source, 'type');
+            const kind = rawType === 'mcq' ? 'choice'
+                : (rawType === 'freetext' || rawType === 'numeric') ? rawType
                 : 'likert';
+            const opts = own(source, 'options');
+            const lbls = own(source, 'labels');
             return {
-                id: source.id,
-                text: source.text,
+                id: own(source, 'id'),
+                text: own(source, 'text'),
                 type: kind,
-                labels: kind === 'likert' ? source.labels : undefined,
-                options: kind === 'choice' ? (Array.isArray(source.options) && source.options.length ? source.options : source.labels) : undefined
+                labels: kind === 'likert' ? lbls : undefined,
+                options: kind === 'choice' ? (Array.isArray(opts) && opts.length ? opts : lbls) : undefined
             };
         }));
     }
@@ -204,7 +243,7 @@
         });
     }
 
-    const FIVE = ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'];
+    const FIVE = Object.freeze(['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree']);
     function defaultLabels(steps) {
         if (steps === 5) return FIVE.map((t) => ({ text: t, image: null }));
         const out = [];
@@ -245,21 +284,22 @@
     function fromQuizItems(questions) {
         return normalizeInstrument((Array.isArray(questions) ? questions.slice(0, MAX_INSTRUMENT_ITEMS) : []).map((q) => {
             const source = isObject(q) ? q : {};
-            if (source.itemType === 'likert') {
-                const scale = isObject(source.scale) ? source.scale : {};
-                const parsedSteps = parseInt(scale.steps, 10);
+            if (own(source, 'itemType') === 'likert') {
+                const rawScale = own(source, 'scale');
+                const scale = isObject(rawScale) ? rawScale : {};
+                const parsedSteps = safeInt(own(scale, 'steps'));
                 const steps = Math.min(MAX_STEPS, Math.max(2, isFinite(parsedSteps) && parsedSteps >= 2 ? parsedSteps : 5));
                 // Only the endpoints were ever stored, so the middle comes
                 // back blank rather than invented.
                 const labels = [];
                 for (let i = 0; i < steps; i += 1) {
-                    if (i === 0) labels.push({ text: text(scale.lowLabel, 120), image: null });
-                    else if (i === steps - 1) labels.push({ text: text(scale.highLabel, 120), image: null });
+                    if (i === 0) labels.push({ text: text(own(scale, 'lowLabel'), 120), image: null });
+                    else if (i === steps - 1) labels.push({ text: text(own(scale, 'highLabel'), 120), image: null });
                     else labels.push({ text: '', image: null });
                 }
-                return { id: source.id, text: source.question || source.text, type: 'likert', steps: steps, labels: labels };
+                return { id: own(source, 'id'), text: own(source, 'question') || own(source, 'text'), type: 'likert', steps: steps, labels: labels };
             }
-            return { id: source.id, text: source.question || source.text, type: 'choice', options: source.options };
+            return { id: own(source, 'id'), text: own(source, 'question') || own(source, 'text'), type: 'choice', options: own(source, 'options') };
         }));
     }
 
@@ -290,12 +330,13 @@
             }
             return entry;
         });
+        const rawIdentity = own(opts, 'identityMode');
         const activity = {
             type: 'survey',
-            prompt: text(opts.prompt, 240) || 'A few quick questions',
+            prompt: text(own(opts, 'prompt'), 240) || 'A few quick questions',
             // Identity is a privacy decision the server refuses to default, so
             // this adapter will not invent one either.
-            identityMode: opts.identityMode || '',
+            identityMode: typeof rawIdentity === 'string' ? text(rawIdentity, 60) : '',
             items: wireItems.slice(0, MAILBOX_MAX_SURVEY_ITEMS)
         };
         const droppedImages = list.some((item) => (item.labels || []).some((c) => c.image) || (item.options || []).some((c) => c.image));
@@ -306,43 +347,56 @@
         };
     }
 
-    function fromMailboxActivity(activity) {
-        const source = isObject(activity) ? activity : {};
-        if (source.type === 'survey') {
-            // The server generated the item ids; keep them so answers can be
-            // joined back to the instrument.
-            return normalizeInstrument((Array.isArray(source.items) ? source.items.slice(0, MAX_INSTRUMENT_ITEMS) : []).map((item) => ({
-                id: item && item.id,
-                text: item && item.text,
-                type: item && item.type,
-                required: item && item.required === true,
-                steps: item && item.steps,
-                labels: item && item.labels,
-                options: item && Array.isArray(item.options) ? item.options.slice(0, MAX_CELLS).map((o) => o && o.label) : undefined,
-                min: item && item.min,
-                max: item && item.max
-            })));
-        }
-        if (source.type === 'rating') {
-            const min = parseInt(source.minValue, 10);
-            const max = parseInt(source.maxValue, 10);
-            const lo = isFinite(min) ? min : 1;
-            const hi = isFinite(max) ? max : 5;
-            return normalizeItem({
-                id: source.activityId,
-                text: source.prompt,
-                type: 'likert',
-                steps: Math.min(MAX_STEPS, Math.max(2, hi - lo + 1)),
-                labels: Array.isArray(source.labels) && source.labels.length ? source.labels : undefined
-            }, 0);
-        }
-        if (source.type === 'availability' || source.type === 'signup') {
-            return normalizeItem({ id: source.activityId, text: source.prompt, type: 'choice', options: (Array.isArray(source.options) ? source.options.slice(0, MAX_CELLS) : []).map((o) => o && o.label) }, 0);
-        }
-        return normalizeItem({ id: source.activityId, text: source.prompt, type: 'freetext' }, 0);
+    function mailboxOptionLabel(o) {
+        if (typeof o === 'string') return o;
+        return own(o, 'label');
     }
 
-    return {
+    function fromMailboxActivity(activity) {
+        const source = isObject(activity) ? activity : {};
+        const sType = own(source, 'type');
+        if (sType === 'survey') {
+            // The server generated the item ids; keep them so answers can be
+            // joined back to the instrument.
+            const rawItems = own(source, 'items');
+            return normalizeInstrument((Array.isArray(rawItems) ? rawItems.slice(0, MAX_INSTRUMENT_ITEMS) : []).map((item) => {
+                const it = isObject(item) ? item : {};
+                const rawOpts = own(it, 'options');
+                return {
+                    id: own(it, 'id'),
+                    text: own(it, 'text'),
+                    type: own(it, 'type'),
+                    required: own(it, 'required') === true,
+                    steps: own(it, 'steps'),
+                    labels: own(it, 'labels'),
+                    options: Array.isArray(rawOpts) ? rawOpts.slice(0, MAX_CELLS).map(mailboxOptionLabel) : undefined,
+                    min: own(it, 'min'),
+                    max: own(it, 'max')
+                };
+            }));
+        }
+        if (sType === 'rating') {
+            const min = safeInt(own(source, 'minValue'));
+            const max = safeInt(own(source, 'maxValue'));
+            const lo = isFinite(min) ? min : 1;
+            const hi = isFinite(max) ? max : 5;
+            const rawLabels = own(source, 'labels');
+            return normalizeItem({
+                id: own(source, 'activityId'),
+                text: own(source, 'prompt'),
+                type: 'likert',
+                steps: Math.min(MAX_STEPS, Math.max(2, hi - lo + 1)),
+                labels: Array.isArray(rawLabels) && rawLabels.length ? rawLabels : undefined
+            }, 0);
+        }
+        if (sType === 'availability' || sType === 'signup') {
+            const rawOpts = own(source, 'options');
+            return normalizeItem({ id: own(source, 'activityId'), text: own(source, 'prompt'), type: 'choice', options: (Array.isArray(rawOpts) ? rawOpts.slice(0, MAX_CELLS) : []).map(mailboxOptionLabel) }, 0);
+        }
+        return normalizeItem({ id: own(source, 'activityId'), text: own(source, 'prompt'), type: 'freetext' }, 0);
+    }
+
+    return Object.freeze({
         VERSION,
         TYPES,
         RESEARCH_MIN_STEPS,
@@ -359,5 +413,5 @@
         toQuizItems,
         fromMailboxActivity,
         toMailboxActivities
-    };
+    });
 });

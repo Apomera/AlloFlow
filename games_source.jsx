@@ -349,7 +349,7 @@ const useReducedMotion = () => typeof window !== 'undefined' && window.matchMedi
 const getGameDialogFocusable = (dialog) => dialog ? Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter((element) => element.getClientRects().length > 0 && element.getAttribute('aria-hidden') !== 'true') : [];
 
 // Shared focus management for full-screen game workspaces.
-const useGameDialogFocus = (dialogRef, initialFocusRef, onClose, active = true) => {
+const useGameDialogFocus = (dialogRef, initialFocusRef, onClose, active = true, stopSpeechOnUnmount = true) => {
   const closeHandlerRef = useRef(onClose);
   closeHandlerRef.current = onClose;
   useEffect(() => {
@@ -377,8 +377,10 @@ const useGameDialogFocus = (dialogRef, initialFocusRef, onClose, active = true) 
     dialog.addEventListener('keydown', onKeyDown);
     return () => {
       dialog.removeEventListener('keydown', onKeyDown);
-      try { if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop(); } catch (_) {}
-      try { if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel(); } catch (_) {}
+      if (stopSpeechOnUnmount) {
+        try { if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop(); } catch (_) {}
+        try { if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel(); } catch (_) {}
+      }
       if (previousFocus?.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
     };
   }, [active]);
@@ -7828,7 +7830,7 @@ const DefinitionDetectiveGame = React.memo(({ data, onClose, onScoreUpdate, onGa
     setRounds(nextRounds); setIndex(0); setResults([]); setAnswer(null); setPhase('question'); setPractice(isPractice);
   };
   useEffect(() => { start(buildRounds()); }, [dataKey]);
-  useGameDialogFocus(dialogRef, closeRef, close);
+  useGameDialogFocus(dialogRef, closeRef, close, true, false);
   useEffect(() => {
     if (phase === 'feedback') {
       feedbackRef.current?.focus({ preventScroll: true });
@@ -7870,19 +7872,19 @@ const DefinitionDetectiveGame = React.memo(({ data, onClose, onScoreUpdate, onGa
   const title = message('title', 'Definition Detective');
   const clueAudio = current ? message('question', 'Which term matches this definition?') + ' ' + current.def + ' ' + message('choices', 'Answer choices') + ': ' + current.choices.map(choice => choice.term).join('. ') : '';
   const feedbackAudio = answer ? current.target.term + '. ' + current.def + (!answer.correct && answer.choice ? ' ' + answer.choice.term + '. ' + answer.choice.defs.join('. ') : '') : '';
-  const choiceStyle = 'w-full min-h-14 rounded-xl border-2 px-4 py-4 text-left text-base sm:text-lg font-bold break-words focus-visible:ring-4 focus-visible:ring-indigo-500 focus-visible:ring-offset-2';
+  const choiceStyle = 'w-full min-w-0 max-w-full min-h-14 rounded-xl border-2 px-4 py-4 text-left text-base sm:text-lg font-bold break-words [overflow-wrap:anywhere] focus-visible:ring-4 focus-visible:ring-indigo-500 focus-visible:ring-offset-2';
   return (
     <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="definition-detective-title" aria-describedby="detective-instructions"
       className="fixed inset-0 z-[260] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-2 sm:p-5">
       <div className={"bg-white w-full max-w-3xl max-h-[94vh] overflow-y-auto overscroll-contain rounded-2xl shadow-2xl border border-indigo-200 " + (largeText ? "detective-large-text" : "")}>
-        <style>{".detective-large-text [data-detective-reading]{font-size:1.5rem;line-height:1.75}.detective-large-text [data-help-key=detective_choice]{font-size:1.375rem;line-height:1.6}[data-help-key=detective_choice]:disabled{opacity:1}@media(forced-colors:active){[data-help-key=detective_choice][data-answer-state=correct]{outline:3px solid Highlight;outline-offset:-5px}[data-help-key=detective_choice][data-answer-state=wrong]{border-style:dashed}}"}</style>
-        <header className="flex items-start justify-between gap-3 bg-indigo-700 text-white p-4 sm:p-6 rounded-t-2xl">
-          <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-widest text-indigo-100 mb-2">{message('eyebrow', 'Vocabulary • meaning practice')}</p>
-            <h2 id="definition-detective-title" className="text-2xl sm:text-3xl font-black break-words">{title}</h2>
-            <p id="detective-instructions" className="mt-2 text-sm text-indigo-100">{message('instructions', 'Read the clue, choose a term, and check its meaning. Take your time.')}</p>
+        <style>{".detective-large-text{overflow-wrap:anywhere;word-break:break-word}.detective-large-text [data-detective-reading]{font-size:1.5rem;line-height:1.75;overflow-wrap:anywhere}.detective-large-text [data-help-key=detective_choice]{font-size:1.375rem;line-height:1.6;min-width:0;max-width:100%;overflow-wrap:anywhere}.detective-large-text button{max-width:100%;overflow-wrap:anywhere}[data-help-key=detective_choice]:disabled{opacity:1}@media(forced-colors:active){[aria-labelledby=definition-detective-title] header,[aria-labelledby=definition-detective-title] header *{color:CanvasText;background-color:Canvas}[data-help-key=detective_choice][data-answer-state=correct]{outline:3px solid Highlight;outline-offset:-5px}[data-help-key=detective_choice][data-answer-state=wrong]{border-style:dashed}}"}</style>
+        <header className="flex flex-wrap items-start justify-between gap-3 bg-indigo-700 text-white p-4 sm:p-6 rounded-t-2xl">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold uppercase tracking-widest text-indigo-100 mb-2 break-words">{message('eyebrow', 'Vocabulary • meaning practice')}</p>
+            <h2 id="definition-detective-title" className="text-2xl sm:text-3xl font-black break-words [overflow-wrap:anywhere]">{title}</h2>
+            <p id="detective-instructions" className="mt-2 text-sm text-indigo-100 break-words">{message('instructions', 'Read the clue, choose a term, and check its meaning. Take your time.')}</p>
           </div>
-          <div className="flex shrink-0 gap-1"><GameThemeToggle /><GameReadingSettingsButton className="text-white hover:bg-indigo-600 focus-visible:ring-white focus-visible:ring-offset-indigo-700" /><button ref={closeRef} type="button" onClick={close} aria-label={gameMessage(t, 'common.close', 'Close')}
+          <div className="flex flex-wrap shrink-0 gap-1"><GameThemeToggle /><GameReadingSettingsButton className="text-white hover:bg-indigo-600 focus-visible:ring-white focus-visible:ring-offset-indigo-700" /><button ref={closeRef} type="button" onClick={close} aria-label={gameMessage(t, 'common.close', 'Close')}
             className="min-w-11 min-h-11 rounded-full hover:bg-indigo-600 focus-visible:ring-2 focus-visible:ring-white"><X size={22} aria-hidden="true" className="mx-auto" /></button></div>
         </header>
         <div className="p-4 sm:p-7">

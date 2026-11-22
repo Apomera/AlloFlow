@@ -38,7 +38,7 @@ html { max-width: 100%; overflow-x: clip; }
   --blue: #3730a3; --green: #16a34a; --amber: #f59e0b; --red: #ef4444;
   --gray-50: #f8fafc; --gray-100: #f1f5f9; --gray-200: #e2e8f0; --gray-400: #94a3b8;
   --gray-600: #475569; --gray-800: #1e293b; --gray-900: #0f172a;
-  --bg: #ffffff; --text: #1e293b; --text-muted: #64748b;
+  --bg: #ffffff; --text: #1e293b; --text-muted: #475569;
   --card-bg: #ffffff; --card-border: #e2e8f0;
   --section-bg: #f8fafc;
   --focus-ring: #0f766e;
@@ -96,7 +96,7 @@ body.hc .hero { background: #000; border-bottom: 4px solid #fff; }
 .btn-dark { background: var(--gray-800); color: #fff; }
 .btn-outline { background: transparent; border: 2px solid var(--card-border); color: var(--text); }
 body.hc .btn-outline { border-color: #fff; color: #fff; }
-.btn-sm { padding: 6px 14px; font-size: 12px; min-height: 36px; }
+.btn-sm { padding: 8px 14px; font-size: 12px; min-height: 44px; }
 .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* ── Try-It Banner ── */
@@ -132,7 +132,7 @@ body.hc .demo-cell.scan-hl { border-color: #facc15 !important; }
 .scan-bar { display: none; background: #1e293b; padding: 8px 14px; align-items: center; gap: 10px; font-size: 12px; flex-wrap: wrap; }
 .scan-bar.active { display: flex; }
 .scan-bar .status { color: #facc15; font-weight: 700; }
-.scan-bar select { font-size: 12px; background: #334155; color: #fff; border: 1px solid #475569; border-radius: 5px; padding: 3px 6px; min-height: 32px; }
+.scan-bar select { font-size: 12px; background: #334155; color: #fff; border: 1px solid #64748b; border-radius: 6px; padding: 6px 10px; min-height: 44px; }
 
 /* ── WCAG Checklist ── */
 .checklist { list-style: none; padding: 0; margin: 0; }
@@ -203,6 +203,10 @@ footer a { color: var(--purple); }
 @media (forced-colors: active) { .demo-cell { border: 2px solid CanvasText; } .demo-cell:focus-visible { outline: 3px solid Highlight; } .btn { border: 1px solid ButtonText; } }
 @media (prefers-color-scheme: dark) {
   body:not(.hc) { --bg: #0f172a; --text: #e2e8f0; --text-muted: #94a3b8; --card-bg: #1e293b; --card-border: #334155; --section-bg: #0f172a; --gray-50: #1e293b; --gray-100: #1e293b; }
+  body:not(.hc) h2, body:not(.hc) .stat-num, body:not(.hc) footer a, body:not(.hc) main p a:not(.btn-primary):not(.btn-secondary), body:not(.hc) main li a:not(.btn-primary):not(.btn-secondary) { color: #5eead4; }
+  body:not(.hc) .try-it { background: #134e4a; color: #f0fdfa; border-color: #2dd4bf; }
+  body:not(.hc) .badge-purple { background: #134e4a; color: #ccfbf1; }
+  body:not(.hc) kbd { background: #0f172a; border-color: #64748b; color: #f1f5f9; }
 }
 @media print { .hero { background: #f5f5f5 !important; color: #000 !important; } .demo-board-wrap, .btn-group, .scan-bar, #live { display: none !important; } }
 @media (max-width: 640px) {
@@ -279,7 +283,7 @@ footer a { color: var(--purple); }
   <h1 style="margin-top:12px;">Accessibility in AlloFlow</h1>
   <p class="subtitle">An interactive demonstration of how AlloFlow's AAC communication tools serve every student, regardless of how they access technology.</p>
   <div class="btn-group" style="margin-top:24px;">
-    <button type="button" class="btn btn-dark" onclick="toggleHC()" aria-label="Toggle high contrast mode" id="hc-btn">Toggle High Contrast</button>
+    <button type="button" class="btn btn-dark" onclick="toggleHC()" aria-pressed="false" aria-label="Toggle high contrast mode" id="hc-btn" data-hc-toggle="true">Toggle High Contrast</button>
     <a href="#demo-board" class="btn" style="background:rgba(255,255,255,0.15);color:#fff;text-decoration:none;">Try the Demo Board</a>
   </div>
 </div>
@@ -309,17 +313,17 @@ footer a { color: var(--purple); }
   <p class="section-intro">Every accessibility feature in AlloFlow exists because a real student needs it. These are the students we build for.</p>
   <div class="card-grid" style="margin-bottom:32px;">
     <div class="card">
-      <div style="font-size:28px;margin-bottom:8px;">&#9855;</div>
+      <div style="font-size:28px;margin-bottom:8px;" aria-hidden="true">&#9855;</div>
       <h3>The student who communicates with a switch</h3>
       <p style="font-size:0.85rem;color:var(--text-muted);margin:6px 0 0;">She has cerebral palsy and uses a single head switch to interact with technology. Without scanning mode, a communication board is a picture on a wall. With it, she can build sentences, tell her teacher she needs a break, and ask her mom for water at home, using the same exported board on any device.</p>
     </div>
     <div class="card">
-      <div style="font-size:28px;margin-bottom:8px;">&#127758;</div>
+      <div style="font-size:28px;margin-bottom:8px;" aria-hidden="true">&#127758;</div>
       <h3>The student whose family speaks Arabic</h3>
       <p style="font-size:0.85rem;color:var(--text-muted);margin:6px 0 0;">He's learning English at school but thinks in Arabic. His communication board needs to work right-to-left, with translated labels his parents can read, and arrow keys that move in the direction his family reads. At school he uses the English board. At home, his mom opens the Arabic export and hears his voice in their language.</p>
     </div>
     <div class="card">
-      <div style="font-size:28px;margin-bottom:8px;">&#128065;</div>
+      <div style="font-size:28px;margin-bottom:8px;" aria-hidden="true">&#128065;</div>
       <h3>The student with low vision</h3>
       <p style="font-size:0.85rem;color:var(--text-muted);margin:6px 0 0;">She can see shapes and colors but can't read small text. High contrast mode with Atkinson Hyperlegible font, 44px touch targets, and a 3px focus ring mean she can find and select symbols independently. The board doesn't need to be adapted for her, it adapts to her.</p>
     </div>
@@ -347,23 +351,23 @@ footer a { color: var(--purple); }
   <h2>Interactive AAC Board</h2>
   <p class="section-intro">This is a working communication board. Every feature below is built into AlloFlow's standalone HTML exports, no app or internet required.</p>
 
-  <div class="try-it" role="note"><span class="icon">&#9000;</span> <strong>Try it:</strong>&nbsp;Click a symbol, or use <kbd>Tab</kbd> to focus the grid, then <kbd>Arrow keys</kbd> to navigate and <kbd>Enter</kbd> to select. Press <kbd>S</kbd> to start scanning.</div>
+  <div class="try-it" role="note"><span class="icon" aria-hidden="true">&#9000;</span> <strong>Try it:</strong>&nbsp;Click a symbol, or use <kbd>Tab</kbd> to focus the grid, then <kbd>Arrow keys</kbd> to navigate and <kbd>Enter</kbd> to select. Press <kbd>S</kbd> to start scanning.</div>
 
   <div class="demo-board-wrap" role="region" aria-label="AAC Board Demo">
     <!-- Header -->
     <div class="demo-header">
       <h3>Core Vocabulary Board</h3>
-      <div style="margin-left:auto;display:flex;gap:6px;">
-        <button type="button" class="btn btn-sm" style="background:#0f766e;color:#fff;" onclick="toggleScan()" aria-label="Toggle scanning mode" id="scan-toggle-btn">Scan</button>
-        <button type="button" class="btn btn-sm" id="scan-mode-btn" style="background:#334155;color:#fff;" onclick="toggleScanMode()" aria-label="Switch scanning mode">1-Switch</button>
+      <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;">
+        <button type="button" class="btn btn-sm" style="background:#0f766e;color:#fff;" onclick="toggleScan()" aria-pressed="false" id="scan-toggle-btn">Scan</button>
+        <button type="button" class="btn btn-sm" id="scan-mode-btn" style="background:#334155;color:#fff;" onclick="toggleScanMode()" aria-pressed="false" aria-label="Switch scanning mode: currently 1-Switch">1-Switch</button>
       </div>
     </div>
     <!-- Scan bar -->
     <div class="scan-bar" id="scan-bar" role="status" aria-live="polite">
       <span class="status">Scanning Active</span>
-      <label style="color:#94a3b8;display:flex;align-items:center;gap:4px;">Speed: <select onchange="setScanSpd(Number(this.value))" aria-label="Scanning speed"><option value="800">Fast</option><option value="1500" selected>Medium</option><option value="2500">Slow</option></select></label>
+      <label style="color:#cbd5e1;display:flex;align-items:center;gap:6px;">Speed: <select onchange="setScanSpd(Number(this.value))" aria-label="Scanning speed"><option value="800">Fast</option><option value="1500" selected>Medium</option><option value="2500">Slow</option></select></label>
       <button type="button" class="btn btn-sm" style="background:#1e40af;color:#fff;" onclick="advanceScan()" aria-label="Advance to next symbol">&rarr; Next</button>
-      <span style="color:#94a3b8;font-size:11px;margin-left:auto;">Space = select &middot; Esc = stop</span>
+      <span style="color:#cbd5e1;font-size:12px;margin-left:auto;">Space = select &middot; Esc = stop</span>
     </div>
     <!-- Sentence strip -->
     <div class="demo-strip" id="demo-strip" role="log" aria-live="polite" aria-label="Message being composed">
@@ -443,7 +447,7 @@ footer a { color: var(--purple); }
     <div class="card">
       <h3>High Contrast Mode</h3>
       <p style="font-size:0.9rem;color:var(--text-muted);margin:4px 0 12px;">Switches to Atkinson Hyperlegible font, white-on-black, yellow highlights. Toggle with <kbd>H</kbd> or the button above.</p>
-      <button type="button" class="btn btn-outline btn-sm" onclick="toggleHC()">Toggle High Contrast</button>
+      <button type="button" class="btn btn-outline btn-sm" onclick="toggleHC()" aria-pressed="false" data-hc-toggle="true">Toggle High Contrast</button>
     </div>
     <div class="card">
       <h3>OS Preferences</h3>
@@ -666,6 +670,7 @@ footer a { color: var(--purple); }
       cell.style.borderColor = sym.border;
       var symBox = document.createElement("div");
       symBox.className = "symbol";
+      symBox.setAttribute("aria-hidden", "true");
       symBox.style.background = sym.bg;
       symBox.textContent = sym.emoji;
       var symLbl = document.createElement("div");
@@ -729,7 +734,8 @@ footer a { color: var(--purple); }
     ann(sym.label + " added to message");
     speak(sym.label);
     var cell = cells[idx];
-    if (cell) { cell.classList.add("flash"); setTimeout(function () { cell.classList.remove("flash"); }, 350); }
+    var reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (cell && !reducedMotion) { cell.classList.add("flash"); setTimeout(function () { cell.classList.remove("flash"); }, 350); }
   }
 
   // ── Strip ──
@@ -762,6 +768,7 @@ footer a { color: var(--purple); }
 
   // ── Keyboard ──
   function onKey(e) {
+    if (e.isComposing || e.keyCode === 229) return;
     var a = document.activeElement;
 
     // Scanning keys
@@ -776,7 +783,7 @@ footer a { color: var(--purple); }
     if (a && a.getAttribute("role") === "gridcell") {
       var idx = cells.indexOf(a);
       if (idx === -1) return;
-      var ni = idx, cols = 4;
+      var ni = idx, cols = gridColumns();
       switch (e.key) {
         case "ArrowRight": ni = Math.min(cells.length - 1, idx + 1); e.preventDefault(); break;
         case "ArrowLeft": ni = Math.max(0, idx - 1); e.preventDefault(); break;
@@ -790,13 +797,20 @@ footer a { color: var(--purple); }
       if (ni !== idx) { a.setAttribute("tabindex", "-1"); cells[ni].setAttribute("tabindex", "0"); cells[ni].focus(); }
     }
 
-    // Global shortcuts
+    // Global shortcuts (ignore when modifier keys are held or inside form inputs)
     var tag = a ? a.tagName : "";
-    if (tag !== "INPUT" && tag !== "SELECT" && tag !== "TEXTAREA") {
+    if (!e.ctrlKey && !e.metaKey && !e.altKey && tag !== "INPUT" && tag !== "SELECT" && tag !== "TEXTAREA") {
       if (e.key === "s" || e.key === "S") { e.preventDefault(); toggleScan(); }
       if (e.key === "h" || e.key === "H") { e.preventDefault(); toggleHC(); }
       if (e.key === "Backspace") { e.preventDefault(); window.delLast(); }
       if (e.key === "Delete") { e.preventDefault(); window.clearAll(); }
+      if (e.key === "?") {
+        e.preventDefault();
+        var kbSec = document.getElementById("keyboard");
+        var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (kbSec && typeof kbSec.scrollIntoView === "function") kbSec.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+        ann("Keyboard shortcuts: Arrow keys navigate symbols, Enter or Space selects, S toggles scanning, H toggles high contrast, Backspace removes last word.");
+      }
     }
   }
 
@@ -806,20 +820,32 @@ footer a { color: var(--purple); }
     scanOn = true; scanIdx = 0; hlScan(0);
     if (!scanMan) { scanTmr = setInterval(function () { scanIdx = (scanIdx + 1) % cells.length; hlScan(scanIdx); }, scanSpd); }
     document.getElementById("scan-bar").className = "scan-bar active";
-    document.getElementById("scan-toggle-btn").textContent = "Stop Scan";
+    var scanBtn = document.getElementById("scan-toggle-btn");
+    if (scanBtn) { scanBtn.textContent = "Stop Scan"; scanBtn.setAttribute("aria-pressed", "true"); }
     ann(scanMan ? "Manual scanning. Tab to advance, Space to select." : "Scanning started. Space to select. Escape to stop.");
   }
   function stopScan() {
     scanOn = false; clearInterval(scanTmr);
     cells.forEach(function (c) { c.classList.remove("scan-hl"); });
     document.getElementById("scan-bar").className = "scan-bar";
-    document.getElementById("scan-toggle-btn").textContent = "Scan";
+    var scanBtn = document.getElementById("scan-toggle-btn");
+    if (scanBtn) { scanBtn.textContent = "Scan"; scanBtn.setAttribute("aria-pressed", "false"); }
     ann("Scanning stopped.");
   }
   function hlScan(i) { cells.forEach(function (c) { c.classList.remove("scan-hl"); }); if (cells[i]) cells[i].classList.add("scan-hl"); }
   function advanceScan() { scanIdx = (scanIdx + 1) % cells.length; hlScan(scanIdx); }
   function setScanSpd(v) { scanSpd = v; if (scanOn && !scanMan) { clearInterval(scanTmr); scanTmr = setInterval(function () { scanIdx = (scanIdx + 1) % cells.length; hlScan(scanIdx); }, scanSpd); } }
-  function toggleScanMode() { scanMan = !scanMan; if (scanOn) { stopScan(); startScan(); } document.getElementById("scan-mode-btn").textContent = scanMan ? "2-Switch" : "1-Switch"; }
+  function toggleScanMode() {
+    scanMan = !scanMan;
+    if (scanOn) { stopScan(); startScan(); }
+    var modeBtn = document.getElementById("scan-mode-btn");
+    if (modeBtn) {
+      modeBtn.textContent = scanMan ? "2-Switch" : "1-Switch";
+      modeBtn.setAttribute("aria-pressed", String(scanMan));
+      modeBtn.setAttribute("aria-label", "Switch scanning mode: currently " + (scanMan ? "2-Switch" : "1-Switch"));
+    }
+    ann(scanMan ? "2-Switch manual scanning mode selected" : "1-Switch automatic scanning mode selected");
+  }
 
   window.toggleScan = toggleScan;
   window.toggleScanMode = toggleScanMode;
@@ -831,14 +857,18 @@ footer a { color: var(--purple); }
     document.body.classList.toggle("hc");
     var isHC = document.body.classList.contains("hc");
     ann(isHC ? "High contrast mode on" : "High contrast mode off");
-    document.getElementById("hc-btn").textContent = isHC ? "Normal Mode" : "Toggle High Contrast";
+    document.querySelectorAll('[data-hc-toggle="true"]').forEach(function (btn) {
+      btn.textContent = isHC ? "Normal Mode" : "Toggle High Contrast";
+      btn.setAttribute("aria-pressed", String(isHC));
+    });
   }
   window.toggleHC = toggleHC;
 
   // ── Scroll reveal ──
   function initReveal() {
     var els = document.querySelectorAll(".reveal");
-    if (!("IntersectionObserver" in window)) { els.forEach(function (el) { el.classList.add("visible"); }); return; }
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || !("IntersectionObserver" in window)) { els.forEach(function (el) { el.classList.add("visible"); }); return; }
     var obs = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("visible"); obs.unobserve(e.target); } });
     }, { threshold: 0.1 });

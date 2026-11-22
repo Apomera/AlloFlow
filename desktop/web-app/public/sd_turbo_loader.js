@@ -129,7 +129,7 @@
           try { await cache.delete(url); } catch (_) {}
         } else {
           var cachedBuf = await hit.arrayBuffer();
-          if (cachedBuf.byteLength > MAX_MODEL_BYTES) {
+          if (cachedBuf.byteLength > MAX_MODEL_BYTES || cachedBuf.byteLength < 1024) {
             try { await cache.delete(url); } catch (_) {}
           } else {
             if (onProgress) onProgress({ file: label, pct: 1, cached: true });
@@ -191,6 +191,9 @@
         received += step.value.length;
         if (onProgress && total) onProgress({ file: label, pct: Math.min(1, received / total) });
       }
+      if ((total > 0 && received !== total) || received < 1024) {
+        throw new Error(label + ' download was truncated (' + received + ' of ' + total + ' bytes)');
+      }
       if (cachePutPromise) { try { await cachePutPromise; } catch (_) {} }
       if (buffer) {
         return received === buffer.length ? buffer.buffer : buffer.buffer.slice(0, received);
@@ -210,10 +213,26 @@
     }
   }
 
+  function releasePartialSessions() {
+    var keys = Object.keys(state.sessions || {});
+    for (var i = 0; i < keys.length; i++) {
+      var s = state.sessions[keys[i]];
+      try { if (s && typeof s.release === 'function') s.release(); } catch (_) {}
+    }
+    state.sessions = {};
+  }
+
   async function init(onProgress) {
     if (window._sdTurbo.ready) return true;
-    if (window._isDesktopBundledApp === true) {
-      throw new Error('Remote SD-Turbo download is disabled in Desktop mode');
+    if (
+      window._isDesktopBundledApp === true ||
+      window.__alloOfflineOnly === true ||
+      window.__ALLO_LOCAL_BOX === true ||
+      !!window.__alloQrStudentMode ||
+      window._alloQrBlocked === true ||
+      window.__alloStudentAiDisabled === true
+    ) {
+      throw new Error('Remote SD-Turbo download is disabled in this mode');
     }
     if (state.initPromise) return state.initPromise;
     state.initPromise = (async function () {
@@ -232,26 +251,35 @@
       };
       for (var i = 0; i < MODELS.length; i++) {
         var m = MODELS[i];
-        var bytes = await fetchModel(MODEL_BASE + m.file, m.key, onProgress);
+        var modelUrl = MODEL_BASE + m.file;
+        var bytes = await fetchModel(modelUrl, m.key, onProgress);
         if (onProgress) onProgress({ file: m.key, pct: 1, stage: 'loading' });
-        state.sessions[m.key] = await ort.InferenceSession.create(bytes, {
-          executionProviders: ['webgpu'],
-          enableMemPattern: false,
-          enableCpuMemArena: false,
-          freeDimensionOverrides: overrides[m.key],
-          extra: { session: {
-            disable_prepacking: '1',
-            use_device_allocator_for_initializers: '1',
-            use_ort_model_bytes_directly: '1',
-            use_ort_model_bytes_for_initializers: '1',
-          } },
-        });
+        try {
+          state.sessions[m.key] = await ort.InferenceSession.create(bytes, {
+            executionProviders: ['webgpu'],
+            enableMemPattern: false,
+            enableCpuMemArena: false,
+            freeDimensionOverrides: overrides[m.key],
+            extra: { session: {
+              disable_prepacking: '1',
+              use_device_allocator_for_initializers: '1',
+              use_ort_model_bytes_directly: '1',
+              use_ort_model_bytes_for_initializers: '1',
+            } },
+          });
+        } catch (sessionErr) {
+          try {
+            var cache = await caches.open(CACHE_NAME);
+            await cache.delete(modelUrl);
+          } catch (_) {}
+          throw sessionErr;
+        }
       }
       window._sdTurbo.ready = true;
       return true;
     })();
     try { return await state.initPromise; }
-    catch (error) { state.initPromise = null; throw error; }
+    catch (error) { releasePartialSessions(); state.initPromise = null; throw error; }
   }
 
   function makeFloatTensor(session, name, data, dims) {

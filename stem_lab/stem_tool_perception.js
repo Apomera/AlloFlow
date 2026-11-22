@@ -649,10 +649,33 @@
     '[data-perception-lab] .perception-preset-bar button{min-height:36px;padding:5px 10px;font-size:.75rem;border-radius:999px}',
     '.perception-capacity-meter{width:100%;height:8px;border-radius:999px;background:var(--pl-ground);border:1px solid var(--pl-border);overflow:hidden;margin:6px 0 10px}',
     '.perception-capacity-fill{display:block;height:100%;background:var(--pl-accent);transition:width .25s ease}',
+    '@keyframes perceptionWavefrontShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}',
+    '@keyframes perceptionBeaconPulse{0%,100%{box-shadow:0 0 0 0 rgba(21,86,108,.34),0 0 8px rgba(21,86,108,.22)}50%{box-shadow:0 0 0 5px rgba(21,86,108,0),0 0 14px rgba(56,189,248,.34)}}',
+    '@keyframes perceptionMedianGlow{0%,100%{box-shadow:0 0 6px rgba(21,86,108,.26)}50%{box-shadow:0 0 13px rgba(56,189,248,.48)}}',
+    '@keyframes perceptionReticleBreath{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.06)}}',
+    '.perception-camera-viewport::after{content:"";position:absolute;z-index:4;left:var(--pl-gaze-x,50%);top:var(--pl-gaze-y,50%);width:44px;height:44px;border-radius:50%;pointer-events:none;opacity:calc(var(--pl-gaze-on,0) * .72);border:1.5px solid rgba(21,86,108,.48);background:radial-gradient(circle,transparent 56%,rgba(56,189,248,.11) 74%,transparent 100%);box-shadow:0 0 12px rgba(21,86,108,.18),inset 0 0 0 1px rgba(255,255,255,.35);transform:translate(-50%,-50%);transition:opacity .18s ease;animation:perceptionReticleBreath 3.2s ease-in-out infinite;will-change:transform,opacity}',
+    '.theme-dark [data-perception-lab] .perception-camera-viewport::after,[data-perception-theme=dark] .perception-camera-viewport::after{border-color:rgba(155,213,230,.58);box-shadow:0 0 14px rgba(155,213,230,.24),inset 0 0 0 1px rgba(16,39,56,.4)}',
+    '[data-perception-lab] .perception-reading,.perception-context-explanation{position:relative;overflow:hidden;background-image:linear-gradient(110deg,transparent 0%,transparent 36%,rgba(56,189,248,.075) 50%,transparent 64%,transparent 100%);background-size:240% 100%;animation:perceptionWavefrontShimmer 8.5s linear infinite}',
+    '.theme-dark [data-perception-lab] .perception-reading,.theme-dark [data-perception-lab] .perception-context-explanation,[data-perception-theme=dark] .perception-reading,[data-perception-theme=dark] .perception-context-explanation{background-image:linear-gradient(110deg,transparent 0%,transparent 36%,rgba(155,213,230,.09) 50%,transparent 64%,transparent 100%)}',
+    '.perception-pair-dot{animation:perceptionBeaconPulse 2.8s ease-in-out infinite}',
+    '.perception-pair-median-mark{animation:perceptionMedianGlow 3s ease-in-out infinite}',
+    '.perception-pair-range-mark{box-shadow:0 0 6px rgba(21,86,108,.18)}',
+    '.perception-slide-divider{box-shadow:0 0 0 1px #fff,0 0 14px rgba(56,189,248,.42);transition:box-shadow .2s ease}',
+    '.perception-camera-layer{transition:transform .16s cubic-bezier(.22,.61,.36,1)}',
+    '.perception-camera-viewport[data-pan-mode=true]:active .perception-camera-layer{transition:none}',
+    '[data-perception-lab] .perception-experiments button{transition:border-color .18s ease,background-color .18s ease,box-shadow .18s ease}',
+    '[data-perception-lab] .perception-experiments button:hover .perception-experiment-thumbnail,[data-perception-lab] .perception-experiments button[aria-pressed=true] .perception-experiment-thumbnail{border-color:var(--pl-accent);box-shadow:0 0 0 2px rgba(21,86,108,.16)}',
+    '[data-perception-camera-window]{filter:drop-shadow(0 0 3px rgba(56,189,248,.48))}',
     '.theme-contrast [data-perception-lab]{--pl-ink:#fff;--pl-soft:#fff;--pl-panel:#000;--pl-ground:#000;--pl-border:#ffff00;--pl-control:#ffff00;--pl-accent:#ffff00;--pl-active:#ffff00;--pl-active-ink:#000;--pl-shadow:none}',
     '.theme-contrast [data-perception-lab] button[aria-pressed=true]{background:#ffff00;color:#000;border-color:#ffff00}',
     '.theme-contrast [data-perception-lab] .perception-reading a{color:#ffff00}',
-    '@media(prefers-reduced-motion:reduce){.perception-capacity-fill{transition:none}}'
+    '[data-perception-theme=contrast] .perception-camera-viewport::after,.theme-contrast [data-perception-lab] .perception-camera-viewport::after{display:none!important}',
+    '[data-perception-theme=contrast] .perception-reading,[data-perception-theme=contrast] .perception-context-explanation,.theme-contrast [data-perception-lab] .perception-reading,.theme-contrast [data-perception-lab] .perception-context-explanation{background-image:none!important;animation:none!important}',
+    '[data-perception-theme=contrast] .perception-pair-dot,[data-perception-theme=contrast] .perception-pair-median-mark,.theme-contrast [data-perception-lab] .perception-pair-dot,.theme-contrast [data-perception-lab] .perception-pair-median-mark{animation:none!important;box-shadow:none!important}',
+    '[data-perception-theme=contrast] .perception-pair-range-mark,[data-perception-theme=contrast] .perception-slide-divider,.theme-contrast [data-perception-lab] .perception-pair-range-mark,.theme-contrast [data-perception-lab] .perception-slide-divider{box-shadow:0 0 0 1px #fff}',
+    '[data-perception-theme=contrast] [data-perception-camera-window],.theme-contrast [data-perception-lab] [data-perception-camera-window]{filter:none!important}',
+    '@media(forced-colors:active){.perception-camera-viewport::after{display:none!important}.perception-reading,.perception-context-explanation,.perception-pair-dot,.perception-pair-median-mark{animation:none!important;background-image:none!important;box-shadow:none!important}[data-perception-camera-window]{filter:none!important}}',
+    '@media(prefers-reduced-motion:reduce){.perception-capacity-fill,.perception-camera-layer,[data-perception-lab] .perception-experiments button,.perception-slide-divider{transition:none}.perception-camera-viewport::after,.perception-reading,.perception-context-explanation,.perception-pair-dot,.perception-pair-median-mark{animation:none!important;background-image:none!important}}'
   ].join('\n');
   var studySerial = 0;
   function PerceptionAdjustment(props) {
@@ -1069,10 +1092,26 @@
         h('p', { id: uid + '-camera-overview-position', className: 'perception-camera-overview-position', 'data-perception-camera-overview-position': true }, format(t('camera_overview_position', 'View center: {horizontal}% across · {vertical}% down'), { horizontal: Math.round(camera.x * 100), vertical: Math.round(camera.y * 100) })),
         h('p', { id: uid + '-camera-overview-hint' }, t('camera_overview_hint', 'Select a spot or drag the outlined window. Arrow keys move it; Enter centers; Home fits.')));
     }
+    function updateGazeReticle(event) {
+      moveCameraPointer(event);
+      var el = event && event.currentTarget;
+      if (!el || !el.style || typeof el.getBoundingClientRect !== 'function') return;
+      var rect = el.getBoundingClientRect();
+      if (!(rect.width > 0 && rect.height > 0)) return;
+      var gx = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
+      var gy = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100));
+      el.style.setProperty('--pl-gaze-x', gx.toFixed(2) + '%');
+      el.style.setProperty('--pl-gaze-y', gy.toFixed(2) + '%');
+      el.style.setProperty('--pl-gaze-on', '1');
+    }
+    function clearGazeReticle(event) {
+      var el = event && event.currentTarget;
+      if (el && el.style) el.style.setProperty('--pl-gaze-on', '0');
+    }
     function cameraViewportProps(key, label) {
       return { className: 'perception-camera-viewport', 'data-perception-camera-viewport': key, 'data-camera-zoom': camera.zoom, 'data-camera-x': camera.x, 'data-camera-y': camera.y, 'data-pan-mode': camera.pan, tabIndex: camera.zoom > 1 && cameraEnabled ? 0 : undefined, role: camera.zoom > 1 ? 'region' : undefined,
         'aria-label': camera.zoom > 1 ? format(t('camera_viewport', '{view}, {percent}% drawing inspection'), { view: label, percent: camera.zoom * 100 }) : undefined, 'aria-describedby': camera.zoom > 1 ? uid + '-camera-pan-hint ' + uid + '-camera-crop-hint' : undefined,
-        onPointerDown: startCameraDrag, onPointerMove: moveCameraPointer, onPointerUp: finishCameraPointer, onPointerCancel: cancelCameraPointer, onLostPointerCapture: cancelCameraPointer, onKeyDown: cameraKeyDown };
+        onPointerDown: startCameraDrag, onPointerMove: updateGazeReticle, onPointerLeave: clearGazeReticle, onPointerUp: finishCameraPointer, onPointerCancel: cancelCameraPointer, onLostPointerCapture: cancelCameraPointer, onKeyDown: cameraKeyDown };
     }
     function cameraLayer(id, settings, reference) {
       return h('div', { className: 'perception-camera-layer', 'data-perception-camera-layer': reference ? 'reference' : 'current', style: { transform: 'translate(' + ((.5 - camera.zoom * camera.x) * 100).toFixed(5) + '%, ' + ((.5 - camera.zoom * camera.y) * 100).toFixed(5) + '%) scale(' + camera.zoom + ')' } }, drawingSVG(id, settings, reference));

@@ -22,14 +22,22 @@
   }
   function safeUrl(value, limit) {
     var cleaned = clip(value, limit || 500);
-    if (!cleaned) return '';
-    return /^https?:\/\/[^\s]+$/i.test(cleaned) ? cleaned : '';
+    if (!cleaned || /["'<>]/.test(cleaned)) return '';
+    try {
+      var parsed = new URL(cleaned);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+      if (parsed.username || parsed.password) return '';
+      if (/["'<>]/.test(parsed.href)) return '';
+      return parsed.href.slice(0, limit || 500);
+    } catch (_) {
+      return '';
+    }
   }
   function redact(value) {
     return clip(value, 1800)
       .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[email omitted]')
       .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[identifier omitted]')
-      .replace(/\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b/g, '[phone omitted]')
+      .replace(/(?:\+?1[-.\s]?)?(?:\(\d{3}\)[-.\s]?|\b\d{3}[-.\s])\d{3}[-.\s]\d{4}\b/g, '[phone omitted]')
       .replace(/\b[ACGTUN]{40,}\b/gi, '[nucleic-acid sequence omitted]')
       .replace(/\b[ACDEFGHIKLMNPQRSTVWY]{40,}\b/gi, '[protein sequence omitted]');
   }
@@ -107,7 +115,28 @@
   function toAnnotationSuitePayload(handoff, annotations) {
     var baseTitle = redact(handoff && handoff.source && handoff.source.title).slice(0, 180) || 'Text Inquiry excerpts';
     var valid = (Array.isArray(annotations) ? annotations.slice(0, 200) : []).filter(function (annotation) { return validateAnnotation(handoff, annotation); }).slice(0, 20);
-    return { docTitle: baseTitle + ' — close reading', annotations: valid };
+    return {
+      docTitle: baseTitle + ' — close reading',
+      annotations: valid.map(function (annotation, idx) {
+        var stance = annotation.inquiryStance;
+        var rawX = Number(annotation.x);
+        var rawY = Number(annotation.y);
+        return {
+          id: clip(annotation.id, 120) || 'inquiry-note-' + stableId(String(idx) + '|' + clip(annotation.content, 120)),
+          kind: 'note',
+          type: 'inquiry',
+          x: Number.isFinite(rawX) ? rawX : 32,
+          y: Number.isFinite(rawY) ? rawY : (64 + idx * 76),
+          content: redact(annotation.content).slice(0, 900),
+          color: hasOwn.call(COLORS, stance) ? COLORS[stance] : 'yellow',
+          author: 'student',
+          authorName: redact(annotation.authorName).slice(0, 80),
+          createdAt: clip(annotation.createdAt, 80),
+          inquiryStance: stance,
+          inquiryTarget: cloneTarget(annotation.inquiryTarget)
+        };
+      })
+    };
   }
   return Object.freeze({ version: VERSION, stances: STANCES.slice(), createHandoff: createHandoff, createAnnotation: createAnnotation, validateAnnotation: validateAnnotation, summarizeForCapture: summarizeForCapture, toAnnotationSuitePayload: toAnnotationSuitePayload });
 });

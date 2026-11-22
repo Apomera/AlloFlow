@@ -133,14 +133,15 @@ function GlobalLevelUpModal({
     };
   }, []);
 
-  const dragStartedInsideRef = React.useRef(false);
+  const pointerStartedInsideRef = React.useRef(false);
+  const xpRemaining = Math.max(0, xpMax - xpValue);
   return (
     <div
       role="presentation"
       className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 sm:p-4 animate-in fade-in duration-500 motion-reduce:animate-none"
-      onMouseDown={(event) => { dragStartedInsideRef.current = event.target !== event.currentTarget; }}
+      onMouseDown={(event) => { pointerStartedInsideRef.current = event.target !== event.currentTarget; }}
       onClick={(event) => {
-        if (dragStartedInsideRef.current) { dragStartedInsideRef.current = false; return; }
+        if (pointerStartedInsideRef.current) { pointerStartedInsideRef.current = false; return; }
         if (event.target === event.currentTarget) handleSetShowGlobalLevelUpToFalse();
       }}
     >
@@ -153,7 +154,7 @@ function GlobalLevelUpModal({
         aria-labelledby="global-level-up-title"
         aria-describedby="global-level-up-description"
         className="allo-docsuite bg-white rounded-3xl p-5 sm:p-8 md:p-12 text-center shadow-2xl border-4 border-yellow-400 relative overflow-y-auto max-h-[calc(100vh-1rem)] max-w-sm w-full transform transition-all animate-in zoom-in-50 duration-500 motion-reduce:animate-none motion-reduce:transform-none"
-        onMouseDown={() => { dragStartedInsideRef.current = true; }}
+        onMouseDown={() => { pointerStartedInsideRef.current = true; }}
         onClick={(event) => event.stopPropagation()}
       >
         <div aria-hidden="true" className="absolute inset-0 opacity-20 bg-[radial-gradient(circle,rgba(250,204,21,1)0%,rgba(255,255,255,0)70%)] animate-pulse motion-reduce:animate-none"></div>
@@ -167,7 +168,7 @@ function GlobalLevelUpModal({
           <h2 id="global-level-up-title" className="text-3xl sm:text-4xl font-black text-indigo-900 mb-2 uppercase tracking-tight drop-shadow-sm">{t('feedback.level_up_title')}</h2>
           <p id="global-level-up-description" className="text-indigo-800 font-bold text-lg mb-6">{t('feedback.level_reached', { level: safeLevel })}</p>
           <div className="bg-indigo-50 rounded-xl p-4 mb-8 border border-indigo-200 shadow-inner">
-            <div className="text-[11px] text-indigo-800 font-bold uppercase tracking-wider mb-1 flex justify-between gap-2">
+            <div className="text-xs text-indigo-800 font-bold uppercase tracking-wider mb-1 flex justify-between gap-2">
               <span>{t('feedback.next_milestone')}</span>
               <span>{xpPercent}%</span>
             </div>
@@ -186,10 +187,15 @@ function GlobalLevelUpModal({
                 style={{ width: `${xpPercent}%` }}
               ></div>
             </div>
-            <div className="flex justify-between text-[11px] font-mono font-bold text-indigo-800 mt-1.5 gap-2">
+            <div className="flex justify-between text-xs font-mono font-bold text-indigo-800 mt-1.5 gap-2">
               <span><AnimatedNumber value={xpValue} /> {t('common.xp')}</span>
               <span>{xpMax} {t('common.xp')}</span>
             </div>
+            <p data-testid="global-level-up-remaining" className="mt-2 text-xs font-semibold text-indigo-900">
+              {xpRemaining > 0
+                ? `${xpRemaining} ${t('common.xp')} to next milestone`
+                : 'Next milestone reached!'}
+            </p>
           </div>
           <button
             ref={continueButtonRef}

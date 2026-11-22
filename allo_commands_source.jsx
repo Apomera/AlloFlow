@@ -1016,7 +1016,10 @@ function buildAlloCommands(ctx, opts = {}) {
     // unrestricted posture. Distinct from open_screen_coach, which stays with
     // the recorder: that one coaches while you record, this one is the tool you
     // open when a website is fighting you.
-    { id: 'open_it_coach', icon: '\uD83D\uDC69\u200D\uD83C\uDFEB', roles: 'all', when: () => typeof window !== 'undefined' && typeof window.open === 'function', label: t('cmd.open_it_coach', 'Coach me through another website'), aliases: ['it coach', 'help me use this website', 'help me use another website', 'guide me through a website', 'walk me through this site', 'how do i use this site', 'stuck on a website'], hint: t('cmd.open_it_coach_hint', 'Opens a coach that watches a site you share and suggests the next step — it advises, you do the clicking'), run: (c) => {
+    { id: 'open_it_coach', icon: '\uD83D\uDC69\u200D\uD83C\uDFEB', roles: 'all', when: (c) => typeof window !== 'undefined' && typeof window.open === 'function' && !(c && c.studentAiFeaturesHidden) && window.__alloStudentAiDisabled !== true && window._alloQrBlocked !== true && !window.__alloQrStudentMode && !(window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false), label: t('cmd.open_it_coach', 'Coach me through another website'), aliases: ['it coach', 'help me use this website', 'help me use another website', 'guide me through a website', 'walk me through this site', 'how do i use this site', 'stuck on a website'], hint: t('cmd.open_it_coach_hint', 'Opens a coach that watches a site you share and suggests the next step — it advises, you do the clicking'), run: (c) => {
+      if ((c && c.studentAiFeaturesHidden) || (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window._alloQrBlocked === true || !!window.__alloQrStudentMode || (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)))) {
+        return t('cmd.open_it_coach_disabled', 'Screen Coach is not available while AI features are turned off.');
+      }
       const posture = getCommandAudience(c) === 'teacher' ? 'educator' : 'learner';
       // Prefer the Video Studio module's opener: it mints a bridge token and
       // registers the window, so the coach reuses the app's AI settings through
@@ -5147,6 +5150,7 @@ function createVoiceLoop(getCtx, opts = {}) {
   // handling) out. "Stop listening" always works — even in standby, and even
   // without the wake word — a kill phrase must never be gated.
   const handleUtterance = async (text, recognitionMeta = {}) => {
+    if (!active) return;
     errStreak = 0;
     text = String(text || "").trim();
     if (!text) return;
@@ -5484,6 +5488,7 @@ function createVoiceLoop(getCtx, opts = {}) {
         : undefined;
       Promise.resolve(asr(downsampleAudio(segment, ac.sampleRate, 16000), inferenceOptions)).then((out) => {
         busy = false;
+        if (!active || sessionSerial !== mySession || paused) return;
         const text = String(out && out.text || "").trim();
         // Whisper emits bracketed non-speech tokens ("[BLANK_AUDIO]", "(music)").
         if (text && !/^[\[(]/.test(text)) handleUtterance(text);
@@ -5510,12 +5515,14 @@ function createVoiceLoop(getCtx, opts = {}) {
       updateVoiceSession("starting", "Starting browser speech recognition.", "Browser speech may send audio to the browser's speech service.");
       if (standbyWanted) announce(tx(getCtx(), 'voice.standby_model_required', '“Hey Allo” standby needs the on-device speech model — say “download voice models” first. Tap-to-talk listening is on instead.'));
       rec = new SR();
+      const thisRec = rec;
       rec.continuous = true;
       // Interim results exist ONLY to detect that a sentence is in progress.
       // Routing still waits for the final transcript in onresult below.
       rec.interimResults = true;
       rec.lang = c && c.voiceLang || "en-US";
       rec.onresult = (ev) => {
+        if (!active || paused || rec !== thisRec) return;
         const parts = [];
         const confidences = [];
         const first = typeof ev.resultIndex === "number" ? Math.max(0, ev.resultIndex) : 0;
@@ -6187,6 +6194,7 @@ const AlloCommandPalette = ({ ctx }) => {
       'button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
     )).filter((node) => !node.hidden && node.getAttribute('aria-hidden') !== 'true');
     const onDocumentKeyDown = (event) => {
+      if (event.isComposing || event.keyCode === 229) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopPropagation();
@@ -6211,7 +6219,7 @@ const AlloCommandPalette = ({ ctx }) => {
       if (event.shiftKey && (active === first || !dialog.contains(active))) {
         event.preventDefault();
         last.focus();
-      } else if (!event.shiftKey && active === last) {
+      } else if (!event.shiftKey && (active === last || !dialog.contains(active))) {
         event.preventDefault();
         first.focus();
       }

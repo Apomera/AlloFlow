@@ -4,7 +4,7 @@
   "ai": "Deterministic provider fixture through production generation and validation flow",
   "independentBrowsers": 4,
   "completedReceiptCount": 3,
-  "completedDocumentChars": 7658,
+  "completedDocumentChars": 7651,
   "permissionCheckedWrites": 33,
   "scenarios": [
     "AI repair",

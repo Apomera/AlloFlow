@@ -43,11 +43,11 @@
     },
     {
       "path": "guide/guide-search.js",
-      "sha256": "0c5220f318faf54998f0788a0abc5f80ecd30b8e49fbefaf93eb0e2d23378015"
+      "sha256": "33994a1240383d6dc92a0159001f4ff3a37e8370a358076b33242378f7f21fcd"
     },
     {
       "path": "guide/guide.css",
-      "sha256": "9c7cb6c4a9942f52ba3bfdfa2423411640dcf52c88e7de254d84b9c08dde1613"
+      "sha256": "7168c6a10632a493f448e1f0ee6b60e93bf98fb7df753a45e7431ea5280778dd"
     },
     {
       "path": "guide/index.html",
@@ -67,7 +67,7 @@
     },
     {
       "path": "guide/offline.html",
-      "sha256": "65700e56aee5571bd5265cfb84a1a80bb578f37aef85863f12b6e03757de9b70"
+      "sha256": "f840b72ba3e242e3ac85db7cb48c911a15f273cbe1ba924d44b4350343fbccb6"
     },
     {
       "path": "guide/prepare-a-lesson.html",

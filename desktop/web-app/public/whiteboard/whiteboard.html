@@ -50,7 +50,7 @@
   :focus-visible, button:focus-visible, a:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid #a5b4fc !important; outline-offset: 2px !important; }
   main { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
-  @media (forced-colors: active) { :root { color-scheme: light dark; } header, .aibar, footer.privacy { background: Canvas; color: CanvasText; border-color: CanvasText; } :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; } }
+  @media (forced-colors: active) { :root { color-scheme: light dark; --bg: Canvas; --panel: Canvas; --line: CanvasText; --text: CanvasText; --dim: CanvasText; --accent: Highlight; --accent2: Highlight; } body, header, header .sub, .aibar, .aibar .ailabel, .aistatus, .tpl label, .loadmsg, footer.privacy, select, input.hdr, button.hdr { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; } button.primary { background: Highlight !important; color: HighlightText !important; border-color: Highlight !important; } :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; } }
   header { display: flex; align-items: center; gap: 10px; padding: 7px 12px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; flex-wrap: wrap; }
   header h1 { font-size: 14px; margin: 0; font-weight: 700; }
   header .sub { color: var(--dim); font-size: 11px; }
@@ -58,16 +58,16 @@
   .tpl { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-width: 0; max-width: 100%; }
   .tpl select { min-width: 0; max-width: 100%; }
   .tpl label { font-size: 11px; color: var(--dim); }
-  select, button.hdr { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; font-family: inherit; }
+  select, button.hdr { background: var(--bg); color: var(--text); border: 1px solid #64748b; border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; font-family: inherit; }
   button.hdr:hover, select:hover { border-color: var(--accent); }
   button.primary { background: var(--accent2); border-color: var(--accent2); color: #fff; font-weight: 700; }
-  button.primary:hover { background: var(--accent); }
+  button.primary:hover { background: #4338ca; border-color: #4338ca; }
   #excal { flex: 1 1 auto; min-height: 0; position: relative; }
   .loadmsg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--dim); font-size: 14px; text-align: center; padding: 24px; }
   .privacy { padding: 5px 12px; background: var(--panel); border-top: 1px solid var(--line); font-size: 10.5px; color: #6b7aa8; flex: 0 0 auto; }
   /* Excalidraw renders light by default; give it a clean light ground below the dark chrome. */
   .excalidraw { --color-primary: #4f46e5; }
-  input.hdr { background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: inherit; }
+  input.hdr { background: var(--bg); color: var(--text); border: 1px solid #64748b; border-radius: 8px; padding: 6px 10px; font-size: 12px; font-family: inherit; }
   input.hdr::placeholder { color: var(--dim); }
   input.hdr:focus-visible { outline: 3px solid #a5b4fc; outline-offset: 2px; border-color: var(--accent); }
   .nameinput { max-width: 170px; }
@@ -163,7 +163,7 @@
     try {
       var u = new URL(o);
       var host = (u.hostname || '').toLowerCase();
-      if (/^(localhost|127\.0\.0\.1)$/.test(host)) return true;
+      if (/^(localhost|127\.0\.0\.1)$/.test(host) && (u.protocol === 'http:' || u.protocol === 'https:')) return true;
       if (u.protocol !== 'https:') return false;
       return host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host);
     } catch (_) { return false; }
@@ -187,10 +187,18 @@
       if (!window.opener || window.opener.closed) return;
       var handshake = !!(payload && HANDSHAKE_TYPES[payload.type]);
       if (!handshake && !linked) return;
-      if (imageSlot) payload = Object.assign({}, payload, { type: payload.type.replace('allocwb-', 'alloasset-'), token: imageSlot });
       var target = (linked && openerOrigin && openerOrigin !== 'null') ? openerOrigin : '*';
-      if (imageSlot) target = (slotHost === 'null' && declaredHost === 'null') ? '*' : (slotHost !== 'null' ? slotHost : '');
-      else if (!handshake && target === '*' && !(linked && openerOrigin === 'null' && declaredHost === 'null')) return;
+      if (imageSlot) {
+        var slotHostTrusted = slotHost && (isTrustedOpenerOrigin(slotHost) || isDeclaredCanvasOpener(slotHost, declaredHost));
+        target = (slotHost === 'null' && declaredHost === 'null') ? '*' : (slotHost !== 'null' && slotHostTrusted ? slotHost : '');
+        if (!target) return;
+        // Never leak the imageSlot capability token over an unpinned '*' wildcard before handshake completes.
+        if (target === '*' && !linked) {
+          payload = Object.assign({}, payload, { type: payload.type.replace('allocwb-', 'alloasset-') });
+        } else {
+          payload = Object.assign({}, payload, { type: payload.type.replace('allocwb-', 'alloasset-'), token: imageSlot });
+        }
+      } else if (!handshake && target === '*' && !(linked && openerOrigin === 'null' && declaredHost === 'null')) return;
       if (!target) return;
       window.opener.postMessage(payload, target);
     } catch (_) {}
@@ -687,7 +695,12 @@
     var ctx = cv.getContext('2d');
     ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, REC_W, REC_H);
 
-    var stream = cv.captureStream(30);
+    var stream = null;
+    try {
+      stream = cv.captureStream(30);
+    } catch (e) {
+      recordBusy = false; aiStatus('Could not start the recorder.', false); return Promise.resolve();
+    }
     var track = stream.getVideoTracks()[0] || null;
     var mime = pickRecorderMime();
     var mr;
@@ -734,7 +747,13 @@
       }
     }
 
-    mr.start(500);
+    try {
+      mr.start(500);
+    } catch (e) {
+      gifFrames.length = 0;
+      try { stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {}
+      recordBusy = false; aiStatus('Could not start the recorder.', false); return Promise.resolve();
+    }
     aiStatus('Recording the drawing…', null);
 
     var startedAt = performance.now();
@@ -773,8 +792,19 @@
       if (mr.state === 'inactive' && !recorderSettled) {
         return new Blob(chunks, { type: mr.mimeType || 'video/webm' });
       }
-      try { mr.stop(); } catch (_) {}
-      return recorded;
+      var stopThrew = false;
+      try { mr.stop(); } catch (_) { stopThrew = true; }
+      if (stopThrew) {
+        return new Blob(chunks, { type: mr.mimeType || 'video/webm' });
+      }
+      return Promise.race([
+        recorded,
+        new Promise(function (r) {
+          setTimeout(function () {
+            r(new Blob(chunks, { type: mr.mimeType || 'video/webm' }));
+          }, 5000);
+        })
+      ]);
     }).then(function (blob) {
       try { stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {}
       if (!blob || !blob.size) { aiStatus('The recording came out empty.', false); return; }
@@ -792,11 +822,13 @@
       // autoplay or embed. Failure here must never lose the video the teacher
       // actually asked for, so it is strictly additive and swallows its errors.
       var gifNote = '';
+      var gifSaved = false;
       if (gifCanUse && gifFrames.length) {
         try {
           var gifBlob = window.AlloGif.encodeCanvasesToBlob(gifFrames, GIF_W, gifH, GIF_FPS);
           if (gifBlob && gifBlob.size) {
             downloadBlob(gifBlob, base + '.gif');
+            gifSaved = true;
             gifNote = ' Also saved a ' + GIF_SECONDS + 's looping GIF (' + Math.round(gifBlob.size / 1024) + ' KB)'
               + (totalSec > GIF_SECONDS + 0.5 ? ', time-lapsed from the full build' : '') + '.';
           }
@@ -809,13 +841,13 @@
       }
       gifFrames.length = 0;
       aiStatus('Recorded ✓ — drop the .webm and .vtt into Video Studio to narrate or trim.' + gifNote, true);
-      toOpener({ type: 'allocwb-recorded', seconds: Math.round(totalSec), elementCount: newEls.length, cues: cues.length, gif: !!gifNote });
+      toOpener({ type: 'allocwb-recorded', seconds: Math.round(totalSec), elementCount: newEls.length, cues: cues.length, gif: gifSaved });
     }).catch(function (e) {
       console.warn('[Whiteboard] record failed', e);
       try { if (mr.state !== 'inactive') mr.stop(); } catch (_) {}
       try { stream.getTracks().forEach(function (tr) { tr.stop(); }); } catch (_) {}
       aiStatus('Could not record the drawing.', false);
-    }).then(function () { recordBusy = false; });
+    }).then(function () { gifFrames.length = 0; recordBusy = false; });
   }
 
   function makeImageElement(fileId, x, y, w, h) {
@@ -935,6 +967,8 @@
       // remains an upgrade; learning 'null' was a downgrade to muteness.
       if (d.type === 'allocwb-ack') {
         if (!isTrustedOpenerOrigin(ev.origin) && !isDeclaredCanvasOpener(ev.origin, declaredHost)) return;
+        if (ev.origin === 'null' && declaredHost && declaredHost !== 'null') return;
+        if (linked) return;
         openerOrigin = ev.origin;
         setLinked(true);
         return;

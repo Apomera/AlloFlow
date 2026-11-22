@@ -75,7 +75,7 @@
     var n = 0;
     for (var i = 0; i < list.length; i++) {
       var c = list[i] || {};
-      var text = String(c.text || '').replace(/[\r\n]+/g, ' ').trim();
+      var text = String(c.text || '').replace(/[\r\n]+/g, ' ').replace(/-->/g, '->').trim();
       var start = Number(c.start), end = Number(c.end);
       if (!text || !isFinite(start) || !isFinite(end)) continue;
       if (end <= start) end = start + 0.5;
@@ -92,14 +92,14 @@
   // numeric cue identifiers, and cue settings after the end timestamp.
   function vsParseVtt(text) {
     var cues = [];
-    if (typeof text !== 'string') return cues;
+    if (typeof text !== 'string' || text.length > 2 * 1024 * 1024) return cues;
     var toSec = function (ts) {
       var m = /^(?:(\d+):)?(\d{1,2}):(\d{2})[.,](\d{3})$/.exec(ts.trim());
       if (!m) return null;
       return (Number(m[1] || 0) * 3600) + (Number(m[2]) * 60) + Number(m[3]) + (Number(m[4]) / 1000);
     };
     var blocks = text.replace(/\r/g, '').split(/\n\n+/);
-    for (var i = 0; i < blocks.length; i++) {
+    for (var i = 0; i < blocks.length && cues.length < 5000; i++) {
       var lines = blocks[i].split('\n').filter(function (l) { return l.trim() !== ''; });
       for (var j = 0; j < lines.length; j++) {
         var tm = /^(\S+)\s+-->\s+(\S+)/.exec(lines[j]);
@@ -494,6 +494,7 @@
     for (var n = 0; n < count; n++) {
       if (p + 46 > u8.length || rd32(p) !== 0x02014b50) break;
       var method = rd16(p + 10), size = rd32(p + 24), nameLen = rd16(p + 28), extraLen = rd16(p + 30), commentLen = rd16(p + 32), lho = rd32(p + 42);
+      if (p + 46 + nameLen + extraLen + commentLen > u8.length) break;
       var name = '';
       for (var c2 = 0; c2 < nameLen; c2++) name += String.fromCharCode(u8[p + 46 + c2]);
       if (method === 0 && lho + 30 <= u8.length && rd32(lho) === 0x04034b50) {
@@ -657,12 +658,12 @@
 
   function vsAudioPolishPreset(key) {
     var k = String(key || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'voice_balanced';
-    var map = {
+    var map = Object.assign(Object.create(null), {
       voice_balanced: { key: 'voice_balanced', label: 'Voice balanced', description: 'Slight voice lift with cautious volume; good default for teacher recordings.', audio: { volume: 1.08, removeAll: false }, music: { volume: 0.24, fadeIn: 1.2, fadeOut: 2.2, duck: true } },
       quiet_voice: { key: 'quiet_voice', label: 'Quiet voice lift', description: 'Raises a quiet recording without pushing past the distortion warning zone.', audio: { volume: 1.25, removeAll: false }, music: { volume: 0.18, fadeIn: 1.5, fadeOut: 2.5, duck: true } },
       music_under: { key: 'music_under', label: 'Music under speech', description: 'Keeps background music low, faded, and ducked under speech.', audio: { volume: 1, removeAll: false }, music: { volume: 0.16, fadeIn: 2, fadeOut: 3, duck: true } },
       voiceover_replace: { key: 'voiceover_replace', label: 'Voiceover replaces original', description: 'Mutes the source audio so narration or interpreter clips can carry the lesson.', audio: { volume: 1, removeAll: true }, music: { volume: 0.18, fadeIn: 1.5, fadeOut: 2.5, duck: true } }
-    };
+    });
     return map[k] || map.voice_balanced;
   }
 
@@ -1451,7 +1452,7 @@
     var source = String(text || '').slice(0, 12000);
     var entries = Array.isArray(rawGlossary) ? rawGlossary : vsParsePronunciationGlossary(rawGlossary);
     if (!source || !entries.length) return source;
-    var map = {};
+    var map = Object.create(null);
     entries.forEach(function (entry) { map[String(entry.term).toLowerCase()] = String(entry.spoken); });
     var pattern = entries.map(function (entry) { return String(entry.term).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|');
     if (!pattern) return source;
@@ -1508,7 +1509,7 @@
     var dur = Math.max(0.1, Number(duration) || 0.1);
     var list = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.descriptions) ? raw.descriptions : (raw && Array.isArray(raw.segments) ? raw.segments : []));
     var out = [];
-    var basisMap = {
+    var basisMap = Object.assign(Object.create(null), {
       observed: 'observed',
       inference: 'inferred',
       inferred: 'inferred',
@@ -1518,7 +1519,7 @@
       'needs-review': 'needs-review',
       review: 'needs-review',
       uncertain: 'needs-review'
-    };
+    });
     function confidence(v) {
       var n = Number(v);
       if (isFinite(n)) return n >= 0.75 ? 'high' : (n >= 0.45 ? 'medium' : 'low');
@@ -1930,7 +1931,7 @@
       if (!text && type !== 'sticker' && type !== 'visual_card' && type !== 'image_overlay') continue;
       var note = String(s.note || s.subtext || s.prompt || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 240);
       var imageSrc = String(s.imageSrc || s.image || s.src || '').trim();
-      if (imageSrc && imageSrc.indexOf('data:image/') !== 0) imageSrc = '';
+      if (imageSrc && (!/^data:image\/(?:png|jpe?g|webp|gif|avif|bmp);base64,/i.test(imageSrc) || imageSrc.length > 4 * 1024 * 1024)) imageSrc = '';
       if (type === 'image_overlay' && !imageSrc) continue;
       var motion = String(s.motion || '').toLowerCase().replace(/[\s-]+/g, '_');
       var style = String(s.style || s.calloutStyle || '').toLowerCase().replace(/[\s-]+/g, '_');
@@ -1971,7 +1972,7 @@
     var clean = function (v, n) { return String(v || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n); };
     var safeImg = function (v) {
       v = String(v || '').trim();
-      return (v.indexOf('data:image/') === 0 && v.length <= 1200000) ? v : '';
+      return (/^data:image\/(?:png|jpe?g|webp|gif|avif|bmp);base64,/i.test(v) && v.length <= 1200000) ? v : '';
     };
     var push = function (cue) {
       if (!cue || out.length >= max) return;
@@ -2077,7 +2078,7 @@
   var dur = Math.max(0.1, Number(duration) || 0.1);
   var list = Array.isArray(raw) ? raw : (raw && (Array.isArray(raw.suggestions) ? raw.suggestions : (Array.isArray(raw.items) ? raw.items : (Array.isArray(raw.plan) ? raw.plan : (Array.isArray(raw.lessonPlan) ? raw.lessonPlan : [])))));
   var out = [];
-  var typeMap = {
+  var typeMap = Object.assign(Object.create(null), {
   title: 'title_card',
   title_card: 'title_card',
   chapter: 'chapter',
@@ -2098,8 +2099,8 @@
   motion_sticker: 'motion_sticker',
   gif: 'motion_sticker',
   gif_prompt: 'motion_sticker'
-  };
-  var styleMap = { label: 'label', box: 'box', spotlight: 'spotlight', arrow: 'arrow' };
+  });
+  var styleMap = Object.assign(Object.create(null), { label: 'label', box: 'box', spotlight: 'spotlight', arrow: 'arrow' });
   function clean(v, max) { return String(v || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max); }
   function clamp01(v, fallback) {
   v = Number(v);
@@ -2166,7 +2167,7 @@
       return isFinite(v) ? Math.max(0, Math.min(dur, v)) : fallback;
     };
     var styleKey = String(src.style || src.mode || 'natural').toLowerCase().replace(/[\s-]+/g, '_');
-    var styleMap = { literal: 'literal', natural: 'natural', classroom: 'natural', interpreter: 'interpreter', interpretation: 'interpreter', family: 'family', simplified: 'family', bilingual: 'bilingual' };
+    var styleMap = Object.assign(Object.create(null), { literal: 'literal', natural: 'natural', classroom: 'natural', interpreter: 'interpreter', interpretation: 'interpreter', family: 'family', simplified: 'family', bilingual: 'bilingual' });
     var draft = {
       id: clean(src.id, 40) || ('loc' + Math.random().toString(36).slice(2, 8)),
       targetLanguage: clean(src.targetLanguage || src.language || src.locale, 80) || 'Target language',
@@ -2955,11 +2956,16 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function vsSanitizeCoachChat(result, opts) {
     opts = opts || {};
     var raw = result;
+    var safeParse = function (str) {
+      return JSON.parse(str, function (k, v) {
+        return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+      });
+    };
     if (!raw || typeof raw !== 'object' || typeof raw.guidance !== 'string') {
       var text = typeof result === 'string' ? result : result && (result.text || result.output) || '';
-      try { raw = JSON.parse(text); } catch (_) {
+      try { raw = safeParse(text); } catch (_) {
         var match = /\{[\s\S]*\}/.exec(String(text));
-        try { raw = match ? JSON.parse(match[0]) : {}; } catch (_2) { raw = {}; }
+        try { raw = match ? safeParse(match[0]) : {}; } catch (_2) { raw = {}; }
       }
     }
     raw = raw && typeof raw === 'object' ? raw : {};

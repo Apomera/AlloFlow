@@ -8,17 +8,21 @@
 // Grade-adaptive: uses ctx.gradeBand to scale vocabulary & scenarios
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
-};
+if (typeof window !== 'undefined') {
+  window.SelHub = window.SelHub || {
+    _registry: {}, _order: [],
+    registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
+    isRegistered: function(id) { return !!this._registry[id]; },
+    renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
+  };
+}
 
 (function() {
   'use strict';
+  if (typeof window === 'undefined' || !window.SelHub) return;
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-zones')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-zones';
@@ -34,14 +38,23 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   // ── Sound Effects Engine (Web Audio API) ──
   // ══════════════════════════════════════════════════════════════
+  function _znIsMuted() {
+    try {
+      if (typeof window === 'undefined') return true;
+      if (typeof window.__alloIsGlobalMuted === 'function') return !!window.__alloIsGlobalMuted();
+      return window.__alloMuted === true || window.__alloGlobalMuted === true;
+    } catch (e) { return false; }
+  }
   var _audioCtx = null;
   function getAudioCtx() {
+    if (_znIsMuted()) return null;
     if (!_audioCtx) {
       try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { /* silent */ }
     }
     return _audioCtx;
   }
   function playTone(freq, dur, type, vol) {
+    if (_znIsMuted()) return;
     var ac = getAudioCtx(); if (!ac) return;
     try {
       var osc = ac.createOscillator();
@@ -33283,12 +33296,18 @@ var CULTURAL_ZONE_ADAPTATIONS = [
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
 
+  var _znBreathTimerId = null;
+  function _stopZnBreathTimer() {
+    if (_znBreathTimerId) { clearTimeout(_znBreathTimerId); _znBreathTimerId = null; }
+  }
+
   window.SelHub.registerTool('zones', {
     icon: '\uD83D\uDEA6',
     label: 'Emotion Zones',
     desc: 'Identify your zone and explore strategies to self-regulate.',
     color: 'emerald',
     category: 'self-awareness',
+    cleanup: function() { _stopZnBreathTimer(); },
     render: function(ctx) {
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _zoT = (ctx && ctx.theme) || {};
@@ -33301,14 +33320,23 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       var _zoBd = function(h){ return _zoHC ? (_zo_BDH[h]||h) : (_zoL ? (_zo_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
-      var ArrowLeft = ctx.icons.ArrowLeft;
-      var Sparkles = ctx.icons.Sparkles;
-      var setSelHubTool = ctx.setSelHubTool;
-      var addToast = ctx.addToast;
-      var awardXP = ctx.awardXP;
-      var announceToSR = ctx.announceToSR;
-      var a11yClick = ctx.a11yClick;
-      var celebrate = ctx.celebrate;
+      var _znIcons = (ctx && ctx.icons) || {};
+      var ArrowLeft = _znIcons.ArrowLeft;
+      var Sparkles = _znIcons.Sparkles;
+      var setSelHubTool = typeof ctx.setSelHubTool === 'function' ? ctx.setSelHubTool : function() {};
+      var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : function() {};
+      var awardXP = typeof ctx.awardXP === 'function' ? ctx.awardXP : function() {};
+      var announceToSR = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : function() {};
+      var a11yClick = typeof ctx.a11yClick === 'function' ? ctx.a11yClick : function(fn) {
+        return {
+          role: 'button', tabIndex: 0, onClick: fn,
+          onKeyDown: function(ev) {
+            if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+            if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); if (typeof fn === 'function') fn(ev); }
+          }
+        };
+      };
+      var celebrate = typeof ctx.celebrate === 'function' ? ctx.celebrate : function() {};
       var callGemini = ctx.callGemini;
       var _znAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true; })(callGemini);
       var callTTS = ctx.callTTS;
@@ -33324,7 +33352,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       var hc = !!theme.isContrast;
 
       // ── Tool-scoped state (via ctx.toolData.zones) ──
-      var d = (ctx.toolData && ctx.toolData.zones) || {};
+      var d = (ctx.toolData && ctx.toolData.zones && typeof ctx.toolData.zones === 'object') ? ctx.toolData.zones : {};
       var upd = function(key, val) {
         if (typeof key === 'object') { if (ctx.updateMulti) ctx.updateMulti('zones', key); }
         else { if (ctx.update) ctx.update('zones', key, val); }
@@ -33343,6 +33371,23 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       // conditional part. _pickQuestion moved up with it since both the effect
       // and the quiz's Next button call it.
       // Gate: dev-tools/scan_hook_order_branches.cjs.
+      var _znMountedRef = React.useRef(true);
+      var _znBreathRunIdRef = React.useRef(0);
+      var _znFocusTimerRef = React.useRef(null);
+      var _znBadgeReturnTimerRef = React.useRef(null);
+      function stopBreathingLoop() {
+        _znBreathRunIdRef.current++;
+        _stopZnBreathTimer();
+      }
+      React.useEffect(function() {
+        _znMountedRef.current = true;
+        return function() {
+          _znMountedRef.current = false;
+          stopBreathingLoop();
+          if (_znFocusTimerRef.current) { clearTimeout(_znFocusTimerRef.current); _znFocusTimerRef.current = null; }
+          if (_znBadgeReturnTimerRef.current) { clearTimeout(_znBadgeReturnTimerRef.current); _znBadgeReturnTimerRef.current = null; }
+        };
+      }, []);
       function _pickQuestion() {
         if (typeof ZONE_SCENARIOS !== 'undefined' && ZONE_SCENARIOS.length) {
           var pool = ZONE_SCENARIOS.filter(function(s) { return !s.forBand || s.forBand === band || s.forBand === 'all'; });
@@ -33367,15 +33412,15 @@ var CULTURAL_ZONE_ADAPTATIONS = [
 
       // Check-in state
       var selectedZone   = d.selectedZone || null;
-      var checkInNote    = d.checkInNote || '';
-      var checkInLog     = d.checkInLog || [];
+      var checkInNote    = typeof d.checkInNote === 'string' ? d.checkInNote : '';
+      var checkInLog     = Array.isArray(d.checkInLog) ? d.checkInLog.filter(function(e) { return e && typeof e === 'object'; }) : [];
       var intensityLevel = d.intensityLevel != null ? d.intensityLevel : 5; // 1-10 scale
 
       // Scenario state
       var scenarioIdx      = d.scenarioIdx || 0;
       var scenarioAnswer   = d.scenarioAnswer || null;
       var scenarioFeedback = d.scenarioFeedback || null;
-      var scenarioScore    = d.scenarioScore || { correct: 0, total: 0 };
+      var scenarioScore    = (d.scenarioScore && typeof d.scenarioScore === 'object') ? d.scenarioScore : { correct: 0, total: 0 };
       var scenarioStreak   = d.scenarioStreak || 0;
       var scenarioBestStreak = d.scenarioBestStreak || 0;
 
@@ -33394,12 +33439,12 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       var breathingComplete  = d.breathingComplete || 0; // total completed
 
       // Body map state
-      var bodySelections = d.bodySelections || {}; // { head: { sensation: 'tight', zone: 'yellow' }, ... }
+      var bodySelections = (d.bodySelections && typeof d.bodySelections === 'object') ? d.bodySelections : {}; // { head: { sensation: 'tight', zone: 'yellow' }, ... }
       var bodyScanActive = d.bodyScanActive || false;
-      var bodyScanStep   = d.bodyScanStep || 0;
+      var bodyScanStep   = (Number.isInteger(d.bodyScanStep) && d.bodyScanStep >= 0 && d.bodyScanStep < BODY_MAP_AREAS.length) ? d.bodyScanStep : 0;
 
       // Toolbox state (saved favorite strategies)
-      var myToolbox = d.myToolbox || [];
+      var myToolbox = Array.isArray(d.myToolbox) ? d.myToolbox.filter(function(e) { return e && typeof e === 'object'; }) : [];
 
       // Re-check follow-up state (added v3) — when set, show a post-save panel
       // offering the student a 10-minute re-check reminder to close the loop on
@@ -33409,7 +33454,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       var reCheckAt    = d.reCheckAt || 0;
 
       // Badge state
-      var earnedBadges    = d.earnedBadges || {};
+      var earnedBadges    = (d.earnedBadges && typeof d.earnedBadges === 'object') ? d.earnedBadges : {};
       // AI-only badges are hidden without usable AI (earned ones stay), so the set stays completable.
       var shownBadges = BADGES.filter(function(b) { return _znAiOn || !b.aiOnly || earnedBadges[b.id]; });
       var showBadgePopup  = d.showBadgePopup || null; // badge id to show popup for
@@ -33423,7 +33468,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         if (!badgeDialogOpen) return undefined;
         // Captured BEFORE focus moves. autoFocus would defeat this: it runs during
         // commit, so the "opener" would come out as the dialog's own button.
-        var opener = document.activeElement;
+        var opener = typeof document !== 'undefined' ? document.activeElement : null;
         if (opener && typeof opener.focus === 'function') badgeOpenerRef.current = opener;
         var focusTimer = setTimeout(function() {
           var dlg = badgeDialogRef.current;
@@ -33437,7 +33482,9 @@ var CULTURAL_ZONE_ADAPTATIONS = [
           badgeOpenerRef.current = null;
           // isConnected guards the case where the opener itself went away.
           if (previous && previous.isConnected !== false && typeof previous.focus === 'function') {
-            setTimeout(function() { previous.focus(); }, 0);
+            _znBadgeReturnTimerRef.current = setTimeout(function() {
+              if (previous && previous.isConnected !== false && typeof previous.focus === 'function') previous.focus();
+            }, 0);
           }
         };
       }, [badgeDialogOpen]);
@@ -33445,8 +33492,8 @@ var CULTURAL_ZONE_ADAPTATIONS = [
 
       // Grounding exercise state
       var groundingActive   = d.groundingActive || false;
-      var groundingStep     = d.groundingStep || 0; // 0-4 for 5-4-3-2-1
-      var groundingInputs   = d.groundingInputs || {};
+      var groundingStep     = (Number.isInteger(d.groundingStep) && d.groundingStep >= 0 && d.groundingStep < 5) ? d.groundingStep : 0; // 0-4 for 5-4-3-2-1
+      var groundingInputs   = (d.groundingInputs && typeof d.groundingInputs === 'object') ? d.groundingInputs : {};
       var groundingComplete = d.groundingComplete || 0;
 
       var scenarios = SCENARIOS[band] || SCENARIOS.elementary;
@@ -33470,6 +33517,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
 
       // ── TTS read-aloud helper (for elementary) ──
       function readAloud(text) {
+        if (_znIsMuted()) return;
         if (callTTS && band === 'elementary') {
           callTTS(text);
         }
@@ -33598,7 +33646,8 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       function selectZonesTab(tabId) {
         var next = tabs.filter(function(item) { return item.id === tabId; })[0];
         if (!next) return;
-        upd('activeTab', next.id);
+        stopBreathingLoop();
+        upd({ activeTab: next.id, breathingActive: false });
         if (soundEnabled) sfxClick();
         announceToSR('Switched to ' + next.id + ' tab');
       }
@@ -33625,7 +33674,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         },
           visibleTabs.map(function(tab) {
             var isActive = activeTab === tab.id;
-            return h('button', {
+            return h('button', { type: 'button',
               'aria-label': tab.label,
               key: tab.id,
               id: 'zones-tab-' + tab.id,
@@ -33636,6 +33685,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
               tabIndex: isActive ? 0 : -1,
               onClick: function() { selectZonesTab(tab.id); },
               onKeyDown: function(e) {
+                if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 var currentIndex = visibleTabs.indexOf(tab);
                 var nextIndex = currentIndex;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (currentIndex + 1) % visibleTabs.length;
@@ -33646,7 +33696,10 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                 e.preventDefault();
                 var nextTab = visibleTabs[nextIndex];
                 selectZonesTab(nextTab.id);
-                setTimeout(function() {
+                if (_znFocusTimerRef.current) clearTimeout(_znFocusTimerRef.current);
+                _znFocusTimerRef.current = setTimeout(function() {
+                  _znFocusTimerRef.current = null;
+                  if (typeof document === 'undefined') return;
                   var target = document.querySelector('[data-zones-tab="' + nextTab.id + '"]');
                   if (target) target.focus();
                 }, 0);
@@ -33663,7 +33716,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
         ),
         // A tab list may own only tabs, so the More toggle sits beside the list, not in it.
         moreTabsToggle,
-        h('button', {
+        h('button', { type: 'button',
           'aria-label': 'Sound effects',
           'aria-pressed': !!soundEnabled,
           onClick: function() {
@@ -33674,7 +33727,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
           style: { marginLeft: 'auto', alignSelf: 'center', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: _zoFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        h('button', {
+        h('button', { type: 'button',
           'aria-label': 'View badges (' + Object.keys(earnedBadges).length + ' of ' + shownBadges.length + ')',
           'aria-expanded': !!showBadgesPanel,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
@@ -33750,7 +33803,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       }
 
       function zoneLaunchCard(title, blurb, actionLabel, tabId, color) {
-        return h('button', {
+        return h('button', { type: 'button',
           onClick: function() { selectZonesTab(tabId); },
           'aria-label': actionLabel + ': ' + title,
           style: {
@@ -33797,7 +33850,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
               h('p', { style: { margin: '4px 0 0', color: _zoFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.55 } },
                 'Name the zone, then choose the support path that matches your body and setting.')
             ),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() { upd('activeTab', 'history'); if (soundEnabled) sfxClick(); },
               'aria-label': 'Open zone history',
               style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + _zoBd('#334155'), background: _zoBg('#1e293b'), color: _zoFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 800 }
@@ -33835,6 +33888,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
             // failure: three seconds is the whole interaction for anyone reading
             // slowly, listening to a screen reader, or working a switch.
             onKeyDown: function(e) {
+              if (e.isComposing || e.keyCode === 229) return;
               if (e.key === 'Escape') { e.preventDefault(); upd('showBadgePopup', null); return; }
               // Honour aria-modal: keep Tab inside the dialog. One control here,
               // so first === last and Tab holds focus on it.
@@ -33854,9 +33908,9 @@ var CULTURAL_ZONE_ADAPTATIONS = [
             onClick: function() { upd('showBadgePopup', null); }
           },
             h('div', {               style: {
-                background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
+                background: _zoHC ? '#000000' : (_zoL ? '#ffffff' : 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)'),
                 borderRadius: 20, padding: '32px 40px', textAlign: 'center',
-                border: '2px solid #7c3aed', maxWidth: 320,
+                border: '2px solid ' + _zoBd('#7c3aed'), maxWidth: 320,
                 animation: 'scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
               },
               onClick: function(e) { e.stopPropagation(); }
@@ -33865,11 +33919,11 @@ var CULTURAL_ZONE_ADAPTATIONS = [
               h('p', { style: { fontSize: 11, color: _zoFg('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 } }, 'Badge Earned!'),
               h('h3', { style: { margin: '0 0 8px 0', color: _zoFg('#f1f5f9'), fontSize: 20 } }, popBadge.name),
               h('p', { style: { margin: 0, color: _zoFg('#94a3b8'), fontSize: 13 } }, popBadge.desc),
-              h('p', { style: { margin: '12px 0 0 0', color: _zoFg('#7c3aed'), fontSize: 12, fontWeight: 700 } }, '+25 XP'),
+              h('p', { style: { margin: '12px 0 0 0', color: _zoFg('#a78bfa'), fontSize: 12, fontWeight: 700 } }, '+25 XP'),
               h('button', {
                 type: 'button',
                 onClick: function() { upd('showBadgePopup', null); },
-                style: { marginTop: 18, padding: '9px 22px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.14)', color: '#ffffff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
+                style: { marginTop: 18, padding: '9px 22px', borderRadius: 10, border: '1px solid ' + (_zoHC ? '#ffff00' : (_zoL ? '#6d28d9' : 'rgba(255,255,255,0.85)')), background: _zoHC ? '#000000' : (_zoL ? '#6d28d9' : 'rgba(255,255,255,0.14)'), color: _zoHC ? '#ffff00' : '#ffffff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
               }, 'Nice')
             )
           );
@@ -33902,7 +33956,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
               );
             })
           ),
-          h('button', { 'aria-label': 'Close',
+          h('button', { type: 'button', 'aria-label': 'Close',
             onClick: function() { upd('showBadgesPanel', false); },
             style: { display: 'block', margin: '16px auto 0', padding: '8px 20px', borderRadius: 8, border: 'none', background: _zoBg('#334155'), color: _zoFg('#f1f5f9'), fontWeight: 600, cursor: 'pointer' }
           }, 'Close')
@@ -33913,14 +33967,14 @@ var CULTURAL_ZONE_ADAPTATIONS = [
       // ── CSS Keyframes (injected once) — above the badges early return: a hook after it changed the hook count (React #300) ──
       // ══════════════════════════════════════════════════════════
       React.useEffect && React.useEffect(function() {
-        if (document.getElementById('sel-zones-keyframes')) return;
+        if (typeof document === 'undefined' || !document.head) return undefined;
+        if (document.getElementById('sel-zones-keyframes')) return undefined;
         var s = document.createElement('style');
         s.id = 'sel-zones-keyframes';
         s.textContent = [
           '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }',
           '@keyframes scaleIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }',
-          '@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }',
-          '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }'
+          '@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }'
         ].join('\n');
         document.head.appendChild(s);
         return function() { var el = document.getElementById('sel-zones-keyframes'); if (el) el.remove(); };
@@ -33951,7 +34005,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
             ZONES.map(function(zone) {
               var isSelected = selectedZone === zone.id;
               var descriptors = zone.descriptors[band] || zone.descriptors.elementary;
-              return h('button', {
+              return h('button', { type: 'button',
                 key: zone.id,
                 onClick: function() {
                   upd('selectedZone', zone.id);
@@ -34033,7 +34087,14 @@ var CULTURAL_ZONE_ADAPTATIONS = [
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: _zoBg('#1e293b'), color: _zoFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
             }),
             // Save button
-            h('button', { onClick: function() {
+            h('button', { type: 'button', onClick: function() {
+                var ciSafety = (checkInNote && window.SelHub && window.SelHub.safeRehearseCheck)
+                  ? window.SelHub.safeRehearseCheck(checkInNote, { toolId: 'zones_checkin', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+                  : { action: 'continue' };
+                if (ciSafety.action === 'block') {
+                  upd({ _zonesCrisis: true });
+                  return;
+                }
                 var entry = { zone: selectedZone, note: checkInNote, intensity: intensityLevel, timestamp: Date.now() };
                 var newLog = (checkInLog || []).concat([entry]);
                 upd({
@@ -34041,6 +34102,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                   selectedZone: null,
                   checkInNote: '',
                   intensityLevel: 5,
+                  _zonesCrisis: false,
                   // v3: remember this save so the post-save panel can offer a re-check
                   lastSaveTs: Date.now(),
                   lastSaveZone: selectedZone
@@ -34078,9 +34140,10 @@ var CULTURAL_ZONE_ADAPTATIONS = [
               },
               style: { marginTop: 12, width: '100%', padding: '12px 0', borderRadius: 10, border: 'none', background: _zoBg('#7c3aed'), color: _zoFg('#fff'), fontWeight: 700, fontSize: 14, cursor: 'pointer' }
             }, '\u2705 Save Check-In'),
+            (d._zonesCrisis && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function') ? window.SelHub.renderCrisisResources(h, band) : null,
 
             // Quick navigate to strategies
-            selectedZone !== 'green' && h('button', { 'aria-label': 'Need help calming down? Try a breathing exercise',
+            selectedZone !== 'green' && h('button', { type: 'button', 'aria-label': 'Need help calming down? Try a breathing exercise',
               onClick: function() { upd('activeTab', 'breathe'); },
               style: { marginTop: 8, width: '100%', padding: '10px 0', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: _zoFg('#94a3b8'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
             }, '\uD83C\uDF2C\uFE0F Need help calming down? Try a breathing exercise')
@@ -34104,7 +34167,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                     : 'After trying a strategy, a quick re-check tells you whether it actually helped. Building self-awareness is the whole point.'
                 ),
                 h('div', { style: { display: 'flex', gap: 8 } },
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function() {
                       if (soundEnabled) sfxClick();
                       upd({ reCheckAt: Date.now() + 10 * 60 * 1000, lastSaveTs: 0, lastSaveZone: null });
@@ -34113,7 +34176,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                     style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: _zoBg('#7c3aed'), color: _zoFg('#fff'), fontSize: 12, fontWeight: 700, cursor: 'pointer' },
                     'aria-label': 'Set 10-minute re-check timer'
                   }, '\uD83D\uDD14 Set 10-min timer'),
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function() { upd({ lastSaveTs: 0, lastSaveZone: null }); },
                     style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #475569', background: 'transparent', color: _zoFg('#94a3b8'), fontSize: 12, fontWeight: 600, cursor: 'pointer' },
                     'aria-label': 'Dismiss re-check offer'
@@ -34145,7 +34208,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                   h('p', { style: { margin: 0, fontSize: 12, color: _zoFg('#94a3b8') } }, zone.feeling)
                 ),
                 // Read aloud button (elementary)
-                band === 'elementary' && callTTS && h('button', { 'aria-label': 'Read aloud',
+                band === 'elementary' && callTTS && h('button', { type: 'button', 'aria-label': 'Read aloud',
                   onClick: function() { readAloud(zone.label + '. This is when you feel ' + zone.feeling + '. You might feel ' + descriptors.join(', ')); },
                   title: 'Read aloud',
                   style: { padding: '6px 10px', borderRadius: 8, border: 'none', background: zone.color + '22', color: _zoFg(zone.color), cursor: 'pointer', fontSize: 16 }
@@ -34187,8 +34250,8 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                     },
                       h('span', { style: { fontSize: 16 } }, s.icon),
                       h('span', { style: { flex: 1, fontSize: 12, color: _zoFg('#e2e8f0') } }, s.text),
-                      h('span', { style: { fontSize: 11, padding: '2px 6px', borderRadius: 6, background: (typeColors[s.type] || _zoFg('#94a3b8')) + '22', color: _zoFg(typeColors)[s.type] || _zoFg('#94a3b8'), fontWeight: 600 } }, s.type),
-                      h('button', { 'aria-label': isInToolbox ? '\u2705' : '+',
+                      h('span', { style: { fontSize: 11, padding: '2px 6px', borderRadius: 6, background: (typeColors[s.type] || _zoFg('#94a3b8')) + '22', color: typeColors[s.type] || _zoFg('#94a3b8'), fontWeight: 600 } }, s.type),
+                      h('button', { type: 'button', 'aria-label': (isInToolbox ? 'Remove ' : 'Add ') + s.text + (isInToolbox ? ' from toolbox' : ' to toolbox'),
                         onClick: function() {
                           if (isInToolbox) {
                             // Remove from toolbox
@@ -34212,7 +34275,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                 )
               ),
               // AI advice button
-              _znAiOn && callGemini && h('button', { 'aria-label': 'AI advice button',
+              _znAiOn && callGemini && h('button', { type: 'button', 'aria-label': 'AI advice button',
                 onClick: function() {
                   if (!_znAiOn) return;
                   upd({ aiLoading: true, aiAdvice: null });
@@ -34269,7 +34332,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
               BREATHING_PATTERNS.map(function(pat) {
                 var totalTime = pat.steps.reduce(function(sum, s) { return sum + s.duration; }, 0) * pat.cycles;
-                return h('button', { 'aria-label': pat.name,
+                return h('button', { type: 'button', 'aria-label': pat.name,
                   key: pat.id,
                   onClick: function() {
                     upd({ breathingPattern: pat.id, breathingActive: false, breathingStep: 0, breathingCycle: 0, breathingTimer: 0 });
@@ -34367,11 +34430,14 @@ var CULTURAL_ZONE_ADAPTATIONS = [
 
               // Controls
               h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
-                !isComplete && h('button', { 
+                !isComplete && h('button', { type: 'button',
                   onClick: function() {
                     if (breathingActive) {
+                      stopBreathingLoop();
                       upd('breathingActive', false);
                     } else {
+                      stopBreathingLoop();
+                      var runId = _znBreathRunIdRef.current;
                       upd('breathingActive', true);
                       if (soundEnabled) sfxBreathe();
                       // Start the timer cycle
@@ -34380,9 +34446,11 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                       var cycleIdx = breathingCycle;
 
                       function tick() {
+                        if (!_znMountedRef.current || _znBreathRunIdRef.current !== runId) return;
                         var step = pat.steps[stepIdx % pat.steps.length];
                         var countdown = step.duration;
                         function countDown() {
+                          if (!_znMountedRef.current || _znBreathRunIdRef.current !== runId) return;
                           upd('breathingTimer', countdown);
                           if (countdown <= 0) {
                             stepIdx++;
@@ -34391,6 +34459,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                               cycleIdx++;
                               if (cycleIdx >= pat.cycles) {
                                 // Done!
+                                _stopZnBreathTimer();
                                 var newComplete = breathingComplete + 1;
                                 upd({ breathingActive: false, breathingCycle: cycleIdx, breathingStep: 0, breathingTimer: 0, breathingComplete: newComplete });
                                 if (soundEnabled) sfxCorrect();
@@ -34406,17 +34475,18 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                             return;
                           }
                           countdown--;
-                          setTimeout(countDown, 1000);
+                          _znBreathTimerId = setTimeout(countDown, 1000);
                         }
                         countDown();
                       }
                       tick();
                     }
                   },
-                  style: { padding: '12px 32px', borderRadius: 10, border: 'none', background: breathingActive ? _zoFg('#ef4444') : '#7c3aed', color: _zoFg('#fff'), fontWeight: 700, fontSize: 14, cursor: 'pointer' }
+                  style: { padding: '12px 32px', borderRadius: 10, border: _zoHC ? '1px solid #ffff00' : 'none', background: _zoHC ? '#000000' : (breathingActive ? '#ef4444' : '#7c3aed'), color: _zoHC ? '#ffff00' : '#ffffff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }
                 }, breathingActive ? '\u23F8 Pause' : '\u25B6 Start'),
-                h('button', { 'aria-label': 'Try Another',
+                h('button', { type: 'button', 'aria-label': isComplete ? 'Try Another' : 'Back to breathing patterns',
                   onClick: function() {
+                    stopBreathingLoop();
                     upd({ breathingPattern: null, breathingActive: false, breathingStep: 0, breathingCycle: 0, breathingTimer: 0 });
                   },
                   style: { padding: '12px 24px', borderRadius: 10, border: '1px solid #334155', background: 'transparent', color: _zoFg('#94a3b8'), fontWeight: 600, fontSize: 14, cursor: 'pointer' }
@@ -34462,7 +34532,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 20 } },
               sensations.map(function(sens) {
                 var isChosen = scanSelection.sensation === sens;
-                return h('button', { 
+                return h('button', { type: 'button', 
                   key: sens,
                   onClick: function() {
                     var newSelections = Object.assign({}, bodySelections);
@@ -34477,7 +34547,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                   }
                 }, sens);
               }),
-              h('button', { 
+              h('button', { type: 'button', 
                 onClick: function() {
                   var newSelections = Object.assign({}, bodySelections);
                   newSelections[scanArea.id] = Object.assign({}, scanSelection, { sensation: 'nothing' });
@@ -34499,7 +34569,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
               h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
                 ZONES.map(function(zone) {
                   var isChosen = scanSelection.zone === zone.id;
-                  return h('button', {
+                  return h('button', { type: 'button',
                     'aria-label': zone.label + ' \u2014 ' + zone.feeling + (isChosen ? ' (selected)' : ''),
                     'aria-pressed': isChosen,
                     key: zone.id,
@@ -34520,11 +34590,11 @@ var CULTURAL_ZONE_ADAPTATIONS = [
             ),
             // Navigation
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
-              bodyScanStep > 0 && h('button', { 'aria-label': 'Back',
+              bodyScanStep > 0 && h('button', { type: 'button', 'aria-label': 'Back',
                 onClick: function() { upd('bodyScanStep', bodyScanStep - 1); },
                 style: { padding: '10px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: _zoFg('#94a3b8'), fontWeight: 600, cursor: 'pointer' }
               }, '\u2190 Back'),
-              h('button', { 'aria-label': 'Body Map',
+              h('button', { type: 'button', 'aria-label': 'Body Map',
                 onClick: function() {
                   if (scanIsLast) {
                     upd({ bodyScanActive: false, bodyScanStep: 0 });
@@ -34551,7 +34621,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
               'Emotions create physical sensations. Map where you feel them.'
             ),
             // Start guided scan button
-            h('button', { 'aria-label': 'Start Guided Body Scan',
+            h('button', { type: 'button', 'aria-label': 'Start Guided Body Scan',
               onClick: function() {
                 upd({ bodyScanActive: true, bodyScanStep: 0, bodySelections: {} });
                 if (soundEnabled) sfxClick();
@@ -34599,7 +34669,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
           // Score + streak
           h('div', { style: { display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 16 } },
             h('span', { style: { fontSize: 12, color: _zoFg('#94a3b8') } }, 'Score: ' + scenarioScore.correct + '/' + scenarioScore.total),
-            h('span', { style: { fontSize: 12, color: _zoFg(scenarioStreak) >= 3 ? '#f59e0b' : _zoFg('#94a3b8') } },
+            h('span', { style: { fontSize: 12, color: scenarioStreak >= 3 ? _zoFg('#f59e0b') : _zoFg('#94a3b8') } },
               '\uD83D\uDD25 Streak: ' + scenarioStreak + (scenarioBestStreak > 0 ? ' (best: ' + scenarioBestStreak + ')' : '')
             )
           ),
@@ -34611,7 +34681,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
             ),
             h('p', { style: { fontSize: 16, color: _zoFg('#f1f5f9'), lineHeight: 1.6, fontWeight: 500 } }, currentScenario.text),
             // Read aloud (elementary)
-            band === 'elementary' && callTTS && h('button', { 'aria-label': 'Read Aloud',
+            band === 'elementary' && callTTS && h('button', { type: 'button', 'aria-label': 'Read Aloud',
               onClick: function() { readAloud(currentScenario.text); },
               style: { marginTop: 10, padding: '6px 14px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: _zoFg('#94a3b8'), cursor: 'pointer', fontSize: 12 }
             }, '\uD83D\uDD0A Read Aloud')
@@ -34620,7 +34690,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
           // Zone answer buttons
           !scenarioFeedback && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 } },
             ZONES.map(function(zone) {
-              return h('button', {
+              return h('button', { type: 'button',
                 'aria-label': 'Answer: ' + zone.label + ' \u2014 ' + zone.feeling,
                 key: zone.id,
                 onClick: function() {
@@ -34675,7 +34745,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
             }
           },
             h('p', { style: { fontSize: 24, marginBottom: 8 } }, scenarioFeedback === 'correct' ? '\u2705' : '\uD83D\uDCA1'),
-            h('p', { style: { fontWeight: 700, color: _zoFg(scenarioFeedback) === 'correct' ? _zoFg('#22c55e') : '#f59e0b', marginBottom: 4 } },
+            h('p', { style: { fontWeight: 700, color: scenarioFeedback === 'correct' ? _zoFg('#22c55e') : _zoFg('#f59e0b'), marginBottom: 4 } },
               scenarioFeedback === 'correct'
                 ? (scenarioStreak >= 3 ? '\uD83D\uDD25 ' + scenarioStreak + ' in a row!' : 'Great job!')
                 : 'Not quite \u2014 this is a ' + ((ZONES.find(function(z) { return z.id === currentScenario.correctZone; }) || {}).label || 'different') + ' situation.'
@@ -34689,7 +34759,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
             ),
             h('p', { style: { fontSize: 13, color: _zoFg('#cbd5e1'), marginBottom: 16, lineHeight: 1.5 } }, currentScenario.followUp),
             h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center' } },
-              h('button', { 'aria-label': 'Next Scenario',
+              h('button', { type: 'button', 'aria-label': 'Next Scenario',
                 onClick: function() {
                   upd({
                     scenarioIdx: scenarioIdx + 1,
@@ -34705,7 +34775,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
 
           // AI scenario generation button
           _znAiOn && callGemini && !scenarioFeedback && h('div', { style: { marginTop: 20, textAlign: 'center' } },
-            h('button', { 'aria-label': 'Next scenario',
+            h('button', { type: 'button', 'aria-label': 'Next scenario',
               onClick: function() {
                 if (!_znAiOn) return;
                 upd('aiScenarioLoading', true);
@@ -34772,7 +34842,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
             h('h4', { style: { fontSize: 13, color: _zoFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 } }, 'Quick Tools'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 } },
               // Breathing shortcut
-              h('button', { 'aria-label': 'Breathing',
+              h('button', { type: 'button', 'aria-label': 'Breathing',
                 onClick: function() { upd('activeTab', 'breathe'); if (soundEnabled) sfxClick(); },
                 style: { padding: 16, borderRadius: 12, border: '1px solid #334155', background: _zoBg('#1e293b'), cursor: 'pointer', textAlign: 'center' }
               },
@@ -34781,7 +34851,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                 h('div', { style: { fontSize: 10, color: _zoFg('#94a3b8') } }, 'Guided exercises')
               ),
               // Body scan shortcut
-              h('button', { 'aria-label': 'Body Scan',
+              h('button', { type: 'button', 'aria-label': 'Body Scan',
                 onClick: function() { upd({ activeTab: 'body', bodyScanActive: true, bodyScanStep: 0 }); if (soundEnabled) sfxClick(); },
                 style: { padding: 16, borderRadius: 12, border: '1px solid #334155', background: _zoBg('#1e293b'), cursor: 'pointer', textAlign: 'center' }
               },
@@ -34802,7 +34872,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
               band === 'elementary' ? 'Use your senses to feel calm and safe!' : 'A sensory grounding technique to bring you back to the present moment.'
             ),
             !groundingActive
-              ? h('button', { 'aria-label': 'Start Grounding Exercise',
+              ? h('button', { type: 'button', 'aria-label': 'Start Grounding Exercise',
                   onClick: function() { upd({ groundingActive: true, groundingStep: 0, groundingInputs: {} }); if (soundEnabled) sfxClick(); },
                   style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: _zoBg('#7c3aed'), color: _zoFg('#fff'), fontWeight: 700, cursor: 'pointer', width: '100%' }
                 }, 'Start Grounding Exercise')
@@ -34845,11 +34915,11 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                       }),
                       // Navigation
                       h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', marginTop: 12 } },
-                        groundingStep > 0 && h('button', { 'aria-label': 'Back',
+                        groundingStep > 0 && h('button', { type: 'button', 'aria-label': 'Back',
                           onClick: function() { upd('groundingStep', groundingStep - 1); },
                           style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: _zoFg('#94a3b8'), cursor: 'pointer' }
                         }, '\u2190 Back'),
-                        h('button', { 'aria-label': groundingStep >= groundingSteps.length - 1 ? '\u2705 Done!' : 'Next \u2192',
+                        h('button', { type: 'button', 'aria-label': groundingStep >= groundingSteps.length - 1 ? '\u2705 Done!' : 'Next \u2192',
                           onClick: function() {
                             if (groundingStep >= groundingSteps.length - 1) {
                               var newComplete = groundingComplete + 1;
@@ -34890,7 +34960,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                   return h('div', { key: type },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, marginTop: 8 } },
                       h('span', null, typeIcons[type] || ''),
-                      h('span', { style: { fontSize: 11, fontWeight: 700, color: _zoFg(typeColors)[type], textTransform: 'uppercase', letterSpacing: '0.05em' } }, type)
+                      h('span', { style: { fontSize: 11, fontWeight: 700, color: typeColors[type], textTransform: 'uppercase', letterSpacing: '0.05em' } }, type)
                     ),
                     inType.map(function(s, i) {
                       return h('div', {                         key: i,
@@ -34899,7 +34969,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
                         h('span', { style: { fontSize: 18 } }, s.icon),
                         h('span', { style: { flex: 1, fontSize: 12, color: _zoFg('#e2e8f0') } }, s.text),
                         h('div', { style: { width: 8, height: 8, borderRadius: 4, background: s.zoneColor || _zoFg('#94a3b8'), flexShrink: 0 } }),
-                        h('button', { 'aria-label': 'My Check-In History',
+                        h('button', { type: 'button', 'aria-label': 'Remove ' + s.text + ' from toolbox',
                           onClick: function() {
                             var newToolbox = myToolbox.filter(function(t) { return t.text !== s.text; });
                             upd('myToolbox', newToolbox);
@@ -35057,7 +35127,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
 
           // ── Print my self-assessment (take-home artifact) ──
           log.length > 0 ? h('div', { style: { marginTop: 16, textAlign: 'center' } },
-            h('button', {
+            h('button', { type: 'button',
               'aria-label': 'Print my zone history',
               onClick: function() {
                 if (!window.SelHub || !window.SelHub.printDoc) return;
@@ -35111,7 +35181,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
               : 'See whether the strategy you chose actually helped.'
           )
         ),
-        h('button', {
+        h('button', { type: 'button',
           onClick: function() {
             if (soundEnabled) sfxClick();
             upd({ activeTab: 'checkin', reCheckAt: 0 });
@@ -35120,7 +35190,7 @@ var CULTURAL_ZONE_ADAPTATIONS = [
           style: { padding: '7px 14px', borderRadius: 8, border: 'none', background: _zoBg('#fff'), color: _zoFg('#7c3aed'), fontSize: 12, fontWeight: 800, cursor: 'pointer' },
           'aria-label': 'Open check-in tab now'
         }, '🚦 Check in now'),
-        h('button', {
+        h('button', { type: 'button',
           onClick: function() { upd({ reCheckAt: 0 }); },
           style: { padding: '7px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.5)', background: 'transparent', color: _zoFg('#fff'), fontSize: 12, fontWeight: 600, cursor: 'pointer' },
           'aria-label': 'Dismiss re-check reminder'
@@ -35168,7 +35238,7 @@ if (activeTab === 'wheel') {
             stroke: isSel ? '#fff' : '#0f172a', strokeWidth: isSel ? 4 : 2,
             style: { cursor: 'pointer', transition: 'opacity 0.3s' },
             role: 'button', tabIndex: 0, 'aria-label': z.label + ' zone', 'aria-pressed': isSel ? 'true' : 'false',
-            onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); upd({ zwSelected: isSel ? null : z.id }); if (soundEnabled) sfxClick(); } },
+            onKeyDown: function(ev) { if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); upd({ zwSelected: isSel ? null : z.id }); if (soundEnabled) sfxClick(); } },
             onClick: function() { upd({ zwSelected: isSel ? null : z.id }); if (soundEnabled) sfxClick(); }
           });
         }),
@@ -35177,7 +35247,7 @@ if (activeTab === 'wheel') {
           var ang = (i * 90 + 45 - 90) * Math.PI / 180;
           var lx = 200 + 95 * Math.cos(ang);
           var ly = 200 + 95 * Math.sin(ang);
-          return h('text', { key: 'lbl' + z.id, x: lx, y: ly, textAnchor: 'middle', dominantBaseline: 'middle', fontSize: 18, fontWeight: 800, fill: '#fff', style: { pointerEvents: 'none' } }, z.label);
+          return h('text', { key: 'lbl' + z.id, x: lx, y: ly, textAnchor: 'middle', dominantBaseline: 'middle', fontSize: 18, fontWeight: 800, fill: z.id === 'yellow' ? '#0f172a' : '#ffffff', style: { pointerEvents: 'none' } }, z.label);
         }),
         // center hub
         h('circle', { cx: 200, cy: 200, r: 40, fill: '#0f172a', stroke: '#475569', strokeWidth: 2 }),
@@ -35186,6 +35256,7 @@ if (activeTab === 'wheel') {
     ),
     zwSelected ? (function() {
       var z = ZONE_INFO.find(function(x) { return x.id === zwSelected; });
+      if (!z) return null;
       return h('div', { style: { marginTop: 14, padding: 16, borderRadius: 12, background: z.color + '22', border: '2px solid ' + z.color } },
         h('h3', { style: { margin: 0, color: _zoFg(z.color), fontSize: 22, fontWeight: 800 } }, z.label + ' ZONE'),
         h('p', { style: { margin: '6px 0', color: _zoFg('#e2e8f0'), fontSize: 14, lineHeight: 1.55 } }, z.desc),
@@ -35206,8 +35277,8 @@ if (activeTab === 'wheel') {
 var checkinFlowContent = null;
 if (activeTab === 'checkin_flow') {
   var cfStep = d.cfStep || 0;
-  var cfBody = d.cfBody || [];
-  var cfThought = d.cfThought || [];
+  var cfBody = Array.isArray(d.cfBody) ? d.cfBody : [];
+  var cfThought = Array.isArray(d.cfThought) ? d.cfThought : [];
   var cfPredicted = d.cfPredicted || null;
   var cfIntensity = d.cfIntensity != null ? d.cfIntensity : 5;
   var cfChosenStrategy = d.cfChosenStrategy || null;
@@ -35283,7 +35354,7 @@ if (activeTab === 'checkin_flow') {
       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
         BODY_OPTIONS.map(function(b) {
           var on = cfBody.indexOf(b.id) !== -1;
-          return h('button', { key: b.id, onClick: function() {
+          return h('button', { type: 'button', key: b.id, onClick: function() {
               var n = on ? cfBody.filter(function(x) { return x !== b.id; }) : cfBody.concat([b.id]);
               upd({ cfBody: n }); if (soundEnabled) sfxClick();
             },
@@ -35292,9 +35363,9 @@ if (activeTab === 'checkin_flow') {
         })
       ),
       h('div', { style: { marginTop: 14, textAlign: 'right' } },
-        h('button', { onClick: function() { upd({ cfStep: 1 }); if (soundEnabled) sfxClick(); },
+        h('button', { type: 'button', onClick: function() { upd({ cfStep: 1 }); if (soundEnabled) sfxClick(); },
           disabled: cfBody.length === 0,
-          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: cfBody.length === 0 ? '#334155' : '#5eead4', color: _zoFg(cfBody.length) === 0 ? _zoFg('#94a3b8') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: cfBody.length === 0 ? 'not-allowed' : 'pointer' }
+          style: { padding: '10px 20px', borderRadius: 8, border: _zoHC ? '1px solid #ffff00' : 'none', background: cfBody.length === 0 ? _zoBg('#334155') : _zoBg('#5eead4'), color: cfBody.length === 0 ? _zoFg('#94a3b8') : (_zoHC ? '#ffff00' : '#0f172a'), fontSize: 13, fontWeight: 700, cursor: cfBody.length === 0 ? 'not-allowed' : 'pointer' }
         }, 'Next →')
       )
     ) : cfStep === 1 ? h('div', { style: { padding: 18, borderRadius: 12, background: _zoBg('#1e293b'), border: '2px solid #a78bfa' } },
@@ -35303,7 +35374,7 @@ if (activeTab === 'checkin_flow') {
       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
         THOUGHT_OPTIONS.map(function(t) {
           var on = cfThought.indexOf(t.id) !== -1;
-          return h('button', { key: t.id, onClick: function() {
+          return h('button', { type: 'button', key: t.id, onClick: function() {
               var n = on ? cfThought.filter(function(x) { return x !== t.id; }) : cfThought.concat([t.id]);
               upd({ cfThought: n }); if (soundEnabled) sfxClick();
             },
@@ -35312,17 +35383,17 @@ if (activeTab === 'checkin_flow') {
         })
       ),
       h('div', { style: { marginTop: 14, display: 'flex', justifyContent: 'space-between' } },
-        h('button', { onClick: function() { upd({ cfStep: 0 }); if (soundEnabled) sfxClick(); },
+        h('button', { type: 'button', onClick: function() { upd({ cfStep: 0 }); if (soundEnabled) sfxClick(); },
           style: { padding: '8px 14px', borderRadius: 6, border: '1px solid #475569', background: _zoBg('#0f172a'), color: _zoFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
         }, '← Back'),
-        h('button', { onClick: function() { upd({ cfStep: 2, cfPredicted: _predictZone() }); if (soundEnabled) sfxClick(); },
-          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: _zoBg('#7c3aed'), color: _zoFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+        h('button', { type: 'button', onClick: function() { upd({ cfStep: 2, cfPredicted: _predictZone() }); if (soundEnabled) sfxClick(); },
+          style: { padding: '10px 20px', borderRadius: 8, border: _zoHC ? '1px solid #ffff00' : 'none', background: _zoBg('#7c3aed'), color: _zoFg('#fff'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
         }, 'See your zone →')
       )
-    ) : cfStep === 2 ? h('div', { style: { padding: 18, borderRadius: 12, background: ZONE_COLORS[cfPredicted] + '22', border: '3px solid ' + ZONE_COLORS[cfPredicted] } },
+    ) : cfStep === 2 ? h('div', { style: { padding: 18, borderRadius: 12, background: (ZONE_COLORS[cfPredicted] || '#22c55e') + '22', border: '3px solid ' + (ZONE_COLORS[cfPredicted] || '#22c55e') } },
       h('div', { style: { textAlign: 'center' } },
-        h('div', { style: { color: _zoFg(ZONE_COLORS)[cfPredicted], fontSize: 11, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' } }, 'You appear to be in'),
-        h('h2', { style: { margin: '6px 0 0', color: _zoFg(ZONE_COLORS)[cfPredicted], fontSize: 36, fontWeight: 800 } }, (cfPredicted || 'green').toUpperCase() + ' ZONE'),
+        h('div', { style: { color: ZONE_COLORS[cfPredicted] || _zoFg('#22c55e'), fontSize: 11, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' } }, 'You appear to be in'),
+        h('h2', { style: { margin: '6px 0 0', color: ZONE_COLORS[cfPredicted] || _zoFg('#22c55e'), fontSize: 36, fontWeight: 800 } }, (cfPredicted || 'green').toUpperCase() + ' ZONE'),
         h('p', { style: { margin: '6px 0 14px', color: _zoFg('#e2e8f0'), fontSize: 14 } }, ZONE_DESCS[cfPredicted])
       ),
       h('label', { style: { color: _zoFg('#cbd5e1'), fontSize: 13, fontWeight: 600 } }, 'Intensity (1-10): ' + cfIntensity),
@@ -35337,10 +35408,10 @@ if (activeTab === 'checkin_flow') {
         '✨ Gentle activation, not pressure. Small steps.'
       ),
       h('div', { style: { marginTop: 14, display: 'flex', justifyContent: 'space-between' } },
-        h('button', { onClick: function() { upd({ cfStep: 1 }); if (soundEnabled) sfxClick(); },
+        h('button', { type: 'button', onClick: function() { upd({ cfStep: 1 }); if (soundEnabled) sfxClick(); },
           style: { padding: '8px 14px', borderRadius: 6, border: '1px solid #475569', background: _zoBg('#0f172a'), color: _zoFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
         }, '← Back'),
-        h('button', { onClick: function() { upd({ cfStep: 3 }); if (soundEnabled) sfxClick(); },
+        h('button', { type: 'button', onClick: function() { upd({ cfStep: 3 }); if (soundEnabled) sfxClick(); },
           style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: ZONE_COLORS[cfPredicted], color: _zoFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
         }, 'See strategies →')
       )
@@ -35361,7 +35432,7 @@ if (activeTab === 'checkin_flow') {
           ]
         ).map(function(s) {
           var sel = cfChosenStrategy === s.id;
-          return h('button', { key: s.id, onClick: function() { upd({ cfChosenStrategy: s.id }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: s.id, onClick: function() { upd({ cfChosenStrategy: s.id }); if (soundEnabled) sfxClick(); },
             style: { padding: 12, borderRadius: 10, border: '1px solid ' + (sel ? _zoFg('#fbbf24') : '#475569'), background: sel ? '#fbbf2433' : '#0f172a', color: _zoFg('#cbd5e1'), cursor: 'pointer', textAlign: 'left' }
           },
             h('div', { style: { color: _zoFg('#f1f5f9'), fontSize: 14, fontWeight: 700 } }, s.name),
@@ -35370,10 +35441,10 @@ if (activeTab === 'checkin_flow') {
         })
       ),
       h('div', { style: { marginTop: 14, display: 'flex', justifyContent: 'space-between' } },
-        h('button', { onClick: function() { upd({ cfStep: 2 }); if (soundEnabled) sfxClick(); },
+        h('button', { type: 'button', onClick: function() { upd({ cfStep: 2 }); if (soundEnabled) sfxClick(); },
           style: { padding: '8px 14px', borderRadius: 6, border: '1px solid #475569', background: _zoBg('#0f172a'), color: _zoFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
         }, '← Back'),
-        h('button', { onClick: function() {
+        h('button', { type: 'button', onClick: function() {
             // Keep the check-in (it said "saved" and discarded it); History and Heatmap read checkInLog.
             var cfSaved = cfPredicted ? [{ zone: cfPredicted, note: '', intensity: cfIntensity, timestamp: Date.now(), source: 'in_the_moment' }] : [];
             upd({ checkInLog: (d.checkInLog || []).concat(cfSaved), cfStep: 0, cfBody: [], cfThought: [], cfPredicted: null, cfIntensity: 5, cfChosenStrategy: null }); if (soundEnabled) sfxCheckin(); addToast && addToast('Check-in saved. You did the noticing — that matters.', 'success'); },
@@ -35424,10 +35495,11 @@ if (activeTab === 'body_mapper') {
     Object.keys(profile).map(function(rId) {
       var i = profile[rId] * (bmIntensity / 10);
       var alpha = 0.15 + i * 0.75;
+      var _bmHex = ZONE_PALETTE[bmZone] || '#3b82f6';
       var color = 'rgba(' +
-        parseInt(ZONE_PALETTE[bmZone].slice(1, 3), 16) + ',' +
-        parseInt(ZONE_PALETTE[bmZone].slice(3, 5), 16) + ',' +
-        parseInt(ZONE_PALETTE[bmZone].slice(5, 7), 16) + ',' + alpha + ')';
+        parseInt(_bmHex.slice(1, 3), 16) + ',' +
+        parseInt(_bmHex.slice(3, 5), 16) + ',' +
+        parseInt(_bmHex.slice(5, 7), 16) + ',' + alpha + ')';
       var coords = {
         head: { x: 100, y: 55, r: 22 },
         face: { x: 100, y: 60, r: 14 },
@@ -35455,7 +35527,7 @@ if (activeTab === 'body_mapper') {
     h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
       ['blue','green','yellow','red'].map(function(z) {
         var sel = bmZone === z;
-        return h('button', { key: z, onClick: function() { upd({ bmZone: z, bmRegion: null }); if (soundEnabled) sfxClick(); },
+        return h('button', { type: 'button', key: z, onClick: function() { upd({ bmZone: z, bmRegion: null }); if (soundEnabled) sfxClick(); },
           style: { padding: '8px 16px', borderRadius: 8, border: '2px solid ' + (sel ? ZONE_PALETTE[z] : '#475569'), background: sel ? ZONE_PALETTE[z] + '33' : _zoBg('#1e293b'), color: sel ? _zoFg('#fff') : _zoFg('#cbd5e1'), fontSize: 13, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
         }, z);
       })
@@ -35470,9 +35542,9 @@ if (activeTab === 'body_mapper') {
     h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(240px, 1fr) 2fr', gap: 16 } },
       h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#0f172a') } }, bodySvg),
       h('div', null,
-        bmRegion ? h('div', { style: { padding: 14, borderRadius: 10, background: _zoBg('#1e293b'), border: '1px solid #334155' } },
-          h('h4', { style: { margin: 0, color: _zoFg('#fde68a'), fontSize: 17, fontWeight: 800 } }, REGION_INFO[bmRegion].name + ' — ' + bmZone.toUpperCase() + ' ZONE'),
-          h('p', { style: { margin: '8px 0 0', color: _zoFg('#e2e8f0'), fontSize: 14, lineHeight: 1.65 } }, REGION_INFO[bmRegion][bmZone])
+        bmRegion && REGION_INFO[bmRegion] ? h('div', { style: { padding: 14, borderRadius: 10, background: _zoBg('#1e293b'), border: '1px solid #334155' } },
+          h('h4', { style: { margin: 0, color: _zoFg('#fde68a'), fontSize: 17, fontWeight: 800 } }, REGION_INFO[bmRegion].name + ' — ' + String(bmZone || '').toUpperCase() + ' ZONE'),
+          h('p', { style: { margin: '8px 0 0', color: _zoFg('#e2e8f0'), fontSize: 14, lineHeight: 1.65 } }, REGION_INFO[bmRegion][bmZone] || '')
         ) : h('div', { style: { padding: 14, borderRadius: 10, background: _zoBg('#1e293b'), color: _zoFg('#94a3b8'), fontSize: 13, lineHeight: 1.55 } },
           'Click any body region to see what it tends to feel like in the ' + bmZone.toUpperCase() + ' zone.'
         )
@@ -35532,7 +35604,7 @@ if (activeTab === 'sorter') {
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
         unsorted.map(function(s) {
           var sel = d.sortCurrent === s.id;
-          return h('button', { key: s.id, onClick: function() { upd({ sortCurrent: s.id }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: s.id, onClick: function() { upd({ sortCurrent: s.id }); if (soundEnabled) sfxClick(); },
             style: { padding: '8px 12px', borderRadius: 8, border: '1px solid ' + (sel ? _zoFg('#fbbf24') : '#475569'), background: sel ? '#fbbf2433' : _zoBg('#1e293b'), color: _zoFg('#cbd5e1'), fontSize: 12, cursor: 'pointer', textAlign: 'left', maxWidth: 280 }
           }, s.text);
         })
@@ -35543,7 +35615,7 @@ if (activeTab === 'sorter') {
       h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 11, marginBottom: 6 } }, 'Which zone?'),
       h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
         ['blue','green','yellow','red'].map(function(z) {
-          return h('button', { key: z, onClick: function() { _place(d.sortCurrent, z); upd({ sortCurrent: null }); },
+          return h('button', { type: 'button', key: z, onClick: function() { _place(d.sortCurrent, z); upd({ sortCurrent: null }); },
             style: { padding: '10px 16px', borderRadius: 8, border: '2px solid ' + ZONE_PALETTE[z], background: ZONE_PALETTE[z] + '33', color: _zoFg('#fff'), fontSize: 13, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
           }, z);
         })
@@ -35553,13 +35625,13 @@ if (activeTab === 'sorter') {
       ['blue','green','yellow','red'].map(function(z) {
         var placedHere = ALL_SCENARIOS.filter(function(s) { return sortPlaced[s.id] === z; });
         return h('div', { key: z, style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), border: '2px dashed ' + ZONE_PALETTE[z], minHeight: 80 } },
-          h('div', { style: { color: _zoFg(ZONE_PALETTE)[z], fontSize: 14, fontWeight: 800, textTransform: 'uppercase', marginBottom: 6 } }, z + ' Zone'),
+          h('div', { style: { color: ZONE_PALETTE[z], fontSize: 14, fontWeight: 800, textTransform: 'uppercase', marginBottom: 6 } }, z + ' Zone'),
           placedHere.length === 0 ? h('div', { style: { color: _zoFg('#64748b'), fontSize: 11, fontStyle: 'italic' } }, 'empty') :
           placedHere.map(function(s) {
             var fb = sortFeedback[s.id];
             return h('div', { key: s.id, style: { padding: '6px 8px', borderRadius: 6, background: _zoBg('#0f172a'), marginBottom: 4, color: _zoFg('#cbd5e1'), fontSize: 11, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4 } },
               h('span', { style: { flex: 1 } }, s.text.length > 40 ? s.text.substring(0, 40) + '…' : s.text),
-              h('span', { style: { color: _zoFg(fb) === 'correct' ? _zoFg('#22c55e') : _zoFg('#ef4444'), fontSize: 14, fontWeight: 700 } }, fb === 'correct' ? '✓' : '✗')
+              h('span', { style: { color: fb === 'correct' ? _zoFg('#22c55e') : _zoFg('#ef4444'), fontSize: 14, fontWeight: 700 } }, fb === 'correct' ? '✓' : '✗')
             );
           })
         );
@@ -35568,7 +35640,7 @@ if (activeTab === 'sorter') {
     allDone ? h('div', { style: { marginTop: 14, padding: 16, borderRadius: 12, background: _zoBg('#042f2e'), border: '2px solid #5eead4', textAlign: 'center' } },
       h('h3', { style: { color: _zoFg('#5eead4'), fontSize: 24, margin: 0 } }, sortScore + ' / 12'),
       h('p', { style: { color: _zoFg('#a7f3d0'), fontSize: 13, margin: '6px 0 12px' } }, sortScore === 12 ? 'Perfect! You read all 12 zones accurately.' : sortScore >= 9 ? 'Strong reading.' : 'Real practice — try again to refine your reading.'),
-      h('button', { onClick: function() { upd({ sortPlaced: {}, sortFeedback: {}, sortScore: 0, sortCurrent: null }); if (soundEnabled) sfxClick(); },
+      h('button', { type: 'button', onClick: function() { upd({ sortPlaced: {}, sortFeedback: {}, sortScore: 0, sortCurrent: null }); if (soundEnabled) sfxClick(); },
         style: { padding: '10px 22px', borderRadius: 8, border: 'none', background: _zoBg('#5eead4'), color: _zoFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, 'Play again')
     ) : null
@@ -35689,7 +35761,7 @@ if (activeTab === 'matcher') {
           h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
             ['blue','green','yellow','red'].map(function(z) {
               var sel = smZone === z;
-              return h('button', { key: z, onClick: function() { upd({ smZone: z }); if (soundEnabled) sfxClick(); },
+              return h('button', { type: 'button', key: z, onClick: function() { upd({ smZone: z }); if (soundEnabled) sfxClick(); },
                 style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? ZONE_COLORS[z] : '#475569'), background: sel ? ZONE_COLORS[z] + '33' : '#0f172a', color: sel ? _zoFg('#fff') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
               }, z);
             })
@@ -35700,7 +35772,7 @@ if (activeTab === 'matcher') {
           h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
             ['mild','moderate','crisis','any'].map(function(i) {
               var sel = smIntensity === i;
-              return h('button', { key: i, onClick: function() { upd({ smIntensity: i }); if (soundEnabled) sfxClick(); },
+              return h('button', { type: 'button', key: i, onClick: function() { upd({ smIntensity: i }); if (soundEnabled) sfxClick(); },
                 style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _zoFg('#fbbf24') : '#475569'), background: sel ? '#fbbf2433' : '#0f172a', color: sel ? _zoFg('#fde68a') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
               }, i);
             })
@@ -35711,7 +35783,7 @@ if (activeTab === 'matcher') {
           h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
             [{ id: null, label: 'any' }, { id: 'invisible', label: 'invisible' }, { id: 'subtle', label: 'subtle' }, { id: 'moderate', label: 'moderate' }, { id: 'visible', label: 'visible' }].map(function(v) {
               var sel = smVisibility === v.id;
-              return h('button', { key: v.label, onClick: function() { upd({ smVisibility: v.id }); if (soundEnabled) sfxClick(); },
+              return h('button', { type: 'button', key: v.label, onClick: function() { upd({ smVisibility: v.id }); if (soundEnabled) sfxClick(); },
                 style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _zoFg('#a78bfa') : '#475569'), background: sel ? _zoBg('#1e1b4b') : '#0f172a', color: sel ? _zoFg('#c4b5fd') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
               }, v.label);
             })
@@ -35722,7 +35794,7 @@ if (activeTab === 'matcher') {
           h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
             [{ id: null, label: 'any' }, { id: 'still', label: 'still' }, { id: 'small', label: 'small' }, { id: 'moderate', label: 'moderate' }, { id: 'full-body', label: 'full' }].map(function(m) {
               var sel = smMovement === m.id;
-              return h('button', { key: m.label, onClick: function() { upd({ smMovement: m.id }); if (soundEnabled) sfxClick(); },
+              return h('button', { type: 'button', key: m.label, onClick: function() { upd({ smMovement: m.id }); if (soundEnabled) sfxClick(); },
                 style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : '#475569'), background: sel ? '#14b8a633' : '#0f172a', color: sel ? _zoFg('#5eead4') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
               }, m.label);
             })
@@ -35807,18 +35879,18 @@ if (activeTab === 'zone_quiz') {
         h('div', { style: { color: _zoFg('#cbd5e1'), fontSize: 13, fontWeight: 600, marginBottom: 8 } }, 'Which zone?'),
         h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
           ['blue','green','yellow','red'].map(function(z) {
-            return h('button', { key: z, onClick: function() { _answer(z); },
+            return h('button', { type: 'button', key: z, onClick: function() { _answer(z); },
               style: { padding: '12px 20px', borderRadius: 8, border: '2px solid ' + ZONE_COLORS[z], background: ZONE_COLORS[z] + '22', color: _zoFg('#fff'), fontSize: 14, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
             }, z);
           })
         )
       ) : h('div', { style: { marginTop: 14 } },
-        h('div', { style: { padding: '8px 12px', borderRadius: 6, background: ZONE_COLORS[qzCurrent.correct] + '22', border: '1px solid ' + ZONE_COLORS[qzCurrent.correct] } },
-          h('div', { style: { color: _zoFg(ZONE_COLORS)[qzCurrent.correct], fontSize: 11, fontWeight: 800, textTransform: 'uppercase' } }, 'Answer: ' + qzCurrent.correct + ' Zone'),
+        h('div', { style: { padding: '8px 12px', borderRadius: 6, background: (ZONE_COLORS[qzCurrent.correct] || '#22c55e') + '22', border: '1px solid ' + (ZONE_COLORS[qzCurrent.correct] || '#22c55e') } },
+          h('div', { style: { color: ZONE_COLORS[qzCurrent.correct] || _zoFg('#22c55e'), fontSize: 11, fontWeight: 800, textTransform: 'uppercase' } }, 'Answer: ' + qzCurrent.correct + ' Zone'),
           h('p', { style: { margin: '6px 0 0', color: _zoFg('#e2e8f0'), fontSize: 12, lineHeight: 1.55 } }, qzCurrent.explanation)
         ),
         qzCurrent.whatToDo ? h('div', { style: { marginTop: 8, padding: '6px 10px', borderRadius: 6, background: _zoBg('#042f2e'), color: _zoFg('#a7f3d0'), fontSize: 12, lineHeight: 1.5 } }, '💡 ' + qzCurrent.whatToDo) : null,
-        h('button', { onClick: function() { upd({ qzCurrent: _pickQuestion(), qzRevealed: false }); if (soundEnabled) sfxClick(); },
+        h('button', { type: 'button', onClick: function() { upd({ qzCurrent: _pickQuestion(), qzRevealed: false }); if (soundEnabled) sfxClick(); },
           style: { marginTop: 12, padding: '10px 22px', borderRadius: 8, border: 'none', background: _zoBg('#5eead4'), color: _zoFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
         }, 'Next →')
       )
@@ -35833,7 +35905,7 @@ if (activeTab === 'zone_quiz') {
 var coregulationContent = null;
 if (activeTab === 'coreg_helper') {
   var crStep = d.crStep || 0;
-  var crObserved = d.crObserved || [];
+  var crObserved = Array.isArray(d.crObserved) ? d.crObserved : [];
   var crPredicted = d.crPredicted || null;
   var crChosen = d.crChosen || null;
   var ZONE_COLORS = { blue: _zoFg('#3b82f6'), green: _zoFg('#22c55e'), yellow: _zoFg('#fde047'), red: _zoFg('#ef4444') };
@@ -35898,7 +35970,7 @@ if (activeTab === 'coreg_helper') {
       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
         OBSERVABLE_CUES.map(function(c) {
           var on = crObserved.indexOf(c.id) !== -1;
-          return h('button', { key: c.id, onClick: function() {
+          return h('button', { type: 'button', key: c.id, onClick: function() {
               var n = on ? crObserved.filter(function(x) { return x !== c.id; }) : crObserved.concat([c.id]);
               upd({ crObserved: n }); if (soundEnabled) sfxClick();
             },
@@ -35907,17 +35979,17 @@ if (activeTab === 'coreg_helper') {
         })
       ),
       h('div', { style: { marginTop: 14, textAlign: 'right' } },
-        h('button', { onClick: function() { upd({ crStep: 1, crPredicted: _predictFromCues() }); if (soundEnabled) sfxClick(); },
+        h('button', { type: 'button', onClick: function() { upd({ crStep: 1, crPredicted: _predictFromCues() }); if (soundEnabled) sfxClick(); },
           disabled: crObserved.length === 0,
-          style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: crObserved.length === 0 ? '#334155' : '#5eead4', color: _zoFg(crObserved.length) === 0 ? _zoFg('#94a3b8') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: crObserved.length === 0 ? 'not-allowed' : 'pointer' }
+          style: { padding: '10px 20px', borderRadius: 8, border: _zoHC ? '1px solid #ffff00' : 'none', background: crObserved.length === 0 ? _zoBg('#334155') : _zoBg('#5eead4'), color: crObserved.length === 0 ? _zoFg('#94a3b8') : (_zoHC ? '#ffff00' : '#0f172a'), fontSize: 13, fontWeight: 700, cursor: crObserved.length === 0 ? 'not-allowed' : 'pointer' }
         }, 'Get support guide →')
       )
     ) : (function() {
       var guide = SUPPORT_GUIDES[crPredicted] || SUPPORT_GUIDES.yellow;
-      return h('div', { style: { padding: 18, borderRadius: 12, background: ZONE_COLORS[crPredicted] + '22', border: '3px solid ' + ZONE_COLORS[crPredicted] } },
+      return h('div', { style: { padding: 18, borderRadius: 12, background: (ZONE_COLORS[crPredicted] || '#fde047') + '22', border: '3px solid ' + (ZONE_COLORS[crPredicted] || '#fde047') } },
         h('div', { style: { textAlign: 'center', marginBottom: 14 } },
-          h('div', { style: { color: _zoFg(ZONE_COLORS)[crPredicted], fontSize: 11, textTransform: 'uppercase', fontWeight: 700 } }, 'They appear to be in'),
-          h('h2', { style: { margin: '4px 0', color: _zoFg(ZONE_COLORS)[crPredicted], fontSize: 28, fontWeight: 800, textTransform: 'uppercase' } }, crPredicted + ' Zone')
+          h('div', { style: { color: ZONE_COLORS[crPredicted] || _zoFg('#fde047'), fontSize: 11, textTransform: 'uppercase', fontWeight: 700 } }, 'They appear to be in'),
+          h('h2', { style: { margin: '4px 0', color: ZONE_COLORS[crPredicted] || _zoFg('#fde047'), fontSize: 28, fontWeight: 800, textTransform: 'uppercase' } }, (crPredicted || 'yellow') + ' Zone')
         ),
         h('div', { style: { padding: '10px 14px', borderRadius: 8, background: _zoBg('#0f172a'), marginBottom: 12 } },
           h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, 'First step (your body)'),
@@ -35940,7 +36012,7 @@ if (activeTab === 'coreg_helper') {
           h('p', { style: { margin: 0, color: _zoFg('#fde68a'), fontSize: 12, lineHeight: 1.55 } }, guide.escalate)
         ),
         h('div', { style: { textAlign: 'center' } },
-          h('button', { onClick: function() { upd({ crStep: 0, crObserved: [], crPredicted: null }); if (soundEnabled) sfxClick(); },
+          h('button', { type: 'button', onClick: function() { upd({ crStep: 0, crObserved: [], crPredicted: null }); if (soundEnabled) sfxClick(); },
             style: { padding: '10px 22px', borderRadius: 8, border: 'none', background: _zoBg('#5eead4'), color: _zoFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
           }, 'Start over')
         )
@@ -36020,11 +36092,11 @@ if (activeTab === 'compass') {
       h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
         ['blue','green','yellow','red'].map(function(z) {
           var current = compassToday[compassHour] === z;
-          return h('button', { key: z, onClick: function() { _setHour(compassHour, z); },
+          return h('button', { type: 'button', key: z, onClick: function() { _setHour(compassHour, z); },
             style: { padding: '10px 18px', borderRadius: 8, border: '2px solid ' + ZONE_COLORS[z], background: current ? ZONE_COLORS[z] + '44' : ZONE_COLORS[z] + '22', color: _zoFg('#fff'), fontSize: 13, fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase' }
           }, z);
         }),
-        h('button', { onClick: function() { var n = Object.assign({}, compassToday); delete n[compassHour]; upd({ compassToday: n }); if (soundEnabled) sfxClick(); },
+        h('button', { type: 'button', onClick: function() { var n = Object.assign({}, compassToday); delete n[compassHour]; upd({ compassToday: n }); if (soundEnabled) sfxClick(); },
           style: { padding: '10px 14px', borderRadius: 8, border: '1px solid #475569', background: _zoBg('#0f172a'), color: _zoFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
         }, 'Clear')
       )
@@ -36033,11 +36105,11 @@ if (activeTab === 'compass') {
       h('div', { style: { color: _zoFg('#fbbf24'), fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Quick jump'),
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
         [{ name: 'Wake', h: 7 }, { name: 'School arrival', h: 8 }, { name: 'Lunch', h: 12 }, { name: 'After school', h: 15 }, { name: 'Dinner', h: 18 }, { name: 'Bedtime', h: 22 }].map(function(p) {
-          return h('button', { key: p.name, onClick: function() { upd({ compassHour: p.h }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: p.name, onClick: function() { upd({ compassHour: p.h }); if (soundEnabled) sfxClick(); },
             style: { padding: '5px 12px', borderRadius: 12, border: '1px solid #475569', background: _zoBg('#0f172a'), color: _zoFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
           }, p.name);
         }),
-        h('button', { onClick: function() { upd({ compassToday: {} }); if (soundEnabled) sfxClick(); },
+        h('button', { type: 'button', onClick: function() { upd({ compassToday: {} }); if (soundEnabled) sfxClick(); },
           style: { padding: '5px 12px', borderRadius: 12, border: '1px solid #ef4444', background: _zoBg('#7f1d1d'), color: _zoFg('#fecaca'), fontSize: 11, cursor: 'pointer' }
         }, 'Reset day')
       )
@@ -36052,13 +36124,20 @@ if (activeTab === 'compass') {
 var pulseContent = null;
 if (activeTab === 'pulse') {
   var pulseZone = d.pulseZone || null;
-  var pulseNote = d.pulseNote || '';
-  var pulseRecent = d.pulseRecent || [];
+  var pulseNote = typeof d.pulseNote === 'string' ? d.pulseNote : '';
+  var pulseRecent = Array.isArray(d.pulseRecent) ? d.pulseRecent.filter(function(e) { return e && typeof e === 'object'; }) : [];
   var ZONE_COLORS = { blue: _zoFg('#3b82f6'), green: _zoFg('#22c55e'), yellow: _zoFg('#fde047'), red: _zoFg('#ef4444') };
   function _pulse(z) {
+    var pSafety = (pulseNote && window.SelHub && window.SelHub.safeRehearseCheck)
+      ? window.SelHub.safeRehearseCheck(pulseNote, { toolId: 'zones_pulse', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+      : { action: 'continue' };
+    if (pSafety.action === 'block') {
+      upd({ _zonesPulseCrisis: true });
+      return;
+    }
     var newEntry = { zone: z, note: pulseNote, date: new Date().toISOString() };
     var newRecent = [newEntry].concat(pulseRecent.slice(0, 19));
-    upd({ pulseZone: z, pulseRecent: newRecent, pulseNote: '' });
+    upd({ pulseZone: z, pulseRecent: newRecent, pulseNote: '', _zonesPulseCrisis: false });
     if (soundEnabled) sfxCheckin();
     addToast && addToast('Pulse logged: ' + z.toUpperCase() + ' Zone', 'info');
   }
@@ -36071,11 +36150,12 @@ if (activeTab === 'pulse') {
     ),
     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 14 } },
       ['blue','green','yellow','red'].map(function(z) {
-        return h('button', { key: z, onClick: function() { _pulse(z); },
+        return h('button', { type: 'button', key: z, onClick: function() { _pulse(z); },
           style: { padding: 24, borderRadius: 12, border: '3px solid ' + ZONE_COLORS[z], background: ZONE_COLORS[z] + '22', color: _zoFg('#fff'), fontSize: 16, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }
         }, z);
       })
     ),
+    (d._zonesPulseCrisis && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function') ? window.SelHub.renderCrisisResources(h, band) : null,
     h('div', { style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), marginBottom: 14 } },
       h('label', { style: { color: _zoFg('#cbd5e1'), fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 } }, 'Optional note (what triggered? what helped?)'),
       h('input', { type: 'text', value: pulseNote, placeholder: 'e.g., "test in math, used breath"',
@@ -36088,8 +36168,9 @@ if (activeTab === 'pulse') {
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 6 } },
         pulseRecent.map(function(e, i) {
           var dt = new Date(e.date);
-          return h('div', { key: i, style: { padding: '6px 10px', borderRadius: 6, background: ZONE_COLORS[e.zone] + '22', borderLeft: '3px solid ' + ZONE_COLORS[e.zone] } },
-            h('div', { style: { color: _zoFg(ZONE_COLORS)[e.zone], fontSize: 11, fontWeight: 800, textTransform: 'uppercase' } }, e.zone),
+          var zCol = ZONE_COLORS[e.zone] || _zoFg('#94a3b8');
+          return h('div', { key: i, style: { padding: '6px 10px', borderRadius: 6, background: zCol + '22', borderLeft: '3px solid ' + zCol } },
+            h('div', { style: { color: zCol, fontSize: 11, fontWeight: 800, textTransform: 'uppercase' } }, e.zone),
             h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 10 } }, dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + dt.toLocaleDateString()),
             e.note ? h('div', { style: { color: _zoFg('#cbd5e1'), fontSize: 11, marginTop: 2, fontStyle: 'italic' } }, '"' + e.note + '"') : null
           );
@@ -36131,7 +36212,7 @@ if (activeTab === 'descriptors') {
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
         ['all','blue','green','yellow','red'].map(function(z) {
           var sel = dlZone === z;
-          return h('button', { key: z, onClick: function() { upd({ dlZone: z }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: z, onClick: function() { upd({ dlZone: z }); if (soundEnabled) sfxClick(); },
             style: { padding: '6px 12px', borderRadius: 12, border: '1px solid ' + (sel ? (z === 'all' ? _zoFg('#fbbf24') : ZONE_COLORS[z]) : '#475569'), background: sel ? ((z === 'all' ? _zoFg('#fbbf24') : ZONE_COLORS[z]) + '33') : '#0f172a', color: sel ? _zoFg('#fff') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'uppercase' }
           }, z);
         })
@@ -36139,7 +36220,7 @@ if (activeTab === 'descriptors') {
       h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 10 } },
         [0, 1, 2, 3, 4, 5].map(function(i) {
           var sel = dlIntensity === i;
-          return h('button', { key: i, onClick: function() { upd({ dlIntensity: i }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: i, onClick: function() { upd({ dlIntensity: i }); if (soundEnabled) sfxClick(); },
             style: { padding: '4px 10px', borderRadius: 10, border: '1px solid ' + (sel ? _zoFg('#a78bfa') : '#475569'), background: sel ? _zoBg('#1e1b4b') : '#0f172a', color: sel ? _zoFg('#c4b5fd') : _zoFg('#94a3b8'), fontSize: 11, cursor: 'pointer' }
           }, i === 0 ? 'all intensities' : 'intensity ' + i);
         })
@@ -36205,7 +36286,7 @@ if (activeTab === 'triggers') {
       h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 14 } },
         cats.map(function(c) {
           var sel = trCategory === c;
-          return h('button', { key: c, onClick: function() { upd({ trCategory: c }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: c, onClick: function() { upd({ trCategory: c }); if (soundEnabled) sfxClick(); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _zoFg('#fbbf24') : '#475569'), background: sel ? '#fbbf2433' : '#0f172a', color: sel ? _zoFg('#fde68a') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, c);
         })
@@ -36220,7 +36301,7 @@ if (activeTab === 'triggers') {
             ),
             h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, t.category),
             t.whyItTriggers ? h('p', { style: { margin: '6px 0', color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, t.whyItTriggers) : null,
-            h('button', { onClick: function() { upd({ trOpen: isOpen ? null : t.id }); if (soundEnabled) sfxClick(); },
+            h('button', { type: 'button', onClick: function() { upd({ trOpen: isOpen ? null : t.id }); if (soundEnabled) sfxClick(); },
               style: { marginTop: 4, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : (_zoHC ? _zoFg('#3b82f6') : '#1d4ed8'), color: _zoFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'View strategies'),
             isOpen ? h('div', { style: { marginTop: 10 } },
@@ -36285,7 +36366,7 @@ if (activeTab === 'plans') {
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
         ['all','blue','yellow','red'].map(function(z) {
           var sel = plFromZone === z;
-          return h('button', { key: z, onClick: function() { upd({ plFromZone: z }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: z, onClick: function() { upd({ plFromZone: z }); if (soundEnabled) sfxClick(); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? (z === 'all' ? _zoFg('#fbbf24') : ZONE_COLORS[z]) : '#475569'), background: sel ? ((z === 'all' ? _zoFg('#fbbf24') : ZONE_COLORS[z]) + '33') : '#0f172a', color: sel ? _zoFg('#fff') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'uppercase' }
           }, 'From ' + z);
         })
@@ -36302,7 +36383,7 @@ if (activeTab === 'plans') {
               h('h4', { style: { margin: 0, color: _zoFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, p.scenario),
               p.fromZone ? h('span', { style: { padding: '2px 8px', borderRadius: 4, background: ZONE_COLORS[p.fromZone] + '33', color: _zoHC ? ZONE_COLORS[p.fromZone] : ({ '#f87171': '#fca5a5', '#60a5fa': '#93c5fd' }[ZONE_COLORS[p.fromZone]] || ZONE_COLORS[p.fromZone]), fontSize: 9, fontWeight: 800, textTransform: 'uppercase' } }, p.fromZone + (p.toZone ? ' → ' + p.toZone : '')) : null
             ),
-            h('button', { onClick: function() { upd({ plOpen: isOpen ? null : p.id }); if (soundEnabled) sfxClick(); },
+            h('button', { type: 'button', onClick: function() { upd({ plOpen: isOpen ? null : p.id }); if (soundEnabled) sfxClick(); },
               style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : (_zoHC ? _zoFg('#3b82f6') : '#1d4ed8'), color: _zoFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'Open plan'),
             isOpen ? h('div', { style: { marginTop: 10 } },
@@ -36360,7 +36441,7 @@ if (activeTab === 'classroom') {
       h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 14 } },
         cats.map(function(c) {
           var sel = clCategory === c;
-          return h('button', { key: c, onClick: function() { upd({ clCategory: c }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: c, onClick: function() { upd({ clCategory: c }); if (soundEnabled) sfxClick(); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : '#475569'), background: sel ? '#14b8a655' : '#0f172a', color: sel ? _zoFg('#5eead4') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, c);
         })
@@ -36371,7 +36452,7 @@ if (activeTab === 'classroom') {
           return h('div', { key: c.id, style: { padding: 12, borderRadius: 10, background: _zoBg('#1e293b'), border: '1px solid #334155' } },
             h('h4', { style: { margin: 0, color: _zoFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, c.name),
             h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, (c.category || '') + ' · ' + (c.forGrade || 'all') + ' · ' + (c.durationMin || '?') + ' min'),
-            h('button', { onClick: function() { upd({ clOpen: isOpen ? null : c.id }); if (soundEnabled) sfxClick(); },
+            h('button', { type: 'button', onClick: function() { upd({ clOpen: isOpen ? null : c.id }); if (soundEnabled) sfxClick(); },
               style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : '#5eead4', color: isOpen ? _zoFg('#94a3b8') : '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'View'),
             isOpen ? h('div', { style: { marginTop: 8 } },
@@ -36415,7 +36496,7 @@ if (activeTab === 'parent') {
       h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 14 } },
         cats.map(function(c) {
           var sel = pgCategory === c;
-          return h('button', { key: c, onClick: function() { upd({ pgCategory: c }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: c, onClick: function() { upd({ pgCategory: c }); if (soundEnabled) sfxClick(); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#ec4899' : '#475569'), background: sel ? '#ec489933' : '#0f172a', color: sel ? _zoFg('#fbcfe8') : _zoFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, c);
         })
@@ -36427,7 +36508,7 @@ if (activeTab === 'parent') {
             h('h4', { style: { margin: 0, color: _zoFg('#fbcfe8'), fontSize: 13, fontWeight: 700 } }, p.topic),
             h('div', { style: { color: _zoFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, (p.category || '') + ' · for ' + (p.forChildAge || 'any age')),
             p.whatItIs ? h('p', { style: { margin: '6px 0', color: _zoFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } }, p.whatItIs) : null,
-            h('button', { onClick: function() { upd({ pgOpen: isOpen ? null : p.id }); if (soundEnabled) sfxClick(); },
+            h('button', { type: 'button', onClick: function() { upd({ pgOpen: isOpen ? null : p.id }); if (soundEnabled) sfxClick(); },
               style: { marginTop: 4, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : '#ec4899', color: _zoFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'Open'),
             isOpen ? h('div', { style: { marginTop: 8 } },
@@ -36564,7 +36645,7 @@ if (activeTab === 'parent') {
               ['blue', 'green', 'yellow', 'red'].map(function(z) {
                 return _zoByZone[z].map(function(sn) {
                   var on = _zoCues.indexOf(sn.id) !== -1;
-                  return h('button', { key: sn.id, onClick: function() { _zoToggleCue(sn.id); }, 'aria-pressed': on ? 'true' : 'false',
+                  return h('button', { type: 'button', key: sn.id, onClick: function() { _zoToggleCue(sn.id); }, 'aria-pressed': on ? 'true' : 'false',
                     style: { minHeight: 40, padding: '8px 12px', borderRadius: 999, border: '1px solid ' + (on ? _zoFg('#5eead4') : _zoBd('#475569')), background: on ? 'rgba(20,184,166,0.18)' : _zoBg('#0f172a'), color: on ? _zoFg('#5eead4') : _zoFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
                     (on ? '\u2713 ' : '') + sn.sensation);
                 });
@@ -36579,7 +36660,7 @@ if (activeTab === 'parent') {
             ) : null,
             _zoSuggestZone && selectedZone !== _zoSuggest ? h('div', { role: 'status', style: { marginTop: 10, padding: 10, borderRadius: 8, background: _zoBg('#0f172a'), border: '1px solid ' + _zoBd('#334155'), display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' } },
               h('span', { style: { fontSize: 13, color: _zoFg('#e2e8f0') } }, 'Most of what you tapped points to the ' + _zoSuggestZone.label + '.'),
-              h('button', { onClick: function() { upd('selectedZone', _zoSuggest); if (soundEnabled) sfxClick(); readAloud('You selected the ' + _zoSuggestZone.label); },
+              h('button', { type: 'button', onClick: function() { upd('selectedZone', _zoSuggest); if (soundEnabled) sfxClick(); readAloud('You selected the ' + _zoSuggestZone.label); },
                 style: { minHeight: 40, padding: '8px 12px', borderRadius: 8, border: '2px solid ' + _zoFg(_zoSuggestZone.color), background: 'transparent', color: _zoFg(_zoSuggestZone.color), cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, 'Choose ' + _zoSuggestZone.label)
             ) : null
           ), '#5eead4');
@@ -36598,7 +36679,7 @@ if (activeTab === 'parent') {
                 _zoDetails('Why this helps, and what to say to a friend in the same zone', h('div', null,
                   _zoKV('Why it helps', _zoPick.whyItWorks), _zoKV('Other ways to say it', _zoPick.alternatives), _zoKV('Avoid saying', _zoPick.avoidSaying, '#fbbf24'), _zoKV('Example', _zoPick.example)
                 ), _zoPick.id),
-                h('button', { onClick: function() { upd({ validationSeed: (d.validationSeed || 0) + 1 }); if (typeof announceToSR === 'function') announceToSR('Showing another sentence'); },
+                h('button', { type: 'button', onClick: function() { upd({ validationSeed: (d.validationSeed || 0) + 1 }); if (typeof announceToSR === 'function') announceToSR('Showing another sentence'); },
                   style: { minHeight: 40, padding: '8px 12px', borderRadius: 8, border: '1px solid ' + _zoBd('#475569'), background: _zoBg('#0f172a'), color: _zoFg('#e2e8f0'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, 'Another one')
               ), _zoSelZone ? _zoFg(_zoSelZone.color) : '#a78bfa');
           }

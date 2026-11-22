@@ -8,6 +8,7 @@ const reading = require('./parapro_learning/reading.cjs');
 const mathematics = require('./parapro_learning/mathematics.cjs');
 const writing = require('./parapro_learning/writing.cjs');
 const memoryAids = require('./parapro_learning/memory_aids.cjs');
+const { applyParaproLibraryCheckOverrides } = require('./parapro_learning/choice_overrides.cjs');
 
 const root = path.resolve(__dirname, '..');
 const chaptersSource = [...reading, ...mathematics, ...writing];
@@ -37,7 +38,9 @@ const SUPPLEMENTAL_SOURCES = [
 ];
 let checkCursor = 0;
 
-function makeCheck(chapter, seed, index) {
+function makeCheck(chapter, rawSeed, index) {
+  const id = chapter.id + '-check-' + (index + 1);
+  const seed = applyParaproLibraryCheckOverrides(id, rawSeed);
   const answerIndex = checkCursor % 4;
   checkCursor += 1;
   const choices = [];
@@ -47,7 +50,7 @@ function makeCheck(chapter, seed, index) {
     else { choices.push(seed.distractors[distractorIndex]); distractorIndex += 1; }
   }
   return {
-    id: chapter.id + '-check-' + (index + 1),
+    id,
     skillId: chapter.skillId,
     prompt: seed.prompt,
     choices,

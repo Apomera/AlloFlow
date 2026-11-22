@@ -312,6 +312,11 @@ function stripHtmlCommentsAndBlocks(input) {
         out += " ";
         break;
       }
+      if (text.slice(nameEnd, openEnd).trimEnd().endsWith("/")) {
+        out += " ";
+        pos = openEnd + 1;
+        continue;
+      }
       const closeNeedle = "</" + tagName;
       let searchFrom = openEnd + 1;
       let closedAt = -1;
@@ -337,15 +342,50 @@ function stripHtmlCommentsAndBlocks(input) {
   return out;
 }
 
+function extractFirstTagInner(html, tagName) {
+  const text = String(html || "");
+  const lower = text.toLowerCase();
+  const openNeedle = "<" + tagName.toLowerCase();
+  const closeNeedle = "</" + tagName.toLowerCase();
+  const len = text.length;
+  let pos = 0;
+  while (pos < len) {
+    const start = lower.indexOf(openNeedle, pos);
+    if (start < 0) return "";
+    const afterName = start + openNeedle.length;
+    const boundary = afterName < len ? lower[afterName] : "";
+    if (boundary !== ">" && boundary !== "/" && !/\s/.test(boundary)) {
+      pos = afterName;
+      continue;
+    }
+    const openEnd = text.indexOf(">", afterName);
+    if (openEnd < 0) return "";
+    if (text.slice(afterName, openEnd).trimEnd().endsWith("/")) {
+      pos = openEnd + 1;
+      continue;
+    }
+    let searchFrom = openEnd + 1;
+    while (searchFrom < len) {
+      const closeIdx = lower.indexOf(closeNeedle, searchFrom);
+      if (closeIdx < 0) return "";
+      let afterClose = closeIdx + closeNeedle.length;
+      while (afterClose < len && /\s/.test(lower[afterClose])) afterClose += 1;
+      if (afterClose < len && lower[afterClose] === ">") {
+        return text.slice(openEnd + 1, closeIdx);
+      }
+      searchFrom = closeIdx + closeNeedle.length;
+    }
+    return "";
+  }
+  return "";
+}
+
 function extractHtmlDocument(html) {
-  const raw = String(html || "");
-  const titleMatch = raw.match(/<title\b[^>]*>([\s\S]*?)<\/title\s*>/i);
-  const h1Match = raw.match(/<h1\b[^>]*>([\s\S]*?)<\/h1\s*>/i);
-  const title = normalizeReadableText(decodeEntities(stripTags(titleMatch && titleMatch[1] || h1Match && h1Match[1] || ""))).slice(0, 300);
-  const articleMatch = raw.match(/<article\b[^>]*>([\s\S]*?)<\/article\s*>/i);
-  const mainMatch = raw.match(/<main\b[^>]*>([\s\S]*?)<\/main\s*>/i);
-  let body = articleMatch && articleMatch[1] || mainMatch && mainMatch[1] || raw;
-  body = stripHtmlCommentsAndBlocks(body)
+  const cleaned = stripHtmlCommentsAndBlocks(String(html || ""));
+  const titleInner = extractFirstTagInner(cleaned, "title") || extractFirstTagInner(cleaned, "h1");
+  const title = normalizeReadableText(decodeEntities(stripTags(titleInner))).slice(0, 300);
+  let body = extractFirstTagInner(cleaned, "article") || extractFirstTagInner(cleaned, "main") || cleaned;
+  body = body
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<li\b[^>]*>/gi, "\n• ")
     .replace(/<\/(p|div|li|section|article|main|h[1-6]|tr|td|th|blockquote|pre)\s*>/gi, "\n")

@@ -5,4 +5,4 @@
 
 > Not ETS or AAIDD approval; independent intellectual-disabilities educator, self-advocate, family, AAC, assistive-technology, health, transition, legal, cultural-linguistic, and psychometric validation remain pending.
 
-- Independent-batch audit: 200 original source questions plus 0 assistant-authored independent practice questions produce 100 distinct independent content kernels. 300 additional activities remain guided review only. 400 new independent questions remain to reach 500.
+- Independent-batch audit: 200 original source questions plus 0 assistant-authored independent practice questions produce 101 distinct independent content kernels. 300 additional activities remain guided review only. 399 new independent questions remain to reach 500.

@@ -22,22 +22,24 @@
 // Category: science (marine biology + behavioral biology)
 // ═══════════════════════════════════════════════════════════════
 
-window.StemLab = window.StemLab || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
-};
+if (typeof window !== 'undefined') {
+  window.StemLab = window.StemLab || {
+    _registry: {}, _order: [],
+    registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
+    isRegistered: function(id) { return !!this._registry[id]; },
+    getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
+    renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
+  };
+}
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'))) {
+if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'))) {
 
 (function() {
   'use strict';
 
   // ─── Live region for state announcements ───
   (function() {
-    if (document.getElementById('allo-live-cl')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-cl')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-cl';
     lr.setAttribute('aria-live', 'polite');
@@ -47,9 +49,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
     lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(lr);
   })();
+  var _clAnnounceTimer = null;
   function clAnnounce(msg) {
+    if (typeof document === 'undefined') return;
     var lr = document.getElementById('allo-live-cl');
-    if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 30); }
+    if (lr) {
+      lr.textContent = '';
+      if (_clAnnounceTimer !== null) clearTimeout(_clAnnounceTimer);
+      _clAnnounceTimer = setTimeout(function() { _clAnnounceTimer = null; if (lr && lr.isConnected) lr.textContent = msg; }, 30);
+    }
+  }
+  function _clIsGlobalMuted() {
+    try {
+      if (typeof window === 'undefined') return false;
+      if (window.__alloGlobalMuted === true) return true;
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+    } catch (_) {}
+    return false;
   }
 
   // ───────────────────────────────────────────────────────────
@@ -1242,7 +1258,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
     document.head.appendChild(st);
   })();
 
-  window.StemLab.registerTool('cephalopodLab', {
+  if (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.registerTool === 'function') window.StemLab.registerTool('cephalopodLab', {
     icon: '🐙',
     label: 'Cephalopod Lab',
     desc: 'The intelligence + behavior + camouflage biology of octopuses, squid, cuttlefish, and nautilus. Headline: Hunter Sim — play a cephalopod hunter, pick species + habitat + prey + tactic, run the camouflage minigame, time the strike, learn the real biology behind each species\' adaptations.',
@@ -1279,7 +1295,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       var h = React.createElement;
       var huntCanvasRef = React.useRef(null);
       var huntLaunchFocusRef = React.useRef(false);
-      React.useEffect(function() { return function() { var c=huntCanvasRef.current; if(c && c._clCleanup) c._clCleanup(); }; }, []);
+      var dayAbandonFocusTimerRef = React.useRef(null);
+      React.useEffect(function() {
+        return function() {
+          if (dayAbandonFocusTimerRef.current !== null) { clearTimeout(dayAbandonFocusTimerRef.current); dayAbandonFocusTimerRef.current = null; }
+          if (_clAnnounceTimer !== null) { clearTimeout(_clAnnounceTimer); _clAnnounceTimer = null; }
+          var c=huntCanvasRef.current; if(c && c._clCleanup) c._clCleanup();
+        };
+      }, []);
       var dayAbandonTriggerRef = React.useRef(null);
       var dayAbandonDialogRef = React.useRef(null);
       var dayAbandonCancelRef = React.useRef(null);
@@ -1291,16 +1314,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       var _rawCl = labToolData.cephalopodLab;
       var d = (_rawCl && typeof _rawCl === 'object' && !Array.isArray(_rawCl)) ? _rawCl : defaultState();
       function setCL(patch) {
+        if (typeof setLabToolData !== 'function') return;
         setLabToolData(function(prev) {
-          var prior = (prev && prev.cephalopodLab) || defaultState();
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var rawPrior = safePrev.cephalopodLab;
+          var prior = (rawPrior && typeof rawPrior === 'object' && !Array.isArray(rawPrior)) ? rawPrior : defaultState();
           var nextPatch = typeof patch === 'function' ? patch(prior) : patch;
-          var next = Object.assign({}, prior, nextPatch);
+          var next = Object.assign({}, prior, (nextPatch && typeof nextPatch === 'object' && !Array.isArray(nextPatch)) ? nextPatch : {});
           next.lastUpdated = todayISO();
-          return Object.assign({}, prev, { cephalopodLab: next });
+          return Object.assign({}, safePrev, { cephalopodLab: next });
         });
       }
       function restoreDayAbandonFocus(trigger) {
-        setTimeout(function() {
+        if (dayAbandonFocusTimerRef.current !== null) clearTimeout(dayAbandonFocusTimerRef.current);
+        dayAbandonFocusTimerRef.current = setTimeout(function() {
+          dayAbandonFocusTimerRef.current = null;
           if (trigger && trigger.isConnected && typeof trigger.focus === 'function') trigger.focus();
           else if (dayAbandonAppRef.current && typeof dayAbandonAppRef.current.focus === 'function') dayAbandonAppRef.current.focus();
         }, 0);
@@ -1313,6 +1341,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       }
 
       function handleDayAbandonDialogKeyDown(event) {
+        if (!event || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
         if (event.key === 'Escape') {
           event.preventDefault();
           event.stopPropagation();
@@ -1620,6 +1649,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var sectionSearchTerms = sectionSearchQuery ? sectionSearchQuery.split(/\s+/) : [];
         var GROUP_TAB_IDS = TAB_GROUPS.map(function(g) { return g.id; });
         var groupTabKeyDown = function(e, index) {
+          if (!e || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var nextIndex = -1;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % GROUP_TAB_IDS.length;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + GROUP_TAB_IDS.length - 1) % GROUP_TAB_IDS.length;
@@ -1638,6 +1668,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         };
         var SECTION_TAB_IDS = openGroup.tabs.map(function(t) { return t.id; });
         var sectionTabKeyDown = function(e, index) {
+          if (!e || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var nextIndex = -1;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % SECTION_TAB_IDS.length;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + SECTION_TAB_IDS.length - 1) % SECTION_TAB_IDS.length;
@@ -14179,7 +14210,7 @@ function createCLHuntFish(T,index){
         // cleared too or it stays hidden behind the dead hunt.
         if (!canvasEl._clLossBound) {
           canvasEl._clLossBound = true;
-          canvasEl.addEventListener('webglcontextlost', function (ev) {
+          canvasEl._clOnContextLost = function (ev) {
             // releaseGl force-loses a canvas after teardown removes it; that is a
             // normal exit, not a failure. A real loss happens on a canvas still on the page.
             if (!canvasEl.isConnected) return;
@@ -14188,7 +14219,8 @@ function createCLHuntFish(T,index){
             if (canvasEl._clCleanup) { try { canvasEl._clCleanup(); } catch (e) {} canvasEl._clCleanup = null; }
             canvasEl._clInit = false;
             setCL({ hunt3DActive: false, _threeError: true, _threeLoaded: false });
-          });
+          };
+          canvasEl.addEventListener('webglcontextlost', canvasEl._clOnContextLost);
         }
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, quality==='low'?1:quality==='high'?2:1.5));
         renderer.outputEncoding=THREE.sRGBEncoding;
@@ -15936,7 +15968,7 @@ function createCLHuntFish(T,index){
             masterGain = audioCtx.createGain();
             // Master volume reads persisted setting (default 0.5 × 0.7 cap = 0.35)
             var as0 = loadAudioSettings();
-            masterGain.gain.value = as0.muted ? 0 : (as0.volume * 0.7);
+            masterGain.gain.value = (as0.muted || _clIsGlobalMuted()) ? 0 : (as0.volume * 0.7);
             masterGain.connect(audioCtx.destination);
             // Ambient drone: low-pass filtered pink-ish noise loop
             var bufferSize = audioCtx.sampleRate * 4;
@@ -16070,6 +16102,24 @@ function createCLHuntFish(T,index){
         }
         // Initialize audio now (we're inside the click-triggered render path)
         initAudio();
+        function onGlobalMute() {
+          try {
+            if (_clIsGlobalMuted()) {
+              if (masterGain && audioCtx) {
+                try { masterGain.gain.cancelScheduledValues(audioCtx.currentTime); } catch (_) {}
+                masterGain.gain.value = 0;
+              }
+              if (audioCtx && audioCtx.state === 'running' && typeof audioCtx.suspend === 'function') {
+                audioCtx.suspend().catch(function() {});
+              }
+            } else if (audioCtx && audioCtx.state === 'suspended' && typeof audioCtx.resume === 'function' && !disposed) {
+              audioCtx.resume().catch(function() {});
+            }
+          } catch (_) {}
+        }
+        if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+          window.addEventListener('alloflow-mute-changed', onGlobalMute);
+        }
 
         // ─── Soundscape that follows the water ───
         // The drone was identical at 5 m and 3000 m and jetting was silent. Using
@@ -17646,9 +17696,17 @@ function createCLHuntFish(T,index){
           clAnnounce(value?'Paused':'Resumed');
         }
         function onWindowBlur(){if(mobileToolsPanel&&!mobileToolsPanel.hidden){mobileToolsWasPaused=true;clearInput();return;}if(settingsPanel&&!settingsPanel.hidden)settingsWasPaused=true;if(inspection.active){inspection.wasPaused=true;inspection.drag=null;clearInput();return;}setPaused(true);}
-        function onVisibility(){if(document.hidden)onWindowBlur();}
+        function onVisibility(){
+          if(document.hidden){
+            onWindowBlur();
+            if(typeof animId!=='undefined'&&animId!=null&&typeof cancelAnimationFrame==='function'){cancelAnimationFrame(animId);animId=null;}
+          }else if(typeof disposed!=='undefined'&&!disposed&&typeof animId!=='undefined'&&animId==null&&canvasEl&&canvasEl.isConnected&&typeof loop==='function'&&typeof requestAnimationFrame==='function'){
+            if(typeof clock!=='undefined'&&clock)clock.getDelta();
+            animId=requestAnimationFrame(loop);
+          }
+        }
         function onKeyDown(e){
-          if(e.ctrlKey||e.metaKey||e.altKey)return;
+          if(!e||e.isComposing||e.keyCode===229||e.ctrlKey||e.metaKey||e.altKey)return;
           if(e.code==='KeyF'){if(!e.repeat)toggleInspection();e.preventDefault();return;}
           if(inspection.active)return;
           if(e.key==='?'){e.preventDefault();if(!e.repeat)openSettings();return;}
@@ -17666,7 +17724,9 @@ function createCLHuntFish(T,index){
         var targetRay=new THREE.Raycaster(),pointerPoint=new THREE.Vector2();
         function onClick(e){
           if(gameState.paused||gameState.gameOver||inspection.active||capabilities.diet==='detritus')return;
-          var rect=canvasEl.getBoundingClientRect();pointerPoint.set((e.clientX-rect.left)/rect.width*2-1,1-(e.clientY-rect.top)/rect.height*2);
+          var rect=canvasEl.getBoundingClientRect();
+          if(!rect||!rect.width||!rect.height)return;
+          pointerPoint.set((e.clientX-rect.left)/rect.width*2-1,1-(e.clientY-rect.top)/rect.height*2);
           targetRay.setFromCamera(pointerPoint,camera);var candidates=preyCandidates();
           var hits=targetRay.intersectObjects(candidates,true);
           if(!hits.length)return;
@@ -17978,8 +18038,9 @@ function createCLHuntFish(T,index){
         statsOverlay.style.cssText = 'position:absolute;inset:0;background:rgba(5,12,24,0.92);display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:Inter,system-ui,sans-serif;padding:24px;text-align:center;backdrop-filter:blur(4px);';
         statsOverlay.style.zIndex='11';statsOverlay.style.overflow='auto';statsOverlay.style.justifyContent='start';statsOverlay.setAttribute('role','dialog');statsOverlay.setAttribute('aria-modal','true');statsOverlay.setAttribute('aria-label','End of dive');canvasEl.parentElement.appendChild(statsOverlay);
         statsOverlay.onkeydown=function(e){
+          if(!e||e.isComposing||e.keyCode===229||e.ctrlKey||e.metaKey||e.altKey)return;
           if(e.key==='Escape'){e.preventDefault();e.stopPropagation();var pick=statsOverlay.querySelector('#cl-pick-species');if(pick)pick.click();return;}
-          if(e.key==='Tab'){var nodes=statsOverlay.querySelectorAll('button:not([disabled])'),first=nodes[0],last=nodes[nodes.length-1],title=statsOverlay.querySelector('#cl-dive-results-title');if(e.shiftKey&&(document.activeElement===first||document.activeElement===title)){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
+          if(e.key==='Tab'){var nodes=statsOverlay.querySelectorAll('button:not([disabled])');if(!nodes.length)return;var first=nodes[0],last=nodes[nodes.length-1],title=statsOverlay.querySelector('#cl-dive-results-title');if(e.shiftKey&&(document.activeElement===first||document.activeElement===title)){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
         };
 
         // Biology fact popup overlay (top-center). Slides in when an
@@ -18368,8 +18429,9 @@ function createCLHuntFish(T,index){
           scheduleHuntLayout();
         }
         mobileToolsPanel.onkeydown=function(e){
+          if(!e||e.isComposing||e.keyCode===229||e.ctrlKey||e.metaKey||e.altKey)return;
           if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeMobileTools(true);return;}
-          if(e.key==='Tab'){var nodes=mobileToolsPanel.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex="0"]'),first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
+          if(e.key==='Tab'){var nodes=mobileToolsPanel.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex="0"]');if(!nodes.length)return;var first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
         };
         settingsPanel=document.createElement('div');settingsPanel.className='cl-hunt-dialog cl-hunt-settings';settingsPanel.hidden=true;
         settingsPanel.setAttribute('role','dialog');settingsPanel.setAttribute('aria-modal','true');settingsPanel.setAttribute('aria-label','Dive help and settings');stage.appendChild(settingsPanel);
@@ -18406,7 +18468,7 @@ function createCLHuntFish(T,index){
         var settingsWasPaused=false;
         function openSettings(){if(gameState.gameOver)return;if(!settingsPanel.hidden){guideTitle.focus();return;}updateHuntHelp();settingsWasPaused=gameState.paused;setPaused(true);guideIntro.textContent=species.name+' · '+(settingsWasPaused?'The dive was already paused and will stay paused when you return.':'Dive paused while this guide is open. Return to dive when ready.');settingsPanel.hidden=false;settingsContent.scrollTop=0;guideTitle.focus();}
         function closeSettings(){if(settingsPanel.hidden)return;settingsPanel.hidden=true;clearInput();setPaused(settingsWasPaused);canvasEl.focus();}
-        settingsPanel.onkeydown=function(e){if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeSettings();return;}if(e.key==='Tab'){var nodes=settingsPanel.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled])'),first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&(document.activeElement===first||document.activeElement===guideTitle)){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}};
+        settingsPanel.onkeydown=function(e){if(!e||e.isComposing||e.keyCode===229||e.ctrlKey||e.metaKey||e.altKey)return;if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeSettings();return;}if(e.key==='Tab'){var nodes=settingsPanel.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled])');if(!nodes.length)return;var first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&(document.activeElement===first||document.activeElement===guideTitle)){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}};
         function cycleCamera(){gameState.cameraMode=((gameState.cameraMode||0)+1)%4;var names=['Follow','Side','Tactical','Hunt'];viewButton.textContent='View · '+names[gameState.cameraMode];viewButton.title=names[gameState.cameraMode]+' view. V or View cycles Follow, Side, Tactical and Hunt.';if(!inspection.active&&(gameState.paused||gameState.cameraMode===3)){updateDiveCamera(0,true);if(targetHalo.visible)targetHalo.quaternion.copy(camera.quaternion);}clAnnounce(names[gameState.cameraMode]+' view');canvasEl.focus();}
         // Inspection freezes the simulation, including hunger, cooldowns and predator movement.
         inspectionPanel=document.createElement('div');inspectionPanel.className='cl-inspection';inspectionPanel.hidden=true;inspectionPanel.setAttribute('role','region');inspectionPanel.setAttribute('aria-label','Specimen inspection');stage.appendChild(inspectionPanel);
@@ -18513,7 +18575,7 @@ function createCLHuntFish(T,index){
           camera.updateProjectionMatrix();stage.classList.toggle('cl-inspecting',inspection.active);inspectionPanel.hidden=!inspection.active;scheduleHuntLayout();if(inspection.active)frameInspection(true);if(targetHalo){var inspectionTarget=gameState.pendingStrike?gameState.pendingStrike.target:selectedPrey;targetHalo.visible=!inspection.active&&!!inspectionTarget&&inspectionTarget.userData.alive&&capabilities.diet!=='detritus';if(targetHalo.visible){targetHalo.position.copy(inspectionTarget.position);targetHalo.position.y+=0.06;}}canvasEl.focus();clAnnounce(inspection.active?'Inspection. Dive paused. Drag or use orbit controls to examine '+species.name+'. Escape returns.':inspection.wasPaused?'Inspection closed. Dive remains paused.':'Inspection closed. Dive resumed.');
         }
         function inspectKey(e){
-          if(!inspection.active)return;
+          if(!inspection.active||!e||e.isComposing||e.keyCode===229||e.ctrlKey||e.metaKey||e.altKey)return;
           if(e.code==='Escape'||e.code==='KeyF'){e.preventDefault();e.stopPropagation();if(!e.repeat)toggleInspection();return;}
           if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Equal','Minus','NumpadAdd','NumpadSubtract'].indexOf(e.code)<0)return;
           e.preventDefault();e.stopPropagation();
@@ -19027,8 +19089,9 @@ function createCLHuntFish(T,index){
           // Self-terminate if the canvas detached (e.g. left via Back) before the
           // ref-null teardown fires — without this the loop + the whole 3D scene
           // keep running forever against a detached canvas.
-          if(disposed) return;
-          if (!canvasEl.isConnected) { if(canvasEl._clCleanup) canvasEl._clCleanup(); return; }
+          if(disposed) { animId = null; return; }
+          if (!canvasEl.isConnected) { animId = null; if(canvasEl._clCleanup) canvasEl._clCleanup(); return; }
+          if (typeof document !== 'undefined' && document.hidden) { animId = null; return; }
           var rawDt = clock.getDelta();
           var dt = Math.min(0.05, rawDt);
           if(!gameState.paused && !gameState.gameOver) gameNow += dt*1000;
@@ -20804,13 +20867,16 @@ function createCLHuntFish(T,index){
           // Audio mute when paused or game over; otherwise honor persisted vol
           if (masterGain) {
             var as = cachedAudio;
-            var liveVol = as.muted ? 0 : (as.volume * 0.7);
-            var targetMaster = (gameState.paused || gameState.gameOver) ? 0.0 : liveVol;
-            masterGain.gain.value += (targetMaster - masterGain.gain.value) * 0.2;
+            var globalMuted = _clIsGlobalMuted();
+            var liveVol = (as.muted || globalMuted) ? 0 : (as.volume * 0.7);
+            var targetMaster = (gameState.paused || gameState.gameOver || globalMuted) ? 0.0 : liveVol;
+            if (globalMuted) masterGain.gain.value = 0;
+            else masterGain.gain.value += (targetMaster - masterGain.gain.value) * 0.2;
           }
 
           var _ac=renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ renderer._alloComposer=null; renderer.render(scene, camera); } } else { renderer.render(scene, camera); }
-          animId = requestAnimationFrame(loop);
+          if (!disposed && !(typeof document !== 'undefined' && document.hidden)) animId = requestAnimationFrame(loop);
+          else animId = null;
         }
         loop();
 
@@ -20872,7 +20938,13 @@ function createCLHuntFish(T,index){
           canvasEl._clFinishRun=null;
           canvasEl.removeEventListener('blur', clearInput);
           window.removeEventListener('blur', onWindowBlur);
+          window.removeEventListener('alloflow-mute-changed', onGlobalMute);
           document.removeEventListener('visibilitychange', onVisibility);
+          if (canvasEl._clOnContextLost) {
+            canvasEl.removeEventListener('webglcontextlost', canvasEl._clOnContextLost);
+            canvasEl._clOnContextLost = null;
+            canvasEl._clLossBound = false;
+          }
           if(captions.parentElement) captions.remove();
           if(uiStyle && uiStyle.parentElement)uiStyle.remove();
           if(controlPanel && controlPanel.parentElement) controlPanel.remove();
@@ -22351,6 +22423,7 @@ function createCLHuntFish(T,index){
         ];
         var BIOLUX_TAB_IDS = SUBS.map(function(s) { return s.id; });
         var bioluxTabKeyDown = function(e, index) {
+          if (!e || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var nextIndex = -1;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % BIOLUX_TAB_IDS.length;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + BIOLUX_TAB_IDS.length - 1) % BIOLUX_TAB_IDS.length;
@@ -23064,6 +23137,7 @@ function createCLHuntFish(T,index){
                     'data-allo-fs-stage': 'true',
                     'aria-label': __alloT('stem.cephalopodlab.anat3d_label', 'Octopus anatomy, 3D. Interactive. Arrow keys rotate, plus and minus zoom, zero resets. Every structure here is also a button in the All regions list below.'),
                     onKeyDown: function(e) {
+                      if (!e || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                       var k = e.key, handled = true;
                       if (k === 'ArrowLeft') CEPH3D.nudge(-0.16, 0);
                       else if (k === 'ArrowRight') CEPH3D.nudge(0.16, 0);

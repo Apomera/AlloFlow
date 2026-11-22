@@ -43,7 +43,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
   'use strict';
 
   // WCAG 2.1 AA: Accessibility CSS
-  if (!document.getElementById('echotrainer-a11y-css')) {
+  if (typeof document !== 'undefined' && document.head && !document.getElementById('echotrainer-a11y-css')) {
     var _s = document.createElement('style');
     _s.id = 'echotrainer-a11y-css';
     _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .echotrainer-focus-canvas:focus-visible { outline: 3px solid #38bdf8 !important; outline-offset: 3px; } [data-echotrainer-root] button { transition: transform 120ms ease, background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease; } [data-echotrainer-root] button:not([disabled]):hover { transform: translateY(-1px); } [data-echotrainer-root] button:focus-visible, [data-echotrainer-root] summary:focus-visible { outline: 3px solid #38bdf8; outline-offset: 2px; }';
@@ -52,7 +52,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
 
   // WCAG live region
   (function() {
-    if (document.getElementById('allo-live-echotrainer')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-echotrainer')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-echotrainer';
     lr.setAttribute('aria-live', 'polite');
@@ -1087,9 +1087,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
       // live values via dataRef.current without tearing down.
       var dataRef = React.useRef(d);
       dataRef.current = d;
-      var upd = function(key, val) { ctx.update('echoTrainer', key, val); };
-      var updMulti = function(obj) { ctx.updateMulti('echoTrainer', obj); };
-      var addToast = ctx.addToast; var announceToSR = ctx.announceToSR; var awardXP = ctx.awardXP; var setStemLabTool = ctx.setStemLabTool; var ArrowLeft = ctx.icons.ArrowLeft; var isContrast = !!ctx.isContrast; var isDark = !!ctx.isDark || isContrast; var theme = ctx.theme;
+      var upd = function(key, val) { if (typeof ctx.update === 'function') ctx.update('echoTrainer', key, val); };
+      var updMulti = function(obj) { if (typeof ctx.updateMulti === 'function') ctx.updateMulti('echoTrainer', obj); };
+      var addToast = ctx.addToast; var announceToSR = ctx.announceToSR; var awardXP = ctx.awardXP; var setStemLabTool = ctx.setStemLabTool; var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft; var isContrast = !!ctx.isContrast; var isDark = !!ctx.isDark || isContrast; var theme = ctx.theme;
 
       var envType = d.envType || 'simple_room';
       var seed = d.seed || 42;
@@ -1239,9 +1239,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         var player = playerRef.current;
         var map = mapRef.current;
         if (!map) return;
-        updMulti({ clicks: (d.clicks || 0) + 1 });
+        var curData = dataRef.current || {};
+        updMulti({ clicks: (curData.clicks || 0) + 1 });
         if (window._alloHaptic) window._alloHaptic('echo');
-        var activeBuf = clickType === 'cane' ? audio.caneBuf : audio.clickBuf;
+        var activeBuf = (curData.clickType || 'tongue') === 'cane' ? audio.caneBuf : audio.clickBuf;
 
         // One panner per angular bin for this click, positioned at the bin centre.
         // Fresh per click so a click fired while earlier echoes are still ringing
@@ -2052,8 +2053,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 var nextIdx = wpIdx + 1;
                 if (nextIdx >= route.points.length) {
                   goalFoundRef.current = true;
+                  var curGoalsWp = (typeof d.goalsFound === 'number' && isFinite(d.goalsFound) && d.goalsFound >= 0) ? Math.floor(d.goalsFound) : 0;
                   var wpXP = 15 + route.points.length * 8;
-                  var wpUpdateObj = { goalFoundThisRun: true, goalsFound: goalsFound + 1, waypointIdx: nextIdx, waypointComplete: true };
+                  var wpUpdateObj = { goalFoundThisRun: true, goalsFound: curGoalsWp + 1, waypointIdx: nextIdx, waypointComplete: true };
                   updMulti(wpUpdateObj);
                   if (addToast) addToast(tFmt('stem.echotrainer.toast_route_complete', '\uD83C\uDFC1 Route complete! {route} \u2192 {xp} XP!', { route: route.name, xp: wpXP }), 'success');
                   if (awardXP) awardXP('echoTrainer', Math.round(wpXP * diff.xpMult), 'Waypoint route: ' + route.name);
@@ -2074,7 +2076,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               if (gd < o.r + 12) {
                 goalFoundRef.current = true;
                 var isAudioOnly = (currentViewMode === 'audio');
-                var newGoals = goalsFound + 1; var newBlinds = isAudioOnly ? blindWins + 1 : blindWins;
+                var curGoals3d = (typeof d.goalsFound === 'number' && isFinite(d.goalsFound) && d.goalsFound >= 0) ? Math.floor(d.goalsFound) : 0;
+                var curBlinds3d = (typeof d.blindWins === 'number' && isFinite(d.blindWins) && d.blindWins >= 0) ? Math.floor(d.blindWins) : 0;
+                var newGoals = curGoals3d + 1; var newBlinds = isAudioOnly ? curBlinds3d + 1 : curBlinds3d;
                 var updateObj = { goalFoundThisRun: true, goalsFound: newGoals, blindWins: newBlinds };
                 if (envType === 'urban' && !carHitRef.current) { updateObj.urbanNoCarHit = true; }
                 if (diffId === 'master') { updateObj.batMasterWin = true; }
@@ -2108,11 +2112,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           if (renderer.domElement.width !== cw || renderer.domElement.height !== ch) { renderer.setSize(cw, ch); camera.aspect = cw / ch; camera.updateProjectionMatrix(); }
           var _ac=renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ renderer._alloComposer=null; renderer.render(sd.scene, camera); } } else { renderer.render(sd.scene, camera); }
         }
+        function onBlur3d() { keysRef.current = {}; }
+        window.addEventListener('blur', onBlur3d);
         animRef.current = requestAnimationFrame(loop);
         return function() {
           running = false; if (animRef.current) cancelAnimationFrame(animRef.current);
-          for (var osi = 0; osi < agentSounds.length; osi++) { try { agentSounds[osi].osc.stop(); } catch(e) {} } agentOscRef.current = [];
-          for (var amsi = 0; amsi < ambientNodes.length; amsi++) { try { ambientNodes[amsi].osc.stop(); } catch(e) {} } ambientSoundsRef.current = [];
+          keysRef.current = {};
+          window.removeEventListener('blur', onBlur3d);
+          for (var osi = 0; osi < agentSounds.length; osi++) {
+            var asnd = agentSounds[osi];
+            try { if (asnd.osc) { asnd.osc.stop(); asnd.osc.disconnect(); } } catch(e) {}
+            try { if (asnd.gain) asnd.gain.disconnect(); } catch(e) {}
+            try { if (asnd.panner) asnd.panner.disconnect(); } catch(e) {}
+            try { if (asnd.filter) asnd.filter.disconnect(); } catch(e) {}
+          }
+          agentOscRef.current = [];
+          for (var amsi = 0; amsi < ambientNodes.length; amsi++) {
+            var amb = ambientNodes[amsi];
+            try { if (amb.osc) { amb.osc.stop(); amb.osc.disconnect(); } } catch(e) {}
+            try { if (amb.gain) amb.gain.disconnect(); } catch(e) {}
+            try { if (amb.panner) amb.panner.disconnect(); } catch(e) {}
+            try { if (amb.filter) amb.filter.disconnect(); } catch(e) {}
+          }
+          ambientSoundsRef.current = [];
           try{ if(renderer && renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
           try {
             if (sd && sd.scene && sd.scene.traverse) {
@@ -2151,6 +2173,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         var canvas = canvasRef.current; var gfx = canvas.getContext('2d');
         if (!gfx) return;
         var running = true; var rafId2d = 0; var goalCheckTimer2d = 0;
+        var onKeyDown2d = null; var onKeyUp2d = null; var onBlur2d = null;
+        if (!has3D) {
+          onKeyDown2d = function(e) {
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            var tgt = e.target;
+            var focused = (tgt && tgt.nodeType && canvas.contains(tgt)) || document.activeElement === canvas;
+            if (!focused) return;
+            keysRef.current[e.code] = true;
+            if (e.code === 'Space') { e.preventDefault(); emitClick(); }
+          };
+          onKeyUp2d = function(e) { keysRef.current[e.code] = false; };
+          onBlur2d = function() { keysRef.current = {}; };
+          document.addEventListener('keydown', onKeyDown2d);
+          document.addEventListener('keyup', onKeyUp2d);
+          window.addEventListener('blur', onBlur2d);
+        }
         function loop2d() {
           if (!running) return; rafId2d = requestAnimationFrame(loop2d);
           // Live-read tool state so the minimap (and the 2D fallback when
@@ -2320,13 +2358,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                 if (gdist < 200) { var interval = Math.max(8, Math.floor(gdist / 3)); if (goalCheckTimer2d % interval === 0) { var pingFreq = 800 + (1 - Math.min(1, gdist / 200)) * 600; try { var ac = audioRef.current && audioRef.current.ctx; if (ac) { var po = ac.createOscillator(); var pg = ac.createGain(); po.type = 'sine'; po.frequency.value = pingFreq; pg.gain.setValueAtTime(0.04, ac.currentTime); pg.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.05); po.connect(pg); pg.connect(ac.destination); po.start(); po.stop(ac.currentTime + 0.05); } } catch(e) {} if (window._alloHaptic && gdist < 80) window._alloHaptic('echo'); } }
               });
             }
-            if (goalCheckTimer2d % 30 === 0 && !d.goalFoundThisRun) {
+            if (goalCheckTimer2d % 30 === 0 && !d.goalFoundThisRun && !goalFoundRef.current) {
               map.objects.forEach(function(o) {
                 if (!o.isGoal) return;
                 var gd = Math.sqrt((player.x - o.x) * (player.x - o.x) + (player.y - o.y) * (player.y - o.y));
                 if (gd < o.r + 12) {
+                  goalFoundRef.current = true;
                   var isAudioOnly2d = (currentViewMode2d === 'audio');
-                  var updateObj2d = { goalFoundThisRun: true, goalsFound: goalsFound + 1, blindWins: isAudioOnly2d ? blindWins + 1 : blindWins };
+                  var curGoals2d = (typeof d.goalsFound === 'number' && isFinite(d.goalsFound) && d.goalsFound >= 0) ? Math.floor(d.goalsFound) : 0;
+                  var curBlinds2d = (typeof d.blindWins === 'number' && isFinite(d.blindWins) && d.blindWins >= 0) ? Math.floor(d.blindWins) : 0;
+                  var updateObj2d = { goalFoundThisRun: true, goalsFound: curGoals2d + 1, blindWins: isAudioOnly2d ? curBlinds2d + 1 : curBlinds2d };
                   if (diffId === 'master') { updateObj2d.batMasterWin = true; }
                   if (envType === 'school') { updateObj2d.schoolWin = true; }
                   var baseXP2 = isAudioOnly2d ? 30 : (currentViewMode2d === 'echo' ? 20 : 10);
@@ -2357,7 +2398,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           }
         }
         loop2d();
-        return function() { running = false; if (rafId2d) { try { cancelAnimationFrame(rafId2d); } catch (_) {} rafId2d = 0; } };
+        return function() {
+          running = false;
+          if (rafId2d) { try { cancelAnimationFrame(rafId2d); } catch (_) {} rafId2d = 0; }
+          if (onKeyDown2d) document.removeEventListener('keydown', onKeyDown2d);
+          if (onKeyUp2d) document.removeEventListener('keyup', onKeyUp2d);
+          if (onBlur2d) { window.removeEventListener('blur', onBlur2d); keysRef.current = {}; }
+        };
       }, [seed, envType, has3D, viewMode, diffId, isContrast]);
 
       function cycleViewMode() {
@@ -2451,7 +2498,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
                   h('div', { style: { fontSize: '19px', fontWeight: 900, color: isContrast ? '#ffff00' : '#ffffff', lineHeight: 1.2 } }, t('stem.echotrainer.echo_navigator', '\uD83C\uDFA7 Echo Navigator')),
                   has3D ? h('span', { style: { fontSize: '10px', fontWeight: 800, color: isContrast ? '#000000' : '#ffffff', backgroundColor: isContrast ? '#00ff00' : '#2563eb', padding: '2px 8px', borderRadius: '6px' } }, '3D') : null),
                 h('div', { style: { fontSize: '12px', color: isContrast ? '#ffffff' : '#e0e7ff', marginTop: '2px' } }, t('stem.echotrainer.navigate_by_sound_alone', 'Navigate by sound alone')))),
-            h('button', { onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': t('stem.echotrainer.back_to_stem_lab', 'Back to STEAM Lab'), style: { backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.6)', border: isContrast ? '2px solid #ffff00' : '1px solid rgba(199,210,254,0.45)', borderRadius: '9px', padding: '6px 12px', color: isContrast ? '#ffff00' : '#ffffff', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' } }, ArrowLeft ? h(ArrowLeft, { size: 14 }) : '\u2190', t('stem.echotrainer.stem_lab', ' STEAM Lab'))),
+            h('button', { type: 'button', onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': t('stem.echotrainer.back_to_stem_lab', 'Back to STEAM Lab'), style: { backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.6)', border: isContrast ? '2px solid #ffff00' : '1px solid rgba(199,210,254,0.45)', borderRadius: '9px', padding: '6px 12px', color: isContrast ? '#ffff00' : '#ffffff', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' } }, ArrowLeft ? h(ArrowLeft, { size: 14 }) : '\u2190', t('stem.echotrainer.stem_lab', ' STEAM Lab'))),
           // Live Telemetry Pills
           h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '10px' } },
             h('span', { style: heroPillStyle }, currentEnv.icon + ' ' + currentEnv.name),
@@ -2479,8 +2526,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               })
             ),
             h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-              h('button', { onClick: emitClick, style: { padding: '10px 16px', borderRadius: '10px', border: isContrast ? '2px solid #00ff00' : '1px solid #c4b5fd', backgroundColor: isContrast ? '#000000' : (isDark ? '#6d28d9' : '#5b21b6'), color: isContrast ? '#00ff00' : '#fff', fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, t('stem.echotrainer.emit_sonar', 'Emit Sonar')),
-              h('button', { onClick: cycleViewMode, 'aria-label': tFmt('stem.echotrainer.aria_cycle_view', 'Cycle view mode: currently {mode}', { mode: d.viewMode || 'echo' }), style: { padding: '10px 14px', borderRadius: '10px', border: isContrast ? '2px solid #ffff00' : ('1px solid ' + viewTone.border), backgroundColor: isContrast ? '#000000' : viewTone.bg, color: isContrast ? '#ffff00' : viewTone.color, fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, viewTone.label),
+              h('button', { type: 'button', onClick: emitClick, style: { padding: '10px 16px', borderRadius: '10px', border: isContrast ? '2px solid #00ff00' : '1px solid #c4b5fd', backgroundColor: isContrast ? '#000000' : (isDark ? '#6d28d9' : '#5b21b6'), color: isContrast ? '#00ff00' : '#fff', fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, t('stem.echotrainer.emit_sonar', 'Emit Sonar')),
+              h('button', { type: 'button', onClick: cycleViewMode, 'aria-label': tFmt('stem.echotrainer.aria_cycle_view', 'Cycle view mode: currently {mode}', { mode: d.viewMode || 'echo' }), style: { padding: '10px 14px', borderRadius: '10px', border: isContrast ? '2px solid #ffff00' : ('1px solid ' + viewTone.border), backgroundColor: isContrast ? '#000000' : viewTone.bg, color: isContrast ? '#ffff00' : viewTone.color, fontSize: '13px', fontWeight: 900, cursor: 'pointer' } }, viewTone.label),
               h('span', { style: { alignSelf: 'center', padding: '6px 10px', borderRadius: '10px', border: isContrast ? '1px solid #ffff00' : ('1px solid ' + (isDark ? 'rgba(148,163,184,0.22)' : '#cbd5e1')), color: isContrast ? '#ffffff' : (isDark ? '#e2e8f0' : '#334155'), backgroundColor: isContrast ? '#000000' : (isDark ? 'rgba(15,23,42,0.56)' : 'rgba(255,255,255,0.8)'), fontSize: '12px', fontWeight: 800 } }, currentEnv.name + ' - ' + diff.label)
             )
           ),
@@ -2518,7 +2565,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               h('p', { style: { fontSize: '11px', color: isDark ? '#d6d3d1' : '#78350f', lineHeight: 1.5, margin: '6px 0 0 0' } }, t('stem.echotrainer.do_not_attempt_to_navigate_real_world_', 'Do not attempt to navigate real-world environments using echolocation skills developed in this simulation. Virtual environments are simplified and do not include the complexity, hazards, or unpredictability of real spaces. Success here does not indicate readiness for real-world navigation.')),
               h('p', { style: { fontSize: '10px', color: isDark ? '#a8a29e' : '#92400e', lineHeight: 1.4, margin: '8px 0 0 0', fontStyle: 'italic' } }, t('stem.echotrainer.research_thaler_et_al_2011_2021_demons', 'Research: Thaler et al. (2011, 2021) demonstrated that both blind and sighted individuals can develop echolocation skills through training. This tool is inspired by the work of Daniel Kish and World Access for the Blind.'))
             ),
-            h('button', { onClick: function() { upd('disclaimerDismissed', true); }, 'aria-label': t('stem.echotrainer.acknowledge_safety_disclaimer', 'Acknowledge safety disclaimer'), style: { padding: '6px 14px', borderRadius: '6px', background: '#fbbf24', color: '#451a03', border: '1px solid #d97706', fontSize: '11px', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' } }, t('stem.echotrainer.i_understand', 'I Understand'))
+            h('button', { type: 'button', onClick: function() { upd('disclaimerDismissed', true); }, 'aria-label': t('stem.echotrainer.acknowledge_safety_disclaimer', 'Acknowledge safety disclaimer'), style: { padding: '6px 14px', borderRadius: '6px', background: '#fbbf24', color: '#451a03', border: '1px solid #d97706', fontSize: '11px', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' } }, t('stem.echotrainer.i_understand', 'I Understand'))
           )
         ),
         h('details', { style: { fontSize: '10px', color: isDark ? '#94a3b8' : '#64748b', marginBottom: '4px' } },
@@ -2531,27 +2578,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             h('p', { style: { margin: 0, fontStyle: 'italic' } }, t('stem.echotrainer.daniel_kish_who_is_blind_navigates_by_', '\uD83D\uDC1D Daniel Kish, who is blind, navigates by bicycle using tongue clicks. He has taught echolocation to thousands of people worldwide through World Access for the Blind.'))
           )
         ),
-        h('details', { open: false, style: { marginBottom: '8px', borderRadius: '12px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), overflow: 'hidden' } },
+        h('details', { style: { marginBottom: '8px', borderRadius: '12px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), overflow: 'hidden' } },
           h('summary', { style: { padding: '10px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569', background: isDark ? '#1e293b' : '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' } }, t('stem.echotrainer.how_echolocation_works', '\uD83D\uDCDA How Echolocation Works')),
           h('div', { style: { padding: '12px 14px', background: isDark ? '#0f172a' : '#fff' } },
-            h('svg', { viewBox: '0 0 500 172', width: '100%', preserveAspectRatio: 'xMidYMid meet', style: { display: 'block', width: '100%', height: 'auto', maxHeight: '150px' }, 'aria-label': t('stem.echotrainer.diagram_showing_how_echolocation_works', 'Diagram showing how echolocation works: a click travels to a wall, bounces back, and the time delay tells you the distance') },
-              h('rect', { x: 0, y: 0, width: 500, height: 172, fill: isContrast ? '#000000' : (isDark ? '#0f172a' : '#f8fafc'), rx: 8 }),
-              h('circle', { cx: 60, cy: 80, r: 18, fill: '#6366f1', opacity: 0.9 }),
-              h('text', { x: 60, y: 85, textAnchor: 'middle', fontSize: '16', fill: '#fff' }, '\uD83C\uDFA7'),
-              h('text', { x: 60, y: 115, textAnchor: 'middle', fontSize: '10.5', fill: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569'), fontWeight: 700 }, 'You'),
-              h('rect', { x: 410, y: 20, width: 12, height: 112, fill: isContrast ? '#ffff00' : '#475569', rx: 3 }),
-              h('text', { x: 416, y: 150, textAnchor: 'middle', fontSize: '10.5', fill: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569'), fontWeight: 700 }, t('stem.echotrainer.wall', 'Wall')),
-              h('circle', { cx: 80, cy: 70, r: 0, fill: 'none', stroke: '#7c3aed', strokeWidth: 2, opacity: 0.7 }, h('animate', { attributeName: 'r', from: '0', to: '160', dur: '2s', repeatCount: 'indefinite' }), h('animate', { attributeName: 'opacity', from: '0.7', to: '0', dur: '2s', repeatCount: 'indefinite' })),
-              h('circle', { cx: 80, cy: 70, r: 0, fill: 'none', stroke: '#7c3aed', strokeWidth: 1.5, opacity: 0.5 }, h('animate', { attributeName: 'r', from: '0', to: '160', dur: '2s', begin: '0.5s', repeatCount: 'indefinite' }), h('animate', { attributeName: 'opacity', from: '0.5', to: '0', dur: '2s', begin: '0.5s', repeatCount: 'indefinite' })),
-              h('circle', { cx: 410, cy: 70, r: 0, fill: 'none', stroke: '#22c55e', strokeWidth: 2, opacity: 0 }, h('animate', { attributeName: 'r', from: '0', to: '180', dur: '2s', begin: '1s', repeatCount: 'indefinite' }), h('animate', { attributeName: 'opacity', values: '0;0.6;0', dur: '2s', begin: '1s', repeatCount: 'indefinite' })),
-              h('line', { x1: 90, y1: 68, x2: 200, y2: 68, stroke: isContrast ? '#ffff00' : '#a78bfa', strokeWidth: 1.5, strokeDasharray: '4,3', markerEnd: 'url(#arrowOut)' }),
-              h('text', { x: 145, y: 60, textAnchor: 'middle', fontSize: '10', fill: isContrast ? '#ffff00' : (isDark ? '#c4b5fd' : '#6d28d9'), fontWeight: 700 }, t('stem.echotrainer.click', 'Click \u2192')),
-              h('line', { x1: 390, y1: 92, x2: 280, y2: 92, stroke: isContrast ? '#00ff00' : '#4ade80', strokeWidth: 1.5, strokeDasharray: '4,3', markerEnd: 'url(#arrowBack)' }),
-              h('text', { x: 332, y: 109, textAnchor: 'middle', fontSize: '10', fill: isContrast ? '#00ff00' : (isDark ? '#4ade80' : '#15803d'), fontWeight: 700 }, t('stem.echotrainer.echo', '\u2190 Echo')),
-              h('rect', { x: 170, y: 128, width: 160, height: 26, rx: 6, fill: isContrast ? '#000000' : (isDark ? '#1e293b' : '#f0f9ff'), stroke: isContrast ? '#ffff00' : (isDark ? '#334155' : '#bae6fd') }),
-              h('text', { x: 250, y: 145, textAnchor: 'middle', fontSize: '10.5', fill: isContrast ? '#ffff00' : (isDark ? '#7dd3fc' : '#0369a1'), fontWeight: 700 }, t('stem.echotrainer.delay_distance_2_343_m_s', 'Delay = Distance \u00d7 2 \u00f7 343 m/s')),
-              h('defs', null, h('marker', { id: 'arrowOut', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#a78bfa' })), h('marker', { id: 'arrowBack', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#4ade80' })))
-            ),
+            (function() {
+              var etReducedSvg = !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+              return h('svg', { viewBox: '0 0 500 172', width: '100%', preserveAspectRatio: 'xMidYMid meet', style: { display: 'block', width: '100%', height: 'auto', maxHeight: '150px' }, 'aria-label': t('stem.echotrainer.diagram_showing_how_echolocation_works', 'Diagram showing how echolocation works: a click travels to a wall, bounces back, and the time delay tells you the distance') },
+                h('rect', { x: 0, y: 0, width: 500, height: 172, fill: isContrast ? '#000000' : (isDark ? '#0f172a' : '#f8fafc'), rx: 8 }),
+                h('circle', { cx: 60, cy: 80, r: 18, fill: '#6366f1', opacity: 0.9 }),
+                h('text', { x: 60, y: 85, textAnchor: 'middle', fontSize: '16', fill: '#fff' }, '\uD83C\uDFA7'),
+                h('text', { x: 60, y: 115, textAnchor: 'middle', fontSize: '10.5', fill: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569'), fontWeight: 700 }, 'You'),
+                h('rect', { x: 410, y: 20, width: 12, height: 112, fill: isContrast ? '#ffff00' : '#475569', rx: 3 }),
+                h('text', { x: 416, y: 150, textAnchor: 'middle', fontSize: '10.5', fill: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569'), fontWeight: 700 }, t('stem.echotrainer.wall', 'Wall')),
+                etReducedSvg ? h('circle', { cx: 80, cy: 70, r: 72, fill: 'none', stroke: '#7c3aed', strokeWidth: 2, opacity: 0.45 }) : h('circle', { cx: 80, cy: 70, r: 0, fill: 'none', stroke: '#7c3aed', strokeWidth: 2, opacity: 0.7 }, h('animate', { attributeName: 'r', from: '0', to: '160', dur: '2s', repeatCount: 'indefinite' }), h('animate', { attributeName: 'opacity', from: '0.7', to: '0', dur: '2s', repeatCount: 'indefinite' })),
+                etReducedSvg ? h('circle', { cx: 80, cy: 70, r: 120, fill: 'none', stroke: '#7c3aed', strokeWidth: 1.5, opacity: 0.3 }) : h('circle', { cx: 80, cy: 70, r: 0, fill: 'none', stroke: '#7c3aed', strokeWidth: 1.5, opacity: 0.5 }, h('animate', { attributeName: 'r', from: '0', to: '160', dur: '2s', begin: '0.5s', repeatCount: 'indefinite' }), h('animate', { attributeName: 'opacity', from: '0.5', to: '0', dur: '2s', begin: '0.5s', repeatCount: 'indefinite' })),
+                etReducedSvg ? h('circle', { cx: 410, cy: 70, r: 90, fill: 'none', stroke: '#22c55e', strokeWidth: 2, opacity: 0.4 }) : h('circle', { cx: 410, cy: 70, r: 0, fill: 'none', stroke: '#22c55e', strokeWidth: 2, opacity: 0 }, h('animate', { attributeName: 'r', from: '0', to: '180', dur: '2s', begin: '1s', repeatCount: 'indefinite' }), h('animate', { attributeName: 'opacity', values: '0;0.6;0', dur: '2s', begin: '1s', repeatCount: 'indefinite' })),
+                h('line', { x1: 90, y1: 68, x2: 200, y2: 68, stroke: isContrast ? '#ffff00' : '#a78bfa', strokeWidth: 1.5, strokeDasharray: '4,3', markerEnd: 'url(#arrowOut)' }),
+                h('text', { x: 145, y: 60, textAnchor: 'middle', fontSize: '10', fill: isContrast ? '#ffff00' : (isDark ? '#c4b5fd' : '#6d28d9'), fontWeight: 700 }, t('stem.echotrainer.click', 'Click \u2192')),
+                h('line', { x1: 390, y1: 92, x2: 280, y2: 92, stroke: isContrast ? '#00ff00' : '#4ade80', strokeWidth: 1.5, strokeDasharray: '4,3', markerEnd: 'url(#arrowBack)' }),
+                h('text', { x: 332, y: 109, textAnchor: 'middle', fontSize: '10', fill: isContrast ? '#00ff00' : (isDark ? '#4ade80' : '#15803d'), fontWeight: 700 }, t('stem.echotrainer.echo', '\u2190 Echo')),
+                h('rect', { x: 170, y: 128, width: 160, height: 26, rx: 6, fill: isContrast ? '#000000' : (isDark ? '#1e293b' : '#f0f9ff'), stroke: isContrast ? '#ffff00' : (isDark ? '#334155' : '#bae6fd') }),
+                h('text', { x: 250, y: 145, textAnchor: 'middle', fontSize: '10.5', fill: isContrast ? '#ffff00' : (isDark ? '#7dd3fc' : '#0369a1'), fontWeight: 700 }, t('stem.echotrainer.delay_distance_2_343_m_s', 'Delay = Distance \u00d7 2 \u00f7 343 m/s')),
+                h('defs', null, h('marker', { id: 'arrowOut', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#a78bfa' })), h('marker', { id: 'arrowBack', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#4ade80' })))
+              );
+            })(),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '10px', fontSize: '10px' } },
               h('div', { style: { padding: '8px', borderRadius: '8px', background: isDark ? '#1e293b' : '#f5f3ff', border: '1px solid ' + (isDark ? '#334155' : '#e9d5ff'), textAlign: 'center' } }, h('div', { style: { fontSize: '16px', marginBottom: '2px' } }, '\uD83D\uDD0A'), h('div', { style: { fontWeight: 700, color: etint('#7c3aed') } }, t('stem.echotrainer.click_2', 'Click')), h('div', { style: { color: isDark ? '#94a3b8' : '#475569', lineHeight: 1.3 } }, t('stem.echotrainer.press_space_to_emit_a_tongue_click_sou', 'Press Space to emit a tongue click sound'))),
               h('div', { style: { padding: '8px', borderRadius: '8px', background: isDark ? '#1e293b' : '#ecfdf5', border: '1px solid ' + (isDark ? '#334155' : '#bbf7d0'), textAlign: 'center' } }, h('div', { style: { fontSize: '16px', marginBottom: '2px' } }, '\uD83C\uDFA7'), h('div', { style: { fontWeight: 700, color: etint('#22c55e') } }, t('stem.echotrainer.listen', 'Listen')), h('div', { style: { color: isDark ? '#94a3b8' : '#475569', lineHeight: 1.3 } }, t('stem.echotrainer.echoes_return_from_different_direction', 'Echoes return from different directions via headphones'))),
@@ -2577,7 +2627,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             var envName = t('stem.echotrainer.env_' + env.id + '_name', env.name);
             var envDesc = t('stem.echotrainer.env_' + env.id + '_desc', env.desc);
             var envHint = t('stem.echotrainer.unlock_' + env.id, (ENV_UNLOCK[env.id] && ENV_UNLOCK[env.id].label) || '');
-            return h('button', { key: env.id,
+            return h('button', { type: 'button', key: env.id,
               disabled: !unlocked,
               'aria-label': unlocked
                 ? tFmt('stem.echotrainer.aria_env_open', '{name}: {desc}{threeD}', { name: envName, desc: envDesc, threeD: is3D ? ' ' + t('stem.echotrainer.three_d_available', '(3D available)') : '' })
@@ -2597,21 +2647,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           })
         ),
         h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } },
-          h('button', { onClick: emitClick, style: { padding: '8px 20px', borderRadius: '8px', border: 'none', background: '#7c3aed', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer' } }, t('stem.echotrainer.click_space', '\uD83D\uDD0A Click (Space)')),
-          h('button', { onClick: function() { upd('clickType', clickType === 'tongue' ? 'cane' : 'tongue'); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_sound_changed', 'Sound: {sound}', { sound: clickType === 'tongue' ? t('stem.echotrainer.sound_cane_tap', 'Cane tap') : t('stem.echotrainer.sound_tongue_click', 'Tongue click') })); }, style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, clickType === 'tongue' ? '\uD83D\uDC45 Tongue Click' : '\uD83E\uDDAF Cane Tap'),
-          h('button', { onClick: cycleViewMode, 'aria-label': tFmt('stem.echotrainer.aria_cycle_view', 'Cycle view mode: currently {mode}', { mode: d.viewMode || 'echo' }), style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + viewModeColor + '80', background: isDark ? '#1e293b' : '#fff', color: viewModeColor, fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, viewModeLabel),
-          h('button', { onClick: function() { upd('multiBounce', !multiBounce); if (announceToSR) announceToSR(multiBounce ? t('stem.echotrainer.sr_multibounce_off', 'Multi-bounce echoes off') : t('stem.echotrainer.sr_multibounce_on', 'Multi-bounce echoes on \u2014 more realistic but harder')); }, 'aria-label': multiBounce ? 'Turn off multi-bounce echoes' : 'Turn on multi-bounce echoes (advanced)', 'aria-pressed': multiBounce ? 'true' : 'false', style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (multiBounce ? '#f59e0b' : (isDark ? '#334155' : '#e2e8f0')), background: multiBounce ? '#78350f' : (isDark ? '#1e293b' : '#fff'), color: multiBounce ? '#fbbf24' : (isDark ? '#94a3b8' : '#475569'), fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, multiBounce ? '\uD83D\uDD04 Multi-Bounce ON' : '\uD83D\uDD04 Multi-Bounce'),
+          h('button', { type: 'button', onClick: emitClick, style: { padding: '8px 20px', borderRadius: '8px', border: 'none', background: '#7c3aed', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer' } }, t('stem.echotrainer.click_space', '\uD83D\uDD0A Click (Space)')),
+          h('button', { type: 'button', onClick: function() { upd('clickType', clickType === 'tongue' ? 'cane' : 'tongue'); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_sound_changed', 'Sound: {sound}', { sound: clickType === 'tongue' ? t('stem.echotrainer.sound_cane_tap', 'Cane tap') : t('stem.echotrainer.sound_tongue_click', 'Tongue click') })); }, style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, clickType === 'tongue' ? '\uD83D\uDC45 Tongue Click' : '\uD83E\uDDAF Cane Tap'),
+          h('button', { type: 'button', onClick: cycleViewMode, 'aria-label': tFmt('stem.echotrainer.aria_cycle_view', 'Cycle view mode: currently {mode}', { mode: d.viewMode || 'echo' }), style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + viewModeColor + '80', background: isDark ? '#1e293b' : '#fff', color: viewModeColor, fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, viewModeLabel),
+          h('button', { type: 'button', onClick: function() { upd('multiBounce', !multiBounce); if (announceToSR) announceToSR(multiBounce ? t('stem.echotrainer.sr_multibounce_off', 'Multi-bounce echoes off') : t('stem.echotrainer.sr_multibounce_on', 'Multi-bounce echoes on \u2014 more realistic but harder')); }, 'aria-label': multiBounce ? 'Turn off multi-bounce echoes' : 'Turn on multi-bounce echoes (advanced)', 'aria-pressed': multiBounce ? 'true' : 'false', style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (multiBounce ? '#f59e0b' : (isDark ? '#334155' : '#e2e8f0')), background: multiBounce ? '#78350f' : (isDark ? '#1e293b' : '#fff'), color: multiBounce ? '#fbbf24' : (isDark ? '#94a3b8' : '#475569'), fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, multiBounce ? '\uD83D\uDD04 Multi-Bounce ON' : '\uD83D\uDD04 Multi-Bounce'),
           h('button', {
+            type: 'button',
             onClick: startDistanceChallenge,
             'aria-label': t('stem.echotrainer.start_a_distance_estimation_challenge', 'Start a distance estimation challenge'),
             style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#6d28d9' : '#c4b5fd'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#ddd6fe' : '#6d28d9', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
           }, t('stem.echotrainer.distance_quiz', '\uD83D\uDCCF Distance Quiz')),
           h('button', {
+            type: 'button',
             onClick: startMaterialQuiz,
             'aria-label': t('stem.echotrainer.start_a_material_identification_quiz', 'Start a material identification quiz'),
             style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#92400e' : '#f59e0b'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#fde68a' : '#92400e', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
           }, t('stem.echotrainer.material_quiz', '\uD83E\uDDCA Material Quiz')),
           WAYPOINT_ROUTES[envType] ? h('button', {
+            type: 'button',
             onClick: function() {
               var newMode = !waypointMode;
               updMulti({ waypointMode: newMode, waypointIdx: 0, goalFoundThisRun: false });
@@ -2621,8 +2674,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             'aria-label': waypointMode ? 'Disable waypoint challenge' : 'Enable waypoint navigation challenge',
             style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (waypointMode ? '#22c55e' : (isDark ? '#334155' : '#e2e8f0')), background: waypointMode ? '#166534' : (isDark ? '#1e293b' : '#fff'), color: waypointMode ? '#86efac' : (isDark ? '#94a3b8' : '#475569'), fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
           }, waypointMode ? '\uD83D\uDEA9 Waypoint ON (' + (d.waypointIdx || 0) + '/' + WAYPOINT_ROUTES[envType].points.length + ')' : '\uD83D\uDEA9 Waypoint Challenge') : null,
-          h('button', { onClick: function() { var newSeed = Math.floor(Math.random() * 999999); updMulti({ seed: newSeed, viewMode: 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0, waypointMode: false, waypointIdx: 0, matQuiz: null }); mapRef.current = null; agentsRef.current = []; playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 }; yawRef.current = -Math.PI / 2; pitchRef.current = 0; carHitRef.current = false; goalFoundRef.current = false; coverageRef.current = null; runStartRef.current = Date.now(); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_regenerated', 'New {env} environment generated.', { env: envType })); }, 'aria-label': t('stem.echotrainer.generate_new_random_layout', 'Generate new random layout'), style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, t('stem.echotrainer.new_layout', '\uD83C\uDFB2 New Layout')),
-          d.goalFoundThisRun && h('span', { style: { padding: '8px 16px', borderRadius: '8px', background: '#dcfce7', color: '#166534', fontSize: '12px', fontWeight: 800 } }, '\uD83C\uDFC6 Goal Found!' + ((d.viewMode || 'echo') === 'audio' ? ' (Blind! \uD83C\uDFA7)' : ''))
+          h('button', { type: 'button', onClick: function() { var newSeed = Math.floor(Math.random() * 999999); updMulti({ seed: newSeed, viewMode: 'echo', hasRevealed: false, goalFoundThisRun: false, clicks: 0, bumps: 0, waypointMode: false, waypointIdx: 0, matQuiz: null }); mapRef.current = null; agentsRef.current = []; playerRef.current = { x: 400, y: 700, angle: -Math.PI / 2 }; yawRef.current = -Math.PI / 2; pitchRef.current = 0; carHitRef.current = false; goalFoundRef.current = false; coverageRef.current = null; runStartRef.current = Date.now(); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_regenerated', 'New {env} environment generated.', { env: envType })); }, 'aria-label': t('stem.echotrainer.generate_new_random_layout', 'Generate new random layout'), style: { padding: '8px 16px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), background: isDark ? '#1e293b' : '#fff', color: isDark ? '#94a3b8' : '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, t('stem.echotrainer.new_layout', '\uD83C\uDFB2 New Layout')),
+          d.goalFoundThisRun && h('span', { style: isContrast ? { padding: '8px 16px', borderRadius: '8px', background: '#000000', color: '#00ff00', border: '1px solid #ffff00', fontSize: '12px', fontWeight: 800 } : { padding: '8px 16px', borderRadius: '8px', background: '#dcfce7', color: '#166534', fontSize: '12px', fontWeight: 800 } }, '\uD83C\uDFC6 Goal Found!' + ((d.viewMode || 'echo') === 'audio' ? ' (Blind! \uD83C\uDFA7)' : ''))
         ),
         // ── Waypoint HUD info ──
         (waypointMode && WAYPOINT_ROUTES[envType]) ? h('div', {
@@ -2635,7 +2688,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           h('span', { style: { fontSize: '11px', fontWeight: 700, color: isDark ? '#94a3b8' : '#475569' } }, 'Difficulty:'),
           DIFFICULTY.map(function(dLvl) {
             var isActive = diffId === dLvl.id;
-            return h('button', { key: dLvl.id, 'aria-label': tFmt('stem.echotrainer.aria_difficulty', '{name}: {desc}', { name: dLvl.label, desc: dLvl.desc }), 'aria-pressed': isActive ? 'true' : 'false', onClick: function() { upd('difficulty', dLvl.id); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_difficulty', 'Difficulty: {name}. {desc}', { name: dLvl.label, desc: dLvl.desc })); }, style: { padding: '5px 12px', borderRadius: '8px', border: '1px solid ' + (isActive ? '#818cf8' : (isDark ? '#334155' : '#e2e8f0')), background: isActive ? '#4338ca' : (isDark ? '#1e293b' : '#fff'), color: isActive ? '#fff' : (isDark ? '#94a3b8' : '#475569'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, dLvl.icon + ' ' + dLvl.label);
+            return h('button', { type: 'button', key: dLvl.id, 'aria-label': tFmt('stem.echotrainer.aria_difficulty', '{name}: {desc}', { name: dLvl.label, desc: dLvl.desc }), 'aria-pressed': isActive ? 'true' : 'false', onClick: function() { upd('difficulty', dLvl.id); if (announceToSR) announceToSR(tFmt('stem.echotrainer.sr_difficulty', 'Difficulty: {name}. {desc}', { name: dLvl.label, desc: dLvl.desc })); }, style: { padding: '5px 12px', borderRadius: '8px', border: '1px solid ' + (isActive ? '#818cf8' : (isDark ? '#334155' : '#e2e8f0')), background: isActive ? '#4338ca' : (isDark ? '#1e293b' : '#fff'), color: isActive ? '#fff' : (isDark ? '#94a3b8' : '#475569'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, dLvl.icon + ' ' + dLvl.label);
           })
         ),
         h('details', { style: { fontSize: '11px', borderRadius: '8px', border: '1px solid ' + (isDark ? '#334155' : '#e2e8f0'), overflow: 'hidden' } },
@@ -2674,7 +2727,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         (envType === 'simple_room' && tutStep < 4) ? h('div', { role: 'region', 'aria-label': tFmt('stem.echotrainer.aria_tutorial_step', 'Tutorial step {n} of 4', { n: tutStep + 1 }), tabIndex: 0, style: { background: isDark ? '#0f172a' : '#eff6ff', border: '2px solid #3b82f6', borderRadius: '12px', padding: '16px', position: 'relative', zIndex: 10 } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } }, h('span', { style: { fontSize: '14px', fontWeight: 800, color: etint('#3b82f6') } }, tFmt('stem.echotrainer.tut_counter', 'Tutorial {n}/4', { n: tutStep + 1 })), h('span', { style: { fontSize: '12px', fontWeight: 700, color: isDark ? '#e2e8f0' : '#1e293b' } }, t('stem.echotrainer.tut_' + tutStep + '_title', TUTORIAL_STEPS[tutStep].title))),
           h('p', { style: { fontSize: '12px', color: isDark ? '#94a3b8' : '#475569', lineHeight: 1.6, margin: '0 0 10px 0' } }, t('stem.echotrainer.tut_' + tutStep + '_text', TUTORIAL_STEPS[tutStep].text)),
-          h('button', { onClick: function() { var next = tutStep + 1; upd('tutStep', next); if (next >= 4 && announceToSR) announceToSR(t('stem.echotrainer.tutorial_complete_you_are_ready_to_exp', 'Tutorial complete! You are ready to explore on your own.')); }, 'aria-label': tutStep < 3 ? 'Next tutorial step' : 'Complete tutorial', style: { padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#1d4ed8', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, tutStep < 3 ? 'Next \u2192' : 'Got It!')
+          h('button', { type: 'button', onClick: function() { var next = tutStep + 1; upd('tutStep', next); if (next >= 4 && announceToSR) announceToSR(t('stem.echotrainer.tutorial_complete_you_are_ready_to_exp', 'Tutorial complete! You are ready to explore on your own.')); }, 'aria-label': tutStep < 3 ? 'Next tutorial step' : 'Complete tutorial', style: { padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#1d4ed8', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, tutStep < 3 ? 'Next \u2192' : 'Got It!')
         ) : null,
         // Distance challenge UI
         (d.distChallenge && d.distChallenge.active && !d.distChallenge.result) ? h('div', {
@@ -2688,6 +2741,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
             [0.5, 1, 2, 3, 5, 8, 12, 20].map(function(est) {
               return h('button', {
+                type: 'button',
                 key: est,
                 onClick: function() {
                   var actual = d.distChallenge.targetDist;
@@ -2717,6 +2771,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           d.distChallenge.result,
           ' ',
           h('button', {
+            type: 'button',
             onClick: function() { upd('distChallenge', null); },
             style: { marginLeft: '8px', padding: '4px 10px', borderRadius: '6px', border: 'none', background: '#4f46e5', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
           }, t('stem.echotrainer.dismiss', 'Dismiss'))
@@ -2734,6 +2789,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             (matQuiz.options || []).map(function(opt) {
               var hint = matHints[opt] || '';
               return h('button', {
+                type: 'button',
                 key: opt,
                 onClick: function() {
                   var correct = opt === matQuiz.correctMat;
@@ -2760,6 +2816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           matQuiz.result,
           ' ',
           h('button', {
+            type: 'button',
             onClick: function() { upd('matQuiz', null); },
             style: { marginLeft: '8px', padding: '4px 10px', borderRadius: '6px', border: 'none', background: '#4f46e5', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
           }, t('stem.echotrainer.dismiss_2', 'Dismiss'))
@@ -2770,6 +2827,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           h('h4', { style: { fontWeight: 800, fontSize: '15px', marginBottom: '4px' } }, t('stem.echotrainer.echo_navigator_3d_mode_unresolved', '⚠️ Echo Navigator 3D Mode Unresolved')),
           h('p', { style: { marginBottom: '12px', fontSize: '11px', color: isDark ? '#fca5a5' : '#7f1d1d' } }, t('stem.echotrainer.webgl_failed_to_initialize_your_device', 'WebGL failed to initialize. Your device or browser may not support 3D hardware acceleration. The tool has automatically fallen back to 2D Audio/Tactile mode, but you can retry 3D Mode below.')),
           h('button', {
+            type: 'button',
             onClick: function() { upd('webglError', false); },
             style: { padding: '6px 12px', borderRadius: '6px', border: 'none', background: '#dc2626', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
           }, t('stem.echotrainer.retry_3d_mode', 'Retry 3D Mode'))
@@ -2930,12 +2988,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               })
             ),
             h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 } },
-              h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ d: iq.distance, s: iq.speed, sr: iq.surface, ms: echoMs.toFixed(1), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: isDark ? '#0f172a' : '#f1f5f9', color: isDark ? '#cbd5e1' : '#475569', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, t('stem.echotrainer.log', '\uD83D\uDCCB Log')),
-              h('button', { onClick: function() { setIQ({ distance: 10, speed: 340, surface: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: isDark ? '#94a3b8' : '#64748b', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, t('stem.echotrainer.reset', '\u21BA Reset'))
+              h('button', { type: 'button', onClick: function() { setIQ({ log: (iq.log || []).concat([{ d: iq.distance, s: iq.speed, sr: iq.surface, ms: echoMs.toFixed(1), st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: isDark ? '#0f172a' : '#f1f5f9', color: isDark ? '#cbd5e1' : '#475569', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, t('stem.echotrainer.log', '\uD83D\uDCCB Log')),
+              h('button', { type: 'button', onClick: function() { setIQ({ distance: 10, speed: 340, surface: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: isDark ? '#94a3b8' : '#64748b', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, t('stem.echotrainer.reset', '\u21BA Reset'))
             ),
             h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.echotrainer.hypothesis_input', 'Echo distance hypothesis'), placeholder: t('stem.echotrainer.hypothesis_at_what_distance_does_echo_', 'Hypothesis: At what distance does echo become detectable?'),
               style: { width: '100%', minHeight: 50, padding: 6, background: isDark ? '#0f172a' : '#fff', color: isDark ? '#e2e8f0' : '#1e293b', border: '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: etint('#fbbf24'), border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, t('stem.echotrainer.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
+            !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: etint('#fbbf24'), border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, t('stem.echotrainer.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
             iq.stuckRevealed && h('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: isDark ? '#cbd5e1' : '#475569', marginBottom: 8 } },
               h('ul', { style: { margin: 0, paddingLeft: 18 } },
                 h('li', null, t('stem.echotrainer.sound_in_air_343_m_s_investigate_the_f', 'Sound in air = 343 m/s. Investigate the formula.')),

@@ -7,7 +7,7 @@
 // Category: self-regulation
 // ============================================================================
 
-window.SelHub = window.SelHub || {
+if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
   _registry: {}, _order: [],
   registerTool: function(id, config) {
     config.id = id;
@@ -23,9 +23,19 @@ window.SelHub = window.SelHub || {
   }
 };
 
-if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset'))) {
+if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset'))) {
 (function() {
   'use strict';
+
+  function _srIsMuted() {
+    try {
+      if (typeof window === 'undefined') return true;
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+      if (window._alloGlobalMute === true || window._alloGlobalMuted === true || window.__alloMuted === true) return true;
+      if (window.__alloAudio && window.__alloAudio.muted === true) return true;
+    } catch (_) {}
+    return false;
+  }
 
   var TOOL_ID = 'somaticReset';
 
@@ -474,7 +484,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
-      var rawState = (ctx.toolData && ctx.toolData[TOOL_ID]) || {};
+      var _rawSlot = ctx && ctx.toolData && ctx.toolData[TOOL_ID];
+      var rawState = (_rawSlot && typeof _rawSlot === 'object' && !Array.isArray(_rawSlot)) ? _rawSlot : {};
       var d = Object.assign({}, defaultState(), rawState);
       d.pre = clampRating(d.pre);
       d.post = clampRating(d.post);
@@ -493,7 +504,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         ? rawState.guidanceMode
         : (rawState.showGuidance === false ? 'hidden' : 'full')).id;
       d.showGuidance = d.guidanceMode !== 'hidden';
-      d.logs = Array.isArray(d.logs) ? d.logs : [];
+      d.logs = Array.isArray(d.logs) ? d.logs.filter(function(item) { return item && typeof item === 'object' && !Array.isArray(item); }) : [];
 
       var theme = (ctx && ctx.theme) || {};
       var palette = theme.palette || ctx.themePalette || {};
@@ -621,8 +632,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
           !!(selectedProtocol.cadence && d.pacedBreathing) &&
           !reduceMotion;
         if (!shouldAnimate) {
-          if (visualFrameRef.current !== null && typeof window.cancelAnimationFrame === 'function') {
-            window.cancelAnimationFrame(visualFrameRef.current);
+          if (visualFrameRef.current !== null) {
+            if (typeof window.cancelAnimationFrame === 'function') window.cancelAnimationFrame(visualFrameRef.current);
+            else window.clearTimeout(visualFrameRef.current);
           }
           visualFrameRef.current = null;
           visualFrameLastPaintRef.current = 0;
@@ -688,7 +700,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
           return undefined;
         }
         var breath = breathState(selectedProtocol, remaining);
-        if (lastPhaseSoundRef.current && lastPhaseSoundRef.current !== breath.phase && typeof ctx.beep === 'function') {
+        if (lastPhaseSoundRef.current && lastPhaseSoundRef.current !== breath.phase && typeof ctx.beep === 'function' && !_srIsMuted()) {
           ctx.beep(breath.phase === 'in' ? 523 : 392, 0.08, 0.025);
         }
         lastPhaseSoundRef.current = breath.phase;
@@ -730,7 +742,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         deadlineRef.current = null;
         pausedRemainingMsRef.current = 0;
         setIsRunning(false);
-        if (d.soundEnabled && typeof ctx.beep === 'function') ctx.beep(440, 0.35, 0.06);
+        if (d.soundEnabled && typeof ctx.beep === 'function' && !_srIsMuted()) ctx.beep(440, 0.35, 0.06);
         setToolState({
           view: 'after',
           post: d.pre,
@@ -748,10 +760,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         }
         if (typeof ctx.setToolData === 'function') {
           ctx.setToolData(function(previous) {
-            var prior = (previous && previous[TOOL_ID]) || defaultState();
+            var basePrev = (previous && typeof previous === 'object' && !Array.isArray(previous)) ? previous : {};
+            var priorSlot = basePrev[TOOL_ID];
+            var prior = (priorSlot && typeof priorSlot === 'object' && !Array.isArray(priorSlot)) ? priorSlot : defaultState();
             var nextState = Object.assign({}, prior, patch);
             var outer = {}; outer[TOOL_ID] = nextState;
-            return Object.assign({}, previous, outer);
+            return Object.assign({}, basePrev, outer);
           });
         }
       }
@@ -785,6 +799,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         if (visualPreviewUnavailableReason(protocol)) return;
         clearVisualPreviewTimers(true);
         var totalMs = (protocol.cadence[0] + protocol.cadence[1]) * 1000;
+        if (!(totalMs > 0)) return;
         visualPreviewStartedAtRef.current = Date.now();
         setVisualPreviewPhase('in');
         setVisualPreviewProgress(0);
@@ -843,7 +858,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         deadlineRef.current = Date.now() + nextMs;
         setVisualClockNow(Date.now());
         setIsRunning(true);
-        if (d.soundEnabled && typeof ctx.beep === 'function') ctx.beep(392, 0.2, 0.05);
+        if (d.soundEnabled && typeof ctx.beep === 'function' && !_srIsMuted()) ctx.beep(392, 0.2, 0.05);
         announce(resuming ? 'Practice resumed.' : 'Practice started.');
       }
 
@@ -905,6 +920,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
       }
 
       function handleRemovalDialogKeyDown(event) {
+        if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.altKey || event.metaKey) return;
         if (event.key === 'Escape') {
           event.preventDefault();
           closeRemovalConfirm();
@@ -915,10 +931,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         if (!buttons.length) return;
         var first = buttons[0];
         var last = buttons[buttons.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
+        var activeEl = typeof document !== 'undefined' ? document.activeElement : null;
+        if (event.shiftKey && activeEl === first) {
           event.preventDefault();
           last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
+        } else if (!event.shiftKey && activeEl === last) {
           event.preventDefault();
           first.focus();
         }
@@ -1266,17 +1283,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         return protocol.name + '. ' + protocol.setup + ' ' + instructionFor(protocol, gradeBand) + ' ' + breath + ' You may stay still or stop at any time.';
       }
 
+      var srMountedRef = React.useRef(true);
+      React.useEffect(function() {
+        srMountedRef.current = true;
+        return function() { srMountedRef.current = false; };
+      }, []);
+
       function speakGuidance() {
         if (typeof ctx.callTTS !== 'function' || isSpeaking) return;
+        if (_srIsMuted()) {
+          announce('Audio is muted.');
+          return;
+        }
         setIsSpeaking(true);
         announce('Reading the practice guidance aloud.');
         Promise.resolve(ctx.callTTS(guidanceText(selectedProtocol), ctx.selectedVoice, 0.9))
           .then(function(url) {
+            if (!srMountedRef.current) return;
             // Student AI off: the hub reads the guidance with the device voice instead.
             if (!url && window.__alloStudentAiDisabled !== true) toast('Voice guidance is unavailable right now.', 'info');
             setIsSpeaking(false);
           })
           .catch(function() {
+            if (!srMountedRef.current) return;
             setIsSpeaking(false);
             toast('Voice guidance is unavailable right now.', 'info');
           });
@@ -1569,6 +1598,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
       }
 
       function handlePracticeKeyDown(event) {
+        if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.altKey || event.metaKey) return;
         if (!quietView || event.key !== 'Escape') return;
         event.preventDefault();
         setQuietView(false);

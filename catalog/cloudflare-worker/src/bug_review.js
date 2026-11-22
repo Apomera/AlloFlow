@@ -38,6 +38,11 @@ function eventFromMetadata(metadata, identity) {
 
 // Empty pages can still have a continuation cursor. Fail rather than report a
 // partial history when storage returns an invalid page, cursor, or event.
+const MAX_REVIEW_SCAN_PAGES = 40;
+
+// Rebuild the review summary (and optional full event log) by scanning every
+// page for this receipt. Reject partial history when storage returns an invalid
+// page, cursor, or event, or exceeds the bounded scan cap.
 export async function readBugReview(kv, receipt, includeEvents = true) {
   if (!validReceipt(receipt)) throw new Error('Invalid report receipt');
   const prefix = eventPrefix(receipt);
@@ -47,8 +52,9 @@ export async function readBugReview(kv, receipt, includeEvents = true) {
   let cursor;
   let latest = '';
   let latestStatus = '';
+  let scanComplete = false;
   const review = { status: 'new', updated_at: null, note_count: 0, status_updated_at: null, status_event_id: null };
-  while (true) {
+  for (let pageNumber = 0; pageNumber < MAX_REVIEW_SCAN_PAGES; pageNumber++) {
     const page = await kv.list({ prefix, limit: 1000, ...(cursor ? { cursor } : {}) });
     if (!page || !Array.isArray(page.keys) || typeof page.list_complete !== 'boolean') throw new Error('Invalid review page');
     for (const key of page.keys) {
@@ -75,11 +81,12 @@ export async function readBugReview(kv, receipt, includeEvents = true) {
         review.status_event_id = identity.id;
       }
     }
-    if (page.list_complete) break;
+    if (page.list_complete) { scanComplete = true; break; }
     if (typeof page.cursor !== 'string' || !page.cursor || seenCursors.has(page.cursor)) throw new Error('Invalid review cursor');
     seenCursors.add(page.cursor);
     cursor = page.cursor;
   }
+  if (!scanComplete) throw new Error('Review scan bound exceeded');
   if (includeEvents) {
     events.sort((a, b) => a.created_at < b.created_at ? -1 : a.created_at > b.created_at ? 1 : a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
     review.events = events;

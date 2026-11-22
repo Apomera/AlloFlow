@@ -452,6 +452,36 @@ function _useNotesFeedback(props, templateType) {
       return;
     }
     if (isLoading) return;
+    // Safety gate: check only the student's own note text (never the lesson
+    // source) for self-harm disclosures before sending to the AI. Restricting
+    // to self_harm avoids false positives on history/science notes ("attack").
+    const _collectNoteText = (val, depth = 0) => {
+      if (depth > 4 || val == null) return '';
+      if (typeof val === 'string') return val;
+      if (Array.isArray(val)) return val.map(v => _collectNoteText(v, depth + 1)).join(' ');
+      if (typeof val === 'object') {
+        return Object.keys(val)
+          .filter(k => k !== 'feedback' && k !== 'sourceScope' && k !== 'draftFingerprint')
+          .map(k => _collectNoteText(val[k], depth + 1)).join(' ');
+      }
+      return '';
+    };
+    const _studentNoteText = _collectNoteText(data).trim();
+    if (_studentNoteText && typeof window !== 'undefined') {
+      const _ntChecker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+      let _ntFlags = null;
+      try { _ntFlags = (_ntChecker && typeof _ntChecker.check === 'function') ? _ntChecker.check(_studentNoteText) : null; } catch (_) { _ntFlags = null; }
+      const _ntSelfHarm = Array.isArray(_ntFlags) && _ntFlags.find(f => f && f.category === 'self_harm' && f.severity === 'critical');
+      if (_ntSelfHarm) {
+        const _ntFlag = typeof props.onSafetyFlag === 'function' ? props.onSafetyFlag : null;
+        if (_ntFlag) { try { _ntFlag(Object.assign({}, _ntSelfHarm, { source: 'note_taking_' + templateType, context: _studentNoteText.slice(0, 100), aiGenerated: false })); } catch (_) {} }
+        addToast('We paused feedback for a moment because what you wrote sounds heavy. Please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). You are not alone.', 'warn');
+        if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+          try { window.SelHub.showCrisisModal({ toolName: 'Note-Taking Feedback', contentSnippet: _studentNoteText.slice(0, 200) }); } catch (_) {}
+        }
+        return;
+      }
+    }
     const request = { ...current.current, serial: ++feedbackRequest.current };
     // New feedback replaces the kept one, but asking again about the same draft earns no XP.
     const sameDraft = !!data.feedback && data.feedback.draftFingerprint === request.draft;
@@ -510,7 +540,7 @@ function _useNotesFeedback(props, templateType) {
     setXpEarned(0);
   }, [props.handleNoteUpdate]);
 
-  return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: typeof callGemini === 'function', hideRequest: !props.isTeacherMode && typeof callGemini !== 'function', teacherOnlyDisabled: !!props.isTeacherMode && typeof callGemini !== 'function', isEarlierDraft: _notesFeedbackIsEarlier(feedback, current.current.draft), isEarlierSource:!!feedback?.sourceScope && feedback.sourceScope.sourceFingerprint!==current.current.sourceScope.sourceFingerprint };
+  return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: !!callGemini, hideRequest: !props.isTeacherMode && !callGemini, teacherOnlyDisabled: !!props.isTeacherMode && !callGemini, isEarlierDraft: _notesFeedbackIsEarlier(feedback, current.current.draft), isEarlierSource:!!feedback?.sourceScope && feedback.sourceScope.sourceFingerprint!==current.current.sourceScope.sourceFingerprint };
 }
 
 // Optional elaboration scaffold shared across templates that don't already

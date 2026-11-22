@@ -38,6 +38,32 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // ── Cinema-grade live-motion SVG keyframes (GPU-composited, zero-GC, contrast & reduced-motion safe) ──
+  (function() {
+    if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function') return;
+    if (document.getElementById('allo-funcgrapher-motion-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-funcgrapher-motion-css';
+    st.textContent = [
+      '@keyframes fgBeaconPulse{0%{opacity:.68;transform:scale(.76)}65%{opacity:.14;transform:scale(1.68)}100%{opacity:0;transform:scale(1.95)}}',
+      '@keyframes fgCurveBloom{0%,100%{opacity:.18}50%{opacity:.34}}',
+      '@keyframes fgAreaShimmer{0%,100%{opacity:.78}50%{opacity:1}}',
+      '@keyframes fgAsymptoteDash{0%{stroke-dashoffset:0}100%{stroke-dashoffset:-20}}',
+      '@keyframes fgReticleSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}',
+      '@keyframes fgTraceHalo{0%,100%{opacity:.36;transform:scale(.9)}50%{opacity:.14;transform:scale(1.42)}}',
+      '.fg-beacon-pulse{transform-box:fill-box;transform-origin:center;animation:fgBeaconPulse 2.4s cubic-bezier(.22,.61,.36,1) infinite;pointer-events:none}',
+      '.fg-curve-bloom{animation:fgCurveBloom 3.8s ease-in-out infinite;pointer-events:none}',
+      '.fg-area-shimmer{animation:fgAreaShimmer 4.2s ease-in-out infinite;pointer-events:none}',
+      '.fg-asymptote-flow{animation:fgAsymptoteDash 2.2s linear infinite;pointer-events:none}',
+      '.fg-trace-reticle{transform-box:fill-box;transform-origin:center;animation:fgReticleSpin 9s linear infinite;pointer-events:none}',
+      '.fg-trace-halo{transform-box:fill-box;transform-origin:center;animation:fgTraceHalo 2.6s ease-in-out infinite;pointer-events:none}',
+      '.theme-contrast .fg-beacon-pulse,.theme-contrast .fg-curve-bloom,.theme-contrast .fg-area-shimmer,.theme-contrast .fg-asymptote-flow,.theme-contrast .fg-trace-reticle,.theme-contrast .fg-trace-halo{animation:none !important}',
+      '.theme-contrast .fg-beacon-pulse,.theme-contrast .fg-trace-halo{display:none !important}',
+      '@media (prefers-reduced-motion: reduce){.fg-beacon-pulse,.fg-curve-bloom,.fg-area-shimmer,.fg-asymptote-flow,.fg-trace-reticle,.fg-trace-halo{animation:none !important}.fg-beacon-pulse{opacity:.24}}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _funcgrAC = null;
@@ -1425,6 +1451,12 @@ window.StemLab = window.StemLab || {
             aiExplain: '', aiExplainLoading: false
           };
           const d = Object.assign({}, DEFAULT_FG, (labToolData && labToolData.funcGrapher && typeof labToolData.funcGrapher === 'object') ? labToolData.funcGrapher : {});
+          if (typeof d.a !== 'number' || !Number.isFinite(d.a)) d.a = DEFAULT_FG.a;
+          if (typeof d.b !== 'number' || !Number.isFinite(d.b)) d.b = DEFAULT_FG.b;
+          if (typeof d.c !== 'number' || !Number.isFinite(d.c)) d.c = DEFAULT_FG.c;
+          if (typeof d.compareA !== 'number' || !Number.isFinite(d.compareA)) d.compareA = DEFAULT_FG.compareA;
+          if (typeof d.compareB !== 'number' || !Number.isFinite(d.compareB)) d.compareB = DEFAULT_FG.compareB;
+          if (typeof d.compareC !== 'number' || !Number.isFinite(d.compareC)) d.compareC = DEFAULT_FG.compareC;
 
           // ── Canvas narration: init ──
           if (typeof canvasNarrate === 'function') {
@@ -1647,6 +1679,36 @@ window.StemLab = window.StemLab || {
           // Y-intercept
 
           var yIntercept = evalF(0);
+
+          // Comparison intersections (f(x) = g(x)) when compare mode is active
+          var compareIntersections = [];
+          if (d.compare && evalF2) {
+            var cmpStep = Math.max(0.05, (xR.xMax - xR.xMin) / 260);
+            var ySpanCmp = Math.max(1, yR.yMax - yR.yMin);
+            for (var cix = xR.xMin; cix < xR.xMax && compareIntersections.length < 6; cix += cmpStep) {
+              var cia = evalF(cix) - evalF2(cix);
+              var cib = evalF(cix + cmpStep) - evalF2(cix + cmpStep);
+              if (isFinite(cia) && isFinite(cib) && Math.abs(cia - cib) < ySpanCmp * 2 && cia * cib <= 0) {
+                var loI = cix, hiI = cix + cmpStep, fLo = cia;
+                for (var bi = 0; bi < 24; bi++) {
+                  var midI = (loI + hiI) * 0.5;
+                  var fMid = evalF(midI) - evalF2(midI);
+                  if (!isFinite(fMid)) break;
+                  if (fMid * fLo <= 0) hiI = midI; else { loI = midI; fLo = fMid; }
+                }
+                var ixFin = (loI + hiI) * 0.5;
+                var iyFin = evalF(ixFin);
+                var iyFin2 = evalF2(ixFin);
+                if (isFinite(iyFin) && isFinite(iyFin2) && Math.abs(iyFin - iyFin2) < ySpanCmp * 0.04 && iyFin >= yR.yMin && iyFin <= yR.yMax) {
+                  var dup = false;
+                  for (var di = 0; di < compareIntersections.length; di++) {
+                    if (Math.abs(compareIntersections[di].x - ixFin) < cmpStep * 0.9) { dup = true; break; }
+                  }
+                  if (!dup) compareIntersections.push({ x: ixFin, y: iyFin });
+                }
+              }
+            }
+          }
 
 
 
@@ -1962,12 +2024,14 @@ window.StemLab = window.StemLab || {
             var ink = fgPal ? fgPal.curve(4).color : '#6d28d9', near = bx > W - 90;
             var lbl = { fill: fgLabelInk, style: { fontSize: fgFs(12), fontWeight: 'bold' } };
             return h('g', { 'data-funcgrapher-rate-overlay': true, 'aria-hidden': 'true' },
+              !isContrast && h('polygon', { points: ax + ',' + ay + ' ' + bx + ',' + ay + ' ' + bx + ',' + by, fill: ink, opacity: isDark ? 0.14 : 0.09 }),
+              !isContrast && h('line', { x1: ax, y1: ay, x2: bx, y2: by, stroke: ink, strokeWidth: 5.5, opacity: isDark ? 0.22 : 0.14, strokeLinecap: 'round' }),
               h('line', { x1: ax, y1: ay, x2: bx, y2: by, stroke: ink, strokeWidth: 2.5, strokeDasharray: '6 4' }),
               h('line', { 'data-rate-leg': 'dx', x1: ax, y1: ay, x2: bx, y2: ay, stroke: ink, strokeWidth: 2 }),
               h('line', { 'data-rate-leg': 'dy', x1: bx, y1: ay, x2: bx, y2: by, stroke: ink, strokeWidth: 2 }),
               h('text', Object.assign({ x: (ax + bx) / 2, y: ay + (by < ay ? 16 : -6), textAnchor: 'middle' }, lbl), 'Δx = ' + fgNum(rocPts.dx)),
               h('text', Object.assign({ x: near ? bx - 8 : bx + 8, y: (ay + by) / 2 + 4, textAnchor: near ? 'end' : 'start' }, lbl), 'Δy = ' + fgNum(rocPts.dy)),
-              [['A', ax, ay], ['B', bx, by]].map(function(pt) { return h('g', { key: pt[0] }, h('circle', { 'data-rate-handle': pt[0], cx: pt[1], cy: pt[2], r: 7, fill: fgSurface, stroke: ink, strokeWidth: 3 }), h('text', Object.assign({ x: pt[1] - 4, y: pt[2] - 11 }, lbl), pt[0])); }));
+              [['A', ax, ay], ['B', bx, by]].map(function(pt) { return h('g', { key: pt[0] }, !isContrast && h('circle', { className: 'fg-beacon-pulse', cx: pt[1], cy: pt[2], r: 10, fill: 'none', stroke: ink, strokeWidth: 1.5 }), h('circle', { 'data-rate-handle': pt[0], cx: pt[1], cy: pt[2], r: 7, fill: fgSurface, stroke: ink, strokeWidth: 3 }), h('text', Object.assign({ x: pt[1] - 4, y: pt[2] - 11 }, lbl), pt[0])); }));
           }
           function fgPanelToggle(open, onClick, label, id, extra) {
             return h('button', Object.assign({ type: 'button', 'aria-expanded': open, 'aria-controls': open ? id : undefined, onClick: onClick, style: Object.assign({}, fgBtn, open ? { borderWidth: 3 } : null) }, extra || {}), label);
@@ -2409,8 +2473,14 @@ window.StemLab = window.StemLab || {
                   React.createElement("stop", { offset: "100%", stopColor: isContrast ? "#000000" : isDark ? "#070d1e" : "#f1f5f9" })
                 ),
                 React.createElement("linearGradient", { id: "fg-area-grad", x1: "0", y1: "0", x2: "0", y2: "1" },
-                  React.createElement("stop", { offset: "0%", stopColor: isDark ? "#818cf8" : "#4f46e5", stopOpacity: isDark ? 0.34 : 0.2 }),
+                  React.createElement("stop", { offset: "0%", stopColor: isDark ? "#818cf8" : "#4f46e5", stopOpacity: isDark ? 0.36 : 0.22 }),
+                  React.createElement("stop", { offset: "55%", stopColor: isDark ? "#38bdf8" : "#6366f1", stopOpacity: isDark ? 0.14 : 0.09 }),
                   React.createElement("stop", { offset: "100%", stopColor: isDark ? "#38bdf8" : "#6366f1", stopOpacity: 0.03 })
+                ),
+                React.createElement("linearGradient", { id: "fg-area-shimmer-grad", x1: "0", y1: "0", x2: "1", y2: "1" },
+                  React.createElement("stop", { offset: "0%", stopColor: isDark ? "#c7d2fe" : "#818cf8", stopOpacity: 0.02 }),
+                  React.createElement("stop", { offset: "50%", stopColor: isDark ? "#38bdf8" : "#6366f1", stopOpacity: isDark ? 0.22 : 0.12 }),
+                  React.createElement("stop", { offset: "100%", stopColor: isDark ? "#c7d2fe" : "#818cf8", stopOpacity: 0.02 })
                 ),
                 React.createElement("clipPath", { id: "fg-main-plot-clip" },
                   React.createElement("rect", { x: pad, y: pad, width: W - 2 * pad, height: H - 2 * pad, rx: 6 })
@@ -2515,31 +2585,46 @@ window.StemLab = window.StemLab || {
 
               React.createElement("text", { x: toSX(0) + 5, y: pad - 5, fill: fgLabelInk, style: { fontSize: fgFs(13), fontWeight: 'bold' } }, "y"),
 
-              // Area under curve (positive x) with luminous gradient wash
+              // Area under curve (positive x) with luminous gradient wash & translucent shimmer
 
-              d.showArea && integralDefined && areaPts.length > 1 && React.createElement("polygon", {
-                "data-function-area": true,
-                points: toSX(0) + ',' + toSY(0) + ' ' + areaPts.map(p => p.sx + ',' + p.sy).join(' ') + ' ' + areaPts[areaPts.length - 1].sx + ',' + toSY(0),
-                fill: isContrast ? "rgba(250,204,21,0.22)" : "url(#fg-area-grad)", stroke: "none", clipPath: "url(#fg-main-plot-clip)"
-              }),
+              d.showArea && integralDefined && areaPts.length > 1 && React.createElement("g", { clipPath: "url(#fg-main-plot-clip)" },
+                React.createElement("polygon", {
+                  "data-function-area": true,
+                  points: toSX(0) + ',' + toSY(0) + ' ' + areaPts.map(p => p.sx + ',' + p.sy).join(' ') + ' ' + areaPts[areaPts.length - 1].sx + ',' + toSY(0),
+                  fill: isContrast ? "rgba(250,204,21,0.22)" : "url(#fg-area-grad)", stroke: "none"
+                }),
+                !isContrast && React.createElement("polygon", {
+                  className: "fg-area-shimmer",
+                  points: toSX(0) + ',' + toSY(0) + ' ' + areaPts.map(p => p.sx + ',' + p.sy).join(' ') + ' ' + areaPts[areaPts.length - 1].sx + ',' + toSY(0),
+                  fill: "url(#fg-area-shimmer-grad)", stroke: "none"
+                }),
+                !isContrast && React.createElement("polyline", {
+                  points: areaPts.map(p => p.sx + ',' + p.sy).join(' '),
+                  fill: "none", stroke: isDark ? "rgba(165,180,252,0.55)" : "rgba(79,70,229,0.35)", strokeWidth: 1.5, strokeLinecap: "round"
+                })
+              ),
 
-              // Dashed luminous asymptotes (vertical & horizontal for rational / log / exponential)
+              // Dashed luminous asymptotes (vertical & horizontal boundary energy dashes)
 
               d.type === 'rational' && (-d.b) > xR.xMin && (-d.b) < xR.xMax && React.createElement("g", null,
                 !isContrast && React.createElement("line", { x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: isDark ? "rgba(251,113,133,0.28)" : "rgba(225,29,72,0.18)", strokeWidth: 5 }),
-                React.createElement("line", { x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: isContrast ? "#facc15" : isDark ? "#fb7185" : "#e11d48", strokeWidth: 1.4, strokeDasharray: "6 4", "aria-label": "vertical asymptote at x = " + (-d.b) })
+                React.createElement("line", { className: isContrast ? undefined : "fg-asymptote-flow", x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: isContrast ? "#facc15" : isDark ? "#fb7185" : "#e11d48", strokeWidth: 1.4, strokeDasharray: "6 4", "aria-label": "vertical asymptote at x = " + (-d.b) }),
+                !isContrast && React.createElement("path", { "aria-hidden": "true", d: "M" + (toSX(-d.b) - 4) + " " + (pad + 1) + "H" + (toSX(-d.b) + 4) + "M" + (toSX(-d.b) - 4) + " " + (H - pad - 1) + "H" + (toSX(-d.b) + 4), stroke: isDark ? "#fb7185" : "#e11d48", strokeWidth: 1.6, strokeLinecap: "round" })
               ),
               d.type === 'rational' && d.c > yR.yMin && d.c < yR.yMax && React.createElement("g", { "aria-hidden": "true" },
                 !isContrast && React.createElement("line", { x1: pad, y1: toSY(d.c), x2: W - pad, y2: toSY(d.c), stroke: isDark ? "rgba(56,189,248,0.24)" : "rgba(14,165,233,0.16)", strokeWidth: 4.5 }),
-                React.createElement("line", { x1: pad, y1: toSY(d.c), x2: W - pad, y2: toSY(d.c), stroke: isContrast ? "#00ffff" : isDark ? "#38bdf8" : "#0284c7", strokeWidth: 1.3, strokeDasharray: "6 4" })
+                React.createElement("line", { className: isContrast ? undefined : "fg-asymptote-flow", x1: pad, y1: toSY(d.c), x2: W - pad, y2: toSY(d.c), stroke: isContrast ? "#00ffff" : isDark ? "#38bdf8" : "#0284c7", strokeWidth: 1.3, strokeDasharray: "6 4" }),
+                !isContrast && React.createElement("path", { d: "M" + (pad + 1) + " " + (toSY(d.c) - 4) + "V" + (toSY(d.c) + 4) + "M" + (W - pad - 1) + " " + (toSY(d.c) - 4) + "V" + (toSY(d.c) + 4), stroke: isDark ? "#38bdf8" : "#0284c7", strokeWidth: 1.5, strokeLinecap: "round" })
               ),
               d.type === 'log' && (-d.b) > xR.xMin && (-d.b) < xR.xMax && React.createElement("g", { "aria-hidden": "true" },
                 !isContrast && React.createElement("line", { x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: isDark ? "rgba(251,191,36,0.24)" : "rgba(217,119,6,0.16)", strokeWidth: 4.5 }),
-                React.createElement("line", { x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: isContrast ? "#facc15" : isDark ? "#fbbf24" : "#d97706", strokeWidth: 1.3, strokeDasharray: "6 4" })
+                React.createElement("line", { className: isContrast ? undefined : "fg-asymptote-flow", x1: toSX(-d.b), y1: pad, x2: toSX(-d.b), y2: H - pad, stroke: isContrast ? "#facc15" : isDark ? "#fbbf24" : "#d97706", strokeWidth: 1.3, strokeDasharray: "6 4" }),
+                !isContrast && React.createElement("path", { d: "M" + (toSX(-d.b) - 4) + " " + (pad + 1) + "H" + (toSX(-d.b) + 4) + "M" + (toSX(-d.b) - 4) + " " + (H - pad - 1) + "H" + (toSX(-d.b) + 4), stroke: isDark ? "#fbbf24" : "#d97706", strokeWidth: 1.5, strokeLinecap: "round" })
               ),
               d.type === 'exponential' && d.a !== 0 && d.b !== 0 && d.c > yR.yMin && d.c < yR.yMax && React.createElement("g", { "aria-hidden": "true" },
                 !isContrast && React.createElement("line", { x1: pad, y1: toSY(d.c), x2: W - pad, y2: toSY(d.c), stroke: isDark ? "rgba(56,189,248,0.22)" : "rgba(14,165,233,0.14)", strokeWidth: 4 }),
-                React.createElement("line", { x1: pad, y1: toSY(d.c), x2: W - pad, y2: toSY(d.c), stroke: isContrast ? "#00ffff" : isDark ? "#38bdf8" : "#0284c7", strokeWidth: 1.25, strokeDasharray: "6 4" })
+                React.createElement("line", { className: isContrast ? undefined : "fg-asymptote-flow", x1: pad, y1: toSY(d.c), x2: W - pad, y2: toSY(d.c), stroke: isContrast ? "#00ffff" : isDark ? "#38bdf8" : "#0284c7", strokeWidth: 1.25, strokeDasharray: "6 4" }),
+                !isContrast && React.createElement("path", { d: "M" + (pad + 1) + " " + (toSY(d.c) - 4) + "V" + (toSY(d.c) + 4) + "M" + (W - pad - 1) + " " + (toSY(d.c) - 4) + "V" + (toSY(d.c) + 4), stroke: isDark ? "#38bdf8" : "#0284c7", strokeWidth: 1.5, strokeLinecap: "round" })
               ),
 
               // Derivative trace (dual-pass luminous glow + accessible dash)
@@ -2548,18 +2633,19 @@ window.StemLab = window.StemLab || {
                 if (seg.length <= 1) return null;
                 var pts = seg.join(" ");
                 return React.createElement("g", { key: 'dseg' + si, clipPath: "url(#fg-main-plot-clip)" },
-                  !isContrast && React.createElement("polyline", { points: pts, fill: "none", stroke: fgDerivCurve.color, strokeWidth: 6.5, strokeLinecap: "round", opacity: isDark ? 0.24 : 0.14 }),
+                  !isContrast && React.createElement("polyline", { className: "fg-curve-bloom", points: pts, fill: "none", stroke: fgDerivCurve.color, strokeWidth: 6.5, strokeLinecap: "round", opacity: isDark ? 0.24 : 0.14 }),
                   React.createElement("polyline", { points: pts, "data-function-curve": "derivative", fill: "none", stroke: fgDerivCurve.color, strokeWidth: 2.5, strokeLinecap: "round", strokeDasharray: fgDerivCurve.dash.join(' ') || "6 3" })
                 );
               }),
 
-              // Main curve: dual-pass luminous phosphor bloom + primary 3px stroke + crisp specular core filament
+              // Main curve: silky phosphor curve bloom + primary 3px stroke + crisp specular core filament
 
               segments.map(function (seg, si) {
                 if (seg.length <= 1) return null;
                 var pts = seg.join(" ");
                 return React.createElement("g", { key: 'seg' + si, clipPath: "url(#fg-main-plot-clip)" },
-                  !isContrast && React.createElement("polyline", { points: pts, fill: "none", stroke: fgCurve.color, strokeWidth: 8, strokeLinecap: "round", strokeLinejoin: "round", opacity: isDark ? 0.26 : 0.16 }),
+                  !isContrast && React.createElement("polyline", { className: "fg-curve-bloom", points: pts, fill: "none", stroke: fgCurve.color, strokeWidth: 9.5, strokeLinecap: "round", strokeLinejoin: "round", opacity: isDark ? 0.28 : 0.17 }),
+                  !isContrast && React.createElement("polyline", { points: pts, fill: "none", stroke: fgCurve.color, strokeWidth: 5.2, strokeLinecap: "round", strokeLinejoin: "round", opacity: isDark ? 0.34 : 0.2 }),
                   React.createElement("polyline", { points: pts, "data-function-curve": "main", fill: "none", stroke: fgCurve.color, strokeWidth: 3, strokeLinecap: "round", strokeLinejoin: "round", style: { filter: isContrast ? 'none' : 'drop-shadow(0 0 4px rgba(' + (isDark ? '129,140,248,0.72' : '79,70,229,0.45') + '))' } }),
                   !isContrast && React.createElement("polyline", { points: pts, fill: "none", stroke: isDark ? "#e0e7ff" : "#ffffff", strokeWidth: 1, strokeLinecap: "round", strokeLinejoin: "round", opacity: isDark ? 0.72 : 0.52 })
                 );
@@ -2570,12 +2656,12 @@ window.StemLab = window.StemLab || {
                 if (seg.length <= 1) return null;
                 var pts = seg.join(" ");
                 return React.createElement("g", { key: 'cseg' + si, clipPath: "url(#fg-main-plot-clip)" },
-                  !isContrast && React.createElement("polyline", { points: pts, fill: "none", stroke: fgCompareCurve.color, strokeWidth: 6.5, strokeLinecap: "round", opacity: isDark ? 0.22 : 0.13 }),
+                  !isContrast && React.createElement("polyline", { className: "fg-curve-bloom", points: pts, fill: "none", stroke: fgCompareCurve.color, strokeWidth: 6.5, strokeLinecap: "round", opacity: isDark ? 0.22 : 0.13 }),
                   React.createElement("polyline", { points: pts, "data-function-curve": "compare", fill: "none", stroke: fgCompareCurve.color, strokeWidth: 2.5, strokeLinecap: "round", strokeDasharray: fgCompareCurve.dash.join(' ') || "8 4" })
                 );
               }),
 
-              // Tangent line at traceX (luminous laser tangent + crosshair reticle)
+              // Tangent line at traceX (luminous laser tangent + pointer-trace crosshair reticle + animated tangent-slope halo)
               tangentInRange && (function() {
                 var tLen = 3;
                 var x1 = traceX - tLen, x2 = traceX + tLen;
@@ -2583,9 +2669,13 @@ window.StemLab = window.StemLab || {
                 var y2t = traceY + traceSlope * (x2 - traceX);
                 var txPx = toSX(traceX), tyPx = toSY(traceY);
                 return React.createElement('g', null,
-                  !isContrast && React.createElement('line', { x1: toSX(x1), y1: toSY(y1t), x2: toSX(x2), y2: toSY(y2t), stroke: 'rgba(236,72,153,0.28)', strokeWidth: 5.5, clipPath: 'url(#fg-main-plot-clip)' }),
-                  React.createElement('line', { x1: toSX(x1), y1: toSY(y1t), x2: toSX(x2), y2: toSY(y2t), stroke: '#ec4899', strokeWidth: 2, strokeDasharray: '4 2', clipPath: 'url(#fg-main-plot-clip)' }),
-                  !isContrast && React.createElement('path', { d: 'M' + (txPx - 11) + ' ' + tyPx + 'H' + (txPx + 11) + 'M' + txPx + ' ' + (tyPx - 11) + 'V' + (tyPx + 11), stroke: 'rgba(236,72,153,0.55)', strokeWidth: 1 }),
+                  !isContrast && React.createElement('line', { x1: txPx, y1: pad, x2: txPx, y2: H - pad, stroke: isDark ? 'rgba(244,114,182,0.22)' : 'rgba(236,72,153,0.16)', strokeWidth: 1, strokeDasharray: '3 3', clipPath: 'url(#fg-main-plot-clip)' }),
+                  !isContrast && React.createElement('line', { x1: pad, y1: tyPx, x2: W - pad, y2: tyPx, stroke: isDark ? 'rgba(244,114,182,0.22)' : 'rgba(236,72,153,0.16)', strokeWidth: 1, strokeDasharray: '3 3', clipPath: 'url(#fg-main-plot-clip)' }),
+                  !isContrast && React.createElement('line', { x1: toSX(x1), y1: toSY(y1t), x2: toSX(x2), y2: toSY(y2t), stroke: 'rgba(236,72,153,0.28)', strokeWidth: 6, strokeLinecap: 'round', clipPath: 'url(#fg-main-plot-clip)' }),
+                  React.createElement('line', { className: isContrast ? undefined : 'fg-asymptote-flow', x1: toSX(x1), y1: toSY(y1t), x2: toSX(x2), y2: toSY(y2t), stroke: '#ec4899', strokeWidth: 2, strokeDasharray: '6 4', clipPath: 'url(#fg-main-plot-clip)' }),
+                  !isContrast && React.createElement('circle', { className: 'fg-trace-halo', cx: txPx, cy: tyPx, r: 12, fill: 'none', stroke: '#ec4899', strokeWidth: 1.5 }),
+                  !isContrast && React.createElement('circle', { className: 'fg-trace-reticle', cx: txPx, cy: tyPx, r: 9.5, fill: 'none', stroke: isDark ? 'rgba(244,114,182,0.72)' : 'rgba(219,39,119,0.58)', strokeWidth: 1.2, strokeDasharray: '4 4' }),
+                  !isContrast && React.createElement('path', { d: 'M' + (txPx - 13) + ' ' + tyPx + 'H' + (txPx - 6) + 'M' + (txPx + 6) + ' ' + tyPx + 'H' + (txPx + 13) + 'M' + txPx + ' ' + (tyPx - 13) + 'V' + (tyPx - 6) + 'M' + txPx + ' ' + (tyPx + 6) + 'V' + (tyPx + 13), stroke: 'rgba(236,72,153,0.68)', strokeWidth: 1.15, strokeLinecap: 'round' }),
                   React.createElement('circle', { cx: txPx, cy: tyPx, r: 10, fill: '#ec4899', opacity: 0.2 }),
                   React.createElement('circle', { cx: txPx, cy: tyPx, r: 5, fill: '#ec4899', stroke: 'white', strokeWidth: 1.6 }),
                   !isContrast && React.createElement('circle', { cx: txPx - 1.3, cy: tyPx - 1.3, r: 1.4, fill: '#ffffff', opacity: 0.85 }),
@@ -2593,11 +2683,12 @@ window.StemLab = window.StemLab || {
                 );
               })(),
 
-              // Roots — glowing crosshair beacons
+              // Roots — pulsing tracking beacons (non-spoiler in root quiz mode)
 
               roots.map(function (r, i) {
                 var rxPx = toSX(r), ryPx = toSY(0);
                 return React.createElement("g", { key: 'root' + i },
+                  !isContrast && !hideRootAnswer && React.createElement("circle", { className: "fg-beacon-pulse", cx: rxPx, cy: ryPx, r: 9.5, fill: "none", stroke: "#ef4444", strokeWidth: 1.5 }),
                   !isContrast && React.createElement("path", { d: "M" + (rxPx - 10) + " " + ryPx + "H" + (rxPx + 10) + "M" + rxPx + " " + (ryPx - 10) + "V" + (ryPx + 10), stroke: "rgba(239,68,68,0.55)", strokeWidth: 1 }),
                   React.createElement("circle", { cx: rxPx, cy: ryPx, r: 9.5, fill: "#ef4444", opacity: isDark ? 0.24 : 0.16 }),
                   React.createElement("circle", { cx: rxPx, cy: ryPx, r: 4.5, fill: "#ef4444", stroke: "white", strokeWidth: 1.5, style: { filter: isContrast ? 'none' : 'drop-shadow(0 0 3px rgba(239,68,68,0.75))' } }),
@@ -2607,11 +2698,12 @@ window.StemLab = window.StemLab || {
 
               }),
 
-              // Y-intercept — glowing emerald crosshair beacon
+              // Y-intercept — pulsing emerald tracking beacon (non-spoiler in y-int quiz mode)
 
               yIntercept >= yR.yMin && yIntercept <= yR.yMax && (function() {
                 var yxPx = toSX(0), yyPx = toSY(yIntercept);
                 return React.createElement("g", null,
+                  !isContrast && !hideYIntAnswer && React.createElement("circle", { className: "fg-beacon-pulse", cx: yxPx, cy: yyPx, r: 9.5, fill: "none", stroke: "#22c55e", strokeWidth: 1.5 }),
                   !isContrast && React.createElement("path", { d: "M" + (yxPx - 10) + " " + yyPx + "H" + (yxPx + 10) + "M" + yxPx + " " + (yyPx - 10) + "V" + (yyPx + 10), stroke: "rgba(34,197,94,0.55)", strokeWidth: 1 }),
                   React.createElement("circle", { cx: yxPx, cy: yyPx, r: 9.5, fill: "#22c55e", opacity: isDark ? 0.24 : 0.16 }),
                   React.createElement("circle", { cx: yxPx, cy: yyPx, r: 4.5, fill: "#22c55e", stroke: "white", strokeWidth: 1.5, style: { filter: isContrast ? 'none' : 'drop-shadow(0 0 3px rgba(34,197,94,0.75))' } }),
@@ -2620,12 +2712,13 @@ window.StemLab = window.StemLab || {
                 );
               })(),
 
-              // Critical points (local max / min) — glowing violet/cyan extremum crosshair beacons
+              // Critical points (local max / min) — pulsing violet/cyan extremum tracking beacons (non-spoiler)
               critPts.map(function (cp, i) {
                 var isMax = cp.kind === 'max';
                 var color = isMax ? (isDark ? '#c084fc' : '#a855f7') : (isDark ? '#22d3ee' : '#0891b2');
                 var cxPx = toSX(cp.x), cyPx = toSY(cp.y);
                 return React.createElement("g", { key: 'cp' + i },
+                  !isContrast && !fgQuizLeaks && !(hideYIntAnswer && cp.x === 0) && React.createElement("circle", { className: "fg-beacon-pulse", cx: cxPx, cy: cyPx, r: 9.5, fill: "none", stroke: color, strokeWidth: 1.5 }),
                   !isContrast && React.createElement("path", { d: "M" + (cxPx - 10) + " " + cyPx + "H" + (cxPx + 10) + "M" + cxPx + " " + (cyPx - 10) + "V" + (cyPx + 10), stroke: color, strokeWidth: 1, opacity: 0.5 }),
                   !isContrast && React.createElement("circle", { cx: cxPx, cy: cyPx, r: 9, fill: color, opacity: 0.18 }),
                   React.createElement("circle", {
@@ -2640,6 +2733,17 @@ window.StemLab = window.StemLab || {
                     textAnchor: 'middle', fill: color,
                     style: { fontSize: fgFs(12), fontWeight: 'bold' }
                   }, (isMax ? '▲ max ' : '▼ min ') + '(' + cp.x.toFixed(1) + ', ' + cp.y.toFixed(2) + ')')
+                );
+              }),
+
+              // Comparison intersections f(x) = g(x) — pulsing amber tracking beacons (non-spoiler)
+              d.compare && !fgQuizLeaks && compareIntersections.map(function (pt, i) {
+                var ixPx = toSX(pt.x), iyPx = toSY(pt.y);
+                var iCol = isContrast ? '#ffff00' : (isDark ? '#fbbf24' : '#d97706');
+                return React.createElement("g", { key: 'cint' + i, "aria-hidden": "true" },
+                  !isContrast && React.createElement("circle", { className: "fg-beacon-pulse", cx: ixPx, cy: iyPx, r: 10, fill: "none", stroke: iCol, strokeWidth: 1.5 }),
+                  !isContrast && React.createElement("circle", { cx: ixPx, cy: iyPx, r: 8, fill: iCol, opacity: 0.2 }),
+                  React.createElement("circle", { cx: ixPx, cy: iyPx, r: 4.5, fill: iCol, stroke: isContrast ? '#000000' : '#ffffff', strokeWidth: 1.5 })
                 );
               }),
 
@@ -3759,7 +3863,14 @@ window.StemLab = window.StemLab || {
                     if (!cvEl) return;
                     // Literal canvas colours per app theme (canvas cannot read CSS var()); a theme change redraws.
                     cvEl._fzPal = fgZooPal;
-                    if (cvEl._fzAnim) { if (cvEl._fzTheme !== fgZooPal.theme && typeof cvEl._fzDraw === 'function') { cvEl._fzTheme = fgZooPal.theme; cvEl._fzDraw(); } return; }
+                    if (cvEl._fzAnim) {
+                      if (cvEl._fzTheme !== fgZooPal.theme && typeof cvEl._fzDraw === 'function') {
+                        cvEl._fzTheme = fgZooPal.theme;
+                        cvEl._fzDraw();
+                        if (typeof cvEl._fzSyncLoop === 'function') cvEl._fzSyncLoop();
+                      }
+                      return;
+                    }
                     cvEl._fzTheme = fgZooPal.theme;
                     var c2 = cvEl.getContext('2d');
                     if (!c2) return;
@@ -3767,9 +3878,61 @@ window.StemLab = window.StemLab || {
                     var H = cvEl.offsetHeight || 220;
                     cvEl.width = W * 2; cvEl.height = H * 2;
                     c2.scale(2, 2);
-                    var start = performance.now();
+                    var start = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
                     var fzReduce = false;
                     try { fzReduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (_) {}
+                    var fzFuncs = [
+                      { name: __alloT('stem.funcgrapher.linear', 'Linear'), f: function(x) { return x; }, color: '#7dd3fc' },
+                      { name: __alloT('stem.funcgrapher.quadratic', 'Quadratic'), f: function(x) { return x * x / 4; }, color: '#fbbf24' },
+                      { name: __alloT('stem.funcgrapher.cubic', 'Cubic'), f: function(x) { return x * x * x / 16; }, color: '#10b981' },
+                      { name: __alloT('stem.funcgrapher.exponential', 'Exponential'), f: function(x) { return Math.exp(x / 3) - 1; }, color: '#dc2626' },
+                      { name: __alloT('stem.funcgrapher.zoo_log', 'Log'), f: function(x) { return x > 0 ? Math.log(x + 1) * 2 : -Math.log(-x + 1) * 2; }, color: '#a78bfa' },
+                      { name: __alloT('stem.funcgrapher.sine', 'Sine'), f: function(x) { return Math.sin(x); }, color: '#f472b6' }
+                    ];
+                    var FZ_COUNT = 6, FZ_MAX_PTS = 180, FZ_TAIL = 10;
+                    var fzPtX = new Float32Array(FZ_COUNT * FZ_MAX_PTS);
+                    var fzPtY = new Float32Array(FZ_COUNT * FZ_MAX_PTS);
+                    var fzPtValid = new Uint8Array(FZ_COUNT * FZ_MAX_PTS);
+                    var fzPtLen = new Int32Array(FZ_COUNT);
+                    var fzCellX = new Float32Array(FZ_COUNT);
+                    var fzCellY = new Float32Array(FZ_COUNT);
+                    var fzOx = new Float32Array(FZ_COUNT);
+                    var fzOy = new Float32Array(FZ_COUNT);
+                    var fzXSpan = new Float32Array(FZ_COUNT);
+                    var fzTailX = new Float32Array(FZ_TAIL);
+                    var fzTailY = new Float32Array(FZ_TAIL);
+                    var cellW = W / 3, cellH = H / 2;
+
+                    function fzBuildGeo() {
+                      cellW = Math.max(40, W / 3);
+                      cellH = Math.max(40, H / 2);
+                      for (var fi = 0; fi < FZ_COUNT; fi++) {
+                        var col = fi % 3, row = fi < 3 ? 0 : 1;
+                        var cx0 = col * cellW, cy0 = row * cellH;
+                        var ox = cx0 + cellW * 0.5, oy = cy0 + cellH * 0.5 - 4;
+                        var xSpan = Math.max(12, Math.floor(cellW * 0.36));
+                        fzCellX[fi] = cx0; fzCellY[fi] = cy0;
+                        fzOx[fi] = ox; fzOy[fi] = oy; fzXSpan[fi] = xSpan;
+                        var step = Math.max(2, Math.ceil((xSpan * 2) / (FZ_MAX_PTS - 2)));
+                        var base = fi * FZ_MAX_PTS, count = 0;
+                        var fn = fzFuncs[fi].f;
+                        for (var x = -xSpan; x <= xSpan && count < FZ_MAX_PTS; x += step) {
+                          var yv = fn(x / 12);
+                          var py = oy - yv * 7.5;
+                          var idx = base + count;
+                          fzPtX[idx] = ox + x;
+                          if (isFinite(py) && py >= cy0 + 8 && py <= cy0 + cellH - 20) {
+                            fzPtY[idx] = py; fzPtValid[idx] = 1;
+                          } else {
+                            fzPtY[idx] = oy; fzPtValid[idx] = 0;
+                          }
+                          count++;
+                        }
+                        fzPtLen[fi] = count;
+                      }
+                    }
+                    fzBuildGeo();
+
                     function rrect(ctx2, x, y, w, h2, rad) {
                       var r = Math.min(rad, w / 2, h2 / 2);
                       ctx2.beginPath();
@@ -3784,46 +3947,67 @@ window.StemLab = window.StemLab || {
                       ctx2.quadraticCurveTo(x, y, x + r, y);
                       ctx2.closePath();
                     }
+                    function traceCached(fi) {
+                      var base = fi * FZ_MAX_PTS, len = fzPtLen[fi], open = false;
+                      c2.beginPath();
+                      for (var pi = 0; pi < len; pi++) {
+                        var idx = base + pi;
+                        if (!fzPtValid[idx]) { open = false; continue; }
+                        if (!open) { c2.moveTo(fzPtX[idx], fzPtY[idx]); open = true; }
+                        else c2.lineTo(fzPtX[idx], fzPtY[idx]);
+                      }
+                    }
+                    function traceAreaUnder(fi, oy) {
+                      var base = fi * FZ_MAX_PTS, len = fzPtLen[fi];
+                      var firstX = 0, lastX = 0, hasRun = false;
+                      c2.beginPath();
+                      for (var pi = 0; pi < len; pi++) {
+                        var idx = base + pi;
+                        if (!fzPtValid[idx]) {
+                          if (hasRun) { c2.lineTo(lastX, oy); c2.lineTo(firstX, oy); c2.closePath(); hasRun = false; }
+                          continue;
+                        }
+                        var px = fzPtX[idx], py = fzPtY[idx];
+                        if (!hasRun) { firstX = px; c2.moveTo(px, oy); c2.lineTo(px, py); hasRun = true; }
+                        else c2.lineTo(px, py);
+                        lastX = px;
+                      }
+                      if (hasRun) { c2.lineTo(lastX, oy); c2.lineTo(firstX, oy); c2.closePath(); }
+                    }
+
                     function drawFz() {
-                      if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._fzAnim); return; }
-                      var t = fzReduce ? 1.8 : (performance.now() - start) / 1000;
+                      if (!cvEl.isConnected) {
+                        if (cvEl._fzRafId && typeof cancelAnimationFrame === 'function') { cancelAnimationFrame(cvEl._fzRafId); cvEl._fzRafId = 0; }
+                        return;
+                      }
+                      var now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
                       var ZP = cvEl._fzPal || fgZooPal;
+                      var isContrastZoo = ZP.theme === 'contrast';
+                      var t = (fzReduce || isContrastZoo) ? 1.8 : (now - start) / 1000;
                       c2.fillStyle = ZP.bg;
                       c2.fillRect(0, 0, W, H);
-                      if (ZP.theme !== 'contrast' && typeof c2.createLinearGradient === 'function') {
+                      if (!isContrastZoo && typeof c2.createLinearGradient === 'function') {
                         var bgG = c2.createLinearGradient(0, 0, 0, H);
                         if (bgG && typeof bgG.addColorStop === 'function') {
                           bgG.addColorStop(0, ZP.theme === 'dark' ? '#070b1e' : '#f8fafc');
                           bgG.addColorStop(1, ZP.theme === 'dark' ? '#020410' : '#eef2ff');
                           c2.fillStyle = bgG;
-                          c2.fillRect(0, 0, W, H);
+                          c2.beginPath(); c2.rect(0, 0, W, H); c2.fill();
                         }
                       }
-                      var funcs = [
-                        { name: __alloT('stem.funcgrapher.linear', 'Linear'), f: function(x) { return x; }, color: '#7dd3fc' },
-                        { name: __alloT('stem.funcgrapher.quadratic', 'Quadratic'), f: function(x) { return x * x / 4; }, color: '#fbbf24' },
-                        { name: __alloT('stem.funcgrapher.cubic', 'Cubic'), f: function(x) { return x * x * x / 16; }, color: '#10b981' },
-                        { name: __alloT('stem.funcgrapher.exponential', 'Exponential'), f: function(x) { return Math.exp(x / 3) - 1; }, color: '#dc2626' },
-                        { name: __alloT('stem.funcgrapher.zoo_log', 'Log'), f: function(x) { return x > 0 ? Math.log(x + 1) * 2 : -Math.log(-x + 1) * 2; }, color: '#a78bfa' },
-                        { name: __alloT('stem.funcgrapher.sine', 'Sine'), f: function(x) { return Math.sin(x); }, color: '#f472b6' }
-                      ];
-                      var cols = 3, rows = 2;
-                      var cellW = W / cols, cellH = H / rows;
-                      funcs.forEach(function(fn, fi) {
-                        var col = fi % cols;
-                        var row = Math.floor(fi / cols);
-                        var cx0 = col * cellW, cy0 = row * cellH;
-                        var ox = cx0 + cellW / 2;
-                        var oy = cy0 + cellH / 2 - 4;
+                      for (var fi = 0; fi < FZ_COUNT; fi++) {
+                        var fn = fzFuncs[fi];
+                        var cx0 = fzCellX[fi], cy0 = fzCellY[fi];
+                        var ox = fzOx[fi], oy = fzOy[fi], xSpan = fzXSpan[fi];
                         // Recessed studio tile well
                         rrect(c2, cx0 + 5, cy0 + 5, Math.max(8, cellW - 10), Math.max(8, cellH - 10), 8);
-                        c2.fillStyle = ZP.theme === 'contrast' ? '#000000' : (ZP.theme === 'dark' ? 'rgba(15,23,42,0.72)' : 'rgba(255,255,255,0.92)');
+                        c2.fillStyle = isContrastZoo ? '#000000' : (ZP.theme === 'dark' ? 'rgba(15,23,42,0.72)' : 'rgba(255,255,255,0.92)');
                         c2.fill();
-                        c2.strokeStyle = ZP.theme === 'contrast' ? '#ffffff' : (ZP.theme === 'dark' ? 'rgba(129,140,248,0.22)' : 'rgba(148,163,184,0.34)');
+                        c2.strokeStyle = isContrastZoo ? '#ffffff' : (ZP.theme === 'dark' ? 'rgba(129,140,248,0.22)' : 'rgba(148,163,184,0.34)');
                         c2.lineWidth = 1;
                         c2.stroke();
                         // Subtle minor grid inside tile
-                        if (ZP.theme !== 'contrast') {
+                        if (!isContrastZoo) {
                           c2.strokeStyle = ZP.theme === 'dark' ? 'rgba(148,163,184,0.12)' : 'rgba(148,163,184,0.22)';
                           c2.lineWidth = 0.7;
                           c2.beginPath();
@@ -3840,74 +4024,146 @@ window.StemLab = window.StemLab || {
                         c2.moveTo(ox - cellW * 0.38, oy); c2.lineTo(ox + cellW * 0.38, oy);
                         c2.moveTo(ox, oy - cellH * 0.34); c2.lineTo(ox, oy + cellH * 0.34);
                         c2.stroke();
-                        // Curve — dual-pass luminous glow + specular core filament + light bead
+                        // Curve — translucent area shimmer + silky phosphor glow + specular filament + comet bead
                         c2.save();
                         var ink = ZP.curves[fi] || fn.color;
-                        var pts = [];
-                        var xSpan = Math.floor(cellW * 0.36);
-                        for (var x = -xSpan; x <= xSpan; x += 2) {
-                          var xv = x / 12;
-                          var yv = fn.f(xv);
-                          var py = oy - yv * 7.5;
-                          if (isFinite(py) && py >= cy0 + 8 && py <= cy0 + cellH - 20) pts.push([ox + x, py]);
-                          else pts.push(null);
-                        }
-                        function tracePts() {
-                          c2.beginPath();
-                          var open = false;
-                          for (var pi = 0; pi < pts.length; pi++) {
-                            if (!pts[pi]) { open = false; continue; }
-                            if (!open) { c2.moveTo(pts[pi][0], pts[pi][1]); open = true; }
-                            else c2.lineTo(pts[pi][0], pts[pi][1]);
-                          }
+                        var breath = (fzReduce || isContrastZoo) ? 0 : Math.sin(t * 1.9 + fi * 1.05);
+                        if (!isContrastZoo) {
+                          c2.save();
+                          c2.globalAlpha = (ZP.glow ? 0.11 : 0.065) + breath * 0.025;
+                          c2.fillStyle = ink;
+                          traceAreaUnder(fi, oy);
+                          c2.fill();
+                          c2.restore();
                         }
                         c2.lineCap = 'round'; c2.lineJoin = 'round';
-                        if (ZP.theme !== 'contrast') {
+                        if (!isContrastZoo) {
                           c2.save();
-                          c2.globalAlpha = ZP.glow ? 0.24 : 0.14;
-                          c2.strokeStyle = ink; c2.lineWidth = 6.5;
-                          tracePts(); c2.stroke();
+                          c2.globalAlpha = (ZP.glow ? 0.25 : 0.15) + breath * 0.05;
+                          c2.strokeStyle = ink; c2.lineWidth = 6.8 + breath * 0.8;
+                          traceCached(fi); c2.stroke();
                           c2.restore();
                         }
                         c2.shadowColor = ink; c2.shadowBlur = ZP.glow ? 8 : 0;
                         c2.strokeStyle = ink; c2.lineWidth = ZP.glow ? 2.2 : 2.5;
-                        tracePts(); c2.stroke();
+                        traceCached(fi); c2.stroke();
                         c2.shadowBlur = 0;
-                        if (ZP.theme !== 'contrast') {
+                        if (!isContrastZoo) {
                           c2.strokeStyle = ZP.glow ? 'rgba(255,255,255,0.68)' : 'rgba(255,255,255,0.45)';
                           c2.lineWidth = 0.85;
-                          tracePts(); c2.stroke();
+                          traceCached(fi); c2.stroke();
                         }
-                        // Light bead with soft radial halo (static when reduced motion is active)
-                        var beadX = -xSpan + ((t * 0.22 + fi * 0.13) % 1) * (xSpan * 2);
+                        // Origin/intercept micro-beacon pulse
+                        if (!isContrastZoo) {
+                          var pPhase = (t * 0.55 + fi * 0.17) % 1;
+                          var origY = oy - fn.f(0) * 7.5;
+                          if (origY > cy0 + 10 && origY < cy0 + cellH - 22) {
+                            c2.save();
+                            c2.globalAlpha = (1 - pPhase) * (ZP.glow ? 0.52 : 0.34);
+                            c2.strokeStyle = ink; c2.lineWidth = 1.2;
+                            c2.beginPath(); c2.arc(ox, origY, 2.5 + pPhase * 7.5, 0, Math.PI * 2); c2.stroke();
+                            c2.restore();
+                          }
+                        }
+                        // Silky comet tail + glowing light bead along curve (zero-GC scratch tail)
+                        var uHead = (t * 0.22 + fi * 0.13) % 1;
+                        var beadX = -xSpan + uHead * (xSpan * 2);
                         var beadY = oy - fn.f(beadX / 12) * 7.5;
-                        if (beadY > cy0 + 10 && beadY < cy0 + cellH - 22) {
-                          if (ZP.theme !== 'contrast' && typeof c2.createRadialGradient === 'function') {
-                            var halo = c2.createRadialGradient(ox + beadX, beadY, 0.5, ox + beadX, beadY, 9);
+                        if (!isContrastZoo && !fzReduce) {
+                          var tailCount = 0;
+                          for (var ti = 0; ti < FZ_TAIL; ti++) {
+                            var uT = uHead - ti * 0.016;
+                            if (uT < 0) break;
+                            var tx = -xSpan + uT * (xSpan * 2);
+                            var ty = oy - fn.f(tx / 12) * 7.5;
+                            if (isFinite(ty) && ty > cy0 + 9 && ty < cy0 + cellH - 21) {
+                              fzTailX[tailCount] = ox + tx; fzTailY[tailCount] = ty; tailCount++;
+                            } else break;
+                          }
+                          if (tailCount > 1) {
+                            for (var tj = 0; tj < tailCount - 1; tj++) {
+                              var frac = 1 - tj / tailCount;
+                              c2.save();
+                              c2.globalAlpha = frac * (ZP.glow ? 0.62 : 0.38);
+                              c2.strokeStyle = ink;
+                              c2.lineWidth = 1 + frac * 3.2;
+                              c2.beginPath();
+                              c2.moveTo(fzTailX[tj], fzTailY[tj]);
+                              c2.lineTo(fzTailX[tj + 1], fzTailY[tj + 1]);
+                              c2.stroke();
+                              c2.restore();
+                            }
+                          }
+                        }
+                        if (isFinite(beadY) && beadY > cy0 + 10 && beadY < cy0 + cellH - 22) {
+                          if (!isContrastZoo && typeof c2.createRadialGradient === 'function') {
+                            var halo = c2.createRadialGradient(ox + beadX, beadY, 0.5, ox + beadX, beadY, 10);
                             if (halo && typeof halo.addColorStop === 'function') {
                               halo.addColorStop(0, ink);
                               halo.addColorStop(1, 'rgba(0,0,0,0)');
-                              c2.save(); c2.globalAlpha = ZP.glow ? 0.55 : 0.3;
-                              c2.fillStyle = halo; c2.beginPath(); c2.arc(ox + beadX, beadY, 9, 0, Math.PI * 2); c2.fill();
+                              c2.save(); c2.globalAlpha = ZP.glow ? 0.62 : 0.34;
+                              c2.fillStyle = halo; c2.beginPath(); c2.arc(ox + beadX, beadY, 10, 0, Math.PI * 2); c2.fill();
                               c2.restore();
                             }
                           }
                           c2.fillStyle = ZP.bead;
-                          c2.beginPath(); c2.arc(ox + beadX, beadY, 2.5, 0, Math.PI * 2); c2.fill();
+                          c2.beginPath(); c2.arc(ox + beadX, beadY, 2.7, 0, Math.PI * 2); c2.fill();
                         }
                         c2.restore();
                         // Label
                         c2.font = 'bold 12px sans-serif'; c2.fillStyle = ink; c2.textAlign = 'center';
                         c2.fillText(fn.name, ox, cy0 + cellH - 10);
-                      });
+                      }
                     }
+
+                    function fzTick() {
+                      cvEl._fzRafId = 0;
+                      if (!cvEl.isConnected) {
+                        if (cvEl._fzVisHandler && typeof document !== 'undefined') {
+                          document.removeEventListener('visibilitychange', cvEl._fzVisHandler);
+                          cvEl._fzVisHandler = null;
+                        }
+                        return;
+                      }
+                      var ZP = cvEl._fzPal || fgZooPal;
+                      if (fzReduce || ZP.theme === 'contrast' || (typeof document !== 'undefined' && document.hidden)) return;
+                      drawFz();
+                      if (typeof requestAnimationFrame === 'function') cvEl._fzRafId = requestAnimationFrame(fzTick);
+                    }
+                    function fzSyncLoop() {
+                      var ZP = cvEl._fzPal || fgZooPal;
+                      var want = !fzReduce && ZP.theme !== 'contrast' && cvEl.isConnected && !(typeof document !== 'undefined' && document.hidden) && typeof requestAnimationFrame === 'function';
+                      if (want && !cvEl._fzRafId) cvEl._fzRafId = requestAnimationFrame(fzTick);
+                      else if (!want && cvEl._fzRafId && typeof cancelAnimationFrame === 'function') { cancelAnimationFrame(cvEl._fzRafId); cvEl._fzRafId = 0; }
+                    }
+
                     cvEl._fzAnim = 1;
                     cvEl._fzDraw = drawFz;
+                    cvEl._fzSyncLoop = fzSyncLoop;
                     drawFz();
+                    fzSyncLoop();
+                    if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+                      cvEl._fzVisHandler = function() {
+                        if (!cvEl.isConnected) {
+                          document.removeEventListener('visibilitychange', cvEl._fzVisHandler);
+                          cvEl._fzVisHandler = null;
+                          if (cvEl._fzRafId && typeof cancelAnimationFrame === 'function') { cancelAnimationFrame(cvEl._fzRafId); cvEl._fzRafId = 0; }
+                          return;
+                        }
+                        fzSyncLoop();
+                      };
+                      document.addEventListener('visibilitychange', cvEl._fzVisHandler);
+                    }
                     var ro = new ResizeObserver(function() {
-                      if (!cvEl.isConnected) { ro.disconnect(); return; }
-                      W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2); drawFz();
+                      if (!cvEl.isConnected) {
+                        ro.disconnect();
+                        if (cvEl._fzRafId && typeof cancelAnimationFrame === 'function') { cancelAnimationFrame(cvEl._fzRafId); cvEl._fzRafId = 0; }
+                        return;
+                      }
+                      W = cvEl.offsetWidth || 600; H = cvEl.offsetHeight || 220;
+                      cvEl.width = W * 2; cvEl.height = H * 2; c2.scale(2, 2);
+                      fzBuildGeo();
+                      drawFz();
                     });
                     ro.observe(cvEl);
                   },

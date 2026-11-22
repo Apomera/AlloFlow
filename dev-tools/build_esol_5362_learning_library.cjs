@@ -3,7 +3,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const itemBanks = require('./esol_5362/item_content.cjs');
+const { applyChoiceOverrides } = require('./esol_5362/choice_overrides/index.cjs');
+const itemBanks = applyChoiceOverrides(require('./esol_5362/item_content.cjs'));
 const { chapters: chapterSpecs, memoryAids: memoryAidSpecs, workshops: workshopSpecs } = require('./esol_5362/learning_content.cjs');
 const root = path.resolve(__dirname, '..');
 const itemBankBySkill = new Map(itemBanks.map((bank) => [bank.id, bank]));

@@ -3,6 +3,7 @@
 
 const fs=require('fs');
 const path=require('path');
+const { applySourceLeakageOverride } = require('./non_eppp_source_leakage_overrides/index.cjs');
 const root=path.resolve(__dirname,'..');
 const sourceDir=path.join(root,'test_prep');
 const deployDir=path.join(root,'desktop/web-app','public','test_prep');
@@ -171,6 +172,7 @@ for(const packFile of fs.readdirSync(sourceDir).filter(name=>name.endsWith('_pac
     if(patches[item.id])next={...next,...patches[item.id]};
     if(overrides[item.id]||patches[item.id])corrected++;
     next=clean(next,stem);
+    next=applySourceLeakageOverride(stem,next);
     if(!Array.isArray(next.choices)||next.choices.length!==4||!Number.isInteger(next.answerIndex)||next.answerIndex<0||next.answerIndex>3)throw Error(`${stem}/${next.id}: invalid answer shape`);
     if(!Array.isArray(next.choiceRationales)||next.choiceRationales.length!==4)throw Error(`${stem}/${next.id}: invalid choice feedback`);
     return next;

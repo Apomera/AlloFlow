@@ -122,6 +122,31 @@
     return { status: 'submitted', needsReview: true, code: 'input-too-long', feedback: 'This response and its criteria need teacher review because they exceed the automatic feedback limit. No text was shortened or automatically scored.' };
   }
 
+  // Self-harm crisis gate on student-written answers only (never the question
+  // or rubric). Scoped to self_harm so history/literature/science answers
+  // mentioning war, genocide, or medical topics are never blocked.
+  function _quizCheckStudentSelfHarm(studentText, surface, onSafetyFlag) {
+    var txt = String(studentText || '').trim();
+    if (!txt || typeof window === 'undefined') return null;
+    var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+    if (!checker || typeof checker.check !== 'function') return null;
+    var flags = null;
+    try { flags = checker.check(txt); } catch (_) { flags = null; }
+    var hit = Array.isArray(flags) && flags.find(function (f) { return f && f.category === 'self_harm'; });
+    if (!hit) return null;
+    if (typeof onSafetyFlag === 'function') {
+      try { onSafetyFlag({ tool: 'quiz_' + surface, severity: 'critical', category: 'self_harm', timestamp: Date.now() }); } catch (_) {}
+    }
+    try { if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') window.SelHub.showCrisisModal(); } catch (_) {}
+    return {
+      status: 'submitted',
+      needsReview: true,
+      safetyPaused: true,
+      code: 'safety-paused',
+      feedback: 'We paused automatic grading here. Your wellbeing matters more than any quiz — please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line).',
+    };
+  }
+
   /**
    * Grade a free-text short-answer response.
    * @param {Object} args
@@ -140,6 +165,8 @@
     if (!resp.trim()) {
       return { status: 'incorrect', feedback: 'No response provided yet.' };
     }
+    var safetyPause = _quizCheckStudentSelfHarm(resp, 'freeform', args.onSafetyFlag);
+    if (safetyPause) return safetyPause;
     var q = String(args.question || '');
     var expected = String(args.expectedAnswer || '');
     var grade = String(args.gradeLevel || 'middle school');
@@ -193,6 +220,8 @@
     if (!sf) {
       return { status: 'incorrect', feedback: 'Blank not filled in yet.' };
     }
+    var fillSafetyPause = _quizCheckStudentSelfHarm(sf, 'fill_blank', args.onSafetyFlag);
+    if (fillSafetyPause) return Object.assign({ expectedFill: args.expectedFill == null ? '' : String(args.expectedFill).trim() }, fillSafetyPause);
     // Use the same deterministic policy as the teacher's grader, including
     // when AI is disabled. Explicit exact spelling must never use fuzzy AI.
     var ef = args.expectedFill == null ? '' : String(args.expectedFill).trim();
@@ -275,6 +304,8 @@
     if (!args.studentResponse || !String(args.studentResponse).trim()) {
       return { status: 'incorrect', feedback: 'No response provided yet.', score: 0 };
     }
+    var calSafetyPause = _quizCheckStudentSelfHarm(args.studentResponse, 'calibrated', args.onSafetyFlag);
+    if (calSafetyPause) return Object.assign({ score: 0 }, calSafetyPause);
     var rubric = String(args.rubric || 'Demonstrates understanding of the topic and explains reasoning.');
     var resp = String(args.studentResponse || '');
     var context = String(args.context || '');

@@ -13,17 +13,36 @@ function CanvasRecoveryDialogView(props) {
   };
   const fallbackRecoveryRef = React.useRef(null);
   const activeRecoveryDialogRef = canvasRecoveryDialogRef || fallbackRecoveryRef;
+  const [snapshotQuery, setSnapshotQuery] = React.useState('');
+  const [snapshotFilter, setSnapshotFilter] = React.useState('all');
+  const _focusRing = 'transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
   const recoveryStateRef = React.useRef({
     canvasRecoveryDecisionMade,
     vaultMode: canvasRecoveryVaultForm?.mode,
     canvasRecoveryBusyId,
     closeCanvasRecoveryDialog,
+    canvasRecoveryEraseId,
+    canvasRecoveryRemoveMediaId,
+    pdfRemediationDeleteConfirm,
+    setCanvasRecoveryEraseId,
+    setCanvasRecoveryRemoveMediaId,
+    setPdfRemediationDeleteConfirm,
+    snapshotQuery,
+    setSnapshotQuery,
   });
   recoveryStateRef.current = {
     canvasRecoveryDecisionMade,
     vaultMode: canvasRecoveryVaultForm?.mode,
     canvasRecoveryBusyId,
     closeCanvasRecoveryDialog,
+    canvasRecoveryEraseId,
+    canvasRecoveryRemoveMediaId,
+    pdfRemediationDeleteConfirm,
+    setCanvasRecoveryEraseId,
+    setCanvasRecoveryRemoveMediaId,
+    setPdfRemediationDeleteConfirm,
+    snapshotQuery,
+    setSnapshotQuery,
   };
   React.useEffect(() => {
     const dialog = activeRecoveryDialogRef && activeRecoveryDialogRef.current;
@@ -93,6 +112,26 @@ function CanvasRecoveryDialogView(props) {
       if (event.key === 'Escape') {
         if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         const latest = recoveryStateRef.current;
+        if (latest.canvasRecoveryEraseId && typeof latest.setCanvasRecoveryEraseId === 'function') {
+          event.preventDefault();
+          latest.setCanvasRecoveryEraseId(null);
+          return;
+        }
+        if (latest.canvasRecoveryRemoveMediaId && typeof latest.setCanvasRecoveryRemoveMediaId === 'function') {
+          event.preventDefault();
+          latest.setCanvasRecoveryRemoveMediaId(null);
+          return;
+        }
+        if (latest.pdfRemediationDeleteConfirm && typeof latest.setPdfRemediationDeleteConfirm === 'function') {
+          event.preventDefault();
+          latest.setPdfRemediationDeleteConfirm(null);
+          return;
+        }
+        if (latest.snapshotQuery && typeof latest.setSnapshotQuery === 'function') {
+          event.preventDefault();
+          latest.setSnapshotQuery('');
+          return;
+        }
         if (latest.canvasRecoveryDecisionMade && latest.vaultMode !== 'confirm-recovery-code' && !latest.canvasRecoveryBusyId && typeof latest.closeCanvasRecoveryDialog === 'function') {
           event.preventDefault();
           latest.closeCanvasRecoveryDialog();
@@ -182,7 +221,7 @@ function CanvasRecoveryDialogView(props) {
               </div>
               {canvasRecoveryDecisionMade && canvasRecoveryVaultForm?.mode !== 'confirm-recovery-code' && (
                 <button type="button" onClick={() => closeCanvasRecoveryDialog(null)}
-                  className="min-h-11 min-w-11 rounded-xl border border-slate-200 text-xl text-slate-600 hover:bg-slate-100"
+                  className={`min-h-11 min-w-11 rounded-xl border border-slate-200 text-xl text-slate-600 hover:bg-slate-100 ${_focusRing}`}
                   aria-label={t('saved_work.close_aria') || 'Close saved work manager'}>×</button>
               )}
             </div>
@@ -194,7 +233,7 @@ function CanvasRecoveryDialogView(props) {
                 <p className="mt-2 text-sm text-slate-600">{t('storage.checking_canvas_note') || 'This can take a few seconds in Gemini Canvas.'}</p>
               </div>
             ) : canvasRecoveryDialogMode === 'vault-locked' ? (
-              renderCanvasRecoveryLockedScreen()
+              typeof renderCanvasRecoveryLockedScreen === 'function' ? renderCanvasRecoveryLockedScreen() : null
             ) : canvasRecoveryDialogMode === 'error' ? (
               <div>
                 <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-800">
@@ -206,12 +245,12 @@ function CanvasRecoveryDialogView(props) {
                     onClick={needsStorageApproval
                       ? () => void approveAndRetryCanvasRecoveryStorage()
                       : retryCanvasRecoveryStorage}
-                    className="min-h-12 rounded-xl bg-indigo-700 px-4 py-3 font-black text-white hover:bg-indigo-800 disabled:opacity-60">
+                    className={`min-h-12 rounded-xl bg-indigo-700 px-4 py-3 font-black text-white hover:bg-indigo-800 disabled:opacity-60 ${_focusRing}`}>
                     {canvasRecoveryBusyId === 'storage-retry' ? 'Checking…' : (needsStorageApproval ? 'Open device storage' : 'Retry device recovery')}
                   </button>
                   <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
                     onClick={continueWithoutCanvasRecovery}
-                    className="min-h-12 rounded-xl border-2 border-slate-300 px-4 py-3 font-black text-slate-800 hover:bg-slate-100 disabled:opacity-60">
+                    className={`min-h-12 rounded-xl border-2 border-slate-300 px-4 py-3 font-black text-slate-800 hover:bg-slate-100 disabled:opacity-60 ${_focusRing}`}>
                     {t('storage.work_without_recovery') || 'Work without device recovery'}
                   </button>
                 </div>
@@ -227,7 +266,7 @@ function CanvasRecoveryDialogView(props) {
                 <div>
                   <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">{t('storage.no_restorable') || 'No restorable workspace was found.'}</p>
                   <button type="button" data-recovery-autofocus="true" onClick={startFreshCanvasWorkspace}
-                    className="mt-4 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 font-bold text-white hover:bg-indigo-800">
+                    className={`mt-4 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 font-bold text-white hover:bg-indigo-800 ${_focusRing}`}>
                     {t('storage.start_fresh') || 'Start a fresh workspace'}
                   </button>
                 </div>
@@ -251,20 +290,20 @@ function CanvasRecoveryDialogView(props) {
                     <button type="button" data-recovery-autofocus="true"
                       disabled={Boolean(canvasRecoveryBusyId)}
                       onClick={() => restoreCanvasWorkspaceSnapshot(latest)}
-                      className="min-h-12 rounded-xl bg-indigo-700 px-4 py-3 font-black text-white hover:bg-indigo-800 disabled:opacity-60">
+                      className={`min-h-12 rounded-xl bg-indigo-700 px-4 py-3 font-black text-white hover:bg-indigo-800 disabled:opacity-60 ${_focusRing}`}>
                       {canvasRecoveryBusyId === latest.id ? 'Restoring…' : 'Continue previous work'}
                     </button>
                     <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={startFreshCanvasWorkspace}
-                      className="min-h-12 rounded-xl border-2 border-slate-300 px-4 py-3 font-black text-slate-800 hover:bg-slate-100">
+                      className={`min-h-12 rounded-xl border-2 border-slate-300 px-4 py-3 font-black text-slate-800 hover:bg-slate-100 ${_focusRing}`}>
                       {t('storage.start_fresh') || 'Start a fresh workspace'}
                     </button>
                     <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={openCanvasRecoveryManager}
-                      className="min-h-12 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 font-bold text-indigo-800 hover:bg-indigo-100">
+                      className={`min-h-12 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 font-bold text-indigo-800 hover:bg-indigo-100 ${_focusRing}`}>
                       {t('storage.manage_saved', { n: canvasRecoveryStore.snapshots.length, max: choiceRetention.maxSnapshots }) || ('Manage saved work (' + canvasRecoveryStore.snapshots.length + ' of ' + choiceRetention.maxSnapshots + ')')}
                     </button>
                     <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
                       onClick={() => canvasRecoveryImportInputRef.current?.click()}
-                      className="min-h-12 rounded-xl border border-slate-300 px-4 py-3 text-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-60">
+                      className={`min-h-12 rounded-xl border border-slate-300 px-4 py-3 text-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-60 ${_focusRing}`}>
                       {t('storage.import_project') || 'Import project file'}
                     </button>
                   </div>
@@ -281,8 +320,8 @@ function CanvasRecoveryDialogView(props) {
               );
             })() : (
               <>
-                {renderCanvasRecoveryProtectionSection()}
-                {renderEducatorAccessCodeSection()}
+                {typeof renderCanvasRecoveryProtectionSection === 'function' ? renderCanvasRecoveryProtectionSection() : null}
+                {typeof renderEducatorAccessCodeSection === 'function' ? renderEducatorAccessCodeSection() : null}
                 {(() => {
                   const retention = ALLO_WORKSPACE_RECOVERY.retentionStatus(canvasRecoveryStore);
                   const policyOptions = [
@@ -308,6 +347,10 @@ function CanvasRecoveryDialogView(props) {
                     ? (deviceFacts || { persisted: null, usage: null, quota: null })
                     : origin;
                   const persistence = physicalFacts.persisted;
+                  const capacityMax = Math.max(1, Number(retention.maxSnapshots) || 1);
+                  const capacityCurrent = Math.max(0, Number(retention.count) || 0);
+                  const capacityPct = Math.min(100, Math.round((capacityCurrent / capacityMax) * 100));
+                  const capacityNearLimit = retention.overTarget || capacityCurrent >= capacityMax;
                   return (
                     <>
                       <section aria-labelledby="storage-status-title" className="mb-5 rounded-2xl border border-slate-200 p-4">
@@ -320,7 +363,7 @@ function CanvasRecoveryDialogView(props) {
                           </div>
                           <button type="button" disabled={storageManagerInventory.loading}
                             onClick={() => void refreshStorageManagerInventory()}
-                            className="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-60">
+                            className={`min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-60 ${_focusRing}`}>
                             {storageManagerInventory.loading || alloModelStatus.loading ? 'Refreshing…' : 'Refresh status'}
                           </button>
                         </div>
@@ -342,9 +385,30 @@ function CanvasRecoveryDialogView(props) {
                             </div>
                           </div>
                           <div className="rounded-xl bg-slate-50 p-3">
-                            <div className="text-xs font-black uppercase tracking-wide text-slate-600">{t('storage.recovery_workspaces_label') || 'Recovery workspaces'}</div>
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="text-xs font-black uppercase tracking-wide text-slate-600">{t('storage.recovery_workspaces_label') || 'Recovery workspaces'}</div>
+                              {capacityNearLimit && (
+                                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-black text-amber-900">
+                                  {retention.overTarget ? 'Over target' : 'At target'}
+                                </span>
+                              )}
+                            </div>
                             <div className="mt-1 font-black text-slate-900">
                               {t('storage.recovery_target', { count: retention.count, max: retention.maxSnapshots, bytes: _alloFormatWorkspaceBytes(retention.bytes) }) || (retention.count + ' / ' + retention.maxSnapshots + ' target · ' + _alloFormatWorkspaceBytes(retention.bytes))}
+                            </div>
+                            <div
+                              role="progressbar"
+                              aria-label="Recovery workspace target capacity"
+                              aria-valuemin={0}
+                              aria-valuemax={capacityMax}
+                              aria-valuenow={Math.min(capacityCurrent, capacityMax)}
+                              aria-valuetext={`${capacityCurrent} of ${capacityMax} target workspaces (${capacityPct}%)`}
+                              className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200"
+                            >
+                              <div
+                                className={`h-full rounded-full transition-all motion-reduce:transition-none ${capacityNearLimit ? 'bg-amber-600' : 'bg-indigo-600'}`}
+                                style={{ width: `${capacityPct}%` }}
+                              />
                             </div>
                           </div>
                         </div>
@@ -365,7 +429,7 @@ function CanvasRecoveryDialogView(props) {
                                   <span className="shrink-0 rounded-md bg-emerald-50 px-2 py-1 text-xs font-black text-emerald-800">{'✓ '}{t('storage.model_on_device') || 'On this device'}</span>
                                 ) : (
                                   <button type="button" onClick={m.onGet} disabled={!!alloModelStatus.busy}
-                                    className="shrink-0 min-h-11 rounded-md border border-indigo-300 bg-white px-3 py-2 text-xs font-black text-indigo-800 disabled:opacity-50">
+                                    className={`shrink-0 min-h-11 rounded-md border border-indigo-300 bg-white px-3 py-2 text-xs font-black text-indigo-800 hover:bg-indigo-50 disabled:opacity-50 ${_focusRing}`}>
                                     {alloModelStatus.busy === m.key
                                       ? (t('storage.model_downloading') || 'Downloading…')
                                       : ((t('storage.model_download', { size: m.size }) || ('Download ' + m.size)))}
@@ -423,7 +487,7 @@ function CanvasRecoveryDialogView(props) {
                               <button key={option.id} type="button" aria-pressed={selected}
                                 disabled={Boolean(canvasRecoveryBusyId)}
                                 onClick={() => void setStorageRetentionPolicy(option.id)}
-                                className={'min-h-11 rounded-xl border px-3 py-3 text-left disabled:opacity-60 ' +
+                                className={`min-h-11 rounded-xl border px-3 py-3 text-left disabled:opacity-60 ${_focusRing} ` +
                                   (selected ? 'border-indigo-600 bg-white ring-2 ring-indigo-200' : 'border-indigo-200 bg-indigo-50 hover:bg-white')}>
                                 <span className="block font-black text-slate-900">
                                   {option.name}{selected && option.id === 'automatic' ? (t('storage.retention_currently', { policy: retention.effectivePolicyId }) || (' (currently ' + retention.effectivePolicyId + ')')) : ''}
@@ -504,23 +568,23 @@ function CanvasRecoveryDialogView(props) {
                                 <button type="button" onClick={() => {
                                   if (isActive) openCachedPdfRemediation(true);
                                   else void restoreCachedPdfRemediation(entry.storageKey, true);
-                                }} className="min-h-11 rounded-lg bg-emerald-700 px-3 py-2 text-sm font-bold text-white hover:bg-emerald-800">
+                                }} className={`min-h-11 rounded-lg bg-emerald-700 px-3 py-2 text-sm font-bold text-white hover:bg-emerald-800 ${_focusRing}`}>
                                   {t('storage.remediation_open') || 'Resume'}
                                 </button>
                                 {pdfRemediationDeleteConfirm === entry.storageKey ? (
                                   <>
                                     <button type="button" onClick={() => deleteCachedPdfRemediationEntry(entry.storageKey)}
-                                      className="min-h-11 rounded-lg bg-red-700 px-3 py-2 text-sm font-black text-white hover:bg-red-800">
+                                      className={`min-h-11 rounded-lg bg-red-700 px-3 py-2 text-sm font-black text-white hover:bg-red-800 ${_focusRing}`}>
                                       {t('storage.remediation_delete_confirm_one') || 'Confirm delete'}
                                     </button>
                                     <button type="button" onClick={() => setPdfRemediationDeleteConfirm(null)}
-                                      className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800 hover:bg-slate-100">
+                                      className={`min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800 hover:bg-slate-100 ${_focusRing}`}>
                                       {t('common.cancel') || 'Cancel'}
                                     </button>
                                   </>
                                 ) : (
                                   <button type="button" onClick={() => setPdfRemediationDeleteConfirm(entry.storageKey)}
-                                    className="min-h-11 rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-bold text-red-800 hover:bg-red-50">
+                                    className={`min-h-11 rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-bold text-red-800 hover:bg-red-50 ${_focusRing}`}>
                                     {t('storage.remediation_delete') || 'Delete'}
                                   </button>
                                 )}
@@ -536,7 +600,7 @@ function CanvasRecoveryDialogView(props) {
                         <div className="rounded-xl border border-emerald-200 bg-white p-3">
                           <p className="text-sm font-black text-slate-900">Current remediation</p>
                           <p className="mt-1 text-xs text-slate-600">Available in this session; device-cache storage may be unavailable or still updating.</p>
-                          <button type="button" onClick={() => openCachedPdfRemediation(true)} className="mt-2 min-h-11 rounded-lg bg-emerald-700 px-3 py-2 text-sm font-bold text-white hover:bg-emerald-800">Resume</button>
+                          <button type="button" onClick={() => openCachedPdfRemediation(true)} className={`mt-2 min-h-11 rounded-lg bg-emerald-700 px-3 py-2 text-sm font-bold text-white hover:bg-emerald-800 ${_focusRing}`}>Resume</button>
                         </div>
                       )}
                       {pdfRemediationCacheEntries.length === 0 && !pdfFixResult && !lastPdfAuditResultRef.current && canvasRecoveryStore.snapshots.some(snapshot => snapshot?.workspace?.builderDraft) && (
@@ -547,7 +611,7 @@ function CanvasRecoveryDialogView(props) {
                     </div>
                     {pdfRemediationCacheEntries.length > 1 && pdfRemediationDeleteConfirm !== 'all' && (
                       <button type="button" onClick={() => setPdfRemediationDeleteConfirm('all')}
-                        className="mt-3 min-h-11 rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-bold text-red-800 hover:bg-red-50">
+                        className={`mt-3 min-h-11 rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-bold text-red-800 hover:bg-red-50 ${_focusRing}`}>
                         {t('storage.remediation_delete_all') || 'Delete all remediations'}
                       </button>
                     )}
@@ -555,8 +619,8 @@ function CanvasRecoveryDialogView(props) {
                       <div role="alert" className="mt-3 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-950">
                         <p className="font-semibold">{t('storage.remediation_delete_warning') || 'Delete every locally cached remediation and clear the current remediation result? Document Hub drafts, workspaces, and exported files will not be affected.'}</p>
                         <div className="mt-3 flex flex-wrap gap-2">
-                          <button type="button" onClick={deleteCachedPdfRemediation} className="min-h-11 rounded-lg bg-red-700 px-3 py-2 text-sm font-black text-white hover:bg-red-800">Delete all remediations</button>
-                          <button type="button" onClick={() => setPdfRemediationDeleteConfirm(null)} className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800 hover:bg-slate-100">{t('common.cancel') || 'Cancel'}</button>
+                          <button type="button" onClick={deleteCachedPdfRemediation} className={`min-h-11 rounded-lg bg-red-700 px-3 py-2 text-sm font-black text-white hover:bg-red-800 ${_focusRing}`}>Delete all remediations</button>
+                          <button type="button" onClick={() => setPdfRemediationDeleteConfirm(null)} className={`min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-800 hover:bg-slate-100 ${_focusRing}`}>{t('common.cancel') || 'Cancel'}</button>
                         </div>
                       </div>
                     )}
@@ -573,11 +637,116 @@ function CanvasRecoveryDialogView(props) {
                     </p>
                   );
                 })()}
-                <div className="space-y-3">
-                  {canvasRecoveryStore.snapshots.length === 0 && (
-                    <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">No recovery workspaces are listed. Other saved work may still be available in Device storage.</p>
-                  )}
-                  {canvasRecoveryStore.snapshots.map((snapshot, index) => (
+                {(() => {
+                  const allSnapshots = Array.isArray(canvasRecoveryStore?.snapshots) ? canvasRecoveryStore.snapshots : [];
+                  const showWorkspaceFilter = allSnapshots.length >= 4;
+                  const pinnedCount = allSnapshots.filter((item) => item?.pinned === true).length;
+                  const draftCount = allSnapshots.filter((item) => Boolean(item?.workspace?.builderDraft)).length;
+                  const activeFilter = (snapshotFilter === 'pinned' && pinnedCount > 0) || (snapshotFilter === 'drafts' && draftCount > 0)
+                    ? snapshotFilter
+                    : 'all';
+                  const normalizedQuery = showWorkspaceFilter ? snapshotQuery.trim().toLocaleLowerCase() : '';
+                  const visibleSnapshots = showWorkspaceFilter
+                    ? allSnapshots.filter((item) => {
+                        if (activeFilter === 'pinned' && item?.pinned !== true) return false;
+                        if (activeFilter === 'drafts' && !item?.workspace?.builderDraft) return false;
+                        if (!normalizedQuery) return true;
+                        const haystack = `${item?.title || ''} ${item?.workspace?.builderDraft?.title || ''}`.toLocaleLowerCase();
+                        return haystack.includes(normalizedQuery);
+                      })
+                    : allSnapshots;
+                  const isFiltered = showWorkspaceFilter && (activeFilter !== 'all' || Boolean(normalizedQuery));
+                  return (
+                    <>
+                      {showWorkspaceFilter && (
+                        <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2.5" role="search" aria-label="Filter saved workspaces">
+                          <div className="flex items-center gap-2">
+                            <label htmlFor="canvas-recovery-workspace-search" className="sr-only">Search saved workspaces</label>
+                            <input
+                              id="canvas-recovery-workspace-search"
+                              type="search"
+                              value={snapshotQuery}
+                              onChange={(event) => setSnapshotQuery(event.target.value)}
+                              onKeyDown={(event) => {
+                                if (event.key === 'Escape' && snapshotQuery) {
+                                  if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  setSnapshotQuery('');
+                                }
+                              }}
+                              placeholder="Search saved workspaces by title…"
+                              className="w-full min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                            />
+                            {snapshotQuery && (
+                              <button
+                                type="button"
+                                onClick={() => setSnapshotQuery('')}
+                                className={`min-h-11 shrink-0 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 ${_focusRing}`}
+                              >
+                                Clear
+                              </button>
+                            )}
+                          </div>
+                          {(pinnedCount > 0 || draftCount > 0) && (
+                            <div role="group" aria-label="Filter saved workspaces by type" className="flex flex-wrap gap-1.5">
+                              <button
+                                type="button"
+                                data-recovery-filter="all"
+                                aria-pressed={activeFilter === 'all'}
+                                onClick={() => setSnapshotFilter('all')}
+                                className={`min-h-11 rounded-full border px-3 py-1.5 text-xs font-bold ${_focusRing} ${activeFilter === 'all' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100'}`}
+                              >
+                                All ({allSnapshots.length})
+                              </button>
+                              {pinnedCount > 0 && (
+                                <button
+                                  type="button"
+                                  data-recovery-filter="pinned"
+                                  aria-pressed={activeFilter === 'pinned'}
+                                  onClick={() => setSnapshotFilter('pinned')}
+                                  className={`min-h-11 rounded-full border px-3 py-1.5 text-xs font-bold ${_focusRing} ${activeFilter === 'pinned' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100'}`}
+                                >
+                                  Pinned ({pinnedCount})
+                                </button>
+                              )}
+                              {draftCount > 0 && (
+                                <button
+                                  type="button"
+                                  data-recovery-filter="drafts"
+                                  aria-pressed={activeFilter === 'drafts'}
+                                  onClick={() => setSnapshotFilter('drafts')}
+                                  className={`min-h-11 rounded-full border px-3 py-1.5 text-xs font-bold ${_focusRing} ${activeFilter === 'drafts' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100'}`}
+                                >
+                                  Document Hub drafts ({draftCount})
+                                </button>
+                              )}
+                            </div>
+                          )}
+                          {isFiltered && (
+                            <p role="status" aria-live="polite" className="text-xs font-medium text-slate-600">
+                              Showing {visibleSnapshots.length} of {allSnapshots.length} saved workspaces
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      <div className="space-y-3">
+                        {allSnapshots.length === 0 && (
+                          <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">No recovery workspaces are listed. Other saved work may still be available in Device storage.</p>
+                        )}
+                        {allSnapshots.length > 0 && visibleSnapshots.length === 0 && (
+                          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-5 text-center">
+                            <p className="text-sm font-bold text-slate-800">No saved workspaces match your current filter.</p>
+                            <button
+                              type="button"
+                              onClick={() => { setSnapshotQuery(''); setSnapshotFilter('all'); }}
+                              className={`mt-3 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-800 ${_focusRing}`}
+                            >
+                              Reset filters
+                            </button>
+                          </div>
+                        )}
+                        {visibleSnapshots.map((snapshot, index) => (
                     <div key={snapshot.id} className="rounded-2xl border border-slate-200 p-4">
                       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                         <div>
@@ -600,44 +769,44 @@ function CanvasRecoveryDialogView(props) {
                             <button type="button" data-recovery-autofocus={index === 0 ? 'true' : undefined}
                               disabled={Boolean(canvasRecoveryBusyId)}
                               onClick={() => void openCanvasDocumentHubDraft(snapshot)}
-                              className="min-h-11 rounded-lg bg-violet-700 px-3 py-2 text-sm font-bold text-white hover:bg-violet-800 disabled:opacity-60">
+                              className={`min-h-11 rounded-lg bg-violet-700 px-3 py-2 text-sm font-bold text-white hover:bg-violet-800 disabled:opacity-60 ${_focusRing}`}>
                               Open document
                             </button>
                           )}
                           <button type="button" data-recovery-autofocus={index === 0 && !snapshot?.workspace?.builderDraft ? 'true' : undefined}
                             disabled={Boolean(canvasRecoveryBusyId)}
                             onClick={() => restoreCanvasWorkspaceSnapshot(snapshot)}
-                            className="min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-60">
+                            className={`min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-60 ${_focusRing}`}>
                             Restore
                           </button>
                           <button type="button" aria-pressed={snapshot.pinned === true}
                             disabled={Boolean(canvasRecoveryBusyId)}
                             onClick={() => void setCanvasRecoverySnapshotPinned(snapshot.id, !snapshot.pinned)}
-                            className="min-h-11 rounded-lg border border-indigo-300 px-3 py-2 text-sm font-bold text-indigo-800 hover:bg-indigo-50 disabled:opacity-60">
+                            className={`min-h-11 rounded-lg border border-indigo-300 px-3 py-2 text-sm font-bold text-indigo-800 hover:bg-indigo-50 disabled:opacity-60 ${_focusRing}`}>
                             {snapshot.pinned ? 'Unpin' : 'Pin'}
                           </button>
                           {canvasRecoveryRemoveMediaId === snapshot.id ? (
                             <>
                               <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
                                 onClick={() => void removeCanvasRecoverySnapshotMedia(snapshot.id)}
-                                className="min-h-11 rounded-lg bg-amber-700 px-3 py-2 text-sm font-bold text-white hover:bg-amber-800 disabled:opacity-60">
+                                className={`min-h-11 rounded-lg bg-amber-700 px-3 py-2 text-sm font-bold text-white hover:bg-amber-800 disabled:opacity-60 ${_focusRing}`}>
                                 Confirm remove media
                               </button>
                               <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
                                 onClick={() => setCanvasRecoveryRemoveMediaId(null)}
-                                className="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">
+                                className={`min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 ${_focusRing}`}>
                                 Cancel
                               </button>
                             </>
                           ) : (
                             <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
                               onClick={() => { setCanvasRecoveryEraseId(null); setCanvasRecoveryRemoveMediaId(snapshot.id); }}
-                              className="min-h-11 rounded-lg border border-amber-300 px-3 py-2 text-sm font-bold text-amber-800 hover:bg-amber-50">
+                              className={`min-h-11 rounded-lg border border-amber-300 px-3 py-2 text-sm font-bold text-amber-800 hover:bg-amber-50 ${_focusRing}`}>
                               Remove embedded media
                             </button>
                           )}
                           <button type="button" onClick={() => exportCanvasRecoverySnapshot(snapshot)}
-                            className="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">
+                            className={`min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 ${_focusRing}`}>
                             {canvasRecoveryVaultState.enabled ? 'Export readable copy' : 'Export'}
                           </button>
                           {canvasRecoveryEraseId === snapshot.id ? (
@@ -645,18 +814,18 @@ function CanvasRecoveryDialogView(props) {
                               <button type="button" data-recovery-confirm={snapshot.id}
                                 disabled={Boolean(canvasRecoveryBusyId)}
                                 onClick={() => eraseCanvasRecoverySnapshot(snapshot.id)}
-                                className="min-h-11 rounded-lg bg-red-700 px-3 py-2 text-sm font-bold text-white hover:bg-red-800 disabled:opacity-60">
+                                className={`min-h-11 rounded-lg bg-red-700 px-3 py-2 text-sm font-bold text-white hover:bg-red-800 disabled:opacity-60 ${_focusRing}`}>
                                 Confirm erase
                               </button>
                               <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={() => setCanvasRecoveryEraseId(null)}
-                                className="min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100">
+                                className={`min-h-11 rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-100 ${_focusRing}`}>
                                 Cancel
                               </button>
                             </>
                           ) : (
                             <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
                               onClick={() => requestCanvasRecoveryErase(snapshot.id)}
-                              className="min-h-11 rounded-lg border border-red-300 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50">
+                              className={`min-h-11 rounded-lg border border-red-300 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50 ${_focusRing}`}>
                               Erase workspace
                             </button>
                           )}
@@ -664,23 +833,26 @@ function CanvasRecoveryDialogView(props) {
                       </div>
                     </div>
                   ))}
-                </div>
+                      </div>
+                    </>
+                  );
+                })()}
                 <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                   {!canvasRecoveryDecisionMade ? (
                     <button type="button" onClick={() => setCanvasRecoveryDialogMode('choice')}
-                      className="min-h-11 flex-1 rounded-xl border border-slate-300 px-4 py-3 font-bold text-slate-700 hover:bg-slate-100">
+                      className={`min-h-11 flex-1 rounded-xl border border-slate-300 px-4 py-3 font-bold text-slate-700 hover:bg-slate-100 ${_focusRing}`}>
                       Back
                     </button>
                   ) : (
                     <button type="button" onClick={() => closeCanvasRecoveryDialog(null)}
-                      className="min-h-11 flex-1 rounded-xl border border-slate-300 px-4 py-3 font-bold text-slate-700 hover:bg-slate-100">
+                      className={`min-h-11 flex-1 rounded-xl border border-slate-300 px-4 py-3 font-bold text-slate-700 hover:bg-slate-100 ${_focusRing}`}>
                       Close
                     </button>
                   )}
                   {isCanvas && (
                   <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
                     onClick={() => canvasRecoveryImportInputRef.current?.click()}
-                    className="min-h-11 flex-1 rounded-xl bg-indigo-50 px-4 py-3 text-center font-bold text-indigo-800 hover:bg-indigo-100 disabled:opacity-60">
+                    className={`min-h-11 flex-1 rounded-xl bg-indigo-50 px-4 py-3 text-center font-bold text-indigo-800 hover:bg-indigo-100 disabled:opacity-60 ${_focusRing}`}>
                     Import project file
                   </button>
                   )}

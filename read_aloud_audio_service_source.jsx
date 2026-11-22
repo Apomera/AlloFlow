@@ -72,7 +72,6 @@ const createReadAloudAudioService = (dependencies = {}) => {
         if (provider === 'gemini' || provider === 'cloud') return false;
         if (provider === 'local' || provider === 'kokoro' || provider === 'piper' || provider === 'kokoro-word-shard' || provider === 'browser') return true;
         if (/^(?:af|am|bf|bm|ef|em|ff|hf|hm|if|im|jf|jm|pf|pm|zf|zm)_/i.test(voice)) return true;
-        if (typeof window !== 'undefined' && (window._kokoroTTS?.ready || window._piperTTS)) return true;
         return false;
     };
     const rawSynthesize = typeof dependencies.synthesize === 'function' ? dependencies.synthesize : null;
@@ -152,7 +151,11 @@ const createReadAloudAudioService = (dependencies = {}) => {
             const comma = value.indexOf(',');
             const header = value.slice(0, comma);
             const mimeMatch = header.match(/^data:([^;,]+)/i);
-            return { b64: value.slice(comma + 1), mime: mimeMatch ? mimeMatch[1] : 'audio/mpeg' };
+            const mime = mimeMatch ? mimeMatch[1].trim().toLowerCase() : 'audio/mpeg';
+            if (!/^(?:audio\/[a-z0-9.+-]+|application\/octet-stream)$/i.test(mime)) {
+                throw serviceError('invalid-audio-mime', 'Refused to encode non-audio data URI.');
+            }
+            return { b64: value.slice(comma + 1), mime };
         }
         if (value && typeof value === 'object') {
             const b64 = value.b64 || value.base64 || value.data;
@@ -249,11 +252,11 @@ const createReadAloudAudioService = (dependencies = {}) => {
             } else if (typeof moduleValue.getStore === 'function') {
                 store = moduleValue.getStore(ctx);
             }
-            if (!store && typeof lane === 'string') store = moduleValue[lane];
+            if (!store && typeof lane === 'string' && Object.prototype.hasOwnProperty.call(moduleValue, lane)) store = moduleValue[lane];
             if (isStore(store)) return store;
 
             // Legacy KaraokeAudioStore exposes createStore() plus nullable
-            // current/studentCurrent lanes. Keep a private per-module fallback
+            // current/studentCurrent lanes. Keep a bounded private per-module fallback
             // until the host supplies the active lane; never mutate the module.
             if (typeof moduleValue.createStore === 'function') {
                 let stores = fallbackStores.get(moduleValue);
@@ -261,8 +264,21 @@ const createReadAloudAudioService = (dependencies = {}) => {
                     stores = new Map();
                     fallbackStores.set(moduleValue, stores);
                 }
-                if (!stores.has(bindingKey)) stores.set(bindingKey, moduleValue.createStore());
-                return stores.get(bindingKey);
+                if (stores.has(bindingKey)) {
+                    const existing = stores.get(bindingKey);
+                    stores.delete(bindingKey);
+                    stores.set(bindingKey, existing);
+                    return existing;
+                }
+                while (stores.size >= 32) {
+                    const oldestKey = stores.keys().next().value;
+                    const oldestStore = stores.get(oldestKey);
+                    stores.delete(oldestKey);
+                    try { if (oldestStore && typeof oldestStore.clear === 'function') oldestStore.clear(); } catch (_) {}
+                }
+                const created = moduleValue.createStore();
+                stores.set(bindingKey, created);
+                return created;
             }
             return null;
         }
@@ -324,11 +340,10 @@ const createReadAloudAudioService = (dependencies = {}) => {
             let found = null;
             if (typeof input === 'number' && Number.isInteger(input)) found = list[input] || null;
             if (!found && typeof input === 'string') {
-                found = list.find((segment) => (
-                    segment.segmentId === input ||
-                    String(segment.storageKey) === input ||
-                    segment.spokenText === input
-                )) || null;
+                found = list.find((segment) => segment.segmentId === input)
+                    || list.find((segment) => typeof segment.storageKey === 'string' && segment.storageKey === input)
+                    || list.find((segment) => segment.spokenText === input)
+                    || null;
             }
             if (!found && input && typeof input === 'object') {
                 if (input.resourceId === resourceId && input.resourceType === resourceType && input.segmentId != null) {
@@ -492,16 +507,22 @@ const createReadAloudAudioService = (dependencies = {}) => {
             const storeApi = typeof window !== 'undefined' && window.AlloModules?.KaraokeAudioStore;
             const clip = (value, key) => {
                 if (!value || !storeApi) return null;
-                const identityKey = typeof key === 'object' ? storeApi.portableKeyForIdentity(key) : null;
+                const isObjKey = key !== null && typeof key === 'object';
+                const identityKey = isObjKey ? storeApi.portableKeyForIdentity(key) : null;
                 const entry = identityKey && value.entries && Object.prototype.hasOwnProperty.call(value.entries, identityKey)
                     ? value.entries[identityKey]
                     : undefined;
                 if (entry) return JSON.stringify([entry.audio, entry.mime, entry.source, entry.synthesisProfile]);
                 const legacy = value.version === 4 ? value.legacy : value;
-                const textKey = storeApi.keyFor(typeof key === 'object' ? key.spokenText : key);
-                if (!legacy?.sentences?.[textKey]) return null;
-                return JSON.stringify([legacy.sentences[textKey], legacy.mimes?.[textKey] || 'audio/mpeg',
-                    legacy.sources?.[textKey] || 'ai', storeApi.normalizeSynthesisProfile(legacy.metadata?.[textKey])]);
+                const textKey = storeApi.keyFor(isObjKey ? key.spokenText : key);
+                const own = (obj, k) => Boolean(obj && typeof obj === 'object' && Object.prototype.hasOwnProperty.call(obj, k));
+                if (!own(legacy?.sentences, textKey) || !legacy.sentences[textKey]) return null;
+                return JSON.stringify([
+                    legacy.sentences[textKey],
+                    (own(legacy.mimes, textKey) && legacy.mimes[textKey]) || 'audio/mpeg',
+                    (own(legacy.sources, textKey) && legacy.sources[textKey]) || 'ai',
+                    storeApi.normalizeSynthesisProfile(own(legacy.metadata, textKey) ? legacy.metadata[textKey] : undefined),
+                ]);
             };
             let durableReady = 0, protectedRecordings = 0;
             for (const segment of segments()) {
@@ -718,11 +739,19 @@ const createReadAloudAudioService = (dependencies = {}) => {
             // Joining an identical controller job also prevents two callers from
             // both observing a missing clip and synthesizing it simultaneously.
             if (preparation) {
-                if (options.signal === preparationOptions.signal &&
-                    JSON.stringify([options.profile, options.source, options.storeOptions, options.metadata]) ===
-                    JSON.stringify([preparationOptions.profile, preparationOptions.source, preparationOptions.storeOptions, preparationOptions.metadata])) {
+                let sameOpts = false;
+                try {
+                    sameOpts = Boolean(preparationOptions) && options.signal === preparationOptions.signal &&
+                        JSON.stringify([options.profile, options.source, options.storeOptions, options.metadata]) ===
+                        JSON.stringify([preparationOptions.profile, preparationOptions.source, preparationOptions.storeOptions, preparationOptions.metadata]);
+                } catch (_) {
+                    sameOpts = false;
+                }
+                if (sameOpts) {
                     if (typeof options.onProgress === 'function') {
-                        const unsubJoin = subscribe('progress', options.onProgress);
+                        const unsubJoin = subscribe((event) => {
+                            if (event && event.type === 'progress') options.onProgress(event);
+                        });
                         preparation.finally(() => { try { unsubJoin(); } catch (_) {} }).catch(() => {});
                     }
                     return preparation;
@@ -732,7 +761,12 @@ const createReadAloudAudioService = (dependencies = {}) => {
             preparationOptions = options;
             const running = Promise.resolve().then(() => runPreparation(options));
             preparation = running;
-            running.finally(() => { if (preparation === running) preparation = null; }).catch(() => {});
+            running.finally(() => {
+                if (preparation === running) {
+                    preparation = null;
+                    preparationOptions = null;
+                }
+            }).catch(() => {});
             return running;
         }
 
@@ -943,7 +977,6 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         if (provider === 'gemini' || provider === 'cloud') return false;
         if (provider === 'local' || provider === 'kokoro' || provider === 'piper' || provider === 'kokoro-word-shard' || provider === 'browser') return true;
         if (/^(?:af|am|bf|bm|ef|em|ff|hf|hm|if|im|jf|jm|pf|pm|zf|zm)_/i.test(voice)) return true;
-        if (typeof window !== 'undefined' && (window._kokoroTTS?.ready || window._piperTTS)) return true;
         return false;
     };
     const rawBridgeSynthesize = typeof dependencies.synthesize === 'function' ? dependencies.synthesize : null;
@@ -1299,6 +1332,11 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
                 segmentId: event.segment && event.segment.segmentId != null
                     ? String(event.segment.segmentId)
                     : String(segment.segmentId),
+                resourceId: event.resourceId != null ? String(event.resourceId) : String(segment.resourceId || ''),
+                resourceType: event.resourceType != null ? String(event.resourceType) : String(segment.resourceType || ''),
+                spokenText: event.segment && event.segment.spokenText != null
+                    ? String(event.segment.spokenText)
+                    : String(segment.spokenText || ''),
             });
         });
         const resolveStartedAt = Date.now();
@@ -1505,8 +1543,12 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             const fullBinding = bindingFor(null, 'reference');
             if (fullBinding) {
                 try {
+                    const normalizedSentence = normalize(sentence);
                     const matched = fullBinding.controller.segments().find((candidate) => (
-                        String(candidate.segmentId) === String(provenance.segmentId)
+                        String(candidate.segmentId) === String(provenance.segmentId) &&
+                        (!provenance.resourceId || String(candidate.resourceId || '') === String(provenance.resourceId)) &&
+                        (!provenance.resourceType || String(candidate.resourceType || '') === String(provenance.resourceType)) &&
+                        (!provenance.spokenText || String(candidate.spokenText || '') === String(provenance.spokenText) || String(candidate.spokenText || '') === normalizedSentence)
                     )) || null;
                     if (matched) {
                         binding = fullBinding;

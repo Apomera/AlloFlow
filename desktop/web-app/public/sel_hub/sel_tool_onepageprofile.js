@@ -12,19 +12,22 @@
 // Category: self-direction
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
-};
-
-if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile'))) {
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
+
+  window.SelHub = window.SelHub || {
+    _registry: {}, _order: [],
+    registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
+    isRegistered: function(id) { return !!this._registry[id]; },
+    renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
+  };
+
+  if (window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')) return;
 
   // WCAG 4.1.3: live region
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-onepageprofile')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-onepageprofile';
@@ -114,21 +117,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
     category: 'self-direction',
     render: function(ctx) {
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      if (!ctx || !ctx.React) return null;
       var _opT = (ctx && ctx.theme) || {};
       var _opHC = !!_opT.isContrast, _opL = !_opHC && !_opT.isDark;
       var _op_BGL = {'#1e293b':'#ffffff','#0f172a':'#f8fafc'}, _op_BGH = {'#1e293b':'#000000','#0f172a':'#000000','#fff':'#000000'};
-      var _op_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#64748b','#e0e7ff':'#3730a3','#e2e8f0':'#1e293b','#fcd34d':'#78350f','#fde68a':'#92400e'}, _op_FGH = {'#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#e0e7ff':'#ffff00','#fff':'#ffff00','#64748b':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
-      var _op_BDL = {'#334155':'#e2e8f0','#475569':'#cbd5e1','#1e293b':'#e5e7eb'}, _op_BDH = {'#334155':'#ffff00','#818cf8':'#ffff00','#475569':'#ffff00','#1e293b':'#ffff00','#cbd5e1':'#ffff00','#4f46e5':'#ffff00','#f59e0b':'#ffff00'};
+      var _op_FGL = {'#cbd5e1':'#334155','#a5b4fc':'#3730a3','#94a3b8':'#475569','#e0e7ff':'#3730a3','#e2e8f0':'#1e293b','#fcd34d':'#78350f','#fde68a':'#92400e','#64748b':'#475569'}, _op_FGH = {'#cbd5e1':'#ffff00','#a5b4fc':'#ffff00','#94a3b8':'#ffff00','#e0e7ff':'#ffff00','#fff':'#ffff00','#64748b':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _op_FGD = {'#64748b':'#94a3b8'};
+      var _op_BDL = {'#334155':'#cbd5e1','#475569':'#cbd5e1','#1e293b':'#e2e8f0','#818cf8':'#6366f1'}, _op_BDH = {'#334155':'#ffff00','#818cf8':'#ffff00','#475569':'#ffff00','#1e293b':'#ffff00','#cbd5e1':'#ffff00','#4f46e5':'#ffff00','#f59e0b':'#ffff00','#10b981':'#ffff00','#6366f1':'#ffff00'};
       var _opBg = function(h){ return _opHC ? (_op_BGH[h]||h) : (_opL ? (_op_BGL[h]||h) : h); };
-      var _opFg = function(h){ return _opHC ? (_op_FGH[h]||h) : (_opL ? (_op_FGL[h]||h) : h); };
+      var _opFg = function(h){ return _opHC ? (_op_FGH[h]||h) : (_opL ? (_op_FGL[h]||h) : (_op_FGD[h]||h)); };
       var _opBd = function(h){ return _opHC ? (_op_BDH[h]||h) : (_opL ? (_op_BDL[h]||h) : h); };
-      // accent text on the dark shell needs the 300/400 weight (1.4.3)
-      var _opInk = function(c){ return _opHC || _opL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
+      // accent text: HC = yellow, Light = 700-weight, Dark = 300/400-weight (1.4.3)
+      var _op_INKL = {'#f59e0b':'#92400e','#10b981':'#047857','#6366f1':'#4338ca','#4f46e5':'#4338ca','#a855f7':'#7e22ce','#ef4444':'#b91c1c','#0ea5e9':'#0369a1'};
+      var _opInk = function(c){ var k = String(c).toLowerCase(); return _opHC ? '#ffff00' : (_opL ? (_op_INKL[k] || c) : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24','#f59e0b':'#fbbf24'}[k] || c)); };
       // white text needs a 700-weight fill (1.4.3)
       var _opSolid = function(c){ return _opHC ? '#000000' : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
+      var _opSoftBg = function(darkTint, lightTint){ return _opHC ? '#000000' : (_opL ? (lightTint || '#f1f5f9') : darkTint); };
+      var _opGradBtn = function(grad){ return _opHC ? '#000000' : grad; };
+      var _opBtnBd = function(){ return _opHC ? '1px solid #ffff00' : 'none'; };
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
+      var labToolData = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
       var setLabToolData = ctx.setToolData;
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
@@ -136,21 +145,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var _opBand = (ctx && ctx.gradeBand) || 'high';
 
-      var d = labToolData.onePageProfile || defaultState();
-      function setOPP(patch) {
+      var rawD = labToolData.onePageProfile;
+      var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : defaultState();
+      function safeStr(v) { return typeof v === 'string' ? v : ''; }
+      function safeList(v) { return Array.isArray(v) ? v.filter(function(item) { return typeof item === 'string'; }) : []; }
+      function setOPP(patchOrFn) {
+        if (typeof setLabToolData !== 'function') return;
         setLabToolData(function(prev) {
-          var prior = (prev && prev.onePageProfile) || defaultState();
+          var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var prevRaw = base.onePageProfile;
+          var prior = (prevRaw && typeof prevRaw === 'object' && !Array.isArray(prevRaw)) ? prevRaw : defaultState();
+          var patch = typeof patchOrFn === 'function' ? patchOrFn(prior) : patchOrFn;
+          if (!patch || typeof patch !== 'object') return base;
           var next = Object.assign({}, prior, patch);
           if (patch.likeAdmire || patch.important || patch.howToSupport ||
               patch.name !== undefined || patch.photoEmoji || patch.gradeLevel !== undefined || patch.pronouns !== undefined) {
             next.lastUpdated = todayISO();
           }
-          return Object.assign({}, prev, { onePageProfile: next });
+          return Object.assign({}, base, { onePageProfile: next });
         });
       }
       function scanProfileText(text) {
         var trimmed = String(text || '').trim();
-        if (!trimmed || !window.SelHub) return false;
+        if (!trimmed || typeof window === 'undefined' || !window.SelHub) return false;
         var blocked = false;
         if (typeof window.SelHub.safeRehearseCheck === 'function') {
           var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'onePageProfile', onSafetyFlag: onSafetyFlag });
@@ -173,15 +190,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
         }
         return blocked;
       }
-      var view = d.view || 'profile';
+      var VALID_VIEWS = ['profile', 'edit', 'print', 'about'];
+      var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'profile';
       function goto(v) { setOPP({ view: v }); }
-      function printNow() { try { window.print(); } catch (e) { /* print not available */ } }
+      function printNow() { try { if (typeof window !== 'undefined' && typeof window.print === 'function') window.print(); } catch (e) { /* print not available */ } }
 
       // ── Header ──
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _opFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { if (typeof setSelHubTool === 'function') setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _opSoftBg('rgba(255,255,255,0.05)', '#f1f5f9'), border: '1px solid ' + _opBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _opFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _opFg('#a5b4fc'), fontSize: 22, fontWeight: 900 } }, '📄 One-Page Profile'),
             h('div', { style: { fontSize: 12, color: _opFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A portable, person-centered profile that fits on one page.')
@@ -196,14 +214,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
           { id: 'print', label: 'Print view', icon: '🖨' },
           { id: 'about', label: 'About', icon: 'ℹ' }
         ];
+        function selectTab(nextId) {
+          goto(nextId);
+          if (typeof document !== 'undefined') {
+            setTimeout(function() {
+              var el = document.getElementById('opp-tab-' + nextId);
+              if (el && typeof el.focus === 'function') el.focus();
+            }, 0);
+          }
+        }
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'One-Page Profile sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, ti) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#818cf8' : '#334155'),
-                background: active ? 'rgba(129,140,248,0.18)' : _opBg('#1e293b'),
+            return h('button', { key: t.id, id: 'opp-tab-' + t.id, type: 'button', onClick: function() { goto(t.id); },
+              role: 'tab', 'aria-selected': active, 'aria-controls': 'opp-panel-' + t.id, tabIndex: active ? 0 : -1,
+              onKeyDown: function(e) {
+                if (e.key === 'ArrowRight') { e.preventDefault(); selectTab(tabs[(ti + 1) % tabs.length].id); }
+                else if (e.key === 'ArrowLeft') { e.preventDefault(); selectTab(tabs[(ti - 1 + tabs.length) % tabs.length].id); }
+                else if (e.key === 'Home') { e.preventDefault(); selectTab(tabs[0].id); }
+                else if (e.key === 'End') { e.preventDefault(); selectTab(tabs[tabs.length - 1].id); }
+              },
+              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + _opBd(active ? '#818cf8' : '#334155'),
+                background: active ? _opSoftBg('rgba(129,140,248,0.18)', '#eef2ff') : _opBg('#1e293b'),
                 color: active ? _opFg('#e0e7ff') : _opFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -212,31 +245,37 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _opFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _opSoftBg('rgba(15,23,42,0.5)', '#f1f5f9'), border: '1px solid ' + _opBd('#334155'), fontSize: 12, color: _opFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'This is your profile. You decide what goes on it and who sees it. The Crisis Companion is in this same SEL Hub if you need it; Crisis Text Line: text HOME to 741741.'
         );
       }
 
       function isEmpty() {
-        return ((Array.isArray(d.likeAdmire) ? d.likeAdmire : [])).length === 0 &&
-               ((Array.isArray(d.important) ? d.important : [])).length === 0 &&
-               ((Array.isArray(d.howToSupport) ? d.howToSupport : [])).length === 0;
+        return safeList(d.likeAdmire).length === 0 &&
+               safeList(d.important).length === 0 &&
+               safeList(d.howToSupport).length === 0;
       }
 
       // ═══════════════════════════════════════════════════════════
       // PROFILE — the assembled view (read-only summary)
       // ═══════════════════════════════════════════════════════════
       function renderProfile() {
-        if (isEmpty() && !d.name) {
+        var nameStr = safeStr(d.name);
+        var photoStr = safeStr(d.photoEmoji) || '🌟';
+        var gradeStr = safeStr(d.gradeLevel);
+        var pronounsStr = safeStr(d.pronouns);
+        var updatedStr = safeStr(d.lastUpdated);
+
+        if (isEmpty() && !nameStr.trim()) {
           return h('div', null,
-            h('div', { style: { padding: 28, borderRadius: 14, background: 'linear-gradient(135deg, rgba(129,140,248,0.18) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(129,140,248,0.4)', textAlign: 'center', marginBottom: 14 } },
-              h('div', { style: { fontSize: 56, marginBottom: 8 } }, '📄'),
+            h('div', { style: { padding: 28, borderRadius: 14, background: _opSoftBg('linear-gradient(135deg, rgba(129,140,248,0.18) 0%, rgba(15,23,42,0.4) 60%)', '#eef2ff'), border: '1px solid ' + _opBd('#818cf8'), textAlign: 'center', marginBottom: 14 } },
+              h('div', { style: { fontSize: 56, marginBottom: 8 }, 'aria-hidden': true }, '📄'),
               h('h3', { style: { margin: '0 0 8px', color: _opFg('#e0e7ff'), fontSize: 18 } }, 'Your profile is empty'),
               h('p', { style: { margin: '0 0 14px', color: _opFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'A One-Page Profile is three things people who work with you should know in order to support you well. It is not a list of diagnoses, scores, or things wrong with you. It is what is right with you, what matters to you, and what helps you do your best.'),
-              h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Start my profile',
-                style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _opFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              h('button', { type: 'button', onClick: function() { goto('edit'); }, 'aria-label': 'Start my profile',
+                style: { padding: '10px 22px', borderRadius: 10, border: _opBtnBd(), cursor: 'pointer', background: _opGradBtn('linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)'), color: _opFg('#fff'), fontWeight: 800, fontSize: 14 } },
                 '+ Start my profile')
             ),
             softPointer()
@@ -244,19 +283,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
         }
 
         return h('div', null,
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, padding: 18, borderRadius: 12, background: 'linear-gradient(135deg, rgba(129,140,248,0.14) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(129,140,248,0.4)', marginBottom: 14, flexWrap: 'wrap' } },
-            h('div', { style: { fontSize: 56, lineHeight: 1, padding: 8, borderRadius: 10, background: _opBg('#1e293b'), border: '1px solid #334155' }, 'aria-label': 'Profile icon' }, d.photoEmoji || '🌟'),
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, padding: 18, borderRadius: 12, background: _opSoftBg('linear-gradient(135deg, rgba(129,140,248,0.14) 0%, rgba(15,23,42,0.4) 60%)', '#eef2ff'), border: '1px solid ' + _opBd('#818cf8'), marginBottom: 14, flexWrap: 'wrap' } },
+            h('div', { role: 'img', style: { fontSize: 56, lineHeight: 1, padding: 8, borderRadius: 10, background: _opBg('#1e293b'), border: '1px solid ' + _opBd('#334155') }, 'aria-label': 'Profile icon' }, photoStr),
             h('div', { style: { flex: 1, minWidth: 200 } },
-              h('div', { style: { fontSize: 22, fontWeight: 900, color: _opFg('#e0e7ff') } }, (typeof d.name === 'string' ? d.name : '(your name)')),
+              h('div', { style: { fontSize: 22, fontWeight: 900, color: _opFg('#e0e7ff') } }, nameStr.trim() ? nameStr : '(your name)'),
               h('div', { style: { fontSize: 12, color: _opFg('#94a3b8'), marginTop: 4 } },
-                d.gradeLevel ? ('Grade ' + d.gradeLevel) : '',
-                d.gradeLevel && d.pronouns ? ' · ' : '',
-                d.pronouns || ''
+                gradeStr ? ('Grade ' + gradeStr) : '',
+                gradeStr && pronounsStr ? ' · ' : '',
+                pronounsStr || ''
               ),
-              d.lastUpdated ? h('div', { style: { fontSize: 10, color: _opFg('#64748b'), marginTop: 4, fontFamily: 'ui-monospace, monospace' } }, 'Updated ' + d.lastUpdated) : null
+              updatedStr ? h('div', { style: { fontSize: 12, color: _opFg('#64748b'), marginTop: 4, fontFamily: 'ui-monospace, monospace' } }, 'Updated ' + updatedStr) : null
             ),
-            h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Edit profile',
-              style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #818cf8', background: 'rgba(129,140,248,0.18)', color: _opFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✏️ Edit')
+            h('button', { type: 'button', onClick: function() { goto('edit'); }, 'aria-label': 'Edit profile',
+              style: { padding: '8px 16px', borderRadius: 8, border: '1px solid ' + _opBd('#818cf8'), background: _opSoftBg('rgba(129,140,248,0.18)', '#e0e7ff'), color: _opFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✏️ Edit')
           ),
 
           // Three sections
@@ -266,20 +305,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
 
           // Print + Edit
           h('div', { style: { display: 'flex', gap: 10, marginTop: 18, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('print'); }, style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _opFg('#fff'), fontWeight: 800, fontSize: 14 } },
+            h('button', { type: 'button', onClick: function() { goto('print'); }, style: { padding: '10px 20px', borderRadius: 10, border: _opBtnBd(), cursor: 'pointer', background: _opGradBtn('linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)'), color: _opFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '🖨 Print or save as PDF'),
-            h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Edit profile',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _opBg('#1e293b'), color: _opFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '✏️ Edit profile')
+            h('button', { type: 'button', onClick: function() { goto('edit'); }, 'aria-label': 'Edit profile',
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _opBd('#475569'), background: _opBg('#1e293b'), color: _opFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '✏️ Edit profile')
           ),
 
           softPointer()
         );
       }
 
-      function renderSection(title, items, color) {
-        return h('div', { style: { padding: 14, borderRadius: 10, background: _opBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 12 } },
-          h('div', { style: { fontSize: 12, color: color, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 10 } }, title),
-          (items && items.length > 0)
+      function renderSection(title, rawItems, color) {
+        var items = safeList(rawItems);
+        return h('div', { style: { padding: 14, borderRadius: 10, background: _opBg('#0f172a'), borderTop: '1px solid ' + _opBd('#1e293b'), borderRight: '1px solid ' + _opBd('#1e293b'), borderBottom: '1px solid ' + _opBd('#1e293b'), borderLeft: '3px solid ' + _opBd(color), marginBottom: 12 } },
+          h('div', { style: { fontSize: 12, color: _opInk(color), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 10 } }, title),
+          (items.length > 0)
             ? h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _opFg('#e2e8f0'), fontSize: 14, lineHeight: 1.75 } },
                 items.map(function(item, i) { return h('li', { key: i, style: { marginBottom: 4 } }, item); })
               )
@@ -293,56 +333,66 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
       function renderEdit() {
         function addItem(sectionKey, value) {
           if (!value || !value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
-          var current = (d[sectionKey] || []).slice();
-          current.push(value.trim());
-          var patch = {};
-          patch[sectionKey] = current;
-          setOPP(patch);
+          var text = value.trim();
+          setOPP(function(prior) {
+            var current = safeList(prior[sectionKey]).slice();
+            current.push(text);
+            var patch = {};
+            patch[sectionKey] = current;
+            return patch;
+          });
         }
         function removeItem(sectionKey, idx) {
-          var current = (d[sectionKey] || []).slice();
-          current.splice(idx, 1);
-          var patch = {};
-          patch[sectionKey] = current;
-          setOPP(patch);
+          setOPP(function(prior) {
+            var current = safeList(prior[sectionKey]).slice();
+            if (idx < 0 || idx >= current.length) return null;
+            current.splice(idx, 1);
+            var patch = {};
+            patch[sectionKey] = current;
+            return patch;
+          });
         }
         function moveItem(sectionKey, idx, dir) {
-          var current = (d[sectionKey] || []).slice();
-          var newIdx = idx + dir;
-          if (newIdx < 0 || newIdx >= current.length) return;
-          var tmp = current[idx];
-          current[idx] = current[newIdx];
-          current[newIdx] = tmp;
-          var patch = {};
-          patch[sectionKey] = current;
-          setOPP(patch);
+          setOPP(function(prior) {
+            var current = safeList(prior[sectionKey]).slice();
+            var newIdx = idx + dir;
+            if (idx < 0 || idx >= current.length || newIdx < 0 || newIdx >= current.length) return null;
+            var tmp = current[idx];
+            current[idx] = current[newIdx];
+            current[newIdx] = tmp;
+            var patch = {};
+            patch[sectionKey] = current;
+            return patch;
+          });
         }
 
         function sectionEditor(sectionKey, title, color, starters) {
           var inputId = 'opp-input-' + sectionKey;
-          var items = d[sectionKey] || [];
+          var items = safeList(d[sectionKey]);
           function submitInput() {
+            if (typeof document === 'undefined') return;
             var el = document.getElementById(inputId);
             if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
+            scanProfileText(el.value);
             addItem(sectionKey, el.value);
             el.value = '';
             if (announceToSR) announceToSR('Added.');
           }
           function useStarter(s) { addItem(sectionKey, s); if (announceToSR) announceToSR('Added: ' + s); }
 
-          return h('div', { style: { padding: 14, borderRadius: 10, background: _opBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + color, marginBottom: 14 } },
+          return h('div', { style: { padding: 14, borderRadius: 10, background: _opBg('#0f172a'), borderTop: '1px solid ' + _opBd('#1e293b'), borderRight: '1px solid ' + _opBd('#1e293b'), borderBottom: '1px solid ' + _opBd('#1e293b'), borderLeft: '3px solid ' + _opBd(color), marginBottom: 14 } },
             h('div', { style: { fontSize: 13, color: _opInk(color), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 10 } }, title),
             // Existing items
             items.length > 0 ? h('div', { style: { marginBottom: 12 } },
               items.map(function(item, i) {
                 return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 6, padding: 8, borderRadius: 6, background: _opBg('#1e293b'), marginBottom: 4 } },
                   h('span', { style: { flex: 1, color: _opFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.55 } }, item),
-                  h('button', { onClick: function() { moveItem(sectionKey, i, -1); }, 'aria-label': 'Move up', disabled: i === 0,
-                    style: { background: 'transparent', border: '1px solid #475569', color: i === 0 ? _opFg('#475569') : _opFg('#94a3b8'), borderRadius: 4, padding: '2px 6px', cursor: i === 0 ? 'not-allowed' : 'pointer', fontSize: 11 } }, '↑'),
-                  h('button', { onClick: function() { moveItem(sectionKey, i, 1); }, 'aria-label': 'Move down', disabled: i === items.length - 1,
-                    style: { background: 'transparent', border: '1px solid #475569', color: i === items.length - 1 ? _opFg('#475569') : _opFg('#94a3b8'), borderRadius: 4, padding: '2px 6px', cursor: i === items.length - 1 ? 'not-allowed' : 'pointer', fontSize: 11 } }, '↓'),
-                  h('button', { onClick: function() { removeItem(sectionKey, i); }, 'aria-label': 'Remove item',
-                    style: { background: 'transparent', border: '1px solid #475569', color: _opFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 11 } }, '✕')
+                  h('button', { type: 'button', onClick: function() { moveItem(sectionKey, i, -1); }, 'aria-label': 'Move up', disabled: i === 0,
+                    style: { background: 'transparent', border: '1px solid ' + _opBd('#475569'), color: i === 0 ? _opFg('#475569') : _opFg('#94a3b8'), borderRadius: 4, padding: '2px 6px', cursor: i === 0 ? 'not-allowed' : 'pointer', fontSize: 12 } }, '↑'),
+                  h('button', { type: 'button', onClick: function() { moveItem(sectionKey, i, 1); }, 'aria-label': 'Move down', disabled: i === items.length - 1,
+                    style: { background: 'transparent', border: '1px solid ' + _opBd('#475569'), color: i === items.length - 1 ? _opFg('#475569') : _opFg('#94a3b8'), borderRadius: 4, padding: '2px 6px', cursor: i === items.length - 1 ? 'not-allowed' : 'pointer', fontSize: 12 } }, '↓'),
+                  h('button', { type: 'button', onClick: function() { removeItem(sectionKey, i); }, 'aria-label': 'Remove item',
+                    style: { background: 'transparent', border: '1px solid ' + _opBd('#475569'), color: _opFg('#94a3b8'), borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 12 } }, '✕')
                 );
               })
             ) : null,
@@ -352,19 +402,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
               h('input', { id: inputId, type: 'text',
                 placeholder: 'Type and press Enter, or pick a starter below...',
                 onBlur: function(e) { scanProfileText(e.target.value); },
-                onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); scanProfileText(e.target.value); submitInput(); } },
-                style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } }),
-              h('button', { onClick: submitInput, 'aria-label': 'Add item',
-                style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _opSolid(color), color: _opFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submitInput(); } },
+                style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid ' + _opBd('#334155'), background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } }),
+              h('button', { type: 'button', onClick: submitInput, 'aria-label': 'Add item',
+                style: { padding: '8px 14px', borderRadius: 6, border: _opBtnBd(), cursor: 'pointer', background: _opSolid(color), color: _opFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
             ),
             // Starters
             h('details', null,
-              h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _opFg('#94a3b8'), userSelect: 'none' } }, 'Need ideas? Tap a starter to add it (you can edit after)'),
+              h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _opFg('#94a3b8'), userSelect: 'none' } }, 'Need ideas? Tap a starter to add it (you can edit after)'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 } },
                 starters.map(function(s, si) {
                   var already = items.indexOf(s) !== -1;
-                  return h('button', { key: si, onClick: function() { useStarter(s); }, disabled: already, 'aria-label': 'Add starter: ' + s,
-                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + color + '66', background: already ? _opBg('#1e293b') : 'rgba(15,23,42,0.6)', color: already ? _opFg('#64748b') : _opFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 11, opacity: already ? 0.5 : 1 } },
+                  return h('button', { key: si, type: 'button', onClick: function() { useStarter(s); }, disabled: already, 'aria-label': 'Add starter: ' + s,
+                    style: { padding: '4px 10px', borderRadius: 14, border: '1px solid ' + (_opHC ? '#ffff00' : color + '66'), background: already ? _opBg('#1e293b') : _opSoftBg('rgba(15,23,42,0.6)', '#ffffff'), color: already ? _opFg('#64748b') : _opFg('#cbd5e1'), cursor: already ? 'not-allowed' : 'pointer', fontSize: 12, opacity: already ? 0.5 : 1 } },
                     (already ? '✓ ' : '+ ') + s);
                 })
               )
@@ -374,38 +424,41 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
 
         return h('div', null,
           // Identity block
-          h('div', { style: { padding: 14, borderRadius: 10, background: _opBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _opBg('#0f172a'), border: '1px solid ' + _opBd('#1e293b'), marginBottom: 14 } },
             h('div', { style: { fontSize: 13, color: _opFg('#a5b4fc'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 800, marginBottom: 10 } }, '✏️ Who I am'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
               h('div', null,
-                h('label', { htmlFor: 'opp-name', style: { display: 'block', fontSize: 11, color: _opFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'My name'),
-                h('input', { id: 'opp-name', type: 'text', value: (typeof d.name === 'string' ? d.name : ''),
+                h('label', { htmlFor: 'opp-name', style: { display: 'block', fontSize: 12, color: _opFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'My name'),
+                h('input', { id: 'opp-name', type: 'text', value: safeStr(d.name),
                   onChange: function(e) { setOPP({ name: e.target.value }); },
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } })
+                  onBlur: function(e) { scanProfileText(e.target.value); },
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _opBd('#334155'), background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } })
               ),
               h('div', null,
-                h('label', { htmlFor: 'opp-grade', style: { display: 'block', fontSize: 11, color: _opFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Grade (optional)'),
-                h('input', { id: 'opp-grade', type: 'text', value: d.gradeLevel || '',
+                h('label', { htmlFor: 'opp-grade', style: { display: 'block', fontSize: 12, color: _opFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Grade (optional)'),
+                h('input', { id: 'opp-grade', type: 'text', value: safeStr(d.gradeLevel),
                   placeholder: 'e.g. 7',
                   onChange: function(e) { setOPP({ gradeLevel: e.target.value }); },
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } })
+                  onBlur: function(e) { scanProfileText(e.target.value); },
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _opBd('#334155'), background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } })
               ),
               h('div', null,
-                h('label', { htmlFor: 'opp-pronouns', style: { display: 'block', fontSize: 11, color: _opFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Pronouns (optional)'),
-                h('input', { id: 'opp-pronouns', type: 'text', value: d.pronouns || '',
+                h('label', { htmlFor: 'opp-pronouns', style: { display: 'block', fontSize: 12, color: _opFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Pronouns (optional)'),
+                h('input', { id: 'opp-pronouns', type: 'text', value: safeStr(d.pronouns),
                   placeholder: 'e.g. she/her, they/them',
                   onChange: function(e) { setOPP({ pronouns: e.target.value }); },
-                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #334155', background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } })
+                  onBlur: function(e) { scanProfileText(e.target.value); },
+                  style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + _opBd('#334155'), background: _opBg('#1e293b'), color: _opFg('#e2e8f0'), fontSize: 13 } })
               )
             ),
             // Photo emoji picker
             h('div', { style: { marginTop: 12 } },
-              h('div', { style: { fontSize: 11, color: _opFg('#94a3b8'), fontWeight: 700, marginBottom: 6 } }, 'Pick an icon (instead of a photo)'),
+              h('div', { style: { fontSize: 12, color: _opFg('#94a3b8'), fontWeight: 700, marginBottom: 6 } }, 'Pick an icon (instead of a photo)'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
                 PHOTO_EMOJIS.map(function(em) {
                   var active = d.photoEmoji === em;
-                  return h('button', { key: em, onClick: function() { setOPP({ photoEmoji: em }); }, 'aria-label': 'Choose icon ' + em, 'aria-pressed': active,
-                    style: { padding: 6, borderRadius: 6, border: '1px solid ' + (active ? '#818cf8' : '#334155'), background: active ? 'rgba(129,140,248,0.2)' : _opBg('#1e293b'), cursor: 'pointer', fontSize: 22 } }, em);
+                  return h('button', { key: em, type: 'button', onClick: function() { setOPP({ photoEmoji: em }); }, 'aria-label': 'Choose icon ' + em, 'aria-pressed': active,
+                    style: { padding: 6, borderRadius: 6, border: '1px solid ' + _opBd(active ? '#818cf8' : '#334155'), background: active ? _opSoftBg('rgba(129,140,248,0.2)', '#e0e7ff') : _opBg('#1e293b'), cursor: 'pointer', fontSize: 22 } }, em);
                 })
               )
             )
@@ -415,17 +468,17 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
           sectionEditor('important', '⭐ What is important to me', '#10b981', STARTERS.important),
           sectionEditor('howToSupport', '🤝 How best to support me', '#6366f1', STARTERS.howToSupport),
 
-          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(129,140,248,0.1)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: _opFg('#e0e7ff'), lineHeight: 1.6, marginBottom: 12 } },
+          h('div', { style: { padding: 10, borderRadius: 8, background: _opSoftBg('rgba(129,140,248,0.1)', '#eef2ff'), borderTop: '1px solid ' + _opBd('#818cf8'), borderRight: '1px solid ' + _opBd('#818cf8'), borderBottom: '1px solid ' + _opBd('#818cf8'), borderLeft: '3px solid ' + _opBd('#818cf8'), fontSize: 12.5, color: _opFg('#e0e7ff'), lineHeight: 1.6, marginBottom: 12 } },
             h('strong', null, '💡 Tip: '),
             'A One-Page Profile works best when it is updated once or twice a year. What you needed in 6th grade is not what you need in 9th. Keep this one current; print fresh copies when you change supports.'
           ),
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('profile'); }, 'aria-label': 'See my profile',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _opFg('#fff'), fontWeight: 800, fontSize: 14 } },
+            h('button', { type: 'button', onClick: function() { goto('profile'); }, 'aria-label': 'See my profile',
+              style: { padding: '10px 20px', borderRadius: 10, border: _opBtnBd(), cursor: 'pointer', background: _opGradBtn('linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)'), color: _opFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '👁 See my profile'),
-            h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Open print view',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _opBg('#1e293b'), color: _opFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print view')
+            h('button', { type: 'button', onClick: function() { goto('print'); }, 'aria-label': 'Open print view',
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _opBd('#475569'), background: _opBg('#1e293b'), color: _opFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print view')
           ),
 
           softPointer()
@@ -436,43 +489,48 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
       // PRINT — clean printable artifact (1 page)
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
+        var nameStr = safeStr(d.name);
+        var photoStr = safeStr(d.photoEmoji) || '🌟';
+        var gradeStr = safeStr(d.gradeLevel);
+        var pronounsStr = safeStr(d.pronouns);
+        var updatedStr = safeStr(d.lastUpdated);
         return h('div', null,
           // Print toolbar (hidden in print)
-          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(129,140,248,0.10)', borderRadius: 8, border: '1px solid rgba(129,140,248,0.3)' } },
+          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _opSoftBg('rgba(129,140,248,0.10)', '#eef2ff'), borderRadius: 8, border: '1px solid ' + _opBd('#818cf8') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _opFg('#e0e7ff'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'This is what your profile looks like printed. Use your browser\'s print dialog (Print or Save as PDF).'
             ),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)', color: _opFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
-            h('button', { onClick: function() { goto('profile'); }, 'aria-label': 'Back to profile',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _opBg('#1e293b'), color: _opFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+            h('button', { type: 'button', onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _opBtnBd(), cursor: 'pointer', background: _opGradBtn('linear-gradient(135deg, #4338ca 0%, #4f46e5 100%)'), color: _opFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { type: 'button', onClick: function() { goto('profile'); }, 'aria-label': 'Back to profile',
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _opBd('#475569'), background: _opBg('#1e293b'), color: _opFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'onepageprofile-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _opBg('#fff'), color: _opFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _opBg('#fff'), color: _opFg('#0f172a'), borderRadius: 8, border: '1px solid ' + _opBd('#cbd5e1'), fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             // Print CSS
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
               '#onepageprofile-print-region, #onepageprofile-print-region * { visibility: visible !important; } ' +
-              '#onepageprofile-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
+              '#onepageprofile-print-region { position: absolute; left: 0; top: 0; width: 100%; background: #ffffff !important; color: #0f172a !important; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
 
             // Header
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 16, paddingBottom: 14, marginBottom: 18, borderBottom: '3px solid #4f46e5' } },
-              h('div', { style: { fontSize: 56, lineHeight: 1, padding: 4 } }, d.photoEmoji || '🌟'),
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 16, paddingBottom: 14, marginBottom: 18, borderBottom: '3px solid ' + _opBd('#4f46e5') } },
+              h('div', { style: { fontSize: 56, lineHeight: 1, padding: 4 }, 'aria-hidden': true }, photoStr),
               h('div', { style: { flex: 1 } },
-                h('div', { style: { fontSize: 10, color: _opFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'One-Page Profile'),
-                h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900, color: _opFg('#0f172a') } }, (typeof d.name === 'string' ? d.name : '(your name)')),
+                h('div', { style: { fontSize: 12, color: _opFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'One-Page Profile'),
+                h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900, color: _opFg('#0f172a') } }, nameStr.trim() ? nameStr : '(your name)'),
                 h('div', { style: { fontSize: 12, color: _opFg('#475569'), marginTop: 4 } },
-                  d.gradeLevel ? ('Grade ' + d.gradeLevel) : '',
-                  d.gradeLevel && d.pronouns ? '  ·  ' : '',
-                  d.pronouns || '',
-                  (d.gradeLevel || d.pronouns) && d.lastUpdated ? '  ·  ' : '',
-                  d.lastUpdated ? ('Updated ' + d.lastUpdated) : ''
+                  gradeStr ? ('Grade ' + gradeStr) : '',
+                  gradeStr && pronounsStr ? '  ·  ' : '',
+                  pronounsStr || '',
+                  (gradeStr || pronounsStr) && updatedStr ? '  ·  ' : '',
+                  updatedStr ? ('Updated ' + updatedStr) : ''
                 )
               )
             ),
@@ -483,7 +541,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
             printSection('How best to support me', d.howToSupport, '#4f46e5'),
 
             // Print footer
-            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid #cbd5e1', fontSize: 9, color: _opFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 20, paddingTop: 12, borderTop: '1px solid ' + _opBd('#cbd5e1'), fontSize: 12, color: _opFg('#475569'), textAlign: 'center', lineHeight: 1.5 } },
               'Format adapted from the Helen Sanderson Associates One-Page Profile (helensandersonassociates.co.uk). ',
               'Created with AlloFlow SEL Hub.'
             )
@@ -493,14 +551,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
         );
       }
 
-      function printSection(title, items, color) {
+      function printSection(title, rawItems, color) {
+        var items = safeList(rawItems);
         return h('div', { style: { marginBottom: 16, pageBreakInside: 'avoid' } },
-          h('div', { style: { fontSize: 13, fontWeight: 800, color: _opFg('#fff'), background: _opSolid(color), padding: '6px 12px', borderRadius: 4, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } }, title),
-          (items && items.length > 0)
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: _opFg('#fff'), background: _opSolid(color), border: _opHC ? '1px solid #ffff00' : 'none', padding: '6px 12px', borderRadius: 4, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } }, title),
+          (items.length > 0)
             ? h('ul', { style: { margin: 0, padding: '0 0 0 24px', color: _opFg('#0f172a'), fontSize: 13, lineHeight: 1.65 } },
                 items.map(function(item, i) { return h('li', { key: i, style: { marginBottom: 4 } }, item); })
               )
-            : h('div', { style: { padding: 8, fontSize: 11, color: _opFg('#475569'), fontStyle: 'italic' } }, '(not filled in)')
+            : h('div', { style: { padding: 8, fontSize: 12, color: _opFg('#475569'), fontStyle: 'italic' } }, '(not filled in)')
         );
       }
 
@@ -509,8 +568,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
       // ═══════════════════════════════════════════════════════════
       function renderAbout() {
         return h('div', null,
-          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('onePageProfile', h, ctx) : null),
-          h('div', { style: { padding: 16, borderRadius: 12, background: _opBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+          (typeof window !== 'undefined' && window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('onePageProfile', h, ctx) : null),
+          h('div', { style: { padding: 16, borderRadius: 12, background: _opBg('#0f172a'), border: '1px solid ' + _opBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _opFg('#a5b4fc'), fontSize: 16 } }, 'What this tool is'),
             h('p', { style: { margin: '0 0 10px', color: _opFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'A One-Page Profile is a portable, person-centered description of you. It is built around three questions that have become standard in person-centered planning: what do people like and admire about you, what is important to you, and how do people best support you.'
@@ -521,7 +580,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
           ),
 
           // Lineage
-          h('div', { style: { padding: 16, borderRadius: 12, background: _opBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _opBg('#0f172a'), border: '1px solid ' + _opBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _opFg('#a5b4fc'), fontSize: 16 } }, 'Where the format comes from'),
             h('p', { style: { margin: '0 0 10px', color: _opFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'The One-Page Profile format was developed by Helen Sanderson and Helen Sanderson Associates in the United Kingdom, growing out of the broader person-centered planning movement (PATH, MAPS, Essential Lifestyle Planning). It is now used across the UK National Health Service, in US schools as part of IEP and 504 documentation, in supported-living services, and in family-led planning.'
@@ -532,7 +591,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
           ),
 
           // Sources
-          h('div', { style: { padding: 16, borderRadius: 12, background: _opBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _opBg('#0f172a'), border: '1px solid ' + _opBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _opFg('#a5b4fc'), fontSize: 16 } }, '📚 Sources and learn more'),
             h('div', { style: { fontSize: 12, color: _opFg('#94a3b8'), marginBottom: 10, lineHeight: 1.55 } }, 'Authoritative resources you can use to verify the evidence base for this tool, or to learn more.'),
             sourceCard('Helen Sanderson Associates', 'helensandersonassociates.co.uk', 'The original developers of the One-Page Profile format. Free templates, training materials, examples across age groups, and the ongoing research base.', 'https://helensandersonassociates.co.uk/'),
@@ -542,7 +601,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
           ),
 
           // Honest limits
-          h('div', { style: { padding: 16, borderRadius: 12, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _opSoftBg('rgba(245,158,11,0.08)', '#fffbeb'), borderTop: '1px solid ' + _opBd('#f59e0b'), borderRight: '1px solid ' + _opBd('#f59e0b'), borderBottom: '1px solid ' + _opBd('#f59e0b'), borderLeft: '3px solid ' + _opBd('#f59e0b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _opFg('#fcd34d'), fontSize: 15 } }, '⚖️ Honest limits of this format'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _opFg('#fde68a'), fontSize: 13, lineHeight: 1.75 } },
               h('li', null, 'A profile is only as good as the trust around it. If a student writes "I need quiet" and a teacher reads it as defiance, the format did not fail; the relationship did.'),
@@ -553,7 +612,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
           ),
 
           // For educators
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(129,140,248,0.10)', borderTop: '1px solid rgba(129,140,248,0.3)', borderRight: '1px solid rgba(129,140,248,0.3)', borderBottom: '1px solid rgba(129,140,248,0.3)', borderLeft: '3px solid #818cf8', fontSize: 12.5, color: _opFg('#e0e7ff'), lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _opSoftBg('rgba(129,140,248,0.10)', '#eef2ff'), borderTop: '1px solid ' + _opBd('#818cf8'), borderRight: '1px solid ' + _opBd('#818cf8'), borderBottom: '1px solid ' + _opBd('#818cf8'), borderLeft: '3px solid ' + _opBd('#818cf8'), fontSize: 12.5, color: _opFg('#e0e7ff'), lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'One-Page Profiles work well as a beginning-of-year Crew activity, attached to the front of an IEP at-a-glance, given to a substitute teacher, or shared at family conferences. The student keeps editorial control; faculty support but do not author. For students with significant communication differences, profiles can be built collaboratively with family, using "what we see" framing rather than "what they said."'
           ),
@@ -563,8 +622,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
       }
 
       function sourceCard(authorYear, title, blurb, url) {
-        return h('div', { style: { padding: 10, borderRadius: 8, background: _opBg('#1e293b'), border: '1px solid #334155', marginBottom: 8 } },
-          h('div', { style: { fontSize: 11, color: _opFg('#a5b4fc'), fontWeight: 700, marginBottom: 2 } }, authorYear),
+        return h('div', { style: { padding: 10, borderRadius: 8, background: _opBg('#1e293b'), border: '1px solid ' + _opBd('#334155'), marginBottom: 8 } },
+          h('div', { style: { fontSize: 12, color: _opFg('#a5b4fc'), fontWeight: 700, marginBottom: 2 } }, authorYear),
           url
             ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer',
                 style: { fontSize: 13, color: _opFg('#e0e7ff'), fontWeight: 700, textDecoration: 'underline', display: 'block', marginBottom: 4 } }, title + ' ↗')
@@ -583,12 +642,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
       return h('div', { style: { maxWidth: 880, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'One-Page Profile' },
         header(),
         navTabs(),
-        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+        (d._crisisTier >= 3 && typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
           ? window.SelHub.renderCrisisResources(h, _opBand) : null,
-        body
+        h('div', { role: 'tabpanel', id: 'opp-panel-' + view, 'aria-labelledby': 'opp-tab-' + view }, body)
       );
     }
   });
 
 })();
-}

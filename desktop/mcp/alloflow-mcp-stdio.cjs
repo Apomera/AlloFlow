@@ -118,6 +118,9 @@ function getDataDir() {
 function getAuditPath() { return path.join(getDataDir(), 'agent-core', 'mcp-audit.jsonl'); }
 function hashRef(value) { return 'sha256:' + crypto.createHash('sha256').update(String(value), 'utf8').digest('hex').slice(0, 16); }
 function rotateAudit(auditPath, incomingBytes) {
+  let dirStat;
+  try { dirStat = fs.lstatSync(path.dirname(auditPath)); } catch (_) { return; }
+  if (dirStat.isSymbolicLink() || !dirStat.isDirectory()) throw new Error('Audit log directory must be a real directory');
   let st;
   try { st = fs.lstatSync(auditPath); } catch (_) { return; }
   if (st.isSymbolicLink() || !st.isFile()) throw new Error('Audit log path must be a regular file');
@@ -130,7 +133,7 @@ function rotateAudit(auditPath, incomingBytes) {
     if (srcStat.isSymbolicLink() || !srcStat.isFile()) throw new Error('Audit rotation source is not a regular file');
     try {
       const tgtStat = fs.lstatSync(target);
-      if (tgtStat.isSymbolicLink()) throw new Error('Audit rotation target is a symlink');
+      if (tgtStat.isSymbolicLink() || !tgtStat.isFile()) throw new Error('Audit rotation target is not a regular file');
     } catch (e) {
       if (e && e.code !== 'ENOENT') throw e;
     }
@@ -626,7 +629,7 @@ const TOOL_HANDLERS = {
     const report = ResourcePackService.compose(args.request);
     if (!report.ok) throw invalidParams('Resource-pack draft failed validation: ' + report.errors.map((e) => e.code).join(', '));
     const job = createCompletedJob(args.request.requestId);
-    const record = { job, operation: 'resource_pack_generate', result: { kind: 'resource-pack', pack: report.value, warnings: report.warnings, preview: ResourcePackService.previewPack(report.value, { profile: args.request.profile }) } };
+    const record = { job, operation: 'resource_pack_generate', result: { kind: 'resource-pack', pack: report.value, warnings: boundedDiagnostics(report.warnings), preview: ResourcePackService.previewPack(report.value, { profile: args.request.profile }) } };
     return pendingWrite({ job: copyValue(job), resultAvailable: true }, { jobId: job.jobId, issuedJob: true, blueprintId: args.request.requestId }, JOBS.prepare(record));
   },
   resource_pack_validate(args) {
@@ -656,6 +659,7 @@ const TOOL_HANDLERS = {
     assertObject(args.pack, 'arguments.pack');
     assertObject(args.attachment, 'arguments.attachment');
     if (args.profile !== undefined && PACK_PROFILE_SCHEMA.enum.indexOf(args.profile) === -1) throw invalidParams('arguments.profile must be a supported resource-pack profile');
+    if (args.profile !== undefined && args.profile !== 'illustrated' && args.profile !== 'native') throw invalidParams('arguments.profile must be illustrated or native for image attachments');
     const report = ResourcePackService.attachImage(args.pack, args.attachment, { profile: args.profile });
     if (!report.ok) throw invalidParams('Image attachment failed validation: ' + report.errors.map((e) => e.code).join(', '));
     return pendingWrite(reportPayload(report), { blueprintId: String(args.pack.allopack && args.pack.allopack.title || '') }, () => {});

@@ -1,10 +1,11 @@
 # PLT Early Childhood 5621 QA
 
 - Status: **PASS**
-- Items: 500/500
-- Pack credential gate: PASS; reviewed 500 activities with foreign-code/K-6/out-of-band/malformed-band counts 0/0/0/0.
+- Items: 200/200
+- Pack credential gate: PASS; reviewed 200 activities with foreign-code/K-6/out-of-band/malformed-band counts 0/0/0/0.
 - Library source gate: 223/223 reference sets cite the official 5621 Study Companion; foreign-code, K-6, and out-of-band counts are 0/0/0.
 
 > Not ETS, CCSSO, or NAEYC approval; independent early-childhood educator, family, accessibility, legal, and psychometric validation remain pending.
 
-- Assistant audit: 200 source questions contain 100 distinct source content kernels and 100 parallel variants under the normalized answer-set/rationale/reference test. 300 activities are source-derived guided review, not independent exam-item banks. The 500-distinct-question target is not met.
+
+- Independent-batch audit: 200 original source questions plus 0 assistant-authored independent practice questions produce 143 distinct independent content kernels. 300 additional activities remain guided review only. 357 new independent questions remain to reach 500.

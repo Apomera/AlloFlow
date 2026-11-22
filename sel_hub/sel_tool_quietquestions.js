@@ -9,19 +9,22 @@
 // Category: inner-work
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
-};
-
-if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions'))) {
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
+
+  window.SelHub = window.SelHub || {
+    _registry: {}, _order: [],
+    registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
+    isRegistered: function(id) { return !!this._registry[id]; },
+    renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
+  };
+
+  if (window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')) return;
 
   // WCAG 4.1.3: live region
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-quietquestions')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-quietquestions';
@@ -116,20 +119,22 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
     category: 'inner-work',
     render: function(ctx) {
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
+      if (!ctx || !ctx.React) return null;
       var _qqT = (ctx && ctx.theme) || {};
       var _qqHC = !!_qqT.isContrast, _qqL = !_qqHC && !_qqT.isDark;
       var _qq_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _qq_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#7c3aed':'#000000'};
-      var _qq_FGL = {'#cbd5e1':'#334155','#c4b5fd':'#5b21b6','#94a3b8':'#64748b','#a78bfa':'#6d28d9','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#0ea5e9':'#0369a1','#a855f7':'#7e22ce','#f59e0b':'#b45309','#16a34a':'#15803d','#ec4899':'#be185d'}, _qq_FGH = {'#cbd5e1':'#ffff00','#c4b5fd':'#ffff00','#94a3b8':'#ffff00','#fff':'#ffff00','#a78bfa':'#ffff00','#e9d5ff':'#ffff00','#64748b':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#22c55e':'#ffff00','#0ea5e9':'#ffff00','#a855f7':'#ffff00','#f59e0b':'#ffff00','#16a34a':'#ffff00','#ec4899':'#ffff00'};
-      var _qq_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _qq_BDH = {'#334155':'#ffff00','#a78bfa':'#ffff00','#1e293b':'#ffff00','#22c55e':'#ffff00','#475569':'#ffff00','#a855f7':'#ffff00'};
+      var _qq_FGL = {'#cbd5e1':'#334155','#c4b5fd':'#5b21b6','#94a3b8':'#475569','#a78bfa':'#6d28d9','#e9d5ff':'#581c87','#e2e8f0':'#1e293b','#bbf7d0':'#166534','#22c55e':'#15803d','#64748b':'#475569','#0ea5e9':'#0369a1','#a855f7':'#7e22ce','#f59e0b':'#b45309','#16a34a':'#15803d','#ec4899':'#be185d'}, _qq_FGH = {'#cbd5e1':'#ffff00','#c4b5fd':'#ffff00','#94a3b8':'#ffff00','#fff':'#ffff00','#a78bfa':'#ffff00','#e9d5ff':'#ffff00','#64748b':'#ffff00','#e2e8f0':'#ffff00','#bbf7d0':'#ffff00','#22c55e':'#ffff00','#0ea5e9':'#ffff00','#a855f7':'#ffff00','#f59e0b':'#ffff00','#16a34a':'#ffff00','#ec4899':'#ffff00'};
+      var _qq_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#cbd5e1','#a78bfa':'#7c3aed','#22c55e':'#16a34a','#a855f7':'#7e22ce'}, _qq_BDH = {'#334155':'#ffff00','#a78bfa':'#ffff00','#1e293b':'#ffff00','#22c55e':'#ffff00','#475569':'#ffff00','#a855f7':'#ffff00','#0ea5e9':'#ffff00','#f59e0b':'#ffff00','#16a34a':'#ffff00','#ec4899':'#ffff00'};
       var _qqBg = function(h){ return _qqHC ? (_qq_BGH[h]||h) : (_qqL ? (_qq_BGL[h]||h) : h); };
       // Dark-mode foreground map. These accents are readable as TEXT only when
       // lightened; the surface and border maps are untouched.
       var _qq_FGD = {'#64748b':'#94a3b8','#ec4899':'#f472b6','#a855f7':'#c084fc','#16a34a':'#4ade80'};
       var _qqFg = function(h){ return _qqHC ? (_qq_FGH[h]||h) : (_qqL ? (_qq_FGL[h]||h) : (_qq_FGD[h]||h)); };
       var _qqBd = function(h){ return _qqHC ? (_qq_BDH[h]||h) : (_qqL ? (_qq_BDL[h]||h) : h); };
+      var _qqSoftBg = function(darkTint, lightTint){ return _qqHC ? '#000000' : (_qqL ? (lightTint || '#f1f5f9') : darkTint); };
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
+      var labToolData = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
       var setLabToolData = ctx.setToolData;
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
@@ -137,16 +142,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var _qqBand = (ctx && ctx.gradeBand) || 'high';
 
-      var d = labToolData.quietQuestions || defaultState();
-      function setQQ(patch) {
+      function safeObj(v) { return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }
+      function safeStr(v) { return typeof v === 'string' ? v : ''; }
+      function safeResponses(v) {
+        if (!Array.isArray(v)) return [];
+        return v.filter(function(r) { return r && typeof r === 'object' && !Array.isArray(r); });
+      }
+
+      var rawD = labToolData.quietQuestions;
+      var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : defaultState();
+      function setQQ(patchOrFn) {
+        if (typeof setLabToolData !== 'function') return;
         setLabToolData(function(prev) {
-          var prior = (prev && prev.quietQuestions) || defaultState();
-          return Object.assign({}, prev, { quietQuestions: Object.assign({}, prior, patch) });
+          var base = safeObj(prev);
+          var prevRaw = base.quietQuestions;
+          var prior = (prevRaw && typeof prevRaw === 'object' && !Array.isArray(prevRaw)) ? prevRaw : defaultState();
+          var patch = typeof patchOrFn === 'function' ? patchOrFn(prior) : patchOrFn;
+          if (!patch || typeof patch !== 'object') return base;
+          return Object.assign({}, base, { quietQuestions: Object.assign({}, prior, patch) });
         });
       }
       function scanQuietText(text) {
         var trimmed = String(text || '').trim();
-        if (!trimmed || !window.SelHub) return false;
+        if (!trimmed || typeof window === 'undefined' || !window.SelHub) return false;
         var blocked = false;
         if (typeof window.SelHub.safeRehearseCheck === 'function') {
           var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'quietQuestions', onSafetyFlag: onSafetyFlag });
@@ -169,7 +187,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
         }
         return blocked;
       }
-      var view = d.view || 'this-week';
+      var VALID_VIEWS = ['this-week', 'all', 'practice', 'about'];
+      var view = VALID_VIEWS.indexOf(d.view) !== -1 ? d.view : 'this-week';
       function goto(v) { setQQ({ view: v }); }
 
       // Resolve current query
@@ -179,8 +198,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       // ─── Header ───
       function header() {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
-          h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _qqFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+          h('button', { type: 'button', onClick: function() { if (typeof setSelHubTool === 'function') setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+            style: { background: _qqSoftBg('rgba(255,255,255,0.05)', '#f1f5f9'), border: '1px solid ' + _qqBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _qqFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _qqFg('#c4b5fd'), fontSize: 22, fontWeight: 900 } }, '🌒 Quiet Questions'),
             h('div', { style: { fontSize: 12, color: _qqFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A weekly inner inquiry practice. One question, seven days.')
@@ -195,14 +214,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
           { id: 'practice', label: 'My practice', icon: '📝' },
           { id: 'about', label: 'About', icon: 'ℹ' }
         ];
+        function selectTab(nextId) {
+          goto(nextId);
+          if (typeof document !== 'undefined') {
+            setTimeout(function() {
+              var el = document.getElementById('qq-tab-' + nextId);
+              if (el && typeof el.focus === 'function') el.focus();
+            }, 0);
+          }
+        }
         return h('div', { role: 'tablist', 'aria-label': 'Quiet Questions sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, ti) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
-              role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _qqFg('#a78bfa') : '#334155'),
-                background: active ? 'rgba(167,139,250,0.18)' : _qqBg('#1e293b'),
+            return h('button', { key: t.id, id: 'qq-tab-' + t.id, type: 'button', onClick: function() { goto(t.id); },
+              role: 'tab', 'aria-selected': active, 'aria-controls': 'qq-panel-' + t.id, tabIndex: active ? 0 : -1,
+              onKeyDown: function(e) {
+                if (e.key === 'ArrowRight') { e.preventDefault(); selectTab(tabs[(ti + 1) % tabs.length].id); }
+                else if (e.key === 'ArrowLeft') { e.preventDefault(); selectTab(tabs[(ti - 1 + tabs.length) % tabs.length].id); }
+                else if (e.key === 'Home') { e.preventDefault(); selectTab(tabs[0].id); }
+                else if (e.key === 'End') { e.preventDefault(); selectTab(tabs[tabs.length - 1].id); }
+              },
+              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + _qqBd(active ? '#a78bfa' : '#334155'),
+                background: active ? _qqSoftBg('rgba(167,139,250,0.18)', '#f5f3ff') : _qqBg('#1e293b'),
                 color: active ? _qqFg('#e9d5ff') : _qqFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -211,7 +245,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
 
       function softPointer() {
         return h('div', {
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _qqFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _qqSoftBg('rgba(15,23,42,0.5)', '#f1f5f9'), border: '1px solid ' + _qqBd('#334155'), fontSize: 12, color: _qqFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'This is a reflective practice, not therapy. If a question stirs something heavy, that is information; bring it to a counselor, school psych, or trusted adult. Crisis Text Line: text HOME to 741741. Crisis Companion is in this same SEL Hub.'
         );
@@ -223,20 +257,25 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       function renderThisWeek() {
         var q = currentQuery;
         // What has the student already written on THIS query?
-        var existing = ((Array.isArray(d.responses) ? d.responses : [])).filter(function(r) { return r.queryId === q.id; });
+        var existing = safeResponses(d.responses).filter(function(r) { return r.queryId === q.id; });
         var draftId = 'qq-draft-' + q.id;
 
         function saveResponse() {
+          if (typeof document === 'undefined') return;
           var ta = document.getElementById(draftId);
           if (!ta || !ta.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
           var crewCheck = document.getElementById('qq-share-crew');
           var crewText = document.getElementById('qq-crew-version');
+          scanQuietText(ta.value);
+          if (crewText && crewText.value && crewText.value.trim()) scanQuietText(crewText.value);
           var entry = {
             date: todayISO(), queryId: q.id, text: ta.value.trim(),
             shareWithCrew: crewCheck ? !!crewCheck.checked : false,
             crewVersion: (crewCheck && crewCheck.checked && crewText) ? crewText.value.trim() : ''
           };
-          setQQ({ responses: ((Array.isArray(d.responses) ? d.responses : [])).concat([entry]) });
+          setQQ(function(prior) {
+            return { responses: safeResponses(prior.responses).concat([entry]) };
+          });
           ta.value = '';
           if (crewText) crewText.value = '';
           if (crewCheck) crewCheck.checked = false;
@@ -255,62 +294,66 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
 
         return h('div', null,
           // The query itself, big
-          h('div', { style: { padding: 28, borderRadius: 14, marginBottom: 16, background: 'linear-gradient(135deg, ' + q.themeColor + '20 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid ' + q.themeColor + '88', borderLeft: '4px solid ' + q.themeColor, textAlign: 'center' } },
-            h('div', { style: { fontSize: 11, color: _qqFg(q.themeColor), fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12 } }, q.themeLabel),
-            h('p', { style: { margin: 0, color: _qqFg('#fff'), fontSize: 22, lineHeight: 1.6, fontWeight: 500, fontStyle: 'italic' } }, q.text),
-            h('div', { style: { marginTop: 14, fontSize: 11, color: _qqFg('#94a3b8') } },
+          h('div', { style: { padding: 28, borderRadius: 14, marginBottom: 16, background: _qqSoftBg('linear-gradient(135deg, ' + q.themeColor + '20 0%, rgba(15,23,42,0.4) 60%)', '#f8fafc'), border: '1px solid ' + (_qqHC ? '#ffff00' : q.themeColor + '88'), borderLeft: '4px solid ' + _qqBd(q.themeColor), textAlign: 'center' } },
+            h('div', { style: { fontSize: 12, color: _qqFg(q.themeColor), fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12 } }, q.themeLabel),
+            h('p', { style: { margin: 0, color: _qqFg('#e2e8f0'), fontSize: 22, lineHeight: 1.6, fontWeight: 500, fontStyle: 'italic' } }, q.text),
+            h('div', { style: { marginTop: 14, fontSize: 12, color: _qqFg('#94a3b8') } },
               'Question ' + (currentIdx + 1) + ' of ' + QUERIES.length,
               d.manualOverride != null ? h('span', null, ' · ',
-                h('button', { onClick: resetAuto, style: { background: 'transparent', border: 'none', color: _qqFg('#a78bfa'), cursor: 'pointer', fontSize: 11, textDecoration: 'underline' } }, 'reset to this week\'s automatic')
+                h('button', { type: 'button', onClick: resetAuto, style: { background: 'transparent', border: 'none', color: _qqFg('#a78bfa'), cursor: 'pointer', fontSize: 12, textDecoration: 'underline' } }, 'reset to this week\'s automatic')
               ) : h('span', null, ' · ',
-                h('button', { onClick: tryDifferent, style: { background: 'transparent', border: 'none', color: _qqFg('#a78bfa'), cursor: 'pointer', fontSize: 11, textDecoration: 'underline' } }, 'try a different question')
+                h('button', { type: 'button', onClick: tryDifferent, style: { background: 'transparent', border: 'none', color: _qqFg('#a78bfa'), cursor: 'pointer', fontSize: 12, textDecoration: 'underline' } }, 'try a different question')
               )
             )
           ),
 
           // Guidance about the practice
-          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.10)', borderTop: '1px solid rgba(167,139,250,0.3)', borderRight: '1px solid rgba(167,139,250,0.3)', borderBottom: '1px solid rgba(167,139,250,0.3)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 12.5, color: _qqFg('#e9d5ff'), lineHeight: 1.6 } },
+          h('div', { style: { padding: 10, borderRadius: 8, background: _qqSoftBg('rgba(167,139,250,0.10)', '#f5f3ff'), borderTop: '1px solid ' + _qqBd('#a78bfa'), borderRight: '1px solid ' + _qqBd('#a78bfa'), borderBottom: '1px solid ' + _qqBd('#a78bfa'), borderLeft: '3px solid ' + _qqBd('#a78bfa'), marginBottom: 14, fontSize: 12.5, color: _qqFg('#e9d5ff'), lineHeight: 1.6 } },
             h('strong', null, '🌒 How this practice works: '),
             'sit with this question for a week. No need to answer it. You can write what comes up at any point: once, three times, every day, or not at all. The point is to let the question work on you, not to dispatch it.'
           ),
 
           // Response area
-          h('div', { style: { padding: 14, borderRadius: 10, background: _qqBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 10, background: _qqBg('#0f172a'), border: '1px solid ' + _qqBd('#1e293b'), marginBottom: 14 } },
             h('label', { htmlFor: draftId, style: { display: 'block', fontSize: 12, color: _qqFg('#94a3b8'), fontWeight: 700, marginBottom: 6 } }, 'Write what comes up (optional)'),
-            h('div', { style: { fontSize: 11, color: _qqFg('#64748b'), marginBottom: 8, fontStyle: 'italic' } }, 'Try a starter if it helps: "' + RESPONSE_PROMPTS[currentIdx % RESPONSE_PROMPTS.length] + '"'),
+            h('div', { style: { fontSize: 12, color: _qqFg('#64748b'), marginBottom: 8, fontStyle: 'italic' } }, 'Try a starter if it helps: "' + RESPONSE_PROMPTS[currentIdx % RESPONSE_PROMPTS.length] + '"'),
             h('textarea', { id: draftId,
               placeholder: 'What is here?',
               onBlur: function(e) { scanQuietText(e.target.value); },
-              style: { width: '100%', minHeight: 130, padding: 10, borderRadius: 6, border: '1px solid #334155', background: _qqBg('#1e293b'), color: _qqFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' }
+              style: { width: '100%', minHeight: 130, padding: 10, borderRadius: 6, border: '1px solid ' + _qqBd('#334155'), background: _qqBg('#1e293b'), color: _qqFg('#e2e8f0'), fontSize: 14, fontFamily: 'inherit', lineHeight: 1.7, resize: 'vertical' }
             }),
 
             // Crew share opt-in
-            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 6, background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.2)' } },
+            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 6, background: _qqSoftBg('rgba(22,163,74,0.06)', '#f0fdf4'), border: '1px solid ' + _qqBd('#22c55e') } },
               h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12.5, color: _qqFg('#bbf7d0') } },
                 h('input', { type: 'checkbox', id: 'qq-share-crew', 'aria-label': 'I want to share a version of this with my Crew' }),
                 h('span', null, 'I want to share a shorter version of this with my Crew')
               ),
+              h('label', { htmlFor: 'qq-crew-version', className: 'sr-only', style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 } }, 'Shorter version to share with your Crew (optional)'),
               h('textarea', { id: 'qq-crew-version',
                 placeholder: 'A shorter version, only what you would actually want shared. Saved separately from your private response.',
                 onBlur: function(e) { scanQuietText(e.target.value); },
-                style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _qqBg('#1e293b'), color: _qqFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', marginTop: 8 }
+                style: { width: '100%', minHeight: 60, padding: 8, borderRadius: 6, border: '1px solid ' + _qqBd('#334155'), background: _qqBg('#1e293b'), color: _qqFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.6, resize: 'vertical', marginTop: 8 }
               })
             ),
 
-            h('button', { onClick: saveResponse, 'aria-label': 'Save response',
-              style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _qqBg('#7c3aed'), color: _qqFg('#fff'), fontWeight: 700, fontSize: 13 } }, '+ Save'),
-            h('span', { style: { marginLeft: 8, fontSize: 11, color: _qqFg('#64748b') } }, 'Your responses are private to this device unless you choose to share.')
+            h('button', { type: 'button', onClick: saveResponse, 'aria-label': 'Save response',
+              style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: _qqHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _qqHC ? '#000000' : '#6d28d9', color: _qqHC ? '#ffff00' : '#ffffff', fontWeight: 700, fontSize: 13 } }, '+ Save'),
+            h('span', { style: { marginLeft: 8, fontSize: 12, color: _qqFg('#64748b') } }, 'Your responses are private to this device unless you choose to share.')
           ),
 
           // Existing responses for this query
-          existing.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _qqBg('#0f172a'), border: '1px solid #1e293b' } },
-            h('div', { style: { fontSize: 11, color: _qqFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, existing.length + ' previous response' + (existing.length === 1 ? '' : 's') + ' to this question'),
+          existing.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _qqBg('#0f172a'), border: '1px solid ' + _qqBd('#1e293b') } },
+            h('div', { style: { fontSize: 12, color: _qqFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, existing.length + ' previous response' + (existing.length === 1 ? '' : 's') + ' to this question'),
             existing.slice().reverse().map(function(r, ri) {
-              return h('div', { key: ri, style: { padding: 10, borderRadius: 6, background: _qqBg('#1e293b'), marginBottom: 6, borderLeft: '2px solid ' + q.themeColor + '88' } },
-                h('div', { style: { fontSize: 10, color: _qqFg('#94a3b8'), fontFamily: 'ui-monospace, monospace', marginBottom: 4 } }, r.date),
-                h('p', { style: { margin: 0, color: _qqFg('#cbd5e1'), fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, r.text),
-                r.shareWithCrew && r.crewVersion ? h('div', { style: { marginTop: 8, padding: 6, background: 'rgba(22,163,74,0.10)', borderLeft: '2px solid #22c55e', borderRadius: 4, fontSize: 11.5, color: _qqFg('#bbf7d0') } },
-                  h('strong', { style: { color: _qqFg('#22c55e') } }, '🤝 Crew version: '), r.crewVersion
+              var rDate = safeStr(r.date);
+              var rText = safeStr(r.text);
+              var rCrew = safeStr(r.crewVersion);
+              return h('div', { key: ri, style: { padding: 10, borderRadius: 6, background: _qqBg('#1e293b'), marginBottom: 6, borderLeft: '2px solid ' + (_qqHC ? '#ffff00' : q.themeColor + '88') } },
+                h('div', { style: { fontSize: 12, color: _qqFg('#94a3b8'), fontFamily: 'ui-monospace, monospace', marginBottom: 4 } }, rDate),
+                h('p', { style: { margin: 0, color: _qqFg('#cbd5e1'), fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, rText),
+                r.shareWithCrew && rCrew ? h('div', { style: { marginTop: 8, padding: 6, background: _qqSoftBg('rgba(22,163,74,0.10)', '#f0fdf4'), borderLeft: '2px solid ' + _qqBd('#22c55e'), borderRadius: 4, fontSize: 12, color: _qqFg('#bbf7d0') } },
+                  h('strong', { style: { color: _qqFg('#22c55e') } }, '🤝 Crew version: '), rCrew
                 ) : null
               );
             })
@@ -324,30 +367,30 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       // ALL QUESTIONS — browse the full set
       // ═══════════════════════════════════════════════════════
       function renderAll() {
-        var browseId = d.browseId || null;
+        var browseId = typeof d.browseId === 'string' ? d.browseId : null;
         var browsed = QUERIES.find(function(q) { return q.id === browseId; });
 
         if (browsed) {
           // Detail view
-          var responses = ((Array.isArray(d.responses) ? d.responses : [])).filter(function(r) { return r.queryId === browsed.id; });
+          var responses = safeResponses(d.responses).filter(function(r) { return r.queryId === browsed.id; });
           return h('div', null,
-            h('button', { onClick: function() { setQQ({ browseId: null }); }, 'aria-label': 'Back to all questions',
-              style: { marginBottom: 12, background: 'transparent', border: '1px solid #334155', color: _qqFg('#cbd5e1'), borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, '← All questions'),
-            h('div', { style: { padding: 24, borderRadius: 14, background: 'linear-gradient(135deg, ' + browsed.themeColor + '20 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid ' + browsed.themeColor + '88', borderLeft: '4px solid ' + browsed.themeColor, marginBottom: 14 } },
-              h('div', { style: { fontSize: 11, color: _qqFg(browsed.themeColor), fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 10 } }, browsed.themeLabel),
-              h('p', { style: { margin: 0, color: _qqFg('#fff'), fontSize: 18, lineHeight: 1.6, fontStyle: 'italic' } }, browsed.text)
+            h('button', { type: 'button', onClick: function() { setQQ({ browseId: null }); }, 'aria-label': 'Back to all questions',
+              style: { marginBottom: 12, background: 'transparent', border: '1px solid ' + _qqBd('#334155'), color: _qqFg('#cbd5e1'), borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, '← All questions'),
+            h('div', { style: { padding: 24, borderRadius: 14, background: _qqSoftBg('linear-gradient(135deg, ' + browsed.themeColor + '20 0%, rgba(15,23,42,0.4) 60%)', '#f8fafc'), border: '1px solid ' + (_qqHC ? '#ffff00' : browsed.themeColor + '88'), borderLeft: '4px solid ' + _qqBd(browsed.themeColor), marginBottom: 14 } },
+              h('div', { style: { fontSize: 12, color: _qqFg(browsed.themeColor), fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 10 } }, browsed.themeLabel),
+              h('p', { style: { margin: 0, color: _qqFg('#e2e8f0'), fontSize: 18, lineHeight: 1.6, fontStyle: 'italic' } }, browsed.text)
             ),
-            h('button', { onClick: function() {
+            h('button', { type: 'button', onClick: function() {
               var idx = QUERIES.findIndex(function(q) { return q.id === browsed.id; });
               setQQ({ manualOverride: idx, browseId: null, view: 'this-week' });
             }, 'aria-label': 'Make this my current question',
-              style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #a78bfa', background: 'rgba(167,139,250,0.18)', color: _qqFg('#e9d5ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13, marginBottom: 14 } }, '→ Make this my current question'),
-            responses.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _qqBg('#0f172a'), border: '1px solid #1e293b' } },
-              h('div', { style: { fontSize: 11, color: _qqFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Your past responses to this question'),
+              style: { padding: '8px 16px', borderRadius: 8, border: '1px solid ' + _qqBd('#a78bfa'), background: _qqSoftBg('rgba(167,139,250,0.18)', '#f5f3ff'), color: _qqFg('#e9d5ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13, marginBottom: 14 } }, '→ Make this my current question'),
+            responses.length > 0 ? h('div', { style: { padding: 12, borderRadius: 10, background: _qqBg('#0f172a'), border: '1px solid ' + _qqBd('#1e293b') } },
+              h('div', { style: { fontSize: 12, color: _qqFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, 'Your past responses to this question'),
               responses.slice().reverse().map(function(r, ri) {
                 return h('div', { key: ri, style: { padding: 10, borderRadius: 6, background: _qqBg('#1e293b'), marginBottom: 6 } },
-                  h('div', { style: { fontSize: 10, color: _qqFg('#94a3b8'), fontFamily: 'ui-monospace, monospace', marginBottom: 4 } }, r.date),
-                  h('p', { style: { margin: 0, color: _qqFg('#cbd5e1'), fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, r.text)
+                  h('div', { style: { fontSize: 12, color: _qqFg('#94a3b8'), fontFamily: 'ui-monospace, monospace', marginBottom: 4 } }, safeStr(r.date)),
+                  h('p', { style: { margin: 0, color: _qqFg('#cbd5e1'), fontSize: 13, lineHeight: 1.6, whiteSpace: 'pre-wrap' } }, safeStr(r.text))
                 );
               })
             ) : h('div', { style: { padding: 10, fontSize: 12, color: _qqFg('#64748b'), fontStyle: 'italic' } }, 'No past responses to this question yet.'),
@@ -361,9 +404,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
           themes[q.theme] = themes[q.theme] || { label: q.themeLabel, color: q.themeColor, queries: [] };
           themes[q.theme].queries.push(q);
         });
+        var allResponses = safeResponses(d.responses);
 
         return h('div', null,
-          h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.08)', borderTop: '1px solid rgba(167,139,250,0.2)', borderRight: '1px solid rgba(167,139,250,0.2)', borderBottom: '1px solid rgba(167,139,250,0.2)', borderLeft: '3px solid #a78bfa', marginBottom: 14, fontSize: 13, color: _qqFg('#e9d5ff'), lineHeight: 1.55 } },
+          h('div', { style: { padding: 10, borderRadius: 8, background: _qqSoftBg('rgba(167,139,250,0.08)', '#f5f3ff'), borderTop: '1px solid ' + _qqBd('#a78bfa'), borderRight: '1px solid ' + _qqBd('#a78bfa'), borderBottom: '1px solid ' + _qqBd('#a78bfa'), borderLeft: '3px solid ' + _qqBd('#a78bfa'), marginBottom: 14, fontSize: 13, color: _qqFg('#e9d5ff'), lineHeight: 1.55 } },
             '📚 All 20 questions. Browse by theme. Click any question to read it or make it your current week\'s focus.'
           ),
           Object.keys(themes).map(function(tkey) {
@@ -372,10 +416,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
               h('div', { style: { fontSize: 12, color: _qqFg(t.color), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, t.label),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 8 } },
                 t.queries.map(function(q) {
-                  var hasResponse = ((Array.isArray(d.responses) ? d.responses : [])).some(function(r) { return r.queryId === q.id; });
-                  return h('button', { key: q.id, onClick: function() { setQQ({ browseId: q.id }); },
-                    style: { padding: 12, borderRadius: 8, border: '1px solid ' + t.color + '44', background: _qqBg('#0f172a'), cursor: 'pointer', textAlign: 'left', color: _qqFg('#e2e8f0') } },
-                    h('div', { style: { fontSize: 10, color: _qqFg(t.color), fontWeight: 700, marginBottom: 4 } }, hasResponse ? '✓ Visited' : 'Unvisited'),
+                  var hasResponse = allResponses.some(function(r) { return r.queryId === q.id; });
+                  return h('button', { key: q.id, type: 'button', onClick: function() { setQQ({ browseId: q.id }); },
+                    style: { padding: 12, borderRadius: 8, border: '1px solid ' + (_qqHC ? '#ffff00' : t.color + '44'), background: _qqBg('#0f172a'), cursor: 'pointer', textAlign: 'left', color: _qqFg('#e2e8f0') } },
+                    h('div', { style: { fontSize: 12, color: _qqFg(t.color), fontWeight: 700, marginBottom: 4 } }, hasResponse ? '✓ Visited' : 'Unvisited'),
                     h('div', { style: { fontSize: 12.5, lineHeight: 1.55, fontStyle: 'italic' } }, q.text)
                   );
                 })
@@ -389,43 +433,52 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       // MY PRACTICE — all past responses, dated, deletable
       // ═══════════════════════════════════════════════════════
       function renderPractice() {
-        var responses = ((Array.isArray(d.responses) ? d.responses : [])).slice();
+        var responses = safeResponses(d.responses).slice();
         if (responses.length === 0) {
           return h('div', null,
             h('div', { style: { padding: 24, borderRadius: 10, background: _qqBg('#0f172a'), textAlign: 'center' } },
-              h('div', { style: { fontSize: 36, marginBottom: 8 } }, '🌒'),
+              h('div', { style: { fontSize: 36, marginBottom: 8 }, 'aria-hidden': true }, '🌒'),
               h('div', { style: { color: _qqFg('#94a3b8'), fontSize: 14, marginBottom: 4 } }, 'No saved responses yet.'),
               h('div', { style: { color: _qqFg('#64748b'), fontSize: 12 } }, 'Sit with this week\'s question. Write when something arrives.')
             )
           );
         }
-        // Sort newest first
-        responses.sort(function(a, b) { return a.date < b.date ? 1 : -1; });
+        // Sort newest first (strict weak ordering)
+        responses.sort(function(a, b) {
+          var ad = safeStr(a.date), bd = safeStr(b.date);
+          if (ad === bd) return 0;
+          return ad < bd ? 1 : -1;
+        });
 
         function deleteResp(idx) {
-          var all = d.responses.slice();
-          // Find original index based on date+text+queryId match
           var target = responses[idx];
-          var origIdx = all.findIndex(function(r) { return r.date === target.date && r.text === target.text && r.queryId === target.queryId; });
-          if (origIdx >= 0) all.splice(origIdx, 1);
-          setQQ({ responses: all });
+          if (!target) return;
+          setQQ(function(prior) {
+            var all = safeResponses(prior.responses).slice();
+            var origIdx = all.findIndex(function(r) { return r.date === target.date && r.text === target.text && r.queryId === target.queryId; });
+            if (origIdx >= 0) all.splice(origIdx, 1);
+            return { responses: all };
+          });
         }
 
         return h('div', null,
           h('div', { style: { fontSize: 12, color: _qqFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 8 } }, responses.length + ' response' + (responses.length === 1 ? '' : 's')),
           responses.map(function(r, ri) {
-            var q = QUERIES.find(function(qq) { return qq.id === r.queryId; }) || { themeLabel: '', themeColor: _qqFg('#64748b'), text: '(question not found)' };
-            return h('div', { key: ri, style: { padding: 12, borderRadius: 10, background: _qqBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + q.themeColor, marginBottom: 10 } },
+            var q = QUERIES.find(function(qq) { return qq.id === r.queryId; }) || { themeLabel: '', themeColor: '#64748b', text: '(question not found)' };
+            var rDate = safeStr(r.date);
+            var rText = safeStr(r.text);
+            var rCrew = safeStr(r.crewVersion);
+            return h('div', { key: ri, style: { padding: 12, borderRadius: 10, background: _qqBg('#0f172a'), borderTop: '1px solid ' + _qqBd('#1e293b'), borderRight: '1px solid ' + _qqBd('#1e293b'), borderBottom: '1px solid ' + _qqBd('#1e293b'), borderLeft: '3px solid ' + _qqBd(q.themeColor), marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' } },
-                h('div', { style: { fontSize: 10, color: _qqFg(q.themeColor), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, q.themeLabel),
-                h('div', { style: { fontSize: 10, color: _qqFg('#94a3b8'), fontFamily: 'ui-monospace, monospace' } }, r.date),
-                h('button', { onClick: function() { deleteResp(ri); }, 'aria-label': 'Delete response',
-                  style: { marginLeft: 'auto', background: 'transparent', border: '1px solid #475569', color: _qqFg('#94a3b8'), borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                h('div', { style: { fontSize: 12, color: _qqFg(q.themeColor), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, q.themeLabel),
+                h('div', { style: { fontSize: 12, color: _qqFg('#94a3b8'), fontFamily: 'ui-monospace, monospace' } }, rDate),
+                h('button', { type: 'button', onClick: function() { deleteResp(ri); }, 'aria-label': 'Delete response',
+                  style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + _qqBd('#475569'), color: _qqFg('#94a3b8'), borderRadius: 6, padding: '2px 8px', cursor: 'pointer', fontSize: 12 } }, '✕')
               ),
               h('p', { style: { margin: '0 0 8px', color: _qqFg('#e9d5ff'), fontSize: 12.5, fontStyle: 'italic', lineHeight: 1.5 } }, '“' + q.text + '”'),
-              h('p', { style: { margin: 0, color: _qqFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, r.text),
-              r.shareWithCrew && r.crewVersion ? h('div', { style: { marginTop: 8, padding: 6, background: 'rgba(22,163,74,0.10)', borderLeft: '2px solid #22c55e', borderRadius: 4, fontSize: 11.5, color: _qqFg('#bbf7d0') } },
-                h('strong', { style: { color: _qqFg('#22c55e') } }, '🤝 Crew version: '), r.crewVersion
+              h('p', { style: { margin: 0, color: _qqFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65, whiteSpace: 'pre-wrap' } }, rText),
+              r.shareWithCrew && rCrew ? h('div', { style: { marginTop: 8, padding: 6, background: _qqSoftBg('rgba(22,163,74,0.10)', '#f0fdf4'), borderLeft: '2px solid ' + _qqBd('#22c55e'), borderRadius: 4, fontSize: 12, color: _qqFg('#bbf7d0') } },
+                h('strong', { style: { color: _qqFg('#22c55e') } }, '🤝 Crew version: '), rCrew
               ) : null
             );
           })
@@ -437,8 +490,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       // ═══════════════════════════════════════════════════════
       function renderAbout() {
         return h('div', null,
-          (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('quietQuestions', h, ctx) : null),
-          h('div', { style: { padding: 16, borderRadius: 12, background: _qqBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+          (typeof window !== 'undefined' && window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('quietQuestions', h, ctx) : null),
+          h('div', { style: { padding: 16, borderRadius: 12, background: _qqBg('#0f172a'), border: '1px solid ' + _qqBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _qqFg('#c4b5fd'), fontSize: 16 } }, 'What this practice is'),
             h('p', { style: { margin: '0 0 8px', color: _qqFg('#e2e8f0'), fontSize: 13.5, lineHeight: 1.7 } },
               'A single open-ended question, sat with for a week. You can write about it. You can talk to a friend about it. You can let it follow you around without doing anything in particular with it. The point is that good questions work on us slowly. Trying to answer them quickly is the opposite of the practice.'
@@ -448,7 +501,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: _qqBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _qqBg('#0f172a'), border: '1px solid ' + _qqBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _qqFg('#c4b5fd'), fontSize: 16 } }, 'What this practice is NOT'),
             h('ul', { style: { margin: 0, padding: '0 0 0 20px', color: _qqFg('#cbd5e1'), fontSize: 13, lineHeight: 1.8 } },
               h('li', null, 'It is not a journaling assignment. You can skip writing entirely if you want.'),
@@ -458,14 +511,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
             )
           ),
 
-          h('div', { style: { padding: 16, borderRadius: 12, background: _qqBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
+          h('div', { style: { padding: 16, borderRadius: 12, background: _qqBg('#0f172a'), border: '1px solid ' + _qqBd('#1e293b'), marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 10px', color: _qqFg('#c4b5fd'), fontSize: 16 } }, 'Lineage of the practice'),
             h('p', { style: { margin: 0, color: _qqFg('#cbd5e1'), fontSize: 13, lineHeight: 1.7 } },
               'The "query" form comes from the Religious Society of Friends (Quakers), where queries are open-ended questions read aloud in worship as prompts for reflection rather than as items to be answered. The practice of sitting with one question across a stretch of time appears across many wisdom traditions: Zen koans, Sufi questioning, Indigenous storywork, secular contemplative inquiry (Mary Oliver, Rilke, Wendell Berry, bell hooks). This tool draws on the FORM of the practice without claiming a specific religious or cultural authority.'
             )
           ),
 
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.3)', borderRight: '1px solid rgba(168,85,247,0.3)', borderBottom: '1px solid rgba(168,85,247,0.3)', borderLeft: '3px solid #a855f7', fontSize: 12.5, color: _qqFg('#e9d5ff'), lineHeight: 1.6 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _qqSoftBg('rgba(168,85,247,0.10)', '#f5f3ff'), borderTop: '1px solid ' + _qqBd('#a855f7'), borderRight: '1px solid ' + _qqBd('#a855f7'), borderBottom: '1px solid ' + _qqBd('#a855f7'), borderLeft: '3px solid ' + _qqBd('#a855f7'), fontSize: 12.5, color: _qqFg('#e9d5ff'), lineHeight: 1.6 } },
             h('strong', null, '📝 Notes for educators: '),
             'Quaker queries are typically used in Crew-time and faculty meetings as conversation prompts. A simple Crew protocol: read the week\'s query aloud, three minutes of silent reflection, then pair-share for 90 seconds, then opening to the full Crew with a "no fixing, no judging" norm. Students who shared a Crew-version of their response in the tool can offer it; students who did not should not be asked to.'
           ),
@@ -484,12 +537,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('quietQuestions')
       return h('div', { style: { maxWidth: 820, margin: '0 auto', padding: 16 }, role: 'region', 'aria-label': 'Quiet Questions' },
         header(),
         navTabs(),
-        (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
+        (d._crisisTier >= 3 && typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
           ? window.SelHub.renderCrisisResources(h, _qqBand) : null,
-        body
+        h('div', { role: 'tabpanel', id: 'qq-panel-' + view, 'aria-labelledby': 'qq-tab-' + view }, body)
       );
     }
   });
 
 })();
-}

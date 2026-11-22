@@ -287,6 +287,7 @@
     var end = span.end;
     if (typeof start !== 'number' || typeof end !== 'number'
       || !isFinite(start) || !isFinite(end)
+      || Math.floor(start) !== start || Math.floor(end) !== end
       || start < 0 || end <= start || end > notes.length) {
       errors.push(error('span-range', path, 'Source span offsets fall outside the observation notes.'));
       return false;
@@ -305,7 +306,8 @@
 
   function detectForbiddenKeys(suggestion, path, errors) {
     Object.keys(suggestion).forEach(function (key) {
-      if (FORBIDDEN_SUGGESTION_KEYS.indexOf(key) !== -1) {
+      var lowerKey = String(key).toLowerCase();
+      if (FORBIDDEN_SUGGESTION_KEYS.some(function (f) { return f.toLowerCase() === lowerKey; })) {
         errors.push(error('field-forbidden', path + '.' + key,
           'A suggestion may not carry a rating, score, or employment recommendation.'));
       }
@@ -545,6 +547,9 @@
     if (!isObject(draft) || !Array.isArray(draft.suggestions)) {
       return bad([error('draft-invalid', 'draft', 'Lock your notes before adding evidence.')]);
     }
+    if (draft.suggestions.length >= MAX_SUGGESTIONS) {
+      return bad([error('suggestions-limit', 'suggestions', 'This draft already has the maximum number of evidence items.')]);
+    }
     var entry = isObject(input) ? input : {};
     var span = locateQuote(draft.sourceNotesOriginal, entry.quote);
     if (!span.ok) return span;
@@ -575,7 +580,7 @@
     if (!report.ok) return report;
 
     var next = clone(draft);
-    next.suggestions = draft.suggestions.concat(report.value.suggestions);
+    next.suggestions = next.suggestions.concat(report.value.suggestions);
     next.globalWarnings = globalWarnings(next);
     return ok(next, report.warnings);
   }
@@ -670,26 +675,33 @@
     var readiness = exportReadiness(draft);
     if (!readiness.ok) return readiness;
 
+    if (!isObject(draft.framework) || !Array.isArray(draft.framework.domains)) {
+      return bad([error('draft-invalid', 'framework', 'Draft framework domains are missing.')]);
+    }
     var map = isObject(fieldMap) ? fieldMap : {};
+    var mappedLabel = function (key, fallback) {
+      return Object.prototype.hasOwnProperty.call(map, key) && isNonEmptyString(map[key]) ? map[key] : fallback;
+    };
     var line = disclosureLine(draft.disclosure);
     var watermark = draft.mode === 'demo' ? DEMO_WATERMARK : '';
     var header = watermark ? watermark + '\n' + line : line;
 
     var byDomain = Object.create(null);
     draft.framework.domains.forEach(function (domain) {
-      byDomain[domain.id] = [];
+      if (domain && isNonEmptyString(domain.id)) byDomain[domain.id] = [];
     });
     draft.suggestions.forEach(function (suggestion) {
       if (suggestion.decision !== 'accepted' && suggestion.decision !== 'edited') return;
       if (suggestion.result === 'insufficient_evidence') return;
+      if (!Object.prototype.hasOwnProperty.call(byDomain, suggestion.domainId)) return;
       var text = suggestion.approvedText || suggestion.objectiveEvidence;
       byDomain[suggestion.domainId].push(text);
     });
 
     var fields = draft.framework.domains.map(function (domain) {
-      var body = byDomain[domain.id].join('\n\n');
+      var body = (byDomain[domain.id] || []).join('\n\n');
       return {
-        key: map[domain.id] || domain.label,
+        key: mappedLabel(domain.id, domain.label),
         domainId: domain.id,
         label: domain.label,
         empty: body === '',
@@ -699,10 +711,11 @@
       };
     });
 
+    var ctxObj = isObject(draft.context) ? draft.context : {};
     var contextFields = [];
     ['teacherDisplayName', 'date', 'period', 'subject', 'observer'].forEach(function (key) {
-      if (isNonEmptyString(draft.context[key])) {
-        contextFields.push({ key: map[key] || key, domainId: null, label: key, empty: false, text: draft.context[key] });
+      if (Object.prototype.hasOwnProperty.call(ctxObj, key) && isNonEmptyString(ctxObj[key])) {
+        contextFields.push({ key: mappedLabel(key, key), domainId: null, label: key, empty: false, text: ctxObj[key] });
       }
     });
 
@@ -945,6 +958,10 @@
         });
       },
       deliver: function (draft, fieldMap, deliveryOptions) {
+        if (!token) {
+          return Promise.resolve(bad([error('owner_token_required', 'token',
+            'Paste the owner token from Apps Script Project Settings > Script properties.')]));
+        }
         var opts = isObject(deliveryOptions) ? deliveryOptions : {};
         var recipient = validateRecipient(opts.teacherEmail, opts.allowedDomain);
         if (!recipient.ok) return Promise.resolve(recipient);

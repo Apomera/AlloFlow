@@ -901,6 +901,8 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   };
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null); // edit mode: seat/furniture id
+  const [trayQuery, setTrayQuery] = useState('');
+  const [listQuery, setListQuery] = useState('');
   const [showConstraints, setShowConstraints] = useState(false);
   const [lastSolve, setLastSolve] = useState(null);       // {score, violations}
   const [confirmState, setConfirmState] = useState(null); // {message, onYes}
@@ -1268,7 +1270,22 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
 
   if (!isOpen) return null;
 
-  const btn = 'min-h-11 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none disabled:opacity-40';
+  const btn = 'min-h-11 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:opacity-40';
+  const seatedCount = Math.max(0, studentNames.length - unassigned.length);
+  const openSeatsCount = layout ? Math.max(0, layout.seats.length - Object.keys(layout.assignments || {}).filter(sid => layout.assignments[sid]).length) : 0;
+  const seatedPct = studentNames.length > 0 ? Math.min(100, Math.round((seatedCount / studentNames.length) * 100)) : 0;
+  const normalizedTrayQuery = trayQuery.trim().toLowerCase();
+  const visibleUnassigned = normalizedTrayQuery
+    ? unassigned.filter(n2 => String(displayNameOf(n2) || '').toLowerCase().indexOf(normalizedTrayQuery) !== -1)
+    : unassigned;
+  const normalizedListQuery = listQuery.trim().toLowerCase();
+  const visibleSortedSeats = normalizedListQuery && layout
+    ? sortedSeats.filter(s => {
+        const seatText = ('seat ' + seatNumberOf[s.id]).toLowerCase();
+        const stuName = layout.assignments[s.id] ? String(displayNameOf(layout.assignments[s.id]) || '').toLowerCase() : 'empty';
+        return seatText.indexOf(normalizedListQuery) !== -1 || stuName.indexOf(normalizedListQuery) !== -1;
+      })
+    : sortedSeats;
 
   return (
     <div className="fixed inset-0 z-[210] bg-black/60 flex items-center justify-center p-2 sm:p-4" role="presentation"
@@ -1457,64 +1474,96 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                   </React.Fragment>
                 ) : (
                   /* List view — same data, native controls, full AT parity. */
-                  <table className="w-full text-sm border-collapse">
-                    <caption className="sr-only">{tr('Seat assignments, front to back')}</caption>
-                    <thead>
-                      <tr className="text-left text-xs text-slate-600 uppercase tracking-wide">
-                        <th scope="col" className="py-1.5 pr-3">{tr('Seat')}</th>
-                        <th scope="col" className="py-1.5">{tr('Student')}</th>
-                        {mode === 'live' && <th scope="col" className="py-1.5 ps-3">{tr('Live')}</th>}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sortedSeats.map(s => {
-                        const name = layout.assignments[s.id] || '';
-                        return (
-                          <tr key={s.id} className="border-t border-slate-100">
-                            <th scope="row" className="py-1.5 pr-3 font-bold text-slate-700">{tr('Seat {n}', { n: seatNumberOf[s.id] })}</th>
-                            <td className="py-1.5">
-                              <select value={name} aria-label={tr('Student for seat {n}', { n: seatNumberOf[s.id] })}
-                                onChange={e => {
-                                  const v = e.target.value;
-                                  const next = { ...layout.assignments };
-                                  if (next[s.id]) delete next[s.id];
-                                  if (v) {
-                                    Object.keys(next).forEach(k => { if (next[k] === v) delete next[k]; });
-                                    next[s.id] = v;
-                                  }
-                                  patchLayout({ assignments: next });
-                                }}
-                                className="px-2 py-1 rounded-lg border border-slate-400 text-sm bg-white min-w-[180px]">
-                                <option value="">{tr('— empty —')}</option>
-                                {name && <option value={name}>{displayNameOf(name)}</option>}
-                                {unassigned.map(n2 => <option key={n2} value={n2}>{displayNameOf(n2)}</option>)}
-                              </select>
-                            </td>
-                            {mode === 'live' && (() => {
-                              const entry = name ? liveInfoFor(name) : null;
-                              const status = liveStatusOf(entry);
-                              const signal = entry ? liveSignalOf(entry) : null;
-                              return (
-                                <td className="py-1.5 ps-3">
-                                  {!name ? <span className="text-slate-600">—</span> : !entry ? <span className="text-slate-600 italic">{tr('not joined')}</span> : (
-                                    <span className="inline-flex items-center gap-2 text-xs">
-                                      <span className={status === 'on' ? 'text-emerald-700 font-bold' : 'text-slate-600'}>
-                                        {(signal ? signal.emoji + ' ' + signal.label + ' · ' : '') + (status === 'on' ? tr('active') : tr('quiet')) + (entry.xp ? ' · ' + entry.xp + ' XP' : '')}
+                  <div>
+                    {sortedSeats.length >= 6 && (
+                      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                        <input
+                          id="seating-list-search"
+                          type="search"
+                          value={listQuery}
+                          onChange={e => setListQuery(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+                            if (e.key === 'Escape' && listQuery) { e.preventDefault(); e.stopPropagation(); setListQuery(''); }
+                          }}
+                          aria-label={tr('Filter seats by number or student')}
+                          placeholder={tr('Find seat or student…')}
+                          className="min-h-11 w-52 rounded-lg border border-slate-300 bg-white px-2.5 text-xs text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
+                        />
+                        {normalizedListQuery && (
+                          <span className="text-xs font-semibold text-slate-600 tabular-nums">
+                            {visibleSortedSeats.length} / {sortedSeats.length}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <table className="w-full text-sm border-collapse">
+                      <caption className="sr-only">{tr('Seat assignments, front to back')}</caption>
+                      <thead>
+                        <tr className="text-left text-xs text-slate-600 uppercase tracking-wide">
+                          <th scope="col" className="py-1.5 pr-3">{tr('Seat')}</th>
+                          <th scope="col" className="py-1.5">{tr('Student')}</th>
+                          {mode === 'live' && <th scope="col" className="py-1.5 ps-3">{tr('Live')}</th>}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visibleSortedSeats.map(s => {
+                          const name = layout.assignments[s.id] || '';
+                          return (
+                            <tr key={s.id} className="border-t border-slate-100">
+                              <th scope="row" className="py-1.5 pr-3 font-bold text-slate-700">{tr('Seat {n}', { n: seatNumberOf[s.id] })}</th>
+                              <td className="py-1.5">
+                                <select value={name} aria-label={tr('Student for seat {n}', { n: seatNumberOf[s.id] })}
+                                  onChange={e => {
+                                    const v = e.target.value;
+                                    const next = { ...layout.assignments };
+                                    if (next[s.id]) delete next[s.id];
+                                    if (v) {
+                                      Object.keys(next).forEach(k => { if (next[k] === v) delete next[k]; });
+                                      next[s.id] = v;
+                                    }
+                                    patchLayout({ assignments: next });
+                                  }}
+                                  className="px-2 py-1 rounded-lg border border-slate-400 text-sm bg-white min-w-[180px]">
+                                  <option value="">{tr('— empty —')}</option>
+                                  {name && <option value={name}>{displayNameOf(name)}</option>}
+                                  {unassigned.map(n2 => <option key={n2} value={n2}>{displayNameOf(n2)}</option>)}
+                                </select>
+                              </td>
+                              {mode === 'live' && (() => {
+                                const entry = name ? liveInfoFor(name) : null;
+                                const status = liveStatusOf(entry);
+                                const signal = entry ? liveSignalOf(entry) : null;
+                                return (
+                                  <td className="py-1.5 ps-3">
+                                    {!name ? <span className="text-slate-600">—</span> : !entry ? <span className="text-slate-600 italic">{tr('not joined')}</span> : (
+                                      <span className="inline-flex items-center gap-2 text-xs">
+                                        <span className={status === 'on' ? 'text-emerald-700 font-bold' : 'text-slate-600'}>
+                                          {(signal ? signal.emoji + ' ' + signal.label + ' · ' : '') + (status === 'on' ? tr('active') : tr('quiet')) + (entry.xp ? ' · ' + entry.xp + ' XP' : '')}
+                                        </span>
+                                          <button type="button" disabled={!live.recognitionEnabled}
+                                          onClick={() => live.onRecognizeStudent(entry.uid)}
+                                          aria-label={tr('Recognize {name}', { name: displayNameOf(name) })}
+                                          className="min-h-11 min-w-11 px-2 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 disabled:opacity-40">🌿</button>
                                       </span>
-                                        <button type="button" disabled={!live.recognitionEnabled}
-                                        onClick={() => live.onRecognizeStudent(entry.uid)}
-                                        aria-label={tr('Recognize {name}', { name: displayNameOf(name) })}
-                                        className="min-h-11 min-w-11 px-2 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 disabled:opacity-40">🌿</button>
-                                    </span>
-                                  )}
-                                </td>
-                              );
-                            })()}
+                                    )}
+                                  </td>
+                                );
+                              })()}
+                            </tr>
+                          );
+                        })}
+                        {visibleSortedSeats.length === 0 && (
+                          <tr className="border-t border-slate-100">
+                            <td colSpan={mode === 'live' ? 3 : 2} className="py-3 text-center text-xs text-slate-600">
+                              <span>{tr('No seats match your filter.')}</span>{' '}
+                              <button type="button" onClick={() => setListQuery('')} className="min-h-11 px-2.5 py-1 rounded-lg border border-slate-300 bg-white font-bold text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600">{tr('Clear')}</button>
+                            </td>
                           </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
               </div>
 
@@ -1543,21 +1592,71 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
                       <p className="text-xs text-slate-600 mt-1">{tr('Pod goals with tokens live in the Live Dock’s Class Goals; this strip sends the standard recognition.')}</p>
                     </div>
                   )}
+                  {/* Seating occupancy summary */}
+                  {studentNames.length > 0 && (
+                    <div data-seating-occupancy="true" className="rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+                      <div className="flex items-center justify-between gap-1 text-xs font-bold text-slate-700 tabular-nums">
+                        <span>{seatedCount}/{studentNames.length} {tr('seated')}</span>
+                        <span className="font-semibold text-slate-600">{openSeatsCount} {tr('open')}</span>
+                      </div>
+                      <div className="mt-1.5 h-2 w-full rounded-full bg-slate-200 overflow-hidden" aria-hidden="true">
+                        <div
+                          className={'h-full rounded-full transition-all motion-reduce:transition-none ' + (seatedCount >= studentNames.length ? 'bg-emerald-600' : 'bg-indigo-600')}
+                          style={{ width: seatedPct + '%' }}
+                        />
+                      </div>
+                    </div>
+                  )}
                   {/* Unassigned tray */}
                   <div>
                     <h3 className="text-xs font-black text-slate-600 uppercase tracking-wide mb-1.5">{tr('Unseated')} ({unassigned.length})</h3>
+                    {unassigned.length >= 6 && (
+                      <div className="mb-2">
+                        <input
+                          id="seating-unseated-search"
+                          type="search"
+                          value={trayQuery}
+                          onChange={e => setTrayQuery(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+                            if (e.key === 'Escape' && trayQuery) { e.preventDefault(); e.stopPropagation(); setTrayQuery(''); }
+                          }}
+                          aria-label={tr('Filter unseated students')}
+                          placeholder={tr('Find student…')}
+                          className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2.5 text-xs text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
+                        />
+                      </div>
+                    )}
                     {unassigned.length === 0 && <p className="text-xs text-slate-600 italic">{tr('Everyone has a seat.')}</p>}
+                    {unassigned.length > 0 && visibleUnassigned.length === 0 && (
+                      <div className="flex items-center justify-between gap-2 text-xs text-slate-600">
+                        <span>{tr('No unseated students match.')}</span>
+                        <button type="button" onClick={() => setTrayQuery('')} className="min-h-11 px-2.5 py-1 rounded-lg border border-slate-300 bg-white font-bold text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600">{tr('Clear')}</button>
+                      </div>
+                    )}
                     <div className="flex flex-wrap gap-1.5">
-                      {unassigned.map(n2 => (
+                      {visibleUnassigned.map(n2 => (
                         <button key={n2} type="button" aria-pressed={selectedStudent === n2}
                           onClick={() => { setSelectedStudent(selectedStudent === n2 ? null : n2); setMode('assign'); }}
                           style={{ borderColor: groupColorOf(n2) }}
-                          className={'min-h-11 px-3 py-1 rounded-full text-xs font-bold border-2 ' + (selectedStudent === n2 ? 'bg-amber-100 text-amber-900' : 'bg-white text-slate-700 hover:bg-slate-50')}>
+                          className={'min-h-11 px-3 py-1 rounded-full text-xs font-bold border-2 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none ' + (selectedStudent === n2 ? 'bg-amber-100 text-amber-900' : 'bg-white text-slate-700 hover:bg-slate-50')}>
                           {displayNameOf(n2)}
                         </button>
                       ))}
                     </div>
-                    {selectedStudent && <p className="text-xs text-amber-700 mt-1.5">{tr('Now click a seat for {name}.', { name: displayNameOf(selectedStudent) })}</p>}
+                    {selectedStudent && (
+                      <div data-seating-placing-banner="true" className="mt-2 flex items-center justify-between gap-2 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs text-amber-900">
+                        <span className="font-semibold">{tr('Now click a seat for {name}.', { name: displayNameOf(selectedStudent) })}</span>
+                        <button
+                          type="button"
+                          data-seating-cancel-select="true"
+                          onClick={() => setSelectedStudent(null)}
+                          className="shrink-0 min-h-11 px-2.5 py-1 rounded-lg border border-amber-400 bg-white font-bold text-amber-900 hover:bg-amber-100 focus-visible:ring-2 focus-visible:ring-indigo-600 transition-colors motion-reduce:transition-none"
+                        >
+                          {t && t('common.cancel') || tr('Cancel')}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Constraints */}

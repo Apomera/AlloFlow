@@ -5,6 +5,7 @@
 
 // ═══ Defensive StemLab guard ═══
 function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -26,6 +27,7 @@ window.StemLab = window.StemLab || {
     try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
   }
 };
+}
 // ═══ End Guard ═══
 
 (function() {
@@ -1075,7 +1077,7 @@ function renderGalaxyEvidenceWorkbench(o) {
   // are deliberately ignored; the current model rebuilds them after import.
   function blackHoleParseNotebookBackup(text) {
     if(typeof text!=='string'||text.length>262144)return {error:'size'};
-    var data;try{data=JSON.parse(text.replace(/^\uFEFF/,''));}catch(error){return {error:'format'};}
+    var data;try{data=JSON.parse(text.replace(/^\uFEFF/,''),function(k,v){return(k==='__proto__'||k==='constructor'||k==='prototype')?undefined:v;});}catch(error){return {error:'format'};}
     if(!data||typeof data!=='object'||Array.isArray(data)||data.schema!=='galaxy-black-hole-experiments')return {error:'format'};
     if(data.version!==1)return {error:'version'};
     if(!Array.isArray(data.experiments)||data.experiments.length>8)return {error:'entries'};
@@ -1243,7 +1245,7 @@ function renderGalaxyEvidenceWorkbench(o) {
 
   // Scoped observatory styling: scene colours and scientific controls remain independent.
   (function () {
-    if (document.getElementById('galaxy-observatory-design')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('galaxy-observatory-design')) return;
     var style = document.createElement('style');
     style.id = 'galaxy-observatory-design';
     style.textContent = `
@@ -1882,7 +1884,7 @@ function renderGalaxyEvidenceWorkbench(o) {
   })();
   // end WCAG 1.4.3 high contrast
   (function() {
-    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } } @media (forced-colors: active) { [data-galaxy-canvas]:focus-visible, [data-black-hole-canvas]:focus-visible { outline: 4px solid CanvasText !important; outline-offset: -4px !important; } [data-galaxy-root] button:focus-visible, [data-galaxy-root] summary:focus-visible, [data-galaxy-root] input:focus-visible, [data-galaxy-root] select:focus-visible, [data-galaxy-root] textarea:focus-visible, [data-galaxy-root] a:focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; } [data-galaxy-mode][aria-pressed=true], [data-galaxy-shape][aria-pressed=true], [data-galaxy-toggle][aria-pressed=true], [data-galaxy-control-tab][aria-selected=true] { border: 3px solid Highlight !important; } }';
@@ -1892,14 +1894,32 @@ function renderGalaxyEvidenceWorkbench(o) {
 
   // ── Audio (auto-injected) ──
   var _galAC = null;
-  function getGalAC() { if (!_galAC) { try { _galAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_galAC && _galAC.state === "suspended") { try { _galAC.resume(); } catch(e) {} } return _galAC; }
-  function galTone(f,d,tp,v) { var ac = getGalAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
-  function sfxGalClick() { galTone(600, 0.03, "sine", 0.04); }
-  function sfxGalSuccess() { galTone(523, 0.08, "sine", 0.07); setTimeout(function() { galTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { galTone(784, 0.1, "sine", 0.08); }, 140); }
+  var _galMuteBound = false;
+  function _galIsGlobalMuted() {
+    try {
+      if (typeof window === 'undefined') return false;
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+      if (window.__alloGlobalMuted === true || window._alloGlobalMute === true) return true;
+      if (typeof window.localStorage !== 'undefined' && window.localStorage.getItem('alloflow-global-muted') === 'true') return true;
+    } catch (e) {}
+    return false;
+  }
+  function _galBindMute() {
+    if (_galMuteBound || typeof window === 'undefined' || typeof window.addEventListener !== 'function') return;
+    _galMuteBound = true;
+    window.addEventListener('alloflow-mute-changed', function(ev) {
+      var muted = (ev && ev.detail && typeof ev.detail.muted === 'boolean') ? ev.detail.muted : _galIsGlobalMuted();
+      if (muted && _galAC && _galAC.state === 'running' && typeof _galAC.suspend === 'function') { try { _galAC.suspend(); } catch (e) {} }
+    });
+  }
+  function getGalAC() { if (_galIsGlobalMuted()) return null; _galBindMute(); if (!_galAC) { try { _galAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_galAC && _galAC.state === "suspended") { try { _galAC.resume(); } catch(e) {} } return _galAC; }
+  function galTone(f,d,tp,v) { if (_galIsGlobalMuted()) return; var ac = getGalAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxGalClick() { if (_galIsGlobalMuted()) return; galTone(600, 0.03, "sine", 0.04); }
+  function sfxGalSuccess() { if (_galIsGlobalMuted()) return; galTone(523, 0.08, "sine", 0.07); setTimeout(function() { if (!_galIsGlobalMuted()) galTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { if (!_galIsGlobalMuted()) galTone(784, 0.1, "sine", 0.08); }, 140); }
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
-    if (document.getElementById('allo-live-galaxy')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-galaxy')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-galaxy';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -2212,7 +2232,7 @@ function renderGalaxyEvidenceWorkbench(o) {
   }
 
   // ═══ 🔬 galaxy (galaxy) ═══
-  window.StemLab.registerTool('galaxy', {
+  if (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.registerTool === 'function') window.StemLab.registerTool('galaxy', {
     icon: "🌌",
     label: "Galaxy Explorer",
     desc: "Explore galaxy types, stellar lifecycles, star classification, and metallicity in an interactive 3D Milky Way simulation.",
@@ -2353,7 +2373,9 @@ function renderGalaxyEvidenceWorkbench(o) {
       var getStemXP = ctx.getXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
-      var callGemini = ctx.callGemini;
+      var _galAiBlocked = typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.studentAiDisabled === true));
+      var _galAiUsable = !(typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', ctx.callGemini));
+      var callGemini = (ctx.aiAvailable !== false && !_galAiBlocked && _galAiUsable && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked) ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
@@ -2424,7 +2446,7 @@ if (!window._galaxyHasLoadedOnce) {
               }
               request.focusRoot = request.focusOrigin = null; request.focusFrame = 0;
               var questions = [];
-              try { if (response && typeof response.text === 'string') questions = sanitizeGeneratedQuiz(JSON.parse(response.text.replace(/```json/gi, '').replace(/```/g, '').trim())); } catch (error) {}
+              try { if (response && typeof response.text === 'string') questions = sanitizeGeneratedQuiz(JSON.parse(response.text.replace(/```json/gi, '').replace(/```/g, '').trim(), function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; })); } catch (error) {}
               setGalaxyQuizLoading(false);
               if (questions.length) {
                 galaxyQuizAnswerCommit.current = null;
@@ -4924,7 +4946,7 @@ if (!window._galaxyHasLoadedOnce) {
               var fragmentPickRay=new THREE.Raycaster(),fragmentPickNdc=new THREE.Vector2(),fragmentProjection=new THREE.Vector3();
               canvas._pickBlackHoleFragment=function(clientX,clientY){
                 var item=fallingObjects[0],box=canvas.getBoundingClientRect();
-                if(opticalEnabled||interaction!=='camera'||!released||!item||!item.debris.visible||item.fragmentBlend<.25||!isFinite(clientX)||!isFinite(clientY)||clientX<box.left||clientX>box.right||clientY<box.top||clientY>box.bottom)return false;
+                if(opticalEnabled||interaction!=='camera'||!released||!item||!item.debris.visible||item.fragmentBlend<.25||!box||box.width<=0||box.height<=0||!isFinite(clientX)||!isFinite(clientY)||clientX<box.left||clientX>box.right||clientY<box.top||clientY>box.bottom)return false;
                 updateCamera();scene.updateMatrixWorld(true);
                 fragmentPickNdc.set((clientX-box.left)/box.width*2-1,1-(clientY-box.top)/box.height*2);fragmentPickRay.setFromCamera(fragmentPickNdc,camera);
                 var blocker=fragmentPickRay.intersectObject(horizon,false)[0],hitDistance=Infinity,chosen=-1;
@@ -5582,6 +5604,10 @@ if (!window._galaxyHasLoadedOnce) {
             var renderer;
             try {
               renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true, powerPreference: 'high-performance' });
+              if (canvasEl && !canvasEl._galaxyMainContextLossBound) {
+                canvasEl._galaxyMainContextLossBound = true;
+                canvasEl.addEventListener('webglcontextlost', function (ev) { if (ev && ev.preventDefault) ev.preventDefault(); }, false);
+              }
             } catch (e) {
               console.error('[Galaxy] WebGLRenderer creation failed:', e);
               setTimeout(function() {
@@ -11382,8 +11408,8 @@ if (!window._galaxyHasLoadedOnce) {
               animId = requestAnimationFrame(animate);
 
               // Stay scheduled (so the view is live the moment it scrolls back) but do
-              // no per-frame work while off-screen.
-              if (!galaxyInView) return;
+              // no per-frame work while off-screen or hidden.
+              if (!galaxyInView || (typeof document !== 'undefined' && document.hidden)) return;
 
               var elapsed = prefersReducedMotion ? frozenMotionElapsed : (Date.now() - startT) * 0.001;
               var motionStep = prefersReducedMotion ? 0 : 1;
@@ -12442,8 +12468,9 @@ if (!window._galaxyHasLoadedOnce) {
           var evidenceEntry = galaxyEvidenceEntry(evidenceWorkbench, evidenceWorkbench.mission);
           function updateEvidenceEntry(patch) {
             setLabToolData(function (prev) {
-              var current = prev.galaxy || {};
-              return Object.assign({}, prev, { galaxy: Object.assign({}, current, {
+              var safeP = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+              var current = (safeP.galaxy && typeof safeP.galaxy === 'object' && !Array.isArray(safeP.galaxy)) ? safeP.galaxy : {};
+              return Object.assign({}, safeP, { galaxy: Object.assign({}, current, {
                 galaxyEvidenceWorkbench: galaxyEvidenceUpdate(current.galaxyEvidenceWorkbench, evidenceMission.id, patch)
               }) });
             });
@@ -15071,6 +15098,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                       window._galaxyTimeLapse = setInterval(function () {
 
+                        if (typeof document !== 'undefined' && document.hidden) return;
                         age += 0.1;
 
                         if (age > 13.85) { clearInterval(window._galaxyTimeLapse); window._galaxyTimeLapse = null; upd("isPlaying", false); return; }
@@ -15256,9 +15284,10 @@ if (!window._galaxyHasLoadedOnce) {
                 activeMission: evidenceMission, activeBand: observeMode,
                 onMission: function (id) {
                   setLabToolData(function (prev) {
-                    var current = prev.galaxy || {}, book = galaxyEvidenceState(current.galaxyEvidenceWorkbench);
+                    var safeP = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+                    var current = (safeP.galaxy && typeof safeP.galaxy === 'object' && !Array.isArray(safeP.galaxy)) ? safeP.galaxy : {}, book = galaxyEvidenceState(current.galaxyEvidenceWorkbench);
                     if (GALAXY_EVIDENCE_MISSION_IDS.indexOf(id) !== -1) book.mission = id;
-                    return Object.assign({}, prev, { galaxy: Object.assign({}, current, { galaxyEvidenceWorkbench: book, galaxyEvidenceReturn: null }) });
+                    return Object.assign({}, safeP, { galaxy: Object.assign({}, current, { galaxyEvidenceWorkbench: book, galaxyEvidenceReturn: null }) });
                   });
                 },
                 onPrediction: function (choice) { updateEvidenceEntry({ prediction: choice }); },
@@ -15619,7 +15648,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-                React.createElement("button", { type: "button", "aria-label": __alloT('stem.galaxy.snapshot', 'Snapshot'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy', 'Galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(__alloT('stem.galaxy.toast_snapshot', '\uD83D\uDCF8 Snapshot saved!'), 'success'); }, className: "ml-auto min-h-[44px] px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.galaxy.snapshot', 'Snapshot'))
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.galaxy.snapshot', 'Snapshot'), onClick: function () { setToolSnapshots(function (prev) { return (Array.isArray(prev) ? prev : []).concat([{ id: 'gx-' + Date.now(), tool: 'galaxy', label: t('stem.galaxy.galaxy', 'Galaxy') + (d.selectedStar ? ': ' + d.selectedStar : '') + ' (' + gType.label + ')', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(__alloT('stem.galaxy.toast_snapshot', '\uD83D\uDCF8 Snapshot saved!'), 'success'); }, className: "ml-auto min-h-[44px] px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.galaxy.snapshot', 'Snapshot'))
 
               )
 
@@ -16128,15 +16157,16 @@ if (!window._galaxyHasLoadedOnce) {
                   React.createElement("div", { className: "mt-3 grid grid-cols-1 md:grid-cols-3 gap-2" },
                     [
                       { title: __alloT('stem.galaxy.card_observe_title', 'Observe it'), body: __alloT('stem.galaxy.card_observe_body', 'Move this target into Night Sky & Astronomy to compare real survey data with telescope expectations.'), action: __alloT('stem.galaxy.card_observe_action', 'Astronomy'), onClick: function () {
-                        setLabToolData(function (prev) { return Object.assign({}, prev, { astronomy: Object.assign({}, prev.astronomy || {}, { tab: 'observe', eyepieceTarget: activeRealSkyTarget.astronomyTarget || 'andromeda' }) }); });
+                        setLabToolData(function (prev) { var safeP = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {}; var safeA = (safeP.astronomy && typeof safeP.astronomy === 'object' && !Array.isArray(safeP.astronomy)) ? safeP.astronomy : {}; return Object.assign({}, safeP, { astronomy: Object.assign({}, safeA, { tab: 'observe', eyepieceTarget: activeRealSkyTarget.astronomyTarget || 'andromeda' }) }); });
                         setStemLabTool('astronomy');
                       } },
                       { title: __alloT('stem.galaxy.card_time_title', 'Place it in time'), body: __alloT('stem.galaxy.card_time_body', 'Jump to Universe with the matching real-data tour, evidence thread, and guided mission selected.'), action: __alloT('stem.galaxy.card_time_action', 'Universe'), onClick: function () {
                         setLabToolData(function (prev) {
-                          var prevUniverse = prev.universe || {};
-                          var launched = prevUniverse.cosmicMissionsLaunched || [];
+                          var safeP = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+                          var prevUniverse = (safeP.universe && typeof safeP.universe === 'object' && !Array.isArray(safeP.universe)) ? safeP.universe : {};
+                          var launched = Array.isArray(prevUniverse.cosmicMissionsLaunched) ? prevUniverse.cosmicMissionsLaunched : [];
                           var nextLaunched = launched.indexOf(activeRealSkyMission) === -1 ? launched.concat([activeRealSkyMission]) : launched;
-                          return Object.assign({}, prev, { universe: Object.assign({}, prevUniverse, { showImages: true, wwtTourStop: activeRealSkyUniverseStop, cosmicEvidenceThread: activeRealSkyEvidenceThread, cosmicTime: activeRealSkyUniverseTime, activeCosmicMission: activeRealSkyMission, cosmicMissionsLaunched: nextLaunched }) });
+                          return Object.assign({}, safeP, { universe: Object.assign({}, prevUniverse, { showImages: true, wwtTourStop: activeRealSkyUniverseStop, cosmicEvidenceThread: activeRealSkyEvidenceThread, cosmicTime: activeRealSkyUniverseTime, activeCosmicMission: activeRealSkyMission, cosmicMissionsLaunched: nextLaunched }) });
                         });
                         setStemLabTool('universe');
                       } },
@@ -16364,7 +16394,7 @@ if (!window._galaxyHasLoadedOnce) {
                       React.createElement("span",{id:'black-hole-distance-max',style:{position:'absolute',left:0,top:'8px',fontSize:'12px'},'aria-hidden':true},'—'),
                       React.createElement("span",{style:{position:'absolute',left:0,top:'134px',fontSize:'12px',color:'#fbbf24'},'aria-hidden':true},'1'),
                       React.createElement("svg",{id:'black-hole-distance-chart',viewBox:'0 0 600 160',preserveAspectRatio:'none',role:'slider',tabIndex:0,'aria-label':__alloT('stem.galaxy.bh_distance_inspect','Inspect distance over playback'),'aria-describedby':'black-hole-distance-help black-hole-distance-readout black-hole-distance-reference-readout black-hole-distance-reference-help','aria-valuemin':0,'aria-valuemax':100,'aria-valuenow':0,'aria-orientation':'horizontal',
-                        onClick:function(e){var box=e.currentTarget.getBoundingClientRect(),cv=blackHoleCanvasActive.current,nearest=22*22,index=-1;blackHoleDebrisUi.moments.forEach(function(event,i){var dx=e.clientX-box.left-event.x/600*box.width,dy=e.clientY-box.top-event.y/160*box.height,distance=dx*dx+dy*dy;if(distance<nearest){nearest=distance;index=i;}});if(index>=0&&cv&&cv._seekBlackHoleFragmentMoment){cv._seekBlackHoleFragmentMoment(index);return;}pauseBlackHoleForInspection();if(cv&&cv._seekBlackHoleExperiment)cv._seekBlackHoleExperiment((e.clientX-box.left)/box.width);},
+                        onClick:function(e){var box=e.currentTarget.getBoundingClientRect(),cv=blackHoleCanvasActive.current,nearest=22*22,index=-1;if(!box||box.width<=0||box.height<=0)return;blackHoleDebrisUi.moments.forEach(function(event,i){var dx=e.clientX-box.left-event.x/600*box.width,dy=e.clientY-box.top-event.y/160*box.height,distance=dx*dx+dy*dy;if(distance<nearest){nearest=distance;index=i;}});if(index>=0&&cv&&cv._seekBlackHoleFragmentMoment){cv._seekBlackHoleFragmentMoment(index);return;}pauseBlackHoleForInspection();if(cv&&cv._seekBlackHoleExperiment)cv._seekBlackHoleExperiment((e.clientX-box.left)/box.width);},
                         onKeyDown:function(e){if(e.ctrlKey||e.metaKey||e.altKey||e.isComposing||(e.nativeEvent&&e.nativeEvent.isComposing)||e.keyCode===229)return;var value=Number(e.currentTarget.getAttribute('aria-valuenow'))/100,step=e.shiftKey?.1:.01;if(e.key==='ArrowLeft'||e.key==='ArrowDown')value-=step;else if(e.key==='ArrowRight'||e.key==='ArrowUp')value+=step;else if(e.key==='Home')value=0;else if(e.key==='End')value=1;else return;e.preventDefault();e.stopPropagation();pauseBlackHoleForInspection();var cv=blackHoleCanvasActive.current;if(cv&&cv._seekBlackHoleExperiment)cv._seekBlackHoleExperiment(value);}},
                         React.createElement("line",{x1:0,x2:600,y1:18,y2:18,stroke:'#526889','vectorEffect':'non-scaling-stroke','aria-hidden':true}),
                         React.createElement("line",{x1:0,x2:600,y1:81,y2:81,stroke:'#334155',strokeDasharray:'3 5','vectorEffect':'non-scaling-stroke','aria-hidden':true}),
@@ -16669,6 +16699,7 @@ if (!window._galaxyHasLoadedOnce) {
                         try { if (cvEl._starLifeMotionCleanup) cvEl._starLifeMotionCleanup(); } catch (e) {}
                         return;
                       }
+                      if (typeof document !== 'undefined' && document.hidden) { cvEl._starLifeAnim = requestAnimationFrame(drawStar); return; }
                       if (starLifeReduceMotion) { tick = 40; } else { tick++; }
                       ctx.clearRect(0, 0, W, H);
                       // Starfield background
@@ -17312,7 +17343,7 @@ if (!window._galaxyHasLoadedOnce) {
                 }),
 
                 // ── Snapshot button (overlay, bottom-right of canvas) ──
-                React.createElement("button", { type: "button", "aria-label": __alloT('stem.galaxy.snapshot', 'Snapshot'), onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: __alloT('stem.galaxy.narrate_starlife_prefix', 'Star Life: ') + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(__alloT('stem.galaxy.toast_starlife_snapshot', '\uD83D\uDCF8 Star life snapshot saved!'), 'success'); }, className: "min-h-[44px] px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 rounded-full hover:from-amber-700 hover:to-orange-700 shadow-md hover:shadow-lg transition-all", style: { position: 'absolute', bottom: '12px', right: '12px', zIndex: 10 } }, "\uD83D\uDCF8 Snapshot")
+                React.createElement("button", { type: "button", "aria-label": __alloT('stem.galaxy.snapshot', 'Snapshot'), onClick: function () { setToolSnapshots(function (prev) { return (Array.isArray(prev) ? prev : []).concat([{ id: 'sl-' + Date.now(), tool: 'galaxy', label: __alloT('stem.galaxy.narrate_starlife_prefix', 'Star Life: ') + lifecycleMass + ' M\u2609', data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast(__alloT('stem.galaxy.toast_starlife_snapshot', '\uD83D\uDCF8 Star life snapshot saved!'), 'success'); }, className: "min-h-[44px] px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-700 to-orange-700 rounded-full hover:from-amber-700 hover:to-orange-700 shadow-md hover:shadow-lg transition-all", style: { position: 'absolute', bottom: '12px', right: '12px', zIndex: 10 } }, "\uD83D\uDCF8 Snapshot")
 
               )
 

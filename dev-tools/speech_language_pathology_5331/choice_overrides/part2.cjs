@@ -3,7 +3,7 @@
 module.exports = [
   {
     id: 'L4.0',
-    correct: 'Identifying possible risk and the need for follow-up, without by itself establishing a diagnosis or eligibility.',
+    correct: 'Identifying possible risk and follow-up need, without by itself establishing a diagnosis or eligibility.',
     distractors: [
       'Confirming that the student has a communication disorder so that eligibility can be documented at the meeting.',
       'Producing a detailed score profile that can be converted directly into treatment goals and a service schedule.',
@@ -129,7 +129,7 @@ module.exports = [
   },
   {
     id: 'L5.0',
-    correct: 'Error consistency, sound classes, word positions, contrasts, stimulability, and any motor or structural findings.',
+    correct: 'Error consistency, sound classes, word positions, contrasts, stimulability, and motor or structural findings.',
     distractors: [
       'The child’s chronological age compared with a single published age-of-mastery chart for each individual sound.',
       'The number of correctly spelled words on a classroom spelling test given during the same week as the evaluation.',

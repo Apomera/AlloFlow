@@ -1,17 +1,18 @@
   const GUIDED_STEP_IDS = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'anchor-chart', 'image', 'faq', 'sentence-frames', 'note-taking', 'memory-aid', 'applied-challenge', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'alignment', 'lesson-plan', 'directions', 'package-deliver', '_final'];
   const GUIDED_DELIVERY_EVIDENCE_KEYS = ['directionsSaved', 'exportCreated', 'shareCreated', 'liveStarted', 'studentPreviewed'];
   const normalizeGuidedPlanBrief = (raw) => {
-    if (!raw || typeof raw !== 'object') return null;
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
     const clean = (value, max) => String(value || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
     const validSteps = new Set(GUIDED_STEP_IDS);
     const stepReasons = {};
-    if (raw.stepReasons && typeof raw.stepReasons === 'object') Object.entries(raw.stepReasons).forEach(([id, reason]) => { const cleaned = clean(reason, 180); if (validSteps.has(id) && cleaned) stepReasons[id] = cleaned; });
-    const classroom = raw.classroomContext && typeof raw.classroomContext === 'object' ? raw.classroomContext : {};
+    if (raw.stepReasons && typeof raw.stepReasons === 'object' && !Array.isArray(raw.stepReasons)) Object.entries(raw.stepReasons).forEach(([id, reason]) => { const cleaned = clean(reason, 180); if (validSteps.has(id) && cleaned) stepReasons[id] = cleaned; });
+    const classroom = raw.classroomContext && typeof raw.classroomContext === 'object' && !Array.isArray(raw.classroomContext) ? raw.classroomContext : {};
+    const rawMins = Number(raw.estimatedMinutes);
     const brief = {
       id: clean(raw.id, 80), title: clean(raw.title || raw.label, 90), summary: clean(raw.summary || raw.description, 320),
       goal: clean(raw.originalGoal || raw.goal, 1200), rationale: clean(raw.rationale, 420), stepReasons,
       assumptions: Array.isArray(raw.assumptions) ? raw.assumptions.map(item => clean(item, 160)).filter(Boolean).slice(0, 4) : [],
-      estimatedMinutes: Math.max(0, Math.min(180, Math.round(Number(raw.estimatedMinutes) || 0))),
+      estimatedMinutes: Math.max(0, Math.min(180, Math.round(Number.isFinite(rawMins) ? rawMins : 0))),
       classroomContext: {
         supports: Array.isArray(classroom.supports) ? classroom.supports.map(item => clean(item, 60)).filter(Boolean).slice(0, 8) : [],
         languages: clean(classroom.languages, 120), devices: clean(classroom.devices, 40), notes: clean(classroom.notes, 280),
@@ -155,7 +156,10 @@
   };
 
 async function generateGuidedPlanFromGoal(rawGoal, refinementContext = null, deps = {}) {
-  const { callGemini, cleanJson = (s) => String(s || '').replace(/^```(?:json)?\s*|\s*```$/gi, '').trim(), warnLog = function () {} } = deps || {};
+  const safeDeps = (deps && typeof deps === 'object') ? deps : {};
+  const callGemini = safeDeps.callGemini;
+  const cleanJson = typeof safeDeps.cleanJson === 'function' ? safeDeps.cleanJson : (s) => String(s || '').replace(/^```(?:json)?\s*|\s*```$/gi, '').trim();
+  const warnLog = typeof safeDeps.warnLog === 'function' ? safeDeps.warnLog : function () {};
   const _gmcAiUsable = (kind, fn) => {
     if (typeof window !== 'undefined' && (
       window.__alloStudentAiDisabled === true ||
@@ -193,6 +197,7 @@ async function generateGuidedPlanFromGoal(rawGoal, refinementContext = null, dep
       if (!stepIds.length) throw new Error('The plan did not include any supported Guided steps.');
       const stepReasons = {};
       if (raw.stepReasons && typeof raw.stepReasons === 'object') stepIds.forEach(id => { const reason = cleanText(raw.stepReasons[id], 180); if (reason) stepReasons[id] = reason; });
+      const rawMins = Number(raw.estimatedMinutes);
       return {
         id: 'ai-plan',
         source,
@@ -202,7 +207,7 @@ async function generateGuidedPlanFromGoal(rawGoal, refinementContext = null, dep
         rationale: cleanText(raw.rationale, 420),
         stepIds,
         stepReasons,
-        estimatedMinutes: Math.max(5, Math.min(180, Math.round(Number(raw.estimatedMinutes) || Math.max(12, stepIds.length * 3)))),
+        estimatedMinutes: Math.max(5, Math.min(180, Math.round(Number.isFinite(rawMins) && rawMins > 0 ? rawMins : Math.max(12, stepIds.length * 3)))),
         deliverySetting: allowedSettings.has(raw.deliverySetting) ? raw.deliverySetting : 'take-home',
         deliveryPriority: allowedPriorities.has(raw.deliveryPriority) ? raw.deliveryPriority : 'accessible',
         assumptions: Array.isArray(raw.assumptions) ? raw.assumptions.map(item => cleanText(item, 160)).filter(Boolean).slice(0, 4) : [],
@@ -288,8 +293,9 @@ function guidedLinkFingerprint(text) {
   for (let i = 0; i < str.length; i++) hash = Math.imul(hash ^ str.charCodeAt(i), 16777619);
   return str.length + ':' + (hash >>> 0).toString(16);
 }
-function createGuidedLessonMatcher({ history, sourceText, activeUnitId, observed, normalizeDirections }) {
-  sourceText = typeof sourceText === 'string' ? sourceText : '';
+function createGuidedLessonMatcher(opts) {
+  const { history, sourceText: rawSourceText, activeUnitId, observed, normalizeDirections } = (opts && typeof opts === 'object') ? opts : {};
+  const sourceText = typeof rawSourceText === 'string' ? rawSourceText : '';
   const textKey = guidedLinkFingerprint(sourceText);
   const safeHistory = Array.isArray(history) ? history : [];
   const byId = new Map(safeHistory.filter(Boolean).map(item => [item.id, item]));
@@ -313,7 +319,7 @@ function createGuidedLessonMatcher({ history, sourceText, activeUnitId, observed
   };
   return (item, justObserved) => {
     if (!belongs(item, justObserved)) return false;
-    if (item.type !== 'directions' || !normalizeDirections) return true;
+    if (item.type !== 'directions' || typeof normalizeDirections !== 'function') return true;
     const directions = normalizeDirections(item.data);
     const objectives = Array.isArray(directions?.objectives) ? directions.objectives : [];
     const choices = Array.isArray(directions?.choiceBoard?.choices) ? directions.choiceBoard.choices : [];
@@ -321,24 +327,33 @@ function createGuidedLessonMatcher({ history, sourceText, activeUnitId, observed
     return entries.every(entry => !entry?.resourceRef || belongs(byId.get(String(entry.resourceRef))));
   };
 }
-function guidedLearnerResources({ history, runIds, sourceText, activeUnitId, observed, studentSafe, resolveResources, normalizeDirections }) {
+function guidedLearnerResources(opts) {
+  const { history, runIds, sourceText, activeUnitId, observed, studentSafe, resolveResources, normalizeDirections } = (opts && typeof opts === 'object') ? opts : {};
+  if (typeof studentSafe !== 'function' || typeof resolveResources !== 'function') return null;
   const safeHistory = Array.isArray(history) ? history : [];
   const belongs = createGuidedLessonMatcher({ history: safeHistory, sourceText, activeUnitId, observed, normalizeDirections });
-  const run = new Set(runIds || []);
-  let ids = studentSafe(safeHistory).filter(item => run.has(item.id) && belongs(item)).map(item => item.id);
+  const run = new Set(Array.isArray(runIds) ? runIds : []);
+  const safeList = studentSafe(safeHistory);
+  if (!Array.isArray(safeList)) return null;
+  let ids = safeList.filter(item => item && run.has(item.id) && belongs(item)).map(item => item.id);
   if (!ids.length || ids.length > 25) return null;
   let resources = resolveResources(ids);
+  if (!Array.isArray(resources)) return null;
   if (resources.some(item => !belongs(item))) {
     // Directions and reading pairs may pull in linked resources from History.
-    ids = ids.filter(id => resolveResources([id]).every(belongs));
+    ids = ids.filter(id => {
+      const resolved = resolveResources([id]);
+      return Array.isArray(resolved) && resolved.every(belongs);
+    });
     resources = ids.length ? resolveResources(ids) : [];
+    if (!Array.isArray(resources)) return null;
   }
   if (!resources.length || !resources.every(belongs)) return null;
   try { return { ids, signature: guidedLinkFingerprint(JSON.stringify(resources)) }; }
   catch (_) { return null; }
 }
 function resolveGuidedLearnerLink(link, scope, records, now = Date.now()) {
-  if (!link || !scope || link.scope !== scope || !Array.isArray(records)) return null;
+  if (!link || typeof link !== 'object' || typeof link.id !== 'string' || !link.id || typeof link.urlKey !== 'string' || !link.urlKey || !scope || link.scope !== scope || !Array.isArray(records)) return null;
   const isValidHttpUrl = (raw) => {
     if (typeof raw !== 'string' || raw.length > 8192) return false;
     try {
@@ -351,6 +366,7 @@ function resolveGuidedLearnerLink(link, scope, records, now = Date.now()) {
     && isValidHttpUrl(share.url) && guidedLinkFingerprint(share.url) === link.urlKey
     && (!share.expiresAt || Date.parse(share.expiresAt) > now)) || null;
 }
+if (typeof window !== 'undefined') {
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.GuidedModeConfig = {
   GUIDED_STEP_IDS,
@@ -368,3 +384,4 @@ window.AlloModules.GuidedModeConfig = {
   resolveGuidedLearnerLink,
   generateGuidedPlanFromGoal,
 };
+}

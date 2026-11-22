@@ -66,12 +66,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
       '.theme-contrast [data-stem-tool-shell="universe"] button:hover:not(:disabled) .uni-path-icon,.theme-contrast [data-stem-tool-shell="universe"] button:hover:not(:disabled) .uni-topic-icon{background:transparent!important}',
       '.theme-contrast [data-stem-tool-shell="universe"] button[aria-pressed=true],.theme-contrast [data-stem-tool-shell="universe"] button[aria-expanded=true],.theme-contrast [data-stem-tool-shell="universe"] button[aria-selected=true],.theme-contrast [data-stem-tool-shell="universe"] button[aria-current=true]{box-shadow:inset 0 0 0 3px #ffff00!important}',
       '.theme-contrast [data-stem-tool-shell="universe"] button[data-result=right]::after{content:" \\2713"}',
-      '.theme-contrast [data-stem-tool-shell="universe"] button[data-result=wrong]::after,.theme-contrast [data-stem-tool-shell="universe"] button[data-result=miss]::after{content:" \\2717"}'
+      '.theme-contrast [data-stem-tool-shell="universe"] button[data-result=wrong]::after,.theme-contrast [data-stem-tool-shell="universe"] button[data-result=miss]::after{content:" \\2717"}',
+      '.theme-contrast [data-stem-tool-shell="universe"] .uni-hr-comet-bead,.theme-contrast [data-stem-tool-shell="universe"] .uni-hr-halo{animation:none!important;opacity:0!important}'
     ].join('') + '}';
     var st = document.getElementById('allo-universe-hc-extra-css');
     if (!st) { st = document.createElement('style'); st.id = 'allo-universe-hc-extra-css'; document.head.appendChild(st); }
     if (st.textContent !== css) st.textContent = css;
+    if (!document.getElementById('allo-universe-motion-css')) {
+      var mst = document.createElement('style');
+      mst.id = 'allo-universe-motion-css';
+      mst.textContent = '@keyframes uniHrBeadPulse{0%,100%{opacity:.42;transform:scale(1)}50%{opacity:.95;transform:scale(1.45)}}[data-universe-tool] .uni-hr-comet-bead{transform-box:fill-box;transform-origin:center;animation:uniHrBeadPulse 2.6s ease-in-out infinite}@media (prefers-reduced-motion:reduce){[data-universe-tool] .uni-hr-comet-bead{animation:none!important;opacity:.75}}';
+      document.head.appendChild(mst);
+    }
   })();
+
+  function universeHighContrast() {
+    try {
+      if (typeof document === 'undefined') return false;
+      var root = document.documentElement, body = document.body;
+      return !!((root && root.classList && root.classList.contains('theme-contrast')) || (body && body.classList && body.classList.contains('theme-contrast')));
+    } catch (e) { return false; }
+  }
+  function universeReducedMotion() {
+    try { return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+    catch (e) { return false; }
+  }
+  function universeSafeEllipse(ctx, x, y, rx, ry, rot, sa, ea) {
+    if (!ctx) return;
+    if (typeof ctx.ellipse === 'function') { ctx.ellipse(x, y, rx, ry, rot || 0, sa, ea); return; }
+    ctx.arc(x, y, Math.max(0.5, (rx + ry) * 0.5), sa, ea);
+  }
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
@@ -6548,7 +6572,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             var lums = [[1e6, '1,000,000'], [1e4, '10,000'], [100, '100'], [1, '1'], [0.01, '0.01'], [1e-4, '0.0001']];
             var temps = [[30000, '30,000 K'], [10000, '10,000 K'], [6000, '6,000 K'], [3000, '3,000 K']];
             var strip0 = at(7500, 1e5), strip1 = at(5500, 30);
+            // Solar-mass stellar evolutionary track (Main Sequence -> Red Giant -> AGB -> Planetary Nebula -> White Dwarf)
+            var evoWaypoints = [[5772, 1], [5000, 3.2], [4300, 32], [3850, 950], [4900, 65], [3450, 3200], [18000, 1200], [16000, 0.012]];
+            var evoPts = evoWaypoints.map(function (wp) { return at(wp[0], wp[1]); });
+            var evoD = evoPts.map(function (pt, idx) { return (idx === 0 ? 'M' : 'L') + pt.x.toFixed(1) + ',' + pt.y.toFixed(1); }).join(' ');
             return h('svg', { viewBox: '0 0 560 336', className: 'uni-hr-svg', role: 'img', 'aria-label': __alloT('stem.universe.a11y_hertzsprung_russell_diagram_plotting_stars_by_s', 'Hertzsprung-Russell diagram plotting stars by surface temperature on the horizontal axis and luminosity on the vertical axis, with most stars falling on the main sequence diagonal') },
+              h('defs', null,
+                h('linearGradient', { id: 'uni-hr-evo-grad', x1: '0%', y1: '100%', x2: '100%', y2: '0%' },
+                  h('stop', { offset: '0%', stopColor: '#fde047', stopOpacity: 0.72 }),
+                  h('stop', { offset: '55%', stopColor: '#fb923c', stopOpacity: 0.8 }),
+                  h('stop', { offset: '100%', stopColor: '#7dd3fc', stopOpacity: 0.78 }))),
               h('rect', { x: 0, y: 0, width: 560, height: 336, rx: 12, fill: '#0b1220' }),
               classes.map(function (c) { return h('text', { key: c[0], x: at(c[1], 1).x, y: 22, textAnchor: 'middle', fontSize: 12, fontWeight: 700, fill: universeStarColor(c[1]) }, c[0]); }),
               lums.map(function (l) { var y = at(5772, l[0]).y; return h('g', { key: 'l' + l[0] }, h('line', { x1: X0, x2: X0 + PW, y1: y, y2: y, stroke: '#1e293b' }), h('text', { x: X0 - 6, y: y + 4, textAnchor: 'end', fontSize: 10, fill: '#cbd5e1' }, l[1])); }),
@@ -6556,14 +6589,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               h('text', { x: X0 + PW / 2, y: 330, textAnchor: 'middle', fontSize: 11, fill: '#e2e8f0' }, 'Surface temperature (hotter to the left)'),
               h('text', { x: 14, y: Y0 + PH / 2, textAnchor: 'middle', fontSize: 11, fill: '#e2e8f0', transform: 'rotate(-90 14 ' + (Y0 + PH / 2) + ')' }, 'Luminosity (Sun = 1)'),
               region === 'strip' && h('rect', { x: strip0.x, y: strip0.y, width: strip1.x - strip0.x, height: strip1.y - strip0.y, fill: '#a78bfa', opacity: 0.2 }),
+              // Glowing HR evolutionary-track path + comet beads
+              h('path', { d: evoD, fill: 'none', stroke: 'url(#uni-hr-evo-grad)', strokeWidth: 4.2, opacity: 0.16, strokeLinecap: 'round', strokeLinejoin: 'round', className: 'uni-hr-halo' }),
+              h('path', { d: evoD, fill: 'none', stroke: 'url(#uni-hr-evo-grad)', strokeWidth: 1.5, strokeDasharray: '4 4', opacity: 0.72, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+              evoPts.map(function (pt, ei) {
+                return h('g', { key: 'evo' + ei },
+                  h('circle', { cx: pt.x.toFixed(1), cy: pt.y.toFixed(1), r: 5.5, fill: 'none', stroke: ei < 4 ? '#fbbf24' : '#38bdf8', strokeWidth: 1, className: 'uni-hr-comet-bead', style: { animationDelay: (ei * 0.28).toFixed(2) + 's' } }),
+                  h('circle', { cx: pt.x.toFixed(1), cy: pt.y.toFixed(1), r: 2.1, fill: '#fef9c3', opacity: 0.9 }));
+              }),
               UNIVERSE_HR_STARS.map(function (st, i) {
                 var p = at(st.T, st.L), on = lit(st);
                 var r = st.kind === 'wd' ? 1.3 : st.kind === 'giant' ? 2.6 : st.kind === 'super' ? 3.4 : Math.max(1, Math.min(3.2, 0.9 + (Math.log10(st.L) + 4) * 0.22));
                 return h('circle', { key: i, cx: p.x.toFixed(1), cy: p.y.toFixed(1), r: r, fill: universeStarColor(st.T), opacity: on ? 0.95 : 0.14, 'data-lit': region && on ? 'true' : undefined });
               }),
               UNIVERSE_HR_NAMED.map(function (st) {
-                var p = at(st.T, st.L), left = st.side === 'left';
-                return h('g', { key: st.name }, h('circle', { cx: p.x, cy: p.y, r: 4.6, fill: universeStarColor(st.T), stroke: '#ffffff', strokeWidth: 1.4 }),
+                var p = at(st.T, st.L), left = st.side === 'left', scol = universeStarColor(st.T);
+                return h('g', { key: st.name },
+                  h('circle', { cx: p.x, cy: p.y, r: 8.5, fill: scol, opacity: 0.2, className: 'uni-hr-halo' }),
+                  h('circle', { cx: p.x, cy: p.y, r: 4.6, fill: scol, stroke: '#ffffff', strokeWidth: 1.4 }),
                   h('text', { x: p.x + (left ? -8 : 8), y: p.y + 4, textAnchor: left ? 'end' : 'start', fontSize: 11, fontWeight: 700, fill: '#f1f5f9' }, st.name));
               }));
           }
@@ -6571,6 +6614,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
           function drawLensing(el, sx, sy, einstein, showTruth) {
             var ctx = el.getContext ? el.getContext('2d') : null;
             if (!ctx || !ctx.createImageData) return;
+            var hc = universeHighContrast();
             var W = el.width, H = el.height, img = ctx.createImageData(W, H), px = img.data, cx = W / 2, cy = H / 2, e2 = einstein * einstein;
             for (var y = 0; y < H; y++) {
               for (var x = 0; x < W; x++) {
@@ -6588,15 +6632,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             }
             ctx.putImageData(img, 0, 0);
             var rand = quizRng(31);
-            ctx.fillStyle = 'rgba(226,232,240,0.7)';
+            ctx.fillStyle = hc ? '#ffffff' : 'rgba(226,232,240,0.72)';
             for (var k = 0; k < 46; k++) ctx.fillRect(Math.floor(rand() * W), Math.floor(rand() * H), 1.4, 1.4);
+            // Gravitational-lensing tangential caustic shimmer arcs & potential halos
+            if (!hc) {
+              var srcAng = Math.atan2(sy, sx);
+              var uNorm = Math.sqrt(sx * sx + sy * sy) / Math.max(1, einstein);
+              var arcHalf = uNorm < 0.1 ? Math.PI : Math.max(0.24, Math.min(1.05, 0.72 / (0.35 + uNorm)));
+              ctx.save();
+              ctx.lineCap = 'round';
+              // Subtle spacetime curvature contour rings around foreground mass
+              for (var cr = 1; cr <= 2; cr++) {
+                ctx.strokeStyle = 'rgba(125,211,252,' + (0.14 - cr * 0.04) + ')';
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.arc(cx, cy, einstein * (0.62 + cr * 0.38), 0, Math.PI * 2); ctx.stroke();
+              }
+              // Shimmering Einstein caustic arc highlights along primary & counter-image tangents
+              var outerR = einstein * (0.5 * (uNorm + Math.sqrt(uNorm * uNorm + 4)));
+              var innerR = Math.max(8, einstein * (0.5 * (Math.sqrt(uNorm * uNorm + 4) - uNorm)));
+              ctx.strokeStyle = 'rgba(186,230,253,0.42)';
+              ctx.lineWidth = 3.2;
+              ctx.beginPath(); ctx.arc(cx, cy, outerR, srcAng - arcHalf, srcAng + arcHalf); ctx.stroke();
+              ctx.strokeStyle = 'rgba(240,249,255,0.75)';
+              ctx.lineWidth = 1.1;
+              ctx.beginPath(); ctx.arc(cx, cy, outerR, srcAng - arcHalf * 0.75, srcAng + arcHalf * 0.75); ctx.stroke();
+              if (uNorm >= 0.1) {
+                ctx.strokeStyle = 'rgba(165,243,252,0.28)';
+                ctx.lineWidth = 2.0;
+                ctx.beginPath(); ctx.arc(cx, cy, innerR, srcAng + Math.PI - arcHalf * 0.6, srcAng + Math.PI + arcHalf * 0.6); ctx.stroke();
+              }
+              ctx.restore();
+            }
             if (showTruth) {
               ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5;
-              ctx.strokeStyle = 'rgba(148,163,184,0.9)'; ctx.beginPath(); ctx.arc(cx, cy, einstein, 0, Math.PI * 2); ctx.stroke();
-              ctx.strokeStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(cx + sx, cy + sy, 13, 0, Math.PI * 2); ctx.stroke();
-              ctx.setLineDash([]); ctx.font = '600 12px system-ui, sans-serif'; ctx.fillStyle = '#f8fafc';
+              ctx.strokeStyle = hc ? '#ffff00' : 'rgba(148,163,184,0.9)'; ctx.beginPath(); ctx.arc(cx, cy, einstein, 0, Math.PI * 2); ctx.stroke();
+              ctx.strokeStyle = hc ? '#00ff00' : '#f8fafc'; ctx.beginPath(); ctx.arc(cx + sx, cy + sy, 13, 0, Math.PI * 2); ctx.stroke();
+              ctx.setLineDash([]); ctx.font = '600 12px system-ui, sans-serif'; ctx.fillStyle = hc ? '#ffff00' : '#f8fafc';
               ctx.fillText('Where the galaxy really is', Math.min(W - 170, cx + sx + 16), Math.max(14, cy + sy - 16));
-              ctx.fillStyle = '#cbd5e1'; ctx.fillText('Einstein radius', cx - einstein * 0.7 - 96, cy - einstein * 0.7 - 4);
+              ctx.fillStyle = hc ? '#00ff00' : '#cbd5e1'; ctx.fillText('Einstein radius', cx - einstein * 0.7 - 96, cy - einstein * 0.7 - 4);
             }
           }
           function renderLensLab() {
@@ -7529,7 +7602,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
             }
 
-            // Nebula clouds
+            // Nebula clouds + pre-allocated zero-GC nebular dust filaments & pulsar/supernova shockwave pools
 
             var nebulae = [];
 
@@ -7537,6 +7610,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
               nebulae.push({ x: Math.random(), y: Math.random(), size: 0.05 + Math.random() * 0.08, hue: ni % 4 === 0 ? '200,100,255' : ni % 4 === 1 ? '100,180,255' : ni % 4 === 2 ? '255,150,100' : '150,255,200', phase: Math.random() * Math.PI * 2 });
 
+            }
+            var NEB_FIL_MAX = 24;
+            var nebFilHost = new Uint8Array(NEB_FIL_MAX);
+            var nebFilOffX = new Float32Array(NEB_FIL_MAX), nebFilOffY = new Float32Array(NEB_FIL_MAX);
+            var nebFilAng = new Float32Array(NEB_FIL_MAX), nebFilSpan = new Float32Array(NEB_FIL_MAX);
+            var nebFilBend = new Float32Array(NEB_FIL_MAX), nebFilPhase = new Float32Array(NEB_FIL_MAX);
+            var filRng = quizRng(4207);
+            for (var nfi = 0; nfi < NEB_FIL_MAX; nfi++) {
+              nebFilHost[nfi] = nfi % nebulae.length;
+              nebFilOffX[nfi] = (filRng() - 0.5) * 1.4;
+              nebFilOffY[nfi] = (filRng() - 0.5) * 0.9;
+              nebFilAng[nfi] = filRng() * Math.PI * 2;
+              nebFilSpan[nfi] = 0.45 + filRng() * 0.85;
+              nebFilBend[nfi] = (filRng() - 0.5) * 0.65;
+              nebFilPhase[nfi] = filRng() * Math.PI * 2;
+            }
+            var SN_MAX = 6;
+            var snX = new Float32Array(SN_MAX), snY = new Float32Array(SN_MAX);
+            var snPhase = new Float32Array(SN_MAX), snSpeed = new Float32Array(SN_MAX);
+            var snMaxR = new Float32Array(SN_MAX), snAng = new Float32Array(SN_MAX);
+            var snIsPulsar = new Uint8Array(SN_MAX);
+            var snRng = quizRng(7719);
+            for (var sni = 0; sni < SN_MAX; sni++) {
+              snX[sni] = 0.1 + snRng() * 0.8;
+              snY[sni] = 0.14 + snRng() * 0.72;
+              snPhase[sni] = snRng();
+              snSpeed[sni] = 0.0022 + snRng() * 0.0024;
+              snMaxR[sni] = 18 + snRng() * 24;
+              snAng[sni] = snRng() * Math.PI * 2;
+              snIsPulsar[sni] = sni % 2;
             }
 
             var galaxyTextures = [0, 1, 2, 3].map(universeGalaxyTexture);
@@ -7580,7 +7683,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 ctx.strokeStyle = 'rgba(147,197,253,0.22)'; ctx.lineWidth = R * 0.16; ctx.stroke();
                 ctx.strokeStyle = 'rgba(219,234,254,0.4)'; ctx.lineWidth = R * 0.045; ctx.stroke();
               }
-              ctx.fillStyle = 'rgba(253,230,138,0.5)'; ctx.beginPath(); ctx.ellipse(0, 0, R * 0.24, R * 0.075, 0, 0, Math.PI * 2); ctx.fill();
+              ctx.fillStyle = 'rgba(253,230,138,0.5)'; ctx.beginPath(); universeSafeEllipse(ctx, 0, 0, R * 0.24, R * 0.075, 0, 0, Math.PI * 2); ctx.fill();
               var core = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.4);
               core.addColorStop(0, 'rgba(255,244,214,0.95)'); core.addColorStop(0.4, 'rgba(251,191,36,0.35)'); core.addColorStop(1, 'rgba(251,191,36,0)');
               ctx.fillStyle = core; ctx.fillRect(-R, -R, R * 2, R * 2);
@@ -7634,7 +7737,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                 (era.look === 'pangaea' ? PANGAEA : earthBlobs).forEach(function (b) {
                   var q = project(b); if (q.c < -0.1) return;
                   ctx.fillStyle = look.land; ctx.beginPath();
-                  ctx.ellipse(q.x, q.y, Math.max(1, b.s * er * Math.max(0.12, q.c)), b.s * er * b.ar * 0.7, 0, 0, Math.PI * 2); ctx.fill();
+                  universeSafeEllipse(ctx, q.x, q.y, Math.max(1, b.s * er * Math.max(0.12, q.c)), b.s * er * b.ar * 0.7, 0, 0, Math.PI * 2); ctx.fill();
                 });
                 if (era.look === 'ice') {
                   // A thin belt of slushy open water may have survived near the equator.
@@ -7642,10 +7745,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   belt.addColorStop(0, 'rgba(30,64,175,0)'); belt.addColorStop(0.5, 'rgba(30,64,175,0.32)'); belt.addColorStop(1, 'rgba(30,64,175,0)');
                   ctx.fillStyle = belt; ctx.fillRect(-er, -er * 0.2, er * 2, er * 0.4);
                 }
-                if (look.caps) { ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.beginPath(); ctx.ellipse(0, -er * 0.97, er * 0.5, er * 0.16, 0, 0, Math.PI * 2); ctx.ellipse(0, er * 0.97, er * 0.6, er * 0.2, 0, 0, Math.PI * 2); ctx.fill(); }
+                if (look.caps) { ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.beginPath(); universeSafeEllipse(ctx, 0, -er * 0.97, er * 0.5, er * 0.16, 0, 0, Math.PI * 2); universeSafeEllipse(ctx, 0, er * 0.97, er * 0.6, er * 0.2, 0, 0, Math.PI * 2); ctx.fill(); }
                 if (look.clouds) {
                   ctx.fillStyle = 'rgba(255,255,255,0.45)';
-                  earthBlobs.forEach(function (b, i) { var q = project({ lon: b.lon + 1.7, lat: b.lat * 0.8 }, 1.35); if (q.c < 0 || i % 3) return; ctx.beginPath(); ctx.ellipse(q.x, q.y, er * 0.3 * Math.max(0.15, q.c), er * 0.05, 0, 0, Math.PI * 2); ctx.fill(); });
+                  earthBlobs.forEach(function (b, i) { var q = project({ lon: b.lon + 1.7, lat: b.lat * 0.8 }, 1.35); if (q.c < 0 || i % 3) return; ctx.beginPath(); universeSafeEllipse(ctx, q.x, q.y, er * 0.3 * Math.max(0.15, q.c), er * 0.05, 0, 0, Math.PI * 2); ctx.fill(); });
                 }
               }
               // Night side, and today's city lights on it.
@@ -7981,8 +8084,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
 
 
-                // ── Nebulae (after t > 2 Gyr, star-forming regions) ──
+                // ── Nebulae (after t > 2 Gyr, star-forming regions) + zero-GC shimmering dust filaments ──
 
+                var hcScene = universeHighContrast();
                 if (t > 2) {
 
                   var nebAlpha = Math.min(0.3, (t - 2) * 0.03);
@@ -7995,13 +8099,108 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                     var nbSize = nb.size * W * (1 + 0.1 * Math.sin(tick * 0.01 + nb.phase));
 
-                    ctx.save(); ctx.translate(nbx, nby); ctx.rotate(nb.phase + Math.sin(tick * 0.001 + nb.phase) * 0.025);
-                    ctx.scale(1.5, 0.78); ctx.globalAlpha = nebAlpha;
-                    ctx.drawImage(cloudTextures[2 + nbi % 4], -nbSize, -nbSize, nbSize * 2, nbSize * 2); ctx.restore();
+                    if (!hcScene) {
+                      ctx.save(); ctx.translate(nbx, nby); ctx.rotate(nb.phase + Math.sin(tick * 0.001 + nb.phase) * 0.025);
+                      ctx.scale(1.5, 0.78); ctx.globalAlpha = nebAlpha;
+                      ctx.drawImage(cloudTextures[2 + nbi % 4], -nbSize, -nbSize, nbSize * 2, nbSize * 2); ctx.restore();
+                    }
                     if (t > 2.4) spot('nebula', nbi, nbx, nby, nbSize * 0.8);
 
                   }
+                  if (!hcScene) {
+                    ctx.save();
+                    ctx.lineCap = 'round';
+                    ctx.globalCompositeOperation = 'lighter';
+                    for (var nfi2 = 0; nfi2 < NEB_FIL_MAX; nfi2++) {
+                      var hNb = nebulae[nebFilHost[nfi2]];
+                      var hSize = hNb.size * W;
+                      var fx0 = hNb.x * W + nebFilOffX[nfi2] * hSize;
+                      var fy0 = hNb.y * H + nebFilOffY[nfi2] * hSize;
+                      var fLen = nebFilSpan[nfi2] * hSize;
+                      var fAng = nebFilAng[nfi2] + (stillScene ? 0 : Math.sin(tick * 0.006 + nebFilPhase[nfi2]) * 0.08);
+                      var fx1 = fx0 + Math.cos(fAng) * fLen;
+                      var fy1 = fy0 + Math.sin(fAng) * fLen;
+                      var fcx = (fx0 + fx1) * 0.5 - (fy1 - fy0) * nebFilBend[nfi2];
+                      var fcy = (fy0 + fy1) * 0.5 + (fx1 - fx0) * nebFilBend[nfi2];
+                      var shim = stillScene ? 0.65 : (0.45 + 0.55 * Math.sin(tick * 0.025 + nebFilPhase[nfi2]));
+                      ctx.strokeStyle = 'rgba(' + hNb.hue + ',' + (nebAlpha * 0.75 * shim).toFixed(3) + ')';
+                      ctx.lineWidth = 1.4 * dpr;
+                      ctx.beginPath();
+                      ctx.moveTo(fx0, fy0);
+                      if (typeof ctx.quadraticCurveTo === 'function') ctx.quadraticCurveTo(fcx, fcy, fx1, fy1);
+                      else ctx.lineTo(fx1, fy1);
+                      ctx.stroke();
+                    }
+                    ctx.restore();
+                  }
 
+                }
+
+                // ── Cosmic-expansion redshift comoving grid pulse (subtle spacetime lattice) ──
+                if (t > 0.35 && showStructureGuides && !hcScene && actualAge < UNIVERSE_FUTURE_PREVIEW_GYR) {
+                  var expPulse = stillScene ? 0.5 : ((tick * 0.0045) % 1);
+                  var gridAlpha = Math.min(0.11, (t - 0.35) * 0.02);
+                  ctx.save();
+                  ctx.strokeStyle = 'rgba(129,140,248,' + (gridAlpha * 0.65).toFixed(3) + ')';
+                  ctx.lineWidth = 0.8 * dpr;
+                  var stepG = Math.max(48 * dpr, W / 9);
+                  var driftG = stillScene ? 0 : (expPulse * stepG * 0.35);
+                  for (var gx2 = cx + driftG; gx2 < W; gx2 += stepG) {
+                    ctx.beginPath(); ctx.moveTo(gx2, 0); ctx.lineTo(gx2, H); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(cx - (gx2 - cx), 0); ctx.lineTo(cx - (gx2 - cx), H); ctx.stroke();
+                  }
+                  for (var gy2 = cy + driftG; gy2 < H; gy2 += stepG) {
+                    ctx.beginPath(); ctx.moveTo(0, gy2); ctx.lineTo(W, gy2); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(0, cy - (gy2 - cy)); ctx.lineTo(W, cy - (gy2 - cy)); ctx.stroke();
+                  }
+                  // Outward redshift expansion wavefront ring
+                  var maxRad = Math.hypot(cx, cy);
+                  var waveR = expPulse * maxRad;
+                  ctx.strokeStyle = 'rgba(244,114,182,' + ((1 - expPulse) * gridAlpha * 1.4).toFixed(3) + ')';
+                  ctx.lineWidth = 1.4 * dpr;
+                  ctx.beginPath(); ctx.arc(cx, cy, waveR, 0, Math.PI * 2); ctx.stroke();
+                  ctx.restore();
+                }
+
+                // ── Pulsar & supernova shockwave rings (zero-GC fixed pool) ──
+                if (t > 1.2 && actualAge < UNIVERSE_FUTURE_PREVIEW_GYR) {
+                  var snFade = Math.min(1, (t - 1.2) * 0.8);
+                  ctx.save();
+                  if (!hcScene) ctx.globalCompositeOperation = 'lighter';
+                  for (var sni2 = 0; sni2 < SN_MAX; sni2++) {
+                    if (!stillScene) {
+                      snPhase[sni2] += snSpeed[sni2];
+                      if (snPhase[sni2] >= 1) snPhase[sni2] -= 1;
+                    }
+                    var sp = stillScene ? (0.35 + (sni2 % 3) * 0.2) : snPhase[sni2];
+                    var sx2 = snX[sni2] * W, sy2 = snY[sni2] * H;
+                    var sr = (4 + sp * snMaxR[sni2]) * dpr;
+                    var sa = (1 - sp) * 0.55 * snFade;
+                    if (sa <= 0.02) continue;
+                    // Outer supernova shockwave shell + inner reverse-shock ring
+                    ctx.strokeStyle = hcScene ? '#ffff00' : (snIsPulsar[sni2] ? ('rgba(56,189,248,' + sa.toFixed(3) + ')') : ('rgba(251,191,36,' + sa.toFixed(3) + ')'));
+                    ctx.lineWidth = (hcScene ? 1.4 : (2.1 - sp * 1.1)) * dpr;
+                    ctx.beginPath(); ctx.arc(sx2, sy2, sr, 0, Math.PI * 2); ctx.stroke();
+                    if (!hcScene && sp < 0.78) {
+                      ctx.strokeStyle = 'rgba(224,242,254,' + (sa * 0.55).toFixed(3) + ')';
+                      ctx.lineWidth = 0.9 * dpr;
+                      ctx.beginPath(); ctx.arc(sx2, sy2, sr * 0.64, 0, Math.PI * 2); ctx.stroke();
+                    }
+                    // Twin relativistic pulsar lighthouse beams for pulsar remnants
+                    if (snIsPulsar[sni2] && !hcScene) {
+                      var pAng = snAng[sni2] + (stillScene ? 0 : tick * 0.075 + sni2);
+                      var bLen = (10 + (1 - sp) * 14) * dpr;
+                      var bdx = Math.cos(pAng) * bLen, bdy = Math.sin(pAng) * bLen;
+                      ctx.strokeStyle = 'rgba(186,230,253,' + (sa * 0.85).toFixed(3) + ')';
+                      ctx.lineWidth = 1.2 * dpr;
+                      ctx.beginPath();
+                      ctx.moveTo(sx2 - bdx, sy2 - bdy); ctx.lineTo(sx2 + bdx, sy2 + bdy);
+                      ctx.stroke();
+                      ctx.fillStyle = 'rgba(255,255,255,' + Math.min(1, sa * 1.4).toFixed(3) + ')';
+                      ctx.beginPath(); ctx.arc(sx2, sy2, 1.8 * dpr, 0, Math.PI * 2); ctx.fill();
+                    }
+                  }
+                  ctx.restore();
                 }
 
 
@@ -8134,22 +8333,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
 
                     if (cli < 3 && showStructureGuides) {
 
-                      ctx.strokeStyle = 'rgba(196,181,253,' + (0.18 * clusterAlpha * clPulse) + ')';
+                      var arcShimmer = stillScene ? 1 : (0.72 + 0.28 * Math.sin(tick * 0.045 + cli * 2.1));
+                      var aStart1 = Math.PI * (0.1 + cli * 0.24), aEnd1 = Math.PI * (0.95 + cli * 0.24);
+                      var aRad1 = clR * (0.78 + cli * 0.08);
+                      ctx.strokeStyle = hcScene ? '#ffff00' : ('rgba(196,181,253,' + (0.24 * clusterAlpha * clPulse * arcShimmer).toFixed(3) + ')');
+                      ctx.lineWidth = (hcScene ? 1.5 : 2.2) * dpr;
+                      ctx.beginPath(); ctx.arc(clx, cly, aRad1, aStart1, aEnd1); ctx.stroke();
+                      if (!hcScene) {
+                        var glintAng = aStart1 + (stillScene ? 0.5 : (0.5 + 0.36 * Math.sin(tick * 0.035 + cli))) * (aEnd1 - aStart1);
+                        ctx.strokeStyle = 'rgba(240,249,255,' + (0.48 * clusterAlpha * arcShimmer).toFixed(3) + ')';
+                        ctx.lineWidth = 1.1 * dpr;
+                        ctx.beginPath(); ctx.arc(clx, cly, aRad1, glintAng - 0.16, glintAng + 0.16); ctx.stroke();
+                      }
 
-                      ctx.lineWidth = 1.1 * dpr;
-
+                      ctx.strokeStyle = hcScene ? '#00ff00' : ('rgba(125,211,252,' + (0.18 * clusterAlpha * arcShimmer).toFixed(3) + ')');
+                      ctx.lineWidth = 1.3 * dpr;
                       ctx.beginPath();
-
-                      ctx.arc(clx, cly, clR * (0.78 + cli * 0.08), Math.PI * (0.1 + cli * 0.24), Math.PI * (0.95 + cli * 0.24));
-
-                      ctx.stroke();
-
-                      ctx.strokeStyle = 'rgba(125,211,252,' + (0.12 * clusterAlpha) + ')';
-
-                      ctx.beginPath();
-
                       ctx.arc(clx, cly, clR * (1.02 + cli * 0.06), Math.PI * (1.12 + cli * 0.18), Math.PI * (1.84 + cli * 0.18));
-
                       ctx.stroke();
 
                     }
@@ -11173,31 +11373,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                     rsEl.width = RW * 2; rsEl.height = RH * 2; rctx.scale(2, 2);
                     var rtick = 0;
                     var rsRaf;
+                    var specColors = ['#6366f1','#3b82f6','#22d3ee','#22c55e','#eab308','#f97316','#ef4444'];
                     function drawRS() {
                       if (!rsEl.isConnected) { cancelAnimationFrame(rsRaf); rsEl._rsInit = false; return; }
-                      rtick++;
-                      rctx.fillStyle = '#050510';
+                      var reduced = universeReducedMotion();
+                      var hc = universeHighContrast();
+                      if (!reduced) rtick++;
+                      rctx.fillStyle = hc ? '#000000' : '#050510';
                       rctx.fillRect(0, 0, RW, RH);
+
+                      // Subtle cosmic-expansion redshift grid pulses (compressed top, stretching bottom)
+                      if (!hc) {
+                        var gridDrift = reduced ? 0 : ((rtick * 0.35) % 24);
+                        rctx.strokeStyle = 'rgba(96,165,250,0.08)';
+                        rctx.lineWidth = 0.8;
+                        for (var gxB = 18; gxB < RW - 18; gxB += 22) {
+                          rctx.beginPath(); rctx.moveTo(gxB, 6); rctx.lineTo(gxB, RH * 0.48); rctx.stroke();
+                        }
+                        rctx.strokeStyle = 'rgba(248,113,113,0.09)';
+                        for (var gxR = 18 + gridDrift; gxR < RW - 18; gxR += 28) {
+                          rctx.beginPath(); rctx.moveTo(gxR, RH * 0.52); rctx.lineTo(gxR, RH - 24); rctx.stroke();
+                        }
+                      }
 
                       // === TOP HALF: Blueshift (approaching) ===
                       var topY = RH * 0.25;
-                      // Approaching galaxy (moves right toward observer)
-                      var galX1 = 40 + (rtick * 0.3) % (RW * 0.35);
+                      var galX1 = 40 + (reduced ? RW * 0.16 : ((rtick * 0.3) % (RW * 0.35)));
                       var obsX1 = RW * 0.78;
-                      // Draw compressed waves between galaxy and observer
+                      // Continuous compressed blue sinusoidal lightwave + expanding wavefront rings
+                      rctx.save();
+                      rctx.lineCap = 'round';
+                      rctx.beginPath();
+                      for (var bx = galX1 + 10; bx <= obsX1 - 8; bx += 2) {
+                        var by = topY + Math.sin((bx - galX1) * 0.42 - (reduced ? 0 : rtick * 0.18)) * 7;
+                        if (bx === galX1 + 10) rctx.moveTo(bx, by); else rctx.lineTo(bx, by);
+                      }
+                      if (!hc) {
+                        rctx.strokeStyle = 'rgba(96,165,250,0.28)'; rctx.lineWidth = 4.2; rctx.stroke();
+                      }
+                      rctx.strokeStyle = hc ? '#00ff00' : '#60a5fa'; rctx.lineWidth = 1.6; rctx.stroke();
+                      rctx.restore();
                       var waveCount1 = 12;
                       for (var wi = 0; wi < waveCount1; wi++) {
                         var frac = wi / waveCount1;
                         var wx = galX1 + frac * (obsX1 - galX1);
-                        // Compressed wavelength (shorter = bluer)
                         var spacing = 0.6 + frac * 0.2;
                         var alpha = 0.2 + 0.3 * (1 - frac);
                         rctx.beginPath();
                         rctx.arc(wx, topY, 2, 0, Math.PI * 2);
-                        rctx.fillStyle = 'rgba(80,160,255,' + alpha + ')';
+                        rctx.fillStyle = hc ? '#00ff00' : ('rgba(80,160,255,' + alpha + ')');
                         rctx.fill();
-                        // Wave rings (compressed)
-                        if (wi % 2 === 0) {
+                        if (wi % 2 === 0 && !hc) {
                           rctx.beginPath();
                           rctx.arc(wx, topY, 4 + spacing * 3, 0, Math.PI * 2);
                           rctx.strokeStyle = 'rgba(80,160,255,' + (alpha * 0.4) + ')';
@@ -11206,36 +11432,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         }
                       }
                       // Galaxy icon (approaching)
-                      var galGrad1 = rctx.createRadialGradient(galX1, topY, 0, galX1, topY, 10);
-                      galGrad1.addColorStop(0, 'rgba(150,200,255,0.8)');
-                      galGrad1.addColorStop(1, 'rgba(150,200,255,0)');
-                      rctx.fillStyle = galGrad1;
-                      rctx.beginPath(); rctx.arc(galX1, topY, 10, 0, Math.PI * 2); rctx.fill();
+                      if (!hc && typeof rctx.createRadialGradient === 'function') {
+                        var galGrad1 = rctx.createRadialGradient(galX1, topY, 0, galX1, topY, 12);
+                        galGrad1.addColorStop(0, 'rgba(186,230,253,0.92)');
+                        galGrad1.addColorStop(1, 'rgba(150,200,255,0)');
+                        rctx.fillStyle = galGrad1;
+                      } else {
+                        rctx.fillStyle = hc ? '#ffff00' : '#93c5fd';
+                      }
+                      rctx.beginPath(); rctx.arc(galX1, topY, hc ? 6 : 12, 0, Math.PI * 2); rctx.fill();
                       // Observer
-                      rctx.fillStyle = '#22c55e';
+                      rctx.fillStyle = hc ? '#00ff00' : '#22c55e';
                       rctx.beginPath(); rctx.arc(obsX1, topY, 5, 0, Math.PI * 2); rctx.fill();
                       // Arrow showing approach
-                      rctx.strokeStyle = '#60a5fa'; rctx.lineWidth = 1.5;
+                      rctx.strokeStyle = hc ? '#ffff00' : '#60a5fa'; rctx.lineWidth = 1.5;
                       rctx.beginPath(); rctx.moveTo(galX1 + 14, topY); rctx.lineTo(obsX1 - 10, topY);
                       rctx.stroke();
                       rctx.beginPath(); rctx.moveTo(obsX1 - 10, topY); rctx.lineTo(obsX1 - 16, topY - 4); rctx.moveTo(obsX1 - 10, topY); rctx.lineTo(obsX1 - 16, topY + 4);
                       rctx.stroke();
                       // Labels
-                      rctx.fillStyle = '#60a5fa'; rctx.font = 'bold 12px system-ui'; rctx.textAlign = 'center';
+                      rctx.fillStyle = hc ? '#ffff00' : '#60a5fa'; rctx.font = 'bold 12px system-ui'; rctx.textAlign = 'center';
                       rctx.fillText('BLUESHIFT', RW * 0.5, topY - 18);
-                      rctx.fillStyle = '#94a3b8'; rctx.font = '11px system-ui';
+                      rctx.fillStyle = hc ? '#ffffff' : '#94a3b8'; rctx.font = '11px system-ui';
                       rctx.fillText('Approaching \u2192 wavelength compressed \u2192 light appears bluer', RW * 0.5, topY + 22);
 
                       // Divider
-                      rctx.strokeStyle = 'rgba(100,116,139,0.3)'; rctx.lineWidth = 0.5;
+                      rctx.strokeStyle = hc ? '#ffff00' : 'rgba(100,116,139,0.3)'; rctx.lineWidth = 0.6;
                       rctx.beginPath(); rctx.moveTo(20, RH * 0.5); rctx.lineTo(RW - 20, RH * 0.5); rctx.stroke();
 
                       // === BOTTOM HALF: Redshift (receding) ===
                       var botY = RH * 0.75;
-                      // Receding galaxy (moves left away from observer)
-                      var galX2 = RW * 0.42 + (rtick * 0.3) % (RW * 0.4);
+                      var galX2 = RW * 0.42 + (reduced ? RW * 0.18 : ((rtick * 0.3) % (RW * 0.4)));
                       var obsX2 = RW * 0.22;
-                      // Draw stretched waves between observer and galaxy
+                      // Continuous stretched red sinusoidal lightwave
+                      rctx.save();
+                      rctx.lineCap = 'round';
+                      rctx.beginPath();
+                      for (var rx = obsX2 + 8; rx <= galX2 - 10; rx += 2) {
+                        var ry = botY + Math.sin((rx - obsX2) * 0.16 + (reduced ? 0 : rtick * 0.12)) * 7.5;
+                        if (rx === obsX2 + 8) rctx.moveTo(rx, ry); else rctx.lineTo(rx, ry);
+                      }
+                      if (!hc) {
+                        rctx.strokeStyle = 'rgba(248,113,113,0.28)'; rctx.lineWidth = 4.2; rctx.stroke();
+                      }
+                      rctx.strokeStyle = hc ? '#ffff00' : '#f87171'; rctx.lineWidth = 1.6; rctx.stroke();
+                      rctx.restore();
                       var waveCount2 = 8;
                       for (var wj = 0; wj < waveCount2; wj++) {
                         var frac2 = wj / waveCount2;
@@ -11244,10 +11485,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         var alpha2 = 0.2 + 0.3 * frac2;
                         rctx.beginPath();
                         rctx.arc(wx2, botY, 2, 0, Math.PI * 2);
-                        rctx.fillStyle = 'rgba(255,100,80,' + alpha2 + ')';
+                        rctx.fillStyle = hc ? '#ffff00' : ('rgba(255,100,80,' + alpha2 + ')');
                         rctx.fill();
-                        // Wave rings (stretched)
-                        if (wj % 2 === 0) {
+                        if (wj % 2 === 0 && !hc) {
                           rctx.beginPath();
                           rctx.arc(wx2, botY, 5 + spacing2 * 5, 0, Math.PI * 2);
                           rctx.strokeStyle = 'rgba(255,100,80,' + (alpha2 * 0.3) + ')';
@@ -11256,35 +11496,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         }
                       }
                       // Galaxy icon (receding)
-                      var galGrad2 = rctx.createRadialGradient(galX2, botY, 0, galX2, botY, 10);
-                      galGrad2.addColorStop(0, 'rgba(255,150,120,0.8)');
-                      galGrad2.addColorStop(1, 'rgba(255,150,120,0)');
-                      rctx.fillStyle = galGrad2;
-                      rctx.beginPath(); rctx.arc(galX2, botY, 10, 0, Math.PI * 2); rctx.fill();
+                      if (!hc && typeof rctx.createRadialGradient === 'function') {
+                        var galGrad2 = rctx.createRadialGradient(galX2, botY, 0, galX2, botY, 12);
+                        galGrad2.addColorStop(0, 'rgba(254,202,202,0.92)');
+                        galGrad2.addColorStop(1, 'rgba(255,150,120,0)');
+                        rctx.fillStyle = galGrad2;
+                      } else {
+                        rctx.fillStyle = hc ? '#ffff00' : '#fca5a5';
+                      }
+                      rctx.beginPath(); rctx.arc(galX2, botY, hc ? 6 : 12, 0, Math.PI * 2); rctx.fill();
                       // Observer
-                      rctx.fillStyle = '#22c55e';
+                      rctx.fillStyle = hc ? '#00ff00' : '#22c55e';
                       rctx.beginPath(); rctx.arc(obsX2, botY, 5, 0, Math.PI * 2); rctx.fill();
                       // Arrow showing recession
-                      rctx.strokeStyle = '#f87171'; rctx.lineWidth = 1.5;
+                      rctx.strokeStyle = hc ? '#ffff00' : '#f87171'; rctx.lineWidth = 1.5;
                       rctx.beginPath(); rctx.moveTo(galX2 + 12, botY); rctx.lineTo(galX2 + 30, botY);
                       rctx.stroke();
                       rctx.beginPath(); rctx.moveTo(galX2 + 30, botY); rctx.lineTo(galX2 + 24, botY - 4); rctx.moveTo(galX2 + 30, botY); rctx.lineTo(galX2 + 24, botY + 4);
                       rctx.stroke();
                       // Labels
-                      rctx.fillStyle = '#f87171'; rctx.font = 'bold 12px system-ui'; rctx.textAlign = 'center';
+                      rctx.fillStyle = hc ? '#ffff00' : '#f87171'; rctx.font = 'bold 12px system-ui'; rctx.textAlign = 'center';
                       rctx.fillText('REDSHIFT', RW * 0.5, botY - 18);
-                      rctx.fillStyle = '#94a3b8'; rctx.font = '11px system-ui';
+                      rctx.fillStyle = hc ? '#ffffff' : '#94a3b8'; rctx.font = '11px system-ui';
                       rctx.fillText('Receding \u2192 wavelength stretched \u2192 light appears redder', RW * 0.5, botY + 22);
 
                       // Spectrum bar at bottom
                       var specY = RH - 12;
-                      var specColors = ['#6366f1','#3b82f6','#22d3ee','#22c55e','#eab308','#f97316','#ef4444'];
                       var barW = (RW - 40) / specColors.length;
                       for (var sci = 0; sci < specColors.length; sci++) {
                         rctx.fillStyle = specColors[sci];
                         rctx.fillRect(20 + sci * barW, specY, barW, 6);
                       }
-                      rctx.fillStyle = '#94a3b8'; rctx.font = '10px system-ui';
+                      rctx.fillStyle = hc ? '#ffffff' : '#94a3b8'; rctx.font = '10px system-ui';
                       rctx.textAlign = 'left'; rctx.fillText('Blue (short \u03BB)', 20, specY - 2);
                       rctx.textAlign = 'right'; rctx.fillText('Red (long \u03BB)', RW - 20, specY - 2);
 

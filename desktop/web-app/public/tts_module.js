@@ -2420,8 +2420,9 @@ const createTTS = deps => {
             }, 'Direct TTS request timed out', _directSignal);
           } catch (fetchError) {
             if (_directSignal?.aborted) {
-              fetchError.name = 'AbortError';
-              throw fetchError;
+              const abortError = new Error('TTS request aborted');
+              abortError.name = 'AbortError';
+              throw abortError;
             }
             if (fetchTimedOut) throw new Error('Direct TTS request timed out');
             throw fetchError;

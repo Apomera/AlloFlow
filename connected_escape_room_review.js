@@ -43,7 +43,7 @@ export function assessReview(room, node, raw) {
   if (answer !== null) {
     if (node.type === 'use-tool') {
       if (typeof answer !== 'string' || !playerReviewCase(room, node.id).interaction.tools.some(tool => tool.id === answer)) throw Error('The AI returned an invalid tool choice.');
-      value = String(room.nodes.findIndex(n => n.reward.id === answer));
+      value = String(room.nodes.findIndex(n => n && n.reward && n.reward.id === answer));
     } else {
       const count = node.type === 'configure' ? node.controls.length : node.type === 'sequence' ? node.items.length : 2;
       if (!Array.isArray(answer) || answer.length !== count || !answer.every(Number.isInteger)) throw Error('The AI returned invalid device settings.');

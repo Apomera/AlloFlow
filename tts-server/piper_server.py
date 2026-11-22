@@ -26,6 +26,7 @@ import struct
 import math
 import re
 import threading
+import time
 from urllib.parse import urlsplit
 
 
@@ -34,7 +35,7 @@ def is_allowed_host(host_header):
     if not isinstance(host_header, str):
         return False
     raw = host_header.strip().lower()
-    if not raw or any(ord(c) <= 32 or ord(c) == 127 for c in raw):
+    if not raw or len(raw) > 255 or any(ord(c) <= 32 or ord(c) == 127 for c in raw):
         return False
     if raw.startswith("["):
         end = raw.find("]")
@@ -42,12 +43,17 @@ def is_allowed_host(host_header):
             return False
         host = raw[1:end]
         rest = raw[end + 1:]
-        if rest and not re.fullmatch(r":\d{1,5}", rest):
-            return False
+        if rest:
+            if not re.fullmatch(r":\d{1,5}", rest):
+                return False
+            if not (1 <= int(rest[1:]) <= 65535):
+                return False
     else:
         if ":" in raw:
             host, port = raw.rsplit(":", 1)
             if not re.fullmatch(r"\d{1,5}", port):
+                return False
+            if not (1 <= int(port) <= 65535):
                 return False
         else:
             host = raw
@@ -116,6 +122,13 @@ ALLOWED_DOWNLOAD_VOICES = frozenset(VOICE_MAP.values()) | {DEFAULT_VOICE}
 MAX_REQUEST_BYTES = 65536
 MAX_TEXT_CHARS = 10000
 MAX_PCM_BYTES = 32 * 1024 * 1024
+MAX_CONCURRENT_REQUESTS = 4
+SYNTHESIS_TIMEOUT_SEC = 60.0
+_speech_slots = threading.BoundedSemaphore(MAX_CONCURRENT_REQUESTS)
+
+
+class AudioTooLargeError(RuntimeError):
+    """Generated PCM stream exceeded MAX_PCM_BYTES."""
 
 # Cache of voice models we've already confirmed/downloaded this session
 _ready_voices = set()
@@ -161,18 +174,23 @@ def ensure_voice(voice_name):
     Returns True on success, False on failure.
     """
     voice_name = validated_model_id(voice_name)
-    os.makedirs(VOICES_DIR, exist_ok=True)
-
     model_path = os.path.join(VOICES_DIR, f"{voice_name}.onnx")
     config_path = os.path.join(VOICES_DIR, f"{voice_name}.onnx.json")
+    if voice_name in _ready_voices or (
+        os.path.exists(model_path) and os.path.exists(config_path)
+    ):
+        _ready_voices.add(voice_name)
+        return True
+    if voice_name not in ALLOWED_DOWNLOAD_VOICES:
+        return False
+
+    os.makedirs(VOICES_DIR, exist_ok=True)
     with _get_voice_lock(voice_name):
         if voice_name in _ready_voices or (
             os.path.exists(model_path) and os.path.exists(config_path)
         ):
             _ready_voices.add(voice_name)
             return True
-        if voice_name not in ALLOWED_DOWNLOAD_VOICES:
-            return False
 
         print(f"[Piper TTS] Downloading voice {voice_name}...", flush=True)
         try:
@@ -194,8 +212,24 @@ def ensure_voice(voice_name):
             return False
 
 
+def voice_sample_rate(voice_name):
+    """Read the voice's native PCM sample rate from its .onnx.json metadata (default 22050)."""
+    try:
+        voice_name = validated_model_id(voice_name)
+        config_path = os.path.join(VOICES_DIR, f"{voice_name}.onnx.json")
+        if os.path.isfile(config_path):
+            with open(config_path, "r", encoding="utf-8") as fh:
+                meta = json.load(fh)
+            rate = (meta.get("audio") or {}).get("sample_rate")
+            if isinstance(rate, int) and 8000 <= rate <= 96000:
+                return rate
+    except Exception:
+        pass
+    return 22050
+
+
 def synthesize(text, voice_name, speed):
-    """Run piper and return raw PCM bytes (16-bit mono 22050 Hz), or None."""
+    """Run piper and return bounded raw PCM bytes (16-bit mono), or None."""
     voice_name = validated_model_id(voice_name)
     cmd = [
         PIPER_PYTHON, "-m", "piper",
@@ -206,18 +240,107 @@ def synthesize(text, voice_name, speed):
     if speed and speed != 1.0:
         cmd.extend(["--length-scale", str(1.0 / speed)])
 
-    proc = subprocess.run(
-        cmd, input=text.encode("utf-8"), capture_output=True, timeout=60
+    proc = subprocess.Popen(
+        cmd,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
+    timed_out = threading.Event()
+    timer = threading.Timer(SYNTHESIS_TIMEOUT_SEC, lambda: (timed_out.set(), proc.kill()))
+    timer.daemon = True
+    timer.start()
+
+    stderr_chunks = bytearray()
+    def _drain_stderr():
+        try:
+            while True:
+                chunk = proc.stderr.read(4096)
+                if not chunk:
+                    break
+                if len(stderr_chunks) < 4096:
+                    stderr_chunks.extend(chunk[:4096 - len(stderr_chunks)])
+        except Exception:
+            pass
+
+    def _feed_stdin():
+        try:
+            proc.stdin.write(text.encode("utf-8"))
+        except Exception:
+            pass
+        finally:
+            try:
+                proc.stdin.close()
+            except Exception:
+                pass
+
+    err_thread = threading.Thread(target=_drain_stderr, daemon=True)
+    in_thread = threading.Thread(target=_feed_stdin, daemon=True)
+    err_thread.start()
+    in_thread.start()
+
+    audio = bytearray()
+    oversized = False
+    try:
+        while True:
+            chunk = proc.stdout.read(65536)
+            if not chunk:
+                break
+            if len(audio) + len(chunk) > MAX_PCM_BYTES:
+                oversized = True
+                proc.kill()
+                break
+            audio.extend(chunk)
+    finally:
+        timer.cancel()
+        try:
+            proc.stdout.close()
+        except Exception:
+            pass
+        try:
+            proc.wait(timeout=5)
+        except Exception:
+            try:
+                proc.kill()
+                proc.wait(timeout=2)
+            except Exception:
+                pass
+        in_thread.join(timeout=2)
+        err_thread.join(timeout=2)
+        try:
+            proc.stderr.close()
+        except Exception:
+            pass
+
+    if oversized:
+        raise AudioTooLargeError("Generated audio exceeded maximum size")
+    if timed_out.is_set():
+        print("[Piper TTS] Synthesis timed out", flush=True)
+        return None
     if proc.returncode != 0:
         print(f"[Piper TTS] Synthesis error: "
-              f"{proc.stderr.decode(errors='replace')[:300]}", flush=True)
+              f"{stderr_chunks.decode(errors='replace')[:300]}", flush=True)
         return None
-    return proc.stdout
+    return bytes(audio)
+
+
+class _DaemonThreadingHTTPServer(http.server.ThreadingHTTPServer):
+    daemon_threads = True
+    allow_reuse_address = True
 
 
 class TTSHandler(http.server.BaseHTTPRequestHandler):
+    def setup(self):
+        if hasattr(self.request, "settimeout"):
+            self.request.settimeout(15)
+        super().setup()
+
+    def _add_security_headers(self):
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Cache-Control", "no-store")
+
     def _add_cors_headers(self):
+        self._add_security_headers()
         self.send_header("Vary", "Origin")
         origin = self.headers.get("Origin")
         if origin and is_allowed_origin(origin):
@@ -232,10 +355,13 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
         self._send_json(403, {"error": "Browser origin is not allowed; configure ALLOFLOW_TTS_ALLOWED_ORIGINS for your school app."})
         return True
 
-    def _send_json(self, status, obj):
+    def _send_json(self, status, obj, extra_headers=None):
         body = json.dumps(obj).encode()
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
+        if extra_headers:
+            for k, v in extra_headers.items():
+                self.send_header(k, v)
         self._add_cors_headers()
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
@@ -246,9 +372,11 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             return
         if self.path != "/v1/audio/speech":
             self.send_response(404)
+            self._add_security_headers()
             self.end_headers()
             return
 
+        acquired = False
         try:
             length = int(self.headers.get("Content-Length", 0))
             if length < 0 or length > MAX_REQUEST_BYTES:
@@ -259,15 +387,24 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
                 return self._send_json(400, {"error": "Expected a JSON object"})
             text = body.get("input", "")
             piper_voice = resolve_voice(body.get("voice", "alloy"))
-            speed = float(body.get("speed", 1.0))
+            raw_speed = body.get("speed", 1.0)
+            if isinstance(raw_speed, bool):
+                raise TypeError("Speed must be a number")
+            speed = float(raw_speed)
             if not math.isfinite(speed) or speed <= 0:
                 return self._send_json(400, {"error": "Speed must be a finite positive number"})
             speed = max(0.5, min(2.5, speed))
 
-            if not text:
-                return self._send_json(400, {"error": "No input text"})
-            if not isinstance(text, str) or len(text) > MAX_TEXT_CHARS:
+            if not isinstance(text, str):
                 return self._send_json(400, {"error": f"Input must be text up to {MAX_TEXT_CHARS} characters"})
+            if not text.strip():
+                return self._send_json(400, {"error": "No input text"})
+            if len(text) > MAX_TEXT_CHARS:
+                return self._send_json(400, {"error": f"Input must be text up to {MAX_TEXT_CHARS} characters"})
+
+            acquired = _speech_slots.acquire(blocking=False)
+            if not acquired:
+                return self._send_json(429, {"error": "TTS server busy; retry shortly"}, extra_headers={"Retry-After": "1"})
 
             if not ensure_voice(piper_voice):
                 # Fall back to the default voice if a specific one can't be fetched
@@ -282,7 +419,7 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             if len(raw_audio) > MAX_PCM_BYTES:
                 return self._send_json(413, {"error": "Generated audio exceeded maximum size"})
 
-            wav_audio = pcm_to_wav(raw_audio, 22050, 1)
+            wav_audio = pcm_to_wav(raw_audio, voice_sample_rate(piper_voice), 1)
             self.send_response(200)
             self.send_header("Content-Type", "audio/wav")
             self.send_header("Content-Length", str(len(wav_audio)))
@@ -292,7 +429,9 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             print(f"[Piper TTS] Generated {len(wav_audio)} bytes "
                   f"for voice={piper_voice}", flush=True)
 
-        except (ValueError, TypeError):
+        except AudioTooLargeError:
+            self._send_json(413, {"error": "Generated audio exceeded maximum size"})
+        except (ValueError, TypeError, OverflowError):
             self._send_json(400, {"error": "Invalid speech request"})
         except Exception as e:
             print(f"[Piper TTS] Error: {e}", flush=True)
@@ -300,6 +439,9 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
                 self._send_json(500, {"error": "Speech generation failed"})
             except Exception:
                 pass
+        finally:
+            if acquired:
+                _speech_slots.release()
 
     def do_OPTIONS(self):
         if self._reject_untrusted_origin():
@@ -320,6 +462,7 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
                 "voices": list(VOICE_MAP.keys()),
             })
         self.send_response(404)
+        self._add_security_headers()
         self.end_headers()
 
     def log_message(self, fmt, *args):
@@ -365,6 +508,10 @@ if __name__ == "__main__":
     if _preflight():
         # Pre-download the default voice so the first request is fast
         ensure_voice(DEFAULT_VOICE)
-    server = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), TTSHandler)
+    server = _DaemonThreadingHTTPServer(("127.0.0.1", PORT), TTSHandler)
     print(f"[Piper TTS] ✅ Listening on http://127.0.0.1:{PORT}", flush=True)
-    server.serve_forever()
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\n[Piper TTS] Shutting down...", flush=True)
+        server.shutdown()

@@ -991,9 +991,32 @@
   // ── Main Component ────────────────────────────────────────────────────
   var PoetTree = React.memo(function PoetTree(props) {
     var onClose = props.onClose;
-    var onCallGemini = props.onCallGemini;
+    var _rawOnCallGemini = props.onCallGemini;
+    var onSafetyFlag = props.onSafetyFlag || null;
     // Learner AI off: the host may hand a blocked fn (truthy). Teacher behaviour is unchanged.
-    var ptTextAi = typeof onCallGemini === 'function' && !onCallGemini._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', onCallGemini))));
+    var ptTextAi = typeof _rawOnCallGemini === 'function' && !_rawOnCallGemini._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', _rawOnCallGemini))));
+    // Central self-harm safety gate for PoetTree AI coaching surfaces.
+    // Scoped to self_harm so figurative/dramatic poetry never false-positives.
+    var onCallGemini = typeof _rawOnCallGemini === 'function' ? function(prompt) {
+      var msg = String(prompt || '');
+      if (msg && typeof window !== 'undefined') {
+        var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+        var flags = null;
+        try { flags = (checker && typeof checker.check === 'function') ? checker.check(msg) : null; } catch (_) { flags = null; }
+        var hit = Array.isArray(flags) && flags.find(function(f) { return f && f.category === 'self_harm' && f.severity === 'critical'; });
+        if (hit) {
+          if (typeof onSafetyFlag === 'function') {
+            try { onSafetyFlag(Object.assign({}, hit, { source: 'poet_tree_ai', context: msg.slice(0, 100), aiGenerated: false })); } catch (_) {}
+          }
+          if (props.addToast) props.addToast('We paused PoetTree AI for a moment because what was written sounds heavy. Please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). You are not alone.', 'warn');
+          if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+            try { window.SelHub.showCrisisModal({ toolName: 'PoetTree', contentSnippet: msg.slice(0, 200) }); } catch (_) {}
+          }
+          return Promise.reject(Object.assign(new Error('Paused for safety'), { code: 'safety-paused' }));
+        }
+      }
+      return _rawOnCallGemini.apply(null, arguments);
+    } : _rawOnCallGemini;
     var onCallTTS = props.onCallTTS;
     var onCallImagen = props.onCallImagen;
     var onCallGeminiImageEdit = props.onCallGeminiImageEdit;

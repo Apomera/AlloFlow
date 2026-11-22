@@ -13,6 +13,7 @@
 (function () {
   'use strict';
 
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.LearningWebExplorer) {
     console.log('[LearningWebExplorer] Already loaded, skipping');
     return;
@@ -34,6 +35,7 @@
   };
   var viewCounter = 0;
   var modalStack = [];
+  var savedBodyOverflow = null;
 
   function safeNotify(callback) {
     try { if (typeof callback === 'function') callback(); } catch (_) {}
@@ -73,7 +75,15 @@
 
   function safeHttpsUrl(value) {
     var url = cleanText(value, LIMITS.url);
-    return /^https:\/\/[a-z0-9.-]+(?::[0-9]+)?(?:[/?#]|$)/i.test(url) ? url : '';
+    if (!url || /\s/.test(url) || !/^https:\/\//i.test(url)) return '';
+    try {
+      var parsed = new URL(url);
+      if (parsed.protocol !== 'https:' || parsed.username || parsed.password) return '';
+      if (!parsed.hostname || !/^[a-z0-9.-]+$/i.test(parsed.hostname) || parsed.hostname.charAt(0) === '.' || parsed.hostname.charAt(parsed.hostname.length - 1) === '.') return '';
+      return url;
+    } catch (_) {
+      return '';
+    }
   }
 
   function normalizeStringList(value, limit, itemLimit) {
@@ -593,7 +603,8 @@
   function layoutGraph(graph, options) {
     options = options || {};
     graph = graph && graph.version === GRAPH_VERSION && graph.meta && graph.meta.learningWebExplorer ? graph : normalizeInput(graph, options);
-    var width = Math.max(520, Number(options.width) || 1000);
+    var rawWidth = Number(options.width);
+    var width = Number.isFinite(rawWidth) && rawWidth > 0 ? Math.max(520, Math.min(10000, rawWidth)) : 1000;
     var paddingX = 74;
     var paddingY = 64;
     var rowGap = 104;
@@ -711,8 +722,9 @@
     return h('rect', Object.assign({ x: position.x - 58, y: position.y - 31, width: 116, height: 62, rx: 8 }, common));
   }
 
-  function provenanceRows(h, provenance, attributionSource, tr) {
+  function provenanceRows(h, provenance, attributionSource, tr, Fragment) {
     var tx = typeof tr === 'function' ? tr : function (_k, f) { return f; };
+    var Frag = Fragment || (typeof window !== 'undefined' && window.React && window.React.Fragment) || 'span';
     var rows = [];
     function row(key, label, value) {
       if (!value) return;
@@ -733,7 +745,7 @@
         rows.push(h('div', { key: 'sourceUrls', style: { display: 'grid', gridTemplateColumns: 'minmax(7rem, auto) 1fr', gap: 8 } },
           h('dt', { style: { fontWeight: 500 } }, tx('learning_web_explorer.provenance.source_links', 'Source links')),
           h('dd', { style: { margin: 0 } }, provenance.sourceUrls.map(function (url, index) {
-            return h(window.React.Fragment, { key: url }, index ? ', ' : null,
+            return h(Frag, { key: url }, index ? ', ' : null,
               h('a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, tx('learning_web_explorer.provenance.source_n', 'Source {n}', { n: index + 1 }))
             );
           }))
@@ -743,7 +755,7 @@
     return rows.length ? h('dl', { style: { display: 'grid', gap: 6, margin: '8px 0 0' } }, rows) : h('p', null, tx('learning_web_explorer.provenance.none', 'No provenance was supplied for this item.'));
   }
 
-  function sourceDetailsView(h, details, tr) {
+  function sourceDetailsView(h, details, tr, Fragment) {
     if (!Array.isArray(details) || !details.length) return null;
     return h('section', { 'aria-label': tr('learning_web_explorer.source_details', 'Source-specific evidence') },
       h('h5', null, tr('learning_web_explorer.source_details', 'Source-specific evidence')),
@@ -753,7 +765,7 @@
           h('strong', null, heading),
           detail.provider && detail.provider !== heading ? h('p', null, detail.provider) : null,
           detail.evidence ? h('p', null, detail.evidence) : null,
-          detail.provenance ? provenanceRows(h, detail.provenance, '', tr) : null
+          detail.provenance ? provenanceRows(h, detail.provenance, '', tr, Fragment) : null
         );
       }))
     );
@@ -794,17 +806,24 @@
       }
       var out = cleanText(translated, LIMITS.text);
       if (!out || out === key) out = fallback;
-      Object.keys(params || {}).forEach(function (name) {
-        out = out.split('{' + name + '}').join(String(params[name]));
-      });
+      if (params && typeof params === 'object') {
+        out = String(out).replace(/\{([a-zA-Z0-9_]+)\}/g, function (match, name) {
+          return Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : match;
+        });
+      }
       return out;
     }
 
     var isModal = typeof props.onClose === 'function';
+    var mountedRef = React.useRef(true);
+    React.useEffect(function () {
+      mountedRef.current = true;
+      return function () { mountedRef.current = false; };
+    }, []);
     var _callbackStatus = React.useState(''), callbackStatus = _callbackStatus[0], setCallbackStatus = _callbackStatus[1];
-    function callbackFailure(message) { setCallbackStatus(message); }
+    function callbackFailure(message) { if (mountedRef.current) setCallbackStatus(message); }
     function requestClose() {
-      setCallbackStatus('');
+      if (mountedRef.current) setCallbackStatus('');
       invokeOptionalCallback(onCloseRef.current, undefined, function () {
         callbackFailure(tr('learning_web_explorer.callback.close_failed', 'Learning Web Explorer could not close.'));
       });
@@ -814,6 +833,9 @@
       if (!isModal || !root) return function () {};
       var token = modalTokenRef.current || { id: idRef.current };
       modalTokenRef.current = token;
+      if (modalStack.length === 0 && document.body && document.body.style) {
+        savedBodyOverflow = document.body.style.overflow;
+      }
       modalStack.push(token);
       var active = document.activeElement;
       if (active && active !== document.body && !root.contains(active)) openerRef.current = active;
@@ -837,7 +859,6 @@
         keep = container;
         container = container.parentElement;
       }
-      var priorBodyOverflow = document.body && document.body.style ? document.body.style.overflow : '';
       if (document.body && document.body.style) document.body.style.overflow = 'hidden';
       if (modalStack[modalStack.length - 1] === token) {
         var initTarget = (closeRef.current && closeRef.current.focus) ? closeRef.current : root;
@@ -847,10 +868,17 @@
         if (modalStack[modalStack.length - 1] === token && closeRef.current && closeRef.current.focus && !root.contains(document.activeElement)) closeRef.current.focus();
       }, 0);
       function focusable() {
-        return Array.prototype.slice.call(root.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'));
+        return Array.prototype.slice.call(root.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')).filter(function (el) {
+          if (!el) return false;
+          if (el.hasAttribute && el.hasAttribute('hidden')) return false;
+          if (el.type === 'hidden') return false;
+          if (typeof el.closest === 'function' && el.closest('[hidden],[inert]')) return false;
+          return true;
+        });
       }
       function onKeyDown(event) {
         if (modalStack[modalStack.length - 1] !== token) return;
+        if (event.isComposing || event.keyCode === 229) return;
         if (event.key === 'Escape') {
           event.preventDefault();
           event.stopPropagation();
@@ -872,7 +900,10 @@
         document.removeEventListener('keydown', onKeyDown);
         var stackIndex = modalStack.indexOf(token);
         if (stackIndex >= 0) modalStack.splice(stackIndex, 1);
-        if (document.body && document.body.style) document.body.style.overflow = priorBodyOverflow;
+        if (modalStack.length === 0 && document.body && document.body.style) {
+          document.body.style.overflow = savedBodyOverflow !== null ? savedBodyOverflow : '';
+          savedBodyOverflow = null;
+        }
         isolated.forEach(function (state) {
           if (!state.inert) state.node.removeAttribute('inert');
           if (state.ariaHidden === null) state.node.removeAttribute('aria-hidden');
@@ -1035,22 +1066,22 @@
             h('p', null, humanize(selectedItem.type) + (selectedItem.category ? ' · ' + selectedItem.category : '') + ' · ' + humanize(selectedItem.graphKind)),
             selectedItem.summary ? h('p', null, selectedItem.summary) : null,
             selectedItem.evidence ? h('p', null, h('strong', null, tr('learning_web_explorer.evidence', 'Evidence: ')), selectedItem.evidence) : null,
-            provenanceRows(h, selectedItem.provenance, selectedItem.attributionSource, tr),
-            sourceDetailsView(h, selectedItem.sourceDetails, tr),
+            provenanceRows(h, selectedItem.provenance, selectedItem.attributionSource, tr, React.Fragment),
+            sourceDetailsView(h, selectedItem.sourceDetails, tr, React.Fragment),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 } },
               h('button', {
                 type: 'button', onClick: function () { setFocusNodeId(selectedItem.id); },
                 'aria-pressed': activeFocusId === selectedItem.id ? 'true' : 'false',
-                style: { minHeight: 44 }, 'data-learning-web-focus-node': selectedItem.id
+                style: { minHeight: 44, background: '#ffffff', color: '#0f172a', border: '1px solid #94a3b8' }, 'data-learning-web-focus-node': selectedItem.id
               }, tr('learning_web_explorer.focus_connections', 'Focus connections')),
               selectedResourceId && typeof props.onOpenResource === 'function' ? h('button', {
                 type: 'button', onClick: function () {
-                  setCallbackStatus('');
+                  if (mountedRef.current) setCallbackStatus('');
                   invokeOptionalCallback(props.onOpenResource, { resourceId: selectedResourceId, nodeId: selectedItem.id }, function () {
                     callbackFailure(tr('learning_web_explorer.callback.open_failed', 'The resource could not be opened.'));
                   });
                 },
-                style: { minHeight: 44 }, 'data-learning-web-open-resource': selectedResourceId
+                style: { minHeight: 44, background: '#ffffff', color: '#0f172a', border: '1px solid #94a3b8' }, 'data-learning-web-open-resource': selectedResourceId
               }, tr('learning_web_explorer.open_resource', 'Open resource')) : null
             )
           )
@@ -1060,8 +1091,8 @@
             selectedItem.status ? h('p', null, h('strong', null, tr('learning_web_explorer.status', 'Status: ')), selectedItem.status) : null,
             selectedItem.explanation ? h('p', null, h('strong', null, tr('learning_web_explorer.explanation', 'Explanation: ')), selectedItem.explanation) : null,
             selectedItem.evidence ? h('p', null, h('strong', null, tr('learning_web_explorer.evidence', 'Evidence: ')), selectedItem.evidence) : null,
-            provenanceRows(h, selectedItem.provenance, selectedItem.attributionSource, tr),
-            sourceDetailsView(h, selectedItem.sourceDetails, tr)
+            provenanceRows(h, selectedItem.provenance, selectedItem.attributionSource, tr, React.Fragment),
+            sourceDetailsView(h, selectedItem.sourceDetails, tr, React.Fragment)
           )
     );
 
@@ -1071,7 +1102,7 @@
     });
     var focusControls = activeFocusId ? h('div', { 'data-learning-web-focus-controls': 'true', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, margin: '12px 0' } },
       h('p', { role: 'status', 'aria-live': 'polite', style: { margin: 0 } }, tr('learning_web_explorer.focus_status', 'Diagram focused on {label}: {nodes} nodes and {edges} relationships. The complete outline and table remain below.', { label: byId[activeFocusId].label, nodes: visualGraph.nodes.length, edges: visualGraph.edges.length })),
-      h('button', { type: 'button', onClick: showWholeGraph, style: { minHeight: 44 }, 'data-learning-web-show-whole': 'true' }, tr('learning_web_explorer.show_whole_graph', 'Show whole graph'))
+      h('button', { type: 'button', onClick: showWholeGraph, style: { minHeight: 44, background: '#ffffff', color: '#0f172a', border: '1px solid #94a3b8' }, 'data-learning-web-show-whole': 'true' }, tr('learning_web_explorer.show_whole_graph', 'Show whole graph'))
     ) : null;
     var visual = graph.nodes.length
       ? h(React.Fragment, null,
@@ -1121,32 +1152,32 @@
           h('h2', { id: ids.title }, props.title || normalized.title || tr('learning_web_explorer.title', 'Learning Web Explorer')),
           h('p', { id: ids.description }, props.description || tr('learning_web_explorer.description', 'Explore how standards, concepts, learning experiences, evidence, and findings connect. The diagram and accessible views describe the same read-only graph.'))
         ),
-        isModal ? h('button', { ref: closeRef, type: 'button', onClick: requestClose, 'aria-label': tr('learning_web_explorer.close', 'Close Learning Web Explorer'), style: { flexShrink: 0, minWidth: 44, minHeight: 44 } }, tr('common.close', 'Close')) : null
+        isModal ? h('button', { ref: closeRef, type: 'button', onClick: requestClose, 'aria-label': tr('learning_web_explorer.close', 'Close Learning Web Explorer'), style: { flexShrink: 0, minWidth: 44, minHeight: 44, background: '#ffffff', color: '#0f172a', border: '1px solid #94a3b8' } }, tr('common.close', 'Close')) : null
       ),
       warnings.map(function (warning, index) { return h('p', { key: index, role: 'status' }, warning); }),
       h('form', { onSubmit: function (event) { event.preventDefault(); }, 'aria-label': tr('learning_web_explorer.filters', 'Learning Web filters'), style: { display: 'flex', flexWrap: 'wrap', alignItems: 'end', gap: 12, margin: '16px 0' } },
         h('label', { htmlFor: ids.search, style: { display: 'grid', gap: 4, flex: '2 1 14rem' } }, tr('learning_web_explorer.search', 'Search'),
-          h('input', { id: ids.search, type: 'search', value: query, onChange: function (event) { setQuery(event.target.value); }, placeholder: tr('learning_web_explorer.search_placeholder', 'Search labels, evidence, or sources'), style: { minHeight: 44, width: '100%' } })
+          h('input', { id: ids.search, type: 'search', value: query, onChange: function (event) { setQuery(event.target.value); }, placeholder: tr('learning_web_explorer.search_placeholder', 'Search labels, evidence, or sources'), style: { minHeight: 44, width: '100%', background: '#ffffff', color: '#0f172a', border: '1px solid #94a3b8' } })
         ),
         h('label', { htmlFor: ids.nodeType, style: { display: 'grid', gap: 4, flex: '1 1 10rem' } }, tr('learning_web_explorer.node_type', 'Node type'),
-          h('select', { id: ids.nodeType, value: nodeType, onChange: function (event) { setNodeType(event.target.value); }, style: { minHeight: 44, width: '100%' } },
+          h('select', { id: ids.nodeType, value: nodeType, onChange: function (event) { setNodeType(event.target.value); }, style: { minHeight: 44, width: '100%', background: '#ffffff', color: '#0f172a', border: '1px solid #94a3b8' } },
             h('option', { value: 'all' }, tr('learning_web_explorer.all_node_types', 'All node types')),
             view.available.nodeTypes.map(function (value) { return h('option', { key: value, value: value.toLowerCase() }, humanize(value)); })
           )
         ),
         h('label', { htmlFor: ids.relationType, style: { display: 'grid', gap: 4, flex: '1 1 11rem' } }, tr('learning_web_explorer.relationship', 'Relationship'),
-          h('select', { id: ids.relationType, value: relationType, onChange: function (event) { setRelationType(event.target.value); }, style: { minHeight: 44, width: '100%' } },
+          h('select', { id: ids.relationType, value: relationType, onChange: function (event) { setRelationType(event.target.value); }, style: { minHeight: 44, width: '100%', background: '#ffffff', color: '#0f172a', border: '1px solid #94a3b8' } },
             h('option', { value: 'all' }, tr('learning_web_explorer.all_relationships', 'All relationships')),
             view.available.relationTypes.map(function (value) { return h('option', { key: value, value: value.toLowerCase() }, humanize(value)); })
           )
         ),
         view.available.graphKinds.length > 1 ? h('label', { htmlFor: ids.graphKind, style: { display: 'grid', gap: 4, flex: '1 1 10rem' } }, tr('learning_web_explorer.graph_source', 'Graph source'),
-          h('select', { id: ids.graphKind, value: graphKind, onChange: function (event) { setGraphKind(event.target.value); }, style: { minHeight: 44, width: '100%' } },
+          h('select', { id: ids.graphKind, value: graphKind, onChange: function (event) { setGraphKind(event.target.value); }, style: { minHeight: 44, width: '100%', background: '#ffffff', color: '#0f172a', border: '1px solid #94a3b8' } },
             h('option', { value: 'all' }, tr('learning_web_explorer.all_graph_sources', 'All graph sources')),
             view.available.graphKinds.map(function (value) { return h('option', { key: value, value: value.toLowerCase() }, humanize(value)); })
           )
         ) : null,
-        h('button', { type: 'button', onClick: resetFilters, disabled: !filterActive, style: { minHeight: 44 } }, tr('learning_web_explorer.reset_filters', 'Reset filters'))
+        h('button', { type: 'button', onClick: resetFilters, disabled: !filterActive, style: { minHeight: 44, background: '#ffffff', color: '#0f172a', border: '1px solid #94a3b8' } }, tr('learning_web_explorer.reset_filters', 'Reset filters'))
       ),
       h('p', { role: 'status', 'aria-live': 'polite', 'data-learning-web-callback-status': callbackStatus ? 'true' : undefined, style: callbackStatus ? undefined : { margin: 0 } }, callbackStatus),
       h('p', { role: 'status', 'aria-live': 'polite' }, tr('learning_web_explorer.counts', '{nodes} of {totalNodes} nodes; {edges} of {totalEdges} relationships.', { nodes: graph.nodes.length, totalNodes: normalized.nodes.length, edges: graph.edges.length, totalEdges: normalized.edges.length })),
@@ -1167,7 +1198,7 @@
                     onClick: function () { choose('node', node); },
                     'aria-pressed': selected && selected.kind === 'node' && selected.id === node.id ? 'true' : 'false',
                     'aria-current': current ? 'true' : undefined,
-                    style: { minHeight: 44 },
+                    style: { minHeight: 44, background: '#ffffff', color: '#0f172a', border: '1px solid #94a3b8' },
                     'data-learning-web-node-select': node.id
                   }, node.label),
                   ' — ', humanize(node.type), node.category ? ' · ' + node.category : '',
@@ -1203,7 +1234,7 @@
                   onClick: function () { choose('edge', edge); },
                   'aria-pressed': selected && selected.kind === 'edge' && selected.id === edge.id ? 'true' : 'false',
                   'aria-label': tr('learning_web_explorer.inspect_aria', 'Inspect {relationship} from {from} to {to}', { relationship: humanize(edge.type), from: from ? from.label : edge.fromId, to: to ? to.label : edge.toId }),
-                  style: { minHeight: 44 },
+                  style: { minHeight: 44, background: '#ffffff', color: '#0f172a', border: '1px solid #94a3b8' },
                   'data-learning-web-edge-select': edge.id
                 }, tr('learning_web_explorer.inspect', 'Inspect')))
               );

@@ -924,11 +924,19 @@ window.StemLab = window.StemLab || {
           h('label',null,'Trace part ',h('select',{'aria-label':__alloT('stem.circuit.oscilloscope_component','Oscilloscope component'),value:index,onChange:function(e){props.updateMany({selectedPart:Number(e.target.value)});}},cfg.base.rows.map(function(r,i){return h('option',{key:i,value:i},(i+1)+'. '+r.component.type+' · branch '+String.fromCharCode(64+r.branch));})))),
         !cfg.resolved&&h('p',{className:'circuit-warning'},'This window is too wide to resolve the oscillation. Choose a shorter window or Automatic. Cursor readings remain available; trace export waits for a resolved window.'),
         cfg.resolved&&h('div',{className:'circuit-scope-chart',tabIndex:0,role:'region','aria-label':__alloT('stem.circuit.scrollable_oscilloscope_chart','Scrollable oscilloscope chart')},h('svg', {viewBox:'0 0 720 330',role: 'img','aria-label':__alloFill(__alloT('stem.circuit.a11y_calculated_oscilloscope_traces_over_supply_and', 'Calculated oscilloscope traces over {value1}. Supply and selected part voltage are on the upper axis; selected branch current is on the lower axis. Cursor at {value2}. Exact cursor readings follow.'), { value1: circuitTimeText(cfg.duration), value2: circuitTimeText(t) })},
+          h('defs',null,
+            h('filter',{id:'circuit-scope-phosphor',x:'-10%',y:'-25%',width:'120%',height:'150%'},
+              h('feGaussianBlur',{stdDeviation:'2.4',result:'pb'}),
+              h('feMerge',null,h('feMergeNode',{in:'pb'}),h('feMergeNode',{in:'SourceGraphic'}))
+            )
+          ),
           h('rect',{x:0,y:0,width:720,height:330,rx:14,fill:'#081c2a'}),
           [100,217.2,334.4,451.6,568.8,686].map(function(gx,i){return h('g',{key:i},h('path',{d:'M '+gx+' 25 V 292',stroke:'#30505f',strokeWidth:1}),h('text',{x:gx,y:315,fill:'#c0d9e6',fontSize:12,textAnchor:'middle'},circuitTimeText(cfg.duration*i/5)));}),
           [45,105,165,195,240,285].map(function(y,i){return h('path',{key:i,d:'M 100 '+y+' H 686',stroke:i===1||i===4?'#7193a5':'#2a4655',strokeWidth:1});}),
           h('text',{x:92,y:49,fill:'#b4e7dc',fontSize:12,textAnchor:'end'},circuitPreciseVoltageText(vMax)),h('text',{x:92,y:109,fill:'#b4e7dc',fontSize:12,textAnchor:'end'},'0 V'),h('text',{x:92,y:169,fill:'#b4e7dc',fontSize:12,textAnchor:'end'},circuitPreciseVoltageText(-vMax)),
           h('text',{x:92,y:199,fill:'#fde3a3',fontSize:12,textAnchor:'end'},circuitCurrentText(iMax)),h('text',{x:92,y:244,fill:'#fde3a3',fontSize:12,textAnchor:'end'},'0 A'),h('text',{x:92,y:289,fill:'#fde3a3',fontSize:12,textAnchor:'end'},circuitCurrentText(-iMax)),
+          h('path',{className:'circuit-fx-glow',d:path('voltage',105,60,vMax),fill:'none',stroke:'#34d399',strokeWidth:6,opacity:0.22,filter:'url(#circuit-scope-phosphor)'}),
+          h('path',{className:'circuit-fx-glow',d:path('current',240,45,iMax),fill:'none',stroke:'#fbbf24',strokeWidth:6,opacity:0.22,filter:'url(#circuit-scope-phosphor)'}),
           h('path',{d:path('source',105,60,vMax),fill:'none',stroke:'#c5b8fa',strokeWidth:2,strokeDasharray:'7 5'}),h('path',{d:path('voltage',105,60,vMax),fill:'none',stroke:'#8bf0d0',strokeWidth:2.5}),h('path',{d:path('current',240,45,iMax),fill:'none',stroke:'#ffda82',strokeWidth:2.5}),
           h('path',{d:'M '+x+' 25 V 292',stroke:'#f1f7fb',strokeWidth:1.5,strokeDasharray:'3 4'}))),
         h('p',{className:'circuit-scope-legend'},h('span',null,'··· Supply voltage'),h('span',null,'— Part voltage'),h('span',null,'— Branch current')),
@@ -4737,7 +4745,11 @@ function CircuitActiveLessonLab(props) {
       '.short-active-flash { animation: shortRedFlash 1s ease-in-out infinite !important; }',
       '.glow-button { transition: all 0.2s ease; }',
       '.glow-button:hover { transform: translateY(-1px); box-shadow: 0 0 10px currentColor; }',
-      '@media (prefers-reduced-motion: reduce) { .circ-signal-pulse, .circ-electron-drift, .circuit-card, .circuit-badge, .circuit-active, .circuit-short, .short-active-flash { animation: none !important; } .glow-button { transition: none !important; } .glow-button:hover { transform: none !important; } }'
+      '@keyframes circuitThermalShimmer { 0%, 100% { transform: translateY(0px); opacity: 0.32; } 50% { transform: translateY(-2.4px); opacity: 0.68; } }',
+      '.circuit-thermal-shimmer { animation: circuitThermalShimmer 1.6s ease-in-out infinite; }',
+      '.theme-contrast .circuit-fx-glow { display: none !important; }',
+      '.theme-contrast [data-circuit-builder-root] svg [filter] { filter: none !important; }',
+      '@media (prefers-reduced-motion: reduce) { .circ-signal-pulse, .circ-electron-drift, .circuit-card, .circuit-badge, .circuit-active, .circuit-short, .short-active-flash { animation: none !important; } .circuit-thermal-shimmer { animation: none !important; } .glow-button { transition: none !important; } .glow-button:hover { transform: none !important; } }'
     ].join('\n');
     circStyle.textContent += "\n[data-circuit-builder-root] .circuit-lab-workflow,[data-circuit-builder-root] .circuit-part-inspector{border:1px solid #315066;border-radius:16px;background:linear-gradient(125deg,#0d2636,#0f172a);padding:18px;margin:16px 0}\n[data-circuit-builder-root] .circuit-step-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}\n[data-circuit-builder-root] .circuit-eyebrow{font-size:11px;letter-spacing:.13em;color:#67e8f9;font-weight:800}\n[data-circuit-builder-root] .circuit-step-heading h3{font-size:20px;font-weight:750;margin:6px 0}\n[data-circuit-builder-root] .circuit-model-chip{font-size:11px;color:#bae6fd;border:1px solid #155e75;border-radius:20px;padding:5px 10px}\n[data-circuit-builder-root] .circuit-help{font-size:12px;line-height:1.65;color:#cbd5e1;margin:8px 0}\n[data-circuit-builder-root] .circuit-prediction-label{display:block;font-size:12px;font-weight:700;color:#e2e8f0;margin:12px 0 6px}\n[data-circuit-builder-root] textarea{width:100%;background:#071520;border:1px solid #527286;color:#f1f5f9;border-radius:9px;padding:10px;font-size:14px;resize:vertical}\n[data-circuit-builder-root] textarea::placeholder{color:#94a3b8}\n[data-circuit-builder-root] .circuit-action-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:10px 0}\n[data-circuit-builder-root] .circuit-action-row button,[data-circuit-builder-root] .circuit-camera button,[data-circuit-builder-root] .circuit-part-inspector button{min-height:40px;border:1px solid #547086;border-radius:9px;padding:8px 12px;background:#122d40;color:#e0f2fe;font-size:12px;font-weight:700}\n[data-circuit-builder-root] .circuit-action-row button[aria-pressed=true]{background:#a5f3fc;color:#083344;border-color:#a5f3fc}\n[data-circuit-builder-root] button:disabled{opacity:.45;cursor:not-allowed}\n[data-circuit-builder-root] .circuit-comparison{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}\n[data-circuit-builder-root] .circuit-comparison>div{padding:10px;border:1px solid #315066;border-radius:10px;background:#071520}\n[data-circuit-builder-root] .circuit-comparison span{display:block;font-size:11px;color:#cbd5e1}\n[data-circuit-builder-root] .circuit-comparison strong{display:block;font-size:18px;color:#a5f3fc;font-variant-numeric:tabular-nums;margin-top:5px}\n[data-circuit-builder-root] .circuit-evidence{color:#a7f3d0;font-size:13px;margin:12px 0}\n[data-circuit-builder-root] .circuit-notebook,[data-circuit-builder-root] .circuit-model-details{font-size:12px;line-height:1.7;color:#cbd5e1;margin:12px 0}\n[data-circuit-builder-root] summary{cursor:pointer;font-weight:700;min-height:32px}\n[data-circuit-builder-root] .circuit-notebook li{padding:10px;border-top:1px solid #315066}\n[data-circuit-builder-root] .circuit-view-toolbar{border-top:1px solid #315066;margin-top:20px;padding-top:16px}\n[data-circuit-builder-root] .circuit-3d{border:1px solid #315066;border-radius:16px;overflow:hidden;background:#071520}\n[data-circuit-builder-root] .circuit-3d svg{width:100%;height:auto;display:block}\n[data-circuit-builder-root] .circuit-camera{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:12px}\n[data-circuit-builder-root] .circuit-camera label{display:flex;align-items:center;gap:8px;font-size:12px;flex:1;min-width:180px}\n[data-circuit-builder-root] .circuit-camera input{width:100%;accent-color:#22d3ee;min-height:32px}\n[data-circuit-builder-root] .circuit-3d>.circuit-help{padding:0 14px 8px}\n[data-circuit-builder-root] .circuit-part-inspector{font-size:13px;padding:12px}\n[data-circuit-builder-root] .circuit-part-inspector select{background:#071520;border:1px solid #527286;border-radius:6px;color:#f1f5f9;padding:8px;max-width:100%}\n[data-circuit-builder-root] .circuit-part-inspector p{margin:10px 0;color:#a5f3fc;font-variant-numeric:tabular-nums}\n[data-circuit-builder-root] .circuit-model-note,[data-circuit-builder-root] .circuit-warning{padding:12px;border-left:3px solid #38bdf8;background:#0c2435;color:#e0f2fe;font-size:12px;line-height:1.6;margin:10px 0}\n[data-circuit-builder-root] .circuit-warning{border-color:#fbbf24;background:#362817;color:#fef3c7}\n[data-circuit-builder-root] .circuit-model-details a{color:#67e8f9;text-decoration:underline}\n@media(max-width:480px){[data-circuit-builder-root]{padding:12px!important}[data-circuit-builder-root] .circuit-lab-workflow{padding:12px}[data-circuit-builder-root] .circuit-comparison strong{font-size:14px}[data-circuit-builder-root] .circuit-comparison>div{padding:7px}}\n";
     circStyle.textContent += '\n[data-circuit-motion=paused] *,[data-circuit-motion=paused] *::before,[data-circuit-motion=paused] *::after {animation-play-state:paused!important;transition:none!important}';
@@ -8025,14 +8037,19 @@ function CircuitActiveLessonLab(props) {
                     h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0.48 })
                   ),
                   h('radialGradient', { id: 'circuit-bulb-filament-halo', cx: '50%', cy: '50%', r: '50%' },
-                    h('stop', { offset: '0%', stopColor: '#fffbeb', stopOpacity: 0.92 }),
-                    h('stop', { offset: '32%', stopColor: '#fde047', stopOpacity: 0.56 }),
-                    h('stop', { offset: '68%', stopColor: '#f59e0b', stopOpacity: 0.18 }),
-                    h('stop', { offset: '100%', stopColor: '#f59e0b', stopOpacity: 0 })
+                    h('stop', { offset: '0%', stopColor: '#fffbeb', stopOpacity: 0.94 }),
+                    h('stop', { offset: '30%', stopColor: '#fde047', stopOpacity: 0.58 }),
+                    h('stop', { offset: '64%', stopColor: '#f97316', stopOpacity: 0.22 }),
+                    h('stop', { offset: '100%', stopColor: '#ea580c', stopOpacity: 0 })
+                  ),
+                  h('radialGradient', { id: 'circuit-resistor-thermal-glow', cx: '50%', cy: '50%', r: '50%' },
+                    h('stop', { offset: '0%', stopColor: '#fb923c', stopOpacity: 0.72 }),
+                    h('stop', { offset: '55%', stopColor: '#ea580c', stopOpacity: 0.28 }),
+                    h('stop', { offset: '100%', stopColor: '#9a3412', stopOpacity: 0 })
                   ),
                   h('radialGradient', { id: 'circuit-electron-halo', cx: '50%', cy: '50%', r: '50%' },
-                    h('stop', { offset: '0%', stopColor: '#ecfeff', stopOpacity: 0.92 }),
-                    h('stop', { offset: '42%', stopColor: '#22d3ee', stopOpacity: 0.52 }),
+                    h('stop', { offset: '0%', stopColor: '#ecfeff', stopOpacity: 0.95 }),
+                    h('stop', { offset: '40%', stopColor: '#22d3ee', stopOpacity: 0.56 }),
                     h('stop', { offset: '100%', stopColor: '#06b6d4', stopOpacity: 0 })
                   ),
                   h('filter', { id: 'circuit-wire-glow', x: '-30%', y: '-80%', width: '160%', height: '260%' },
@@ -8133,7 +8150,14 @@ function CircuitActiveLessonLab(props) {
                     wires.push(h('line', { key: 'w2', x1: 260, y1: 40, x2: 260, y2: parallelReturnY, stroke: wireColor, strokeWidth: wWidth }));
                     wires.push(h('line', { key: 'w3', x1: 260, y1: parallelReturnY, x2: 35, y2: parallelReturnY, stroke: wireColor, strokeWidth: wWidth }));
                   }
-                  return h('g', { 'data-circuit-wires':mode,filter: current > 0.001 || isShort ? 'url(#circuit-wire-glow)' : null, opacity: current > 0.001 ? 0.95 : 1 }, wires);
+                  var copperTrace = current > 0.001 && !isShort
+                    ? h('g', { className: 'circuit-fx-glow', 'aria-hidden': 'true', pointerEvents: 'none', opacity: Number(Math.min(0.42, 0.16 + Math.log10(1 + current * 10) * 0.24).toFixed(2)) },
+                        wires.map(function(wEl, wi) {
+                          return h('line', { key: 'cu-' + wi, x1: wEl.props.x1, y1: wEl.props.y1, x2: wEl.props.x2, y2: wEl.props.y2, stroke: '#d97706', strokeWidth: wWidth + 2.4, strokeLinecap: 'round' });
+                        })
+                      )
+                    : null;
+                  return h('g', { 'data-circuit-wires':mode,filter: current > 0.001 || isShort ? 'url(#circuit-wire-glow)' : null, opacity: current > 0.001 ? 0.95 : 1 }, copperTrace, wires);
                 })(),
 
                 // Battery connections
@@ -8179,23 +8203,33 @@ function CircuitActiveLessonLab(props) {
                       var compV = reading(comp).voltage;
                       var compP = reading(comp).power;
                       var bulbBright = comp.type === 'bulb' && compP > 0 ? Math.min(Math.sqrt(compP / 2), 1) : 0;
+                      var bulbBlackbody = bulbBright < 0.28 ? '#f97316' : (bulbBright < 0.62 ? '#facc15' : '#fffbeb');
+                      var resHeat = comp.type === 'resistor' && compP > 0.06 ? Math.min(1, Math.sqrt(compP / 3.2)) : 0;
                       var ledGlow = comp.type === 'led' && current > 0.005 ? Math.min(current * 20, 1) : 0;
                       var chargeLvl = voltage > 0 ? 1 : 0;
 
                       return h('g', Object.assign({ key: comp.id, className: 'circuit-schematic-part', 'data-circuit-schematic-part': comp.id, style: { cursor: components.length > 1 ? 'grab' : 'pointer', touchAction: 'none' }, opacity: reorderDrag && reorderDrag.source === 'schematic' && reorderDrag.id === comp.id ? 0.5 : 1 }, reorderPointerHandlers(i, comp, 'schematic')),
                         // Power aura scales with P = VI, revealing where energy becomes heat or light.
                         compP > 0.01 && comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('ellipse', {
+                          className: 'circuit-fx-glow',
                           cx: cx, cy: 78, rx: 18 + Math.min(compP, 20) * 0.7, ry: 25 + Math.min(compP, 20) * 0.8,
-                          fill: comp.type === 'bulb' ? '#fde047' : (comp.type === 'led' ? (comp.ledColor || '#ef4444') : '#fb923c'),
+                          fill: comp.type === 'bulb' ? bulbBlackbody : (comp.type === 'led' ? (comp.ledColor || '#ef4444') : '#fb923c'),
                           opacity: Math.min(0.08 + compP / 55, 0.34), filter: 'blur(6px)', 'aria-hidden': 'true'
                         }),
                         // Component body
                         comp.type === 'resistor'
                           ? h('g', null,
+                              // Power-scaled resistor thermal-load glow & subtle rising shimmer waves
+                              resHeat > 0.08 && h('ellipse', { className: 'circuit-fx-glow', cx: cx, cy: 77, rx: 16 + resHeat * 8, ry: 26 + resHeat * 8, fill: 'url(#circuit-resistor-thermal-glow)', opacity: (0.22 + resHeat * 0.52).toFixed(2), 'aria-hidden': 'true' }),
+                              resHeat > 0.14 && h('g', { className: _prefersReducedMotion ? 'circuit-fx-glow' : 'circuit-fx-glow circuit-thermal-shimmer', 'aria-hidden': 'true', pointerEvents: 'none', opacity: (0.28 + resHeat * 0.45).toFixed(2) },
+                                h('path', { d: 'M ' + (cx - 6) + ' 51 Q ' + (cx - 8) + ' 47 ' + (cx - 5) + ' 43', fill: 'none', stroke: '#fb923c', strokeWidth: 1.1, strokeLinecap: 'round' }),
+                                h('path', { d: 'M ' + (cx + 1) + ' 50 Q ' + (cx - 1) + ' 46 ' + (cx + 2) + ' 41', fill: 'none', stroke: '#fdba74', strokeWidth: 1.1, strokeLinecap: 'round' }),
+                                h('path', { d: 'M ' + (cx + 7) + ' 51 Q ' + (cx + 5) + ' 47 ' + (cx + 8) + ' 43', fill: 'none', stroke: '#fb923c', strokeWidth: 1.0, strokeLinecap: 'round' })
+                              ),
                               // Metallic chrome/brass terminal collars & ceramic resistor housing
                               h('rect', { x: cx - 7, y: 52, width: 14, height: 4, fill: 'url(#circuit-chrome-terminal)', rx: 1.5, 'aria-hidden': 'true' }),
                               h('rect', { x: cx - 7, y: 99, width: 14, height: 4, fill: 'url(#circuit-chrome-terminal)', rx: 1.5, 'aria-hidden': 'true' }),
-                              h('rect', { x: cx - 12, y: 55, width: 24, height: 45, fill: '#263344', stroke: '#eab308', strokeWidth: 1.5, rx: 5 }),
+                              h('rect', { x: cx - 12, y: 55, width: 24, height: 45, fill: '#263344', stroke: resHeat > 0.35 ? '#fb923c' : '#eab308', strokeWidth: 1.5, rx: 5 }),
                               // Color bands
                               h('rect', { x: cx - 11.2, y: 62, width: 22.4, height: 4.2, fill: '#ea580c' }),
                               h('rect', { x: cx - 11.2, y: 70, width: 22.4, height: 4.2, fill: '#6366f1' }),
@@ -8219,11 +8253,12 @@ function CircuitActiveLessonLab(props) {
 
                           : comp.type === 'led'
                           ? h('g', { transform: 'rotate(' + ((!!comp.reversed !== (i % 2 === 1)) ? 180 : 0) + ' ' + cx + ' 75)', onClick: function() { cycleLedColor(comp.id); }, role: 'button', tabIndex: 0, 'aria-label': 'LED, part ' + partPosition(comp.id) + ' (' + (LED_COLOR_NAMES[comp.ledColor || '#ef4444'] || 'custom') + '). Press Enter to cycle color.', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cycleLedColor(comp.id); } }, style: { cursor: 'pointer' } },
-                              // Glow light cone & dual radial LED bloom halo
-                              ledGlow > 0.1 && h('polygon', { points: (cx - 14) + ',78 ' + (cx + 14) + ',78 ' + cx + ',115', fill: 'url(#led-grad-' + comp.id + ')', pointerEvents: 'none' }),
-                              ledGlow > 0.1 && h('circle', { cx: cx, cy: 75, r: 19 + ledGlow * 9, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow * 0.22).toFixed(2)), filter: 'blur(4px)', 'aria-hidden': 'true' }),
-                              ledGlow > 0.1 && h('circle', { cx: cx, cy: 75, r: 12 + ledGlow * 5, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow * 0.42).toFixed(2)), filter: 'blur(2px)', 'aria-hidden': 'true' }),
+                              // Volumetric LED radiance halo & optical light cone
+                              ledGlow > 0.1 && h('polygon', { className: 'circuit-fx-glow', points: (cx - 16) + ',78 ' + (cx + 16) + ',78 ' + cx + ',118', fill: 'url(#led-grad-' + comp.id + ')', pointerEvents: 'none' }),
+                              ledGlow > 0.1 && h('circle', { className: 'circuit-fx-glow', cx: cx, cy: 75, r: 24 + ledGlow * 12, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow * 0.18).toFixed(2)), filter: 'blur(5.5px)', 'aria-hidden': 'true' }),
+                              ledGlow > 0.1 && h('circle', { className: 'circuit-fx-glow', cx: cx, cy: 75, r: 14 + ledGlow * 6, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow * 0.44).toFixed(2)), filter: 'blur(2px)', 'aria-hidden': 'true' }),
                               h('polygon', { points: (cx - 10) + ',65 ' + (cx + 10) + ',65 ' + cx + ',85', fill: ledGlow > 0.2 ? (comp.ledColor || '#ef4444') : '#475569', stroke: comp.ledColor || '#ef4444', strokeWidth: 1.5 }),
+                              ledGlow > 0.25 && h('circle', { className: 'circuit-fx-glow', cx: cx, cy: 73, r: 2.2 + ledGlow * 1.4, fill: '#ffffff', opacity: (0.45 + ledGlow * 0.42).toFixed(2), 'aria-hidden': 'true' }),
                               h('line', { x1: cx - 5, y1: 68, x2: cx - 1, y2: 78, stroke: '#ffffff', strokeWidth: 1.2, strokeLinecap: 'round', opacity: ledGlow > 0.2 ? 0.65 : 0.25, 'aria-hidden': 'true' }),
                               h('line', { x1: cx - 10, y1: 85, x2: cx + 10, y2: 85, stroke: comp.ledColor || '#ef4444', strokeWidth: 2.2 })
                             )
@@ -8263,15 +8298,16 @@ function CircuitActiveLessonLab(props) {
                               )
                             )
 
-                          // Bulb: warm radial incandescent filament bloom halo + glass glint + brass collar
+                          // Bulb: power-scaled blackbody filament incandescence halo + glass glint + brass collar
                           : h('g', null,
-                              bulbBright > 0.07 && h('circle', { cx: cx, cy: 77, r: 24 + bulbBright * 18, fill: 'url(#circuit-bulb-filament-halo)', opacity: (0.35 + bulbBright * 0.6).toFixed(2), 'aria-hidden': 'true' }),
-                              bulbBright > 0.07 && h('circle', { cx: cx, cy: 77, r: 18 + bulbBright * 9, fill: 'rgba(253,224,71,' + (bulbBright * 0.36).toFixed(2) + ')', filter: 'blur(3px)', 'aria-hidden': 'true' }),
+                              bulbBright > 0.05 && h('circle', { className: 'circuit-fx-glow', cx: cx, cy: 77, r: 26 + bulbBright * 22, fill: 'url(#circuit-bulb-filament-halo)', opacity: (0.32 + bulbBright * 0.64).toFixed(2), 'aria-hidden': 'true' }),
+                              bulbBright > 0.05 && h('circle', { className: 'circuit-fx-glow', cx: cx, cy: 77, r: 17 + bulbBright * 10, fill: bulbBlackbody, opacity: (bulbBright * 0.36).toFixed(2), filter: 'blur(3.2px)', 'aria-hidden': 'true' }),
                               h('rect', { x: cx - 6, y: 90, width: 12, height: 5, fill: 'url(#circuit-brass-cap)', rx: 1.5, 'aria-hidden': 'true' }),
-                              h('circle', { cx: cx, cy: 77, r: 15, fill: bulbBright > 0.07 ? 'rgba(253,224,71,' + (0.28 + bulbBright * 0.66).toFixed(2) + ')' : '#283548', stroke: bulbBright > 0.07 ? '#fef08a' : '#eab308', strokeWidth: 1.6 }),
-                              // Glass specular crescent & tungsten filament
+                              h('circle', { cx: cx, cy: 77, r: 15, fill: bulbBright > 0.05 ? (bulbBright < 0.3 ? 'rgba(249,115,22,' + (0.24 + bulbBright * 0.65).toFixed(2) + ')' : 'rgba(253,224,71,' + (0.28 + bulbBright * 0.66).toFixed(2) + ')') : '#283548', stroke: bulbBright > 0.05 ? bulbBlackbody : '#eab308', strokeWidth: 1.6 }),
+                              // Glass specular crescent & power-scaled blackbody tungsten filament
                               h('path', { d: 'M ' + (cx - 10) + ' 72 A 11 11 0 0 1 ' + (cx - 3) + ' 65', fill: 'none', stroke: '#ffffff', strokeWidth: 1.5, strokeLinecap: 'round', opacity: 0.55, 'aria-hidden': 'true' }),
-                              h('path', { d: 'M ' + (cx - 5) + ' 84 L ' + (cx - 3) + ' 74 Q ' + cx + ' 67 ' + (cx + 3) + ' 74 L ' + (cx + 5) + ' 84', fill: 'none', stroke: bulbBright > 0.07 ? '#fffbeb' : '#94a3b8', strokeWidth: bulbBright > 0.07 ? 2 : 1.5, strokeLinecap: 'round', filter: bulbBright > 0.2 ? 'url(#circuit-wire-glow)' : null })
+                              h('path', { d: 'M ' + (cx - 5) + ' 84 L ' + (cx - 3) + ' 74 Q ' + cx + ' 67 ' + (cx + 3) + ' 74 L ' + (cx + 5) + ' 84', fill: 'none', stroke: bulbBright > 0.05 ? bulbBlackbody : '#94a3b8', strokeWidth: bulbBright > 0.05 ? (1.7 + bulbBright * 0.9) : 1.5, strokeLinecap: 'round', filter: bulbBright > 0.16 ? 'url(#circuit-wire-glow)' : null }),
+                              bulbBright > 0.42 && h('circle', { className: 'circuit-fx-glow', cx: cx, cy: 72, r: 2.2 + bulbBright * 2.2, fill: '#fffef5', opacity: (bulbBright * 0.72).toFixed(2), filter: 'blur(1.2px)', 'aria-hidden': 'true' })
                             ),
 
                         // Value label
@@ -8305,6 +8341,8 @@ function CircuitActiveLessonLab(props) {
                       var branchStrength = Math.min(1, Math.log10(1 + Math.max(0, compI2)) / 1.4);
                       var isIdealParallelBranch2 = mode === 'parallel' && compR2 < 0.01;
                       var bulbBright2 = comp.type === 'bulb' && compP2 > 0 ? Math.min(Math.sqrt(compP2 / 2), 1) : 0;
+                      var bulbBlackbody2 = bulbBright2 < 0.28 ? '#f97316' : (bulbBright2 < 0.62 ? '#facc15' : '#fffbeb');
+                      var resHeat2 = comp.type === 'resistor' && compP2 > 0.06 ? Math.min(1, Math.sqrt(compP2 / 3.2)) : 0;
                       var ledGlow2 = comp.type === 'led' && compI2 > 0.005 ? Math.min(compI2 * 20, 1) : 0;
                       var chargeLvl = voltage > 0 ? 1 : 0;
                       var terminalLeft=comp.type==='led'?(comp.reversed?213:215):['bulb','ammeter','voltmeter','inductor'].includes(comp.type)?210:200;
@@ -8313,8 +8351,9 @@ function CircuitActiveLessonLab(props) {
                       return h('g', Object.assign({ key: comp.id, className: 'circuit-schematic-part', 'data-circuit-schematic-part': comp.id, style: { cursor: components.length > 1 ? 'grab' : 'pointer', touchAction: 'none' }, opacity: reorderDrag && reorderDrag.source === 'schematic' && reorderDrag.id === comp.id ? 0.5 : 1 }, reorderPointerHandlers(i, comp, 'schematic')),
                         // Each branch gets its own P = VI aura, making parallel power sharing visible.
                         compP2 > 0.01 && comp.type !== 'switch' && comp.type !== 'ammeter' && comp.type !== 'voltmeter' && h('ellipse', {
+                          className: 'circuit-fx-glow',
                           cx: 220, cy: cy, rx: 28 + Math.min(compP2, 20) * 0.55, ry: 13 + Math.min(compP2, 20) * 0.35,
-                          fill: comp.type === 'bulb' ? '#fde047' : (comp.type === 'led' ? (comp.ledColor || '#ef4444') : '#fb923c'),
+                          fill: comp.type === 'bulb' ? bulbBlackbody2 : (comp.type === 'led' ? (comp.ledColor || '#ef4444') : '#fb923c'),
                           opacity: Math.min(0.08 + compP2 / 55, 0.34), filter: 'blur(5px)', 'aria-hidden': 'true'
                         }),
                         // Branch glow and metallic junction pads encode how total current divides.
@@ -8330,9 +8369,15 @@ function CircuitActiveLessonLab(props) {
                         // Component body (parallel - horizontal)
                         comp.type === 'resistor'
                           ? h('g', null,
+                              resHeat2 > 0.08 && h('ellipse', { className: 'circuit-fx-glow', cx: 220, cy: cy, rx: 24 + resHeat2 * 8, ry: 12 + resHeat2 * 5, fill: 'url(#circuit-resistor-thermal-glow)', opacity: (0.22 + resHeat2 * 0.52).toFixed(2), 'aria-hidden': 'true' }),
+                              resHeat2 > 0.14 && h('g', { className: _prefersReducedMotion ? 'circuit-fx-glow' : 'circuit-fx-glow circuit-thermal-shimmer', 'aria-hidden': 'true', pointerEvents: 'none', opacity: (0.28 + resHeat2 * 0.45).toFixed(2) },
+                                h('path', { d: 'M 211 ' + (cy - 10) + ' Q 209 ' + (cy - 13) + ' 212 ' + (cy - 16), fill: 'none', stroke: '#fb923c', strokeWidth: 1.0, strokeLinecap: 'round' }),
+                                h('path', { d: 'M 220 ' + (cy - 11) + ' Q 218 ' + (cy - 14) + ' 221 ' + (cy - 17), fill: 'none', stroke: '#fdba74', strokeWidth: 1.0, strokeLinecap: 'round' }),
+                                h('path', { d: 'M 229 ' + (cy - 10) + ' Q 227 ' + (cy - 13) + ' 230 ' + (cy - 16), fill: 'none', stroke: '#fb923c', strokeWidth: 1.0, strokeLinecap: 'round' })
+                              ),
                               h('rect', { x: 198, y: cy - 5, width: 3.5, height: 10, fill: 'url(#circuit-chrome-terminal)', rx: 1, 'aria-hidden': 'true' }),
                               h('rect', { x: 238.5, y: cy - 5, width: 3.5, height: 10, fill: 'url(#circuit-chrome-terminal)', rx: 1, 'aria-hidden': 'true' }),
-                              h('rect', { x: 200, y: cy - 8, width: 40, height: 16, fill: '#263344', stroke: '#eab308', strokeWidth: 1.5, rx: 3.5 }),
+                              h('rect', { x: 200, y: cy - 8, width: 40, height: 16, fill: '#263344', stroke: resHeat2 > 0.35 ? '#fb923c' : '#eab308', strokeWidth: 1.5, rx: 3.5 }),
                               h('rect', { x: 208, y: cy - 7.3, width: 3.4, height: 14.6, fill: '#ea580c' }),
                               h('rect', { x: 216, y: cy - 7.3, width: 3.4, height: 14.6, fill: '#6366f1' }),
                               h('rect', { x: 224, y: cy - 7.3, width: 3.4, height: 14.6, fill: '#06b6d4' }),
@@ -8354,9 +8399,10 @@ function CircuitActiveLessonLab(props) {
 
                           : comp.type === 'led'
                           ? h('g', { transform: 'rotate(' + (comp.reversed ? 90 : -90) + ' 220 ' + cy + ')', onClick: function() { cycleLedColor(comp.id); }, role: 'button', tabIndex: 0, 'aria-label': 'LED, part ' + partPosition(comp.id) + ' (' + (LED_COLOR_NAMES[comp.ledColor || '#ef4444'] || 'custom') + '). Press Enter to cycle color.', onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cycleLedColor(comp.id); } }, style: { cursor: 'pointer' } },
-                              ledGlow2 > 0.1 && h('circle', { cx: 220, cy: cy, r: 16 + ledGlow2 * 7, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow2 * 0.22).toFixed(2)), filter: 'blur(3.5px)', 'aria-hidden': 'true' }),
-                              ledGlow2 > 0.1 && h('circle', { cx: 220, cy: cy, r: 12 + ledGlow2 * 5, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow2 * 0.42).toFixed(2)), filter: 'blur(2px)', 'aria-hidden': 'true' }),
+                              ledGlow2 > 0.1 && h('circle', { className: 'circuit-fx-glow', cx: 220, cy: cy, r: 20 + ledGlow2 * 9, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow2 * 0.18).toFixed(2)), filter: 'blur(4.5px)', 'aria-hidden': 'true' }),
+                              ledGlow2 > 0.1 && h('circle', { className: 'circuit-fx-glow', cx: 220, cy: cy, r: 12 + ledGlow2 * 5, fill: getLedGlowColor(comp.ledColor || '#ef4444', (ledGlow2 * 0.44).toFixed(2)), filter: 'blur(2px)', 'aria-hidden': 'true' }),
                               h('polygon', { points: '212,' + (cy - 5) + ' 228,' + (cy - 5) + ' 220,' + (cy + 7), fill: ledGlow2 > 0.2 ? (comp.ledColor || '#ef4444') : '#475569', stroke: comp.ledColor || '#ef4444', strokeWidth: 1.2 }),
+                              ledGlow2 > 0.25 && h('circle', { className: 'circuit-fx-glow', cx: 220, cy: cy - 1, r: 1.8 + ledGlow2 * 1.1, fill: '#ffffff', opacity: (0.45 + ledGlow2 * 0.42).toFixed(2), 'aria-hidden': 'true' }),
                               h('line', { x1: 216, y1: cy - 3, x2: 219, y2: cy + 3, stroke: '#ffffff', strokeWidth: 1, strokeLinecap: 'round', opacity: ledGlow2 > 0.2 ? 0.65 : 0.25, 'aria-hidden': 'true' }),
                               h('line', { x1: 212, y1: cy + 7, x2: 228, y2: cy + 7, stroke: comp.ledColor || '#ef4444', strokeWidth: 1.6 })
                             )
@@ -8385,13 +8431,14 @@ function CircuitActiveLessonLab(props) {
                               h('line', { x1: 224, y1: cy - 6, x2: 224, y2: cy + 6, stroke: '#7dd3fc', strokeWidth: 2.2, strokeLinecap: 'round' })
                             )
 
-                          // bulb: warm radial incandescent halo + filament + glass glint
+                          // bulb: power-scaled blackbody incandescent halo + filament + glass glint
                           : h('g', null,
-                              bulbBright2 > 0.07 && h('circle', { cx: 220, cy: cy, r: 16 + bulbBright2 * 10, fill: 'url(#circuit-bulb-filament-halo)', opacity: (0.35 + bulbBright2 * 0.58).toFixed(2), 'aria-hidden': 'true' }),
-                              bulbBright2 > 0.07 && h('circle', { cx: 220, cy: cy, r: 12 + bulbBright2 * 5, fill: 'rgba(253,224,71,' + (bulbBright2 * 0.32).toFixed(2) + ')', filter: 'blur(2.5px)', 'aria-hidden': 'true' }),
-                              h('circle', { cx: 220, cy: cy, r: 10, fill: bulbBright2 > 0.07 ? 'rgba(253,224,71,' + (0.28 + bulbBright2 * 0.68).toFixed(2) + ')' : '#283548', stroke: bulbBright2 > 0.07 ? '#fef08a' : '#eab308', strokeWidth: 1.3 }),
+                              bulbBright2 > 0.05 && h('circle', { className: 'circuit-fx-glow', cx: 220, cy: cy, r: 18 + bulbBright2 * 13, fill: 'url(#circuit-bulb-filament-halo)', opacity: (0.34 + bulbBright2 * 0.62).toFixed(2), 'aria-hidden': 'true' }),
+                              bulbBright2 > 0.05 && h('circle', { className: 'circuit-fx-glow', cx: 220, cy: cy, r: 12 + bulbBright2 * 6, fill: bulbBlackbody2, opacity: (bulbBright2 * 0.34).toFixed(2), filter: 'blur(2.5px)', 'aria-hidden': 'true' }),
+                              h('circle', { cx: 220, cy: cy, r: 10, fill: bulbBright2 > 0.05 ? (bulbBright2 < 0.3 ? 'rgba(249,115,22,' + (0.24 + bulbBright2 * 0.64).toFixed(2) + ')' : 'rgba(253,224,71,' + (0.28 + bulbBright2 * 0.68).toFixed(2) + ')') : '#283548', stroke: bulbBright2 > 0.05 ? bulbBlackbody2 : '#eab308', strokeWidth: 1.3 }),
                               h('path', { d: 'M 213 ' + (cy - 3) + ' A 7 7 0 0 1 218 ' + (cy - 7), fill: 'none', stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.55, 'aria-hidden': 'true' }),
-                              h('path', { d: 'M 216 ' + (cy + 3) + ' Q 220 ' + (cy - 5) + ' 224 ' + (cy + 3), fill: 'none', stroke: bulbBright2 > 0.07 ? '#fffbeb' : '#94a3b8', strokeWidth: 1.3, strokeLinecap: 'round' })
+                              h('path', { d: 'M 216 ' + (cy + 3) + ' Q 220 ' + (cy - 5) + ' 224 ' + (cy + 3), fill: 'none', stroke: bulbBright2 > 0.05 ? bulbBlackbody2 : '#94a3b8', strokeWidth: bulbBright2 > 0.05 ? (1.3 + bulbBright2 * 0.7) : 1.3, strokeLinecap: 'round' }),
+                              bulbBright2 > 0.42 && h('circle', { className: 'circuit-fx-glow', cx: 220, cy: cy - 1, r: 1.8 + bulbBright2 * 1.4, fill: '#fffef5', opacity: (bulbBright2 * 0.72).toFixed(2), filter: 'blur(1px)', 'aria-hidden': 'true' })
                             ),
 
                         // Value/reading labels (parallel)
@@ -8421,20 +8468,25 @@ function CircuitActiveLessonLab(props) {
                   h('text', { x: 170, y: 64, textAnchor: 'middle', fill: '#fecaca', style: { fontSize: '9px', fontWeight: '900', fontFamily: 'system-ui' } }, __alloT('stem.circuit.short_circuit_label', 'SHORT CIRCUIT')),
                   h('text', { x: 170, y: 76, textAnchor: 'middle', fill: '#fda4af', style: { fontSize: '7px', fontWeight: 'bold', fontFamily: 'monospace' } }, __alloT('stem.circuit.short_circuit_detail', 'near-zero resistance • current surge'))
                 ),
-                // Luminous amperage-scaled current flow pulse halos (gated on reduced motion)
-                electronDots.length > 0 && h('g', { 'aria-hidden': 'true', pointerEvents: 'none' },
+                // Velocity-scaled luminous electron-drift / current energy packet halos (gated on reduced motion)
+                electronDots.length > 0 && h('g', { className: 'circuit-fx-glow', 'aria-hidden': 'true', pointerEvents: 'none' },
                   electronDots.map(function(dot, i) {
                     var flowGlow = Math.min(1, Math.log10(1 + Math.max(0, dot.amps || current) * 18) / 1.55);
-                    var haloR = 5.4 + flowGlow * 4.4;
-                    var haloOpacity = Number((0.36 + flowGlow * 0.44).toFixed(2));
+                    var haloR = 5.6 + flowGlow * 5.2;
+                    var haloOpacity = Number((0.38 + flowGlow * 0.48).toFixed(2));
                     if (_prefersReducedMotion) return h('circle', { key: 'eh' + i, cx: dot.x, cy: dot.y, r: haloR, fill: 'url(#circuit-electron-halo)', opacity: haloOpacity });
-                    return h('circle', { key: 'eh' + i, cx: 0, cy: 0, r: haloR, fill: 'url(#circuit-electron-halo)', opacity: haloOpacity },
-                      h('animateMotion', { dur: dot.dur.toFixed(2) + 's', begin: (-dot.offset * dot.dur).toFixed(2) + 's', repeatCount: 'indefinite', path: 'M ' + dot.path.map(function(p) { return p.x + ' ' + p.y; }).join(' L ') }));
+                    return h('g', { key: 'eh' + i },
+                      h('circle', { cx: 0, cy: 0, r: haloR, fill: 'url(#circuit-electron-halo)', opacity: haloOpacity },
+                        h('animateMotion', { dur: dot.dur.toFixed(2) + 's', begin: (-dot.offset * dot.dur).toFixed(2) + 's', repeatCount: 'indefinite', path: 'M ' + dot.path.map(function(p) { return p.x + ' ' + p.y; }).join(' L ') })),
+                      flowGlow > 0.25 && h('circle', { cx: 0, cy: 0, r: 1.4 + flowGlow * 0.9, fill: '#ecfeff', opacity: Number((0.5 + flowGlow * 0.45).toFixed(2)) },
+                        h('animateMotion', { dur: dot.dur.toFixed(2) + 's', begin: (-dot.offset * dot.dur).toFixed(2) + 's', repeatCount: 'indefinite', path: 'M ' + dot.path.map(function(p) { return p.x + ' ' + p.y; }).join(' L ') }))
+                    );
                   })
                 ),
                 // Electron dots
                 electronDots.map(function(dot, i) {
-                  var style = { key: 'e' + i, r: 3, fill: '#06b6d4', opacity: 0.88, filter: 'drop-shadow(0 0 2.5px #22d3ee)', 'aria-hidden': 'true' };
+                  var flowScale = Math.min(1, Math.log10(1 + Math.max(0, dot.amps || current) * 18) / 1.55);
+                  var style = { key: 'e' + i, r: Number((2.6 + flowScale * 1.1).toFixed(2)), fill: '#06b6d4', opacity: 0.9, filter: 'drop-shadow(0 0 2.5px #22d3ee)', 'aria-hidden': 'true' };
                   if (_prefersReducedMotion) return h('circle', Object.assign(style, { cx: dot.x, cy: dot.y }));
                   return h('circle', Object.assign(style, { cx: 0, cy: 0, 'data-circuit-flow-dot': true }),
                     h('animateMotion', { dur: dot.dur.toFixed(2) + 's', begin: (-dot.offset * dot.dur).toFixed(2) + 's', repeatCount: 'indefinite', path: 'M ' + dot.path.map(function(p) { return p.x + ' ' + p.y; }).join(' L ') }));
@@ -8506,19 +8558,43 @@ function CircuitActiveLessonLab(props) {
 
                   resizeCircuitSparkCanvas();
                   
-                  if (!canvas.particles) {
+                  if (!canvas.particles || canvas.particles.length !== 48) {
                     canvas.particles = [];
-                    for (var p = 0; p < 20; p++) {
+                    for (var p = 0; p < 48; p++) {
+                      var initialLive = p < 20;
                       canvas.particles.push({
                         x: w / 2 + (Math.random() - 0.5) * 60,
                         y: h / 2 + (Math.random() - 0.5) * 60,
                         vx: (Math.random() - 0.5) * 5,
                         vy: -Math.random() * 3 - 2,
-                        life: Math.random() * 25 + 10,
+                        life: initialLive ? (Math.random() * 25 + 10) : 0,
                         maxLife: 35,
                         type: Math.random() > 0.45 ? 'spark' : 'smoke',
                         size: Math.random() * 2.5 + 1
                       });
+                    }
+                  }
+                  function spawnPoolParticle(kind) {
+                    for (var si = 0; si < canvas.particles.length; si++) {
+                      var slot = canvas.particles[si];
+                      if (slot.life <= 0) {
+                        if (kind === 'spark') {
+                          slot.x = 35 + (Math.random() - 0.5) * 15;
+                          slot.y = 40 + Math.random() * 60;
+                          slot.vx = (Math.random() - 0.5) * 6;
+                          slot.vy = (Math.random() - 0.5) * 4 - 2;
+                          slot.life = 30; slot.maxLife = 30;
+                          slot.type = 'spark'; slot.size = Math.random() * 2.5 + 1.5;
+                        } else {
+                          slot.x = 35 + Math.random() * (w - 70);
+                          slot.y = 20 + (Math.random() - 0.5) * 8;
+                          slot.vx = (Math.random() - 0.5) * 2;
+                          slot.vy = -Math.random() * 2 - 1;
+                          slot.life = 45; slot.maxLife = 45;
+                          slot.type = 'smoke'; slot.size = Math.random() * 6 + 3;
+                        }
+                        return;
+                      }
                     }
                   }
                   
@@ -8528,60 +8604,45 @@ function CircuitActiveLessonLab(props) {
                     if (!canvas.isConnected) { cleanupCircuitSparkCanvas(); return; }
                     if (isCircuitSparkHidden()) { cancelCircuitSparkFrame(); return; }
                     ctx2d.clearRect(0, 0, w, h);
+                    var sparkHC = !!(typeof canvas.closest === 'function' && canvas.closest('.theme-contrast'));
                     
-                    // Spawn sparks near battery / short components
-                    if (Math.random() < 0.4) {
-                      canvas.particles.push({
-                        x: 35 + (Math.random() - 0.5) * 15,
-                        y: 40 + Math.random() * 60,
-                        vx: (Math.random() - 0.5) * 6,
-                        vy: (Math.random() - 0.5) * 4 - 2,
-                        life: 30,
-                        maxLife: 30,
-                        type: 'spark',
-                        size: Math.random() * 2.5 + 1.5
-                      });
-                    }
-                    if (Math.random() < 0.25) {
-                      canvas.particles.push({
-                        x: 35 + Math.random() * (w - 70),
-                        y: 20 + (Math.random() - 0.5) * 8,
-                        vx: (Math.random() - 0.5) * 2,
-                        vy: -Math.random() * 2 - 1,
-                        life: 45,
-                        maxLife: 45,
-                        type: 'smoke',
-                        size: Math.random() * 6 + 3
-                      });
-                    }
+                    // Spawn sparks & smoke into pre-allocated pool (zero per-frame allocations)
+                    if (Math.random() < 0.42) spawnPoolParticle('spark');
+                    if (Math.random() < 0.25) spawnPoolParticle('smoke');
                     
                     for (var p = 0; p < canvas.particles.length; p++) {
                       var pt = canvas.particles[p];
+                      if (pt.life <= 0) continue;
                       pt.x += pt.vx;
                       pt.y += pt.vy;
+                      if (pt.type === 'spark') pt.vy += 0.12;
                       pt.life--;
+                      if (pt.life <= 0) continue;
+                      var frac = pt.life / pt.maxLife;
                       
                       if (pt.type === 'spark') {
                         ctx2d.save();
-                        ctx2d.shadowColor = 'rgba(251,146,60,0.9)'; ctx2d.shadowBlur = 6;
-                        ctx2d.fillStyle = 'rgba(251, 146, 60, ' + (pt.life / pt.maxLife).toFixed(2) + ')';
+                        if (!sparkHC) { ctx2d.shadowColor = 'rgba(251,146,60,0.92)'; ctx2d.shadowBlur = 7; }
+                        ctx2d.strokeStyle = sparkHC ? '#ffff00' : ('rgba(254, 240, 138, ' + frac.toFixed(2) + ')');
+                        ctx2d.lineWidth = Math.max(1, pt.size * 0.75);
+                        ctx2d.lineCap = 'round';
                         ctx2d.beginPath();
-                        ctx2d.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
-                        ctx2d.fill();
-                        ctx2d.strokeStyle = 'rgba(239, 68, 68, ' + (pt.life / pt.maxLife * 0.4).toFixed(2) + ')';
-                        ctx2d.lineWidth = 1;
+                        ctx2d.moveTo(pt.x - pt.vx * 1.4, pt.y - pt.vy * 1.4);
+                        ctx2d.lineTo(pt.x, pt.y);
                         ctx2d.stroke();
-                        ctx2d.restore();
-                      } else {
-                        // smoke
-                        ctx2d.fillStyle = 'rgba(148, 163, 184, ' + (pt.life / pt.maxLife * 0.15).toFixed(2) + ')';
+                        ctx2d.fillStyle = sparkHC ? '#ffff00' : ('rgba(251, 146, 60, ' + frac.toFixed(2) + ')');
                         ctx2d.beginPath();
-                        ctx2d.arc(pt.x, pt.y, pt.size + (1 - pt.life / pt.maxLife) * 8, 0, Math.PI * 2);
+                        ctx2d.arc(pt.x, pt.y, pt.size * 0.85, 0, Math.PI * 2);
+                        ctx2d.fill();
+                        ctx2d.restore();
+                      } else if (!sparkHC) {
+                        // smoke
+                        ctx2d.fillStyle = 'rgba(148, 163, 184, ' + (frac * 0.15).toFixed(2) + ')';
+                        ctx2d.beginPath();
+                        ctx2d.arc(pt.x, pt.y, pt.size + (1 - frac) * 8, 0, Math.PI * 2);
                         ctx2d.fill();
                       }
                     }
-                    
-                    canvas.particles = canvas.particles.filter(function(pt) { return pt.life > 0; });
                     scheduleCircuitSparkFrame();
                   }
                   
@@ -9551,6 +9612,8 @@ function CircuitActiveLessonLab(props) {
                 ref: function(canvas) {
                   if (!canvas) return;
                   var oc = canvas.getContext('2d');
+                  if (!oc) return;
+                  var scopeHC = !!(typeof canvas.closest === 'function' && canvas.closest('.theme-contrast'));
                   var dpr = window.devicePixelRatio || 1;
                   var ow = canvas.offsetWidth || 400;
                   var oh = 120;
@@ -9563,11 +9626,18 @@ function CircuitActiveLessonLab(props) {
                   oc.setTransform(dpr, 0, 0, dpr, 0, 0);
                   oc.clearRect(0, 0, ow, oh);
 
-                  // Dark CRT background
-                  oc.fillStyle = '#050a12'; oc.fillRect(0, 0, ow, oh);
+                  // Dark CRT phosphor screen background (pure black in High-Contrast)
+                  oc.fillStyle = scopeHC ? '#000000' : '#040a12'; oc.fillRect(0, 0, ow, oh);
+                  if (!scopeHC && typeof oc.createRadialGradient === 'function') {
+                    var crtBack = oc.createRadialGradient(ow * 0.5, oh * 0.5, 8, ow * 0.5, oh * 0.5, ow * 0.58);
+                    crtBack.addColorStop(0, 'rgba(16,185,129,0.06)');
+                    crtBack.addColorStop(0.65, 'rgba(6,78,59,0.02)');
+                    crtBack.addColorStop(1, 'rgba(2,6,14,0)');
+                    oc.fillStyle = crtBack; oc.fillRect(0, 0, ow, oh);
+                  }
 
-                  // CRT grid pattern
-                  oc.strokeStyle = 'rgba(16, 185, 129, 0.08)'; oc.lineWidth = 0.5;
+                  // CRT graticule grid pattern & center micro-ticks
+                  oc.strokeStyle = scopeHC ? 'rgba(255,255,0,0.22)' : 'rgba(16, 185, 129, 0.10)'; oc.lineWidth = 0.5;
                   for (var gx = 0; gx < ow; gx += ow / 10) {
                     oc.beginPath(); oc.moveTo(gx, 0); oc.lineTo(gx, oh); oc.stroke();
                   }
@@ -9575,79 +9645,128 @@ function CircuitActiveLessonLab(props) {
                     oc.beginPath(); oc.moveTo(0, gy); oc.lineTo(ow, gy); oc.stroke();
                   }
 
-                  // Center division lines
-                  oc.strokeStyle = 'rgba(16, 185, 129, 0.2)'; oc.lineWidth = 1;
+                  // Center division lines + fine calibration ticks
+                  oc.strokeStyle = scopeHC ? 'rgba(255,255,0,0.45)' : 'rgba(16, 185, 129, 0.24)'; oc.lineWidth = 1;
                   oc.beginPath(); oc.moveTo(0, oh / 2); oc.lineTo(ow, oh / 2); oc.stroke();
                   oc.beginPath(); oc.moveTo(ow / 2, 0); oc.lineTo(ow / 2, oh); oc.stroke();
+                  for (var tx = 8; tx < ow; tx += 12) {
+                    oc.beginPath(); oc.moveTo(tx, oh / 2 - 2.5); oc.lineTo(tx, oh / 2 + 2.5); oc.stroke();
+                  }
 
-                  // 1. Draw capacitor charge wave if present
+                  // Multi-pass CRT phosphor persistence helper (bypassed in High-Contrast)
+                  function paintPhosphorTrace(traceFn, bloomRgba, mainColor, coreColor, baseWidth, tipY) {
+                    if (!scopeHC) {
+                      oc.save();
+                      oc.lineCap = 'round'; oc.lineJoin = 'round';
+                      oc.strokeStyle = bloomRgba; oc.lineWidth = baseWidth * 3.4;
+                      oc.beginPath(); traceFn(); oc.stroke();
+                      oc.strokeStyle = mainColor; oc.lineWidth = baseWidth;
+                      oc.shadowColor = mainColor; oc.shadowBlur = 9;
+                      oc.beginPath(); traceFn(); oc.stroke();
+                      oc.shadowBlur = 0;
+                      oc.strokeStyle = coreColor; oc.lineWidth = Math.max(0.75, baseWidth * 0.42);
+                      oc.beginPath(); traceFn(); oc.stroke();
+                      if (typeof tipY === 'number' && isFinite(tipY) && typeof oc.createRadialGradient === 'function') {
+                        var tipX = ow - 4;
+                        var spot = oc.createRadialGradient(tipX, tipY, 0.5, tipX, tipY, 7);
+                        spot.addColorStop(0, '#ffffff');
+                        spot.addColorStop(0.4, mainColor);
+                        spot.addColorStop(1, 'rgba(0,0,0,0)');
+                        oc.fillStyle = spot;
+                        oc.beginPath(); oc.arc(tipX, tipY, 7, 0, Math.PI * 2); oc.fill();
+                      }
+                      oc.restore();
+                    } else {
+                      oc.strokeStyle = mainColor; oc.lineWidth = Math.max(2, baseWidth);
+                      oc.beginPath(); traceFn(); oc.stroke();
+                    }
+                  }
+
+                  // 1. Draw capacitor charge wave with decaying CRT phosphor persistence ghosts
                   if (components.some(function(c) { return c.type === 'capacitor'; })) {
                     var cap = components.find(function(c) { return c.type === 'capacitor'; });
                     var capVal = cap.value || 100;
                     var period = 100;
-                    oc.strokeStyle = '#38bdf8'; oc.lineWidth = 2;
-                    oc.shadowColor = '#38bdf8'; oc.shadowBlur = 6;
-                    oc.beginPath();
-                    for (var sx = 0; sx < ow; sx++) {
-                      var phase = (sx + tick * 1.5) % period;
-                      var isCharging = phase < period / 2;
-                      var t = phase % (period / 2);
-                      var normVal;
-                      if (isCharging) {
-                        normVal = 1 - Math.exp(-t / (capVal * 0.08 + 2));
-                      } else {
-                        normVal = Math.exp(-t / (capVal * 0.08 + 2));
+                    var capPhaseBase = _prefersReducedMotion ? 0 : tick * 1.5;
+                    function traceCapAt(phaseOffset) {
+                      var lastY = oh * 0.5;
+                      for (var sx = 0; sx < ow; sx++) {
+                        var phase = ((sx + phaseOffset) % period + period) % period;
+                        var isCharging = phase < period / 2;
+                        var t = phase % (period / 2);
+                        var normVal = isCharging
+                          ? (1 - Math.exp(-t / (capVal * 0.08 + 2)))
+                          : Math.exp(-t / (capVal * 0.08 + 2));
+                        var sy = oh * 0.75 - normVal * oh * 0.5;
+                        lastY = sy;
+                        if (sx === 0) oc.moveTo(sx, sy); else oc.lineTo(sx, sy);
                       }
-                      var sy = oh * 0.75 - normVal * oh * 0.5;
-                      if (sx === 0) oc.moveTo(sx, sy); else oc.lineTo(sx, sy);
+                      return lastY;
                     }
-                    oc.stroke(); oc.shadowBlur = 0;
+                    if (!scopeHC && !_prefersReducedMotion) {
+                      for (var ph = 2; ph >= 1; ph--) {
+                        oc.save();
+                        oc.strokeStyle = 'rgba(56,189,248,' + (0.14 / ph).toFixed(3) + ')';
+                        oc.lineWidth = 2.4;
+                        oc.beginPath(); traceCapAt(capPhaseBase - ph * 5.5); oc.stroke();
+                        oc.restore();
+                      }
+                    }
+                    var capTipY = oh * 0.5;
+                    paintPhosphorTrace(
+                      function() { capTipY = traceCapAt(capPhaseBase); },
+                      'rgba(56,189,248,0.18)', scopeHC ? '#00ffff' : '#38bdf8', 'rgba(224,242,254,0.82)', 2, capTipY
+                    );
                   }
 
-                  // 2. Voltage trace (green, DC flat line at voltage level with noise jitter)
+                  // 2. Voltage trace (emerald phosphor with subtle thermal noise)
                   var vNorm = Math.min(voltage / 24, 1);
                   var vY = oh * 0.8 - vNorm * oh * 0.6;
-                  oc.strokeStyle = '#10b981'; oc.lineWidth = 2;
-                  oc.shadowColor = '#10b981'; oc.shadowBlur = 6;
-                  oc.beginPath();
-                  for (var sx = 0; sx < ow; sx++) {
-                    var jitter = (Math.random() - 0.5) * 0.4;
-                    if (sx === 0) oc.moveTo(sx, vY + jitter); else oc.lineTo(sx, vY + jitter);
-                  }
-                  oc.stroke(); oc.shadowBlur = 0;
+                  paintPhosphorTrace(
+                    function() {
+                      for (var sx = 0; sx < ow; sx++) {
+                        var jitter = _prefersReducedMotion ? 0 : (Math.random() - 0.5) * 0.4;
+                        if (sx === 0) oc.moveTo(sx, vY + jitter); else oc.lineTo(sx, vY + jitter);
+                      }
+                    },
+                    'rgba(16,185,129,0.20)', scopeHC ? '#00ff00' : '#10b981', 'rgba(209,250,229,0.85)', 2, vY
+                  );
 
-                  // 3. Current trace (cyan, with slight noise to look realistic)
+                  // 3. Current trace (cyan phosphor with electron-beam bloom)
                   if (!isShort) {
                     var iNorm = Math.min(current / 2, 1);
                     var iY = oh * 0.8 - iNorm * oh * 0.6;
-                    oc.strokeStyle = '#06b6d4'; oc.lineWidth = 1.5;
-                    oc.shadowColor = '#06b6d4'; oc.shadowBlur = 4;
-                    oc.beginPath();
-                    for (var sx = 0; sx < ow; sx++) {
-                      var noise = (Math.random() - 0.5) * 0.8;
-                      if (sx === 0) oc.moveTo(sx, iY + noise); else oc.lineTo(sx, iY + noise);
+                    paintPhosphorTrace(
+                      function() {
+                        for (var sx = 0; sx < ow; sx++) {
+                          var noise = _prefersReducedMotion ? 0 : (Math.random() - 0.5) * 0.75;
+                          if (sx === 0) oc.moveTo(sx, iY + noise); else oc.lineTo(sx, iY + noise);
+                        }
+                      },
+                      'rgba(6,182,212,0.18)', scopeHC ? '#ffff00' : '#06b6d4', 'rgba(207,250,254,0.8)', 1.6, iY
+                    );
+                  }
+
+                  // Scanlines & CRT vignette overlay (bypassed in High-Contrast)
+                  if (!scopeHC) {
+                    oc.fillStyle = 'rgba(255, 255, 255, 0.028)';
+                    for (var sy = 0; sy < oh; sy += 3) {
+                      oc.fillRect(0, sy, ow, 1.1);
                     }
-                    oc.stroke(); oc.shadowBlur = 0;
+                    if (typeof oc.createRadialGradient === 'function') {
+                      var vig = oc.createRadialGradient(ow / 2, oh / 2, oh / 2, ow / 2, oh / 2, ow * 0.6);
+                      vig.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                      vig.addColorStop(1, 'rgba(5, 10, 18, 0.68)');
+                      oc.fillStyle = vig; oc.fillRect(0, 0, ow, oh);
+                    }
                   }
-
-                  // Scanlines overlay for CRT effect
-                  oc.fillStyle = 'rgba(255, 255, 255, 0.03)';
-                  for (var sy = 0; sy < oh; sy += 3) {
-                    oc.fillRect(0, sy, ow, 1.2);
-                  }
-
-                  // CRT Vignette glow overlay
-                  var vig = oc.createRadialGradient(ow / 2, oh / 2, oh / 2, ow / 2, oh / 2, ow * 0.6);
-                  vig.addColorStop(0, 'rgba(0, 0, 0, 0)');
-                  vig.addColorStop(1, 'rgba(5, 10, 18, 0.7)');
-                  oc.fillStyle = vig; oc.fillRect(0, 0, ow, oh);
 
                   // Legend
                   oc.font = '9px monospace'; oc.textAlign = 'left';
-                  oc.fillStyle = '#10b981'; oc.fillText('\u2588 Voltage', 10, oh - 8);
-                  oc.fillStyle = '#06b6d4'; oc.fillText('\u2588 Current', 80, oh - 8);
+                  oc.fillStyle = scopeHC ? '#00ff00' : '#10b981'; oc.fillText('\u2588 Voltage', 10, oh - 8);
+                  oc.fillStyle = scopeHC ? '#ffff00' : '#06b6d4'; oc.fillText('\u2588 Current', 80, oh - 8);
                   if (components.some(function(c) { return c.type === 'capacitor'; })) {
-                    oc.fillStyle = '#38bdf8'; oc.fillText('\u2588 Cap-Charge', 150, oh - 8);
+                    oc.fillStyle = scopeHC ? '#00ffff' : '#38bdf8'; oc.fillText('\u2588 Cap-Charge', 150, oh - 8);
                   }
 
                   // Short circuit warning overlay

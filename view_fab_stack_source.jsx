@@ -562,7 +562,7 @@ function createPageMagnifier(options) {
   const onKeyDown = (event) => {
     if (event.key === 'Escape') {
       // Escape that closed something else (a dialog, a menu, the tools panel) is theirs.
-      if (event.defaultPrevented || event.isComposing || editable(event.target) || modalOpen()) return;
+      if (event.defaultPrevented || event.isComposing || event.keyCode === 229 || editable(event.target) || modalOpen()) return;
       if (typeof opts.onEscape === 'function') opts.onEscape();
       return;
     }
@@ -802,7 +802,35 @@ function FabStack(props) {
   }, [magnifierOn]);
   React.useEffect(() => { if (magnifierRef.current) magnifierRef.current.setZoom(magnifierZoom); }, [magnifierZoom]);
 
+  const [aidResetNotice, setAidResetNotice] = React.useState('');
+  const activeFocusAidCount = [
+    readingRuler,
+    magnifierSupported && magnifierOn,
+    focusMode,
+    showVisualSupports,
+    activeView === 'simplified' && isLineFocusMode,
+  ].filter(Boolean).length;
+  const activeToolCount = activeFocusAidCount + [
+    isStudyTimerRunning,
+    !isTeacherMode && !studentAiFeaturesHidden && safeStudentSettings.allowSocraticTutor && showSocraticChat,
+  ].filter(Boolean).length;
+  const resetFocusAids = () => {
+    if (readingRuler && typeof handleToggleReadingRuler === 'function') handleToggleReadingRuler();
+    if (magnifierOn) setMagnifierOn(false);
+    if (focusMode && typeof handleToggleFocusMode === 'function') handleToggleFocusMode();
+    if (showVisualSupports && typeof handleToggleVisualSupports === 'function') handleToggleVisualSupports();
+    if (isLineFocusMode) {
+      if (typeof setIsLineFocusMode === 'function') setIsLineFocusMode(false);
+      if (typeof setFocusedParagraphIndex === 'function') setFocusedParagraphIndex(null);
+    }
+    setAidResetNotice(toolLabel('student_tools.aids_reset_notice', 'Focus aids turned off.'));
+  };
+  React.useEffect(() => {
+    if (activeFocusAidCount > 0 && aidResetNotice) setAidResetNotice('');
+  }, [activeFocusAidCount, aidResetNotice]);
+
   const handleMagnifierKeyDown = (event) => {
+    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
     const lens = magnifierRef.current;
     if (!magnifierOn || !lens) return;
     const step = event.shiftKey ? 96 : 24;
@@ -1111,7 +1139,22 @@ function FabStack(props) {
               )}
 
               <section className="alloflow-student-tools-section px-4 py-3" aria-labelledby="alloflow-student-tools-focus-heading">
-                <h3 id="alloflow-student-tools-focus-heading" className="mb-2 text-xs font-black uppercase tracking-[0.16em] text-slate-600">{t('student_tools.focus') || 'Focus'}</h3>
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <h3 id="alloflow-student-tools-focus-heading" className="text-xs font-black uppercase tracking-[0.16em] text-slate-600">{t('student_tools.focus') || 'Focus'}</h3>
+                  {activeFocusAidCount > 0 && (
+                    <button
+                      type="button"
+                      data-fab-reset-aids=""
+                      onClick={resetFocusAids}
+                      className="min-h-11 rounded-lg px-2.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
+                    >
+                      {toolLabel('student_tools.reset_aids', 'Reset aids')} ({activeFocusAidCount})
+                    </button>
+                  )}
+                </div>
+                {aidResetNotice && (
+                  <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">{aidResetNotice}</p>
+                )}
                 <div className="alloflow-student-tools-grid">
                   <button type="button"
                     data-student-tool="true"
@@ -1123,7 +1166,8 @@ function FabStack(props) {
                     data-help-key="fab_ruler"
                   >
                     <span className="alloflow-student-tool-icon" aria-hidden="true"><ScanLine size={18} /></span>
-                    <span className="min-w-0 text-xs font-bold leading-tight">{t('a11y.toggle_ruler')}</span>
+                    <span className="min-w-0 flex-1 text-xs font-bold leading-tight">{t('a11y.toggle_ruler')}</span>
+                    {readingRuler && <span className="shrink-0 rounded-full bg-indigo-700 px-1.5 py-0.5 text-xs font-black text-white" aria-hidden="true">ON</span>}
                   </button>
                   {magnifierSupported && (
                     <button
@@ -1139,7 +1183,8 @@ function FabStack(props) {
                       aria-describedby={magnifierOn ? 'student-tools-magnifier-hint student-tools-magnifier-keys' : 'student-tools-magnifier-hint'}
                     >
                       <span className="alloflow-student-tool-icon" aria-hidden="true"><ScanSearch size={18} /></span>
-                      <span className="min-w-0 text-xs font-bold leading-tight"><span className="block">{magnifierLabel}</span><span id="student-tools-magnifier-hint" className="mt-1 block text-xs font-normal">{magnifierHint}</span></span>
+                      <span className="min-w-0 flex-1 text-xs font-bold leading-tight"><span className="block">{magnifierLabel}</span><span id="student-tools-magnifier-hint" className="mt-1 block text-xs font-normal">{magnifierHint}</span></span>
+                      {magnifierOn && <span className="shrink-0 rounded-full bg-indigo-700 px-1.5 py-0.5 text-xs font-black text-white" aria-hidden="true">ON</span>}
                     </button>
                   )}
                   {magnifierSupported && magnifierOn && (
@@ -1174,7 +1219,8 @@ function FabStack(props) {
                     data-help-key="fab_timer"
                   >
                     <span className="alloflow-student-tool-icon" aria-hidden="true"><Clock size={18} /></span>
-                    <span className="min-w-0 text-xs font-bold leading-tight">{t('a11y.task_timer')}</span>
+                    <span className="min-w-0 flex-1 text-xs font-bold leading-tight">{t('a11y.task_timer')}</span>
+                    {isStudyTimerRunning && <span className="shrink-0 rounded-full bg-green-700 px-1.5 py-0.5 text-xs font-black text-white" aria-hidden="true">ON</span>}
                   </button>
                   <button type="button"
                     data-student-tool="true"
@@ -1187,7 +1233,8 @@ function FabStack(props) {
                     aria-describedby="student-tools-bionic-hint"
                   >
                     <span className="alloflow-student-tool-icon" aria-hidden="true"><Eye size={18} /></span>
-                    <span className="min-w-0 text-xs font-bold leading-tight"><span className="block">{t('settings.text.bionic') || 'Bionic Reading Style'}</span><span id="student-tools-bionic-hint" className="mt-1 block text-xs font-normal">{t('settings.text.bionic_sub') || 'Bolds the beginning of each word'}</span></span>
+                    <span className="min-w-0 flex-1 text-xs font-bold leading-tight"><span className="block">{t('settings.text.bionic') || 'Bionic Reading Style'}</span><span id="student-tools-bionic-hint" className="mt-1 block text-xs font-normal">{t('settings.text.bionic_sub') || 'Bolds the beginning of each word'}</span></span>
+                    {focusMode && <span className="shrink-0 rounded-full bg-indigo-700 px-1.5 py-0.5 text-xs font-black text-white" aria-hidden="true">ON</span>}
                   </button>
                   <button type="button"
                     data-student-tool="true"
@@ -1198,7 +1245,8 @@ function FabStack(props) {
                     aria-pressed={showVisualSupports}
                   >
                     <span className="alloflow-student-tool-icon" aria-hidden="true"><span style={{ fontSize: 18, lineHeight: 1 }}>{'\uD83D\uDDBC\uFE0F'}</span></span>
-                    <span className="min-w-0 text-xs font-bold leading-tight">{t('fab.visual_supports') || 'Visual Supports'}</span>
+                    <span className="min-w-0 flex-1 text-xs font-bold leading-tight">{t('fab.visual_supports') || 'Visual Supports'}</span>
+                    {showVisualSupports && <span className="shrink-0 rounded-full bg-purple-700 px-1.5 py-0.5 text-xs font-black text-white" aria-hidden="true">ON</span>}
                   </button>
                   {activeView === 'simplified' && (
                     <button type="button"
@@ -1215,7 +1263,8 @@ function FabStack(props) {
                       aria-describedby="student-tools-paragraph-focus-hint"
                     >
                       <span className="alloflow-student-tool-icon" aria-hidden="true"><AlignJustify size={18} /></span>
-                      <span className="min-w-0 text-xs font-bold leading-tight"><span className="block">{t('student_tools.paragraph_focus') || 'Paragraph focus'}</span><span id="student-tools-paragraph-focus-hint" className="mt-1 block text-xs font-normal">{t('student_tools.paragraph_focus_hint') || 'Keeps the active paragraph clear'}</span></span>
+                      <span className="min-w-0 flex-1 text-xs font-bold leading-tight"><span className="block">{t('student_tools.paragraph_focus') || 'Paragraph focus'}</span><span id="student-tools-paragraph-focus-hint" className="mt-1 block text-xs font-normal">{t('student_tools.paragraph_focus_hint') || 'Keeps the active paragraph clear'}</span></span>
+                      {isLineFocusMode && <span className="shrink-0 rounded-full bg-indigo-700 px-1.5 py-0.5 text-xs font-black text-white" aria-hidden="true">ON</span>}
                     </button>
                   )}
                 </div>
@@ -1332,6 +1381,15 @@ function FabStack(props) {
         >
           <Wrench size={20} aria-hidden="true" />
           <span className="text-sm font-black">{toolsTitle}</span>
+          {!dictationIsActive && activeToolCount > 0 && (
+            <span
+              data-active-tools-count={activeToolCount}
+              className="rounded-full bg-white/25 px-2 py-0.5 text-xs font-black leading-tight"
+              aria-hidden="true"
+            >
+              {activeToolCount}
+            </span>
+          )}
           {dictationIsActive && (
             <span className="flex items-center gap-1 rounded-full bg-white/20 px-2 py-1 text-xs font-black uppercase tracking-wide">
               <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse motion-reduce:animate-none" aria-hidden="true"></span>

@@ -113,7 +113,7 @@ const preflight = process.env.CONSTRUCTION_IMPACT_PREFLIGHT === '1';
           else{
             const stamp=root.locator('[data-production-stamp="'+nodeId+'"]');
             await expect(stamp).toHaveAttribute('data-production-project',id);await expect(stamp).toHaveAttribute('data-production-resource',String(resource));await expect(stamp).toHaveAttribute('data-production-state',built?'built':'blueprint');await expect(stamp).toHaveAttribute('data-production-scope',scope);await expect(stamp).toHaveText('+1');
-            await expect(root.locator('[data-location="'+nodeId+'"]')).toHaveAccessibleName(new RegExp('\\+1 '+base.resources[resource]));
+            await expect(root.locator('[data-location="'+nodeId+'"]')).toHaveAccessibleDescription(new RegExp('\\+1 '+base.resources[resource]));
           }
         }
       };

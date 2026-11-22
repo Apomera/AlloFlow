@@ -31,9 +31,9 @@
       "domain": "Integrative & Test Strategy",
       "prompt": "Under the January 2026 ASPPB Candidate Handbook, Part 1–Knowledge contains 225 items, including 175 scored and 50 unscored pretest items. Which response strategy is best supported?",
       "choices": [
-        "Answer every item and treat each as potentially consequential, because total correct responses determine the score and ASPPB expressly advises answering even when uncertain",
-        "Answer only the 175 items that seem most representative of the published content outline",
-        "Skip unusually difficult items because difficulty is a reliable marker that an item is unscored",
+        "Attempt every question as potentially consequential, because total correct choices drive the result and official guidance recommends answering when unsure",
+        "Focus effort selectively on the 175 items that appear most representative of the published content outline while leaving unfamiliar items blank to avoid a guessing penalty",
+        "Skip unusually difficult items to conserve pacing because elevated item difficulty is a reliable cue that ASPPB designated the question as an unscored pretest item",
         "Assume the final 50 positions are pretest items and reserve no time for them"
       ],
       "answerIndex": 0,
@@ -65,9 +65,9 @@
       "domain": "Integrative & Test Strategy",
       "prompt": "A candidate has spent substantial time on an unfamiliar Part 1 item and still cannot recall the theory being tested. Which next action best combines sound item reasoning with the current test interface?",
       "choices": [
-        "Continue indefinitely until recall returns, because changing items invalidates an earlier response",
-        "Compare the options on substantive fit, record the best-supported answer, flag the item for later review if time permits, and continue",
-        "Leave the item unanswered and rely on the review screen to supply partial credit",
+        "Remain on the screen indefinitely until exact theory recall returns, because navigating forward locks in the current screen and invalidates later revisions",
+        "Weigh each option on clinical fit, mark the most defensible choice, flag the question to revisit if pacing allows, and move forward",
+        "Leave the response blank for now and rely on the end-of-section review summary to award partial credit for partially eliminated distractors",
         "Select the longest option or reject every option containing an absolute word, regardless of the construct"
       ],
       "answerIndex": 1,
@@ -100,9 +100,9 @@
       "prompt": "Baseline and ongoing absolute neutrophil count monitoring for a patient taking clozapine is intended primarily to detect which serious labeled risk, and what changed federally in 2025?",
       "choices": [
         "Tardive dyskinesia; FDA replaced neurologic examination with mandatory ANC reporting",
-        "Serotonin syndrome; FDA created a new clozapine restricted-distribution program",
-        "Severe neutropenia that can lead to serious or fatal infection; FDA removed the Clozapine REMS while continuing to recommend label-directed ANC monitoring",
-        "Hypertensive crisis; FDA ended both the REMS and all recommendations for blood-count monitoring"
+        "Serotonin syndrome with hyperthermia and neuromuscular clonus; FDA instituted a stricter clozapine restricted-distribution program for outpatient clinics",
+        "Severe neutropenia risking life-threatening infection; FDA ended the Clozapine REMS while maintaining label-directed blood-count monitoring",
+        "Acute hypertensive crisis with malignant blood-pressure elevation; FDA eliminated both the REMS program and all label recommendations for blood-count monitoring"
       ],
       "answerIndex": 2,
       "rationale": "Clozapine can cause severe neutropenia, which can lead to serious or fatal infection, and ANC monitoring supports early detection. FDA removed the Clozapine REMS effective June 13, 2025, so prescriber, pharmacy, and patient enrollment and REMS reporting are no longer dispensing requirements. That regulatory change did not erase the labeled risk or the monitoring recommendation: FDA continues to recommend baseline and ongoing ANC monitoring according to prescribing information. This item tests recognition of a serious adverse effect and a current regulatory distinction, not a patient-specific decision to start, continue, interrupt, or stop medication.",
@@ -165,11 +165,11 @@
       "sectionId": "ch-47-section-4",
       "domainId": 9,
       "domain": "Integrative Seminars",
-      "prompt": "Among buspirone, alprazolam, diazepam, and lorazepam, which option generally has lower misuse and physical-dependence liability, while still requiring individualized medication assessment?",
+      "prompt": "Among the listed anxiolytic medications, which option generally carries reduced misuse and physical-dependence risk while still requiring individualized clinical evaluation?",
       "choices": [
-        "Buspirone, a noncontrolled non-benzodiazepine whose labeling reports substantially lower abuse and dependence evidence than the listed benzodiazepines, without making it risk-free or universally preferred",
-        "Alprazolam, because rapid onset prevents tolerance and withdrawal when it is prescribed for anxiety",
-        "Diazepam, because a longer half-life eliminates misuse, accumulation, interaction, and physical-dependence concerns",
+        "Buspirone, a noncontrolled non-benzodiazepine showing substantially less abuse and dependence evidence than benzodiazepines, yet not universally ideal",
+        "Alprazolam, a high-potency benzodiazepine whose rapid onset of symptom relief prevents pharmacologic tolerance and rebound withdrawal when dosed regularly for anxiety",
+        "Diazepam, a long-acting benzodiazepine whose extended half-life eliminates clinical misuse, active-metabolite accumulation, sedative interaction, and dependence liability",
         "Lorazepam, because an intermediate duration makes benzodiazepine class warnings inapplicable"
       ],
       "answerIndex": 0,
@@ -201,10 +201,10 @@
       "domain": "Integrative Seminars",
       "prompt": "A score uses the conventional T metric with mean 50 and standard deviation 10. If the reference distribution is modeled as normal, a T score of 70 is closest to which percentile rank?",
       "choices": [
-        "The 84th percentile, because every 10-point increase above the T mean equals two standard deviations",
+        "The 84th percentile, because each 10-point increment above the T-score mean represents two standard deviations on a normal curve",
         "The 98th percentile, because T = 70 corresponds to z = 2 and the normal cumulative area is about 97.7%",
         "The 70th percentile, because a T score is itself a percentile on a zero-to-100 scale",
-        "The 99.9th percentile, because any score two standard deviations above the mean is effectively the maximum"
+        "The 99.9th percentile, because a value two standard deviations above the normal mean sits practically at the upper scale ceiling"
       ],
       "answerIndex": 1,
       "rationale": "On the conventional T metric, z = (70 - 50) / 10 = 2. Under a normal reference-distribution model, the cumulative area below z = 2 is approximately .977, making the 98th percentile the closest option. A T score is an equal-interval linear transformation of a z score, not a percentile. The conversion is conditional: if a test uses a different T convention, normalized scores, a skewed empirical norm distribution, age- or group-specific norms, or a score table with discrete ranks, the applicable manual or empirical percentile table should control rather than this normal approximation.",

@@ -77,7 +77,8 @@ function _g1Wrap(line, into, cells) {
 }
 function toGrade1BRF(text, opts) {
   var src = String(text == null ? '' : text);
-  var cells = (opts && opts.cellsPerLine) || 40;
+  var rawCells = opts && opts.cellsPerLine;
+  var cells = Math.max(2, Math.floor(Number.isFinite(Number(rawCells)) && Number(rawCells) > 0 ? Number(rawCells) : 40));
   src = src.replace(/[\u201c\u00ab]/g, _G1_OPEN_QUOTE).replace(/[\u201d\u00bb]/g, _G1_CLOSE_QUOTE);
   src = src.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, function (c) { return _G1_SMART[c] || ''; });
   try { src = src.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
@@ -148,8 +149,14 @@ if (typeof window !== 'undefined') (function () {
   var _readyPromise = null;
 
   function loadScript(src) {
-    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
-      return Promise.reject(new Error('External liblouis CDN is disabled in Desktop mode'));
+    if (typeof window !== 'undefined' && (
+      window._isDesktopBundledApp === true ||
+      window.__alloOfflineOnly === true ||
+      window.__ALLO_LOCAL_BOX === true ||
+      !!window.__alloQrStudentMode ||
+      window._alloQrBlocked === true
+    )) {
+      return Promise.reject(new Error('External liblouis CDN is disabled in this mode'));
     }
     return new Promise(function (resolve, reject) {
       var s = document.createElement('script');
@@ -213,8 +220,10 @@ if (typeof window !== 'undefined') (function () {
 
   function ensureReady() {
     if (_readyPromise) return _readyPromise;
-    _readyPromise = loadScript(BUILD_URL)
-      .then(function () { return loadScript(EASY_URL); })
+    var hasBuild = typeof window !== 'undefined' && (window.liblouis || window.liblouisBuild || window.Module);
+    var hasEasy = typeof window !== 'undefined' && (window.liblouis || typeof window.LiblouisEasyApi === 'function');
+    _readyPromise = (hasBuild ? Promise.resolve() : loadScript(BUILD_URL))
+      .then(function () { return hasEasy ? Promise.resolve() : loadScript(EASY_URL); })
       .then(function () { return waitForReady(12000); })
       .then(function (inst) {
         try { inst.enableOnDemandTableLoading(TABLES_URL); } catch (e) { /* still usable if tables cached */ }

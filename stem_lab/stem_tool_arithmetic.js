@@ -1867,6 +1867,34 @@
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
+
+  // Cinema-grade 2D live-motion CSS (GPU-composited, strictly scoped, reduced-motion & HC gated)
+  (function () {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-arithmetic-motion-css')) return;
+    var mst = document.createElement('style');
+    mst.id = 'allo-arithmetic-motion-css';
+    mst.textContent = [
+      '@keyframes arith-dash-flow{from{stroke-dashoffset:0}to{stroke-dashoffset:-28}}',
+      '@keyframes arith-dash-flow-rev{from{stroke-dashoffset:0}to{stroke-dashoffset:28}}',
+      '@keyframes arith-bevel-glint{0%,100%{opacity:.42}50%{opacity:.88}}',
+      '@keyframes arith-beacon-pulse{0%,100%{opacity:.22;transform:scale(1)}50%{opacity:.58;transform:scale(1.14)}}',
+      '@keyframes arith-ripple-out{0%{opacity:.5;transform:scale(.92)}75%{opacity:0;transform:scale(1.42)}100%{opacity:0;transform:scale(1.42)}}',
+      '@keyframes arith-col-halo{0%,100%{opacity:.24}50%{opacity:.72}}',
+      '@keyframes arith-disk-float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-1.5px) scale(1.045)}}',
+      '[data-arithmetic-studio] .arith-dash-flow{animation:arith-dash-flow 1.85s linear infinite}',
+      '[data-arithmetic-studio] .arith-dash-flow-rev{animation:arith-dash-flow-rev 1.85s linear infinite}',
+      '[data-arithmetic-studio] .arith-bevel-glint{animation:arith-bevel-glint 3.2s ease-in-out infinite}',
+      '[data-arithmetic-studio] .arith-beacon-pulse{transform-box:fill-box;transform-origin:center;animation:arith-beacon-pulse 2.6s ease-in-out infinite}',
+      '[data-arithmetic-studio] .arith-ripple-ring{transform-box:fill-box;transform-origin:center;animation:arith-ripple-out 2.8s cubic-bezier(.22,.61,.36,1) infinite}',
+      '[data-arithmetic-studio] .arith-place-col-active{position:relative}',
+      '[data-arithmetic-studio] .arith-place-col-active::after{content:"";position:absolute;inset:-2px;border-radius:10px;border:2px solid var(--arith-col-glow,#2563eb);pointer-events:none;opacity:.35;animation:arith-col-halo 2.4s ease-in-out infinite}',
+      '[data-arithmetic-studio] .arith-disk-marked{animation:arith-disk-float 2.2s ease-in-out infinite;will-change:transform}',
+      '@media(prefers-reduced-motion:reduce){[data-arithmetic-studio] .arith-dash-flow,[data-arithmetic-studio] .arith-dash-flow-rev,[data-arithmetic-studio] .arith-bevel-glint,[data-arithmetic-studio] .arith-beacon-pulse,[data-arithmetic-studio] .arith-ripple-ring,[data-arithmetic-studio] .arith-place-col-active::after,[data-arithmetic-studio] .arith-disk-marked{animation:none!important;transition:none!important}}',
+      '.theme-contrast [data-arithmetic-studio] .arith-dash-flow,.theme-contrast [data-arithmetic-studio] .arith-dash-flow-rev,.theme-contrast [data-arithmetic-studio] .arith-bevel-glint,.theme-contrast [data-arithmetic-studio] .arith-beacon-pulse,.theme-contrast [data-arithmetic-studio] .arith-ripple-ring,.theme-contrast [data-arithmetic-studio] .arith-disk-marked{animation:none!important}',
+      '.theme-contrast [data-arithmetic-studio] .arith-place-col-active::after,.theme-contrast [data-arithmetic-studio] .arith-decor-only{display:none!important}'
+    ].join('');
+    document.head.appendChild(mst);
+  })();
   window.StemLab.registerTool('arithmeticStudio', {
     icon: '➕',
     label: 'Arithmetic Strategy Studio',
@@ -2935,6 +2963,38 @@
               h('span', { className: 'self-center text-xs' }, fill(t('stem.arithmetic.step_counter', 'Step {n} of {total}'), { n: step + 1, total: stages.length })),
               h('p', { className: 'text-xs w-full' }, step === stages.length - 1 ? t('stem.arithmetic.explain_final_disks', 'Explain how these disks represent the answer.') : t('stem.arithmetic.predict_next_change', 'Before moving on, predict what will change in the next step.'))
             ),
+          (function () {
+            var nextStage = stages[step + 1];
+            if (!action || !nextStage || nextStage.kind !== 'exchange' || places < 2) return null;
+            var up = op === 'add';
+            var fromPlace = up ? nextStage.place : nextStage.donor;
+            var toPlace = up ? (nextStage.place + 1) : nextStage.place;
+            if (fromPlace < 0 || fromPlace >= places || toPlace < 0 || toPlace >= places || fromPlace === toPlace) return null;
+            var colW = 360 / places;
+            var fromCol = places - 1 - fromPlace;
+            var toCol = places - 1 - toPlace;
+            var x1 = Math.round((fromCol + 0.5) * colW * 10) / 10;
+            var x2 = Math.round((toCol + 0.5) * colW * 10) / 10;
+            var midX = Math.round(((x1 + x2) / 2) * 10) / 10;
+            var dir = x2 >= x1 ? 1 : -1;
+            var arcD = 'M' + x1 + ' 28 Q' + midX + ' 4 ' + x2 + ' 28';
+            var arcStroke = isContrast ? '#fbbf24' : accentText;
+            return h('svg', {
+              viewBox: '0 0 360 36',
+              'aria-hidden': true,
+              'data-regroup-arc': up ? 'carry' : 'borrow',
+              style: { width: '100%', height: 34, display: 'block', overflow: 'visible' }
+            },
+              !isContrast && h('path', { d: arcD, fill: 'none', stroke: arcStroke, strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.16, className: 'arith-decor-only' }),
+              h('path', { d: arcD, fill: 'none', stroke: arcStroke, strokeWidth: 2, strokeLinecap: 'round', opacity: isContrast ? 1 : 0.45 }),
+              !isContrast && h('path', { d: arcD, fill: 'none', stroke: arcStroke, strokeWidth: 2.6, strokeLinecap: 'round', strokeDasharray: '6 8', className: 'arith-dash-flow arith-decor-only' }),
+              h('polygon', { points: x2 + ',28 ' + (x2 - dir * 8) + ',22 ' + (x2 - dir * 3) + ',18', fill: arcStroke }),
+              !isContrast && h('circle', { cx: x1, cy: 28, r: 6, fill: arcStroke, opacity: 0.24, className: 'arith-ripple-ring arith-decor-only' }),
+              h('circle', { cx: x1, cy: 28, r: 3.5, fill: arcStroke }),
+              !isContrast && h('circle', { cx: x2, cy: 28, r: 6.5, fill: arcStroke, opacity: 0.24, className: 'arith-beacon-pulse arith-decor-only' }),
+              h('circle', { cx: x2, cy: 28, r: 3.8, fill: arcStroke, stroke: isContrast ? '#000000' : card, strokeWidth: 1.4 })
+            );
+          })(),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(110px,1fr))', gap: 8 } }, stage.counts.map(function (_, reverseIndex) {
             var i = places - 1 - reverseIndex, value = Math.pow(10, i), count = stage.counts[i];
             var delta = previousStage ? count - previousStage.counts[i] : 0;
@@ -2942,7 +3002,8 @@
             // Marked disks: the first ten for a carry, the last ones for a borrow or a take-away.
             var markFrom = !isSource ? count : (op === 'add' && action.marked === 10 ? 0 : count - action.marked);
             var markTo = !isSource ? count : (op === 'add' && action.marked === 10 ? 10 : count);
-            return h('div', { key: i, 'data-place': value, 'data-count': count, 'data-place-delta': delta, 'data-trade-source': isSource ? 'true' : undefined, style: { border: delta ? '2px dashed ' + accentText : isSource ? '2px solid ' + accentText : '1px solid ' + border, borderRadius: 8, padding: 8 } },
+            var activeCol = !isContrast && (isSource || delta !== 0);
+            return h('div', { key: i, className: activeCol ? 'arith-place-col-active' : undefined, 'data-place': value, 'data-count': count, 'data-place-delta': delta, 'data-trade-source': isSource ? 'true' : undefined, style: Object.assign({ border: delta ? '2px dashed ' + accentText : isSource ? '2px solid ' + accentText : '1px solid ' + border, borderRadius: 8, padding: 8 }, activeCol ? { '--arith-col-glow': accentText } : null) },
               h('p', { className: 'text-xs font-bold mb-2' }, placeCount(t, i, count)),
               delta !== 0 && h('p', { className: 'text-xs font-bold mb-2', style: { color: accentText } }, fill(delta > 0
                 ? (delta === 1 ? t('stem.arithmetic.delta_more_one', '{n} more disk than the previous step') : t('stem.arithmetic.delta_more', '{n} more disks than the previous step'))
@@ -2953,7 +3014,7 @@
                 style: { display: 'flex', flexWrap: 'wrap', gap: 4, cursor: isSource ? 'pointer' : undefined } },
                 Array.from({ length: count }, function (_, disk) {
                   var marked = disk >= markFrom && disk < markTo;
-                  return h('span', { key: disk, 'aria-hidden': true, 'data-disk-marked': marked ? 'true' : undefined, style: { minWidth: 28, height: 28, padding: '0 4px', borderRadius: 14, border: marked ? '2px dashed ' + accentText : '1px solid ' + accentText, display: 'inline-flex', justifyContent: 'center', alignItems: 'center', fontSize: 11, fontWeight: 700, color: text, background: marked ? markBg : card } }, value);
+                  return h('span', { key: disk, 'aria-hidden': true, className: !isContrast && marked ? 'arith-disk-marked' : undefined, 'data-disk-marked': marked ? 'true' : undefined, style: { minWidth: 28, height: 28, padding: '0 4px', borderRadius: 14, border: marked ? '2px dashed ' + accentText : '1px solid ' + accentText, display: 'inline-flex', justifyContent: 'center', alignItems: 'center', fontSize: 11, fontWeight: 700, color: text, background: marked ? markBg : card, boxShadow: isContrast ? 'none' : (marked ? 'inset 0 1.5px 0 rgba(255,255,255,0.68), 0 2px 5px rgba(15,23,42,0.18)' : 'inset 0 1px 0 rgba(255,255,255,0.42)'), animationDelay: !isContrast && marked ? ((disk % 5) * 0.14) + 's' : undefined } }, value);
                 })
               ),
               isSource && h('p', { className: 'text-xs mt-2', style: { color: muted } }, t('stem.arithmetic.tap_marked_disks', 'Tap the marked disks to make this move.'))
@@ -2983,7 +3044,7 @@
             return h('div', { className: 'rounded-xl p-3', style: { background: card, border: '1px solid ' + border } },
               h('h3', { className: 'text-sm font-black mb-2', style: { color: accentText } }, t('stem.arithmetic.array_model', 'Array model')),
               h('div', { role: 'img', 'data-array-model': true, 'aria-label': learnTotalOpen ? fill(t('stem.arithmetic.array_label', '{r} rows of {c} dots, {n} in all'), { r: left, c: right, n: left * right }) : fill(t('stem.arithmetic.array_label_hidden', '{r} rows of {c} dots'), { r: left, c: right }), style: { display: 'grid', gridTemplateColumns: 'repeat(' + right + ', minmax(8px, 18px))', gap: 4, justifyContent: 'center' } },
-                Array.from({ length: left * right }).map(function (_, i) { return h('span', { key: i, 'data-array-dot': true, style: { width: 12, height: 12, borderRadius: '50%', background: dotColor } }); })
+                Array.from({ length: left * right }).map(function (_, i) { return h('span', { key: i, 'data-array-dot': true, style: { width: 12, height: 12, borderRadius: '50%', background: dotColor, boxShadow: isContrast ? 'none' : 'inset 2px 2px 3px rgba(255,255,255,0.48), 0 1px 2px rgba(15,23,42,0.22)' } }); })
               ),
               h('p', { className: 'text-xs mt-2', style: { color: muted } }, fill(t('stem.arithmetic.array_caption', '{r} rows with {c} in each row.'), { r: left, c: right }))
             );
@@ -3017,13 +3078,14 @@
                     )
                   ),
                   h('rect', { x: 4, y: 4, width: 352, height: 212, rx: 9, fill: isContrast ? '#000000' : 'url(#arith-area-well)', stroke: isContrast ? '#fbbf24' : '#7c3aed', strokeWidth: 1.4, opacity: isContrast ? 1 : 0.9 }),
+                  !isContrast && h('rect', { x: 4, y: 4, width: 352, height: 212, rx: 9, fill: 'none', stroke: '#a78bfa', strokeWidth: 1.2, strokeDasharray: '8 10', opacity: 0.42, className: 'arith-dash-flow arith-decor-only', pointerEvents: 'none' }),
                   partials.map(function (part, i) {
                     var ci = area.cols.indexOf(part.col), ri = area.rows.indexOf(part.row);
                     var x = 10 + colX(ci), y = 10 + rowY(ri), w = colW(ci), ht = rowH(ri);
                     return h('g', { key: part.label },
                       h('rect', { x: x, y: y, width: w, height: ht, rx: 4, fill: isContrast ? '#ffffff' : fills[i % fills.length], stroke: isContrast ? '#000000' : '#4c1d95', strokeWidth: 1.5, 'data-partial-product': part.row * part.col }),
-                      !isContrast && w > 8 && ht > 8 && h('rect', { x: x + 1.5, y: y + 1.5, width: w - 3, height: ht - 3, rx: 3, fill: 'url(#arith-area-sheen)', pointerEvents: 'none' }),
-                      !isContrast && w > 12 && h('line', { x1: x + 4, y1: y + 2.5, x2: x + w - 4, y2: y + 2.5, stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.65 }),
+                      !isContrast && w > 8 && ht > 8 && h('rect', { x: x + 1.5, y: y + 1.5, width: w - 3, height: ht - 3, rx: 3, fill: 'url(#arith-area-sheen)', pointerEvents: 'none', className: 'arith-decor-only' }),
+                      !isContrast && w > 12 && h('line', { x1: x + 4, y1: y + 2.5, x2: x + w - 4, y2: y + 2.5, stroke: '#ffffff', strokeWidth: 1.25, strokeLinecap: 'round', className: 'arith-bevel-glint arith-decor-only', style: { animationDelay: (i * 0.45) + 's' } }),
                       h('text', { x: x + w / 2, y: y + ht / 2, textAnchor: 'middle', dominantBaseline: 'central', fill: '#0f172a', fontSize: labelSize, fontWeight: 800, 'data-partial-label': part.label }, part.label));
                   }))),
               !toScale && h('p', { className: 'text-xs mt-1', style: { color: muted } }, t('stem.arithmetic.area_not_to_scale', 'Not drawn to scale, so every part has room for its label. The list below gives every partial product.')),
@@ -4016,9 +4078,10 @@
             var lblText = (j.delta >= 0 ? '+' : '−') + Math.abs(j.delta);
             var lblY = 88 - lift - 6;
             return h('g', { key: 'j' + i },
-              // Dual-pass luminous jump bridge arc
-              !isContrast && h('path', { d: arcD, fill: 'none', stroke: svgArc, strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.18 }),
+              // Dual-pass luminous jump bridge arc + directional animated flow dashes
+              !isContrast && h('path', { d: arcD, fill: 'none', stroke: svgArc, strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.18, className: 'arith-decor-only' }),
               h('path', { d: arcD, fill: 'none', stroke: svgArc, strokeWidth: 2.5, strokeLinecap: 'round' }),
+              !isContrast && h('path', { d: arcD, fill: 'none', stroke: '#ffffff', strokeWidth: 1.35, strokeLinecap: 'round', strokeDasharray: '5 9', opacity: 0.72, className: 'arith-dash-flow arith-decor-only', style: { animationDelay: (i * 0.28) + 's' } }),
               h('polygon', { points: x2 + ',88 ' + (x2 - dir * 10) + ',82 ' + (x2 - dir * 3) + ',78', fill: svgArc }),
               !isContrast && h('rect', { x: mid - 18, y: lblY - 12, width: 36, height: 16, rx: 8, fill: isDark ? '#0f172a' : '#ffffff', stroke: svgArc, strokeWidth: 1, opacity: 0.92 }),
               h('text', { x: mid, y: lblY, textAnchor: 'middle', fill: svgInk, fontSize: 12, fontWeight: 800 }, lblText));
@@ -4027,8 +4090,9 @@
             var isFinal = v === finalVal && v !== line.start;
             return h('g', { key: 'p' + i },
               h('line', { x1: xs[i], y1: 82, x2: xs[i], y2: 98, stroke: svgLine, strokeWidth: 2 }),
-              // Glossy 3D-shaded anchor node with specular catchlight
-              !isContrast && isFinal && h('circle', { cx: xs[i], cy: 90, r: 8, fill: svgArc, opacity: 0.2 }),
+              // Glossy 3D-shaded anchor node with resonance ripple & specular catchlight
+              !isContrast && isFinal && h('circle', { cx: xs[i], cy: 90, r: 9.5, fill: 'none', stroke: svgArc, strokeWidth: 1.6, className: 'arith-ripple-ring arith-decor-only' }),
+              !isContrast && isFinal && h('circle', { cx: xs[i], cy: 90, r: 8, fill: svgArc, opacity: 0.22, className: 'arith-beacon-pulse arith-decor-only' }),
               h('circle', { cx: xs[i], cy: 90, r: isFinal ? 5 : 3.8, fill: isFinal ? svgArc : svgLine, stroke: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), strokeWidth: 1.5 }),
               !isContrast && h('circle', { cx: xs[i] - 1.2, cy: 88.8, r: 1.1, fill: '#ffffff', opacity: 0.65 }),
               h('text', { x: xs[i], y: 116, textAnchor: 'middle', fill: svgInk, fontSize: 12, fontWeight: 700 }, hideFinal && isFinal ? '?' : String(v)));
@@ -4059,16 +4123,16 @@
           var bracketD = 'M' + (80 + dx) + ' ' + (y - 11) + ' L' + (80 + dx) + ' ' + (y - 18) + ' L' + (260 + dx) + ' ' + (y - 18) + ' L' + (260 + dx) + ' ' + (y - 11);
           return h('g', null,
             // Tinted gap-span highlight bar showing conserved distance
-            !isContrast && h('rect', { x: 80 + dx, y: y - 5, width: 180, height: 10, rx: 5, fill: svgArc, opacity: 0.15 }),
+            !isContrast && h('rect', { x: 80 + dx, y: y - 5, width: 180, height: 10, rx: 5, fill: svgArc, opacity: 0.16, className: 'arith-bevel-glint arith-decor-only' }),
             h('line', { x1: 12, y1: y, x2: 348, y2: y, stroke: svgLine, strokeWidth: 2, strokeLinecap: 'round' }),
             [[80 + dx, left], [260 + dx, right]].map(function (p, i) {
               return h('g', { key: i },
-                !isContrast && h('circle', { cx: p[0], cy: y, r: 9, fill: svgArc, opacity: 0.16 }),
+                !isContrast && h('circle', { cx: p[0], cy: y, r: 9, fill: svgArc, opacity: 0.18, className: 'arith-beacon-pulse arith-decor-only', style: { animationDelay: (i * 0.45) + 's' } }),
                 h('circle', { cx: p[0], cy: y, r: 5.5, fill: svgArc, stroke: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), strokeWidth: 1.6 }),
                 !isContrast && h('circle', { cx: p[0] - 1.6, cy: y - 1.6, r: 1.5, fill: '#ffffff', opacity: 0.65 }),
                 h('text', { x: p[0], y: y + 22, textAnchor: 'middle', fill: svgInk, fontSize: 12, fontWeight: 700 }, String(p[1])));
             }),
-            !isContrast && h('path', { d: bracketD, fill: 'none', stroke: svgArc, strokeWidth: 5.5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.16 }),
+            !isContrast && h('path', { d: bracketD, fill: 'none', stroke: svgArc, strokeWidth: 5.5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.16, className: 'arith-decor-only' }),
             h('path', { d: bracketD, fill: 'none', stroke: svgArc, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
             h('text', { x: 170 + dx, y: y - 23, textAnchor: 'middle', fill: svgInk, fontSize: 11, fontWeight: 700 }, gapLabel));
         }
@@ -4082,7 +4146,7 @@
             ),
             h('rect', { x: 2, y: 2, width: 356, height: 146, rx: 10, fill: isContrast ? '#000000' : 'url(#arith-sh-well)', stroke: isContrast ? '#ffffff' : border, strokeWidth: 1.1 }),
             // Diagonal parallel shift guide traces connecting original to shifted points
-            !isContrast && h('g', { stroke: svgArc, strokeWidth: 1.1, strokeDasharray: '3 4', opacity: 0.35 },
+            !isContrast && h('g', { stroke: svgArc, strokeWidth: 1.4, strokeDasharray: '4 6', opacity: 0.52, className: 'arith-dash-flow arith-decor-only' },
               h('line', { x1: 80, y1: 45, x2: 80 + off, y2: 120 }),
               h('line', { x1: 260, y1: 45, x2: 260 + off, y2: 120 })
             ),
@@ -4108,10 +4172,10 @@
                 h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.08 })
               )
             ),
-            !isContrast && h('rect', { x: 7, y: 7, width: w, height: ht, rx: 4, fill: svgArc, opacity: 0.12 }),
+            !isContrast && h('rect', { x: 7, y: 7, width: w, height: ht, rx: 4, fill: svgArc, opacity: 0.12, className: 'arith-decor-only' }),
             h('rect', { x: 5, y: 5, width: w, height: ht, rx: 4, fill: i % 2 ? fillB : fillA, stroke: svgArc, strokeWidth: 2 }),
-            !isContrast && w > 8 && ht > 8 && h('rect', { x: 6.5, y: 6.5, width: w - 3, height: ht - 3, rx: 3, fill: 'url(#' + sheenId + ')' }),
-            !isContrast && w > 12 && h('line', { x1: 8, y1: 7.5, x2: 5 + w - 3, y2: 7.5, stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.65 }),
+            !isContrast && w > 8 && ht > 8 && h('rect', { x: 6.5, y: 6.5, width: w - 3, height: ht - 3, rx: 3, fill: 'url(#' + sheenId + ')', className: 'arith-decor-only' }),
+            !isContrast && w > 12 && h('line', { x1: 8, y1: 7.5, x2: 5 + w - 3, y2: 7.5, stroke: '#ffffff', strokeWidth: 1.25, strokeLinecap: 'round', className: 'arith-bevel-glint arith-decor-only', style: { animationDelay: (i * 0.45) + 's' } }),
             h('text', { x: 5, y: ht + 24, fill: svgInk, fontSize: 13, fontWeight: 800 }, rc.x + ' × ' + rc.y));
         });
         return h('div', { 'data-rect-model': rects.length },
@@ -4287,7 +4351,7 @@
           var canMove = !done && !full;
           tray.push(canMove
             ? h('button', { key: c, type: 'button', 'data-ten-frame-counter': c, tabIndex: c === 0 ? 0 : -1, 'aria-label': t('stem.arithmetic.tf_move_aria', 'Move a counter into the ten frame'), onClick: moveTenFrameCounter,
-              className: 'rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2', style: { width: 44, height: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '2px dashed ' + moveRing, cursor: 'pointer' } }, dot('moved'))
+              className: 'rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2' + (!isContrast && c === 0 ? ' arith-disk-marked' : ''), style: { width: 44, height: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '2px dashed ' + moveRing, cursor: 'pointer' } }, dot('moved'))
             : h('span', { key: c, 'data-ten-frame-left': true, style: { width: 44, height: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' } }, dot('moved')));
         }
         return h('section', { className: 'rounded-xl p-3 space-y-2', 'data-ten-frame': item.id, 'data-ten-frame-moved': moved, style: sectionStyle },
@@ -4581,17 +4645,20 @@
         function box(key, x, y, w, ht, fillColor, slot, dashed) {
           var rw = Math.max(1, w);
           return h('g', { key: key },
-            !isContrast && !dashed && h('rect', { x: x + 1, y: y + 2, width: rw, height: ht, rx: 5, fill: svgArc, opacity: 0.1 }),
-            h('rect', { x: x, y: y, width: rw, height: ht, rx: 5, fill: dashed ? (isContrast ? 'none' : (isDark ? 'rgba(147,197,253,0.08)' : 'rgba(29,78,216,0.06)')) : fillColor, stroke: svgArc, strokeWidth: 2, strokeDasharray: dashed ? '6 4' : undefined }),
-            !isContrast && !dashed && rw > 8 && h('rect', { x: x + 1.5, y: y + 1.5, width: rw - 3, height: Math.max(4, ht - 3), rx: 4, fill: 'url(#arith-bar-sheen)' }),
-            !isContrast && !dashed && rw > 12 && h('line', { x1: x + 5, y1: y + 3, x2: x + rw - 5, y2: y + 3, stroke: '#ffffff', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.6 }),
+            !isContrast && !dashed && h('rect', { x: x + 1, y: y + 2, width: rw, height: ht, rx: 5, fill: svgArc, opacity: 0.1, className: 'arith-decor-only' }),
+            h('rect', { x: x, y: y, width: rw, height: ht, rx: 5, fill: dashed ? (isContrast ? 'none' : (isDark ? 'rgba(147,197,253,0.08)' : 'rgba(29,78,216,0.06)')) : fillColor, stroke: svgArc, strokeWidth: 2, strokeDasharray: dashed ? '6 4' : undefined, className: !isContrast && dashed ? 'arith-dash-flow' : undefined }),
+            !isContrast && !dashed && rw > 8 && h('rect', { x: x + 1.5, y: y + 1.5, width: rw - 3, height: Math.max(4, ht - 3), rx: 4, fill: 'url(#arith-bar-sheen)', className: 'arith-decor-only' }),
+            !isContrast && !dashed && rw > 12 && h('line', { x1: x + 5, y1: y + 3, x2: x + rw - 5, y2: y + 3, stroke: '#ffffff', strokeWidth: 1.3, strokeLinecap: 'round', className: 'arith-bevel-glint arith-decor-only' }),
             h('text', { x: x + w / 2, y: y + ht / 2, textAnchor: 'middle', dominantBaseline: 'central', fill: svgInk, fontSize: 13, fontWeight: 800 }, label(slot)));
         }
         function brace(key, x1, x2, y, slot) {
           var dBrace = 'M' + x1 + ' ' + (y + 8) + ' L' + x1 + ' ' + y + ' L' + x2 + ' ' + y + ' L' + x2 + ' ' + (y + 8);
           return h('g', { key: key },
-            !isContrast && h('path', { d: dBrace, fill: 'none', stroke: svgArc, strokeWidth: 5.5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.16 }),
+            !isContrast && h('path', { d: dBrace, fill: 'none', stroke: svgArc, strokeWidth: 5.5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.16, className: 'arith-decor-only' }),
             h('path', { d: dBrace, fill: 'none', stroke: svgArc, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            !isContrast && h('path', { d: dBrace, fill: 'none', stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', strokeLinejoin: 'round', strokeDasharray: '6 10', opacity: 0.65, className: 'arith-dash-flow arith-decor-only' }),
+            !isContrast && h('circle', { cx: x1, cy: y + 8, r: 4.5, fill: svgArc, opacity: 0.22, className: 'arith-beacon-pulse arith-decor-only' }),
+            !isContrast && h('circle', { cx: x2, cy: y + 8, r: 4.5, fill: svgArc, opacity: 0.22, className: 'arith-beacon-pulse arith-decor-only', style: { animationDelay: '0.5s' } }),
             h('circle', { cx: x1, cy: y + 8, r: 2.3, fill: svgArc }),
             h('circle', { cx: x2, cy: y + 8, r: 2.3, fill: svgArc }),
             h('text', { x: (x1 + x2) / 2, y: y - 8, textAnchor: 'middle', fill: svgInk, fontSize: 13, fontWeight: 800 }, label(slot)));
@@ -4844,7 +4911,7 @@
             return h('div', { key: i, 'data-dec-place': unitLabel(e), 'data-dec-count': count, style: { border: '1px solid ' + border, borderRadius: 8, padding: 6 } },
               h('p', { className: 'text-xs font-bold' }, fill(t('stem.arithmetic.dec_place_count', '{n} × {unit} ({place})'), { n: count, unit: unitLabel(e), place: decPlaceName(e) })),
               h('div', { 'aria-hidden': true, style: { display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 4 } }, Array.from({ length: drawn }, function (_, k) {
-                return h('span', { key: k, style: { minWidth: 26, height: 26, padding: '0 3px', borderRadius: 13, border: '1px solid ' + accentText, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: text, background: card } }, unitLabel(e));
+                return h('span', { key: k, style: { minWidth: 26, height: 26, padding: '0 3px', borderRadius: 13, border: '1px solid ' + accentText, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: text, background: card, boxShadow: isContrast ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.48), 0 1px 2px rgba(15,23,42,0.12)' } }, unitLabel(e));
               })),
               count > drawn && h('p', { className: 'text-xs' }, fill(t('stem.arithmetic.dec_more_disks', 'and {n} more'), { n: count - drawn })));
           })));
@@ -5033,7 +5100,8 @@
           )
         ),
         h('rect', { x: 2, y: 2, width: 36, height: 36, rx: 9, fill: isContrast ? '#000000' : 'url(#arith-emb-bezel)', stroke: isContrast ? '#fbbf24' : 'rgba(255,255,255,0.45)', strokeWidth: 1.5 }),
-        !isContrast && h('line', { x1: 7, y1: 3.5, x2: 33, y2: 3.5, stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.35 }),
+        !isContrast && h('line', { x1: 7, y1: 3.5, x2: 33, y2: 3.5, stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.35, className: 'arith-bevel-glint arith-decor-only' }),
+        !isContrast && h('rect', { x: operation === 'add' || operation === 'multiply' ? 5.5 : 19.5, y: operation === 'add' || operation === 'subtract' ? 5.5 : 19.5, width: 15, height: 15, rx: 4.5, fill: 'none', stroke: opMeta.darkText, strokeWidth: 1.5, className: 'arith-beacon-pulse arith-decor-only' }),
         h('rect', { x: 7, y: 7, width: 12, height: 12, rx: 3, fill: operation === 'add' ? (isContrast ? '#fbbf24' : '#3b82f6') : (isContrast ? '#000000' : 'rgba(255,255,255,0.16)'), stroke: isContrast ? '#fbbf24' : 'rgba(255,255,255,0.45)', strokeWidth: 1 }),
         !isContrast && h('rect', { x: 7.8, y: 7.8, width: 10.4, height: 4.5, rx: 1.8, fill: 'url(#arith-emb-sheen)' }),
         h('rect', { x: 21, y: 7, width: 12, height: 12, rx: 3, fill: operation === 'subtract' ? (isContrast ? '#fbbf24' : '#ef4444') : (isContrast ? '#000000' : 'rgba(255,255,255,0.16)'), stroke: isContrast ? '#fbbf24' : 'rgba(255,255,255,0.45)', strokeWidth: 1 }),

@@ -6,10 +6,10 @@
     "difficulty": "application",
     "prompt": "Read the passage. Neighbors transformed an unused lot into a small park. They removed litter, planted native shrubs, and installed two benches. By autumn, families were using the space for reading and conversation. Which statement best expresses the main idea?",
     "choices": [
-      "Neighbors improved an unused lot and created a useful community space.",
-      "Native shrubs grow best when planted during autumn.",
-      "Families asked the city to build a large playground.",
-      "The lot remained unused after the cleanup was completed."
+      "Neighbors turned an unused lot into a shared community park.",
+      "Native shrubs grow strongest when residents plant them during late autumn.",
+      "Local families petitioned city officials to build a large new playground.",
+      "The vacant corner lot stayed completely unused after cleanup work ended."
     ],
     "answerIndex": 0,
     "rationale": "The passage focuses on people improving an unused lot and the community then using it. The correct main idea includes the central action and result rather than one minor detail.",
@@ -36,10 +36,10 @@
     "difficulty": "application",
     "prompt": "Read the passage. A city added an express bus on weekday mornings. During the next month, average travel time on that route fell from 48 minutes to 35 minutes, while ridership increased. Which conclusion is best supported?",
     "choices": [
-      "Every rider reached work exactly thirteen minutes earlier.",
-      "The express service was associated with shorter trips and higher ridership.",
-      "The city removed all other buses from the weekday route.",
-      "Weekend ridership increased by the same amount as weekday ridership."
+      "Every commuter on the weekday route reached work thirteen minutes earlier.",
+      "Express service aligned with shorter trips and higher ridership.",
+      "City transit planners removed every regular local bus from the corridor.",
+      "Weekend bus ridership climbed by the exact same rate as weekday ridership."
     ],
     "answerIndex": 1,
     "rationale": "Travel time decreased and ridership increased after the express bus was added. The cautious phrase was associated with matches the evidence and avoids unsupported claims about every rider or weekends.",
@@ -54,7 +54,7 @@
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
       "This option does not fit because an average does not describe every individual trip. The stated information or governing rule points to a different result.",
-      "It accurately summarizes both reported changes without claiming that the new service alone proved causation.",
+      "It accurately summarizes both reported changes without claiming that the new service alone proved causation. It is the only option that satisfies every part of the prompt.",
       "This option does not fit because the passage says nothing about removing other buses. The stated information or governing rule points to a different result.",
       "This option does not fit because only weekday morning information is provided. The stated information or governing rule points to a different result."
     ]
@@ -66,10 +66,10 @@
     "difficulty": "application",
     "prompt": "A student claims that the school science fair attracted participants from many grade levels. Which detail would best support the claim?",
     "choices": [
-      "The science fair was held in the school gymnasium.",
-      "Several projects used colorful presentation boards.",
-      "The participant list included students from grades four through eight.",
-      "The judges announced awards at the end of the evening."
+      "The annual science fair took place inside the main school gymnasium.",
+      "Several student entries displayed bright tri-fold presentation boards.",
+      "The roster listed students from grades four through eight.",
+      "Volunteer judges announced ribbon awards near the close of the evening."
     ],
     "answerIndex": 2,
     "rationale": "A supporting detail must address the range of grade levels represented. A participant list naming grades four through eight directly supports that claim; the other facts concern setting or procedures.",
@@ -176,7 +176,7 @@
       "This option does not fit because practice occurred later and does not mean she began fully prepared.",
       "The word but contrasts her initial hesitation with her later agreement to take the role. It is the only option that satisfies every part of the prompt.",
       "This option does not fit because the contrast with later agreement shows initial hesitation. The stated information or governing rule points to a different result.",
-      "This option does not fit because she ultimately introduces the project, so inability is unsupported."
+      "This option does not fit because she ultimately agrees to introduce the group project after practicing, so being unable to speak is unsupported."
     ]
   },
   {
@@ -186,10 +186,10 @@
     "difficulty": "application",
     "prompt": "Account 1 says the new trail is easy because it is level and clearly marked. Account 2 says the trail can be difficult after rain because several low areas become muddy. What is the main difference between the accounts?",
     "choices": [
-      "They disagree about where the trail begins.",
-      "They describe two trails in different cities.",
-      "They emphasize different conditions that affect trail difficulty.",
-      "They give different dates for when the trail opened."
+      "They disagree sharply about which park entrance marks the trailhead.",
+      "They describe two separate hiking paths located in neighboring cities.",
+      "They highlight different conditions affecting trail difficulty.",
+      "They report conflicting calendar dates for when the trail first opened."
     ],
     "answerIndex": 2,
     "rationale": "The accounts differ in the conditions they highlight: a level marked surface versus muddy low areas after rain. Nothing in the statements supports differences in location, identity, or opening date.",
@@ -205,7 +205,7 @@
     "choiceRationales": [
       "This option does not fit because neither account discusses the starting point. The stated information or governing rule points to a different result.",
       "This option does not fit because both accounts can refer to the same new trail. The stated information or governing rule points to a different result.",
-      "One account emphasizes normal level conditions, while the other emphasizes wet conditions after rain.",
+      "One account emphasizes normal level conditions, while the other emphasizes wet conditions after rain. It is the only option that satisfies every part of the prompt.",
       "This option does not fit because no opening date appears in either account. The stated information or governing rule points to a different result."
     ]
   },
@@ -244,12 +244,12 @@
     "type": "single-choice",
     "domainId": "reading",
     "difficulty": "application",
-    "prompt": "Which sentence is an opinion?",
+    "prompt": "During a classroom reading review about fact and opinion, which sentence expresses an opinion?",
     "choices": [
-      "The renovated cafeteria is extremely welcoming.",
-      "The cafeteria opens for breakfast at 7:30 a.m.",
-      "The renovation added twelve round tables.",
-      "The north wall contains three large windows."
+      "The renovated cafeteria feels warm and welcoming.",
+      "The school cafeteria opens for student breakfast at 7:30 a.m.",
+      "The recent cafeteria renovation added twelve new round tables.",
+      "The north wall of the cafeteria contains three wide glass windows."
     ],
     "answerIndex": 0,
     "rationale": "An opinion expresses a judgment rather than a verifiable condition. Calling a room the most welcoming is subjective, while times, quantities, and observable features can be checked.",
@@ -306,10 +306,10 @@
     "difficulty": "application",
     "prompt": "Read the passage. The art club needed display stands but had little money. Members collected clean cardboard, tested several folding designs, and built sturdy stands at almost no cost. Which is the best summary?",
     "choices": [
-      "The club purchased expensive wooden stands for every project.",
-      "Cardboard is the only material that artists should use.",
-      "The club solved its display problem with low-cost recycled stands.",
-      "Several members decided to stop displaying their artwork."
+      "The art club purchased sturdy wooden display stands for every project.",
+      "Recycled cardboard works better than any other display craft material.",
+      "The club met its display need with low-cost recycled stands.",
+      "Several club members chose to stop displaying finished artwork publicly."
     ],
     "answerIndex": 2,
     "rationale": "A strong summary captures the need for stands, the use and testing of recycled cardboard, and the inexpensive solution. The alternatives contradict the passage or overgeneralize.",
@@ -326,7 +326,7 @@
       "This option does not fit because the stands were built from collected cardboard at little cost. The stated information or governing rule points to a different result.",
       "This option does not fit because the passage describes one solution without making a universal claim.",
       "It includes the problem, the club response, and the low-cost result without unnecessary detail. It is the only option that satisfies every part of the prompt.",
-      "This option does not fit because members solved the display problem rather than abandoning displays."
+      "This option does not fit because club members solved the display challenge creatively with cardboard stands rather than abandoning student art displays."
     ]
   },
   {
@@ -396,10 +396,10 @@
     "difficulty": "application",
     "prompt": "The computer lab schedule lists: Grade 5, 9:00-9:40; Grade 6, 9:45-10:25; maintenance, 10:30-11:00; Grade 7, 11:05-11:45. Which conclusion is supported?",
     "choices": [
-      "Grade 7 uses the lab before Grade 5.",
-      "The lab is unavailable to classes from 10:30 until 11:00.",
-      "Maintenance lasts longer than every class session.",
-      "Grade 6 and Grade 7 begin at the same time."
+      "Seventh-grade classes are scheduled inside the computer lab before Grade 5.",
+      "Classes cannot use the lab from 10:30 to 11:00.",
+      "Scheduled computer maintenance lasts longer than every forty-minute class.",
+      "Sixth-grade and seventh-grade computer sessions start at the identical hour."
     ],
     "answerIndex": 1,
     "rationale": "The maintenance block occupies 10:30 through 11:00, so no class is scheduled then. The other statements directly conflict with the listed order, durations, or times.",
@@ -473,10 +473,10 @@
     "qaStatus": "qa-passed",
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
-      "This option does not fit because materials identifies needed supplies rather than solutions to problems.",
+      "This option does not fit because the Materials section lists needed tools and parts rather than explaining how to diagnose or fix a malfunction.",
       "This option does not fit because assembly explains construction rather than diagnosing failure. The stated information or governing rule points to a different result.",
       "This option does not fit because testing checks operation but troubleshooting addresses what to do after a problem appears.",
-      "Troubleshooting sections are specifically organized around identifying and correcting operating problems."
+      "Troubleshooting sections are specifically organized around identifying and correcting operating problems. It is the only option that satisfies every part of the prompt."
     ]
   },
   {
@@ -516,10 +516,10 @@
     "difficulty": "application",
     "prompt": "The word preview contains the prefix pre-. What does preview most likely mean?",
     "choices": [
-      "To view something again after it ends",
-      "To view something before its main presentation",
-      "To refuse to view something at any time",
-      "To divide a presentation into equal parts"
+      "To view a finished presentation again after it ends",
+      "To view something before its main showing",
+      "To refuse to view a planned presentation at any time",
+      "To split a long presentation into two separate halves"
     ],
     "answerIndex": 1,
     "rationale": "Recognizing that pre- means before allows the reader to infer that a preview is an advance viewing. The alternatives attach meanings that the prefix does not carry.",
@@ -546,10 +546,10 @@
     "difficulty": "application",
     "prompt": "A writer claims that the new water fountains reduce plastic waste. Which evidence is most relevant?",
     "choices": [
-      "The fountains are painted the same blue as the lockers.",
-      "Students voted on where the fountains should be placed.",
-      "Disposable-bottle waste fell by 600 bottles after installation.",
-      "The installation crew arrived before the school day began."
+      "The new water fountains match the blue paint on nearby hall lockers.",
+      "Students voted on which hallway corners should hold the new fountains.",
+      "Bottle waste dropped by 600 bottles after installation.",
+      "The district plumbing crew finished installation before morning classes."
     ],
     "answerIndex": 2,
     "rationale": "Relevant evidence must connect the fountains to plastic waste. A measured decrease in disposable bottles after installation directly supports the claim; appearance and logistics do not.",
@@ -565,7 +565,7 @@
     "choiceRationales": [
       "This option does not fit because paint color does not measure plastic waste. The stated information or governing rule points to a different result.",
       "This option does not fit because a placement vote does not show waste reduction. The stated information or governing rule points to a different result.",
-      "The before-and-after reduction in collected disposable bottles directly measures the claimed outcome.",
+      "The before-and-after reduction in collected disposable bottles directly measures the claimed outcome. It is the only option that satisfies every part of the prompt.",
       "This option does not fit because crew arrival time is unrelated to discarded bottles. The stated information or governing rule points to a different result."
     ]
   },
@@ -636,10 +636,10 @@
     "difficulty": "application",
     "prompt": "Read the passage. Priya practiced the difficult piano section slowly each day. At the recital she missed one note, paused, and continued without losing the rhythm. Which theme is best supported?",
     "choices": [
-      "A performance has value only when it is completely perfect.",
-      "Preparation and persistence help people recover from mistakes.",
-      "Musicians should avoid performing difficult pieces in public.",
-      "Natural ability makes daily practice unnecessary."
+      "A musical recital carries value when every played note is flawless.",
+      "Steady practice helps performers recover from small slips.",
+      "Developing musicians should avoid playing difficult pieces onstage.",
+      "Natural musical talent makes daily slow practice sessions unnecessary."
     ],
     "answerIndex": 1,
     "rationale": "The passage links steady practice with Priya's ability to recover during the recital. The theme concerns preparation and persistence, while the alternatives contradict those events.",
@@ -696,10 +696,10 @@
     "difficulty": "application",
     "prompt": "A student selects a minor detail as the main idea of each paragraph. Which support would best develop main-idea understanding?",
     "choices": [
-      "Have the student copy the longest sentence from every paragraph.",
-      "Tell the student that the first sentence is always the main idea.",
-      "Skip the paragraphs and practice spelling unrelated vocabulary words.",
-      "Identify the shared topic, then select a statement covering the key details."
+      "Have the student copy the longest sentence verbatim from every paragraph.",
+      "Tell the learner that the opening sentence states the main idea each time.",
+      "Skip paragraph reading and practice spelling unrelated weekly word lists.",
+      "Name the shared topic, then form a statement covering key details."
     ],
     "answerIndex": 3,
     "rationale": "Main-idea instruction should help the student identify the shared topic and determine which statement encompasses the important details. Copying or relying on a fixed position rule does not build that reasoning.",
@@ -727,10 +727,10 @@
     "difficulty": "application",
     "prompt": "A student does not know the word arid in the sentence, The arid region receives very little rain, so few large plants grow there. What prompt would best support use of context?",
     "choices": [
-      "Which nearby clues describe the region and help you infer the word meaning?",
-      "How many letters and syllables are in the unfamiliar word?",
-      "Can you ignore the sentence and choose the first dictionary meaning?",
-      "Would you like me to replace the word without discussing it?"
+      "Which nearby clues describe the region and suggest word meaning?",
+      "How many total letters and spoken syllables appear in the unfamiliar word?",
+      "Can you ignore the surrounding sentence and pick the first glossary entry?",
+      "Would you prefer that I swap in a simpler word without discussing context?"
     ],
     "answerIndex": 0,
     "rationale": "Effective context-clue support draws attention to meaningful nearby information and asks the learner to connect it to the unfamiliar word. The sentence clues indicate that arid means very dry.",
@@ -758,10 +758,10 @@
     "difficulty": "application",
     "prompt": "A student reads accurately but in a choppy word-by-word manner. Which activity is most appropriate for building fluency?",
     "choices": [
-      "Assign a much harder passage and require silent reading only.",
-      "Model a short passage, then use repeated oral reading with phrasing feedback.",
-      "Correct every pause by supplying the next word immediately.",
-      "Replace connected text with isolated spelling lists for the week."
+      "Assign a much harder grade-level passage for unguided silent reading practice.",
+      "Model fluent reading, then guide repeated oral reading with feedback.",
+      "Jump in on every brief hesitation by pronouncing the next printed word aloud.",
+      "Replace connected story reading with isolated weekly spelling drills instead."
     ],
     "answerIndex": 1,
     "rationale": "Because accuracy is already adequate, instruction should focus on phrasing and smoothness in connected text. Modeled and repeated oral reading offers targeted practice and actionable feedback.",
@@ -777,7 +777,7 @@
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
       "This option does not fit because excessive difficulty and silent reading do not target oral phrasing.",
-      "Modeling and supported repetition provide practice with rate, accuracy, expression, and meaningful phrase boundaries.",
+      "Modeling and supported repetition provide practice with rate, accuracy, expression, and meaningful phrase boundaries. It is the only option that satisfies every part of the prompt.",
       "This option does not fit because immediate supplying can prevent independent phrasing practice. The stated information or governing rule points to a different result.",
       "This option does not fit because isolated lists do not develop fluent reading of connected text. The stated information or governing rule points to a different result."
     ]
@@ -789,10 +789,10 @@
     "difficulty": "application",
     "prompt": "A student answers an inference question correctly but cannot explain the answer. What should the paraeducator ask next?",
     "choices": [
-      "Can you repeat the answer more loudly without using the text?",
-      "Would you like a different answer that needs no explanation?",
-      "Which words or events in the passage led you to that conclusion?",
-      "How quickly can you copy the question into your notebook?"
+      "Can you repeat your spoken answer more loudly without checking text?",
+      "Would you rather choose a simpler answer that needs no explanation?",
+      "Which clues in the passage led you to that conclusion?",
+      "How rapidly can you copy the comprehension prompt into your notebook?"
     ],
     "answerIndex": 2,
     "rationale": "An evidence-based inference requires both a conclusion and the clues that support it. Asking what in the passage led to the answer makes the reasoning visible and open to feedback.",
@@ -820,10 +820,10 @@
     "difficulty": "application",
     "prompt": "Students are comparing two articles about the same local event. Which organizer would best support the task?",
     "choices": [
-      "A list containing only the number of words in each article",
-      "A calendar showing unrelated events from the previous month",
-      "A spelling worksheet using words not found in either article",
-      "A chart of shared facts, unique details, and viewpoint differences"
+      "A simple tally counting total words printed inside each news article",
+      "A wall calendar listing unrelated civic events from the prior month",
+      "A spelling practice sheet featuring words absent from both articles",
+      "A chart of shared facts, unique details, and viewpoints"
     ],
     "answerIndex": 3,
     "rationale": "Comparing sources requires attending to shared information, unique details, and how viewpoints differ. A structured chart externalizes those relationships and supports evidence-based discussion.",
@@ -851,10 +851,10 @@
     "difficulty": "application",
     "prompt": "During independent reading, a student reaches the end of a page and realizes the meaning is unclear. Which strategy should be encouraged first?",
     "choices": [
-      "Pause, reread the confusing section, and summarize it in the student's own words.",
-      "Continue reading quickly and assume the meaning will never matter.",
-      "Copy every word on the page without checking understanding.",
-      "Choose a summary before looking back at the confusing section."
+      "Pause, reread the confusing part, and restate it in own words.",
+      "Keep skimming rapidly forward and assume the confusing details will clear up.",
+      "Copy every sentence on the page carefully without pausing to check meaning.",
+      "Pick a quick overall summary before rereading the unclear middle passage."
     ],
     "answerIndex": 0,
     "rationale": "Recognizing confusion is the first step in comprehension monitoring. Pausing, rereading, and summarizing helps the learner repair understanding instead of ignoring or mechanically copying the text.",
@@ -870,7 +870,7 @@
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
       "Rereading and self-explanation are direct comprehension-monitoring responses to detected confusion. It is the only option that satisfies every part of the prompt.",
-      "This option does not fit because continuing without monitoring leaves the misunderstanding unresolved.",
+      "This option does not fit because continuing forward without monitoring comprehension leaves the reader’s misunderstanding unresolved across the rest of the text.",
       "This option does not fit because copying text does not necessarily produce comprehension. The stated information or governing rule points to a different result.",
       "This option does not fit because selecting a summary first bypasses rereading and reasoning. The stated information or governing rule points to a different result."
     ]
@@ -882,10 +882,10 @@
     "difficulty": "application",
     "prompt": "A student repeatedly performs steps in a classroom procedure out of order. Which support is most appropriate?",
     "choices": [
-      "Give all directions orally one time while the student is across the room.",
-      "Provide a numbered visual checklist and have the student mark each completed step.",
-      "Remove step numbers so the student must guess the sequence.",
-      "Correct only the final result without discussing the procedure."
+      "Read all multi-step directions aloud once while standing across the classroom.",
+      "Provide a numbered visual checklist so the student marks each step.",
+      "Remove visible step numbers so the student practices recalling sequence alone.",
+      "Point out errors in the final product without reviewing the ordered procedure."
     ],
     "answerIndex": 1,
     "rationale": "The difficulty involves remembering and ordering steps, so a visible numbered checklist directly addresses the barrier. Marking each step also promotes independence and self-monitoring.",
@@ -944,10 +944,10 @@
     "difficulty": "application",
     "prompt": "A student labels every sentence containing a number as a fact. Which response best addresses the misconception?",
     "choices": [
-      "Tell the student that any sentence without a number must be false.",
-      "Ask the student to underline all digits without reading the sentences.",
-      "Avoid discussing how claims can be checked against reliable evidence.",
-      "Contrast verifiable claims with numerical opinions, then discuss supporting evidence."
+      "Explain to the student that any statement lacking digits must be an opinion.",
+      "Have the student underline every printed digit without reading full sentences.",
+      "Avoid discussing how factual statements can be checked against reliable data.",
+      "Contrast verifiable numbers with numerical opinions using evidence."
     ],
     "answerIndex": 3,
     "rationale": "Numbers can appear in factual or opinion statements, so instruction should focus on whether evidence can verify the claim. Contrasting examples helps the student revise the overgeneralized rule.",
@@ -965,7 +965,7 @@
       "This option does not fit because absence of a number does not make a statement false. The stated information or governing rule points to a different result.",
       "This option does not fit because underlining digits repeats the surface feature causing confusion. The stated information or governing rule points to a different result.",
       "This option does not fit because verification is central to distinguishing fact from opinion. The stated information or governing rule points to a different result.",
-      "The comparison teaches that verifiability, not the presence of numerals, distinguishes factual claims."
+      "The comparison teaches that verifiability, not the presence of numerals, distinguishes factual claims. It is the only option that satisfies every part of the prompt."
     ]
   },
   {
@@ -975,10 +975,10 @@
     "difficulty": "application",
     "prompt": "A multilingual learner understands a passage when it is discussed orally but struggles to follow dense written directions. Which initial support best preserves the learning goal?",
     "choices": [
-      "Chunk the directions, add a visual to each step, and check each part.",
-      "Complete the entire assignment for the student without explanation.",
-      "Remove the academic task and provide unrelated coloring pages.",
-      "Repeat the full directions more quickly without adding supports."
+      "Chunk steps, pair each step with a visual, and check progress.",
+      "Complete the full written assignment directly for the student without review.",
+      "Set the academic lesson aside and provide unrelated quiet coloring sheets.",
+      "Repeat the dense written instructions faster without adding visual scaffolds."
     ],
     "answerIndex": 0,
     "rationale": "The learner can engage with the content but needs accessible written directions. Smaller units, visuals, and brief checks support comprehension without changing or completing the target task.",
@@ -993,7 +993,7 @@
     "qaStatus": "qa-passed",
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
-      "Chunking and visuals reduce language-processing load while keeping the same academic task and promoting independence.",
+      "Chunking and visuals reduce language-processing load while keeping the same academic task and promoting independence. It is the only option that satisfies every part of the prompt.",
       "This option does not fit because doing the work removes the learner's opportunity to participate. The stated information or governing rule points to a different result.",
       "This option does not fit because an unrelated substitute abandons the intended learning goal. The stated information or governing rule points to a different result.",
       "This option does not fit because greater speed increases processing demands and does not clarify sequence."
@@ -1006,10 +1006,10 @@
     "difficulty": "application",
     "prompt": "A student concludes that a character is angry only because the illustration uses the color red. The text says the character smiled and thanked everyone. What feedback is best?",
     "choices": [
-      "Accept the color alone and ignore the character's stated actions.",
-      "Compare the illustration with textual clues and prioritize direct behavioral evidence.",
-      "Tell the student that illustrations can never provide useful evidence.",
-      "Provide a new conclusion without asking the student to revisit any clues."
+      "Accept the color cue alone while overlooking the character’s stated actions.",
+      "Compare the artwork with text clues and weigh direct actions first.",
+      "Tell the student that story illustrations fail to offer helpful text clues.",
+      "Supply a new interpretation directly without having the student revisit clues."
     ],
     "answerIndex": 1,
     "rationale": "Inference requires evaluating all relevant evidence. Here, explicit smiling and thanking are more direct indicators of emotion than color alone, though the illustration can still be considered.",
@@ -1024,9 +1024,9 @@
     "qaStatus": "qa-passed",
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
-      "This option does not fit because the direct behavioral details conflict with the color-only inference.",
+      "This option does not fit because the character’s direct actions of smiling and thanking everyone clearly contradict a color-only inference of anger.",
       "The response teaches the student to integrate sources and judge which clues most directly support an inference.",
-      "This option does not fit because illustrations can contribute evidence when interpreted with the text.",
+      "This option does not fit because book illustrations can contribute meaningful story evidence when interpreted alongside the written text rather than in isolation.",
       "This option does not fit because supplying an answer does not teach evidence evaluation. The stated information or governing rule points to a different result."
     ]
   },
@@ -1035,7 +1035,7 @@
     "type": "single-choice",
     "domainId": "mathematics",
     "difficulty": "foundation",
-    "prompt": "What is 3/4 + 2/3?",
+    "prompt": "Without using a calculator, find the sum in lowest terms: what is 3/4 + 2/3?",
     "choices": [
       "5/7",
       "5/12",
@@ -1128,7 +1128,7 @@
     "type": "single-choice",
     "domainId": "mathematics",
     "difficulty": "foundation",
-    "prompt": "What is -7 + 12 - 5?",
+    "prompt": "Without using a calculator, evaluate the integer expression: what is -7 + 12 - 5?",
     "choices": [
       "-24",
       "0",
@@ -1159,7 +1159,7 @@
     "type": "single-choice",
     "domainId": "mathematics",
     "difficulty": "foundation",
-    "prompt": "Solve 4x - 7 = 21.",
+    "prompt": "Without using a calculator, solve the linear equation for x: 4x - 7 = 21.",
     "choices": [
       "x = 3.5",
       "x = 5",
@@ -1381,7 +1381,7 @@
       "7",
       "8.5",
       "10",
-      "11"
+      "9.5"
     ],
     "answerIndex": 1,
     "rationale": "An even number of observations has two middle values. The third and fourth values are 7 and 10, and their mean is 17/2, or 8.5.",
@@ -1399,7 +1399,7 @@
       "This option does not fit because seven is the lower of the two middle values and also the mode. The stated information or governing rule points to a different result.",
       "With six ordered values, average the third and fourth values: 7 plus 10 divided by 2 equals 8.5. It is the only option that satisfies every part of the prompt.",
       "This option does not fit because ten is the upper middle value, but both middle values must be averaged.",
-      "This option does not fit because eleven does not equal the average of 7 and 10. The stated information or governing rule points to a different result."
+      "This option does not fit because 9.5 miscalculates the midpoint halfway between the two middle values 7 and 10, which equals (7 + 10) divided by 2, or 8.5."
     ]
   },
   {
@@ -1469,7 +1469,7 @@
     "type": "single-choice",
     "domainId": "mathematics",
     "difficulty": "foundation",
-    "prompt": "What is 2.4 multiplied by 0.35?",
+    "prompt": "Without using a calculator, compute the decimal product: what is 2.4 multiplied by 0.35?",
     "choices": [
       "0.84",
       "0.084",
@@ -1737,7 +1737,7 @@
     "qaStatus": "qa-passed",
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
-      "The model makes common-sized parts visible and links them to the symbolic common-denominator procedure.",
+      "The model makes common-sized parts visible and links them to the symbolic common-denominator procedure. It is the only option that satisfies every part of the prompt.",
       "This option does not fit because memorization alone does not repair the denominator misconception. The stated information or governing rule points to a different result.",
       "This option does not fit because this repeats the exact invalid rule that caused the error. The stated information or governing rule points to a different result.",
       "This option does not fit because avoiding the concept does not build fraction understanding. The stated information or governing rule points to a different result."
@@ -1750,10 +1750,10 @@
     "difficulty": "application",
     "prompt": "A student writes 4.07 as 4.7. Which support would best clarify the value of the zero?",
     "choices": [
-      "State that zeros never affect the value of a decimal number.",
-      "Build both numbers on a place-value chart and compare tenths with hundredths.",
-      "Have the student remove all decimal points before comparing values.",
-      "Ask the student to round both numbers to the nearest whole number only."
+      "Explain that interior zeros carry no numerical effect inside decimal fractions.",
+      "Model both decimals on a place-value chart to compare tenths and hundredths.",
+      "Have the student strip out decimal points before comparing the whole digits.",
+      "Direct the learner to round both decimals to the nearest whole number instead."
     ],
     "answerIndex": 1,
     "rationale": "The misconception concerns positional value. Modeling the two decimals by place makes the placeholder function of zero visible and supports an exact comparison.",
@@ -1812,10 +1812,10 @@
     "difficulty": "application",
     "prompt": "A student finds rectangle area by adding length and width. Which activity best develops the area concept?",
     "choices": [
-      "Trace the outside edge and call the resulting distance area.",
-      "Memorize length plus width as the rule for every rectangle.",
-      "Count only the corner squares and ignore the interior units.",
-      "Tile rectangles with unit squares, then connect equal rows to multiplication."
+      "Trace the outer rectangular boundary and label that total distance as area.",
+      "Have students memorize length plus width as the standard rectangle area rule.",
+      "Count the four corner squares alone while ignoring the interior grid units.",
+      "Tile rectangles with unit squares and link rows to multiplication."
     ],
     "answerIndex": 3,
     "rationale": "The student is confusing a linear operation with surface coverage. Unit-square tiling makes the two-dimensional quantity visible and connects equal rows to length times width.",
@@ -1843,10 +1843,10 @@
     "difficulty": "application",
     "prompt": "A learner can solve a single ratio but struggles to scale it. Which representation is most helpful for 3 tickets cost $12 and 8 tickets cost how much?",
     "choices": [
-      "A ratio table showing 1 ticket costs $4 and scaling to 8 tickets",
-      "A table that adds 3 tickets and $12 in the same column",
-      "A number line with no labels, units, or equal intervals",
-      "A rule that always subtracts the two values in a ratio"
+      "A ratio table finding 1 ticket ($4) and scaling to 8",
+      "A chart adding 3 tickets and $12 together in one single column",
+      "A blank number line with no labels, units, or equal intervals",
+      "A classroom rule that subtracts the two terms inside each ratio"
     ],
     "answerIndex": 0,
     "rationale": "A ratio table organizes corresponding quantities and supports multiplicative scaling. Finding the one-ticket rate of four dollars makes the eight-ticket cost of 32 dollars transparent.",
@@ -1874,10 +1874,10 @@
     "difficulty": "application",
     "prompt": "A student solves 2x + 5 = 17 by subtracting 5 from only the left side. What feedback is best?",
     "choices": [
-      "Tell the student to change 17 to 12 without explaining equality.",
-      "Use a balance model to show that the same operation must be applied to both sides.",
-      "Ask the student to divide the left side by 2 and leave the right side unchanged.",
-      "Replace the equation with an unrelated multiplication fact."
+      "Tell the student to rewrite 17 as 12 without discussing why equality holds.",
+      "Use a balance model to show applying the same step to both sides.",
+      "Have the student divide the left side by 2 while keeping the right side fixed.",
+      "Set the algebra problem aside and practice unrelated single-digit multiplication."
     ],
     "answerIndex": 1,
     "rationale": "An equation states that two expressions are equal, so any inverse operation used to isolate the variable must be performed on both sides. A balance model directly illustrates that invariant.",
@@ -1893,7 +1893,7 @@
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
       "This option does not fit because changing one side alone does not preserve or explain equality. The stated information or governing rule points to a different result.",
-      "The balance representation makes preservation of equality visible when equal changes occur on both sides.",
+      "The balance representation makes preservation of equality visible when equal changes occur on both sides. It is the only option that satisfies every part of the prompt.",
       "This option does not fit because operating on only one side repeats the balance error. The stated information or governing rule points to a different result.",
       "This option does not fit because an unrelated fact does not address equation equivalence. The stated information or governing rule points to a different result."
     ]
@@ -1936,10 +1936,10 @@
     "difficulty": "application",
     "prompt": "Students flip a coin ten times and get eight heads. One student says the probability of heads must now be 8/10 for every future flip. What response is best?",
     "choices": [
-      "Agree that ten trials permanently change the coin's theoretical probability.",
-      "Remove the eight heads from the record so the results look balanced.",
-      "State that experiments can never provide useful probability information.",
-      "Distinguish experimental results from theoretical probability and repeat many more trials."
+      "Agree that ten recorded coin tosses permanently shift theoretical probability.",
+      "Erase several heads from the tally chart so the sample looks evenly balanced.",
+      "Explain that hands-on coin trials fail to yield useful probability information.",
+      "Separate experimental data from theoretical odds and run more trials."
     ],
     "answerIndex": 3,
     "rationale": "The observed proportion in ten flips is experimental probability, not a permanent change in the fair coin's theoretical probability. Repetition helps students see sampling variation and long-run stabilization.",
@@ -1956,8 +1956,8 @@
     "choiceRationales": [
       "This option does not fit because a fair coin's theoretical probability remains one-half. The stated information or governing rule points to a different result.",
       "This option does not fit because altering observations is not valid data analysis. The stated information or governing rule points to a different result.",
-      "This option does not fit because experiments estimate probability and reveal variation across samples.",
-      "More trials demonstrate long-run behavior while clarifying that one small sample can vary from one-half."
+      "This option does not fit because classroom probability experiments help students estimate empirical rates and observe natural random variation across small samples.",
+      "More trials demonstrate long-run behavior while clarifying that one small sample can vary from one-half. It is the only option that satisfies every part of the prompt."
     ]
   },
   {
@@ -1998,10 +1998,10 @@
     "difficulty": "application",
     "prompt": "A student says -6 is greater than -2 because 6 is greater than 2. Which support best corrects the comparison?",
     "choices": [
-      "Compare their distances from zero and choose the value with the greater distance.",
-      "Place both values on a number line; the point farther right represents the greater number.",
-      "Rewrite both as positive values, compare 6 and 2, and then restore the negative signs.",
-      "Compare the digits first and use the negative signs after choosing the larger digit."
+      "Compare their distances from zero and select whichever number lies farther out.",
+      "Plot both on a number line; the point farther right is greater.",
+      "Drop both negative signs first, compare 6 and 2, then put the signs back on.",
+      "Rank the unsigned digits first and apply the negative signs afterward in order."
     ],
     "answerIndex": 1,
     "rationale": "The student is comparing absolute values instead of signed values. Locating both numbers on a number line makes their order visible: values increase from left to right, so -2 is greater than -6.",
@@ -2029,10 +2029,10 @@
     "difficulty": "application",
     "prompt": "A student reports that the class reading time was usually 60 minutes because one student read for 60 minutes; all other times were between 18 and 25 minutes. What should be examined?",
     "choices": [
-      "Use 60 as the typical value because it is the largest observation.",
-      "Delete every value except the outlier before describing the data.",
-      "Compare the mean and median and discuss how the 60-minute outlier affects each measure.",
-      "Add the times without dividing or ordering any of the values."
+      "Report 60 minutes as the typical class reading time since it is the maximum.",
+      "Discard every regular student time except the 60-minute outlier when reporting.",
+      "Compare mean and median to show how the 60-minute outlier shifts center.",
+      "Sum all recorded reading times without ordering values or dividing by count."
     ],
     "answerIndex": 2,
     "rationale": "The student's claim treats an outlier as typical. Computing and comparing mean and median shows how the extreme 60-minute observation influences measures of center differently.",
@@ -2047,7 +2047,7 @@
     "qaStatus": "qa-passed",
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
-      "This option does not fit because the maximum is not automatically representative of the distribution.",
+      "This option does not fit because the single highest maximum value is not automatically representative of a clustered distribution when nearly all other times are 18 to 25 minutes.",
       "This option does not fit because retaining only the outlier destroys the data set. The stated information or governing rule points to a different result.",
       "The comparison reveals that an extreme value pulls the mean upward while the median remains more resistant.",
       "This option does not fit because a total alone does not provide a measure of center. The stated information or governing rule points to a different result."
@@ -2091,10 +2091,10 @@
     "difficulty": "foundation",
     "prompt": "Which sentence uses pronouns correctly?",
     "choices": [
-      "Each volunteer placed a name tag beside their own materials.",
-      "Each volunteer placed their name tags beside his materials.",
-      "The volunteers placed her name tag beside their materials.",
-      "Every volunteers placed its name tag beside the materials."
+      "Each volunteer placed a name tag beside their materials.",
+      "Each volunteer placed their name tags beside his own materials.",
+      "The volunteers placed her name tag beside their own materials.",
+      "Every volunteers placed its name tag beside the table materials."
     ],
     "answerIndex": 0,
     "rationale": "Clear pronoun use requires consistent number and an unmistakable antecedent. The correct sentence avoids conflicting pronouns and identifies whose materials belong to each volunteer.",
@@ -2110,7 +2110,7 @@
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
       "Singular their clearly refers to each volunteer and remains consistent throughout the sentence. It is the only option that satisfies every part of the prompt.",
-      "This option does not fit because the sentence shifts unnecessarily between plural and singular references.",
+      "This option does not fit because the sentence shifts inconsistently between plural their and singular his when referring to the same volunteer.",
       "This option does not fit because her does not clearly agree with or refer to the plural volunteers. The stated information or governing rule points to a different result.",
       "This option does not fit because every volunteers is ungrammatical and its is inappropriate for people."
     ]
@@ -2122,10 +2122,10 @@
     "difficulty": "application",
     "prompt": "Which revision corrects the misplaced modifier? Covered in bright paint, the students displayed the mural in the hallway.",
     "choices": [
-      "Covered in bright paint, the hallway displayed the students mural.",
-      "The students displayed the mural, which was covered in bright paint, in the hallway.",
-      "The bright students displayed the painted mural in the hallway.",
-      "Displaying in the hallway, bright paint covered the students mural."
+      "Covered in bright paint, the hallway displayed the students’ large mural.",
+      "The students displayed the bright painted mural in the hallway.",
+      "The brightly painted students displayed the hallway mural after art class.",
+      "Displaying in the hallway, bright paint covered the students’ class mural."
     ],
     "answerIndex": 1,
     "rationale": "The original opening phrase appears to modify students, creating an unintended meaning. Placing the description beside mural makes the painted object explicit and removes the dangling relationship.",
@@ -2153,10 +2153,10 @@
     "difficulty": "foundation",
     "prompt": "Which option is a complete sentence?",
     "choices": [
-      "Because the rain ended before the outdoor concert.",
-      "The musicians near the covered stage and the audience.",
-      "Because the rain ended, the outdoor concert began on time.",
-      "While waiting for the final weather announcement."
+      "Because the heavy rain stopped before the outdoor band concert.",
+      "The student musicians near the covered stage and front audience.",
+      "Because the rain ended, the concert began on time.",
+      "While waiting patiently for the final afternoon weather update."
     ],
     "answerIndex": 2,
     "rationale": "A complete sentence expresses a full thought with an independent clause. The correct option combines a dependent reason clause with a complete main clause; the others remain fragments.",
@@ -2171,7 +2171,7 @@
     "qaStatus": "qa-passed",
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
-      "This option does not fit because because introduces a dependent clause without an independent clause.",
+      "This option does not fit because the subordinating conjunction because introduces a dependent clause that lacks an accompanying independent clause to complete the thought.",
       "This option does not fit because the words form a noun group without a complete predicate. The stated information or governing rule points to a different result.",
       "The dependent because clause is followed by the independent clause the outdoor concert began on time.",
       "This option does not fit because while introduces a dependent fragment with no main clause. The stated information or governing rule points to a different result."
@@ -2236,7 +2236,7 @@
       "This option should show plural possession with teachers' and singular possession with principal's. It is the only option that satisfies every part of the prompt.",
       "This option does not fit because the sentence needs possessive apostrophes for both plural teachers and singular principal.",
       "This option does not fit because the plural teachers' possession and singular principal's possession are not both shown.",
-      "This option does not fit because apostrophe placement must distinguish plural possession from singular possession."
+      "This option does not fit because apostrophe placement must distinguish plural possession for multiple teachers from singular possession for one school principal."
     ]
   },
   {
@@ -2309,9 +2309,9 @@
     "prompt": "Which revision presents all three workshop goals in parallel form?",
     "choices": [
       "The workshop teaches planning lessons, to organize materials, and assessment.",
-      "The workshop teaches participants to plan lessons, organizing materials, and assessments.",
-      "The workshop teaches lesson planning, to organize, and how learning is assessed.",
-      "The workshop teaches participants to plan lessons, organize materials, and assess learning."
+      "The workshop teaches participants to plan lessons, organizing, and assessments.",
+      "The workshop teaches lesson planning, to organize well, and how work is graded.",
+      "The workshop teaches participants to plan, organize, and assess."
     ],
     "answerIndex": 3,
     "rationale": "Parallel structure presents coordinated ideas in matching grammatical form. The correct sentence uses three base-form verbs after to, while the alternatives mix nouns, gerunds, and clauses.",
@@ -2370,10 +2370,10 @@
     "difficulty": "application",
     "prompt": "Which sentence combines the ideas most effectively? The library extended its hours. More students began using the study rooms in the evening.",
     "choices": [
-      "The library extended its hours, more students used study rooms in the evening.",
-      "After the library extended its hours, more students used the study rooms in the evening.",
-      "Extending hours and more students began using the evening study rooms.",
-      "More students, the library extended hours, used evening study rooms."
+      "The library extended its evening hours, more students used the study rooms.",
+      "After the library extended hours, more students used study rooms.",
+      "Extending its evening hours and more students began using the study rooms.",
+      "More students, the library extended its hours, used the evening study rooms."
     ],
     "answerIndex": 1,
     "rationale": "The correct revision creates a grammatical relationship between the timing of the extended hours and increased evening use. The other options contain a comma splice or incomplete structure.",
@@ -2574,7 +2574,7 @@
     "qaStatus": "qa-passed",
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
-      "This option does not fit because vague directions would be unclear rather than consistently successful.",
+      "This option does not fit because vague directions would leave steps unclear and confusing rather than helping every group assemble the model cleanly on the first try.",
       "This option does not fit because random directions would not support accurate assembly. The stated information or governing rule points to a different result.",
       "This option does not fit because ordinary does not explain why every group succeeded immediately. The stated information or governing rule points to a different result.",
       "Precise means exact and clear, which explains the consistent correct assembly. It is the only option that satisfies every part of the prompt."
@@ -2587,10 +2587,10 @@
     "difficulty": "application",
     "prompt": "A paragraph explains how sleep supports attention, memory, and mood in students. Which topic sentence is best?",
     "choices": [
-      "Adequate sleep supports several important parts of student learning and well-being.",
-      "Many bedrooms contain beds, lamps, and alarm clocks.",
-      "Students attend different classes throughout the school day.",
-      "Some people prefer blue blankets while others prefer green ones."
+      "Adequate sleep supports student attention, memory, and wellness.",
+      "Many home bedrooms contain comfortable beds, reading lamps, and clocks.",
+      "Middle-school students attend several different classes during each day.",
+      "Some students prefer blue blankets while classmates prefer green quilts."
     ],
     "answerIndex": 0,
     "rationale": "A topic sentence should state the controlling idea that the paragraph develops. Attention, memory, and mood are all learning or well-being benefits of adequate sleep.",
@@ -2649,10 +2649,10 @@
     "difficulty": "application",
     "prompt": "Which concluding sentence best completes a paragraph explaining the benefits of a school composting program?",
     "choices": [
-      "The cafeteria walls were painted during summer vacation.",
-      "Some students bring lunch from home in reusable containers.",
-      "Composting reduces waste and creates useful soil for school gardens.",
-      "The next paragraph will list every school club alphabetically."
+      "The cafeteria walls received fresh paint during the summer school break.",
+      "Several students bring packed lunches from home inside reusable boxes.",
+      "Composting cuts waste and builds rich soil for school gardens.",
+      "The following paragraph will list every after-school club alphabetically."
     ],
     "answerIndex": 2,
     "rationale": "An effective conclusion reinforces the paragraph's main idea without introducing an unrelated topic. The correct sentence brings together waste reduction and useful compost for gardens.",
@@ -2680,10 +2680,10 @@
     "difficulty": "application",
     "prompt": "Which sentence integrates source information most clearly?",
     "choices": [
-      "Water use fell by 8 percent, which somebody reported somewhere.",
-      "The report says things changed, and this proves every campaign works.",
-      "Household water use is important, according to information about water.",
-      "The city's 2025 report says household water use fell 8 percent after the campaign."
+      "Household water use fell by 8 percent, which somebody reported somewhere.",
+      "The city report says usage shifted, proving every public campaign succeeds.",
+      "Household water use remains important according to general water brochures.",
+      "The 2025 city report notes an 8 percent drop in home water use."
     ],
     "answerIndex": 3,
     "rationale": "Clear source integration identifies where information came from and accurately presents the specific finding. The correct sentence supplies attribution and avoids vague or overgeneralized claims.",
@@ -2711,7 +2711,7 @@
     "difficulty": "application",
     "prompt": "Which revision removes ambiguity? When Jordan met Alex after practice, they said the schedule had changed.",
     "choices": [
-      "When Jordan met Alex after practice, Jordan said the schedule had changed.",
+      "After practice with Alex, Jordan said the schedule changed.",
       "When Jordan met Alex after practice, they said it had changed.",
       "After practice, Jordan met Alex, and they discussed that thing.",
       "When they met after it, the schedule had changed according to them."
@@ -2729,7 +2729,7 @@
     "qaStatus": "qa-passed",
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
-      "Repeating Jordan explicitly identifies the speaker while preserving the rest of the original meaning.",
+      "Repeating Jordan explicitly identifies the speaker while preserving the rest of the original meaning. It is the only option that satisfies every part of the prompt.",
       "This option does not fit because both they and it remain unclear. The stated information or governing rule points to a different result.",
       "This option does not fit because they and that thing do not identify the speaker or subject. The stated information or governing rule points to a different result.",
       "This option does not fit because multiple pronouns lack clear antecedents and obscure the event. The stated information or governing rule points to a different result."
@@ -2742,10 +2742,10 @@
     "difficulty": "application",
     "prompt": "A student's report contains strong facts but moves back and forth between three topics. Which feedback is most useful?",
     "choices": [
-      "Correct only the spelling of one word in the final paragraph.",
-      "Group related evidence under clear topic sentences, then order the groups logically.",
-      "Add more facts in random locations without changing organization.",
-      "Rewrite the entire report for the student and provide no explanation."
+      "Fix one minor spelling mistake in the closing paragraph and leave order alone.",
+      "Group related facts under topic sentences and order sections clearly.",
+      "Insert additional interesting facts into random spots without reorganizing.",
+      "Rewrite the entire student report personally without explaining the revisions."
     ],
     "answerIndex": 1,
     "rationale": "The primary weakness is organization, not evidence quantity. Grouping related information and arranging those groups around topic sentences creates a coherent structure the student can apply independently.",
@@ -2760,8 +2760,8 @@
     "qaStatus": "qa-passed",
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
-      "This option does not fit because one spelling correction does not address the organizational problem.",
-      "The feedback directly addresses grouping and sequence while giving the student an actionable revision process.",
+      "This option does not fit because correcting one minor spelling mistake leaves the report’s core organizational jumping between three topics completely unresolved.",
+      "The feedback directly addresses grouping and sequence while giving the student an actionable revision process. It is the only option that satisfies every part of the prompt.",
       "This option does not fit because additional randomly placed facts would increase the lack of coherence.",
       "This option does not fit because doing the revision removes the student's opportunity to learn the strategy."
     ]
@@ -2774,9 +2774,9 @@
     "prompt": "A student argues that the school should create a quiet study room but provides only personal preference. Which revision prompt is best?",
     "choices": [
       "Can you repeat that you personally prefer quiet rooms three more times?",
-      "Which unrelated school tradition could be described in the next paragraph?",
-      "What survey, usage, or achievement evidence could show a broader student need?",
-      "Would removing the claim eliminate the need to find any evidence?"
+      "Which unrelated school tradition could appear inside the next paragraph?",
+      "What survey or usage data could show broader student need?",
+      "Would deleting the main claim remove the need to locate solid evidence?"
     ],
     "answerIndex": 2,
     "rationale": "An argument about a schoolwide program needs evidence of broader need or likely benefit. Survey, use, or outcome data could support the claim more convincingly than repeated personal opinion.",
@@ -2793,7 +2793,7 @@
     "choiceRationales": [
       "This option does not fit because repetition does not strengthen the evidence base. The stated information or governing rule points to a different result.",
       "This option does not fit because an unrelated tradition does not support the proposal. The stated information or governing rule points to a different result.",
-      "The prompt directs the writer toward relevant evidence that extends beyond one individuals preference.",
+      "The prompt directs the writer toward relevant evidence that extends beyond one individuals preference. It is the only option that satisfies every part of the prompt.",
       "This option does not fit because removing the argument avoids rather than improves the reasoning task."
     ]
   },
@@ -2804,10 +2804,10 @@
     "difficulty": "application",
     "prompt": "A student is writing safety directions for younger children. Which revision principle should be emphasized?",
     "choices": [
-      "Use long technical sentences to make the directions sound advanced.",
-      "Hide the most important warning in a final background paragraph.",
-      "Assume readers already understand every specialized abbreviation.",
-      "Use short direct steps, familiar words, and clear warnings at the point of need."
+      "Use long technical phrasing so the safety handout sounds formal and advanced.",
+      "Place the most important safety warning inside a closing background paragraph.",
+      "Assume young readers already recognize every specialized safety abbreviation.",
+      "Use short steps, familiar words, and clear point-of-need warnings."
     ],
     "answerIndex": 3,
     "rationale": "Effective writing considers audience and purpose. Younger readers need concise steps, accessible vocabulary, and warnings next to the action where the information must be used.",
@@ -2822,7 +2822,7 @@
     "qaStatus": "qa-passed",
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
-      "This option does not fit because complex technical language creates barriers for the intended audience.",
+      "This option does not fit because long technical phrasing creates unnecessary reading barriers for younger children who need immediate, accessible safety directions.",
       "This option does not fit because delayed warnings may not be seen before the relevant action. The stated information or governing rule points to a different result.",
       "This option does not fit because unexplained abbreviations reduce clarity and safety. The stated information or governing rule points to a different result.",
       "The language, sequence, and warning placement are matched to young readers and the practical safety purpose."
@@ -2835,10 +2835,10 @@
     "difficulty": "application",
     "prompt": "During peer review, a student says only, This essay is good. What guidance would improve the feedback?",
     "choices": [
-      "Identify one effective passage and one specific revision, explaining the reason for each.",
-      "Replace the comment with a score but no evidence or explanation.",
-      "List personal preferences that are unrelated to the assignment criteria.",
-      "Rewrite every sentence so the original writer makes no decisions."
+      "Name one strong passage and one specific edit with clear reasons.",
+      "Replace the brief comment with a numeric score offering no explanation.",
+      "List unrelated personal tastes that fall outside the assignment rubric.",
+      "Rewrite every rough sentence so the original author makes no choices."
     ],
     "answerIndex": 0,
     "rationale": "Useful peer feedback points to concrete text and connects observations to a purpose or criterion. A balanced specific comment helps the writer recognize a strength and make an informed revision.",
@@ -2866,10 +2866,10 @@
     "difficulty": "application",
     "prompt": "A learner writes several short repetitive sentences: The robot moved. The robot stopped. The robot turned. Which support is best?",
     "choices": [
-      "Require every sentence to remain the same length and pattern.",
-      "Model sentence combining, then let the learner revise selected sentences.",
-      "Delete all action words so the paragraph has fewer repetitions.",
-      "Combine the entire paragraph into one sentence without punctuation."
+      "Require every sentence in the paragraph to keep identical short length.",
+      "Model sentence combining, then guide revising selected lines.",
+      "Delete repeated action verbs so the draft contains fewer repeated words.",
+      "Join the whole paragraph into one long run-on sentence without commas."
     ],
     "answerIndex": 1,
     "rationale": "The issue is repetitive sentence structure, so guided sentence combining can create variety and show relationships among actions. Practice should preserve clarity and proper punctuation.",
@@ -2885,7 +2885,7 @@
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
       "This option does not fit because preserving the repeated pattern does not improve fluency. The stated information or governing rule points to a different result.",
-      "The model teaches a transferable sentence-combining strategy while leaving revision decisions to the learner.",
+      "The model teaches a transferable sentence-combining strategy while leaving revision decisions to the learner. It is the only option that satisfies every part of the prompt.",
       "This option does not fit because verbs carry essential meaning and should not simply be removed. The stated information or governing rule points to a different result.",
       "This option does not fit because one unpunctuated sentence creates a run-on rather than controlled variety."
     ]
@@ -2897,10 +2897,10 @@
     "difficulty": "application",
     "prompt": "A draft has a clear argument but weak paragraph order and several comma errors. What should the student generally do first?",
     "choices": [
-      "Correct one comma and submit without reviewing the argument.",
-      "Alphabetize the paragraphs instead of considering logical order.",
-      "Revise the organization and reasoning before editing sentence-level punctuation.",
-      "Delete the claim so punctuation becomes the only remaining concern."
+      "Fix one comma error and submit the draft without reviewing paragraph flow.",
+      "Arrange the body paragraphs alphabetically instead of checking logical flow.",
+      "Revise paragraph order and reasoning before editing commas.",
+      "Delete the main thesis claim so punctuation stays the sole remaining task."
     ],
     "answerIndex": 2,
     "rationale": "Writers generally revise ideas, evidence, and organization before polishing punctuation. Structural changes may alter many sentences, making early line editing inefficient or temporary.",
@@ -2949,7 +2949,7 @@
       "This option does not fit because public availability does not remove the obligation to distinguish borrowed language and identify its source.",
       "This option does not fit because minor substitutions that retain the original structure are not a genuine paraphrase, and missing credit still conceals the source.",
       "This option does not fit because quotation marks identify borrowed wording but do not tell readers which source supplied the language.",
-      "This response teaches both accurate handling of borrowed language and transparent identification of its source."
+      "This response teaches both accurate handling of borrowed language and transparent identification of its source. It is the only option that satisfies every part of the prompt."
     ]
   },
   {
@@ -2959,10 +2959,10 @@
     "difficulty": "application",
     "prompt": "Two paragraphs shift from the benefits of walking to school to concerns about unsafe intersections. Which transition best supports the shift?",
     "choices": [
-      "Despite these benefits, several route-safety concerns must also be addressed.",
-      "For the same reason, walking has no connection to intersections.",
-      "In conclusion, the essay will now begin an unrelated first topic.",
-      "For example, every benefit proves that no safety problem exists."
+      "Despite those benefits, route-safety issues also need attention.",
+      "For the same reason, walking to school has no link to intersections.",
+      "In conclusion, this essay will now introduce a separate first topic.",
+      "For example, every walking benefit proves no traffic hazard exists."
     ],
     "answerIndex": 0,
     "rationale": "A strong transition connects ideas across paragraphs. The correct sentence refers back to the benefits while preparing readers for a related limitation, creating cohesion and contrast.",
@@ -2977,7 +2977,7 @@
     "qaStatus": "qa-passed",
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
-      "Despite these benefits acknowledges the first paragraph and clearly signals the contrasting safety concern.",
+      "Despite these benefits acknowledges the first paragraph and clearly signals the contrasting safety concern. It is the only option that satisfies every part of the prompt.",
       "This option does not fit because the relationship is a contrast rather than sameness or disconnection.",
       "This option does not fit because the second paragraph is not an unrelated conclusion. The stated information or governing rule points to a different result.",
       "This option does not fit because an example transition cannot erase the stated counterconcern. The stated information or governing rule points to a different result."
@@ -2990,10 +2990,10 @@
     "difficulty": "application",
     "prompt": "A narrative says, The room was messy, but gives no details. Which prompt best encourages elaboration?",
     "choices": [
-      "Can you repeat the word messy at the end of every sentence?",
-      "Which objects, sounds, or actions would help readers picture the mess?",
-      "Would removing the setting make the room easier to describe?",
-      "Can you add a fact about an unrelated building across town?"
+      "Can you repeat the adjective messy at the end of every sentence?",
+      "Which objects, sounds, or actions help readers picture it?",
+      "Would deleting the room setting make the story easier to follow?",
+      "Can you insert a fact about an unrelated building across town?"
     ],
     "answerIndex": 1,
     "rationale": "Elaboration helps readers construct a specific mental image. Asking about observable objects, sounds, and actions guides the writer to replace a general label with relevant descriptive evidence.",
@@ -3041,8 +3041,8 @@
     "choiceRationales": [
       "This option does not fit because more unexplained evidence does not meet the explanation criterion. The stated information or governing rule points to a different result.",
       "This option does not fit because a title does not perform the function of an arguable claim. The stated information or governing rule points to a different result.",
-      "The feedback targets the missing explanation and makes the expected evidence-to-claim connection explicit.",
-      "This option does not fit because presentation does not address the rubric requirement for reasoning."
+      "The feedback targets the missing explanation and makes the expected evidence-to-claim connection explicit. It is the only option that satisfies every part of the prompt.",
+      "This option does not fit because handwriting neatness alone does not address the rubric requirement to connect each supporting fact directly to the main claim."
     ]
   },
   {
@@ -3052,10 +3052,10 @@
     "difficulty": "application",
     "prompt": "A family notice uses long paragraphs and unexplained school acronyms. Which revision would improve accessibility?",
     "choices": [
-      "Add more acronyms so the notice sounds more official.",
-      "Move required actions into a dense footnote in smaller print.",
-      "Remove headings and combine all information into one paragraph.",
-      "Use headings, define acronyms, and state actions in plain language."
+      "Insert extra district acronyms so the family notice sounds formal.",
+      "Move required family actions into a dense small-print footnote.",
+      "Strip out section headings and merge every detail into one block.",
+      "Add headings, define acronyms, and state actions plainly."
     ],
     "answerIndex": 3,
     "rationale": "Accessible notices make key information easy to locate and understand. Headings, lists, defined terms, and plain action statements reduce unnecessary language and navigation demands.",
@@ -3072,7 +3072,7 @@
     "choiceRationales": [
       "This option does not fit because additional unexplained abbreviations increase barriers. The stated information or governing rule points to a different result.",
       "This option does not fit because small dense footnotes make essential actions harder to find. The stated information or governing rule points to a different result.",
-      "This option does not fit because one continuous paragraph reduces scanning and information hierarchy.",
+      "This option does not fit because merging every detail into one continuous block removes clear headings and makes scanning required actions much harder for families.",
       "The revision improves navigation, comprehension, and action clarity for readers with varied familiarity and literacy needs."
     ]
   }

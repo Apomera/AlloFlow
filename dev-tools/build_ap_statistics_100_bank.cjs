@@ -7,6 +7,12 @@
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const { distractorFeedbackFor } = require('./ap_statistics_distractor_feedback/index.cjs');
+const {
+  AP_STATISTICS_FOUNDATIONAL_CHECKS,
+  AP_STATISTICS_TRANSFER_CHECK_OVERRIDES,
+  applyApStatsChoiceOverride,
+  buildTransferCheckChoices,
+} = require('./ap_statistics_choice_overrides/index.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_statistics_foundation_pilot.json');
@@ -522,12 +528,13 @@ function sourceDetails() {
   }));
 }
 
-function makeItem(spec, index) {
+function makeItem(rawSpec, index) {
+  const itemId = PACK_ID + '-item-' + String(index + 1).padStart(3, '0');
+  const spec = applyApStatsChoiceOverride(itemId, rawSpec);
   const unit = unitByNumber.get(spec.unit);
   const objective = objectiveFor(spec);
   const answerIndex = index % 4;
   const choices = rotateChoices(spec.answer, spec.distractors, answerIndex);
-  const itemId = PACK_ID + '-item-' + String(index + 1).padStart(3, '0');
   // Every distractor carries its own explanation, authored per item in
   // ap_statistics_distractor_feedback/. A missing entry fails the build rather
   // than falling back to a generic sentence.
@@ -879,36 +886,37 @@ function buildLibrary(objectiveCatalog) {
       ['How is a residual calculated?', ['Observed response minus predicted response', 'Predicted response minus explanatory variable', 'Observed response divided by sample size', 'Slope minus intercept'], 'Residual = y - y-hat, so it measures vertical deviation from the fitted line.'],
       ['What does r-squared not establish?', ['Causation', 'The proportion of response variation explained by the fitted model', 'A summary of linear model fit', 'A value between 0 and 1 for the usual regression setting'], 'R-squared describes explained variation but is not a probability of causation.'],
     ];
-    const foundationalKnowledgeChecks = sections.map((section, sectionIndex) => ({
-      id: section.id + '-check',
-      chapterId,
-      sectionId: section.id,
-      type: 'single-choice',
-      prompt: 'Which study move best supports accurate reasoning in ' + unit.shortLabel + '?',
-      choices: [
-        'Identify the target, match the method, check conditions, and state the conclusion in context.',
-        'Choose a procedure because it is the most familiar one.',
-        'Treat a sample statistic as the population parameter.',
-        'Generalize beyond the population and design represented by the data.',
-      ],
-      answerIndex: 0,
-      rationale: 'Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.',
-      references: [CED_URL, COURSE_URL, OPENSTAX_URL],
-      reviewStatus: 'source-reviewed-editorial-pass',
-      reviewNote: 'Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.',
-      skillId: objective ? objective.skillId || '2.A' : '2.A',
-      topicIds: sections[sectionIndex].topicCoverage,
-    }));
+    const foundationalKnowledgeChecks = sections.map((section, sectionIndex) => {
+      const checkSpec = AP_STATISTICS_FOUNDATIONAL_CHECKS[section.id];
+      if (!checkSpec) throw new Error('Missing AP Statistics foundational knowledge check for ' + section.id);
+      return {
+        id: section.id + '-check',
+        chapterId,
+        sectionId: section.id,
+        type: 'single-choice',
+        prompt: checkSpec.prompt,
+        choices: checkSpec.choices,
+        answerIndex: checkSpec.answerIndex,
+        rationale: checkSpec.rationale,
+        references: [CED_URL, COURSE_URL, OPENSTAX_URL],
+        reviewStatus: 'source-reviewed-editorial-pass',
+        reviewNote: 'Original retrieval check; independent AP Statistics subject-expert and psychometric review remain pending.',
+        skillId: objective ? objective.skillId || '2.A' : '2.A',
+        topicIds: sections[sectionIndex].topicCoverage,
+      };
+    });
     const transferKnowledgeChecks = sections.map((section, sectionIndex) => {
       const seed = transferCheckSeeds[unitIndex * 3 + sectionIndex];
+      const checkId = section.id + '-transfer-check';
+      const { choices, answerIndex } = buildTransferCheckChoices(seed[1], AP_STATISTICS_TRANSFER_CHECK_OVERRIDES[checkId]);
       return {
-        id: section.id + '-transfer-check',
+        id: checkId,
         chapterId,
         sectionId: section.id,
         type: 'single-choice',
         prompt: seed[0],
-        choices: seed[1],
-        answerIndex: 0,
+        choices,
+        answerIndex,
         rationale: seed[2],
         references: [CED_URL, COURSE_URL, OPENSTAX_URL],
         reviewStatus: 'source-reviewed-editorial-pass',

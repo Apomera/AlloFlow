@@ -4,12 +4,13 @@ import {challengeValidDraft} from './lesson_board_challenges.js';
 import {prepareFinale} from './lesson_board_finale.js';
 import * as engine from './lesson_board_engine.js';
 import { prepareBoard, emptyRun, derive } from './lesson_board_engine.js';
+const parseSafe = raw => JSON.parse(raw, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
 export const fingerprint = value => { let hash = 2166136261; for (const c of value) hash = Math.imul(hash ^ c.charCodeAt(0), 16777619); return (hash >>> 0).toString(36); };
 export const libraryKey = (source, language) => 'allo-lesson-boards:' + fingerprint(language + ':' + source);
 export function readLibrary(storage, source, language) {
   const raw = storage.getItem(libraryKey(source, language)); if (!raw) return [];
   if (raw.length > 160000) throw Error('Saved boards could not be read. Existing data has been kept.');
-  try { const data = JSON.parse(raw); if (data.version !== 1 || data.source !== source || data.language !== language || !Array.isArray(data.boards) || data.boards.length > 4) throw Error(); return data.boards.map(board => prepareBoard(board, source)); } catch (_) { throw Error('Saved boards could not be read. Existing data has been kept.'); }
+  try { const data = parseSafe(raw); if (data.version !== 1 || data.source !== source || data.language !== language || !Array.isArray(data.boards) || data.boards.length > 4) throw Error(); return data.boards.map(board => prepareBoard(board, source)); } catch (_) { throw Error('Saved boards could not be read. Existing data has been kept.'); }
 }
 export function saveBoard(storage, source, language, board) {
   const valid = prepareBoard(board, source), boards = readLibrary(storage, source, language), json = JSON.stringify(valid), previous = boards.findIndex(b => JSON.stringify(b) === json);
@@ -21,7 +22,7 @@ export function restoreSolo(board, raw) {
   if (!raw) return emptyRun();
   try {
     if (raw.length > 200000) throw Error();
-    const data = JSON.parse(raw);
+    const data = parseSafe(raw);
     if (![1, 2].includes(data.version) || data.board !== JSON.stringify(board)) throw Error();
     return engine.restoreRun(board, data.run);
   } catch (_) { throw Error('Your saved solo game could not be restored. Start a new local game to replace that save.'); }
@@ -68,7 +69,7 @@ export function readSolo(storage, board, appId, uid, legacyStorage) {
   if (raw !== null) {
     try {
       if (raw.length > 200000) throw Error();
-      const value = JSON.parse(raw), identity = soloIdentity(appId, uid);
+      const value = parseSafe(raw), identity = soloIdentity(appId, uid);
       if (value.version !== 2 || value.identity?.appId !== identity.appId || value.identity?.uid !== identity.uid || !Number.isSafeInteger(value.savedAt) || value.savedAt <= 0) throw Error();
       const run = restoreSolo(board, raw);
       return { status: 'saved', revision: raw, run, workspace: soloWorkspace(board, run, value.workspace), savedAt: value.savedAt, ...(typeof value.reportAttemptId === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value.reportAttemptId) ? {reportAttemptId:value.reportAttemptId} : {}) };
@@ -80,7 +81,7 @@ export function readSolo(storage, board, appId, uid, legacyStorage) {
     try {
       if (legacy !== null) {
         const run = restoreSolo(board, legacy); let workspace;
-        try { const draft = legacyStorage.getItem(legacyKey + ':draft'); if (draft && draft.length < 50000) { const saved = JSON.parse(draft); if (saved.board === JSON.stringify(board)) workspace = saved; } } catch (_) {}
+        try { const draft = legacyStorage.getItem(legacyKey + ':draft'); if (draft && draft.length < 50000) { const saved = parseSafe(draft); if (saved.board === JSON.stringify(board)) workspace = saved; } } catch (_) {}
         return { status: 'legacy', revision: null, run, workspace: soloWorkspace(board, run, workspace), savedAt: null };
       }
     } catch (_) { return { status: 'corrupt', revision: null, legacy: true }; }
@@ -88,12 +89,12 @@ export function readSolo(storage, board, appId, uid, legacyStorage) {
   return { status: 'empty', revision: null };
 }
 export function saveSolo(storage, board, appId, uid, { run, workspace, expectedRevision = null, reportAttemptId }) {
-  let encoded, normalized;
+  let encoded, normalized, savedValue;
   try {
     prepareBoard(board);
     normalized = restoreSolo(board, JSON.stringify({ version: 2, board: JSON.stringify(board), run }));
-    const value = { version: 2, identity: soloIdentity(appId, uid), board: JSON.stringify(board), run: normalized, workspace: soloWorkspace(board, normalized, workspace), savedAt: Date.now(), ...(typeof reportAttemptId === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(reportAttemptId) ? {reportAttemptId} : {}) };
-    encoded = JSON.stringify(value);
+    savedValue = { version: 2, identity: soloIdentity(appId, uid), board: JSON.stringify(board), run: normalized, workspace: soloWorkspace(board, normalized, workspace), savedAt: Date.now(), ...(typeof reportAttemptId === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(reportAttemptId) ? {reportAttemptId} : {}) };
+    encoded = JSON.stringify(savedValue);
     if (encoded.length > 200000) throw Error();
   } catch (_) { return { status: 'invalid' }; }
   const key = soloStorageKey(board, appId, uid);
@@ -103,7 +104,7 @@ export function saveSolo(storage, board, appId, uid, { run, workspace, expectedR
     storage.setItem(key, encoded);
     const actual = storage.getItem(key);
     if (actual !== encoded) return { status: 'conflict', revision: actual };
-    return { status: 'saved', revision: encoded, run: normalized, workspace: JSON.parse(encoded).workspace, savedAt: JSON.parse(encoded).savedAt };
+    return { status: 'saved', revision: encoded, run: normalized, workspace: savedValue.workspace, savedAt: savedValue.savedAt };
   } catch (_) { return { status: 'unavailable', revision: expectedRevision }; }
 }
 export function soloStatus(storage, board, appId, uid, legacyStorage) {

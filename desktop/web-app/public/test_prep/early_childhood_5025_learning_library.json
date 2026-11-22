@@ -223,12 +223,12 @@
       "knowledgeChecks": [
         {
           "id": "ec5025-ch-01-check-1",
-          "prompt": "In an early-childhood language and literacy context, in a K–2 literacy lesson, how should a elementary literacy teacher use a developmental literacy continuum?",
+          "prompt": "In an early-childhood language and literacy context, in a K–2 literacy lesson, how should an elementary literacy teacher use a developmental literacy continuum?",
           "choices": [
-            "Use the continuum to anticipate relationships and prerequisites while assessing the individual learner rather than treating stages as fixed gates.",
-            "Require every learner to master skills at the same age.",
-            "Skip foundational evidence when comprehension is weak.",
-            "Use grade placement as the only indicator of instructional need."
+            "Use the sequence to anticipate skill links while assessing each child rather than treating stages as gates.",
+            "Require every student in the class to master each literacy milestone at the exact same chronological age.",
+            "Skip foundational decoding and print checks whenever a learner shows low reading comprehension scores.",
+            "Rely on a child’s assigned grade placement as the sole basis for deciding daily instructional reading needs."
           ],
           "answerIndex": 0,
           "rationale": "Literacy components develop in related and partly overlapping ways; a continuum organizes assessment and instruction but does not erase individual, linguistic, cultural, disability, or opportunity differences. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
@@ -244,10 +244,10 @@
           "id": "ec5025-ch-01-check-2",
           "prompt": "In an early-childhood language and literacy context, in a K–2 literacy lesson, which relationship is central to reading comprehension?",
           "choices": [
-            "Comprehension depends only on reading rate.",
-            "Reading comprehension depends on both efficient word recognition and language comprehension, so each component should be assessed.",
-            "Listening comprehension makes decoding unnecessary.",
-            "Word recognition alone guarantees text understanding."
+            "Reading comprehension depends primarily on oral reading speed rather than word accuracy or language meaning.",
+            "Reading comprehension relies on both fluent word recognition and language comprehension, so both need review.",
+            "Strong spoken listening comprehension makes systematic print decoding instruction unnecessary for young readers.",
+            "Accurate printed word recognition by itself ensures full understanding of complex classroom stories and texts."
           ],
           "answerIndex": 1,
           "rationale": "Word recognition and language comprehension make distinct, interacting contributions; instructional planning should locate the learner’s relative strengths and needs rather than infer one from the other. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
@@ -263,10 +263,10 @@
           "id": "ec5025-ch-01-check-3",
           "prompt": "In an early-childhood language and literacy context, in a K–2 literacy lesson, what is the instructional value of oral-language assessment?",
           "choices": [
-            "It replaces direct assessment of print skills.",
-            "It establishes intelligence from conversation.",
-            "Oral-language evidence helps explain comprehension and expression and guides language-rich reading and writing instruction.",
-            "It is relevant only before kindergarten."
+            "Oral-language checks replace direct assessment of letter knowledge, decoding accuracy, and print conventions.",
+            "Brief classroom conversation scores establish a young child’s overall cognitive ability across academic domains.",
+            "Oral-language data clarifies comprehension and expression and guides language-rich reading and writing lessons.",
+            "Oral-language assessment matters during preschool years yet loses instructional value once kindergarten begins."
           ],
           "answerIndex": 2,
           "rationale": "Oral language supports vocabulary, syntax, discourse, inference, comprehension, and written expression across grades, but it must be integrated with direct print and writing evidence. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
@@ -282,10 +282,10 @@
           "id": "ec5025-ch-01-check-4",
           "prompt": "In an early-childhood language and literacy context, in a K–2 literacy lesson, how should a teacher interpret a diverse literacy profile?",
           "choices": [
-            "Assign identical intervention from the total score.",
-            "Assume both students have dyslexia.",
-            "Select the lowest-grade workbook for both students.",
-            "Analyze component skills and contexts separately because the same overall score can reflect different instructional needs."
+            "Place both learners in the identical small-group intervention solely because their overall composite scores match.",
+            "Conclude that both students exhibit dyslexia based on their shared low score on a general comprehension test.",
+            "Assign the lowest available grade-level practice workbook to both learners until their composite totals rise.",
+            "Analyze decoding and linguistic subskills separately because one composite score masks distinct needs."
           ],
           "answerIndex": 3,
           "rationale": "Composite performance can conceal different mechanisms; disaggregating word recognition, language, fluency, knowledge, writing, opportunity, and task conditions supports more precise instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
@@ -301,10 +301,10 @@
           "id": "ec5025-ch-01-check-5",
           "prompt": "In an early-childhood language and literacy context, in a K–2 literacy lesson, which pattern is commonly associated with dyslexia?",
           "choices": [
-            "A word-level reading difficulty involving accurate or fluent recognition, decoding, and spelling, evaluated comprehensively and under current criteria.",
-            "A disorder defined by reversing letters.",
-            "Low motivation as the necessary cause.",
-            "A comprehension problem that never affects word reading."
+            "A word-level difficulty in accurate or fluent reading, decoding, and spelling assessed under current criteria.",
+            "A visual processing disorder defined chiefly by reversing individual letters such as b and d during writing.",
+            "Low classroom motivation or limited home reading effort acting as the primary cause of decoding struggles.",
+            "A pure listening and text comprehension difficulty that leaves printed word reading and spelling unaffected."
           ],
           "answerIndex": 0,
           "rationale": "Dyslexia is not established by reversals or a single score; evaluation considers persistent word-level patterns, instruction, language, development, functional impact, and exclusionary and co-occurring factors. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
@@ -415,12 +415,12 @@
           "id": "ec5025-ch-02-check-1",
           "prompt": "In an early-childhood language and literacy context, while planning explicit emergent-literacy instruction, which task measures phoneme manipulation?",
           "choices": [
-            "Phoneme substitution, a form of phoneme manipulation.",
-            "Print-directionality knowledge.",
-            "Syllable counting only.",
-            "Vocabulary categorization."
+            "Semantic vocabulary categorization that sorts words into related topical concept groups aloud.",
+            "Replacing one individual speech sound inside a spoken word to create a different word.",
+            "Concepts of print directionality showing where a sentence starts and which way lines move.",
+            "Basic syllable counting that claps larger rhythmic word parts without isolating single sounds."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Deleting, adding, or substituting phonemes requires deliberate manipulation of the sound sequence and is more complex than recognition alone. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -434,12 +434,12 @@
           "id": "ec5025-ch-02-check-2",
           "prompt": "In an early-childhood language and literacy context, while planning explicit emergent-literacy instruction, what is the alphabetic principle?",
           "choices": [
-            "Every letter always represents one sound.",
-            "Letters and letter patterns represent the phonemes in spoken language in systematic ways.",
-            "Word meaning can be derived from letter shape alone.",
-            "Print is memorized only as whole visual pictures."
+            "Beginning readers acquire printed words chiefly by memorizing whole visual shapes without sound links.",
+            "Each English alphabet letter maps consistently to one single unchanging speech sound across every word.",
+            "Written letters and spelling patterns systematically represent the individual phonemes of speech.",
+            "A printed word’s meaning can be deduced directly from the visual outline and height of its letters."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "The alphabetic principle links phonology and orthography; English correspondences vary, so teaching progresses from common transparent patterns to more complex ones. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -453,12 +453,12 @@
           "id": "ec5025-ch-02-check-3",
           "prompt": "In an early-childhood language and literacy context, while planning explicit emergent-literacy instruction, which activity addresses concepts of print?",
           "choices": [
-            "Advanced morphological analysis.",
-            "Silent-reading rate.",
-            "Understanding how print is organized and functions in books and written language.",
-            "Norm-referenced interpretation."
+            "Interpreting norm-referenced percentile ranks from standardized district reading benchmark reports.",
+            "Applying advanced morphological analysis to decode Latin roots and multisyllabic academic terms.",
+            "Measuring silent-reading rate and endurance across extended grade-level informational chapter texts.",
+            "Understanding how written text is organized, tracked, and structured across pages and books."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Concepts of print include directionality, word boundaries, book handling, and distinctions among letters, words, and sentences that support access to alphabetic instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -472,12 +472,12 @@
           "id": "ec5025-ch-02-check-4",
           "prompt": "In an early-childhood language and literacy context, while planning explicit emergent-literacy instruction, why can phonemic-awareness instruction include letters?",
           "choices": [
-            "Letters convert the activity into vocabulary instruction only.",
-            "Oral sound awareness must end before print is introduced.",
-            "The tiles eliminate the need for explicit feedback.",
-            "Connecting phonemes with graphemes can strengthen transfer from oral awareness to decoding and spelling."
+            "Pairing spoken phonemes with grapheme tiles strengthens transfer from oral skills to decoding and spelling.",
+            "Adding letter tiles turns the sound-blending routine into a pure semantic vocabulary definition lesson.",
+            "Oral sound-awareness practice must stop completely before any printed alphabet letters enter instruction.",
+            "Using physical grapheme tiles removes the teacher’s need to model or give corrective reading feedback."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Sound awareness and letter–sound knowledge are mutually supportive; carefully linking them helps students apply phonemic skills to reading and encoding. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -491,12 +491,12 @@
           "id": "ec5025-ch-02-check-5",
           "prompt": "In an early-childhood language and literacy context, while planning explicit emergent-literacy instruction, what is a useful sequence for phonological-awareness instruction?",
           "choices": [
-            "Use explicit modeling and supported practice that moves from accessible larger units toward blending, segmenting, and manipulating phonemes based on data.",
-            "Begin with advanced Latin roots.",
-            "Require independent silent reading only.",
-            "Repeat rhyme identification indefinitely without monitoring."
+            "Continue repeating simple rhyme-recognition games indefinitely without checking progress toward phoneme skills.",
+            "Model and scaffold systematically from larger sound units toward blending, segmenting, and manipulating phonemes.",
+            "Launch phonological instruction with complex Latin roots and Greek combining forms across whole-group lessons.",
+            "Shift students who struggle with phonemes directly into unguided silent reading to build independence."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Instruction should be explicit, cumulative, responsive, and focused on the skills needed for word reading rather than tied mechanically to one universal sequence. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -603,14 +603,14 @@
       "knowledgeChecks": [
         {
           "id": "ec5025-ch-03-check-1",
-          "prompt": "In an early-childhood language and literacy context, during systematic K–6 phonics instruction, why teach morphology?",
+          "prompt": "In an early-childhood language and literacy context, during systematic early-childhood and early-elementary phonics instruction, why teach morphology?",
           "choices": [
-            "Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related words.",
-            "It is useful only for grammar labels.",
-            "It eliminates the need for phonics.",
-            "It applies only to words of Anglo-Saxon origin."
+            "Teaching prefixes, suffixes, and roots removes any remaining need for systematic early phonics lessons.",
+            "Morphological word analysis applies strictly to simple everyday words derived from Anglo-Saxon roots.",
+            "Morpheme analysis strengthens word decoding, spelling accuracy, vocabulary growth, and meaning links.",
+            "Morphology helps chiefly with labeling parts of speech on isolated grammar diagramming worksheets."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Morphology links word form and meaning and becomes increasingly valuable in academic language while working alongside phonological, orthographic, and contextual knowledge. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -622,14 +622,14 @@
         },
         {
           "id": "ec5025-ch-03-check-2",
-          "prompt": "In an early-childhood language and literacy context, during systematic K–6 phonics instruction, what is orthographic mapping?",
+          "prompt": "In an early-childhood language and literacy context, during systematic early-childhood and early-elementary phonics instruction, what is orthographic mapping?",
           "choices": [
-            "They store the outline of the word as a picture.",
-            "They bond a word’s phonemes, graphemes, and meaning in memory through accurate analysis and repeated successful retrieval.",
-            "They memorize the page location.",
-            "They infer the word from context without attending to letters."
+            "They memorize the word’s recurring physical position on a familiar classroom chart or storybook page.",
+            "They predict the word repeatedly from surrounding illustrations and sentence context without inspecting letters.",
+            "They store the outer visual silhouette of the entire printed word as an unanalyzed photographic picture.",
+            "They bond a word’s phonemes, graphemes, and meaning in memory through accurate decoding and retrieval."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Orthographic mapping depends on phonemic proficiency and knowledge of spelling patterns; it explains why accurate decoding supports increasingly automatic word recognition. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -641,14 +641,14 @@
         },
         {
           "id": "ec5025-ch-03-check-3",
-          "prompt": "In an early-childhood language and literacy context, during systematic K–6 phonics instruction, how does spelling instruction support reading?",
+          "prompt": "In an early-childhood language and literacy context, during systematic early-childhood and early-elementary phonics instruction, how does spelling instruction support reading?",
           "choices": [
-            "Spelling and reading use unrelated systems.",
-            "Encoding should wait until reading is fluent.",
-            "Spelling requires analysis of phoneme–grapheme and morphological structure, reinforcing the representations used in word reading.",
-            "Copying word lists provides the same evidence as generative spelling."
+            "Encoding requires phoneme–grapheme and morpheme analysis, strengthening representations used in reading.",
+            "Copying weekly spelling lists repeatedly yields the same diagnostic insight as generative dictated spelling.",
+            "Spelling and word reading operate through wholly separate cognitive pathways with minimal mutual transfer.",
+            "Classroom encoding practice should wait until students reach fluent silent reading across grade-level texts."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Reading and spelling are reciprocal: generative encoding exposes what a learner understands about sounds, patterns, syllables, and morphemes and strengthens those links. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -660,14 +660,14 @@
         },
         {
           "id": "ec5025-ch-03-check-4",
-          "prompt": "In an early-childhood language and literacy context, during systematic K–6 phonics instruction, which error analysis best guides phonics instruction?",
+          "prompt": "In an early-childhood language and literacy context, during systematic early-childhood and early-elementary phonics instruction, which error analysis best guides phonics instruction?",
           "choices": [
-            "Whether the student knows the story theme.",
-            "Whether the font is the preferred color.",
-            "Whether the student can define every word.",
-            "Whether the student represents and blends consonant clusters accurately in both decoding and encoding."
+            "Whether the learner can recite formal dictionary definitions for every short word on the spelling list.",
+            "Whether the learner perceives, segments, and represents consonant clusters across decoding and encoding.",
+            "Whether the learner can summarize the central moral theme of the accompanying classroom picture book.",
+            "Whether the printed practice cards use the student’s preferred background font style and paper color."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Parallel omissions in reading and spelling suggest a specific cluster or phoneme-sequence need that can be confirmed and addressed explicitly. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -679,14 +679,14 @@
         },
         {
           "id": "ec5025-ch-03-check-5",
-          "prompt": "In an early-childhood language and literacy context, during systematic K–6 phonics instruction, what is the best response when context and decoding conflict?",
+          "prompt": "In an early-childhood language and literacy context, during systematic early-childhood and early-elementary phonics instruction, what is the best response when context and decoding conflict?",
           "choices": [
-            "Return to the graphemes, blend or analyze the word accurately, then confirm that the pronunciation and meaning fit the sentence.",
-            "Accept the substitution because the meaning is plausible.",
-            "Cover the word and guess again.",
-            "Ignore print and reread only for expression."
+            "Cover the printed word completely and invite the child to predict another contextually plausible word.",
+            "Bypass the printed letters and ask the student to reread the line focusing strictly on expressive voice.",
+            "Direct attention back to the graphemes, decode the printed word accurately, then verify sentence meaning.",
+            "Accept the semantic word substitution without correction whenever the guessed word fits the story context."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Context confirms meaning and pronunciation but should not replace close attention to the orthographic information needed for accurate word recognition. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -795,12 +795,12 @@
           "id": "ec5025-ch-04-check-1",
           "prompt": "Without using a calculator, solve or interpret this early-childhood content-knowledge problem: What is 3/4 + 2/3?",
           "choices": [
-            "17/12, or 1 5/12",
             "5/7",
             "5/12",
-            "13/12, or 1 1/12"
+            "13/12, or 1 1/12",
+            "17/12, or 1 5/12"
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "The least common denominator is 12. Convert 3/4 to 9/12 and 2/3 to 8/12, then add to obtain 17/12, which is the mixed number 1 5/12.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -814,12 +814,12 @@
           "id": "ec5025-ch-04-check-2",
           "prompt": "Without using a calculator, solve or interpret this early-childhood content-knowledge problem: A backpack costs $48 and is discounted by 25%. What is the sale price before tax?",
           "choices": [
-            "$12",
             "$36",
             "$23",
-            "$42"
+            "$42",
+            "$12"
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Find the discount by multiplying 48 by 0.25 to get 12. The sale price is the original 48 dollars minus the 12-dollar discount, which equals 36 dollars.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -833,12 +833,12 @@
           "id": "ec5025-ch-04-check-3",
           "prompt": "Without using a calculator, solve or interpret this early-childhood content-knowledge problem: A paint mixture uses 2 cups of blue paint for every 5 cups of white paint. How many cups of blue paint are needed with 20 cups of white paint?",
           "choices": [
-            "4 cups",
             "10 cups",
             "8 cups",
-            "17 cups"
+            "17 cups",
+            "4 cups"
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "The ratio 2 to 5 must remain equivalent. Since 20 cups of white paint is four groups of 5, multiply the blue amount by four as well to obtain 8 cups.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -852,12 +852,12 @@
           "id": "ec5025-ch-04-check-4",
           "prompt": "Without using a calculator, solve or interpret this early-childhood content-knowledge problem: What is -7 + 12 - 5?",
           "choices": [
-            "-24",
             "-10",
             "10",
-            "0"
+            "0",
+            "-24"
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Evaluate from left to right: negative 7 plus 12 equals 5, and 5 minus 5 equals 0. The signs must be applied to each operation as written.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -871,12 +871,12 @@
           "id": "ec5025-ch-04-check-5",
           "prompt": "Without using a calculator, solve or interpret this early-childhood content-knowledge problem: Solve 4x - 7 = 21.",
           "choices": [
-            "x = 7",
             "x = 3.5",
             "x = 5",
-            "x = 28"
+            "x = 28",
+            "x = 7"
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Undo the subtraction by adding 7 to each side, producing 4x = 28. Then divide both sides by 4 to isolate x, so x equals 7.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1026,7 +1026,7 @@
             "7",
             "10",
             "8.5",
-            "11"
+            "11.5"
           ],
           "answerIndex": 2,
           "rationale": "An even number of observations has two middle values. The third and fourth values are 7 and 10, and their mean is 17/2, or 8.5.",
@@ -1175,12 +1175,12 @@
           "id": "ec5025-ch-06-check-1",
           "prompt": "Without using a calculator, solve or interpret this early-childhood content-knowledge problem: Evaluate 2a squared - 3b when a = 4 and b = 5.",
           "choices": [
+            "145",
             "17",
             "1",
-            "49",
-            "145"
+            "49"
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Substitute the given values and apply exponents before multiplication: 4 squared is 16, so 2 times 16 is 32; then 32 minus 15 equals 17.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1194,12 +1194,12 @@
           "id": "ec5025-ch-06-check-2",
           "prompt": "Without using a calculator, solve or interpret this early-childhood content-knowledge problem: If 6 notebooks cost $15, what is the cost of 14 notebooks at the same rate?",
           "choices": [
+            "$90",
             "$21",
             "$35",
-            "$29",
-            "$90"
+            "$29"
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Find the constant rate: 15 dollars for 6 notebooks is 2.50 dollars per notebook. Multiplying 2.50 by 14 gives a total cost of 35 dollars.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1213,12 +1213,12 @@
           "id": "ec5025-ch-06-check-3",
           "prompt": "Without using a calculator, solve or interpret this early-childhood content-knowledge problem: A rectangular prism measures 7 centimeters by 4 centimeters by 6 centimeters. What is its volume?",
           "choices": [
+            "336 cubic centimeters",
             "17 cubic centimeters",
             "68 cubic centimeters",
-            "168 cubic centimeters",
-            "336 cubic centimeters"
+            "168 cubic centimeters"
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "A rectangular prism volume is the product of its three dimensions. Multiplying 7 by 4 by 6 gives 168, and the unit is cubic centimeters.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1232,12 +1232,12 @@
           "id": "ec5025-ch-06-check-4",
           "prompt": "Without using a calculator, solve or interpret this early-childhood content-knowledge problem: Enrollment increased from 240 students to 276 students. What was the percent increase?",
           "choices": [
+            "15%",
             "13%",
             "36%",
-            "85%",
-            "15%"
+            "85%"
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Percent increase compares the change with the original amount. Subtract to get 36, divide 36 by 240 to get 0.15, and convert to 15 percent.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1251,12 +1251,12 @@
           "id": "ec5025-ch-06-check-5",
           "prompt": "Without using a calculator, solve or interpret this early-childhood content-knowledge problem: A student has $50 and buys 3 identical notebooks. After the purchase, $32 remains. Which equation can be used to find the price n of one notebook?",
           "choices": [
+            "50 - n = 96",
             "50 - 3n = 32",
             "50 + 3n = 32",
-            "3(50 - n) = 32",
-            "50 - n = 96"
+            "3(50 - n) = 32"
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "The original amount is 50 dollars, the total purchase is three times the single price n, and the remainder is 32. That relationship is 50 - 3n = 32.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1370,12 +1370,12 @@
           "id": "ec5025-ch-07-check-1",
           "prompt": "Which statement best demonstrates accurate social studies content knowledge about past, present, and future?",
           "choices": [
-            "A timeline orders events chronologically and can use dated or relative intervals appropriate to the evidence.",
-            "A timeline proves why every event occurred.",
-            "Events on a timeline must be equally spaced regardless of elapsed time.",
-            "The most important event must always appear first."
+            "Events plotted on any timeline must sit at identical visual spacing regardless of years elapsed.",
+            "The most famous historical event in a unit belongs first on the far left of every timeline.",
+            "A timeline orders events chronologically using dated or relative intervals backed by evidence.",
+            "A chronological timeline proves the exact underlying cause behind every historical event listed."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "A timeline orders events chronologically and can use dated or relative intervals appropriate to the evidence. This directly states the governing concept for past, present, and future; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1390,12 +1390,12 @@
           "id": "ec5025-ch-07-check-2",
           "prompt": "Which statement best demonstrates accurate social studies content knowledge about primary and secondary sources?",
           "choices": [
-            "Every photograph is objective and complete.",
-            "A photograph made during an event can be primary evidence, while a later textbook account is generally secondary.",
-            "A textbook is always a primary source.",
-            "Primary sources eliminate the need to compare perspectives."
+            "A school social-studies textbook counts as a primary source because teachers use it directly in class.",
+            "Locating one credible primary source removes the need to compare multiple perspectives or accounts.",
+            "Any historical photograph provides a fully objective, unframed record capturing every detail present.",
+            "A photograph from an event offers primary evidence; a later textbook provides a secondhand account."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "A photograph made during an event can be primary evidence, while a later textbook account is generally secondary. This directly states the governing concept for primary and secondary sources; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1410,12 +1410,12 @@
           "id": "ec5025-ch-07-check-3",
           "prompt": "Which statement best demonstrates accurate social studies content knowledge about maps and globes?",
           "choices": [
-            "Lines of latitude show east-west distance from the prime meridian.",
-            "A globe has no distortion of distance, area, or shape.",
-            "A map key explains symbols, a compass rose indicates direction, and scale relates map distance to real distance.",
-            "Map color has one universal meaning without a key."
+            "A map key defines symbols, a compass rose shows direction, and scale links map distance to ground.",
+            "Standard map colors carry one fixed universal meaning across every atlas without consulting a key.",
+            "Horizontal lines of latitude measure east-west angular distance away from the prime meridian.",
+            "A flat classroom wall map preserves exact area, distance, and shape across Earth with no distortion."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "A map key explains symbols, a compass rose indicates direction, and scale relates map distance to real distance. This directly states the governing concept for maps and globes; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1430,12 +1430,12 @@
           "id": "ec5025-ch-07-check-4",
           "prompt": "Which statement best demonstrates accurate social studies content knowledge about community rules and laws?",
           "choices": [
-            "Every classroom rule is a federal law.",
-            "Laws never change.",
-            "A law is valid only when every person agrees with it.",
-            "Rules and laws organize shared life, protect rights and safety, and carry consequences established by legitimate groups or governments."
+            "A municipal or state law holds legitimate authority solely when every single citizen votes in favor.",
+            "Shared norms and laws structure civic life, protect rights and safety, and carry fair consequences.",
+            "Every classroom expectation written on a school poster carries the same legal force as a federal law.",
+            "Once enacted by a legislative body, formal public laws remain permanently fixed without amendment."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Rules and laws organize shared life, protect rights and safety, and carry consequences established by legitimate groups or governments. This directly states the governing concept for community rules and laws; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1450,12 +1450,12 @@
           "id": "ec5025-ch-07-check-5",
           "prompt": "Which statement best demonstrates accurate social studies content knowledge about rights and responsibilities?",
           "choices": [
-            "A right protects an entitlement or freedom, while a responsibility describes an obligation connected to participation in a community.",
-            "Rights are rewards earned only by completing chores.",
-            "Responsibilities apply only to elected officials.",
-            "A right and a responsibility are identical concepts."
+            "Civic responsibilities apply strictly to elected public officials rather than ordinary community members.",
+            "Rights and responsibilities serve as interchangeable civic labels describing the exact same legal duty.",
+            "A right safeguards a freedom or entitlement; a responsibility is a duty tied to community membership.",
+            "Basic civic rights function as optional classroom rewards earned after completing assigned daily chores."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "A right protects an entitlement or freedom, while a responsibility describes an obligation connected to participation in a community. This directly states the governing concept for rights and responsibilities; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1570,12 +1570,12 @@
           "id": "ec5025-ch-08-check-1",
           "prompt": "Which statement best demonstrates accurate social studies content knowledge about producers and consumers?",
           "choices": [
-            "A producer creates a good or service, while a consumer uses or purchases it; one person can occupy both roles in different situations.",
-            "Consumers manufacture every product they buy.",
-            "Producers never use goods or services.",
-            "The roles are permanently assigned at birth."
+            "Household consumers physically manufacture most everyday goods they purchase inside local stores.",
+            "Business producers and service workers avoid acting as consumers while operating inside a market economy.",
+            "Economic identities as either producer or consumer remain fixed permanently across an individual’s lifetime.",
+            "Producers create goods or services while consumers use them, and one person fills both roles across contexts."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "A producer creates a good or service, while a consumer uses or purchases it; one person can occupy both roles in different situations. This directly states the governing concept for producers and consumers; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1590,12 +1590,12 @@
           "id": "ec5025-ch-08-check-2",
           "prompt": "Which statement best demonstrates accurate social studies content knowledge about families and cultural diversity?",
           "choices": [
-            "Every culture shares identical family roles.",
-            "Families vary in structure, language, traditions, and roles; accurate study avoids treating one pattern as universal or deficient.",
-            "One holiday represents an entire culture.",
-            "Differences should be ranked from best to worst."
+            "Households differ in structure, language, customs, and roles; sound study avoids ranking one as superior.",
+            "Highlighting one festive annual holiday gives children a complete portrait of an entire cultural heritage.",
+            "Classroom comparisons should rank diverse family traditions from most effective to least effective.",
+            "Communities worldwide organize household family structures and daily caregiver roles in identical patterns."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Families vary in structure, language, traditions, and roles; accurate study avoids treating one pattern as universal or deficient. This directly states the governing concept for families and cultural diversity; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1610,12 +1610,12 @@
           "id": "ec5025-ch-08-check-3",
           "prompt": "Which statement best demonstrates accurate social studies content knowledge about civic decision making?",
           "choices": [
-            "Voting guarantees that every outcome is fair.",
-            "Only adults can examine community problems.",
-            "Groups can identify a shared problem, gather perspectives and evidence, consider alternatives, decide through an agreed process, and evaluate effects.",
-            "Evidence is unnecessary when opinions differ."
+            "Civic problem solving belongs strictly to adult voters because young children lack community perspectives.",
+            "Groups define a shared issue, weigh voices and evidence, compare options, decide fairly, and review effects.",
+            "Factual evidence becomes unnecessary in civic discussions whenever group members hold firm personal views.",
+            "Holding a quick majority vote ensures every resulting community decision is equitable and well informed."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Groups can identify a shared problem, gather perspectives and evidence, consider alternatives, decide through an agreed process, and evaluate effects. This directly states the governing concept for civic decision making; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1630,12 +1630,12 @@
           "id": "ec5025-ch-08-check-4",
           "prompt": "Which statement best demonstrates accurate social studies content knowledge about geographic human-environment interaction?",
           "choices": [
-            "Environment determines human behavior completely.",
-            "Human activity never changes land or water.",
-            "Adaptation and modification mean the same thing.",
-            "People adapt to, depend on, and modify environments, and those actions can create benefits and costs."
+            "Human settlement, farming, and construction leave surrounding land, waterways, and habitats unchanged.",
+            "Adapting to local physical conditions and modifying a landscape represent the exact same geographic process.",
+            "People depend on, adapt to, and modify environments, producing both intended benefits and tradeoffs.",
+            "Local climate and physical landforms rigidly dictate every cultural custom and economic choice people make."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "People adapt to, depend on, and modify environments, and those actions can create benefits and costs. This directly states the governing concept for geographic human-environment interaction; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1650,12 +1650,12 @@
           "id": "ec5025-ch-08-check-5",
           "prompt": "Which statement best demonstrates accurate social studies content knowledge about local, state, and national government?",
           "choices": [
-            "Different levels of government have distinct and sometimes shared responsibilities; authority depends on constitutions and laws.",
-            "A mayor leads the national government.",
-            "States have no laws of their own.",
-            "Every public service is managed by the same level."
+            "An elected city mayor serves as the chief executive officer leading the national federal government.",
+            "Individual states enforce federal statutes without authority to enact or amend state-level laws.",
+            "Every public service from local parks to national defense is administered by one single government tier.",
+            "Local, state, and national governments hold distinct and shared powers rooted in constitutions and laws."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Different levels of government have distinct and sometimes shared responsibilities; authority depends on constitutions and laws. This directly states the governing concept for local, state, and national government; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1770,10 +1770,10 @@
           "id": "ec5025-ch-09-check-1",
           "prompt": "Which statement best demonstrates accurate science content knowledge about observation and inference?",
           "choices": [
-            "An observation records information obtained through senses or tools; an inference is an interpretation based on observations and prior knowledge.",
-            "An inference is always directly visible.",
-            "Measurements are opinions.",
-            "Observations can never be revised."
+            "Direct sensing or measurement gathers data; an inference interprets that data using prior concepts.",
+            "A scientific inference must be directly visible with unaided eyes during a classroom investigation.",
+            "Numeric classroom measurements count as subjective personal opinions rather than empirical evidence.",
+            "Once recorded in a lab notebook, initial observations remain fixed and cannot be checked or revised."
           ],
           "answerIndex": 0,
           "rationale": "An observation records information obtained through senses or tools; an inference is an interpretation based on observations and prior knowledge. This directly states the governing concept for observation and inference; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
@@ -1790,10 +1790,10 @@
           "id": "ec5025-ch-09-check-2",
           "prompt": "Which statement best demonstrates accurate science content knowledge about fair tests and variables?",
           "choices": [
-            "Change every condition at once.",
-            "A fair comparison changes the factor of interest, measures an outcome, and keeps other relevant conditions as consistent as feasible.",
-            "Use the result you expected as the data.",
-            "One trial always proves a universal rule."
+            "Changing several experimental conditions together speeds up testing and clarifies which factor mattered.",
+            "A controlled trial varies one target factor, measures an outcome, and keeps other conditions steady.",
+            "Recording the outcome predicted before the trial ensures the class data table looks neat and accurate.",
+            "Running one quick classroom trial provides sufficient proof to establish a universal scientific law."
           ],
           "answerIndex": 1,
           "rationale": "A fair comparison changes the factor of interest, measures an outcome, and keeps other relevant conditions as consistent as feasible. This directly states the governing concept for fair tests and variables; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
@@ -1810,10 +1810,10 @@
           "id": "ec5025-ch-09-check-3",
           "prompt": "Which statement best demonstrates accurate science content knowledge about patterns and evidence?",
           "choices": [
-            "A pattern proves causation by itself.",
-            "One unusual case must be ignored.",
-            "Repeated observations can reveal patterns, but claims should match the amount, quality, and limits of the evidence.",
-            "Data should be changed to fit a prediction."
+            "Spotting a recurring pattern across two variables proves directly that the first factor caused the second.",
+            "Any single unusual data point outside the main cluster should be deleted quietly to clean up the chart.",
+            "Repeated observations reveal trends, yet claims must fit the amount, quality, and limits of the data.",
+            "Adjusting recorded classroom measurements to match the class hypothesis makes graphs easier to interpret."
           ],
           "answerIndex": 2,
           "rationale": "Repeated observations can reveal patterns, but claims should match the amount, quality, and limits of the evidence. This directly states the governing concept for patterns and evidence; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
@@ -1830,10 +1830,10 @@
           "id": "ec5025-ch-09-check-4",
           "prompt": "Which statement best demonstrates accurate science content knowledge about properties of matter?",
           "choices": [
-            "All solids have the same mass.",
-            "Gases are not matter.",
-            "Color alone identifies every substance.",
-            "Matter has observable properties such as mass, volume, state, texture, color, and temperature; properties can be measured or compared."
+            "Every solid object of similar shape and size carries the exact same physical mass on a balance.",
+            "Invisible atmospheric gases such as air and oxygen do not count as matter because they float.",
+            "Checking surface color alone suffices to identify any unknown classroom material with certainty.",
+            "Matter has measurable traits such as mass, volume, state, texture, color, and temperature."
           ],
           "answerIndex": 3,
           "rationale": "Matter has observable properties such as mass, volume, state, texture, color, and temperature; properties can be measured or compared. This directly states the governing concept for properties of matter; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
@@ -1850,10 +1850,10 @@
           "id": "ec5025-ch-09-check-5",
           "prompt": "Which statement best demonstrates accurate science content knowledge about changes in matter?",
           "choices": [
-            "Melting and freezing are physical state changes; forming a new substance with different properties is evidence of chemical change.",
-            "Melting always creates a new substance.",
-            "Every temperature change is chemical.",
-            "Freezing removes matter."
+            "Melting and freezing are physical state shifts; forming a new substance signals a chemical change.",
+            "Melting solid ice into liquid water creates a brand-new chemical substance with different molecules.",
+            "Any noticeable rise or drop in a sample’s temperature indicates that a chemical reaction occurred.",
+            "Freezing liquid water inside a sealed cup reduces the total amount of matter stored in the cup."
           ],
           "answerIndex": 0,
           "rationale": "Melting and freezing are physical state changes; forming a new substance with different properties is evidence of chemical change. This directly states the governing concept for changes in matter; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
@@ -1970,12 +1970,12 @@
           "id": "ec5025-ch-10-check-1",
           "prompt": "Which statement best demonstrates accurate science content knowledge about Earth materials?",
           "choices": [
-            "Rocks, soil, sand, and water have observable properties and participate in Earth processes such as weathering, erosion, and deposition.",
-            "Erosion and weathering are identical.",
-            "Soil contains only crushed rock.",
-            "Deposition removes all sediment."
+            "Sediment deposition dissolves rock particles permanently and removes them from Earth’s surface cycle.",
+            "Rocks, soil, sand, and water show measurable traits and cycle via weathering, erosion, and deposition.",
+            "Weathering and erosion name the exact same single process of washing soil downstream in rivers.",
+            "Natural garden soil consists strictly of finely crushed bedrock with no organic matter, air, or water."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Rocks, soil, sand, and water have observable properties and participate in Earth processes such as weathering, erosion, and deposition. This directly states the governing concept for Earth materials; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -1990,12 +1990,12 @@
           "id": "ec5025-ch-10-check-2",
           "prompt": "Which statement best demonstrates accurate science content knowledge about weather and climate?",
           "choices": [
-            "One storm defines a region’s climate.",
-            "Weather describes short-term atmospheric conditions; climate describes longer-term patterns for a region.",
-            "Weather and climate are interchangeable.",
-            "Climate never varies over time."
+            "Regional climate patterns remain permanently locked in place and show no variation across decades.",
+            "One unusually cold winter storm is sufficient to redefine an entire geographic region’s climate.",
+            "Weather describes short-term local air conditions; climate describes long-term regional patterns.",
+            "Weather and climate serve as interchangeable scientific terms describing the daily local forecast."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Weather describes short-term atmospheric conditions; climate describes longer-term patterns for a region. This directly states the governing concept for weather and climate; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -2010,12 +2010,12 @@
           "id": "ec5025-ch-10-check-3",
           "prompt": "Which statement best demonstrates accurate science content knowledge about day, night, and seasons?",
           "choices": [
-            "Seasons occur because Earth is much closer to the Sun in summer.",
-            "The Sun circles Earth once each day.",
-            "Earth’s rotation produces day and night; Earth’s tilted axis and revolution around the Sun produce seasonal patterns.",
-            "Every location has identical seasons."
+            "Every latitude on Earth experiences the exact same seasonal temperatures during the same calendar month.",
+            "Summer occurs across the Northern Hemisphere mainly because Earth moves much closer to the Sun.",
+            "Day and night happen because the Sun travels around a stationary Earth once every twenty-four hours.",
+            "Earth’s rotation creates day and night; its tilted axis and solar orbit drive seasonal cycles."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Earth’s rotation produces day and night; Earth’s tilted axis and revolution around the Sun produce seasonal patterns. This directly states the governing concept for day, night, and seasons; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -2030,12 +2030,12 @@
           "id": "ec5025-ch-10-check-4",
           "prompt": "Which statement best demonstrates accurate science content knowledge about plant needs and structures?",
           "choices": [
-            "Plants obtain all food directly from soil.",
-            "Roots perform photosynthesis for every plant.",
-            "Seeds are nonliving rocks.",
-            "Plants generally require light, water, air, nutrients, and suitable conditions; roots, stems, leaves, flowers, fruits, and seeds have related functions."
+            "Plants need light, water, air, and nutrients; roots, stems, leaves, flowers, and seeds serve linked roles.",
+            "Green plants obtain their entire supply of chemical food energy directly by eating soil through roots.",
+            "Underground plant roots carry out primary sunlight photosynthesis across typical leafy flowering plants.",
+            "Dry plant seeds are nonliving mineral pebbles that come alive for the first time after touching water."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Plants generally require light, water, air, nutrients, and suitable conditions; roots, stems, leaves, flowers, fruits, and seeds have related functions. This directly states the governing concept for plant needs and structures; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -2050,12 +2050,12 @@
           "id": "ec5025-ch-10-check-5",
           "prompt": "Which statement best demonstrates accurate science content knowledge about animal structures and life cycles?",
           "choices": [
-            "Animals have structures and behaviors that support survival, and life cycles include patterned stages that vary among species.",
-            "Every animal begins as a miniature adult.",
-            "All life cycles contain identical stages.",
-            "A learned behavior is a body structure."
+            "A learned survival behavior acquired from parents counts anatomically as an inherited body structure.",
+            "Animals use body traits and behaviors to survive, and development follows species-specific stages.",
+            "Every young animal hatches or is born looking like a smaller identical copy of its mature adult form.",
+            "All vertebrate and invertebrate animal species progress through the exact same set of life-cycle stages."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Animals have structures and behaviors that support survival, and life cycles include patterned stages that vary among species. This directly states the governing concept for animal structures and life cycles; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -2175,12 +2175,12 @@
           "id": "ec5025-ch-11-check-1",
           "prompt": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about personal hygiene and disease prevention?",
           "choices": [
-            "Handwashing with soap, respiratory etiquette, vaccination guidance, food safety, and avoiding shared bodily-fluid exposure reduce disease transmission.",
-            "Antibiotics prevent every viral infection.",
-            "Visible cleanliness guarantees no germs.",
-            "Children should share drinking containers to build immunity."
+            "Hands and tabletops that look visibly spotless carry zero infectious germs capable of spreading illness.",
+            "Encouraging young children to share classroom water cups builds stronger natural group immunity safely.",
+            "Soap handwashing, cough etiquette, vaccination guidance, safe food prep, and fluid precautions cut spread.",
+            "Prescription antibiotics serve as a reliable preventive medicine against common viral colds and influenza."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Handwashing with soap, respiratory etiquette, vaccination guidance, food safety, and avoiding shared bodily-fluid exposure reduce disease transmission. This directly states the governing concept for personal hygiene and disease prevention; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -2196,12 +2196,12 @@
           "id": "ec5025-ch-11-check-2",
           "prompt": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about nutrition and balanced eating?",
           "choices": [
-            "One food supplies every nutrient.",
-            "A varied pattern across food groups supplies energy and nutrients; portion, frequency, allergy, culture, and access matter more than labeling foods morally.",
-            "Sugar is the only source of dietary energy.",
-            "All fats must be eliminated."
+            "Refined dietary sugar functions as the body’s sole usable nutrient source for daily childhood energy.",
+            "Healthy early-childhood meal plans should eliminate dietary fats across every snack and school lunch.",
+            "Eating one nutrient-dense favorite food daily supplies every vitamin, mineral, and macronutrient needed.",
+            "Varied foods supply energy and nutrients; balance, allergies, culture, and access beat moral food labels."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "A varied pattern across food groups supplies energy and nutrients; portion, frequency, allergy, culture, and access matter more than labeling foods morally. This directly states the governing concept for nutrition and balanced eating; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -2217,12 +2217,12 @@
           "id": "ec5025-ch-11-check-3",
           "prompt": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about physical activity and fitness?",
           "choices": [
-            "Only competitive sports count as activity.",
-            "Pain should always be ignored.",
-            "Regular age-appropriate activity supports cardiovascular endurance, strength, flexibility, coordination, and well-being, with rest and hydration.",
-            "Flexibility and strength are identical."
+            "Regular movement builds endurance, strength, flexibility, coordination, and wellness with rest and water.",
+            "Muscular strength and joint flexibility represent the exact same underlying component of physical fitness.",
+            "Structured competitive league sports are the sole movement form that counts toward childhood fitness.",
+            "Children should push through sharp joint or muscle pain during exercise to build lasting toughness."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Regular age-appropriate activity supports cardiovascular endurance, strength, flexibility, coordination, and well-being, with rest and hydration. This directly states the governing concept for physical activity and fitness; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -2238,12 +2238,12 @@
           "id": "ec5025-ch-11-check-4",
           "prompt": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about motor development?",
           "choices": [
-            "Throwing is a locomotor skill.",
-            "Balancing requires travel across space.",
-            "Motor skills develop identically without practice or access.",
-            "Locomotor skills move the body through space, nonlocomotor skills stabilize or bend in place, and manipulative skills control objects."
+            "Fundamental motor skills mature at identical ages regardless of practice opportunities or safe space.",
+            "Locomotor skills travel, nonlocomotor skills stabilize in place, and manipulative skills handle objects.",
+            "Overhand throwing a beanbag at a target qualifies as a primary locomotor movement skill in gym.",
+            "Static balancing on one foot requires children to travel rapidly across open gymnasium floor space."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Locomotor skills move the body through space, nonlocomotor skills stabilize or bend in place, and manipulative skills control objects. This directly states the governing concept for motor development; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -2259,12 +2259,12 @@
           "id": "ec5025-ch-11-check-5",
           "prompt": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about body and safety signals?",
           "choices": [
-            "Children should identify trusted adults, recognize unsafe or uncomfortable situations, use correct body-part language, understand bodily autonomy, and seek help.",
-            "Secrets about unsafe touch must always be kept.",
-            "A child is responsible for an adult’s harmful behavior.",
-            "Only strangers can create unsafe situations."
+            "A young child bears personal responsibility when an older person crosses a physical safety boundary.",
+            "Safety lessons should focus strictly on unfamiliar strangers because familiar adults pose no boundary risk.",
+            "Children learn trusted adults, warning cues, correct anatomy terms, bodily autonomy, and help seeking.",
+            "Promises to keep secrets about uncomfortable physical touch should be honored to maintain adult trust."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Children should identify trusted adults, recognize unsafe or uncomfortable situations, use correct body-part language, understand bodily autonomy, and seek help. This directly states the governing concept for body and safety signals; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -2385,12 +2385,12 @@
           "id": "ec5025-ch-12-check-1",
           "prompt": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about visual-art elements?",
           "choices": [
-            "Line, shape, form, color, value, texture, and space are elements artists organize to communicate and create visual relationships.",
-            "Texture can only be touched, never implied.",
-            "Shape and three-dimensional form are identical.",
-            "Value means monetary price only."
+            "Visual texture exists strictly on rough physical surfaces that can be touched rather than drawn.",
+            "Flat two-dimensional shapes and three-dimensional sculptural forms describe the exact same element.",
+            "The art element called value refers strictly to a finished painting’s monetary retail price tag.",
+            "Line, shape, form, color, value, texture, and space are key visual components artists combine."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Line, shape, form, color, value, texture, and space are elements artists organize to communicate and create visual relationships. This directly states the governing concept for visual-art elements; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -2406,12 +2406,12 @@
           "id": "ec5025-ch-12-check-2",
           "prompt": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about visual-art processes?",
           "choices": [
-            "Every artwork has one correct interpretation.",
-            "Artists generate ideas, explore materials, create, revise, present, respond, and connect work with context; process and interpretation can have multiple defensible outcomes.",
-            "Revision makes art inauthentic.",
-            "Copying a model is the only way to learn."
+            "Artists imagine, explore media, create, revise, share, and connect work with open defensible outcomes.",
+            "Revising sketches or reworking clay layers makes a child’s classroom artwork seem less authentic.",
+            "Tracing or copying a teacher’s finished craft template offers the clearest path to artistic mastery.",
+            "Every genuine visual artwork communicates one single pre-approved interpretation graded right or wrong."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Artists generate ideas, explore materials, create, revise, present, respond, and connect work with context; process and interpretation can have multiple defensible outcomes. This directly states the governing concept for visual-art processes; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -2427,12 +2427,12 @@
           "id": "ec5025-ch-12-check-3",
           "prompt": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about dramatic play and theater?",
           "choices": [
-            "A costume alone creates a complete character.",
-            "Dramatic play has no connection to language.",
-            "Theater uses character, action, setting, voice, movement, and collaborative choices to represent experiences and stories.",
-            "Only memorized scripts count as theater."
+            "Early-childhood dramatic play operates separately from oral vocabulary growth and narrative skills.",
+            "Theater combines character, action, setting, voice, movement, and teamwork to dramatize experiences.",
+            "Classroom drama counts as authentic theater strictly when children recite fixed memorized scripts.",
+            "Putting on a colorful dress-up costume creates a developed dramatic character without voice or action."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Theater uses character, action, setting, voice, movement, and collaborative choices to represent experiences and stories. This directly states the governing concept for dramatic play and theater; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -2448,12 +2448,12 @@
           "id": "ec5025-ch-12-check-4",
           "prompt": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about dance elements?",
           "choices": [
-            "Dance requires a competition.",
-            "Space refers only to the building.",
-            "Energy and tempo are identical.",
-            "Dance organizes body, action, space, time, and energy; movement can communicate patterns, ideas, and feelings."
+            "In dance instruction, the element of space refers strictly to the square footage of the gym building.",
+            "Movement energy and musical tempo mean the exact same thing when describing classroom choreography.",
+            "Dance shapes body, action, space, time, and energy to express patterns, ideas, and feelings.",
+            "Early-childhood movement qualifies as genuine dance chiefly when performed in judged stage contests."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Dance organizes body, action, space, time, and energy; movement can communicate patterns, ideas, and feelings. This directly states the governing concept for dance elements; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -2469,12 +2469,12 @@
           "id": "ec5025-ch-12-check-5",
           "prompt": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about creative process?",
           "choices": [
-            "Creating involves imagining, planning, making, revising, and sharing; responding involves observing, interpreting, evaluating with criteria, and connecting.",
-            "Creativity excludes practice.",
-            "Feedback should rank children rather than address work.",
-            "A product matters but process never does."
+            "Genuine childhood creativity requires spontaneous impulse and breaks down when skills are practiced.",
+            "Constructive arts feedback works best when ranking student projects visibly from strongest to weakest.",
+            "Evaluating final display products matters in arts lessons while exploring creative process steps does not.",
+            "Creating spans imagining, planning, making, revising, and sharing; responding interprets and connects."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Creating involves imagining, planning, making, revising, and sharing; responding involves observing, interpreting, evaluating with criteria, and connecting. This directly states the governing concept for creative process; the other statements contradict its definition, evidence, relationship, or disciplinary boundary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
@@ -2497,8 +2497,8 @@
       "skillId": "oral-language-emergent-literacy",
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
-      "front": "In an early-childhood language and literacy context, in a K–2 literacy lesson, how should a elementary literacy teacher use a developmental literacy continuum?",
-      "back": "Use the continuum to anticipate relationships and prerequisites while assessing the individual learner rather than treating stages as fixed gates.",
+      "front": "In an early-childhood language and literacy context, in a K–2 literacy lesson, how should an elementary literacy teacher use a developmental literacy continuum?",
+      "back": "Use the continuum to anticipate skill links while assessing each child rather than using stages as fixed gates.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2514,7 +2514,7 @@
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
       "front": "In an early-childhood language and literacy context, in a K–2 literacy lesson, which relationship is central to reading comprehension?",
-      "back": "Reading comprehension depends on both efficient word recognition and language comprehension, so each component should be assessed.",
+      "back": "Reading comprehension relies on both fluent word recognition and language comprehension, so both need review.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2530,7 +2530,7 @@
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
       "front": "In an early-childhood language and literacy context, in a K–2 literacy lesson, what is the instructional value of oral-language assessment?",
-      "back": "Oral-language evidence helps explain comprehension and expression and guides language-rich reading and writing instruction.",
+      "back": "Oral-language data clarifies comprehension and expression and guides language-rich reading and writing lessons.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2546,7 +2546,7 @@
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
       "front": "In an early-childhood language and literacy context, in a K–2 literacy lesson, how should a teacher interpret a diverse literacy profile?",
-      "back": "Analyze component skills and contexts separately because the same overall score can reflect different instructional needs.",
+      "back": "Analyze decoding and language subskills separately because one composite score can mask distinct needs.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2562,7 +2562,7 @@
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
       "front": "In an early-childhood language and literacy context, in a K–2 literacy lesson, which pattern is commonly associated with dyslexia?",
-      "back": "A word-level reading difficulty involving accurate or fluent recognition, decoding, and spelling, evaluated comprehensively and under current criteria.",
+      "back": "A word-level difficulty in accurate or fluent reading, decoding, and spelling assessed under current criteria.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2578,7 +2578,7 @@
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
       "front": "In an early-childhood language and literacy context, in a K–2 literacy lesson, how should attention, memory, and processing speed be used in literacy planning?",
-      "back": "Consider cognitive and behavioral factors as part of the learning context while directly assessing the literacy skills and instructional response.",
+      "back": "Factor cognitive and behavioral context into planning while directly assessing literacy skills and response.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2594,7 +2594,7 @@
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
       "front": "In an early-childhood language and literacy context, while planning explicit emergent-literacy instruction, which task measures phoneme manipulation?",
-      "back": "Phoneme substitution, a form of phoneme manipulation.",
+      "back": "Phoneme substitution, an advanced form of oral phoneme manipulation with individual sounds.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2610,7 +2610,7 @@
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
       "front": "In an early-childhood language and literacy context, while planning explicit emergent-literacy instruction, what is the alphabetic principle?",
-      "back": "Letters and letter patterns represent the phonemes in spoken language in systematic ways.",
+      "back": "Written letters and letter patterns systematically represent the individual phonemes of spoken language.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2626,7 +2626,7 @@
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
       "front": "In an early-childhood language and literacy context, while planning explicit emergent-literacy instruction, which activity addresses concepts of print?",
-      "back": "Understanding how print is organized and functions in books and written language.",
+      "back": "Understanding how print is organized, tracked, and structured within books and written language.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2642,7 +2642,7 @@
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
       "front": "In an early-childhood language and literacy context, while planning explicit emergent-literacy instruction, why can phonemic-awareness instruction include letters?",
-      "back": "Connecting phonemes with graphemes can strengthen transfer from oral awareness to decoding and spelling.",
+      "back": "Pairing spoken phonemes with grapheme tiles strengthens transfer from oral skills to decoding and spelling.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2658,7 +2658,7 @@
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
       "front": "In an early-childhood language and literacy context, while planning explicit emergent-literacy instruction, what is a useful sequence for phonological-awareness instruction?",
-      "back": "Use explicit modeling and supported practice that moves from accessible larger units toward blending, segmenting, and manipulating phonemes based on data.",
+      "back": "Model and scaffold systematically from larger sound units toward blending, segmenting, and manipulating phonemes.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2674,7 +2674,7 @@
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
       "front": "In an early-childhood language and literacy context, while planning explicit emergent-literacy instruction, a student confuses phonological awareness with phonics. Which clarification is best?",
-      "back": "Phonological and phonemic awareness concern spoken sound structures; phonics explicitly connects those sounds with print.",
+      "back": "Phonological and phonemic awareness target spoken sounds; phonics links those spoken sounds with print.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2689,8 +2689,8 @@
       "skillId": "comprehension-writing-literature",
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
-      "front": "In an early-childhood language and literacy context, during systematic K–6 phonics instruction, why teach morphology?",
-      "back": "Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related words.",
+      "front": "In an early-childhood language and literacy context, during systematic early-childhood and early-elementary phonics instruction, why teach morphology?",
+      "back": "Morpheme analysis strengthens word decoding, spelling accuracy, vocabulary growth, and meaning links.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2705,8 +2705,8 @@
       "skillId": "comprehension-writing-literature",
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
-      "front": "In an early-childhood language and literacy context, during systematic K–6 phonics instruction, what is orthographic mapping?",
-      "back": "They bond a word’s phonemes, graphemes, and meaning in memory through accurate analysis and repeated successful retrieval.",
+      "front": "In an early-childhood language and literacy context, during systematic early-childhood and early-elementary phonics instruction, what is orthographic mapping?",
+      "back": "They bond a word’s phonemes, graphemes, and meaning in memory through accurate decoding and retrieval.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2721,8 +2721,8 @@
       "skillId": "comprehension-writing-literature",
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
-      "front": "In an early-childhood language and literacy context, during systematic K–6 phonics instruction, how does spelling instruction support reading?",
-      "back": "Spelling requires analysis of phoneme–grapheme and morphological structure, reinforcing the representations used in word reading.",
+      "front": "In an early-childhood language and literacy context, during systematic early-childhood and early-elementary phonics instruction, how does spelling instruction support reading?",
+      "back": "Encoding requires phoneme–grapheme and morpheme analysis, strengthening representations used in reading.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2737,8 +2737,8 @@
       "skillId": "comprehension-writing-literature",
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
-      "front": "In an early-childhood language and literacy context, during systematic K–6 phonics instruction, which error analysis best guides phonics instruction?",
-      "back": "Whether the student represents and blends consonant clusters accurately in both decoding and encoding.",
+      "front": "In an early-childhood language and literacy context, during systematic early-childhood and early-elementary phonics instruction, which error analysis best guides phonics instruction?",
+      "back": "Whether the learner perceives, segments, and represents consonant clusters across decoding and encoding.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2753,8 +2753,8 @@
       "skillId": "comprehension-writing-literature",
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
-      "front": "In an early-childhood language and literacy context, during systematic K–6 phonics instruction, what is the best response when context and decoding conflict?",
-      "back": "Return to the graphemes, blend or analyze the word accurately, then confirm that the pronunciation and meaning fit the sentence.",
+      "front": "In an early-childhood language and literacy context, during systematic early-childhood and early-elementary phonics instruction, what is the best response when context and decoding conflict?",
+      "back": "Direct attention back to the graphemes, decode the printed word accurately, then verify sentence meaning.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -2770,7 +2770,7 @@
       "domainId": "language-literacy",
       "domain": "Language and Literacy",
       "front": "In an early-childhood language and literacy context, a child can blend /m/ /a/ /p/ but cannot segment map. What is the best instructional response?",
-      "back": "Explicit supported phoneme segmentation linked to the letters once the oral task is understood.",
+      "back": "Explicit supported phoneme segmentation linked with letters once the oral task is clearly understood.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3058,7 +3058,7 @@
       "domainId": "mathematics",
       "domain": "Mathematics",
       "front": "Without using a calculator, solve or interpret this early-childhood content-knowledge problem: A student says 1/3 + 1/4 = 2/7. Which response best addresses the error?",
-      "back": "Use fraction strips to show twelfths, then connect 4/12 + 3/12 to 7/12.",
+      "back": "Use fraction strips to model twelfths, then connect 4/12 + 3/12 directly to the sum 7/12.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3074,7 +3074,7 @@
       "domainId": "social-studies",
       "domain": "Social Studies",
       "front": "Which statement best demonstrates accurate social studies content knowledge about past, present, and future?",
-      "back": "A timeline orders events chronologically and can use dated or relative intervals appropriate to the evidence.",
+      "back": "A timeline orders events chronologically using dated or relative intervals backed by evidence.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3091,7 +3091,7 @@
       "domainId": "social-studies",
       "domain": "Social Studies",
       "front": "Which statement best demonstrates accurate social studies content knowledge about primary and secondary sources?",
-      "back": "A photograph made during an event can be primary evidence, while a later textbook account is generally secondary.",
+      "back": "A photograph taken during an event can be primary evidence; a later textbook is usually secondary.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3108,7 +3108,7 @@
       "domainId": "social-studies",
       "domain": "Social Studies",
       "front": "Which statement best demonstrates accurate social studies content knowledge about maps and globes?",
-      "back": "A map key explains symbols, a compass rose indicates direction, and scale relates map distance to real distance.",
+      "back": "A map key defines symbols, a compass rose shows direction, and scale links map distance to ground.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3125,7 +3125,7 @@
       "domainId": "social-studies",
       "domain": "Social Studies",
       "front": "Which statement best demonstrates accurate social studies content knowledge about community rules and laws?",
-      "back": "Rules and laws organize shared life, protect rights and safety, and carry consequences established by legitimate groups or governments.",
+      "back": "Rules and laws structure shared life, protect rights and safety, and carry legitimate consequences.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3142,7 +3142,7 @@
       "domainId": "social-studies",
       "domain": "Social Studies",
       "front": "Which statement best demonstrates accurate social studies content knowledge about rights and responsibilities?",
-      "back": "A right protects an entitlement or freedom, while a responsibility describes an obligation connected to participation in a community.",
+      "back": "A right safeguards a freedom or entitlement; a responsibility is a duty tied to community membership.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3159,7 +3159,7 @@
       "domainId": "social-studies",
       "domain": "Social Studies",
       "front": "Which statement best demonstrates accurate social studies content knowledge about needs, wants, goods, and services?",
-      "back": "Food and shelter are commonly described as needs; a toy is a want; goods are tangible and services are actions performed for others.",
+      "back": "Food and shelter are core needs, toys are wants, goods are tangible objects, and services are actions.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3176,7 +3176,7 @@
       "domainId": "social-studies",
       "domain": "Social Studies",
       "front": "Which statement best demonstrates accurate social studies content knowledge about producers and consumers?",
-      "back": "A producer creates a good or service, while a consumer uses or purchases it; one person can occupy both roles in different situations.",
+      "back": "Producers create goods or services while consumers use them, and one person fills both roles across contexts.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3193,7 +3193,7 @@
       "domainId": "social-studies",
       "domain": "Social Studies",
       "front": "Which statement best demonstrates accurate social studies content knowledge about families and cultural diversity?",
-      "back": "Families vary in structure, language, traditions, and roles; accurate study avoids treating one pattern as universal or deficient.",
+      "back": "Families differ in structure, language, customs, and roles; sound study avoids ranking one norm as superior.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3210,7 +3210,7 @@
       "domainId": "social-studies",
       "domain": "Social Studies",
       "front": "Which statement best demonstrates accurate social studies content knowledge about civic decision making?",
-      "back": "Groups can identify a shared problem, gather perspectives and evidence, consider alternatives, decide through an agreed process, and evaluate effects.",
+      "back": "Groups define a shared issue, weigh voices and evidence, compare options, decide fairly, and review effects.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3227,7 +3227,7 @@
       "domainId": "social-studies",
       "domain": "Social Studies",
       "front": "Which statement best demonstrates accurate social studies content knowledge about geographic human-environment interaction?",
-      "back": "People adapt to, depend on, and modify environments, and those actions can create benefits and costs.",
+      "back": "People depend on, adapt to, and modify environments, producing both intended benefits and tradeoffs.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3244,7 +3244,7 @@
       "domainId": "social-studies",
       "domain": "Social Studies",
       "front": "Which statement best demonstrates accurate social studies content knowledge about local, state, and national government?",
-      "back": "Different levels of government have distinct and sometimes shared responsibilities; authority depends on constitutions and laws.",
+      "back": "Local, state, and national governments hold distinct and shared powers rooted in constitutions and laws.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3261,7 +3261,7 @@
       "domainId": "social-studies",
       "domain": "Social Studies",
       "front": "Which statement best demonstrates accurate social studies content knowledge about historical perspective?",
-      "back": "Accounts can differ because people have different positions, experiences, purposes, and available evidence; claims should be compared with sources.",
+      "back": "Accounts vary with vantage point, experience, purpose, and evidence, so claims should be checked with sources.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3278,7 +3278,7 @@
       "domainId": "science",
       "domain": "Science",
       "front": "Which statement best demonstrates accurate science content knowledge about observation and inference?",
-      "back": "An observation records information obtained through senses or tools; an inference is an interpretation based on observations and prior knowledge.",
+      "back": "An observation records sensed or measured data; an inference interprets data using prior knowledge.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3295,7 +3295,7 @@
       "domainId": "science",
       "domain": "Science",
       "front": "Which statement best demonstrates accurate science content knowledge about fair tests and variables?",
-      "back": "A fair comparison changes the factor of interest, measures an outcome, and keeps other relevant conditions as consistent as feasible.",
+      "back": "A fair test varies one factor of interest, measures an outcome, and holds other relevant variables steady.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3312,7 +3312,7 @@
       "domainId": "science",
       "domain": "Science",
       "front": "Which statement best demonstrates accurate science content knowledge about patterns and evidence?",
-      "back": "Repeated observations can reveal patterns, but claims should match the amount, quality, and limits of the evidence.",
+      "back": "Repeated observations reveal patterns, yet claims must fit the amount, quality, and limits of evidence.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3329,7 +3329,7 @@
       "domainId": "science",
       "domain": "Science",
       "front": "Which statement best demonstrates accurate science content knowledge about properties of matter?",
-      "back": "Matter has observable properties such as mass, volume, state, texture, color, and temperature; properties can be measured or compared.",
+      "back": "Matter has measurable properties such as mass, volume, state, texture, color, and temperature.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3346,7 +3346,7 @@
       "domainId": "science",
       "domain": "Science",
       "front": "Which statement best demonstrates accurate science content knowledge about changes in matter?",
-      "back": "Melting and freezing are physical state changes; forming a new substance with different properties is evidence of chemical change.",
+      "back": "Melting and freezing are physical state changes; forming a new substance signals a chemical change.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3363,7 +3363,7 @@
       "domainId": "science",
       "domain": "Science",
       "front": "Which statement best demonstrates accurate science content knowledge about forces and motion?",
-      "back": "A force is a push or pull that can change an object’s motion; motion can be described by position, direction, and speed relative to a reference.",
+      "back": "A force is a push or pull that can alter motion, described by position, direction, and speed.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3380,7 +3380,7 @@
       "domainId": "science",
       "domain": "Science",
       "front": "Which statement best demonstrates accurate science content knowledge about Earth materials?",
-      "back": "Rocks, soil, sand, and water have observable properties and participate in Earth processes such as weathering, erosion, and deposition.",
+      "back": "Rocks, soil, sand, and water show measurable traits and cycle via weathering, erosion, and deposition.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3397,7 +3397,7 @@
       "domainId": "science",
       "domain": "Science",
       "front": "Which statement best demonstrates accurate science content knowledge about weather and climate?",
-      "back": "Weather describes short-term atmospheric conditions; climate describes longer-term patterns for a region.",
+      "back": "Weather describes short-term local air conditions; climate describes long-term regional patterns.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3414,7 +3414,7 @@
       "domainId": "science",
       "domain": "Science",
       "front": "Which statement best demonstrates accurate science content knowledge about day, night, and seasons?",
-      "back": "Earth’s rotation produces day and night; Earth’s tilted axis and revolution around the Sun produce seasonal patterns.",
+      "back": "Earth’s rotation creates day and night; its tilted axis and orbit around the Sun create seasons.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3431,7 +3431,7 @@
       "domainId": "science",
       "domain": "Science",
       "front": "Which statement best demonstrates accurate science content knowledge about plant needs and structures?",
-      "back": "Plants generally require light, water, air, nutrients, and suitable conditions; roots, stems, leaves, flowers, fruits, and seeds have related functions.",
+      "back": "Plants need light, water, air, and nutrients; roots, stems, leaves, flowers, and seeds serve linked roles.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3448,7 +3448,7 @@
       "domainId": "science",
       "domain": "Science",
       "front": "Which statement best demonstrates accurate science content knowledge about animal structures and life cycles?",
-      "back": "Animals have structures and behaviors that support survival, and life cycles include patterned stages that vary among species.",
+      "back": "Animals use body structures and behaviors to survive, and life cycles follow species-specific stages.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3465,7 +3465,7 @@
       "domainId": "science",
       "domain": "Science",
       "front": "Which statement best demonstrates accurate science content knowledge about ecosystem relationships?",
-      "back": "Organisms depend on living and nonliving components; food chains represent transfer of matter and energy, not a ranking of importance.",
+      "back": "Organisms rely on biotic and abiotic factors; food chains trace matter and energy flow, not rank.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3482,7 +3482,7 @@
       "domainId": "health-physical-arts",
       "domain": "Health and Physical Education; Creative and Performing Arts",
       "front": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about personal hygiene and disease prevention?",
-      "back": "Handwashing with soap, respiratory etiquette, vaccination guidance, food safety, and avoiding shared bodily-fluid exposure reduce disease transmission.",
+      "back": "Soap handwashing, cough etiquette, vaccination guidance, safe food prep, and fluid precautions cut spread.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3500,7 +3500,7 @@
       "domainId": "health-physical-arts",
       "domain": "Health and Physical Education; Creative and Performing Arts",
       "front": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about nutrition and balanced eating?",
-      "back": "A varied pattern across food groups supplies energy and nutrients; portion, frequency, allergy, culture, and access matter more than labeling foods morally.",
+      "back": "Varied foods supply energy and nutrients; balance, allergies, culture, and access beat moral food labels.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3518,7 +3518,7 @@
       "domainId": "health-physical-arts",
       "domain": "Health and Physical Education; Creative and Performing Arts",
       "front": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about physical activity and fitness?",
-      "back": "Regular age-appropriate activity supports cardiovascular endurance, strength, flexibility, coordination, and well-being, with rest and hydration.",
+      "back": "Regular movement builds endurance, strength, flexibility, coordination, and wellness with rest and water.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3536,7 +3536,7 @@
       "domainId": "health-physical-arts",
       "domain": "Health and Physical Education; Creative and Performing Arts",
       "front": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about motor development?",
-      "back": "Locomotor skills move the body through space, nonlocomotor skills stabilize or bend in place, and manipulative skills control objects.",
+      "back": "Locomotor skills travel, nonlocomotor skills stabilize in place, and manipulative skills handle objects.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3554,7 +3554,7 @@
       "domainId": "health-physical-arts",
       "domain": "Health and Physical Education; Creative and Performing Arts",
       "front": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about body and safety signals?",
-      "back": "Children should identify trusted adults, recognize unsafe or uncomfortable situations, use correct body-part language, understand bodily autonomy, and seek help.",
+      "back": "Children learn trusted adults, unsafe signals, accurate anatomy terms, bodily autonomy, and help seeking.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3572,7 +3572,7 @@
       "domainId": "health-physical-arts",
       "domain": "Health and Physical Education; Creative and Performing Arts",
       "front": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about emergency and injury prevention?",
-      "back": "Risk reduction includes supervision, protective equipment, safe environments, practiced emergency procedures, and developmentally appropriate help seeking.",
+      "back": "Injury prevention pairs active supervision, safety gear, safe spaces, drills, and help seeking.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3590,7 +3590,7 @@
       "domainId": "health-physical-arts",
       "domain": "Health and Physical Education; Creative and Performing Arts",
       "front": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about visual-art elements?",
-      "back": "Line, shape, form, color, value, texture, and space are elements artists organize to communicate and create visual relationships.",
+      "back": "Line, shape, form, color, value, texture, and space are visual elements artists use to communicate.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3608,7 +3608,7 @@
       "domainId": "health-physical-arts",
       "domain": "Health and Physical Education; Creative and Performing Arts",
       "front": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about visual-art processes?",
-      "back": "Artists generate ideas, explore materials, create, revise, present, respond, and connect work with context; process and interpretation can have multiple defensible outcomes.",
+      "back": "Artists imagine, explore media, create, revise, share, and connect work with open defensible outcomes.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3626,7 +3626,7 @@
       "domainId": "health-physical-arts",
       "domain": "Health and Physical Education; Creative and Performing Arts",
       "front": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about dramatic play and theater?",
-      "back": "Theater uses character, action, setting, voice, movement, and collaborative choices to represent experiences and stories.",
+      "back": "Theater combines character, action, setting, voice, movement, and teamwork to dramatize experiences.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3644,7 +3644,7 @@
       "domainId": "health-physical-arts",
       "domain": "Health and Physical Education; Creative and Performing Arts",
       "front": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about dance elements?",
-      "back": "Dance organizes body, action, space, time, and energy; movement can communicate patterns, ideas, and feelings.",
+      "back": "Dance shapes body, action, space, time, and energy to express patterns, ideas, and feelings.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3662,7 +3662,7 @@
       "domainId": "health-physical-arts",
       "domain": "Health and Physical Education; Creative and Performing Arts",
       "front": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about creative process?",
-      "back": "Creating involves imagining, planning, making, revising, and sharing; responding involves observing, interpreting, evaluating with criteria, and connecting.",
+      "back": "Creating spans imagining, planning, making, revising, and sharing; responding interprets and connects.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",
@@ -3680,7 +3680,7 @@
       "domainId": "health-physical-arts",
       "domain": "Health and Physical Education; Creative and Performing Arts",
       "front": "Which statement best demonstrates accurate health, physical education, or the arts content knowledge about arts and cultural context?",
-      "back": "Artistic forms reflect varied histories, communities, purposes, and identities; instruction should use accurate context and avoid stereotypes or token examples.",
+      "back": "Art reflects diverse histories, purposes, and communities; study uses accurate context without stereotypes.",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5025.pdf",
         "https://praxis.ets.org/test/early-childhood-education-5025.html",

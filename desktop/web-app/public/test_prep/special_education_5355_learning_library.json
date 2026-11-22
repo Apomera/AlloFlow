@@ -381,12 +381,12 @@
           "id": "sp5355-ch-02-check-01",
           "prompt": "A student with a specific learning disability reads grade-level text accurately but cannot organize written paragraphs. Which response is best?",
           "choices": [
+            "Assign an instructional aide to complete the demanding academic steps so the student can keep pace with class assignments.",
             "Target the documented area of academic need while preserving strengths in unaffected subjects.",
             "Deliver uniform remedial instruction across all core academic subjects so the student receives consistent skill reinforcement.",
-            "Interpret the persistent academic bottleneck as evidence of broadly limited cognitive ability across every learning domain.",
-            "Assign an instructional aide to complete the demanding academic steps so the student can keep pace with class assignments."
+            "Interpret the persistent academic bottleneck as evidence of broadly limited cognitive ability across every learning domain."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Specific learning disabilities can affect particular psychological processes and academic skills unevenly. Instruction should be based on the learner’s actual pattern of strengths and needs, not a global assumption.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf"
@@ -398,12 +398,12 @@
           "id": "sp5355-ch-02-check-02",
           "prompt": "A student with autism covers their ears during fire-drill announcements and then misses directions. Which support is most responsive?",
           "choices": [
+            "Continue using loud, unannounced signals without preparation so the student gradually desensitizes through repeated exposure.",
             "Treat covering the ears and missing directions as task refusal and apply standard classroom behavior consequences.",
             "Build a predictable warning and accessible cueing routine while teaching the student how to use it.",
-            "Excuse the student from participating in future schoolwide drills or timed transitions to avoid triggering sensory distress.",
-            "Continue using loud, unannounced signals without preparation so the student gradually desensitizes through repeated exposure."
+            "Excuse the student from participating in future schoolwide drills or timed transitions to avoid triggering sensory distress."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Sensory and communication needs can affect access and behavior. A predictable warning, accessible direction, and taught coping or communication response support participation while preserving safety requirements.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf"
@@ -415,12 +415,12 @@
           "id": "sp5355-ch-02-check-03",
           "prompt": "A student with ADHD begins work when directions are chunked and a checklist is visible. What does this pattern suggest?",
           "choices": [
+            "The student’s uneven project completion reflects limited intellectual understanding of the content rather than self-regulation.",
             "The student already mastered the self-management skills needed and had been choosing not to start earlier assignments.",
             "Adding checklists and interim milestones has lowered the rigor of the grade-level academic standard being assessed.",
-            "Executive-function scaffolds are strengthening task initiation, planning, and self-monitoring.",
-            "The student’s uneven project completion reflects limited intellectual understanding of the content rather than self-regulation."
+            "Executive-function scaffolds are strengthening task initiation, planning, and self-monitoring."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "ADHD may affect executive functions such as initiation, working memory, inhibition, and organization. External structures can support performance without changing the learning target or implying weak ability.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf"
@@ -432,12 +432,12 @@
           "id": "sp5355-ch-02-check-04",
           "prompt": "A student with an emotional or behavioral disability argues mainly during unpredictable peer-group tasks. What perspective is most useful?",
           "choices": [
+            "Analyze interactions among the learner, task structure, peers, expectations, and consequences.",
             "Expect the same level of emotional conflict across every school setting because the disability resides within the student.",
             "Conclude that classmates’ interpersonal habits are the sole cause of the student’s behavioral difficulties during group work.",
-            "Replace peer-group and cooperative learning tasks with independent seatwork for the remainder of the academic year.",
-            "Analyze interactions among the learner, task structure, peers, expectations, and consequences."
+            "Replace peer-group and cooperative learning tasks with independent seatwork for the remainder of the academic year."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "An ecological perspective considers how behavior emerges through interactions between the learner and the environment. Context-specific data can guide prevention, instruction, and reinforcement of more effective responses.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf"
@@ -449,12 +449,12 @@
           "id": "sp5355-ch-02-check-05",
           "prompt": "Which information is essential when considering educational needs associated with intellectual disability?",
           "choices": [
-            "Combined evidence of intellectual functioning and adaptive behavior across conceptual, social, and practical domains.",
+            "Anecdotal teacher ratings describing the student’s adherence to rules inside one general education classroom.",
+            "Joint evidence of cognitive functioning and adaptive behavior across conceptual, social, and practical domains.",
             "A standardized oral reading fluency and comprehension score collected during a single school screening window.",
-            "Medical history records and physical growth measurements gathered from the student’s primary health-care provider.",
-            "Anecdotal teacher ratings describing the student’s adherence to rules inside one general education classroom."
+            "Medical history records and physical growth measurements gathered from the student’s primary health-care provider."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Intellectual disability involves limitations in intellectual functioning and adaptive behavior. Educational planning therefore considers functional conceptual, social, and practical performance across relevant environments.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf"
@@ -556,12 +556,12 @@
           "id": "sp5355-ch-03-check-01",
           "prompt": "A student with low vision receives a worksheet containing a dense unlabeled diagram. What is the best access response?",
           "choices": [
-            "Provide an equivalent accessible format—such as a verbal description, tactile graphic, or usable enlargement.",
-            "Substitute an easier vocabulary activity from an earlier unit so the student can work independently without visual media.",
             "Provide a classmate’s completed responses so the student can record the conclusions without interpreting the figure.",
-            "Allow extended time on the original worksheet while keeping the dense visual graphic unchanged in size and contrast."
+            "Allow extended time on the original worksheet while keeping the dense visual graphic unchanged in size and contrast.",
+            "Provide an equivalent accessible format—such as a verbal description, tactile graphic, or usable enlargement.",
+            "Substitute an easier vocabulary activity from an earlier unit so the student can work independently without visual media."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Access means preserving the intended concept while changing how information is perceived when necessary. The appropriate representation depends on the learner’s assessed media and access needs.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -574,12 +574,12 @@
           "id": "sp5355-ch-03-check-02",
           "prompt": "A student who is deaf uses sign language and will join a fast-paced seminar. Which plan best supports communication access?",
           "choices": [
-            "Assign front-row seating near the teacher’s desk as the primary accommodation for full seminar participation.",
-            "Address communication mode, direct interaction opportunities, acoustics, assistive technology, and speaker visibility.",
             "Replace live seminar discussions with written summaries so the student can earn participation credit independently.",
-            "Maintain rapid open-floor discussions without turn-taking cues so the student experiences realistic peer pacing."
+            "Maintain rapid open-floor discussions without turn-taking cues so the student experiences realistic peer pacing.",
+            "Assign front-row seating near the teacher’s desk as the primary accommodation for full seminar participation.",
+            "Address expressive modality, direct interaction, acoustics, assistive technology, and clear speaker visibility."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Communication access is broader than hearing volume. Planning should address the learner’s language and mode, visibility or audibility of speakers, technology, peer access, and direct instruction needs.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -592,12 +592,12 @@
           "id": "sp5355-ch-03-check-03",
           "prompt": "A student with a physical disability needs support positioning materials during science lab. What is the teacher’s best action?",
           "choices": [
+            "Collaborate with the student and specialists to arrange safe, accessible setup and active lab participation.",
+            "Ask a lab partner to make experimental decisions and manipulate every tool while the student watches the steps.",
             "Assign the student to record observations from the side of the room during laboratory investigations for safety.",
-            "Adjust the student’s wheelchair seating and lab reach setup independently based on quick classroom judgment.",
-            "Collaborate with the student and specialists to arrange safe, accessible positioning and active lab participation.",
-            "Ask a lab partner to make experimental decisions and manipulate every tool while the student watches the steps."
+            "Adjust the student’s wheelchair seating and lab reach setup independently based on quick classroom judgment."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Physical access should enable meaningful participation and follow established safety, positioning, and equipment guidance. Collaboration prevents unsafe improvisation and avoids unnecessary removal of learner agency.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -610,12 +610,12 @@
           "id": "sp5355-ch-03-check-04",
           "prompt": "A student has a documented seizure action plan. During a classroom seizure, what should staff do first?",
           "choices": [
-            "Improvise a quick classroom response based on staff intuition rather than pausing to follow written health protocols.",
-            "Offer water, a small snack, or an unprescribed comfort remedy to help stabilize the student during the episode.",
             "Wait to initiate school emergency procedures until a parent or guardian can be reached by telephone for guidance.",
-            "Follow the individualized emergency plan, protect safety, and activate trained medical procedures."
+            "Follow the individualized emergency protocol, protect safety, and activate trained medical procedures.",
+            "Improvise a quick classroom response based on staff intuition rather than pausing to follow written health protocols.",
+            "Offer water, a small snack, or an unprescribed comfort remedy to help stabilize the student during the episode."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Health supports in school must follow the individualized plan, staff training, delegation rules, and emergency procedures. Improvised treatment can create risk and exceed an educator’s role.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -628,12 +628,12 @@
           "id": "sp5355-ch-03-check-05",
           "prompt": "Which goal best addresses adaptive behavior?",
           "choices": [
-            "Given a visual checklist, the student will complete four cafeteria-purchasing steps in four of five trials.",
-            "Over the upcoming grading period, the student will demonstrate noticeably greater daily independence across school routines.",
             "By the end of the annual review cycle, the student will achieve higher composite scores on a standardized intelligence test.",
-            "During school hours, the student will perform everyday self-care and social routines identically to same-age classmates."
+            "During school hours, the student will perform everyday self-care and social routines identically to same-age classmates.",
+            "Given a visual checklist, the student will complete four cafeteria-purchasing steps in four of five trials.",
+            "Over the upcoming grading period, the student will demonstrate noticeably greater daily independence across school routines."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Adaptive goals should identify a meaningful conceptual, social, or practical routine and specify observable conditions, performance, and criteria. Vague comparisons do not support instruction or progress monitoring.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -751,12 +751,12 @@
           "id": "sp5355-ch-04-check-01",
           "prompt": "Which present-level statement best supports individualized planning?",
           "choices": [
-            "Across three writing samples, the student wrote a clear topic sentence twice and added supporting details once.",
             "Compared with classmates across the grade level, the student performs significantly below expectations in writing.",
             "The student expresses reluctance during extended writing tasks and continues to need frequent encouragement from adults.",
-            "Evaluation records document a specific learning disability in written expression affecting classroom writing assignments."
+            "Evaluation records document a specific learning disability in written expression affecting classroom writing assignments.",
+            "Across three writing samples, the student wrote a clear topic sentence twice and added supporting details once."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Present levels should describe current, measurable academic or functional performance and how disability affects progress. Specific baseline evidence supports goal design and later comparison.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -772,12 +772,12 @@
           "id": "sp5355-ch-04-check-02",
           "prompt": "Which draft annual IEP goal is written in measurable terms?",
           "choices": [
-            "With continued special education reading instruction, the student will demonstrate stronger oral reading fluency by spring.",
             "Given a 150-word instructional passage, the student will read 120 correct words per minute on three consecutive probes.",
             "During daily small-group literacy lessons, the student will sustain consistent effort while reading grade-level passages aloud.",
-            "Across independent classroom reading blocks, the student will develop greater confidence and enjoyment when reading narrative text."
+            "Across independent classroom reading blocks, the student will develop greater confidence and enjoyment when reading narrative text.",
+            "With continued special education reading instruction, the student will demonstrate stronger oral reading fluency by spring."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "A measurable annual goal states the condition, observable behavior, criterion, and often a consistency requirement. These features permit repeated progress measurement and instructional decisions.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -793,12 +793,12 @@
           "id": "sp5355-ch-04-check-03",
           "prompt": "An IEP contains a measurable goal but no description of how progress will be measured. What is missing?",
           "choices": [
-            "A written assurance that the school will bring the student to mastery before the next annual review.",
             "Weekly normative charts ranking the student’s score against every nondisabled classmate in the grade.",
-            "The measurement method and schedule for periodic progress reports.",
-            "A separate disability classification listing each academic subskill that requires targeted remediation."
+            "The measurement method and schedule for periodic growth reports.",
+            "A separate disability classification listing each academic subskill that requires targeted remediation.",
+            "A written assurance that the school will bring the student to mastery before the next annual review."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "IDEA requires the IEP to describe how progress toward annual goals will be measured and when periodic reports will be provided. A goal without a monitoring plan is incomplete for decision making.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -814,12 +814,12 @@
           "id": "sp5355-ch-04-check-04",
           "prompt": "A student’s goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
           "choices": [
-            "Leave the service grid unchanged because annual IEP goals and service minutes are developed as independent sections.",
             "Remove the unaligned annual goal from the draft IEP so the documented need matches the existing service schedule.",
             "Substitute a standard district service package associated with the student’s primary eligibility category instead.",
-            "Align specially designed instruction, related services, supports, and monitoring with the stated goal."
+            "Align specially designed instruction, related services, supports, and monitoring with the stated goal.",
+            "Leave the service grid unchanged because annual IEP goals and service minutes are developed as independent sections."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "IEP components should form a coherent program: present needs lead to measurable goals, services and supports address those goals, and progress measures show whether the program is effective.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -835,12 +835,12 @@
           "id": "sp5355-ch-04-check-05",
           "prompt": "A student is allowed to use a calculator on a test that measures multistep problem solving, not computation. This is best described as what?",
           "choices": [
-            "An accommodation altering access or response conditions without changing the target construct.",
             "A curricular modification that lowers the grade-level performance expectation being evaluated on the task.",
             "An alternate assessment pathway assigned whenever a student qualifies for special education services.",
-            "A restrictive placement determination that shifts how instructional minutes are delivered across settings."
+            "A restrictive placement determination that shifts how instructional minutes are delivered across settings.",
+            "An accommodation altering access or response conditions without changing the target construct."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "An accommodation changes how a learner accesses or responds while preserving what is measured. A modification changes the expected content, complexity, or performance standard.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -951,7 +951,7 @@
           "id": "sp5355-ch-05-check-01",
           "prompt": "A teacher introduces a new strategy by naming it, modeling a think-aloud, guiding several examples, checking responses, and then assigning independent practice. What approach is this?",
           "choices": [
-            "Model the strategy, guide structured practice with feedback, and release to independent practice.",
+            "Explicit instruction with demonstration, guided rehearsal with feedback, and gradual independent release.",
             "Open-ended discovery exploration in which students invent their own procedures before seeing any teacher demonstration.",
             "Continuous adult prompting throughout every class assignment so students do not risk making an independent mistake.",
             "Repeated independent worksheet drills that assign the same problems daily without modeling or step-by-step feedback."
@@ -1141,12 +1141,12 @@
           "id": "sp5355-ch-06-check-01",
           "prompt": "A class loses instructional time because arrival routines change each day. Which preventive support is best?",
           "choices": [
+            "Vary arrival directions each morning so students learn to adapt rapidly to unpredictable classroom procedures.",
             "Teach, model, practice, and visually post a concise arrival routine, then reinforce consistent use.",
             "Wait for off-task behavior during arrival and issue progressively firmer disciplinary consequences for delays.",
-            "Post a comprehensive twenty-rule classroom contract on the bulletin board without rehearsing entry expectations.",
-            "Vary arrival directions each morning so students learn to adapt rapidly to unpredictable classroom procedures."
+            "Post a comprehensive twenty-rule classroom contract on the bulletin board without rehearsing entry expectations."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Predictable routines reduce ambiguity and increase available learning time. Expectations become useful when they are explicitly taught, practiced in context, prompted as needed, and reinforced consistently.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1160,12 +1160,12 @@
           "id": "sp5355-ch-06-check-02",
           "prompt": "A student tears worksheets after receiving a long independent assignment, and the task is then removed. Which information is most relevant to a functional hypothesis?",
           "choices": [
+            "A standard schoolwide discipline chart listing consequences previously assigned to classmates for similar incidents.",
             "Trait-based personality inventories estimating whether the student prefers independent or social school tasks.",
-            "The antecedent demand, observable behavior, and resulting escape or delay from the task.",
-            "Anecdotal staff ratings describing how frustrating the student’s behavior feels during whole-class instruction.",
-            "A standard schoolwide discipline chart listing consequences previously assigned to classmates for similar incidents."
+            "The antecedent demand, observable behavior, and resulting escape or delay from the work.",
+            "Anecdotal staff ratings describing how frustrating the student’s behavior feels during whole-class instruction."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Functional assessment examines relationships among antecedents, observable behavior, and consequences. Repeated removal of a difficult task may maintain behavior through escape, a hypothesis that must be tested with data.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1179,12 +1179,12 @@
           "id": "sp5355-ch-06-check-03",
           "prompt": "An FBA suggests that disruption reliably produces peer attention. Which BIP component is most important?",
           "choices": [
+            "Teach the student to request quiet hallway breaks even though FBA data point to attention rather than escape.",
             "Apply a generic loss-of-privilege consequence that does not address how attention is delivered in class.",
             "Suspend group academic instruction for the student until calling out or disruption stops for a full month.",
-            "Teach and reinforce an appropriate attention-requesting skill while altering maintaining triggers and responses.",
-            "Teach the student to request quiet hallway breaks even though FBA data point to attention rather than escape."
+            "Teach and reinforce an appropriate attention-requesting skill while altering maintaining triggers and responses."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "A function-based plan should prevent predictable triggers, teach a socially appropriate replacement that serves the same function, and arrange consequences so the replacement is more efficient and successful.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1198,12 +1198,12 @@
           "id": "sp5355-ch-06-check-04",
           "prompt": "Which replacement behavior is best for a student who leaves work to escape confusing directions?",
           "choices": [
+            "Use a taught help card to ask for clarification or a brief guided start on the first step.",
             "Sit quietly at the desk without speaking or signaling until the instructional period ends.",
             "Raise a hand to share an unrelated personal story with classmates whenever frustration builds.",
-            "Put away the confusing assignment and transition independently to a preferred classroom center.",
-            "Use a taught help card to ask for clarification or a brief guided start on the first step."
+            "Put away the confusing assignment and transition independently to a preferred classroom center."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "A replacement behavior must be teachable, efficient, and serve the same function as the problem behavior. Requesting clarification addresses escape from confusion while keeping the learner engaged in the task.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1217,12 +1217,12 @@
           "id": "sp5355-ch-06-check-05",
           "prompt": "A teacher says, “You opened your notebook and began within one minute—that followed our start routine.” Why is this feedback effective?",
           "choices": [
-            "It gives prompt, behavior-specific feedback linking the observable action to the taught routine.",
+            "It compares the student’s starting speed favorably against slower classmates in the same row.",
+            "It offers prompt, behavior-specific praise linking the observable action to a taught expectation.",
             "It highlights an innate personal strength rather than naming the student’s specific classroom action.",
-            "It accumulates general approval points to be reviewed during a summary conference at month’s end.",
-            "It compares the student’s starting speed favorably against slower classmates in the same row."
+            "It accumulates general approval points to be reviewed during a summary conference at month’s end."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Behavior-specific praise names the observable action and its connection to an expectation. Immediate, contingent feedback helps learners identify what to repeat and is more informative than global approval.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1331,12 +1331,12 @@
           "id": "sp5355-ch-07-check-01",
           "prompt": "A vocabulary test is used to decide whether a student can solve multistep equations. What is the primary concern?",
           "choices": [
-            "Validity, because the scores do not support the intended construct interpretation and decision.",
-            "Reliability, because numerical test scores fluctuate whenever vocabulary or spelling tasks are short.",
             "Administration efficiency, because brief screening tools take less time than full-length unit exams.",
-            "National norming, because classroom skill evaluations must compare learners against national peer samples."
+            "National norming, because classroom skill evaluations must compare learners against national peer samples.",
+            "Validity, because the scores do not support the intended construct interpretation and decision.",
+            "Reliability, because numerical test scores fluctuate whenever vocabulary or spelling tasks are short."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Validity concerns whether evidence supports the interpretation and use of scores. A measure dominated by a different skill cannot justify a conclusion about the intended construct.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1350,12 +1350,12 @@
           "id": "sp5355-ch-07-check-02",
           "prompt": "A progress measure gives very different scores on consecutive days even though instruction and performance appear stable. What quality is in question?",
           "choices": [
-            "Face validity, or whether the assessment directions appear relevant to students and families.",
-            "Reliability, or the consistency of measurement across occasions and scorers.",
             "Eligibility classification, or whether the student’s primary disability label matches the test manual.",
-            "Documentation length, or whether the student’s IEP includes enough narrative background detail."
+            "Documentation length, or whether the student’s IEP includes enough narrative background detail.",
+            "Face validity, or whether the assessment directions appear relevant to students and families.",
+            "Reliability, or the consistency of measurement across occasions and scorers."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Reliability concerns consistency across occasions, forms, items, or raters as relevant. Large unexplained variation weakens confidence that score changes reflect actual performance rather than measurement error.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1369,12 +1369,12 @@
           "id": "sp5355-ch-07-check-03",
           "prompt": "Why should an eligibility team use multiple assessment tools and strategies?",
           "choices": [
-            "Combining multiple standardized tests ensures the team can document eligibility for preferred services.",
-            "When assessment scores disagree, the team should replace lower results with the single highest score.",
             "Converging sources test competing explanations and prevent a single score from deciding eligibility.",
-            "Formal standardized batteries should be used exclusively because informal classroom observations lack rigor."
+            "Formal standardized batteries should be used exclusively because informal classroom observations lack rigor.",
+            "Combining multiple standardized tests ensures the team can document eligibility for preferred services.",
+            "When assessment scores disagree, the team should replace lower results with the single highest score."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "IDEA requires varied tools and strategies and prohibits using a single measure as the sole criterion. Multiple sources help the team understand functional, developmental, academic, and contextual evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1388,12 +1388,12 @@
           "id": "sp5355-ch-07-check-04",
           "prompt": "A newly arrived multilingual learner is assessed only in rapid academic English. What is the central evaluation concern?",
           "choices": [
-            "Convert the resulting test score into a translated report while keeping the original administration format.",
-            "Interpret low performance under standard administration as reliable proof of an underlying disability.",
             "Omit parent interviews and language-history records so the evaluation relies on uniform school testing.",
-            "Assess in the language or communication mode most likely to yield accurate evidence of knowledge."
+            "Assess in the language or communication mode most likely to yield accurate evidence of knowledge.",
+            "Convert the resulting test score into a translated report while keeping the original administration format.",
+            "Interpret low performance under standard administration as reliable proof of an underlying disability."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Evaluation procedures must reduce racial, cultural, linguistic, sensory, manual, and communication barriers so results reflect the intended aptitude or achievement rather than an access limitation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1407,12 +1407,12 @@
           "id": "sp5355-ch-07-check-05",
           "prompt": "Which assessment is most useful for adjusting tomorrow’s instruction?",
           "choices": [
-            "A brief formative check aligned to the taught steps, paired with targeted error analysis.",
-            "An annual statewide accountability score report summarizing broad end-of-year proficiency bands.",
             "A norm-referenced intelligence battery administered by a school psychologist for triennial review.",
-            "A final cumulative semester grade calculated after the instructional unit has already concluded."
+            "A final cumulative semester grade calculated after the instructional unit has already concluded.",
+            "A brief formative check aligned to the taught steps, paired with targeted error analysis.",
+            "An annual statewide accountability score report summarizing broad end-of-year proficiency bands."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Formative assessment supplies timely, instructionally relevant evidence during learning. Alignment and error analysis help the teacher decide what to reteach, model differently, or release to independent practice.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1516,12 +1516,12 @@
           "id": "sp5355-ch-08-check-01",
           "prompt": "A general education team sees persistent difficulty and begins a targeted intervention. What is an appropriate prereferral practice?",
           "choices": [
-            "Define the skill concern, deliver an evidence-based intervention with fidelity, and monitor progress.",
             "Monitor regular classroom grades for another semester without altering instructional intensity or scaffolds.",
             "Inform the family that strong or weak prereferral response will settle IDEA eligibility by itself.",
-            "Assign supplemental general review worksheets that do not target the specific documented skill gap."
+            "Assign supplemental general review worksheets that do not target the specific documented skill gap.",
+            "Define the skill concern, deliver an evidence-based support with fidelity, and monitor progress."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Prereferral intervention should be specific, evidence based, implemented as intended, and monitored. It can improve instruction and contribute data, but it does not predetermine eligibility.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1534,12 +1534,12 @@
           "id": "sp5355-ch-08-check-02",
           "prompt": "A school says it will not evaluate a student until every tier of intervention has been completed. What is the problem?",
           "choices": [
-            "General education interventions must stop as soon as a multidisciplinary evaluation is discussed.",
             "RTI procedures cannot be used to delay or deny a timely IDEA evaluation when disability is suspected.",
             "A written parent evaluation request establishes IDEA eligibility before testing is conducted.",
-            "Once an evaluation begins, teams are restricted to standardized cognitive tests rather than RTI data."
+            "Once an evaluation begins, teams are restricted to standardized cognitive tests rather than RTI data.",
+            "General education interventions must stop as soon as a multidisciplinary evaluation is discussed."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Multi-tiered supports and evaluation can inform one another, but an intervention process cannot become a barrier to IDEA evaluation duties. The agency must follow notice, consent, and timeline requirements.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1552,12 +1552,12 @@
           "id": "sp5355-ch-08-check-03",
           "prompt": "What is the role of parent information in an evaluation?",
           "choices": [
-            "Set family observations aside because formal school evaluations rely on clinician-administered protocols.",
             "Treat the parent’s home description as the decisive criterion establishing eligibility and services.",
             "Integrate parent input as required evidence alongside academic, developmental, and functional data.",
-            "File the family’s observations for review after eligibility and classroom placement have been finalized."
+            "File the family’s observations for review after eligibility and classroom placement have been finalized.",
+            "Set family observations aside because formal school evaluations rely on clinician-administered protocols."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "IDEA explicitly includes information provided by parents among the sources used in evaluation. It should be integrated with other evidence, not dismissed or made the only basis for a decision.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1570,12 +1570,12 @@
           "id": "sp5355-ch-08-check-04",
           "prompt": "A student is referred for reading difficulty, but records also show significant hearing and communication concerns. How broad should the evaluation be?",
           "choices": [
-            "Restrict evaluation tools strictly to the original referral concern listed on the initial screening form.",
             "Administer one broad intellectual screening measure to represent every developmental domain efficiently.",
             "Defer assessing hearing, motor, or language concerns until eligibility is confirmed at the next annual review.",
-            "Assess all areas related to the suspected disability and identify all special education needs."
+            "Assess all areas related to the suspected disability and identify all special education needs.",
+            "Restrict evaluation tools strictly to the original referral concern listed on the initial screening form."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Evaluation must be comprehensive enough to identify special education and related-service needs, including needs not commonly linked to the eventual disability category.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1588,12 +1588,12 @@
           "id": "sp5355-ch-08-check-05",
           "prompt": "Why can no single test score determine special education eligibility?",
           "choices": [
-            "Synthesize multiple technically sound measures, observations, histories, and context as a team.",
             "Disregard classroom work samples that conflict with the lowest standardized assessment result.",
             "Compute a mathematical average of all numerical scores across different academic and cognitive tests.",
-            "Follow the test publisher’s cutoff table as the binding determinant of IDEA eligibility classification."
+            "Follow the test publisher’s cutoff table as the binding determinant of IDEA eligibility classification.",
+            "Synthesize multiple technically sound measures, observations, histories, and context as a team."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "No single measure may serve as the sole criterion. Teams evaluate patterns, validity, access, instruction, exclusionary factors, functional impact, and need for specially designed instruction.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1701,7 +1701,7 @@
           "id": "sp5355-ch-09-check-01",
           "prompt": "A student’s weekly reading-fluency scores are 62, 64, 63, 65, and 64 while the goal line rises steadily. What is the best interpretation?",
           "choices": [
-            "Growth trails the aim line, so check implementation fidelity and adjust instruction before annual review.",
+            "Growth trails the target slope, so check delivery fidelity and adjust instruction before annual review.",
             "The slight upward uptick between earlier and later probes confirms the student will meet the goal on time.",
             "Consistent scores across consecutive weeks indicate the student has stabilized at independent skill mastery.",
             "Weekly progress charts should be archived for documentation and revisited at the scheduled annual IEP meeting."
@@ -1721,7 +1721,7 @@
           "prompt": "What is the purpose of a goal line on a progress graph?",
           "choices": [
             "The median weekly score earned by same-grade classmates on the same curriculum probe.",
-            "The expected rate of improvement connecting baseline performance to the target goal.",
+            "The expected rate of improvement connecting baseline performance to the target score.",
             "A formal commitment guaranteeing that the student will reach the target score on schedule.",
             "The test-retest reliability index quantifying measurement error across repeated probe forms."
           ],
@@ -1901,12 +1901,12 @@
           "id": "sp5355-ch-10-check-01",
           "prompt": "What does FAPE require at a foundational level under IDEA?",
           "choices": [
+            "A qualifying disability classification determines a uniform instructional program across the district.",
             "Eligible students receive public special education and related services through an appropriate IEP.",
             "Public schools must ensure that every eligible student reaches identical standardized achievement benchmarks.",
-            "Families share tuition or co-payment expenses for specialized related services written into the IEP.",
-            "A qualifying disability classification determines a uniform instructional program across the district."
+            "Families share tuition or co-payment expenses for specialized related services written into the IEP."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "FAPE concerns an individualized public educational program and required services provided without charge under IDEA procedures. It does not promise a specific score or justify a category-based program.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1922,12 +1922,12 @@
           "id": "sp5355-ch-10-check-02",
           "prompt": "A school suspects a disability in a student who is passing classes with extensive informal help. What duty remains relevant?",
           "choices": [
+            "Special education referral procedures begin once a student fails at least one required core academic course.",
             "District staff must wait for parents or guardians to initiate a formal written concern before reviewing needs.",
             "Child Find requires locating, identifying, and evaluating children who may need special education, even if advancing grades.",
-            "Passing report-card grades and grade-level promotion suspend the district’s IDEA evaluation obligations.",
-            "Special education referral procedures begin once a student fails at least one required core academic course."
+            "Passing report-card grades and grade-level promotion suspend the district’s IDEA evaluation obligations."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Child Find is an affirmative obligation and is not limited to students who are failing or already referred. The school should follow screening, referral, notice, consent, and evaluation procedures as appropriate.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1941,14 +1941,14 @@
         },
         {
           "id": "sp5355-ch-10-check-03",
-          "prompt": "A district proposes changing a student’s placement. What procedural communication is required?",
+          "prompt": "A district proposes changing a student’s placement. What required communication must go to parents?",
           "choices": [
+            "Internal administrative notes kept in the district office without written notice when staff agree on the choice.",
             "A brief informal phone call summarizing the administrative decision after the classroom change takes effect.",
             "A shared building memo naming the student so staff across departments know the updated schedule.",
-            "Prior written notice explaining the proposed or refused action, reasons, evidence, and procedural safeguards.",
-            "Internal administrative notes kept in the district office without written notice when staff agree on the choice."
+            "Prior written notice explaining the proposed or refused action, reasons, evidence, and procedural safeguards."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Prior written notice supports informed participation by documenting what the agency proposes or refuses and why, the records or assessments used, alternatives considered, and available safeguards.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1964,12 +1964,12 @@
           "id": "sp5355-ch-10-check-04",
           "prompt": "A teacher wants to discuss a student’s IEP in a public elevator with a colleague who does not serve the student. What should the teacher do?",
           "choices": [
+            "Protect confidentiality by discussing records in private authorized channels with staff who hold a legitimate role.",
             "Discuss the IEP openly with fellow building staff because school employment grants broad access to student files.",
             "Display an abbreviated IEP accommodation chart on a shared clipboard where substitutes and visitors can consult it.",
-            "Omit the student’s first name during the public conversation while describing specific classroom details.",
-            "Protect confidentiality by discussing records in private authorized channels with staff who hold a legitimate role."
+            "Omit the student’s first name during the public conversation while describing specific classroom details."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Confidentiality protects personally identifiable educational information. Professionals should use secure channels, limit access to legitimate educational interests, and follow federal, state, and local record policies.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -1985,12 +1985,12 @@
           "id": "sp5355-ch-10-check-05",
           "prompt": "What is a central protection of Section 504 in public schools receiving federal funds?",
           "choices": [
+            "Section 504 obligations are restricted to physical building accessibility such as ramps, elevators, and restrooms.",
             "Section 504 bars disability discrimination and can require accommodations and related aids for equal access.",
             "Section 504 protections become available after a student first qualifies under an IDEA disability category.",
-            "Section 504 requires selective academic programs to waive essential technical admission criteria for applicants.",
-            "Section 504 obligations are restricted to physical building accessibility such as ramps, elevators, and restrooms."
+            "Section 504 requires selective academic programs to waive essential technical admission criteria for applicants."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Section 504 is a civil-rights law distinct from IDEA eligibility. It protects qualified students from disability discrimination and can require an appropriate plan of access supports.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -2096,12 +2096,12 @@
           "id": "sp5355-ch-11-check-01",
           "prompt": "In effective co-teaching, what is the special educator’s role?",
           "choices": [
-            "Share planning, instruction, assessment, and responsibility for all learners while contributing specialized expertise.",
-            "Serve primarily as a classroom assistant preparing photocopies and circulating while the general educator teaches.",
             "Manage whole-class behavioral reminders while the general educator directs all curriculum planning and grading.",
-            "Work separately at a back table with students who have IEPs during every shared instructional period."
+            "Work separately at a back table with students who have IEPs during every shared instructional period.",
+            "Share planning, instruction, assessment, and responsibility for all learners while contributing specialized expertise.",
+            "Serve primarily as a classroom assistant preparing photocopies and circulating while the general educator teaches."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Co-teaching is a partnership with shared ownership. Roles may vary by lesson, but both educators contribute to planning, instruction, assessment, classroom management, and access for the whole class.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -2114,12 +2114,12 @@
           "id": "sp5355-ch-11-check-02",
           "prompt": "How should a special educator work with a paraprofessional?",
           "choices": [
-            "Delegate annual IEP goal drafting, instructional planning, and summative grading to the paraprofessional.",
-            "Provide clear direction, training, boundaries, observation, and feedback while retaining instructional responsibility.",
             "Encourage the paraprofessional to design and improvise specialized communication interventions independently.",
-            "Withhold relevant communication goals and prompt hierarchies from the paraprofessional to protect student privacy."
+            "Withhold relevant communication goals and prompt hierarchies from the paraprofessional to protect student privacy.",
+            "Delegate annual IEP goal drafting, instructional planning, and summative grading to the paraprofessional.",
+            "Provide clear direction, training, boundaries, observation, and feedback while retaining instructional responsibility."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Teachers remain accountable for instruction and supervision. Paraprofessionals need enough authorized information, modeling, and feedback to implement supports consistently without being assigned professional duties outside their role.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -2132,12 +2132,12 @@
           "id": "sp5355-ch-11-check-03",
           "prompt": "A family disagrees with the team’s interpretation of progress data. What is the best first response?",
           "choices": [
-            "Explain that standardized school probes carry greater weight than informal family observations during homework.",
-            "Pause the conference and reschedule once the family is ready to accept the team’s written progress summary.",
             "Listen carefully, clarify concerns, review evidence together, invite home context, and plan next steps.",
-            "Revise the student’s annual IEP goals on the spot to match the parent’s impression before checking data."
+            "Revise the student’s annual IEP goals on the spot to match the parent’s impression before checking data.",
+            "Explain that standardized school probes carry greater weight than informal family observations during homework.",
+            "Pause the conference and reschedule once the family is ready to accept the team’s written progress summary."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Family collaboration is reciprocal. Respectful inquiry can reveal contextual variables and improve the evidence base, while shared review keeps decisions connected to student needs and procedural requirements.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -2150,12 +2150,12 @@
           "id": "sp5355-ch-11-check-04",
           "prompt": "A student’s occupational therapist recommends a classroom positioning support. How should the teacher proceed?",
           "choices": [
-            "Keep the positioning or communication strategy confined to pull-out therapy sessions rather than classroom lessons.",
-            "Alter the specialist’s recommended setup unilaterally whenever classroom furniture or grouping feels tight.",
             "Ask the related-service specialist to assume primary responsibility for teaching the student’s classroom units.",
-            "Clarify the goal, embed the support into authentic routines, define roles, and share outcome data."
+            "Clarify the goal, embed the strategy into authentic routines, define roles, and share outcome data.",
+            "Keep the positioning or communication strategy confined to pull-out therapy sessions rather than classroom lessons.",
+            "Alter the specialist’s recommended setup unilaterally whenever classroom furniture or grouping feels tight."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Related services support educational access. Coordination connects specialist expertise with classroom routines, promotes consistency, and creates shared data for determining whether the support is feasible and effective.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -2168,12 +2168,12 @@
           "id": "sp5355-ch-11-check-05",
           "prompt": "How can a student contribute meaningfully to an IEP meeting?",
           "choices": [
-            "Prepare the student to share strengths, preferences, goals, and helpful supports via an accessible mode.",
-            "Hand the student a prewritten script to read aloud at the meeting without inviting personal input or choices.",
             "Conduct the postsecondary goal discussion privately among adults so the student avoids feeling overwhelmed.",
-            "Invite the student to sit in the meeting room without previewing the agenda, terms, or participation options."
+            "Invite the student to sit in the meeting room without previewing the agenda, terms, or participation options.",
+            "Prepare the student to share strengths, preferences, goals, and helpful supports via an accessible mode.",
+            "Hand the student a prewritten script to read aloud at the meeting without inviting personal input or choices."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Student participation supports self-determination when learners understand the process and can communicate preferences, evaluate supports, and contribute to goals with whatever access tools they need.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -2281,12 +2281,12 @@
           "id": "sp5355-ch-12-check-01",
           "prompt": "Which reflection question is most useful after an instructional unit?",
           "choices": [
-            "Which students met the target, what error patterns emerged, and what evidence should guide next lessons?",
             "Did the pacing calendar allow the class to finish every slide deck and worksheet scheduled for the unit?",
             "Did most students appear warm, enthusiastic, and personally comfortable with the teacher’s classroom style?",
-            "Could most unfinished assignments be explained by fluctuating student motivation rather than lesson design?"
+            "Could most unfinished assignments be explained by fluctuating student motivation rather than lesson design?",
+            "Which students met the target, what error patterns emerged, and what evidence should guide next lessons?"
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Professional reflection links educator actions to observable learner outcomes and implementation evidence. It identifies a specific change to test instead of relying on coverage, popularity, or blame.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -2300,12 +2300,12 @@
           "id": "sp5355-ch-12-check-02",
           "prompt": "How should a teacher choose professional development?",
           "choices": [
-            "Register for whichever district workshop fits an open afternoon slot regardless of alignment to classroom needs.",
-            "Choose credible training matched to the practice gap, apply it with coaching, and check student outcomes.",
+            "Select credible training matched to the practice gap, apply it with coaching, and check student outcomes.",
             "Complete short online modules mainly to accumulate renewal certificates without altering instructional routines.",
-            "Gather quick classroom tips from unvetted educator social-media threads instead of evidence-based workshops."
+            "Gather quick classroom tips from unvetted educator social-media threads instead of evidence-based workshops.",
+            "Register for whichever district workshop fits an open afternoon slot regardless of alignment to classroom needs."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "High-value professional learning is targeted, evidence informed, applied in authentic work, supported by feedback, and evaluated through implementation and learner outcomes rather than attendance alone.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -2319,12 +2319,12 @@
           "id": "sp5355-ch-12-check-03",
           "prompt": "A student lacks an accessible communication tool needed to participate. What is an appropriate advocacy step?",
           "choices": [
-            "Assure the family verbally that the teacher will arrange specialized equipment outside district approval channels.",
             "Share details of the student’s unmet IEP accommodations publicly with community members to build pressure.",
             "Document educational impact, use formal team and administrative channels, propose solutions, and follow up.",
-            "Adjust classroom activities quietly around the missing support without notifying the IEP team or administration."
+            "Adjust classroom activities quietly around the missing support without notifying the IEP team or administration.",
+            "Assure the family verbally that the teacher will arrange specialized equipment outside district approval channels."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Professional advocacy is specific, evidence based, collaborative, and persistent. It protects confidentiality, stays within role, and uses formal channels to address barriers to services, resources, and equitable participation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -2338,12 +2338,12 @@
           "id": "sp5355-ch-12-check-04",
           "prompt": "A student reveals information suggesting immediate risk of harm and asks the teacher to keep it secret. What should the teacher do?",
           "choices": [
-            "Conduct private follow-up interviews with peers and family members to verify the report before notifying authorities.",
             "Agree to keep the student’s disclosure completely confidential so counseling trust and rapport remain intact.",
             "Consult informally with several colleagues in the staff lounge to gauge whether the concern warrants reporting.",
-            "Follow mandatory reporting and safety protocols promptly, share with authorized personnel, and avoid promising secrecy."
+            "Follow mandatory reporting and safety protocols promptly, share with authorized personnel, and avoid promising secrecy.",
+            "Conduct private follow-up interviews with peers and family members to verify the report before notifying authorities."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Safety and reporting duties override a promise of secrecy. Educators should know their jurisdiction and policy, report through required channels, preserve privacy, and avoid conducting an unauthorized investigation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",
@@ -2357,12 +2357,12 @@
           "id": "sp5355-ch-12-check-05",
           "prompt": "A transition team wants an adult-service agency representative to attend an IEP meeting. What safeguard matters?",
           "choices": [
-            "Secure required parent or adult-student consent before inviting an outside agency likely to fund or deliver services.",
             "Send a meeting invitation to the outside agency automatically because transition planning is on the agenda.",
             "Transfer ongoing IDEA transition obligations to the outside employment agency once its representative attends.",
-            "Wait until after the student graduates from high school before coordinating contacts with adult-service agencies."
+            "Wait until after the student graduates from high school before coordinating contacts with adult-service agencies.",
+            "Secure required parent or adult-student consent before inviting an outside agency likely to fund or deliver services."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Transition collaboration can improve continuity, but outside-agency participation must follow consent and confidentiality requirements. The public agency retains its IDEA responsibilities even when another agency is involved.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dwa68a3c59/pdfs/5355.pdf",

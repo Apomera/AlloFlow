@@ -115,7 +115,7 @@ module.exports = [
   },
   {
     id: 'L8.8',
-    correct: 'When current criteria, outcomes, function, and preferences support it, with education and a documented follow-up plan.',
+    correct: 'When current criteria, outcomes, function, and preferences support it, with a documented follow-up plan.',
     distractors: [
       'When the client reaches a fixed number of visits set at intake, regardless of outcomes or remaining functional needs.',
       'Never while any diagnosis remains on record, because a continuing diagnosis justifies indefinite skilled services.',

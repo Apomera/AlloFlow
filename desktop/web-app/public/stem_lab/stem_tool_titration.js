@@ -4699,9 +4699,9 @@ window.StemLab.registerTool('titrationLab', {
     // Student AI-off: null unless text AI is usable, so the AI tutor panel hides.
     var _aiUsable = function (kind, fn) {
       try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-      return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+      return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window.__alloOfflineOnly === true));
     };
-    var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
+    var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && _aiUsable('text', ctx.callGemini)) ? ctx.callGemini : null;
     var gradeLevel = ctx.gradeLevel;
 
 var d = (labToolData && labToolData.titrationLab && typeof labToolData.titrationLab === 'object' && !Array.isArray(labToolData.titrationLab)) ? labToolData.titrationLab : {};

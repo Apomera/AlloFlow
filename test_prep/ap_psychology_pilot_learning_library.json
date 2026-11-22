@@ -2203,9 +2203,9 @@
           "id": "ap-psych-ch-01-check-02",
           "prompt": "Researchers find that identical twins raised in different homes are more similar on a measured trait than unrelated people, but the twins are not identical on the trait. Which conclusion is most defensible?",
           "choices": [
-            "The trait is entirely genetic because the twins share genes.",
-            "The trait is entirely environmental because the twins lived in different homes.",
-            "Inherited variation may contribute, while environmental and developmental factors also matter.",
+            "The trait stems strictly from genetics because the twins share genes.",
+            "The trait stems solely from environment because the twins lived in different homes.",
+            "Both inherited variation and environmental factors matter.",
             "The finding proves the trait cannot change within a person."
           ],
           "answerIndex": 2,
@@ -2223,12 +2223,12 @@
           "type": "single-choice-retrieval",
           "prompt": "A study reports that a reading score has a heritability estimate of .70 in one population. Which conclusion is most defensible?",
           "choices": [
+            "Genetic differences link to much trait variation in this group.",
             "Seventy percent of each student’s reading ability is caused by genes.",
-            "Genetic differences are associated with much of the variation in scores under the studied conditions.",
             "Reading ability cannot be changed through instruction or environmental support.",
             "The estimate proves that the study used random assignment."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Heritability describes variation within a population and environment. It does not partition one person’s trait, establish immutability, or identify the study design.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
@@ -2244,12 +2244,12 @@
           "type": "single-choice-retrieval",
           "prompt": "A neuron’s individual action potentials remain the same amplitude, but their frequency increases as stimulation becomes stronger. Which principle best explains the pattern?",
           "choices": [
-            "The all-or-none principle with frequency coding",
             "Reuptake makes every neural signal identical",
             "The refractory period increases action-potential amplitude",
+            "The all-or-none response with frequency coding",
             "Inhibitory input always increases firing frequency"
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "An action potential has a stable amplitude after threshold, while stimulus intensity can be represented by how often action potentials occur.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
@@ -2265,12 +2265,12 @@
           "type": "single-choice-retrieval",
           "prompt": "A person notices a room’s odor less after sitting there for ten minutes, even though the odor source remains. Which process best explains the change?",
           "choices": [
-            "Sensory adaptation",
             "An increased absolute threshold caused by learning",
             "A new conditioned stimulus",
-            "A complete loss of transduction"
+            "A complete loss of transduction",
+            "Sensory adaptation"
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Sensory adaptation is reduced responsiveness to a constant stimulus. The receptor system has not necessarily stopped transducing the odor.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
@@ -3505,7 +3505,7 @@
           "id": "ap-psych-ch-02-check-02",
           "prompt": "After viewing a minor collision, witnesses are asked a misleading question that implies broken glass was present. Some later report seeing glass that was never shown. Which concept best explains this change?",
           "choices": [
-            "The misinformation effect",
+            "Misinformation effect",
             "Sensory adaptation",
             "The absolute threshold",
             "State-dependent learning"
@@ -3525,12 +3525,12 @@
           "type": "single-choice-retrieval",
           "prompt": "A reader correctly interprets a poorly printed word because the surrounding sentence strongly suggests its meaning. Which process is most directly involved?",
           "choices": [
-            "Top-down processing",
             "Sensory adaptation",
+            "Top-down processing",
             "Negative reinforcement",
             "The absolute threshold"
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Top-down processing uses context and prior knowledge to interpret incomplete or ambiguous sensory information in a given situation.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
@@ -3546,12 +3546,12 @@
           "type": "single-choice-retrieval",
           "prompt": "After studying, a learner repeatedly tries to recall the ideas before checking the notes. Which process is most directly being practiced?",
           "choices": [
-            "Retrieval practice",
             "Sensory adaptation",
             "State-dependent punishment",
+            "Retrieval practice",
             "A fixed-ratio schedule"
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Repeatedly bringing information to mind strengthens access and provides feedback about what has and has not been learned.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
@@ -3567,12 +3567,12 @@
           "type": "single-choice-retrieval",
           "prompt": "A measure produces nearly identical scores on two occasions but disagrees with an established measure of the intended construct. Which conclusion is best supported?",
           "choices": [
-            "It appears reliable but has limited validity evidence.",
             "It is valid because consistency guarantees accuracy.",
             "It is neither reliable nor measurable.",
-            "It has validity but no reliability."
+            "It has validity but no reliability.",
+            "High reliability with weak validity evidence."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Similar scores support reliability, while disagreement with an established measure limits evidence that the test measures the intended construct.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
@@ -4810,7 +4810,7 @@
           "choices": [
             "It is longitudinal, and attrition is the only major concern.",
             "It is experimental, so random assignment establishes age as the cause.",
-            "It is cross-sectional, and age differences may be mixed with cohort differences.",
+            "Cross-sectional, so age may be confounded with cohort.",
             "It is a case study, so no group comparison is possible."
           ],
           "answerIndex": 2,
@@ -4828,7 +4828,7 @@
           "type": "single-choice-retrieval",
           "prompt": "A developmental comparison finds older adults scored higher than adolescents after one testing session. Which alternative explanation should be checked first?",
           "choices": [
-            "Cohort effects may be confused with age-related change.",
+            "Cohort differences may confound age.",
             "The study cannot measure any behavior.",
             "The design is automatically experimental.",
             "The same people are measured repeatedly."
@@ -4849,12 +4849,12 @@
           "type": "single-choice-retrieval",
           "prompt": "A child’s whining increases after a caregiver removes a difficult cleanup demand whenever the child whines. For the whining, removal of the demand is what?",
           "choices": [
-            "Negative reinforcement",
             "Positive punishment",
             "Negative punishment",
+            "Negative reinforcement",
             "Classical extinction"
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Whining increases and an aversive demand is removed. That combination is negative reinforcement rather than punishment.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
@@ -4870,12 +4870,12 @@
           "type": "single-choice-retrieval",
           "prompt": "Students participate more after watching a classmate receive praise for contributing an answer. Which process is most directly illustrated?",
           "choices": [
-            "Vicarious reinforcement",
             "Sensory adaptation",
             "Negative punishment",
-            "Retroactive interference"
+            "Retroactive interference",
+            "Vicarious reinforcement"
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "The students observe another person receive a rewarding consequence, and their own behavior increases after seeing the model.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
@@ -6091,7 +6091,7 @@
           "id": "ap-psych-ch-04-check-01",
           "prompt": "A manager sees a driver arrive late and immediately concludes that the driver is irresponsible, without considering a road closure announced that morning. Which concept best fits the manager's judgment?",
           "choices": [
-            "The mere-exposure effect",
+            "The mere-exposure attitude effect",
             "Group polarization",
             "Reciprocal determinism",
             "The fundamental attribution error"
@@ -6129,12 +6129,12 @@
           "type": "single-choice-retrieval",
           "prompt": "A manager labels a driver irresponsible after a late arrival but ignores a road closure that morning. Which concept best fits the judgment?",
           "choices": [
-            "Fundamental attribution error",
             "Self-actualization",
+            "Fundamental attribution error",
             "Latent learning",
-            "The spacing effect"
+            "The self-serving attribution bias"
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "The manager overemphasizes a personal disposition while neglecting a relevant situational explanation for another person’s behavior.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
@@ -6150,12 +6150,12 @@
           "type": "single-choice-retrieval",
           "prompt": "A learner’s confidence changes after observing a similar peer succeed, which increases persistence and changes the learning environment. Which perspective best captures the loop?",
           "choices": [
-            "Social-cognitive reciprocal determinism",
             "A fixed trait-only explanation",
             "Sensory adaptation",
+            "Reciprocal determinism",
             "The psychodynamic id alone"
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "The example connects personal belief, behavior, and environment in a reciprocal loop, a central social-cognitive idea.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
@@ -6169,14 +6169,14 @@
           "id": "ap-psych-ch-04-section-03-retrieval-check",
           "sectionId": "ap-psych-ch-04-section-03",
           "type": "single-choice-retrieval",
-          "prompt": "The same elevated heart rate is labeled excitement at a concert but fear in a threatening alley. Which theory most directly emphasizes this pattern?",
+          "prompt": "The same elevated heart rate is labeled excitement at a concert but fear in a threatening alley. Which explanation most directly emphasizes this pattern?",
           "choices": [
-            "Two-factor theory",
             "The law of effect alone",
             "The absolute threshold",
-            "The Big Five trait model"
+            "The Big Five trait model",
+            "Two-factor theory"
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Two-factor theory combines physiological arousal with a cognitive interpretation of the situation to produce an emotion.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
@@ -7393,7 +7393,7 @@
           "prompt": "A student has trouble concentrating during one stressful week. Which response best reflects responsible psychological reasoning?",
           "choices": [
             "Assign a disorder label because impaired concentration appears in several diagnoses.",
-            "Avoid diagnosis from one brief example and consider duration, context, impairment, alternatives, and qualified assessment.",
+            "Weigh duration, context, impairment, and alternatives before diagnosing.",
             "Conclude that the difficulty is voluntary because it appeared recently.",
             "Recommend a specific treatment before gathering additional information."
           ],
@@ -7410,10 +7410,10 @@
           "id": "ap-psych-ch-05-check-02",
           "prompt": "Which feature most directly strengthens a causal conclusion that a treatment, rather than a preexisting group difference, changed the measured outcome?",
           "choices": [
-            "Recruiting only participants who strongly expect the treatment to work",
+            "Recruiting volunteers who strongly expect the treatment to work",
             "Reporting testimonials from participants who completed treatment",
-            "Randomly assigning consenting participants to treatment and credible comparison conditions",
-            "Measuring the outcome only after participants choose their preferred condition"
+            "Randomly assigning participants to treatment and comparison groups",
+            "Measuring the outcome after participants choose their preferred condition"
           ],
           "answerIndex": 2,
           "rationale": "Random assignment helps distribute preexisting differences across conditions, strengthening causal inference. A credible comparison and ethical consent add interpretive and ethical value; testimonials and self-selection do not rule out major alternatives.",
@@ -7430,7 +7430,7 @@
           "type": "single-choice-retrieval",
           "prompt": "A student can change a scheduling problem by contacting an instructor and reorganizing study time. Which coping response is most directly problem-focused?",
           "choices": [
-            "Changing the plan and addressing the source of the demand",
+            "Revising the plan to tackle the demand",
             "Ignoring the demand while rehearsing the worry",
             "Assuming the outcome is fixed",
             "Diagnosing a disorder from the stress report"
@@ -7451,12 +7451,12 @@
           "type": "single-choice-retrieval",
           "prompt": "A student reports unusual behavior for one day during severe sleep loss but returns to baseline afterward. Which response is most responsible?",
           "choices": [
-            "Consider context and duration rather than diagnosing from one brief report.",
             "Assign a disorder category from the unusual behavior alone.",
+            "Weigh context and duration instead of diagnosing briefly.",
             "Treat the behavior as proof of a biological cause.",
             "Ignore functioning because symptoms are the only relevant evidence."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Classification requires attention to duration, distress, impairment, context, and alternative explanations; one brief observation is insufficient before drawing a diagnosis.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
@@ -7472,12 +7472,12 @@
           "type": "single-choice-retrieval",
           "prompt": "A randomized study reports greater symptom improvement in the treatment group. Which additional result would help judge whether the benefit is practically meaningful?",
           "choices": [
-            "A comparison of effect size and functional improvement at follow-up",
             "Anecdotal improvement from one participant",
             "A treatment group selected because it already expects success",
-            "A follow-up with no record of who received treatment"
+            "A follow-up with no record of who received treatment",
+            "Effect size and daily functioning at follow-up"
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Effect size and functional follow-up help show whether a statistically detectable group difference has practical significance beyond symptom counts alone.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",

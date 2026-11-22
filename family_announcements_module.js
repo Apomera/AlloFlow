@@ -343,13 +343,83 @@ function FamilyAnnouncementsPanel(props) {
   };
   const mountedRef = React.useRef(true);
   const runIdRef = React.useRef(0);
+  const copyTimerRef = React.useRef(null);
+  const [copiedKey, setCopiedKey] = React.useState(null);
   React.useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
       runIdRef.current += 1;
+      if (copyTimerRef.current) {
+        clearTimeout(copyTimerRef.current);
+        copyTimerRef.current = null;
+      }
     };
   }, []);
+  const copyTranslation = React.useCallback((key, lang, text) => {
+    const clean = String(text || "").trim();
+    if (!clean) return;
+    const payload = clean + "\n\n" + FAMANN_DISCLAIMER_EN;
+    const markCopied = () => {
+      if (!mountedRef.current) return;
+      setCopiedKey(key);
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => {
+        if (mountedRef.current) setCopiedKey(null);
+      }, 2200);
+      famannAnnounce(lang.name + " " + tt("famann.copied_announce", "translation copied with disclosure."));
+    };
+    const fallbackCopy = () => {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = payload;
+        ta.setAttribute("readonly", "");
+        ta.setAttribute("aria-hidden", "true");
+        ta.setAttribute("aria-label", "Clipboard copy helper");
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand && document.execCommand("copy");
+        document.body.removeChild(ta);
+        if (ok) {
+          markCopied();
+          return;
+        }
+      } catch (_) {
+      }
+      addToast(tt("famann.copy_failed", "Could not copy automatically — select the text and copy manually."), "warning");
+    };
+    if (typeof navigator !== "undefined" && navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      Promise.resolve(navigator.clipboard.writeText(payload)).then(markCopied, fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+  }, [addToast, tt]);
+  const translateSingle = async (lang) => {
+    if (!lang || busyTag || !_famannAiUsable("text", callGemini)) return;
+    const sourceText = draft.text;
+    if (sourceText.trim().length < 20) {
+      addToast(tt("famann.too_short", "Write the announcement first."), "warning");
+      return;
+    }
+    const runId = ++runIdRef.current;
+    setBusyTag(lang.tag);
+    try {
+      const raw = await callGemini(famannPrompt(lang, sourceText));
+      if (!mountedRef.current || runIdRef.current !== runId) return;
+      const text = famannCleanTranslation(raw);
+      if (!text) throw new Error("empty response");
+      setDraft((d) => ({ ...d, translations: { ...d.translations, [lang.tag]: { text, status: "done", forText: sourceText } } }));
+      famannAnnounce(lang.name + " " + tt("famann.single_translated_announce", "translation ready for review."));
+    } catch (e) {
+      if (!mountedRef.current || runIdRef.current !== runId) return;
+      setDraft((d) => ({ ...d, translations: { ...d.translations, [lang.tag]: { text: d.translations && d.translations[lang.tag] && d.translations[lang.tag].text || "", status: "error", forText: sourceText } } }));
+      addToast(lang.name + ": " + tt("famann.translate_failed", "translation failed — retry or paste your own.") + " " + String(e && e.message || e), "error");
+    } finally {
+      if (mountedRef.current && runIdRef.current === runId) setBusyTag(null);
+    }
+  };
   const translateAll = async () => {
     if (!_famannAiUsable("text", callGemini)) return;
     const sourceText = draft.text;
@@ -422,6 +492,16 @@ function FamilyAnnouncementsPanel(props) {
     );
   };
   const viewSaved = viewId ? saved.find((x) => x.id === viewId) : null;
+  const aiUsable = _famannAiUsable("text", callGemini);
+  const sourceWords = draft.text.trim() ? draft.text.trim().split(/\s+/).length : 0;
+  const langStatusSummary = selectedLangs.reduce((acc, lang) => {
+    const entry = (draft.translations || {})[lang.tag] || { text: "", status: "empty" };
+    const stale = entry.status === "done" && entry.forText !== draft.text;
+    if (entry.status === "error") acc.errors += 1;
+    else if (stale && entry.text) acc.stale += 1;
+    else if (entry.text && entry.text.trim()) acc.ready += 1;
+    return acc;
+  }, { ready: 0, stale: 0, errors: 0 });
   const tabs = [
     { id: "compose", label: tt("famann.tab_compose", "Compose"), icon: "📣" },
     { id: "saved", label: tt("famann.tab_saved", "Saved"), icon: "🗂️" }
@@ -495,7 +575,7 @@ function FamilyAnnouncementsPanel(props) {
         onChange: (e) => setDraft((d) => ({ ...d, date: e.target.value })),
         className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
       }
-    ))), /* @__PURE__ */ React.createElement("label", { htmlFor: "famann-text", className: "block text-xs font-bold text-slate-600 mt-2 mb-1" }, tt("famann.text_label", "Announcement (English master)")), /* @__PURE__ */ React.createElement(
+    ))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mt-2 mb-1" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "famann-text", className: "block text-xs font-bold text-slate-600" }, tt("famann.text_label", "Announcement (English master)")), /* @__PURE__ */ React.createElement("span", { "data-famann-word-count": "true", className: "text-xs font-medium text-slate-600 tabular-nums" }, sourceWords, " ", sourceWords === 1 ? tt("famann.word_singular", "word") : tt("famann.word_plural", "words"), sourceWords >= 220 ? " · " + tt("famann.long_note_hint", "Short paragraphs help families scan") : "")), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         id: "famann-text",
@@ -520,19 +600,44 @@ function FamilyAnnouncementsPanel(props) {
         " ",
         /* @__PURE__ */ React.createElement("span", { className: "font-normal " + (on ? "text-indigo-100" : "text-slate-600") }, lang.name)
       );
-    }))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" }, _famannAiUsable("text", callGemini) ? /* @__PURE__ */ React.createElement(
+    }))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-3" }, aiUsable ? /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         disabled: !!busyTag,
         onClick: translateAll,
-        className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-wait"
+        className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-wait focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
       },
       busyTag ? tt("famann.translating", "Translating") + " " + ((famannLangByTag(busyTag) || {}).name || "") + "…" : tt("famann.translate_all", "Translate all") + " ✨"
-    ) : /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 self-center" }, tt("famann.no_ai", "AI translation is unavailable in this host — paste translations into each language box below.")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!busyTag, onClick: saveAnnouncement, className: "min-h-11 px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800 disabled:opacity-60" }, tt("famann.save", "Save announcement"))), selectedLangs.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, selectedLangs.map((lang) => {
+    ) : /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 self-center" }, tt("famann.no_ai", "AI translation is unavailable in this host — paste translations into each language box below.")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!busyTag, onClick: saveAnnouncement, className: "min-h-11 px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800 disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none" }, tt("famann.save", "Save announcement")), selectedLangs.length > 0 && /* @__PURE__ */ React.createElement("div", { "data-famann-readiness": "true", className: "ml-auto flex flex-wrap items-center gap-1.5 text-xs font-bold" }, /* @__PURE__ */ React.createElement("span", { className: "px-2.5 py-1 rounded-full border " + (langStatusSummary.ready === selectedLangs.length ? "bg-emerald-50 text-emerald-800 border-emerald-300" : "bg-white text-slate-700 border-slate-300") }, langStatusSummary.ready, "/", selectedLangs.length, " ", tt("famann.ready_short", "ready")), langStatusSummary.stale > 0 && /* @__PURE__ */ React.createElement("span", { className: "px-2.5 py-1 rounded-full border border-amber-300 bg-amber-50 text-amber-800" }, langStatusSummary.stale, " ", tt("famann.stale_short", "needs update")), langStatusSummary.errors > 0 && /* @__PURE__ */ React.createElement("span", { className: "px-2.5 py-1 rounded-full border border-rose-300 bg-rose-50 text-rose-800" }, langStatusSummary.errors, " ", tt("famann.error_short", "retry needed")))), selectedLangs.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, selectedLangs.map((lang) => {
       const entry = (draft.translations || {})[lang.tag] || { text: "", status: "empty" };
       const stale = entry.status === "done" && entry.forText !== draft.text;
-      return /* @__PURE__ */ React.createElement("div", { key: lang.tag, className: "bg-white border rounded-xl p-3 " + (entry.status === "error" ? "border-rose-300" : stale ? "border-amber-300" : "border-slate-300") }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "famann-tr-" + lang.tag, className: "text-xs font-bold text-slate-700" }, lang.native, " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-600" }, "(", lang.name, lang.rtl ? " · RTL" : "", ")")), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold" }, entry.status === "error" && /* @__PURE__ */ React.createElement("span", { className: "text-rose-700" }, tt("famann.status_error", "failed — retry or paste")), stale && /* @__PURE__ */ React.createElement("span", { className: "text-amber-700" }, tt("famann.status_stale", "English changed since this translation")))), /* @__PURE__ */ React.createElement(
+      const hasText = Boolean(entry.text && entry.text.trim());
+      const copyId = "compose:" + lang.tag;
+      const isCopied = copiedKey === copyId;
+      const needsSingleTranslate = aiUsable && (entry.status === "error" || stale || !hasText);
+      return /* @__PURE__ */ React.createElement("div", { key: lang.tag, className: "bg-white border rounded-xl p-3 " + (entry.status === "error" ? "border-rose-300" : stale ? "border-amber-300" : "border-slate-300") }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "famann-tr-" + lang.tag, className: "text-xs font-bold text-slate-700" }, lang.native, " ", /* @__PURE__ */ React.createElement("span", { className: "font-normal text-slate-600" }, "(", lang.name, lang.rtl ? " · RTL" : "", ")")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5" }, entry.status === "error" && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-rose-700" }, tt("famann.status_error", "failed — retry or paste")), stale && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-amber-700" }, tt("famann.status_stale", "English changed since this translation")), needsSingleTranslate && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          disabled: !!busyTag,
+          onClick: () => translateSingle(lang),
+          "data-famann-single-translate": lang.tag,
+          "aria-label": (entry.status === "error" ? tt("famann.retry_lang", "Retry") : stale ? tt("famann.update_lang", "Update") : tt("famann.translate_lang", "Translate")) + " " + lang.name,
+          className: "min-h-11 px-2.5 py-1 rounded-lg border border-indigo-200 bg-indigo-50 text-xs font-bold text-indigo-800 hover:bg-indigo-100 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
+        },
+        busyTag === lang.tag ? tt("famann.translating_short", "Translating…") : entry.status === "error" ? "↻ " + tt("famann.retry_lang", "Retry") : stale ? "↻ " + tt("famann.update_lang", "Update") : "✨ " + tt("famann.translate_lang", "Translate")
+      ), hasText && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => copyTranslation(copyId, lang, entry.text),
+          "data-famann-copy-lang": lang.tag,
+          "aria-label": (isCopied ? tt("famann.copied_lang", "Copied") : tt("famann.copy_lang", "Copy")) + " " + lang.name,
+          className: "min-h-11 px-2.5 py-1 rounded-lg border text-xs font-bold focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none " + (isCopied ? "border-emerald-400 bg-emerald-50 text-emerald-800" : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100")
+        },
+        isCopied ? "✓ " + tt("famann.copied_short", "Copied") : "📋 " + tt("famann.copy_short", "Copy")
+      ))), /* @__PURE__ */ React.createElement(
         "textarea",
         {
           id: "famann-tr-" + lang.tag,
@@ -563,19 +668,31 @@ function FamilyAnnouncementsPanel(props) {
         className: "min-h-11 px-3 py-2 rounded-lg border text-sm font-bold " + (armDelete === viewSaved.id ? "bg-rose-600 text-white border-rose-700" : "bg-white text-rose-700 border-rose-300 hover:bg-rose-50")
       },
       armDelete === viewSaved.id ? tt("famann.delete_confirm", "Tap again to delete") : tt("famann.delete", "Delete")
-    ))), /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-slate-800" }, viewSaved.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, viewSaved.date), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 whitespace-pre-wrap mt-2" }, viewSaved.text), /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700 mt-3" }, tt("famann.per_language", "Per-language files")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 flex flex-wrap gap-1.5" }, (viewSaved.langTags || []).map((tag) => {
+    ))), /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-slate-800" }, viewSaved.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, viewSaved.date), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 whitespace-pre-wrap mt-2" }, viewSaved.text), /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700 mt-3" }, tt("famann.per_language", "Per-language files")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 flex flex-wrap gap-2" }, (viewSaved.langTags || []).map((tag) => {
       const lang = famannLangByTag(tag);
       const entry = (viewSaved.translations || {})[tag];
       if (!lang || !entry || !entry.text || entry.status === "error") return null;
-      return /* @__PURE__ */ React.createElement("li", { key: tag }, /* @__PURE__ */ React.createElement(
+      const savedCopyId = "saved:" + viewSaved.id + ":" + tag;
+      const isCopied = copiedKey === savedCopyId;
+      return /* @__PURE__ */ React.createElement("li", { key: tag, className: "inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
           onClick: () => famannDownload("announcement-" + (viewSaved.date || famannToday()) + "-" + tag + ".html", "text/html", famannSingleHtml(viewSaved, { lang, ...entry }), addToast, tt("famann.export_toast", "Export started — check your downloads."), tt("famann.export_failed", "Export failed: ")),
-          className: "min-h-11 px-2.5 py-1 rounded-full border border-emerald-300 bg-emerald-50 text-xs font-bold text-emerald-800 hover:bg-emerald-100"
+          className: "min-h-11 px-2.5 py-1 rounded-full border border-emerald-300 bg-emerald-50 text-xs font-bold text-emerald-800 hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
         },
         "⬇️ ",
         lang.native
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "data-famann-saved-copy": tag,
+          onClick: () => copyTranslation(savedCopyId, lang, entry.text),
+          "aria-label": (isCopied ? tt("famann.copied_lang", "Copied") : tt("famann.copy_lang", "Copy")) + " " + lang.name,
+          className: "min-h-11 px-2.5 py-1 rounded-full border text-xs font-bold focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none " + (isCopied ? "border-emerald-400 bg-emerald-50 text-emerald-800" : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100")
+        },
+        isCopied ? "✓ " + tt("famann.copied_short", "Copied") : "📋 " + tt("famann.copy_short", "Copy")
       ));
     })))), tab === "saved" && !viewSaved && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("famann.saved_title", "Saved announcements")), saved.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("famann.no_saved", "Nothing saved yet. Compose an announcement first.")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5" }, saved.map((a) => /* @__PURE__ */ React.createElement("li", { key: a.id }, /* @__PURE__ */ React.createElement(
       "button",

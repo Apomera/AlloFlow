@@ -172,22 +172,37 @@
 
   // ── Time → sweep percentage (drives the overlay's existing word fill) ──
   function weightPctAtTime(mapping, seconds) {
-    if (!mapping || !Array.isArray(mapping.boundaryMs) || !Array.isArray(mapping.parts) || !Array.isArray(mapping.weights) || !(mapping.totalWeight > 0)) return 0;
+    if (
+      !mapping ||
+      !Array.isArray(mapping.boundaryMs) ||
+      !Array.isArray(mapping.parts) ||
+      !Array.isArray(mapping.weights) ||
+      !Number.isFinite(mapping.totalWeight) ||
+      !(mapping.totalWeight > 0) ||
+      mapping.parts.length === 0 ||
+      mapping.boundaryMs.length < mapping.parts.length + 1 ||
+      mapping.weights.length < mapping.parts.length
+    ) return 0;
     var sec = Number(seconds);
     if (!Number.isFinite(sec) || sec <= 0) return 0;
     var timeMs = sec * 1000;
-    if (timeMs <= mapping.boundaryMs[0]) return 0;
-    var lastIndex = mapping.boundaryMs.length - 1;
-    if (timeMs >= mapping.boundaryMs[lastIndex]) return 100;
+    var firstBoundary = Number(mapping.boundaryMs[0]);
+    var lastBoundary = Number(mapping.boundaryMs[mapping.parts.length]);
+    if (!Number.isFinite(firstBoundary) || !Number.isFinite(lastBoundary)) return 0;
+    if (timeMs <= firstBoundary) return 0;
+    if (timeMs >= lastBoundary) return 100;
     var cum = 0;
     for (var i = 0; i < mapping.parts.length; i++) {
-      var start = mapping.boundaryMs[i];
-      var end = mapping.boundaryMs[i + 1];
+      var start = Number(mapping.boundaryMs[i]);
+      var end = Number(mapping.boundaryMs[i + 1]);
+      var w = Number(mapping.weights[i]);
+      if (!Number.isFinite(start) || !Number.isFinite(end) || !Number.isFinite(w) || w < 0) return 0;
       if (timeMs < end) {
         var frac = end > start ? (timeMs - start) / (end - start) : 1;
-        return Math.max(0, Math.min(100, ((cum + frac * mapping.weights[i]) / mapping.totalWeight) * 100));
+        var pct = ((cum + frac * w) / mapping.totalWeight) * 100;
+        return Number.isFinite(pct) ? Math.max(0, Math.min(100, pct)) : 0;
       }
-      cum += mapping.weights[i];
+      cum += w;
     }
     return 100;
   }
@@ -222,7 +237,7 @@
     var trimmed = raw.trim();
     if (!trimmed || trimmed.length > 2000000) return false;
     if (/^blob:/i.test(trimmed)) return true;
-    if (/^data:audio\/[a-z0-9.+-]+;base64,/i.test(trimmed)) return true;
+    if (/^data:audio\/[a-z0-9.+-]+(?:;[^,]*)?;base64,/i.test(trimmed)) return true;
     try {
       var base = (typeof window !== 'undefined' && window.location && window.location.href) ? window.location.href : 'https://localhost/';
       var parsed = new URL(trimmed, base);
@@ -239,6 +254,7 @@
 
   // ── URL → mapping with a bounded session cache ──
   var _cache = new Map();
+  var _inFlight = new Map();
   var CACHE_MAX = 120;
   var _audioContext = null;
   function audioContext() {
@@ -249,19 +265,54 @@
     return _audioContext;
   }
 
+  function decodeAudioSafely(context, buffer, timeoutMs) {
+    return new Promise(function (resolve, reject) {
+      var settled = false;
+      var timer = setTimeout(function () {
+        if (!settled) {
+          settled = true;
+          reject(new Error('Audio decode timed out'));
+        }
+      }, timeoutMs || 10000);
+      function finish(fn, val) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        fn(val);
+      }
+      try {
+        // Support both callback form (older Safari) and Promise return form.
+        var ret = context.decodeAudioData(
+          buffer.slice(0),
+          function (decoded) { finish(resolve, decoded); },
+          function (err) { finish(reject, err || new Error('decodeAudioData failed')); }
+        );
+        if (ret && typeof ret.then === 'function') {
+          ret.then(
+            function (decoded) { finish(resolve, decoded); },
+            function (err) { finish(reject, err); }
+          );
+        }
+      } catch (err) {
+        finish(reject, err);
+      }
+    });
+  }
+
   function timingsForUrl(url, sentence, options) {
     if (!url || typeof sentence !== 'string' || !sentence) return Promise.resolve(null);
     if (!isSafeAudioUrl(url)) return Promise.resolve(null);
     var boundedSentence = sentence.slice(0, MAX_SENTENCE_CHARS);
     var key = hashSentence(url) + '␟' + url.length + '␟' + url.slice(0, 64) + '␟' + boundedSentence.length + '␟' + hashSentence(boundedSentence);
     if (_cache.has(key)) return Promise.resolve(_cache.get(key));
+    if (_inFlight.has(key)) return _inFlight.get(key);
     var context = (options && options.audioContext) || audioContext();
     if (!context || typeof fetch !== 'function') return Promise.resolve(null);
     var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
     var timer = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (_) {} }, 10000) : null;
-    var fetchInit = { credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' };
+    var fetchInit = { credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store', redirect: 'error' };
     if (ctrl) fetchInit.signal = ctrl.signal;
-    return fetch(url, fetchInit)
+    var req = fetch(url, fetchInit)
       .then(function (response) {
         if (!response || !response.ok) throw new Error('HTTP ' + (response ? response.status : 'error'));
         var lenHdr = Number(response.headers && response.headers.get && response.headers.get('content-length'));
@@ -270,23 +321,28 @@
       })
       .then(function (buffer) {
         if (!buffer || buffer.byteLength > MAX_AUDIO_BYTES) throw new Error('Audio exceeds size budget');
-        return new Promise(function (resolve, reject) {
-          // Callback form: Safari's decodeAudioData promise support lags.
-          context.decodeAudioData(buffer.slice(0), resolve, reject);
-        });
+        return decodeAudioSafely(context, buffer, 10000);
       })
       .then(function (decoded) {
+        if (!decoded || typeof decoded.getChannelData !== 'function') return null;
         var mapping = estimateFromChannel({
           channelData: decoded.getChannelData(0),
           sampleRate: decoded.sampleRate,
           sentence: boundedSentence,
         });
-        _cache.set(key, mapping);
-        while (_cache.size > CACHE_MAX) _cache.delete(_cache.keys().next().value);
+        if (mapping) {
+          _cache.set(key, mapping);
+          while (_cache.size > CACHE_MAX) _cache.delete(_cache.keys().next().value);
+        }
         return mapping;
       })
       .catch(function () { return null; })
-      .finally(function () { if (timer) clearTimeout(timer); });
+      .finally(function () {
+        if (timer) clearTimeout(timer);
+        if (_inFlight.get(key) === req) _inFlight.delete(key);
+      });
+    _inFlight.set(key, req);
+    return req;
   }
 
   window.AlloModules = window.AlloModules || {};

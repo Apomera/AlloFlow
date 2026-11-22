@@ -2335,10 +2335,12 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
     setEditIdx(null);
     setEditPrompt("");
   }, className: "min-w-11 min-h-11 px-2 py-2 bg-slate-200 text-slate-700 rounded-lg font-bold hover:bg-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2" }, "\u2717")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": (t("adventure.edit_nanobanana") || "Refine portrait") + ": " + char.name, onClick: () => setEditIdx(i), className: "min-h-11 px-3 py-2 bg-slate-100 text-slate-700 rounded-full hover:bg-slate-200 transition-all font-medium border border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2", title: t("adventure.edit_nanobanana") }, "\u270F\uFE0F Refine"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    const portraitUrl = typeof char.portrait === "string" ? char.portrait.trim() : "";
+    if (!/^(?:data:image\/(?:png|jpeg|jpg|webp|gif);base64,|blob:|https?:\/\/)/i.test(portraitUrl)) return;
     const link = document.createElement("a");
-    link.href = char.portrait;
-    const ext = typeof char.portrait === "string" && char.portrait.startsWith("data:image/jpeg") ? "jpg" : "png";
-    link.download = `${(char.name || "character").replace(/\s+/g, "_")}_portrait.${ext}`;
+    link.href = portraitUrl;
+    const ext = /^data:image\/jpeg/i.test(portraitUrl) ? "jpg" : "png";
+    link.download = `${(char.name || "character").replace(/[^a-z0-9_-]+/gi, "_")}_portrait.${ext}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

@@ -360,6 +360,10 @@ function AdminHubPanel(props) {
   const dialogRef = React.useRef(null);
   const onCloseRef = React.useRef(onClose);
   onCloseRef.current = onClose;
+  const [toolCategory, setToolCategory] = React.useState("all");
+  const [toolQuery, setToolQuery] = React.useState("");
+  const toolQueryComposingRef = React.useRef(false);
+  const [backupCountTick, setBackupCountTick] = React.useState(0);
   React.useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog || typeof document === "undefined") return void 0;
@@ -500,6 +504,7 @@ function AdminHubPanel(props) {
   const TOOLS = [
     {
       id: "mtss",
+      category: "equity",
       icon: "🧮",
       title: tt("adminhub.mtss_title", "MTSS Triage"),
       desc: tt("adminhub.mtss_desc", "Screening scores against YOUR benchmark cut points: suggested risk bands for team review (never automatic placement), intervention grouping, and window-over-window progress."),
@@ -509,6 +514,7 @@ function AdminHubPanel(props) {
     },
     {
       id: "announcements",
+      category: "sped",
       icon: "📣",
       title: tt("adminhub.announcements_title", "Family Announcements"),
       desc: tt("adminhub.announcements_desc", "One announcement, every family language: AI-translated with human review, exported as accessible lang-tagged documents with a translation disclosure — the whole-building packet the Bridge’s live messaging doesn’t cover."),
@@ -518,6 +524,7 @@ function AdminHubPanel(props) {
     },
     {
       id: "evaluation",
+      category: "coaching",
       icon: "✅",
       title: tt("adminhub.evaluation_title", "Educator Evaluation"),
       desc: tt("adminhub.evaluation_desc", "Opens your connected district evaluation portal; otherwise your private on-device workspace — completion and weighting views, walkthroughs, formal observations, SPM / SLO, dialogue, receipts, and audit history, with framework profiles for PA Act 13 and Maine PEPG."),
@@ -527,6 +534,7 @@ function AdminHubPanel(props) {
     },
     {
       id: "rewards",
+      category: "coaching",
       icon: "🎟️",
       title: tt("adminhub.rewards_title", "School Rewards & Store"),
       desc: tt("adminhub.rewards_desc", "Open the connected Google Education rewards ledger for staff recognition, private student balance emails, prize previews, and locked trimester store checkout."),
@@ -536,6 +544,7 @@ function AdminHubPanel(props) {
     },
     {
       id: "walkthrough",
+      category: "coaching",
       icon: "🚪",
       title: tt("adminhub.walkthrough_title", "UDL Walkthrough"),
       desc: tt("adminhub.walkthrough_desc", "Growth-framed classroom visits scored against UDL 3.0 look-fors — feedback cards for teachers, a building heatmap, trends, and inter-rater checks for research use."),
@@ -545,6 +554,7 @@ function AdminHubPanel(props) {
     },
     {
       id: "walkthroughCopilot",
+      category: "coaching",
       icon: "📝",
       title: tt("adminhub.walkthrough_copilot_title", "Walkthrough Copilot"),
       desc: tt("adminhub.walkthrough_copilot_desc", "Turn shorthand walkthrough notes into evidence-based coaching feedback you write and approve — every claim cited back to your own notes, with practice scenarios for building the habit. Formative coaching only; never rates anyone."),
@@ -554,6 +564,7 @@ function AdminHubPanel(props) {
     },
     {
       id: "dispro",
+      category: "equity",
       icon: "⚖️",
       title: tt("adminhub.dispro_title", "Disproportionality Analyzer"),
       desc: tt("adminhub.dispro_desc", "Risk indexes, risk ratios, and composition from aggregate discipline or identification counts — stability cautions, alternate ratios for small groups, multi-year trends."),
@@ -563,6 +574,7 @@ function AdminHubPanel(props) {
     },
     {
       id: "timelines",
+      category: "sped",
       icon: "⏰",
       title: tt("adminhub.timelines_title", "SpEd Timelines"),
       desc: tt("adminhub.timelines_desc", "Evaluation clocks, IEP annuals, and triennials on one urgency dashboard with per-provider caseloads — student codes only; due dates are editable prefills you confirm against your state rule."),
@@ -572,6 +584,7 @@ function AdminHubPanel(props) {
     },
     {
       id: "maineSldPractice",
+      category: "sped",
       icon: "📂",
       title: "Maine SLD Case Lab",
       desc: "Practice with fictional Maine SLD cases: review the full score profile, weigh evidence, follow the form, distinguish SLD from the need for specially designed instruction, and compare your reasoning with a facilitator debrief.",
@@ -581,6 +594,7 @@ function AdminHubPanel(props) {
     },
     {
       id: "diagnosisEligibility",
+      category: "sped",
       icon: "🧩",
       title: tt("adminhub.eligibility_title", "Diagnosis, Evaluation & School Eligibility"),
       desc: tt("adminhub.eligibility_desc", "Compare clinical diagnosis, IDEA, and Section 504; follow the evaluation path; review federal definitions, safeguards, and timelines; explore open-question cases; and build a privacy-safe meeting-preparation guide. Never decides eligibility, services, or placement."),
@@ -590,6 +604,7 @@ function AdminHubPanel(props) {
     },
     {
       id: "meetings",
+      category: "sped",
       icon: "📋",
       title: tt("adminhub.meetings_title", "Meeting Documentation"),
       desc: tt("adminhub.meetings_desc", "Turn notes or a transcript into your district’s meeting format — SST, IEP team, 504, and custom templates — with source-anchored decisions, an action-item tracker, and local name masking before any AI call."),
@@ -598,6 +613,25 @@ function AdminHubPanel(props) {
       descCls: "text-emerald-700"
     }
   ];
+  const TOOL_CATEGORIES = [
+    { id: "all", label: tt("adminhub.cat_all", "All tools"), count: TOOLS.length },
+    { id: "coaching", label: tt("adminhub.cat_coaching", "Instruction & Coaching"), count: TOOLS.filter((x) => x.category === "coaching").length },
+    { id: "equity", label: tt("adminhub.cat_equity", "MTSS & Equity"), count: TOOLS.filter((x) => x.category === "equity").length },
+    { id: "sped", label: tt("adminhub.cat_sped", "SpEd, Meetings & Family"), count: TOOLS.filter((x) => x.category === "sped").length }
+  ];
+  const normalizedQuery = toolQuery.trim().toLowerCase();
+  const visibleTools = TOOLS.filter((tool) => {
+    if (toolCategory !== "all" && tool.category !== toolCategory) return false;
+    if (!normalizedQuery) return true;
+    return (tool.title + " " + tool.desc).toLowerCase().includes(normalizedQuery);
+  });
+  const localBackupCount = React.useMemo(() => {
+    try {
+      return _adminHubCollectBackup().keyCount;
+    } catch (_) {
+      return 0;
+    }
+  }, [backupCountTick]);
   const backdropDownRef = React.useRef(false);
   return /* @__PURE__ */ React.createElement(
     "div",
@@ -614,7 +648,69 @@ function AdminHubPanel(props) {
         if (allow && e.target === e.currentTarget) onClose();
       }
     },
-    /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "adminhub_panel", className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "adminhub-title", "aria-describedby": "adminhub-subtitle", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "adminhub-title", className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🏛️"), " ", tt("adminhub.title", "Leadership Hub")), /* @__PURE__ */ React.createElement("p", { id: "adminhub-subtitle", className: "text-sm text-slate-600 mt-1" }, tt("adminhub.subtitle", "Tools for principals, coaches, and student-services leaders"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": tt("adminhub.close_aria", "Close Leadership Hub") }, "✕")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, TOOLS.map((tool) => {
+    /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "adminhub_panel", className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus:ring-2 focus:ring-indigo-500", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "adminhub-title", "aria-describedby": "adminhub-subtitle", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "adminhub-title", className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "🏛️"), " ", tt("adminhub.title", "Leadership Hub")), /* @__PURE__ */ React.createElement("p", { id: "adminhub-subtitle", className: "text-sm text-slate-600 mt-1" }, tt("adminhub.subtitle", "Tools for principals, coaches, and student-services leaders"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-colors motion-reduce:transition-none text-xl", "aria-label": tt("adminhub.close_aria", "Close Leadership Hub") }, "✕")), /* @__PURE__ */ React.createElement("div", { className: "mb-4 flex flex-col gap-2", "data-testid": "adminhub-filter-bar" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5", role: "group", "aria-label": tt("adminhub.filter_categories", "Filter leadership tools by focus area") }, TOOL_CATEGORIES.map((cat) => {
+      const active = toolCategory === cat.id;
+      return /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: cat.id,
+          type: "button",
+          "aria-pressed": active,
+          onClick: () => setToolCategory(cat.id),
+          className: "min-h-11 px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-500 " + (active ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50")
+        },
+        cat.label,
+        " (",
+        cat.count,
+        ")"
+      );
+    })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "search",
+        value: toolQuery,
+        "aria-label": tt("adminhub.search_tools", "Filter leadership tools by name or description"),
+        placeholder: tt("adminhub.search_tools_ph", "Find a leadership tool…"),
+        onCompositionStart: () => {
+          toolQueryComposingRef.current = true;
+        },
+        onCompositionEnd: () => {
+          toolQueryComposingRef.current = false;
+        },
+        onChange: (e) => setToolQuery(e.target.value),
+        onKeyDown: (e) => {
+          if (toolQueryComposingRef.current || e.isComposing || e.keyCode === 229) return;
+          if (e.key === "Escape" && toolQuery) {
+            e.preventDefault();
+            e.stopPropagation();
+            setToolQuery("");
+          }
+        },
+        className: "min-h-11 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-indigo-500"
+      }
+    ), (toolQuery || toolCategory !== "all") && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          setToolQuery("");
+          setToolCategory("all");
+        },
+        className: "min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-colors motion-reduce:transition-none shrink-0"
+      },
+      tt("adminhub.clear_filters", "Show all")
+    ))), visibleTools.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-slate-50 p-6 text-center", role: "status" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-semibold text-slate-700" }, tt("adminhub.no_matches", "No leadership tools match that filter.")), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          setToolQuery("");
+          setToolCategory("all");
+        },
+        className: "mt-3 min-h-11 px-4 rounded-lg border border-indigo-300 bg-white text-xs font-bold text-indigo-800 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-colors motion-reduce:transition-none"
+      },
+      tt("adminhub.show_all_tools", "Show all tools")
+    )) : /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, visibleTools.map((tool) => {
       const isMaineCase = tool.id === "maineSldPractice";
       const Card = isMaineCase ? "a" : "button";
       return /* @__PURE__ */ React.createElement(
@@ -639,12 +735,12 @@ function AdminHubPanel(props) {
             }
             openHubTool(tool.id);
           },
-          className: "flex items-start gap-3 p-4 bg-gradient-to-br border rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left " + tool.accent
+          className: "flex items-start gap-3 p-4 bg-gradient-to-br border rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-500 text-left " + tool.accent
         },
         /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, tool.icon),
         /* @__PURE__ */ React.createElement("span", { className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold " + tool.titleCls }, tool.title), /* @__PURE__ */ React.createElement("span", { className: "block text-xs mt-1 " + tool.descCls }, tool.desc), isMaineCase && typeof window.__alloOpenMaineSldPractice !== "function" && /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-semibold mt-2" }, "Opens in a new tab ↗"))
       );
-    })), /* @__PURE__ */ React.createElement("div", { className: "mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3", "data-help-key": "adminhub_backup_section" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black uppercase tracking-wide text-slate-700" }, tt("adminhub.backup_title", "Back up this hub")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, tt("adminhub.backup_desc", "Everything above lives only in this browser. Download one file with all of it, and restore on a new device or after a wipe."))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 shrink-0" }, /* @__PURE__ */ React.createElement(
+    })), /* @__PURE__ */ React.createElement("div", { className: "mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3", "data-help-key": "adminhub_backup_section" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black uppercase tracking-wide text-slate-700" }, tt("adminhub.backup_title", "Back up this hub")), /* @__PURE__ */ React.createElement("span", { "data-testid": "adminhub-backup-count", className: "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold " + (localBackupCount > 0 ? "bg-indigo-100 text-indigo-900" : "bg-slate-200 text-slate-700") }, localBackupCount > 0 ? localBackupCount === 1 ? tt("adminhub.backup_count_one", "1 saved item on this device") : tt("adminhub.backup_count_many", "{count} saved items on this device").replace("{count}", String(localBackupCount)) : tt("adminhub.backup_count_none", "No local hub data yet"))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, tt("adminhub.backup_desc", "Everything above lives only in this browser. Download one file with all of it, and restore on a new device or after a wipe."))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 shrink-0" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -687,6 +783,8 @@ function AdminHubPanel(props) {
           const input = document.createElement("input");
           input.type = "file";
           input.accept = "application/json,.json";
+          input.setAttribute("aria-hidden", "true");
+          input.setAttribute("aria-label", tt("adminhub.restore_file_label", "Choose Leadership Hub backup file"));
           input.onchange = () => {
             const file = input.files && input.files[0];
             if (!file) return;
@@ -750,6 +848,7 @@ function AdminHubPanel(props) {
                   restoredCount += 1;
                 }
                 const totalSkipped = rejected + vaultSkipped;
+                setBackupCountTick((n) => n + 1);
                 addToast(
                   (totalSkipped > 0 ? tt("adminhub.restore_done_skipped", "Restored {count} items; {skipped} entries outside the hub or locked in the vault were ignored. Reopen a tool to see its data.").replace("{skipped}", String(totalSkipped)) : tt("adminhub.restore_done", "Restored {count} items. Reopen a tool to see its data.")).replace("{count}", String(restoredCount)),
                   vaultSkipped > 0 ? "warning" : "success"

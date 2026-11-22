@@ -1147,14 +1147,40 @@
     );
   }
   function StageChipStrip(props) {
+    var t = props.t || function(k) {
+      return k;
+    };
     var activeStage = props.activeStage, onJump = props.onJump;
     var journalStageNotes = props.journalStageNotes || {};
     var buildVersionCount = props.buildVersionCount || 0;
-    return /* @__PURE__ */ React.createElement(
+    var stageFlags = STAGES.map(function(s) {
+      var sn = journalStageNotes[s.key] || {};
+      return !!(sn.problemText || sn.designRationale || sn.tradeOffDeclaration || sn.text || s.key === "build_test" && buildVersionCount > 0 || s.key === "optimize" && buildVersionCount > 1);
+    });
+    var startedCount = stageFlags.filter(Boolean).length;
+    var activeObj = STAGE_BY_KEY[activeStage] || STAGES[0];
+    var pct = Math.round(startedCount / STAGES.length * 100);
+    function onTabKeyDown(e, idx) {
+      if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229) return;
+      var nextIdx = null;
+      if (e.key === "ArrowRight") nextIdx = (idx + 1) % STAGES.length;
+      else if (e.key === "ArrowLeft") nextIdx = (idx - 1 + STAGES.length) % STAGES.length;
+      else if (e.key === "Home") nextIdx = 0;
+      else if (e.key === "End") nextIdx = STAGES.length - 1;
+      if (nextIdx === null) return;
+      e.preventDefault();
+      if (typeof onJump === "function") onJump(STAGES[nextIdx].key);
+      var parent = e.currentTarget && e.currentTarget.parentElement;
+      if (parent) {
+        var tabs = parent.querySelectorAll('[role="tab"]');
+        if (tabs[nextIdx]) tabs[nextIdx].focus();
+      }
+    }
+    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "6px" } }, /* @__PURE__ */ React.createElement(
       "div",
       {
         role: "tablist",
-        "aria-label": "Stage navigation",
+        "aria-label": t("engineering.aria_stage_nav") || "Stage navigation",
         style: {
           display: "flex",
           flexWrap: "wrap",
@@ -1166,8 +1192,7 @@
       },
       STAGES.map(function(s, idx) {
         var isActive = activeStage === s.key;
-        var sn = journalStageNotes[s.key] || {};
-        var hasWork = !!(sn.problemText || sn.designRationale || sn.tradeOffDeclaration || sn.text || s.key === "build_test" && buildVersionCount > 0);
+        var hasWork = stageFlags[idx];
         return /* @__PURE__ */ React.createElement(
           "button",
           {
@@ -1175,6 +1200,10 @@
             type: "button",
             role: "tab",
             "aria-selected": isActive,
+            tabIndex: isActive ? 0 : -1,
+            onKeyDown: function(e) {
+              onTabKeyDown(e, idx);
+            },
             onClick: function() {
               if (typeof onJump === "function") onJump(s.key);
             },
@@ -1183,7 +1212,7 @@
               padding: "6px 12px",
               borderRadius: "999px",
               background: isActive ? s.color : "#ffffff",
-              color: isActive ? "#ffffff" : "#475569",
+              color: isActive ? "#ffffff" : "#334155",
               border: "1px solid " + (isActive ? s.color : "#cbd5e1"),
               fontWeight: 700,
               fontSize: "11px",
@@ -1195,10 +1224,29 @@
           },
           /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, idx + 1 + ". "),
           /* @__PURE__ */ React.createElement("span", null, s.shortLabel),
-          hasWork && /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2713")
+          hasWork && /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2713"),
+          hasWork && /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, " (has work)")
         );
       })
-    );
+    ), /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        "data-lane-stage-progress": "true",
+        role: "progressbar",
+        "aria-label": t("engineering.stage_progress_aria") || "Design cycle progress",
+        "aria-valuemin": 0,
+        "aria-valuemax": STAGES.length,
+        "aria-valuenow": startedCount,
+        "aria-valuetext": startedCount + " of " + STAGES.length + " stages started, currently on " + (activeObj ? activeObj.label : activeStage),
+        style: { height: "6px", width: "100%", borderRadius: "999px", background: "#e2e8f0", overflow: "hidden" }
+      },
+      /* @__PURE__ */ React.createElement("div", { style: {
+        height: "100%",
+        width: pct + "%",
+        background: "#b45309",
+        transition: typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "none" : "width 0.2s ease"
+      } })
+    ));
   }
   function LoopBackPicker(props) {
     var t = props.t || function(k) {
@@ -1215,6 +1263,7 @@
     var setOtherText = _other[1];
     var canCommit = !!chipId && (chipId !== "other" || otherText.trim().length >= 10);
     var modalRef = useRef(null);
+    var backdropDownRef = useRef(false);
     useFocusTrap(modalRef, true, onCancel);
     return /* @__PURE__ */ React.createElement(
       "div",
@@ -1223,6 +1272,7 @@
         role: "dialog",
         "aria-modal": "true",
         "aria-label": t("engineering.loopback_modal_title") || "Why are you looping back?",
+        "aria-describedby": "eng-loopback-help",
         style: {
           position: "fixed",
           inset: 0,
@@ -1234,8 +1284,13 @@
           justifyContent: "center",
           padding: "20px"
         },
+        onMouseDown: function(e) {
+          backdropDownRef.current = e.target === e.currentTarget;
+        },
         onClick: function(e) {
-          if (e.target === e.currentTarget) onCancel();
+          var ok = backdropDownRef.current;
+          backdropDownRef.current = false;
+          if (ok && e.target === e.currentTarget) onCancel();
         }
       },
       /* @__PURE__ */ React.createElement(
@@ -1254,7 +1309,7 @@
           }
         },
         /* @__PURE__ */ React.createElement("h3", { style: { margin: 0, fontSize: "15px", fontWeight: 800, color: "#1e293b" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F501} "), t("engineering.loopback_modal_title") || "Why are you looping back?"),
-        /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 12px", fontSize: "11px", color: "#64748b", lineHeight: 1.5 } }, t("engineering.loopback_modal_help") || "In engineering, loops are how the design gets better. Your downstream work is preserved as a record; you can return."),
+        /* @__PURE__ */ React.createElement("p", { id: "eng-loopback-help", style: { margin: "4px 0 12px", fontSize: "11px", color: "#475569", lineHeight: 1.5 } }, t("engineering.loopback_modal_help") || "In engineering, loops are how the design gets better. Your downstream work is preserved as a record; you can return."),
         /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "8px", maxHeight: "50vh", overflowY: "auto" } }, LOOPBACK_CHIPS.map(function(c) {
           var selected = chipId === c.id;
           return /* @__PURE__ */ React.createElement(
@@ -1377,15 +1432,17 @@
     } }, /* @__PURE__ */ React.createElement("strong", { style: { marginRight: "4px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F6E1}\uFE0F "), t("engineering.blocked_prefix") || "AI helper paused:"), reason);
   }
   function TextareaCard(props) {
-    return /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", fontWeight: 700, color: "#1e293b", display: "block" } }, props.label, props.help && /* @__PURE__ */ React.createElement("span", { style: { display: "block", margin: "4px 0", fontSize: "11px", fontWeight: 400, color: "#475569", lineHeight: 1.5 } }, props.help), /* @__PURE__ */ React.createElement(
+    var val = String(props.value || "");
+    var maxLen = props.max || 800;
+    return /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", fontWeight: 700, color: "#1e293b", display: "block" } }, /* @__PURE__ */ React.createElement("span", { style: { display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "8px" } }, /* @__PURE__ */ React.createElement("span", null, props.label), /* @__PURE__ */ React.createElement("span", { "data-textarea-char-count": "true", style: { fontSize: "11px", fontWeight: 600, color: "#475569", fontVariantNumeric: "tabular-nums" } }, val.length, " / ", maxLen)), props.help && /* @__PURE__ */ React.createElement("span", { style: { display: "block", margin: "4px 0", fontSize: "11px", fontWeight: 400, color: "#475569", lineHeight: 1.5 } }, props.help), /* @__PURE__ */ React.createElement(
       "textarea",
       {
-        value: props.value || "",
+        value: val,
         onChange: function(e) {
           props.onChange(e.target.value);
         },
         rows: props.rows || 3,
-        maxLength: props.max || 800,
+        maxLength: maxLen,
         placeholder: props.placeholder || "",
         style: {
           marginTop: "4px",
@@ -1677,6 +1734,7 @@
         type: "text",
         value: draft.name || "",
         maxLength: 80,
+        "aria-invalid": nameDenied ? "true" : void 0,
         onChange: function(e) {
           setDraft(Object.assign({}, draft, { name: e.target.value }));
         },
@@ -1684,15 +1742,16 @@
         style: {
           marginTop: "2px",
           width: "100%",
+          minHeight: "44px",
           boxSizing: "border-box",
-          padding: "6px 8px",
+          padding: "8px 10px",
           borderRadius: "6px",
           border: "1px solid " + (nameDenied ? "#dc2626" : "#cbd5e1"),
           fontSize: "12px",
           fontFamily: "inherit"
         }
       }
-    ), nameDenied && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "2px", fontSize: "10px", color: "#dc2626" } }, t("engineering.stakeholder_generic_warning") || "Too generic \u2014 pick a specific person, not a category.")), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "11px", fontWeight: 700, color: "#7c2d12" } }, t("engineering.stakeholder_group") || "Group / role (optional)", /* @__PURE__ */ React.createElement(
+    ), nameDenied && /* @__PURE__ */ React.createElement("div", { role: "alert", style: { marginTop: "2px", fontSize: "11px", color: "#b91c1c" } }, t("engineering.stakeholder_generic_warning") || "Too generic \u2014 pick a specific person, not a category.")), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "11px", fontWeight: 700, color: "#7c2d12" } }, t("engineering.stakeholder_group") || "Group / role (optional)", /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "text",
@@ -1705,8 +1764,9 @@
         style: {
           marginTop: "2px",
           width: "100%",
+          minHeight: "44px",
           boxSizing: "border-box",
-          padding: "6px 8px",
+          padding: "8px 10px",
           borderRadius: "6px",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
@@ -1723,11 +1783,13 @@
         style: {
           marginTop: "2px",
           width: "100%",
-          padding: "6px 8px",
+          minHeight: "44px",
+          padding: "8px 10px",
           borderRadius: "6px",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
-          fontFamily: "inherit"
+          fontFamily: "inherit",
+          background: "#fff"
         }
       },
       /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 pick \u2014"),
@@ -1744,11 +1806,13 @@
         style: {
           marginTop: "2px",
           width: "100%",
-          padding: "6px 8px",
+          minHeight: "44px",
+          padding: "8px 10px",
           borderRadius: "6px",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
-          fontFamily: "inherit"
+          fontFamily: "inherit",
+          background: "#fff"
         }
       },
       /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014 pick \u2014"),
@@ -1756,7 +1820,7 @@
       /* @__PURE__ */ React.createElement("option", { value: "observed" }, "Observed (I watched them, didn't talk)"),
       /* @__PURE__ */ React.createElement("option", { value: "interviewed" }, "Interviewed (I talked to them)"),
       /* @__PURE__ */ React.createElement("option", { value: "curriculum_prompt" }, "Curriculum prompt (assigned)")
-    ))), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "11px", fontWeight: 700, color: "#7c2d12" } }, t("engineering.stakeholder_why") || "Why this stakeholder, why now?", " * (\u2265", floors.stakeholderJust, " chars)", /* @__PURE__ */ React.createElement(
+    ))), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "11px", fontWeight: 700, color: "#7c2d12" } }, /* @__PURE__ */ React.createElement("span", { style: { display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "8px" } }, /* @__PURE__ */ React.createElement("span", null, t("engineering.stakeholder_why") || "Why this stakeholder, why now?", " * (\u2265", floors.stakeholderJust, " chars)"), /* @__PURE__ */ React.createElement("span", { "data-stakeholder-just-count": "true", role: "status", "aria-live": "polite", style: { fontSize: "11px", fontWeight: 700, fontVariantNumeric: "tabular-nums", color: (draft.whyThisStakeholderJustification || "").trim().length >= floors.stakeholderJust ? "#166534" : "#7c2d12" } }, (draft.whyThisStakeholderJustification || "").trim().length, " / ", floors.stakeholderJust, "+")), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: draft.whyThisStakeholderJustification || "",
@@ -1849,7 +1913,7 @@
       display: "flex",
       flexDirection: "column",
       gap: "6px"
-    } }, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "6px" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 700, color: "#475569", gridColumn: "1 / -1" } }, t("engineering.constraint_criterion") || "Constraint description", " *", /* @__PURE__ */ React.createElement(
+    } }, /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "6px" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "11px", fontWeight: 700, color: "#334155", gridColumn: "1 / -1" } }, t("engineering.constraint_criterion") || "Constraint description", " *", /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "text",
@@ -1862,21 +1926,23 @@
         style: {
           marginTop: "2px",
           width: "100%",
+          minHeight: "44px",
           boxSizing: "border-box",
-          padding: "5px 8px",
+          padding: "8px 10px",
           borderRadius: "6px",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
           fontFamily: "inherit"
         }
       }
-    )), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 700, color: "#475569" } }, t("engineering.constraint_target") || "Numeric target", " *", /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "11px", fontWeight: 700, color: "#334155" } }, t("engineering.constraint_target") || "Numeric target", " *", /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "text",
         inputMode: "decimal",
         value: draft.target || "",
         maxLength: 20,
+        "aria-invalid": draft.target && !targetValid ? "true" : void 0,
         onChange: function(e) {
           setDraft(Object.assign({}, draft, { target: e.target.value }));
         },
@@ -1884,20 +1950,22 @@
         style: {
           marginTop: "2px",
           width: "100%",
+          minHeight: "44px",
           boxSizing: "border-box",
-          padding: "5px 8px",
+          padding: "8px 10px",
           borderRadius: "6px",
           border: "1px solid " + (draft.target && !targetValid ? "#dc2626" : "#cbd5e1"),
           fontSize: "12px",
           fontFamily: "inherit"
         }
       }
-    )), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 700, color: "#475569" } }, t("engineering.constraint_unit") || "Unit", " *", /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "11px", fontWeight: 700, color: "#334155" } }, t("engineering.constraint_unit") || "Unit", " *", /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "text",
         value: draft.unit || "",
         maxLength: 24,
+        "aria-invalid": draft.unit && !unitValid ? "true" : void 0,
         onChange: function(e) {
           setDraft(Object.assign({}, draft, { unit: e.target.value }));
         },
@@ -1905,15 +1973,16 @@
         style: {
           marginTop: "2px",
           width: "100%",
+          minHeight: "44px",
           boxSizing: "border-box",
-          padding: "5px 8px",
+          padding: "8px 10px",
           borderRadius: "6px",
           border: "1px solid " + (draft.unit && !unitValid ? "#dc2626" : "#cbd5e1"),
           fontSize: "12px",
           fontFamily: "inherit"
         }
       }
-    ), draft.unit && !unitValid && /* @__PURE__ */ React.createElement("div", { style: { marginTop: "2px", fontSize: "9px", color: "#dc2626" } }, t("engineering.unit_not_whitelisted") || "Unit not recognized \u2014 try $, g, kg, s, m, cm, \xB0C, %, etc. 'good' is not a unit.")), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 700, color: "#475569" } }, t("engineering.constraint_source") || "Source", " *", /* @__PURE__ */ React.createElement(
+    ), draft.unit && !unitValid && /* @__PURE__ */ React.createElement("div", { role: "alert", style: { marginTop: "2px", fontSize: "11px", color: "#b91c1c" } }, t("engineering.unit_not_whitelisted") || "Unit not recognized \u2014 try $, g, kg, s, m, cm, \xB0C, %, etc. 'good' is not a unit.")), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "11px", fontWeight: 700, color: "#334155" } }, t("engineering.constraint_source") || "Source", " *", /* @__PURE__ */ React.createElement(
       "select",
       {
         value: draft.source || "",
@@ -1924,11 +1993,13 @@
         style: {
           marginTop: "2px",
           width: "100%",
-          padding: "5px 8px",
+          minHeight: "44px",
+          padding: "8px 10px",
           borderRadius: "6px",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
-          fontFamily: "inherit"
+          fontFamily: "inherit",
+          background: "#fff"
         }
       },
       /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014"),
@@ -1940,7 +2011,7 @@
       /* @__PURE__ */ React.createElement("option", { value: "access" }, "access"),
       /* @__PURE__ */ React.createElement("option", { value: "stakeholder" }, "stakeholder said so"),
       /* @__PURE__ */ React.createElement("option", { value: "other" }, "other")
-    )), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "10px", fontWeight: 700, color: "#475569" } }, t("engineering.constraint_tier") || "Tier", " *", /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "11px", fontWeight: 700, color: "#334155" } }, t("engineering.constraint_tier") || "Tier", " *", /* @__PURE__ */ React.createElement(
       "select",
       {
         value: draft.tier || "hard",
@@ -1951,11 +2022,13 @@
         style: {
           marginTop: "2px",
           width: "100%",
-          padding: "5px 8px",
+          minHeight: "44px",
+          padding: "8px 10px",
           borderRadius: "6px",
           border: "1px solid #cbd5e1",
           fontSize: "12px",
-          fontFamily: "inherit"
+          fontFamily: "inherit",
+          background: "#fff"
         }
       },
       /* @__PURE__ */ React.createElement("option", { value: "hard" }, "hard (must hold)"),
@@ -2835,12 +2908,13 @@
         min: "1",
         max: "5",
         value: rank,
+        "aria-valuetext": rank + " of 5 (" + (rank <= 1 ? "reluctantly accepted" : rank >= 5 ? "strongly chose" : "moderate preference") + ")",
         onChange: function(e) {
           setRank(parseInt(e.target.value, 10));
         },
         style: { width: "100%", marginTop: "4px" }
       }
-    ), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", color: "#64748b", textAlign: "center" } }, rank)), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "11px", fontWeight: 700, color: "#7c2d12" } }, t("engineering.tradeoff_whose") || "Whose interest does this serve?", " * (\u226510 chars; not the same as the named stakeholder)", /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: "#475569", textAlign: "center", fontWeight: 700 } }, rank, " / 5")), /* @__PURE__ */ React.createElement("label", { style: { fontSize: "11px", fontWeight: 700, color: "#7c2d12" } }, t("engineering.tradeoff_whose") || "Whose interest does this serve?", " * (\u226510 chars; not the same as the named stakeholder)", /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "text",

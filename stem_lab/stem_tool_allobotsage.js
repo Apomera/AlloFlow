@@ -17,6 +17,7 @@
 // ═══════════════════════════════════════════
 
 // ═══ Defensive StemLab guard ═══
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -38,17 +39,41 @@ window.StemLab = window.StemLab || {
     try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
   }
 };
+}
 // ═══ End Guard ═══
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))) {
+if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))) {
 
 (function() {
   'use strict';
 
+  var _absCombatGen = 0;
+  var _absCombatTimers = [];
+  var _absLastSeenKey = '';
+  var _absLastVisitTick = 0;
+  function clearCombatTimers() {
+    _absCombatGen++;
+    while (_absCombatTimers.length) {
+      try { clearTimeout(_absCombatTimers.pop()); } catch (_) {}
+    }
+  }
+  function scheduleCombat(fn, ms) {
+    var gen = _absCombatGen;
+    var id = setTimeout(function() {
+      var idx = _absCombatTimers.indexOf(id);
+      if (idx !== -1) _absCombatTimers.splice(idx, 1);
+      if (gen !== _absCombatGen) return;
+      fn();
+    }, ms);
+    _absCombatTimers.push(id);
+    return id;
+  }
+
   // ── Audio ──
   var _absAC = null;
-  function getAC() { if (!_absAC) { try { _absAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_absAC && _absAC.state === 'suspended') { try { _absAC.resume(); } catch(e) {} } return _absAC; }
-  function absTone(f, d, t, v) { var ac = getAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.06, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function isGloballyMuted() { return typeof window === 'undefined' || (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || !!window._alloGlobalMute; }
+  function getAC() { if (isGloballyMuted()) return null; if (!_absAC) { try { _absAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_absAC && _absAC.state === 'suspended') { try { _absAC.resume(); } catch(e) {} } return _absAC; }
+  function absTone(f, d, t, v) { if (isGloballyMuted()) return; var ac = getAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.06, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxCastReady() { absTone(660, 0.08, 'sine', 0.05); setTimeout(function() { absTone(880, 0.1, 'sine', 0.06); }, 70); }
   function sfxCastHit()   { absTone(440, 0.05, 'sawtooth', 0.05); setTimeout(function() { absTone(220, 0.15, 'sawtooth', 0.06); }, 50); }
   function sfxCastCrit()  { absTone(880, 0.06, 'square', 0.06); setTimeout(function() { absTone(1320, 0.08, 'sine', 0.07); }, 50); setTimeout(function() { absTone(1760, 0.12, 'sine', 0.08); }, 120); }
@@ -58,7 +83,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
   function sfxClick()     { absTone(600, 0.03, 'sine', 0.04); }
 
   // ── a11y CSS + live region ──
-  if (!document.getElementById('abs-a11y-css')) {
+  if (typeof document !== 'undefined' && document.head && !document.getElementById('abs-a11y-css')) {
     var _s = document.createElement('style');
     _s.id = 'abs-a11y-css';
     _s.textContent = '@media (prefers-reduced-motion: reduce) { .abs-anim, .abs-pulse, .abs-float, .abs-backflip, .abs-confetti, .abs-wand-aura, .abs-wand-flicker, .abs-idle-twist { animation: none !important; transition: none !important; } }'
@@ -95,10 +120,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       + ' @keyframes absDriftRise { 0% { transform: translateY(20px) rotate(-4deg); opacity: 0; } 15% { opacity: 0.6; } 85% { opacity: 0.6; } 100% { transform: translateY(-60px) rotate(8deg); opacity: 0; } }'
       + ' @keyframes absSlowSpin { to { transform: rotate(360deg); } }'
       + ' @keyframes absBubble { 0% { transform: translateY(0) scale(0.7); opacity: 0; } 20% { opacity: 0.55; } 90% { opacity: 0.55; } 100% { transform: translateY(-140px) scale(1); opacity: 0; } }'
+      // ── Cinema-Grade 2D Live-Motion Polish (GPU-composited SVG keyframes) ──
+      + ' @keyframes absHaloBreath { 0%,100% { opacity: 0.24; transform: scale(0.94); } 50% { opacity: 0.52; transform: scale(1.07); } }'
+      + ' @keyframes absOrbitDrift { from { stroke-dashoffset: 32; } to { stroke-dashoffset: 0; } }'
+      + ' @keyframes absConduitFlow { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }'
+      + ' @keyframes absBeaconPulse { 0%,100% { opacity: 0.22; transform: scale(0.92); } 50% { opacity: 0.56; transform: scale(1.22); } }'
+      + ' @keyframes absGlintSweep { 0%,24% { transform: translateX(-80px); opacity: 0; } 48% { opacity: 0.36; } 72% { transform: translateX(140px); opacity: 0; } 100% { transform: translateX(140px); opacity: 0; } }'
+      + ' @keyframes absStarTwinkle { 0%,100% { opacity: 0.26; } 50% { opacity: 0.85; } }'
       + ' .abs-twinkle { animation: absTwinkle 2.4s ease-in-out infinite; }'
       + ' .abs-drift-rise { animation: absDriftRise 6s ease-in-out infinite; }'
       + ' .abs-slow-spin { animation: absSlowSpin 8s linear infinite; transform-origin: center; transform-box: fill-box; }'
       + ' .abs-bubble { animation: absBubble 5s ease-in-out infinite; }'
+      + ' .abs-halo-breath { animation: absHaloBreath 4.2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }'
+      + ' .abs-orbit-drift { animation: absOrbitDrift 9.5s linear infinite; }'
+      + ' .abs-conduit-flow { animation: absConduitFlow 2.2s linear infinite; }'
+      + ' .abs-conduit-flow-slow { animation: absConduitFlow 4.6s linear infinite; }'
+      + ' .abs-beacon-pulse { animation: absBeaconPulse 3s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }'
+      + ' .abs-glint-sweep { animation: absGlintSweep 5.8s ease-in-out infinite; }'
+      + ' .abs-star-twinkle { animation: absStarTwinkle 3.8s ease-in-out infinite; }'
+      + ' @media (prefers-reduced-motion: reduce) { .abs-halo-breath, .abs-orbit-drift, .abs-conduit-flow, .abs-conduit-flow-slow, .abs-beacon-pulse, .abs-glint-sweep, .abs-star-twinkle { animation: none !important; transition: none !important; } .abs-glint-sweep { display: none !important; } }'
+      + ' .abs-workbench[data-abs-rm="1"] * { animation: none !important; transition: none !important; }'
+      + ' .abs-workbench[data-abs-rm="1"] .abs-glint-sweep { display: none !important; }'
+      + ' .abs-workbench[data-abs-hc="1"] * { animation: none !important; transition: none !important; }'
+      + ' .abs-workbench[data-abs-hc="1"] .abs-svg-fx { display: none !important; }'
+      + ' @media (forced-colors: active) { .abs-workbench * { animation: none !important; transition: none !important; } .abs-workbench .abs-svg-fx { display: none !important; } }'
       // ── Starbound Spellforge Observatory Workbench + Light / Dark / High-Contrast Parity ──
       + ' .abs-workbench { --abs-surface: #ffffff; --abs-surface-2: #f8fafc; --abs-border: #e2e8f0; --abs-ink: #0f172a; --abs-muted: #475569; --abs-accent: #7c3aed; --abs-accent-soft: #f5f3ff; }'
       + ' .abs-hero-deck { position: relative; border-radius: 18px; border: 1px solid rgba(167,139,250,0.42); background: linear-gradient(135deg, #17153b 0%, #3b1d7a 52%, #1e1b4b 100%); color: #f8fafc; box-shadow: 0 14px 32px rgba(30,27,75,0.28), inset 0 1px 0 rgba(255,255,255,0.12); overflow: hidden; }'
@@ -126,11 +171,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       + ' .theme-contrast .abs-preset-btn:hover, .theme-contrast .abs-inquiry-preset:hover { background: #facc15 !important; color: #000000 !important; }'
       + ' .theme-contrast .abs-stage-card { background: #000000 !important; border: 2px solid #ffffff !important; box-shadow: none !important; color: #ffffff !important; }'
       + ' .theme-contrast .abs-stage-title, .theme-contrast .abs-stage-sub { color: #facc15 !important; }'
+      + ' .theme-contrast .abs-workbench * { animation: none !important; transition: none !important; }'
       + ' .theme-contrast .abs-svg-fx { display: none !important; }';
     document.head.appendChild(_s);
   }
   (function() {
-    if (document.getElementById('allo-live-allobotsage')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-allobotsage')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-allobotsage';
     lr.setAttribute('aria-live', 'polite');
@@ -152,8 +198,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
   }
 
   function announceSR(msg) {
+    if (typeof document === 'undefined') return;
     var el = document.getElementById('allo-live-allobotsage');
-    if (el) { el.textContent = ''; setTimeout(function() { el.textContent = msg; }, 50); }
+    if (el) { el.textContent = ''; setTimeout(function() { if (el.isConnected) el.textContent = msg; }, 50); }
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -1567,7 +1614,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       // theme, where slate-600 measured 2.77:1.
       var isContrast = !!ctx.isContrast;
       var onHostInk = isContrast ? ' text-white' : '';
-      var React = window.React;
+      var React = (ctx && ctx.React) || (typeof window !== 'undefined' && window.React);
+      if (!React) return null;
       var h = React.createElement;
       var toolData = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
       var addToast = ctx.addToast || function() {};
@@ -1575,13 +1623,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       var setStemLabTool = ctx.setStemLabTool || function() {};
       var awardXP = ctx.awardXP || function() {};
       var callGemini = ctx.callGemini || null;
+      var aiOn = (function() {
+        if (ctx.aiAvailable === false || typeof callGemini !== 'function' || callGemini._alloQrBlocked) return false;
+        if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' && window.__alloAiUsable('text', callGemini) === false) return false; } catch (_) {}
+        return true;
+      })();
 
       var d = (toolData.alloBotSage && typeof toolData.alloBotSage === 'object' && !Array.isArray(toolData.alloBotSage)) ? toolData.alloBotSage : {};
       var aiChallengeCache = (d.aiChallengeCache && typeof d.aiChallengeCache === 'object' && !Array.isArray(d.aiChallengeCache)) ? d.aiChallengeCache : {};
 
       // Helpers to patch alloBotSage state.
-      function updSage(patch) { ctx.updateMulti('alloBotSage', patch); }
-      function updKey(k, v) { ctx.update('alloBotSage', k, v); }
+      function updSage(patch) { if (typeof ctx.updateMulti === 'function') ctx.updateMulti('alloBotSage', patch); }
+      function updKey(k, v) { if (typeof ctx.update === 'function') ctx.update('alloBotSage', k, v); }
 
       // ── Persistent state ──
       var phase            = (typeof d.phase === 'string' && d.phase) ? d.phase : 'hub'; // hub | loadout | expedition | debrief
@@ -1606,18 +1660,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       var currentlyUnlocked = computeUnlockedSpells(toolData);
       var newlyUnlocked = computeNewlyUnlocked(toolData, seenSpells);
 
-      // If new spells just appeared, fire toasts + mark them seen.
+      // If new spells just appeared, defer toasts + seen-marking off the render stack.
       if (newlyUnlocked.length > 0 && phase === 'hub') {
-        newlyUnlocked.forEach(function(id) {
-          var s = findSpell(id);
-          if (!s) return;
-          try { addToast(s.icon + ' New rune! \u201c' + s.name + '\u201d sparks in your grimoire', 'success'); } catch(e) {}
-          announceSR('New spell unlocked: ' + s.name);
-        });
-        sfxUnlock();
         var mergedSeen = seenSpells.concat(newlyUnlocked);
-        // Defer so we don't loop inside render — context deferSafe already wraps setToolData.
-        updKey('seenSpells', mergedSeen);
+        var seenKey = mergedSeen.join(',');
+        if (_absLastSeenKey !== seenKey) {
+          _absLastSeenKey = seenKey;
+          Promise.resolve().then(function() {
+            newlyUnlocked.forEach(function(id) {
+              var s = findSpell(id);
+              if (!s) return;
+              try { addToast(s.icon + ' New rune! \u201c' + s.name + '\u201d sparks in your grimoire', 'success'); } catch(e) {}
+              announceSR('New spell unlocked: ' + s.name);
+            });
+            sfxUnlock();
+            updKey('seenSpells', mergedSeen);
+          });
+        }
       }
 
       // ─────────────────────────────────────────────────
@@ -1625,6 +1684,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       // ─────────────────────────────────────────────────
       function backBtn(onClick, label) {
         return h('button', {
+          type: 'button',
           onClick: onClick,
           className: 'transition-colors inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 focus:ring-2 focus:ring-violet-400 focus:outline-none' + onHostInk,
           'aria-label': label || 'Back'
@@ -1745,8 +1805,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               h('stop', { offset: '100%', stopColor: auraColor, stopOpacity: 0 })
             )
           ),
-          // Ambient astral crest aura behind AlloBot
-          !hc && h('circle', { className: 'abs-svg-fx', cx: 60, cy: 76, r: 44, fill: 'url(#' + uid + '-halo)' }),
+          // Ambient astral crest aura & gentle orbital halo behind AlloBot
+          !hc && h('circle', { className: 'abs-svg-fx abs-halo-breath', cx: 60, cy: 76, r: 44, fill: 'url(#' + uid + '-halo)' }),
+          !hc && h('circle', { className: 'abs-svg-fx abs-orbit-drift', cx: 60, cy: 74, r: 48, fill: 'none', stroke: 'rgba(196,181,253,0.34)', strokeWidth: 1.1, strokeDasharray: '4 6' }),
           !hc && h('ellipse', { className: 'abs-svg-fx', cx: 60, cy: 132, rx: 30, ry: 4.5, fill: '#020617', opacity: 0.48 }),
           // Wand-tip aura (rendered behind wand stick)
           wandTier > 0 && !hc && h('circle', { cx: 112, cy: 64, r: auraRadius, fill: 'url(#' + uid + '-wand)', className: 'abs-svg-fx ' + auraClass }),
@@ -1755,7 +1816,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('polygon', { points: '60,3 38,44 82,44', fill: hc ? '#000000' : 'url(#' + uid + '-hat)', stroke: hc ? '#ffffff' : 'rgba(196,181,253,0.45)', strokeWidth: 1.1, strokeLinejoin: 'round' }),
           h('polygon', { points: '55,13 55,44 65,44 65,13', fill: hc ? '#facc15' : '#8b5cf6', opacity: hc ? 0.35 : 0.72 }),
           h('path', { d: 'M 42 40 Q 60 44 78 40', stroke: hc ? '#facc15' : '#fde047', strokeWidth: 2, fill: 'none', strokeLinecap: 'round' }),
-          h('polygon', { points: '60,21 61.5,24.8 65.5,26 61.5,27.2 60,31 58.5,27.2 54.5,26 58.5,24.8', fill: '#fde047' }),
+          h('polygon', { className: !hc ? 'abs-star-twinkle' : undefined, points: '60,21 61.5,24.8 65.5,26 61.5,27.2 60,31 58.5,27.2 54.5,26 58.5,24.8', fill: '#fde047' }),
           h('circle', { cx: 60, cy: 6, r: 3.4, fill: '#fbbf24', stroke: '#fef9c3', strokeWidth: 0.8 }),
           // Body/robe with beveled collar mantle
           h('ellipse', { cx: 60, cy: 110, rx: 36, ry: 22, fill: hc ? '#000000' : 'url(#' + uid + '-robe)', stroke: hc ? '#ffffff' : 'rgba(167,139,250,0.42)', strokeWidth: 1.3 }),
@@ -1888,9 +1949,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           : daysSinceVisit < 7 ? 'AlloBot\u2019s visor dims slightly. They missed you.'
           : 'AlloBot blinks awake. \u201cIt\u2019s been a while. I kept your grimoire safe.\u201d';
 
-        // Mark visit (fire-and-forget; throttled by setToolData\u2019s state equality)
-        if (!d.lastVisit || (nowMs - d.lastVisit) > 60000) {
-          updKey('lastVisit', nowMs);
+        // Mark visit off the render stack (throttled to >60s)
+        if ((!d.lastVisit || (nowMs - d.lastVisit) > 60000) && (nowMs - _absLastVisitTick) > 60000) {
+          _absLastVisitTick = nowMs;
+          Promise.resolve().then(function() { updKey('lastVisit', nowMs); });
         }
 
         // ── Trophy shelf: one trophy per source tool with unlocked spells ──
@@ -1917,7 +1979,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         var ringCirc = 2 * Math.PI * ringRadius;
         var ringOffset = ringCirc * (1 - Math.min(1, Math.max(0, masteryPct / 100)));
 
-        return h('div', { className: 'abs-workbench max-w-4xl mx-auto p-4 md:p-6 abs-fade relative' },
+        return h('div', { className: 'abs-workbench max-w-4xl mx-auto p-4 md:p-6 abs-fade relative', 'data-abs-hc': isContrast ? '1' : '0', 'data-abs-rm': ctx.reduceMotion ? '1' : '0' },
           // ── Spell Preview Modal (overlay) ──
           // Renders when d.previewingSpellId is set. Shows 2-3 sample challenge
           // questions, per-spell SRS health, and a "Drill in Study Hall" jump.
@@ -1947,6 +2009,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             }, []);
             function handlePreviewKeyDown(e) {
               if (e.key === 'Escape') {
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
                 e.preventDefault();
                 e.stopPropagation();
                 closePreview();
@@ -2143,7 +2206,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     }),
                     h('circle', { cx: 30, cy: 30, r: ringRadius, fill: 'none', stroke: isContrast ? 'rgba(255,255,255,0.28)' : 'rgba(196,181,253,0.24)', strokeWidth: 4.5 }),
                     !isContrast && h('circle', {
-                      className: 'abs-svg-fx',
+                      className: 'abs-svg-fx abs-halo-breath',
                       cx: 30, cy: 30, r: ringRadius, fill: 'none',
                       stroke: arcCol, strokeWidth: 8.5, strokeOpacity: 0.22, strokeLinecap: 'round',
                       strokeDasharray: ringCirc.toFixed(1), strokeDashoffset: ringOffset.toFixed(1),
@@ -2155,6 +2218,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       strokeDasharray: ringCirc.toFixed(1), strokeDashoffset: ringOffset.toFixed(1),
                       transform: 'rotate(-90 30 30)'
                     }),
+                    masteryPct > 2 && !isContrast && h('circle', { className: 'abs-svg-fx abs-beacon-pulse', cx: tipX.toFixed(1), cy: tipY.toFixed(1), r: 5.5, fill: arcCol, opacity: 0.36 }),
                     masteryPct > 2 && h('circle', { cx: tipX.toFixed(1), cy: tipY.toFixed(1), r: 2.4, fill: '#ffffff', stroke: arcCol, strokeWidth: 1 }),
                     h('text', { x: 30, y: 29, fill: '#f8fafc', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, masteryPct + '%'),
                     h('text', { x: 30, y: 40, fill: isContrast ? '#facc15' : '#ddd6fe', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'T' + wandTierHub)
@@ -2171,8 +2235,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                           h('stop', { offset: '100%', stopColor: '#fde047', stopOpacity: 0 })
                         )
                       ),
-                      !isContrast && h('circle', { className: 'abs-svg-fx', cx: 10, cy: 10, r: 9.2, fill: 'url(#abs-crest-g)' }),
-                      h('circle', { cx: 10, cy: 10, r: 8.2, fill: 'none', stroke: '#fde047', strokeWidth: 1.4, strokeDasharray: '3 2' }),
+                      !isContrast && h('circle', { className: 'abs-svg-fx abs-halo-breath', cx: 10, cy: 10, r: 9.2, fill: 'url(#abs-crest-g)' }),
+                      h('circle', { className: !isContrast ? 'abs-orbit-drift' : undefined, cx: 10, cy: 10, r: 8.2, fill: 'none', stroke: '#fde047', strokeWidth: 1.4, strokeDasharray: '3 2' }),
                       h('polygon', { points: '10,2.5 12,8 17.5,10 12,12 10,17.5 8,12 2.5,10 8,8', fill: '#fde047' }),
                       h('circle', { cx: 10, cy: 10, r: 1.7, fill: '#ffffff' })
                     ),
@@ -2269,10 +2333,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 // Deep starfield observatory stage
                 h('rect', { x: 0, y: 0, width: 420, height: 124, rx: 12, fill: isContrast ? '#000000' : 'url(#abs-const-sky)' }),
                 !isContrast && [[24,18,1],[44,88,0.8],[94,16,1.1],[186,14,0.9],[240,108,1],[334,15,1.1],[392,26,0.9],[396,86,1.2],[168,108,0.8],[292,16,0.9]].map(function(st, si) {
-                  return h('circle', { key: 'sf-' + si, className: 'abs-svg-fx', cx: st[0], cy: st[1], r: st[2], fill: '#e0e7ff', opacity: 0.45 });
+                  return h('circle', { key: 'sf-' + si, className: 'abs-svg-fx abs-star-twinkle', cx: st[0], cy: st[1], r: st[2], fill: '#e0e7ff', opacity: 0.45, style: { animationDelay: (si * 0.37) + 's' } });
                 }),
                 // Dual astrolabe orbital reference rings
-                h('ellipse', { cx: cx, cy: cy, rx: 152, ry: 46, fill: 'none', stroke: isContrast ? '#facc15' : 'rgba(167,139,250,0.24)', strokeWidth: 1.1, strokeDasharray: '4 4' }),
+                h('ellipse', { className: !isContrast ? 'abs-orbit-drift' : undefined, cx: cx, cy: cy, rx: 152, ry: 46, fill: 'none', stroke: isContrast ? '#facc15' : 'rgba(167,139,250,0.24)', strokeWidth: 1.1, strokeDasharray: '4 4' }),
                 h('ellipse', { cx: cx, cy: cy, rx: 90, ry: 29, fill: 'none', stroke: isContrast ? '#ffffff' : 'rgba(148,163,184,0.22)', strokeWidth: 0.9 }),
                 // Dual-pass glowing resonance conduits from each domain to central Spellforge core
                 constellationNodes.map(function(nd) {
@@ -2282,18 +2346,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   return h('g', { key: 'beam-' + nd.key },
                     !isContrast && active && h('line', { className: 'abs-svg-fx', x1: nd.x, y1: nd.y, x2: cx, y2: cy, stroke: nd.color, strokeWidth: 6, strokeOpacity: 0.22, strokeLinecap: 'round' }),
                     h('line', {
+                      className: !isContrast && !active ? 'abs-conduit-flow-slow' : undefined,
                       x1: nd.x, y1: nd.y, x2: cx, y2: cy,
                       stroke: active ? (isContrast ? '#facc15' : nd.color) : 'rgba(148,163,184,0.32)',
                       strokeWidth: active ? 2.2 : 1.2,
                       strokeDasharray: active ? '' : '3 3',
                       strokeLinecap: 'round'
                     }),
+                    !isContrast && active && h('line', { className: 'abs-svg-fx abs-conduit-flow', x1: nd.x, y1: nd.y, x2: cx, y2: cy, stroke: '#ffffff', strokeWidth: 1.4, strokeDasharray: '5 19', strokeOpacity: 0.78, strokeLinecap: 'round' }),
                     active && h('circle', { cx: midX, cy: midY, r: 2.3, fill: isContrast ? '#facc15' : '#ffffff', stroke: isContrast ? '#000000' : nd.color, strokeWidth: 1 })
                   );
                 }),
                 // Central Spellforge Reactor Core
-                !isContrast && h('circle', { className: 'abs-svg-fx', cx: cx, cy: cy, r: 27, fill: '#8b5cf6', opacity: 0.22 }),
-                h('circle', { cx: cx, cy: cy, r: 23, fill: 'none', stroke: isContrast ? '#facc15' : 'rgba(196,181,253,0.45)', strokeWidth: 1, strokeDasharray: '3 3' }),
+                !isContrast && h('circle', { className: 'abs-svg-fx abs-halo-breath', cx: cx, cy: cy, r: 27, fill: '#8b5cf6', opacity: 0.24 }),
+                h('circle', { className: !isContrast ? 'abs-orbit-drift' : undefined, cx: cx, cy: cy, r: 23, fill: 'none', stroke: isContrast ? '#facc15' : 'rgba(196,181,253,0.45)', strokeWidth: 1, strokeDasharray: '3 3' }),
                 h('circle', { cx: cx, cy: cy, r: 19, fill: isContrast ? '#000000' : 'url(#abs-const-core)', stroke: isContrast ? '#facc15' : '#ddd6fe', strokeWidth: 2 }),
                 h('text', { x: cx, y: cy + 4, fill: '#ffffff', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, unlockedSpells.length + '/' + SPELLBOOK.length),
                 // Sculpted domain star nodes
@@ -2303,7 +2369,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   var active = count > 0;
                   var labelY = nd.y < 60 ? nd.y + 22 : nd.y + 20;
                   return h('g', { key: 'node-' + nd.key },
-                    active && !isContrast && h('circle', { className: 'abs-svg-fx', cx: nd.x, cy: nd.y, r: 15.5, fill: nd.color, opacity: 0.26 }),
+                    active && !isContrast && h('circle', { className: 'abs-svg-fx abs-beacon-pulse', cx: nd.x, cy: nd.y, r: 15.5, fill: nd.color, opacity: 0.28 }),
                     h('circle', {
                       cx: nd.x, cy: nd.y, r: 9.8,
                       fill: active ? (isContrast ? '#facc15' : nd.color) : '#1e293b',
@@ -2325,6 +2391,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
 
           // Daily bonus
           dailyAvailable && unlockedSpells.length > 0 && h('button', {
+            type: 'button',
             onClick: claimDaily,
             className: 'w-full mb-3 rounded-xl p-3 text-left border-2 border-amber-600 bg-gradient-to-r from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100 focus:ring-2 focus:ring-amber-400 focus:outline-none transition abs-pulse',
             'aria-label': t('stem.allobotsage.claim_daily_essence_bonus', 'Claim daily essence bonus')
@@ -2364,6 +2431,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 )
               : [
                   h('button', {
+                    type: 'button',
                     key: 'expedition',
                     onClick: function() {
                       sfxClick();
@@ -2373,6 +2441,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     className: 'transition-colors flex-1 px-6 py-3 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-300 focus:outline-none shadow-lg'
                   }, t('stem.allobotsage.begin_expedition_3_rooms_boss', '\uD83C\uDF0C Begin Expedition (3 rooms \u2192 boss)')),
                   h('button', {
+                    type: 'button',
                     key: 'shop',
                     onClick: function() { sfxClick(); updKey('phase', 'shop'); },
                     className: 'transition-colors px-5 py-3 rounded-xl font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border-2 border-amber-200 focus:ring-2 focus:ring-amber-600 focus:outline-none'
@@ -2396,6 +2465,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             });
             return h('div', { className: 'flex flex-col md:flex-row gap-2 mb-5' },
               h('button', {
+                type: 'button',
                 onClick: function() { sfxClick(); updSage({ phase: 'practice', practiceSpellId: null, practiceQuestion: null, practiceSession: null }); },
                 className: 'transition-colors flex-1 px-5 py-2.5 rounded-xl font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 focus:ring-2 focus:ring-emerald-600 focus:outline-none flex items-center justify-center gap-2',
                 'aria-label': t('stem.allobotsage.open_study_hall_untimed_practice_mode', 'Open Study Hall \u2014 untimed practice mode')
@@ -2407,6 +2477,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 )
               ),
               h('button', {
+                type: 'button',
                 onClick: function() { sfxClick(); updSage({ phase: 'review_mistakes', reviewIdx: 0, reviewRevealed: false }); },
                 className: 'transition-colors flex-1 px-5 py-2.5 rounded-xl font-bold text-red-800 bg-red-50 hover:bg-red-100 border-2 border-red-200 focus:ring-2 focus:ring-red-500 focus:outline-none flex items-center justify-center gap-2',
                 'aria-label': 'Review tough questions \u2014 ' + toughCount + ' queued'
@@ -2425,6 +2496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 )
               ),
               h('button', {
+                type: 'button',
                 onClick: function() { sfxClick(); updKey('phase', 'dashboard'); },
                 className: 'transition-colors flex-1 px-5 py-2.5 rounded-xl font-bold text-sky-800 bg-sky-50 hover:bg-sky-100 border-2 border-sky-200 focus:ring-2 focus:ring-sky-600 focus:outline-none flex items-center justify-center gap-2',
                 'aria-label': t('stem.allobotsage.view_your_progress_dashboard', 'View your progress dashboard')
@@ -2463,6 +2535,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   h('span', { className: 'text-violet-700' }, '(' + earnedCount + '/' + hookEval.length + ')')
                 ),
                 h('button', {
+                  type: 'button',
                   onClick: function() { sfxClick(); updKey('galleryOpen', !galleryOpen); },
                   className: 'transition-colors ml-auto text-[0.625rem] text-slate-500 hover:text-slate-800 font-semibold focus:ring-2 focus:ring-violet-400 focus:outline-none rounded px-2 py-0.5',
                   'aria-expanded': galleryOpen
@@ -2534,6 +2607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     // loop one-click. Closes the distance between Sage and the
                     // STEAM Lab tools that feed it.
                     ctx.setStemLabTool && h('button', {
+                      type: 'button',
                       onClick: function() {
                         sfxClick();
                         try { ctx.setStemLabTool(s.sourceTool); } catch(e) {}
@@ -2615,15 +2689,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               h('line', { x1: 180, y1: 18, x2: 180, y2: 126, stroke: isContrast ? '#ffffff' : '#64748b', strokeWidth: 1, strokeDasharray: '3 3' }),
               h('line', { x1: 18, y1: 72, x2: 342, y2: 72, stroke: isContrast ? '#ffffff' : '#64748b', strokeWidth: 1, strokeDasharray: '3 3' }),
               // Laser crosshair projections to axes from active operating point
-              h('line', { x1: dotX, y1: 18, x2: dotX, y2: 126, stroke: isContrast ? '#facc15' : sm.color, strokeWidth: 0.9, strokeDasharray: '2 3', opacity: 0.45 }),
-              h('line', { x1: 18, y1: dotY, x2: 342, y2: dotY, stroke: isContrast ? '#facc15' : sm.color, strokeWidth: 0.9, strokeDasharray: '2 3', opacity: 0.45 }),
+              h('line', { className: !isContrast ? 'abs-conduit-flow-slow' : undefined, x1: dotX, y1: 18, x2: dotX, y2: 126, stroke: isContrast ? '#facc15' : sm.color, strokeWidth: 0.9, strokeDasharray: '2 3', opacity: 0.45 }),
+              h('line', { className: !isContrast ? 'abs-conduit-flow-slow' : undefined, x1: 18, y1: dotY, x2: 342, y2: dotY, stroke: isContrast ? '#facc15' : sm.color, strokeWidth: 0.9, strokeDasharray: '2 3', opacity: 0.45 }),
               // Axis labels
               h('text', { x: 180, y: 13, fill: isContrast ? '#facc15' : '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, t('stem.allobotsage.high_learning', 'High Learning')),
               h('text', { x: 180, y: 139, fill: isContrast ? '#facc15' : '#cbd5e1', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, t('stem.allobotsage.low_learning', 'Low Learning')),
               h('text', { x: 24, y: 68, fill: isContrast ? '#ffffff' : '#86efac', fontSize: 10, fontWeight: 700 }, t('stem.allobotsage.safe_axis', 'Safe')),
               h('text', { x: 336, y: 68, fill: isContrast ? '#facc15' : '#fca5a5', fontSize: 10, fontWeight: 700, textAnchor: 'end' }, t('stem.allobotsage.risky_axis', 'Risky')),
               // Luminous telemetry beacon at operating point
-              !isContrast && h('circle', { className: 'abs-svg-fx', cx: dotX, cy: dotY, r: 14, fill: sm.color, opacity: 0.22 }),
+              !isContrast && h('circle', { className: 'abs-svg-fx abs-beacon-pulse', cx: dotX, cy: dotY, r: 16, fill: 'none', stroke: sm.color, strokeWidth: 1.4, opacity: 0.48 }),
+              !isContrast && h('circle', { className: 'abs-svg-fx abs-beacon-pulse', cx: dotX, cy: dotY, r: 13.5, fill: sm.color, opacity: 0.24 }),
               h('circle', { cx: dotX, cy: dotY, r: 7.5, fill: isContrast ? '#facc15' : sm.color, stroke: '#ffffff', strokeWidth: 2 }),
               !isContrast && h('circle', { className: 'abs-svg-fx', cx: dotX - 2, cy: dotY - 2, r: 2.1, fill: '#ffffff', opacity: 0.85 }),
               // Non-colliding frosted state badge pill
@@ -2650,19 +2725,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             )
           ),
           h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
-            h('button', { onClick: function() {
+            h('button', { type: 'button', onClick: function() {
               var t = new Date().toISOString().slice(11, 19);
               setIQ({ log: iq.log.concat([{ t: t, ai: iq.aiAssist, le: iq.learnerEffort, nov: iq.novelty, ec: iq.errorCost, lg: learnGain.toFixed(1), rk: risk.toFixed(1), state: sm.label }]) });
             }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, t('stem.allobotsage.log_this_workload_split', '📋 Log this workload split')),
-            h('button', { onClick: function() { setIQ({ aiAssist: 50, learnerEffort: 50, novelty: 5, errorCost: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, t('stem.allobotsage.reset', 'Reset')),
-            h('button', { onClick: function() { updKey('phase', 'hub'); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, t('stem.allobotsage.hub', '← Hub'))
+            h('button', { type: 'button', onClick: function() { setIQ({ aiAssist: 50, learnerEffort: 50, novelty: 5, errorCost: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, t('stem.allobotsage.reset', 'Reset')),
+            h('button', { type: 'button', onClick: function() { updKey('phase', 'hub'); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, t('stem.allobotsage.hub', '← Hub'))
           ),
           iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
             iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · ai' + e.ai + ' le' + e.le + ' nov' + e.nov + ' ec' + e.ec + ' → learn ' + e.lg + ' risk ' + e.rk); })
           ),
           h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, t('stem.allobotsage.your_hypothesis_when_does_ai_assist_he', 'Your hypothesis (when does AI assist help vs hurt? Where would you draw the line?)')),
           h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: t('stem.allobotsage.e_g_on_high_novelty_tasks_ai_is_a_brai', 'e.g., on high-novelty tasks AI is a brainstorm partner; on routine work it short-circuits skill...'), 'aria-label': t('stem.allobotsage.hypothesis_input', 'AI workload hypothesis'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, t('stem.allobotsage.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
+          !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, t('stem.allobotsage.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
           iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
             h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, t('stem.allobotsage.open_questions_no_answer_key', 'Open questions (no answer key)')),
             h('ul', { style: { margin: 0, paddingLeft: 16 } },
@@ -2730,6 +2805,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 var dp = DIFFICULTY_PROFILES[diffId];
                 var picked = (d.difficulty || 'standard') === diffId;
                 return h('button', {
+                  type: 'button',
                   key: 'diff-' + diffId,
                   onClick: function() { sfxClick(); updKey('difficulty', diffId); },
                   className: 'text-left p-2.5 rounded-lg border-2 transition focus:outline-none focus:ring-2 focus:ring-violet-400 ' + (picked ? 'shadow-md' : 'hover:border-slate-400'),
@@ -2814,6 +2890,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               h('div', { className: 'flex items-center justify-between mb-2' },
                 h('div', { className: 'text-[0.625rem] font-bold uppercase tracking-wider text-slate-600' }, '\ud83d\udcbe Loadout Presets ' + (presets.length > 0 ? '(' + presets.length + '/3)' : '')),
                 h('button', {
+                  type: 'button',
                   onClick: saveAsPreset,
                   disabled: presets.length >= 3 || equippedLoadout.length === 0,
                   className: 'transition-colors text-[0.625rem] font-bold py-1 px-2 rounded-md bg-slate-700 text-white hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed focus:ring-2 focus:ring-slate-400 focus:outline-none',
@@ -2829,6 +2906,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                         className: 'flex items-center gap-2 p-1.5 rounded-lg bg-white border border-slate-200'
                       },
                         h('button', {
+                          type: 'button',
                           onClick: function() { loadPreset(p); },
                           className: 'flex-1 text-left text-[0.6875rem] font-semibold text-violet-700 hover:underline focus:ring-2 focus:ring-violet-400 focus:outline-none rounded',
                           'aria-label': 'Load preset ' + p.name
@@ -2840,6 +2918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                           })
                         ),
                         h('button', {
+                          type: 'button',
                           onClick: async function() {
                             var confirmModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
                             var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
@@ -2860,7 +2939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                             if (confirmed) { deletePreset(idx); announceSR('Deleted preset: ' + p.name); }
                             else announceSR(__alloT('stem.allobotsage.sr_preset_kept', 'Preset kept.'));
                           },
-                          className: 'transition-colors text-[0.75rem] text-slate-400 hover:text-red-600 px-1 focus:ring-2 focus:ring-red-400 focus:outline-none rounded',
+                          className: 'transition-colors text-[0.75rem] text-slate-600 hover:text-red-600 px-1 focus:ring-2 focus:ring-red-400 focus:outline-none rounded',
                           'aria-label': 'Delete preset ' + p.name
                         }, '\ud83d\uddd1')
                       );
@@ -2870,8 +2949,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           })(),
 
           // AI question bank panel \u2014 pre-load + per-spell AI status.
-          // Only renders when callGemini is wired AND at least 1 spell is equipped.
-          callGemini && equippedLoadout.length > 0 && h('section', { 'aria-label': t('stem.allobotsage.ai_question_banks', 'AI question banks'), className: 'mb-4 p-3 rounded-xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-fuchsia-50' },
+          // Only renders when text AI is enabled AND at least 1 spell is equipped.
+          aiOn && equippedLoadout.length > 0 && h('section', { 'aria-label': t('stem.allobotsage.ai_question_banks', 'AI question banks'), className: 'mb-4 p-3 rounded-xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-fuchsia-50' },
             h('div', { className: 'flex items-center justify-between gap-2 mb-2' },
               h('div', null,
                 h('div', { className: 'text-[0.6875rem] font-bold text-violet-900 uppercase tracking-wider flex items-center gap-1' }, t('stem.allobotsage.infinite_question_bank', '\u2728 Infinite Question Bank')),
@@ -2879,10 +2958,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 h('div', { className: 'text-[0.625rem] text-amber-700 mt-0.5 font-semibold' }, t('stem.allobotsage.ai_generated_questions_can_be_wrong_ev', '\u26a0\ufe0f AI-generated questions can be wrong (even the marked answer) \u2014 if one looks off, tell your teacher.'))
               ),
               h('button', {
+                type: 'button',
                 onClick: function() {
                   // Fire off generation for any equipped spell that has no AI cache yet.
                   // Already-cached spells are skipped (use refresh button to reroll).
-                  if (!callGemini) return;
+                  if (!aiOn) return;
                   sfxClick();
                   var inFlight = Object.assign({}, d._aiInFlight || {});
                   var promises = [];
@@ -2914,7 +2994,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                         addedCount += r.qs.length;
                       }
                     });
-                    ctx.updateMulti('alloBotSage', { aiChallengeCache: freshCache, _aiInFlight: freshFlight });
+                    updSage({ aiChallengeCache: freshCache, _aiInFlight: freshFlight });
                     addToast('+' + addedCount + ' AI questions ready', 'success');
                   }).catch(function(err) {
                     // Reset in-flight state so the user can retry — without this, loading spinners freeze
@@ -2922,7 +3002,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
                     var freshFlight = Object.assign({}, freshD._aiInFlight || {});
                     equippedLoadout.forEach(function(spellId) { delete freshFlight[spellId]; });
-                    ctx.updateMulti('alloBotSage', { _aiInFlight: freshFlight });
+                    updSage({ _aiInFlight: freshFlight });
                     addToast('Failed to generate AI questions. Try again.', 'error');
                   });
                 },
@@ -2943,16 +3023,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 },
                   h('span', { className: 'flex-shrink-0' }, s.icon),
                   h('span', { className: 'font-bold flex-1 truncate', style: { color: s.color } }, s.name),
-                  h('span', { className: 'text-slate-500 text-[0.625rem]' }, staticCount + ' static'),
+                  h('span', { className: 'text-slate-600 text-[0.625rem]' }, staticCount + ' static'),
                   inFlight
                     ? h('span', { className: 'text-violet-600 text-[0.625rem] font-bold abs-pulse' }, t('stem.allobotsage.generating', '\u23f3 generating...'))
                     : aiCount > 0
                       ? h('span', { className: 'text-violet-700 text-[0.625rem] font-bold px-1.5 py-0.5 rounded bg-violet-100 border border-violet-300' }, '\u2728 +' + aiCount + ' AI')
-                      : h('span', { className: 'text-slate-400 text-[0.625rem] italic' }, t('stem.allobotsage.no_ai_yet', 'no AI yet')),
+                      : h('span', { className: 'text-slate-600 text-[0.625rem] italic' }, t('stem.allobotsage.no_ai_yet', 'no AI yet')),
                   aiCount > 0 && !inFlight && h('button', {
+                    type: 'button',
                     onClick: function() {
                       // Reroll the AI bank for THIS spell.
-                      if (!callGemini) return;
+                      if (!aiOn) return;
                       sfxClick();
                       var inFlightLocal = Object.assign({}, d._aiInFlight || {});
                       inFlightLocal[spellId] = true;
@@ -2963,7 +3044,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                         var freshFlight = Object.assign({}, freshD._aiInFlight || {});
                         delete freshFlight[spellId];
                         if (qs.length > 0) freshCache[spellId] = qs;
-                        ctx.updateMulti('alloBotSage', { aiChallengeCache: freshCache, _aiInFlight: freshFlight });
+                        updSage({ aiChallengeCache: freshCache, _aiInFlight: freshFlight });
                         if (qs.length > 0) addToast('\u2728 ' + s.name + ' rerolled (+' + qs.length + ' new)', 'success');
                       }).catch(function(err) {
                         // Clear in-flight so the spell can be rerolled again instead of getting stuck
@@ -2972,7 +3053,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                         var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
                         var freshFlight = Object.assign({}, freshD._aiInFlight || {});
                         delete freshFlight[spellId];
-                        ctx.updateMulti('alloBotSage', { _aiInFlight: freshFlight });
+                        updSage({ _aiInFlight: freshFlight });
                         addToast('Failed to reroll ' + s.name + '. Try again.', 'error');
                       });
                     },
@@ -3000,6 +3081,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   return e.boss && sec.bossPool && sec.bossPool.indexOf(e.id) !== -1;
                 });
                 return h('button', {
+                  type: 'button',
                   key: sec.id,
                   disabled: !unlocked,
                   onClick: function() {
@@ -3088,6 +3170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 h('div', { className: 'text-[0.625rem] text-violet-700 mt-0.5' }, t('stem.allobotsage.research_specific_goals_improve_perfor', 'Research: specific goals improve performance + focus. Pick any.'))
               ),
               h('button', {
+                type: 'button',
                 onClick: function() { sfxClick(); updKey('selectedGoals', []); },
                 className: 'transition-colors text-[0.625rem] text-violet-600 hover:text-violet-900 font-semibold underline focus:ring-2 focus:ring-violet-400 focus:outline-none rounded'
               }, t('stem.allobotsage.skip_clear_all', 'Skip / clear all'))
@@ -3111,6 +3194,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 GOALS.map(function(g) {
                   var picked = selectedGoals.indexOf(g.id) !== -1;
                   return h('button', {
+                    type: 'button',
                     key: 'goal-' + g.id,
                     onClick: function() { toggleGoal(g.id); },
                     className: 'text-left p-2 rounded-lg border-2 transition focus:outline-none focus:ring-2 focus:ring-violet-400 ' + (picked ? 'border-violet-500 bg-violet-100' : 'border-slate-200 bg-white hover:border-violet-300'),
@@ -3131,6 +3215,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             })()
           ),
           h('button', {
+            type: 'button',
             disabled: equippedLoadout.length === 0,
             onClick: function() {
               if (equippedLoadout.length === 0) return;
@@ -3292,13 +3377,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           mutateExp({ playerHp: newPlayerHp, log: (exp.log || []).concat([entry]) });
           announceSR(__alloT('stem.allobotsage.sr_rested_at_shrine_advancing', 'Rested at shrine. Advancing.'));
           // Use advanceRoom so shrine "clear" counts toward roomsCleared + gives essence.
-          setTimeout(function() {
+          scheduleCombat(function() {
             if (roomIndex < totalRooms - 1) {
               advanceRoom(shrineEssence);
             } else {
               // Edge case (shouldn\u2019t happen \u2014 boss is always last): just finish.
               mutateExp({ essenceEarned: (exp.essenceEarned || 0) + shrineEssence, roomsCleared: (exp.roomsCleared || 0) + 1 });
-              setTimeout(function() { finishExpedition(true); }, 80);
+              scheduleCombat(function() { finishExpedition(true); }, 80);
             }
           }, 600);
         }
@@ -3350,7 +3435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           if (newHp <= 0) {
             // Defeat path
             mutateExp({ playerHp: 0, log: nextLog, enemy: newEnemy });
-            setTimeout(function() { finishExpedition(false); }, 600);
+            scheduleCombat(function() { finishExpedition(false); }, 600);
             return;
           }
           mutateExp({ playerHp: newHp, turn: 'player', log: nextLog, enemy: newEnemy });
@@ -3366,6 +3451,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           // Pick weighted by SRS stats so recently-failed questions resurface.
           var bank = getMergedBank(s, aiChallengeCache);
           var challenge = pickWeighted(bank, d.questionStats || {});
+          if (!challenge) return;
           sfxCastReady();
           mutateExp({
             pendingCast: {
@@ -3382,7 +3468,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           // request. The questions arrive within a few seconds and are merged
           // for the next cast. THIS cast already used static bank.
           var existingAi = (aiChallengeCache[spellId] || []);
-          if (existingAi.length === 0 && callGemini) {
+          if (existingAi.length === 0 && aiOn) {
             // Mark in-flight so we don't double-fire if startCast runs again.
             if (!d._aiInFlight || !d._aiInFlight[spellId]) {
               var inFlight = Object.assign({}, d._aiInFlight || {});
@@ -3395,9 +3481,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 delete freshFlight[spellId];
                 if (qs.length > 0) {
                   freshCache[spellId] = qs;
-                  ctx.updateMulti('alloBotSage', { aiChallengeCache: freshCache, _aiInFlight: freshFlight });
+                  updSage({ aiChallengeCache: freshCache, _aiInFlight: freshFlight });
                 } else {
-                  ctx.updateMulti('alloBotSage', { _aiInFlight: freshFlight });
+                  updSage({ _aiInFlight: freshFlight });
                 }
               }).catch(function(err) {
                 // Background generation — student already has bank questions, so silent + log only
@@ -3406,7 +3492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
                 var freshFlight = Object.assign({}, freshD._aiInFlight || {});
                 delete freshFlight[spellId];
-                ctx.updateMulti('alloBotSage', { _aiInFlight: freshFlight });
+                updSage({ _aiInFlight: freshFlight });
               });
             }
           }
@@ -3416,6 +3502,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           if (!pendingCast || pendingCast.resolved) return;
           var s = findSpell(pendingCast.spellId);
           var challenge = pendingCast.challenge;
+          if (!s || !challenge) return;
           var lvl = spellLevels[s.id] || 0;
           var leveledBase = getSpellDamage(s, lvl);
           var elapsed = (Date.now() - pendingCast.startedAt) / 1000;
@@ -3506,7 +3593,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           });
           announceSR(text + (willInterrupt ? ' Boss special interrupted!' : ''));
 
-          setTimeout(function() {
+          scheduleCombat(function() {
             if (newEnemyHp <= 0) {
               var clearReward = scaledReward(PER_ROOM_ESSENCE[roomIndex] || 10);
               if (roomIndex < totalRooms - 1) {
@@ -3518,24 +3605,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   roomsCleared: (exp.roomsCleared || 0) + 1,
                   essenceEarned: (exp.essenceEarned || 0) + clearReward
                 });
-                setTimeout(function() { finishExpedition(true); }, 100);
+                scheduleCombat(function() { finishExpedition(true); }, 100);
               }
               return;
             }
             // Enemy turn
             mutateExp({ pendingCast: null, turn: 'enemy' });
-            setTimeout(function() { enemyTurn(); }, 550);
+            scheduleCombat(function() { enemyTurn(); }, 550);
           }, 1400);
         }
 
         // ── Render encounter ──
-        var enemyPct = Math.round((enemy.hp / enemy.maxHp) * 100);
-        var playerPct = Math.round((exp.playerHp / exp.playerMaxHp) * 100);
+        var enemyPct = Math.max(0, Math.min(100, Math.round((enemy.hp / Math.max(1, Number(enemy.maxHp) || 1)) * 100)));
+        var playerPct = Math.max(0, Math.min(100, Math.round((exp.playerHp / Math.max(1, Number(exp.playerMaxHp) || 1)) * 100)));
 
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 abs-fade' },
           // Top bar
           h('div', { className: 'flex items-center gap-3 mb-3' },
             h('button', {
+              type: 'button',
               onClick: async function() {
                 var confirmModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
                 var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
@@ -3554,6 +3642,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   return;
                 }
                 if (confirmed) {
+                  clearCombatTimers();
                   sfxClick();
                   updSage({ phase: 'hub', expedition: null });
                   announceSR(__alloT('stem.allobotsage.sr_expedition_abandoned_returned_to_the_hub', 'Expedition abandoned. Returned to the hub.'));
@@ -3778,6 +3867,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               h('div', { className: 'px-3 py-1.5 rounded-lg bg-amber-400/20 text-amber-100 text-xs font-bold' }, '+' + scaledReward(3) + ' \u2B50 Essence')
             ),
             h('button', {
+              type: 'button',
               onClick: function() { restAtShrine(); },
               className: 'transition-colors px-6 py-2.5 rounded-xl font-bold text-emerald-800 bg-white hover:bg-emerald-50 focus:ring-2 focus:ring-white focus:outline-none shadow-lg'
             }, t('stem.allobotsage.rest_at_the_shrine', '\u26E9\uFE0F Rest at the shrine'))
@@ -3791,6 +3881,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               var lvl = spellLevels[s.id] || 0;
               var leveledDmg = getSpellDamage(s, lvl);
               return h('button', {
+                type: 'button',
                 key: id,
                 onClick: function() { startCast(id); },
                 className: 'p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-violet-500 hover:bg-violet-50 focus:ring-2 focus:ring-violet-400 focus:outline-none transition text-left',
@@ -3869,6 +3960,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   ].map(function(opt) {
                     var picked = confidence === opt.level;
                     return h('button', {
+                      type: 'button',
                       key: 'conf-' + opt.level,
                       onClick: function() {
                         sfxClick();
@@ -3890,6 +3982,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   var isSelected = resolved && pendingCast.selectedIndex === i;
                   var isCorrect = resolved && i === c.correctIndex;
                   return h('button', {
+                    type: 'button',
                     key: i,
                     disabled: resolved,
                     onClick: function() { if (!resolved) resolveChallenge(i); },
@@ -4126,7 +4219,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     h('linearGradient', { id: 'abs-cal-warn', x1: '0', y1: '0', x2: '0', y2: '1' },
                       h('stop', { offset: '0%', stopColor: '#fbbf24' }),
                       h('stop', { offset: '100%', stopColor: '#d97706' })
-                    )
+                    ),
+                    h('linearGradient', { id: 'abs-cal-glint', x1: '0', y1: '0', x2: '1', y2: '0.2' },
+                      h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
+                      h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.42 }),
+                      h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+                    ),
+                    order.map(function(o, i) {
+                      var rc = runConfidence[o.level], tot = rc.right + rc.wrong, x = padL + i * (bw + gap);
+                      if (tot === 0) return null;
+                      var pct = Math.round(rc.right / tot * 100);
+                      var barH = Math.max(2, (Hh - padB) - sy(pct));
+                      return h('clipPath', { key: 'cc-' + i, id: 'abs-cal-clip-' + i },
+                        h('rect', { x: x, y: sy(pct), width: bw, height: barH, rx: 4 })
+                      );
+                    })
                   ),
                   // Recessed studio calibration well
                   h('rect', { x: 0, y: 0, width: W, height: Hh, rx: 8, fill: isContrast ? '#000000' : 'url(#abs-cal-well)', stroke: isContrast ? '#ffffff' : 'rgba(148,163,184,0.32)', strokeWidth: 1 }),
@@ -4136,7 +4243,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   }),
                   h('line', { x1: padL - 4, y1: Hh - padB, x2: W - 8, y2: Hh - padB, stroke: isContrast ? '#ffffff' : '#94a3b8', strokeWidth: 1 }),
                   // Well-calibrated reference slope line
-                  h('line', { x1: x1Ref, y1: sy(50), x2: x3Ref, y2: sy(90), stroke: isContrast ? '#facc15' : '#6366f1', strokeWidth: 1.4, strokeDasharray: '3 3', opacity: 0.75 }),
+                  h('line', { className: !isContrast ? 'abs-conduit-flow-slow' : undefined, x1: x1Ref, y1: sy(50), x2: x3Ref, y2: sy(90), stroke: isContrast ? '#facc15' : '#6366f1', strokeWidth: 1.4, strokeDasharray: '3 3', opacity: 0.75 }),
                   order.map(function(o, i) {
                     var rc = runConfidence[o.level], tot = rc.right + rc.wrong, x = padL + i * (bw + gap);
                     var targetY = sy(50 + i * 20);
@@ -4149,6 +4256,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     var barH = Math.max(2, (Hh - padB) - sy(pct));
                     return h('g', { key: i },
                       h('rect', { x: x, y: sy(pct), width: bw, height: barH, rx: 4, fill: isContrast ? '#facc15' : (pct >= 70 ? 'url(#abs-cal-good)' : 'url(#abs-cal-warn)'), stroke: isContrast ? '#ffffff' : col, strokeWidth: 0.8 }),
+                      !isContrast && h('g', { clipPath: 'url(#abs-cal-clip-' + i + ')', className: 'abs-svg-fx' },
+                        h('rect', { className: 'abs-glint-sweep', x: x, y: sy(pct), width: 22, height: barH, fill: 'url(#abs-cal-glint)', style: { animationDelay: (i * 0.6) + 's' } })
+                      ),
                       !isContrast && h('rect', { className: 'abs-svg-fx', x: x + 2, y: sy(pct) + 1, width: bw - 4, height: Math.min(3, barH * 0.35), rx: 1.5, fill: '#ffffff', opacity: 0.35 }),
                       h('circle', { cx: x + bw / 2, cy: targetY, r: 2.3, fill: '#ffffff', stroke: isContrast ? '#facc15' : '#6366f1', strokeWidth: 1.1 }),
                       h('text', { x: x + bw / 2, y: sy(pct) - 3, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: isContrast ? '#facc15' : col }, pct + '%'),
@@ -4196,6 +4306,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('div', { className: 'flex flex-col gap-2 mb-4', 'aria-label': t('stem.allobotsage.recommended_next_steps', 'Recommended next steps') },
             // Backfire-driven CTA: review tough questions
             globalToughCount > 0 && h('button', {
+              type: 'button',
               onClick: function() { sfxClick(); updSage({ phase: 'review_mistakes', reviewIdx: 0, reviewRevealed: false, expedition: null }); },
               className: 'transition-colors p-3 rounded-xl border-2 border-red-300 bg-red-50 hover:bg-red-100 text-left flex items-center gap-3 focus:ring-2 focus:ring-red-500 focus:outline-none'
             },
@@ -4211,6 +4322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               var ws = findSpell(weakestSpell);
               if (!ws) return null;
               return h('button', {
+                type: 'button',
                 onClick: function() { sfxClick(); updSage({ phase: 'practice', practiceSpellId: weakestSpell, practiceQuestion: null, practiceSession: { correct: 0, attempted: 0 }, expedition: null }); },
                 className: 'transition-colors p-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-left flex items-center gap-3 focus:ring-2 focus:ring-emerald-600 focus:outline-none'
               },
@@ -4272,6 +4384,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             }),
             h('div', { className: 'flex justify-end mt-2' },
               h('button', {
+                type: 'button',
                 onClick: function() {
                   var ta = document.getElementById('abs-reflection-textarea');
                   if (!ta) return;
@@ -4301,14 +4414,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           ),
           h('div', { className: 'flex flex-wrap gap-2 justify-center' },
             h('button', {
+              type: 'button',
               onClick: function() { sfxClick(); updSage({ phase: 'hub', expedition: null }); },
               className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-300 focus:outline-none'
             }, t('stem.allobotsage.return_to_spellforge', 'Return to Spellforge')),
             h('button', {
+              type: 'button',
               onClick: function() { sfxClick(); updSage({ phase: 'shop', expedition: null }); },
               className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 focus:ring-2 focus:ring-amber-600 focus:outline-none'
             }, t('stem.allobotsage.visit_spell_shop', '\u2B50 Visit Spell Shop')),
             h('button', {
+              type: 'button',
               onClick: function() { sfxClick(); updSage({ phase: 'loadout', expedition: null }); },
               className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200 focus:ring-2 focus:ring-violet-500 focus:outline-none'
             }, t('stem.allobotsage.another_expedition', 'Another Expedition'))
@@ -4407,6 +4523,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       )
                     ),
                     h('button', {
+                      type: 'button',
                       disabled: maxed || !canAfford,
                       onClick: function() { upgrade(s.id); },
                       className: 'px-3 py-2 rounded-lg font-bold text-xs focus:ring-2 focus:ring-amber-400 focus:outline-none '
@@ -4526,6 +4643,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       });
                       var unseen = bank.length - seen;
                       return h('button', {
+                        type: 'button',
                         key: s.id,
                         onClick: function() { sfxClick(); startPractice(s.id); },
                         className: 'text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 focus:ring-2 focus:ring-emerald-400 focus:outline-none transition',
@@ -4556,6 +4674,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         return h('div', { className: 'max-w-2xl mx-auto p-4 md:p-6 abs-fade' },
           h('div', { className: 'flex items-center gap-3 mb-3' },
             h('button', {
+              type: 'button',
               onClick: function() { sfxClick(); updSage({ practiceSpellId: null, practiceQuestion: null }); },
               className: 'transition-colors text-xs font-semibold text-slate-500 hover:text-slate-800 underline'
             }, t('stem.allobotsage.change_spell', '← Change spell')),
@@ -4566,6 +4685,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               )
             ),
             h('button', {
+              type: 'button',
               onClick: exitPractice,
               className: 'transition-colors text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline'
             }, t('stem.allobotsage.end_session', 'End session'))
@@ -4598,6 +4718,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   cls += 'border-slate-200 bg-slate-50 opacity-60';
                 }
                 return h('button', {
+                  type: 'button',
                   key: 'opt-' + oi,
                   onClick: revealed ? null : function() { answerPractice(oi); },
                   disabled: revealed,
@@ -4625,6 +4746,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           // Footer actions
           practiceAnswered && h('div', { className: 'flex gap-2 justify-end' },
             h('button', {
+              type: 'button',
               onClick: function() { sfxClick(); nextPractice(); },
               className: 'transition-colors px-5 py-2.5 rounded-xl font-bold text-white bg-emerald-700 hover:bg-emerald-800 focus:ring-2 focus:ring-emerald-300 focus:outline-none'
             }, t('stem.allobotsage.next_question', 'Next question →'))
@@ -4714,7 +4836,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               h('div', { className: 'text-6xl mb-3' }, '🎓'),
               h('h2', { className: 'text-2xl font-bold mb-2' }, t('stem.allobotsage.review_complete', 'Review complete!')),
               h('p', { className: 'text-sm text-emerald-100 mb-4' }, 'You reviewed ' + toughList.length + ' tough question' + (toughList.length > 1 ? 's' : '') + '. Strong work — that\'s how learning sticks.'),
-              h('button', { onClick: exitReview, className: 'transition-colors px-6 py-2.5 rounded-xl font-bold text-emerald-800 bg-white hover:bg-emerald-50' }, t('stem.allobotsage.back_to_spellforge', 'Back to Spellforge'))
+              h('button', { type: 'button', onClick: exitReview, className: 'transition-colors px-6 py-2.5 rounded-xl font-bold text-emerald-800 bg-white hover:bg-emerald-50' }, t('stem.allobotsage.back_to_spellforge', 'Back to Spellforge'))
             )
           );
         }
@@ -4756,6 +4878,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               })
             ),
             !reviewRevealed && h('button', {
+              type: 'button',
               onClick: function() { sfxClick(); updKey('reviewRevealed', true); },
               className: 'transition-colors mt-4 w-full py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 focus:ring-2 focus:ring-red-200 focus:outline-none'
             }, t('stem.allobotsage.reveal_answer_explanation', '👁 Reveal answer + explanation')),
@@ -4767,10 +4890,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           // Action buttons (only after reveal)
           reviewRevealed && h('div', { className: 'flex gap-2' },
             h('button', {
+              type: 'button',
               onClick: stillTough,
               className: 'transition-colors flex-1 py-2.5 rounded-xl font-bold text-red-700 bg-red-50 hover:bg-red-100 border-2 border-red-200 focus:ring-2 focus:ring-red-500 focus:outline-none'
             }, t('stem.allobotsage.still_tough_keep_in_queue', 'Still tough — keep in queue')),
             h('button', {
+              type: 'button',
               onClick: gotIt,
               className: 'transition-colors flex-1 py-2.5 rounded-xl font-bold text-white bg-emerald-700 hover:bg-emerald-800 focus:ring-2 focus:ring-emerald-300 focus:outline-none'
             }, t('stem.allobotsage.got_it_now', 'Got it now ✓'))
@@ -4950,6 +5075,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 : h('div', { className: 'space-y-1' },
                     weakest.map(function(item) {
                       return h('button', {
+                        type: 'button',
                         key: 'weak-' + item.spell.id,
                         onClick: function() { sfxClick(); updSage({ phase: 'practice', practiceSpellId: item.spell.id, practiceQuestion: null, practiceSession: { correct: 0, attempted: 0 } }); },
                         className: 'w-full flex items-center gap-2 text-[0.6875rem] p-1.5 rounded-lg bg-white border border-rose-200 hover:bg-rose-100 focus:ring-2 focus:ring-rose-400 focus:outline-none transition text-left',

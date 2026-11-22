@@ -90,28 +90,48 @@
   // No IDs/attributes are injected into the document being verified.
   async function inventory(doc, options) {
     var refs = [], tables = Array.from(doc.querySelectorAll('table')).slice(0, 100), images = Array.from(doc.querySelectorAll('img')).slice(0, 200);
-    for (var ti = 0; ti < tables.length && refs.length < MAX_REFERENCES; ti++) {
+    // Deduplicate identical payloads (e.g. repeated empty/numeric cells) and run
+    // WebCrypto SHA-256 digests concurrently instead of 700+ serial round-trips.
+    var hashCache = new Map();
+    var hashCached = function (payload) {
+      var key = String(payload);
+      if (hashCache.has(key)) return hashCache.get(key);
+      var p = hash(key, options);
+      hashCache.set(key, p);
+      return p;
+    };
+    var pending = [];
+    for (var ti = 0; ti < tables.length && pending.length < MAX_REFERENCES; ti++) {
       var table = tables[ti], rows = ownedRows(table), cellData = [];
       rows.forEach(function (row, ri) {
         Array.from(row.children).filter(function (cell) { return /^(TD|TH)$/.test(cell.tagName); }).forEach(function (cell, ci) {
           cellData.push({ node: cell, row: ri, column: ci, value: text(cell.textContent), rowSpan: cell.rowSpan || 1, colSpan: cell.colSpan || 1 });
         });
       });
-      var fingerprint = await hash(JSON.stringify(cellData.map(function (cell) { return [cell.row, cell.column, cell.value, cell.rowSpan, cell.colSpan]; })), options);
+      var tableFpPromise = hashCached(JSON.stringify(cellData.map(function (cell) { return [cell.row, cell.column, cell.value, cell.rowSpan, cell.colSpan]; })));
       var caption = Array.from(table.children).find(function (child) { return child.tagName === 'CAPTION'; });
-      refs.push({ kind: 'table', table: ti, fingerprint: fingerprint, label: 'Table ' + (ti + 1) + (caption ? ': ' + text(caption.textContent).slice(0, 120) : ''), node: table });
-      for (var ci = 0; ci < cellData.length && refs.length < MAX_REFERENCES; ci++) {
+      pending.push({ kind: 'table', table: ti, fpPromise: tableFpPromise, label: 'Table ' + (ti + 1) + (caption ? ': ' + text(caption.textContent).slice(0, 120) : ''), node: table });
+      for (var ci = 0; ci < cellData.length && pending.length < MAX_REFERENCES; ci++) {
         var cell = cellData[ci];
-        refs.push({ kind: 'cell', table: ti, row: cell.row, column: cell.column, tableFingerprint: fingerprint,
-          fingerprint: await hash(JSON.stringify([cell.value, cell.rowSpan, cell.colSpan]), options),
+        pending.push({ kind: 'cell', table: ti, row: cell.row, column: cell.column, tableFpPromise: tableFpPromise,
+          fpPromise: hashCached(JSON.stringify([cell.value, cell.rowSpan, cell.colSpan])),
           label: 'Table ' + (ti + 1) + ', row ' + (cell.row + 1) + ', cell ' + (cell.column + 1), node: cell.node });
       }
     }
-    for (var ii = 0; ii < images.length && refs.length < MAX_REFERENCES; ii++) {
+    for (var ii = 0; ii < images.length && pending.length < MAX_REFERENCES; ii++) {
       var img = images[ii];
-      refs.push({ kind: 'figure', index: ii, fingerprint: await hash(JSON.stringify([img.getAttribute('src') || '', img.getAttribute('srcset') || '']), options),
+      pending.push({ kind: 'figure', index: ii, fpPromise: hashCached(JSON.stringify([img.getAttribute('src') || '', img.getAttribute('srcset') || ''])),
         label: 'Image ' + (ii + 1) + (img.getAttribute('alt') ? ': ' + text(img.getAttribute('alt')).slice(0, 120) : ''), node: img });
     }
+    refs = await Promise.all(pending.map(async function (entry) {
+      if (entry.kind === 'cell') {
+        var pair = await Promise.all([entry.tableFpPromise, entry.fpPromise]);
+        return { kind: 'cell', table: entry.table, row: entry.row, column: entry.column, tableFingerprint: pair[0], fingerprint: pair[1], label: entry.label, node: entry.node };
+      }
+      var fp = await entry.fpPromise;
+      if (entry.kind === 'table') return { kind: 'table', table: entry.table, fingerprint: fp, label: entry.label, node: entry.node };
+      return { kind: 'figure', index: entry.index, fingerprint: fp, label: entry.label, node: entry.node };
+    }));
     var signature = await hash(JSON.stringify([text(doc.body && doc.body.textContent), refs.map(function (ref) { return [ref.kind, ref.fingerprint]; })]), options);
     return { refs: refs, signature: signature, truncated: refs.length >= MAX_REFERENCES || doc.querySelectorAll('table').length > tables.length || doc.querySelectorAll('img').length > images.length };
   }

@@ -21,6 +21,49 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     document.head.appendChild(st);
   })();
 
+  // Cinema-grade metrology live-motion polish (scale beam, meniscus wave, thermal glow, speed wake; respects reduced-motion & high-contrast)
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-unitconvert-motion-polish-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-unitconvert-motion-polish-css';
+    st.textContent = [
+      '@keyframes ucBeamEquilibrate{0%{transform:rotate(-8deg)}28%{transform:rotate(5deg)}52%{transform:rotate(-2.5deg)}74%{transform:rotate(1deg)}100%{transform:rotate(0deg)}}',
+      '@keyframes ucMeniscusWave{0%,100%{transform:translateX(-1.5px) scaleY(1)}50%{transform:translateX(1.5px) scaleY(1.12)}}',
+      '@keyframes ucThermalPulse{0%,100%{opacity:0.88;filter:brightness(1)}50%{opacity:1;filter:brightness(1.14)}}',
+      '@keyframes ucDashFlow{0%{stroke-dashoffset:20}100%{stroke-dashoffset:0}}',
+      '@keyframes ucSpeedPulse{0%,100%{transform:translateX(0);opacity:0.9}50%{transform:translateX(5px);opacity:0.5}}',
+      '[data-stem-tool-shell="unitConvert"] .uc-scale-beam{transform-box:fill-box;transform-origin:50% 50%;animation:ucBeamEquilibrate 1.5s cubic-bezier(0.22,1,0.36,1) both}',
+      '[data-stem-tool-shell="unitConvert"] .uc-meniscus-wave{transform-box:fill-box;transform-origin:center;animation:ucMeniscusWave 2.8s ease-in-out infinite}',
+      '[data-stem-tool-shell="unitConvert"] .uc-thermal-col{animation:ucThermalPulse 2.6s ease-in-out infinite}',
+      '[data-stem-tool-shell="unitConvert"] .uc-bridge-dash{animation:ucDashFlow 1.4s linear infinite}',
+      '[data-stem-tool-shell="unitConvert"] .uc-speed-wake{animation:ucSpeedPulse 1.3s ease-in-out infinite}',
+      '.theme-contrast [data-stem-tool-shell="unitConvert"] .uc-scale-beam,.theme-contrast [data-stem-tool-shell="unitConvert"] .uc-meniscus-wave,.theme-contrast [data-stem-tool-shell="unitConvert"] .uc-thermal-col,.theme-contrast [data-stem-tool-shell="unitConvert"] .uc-bridge-dash,.theme-contrast [data-stem-tool-shell="unitConvert"] .uc-speed-wake{animation:none!important;filter:none!important}',
+      '@media (prefers-reduced-motion: reduce){[data-stem-tool-shell="unitConvert"] .uc-scale-beam,[data-stem-tool-shell="unitConvert"] .uc-meniscus-wave,[data-stem-tool-shell="unitConvert"] .uc-thermal-col,[data-stem-tool-shell="unitConvert"] .uc-bridge-dash,[data-stem-tool-shell="unitConvert"] .uc-speed-wake{animation:none!important;filter:none!important}}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
+  // ── Zero-GC Metric-Prefix Canvas Static Tables & Pre-Allocated Scratch Pools ──
+  function _ucIsHighContrast() {
+    if (typeof document === 'undefined') return false;
+    var root = document.documentElement;
+    if (root && root.classList && root.classList.contains('theme-contrast')) return true;
+    return !!(document.body && document.body.classList && document.body.classList.contains('theme-contrast'));
+  }
+  var _UC_PREFIXES = [
+    { sym: 'p', name: 'pico', exp: -12, powLabel: '10⁻¹²', color: '#a855f7', fallbackEx: 'pm = bond lengths' },
+    { sym: 'n', name: 'nano', exp: -9,  powLabel: '10⁻⁹',  color: '#3b82f6', fallbackEx: 'nm = wavelengths' },
+    { sym: 'µ', name: 'micro', exp: -6, powLabel: '10⁻⁶',  color: '#22d3ee', fallbackEx: 'µm = bacteria' },
+    { sym: 'm', name: 'milli', exp: -3, powLabel: '10⁻³',  color: '#86efac', fallbackEx: 'mm = grains of sand' },
+    { sym: '',  name: 'base', exp: 0,   powLabel: '10⁰',   color: '#fff',    fallbackEx: 'meter, second, gram, ampere' },
+    { sym: 'k', name: 'kilo', exp: 3,   powLabel: '10³',   color: '#fde047', fallbackEx: 'km = walking distance' },
+    { sym: 'M', name: 'mega', exp: 6,   powLabel: '10⁶',   color: '#fb923c', fallbackEx: 'Mm = continents' },
+    { sym: 'G', name: 'giga', exp: 9,   powLabel: '10⁹',   color: '#fb7185', fallbackEx: 'Gm = Sun-Earth' },
+    { sym: 'T', name: 'tera', exp: 12,  powLabel: '10¹²',  color: '#dc2626', fallbackEx: 'Tm = Jupiter-Sun' }
+  ];
+  var _UC_PACKET_TRAIL = 5;
+  var _ucTrailU = typeof Float32Array === 'function' ? new Float32Array(_UC_PACKET_TRAIL) : [0, 0, 0, 0, 0];
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-unitconvert')) return;
@@ -3854,25 +3897,41 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               ticks.map(function(tk, k) {
                 return h('line', { key: k, x1: tk.x, x2: tk.x, y1: 8, y2: tk.major ? 32 : 22, stroke: bigStroke, strokeWidth: tk.major ? 1.5 : 1, strokeOpacity: tk.major ? 0.95 : 0.65 });
               }),
-              // Category-specific metrology instrument detail (borosilicate beaker for volume, steel balance for weight)
+              // Category-specific metrology instrument detail (borosilicate beaker with meniscus wave for volume, spring-damped steel balance for weight, motion-track wake for speed)
               !isContrast && d.category === 'volume' && h('g', { key: 'vol-beaker', transform: 'translate(258, 42)', 'aria-hidden': 'true' },
                 h('rect', { x: 4, y: 12, width: 22, height: 22, rx: 2, fill: isDarkUI ? 'rgba(34,211,238,0.34)' : 'rgba(14,116,144,0.28)' }),
-                h('ellipse', { cx: 15, cy: 12, rx: 11, ry: 2.5, fill: 'rgba(255,255,255,0.55)', stroke: bigStroke, strokeWidth: 0.9 }),
+                h('g', { className: 'uc-meniscus-wave' },
+                  h('ellipse', { cx: 15, cy: 12, rx: 11, ry: 2.5, fill: 'rgba(255,255,255,0.58)', stroke: bigStroke, strokeWidth: 0.9 }),
+                  h('path', { d: 'M 6 12 Q 11 10.2 15 12 T 24 12', fill: 'none', stroke: 'rgba(255,255,255,0.78)', strokeWidth: 1, strokeLinecap: 'round' })
+                ),
+                h('circle', { cx: 12, cy: 26, r: 1.3, fill: 'rgba(255,255,255,0.62)' }),
+                h('circle', { cx: 18, cy: 21, r: 1.0, fill: 'rgba(255,255,255,0.52)' }),
                 h('rect', { x: 6, y: 6, width: 3.5, height: 26, rx: 1.5, fill: 'rgba(255,255,255,0.48)' }),
                 h('path', { d: 'M 1 4 L 4 7 L 4 34 Q 4 36 6 36 L 24 36 Q 26 36 26 34 L 26 7 L 29 4', fill: 'none', stroke: bigStroke, strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
                 [12, 19, 26].map(function(by) { return h('line', { key: 'bt' + by, x1: 18, y1: by, x2: 24, y2: by, stroke: bigStroke, strokeWidth: 1, strokeOpacity: 0.8 }); })
               ),
-              !isContrast && d.category === 'weight' && h('g', { key: 'wt-balance', transform: 'translate(254, 46)', 'aria-hidden': 'true' },
+              !isContrast && d.category === 'weight' && h('g', { key: 'wt-balance-' + String(conversionValue) + '-' + String(d.fromUnit) + '-' + String(d.toUnit), transform: 'translate(254, 46)', 'aria-hidden': 'true' },
                 h('line', { x1: 16, y1: 6, x2: 16, y2: 30, stroke: bigStroke, strokeWidth: 2, strokeLinecap: 'round' }),
                 h('path', { d: 'M 9 32 L 23 32', stroke: bigStroke, strokeWidth: 2.4, strokeLinecap: 'round' }),
-                h('line', { x1: 4, y1: 10, x2: 28, y2: 10, stroke: isDarkUI ? '#e2e8f0' : '#475569', strokeWidth: 2.2, strokeLinecap: 'round' }),
-                h('path', { d: 'M 4 10 L 1 20 L 7 20 Z M 28 10 L 25 20 L 31 20 Z', fill: 'none', stroke: bigStroke, strokeWidth: 1.1 }),
-                h('path', { d: 'M 0 20 Q 4 24 8 20 Z M 24 20 Q 28 24 32 20 Z', fill: smallFill, opacity: 0.85 })
+                h('g', { className: 'uc-scale-beam' },
+                  h('line', { x1: 4, y1: 10, x2: 28, y2: 10, stroke: isDarkUI ? '#e2e8f0' : '#475569', strokeWidth: 2.2, strokeLinecap: 'round' }),
+                  h('circle', { cx: 16, cy: 10, r: 2, fill: bigStroke }),
+                  h('path', { d: 'M 4 10 L 1 20 L 7 20 Z M 28 10 L 25 20 L 31 20 Z', fill: 'none', stroke: bigStroke, strokeWidth: 1.1 }),
+                  h('path', { d: 'M 0 20 Q 4 24 8 20 Z M 24 20 Q 28 24 32 20 Z', fill: smallFill, opacity: 0.85 })
+                )
+              ),
+              !isContrast && d.category === 'speed' && h('g', { key: 'spd-track', transform: 'translate(248, 48)', 'aria-hidden': 'true' },
+                h('line', { x1: 2, y1: 24, x2: 40, y2: 24, stroke: bigStroke, strokeWidth: 1.4, strokeDasharray: '4 3', className: 'uc-bridge-dash' }),
+                h('g', { className: 'uc-speed-wake' },
+                  h('line', { x1: 4, y1: 12, x2: 18, y2: 12, stroke: smallFill, strokeWidth: 2.2, strokeLinecap: 'round', strokeOpacity: 0.45 }),
+                  h('line', { x1: 8, y1: 17, x2: 22, y2: 17, stroke: bigStroke, strokeWidth: 1.6, strokeLinecap: 'round', strokeOpacity: 0.7 }),
+                  h('polygon', { points: '22,10 34,15 22,20 25,15', fill: smallFill, stroke: bigStroke, strokeWidth: 0.8 })
+                )
               ),
               // Subtle conversion-bridge guide connecting 1 small unit to first division on the big ruler
               !isContrast && h('path', {
                 d: 'M ' + (X0 + drawSmallW) + ' 55 L ' + (X0 + drawSmallW) + ' 32',
-                fill: 'none', stroke: isDarkUI ? '#818cf8' : '#4f46e5', strokeWidth: 1.2, strokeDasharray: '3 2', strokeOpacity: 0.7
+                fill: 'none', stroke: isDarkUI ? '#818cf8' : '#4f46e5', strokeWidth: 1.3, strokeDasharray: '3 2', strokeOpacity: 0.78, className: 'uc-bridge-dash'
               }),
               h('text', { x: X0, y: 47, fontSize: 11, fill: labelFill, fontWeight: 700 }, '1 ' + unitShort(cmp.big)),
               !isContrast && h('rect', { x: X0 + 1, y: 57, width: drawSmallW, height: 20, rx: 3, fill: 'rgba(15,23,42,0.16)' }),
@@ -4440,8 +4499,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       borderColor: isContrast ? '#ffffff' : (isDarkUI ? '#64748b' : '#94a3b8'),
                       boxShadow: isContrast ? undefined : 'inset 2px 0 4px rgba(255,255,255,0.65), inset -2px 0 4px rgba(15,23,42,0.16), 0 4px 10px rgba(15,23,42,0.14)'
                     } },
-                      // Glowing liquid thermal column
-                      h('div', { className: 'absolute bottom-0 left-1 right-1 rounded-t-full transition-all duration-700', style: {
+                      // Glowing liquid thermal column with subtle thermal-convection glow
+                      h('div', { className: 'uc-thermal-col absolute bottom-0 left-1 right-1 rounded-t-full transition-all duration-700', style: {
                         backgroundColor: isContrast ? '#ffff00' : color,
                         backgroundImage: isContrast ? undefined : ('linear-gradient(90deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.08) 38%, rgba(15,23,42,0.22) 100%)'),
                         boxShadow: isContrast ? undefined : ('0 0 12px ' + glowHex + ', inset 0 2px 3px rgba(255,255,255,0.65)'),
@@ -4468,7 +4527,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   thermo(conversionValue, d.fromUnit, isDarkUI ? '#22d3ee' : '#0891b2', 'rgba(34,211,238,0.55)'),
                   h('svg', { key: 'arr', width: 44, height: 34, viewBox: '0 0 44 34', className: 'mt-4 shrink-0', 'aria-hidden': 'true' },
                     h('path', { d: 'M 4 22 Q 22 4 38 20', fill: 'none', stroke: isContrast ? '#ffff00' : (isDarkUI ? '#38bdf8' : '#0e7490'), strokeWidth: isContrast ? 2.5 : 6, strokeOpacity: isContrast ? 1 : 0.16, strokeLinecap: 'round' }),
-                    h('path', { d: 'M 4 22 Q 22 4 38 20', fill: 'none', stroke: isContrast ? '#ffff00' : (isDarkUI ? '#67e8f9' : '#0e7490'), strokeWidth: 2.2, strokeLinecap: 'round', strokeDasharray: '4 2.5' }),
+                    h('path', { d: 'M 4 22 Q 22 4 38 20', fill: 'none', stroke: isContrast ? '#ffff00' : (isDarkUI ? '#67e8f9' : '#0e7490'), strokeWidth: 2.2, strokeLinecap: 'round', strokeDasharray: '4 2.5', className: isContrast ? undefined : 'uc-bridge-dash' }),
                     h('path', { d: 'M 33 13 L 40 21 L 31 22', fill: 'none', stroke: isContrast ? '#ffff00' : (isDarkUI ? '#67e8f9' : '#0e7490'), strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' })
                   ),
                   thermo(result, d.toUnit, isDarkUI ? '#a5b4fc' : '#4f46e5', 'rgba(129,140,248,0.55)')
@@ -5710,17 +5769,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           cvEl._mpCleanup = cleanupMetricPrefixCanvas;
           try { window.__alloMetricPrefixCleanup = cvEl._mpCleanup; } catch (e) {}
           if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onMetricPrefixVisibilityChange);
-          var prefixes = [
-            { sym: 'p', name: 'pico', exp: -12, color: '#a855f7' },
-            { sym: 'n', name: 'nano', exp: -9, color: '#3b82f6' },
-            { sym: 'µ', name: 'micro', exp: -6, color: '#22d3ee' },
-            { sym: 'm', name: 'milli', exp: -3, color: '#86efac' },
-            { sym: '', name: 'base', exp: 0, color: '#fff' },
-            { sym: 'k', name: 'kilo', exp: 3, color: '#fde047' },
-            { sym: 'M', name: 'mega', exp: 6, color: '#fb923c' },
-            { sym: 'G', name: 'giga', exp: 9, color: '#fb7185' },
-            { sym: 'T', name: 'tera', exp: 12, color: '#dc2626' }
-          ];
+          var prefixes = _UC_PREFIXES;
+          var lastMpBlink = -1;
+          var mpBlinkAt = 0;
           function drawMp() {
             if (!alive) return;
             cvEl._mpAnim = null;
@@ -5728,13 +5779,16 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             if (isMetricPrefixHidden()) { cancelMetricPrefixFrame(); return; }
             var labels = mpLabelsRef.current || { exampleText: 'Example: {example}', footerText: '', examples: {} };
             var t = reducedMotion ? 8 : (performance.now() - start) / 1000;
-            var hasLin = typeof c2.createLinearGradient === 'function';
-            var hasRad = typeof c2.createRadialGradient === 'function';
+            var isHC = _ucIsHighContrast();
+            var hasLin = !isHC && typeof c2.createLinearGradient === 'function';
+            var hasRad = !isHC && typeof c2.createRadialGradient === 'function';
             var hasPath = typeof c2.beginPath === 'function' && typeof c2.stroke === 'function' && typeof c2.moveTo === 'function' && typeof c2.lineTo === 'function';
             var hasArc = hasPath && typeof c2.arc === 'function' && typeof c2.fill === 'function';
             var hasQuad = hasPath && typeof c2.quadraticCurveTo === 'function';
-            // Studio metrology slate backdrop with subtle radial spotlight
-            if (hasRad) {
+            // Studio metrology slate backdrop with subtle radial spotlight (bypassed in high contrast)
+            if (isHC) {
+              c2.fillStyle = '#000000';
+            } else if (hasRad) {
               var bgG = c2.createRadialGradient(W * 0.5, H * 0.35, 16, W * 0.5, H * 0.5, Math.max(W, H) * 0.78);
               bgG.addColorStop(0, '#132a47');
               bgG.addColorStop(0.58, '#0c1a2e');
@@ -5746,13 +5800,16 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             c2.fillRect(0, 0, W, H);
             var cellW = (W - 30) / prefixes.length;
             var blink = Math.floor((t * 0.5) % prefixes.length);
+            if (blink !== lastMpBlink) { lastMpBlink = blink; mpBlinkAt = t; }
             var baseIdx = 4; // 10^0 base unit
             var tileY = H * 0.28;
             var tileH = H * 0.44;
-            // Fine vernier brushed-steel graduation ticks along top rail
+            var activeCx = 15 + blink * cellW + (cellW - 4) / 2;
+            var activeCol = isHC ? '#ffff00' : prefixes[blink].color;
+            // Fine vernier brushed-steel graduation ticks along top rail + active tick beacon
             if (hasPath) {
               c2.save();
-              c2.strokeStyle = 'rgba(148,163,184,0.20)';
+              c2.strokeStyle = isHC ? '#ffffff' : 'rgba(148,163,184,0.22)';
               c2.lineWidth = 1;
               c2.beginPath(); c2.moveTo(15, tileY - 5); c2.lineTo(W - 15, tileY - 5); c2.stroke();
               for (var vt = 0; vt <= 36; vt++) {
@@ -5760,57 +5817,91 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 var vh = vt % 4 === 0 ? 6 : 3;
                 c2.beginPath(); c2.moveTo(vx, tileY - 5); c2.lineTo(vx, tileY - 5 - vh); c2.stroke();
               }
+              // Illuminated vernier index tick aligned with active prefix
+              c2.strokeStyle = activeCol;
+              c2.lineWidth = 2;
+              c2.beginPath(); c2.moveTo(activeCx, tileY - 4); c2.lineTo(activeCx, tileY - 12); c2.stroke();
               c2.restore();
             }
-            // Luminous animated scale-conversion bridge arc from base (10^0) to active prefix
+            // Luminous animated factor-label bridge arc from base (10^0) to active prefix with trailing photon packets
             if (hasQuad && blink !== baseIdx) {
               var xBase = 15 + baseIdx * cellW + (cellW - 4) / 2;
-              var xCur = 15 + blink * cellW + (cellW - 4) / 2;
+              var xCur = activeCx;
               var xMid = (xBase + xCur) / 2;
               var arcY = Math.max(8, tileY - Math.min(34, 16 + Math.abs(blink - baseIdx) * 4.5));
-              var curColor = prefixes[blink].color;
+              var curColor = activeCol;
               c2.save();
+              if (!isHC) {
+                c2.strokeStyle = curColor;
+                c2.globalAlpha = 0.22;
+                c2.lineWidth = 6;
+                c2.beginPath(); c2.moveTo(xBase, tileY - 2); c2.quadraticCurveTo(xMid, arcY, xCur, tileY - 2); c2.stroke();
+              }
               c2.strokeStyle = curColor;
-              c2.globalAlpha = 0.22;
-              c2.lineWidth = 6;
-              c2.beginPath(); c2.moveTo(xBase, tileY - 2); c2.quadraticCurveTo(xMid, arcY, xCur, tileY - 2); c2.stroke();
-              c2.globalAlpha = 0.92;
+              c2.globalAlpha = isHC ? 1 : 0.92;
               c2.lineWidth = 1.8;
               if (typeof c2.setLineDash === 'function') c2.setLineDash([4, 3]);
               c2.beginPath(); c2.moveTo(xBase, tileY - 2); c2.quadraticCurveTo(xMid, arcY, xCur, tileY - 2); c2.stroke();
               if (typeof c2.setLineDash === 'function') c2.setLineDash([]);
-              // Traveling photon pulse along the conversion bridge arc (gated on !reducedMotion)
+              // Zero-GC multi-packet trailing photon stream along conversion bridge arc
               if (hasArc) {
-                var u = reducedMotion ? 0.5 : ((t * 0.9) % 1);
-                var inv = 1 - u;
-                var bx = inv * inv * xBase + 2 * inv * u * xMid + u * u * xCur;
-                var by = inv * inv * (tileY - 2) + 2 * inv * u * arcY + u * u * (tileY - 2);
-                c2.shadowColor = curColor; c2.shadowBlur = 10;
-                c2.fillStyle = '#ffffff';
-                c2.beginPath(); c2.arc(bx, by, 3, 0, Math.PI * 2); c2.fill();
+                var uLead = reducedMotion ? 0.5 : ((t * 0.92) % 1);
+                var steps = (reducedMotion || isHC) ? 1 : _UC_PACKET_TRAIL;
+                for (var pi = steps - 1; pi >= 0; pi--) {
+                  var pu = uLead - pi * 0.048;
+                  if (pu < 0) continue;
+                  _ucTrailU[pi] = pu;
+                  var inv = 1 - pu;
+                  var bx = inv * inv * xBase + 2 * inv * pu * xMid + pu * pu * xCur;
+                  var by = inv * inv * (tileY - 2) + 2 * inv * pu * arcY + pu * pu * (tileY - 2);
+                  var pFrac = 1 - (pi / Math.max(1, steps));
+                  if (!isHC && pi === 0) { c2.shadowColor = curColor; c2.shadowBlur = 10; }
+                  else { c2.shadowBlur = 0; }
+                  c2.globalAlpha = isHC ? 1 : (0.28 + pFrac * 0.72);
+                  c2.fillStyle = pi === 0 ? (isHC ? '#ffff00' : '#ffffff') : curColor;
+                  c2.beginPath(); c2.arc(bx, by, pi === 0 ? 3.2 : (1.2 + pFrac * 1.6), 0, Math.PI * 2); c2.fill();
+                }
               }
               c2.restore();
             }
-            prefixes.forEach(function(p, i) {
+            // Zero-GC prefix tile rendering loop
+            for (var i = 0; i < prefixes.length; i++) {
+              var p = prefixes[i];
               var x = 15 + i * cellW;
               var y = tileY;
               var sel = i === blink;
               var tileW = cellW - 4;
-              // Ambient glow halo behind active prefix tile
-              if (sel && hasRad && hasArc) {
-                c2.save();
-                var glowG = c2.createRadialGradient(x + tileW / 2, y + tileH / 2, 4, x + tileW / 2, y + tileH / 2, Math.max(tileW, tileH) * 0.85);
-                glowG.addColorStop(0, p.color);
-                glowG.addColorStop(1, 'rgba(12,26,46,0)');
-                c2.globalAlpha = 0.28;
-                c2.fillStyle = glowG;
-                c2.beginPath(); c2.arc(x + tileW / 2, y + tileH / 2, Math.max(tileW, tileH) * 0.85, 0, Math.PI * 2); c2.fill();
-                c2.restore();
+              var tileCx = x + tileW / 2;
+              var tileCy = y + tileH / 2;
+              // Ambient glow halo + transition landing impact ring behind active prefix tile
+              if (sel && !isHC && hasArc) {
+                if (hasRad) {
+                  c2.save();
+                  var glowG = c2.createRadialGradient(tileCx, tileCy, 4, tileCx, tileCy, Math.max(tileW, tileH) * 0.85);
+                  glowG.addColorStop(0, p.color);
+                  glowG.addColorStop(1, 'rgba(12,26,46,0)');
+                  c2.globalAlpha = 0.28;
+                  c2.fillStyle = glowG;
+                  c2.beginPath(); c2.arc(tileCx, tileCy, Math.max(tileW, tileH) * 0.85, 0, Math.PI * 2); c2.fill();
+                  c2.restore();
+                }
+                if (!reducedMotion) {
+                  var stepAge = t - mpBlinkAt;
+                  if (stepAge >= 0 && stepAge < 0.65) {
+                    var ringP = stepAge / 0.65;
+                    c2.save();
+                    c2.globalAlpha = (1 - ringP) * 0.72;
+                    c2.strokeStyle = p.color;
+                    c2.lineWidth = Math.max(0.8, 2.2 * (1 - ringP));
+                    c2.beginPath(); c2.arc(tileCx, tileCy, Math.min(tileW, tileH) * 0.42 + ringP * 20, 0, Math.PI * 2); c2.stroke();
+                    c2.restore();
+                  }
+                }
               }
               c2.save();
-              if (sel) { c2.shadowColor = p.color; c2.shadowBlur = 16; }
-              c2.fillStyle = p.color;
-              c2.globalAlpha = sel ? 1 : 0.72;
+              if (sel && !isHC) { c2.shadowColor = p.color; c2.shadowBlur = 16; }
+              c2.fillStyle = isHC ? (sel ? '#ffff00' : '#000000') : p.color;
+              c2.globalAlpha = isHC ? 1 : (sel ? 1 : 0.72);
               c2.fillRect(x, y, tileW, tileH);
               // Translucent glass top-bevel highlight on each scale tile
               if (hasLin) {
@@ -5824,40 +5915,29 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               c2.restore();
               if (typeof c2.strokeRect === 'function') {
                 c2.save();
-                c2.strokeStyle = sel ? '#ffffff' : 'rgba(255,255,255,0.22)';
-                c2.lineWidth = sel ? 1.5 : 0.8;
+                c2.strokeStyle = isHC ? (sel ? '#00ff00' : '#ffffff') : (sel ? '#ffffff' : 'rgba(255,255,255,0.22)');
+                c2.lineWidth = sel ? (isHC ? 2.4 : 1.5) : 0.8;
                 c2.strokeRect(x + 0.5, y + 0.5, tileW - 1, tileH - 1);
                 c2.restore();
               }
-              c2.fillStyle = sel ? '#0c1a2e' : (p.exp === 0 ? '#0c1a2e' : 'rgba(0,0,0,0.75)');
+              c2.fillStyle = isHC ? (sel ? '#000000' : '#ffffff') : (sel ? '#0c1a2e' : (p.exp === 0 ? '#0c1a2e' : 'rgba(0,0,0,0.75)'));
               c2.font = 'bold 14px serif';
               c2.textAlign = 'center';
               c2.fillText(p.sym || '—', x + cellW / 2, y + 20);
               c2.font = 'bold 9px sans-serif';
               c2.fillText(p.name, x + cellW / 2, y + 35);
               c2.font = 'bold 10px monospace';
-              c2.fillText('10' + String(p.exp).split('').map(function(ch) { return ch === '-' ? '⁻' : '⁰¹²³⁴⁵⁶⁷⁸⁹'.charAt(Number(ch)); }).join(''), x + cellW / 2, y + 50);
-            });
+              c2.fillText(p.powLabel, x + cellW / 2, y + 50);
+            }
             // Selected info
             var cur = prefixes[blink];
-            c2.fillStyle = cur.color;
+            c2.fillStyle = isHC ? '#ffff00' : cur.color;
             c2.font = 'bold 12px sans-serif';
             c2.textAlign = 'center';
-            var examples = {
-              'pico': 'pm = bond lengths',
-              'nano': 'nm = wavelengths',
-              'micro': 'µm = bacteria',
-              'milli': 'mm = grains of sand',
-              'base': 'meter, second, gram, ampere',
-              'kilo': 'km = walking distance',
-              'mega': 'Mm = continents',
-              'giga': 'Gm = Sun-Earth',
-              'tera': 'Tm = Jupiter-Sun'
-            };
-            c2.fillText(labels.exampleText.split('{example}').join(labels.examples[cur.name] || examples[cur.name] || ''), W / 2, H - 22);
-            c2.fillStyle = 'rgba(0,0,0,0.85)';
+            c2.fillText(labels.exampleText.split('{example}').join(labels.examples[cur.name] || cur.fallbackEx || ''), W / 2, H - 22);
+            c2.fillStyle = isHC ? '#000000' : 'rgba(0,0,0,0.85)';
             c2.fillRect(8, H - 14, W - 16, 12);
-            c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#93c5fd'; c2.textAlign = 'center';
+            c2.font = 'bold 8px sans-serif'; c2.fillStyle = isHC ? '#ffffff' : '#93c5fd'; c2.textAlign = 'center';
             c2.fillText(labels.footerText, W / 2, H - 5);
             scheduleMetricPrefixFrame();
           }

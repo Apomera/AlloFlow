@@ -58,7 +58,7 @@
   }
   function dictionaryAudioUrl(value) {
     var url = dictionaryText(value);
-    if (!url) return '';
+    if (!url || url.indexOf('//') === 0 || url.indexOf('\\') !== -1) return '';
     if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(url)) {
       var lower = url.toLowerCase();
       if (lower.startsWith('https://') || lower.startsWith('http://') || lower.startsWith('blob:') || lower.startsWith('data:audio/')) {
@@ -373,14 +373,16 @@
         });
       });
     };
-    if (pendingBankLoad && !(pendingBankSignal && pendingBankSignal.aborted) && !opts.fetch && opts.base == null) {
+    if (pendingBankLoad && !opts.fetch && opts.base == null) {
       return raceWithAbort(pendingBankLoad);
     }
     var thisLoad;
+    var sharedOpts = Object.assign({}, opts);
+    delete sharedOpts.signal;
     if (typeof window !== 'undefined' && window.AlloVocabBank && typeof window.AlloVocabBank.load === 'function') {
-      thisLoad = Promise.resolve(window.AlloVocabBank.load(opts)).catch(function (err) {
-        if (opts.base == null && !(sig && sig.aborted)) {
-          return window.AlloVocabBank.load(Object.assign({}, opts, { base: '../' }));
+      thisLoad = Promise.resolve(window.AlloVocabBank.load(sharedOpts)).catch(function (err) {
+        if (opts.base == null) {
+          return window.AlloVocabBank.load(Object.assign({}, sharedOpts, { base: '../' }));
         }
         throw err;
       }).then(function () { return isVocabBankReady(); }).catch(function () { return false; });
@@ -393,10 +395,9 @@
       };
       var bases = opts.base != null ? [normalizeBase(opts.base)] : ['./packets_vocab/', '../packets_vocab/'];
       var tryBase = function (idx) {
-        if (sig && sig.aborted) return Promise.resolve(false);
         if (idx >= bases.length) return Promise.resolve(false);
         var base = bases[idx];
-        var fetchOpts = sig ? { credentials: 'omit', signal: sig } : { credentials: 'omit' };
+        var fetchOpts = { credentials: 'omit' };
         return Promise.all(VOCAB_SHARDS.map(function (file) {
           return Promise.resolve(f(base + file, fetchOpts)).then(function (r) {
             if (!r || !r.ok) throw new Error('AlloVocabBank: ' + file + ' ' + (r ? r.status : 'error'));
@@ -406,34 +407,24 @@
             return data;
           });
         })).then(function (parts) {
-          if (sig && sig.aborted) return false;
           internalVocabBank = buildInternalVocabBank(parts);
           return isVocabBankReady();
-        }).catch(function (err) {
-          if ((sig && sig.aborted) || (err && err.name === 'AbortError')) return false;
+        }).catch(function () {
           return tryBase(idx + 1);
         });
       };
       thisLoad = tryBase(0).catch(function () { return false; });
     }
-    pendingBankLoad = thisLoad;
-    pendingBankSignal = sig || null;
-    if (sig && typeof sig.addEventListener === 'function') {
-      try {
-        sig.addEventListener('abort', function () {
-          if (pendingBankLoad === thisLoad) {
-            pendingBankLoad = null;
-            pendingBankSignal = null;
-          }
-        }, { once: true });
-      } catch (_) {}
+    if (!opts.fetch && opts.base == null) {
+      pendingBankLoad = thisLoad;
+      pendingBankSignal = null;
+      thisLoad.then(function () {
+        if (pendingBankLoad === thisLoad) {
+          pendingBankLoad = null;
+          pendingBankSignal = null;
+        }
+      });
     }
-    thisLoad.then(function () {
-      if (pendingBankLoad === thisLoad) {
-        pendingBankLoad = null;
-        pendingBankSignal = null;
-      }
-    });
     return raceWithAbort(thisLoad);
   }
 
@@ -478,7 +469,8 @@
     if (typeof window !== 'undefined' && (
       window._isDesktopBundledApp === true ||
       window.__alloOfflineOnly === true ||
-      window.__alloQrStudentMode === true ||
+      window.__ALLO_LOCAL_BOX === true ||
+      !!window.__alloQrStudentMode ||
       window._alloQrBlocked === true
     )) {
       const localHit = await ensureAndLookupBank();
@@ -492,12 +484,11 @@
       return result(null, 'not_available');
     }
     const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
-    const isLocalBox = typeof window !== 'undefined' && window.__ALLO_LOCAL_BOX === true;
-    if (isOffline || isLocalBox) {
+    if (isOffline) {
       const localHit = await ensureAndLookupBank();
       if (localHit === 'cancelled') return result(null, 'cancelled');
       if (localHit) return finishBankHit(localHit);
-      if (isLocalBox && isOffline) return result(null, 'not_available');
+      return result(null, 'not_available');
     }
     // Another request can save useful help while this one is awaiting the provider.
     // Revalidate that same-word entry on failure; cancellation must still win.

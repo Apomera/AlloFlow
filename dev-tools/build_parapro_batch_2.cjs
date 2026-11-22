@@ -6,6 +6,7 @@ const path = require('path');
 const reading = require('./parapro_batch_2/reading.cjs');
 const mathematics = require('./parapro_batch_2/mathematics.cjs');
 const writing = require('./parapro_batch_2/writing.cjs');
+const { applyParaproBatch2Overrides } = require('./parapro_batch_2/choice_overrides.cjs');
 
 const root = path.resolve(__dirname, '..');
 const reviewedAt = '2026-07-13';
@@ -37,11 +38,14 @@ assertContent('writing', writing);
 let answerCursor = 0;
 function ensureRationale(value, suffix) {
   const text = String(value || '').trim();
-  if (text.length >= 100) return text;
+  if (text.length >= 100 && text.split(/\s+/).length >= 16) return text;
   return (text + ' ' + suffix).trim();
 }
 
-function createItem(domainId, role, number, spec, references) {
+function createItem(domainId, role, number, rawSpec, references) {
+  const sequence = String(number).padStart(3, '0');
+  const id = 'parapro-' + domainId + '-' + role + '-' + sequence;
+  const spec = applyParaproBatch2Overrides(id, rawSpec);
   if (!spec || !spec.prompt || !spec.correct || !Array.isArray(spec.distractors) || spec.distractors.length !== 3) throw new Error('Invalid content specification for ' + domainId + ' ' + role + ' ' + number + '.');
   if (!Array.isArray(spec.whyWrong) || spec.whyWrong.length !== 3) throw new Error('Three distractor explanations are required for ' + domainId + ' ' + role + ' ' + number + '.');
   const answerIndex = answerCursor % 4;
@@ -59,9 +63,8 @@ function createItem(domainId, role, number, spec, references) {
       distractorIndex += 1;
     }
   }
-  const sequence = String(number).padStart(3, '0');
   return {
-    id: 'parapro-' + domainId + '-' + role + '-' + sequence,
+    id,
     type: 'single-choice',
     domainId,
     difficulty: spec.difficulty || 'application',

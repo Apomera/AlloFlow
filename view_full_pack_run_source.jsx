@@ -240,6 +240,8 @@ function FullPackRunView(props) {
                     const retryable = allRows.some(row => row && ['partial', 'failed', 'interrupted', 'stopped'].includes(row.status) && row.retryable !== false);
                     const hasFailureDiagnostics = Boolean(fullPackRun.reason) || allRows.some(row => row && (row.reason || ['partial', 'failed', 'interrupted', 'stopped'].includes(row.status)));
                     const completedRows = allRows.filter(row => row && ['landed', 'completed'].includes(row.status)).length;
+                    const inProgressRows = allRows.filter(row => row && ['queued', 'running', 'retrying'].includes(row.status)).length;
+                    const attentionRows = allRows.filter(row => row && ['partial', 'failed', 'interrupted', 'stopped'].includes(row.status)).length;
                     const progress = total ? Math.round((settled / total) * 100) : 0;
                     const elapsedSeconds = Math.max(0, Math.round(Number(fullPackRun.elapsedMs || 0) / 1000));
                     const currentRosterSignature = JSON.stringify(Object.entries(rosterKey?.groups || {}).sort(([a], [b]) => String(a).localeCompare(String(b))).map(([id, group]) => {
@@ -276,6 +278,13 @@ function FullPackRunView(props) {
                                     <div className="mt-0.5 text-xs text-slate-600">
                                         {planSummaries.length ? `${planSelected} ${t('fullpack.resources_in_pack') || 'resources in your pack'}` : (t('fullpack.preparing_plan') || 'Preparing generation plan…')}
                                     </div>
+                                    {fullPackRun.status === 'ready' && planSummaries.length > 0 && (
+                                        <div data-testid="full-pack-plan-pills" className="mt-1.5 flex flex-wrap items-center gap-1 text-[11px] font-bold">
+                                            <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-slate-700 tabular-nums">~{Math.max(1, planMinutes)} {t('fullpack.minutes') || 'minutes'}</span>
+                                            {planReused > 0 && <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-emerald-800 tabular-nums">{planReused} {t('fullpack.reused_short') || 'reused'}</span>}
+                                            {planImageCalls > 0 && <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-indigo-800 tabular-nums">{planImageCalls} {t('fullpack.image_calls') || 'image calls'}</span>}
+                                        </div>
+                                    )}
                                 </div>
                                 <span className={`shrink-0 rounded-full border px-2 py-1 text-xs font-black uppercase tracking-wide ${statusStyles[fullPackRun.status] || statusStyles.queued}`}>
                                     {statusLabels[fullPackRun.status] || fullPackRun.status}
@@ -336,6 +345,12 @@ function FullPackRunView(props) {
                                     <div className="mb-1 flex justify-between text-xs font-bold text-slate-600"><span>{settled} of {total} {t('fullpack.finished') || 'finished'}</span><span>{progress}%</span></div>
                                     <div className="h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label={t('fullpack.progress_aria') || 'Full Pack generation progress'} aria-valuemin="0" aria-valuemax="100" aria-valuenow={progress}>
                                         <div className="h-full rounded-full bg-indigo-600 transition-[width] motion-reduce:transition-none" style={{ width: `${progress}%` }} />
+                                    </div>
+                                    <div data-testid="full-pack-status-breakdown" className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] font-bold tabular-nums">
+                                        {completedRows > 0 && <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-emerald-800">✓ {completedRows} {t('fullpack.status_complete') || 'Complete'}</span>}
+                                        {inProgressRows > 0 && <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-blue-800">{inProgressRows} {t('fullpack.in_progress_short') || 'in progress'}</span>}
+                                        {attentionRows > 0 && <span className="rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-rose-800">{attentionRows} {t('fullpack.status_failed') || 'Needs attention'}</span>}
+                                        {elapsedSeconds > 0 && <span className="ms-auto rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-slate-700">{elapsedSeconds}s</span>}
                                     </div>
                                 </div>
                             )}

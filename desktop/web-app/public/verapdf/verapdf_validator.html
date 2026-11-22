@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://cjrtnc.leaningtech.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' https://cdn.jsdelivr.net data:; connect-src 'self' blob: data: https://cdn.jsdelivr.net https://cjrtnc.leaningtech.com; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://cjrtnc.leaningtech.com blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' blob: https://cdn.jsdelivr.net https://cjrtnc.leaningtech.com; worker-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>AlloFlow · independent PDF/UA validator (veraPDF in-browser)</title>
 <!--
@@ -27,24 +27,30 @@
   reading-order sense, etc.). Big docs can take minutes (size-gate in the host).
 -->
 <style>
-  body { font-family: system-ui, Segoe UI, Roboto, sans-serif; max-width: 760px; margin: 20px auto; padding: 0 16px; color: #0f172a; }
+  body { font-family: system-ui, Segoe UI, Roboto, sans-serif; max-width: 760px; margin: 20px auto; padding: 0 16px; background: #ffffff; color: #0f172a; }
   h1 { font-size: 18px; margin: 0 0 12px; } #status { font-weight: 700; padding: 8px 12px; border-radius: 8px; background: #f1f5f9; }
   input[type=file] { margin: 12px 0; } ul { margin: 6px 0 0; padding-left: 20px; }
   li { margin: 3px 0; font-size: 13px; } .pass { color: #15803d; } .fail { color: #b91c1c; }
   .muted { color: #475569; font-size: 12px; } #report { margin-top: 12px; }
+  button { min-height: 36px; padding: 6px 12px; border-radius: 8px; border: 1px solid #475569; background: #f8fafc; color: #0f172a; font: 600 13px system-ui, sans-serif; cursor: pointer; }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+  .ro-active { background: #fef9c3; border-left: 3px solid #1d4ed8; padding-left: 6px; border-radius: 4px; }
   .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 9999; background: #1e3a8a; color: #fff; padding: 8px 14px; border-radius: 8px; font-weight: 700; text-decoration: none; }
   .skip-link:focus { left: 12px; }
   :focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
-  @media (forced-colors: active) { :focus-visible { outline: 3px solid Highlight; outline-offset: 2px; } }
+  @media (forced-colors: active) {
+    :focus-visible { outline: 3px solid Highlight; outline-offset: 2px; }
+    .ro-active { outline: 2px solid Highlight; }
+  }
 </style>
 </head>
 <body>
 <a href="#main-content" class="skip-link">Skip to main content</a>
 <main id="main-content" tabindex="-1">
 <h1>Independent PDF/UA-1 validator <span class="muted">(veraPDF, in-browser)</span></h1>
-<p id="status" role="status" aria-live="polite">Booting…</p>
-<label for="pick">Choose a PDF to validate</label>
+<p id="status" role="status" aria-live="polite" aria-atomic="true">Booting…</p>
+<label id="pickLabel" for="pick">Choose a PDF to validate</label>
 <input type="file" id="pick" accept="application/pdf,.pdf" disabled />
 <div id="report"></div>
 <div id="ro" style="margin-top:10px"></div>
@@ -53,10 +59,17 @@
 
 <script>
   // Identify this document before either external runtime can fail or hang. The repeated pulse
-  // closes the tiny window.open/iframe-listener race; it is stopped on ready or fatal boot error.
+  // closes the tiny window.open/iframe-listener race; it is stopped on ready, fatal boot error, or 90 ticks.
   (() => {
     const driven = !!window.opener || (window.parent && window.parent !== window);
+    let ticks = 0;
+    const stopPulse = () => {
+      try { if (window.__alloflowVeraPdfBootPulse) clearInterval(window.__alloflowVeraPdfBootPulse); } catch (e) {}
+      window.__alloflowVeraPdfBootPulse = 0;
+    };
     const announce = () => {
+      if (ticks >= 90) { stopPulse(); return; }
+      ticks += 1;
       const payload = { type: 'verapdf-loading', protocol: 1 };
       try { if (window.opener) window.opener.postMessage(payload, '*'); } catch (e) {}
       try { if (window.parent && window.parent !== window) window.parent.postMessage(payload, '*'); } catch (e) {}
@@ -65,6 +78,8 @@
     if (driven) {
       announce();
       window.__alloflowVeraPdfBootPulse = setInterval(announce, 1000);
+      window.addEventListener('pagehide', stopPulse);
+      window.addEventListener('beforeunload', stopPulse);
     }
   })();
 </script>
@@ -136,14 +151,18 @@
 
   async function validateBytes(bytes) {
     cheerpOSAddStringFile('/str/input.pdf', bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes));
-    return await validatePath('/str/input.pdf');
+    try {
+      return await validatePath('/str/input.pdf');
+    } finally {
+      try { cheerpOSAddStringFile('/str/input.pdf', new Uint8Array(0)); } catch (_) {}
+    }
   }
 
   // ── Closed-loop remediation: validate → targeted pdf-lib repair → re-validate → loop until green ──
   // Repairs run with pdf-lib (loaded in this window) — the same catalog-level recipes AlloFlow could
   // run inline. Extensible: add a branch per veraPDF rule. Returns the repaired bytes + a per-iteration
   // log so the caller can ship the green file. (PDFBox-via-CheerpJ can be added for heavier repairs.)
-  async function _applyRepairs(bytes, failedRules) {
+  async function _applyRepairs(bytes, failedRules, opts) {
     const PL = window.PDFLib; if (!PL) return { bytes: bytes, applied: [] };
     const { PDFDocument, PDFName, PDFBool, PDFString } = PL;
     let doc;
@@ -151,23 +170,54 @@
     catch (e) { return { bytes: bytes, applied: [] }; }
     const cat = doc.catalog;
     const ensure = (key) => { let dd = cat.lookup(PDFName.of(key)); if (!dd || !dd.set) { dd = doc.context.obj({}); cat.set(PDFName.of(key), dd); } return dd; };
+    const rawLangHint = opts && typeof opts.lang === 'string' ? opts.lang.trim() : '';
+    const validLangHint = /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(rawLangHint) ? rawLangHint : '';
+    const _isLangRule = (r) => (r.clause === '7.2' && (r.testNumber === 32 || /language|\bLang\b/i.test(String(r.message || '')))) || r.clause === '3.1';
+    const _isMetadataOnlyRule = (r) =>
+      (r.clause === '7.1' && (r.testNumber === 7 || r.testNumber === 8 || r.testNumber === 10))
+      || (r.clause === '6.2' && r.testNumber === 1)
+      || (r.clause === '5' && r.testNumber === 1)
+      || _isLangRule(r);
+    // Evidence-backed PDF/UA-1 claim: only stamp pdfuaid:part=1 when no structural, content, font, or annotation rules are failing.
+    const _safeToClaimPdfUa = Array.isArray(failedRules) && failedRules.length > 0 && failedRules.every(_isMetadataOnlyRule);
+    const _buildXmp = (includeUaClaim) => {
+      let _t = 'Document'; try { _t = doc.getTitle() || 'Document'; } catch (_) {}
+      _t = String(_t)
+        .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x84\x86-\x9f]/g, '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .trim() || 'Document';
+      return '<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
+        + '<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
+        + '<rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/"'
+        + (includeUaClaim ? ' xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/"' : '') + '>'
+        + '<dc:title><rdf:Alt><rdf:li xml:lang="x-default">' + _t + '</rdf:li></rdf:Alt></dc:title>'
+        + (includeUaClaim ? '<pdfuaid:part>1</pdfuaid:part>' : '')
+        + '</rdf:Description></rdf:RDF></x:xmpmeta>\n<?xpacket end="w"?>';
+    };
     const applied = [];
     for (const f of failedRules) {
       const id = '§' + f.clause + 't' + f.testNumber;
       try {
         if (f.clause === '7.1' && f.testNumber === 10) { ensure('ViewerPreferences').set(PDFName.of('DisplayDocTitle'), PDFBool.True); applied.push(id + ':DisplayDocTitle'); }
         else if (f.clause === '6.2' && f.testNumber === 1) { ensure('MarkInfo').set(PDFName.of('Marked'), PDFBool.True); applied.push(id + ':MarkInfo'); }
-        else if ((f.clause === '7.2' || f.clause === '3.1') && !cat.lookup(PDFName.of('Lang'))) { cat.set(PDFName.of('Lang'), PDFString.of('en')); applied.push(id + ':Lang'); }
+        else if (_isLangRule(f) && !cat.lookup(PDFName.of('Lang'))) {
+          const langVal = validLangHint || 'en';
+          cat.set(PDFName.of('Lang'), PDFString.of(langVal));
+          applied.push(validLangHint ? (id + ':Lang(' + langVal + ')') : (id + ':Lang (REVIEW: defaulted to en — verify document language)'));
+        }
         else if (f.clause === '7.1' && f.testNumber === 8 && !cat.lookup(PDFName.of('Metadata'))) {
-          // Metadata: add an UNCOMPRESSED XMP stream with the PDF/UA-1 declaration (pdfuaid:part=1)
-          // + dc:title (mirrors the doc title), the form veraPDF requires for §7.1 t8 + the UA claim.
-          let _t = 'Document'; try { _t = doc.getTitle() || 'Document'; } catch (_) {}
-          _t = String(_t).replace(/[<>&]/g, ' ');
-          const xmp = '<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n'
-            + '<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
-            + '<rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/">'
-            + '<dc:title><rdf:Alt><rdf:li xml:lang="x-default">' + _t + '</rdf:li></rdf:Alt></dc:title>'
-            + '<pdfuaid:part>1</pdfuaid:part></rdf:Description></rdf:RDF></x:xmpmeta>\n<?xpacket end="w"?>';
+          const xmp = _buildXmp(_safeToClaimPdfUa);
+          const ms = doc.context.stream(xmp, { Type: PDFName.of('Metadata'), Subtype: PDFName.of('XML') });
+          cat.set(PDFName.of('Metadata'), doc.context.register(ms));
+          applied.push(_safeToClaimPdfUa ? (id + ':Metadata/XMP+UA-claim') : (id + ':Metadata/XMP (pdfuaid:part withheld while structural rules fail)'));
+        }
+        else if (f.clause === '5' && f.testNumber === 1 && _safeToClaimPdfUa) {
+          // All structural/content rules now pass; upgrade XMP to include pdfuaid:part=1.
+          const xmp = _buildXmp(true);
           const ms = doc.context.stream(xmp, { Type: PDFName.of('Metadata'), Subtype: PDFName.of('XML') });
           cat.set(PDFName.of('Metadata'), doc.context.register(ms));
           applied.push(id + ':Metadata/XMP+UA-claim');
@@ -199,10 +249,13 @@
     const L = _lib, pb = L.org.apache.pdfbox;
     const COSName = await pb.cos.COSName, COSArray = await pb.cos.COSArray, COSBoolean = await pb.cos.COSBoolean, COSDictionary = await pb.cos.COSDictionary;
     const Loader = await pb.Loader, File = await L.java.io.File;
+    const Files = await L.java.nio.file.Files, Base64 = await L.java.util.Base64;
+    const outPath = await (await new File('/files/struct_out.pdf')).toPath();
     cheerpOSAddStringFile('/str/struct_in.pdf', bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes));
-    const doc = await Loader.loadPDF(await new File('/str/struct_in.pdf'));
+    let doc = null;
     const applied = [];
     try {
+      doc = await Loader.loadPDF(await new File('/str/struct_in.pdf'));
       if (needArtifact) { // R-A: wrap each page's content as /Artifact
         const PDPageContentStream = await pb.pdmodel.PDPageContentStream;
         const AppendMode = await pb.pdmodel['PDPageContentStream$AppendMode']; // nested enum → $ binary name
@@ -262,6 +315,7 @@
           const np = await doc.getNumberOfPages();
           for (let i = 0; i < np; i++) {
             const res = await (await doc.getPage(i)).getResources();
+            if (!res) continue;
             const names = []; // collect first, then replace (avoid concurrent modification)
             const it = await (await res.getFontNames()).iterator();
             while (await it.hasNext()) {
@@ -278,28 +332,33 @@
       }
       await doc.save('/files/struct_out.pdf');
       await doc.close();
-      const Files = await L.java.nio.file.Files, Base64 = await L.java.util.Base64;
-      const outPath = await (await new File('/files/struct_out.pdf')).toPath();
-      try {
-        const rb = await Files.readAllBytes(outPath);
-        const b64 = await (await Base64.getEncoder()).encodeToString(rb);
-        return { bytes: Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)), applied: applied };
-      } finally {
-        try { await Files.deleteIfExists(outPath); } catch (_) {}
+      doc = null;
+      const rb = await Files.readAllBytes(outPath);
+      const rbLen = Number(rb && rb.length);
+      if (Number.isFinite(rbLen) && rbLen > MAX_VERAPDF_BYTES) {
+        throw new Error('Repaired PDF exceeds the 50 MB size limit');
       }
-    } catch (e) { try { await doc.close(); } catch (_) {} throw e; }
+      const b64 = await (await Base64.getEncoder()).encodeToString(rb);
+      return { bytes: Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)), applied: applied };
+    } finally {
+      if (doc) { try { await doc.close(); } catch (_) {} }
+      try { await Files.deleteIfExists(outPath); } catch (_) {}
+      try { cheerpOSAddStringFile('/str/struct_in.pdf', new Uint8Array(0)); } catch (_) {}
+    }
   }
 
   async function remediate(bytes, maxIters, opts) {
     maxIters = maxIters || 5;
     let cur = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
     const log = []; let verdict = null;
+    let mutatedAfterLastValidate = false;
     for (let i = 1; i <= maxIters; i++) {
       verdict = await validateBytes(cur);
+      mutatedAfterLastValidate = false;
       const step = { iter: i, failedRules: verdict.failedRules.length, rules: verdict.failedRules.map((f) => '§' + f.clause + 't' + f.testNumber) };
       log.push(step);
       if (verdict.compliant) break;
-      const rep = await _applyRepairs(cur, verdict.failedRules);
+      const rep = await _applyRepairs(cur, verdict.failedRules, opts);
       step.applied = rep.applied.slice();
       cur = rep.bytes;
       // structural fallback (PDFBox, co-loaded) for rules pdf-lib can't fix: 7.1t3 content-marking, 7.1t11 StructTreeRoot
@@ -309,6 +368,16 @@
         catch (e) { step.structError = String(e && (e.message || e)); }
       }
       if (!step.applied.length) break; // nothing more is fixable — stop (ship best-effort)
+      mutatedAfterLastValidate = true;
+    }
+    // Always re-validate after the final repair pass so the returned verdict matches the emitted bytes.
+    if (mutatedAfterLastValidate) {
+      verdict = await validateBytes(cur);
+      log.push({ iter: 'final', failedRules: verdict.failedRules.length, rules: verdict.failedRules.map((f) => '§' + f.clause + 't' + f.testNumber), applied: [] });
+    }
+    if (opts && opts.preferBytes) {
+      const exactBuf = (cur.byteOffset === 0 && cur.byteLength === cur.buffer.byteLength) ? cur.buffer : cur.slice().buffer;
+      return { compliant: !!(verdict && verdict.compliant), verdict: verdict, log: log, repairedBytes: exactBuf };
     }
     let b = ''; for (let i = 0; i < cur.length; i += 8192) b += String.fromCharCode.apply(null, cur.subarray(i, i + 8192));
     return { compliant: !!(verdict && verdict.compliant), verdict: verdict, log: log, repairedB64: btoa(b) };
@@ -318,7 +387,7 @@
   const _roEsc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   function render(r) {
     $('report').innerHTML =
-      (r.compliant ? '<b class="pass">✅ PASSES PDF/UA-1</b>' : '<b class="fail">❌ FAILS PDF/UA-1</b>') +
+      (r.compliant ? '<strong class="pass"><span aria-hidden="true">✅</span> PASSES PDF/UA-1</strong>' : '<strong class="fail"><span aria-hidden="true">❌</span> FAILS PDF/UA-1</strong>') +
       ' — ' + _roEsc(r.failedRules.length) + ' distinct rule(s), ' + _roEsc(r.failedChecks) + ' check(s) failed' +
       (r.failedRules.length ? '<ul>' + r.failedRules.map((f) => '<li>ISO 14289-1 §' + _roEsc(f.clause) + ' (test ' + _roEsc(f.testNumber) + '): ' + _roEsc(f.message) + (f.count > 1 ? ' <span class="muted">×' + _roEsc(f.count) + '</span>' : '') + '</li>').join('') + '</ul>' : '');
   }
@@ -375,21 +444,47 @@
   }
   function _roHighlight(i) {
     const ul = document.getElementById('ro-list'); if (!ul) return;
-    Array.prototype.forEach.call(ul.children, (li, n) => { li.style.background = (n === i) ? '#fef9c3' : ''; });
+    Array.prototype.forEach.call(ul.children, (li, n) => {
+      const active = n === i;
+      li.classList.toggle('ro-active', active);
+      if (active) li.setAttribute('aria-current', 'step');
+      else li.removeAttribute('aria-current');
+    });
     const cur = ul.children[i]; if (cur && cur.scrollIntoView) { try { cur.scrollIntoView({ block: 'nearest' }); } catch (e) {} }
   }
-  function _roStop() { try { speechSynthesis.cancel(); } catch (e) {} _roSpeaking = false; _roHighlight(-1); }
+  function _roStop() {
+    try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch (e) {}
+    _roSpeaking = false;
+    const pauseBtn = document.getElementById('ro-pause');
+    if (pauseBtn) pauseBtn.setAttribute('aria-pressed', 'false');
+    _roHighlight(-1);
+  }
   function _roSpeakFrom(i) {
-    if (!_roItems || i >= _roItems.length) { _roSpeaking = false; _roHighlight(-1); return; }
+    if (!('speechSynthesis' in window) || !_roItems || i >= _roItems.length) { _roSpeaking = false; _roHighlight(-1); return; }
     _roHighlight(i);
     const it = _roItems[i];
     const u = new SpeechSynthesisUtterance((it.role ? it.role + '. ' : '') + (it.text || 'no actual-text — content is in the page stream'));
     u.rate = 1.05;
     u.onend = () => { if (_roSpeaking) _roSpeakFrom(i + 1); };
-    try { speechSynthesis.speak(u); } catch (e) { _roSpeaking = false; }
+    u.onerror = () => { _roSpeaking = false; _roHighlight(-1); };
+    try { window.speechSynthesis.speak(u); } catch (e) { _roSpeaking = false; }
   }
-  function _roPlay() { if (!_roItems || !_roItems.length) return; _roStop(); _roSpeaking = true; _roSpeakFrom(0); }
-  function _roPause() { try { if (speechSynthesis.speaking && !speechSynthesis.paused) speechSynthesis.pause(); else speechSynthesis.resume(); } catch (e) {} }
+  function _roPlay() { if (!('speechSynthesis' in window) || !_roItems || !_roItems.length) return; _roStop(); _roSpeaking = true; _roSpeakFrom(0); }
+  function _roPause() {
+    try {
+      if (!('speechSynthesis' in window)) return;
+      const pauseBtn = document.getElementById('ro-pause');
+      if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+        window.speechSynthesis.pause();
+        if (pauseBtn) pauseBtn.setAttribute('aria-pressed', 'true');
+      } else {
+        window.speechSynthesis.resume();
+        if (pauseBtn) pauseBtn.setAttribute('aria-pressed', 'false');
+      }
+    } catch (e) {}
+  }
+  window.addEventListener('pagehide', _roStop);
+  window.addEventListener('beforeunload', _roStop);
   async function _showReadingOrder() {
     const host = document.getElementById('ro'); if (!host) return;
     host.innerHTML = '<span class="muted">Reading the tag tree…</span>';
@@ -398,12 +493,12 @@
     if (!ro.tagged) { host.innerHTML = '<span class="muted">No structure tree — this PDF is untagged, so it has no programmatic reading order to preview.</span>'; return; }
     if (!ro.items.length) { host.innerHTML = '<span class="muted">The structure tree has no content leaves to read.</span>'; return; }
     _roItems = ro.items;
-    const list = ro.items.map((it, n) => '<li data-i="' + n + '"><b>' + _roEsc(it.role) + '</b>' + (it.text ? ': ' + _roEsc(it.text.slice(0, 200)) : ' <span class="muted">(no /ActualText)</span>') + '</li>').join('');
+    const list = ro.items.map((it, n) => '<li data-i="' + n + '"><strong>' + _roEsc(it.role) + '</strong>' + (it.text ? ': ' + _roEsc(it.text.slice(0, 200)) : ' <span class="muted">(no /ActualText)</span>') + '</li>').join('');
     host.innerHTML =
-      '<h3 style="font-size:14px;margin:14px 0 4px">🔊 Reading-order preview <span class="muted">(' + ro.items.length + ' elements — the order a screen reader announces)</span></h3>' +
+      '<h2 id="ro-heading" style="font-size:14px;margin:14px 0 4px"><span aria-hidden="true">🔊</span> Reading-order preview <span class="muted">(' + ro.items.length + ' elements — the order a screen reader announces)</span></h2>' +
       '<p class="muted" style="margin:0 0 6px">Replays the tagged structure in order. If a multi-column or complex page reads out of sequence here, the tag reading order is wrong — independent of whether veraPDF passes.</p>' +
-      '<div style="margin:6px 0;display:flex;gap:6px;flex-wrap:wrap"><button id="ro-play">▶ Read aloud</button><button id="ro-pause">⏸ Pause / Resume</button><button id="ro-stop">⏹ Stop</button></div>' +
-      '<ol id="ro-list" style="max-height:320px;overflow:auto;font-size:13px;line-height:1.5;border:1px solid #e2e8f0;border-radius:8px;padding:8px 8px 8px 30px;margin:0">' + list + '</ol>';
+      '<div style="margin:6px 0;display:flex;gap:6px;flex-wrap:wrap"><button id="ro-play" type="button"><span aria-hidden="true">▶</span> Read aloud</button><button id="ro-pause" type="button" aria-pressed="false"><span aria-hidden="true">⏸</span> Pause / Resume</button><button id="ro-stop" type="button"><span aria-hidden="true">⏹</span> Stop</button></div>' +
+      '<ol id="ro-list" tabindex="0" aria-labelledby="ro-heading" style="max-height:320px;overflow:auto;font-size:13px;line-height:1.5;border:1px solid #cbd5e1;border-radius:8px;padding:8px 8px 8px 30px;margin:0">' + list + '</ol>';
     document.getElementById('ro-play').onclick = _roPlay;
     document.getElementById('ro-pause').onclick = _roPause;
     document.getElementById('ro-stop').onclick = _roStop;
@@ -411,7 +506,7 @@
   function _roOfferPreview() {
     const host = document.getElementById('ro'); if (!host) return;
     _roStop();
-    host.innerHTML = '<button id="ro-go">🔊 Preview reading order (what a screen reader announces)</button>';
+    host.innerHTML = '<button id="ro-go" type="button"><span aria-hidden="true">🔊</span> Preview reading order (what a screen reader announces)</button>';
     const go = document.getElementById('ro-go'); if (go) go.onclick = _showReadingOrder;
   }
 
@@ -441,10 +536,20 @@
     return message;
   }
 
+  function _withBootTimeout(promise, ms, label) {
+    let timer = 0;
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(label + ' timed out after ' + Math.round(ms / 1000) + 's')), ms);
+      }),
+    ]).finally(() => { if (timer) clearTimeout(timer); });
+  }
+
   async function boot() {
     try {
       setStatus('Starting Java runtime…');
-      await cheerpjInit();
+      await _withBootTimeout(cheerpjInit(), 75000, 'CheerpJ runtime initialization');
       // Co-load PDFBox for structural repairs ONLY if its jar is actually reachable — otherwise boot
       // veraPDF-only so a missing/un-hosted jar can never break basic validation (CheerpJ allows one
       // library thread, so the classpath is decided ONCE here). _lib gates the structural fallback.
@@ -458,8 +563,17 @@
         if (pdfboxTimer) clearTimeout(pdfboxTimer);
       }
       setStatus(pdfboxOk ? 'Loading veraPDF + PDFBox…' : 'Loading veraPDF…');
-      const lib = await cheerpjRunLibrary(classpath);
-      if (pdfboxOk) _lib = lib; // enable the PDFBox structural fallback only when its jar loaded
+      const lib = await _withBootTimeout(cheerpjRunLibrary(classpath), 75000, 'veraPDF library load');
+      if (pdfboxOk) {
+        _lib = lib; // enable the PDFBox structural fallback only when its jar loaded
+        // Sweep any leftover structural-repair output file from an interrupted prior session.
+        try {
+          const BootFile = await lib.java.io.File;
+          const BootFiles = await lib.java.nio.file.Files;
+          const stalePath = await (await new BootFile('/files/struct_out.pdf')).toPath();
+          await BootFiles.deleteIfExists(stalePath);
+        } catch (_) {}
+      }
       const Provider = await lib.org.verapdf.gf.foundry.VeraGreenfieldFoundryProvider;
       await Provider.initialise();
       const Foundries = await lib.org.verapdf.pdfa.Foundries;
@@ -469,14 +583,20 @@
       FileInputStream = await lib.java.io.FileInputStream;
       setStatus('Warming up validator…');
       cheerpOSAddStringFile('/str/warm.pdf', warmPdf());
-      await validatePath('/str/warm.pdf');
+      try {
+        await validatePath('/str/warm.pdf');
+      } finally {
+        try { cheerpOSAddStringFile('/str/warm.pdf', new Uint8Array(0)); } catch (_) {}
+      }
       ready = true;
+      const pdfLibNote = window.PDFLib ? '' : ' (Warning: pdf-lib unavailable; reading-order preview and catalog repairs disabled.)';
       if (_driven) {
         // Part of AlloFlow's pipeline: no manual file step — AlloFlow sends the remediated PDF's bytes.
-        setStatus('✅ Connected to AlloFlow — this window is part of the automatic accessibility check. It validates your remediated PDF and sends the result back to AlloFlow. You can leave it open.');
+        setStatus('✅ Connected to AlloFlow — this window is part of the automatic accessibility check. It validates your remediated PDF and sends the result back to AlloFlow. You can leave it open.' + pdfLibNote);
         $('pick').style.display = 'none';
+        if ($('pickLabel')) $('pickLabel').style.display = 'none';
       } else {
-        setStatus('✅ Validator ready. Pick a PDF (or it accepts bytes via postMessage).');
+        setStatus('✅ Validator ready. Pick a PDF (or it accepts bytes via postMessage).' + pdfLibNote);
         $('pick').disabled = false;
       }
       announceReady();
@@ -486,21 +606,30 @@
     }
   }
 
-  $('pick').addEventListener('change', async (e) => {
+  $('pick').addEventListener('change', (e) => {
     const f = e.target.files[0]; if (!f) return;
+    if (!ready) { setStatus('⏳ Validator is still booting — please wait a moment.'); return; }
     if (Number(f.size) > MAX_VERAPDF_BYTES) { setStatus('❌ PDF exceeds the 50 MB validation limit.'); return; }
+    $('pick').disabled = true;
     setStatus('Validating ' + f.name + '…');
-    try {
-      const t = performance.now();
-      const _b = new Uint8Array(await f.arrayBuffer());
-      const r = await validateBytes(_b);
-      render(r);
-      _lastBytes = _b; _roOfferPreview();
-      setStatus('Done in ' + Math.round(performance.now() - t) + 'ms.');
-      window.__lastResult = r; // for headless tests
-    } catch (err) {
-      setStatus('❌ Validation failed: ' + String(err && (err.message || err)));
-    }
+    _opQueue = _opQueue.then(async () => {
+      try {
+        const t = performance.now();
+        const _b = new Uint8Array(await f.arrayBuffer());
+        const r = await validateBytes(_b);
+        render(r);
+        _lastBytes = _b; _roOfferPreview();
+        const ms = Math.round(performance.now() - t);
+        setStatus((r.compliant ? '✅ PASSES PDF/UA-1' : '❌ FAILS PDF/UA-1 (' + r.failedRules.length + ' rule(s))') + ' — done in ' + ms + 'ms.');
+        window.__lastResult = r; // for headless tests
+      } catch (err) {
+        setStatus('❌ Validation failed: ' + String(err && (err.message || err)));
+      } finally {
+        if (!_driven && ready) $('pick').disabled = false;
+      }
+    }, () => {
+      if (!_driven && ready) $('pick').disabled = false;
+    });
   });
 
   function _isOpaqueLocalOrigin() {
@@ -514,7 +643,7 @@
       if (window.location && window.location.origin && window.location.origin !== 'null' && o === window.location.origin) return true;
       const u = new URL(o);
       const host = (u.hostname || '').toLowerCase();
-      if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(host)) return true;
+      if ((u.protocol === 'http:' || u.protocol === 'https:') && /^(localhost|127\.0\.0\.1|\[::1\]|::1)$/.test(host)) return true;
       if (u.protocol !== 'https:') return false;
       return host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
         host === 'alloflow.app' || /\.alloflow\.app$/.test(host) ||
@@ -539,57 +668,88 @@
     return { ok: true, length: len };
   }
 
+  function _clonePayloadBytes(bytes) {
+    if (bytes instanceof Uint8Array) return new Uint8Array(bytes);
+    if (bytes instanceof ArrayBuffer) return new Uint8Array(bytes.slice(0));
+    return new Uint8Array(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
+  }
+
+  const MAX_PENDING_OPS = 4;
+  const _isHiddenIframe = !window.opener && !!(window.parent && window.parent !== window);
   let _verifiedHostOrigin = null;
+  let _verifiedHostSource = null;
+  let _pendingOps = 0;
   let _opQueue = Promise.resolve();
 
   window.addEventListener('message', (ev) => {
     if (!_isTrustedVeraSource(ev.source) || !_isTrustedVeraOrigin(ev.origin)) return;
     if (_verifiedHostOrigin !== null && ev.origin !== _verifiedHostOrigin) return;
+    if (_verifiedHostSource !== null && ev.source !== _verifiedHostSource) return;
     const replyTarget = ev.source;
     const replyOrigin = ev.origin === 'null' ? (_isOpaqueLocalOrigin() ? '*' : null) : ev.origin;
     if (!replyTarget || !replyOrigin) return;
     const d = ev.data && typeof ev.data === 'object' ? ev.data : null;
     if (!d || typeof d.type !== 'string') return;
+    const isValidate = d.type === 'verapdf-validate';
+    const isRemediate = d.type === 'verapdf-remediate';
+    if (!isValidate && !isRemediate) return;
     if (_verifiedHostOrigin === null) _verifiedHostOrigin = ev.origin;
-    if (d.type === 'verapdf-validate' && d.bytes != null && ready) {
-      const check = _validatePdfPayload(d.bytes);
-      if (!check.ok) {
-        replyTarget.postMessage({ type: 'verapdf-result', error: check.reason }, replyOrigin);
-        return;
-      }
-      const bytesCopy = d.bytes instanceof Uint8Array ? new Uint8Array(d.bytes) : new Uint8Array(d.bytes instanceof ArrayBuffer ? d.bytes : d.bytes.buffer.slice(d.bytes.byteOffset, d.bytes.byteOffset + d.bytes.byteLength));
+    if (_verifiedHostSource === null) _verifiedHostSource = ev.source;
+    const replyType = isValidate ? 'verapdf-result' : 'verapdf-remediate-result';
+    if (!ready) {
+      replyTarget.postMessage({ type: replyType, error: 'Validator is not ready yet.' }, replyOrigin);
+      return;
+    }
+    if (d.bytes == null) {
+      replyTarget.postMessage({ type: replyType, error: 'Missing PDF payload.' }, replyOrigin);
+      return;
+    }
+    const check = _validatePdfPayload(d.bytes);
+    if (!check.ok) {
+      replyTarget.postMessage({ type: replyType, error: check.reason }, replyOrigin);
+      return;
+    }
+    if (_pendingOps >= MAX_PENDING_OPS) {
+      replyTarget.postMessage({ type: replyType, error: 'Validator queue is full; try again shortly.' }, replyOrigin);
+      return;
+    }
+    const bytesCopy = _clonePayloadBytes(d.bytes);
+    _pendingOps += 1;
+    if (isValidate) {
       _opQueue = _opQueue.then(async () => {
         setStatus('⏳ Validating the PDF AlloFlow sent…');
         try {
           const r = await validateBytes(bytesCopy);
           render(r); // show the verdict in this window too (useful when it's the visible popup fallback)
-          _lastBytes = bytesCopy; _roOfferPreview();
+          if (!_isHiddenIframe) { _lastBytes = bytesCopy; _roOfferPreview(); }
           setStatus(r.compliant ? '✅ PDF/UA-1: conformant — result sent back to AlloFlow.' : '❌ PDF/UA-1: ' + r.failedRules.length + ' rule(s) — result sent back to AlloFlow.');
           replyTarget.postMessage({ type: 'verapdf-result', result: r }, replyOrigin);
         } catch (e) {
           setStatus('❌ Validation error — reported back to AlloFlow.');
           replyTarget.postMessage({ type: 'verapdf-result', error: String(e && (e.message || e)) }, replyOrigin);
+        } finally {
+          _pendingOps = Math.max(0, _pendingOps - 1);
         }
-      }, () => {});
+      }, () => { _pendingOps = Math.max(0, _pendingOps - 1); });
     }
     // Closed-loop remediation: validate → repair → re-validate → loop, return the green (or best-effort) PDF.
-    if (d.type === 'verapdf-remediate' && d.bytes != null && ready) {
-      const check = _validatePdfPayload(d.bytes);
-      if (!check.ok) {
-        replyTarget.postMessage({ type: 'verapdf-remediate-result', error: check.reason }, replyOrigin);
-        return;
-      }
+    if (isRemediate) {
       const clampedIters = Math.max(1, Math.min(10, Math.floor(Number(d.maxIters) || 5)));
       const allowArtifact = !!d.allowArtifact;
-      const bytesCopy = d.bytes instanceof Uint8Array ? new Uint8Array(d.bytes) : new Uint8Array(d.bytes instanceof ArrayBuffer ? d.bytes : d.bytes.buffer.slice(d.bytes.byteOffset, d.bytes.byteOffset + d.bytes.byteLength));
+      const preferBytes = !!d.preferBytes;
+      const lang = typeof d.lang === 'string' ? d.lang.trim().slice(0, 32) : '';
       _opQueue = _opQueue.then(async () => {
         try {
-          const r = await remediate(bytesCopy, clampedIters, { allowArtifact }); // Artifact-wrap stays off unless the caller explicitly opts in
-          replyTarget.postMessage({ type: 'verapdf-remediate-result', result: r }, replyOrigin);
+          const r = await remediate(bytesCopy, clampedIters, { allowArtifact, preferBytes, lang }); // Artifact-wrap stays off unless the caller explicitly opts in
+          const transfer = (preferBytes && r && r.repairedBytes instanceof ArrayBuffer) ? [r.repairedBytes] : [];
+          if (transfer.length) replyTarget.postMessage({ type: 'verapdf-remediate-result', result: r }, replyOrigin, transfer);
+          else replyTarget.postMessage({ type: 'verapdf-remediate-result', result: r }, replyOrigin);
         } catch (e) {
           replyTarget.postMessage({ type: 'verapdf-remediate-result', error: String(e && (e.message || e)) }, replyOrigin);
+        } finally {
+          _pendingOps = Math.max(0, _pendingOps - 1);
         }
-      }, () => {});
+      }, () => { _pendingOps = Math.max(0, _pendingOps - 1); });
     }
   });
 

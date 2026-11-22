@@ -74,7 +74,9 @@ function managedExternalSearchAllowed() {
   try { const snapshot = managedAISnapshot(); return !snapshot.policy || snapshot.policy.allowExternalSearch; }
   catch (_) { return false; }
 }
-async function assertManagedAIConnection({ backend, baseUrl, apiKey = '', canvasHost = false, operation = 'text', search = false }) {
+async function assertManagedAIConnection(rawArgs) {
+  if (!rawArgs || typeof rawArgs !== 'object' || Array.isArray(rawArgs)) throw managedAIError();
+  const { backend, baseUrl, apiKey = '', canvasHost = false, operation = 'text', search = false } = rawArgs;
   const snapshot = managedAISnapshot(), guard = managedAIDispatchGuard(snapshot), policy = snapshot.policy;
   if (!policy) return guard;
   // Version 1 deliberately covers text inference. Media routes can use separate
@@ -82,7 +84,7 @@ async function assertManagedAIConnection({ backend, baseUrl, apiKey = '', canvas
   if (operation !== 'text' || (search && !policy.allowExternalSearch) || typeof apiKey !== 'string') throw managedAIError();
   const endpoint = managedAIEndpoint(baseUrl);
   const entries = policy.connections.filter(row => row.backend === backend && endpoint && row.baseUrl === endpoint);
-  if (entries.some(entry => (canvasHost && entry.canvasHost) || (!apiKey && entry.keyless))) { guard(); return guard; }
+  if (entries.some(entry => (canvasHost === true && entry.canvasHost) || (!apiKey && entry.keyless))) { guard(); return guard; }
   if (apiKey && entries.some(entry => entry.apiKeySha256.length) && globalThis.crypto?.subtle) {
     let digest;
     try { digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(apiKey)); }
@@ -692,12 +694,15 @@ const createGeminiAPI = (deps) => {
         });
         _guardRequest(_request);
         const r = await fetch(url, requestOptions);
+        _guardRequest(_request);
         if (!r.ok) {
           const body = await r.text().catch(() => '');
+          _guardRequest(_request);
           const cls = _classifyGeminiError(new Error(`HTTP ${r.status}: ${body.substring(0, 500)}`));
           return { error: cls.userMessage + ' (HTTP ' + r.status + ')', models: [], reachable: true, httpStatus: r.status, classification: cls };
         }
         const data = await r.json();
+        _guardRequest(_request);
         // Normalize: Gemini returns models as { name: "models/X", displayName, supportedGenerationMethods, ... }
         const models = (data.models || []).map(m => ({
           id: (m.name || '').replace(/^models\//, ''),
@@ -710,7 +715,7 @@ const createGeminiAPI = (deps) => {
         }));
         return { error: null, models, reachable: true, fetchedAt: (Date.now ? Date.now() : 0) };
       } catch (e) {
-        if (_managedRequestDenied(e)) throw e;
+        if (_managedRequestDenied(e) || e?.code === 'allo/ai-disabled') throw e;
         return { error: e.message || 'Network error', models: [], reachable: false };
       } finally {
         if (listTimer !== null) clearTimeout(listTimer);
@@ -924,12 +929,12 @@ const createGeminiAPI = (deps) => {
       if (useCodeExecution) {
           payload.tools = (payload.tools || []).concat([{ code_execution: {} }]);
       }
+      // Pick up either the caller-supplied signal or the ambient pdf-autocontinue
+      // signal (set by runAutoFixLoop and read by every nested callGemini during
+      // a run, so Stop actually cancels the in-flight fetch instead of just
+      // breaking the loop after the request finishes).
+      const _signal = signal || (getAbortSignal ? getAbortSignal() : null) || null;
       try {
-        // Pick up either the caller-supplied signal or the ambient pdf-autocontinue
-        // signal (set by runAutoFixLoop and read by every nested callGemini during
-        // a run, so Stop actually cancels the in-flight fetch instead of just
-        // breaking the loop after the request finishes).
-        const _signal = signal || (getAbortSignal ? getAbortSignal() : null) || null;
         const _fetchOpts = { method: 'POST', headers: _geminiHeaders(true, _request.apiKey),
             ...(managedAIProfile() != null ? { redirect: 'error' } : {}), body: JSON.stringify(payload), ...(_signal ? { signal: _signal } : {}) };
         const _innerTelemetry = telemetry && typeof telemetry === 'object' ? telemetry : null;
@@ -1145,7 +1150,7 @@ const createGeminiAPI = (deps) => {
         if (cls.kind === 'quota' || cls.kind === 'auth' || cls.kind === 'config') {
           if (cls.kind === 'quota' && !hasVideoInput) {
             if (feedbackContext && _readLocalFallbackConfig()) _emitApiFeedback(feedbackContext, 'retrying', err);
-            const localFallback = await _tryLocalFallbackAfterQuota(prompt, { jsonMode, useSearch, temperature, signal, useCodeExecution }, _request);
+            const localFallback = await _tryLocalFallbackAfterQuota(prompt, { jsonMode, useSearch, temperature, signal: _signal, useCodeExecution }, _request);
             if (localFallback.used) {
               // Local completion recovers the task, not the remote connection.
               // Keep the Gemini quota evidence for a later remote request.
@@ -1524,15 +1529,17 @@ const _abortError = () => { const error = new Error('AI request cancelled.'); er
         });
         _guardRequest(_request);
         const r = await fetch(url, requestOptions);
+        _guardRequest(_request);
         if (r.ok) return { kind: 'ok', model };
         const body = await r.text().catch(() => '');
+        _guardRequest(_request);
         const cls = _classifyGeminiError(new Error(`HTTP ${r.status}: ${body.substring(0, 500)}`));
         if (cls.kind === 'quota' || cls.kind === 'auth' || cls.kind === 'config') {
           _showQuotaBanner({ ...cls, model: cls.model || model });
         }
         return { ...cls, model };
       } catch (probeErr) {
-        if (_managedRequestDenied(probeErr)) throw probeErr;
+        if (_managedRequestDenied(probeErr) || probeErr?.code === 'allo/ai-disabled') throw probeErr;
         return { kind: 'transient', userMessage: probeErr.message, model };
       } finally {
         if (probeTimer !== null) clearTimeout(probeTimer);

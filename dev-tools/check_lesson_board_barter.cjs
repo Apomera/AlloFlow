@@ -105,19 +105,19 @@ const preflight = process.env.BARTER_PREFLIGHT === '1';
         results.push({...scenario,barterAbsentOutsideThemedFamilies:true,keyboardDeckFocus:true,scans});await context.close();continue;
       }
       expect(['supplies','rendezvous']).toContain(initial.offer.id);expect(initial.offer.trades).toHaveLength(2);
-      await page.locator('[data-field-trade-offer]>summary').click();
+      await page.locator('[data-field-approach="trade"]').click();
       await expect(page.locator('[data-field-trade-option]')).toHaveCount(2);
       for (const trade of initial.offer.trades) {
         const radio=page.locator('[data-field-trade-option="'+trade.id+'"]');
         if (!trade.legal) {await expect(radio).toBeDisabled();continue;}
         await radio.check();await unchanged(initial);
-        for (const [index,value] of trade.after.entries()) await expect(page.locator('[data-field-trade-preview] [data-trade-after="'+index+'"]').first()).toHaveText(String(value));
+        for (const [index,value] of trade.after.entries()) await expect(page.locator('[data-field-decision-preview] [data-decision-after="'+index+'"]').first()).toHaveText(String(value));
       }
       if (scenario.insufficient) {expect(initial.progress.balance[0]).toBe(0);expect(initial.offer.trades.find(item => item.id==='trade:0').reason).toBe('insufficient');}
       const trade=initial.offer.trades.find(item => item.id===scenario.trade);expect(trade.legal).toBe(true);
       await page.locator('[data-field-trade-option="'+trade.id+'"]').check();await unchanged(initial);
       if (scenario.project) {
-        await page.locator('[data-trade-project="'+scenario.project+'"]').click();
+        await page.locator('[data-decision-inspect="'+scenario.project+'"]').click();
         await expect(page.locator('[data-board-inspection]')).toContainText(base.projects.find(project => project.id===scenario.project).name);
         await unchanged(initial);
       }
@@ -127,7 +127,7 @@ const preflight = process.env.BARTER_PREFLIGHT === '1';
       if (width===1440) await shoot(page.locator('[data-field-trade-offer]'),'dark-barter-offer');
       await page.evaluate(() => document.body.classList.remove('dark'));await page.emulateMedia({forcedColors:'active'});await scan('forced colors barter choices and tactile deck');await page.emulateMedia({forcedColors:'none'});
       expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
-      await resume();await page.locator('[data-field-trade-offer]>summary').click();await page.locator('[data-field-trade-option="'+trade.id+'"]').check();await unchanged(initial);
+      await resume();await page.locator('[data-field-approach="trade"]').click();await page.locator('[data-field-trade-option="'+trade.id+'"]').check();await unchanged(initial);
       if (scenario.project) expect(await page.evaluate(id => AlloModules.LessonBoardEngine.constructionFunding(qaBoard,snapshot().run,id).some(option => option.legal),scenario.project)).toBe(false);
       await page.locator('[data-field-trade-commit]').focus();await page.keyboard.press('Enter');
       const traded=await page.evaluate(() => snapshot());

@@ -905,6 +905,23 @@ var _lazyIcon = function (name) {
     return uniqueRecommendations.slice(0, typeof n === 'number' ? n : 4);
   }
   function ExecutiveSummary(p) {
+    var _copyState = (typeof React !== 'undefined' && typeof React.useState === 'function')
+      ? React.useState('')
+      : ['', function () {}];
+    var copyStatus = _copyState[0], setCopyStatus = _copyState[1];
+    var copyTimerRef = (typeof React !== 'undefined' && typeof React.useRef === 'function')
+      ? React.useRef(null)
+      : { current: null };
+    if (typeof React !== 'undefined' && typeof React.useEffect === 'function') {
+      React.useEffect(function () {
+        return function () {
+          if (copyTimerRef.current) {
+            clearTimeout(copyTimerRef.current);
+            copyTimerRef.current = null;
+          }
+        };
+      }, []);
+    }
     var c = p.comp;
     var t = typeof p.t === 'function' ? p.t : function () { return 'Curriculum audit summary'; };
     var standardsReportCount = p.standardsReportCount || 0;
@@ -965,8 +982,6 @@ var _lazyIcon = function (name) {
     };
     var textDoor = typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway('text', t) : null;
     var aiBusyOrBlocked = !!p.isProcessing || !!(textDoor && textDoor.disabled);
-    var _copyState = React.useState('');
-    var copyStatus = _copyState[0], setCopyStatus = _copyState[1];
     var buildAdminSummaryText = function () {
       var lines = [];
       lines.push('AlloFlow Curriculum Audit Summary');
@@ -992,7 +1007,8 @@ var _lazyIcon = function (name) {
       if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
         navigator.clipboard.writeText(summary).then(function () {
           setCopyStatus(atr('summary_copied', 'Admin summary copied.'));
-          setTimeout(function () { setCopyStatus(''); }, 2500);
+          if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+          copyTimerRef.current = setTimeout(function () { copyTimerRef.current = null; setCopyStatus(''); }, 2500);
         }).catch(function () {
           setCopyStatus(atr('summary_copy_failed', 'Could not copy summary.'));
         });
@@ -1190,7 +1206,9 @@ var _lazyIcon = function (name) {
 
   function ComprehensiveBlock(p) {
     var c = p.comp;
-    var _dimFilterState = React.useState('all');
+    var _dimFilterState = (typeof React !== 'undefined' && typeof React.useState === 'function')
+      ? React.useState('all')
+      : ['all', function () {}];
     var dimFilter = _dimFilterState[0], setDimFilter = _dimFilterState[1];
     if (!c) return null;
     var classifyDim = function (key) {

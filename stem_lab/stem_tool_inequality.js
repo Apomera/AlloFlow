@@ -4,12 +4,30 @@
 // step-by-step solver, sound effects, badges, AI tutor & keyboard shortcuts
 // ═══════════════════════════════════════════
 
-// Inject fadeIn keyframe if not already present
+// Inject scoped fadeIn + GPU-composited inequality live-motion keyframes if not already present
 (function() {
-  if (document.getElementById('ineq-keyframes')) return;
+  if (typeof document === 'undefined' || !document.head || document.getElementById('ineq-keyframes')) return;
   var style = document.createElement('style');
   style.id = 'ineq-keyframes';
-  style.textContent = '@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}';
+  style.textContent = [
+    '@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}',
+    '@keyframes iqRayFlowR{from{stroke-dashoffset:0}to{stroke-dashoffset:-28}}',
+    '@keyframes iqRayFlowL{from{stroke-dashoffset:0}to{stroke-dashoffset:28}}',
+    '@keyframes iqEndpointPulse{0%,100%{opacity:0.16;transform:scale(0.88)}50%{opacity:0.46;transform:scale(1.24)}}',
+    '@keyframes iqBoundaryShimmer{0%,100%{opacity:0.16}50%{opacity:0.42}}',
+    '@keyframes iqOverlapAura{0%,100%{opacity:0.68}50%{opacity:1}}',
+    '@keyframes iqMirrorPulse{0%,100%{opacity:0.14}50%{opacity:0.36}}',
+    '[data-inequality-root] .iq-flow-right{animation:iqRayFlowR 1.85s linear infinite;will-change:stroke-dashoffset}',
+    '[data-inequality-root] .iq-flow-left{animation:iqRayFlowL 1.85s linear infinite;will-change:stroke-dashoffset}',
+    '[data-inequality-root] .iq-flow-dash{animation:iqRayFlowR 2.6s linear infinite;will-change:stroke-dashoffset}',
+    '[data-inequality-root] .iq-endpoint-ring{transform-box:fill-box;transform-origin:center;animation:iqEndpointPulse 2.8s ease-in-out infinite;will-change:transform,opacity}',
+    '[data-inequality-root] .iq-boundary-shimmer{animation:iqBoundaryShimmer 3.2s ease-in-out infinite;will-change:opacity}',
+    '[data-inequality-root] .iq-overlap-aura{animation:iqOverlapAura 4.0s ease-in-out infinite;will-change:opacity}',
+    '[data-inequality-root] .iq-mirror-pulse{animation:iqMirrorPulse 2.8s ease-in-out infinite;will-change:opacity}',
+    '.theme-contrast [data-inequality-root] .iq-flow-right,.theme-contrast [data-inequality-root] .iq-flow-left,.theme-contrast [data-inequality-root] .iq-flow-dash,.theme-contrast [data-inequality-root] .iq-boundary-shimmer,.theme-contrast [data-inequality-root] .iq-mirror-pulse{display:none!important;animation:none!important}',
+    '.theme-contrast [data-inequality-root] .iq-endpoint-ring,.theme-contrast [data-inequality-root] .iq-overlap-aura{animation:none!important}',
+    '@media (prefers-reduced-motion:reduce){[data-inequality-root] .iq-flow-right,[data-inequality-root] .iq-flow-left,[data-inequality-root] .iq-flow-dash,[data-inequality-root] .iq-endpoint-ring,[data-inequality-root] .iq-boundary-shimmer,[data-inequality-root] .iq-overlap-aura,[data-inequality-root] .iq-mirror-pulse{animation:none!important;transition:none!important;transform:none!important}}'
+  ].join('\n');
   document.head.appendChild(style);
 })();
 
@@ -1477,13 +1495,16 @@ window.StemLab = window.StemLab || {
             if (!isContrast && b - a > 12) kids.push(h('path', { key: key + 'top', d: 'M' + (a + 4) + ',27.2 H' + (b - 4), stroke: '#f5d0fe', strokeWidth: 1.1, opacity: isDark ? 0.45 : 0.65, fill: 'none' }));
           }
         };
-        var seg = function(key, x0, x1, gapL, gapR) {
+        var seg = function(key, x0, x1, gapL, gapR, flowDir) {
           var a = csx(x0) + (gapL && vis(x0) ? 8 : 0), b = csx(x1) - (gapR && vis(x1) ? 8 : 0);
           if (b - a > 0.5) {
-            // Dual-pass luminous boundary laser segment
-            if (!isContrast) kids.push(h('path', { key: key + 'glow', d: 'M' + a + ',50 L' + b + ',50', stroke: mark, strokeWidth: 10, strokeLinecap: 'round', opacity: isDark ? 0.28 : 0.18, fill: 'none' }));
+            // Dual-pass luminous boundary laser segment + directional energy flow dashes
+            if (!isContrast) kids.push(h('path', { key: key + 'glow', d: 'M' + a + ',50 L' + b + ',50', stroke: mark, strokeWidth: 10, strokeLinecap: 'round', opacity: isDark ? 0.28 : 0.18, fill: 'none', className: 'iq-boundary-shimmer' }));
             kids.push(h('line', { key: key, x1: a, y1: 50, x2: b, y2: 50, stroke: mark, strokeWidth: 4.5, strokeLinecap: 'round' }));
             if (!isContrast) kids.push(h('path', { key: key + 'core', d: 'M' + a + ',49.2 L' + b + ',49.2', stroke: '#fdf4ff', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.65, fill: 'none' }));
+            if (!isContrast && !reduceMotion && b - a > 12) {
+              kids.push(h('path', { key: key + 'flow', d: 'M' + a + ',50 L' + b + ',50', stroke: '#fdf4ff', strokeWidth: 2, strokeDasharray: '6 8', strokeLinecap: 'round', opacity: 0.82, fill: 'none', className: flowDir === 'left' ? 'iq-flow-left' : 'iq-flow-right' }));
+            }
           }
         };
         var arrow = function(key, right) {
@@ -1495,7 +1516,8 @@ window.StemLab = window.StemLab || {
           if (vis(x)) {
             var cxPos = sx(x);
             var specCx = Math.max(pad, Math.min(W - pad, cxPos - 1.8));
-            kids.push(h('circle', { key: key + 'halo', cx: cxPos, cy: 50, r: 11.5, fill: mark, opacity: isContrast ? 0.25 : 0.18 }));
+            kids.push(h('circle', { key: key + 'halo', cx: cxPos, cy: 50, r: 11.5, fill: mark, opacity: isContrast ? 0.25 : 0.18, className: isContrast ? undefined : 'iq-endpoint-ring' }));
+            if (!isContrast) kids.push(h('circle', { key: key + 'ring', cx: cxPos, cy: 50, r: 9.8, fill: 'none', stroke: mark, strokeWidth: closed ? 1.4 : 1.2, strokeDasharray: closed ? undefined : '3 2.5', opacity: 0.42, className: 'iq-endpoint-ring' }));
             kids.push(h('circle', { key: key, cx: cxPos, cy: 50, r: 6.8, fill: closed ? (isContrast ? mark : 'url(#' + beadId + ')') : hollow, stroke: mark, strokeWidth: 2.6, strokeDasharray: o.dashedDot ? '3,2' : undefined }));
             if (closed && !isContrast) kids.push(h('circle', { key: key + 'spec', cx: specCx, cy: 47.8, r: 1.6, fill: '#ffffff', opacity: 0.8 }));
             if (text) kids.push(h('text', { key: key + 't', x: Math.max(pad + 18, Math.min(W - pad - 18, cxPos)), y: y, textAnchor: 'middle', fill: ink, style: { fontSize: '10px', fontWeight: 'bold' } }, sym + text));
@@ -1507,8 +1529,8 @@ window.StemLab = window.StemLab || {
           if (text) kids.push(h('text', { key: key + 't', x: ex + dx * 18, y: 23, textAnchor: right ? 'end' : 'start', fill: ink, style: { fontSize: '10px', fontWeight: 'bold' } }, right ? sym + text + ' →' : '← ' + sym + text));
         };
         var ray = function(key, b, right, closed, text, labelY) {
-          if (right && b < R.max) { band(key + 'b', b, R.max); seg(key + 's', b, R.max, true, false); arrow(key + 'a', true); }
-          if (!right && b > R.min) { band(key + 'b', R.min, b); seg(key + 's', R.min, b, false, true); arrow(key + 'a', false); }
+          if (right && b < R.max) { band(key + 'b', b, R.max); seg(key + 's', b, R.max, true, false, 'right'); arrow(key + 'a', true); }
+          if (!right && b > R.min) { band(key + 'b', R.min, b); seg(key + 's', R.min, b, false, true, 'left'); arrow(key + 'a', false); }
           dot(key + 'd', b, closed, text, labelY);
         };
         var bt = function(x, t) { return v + ' = ' + endText(x, t); };
@@ -1546,7 +1568,7 @@ window.StemLab = window.StemLab || {
           var tx = sx(o.testVal), tcol = o.testOk ? okInk : badInk;
           kids.push(h('g', { key: 'tv' },
             h('line', { x1: tx, y1: 24, x2: tx, y2: 76, stroke: tcol, strokeWidth: 2.2, strokeDasharray: '4,2' }),
-            !isContrast && h('circle', { cx: tx, cy: 50, r: 8, fill: tcol, opacity: 0.22 }),
+            !isContrast && h('circle', { cx: tx, cy: 50, r: 8.5, fill: tcol, opacity: 0.24, className: 'iq-endpoint-ring' }),
             h('circle', { cx: tx, cy: 50, r: 4.4, fill: tcol, stroke: hollow, strokeWidth: 1.4 }),
             h('text', { x: Math.max(pad + 18, Math.min(W - pad - 18, tx)), y: 120, textAnchor: 'middle', fill: tcol, style: { fontSize: '10px', fontWeight: 'bold' } }, (o.testOk ? '✅ ' : '❌ ') + o.testVal)));
         }
@@ -1606,7 +1628,11 @@ window.StemLab = window.StemLab || {
         if (region.length >= 3) {
           var ptsStr = region.map(function(p) { return toGX(p[0]) + ',' + toGY(p[1]); }).join(' ');
           kids.push(h('polygon', { key: 'region', 'data-inequality-region': 'true', points: ptsStr, fill: 'url(#' + feasibleGradId + ')' }));
-          kids.push(h('polygon', { key: 'regionHatch', points: ptsStr, fill: 'url(#' + hatchId + ')' }));
+          kids.push(h('polygon', { key: 'regionHatch', points: ptsStr, fill: 'url(#' + hatchId + ')', className: isContrast ? undefined : 'iq-overlap-aura' }));
+          if (!isContrast && cons.length >= 2) {
+            var regPath = region.map(function(p, idx) { return (idx === 0 ? 'M' : 'L') + toGX(p[0]).toFixed(1) + ',' + toGY(p[1]).toFixed(1); }).join(' ') + ' Z';
+            kids.push(h('path', { key: 'regionAura', d: regPath, fill: 'none', stroke: isDark ? '#f0abfc' : '#c026d3', strokeWidth: 3.2, strokeLinejoin: 'round', opacity: 0.34, className: 'iq-overlap-aura' }));
+          }
         }
         cons.forEach(function(k, i) {
           var sg = iqSegment(k, gRange);
@@ -1614,9 +1640,12 @@ window.StemLab = window.StemLab || {
           var col = isContrast ? (i === 0 ? '#00ff00' : '#ffff00') : (cons.length > 1 ? PLANE_COLORS[i % 3] : '#d946ef');
           var x1 = toGX(sg[0][0]), y1 = toGY(sg[0][1]), x2 = toGX(sg[1][0]), y2 = toGY(sg[1][1]);
           var dash = k.rel.indexOf('=') >= 0 ? 'none' : '6,4';
-          // Dual-pass luminous boundary laser (glow pass uses <path> so <line> boundary invariant stays exact)
-          if (!isContrast) kids.push(h('path', { key: 'blg' + i, d: 'M' + x1 + ',' + y1 + ' L' + x2 + ',' + y2, stroke: col, strokeWidth: 8.5, strokeDasharray: dash, opacity: isDark ? 0.28 : 0.2, fill: 'none', strokeLinecap: 'round' }));
+          // Dual-pass luminous boundary laser (glow & shimmer passes use <path> so <line> boundary invariant stays exact)
+          if (!isContrast) kids.push(h('path', { key: 'blg' + i, d: 'M' + x1 + ',' + y1 + ' L' + x2 + ',' + y2, stroke: col, strokeWidth: 8.5, strokeDasharray: dash, opacity: isDark ? 0.28 : 0.2, fill: 'none', strokeLinecap: 'round', className: 'iq-boundary-shimmer' }));
           kids.push(h('line', { key: 'bl' + i, 'data-inequality-boundary': 'true', x1: x1, y1: y1, x2: x2, y2: y2, stroke: col, strokeWidth: 2.8, strokeDasharray: dash }));
+          if (!isContrast && !reduceMotion) {
+            kids.push(h('path', { key: 'blf' + i, d: 'M' + x1 + ',' + y1 + ' L' + x2 + ',' + y2, stroke: '#fdf4ff', strokeWidth: 1.4, strokeDasharray: dash === 'none' ? '8 14' : '6 8', opacity: 0.65, fill: 'none', strokeLinecap: 'round', className: 'iq-flow-dash' }));
+          }
           if (cons.length > 1) {
             var ex = x2, ey = y2, sx0 = x1, sy0 = y1, len = Math.sqrt((ex - sx0) * (ex - sx0) + (ey - sy0) * (ey - sy0)) || 1;
             kids.push(h('text', { key: 'bn' + i, x: Math.max(pad2 + 6, Math.min(W2 - pad2 - 14, ex + (sx0 - ex) * 16 / len + 6)), y: Math.max(pad2 + 12, Math.min(H2 - pad2 - 6, ey + (sy0 - ey) * 16 / len)), fill: col, style: { fontSize: '13px', fontWeight: 'bold' } }, o.labels ? o.labels[i] : CIRCLED[i % 3]));
@@ -1625,7 +1654,7 @@ window.StemLab = window.StemLab || {
         (o.corners || []).forEach(function(c, i) {
           if (c.x < gRange.xMin || c.x > gRange.xMax || c.y < gRange.yMin || c.y > gRange.yMax) return;
           var ccx = toGX(c.x), ccy = toGY(c.y);
-          if (!isContrast) kids.push(h('circle', { key: 'cnh' + i, cx: ccx, cy: ccy, r: 9, fill: '#d946ef', opacity: 0.2 }));
+          if (!isContrast) kids.push(h('circle', { key: 'cnh' + i, cx: ccx, cy: ccy, r: 9.5, fill: '#d946ef', opacity: 0.22, className: 'iq-endpoint-ring', style: { animationDelay: (i * 0.35).toFixed(2) + 's' } }));
           kids.push(h('circle', { key: 'cn' + i, cx: ccx, cy: ccy, r: 5.2, fill: c.strict ? (isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff')) : ink, stroke: ink, strokeWidth: 1.8 }));
           kids.push(h('text', { key: 'cl' + i, x: Math.min(W2 - pad2 - 12, ccx + 7), y: Math.max(pad2 + 12, ccy - 6), fill: ink, style: { fontSize: '11px', fontWeight: 'bold' } }, String.fromCharCode(65 + i)));
         });
@@ -1633,7 +1662,7 @@ window.StemLab = window.StemLab || {
           var px = toGX(p.x), py = toGY(p.y), col = p.ok ? okInk : badInk;
           if (p.x < gRange.xMin || p.x > gRange.xMax || p.y < gRange.yMin || p.y > gRange.yMax) return;
           // Shape as well as colour: a filled glossy bead inside, a cross outside.
-          if (p.ok && !isContrast) kids.push(h('circle', { key: 'tph' + i, cx: px, cy: py, r: 10, fill: col, opacity: 0.22 }));
+          if (p.ok && !isContrast) kids.push(h('circle', { key: 'tph' + i, cx: px, cy: py, r: 10, fill: col, opacity: 0.22, className: 'iq-endpoint-ring' }));
           kids.push(p.ok
             ? h('circle', { key: 'tp' + i, cx: px, cy: py, r: 5.8, fill: col, stroke: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), strokeWidth: 1.8 })
             : h('path', { key: 'tp' + i, d: 'M' + (px - 5) + ',' + (py - 5) + ' L' + (px + 5) + ',' + (py + 5) + ' M' + (px - 5) + ',' + (py + 5) + ' L' + (px + 5) + ',' + (py - 5), stroke: col, strokeWidth: 2.5, strokeLinecap: 'round' }));
@@ -2038,13 +2067,13 @@ window.StemLab = window.StemLab || {
         for (var t0 = Math.ceil(lo / tStep) * tStep; t0 <= hi; t0 += tStep) if (t0 % (tStep * 2) === 0 || t0 === 0) fk.push(h('text', { key: 'tn' + t0, x: fsx(t0), y: 122, textAnchor: 'middle', fill: lineInk, style: { fontSize: '9px' } }, t0));
         var mirror = checked && (op === 'mul' || op === 'div') && k < 0;
         if (mirror) {
-          if (!isContrast) fk.push(h('line', { key: 'mirrorGlow', x1: fsx(0), y1: 18, x2: fsx(0), y2: 112, stroke: '#38bdf8', strokeWidth: 7, opacity: 0.22 }));
-          fk.push(h('line', { key: 'mirror', x1: fsx(0), y1: 20, x2: fsx(0), y2: 110, stroke: isContrast ? '#00ff00' : '#0284c7', strokeWidth: 1.8, strokeDasharray: '4,3' }));
+          if (!isContrast) fk.push(h('line', { key: 'mirrorGlow', x1: fsx(0), y1: 18, x2: fsx(0), y2: 112, stroke: '#38bdf8', strokeWidth: 7, opacity: 0.22, className: 'iq-mirror-pulse' }));
+          fk.push(h('line', { key: 'mirror', x1: fsx(0), y1: 20, x2: fsx(0), y2: 110, stroke: isContrast ? '#00ff00' : '#0284c7', strokeWidth: 1.8, strokeDasharray: '4,3', className: isContrast ? undefined : 'iq-flow-dash' }));
           fk.push(h('text', { key: 'mirrorT', x: fsx(0) + 5, y: 70, fill: isContrast ? '#00ff00' : (isDark ? '#7dd3fc' : '#0369a1'), style: { fontSize: '9px', fontWeight: 'bold' } }, __alloT('stem.inequality.flip_mirror', 'mirror at 0')));
         }
         before.forEach(function(p, i) {
           var bx = fsx(p.v), isOpen = p.boundary && setOp.indexOf('=') < 0;
-          if (!isContrast) fk.push(h('circle', { key: 'bh' + i, cx: bx, cy: 40, r: p.boundary ? 9.5 : 8, fill: beforeCol, opacity: 0.18 }));
+          if (!isContrast) fk.push(h('circle', { key: 'bh' + i, cx: bx, cy: 40, r: p.boundary ? 9.5 : 8, fill: beforeCol, opacity: 0.18, className: 'iq-endpoint-ring', style: { animationDelay: (i * 0.28).toFixed(2) + 's' } }));
           fk.push(h('circle', { key: 'b' + i, cx: bx, cy: 40, r: p.boundary ? 6 : 5, fill: isOpen ? (isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff')) : (isContrast ? beforeCol : 'url(#iqFlipBeadA)'), stroke: beforeCol, strokeWidth: 2 }));
           if (!isOpen && !isContrast) fk.push(h('circle', { key: 'bs' + i, cx: bx - 1.5, cy: 38.2, r: 1.3, fill: '#ffffff', opacity: 0.78 }));
           fk.push(h('text', { key: 'bt' + i, x: bx, y: 24, textAnchor: 'middle', fill: isContrast ? '#00ff00' : (isDark ? '#f0abfc' : '#a21caf'), style: { fontSize: '9px', fontWeight: 'bold' } }, p.t));
@@ -2053,7 +2082,7 @@ window.StemLab = window.StemLab || {
           var from = before[i] ? fsx(before[i].v) : fsx(p.v), dx = checked ? fsx(p.v) - from : 0;
           var isOpen = p.boundary && setOp.indexOf('=') < 0;
           fk.push(h('g', { key: 'a' + i, style: { transform: 'translate(' + dx + 'px, 0px)', transition: reduceMotion ? 'none' : 'transform 0.6s ease', opacity: checked ? 1 : 0.35 } },
-            !isContrast && h('circle', { cx: from, cy: 95, r: p.boundary ? 9.5 : 8, fill: afterCol, opacity: 0.2 }),
+            !isContrast && h('circle', { cx: from, cy: 95, r: p.boundary ? 9.5 : 8, fill: afterCol, opacity: 0.2, className: checked ? 'iq-endpoint-ring' : undefined }),
             h('circle', { cx: from, cy: 95, r: p.boundary ? 6 : 5, fill: isOpen ? (isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff')) : (isContrast ? afterCol : 'url(#iqFlipBeadB)'), stroke: afterCol, strokeWidth: 2 }),
             !isOpen && !isContrast && h('circle', { cx: from - 1.5, cy: 93.2, r: 1.3, fill: '#ffffff', opacity: 0.78 }),
             checked && h('text', { x: from, y: 112, textAnchor: 'middle', fill: isContrast ? '#ffff00' : (isDark ? '#7dd3fc' : '#0369a1'), style: { fontSize: '9px', fontWeight: 'bold' } }, p.t)));

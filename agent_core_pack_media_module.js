@@ -153,21 +153,21 @@
   }
   function jpeg(b) {
     if (b.length < 12 || b[0] !== 255 || b[1] !== 216) invalid('JPEG signature is missing.');
-    var p = 2, width = 0, height = 0, scan = false, entropy = false, ended = false;
+    var p = 2, width = 0, height = 0, seenFrame = false, scan = false, entropy = false, ended = false;
     while (p < b.length) {
       if (scan) {
         if (b[p] !== 255) { entropy = true; p++; continue; }
         var after = p + 1;
         while (after < b.length && b[after] === 255) after++;
         if (after >= b.length) invalid('JPEG scan is truncated.');
-        if (b[after] === 0) { entropy = true; p = after + 1; continue; }
+        if (after === p + 1 && b[after] === 0) { entropy = true; p = after + 1; continue; }
         if (b[after] >= 208 && b[after] <= 215) { p = after + 1; continue; }
         scan = false;
       }
       if (b[p++] !== 255) invalid('JPEG marker is missing.');
       while (p < b.length && b[p] === 255) p++;
       var marker = b[p++];
-      if (marker === 217) { if (p !== b.length || !width || !entropy) invalid('JPEG end marker or scan is invalid.'); ended = true; break; }
+      if (marker === 217) { if (p !== b.length || !seenFrame || !width || !height || !entropy) invalid('JPEG end marker or scan is invalid.'); ended = true; break; }
       if (marker === 216 || marker === 0 || marker === undefined || (marker >= 208 && marker <= 215)) invalid('JPEG marker order is invalid.');
       if (marker === 1) continue;
       if (p + 2 > b.length) invalid('JPEG segment is truncated.');
@@ -176,11 +176,13 @@
       var isFrame = marker >= 192 && marker <= 207 && [196, 200, 204].indexOf(marker) === -1;
       if (isFrame) {
         if ([192, 193, 194].indexOf(marker) === -1) invalid('Use baseline or progressive JPEG.');
-        if (width || size < 11 || b[p + 2] !== 8 || ![1, 3, 4].includes(b[p + 7]) || size !== 8 + 3 * b[p + 7]) invalid('JPEG frame header is invalid.');
+        if (seenFrame || size < 11 || b[p + 2] !== 8 || ![1, 3, 4].includes(b[p + 7]) || size !== 8 + 3 * b[p + 7]) invalid('JPEG frame header is invalid.');
         height = be16(b, p + 3); width = be16(b, p + 5);
+        if (!width || !height) invalid('JPEG frame dimensions must be positive.');
+        seenFrame = true;
       }
       if (marker === 218) {
-        if (!width || size < 8 || !b[p + 2] || size !== 6 + 2 * b[p + 2]) invalid('JPEG scan header is invalid.');
+        if (!seenFrame || !width || !height || size < 8 || !b[p + 2] || size !== 6 + 2 * b[p + 2]) invalid('JPEG scan header is invalid.');
         scan = true;
       }
       p = end;
@@ -328,14 +330,14 @@
       // Memory-card and challenge pictures are rendered app fields in both media profiles.
       if (resource.type === 'memory-aid' && object(data) && Array.isArray(data.cards)) eachSlot(data.cards, function (row, i) {
         add(row, 'memory', i, resource, ri, base + '.cards[' + i + ']', { altLimit: 800 });
-        if (native && object(row) && row.imageUrl) add(row, 'memory', i, resource, ri, base + '.cards[' + i + ']', { fields: Object.assign({}, IMAGE_FIELDS.memory, { image: 'imageUrl' }), altLimit: 800 });
+        if (native && object(row) && hasOwn.call(row, 'imageUrl') && row.imageUrl !== undefined && row.imageUrl !== null && row.imageUrl !== '') add(row, 'memory', i, resource, ri, base + '.cards[' + i + ']', { fields: Object.assign({}, IMAGE_FIELDS.memory, { image: 'imageUrl' }), altLimit: 800 });
       });
       if (resource.type === 'applied-challenge' && object(data) && object(data.visual)) add(data.visual, 'challenge', 0, resource, ri, base + '.visual', { altLimit: 1200 });
       if (native) {
         // These renderers use the adjacent name/title as their accessible text,
         // rather than the image-view alt metadata contract.
         function named(owner, key, label, kind, index, path, decorative) {
-          if (!object(owner) || !hasOwn.call(owner, key) || !owner[key]) return;
+          if (!object(owner) || !hasOwn.call(owner, key) || owner[key] === undefined || owner[key] === null || owner[key] === '') return;
           var synthetic = { imageUrl: owner[key], altText: label || '', decorative: decorative === true };
           add(synthetic, kind, index, resource, ri, path, { fields: IMAGE_FIELDS.single, path: path + '.' + key, rendererDescription: true });
         }
@@ -416,8 +418,9 @@
           var labelMap = field === 'aiLabelPositions' || field === 'aiLabelAnchors';
           var match = labelMap ? /^(0|[1-9]\d*)-(0|[1-9]\d*)$/.exec(key) : /^(0|[1-9]\d*)$/.exec(key);
           var pi = match && Number(match[1]), value = map[key], itemPath = fieldPath + '.' + key;
-          if (!match || !panels[pi] || (labelMap && (!Array.isArray(panels[pi].labels) || !panels[pi].labels[Number(match[2])]))) { fail('unknown-image-annotation-target', itemPath, 'Annotation keys must identify existing panels or labels.'); return; }
+          if (!match || !object(panels[pi]) || (labelMap && (!Array.isArray(panels[pi].labels) || !panels[pi].labels[Number(match[2])]))) { fail('unknown-image-annotation-target', itemPath, 'Annotation keys must identify existing panels or labels.'); return; }
           count++;
+          if (count > cap.maxAnnotations) return;
           if (field === 'imageOverrides') {
             if (typeof value !== 'string') fail('invalid-image-value', itemPath, 'An image override must be an embedded image string.');
           } else if (field === 'captionOverrides') {
@@ -431,8 +434,10 @@
             var ids = new Set();
             eachValidation(value, errors, function (label, li) {
               count++;
+              if (count > cap.maxAnnotations) return;
               var labelPath = itemPath + '[' + li + ']';
-              if (!object(label) || !point(label) || typeof label.text !== 'string' || label.text.length > 2000 || !['string', 'number'].includes(typeof label.id) || !String(label.id) || ids.has(String(label.id))) { fail('invalid-user-label', labelPath, 'Each label needs a unique id, text, and finite x/y percentages.'); return; }
+              var validId = object(label) && ((typeof label.id === 'string' && label.id.trim().length > 0 && label.id.length <= 200) || (typeof label.id === 'number' && Number.isFinite(label.id)));
+              if (!validId || !point(label) || typeof label.text !== 'string' || label.text.length > 2000 || ids.has(String(label.id))) { fail('invalid-user-label', labelPath, 'Each label needs a unique id, text, and finite x/y percentages.'); return; }
               ids.add(String(label.id));
               if ((label.anchorX !== undefined || label.anchorY !== undefined) && (!finite(label.anchorX, 0, 100) || !finite(label.anchorY, 0, 100))) fail('invalid-label-anchor', labelPath, 'Both label anchor coordinates must be finite percentages from 0 to 100.');
             });
@@ -440,11 +445,14 @@
             if (!Array.isArray(value)) { fail('invalid-image-drawings', itemPath, 'Drawings must be an array.'); return; }
             eachValidation(value, errors, function (drawing, di) {
               count++;
+              if (count > cap.maxAnnotations) return;
               var drawingPath = itemPath + '[' + di + ']';
-              if (!object(drawing) || ['freehand', 'highlight', 'arrow', 'circle'].indexOf(drawing.type) === -1 || typeof drawing.color !== 'string' || !/^(?:#[0-9a-f]{3,8}|[a-z]{1,30}|(?:rgb|rgba|hsl|hsla)\([\d.,%\s]+\))$/i.test(drawing.color)) { fail('invalid-image-drawing', drawingPath, 'Use a native drawing type and a plain CSS color.'); return; }
+              if (!object(drawing) || ['freehand', 'highlight', 'arrow', 'circle'].indexOf(drawing.type) === -1 || typeof drawing.color !== 'string' || drawing.color.length > 64 || !/^(?:#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})|[a-z]{1,30}|(?:rgb|rgba|hsl|hsla)\([\d.,%\s]+\))$/i.test(drawing.color)) { fail('invalid-image-drawing', drawingPath, 'Use a native drawing type and a plain CSS color.'); return; }
               if (drawing.type === 'freehand' || drawing.type === 'highlight') {
-                if (!Array.isArray(drawing.points) || !drawing.points.length || drawing.points.some(function (p) { return !point(p); })) fail('invalid-drawing-points', drawingPath + '.points', 'Drawing points must contain finite x/y percentages.');
-                if (Array.isArray(drawing.points)) points += drawing.points.length;
+                if (!Array.isArray(drawing.points) || !drawing.points.length) { fail('invalid-drawing-points', drawingPath + '.points', 'Drawing points must contain finite x/y percentages.'); return; }
+                points += drawing.points.length;
+                if (points > cap.maxDrawingPoints) return;
+                if (drawing.points.some(function (p) { return !point(p); })) fail('invalid-drawing-points', drawingPath + '.points', 'Drawing points must contain finite x/y percentages.');
               } else if (!point(drawing.start) || !point(drawing.end)) fail('invalid-drawing-points', drawingPath, 'Shape start/end must contain finite x/y percentages.');
             });
           }
@@ -490,9 +498,13 @@
         if ((owner.frameWidth !== undefined && owner.frameWidth !== report.width) || (owner.frameHeight !== undefined && owner.frameHeight !== report.height)) appendIssue(errors, issue('animation-canvas-mismatch', slot.path, 'Saved animation canvas dimensions must match the encoded GIF.'));
       }
       if (slot.skipDescription) return;
-      var base = slot.descriptionPath || slot.path.slice(0, -f.image.length), decorative = owner[f.decorative] === true;
-      if (owner[f.decorative] !== undefined && typeof owner[f.decorative] !== 'boolean') appendIssue(errors, issue('invalid-image-decorative', base + f.decorative, 'Decorative must be an explicit boolean.'));
-      var alt = owner[f.alt], hash = owner[f.hash], source = owner[f.source];
+      var base = slot.descriptionPath || slot.path.slice(0, -f.image.length);
+      var rawDecorative = f.decorative && hasOwn.call(owner, f.decorative) ? owner[f.decorative] : undefined;
+      var decorative = rawDecorative === true;
+      if (rawDecorative !== undefined && typeof rawDecorative !== 'boolean') appendIssue(errors, issue('invalid-image-decorative', base + f.decorative, 'Decorative must be an explicit boolean.'));
+      var alt = f.alt && hasOwn.call(owner, f.alt) ? owner[f.alt] : undefined;
+      var hash = f.hash && hasOwn.call(owner, f.hash) ? owner[f.hash] : undefined;
+      var source = f.source && hasOwn.call(owner, f.source) ? owner[f.source] : undefined;
       var altLimit = slot.altLimit || 250;
       if (!decorative && (typeof alt !== 'string' || !alt.trim() || alt.trim().length > altLimit)) appendIssue(errors, issue('invalid-image-alt', base + f.alt, 'An informative image needs an actual-image description of 1–' + altLimit + ' characters.'));
       if (decorative && typeof alt === 'string' && alt.trim()) appendIssue(warnings, issue('decorative-image-alt-unused', base + f.alt, 'The image is decorative; its description is not announced.'));
@@ -510,8 +522,12 @@
     if (stats.pixels > cap.maxTotalPixels) appendIssue(errors, issue('pack-media-pixels-exceeded', 'pack.history', 'Combined image placements and animation canvas frames exceed the pack pixel budget.'));
     if (stats.animationFrames > cap.maxTotalAnimationFrames) appendIssue(errors, issue('pack-animation-budget-exceeded', 'pack.history', 'Combined encoded animation frames and preserved still frames exceed the pack animation budget.'));
     var visited = new Set();
+    var scanNodes = 0;
+    var MAX_SCAN_NODES = 100000;
+    var allImageKeys = ['image', 'imageUrl', 'iconUrl', 'avatarUrl', 'coverImage', 'portrait', 'sceneImage', 'sceneImagePreview', 'visualImage', 'frayerExampleImage'];
     function scan(value, path, depth) {
       if (errors.length >= MAX_DIAGNOSTICS) return;
+      if (++scanNodes > MAX_SCAN_NODES) { appendIssue(errors, issue('media-payload-too-large', path, 'Media payload exceeds node traversal budget.')); return; }
       if (typeof value === 'string') {
         if (/data:image\//i.test(value) && !paths.has(path)) appendIssue(errors, issue('unsupported-image-placement', path, 'Embed raster images only in supported native image fields.'));
         return;
@@ -520,10 +536,13 @@
       if (depth > cap.maxDepth) { appendIssue(errors, issue('media-payload-too-deep', path, 'Media payload nesting exceeds the supported limit.')); return; }
       if (visited.has(value)) { appendIssue(errors, issue('cyclic-media-payload', path, 'Pack must be acyclic JSON data.')); return; }
       visited.add(value);
+      var isImageOverridesMap = /\.annotations\.imageOverrides$/.test(path) && !Array.isArray(value);
+      var isFramesList = /\.visualPlan\.panels\[\d+\]\.frames$/.test(path) && Array.isArray(value);
       eachValidation(Object.keys(value), errors, function (key) {
+        if (++scanNodes > MAX_SCAN_NODES) { appendIssue(errors, issue('media-payload-too-large', path, 'Media payload exceeds node traversal budget.')); return; }
         var next = Array.isArray(value) ? path + '[' + key + ']' : path + '.' + key;
-        var imageKeys = native ? ['image', 'imageUrl', 'iconUrl', 'avatarUrl', 'coverImage', 'portrait', 'sceneImage', 'sceneImagePreview', 'visualImage', 'frayerExampleImage'] : ['image', 'imageUrl', 'iconUrl'];
-        if (!paths.has(next) && imageKeys.indexOf(key) !== -1 && typeof value[key] === 'string' && value[key] && !/data:image\//i.test(value[key])) {
+        var isImageSlotKey = allImageKeys.indexOf(key) !== -1 || isImageOverridesMap || isFramesList;
+        if (!paths.has(next) && isImageSlotKey && typeof value[key] === 'string' && value[key] && !/data:image\//i.test(value[key])) {
           appendIssue(errors, issue('unsupported-image-source', next, 'Native images must use bounded embedded raster data; remote references are not fetched.'));
         }
         scan(value[key], next, depth + 1);

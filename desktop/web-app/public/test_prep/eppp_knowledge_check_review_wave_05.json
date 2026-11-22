@@ -38,9 +38,9 @@
       "domain": "Assessment & Diagnosis",
       "prompt": "Which statement most accurately describes the Dusky competence-to-stand-trial standard and the limit of that standard?",
       "choices": [
-        "It concerns the defendant's sufficient present ability to consult with counsel with a reasonable degree of rational understanding and a rational as well as factual understanding of the proceedings; the court applies the legal standard under governing law",
-        "It asks whether the defendant knew right from wrong when the alleged offense occurred, making it the same inquiry as criminal responsibility",
-        "It is satisfied whenever no severe mental disorder is diagnosed, because diagnosis determines legal competence",
+        "It asks whether the defendant has sufficient present ability to consult rationally with counsel and a rational plus factual grasp of proceedings, as decided by the court",
+        "It evaluates whether the defendant understood right from wrong at the time of the alleged offense, aligning the standard directly with retrospective criminal responsibility",
+        "It is satisfied whenever forensic screening rules out a severe psychotic disorder, because diagnostic status under DSM criteria determines legal competence to stand trial",
         "It requires perfect recall of the alleged offense and the ability to conduct a defense without assistance from counsel"
       ],
       "answerIndex": 0,
@@ -73,9 +73,9 @@
       "prompt": "Within the Integrated Developmental Model of supervision, a supervisee is eager to learn but anxious, highly dependent on the supervisor, and focused mainly on personal performance. Which classification and qualification are most accurate?",
       "choices": [
         "Level 2, because variable autonomy and a shifting focus toward the client define every highly motivated beginner",
-        "Level 1 in the relevant practice domain; the pattern guides developmentally responsive supervision rather than serving as a global diagnosis or fixed rank",
-        "Level 3, because strong motivation by itself establishes stable autonomy and integrated client awareness",
-        "Level 3i, because dependency on a supervisor is the defining feature of an independently practicing professional"
+        "Level 1 in the relevant practice domain; this profile guides developmentally attuned training support rather than acting as a global label or fixed rank",
+        "Level 3 across practice areas, because high motivation to learn is sufficient on its own to demonstrate stable professional autonomy and balanced client awareness",
+        "Level 3i in general clinical practice, because strong reliance on direct supervisor guidance defines the developmental stance of an independently integrated clinician"
       ],
       "answerIndex": 1,
       "rationale": "In the IDM, Level 1 is characterized by substantial self-focus, relatively high and partly extrinsic motivation often accompanied by anxiety, and considerable dependence on supervisory structure. Level 2 brings more other-awareness and fluctuation between dependence and autonomy, while Level 3 reflects more stable intrinsic motivation, conditional autonomy, and integrated self-other awareness. Development is domain-specific: the same supervisee can function differently across assessment, intervention, ethics, or other activities. The model supports tailored supervision and reassessment; it is not a diagnosis, licensure decision, or immutable label.",
@@ -106,9 +106,9 @@
       "domain": "Treatment, Intervention & Prevention",
       "prompt": "A court-mandated client attends an intake but disputes that weekend drinking is a problem and is not considering changing that behavior. In the Transtheoretical Model, which formulation is best?",
       "choices": [
-        "Contemplation, because attending any appointment establishes that the client is weighing a personal behavior change",
-        "Preparation, because the court's referral supplies an action plan even when the client has formed no intention to change",
-        "Precontemplation for this target behavior at this time, while readiness, risk, and goals should be assessed collaboratively rather than treated as a fixed trait",
+        "Contemplation for alcohol use, because showing up for a scheduled intake session confirms the client is actively weighing personal reasons to reduce drinking",
+        "Preparation for abstinence, because a judicial treatment mandate supplies an operational change plan even before the client forms any personal intent to shift",
+        "Precontemplation for this target habit right now, while readiness, risk, and goals merit collaborative exploration rather than a fixed trait label",
         "Action, because physically arriving at treatment is equivalent to actively modifying the drinking pattern"
       ],
       "answerIndex": 2,
@@ -148,8 +148,8 @@
       "prompt": "In an idealized first-order elimination model, a measured drug concentration starts at 100%, no additional dose is given, and the half-life is 8 hours. Approximately what fraction remains after 32 hours?",
       "choices": [
         "Fifty percent, because elapsed clock time does not matter once the first half-life has passed",
-        "Twenty-five percent, because 32 hours contains two 8-hour half-lives",
-        "Twelve and one-half percent, because the concentration is divided by two only three times",
+        "Twenty-five percent, because 32 elapsed hours spans two complete 8-hour half-lives under standard exponential decay kinetics",
+        "Twelve and one-half percent, because plasma concentration drops by half three times across a 32-hour post-dose elimination window",
         "Six and one-quarter percent, because 32 hours contains four half-lives and the concentration is halved four times"
       ],
       "answerIndex": 3,
@@ -181,9 +181,9 @@
       "domain": "Cognitive-Affective Bases of Behavior",
       "prompt": "In Festinger and Carlsmith's classic induced-compliance study, which group later reported greater task enjoyment, and what is the appropriately bounded theoretical interpretation?",
       "choices": [
-        "The $1 group; under the study conditions, limited external justification was interpreted as creating pressure to reduce inconsistency through attitude change",
-        "The $20 group; larger payment created a stronger conditioned preference for the repetitive task",
-        "The groups reported identical enjoyment, showing that payment magnitude did not relate to later ratings",
+        "The $1 group; under those experimental conditions, minimal external justification was interpreted as driving attitude shift to reduce dissonance",
+        "The $20 group; receiving a substantially larger monetary incentive produced stronger positive reinforcement and conditioned liking for the repetitive peg-turning task",
+        "Both paid groups reported equivalent enjoyment afterward, demonstrating that external incentive magnitude had no measurable relation to post-task attitude ratings",
         "The $1 group; receiving less money universally causes people to value any activity more, regardless of choice, commitment, or context"
       ],
       "answerIndex": 0,
@@ -215,9 +215,9 @@
       "domain": "Social & Cultural Bases of Behavior",
       "prompt": "Which statement most accurately describes the development and responsible use of Cross's nigrescence theory?",
       "choices": [
-        "It remains a fixed sequence of four stages that every Black person must complete in the same order",
-        "It evolved from an early developmental sequence toward a multidimensional attitudinal model and can organize inquiry without diagnosing identity or replacing a person's own meanings and context",
-        "A pre-encounter attitude establishes low self-esteem, internalized racism, and the need for a prescribed intervention",
+        "It remains a rigid four-stage developmental ladder that every Black individual must progress through sequentially to reach psychological maturity and racial pride",
+        "It shifted from a linear stage model to a multidimensional attitudinal framework that guides inquiry without diagnosing identity or displacing personal context",
+        "Endorsing a pre-encounter attitude clinically establishes low self-esteem, pervasive internalized racism, and a clear clinical indication for prescribed identity work",
         "Experiencing discrimination proves that a person occupies the encounter stage and predicts the next identity position"
       ],
       "answerIndex": 1,
@@ -250,9 +250,9 @@
       "prompt": "What is the most defensible interpretation of findings from the English and Romanian Adoptees research program on severe early institutional deprivation?",
       "choices": [
         "Failure to form a selective attachment by age two makes later attachment and developmental improvement impossible",
-        "Institutional history alone establishes an attachment disorder and identifies deprivation as the sole cause of every later difficulty",
-        "Longer exposure to profound early deprivation was associated with greater average risk for some outcomes, while outcomes were heterogeneous and substantial catch-up or resilience remained possible",
-        "Adoption after infancy cannot improve physical growth, cognitive functioning, or social development"
+        "A documented history of institutional rearing by itself establishes an attachment disorder and confirms deprivation as the primary cause of every subsequent difficulty",
+        "Longer profound deprivation raised average risk across several domains, yet outcomes varied widely and substantial developmental catch-up remained possible",
+        "Transitioning into adoptive family care after infancy fails to yield measurable gains in physical growth, cognitive test performance, or peer social functioning"
       ],
       "answerIndex": 2,
       "rationale": "The ERA studies found marked early impairment and average duration-related risk for several later outcomes following unusually severe institutional deprivation, alongside substantial catch-up and wide heterogeneity after adoption into more supportive homes. The findings therefore support neither an absolute age-two cutoff nor the claim that later care cannot matter. Exposure was not randomly assigned, age at adoption and duration of deprivation are closely related, and the historical institutions involved multiple adverse conditions. Institutional history alone does not diagnose an attachment disorder or prove a single mechanism for an individual child's presentation.",
@@ -290,10 +290,10 @@
       "domain": "Research Methods & Statistics",
       "prompt": "In a community of 10,000 people, 500 currently meet the case definition for depression and 200 new cases were identified during the past year. What point prevalence is directly supported at the stated current time?",
       "choices": [
-        "Two percent, because only the 200 newly identified cases belong in a prevalence numerator",
-        "Seven percent, because current and newly identified cases can always be added without checking timing or recovery",
+        "Two percent, because the 200 newly identified cases over the past year serve as the standard numerator for point prevalence",
+        "Seven percent, because current cases and newly identified past-year cases are summed together without checking recovery or overlap",
         "Forty percent, because the 200 new cases should be divided by the 500 current cases",
-        "Five percent, because point prevalence is the 500 current cases divided by the 10,000-person population"
+        "Five percent, dividing the 500 active cases at that moment by the 10,000-person resident population"
       ],
       "answerIndex": 3,
       "rationale": "Point prevalence is the proportion of the population who are cases at the specified point in time, so the directly supported calculation is 500 divided by 10,000, or 5%. The 200 new cases concern incidence over the prior year, but a cumulative-incidence denominator should exclude people not initially at risk, and an incidence rate requires person-time. The prompt does not state how many of the 200 remain among the 500 current cases, how many prior cases recovered, or the initial at-risk population. Adding 500 and 200 would therefore risk double counting and would not yield the stated point prevalence.",

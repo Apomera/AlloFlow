@@ -1405,255 +1405,6 @@ function HeaderBar(props) {
                                 <span className="text-xs font-bold hidden xl:inline">{t('immersive.label_text')}</span>
                                 {showTextSettings ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
                             </button>
-                            {showTextSettings && _headerPortal(
-                                <>
-                                    <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetShowTextSettingsToFalse}></div>
-                                    <div ref={_textSettingsRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-text-settings-title" className={`allo-header-settings-dialog fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}`}>
-                                        <div className="space-y-5">
-                                            <div className={`flex justify-between items-center border-b ${_skin.divider} pb-2`}>
-                                                <h4 id="header-text-settings-title" className="font-bold text-sm">{t('settings.text.header')}</h4>
-                                                <div className="flex items-center gap-2">
-                                                    <button type="button" onClick={resetFontSize} data-help-key="header_settings_text_reset" className={`text-xs font-bold flex items-center gap-1 ${_skin.action}`}><RefreshCw size={10}/> {t('header.reset_size_spacing') || 'Reset size & spacing'}</button>
-                                                    <button type="button" onClick={handleSetShowTextSettingsToFalse} className={`min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`} aria-label={t('common.close') || 'Close text settings'}>&times;</button>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label htmlFor="header-text-font-family" className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.font_family')}</label>
-                                                <select id="header-text-font-family"
-                                                    value={selectedFont}
-                                                    onChange={(e) => setSelectedFont(e.target.value)}
-                                                    data-help-key="header_settings_text_font"
-                                                    className={`w-full text-sm p-2.5 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all`}
-                                                >
-                                                    {FONT_OPTIONS.map((font) => (
-                                                        <option key={font.id} value={font.id}>{font.label}</option>
-                                                    ))}
-                                                </select>
-                                                <p className={`text-xs p-2 rounded ${_skin.surface} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''}`}>
-                                                    {t('settings.text.font_preview')} {t('settings.text.font_preview_sample')}
-                                                </p>
-                                            </div>
-                                            <button type="button"
-                                                onClick={handleToggleFocusMode}
-                                                data-help-key="header_settings_text_bionic"
-                                                aria-pressed={focusMode}
-                                                aria-describedby="header-bionic-scope"
-                                                className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all group ${focusMode ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`}
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`p-1.5 rounded-md ${focusMode ? 'bg-indigo-600 text-white' : _skin.chip}`}>
-                                                        <Eye size={16} />
-                                                    </div>
-                                                    <div className="text-left">
-                                                        <span className="block text-xs font-bold">{t('settings.text.bionic')}</span>
-                                                        <span className="block text-xs">{t('settings.text.bionic_sub')}</span>
-                                                        <span id="header-bionic-scope" className="block text-xs mt-1">{t('header.bionic_scope') || 'Applies across reading passages, quizzes, glossaries, study guides, lessons, library books, and activities.'}</span>
-                                                    </div>
-                                                </div>
-                                                <div className={`w-10 h-5 rounded-full relative transition-colors ${focusMode ? 'bg-indigo-500' : theme === 'contrast' ? 'bg-yellow-400' : 'bg-slate-500'}`}>
-                                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${focusMode ? 'left-6' : 'left-1'}`}></div>
-                                                </div>
-                                            </button>
-                                            <button type="button"
-                                                onClick={handleToggleSyllables}
-                                                data-help-key="header_settings_text_syllables"
-                                                aria-pressed={syllablesOn}
-                                                aria-describedby="header-syllables-scope"
-                                                className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all group ${syllablesOn ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`}
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`p-1.5 rounded-md min-w-[28px] text-center ${syllablesOn ? 'bg-indigo-600 text-white' : _skin.chip}`}>
-                                                        <span aria-hidden="true" className="text-[11px] font-extrabold leading-none">a·b</span>
-                                                    </div>
-                                                    <div className="text-left">
-                                                        <span className="block text-xs font-bold">{t('settings.text.syllables') || 'Syllable Breaks (a·b·c)'}</span>
-                                                        <span className="block text-xs">{t('settings.text.syllables_sub') || 'Splits multi-syllable words offline (no AI needed)'}</span>
-                                                        <span id="header-syllables-scope" className="block text-xs mt-1">{t('header.syllables_scope') || 'Applies across reading passages, quizzes, glossaries, study guides, lessons, library books, and activities.'}</span>
-                                                    </div>
-                                                </div>
-                                                <div className={`shrink-0 w-10 h-5 rounded-full relative transition-colors ${syllablesOn ? 'bg-indigo-500' : theme === 'contrast' ? 'bg-yellow-400' : 'bg-slate-500'}`}>
-                                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${syllablesOn ? 'left-6' : 'left-1'}`}></div>
-                                                </div>
-                                            </button>
-                                            <button type="button"
-                                                onClick={handleToggleHeaderRuler}
-                                                data-help-key="header_settings_text_ruler"
-                                                aria-pressed={readingRulerOn}
-                                                className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all group ${readingRulerOn ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`}
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`p-1.5 rounded-md min-w-[28px] text-center ${readingRulerOn ? 'bg-indigo-600 text-white' : _skin.chip}`}>
-                                                        <span aria-hidden="true" className="text-xs font-extrabold leading-none">═</span>
-                                                    </div>
-                                                    <div className="text-left">
-                                                        <span className="block text-xs font-bold">{t('reading_settings.ruler') || 'Reading ruler'}</span>
-                                                        <span className="block text-xs">{t('header.reading_ruler_sub') || 'Highlights the line you are reading across any view (no AI needed)'}</span>
-                                                    </div>
-                                                </div>
-                                                <div className={`shrink-0 w-10 h-5 rounded-full relative transition-colors ${readingRulerOn ? 'bg-indigo-500' : theme === 'contrast' ? 'bg-yellow-400' : 'bg-slate-500'}`}>
-                                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${readingRulerOn ? 'left-6' : 'left-1'}`}></div>
-                                                </div>
-                                            </button>
-                                            {readingRulerOn && (
-                                                <div className={`flex items-center justify-between gap-2 px-3 py-2 rounded-lg border ${_skin.surface}`} data-help-key="header_settings_text_ruler_lines" role="group" aria-label={t('reading_settings.ruler_lines') || 'Ruler height'}>
-                                                    <span className={`text-xs font-bold ${_skin.label}`}>{t('reading_settings.ruler_lines') || 'Ruler height'}</span>
-                                                    <div className="flex items-center gap-1">
-                                                        {[
-                                                            [1, t('reading_settings.ruler_1') || '1 line'],
-                                                            [3, t('reading_settings.ruler_3') || '3 lines'],
-                                                            [5, t('reading_settings.ruler_5') || '5 lines']
-                                                        ].map(([n, lbl]) => (
-                                                            <button
-                                                                key={n}
-                                                                type="button"
-                                                                onClick={() => handleSetHeaderRulerLines(n)}
-                                                                aria-pressed={rulerLines === n}
-                                                                className={`px-2 py-1 rounded-md text-xs font-bold border transition-colors ${rulerLines === n ? 'bg-indigo-600 text-white border-indigo-600' : `${_skin.ghost} border-transparent`}`}
-                                                            >
-                                                                {lbl}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-                                            <div>
-                                                <div className="flex justify-between items-center mb-2">
-                                                    <label htmlFor="header-text-font-size" className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.size')}</label>
-                                                    <span className={`text-xs font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{baseFontSize}px</span>
-                                                </div>
-                                            <div className="flex items-center gap-3" data-help-key="header_settings_text_size">
-                                                    <button type="button" aria-label={t('settings.text.decrease_size') || 'Decrease text size'} onClick={() => setSliderFontSize(Math.max(10, baseFontSize - 1))} className={`p-2.5 rounded-lg transition-colors ${_skin.ghost}`}><Minimize size={16} aria-hidden="true"/></button>
-                                                    <input id="header-text-font-size"
-                                                        type="range" min="10" max="48" step="1"
-                                                        value={sliderFontSize}
-                                                        onChange={(e) => setSliderFontSize(parseInt(e.target.value))}
-                                                        className="flex-grow h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                                                    />
-                                                    <button type="button" aria-label={t('settings.text.increase_size') || 'Increase text size'} onClick={() => setSliderFontSize(Math.min(48, baseFontSize + 1))} className={`p-2.5 rounded-lg transition-colors ${_skin.ghost}`}><Maximize size={16} aria-hidden="true"/></button>
-                                                </div>
-                                            </div>
-                                            <div className={`border-t ${_skin.divider} pt-3 mt-3`}>
-                                                <div className="flex justify-between items-center mb-2">
-                                                    <label htmlFor="header-text-line-height" className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.line_height')}</label>
-                                                    <span className={`text-xs font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{lineHeight}</span>
-                                                </div>
-                                                <input id="header-text-line-height"
-                                                    type="range" min="1.0" max="2.5" step="0.1"
-                                                    value={lineHeight}
-                                                    onChange={(e) => setLineHeight(parseFloat(e.target.value))}
-                                                    data-help-key="header_settings_text_line_height"
-                                                    className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                                                />
-                                            </div>
-                                            <div>
-                                                <div className="flex justify-between items-center mb-2">
-                                                    <label htmlFor="header-text-letter-spacing" className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.spacing')}</label>
-                                                    <span className={`text-xs font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{letterSpacing}em</span>
-                                                </div>
-                                                <input id="header-text-letter-spacing"
-                                                    type="range" min="0" max="0.2" step="0.01"
-                                                    value={letterSpacing}
-                                                    onChange={(e) => setLetterSpacing(parseFloat(e.target.value))}
-                                                    data-help-key="header_settings_text_spacing"
-                                                    className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                                                />
-                                            </div>
-                                            {/* ── Reading Theme Swatches ── */}
-                                            <div>
-                                                <div className="flex justify-between items-center mb-2">
-                                                    <label className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.reading_theme') || '🎨 Reading Theme'}</label>
-                                                    <span aria-live="polite" className={`text-xs font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{selectedReadingThemeLabel}</span>
-                                                </div>
-                                                <p className={`text-xs ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} mb-2`}>{t('settings.reading_theme_desc') || 'Background & text color for all content views'} {t('settings.reading_theme_scope') || 'Changes lesson colors only; your app theme stays the same.'}</p>
-                                                <div className="allo-reading-theme-grid grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={t('header.reading_theme_aria') || 'Reading theme'}>
-                                                    {[
-                                                        { id: 'default', label: t('header.reading_theme_default') || 'Default', bg: '#ffffff', fg: '#1e293b', border: '#64748b', focus: '#4f46e5', emoji: '○' },
-                                                        { id: 'warm', label: t('header.reading_theme_warm') || 'Warm', bg: '#fff1e6', fg: '#432714', border: '#a85b2f', focus: '#1d4ed8', emoji: '☀️' },
-                                                        { id: 'sepia', label: t('header.reading_theme_sepia') || 'Sepia', bg: '#f3eadb', fg: '#2a1f13', border: '#7f5e3d', focus: '#174ea6', emoji: '📜' },
-                                                        { id: 'dark', label: t('header.reading_theme_dark') || 'Dark', bg: '#1a1a2e', fg: '#e2e8f0', border: '#7979ab', focus: '#fbbf24', emoji: '🌙' },
-                                                        { id: 'highContrast', label: t('header.reading_theme_contrast') || 'Contrast', bg: '#000000', fg: '#ffff00', border: '#ffff00', focus: '#ffff00', emoji: '◼️' },
-                                                        { id: 'blue', label: t('header.reading_theme_blue') || 'Blue', bg: '#eef5fc', fg: '#16304b', border: '#3b78a5', focus: '#174ea6', emoji: '💧' },
-                                                        { id: 'green', label: t('header.reading_theme_green') || 'Green', bg: '#eef7ec', fg: '#123f21', border: '#3b7f4c', focus: '#1455a5', emoji: '🌿' },
-                                                        { id: 'rose', label: t('header.reading_theme_rose') || 'Rose', bg: '#fdf0f4', fg: '#561530', border: '#a7476b', focus: '#174ea6', emoji: '🌸' },
-                                                        { id: 'dyslexia', label: t('header.reading_theme_easy_read') || 'Easy Read', bg: '#fcf8e4', fg: '#3f3b31', border: '#8d7621', focus: '#174ea6', emoji: '🔤' },
-                                                        { id: 'dim', label: t('header.reading_theme_dim') || 'Dim', bg: '#adb3bd', fg: '#000000', border: '#46505d', focus: '#1d4ed8', emoji: '🌫️' },
-                                                    ].sort(function(a, b) { return readingThemeOrder.indexOf(a.id) - readingThemeOrder.indexOf(b.id); }).map(function(th) {
-                                                        var isActive = readingTheme === th.id;
-                                                        return <button type="button" key={th.id}
-                                                            role="radio" aria-checked={isActive} aria-label={th.label}
-                                                            aria-posinset={readingThemeOrder.indexOf(th.id) + 1}
-                                                            aria-setsize={10}
-                                                            tabIndex={isActive ? 0 : -1}
-                                                            data-reading-theme-option={th.id}
-                                                            onClick={() => setReadingTheme(th.id)}
-                                                            onKeyDown={(event) => handleReadingThemeKeyDown(event, th.id)}
-                                                            title={th.label}
-                                                            className={`allo-reading-theme-swatch flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-all border-2 cursor-pointer ${isActive ? 'scale-105' : 'hover:scale-105'}`}
-                                                            style={{
-                                                                '--allo-reading-swatch-bg': th.bg,
-                                                                '--allo-reading-swatch-fg': th.fg,
-                                                                '--allo-reading-swatch-border': th.border,
-                                                                '--allo-reading-swatch-focus': th.focus,
-                                                            }}
-                                                        >
-                                                            <span className="text-sm leading-none">{th.emoji}</span>
-                                                            <span className="text-xs font-bold leading-none">{th.label}</span>
-                                                        </button>;
-                                                    })}
-                                                </div>
-                                                {typeof toggleReadingThemeFavorite === 'function' && (
-                                                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                                                        <button type="button"
-                                                            onClick={() => toggleReadingThemeFavorite(readingTheme)}
-                                                            aria-pressed={selectedReadingThemeIsFavorite}
-                                                            className={`min-h-9 rounded-lg border px-3 text-xs font-bold transition-colors motion-reduce:transition-none ${selectedReadingThemeIsFavorite ? (theme === 'contrast' ? 'border-yellow-400 bg-yellow-400 text-black' : theme === 'dark' ? 'border-amber-400 bg-amber-950 text-amber-100' : 'border-amber-500 bg-amber-100 text-amber-950') : (_skin.field + ' hover:border-amber-500')}`}
-                                                        >
-                                                            {selectedReadingThemeIsFavorite ? '★ Favorite' : '☆ Favorite this theme'}
-                                                        </button>
-                                                        <span aria-live="polite" className={`text-xs ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>
-                                                            {readingThemePreferenceScope
-                                                                ? `Saved for ${readingThemePreferenceScope} when this live class syncs.`
-                                                                : (normalizedReadingThemeFavorites.length ? `${normalizedReadingThemeFavorites.length} favorite${normalizedReadingThemeFavorites.length === 1 ? '' : 's'} saved on this device.` : 'Favorites appear first in this picker.')}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            {/* Beside Reading Theme on purpose: the theme colors lessons, the overlay tints everything. */}
-                                            <fieldset data-header-color-overlay aria-describedby="header-color-overlay-desc">
-                                                <legend className={`text-xs font-bold mb-1 ${_skin.label}`}>{t('settings.overlay') || 'Color Overlay'}</legend>
-                                                <p id="header-color-overlay-desc" className={`text-xs mb-2 ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>{t('reading_settings.overlay_desc') || 'Tints the whole screen, like a colored reading sheet.'}</p>
-                                                <div className="flex flex-wrap gap-1.5">
-                                                    {[['none', t('header.overlay_none') || 'None'], ['blue', t('header.reading_theme_blue') || 'Blue'], ['peach', t('header.overlay_peach') || 'Peach'], ['yellow', t('header.overlay_yellow') || 'Yellow']].map(([id, label]) => (
-                                                        <label key={id} className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-2 text-xs font-semibold cursor-pointer ${colorOverlay === id ? _skin.accent : _skin.surface}`}>
-                                                            <input type="radio" name="header-color-overlay" value={id} checked={colorOverlay === id}
-                                                                onChange={() => { try { window.__alloReadingSettings?.set({ colorOverlay: id }); } catch (_) {} }} />
-                                                            {label}
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            </fieldset>
-                                            <div className={`border-t ${_skin.divider} pt-3`}>
-                                                <button type="button"
-                                                    onClick={toggleSingleKeyShortcuts}
-                                                    role="switch"
-                                                    aria-checked={singleKeyShortcuts}
-                                                    aria-describedby="header-single-key-shortcuts-desc"
-                                                    data-single-key-shortcuts-toggle="true"
-                                                    className={`w-full flex items-center justify-between gap-3 p-3 rounded-lg border-2 transition-all ${singleKeyShortcuts ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`}
-                                                >
-                                                    <span className="text-left">
-                                                        <span className="block text-xs font-bold">{t('settings.text.single_key_shortcuts') || 'Single-key shortcuts'}</span>
-                                                        <span id="header-single-key-shortcuts-desc" className="block text-xs mt-0.5">{t('settings.text.single_key_shortcuts_sub') || 'Press ? to turn Help Mode on or off. Turn this off if you use speech input or often press keys by accident. The Help Mode button in the toolbar still works.'}</span>
-                                                    </span>
-                                                    <span aria-hidden="true" className={`shrink-0 w-10 h-5 rounded-full relative transition-colors ${singleKeyShortcuts ? 'bg-indigo-500' : theme === 'contrast' ? 'bg-yellow-400' : 'bg-slate-500'}`}>
-                                                        <span className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${singleKeyShortcuts ? 'left-6' : 'left-1'}`}></span>
-                                                    </span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
                         </div>
                         <div className="relative">
                             <button type="button"
@@ -1669,239 +1420,6 @@ function HeaderBar(props) {
                                 <span className="text-xs font-bold hidden xl:inline">{t('immersive.label_voice')}</span>
                                 {showVoiceSettings ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
                             </button>
-                            {showVoiceSettings && _headerPortal(
-                                <>
-                                    <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetShowVoiceSettingsToFalse}></div>
-                                    <div ref={_voiceSettingsRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-voice-settings-title" className={`allo-header-settings-dialog fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}`}>
-                                        <div className="space-y-3">
-                                            <div className={`flex justify-between items-center border-b ${_skin.divider} pb-2`}>
-                                                <h4 id="header-voice-settings-title" className="font-bold text-sm">{t('settings.voice.label')}</h4>
-                                                <button type="button" onClick={handleSetShowVoiceSettingsToFalse} className={`min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`} aria-label={t('common.close') || 'Close voice and audio settings'}>&times;</button>
-                                            </div>
-                                            <div className={`rounded-lg border p-2 ${_skin.surface}`}>
-                                                <label htmlFor="header-voice-input-engine" className={`text-xs uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_input') || 'Voice input'}</label>
-                                                <select
-                                                    id="header-voice-input-engine"
-                                                    aria-describedby="header-voice-input-engine-help"
-                                                    value={((voiceInputEngine === 'webspeech' && voiceLocalOnly) || (voiceInputEngine === 'gemini' && (studentDeviceVoiceOnly || voiceLocalOnly))) ? 'auto' : voiceInputEngine}
-                                                    onChange={(event) => chooseVoiceInputEngine(event.target.value)}
-                                                    className={`w-full text-xs p-2 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 outline-none`}
-                                                >
-                                                    <option value="auto">{t('header.voice_engine_auto') || 'Auto (private-first)'}</option>
-                                                    <option value="whisper">{t('header.voice_engine_whisper') || 'On-device Whisper'}</option>
-                                                    {!voiceLocalOnly && <option value="webspeech">{t('header.voice_engine_webspeech') || 'Browser speech service'}</option>}
-                                                    {!(studentDeviceVoiceOnly || voiceLocalOnly) && <option value="gemini">{t('header.voice_engine_gemini') || 'Gemini cloud transcription'}</option>}
-                                                    <option value="off">{t('header.voice_engine_off') || 'Off'}</option>
-                                                </select>
-                                                <p id="header-voice-input-engine-help" className={`mt-1 text-xs leading-tight ${_skin.label}`}>{voiceInputDescriptions[((voiceInputEngine === 'webspeech' && voiceLocalOnly) || (voiceInputEngine === 'gemini' && (studentDeviceVoiceOnly || voiceLocalOnly))) ? 'auto' : voiceInputEngine]}</p>
-                                                {window.__alloSpeechSetupHost === true && (
-                                                  <button type="button" onClick={() => { handleSetShowVoiceSettingsToFalse(); window.dispatchEvent(new window.CustomEvent('alloflow:open-speech-setup')); }} className={`mt-2 w-full min-h-11 rounded-md border px-2 py-1 text-xs font-bold ${_skin.field}`}>
-                                                    {t('speech_setup.open') || 'Speech setup: download, size, mic test'}
-                                                  </button>
-                                                )}
-                                                {voiceInputEngine === 'gemini' && !geminiAudioCapability.available && (
-                                                  <div className={`mt-2 rounded-lg border p-2 ${_skin.note}`}>
-                                                    <p role="status" aria-live="polite" className={`text-xs font-bold leading-tight ${_skin.noteHead}`}>
-                                                      {canConfigureGeminiAudio
-                                                         ? (t('header.gemini_key_missing') || 'Gemini transcription is selected, but no Gemini cloud-services key is configured.')
-                                                         : (t('header.gemini_unavailable_activity') || 'Gemini cloud transcription is unavailable in this activity.')}
-                                                    </p>
-                                                    <div className="mt-2 flex flex-wrap gap-1.5">
-                                                      {canConfigureGeminiAudio && (
-                                                        <button type="button" onClick={openGeminiAudioConfiguration} data-help-key="header_voice_configure_gemini" className="min-h-11 rounded-md bg-sky-700 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-sky-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-                                                          {t('header.configure_gemini_access') || 'Configure Gemini access'}
-                                                        </button>
-                                                      )}
-                                                      <button type="button" onClick={() => chooseVoiceInputEngine('auto')} className={`min-h-11 rounded-md border px-2.5 py-1.5 text-xs font-bold ${_skin.field}`}>
-                                                         {t('header.use_auto_instead') || 'Use Auto instead'}
-                                                      </button>
-                                                    </div>
-                                                  </div>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <label htmlFor="header-spoken-output-voice" className={`text-xs uppercase font-bold ${_skin.label} block mb-1`}>{t('header.spoken_output_voice') || 'Spoken-output voice'}</label>
-                                                <select id="header-spoken-output-voice"
-                                                    value={studentDeviceVoiceOnly ? studentVoiceValue : selectedVoice}
-                                                    onChange={(e) => {
-                                                      const voice = e.target.value;
-                                                      if (voice === '__kokoro_unavailable') return;
-                                                      setSelectedVoice(voice);
-                                                      if (KOKORO_VOICES.some(v => v.id === voice)) startKokoroVoiceDownload();
-                                                    }}
-                                                    data-help-key="header_settings_voice_select"
-                                                    className={`w-full text-xs p-2 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 outline-none`}
-                                                >
-                                                    {studentDeviceVoiceOnly ? (
-                                                        <>
-                                                            {studentOnDeviceKokoro && renderStudentOnDeviceGroup()}
-                                                            {renderDeviceVoiceGroup()}
-                                                        </>
-                                                    ) : _isCanvasEnv ? (
-                                                        <>
-                                                            <optgroup label={'✨ ' + (t('header.voice_cloud_group') || 'Cloud voice (Gemini): most natural, needs the internet')}>
-                                                                {GEMINI_VOICES.slice(0, 15).map(v => (
-                                                                    <option key={v.id} value={v.id}>{v.label || v.id}</option>
-                                                                ))}
-                                                            </optgroup>
-                                                            {renderKokoroVoiceGroup()}
-                                                            {renderDeviceVoiceGroup()}
-                                                        </>
-                                                    ) : isLocalVoiceMode ? (
-                                                        <>
-                                                            {renderKokoroVoiceGroup()}
-                                                            <optgroup label={t('header.edge_tts_voices') || '🎤 Edge TTS Voices'}>
-                                                                {EDGE_TTS_VOICES.map(v => (
-                                                                    <option key={v.id} value={v.id}>{v.label}</option>
-                                                                ))}
-                                                            </optgroup>
-                                                            {renderDeviceVoiceGroup()}
-                                                        </>
-                                                    ) : (
-                                                        /* Every other surface — the hosted web app, which is what a
-                                                           phone loads. This branch used to be cloud voices only. */
-                                                        <>
-                                                            <optgroup label={'✨ ' + (t('header.voice_cloud_group') || 'Cloud voice (Gemini): most natural, needs the internet')}>
-                                                                {GEMINI_VOICES.map(v => (
-                                                                    <option key={v.id} value={v.id}>{v.label}</option>
-                                                                ))}
-                                                            </optgroup>
-                                                            {renderKokoroVoiceGroup()}
-                                                            {renderDeviceVoiceGroup()}
-                                                        </>
-                                                    )}
-                                                </select>
-                                                {!studentDeviceVoiceOnly && /^[ab][fm]_/i.test(selectedVoice || '') && (speechProvider === 'browser' || speechProvider === 'off') && (
-                                                  <p role="status" className={`mt-2 text-xs ${_skin.label}`}>
-                                                    {speechProvider === 'browser'
-                                                      ? (t('header.kokoro_browser_provider') || 'The speech provider is set to Device voice. Read-aloud will use the device voice. Choose Auto or Local in speech provider settings to hear Kokoro.')
-                                                      : (t('header.kokoro_disabled_provider') || 'Speech output is off. Choose Auto or Local in speech provider settings to hear Kokoro.')}
-                                                  </p>
-                                                )}
-                                                {/* ── Kokoro model info (2026-07-06): the old Fast(q4)/High(q8)
-                                                    toggle was retired — the q4 file is really ~291MB (not 43MB),
-                                                    sounds worse, and benched no faster on wasm CPU. One honest
-                                                    tier now: q8, ~88MB, downloaded once + cached on device. ── */}
-                                                {canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes('_') && (
-                                                    <div className={`mt-2 p-2 rounded-lg border ${_skin.surface}`} data-kokoro-model-status={window._kokoroTTS?.ready ? 'ready' : (kokoroDownloading || window.__kokoroTTSDownloading) ? 'preparing' : kokoroSavedOnDevice ? 'saved' : 'missing'}>
-                                                        <p className="text-xs m-0">
-                                                            <span className="font-bold">{t('header.voice_model_label') || 'Voice model'}:</span>{' '}
-                                                            {window._kokoroTTS?.ready
-                                                                ? (t('header.voice_model_ready') || 'Kokoro (~88MB) — ready on this device. Downloaded once; reads offline.')
-                                                                : (kokoroDownloading || window.__kokoroTTSDownloading)
-                                                                    ? (t('header.voice_model_preparing') || 'Kokoro (~88MB) is preparing. Try reading again when the voice is ready.')
-                                                                    : kokoroSavedOnDevice
-                                                                        ? (t('header.voice_model_saved') || 'Kokoro (~88MB) is saved on this device. It starts when reading begins.')
-                                                                        : (t('header.voice_model_missing') || "Kokoro (~88MB) is not on this device yet. Get the voice to read aloud with it.")}
-                                                        </p>
-                                                        {!window._kokoroTTS?.ready && !(kokoroDownloading || window.__kokoroTTSDownloading) && !kokoroSavedOnDevice && window.__loadKokoroTTS && (
-                                                            <button type="button" onClick={() => { startKokoroVoiceDownload(); setKokoroSavedOnDevice(null); }} data-kokoro-get-voice className={`mt-2 min-h-9 rounded-lg border px-3 text-xs font-bold ${_skin.ghost}`}>
-                                                                {t('header.voice_model_get') || 'Get the voice (88 MB)'}
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                )}
-                                                {/* ── Browser-TTS Fallback Toggle ──
-                                                    When Gemini refuses a sentence or exhausts retries, fall back to the
-                                                    system voice instead of skipping. Enabled by default, with an explicit
-                                                    opt-out saved alongside the provider settings. */}
-                                                {!studentDeviceVoiceOnly && <div className={`mt-2 p-2 rounded-lg border ${_skin.surface}`}>
-                                                    <label className="flex items-start gap-2 cursor-pointer">
-                                                        <input
-                                                            type="checkbox"
-                                                            id="header-browser-voice-fallback"
-                                                            className="mt-0.5 accent-indigo-600"
-                                                            defaultChecked={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').browserTtsFallback !== false; } catch { return true; } })()}
-                                                            onChange={(e) => {
-                                                                const requested = e.currentTarget.checked;
-                                                                try {
-                                                                    const cur = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-                                                                    localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...cur, browserTtsFallback: requested }));
-                                                                } catch (_) {
-                                                                    e.currentTarget.checked = !requested;
-                                                                    addToast(t('header.audio_setting_save_failed') || 'This audio setting could not be saved. Your previous choice is still active.', 'error');
-                                                                }
-                                                            }}
-                                                            aria-label={t('header.browser_tts_fallback_aria') || 'Use browser voice as fallback when Gemini TTS refuses or fails'}
-                                                        />
-                                                        <span className="text-xs leading-tight">
-                                                            <span className="font-bold block">{t('header.browser_tts_fallback_label') || 'Browser-voice fallback'}</span>
-                                                            <span className="opacity-80">{t('header.browser_tts_fallback_desc') || 'Read refused/failed sentences with the system voice instead of skipping.'}</span>
-                                                        </span>
-                                                    </label>
-                                                </div>}
-                                                {/* ── Non-English Language TTS Indicator ── */}
-                                                {/* Shown on every surface, not only Canvas: the language cascade is
-                                                    the same everywhere and a teacher working in Spanish on the web
-                                                    app needs the same answer.
-
-                                                    This used to claim "Piper Neural Voice, auto-selected" whenever
-                                                    supportsLanguage() was true, which only says a voice EXISTS in
-                                                    the table, not that it has been downloaded. In the build before
-                                                    2026-08-16, seven of those table entries pointed at models that
-                                                    do not exist at all, Spanish among them. Report the three states
-                                                    separately instead. */}
-                                                {!studentDeviceVoiceOnly && leveledTextLanguage && leveledTextLanguage !== 'English' && (
-                                                    <div className={`mt-2 p-2 rounded-lg border ${_skin.note}`}>
-                                                        <div className={`text-xs uppercase font-bold ${_skin.noteHead}`}>{t('header.voice_active_language') || 'Reading language'}: {leveledTextLanguage}</div>
-                                                        <div className={`text-xs ${_skin.noteBody} mt-0.5`}>
-                                                            {!window._piperTTS?.supportsLanguage(languageToTTSCode(leveledTextLanguage))
-                                                                ? (t('header.voice_lang_no_offline') || 'Cloud voice, then the device voice. There is no offline voice for this language yet.')
-                                                                : window._piperTTS?.isLanguageReady?.(languageToTTSCode(leveledTextLanguage))
-                                                                    ? (t('header.voice_lang_offline_ready') || 'An offline voice for this language is saved on this device.')
-                                                                    : (t('header.voice_lang_offline_on_demand') || 'Cloud voice first. An offline voice for this language downloads the first time it is needed.')}
-                                                        </div>
-                                                        <div className={`text-xs ${_skin.noteHead} mt-0.5`}>{t('header.kokoro_english_only') || 'Kokoro voice applies to English content'}</div>
-                                                    </div>
-                                                )}
-                                                <div className="flex gap-2 mt-3">
-                                                    <div className="flex-1">
-                                                        <label htmlFor="header-voice-speed" className={`text-xs uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_speed') || 'Speed'}: {voiceSpeed}x</label>
-                                                        <input id="header-voice-speed"
-                                                            type="range"
-                                                            min="0.5"
-                                                            max="2"
-                                                            step="0.1"
-                                                            value={voiceSpeed}
-                                                            onChange={(e) => setVoiceSpeed(parseFloat(e.target.value))}
-                                                            data-help-key="header_settings_voice_speed"
-                                                            className="w-full accent-indigo-600 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-                                                        />
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <label htmlFor="header-voice-volume" className={`text-xs uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_volume') || 'Volume'}: {Math.round(voiceVolume * 100)}%</label>
-                                                        <input id="header-voice-volume"
-                                                            type="range"
-                                                            min="0"
-                                                            max="1"
-                                                            step="0.1"
-                                                            value={voiceVolume}
-                                                            onChange={(e) => setVoiceVolume(parseFloat(e.target.value))}
-                                                            data-help-key="header_settings_voice_volume"
-                                                            className="w-full accent-indigo-600 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const testVoice = typeof window !== 'undefined' && window.__alloTestVoice;
-                                                        if (typeof testVoice === 'function') testVoice();
-                                                    }}
-                                                    disabled={!(typeof window !== 'undefined' && typeof window.__alloTestVoice === 'function')}
-                                                    className={`mt-3 w-full min-h-9 rounded-lg border px-3 py-2 text-xs font-bold ${_skin.surface} ${_skin.action} disabled:opacity-50 disabled:cursor-not-allowed`}
-                                                    aria-label={t('header.voice_test_aria') || 'Test the selected voice and audio output'}
-                                                >
-                                                    {t('header.voice_test') || 'Test voice'}
-                                                </button>
-                                                <p className={`text-xs ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} mt-2 italic leading-tight`}>
-                                                    {t('settings.voice.helper')}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
                         </div>
                         <div className="w-px h-6 bg-white/20 mx-1"></div>
                         <button type="button"
@@ -2589,6 +2107,489 @@ function HeaderBar(props) {
             </div>
           </div>
         )}
+        {/* Hoisted outside !headerCollapsed so AlloBot Settings and external shortcuts open Voice/Text Settings even in compact mobile header mode */}
+                            {showTextSettings && _headerPortal(
+                                <>
+                                    <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetShowTextSettingsToFalse}></div>
+                                    <div ref={_textSettingsRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-text-settings-title" className={`allo-header-settings-dialog fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}`}>
+                                        <div className="space-y-5">
+                                            <div className={`flex justify-between items-center border-b ${_skin.divider} pb-2`}>
+                                                <h4 id="header-text-settings-title" className="font-bold text-sm">{t('settings.text.header')}</h4>
+                                                <div className="flex items-center gap-2">
+                                                    <button type="button" onClick={resetFontSize} data-help-key="header_settings_text_reset" className={`text-xs font-bold flex items-center gap-1 ${_skin.action}`}><RefreshCw size={10}/> {t('header.reset_size_spacing') || 'Reset size & spacing'}</button>
+                                                    <button type="button" onClick={handleSetShowTextSettingsToFalse} className={`min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`} aria-label={t('common.close') || 'Close text settings'}>&times;</button>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label htmlFor="header-text-font-family" className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.font_family')}</label>
+                                                <select id="header-text-font-family"
+                                                    value={selectedFont}
+                                                    onChange={(e) => setSelectedFont(e.target.value)}
+                                                    data-help-key="header_settings_text_font"
+                                                    className={`w-full text-sm p-2.5 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all`}
+                                                >
+                                                    {FONT_OPTIONS.map((font) => (
+                                                        <option key={font.id} value={font.id}>{font.label}</option>
+                                                    ))}
+                                                </select>
+                                                <p className={`text-xs p-2 rounded ${_skin.surface} ${FONT_OPTIONS.find(f => f.id === selectedFont)?.cssClass || ''}`}>
+                                                    {t('settings.text.font_preview')} {t('settings.text.font_preview_sample')}
+                                                </p>
+                                            </div>
+                                            <button type="button"
+                                                onClick={handleToggleFocusMode}
+                                                data-help-key="header_settings_text_bionic"
+                                                aria-pressed={focusMode}
+                                                aria-describedby="header-bionic-scope"
+                                                className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all group ${focusMode ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-1.5 rounded-md ${focusMode ? 'bg-indigo-600 text-white' : _skin.chip}`}>
+                                                        <Eye size={16} />
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <span className="block text-xs font-bold">{t('settings.text.bionic')}</span>
+                                                        <span className="block text-xs">{t('settings.text.bionic_sub')}</span>
+                                                        <span id="header-bionic-scope" className="block text-xs mt-1">{t('header.bionic_scope') || 'Applies across reading passages, quizzes, glossaries, study guides, lessons, library books, and activities.'}</span>
+                                                    </div>
+                                                </div>
+                                                <div className={`w-10 h-5 rounded-full relative transition-colors ${focusMode ? 'bg-indigo-500' : theme === 'contrast' ? 'bg-yellow-400' : 'bg-slate-500'}`}>
+                                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${focusMode ? 'left-6' : 'left-1'}`}></div>
+                                                </div>
+                                            </button>
+                                            <button type="button"
+                                                onClick={handleToggleSyllables}
+                                                data-help-key="header_settings_text_syllables"
+                                                aria-pressed={syllablesOn}
+                                                aria-describedby="header-syllables-scope"
+                                                className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all group ${syllablesOn ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-1.5 rounded-md min-w-[28px] text-center ${syllablesOn ? 'bg-indigo-600 text-white' : _skin.chip}`}>
+                                                        <span aria-hidden="true" className="text-[11px] font-extrabold leading-none">a·b</span>
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <span className="block text-xs font-bold">{t('settings.text.syllables') || 'Syllable Breaks (a·b·c)'}</span>
+                                                        <span className="block text-xs">{t('settings.text.syllables_sub') || 'Splits multi-syllable words offline (no AI needed)'}</span>
+                                                        <span id="header-syllables-scope" className="block text-xs mt-1">{t('header.syllables_scope') || 'Applies across reading passages, quizzes, glossaries, study guides, lessons, library books, and activities.'}</span>
+                                                    </div>
+                                                </div>
+                                                <div className={`shrink-0 w-10 h-5 rounded-full relative transition-colors ${syllablesOn ? 'bg-indigo-500' : theme === 'contrast' ? 'bg-yellow-400' : 'bg-slate-500'}`}>
+                                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${syllablesOn ? 'left-6' : 'left-1'}`}></div>
+                                                </div>
+                                            </button>
+                                            <button type="button"
+                                                onClick={handleToggleHeaderRuler}
+                                                data-help-key="header_settings_text_ruler"
+                                                aria-pressed={readingRulerOn}
+                                                className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all group ${readingRulerOn ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-1.5 rounded-md min-w-[28px] text-center ${readingRulerOn ? 'bg-indigo-600 text-white' : _skin.chip}`}>
+                                                        <span aria-hidden="true" className="text-xs font-extrabold leading-none">═</span>
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <span className="block text-xs font-bold">{t('reading_settings.ruler') || 'Reading ruler'}</span>
+                                                        <span className="block text-xs">{t('header.reading_ruler_sub') || 'Highlights the line you are reading across any view (no AI needed)'}</span>
+                                                    </div>
+                                                </div>
+                                                <div className={`shrink-0 w-10 h-5 rounded-full relative transition-colors ${readingRulerOn ? 'bg-indigo-500' : theme === 'contrast' ? 'bg-yellow-400' : 'bg-slate-500'}`}>
+                                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${readingRulerOn ? 'left-6' : 'left-1'}`}></div>
+                                                </div>
+                                            </button>
+                                            {readingRulerOn && (
+                                                <div className={`flex items-center justify-between gap-2 px-3 py-2 rounded-lg border ${_skin.surface}`} data-help-key="header_settings_text_ruler_lines" role="group" aria-label={t('reading_settings.ruler_lines') || 'Ruler height'}>
+                                                    <span className={`text-xs font-bold ${_skin.label}`}>{t('reading_settings.ruler_lines') || 'Ruler height'}</span>
+                                                    <div className="flex items-center gap-1">
+                                                        {[
+                                                            [1, t('reading_settings.ruler_1') || '1 line'],
+                                                            [3, t('reading_settings.ruler_3') || '3 lines'],
+                                                            [5, t('reading_settings.ruler_5') || '5 lines']
+                                                        ].map(([n, lbl]) => (
+                                                            <button
+                                                                key={n}
+                                                                type="button"
+                                                                onClick={() => handleSetHeaderRulerLines(n)}
+                                                                aria-pressed={rulerLines === n}
+                                                                className={`px-2 py-1 rounded-md text-xs font-bold border transition-colors ${rulerLines === n ? 'bg-indigo-600 text-white border-indigo-600' : `${_skin.ghost} border-transparent`}`}
+                                                            >
+                                                                {lbl}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <div>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label htmlFor="header-text-font-size" className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.size')}</label>
+                                                    <span className={`text-xs font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{baseFontSize}px</span>
+                                                </div>
+                                            <div className="flex items-center gap-3" data-help-key="header_settings_text_size">
+                                                    <button type="button" aria-label={t('settings.text.decrease_size') || 'Decrease text size'} onClick={() => setSliderFontSize(Math.max(10, baseFontSize - 1))} className={`p-2.5 rounded-lg transition-colors ${_skin.ghost}`}><Minimize size={16} aria-hidden="true"/></button>
+                                                    <input id="header-text-font-size"
+                                                        type="range" min="10" max="48" step="1"
+                                                        value={sliderFontSize}
+                                                        onChange={(e) => setSliderFontSize(parseInt(e.target.value))}
+                                                        className="flex-grow h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                                    />
+                                                    <button type="button" aria-label={t('settings.text.increase_size') || 'Increase text size'} onClick={() => setSliderFontSize(Math.min(48, baseFontSize + 1))} className={`p-2.5 rounded-lg transition-colors ${_skin.ghost}`}><Maximize size={16} aria-hidden="true"/></button>
+                                                </div>
+                                            </div>
+                                            <div className={`border-t ${_skin.divider} pt-3 mt-3`}>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label htmlFor="header-text-line-height" className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.line_height')}</label>
+                                                    <span className={`text-xs font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{lineHeight}</span>
+                                                </div>
+                                                <input id="header-text-line-height"
+                                                    type="range" min="1.0" max="2.5" step="0.1"
+                                                    value={lineHeight}
+                                                    onChange={(e) => setLineHeight(parseFloat(e.target.value))}
+                                                    data-help-key="header_settings_text_line_height"
+                                                    className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                                />
+                                            </div>
+                                            <div>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label htmlFor="header-text-letter-spacing" className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.text.spacing')}</label>
+                                                    <span className={`text-xs font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{letterSpacing}em</span>
+                                                </div>
+                                                <input id="header-text-letter-spacing"
+                                                    type="range" min="0" max="0.2" step="0.01"
+                                                    value={letterSpacing}
+                                                    onChange={(e) => setLetterSpacing(parseFloat(e.target.value))}
+                                                    data-help-key="header_settings_text_spacing"
+                                                    className="w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                                />
+                                            </div>
+                                            {/* ── Reading Theme Swatches ── */}
+                                            <div>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.reading_theme') || '🎨 Reading Theme'}</label>
+                                                    <span aria-live="polite" className={`text-xs font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{selectedReadingThemeLabel}</span>
+                                                </div>
+                                                <p className={`text-xs ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} mb-2`}>{t('settings.reading_theme_desc') || 'Background & text color for all content views'} {t('settings.reading_theme_scope') || 'Changes lesson colors only; your app theme stays the same.'}</p>
+                                                <div className="allo-reading-theme-grid grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={t('header.reading_theme_aria') || 'Reading theme'}>
+                                                    {[
+                                                        { id: 'default', label: t('header.reading_theme_default') || 'Default', bg: '#ffffff', fg: '#1e293b', border: '#64748b', focus: '#4f46e5', emoji: '○' },
+                                                        { id: 'warm', label: t('header.reading_theme_warm') || 'Warm', bg: '#fff1e6', fg: '#432714', border: '#a85b2f', focus: '#1d4ed8', emoji: '☀️' },
+                                                        { id: 'sepia', label: t('header.reading_theme_sepia') || 'Sepia', bg: '#f3eadb', fg: '#2a1f13', border: '#7f5e3d', focus: '#174ea6', emoji: '📜' },
+                                                        { id: 'dark', label: t('header.reading_theme_dark') || 'Dark', bg: '#1a1a2e', fg: '#e2e8f0', border: '#7979ab', focus: '#fbbf24', emoji: '🌙' },
+                                                        { id: 'highContrast', label: t('header.reading_theme_contrast') || 'Contrast', bg: '#000000', fg: '#ffff00', border: '#ffff00', focus: '#ffff00', emoji: '◼️' },
+                                                        { id: 'blue', label: t('header.reading_theme_blue') || 'Blue', bg: '#eef5fc', fg: '#16304b', border: '#3b78a5', focus: '#174ea6', emoji: '💧' },
+                                                        { id: 'green', label: t('header.reading_theme_green') || 'Green', bg: '#eef7ec', fg: '#123f21', border: '#3b7f4c', focus: '#1455a5', emoji: '🌿' },
+                                                        { id: 'rose', label: t('header.reading_theme_rose') || 'Rose', bg: '#fdf0f4', fg: '#561530', border: '#a7476b', focus: '#174ea6', emoji: '🌸' },
+                                                        { id: 'dyslexia', label: t('header.reading_theme_easy_read') || 'Easy Read', bg: '#fcf8e4', fg: '#3f3b31', border: '#8d7621', focus: '#174ea6', emoji: '🔤' },
+                                                        { id: 'dim', label: t('header.reading_theme_dim') || 'Dim', bg: '#adb3bd', fg: '#000000', border: '#46505d', focus: '#1d4ed8', emoji: '🌫️' },
+                                                    ].sort(function(a, b) { return readingThemeOrder.indexOf(a.id) - readingThemeOrder.indexOf(b.id); }).map(function(th) {
+                                                        var isActive = readingTheme === th.id;
+                                                        return <button type="button" key={th.id}
+                                                            role="radio" aria-checked={isActive} aria-label={th.label}
+                                                            aria-posinset={readingThemeOrder.indexOf(th.id) + 1}
+                                                            aria-setsize={10}
+                                                            tabIndex={isActive ? 0 : -1}
+                                                            data-reading-theme-option={th.id}
+                                                            onClick={() => setReadingTheme(th.id)}
+                                                            onKeyDown={(event) => handleReadingThemeKeyDown(event, th.id)}
+                                                            title={th.label}
+                                                            className={`allo-reading-theme-swatch flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-all border-2 cursor-pointer ${isActive ? 'scale-105' : 'hover:scale-105'}`}
+                                                            style={{
+                                                                '--allo-reading-swatch-bg': th.bg,
+                                                                '--allo-reading-swatch-fg': th.fg,
+                                                                '--allo-reading-swatch-border': th.border,
+                                                                '--allo-reading-swatch-focus': th.focus,
+                                                            }}
+                                                        >
+                                                            <span className="text-sm leading-none">{th.emoji}</span>
+                                                            <span className="text-xs font-bold leading-none">{th.label}</span>
+                                                        </button>;
+                                                    })}
+                                                </div>
+                                                {typeof toggleReadingThemeFavorite === 'function' && (
+                                                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                                                        <button type="button"
+                                                            onClick={() => toggleReadingThemeFavorite(readingTheme)}
+                                                            aria-pressed={selectedReadingThemeIsFavorite}
+                                                            className={`min-h-9 rounded-lg border px-3 text-xs font-bold transition-colors motion-reduce:transition-none ${selectedReadingThemeIsFavorite ? (theme === 'contrast' ? 'border-yellow-400 bg-yellow-400 text-black' : theme === 'dark' ? 'border-amber-400 bg-amber-950 text-amber-100' : 'border-amber-500 bg-amber-100 text-amber-950') : (_skin.field + ' hover:border-amber-500')}`}
+                                                        >
+                                                            {selectedReadingThemeIsFavorite ? '★ Favorite' : '☆ Favorite this theme'}
+                                                        </button>
+                                                        <span aria-live="polite" className={`text-xs ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>
+                                                            {readingThemePreferenceScope
+                                                                ? `Saved for ${readingThemePreferenceScope} when this live class syncs.`
+                                                                : (normalizedReadingThemeFavorites.length ? `${normalizedReadingThemeFavorites.length} favorite${normalizedReadingThemeFavorites.length === 1 ? '' : 's'} saved on this device.` : 'Favorites appear first in this picker.')}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {/* Beside Reading Theme on purpose: the theme colors lessons, the overlay tints everything. */}
+                                            <fieldset data-header-color-overlay aria-describedby="header-color-overlay-desc">
+                                                <legend className={`text-xs font-bold mb-1 ${_skin.label}`}>{t('settings.overlay') || 'Color Overlay'}</legend>
+                                                <p id="header-color-overlay-desc" className={`text-xs mb-2 ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>{t('reading_settings.overlay_desc') || 'Tints the whole screen, like a colored reading sheet.'}</p>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {[['none', t('header.overlay_none') || 'None'], ['blue', t('header.reading_theme_blue') || 'Blue'], ['peach', t('header.overlay_peach') || 'Peach'], ['yellow', t('header.overlay_yellow') || 'Yellow']].map(([id, label]) => (
+                                                        <label key={id} className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-2 text-xs font-semibold cursor-pointer ${colorOverlay === id ? _skin.accent : _skin.surface}`}>
+                                                            <input type="radio" name="header-color-overlay" value={id} checked={colorOverlay === id}
+                                                                onChange={() => { try { window.__alloReadingSettings?.set({ colorOverlay: id }); } catch (_) {} }} />
+                                                            {label}
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </fieldset>
+                                            <div className={`border-t ${_skin.divider} pt-3`}>
+                                                <button type="button"
+                                                    onClick={toggleSingleKeyShortcuts}
+                                                    role="switch"
+                                                    aria-checked={singleKeyShortcuts}
+                                                    aria-describedby="header-single-key-shortcuts-desc"
+                                                    data-single-key-shortcuts-toggle="true"
+                                                    className={`w-full flex items-center justify-between gap-3 p-3 rounded-lg border-2 transition-all ${singleKeyShortcuts ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`}
+                                                >
+                                                    <span className="text-left">
+                                                        <span className="block text-xs font-bold">{t('settings.text.single_key_shortcuts') || 'Single-key shortcuts'}</span>
+                                                        <span id="header-single-key-shortcuts-desc" className="block text-xs mt-0.5">{t('settings.text.single_key_shortcuts_sub') || 'Press ? to turn Help Mode on or off. Turn this off if you use speech input or often press keys by accident. The Help Mode button in the toolbar still works.'}</span>
+                                                    </span>
+                                                    <span aria-hidden="true" className={`shrink-0 w-10 h-5 rounded-full relative transition-colors ${singleKeyShortcuts ? 'bg-indigo-500' : theme === 'contrast' ? 'bg-yellow-400' : 'bg-slate-500'}`}>
+                                                        <span className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${singleKeyShortcuts ? 'left-6' : 'left-1'}`}></span>
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            {showVoiceSettings && _headerPortal(
+                                <>
+                                    <div aria-hidden="true" className="fixed inset-0 z-[10000]" onClick={handleSetShowVoiceSettingsToFalse}></div>
+                                    <div ref={_voiceSettingsRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="header-voice-settings-title" className={`allo-header-settings-dialog fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}`}>
+                                        <div className="space-y-3">
+                                            <div className={`flex justify-between items-center border-b ${_skin.divider} pb-2`}>
+                                                <h4 id="header-voice-settings-title" className="font-bold text-sm">{t('settings.voice.label')}</h4>
+                                                <button type="button" onClick={handleSetShowVoiceSettingsToFalse} className={`min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`} aria-label={t('common.close') || 'Close voice and audio settings'}>&times;</button>
+                                            </div>
+                                            <div className={`rounded-lg border p-2 ${_skin.surface}`}>
+                                                <label htmlFor="header-voice-input-engine" className={`text-xs uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_input') || 'Voice input'}</label>
+                                                <select
+                                                    id="header-voice-input-engine"
+                                                    aria-describedby="header-voice-input-engine-help"
+                                                    value={((voiceInputEngine === 'webspeech' && voiceLocalOnly) || (voiceInputEngine === 'gemini' && (studentDeviceVoiceOnly || voiceLocalOnly))) ? 'auto' : voiceInputEngine}
+                                                    onChange={(event) => chooseVoiceInputEngine(event.target.value)}
+                                                    className={`w-full text-xs p-2 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 outline-none`}
+                                                >
+                                                    <option value="auto">{t('header.voice_engine_auto') || 'Auto (private-first)'}</option>
+                                                    <option value="whisper">{t('header.voice_engine_whisper') || 'On-device Whisper'}</option>
+                                                    {!voiceLocalOnly && <option value="webspeech">{t('header.voice_engine_webspeech') || 'Browser speech service'}</option>}
+                                                    {!(studentDeviceVoiceOnly || voiceLocalOnly) && <option value="gemini">{t('header.voice_engine_gemini') || 'Gemini cloud transcription'}</option>}
+                                                    <option value="off">{t('header.voice_engine_off') || 'Off'}</option>
+                                                </select>
+                                                <p id="header-voice-input-engine-help" className={`mt-1 text-xs leading-tight ${_skin.label}`}>{voiceInputDescriptions[((voiceInputEngine === 'webspeech' && voiceLocalOnly) || (voiceInputEngine === 'gemini' && (studentDeviceVoiceOnly || voiceLocalOnly))) ? 'auto' : voiceInputEngine]}</p>
+                                                {window.__alloSpeechSetupHost === true && (
+                                                  <button type="button" onClick={() => { handleSetShowVoiceSettingsToFalse(); window.dispatchEvent(new window.CustomEvent('alloflow:open-speech-setup')); }} className={`mt-2 w-full min-h-11 rounded-md border px-2 py-1 text-xs font-bold ${_skin.field}`}>
+                                                    {t('speech_setup.open') || 'Speech setup: download, size, mic test'}
+                                                  </button>
+                                                )}
+                                                {voiceInputEngine === 'gemini' && !geminiAudioCapability.available && (
+                                                  <div className={`mt-2 rounded-lg border p-2 ${_skin.note}`}>
+                                                    <p role="status" aria-live="polite" className={`text-xs font-bold leading-tight ${_skin.noteHead}`}>
+                                                      {canConfigureGeminiAudio
+                                                         ? (t('header.gemini_key_missing') || 'Gemini transcription is selected, but no Gemini cloud-services key is configured.')
+                                                         : (t('header.gemini_unavailable_activity') || 'Gemini cloud transcription is unavailable in this activity.')}
+                                                    </p>
+                                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                                      {canConfigureGeminiAudio && (
+                                                        <button type="button" onClick={openGeminiAudioConfiguration} data-help-key="header_voice_configure_gemini" className="min-h-11 rounded-md bg-sky-700 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-sky-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+                                                          {t('header.configure_gemini_access') || 'Configure Gemini access'}
+                                                        </button>
+                                                      )}
+                                                      <button type="button" onClick={() => chooseVoiceInputEngine('auto')} className={`min-h-11 rounded-md border px-2.5 py-1.5 text-xs font-bold ${_skin.field}`}>
+                                                         {t('header.use_auto_instead') || 'Use Auto instead'}
+                                                      </button>
+                                                    </div>
+                                                  </div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <label htmlFor="header-spoken-output-voice" className={`text-xs uppercase font-bold ${_skin.label} block mb-1`}>{t('header.spoken_output_voice') || 'Spoken-output voice'}</label>
+                                                <select id="header-spoken-output-voice"
+                                                    value={studentDeviceVoiceOnly ? studentVoiceValue : selectedVoice}
+                                                    onChange={(e) => {
+                                                      const voice = e.target.value;
+                                                      if (voice === '__kokoro_unavailable') return;
+                                                      setSelectedVoice(voice);
+                                                      if (KOKORO_VOICES.some(v => v.id === voice)) startKokoroVoiceDownload();
+                                                    }}
+                                                    data-help-key="header_settings_voice_select"
+                                                    className={`w-full text-xs p-2 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 outline-none`}
+                                                >
+                                                    {studentDeviceVoiceOnly ? (
+                                                        <>
+                                                            {studentOnDeviceKokoro && renderStudentOnDeviceGroup()}
+                                                            {renderDeviceVoiceGroup()}
+                                                        </>
+                                                    ) : _isCanvasEnv ? (
+                                                        <>
+                                                            <optgroup label={'✨ ' + (t('header.voice_cloud_group') || 'Cloud voice (Gemini): most natural, needs the internet')}>
+                                                                {GEMINI_VOICES.slice(0, 15).map(v => (
+                                                                    <option key={v.id} value={v.id}>{v.label || v.id}</option>
+                                                                ))}
+                                                            </optgroup>
+                                                            {renderKokoroVoiceGroup()}
+                                                            {renderDeviceVoiceGroup()}
+                                                        </>
+                                                    ) : isLocalVoiceMode ? (
+                                                        <>
+                                                            {renderKokoroVoiceGroup()}
+                                                            <optgroup label={t('header.edge_tts_voices') || '🎤 Edge TTS Voices'}>
+                                                                {EDGE_TTS_VOICES.map(v => (
+                                                                    <option key={v.id} value={v.id}>{v.label}</option>
+                                                                ))}
+                                                            </optgroup>
+                                                            {renderDeviceVoiceGroup()}
+                                                        </>
+                                                    ) : (
+                                                        /* Every other surface — the hosted web app, which is what a
+                                                           phone loads. This branch used to be cloud voices only. */
+                                                        <>
+                                                            <optgroup label={'✨ ' + (t('header.voice_cloud_group') || 'Cloud voice (Gemini): most natural, needs the internet')}>
+                                                                {GEMINI_VOICES.map(v => (
+                                                                    <option key={v.id} value={v.id}>{v.label}</option>
+                                                                ))}
+                                                            </optgroup>
+                                                            {renderKokoroVoiceGroup()}
+                                                            {renderDeviceVoiceGroup()}
+                                                        </>
+                                                    )}
+                                                </select>
+                                                {!studentDeviceVoiceOnly && /^[ab][fm]_/i.test(selectedVoice || '') && (speechProvider === 'browser' || speechProvider === 'off') && (
+                                                  <p role="status" className={`mt-2 text-xs ${_skin.label}`}>
+                                                    {speechProvider === 'browser'
+                                                      ? (t('header.kokoro_browser_provider') || 'The speech provider is set to Device voice. Read-aloud will use the device voice. Choose Auto or Local in speech provider settings to hear Kokoro.')
+                                                      : (t('header.kokoro_disabled_provider') || 'Speech output is off. Choose Auto or Local in speech provider settings to hear Kokoro.')}
+                                                  </p>
+                                                )}
+                                                {/* ── Kokoro model info (2026-07-06): the old Fast(q4)/High(q8)
+                                                    toggle was retired — the q4 file is really ~291MB (not 43MB),
+                                                    sounds worse, and benched no faster on wasm CPU. One honest
+                                                    tier now: q8, ~88MB, downloaded once + cached on device. ── */}
+                                                {canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes('_') && (
+                                                    <div className={`mt-2 p-2 rounded-lg border ${_skin.surface}`} data-kokoro-model-status={window._kokoroTTS?.ready ? 'ready' : (kokoroDownloading || window.__kokoroTTSDownloading) ? 'preparing' : kokoroSavedOnDevice ? 'saved' : 'missing'}>
+                                                        <p className="text-xs m-0">
+                                                            <span className="font-bold">{t('header.voice_model_label') || 'Voice model'}:</span>{' '}
+                                                            {window._kokoroTTS?.ready
+                                                                ? (t('header.voice_model_ready') || 'Kokoro (~88MB) — ready on this device. Downloaded once; reads offline.')
+                                                                : (kokoroDownloading || window.__kokoroTTSDownloading)
+                                                                    ? (t('header.voice_model_preparing') || 'Kokoro (~88MB) is preparing. Try reading again when the voice is ready.')
+                                                                    : kokoroSavedOnDevice
+                                                                        ? (t('header.voice_model_saved') || 'Kokoro (~88MB) is saved on this device. It starts when reading begins.')
+                                                                        : (t('header.voice_model_missing') || "Kokoro (~88MB) is not on this device yet. Get the voice to read aloud with it.")}
+                                                        </p>
+                                                        {!window._kokoroTTS?.ready && !(kokoroDownloading || window.__kokoroTTSDownloading) && !kokoroSavedOnDevice && window.__loadKokoroTTS && (
+                                                            <button type="button" onClick={() => { startKokoroVoiceDownload(); setKokoroSavedOnDevice(null); }} data-kokoro-get-voice className={`mt-2 min-h-9 rounded-lg border px-3 text-xs font-bold ${_skin.ghost}`}>
+                                                                {t('header.voice_model_get') || 'Get the voice (88 MB)'}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                )}
+                                                {/* ── Browser-TTS Fallback Toggle ──
+                                                    When Gemini refuses a sentence or exhausts retries, fall back to the
+                                                    system voice instead of skipping. Enabled by default, with an explicit
+                                                    opt-out saved alongside the provider settings. */}
+                                                {!studentDeviceVoiceOnly && <div className={`mt-2 p-2 rounded-lg border ${_skin.surface}`}>
+                                                    <label className="flex items-start gap-2 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            id="header-browser-voice-fallback"
+                                                            className="mt-0.5 accent-indigo-600"
+                                                            defaultChecked={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').browserTtsFallback !== false; } catch { return true; } })()}
+                                                            onChange={(e) => {
+                                                                const requested = e.currentTarget.checked;
+                                                                try {
+                                                                    const cur = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
+                                                                    localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...cur, browserTtsFallback: requested }));
+                                                                } catch (_) {
+                                                                    e.currentTarget.checked = !requested;
+                                                                    addToast(t('header.audio_setting_save_failed') || 'This audio setting could not be saved. Your previous choice is still active.', 'error');
+                                                                }
+                                                            }}
+                                                            aria-label={t('header.browser_tts_fallback_aria') || 'Use browser voice as fallback when Gemini TTS refuses or fails'}
+                                                        />
+                                                        <span className="text-xs leading-tight">
+                                                            <span className="font-bold block">{t('header.browser_tts_fallback_label') || 'Browser-voice fallback'}</span>
+                                                            <span className="opacity-80">{t('header.browser_tts_fallback_desc') || 'Read refused/failed sentences with the system voice instead of skipping.'}</span>
+                                                        </span>
+                                                    </label>
+                                                </div>}
+                                                {/* ── Non-English Language TTS Indicator ── */}
+                                                {/* Shown on every surface, not only Canvas: the language cascade is
+                                                    the same everywhere and a teacher working in Spanish on the web
+                                                    app needs the same answer.
+
+                                                    This used to claim "Piper Neural Voice, auto-selected" whenever
+                                                    supportsLanguage() was true, which only says a voice EXISTS in
+                                                    the table, not that it has been downloaded. In the build before
+                                                    2026-08-16, seven of those table entries pointed at models that
+                                                    do not exist at all, Spanish among them. Report the three states
+                                                    separately instead. */}
+                                                {!studentDeviceVoiceOnly && leveledTextLanguage && leveledTextLanguage !== 'English' && (
+                                                    <div className={`mt-2 p-2 rounded-lg border ${_skin.note}`}>
+                                                        <div className={`text-xs uppercase font-bold ${_skin.noteHead}`}>{t('header.voice_active_language') || 'Reading language'}: {leveledTextLanguage}</div>
+                                                        <div className={`text-xs ${_skin.noteBody} mt-0.5`}>
+                                                            {!window._piperTTS?.supportsLanguage(languageToTTSCode(leveledTextLanguage))
+                                                                ? (t('header.voice_lang_no_offline') || 'Cloud voice, then the device voice. There is no offline voice for this language yet.')
+                                                                : window._piperTTS?.isLanguageReady?.(languageToTTSCode(leveledTextLanguage))
+                                                                    ? (t('header.voice_lang_offline_ready') || 'An offline voice for this language is saved on this device.')
+                                                                    : (t('header.voice_lang_offline_on_demand') || 'Cloud voice first. An offline voice for this language downloads the first time it is needed.')}
+                                                        </div>
+                                                        <div className={`text-xs ${_skin.noteHead} mt-0.5`}>{t('header.kokoro_english_only') || 'Kokoro voice applies to English content'}</div>
+                                                    </div>
+                                                )}
+                                                <div className="flex gap-2 mt-3">
+                                                    <div className="flex-1">
+                                                        <label htmlFor="header-voice-speed" className={`text-xs uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_speed') || 'Speed'}: {voiceSpeed}x</label>
+                                                        <input id="header-voice-speed"
+                                                            type="range"
+                                                            min="0.5"
+                                                            max="2"
+                                                            step="0.1"
+                                                            value={voiceSpeed}
+                                                            onChange={(e) => setVoiceSpeed(parseFloat(e.target.value))}
+                                                            data-help-key="header_settings_voice_speed"
+                                                            className="w-full accent-indigo-600 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <label htmlFor="header-voice-volume" className={`text-xs uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_volume') || 'Volume'}: {Math.round(voiceVolume * 100)}%</label>
+                                                        <input id="header-voice-volume"
+                                                            type="range"
+                                                            min="0"
+                                                            max="1"
+                                                            step="0.1"
+                                                            value={voiceVolume}
+                                                            onChange={(e) => setVoiceVolume(parseFloat(e.target.value))}
+                                                            data-help-key="header_settings_voice_volume"
+                                                            className="w-full accent-indigo-600 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const testVoice = typeof window !== 'undefined' && window.__alloTestVoice;
+                                                        if (typeof testVoice === 'function') testVoice();
+                                                    }}
+                                                    disabled={!(typeof window !== 'undefined' && typeof window.__alloTestVoice === 'function')}
+                                                    className={`mt-3 w-full min-h-9 rounded-lg border px-3 py-2 text-xs font-bold ${_skin.surface} ${_skin.action} disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                    aria-label={t('header.voice_test_aria') || 'Test the selected voice and audio output'}
+                                                >
+                                                    {t('header.voice_test') || 'Test voice'}
+                                                </button>
+                                                <p className={`text-xs ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} mt-2 italic leading-tight`}>
+                                                    {t('settings.voice.helper')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
       </header>
   );
 }

@@ -17,7 +17,7 @@
   }
 
   if (typeof document !== 'undefined') {
-    if (!document.getElementById('allo-live-open-groove')) {
+    if (document.body && !document.getElementById('allo-live-open-groove')) {
       var live = document.createElement('div');
       live.id = 'allo-live-open-groove';
       live.setAttribute('aria-live', 'polite');
@@ -26,7 +26,7 @@
       live.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
       document.body.appendChild(live);
     }
-    if (!document.getElementById('og-a11y-css')) {
+    if (document.head && !document.getElementById('og-a11y-css')) {
       var css = document.createElement('style');
       css.id = 'og-a11y-css';
       css.textContent = [
@@ -41,6 +41,25 @@
       ].join('\n');
       document.head.appendChild(css);
     }
+  }
+
+  function _ogGlobalMuted() {
+    try {
+      if (root) {
+        if (typeof root.__alloIsGlobalMuted === 'function' && root.__alloIsGlobalMuted()) return true;
+        if (root._alloGlobalMute === true || root._alloGlobalMuted === true || root.__alloFlowMuted === true || root.__alloSoundMuted === true) return true;
+        if (typeof root.isAlloMuted === 'function' && root.isAlloMuted()) return true;
+        if (root.localStorage && (root.localStorage.getItem('alloflow-global-muted') === 'true' || root.localStorage.getItem('alloflow_muted') === '1')) return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  function _ogSafeJsonParse(raw) {
+    return JSON.parse(raw, function (key, val) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return undefined;
+      return val;
+    });
   }
 
   var OG_THEME_STORAGE_KEY = 'openGrooveThemePreference';
@@ -140,7 +159,7 @@
       var store = ogDraftStore(rootLike, keys.student);
       var text = ogStorageRead(rootLike, keys.metaKey, store);
       if (!text) return null;
-      var meta = JSON.parse(text);
+      var meta = _ogSafeJsonParse(text);
       return meta && meta.savedAt ? meta : null;
     } catch (_) {
       return null;
@@ -540,7 +559,7 @@
 
     React.useEffect(function () {
       function handleComputerKey(ev) {
-        if (!ev || ev.defaultPrevented || ev.repeat || ev.altKey || ev.ctrlKey || ev.metaKey) return;
+        if (!ev || ev.defaultPrevented || ev.repeat || ev.isComposing || ev.keyCode === 229 || ev.altKey || ev.ctrlKey || ev.metaKey) return;
         if (isEditableEventTarget(ev.target)) return;
         var keyName = String(ev.key || '').toUpperCase();
         var key = (keyboardLayout.keys || []).find(function (item) { return item.computerKey === keyName; });
@@ -577,7 +596,8 @@
     }
 
     function trimHistory(stack) {
-      return stack.slice(Math.max(0, stack.length - historyLimit));
+      var list = Array.isArray(stack) ? stack : [];
+      return list.slice(Math.max(0, list.length - historyLimit));
     }
 
     function syncSelectionForProject(next) {
@@ -596,7 +616,7 @@
     function commitProject(next, options) {
       options = options || {};
       if (options.history !== false) {
-        setUndoStack(function (stack) { return trimHistory(stack.concat([clone(project)])); });
+        setUndoStack(function (stack) { return trimHistory((Array.isArray(stack) ? stack : []).concat([clone(project)])); });
         setRedoStack([]);
       }
       setProject(next);
@@ -612,8 +632,8 @@
     function undoProject() {
       if (!undoStack.length) return;
       var previous = clone(undoStack[undoStack.length - 1]);
-      setUndoStack(function (stack) { return stack.slice(0, Math.max(0, stack.length - 1)); });
-      setRedoStack(function (stack) { return trimHistory(stack.concat([clone(project)])); });
+      setUndoStack(function (stack) { var list = Array.isArray(stack) ? stack : []; return list.slice(0, Math.max(0, list.length - 1)); });
+      setRedoStack(function (stack) { return trimHistory((Array.isArray(stack) ? stack : []).concat([clone(project)])); });
       setProject(previous);
       syncSelectionForProject(previous);
       ogAnnounce('Undo');
@@ -622,8 +642,8 @@
     function redoProject() {
       if (!redoStack.length) return;
       var next = clone(redoStack[redoStack.length - 1]);
-      setRedoStack(function (stack) { return stack.slice(0, Math.max(0, stack.length - 1)); });
-      setUndoStack(function (stack) { return trimHistory(stack.concat([clone(project)])); });
+      setRedoStack(function (stack) { var list = Array.isArray(stack) ? stack : []; return list.slice(0, Math.max(0, list.length - 1)); });
+      setUndoStack(function (stack) { return trimHistory((Array.isArray(stack) ? stack : []).concat([clone(project)])); });
       setProject(next);
       syncSelectionForProject(next);
       ogAnnounce('Redo');
@@ -670,6 +690,8 @@
         var now = engine && engine.ctx ? engine.ctx.currentTime : Date.now() / 1000;
         var elapsed = Math.max(0, now - startTime);
         var safeDuration = Math.max(0.001, durationSec || 0.001);
+        var isHidden = !!(root.document && root.document.hidden);
+        if (isHidden && (activeLoop || elapsed < safeDuration)) return;
         var cycleElapsed = activeLoop ? elapsed % safeDuration : Math.min(elapsed, safeDuration);
         var progress = Math.max(0, Math.min(1, cycleElapsed / safeDuration));
         var safeTotalTicks = Math.max(1, totalTicks || 1);
@@ -741,7 +763,7 @@
     }
 
     function handleDialogCommandShortcut(ev) {
-      if (!ev || ev.defaultPrevented || ev.repeat) return false;
+      if (!ev || ev.defaultPrevented || ev.repeat || ev.isComposing || ev.keyCode === 229) return false;
       var key = String(ev.key || '');
       var lowerKey = key.toLowerCase();
       var editable = isEditableEventTarget(ev.target);
@@ -789,13 +811,14 @@
     }
 
     function handleDialogKeyDown(ev) {
+      if (!ev || ev.isComposing || ev.keyCode === 229) return;
       if (handleDialogCommandShortcut(ev)) return;
-      if (ev.key === 'Escape' && props.onClose) {
+      if (ev.key === 'Escape' && !ev.ctrlKey && !ev.metaKey && !ev.altKey && props.onClose) {
         ev.preventDefault();
         props.onClose();
         return;
       }
-      if (ev.key !== 'Tab' || !dialogRef.current || !root.document) return;
+      if (ev.key !== 'Tab' || ev.ctrlKey || ev.metaKey || ev.altKey || !dialogRef.current || !root.document) return;
       var nodes = dialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
       var focusable = Array.prototype.slice.call(nodes).filter(function (node) {
         return node && !node.getAttribute('aria-hidden') && (node.offsetWidth || node.offsetHeight || node.getClientRects().length);
@@ -899,8 +922,12 @@
         if (showError) addToast(engineRef.current.reason || 'Audio is unavailable in this browser.', 'error');
         return null;
       }
+      var effectiveMuted = masterMutedRef.current || _ogGlobalMuted();
       if (engineRef.current.master && engineRef.current.master.gain) {
-        engineRef.current.master.gain.value = masterMutedRef.current ? 0 : 0.85;
+        engineRef.current.master.gain.value = effectiveMuted ? 0 : 0.85;
+      }
+      if (!effectiveMuted && engineRef.current.ctx && engineRef.current.ctx.state === 'suspended' && typeof engineRef.current.ctx.resume === 'function') {
+        try { engineRef.current.ctx.resume(); } catch (_) {}
       }
       return engineRef.current;
     }
@@ -910,10 +937,26 @@
       masterMutedRef.current = next;
       setMasterMuted(next);
       if (engineRef.current && engineRef.current.master && engineRef.current.master.gain) {
-        engineRef.current.master.gain.value = next ? 0 : 0.85;
+        engineRef.current.master.gain.value = (next || _ogGlobalMuted()) ? 0 : 0.85;
       }
       ogAnnounce(next ? 'Master audio muted' : 'Master audio unmuted');
     }
+
+    React.useEffect(function () {
+      function syncGlobalMute() {
+        var effectiveMuted = masterMutedRef.current || _ogGlobalMuted();
+        if (engineRef.current && engineRef.current.master && engineRef.current.master.gain) {
+          engineRef.current.master.gain.value = effectiveMuted ? 0 : 0.85;
+        }
+      }
+      if (root && typeof root.addEventListener === 'function') {
+        root.addEventListener('alloflow-mute-changed', syncGlobalMute);
+        return function () {
+          try { root.removeEventListener('alloflow-mute-changed', syncGlobalMute); } catch (_) {}
+        };
+      }
+      return undefined;
+    }, []);
 
     function restoreEmbeddedSamplesFor(nextProject, quiet) {
       if (!A || !A.ogRestoreEmbeddedSamples) return;
@@ -926,7 +969,8 @@
 
     function stepActive(step) {
       if (!pattern || !drumTrack) return false;
-      var stepTicks = S ? S.ogStepTicks(project, stepsPerBar) : Math.round(C.ogTicksPerMeasure(project) / stepsPerBar);
+      var safeSteps = Math.max(1, Number(stepsPerBar) || 1);
+      var stepTicks = S ? S.ogStepTicks(project, safeSteps) : Math.round(C.ogTicksPerMeasure(project) / safeSteps);
       return pattern.events.some(function (event) {
         return event.type === 'drumHit' && event.trackId === drumTrack.id && event.padId === selectedPadId && event.startTick === step * stepTicks;
       });
@@ -934,7 +978,8 @@
 
     function noteActive(pitch, step) {
       if (!pattern || !synthTrack) return false;
-      var stepTicks = S ? S.ogStepTicks(project, stepsPerBar) : Math.round(C.ogTicksPerMeasure(project) / stepsPerBar);
+      var safeSteps = Math.max(1, Number(stepsPerBar) || 1);
+      var stepTicks = S ? S.ogStepTicks(project, safeSteps) : Math.round(C.ogTicksPerMeasure(project) / safeSteps);
       var midi = C.ogNoteNameToMidi(pitch);
       return pattern.events.some(function (event) {
         return event.type === 'note' && event.trackId === synthTrack.id && event.midi === midi && event.startTick === step * stepTicks;
@@ -981,8 +1026,10 @@
     }
 
     function keyboardStaffBeatForStep(stepValue) {
-      var step = Math.max(0, Math.min(stepsPerBar - 1, Number(stepValue) || 0));
-      return Math.round((1 + (step * (C.ogTicksPerMeasure(project) / stepsPerBar) / C.ogTicksPerBeat(project))) * 1000) / 1000;
+      var safeSteps = Math.max(1, Number(stepsPerBar) || 1);
+      var safeBeatTicks = Math.max(1, C.ogTicksPerBeat(project) || 1);
+      var step = Math.max(0, Math.min(safeSteps - 1, Number(stepValue) || 0));
+      return Math.round((1 + (step * (C.ogTicksPerMeasure(project) / safeSteps) / safeBeatTicks)) * 1000) / 1000;
     }
 
     function writeKeyboardStaffRest() {
@@ -1024,7 +1071,7 @@
           return;
         }
         if (!C.ogSetNoteStep) return;
-        var durationTicks = Math.round(C.ogTicksPerMeasure(next) / stepsPerBar) * durationSteps;
+        var durationTicks = Math.round(C.ogTicksPerMeasure(next) / Math.max(1, Number(stepsPerBar) || 1)) * durationSteps;
         (pitches || []).forEach(function (pitch) {
           C.ogSetNoteStep(next, nextPattern.id, nextSynth.id, pitch, step, stepsPerBar, {
             on: true,
@@ -1343,7 +1390,7 @@
       if (!engine) return;
       var targetTrack = C.ogFindTrack(project, selectedEffectTrackId) || synthTrack || drumTrack;
       if (!targetTrack) return;
-      var stepTicks = Math.round(C.ogTicksPerMeasure(project) / stepsPerBar);
+      var stepTicks = Math.round(C.ogTicksPerMeasure(project) / Math.max(1, Number(stepsPerBar) || 1));
       var tick = selectedBar * C.ogTicksPerMeasure(project) + automationStep * stepTicks;
       var effects = C.ogResolveTrackEffectsAtTick ? C.ogResolveTrackEffectsAtTick(project, pattern && pattern.id, targetTrack.id, tick) : C.ogGetTrackEffects ? C.ogGetTrackEffects(project, targetTrack.id) : [];
       var when = engine.ctx.currentTime + 0.01;
@@ -1911,6 +1958,7 @@
     }
 
     function staffRestKey(ev, rest, measure) {
+      if (!ev || ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
       if (ev.key !== 'Enter' && ev.key !== ' ') return;
       ev.preventDefault();
       if (ev.stopPropagation) ev.stopPropagation();
@@ -1918,6 +1966,7 @@
     }
 
     function staffNoteKey(ev, note, measure) {
+      if (!ev || ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
       if (ev.key === 'Enter' || ev.key === ' ') {
         ev.preventDefault();
         selectStaffNote(note, measure);
@@ -1938,14 +1987,16 @@
         summary = C.ogUpdateStaffNote(next, nextPattern.id, nextSynth.id, selectedStaffNoteId, Object.assign({ source: 'staffInspector' }, updates || {}));
       });
       if (summary && summary.event) {
+        var safeMeasureTicks = Math.max(1, C.ogTicksPerMeasure(project) || 1);
+        var safeBeatTicks = Math.max(1, C.ogTicksPerBeat(project) || 1);
         setStaffPitch(summary.event.pitch || activeStaffPitch);
         setStaffDuration(summary.duration || staffDuration);
         setStaffArticulation(summary.articulation || summary.event.articulation || 'normal');
         setStaffDynamic(summary.dynamic || summary.event.dynamic || 'mf');
         setStaffCursor({
-          barIndex: Math.max(0, Math.floor((summary.startTick || 0) / C.ogTicksPerMeasure(project))),
-          bar: Math.max(1, Math.floor((summary.startTick || 0) / C.ogTicksPerMeasure(project)) + 1),
-          startBeat: Math.round((((summary.startTick || 0) % C.ogTicksPerMeasure(project)) / C.ogTicksPerBeat(project) + 1) * 1000) / 1000,
+          barIndex: Math.max(0, Math.floor((summary.startTick || 0) / safeMeasureTicks)),
+          bar: Math.max(1, Math.floor((summary.startTick || 0) / safeMeasureTicks) + 1),
+          startBeat: Math.round((((summary.startTick || 0) % safeMeasureTicks) / safeBeatTicks + 1) * 1000) / 1000,
           pitch: summary.event.pitch || activeStaffPitch,
           duration: summary.duration || staffDuration,
           tool: 'note',
@@ -2026,6 +2077,7 @@
     }
 
     function staffSlotKey(ev, barIndex, startBeat) {
+      if (!ev || ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
       if (ev.key === 'Enter' || ev.key === ' ') {
         ev.preventDefault();
         writeStaffSlot(barIndex, startBeat);
@@ -2061,7 +2113,8 @@
       React.useEffect(function () {
         var mount = mountRef.current;
         if (!mount) return;
-        mount.innerHTML = '';
+        if (typeof mount.replaceChildren === 'function') mount.replaceChildren();
+        else mount.textContent = '';
         var model = props.model || {};
         var runtime = root.Vex && root.Vex.Flow || root.VexFlow && (root.VexFlow.Flow || root.VexFlow) || root.vexflow && (root.vexflow.Flow || root.vexflow) || null;
         if (!runtime || !runtime.Renderer || !runtime.Stave || !runtime.StaveNote || !runtime.Voice || !runtime.Formatter) {
@@ -3442,10 +3495,11 @@
     var automationSnapshot = C.ogBuildAutomationSnapshot && pattern && selectedEffectTrack ? C.ogBuildAutomationSnapshot(project, pattern.id, selectedEffectTrack.id) : { lanes: [], pointCount: 0 };
     var automationLane = (automationSnapshot.lanes || []).filter(function (lane) { return lane.target === automationSpec.id; })[0] || { points: [] };
     var automationStepMap = {};
-    var automationStepTicks = Math.round(C.ogTicksPerMeasure(project) / stepsPerBar);
+    var safeAutoSteps = Math.max(1, Number(stepsPerBar) || 1);
+    var automationStepTicks = Math.max(1, Math.round(C.ogTicksPerMeasure(project) / safeAutoSteps));
     (automationLane.points || []).forEach(function (point) {
       var absoluteStep = Math.round((point.startTick || 0) / automationStepTicks);
-      if (Math.floor(absoluteStep / stepsPerBar) === selectedBar) automationStepMap[absoluteStep % stepsPerBar] = point;
+      if (Math.floor(absoluteStep / safeAutoSteps) === selectedBar) automationStepMap[absoluteStep % safeAutoSteps] = point;
     });
     var synthPatch = C.ogNormalizeSynthInstrument ? C.ogNormalizeSynthInstrument(synthTrack && synthTrack.instrument) : (synthTrack && synthTrack.instrument || { oscillator: 'sawtooth', filter: { type: 'lowpass', cutoff: 6000, q: 0.7 }, envelope: { attack: 0.01, decay: 0.12, sustain: 0.65, release: 0.25 } });
     var synthPatchSummary = C.ogBuildSynthPatchSummary ? C.ogBuildSynthPatchSummary(project, synthTrack && synthTrack.id) : { label: synthPatch.oscillator };
@@ -3576,7 +3630,7 @@
       }).join(' ');
       var barPoints = (automationLane.points || []).filter(function (point) {
         var absoluteStep = Math.round((point.startTick || 0) / automationStepTicks);
-        return Math.floor(absoluteStep / stepsPerBar) === selectedBar;
+        return Math.floor(absoluteStep / Math.max(1, Number(stepsPerBar) || 1)) === selectedBar;
       });
       return h('svg', {
         style: styles.automationCurveSvg,

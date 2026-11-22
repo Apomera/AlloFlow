@@ -31,7 +31,8 @@
 // chosen: a picked symbol or photo - { imageSource, altText, altSource, altHash, imageAttribution }.
 // An upload has no known credit, so any earlier credit is dropped with the old picture.
 function replaceSingleImage(item, imageUrl, chosen) {
-  const data = item.data || {};
+  if (!item || typeof item !== 'object') return item;
+  const data = item.data && typeof item.data === 'object' ? item.data : {};
   const originalImage = data.originalImage || {
     imageUrl: data.imageUrl || '',
     altText: data.altText || '',
@@ -69,7 +70,8 @@ function replaceSingleImage(item, imageUrl, chosen) {
   };
 }
 function restoreSingleImage(item) {
-  const data = item.data || {};
+  if (!item || typeof item !== 'object') return item;
+  const data = item.data && typeof item.data === 'object' ? item.data : {};
   if (!data.originalImage) return item;
   const next = {
     ...data,
@@ -88,13 +90,39 @@ function restoreSingleImage(item) {
 // A learner never edits the teacher's annotations. The learner keeps only their own
 // drawings and the labels they added; the teacher's labels, captions, replacements and
 // challenge settings always come from the resource.
+function _imgIsSafePanelKey(k) {
+  return typeof k === 'string' && k !== '__proto__' && k !== 'constructor' && k !== 'prototype';
+}
+function _imgSafeImageUrl(raw) {
+  if (typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+  if (/^data:image\/(?:png|jpe?g|gif|webp|avif);base64,/i.test(trimmed)) return trimmed;
+  if (/^data:image\/svg\+xml/i.test(trimmed)) {
+    try {
+      const comma = trimmed.indexOf(',');
+      if (comma < 0) return '';
+      const decoded = /;base64/i.test(trimmed.slice(0, comma)) ? atob(trimmed.slice(comma + 1)) : decodeURIComponent(trimmed.slice(comma + 1));
+      if (/<script\b|<foreignObject\b|<(?:iframe|object|embed|meta|base|link|animate|set)\b|<!ENTITY|&#|\bon[a-z]+\s*=|(?:xlink:)?href\s*=\s*["']?\s*(?:javascript:|data:)|javascript:|@import|expression\s*\(/i.test(decoded)) return '';
+      return trimmed;
+    } catch (_) {
+      return '';
+    }
+  }
+  if (/^(?:https?:|blob:|\/|\.{1,2}\/)/i.test(trimmed)) return trimmed;
+  return '';
+}
 function learnerOwnedAnnotations(annotations, teacher) {
-  const a = annotations || {},
-    teacherLabels = teacher && teacher.userLabels || {},
-    userLabels = {};
-  Object.keys(a.userLabels || {}).forEach(panel => {
-    const taken = new Set((teacherLabels[panel] || []).map(label => label && label.id));
-    const own = (a.userLabels[panel] || []).filter(label => label && !taken.has(label.id));
+  const a = annotations && typeof annotations === 'object' ? annotations : {};
+  const teacherLabels = teacher && teacher.userLabels && typeof teacher.userLabels === 'object' ? teacher.userLabels : {};
+  const srcUserLabels = a.userLabels && typeof a.userLabels === 'object' ? a.userLabels : {};
+  const userLabels = {};
+  Object.keys(srcUserLabels).forEach(panel => {
+    if (!_imgIsSafePanelKey(panel)) return;
+    const tList = Object.prototype.hasOwnProperty.call(teacherLabels, panel) && Array.isArray(teacherLabels[panel]) ? teacherLabels[panel] : [];
+    const uList = Array.isArray(srcUserLabels[panel]) ? srcUserLabels[panel] : [];
+    const taken = new Set(tList.map(label => label && label.id));
+    const own = uList.filter(label => label && !taken.has(label.id));
     if (own.length) userLabels[panel] = own;
   });
   return {
@@ -104,14 +132,20 @@ function learnerOwnedAnnotations(annotations, teacher) {
 }
 function learnerPanelAnnotations(teacher, learner) {
   const base = {
-      ...(teacher || {})
-    },
-    own = learner && typeof learner === 'object' ? learner : {};
-  const userLabels = {
-    ...(base.userLabels || {})
+    ...(teacher && typeof teacher === 'object' ? teacher : {})
   };
-  Object.keys(own.userLabels || {}).forEach(panel => {
-    userLabels[panel] = [...(userLabels[panel] || []), ...(own.userLabels[panel] || [])];
+  const own = learner && typeof learner === 'object' ? learner : {};
+  const baseLabels = base.userLabels && typeof base.userLabels === 'object' ? base.userLabels : {};
+  const ownLabels = own.userLabels && typeof own.userLabels === 'object' ? own.userLabels : {};
+  const userLabels = {};
+  Object.keys(baseLabels).forEach(panel => {
+    if (_imgIsSafePanelKey(panel) && Array.isArray(baseLabels[panel])) userLabels[panel] = baseLabels[panel].slice();
+  });
+  Object.keys(ownLabels).forEach(panel => {
+    if (!_imgIsSafePanelKey(panel)) return;
+    const prevList = Object.prototype.hasOwnProperty.call(userLabels, panel) && Array.isArray(userLabels[panel]) ? userLabels[panel] : [];
+    const addList = Array.isArray(ownLabels[panel]) ? ownLabels[panel] : [];
+    userLabels[panel] = [...prevList, ...addList];
   });
   return {
     ...base,
@@ -123,7 +157,22 @@ function learnerPanelAnnotations(teacher, learner) {
 // Host "Needs AI setup" doorway for teacher AI actions; null on old hosts.
 function _imageViewAiDoor(kind, t) {
   try {
-    return typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway(kind, t) : null;
+    if (typeof window !== 'undefined') {
+      if (window._alloQrBlocked === true || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) {
+        return {
+          disabled: true,
+          title: typeof t === 'function' && t('ai.setup_required') || 'AI setup required'
+        };
+      }
+      if (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable(kind || 'text')) {
+        return {
+          disabled: true,
+          title: typeof t === 'function' && t('ai.setup_required') || 'AI setup required'
+        };
+      }
+      if (typeof window.__alloAiSetupDoorway === 'function') return window.__alloAiSetupDoorway(kind, t);
+    }
+    return null;
   } catch (_) {
     return null;
   }
@@ -131,13 +180,13 @@ function _imageViewAiDoor(kind, t) {
 function _imageViewFnUsable(kind, fn) {
   if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
   try {
-    if (typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true)) return false;
+    if (typeof window !== 'undefined' && (window._alloQrBlocked === true || window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true)) return false;
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind || 'text', fn);
   } catch (_) {}
   return true;
 }
 function ImageView(props) {
-  var t = props.t;
+  var t = typeof props.t === 'function' ? props.t : () => '';
   var imageEditDoor = _imageViewAiDoor('imageEdit', t);
   const imageText = (key, fallback) => {
     const value = typeof t === 'function' ? t(key) : '';
@@ -156,7 +205,7 @@ function ImageView(props) {
   var generatedContent = props.generatedContent;
   var isTeacherMode = props.isTeacherMode;
   var imageGenDoor = isTeacherMode ? _imageViewAiDoor('images', t) : null;
-  var imageRefinementInput = props.imageRefinementInput;
+  var imageRefinementInput = typeof props.imageRefinementInput === 'string' ? props.imageRefinementInput : '';
   var isProcessing = props.isProcessing;
   var singleImageFileRef = props.singleImageFileRef;
   var setLabelChallengeResults = props.setLabelChallengeResults;
@@ -208,8 +257,8 @@ function ImageView(props) {
     const id = generatedContent && generatedContent.id;
     const patch = item => item && item.id === id && item.type === 'image' ? updater(item) : item;
     if (typeof props.onUpdateResource === 'function') return props.onUpdateResource(id, patch);
-    setGeneratedContent(patch);
-    setHistory(items => items.map(patch));
+    if (typeof setGeneratedContent === 'function') setGeneratedContent(patch);
+    if (typeof setHistory === 'function') setHistory(items => Array.isArray(items) ? items.map(patch) : items);
   };
   // Picked Mulberry symbols and screened photos replace the picture like an
   // upload, but keep their description and carry their credit (drawn into the
@@ -293,11 +342,11 @@ function ImageView(props) {
     event.target.value = '';
     if (!file) return;
     if (!/^image\/(png|jpeg|gif|webp|avif)$/i.test(file.type)) {
-      addToast(t('visuals.upload_format_error') || 'Choose a PNG, JPEG, GIF, WebP, or AVIF image.', 'warning');
+      if (typeof addToast === 'function') addToast(t('visuals.upload_format_error') || 'Choose a PNG, JPEG, GIF, WebP, or AVIF image.', 'warning');
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      addToast(t('toasts.image_too_large_10mb_alt'), 'warning');
+      if (typeof addToast === 'function') addToast(t('toasts.image_too_large_10mb_alt'), 'warning');
       return;
     }
     const resourceId = generatedContent && generatedContent.id;
@@ -316,13 +365,13 @@ function ImageView(props) {
     reader.onerror = () => {
       if (uploadRequestsRef.current.get(resourceId) !== request) return;
       uploadRequestsRef.current.delete(resourceId);
-      addToast(t('visuals.upload_failed') || 'The image could not be read. Please try another file.', 'error');
+      if (typeof addToast === 'function') addToast(t('visuals.upload_failed') || 'The image could not be read. Please try another file.', 'error');
     };
     reader.onload = event => {
       if (uploadRequestsRef.current.get(resourceId) !== request) return;
       uploadRequestsRef.current.delete(resourceId);
       const imageUrl = event.target && event.target.result;
-      if (typeof imageUrl !== 'string' || !imageUrl.startsWith('data:image/')) return;
+      if (typeof imageUrl !== 'string' || !/^data:image\/(?:png|jpe?g|gif|webp|avif);base64,/i.test(imageUrl)) return;
       updateImageResource(item => item.data && item.data.imageUrl === previousImageUrl ? replaceSingleImage(item, imageUrl) : item);
     };
     reader.readAsDataURL(file);
@@ -374,6 +423,11 @@ function ImageView(props) {
       return;
     }
     try {
+      if (typeof window !== 'undefined' && (window.__alloMuted === true || window._alloGlobalMute === true || window._alloGlobalMuted === true || typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted())) {
+        return;
+      }
+    } catch (_) {}
+    try {
       if (typeof handleSpeak === 'function') {
         handleSpeak(clean, 'visual-desc-' + (generatedContent?.id || 'single'), 0, false, leveledTextLanguage || null);
         return;
@@ -382,19 +436,25 @@ function ImageView(props) {
         setSpeakingDesc(true);
         Promise.resolve(window.AlloSpeechPlayer.speak(clean, {
           language: leveledTextLanguage || 'English'
-        })).catch(() => setSpeakingDesc(false));
+        })).catch(() => {
+          if (imageViewMountedRef.current) setSpeakingDesc(false);
+        });
         return;
       }
       if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
         window.speechSynthesis.cancel();
         const u = new window.SpeechSynthesisUtterance(clean);
-        u.onend = () => setSpeakingDesc(false);
-        u.onerror = () => setSpeakingDesc(false);
+        u.onend = () => {
+          if (imageViewMountedRef.current) setSpeakingDesc(false);
+        };
+        u.onerror = () => {
+          if (imageViewMountedRef.current) setSpeakingDesc(false);
+        };
         setSpeakingDesc(true);
         window.speechSynthesis.speak(u);
       }
     } catch (_) {
-      setSpeakingDesc(false);
+      if (imageViewMountedRef.current) setSpeakingDesc(false);
     }
   };
   return /*#__PURE__*/React.createElement("div", {
@@ -419,7 +479,7 @@ function ImageView(props) {
     className: "w-full max-w-2xl bg-slate-100 rounded-lg border border-slate-400 shadow-md p-2 mb-4 relative overflow-hidden"
   }, usesVisualPanelGrid ? /*#__PURE__*/React.createElement(VisualPanelGrid, {
     key: (generatedContent?.id || "default") + (isTeacherMode ? ':teacher' : ':learner'),
-    visualPlan: generatedContent?.data.visualPlan,
+    visualPlan: generatedContent?.data?.visualPlan,
     onRefinePanel: isTeacherMode && !imageEditDoor?.disabled ? handleRefinePanel : undefined,
     onAnimatePanel: isTeacherMode && !imageEditDoor?.disabled ? handleAnimatePanel : undefined,
     onRegenerateFrame: isTeacherMode && !imageEditDoor?.disabled ? handleRegeneratePanelFrame : undefined,
@@ -437,14 +497,14 @@ function ImageView(props) {
     t: t,
     isTeacherMode: isTeacherMode,
     onChallengeSubmit: result => {
-      handleScoreUpdate(Math.round((result.score || 0) / 2), "Label Challenge", generatedContent?.id);
-      setLabelChallengeResults(prev => [...prev, {
-        score: result.score || 0,
-        totalCorrect: result.totalCorrect || 0,
-        totalClose: result.totalClose || 0,
-        totalExpected: result.totalExpected || 0,
-        feedback: result.feedback || '',
-        labelResults: result.labelResults || [],
+      if (typeof handleScoreUpdate === 'function') handleScoreUpdate(Math.round((result && result.score || 0) / 2), "Label Challenge", generatedContent?.id);
+      if (typeof setLabelChallengeResults === 'function') setLabelChallengeResults(prev => [...(Array.isArray(prev) ? prev : []), {
+        score: result && result.score || 0,
+        totalCorrect: result && result.totalCorrect || 0,
+        totalClose: result && result.totalClose || 0,
+        totalExpected: result && result.totalExpected || 0,
+        feedback: result && result.feedback || '',
+        labelResults: result && result.labelResults || [],
         resourceId: generatedContent?.id,
         resourceTitle: generatedContent?.data?.visualPlan?.title || '',
         panelCount: generatedContent?.data?.visualPlan?.panels?.length || 0,
@@ -453,7 +513,7 @@ function ImageView(props) {
       }]);
     },
     callGemini: _imageViewFnUsable('text', callGemini) ? callGemini : null,
-    initialAnnotations: isTeacherMode ? generatedContent?.data.annotations : learnerPanelAnnotations(generatedContent?.data.annotations, props.learnerAnnotations),
+    initialAnnotations: isTeacherMode ? generatedContent?.data?.annotations : learnerPanelAnnotations(generatedContent?.data?.annotations, props.learnerAnnotations),
     readOnlyDrawings: isTeacherMode ? undefined : generatedContent?.data?.annotations?.drawings,
     onRetryFailed: isTeacherMode && typeof handleRestoreImage === 'function' ? () => handleRestoreImage() : undefined,
     onAnnotationsChange: annotations => {
@@ -466,15 +526,15 @@ function ImageView(props) {
         }
       }));else if (typeof props.onLearnerAnnotationsChange === 'function') props.onLearnerAnnotationsChange(generatedContent?.id, learnerOwnedAnnotations(annotations, generatedContent?.data?.annotations));
     }
-  }) : generatedContent?.data.imageUrl ? /*#__PURE__*/React.createElement("div", {
+  }) : _imgSafeImageUrl(generatedContent?.data?.imageUrl) ? /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'relative'
     }
   }, /*#__PURE__*/React.createElement("img", {
-    src: generatedContent?.data.imageUrl,
+    src: _imgSafeImageUrl(generatedContent?.data?.imageUrl),
     alt: imageDescription,
     "aria-describedby": descriptionNeedsAttention ? descriptionId : undefined,
-    role: generatedContent?.data.decorative ? 'presentation' : undefined,
+    role: generatedContent?.data?.decorative ? 'presentation' : undefined,
     className: "w-full h-auto rounded",
     loading: "lazy",
     decoding: "async"
@@ -493,7 +553,7 @@ function ImageView(props) {
     type: "button",
     "aria-label": t('visuals.upload_image') || 'Upload your own image',
     title: t('visuals.upload_image') || 'Upload your own image',
-    onClick: () => singleImageFileRef.current?.click(),
+    onClick: () => singleImageFileRef?.current?.click(),
     className: "min-h-11 flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:border-indigo-400 hover:text-indigo-700 transition-all motion-reduce:transition-none shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
@@ -560,7 +620,7 @@ function ImageView(props) {
     const currentUrl = d.imageUrl;
     const stale = descriptionStale;
     const patch = fields => {
-      updateImageResource(item => item.data.imageUrl === currentUrl ? {
+      updateImageResource(item => item && item.data && item.data.imageUrl === currentUrl ? {
         ...item,
         data: {
           ...item.data,
@@ -589,7 +649,7 @@ function ImageView(props) {
         if (r && altRequestRef.current === request) {
           // An AI draft must not replace a description or decorative
           // choice the author changed while the request was pending.
-          updateImageResource(item => item.data.imageUrl === currentUrl && ['altText', 'altSource', 'altHash', 'decorative', 'prompt'].every(key => item.data[key] === d[key]) ? {
+          updateImageResource(item => item && item.data && item.data.imageUrl === currentUrl && ['altText', 'altSource', 'altHash', 'decorative', 'prompt'].every(key => item.data[key] === d[key]) ? {
             ...item,
             data: {
               ...item.data,
@@ -715,7 +775,7 @@ function ImageView(props) {
     className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2"
   }, t('visuals.prompt_label')), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-700 italic bg-slate-50 p-3 rounded border border-slate-100 text-sm"
-  }, "\"", generatedContent?.data.prompt, "\"")), isTeacherMode && /*#__PURE__*/React.createElement("div", {
+  }, "\"", generatedContent?.data?.prompt, "\"")), isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-2xl bg-yellow-50 rounded-xl border border-yellow-200 p-4 shadow-sm mb-6",
     "data-help-key": "visuals_refiner"
   }, /*#__PURE__*/React.createElement("div", {
@@ -731,7 +791,9 @@ function ImageView(props) {
     "aria-label": t('common.visuals_refiner_placeholder'),
     type: "text",
     value: imageRefinementInput,
-    onChange: e => setImageRefinementInput(e.target.value),
+    onChange: e => {
+      if (typeof setImageRefinementInput === 'function') setImageRefinementInput(e.target.value);
+    },
     placeholder: t('visuals.refiner_placeholder'),
     className: "min-w-0 min-h-11 flex-grow text-sm p-2 border border-yellow-600 rounded-md focus:ring-2 focus:ring-amber-700 focus:outline-none",
     onCompositionStart: () => {
@@ -744,16 +806,16 @@ function ImageView(props) {
       imageRefinementComposingRef.current = false;
     },
     onKeyDown: e => {
-      if (e.key !== 'Enter' || imageRefinementComposingRef.current || e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229) return;
+      if (e.key !== 'Enter' || e.altKey || e.ctrlKey || e.metaKey || imageRefinementComposingRef.current || e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229) return;
       e.preventDefault();
       if (!e.repeat && !isProcessing && !imageEditDoor?.disabled && String(imageRefinementInput || '').trim() && typeof handleRefineImage === 'function') handleRefineImage();
     }
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleRefineImage,
-    disabled: !String(imageRefinementInput || '').trim() || isProcessing || !!imageEditDoor?.disabled,
+    disabled: !imageRefinementInput.trim() || isProcessing || !!imageEditDoor?.disabled,
     "aria-busy": isProcessing,
-    className: "min-h-11 min-w-11 shrink-0 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-bold p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700",
+    className: "min-h-11 min-w-11 shrink-0 bg-yellow-400 hover:bg-yellow-500 text-slate-950 font-bold p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700",
     title: imageEditDoor?.title || t('common.apply_nano_edit'),
     "aria-label": t('common.apply_nano_edit')
   }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
@@ -805,7 +867,7 @@ function ImageView(props) {
     type: "button",
     "aria-label": t('visuals.upload_image') || 'Upload your own image',
     title: t('visuals.upload_image') || 'Upload your own image',
-    onClick: () => singleImageFileRef.current?.click(),
+    onClick: () => singleImageFileRef?.current?.click(),
     className: "min-h-11 min-w-11 flex-none flex items-center justify-center gap-2 bg-purple-50 text-purple-800 py-2 px-4 rounded-lg hover:bg-purple-100 transition-colors motion-reduce:transition-none font-medium border border-purple-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true",

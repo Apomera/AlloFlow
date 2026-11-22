@@ -104,8 +104,11 @@ for (const loader of ['build.js', 'AlloFlowANTI.txt', 'desktop/web-app/src/AlloF
   assert(dataIndex >= 0, `${loader} does not load the real snapshot.`);
   assert(toolIndex > dataIndex, `${loader} must load the snapshot before the tool.`);
   if (loader !== 'build.js') {
+    const hasLegacyOrder = text.includes('s.async = !orderedCellAtlasDependency');
+    const hasGraphOrder = text.includes("'stem_lab/stem_tool_cellatlas.js': ['stem_lab/stem_data_cellatlas_muraro.js']")
+      && text.includes('loadStemModuleWithDependencies');
     assert(
-      text.includes("s.async = !orderedCellAtlasDependency"),
+      hasLegacyOrder || hasGraphOrder,
       `${loader} does not enforce execution order for the snapshot dependency.`,
     );
   }

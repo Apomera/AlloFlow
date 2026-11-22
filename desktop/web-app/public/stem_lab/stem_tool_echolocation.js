@@ -15,6 +15,7 @@
 // ═══════════════════════════════════════════
 
 // ═══ Defensive StemLab guard ═══
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -36,15 +37,16 @@ window.StemLab = window.StemLab || {
     try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
   }
 };
+}
 // ═══ End Guard ═══
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation'))) {
+if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation'))) {
 
 (function() {
   'use strict';
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
-    if (document.getElementById('allo-live-echolocation')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-echolocation')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-echolocation';
     lr.setAttribute('aria-live', 'polite');
@@ -56,7 +58,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
   })();
 
   (function() {
-    if (document.getElementById('allo-echolocation-polish-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-echolocation-polish-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-echolocation-polish-css';
     st.textContent = [
@@ -708,11 +710,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var announceToSR = ctx.announceToSR;
       // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
       var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
-      var callGemini = ctx.callGemini;
+      function _echoIsGlobalMuted() {
+        if (typeof window === 'undefined') return false;
+        try {
+          if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+          if (window.__alloGlobalMuted || window._alloGlobalMute || window.__alloMuted) return true;
+          if (window.localStorage && window.localStorage.getItem('alloflow_global_mute') === 'true') return true;
+        } catch (_) {}
+        return false;
+      }
+      function _echoSafeJsonParse(raw, fallback) {
+        try {
+          var parsed = JSON.parse(raw, function (k, v) {
+            if (k === '__proto__' || k === 'constructor' || k === 'prototype') return undefined;
+            return v;
+          });
+          return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : fallback;
+        } catch (_) { return fallback; }
+      }
+      var _echoAiBlocked = (function () {
+        if (ctx.aiAvailable === false) return true;
+        if (typeof window === 'undefined') return false;
+        try {
+          if (window._alloQrBlocked || window.__alloStudentAiDisabled || window.__alloAiSecretsLocked || window.__alloQrStudentMode) return true;
+          if (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable()) return true;
+          var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+          if (mp && (mp.disabled === true || mp.aiEnabled === false || mp.allowAi === false || mp.locked === true)) return true;
+        } catch (_) {}
+        return false;
+      })();
+      var callGemini = (!_echoAiBlocked && typeof ctx.callGemini === 'function') ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
       var awardXP = ctx.awardXP;
       var celebrate = ctx.celebrate;
-      var beep = ctx.beep;
+      var _rawBeep = ctx.beep;
+      var beep = typeof _rawBeep === 'function' ? function () {
+        if (_echoIsGlobalMuted()) return;
+        return _rawBeep.apply(null, arguments);
+      } : null;
+      useEffect(function () {
+        if (typeof window === 'undefined' || !window.addEventListener) return;
+        var onMute = function (ev) {
+          var muted = (ev && ev.detail && typeof ev.detail.muted === 'boolean') ? ev.detail.muted : _echoIsGlobalMuted();
+          if (muted && window._echoLabAC && typeof window._echoLabAC.suspend === 'function') {
+            try { window._echoLabAC.suspend(); } catch (_) {}
+          }
+        };
+        window.addEventListener('alloflow-mute-changed', onMute);
+        return function () { window.removeEventListener('alloflow-mute-changed', onMute); };
+      }, []);
       var ArrowLeft = (ctx.icons && ctx.icons.ArrowLeft) || function() { return null; };
       var isDark = ctx.isDark;
       var isContrast = ctx.isContrast;
@@ -878,7 +924,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 'aria-label': sp.name + ', ' + sp.subtitle + '. ' + sp.desc,
                 tabIndex: 0,
                 onClick: function() { upd('playableSpecies', sp.id); },
-                onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('playableSpecies', sp.id); } },
+                onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('playableSpecies', sp.id); } },
                 className: 'rounded-xl p-4 cursor-pointer transition-all border-2 ' +
                   (isSelected
                     ? (isDark ? 'bg-indigo-900/60 border-indigo-400 ring-2 ring-indigo-400/40 shadow-lg shadow-indigo-500/20' : 'bg-indigo-50 border-indigo-500 ring-2 ring-indigo-300 shadow-lg')
@@ -1298,7 +1344,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           eng.perchRegen = 8; // per second while perched
           eng.gameOver = false;
           eng.survivalTime = 0;
-          try { eng.highScore = JSON.parse(localStorage.getItem('echo3d_highscore') || '{}'); } catch(e) { eng.highScore = {}; }
+          eng.highScore = _echoSafeJsonParse(localStorage.getItem('echo3d_highscore') || '{}', {});
 
           // ── Insect types (different food values) ──
           var INSECT_TYPES = [
@@ -1349,6 +1395,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           eng.keys = {};
           var _CAVE_FLIGHT_CODES = { KeyW: 1, KeyA: 1, KeyS: 1, KeyD: 1, KeyE: 1, KeyP: 1, KeyR: 1, Space: 1, ShiftLeft: 1, ShiftRight: 1, ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1 };
           eng._keyDown = function(e) {
+            if (e.isComposing || e.keyCode === 229) return;
             // WCAG 2.1.4: flight keys act only while the cave has focus or the mouse is locked.
             if (!eng._locked && (e.ctrlKey || e.metaKey || e.altKey || !e.target || !e.target.nodeType || !container.contains(e.target))) return;
             if (_CAVE_FLIGHT_CODES[e.code]) {
@@ -1423,6 +1470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           // ── Animate ──
           function animate() {
             cave3dAnimRef.current = requestAnimationFrame(animate);
+            if (typeof document !== 'undefined' && document.hidden) { eng.clock.getDelta(); return; }
             var dt = Math.min(eng.clock.getDelta(), 0.1);
             var t = eng.clock.getElapsedTime();
 
@@ -1475,7 +1523,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               eng.gameOver = true;
               // Save high score to localStorage
               try {
-                var hs = JSON.parse(localStorage.getItem('echo3d_highscore') || '{}');
+                var hs = _echoSafeJsonParse(localStorage.getItem('echo3d_highscore') || '{}', {});
                 if (!hs.score || eng.score > hs.score) {
                   hs = { score: eng.score, caught: eng.mothsCaught, time: Math.round(eng.survivalTime) };
                   localStorage.setItem('echo3d_highscore', JSON.stringify(hs));
@@ -2133,10 +2181,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               type: 'button',
               onClick: function() {
                 ctx.setToolData(function(prev) {
-                  return Object.assign({}, prev, {
+                  var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+                  return Object.assign({}, base, {
                     _threeLoadError: undefined,
                     _threeLoaded: false,
-                    _threeAttempt: ((prev && prev._threeAttempt) || 0) + 1
+                    _threeAttempt: (base._threeAttempt || 0) + 1
                   });
                 });
               },
@@ -2410,6 +2459,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           'data-echolocation-canvas': 'true',
           tabIndex: 0,
           onKeyDown: function(e) {
+            if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
             if (e.key === ' ' || e.key === 'Spacebar') {
               e.preventDefault();
               emitSonarPulse();
@@ -2828,6 +2878,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         // Audio chirp — species-specific echolocation call
         // Insectivores: high-frequency FM sweep (frequency drops during call)
         // Frugivores: tongue click (short broadband impulse)
+        if (!_echoIsGlobalMuted()) {
         try {
           var ac = window._echoLabAC || (window._echoLabAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()));
           if (ac.state === 'suspended') ac.resume();
@@ -2853,6 +2904,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           }
           if (window._alloHaptic) window._alloHaptic('echo');
         } catch(e) {}
+        }
         srAnnounce(__alloT('stem.echolocation.sr_sonar_pulse_emitted', 'Sonar pulse emitted'));
       }
 
@@ -2917,6 +2969,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         // key swallows its default browser action.
         var FLIGHT_KEYS = { 'arrowup': 1, 'arrowdown': 1, 'arrowleft': 1, 'arrowright': 1, 'w': 1, 'a': 1, 's': 1, 'd': 1, ' ': 1, 'spacebar': 1 };
         var onKey = function(e) {
+          if (e.isComposing || e.keyCode === 229) return;
           var k = (e.key || '').toLowerCase();
           if (FLIGHT_KEYS[k]) {
             if (e.type === 'keydown') {
@@ -3044,6 +3097,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
         function animate(now) {
           if (!running) return;
+          if (typeof document !== 'undefined' && document.hidden) { lastTime = now; sonarAnimRef.current = requestAnimationFrame(animate); return; }
           // Read live tool state via dataRef so caught-moth / collected-
           // fruit / mapped-cave counters reflect the actual gameplay
           // state rather than mount-time values. See dataRef declaration
@@ -3567,6 +3621,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               'aria-label': __alloFill(__alloT('stem.echolocation.a11y_sound_wave_visualization_showing_a_sine_wave_at', 'Sound wave visualization showing a sine wave at {value1} hertz with wavelength {value2} meters'), { value1: waveFreq, value2: wavelength.toFixed(3) }),
               tabIndex: 0,
               onKeyDown: function(e) {
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 if (e.key === 'ArrowRight') { e.preventDefault(); upd('waveFreq', Math.min(200000, waveFreq + 100)); }
                 if (e.key === 'ArrowLeft') { e.preventDefault(); upd('waveFreq', Math.max(20, waveFreq - 100)); }
               },
@@ -3748,6 +3803,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               'aria-label': __alloFill(__alloT('stem.echolocation.a11y_sound_reflection_visualization_showing_incident', 'Sound reflection visualization showing incident and reflected waves off {value1} wall'), { value1: wallMaterial }),
               tabIndex: 0,
               onKeyDown: function(e) {
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 if (e.key === 'ArrowRight') {
                   e.preventDefault();
                   var idx = WALL_MATERIALS.findIndex(function(m) { return m.id === wallMaterial; });
@@ -3889,6 +3945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
         function animate() {
           if (!running) return;
+          if (typeof document !== 'undefined' && document.hidden) { waveAnimRef.current = requestAnimationFrame(animate); return; }
           if (!reducedMotion.current) phase += 0.05;
           var W = canvas.width;
           var H = canvas.height;
@@ -4006,6 +4063,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
         function animate() {
           if (!running) return;
+          if (typeof document !== 'undefined' && document.hidden) { reflAnimRef.current = requestAnimationFrame(animate); return; }
           if (!reducedMotion.current) phase += 0.04;
           var W = canvas.width;
           var H = canvas.height;
@@ -4240,6 +4298,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 '. Received frequency: ' + shiftedFreq + ' hertz.',
               tabIndex: 0,
               onKeyDown: function(e) {
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 if (e.key === 'ArrowRight') { e.preventDefault(); upd('mothSpeed', Math.min(10, mothSpeed + 1)); }
                 if (e.key === 'ArrowLeft') { e.preventDefault(); upd('mothSpeed', Math.max(-10, mothSpeed - 1)); }
               },
@@ -4558,6 +4617,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
         function animate(now) {
           if (!running) return;
+          if (typeof document !== 'undefined' && document.hidden) { dopplerAnimRef.current = requestAnimationFrame(animate); return; }
           flapPhase += 0.12;
           mothPhase += 0.08;
           dSt.time += 1 / 60;
@@ -4714,6 +4774,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       function renderBiologyTab() {
         var BIOLOGY_SECTION_IDS = ['anatomy', 'species', 'conservation'];
         var biologyTabKeyDown = function(e, index) {
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var nextIndex = -1;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % BIOLOGY_SECTION_IDS.length;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + BIOLOGY_SECTION_IDS.length - 1) % BIOLOGY_SECTION_IDS.length;
@@ -4767,6 +4828,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 tabIndex: 0,
                 onClick: function(e) {
                   var rect = e.target.getBoundingClientRect();
+                  if (!rect || !(rect.width > 0) || !(rect.height > 0)) return;
                   var scaleX = 500 / rect.width;
                   var scaleY = 300 / rect.height;
                   var mx = (e.clientX - rect.left) * scaleX;
@@ -4781,6 +4843,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   if (found) srAnnounce(__alloFill(__alloT('stem.echolocation.sr_selected', 'Selected: {value1}'), { value1: (BAT_ANATOMY.find(function(p) { return p.id === found; }) || {}).label }));
                 },
                 onKeyDown: function(e) {
+                  if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                   var ids = BAT_ANATOMY.map(function(p) { return p.id; });
                   var curIdx = selectedAnatomyPart ? ids.indexOf(selectedAnatomyPart) : -1;
                   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
@@ -4942,7 +5005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   'aria-label': sp.name + (expanded ? ', expanded' : ', click to expand'),
                   'aria-expanded': expanded ? 'true' : 'false',
                   onClick: function() { upd('selectedSpecies', expanded ? null : si); },
-                  onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('selectedSpecies', expanded ? null : si); } }
+                  onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); upd('selectedSpecies', expanded ? null : si); } }
                 },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { className: 'text-2xl' }, sp.emoji),
@@ -5203,6 +5266,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var ECOLOGY_SECTION_IDS = ['soundscape', 'bioacoustics', 'soundmap'];
         if (!callGemini) ECOLOGY_SECTION_IDS = ['soundscape', 'bioacoustics'];
         var ecologyTabKeyDown = function(e, index) {
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var nextIndex = -1;
           if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % ECOLOGY_SECTION_IDS.length;
           else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + ECOLOGY_SECTION_IDS.length - 1) % ECOLOGY_SECTION_IDS.length;
@@ -5579,17 +5643,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 onClick: function() {
                   if (!callGemini) { if (addToast) addToast('AI not available', 'info'); return; }
                   upd('soundmapLoading', true);
-                  var env = d.soundmapEnv || 'temperate_forest';
-                  var time = d.soundmapTime || 'dusk';
+                  var ALLOWED_ENVS = ['temperate_forest', 'tropical_rainforest', 'desert', 'ocean_coast', 'cave', 'freshwater_pond', 'arctic_tundra', 'coral_reef'];
+                  var ALLOWED_TIMES = ['dawn', 'midday', 'dusk', 'midnight'];
+                  var env = ALLOWED_ENVS.indexOf(d.soundmapEnv) !== -1 ? d.soundmapEnv : 'temperate_forest';
+                  var time = ALLOWED_TIMES.indexOf(d.soundmapTime) !== -1 ? d.soundmapTime : 'dusk';
                   var prompt = 'Describe the soundscape of a ' + env.replace(/_/g, ' ') + ' at ' + time + '. ' +
                     'List 5-8 animals or natural sounds you would hear. For each, include: the sound description, approximate frequency range in Hz, whether it\'s infrasonic/audible/ultrasonic, and its ecological purpose (mating call, territory defense, echolocation, etc.). ' +
                     'Explain how these animals share the acoustic space (frequency partitioning). ' +
                     'Write for a ' + (gradeLevel || 'middle school') + ' student. Keep it engaging and educational. Use bullet points.';
-                  callGemini(prompt).then(function(result) {
+                  Promise.resolve().then(function() { return callGemini(prompt); }).then(function(result) {
                     updMulti({ soundmapResult: result, soundmapLoading: false });
                     srAnnounce(__alloT('stem.echolocation.sr_soundscape_description_generated', 'Soundscape description generated'));
                   }).catch(function(err) {
-                    updMulti({ soundmapResult: 'Error generating soundscape: ' + err.message, soundmapLoading: false });
+                    updMulti({ soundmapResult: 'Error generating soundscape: ' + ((err && err.message) || 'unavailable'), soundmapLoading: false });
                   });
                 },
                 className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (soundmapLoading ? 'bg-slate-700 text-slate-200 cursor-wait' : 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700')
@@ -5670,6 +5736,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
         function animate() {
           if (!running) return;
+          if (typeof document !== 'undefined' && document.hidden) { soundscapeAnimRef.current = requestAnimationFrame(animate); return; }
           if (!reducedMotion.current) phase += 0.03;
           var W = canvas.width;
           var H = canvas.height;
@@ -5944,6 +6011,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               'aria-label': tb.label + ' tab',
               onClick: function() { upd('tab', tb.id); },
               onKeyDown: function(e) {
+                if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 var nextIdx = ti;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); nextIdx = (ti + 1) % TABS.length; }
                 else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); nextIdx = (ti - 1 + TABS.length) % TABS.length; }

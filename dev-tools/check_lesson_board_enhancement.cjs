@@ -3,7 +3,7 @@ const { makeBoard } = require('./fixtures/lesson_board.cjs');
 const out = path.resolve('reports/lesson-board-enhancement-2026-09-12'); fs.mkdirSync(out, { recursive: true });
 execFileSync(process.execPath, ['_build_lesson_board_module.js'], { stdio: 'inherit' });
 const board = { ...makeBoard(), goal: 'expedition' };
-const boardStyles = fs.readFileSync('lesson_board_ui.jsx', 'utf8').match(/return <style>\{`([\s\S]*?)`\}<\/style>/)[1];
+const boardStyles = fs.readFileSync('lesson_board_ui.jsx', 'utf8').match(/return (?:<style>\{|addBoardStyle\()`([\s\S]*?)`(?:\}<\/style>|\))/)[1];
 const html = '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lesson board play verification</title><style>body{margin:0;background:#f6f7fc}main{max-width:1150px;padding:18px;margin:auto}</style></head><body><main id="root" class="lb"></main></body></html>';
 (async () => {
   const server = http.createServer((request, response) => { response.writeHead(200, { 'Content-Type': 'text/html' }); response.end(html); }); await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));

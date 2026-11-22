@@ -46,7 +46,7 @@
     const href = a.href.toLowerCase();
     return href.endsWith('.pdf') || href.endsWith('.docx') || href.endsWith('.pptx') ||
            href.includes('/content/') || href.includes('/d2l/') || href.includes('/files/') ||
-           href.includes('/download') || href.includes('viewContent') ||
+           href.includes('/download') || href.includes('viewcontent') ||
            a.textContent.toLowerCase().includes('.pdf');
   }).map(a => ({
     url: a.href,
@@ -64,11 +64,16 @@
   // Create floating panel
   const panel = document.createElement('div');
   panel.id = 'alloflow-lms-panel';
-  panel.style.cssText = 'position:fixed;top:20px;right:20px;width:380px;max-height:80vh;background:white;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.3);z-index:999999;font-family:system-ui,sans-serif;overflow:hidden;animation:slideIn 0.3s ease-out';
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-label', 'AlloFlow Accessibility Scanner');
+  panel.style.cssText = 'position:fixed;top:20px;right:20px;width:380px;max-height:80vh;background:white;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.3);z-index:999999;font-family:system-ui,sans-serif;overflow:hidden;animation:alloflowLmsSlideIn 0.3s ease-out';
 
-  const style = document.createElement('style');
-  style.textContent = '@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}';
-  document.head.appendChild(style);
+  if (!document.getElementById('alloflow-lms-style')) {
+    const style = document.createElement('style');
+    style.id = 'alloflow-lms-style';
+    style.textContent = '@keyframes alloflowLmsSlideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}';
+    document.head.appendChild(style);
+  }
 
   panel.innerHTML = `
     <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:16px 20px;color:white">
@@ -77,14 +82,14 @@
           <div style="font-weight:800;font-size:15px">♿ AlloFlow Accessibility Scanner</div>
           <div style="font-size:11px;opacity:0.8">${unique.length} document${unique.length !== 1 ? 's' : ''} found on this page</div>
         </div>
-        <button onclick="document.getElementById('alloflow-lms-panel').remove()" style="background:rgba(255,255,255,0.2);border:none;color:white;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:16px">×</button>
+        <button type="button" id="alloflow-lms-close" aria-label="Close scanner" style="background:rgba(255,255,255,0.2);border:none;color:white;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:16px">×</button>
       </div>
     </div>
     <div style="padding:12px;max-height:50vh;overflow-y:auto">
       ${unique.length === 0 ? '<p style="color:#94a3b8;text-align:center;padding:20px;font-size:13px">No documents found on this page.<br><span style="font-size:11px">Try navigating to a course content page.</span></p>' :
-        '<div style="margin-bottom:8px"><label style="display:flex;align-items:center;gap:6px;font-size:11px;color:#64748b;cursor:pointer"><input type="checkbox" id="alloflow-select-all" onchange="document.querySelectorAll(\'.alloflow-file-cb\').forEach(c=>c.checked=this.checked)"> Select All</label></div>' +
-        unique.map((d, i) => `
-          <label style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;cursor:pointer;font-size:12px;border:1px solid #e2e8f0;margin-bottom:4px;transition:background 0.15s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+        '<div style="margin-bottom:8px"><label style="display:flex;align-items:center;gap:6px;font-size:11px;color:#64748b;cursor:pointer"><input type="checkbox" id="alloflow-select-all" checked> Select All</label></div>' +
+        unique.map((d) => `
+          <label class="alloflow-file-row" style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;cursor:pointer;font-size:12px;border:1px solid #e2e8f0;margin-bottom:4px;transition:background 0.15s">
             <input type="checkbox" class="alloflow-file-cb" data-url="${escHtml(d.url)}" data-name="${escHtml(d.text)}" checked>
             <span style="background:${d.type === 'PDF' ? '#dc262620' : '#2563eb20'};color:${d.type === 'PDF' ? '#dc2626' : '#2563eb'};padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;flex-shrink:0">${escHtml(d.type)}</span>
             <span style="color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(d.text)}</span>
@@ -94,31 +99,66 @@
     </div>
     ${unique.length > 0 ? `
     <div style="padding:12px;border-top:1px solid #e2e8f0;display:flex;gap:8px">
-      <button onclick="
-        var files = Array.from(document.querySelectorAll('.alloflow-file-cb:checked')).map(c => ({url: c.dataset.url, name: c.dataset.name}));
-        if (files.length === 0) { alert('Select at least one file'); return; }
-        var urls = files.map(f => encodeURIComponent(f.url)).join(',');
-        window.open(ALLOFLOW_URL + '?audit_urls=' + urls, '_blank', 'noopener,noreferrer');
-        document.getElementById('alloflow-lms-panel').remove();
-      " style="flex:1;padding:10px;background:linear-gradient(135deg,#16a34a,#059669);color:white;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer">
+      <button type="button" id="alloflow-lms-audit" style="flex:1;padding:10px;background:linear-gradient(135deg,#16a34a,#059669);color:white;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer">
         ♿ Audit Selected in AlloFlow
       </button>
-      <button onclick="
-        var files = Array.from(document.querySelectorAll('.alloflow-file-cb:checked'));
-        if (files.length === 0) return;
-        var report = '♿ AlloFlow LMS Document Scan\\n' + '═'.repeat(40) + '\\n';
-        report += 'Page: ' + document.title + '\\n';
-        report += 'URL: ' + location.href + '\\n';
-        report += 'Date: ' + new Date().toLocaleDateString() + '\\n\\n';
-        report += files.length + ' documents found:\\n';
-        files.forEach((f, i) => { report += (i+1) + '. ' + f.dataset.name + '\\n   ' + f.dataset.url + '\\n'; });
-        report += '\\nAudit these at: ' + ALLOFLOW_URL;
-        navigator.clipboard.writeText(report).then(() => alert('Document list copied to clipboard!'));
-      " style="padding:10px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;color:#64748b">
+      <button type="button" id="alloflow-lms-copy" aria-label="Copy document list to clipboard" style="padding:10px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;color:#64748b">
         📋
       </button>
     </div>` : ''}
   `;
+
+  const closePanel = () => {
+    document.removeEventListener('keydown', onKeyDown);
+    panel.remove();
+  };
+  const onKeyDown = (e) => {
+    if (e.key === 'Escape') closePanel();
+  };
+  document.addEventListener('keydown', onKeyDown);
+
+  const closeBtn = panel.querySelector('#alloflow-lms-close');
+  if (closeBtn) closeBtn.addEventListener('click', closePanel);
+
+  const selectAll = panel.querySelector('#alloflow-select-all');
+  if (selectAll) {
+    selectAll.addEventListener('change', () => {
+      panel.querySelectorAll('.alloflow-file-cb').forEach(c => { c.checked = selectAll.checked; });
+    });
+  }
+
+  const auditBtn = panel.querySelector('#alloflow-lms-audit');
+  if (auditBtn) {
+    auditBtn.addEventListener('click', () => {
+      const files = Array.from(panel.querySelectorAll('.alloflow-file-cb:checked')).map(c => ({ url: c.dataset.url, name: c.dataset.name }));
+      if (files.length === 0) { alert('Select at least one file'); return; }
+      const urls = files.map(f => encodeURIComponent(f.url)).join(',');
+      window.open(ALLOFLOW_URL + '?audit_urls=' + urls, '_blank', 'noopener,noreferrer');
+      closePanel();
+    });
+  }
+
+  const copyBtn = panel.querySelector('#alloflow-lms-copy');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const files = Array.from(panel.querySelectorAll('.alloflow-file-cb:checked'));
+      if (files.length === 0) return;
+      let report = '♿ AlloFlow LMS Document Scan\n' + '═'.repeat(40) + '\n';
+      report += 'Page: ' + document.title + '\n';
+      report += 'URL: ' + location.href + '\n';
+      report += 'Date: ' + new Date().toLocaleDateString() + '\n\n';
+      report += files.length + ' documents found:\n';
+      files.forEach((f, i) => { report += (i + 1) + '. ' + f.dataset.name + '\n   ' + f.dataset.url + '\n'; });
+      report += '\nAudit these at: ' + ALLOFLOW_URL;
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        navigator.clipboard.writeText(report)
+          .then(() => alert('Document list copied to clipboard!'))
+          .catch(() => alert('Could not copy to clipboard on this page.'));
+      } else {
+        alert('Clipboard access is unavailable on this page.');
+      }
+    });
+  }
 
   document.body.appendChild(panel);
 })();
@@ -127,4 +167,4 @@
 // MINIFIED BOOKMARKLET (paste this as a bookmark URL):
 // ── Change the URL on the first line to match your deployment ──
 // ═══════════════════════════════════════════════════════════
-// javascript:void((function(){var U='https://alloflow-cdn.pages.dev/app/';function E(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}if(document.getElementById('alloflow-lms-panel')){document.getElementById('alloflow-lms-panel').remove();return}var links=Array.from(document.querySelectorAll('a[href]'));var docs=links.filter(function(a){if(!/^https?:\/\//i.test(a.href))return false;var h=a.href.toLowerCase();return h.endsWith('.pdf')||h.endsWith('.docx')||h.includes('/content/')||h.includes('/files/')||a.textContent.toLowerCase().includes('.pdf')}).map(function(a){return{url:a.href,text:a.textContent.trim().substring(0,60)||a.href.split('/').pop(),type:a.href.toLowerCase().endsWith('.pdf')?'PDF':'File'}});var unique=[];var seen=new Set();docs.forEach(function(d){if(!seen.has(d.url)){seen.add(d.url);unique.push(d)}});var p=document.createElement('div');p.id='alloflow-lms-panel';p.style.cssText='position:fixed;top:20px;right:20px;width:380px;max-height:80vh;background:white;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.3);z-index:999999;font-family:system-ui;overflow:hidden';p.innerHTML='<div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:16px 20px;color:white"><div style="display:flex;justify-content:space-between"><div><div style="font-weight:800;font-size:15px">♿ AlloFlow Scanner</div><div style="font-size:11px;opacity:0.8">'+unique.length+' documents found</div></div><button onclick="this.closest(\'#alloflow-lms-panel\').remove()" style="background:rgba(255,255,255,0.2);border:none;color:white;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:16px">×</button></div></div><div style="padding:12px;max-height:50vh;overflow-y:auto">'+unique.map(function(d){return'<label style="display:flex;align-items:center;gap:8px;padding:6px;border-radius:6px;cursor:pointer;font-size:12px;border:1px solid #e2e8f0;margin-bottom:3px"><input type=checkbox class=af-cb data-url="'+E(d.url)+'" checked><span style="color:#dc2626;font-size:10px;font-weight:700">'+E(d.type)+'</span><span>'+E(d.text)+'</span></label>'}).join('')+'</div><div style="padding:12px;border-top:1px solid #e2e8f0"><button onclick="var f=Array.from(document.querySelectorAll(\'.af-cb:checked\')).map(function(c){return c.dataset.url});window.open(\''+U+'?audit_urls=\'+f.map(encodeURIComponent).join(\',\'),\'_blank\',\'noopener,noreferrer\')" style="width:100%;padding:10px;background:#16a34a;color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer">♿ Audit in AlloFlow</button></div>';document.body.appendChild(p)})());
+// javascript:void((function(){var U='https://alloflow-cdn.pages.dev/app/';function E(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}var ex=document.getElementById('alloflow-lms-panel');if(ex){ex.remove();return}var links=Array.from(document.querySelectorAll('a[href]'));var docs=links.filter(function(a){if(!/^https?:\/\//i.test(a.href))return false;var h=a.href.toLowerCase();return h.endsWith('.pdf')||h.endsWith('.docx')||h.endsWith('.pptx')||h.includes('/content/')||h.includes('/d2l/')||h.includes('/files/')||h.includes('/download')||h.includes('viewcontent')||a.textContent.toLowerCase().includes('.pdf')}).map(function(a){return{url:a.href,text:a.textContent.trim().substring(0,60)||a.href.split('/').pop(),type:a.href.toLowerCase().endsWith('.pdf')?'PDF':'File'}});var unique=[];var seen=new Set();docs.forEach(function(d){if(!seen.has(d.url)){seen.add(d.url);unique.push(d)}});var p=document.createElement('div');p.id='alloflow-lms-panel';p.setAttribute('role','dialog');p.setAttribute('aria-label','AlloFlow Scanner');p.style.cssText='position:fixed;top:20px;right:20px;width:380px;max-height:80vh;background:white;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.3);z-index:999999;font-family:system-ui;overflow:hidden';p.innerHTML='<div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:16px 20px;color:white"><div style="display:flex;justify-content:space-between"><div><div style="font-weight:800;font-size:15px">♿ AlloFlow Scanner</div><div style="font-size:11px;opacity:0.8">'+unique.length+' documents found</div></div><button type="button" id="af-close" aria-label="Close scanner" style="background:rgba(255,255,255,0.2);border:none;color:white;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:16px">×</button></div></div><div style="padding:12px;max-height:50vh;overflow-y:auto">'+unique.map(function(d){return'<label style="display:flex;align-items:center;gap:8px;padding:6px;border-radius:6px;cursor:pointer;font-size:12px;border:1px solid #e2e8f0;margin-bottom:3px"><input type=checkbox class=af-cb data-url="'+E(d.url)+'" checked><span style="color:#dc2626;font-size:10px;font-weight:700">'+E(d.type)+'</span><span>'+E(d.text)+'</span></label>'}).join('')+'</div><div style="padding:12px;border-top:1px solid #e2e8f0"><button type="button" id="af-audit" style="width:100%;padding:10px;background:#16a34a;color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer">♿ Audit in AlloFlow</button></div>';p.querySelector('#af-close').addEventListener('click',function(){p.remove()});p.querySelector('#af-audit').addEventListener('click',function(){var f=Array.from(p.querySelectorAll('.af-cb:checked')).map(function(c){return c.dataset.url});if(!f.length){alert('Select at least one file');return}window.open(U+'?audit_urls='+f.map(encodeURIComponent).join(','),'_blank','noopener,noreferrer');p.remove()});document.body.appendChild(p)})());

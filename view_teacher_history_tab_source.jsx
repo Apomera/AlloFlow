@@ -46,11 +46,14 @@ function TeacherHistoryTab({
   const [quickLanguage, setQuickLanguage] = React.useState('');
   const [quickMessage, setQuickMessage] = React.useState(null);
   const [quickSaving, setQuickSaving] = React.useState(false);
+  const [appliedGroupId, setAppliedGroupId] = React.useState('');
   const quickSavingRef = React.useRef(false);
   const quickSaveEpochRef = React.useRef(0);
   const quickToggleRef = React.useRef(null);
   const quickNameRef = React.useRef(null);
-  const hasGroups = Object.keys(rosterKey?.groups || {}).length > 0;
+  const groupEntries = Object.entries(rosterKey?.groups || {});
+  const hasGroups = groupEntries.length > 0;
+  const appliedGroupEntry = appliedGroupId ? groupEntries.find(([gid]) => String(gid) === String(appliedGroupId)) || null : null;
   const canQuickAdd = typeof onQuickAddGroup === 'function' && gradeOptions.length > 0 && languageOptions.length > 0;
   const classId = rosterKey?.classId || '';
   React.useEffect(() => {
@@ -58,6 +61,7 @@ function TeacherHistoryTab({
     setQuickName('');
     setQuickMessage(null);
     setQuickSaving(false);
+    setAppliedGroupId('');
     quickSavingRef.current = false;
     return () => { quickSaveEpochRef.current++; };
   }, [classId]);
@@ -115,6 +119,11 @@ function TeacherHistoryTab({
       <div className="p-3 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center">
         <div className="text-sm font-bold text-indigo-800 flex items-center gap-2">
           <ClipboardList size={16} aria-hidden="true" /> {t('roster.strip_title') || 'Class Groups'}
+          {hasGroups && (
+            <span data-roster-group-count="true" className="rounded-full bg-white border border-indigo-200 px-2 py-0.5 text-[11px] font-black text-indigo-800">
+              {groupEntries.length}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1">
           {/* Bridge moved to a header button (🌐 Bridge) for discoverability — removed here to avoid redundancy. */}
@@ -127,17 +136,34 @@ function TeacherHistoryTab({
         {hasGroups ? (
           <>
             <div className="flex flex-wrap gap-1.5 mb-2">
-              {Object.entries(rosterKey.groups).map(([gid, g]) => (
-                <button type="button" key={gid} onClick={() => handleApplyRosterGroup(gid)}
-                  className="min-h-11 inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold text-slate-800 transition-all motion-reduce:transition-none hover:scale-105 motion-reduce:hover:scale-100 border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
-                  style={{ backgroundColor: (g.color || '#6366f1') + '20', borderColor: (g.color && g.color !== '#f5f5f5') ? g.color + '80' : '#94a3b8' }}
-                  title={`${g.name} · ${g.profile?.gradeLevel || 'No grade'} · ${g.profile?.leveledTextLanguage || 'English'}`}
+              {groupEntries.map(([gid, g]) => {
+                const isApplied = String(appliedGroupId) === String(gid);
+                const gGrade = g.profile?.gradeLevel || g.grade || '';
+                const gLang = g.profile?.leveledTextLanguage || g.language || 'English';
+                return (
+                <button type="button" key={gid} data-roster-group-pill={String(gid)} aria-pressed={isApplied} onClick={() => { setAppliedGroupId(String(gid)); handleApplyRosterGroup(gid); }}
+                  className={`min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-slate-800 transition-all motion-reduce:transition-none hover:scale-105 motion-reduce:hover:scale-100 border cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${isApplied ? 'ring-2 ring-indigo-600/40 shadow-sm' : ''}`}
+                  style={{ backgroundColor: (g.color || '#6366f1') + '20', borderColor: isApplied ? '#4f46e5' : ((g.color && g.color !== '#f5f5f5') ? g.color + '80' : '#94a3b8') }}
+                  title={`${g.name} · ${gGrade || 'No grade'} · ${gLang}`}
                 >
-                  <span className="inline-block w-2 h-2 rounded-full mr-1.5 align-middle" aria-hidden="true" style={{ backgroundColor: g.color || '#6366f1' }} />
-                  {g.name}
+                  <span className="inline-block w-2 h-2 rounded-full align-middle" aria-hidden="true" style={{ backgroundColor: g.color || '#6366f1' }} />
+                  <span>{g.name}</span>
+                  {isApplied && <span aria-hidden="true" className="text-indigo-800">✓</span>}
                 </button>
-              ))}
+                );
+              })}
             </div>
+            {appliedGroupEntry && (() => {
+              const g = appliedGroupEntry[1] || {};
+              const gGrade = g.profile?.gradeLevel || g.grade || '';
+              const gLang = g.profile?.leveledTextLanguage || g.language || 'English';
+              const meta = [gGrade ? gradeLabel(gGrade) : '', gLang === 'English' ? label('languages.english', 'English') : gLang].filter(Boolean).join(' · ');
+              return (
+                <p data-roster-applied-status="true" role="status" aria-live="polite" className="mb-2 rounded-lg border border-indigo-200 bg-indigo-50/70 px-2.5 py-1.5 text-xs font-semibold text-indigo-900">
+                  {label('roster.applied_group_prefix', 'Applied')}: <strong>{g.name}</strong>{meta ? ' · ' + meta : ''}
+                </p>
+              );
+            })()}
             <button type="button" onClick={onDifferentiateByGroup}
               disabled={!hasSourceOrAnalysis}
               className="min-h-11 w-full px-3 py-1.5 bg-amber-50 text-amber-900 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5 disabled:opacity-50 border border-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"
@@ -151,7 +177,7 @@ function TeacherHistoryTab({
         {canQuickAdd && <button ref={quickToggleRef} type="button" onClick={toggleQuickGroup} disabled={quickSaving} aria-expanded={quickOpen} aria-controls="roster-quick-group-form" className="mt-2 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-xs font-bold text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
           <Plus size={14} aria-hidden="true" /> {label('roster.quick_add', 'Add group')}
         </button>}
-        {quickOpen && canQuickAdd && <form id="roster-quick-group-form" onSubmit={submitQuickGroup} className="mt-2 grid gap-2 border-t border-slate-200 pt-3" aria-busy={quickSaving} aria-label={label('roster.quick_add', 'Add group')}>
+        {quickOpen && canQuickAdd && <form id="roster-quick-group-form" onSubmit={submitQuickGroup} onKeyDown={(event) => { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return; if (event.key === 'Escape' && !quickSaving) { event.preventDefault(); event.stopPropagation(); setQuickOpen(false); setQuickMessage(null); if (quickToggleRef.current?.isConnected) quickToggleRef.current.focus(); } }} className="mt-2 grid gap-2 border-t border-slate-200 pt-3" aria-busy={quickSaving} aria-label={label('roster.quick_add', 'Add group')}>
           <label className="grid gap-1 text-xs font-semibold text-slate-700">{label('roster.quick_name', 'Group name')}
             <input ref={quickNameRef} value={quickName} disabled={quickSaving} onChange={event => { setQuickName(event.target.value); setQuickMessage(null); }} maxLength={60} className="min-h-11 min-w-0 rounded-lg border border-slate-400 bg-white px-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" />
           </label>

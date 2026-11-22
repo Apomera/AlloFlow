@@ -12,6 +12,16 @@
 
     let activeAudience = 'all';
 
+    const resetButton = document.createElement('button');
+    resetButton.type = 'button';
+    resetButton.className = 'manual-reset-btn';
+    resetButton.textContent = 'Reset search & filters';
+    resetButton.setAttribute('data-manual-reset', 'true');
+    resetButton.hidden = true;
+    if (status.parentNode) {
+        status.parentNode.insertBefore(resetButton, status.nextSibling);
+    }
+
     function normalize(value) {
         return String(value || '').toLocaleLowerCase().replace(/\s+/g, ' ').trim();
     }
@@ -35,11 +45,13 @@
             group.hidden = !group.querySelector('[data-manual-card]:not([hidden])');
         });
 
+        resetButton.hidden = activeAudience === 'all' && query === '';
+
         const audienceLabel = activeAudience === 'all'
             ? 'all audiences'
             : filters.find(function (button) { return button.dataset.manualFilter === activeAudience; }).textContent;
         status.textContent = visibleCount === 0
-            ? 'No guides match that search. Clear the search or choose another audience.'
+            ? 'No guides match that search. Use Reset search & filters or choose another audience.'
             : 'Showing ' + visibleCount + ' of ' + cards.length + ' guides for ' + audienceLabel + '.';
     }
 
@@ -53,7 +65,34 @@
         });
     });
 
+    resetButton.addEventListener('click', function () {
+        activeAudience = 'all';
+        search.value = '';
+        filters.forEach(function (candidate) {
+            candidate.setAttribute('aria-pressed', String(candidate.dataset.manualFilter === 'all'));
+        });
+        update();
+        search.focus();
+    });
+
     search.addEventListener('input', update);
+    search.addEventListener('keydown', function (event) {
+        if (event.isComposing || event.keyCode === 229) return;
+        if (event.key === 'Escape' && search.value) {
+            event.preventDefault();
+            search.value = '';
+            update();
+        }
+    });
     controls.hidden = false;
     update();
+
+    const backBtn = document.querySelector('.back-to-top');
+    if (backBtn) {
+        const syncBackBtn = function () {
+            backBtn.classList.toggle('visible', window.scrollY > 500);
+        };
+        window.addEventListener('scroll', syncBackBtn, { passive: true });
+        syncBackBtn();
+    }
 }());

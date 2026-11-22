@@ -23,6 +23,7 @@
 // ═══ Defensive StemLab guard ═══
 // Ensure window.StemLab is available before registering tools.
 // If stem_lab_module.js hasn't loaded yet, create the registry stub.
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -44,6 +45,7 @@ window.StemLab = window.StemLab || {
     try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
   }
 };
+}
 // ═══ End Guard ═══
 
 (function() {
@@ -51,7 +53,7 @@ window.StemLab = window.StemLab || {
 
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
   (function() {
-    if (typeof document === 'undefined') return;
+    if (typeof document === 'undefined' || !document.head) return;
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
@@ -5115,7 +5117,14 @@ window.StemLab = window.StemLab || {
   // to re-render the whole tool sixty times a second for four numbers.
   var SCENE_AUDIO = (function () {
     var ctx = null, noiseBuf = null, bedOn = null;
+    function _mlIsGlobalMuted() {
+      try {
+        if (typeof window !== 'undefined' && typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+      } catch (_) {}
+      return typeof window !== 'undefined' && !!(window.__alloGlobalMuted || window._alloGlobalMute);
+    }
     function ac() {
+      if (_mlIsGlobalMuted()) return null;
       if (ctx) return ctx;
       try { ctx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch (e) { ctx = null; }
       return ctx;
@@ -5135,11 +5144,12 @@ window.StemLab = window.StemLab || {
       }
       var s = a.createBufferSource(); s.buffer = noiseBuf; return s;
     }
-    return {
-      unlock: function () { var a = ac(); if (a && a.state === 'suspended' && a.resume) { try { a.resume(); } catch (e) {} } },
+    var api = {
+      unlock: function () { if (_mlIsGlobalMuted()) return; var a = ac(); if (a && a.state === 'suspended' && a.resume) { try { a.resume(); } catch (e) {} } },
       // The winch: a low saw through a lowpass, chopped by a slow tremolo so it
       // reads as ratchet clicks rather than a hum.
       haul: function (secs) {
+        if (_mlIsGlobalMuted()) return;
         var a = ac(); if (!a) return;
         try {
           var t0 = a.currentTime, dur = Math.max(0.4, secs || 1.6);
@@ -5157,6 +5167,7 @@ window.StemLab = window.StemLab || {
       },
       // Release: a band of noise sweeping up and away, louder for a faster stone.
       whoosh: function (speed) {
+        if (_mlIsGlobalMuted()) return;
         var a = ac(), n = noise(); if (!a || !n) return;
         try {
           var t0 = a.currentTime, vol = Math.min(0.14, 0.05 + (speed || 20) * 0.002);
@@ -5174,6 +5185,7 @@ window.StemLab = window.StemLab || {
       // flat when sound goes off, so nothing is left running behind a view
       // the learner has left.
       bed: function (owner, windAbs, fire, rain) {
+        if (_mlIsGlobalMuted()) { api.quiet(); return; }
         var a = ac(); if (!a) return;
         try {
           if (!bedOn) {
@@ -5203,8 +5215,7 @@ window.StemLab = window.StemLab || {
         } catch (e) {}
       },
       quiet: function (owner) {
-        var a = ac();
-        if (!a || !bedOn) return;
+        if (!bedOn) return;
         // A scene may only silence the bed it owns. No owner means the learner
         // asked for silence, which always wins.
         if (owner && bedOn.owner && bedOn.owner !== owner) return;
@@ -5218,6 +5229,7 @@ window.StemLab = window.StemLab || {
       // Masonry coming down: a body of low noise with a scatter of clacks over
       // it, longer and heavier the more of the wall went.
       rubble: function (blocks) {
+        if (_mlIsGlobalMuted()) return;
         var a = ac(), n = noise(); if (!a || !n) return;
         try {
           var t0 = a.currentTime, count = Math.max(1, Math.min(14, blocks || 1));
@@ -5243,6 +5255,7 @@ window.StemLab = window.StemLab || {
       },
       // Landing: a low thump for earth, a thump plus a rattle of stone for the wall.
       thud: function (hitWall, energyKJ) {
+        if (_mlIsGlobalMuted()) return;
         var a = ac(); if (!a) return;
         try {
           var t0 = a.currentTime, vol = Math.min(0.22, 0.08 + (energyKJ || 5) * 0.004);
@@ -5259,6 +5272,16 @@ window.StemLab = window.StemLab || {
         } catch (e) {}
       }
     };
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function' && !window.__alloMlMuteListenerAdded) {
+      window.__alloMlMuteListenerAdded = true;
+      window.addEventListener('alloflow-mute-changed', function () {
+        if (_mlIsGlobalMuted()) {
+          api.quiet();
+          if (typeof window.speechSynthesis !== 'undefined') { try { window.speechSynthesis.cancel(); } catch (_) {} }
+        }
+      });
+    }
+    return api;
   })();
 
   var SCENE_HUD = {};
@@ -7652,6 +7675,8 @@ window.StemLab = window.StemLab || {
   // TOOL REGISTRATION
   // ═══════════════════════════════════════════════════════════════════
 
+  if (typeof window === 'undefined' || !window.StemLab || typeof window.StemLab.registerTool !== 'function') { return; }
+
   window.StemLab.registerTool('machineLab', {
     icon: '⚙️',
     label: 'Machine Lab',
@@ -7764,7 +7789,19 @@ window.StemLab = window.StemLab || {
       };
 
       var labToolData = ctx.toolData;
-      var setLabToolData = ctx.setToolData;
+      var _rawSetLabToolData = ctx.setToolData;
+      var setLabToolData = typeof _rawSetLabToolData === 'function' ? function (updater) {
+        if (typeof updater === 'function') {
+          return _rawSetLabToolData(function (prev) {
+            var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            if (!base.machineLab || typeof base.machineLab !== 'object' || Array.isArray(base.machineLab)) {
+              base = Object.assign({}, base, { machineLab: defaultState() });
+            }
+            return updater(base);
+          });
+        }
+        return _rawSetLabToolData(updater);
+      } : function () {};
       var addToast = (typeof ctx.addToast === 'function') ? ctx.addToast : function () {};
       var announceToSR = (typeof ctx.announceToSR === 'function') ? ctx.announceToSR : function () {};
       var awardStemXP = (typeof ctx.awardXP === 'function') ? ctx.awardXP : function () {};
@@ -8034,6 +8071,7 @@ window.StemLab = window.StemLab || {
             tabIndex: active ? 0 : -1, 'aria-controls': 'ml-shop-panel',
             title: __alloT('stem.machinelab.station_keys', 'Use Left and Right arrow keys to switch stations; Home and End select the first and last.'),
             onKeyDown: function (ev) {
+              if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
               var next = ev.key === 'ArrowRight' ? (stationIndex + 1) % BENCHES.length
                 : ev.key === 'ArrowLeft' ? (stationIndex + BENCHES.length - 1) % BENCHES.length
                 : ev.key === 'Home' ? 0 : ev.key === 'End' ? BENCHES.length - 1 : -1;
@@ -8740,7 +8778,7 @@ window.StemLab = window.StemLab || {
             h('input', { key: 'answer', id: prefix + 'answer-' + bench.id, type: 'text', inputMode: 'decimal', maxLength: 64, value: draft.answer,
               'aria-describedby': prefix + 'rounding-' + bench.id, 'aria-invalid': result === 'invalid' || result === 'incorrect', style: Object.assign({}, practiceInput, { fontSize: 24, fontVariantNumeric: 'tabular-nums', lineHeight: 1.25, minHeight: 54 }),
               onChange: function (ev) { change({ answer: ev.target.value.slice(0, 64), checked: false }); },
-              onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); change({ checked: true }); } } })
+              onKeyDown: function (ev) { if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter') { ev.preventDefault(); change({ checked: true }); } } })
             ]),
             h('div', { key: 'units', style: { minWidth: 0 } }, [
             h('label', { key: 'unit-label', htmlFor: prefix + 'unit-' + bench.id, style: practiceText }, __alloT('stem.machinelab.eff_unit', 'Answer unit')),
@@ -9298,7 +9336,7 @@ window.StemLab = window.StemLab || {
                   style: Object.assign({}, control, { minWidth: 0, flex: 1, minHeight: 48, fontSize: 20, fontWeight: 750, fontVariantNumeric: 'tabular-nums' }), 'aria-invalid': numericOutcome === 'invalid' || numericOutcome === 'incorrect',
                   'aria-describedby': id + 'number-help-' + bench.id + ' ' + id + 'number-feedback-' + bench.id,
                   onChange: function (ev) { updatePrediction(prediction.kind, 'number', ev.target.value, prediction.numericTarget); },
-                  onKeyDown: function (ev) { if (ev.key === 'Enter' && !ev.isComposing) { ev.preventDefault(); updatePrediction(prediction.kind, 'check-number', undefined, prediction.numericTarget); } } }),
+                  onKeyDown: function (ev) { if (ev.key === 'Enter' && !ev.isComposing && ev.keyCode !== 229 && !ev.ctrlKey && !ev.metaKey && !ev.altKey) { ev.preventDefault(); updatePrediction(prediction.kind, 'check-number', undefined, prediction.numericTarget); } } }),
                 h('span', { key: 'unit', 'aria-hidden': 'true', style: Object.assign({}, style, { fontWeight: 800, flexShrink: 0 }) }, numericUnit)
               ]),
               act('check-number', __alloT('stem.machinelab.predict_number_check', 'Check calculation')),
@@ -9863,7 +9901,7 @@ window.StemLab = window.StemLab || {
                   style: Object.assign({}, control, { minWidth: 0, flex: 1, minHeight: 48, fontSize: 20, fontWeight: 750 }),
                   'aria-describedby': id + 'help-' + bench.id + ' ' + id + 'feedback-' + bench.id, 'aria-invalid': outcome === 'number' || outcome === 'invalid' && budgetPracticeNumber(state.answer) === null,
                   onChange: function (ev) { updateBudgetPractice('answer', ev.target.value); },
-                  onKeyDown: function (ev) { if (ev.key === 'Enter' && !ev.isComposing) { ev.preventDefault(); updateBudgetPractice('check'); } } }),
+                  onKeyDown: function (ev) { if (ev.key === 'Enter' && !ev.isComposing && ev.keyCode !== 229 && !ev.ctrlKey && !ev.metaKey && !ev.altKey) { ev.preventDefault(); updateBudgetPractice('check'); } } }),
                 h('span', { key: 'unit', 'aria-hidden': 'true', style: Object.assign({}, style, { fontWeight: 800 }) }, '%')
               ])
             ]),
@@ -10143,7 +10181,7 @@ window.StemLab = window.StemLab || {
             h('input', { key: 'answer', id: prefix + 'answer-' + bench.id, type: 'text', inputMode: 'decimal', maxLength: 64, value: draft.answer,
               style: Object.assign({}, control, { minHeight: 52, fontSize: 22, fontWeight: 750, fontVariantNumeric: 'tabular-nums' }), 'aria-describedby': roundingId, 'aria-invalid': result === 'invalid' || result === 'incorrect',
               onChange: function (ev) { change({ answer: ev.target.value.slice(0, 64), checked: false }); },
-              onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); change({ checked: true }); } } })
+              onKeyDown: function (ev) { if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter') { ev.preventDefault(); change({ checked: true }); } } })
             ]),
             select('unit', __alloT('stem.machinelab.eff_unit', 'Answer unit'), [
               ['', __alloT('stem.machinelab.eff_choose_unit', 'Choose a unit')], ['W', __alloT('stem.machinelab.power_unit_w', 'W — watts')],
@@ -10702,7 +10740,7 @@ window.StemLab = window.StemLab || {
             h('label', { key: 'answer-label', htmlFor: prefix + 'answer-' + bench.id, style: textStyle }, __alloT('stem.machinelab.eff_answer', 'Your answer')),
             h('input', { key: 'answer', id: prefix + 'answer-' + bench.id, type: 'text', inputMode: 'decimal', maxLength: 64, value: draft.answer, style: control, 'aria-describedby': roundingId,
               'aria-invalid': result === 'invalid' || result === 'incorrect', onChange: function (ev) { change({ answer: ev.target.value.slice(0, 64), checked: false }); },
-              onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); if (canPractice) change({ checked: true }); } } }),
+              onKeyDown: function (ev) { if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return; if (ev.key === 'Enter') { ev.preventDefault(); if (canPractice) change({ checked: true }); } } }),
             select('unit', __alloT('stem.machinelab.eff_unit', 'Answer unit'), [
               ['', __alloT('stem.machinelab.eff_choose_unit', 'Choose a unit')], ['ratio', __alloT('stem.machinelab.compound_unit_ratio', 'Ratio — no physical unit')],
               ['%', __alloT('stem.machinelab.compound_unit_percent', '% — percent')], ['N', __alloT('stem.machinelab.eff_unit_n', 'N — newtons')],
@@ -12079,7 +12117,7 @@ window.StemLab = window.StemLab || {
                 'aria-label': __alloT('stem.machinelab.aria_predict', 'Your predicted effort force in newtons'),
                 placeholder: __alloT('stem.machinelab.newtons', 'newtons'),
                 onChange: function (e) { updMulti({ benchPrediction: e.target.value, benchResult: null }); },
-                onKeyDown: function (e) { if (e.key === 'Enter') submitTyped(); },
+                onKeyDown: function (e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') submitTyped(); },
                 style: {
                   width: '100%', minWidth: 0, minHeight: 48, boxSizing: 'border-box', padding: '12px 14px', borderRadius: 10,
                   border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 18, lineHeight: 1.5, fontVariantNumeric: 'tabular-nums'
@@ -12108,7 +12146,7 @@ window.StemLab = window.StemLab || {
                 'aria-label': __alloT('stem.machinelab.aria_predict', 'Your predicted effort force in newtons'),
                 placeholder: __alloT('stem.machinelab.newtons', 'newtons'),
                 onChange: function (e) { updMulti({ benchPrediction: e.target.value, benchResult: null }); },
-                onKeyDown: function (e) { if (e.key === 'Enter') submitTyped(); },
+                onKeyDown: function (e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') submitTyped(); },
                 style: {
                   width: '100%', minWidth: 0, minHeight: 48, boxSizing: 'border-box', padding: '12px 14px', borderRadius: 10,
                   border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 18, lineHeight: 1.5, fontVariantNumeric: 'tabular-nums'
@@ -12263,7 +12301,7 @@ window.StemLab = window.StemLab || {
             tabIndex: on ? 0 : -1,
             onClick: function () { upd('view', v.id); },
             onKeyDown: function (e) {
-              if (!e || (e.key !== 'ArrowRight' && e.key !== 'ArrowDown' && e.key !== 'ArrowLeft' && e.key !== 'ArrowUp')) return;
+              if (!e || e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey || (e.key !== 'ArrowRight' && e.key !== 'ArrowDown' && e.key !== 'ArrowLeft' && e.key !== 'ArrowUp')) return;
               if (e.preventDefault) e.preventDefault();
               var step = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
               var next = views[(viewIndex + step + views.length) % views.length];
@@ -13005,6 +13043,10 @@ window.StemLab = window.StemLab || {
       // header mute gate is meant to defer to.
       function speak(text) {
         if (typeof ctx.callTTS !== 'function' || !text) return;
+        if (typeof window !== 'undefined' && (window.__alloGlobalMuted || window._alloGlobalMute || window._alloQrBlocked === true)) return;
+        try {
+          if (typeof window !== 'undefined' && typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return;
+        } catch (_) {}
         try {
           Promise.resolve(ctx.callTTS(String(text), null, 1.0, { force: true })).catch(function () {});
         } catch (e) { /* a tool must not fall over because audio did */ }
@@ -13012,6 +13054,7 @@ window.StemLab = window.StemLab || {
 
       function readAloud(text, key) {
         if (typeof ctx.callTTS !== 'function' || !text) return null;   // older host, or no voice
+        if (typeof window !== 'undefined' && window._alloQrBlocked === true) return null;
         return h('button', {
           key: key || 'tts',
           onClick: function () { speak(text); },
@@ -13834,7 +13877,7 @@ window.StemLab = window.StemLab || {
                   placeholder: __alloT('stem.machinelab.metres', 'metres'),
                   'aria-label': __alloT('stem.machinelab.aria_range_predict', 'Your predicted range in metres'),
                   onChange: function (e) { upd('rangePrediction', e.target.value); },
-                  onKeyDown: function (e) { if (e.key === 'Enter') fire(); },
+                  onKeyDown: function (e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') fire(); },
                   style: {
                     flex: '1 1 110px', padding: '9px 11px', borderRadius: 8,
                     border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 14
@@ -17147,9 +17190,17 @@ window.StemLab = window.StemLab || {
       //    than always Grade 5.
       function aiPanel() {
         // Student AI-off: the panel renders only when text AI is usable.
-        var _aiFn = ctx.callGemini, _aiOk = false;
-        try { _aiOk = (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') ? !!window.__alloAiUsable('text', _aiFn) : !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)); } catch (_) {}
-        if (!(ctx.aiAvailable !== false && typeof _aiFn === 'function' && !_aiFn._alloQrBlocked && (!!ctx.isTeacherMode || _aiOk))) return null;
+        var _aiFn = ctx.callGemini;
+        var _mlWin = (typeof window !== 'undefined') ? window : {};
+        var _mlPolicy = (_mlWin.ALLOFLOW_MANAGED_AI_POLICY && typeof _mlWin.ALLOFLOW_MANAGED_AI_POLICY === 'object') ? _mlWin.ALLOFLOW_MANAGED_AI_POLICY : null;
+        var _mlPolicyDeny = !!(_mlPolicy && (_mlPolicy.studentAiDisabled === true || _mlPolicy.aiDisabled === true || _mlPolicy.allowAi === false || _mlPolicy.disabled === true || _mlPolicy.locked === true));
+        var _mlHardDeny = !!(ctx.aiAvailable === false || _mlWin._alloQrBlocked === true || _mlWin.__alloAiSecretsLocked === true || _mlWin.__alloQrStudentMode === true || _mlPolicyDeny);
+        var _aiOk = false;
+        if (!_mlHardDeny) {
+          try { _aiOk = (typeof _mlWin.__alloAiUsable === 'function') ? !!_mlWin.__alloAiUsable('text', _aiFn) : (_mlWin.__alloStudentAiDisabled !== true && _mlWin.__alloAiUsable !== false); } catch (_) {}
+        }
+        var _mlAiAllowed = !_mlHardDeny && typeof _aiFn === 'function' && !_aiFn._alloQrBlocked && (!!ctx.isTeacherMode || _aiOk);
+        if (!_mlAiAllowed) return null;
         var LEVELS = [
           { id: 'grade2', band: 'k2', label: __alloT('stem.machinelab.lv_g2', 'Grade 2') },
           { id: 'grade5', band: 'g35', label: __alloT('stem.machinelab.lv_g5', 'Grade 5') },
@@ -17163,7 +17214,7 @@ window.StemLab = window.StemLab || {
         var level = d.aiLevel || defaultLevel;
 
         function explain() {
-          if (typeof ctx.callGemini !== 'function') {
+          if (!_mlAiAllowed || typeof ctx.callGemini !== 'function') {
             upd('aiError', __alloT('stem.machinelab.ai_offline', 'The AI tutor is not available here.'));
             return;
           }

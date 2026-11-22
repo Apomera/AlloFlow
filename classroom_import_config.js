@@ -4,6 +4,6 @@ window.ALLOFLOW_CLASSROOM_IMPORT_CONFIG = Object.freeze({
   enabled: false,
   reviewedDeployment: false,
   clientId: '',
-  allowedOrigins: [],
-  allowedAccountIds: []
+  allowedOrigins: Object.freeze([]),
+  allowedAccountIds: Object.freeze([])
 });

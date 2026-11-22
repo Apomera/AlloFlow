@@ -558,6 +558,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
   /**
    * Draw the piano roll — pitch over time mapped to musical notes.
    */
+  // Pre-allocated zero-GC point buffers & a11y/JSDOM helpers for live vocal canvases
+  var _sgPitchBuf = [];
+  var _sgVibBuf = [];
+  var _sgBreathSeeds = [];
+  for (var _sbi = 0; _sbi < 18; _sbi++) {
+    _sgBreathSeeds.push({
+      lane: (_sbi % 3) - 1, // -1 = anterior, 0 = axial core, +1 = posterior
+      phaseOffset: _sbi / 18,
+      sizeBias: 0.85 + (_sbi % 4) * 0.14
+    });
+  }
+  function _sgIsReducedMotion() {
+    try { return typeof window !== 'undefined' && typeof window.matchMedia === 'function' && !!window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
+  }
+  function _sgIsHighContrast(canvas) {
+    try {
+      if (typeof document !== 'undefined') {
+        var root = document.documentElement;
+        if (root && (root.classList.contains('theme-contrast') || root.getAttribute('data-theme') === 'high-contrast')) return true;
+        if (canvas && typeof canvas.closest === 'function' && canvas.closest('.theme-contrast,[data-theme="high-contrast"]')) return true;
+        if (document.querySelector && document.querySelector('main.theme-contrast')) return true;
+      }
+      return typeof window !== 'undefined' && typeof window.matchMedia === 'function' && !!window.matchMedia('(forced-colors: active)').matches;
+    } catch (e) { return false; }
+  }
+  function _sgSafeEllipse(ctx, x, y, rx, ry, rot, sa, ea) {
+    if (typeof ctx.ellipse === 'function') {
+      ctx.ellipse(x, y, Math.max(0.1, rx), Math.max(0.1, ry), rot || 0, sa || 0, ea == null ? Math.PI * 2 : ea);
+    } else {
+      ctx.save();
+      ctx.translate(x, y);
+      if (rot) ctx.rotate(rot);
+      ctx.scale(Math.max(0.1, rx), Math.max(0.1, ry));
+      ctx.arc(0, 0, 1, sa || 0, ea == null ? Math.PI * 2 : ea);
+      ctx.restore();
+    }
+  }
+
   function drawPitchRoll(canvas, history, opts) {
     if (!canvas) return;
     var c = canvas.getContext('2d');
@@ -567,10 +605,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var isDark = opts && opts.isDark;
     var minMidi = (opts && opts.minMidi) || 36; // C2
     var maxMidi = (opts && opts.maxMidi) || 84; // C6
-    var reduced = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var reduced = _sgIsReducedMotion();
+    var hc = _sgIsHighContrast(canvas);
 
     c.clearRect(0, 0, W, H);
-    if (typeof c.createLinearGradient === 'function') {
+    if (!hc && typeof c.createLinearGradient === 'function') {
       var bgGrad = c.createLinearGradient(0, 0, 0, H);
       if (isDark) {
         bgGrad.addColorStop(0, '#090f1f');
@@ -582,7 +621,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       }
       c.fillStyle = bgGrad;
     } else {
-      c.fillStyle = isDark ? '#0f172a' : '#f1f5f9';
+      c.fillStyle = hc ? '#000000' : (isDark ? '#0f172a' : '#f1f5f9');
     }
     c.fillRect(0, 0, W, H);
 
@@ -593,17 +632,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var midiRange = maxMidi - minMidi;
 
     // Subtle octave acoustic bands & gutter separator
-    for (var octM = minMidi; octM < maxMidi; octM += 12) {
-      if (Math.floor(octM / 12) % 2 === 0) {
-        var yTop = plotH - ((Math.min(maxMidi, octM + 12) - minMidi) / midiRange) * plotH;
-        var yBot = plotH - ((octM - minMidi) / midiRange) * plotH;
-        c.fillStyle = isDark ? 'rgba(56,189,248,0.035)' : 'rgba(99,102,241,0.035)';
-        c.fillRect(plotX, yTop, plotW, yBot - yTop);
+    if (!hc) {
+      for (var octM = minMidi; octM < maxMidi; octM += 12) {
+        if (Math.floor(octM / 12) % 2 === 0) {
+          var yTop = plotH - ((Math.min(maxMidi, octM + 12) - minMidi) / midiRange) * plotH;
+          var yBot = plotH - ((octM - minMidi) / midiRange) * plotH;
+          c.fillStyle = isDark ? 'rgba(56,189,248,0.035)' : 'rgba(99,102,241,0.035)';
+          c.fillRect(plotX, yTop, plotW, yBot - yTop);
+        }
       }
     }
-    c.fillStyle = isDark ? 'rgba(15,23,42,0.72)' : 'rgba(226,232,240,0.55)';
+    c.fillStyle = hc ? '#000000' : (isDark ? 'rgba(15,23,42,0.72)' : 'rgba(226,232,240,0.55)');
     c.fillRect(0, 0, labelW - 1, H);
-    c.strokeStyle = isDark ? 'rgba(148,163,184,0.2)' : 'rgba(148,163,184,0.45)';
+    c.strokeStyle = hc ? '#ffff00' : (isDark ? 'rgba(148,163,184,0.2)' : 'rgba(148,163,184,0.45)');
     c.lineWidth = 1;
     c.beginPath(); c.moveTo(labelW - 0.5, 0); c.lineTo(labelW - 0.5, H); c.stroke();
 
@@ -618,16 +659,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       var isNatural = noteInfo.note.indexOf('#') === -1;
 
       if (isC) {
-        c.strokeStyle = isDark ? 'rgba(99,102,241,0.34)' : 'rgba(148,163,184,0.7)';
+        c.strokeStyle = hc ? 'rgba(255,255,0,0.55)' : (isDark ? 'rgba(99,102,241,0.34)' : 'rgba(148,163,184,0.7)');
         c.lineWidth = 1;
         c.beginPath();
         c.moveTo(plotX, noteY);
         c.lineTo(W, noteY);
         c.stroke();
-        c.fillStyle = isDark ? '#cbd5e1' : '#334155';
+        c.fillStyle = hc ? '#ffff00' : (isDark ? '#cbd5e1' : '#334155');
         c.fillText(noteInfo.str, labelW - 4, noteY + 3);
       } else if (isNatural) {
-        c.strokeStyle = isDark ? 'rgba(30,41,59,0.75)' : 'rgba(226,232,240,0.85)';
+        c.strokeStyle = hc ? 'rgba(255,255,255,0.18)' : (isDark ? 'rgba(30,41,59,0.75)' : 'rgba(226,232,240,0.85)');
         c.lineWidth = 0.5;
         c.beginPath();
         c.moveTo(plotX, noteY);
@@ -638,117 +679,199 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     // Draw pitch history line
     if (!history || history.length < 2) {
-      c.fillStyle = isDark ? '#94a3b8' : '#475569';
+      c.fillStyle = hc ? '#ffff00' : (isDark ? '#94a3b8' : '#475569');
       c.textAlign = 'center';
       c.font = '13px sans-serif';
       c.fillText((opts && opts.emptyLabel) || 'Start singing to see your pitch', W / 2, H / 2);
       return;
     }
 
-    // Collect valid pitch points for luminous ribbon + harmonic overtone ghost
-    var segments = [];
-    var curSeg = [];
-    for (var i = 0; i < history.length; i++) {
+    // Populate pre-allocated zero-GC buffer with valid pitch points & harmonic overtone coordinates
+    var nPts = 0;
+    var segBounds = [];
+    var segStart = -1;
+    var histLen = history.length;
+    for (var i = 0; i < histLen; i++) {
       var entry = history[i];
-      if (!entry || entry.midi <= 0) {
-        if (curSeg.length) { segments.push(curSeg); curSeg = []; }
+      var valid = !!(entry && entry.midi > 0);
+      var px = 0, py = 0;
+      if (valid) {
+        px = plotX + (i / (histLen - 1)) * plotW;
+        py = plotH - ((entry.midi - minMidi) / midiRange) * plotH;
+        if (py < 0 || py > H) valid = false;
+      }
+      if (!valid) {
+        if (segStart >= 0) { segBounds.push(segStart, nPts); segStart = -1; }
         continue;
       }
-      var px = plotX + (i / (history.length - 1)) * plotW;
-      var py = plotH - ((entry.midi - minMidi) / midiRange) * plotH;
-      if (py < 0 || py > H) {
-        if (curSeg.length) { segments.push(curSeg); curSeg = []; }
-        continue;
-      }
+      if (segStart < 0) segStart = nPts;
       var centsAbs = Math.abs(entry.cents || 0);
-      var segColor = centsAbs <= 10 ? '#22c55e' : centsAbs <= 25 ? '#eab308' : '#f43f5e';
-      var overtoneY = plotH - ((entry.midi + 12 - minMidi) / midiRange) * plotH;
-      curSeg.push({ x: px, y: py, color: segColor, overtoneY: overtoneY });
+      var locked = centsAbs <= 10;
+      var segColor = locked ? '#22c55e' : centsAbs <= 25 ? '#eab308' : '#f43f5e';
+      var h2Y = plotH - ((entry.midi + 12 - minMidi) / midiRange) * plotH;
+      var h3Y = plotH - ((entry.midi + 19 - minMidi) / midiRange) * plotH;
+      var slot = _sgPitchBuf[nPts];
+      if (!slot) { slot = { x: 0, y: 0, color: '', locked: false, h2Y: 0, h3Y: 0 }; _sgPitchBuf[nPts] = slot; }
+      slot.x = px; slot.y = py; slot.color = segColor; slot.locked = locked; slot.h2Y = h2Y; slot.h3Y = h3Y;
+      nPts++;
     }
-    if (curSeg.length) segments.push(curSeg);
+    if (segStart >= 0) segBounds.push(segStart, nPts);
 
-    // Subtle harmonic overtone waterfall ghost (+1 octave resonance shimmer)
+    // Silky gradient energy ribbons, multi-harmonic spectrogram shimmer & ±10¢ emerald lock bloom
     c.save();
     c.lineCap = 'round';
     c.lineJoin = 'round';
-    segments.forEach(function(seg) {
-      if (seg.length < 2) return;
-      c.beginPath();
-      var hasOvertone = false;
-      for (var oi = 0; oi < seg.length; oi++) {
-        if (seg[oi].overtoneY >= 2 && seg[oi].overtoneY <= H - 2) {
-          if (!hasOvertone) { c.moveTo(seg[oi].x, seg[oi].overtoneY); hasOvertone = true; }
-          else c.lineTo(seg[oi].x, seg[oi].overtoneY);
+    for (var sb = 0; sb < segBounds.length; sb += 2) {
+      var s0 = segBounds[sb], s1 = segBounds[sb + 1];
+      if (s1 - s0 < 2) continue;
+
+      // Harmonic spectrogram overtone waterfall ghosts (+1 octave f2 & +octave+5th f3 shimmer)
+      if (!hc) {
+        c.beginPath();
+        var hasH2 = false;
+        for (var oi = s0; oi < s1; oi++) {
+          var oPt = _sgPitchBuf[oi];
+          if (oPt.h2Y >= 2 && oPt.h2Y <= H - 2) {
+            if (!hasH2) { c.moveTo(oPt.x, oPt.h2Y); hasH2 = true; }
+            else c.lineTo(oPt.x, oPt.h2Y);
+          }
+        }
+        if (hasH2) {
+          c.strokeStyle = isDark ? 'rgba(56,189,248,0.22)' : 'rgba(99,102,241,0.18)';
+          c.lineWidth = 4.2;
+          c.stroke();
+          c.strokeStyle = isDark ? 'rgba(186,230,253,0.26)' : 'rgba(129,140,248,0.20)';
+          c.lineWidth = 1.2;
+          c.stroke();
+        }
+        c.beginPath();
+        var hasH3 = false;
+        for (var o3 = s0; o3 < s1; o3++) {
+          var o3Pt = _sgPitchBuf[o3];
+          if (o3Pt.h3Y >= 2 && o3Pt.h3Y <= H - 2) {
+            if (!hasH3) { c.moveTo(o3Pt.x, o3Pt.h3Y); hasH3 = true; }
+            else c.lineTo(o3Pt.x, o3Pt.h3Y);
+          }
+        }
+        if (hasH3) {
+          c.strokeStyle = isDark ? 'rgba(167,139,250,0.14)' : 'rgba(139,92,246,0.12)';
+          c.lineWidth = 2.6;
+          c.stroke();
+        }
+        // Luminous translucent harmonic energy wash beneath the vocal pitch ribbon
+        if (typeof c.createLinearGradient === 'function') {
+          var tailLocked = _sgPitchBuf[s1 - 1].locked;
+          var ribGrad = c.createLinearGradient(0, 0, 0, H);
+          if (tailLocked) {
+            ribGrad.addColorStop(0, isDark ? 'rgba(34,197,94,0.26)' : 'rgba(16,185,129,0.20)');
+            ribGrad.addColorStop(0.55, isDark ? 'rgba(56,189,248,0.14)' : 'rgba(56,189,248,0.10)');
+          } else {
+            ribGrad.addColorStop(0, isDark ? 'rgba(244,63,94,0.22)' : 'rgba(244,63,94,0.16)');
+            ribGrad.addColorStop(0.6, isDark ? 'rgba(139,92,246,0.14)' : 'rgba(139,92,246,0.09)');
+          }
+          ribGrad.addColorStop(1, 'rgba(15,23,42,0)');
+          c.beginPath();
+          c.moveTo(_sgPitchBuf[s0].x, H);
+          c.lineTo(_sgPitchBuf[s0].x, _sgPitchBuf[s0].y);
+          for (var ri = s0 + 1; ri < s1 - 1; ri++) {
+            var rmX = (_sgPitchBuf[ri].x + _sgPitchBuf[ri + 1].x) * 0.5;
+            var rmY = (_sgPitchBuf[ri].y + _sgPitchBuf[ri + 1].y) * 0.5;
+            c.quadraticCurveTo(_sgPitchBuf[ri].x, _sgPitchBuf[ri].y, rmX, rmY);
+          }
+          c.lineTo(_sgPitchBuf[s1 - 1].x, _sgPitchBuf[s1 - 1].y);
+          c.lineTo(_sgPitchBuf[s1 - 1].x, H);
+          c.closePath();
+          c.fillStyle = ribGrad;
+          c.fill();
         }
       }
-      if (hasOvertone) {
-        c.strokeStyle = isDark ? 'rgba(56,189,248,0.22)' : 'rgba(99,102,241,0.18)';
-        c.lineWidth = 4;
-        c.stroke();
-      }
-      // Luminous translucent ribbon wash beneath the vocal pitch trace
-      if (typeof c.createLinearGradient === 'function') {
-        var ribGrad = c.createLinearGradient(0, 0, 0, H);
-        ribGrad.addColorStop(0, isDark ? 'rgba(244,63,94,0.22)' : 'rgba(244,63,94,0.16)');
-        ribGrad.addColorStop(0.6, isDark ? 'rgba(139,92,246,0.14)' : 'rgba(139,92,246,0.09)');
-        ribGrad.addColorStop(1, 'rgba(15,23,42,0)');
-        c.beginPath();
-        c.moveTo(seg[0].x, H);
-        for (var ri = 0; ri < seg.length; ri++) c.lineTo(seg[ri].x, seg[ri].y);
-        c.lineTo(seg[seg.length - 1].x, H);
-        c.closePath();
-        c.fillStyle = ribGrad;
-        c.fill();
-      }
-      // Soft outer bloom + crisp inner tuning-colored pitch filament
-      for (var si = 1; si < seg.length; si++) {
-        var aPt = seg[si - 1], bPt = seg[si];
-        c.save();
-        c.shadowColor = bPt.color;
-        c.shadowBlur = 10;
-        c.strokeStyle = bPt.color;
-        c.lineWidth = 5;
-        c.globalAlpha = 0.28;
-        c.beginPath(); c.moveTo(aPt.x, aPt.y); c.lineTo(bPt.x, bPt.y); c.stroke();
+
+      // Silky tuning-colored pitch energy ribbon (blooms brighter with emerald resonance when ±10¢ locked)
+      for (var si = s0 + 1; si < s1; si++) {
+        var aPt = _sgPitchBuf[si - 1], bPt = _sgPitchBuf[si];
+        var isLockSeg = bPt.locked;
+        var strokeCol = hc ? (isLockSeg ? '#00ff66' : '#ffff00') : bPt.color;
+        if (!hc) {
+          c.strokeStyle = strokeCol;
+          c.lineWidth = isLockSeg ? 9.5 : 5.4;
+          c.globalAlpha = isLockSeg ? 0.34 : 0.22;
+          c.beginPath(); c.moveTo(aPt.x, aPt.y); c.lineTo(bPt.x, bPt.y); c.stroke();
+        }
         c.globalAlpha = 0.96;
-        c.lineWidth = 2.6;
+        c.strokeStyle = strokeCol;
+        c.lineWidth = isLockSeg ? 3.2 : 2.5;
+        if (!hc) {
+          c.shadowColor = strokeCol;
+          c.shadowBlur = isLockSeg ? 14 : 8;
+        }
         c.beginPath(); c.moveTo(aPt.x, aPt.y); c.lineTo(bPt.x, bPt.y); c.stroke();
-        c.restore();
+        c.shadowBlur = 0;
+        if (!hc && isLockSeg) {
+          // Crisp luminous emerald-white inner filament when locked in tune
+          c.strokeStyle = 'rgba(236,253,245,0.72)';
+          c.lineWidth = 1.05;
+          c.beginPath(); c.moveTo(aPt.x, aPt.y); c.lineTo(bPt.x, bPt.y); c.stroke();
+        }
       }
-    });
+    }
     c.restore();
 
-    // Current pitch dot with luminous resonance halo
+    // Current pitch dot with luminous ±10¢ emerald resonance lock halo
     var last = history[history.length - 1];
     if (last && last.midi > 0) {
       var dotY = plotH - ((last.midi - minMidi) / midiRange) * plotH;
       var cAbs = Math.abs(last.cents || 0);
-      var dotColor = cAbs <= 10 ? '#22c55e' : cAbs <= 25 ? '#eab308' : '#f43f5e';
-      var pulse = reduced ? 0.5 : (0.5 + 0.5 * Math.sin((typeof performance !== 'undefined' ? performance.now() : 0) * 0.008));
+      var inTuneLock = cAbs <= 10;
+      var dotColor = hc ? (inTuneLock ? '#00ff66' : '#ffff00') : (inTuneLock ? '#22c55e' : cAbs <= 25 ? '#eab308' : '#f43f5e');
+      var nowMs = typeof performance !== 'undefined' ? performance.now() : 0;
+      var pulse = reduced ? 0.5 : (0.5 + 0.5 * Math.sin(nowMs * 0.008));
       c.save();
+      // ±10¢ Emerald resonance lock bloom & expanding harmonic halo
+      if (inTuneLock && !hc) {
+        if (typeof c.createRadialGradient === 'function') {
+          var lockR = 16 + pulse * 6;
+          var lockGrad = c.createRadialGradient(W - 8, dotY, 1, W - 8, dotY, lockR);
+          lockGrad.addColorStop(0, 'rgba(110,231,183,0.72)');
+          lockGrad.addColorStop(0.45, 'rgba(34,197,94,0.34)');
+          lockGrad.addColorStop(1, 'rgba(34,197,94,0)');
+          c.fillStyle = lockGrad;
+          c.beginPath(); c.arc(W - 8, dotY, lockR, 0, 2 * Math.PI); c.fill();
+        }
+        if (!reduced) {
+          var ringProg = (nowMs * 0.0014) % 1;
+          c.beginPath();
+          c.arc(W - 8, dotY, 7 + ringProg * 14, 0, 2 * Math.PI);
+          c.strokeStyle = '#6ee7b7';
+          c.globalAlpha = (1 - ringProg) * 0.65;
+          c.lineWidth = 1.6 - ringProg * 0.8;
+          c.stroke();
+        }
+      }
       c.beginPath();
-      c.arc(W - 8, dotY, 8 + pulse * 4, 0, 2 * Math.PI);
+      c.arc(W - 8, dotY, (inTuneLock ? 9 : 8) + pulse * 3.8, 0, 2 * Math.PI);
       c.strokeStyle = dotColor;
-      c.globalAlpha = 0.35;
-      c.lineWidth = 1.5;
+      c.globalAlpha = inTuneLock ? 0.58 : 0.35;
+      c.lineWidth = inTuneLock ? 1.8 : 1.4;
       c.stroke();
       c.globalAlpha = 1;
-      c.shadowColor = dotColor;
-      c.shadowBlur = 12;
+      if (!hc) {
+        c.shadowColor = dotColor;
+        c.shadowBlur = inTuneLock ? 16 : 10;
+      }
       c.beginPath();
-      c.arc(W - 8, dotY, 5.2, 0, 2 * Math.PI);
+      c.arc(W - 8, dotY, inTuneLock ? 5.6 : 5.0, 0, 2 * Math.PI);
       c.fillStyle = dotColor;
       c.fill();
       c.shadowBlur = 0;
       c.beginPath();
-      c.arc(W - 9.2, dotY - 1.2, 1.8, 0, 2 * Math.PI);
-      c.fillStyle = 'rgba(255,255,255,0.85)';
+      c.arc(W - 9.2, dotY - 1.2, 1.9, 0, 2 * Math.PI);
+      c.fillStyle = 'rgba(255,255,255,0.88)';
       c.fill();
       c.restore();
 
       // Note label near dot
       c.font = 'bold 11px sans-serif';
-      c.fillStyle = isDark ? '#f1f5f9' : '#0f172a';
+      c.fillStyle = hc ? '#ffff00' : (isDark ? '#f1f5f9' : '#0f172a');
       c.textAlign = 'right';
       c.fillText(last.noteStr || '', W - 20, Math.max(12, dotY - 8));
     }
@@ -764,15 +887,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     if (!c) return;
     var W = canvas.width;
     var H = canvas.height;
+    var hc = _sgIsHighContrast(canvas);
     c.clearRect(0, 0, W, H);
 
-    if (typeof c.createLinearGradient === 'function') {
+    if (!hc && typeof c.createLinearGradient === 'function') {
       var bgG = c.createLinearGradient(0, 0, 0, H);
       bgG.addColorStop(0, isDark ? '#0f172a' : '#f8fafc');
       bgG.addColorStop(1, isDark ? '#1e293b' : '#f1f5f9');
       c.fillStyle = bgG;
     } else {
-      c.fillStyle = isDark ? '#1e293b' : '#f8fafc';
+      c.fillStyle = hc ? '#000000' : (isDark ? '#1e293b' : '#f8fafc');
     }
     c.fillRect(0, 0, W, H);
 
@@ -783,25 +907,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     var center = barX + barW / 2;
 
     // Background track
-    c.fillStyle = isDark ? '#1e293b' : '#e2e8f0';
+    c.fillStyle = hc ? '#000000' : (isDark ? '#1e293b' : '#e2e8f0');
     c.fillRect(barX, barY, barW, barH);
-    c.strokeStyle = isDark ? 'rgba(148,163,184,0.28)' : 'rgba(100,116,139,0.35)';
+    c.strokeStyle = hc ? '#ffff00' : (isDark ? 'rgba(148,163,184,0.28)' : 'rgba(100,116,139,0.35)');
     c.lineWidth = 1;
     c.strokeRect(barX + 0.5, barY + 0.5, barW - 1, barH - 1);
 
     // Yellow zone (±10 to ±25)
     var greenW = (10 / 50) * (barW / 2);
     var yellowW = (25 / 50) * (barW / 2);
-    c.fillStyle = isDark ? 'rgba(234, 179, 8, 0.22)' : 'rgba(234, 179, 8, 0.16)';
-    c.fillRect(center - yellowW, barY, yellowW - greenW, barH);
-    c.fillRect(center + greenW, barY, yellowW - greenW, barH);
+    if (!hc) {
+      c.fillStyle = isDark ? 'rgba(234, 179, 8, 0.22)' : 'rgba(234, 179, 8, 0.16)';
+      c.fillRect(center - yellowW, barY, yellowW - greenW, barH);
+      c.fillRect(center + greenW, barY, yellowW - greenW, barH);
+    }
 
-    // Luminous emerald zone in center (±10 cents)
-    c.fillStyle = isDark ? 'rgba(34, 197, 94, 0.34)' : 'rgba(34, 197, 94, 0.26)';
+    var clampedCents = Math.min(50, Math.max(-50, cents || 0));
+    var needleX = center + (clampedCents / 50) * (barW / 2);
+    var cAbs = Math.abs(clampedCents);
+    var isLocked = cAbs <= 10;
+
+    // Luminous emerald zone in center (±10 cents — blooms brighter when locked in tune)
+    c.fillStyle = hc ? 'rgba(0, 255, 102, 0.25)' : (isLocked
+      ? (isDark ? 'rgba(34, 197, 94, 0.52)' : 'rgba(34, 197, 94, 0.40)')
+      : (isDark ? 'rgba(34, 197, 94, 0.30)' : 'rgba(34, 197, 94, 0.24)'));
     c.fillRect(center - greenW, barY, greenW * 2, barH);
 
     // Fine calibration ticks every 10 cents
-    c.strokeStyle = isDark ? 'rgba(148,163,184,0.35)' : 'rgba(71,85,105,0.3)';
+    c.strokeStyle = hc ? '#ffff00' : (isDark ? 'rgba(148,163,184,0.35)' : 'rgba(71,85,105,0.3)');
     c.lineWidth = 1;
     for (var tc = -40; tc <= 40; tc += 10) {
       if (tc === 0) continue;
@@ -810,7 +943,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     }
 
     // Center zero-cent beacon line
-    c.strokeStyle = isDark ? '#e2e8f0' : '#334155';
+    c.strokeStyle = hc ? '#00ff66' : (isLocked ? '#6ee7b7' : (isDark ? '#e2e8f0' : '#334155'));
     c.lineWidth = 2;
     c.beginPath();
     c.moveTo(center, barY - 3);
@@ -819,25 +952,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     // Labels
     c.font = '8px sans-serif';
-    c.fillStyle = isDark ? '#94a3b8' : '#475569';
+    c.fillStyle = hc ? '#ffff00' : (isDark ? '#94a3b8' : '#475569');
     c.textAlign = 'center';
     c.fillText(L.flat || 'Flat', barX + 10, barY + barH + 12);
     c.fillText(L.sharp || 'Sharp', barX + barW - 10, barY + barH + 12);
     c.fillText('0', center, barY + barH + 12);
 
     // Luminous active fill from center to needle + glowing chevron pointer
-    var clampedCents = Math.min(50, Math.max(-50, cents || 0));
-    var needleX = center + (clampedCents / 50) * (barW / 2);
-    var cAbs = Math.abs(clampedCents);
-    var needleColor = cAbs <= 10 ? '#22c55e' : cAbs <= 25 ? '#eab308' : '#ef4444';
+    var needleColor = hc ? (isLocked ? '#00ff66' : '#ffff00') : (isLocked ? '#22c55e' : cAbs <= 25 ? '#eab308' : '#ef4444');
 
     c.save();
+    if (isLocked && !hc && typeof c.createRadialGradient === 'function') {
+      var lockG = c.createRadialGradient(needleX, barY + barH / 2, 1, needleX, barY + barH / 2, 18);
+      lockG.addColorStop(0, 'rgba(110,231,183,0.48)');
+      lockG.addColorStop(1, 'rgba(34,197,94,0)');
+      c.fillStyle = lockG;
+      c.beginPath(); c.arc(needleX, barY + barH / 2, 18, 0, Math.PI * 2); c.fill();
+    }
     c.fillStyle = needleColor;
-    c.globalAlpha = 0.42;
+    c.globalAlpha = 0.44;
     c.fillRect(Math.min(center, needleX), barY + 2, Math.abs(needleX - center), barH - 4);
     c.globalAlpha = 1;
-    c.shadowColor = needleColor;
-    c.shadowBlur = 8;
+    if (!hc) {
+      c.shadowColor = needleColor;
+      c.shadowBlur = isLocked ? 12 : 8;
+    }
     c.beginPath();
     c.moveTo(needleX, barY - 2);
     c.lineTo(needleX - 5, barY - 9);
@@ -866,47 +1005,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     if (!c) return;
     var W = canvas.width;
     var H = canvas.height;
+    var reduced = _sgIsReducedMotion();
+    var hc = _sgIsHighContrast(canvas);
     c.clearRect(0, 0, W, H);
 
-    if (typeof c.createLinearGradient === 'function') {
+    if (!hc && typeof c.createLinearGradient === 'function') {
       var bgGrad = c.createLinearGradient(0, 0, 0, H);
       bgGrad.addColorStop(0, isDark ? '#090e1c' : '#f8fafc');
       bgGrad.addColorStop(1, isDark ? '#131d36' : '#eef2ff');
       c.fillStyle = bgGrad;
     } else {
-      c.fillStyle = isDark ? '#0f172a' : '#f1f5f9';
+      c.fillStyle = hc ? '#000000' : (isDark ? '#0f172a' : '#f1f5f9');
     }
     c.fillRect(0, 0, W, H);
 
     if (!history || history.length < 10) {
-      c.fillStyle = isDark ? '#94a3b8' : '#475569';
+      c.fillStyle = hc ? '#ffff00' : (isDark ? '#94a3b8' : '#475569');
       c.textAlign = 'center';
       c.font = '12px sans-serif';
       c.fillText(L.empty || 'Sustain a note to see vibrato waveform', W / 2, H / 2);
       return;
     }
 
-    // Calculate mean MIDI for the window
-    var midiVals = history.map(function(h) { return h.midi; });
-    var mean = midiVals.reduce(function(a, b) { return a + b; }, 0) / midiVals.length;
+    // Calculate mean MIDI & excursion for the window (zero allocation)
+    var vLen = history.length;
+    var meanSum = 0;
+    for (var mi = 0; mi < vLen; mi++) meanSum += history[mi].midi;
+    var mean = meanSum / vLen;
 
     // Center line at 0
     var centerY = H / 2;
     var scaleY = H / 100; // ±50 cents maps to full height
 
-    // Healthy vibrato ideal envelope corridor (±15¢ to ±40¢)
-    c.fillStyle = isDark ? 'rgba(139,92,246,0.10)' : 'rgba(139,92,246,0.08)';
-    c.fillRect(30, centerY - 40 * scaleY, W - 30, 25 * scaleY);
-    c.fillRect(30, centerY + 15 * scaleY, W - 30, 25 * scaleY);
+    // Healthy vibrato ideal envelope corridor (±15¢ to ±40¢) + ±10¢ center lock lane
+    if (!hc) {
+      c.fillStyle = isDark ? 'rgba(139,92,246,0.10)' : 'rgba(139,92,246,0.08)';
+      c.fillRect(30, centerY - 40 * scaleY, W - 30, 25 * scaleY);
+      c.fillRect(30, centerY + 15 * scaleY, W - 30, 25 * scaleY);
+      c.fillStyle = isDark ? 'rgba(34,197,94,0.08)' : 'rgba(16,185,129,0.07)';
+      c.fillRect(30, centerY - 10 * scaleY, W - 30, 20 * scaleY);
+    }
 
     // Grid lines
-    c.strokeStyle = isDark ? 'rgba(71,85,105,0.45)' : '#cbd5e1';
+    c.strokeStyle = hc ? 'rgba(255,255,255,0.28)' : (isDark ? 'rgba(71,85,105,0.45)' : '#cbd5e1');
     c.lineWidth = 0.5;
     c.setLineDash([3, 3]);
     var gridCents = [-40, -20, 0, 20, 40];
     c.font = '8px sans-serif';
     c.textAlign = 'right';
-    c.fillStyle = isDark ? '#94a3b8' : '#475569';
+    c.fillStyle = hc ? '#ffff00' : (isDark ? '#94a3b8' : '#475569');
     for (var gi = 0; gi < gridCents.length; gi++) {
       var gy = centerY - gridCents[gi] * scaleY;
       c.beginPath();
@@ -918,70 +1065,105 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     c.setLineDash([]);
 
     // Center line (bolder)
-    c.strokeStyle = isDark ? 'rgba(148,163,184,0.55)' : '#94a3b8';
+    c.strokeStyle = hc ? '#ffff00' : (isDark ? 'rgba(148,163,184,0.55)' : '#94a3b8');
     c.lineWidth = 1;
     c.beginPath();
     c.moveTo(30, centerY);
     c.lineTo(W, centerY);
     c.stroke();
 
-    // Compute smooth points
-    var vPts = [];
-    for (var i = 0; i < history.length; i++) {
+    // Populate pre-allocated zero-GC vibrato point buffer
+    var peakDev = 0;
+    for (var i = 0; i < vLen; i++) {
       var deviation = (history[i].midi - mean) * 100;
-      var px = 30 + (i / (history.length - 1)) * (W - 30);
+      if (Math.abs(deviation) > peakDev) peakDev = Math.abs(deviation);
+      var px = 30 + (i / (vLen - 1)) * (W - 30);
       var py = Math.max(4, Math.min(H - 4, centerY - deviation * scaleY));
-      vPts.push({ x: px, y: py });
+      var vSlot = _sgVibBuf[i];
+      if (!vSlot) { vSlot = { x: 0, y: 0, dev: 0 }; _sgVibBuf[i] = vSlot; }
+      vSlot.x = px; vSlot.y = py; vSlot.dev = Math.abs(deviation);
     }
+    var tip = _sgVibBuf[vLen - 1];
+    var tipInTune = tip.dev <= 10;
+    var healthyVib = peakDev >= 15 && peakDev <= 45;
 
-    // Translucent ribbon fill from center axis to vibrato trace
+    // Silky quadratic-smoothed gradient energy ribbon fill from center axis to vibrato trace
     c.save();
-    c.beginPath();
-    c.moveTo(vPts[0].x, centerY);
-    for (var fi = 0; fi < vPts.length; fi++) c.lineTo(vPts[fi].x, vPts[fi].y);
-    c.lineTo(vPts[vPts.length - 1].x, centerY);
-    c.closePath();
-    if (typeof c.createLinearGradient === 'function') {
-      var fillG = c.createLinearGradient(0, 0, 0, H);
-      fillG.addColorStop(0, 'rgba(232,121,249,0.24)');
-      fillG.addColorStop(0.5, 'rgba(139,92,246,0.06)');
-      fillG.addColorStop(1, 'rgba(56,189,248,0.24)');
-      c.fillStyle = fillG;
-    } else {
-      c.fillStyle = 'rgba(139,92,246,0.16)';
+    if (!hc) {
+      c.beginPath();
+      c.moveTo(_sgVibBuf[0].x, centerY);
+      c.lineTo(_sgVibBuf[0].x, _sgVibBuf[0].y);
+      for (var fi = 1; fi < vLen - 1; fi++) {
+        var fmX = (_sgVibBuf[fi].x + _sgVibBuf[fi + 1].x) * 0.5;
+        var fmY = (_sgVibBuf[fi].y + _sgVibBuf[fi + 1].y) * 0.5;
+        c.quadraticCurveTo(_sgVibBuf[fi].x, _sgVibBuf[fi].y, fmX, fmY);
+      }
+      c.lineTo(tip.x, tip.y);
+      c.lineTo(tip.x, centerY);
+      c.closePath();
+      if (typeof c.createLinearGradient === 'function') {
+        var fillG = c.createLinearGradient(0, 0, 0, H);
+        fillG.addColorStop(0, healthyVib ? 'rgba(52,211,153,0.28)' : 'rgba(232,121,249,0.26)');
+        fillG.addColorStop(0.5, 'rgba(139,92,246,0.06)');
+        fillG.addColorStop(1, healthyVib ? 'rgba(56,189,248,0.28)' : 'rgba(56,189,248,0.24)');
+        c.fillStyle = fillG;
+      } else {
+        c.fillStyle = 'rgba(139,92,246,0.16)';
+      }
+      c.fill();
     }
-    c.fill();
 
-    // Multi-pass luminous vibrato filament (outer neon halo + bright core)
-    var strokeStyle = '#a855f7';
-    if (typeof c.createLinearGradient === 'function') {
+    // Multi-pass silky luminous vibrato energy ribbon (outer neon bloom + bright core + specular filament)
+    var strokeStyle = hc ? '#00ff66' : '#a855f7';
+    if (!hc && typeof c.createLinearGradient === 'function') {
       var lineG = c.createLinearGradient(30, 0, W, 0);
       lineG.addColorStop(0, '#38bdf8');
-      lineG.addColorStop(0.5, '#a855f7');
-      lineG.addColorStop(1, '#f472b6');
+      lineG.addColorStop(0.5, healthyVib ? '#34d399' : '#a855f7');
+      lineG.addColorStop(1, tipInTune ? '#22c55e' : '#f472b6');
       strokeStyle = lineG;
     }
     c.lineCap = 'round';
     c.lineJoin = 'round';
     c.beginPath();
-    for (var li = 0; li < vPts.length; li++) {
-      if (li === 0) c.moveTo(vPts[li].x, vPts[li].y);
-      else c.lineTo(vPts[li].x, vPts[li].y);
+    c.moveTo(_sgVibBuf[0].x, _sgVibBuf[0].y);
+    for (var li = 1; li < vLen - 1; li++) {
+      var lmX = (_sgVibBuf[li].x + _sgVibBuf[li + 1].x) * 0.5;
+      var lmY = (_sgVibBuf[li].y + _sgVibBuf[li + 1].y) * 0.5;
+      c.quadraticCurveTo(_sgVibBuf[li].x, _sgVibBuf[li].y, lmX, lmY);
     }
-    c.shadowColor = '#a855f7';
-    c.shadowBlur = 10;
-    c.strokeStyle = strokeStyle;
-    c.lineWidth = 4.5;
-    c.globalAlpha = 0.28;
-    c.stroke();
+    c.lineTo(tip.x, tip.y);
+    if (!hc) {
+      c.shadowColor = tipInTune ? '#22c55e' : (healthyVib ? '#34d399' : '#a855f7');
+      c.shadowBlur = tipInTune || healthyVib ? 13 : 9;
+      c.strokeStyle = strokeStyle;
+      c.lineWidth = tipInTune || healthyVib ? 6.5 : 4.8;
+      c.globalAlpha = 0.28;
+      c.stroke();
+    }
     c.globalAlpha = 1;
-    c.lineWidth = 2.2;
+    c.strokeStyle = strokeStyle;
+    c.lineWidth = 2.4;
     c.stroke();
-    // Luminous live tip dot
-    var tip = vPts[vPts.length - 1];
+    c.shadowBlur = 0;
+    if (!hc) {
+      c.strokeStyle = 'rgba(255,255,255,0.52)';
+      c.lineWidth = 0.9;
+      c.stroke();
+    }
+    // Luminous live tip dot with emerald resonance halo when ±10¢ locked
+    var tipCol = hc ? '#ffff00' : (tipInTune ? '#22c55e' : '#f472b6');
+    if (!hc && typeof c.createRadialGradient === 'function') {
+      var vPulse = reduced ? 0.5 : (0.5 + 0.5 * Math.sin((typeof performance !== 'undefined' ? performance.now() : 0) * 0.009));
+      var tipHaloR = (tipInTune ? 12 : 9) + vPulse * 3;
+      var tipG = c.createRadialGradient(tip.x, tip.y, 1, tip.x, tip.y, tipHaloR);
+      tipG.addColorStop(0, tipInTune ? 'rgba(52,211,153,0.72)' : 'rgba(244,114,182,0.55)');
+      tipG.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = tipG;
+      c.beginPath(); c.arc(tip.x, tip.y, tipHaloR, 0, Math.PI * 2); c.fill();
+    }
     c.beginPath();
-    c.arc(tip.x, tip.y, 4, 0, Math.PI * 2);
-    c.fillStyle = '#f472b6';
+    c.arc(tip.x, tip.y, 4.2, 0, Math.PI * 2);
+    c.fillStyle = tipCol;
     c.fill();
     c.restore();
   }
@@ -1569,13 +1751,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         c.strokeStyle = noteColor;
         c.lineWidth = 1.8;
         c.beginPath();
-        c.ellipse(nx, ny, r * 1.2, r, -0.3, 0, 2 * Math.PI);
+        _sgSafeEllipse(c, nx, ny, r * 1.2, r, -0.3, 0, 2 * Math.PI);
         c.stroke();
       } else {
         // Filled note head (quarter or shorter)
         c.fillStyle = noteColor;
         c.beginPath();
-        c.ellipse(nx, ny, r * 1.2, r, -0.3, 0, 2 * Math.PI);
+        _sgSafeEllipse(c, nx, ny, r * 1.2, r, -0.3, 0, 2 * Math.PI);
         c.fill();
       }
 
@@ -1866,7 +2048,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     // Cricoid cartilage (ring below thyroid)
     ctx.beginPath();
-    ctx.ellipse(larynxX, larynxBottom + 3, larynxW / 2 - 2, 5, 0, 0, Math.PI * 2);
+    _sgSafeEllipse(ctx, larynxX, larynxBottom + 3, larynxW / 2 - 2, 5, 0, 0, Math.PI * 2);
     ctx.fillStyle = regionFill('larynx', larynxColor);
     ctx.strokeStyle = regionStroke('larynx', larynxColor);
     ctx.fill();
@@ -1916,53 +2098,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     ctx.closePath();
     ctx.fill();
 
-    // Phonation & Vowel Shaping: luminous vocal-tract acoustic resonance waves & harmonic glow
+    // Phonation & Vowel Shaping: propagating acoustic pressure-wave pulses through pharynx & mouth + radiating lip wavefronts
     if (animMode === 'phonation' || animMode === 'vowel') {
       ctx.save();
-      var reducedAnim = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var reducedAnim = _sgIsReducedMotion();
+      var anatHC = _sgIsHighContrast(canvas);
       var phaseT = reducedAnim ? 0 : animFrame;
-      var waveAlpha = animMode === 'phonation' ? (0.28 + Math.abs(Math.sin(phaseT * 0.1)) * 0.42) : 0.36;
-      // Resonant pharyngeal & oral formant standing-wave glow halos
-      if (typeof ctx.createRadialGradient === 'function') {
-        var f1Glow = ctx.createRadialGradient(larynxX, larynxTop - 28, 4, larynxX, larynxTop - 28, 36);
-        f1Glow.addColorStop(0, 'rgba(244,114,182,' + (waveAlpha * 0.45) + ')');
+      var waveFreq = pitchHigh ? 0.052 : 0.032;
+      var waveAlpha = animMode === 'phonation' ? (0.34 + Math.abs(Math.sin(phaseT * 0.1)) * 0.42) : 0.44;
+      var vOpen = vowelShape ? vowelShape.mouthOpen : 0.6;
+      var vTongY = vowelShape ? vowelShape.tongueY : 0.6;
+      // Resonant pharyngeal (F1) & oral (F2) formant standing-wave glow halos (bypassed in HC)
+      if (!anatHC && typeof ctx.createRadialGradient === 'function') {
+        var f1Breath = reducedAnim ? 1 : (0.9 + 0.14 * Math.sin(phaseT * (pitchHigh ? 0.22 : 0.13)));
+        var f1R = 38 * f1Breath;
+        var f1Glow = ctx.createRadialGradient(larynxX, larynxTop - 32, 3, larynxX, larynxTop - 32, f1R);
+        f1Glow.addColorStop(0, 'rgba(244,114,182,' + (waveAlpha * 0.56).toFixed(3) + ')');
+        f1Glow.addColorStop(0.55, 'rgba(167,139,250,' + (waveAlpha * 0.24).toFixed(3) + ')');
         f1Glow.addColorStop(1, 'rgba(244,114,182,0)');
         ctx.fillStyle = f1Glow;
-        ctx.beginPath(); ctx.arc(larynxX, larynxTop - 28, 36, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(larynxX, larynxTop - 32, f1R, 0, Math.PI * 2); ctx.fill();
 
-        var f2Glow = ctx.createRadialGradient(118, 108, 4, 118, 108, 44);
-        f2Glow.addColorStop(0, 'rgba(56,189,248,' + (waveAlpha * 0.36) + ')');
+        var f2X = 116 + (vowelShape ? (vowelShape.tongueX - 0.5) * 18 : 0);
+        var f2Y = 104 + (vTongY - 0.5) * 8;
+        var f2R = (42 + vOpen * 10) * f1Breath;
+        var f2Glow = ctx.createRadialGradient(f2X, f2Y, 3, f2X, f2Y, f2R);
+        f2Glow.addColorStop(0, 'rgba(56,189,248,' + (waveAlpha * 0.46).toFixed(3) + ')');
+        f2Glow.addColorStop(0.55, 'rgba(52,211,153,' + (waveAlpha * 0.18).toFixed(3) + ')');
         f2Glow.addColorStop(1, 'rgba(56,189,248,0)');
         ctx.fillStyle = f2Glow;
-        ctx.beginPath(); ctx.arc(118, 108, 44, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(f2X, f2Y, f2R, 0, Math.PI * 2); ctx.fill();
       }
-      // Rising luminous standing acoustic waves along the pharynx
+      // Subtle acoustic waveguide centerline through pharynx -> oral cavity -> lips
       ctx.lineCap = 'round';
-      for (var wi = 0; wi < 5; wi++) {
-        var wy = foldY - 10 - wi * 14;
-        var wAmp = 3.5 + wi * 1.4;
+      if (!anatHC) {
+        ctx.strokeStyle = 'rgba(125,211,252,' + (waveAlpha * 0.24).toFixed(3) + ')';
+        ctx.lineWidth = 6;
         ctx.beginPath();
-        for (var wx = -14; wx <= 14; wx += 2) {
-          var sy = wy + Math.sin((wx + phaseT * (pitchHigh ? 4.5 : 2.8)) * 0.32) * wAmp;
-          if (wx === -14) ctx.moveTo(larynxX + wx, sy);
-          else ctx.lineTo(larynxX + wx, sy);
-        }
-        ctx.shadowColor = wi % 2 === 0 ? '#f472b6' : '#38bdf8';
-        ctx.shadowBlur = 6;
-        ctx.strokeStyle = wi % 2 === 0 ? ('rgba(244,114,182,' + waveAlpha + ')') : ('rgba(56,189,248,' + (waveAlpha * 0.85) + ')');
-        ctx.lineWidth = 1.6;
+        ctx.moveTo(larynxX, foldY - 4);
+        ctx.quadraticCurveTo(larynxX, 108, 126, 102 + (1 - vOpen) * 6);
+        ctx.lineTo(66, 104 + vOpen * 5);
         ctx.stroke();
       }
-      // Radiating acoustic wavefront arcs projecting out from the lips
-      ctx.shadowBlur = 0;
-      for (var arcI = 0; arcI < 3; arcI++) {
-        var arcProg = reducedAnim ? ((arcI + 0.5) / 3) : (((phaseT * 0.03) + arcI / 3) % 1);
-        var arcR = 14 + arcProg * 44;
-        var arcAlpha = (1 - arcProg) * 0.55;
-        ctx.strokeStyle = 'rgba(56,189,248,' + arcAlpha + ')';
-        ctx.lineWidth = 2 - arcProg * 1.1;
+      // Traveling acoustic pressure-wave compression pulses propagating from glottis -> pharynx -> oral cavity -> lips
+      var pulseCount = 7;
+      for (var pwi = 0; pwi < pulseCount; pwi++) {
+        var u = reducedAnim ? ((pwi + 0.5) / pulseCount) : (((phaseT * waveFreq) + pwi / pulseCount) % 1);
+        // Piecewise quadratic Bezier along vocal tract centerline: u in [0, 0.52] pharynx, [0.52, 1] mouth
+        var cxP, cyP, tangAng;
+        if (u < 0.52) {
+          var tPh = u / 0.52;
+          cxP = larynxX - Math.pow(tPh, 2.2) * 14;
+          cyP = (foldY - 4) - tPh * (foldY - 110);
+          tangAng = -Math.PI / 2 - tPh * 0.55;
+        } else {
+          var tOr = (u - 0.52) / 0.48;
+          var om = 1 - tOr;
+          var p0x = larynxX - 14, p0y = 106;
+          var p1x = 128, p1y = 98 + (1 - vOpen) * 5;
+          var p2x = 66, p2y = 104 + vOpen * 5;
+          cxP = om * om * p0x + 2 * om * tOr * p1x + tOr * tOr * p2x;
+          cyP = om * om * p0y + 2 * om * tOr * p1y + tOr * tOr * p2y;
+          var dxdt = 2 * om * (p1x - p0x) + 2 * tOr * (p2x - p1x);
+          var dydt = 2 * om * (p1y - p0y) + 2 * tOr * (p2y - p1y);
+          tangAng = Math.atan2(dydt, dxdt);
+        }
+        var pEnv = Math.sin(u * Math.PI);
+        var halfSpan = 8 + (u > 0.5 ? vOpen * 7 : 4) * (0.75 + pEnv * 0.35);
+        var pCol = anatHC ? '#00ffff' : (u < 0.48 ? '244,114,182' : (u < 0.78 ? '167,139,250' : '56,189,248'));
+        var pAlpha = Math.min(0.92, (0.28 + pEnv * 0.62) * (0.75 + waveAlpha * 0.5));
+        ctx.save();
+        ctx.translate(cxP, cyP);
+        ctx.rotate(tangAng);
+        // Curved acoustic compression wavefront perpendicular to propagation direction
+        if (!anatHC) {
+          ctx.strokeStyle = 'rgba(' + pCol + ',' + (pAlpha * 0.34).toFixed(3) + ')';
+          ctx.lineWidth = 4.6;
+          ctx.beginPath();
+          ctx.moveTo(-2.5, -halfSpan);
+          ctx.quadraticCurveTo(3.5, 0, -2.5, halfSpan);
+          ctx.stroke();
+        }
+        ctx.strokeStyle = anatHC ? pCol : ('rgba(' + pCol + ',' + pAlpha.toFixed(3) + ')');
+        ctx.lineWidth = 1.75;
         ctx.beginPath();
-        ctx.arc(62, 106, arcR, Math.PI * 0.72, Math.PI * 1.28);
+        ctx.moveTo(-2.5, -halfSpan);
+        ctx.quadraticCurveTo(3.5, 0, -2.5, halfSpan);
+        ctx.stroke();
+        ctx.restore();
+      }
+      // Multi-layered radiating acoustic wavefront arcs projecting out from the lip aperture
+      var lipEmitX = 63;
+      var lipEmitY = 104 + vOpen * 6;
+      var arcCount = 4;
+      for (var arcI = 0; arcI < arcCount; arcI++) {
+        var arcProg = reducedAnim ? ((arcI + 0.45) / arcCount) : (((phaseT * waveFreq * 0.85) + arcI / arcCount) % 1);
+        var arcR = 12 + arcProg * 52;
+        var arcAlpha = Math.pow(1 - arcProg, 1.35) * 0.68;
+        var arcSpan = 0.24 + vOpen * 0.10 + arcProg * 0.08;
+        if (!anatHC) {
+          ctx.strokeStyle = 'rgba(56,189,248,' + (arcAlpha * 0.35).toFixed(3) + ')';
+          ctx.lineWidth = 4.5 - arcProg * 2.4;
+          ctx.beginPath();
+          ctx.arc(lipEmitX, lipEmitY, arcR, Math.PI * (1 - arcSpan), Math.PI * (1 + arcSpan));
+          ctx.stroke();
+        }
+        ctx.strokeStyle = anatHC ? '#00ffff' : (arcI % 2 === 0 ? ('rgba(56,189,248,' + arcAlpha.toFixed(3) + ')') : ('rgba(167,139,250,' + (arcAlpha * 0.88).toFixed(3) + ')'));
+        ctx.lineWidth = Math.max(0.85, 2.2 - arcProg * 1.25);
+        ctx.beginPath();
+        ctx.arc(lipEmitX, lipEmitY, arcR, Math.PI * (1 - arcSpan), Math.PI * (1 + arcSpan));
         ctx.stroke();
       }
       ctx.restore();
@@ -2174,7 +2418,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
 
     // Nostril opening at front
     ctx.beginPath();
-    ctx.ellipse(palateEndX - 8, palateEndY - 18, 4, 6, -0.3, 0, Math.PI * 2);
+    _sgSafeEllipse(ctx, palateEndX - 8, palateEndY - 18, 4, 6, -0.3, 0, Math.PI * 2);
     ctx.fillStyle = regionFill('nasal', nasalColor);
     ctx.strokeStyle = regionStroke('nasal', nasalColor);
     ctx.lineWidth = 1.5;
@@ -2202,75 +2446,116 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
     }
     ctx.restore();
 
-    // ── AIR FLOW RINGS & PARTICLES (breathing animation) ──
+    // ── AIR FLOW RINGS & LAMINAR DIAPHRAGM PARTICLES (breathing animation) ──
     if (animMode === 'breathing') {
       ctx.save();
+      var bReduced = _sgIsReducedMotion();
+      var bHC = _sgIsHighContrast(canvas);
       var isInhale = breathPhase < 0.5;
       var flowRgb = isInhale ? '56,189,248' : '244,114,182';
-      // Smooth concentric breath-support airflow rings around lungs & diaphragm
-      for (var ringI = 0; ringI < 3; ringI++) {
-        var ringP = ((breathPhase * 2 + ringI / 3) % 1);
-        var ringScale = isInhale ? (0.4 + ringP * 0.85) : (1.25 - ringP * 0.85);
-        var ringAlpha = Math.sin(ringP * Math.PI) * 0.34;
-        ctx.strokeStyle = 'rgba(' + flowRgb + ',' + ringAlpha + ')';
-        ctx.lineWidth = 1.6;
+      var flowCoreCol = bHC ? '#00ffff' : (isInhale ? '#bae6fd' : '#fbcfe8');
+      // Pre-allocated out-vectors for zero-GC spline sampling
+      var _airHead = [0, 0], _airTail = [0, 0];
+      // Helper: sample smooth laminar airway spline into out (u = 0 at mouth, u = 1 at diaphragm dome)
+      var sampleAirway = function(u, lane, out) {
+        var uc = Math.max(0, Math.min(1, u));
+        var lat = lane * 5.2;
+        if (uc < 0.34) {
+          var t1 = uc / 0.34;
+          var om1 = 1 - t1;
+          // Mouth -> upper pharynx curve
+          out[0] = om1 * om1 * 72 + 2 * om1 * t1 * 142 + t1 * t1 * (tracheaX + lat * 0.7);
+          out[1] = om1 * om1 * (102 + lat * 0.9) + 2 * om1 * t1 * (106 + lat * 0.8) + t1 * t1 * 158;
+          return out;
+        }
+        if (uc < 0.70) {
+          var t2 = (uc - 0.34) / 0.36;
+          // Trachea laminar vertical column
+          out[0] = tracheaX + lat * (0.7 + t2 * 0.45);
+          out[1] = 158 + t2 * 124;
+          return out;
+        }
+        var t3 = (uc - 0.70) / 0.30;
+        // Bronchial fan spreading smoothly into left/center/right lung & diaphragm dome
+        var spread = lane * (8 + t3 * 34);
+        out[0] = tracheaX + spread;
+        out[1] = 282 + t3 * (54 + breathOffset * 0.55);
+        return out;
+      };
+
+      // Smooth concentric breath-support diaphragm pressure rings (static rings under reduced motion)
+      if (!bHC && typeof ctx.createRadialGradient === 'function') {
+        var lungLum = ctx.createRadialGradient(175, 326 + breathOffset * 0.4, 8, 175, 326 + breathOffset * 0.4, 78);
+        lungLum.addColorStop(0, 'rgba(' + flowRgb + ',0.22)');
+        lungLum.addColorStop(1, 'rgba(' + flowRgb + ',0)');
+        ctx.fillStyle = lungLum;
         ctx.beginPath();
-        ctx.ellipse(175, 326 + breathOffset * 0.4, 72 * ringScale, 32 * ringScale, 0, 0, Math.PI * 2);
+        _sgSafeEllipse(ctx, 175, 326 + breathOffset * 0.4, 78, 36, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      for (var ringI = 0; ringI < 3; ringI++) {
+        var ringP = bReduced ? ((ringI + 0.5) / 3) : ((breathPhase * 2 + ringI / 3) % 1);
+        var ringScale = isInhale ? (0.42 + ringP * 0.82) : (1.24 - ringP * 0.82);
+        var ringAlpha = Math.sin(ringP * Math.PI) * (bHC ? 0.65 : 0.36);
+        ctx.strokeStyle = bHC ? '#00ffff' : ('rgba(' + flowRgb + ',' + ringAlpha.toFixed(3) + ')');
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        _sgSafeEllipse(ctx, 175, 326 + breathOffset * 0.4, 72 * ringScale, 32 * ringScale, 0, 0, Math.PI * 2);
         ctx.stroke();
       }
-      // Smooth laminar airway flow guide ribbon
-      ctx.strokeStyle = 'rgba(' + flowRgb + ',0.22)';
-      ctx.lineWidth = 5;
+
+      // 3-lane laminar airway streamline guides
       ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(75, 102);
-      ctx.quadraticCurveTo(175, 110, tracheaX, 175);
-      ctx.lineTo(tracheaX, 305);
-      ctx.stroke();
-      // Draw smooth glowing airflow particles along the airway
-      var particleCount = 10;
-      for (var pi = 0; pi < particleCount; pi++) {
-        var pPhase = ((breathPhase * 2 + pi / particleCount) % 1);
-        var pAlpha = 0.35 + Math.sin(pPhase * Math.PI) * 0.6;
-        var pSize = 2.4 + Math.sin(pPhase * Math.PI) * 1.8;
-        var drift = Math.sin(pPhase * Math.PI * 4 + pi * 1.7);
-
-        // Path: from diaphragm up through trachea, larynx, pharynx, out mouth
-        var py, px;
-        if (isInhale) {
-          var t = pPhase;
-          if (t < 0.3) {
-            px = 75 + t * 300;
-            py = 96 + t * 145;
-          } else if (t < 0.6) {
-            px = tracheaX + drift * 5;
-            py = pharynxTop + (t - 0.3) * 400;
-          } else {
-            px = tracheaX + drift * 28;
-            py = 280 + (t - 0.6) * 180;
-          }
-        } else {
-          var t2 = pPhase;
-          if (t2 < 0.3) {
-            px = tracheaX + drift * 24;
-            py = 330 - t2 * 200;
-          } else if (t2 < 0.6) {
-            px = tracheaX + drift * 5;
-            py = 220 - (t2 - 0.3) * 300;
-          } else {
-            px = 175 - (t2 - 0.6) * 250;
-            py = 120 - (t2 - 0.6) * 65;
-          }
+      for (var ln = -1; ln <= 1; ln++) {
+        ctx.strokeStyle = bHC ? '#ffff00' : ('rgba(' + flowRgb + ',' + (ln === 0 ? '0.28' : '0.16') + ')');
+        ctx.lineWidth = ln === 0 ? 4.2 : 1.6;
+        ctx.beginPath();
+        for (var ls = 0; ls <= 16; ls++) {
+          var lp = sampleAirway(ls / 16, ln, _airHead);
+          if (ls === 0) ctx.moveTo(lp[0], lp[1]);
+          else ctx.lineTo(lp[0], lp[1]);
         }
+        ctx.stroke();
+      }
 
-        ctx.fillStyle = 'rgba(' + flowRgb + ',' + (pAlpha * 0.28) + ')';
+      // Pre-allocated zero-GC smooth laminar airflow particles with velocity comet tails
+      var flowCycle = bReduced ? 0.25 : (breathPhase * 2);
+      for (var pi = 0; pi < _sgBreathSeeds.length; pi++) {
+        var seed = _sgBreathSeeds[pi];
+        var pPhase = (flowCycle + seed.phaseOffset) % 1;
+        var uPos = isInhale ? pPhase : (1 - pPhase);
+        var uTail = isInhale ? Math.max(0, uPos - 0.055) : Math.min(1, uPos + 0.055);
+        var headPt = sampleAirway(uPos, seed.lane, _airHead);
+        var tailPt = sampleAirway(uTail, seed.lane, _airTail);
+        var pEnv = Math.sin(pPhase * Math.PI);
+        var pAlpha = (0.30 + pEnv * 0.64);
+        var pSize = (1.9 + pEnv * 1.6) * seed.sizeBias;
+
+        // Tapered laminar streamline tail aligned to exact airway tangent
+        if (!bReduced) {
+          ctx.strokeStyle = bHC ? '#00ffff' : ('rgba(' + flowRgb + ',' + (pAlpha * 0.52).toFixed(3) + ')');
+          ctx.lineWidth = pSize * 1.05;
+          ctx.beginPath();
+          ctx.moveTo(tailPt[0], tailPt[1]);
+          ctx.lineTo(headPt[0], headPt[1]);
+          ctx.stroke();
+        }
+        if (!bHC) {
+          ctx.fillStyle = 'rgba(' + flowRgb + ',' + (pAlpha * 0.26).toFixed(3) + ')';
+          ctx.beginPath();
+          ctx.arc(headPt[0], headPt[1], pSize * 2.1, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = bHC ? flowCoreCol : ('rgba(' + flowRgb + ',' + pAlpha.toFixed(3) + ')');
         ctx.beginPath();
-        ctx.arc(px, py, pSize * 2.1, 0, Math.PI * 2);
+        ctx.arc(headPt[0], headPt[1], pSize, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = 'rgba(' + flowRgb + ',' + pAlpha + ')';
-        ctx.beginPath();
-        ctx.arc(px, py, pSize, 0, Math.PI * 2);
-        ctx.fill();
+        if (!bHC) {
+          ctx.fillStyle = 'rgba(255,255,255,' + (pAlpha * 0.65).toFixed(3) + ')';
+          ctx.beginPath();
+          ctx.arc(headPt[0], headPt[1], pSize * 0.42, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
       // INHALE / EXHALE label
@@ -2692,10 +2977,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
       let at = start;
       let left = len;
       while (left > 0) {
-        let v = VALUES.find(([d]) => d <= left)[0];
+        const hit = VALUES.find(([d]) => d <= left);
+        if (!hit) break;
+        let v = hit[0];
         // Off the beat, don't let a note swallow the next beat unless it ends exactly on one.
         const toBeat = beat - (at % beat);
-        if (at % beat !== 0 && v > toBeat && toBeat < left) v = VALUES.find(([d]) => d <= toBeat)[0];
+        if (at % beat !== 0 && v > toBeat && toBeat < left) {
+          const beatHit = VALUES.find(([d]) => d <= toBeat);
+          if (beatHit) v = beatHit[0];
+        }
         out.push(v);
         at += v;
         left -= v;

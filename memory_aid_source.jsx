@@ -3206,11 +3206,34 @@ function MemoryAidView(props) {
     else addToast(tr('toast_fact_corrected_open', 'Fact updated. Other disputed facts are still open, so the card stays unverified.'), 'info');
   };
 
+  // Safety gate: check student-written cue/mnemonic text for self-harm
+  // disclosures before sending to AI coaching or fact checking.
+  const checkMemoryAidSelfHarm = (card, surface) => {
+    if (!card || typeof window === 'undefined') return false;
+    const parts = [card.target, card.cue, card.personalLink, card.studentMnemonic, card.selfExplain, card.notes, card.prompt, card.explanation]
+      .filter(v => typeof v === 'string' && v.trim());
+    const msg = parts.join(' ').trim();
+    if (!msg) return false;
+    const checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+    let flags = null;
+    try { flags = (checker && typeof checker.check === 'function') ? checker.check(msg) : null; } catch (_) { flags = null; }
+    const hit = Array.isArray(flags) && flags.find(f => f && f.category === 'self_harm' && f.severity === 'critical');
+    if (!hit) return false;
+    const onFlag = typeof props.onSafetyFlag === 'function' ? props.onSafetyFlag : null;
+    if (onFlag) { try { onFlag(Object.assign({}, hit, { source: 'memory_aid_' + surface, context: msg.slice(0, 100), aiGenerated: false })); } catch (_) {} }
+    addToast(tr('toast_self_harm_pause', 'We paused AI coaching for a moment because what you wrote sounds heavy. Please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). You are not alone.'), 'warn');
+    if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+      try { window.SelHub.showCrisisModal({ toolName: 'Memory Aid Studio', contentSnippet: msg.slice(0, 200) }); } catch (_) {}
+    }
+    return true;
+  };
+
   const requestFactCheck = async (card) => {
     if (typeof callGemini !== 'function') {
       addToast(tr('toast_fact_check_unavailable', 'AI fact checking is not available with the current setup.'), 'info');
       return;
     }
+    if (checkMemoryAidSelfHarm(card, 'fact-check')) return;
     const token = beginAsyncOperation(card, 'fact-check');
     try {
       let raw = null;
@@ -3677,6 +3700,7 @@ function MemoryAidView(props) {
       addToast(tr('toast_coaching_unavailable', 'AI coaching is not available yet.'), 'info');
       return;
     }
+    if (checkMemoryAidSelfHarm(card, 'hint')) return;
     const token = beginAsyncOperation(card, 'hint');
     try {
       const response = await callGemini(token.input.text, false, false, null, null, _maTokenSignal(token));
@@ -4147,7 +4171,7 @@ function MemoryAidView(props) {
                         )}
                       >
                         <span className="truncate">{i + 1}. {labelText}</span>
-                        {hasProgress && <span aria-label={tr('target_worked', 'Practiced or personalized')} className="shrink-0">✓</span>}
+                        {hasProgress && <span className="shrink-0"><span aria-hidden="true">✓</span><span className="sr-only"> ({tr('target_worked', 'Practiced or personalized')})</span></span>}
                       </button>
                     );
                   })}
@@ -4391,8 +4415,8 @@ function MemoryAidView(props) {
                     {isTeacherMode && isEditing ? (
                       <MemoryAidListTextarea aria-label={tr('coach_prompts_aria', 'Coach prompts for {target}', { target: card.target })} items={card.coachPrompts} onChangeItems={(nextItems) => updateCard(card.id, { coachPrompts: nextItems })} minRows={3} placeholder={tr('coach_prompts_placeholder', 'One coaching question per line')} className="mt-2 w-full rounded-xl border border-violet-300 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600" />
                     ) : <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-800">{card.coachPrompts.map((prompt, promptIndex) => <li key={promptIndex}>{prompt}</li>)}</ul>}
-                    <button type="button" onClick={() => requestHint(card)} disabled={!!busy || isProcessing || typeof callGemini !== 'function'} className="memory-aid-no-print mt-3 min-h-11 rounded-xl border border-violet-400 bg-white px-3 py-2 text-sm font-black text-violet-900 hover:bg-violet-100 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">{busy === 'hint' ? tr('coach_hint_busy', 'Thinking of a hint…') : tr('coach_hint_ask', 'Ask for one hint')}</button>
-                    {typeof callGemini !== 'function' && <p className="memory-aid-no-print mt-2 text-xs leading-relaxed text-slate-600">{tr('coach_hint_unavailable_note', 'AI hints are unavailable in this session. Use the coach questions above to guide your draft.')}</p>}
+                    <button type="button" onClick={() => requestHint(card)} disabled={!!busy || isProcessing || !callGemini} className="memory-aid-no-print mt-3 min-h-11 rounded-xl border border-violet-400 bg-white px-3 py-2 text-sm font-black text-violet-900 hover:bg-violet-100 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">{busy === 'hint' ? tr('coach_hint_busy', 'Thinking of a hint…') : tr('coach_hint_ask', 'Ask for one hint')}</button>
+                    {!callGemini && <p className="memory-aid-no-print mt-2 text-xs leading-relaxed text-slate-600">{tr('coach_hint_unavailable_note', 'AI hints are unavailable in this session. Use the coach questions above to guide your draft.')}</p>}
                     {card.coachHint && <p role="status" className="mt-3 rounded-xl border border-violet-200 bg-white p-3 text-sm text-violet-950"><strong>{tr('coach_hint_label', 'Coach hint:')}</strong> {card.coachHint}</p>}
                   </section>
                 )}

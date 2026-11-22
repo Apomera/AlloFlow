@@ -146,9 +146,17 @@
       if (!script) { resolve(null); return; }
       script.src = 'packets_audio_kit.js';
       script.onload = function () { resolve(root.AlloPacketAudioKit || null); };
-      script.onerror = function () { resolve(null); };
+      script.onerror = function () {
+        try { if (script.parentNode) script.parentNode.removeChild(script); } catch (_) {}
+        resolve(null);
+      };
       doc.head.appendChild(script);
-    }).then(function (kit) { return kit ? kit.getMp3().then(function (ok) { readyKit = ok ? kit : null; return readyKit; }, function () { return null; }) : null; });
+    }).then(function (kit) {
+      return kit ? kit.getMp3().then(function (ok) { readyKit = ok ? kit : null; return readyKit; }, function () { return null; }) : null;
+    }).then(function (kit) {
+      if (!kit) gettingKit = null;
+      return kit;
+    });
     return gettingKit;
   }
   // The picture set's drawings, all of its data files, once.

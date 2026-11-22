@@ -123,7 +123,8 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
       'denied': 'This board did not recognise you. Reopen the assignment link.',
       'no-board': 'That board is no longer available.'
     };
-    setError(result.transport ? 'The board could not reach the class mailbox. Check the connection and try again.' : messages[result.reason] || 'That could not be saved. Try again.');
+    const safeReason = typeof result.reason === 'string' && Object.prototype.hasOwnProperty.call(messages, result.reason) ? messages[result.reason] : 'That could not be saved. Try again.';
+    setError(result.transport ? 'The board could not reach the class mailbox. Check the connection and try again.' : safeReason);
     return true;
   }, []);
   const refresh = React.useCallback(async (force = false) => {
@@ -196,7 +197,7 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
     } finally {
       if (mutationRef.current === token) {
         mutationRef.current = null;
-        setBusy(false);
+        if (transportRef.current === transport) setBusy(false);
       }
     }
   }, [transport, refresh, report, addToast]);
@@ -248,6 +249,7 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
   }, "Your name"), (displayName || actor?.uid) && (armStartFresh ? /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1",
     onKeyDown: e => {
+      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
@@ -386,7 +388,8 @@ function _alloBuildAssignmentCenterRows(shares, statusByUrl, nowValue) {
   return (Array.isArray(shares) ? shares : []).filter(share => share && share.url).slice(0, 20).map((share, index) => {
     const expiresAtMs = Date.parse(share.expiresAt || '');
     const lifecycle = share.revokedAt ? 'revoked' : Number.isFinite(expiresAtMs) && expiresAtMs <= now ? 'expired' : 'active';
-    const remote = statuses[share.url] && typeof statuses[share.url] === 'object' ? statuses[share.url] : {};
+    const rawRemote = Object.prototype.hasOwnProperty.call(statuses, share.url) ? statuses[share.url] : null;
+    const remote = rawRemote && typeof rawRemote === 'object' ? rawRemote : {};
     return {
       key: String(share.url),
       share,
@@ -438,29 +441,31 @@ function _alloReadingDeliveryCapabilities(item, items, options = {}) {
     ...extra
   });
   const keys = ['originalText', 'adaptedText', 'originalSupports', 'adaptedSupports', 'pictures', 'referenceAudio', 'instructionalRoles', 'citations'];
-  const unresolved = item.__alloResourceRef || item.__alloResourcesManifestRef;
+  const safeItem = item && typeof item === 'object' ? item : {};
+  const safeItems = Array.isArray(items) ? items : [];
+  const unresolved = safeItem.__alloResourceRef || safeItem.__alloResourcesManifestRef;
   if (unresolved || !api?.getSourceSnapshot || !api?.getInstructionalText || !api?.sameReadingSourceFamily || !api?.validateReadingSupports) {
     const reason = unresolved ? options.assetStatus === 'failed' ? 'missing-asset' : 'asset-not-resolved' : 'validator-unavailable';
     return Object.fromEntries(keys.map(key => [key, state('unknown', unresolved && options.assetStatus === 'failed' ? 'unavailable' : 'unverified', reason)]));
   }
-  const snapshot = api.getSourceSnapshot(item);
-  const intact = value => value && !value.__alloResourceRef && !value.__alloResourcesManifestRef && value.syncTruncated !== true && value.readingSourceAvailability?.status !== 'unavailable' && api.isSupportedOriginal?.(value);
-  const original = intact(item);
-  const paired = original ? item : snapshot && items.find(candidate => intact(candidate) && api.sameReadingSourceFamily(candidate, item) && candidate.data === snapshot.text);
-  const profile = api.getInstructionalText(item);
+  const snapshot = api.getSourceSnapshot(safeItem);
+  const intact = value => value && typeof value === 'object' && !value.__alloResourceRef && !value.__alloResourcesManifestRef && value.syncTruncated !== true && value.readingSourceAvailability?.status !== 'unavailable' && api.isSupportedOriginal?.(value);
+  const original = intact(safeItem);
+  const paired = original ? safeItem : snapshot && safeItems.find(candidate => intact(candidate) && api.sameReadingSourceFamily(candidate, safeItem) && candidate.data === snapshot.text);
+  const profile = api.getInstructionalText(safeItem);
   const adapted = profile.form === 'adapted';
-  const hasBody = typeof item.data === 'string' && item.syncTruncated !== true;
+  const hasBody = typeof safeItem.data === 'string' && safeItem.syncTruncated !== true;
   // A validated original in this received bundle is direct evidence, even if
   // the adaptation still carries an older unavailable marker for its copy.
-  const hasSource = !!paired || !!snapshot && item.readingSourceAvailability?.status !== 'unavailable';
-  const originalOwner = paired || item;
+  const hasSource = !!paired || !!snapshot && safeItem.readingSourceAvailability?.status !== 'unavailable';
+  const originalOwner = paired || safeItem;
   const supports = hasSource && originalOwner.readingSupports ? api.validateReadingSupports(originalOwner, originalOwner.readingSupports) : null;
-  const adaptedValidationUnavailable = adapted && item.adaptedReadingSupports && typeof api.validateAdaptedReadingSupports !== 'function';
-  const adaptedEnvelope = adapted && typeof api.validateAdaptedReadingSupports === 'function' && item.adaptedReadingSupports ? api.validateAdaptedReadingSupports(item, item.adaptedReadingSupports) : null;
+  const adaptedValidationUnavailable = adapted && safeItem.adaptedReadingSupports && typeof api.validateAdaptedReadingSupports !== 'function';
+  const adaptedEnvelope = adapted && typeof api.validateAdaptedReadingSupports === 'function' && safeItem.adaptedReadingSupports ? api.validateAdaptedReadingSupports(safeItem, safeItem.adaptedReadingSupports) : null;
   // Only shown help counts as delivered, even in a pack made before hidden help
   // was held back. The sender records why none was sent, never the help itself.
   const adaptedSupports = adaptedEnvelope && adaptedEnvelope.shown === true ? adaptedEnvelope : null;
-  const withheldAdapted = adaptedEnvelope && adaptedEnvelope.status === 'stale' ? 'stale' : adaptedEnvelope && adaptedEnvelope.shown !== true && adaptedEnvelope.annotations?.length ? 'hidden' : !adaptedEnvelope && item.readingDelivery?.version === 1 && ['hidden', 'stale'].includes(item.readingDelivery.adaptedWordHelp) ? item.readingDelivery.adaptedWordHelp : null;
+  const withheldAdapted = adaptedEnvelope && adaptedEnvelope.status === 'stale' ? 'stale' : adaptedEnvelope && adaptedEnvelope.shown !== true && adaptedEnvelope.annotations?.length ? 'hidden' : !adaptedEnvelope && safeItem.readingDelivery?.version === 1 && ['hidden', 'stale'].includes(safeItem.readingDelivery.adaptedWordHelp) ? safeItem.readingDelivery.adaptedWordHelp : null;
   const activeAnnotations = envelope => envelope && !['stale', 'unavailable'].includes(envelope.status) && Array.isArray(envelope.annotations) ? envelope.annotations : [];
   const describeSupports = (envelope, applicable = true) => {
     if (!applicable) return state('not-applicable', 'unavailable');
@@ -481,27 +486,27 @@ function _alloReadingDeliveryCapabilities(item, items, options = {}) {
   };
   const pictures = [supports, adaptedSupports].flatMap(activeAnnotations).filter(entry => entry.image?.src);
   const unavailablePictureSupports = withheldAdapted === 'stale' || [supports, adaptedSupports].some(envelope => envelope && ['stale', 'unavailable'].includes(envelope.status));
-  const pictureOwners = paired && paired !== item ? [item, paired] : [item];
+  const pictureOwners = paired && paired !== safeItem ? [safeItem, paired] : [safeItem];
   const omittedPictures = pictureOwners.reduce((sum, owner) => sum + (owner.readingDelivery?.version === 1 ? Math.max(0, Math.min(10000, Math.trunc(Number(owner.readingDelivery.pictures?.omittedCount) || 0))) : 0), 0);
   // Audio presence is not playback readiness. In particular, a receiver may
   // reject an entry's identity, provenance, profile, bytes, or decoder format.
-  const audio = item.karaokeAudio;
+  const audio = safeItem.karaokeAudio;
   const audioEntries = audio && typeof audio === 'object' ? Object.values(audio.version === 4 ? audio.entries || {} : audio.sentences || {}).filter(entry => typeof entry === 'string' ? !!entry : typeof entry?.audio === 'string' && !!entry.audio) : [];
-  const audioReason = item.readingDelivery?.version === 1 && item.readingDelivery.referenceAudio?.reason === 'route-unsupported' ? 'route-unsupported' : 'not-provided';
+  const audioReason = safeItem.readingDelivery?.version === 1 && safeItem.readingDelivery.referenceAudio?.reason === 'route-unsupported' ? 'route-unsupported' : 'not-provided';
   const split = window.AlloModules?.TextPipelineHelpers?.splitReferencesFromBody;
   let references = null;
   if (hasBody && typeof split === 'function') {
     try {
-      references = String(split(item.data)?.references || '');
+      references = String(split(safeItem.data)?.references || '');
     } catch (_) {/* unknown, never borrow another source */}
   }
   return {
     originalText: hasSource ? state('included', 'ready', null, {
       resourceId: paired ? String(paired.id) : null,
-      fingerprint: snapshot.fingerprint
+      fingerprint: snapshot ? snapshot.fingerprint : null
     }) : state('omitted', 'unavailable', 'source-unavailable'),
     adaptedText: !adapted ? state('not-applicable', 'unavailable') : hasBody ? state('included', 'ready', null, {
-      fingerprint: api.fingerprintSourceText?.(item.data) || null
+      fingerprint: api.fingerprintSourceText?.(safeItem.data) || null
     }) : state('omitted', 'unavailable', options.bodyIssue || 'body-unavailable'),
     originalSupports: describeSupports(supports),
     adaptedSupports: adaptedValidationUnavailable ? state('unknown', 'unverified', 'validator-unavailable') : adapted && withheldAdapted ? state('omitted', 'unavailable', withheldAdapted === 'stale' ? 'stale-identity' : 'not-shown', {
@@ -519,9 +524,9 @@ function _alloReadingDeliveryCapabilities(item, items, options = {}) {
     }),
     instructionalRoles: state('included', 'ready', null, {
       reading: profile.role,
-      original: api.getSourceInstructionalText?.(paired || item)?.role || 'unspecified',
-      sourceFamilyId: api.getReadingSourceFamilyId?.(item) || null,
-      unitId: item.unitId ?? null
+      original: api.getSourceInstructionalText?.(paired || safeItem)?.role || 'unspecified',
+      sourceFamilyId: api.getReadingSourceFamilyId?.(safeItem) || null,
+      unitId: safeItem.unitId ?? null
     }),
     citations: references ? state('included', 'ready', null, {
       basis: 'resource-owned-text',
@@ -594,7 +599,11 @@ function _alloDescribeAssignmentDelivery(resources, currentResourceId, selectedR
     result.form = original ? 'original' : api.getInstructionalText(item).form === 'adapted' ? 'adapted' : 'unverified';
     const paired = original ? item : snapshot && readableItems.find(candidate => intact(candidate) && api.sameReadingSourceFamily(candidate, item) && candidate.data === snapshot.text);
     // A row also depends on its original's curation, not just its own body.
-    result.resourceRevision = api?.fingerprintSourceText?.(JSON.stringify([item, paired && paired !== item ? paired : null])) || null;
+    try {
+      result.resourceRevision = api?.fingerprintSourceText?.(JSON.stringify([item, paired && paired !== item ? paired : null])) || null;
+    } catch (_) {
+      result.resourceRevision = null;
+    }
     result.originalStatus = paired ? 'included' : snapshot && item.readingSourceAvailability?.status !== 'unavailable' ? 'captured' : 'unavailable';
     // Legacy dialog fields share the same validation result as capabilities.
     const supports = result.capabilities.originalSupports;
@@ -630,7 +639,7 @@ async function _alloBuildAssignmentPackEncoded(options = {}, dependencies = {}) 
   const resourceIds = Object.prototype.hasOwnProperty.call(request, 'resourceIds') ? request.resourceIds : null;
   const {
     resolveAssignmentResources,
-    sharedAssignmentActivity = {},
+    sharedAssignmentActivity: rawSharedAssignmentActivity = {},
     addToast = () => {},
     sourceTopic = '',
     generatedContent = null,
@@ -642,6 +651,7 @@ async function _alloBuildAssignmentPackEncoded(options = {}, dependencies = {}) 
     workStoryEnabled = false,
     encodeAlloPack
   } = dependencies && typeof dependencies === 'object' ? dependencies : {};
+  const sharedAssignmentActivity = rawSharedAssignmentActivity && typeof rawSharedAssignmentActivity === 'object' ? rawSharedAssignmentActivity : {};
   const requiredFunctions = {
     resolveAssignmentResources,
     serializeResourceForStudentPack,
@@ -659,7 +669,8 @@ async function _alloBuildAssignmentPackEncoded(options = {}, dependencies = {}) 
     addToast('Select at most 25 resources for one homework link. Create another link for the remaining resources.', 'info');
     return null;
   }
-  const resourcesToAssign = resolveAssignmentResources(resourceIds);
+  const resolvedAssignmentResources = resolveAssignmentResources(resourceIds);
+  const resourcesToAssign = Array.isArray(resolvedAssignmentResources) ? resolvedAssignmentResources.filter(item => item && typeof item === 'object') : [];
   // A saved selection can disappear from History before a link is converted.
   // Do not replace missing members with the teacher's current shared activity.
   if (Array.isArray(resourceIds) && resourceIds.length > 0 && (!requestedIds.length || requestedIds.some(id => !resourcesToAssign.some(item => String(item.id) === id)))) {
@@ -927,8 +938,10 @@ function alloCredentialSlotKey(identityMode, label, store) {
 }
 function alloCredentialStoreWith(store, slotKey, credential, label) {
   const base = alloNormalizeCredentialStore(store);
+  if (!credential || typeof credential !== 'object' || !credential.uid || !credential.pt) return base;
   const slots = Object.assign(Object.create(null), base.slots);
-  const safeKey = slotKey === '__proto__' || slotKey === 'constructor' || slotKey === 'prototype' ? 's1' : String(slotKey || 's1');
+  const keyStr = String(slotKey || 's1');
+  const safeKey = keyStr === '__proto__' || keyStr === 'constructor' || keyStr === 'prototype' ? 's1' : keyStr;
   slots[safeKey] = {
     uid: String(credential.uid),
     pt: String(credential.pt),
@@ -1117,6 +1130,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       k: packSecret,
       aid: activityId
     });
+    if (!joined || !joined.uid || !joined.pt) throw new Error('Could not join activity');
     return rememberCredential({
       uid: joined.uid,
       pt: joined.pt
@@ -1133,9 +1147,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
           storeApi.removeItem(storageKey);
           return;
         }
-        const nextSlots = {
-          ...store.slots
-        };
+        const nextSlots = Object.assign(Object.create(null), store.slots);
         const activeKey = store.active;
         if (activeKey && Object.prototype.hasOwnProperty.call(nextSlots, activeKey)) {
           delete nextSlots[activeKey];
@@ -1187,10 +1199,13 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       id: packId,
       k: packSecret,
       aid: activityId
-    }).then(joined => rememberCredential({
-      uid: joined.uid,
-      pt: joined.pt
-    }, 's1', '')).finally(() => {
+    }).then(joined => {
+      if (!joined || !joined.uid || !joined.pt) throw new Error('Could not join activity');
+      return rememberCredential({
+        uid: joined.uid,
+        pt: joined.pt
+      }, 's1', '');
+    }).finally(() => {
       if (credentialRequestRef.current === request) credentialRequestRef.current = null;
     });
     credentialRequestRef.current = request;
@@ -1297,7 +1312,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     } finally {
       if (!quiet && !mutationRef.current && activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) setBusy(false);
     }
-  }, [activityId, activityScope, admin, applySharedActivitySummary, clearCredential, ensureCredential, isQuestionBoard, isTeacher, mailboxUrl, packId, scopeToken]);
+  }, [activityId, activityMeta.title, activityScope, admin, applySharedActivitySummary, clearCredential, ensureCredential, isQuestionBoard, isTeacher, mailboxUrl, packId, scopeToken]);
   React.useEffect(() => {
     if (isQuestionBoard) return undefined;
     let cancelled = false;
@@ -1420,7 +1435,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   const submitRating = async event => {
     event?.preventDefault?.();
     if (busy || mutationRef.current || scopeTokenRef.current !== scopeToken) return;
-    if (!Number.isInteger(ratingValue) || ratingValue < ratingActivity.minValue || ratingValue > ratingActivity.maxValue) {
+    if (!ratingActivity || !Number.isInteger(ratingValue) || ratingValue < ratingActivity.minValue || ratingValue > ratingActivity.maxValue) {
       setError('Choose one rating before saving.');
       return;
     }
@@ -1548,9 +1563,14 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     return ratingActivity.labels[value - ratingActivity.minValue] || String(value);
   };
   const statusText = isRating ? ownStatus === 'recorded' && Number.isInteger(summary?.own?.value) ? `Saved anonymously: ${summary.own.value}${ratingLabel(summary.own.value) !== String(summary.own.value) ? ` · ${ratingLabel(summary.own.value)}` : ''}` : 'Choose one rating, then save it.' : ownStatus === 'approved' ? 'Published anonymously' : ownStatus === 'hidden' ? 'Hidden by your teacher' : ownStatus === 'pending' ? 'Waiting for teacher review' : '';
-  const heldCount = responses.filter(row => row.status === 'pending').length;
-  const approvedCount = responses.filter(row => row.status === 'approved').length;
-  const hiddenCount = responses.filter(row => row.status === 'hidden').length;
+  const heldCount = responses.filter(row => row && row.status === 'pending').length;
+  const approvedCount = responses.filter(row => row && row.status === 'approved').length;
+  const hiddenCount = responses.filter(row => row && row.status === 'hidden').length;
+  const safeKey = k => {
+    const s = String(k ?? '');
+    return s !== '' && s !== '__proto__' && s !== 'constructor' && s !== 'prototype';
+  };
+  const ownVal = (obj, k) => obj && typeof obj === 'object' && safeKey(k) && Object.prototype.hasOwnProperty.call(obj, k) ? obj[k] : undefined;
   const ratingValues = ratingActivity ? Array.from({
     length: ratingActivity.maxValue - ratingActivity.minValue + 1
   }, (_, index) => ratingActivity.minValue + index) : [];
@@ -1625,6 +1645,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, item.label)), armStartFresh ? /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1",
     onKeyDown: e => {
+      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
@@ -1695,9 +1716,11 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     onSubmit: async event => {
       event.preventDefault();
       if (busy) return;
-      const marks = {};
+      const marks = Object.create(null);
       (summary?.options || []).forEach(opt => {
-        if (pollPicks[opt.id]) marks[opt.id] = pollPicks[opt.id];
+        if (!opt || !safeKey(opt.id)) return;
+        const pick = ownVal(pollPicks, opt.id);
+        if (pick) marks[opt.id] = pick;
       });
       if (!Object.keys(marks).length) {
         addToast('Mark at least one option first.', 'info');
@@ -1740,11 +1763,9 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, ['yes', summary?.allowMaybe === false ? null : 'maybe', 'no'].filter(Boolean).map(mark => /*#__PURE__*/React.createElement("button", {
     key: mark,
     type: "button",
-    "aria-pressed": pollPicks[opt.id] === mark,
+    "aria-pressed": ownVal(pollPicks, opt.id) === mark,
     onClick: () => setPollPicks(previous => {
-      const next = {
-        ...previous
-      };
+      const next = Object.assign(Object.create(null), previous);
       // Single-choice polls behave like a radio group: one yes,
       // and choosing another moves it rather than adding a second.
       if (summary?.multiSelect === false && mark === 'yes') {
@@ -1752,10 +1773,10 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
           if (next[key] === 'yes') delete next[key];
         });
       }
-      next[opt.id] = mark;
+      if (safeKey(opt.id)) next[opt.id] = mark;
       return next;
     }),
-    className: `min-h-11 min-w-11 rounded-md px-2 py-1 text-xs font-black ${pollPicks[opt.id] === mark ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
+    className: `min-h-11 min-w-11 rounded-md px-2 py-1 text-xs font-black ${ownVal(pollPicks, opt.id) === mark ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
   }, mark === 'yes' ? 'Yes' : mark === 'maybe' ? 'Maybe' : 'No')))))), /*#__PURE__*/React.createElement("button", {
     type: "submit",
     className: "mt-3 min-h-11 w-full rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50"
@@ -1792,16 +1813,19 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     key: opt.id,
     scope: "col",
     className: "px-2 py-1 font-black text-slate-700"
-  }, opt.label)))), /*#__PURE__*/React.createElement("tbody", null, (summary?.rows || []).map((row, index) => /*#__PURE__*/React.createElement("tr", {
-    key: `${row.label}-${index}`,
+  }, opt.label)))), /*#__PURE__*/React.createElement("tbody", null, (summary?.rows || []).filter(Boolean).map((row, index) => /*#__PURE__*/React.createElement("tr", {
+    key: `${row.label || 'row'}-${index}`,
     className: "border-t border-slate-200"
   }, /*#__PURE__*/React.createElement("th", {
     scope: "row",
     className: "px-2 py-1 font-bold text-slate-800"
-  }, row.label || 'Someone'), (summary?.options || []).map(opt => /*#__PURE__*/React.createElement("td", {
-    key: opt.id,
-    className: "px-2 py-1 text-slate-700"
-  }, row.picks?.[opt.id] === 'yes' ? 'Yes' : row.picks?.[opt.id] === 'maybe' ? 'Maybe' : row.picks?.[opt.id] === 'no' ? 'No' : '-')))))))), isSurvey && !isTeacher && /*#__PURE__*/React.createElement("form", {
+  }, row.label || 'Someone'), (summary?.options || []).filter(Boolean).map(opt => {
+    const pick = ownVal(row.picks, opt.id);
+    return /*#__PURE__*/React.createElement("td", {
+      key: opt.id,
+      className: "px-2 py-1 text-slate-700"
+    }, pick === 'yes' ? 'Yes' : pick === 'maybe' ? 'Maybe' : pick === 'no' ? 'No' : '-');
+  }))))))), isSurvey && !isTeacher && /*#__PURE__*/React.createElement("form", {
     noValidate: true,
     className: "mt-4 rounded-xl border border-sky-100 bg-white p-3",
     onChangeCapture: markDraftChanged,
@@ -1815,18 +1839,19 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         ...(rawItem || {}),
         id: `q${idx + 1}`
       });
-      const payload = {};
+      const payload = Object.create(null);
       formItems.forEach(formItem => {
-        const value = surveyAnswers[formItem.id];
+        if (!safeKey(formItem.id)) return;
+        const value = ownVal(surveyAnswers, formItem.id);
         if (value !== undefined && value !== null && String(value).trim() !== '') payload[formItem.id] = value;
       });
-      const missing = formItems.filter(formItem => formItem.required && payload[formItem.id] === undefined);
+      const missing = formItems.filter(formItem => formItem.required && ownVal(payload, formItem.id) === undefined);
       const invalid = formItems.find(item => {
-        const value = payload[item.id];
+        const value = ownVal(payload, item.id);
         if (value === undefined) return false;
         if (item.type === 'numeric') return !Number.isFinite(Number(value)) || item.min != null && Number(value) < item.min || item.max != null && Number(value) > item.max;
         if (item.type === 'likert') return !Number.isInteger(value) || value < 1 || value > (item.steps || 5);
-        if (item.type === 'choice') return !(item.options || []).some(option => option.id === value);
+        if (item.type === 'choice') return !(item.options || []).some(option => option && option.id === value);
         return false;
       });
       const problem = missing[0] || invalid;
@@ -1838,7 +1863,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         return;
       }
       formItems.forEach(item => {
-        if (item.type === 'numeric' && payload[item.id] !== undefined) payload[item.id] = Number(payload[item.id]);
+        if (item.type === 'numeric' && safeKey(item.id) && ownVal(payload, item.id) !== undefined) payload[item.id] = Number(payload[item.id]);
       });
       if (!Object.keys(payload).length) {
         addToast('Answer at least one question first.', 'info');
@@ -1882,10 +1907,13 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       className: "rounded-lg border border-slate-200 px-2 py-2"
     }, /*#__PURE__*/React.createElement("p", {
       className: "text-xs font-bold text-slate-800"
-    }, formItem.text, formItem.required && /*#__PURE__*/React.createElement("span", {
+    }, formItem.text, formItem.required && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
       className: "ml-1 text-rose-600",
-      title: "Required"
-    }, "*")), formItem.type === 'likert' && /*#__PURE__*/React.createElement("div", {
+      title: "Required",
+      "aria-hidden": "true"
+    }, "*"), /*#__PURE__*/React.createElement("span", {
+      className: "sr-only"
+    }, " (required)"))), formItem.type === 'likert' && /*#__PURE__*/React.createElement("div", {
       className: "mt-2"
     }, /*#__PURE__*/React.createElement("div", {
       role: "group",
@@ -1897,36 +1925,39 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       key: tick,
       type: "button",
       "aria-label": `${tick}${formItem.labels?.[tick - 1] ? ": " + formItem.labels[tick - 1] : ""}`,
-      "aria-pressed": surveyAnswers[formItem.id] === tick,
-      onClick: () => setSurveyAnswers(previous => ({
-        ...previous,
-        [formItem.id]: tick
-      })),
-      className: `min-h-11 min-w-11 rounded-md px-2 py-1 text-xs font-black ${surveyAnswers[formItem.id] === tick ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
+      "aria-pressed": ownVal(surveyAnswers, formItem.id) === tick,
+      onClick: () => setSurveyAnswers(previous => {
+        const next = Object.assign(Object.create(null), previous);
+        if (safeKey(formItem.id)) next[formItem.id] = tick;
+        return next;
+      }),
+      className: `min-h-11 min-w-11 rounded-md px-2 py-1 text-xs font-black ${ownVal(surveyAnswers, formItem.id) === tick ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
     }, tick))), ((formItem.labels || [])[0] || (formItem.labels || [])[(formItem.steps || 5) - 1]) && /*#__PURE__*/React.createElement("div", {
       className: "mt-1 flex justify-between text-xs font-bold text-slate-600"
     }, /*#__PURE__*/React.createElement("span", null, (formItem.labels || [])[0] || ''), /*#__PURE__*/React.createElement("span", null, (formItem.labels || [])[(formItem.steps || 5) - 1] || ''))), formItem.type === 'choice' && /*#__PURE__*/React.createElement("div", {
       role: "group",
       "aria-label": formItem.text,
       className: "mt-2 flex flex-col gap-1"
-    }, (formItem.options || []).map(option => /*#__PURE__*/React.createElement("button", {
+    }, (formItem.options || []).filter(Boolean).map(option => /*#__PURE__*/React.createElement("button", {
       key: option.id,
       type: "button",
-      "aria-pressed": surveyAnswers[formItem.id] === option.id,
-      onClick: () => setSurveyAnswers(previous => ({
-        ...previous,
-        [formItem.id]: option.id
-      })),
-      className: `min-h-11 rounded-md px-2 py-1.5 text-left text-xs font-bold ${surveyAnswers[formItem.id] === option.id ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
+      "aria-pressed": ownVal(surveyAnswers, formItem.id) === option.id,
+      onClick: () => setSurveyAnswers(previous => {
+        const next = Object.assign(Object.create(null), previous);
+        if (safeKey(formItem.id)) next[formItem.id] = option.id;
+        return next;
+      }),
+      className: `min-h-11 rounded-md px-2 py-1.5 text-left text-xs font-bold ${ownVal(surveyAnswers, formItem.id) === option.id ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
     }, option.label))), formItem.type === 'freetext' && /*#__PURE__*/React.createElement("textarea", {
       "aria-label": formItem.text,
       "aria-required": formItem.required || undefined,
       "aria-invalid": surveyInvalidId === formItem.id || undefined,
-      value: String(surveyAnswers[formItem.id] || ''),
-      onChange: event => setSurveyAnswers(previous => ({
-        ...previous,
-        [formItem.id]: event.target.value.slice(0, 500)
-      })),
+      value: String(ownVal(surveyAnswers, formItem.id) || ''),
+      onChange: event => setSurveyAnswers(previous => {
+        const next = Object.assign(Object.create(null), previous);
+        if (safeKey(formItem.id)) next[formItem.id] = event.target.value.slice(0, 500);
+        return next;
+      }),
       rows: 2,
       maxLength: 500,
       className: "mt-2 w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-800"
@@ -1936,23 +1967,22 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       "aria-required": formItem.required || undefined,
       "aria-invalid": surveyInvalidId === formItem.id || undefined,
       "aria-label": formItem.text,
-      value: surveyAnswers[formItem.id] ?? '',
+      value: ownVal(surveyAnswers, formItem.id) ?? '',
       min: formItem.min ?? undefined,
       max: formItem.max ?? undefined,
-      onChange: event => setSurveyAnswers(previous => ({
-        ...previous,
-        [formItem.id]: event.target.value
-      })),
+      onChange: event => setSurveyAnswers(previous => {
+        const next = Object.assign(Object.create(null), previous);
+        if (safeKey(formItem.id)) next[formItem.id] = event.target.value;
+        return next;
+      }),
       className: "mt-2 w-32 rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-800"
-    }), !formItem.required && surveyAnswers[formItem.id] !== undefined && String(surveyAnswers[formItem.id]).trim() !== '' && /*#__PURE__*/React.createElement("button", {
+    }), !formItem.required && ownVal(surveyAnswers, formItem.id) !== undefined && String(ownVal(surveyAnswers, formItem.id)).trim() !== '' && /*#__PURE__*/React.createElement("button", {
       type: "button",
       className: "mt-2 min-h-11 rounded border border-slate-300 px-3 text-xs font-bold text-slate-700",
       "aria-label": `Clear answer: ${formItem.text}`,
       onClick: () => setSurveyAnswers(previous => {
-        const next = {
-          ...previous
-        };
-        delete next[formItem.id];
+        const next = Object.assign(Object.create(null), previous);
+        if (safeKey(formItem.id)) delete next[formItem.id];
         return next;
       })
     }, "Clear answer"));
@@ -1978,7 +2008,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     className: "mt-1 text-xs font-black text-slate-700"
   }, `Mean ${resultItem.aggregate.mean ?? '-'} of ${resultItem.steps} · ` + (resultItem.aggregate.counts || []).map((tickCount, at) => `${at + 1}: ${tickCount}`).join('  ')), resultItem.aggregate && resultItem.type === 'choice' && /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-xs font-black text-slate-700"
-  }, (resultItem.options || []).map(option => `${option.label}: ${(resultItem.aggregate.counts || {})[option.id] || 0}`).join('  ·  ')), resultItem.aggregate && resultItem.type === 'numeric' && /*#__PURE__*/React.createElement("p", {
+  }, (resultItem.options || []).filter(Boolean).map(option => `${option.label}: ${ownVal(resultItem.aggregate.counts, option.id) || 0}`).join('  ·  ')), resultItem.aggregate && resultItem.type === 'numeric' && /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-xs font-black text-slate-700"
   }, `n ${resultItem.aggregate.n} · mean ${resultItem.aggregate.mean ?? '-'} · min ${resultItem.aggregate.min ?? '-'} · max ${resultItem.aggregate.max ?? '-'}`), resultItem.type === 'freetext' && Array.isArray(resultItem.texts) && /*#__PURE__*/React.createElement("ul", {
     className: "mt-1 list-disc pl-4 text-xs text-slate-700"
@@ -1995,19 +2025,19 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, "Individual responses"), /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
     scope: "col",
     className: "px-2 py-1 font-black text-slate-700"
-  }, "Name"), (summary?.items || []).map(resultItem => /*#__PURE__*/React.createElement("th", {
+  }, "Name"), (summary?.items || []).filter(Boolean).map(resultItem => /*#__PURE__*/React.createElement("th", {
     key: resultItem.id,
     scope: "col",
     className: "px-2 py-1 font-black text-slate-700"
-  }, resultItem.text.slice(0, 30))))), /*#__PURE__*/React.createElement("tbody", null, (summary?.rows || []).map((row, rowIndex) => /*#__PURE__*/React.createElement("tr", {
-    key: `${row.label}-${rowIndex}`,
+  }, String(resultItem.text || '').slice(0, 30))))), /*#__PURE__*/React.createElement("tbody", null, (summary?.rows || []).filter(Boolean).map((row, rowIndex) => /*#__PURE__*/React.createElement("tr", {
+    key: `${row.label || 'row'}-${rowIndex}`,
     className: "border-t border-slate-200"
   }, /*#__PURE__*/React.createElement("th", {
     scope: "row",
     className: "px-2 py-1 font-bold text-slate-800"
-  }, row.label || 'Someone'), (summary?.items || []).map(resultItem => {
-    const answer = row.answers?.[resultItem.id];
-    const shown = resultItem.type === 'choice' ? (resultItem.options || []).find(option => option.id === answer)?.label || '-' : answer === undefined || answer === null ? '-' : String(answer).slice(0, 60);
+  }, row.label || 'Someone'), (summary?.items || []).filter(Boolean).map(resultItem => {
+    const answer = ownVal(row.answers, resultItem.id);
+    const shown = resultItem.type === 'choice' ? (resultItem.options || []).find(option => option && option.id === answer)?.label || '-' : answer === undefined || answer === null ? '-' : String(answer).slice(0, 60);
     return /*#__PURE__*/React.createElement("td", {
       key: resultItem.id,
       className: "px-2 py-1 text-slate-700"
@@ -2089,7 +2119,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     className: "text-xs font-black text-slate-700"
   }, slot.taken, " of ", slot.capacity, " taken")), !!(slot.who || []).length && /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-xs text-slate-600"
-  }, slot.who.map(person => person.label || 'Someone').join(', '))))), summary?.identityMode === 'anonymous' && /*#__PURE__*/React.createElement("p", {
+  }, slot.who.map(person => person && person.label || 'Someone').join(', '))))), summary?.identityMode === 'anonymous' && /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-xs text-slate-600"
   }, "This sheet is anonymous, so you see counts but not names.")), !isTeacher && !isRating && !isPoll && !isSignup && !isSurvey && /*#__PURE__*/React.createElement("form", {
     onSubmit: submitTerm,
@@ -2139,7 +2169,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, /*#__PURE__*/React.createElement("div", {
     className: "h-full rounded-full bg-violet-600",
     style: {
-      width: `${item.percent}%`
+      width: `${Math.max(0, Math.min(100, Number(item.percent) || 0))}%`
     }
   })), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-black text-violet-900"
@@ -2184,8 +2214,8 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     "aria-label": "Word cloud moderation queue"
   }, responses.length === 0 && /*#__PURE__*/React.createElement("p", {
     className: "rounded-lg bg-slate-50 p-3 text-center text-xs text-slate-600"
-  }, "Waiting for student responses."), responses.map((row, index) => /*#__PURE__*/React.createElement("div", {
-    key: row.uid,
+  }, "Waiting for student responses."), responses.filter(Boolean).map((row, index) => /*#__PURE__*/React.createElement("div", {
+    key: row.uid || index,
     role: "listitem",
     className: "flex items-center gap-2 rounded-lg border border-slate-200 p-2"
   }, /*#__PURE__*/React.createElement("div", {

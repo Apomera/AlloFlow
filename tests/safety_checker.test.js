@@ -43,6 +43,35 @@ describe('check() — regex safety classification', () => {
     expect(SC.check('The mitochondria is the powerhouse of the cell')).toEqual([]);
   });
 
+  it('does not false-positive on war, history, science, or clinical phrases containing attack/shoot/bomb', () => {
+    const academic = [
+      'Explain the causes of World War II and the attack on Pearl Harbor',
+      'Why did the United States drop the atomic bomb on Hiroshima?',
+      'Analyze primary sources about genocide in the 20th century',
+      'The dataset tracks heart attack rates by age group',
+      'I had a panic attack before my math test',
+      'Calculate the trajectory when we shoot a rocket at 45 degrees',
+    ];
+    for (const text of academic) {
+      expect(cats(SC.check(text)), text).not.toContain('harm_to_others');
+    }
+  });
+
+  it('still flags directed threats as critical harm_to_others', () => {
+    const threats = [
+      'I want to shoot up the school',
+      'I am going to attack him after class',
+      'How do I make a bomb',
+      'I want to bomb the school',
+      'I will hurt someone today',
+    ];
+    for (const text of threats) {
+      const f = SC.check(text);
+      expect(cats(f), text).toContain('harm_to_others');
+      expect(f.find((x) => x.category === 'harm_to_others').severity, text).toBe('critical');
+    }
+  });
+
   it('returns [] for empty / non-string input', () => {
     expect(SC.check('')).toEqual([]);
     expect(SC.check(null)).toEqual([]);
@@ -58,6 +87,39 @@ describe('check() — regex safety classification', () => {
     expect(flag).toHaveProperty('match');
     expect(flag).toHaveProperty('severity');
     expect(typeof flag.timestamp).toBe('string');
+  });
+
+  it('catches expanded first-person self-harm phrases without false-positiving on literature/history', () => {
+    for (const phrase of [
+      'I want to end my life',
+      'I wish I were dead',
+      'I do not want to be alive anymore',
+      'Everyone would be better off dead if I left',
+      'I have no reason to live',
+      'I want to harm myself',
+    ]) {
+      const f = SC.check(phrase);
+      expect(f.some(x => x.category === 'self_harm' && x.severity === 'critical'), phrase).toBe(true);
+    }
+    for (const academic of [
+      'Romeo and Juliet ends in tragedy for both families',
+      'Genocide during World War II caused millions of deaths',
+      'The atomic bomb ended the war in the Pacific',
+    ]) {
+      const f = SC.check(academic);
+      expect(f.filter(x => x.severity === 'critical'), academic).toEqual([]);
+    }
+  });
+
+  it('catches zero-width, soft-hyphen, smart-quote, and newline-split self-harm obfuscation', () => {
+    for (const obfuscated of [
+      'I want to k\u200bill myself',
+      'I don\u2019t   want\nto live',
+      'self\u00ADharm is on my mind',
+    ]) {
+      const f = SC.check(obfuscated);
+      expect(f.some(x => x.category === 'self_harm' && x.severity === 'critical'), obfuscated).toBe(true);
+    }
   });
 });
 

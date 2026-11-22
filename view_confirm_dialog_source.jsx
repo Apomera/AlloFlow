@@ -35,14 +35,43 @@ function ConfirmDialog({ confirmDialog: rawConfirmDialog, setConfirmDialog, t })
   const tone = dialogConfig.tone || 'warning';
   const iconMap = { danger: AlertTriangle, warning: AlertCircle, info: Info };
   const colorMap = {
-    danger:  { iconBg: 'bg-red-100',   iconText: 'text-red-700',   btn: 'bg-red-700 hover:bg-red-800 shadow-red-500/25' },
-    warning: { iconBg: 'bg-amber-100', iconText: 'text-amber-800', btn: 'bg-red-700 hover:bg-red-800 shadow-red-500/25' },
-    info:    { iconBg: 'bg-indigo-100', iconText: 'text-indigo-700', btn: 'bg-indigo-700 hover:bg-indigo-800 shadow-indigo-500/25' },
+    danger:  {
+      iconBg: 'bg-red-100',
+      iconText: 'text-red-700',
+      btn: 'bg-red-700 hover:bg-red-800 shadow-red-500/25',
+      cardBorder: 'border-red-200',
+      badgeBg: 'bg-red-50 text-red-800 border-red-200',
+      badgeKey: 'confirm.tone_danger',
+      badgeFallback: 'Caution',
+    },
+    warning: {
+      iconBg: 'bg-amber-100',
+      iconText: 'text-amber-800',
+      btn: 'bg-red-700 hover:bg-red-800 shadow-red-500/25',
+      cardBorder: 'border-amber-200',
+      badgeBg: 'bg-amber-50 text-amber-900 border-amber-200',
+      badgeKey: 'confirm.tone_warning',
+      badgeFallback: 'Check before continuing',
+    },
+    info:    {
+      iconBg: 'bg-indigo-100',
+      iconText: 'text-indigo-700',
+      btn: 'bg-indigo-700 hover:bg-indigo-800 shadow-indigo-500/25',
+      cardBorder: 'border-indigo-200',
+      badgeBg: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+      badgeKey: 'confirm.tone_info',
+      badgeFallback: 'Confirmation',
+    },
   };
   const Icon = iconMap[tone] || AlertCircle;
   const palette = colorMap[tone] || colorMap.warning;
 
   const tx = typeof t === 'function' ? t : () => '';
+  const safeTx = (key, fallback) => {
+    const val = tx(key);
+    return (typeof val === 'string' && val && val !== key) ? val : fallback;
+  };
+  const toneBadgeLabel = dialogConfig.toneLabel || safeTx(palette.badgeKey, palette.badgeFallback);
   const dialogConfigRef = React.useRef(dialogConfig);
   dialogConfigRef.current = dialogConfig;
   const setConfirmDialogRef = React.useRef(setConfirmDialog);
@@ -185,22 +214,30 @@ function ConfirmDialog({ confirmDialog: rawConfirmDialog, setConfirmDialog, t })
         aria-modal="true"
         aria-labelledby="alloflow-confirm-title"
         aria-describedby={confirmDialog.detail ? 'alloflow-confirm-message alloflow-confirm-detail' : 'alloflow-confirm-message'}
-        className="allo-docsuite bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto p-6 animate-in zoom-in-95 duration-200 motion-reduce:animate-none border-2 border-slate-200"
+        className={`allo-docsuite bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto p-6 animate-in zoom-in-95 duration-200 motion-reduce:animate-none border-2 ${palette.cardBorder}`}
       >
-        <div className="flex items-center gap-3 mb-4">
-          <div className={`w-10 h-10 rounded-full ${palette.iconBg} flex items-center justify-center shrink-0`}>
+        <div className="flex items-start gap-3 mb-4">
+          <div className={`w-10 h-10 rounded-full ${palette.iconBg} flex items-center justify-center shrink-0 mt-0.5`}>
             <Icon size={20} className={palette.iconText} aria-hidden="true" />
           </div>
-          <h2 id="alloflow-confirm-title" className="text-lg font-bold text-slate-800">
-            {dialogConfig.title || tx('common.confirm') || 'Confirm'}
-          </h2>
+          <div className="min-w-0 flex-1">
+            <span
+              data-confirm-tone={tone}
+              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border mb-1 ${palette.badgeBg}`}
+            >
+              {toneBadgeLabel}
+            </span>
+            <h2 id="alloflow-confirm-title" className="text-lg font-bold text-slate-800 leading-snug">
+              {dialogConfig.title || tx('common.confirm') || 'Confirm'}
+            </h2>
+          </div>
         </div>
-        <p id="alloflow-confirm-message" className="text-sm text-slate-700 leading-relaxed mb-2 whitespace-pre-wrap">
+        <p id="alloflow-confirm-message" className="text-sm text-slate-700 leading-relaxed mb-3 whitespace-pre-wrap">
           {dialogConfig.message}
         </p>
         {dialogConfig.detail ? (
-          <p id="alloflow-confirm-detail" className="text-xs text-slate-600 leading-relaxed mb-6 whitespace-pre-wrap">{dialogConfig.detail}</p>
-        ) : <div className="mb-6" />}
+          <p id="alloflow-confirm-detail" className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-700 leading-relaxed mb-5 whitespace-pre-wrap">{dialogConfig.detail}</p>
+        ) : <div className="mb-5" />}
         <div className="flex flex-col sm:flex-row gap-3 justify-end">
           <button
             ref={cancelBtnRef}
@@ -218,6 +255,11 @@ function ConfirmDialog({ confirmDialog: rawConfirmDialog, setConfirmDialog, t })
             {dialogConfig.confirmText || tx('common.confirm_action') || 'Confirm'}
           </button>
         </div>
+        <p className="mt-3 text-xs text-slate-600 flex items-center justify-end gap-1.5">
+          <span>{safeTx('confirm.esc_hint_prefix', 'Press')}</span>
+          <kbd className="px-1.5 py-0.5 rounded border border-slate-300 bg-slate-50 font-mono text-xs text-slate-700">Esc</kbd>
+          <span>{safeTx('confirm.esc_hint_suffix', 'to cancel')}</span>
+        </p>
       </div>
     </div>
   );

@@ -552,11 +552,12 @@
   }
   function parseRaw(raw) {
     const object = value => value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+    const safeParse = text => JSON.parse(text, (k, v) => k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v);
     if (typeof raw !== 'string') return object(raw);
     if (raw.length > 400000) return null;
     const body = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
     try {
-      return object(JSON.parse(body));
+      return object(safeParse(body));
     } catch (_) {/* Recover formatting below, never invent missing content. */}
     const start = body.indexOf('{');
     if (start < 0) return null;
@@ -605,12 +606,12 @@
     // A repair library can close truncated strings/objects; doing so could accept cut-off teaching text.
     if (!closed || quote || stack.length) return null;
     try {
-      return object(JSON.parse(cleaned));
+      return object(safeParse(cleaned));
     } catch (_) {/* Use the app's optional syntax repair when loaded. */}
     const repair = typeof root.jsonrepair === 'function' ? root.jsonrepair : root.JSONRepair?.jsonrepair;
     if (typeof repair === 'function') {
       try {
-        return object(JSON.parse(repair(cleaned)));
+        return object(safeParse(repair(cleaned)));
       } catch (_) {/* Request a corrected response instead. */}
     }
     return null;

@@ -151,9 +151,12 @@ describe('host remediation project restore hardening', () => {
 });
 
   it('preserves the live HTML-binding proof after canonical view normalization', () => {
+    // Wave 6 (T3-2): both Load Project pickers now share one _loadProjectFromFileInput helper.
+    const pickerCalls = viewSrc.match(/_loadProjectFromFileInput\(e,\s*\{\s*sidebar:/g) || [];
+    expect(pickerCalls).toHaveLength(2);
     const proofCopies = viewSrc.match(/_viewAttachRuntimeBindingProof\(_normalizedLoadedFixResult, project\.accessibleHtml/g) || [];
-    expect(proofCopies).toHaveLength(2);
-    expect(viewSrc.match(/setPdfFixResult\(_normalizedLoadedFixResult\);/g) || []).toHaveLength(2);
+    expect(proofCopies).toHaveLength(1);
+    expect(viewSrc.match(/setPdfFixResult\(_normalizedLoadedFixResult\);/g) || []).toHaveLength(1);
   });
   });
 // only fills the scanned/empty case, and only on an exact filename match with real text.

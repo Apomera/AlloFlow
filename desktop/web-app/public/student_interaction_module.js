@@ -103,11 +103,11 @@ function getStudentInteractionThemeStyles(themeContext = {}) {
       headerText: "text-indigo-100",
       iconBubble: "bg-indigo-950 text-indigo-200 border border-indigo-700",
       title: "text-slate-100",
-      text: "text-slate-300",
-      muted: "text-slate-400",
-      input: "bg-slate-950 border-slate-600 text-slate-100 placeholder:text-slate-500 focus:ring-indigo-500/40 focus:border-indigo-400",
+      text: "text-slate-200",
+      muted: "text-slate-300",
+      input: "bg-slate-950 border-slate-600 text-slate-100 placeholder:text-slate-400 focus:ring-indigo-500/40 focus:border-indigo-400",
       primary: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-none",
-      secondary: "bg-slate-950 border border-slate-600 text-slate-200 hover:bg-slate-800 hover:text-white",
+      secondary: "bg-slate-950 border border-slate-600 text-slate-100 hover:bg-slate-800 hover:text-white",
       focusOffset: "focus:ring-offset-slate-900",
       positive: "bg-emerald-950 border-emerald-700 text-emerald-100",
       needsWork: "bg-amber-950 border-amber-700 text-amber-100",
@@ -122,13 +122,13 @@ function getStudentInteractionThemeStyles(themeContext = {}) {
     panelSoft: "bg-slate-50 text-slate-700 border border-slate-400",
     header: "bg-indigo-600 text-white",
     headerText: "text-indigo-100",
-    iconBubble: "bg-indigo-100 text-indigo-600 border-2 border-indigo-200",
-    title: "text-slate-800",
-    text: "text-slate-600",
+    iconBubble: "bg-indigo-100 text-indigo-700 border-2 border-indigo-200",
+    title: "text-slate-900",
+    text: "text-slate-700",
     muted: "text-slate-600",
-    input: "bg-white border-slate-300 text-slate-800 placeholder:text-slate-500 focus:ring-indigo-500/20 focus:border-indigo-500",
+    input: "bg-white border-slate-300 text-slate-900 placeholder:text-slate-500 focus:ring-indigo-500/20 focus:border-indigo-500",
     primary: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg",
-    secondary: "bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600",
+    secondary: "bg-white border-2 border-slate-300 text-slate-700 hover:border-indigo-400 hover:text-indigo-700",
     focusOffset: "focus:ring-offset-white",
     positive: "bg-green-50 border-green-400 text-green-800",
     needsWork: "bg-orange-50 border-orange-400 text-orange-800",
@@ -502,25 +502,37 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     return stats2;
   };
   const stats = getSummaryStats();
+  const totalSummaryItems = stats.quizzes + stats.readings + stats.adventures + stats.scaffolds;
+  const sayCount = (key, count, fallback) => {
+    try {
+      const v = key ? t(key, { count }) : "";
+      return typeof v === "string" && v && v !== key ? v : fallback;
+    } catch (_) {
+      return fallback;
+    }
+  };
   const getSummaryString = () => {
     const parts = [];
     if (stats.quizzes > 0) {
       const key = stats.quizzes === 1 ? "modals.summary_details.quiz" : "modals.summary_details.quizzes";
-      parts.push(t(key, { count: stats.quizzes }));
+      parts.push(sayCount(key, stats.quizzes, `${stats.quizzes} ${stats.quizzes === 1 ? "quiz" : "quizzes"}`));
     }
     if (stats.adventures > 0) {
       const key = stats.adventures === 1 ? "modals.summary_details.adventure" : "modals.summary_details.adventures";
-      parts.push(t(key, { count: stats.adventures }));
+      parts.push(sayCount(key, stats.adventures, `${stats.adventures} ${stats.adventures === 1 ? "adventure" : "adventures"}`));
     }
     if (stats.readings > 0) {
       const key = stats.readings === 1 ? "modals.summary_details.reading" : "modals.summary_details.readings";
-      parts.push(t(key, { count: stats.readings }));
+      parts.push(sayCount(key, stats.readings, `${stats.readings} ${stats.readings === 1 ? "reading" : "readings"}`));
     }
-    if (parts.length === 0) return t("modals.summary_details.empty");
+    if (stats.scaffolds > 0) {
+      parts.push(`${stats.scaffolds} ${stats.scaffolds === 1 ? "scaffold" : "scaffolds"}`);
+    }
+    if (parts.length === 0) return say("modals.summary_details.empty", "No completed activities yet");
     return parts.join(", ");
   };
   const mailboxDelivery = submissionMethod === "mailbox";
-  const submitLabel = mailboxDelivery ? "Submit to teacher's Drive" : t("modals.download_submission") || "Download submission file";
+  const submitLabel = mailboxDelivery ? "Submit to teacher's Drive" : say("modals.download_submission", "Download submission file");
   const submitHint = mailboxDelivery ? "Your complete work will be saved automatically as a JSON file in your teacher's private AlloFlow Class Mailbox Drive folder. If delivery fails, a backup file downloads instead." : submissionContext === "standard-live" ? "Live quiz and activity responses sync during class. Your complete portfolio downloads as a file for your teacher or LMS." : "Your complete work downloads as a file. Send it to your teacher or upload it to your LMS.";
   const knownName = parseNickname(currentNickname);
   const hasKnownName = !!(knownName.adj && knownName.animal);
@@ -668,18 +680,26 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
           if (!submittingRef.current) onClose();
         },
         className: cx("absolute top-4 right-4 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 transition-colors motion-reduce:transition-none", styles.secondary, styles.focusOffset),
-        "aria-label": t("common.close")
+        "aria-label": say("common.close", "Close")
       },
       /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" })
     ),
-    /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6 relative" }, /* @__PURE__ */ React.createElement("div", { className: cx("w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4", styles.iconBubble), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Send, { size: 32, className: "ml-1" })), /* @__PURE__ */ React.createElement("h2", { id: titleId, className: cx("text-2xl font-black mb-1", styles.title) }, receipt ? receiptTitle : t("modals.submit_title")), /* @__PURE__ */ React.createElement("p", { id: descId, className: cx("text-sm font-medium", styles.text) }, receipt ? receiptBody : t("modals.submit_ready"))),
-    receipt ? /* @__PURE__ */ React.createElement("div", { "data-submit-receipt": receipt.delivery }, /* @__PURE__ */ React.createElement("div", { role: "status", className: cx("rounded-xl p-4 mb-6 text-center", styles.panelSoft) }, /* @__PURE__ */ React.createElement("div", { className: cx("text-xs font-bold uppercase tracking-wider mb-1", styles.muted) }, say("modals.submit_receipt_as", "Codename")), /* @__PURE__ */ React.createElement("div", { className: cx("text-xl font-black tracking-tight break-words", styles.title) }, receipt.name), /* @__PURE__ */ React.createElement("div", { className: cx("text-sm font-medium mt-2", styles.text) }, receipt.time)), /* @__PURE__ */ React.createElement("button", { type: "button", ref: receiptDoneRef, onClick: onClose, "data-submit-receipt-done": "", className: cx("w-full font-bold py-3 rounded-xl transition-all motion-reduce:transition-none active:scale-95", styles.primary) }, say("modals.submit_receipt_done", "Done"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("p", { className: cx("block text-xs font-bold uppercase tracking-wider mb-2 text-center", styles.muted) }, nameLabel), /* @__PURE__ */ React.createElement("div", { className: cx("p-4 rounded-xl", styles.panelSoft) }, pickingName && /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6 relative" }, /* @__PURE__ */ React.createElement("div", { className: cx("w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4", styles.iconBubble), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Send, { size: 32, className: "ml-1" })), /* @__PURE__ */ React.createElement("h2", { id: titleId, className: cx("text-2xl font-black mb-1", styles.title) }, receipt ? receiptTitle : say("modals.submit_title", "Submit Work")), /* @__PURE__ */ React.createElement("p", { id: descId, className: cx("text-sm font-medium", styles.text) }, receipt ? receiptBody : say("modals.submit_ready", "Review your codename and work summary before submitting."))),
+    receipt ? /* @__PURE__ */ React.createElement("div", { "data-submit-receipt": receipt.delivery }, /* @__PURE__ */ React.createElement("div", { role: "status", className: cx("rounded-xl p-4 mb-6 text-center", styles.panelSoft) }, /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        "data-submit-receipt-badge": receipt.delivery,
+        className: cx("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border mb-2", receipt.delivery === "mailbox" ? styles.positive : styles.needsWork)
+      },
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, receipt.delivery === "mailbox" ? "\u2713" : "!"),
+      /* @__PURE__ */ React.createElement("span", null, receipt.delivery === "mailbox" ? say("modals.submit_receipt_status_sent", "Delivered") : receipt.delivery === "backup" ? say("modals.submit_receipt_status_backup", "Backup file saved") : say("modals.submit_receipt_status_file", "Saved on device"))
+    ), /* @__PURE__ */ React.createElement("div", { className: cx("text-xs font-bold uppercase tracking-wider mb-1", styles.muted) }, say("modals.submit_receipt_as", "Codename")), /* @__PURE__ */ React.createElement("div", { className: cx("text-xl font-black tracking-tight break-words", styles.title) }, receipt.name), /* @__PURE__ */ React.createElement("div", { className: cx("text-sm font-medium mt-2", styles.text) }, receipt.time)), /* @__PURE__ */ React.createElement("button", { type: "button", ref: receiptDoneRef, onClick: onClose, "data-submit-receipt-done": "", className: cx("w-full min-h-11 font-bold py-3 rounded-xl transition-all motion-reduce:transition-none active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500", styles.primary, styles.focusOffset) }, say("modals.submit_receipt_done", "Done"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("p", { className: cx("block text-xs font-bold uppercase tracking-wider mb-2 text-center", styles.muted) }, nameLabel), /* @__PURE__ */ React.createElement("div", { className: cx("p-4 rounded-xl", styles.panelSoft) }, pickingName && /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
       "select",
       {
         value: selectedAdj,
         onChange: (e) => setSelectedAdj(e.target.value),
-        className: cx("w-1/2 min-h-11 p-2 rounded-lg border font-bold text-sm focus:ring-2 outline-none cursor-pointer", styles.input),
-        "aria-label": t("modals.entry.select_adjective"),
+        className: cx("w-1/2 min-h-11 p-2 rounded-lg border font-bold text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus:ring-2 cursor-pointer", styles.input),
+        "aria-label": say("modals.entry.select_adjective", "Select adjective"),
         "data-help-key": "entry_adjective"
       },
       adjectives.map((adj, i) => /* @__PURE__ */ React.createElement("option", { key: i, value: adj }, adj))
@@ -688,8 +708,8 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       {
         value: selectedAnimal,
         onChange: (e) => setSelectedAnimal(e.target.value),
-        className: cx("w-1/2 min-h-11 p-2 rounded-lg border font-bold text-sm focus:ring-2 outline-none cursor-pointer", styles.input),
-        "aria-label": t("modals.entry.select_animal"),
+        className: cx("w-1/2 min-h-11 p-2 rounded-lg border font-bold text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus:ring-2 cursor-pointer", styles.input),
+        "aria-label": say("modals.entry.select_animal", "Select animal"),
         "data-help-key": "entry_animal"
       },
       animals.map((anim, i) => /* @__PURE__ */ React.createElement("option", { key: i, value: anim }, anim))
@@ -698,20 +718,21 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       {
         type: "button",
         onClick: randomizeName,
-        className: cx("min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full hover:scale-110 transition-all motion-reduce:transition-none shrink-0", styles.secondary),
-        title: t("modals.entry.randomize_codename"),
-        "aria-label": t("modals.entry.randomize_codename"),
+        className: cx("min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full hover:scale-110 transition-all motion-reduce:transition-none shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500", styles.secondary, styles.focusOffset),
+        title: say("modals.entry.randomize_codename", "Randomize codename"),
+        "aria-label": say("modals.entry.randomize_codename", "Randomize codename"),
         "data-help-key": "entry_randomize_btn"
       },
-      /* @__PURE__ */ React.createElement(RefreshCw, { size: 18 })
-    ) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setChangingName(true), "data-submit-change-codename": "", className: cx("min-h-11 px-3 rounded-lg text-sm font-bold underline shrink-0", styles.secondary) }, say("modals.submit_change_codename", "Change"))))), /* @__PURE__ */ React.createElement("div", { role: "group", className: cx("rounded-xl p-4 mb-6", styles.panelSoft), "aria-labelledby": summaryId }, /* @__PURE__ */ React.createElement("h3", { id: summaryId, className: cx("text-xs font-bold uppercase tracking-widest mb-3 border-b pb-2", styles.muted) }, t("modals.work_summary")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(CheckSquare, { size: 16, className: "text-teal-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.quizzes), " ", t("modals.summary_quizzes")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 16, className: "text-green-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.readings), " ", t("modals.summary_readings")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, className: "text-purple-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.adventures), " ", t("modals.summary_adventures")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(Quote, { size: 16, className: "text-rose-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.scaffolds), " ", t("modals.summary_scaffolds"))), /* @__PURE__ */ React.createElement("div", { className: cx("text-xs italic text-center mt-2 pt-2 border-t", styles.muted) }, '"', getSummaryString(), '"')), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3" }, submitError && /* @__PURE__ */ React.createElement("p", { role: "alert", className: cx("rounded-xl border px-3 py-2 text-xs font-bold text-center", styles.needsWork) }, submitError), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement(RefreshCw, { size: 18, "aria-hidden": "true" })
+    ) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setChangingName(true), "data-submit-change-codename": "", className: cx("min-h-11 px-3 rounded-lg text-sm font-bold underline shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500", styles.secondary, styles.focusOffset) }, say("modals.submit_change_codename", "Change"))))), /* @__PURE__ */ React.createElement("div", { role: "group", className: cx("rounded-xl p-4 mb-6", styles.panelSoft), "aria-labelledby": summaryId }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 border-b pb-2" }, /* @__PURE__ */ React.createElement("h3", { id: summaryId, className: cx("text-xs font-bold uppercase tracking-widest", styles.muted) }, say("modals.work_summary", "Work Summary")), /* @__PURE__ */ React.createElement("span", { "data-submit-total-count": String(totalSummaryItems), className: cx("px-2.5 py-0.5 rounded-full text-xs font-bold border", styles.stat) }, totalSummaryItems, " ", totalSummaryItems === 1 ? say("modals.summary_item_singular", "item") : say("modals.summary_item_plural", "items"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(CheckSquare, { size: 16, className: "text-teal-600", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.quizzes), " ", say("modals.summary_quizzes", "Quizzes")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 16, className: "text-green-600", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.readings), " ", say("modals.summary_readings", "Readings")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, className: "text-purple-600", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.adventures), " ", say("modals.summary_adventures", "Adventures")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(Quote, { size: 16, className: "text-rose-600", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.scaffolds), " ", say("modals.summary_scaffolds", "Scaffolds"))), /* @__PURE__ */ React.createElement("div", { className: cx("text-xs italic text-center mt-2 pt-2 border-t", styles.muted) }, '"', getSummaryString(), '"')), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3" }, submitError && /* @__PURE__ */ React.createElement("p", { role: "alert", className: cx("rounded-xl border px-3 py-2 text-xs font-bold text-center", styles.needsWork) }, submitError), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         "aria-label": submitLabel,
+        "aria-busy": submitting ? "true" : void 0,
         onClick: handleSubmit,
         disabled: !selectedAdj || !selectedAnimal || submitting,
-        className: cx("w-full font-bold py-3 rounded-xl transition-all motion-reduce:transition-none disabled:opacity-60 disabled:cursor-not-allowed active:scale-95 flex items-center justify-center gap-2", styles.primary),
+        className: cx("w-full min-h-11 font-bold py-3 rounded-xl transition-all motion-reduce:transition-none disabled:opacity-60 disabled:cursor-not-allowed active:scale-95 flex items-center justify-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500", styles.primary, styles.focusOffset),
         "data-help-key": "submit_confirm_btn"
       },
       mailboxDelivery ? /* @__PURE__ */ React.createElement(Send, { size: 18, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Download, { size: 18, "aria-hidden": "true" }),
@@ -723,9 +744,9 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
         type: "button",
         onClick: onClose,
         disabled: submitting,
-        className: cx("w-full font-bold py-3 rounded-xl transition-all motion-reduce:transition-none active:scale-95", styles.secondary)
+        className: cx("w-full min-h-11 font-bold py-3 rounded-xl transition-all motion-reduce:transition-none active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500", styles.secondary, styles.focusOffset)
       },
-      t("common.cancel")
+      say("common.cancel", "Cancel")
     )))
   ));
 });
@@ -745,75 +766,139 @@ const DraftFeedbackInterface = React.memo(({
   const { t } = useContext(LanguageContext);
   const themeContext = useContext(window.AlloThemeContext || StudentInteractionThemeFallbackContext);
   const styles = getStudentInteractionThemeStyles(themeContext);
+  const say = (key, fallback, opts) => {
+    try {
+      const v = key ? opts ? t(key, opts) : t(key) : "";
+      return typeof v === "string" && v && v !== key ? v : fallback;
+    } catch (_) {
+      return fallback;
+    }
+  };
+  const focusRing = cx("focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500", styles.focusOffset);
+  const normalizedDraft = String(draftText || "");
+  const trimmedDraft = normalizedDraft.trim();
+  const wordCount = trimmedDraft ? trimmedDraft.split(/\s+/).length : 0;
+  const charCount = normalizedDraft.length;
+  const prevWordCount = String(previousDraft || "").trim() ? String(previousDraft || "").trim().split(/\s+/).length : 0;
+  const wordDelta = prevWordCount > 0 ? wordCount - prevWordCount : null;
+  const normalizedCriteria = Array.isArray(rubricCriteria) ? rubricCriteria.map((item) => typeof item === "string" ? item : item && (item.criterion || item.name || item.title || item.description)).filter(Boolean) : [];
   const renderRubric = () => {
     if (!gradingDetails || !Array.isArray(gradingDetails.breakdown)) return null;
     const hasRawScore = typeof gradingDetails.rawScore === "number" && Number.isFinite(gradingDetails.rawScore);
-    return /* @__PURE__ */ React.createElement("div", { className: cx("rounded-xl shadow-sm overflow-hidden mb-6", styles.panel) }, /* @__PURE__ */ React.createElement("div", { className: cx("p-4 border-b flex justify-between items-center", styles.panelSoft) }, /* @__PURE__ */ React.createElement("h3", { className: cx("font-bold", styles.title) }, t("mastery.feedback"), " & ", t("mastery.score")), hasRawScore && /* @__PURE__ */ React.createElement("div", { className: cx("px-4 py-1 rounded-full text-sm font-black border", status === "mastery" ? styles.positive : styles.stat) }, t("mastery.score"), ": ", gradingDetails.rawScore, "/100")), /* @__PURE__ */ React.createElement("div", { className: "divide-y divide-slate-200/40" }, gradingDetails.breakdown.map((grade, idx) => {
+    return /* @__PURE__ */ React.createElement("div", { className: cx("rounded-xl shadow-sm overflow-hidden mb-6", styles.panel) }, /* @__PURE__ */ React.createElement("div", { className: cx("p-4 border-b flex justify-between items-center gap-3", styles.panelSoft) }, /* @__PURE__ */ React.createElement("h3", { className: cx("font-bold", styles.title) }, say("mastery.feedback", "Feedback"), " & ", say("mastery.score", "Score")), hasRawScore && /* @__PURE__ */ React.createElement("div", { className: cx("px-4 py-1 rounded-full text-sm font-black border", status === "mastery" ? styles.positive : styles.stat) }, say("mastery.score", "Score"), ": ", gradingDetails.rawScore, "/100")), /* @__PURE__ */ React.createElement("div", { className: "divide-y divide-slate-200/40" }, gradingDetails.breakdown.map((grade, idx) => {
       if (!grade || typeof grade !== "object") return null;
-      return /* @__PURE__ */ React.createElement("div", { key: idx, className: "p-4 md:p-6" }, /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex justify-between items-end" }, /* @__PURE__ */ React.createElement("h4", { className: cx("font-bold text-sm uppercase tracking-wider", styles.title) }, grade.criterion || "Criterion"), /* @__PURE__ */ React.createElement("span", { className: cx("text-xs font-medium", styles.muted) }, t("mastery.achieved_level"), ": ", grade.score, "/", grade.max || 5)), grade.reason && /* @__PURE__ */ React.createElement("div", { className: cx("mt-2 text-sm p-3 rounded-lg border-l-4", grade.score >= (grade.max || 5) * 0.8 ? styles.positive : styles.needsWork) }, /* @__PURE__ */ React.createElement("span", { className: "font-bold mr-1" }, t("mastery.feedback"), ":"), " ", grade.reason));
+      const maxVal = Number(grade.max) > 0 ? Number(grade.max) : 5;
+      const scoreVal = Number.isFinite(Number(grade.score)) ? Number(grade.score) : 0;
+      const pct = Math.max(0, Math.min(100, Math.round(scoreVal / maxVal * 100)));
+      const isMet = scoreVal >= maxVal * 0.8;
+      const criterionName = grade.criterion || "Criterion";
+      return /* @__PURE__ */ React.createElement("div", { key: idx, className: "p-4 md:p-6" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex flex-wrap justify-between items-center gap-2" }, /* @__PURE__ */ React.createElement("h4", { className: cx("font-bold text-sm uppercase tracking-wider", styles.title) }, criterionName), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+        "span",
+        {
+          "data-rubric-criterion-status": isMet ? "met" : "revise",
+          className: cx("inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border", isMet ? styles.positive : styles.needsWork)
+        },
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, isMet ? "\u2713" : "!"),
+        /* @__PURE__ */ React.createElement("span", null, isMet ? say("mastery.status_met", "Met") : say("mastery.status_revise", "Needs revision"))
+      ), /* @__PURE__ */ React.createElement("span", { className: cx("text-xs font-semibold", styles.muted) }, say("mastery.achieved_level", "Score"), ": ", scoreVal, "/", maxVal))), /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          role: "progressbar",
+          "aria-label": criterionName,
+          "aria-valuemin": 0,
+          "aria-valuemax": maxVal,
+          "aria-valuenow": scoreVal,
+          "aria-valuetext": `${criterionName}: ${scoreVal} of ${maxVal} (${pct}%), ${isMet ? "Met" : "Needs revision"}`,
+          className: "w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden mb-2"
+        },
+        /* @__PURE__ */ React.createElement("div", { className: cx("h-full rounded-full", isMet ? "bg-emerald-600" : "bg-amber-600"), style: { width: `${pct}%` } })
+      ), grade.reason && /* @__PURE__ */ React.createElement("div", { className: cx("mt-2 text-sm p-3 rounded-lg border-l-4", isMet ? styles.positive : styles.needsWork) }, /* @__PURE__ */ React.createElement("span", { className: "font-bold mr-1" }, say("mastery.feedback", "Feedback"), ":"), " ", grade.reason));
     })));
   };
   if (status === "writing") {
-    return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-2" }, /* @__PURE__ */ React.createElement("div", { className: cx("rounded-2xl shadow-xl overflow-hidden", styles.panel) }, /* @__PURE__ */ React.createElement("div", { className: cx("p-4 flex items-center justify-between gap-3", styles.header) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full", styles.iconBubble) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 20 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "font-bold text-lg" }, t("mastery.draft_label", { count: draftCount })), /* @__PURE__ */ React.createElement("p", { className: cx("text-xs", styles.headerText) }, t("mastery.instruction")))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onCancel, className: cx("min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full", styles.secondary), "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20 }))), /* @__PURE__ */ React.createElement("div", { className: "p-6" }, /* @__PURE__ */ React.createElement(
+    const draftTitle = say("mastery.draft_label", `Draft ${draftCount}`, { count: draftCount });
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-2" }, /* @__PURE__ */ React.createElement("div", { className: cx("rounded-2xl shadow-xl overflow-hidden", styles.panel) }, /* @__PURE__ */ React.createElement("div", { className: cx("p-4 flex items-center justify-between gap-3", styles.header) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full", styles.iconBubble), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 20 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "font-bold text-lg" }, draftTitle), /* @__PURE__ */ React.createElement("p", { className: cx("text-xs", styles.headerText) }, say("mastery.instruction", "Write your response below, then submit for feedback.")))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onCancel, className: cx("min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full transition-colors motion-reduce:transition-none", styles.secondary, focusRing), "aria-label": say("common.close", "Close") }, /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { className: "p-6" }, normalizedCriteria.length > 0 && /* @__PURE__ */ React.createElement("details", { "data-draft-rubric-disclosure": "true", className: cx("mb-4 rounded-xl border p-3", styles.panelSoft) }, /* @__PURE__ */ React.createElement("summary", { className: cx("min-h-11 flex items-center cursor-pointer text-xs font-bold uppercase tracking-wider rounded-lg px-2", styles.title, focusRing) }, say("mastery.rubric_checklist", `Rubric checklist (${normalizedCriteria.length})`, { count: normalizedCriteria.length })), /* @__PURE__ */ React.createElement("ul", { className: cx("mt-2 pl-5 list-disc space-y-1 text-sm", styles.text) }, normalizedCriteria.map((criterion, idx) => /* @__PURE__ */ React.createElement("li", { key: idx }, criterion)))), /* @__PURE__ */ React.createElement("label", { htmlFor: "mastery-writing-draft-textarea", className: "sr-only" }, say("mastery.draft_aria", "Draft response")), /* @__PURE__ */ React.createElement(
       "textarea",
       {
-        "aria-label": t("mastery.draft_aria") || t("mastery.placeholder") || "Draft response",
-        value: draftText,
-        onChange: (e) => setDraftText(e.target.value),
-        className: cx("w-full h-64 p-4 border-2 rounded-xl focus:ring-4 outline-none resize-none text-base leading-relaxed", styles.input),
-        placeholder: t("mastery.placeholder"),
+        id: "mastery-writing-draft-textarea",
+        "aria-label": say("mastery.draft_aria", say("mastery.placeholder", "Draft response")),
+        "aria-describedby": "mastery-writing-meta",
+        value: normalizedDraft,
+        onChange: (e) => setDraftText && setDraftText(e.target.value),
+        className: cx("w-full h-64 p-4 border-2 rounded-xl focus:ring-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 resize-none text-base leading-relaxed", styles.input),
+        placeholder: say("mastery.placeholder", "Write your draft here..."),
         autoFocus: true,
         "data-help-key": "mastery_draft_input"
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex justify-end" }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex flex-wrap items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { id: "mastery-writing-meta", "data-draft-word-count": "true", role: "status", "aria-live": "polite", className: cx("text-xs font-semibold", styles.muted) }, wordCount, " ", wordCount === 1 ? "word" : "words", " \xB7 ", charCount, " ", charCount === 1 ? "character" : "characters"), trimmedDraft.length > 0 && typeof setDraftText === "function" && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-draft-clear": "true",
+        onClick: () => setDraftText(""),
+        className: cx("min-h-11 px-3 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none", styles.secondary, focusRing)
+      },
+      say("common.clear", "Clear draft")
+    )), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         onClick: onSubmit,
-        disabled: !String(draftText || "").trim(),
-        className: cx("font-bold py-3 px-8 rounded-full transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-105 active:scale-95 disabled:opacity-60 disabled:scale-100 flex items-center gap-2", styles.primary)
+        disabled: !trimmedDraft,
+        className: cx("min-h-11 font-bold py-3 px-8 rounded-full transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-105 active:scale-95 disabled:opacity-60 disabled:scale-100 disabled:cursor-not-allowed flex items-center gap-2", styles.primary, focusRing)
       },
-      t("mastery.submit_feedback"),
+      say("mastery.submit_feedback", "Submit for Feedback"),
       " ",
-      /* @__PURE__ */ React.createElement(ArrowRight, { size: 18 })
+      /* @__PURE__ */ React.createElement(ArrowRight, { size: 18, "aria-hidden": "true" })
     )))));
   }
   if (status === "grading") {
     return /* @__PURE__ */ React.createElement("div", { className: cx("flex flex-col items-center justify-center h-96 p-8", styles.panel), role: "status", "aria-live": "polite", "aria-atomic": "true", "aria-busy": "true" }, /* @__PURE__ */ React.createElement("div", { className: "relative", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("div", { className: "w-20 h-20 border-4 border-indigo-100 rounded-full" }), /* @__PURE__ */ React.createElement("div", { className: "w-20 h-20 border-4 border-t-indigo-600 border-r-indigo-600 border-b-transparent border-l-transparent rounded-full animate-spin motion-reduce:animate-none absolute top-0 left-0" }), /* @__PURE__ */ React.createElement("div", { className: cx("absolute inset-0 flex items-center justify-center", styles.title) }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 24, className: "animate-spin motion-reduce:animate-none" }))), /* @__PURE__ */ React.createElement("h2", { className: cx("mt-6 text-xl font-bold animate-pulse motion-reduce:animate-none", styles.title) }, t("mastery.analyzing")), /* @__PURE__ */ React.createElement("p", { className: cx("mt-2", styles.text) }, t("mastery.criteria_check")));
   }
   if (status === "revision") {
-    return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto p-4 md:p-6 space-y-8 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-500" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex justify-between items-center p-4 rounded-xl", styles.needsWork) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full", styles.iconBubble) }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 24 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: cx("text-xl font-black", styles.title) }, t("mastery.revision_required")), /* @__PURE__ */ React.createElement("span", { className: "sr-only", role: "status", "aria-live": "polite" }, t("mastery.revision_required")), /* @__PURE__ */ React.createElement("p", { className: cx("text-sm", styles.text) }, t("mastery.revision_desc")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, typeof gradingDetails?.rawScore === "number" && Number.isFinite(gradingDetails.rawScore) && /* @__PURE__ */ React.createElement("div", { className: cx("hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm mr-2", styles.panel) }, /* @__PURE__ */ React.createElement(Star, { size: 16, className: "text-yellow-500 fill-current", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: cx("text-xs font-bold", styles.text) }, t("mastery.current_progress"), ": ", gradingDetails.rawScore, "/100")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onCancel, className: cx("min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full", styles.secondary), "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20 })))), renderRubric(), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { id: "mastery-locked-draft-heading", className: cx("text-xs font-bold uppercase tracking-wider flex items-center gap-2", styles.muted) }, /* @__PURE__ */ React.createElement(History, { size: 14, "aria-hidden": "true" }), " ", t("mastery.locked_draft", { count: draftCount })), /* @__PURE__ */ React.createElement("div", { role: "region", "aria-labelledby": "mastery-locked-draft-heading", className: cx("p-6 rounded-xl h-96 overflow-y-auto font-serif relative whitespace-pre-wrap", styles.panelSoft) }, /* @__PURE__ */ React.createElement("div", { className: cx("absolute top-4 right-4", styles.muted) }, /* @__PURE__ */ React.createElement(Lock, { size: 20, "aria-hidden": "true" })), previousDraft)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "mastery-new-draft-textarea", className: cx("text-xs font-bold uppercase tracking-wider flex items-center gap-2", styles.title) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 14, "aria-hidden": "true" }), " ", t("mastery.new_draft", { count: draftCount + 1 })), /* @__PURE__ */ React.createElement("div", { className: "relative h-96" }, /* @__PURE__ */ React.createElement(
+    const newDraftLabel = say("mastery.new_draft", `Draft ${draftCount + 1}`, { count: draftCount + 1 });
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto p-4 md:p-6 space-y-8 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-500" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex justify-between items-center p-4 rounded-xl", styles.needsWork) }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full", styles.iconBubble), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 24 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: cx("text-xl font-black", styles.title) }, say("mastery.revision_required", "Revision Needed")), /* @__PURE__ */ React.createElement("span", { className: "sr-only", role: "status", "aria-live": "polite" }, t("mastery.revision_required")), /* @__PURE__ */ React.createElement("p", { className: cx("text-sm", styles.text) }, say("mastery.revision_desc", "Use the rubric feedback below to strengthen your next draft.")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, typeof gradingDetails?.rawScore === "number" && Number.isFinite(gradingDetails.rawScore) && /* @__PURE__ */ React.createElement("div", { className: cx("hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm mr-2", styles.panel) }, /* @__PURE__ */ React.createElement(Star, { size: 16, className: "text-yellow-500 fill-current", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: cx("text-xs font-bold", styles.text) }, say("mastery.current_progress", "Current score"), ": ", gradingDetails.rawScore, "/100")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onCancel, className: cx("min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full transition-colors motion-reduce:transition-none", styles.secondary, focusRing), "aria-label": say("common.close", "Close") }, /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" })))), renderRubric(), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { id: "mastery-locked-draft-heading", className: cx("text-xs font-bold uppercase tracking-wider flex items-center gap-2", styles.muted) }, /* @__PURE__ */ React.createElement(History, { size: 14, "aria-hidden": "true" }), " ", say("mastery.locked_draft", `Previous Draft ${draftCount}`, { count: draftCount })), /* @__PURE__ */ React.createElement("div", { role: "region", tabIndex: 0, "aria-labelledby": "mastery-locked-draft-heading", className: cx("p-6 rounded-xl h-96 overflow-y-auto font-serif relative whitespace-pre-wrap", styles.panelSoft, focusRing) }, /* @__PURE__ */ React.createElement("div", { className: cx("absolute top-4 right-4", styles.muted), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Lock, { size: 20, "aria-hidden": "true" })), previousDraft)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "mastery-new-draft-textarea", className: cx("text-xs font-bold uppercase tracking-wider flex items-center gap-2", styles.title) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 14, "aria-hidden": "true" }), " ", newDraftLabel), trimmedDraft.length > 0 && typeof setDraftText === "function" && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-draft-clear": "true",
+        onClick: () => setDraftText(""),
+        className: cx("min-h-11 px-3 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none", styles.secondary, focusRing)
+      },
+      say("common.clear", "Clear draft")
+    )), /* @__PURE__ */ React.createElement("div", { className: "relative h-96" }, /* @__PURE__ */ React.createElement(
       "textarea",
       {
         id: "mastery-new-draft-textarea",
-        "aria-label": t("mastery.new_draft", { count: draftCount + 1 }) || "New draft",
-        value: draftText,
-        onChange: (e) => setDraftText(e.target.value),
-        className: cx("w-full h-full p-6 border-2 rounded-xl focus:ring-4 outline-none resize-none font-serif text-lg leading-relaxed shadow-sm", styles.input),
-        placeholder: t("mastery.rewrite_placeholder")
+        "aria-label": newDraftLabel,
+        "aria-describedby": "mastery-revision-meta",
+        value: normalizedDraft,
+        onChange: (e) => setDraftText && setDraftText(e.target.value),
+        className: cx("w-full h-full p-6 border-2 rounded-xl focus:ring-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 resize-none font-serif text-lg leading-relaxed shadow-sm", styles.input),
+        placeholder: say("mastery.rewrite_placeholder", "Write your revised response here...")
       }
-    )))), /* @__PURE__ */ React.createElement("div", { className: "sticky bottom-6 z-50 flex justify-center" }, /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { id: "mastery-revision-meta", "data-draft-word-count": "true", role: "status", "aria-live": "polite", className: cx("text-xs font-semibold", styles.muted) }, wordCount, " ", wordCount === 1 ? "word" : "words", " \xB7 ", charCount, " ", charCount === 1 ? "character" : "characters", wordDelta !== null ? ` (${wordDelta >= 0 ? "+" : ""}${wordDelta} vs previous draft)` : ""))), /* @__PURE__ */ React.createElement("div", { className: "sticky bottom-6 z-50 flex justify-center" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         onClick: onSubmit,
-        disabled: !String(draftText || "").trim(),
-        className: cx("font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all motion-reduce:transition-none flex items-center gap-3 active:scale-95 disabled:opacity-60 disabled:scale-100 disabled:cursor-not-allowed", styles.primary)
+        disabled: !trimmedDraft,
+        className: cx("min-h-11 font-bold py-4 px-10 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all motion-reduce:transition-none flex items-center gap-3 active:scale-95 disabled:opacity-60 disabled:scale-100 disabled:cursor-not-allowed", styles.primary, focusRing)
       },
-      t("mastery.submit_revision"),
+      say("mastery.submit_revision", "Submit Revision"),
       " ",
-      /* @__PURE__ */ React.createElement(ArrowRight, { size: 20 })
+      /* @__PURE__ */ React.createElement(ArrowRight, { size: 20, "aria-hidden": "true" })
     )));
   }
   if (status === "mastery") {
-    return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-8 text-center animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "mb-8 relative inline-block" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-yellow-400 blur-3xl opacity-20 rounded-full animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(Trophy, { size: 120, className: "text-yellow-500 fill-yellow-200 relative z-10 drop-shadow-lg mx-auto", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: cx("absolute -top-4 -right-12 border-2 px-4 py-1 rounded-full font-black text-sm rotate-12 shadow-md", styles.stat) }, t("mastery.mastery_achieved"))), /* @__PURE__ */ React.createElement("h2", { className: cx("text-5xl font-black mb-4 tracking-tight", styles.title) }, t("mastery.excellent_work")), /* @__PURE__ */ React.createElement("span", { className: "sr-only", role: "status", "aria-live": "polite" }, t("mastery.excellent_work")), /* @__PURE__ */ React.createElement("p", { className: cx("text-xl mb-8 max-w-2xl mx-auto", styles.text) }, t("mastery.mastery_desc")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 max-w-3xl mx-auto" }, (typeof finalScore === "number" || typeof gradingDetails?.rawScore === "number") && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, t("mastery.final_score")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, typeof finalScore === "number" ? finalScore : gradingDetails.rawScore)), /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, t("mastery.drafts")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, draftCount)), typeof xpEarned === "number" && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, t("mastery.xp_earned")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, "+", xpEarned))), gradingDetails?.feedback?.strength && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl shadow-sm text-left mb-8 max-w-3xl mx-auto", styles.panel) }, /* @__PURE__ */ React.createElement("h3", { className: cx("font-bold flex items-center gap-2 mb-2", styles.title) }, /* @__PURE__ */ React.createElement(Star, { size: 16, className: "text-yellow-500 fill-current", "aria-hidden": "true" }), " ", t("mastery.teacher_feedback")), /* @__PURE__ */ React.createElement("p", { className: cx("italic", styles.text) }, '"', gradingDetails.feedback.strength, '"')), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-8 text-center animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "mb-8 relative inline-block" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-yellow-400 blur-3xl opacity-20 rounded-full animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(Trophy, { size: 120, className: "text-yellow-500 fill-yellow-200 relative z-10 drop-shadow-lg mx-auto", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: cx("absolute -top-4 -right-12 border-2 px-4 py-1 rounded-full font-black text-sm rotate-12 shadow-md", styles.stat) }, say("mastery.mastery_achieved", "Mastery Achieved"))), /* @__PURE__ */ React.createElement("h2", { className: cx("text-5xl font-black mb-4 tracking-tight", styles.title) }, say("mastery.excellent_work", "Excellent Work!")), /* @__PURE__ */ React.createElement("span", { className: "sr-only", role: "status", "aria-live": "polite" }, t("mastery.excellent_work")), /* @__PURE__ */ React.createElement("p", { className: cx("text-xl mb-8 max-w-2xl mx-auto", styles.text) }, say("mastery.mastery_desc", "You met the mastery standard for this assignment.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 max-w-3xl mx-auto" }, (typeof finalScore === "number" || typeof gradingDetails?.rawScore === "number") && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, say("mastery.final_score", "Final Score")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, typeof finalScore === "number" ? finalScore : gradingDetails.rawScore)), /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, say("mastery.drafts", "Drafts")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, draftCount)), typeof xpEarned === "number" && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl", styles.stat) }, /* @__PURE__ */ React.createElement("div", { className: cx("font-bold uppercase text-xs mb-2", styles.muted) }, say("mastery.xp_earned", "XP Earned")), /* @__PURE__ */ React.createElement("div", { className: cx("text-5xl font-black", styles.title) }, "+", xpEarned))), gradingDetails?.feedback?.strength && /* @__PURE__ */ React.createElement("div", { className: cx("p-6 rounded-2xl shadow-sm text-left mb-8 max-w-3xl mx-auto", styles.panel) }, /* @__PURE__ */ React.createElement("h3", { className: cx("font-bold flex items-center gap-2 mb-2", styles.title) }, /* @__PURE__ */ React.createElement(Star, { size: 16, className: "text-yellow-500 fill-current", "aria-hidden": "true" }), " ", say("mastery.teacher_feedback", "Strengths")), /* @__PURE__ */ React.createElement("p", { className: cx("italic", styles.text) }, '"', gradingDetails.feedback.strength, '"')), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         onClick: onCancel,
-        className: cx("font-bold py-3 px-12 rounded-full shadow-lg transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-105 active:scale-95", styles.primary)
+        className: cx("min-h-11 font-bold py-3 px-12 rounded-full shadow-lg transition-transform motion-reduce:transition-none motion-reduce:transform-none hover:scale-105 active:scale-95", styles.primary, focusRing)
       },
-      t("mastery.continue")
+      say("mastery.continue", "Continue")
     ));
   }
   return null;

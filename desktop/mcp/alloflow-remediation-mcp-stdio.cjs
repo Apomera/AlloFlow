@@ -1272,7 +1272,7 @@ function restoreJobs() {
     const tempPath = path.join(STATE_DIR, n);
     const finalPath = tempPath.slice(0, -4);
     try {
-      const candidate = JSON.parse(fs.readFileSync(tempPath, 'utf8'));
+      const candidate = _readBoundedJsonFileSync(tempPath, 16 * 1024 * 1024, false);
       const expectedId = n.slice(0, -'.json.tmp'.length);
       if (!candidate || candidate.jobId !== expectedId || !SAFE_JOB_ID_RE.test(candidate.jobId)) {
         throw new Error('invalid temporary job record');
@@ -1292,7 +1292,7 @@ function restoreJobs() {
     if (!/^rjob-.*\.json$/.test(n)) continue;
     const p = path.join(STATE_DIR, n);
     let rec;
-    try { rec = JSON.parse(fs.readFileSync(p, 'utf8')); } catch (_) { try { fs.renameSync(p, p + '.corrupt-' + Date.now()); } catch (__) {} continue; }
+    try { rec = _readBoundedJsonFileSync(p, 16 * 1024 * 1024, false); } catch (_) { try { fs.renameSync(p, p + '.corrupt-' + Date.now()); } catch (__) {} continue; }
     const expectedId = n.slice(0, -'.json'.length);
     if (!rec || rec.jobId !== expectedId || !SAFE_JOB_ID_RE.test(rec.jobId)) {
       try { fs.renameSync(p, p + '.corrupt-' + Date.now()); } catch (_) {}
@@ -2381,10 +2381,8 @@ function persistArtifactIndex() {
 // somewhere else still only republishes what actually exists — and a read
 // re-stats again before serving a byte.
 function loadPersistedArtifactIndex() {
-  let raw;
-  try { raw = fs.readFileSync(artifactIndexPath(), 'utf8'); } catch (_) { return; }
   let parsed;
-  try { parsed = JSON.parse(raw); } catch (_) { return; }
+  try { parsed = _readBoundedJsonFileSync(artifactIndexPath(), 16 * 1024 * 1024, false); } catch (_) { return; }
   if (!parsed || parsed.schema !== ARTIFACT_INDEX_SCHEMA || !Array.isArray(parsed.runs)) return;
   const ordered = parsed.runs
     .filter((run) => run && typeof run.runId === 'string' && Array.isArray(run.entries))
@@ -2717,12 +2715,24 @@ async function runRemediateBatch(j, { files, dir, outDir, opts, skipExisting, pr
 
 // Output path for the HTML-in/HTML-out tools. An explicit output_path wins; otherwise a suffixed
 // sibling. Collision-safe either way, so these tools can never destroy the file handed to them.
+function _readBoundedJsonFileSync(filePath, maxBytes, useAuthorized) {
+  const ls = fs.lstatSync(filePath);
+  if (ls.isSymbolicLink() || !ls.isFile()) throw new Error('Expected a regular JSON file');
+  if (ls.size > maxBytes) throw new Error('JSON file exceeds size limit (' + maxBytes + ' bytes)');
+  const raw = useAuthorized ? authorizedReadFileSync(filePath, 'utf8') : fs.readFileSync(filePath, 'utf8');
+  return JSON.parse(raw);
+}
+
+function _claimExplicitOutputPath(rawPath, fieldName) {
+  if (typeof rawPath !== 'string' || !rawPath.trim()) throw invalidParams((fieldName || 'arguments.output_path') + ' must be a non-empty string');
+  const p = enforceAllowedRoot(path.resolve(rawPath), fieldName || 'arguments.output_path');
+  fs.mkdirSync(path.dirname(p), { recursive: true });
+  return claimOutputPath(path.dirname(p), path.basename(p));
+}
+
 function _htmlOutputPath(args, inputPath, suffix) {
   if (args.output_path !== undefined) {
-    if (typeof args.output_path !== 'string' || !args.output_path.trim()) throw invalidParams('arguments.output_path must be a non-empty string');
-    const p = enforceAllowedRoot(path.resolve(args.output_path), 'arguments.output_path');
-    fs.mkdirSync(path.dirname(p), { recursive: true });
-    return claimOutputPath(path.dirname(p), path.basename(p));
+    return _claimExplicitOutputPath(args.output_path, 'arguments.output_path');
   }
   const stem = path.basename(inputPath).replace(/\.html?$/i, '');
   return claimOutputPath(path.dirname(inputPath), stem + suffix);
@@ -2959,7 +2969,7 @@ function loadEditHistory(htmlPath, htmlSha256, runHtmlSha256) {
   const logFor = (p) => p.replace(/\.html?$/i, '') + '-edits.json';
   const readLog = (p) => {
     try {
-      const j = JSON.parse(authorizedReadFileSync(p, 'utf8'));
+      const j = _readBoundedJsonFileSync(p, 4 * 1024 * 1024, true);
       return j && j.tool === 'edit_accessible_html' && Array.isArray(j.changes) ? j : null;
     } catch (_) { return null; }
   };
@@ -4697,11 +4707,10 @@ const TOOL_HANDLERS = {
     const auditPath = enforceAllowedRoot(path.resolve(String(args.audit_json || '')), 'arguments.audit_json');
     if (!fs.existsSync(auditPath)) throw invalidParams('arguments.audit_json does not exist: ' + auditPath);
     if (typeof args.output_path !== 'string' || !args.output_path.trim()) throw invalidParams('arguments.output_path is required');
-    const outPath = enforceAllowedRoot(path.resolve(args.output_path), 'arguments.output_path');
-    fs.mkdirSync(path.dirname(outPath), { recursive: true });
+    const outPath = _claimExplicitOutputPath(args.output_path, 'arguments.output_path');
 
     let audit;
-    try { audit = JSON.parse(authorizedReadFileSync(auditPath, 'utf8')); }
+    try { audit = _readBoundedJsonFileSync(auditPath, 16 * 1024 * 1024, true); }
     catch (e) { throw invalidParams('arguments.audit_json is not readable JSON: ' + ((e && e.message) || e)); }
     // audit_json may be an axe audit (pdf_audit / agent harness), an audit_two_engines result or a
     // -remediation-report.json. Read each engine from wherever that shape keeps it; an engine the input
@@ -4731,7 +4740,7 @@ const TOOL_HANDLERS = {
     if (args.verapdf_json !== undefined) {
       const vp = enforceAllowedRoot(path.resolve(String(args.verapdf_json)), 'arguments.verapdf_json');
       if (!fs.existsSync(vp)) throw invalidParams('arguments.verapdf_json does not exist: ' + vp);
-      try { vera = JSON.parse(authorizedReadFileSync(vp, 'utf8')); }
+      try { vera = _readBoundedJsonFileSync(vp, 16 * 1024 * 1024, true); }
       catch (e) { throw invalidParams('arguments.verapdf_json is not readable JSON: ' + ((e && e.message) || e)); }
       if (!vera || typeof vera !== 'object' || Array.isArray(vera)) {
         throw invalidParams('arguments.verapdf_json must contain a JSON object');
@@ -4848,7 +4857,7 @@ const TOOL_HANDLERS = {
     requireGeminiKey(); // the only HTML operation here that truly needs one
     const out = await withSingleFlight('describe_images', () => getDriver().describeImages({
       html: authorizedReadFileSync(htmlPath, 'utf8'), cap: cap || 10,
-      fileName: path.basename(htmlPath), onLog: ctx && ctx.onProgress,
+      fileName: path.basename(htmlPath), onLog: ctx && ctx.onProgress, signal: ctx && ctx.signal,
     }));
     authorizedWriteFileSync(dest, out.html, 'utf8');
     return {
@@ -4866,12 +4875,11 @@ const TOOL_HANDLERS = {
       throw invalidParams("arguments.mode must be one of: speech, visual, dual, synthesis");
     }
     const dest = args.output_path !== undefined
-      ? enforceAllowedRoot(path.resolve(args.output_path), 'arguments.output_path')
+      ? _claimExplicitOutputPath(args.output_path, 'arguments.output_path')
       : claimOutputPath(path.dirname(filePath), path.basename(filePath).replace(/\.[^.]+$/, '') + '-transcript.txt');
-    fs.mkdirSync(path.dirname(dest), { recursive: true });
     requireGeminiKey();
     return withSingleFlight('transcribe_media', async () => {
-      const out = await getDriver().transcribeMedia({ filePath, mode: args.mode || 'speech', onLog: ctx && ctx.onProgress });
+      const out = await getDriver().transcribeMedia({ filePath, mode: args.mode || 'speech', onLog: ctx && ctx.onProgress, signal: ctx && ctx.signal });
       authorizedWriteFileSync(dest, String(out.payload || ''), 'utf8');
       return {
         input: filePath, output: dest, mode: out.mode, words: out.words,
@@ -4891,7 +4899,7 @@ const TOOL_HANDLERS = {
     return withSingleFlight('translate_accessible_html', async () => {
       const out = await getDriver().translateHtml({
         html: authorizedReadFileSync(htmlPath, 'utf8'), targetLang: args.target_language,
-        fileName: path.basename(htmlPath), onLog: ctx && ctx.onProgress,
+        fileName: path.basename(htmlPath), onLog: ctx && ctx.onProgress, signal: ctx && ctx.signal,
       });
       if (!out || typeof out.html !== 'string' || !out.html.trim()) throw new Error('Translation returned no HTML');
       authorizedWriteFileSync(dest, out.html, 'utf8');
@@ -4930,8 +4938,7 @@ const TOOL_HANDLERS = {
     const out = await withSingleFlight('extract_document_text', () => getDriver().extractDocumentText({ filePath, onLog: ctx && ctx.onProgress }));
     let dest;
     if (args.output_path !== undefined) {
-      dest = enforceAllowedRoot(path.resolve(args.output_path), 'arguments.output_path');
-      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      dest = _claimExplicitOutputPath(args.output_path, 'arguments.output_path');
       authorizedWriteFileSync(dest, out.text, 'utf8');
     }
     // This tool reads text layers only. A scanned PDF (no layer, or a scan-like page average) and a
@@ -5007,7 +5014,7 @@ const TOOL_HANDLERS = {
     requireGeminiKey();
     return withSingleFlight('simplify_accessible_html', async () => {
       const out = await getDriver().simplifyHtml({
-        html: authorizedReadFileSync(htmlPath, 'utf8'), fileName: path.basename(htmlPath), options: {}, onLog: ctx && ctx.onProgress,
+        html: authorizedReadFileSync(htmlPath, 'utf8'), fileName: path.basename(htmlPath), options: {}, onLog: ctx && ctx.onProgress, signal: ctx && ctx.signal,
       });
       if (!out || typeof out.html !== 'string' || !out.html.trim()) throw new Error('Simplification returned no HTML');
       authorizedWriteFileSync(dest, out.html, 'utf8');
@@ -5052,8 +5059,7 @@ const TOOL_HANDLERS = {
     }));
     let dest;
     if (args.output_path !== undefined) {
-      dest = enforceAllowedRoot(path.resolve(args.output_path), 'arguments.output_path');
-      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      dest = _claimExplicitOutputPath(args.output_path, 'arguments.output_path');
       authorizedWriteFileSync(dest, out.text, 'utf8');
     }
     return {
@@ -5200,12 +5206,13 @@ const TOOL_HANDLERS = {
     const logFor = (p) => p.replace(/\.html?$/i, '') + '-edits.json';
     let previousLog = null;
     try {
-      const prev = JSON.parse(authorizedReadFileSync(logFor(htmlPath), 'utf8'));
+      const prev = _readBoundedJsonFileSync(logFor(htmlPath), 4 * 1024 * 1024, true);
       if (prev && prev.tool === 'edit_accessible_html' && prev.resultSha256 === sha256) previousLog = path.basename(logFor(htmlPath));
     } catch (_) { /* no earlier round, or it does not describe this file */ }
     authorizedWriteFileSync(dest, out.html, 'utf8');
     const newSha = sha256Bytes(Buffer.from(out.html, 'utf8'));
-    const logPath = logFor(dest);
+    const rawLogPath = logFor(dest);
+    const logPath = claimOutputPath(path.dirname(rawLogPath), path.basename(rawLogPath));
     authorizedWriteFileSync(logPath, JSON.stringify({
       tool: 'edit_accessible_html', version: 1, at: new Date().toISOString(),
       baseFile: path.basename(htmlPath), baseSha256: sha256, resultFile: path.basename(dest), resultSha256: newSha, previousLog,
@@ -5255,7 +5262,7 @@ const TOOL_HANDLERS = {
     const aiLabel = includeAi ? transportCfg.backend : 'not-run';
     return withSingleFlight('audit_html', async () => {
       const out = await getDriver().auditHtml({
-        html: authorizedReadFileSync(htmlPath, 'utf8'), fileName: path.basename(htmlPath), onLog: ctx && ctx.onProgress, includeAi,
+        html: authorizedReadFileSync(htmlPath, 'utf8'), fileName: path.basename(htmlPath), onLog: ctx && ctx.onProgress, includeAi, signal: ctx && ctx.signal,
       });
       out.aiEngine = aiLabel;
       if (!includeAi) {
@@ -5314,7 +5321,7 @@ const TOOL_HANDLERS = {
     if (!sameResolvedPath(path.dirname(heldPath), outDir) || !report.files.completionManifest) return refuse('report-changed', 'The report does not match the files beside it.');
     // Tampering or an edit after the check sends the person back to look again. The manifest binds source and report.
     let manifest = null;
-    try { manifest = JSON.parse(authorizedReadFileSync(report.files.completionManifest, 'utf8')); } catch (_) {}
+    try { manifest = _readBoundedJsonFileSync(report.files.completionManifest, 2 * 1024 * 1024, true); } catch (_) {}
     const compatibility = manifest && manifest.compatibility ? { inputSha256: report.contentCoverage.sourceSha256, optionsSha256: manifest.compatibility.optionsSha256, engineSha256: manifest.compatibility.engineSha256 } : null;
     if (!compatibility || !await validateCompletionManifest(path.resolve(report.files.completionManifest), sourcePath, outDir, compatibility)) return refuse('files-changed', 'The original or the report changed after this run, so the confirmation no longer applies. Run the document again.');
     if (!fs.existsSync(htmlPath) || await sha256File(htmlPath) !== report.contentCoverage.htmlSha256) return refuse('files-changed', 'The accessible version changed after the words were listed, so the confirmation no longer applies. Run the document again.');
@@ -5674,11 +5681,11 @@ const TOOL_HANDLERS = {
     return { runId: agentRun.runId, status: 'running', modelTransport: 'agent-bridge',
       note: 'Use remediation_agent_requests and answer the pending requests until terminal. Folder files run sequentially. After restart use remediation_agent_resume; verified completed files are reused. Optional narration uses local Kokoro/Piper and may download public dependencies.' };
   },
-  async document_narration_preflight(args) {
+  async document_narration_preflight(args, ctx) {
     assertAllowedKeys(args,['file_path','dir_path','narration','narration_voice','narration_provider','narration_language'],'arguments');
     const files=narrationInputs(args),opts=validateNarrationOptions({narration:'accessible',...args});
     if(opts.narration==='none')throw invalidParams('Choose accessible or natural narration');
-    return Narration.preflight({filePaths:files,stateDir:STATE_DIR,assetsRoot:Driver.ASSETS_ROOT,resolveChromium:Driver.resolveChromium,mode:opts.narration,provider:opts.narrationProvider,voice:opts.narrationVoice,language:opts.narrationLanguage,readSource:p=>authorizedReadFileSync(p)});
+    return withSingleFlight('document_narration_preflight', () => Narration.preflight({filePaths:files,stateDir:STATE_DIR,assetsRoot:Driver.ASSETS_ROOT,resolveChromium:Driver.resolveChromium,mode:opts.narration,provider:opts.narrationProvider,voice:opts.narrationVoice,language:opts.narrationLanguage,signal:ctx&&ctx.signal,readSource:p=>authorizedReadFileSync(p)}));
   },
   document_narration_voices(args) {
     assertAllowedKeys(args,['language'],'arguments');
@@ -5928,7 +5935,10 @@ function send(message) {
   }
   const line = JSON.stringify(message);
   if (message && (message.id === undefined || message.id === null) && SSE_CLIENTS.size) {
-    for (const client of SSE_CLIENTS) { try { client.write('event: message\ndata: ' + line + '\n\n'); } catch (_) {} }
+    for (const client of SSE_CLIENTS) {
+      if (client.writableEnded || client.destroyed) { SSE_CLIENTS.delete(client); continue; }
+      try { client.write('event: message\ndata: ' + line + '\n\n'); } catch (_) { SSE_CLIENTS.delete(client); }
+    }
   }
   if (!STDIO_KEEPALIVE || process.stdout.writable) { try { process.stdout.write(line + '\n'); } catch (_) {} }
 }
@@ -6037,6 +6047,11 @@ async function handleRequest(msg) {
         ? TOOL_HANDLERS[name]
         : null;
       if (typeof handler !== 'function') { sendError(id, -32602, 'Unknown tool: ' + String(name)); return; }
+      const rawArgs = params ? params.arguments : undefined;
+      if (rawArgs !== undefined && (typeof rawArgs !== 'object' || rawArgs === null || Array.isArray(rawArgs))) {
+        sendError(id, -32602, 'params.arguments must be a JSON object');
+        return;
+      }
       const key = typeof id + ':' + String(id);
       if (IN_FLIGHT.has(key)) { sendError(id, -32600, 'Duplicate in-flight request id'); return; }
       const abortController = new AbortController();
@@ -6047,7 +6062,7 @@ async function handleRequest(msg) {
         signal: abortController.signal,
       };
       try {
-        const output = await handler((params && params.arguments) || {}, ctx);
+        const output = await handler(rawArgs || {}, ctx);
         // Cancelled mid-run: the spec says not to answer a cancelled request, and a
         // late success would contradict the cancel the caller already acted on.
         if (entry.cancelled) return;
@@ -6095,12 +6110,20 @@ async function handleNotification(msg) {
   }
 }
 
+function isValidRpcId(id) {
+  if (id === undefined || id === null) return true;
+  if (typeof id === 'string') return id.length >= 1 && id.length <= 128;
+  if (typeof id === 'number') return Number.isSafeInteger(id);
+  return false;
+}
+
 function handleMessage(line) {
   if (!line.trim()) return;
   if (line.length > MAX_LINE_CHARS) { sendError(null, -32600, 'Message too large'); return; }
   let msg;
   try { msg = JSON.parse(line); } catch (_) { sendError(null, -32700, 'Parse error'); return; }
-  if (!msg || msg.jsonrpc !== '2.0') { sendError(msg && msg.id !== undefined ? msg.id : null, -32600, 'Invalid request'); return; }
+  if (!msg || typeof msg !== 'object' || Array.isArray(msg) || msg.jsonrpc !== '2.0') { sendError(null, -32600, 'Invalid request'); return; }
+  if (!isValidRpcId(msg.id)) { sendError(null, -32600, 'Invalid request id'); return; }
   if (typeof msg.id === 'string' && msg.id.startsWith(HTTP_ID_PREFIX)) {
     sendError(null, -32600, 'Reserved request id prefix');
     return;
@@ -6279,7 +6302,10 @@ function startHttpTransport(port) {
       res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache, no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', Connection: 'keep-alive', 'Mcp-Session-Id': sessionId });
       res.write(': alloflow-remediation notifications\n\n');
       SSE_CLIENTS.add(res);
-      req.on('close', () => SSE_CLIENTS.delete(res));
+      const dropSse = () => SSE_CLIENTS.delete(res);
+      req.on('close', dropSse);
+      res.on('close', dropSse);
+      res.on('error', dropSse);
       return;
     }
     if (req.method === 'DELETE') { res.writeHead(200, { 'Mcp-Session-Id': sessionId, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end(); return; }
@@ -6312,7 +6338,8 @@ function startHttpTransport(port) {
           }
         });
         for (let msg of messages) {
-          if (!msg || msg.jsonrpc !== '2.0') { replies.push({ jsonrpc: '2.0', id: msg && msg.id !== undefined ? msg.id : null, error: { code: -32600, message: 'Invalid request' } }); continue; }
+          if (!msg || typeof msg !== 'object' || Array.isArray(msg) || msg.jsonrpc !== '2.0') { replies.push({ jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Invalid request' } }); continue; }
+          if (!isValidRpcId(msg.id)) { replies.push({ jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Invalid request id' } }); continue; }
           if (typeof msg.id === 'string' && msg.id.startsWith(HTTP_ID_PREFIX)) {
             replies.push({ jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Reserved request id prefix' } });
             continue;

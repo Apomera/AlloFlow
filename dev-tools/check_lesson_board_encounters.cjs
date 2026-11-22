@@ -115,6 +115,7 @@ const cases = [
       await resume();
       await expect(page.locator('[data-field-encounter="' + event + '"]')).toBeVisible();
       await expect(page.locator('[data-board-next]')).toBeDisabled();
+      await page.locator('[data-field-approach="' + choice + '"]').click();
       await page.locator('[data-field-choice="' + choice + '"]').focus();
       await page.keyboard.press('Enter');
       const chosen = await page.evaluate(() => snapshot());

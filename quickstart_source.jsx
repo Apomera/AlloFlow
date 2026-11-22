@@ -216,10 +216,11 @@ function StorybookPicker(props) {
     // Predictable browse order: easiest reading level first, then A-Z.
     return (Number(a.level || 99) - Number(b.level || 99)) || String(a.title).localeCompare(String(b.title));
   });
+  var hasCatalogFilter = Boolean(lang || level || q);
   return e('div', null,
     e('div', { className: 'flex flex-wrap gap-2 mb-2' },
       e('select', {
-        className: 'p-2 border-2 border-slate-200 rounded-xl text-sm text-slate-700 bg-white',
+        className: 'min-h-11 p-2 border-2 border-slate-200 rounded-xl text-sm text-slate-700 bg-white',
         value: level, onChange: function (ev) { setLevel(ev.target.value); },
         'aria-label': wt('wizard.storybook_level', 'Reading level'),
       },
@@ -227,7 +228,7 @@ function StorybookPicker(props) {
         levels.map(function (lv) { return e('option', { key: lv, value: lv }, STORYBOOK_LEVELS[lv] || ('Level ' + lv)); })
       ),
       e('select', {
-        className: 'p-2 border-2 border-slate-200 rounded-xl text-sm text-slate-700 bg-white',
+        className: 'min-h-11 p-2 border-2 border-slate-200 rounded-xl text-sm text-slate-700 bg-white',
         value: lang, onChange: function (ev) { setLang(ev.target.value); },
         'aria-label': wt('wizard.storybook_language', 'Language'),
       },
@@ -236,16 +237,33 @@ function StorybookPicker(props) {
       ),
       e('input', {
         dir: 'auto',
-        className: 'flex-grow min-w-0 p-2 border-2 border-slate-200 rounded-xl text-sm',
+        className: 'min-h-11 flex-grow min-w-0 p-2 border-2 border-slate-200 rounded-xl text-sm',
         placeholder: wt('wizard.storybook_search', 'Search titles, sources, subjects...'),
         value: q, onChange: function (ev) { setQ(ev.target.value); },
+        onKeyDown: function (ev) {
+          if (_qsIsImeComposing(ev)) return;
+          if (ev.key === 'Escape' && q) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            if (ev.nativeEvent && typeof ev.nativeEvent.preventDefault === 'function') ev.nativeEvent.preventDefault();
+            setQ('');
+          }
+        },
         'aria-label': wt('wizard.storybook_search', 'Search titles, sources, subjects...'),
       })
     ),
     level && level === storybookGradeToLevel(props.grade) ? e('p', { className: 'text-xs text-amber-700 mb-2' },
       wt('wizard.storybook_grade_note', 'Showing resources matched to your grade - choose All levels to see everything.')) : null,
-    e('p', { className: 'text-xs font-semibold text-slate-600 mb-1' },
-      matches.length + ' ' + (matches.length === 1 ? wt('wizard.storybook_one', 'resource') : wt('wizard.storybook_many', 'resources'))),
+    e('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1' },
+      e('p', { className: 'text-xs font-semibold text-slate-600', role: 'status' },
+        matches.length + ' ' + (matches.length === 1 ? wt('wizard.storybook_one', 'resource') : wt('wizard.storybook_many', 'resources'))),
+      hasCatalogFilter ? e('button', {
+        type: 'button',
+        'data-storybook-reset-filters': '',
+        onClick: function () { setLevel(''); setLang(''); setQ(''); },
+        className: 'min-h-11 px-3 rounded-lg text-xs font-bold text-amber-800 hover:bg-amber-50 border border-amber-300 bg-white',
+      }, wt('wizard.storybook_reset_filters', 'Reset filters')) : null
+    ),
     matches.length === 0 ? e('p', { className: 'text-sm text-slate-600 italic' }, wt('wizard.storybook_none', 'No resources match - try different filters.')) : null,
     e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[46vh] overflow-y-auto pr-1' },
       matches.map(function (b) {
@@ -1836,6 +1854,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
                       )}
                       {localData.sourceMode === 'paste' && (() => {
                           const words = (localData.pastedText.trim().match(/\S+/g) || []).length;
+                          const readMins = words > 0 ? Math.max(1, Math.round(words / 180)) : 0;
                           return (
                           <div data-wizard-paste className="space-y-3">
                               <label htmlFor="wizard-paste-text" className="block text-lg font-bold text-slate-700">{pick(t('wizard.paste_label'), 'Your text')}</label>
@@ -1844,7 +1863,26 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
                                   onChange={(e) => setLocalData(prev => ({ ...prev, pastedText: e.target.value }))}
                                   placeholder={pick(t('wizard.paste_placeholder'), 'Paste or type your text here…')}
                                   className="w-full p-3 border-2 border-slate-200 rounded-xl focus:border-sky-600 focus:ring-4 focus:ring-sky-600/30 transition-all motion-reduce:transition-none bg-white text-slate-900 resize-y" />
-                              <p id="wizard-paste-count" className="text-xs text-slate-600" aria-live="polite">{pick(t('wizard.paste_word_count'), '{count} words').replace('{count}', String(words))}</p>
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                      <p id="wizard-paste-count" className="text-xs text-slate-600" aria-live="polite">{pick(t('wizard.paste_word_count'), '{count} words').replace('{count}', String(words))}</p>
+                                      {readMins > 0 && (
+                                          <span data-wizard-paste-readtime="" className="rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-semibold text-sky-800">
+                                              ~{readMins} min read
+                                          </span>
+                                      )}
+                                  </div>
+                                  {localData.pastedText && (
+                                      <button
+                                          type="button"
+                                          data-wizard-paste-clear=""
+                                          onClick={() => setLocalData(prev => ({ ...prev, pastedText: '' }))}
+                                          className="min-h-11 rounded-lg px-3 text-xs font-bold text-slate-700 hover:bg-slate-100 border border-slate-300 bg-white transition-colors motion-reduce:transition-none"
+                                      >
+                                          {wt('wizard.clear_text', 'Clear text')}
+                                      </button>
+                                  )}
+                              </div>
                               <button type="button"
                                   aria-label={t('common.next')}
                                   data-help-key="wizard_paste_next"
@@ -1877,11 +1915,39 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
                       )}
                   </div>
               )}
-              {step === 4 && (
+              {step === 4 && (() => {
+                  const sourceSummaryLabel = localData.resourceMeta && localData.resourceMeta.title
+                      ? localData.resourceMeta.title
+                      : localData.sourceMode === 'paste'
+                          ? `${(localData.pastedText.trim().match(/\S+/g) || []).length} ${wt('wizard.words_unit', 'words pasted')}`
+                          : localData.sourceMode === 'generate'
+                              ? (localData.topic ? `${wt('input.actions.write_with_ai', 'Write with AI')}: ${localData.topic}` : wt('input.actions.write_with_ai', 'Write with AI'))
+                              : localData.sourceMode === 'storybook'
+                                  ? wt('input.reading_catalog', 'Reading catalog')
+                                  : localData.sourceMode === 'file'
+                                      ? wt('wizard.upload_file', 'Upload file')
+                                      : wt('input.find_online', 'Find online');
+                  return (
                   <div className="space-y-6 animate-in motion-reduce:animate-none slide-in-from-right-4 duration-300">
                       <div>
                           <label className="block text-lg font-bold text-slate-700 mb-2">{t('wizard.adaptation')}</label>
-                          <p className="text-slate-600 mb-6">{t('wizard.adaptation_desc')}</p>
+                          <p className="text-slate-600 mb-4">{t('wizard.adaptation_desc')}</p>
+                          <div data-wizard-summary="" className="mb-5 flex flex-wrap items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50/70 px-3 py-2.5 text-xs">
+                              <span className="font-bold text-indigo-900">{wt('wizard.summary_label', 'Setup summary:')}</span>
+                              {localData.grade && (
+                                  <span className="rounded-full border border-indigo-200 bg-white px-2.5 py-0.5 font-semibold text-indigo-800">
+                                      {localData.grade}
+                                  </span>
+                              )}
+                              <span className="max-w-full truncate rounded-full border border-slate-200 bg-white px-2.5 py-0.5 font-semibold text-slate-700">
+                                  {sourceSummaryLabel}
+                              </span>
+                              {localData.standards.length > 0 && (
+                                  <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 font-semibold text-emerald-800">
+                                      {localData.standards.length} {localData.standards.length === 1 ? wt('wizard.standard_one', 'standard') : wt('wizard.standard_many', 'standards')}
+                                  </span>
+                              )}
+                          </div>
                           <div className="space-y-4">
                               <div>
                                   <label htmlFor="quickstart-output-format" className="block text-sm font-bold text-slate-600 mb-2">{t('wizard.output_format')}</label>
@@ -1902,7 +1968,10 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
                                   </select>
                               </div>
                               <div>
-                                  <label className="block text-sm font-bold text-slate-600 mb-1">{t('wizard.output_languages_label')}</label>
+                                  <div className="mb-1 flex items-center justify-between gap-2">
+                                      <label className="block text-sm font-bold text-slate-600">{t('wizard.output_languages_label')}</label>
+                                      <span data-wizard-lang-count="" className="text-xs font-semibold text-slate-600 tabular-nums">{localData.languages.length}/4</span>
+                                  </div>
                                   <div className="mb-2 flex flex-col gap-2 sm:flex-row">
                                       <input dir="auto" aria-label={t('common.enter_wiz_lang_input')}
                                         type="text"
@@ -1958,7 +2027,10 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
                                   </div>
                               </div>
                               <div>
-                                  <label className="block text-sm font-bold text-slate-600 mb-1">{t('wizard.interests_label_optional').replace(' (Optional)', '')}<span className="text-slate-600 font-normal"> (Optional)</span></label>
+                                  <div className="mb-1 flex items-center justify-between gap-2">
+                                      <label className="block text-sm font-bold text-slate-600">{t('wizard.interests_label_optional').replace(' (Optional)', '')}<span className="text-slate-600 font-normal"> (Optional)</span></label>
+                                      <span data-wizard-interest-count="" className="text-xs font-semibold text-slate-600 tabular-nums">{localData.interests.length}/5</span>
+                                  </div>
                                   <div className="mb-2 flex flex-col gap-2 sm:flex-row">
                                       <input dir="auto" aria-label={t('common.enter_wiz_interest_input')}
                                         type="text"
@@ -2042,7 +2114,8 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, canContinueG
                           </div>
                       </div>
                   </div>
-              )}
+                  );
+              })()}
           </div>
           {step < 4 && (
               <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-between items-center shrink-0">

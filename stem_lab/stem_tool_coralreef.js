@@ -7,7 +7,7 @@
 // The optional 3D dive loads stem_lab/reef_3d_habitat.js + reef_3d_engine.js.
 (function () {
   'use strict';
-  if (!window.StemLab || window.StemLab.isRegistered('coralReef')) return;
+  if (typeof window === 'undefined' || !window.StemLab || window.StemLab.isRegistered('coralReef')) return;
 
   // ── Survey method ────────────────────────────────────────────────────────
   // One 20 m transect, a point every 0.5 m (40 points), a 5 m wide fish belt
@@ -3257,7 +3257,13 @@
     var P = palette(theme);
     function set(patch) {
       if (typeof ctx.setToolData === 'function') {
-        ctx.setToolData(function (prev) { var out = Object.assign({}, prev); out.coralReef = Object.assign({}, (prev && prev.coralReef) || {}, patch); return out; });
+        ctx.setToolData(function (prev) {
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var prior = (safePrev.coralReef && typeof safePrev.coralReef === 'object' && !Array.isArray(safePrev.coralReef)) ? safePrev.coralReef : {};
+          var out = Object.assign({}, safePrev);
+          out.coralReef = Object.assign({}, prior, patch);
+          return out;
+        });
       } else if (typeof ctx.updateMulti === 'function') ctx.updateMulti('coralReef', patch);
     }
     var announcementState = React.useState({ message: '', revision: 0 }), announcement = announcementState[0], setAnnouncement = announcementState[1];
@@ -4435,6 +4441,7 @@
       env.say(__alloFill(__alloT('stem.coralreef.w2_m_sr_part', 'Part {n} of {total}: {name}.'), { n: W2_METHOD_PARTS.indexOf(id) + 1, total: W2_METHOD_PARTS.length, name: PN[id].name }));
     }
     function onKey(e, idx) {
+      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       var n = W2_METHOD_PARTS.length, nx = null;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nx = (idx + 1) % n;
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nx = (idx - 1 + n) % n;
@@ -11847,7 +11854,7 @@
     var pl = React.useState(false), playing = pl[0], setPlaying = pl[1];
     React.useEffect(function () {
       if (!playing) return undefined;
-      var id = setInterval(function () { setWeek(function (w) { return Math.min(SCILAB_WEEKS, w + 1); }); }, 160);
+      var id = setInterval(function () { if (typeof document !== 'undefined' && document.hidden) return; setWeek(function (w) { return Math.min(SCILAB_WEEKS, w + 1); }); }, 160);
       return function () { clearInterval(id); };
     }, [playing]);
     React.useEffect(function () { if (playing && week >= SCILAB_WEEKS) setPlaying(false); }, [playing, week]);
@@ -12736,6 +12743,7 @@
       a11yRefocus(function () { return chipRefs.current[was]; }, !!env.ctx.reduceMotion);
     }
     function onChipKey(e, id) {
+      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       var i = order.indexOf(id), rows = FW_ROWS, next = null, ri = 0;
       for (var q = 0; q < rows.length; q++) if (rows[q].ids.indexOf(id) >= 0) ri = q;
       var ci = rows[ri].ids.indexOf(id);
@@ -12992,6 +13000,7 @@
       env.say(__alloFill(__alloT('stem.coralreef.sciLab_sr_topic', 'Topic: {name}.'), { name: TN[id].name }));
     }
     function onKey(e, i) {
+      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       var n = SCILAB_TOPICS.length, next = null;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (i + 1) % n;
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (i - 1 + n) % n;
@@ -16297,7 +16306,15 @@
   var REEF_SOUND_ICON_OFF = 'M4 9.5h3.5L12 6v12l-4.5-3.5H4zM16 9.5l5 5M21 9.5l-5 5';
   // A degraded reef keeps only the first kinds; a healthy one has them all.
   var REEF_SOUND_CALLS = ['grunt', 'knock', 'pop', 'whoop', 'growl'];
-  function reefSoundSupported() { return typeof (window.AudioContext || window.webkitAudioContext) === 'function'; }
+  function reefIsGlobalMuted() {
+    try {
+      if (typeof window === 'undefined') return false;
+      if (window.__alloGlobalMuted === true) return true;
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+    } catch (_) {}
+    return false;
+  }
+  function reefSoundSupported() { return typeof window !== 'undefined' && typeof (window.AudioContext || window.webkitAudioContext) === 'function'; }
   // The host's shared context: WebKit refuses more than a few per page. Never closed here.
   function reefSoundContext() {
     if (!reefSoundSupported()) return null;
@@ -16305,7 +16322,7 @@
   }
   // Starting a dive is a press, so a browser that wants a gesture lets the remembered sound play.
   function reefSoundPrime(d) {
-    if (!d || d.reefSound !== true) return;
+    if (!d || d.reefSound !== true || reefIsGlobalMuted()) return;
     var ac = reefSoundContext();
     if (ac && ac.state !== 'running' && typeof ac.resume === 'function') { try { var p = ac.resume(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
   }
@@ -16515,18 +16532,31 @@
     var on = d.reefSound === true, volume = clamp(Math.round(typeof d.reefSoundVolume === 'number' && isFinite(d.reefSoundVolume) ? d.reefSoundVolume : REEF_SOUND_VOLUME), 0, 100);
     var can = reefSoundSupported();
     var hv = React.useState(function () { return !!(typeof document !== 'undefined' && document.hidden); }), pageHidden = hv[0], setPageHidden = hv[1];
+    var gm = React.useState(function () { return reefIsGlobalMuted(); }), globalMuted = gm[0], setGlobalMuted = gm[1];
     var cs = React.useState('ok'), ctxState = cs[0], setCtxState = cs[1];
     var paused = !!(props.snap && props.snap.paused), usable = can && ctxState !== 'none';
-    var play = on && usable && !paused && !pageHidden;
+    var play = on && usable && !paused && !pageHidden && !globalMuted;
     var mix = React.useMemo(function () { return reefSoundMix(props.site); }, [props.siteKey]);
     var engines = React.useRef([]), current = React.useRef(null), vol = React.useRef(volume);
     vol.current = volume;
     var uid = 'crs-' + React.useId().replace(/:/g, '');
     React.useEffect(function () {
       function vis() { setPageHidden(!!document.hidden); }
+      function onMuteChange() {
+        var muted = reefIsGlobalMuted();
+        setGlobalMuted(muted);
+        if (muted) {
+          engines.current.forEach(function (e) { e.dispose(); });
+          engines.current = [];
+          current.current = null;
+          if (props.hook) props.hook.current = null;
+        }
+      }
       document.addEventListener('visibilitychange', vis);
+      if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') window.addEventListener('alloflow-mute-changed', onMuteChange);
       return function () {
         document.removeEventListener('visibilitychange', vis);
+        if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') window.removeEventListener('alloflow-mute-changed', onMuteChange);
         // Leaving the dive or the section: every node stops and disconnects now.
         engines.current.forEach(function (e) { e.dispose(); }); engines.current = [];
         if (props.hook) props.hook.current = null;
@@ -16786,7 +16816,7 @@
       setFlash(function (n) { return n + 1; });
     }
     function keyDown(event) {
-      if (!on || event.ctrlKey || event.altKey || event.metaKey || event.repeat || String(event.key).toLowerCase() !== 'c') return;
+      if (!on || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.altKey || event.metaKey || event.repeat || String(event.key).toLowerCase() !== 'c') return;
       event.preventDefault(); shoot();
     }
     return { on: on, store: store.current, last: last, flash: flash, shoot: shoot, keyDown: keyDown, start: function () { setOn(true); }, stop: function () { setOn(false); }, touchAlbum: function () { setAlbumVersion(function (n) { return n + 1; }); } };
@@ -17785,7 +17815,7 @@
     }, []);
     React.useEffect(function () {
       if (mode !== 'fill') return undefined;
-      function key(e) { if (e.key === 'Escape') setMode(''); }
+      function key(e) { if (e.defaultPrevented || e.isComposing || e.keyCode === 229) return; if (e.key === 'Escape') setMode(''); }
       document.addEventListener('keydown', key);
       var root = document.documentElement, prior = root.style.overflow; root.style.overflow = 'hidden';
       return function () { document.removeEventListener('keydown', key); root.style.overflow = prior; };
@@ -20981,7 +21011,7 @@
         h('div',{className:'cr-dxp-picture-stage','data-practice-picture-stage':'true','data-zoomed':enlarged?'true':undefined,tabIndex:enlarged?0:undefined,role:enlarged?'group':undefined,
           'aria-label':enlarged?__alloT('stem.coralreef.pz_stage','Enlarged organism picture'):undefined,'aria-describedby':enlarged?uid+'-help':undefined,
           onPointerDown:pointerStart,onPointerMove:pointerMove,onPointerUp:pointerEnd,onPointerCancel:pointerEnd,onLostPointerCapture:pointerEnd,
-          onKeyDown:function(event){var key={ArrowLeft:[-8,0],ArrowRight:[8,0],ArrowUp:[0,-8],ArrowDown:[0,8]}[event.key];if(enlarged&&key&&!event.altKey&&!event.ctrlKey&&!event.metaKey){event.preventDefault();pan(key[0],key[1]);}}},
+          onKeyDown:function(event){if(event.isComposing||event.keyCode===229)return;var key={ArrowLeft:[-8,0],ArrowRight:[8,0],ArrowUp:[0,-8],ArrowDown:[0,8]}[event.key];if(enlarged&&key&&!event.altKey&&!event.ctrlKey&&!event.metaKey){event.preventDefault();pan(key[0],key[1]);}}},
           broken?h('p',{className:'cr-dxp-picture-fallback',role:'status'},__alloT('stem.coralreef.pz_unavailable','The picture is unavailable here. Use the written observation and field marks to keep exploring.'))
             :h('img',{src:companionUrl('assets/coralreef/species/'+props.id+'.webp'),width:640,height:420,decoding:'async',draggable:false,
               alt:__alloT('stem.coralreef.dx_practice_unknown_alt','Marine organism to identify. Use the field-mark text below as an alternative to the picture.'),
@@ -22551,7 +22581,7 @@
         h('canvas', { key: 'pf19u-' + pf19uQ, id: uid + '-canvas', ref: canvas, className: 'crsv-canvas', 'data-specimen-canvas': 'true', 'data-move': moving ? 'true' : undefined, tabIndex: ready ? 0 : undefined, role: 'img', 'aria-label': env.fill(t('stem.coralreef.sv_label', 'Interactive 3D model of {name}'), { name: props.name }), 'aria-describedby': uid + '-help ' + uid + '-details ' + uid + '-pinch-help',
           onPointerDown: pointerStart, onPointerMove: pointerMove, onPointerUp: pointerEnd, onPointerCancel: pointerEnd, onLostPointerCapture: pointerEnd,
           onKeyDown: function (event) {
-            if (!ready || event.altKey || event.ctrlKey || event.metaKey) return;
+            if (!ready || event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
             var key = event.key, amount = key === '+' || key === '=' ? .25 : key === '-' || key === '_' ? -.25 : 0;
             if (amount) { event.preventDefault(); zoom(amount); return; }
             if (key === 'Home') { event.preventDefault(); if (event.shiftKey) centerDetail(); else fit(); return; }
@@ -22667,7 +22697,7 @@
             h('div',{className:'crst-stage','data-study-picture-stage':'true','data-zoomed':enlarged?'true':undefined,tabIndex:enlarged?0:undefined,role:enlarged?'group':undefined,
               'aria-label':enlarged?__alloT('stem.coralreef.pz_stage','Enlarged organism picture'):undefined,'aria-describedby':enlarged?uid+'-help':undefined,
               onPointerDown:pointerStart,onPointerMove:pointerMove,onPointerUp:pointerEnd,onPointerCancel:pointerEnd,onLostPointerCapture:pointerEnd,
-              onKeyDown:function(event){var key={ArrowLeft:[-8,0],ArrowRight:[8,0],ArrowUp:[0,-8],ArrowDown:[0,8]}[event.key];if(enlarged&&key&&!event.altKey&&!event.ctrlKey&&!event.metaKey){event.preventDefault();pan(key[0],key[1]);}}},broken
+              onKeyDown:function(event){if(event.isComposing||event.keyCode===229)return;var key={ArrowLeft:[-8,0],ArrowRight:[8,0],ArrowUp:[0,-8],ArrowDown:[0,8]}[event.key];if(enlarged&&key&&!event.altKey&&!event.ctrlKey&&!event.metaKey){event.preventDefault();pan(key[0],key[1]);}}},broken
               ? h('p',{className:'crst-fallback',role:'status'},__alloT('stem.coralreef.st_image_missing','The portrait is unavailable here. You can still explore every field mark and the observation prompt.'))
               : h('img',{src:companionUrl('assets/coralreef/species/'+meta.id+'.webp'),width:640,height:420,decoding:'async',draggable:false,alt:fill(__alloT('stem.coralreef.g_pic_alt','3D model of a {name}'),{name:text.name}),style:{transform:'translate('+view.x+'%,'+view.y+'%) scale('+view.scale+')'},onError:function(){setBroken(true);reset();}})),
             h('figcaption',null,__alloT('stem.coralreef.st_model_note','An illustrative model in clear light. Explore the field-guide text alongside the picture.'))),

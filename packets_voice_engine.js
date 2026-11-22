@@ -18,17 +18,19 @@
   var VOICE_FILES = ['packets_audio_kit.js', 'runtime_graph_delivery_policy.js', 'runtime_graph_host.js'];
   var CATALOG = 'engine_runtime_integrity.json', LOADER = 'kokoro_tts_loader.js';
   var kit = function () { return win.AlloPacketAudioKit || null; };
-  var ready = false, getting = null, added = {};
+  var ready = false, getting = null, added = Object.create(null);
 
   function addScript(src) {
-    if (added[src]) return Promise.resolve();
-    return new Promise(function (resolve, reject) {
+    if (added[src] === true) return Promise.resolve();
+    if (added[src]) return added[src];
+    var p = new Promise(function (resolve, reject) {
       var script = doc.createElement('script');
       script.src = src;
       var done = false;
       var timer = setTimeout(function () {
         if (done) return;
         done = true;
+        delete added[src];
         try { if (script.parentNode) script.parentNode.removeChild(script); } catch (_) {}
         reject(new Error('A part of the page timed out: ' + src + '.'));
       }, 15000);
@@ -43,11 +45,14 @@
         if (done) return;
         done = true;
         clearTimeout(timer);
+        delete added[src];
         try { if (script.parentNode) script.parentNode.removeChild(script); } catch (_) {}
         reject(new Error('A part of the page did not arrive: ' + src + '.'));
       };
       doc.head.appendChild(script);
     });
+    added[src] = p;
+    return p;
   }
 
   function fetchCatalog() {

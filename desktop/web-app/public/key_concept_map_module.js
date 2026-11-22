@@ -20,7 +20,10 @@ const _CONCEPT_ACCENTS = [
   { badge: "#0369a1", ring: "rgba(14,165,233,0.28)", border: "#0ea5e9" }
   // sky
 ];
-const _conceptAccentFor = (i) => _CONCEPT_ACCENTS[i % _CONCEPT_ACCENTS.length];
+const _conceptAccentFor = (i) => {
+  const idx = Number.isFinite(i) ? Math.abs(Math.floor(i)) : 0;
+  return _CONCEPT_ACCENTS[idx % _CONCEPT_ACCENTS.length];
+};
 let _kcmInstanceSeq = 0;
 const _kcmT = (t, key, fallback) => {
   try {
@@ -37,7 +40,7 @@ const _deriveSpine = (main, branches) => {
   if (engine && typeof engine.adaptGenerated === "function" && typeof engine.deriveOutline === "function") {
     try {
       const graph = engine.adaptGenerated({ main, branches: list, structureType: "Key Concept Map" });
-      const byId = {};
+      const byId = /* @__PURE__ */ Object.create(null);
       graph.nodes.forEach((n) => {
         byId[n.id] = n;
       });
@@ -138,26 +141,28 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
           delayMs: 120 + branchIdx * 110
         });
       };
+      leftRefs.current.length = left.length;
+      rightRefs.current.length = right.length;
       leftRefs.current.forEach((el, i) => buildLine(el, "left", i, i));
       rightRefs.current.forEach((el, i) => buildLine(el, "right", i, i + mid));
       setLines(newLines);
       setDims({ w: cRect.width, h: cRect.height });
     };
     compute();
-    const rafId = requestAnimationFrame(compute);
-    const ro = new ResizeObserver(compute);
-    if (containerRef.current) ro.observe(containerRef.current);
-    window.addEventListener("resize", compute);
+    const rafId = typeof requestAnimationFrame === "function" ? requestAnimationFrame(compute) : null;
+    const ro = typeof ResizeObserver === "function" ? new ResizeObserver(compute) : null;
+    if (ro && containerRef.current) ro.observe(containerRef.current);
+    if (typeof window !== "undefined") window.addEventListener("resize", compute);
     return () => {
-      cancelAnimationFrame(rafId);
-      ro.disconnect();
-      window.removeEventListener("resize", compute);
+      if (rafId !== null && typeof cancelAnimationFrame === "function") cancelAnimationFrame(rafId);
+      if (ro) ro.disconnect();
+      if (typeof window !== "undefined") window.removeEventListener("resize", compute);
     };
-  }, [branches.length, main, main_en, mid, studyMode, revealedBranches.size]);
-  const allRevealed = branches.length > 0 && revealedBranches.size >= branches.length;
+  }, [safeBranches.length, main, main_en, mid, studyMode, revealedBranches.size]);
+  const allRevealed = safeBranches.length > 0 && revealedBranches.size >= safeBranches.length;
   const renderBranchCardContent = (b, bi, accent) => {
     if (!studyMode || revealedBranches.has(bi)) {
-      return /* @__PURE__ */ React.createElement(BranchItem, { branch: b, bIdx: bi });
+      return typeof BranchItem === "function" ? /* @__PURE__ */ React.createElement(BranchItem, { branch: b, bIdx: bi }) : null;
     }
     const detailCount = Array.isArray(b && b.items) ? b.items.length : 0;
     return /* @__PURE__ */ React.createElement(
@@ -189,7 +194,7 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
       "aria-label": `${_kcmT(t, "a11y.concept_map", "Concept map")}: ${main || ""}`,
       className: "max-w-7xl mx-auto my-8 px-4"
     },
-    /* @__PURE__ */ React.createElement("div", { className: "sr-only" }, /* @__PURE__ */ React.createElement("p", null, `${_kcmT(t, "a11y.concept_map", "Concept map")}: ${main || ""}${main_en ? ` (${main_en})` : ""}. ${branches.length} ${_kcmT(t, "a11y.branches", "branches")}.`), /* @__PURE__ */ React.createElement("ol", null, spine.filter((r) => r.type === "branch").map((r, i) => /* @__PURE__ */ React.createElement("li", { key: r.id }, `${branchWord} ${i + 1}: ${r.label}${r.items ? ` (${r.items} ${_kcmT(t, "a11y.details", "details")})` : ""}`)))),
+    /* @__PURE__ */ React.createElement("div", { className: "sr-only" }, /* @__PURE__ */ React.createElement("p", null, `${_kcmT(t, "a11y.concept_map", "Concept map")}: ${main || ""}${main_en ? ` (${main_en})` : ""}. ${safeBranches.length} ${_kcmT(t, "a11y.branches", "branches")}.`), /* @__PURE__ */ React.createElement("ol", null, spine.filter((r) => r.type === "branch").map((r, i) => /* @__PURE__ */ React.createElement("li", { key: r.id }, `${branchWord} ${i + 1}: ${r.label}${r.items ? ` (${r.items} ${_kcmT(t, "a11y.details", "details")})` : ""}`)))),
     /* @__PURE__ */ React.createElement("style", null, `
                 @keyframes alloflow-concept-draw {
                     from { stroke-dashoffset: var(--allo-draw-len, 2000); }
@@ -232,7 +237,7 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
                     }
                 }
             `),
-    branches.length >= 2 && /* @__PURE__ */ React.createElement("div", { "data-kcm-toolbar": true, className: "no-print mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-indigo-200 bg-indigo-50/70 px-3 py-2" }, /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": _kcmT(t, "concept_map.focus_branch_aria", "Focus a branch"), className: "flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-900 mr-1" }, _kcmT(t, "concept_map.focus_label", "Focus"), ":"), /* @__PURE__ */ React.createElement(
+    safeBranches.length >= 2 && /* @__PURE__ */ React.createElement("div", { "data-kcm-toolbar": true, className: "no-print mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-indigo-200 bg-indigo-50/70 px-3 py-2" }, /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": _kcmT(t, "concept_map.focus_branch_aria", "Focus a branch"), className: "flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-900 mr-1" }, _kcmT(t, "concept_map.focus_label", "Focus"), ":"), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -281,10 +286,10 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
       {
         type: "button",
         "data-kcm-reveal-all": true,
-        onClick: () => setRevealedBranches(allRevealed ? /* @__PURE__ */ new Set() : new Set(branches.map((_, bi) => bi))),
+        onClick: () => setRevealedBranches(allRevealed ? /* @__PURE__ */ new Set() : new Set(safeBranches.map((_, bi) => bi))),
         className: "min-h-11 inline-flex items-center gap-1 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-800 hover:bg-indigo-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
       },
-      allRevealed ? _kcmT(t, "concept_map.hide_all", "Hide all") : `${_kcmT(t, "concept_map.reveal_all", "Reveal all")} (${revealedBranches.size}/${branches.length})`
+      allRevealed ? _kcmT(t, "concept_map.hide_all", "Hide all") : `${_kcmT(t, "concept_map.reveal_all", "Reveal all")} (${revealedBranches.size}/${safeBranches.length})`
     ))),
     /* @__PURE__ */ React.createElement(
       "div",
@@ -421,6 +426,7 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
                 e.currentTarget.style.boxShadow = `0 0 0 4px ${a.ring}`;
               },
               onBlur: (e) => {
+                if (e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) return;
                 e.currentTarget.style.boxShadow = `0 0 0 0 ${a.ring}`;
               }
             },
@@ -444,13 +450,13 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
           "aria-hidden": "true",
           className: "alloflow-concept-bubble relative w-52 h-52 rounded-full flex flex-col items-center justify-center text-center border-[6px] border-white transition-transform motion-reduce:transition-none duration-500 hover:scale-105 motion-reduce:hover:scale-100",
           style: {
-            background: "radial-gradient(circle at 30% 30%, #818cf8 0%, #6366f1 45%, #4338ca 100%)",
+            background: "radial-gradient(circle at 30% 30%, #4f46e5 0%, #4338ca 50%, #312e81 100%)",
             boxShadow: "0 0 50px rgba(99,102,241,0.45), 0 10px 30px rgba(67,56,202,0.25), inset 0 -10px 30px rgba(30,27,75,0.25)",
             animation: "alloflow-concept-breathe 4.2s ease-in-out infinite"
           }
         },
         /* @__PURE__ */ React.createElement("h3", { className: "font-black text-white text-base leading-tight relative z-10 drop-shadow-lg line-clamp-4 px-3" }, main),
-        main_en && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-100 mt-1.5 opacity-95 relative z-10 font-bold line-clamp-1 px-3" }, "(", main_en, ")")
+        main_en && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-white mt-1.5 relative z-10 font-bold line-clamp-1 px-3" }, "(", main_en, ")")
       )),
       /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col justify-between gap-8 py-4 z-10" }, right.map((b, i) => {
         const idx = i + mid;
@@ -484,6 +490,7 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
                 e.currentTarget.style.boxShadow = `0 0 0 4px ${a.ring}`;
               },
               onBlur: (e) => {
+                if (e.relatedTarget && e.currentTarget.contains(e.relatedTarget)) return;
                 e.currentTarget.style.boxShadow = `0 0 0 0 ${a.ring}`;
               }
             },
@@ -503,8 +510,10 @@ const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem, t }
     )
   );
 });
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.KeyConceptMapView = KeyConceptMapView;
+if (typeof window !== "undefined") {
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.KeyConceptMapView = KeyConceptMapView;
+}
 console.log("[KeyConceptMapModule] KeyConceptMapView registered.");
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.KeyConceptMapView = (typeof KeyConceptMapView !== 'undefined') ? KeyConceptMapView : null;

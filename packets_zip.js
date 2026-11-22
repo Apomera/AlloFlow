@@ -60,20 +60,22 @@
   }
 
   function create() {
-    var parts = [], central = [], offset = 0, done = false, seen = Object.create(null);
+    var parts = [], central = [], offset = 0, centralBytes = 0, done = false, seen = Object.create(null);
     var zip = {
       bytes: 0,
       count: 0,
       add: function (name, data) {
         if (done) throw new Error('The zip file is already finished.');
         var nameBytes = utf8(uniqueName(name || ('file' + central.length), seen));
+        if (nameBytes.length > 0xFFFF) throw new Error('File name is too long for a zip file.');
         var body = typeof data === 'string' ? utf8(data) : data instanceof Uint8Array ? data : new Uint8Array(data || 0);
-        if (central.length >= 65535 || offset + 30 + nameBytes.length + body.length > 0xFFFFFFFF) throw new Error('Too many files for one zip file.');
+        if (central.length >= 65535 || offset + 30 + nameBytes.length + body.length > 0xFFFFFFFF || centralBytes + 46 + nameBytes.length > 0xFFFFFFFF) throw new Error('Too many files for one zip file.');
         var crc = crc32(body);
         var head = new Uint8Array([].concat(u32(0x04034b50), u16(20), u16(UTF8_NAMES), u16(0), u16(0), u16(DOS_DATE), u32(crc), u32(body.length), u32(body.length), u16(nameBytes.length), u16(0)));
         parts.push(head, nameBytes, body);
         central.push({ name: nameBytes, crc: crc, size: body.length, offset: offset });
         offset += head.length + nameBytes.length + body.length;
+        centralBytes += 46 + nameBytes.length;
         zip.bytes = offset;
         zip.count = central.length;
         return crc;
@@ -103,16 +105,23 @@
     var r32 = function (p) { return (b[p] | (b[p + 1] << 8) | (b[p + 2] << 16) | (b[p + 3] << 24)) >>> 0; };
     var end = -1;
     var minEocd = Math.max(0, b.length - 65557);
-    for (var p = b.length - 22; p >= minEocd; p--) if (r32(p) === 0x06054b50) { end = p; break; }
+    for (var p = b.length - 22; p >= minEocd; p--) if (r32(p) === 0x06054b50 && p + 22 + r16(p + 20) === b.length) { end = p; break; }
     if (end < 0) return [];
     var n = r16(end + 10), at = r32(end + 16), out = [];
     var totalBytes = 0, maxTotalBytes = b.length * 2;
     var decode = typeof TextDecoder === 'function' ? function (x) { return new TextDecoder('utf-8').decode(x); } : function (x) { return String.fromCharCode.apply(null, x); };
+    var isSafeEntryName = function (name) {
+      if (!name || name.indexOf('\x00') >= 0 || name.indexOf('\\') >= 0 || name.charAt(0) === '/') return false;
+      var parts = name.split('/');
+      for (var k = 0; k < parts.length; k++) if (parts[k] === '..') return false;
+      return true;
+    };
     for (var i = 0; i < n; i++) {
       if (at + 46 > end || r32(at) !== 0x02014b50) break;
       var method = r16(at + 10);
       if (method !== 0) break;
-      var size = r32(at + 20), nameLength = r16(at + 28), extra = r16(at + 30), note = r16(at + 32), local = r32(at + 42), crc = r32(at + 16);
+      var size = r32(at + 20), uncompSize = r32(at + 24), nameLength = r16(at + 28), extra = r16(at + 30), note = r16(at + 32), local = r32(at + 42), crc = r32(at + 16);
+      if (uncompSize !== size) break;
       var nextAt = at + 46 + nameLength + extra + note;
       if (nextAt > end || local + 30 > end || r32(local) !== 0x04034b50) break;
       var name = decode(b.subarray(at + 46, at + 46 + nameLength));
@@ -120,7 +129,7 @@
       if (from > end || from + size > end || totalBytes + size > maxTotalBytes) break;
       totalBytes += size;
       var data = b.subarray(from, from + size);
-      out.push({ name: name, bytes: data, crcOk: crc32(data) === crc });
+      if (isSafeEntryName(name)) out.push({ name: name, bytes: data, crcOk: crc32(data) === crc });
       at = nextAt;
     }
     return out;

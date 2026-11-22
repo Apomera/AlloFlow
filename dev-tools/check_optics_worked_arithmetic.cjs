@@ -191,10 +191,10 @@ while ((sc = sleuthRe.exec(src)) !== null) {
   // substitution before the result, and the operands are not the claim.
   // The number must not be followed by "/", which is what distinguishes the
   // result from a numerator.
-  const mgSentence = why.match(/[Mm]agnification\s*=[^;]*/);
+  const mgSentence = why.match(/[Mm]agnification\s*=(?:[^.;]|\.(?!\s+[A-Z]))*/);
   let mgM = null;
   if (mgSentence) {
-    const eqs = [...mgSentence[0].matchAll(/=\s*([+\u2212\u2013-]?\d+(?:\.\d+)?)(?!\s*[\/\d])/g)];
+    const eqs = [...mgSentence[0].matchAll(/[=≈]\s*([+\u2212\u2013-]?\d+(?:\.\d+)?)(?!\s*[\/\d])/g)];
     if (eqs.length) mgM = [null, eqs[eqs.length - 1][1]];
   }
   if (mgM) {

@@ -732,23 +732,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var browning = state.browning || 0;
         var omColor = browning >= 1.4 ? '#92400e' : browning >= 0.9 ? '#fbbf24' : '#fef9c3';
         return h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-hidden': 'true' },
-          panTemp >= 300 ? h('ellipse', { cx: 140, cy: 95, rx: 110, ry: 55, fill: 'rgba(251,146,60,' + Math.min(0.6, (panTemp - 300) / 300) + ')', opacity: 0.6 }) : null,
+          panTemp >= 300 ? h('ellipse', { className: 'kl-maillard-glow kl-fx-decor', cx: 140, cy: 95, rx: 110, ry: 55, fill: 'rgba(251,146,60,' + Math.min(0.6, (panTemp - 300) / 300) + ')', opacity: 0.6 }) : null,
           h('ellipse', { cx: 140, cy: 100, rx: 100, ry: 30, fill: panColor, stroke: '#1c1410', strokeWidth: 2 }),
           h('ellipse', { cx: 140, cy: 95, rx: 92, ry: 25, fill: '#1c1410' }),
-          hasButter && !hasEggs ? h('ellipse', { cx: 140, cy: 95, rx: 60, ry: 16, fill: '#fde68a', opacity: 0.5 }) : null,
+          hasButter && !hasEggs ? h('g', null,
+            h('ellipse', { cx: 140, cy: 95, rx: 60, ry: 16, fill: '#fde68a', opacity: 0.5 }),
+            h('ellipse', { className: 'kl-catchlight-sheen kl-fx-decor', cx: 126, cy: 91, rx: 22, ry: 4, fill: 'rgba(255,255,255,0.34)' })
+          ) : null,
           hasEggs && !rolled ? h('g', null,
             h('ellipse', { cx: 140, cy: 95, rx: 80, ry: 22, fill: omColor, opacity: 0.97 }),
+            h('ellipse', { className: 'kl-catchlight-sheen kl-fx-decor', cx: 124, cy: 89, rx: 32, ry: 5.5, fill: 'rgba(255,255,255,0.28)' }),
             // Flat sheet — no curd bumps
-            t > 15 ? h('ellipse', { cx: 140, cy: 95, rx: 80, ry: 22, fill: omColor, stroke: 'rgba(0,0,0,0.1)', strokeWidth: 0.5 }) : null
+            t > 15 ? h('ellipse', { cx: 140, cy: 95, rx: 80, ry: 22, fill: omColor, stroke: 'rgba(0,0,0,0.1)', strokeWidth: 0.5 }) : null,
+            panTemp > 212 ? h('g', { className: 'kl-steam-wisp kl-fx-decor' },
+              h('path', { d: 'M 116 74 Q 119 64 115 53', stroke: 'rgba(226,232,240,0.52)', strokeWidth: 1.8, strokeLinecap: 'round', fill: 'none' }),
+              h('path', { d: 'M 162 74 Q 166 64 161 53', stroke: 'rgba(226,232,240,0.48)', strokeWidth: 1.8, strokeLinecap: 'round', fill: 'none' })
+            ) : null
           ) : null,
           // Rolled omelet — football shape
           rolled ? h('g', null,
             h('ellipse', { cx: 140, cy: 95, rx: 50, ry: 14, fill: omColor, stroke: 'rgba(180,140,80,0.6)', strokeWidth: 1 }),
+            h('ellipse', { className: 'kl-catchlight-sheen kl-fx-decor', cx: 132, cy: 91, rx: 20, ry: 3.2, fill: 'rgba(255,255,255,0.32)' }),
             // Roll seam
             h('path', { d: 'M 100 95 Q 140 100 180 95', stroke: 'rgba(140,100,40,0.5)', strokeWidth: 1, fill: 'none' })
           ) : null,
           h('rect', { x: 232, y: 90, width: 40, height: 14, fill: '#1c1410', rx: 3 }),
-          h('circle', { cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6' })
+          h('circle', { className: panTemp >= 220 ? 'kl-burner-glow' : undefined, cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6' })
         );
       }
     },
@@ -879,7 +888,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var vegAlpha = charred ? 0.55 : 1;
         return h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-hidden': 'true' },
           // Wok glow / flame at high heat
-          panTemp >= 400 ? h('ellipse', { cx: 140, cy: 95, rx: 115, ry: 60, fill: 'rgba(251,146,60,0.7)' }) : null,
+          panTemp >= 400 ? h('ellipse', { className: 'kl-maillard-glow kl-fx-decor', cx: 140, cy: 95, rx: 115, ry: 60, fill: 'rgba(251,146,60,0.7)' }) : null,
           // Wok shape (deeper than pan) with metallic rim specular highlight
           h('ellipse', { cx: 140, cy: 100, rx: 100, ry: 35, fill: panColor, stroke: '#1c1410', strokeWidth: 2 }),
           h('path', { d: 'M 56 86 Q 140 62 224 86', fill: 'none', stroke: 'rgba(255,244,214,0.34)', strokeWidth: 2, strokeLinecap: 'round' }),
@@ -887,7 +896,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // Oil sheen with studio highlight
           hasOil ? h('g', null,
             h('ellipse', { cx: 140, cy: 95, rx: 70, ry: 18, fill: 'rgba(255,220,120,0.42)' }),
-            h('ellipse', { cx: 122, cy: 90, rx: 24, ry: 4.5, fill: 'rgba(255,255,255,0.2)' })
+            h('ellipse', { className: 'kl-catchlight-sheen kl-fx-decor', cx: 122, cy: 90, rx: 24, ry: 4.5, fill: 'rgba(255,255,255,0.24)' })
           ) : null,
           // Aromatics (small bright dots)
           // Stuck-on patch when the wok sits unattended
@@ -1027,24 +1036,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           else if (browning >= 1) crustColor = '#d97706';  // light brown
         }
         return h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-hidden': 'true' },
-          panTemp >= 300 ? h('ellipse', { cx: 140, cy: 95, rx: 110, ry: 55, fill: 'rgba(251,146,60,' + Math.min(0.6, (panTemp - 300) / 300) + ')' }) : null,
+          panTemp >= 300 ? h('ellipse', { className: 'kl-maillard-glow kl-fx-decor', cx: 140, cy: 95, rx: 110, ry: 55, fill: 'rgba(251,146,60,' + Math.min(0.6, (panTemp - 300) / 300) + ')' }) : null,
           h('ellipse', { cx: 140, cy: 100, rx: 100, ry: 30, fill: panColor, stroke: '#1c1410', strokeWidth: 2 }),
           h('ellipse', { cx: 140, cy: 95, rx: 92, ry: 25, fill: '#1c1410' }),
           // Oil sheen
-          hasOil && !hasChicken ? h('ellipse', { cx: 140, cy: 95, rx: 65, ry: 16, fill: 'rgba(255,220,120,0.4)' }) : null,
+          hasOil && !hasChicken ? h('g', null,
+            h('ellipse', { cx: 140, cy: 95, rx: 65, ry: 16, fill: 'rgba(255,220,120,0.4)' }),
+            h('ellipse', { className: 'kl-catchlight-sheen kl-fx-decor', cx: 124, cy: 91, rx: 22, ry: 4, fill: 'rgba(255,255,255,0.26)' })
+          ) : null,
           // Chicken breast — irregular oval shape
           hasChicken ? h('g', null,
             h('path', { d: 'M 95 85 Q 90 95 100 105 Q 110 110 140 110 Q 175 109 185 100 Q 188 88 175 82 Q 145 75 110 78 Q 100 80 95 85 Z',
               fill: crustColor, stroke: 'rgba(120,53,15,0.7)', strokeWidth: 1 }),
+            // Golden Maillard crust catchlight shimmer
+            browning >= 1 ? h('ellipse', { className: 'kl-catchlight-sheen kl-fx-decor', cx: 132, cy: 86, rx: 26, ry: 5, fill: 'rgba(254,215,170,0.28)' }) : null,
             // Sear marks once a crust has started
             browning >= 2 ? h('g', null,
               h('path', { d: 'M 105 92 L 175 90', stroke: 'rgba(60,30,10,0.5)', strokeWidth: 1.5 }),
               h('path', { d: 'M 110 100 L 170 102', stroke: 'rgba(60,30,10,0.5)', strokeWidth: 1.5 })
             ) : null,
+            // Rising sear vapor wisps
+            panTemp >= 280 ? h('g', { className: 'kl-steam-wisp kl-fx-decor' },
+              h('path', { d: 'M 114 72 Q 118 60 112 48', stroke: 'rgba(226,232,240,0.5)', strokeWidth: 2, strokeLinecap: 'round', fill: 'none' }),
+              h('path', { d: 'M 156 71 Q 160 59 154 47', stroke: 'rgba(226,232,240,0.46)', strokeWidth: 2, strokeLinecap: 'round', fill: 'none' })
+            ) : null,
             // Juice pooling if rest started
             state.itemsInPan.length > 0 && panTemp < 200 ? h('ellipse', { cx: 140, cy: 105, rx: 50, ry: 8, fill: 'rgba(180,90,40,0.4)' }) : null,
             // Smoke if burning, or the oil is past its smoke point
-            (browning >= 20 && panTemp > 440) || state.oilSmoking ? h('g', null,
+            (browning >= 20 && panTemp > 440) || state.oilSmoking ? h('g', { className: 'kl-steam-wisp' },
               h('path', { d: 'M 120 70 Q 115 50 125 35', stroke: 'rgba(40,40,40,0.7)', strokeWidth: 3, fill: 'none' }),
               h('path', { d: 'M 160 72 Q 165 55 155 40', stroke: 'rgba(40,40,40,0.7)', strokeWidth: 3, fill: 'none' })
             ) : null,
@@ -1054,7 +1073,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               state.hideReadouts ? 'Internal: probe to read' : 'Internal: ' + Math.round(foodT) + '°F')
           ) : null,
           h('rect', { x: 232, y: 90, width: 40, height: 14, fill: '#1c1410', rx: 3 }),
-          h('circle', { cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6' })
+          h('circle', { className: panTemp >= 220 ? 'kl-burner-glow' : undefined, cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6' })
         );
       }
     },
@@ -1165,14 +1184,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // Oven cavity (rectangle with rounded corners)
           h('rect', { x: 30, y: 20, width: 220, height: 160, fill: '#1c1410', stroke: '#3f2419', strokeWidth: 3, rx: 12 }),
           // Heating elements (top + bottom glowing bars when oven is hot)
-          ovenTemp >= 200 ? h('g', null,
+          ovenTemp >= 200 ? h('g', { className: 'kl-burner-glow' },
             h('line', { x1: 50, y1: 32, x2: 230, y2: 32,
               stroke: ovenTemp >= 400 ? '#fb923c' : '#a16207', strokeWidth: 3, opacity: 0.8, strokeDasharray: '4 2' }),
             h('line', { x1: 50, y1: 168, x2: 230, y2: 168,
               stroke: ovenTemp >= 400 ? '#fb923c' : '#a16207', strokeWidth: 3, opacity: 0.8, strokeDasharray: '4 2' })
           ) : null,
           // Glow inside oven when hot
-          ovenTemp >= 350 ? h('rect', { x: 35, y: 25, width: 210, height: 150, fill: 'rgba(251,146,60,' + Math.min(0.25, (ovenTemp - 300) / 600) + ')', rx: 10 }) : null,
+          ovenTemp >= 350 ? h('rect', { className: 'kl-maillard-glow kl-fx-decor', x: 35, y: 25, width: 210, height: 150, fill: 'rgba(251,146,60,' + Math.min(0.25, (ovenTemp - 300) / 600) + ')', rx: 10 }) : null,
           // Sheet pan with veg
           hasVeg ? h('g', null,
             // Sheet pan (perspective shape)
@@ -1319,12 +1338,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           ),
           h('rect', { x: 30, y: 20, width: 220, height: 180, fill: '#1c1410', stroke: '#573624', strokeWidth: 3, rx: 12 }),
           // Heating elements
-          ovenTemp >= 200 ? h('g', null,
+          ovenTemp >= 200 ? h('g', { className: 'kl-burner-glow' },
             h('line', { x1: 50, y1: 32, x2: 230, y2: 32, stroke: ovenTemp >= 400 ? '#fb923c' : '#a16207', strokeWidth: 3.5, opacity: 0.9, strokeDasharray: '4 2' }),
             h('line', { x1: 50, y1: 188, x2: 230, y2: 188, stroke: ovenTemp >= 400 ? '#fb923c' : '#a16207', strokeWidth: 3.5, opacity: 0.9, strokeDasharray: '4 2' })
           ) : null,
           // Hot radiant cavity glow + convection air wisps
-          h('rect', { x: 35, y: 25, width: 210, height: 170, fill: 'url(#kl-oven-glow)', rx: 10 }),
+          h('rect', { className: ovenTemp >= 320 ? 'kl-maillard-glow kl-fx-decor' : undefined, x: 35, y: 25, width: 210, height: 170, fill: 'url(#kl-oven-glow)', rx: 10 }),
           ovenTemp >= 300 ? h('g', { className: 'kl-steam-wisp', opacity: 0.45 },
             h('path', { d: 'M 54 156 Q 48 112 62 72', fill: 'none', stroke: '#fdba74', strokeWidth: 1.5, strokeDasharray: '4 4', strokeLinecap: 'round' }),
             h('path', { d: 'M 226 156 Q 232 112 218 72', fill: 'none', stroke: '#fdba74', strokeWidth: 1.5, strokeDasharray: '4 4', strokeLinecap: 'round' })
@@ -1556,12 +1575,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           ) : null,
           // Simmer bubbles when tomatoes added
           hasTomatoes && panTemp > 240 ? h('g', null,
-            h('circle', { cx: 110, cy: 92, r: 2.5, fill: 'rgba(252,165,165,0.6)' }),
-            h('circle', { cx: 140, cy: 95, r: 2, fill: 'rgba(252,165,165,0.6)' }),
-            h('circle', { cx: 175, cy: 91, r: 2.5, fill: 'rgba(252,165,165,0.6)' })
+            h('circle', { className: 'kl-bubble-simmer', cx: 110, cy: 92, r: 2.5, fill: 'rgba(252,165,165,0.68)' }),
+            h('circle', { className: 'kl-bubble-simmer', cx: 140, cy: 95, r: 2.2, fill: 'rgba(252,165,165,0.68)', style: { animationDelay: '-0.6s' } }),
+            h('circle', { className: 'kl-bubble-simmer', cx: 175, cy: 91, r: 2.5, fill: 'rgba(252,165,165,0.68)', style: { animationDelay: '-1.2s' } }),
+            h('g', { className: 'kl-steam-wisp kl-fx-decor' },
+              h('path', { d: 'M 118 76 Q 122 65 116 54', stroke: 'rgba(254,226,226,0.48)', strokeWidth: 1.8, strokeLinecap: 'round', fill: 'none' }),
+              h('path', { d: 'M 158 75 Q 162 64 156 53', stroke: 'rgba(254,226,226,0.44)', strokeWidth: 1.8, strokeLinecap: 'round', fill: 'none' })
+            )
           ) : null,
           h('rect', { x: 232, y: 90, width: 40, height: 14, fill: '#1c1410', rx: 3 }),
-          h('circle', { cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6' })
+          h('circle', { className: panTemp >= 220 ? 'kl-burner-glow' : undefined, cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6' })
         );
       }
     },
@@ -1661,7 +1684,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var panColor = panTemp >= 400 ? '#7c2d12' : panTemp >= 320 ? '#a3461a' : panTemp >= 220 ? '#78350f' : '#57534e';
         var bubbleSpots = [[112, 92], [128, 88], [146, 94], [162, 89], [175, 95], [138, 99], [155, 100]];
         return h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-hidden': 'true' },
-          panTemp >= 300 ? h('ellipse', { cx: 140, cy: 95, rx: 110, ry: 55, fill: 'rgba(251,146,60,' + Math.min(0.6, (panTemp - 300) / 300) + ')', opacity: 0.6 }) : null,
+          panTemp >= 300 ? h('ellipse', { className: 'kl-maillard-glow kl-fx-decor', cx: 140, cy: 95, rx: 110, ry: 55, fill: 'rgba(251,146,60,' + Math.min(0.6, (panTemp - 300) / 300) + ')', opacity: 0.6 }) : null,
           h('ellipse', { cx: 140, cy: 100, rx: 100, ry: 30, fill: panColor, stroke: '#1c1410', strokeWidth: 2 }),
           h('ellipse', { cx: 140, cy: 95, rx: 92, ry: 25, fill: '#1c1410' }),
           hasFat && !hasBatter ? h('ellipse', { cx: 140, cy: 95, rx: 60, ry: 15, fill: 'rgba(255,220,120,0.4)' }) : null,
@@ -1669,18 +1692,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('ellipse', { cx: 140, cy: 95, rx: 66, ry: 17, fill: topColor, stroke: rimColor, strokeWidth: 3.5 }),
             dryEdge ? h('ellipse', { cx: 140, cy: 95, rx: 60, ry: 14, fill: 'none', stroke: 'rgba(120,80,30,0.45)', strokeWidth: 1, strokeDasharray: '3 3' }) : null,
             bubbles ? h('g', null, bubbleSpots.map(function(p, i) {
-              return h('circle', { key: i, cx: p[0], cy: p[1], r: foodT >= 150 ? 2.6 : 1.8, fill: 'rgba(255,255,255,0.55)', stroke: 'rgba(120,80,30,0.5)', strokeWidth: 0.6 });
+              return h('circle', { key: i, className: 'kl-bubble-simmer', cx: p[0], cy: p[1], r: foodT >= 150 ? 2.6 : 1.8, fill: 'rgba(255,255,255,0.6)', stroke: 'rgba(120,80,30,0.5)', strokeWidth: 0.6, style: { animationDelay: (-(i % 5) * 0.36) + 's' } });
             })) : null,
             flip ? h('text', { x: 140, y: 99, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: 'rgba(60,30,10,0.7)' }, 'flipped') : null,
-            panTemp > 212 && foodT < 205 ? h('g', { style: { filter: 'blur(0.7px)' } },
+            panTemp > 212 && foodT < 205 ? h('g', { className: 'kl-steam-wisp kl-fx-decor', style: { filter: 'blur(0.7px)' } },
               h('path', { d: 'M 115 75 Q 118 67 115 58', stroke: 'rgba(220,220,230,0.5)', strokeWidth: 2, fill: 'none' }),
               h('path', { d: 'M 165 75 Q 168 67 165 58', stroke: 'rgba(220,220,230,0.5)', strokeWidth: 2, fill: 'none' })) : null,
-            browning >= scale[3] || state.oilSmoking ? h('g', null,
+            browning >= scale[3] || state.oilSmoking ? h('g', { className: 'kl-steam-wisp' },
               h('path', { d: 'M 130 70 Q 135 50 125 35 Q 115 25 120 10', stroke: 'rgba(60,60,60,0.6)', strokeWidth: 3, fill: 'none' }),
               h('path', { d: 'M 160 72 Q 155 55 165 40 Q 175 28 168 12', stroke: 'rgba(60,60,60,0.6)', strokeWidth: 3, fill: 'none' })) : null
           ) : null,
           h('rect', { x: 232, y: 90, width: 40, height: 14, fill: '#1c1410', rx: 3 }),
-          h('circle', { cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6' })
+          h('circle', { className: panTemp >= 220 ? 'kl-burner-glow' : undefined, cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6' })
         );
       }
     },
@@ -1960,14 +1983,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var edge = browning >= 1.5 ? '#1c1410' : browning >= 0.8 ? '#92400e' : browning >= 0.4 ? '#d97706' : 'rgba(0,0,0,0.12)';
         var panColor = panTemp >= 400 ? '#7c2d12' : panTemp >= 320 ? '#a3461a' : panTemp >= 220 ? '#78350f' : '#57534e';
         return h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-hidden': 'true' },
-          panTemp >= 300 ? h('ellipse', { cx: 140, cy: 95, rx: 110, ry: 55, fill: 'rgba(251,146,60,' + Math.min(0.6, (panTemp - 300) / 300) + ')', opacity: 0.6 }) : null,
+          panTemp >= 300 ? h('ellipse', { className: 'kl-maillard-glow kl-fx-decor', cx: 140, cy: 95, rx: 110, ry: 55, fill: 'rgba(251,146,60,' + Math.min(0.6, (panTemp - 300) / 300) + ')', opacity: 0.6 }) : null,
           h('ellipse', { cx: 140, cy: 100, rx: 100, ry: 30, fill: panColor, stroke: '#1c1410', strokeWidth: 2 }),
           h('ellipse', { cx: 140, cy: 95, rx: 92, ry: 25, fill: '#1c1410' }),
           hasButter && !hasEgg ? h('ellipse', { cx: 140, cy: 95, rx: 55, ry: 14, fill: 'rgba(253,230,138,0.5)' }) : null,
           hasEgg ? h('g', null,
             h('path', { d: 'M 90 92 Q 95 72 125 74 Q 150 66 175 78 Q 195 88 185 104 Q 170 116 140 114 Q 105 114 92 104 Q 85 98 90 92 Z', fill: 'rgba(255,255,255,' + whiteAlpha + ')', stroke: edge, strokeWidth: browning >= 0.4 ? 2.5 : 1 }),
             h('ellipse', { cx: 142, cy: 92, rx: 17, ry: 12, fill: yolkColor, stroke: 'rgba(120,53,15,0.35)', strokeWidth: 0.8 }),
-            foodT < 160 ? h('ellipse', { cx: 136, cy: 88, rx: 5, ry: 3, fill: 'rgba(255,255,255,0.5)' }) : null,
+            foodT < 160 ? h('ellipse', { className: 'kl-catchlight-sheen kl-fx-decor', cx: 136, cy: 88, rx: 5, ry: 3, fill: 'rgba(255,255,255,0.55)' }) : null,
             panTemp > 212 && foodT < 205 ? h('g', { className: 'kl-steam-wisp', style: { filter: 'blur(0.7px)' } },
               h('path', { d: 'M 115 68 Q 118 60 115 51', stroke: 'rgba(226,232,240,0.58)', strokeWidth: 2, strokeLinecap: 'round', fill: 'none' }),
               h('path', { d: 'M 165 68 Q 168 60 165 51', stroke: 'rgba(226,232,240,0.58)', strokeWidth: 2, strokeLinecap: 'round', fill: 'none' })) : null,
@@ -2117,7 +2140,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var dryHot = hasRice && moisture <= 0 && panTemp > 280;
         var bubbleEls = [];
         for (var i = 0; i < bubbles; i++) {
-          bubbleEls.push(h('circle', { key: 'b' + i, cx: innerX + 8 + ((i * 37) % (innerW - 16)), cy: floorY - riceH - 3 - ((i * 23) % bubbleZone), r: 1.5 + (i % 3), fill: 'rgba(255,255,255,0.55)' }));
+          bubbleEls.push(h('circle', { key: 'b' + i, className: 'kl-bubble-simmer', cx: innerX + 8 + ((i * 37) % (innerW - 16)), cy: floorY - riceH - 3 - ((i * 23) % bubbleZone), r: 1.5 + (i % 3), fill: 'rgba(255,255,255,0.62)', style: { animationDelay: (-(i % 6) * 0.32) + 's' } }));
         }
         var steamEls = [];
         if (boiling) {
@@ -4131,12 +4154,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
     var st = document.createElement('style');
     st.id = 'allo-kitchenlab-visual-css';
     st.textContent = [
-      '@keyframes kl-steam-rise { 0% { transform: translateY(2px); opacity: 0.25; } 50% { transform: translateY(-4px); opacity: 0.72; } 100% { transform: translateY(2px); opacity: 0.25; } }',
-      '@keyframes kl-beacon-pulse { 0% { opacity: 0.35; } 50% { opacity: 0.85; } 100% { opacity: 0.35; } }',
-      '[data-stem-tool-shell="kitchenLab"] .kl-steam-wisp { animation: kl-steam-rise 2.8s ease-in-out infinite; }',
+      '@keyframes kl-steam-rise { 0% { transform: translateY(3px) scaleX(0.97); opacity: 0.2; } 50% { transform: translateY(-4.5px) scaleX(1.04); opacity: 0.78; } 100% { transform: translateY(-8px) scaleX(0.99); opacity: 0.14; } }',
+      '@keyframes kl-bubble-simmer { 0% { transform: translateY(2px) scale(0.74); opacity: 0.32; } 55% { transform: translateY(-3.5px) scale(1.16); opacity: 0.92; } 100% { transform: translateY(-6.5px) scale(0.88); opacity: 0.15; } }',
+      '@keyframes kl-maillard-shimmer { 0%, 100% { opacity: 0.42; transform: scale(0.985); } 50% { opacity: 0.82; transform: scale(1.022); } }',
+      '@keyframes kl-catchlight-sheen { 0%, 100% { opacity: 0.24; transform: translateX(-2px); } 50% { opacity: 0.68; transform: translateX(3px); } }',
+      '@keyframes kl-beacon-pulse { 0%, 100% { opacity: 0.32; } 50% { opacity: 0.86; } }',
+      '@keyframes kl-beacon-ring { 0% { opacity: 0.68; transform: scale(0.86); } 100% { opacity: 0.04; transform: scale(1.68); } }',
+      '@keyframes kl-burner-glow { 0%, 100% { opacity: 0.38; } 50% { opacity: 0.82; } }',
+      '[data-stem-tool-shell="kitchenLab"] .kl-steam-wisp { transform-box: fill-box; transform-origin: center bottom; animation: kl-steam-rise 3.1s ease-in-out infinite; }',
+      '[data-stem-tool-shell="kitchenLab"] .kl-bubble-simmer { transform-box: fill-box; transform-origin: center; animation: kl-bubble-simmer 1.9s ease-in-out infinite; }',
+      '[data-stem-tool-shell="kitchenLab"] .kl-maillard-glow { transform-box: fill-box; transform-origin: center; animation: kl-maillard-shimmer 3.2s ease-in-out infinite; }',
+      '[data-stem-tool-shell="kitchenLab"] .kl-catchlight-sheen { animation: kl-catchlight-sheen 3.6s ease-in-out infinite; }',
       '[data-stem-tool-shell="kitchenLab"] .kl-temp-beacon { animation: kl-beacon-pulse 2.2s ease-in-out infinite; }',
-      '.theme-contrast [data-stem-tool-shell="kitchenLab"] .kl-steam-wisp, .theme-contrast [data-stem-tool-shell="kitchenLab"] .kl-temp-beacon { animation: none !important; }',
-      '@media (prefers-reduced-motion: reduce) { [data-stem-tool-shell="kitchenLab"] .kl-steam-wisp, [data-stem-tool-shell="kitchenLab"] .kl-temp-beacon { animation: none !important; transform: none !important; } }'
+      '[data-stem-tool-shell="kitchenLab"] .kl-beacon-ring { transform-box: fill-box; transform-origin: center; animation: kl-beacon-ring 2.3s ease-out infinite; }',
+      '[data-stem-tool-shell="kitchenLab"] .kl-burner-glow { animation: kl-burner-glow 2.5s ease-in-out infinite; }',
+      '.theme-contrast [data-stem-tool-shell="kitchenLab"] .kl-steam-wisp, .theme-contrast [data-stem-tool-shell="kitchenLab"] .kl-bubble-simmer, .theme-contrast [data-stem-tool-shell="kitchenLab"] .kl-maillard-glow, .theme-contrast [data-stem-tool-shell="kitchenLab"] .kl-catchlight-sheen, .theme-contrast [data-stem-tool-shell="kitchenLab"] .kl-temp-beacon, .theme-contrast [data-stem-tool-shell="kitchenLab"] .kl-beacon-ring, .theme-contrast [data-stem-tool-shell="kitchenLab"] .kl-burner-glow { animation: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="kitchenLab"] .kl-fx-decor { opacity: 0 !important; }',
+      '@media (prefers-reduced-motion: reduce) { [data-stem-tool-shell="kitchenLab"] .kl-steam-wisp, [data-stem-tool-shell="kitchenLab"] .kl-bubble-simmer, [data-stem-tool-shell="kitchenLab"] .kl-maillard-glow, [data-stem-tool-shell="kitchenLab"] .kl-catchlight-sheen, [data-stem-tool-shell="kitchenLab"] .kl-temp-beacon, [data-stem-tool-shell="kitchenLab"] .kl-beacon-ring, [data-stem-tool-shell="kitchenLab"] .kl-burner-glow { animation: none !important; transform: none !important; } [data-stem-tool-shell="kitchenLab"] .kl-beacon-ring { opacity: 0.28 !important; } }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -4347,7 +4381,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
           // Specular glass highlight strip across temperature zones
           h('rect', { x: 12, y: 22, width: 316, height: 4, rx: 2, fill: '#ffffff', opacity: 0.22 }),
           // Calibrated temperature-zone beacon halo & needle
-          h('circle', { className: 'kl-temp-beacon', cx: px, cy: 27, r: 8.5, fill: z.ink || z.color, opacity: 0.34 }),
+          h('circle', { className: 'kl-beacon-ring kl-fx-decor', cx: px, cy: 27, r: 7.5, fill: 'none', stroke: z.ink || z.color, strokeWidth: 1.5 }),
+          h('circle', { className: 'kl-temp-beacon kl-fx-decor', cx: px, cy: 27, r: 8.5, fill: z.ink || z.color, opacity: 0.34 }),
           h('line', { x1: px, y1: 18, x2: px, y2: 36, stroke: '#fde68a', strokeWidth: 2.2 }),
           h('circle', { cx: px, cy: 27, r: 4.2, fill: '#fde68a', stroke: '#1c1410', strokeWidth: 1.4 }),
           h('text', { x: 12, y: 47, fill: '#cbd5e1', fontSize: 10, fontWeight: 700 }, fmtT(40)),
@@ -4552,7 +4587,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
                 h('line', { x1: 24, y1: 62, x2: 336, y2: 62, stroke: '#64748b', strokeWidth: 1.2 }),
                 h('polyline', { fill: 'none', stroke: '#f87171', strokeWidth: 2.4, strokeLinejoin: 'round', points: pts.join(' ') }),
                 h('line', { x1: curX, y1: 14, x2: curX, y2: 62, stroke: zone.ink || zone.color, strokeWidth: 1.8, strokeDasharray: '3 2' }),
-                h('circle', { className: 'kl-temp-beacon', cx: curX, cy: curY, r: 9, fill: zone.ink || zone.color, opacity: 0.34 }),
+                h('circle', { className: 'kl-beacon-ring kl-fx-decor', cx: curX, cy: curY, r: 7.5, fill: 'none', stroke: zone.ink || zone.color, strokeWidth: 1.4 }),
+                h('circle', { className: 'kl-temp-beacon kl-fx-decor', cx: curX, cy: curY, r: 9, fill: zone.ink || zone.color, opacity: 0.34 }),
                 h('circle', { cx: curX, cy: curY, r: 4.5, fill: zone.ink || zone.color, stroke: '#0f172a', strokeWidth: 1.5 }),
                 h('text', { x: (sx(40) + sx(140)) / 2, y: 14, textAnchor: 'middle', fill: '#fca5a5', fontSize: 10, fontWeight: 800 }, __alloT('stem.kitchenlab.svg_danger_zone', 'DANGER ZONE')),
                 h('text', { x: sx(40), y: 76, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 10, fontWeight: 700 }, fmtT(40)),
@@ -7462,23 +7498,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         var pieces = [[100, 90, 14, 6], [122, 97, 12, 5], [143, 89, 15, 6], [165, 96, 12, 5], [184, 91, 13, 6], [112, 102, 11, 4], [154, 103, 12, 4]];
         return h('div', { style: { display: 'flex', justifyContent: 'center', padding: '8px 0' } },
           h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-hidden': 'true' },
-            panTemp >= 300 ? h('ellipse', { cx: 140, cy: 95, rx: 110, ry: 55, fill: 'rgba(251,146,60,' + Math.min(0.6, (panTemp - 300) / 300) + ')', opacity: 0.6 }) : null,
+            panTemp >= 300 ? h('ellipse', { className: 'kl-maillard-glow kl-fx-decor', cx: 140, cy: 95, rx: 110, ry: 55, fill: 'rgba(251,146,60,' + Math.min(0.6, (panTemp - 300) / 300) + ')', opacity: 0.6 }) : null,
             h('ellipse', { cx: 140, cy: 100, rx: 100, ry: 30, fill: panColor, stroke: '#1c1410', strokeWidth: 2 }),
             h('ellipse', { cx: 140, cy: 95, rx: 92, ry: 25, fill: '#1c1410' }),
-            hasFat ? h('ellipse', { cx: 140, cy: 95, rx: 65, ry: 16, fill: 'rgba(255,220,120,0.35)' }) : null,
+            hasFat ? h('g', null,
+              h('ellipse', { cx: 140, cy: 95, rx: 65, ry: 16, fill: 'rgba(255,220,120,0.35)' }),
+              h('ellipse', { className: 'kl-catchlight-sheen kl-fx-decor', cx: 122, cy: 91, rx: 22, ry: 4, fill: 'rgba(255,255,255,0.24)' })
+            ) : null,
             hasFood && state.unattended ? h('ellipse', { cx: 145, cy: 99, rx: 34, ry: 8, fill: 'rgba(28,20,16,0.85)', stroke: '#7c2d12', strokeWidth: 1 }) : null,
             hasFood ? h('g', null, pieces.map(function(p, i) {
               return h('ellipse', { key: i, cx: p[0], cy: p[1], rx: p[2], ry: p[3], fill: pieceColor, stroke: 'rgba(0,0,0,0.25)', strokeWidth: 0.6 });
             })) : null,
-            steaming ? h('g', { style: { filter: 'blur(0.7px)' } },
+            steaming ? h('g', { className: 'kl-steam-wisp kl-fx-decor', style: { filter: 'blur(0.7px)' } },
               h('path', { d: 'M 110 78 Q 113 70 110 60', stroke: 'rgba(220,220,230,0.5)', strokeWidth: 2, fill: 'none' }),
               h('path', { d: 'M 140 75 Q 145 65 138 55', stroke: 'rgba(220,220,230,0.5)', strokeWidth: 2, fill: 'none' }),
               h('path', { d: 'M 170 78 Q 173 70 170 60', stroke: 'rgba(220,220,230,0.5)', strokeWidth: 2, fill: 'none' })) : null,
-            smoking ? h('g', null,
+            smoking ? h('g', { className: 'kl-steam-wisp' },
               h('path', { d: 'M 130 70 Q 135 50 125 35 Q 115 25 120 10', stroke: 'rgba(60,60,60,0.6)', strokeWidth: 3, fill: 'none' }),
               h('path', { d: 'M 160 72 Q 155 55 165 40 Q 175 28 168 12', stroke: 'rgba(60,60,60,0.6)', strokeWidth: 3, fill: 'none' })) : null,
             h('rect', { x: 232, y: 90, width: 40, height: 14, fill: '#1c1410', rx: 3 }),
-            h('circle', { cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6' })));
+            h('circle', { className: panTemp >= 220 ? 'kl-burner-glow' : undefined, cx: 140, cy: 130, r: 70, fill: 'none', stroke: panTemp >= 220 ? '#fb923c' : '#52525b', strokeWidth: 2, opacity: 0.4, strokeDasharray: '4 6' })));
       }
       function renderDefaultPanVisual(h, state) {
         var panTemp = state.panTemp;
@@ -7504,7 +7543,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
         return h('div', { style: { display: 'flex', justifyContent: 'center', padding: '8px 0' } },
           h('svg', { width: 280, height: 180, viewBox: '0 0 280 180', 'aria-label': __alloT('stem.kitchenlab.visual_pan', 'Visual pan'), 'aria-hidden': 'true' },
             // Glow / heat shimmer
-            panTemp >= 300 ? h('ellipse', { cx: 140, cy: 95, rx: 110, ry: 55, fill: glow, opacity: 0.6 }) : null,
+            panTemp >= 300 ? h('ellipse', { className: 'kl-maillard-glow kl-fx-decor', cx: 140, cy: 95, rx: 110, ry: 55, fill: glow, opacity: 0.6 }) : null,
             // Pan rim with studio specular highlight
             h('ellipse', { cx: 140, cy: 100, rx: 100, ry: 30, fill: panColor, stroke: '#1c1410', strokeWidth: 2 }),
             h('path', { d: 'M 58 88 Q 140 68 222 88', fill: 'none', stroke: 'rgba(255,244,214,0.34)', strokeWidth: 1.8, strokeLinecap: 'round' }),
@@ -7513,10 +7552,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             // Butter (when added, before fully melted)
             hasButter && activeTime < 8 ? h('rect', { x: 130, y: 87, width: 20, height: 14, fill: '#fef3c7', rx: 2, opacity: 0.9 }) : null,
             // Butter pool (melted)
-            hasButter && !hasEggs ? h('ellipse', { cx: 140, cy: 95, rx: 60, ry: 16, fill: '#fde68a', opacity: 0.5 }) : null,
+            hasButter && !hasEggs ? h('g', null,
+              h('ellipse', { cx: 140, cy: 95, rx: 60, ry: 16, fill: '#fde68a', opacity: 0.5 }),
+              h('ellipse', { className: 'kl-catchlight-sheen kl-fx-decor', cx: 126, cy: 91, rx: 20, ry: 3.5, fill: 'rgba(255,255,255,0.32)' })
+            ) : null,
             // Eggs
             hasEggs ? h('g', null,
               h('ellipse', { cx: 140, cy: 95, rx: 78, ry: 22, fill: eggsColor, opacity: 0.95 }),
+              h('ellipse', { className: 'kl-catchlight-sheen kl-fx-decor', cx: 124, cy: 89, rx: 28, ry: 5, fill: 'rgba(255,255,255,0.24)' }),
               // A patch catching on the bottom while the pan sits unattended
               state.unattended ? h('ellipse', { cx: 150, cy: 100, rx: 26, ry: 7, fill: 'rgba(146,64,14,0.75)' }) : null,
               // Curd bumps
@@ -8163,10 +8206,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
               h('line', { x1: 16 + (170 / 300) * 308, y1: 13, x2: 16 + (170 / 300) * 308, y2: 30, stroke: 'rgba(154,52,18,0.5)', strokeWidth: 1, strokeDasharray: '2 2' }),
               h('line', { x1: 16 + (250 / 300) * 308, y1: 13, x2: 16 + (250 / 300) * 308, y2: 30, stroke: 'rgba(153,27,27,0.55)', strokeWidth: 1, strokeDasharray: '2 2' }),
               // Calibrated temperature beacon halo + pointer
-              h('circle', { className: 'kl-temp-beacon', cx: mx, cy: 21, r: 9.5, fill: '#ea580c', opacity: 0.28 }),
+              h('circle', { className: 'kl-beacon-ring kl-fx-decor', cx: mx, cy: 21, r: 8, fill: 'none', stroke: '#ea580c', strokeWidth: 1.5 }),
+              h('circle', { className: 'kl-temp-beacon kl-fx-decor', cx: mx, cy: 21, r: 9.5, fill: '#ea580c', opacity: 0.28 }),
               h('line', { x1: mx, y1: 10, x2: mx, y2: 32, stroke: '#0f172a', strokeWidth: 2.2 }),
               h('circle', { cx: mx, cy: 21, r: 5, fill: swatchFill, stroke: '#ffffff', strokeWidth: 1.8 }),
-              iq.tempF >= 280 ? h('path', { className: 'kl-steam-wisp', d: 'M ' + (mx - 6).toFixed(1) + ' 11 Q ' + (mx - 4).toFixed(1) + ' 6 ' + (mx - 6).toFixed(1) + ' 3 M ' + (mx + 6).toFixed(1) + ' 11 Q ' + (mx + 8).toFixed(1) + ' 6 ' + (mx + 6).toFixed(1) + ' 3', fill: 'none', stroke: '#d97706', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.65 }) : null,
+              iq.tempF >= 280 ? h('path', { className: 'kl-steam-wisp kl-fx-decor', d: 'M ' + (mx - 6).toFixed(1) + ' 11 Q ' + (mx - 4).toFixed(1) + ' 6 ' + (mx - 6).toFixed(1) + ' 3 M ' + (mx + 6).toFixed(1) + ' 11 Q ' + (mx + 8).toFixed(1) + ' 6 ' + (mx + 6).toFixed(1) + ' 3', fill: 'none', stroke: '#d97706', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.65 }) : null,
               h('text', { x: 16, y: 48, fill: '#334155', fontSize: 10, fontWeight: 700 }, fmtT(200)),
               h('text', { x: 16 + (80 / 300) * 308, y: 48, textAnchor: 'middle', fill: '#92400e', fontSize: 10, fontWeight: 700 }, fmtT(280)),
               h('text', { x: 16 + (170 / 300) * 308, y: 48, textAnchor: 'middle', fill: '#9a3412', fontSize: 10, fontWeight: 700 }, fmtT(370)),

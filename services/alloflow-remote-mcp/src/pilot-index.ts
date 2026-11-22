@@ -1,4 +1,7 @@
-import OAuthProvider from "@cloudflare/workers-oauth-provider";
+import OAuthProvider, {
+  getOAuthApi,
+  type OAuthProviderOptions,
+} from "@cloudflare/workers-oauth-provider";
 import { getContainer } from "@cloudflare/containers";
 export { ContainerProxy } from "@cloudflare/containers";
 import { createMcpHandler } from "agents/mcp/server";
@@ -336,7 +339,7 @@ function createOAuthProvider(env: PilotEnv) {
     },
   } satisfies ExportedHandler<PilotEnv>;
 
-  return new OAuthProvider<PilotEnv>({
+  const providerOptions: OAuthProviderOptions<PilotEnv> = {
     apiRoute: `${config.origin}/mcp`,
     apiHandler,
     defaultHandler: defaultHandler(),
@@ -364,7 +367,9 @@ function createOAuthProvider(env: PilotEnv) {
       return validateClientRegistration(clientMetadata, env);
     },
     tokenExchangeCallback(options) {
-      return revalidateAccessGrant(options, env);
+      return revalidateAccessGrant(options, env, (grantId, userId) =>
+        getOAuthApi(providerOptions, env).revokeGrant(grantId, userId),
+      );
     },
     onError({ code, status }) {
       console.warn(
@@ -375,7 +380,8 @@ function createOAuthProvider(env: PilotEnv) {
         }),
       );
     },
-  });
+  };
+  return new OAuthProvider<PilotEnv>(providerOptions);
 }
 
 const worker = {

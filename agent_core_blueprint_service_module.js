@@ -372,7 +372,7 @@
     }
 
     function withReviewedAdaptedPolicy(context, policy) {
-      return Object.assign({}, context || {}, {
+      return safeAssign(safeAssign({}, context), {
         adaptedTextPolicy: policy,
         adaptedTextPolicySource: 'educator',
         textAccessReason: 'educator-choice'
@@ -407,9 +407,9 @@
           return Promise.reject(new Error('AI generation is disabled in this session'));
         }
         return Promise.resolve().then(function () { return d.autoConfigure(req); }).then(function (legacyConfig) {
-          legacyConfig = legacyConfig && typeof legacyConfig === 'object' ? legacyConfig : {};
-          legacyConfig.globalSettings = frozenSettings(req, legacyConfig.globalSettings);
-          var bp = applyDraftTextAccessDefaults(C.fromLegacyConfig(legacyConfig, ctx), {
+          var normalizedLegacy = safeAssign({}, isPlainObject(legacyConfig) ? legacyConfig : {});
+          normalizedLegacy.globalSettings = frozenSettings(req, normalizedLegacy.globalSettings);
+          var bp = applyDraftTextAccessDefaults(C.fromLegacyConfig(normalizedLegacy, ctx), {
             ensureAnalysis: true, ensureAdapted: true, existingAnalysis: existingAnalysis
           });
           bp.plan = resolveRows(bp.plan, req, bp.globalSettings);
@@ -498,7 +498,7 @@
       // does not explicitly rebuild instructionalContext. The contract will
       // normalize and fingerprint this new reviewed snapshot.
       if ((ch.standardsContext !== undefined || standardsTextChanged) && ch.instructionalContext === undefined) {
-        nextInstructionalContext = Object.assign({}, nextInstructionalContext || {}, {
+        nextInstructionalContext = safeAssign(safeAssign({}, nextInstructionalContext), {
           standardsContext: nextStandardsContext,
           standardsFingerprint: ''
         });
@@ -565,8 +565,9 @@
       var b = report.value;
       var boundedInstruction = String(instruction || '').slice(0, MAX_AI_INSTRUCTION_CHARS);
       return Promise.resolve().then(function () { return d.modifyBlueprint(C.toLegacyConfig(b), boundedInstruction); }).then(function (legacyConfig) {
-        var rawPlan = legacyConfig && Array.isArray(legacyConfig.resourcePlan) ? legacyConfig.resourcePlan : [];
-        var next = C.fromLegacyConfig(legacyConfig, {
+        var safeLegacy = isPlainObject(legacyConfig) ? legacyConfig : {};
+        var rawPlan = Array.isArray(safeLegacy.resourcePlan) ? safeLegacy.resourcePlan : [];
+        var next = C.fromLegacyConfig(safeLegacy, {
           blueprintId: b.blueprintId,
           gradeLevel: b.audience.gradeLevel,
           language: b.audience.language,
@@ -703,7 +704,10 @@
         var commandId = (C.TOOL_TO_COMMAND && typeof r.tool === 'string' && hasOwn.call(C.TOOL_TO_COMMAND, r.tool))
           ? (C.TOOL_TO_COMMAND[r.tool] || null)
           : null;
-        var contract = (commandId && typeof d.getCommandContract === 'function') ? d.getCommandContract(commandId) : null;
+        var contract = null;
+        if (commandId && typeof d.getCommandContract === 'function') {
+          try { contract = d.getCommandContract(commandId); } catch (_) { contract = null; }
+        }
         return {
           index: i,
           tool: r.tool,
@@ -889,7 +893,7 @@
     function reviseFromText(workflow, instruction, ctx) {
       var report = validate(workflow, ctx);
       if (!report.ok) return Object.assign({}, report, { summary: '' });
-      var text = String(instruction || '').trim();
+      var text = String(instruction || '').slice(0, MAX_AI_INSTRUCTION_CHARS).trim();
       var steps = report.value.steps;
       var match = text.match(/^(?:remove|delete)\s+(?:step\s+)?(\d+)\s*[.!]?$/i);
       if (match) {
@@ -928,14 +932,20 @@
         var beforeParams = report.value.steps[setIndex].params || {};
         var setReport = revise(report.value, { setParam: { stepId: steps[setIndex].stepId, key: match[2], value: value } }, ctx);
         if (setReport.ok) {
-          var afterParams = setReport.value.steps[setIndex].params || {};
-          var contractForStep = typeof d.getCommandContract === 'function' ? d.getCommandContract(steps[setIndex].commandId) : null;
+          var afterStep = setReport.value && Array.isArray(setReport.value.steps) ? setReport.value.steps[setIndex] : null;
+          var afterParams = (afterStep && afterStep.params) || {};
+          var contractForStep = null;
+          if (typeof d.getCommandContract === 'function') {
+            try { contractForStep = d.getCommandContract(steps[setIndex].commandId); } catch (_) { contractForStep = null; }
+          }
           var canonicalKey = (contractForStep && contractForStep.aliases && Object.prototype.hasOwnProperty.call(contractForStep.aliases, match[2]))
             ? contractForStep.aliases[match[2]]
             : match[2];
+          var afterJson = safeStringify(afterParams);
+          var beforeJson = safeStringify(beforeParams);
           var hasKey = Object.prototype.hasOwnProperty.call(afterParams, match[2])
             || Object.prototype.hasOwnProperty.call(afterParams, canonicalKey)
-            || JSON.stringify(afterParams) !== JSON.stringify(beforeParams);
+            || (afterJson !== null && beforeJson !== null && afterJson !== beforeJson);
           if (!hasKey) {
             return { ok: false, errors: [{ code: 'unsupported-param', path: 'steps[' + setIndex + '].params.' + match[2], message: 'That command does not accept the requested parameter.' }], value: null, summary: '' };
           }
@@ -948,11 +958,21 @@
       var report = validate(workflow, ctx);
       if (!report.ok) return { ok: false, errors: report.errors, steps: [], approvalRequired: true };
       var rawSteps = report.value.steps.map(function (step) { return { commandId: step.commandId, params: step.params, why: step.why }; });
-      var readiness = typeof d.validatePlan === 'function' ? d.validatePlan(ctx || {}, rawSteps, opts || {}) : { ok: true, items: rawSteps.map(function (step, index) { return { index: index, commandId: step.commandId, status: 'ready', detail: '' }; }) };
+      var readiness;
+      if (typeof d.validatePlan === 'function') {
+        try {
+          var validated = d.validatePlan(ctx || {}, rawSteps, opts || {});
+          readiness = (validated && typeof validated === 'object') ? validated : { ok: false, items: [] };
+        } catch (_) {
+          readiness = { ok: false, items: [] };
+        }
+      } else {
+        readiness = { ok: true, items: rawSteps.map(function (step, index) { return { index: index, commandId: step.commandId, status: 'ready', detail: '' }; }) };
+      }
       return {
         ok: !!readiness.ok,
         errors: readiness.ok ? [] : [{ code: 'workflow-blocked', path: 'steps', message: 'One or more workflow steps are blocked.' }],
-        steps: report.value.steps.map(function (step, index) { return Object.assign({}, step, { readiness: readiness.items && readiness.items[index] || { status: 'ready', detail: '' } }); }),
+        steps: report.value.steps.map(function (step, index) { return Object.assign({}, step, { readiness: (Array.isArray(readiness.items) && readiness.items[index]) || { status: readiness.ok ? 'ready' : 'blocked', detail: '' } }); }),
         approvalRequired: true
       };
     }
@@ -1193,7 +1213,8 @@
   }
 
   function createLessonTemplateLibrary(storage) {
-    var store = storage || (function () { try { return window.localStorage; } catch (_) { return null; } })();
+    var candidateStore = storage || (function () { try { return typeof window !== 'undefined' ? window.localStorage : null; } catch (_) { return null; } })();
+    var store = (candidateStore && typeof candidateStore.getItem === 'function' && typeof candidateStore.setItem === 'function') ? candidateStore : null;
     var frozen = false;
     function readAll() {
       if (!store) return [];
@@ -1201,7 +1222,7 @@
         var raw = store.getItem(LESSON_TEMPLATE_LIBRARY_KEY);
         if (!raw) { frozen = false; return []; }
         var env = safeJsonParse(raw, MAX_LIBRARY_JSON_CHARS);
-        if (!env) {
+        if (!isPlainObject(env)) {
           frozen = true;
           return [];
         }
@@ -1292,7 +1313,8 @@
   }
 
   function createBlueprintArchive(storage) {
-    var store = storage || (function () { try { return window.localStorage; } catch (_) { return null; } })();
+    var candidateStore = storage || (function () { try { return typeof window !== 'undefined' ? window.localStorage : null; } catch (_) { return null; } })();
+    var store = (candidateStore && typeof candidateStore.getItem === 'function' && typeof candidateStore.setItem === 'function') ? candidateStore : null;
     var frozen = false;
     function readAll() {
       if (!store) return [];
@@ -1300,7 +1322,7 @@
         var raw = store.getItem(BLUEPRINT_ARCHIVE_KEY);
         if (!raw) { frozen = false; return []; }
         var env = safeJsonParse(raw, MAX_ARCHIVE_JSON_CHARS);
-        if (!env) {
+        if (!isPlainObject(env)) {
           frozen = true;
           return [];
         }

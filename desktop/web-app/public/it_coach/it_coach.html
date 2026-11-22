@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none';">
 <title>AlloBot Screen Coach</title>
 <!--
   Standalone Screen Coach. Guides a person through ANY website they choose to
@@ -86,6 +86,14 @@
   :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 10000; }
   .skip-link:focus { position: fixed; left: 8px; top: 8px; width: auto; height: auto; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
+  @media (forced-colors: active) {
+    :root { --bg: Canvas; --panel: Canvas; --text: CanvasText; --dim: CanvasText; --line: CanvasText; --control-line: CanvasText; --accent: LinkText; --warn: CanvasText; --ok: CanvasText; }
+    body, .card, .badge, .stage, .stage .placeholder, .current-step, .chat-message, .chat-message.user, .chat-message.assistant, .chat-message.system, .skip-link:focus { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; }
+    button, input[type="text"], input[type="password"], select, textarea { background: ButtonFace !important; color: ButtonText !important; border-color: ButtonText !important; forced-color-adjust: auto; }
+    button.action, #coachVoiceBtn[aria-pressed="true"] { background: Highlight !important; color: HighlightText !important; border-color: Highlight !important; }
+    a, .chat-sources a { color: LinkText !important; }
+    :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; }
+  }
 </style>
 </head>
 <body>
@@ -931,9 +939,10 @@
       v.srcObject = s;
       v.hidden = false;
       $('stagePlaceholder').hidden = true;
-      try { await v.play(); } catch (_) {}
       var track = s.getVideoTracks()[0];
       if (track) track.onended = function () { if (watchStream === s) stopWatch(s); };
+      try { await v.play(); } catch (_) {}
+      if (track && track.readyState === 'ended') { if (watchStream === s) stopWatch(s); return; }
       $('coachPrivacyAck').disabled = false;
       $('coachWatchBtn').textContent = '⏹ Stop watching';
       setStatus($('coachStatus'), 'Watching without recording video. A screenshot goes to the configured model when you ask or enable guided mode. Step images are retained for export only if you opt in.', 'ok');
@@ -970,12 +979,19 @@
   }
 
   // ── Floating mirror ──────────────────────────────────────────────────────
+  var startingPip = false;
   async function togglePip() {
+    if (startingPip) return;
     if (pipWin) { stopPip(); return; }
     if (!window.documentPictureInPicture) { setStatus($('coachStatus'), 'Floating mode needs a Chromium browser with Document Picture-in-Picture.', 'warn'); return; }
     if (!captureActive()) { setStatus($('coachStatus'), 'Start watching first: the floating window mirrors what you shared.', 'warn'); return; }
+    startingPip = true;
     try {
       var w = await window.documentPictureInPicture.requestWindow({ width: 420, height: 320 });
+      if (!captureActive()) {
+        try { if (w && !w.closed) w.close(); } catch (_) {}
+        return;
+      }
       pipWin = w;
       w.document.body.style.cssText = 'margin:0;background:#000;color:#e6edf7;font:13px system-ui,sans-serif';
       var cv = w.document.createElement('canvas');
@@ -997,7 +1013,9 @@
         if (!pipWin) return;
         var v = $('previewVideo');
         if (v && v.videoWidth) {
-          cv.width = v.videoWidth; cv.height = v.videoHeight;
+          if (cv.width !== v.videoWidth || cv.height !== v.videoHeight) {
+            cv.width = v.videoWidth; cv.height = v.videoHeight;
+          }
           var g = cv.getContext('2d');
           g.drawImage(v, 0, 0, cv.width, cv.height);
           if (lastAdvice && lastAdvice.target && !highlightStale) {
@@ -1019,6 +1037,8 @@
     } catch (e) {
       pipWin = null;
       setStatus($('coachStatus'), 'Floating window failed: ' + String((e && e.message) || e).slice(0, 120), 'warn');
+    } finally {
+      startingPip = false;
     }
   }
   function stopPip() {
@@ -1079,7 +1099,9 @@
     if (!projection || !ImageReview) return screenSignature();
     if (!captureActive()) return null;
     var frame = grabFrame(true);
-    return frame ? screenSignature(ImageReview.compose(frame.canvas, projection.crop, projection.masks).canvas) : null;
+    if (!frame) return null;
+    var composed = ImageReview.compose(frame.canvas, projection.crop, projection.masks);
+    return composed && composed.canvas ? screenSignature(composed.canvas) : null;
   }
   function captureIsFresh(capture) {
     var v=$('previewVideo');
@@ -1109,11 +1131,13 @@
   }
   function renderScreenReview() {
     if(!pendingReview)return;
-    var full=ImageReview.compose(pendingReview.capture.canvas,ImageReview.FULL,pendingReview.masks).canvas;
+    var fullComposed=ImageReview.compose(pendingReview.capture.canvas,ImageReview.FULL,pendingReview.masks);
+    var prepared=ImageReview.compose(pendingReview.capture.canvas,pendingReview.crop,pendingReview.masks);
+    if(!fullComposed||!fullComposed.canvas||!prepared||!prepared.canvas){setStatus($('reviewStatus'),'Screenshot preview could not be rendered. Reset the edits or capture a new screenshot.','warn');return;}
+    var full=fullComposed.canvas;
     var cv=$('reviewCanvas');cv.width=full.width;cv.height=full.height;var g=cv.getContext('2d');g.drawImage(full,0,0);
     g.strokeStyle='#f59e0b';g.lineWidth=Math.max(2,cv.width/320);
     g.strokeRect(reviewSelection.x*cv.width,reviewSelection.y*cv.height,reviewSelection.w*cv.width,reviewSelection.h*cv.height);
-    var prepared=ImageReview.compose(pendingReview.capture.canvas,pendingReview.crop,pendingReview.masks);
     var out=$('reviewOutput');out.width=prepared.canvas.width;out.height=prepared.canvas.height;out.getContext('2d').drawImage(prepared.canvas,0,0);
     $('reviewUndoBtn').disabled=pendingReview.masks.length===0;
     setStatus($('reviewStatus'), pendingReview.masks.length+' hidden area(s). Image to send: '+out.width+' × '+out.height+' pixels. Existing exported images are not changed.');
@@ -1188,7 +1212,7 @@
     document.body.appendChild(a);
     try { a.click(); } finally {
       a.remove();
-      if (revoke) setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 0);
+      if (revoke) setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 2000);
     }
   }
   function saveCurrentStep() {
@@ -1387,9 +1411,13 @@
         }
       };
       voiceRecognition.onerror = function (event) {
-        if (event && (event.error === 'not-allowed' || event.error === 'service-not-allowed')) {
+        var err = event && event.error;
+        if (err === 'not-allowed' || err === 'service-not-allowed') {
           stopVoiceCommands();
           setStatus($('coachStatus'), 'Microphone access was not granted. Voice commands are off.', 'warn');
+        } else if (err === 'audio-capture' || err === 'network' || err === 'language-not-supported') {
+          stopVoiceCommands();
+          setStatus($('coachStatus'), 'Voice commands stopped because speech recognition is unavailable (' + err + ').', 'warn');
         }
       };
       var recognition = voiceRecognition;
@@ -1399,7 +1427,7 @@
         voiceRestartTimer = setTimeout(function () {
           voiceRestartTimer = null;
           if (!voiceShouldRestart || chatMicMode !== 'commands' || voiceRecognition !== recognition) return;
-          try { recognition.start(); } catch (_) {}
+          try { recognition.start(); } catch (_) { stopVoiceCommands(); }
         }, 350);
       };
       voiceShouldRestart = true;
@@ -1444,16 +1472,20 @@
         }
       };
       recognition.onerror = function (event) {
-        if (event && (event.error === 'not-allowed' || event.error === 'service-not-allowed')) {
+        var err = event && event.error;
+        if (err === 'not-allowed' || err === 'service-not-allowed') {
           stopHandsFreeChat(false);
           setStatus($('coachChatStatus'), 'Microphone access was not granted. Microphone input is off.', 'warn');
+        } else if (err === 'audio-capture' || err === 'network' || err === 'language-not-supported') {
+          stopHandsFreeChat(false);
+          setStatus($('coachChatStatus'), 'Hands-free chat stopped because speech recognition is unavailable (' + err + ').', 'warn');
         }
       };
       recognition.onend = function () {
         if (chatShouldRestart && chatMicMode === 'chat' && chatRecognition === recognition) {
           setTimeout(function () {
             if (!chatShouldRestart || chatMicMode !== 'chat' || chatRecognition !== recognition) return;
-            try { recognition.start(); chatListening = true; updateMicHelp(); } catch (_) {}
+            try { recognition.start(); chatListening = true; updateMicHelp(); } catch (_) { stopHandsFreeChat(false); }
           }, 350);
         } else if (chatRecognition === recognition) {
           chatListening = false;
@@ -1540,14 +1572,16 @@
     appendChatMessage('user', question);
     $('coachChatInput').value = '';
     pauseHandsFreeChatForReply();
-    var req = { controller: new AbortController(), epoch: contextEpoch };
-    var chatTimeout = setTimeout(function () { req.controller.abort(); }, 45000);
+    var req = { controller: new AbortController(), epoch: contextEpoch, timedOut: false };
+    var chatTimeout = setTimeout(function () { req.timedOut = true; req.controller.abort(); }, 45000);
     chatActiveRequest = req;
     setChatBusy(true);
     var useSearch = $('coachChatSearchChk').checked;
     setStatus($('coachChatStatus'), useSearch ? 'Searching and asking the coach…' : 'Asking the coach…');
     var answer = '';
     var sources = [];
+    var shouldSpeakAnswer = false;
+    var shouldResumeMic = false;
     try {
       var result;
       if (bridgeAvailable) {
@@ -1571,15 +1605,21 @@
       chatHistory.push({ role: 'assistant', text: answer });
       appendChatMessage('assistant', answer, sources);
       setStatus($('coachChatStatus'), checked.refused ? 'Learner guidance: software help only.' : sources.length ? 'Answered with web sources. Check that they match your application and version.' : useSearch ? 'No web sources returned. This answer is unverified model guidance; web search may be unavailable.' : 'Answered from model knowledge without web search.', checked.refused || (useSearch && !sources.length) ? 'warn' : 'ok');
-      if (fromVoice || chatMicMode === 'chat') speak(answer, true, resumeHandsFreeChat);
+      if (fromVoice || chatMicMode === 'chat') shouldSpeakAnswer = true;
     } catch (e) {
       if (chatActiveRequest !== req) return;
-      if (e && e.name === 'AbortError') { setStatus($('coachChatStatus'), 'The answer was cancelled or timed out. You can try again.', 'warn'); return; }
+      if (e && e.name === 'AbortError') {
+        setStatus($('coachChatStatus'), req.timedOut ? 'The answer timed out. You can try again.' : 'The answer was cancelled. You can try again.', 'warn');
+        if (req.timedOut && (fromVoice || chatMicMode === 'chat')) shouldResumeMic = true;
+        return;
+      }
       setStatus($('coachChatStatus'), 'Chat unavailable: ' + String((e && e.message) || e).slice(0, 180), 'warn');
-      if (fromVoice || chatMicMode === 'chat') resumeHandsFreeChat();
+      if (fromVoice || chatMicMode === 'chat') shouldResumeMic = true;
     } finally {
       clearTimeout(chatTimeout);
       if (chatActiveRequest === req) { chatActiveRequest = null; setChatBusy(false); }
+      if (shouldSpeakAnswer) speak(answer, true, resumeHandsFreeChat);
+      else if (shouldResumeMic) resumeHandsFreeChat();
     }
   }
 

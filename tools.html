@@ -303,7 +303,7 @@
     <nav class="navbar" aria-label="Primary">
         <div class="navbar-inner">
             <a href="./" class="nav-logo">
-                <i data-lucide="layers" style="width:28px;height:28px"></i>
+                <i data-lucide="layers" aria-hidden="true" style="width:28px;height:28px"></i>
                 AlloFlow
             </a>
             <div class="nav-links" data-site-nav="primary">
@@ -317,7 +317,7 @@
                 <a href="launch.html" class="cta-btn"><i data-lucide="rocket" aria-hidden="true" style="width:16px;height:16px"></i> Launch AlloFlow</a>
             </div>
             <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
-                aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
+                aria-label="Open menu"><i data-lucide="menu" aria-hidden="true" style="width:24px;height:24px"></i></button>
         </div>
     </nav>
 
@@ -360,11 +360,11 @@
                     <label for="toolSearch">What would you like to create, teach, assess, or explore?</label>
                     <div class="tool-search-input-row">
                         <i data-lucide="search" aria-hidden="true"></i>
-                        <input id="toolSearch" type="search"
+                        <input id="toolSearch" type="search" aria-describedby="toolSearchHint"
                             placeholder="Try “photosynthesis,” “WCAG,” or “quiz from an article”"
                             autocomplete="off">
                     </div>
-                    <p class="tool-search-hint">Examples: driving safety, phonics, chemistry, writing support,
+                    <p id="toolSearchHint" class="tool-search-hint">Examples: driving safety, phonics, chemistry, writing support,
                         progress monitoring, no source required</p>
                 </div>
 
@@ -996,6 +996,10 @@
                     var section = document.querySelector(".tool-directory-section");
                     if (!select || !section) return;
                     var count = section.querySelector(".tool-directory-count");
+                    if (count) {
+                        count.setAttribute("role", "status");
+                        count.setAttribute("aria-live", "polite");
+                    }
                     var allText = count ? count.textContent : "";
                     var rows = section.querySelectorAll(".tool-directory-list li");
                     function apply() {
@@ -1071,8 +1075,8 @@
         </div>
     </footer>
 
-    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})"
-        aria-label="Back to top"><i data-lucide="chevron-up" style="width:20px;height:20px"></i></button>
+    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})"
+        aria-label="Back to top"><i data-lucide="chevron-up" aria-hidden="true" style="width:20px;height:20px"></i></button>
 
     <script>
         if (window.lucide) lucide.createIcons();
@@ -1080,6 +1084,17 @@
         window.addEventListener('scroll', function () {
             backBtn.classList.toggle('visible', window.scrollY > 500);
         }, { passive: true });
+        const toolSearchInput = document.getElementById('toolSearch');
+        if (toolSearchInput) {
+            toolSearchInput.addEventListener('keydown', function (e) {
+                if (e.isComposing || e.keyCode === 229) return;
+                if (e.key === 'Escape' && toolSearchInput.value) {
+                    e.preventDefault();
+                    toolSearchInput.value = '';
+                    toolSearchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            });
+        }
     </script>
 </body>
 

@@ -10283,6 +10283,12 @@ window.StemLab = window.StemLab || {
         if (asText(d.lsLifeRole) === 'transition') extra += '&role=transition';
         var prof = String(ctx && ctx.activeProfileId || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 48);
         if (prof) extra += '&learner=' + encodeURIComponent(prof);
+        try {
+          var origin = String(window.location && window.location.origin || '');
+          if (/^https?:\/\//i.test(origin) && origin !== 'null') {
+            extra += '&parentOrigin=' + encodeURIComponent(origin);
+          }
+        } catch (_) {}
         return extra;
       }
 

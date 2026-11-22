@@ -57,10 +57,10 @@ function createOrganizerReflectionStore({ sessions, compact }) {
       if (last && last.resourceId === value.resourceId && JSON.stringify(last.fields) === JSON.stringify(fields)) return { reflection: publicRecord(last), duplicate: true };
       const active = entry.data?.interactiveOrganizer;
       if (entry.data?.isActive === false || active?.type !== 'reflection' || active.activityId !== value.activityId || String(active.resourceId) !== value.resourceId) fail(409, 'This live reflection has ended or changed. Your draft is still saved.');
-      const resource = (entry.data.resources || []).find(item => String(item?.id) === value.resourceId);
+      const resource = (Array.isArray(entry.data.resources) ? entry.data.resources : []).find(item => String(item?.id) === value.resourceId);
       if (!resource?.data) fail(409, 'The matching diagram is still being delivered. Try again shortly.');
       if (prior.length >= 20) fail(409, 'This activity already has 20 saved revisions. Ask your teacher to start a new reflection.');
-      const record = { id: crypto.randomUUID(), uid: auth.uid, ownerToken: auth.jti, studentName: String(entry.data.roster[auth.uid].name || 'Learner').slice(0, 80), activityId: value.activityId, resourceId: value.resourceId, revision: (last?.revision || 0) + 1, submittedAt: Date.now(), fields, diagram: last?.diagram || (entry.organizerReflectionLaunch?.activityId === value.activityId ? entry.organizerReflectionLaunch.diagram : diagramOf(resource)), feedback: null };
+      const record = { id: crypto.randomUUID(), uid: auth.uid, ownerToken: auth.jti, studentName: String(entry.data.roster[auth.uid]?.name || 'Learner').slice(0, 80), activityId: value.activityId, resourceId: value.resourceId, revision: (last?.revision || 0) + 1, submittedAt: Date.now(), fields, diagram: last?.diagram || (entry.organizerReflectionLaunch?.activityId === value.activityId ? entry.organizerReflectionLaunch.diagram : diagramOf(resource)), feedback: null };
       const next = records.concat(record); capacity(entry, next); entry.organizerReflections = next;
       return { reflection: publicRecord(record), duplicate: false };
     },

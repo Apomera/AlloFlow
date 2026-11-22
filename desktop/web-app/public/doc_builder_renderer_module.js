@@ -7,7 +7,7 @@ if(window.AlloModules&&window.AlloModules.DocBuilderRendererModule){console.log(
 function createDocBuilderRenderer(deps) {
   deps = deps || {};
   const {
-    docStyle,
+    docStyle: rawDocStyle,
     _accessibleHeaderColors,
     _alloCellRichText,
     _emitAccessibleTableHtml,
@@ -18,7 +18,33 @@ function createDocBuilderRenderer(deps) {
     warnLog,
   } = deps;
   const _warnLog = typeof warnLog === 'function' ? warnLog : (...args) => console.warn(...args);
-  if (!docStyle || typeof docStyle !== 'object') throw new Error('DocBuilderRenderer requires docStyle');
+  if (!rawDocStyle || typeof rawDocStyle !== 'object') throw new Error('DocBuilderRenderer requires docStyle');
+  const _safeCssColor = (val, fallback) => {
+    const s = String(val == null ? '' : val).trim();
+    if (!s || s.length > 80 || /["'<>;\\]|(?:url|expression|import)\s*\(?/i.test(s)) return fallback;
+    if (/^#[0-9a-f]{3,8}$/i.test(s) || /^(?:rgb|hsl)a?\(\s*[\d.,%\s/+-]+\s*\)$/i.test(s) || /^[a-z]{3,24}$/i.test(s)) return s;
+    return fallback;
+  };
+  const _safeCssBg = (val, fallback) => {
+    const s = String(val == null ? '' : val).trim();
+    if (!s || s.length > 220 || /["'<>;\\]|(?:url|expression|@import|javascript|vbscript)/i.test(s)) return fallback;
+    const solid = _safeCssColor(s, '');
+    if (solid) return solid;
+    if (/^(?:linear|radial)-gradient\(\s*[#a-z0-9(),.%+\-\s]+\)$/i.test(s)) return s;
+    return fallback;
+  };
+  const docStyle = {
+    ...rawDocStyle,
+    headingColor: _safeCssColor(rawDocStyle.headingColor, '#1e293b'),
+    accentColor: _safeCssColor(rawDocStyle.accentColor, '#4f46e5'),
+    tableBg: _safeCssBg(rawDocStyle.tableBg, '#ffffff'),
+    tableBorder: _safeCssColor(rawDocStyle.tableBorder, '#cbd5e1'),
+    bgColor: _safeCssBg(rawDocStyle.bgColor, '#ffffff'),
+    sectionBorderColor: _safeCssColor(rawDocStyle.sectionBorderColor, '#cbd5e1'),
+    headerBg: _safeCssBg(rawDocStyle.headerBg, '#1e293b'),
+    bodyColor: _safeCssColor(rawDocStyle.bodyColor, '#1e293b'),
+    textColor: _safeCssColor(rawDocStyle.textColor, '#1e293b'),
+  };
   for (const pair of [
     ['_accessibleHeaderColors', _accessibleHeaderColors],
     ['_alloCellRichText', _alloCellRichText],
@@ -143,23 +169,24 @@ const renderJsonToHtml = (blocks) => {
             return withInline;
           };
           // Only allow safe URL schemes in link hrefs (block javascript:, data:, etc.).
-          const safeHref = (u) => { const v = String(u || '').trim(); return /^(https?:|mailto:|tel:|#|\/(?!\/)|\.)/i.test(v) ? v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;') : '#'; };
+          const safeHref = (u) => { const v = String(u || '').trim(); return /^(https?:|mailto:|tel:|#|\/(?![\/\\])|\.)/i.test(v) ? v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;') : '#'; };
           try {
-          // Clean block text: strip JSON field names, id tags, literal \n, and type labels
-          if (block.text) {
+          // Clean block text: strip leaked quoted JSON keys and literal \n without eating natural English labels like "Title: ..." or "Description: ...".
+          if (typeof block.text === 'string' && block.text) {
             block.text = block.text
               .replace(/\\n/g, ' ')
               .replace(/(?:^|\n)id:\s*[a-z0-9-]+(?=\n|$)/g, '')
-              .replace(/^(description|alt|title|subtitle|caption|type|text|items|headers|rows):\s*/gim, '') // strip leaked JSON field names
-              .replace(/^(banner|blockquote|image|hr|ul|ol|p|h[1-6])\s*$/gim, '') // strip bare type names on own line
+              .replace(/^"(description|alt|title|subtitle|caption|type|text|items|headers|rows)"\s*:\s*/gim, '') // strip leaked quoted JSON field names only
               .replace(/\n{2,}/g, '\n').trim();
+          } else if (block.text != null) {
+            block.text = String(block.text);
           }
           // Clean title/subtitle on banner blocks
-          if (block.title) block.title = block.title.replace(/^title:\s*/i, '').replace(/\\n/g, ' ').trim();
-          if (block.subtitle) block.subtitle = block.subtitle.replace(/^subtitle:\s*/i, '').replace(/\\n/g, ' ').trim();
-          if (block.description) block.description = block.description.replace(/^description:\s*/i, '').replace(/\\n/g, ' ').trim();
-          if (block.alt) block.alt = block.alt.replace(/^alt:\s*/i, '').replace(/\\n/g, ' ').trim();
-          if (block.caption) block.caption = block.caption.replace(/^caption:\s*/i, '').replace(/\\n/g, ' ').trim();
+          if (typeof block.title === 'string' && block.title) block.title = block.title.replace(/^title:\s*/i, '').replace(/\\n/g, ' ').trim();
+          if (typeof block.subtitle === 'string' && block.subtitle) block.subtitle = block.subtitle.replace(/^subtitle:\s*/i, '').replace(/\\n/g, ' ').trim();
+          if (typeof block.description === 'string' && block.description) block.description = block.description.replace(/^description:\s*/i, '').replace(/\\n/g, ' ').trim();
+          if (typeof block.alt === 'string' && block.alt) block.alt = block.alt.replace(/^alt:\s*/i, '').replace(/\\n/g, ' ').trim();
+          if (typeof block.caption === 'string' && block.caption) block.caption = block.caption.replace(/^caption:\s*/i, '').replace(/\\n/g, ' ').trim();
           // Also clean items arrays (lists)
           if (Array.isArray(block.items)) {
             block.items = block.items.map(item => String(item == null ? '' : item).replace(/\\n/g, ' ').replace(/^(items|text):\s*/i, '').trim());
@@ -328,7 +355,8 @@ const renderJsonToHtml = (blocks) => {
               const _imgDesc = (block.description || block.alt || 'Image');
               // (2026-10-28) quotes escaped, not dropped ("NASA's" became "NASAs"); inert in the attribute, decoded in the JS string
               const _imgAltSafe = (block.description || block.alt || 'Image').replace(/\\/g, '').replace(/"/g, '\\x22').replace(/'/g, '\\x27').replace(/[<>&]/g, (c) => '\\x' + c.charCodeAt(0).toString(16)).replace(/\r/g, '\\r').replace(/\n/g, '\\n').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029'); // strip backslash too (a trailing \ escapes the JS-string delimiter)
-              const _imgId = 'pdf-img-ph-' + (block.id ? String(block.id).replace(/[^a-z0-9]/gi, '') : Math.random().toString(36).slice(2, 8));
+              const _cleanImgId = block.id ? String(block.id).replace(/[^a-z0-9]/gi, '') : '';
+              const _imgId = 'pdf-img-ph-' + (_cleanImgId || Math.random().toString(36).slice(2, 8));
               const _captionText = block.description || block.alt || '';
               // Drag-and-drop + pick-extracted support: handlers pull a dataURL from
               // either the drop dataTransfer, a local file picker, or the shared
@@ -458,6 +486,49 @@ const renderJsonToHtml = (blocks) => {
                 + (_bTitle ? '<h1 style="color:' + _bText + ' !important;font-size:2.1em;font-weight:800;line-height:1.1;letter-spacing:-0.01em;margin:0;text-shadow:' + _shadow + '">' + escapeTextField(_bTitle) + '</h1>' : '')
                 + (_bSubtitle ? '<p style="color:' + _bText + ' !important;font-size:1.1em;font-weight:500;margin:10px 0 0;text-shadow:' + _shadowSm + '">' + escapeTextField(_bSubtitle) + '</p>' : '')
                 + `</div>`;
+            }
+            case 'math':
+            case 'formula': {
+              const _expr = String(block.latex || block.text || block.value || '').trim();
+              if (!_expr) return '';
+              const _spoken = String(block.alt || block.spoken || block.description || _expr).replace(/\s+/g, ' ').trim();
+              const _escAttr = (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+              let _renderedMath = '';
+              try {
+                if (typeof window !== 'undefined' && window.temml && typeof window.temml.renderToString === 'function') {
+                  _renderedMath = window.temml.renderToString(_expr, { displayMode: block.display !== 'inline', throwOnError: false });
+                }
+              } catch (_) { _renderedMath = ''; }
+              if (_renderedMath && /<math\b/i.test(_renderedMath)) {
+                const _withAria = /\baria-label\s*=/i.test(_renderedMath)
+                  ? _renderedMath
+                  : _renderedMath.replace(/<math\b/i, `<math aria-label="${_escAttr(_spoken)}"`);
+                return `<figure${id} class="allo-math-block" style="margin:1em 0;padding:0.75em 1em;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;overflow-x:auto">${_withAria}</figure>`;
+              }
+              return `<div${id} role="math" aria-label="${_escAttr(_spoken)}" style="margin:1em 0;padding:0.75em 1em;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-x:auto"><code>${escapeTextField(_expr)}</code></div>`;
+            }
+            case 'code':
+            case 'pre': {
+              const _codeText = String(block.code || block.text || block.value || '');
+              if (!_codeText.trim()) return '';
+              const _escRaw = (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              return `<pre${id} style="margin:1em 0;padding:12px 16px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.9em;line-height:1.5"><code>${_escRaw(_codeText)}</code></pre>`;
+            }
+            case 'footnote':
+            case 'endnote': {
+              const _fnText = String(block.text || block.value || '').trim();
+              if (!_fnText) return '';
+              const _fnRole = block.type === 'endnote' ? 'doc-endnote' : 'doc-footnote';
+              return `<aside${id} role="${_fnRole}" style="margin:0.75em 0;padding:8px 12px;border-inline-start:3px solid ${docStyle.sectionBorderColor};font-size:0.9em;line-height:1.5;color:${docStyle.textColor}">${escapeTextField(_fnText)}</aside>`;
+            }
+            case 'callout':
+            case 'aside':
+            case 'note': {
+              const _asideTitle = block.title ? `<p style="font-weight:700;margin:0 0 0.4em;color:${docStyle.headingColor}">${escapeTextField(block.title)}</p>` : '';
+              const _asideBody = block.text ? `<p style="margin:0;line-height:1.6">${escapeTextField(block.text)}</p>` : '';
+              if (!_asideTitle && !_asideBody) return '';
+              const _labelAttr = block.title ? '' : ' aria-label="Note"';
+              return `<aside${id}${_labelAttr} style="margin:1em 0;padding:12px 16px;background:#f8fafc;border-inline-start:4px solid ${docStyle.accentColor};border-radius:0 8px 8px 0">${_asideTitle}${_asideBody}</aside>`;
             }
             case 'rawhtml': {
               // Sanitize model-supplied / imported HTML before trusting it. Prefer DOMPurify

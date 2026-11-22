@@ -161,14 +161,28 @@
 
   function isSameOriginOrRelativeUrl(rawUrl) {
     var u = String(rawUrl || '').trim();
-    if (!u) return false;
+    if (!u || /[\u0000-\u001f\u007f\\]/.test(u)) return false;
     if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(u) && !/^\/\//.test(u)) return true;
     try {
       if (typeof window !== 'undefined' && window.location && window.location.origin && window.location.origin !== 'null') {
-        return new URL(u, window.location.href).origin === window.location.origin;
+        var parsed = new URL(u, window.location.href);
+        return (parsed.protocol === 'https:' || parsed.protocol === 'http:') && parsed.origin === window.location.origin;
       }
     } catch (_) {}
     return false;
+  }
+
+  function isSafeEspeakModuleUrl(rawUrl, remoteBlocked) {
+    var u = String(rawUrl || '').trim();
+    if (!u || /[\u0000-\u001f\u007f\\]/.test(u)) return false;
+    if (isSameOriginOrRelativeUrl(u)) return true;
+    if (remoteBlocked) return false;
+    try {
+      var parsed = new URL(u);
+      return parsed.protocol === 'https:' && !parsed.username && !parsed.password;
+    } catch (_) {
+      return false;
+    }
   }
 
   function loadFactory() {
@@ -186,7 +200,7 @@
     var urls = [];
     if (typeof window !== 'undefined' && typeof window._ALLO_ESPEAK_URL === 'string') {
       var customUrl = window._ALLO_ESPEAK_URL.trim();
-      if (customUrl && (!remoteBlocked || isSameOriginOrRelativeUrl(customUrl))) {
+      if (customUrl && isSafeEspeakModuleUrl(customUrl, remoteBlocked)) {
         urls.push(customUrl);
       }
     }
@@ -323,9 +337,9 @@
      */
     toPhonemes: function (word, opts) {
       var w = String(word == null ? '' : word).trim().replace(/[\u2018\u2019\u02BC]/g, "'").replace(/[\u2010-\u2015]/g, '-');
-      if (!w) return Promise.resolve(null);
+      if (!w || w.length > 128 || w.charAt(0) === '-') return Promise.resolve(null);
       // Single tokens only (this seam never needs phrases/digits/symbols).
-      if (/[^\p{L}\p{M}'’‑-]/u.test(w) || /\s/.test(w)) return Promise.resolve(null);
+      if (/[^\p{L}\p{M}'’‑-]/u.test(w) || /\s/.test(w) || !/\p{L}/u.test(w)) return Promise.resolve(null);
       var voice = resolveVoice(opts && (opts.lang || opts.language));
       // No espeak voice for this language → null so the caller keeps its
       // Gemini phonemes. Running the ENGLISH voice here instead would return
@@ -333,7 +347,7 @@
       if (!voice) return Promise.resolve(null);
       return loadFactory().then(function (ESpeakNg) {
         return ESpeakNg({
-          arguments: ['--ipa', '--sep=_', '-q', '--phonout=/allo_ph.txt', '-v', voice, w]
+          arguments: ['--ipa', '--sep=_', '-q', '--phonout=/allo_ph.txt', '-v', voice, '--', w]
         }).then(function (inst) {
           var out = '';
           try { out = inst.FS.readFile('/allo_ph.txt', { encoding: 'utf8' }); } catch (_) { out = ''; }

@@ -222,10 +222,10 @@
           "id": "lead5412-ch-01-check-01",
           "prompt": "What should precede revision of a school mission?",
           "choices": [
-            "Analyze disaggregated student, opportunity, implementation, climate, and stakeholder evidence before facilitating an inclusive review.",
-            "Copy a highly rated school mission.",
-            "Ask only the leadership team to draft it privately.",
-            "Delay all review until test scores rise."
+            "Analyze disaggregated student, opportunity, implementation, climate, and stakeholder data before an inclusive review.",
+            "Adopt a concise mission statement published by a neighboring high-performing school so staff align around proven wording.",
+            "Convene the administrative team privately to draft a fresh mission statement quickly before sharing it with families.",
+            "Postpone any mission review indefinitely until annual statewide standardized test scores rise across every grade level."
           ],
           "answerIndex": 0,
           "rationale": "A mission should respond to the actual school context and each student, so leaders first establish a representative evidence base and an inclusive process.",
@@ -241,10 +241,10 @@
           "id": "lead5412-ch-01-check-02",
           "prompt": "What makes a school vision educationally useful?",
           "choices": [
-            "Add more slogans without defining action.",
-            "Connect a clear future state for every student with shared values, observable commitments, and decisions the community can enact.",
-            "Limit the vision to the highest-performing group.",
-            "Replace the vision with an annual event calendar."
+            "Add more memorable motivational slogans to the statement so students and staff recall the wording during assemblies.",
+            "Connect a clear future state for every student with shared values, observable commitments, and real decisions.",
+            "Focus the future outcomes primarily on advanced academic tracks so the school maintains an ambitious external reputation.",
+            "Replace the vision statement with a detailed annual calendar of schoolwide assemblies, holidays, and testing windows."
           ],
           "answerIndex": 1,
           "rationale": "A useful vision guides choices and collective action; it expresses an equitable future, shared commitments, and a basis for monitoring progress.",
@@ -260,10 +260,10 @@
           "id": "lead5412-ch-01-check-03",
           "prompt": "Which goal is best designed for strategic monitoring?",
           "choices": [
-            "Use a broad aspiration with no measure.",
-            "Set a target without examining baseline variation.",
-            "Specify the learner outcome, baseline, target, timeframe, relevant subgroup evidence, responsible actions, and review intervals.",
-            "Measure only staff attendance at meetings."
+            "Frame the goal as a broad aspirational commitment with no numeric benchmark so teams avoid unnecessary pressure.",
+            "Select an ambitious percentage target right away without checking baseline performance or subgroup variation across classes.",
+            "Specify the student outcome, baseline, realistic target, timeframe, subgroup evidence, owners, and review dates.",
+            "Measure strategic progress by counting how many faculty members attend monthly school improvement committee meetings."
           ],
           "answerIndex": 2,
           "rationale": "A strategic goal is measurable and time bound while linking outcomes to adult actions, access, implementation, and scheduled evidence reviews.",
@@ -279,10 +279,10 @@
           "id": "lead5412-ch-01-check-04",
           "prompt": "How should district and school goals relate?",
           "choices": [
-            "Ignore the district requirement.",
-            "Abandon all school-specific needs.",
-            "Let each teacher choose whether policy applies.",
-            "Clarify the governing requirements, align the school strategy where possible, and document any needed escalation or approved adaptation."
+            "Set the conflicting district mandate aside quietly so the building stays focused on its own local improvement plan.",
+            "Abandon local school needs right away whenever a central-office initiative arrives, even if student data show gaps.",
+            "Allow individual grade-level teams to decide independently whether specific district policies apply inside their classrooms.",
+            "Clarify governing rules, align school priorities where feasible, and document any needed escalation or waiver."
           ],
           "answerIndex": 3,
           "rationale": "Strategic coherence requires lawful alignment with district direction while preserving evidence-based responses to the school context through authorized processes.",
@@ -298,10 +298,10 @@
           "id": "lead5412-ch-01-check-05",
           "prompt": "What is the role of core values in leadership?",
           "choices": [
-            "Use the value consistently in resource, access, staffing, instruction, discipline, communication, and improvement decisions.",
-            "Display the value on posters only.",
-            "Apply it only when no tradeoff is required.",
-            "Treat values as private preferences."
+            "Apply the value consistently across resource, access, staffing, instruction, discipline, and improvement choices.",
+            "Display the school’s core values prominently on hallway posters and newsletters so families see them upon arrival.",
+            "Invoke the stated value during decisions where stakeholders already agree and no budget or schedule tradeoff arises.",
+            "Treat core values as personal leadership beliefs that stay separate from formal staffing, grading, or policy decisions."
           ],
           "answerIndex": 0,
           "rationale": "Core values become credible when they shape routine and difficult decisions, are made visible in practice, and are open to evidence and accountability.",
@@ -412,12 +412,12 @@
           "id": "lead5412-ch-02-check-01",
           "prompt": "What begins a disciplined continuous-improvement cycle?",
           "choices": [
-            "Develop a specific evidence-based problem statement that identifies who is affected, where, when, and under what conditions.",
-            "Purchase the most popular program.",
-            "Set a solution as the problem statement.",
-            "Wait for perfect causal proof."
+            "Delay starting any improvement inquiry until experimental research establishes definitive causal proof for every local factor.",
+            "Draft a specific evidence-based problem statement naming who is affected, where, when, and under what conditions.",
+            "Purchase a widely adopted commercial program first so the team has concrete materials ready to guide problem discussions.",
+            "Write the preferred intervention itself as the problem statement so stakeholders move rapidly into implementation steps."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "A precise problem statement focuses inquiry without assuming the cause or solution and makes later measures and tests interpretable.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -431,12 +431,12 @@
           "id": "lead5412-ch-02-check-02",
           "prompt": "What is a theory of action in strategic school improvement?",
           "choices": [
-            "A guarantee that the plan will work.",
-            "An explicit if-then account linking actions, implementation conditions, intermediate changes, and intended student outcomes.",
-            "A list of staff members without responsibilities.",
-            "A restatement of the mission only."
+            "A brief restatement of the school’s broad mission values placed at the top of the annual activity calendar.",
+            "A formal written assurance stating that completing the listed school activities will produce the expected score gains.",
+            "An explicit if-then chain linking actions, implementation conditions, intermediate shifts, and student outcomes.",
+            "An organizational roster listing every committee member’s title without connecting roles to instructional change steps."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "A theory of action exposes causal assumptions so the team can measure implementation, examine mechanisms, and adapt responsibly.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -450,12 +450,12 @@
           "id": "lead5412-ch-02-check-03",
           "prompt": "How should a small change test be used?",
           "choices": [
-            "Implement everywhere before collecting evidence.",
-            "Judge success from one enthusiastic comment.",
-            "Define the prediction and measures, test on a manageable scale, study process and outcome evidence, and decide what to adapt next.",
-            "Change several unrelated systems at once."
+            "Revise grading, scheduling, and feedback routines simultaneously during the pilot so the school saves planning cycles.",
+            "Roll the new routine out across every classroom right away so all grade levels generate maximum data immediately.",
+            "Conclude the pilot succeeded after one enthusiastic teacher reports that students seemed more engaged during week one.",
+            "State predictions and measures, pilot on a manageable scale, study process and outcome data, and decide next steps."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "A bounded test reduces risk and produces interpretable learning when its prediction, implementation, evidence, and next decision are specified.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -469,12 +469,12 @@
           "id": "lead5412-ch-02-check-04",
           "prompt": "What distinguishes a leading measure from a lagging outcome?",
           "choices": [
-            "More copies of the annual score report.",
-            "Teacher intentions without observation.",
-            "A ranking of schools with no process evidence.",
-            "Frequent evidence of access, dosage, attendance, instructional quality, and near-term learning that can guide implementation before annual outcomes."
+            "Frequent access, dosage, attendance, instructional quality, and near-term learning data to guide delivery early.",
+            "Additional disaggregated printouts of last spring’s annual state achievement report distributed to every tutoring staff member.",
+            "Written statements of teacher commitment collected at kickoff without observing tutoring sessions or checking student work.",
+            "A comparative district ranking of overall school test averages reviewed without process, attendance, or dosage indicators."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Leading measures show whether key conditions and intermediate changes are occurring, while lagging outcomes summarize later results.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -488,12 +488,12 @@
           "id": "lead5412-ch-02-check-05",
           "prompt": "How should leaders respond to implementation variation?",
           "choices": [
-            "Study the schedule, training, resources, adaptations, and fidelity evidence with each team before attributing outcome differences.",
-            "Assume the second grade lacks commitment.",
-            "Average the results and ignore variation.",
-            "Require identical surface routines regardless of context."
+            "Mandate identical minute-by-minute surface routines across both grades regardless of scheduling or learner context.",
+            "Examine schedule, training, resources, adaptations, and fidelity with each team before attributing outcome gaps.",
+            "Conclude that the grade level struggling with implementation lacks professional commitment to the schoolwide priority.",
+            "Combine both grade levels into one schoolwide average so implementation differences balance out in the monthly summary."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Implementation evidence explains whether a strategy received a fair test and whether contextual barriers or productive adaptations matter.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -602,12 +602,12 @@
           "id": "lead5412-ch-03-check-01",
           "prompt": "What makes professional learning job embedded?",
           "choices": [
-            "Use co-planning, modeling, rehearsal, observation, actionable feedback, and student evidence within teachers actual curriculum and schedules.",
-            "Schedule the same lecture again.",
-            "Require implementation without support.",
-            "Measure only workshop satisfaction."
+            "Mandate classroom use of the routine starting Monday without coaching so teachers learn through independent trial.",
+            "Collect end-of-workshop satisfaction ratings from attendees to verify whether the professional learning session worked.",
+            "Use co-planning, modeling, rehearsal, observation, actionable feedback, and student work inside teachers’ schedules.",
+            "Schedule a repeat delivery of the exact same after-school lecture so teachers hear the core principles a second time."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Job-embedded learning connects a defined student need to authentic practice, feedback, collaboration, and evidence over time.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -621,12 +621,12 @@
           "id": "lead5412-ch-03-check-02",
           "prompt": "How should a leader identify professional-learning needs?",
           "choices": [
-            "Select the least expensive session only.",
-            "Integrate student work, disaggregated outcomes, observation, curriculum demands, teacher goals, and implementation evidence to define a focused need.",
-            "Assume every teacher needs identical support.",
-            "Use one test score as the complete diagnosis."
+            "Assign the identical introductory training module to every teacher regardless of subject area, experience, or data.",
+            "Use one single spring test subscore as the complete diagnostic basis for choosing next year’s faculty training.",
+            "Select the lowest-cost workshop from the regional service catalog so professional learning stays well under budget.",
+            "Synthesize classroom artifacts, subgroup trends, lesson observations, pacing demands, and educator priorities first."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Professional learning is more relevant when multiple sources establish the learner and educator need and distinguish shared from differentiated support.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -640,12 +640,12 @@
           "id": "lead5412-ch-03-check-03",
           "prompt": "What makes instructional feedback actionable?",
           "choices": [
-            "Add a numerical rating without evidence.",
-            "Compare the teacher publicly with peers.",
-            "Describe specific evidence, connect it to an agreed instructional goal, offer a manageable next step, and arrange practice or follow-up.",
-            "List every possible improvement at once."
+            "Cite specific classroom evidence, link to a shared goal, name one manageable next step, and schedule follow-up.",
+            "Provide a comprehensive checklist of every instructional flaw noticed during the visit so nothing gets overlooked.",
+            "Attach a numerical rubric rating to the brief note without adding observational examples so scoring stays concise.",
+            "Compare the teacher’s classroom routines publicly with higher-rated peers during a department meeting to set benchmarks."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Actionable feedback is evidence based, goal aligned, specific, feasible, dialogic, and connected to support and follow-up.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -659,12 +659,12 @@
           "id": "lead5412-ch-03-check-04",
           "prompt": "How should walkthrough evidence be used?",
           "choices": [
-            "Treat the visit as a complete performance record.",
-            "Publish the observation to staff.",
-            "Avoid all classroom evidence.",
-            "Use brief visits for pattern finding and formative feedback within policy, while relying on adequate evidence and required procedures for formal evaluation."
+            "Stop conducting classroom visits altogether because short snapshots can never inform instructional leadership decisions.",
+            "Use brief visits for trends and formative feedback under policy, keeping formal evaluation tied to full procedures.",
+            "Record the single three-minute walkthrough as a sufficient formal performance record for the teacher’s annual rating.",
+            "Distribute individual teacher walkthrough notes across the full faculty email list to encourage transparent peer learning."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "The intended use of evidence must match its scope, reliability, policy context, and procedural protections.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -678,12 +678,12 @@
           "id": "lead5412-ch-03-check-05",
           "prompt": "What is productive teacher leadership?",
           "choices": [
-            "Define a meaningful role, decision boundaries, protected time, support, compensation when applicable, and reciprocal accountability.",
-            "An honorary title only.",
-            "Responsibility for evaluating peers secretly.",
-            "Unlimited authority without governance."
+            "Ask the teacher leader to evaluate colleagues’ classroom weaknesses confidentially and report ratings back to leadership.",
+            "Grant broad informal authority to redesign department policies without clear governance boundaries or team input.",
+            "Define a clear role, decision scope, protected time, coaching support, pay where applicable, and shared accountability.",
+            "Award an honorary teacher-leader title without adjusting teaching loads so the role remains budget neutral."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Distributed leadership requires authentic influence, capacity, resources, role clarity, and safeguards rather than transferring work without support.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -797,12 +797,12 @@
           "id": "lead5412-ch-04-check-01",
           "prompt": "What should a curriculum alignment review examine?",
           "choices": [
-            "Compare standards, intended and enacted curriculum, tasks, assessments, pacing, access, and student work vertically and horizontally.",
-            "Compare textbook covers only.",
-            "Require identical daily lessons across grades.",
-            "Use annual scores without examining opportunities."
+            "Compare publisher scope-and-sequence charts on textbook covers without examining classroom tasks or student work.",
+            "Mandate identical daily lesson scripts across grade levels so instructional coverage matches district pacing charts.",
+            "Review annual statewide proficiency percentages alone without examining curriculum access or classroom task rigor.",
+            "Compare standards, enacted curriculum, tasks, assessments, pacing, access, and student work across grades."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Alignment is coherence among intended outcomes, learning opportunities, tasks, assessment, and progression, not mere use of the same materials.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -817,12 +817,12 @@
           "id": "lead5412-ch-04-check-02",
           "prompt": "How should student work inform instructional leadership?",
           "choices": [
-            "Rank teachers from one work sample.",
-            "Use a common protocol to identify evidence of thinking, misconceptions, task demands, subgroup opportunity, and a specific instructional response.",
-            "Replace the task without identifying the issue.",
-            "Discuss student traits instead of the work."
+            "Use a shared protocol to examine thinking, misconceptions, task rigor, subgroup access, and next teaching steps.",
+            "Discard the assignment right away and pick a different worksheet without analyzing why student responses fell short.",
+            "Focus the team conversation on fixed student ability traits and home backgrounds rather than examining the work itself.",
+            "Rank classroom teachers from highest to lowest based on one set of student work samples to identify weak instruction."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Collaborative work analysis connects observable evidence with instruction while avoiding unsupported judgments about students or teachers.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -837,12 +837,12 @@
           "id": "lead5412-ch-04-check-03",
           "prompt": "What is the best use of formative assessment?",
           "choices": [
-            "Treat each check as a final evaluation.",
-            "Use it only for report cards.",
-            "Use timely evidence during learning to adjust instruction, feedback, grouping, scaffolds, and student self-monitoring.",
-            "Wait until the end of the term to respond."
+            "Record weekly check scores neatly in the electronic gradebook to substantiate quarterly report-card averages cleanly.",
+            "Use timely learning evidence to adjust teaching, feedback, grouping, scaffolds, and self-monitoring.",
+            "Wait until the end of the grading period to compile weekly results and plan reteaching for the next unit.",
+            "Score each weekly check as a permanent summative grade so students take every short quiz seriously in class."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Formative assessment is a process for eliciting and using evidence to guide next learning actions, not simply frequent testing.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -857,12 +857,12 @@
           "id": "lead5412-ch-04-check-04",
           "prompt": "How should leaders interpret subgroup outcome gaps?",
           "choices": [
-            "Infer fixed ability differences.",
-            "Hide subgroup results to avoid conflict.",
-            "Attribute the gap to families without evidence.",
-            "Disaggregate opportunity, access, instruction, climate, discipline, attendance, assessment, and implementation evidence before selecting a response."
+            "Keep subgroup disaggregation internal to avoid uncomfortable conversations or community conflict during board meetings.",
+            "Attribute persistent achievement disparities primarily to differences in family support before reviewing school practices.",
+            "Disaggregate opportunity, access, instruction, climate, discipline, attendance, assessment, and delivery data first.",
+            "Infer stable differences in student academic ability across groups and adjust instructional pacing expectations accordingly."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Equity-focused analysis examines system conditions and student experiences rather than treating group averages as causes or individual destinies.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -877,12 +877,12 @@
           "id": "lead5412-ch-04-check-05",
           "prompt": "What supports rigorous instruction for each student?",
           "choices": [
-            "Maintain worthwhile cognitive goals while providing explicit instruction, language and access supports, feedback, productive practice, and multiple pathways to demonstrate learning.",
-            "Lower the goal whenever support is needed.",
-            "Increase workload regardless of purpose.",
-            "Reserve complex tasks for advanced groups."
+            "Reduce the cognitive target whenever a student requires language or accessibility scaffolds during complex lessons.",
+            "Increase nightly homework volume and reading length across grades regardless of alignment with learning objectives.",
+            "Reserve open-ended analytical and problem-solving tasks for students already placed in advanced honors sections.",
+            "Keep strong cognitive goals while adding explicit teaching, access scaffolds, feedback, and varied outputs."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Rigor combines meaningful cognitive demand with equitable opportunities, responsive supports, and evidence of learning.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -997,10 +997,10 @@
           "id": "lead5412-ch-05-check-01",
           "prompt": "What evidence best describes school climate?",
           "choices": [
-            "Use disaggregated student, family, and staff perception data with attendance, discipline, participation, safety, access, and observational evidence.",
-            "Use the leaders impressions only.",
-            "Use one schoolwide average.",
-            "Count posters about belonging."
+            "Combine disaggregated perceptions from stakeholders with attendance, discipline, participation, and observation.",
+            "Rely on the principal’s daily hallway impressions because administrators observe every wing of the building routinely.",
+            "Use a single schoolwide average climate score to summarize overall student connectedness cleanly for the board.",
+            "Count how many welcoming posters and kindness banners appear in hallways as the main measure of school climate."
           ],
           "answerIndex": 0,
           "rationale": "Climate is experienced differently across groups and settings, so leaders triangulate perception, participation, outcome, and process evidence.",
@@ -1017,10 +1017,10 @@
           "id": "lead5412-ch-05-check-02",
           "prompt": "How should leaders respond to disproportionality in discipline referrals?",
           "choices": [
-            "Assume the data prove individual bias in every case.",
-            "Audit referral definitions, comparable incidents, decision points, classroom supports, access, consequences, and stakeholder experience under current civil-rights requirements.",
-            "Stop reporting subgroup data.",
-            "Increase penalties for all students."
+            "Conclude from the subgroup numbers that every staff referral in the building reflects deliberate personal racial bias.",
+            "Audit referral definitions, comparable acts, decision points, supports, consequences, and stakeholder views.",
+            "Stop disaggregating discipline referrals by race and disability so monthly reports focus neutrally on total counts.",
+            "Increase exclusionary penalties across every student group equally so disciplinary consequences appear more uniform."
           ],
           "answerIndex": 1,
           "rationale": "Disproportionality is a signal for careful inquiry into policy, implementation, opportunity, discretion, and legal obligations, not a complete causal finding.",
@@ -1037,10 +1037,10 @@
           "id": "lead5412-ch-05-check-03",
           "prompt": "What builds authentic student belonging?",
           "choices": [
-            "Add more decorations.",
-            "Invite only high-achieving students to advise leaders.",
-            "Create sustained structures for voice, representation, accessible participation, trusted relationships, responsive support, and accountability for experience.",
-            "Treat belonging as attendance at events."
+            "Expand cultural decorations and hallway banners during spirit weeks so students feel visibly welcomed at school.",
+            "Create a student advisory council limited to honor-roll leaders so meetings stay polished and well organized.",
+            "Build lasting structures for voice, representation, accessible participation, trusted adults, support, and accountability.",
+            "Track total student attendance at pep rallies and dances as the primary indicator of schoolwide belonging."
           ],
           "answerIndex": 2,
           "rationale": "Belonging grows from daily relationships, identity safety, meaningful participation, access, and evidence that student input affects the institution.",
@@ -1057,10 +1057,10 @@
           "id": "lead5412-ch-05-check-04",
           "prompt": "How should student voice inform decisions?",
           "choices": [
-            "Promise every suggestion will be adopted.",
-            "Collect feedback without follow-up.",
-            "Ask students to solve the issue alone.",
-            "Share the findings accessibly, involve affected students in examining causes and options, act within governance, and report what changed and why."
+            "Promise students beforehand that every policy suggestion submitted on the survey will be adopted verbatim next term.",
+            "Collect the annual student feedback survey carefully and archive the charts without reporting back to classrooms.",
+            "Turn the entire homework policy revision over to students alone so adults avoid influencing youth leadership.",
+            "Share findings accessibly, involve affected students in analyzing options, act within governance, and report back."
           ],
           "answerIndex": 3,
           "rationale": "Meaningful voice includes representation, influence, transparent constraints, adult responsibility, and a feedback loop.",
@@ -1077,10 +1077,10 @@
           "id": "lead5412-ch-05-check-05",
           "prompt": "What is a culturally responsive climate practice?",
           "choices": [
-            "Examine cultural and linguistic assumptions, clarify teachable expectations, compare comparable behavior, and use relationship-centered, nondiscriminatory responses.",
-            "Eliminate behavior expectations.",
-            "Apply stereotypes more consistently.",
-            "Avoid discussing culture."
+            "Examine cultural assumptions, teach clear expectations, compare similar acts, and use equitable responses.",
+            "Eliminate schoolwide behavioral expectations so staff avoid imposing cultural norms on diverse classroom interactions.",
+            "Apply existing informal staff judgments more uniformly across classrooms so disciplinary rulings feel predictable.",
+            "Avoid discussing cultural differences in faculty meetings so behavioral expectations remain strictly colorblind."
           ],
           "answerIndex": 0,
           "rationale": "Responsive leadership preserves clear expectations while examining bias, communication differences, context, and equitable implementation.",
@@ -1197,12 +1197,12 @@
           "id": "lead5412-ch-06-check-01",
           "prompt": "What characterizes a professional culture of collective responsibility?",
           "choices": [
-            "Shared learning goals, collaborative evidence use, mutual support, clear norms, distributed expertise, and accountability for every student.",
-            "Public competition for the highest scores.",
-            "Identical beliefs enforced without dialogue.",
-            "Isolation to protect teacher autonomy."
+            "Protected classroom isolation where teachers make autonomous instructional choices without sharing student work.",
+            "Shared learning goals, collaborative data use, mutual support, clear norms, and joint student ownership.",
+            "Friendly public competition posting each teacher’s classroom test gains so individual ambition lifts school averages.",
+            "Uniform agreement across faculty enforced without open debate so building priorities stay outwardly harmonious."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Collective responsibility combines professional agency with shared commitments, collaboration, evidence, and support across classrooms.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -1217,12 +1217,12 @@
           "id": "lead5412-ch-06-check-02",
           "prompt": "How should team norms be established?",
           "choices": [
-            "Ask quieter members to adapt.",
-            "Co-create and enforce observable norms for participation, listening, evidence, challenge, decision making, and repair, then monitor who is heard.",
-            "Use unwritten norms known only to veterans.",
-            "End discussion whenever disagreement appears."
+            "Close group discussion and move immediately to a leadership decision whenever minority disagreement surfaces.",
+            "Coach quieter committee members privately to speak louder and assert themselves faster during lively debates.",
+            "Co-create observable agreements for voice, listening, evidence, dissent, decisions, and equity repair.",
+            "Rely on longstanding unwritten meeting customs known to veteran staff so groups avoid spending time on rules."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Explicit, consistently facilitated norms improve psychological safety, equitable participation, and the quality of collective reasoning.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -1237,12 +1237,12 @@
           "id": "lead5412-ch-06-check-03",
           "prompt": "What is a productive approach to conflict?",
           "choices": [
-            "Choose the louder department.",
-            "Avoid the issue until scheduling closes.",
-            "Clarify the common student-centered interest, gather constraints and evidence, distinguish positions from needs, and facilitate options with decision criteria.",
-            "Frame one side as unprofessional."
+            "Reprimand the more assertive department chair for unprofessional conduct before examining instructional time constraints.",
+            "Award the disputed instructional block to whichever department makes the strongest case during the scheduling meeting.",
+            "Delay addressing the scheduling conflict until master-schedule deadlines close so temporary friction settles on its own.",
+            "Center shared student interests, gather constraints and data, separate positions from needs, and compare options."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Constructive conflict work focuses on interests, evidence, transparent criteria, and relationships rather than suppression or positional victory.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -1257,12 +1257,12 @@
           "id": "lead5412-ch-06-check-04",
           "prompt": "How should leaders repair trust after a process failure?",
           "choices": [
-            "Say that intent should be enough.",
-            "Remove the consultation promise from records.",
-            "Hold a celebration to change the subject.",
-            "Acknowledge the breach specifically, explain without defensiveness, restore meaningful input where possible, correct the process, and report follow-through."
+            "Acknowledge the breach plainly, explain openly, restore input where feasible, fix procedures, and report back.",
+            "Remind faculty that leadership intentions were student centered so staff should move past the consultation lapse.",
+            "Delete the earlier consultation commitment from published meeting minutes so official records match the final timeline.",
+            "Organize a surprise staff appreciation breakfast the following morning to lift morale and shift focus forward."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Trust repair requires accountability, voice, corrective action, and consistent future behavior rather than image management.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -1277,12 +1277,12 @@
           "id": "lead5412-ch-06-check-05",
           "prompt": "What supports staff well-being without lowering professional expectations?",
           "choices": [
-            "Workload, role clarity, schedule, resources, psychological safety, autonomy, support, recognition, and policy while preserving clear student-centered priorities.",
-            "Offer self-care tips as the only response.",
-            "Assume stress proves lack of commitment.",
-            "Remove all accountability."
+            "Suspend instructional expectations and accountability reviews across classrooms until faculty morale stabilizes.",
+            "Review workload, role clarity, schedules, resources, safety, autonomy, support, and policy while keeping student priorities.",
+            "Email weekly mindfulness and self-care reminders as the primary building response to rising staff exhaustion.",
+            "Interpret rising absences and stress reports as signs of weak staff commitment to the school’s academic goals."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Well-being is shaped by organizational conditions; leaders address preventable demands and supports while sustaining meaningful standards.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -1392,12 +1392,12 @@
           "id": "lead5412-ch-07-check-01",
           "prompt": "What is the first step in analyzing an ethical dilemma?",
           "choices": [
-            "Identify affected rights, duties, values, evidence, power differences, alternatives, consequences, and governing requirements before deciding transparently.",
-            "Choose the option with the highest average only.",
-            "Follow personal preference without disclosure.",
-            "Avoid naming the tradeoff."
+            "Rely on personal administrative judgment without disclosing value tradeoffs so decisions appear calm and unified.",
+            "Frame the choice as a purely logistical update so stakeholders avoid debating painful equity tradeoffs.",
+            "Identify affected rights, duties, values, data, power gaps, options, consequences, and governing rules transparently.",
+            "Select whichever option maximizes the building’s overall average score because aggregate gains serve the largest group."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Ethical analysis makes competing obligations and impacts visible, centers those affected, and integrates law, professional standards, evidence, and transparency.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -1411,12 +1411,12 @@
           "id": "lead5412-ch-07-check-02",
           "prompt": "How should a leader handle a personal financial conflict?",
           "choices": [
-            "Keep the interest private if the product seems useful.",
-            "Disclose the interest, follow ethics and procurement rules, preserve an objective process, and recuse when impartiality cannot be maintained.",
-            "Approve the contract before competitors apply.",
-            "Use confidential student information in marketing."
+            "Approve the purchase order before competing vendors submit bids so students receive helpful tools sooner.",
+            "Share confidential student outcome clips to help the vendor demonstrate local effectiveness during selection.",
+            "Keep the financial stake private if the vendor’s product clearly benefits students and fits the school budget.",
+            "Disclose the interest, follow procurement rules, protect objectivity, and recuse if impartiality is at risk."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Actual and apparent conflicts can undermine trust and fairness; disclosure and required recusal protect the institution and decision process.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -1430,12 +1430,12 @@
           "id": "lead5412-ch-07-check-03",
           "prompt": "What does equitable resource allocation mean?",
           "choices": [
-            "Assume equal amounts always create equity.",
-            "Allocate based on political influence.",
-            "Use transparent criteria tied to student need, access, program requirements, effectiveness, legal obligations, and opportunity, then monitor distribution and impact.",
-            "Hide the criteria to prevent disagreement."
+            "Use transparent criteria tied to student need, access, legal duties, effectiveness, and opportunity, then monitor.",
+            "Keep budget allocation criteria confidential among senior leaders to prevent unproductive disputes among departments.",
+            "Allocate identical per-pupil dollars across every program so funding formulas remain mathematically equal everywhere.",
+            "Adjust discretionary budget shares toward programs backed by the most vocal parent and community advocates."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Equity may require differentiated resources; leaders document the rationale and test whether allocation improves fair access and outcomes.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -1449,12 +1449,12 @@
           "id": "lead5412-ch-07-check-04",
           "prompt": "How should leaders use authority ethically?",
           "choices": [
-            "Threaten an unfavorable assignment.",
-            "End all discussion of the initiative.",
-            "Promise the staff member final authority.",
-            "Invite evidence and respectful challenge, clarify decision rights, protect against retaliation, and explain how input will inform or not inform the decision."
+            "Promise the questioning staff member final veto power over the initiative to demonstrate open leadership.",
+            "Invite evidence and respectful challenge, clarify decision rights, protect against retaliation, and explain use.",
+            "Warn the questioning staff member privately that persistent skepticism could affect preferred committee assignments.",
+            "Close floor discussion of the initiative right away so public questioning does not weaken faculty unity."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Ethical authority combines role responsibility with voice, procedural fairness, reason giving, and protection from retaliation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -1468,12 +1468,12 @@
           "id": "lead5412-ch-07-check-05",
           "prompt": "What makes transparency responsible rather than absolute?",
           "choices": [
-            "Explain the process, applicable standards, timeline, and what can be shared while protecting privacy, due process, safety, and the integrity of the review.",
-            "Release the entire personnel file.",
-            "Say nothing about process or timing.",
-            "Speculate about likely findings."
+            "Decline to share even the general review steps or expected timeline until every formal proceeding concludes.",
+            "Offer informal hints about likely disciplinary outcomes so worried families feel reassured that action is underway.",
+            "Share the process, standards, and timeline while guarding privacy, due process, safety, and integrity.",
+            "Release the full internal personnel investigation file to families so complete openness restores community confidence."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Responsible transparency provides meaningful process information without violating confidentiality or prejudging an unresolved matter.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -1597,12 +1597,12 @@
           "id": "lead5412-ch-08-check-01",
           "prompt": "How should identifiable student records be shared internally?",
           "choices": [
-            "Verify legitimate educational interest and applicable authority, use the minimum necessary information and a secure method, and follow FERPA and local policy.",
-            "Share because every employee works for the district.",
-            "Remove the name but leave uniquely identifying details.",
-            "Post the record in a shared public folder."
+            "Send the detailed student support file to the building list because every employee works under district confidentiality.",
+            "Delete the student’s first and last name from the broad email while keeping rare schedule and service details.",
+            "Upload the support record into a shared faculty drive folder so authorized adults can open it conveniently.",
+            "Verify legitimate educational interest and authority, share minimum necessary information securely, and follow FERPA."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Professional curiosity is not legitimate educational interest; education records require role-based, purpose-limited, secure handling under current law and policy.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -1619,12 +1619,12 @@
           "id": "lead5412-ch-08-check-02",
           "prompt": "What is required before relying on a vendor for student data services?",
           "choices": [
-            "Accept the default consumer terms immediately.",
-            "Educational purpose, authority or consent, direct control, data minimization, security, use and redisclosure limits, retention, deletion, accessibility, and procurement terms.",
-            "Assume free tools are outside privacy rules.",
-            "Let each teacher upload any data independently."
+            "Check educational purpose, legal authority, direct control, minimization, security, redisclosure limits, deletion, and terms.",
+            "Treat free classroom web applications as exempt from district privacy review because no school funds change hands.",
+            "Allow individual teachers to upload student rosters freely once they verify the site uses encrypted web links.",
+            "Click through the standard consumer terms right away so teachers can pilot the free application during class."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Vendor convenience does not remove institutional privacy, security, accessibility, contracting, and oversight responsibilities.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -1641,12 +1641,12 @@
           "id": "lead5412-ch-08-check-03",
           "prompt": "How should MTSS relate to special-education evaluation?",
           "choices": [
-            "Require every tier before any referral.",
-            "Treat intervention response as the sole eligibility criterion.",
-            "Provide appropriate supports, but MTSS must not delay or deny a full individual evaluation when a disability is suspected under current requirements.",
-            "Stop general-education support once evaluation begins."
+            "Use documented response to tiered intervention as the single criterion for determining special education eligibility.",
+            "Deliver tiered supports without delaying or denying a full individual evaluation when disability is suspected.",
+            "Discontinue general education classroom supports as soon as parents sign consent for a formal disability evaluation.",
+            "Require every referred student to complete fixed months across all intervention tiers before any evaluation referral."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "MTSS and evaluation can proceed responsively; federal guidance states that MTSS cannot delay or deny a warranted evaluation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -1663,12 +1663,12 @@
           "id": "lead5412-ch-08-check-04",
           "prompt": "What makes an evaluation process defensible?",
           "choices": [
-            "Use the fastest measure only.",
-            "Ignore language and sensory access.",
-            "Let program availability determine eligibility.",
-            "Use varied valid tools and strategies, parent information, qualified personnel, nondiscriminatory administration, relevant functional and academic evidence, and no single measure as the sole criterion."
+            "Administer standardized tests in uniform English without examining language proficiency or sensory access needs.",
+            "Base disability eligibility decisions on whether current specialized program slots are open in the building.",
+            "Use varied valid tools, parent input, qualified staff, nondiscriminatory testing, and no single sole criterion.",
+            "Rely on the fastest brief screening instrument so the eligibility meeting finishes ahead of legal deadlines."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "IDEA evaluation procedures require comprehensive, technically sound, nondiscriminatory evidence related to disability and educational need.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -1685,12 +1685,12 @@
           "id": "lead5412-ch-08-check-05",
           "prompt": "What is procedural due process in an employment decision?",
           "choices": [
-            "Follow current law, contract, and policy for notice, evidence, an opportunity to respond, impartial review, representation rights, documentation, and appeal where applicable.",
-            "Announce guilt before the process.",
-            "Destroy notes after the meeting.",
-            "Substitute rumor for an investigation."
+            "State the employee’s guilt during the initial notice meeting so disciplinary authority remains unmistakable.",
+            "Discard interview notes right after the conference to avoid creating discoverable personnel documentation.",
+            "Substitute unverified hallway rumors from staff for a documented factual inquiry when urgency feels high.",
+            "Follow law, contract, and policy for notice, evidence, response opportunity, impartial review, representation, and appeal."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "High-stakes employment action requires fair, documented procedures and qualified guidance; exact rights vary by jurisdiction and agreement.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -1812,10 +1812,10 @@
           "id": "lead5412-ch-09-check-01",
           "prompt": "What makes a school budget strategic?",
           "choices": [
-            "Connect expenditures to student needs, legal obligations, strategic goals, evidence of effectiveness, equity, total cost, sustainability, and measurable review.",
-            "Fund programs only because they are longstanding.",
-            "Use available money without defining outcomes.",
-            "Hide tradeoffs from stakeholders."
+            "Tie spending to student needs, legal duties, goals, evidence, equity, total cost, and review.",
+            "Roll every existing line item forward unchanged because longstanding budget allocations avoid faculty disputes.",
+            "Spend remaining year-end funds rapidly on available supplies without connecting purchases to defined student outcomes.",
+            "Keep budget reductions and priority tradeoffs hidden from school stakeholders so community anxiety stays low."
           ],
           "answerIndex": 0,
           "rationale": "Strategic budgeting is a transparent allocation process that connects finite resources with priorities, obligations, implementation, and evaluation.",
@@ -1833,10 +1833,10 @@
           "id": "lead5412-ch-09-check-02",
           "prompt": "How should leaders analyze the total cost of an initiative?",
           "choices": [
-            "Ignore staff time because salaries already exist.",
-            "Include staffing, training, substitutes, devices, accessibility, data integration, maintenance, security, opportunity cost, renewal, and exit costs.",
-            "Assume future renewals will be free.",
-            "Exclude supports needed for access."
+            "Exclude teacher training and coaching hours from cost projections because existing district salaries cover staff time.",
+            "Include staffing, training, substitutes, hardware, access, integration, upkeep, security, and renewal costs.",
+            "Assume vendor renewal pricing will stay flat or free in later years once the school completes initial onboarding.",
+            "Omit captioning, translation, and assistive-technology compatibility costs until a specific student requests them."
           ],
           "answerIndex": 1,
           "rationale": "Total-cost analysis prevents hidden implementation demands from undermining feasibility, equity, or sustainability.",
@@ -1854,10 +1854,10 @@
           "id": "lead5412-ch-09-check-03",
           "prompt": "What is a sound procurement safeguard?",
           "choices": [
-            "Guarantee the vendor the award.",
-            "Delete competing proposals.",
-            "Use disclosed conflicts, objective requirements, fair competition or authorized exceptions, documented evaluation, required approvals, and contract protections.",
-            "Use student data during the sales demonstration without authority."
+            "Assure the helpful vendor of contract award beforehand because their staff invested unpaid time drafting criteria.",
+            "Remove competing vendor bids that scored lower on the vendor-drafted rubric so the selection file stays tidy.",
+            "Require conflict disclosure, objective specs, fair competition, documented scoring, and contract protections.",
+            "Upload identifiable student records during the live sales demo without formal authorization so features look realistic."
           ],
           "answerIndex": 2,
           "rationale": "Fair procurement protects public resources, integrity, privacy, and trust through transparent criteria and required controls.",
@@ -1875,10 +1875,10 @@
           "id": "lead5412-ch-09-check-04",
           "prompt": "How should facility priorities be set?",
           "choices": [
-            "Prioritize the most visible cosmetic project.",
-            "Allocate by staff popularity vote only.",
-            "Delay urgent hazards until the next cycle.",
-            "Use life safety, legal access, instructional impact, condition, risk, affected populations, cost, dependencies, and continuity criteria with transparent documentation."
+            "Fund the most visible front-entrance cosmetic upgrade first so visiting families notice immediate facility pride.",
+            "Allocate limited capital repair funds through an informal faculty popularity poll so building morale improves.",
+            "Postpone urgent roof and accessibility hazards until the next multi-year bond cycle to stretch current reserves.",
+            "Prioritize life safety, legal access, instructional impact, condition, risk, affected groups, cost, and continuity transparently."
           ],
           "answerIndex": 3,
           "rationale": "Facilities decisions should be risk based, equitable, legally compliant, and connected to learning and continuity rather than appearance or influence.",
@@ -1896,10 +1896,10 @@
           "id": "lead5412-ch-09-check-05",
           "prompt": "What is a key K-12 cybersecurity leadership responsibility?",
           "choices": [
-            "Establish a shared security culture with multifactor authentication, updates, tested backups, incident response, training, vendor controls, and continuity planning appropriate to role.",
-            "Publish passwords for easier access.",
-            "Rely on one untested backup.",
-            "Keep incidents secret from response personnel."
+            "Build shared security with multifactor authentication, updates, tested backups, incident plans, training, and vendor controls.",
+            "Post shared classroom login credentials on office whiteboards so substitute teachers access systems without delay.",
+            "Rely on one automated cloud backup configured years ago without running periodic restoration tests.",
+            "Keep suspected phishing or data incidents quiet from technical responders until building leaders verify the damage."
           ],
           "answerIndex": 0,
           "rationale": "CISA emphasizes that K-12 cyber resilience requires leadership, prioritized controls, trained users, tested recovery, and coordinated response.",
@@ -2022,12 +2022,12 @@
           "id": "lead5412-ch-10-check-01",
           "prompt": "What makes a personnel selection process defensible?",
           "choices": [
-            "Use job-related criteria, structured evidence, trained diverse reviewers, consistent procedures, reference checks, documented reasoning, accessibility, and current employment requirements.",
-            "Use personal familiarity as the main criterion.",
-            "Ask different protected-status questions of each candidate.",
-            "Discard interview records immediately."
+            "Shred interview rubrics and scoring sheets right after offering the job so personnel folders stay uncluttered.",
+            "Use job-related criteria, structured evidence, trained diverse panels, consistent steps, references, access, and legal rules.",
+            "Treat prior personal familiarity with an internal candidate as the decisive factor so onboarding moves rapidly.",
+            "Tailor personal questions about family plans or age differently across finalists to gauge long-term schedule fit."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "A fair selection system links evidence to role requirements and applies transparent, consistent, lawful procedures that reduce arbitrary influence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2043,12 +2043,12 @@
           "id": "lead5412-ch-10-check-02",
           "prompt": "How should an employee performance concern be addressed?",
           "choices": [
-            "Build a secret case until dismissal.",
-            "Document job-related evidence, clarify expectations, hear the employee response, provide support and timelines, monitor progress, and follow current contract, policy, and due process.",
-            "Discuss the employee publicly.",
-            "Use student rumors as the sole evidence."
+            "Rely on unverified student hallway rumors as the sole evidentiary basis for formal personnel discipline.",
+            "Compile a private file of undocumented concerns silently until sufficient material accumulates for sudden dismissal.",
+            "Document job-related evidence, clarify expectations, hear the employee, provide support and timelines, and follow due process.",
+            "Discuss the employee’s ongoing classroom weaknesses openly during faculty meetings to reinforce building norms."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Effective supervision is timely, evidence based, developmental, documented, and procedurally fair; exact requirements vary by jurisdiction and agreement.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2064,12 +2064,12 @@
           "id": "lead5412-ch-10-check-03",
           "prompt": "What is the foundation of a high-quality emergency operations plan?",
           "choices": [
-            "Rely on the copied plan without review.",
-            "Keep roles unknown to avoid alarm.",
-            "Develop a collaborative, site-specific emergency operations plan that defines risk, roles, communication, access, reunification, training, exercises, evidence-based revision, and recovery.",
-            "Plan only for the initial response."
+            "Focus emergency planning strictly on the first ten minutes of lockdown while leaving recovery for later improvisation.",
+            "Keep the borrowed campus binder on the shelf as written because school emergencies follow similar basic steps.",
+            "Keep specific staff emergency roles private until a real incident occurs so drills do not alarm teachers or students.",
+            "Co-design a site-specific preparedness protocol covering risks, roles, access, reunification, drills, and recovery."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Federal guidance describes comprehensive, collaborative, regularly reviewed EOPs supported by training, exercises, accessible procedures, and recovery planning.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2085,12 +2085,12 @@
           "id": "lead5412-ch-10-check-04",
           "prompt": "How should leaders communicate during an active emergency?",
           "choices": [
-            "Post speculation immediately.",
-            "Use several conflicting unofficial channels.",
-            "Delay all communication until the incident ends.",
-            "Follow the incident communication plan, coordinate with authorized responders, prioritize life safety, share verified accessible updates, protect sensitive details, and document decisions."
+            "Follow the incident plan, coordinate responders, prioritize safety, share verified updates, and document.",
+            "Post rapid unverified hypotheses on social media right away so worried families see immediate leadership visibility.",
+            "Encourage department heads to send separate informal text updates to their own parent lists to speed outreach.",
+            "Withhold all family communication until the emergency concludes completely so every detail is settled beforehand."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Crisis communication must be timely, coordinated, accurate, accessible, and bounded by safety, privacy, and operational needs.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2106,12 +2106,12 @@
           "id": "lead5412-ch-10-check-05",
           "prompt": "What belongs in continuity planning?",
           "choices": [
-            "Prioritized essential functions, offline contacts and procedures, tested backups, alternative instructional and operational workflows, decision authority, communications, restoration criteria, and after-action review.",
-            "A single online copy of the plan.",
-            "Dependence on one unavailable employee.",
-            "Restoration without checking integrity."
+            "Reconnect compromised network servers rapidly without verifying data integrity or clearing malware threats first.",
+            "Prioritized essential functions, offline contacts and plans, tested backups, alternate workflows, roles, and restoration checks.",
+            "Store the sole master copy of the continuity plan on the cloud network drive so every leader sees live edits.",
+            "Rely on one veteran technology specialist’s undocumented institutional memory to rebuild systems during outages."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Continuity planning identifies essential services and rehearsed alternatives so learning, safety, communication, and recovery can continue through disruption.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2227,12 +2227,12 @@
           "id": "lead5412-ch-11-check-01",
           "prompt": "What makes family engagement reciprocal?",
           "choices": [
-            "Learn family goals, knowledge, languages, access needs, and experiences; co-design meaningful roles and maintain two-way communication tied to student learning and well-being.",
-            "Send more one-way reminders.",
-            "Limit engagement to fundraising.",
-            "Assume attendance at events measures partnership."
+            "Focus family engagement committees primarily on fundraising drives and event refreshments to boost school spirit.",
+            "Measure schoolwide family partnership strength strictly by counting caregiver sign-in sheets at open-house nights.",
+            "Learn family goals, assets, languages, and access needs; co-design meaningful roles and two-way contact.",
+            "Increase the frequency of one-way school reminder flyers so families hear more often about classroom deadlines."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Reciprocal engagement treats families as knowledgeable partners with influence, accessible communication, shared learning goals, and ongoing feedback.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2247,12 +2247,12 @@
           "id": "lead5412-ch-11-check-02",
           "prompt": "How should leaders reduce participation barriers?",
           "choices": [
-            "Conclude other families are uninterested.",
-            "Use participation data and family input to vary time, format, location, language, childcare, transportation, technology, outreach, and decision pathways.",
-            "Keep the format unchanged for consistency.",
-            "Require families to find their own interpreters."
+            "Keep the identical evening auditorium format each month so meeting expectations remain steady and predictable.",
+            "Ask multilingual families to bring their own informal friends or relatives to translate during evening school forums.",
+            "Conclude from low evening turnout that non-attending families are less invested in their children’s academic success.",
+            "Use turnout data and family input to vary time, format, site, language, childcare, transit, tech, and decision paths."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Equitable engagement changes institutional access conditions and offers multiple meaningful ways to participate rather than blaming families.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2267,12 +2267,12 @@
           "id": "lead5412-ch-11-check-03",
           "prompt": "What is effective crisis communication with families?",
           "choices": [
-            "Wait for rumors to settle.",
-            "Share technical detail without action steps.",
-            "Provide prompt verified plain-language information through accessible channels about the issue, immediate actions, student safety, family responsibilities, supports, and next update.",
-            "Use only a channel many families cannot access."
+            "Send prompt verified plain-language updates via accessible channels on the issue, actions, safety, roles, and next update.",
+            "Post the dismissal change exclusively on one mobile app that many district households do not regularly use.",
+            "Hold off on messaging until social-media rumors quiet down so families receive one polished summary afterward.",
+            "Circulate detailed engineering specifications on the water line without listing clear dismissal pickup steps."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Families need timely, accurate, actionable, accessible updates with a reliable feedback and update process.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2287,12 +2287,12 @@
           "id": "lead5412-ch-11-check-04",
           "prompt": "How should a leader respond to a contentious public meeting?",
           "choices": [
-            "Allow threats because the topic is emotional.",
-            "Silence all criticism of the proposal.",
-            "Promise an outcome before governance review.",
-            "State the decision process and constraints, enforce viewpoint-neutral safety and time norms, provide accessible evidence, listen for interests and impacts, and document follow-up."
+            "Promise angry speakers at the microphone that the proposed boundary map will be withdrawn before board review.",
+            "State process and limits, apply viewpoint-neutral norms, share clear data, listen, and document follow-up.",
+            "Permit personal threats toward speakers or staff because boundary changes naturally provoke intense community emotion.",
+            "Shut down all public comments criticizing the boundary proposal so the meeting stays calm and orderly."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Leaders can protect vigorous participation while maintaining safety, fairness, transparency, and the lawful decision process.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2307,12 +2307,12 @@
           "id": "lead5412-ch-11-check-05",
           "prompt": "What makes a school-community partnership strategic?",
           "choices": [
-            "Alignment with identified needs and goals, evidence, access, roles, safeguarding, data terms, capacity, cost, accountability, and sustainability before agreement.",
-            "Accept any donated program.",
-            "Share student records to secure the offer.",
-            "Let the partner define school priorities."
+            "Provide identifiable student academic rosters upfront so the nonprofit agrees to bring its program to campus.",
+            "Allow the external nonprofit to define building improvement priorities so partnership resources flow smoothly.",
+            "Check alignment with local needs, evidence, access, roles, safeguarding, data rules, cost, accountability, and durability.",
+            "Accept every donated community program right away because free external offerings enrich campus visibility."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Partnerships add value when mission alignment, protections, reciprocal responsibilities, implementation, and evaluation are explicit.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2432,12 +2432,12 @@
           "id": "lead5412-ch-12-check-01",
           "prompt": "How should leaders map community assets?",
           "choices": [
-            "Identify organizations, cultural and linguistic knowledge, trusted leaders, services, spaces, networks, student and family strengths, access conditions, and partnership gaps with community members.",
-            "List only problems from public data.",
-            "Assume formal organizations represent everyone.",
-            "Treat families as service recipients only."
+            "Compile a neighborhood profile strictly from public crime, poverty, and unemployment tables to justify grants.",
+            "Treat formal civic boards as speaking for every resident without engaging informal neighborhood networks.",
+            "Position families solely as passive recipients of school charity services rather than knowledgeable partners.",
+            "Inventory local groups, cultural and linguistic strengths, trusted voices, spaces, and gaps with residents."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Asset mapping recognizes community capacity and relationships while still examining unmet needs, access, representation, and fit with school goals.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2453,12 +2453,12 @@
           "id": "lead5412-ch-12-check-02",
           "prompt": "What makes educational advocacy evidence based?",
           "choices": [
-            "Use one story as proof of total prevalence.",
-            "Combine lived experience with disaggregated need and access data, service capacity, research, legal and equity analysis, resource implications, implementation design, and measurable follow-up.",
-            "Promise the resource will solve every problem.",
-            "Exclude affected students and families."
+            "Pair lived stories with disaggregated need and access data, capacity, research, equity, costs, and review.",
+            "Assure budget decision makers that funding one new position will eliminate severe behavioral incidents schoolwide.",
+            "Draft the mental-health resource proposal strictly among administrators without consulting affected students or families.",
+            "Present one vivid urgent student crisis story as sufficient proof of schoolwide mental-health service prevalence."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Responsible advocacy integrates multiple forms of evidence, names uncertainty, centers affected communities, and proposes an implementable, evaluable response.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2474,12 +2474,12 @@
           "id": "lead5412-ch-12-check-03",
           "prompt": "How should a school leader work within governance?",
           "choices": [
-            "Ignore the policy privately.",
-            "Attack individual board members publicly.",
-            "Clarify the policy and authority, provide evidence and implementation implications through proper channels, carry out lawful direction, document concerns, and monitor effects.",
-            "Invent a contradictory school rule."
+            "Criticize individual school board members publicly in local media to build pressure against the policy vote.",
+            "Clarify policy and authority, share delivery data via proper channels, enact lawful direction, and monitor.",
+            "Issue a contradictory building handbook rule that overrides the board policy for local classroom convenience.",
+            "Quietly decline to enforce the adopted board policy inside the building until trustees revisit the issue later."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "School leaders exercise professional judgment within lawful governance by advising candidly, implementing authorized decisions, and reporting evidence through established channels.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2495,12 +2495,12 @@
           "id": "lead5412-ch-12-check-04",
           "prompt": "What does public accountability require?",
           "choices": [
-            "Remove difficult findings to protect morale.",
-            "Attribute every miss to families.",
-            "Report activities instead of results.",
-            "Present complete relevant outcomes, opportunity and implementation evidence, subgroup patterns, limitations, corrective actions, owners, timelines, and ways stakeholders can respond."
+            "Attribute every missed schoolwide target primarily to low home follow-through rather than instructional delivery.",
+            "Replace student outcome metrics with a lengthy list of staff meetings and workshops held during the year.",
+            "Report full outcomes, opportunity and delivery data, subgroup gaps, limits, corrective owners, timelines, and feedback paths.",
+            "Leave missed targets and subgroup access gaps out of the public summary to protect staff morale during transitions."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Public accountability is transparent about progress and gaps and connects evidence to responsibility, corrective action, and continued participation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2516,12 +2516,12 @@
           "id": "lead5412-ch-12-check-05",
           "prompt": "How should leaders assess representation in advisory groups?",
           "choices": [
-            "Analyze participation barriers and influence, conduct trusted targeted outreach, provide access supports, redesign selection and meeting processes, and monitor whose input affects decisions.",
-            "Claim openness alone guarantees representation.",
-            "Appoint one person to speak for every group.",
-            "Stop collecting demographic participation data."
+            "Maintain that an open-door policy alone guarantees fair community representation across all family groups.",
+            "Appoint one parent from an underrepresented background to represent the views of every diverse neighborhood group.",
+            "Stop tracking demographic participation patterns on advisory rosters so council membership stays colorblind.",
+            "Study participation barriers and influence, do trusted outreach, add access supports, redesign processes, and track impact."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Formal openness may not create meaningful access; leaders examine representation, power, barriers, and actual influence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2545,7 +2545,7 @@
       "domainId": "strategic-leadership",
       "domain": "Strategic Leadership",
       "front": "What should precede revision of a school mission?",
-      "back": "Analyze disaggregated student, opportunity, implementation, climate, and stakeholder evidence before facilitating an inclusive review.",
+      "back": "Analyze disaggregated student, opportunity, implementation, climate, and stakeholder data before an inclusive review.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2561,7 +2561,7 @@
       "domainId": "strategic-leadership",
       "domain": "Strategic Leadership",
       "front": "What makes a school vision educationally useful?",
-      "back": "Connect a clear future state for every student with shared values, observable commitments, and decisions the community can enact.",
+      "back": "Connect a clear future state for every student with shared values, observable commitments, and real decisions.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2577,7 +2577,7 @@
       "domainId": "strategic-leadership",
       "domain": "Strategic Leadership",
       "front": "Which goal is best designed for strategic monitoring?",
-      "back": "Specify the learner outcome, baseline, target, timeframe, relevant subgroup evidence, responsible actions, and review intervals.",
+      "back": "Specify the student outcome, baseline, realistic target, timeframe, subgroup evidence, owners, and review dates.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2593,7 +2593,7 @@
       "domainId": "strategic-leadership",
       "domain": "Strategic Leadership",
       "front": "How should district and school goals relate?",
-      "back": "Clarify the governing requirements, align the school strategy where possible, and document any needed escalation or approved adaptation.",
+      "back": "Clarify governing rules, align school priorities where feasible, and document any needed escalation or waiver.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2609,7 +2609,7 @@
       "domainId": "strategic-leadership",
       "domain": "Strategic Leadership",
       "front": "What is the role of core values in leadership?",
-      "back": "Use the value consistently in resource, access, staffing, instruction, discipline, communication, and improvement decisions.",
+      "back": "Apply the value consistently across resource, access, staffing, instruction, discipline, and improvement choices.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2625,7 +2625,7 @@
       "domainId": "strategic-leadership",
       "domain": "Strategic Leadership",
       "front": "How should leaders engage dissent during goal setting?",
-      "back": "Surface the concerns, examine evidence and barriers with affected groups, revise the strategy when warranted, and explain the final rationale.",
+      "back": "Surface concerns, examine data and barriers with affected groups, revise when warranted, and explain the rationale.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2641,7 +2641,7 @@
       "domainId": "strategic-leadership",
       "domain": "Strategic Leadership",
       "front": "What begins a disciplined continuous-improvement cycle?",
-      "back": "Develop a specific evidence-based problem statement that identifies who is affected, where, when, and under what conditions.",
+      "back": "Draft a specific evidence-based problem statement naming who is affected, where, when, and under what conditions.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2657,7 +2657,7 @@
       "domainId": "strategic-leadership",
       "domain": "Strategic Leadership",
       "front": "What is a theory of action in strategic school improvement?",
-      "back": "An explicit if-then account linking actions, implementation conditions, intermediate changes, and intended student outcomes.",
+      "back": "An explicit if-then chain linking actions, implementation conditions, intermediate shifts, and student outcomes.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2673,7 +2673,7 @@
       "domainId": "strategic-leadership",
       "domain": "Strategic Leadership",
       "front": "How should a small change test be used?",
-      "back": "Define the prediction and measures, test on a manageable scale, study process and outcome evidence, and decide what to adapt next.",
+      "back": "State predictions and measures, test on a manageable scale, study process and outcome data, and decide adaptations.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2689,7 +2689,7 @@
       "domainId": "strategic-leadership",
       "domain": "Strategic Leadership",
       "front": "What distinguishes a leading measure from a lagging outcome?",
-      "back": "Frequent evidence of access, dosage, attendance, instructional quality, and near-term learning that can guide implementation before annual outcomes.",
+      "back": "Frequent access, dosage, attendance, instructional quality, and near-term learning data to guide delivery early.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2705,7 +2705,7 @@
       "domainId": "strategic-leadership",
       "domain": "Strategic Leadership",
       "front": "How should leaders respond to implementation variation?",
-      "back": "Study the schedule, training, resources, adaptations, and fidelity evidence with each team before attributing outcome differences.",
+      "back": "Examine schedule, training, resources, adaptations, and fidelity with each team before attributing outcome gaps.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2737,7 +2737,7 @@
       "domainId": "instructional-leadership",
       "domain": "Instructional Leadership",
       "front": "What makes professional learning job embedded?",
-      "back": "Use co-planning, modeling, rehearsal, observation, actionable feedback, and student evidence within teachers actual curriculum and schedules.",
+      "back": "Use co-planning, modeling, rehearsal, observation, actionable feedback, and student work inside teachers’ schedules.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2753,7 +2753,7 @@
       "domainId": "instructional-leadership",
       "domain": "Instructional Leadership",
       "front": "How should a leader identify professional-learning needs?",
-      "back": "Integrate student work, disaggregated outcomes, observation, curriculum demands, teacher goals, and implementation evidence to define a focused need.",
+      "back": "Synthesize classroom artifacts, subgroup trends, lesson observations, pacing demands, and educator priorities first.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2769,7 +2769,7 @@
       "domainId": "instructional-leadership",
       "domain": "Instructional Leadership",
       "front": "What makes instructional feedback actionable?",
-      "back": "Describe specific evidence, connect it to an agreed instructional goal, offer a manageable next step, and arrange practice or follow-up.",
+      "back": "Cite specific classroom evidence, link to a shared goal, name one manageable next step, and schedule follow-up.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2785,7 +2785,7 @@
       "domainId": "instructional-leadership",
       "domain": "Instructional Leadership",
       "front": "How should walkthrough evidence be used?",
-      "back": "Use brief visits for pattern finding and formative feedback within policy, while relying on adequate evidence and required procedures for formal evaluation.",
+      "back": "Use brief visits for trends and formative feedback under policy, keeping formal evaluation tied to full procedures.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2801,7 +2801,7 @@
       "domainId": "instructional-leadership",
       "domain": "Instructional Leadership",
       "front": "What is productive teacher leadership?",
-      "back": "Define a meaningful role, decision boundaries, protected time, support, compensation when applicable, and reciprocal accountability.",
+      "back": "Define a clear role, decision scope, protected time, coaching support, pay where applicable, and shared accountability.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2817,7 +2817,7 @@
       "domainId": "instructional-leadership",
       "domain": "Instructional Leadership",
       "front": "How should professional learning be evaluated?",
-      "back": "Examine educator learning and practice, implementation conditions, student opportunity and outcomes, subgroup access, and unintended effects over time.",
+      "back": "Assess educator practice, implementation conditions, student opportunity and outcomes, equity, and side effects.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2833,7 +2833,7 @@
       "domainId": "instructional-leadership",
       "domain": "Instructional Leadership",
       "front": "What should a curriculum alignment review examine?",
-      "back": "Compare standards, intended and enacted curriculum, tasks, assessments, pacing, access, and student work vertically and horizontally.",
+      "back": "Compare standards, enacted curriculum, tasks, assessments, pacing, access, and student work across grades.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2850,7 +2850,7 @@
       "domainId": "instructional-leadership",
       "domain": "Instructional Leadership",
       "front": "How should student work inform instructional leadership?",
-      "back": "Use a common protocol to identify evidence of thinking, misconceptions, task demands, subgroup opportunity, and a specific instructional response.",
+      "back": "Use a shared protocol to examine thinking, misconceptions, task rigor, subgroup access, and next instructional steps.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2867,7 +2867,7 @@
       "domainId": "instructional-leadership",
       "domain": "Instructional Leadership",
       "front": "What is the best use of formative assessment?",
-      "back": "Use timely evidence during learning to adjust instruction, feedback, grouping, scaffolds, and student self-monitoring.",
+      "back": "Use timely learning evidence to adjust teaching, feedback, grouping, scaffolds, and self-monitoring.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2884,7 +2884,7 @@
       "domainId": "instructional-leadership",
       "domain": "Instructional Leadership",
       "front": "How should leaders interpret subgroup outcome gaps?",
-      "back": "Disaggregate opportunity, access, instruction, climate, discipline, attendance, assessment, and implementation evidence before selecting a response.",
+      "back": "Disaggregate opportunity, access, instruction, climate, discipline, attendance, assessment, and delivery data first.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2901,7 +2901,7 @@
       "domainId": "instructional-leadership",
       "domain": "Instructional Leadership",
       "front": "What supports rigorous instruction for each student?",
-      "back": "Maintain worthwhile cognitive goals while providing explicit instruction, language and access supports, feedback, productive practice, and multiple pathways to demonstrate learning.",
+      "back": "Keep strong cognitive goals while adding explicit teaching, access scaffolds, feedback, and varied outputs.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2918,7 +2918,7 @@
       "domainId": "instructional-leadership",
       "domain": "Instructional Leadership",
       "front": "How should a leader evaluate an instructional program?",
-      "back": "Examine baseline and comparison context, implementation, access, multiple outcomes, subgroup patterns, concurrent changes, stakeholder experience, and unintended effects.",
+      "back": "Examine baselines, delivery, access, multiple outcomes, subgroups, concurrent shifts, and side effects.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2935,7 +2935,7 @@
       "domainId": "climate-cultural-leadership",
       "domain": "Climate and Cultural Leadership",
       "front": "What evidence best describes school climate?",
-      "back": "Use disaggregated student, family, and staff perception data with attendance, discipline, participation, safety, access, and observational evidence.",
+      "back": "Combine disaggregated perceptions from stakeholders with attendance, discipline, participation, and observation.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2952,7 +2952,7 @@
       "domainId": "climate-cultural-leadership",
       "domain": "Climate and Cultural Leadership",
       "front": "How should leaders respond to disproportionality in discipline referrals?",
-      "back": "Audit referral definitions, comparable incidents, decision points, classroom supports, access, consequences, and stakeholder experience under current civil-rights requirements.",
+      "back": "Audit referral definitions, comparable acts, decision points, supports, consequences, and stakeholder views.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2969,7 +2969,7 @@
       "domainId": "climate-cultural-leadership",
       "domain": "Climate and Cultural Leadership",
       "front": "What builds authentic student belonging?",
-      "back": "Create sustained structures for voice, representation, accessible participation, trusted relationships, responsive support, and accountability for experience.",
+      "back": "Build lasting structures for voice, representation, accessible participation, trusted adults, support, and accountability.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -2986,7 +2986,7 @@
       "domainId": "climate-cultural-leadership",
       "domain": "Climate and Cultural Leadership",
       "front": "How should student voice inform decisions?",
-      "back": "Share the findings accessibly, involve affected students in examining causes and options, act within governance, and report what changed and why.",
+      "back": "Share findings accessibly, involve affected students in analyzing options, act within governance, and report back.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3003,7 +3003,7 @@
       "domainId": "climate-cultural-leadership",
       "domain": "Climate and Cultural Leadership",
       "front": "What is a culturally responsive climate practice?",
-      "back": "Examine cultural and linguistic assumptions, clarify teachable expectations, compare comparable behavior, and use relationship-centered, nondiscriminatory responses.",
+      "back": "Examine cultural assumptions, teach clear expectations, compare similar acts, and use equitable responses.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3020,7 +3020,7 @@
       "domainId": "climate-cultural-leadership",
       "domain": "Climate and Cultural Leadership",
       "front": "How should leaders support multilingual families and students?",
-      "back": "Identify language and accessibility needs, provide qualified communication supports and plain-language formats, and verify reciprocal understanding under current requirements.",
+      "back": "Identify language and access needs, provide qualified supports and plain formats, and check understanding.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3037,7 +3037,7 @@
       "domainId": "climate-cultural-leadership",
       "domain": "Climate and Cultural Leadership",
       "front": "What characterizes a professional culture of collective responsibility?",
-      "back": "Shared learning goals, collaborative evidence use, mutual support, clear norms, distributed expertise, and accountability for every student.",
+      "back": "Shared learning goals, collaborative data use, mutual support, clear norms, and collective student ownership.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3054,7 +3054,7 @@
       "domainId": "climate-cultural-leadership",
       "domain": "Climate and Cultural Leadership",
       "front": "How should team norms be established?",
-      "back": "Co-create and enforce observable norms for participation, listening, evidence, challenge, decision making, and repair, then monitor who is heard.",
+      "back": "Co-create and uphold observable norms for voice, listening, evidence, challenge, decisions, and repair, tracking equity.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3071,7 +3071,7 @@
       "domainId": "climate-cultural-leadership",
       "domain": "Climate and Cultural Leadership",
       "front": "What is a productive approach to conflict?",
-      "back": "Clarify the common student-centered interest, gather constraints and evidence, distinguish positions from needs, and facilitate options with decision criteria.",
+      "back": "Center shared student interests, gather constraints and data, separate positions from needs, and compare options.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3088,7 +3088,7 @@
       "domainId": "climate-cultural-leadership",
       "domain": "Climate and Cultural Leadership",
       "front": "How should leaders repair trust after a process failure?",
-      "back": "Acknowledge the breach specifically, explain without defensiveness, restore meaningful input where possible, correct the process, and report follow-through.",
+      "back": "Acknowledge the breach plainly, explain openly, restore input where feasible, fix process, and report back.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3105,7 +3105,7 @@
       "domainId": "climate-cultural-leadership",
       "domain": "Climate and Cultural Leadership",
       "front": "What supports staff well-being without lowering professional expectations?",
-      "back": "Workload, role clarity, schedule, resources, psychological safety, autonomy, support, recognition, and policy while preserving clear student-centered priorities.",
+      "back": "Review workload, role clarity, schedules, resources, safety, autonomy, support, and policy while keeping student priorities.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3122,7 +3122,7 @@
       "domainId": "climate-cultural-leadership",
       "domain": "Climate and Cultural Leadership",
       "front": "How should recognition be used in professional culture?",
-      "back": "Use transparent criteria to recognize varied contributions, collaboration, growth, service, innovation, and student impact without creating unhealthy competition.",
+      "back": "Use transparent criteria recognizing varied roles, collaboration, growth, service, and impact without rivalry.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3139,7 +3139,7 @@
       "domainId": "ethical-leadership",
       "domain": "Ethical Leadership",
       "front": "What is the first step in analyzing an ethical dilemma?",
-      "back": "Identify affected rights, duties, values, evidence, power differences, alternatives, consequences, and governing requirements before deciding transparently.",
+      "back": "Identify affected rights, duties, values, data, power gaps, options, consequences, and governing rules transparently.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3155,7 +3155,7 @@
       "domainId": "ethical-leadership",
       "domain": "Ethical Leadership",
       "front": "How should a leader handle a personal financial conflict?",
-      "back": "Disclose the interest, follow ethics and procurement rules, preserve an objective process, and recuse when impartiality cannot be maintained.",
+      "back": "Disclose the interest, follow procurement rules, protect objectivity, and recuse if impartiality is at risk.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3171,7 +3171,7 @@
       "domainId": "ethical-leadership",
       "domain": "Ethical Leadership",
       "front": "What does equitable resource allocation mean?",
-      "back": "Use transparent criteria tied to student need, access, program requirements, effectiveness, legal obligations, and opportunity, then monitor distribution and impact.",
+      "back": "Use transparent criteria tied to student need, access, legal duties, effectiveness, and opportunity, then monitor.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3187,7 +3187,7 @@
       "domainId": "ethical-leadership",
       "domain": "Ethical Leadership",
       "front": "How should leaders use authority ethically?",
-      "back": "Invite evidence and respectful challenge, clarify decision rights, protect against retaliation, and explain how input will inform or not inform the decision.",
+      "back": "Invite evidence and respectful challenge, clarify decision rights, protect against retaliation, and explain use.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3203,7 +3203,7 @@
       "domainId": "ethical-leadership",
       "domain": "Ethical Leadership",
       "front": "What makes transparency responsible rather than absolute?",
-      "back": "Explain the process, applicable standards, timeline, and what can be shared while protecting privacy, due process, safety, and the integrity of the review.",
+      "back": "Share the process, standards, and timeline while guarding privacy, due process, safety, and integrity.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3219,7 +3219,7 @@
       "domainId": "ethical-leadership",
       "domain": "Ethical Leadership",
       "front": "How should a leader respond to a directive that may conflict with law or policy?",
-      "back": "Clarify the directive, consult current policy and qualified authority, document the concern, protect immediate rights and safety, and use established escalation channels.",
+      "back": "Clarify the directive, check policy and counsel, document, guard rights and safety, and escalate properly.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3235,7 +3235,7 @@
       "domainId": "ethical-leadership",
       "domain": "Ethical Leadership",
       "front": "How should identifiable student records be shared internally?",
-      "back": "Verify legitimate educational interest and applicable authority, use the minimum necessary information and a secure method, and follow FERPA and local policy.",
+      "back": "Verify legitimate educational interest and authority, share minimum necessary information securely, and follow FERPA.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3254,7 +3254,7 @@
       "domainId": "ethical-leadership",
       "domain": "Ethical Leadership",
       "front": "What is required before relying on a vendor for student data services?",
-      "back": "Educational purpose, authority or consent, direct control, data minimization, security, use and redisclosure limits, retention, deletion, accessibility, and procurement terms.",
+      "back": "Check educational purpose, legal authority, direct control, minimization, security, redisclosure limits, deletion, and terms.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3273,7 +3273,7 @@
       "domainId": "ethical-leadership",
       "domain": "Ethical Leadership",
       "front": "How should MTSS relate to special-education evaluation?",
-      "back": "Provide appropriate supports, but MTSS must not delay or deny a full individual evaluation when a disability is suspected under current requirements.",
+      "back": "Deliver tiered supports, yet MTSS must not delay or deny a full individual evaluation when disability is suspected.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3292,7 +3292,7 @@
       "domainId": "ethical-leadership",
       "domain": "Ethical Leadership",
       "front": "What makes an evaluation process defensible?",
-      "back": "Use varied valid tools and strategies, parent information, qualified personnel, nondiscriminatory administration, relevant functional and academic evidence, and no single measure as the sole criterion.",
+      "back": "Use varied valid tools, parent input, qualified staff, nondiscriminatory testing, and no single sole criterion.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3311,7 +3311,7 @@
       "domainId": "ethical-leadership",
       "domain": "Ethical Leadership",
       "front": "What is procedural due process in an employment decision?",
-      "back": "Follow current law, contract, and policy for notice, evidence, an opportunity to respond, impartial review, representation rights, documentation, and appeal where applicable.",
+      "back": "Follow law, contract, and policy for notice, evidence, response opportunity, impartial review, representation, and appeal.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3330,7 +3330,7 @@
       "domainId": "ethical-leadership",
       "domain": "Ethical Leadership",
       "front": "How should leaders respond to a request for disability accommodation?",
-      "back": "Use the applicable qualified team and current process to gather individualized evidence, engage the family, determine access needs, document decisions, and implement approved supports.",
+      "back": "Use the qualified team and current process to gather individualized data, engage families, decide, and implement.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3349,7 +3349,7 @@
       "domainId": "organizational-leadership",
       "domain": "Organizational Leadership",
       "front": "What makes a school budget strategic?",
-      "back": "Connect expenditures to student needs, legal obligations, strategic goals, evidence of effectiveness, equity, total cost, sustainability, and measurable review.",
+      "back": "Tie spending to student needs, legal duties, goals, evidence, equity, total cost, and review.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3367,7 +3367,7 @@
       "domainId": "organizational-leadership",
       "domain": "Organizational Leadership",
       "front": "How should leaders analyze the total cost of an initiative?",
-      "back": "Include staffing, training, substitutes, devices, accessibility, data integration, maintenance, security, opportunity cost, renewal, and exit costs.",
+      "back": "Include staffing, training, substitutes, hardware, access, integration, upkeep, security, and renewal costs.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3385,7 +3385,7 @@
       "domainId": "organizational-leadership",
       "domain": "Organizational Leadership",
       "front": "What is a sound procurement safeguard?",
-      "back": "Use disclosed conflicts, objective requirements, fair competition or authorized exceptions, documented evaluation, required approvals, and contract protections.",
+      "back": "Require conflict disclosure, objective specs, fair competition, documented scoring, and contract protections.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3403,7 +3403,7 @@
       "domainId": "organizational-leadership",
       "domain": "Organizational Leadership",
       "front": "How should facility priorities be set?",
-      "back": "Use life safety, legal access, instructional impact, condition, risk, affected populations, cost, dependencies, and continuity criteria with transparent documentation.",
+      "back": "Prioritize life safety, legal access, instructional impact, condition, risk, affected groups, cost, and continuity transparently.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3421,7 +3421,7 @@
       "domainId": "organizational-leadership",
       "domain": "Organizational Leadership",
       "front": "What is a key K-12 cybersecurity leadership responsibility?",
-      "back": "Establish a shared security culture with multifactor authentication, updates, tested backups, incident response, training, vendor controls, and continuity planning appropriate to role.",
+      "back": "Build shared security with multifactor authentication, updates, tested backups, incident plans, training, and vendor controls.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3439,7 +3439,7 @@
       "domainId": "organizational-leadership",
       "domain": "Organizational Leadership",
       "front": "How should a leader evaluate schedule efficiency?",
-      "back": "Analyze access, conflicts, instructional minutes, service obligations, staffing, transitions, student pathways, subgroup participation, and feasible redesigns.",
+      "back": "Audit access, conflicts, instructional minutes, service duties, staffing, subgroups, and redesign options.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3457,7 +3457,7 @@
       "domainId": "organizational-leadership",
       "domain": "Organizational Leadership",
       "front": "What makes a personnel selection process defensible?",
-      "back": "Use job-related criteria, structured evidence, trained diverse reviewers, consistent procedures, reference checks, documented reasoning, accessibility, and current employment requirements.",
+      "back": "Use job-related criteria, structured evidence, trained diverse panels, consistent steps, references, access, and legal rules.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3475,7 +3475,7 @@
       "domainId": "organizational-leadership",
       "domain": "Organizational Leadership",
       "front": "How should an employee performance concern be addressed?",
-      "back": "Document job-related evidence, clarify expectations, hear the employee response, provide support and timelines, monitor progress, and follow current contract, policy, and due process.",
+      "back": "Document job-related evidence, clarify expectations, hear the employee, provide support and timelines, and follow due process.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3493,7 +3493,7 @@
       "domainId": "organizational-leadership",
       "domain": "Organizational Leadership",
       "front": "What is the foundation of a high-quality emergency operations plan?",
-      "back": "Develop a collaborative, site-specific emergency operations plan that defines risk, roles, communication, access, reunification, training, exercises, evidence-based revision, and recovery.",
+      "back": "Build a collaborative, site-specific emergency operations plan covering risks, roles, access, reunification, drills, and recovery.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3511,7 +3511,7 @@
       "domainId": "organizational-leadership",
       "domain": "Organizational Leadership",
       "front": "How should leaders communicate during an active emergency?",
-      "back": "Follow the incident communication plan, coordinate with authorized responders, prioritize life safety, share verified accessible updates, protect sensitive details, and document decisions.",
+      "back": "Follow the incident plan, coordinate responders, prioritize safety, share verified updates, and document.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3529,7 +3529,7 @@
       "domainId": "organizational-leadership",
       "domain": "Organizational Leadership",
       "front": "What belongs in continuity planning?",
-      "back": "Prioritized essential functions, offline contacts and procedures, tested backups, alternative instructional and operational workflows, decision authority, communications, restoration criteria, and after-action review.",
+      "back": "Prioritized essential functions, offline contacts and plans, tested backups, alternate workflows, roles, and restoration checks.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3547,7 +3547,7 @@
       "domainId": "organizational-leadership",
       "domain": "Organizational Leadership",
       "front": "How should after-action review be conducted?",
-      "back": "Document the gap without blame, involve affected participants and qualified personnel, assign corrective actions and owners, revise the plan, retrain, and exercise the change.",
+      "back": "Document the gap without blame, involve affected users and specialists, assign owners, revise, and redrill.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3565,7 +3565,7 @@
       "domainId": "community-engagement-leadership",
       "domain": "Community Engagement Leadership",
       "front": "What makes family engagement reciprocal?",
-      "back": "Learn family goals, knowledge, languages, access needs, and experiences; co-design meaningful roles and maintain two-way communication tied to student learning and well-being.",
+      "back": "Learn family goals, assets, languages, and access needs; co-design meaningful roles and two-way contact.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3582,7 +3582,7 @@
       "domainId": "community-engagement-leadership",
       "domain": "Community Engagement Leadership",
       "front": "How should leaders reduce participation barriers?",
-      "back": "Use participation data and family input to vary time, format, location, language, childcare, transportation, technology, outreach, and decision pathways.",
+      "back": "Use turnout data and family input to vary time, format, site, language, childcare, transit, tech, and decision paths.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3599,7 +3599,7 @@
       "domainId": "community-engagement-leadership",
       "domain": "Community Engagement Leadership",
       "front": "What is effective crisis communication with families?",
-      "back": "Provide prompt verified plain-language information through accessible channels about the issue, immediate actions, student safety, family responsibilities, supports, and next update.",
+      "back": "Send prompt verified plain-language updates via accessible channels on the issue, actions, safety, roles, and next update.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3616,7 +3616,7 @@
       "domainId": "community-engagement-leadership",
       "domain": "Community Engagement Leadership",
       "front": "How should a leader respond to a contentious public meeting?",
-      "back": "State the decision process and constraints, enforce viewpoint-neutral safety and time norms, provide accessible evidence, listen for interests and impacts, and document follow-up.",
+      "back": "State process and limits, apply viewpoint-neutral norms, share clear data, listen, and document follow-up.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3633,7 +3633,7 @@
       "domainId": "community-engagement-leadership",
       "domain": "Community Engagement Leadership",
       "front": "What makes a school-community partnership strategic?",
-      "back": "Alignment with identified needs and goals, evidence, access, roles, safeguarding, data terms, capacity, cost, accountability, and sustainability before agreement.",
+      "back": "Check alignment with local needs, evidence, access, roles, safeguarding, data rules, cost, accountability, and durability.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3650,7 +3650,7 @@
       "domainId": "community-engagement-leadership",
       "domain": "Community Engagement Leadership",
       "front": "How should family feedback be closed into a loop?",
-      "back": "Report representative findings and limitations, explain decisions and constraints, identify actions and owners, invite continued input, and monitor whether access and trust improve.",
+      "back": "Share balanced findings and limits, explain decisions and constraints, name actions and owners, and track access and trust.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3667,7 +3667,7 @@
       "domainId": "community-engagement-leadership",
       "domain": "Community Engagement Leadership",
       "front": "How should leaders map community assets?",
-      "back": "Identify organizations, cultural and linguistic knowledge, trusted leaders, services, spaces, networks, student and family strengths, access conditions, and partnership gaps with community members.",
+      "back": "Map local organizations, cultural and linguistic assets, trusted leaders, spaces, family strengths, and gaps with residents.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3685,7 +3685,7 @@
       "domainId": "community-engagement-leadership",
       "domain": "Community Engagement Leadership",
       "front": "What makes educational advocacy evidence based?",
-      "back": "Combine lived experience with disaggregated need and access data, service capacity, research, legal and equity analysis, resource implications, implementation design, and measurable follow-up.",
+      "back": "Pair lived stories with disaggregated need and access data, capacity, research, equity, costs, and review.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3703,7 +3703,7 @@
       "domainId": "community-engagement-leadership",
       "domain": "Community Engagement Leadership",
       "front": "How should a school leader work within governance?",
-      "back": "Clarify the policy and authority, provide evidence and implementation implications through proper channels, carry out lawful direction, document concerns, and monitor effects.",
+      "back": "Clarify policy and authority, share delivery data via proper channels, enact lawful direction, and monitor.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3721,7 +3721,7 @@
       "domainId": "community-engagement-leadership",
       "domain": "Community Engagement Leadership",
       "front": "What does public accountability require?",
-      "back": "Present complete relevant outcomes, opportunity and implementation evidence, subgroup patterns, limitations, corrective actions, owners, timelines, and ways stakeholders can respond.",
+      "back": "Report full outcomes, opportunity and delivery data, subgroup gaps, limits, corrective owners, timelines, and feedback paths.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3739,7 +3739,7 @@
       "domainId": "community-engagement-leadership",
       "domain": "Community Engagement Leadership",
       "front": "How should leaders assess representation in advisory groups?",
-      "back": "Analyze participation barriers and influence, conduct trusted targeted outreach, provide access supports, redesign selection and meeting processes, and monitor whose input affects decisions.",
+      "back": "Study participation barriers and influence, do trusted outreach, add access supports, redesign processes, and track impact.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",
@@ -3757,7 +3757,7 @@
       "domainId": "community-engagement-leadership",
       "domain": "Community Engagement Leadership",
       "front": "How should a partnership be ended responsibly?",
-      "back": "Follow the agreement and governing requirements, protect students and records, communicate evidence and transition plans, preserve essential supports, document closure, and review lessons.",
+      "back": "Follow contract and legal terms, protect students and records, share evidence and transition plans, and review lessons.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5412.pdf",

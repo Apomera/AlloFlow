@@ -13,13 +13,13 @@ module.exports = {
     'Every group agreed that all modernization should be reversed through one single national program of reform instead here now.': 'Modernists and traditionalists disagreed about modernization itself.',
   },
   'item-203': {
-    'The Depression affected every household in exactly the same way, because all workers held completely identical jobs.': 'Effects varied by occupation, race, and region.',
+    'The Depression affected every household in much the same way, because American workers held nearly identical jobs.': 'Effects varied by occupation, race, and region.',
     'The crisis was limited to agriculture alone and did not change industry, cities, or any government policy at all.': 'Factory unemployment and bank failures hit cities hard and reshaped policy.',
-    'The Depression ended quickly, because private charities immediately replaced all of the lost wages and lost savings.': 'Charities were overwhelmed, and the Depression lasted a decade.',
+    'The Depression ended quickly, because private charities soon replaced nearly all of the lost wages and family savings.': 'Charities were overwhelmed, and the Depression lasted a decade.',
   },
   'item-204': {
-    'It abolished all private enterprise and ended every single form of poverty by the very end of the 1930s entirely here.': 'Private enterprise continued, and poverty persisted into the 1940s.',
-    'It reduced all federal responsibility, because the whole crisis was solved entirely by the local governments alone here.': 'Federal agencies took the lead in relief and reform.',
+    'It abolished private enterprise across the nation and eliminated every form of poverty before the close of the 1930s.': 'Private enterprise continued, and poverty persisted into the 1940s.',
+    'It reduced federal responsibility, because municipal and county governments resolved the whole economic crisis themselves.': 'Federal agencies took the lead in relief and reform.',
     'It had no lasting effect at all on political coalitions, on public expectations, or on any of the federal institutions.': 'Social Security and the Democratic coalition lasted for decades.',
   },
   'item-205': {
@@ -28,8 +28,8 @@ module.exports = {
     'Every single worker received equal pay and equal access to every occupation as soon as the war had first begun in earnest.': 'Discrimination in pay and hiring persisted despite executive orders.',
   },
   'item-206': {
-    'The war changed only military equipment and did not affect diplomacy, economic power, or the whole postwar world at all here.': 'The war made the United States the dominant postwar power.',
-    'The United States avoided all major military or industrial participation and remained only a minor power after 1945 entirely.': 'American forces fought across the globe and its industry supplied the Allies.',
+    'The war altered military equipment without reshaping American diplomacy, economic power, or the broader postwar world order.': 'The war made the United States the dominant postwar power.',
+    'The United States avoided major military or industrial involvement and remained a minor diplomatic power after 1945.': 'American forces fought across the globe and its industry supplied the Allies.',
     'Victory resulted from one battle alone and did not depend on alliances, on production, or on any military strategy at all here.': 'Victory took years of coalition warfare and production.',
   },
   'item-207': {
@@ -38,9 +38,9 @@ module.exports = {
     'The GI Bill and suburbanization reduced educational access and prevented families from purchasing homes.': 'Both expanded college enrollment and home ownership.',
   },
   'item-208': {
-    'Civil rights change resulted only from presidential speeches and did not involve courts, organizations, or local activism.': 'The NAACP, the courts, and local boycotts drove change.',
+    'Civil rights change resulted primarily from presidential speeches and did not involve courts, organizations, or local activism.': 'The NAACP, the courts, and local boycotts drove change.',
     'Activists rejected litigation and protest because segregation was already ending without political pressure.': 'Segregation ended only under sustained legal and protest pressure.',
-    'The movement focused only on foreign policy and did not address schools, voting, employment, or public facilities.': 'Schools, voting, and public facilities were the movement’s targets.',
+    'The movement centered on foreign policy and avoided addressing schools, voting rights, employment, or public facilities.': 'Schools, voting, and public facilities were the movement’s targets.',
   },
   'item-209': {
     'The two sources cannot describe the same event, because historical evidence must contain only one single perspective.': 'Multiple perspectives on one event are normal and instructive.',
@@ -53,8 +53,8 @@ module.exports = {
     'Public disagreement resulted only from domestic elections and had no connection to the war or to its human costs at all.': 'Casualties and televised combat drove disagreement.',
   },
   'item-211': {
-    'They ended poverty and racial inequality so completely that all later social policy became entirely unnecessary afterward.': 'Poverty and inequality persisted and stayed on the agenda.',
-    'They transferred responsibility for health and for education entirely from the government to the private charities alone.': 'Medicare and federal education aid expanded government responsibility.',
+    'They eliminated poverty and racial inequality so thoroughly that later federal social programs became unnecessary afterward.': 'Poverty and inequality persisted and stayed on the agenda.',
+    'They shifted responsibility for health care and public education away from federal agencies to private charities instead.': 'Medicare and federal education aid expanded government responsibility.',
     'They had no effect on federal institutions, on citizens expectations, or on any political conflict after the 1960s at all.': 'Medicare and Medicaid became enduring institutions and political flashpoints.',
   },
   'item-212': {
@@ -99,8 +99,8 @@ module.exports = {
   },
   'item-220': {
     'Postwar change produced one shared national experience and eliminated all conflict over race, gender, class, and over all foreign policy.': 'Civil rights and Vietnam divided the nation.',
-    'The United States became far less powerful after 1945, because economic growth and international alliances both came to an end entirely.': 'The postwar boom and NATO made it more powerful.',
-    'Civil rights laws and economic growth made all later social movements unnecessary and ended all political disagreement entirely here now.': 'Later movements arose because inequality remained.',
+    'The United States lost global power after 1945, because domestic economic growth and overseas alliances both collapsed in the postwar era.': 'The postwar boom and NATO made it more powerful.',
+    'Civil rights laws and postwar prosperity made later social movements unnecessary and resolved major political disputes across the nation.': 'Later movements arose because inequality remained.',
   },
   'item-221': {
     'All Indigenous communities used the same economy and political structure because they occupied one continent.': 'A shared continent produced varied societies, from pueblos to Plains bands.',
@@ -124,8 +124,8 @@ module.exports = {
   },
   'item-225': {
     'All colonies followed one plan because European governments controlled settlement in exactly the same way.': 'Charters and companies varied, producing different colonies.',
-    'Regional differences resulted only from climate and had no connection to labor, migration, markets, or policy.': 'Migrants and labor systems mattered as much as climate.',
-    'Colonial societies became different only after independence ended European imperial rule.': 'Regional differences were entrenched long before 1776.',
+    'Regional differences resulted from climate alone and had no connection to labor, migration, markets, or policy.': 'Migrants and labor systems mattered as much as climate.',
+    'Colonial societies grew regionally distinct after independence ended European imperial rule.': 'Regional differences were entrenched long before 1776.',
   },
   'item-226': {
     'European powers agreed to avoid overseas competition and limited colonization to temporary scientific visits.': 'Competition drove permanent colonies.',
@@ -158,9 +158,9 @@ module.exports = {
     'The conflict had no effect on imperial boundaries, taxation, military policy, or colonial political ideas.': 'The war doubled British territory, produced the Proclamation Line, and led to the Stamp Act, which colonists answered with new arguments about consent.',
   },
   'item-232': {
-    'Colonists opposed all taxes in every circumstance and had never accepted local or imperial taxation.': 'Colonists paid taxes levied by their own assemblies.',
+    'Colonists opposed all taxes in every circumstance and rejected both local assembly and imperial levies.': 'Colonists paid taxes levied by their own assemblies.',
     'Parliament gave colonial assemblies seats equal to those of English counties before the protests began.': 'Colonists had no seats in Parliament.',
-    'The dispute concerned only the price of imported goods and had no relationship to sovereignty or representation.': 'The dispute was about who could tax, a question of sovereignty.',
+    'The dispute centered on the price of imported goods and had no relationship to sovereignty or representation.': 'The dispute was about who could tax, a question of sovereignty.',
   },
   'item-233': {
     'The colonies had overwhelming military resources and no internal disagreement at all about independence of any kind.': 'The colonies were outmatched materially and divided by Loyalism.',
@@ -168,9 +168,9 @@ module.exports = {
     'The war was decided entirely by one battle and did not involve diplomacy, geography, or any political division at all.': 'French intervention and geography were decisive over many campaigns.',
   },
   'item-234': {
-    'Revolutionary ideals immediately created equal citizenship for all people and ended debates over political membership.': 'Debates over who belonged continued for generations.',
-    'The Revolution discouraged every discussion of rights because political language remained entirely hereditary.': 'Rights talk pervaded the Revolution.',
-    'Revolutionary ideals affected only foreign diplomacy and had no relationship to slavery, gender, or voting.': 'Northern emancipation laws show ideals touched slavery.',
+    'Revolutionary ideals swiftly created equal citizenship for all residents and ended debates over political membership.': 'Debates over who belonged continued for generations.',
+    'The Revolution discouraged public discussion of rights because political language remained strictly hereditary.': 'Rights talk pervaded the Revolution.',
+    'Revolutionary ideals influenced foreign diplomacy alone and had no relationship to slavery, gender, or voting.': 'Northern emancipation laws show ideals touched slavery.',
   },
   'item-235': {
     'The Articles created an unlimited executive who controlled state governments and national courts.': 'The Articles created no executive or courts.',
@@ -183,9 +183,9 @@ module.exports = {
     'The debate concerned only foreign trade and did not involve rights, representation, or any federal power of any kind at all.': 'Rights and federal power were the core issues.',
   },
   'item-237': {
-    'Political parties emerged only after the Civil War because early leaders agreed on economic and constitutional questions.': 'Parties formed in the 1790s over disagreements.',
+    'Political parties emerged after the Civil War because early leaders agreed on economic and constitutional questions.': 'Parties formed in the 1790s over disagreements.',
     'Federalists and Republicans avoided public debate and refused to organize voters around national policy.': 'Partisan newspapers and campaigns organized voters.',
-    'Party conflict focused only on local elections and had no effect on the presidency or Congress.': 'The presidency changed hands between parties in 1800.',
+    'Party conflict centered on local elections and had no effect on the presidency or Congress.': 'The presidency changed hands between parties in 1800.',
   },
   'item-238': {
     'The period was defined by stable agreement, because the Constitution ended all disputes over federal power and over expansion.': 'The Missouri crisis and Bank War show ongoing dispute.',
@@ -193,14 +193,14 @@ module.exports = {
     'The early republic abandoned representative government and returned to direct rule by the European monarchies instead.': 'Representative government continued and expanded.',
   },
   'item-239': {
-    'Both of the parties supported identical economic programs and differed only over the location of the new national capital city itself.': 'They split over the bank, tariffs, and constitutional reading.',
-    'Democratic Republicans favored a hereditary monarchy, while the Federalists sought to abolish every national institution entirely.': 'Neither favored monarchy, and Federalists built institutions.',
-    'The parties agreed that foreign affairs, banking, and constitutional interpretation should never shape any of the elections at all.': 'Those issues defined elections.',
+    'Both parties supported identical economic programs and disagreed mainly over the geographic location of the new national capital city.': 'They split over the bank, tariffs, and constitutional reading.',
+    'Democratic Republicans favored a hereditary monarchy, while Federalists worked to dismantle every national institution in government.': 'Neither favored monarchy, and Federalists built institutions.',
+    'The parties agreed that foreign affairs, banking, and constitutional debates should stay separate from national political campaigns.': 'Those issues defined elections.',
   },
   'item-240': {
     'Regional interests disappeared because every state depended on the same economy and supported the same federal policies.': 'Regions divided over tariffs and slavery.',
-    'Only foreign governments shaped national politics because domestic economic differences had no political effect.': 'Domestic interests drove congressional fights.',
-    'Regional conflict began only after 1865 and did not influence policy during the early republic.': 'Sectional conflict was visible by the 1790s.',
+    'Foreign governments directed national politics because domestic economic differences had no political effect.': 'Domestic interests drove congressional fights.',
+    'Regional conflict began after 1865 and did not influence national policy during the early republic.': 'Sectional conflict was visible by the 1790s.',
   },
   'item-241': {
     'The United States avoided all international trade and military conflict, so foreign policy remained irrelevant to national development.': 'The War of 1812 and Atlantic trade were central.',
@@ -278,8 +278,8 @@ module.exports = {
     'Migration made the West culturally uniform by eliminating all of the regional, ethnic, racial, and all of the religious differences.': 'The West was strikingly diverse.',
   },
   'item-256': {
-    'The New South immediately replaced agriculture with diverse industry and equal citizenship for Black and white southerners.': 'Agriculture and segregation persisted.',
-    'New South leaders rejected railroads, factories, and outside investment because they wanted to preserve only subsistence farming.': 'Henry Grady and other New South promoters actively courted northern capital, railroads, and textile mills.',
+    'The New South rapidly replaced agriculture with diverse industry and equal citizenship for Black and white southerners.': 'Agriculture and segregation persisted.',
+    'New South leaders rejected railroads, factories, and outside investment because they sought to preserve small subsistence farming.': 'Henry Grady and other New South promoters actively courted northern capital, railroads, and textile mills.',
     'The New South ended racial violence and political disfranchisement by expanding federal enforcement after Reconstruction.': 'Enforcement withdrew and disfranchisement spread.',
   },
   'item-257': {
@@ -309,17 +309,17 @@ module.exports = {
   },
   'item-262': {
     'Imperialism grew because American leaders rejected all overseas markets, all naval power, and all strategic competition.': 'Mahan’s naval strategy and the search for Asian markets show leaders embracing exactly what this option says they rejected.',
-    'The United States expanded only because the European governments asked it to administer all of the former colonies here.': 'Expansion followed war with Spain, not European requests.',
-    'American imperialism was entirely unrelated to industrialization, nationalism, race, trade, or to any military strategy.': 'Each of these motivated expansion.',
+    'The United States expanded overseas because European governments invited Washington to administer their former colonies.': 'Expansion followed war with Spain, not European requests.',
+    'American imperialism developed apart from industrialization, nationalism, racial ideology, trade, or military strategy.': 'Each of these motivated expansion.',
   },
   'item-263': {
-    'The war ended American interest in overseas power because the United States returned every new territory immediately.': 'The United States kept the Philippines and Puerto Rico.',
-    'The conflict concerned only domestic banking and had no effect on Cuba, the Philippines, the navy, or diplomacy.': 'Cuba and the Philippines were the war’s outcomes.',
+    'The war ended American interest in overseas power because the United States returned every new territory right away.': 'The United States kept the Philippines and Puerto Rico.',
+    'The conflict centered on domestic banking and had no effect on Cuba, the Philippines, naval strategy, or diplomacy.': 'Cuba and the Philippines were the war’s outcomes.',
     'All Americans agreed that acquiring overseas influence was consistent with self government and produced no political debate.': 'Anti-imperialists argued the opposite.',
   },
   'item-264': {
-    'Progressive reformers opposed government action and relied entirely on corporations to solve urban and labor problems.': 'Progressives demanded regulation of corporations.',
-    'Progressivism focused only on foreign policy and did not address elections, public health, business, or social welfare.': 'Elections and public health were central targets.',
+    'Progressive reformers opposed government action and relied directly on corporations to solve urban and labor problems.': 'Progressives demanded regulation of corporations.',
+    'Progressivism centered on foreign policy and did not address elections, public health, business, or social welfare.': 'Elections and public health were central targets.',
     'Reformers agreed that industrial society required no changes because corruption and inequality had disappeared.': 'Reformers acted because corruption and inequality persisted.',
   },
   'item-265': {
@@ -339,8 +339,8 @@ module.exports = {
   },
   'item-268': {
     'Controversies declined, because every region and every generation accepted the very same religious, racial, and cultural values.': 'Scopes and the Klan show sharp division.',
-    'The decade involved only foreign policy disputes and had no arguments about schools, immigration, race, or about any popular culture.': 'Those were the decade’s main arguments.',
-    'Modernization ended all political conflict by making the rural and the urban communities entirely culturally identical everywhere.': 'Rural-urban tension defined the decade.',
+    'The decade centered on foreign policy disputes and avoided arguments over public schools, immigration, race, or popular culture.': 'Those were the decade’s main arguments.',
+    'Modernization ended political conflict by making rural and urban communities culturally indistinguishable across the United States.': 'Rural-urban tension defined the decade.',
   },
   'item-269': {
     'The period was defined by isolation because the United States withdrew from alliances, markets, and international conflicts after 1945.': 'NATO and Korea show deep engagement.',
@@ -368,19 +368,19 @@ module.exports = {
     'Consumer abundance ended all social criticism, because every group experienced the same prosperity and the same cultural representation.': 'Critics and excluded groups challenged the consensus.',
   },
   'item-274': {
-    'Civil rights victories occurred without local organizing because segregation ended automatically as the postwar economy grew.': 'Organizing and litigation produced the victories.',
+    'Civil rights victories occurred without local organizing because segregation faded naturally as the postwar economy expanded.': 'Organizing and litigation produced the victories.',
     'The early movement rejected court cases, boycotts, voter registration, and federal enforcement as ineffective strategies.': 'Brown v. Board, the Montgomery boycott, and NAACP voter drives were the movement’s core tools in these decades.',
-    'Federal officials opposed every civil rights claim and never used courts, legislation, or executive authority against segregation.': 'Truman desegregated the military and the Court decided Brown.',
+    'Federal officials rejected every civil rights claim and refused to use courts, legislation, or executive power against segregation.': 'Truman desegregated the military and the Court decided Brown.',
   },
   'item-275': {
-    'The United States relied only on domestic economic policy and avoided alliances, aid, military action, and international institutions.': 'It built alliances and intervened abroad.',
+    'The United States relied primarily on domestic economic policy and avoided alliances, aid, military action, and global institutions.': 'It built alliances and intervened abroad.',
     'American foreign policy ended after World War II because European and Asian governments controlled every major international decision.': 'The Marshall Plan and NATO show the United States making, not ceding, the major postwar decisions.',
-    'Containment meant that the United States supported self determination in every case and never intervened in local political conflicts.': 'Interventions in Iran and Guatemala show otherwise.',
+    'Containment meant that the United States backed local self determination in every case and avoided intervening in regional conflicts.': 'Interventions in Iran and Guatemala show otherwise.',
   },
   'item-276': {
     'Public opinion remained unchanged because the war had no visible human cost or connection to national credibility.': 'Casualties and the credibility gap shifted opinion.',
-    'Opposition grew only after the United States withdrew all forces and therefore had no relationship to wartime events.': 'Opposition peaked during the fighting.',
-    'Vietnamese nationalism was irrelevant because the conflict was understood only as a simple confrontation between two superpowers.': 'Nationalism was central to why containment faltered.',
+    'Opposition grew after the United States withdrew all military forces and therefore had no link to wartime events.': 'Opposition peaked during the fighting.',
+    'Vietnamese nationalism was irrelevant because observers viewed the war as a straightforward confrontation between two superpowers.': 'Nationalism was central to why containment faltered.',
   },
   'item-277': {
     'The period continued unchanged from the 1950s because technology, global markets, demographics, and political coalitions remained stable.': 'The personal computer, deindustrialization, new immigration, and the Reagan coalition all mark sharp breaks from the 1950s.',
@@ -423,8 +423,8 @@ module.exports = {
     'The Constitution replaced representative government with hereditary leadership so that states could no longer make laws.': 'It created elected offices and preserved state lawmaking.',
   },
   'item-285': {
-    'The new nation immediately formed one culture because regional traditions and unequal citizenship ended with independence.': 'Regional and racial differences persisted.',
-    'American identity developed only through European royal institutions and did not include republican symbols or local traditions.': 'Republican symbols defined the new identity.',
+    'The new nation swiftly formed a single culture because regional traditions and unequal citizenship ended with independence.': 'Regional and racial differences persisted.',
+    'American identity developed through European royal institutions and excluded republican symbols as well as local traditions.': 'Republican symbols defined the new identity.',
     'Artists and writers avoided national subjects because political independence had no effect on culture or public memory.': 'Artists celebrated national subjects.',
   },
   'item-286': {
@@ -443,9 +443,9 @@ module.exports = {
     'The period produced no national cultural symbols because the spread of markets and print did not connect different regions.': 'Print spread national symbols widely.',
   },
   'item-289': {
-    'Reform movements grew because Americans rejected all voluntary organizations and believed social problems should remain entirely private.': 'Reform ran through voluntary societies.',
-    'The reform impulse focused only on foreign trade and did not address prisons, schools, alcohol, slavery, or any gender roles at all.': 'Prison reform, common schools, temperance, abolition, and women’s rights were the reform impulse; foreign trade was not part of it.',
-    'Reformers agreed that all existing institutions worked perfectly and organized only to preserve the established social hierarchies.': 'Reformers sought to change institutions.',
+    'Reform movements grew because Americans rejected voluntary organizations and insisted that social problems remain strictly private matters.': 'Reform ran through voluntary societies.',
+    'The reform impulse centered on foreign trade and avoided addressing prisons, public schools, alcohol, slavery, or gender roles.': 'Prison reform, common schools, temperance, abolition, and women’s rights were the reform impulse; foreign trade was not part of it.',
+    'Reformers agreed that existing institutions functioned well and organized primarily to preserve established social hierarchies.': 'Reformers sought to change institutions.',
   },
   'item-290': {
     'African Americans gained equal citizenship throughout the nation because independence ended slavery and racial discrimination.': 'Slavery expanded and discrimination persisted.',
@@ -469,8 +469,8 @@ module.exports = {
   },
   'item-294': {
     'Reconstruction restored the antebellum political order without changing citizenship, voting rights, or the role of the federal government.': 'Three amendments, Black officeholding, and federal enforcement acts were departures from the antebellum order.',
-    'Federal policy ended racial conflict immediately because every southern government accepted equal citizenship and voting rights.': 'White resistance was violent and sustained.',
-    'The amendments changed foreign policy only and had no connection to slavery, citizenship, voting, or federal authority.': 'The amendments addressed exactly those things.',
+    'Federal policy ended racial conflict right away because every southern government accepted equal citizenship and voting rights.': 'White resistance was violent and sustained.',
+    'The amendments reshaped foreign policy alone and had no connection to slavery, citizenship, voting, or federal authority.': 'The amendments addressed exactly those things.',
   },
   'item-295': {
     'Reconstruction failed because formerly enslaved people opposed citizenship and refused to participate in southern political life.': 'Freedpeople voted and held office in large numbers.',
@@ -489,8 +489,8 @@ module.exports = {
   },
   'item-298': {
     'The middle class grew because industrial society eliminated wage differences and gave every worker the same occupation.': 'Occupations and wages diverged.',
-    'Middle-class development occurred only in rural farming communities and had no connection to offices, professions, cities, or consumption.': 'It was an urban, office-based phenomenon.',
-    'Industrial capitalism reduced professional and managerial work because corporations relied entirely on household production.': 'Corporations multiplied managerial jobs.',
+    'Middle-class development occurred in rural farming communities and had no connection to offices, professions, cities, or consumption.': 'It was an urban, office-based phenomenon.',
+    'Industrial capitalism reduced professional and managerial work because corporations relied heavily on household production.': 'Corporations multiplied managerial jobs.',
   },
   'item-299': {
     'Gilded Age reformers used one identical strategy and agreed that government, religion, labor, and voluntary groups had the same role.': 'Strategies ranged from settlement work to strikes.',

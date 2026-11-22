@@ -29,7 +29,10 @@ function getStudentJoinThemeStyles(themeContext = {}) {
       input: "bg-black border-yellow-400 text-yellow-400 placeholder:text-yellow-200 focus-visible:border-yellow-400 focus-visible:ring-yellow-400",
       primary: "bg-yellow-400 hover:bg-yellow-300 text-black shadow-none focus-visible:ring-yellow-400",
       focusOffset: "focus-visible:ring-offset-black",
-      arrow: "bg-yellow-400 text-black"
+      arrow: "bg-yellow-400 text-black",
+      slotFilled: "bg-yellow-400 border-yellow-400",
+      slotEmpty: "bg-black border-yellow-400/60",
+      readyText: "text-yellow-400"
     };
   }
   if (theme === "dark") {
@@ -43,7 +46,10 @@ function getStudentJoinThemeStyles(themeContext = {}) {
       input: "bg-slate-950 border-slate-600 text-slate-100 placeholder:text-slate-400 focus-visible:border-indigo-400 focus-visible:ring-indigo-500",
       primary: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-none focus-visible:ring-indigo-400",
       focusOffset: "focus-visible:ring-offset-slate-900",
-      arrow: "bg-indigo-600 text-white"
+      arrow: "bg-indigo-600 text-white",
+      slotFilled: "bg-indigo-400 border-indigo-400",
+      slotEmpty: "bg-slate-800 border-slate-600",
+      readyText: "text-emerald-300"
     };
   }
   const overlayPanel = colorOverlay === "blue" ? "bg-blue-50 border-blue-200 shadow-blue-500/10" : colorOverlay === "peach" ? "bg-orange-50 border-orange-200 shadow-orange-500/10" : colorOverlay === "yellow" ? "bg-yellow-50 border-yellow-300 shadow-yellow-500/10" : "bg-white border-slate-400 shadow-indigo-500/10";
@@ -58,7 +64,10 @@ function getStudentJoinThemeStyles(themeContext = {}) {
     input: "bg-white border-slate-400 text-slate-700 placeholder:text-slate-600 focus-visible:border-indigo-500 focus-visible:ring-indigo-500",
     primary: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 focus-visible:ring-indigo-500",
     focusOffset: "focus-visible:ring-offset-white",
-    arrow: "bg-indigo-600 text-white"
+    arrow: "bg-indigo-600 text-white",
+    slotFilled: "bg-indigo-600 border-indigo-600",
+    slotEmpty: "bg-slate-100 border-slate-300",
+    readyText: "text-emerald-700"
   };
 }
 function StudentJoinPanel({
@@ -130,10 +139,27 @@ function StudentJoinPanel({
     e.preventDefault();
     triggerJoin();
   };
+  const tx = (key, fallback) => {
+    try {
+      const value = typeof t === "function" ? t(key) : "";
+      return value && value !== key ? value : fallback;
+    } catch (_) {
+      return fallback;
+    }
+  };
+  const clearJoinCode = () => {
+    setJoinCodeInput("");
+    if (codeInputRef.current && typeof codeInputRef.current.focus === "function") {
+      try {
+        codeInputRef.current.focus({ preventScroll: true });
+      } catch (_) {
+      }
+    }
+  };
   return /* @__PURE__ */ React.createElement(
     "div",
     {
-      className: cx(styles.panel, "rounded-3xl shadow-xl mb-4 shrink-0 animate-in slide-in-from-left-4 motion-reduce:animate-none duration-500 overflow-hidden transition-all", isJoinPanelExpanded ? "p-6" : "p-2"),
+      className: cx(styles.panel, "rounded-3xl shadow-xl mb-4 shrink-0 animate-in slide-in-from-left-4 motion-reduce:animate-none duration-500 overflow-hidden transition-all motion-reduce:transition-none", isJoinPanelExpanded ? "p-6" : "p-2"),
       role: "region",
       "aria-labelledby": isJoinPanelExpanded ? titleId : collapsedTitleId
     },
@@ -143,11 +169,11 @@ function StudentJoinPanel({
         type: "button",
         "aria-label": t("common.minimize"),
         onClick: handleSetIsJoinPanelExpandedToFalse,
-        className: cx("absolute -top-2 -right-2 min-w-11 min-h-11 inline-flex items-center justify-center p-2 transition-colors rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.muted, styles.hoverPanel, styles.focusOffset),
+        className: cx("absolute -top-2 -right-2 min-w-11 min-h-11 inline-flex items-center justify-center p-2 transition-colors motion-reduce:transition-none rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.muted, styles.hoverPanel, styles.focusOffset),
         title: t("common.minimize")
       },
       /* @__PURE__ */ React.createElement(Minimize, { size: 16, "aria-hidden": "true" })
-    ), /* @__PURE__ */ React.createElement("div", { className: cx("w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4", styles.icon), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Wifi, { size: 32 })), /* @__PURE__ */ React.createElement("h2", { id: titleId, className: cx("text-xl font-black mb-2 tracking-tight", styles.title) }, t("session.join_panel_title")), /* @__PURE__ */ React.createElement("p", { id: instructionsId, className: cx("text-sm mb-6 font-medium", styles.text) }, t("session.join_instructions")), /* @__PURE__ */ React.createElement("form", { className: "flex flex-col gap-3 max-w-xs mx-auto", onSubmit: handleJoinSubmit, "aria-describedby": instructionsId }, /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("label", { htmlFor: hostInputId, className: cx("block text-[11px] font-bold mb-1 uppercase tracking-wider", styles.muted) }, t("session.host_id_optional")), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: cx("w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4", styles.icon), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Wifi, { size: 32 })), /* @__PURE__ */ React.createElement("h2", { id: titleId, className: cx("text-xl font-black mb-2 tracking-tight", styles.title) }, t("session.join_panel_title")), /* @__PURE__ */ React.createElement("p", { id: instructionsId, className: cx("text-sm mb-6 font-medium", styles.text) }, t("session.join_instructions")), /* @__PURE__ */ React.createElement("form", { className: "flex flex-col gap-3 max-w-xs mx-auto", onSubmit: handleJoinSubmit, "aria-describedby": instructionsId }, /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("label", { htmlFor: hostInputId, className: cx("block text-xs font-bold mb-1 uppercase tracking-wider", styles.muted) }, t("session.host_id_optional")), /* @__PURE__ */ React.createElement(
       "input",
       {
         id: hostInputId,
@@ -157,7 +183,7 @@ function StudentJoinPanel({
         placeholder: `${t("session.default_prefix") || "Default:"} ${appId}`,
         className: cx("w-full text-xs border rounded-xl p-2 focus-visible:outline-none focus-visible:ring-2 font-mono mb-2", styles.input)
       }
-    )), /* @__PURE__ */ React.createElement("label", { htmlFor: codeInputId, className: "sr-only" }, t("common.enter_join_code_input")), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("label", { htmlFor: codeInputId, className: "sr-only" }, t("common.enter_join_code_input")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         ref: codeInputRef,
@@ -172,24 +198,44 @@ function StudentJoinPanel({
           if (e.key === "Enter" && canJoin) {
             e.preventDefault();
             triggerJoin();
+          } else if (e.key === "Escape") {
+            e.preventDefault();
+            if (cleanJoinCode.length > 0) clearJoinCode();
+            else if (typeof handleSetIsJoinPanelExpandedToFalse === "function") handleSetIsJoinPanelExpandedToFalse();
           }
         },
         placeholder: t("session.code_placeholder"),
         maxLength: 12,
         autoComplete: "one-time-code",
         inputMode: "text",
-        className: cx("w-full text-center font-mono font-black text-3xl tracking-[0.5em] border-2 rounded-2xl p-4 focus-visible:outline-none focus-visible:ring-4 uppercase transition-all", styles.input)
+        className: cx("w-full text-center font-mono font-black text-3xl tracking-[0.5em] border-2 rounded-2xl p-4 focus-visible:outline-none focus-visible:ring-4 uppercase transition-all motion-reduce:transition-none", styles.input)
       }
-    ), /* @__PURE__ */ React.createElement(
+    ), cleanJoinCode.length > 0 && !isSubmitting && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: clearJoinCode,
+        "aria-label": tx("session.clear_code", "Clear join code"),
+        title: tx("session.clear_code", "Clear join code"),
+        className: cx("absolute right-1.5 top-1/2 -translate-y-1/2 min-w-11 min-h-11 inline-flex items-center justify-center rounded-xl text-base font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.muted, styles.hoverPanel, styles.focusOffset)
+      },
+      "\xD7"
+    )), /* @__PURE__ */ React.createElement("div", { "data-testid": "student-join-code-progress", className: "flex flex-col items-center gap-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-2 w-full", "aria-hidden": "true" }, [0, 1, 2, 3, 4].map((slot) => /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        key: slot,
+        className: cx("h-2 flex-1 rounded-full border transition-colors motion-reduce:transition-none", slot < cleanJoinCode.length ? styles.slotFilled : styles.slotEmpty)
+      }
+    ))), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: cx("text-xs font-bold", canJoin ? styles.readyText : styles.muted) }, canJoin ? tx("session.code_ready", "\u2713 5-character code ready") : `${cleanJoinCode.length} / 5 ${tx("session.characters_entered", "characters")}`)), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "submit",
         disabled: !canJoin || isSubmitting,
         "aria-disabled": !canJoin || isSubmitting,
         "aria-busy": isSubmitting || void 0,
-        className: cx("w-full font-bold text-lg py-3 rounded-2xl transition-all transform hover:scale-[1.02] active:scale-95 motion-reduce:transform-none disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.primary, styles.focusOffset)
+        className: cx("w-full min-h-11 font-bold text-lg py-3 rounded-2xl transition-all motion-reduce:transition-none transform hover:scale-[1.02] active:scale-95 motion-reduce:transform-none disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.primary, styles.focusOffset)
       },
-      t("session.join_action"),
+      isSubmitting ? tx("session.joining", "Joining\u2026") : t("session.join_action"),
       " ",
       /* @__PURE__ */ React.createElement(ArrowRight, { size: 20, "aria-hidden": "true" })
     ))) : /* @__PURE__ */ React.createElement(
@@ -198,10 +244,10 @@ function StudentJoinPanel({
         ref: collapsedBtnRef,
         type: "button",
         onClick: handleSetIsJoinPanelExpandedToTrue,
-        className: cx("w-full flex items-center justify-between p-2 rounded-2xl transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.hoverPanel, styles.focusOffset)
+        className: cx("w-full min-h-11 flex items-center justify-between p-2 rounded-2xl transition-colors motion-reduce:transition-none group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.hoverPanel, styles.focusOffset)
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 motion-reduce:transform-none transition-transform", styles.icon), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Wifi, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("span", { id: collapsedTitleId, className: cx("block font-bold text-sm", styles.title) }, t("session.join")), /* @__PURE__ */ React.createElement("span", { className: cx("block text-[11px]", styles.text) }, t("session.sync_desc")))),
-      /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity shadow-sm", styles.arrow), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 16 }))
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 motion-reduce:transform-none transition-transform motion-reduce:transition-none", styles.icon), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Wifi, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("span", { id: collapsedTitleId, className: cx("block font-bold text-sm", styles.title) }, t("session.join")), /* @__PURE__ */ React.createElement("span", { className: cx("block text-xs", styles.text) }, t("session.sync_desc")))),
+      /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full opacity-75 group-hover:opacity-100 group-focus:opacity-100 group-focus-within:opacity-100 transition-opacity motion-reduce:transition-none shadow-sm", styles.arrow), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 16 }))
     )
   );
 }

@@ -38,7 +38,7 @@ function syncSoundButton(){
   btn.setAttribute('aria-pressed',String(sound));
 }
 async function playSound(){
-  stopSound();if(!sound||!view||!view.sound||document.hidden||destroyed)return;
+  stopSound();if(!sound||!view||!view.sound||document.hidden||destroyed||window._alloGlobalMuted||(window.__alloAudio&&window.__alloAudio.muted))return;
   const serial=soundSerial;
   try{
     if(options.ensureSound)await options.ensureSound();
@@ -159,7 +159,7 @@ function renderResponses(decisions,actions){
   }
   mode.addEventListener('change',()=>{
     responseMode=mode.value;try{storage?.setItem('alloflow-journey-input:v1',responseMode);}catch{}
-    renderJourney();$('response-mode').focus();
+    renderJourney();$('response-mode')?.focus();
   });modeLabel.append(mode);decisions.append(modeLabel);
   if(responseMode!=='write'){
     const choices=el('div','choice-responses');choices.setAttribute('aria-label','Available choices');
@@ -202,8 +202,8 @@ function renderResponses(decisions,actions){
       },'primary'));
     };
     form.append(button('Review my response',()=>{
-      options.onFreeText?.(input.value);
-      try{proposal=reviewResponse(adapter,run,input.value,{location:adapter.id==='watershed'?selected:undefined});showReview();$('response-action').focus();announce(proposal.message);}
+      if(options.onFreeText?.(input.value)===true){message('Practice paused. Support resources are shown above if you want to talk with someone.',true);return;}
+      try{proposal=reviewResponse(adapter,run,input.value,{location:adapter.id==='watershed'?selected:undefined});showReview();$('response-action')?.focus();announce(proposal.message);}
       catch(error){message(error.message,true);input.focus();}
     }),review);
     if(proposal?.runId===run.runId&&proposal.revision===run.commands.length)showReview();
@@ -312,8 +312,8 @@ function renderJournal(){
   const noteRunId=run.runId;input.addEventListener('input',()=>noteDrafts.set(noteRunId,input.value));
   input.addEventListener('blur',()=>{options.onFreeText?.(input.value);});
   notes.append(label,input,button('Save field note',()=>{
-    options.onFreeText?.(input.value);
-    try{run=addNote(run,input.value);noteDrafts.delete(run.runId);persist();renderJourney();$('field-note').focus();}catch(error){message(error.message,true);}
+    if(options.onFreeText?.(input.value)===true){message('Practice paused. Support resources are shown above if you want to talk with someone.',true);return;}
+    try{run=addNote(run,input.value);noteDrafts.delete(run.runId);persist();renderJourney();$('field-note')?.focus();}catch(error){message(error.message,true);}
   }));
   for(const response of run.responses||[]){const entry=el('div','written-record');entry.append(el('h3','','Your words · decision '+response.revision),el('p','note',response.text));notes.append(entry);}
   for(const note of run.notes)notes.append(el('p','note',note.text));

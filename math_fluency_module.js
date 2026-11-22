@@ -6,6 +6,7 @@
   'use strict';
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-math-fluency')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-math-fluency';
@@ -19,7 +20,7 @@
 
 
   // WCAG 2.1 AA: Accessibility CSS injection
-  if (!document.getElementById('mf-a11y-css')) {
+  if (typeof document !== 'undefined' && document.head && !document.getElementById('mf-a11y-css')) {
     var mfA11yStyle = document.createElement('style');
     mfA11yStyle.id = 'mf-a11y-css';
     mfA11yStyle.textContent = [
@@ -217,16 +218,30 @@
   // and the localStorage record so cross-tab reloads stay consistent.
   var _mfMuted = false;
   try { _mfMuted = localStorage.getItem('fluency_maze_muted') === '1'; } catch (e) {}
+  function _mfGlobalMuted() {
+    try {
+      if (typeof window !== 'undefined') {
+        if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+        if (window._alloGlobalMute === true || window._alloGlobalMuted === true || window.__alloFlowMuted === true || window.__alloSoundMuted === true) return true;
+        if (typeof window.isAlloMuted === 'function' && window.isAlloMuted()) return true;
+      }
+      if (typeof localStorage !== 'undefined' && (localStorage.getItem('alloflow-global-muted') === 'true' || localStorage.getItem('alloflow_muted') === '1')) return true;
+    } catch (e) {}
+    return false;
+  }
   function _mfSetMuted(v) {
     _mfMuted = !!v;
     try { localStorage.setItem('fluency_maze_muted', _mfMuted ? '1' : '0'); } catch (e) {}
   }
 
   function playTone(freq, duration, type, vol) {
-    if (_mfMuted) return;
+    if (_mfMuted || _mfGlobalMuted()) return;
     var ctx = getAudioCtx();
     if (!ctx) return;
     try {
+      if (ctx.state === 'suspended' && typeof ctx.resume === 'function') {
+        try { ctx.resume(); } catch (_) {}
+      }
       var osc = ctx.createOscillator();
       var gain = ctx.createGain();
       osc.type = type || 'sine';
@@ -1273,6 +1288,12 @@
         var qrMode = window.__alloQrStudentMode;
         var qrBlocked = qrMode === true || (qrMode && typeof qrMode === 'object' && (qrMode.aiDisabled === true || qrMode.aiPolicy === 'off'));
         if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true || qrBlocked) return false;
+        var managedPolicy = window.ALLOFLOW_MANAGED_AI_POLICY;
+        if (managedPolicy && typeof managedPolicy === 'object' && (managedPolicy.disabled === true || managedPolicy.aiDisabled === true || managedPolicy.allowAi === false || managedPolicy.aiPolicy === 'off')) return false;
+        var sp = window.StudentPolicy || (window.AlloModules && window.AlloModules.StudentPolicy);
+        if (sp && typeof sp.isAiAllowed === 'function') {
+          try { if (sp.isAiAllowed(kind || 'text') === false) return false; } catch (_) { return false; }
+        }
         if (typeof window.__alloAiUsable === 'function') {
           try { return !!window.__alloAiUsable(kind, fn); } catch (_) { return false; }
         }
@@ -1471,7 +1492,7 @@
     }
 
     function speakProblem(problem) {
-      if (!speechAvailable) return false;
+      if (!speechAvailable || _mfGlobalMuted()) return false;
       var spokenText = formatProblemSpeech(problem);
       if (!spokenText) return false;
       try {
@@ -1483,6 +1504,20 @@
         return true;
       } catch (e) { return false; }
     }
+
+    useEffect(function () {
+      if (typeof window === 'undefined' || typeof window.addEventListener !== 'function') return undefined;
+      function onGlobalMuteChanged() {
+        if (_mfGlobalMuted()) {
+          cancelProblemSpeech();
+          try { if (_audioCtx && _audioCtx.state === 'running' && typeof _audioCtx.suspend === 'function') _audioCtx.suspend(); } catch (_) {}
+        }
+      }
+      window.addEventListener('alloflow-mute-changed', onGlobalMuteChanged);
+      return function () {
+        try { window.removeEventListener('alloflow-mute-changed', onGlobalMuteChanged); } catch (_) {}
+      };
+    }, []);
 
     function updateSupportPreference(key, value) {
       var next = { reducedMotion: reducedMotion, highContrast: highContrast, touchKeypad: touchKeypad, adaptivePractice: adaptivePractice, readAloud: readAloud, calmDisplay: calmDisplay };
@@ -1541,7 +1576,10 @@
         });
       }
       checkpointAccuracyDraft();
-      var checkpointTimer = setInterval(checkpointAccuracyDraft, 5000);
+      var checkpointTimer = setInterval(function () {
+        if (typeof document !== 'undefined' && document.hidden) return;
+        checkpointAccuracyDraft();
+      }, 5000);
       return function () { clearInterval(checkpointTimer); };
     }, [active, problems, currentIndex, practicePaused]);
 
@@ -1687,7 +1725,7 @@
       };
       result.goalResult = evaluateSessionGoal(result.goal, result);
       setResults(result);
-      setHistory(function (items) { return items.concat([result]).slice(-100); });
+      setHistory(function (items) { return (Array.isArray(items) ? items : []).concat([result]).slice(-100); });
 
       onProbeComplete({
         id: 'fluency-probe-' + Date.now(),
@@ -2126,6 +2164,7 @@
     useEffect(function () {
       if (!active) return;
       function handleKey(e) {
+        if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         if ((e.key === 'p' || e.key === 'P') && runConfigRef.current && runConfigRef.current.untimed && !confirmEndEarly) {
           e.preventDefault();
           if (manualPracticePauseRef.current !== null) resumeAccuracyPractice();
@@ -2158,6 +2197,7 @@
     useEffect(function () {
       if (!sheetOpen) return;
       function handleSheetKey(e) {
+        if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         var sheet = document.querySelector('.mf-wide-sheet');
         if (!sheet) return;
         if (e.key === 'Escape') {
@@ -7279,7 +7319,7 @@
                         if (!e.target.checked || m.id === modeId) return;
                         // Groups open now stay open; the new set's group is open.
                         var was = modeId;
-                        setOpenGroups(function (prev) { var next = {}; groups.forEach(function (x) { next[x.id] = prev[x.id] != null ? !!prev[x.id] : x.modes.some(function (mm) { return mm.id === was; }); }); next[g.id] = true; return next; });
+                        setOpenGroups(function (prev) { var safePrev = (prev && typeof prev === 'object') ? prev : {}; var next = {}; groups.forEach(function (x) { next[x.id] = safePrev[x.id] != null ? !!safePrev[x.id] : x.modes.some(function (mm) { return mm.id === was; }); }); next[g.id] = true; return next; });
                         setModeId(m.id); setRunSeed(function (n) { return n + 1; });
                       },
                       style: { marginTop: '3px', flex: '0 0 auto', accentColor: '#a5b4fc' }
@@ -8345,8 +8385,9 @@
     useEffect(function() {
       function handleKey(e) {
         if (mode !== 'playing') return;
+        if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         if (!tutorialSeen) {
-          if (e.key !== 'Tab' && e.key !== 'Shift' && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); _dismissTutorial(); }
+          if (e.key !== 'Tab' && e.key !== 'Shift') { e.preventDefault(); _dismissTutorial(); }
           return;
         }
         if (paused) {
@@ -9118,6 +9159,7 @@
 
       function animate() {
         maze3dAnimRef.current = requestAnimationFrame(animate);
+        if (typeof document !== 'undefined' && document.hidden) return;
         var t2 = eng.clock.getElapsedTime();
         // Position camera at player cell
         var pr = playerPosRef.current;
@@ -10119,7 +10161,7 @@
         var visitedCount = 0;
         for (var k in visited) if (visited.hasOwnProperty(k)) visitedCount++;
         var totalCells = MAZE_COLS * MAZE_ROWS;
-        var pct = Math.min(100, Math.round((visitedCount / totalCells) * 100));
+        var pct = totalCells > 0 ? Math.min(100, Math.round((visitedCount / totalCells) * 100)) : 0;
         var label = keyCollected
           ? '\uD83D\uDDDD\uFE0F Key in hand · ' + pct + '% explored'
           : '\uD83D\uDDFA · ' + pct + '% explored';
@@ -10186,7 +10228,7 @@
       paused && h('div', {
         onClick: function() { setPaused(false); },
         role: 'button', tabIndex: 0,
-        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ' || e.key === 'p' || e.key === 'P' || e.key === 'Escape') { e.preventDefault(); setPaused(false); } },
+        onKeyDown: function(e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ' || e.key === 'p' || e.key === 'P' || e.key === 'Escape') { e.preventDefault(); setPaused(false); } },
         'aria-label': tt('math_fluency.game_paused_press_enter_or_click_to_resu', 'Game paused. Press Enter or click to resume.'),
         style: {
           position: 'absolute', inset: 0, zIndex: 13,
@@ -10228,7 +10270,7 @@
       helpOpen && h('div', {
         onClick: function() { setHelpOpen(false); },
         role: 'button', tabIndex: 0,
-        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ' || e.key === '?' || e.key === 'Escape') { e.preventDefault(); setHelpOpen(false); } },
+        onKeyDown: function(e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ' || e.key === '?' || e.key === 'Escape') { e.preventDefault(); setHelpOpen(false); } },
         'aria-label': tt('math_fluency.keyboard_shortcuts_press_escape_or_click', 'Keyboard shortcuts. Press Escape or click to dismiss.'),
         style: {
           position: 'absolute', inset: 0, zIndex: 14,
@@ -10275,7 +10317,7 @@
       !tutorialSeen && h('div', {
         onClick: _dismissTutorial,
         role: 'button', tabIndex: 0,
-        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); _dismissTutorial(); } },
+        onKeyDown: function(e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') { e.preventDefault(); _dismissTutorial(); } },
         'aria-label': tt('math_fluency.tutorial_press_enter_or_click_to_dismiss', 'Tutorial. Press Enter or click to dismiss.'),
         style: {
           position: 'absolute', inset: 0, zIndex: 14,
@@ -10458,7 +10500,7 @@
           onChange: function(e) { if (/^-?\d*$/.test(e.target.value)) setUserInput(e.target.value); },
           // Enter is handled once, by the document key handler above. Handling it here as
           // well submitted every keyboard answer twice (2 correct, double points, or 2 wrong).
-          onKeyDown: function(e) { if (e.key === 'Escape') setUserInput(''); },
+          onKeyDown: function(e) { if (!e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Escape') setUserInput(''); },
           'aria-label': tt('math_fluency.type_your_answer_to', 'Type your answer to ') + currentProblem.problem.text,
           inputMode: 'numeric', enterKeyHint: 'done', autoComplete: 'off', autoFocus: true,
           style: { display: 'block', width: isFullscreen ? '180px' : '140px', padding: isFullscreen ? '10px 16px' : '8px 12px', margin: '0 auto 10px', fontSize: isFullscreen ? '36px' : '26px', fontWeight: 800, fontFamily: 'monospace', textAlign: 'center', color: feedback === 'wrong' ? '#fee2e2' : (feedback === 'correct' ? '#bbf7d0' : '#fff'), background: feedback === 'wrong' ? '#7f1d1d' : (feedback === 'correct' ? '#14532d' : '#0f172a'), border: '3px solid ' + (feedback === 'wrong' ? '#f87171' : (feedback === 'correct' ? '#4ade80' : '#a78bfa')), borderRadius: '8px', letterSpacing: '0.08em', outlineOffset: '3px' }
@@ -10573,7 +10615,7 @@
         var p = readPending(); delete window.__alloFluencyPendingConfig;
         if (!p) return;
         var student = typeof p.student === 'string' ? p.student.trim() : '';
-        setWho(function (previous) { return { name: student || previous.name, id: student ? 'name:' + student.toLowerCase() : previous.id, pending: p, epoch: previous.epoch + 1 }; });
+        setWho(function (previous) { var prev = (previous && typeof previous === 'object') ? previous : { name: '', id: null, epoch: 0 }; return { name: student || prev.name, id: student ? 'name:' + student.toLowerCase() : prev.id, pending: p, epoch: (Number(prev.epoch) || 0) + 1 }; });
         if (student) setName(student);
         setActive(false);
       }
@@ -10584,7 +10626,7 @@
       var nextId = props.learnerId || null;
       if (nextId === previousPropId.current) return;
       previousPropId.current = nextId;
-      setWho(function (previous) { return { id: nextId, name: props.learnerName || '', pending: null, epoch: previous.epoch + 1 }; });
+      setWho(function (previous) { var prev = (previous && typeof previous === 'object') ? previous : { epoch: 0 }; return { id: nextId, name: props.learnerName || '', pending: null, epoch: (Number(prev.epoch) || 0) + 1 }; });
       setActive(false);
       setName(props.learnerName || '');
     }, [props.learnerId, props.learnerName]);
@@ -10606,12 +10648,13 @@
       h('div', { className: 'mb-3 rounded-lg border border-slate-300 p-3' },
         h('label', { htmlFor: 'mf-learner-name' }, tt('math_fluency.learner_name', 'Learner name or unique classroom identifier')),
         h('input', { id: 'mf-learner-name', value: name, disabled: active || locked || !!props.learnerId, onChange: function (e) { setName(e.target.value); }, className: 'ml-2 min-h-11 border border-slate-400 rounded p-2' }),
-        !props.learnerId && h('button', { type: 'button', disabled: active || locked, className: 'ml-2 min-h-11 rounded bg-indigo-700 text-white px-3', onClick: function () { var clean = name.trim(); setWho(function (previous) { return { id: clean ? 'name:' + clean.toLowerCase() : null, name: clean, pending: null, epoch: previous.epoch + 1 }; }); } }, tt('math_fluency.use_learner', 'Use learner')),
+        !props.learnerId && h('button', { type: 'button', disabled: active || locked, className: 'ml-2 min-h-11 rounded bg-indigo-700 text-white px-3', onClick: function () { var clean = name.trim(); setWho(function (previous) { var prev = (previous && typeof previous === 'object') ? previous : { epoch: 0 }; return { id: clean ? 'name:' + clean.toLowerCase() : null, name: clean, pending: null, epoch: (Number(prev.epoch) || 0) + 1 }; }); } }, tt('math_fluency.use_learner', 'Use learner')),
         h('p', { role: 'status', className: 'mt-2 text-sm text-slate-600' }, who.id ? tt('math_fluency.learner_separate', 'Progress is kept separately for this learner: ') + who.name : tt('math_fluency.anonymous_session', 'Unnamed practice stays in this session. Choose a learner to save separate progress.'))),
       h(MathFluencySession, Object.assign({}, props, { key: (who.id || 'session') + ':' + who.epoch, learnerId: who.id, learnerName: who.name, initialPendingConfig: who.pending, onActiveChange: setActive,
         studentLocked: locked, studentLockedSince: studentLock ? studentLock.since : 0, onStudentLock: lockForStudent })));
   }
 
+  if (typeof window !== 'undefined') {
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.MathFluency = MathFluencyPanel;
   window.AlloModules.FluencyMaze = FluencyMazePanel;
@@ -10642,4 +10685,5 @@
     dailyStreak: _mfDailyStreak, localDate: _mfLocalDate,
   };
   console.log('[CDN] MathFluency + FluencyMaze modules registered');
+  }
 })();

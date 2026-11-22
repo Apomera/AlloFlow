@@ -22,10 +22,24 @@ const _safeVideoHostedUrl = raw => {
 };
 const _videoStudioReducedMotion = () => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const _videoStudioAiTextUsable = callGemini => {
-  if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)) return false;
+  if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.ALLOFLOW_MANAGED_AI_POLICY != null && (window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false || window.ALLOFLOW_MANAGED_AI_POLICY.version !== 1 || !Array.isArray(window.ALLOFLOW_MANAGED_AI_POLICY.connections) || window.ALLOFLOW_MANAGED_AI_POLICY.connections.length === 0))) return false;
   if (callGemini && callGemini._alloQrBlocked === true) return false;
   if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable('text', callGemini));
   return Boolean(callGemini);
+};
+const _safePlainCopy = obj => {
+  const out = {};
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return out;
+  Object.keys(obj).forEach(k => {
+    if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
+    out[k] = obj[k];
+  });
+  return out;
+};
+const _safeVideoThumbDataUrl = val => {
+  const s = typeof val === 'string' ? val.trim() : '';
+  if (!s || s.length > 512 * 1024) return '';
+  return /^data:image\/(?:png|jpeg|jpg|webp);base64,[A-Za-z0-9+/=\s]+$/i.test(s) ? s : '';
 };
 function VideoStudioHostBridgeView(props) {
   const {
@@ -104,7 +118,7 @@ function VideoStudioHostBridgeView(props) {
         text: transcript,
         content: transcript,
         data: {
-          ...(resource?.data || {}),
+          ..._safePlainCopy(resource?.data),
           title: titleBase,
           transcript
         },
@@ -133,6 +147,8 @@ function VideoStudioHostBridgeView(props) {
       const safeHostedUrl = _safeVideoHostedUrl(ref.hostedUrl);
       const safeDur = Math.max(0, Math.round(Number(ref.durationSec) || 0));
       const newRefId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+      const safeRefData = _safePlainCopy(ref);
+      if ('thumbnailDataUrl' in safeRefData) safeRefData.thumbnailDataUrl = _safeVideoThumbDataUrl(safeRefData.thumbnailDataUrl);
       const refItem = {
         id: newRefId,
         type: 'video-ref',
@@ -140,7 +156,7 @@ function VideoStudioHostBridgeView(props) {
         text: `${refTitle} — video (${Math.floor(safeDur / 60)}:${String(safeDur % 60).padStart(2, '0')})${safeHostedUrl ? ` — ${safeHostedUrl}` : ''}`,
         content: '',
         data: {
-          ...ref,
+          ...safeRefData,
           hostedUrl: safeHostedUrl
         },
         meta: safeHostedUrl ? 'Video Studio card · hosted link attached' : 'Video Studio card · re-attach the downloaded file to play',
@@ -196,7 +212,7 @@ function VideoStudioHostBridgeView(props) {
       const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
       const spotlight = async anchorId => {
         let el = null;
-        for (let attempt = 0; !el && attempt < 20; attempt++) {
+        for (let attempt = 0; !el && attempt < 20 && !stopWanted(); attempt++) {
           el = document.getElementById(anchorId);
           if (!el) await wait(100);
         }
@@ -211,22 +227,25 @@ function VideoStudioHostBridgeView(props) {
         const priorOutline = el.style.outline;
         const priorOffset = el.style.outlineOffset;
         let cursorMarker = null;
-        el.style.outline = '4px solid #f59e0b';
-        el.style.outlineOffset = '5px';
-        if (!hooks || hooks.cursorEmphasis !== false) {
-          const rect = el.getBoundingClientRect();
-          cursorMarker = document.createElement('div');
-          cursorMarker.setAttribute('aria-hidden', 'true');
-          cursorMarker.style.cssText = 'position:fixed;z-index:2147483000;pointer-events:none;width:34px;height:34px;border:4px solid #f59e0b;border-radius:999px;left:' + Math.max(4, Math.min(window.innerWidth - 38, rect.left + rect.width / 2 - 17)) + 'px;top:' + Math.max(4, Math.min(window.innerHeight - 38, rect.top + rect.height / 2 - 17)) + 'px;box-shadow:0 0 0 8px rgba(245,158,11,.24),0 4px 16px rgba(15,23,42,.35);background:rgba(255,255,255,.2)' + (reducedMotion ? '' : ';transition:transform .25s ease,opacity .25s ease');
-          document.body.appendChild(cursorMarker);
-          if (!reducedMotion) requestAnimationFrame(() => {
-            if (cursorMarker) cursorMarker.style.transform = 'scale(.72)';
-          });
+        try {
+          el.style.outline = '4px solid #f59e0b';
+          el.style.outlineOffset = '5px';
+          if (!hooks || hooks.cursorEmphasis !== false) {
+            const rect = el.getBoundingClientRect();
+            cursorMarker = document.createElement('div');
+            cursorMarker.setAttribute('aria-hidden', 'true');
+            cursorMarker.style.cssText = 'position:fixed;z-index:2147483000;pointer-events:none;width:34px;height:34px;border:4px solid #f59e0b;border-radius:999px;left:' + Math.max(4, Math.min(window.innerWidth - 38, rect.left + rect.width / 2 - 17)) + 'px;top:' + Math.max(4, Math.min(window.innerHeight - 38, rect.top + rect.height / 2 - 17)) + 'px;box-shadow:0 0 0 8px rgba(245,158,11,.24),0 4px 16px rgba(15,23,42,.35);background:rgba(255,255,255,.2)' + (reducedMotion ? '' : ';transition:transform .25s ease,opacity .25s ease');
+            document.body.appendChild(cursorMarker);
+            if (!reducedMotion) requestAnimationFrame(() => {
+              if (cursorMarker) cursorMarker.style.transform = 'scale(.72)';
+            });
+          }
+          await wait(650);
+        } finally {
+          if (cursorMarker) cursorMarker.remove();
+          el.style.outline = priorOutline;
+          el.style.outlineOffset = priorOffset;
         }
-        await wait(650);
-        if (cursorMarker) cursorMarker.remove();
-        el.style.outline = priorOutline;
-        el.style.outlineOffset = priorOffset;
       };
       try {
         for (let waited = 0; document.visibilityState !== 'visible' && waited < 15000 && !stopWanted(); waited += 250) await wait(250);
@@ -529,14 +548,17 @@ function VideoStudioHostBridgeView(props) {
         // like contentLoaded are exactly the evidence "did the goal
         // land" needs, and nothing student-authored fits in 60 chars
         // of whitelisted primitive — long strings are dropped.
+        const ALLOWED_AUDIT_STRING_KEYS = new Set(['activeView', 'activeSidebarTab', 'commandAudience', 'voiceSessionStatus', 'readingTheme', 'gradeLevel', 'leveledTextLanguage', 'saveType', 'activeResourceType', 'generatedType', 'mode', 'language']);
+        const SENSITIVE_AUDIT_KEY_RE = /(?:sessionCode|token|secret|key|url|topic|inputText|nickname|student|email|phone|password)/i;
         const stateSummaryForAudit = () => {
           try {
             const liveCtx = _alloCmdCtxRef.current || _alloCmdCtx();
             const summary = {};
             let kept = 0;
             for (const key of Object.keys(liveCtx)) {
+              if (SENSITIVE_AUDIT_KEY_RE.test(key)) continue;
               const value = liveCtx[key];
-              if (typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string' && value.length <= 60) {
+              if (typeof value === 'boolean' || typeof value === 'number' && Number.isFinite(value) || typeof value === 'string' && ALLOWED_AUDIT_STRING_KEYS.has(key) && value.length <= 60) {
                 summary[key] = value;
                 if (++kept >= 60) break;
               }

@@ -6,8 +6,9 @@
     const session = {
       records,
       register(controller) {
+        if (active && active !== controller) pending = null;
         active = controller;
-        return () => { if (active === controller) active = null; };
+        return () => { if (active === controller) { active = null; pending = null; } };
       },
       blocked() { return !running && !!active && active.hasChanges(); },
       hasChanges() { return (!!active && active.hasChanges()) || [...records.values()].some(record => record.dirty); },
@@ -27,18 +28,23 @@
         const request = { steps: [step], collecting: true };
         pending = request;
         queueMicrotask(() => { request.collecting = false; });
-        active.defer({
-          type: 'transition',
-          cancel() { if (pending === request) pending = null; },
-          run() {
-            if (pending !== request) return false;
-            pending = null;
-            running = true;
-            try { for (const step of request.steps) step(); }
-            finally { running = false; }
-            return true;
-          }
-        });
+        try {
+          active.defer({
+            type: 'transition',
+            cancel() { if (pending === request) pending = null; },
+            run() {
+              if (pending !== request) return false;
+              pending = null;
+              running = true;
+              try { for (const step of request.steps) step(); }
+              finally { running = false; }
+              return true;
+            }
+          });
+        } catch (err) {
+          if (pending === request) pending = null;
+          throw err;
+        }
         return false;
       },
       protectUnload(event) {

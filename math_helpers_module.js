@@ -14,9 +14,17 @@ const _mathCheckInFlight = new Set();
 // there are several, matching the AI rule of stopping before the answer).
 function _mathAiUsable(kind, fn) {
   try {
-    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
-  } catch (_) {}
-  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn);
+    if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
+    if (typeof window !== 'undefined') {
+      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return false;
+      const qr = window.__alloQrStudentMode;
+      if (qr === true || (qr && typeof qr === 'object' && qr.active === true && qr.allowAi === false)) return false;
+    }
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 const _mathAuthoredHints = (steps) => {
   const texts = (Array.isArray(steps) ? steps : []).map(step => step && typeof step === 'object' ? String(step.explanation || step.latex || '').trim() : '').filter(Boolean);
@@ -1295,7 +1303,15 @@ const handleMathEdit = async (editInstruction, deps) => {
           if (!rawContent) throw new Error("Parse failed after all strategies");
           const normalizeSteps = (steps) => {
               if (!Array.isArray(steps)) return [];
-              return steps.map(s => typeof s === "string" ? { explanation: s, latex: "" } : s);
+              return steps
+                  .map(s => {
+                      if (typeof s === 'string') return { explanation: s, latex: '' };
+                      if (!s || typeof s !== 'object' || Array.isArray(s)) return null;
+                      return Object.fromEntries(
+                          Object.entries(s).filter(([k]) => !['__proto__', 'constructor', 'prototype'].includes(k))
+                      );
+                  })
+                  .filter(Boolean);
           };
           const VALID_TT = new Set(['simplify','solve','evaluate','factor','graph','compute','word_problem','prove','convert']);
           const normTaskType = (raw, fallback) => {
@@ -1309,29 +1325,32 @@ const handleMathEdit = async (editInstruction, deps) => {
               if (!problem || typeof problem !== 'object' || Array.isArray(problem)) {
                   throw new Error('Edited problem set contained an invalid problem');
               }
+              const safeProblem = Object.fromEntries(
+                  Object.entries(problem).filter(([k]) => !['__proto__', 'constructor', 'prototype', '_verification'].includes(k))
+              );
               const previousProblem = capturedContent.data.problems?.[problemIdx];
-              const suppliedId = typeof problem.id === 'string' && problem.id.trim() ? problem.id.trim() : '';
+              const suppliedId = typeof safeProblem.id === 'string' && safeProblem.id.trim() ? safeProblem.id.trim() : '';
               const previousId = typeof previousProblem?.id === 'string' && previousProblem.id.trim() ? previousProblem.id.trim() : '';
-              let id = suppliedId || previousId || _stableMathProblemId(capturedResourceId, problem, problemIdx);
+              let id = suppliedId || previousId || _stableMathProblemId(capturedResourceId, safeProblem, problemIdx);
               let collision = 1;
               while (usedProblemIds.has(id)) {
-                  id = _stableMathProblemId(capturedResourceId, problem, problemIdx, collision);
+                  id = _stableMathProblemId(capturedResourceId, safeProblem, problemIdx, collision);
                   collision += 1;
               }
               usedProblemIds.add(id);
               const preservedManipulative = {};
-              if (problem.manipulativeSupport === undefined && previousProblem?.manipulativeSupport !== undefined) {
+              if (safeProblem.manipulativeSupport === undefined && previousProblem?.manipulativeSupport !== undefined) {
                   preservedManipulative.manipulativeSupport = previousProblem.manipulativeSupport;
               }
-              if (problem.manipulativeResponse === undefined && previousProblem?.manipulativeResponse !== undefined) {
+              if (safeProblem.manipulativeResponse === undefined && previousProblem?.manipulativeResponse !== undefined) {
                   preservedManipulative.manipulativeResponse = previousProblem.manipulativeResponse;
               }
               return {
                   ...preservedManipulative,
-                  ...problem,
+                  ...safeProblem,
                   id,
-                  taskType: normTaskType(problem.taskType, previousProblem?.taskType),
-                  steps: normalizeSteps(problem.steps)
+                  taskType: normTaskType(safeProblem.taskType, previousProblem?.taskType),
+                  steps: normalizeSteps(safeProblem.steps)
               };
           });
           const safeRawContent = Object.fromEntries(
@@ -1473,16 +1492,20 @@ const handleGenerateSimilar = async (deps) => {
       }
 };
 
+let _mathOutcomeInFlight = false;
+let _mathOutcomeEpoch = 0;
+
 const handleGenerateOutcome = async (deps) => {
   const { generatedContent, getGeneratedContent, setIsProcessing, setGenerationStep, setError, addToast, t, callGemini, warnLog, handleAddToMapList } = deps;
   try { if (window._DEBUG_MATH_HELPERS) console.log("[MathHelpers] handleGenerateOutcome fired"); } catch(_) {}
-      if (!generatedContent || generatedContent.type !== 'outline') return;
+      if (!generatedContent || generatedContent.type !== 'outline' || _mathOutcomeInFlight) return;
       if (!_mathAiUsable('text', callGemini)) {
           _safeMathToast(addToast, _mathTranslation(t, 'errors.ai_unavailable', 'AI is currently unavailable.'), 'error');
           return;
       }
       const targetId = generatedContent.id;
-      const isStillCurrent = () => typeof getGeneratedContent !== 'function' || getGeneratedContent()?.id === targetId;
+      const myEpoch = ++_mathOutcomeEpoch;
+      const isStillCurrent = () => myEpoch === _mathOutcomeEpoch && (typeof getGeneratedContent !== 'function' || getGeneratedContent()?.id === targetId);
       const branches = (Array.isArray(generatedContent?.data?.branches) ? generatedContent.data.branches : [])
           .filter(b => b && typeof b === 'object');
       const problems = branches.filter(b => {
@@ -1499,6 +1522,7 @@ const handleGenerateOutcome = async (deps) => {
           addToast(t('errors.no_context_for_outcome'), "error");
           return;
       }
+      _mathOutcomeInFlight = true;
       setIsProcessing(true);
       if (typeof setGenerationStep === 'function') setGenerationStep("Analyzing solutions & generating outcome...");
       const prompt = `
@@ -1530,6 +1554,7 @@ const handleGenerateOutcome = async (deps) => {
           warnLog("Outcome Generation Failed", error);
           if (isStillCurrent() && typeof setError === 'function') setError(t('errors.generation_failed'));
       } finally {
+          _mathOutcomeInFlight = false;
           if (isStillCurrent()) {
               setIsProcessing(false);
               if (typeof setGenerationStep === 'function') setGenerationStep('');

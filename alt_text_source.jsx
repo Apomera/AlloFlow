@@ -39,12 +39,13 @@ const _atQrStudentBlocked = () => {
   return qr === true || Boolean(qr && typeof qr === 'object' && (qr.aiDisabled === true || qr.aiPolicy === 'off'));
 };
 const _atVisionUsable = (fn) => {
+  if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
   if (_atQrStudentBlocked()) return false;
   if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
-  try {
-    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn);
-  } catch (_) {}
-  return typeof fn === 'function' && !fn._alloQrBlocked;
+  if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
+    try { return Boolean(window.__alloAiUsable('text', fn)); } catch (_) { return false; }
+  }
+  return true;
 };
 const _atTranslate = (t, key, fallback, params) => {
   let text = '';
@@ -398,18 +399,27 @@ const _oiMulberryUrl = (value) => {
   }
 };
 const _oiValidateSvgDataUrl = (dataUrl) => {
-  const raw = _atString(dataUrl, 5000000);
-  const match = raw.match(/^data:image\/svg\+xml;base64,([A-Za-z0-9+/]*={0,2})$/i);
-  if (!match) return raw;
+  const raw = _atString(dataUrl, 5000000).trim();
+  if (!/^data:image\/svg\+xml\b/i.test(raw)) return raw;
+  const match = raw.match(/^data:image\/svg\+xml(?:\s*;\s*charset\s*=\s*[a-z0-9._-]+)?\s*;\s*base64,([A-Za-z0-9+/]*={0,2})$/i);
+  if (!match || match[1].length % 4 !== 0) throw new Error('This symbol is not a valid base64 SVG image.');
   if (typeof atob !== 'function') throw new Error('SVG validation is unavailable.');
   let svg = '';
   try { svg = atob(match[1]); } catch (_) { throw new Error('This symbol could not be decoded.'); }
   if (!/<svg(?:\s|>|\/)/i.test(svg)) throw new Error('This symbol is not valid SVG markup.');
-  const unsafe = /<\s*(?:script|foreignObject|iframe|object|embed|link|style|image|audio|video)\b/i.test(svg)
-    || /<!\s*(?:DOCTYPE|ENTITY)\b|<\?xml-stylesheet\b/i.test(svg)
-    || /\son[a-z]+\s*=/i.test(svg)
-    || /(?:href|xlink:href)\s*=\s*['"]\s*(?:https?:|\/\/|blob:|data:|javascript:)/i.test(svg)
-    || /(?:url\s*\(|@import|javascript:|expression\s*\()/i.test(svg);
+  const plain = svg
+    .replace(/&#x([0-9a-f]+);?/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16) & 0xFFFF))
+    .replace(/&#(\d+);?/g, (_, dec) => String.fromCharCode(Number(dec) & 0xFFFF))
+    .replace(/&(colon|newline|tab);/gi, (_, name) => name.toLowerCase() === 'colon' ? ':' : '');
+  const packed = plain.replace(/[\x00-\x20]+/g, '');
+  const unsafe = /<\s*(?:[^\s<>"'=/:]+:)?(?:script|foreignObject|iframe|object|embed|link|style|image|audio|video|use|a|set|animate\w*|handler|feImage)\b/i.test(plain)
+    || /<!\s*(?:DOCTYPE|ENTITY)\b|<\?(?!xml\s)/i.test(svg)
+    || /[\s/"']on[a-z]+\s*=/i.test(plain)
+    || /[\s/"']srcdoc\s*=/i.test(plain)
+    || /xml:base\s*=/i.test(plain)
+    || /(?:java|vb|live)script:/i.test(packed)
+    || /(?:[^\s<>"'=/:]+:)?href\s*=\s*(?:['"]\s*(?:https?:|\/\/|blob:|data:|javascript:|vbscript:)|(?:https?:|\/\/|blob:|data:|javascript:|vbscript:))/i.test(plain)
+    || /(?:url\s*\(|(?:-(?:webkit|moz)-)?image-set\s*\(|@import|expression\s*\()/i.test(plain);
   if (unsafe) throw new Error('This symbol contains unsafe SVG markup and was blocked.');
   return raw;
 };
@@ -929,9 +939,16 @@ function ClassroomImagePicker(props) {
     setChoosing(item.id);
     setState(prev => Object.assign({}, prev, { chooseError: '' }));
     try {
-      const dataUrl = item.source === 'mulberry'
-        ? _oiValidateSvgDataUrl(await _oiFetchDataUrl(_oiMulberryUrl(item.svgUrl), fetchImpl || fetch, signal))
-        : await fetchClassroomImage(item, { fetchImpl, callGeminiVision, language, query: state.query || query, signal });
+      let dataUrl;
+      if (item.source === 'mulberry') {
+        const safeUrl = _oiMulberryUrl(item.svgUrl);
+        if (!safeUrl) throw new Error('This symbol URL is not allowed.');
+        const activeFetch = typeof fetchImpl === 'function' ? fetchImpl : (typeof fetch === 'function' ? fetch : null);
+        if (!activeFetch) throw new Error('Network unavailable.');
+        dataUrl = _oiValidateSvgDataUrl(await _oiFetchDataUrl(safeUrl, activeFetch, signal));
+      } else {
+        dataUrl = await fetchClassroomImage(item, { fetchImpl, callGeminiVision, language, query: state.query || query, signal });
+      }
       if (timer) clearTimeout(timer);
       // Closed, searched again or switched tab while this was checked: no longer wanted.
       if (!mountedRef.current || mine !== epoch.current || (signal && signal.aborted)) return;

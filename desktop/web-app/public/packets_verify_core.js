@@ -323,10 +323,17 @@
 
     var scripts = policy ? lineFor(policy, ['script-src-elem', 'script-src', 'default-src']) : null;
     var scriptReach = scripts ? reach(scripts.sources) : { outside: [], inline: false, hashes: [], builds: false };
-    var pinned = !!scripts && scriptReach.hashes.length === 1 && !scriptReach.outside.length;
+    var evalPolicy = policy ? lineFor(policy, ['script-src', 'default-src']) : null;
+    var evalReach = evalPolicy ? reach(evalPolicy.sources) : { outside: [], inline: false, hashes: [], builds: false };
+    var scriptAttr = policy && policy.map && has(policy.map, 'script-src-attr') ? lineFor(policy, ['script-src-attr']) : null;
+    var scriptAttrReach = scriptAttr ? reach(scriptAttr.sources) : null;
+    var scriptAttrOpen = !!(scriptAttrReach && (scriptAttrReach.outside.length || scriptAttrReach.inline || scriptAttrReach.builds));
+    var scriptFallbackWide = !!(scripts && scripts.name === 'script-src-elem' && evalPolicy && evalPolicy.name === 'script-src' && (evalReach.outside.length || evalReach.inline));
+    var builds = !!(scriptReach.builds || evalReach.builds);
+    var pinned = !!scripts && scriptReach.hashes.length === 1 && !scriptReach.outside.length && !scriptFallbackWide && !scriptAttrOpen;
     fact('pinned', 'Is its script pinned by a hash?', pinned ? 'Yes. The browser runs the script only while it matches ' + scriptReach.hashes[0] + '.'
       : scriptReach.hashes.length > 1 ? 'The policy lists ' + scriptReach.hashes.length + ' hashes. A packet has one script and one hash.'
-        : 'No. The policy carries no hash for the script.', scripts ? scripts.text : '', !pinned, { hashes: scriptReach.hashes, builds: scriptReach.builds });
+        : 'No. The policy carries no hash for the script.', scripts ? scripts.text : '', !pinned, { hashes: scriptReach.hashes, builds: builds, scriptAttrOpen: scriptAttrOpen, scriptFallbackWide: scriptFallbackWide });
 
     [['forms', 'form-action', 'Can it send a form to another address?', 'forms'], ['base', 'base-uri', 'Can it change where its own addresses point (a base address)?', 'base changes']].forEach(function (row) {
       var line = policy ? lineFor(policy, [row[1]]) : null;
@@ -710,6 +717,8 @@
         if (row.open) add('policy-load', 'The policy allows ' + load.what + ' from elsewhere', UNEXPECTED, 'The policy lets the file load ' + load.what + ' from: ' + row.from.join(', ') + '. Everything a packet uses is inside the file.', policyTag.at, policyTag.end - policyTag.at);
       });
       if (pinFact.builds) add('policy-builds', 'The policy lets code be built from text', UNEXPECTED, 'The policy allows eval and new Function (\'unsafe-eval\'). A packet\'s policy does not.', policyTag.at, policyTag.end - policyTag.at);
+      if (pinFact.scriptAttrOpen) add('policy-script-attr', 'The policy allows inline event handler scripts', UNEXPECTED, 'The policy\'s script-src-attr directive permits inline event handlers or external scripts. A packet\'s policy does not.', policyTag.at, policyTag.end - policyTag.at);
+      if (pinFact.scriptFallbackWide) add('policy-script-fallback', 'The policy\'s script-src is wider than script-src-elem', UNEXPECTED, 'The policy pairs script-src-elem with a wider script-src allowing inline or external scripts. A packet\'s policy does not.', policyTag.at, policyTag.end - policyTag.at);
       if (pinFact.hashes.length > 1) add('policy-hashes', 'More than one script hash', LOOK, 'The policy lists ' + pinFact.hashes.length + ' script hashes. A packet has one script and one hash.', policyTag.at, policyTag.end - policyTag.at);
       if (!older) {
         if (!pinned && pinFact.hashes.length < 2) add('policy-unpinned', 'The script is not pinned', UNEXPECTED, 'The policy carries no hash for the script, so any script written into the file can run.', policyTag.at, policyTag.end - policyTag.at);
@@ -962,24 +971,25 @@
       .replace(/&(colon|newline|tab);/gi, function (_, name) { return name.toLowerCase() === 'colon' ? ':' : ''; });
     var packed = plain.replace(/[\x00-\x20]+/g, '');
     var bare = function (value) { return String(value || '').replace(/[\x00-\x20]+/g, ''); };
-    if (/<\s*(?:[\w-]+:)?script\b/i.test(plain)) return 'a script block';
-    if (/<\s*(?:[\w-]+:)?foreignObject\b/i.test(plain)) return 'a foreignObject block';
-    if (/<\s*(?:[\w-]+:)?(?:iframe|embed|object|audio|video|animate\w*|set|handler|listener)\b/i.test(plain)) return 'an element that is not a static drawing shape';
+    if (/<\s*(?:[^\s<>"'=/:]+:)?script\b/i.test(plain)) return 'a script block';
+    if (/<\s*(?:[^\s<>"'=/:]+:)?foreignObject\b/i.test(plain)) return 'a foreignObject block';
+    if (/<\s*(?:[^\s<>"'=/:]+:)?(?:iframe|embed|object|audio|video|animate\w*|set|handler|listener)\b/i.test(plain)) return 'an element that is not a static drawing shape';
     if (/[\s"'\/]on[a-z]+\s*=/i.test(plain)) return 'an event handler';
     if (/(?:java|vb|live)script:/i.test(packed)) return 'a script address';
     if (/xml:base\s*=/i.test(plain)) return 'a base address';
-    var m, href = /(?:[\s"'\/])(?:[\w-]+:)?href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*))/gi;
+    var m, href = /(?:[\s"'\/])(?:[^\s<>"'=/:]+:)?href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*))/gi;
     while ((m = href.exec(plain))) {
       var target = bare(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]);
       if (target.charAt(0) !== '#') return 'a link to something outside the drawing';
     }
-    if (/[\s"'\/]src\s*=/i.test(plain)) return 'a link to something outside the drawing';
-    var styleRe = /<\s*(?:[\w-]+:)?style\b[^>]*>/gi;
+    if (/[\s"'\/]src(?:doc)?\s*=/i.test(plain)) return 'a link to something outside the drawing';
+    if (/(?:-(?:webkit|moz)-)?image-set\s*\(/i.test(plain)) return 'a link to something outside the drawing';
+    var styleRe = /<\s*(?:[^\s<>"'=/:]+:)?style\b(?:"[^"]*"|'[^']*'|[^>"'])*>/gi;
     while ((m = styleRe.exec(plain))) {
       if (/\/\s*>$/.test(m[0])) continue;
-      var end = plain.slice(styleRe.lastIndex).search(/<\s*\/\s*(?:[\w-]+:)?style\s*>/i);
+      var end = plain.slice(styleRe.lastIndex).search(/<\s*\/\s*(?:[^\s<>"'=/:]+:)?style\s*>/i);
       var css = end < 0 ? plain.slice(styleRe.lastIndex) : plain.slice(styleRe.lastIndex, styleRe.lastIndex + end);
-      if (end < 0 || /@import|@font-face|@namespace|url\s*\(|expression\s*\(/i.test(css)) return 'a style block that loads something';
+      if (end < 0 || /@import|@font-face|@namespace|url\s*\(|(?:-(?:webkit|moz)-)?image-set\s*\(|expression\s*\(/i.test(css)) return 'a style block that loads something';
     }
     var urlRe = /url\s*\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))/gi;
     while ((m = urlRe.exec(plain))) {

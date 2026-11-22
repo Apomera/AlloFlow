@@ -3763,6 +3763,15 @@
         ? { div: 365.25, label: 'years' }
         : (bioSpanDays > 2 ? { div: 1, label: 'days' } : { div: 1 / 24, label: 'hours' });
 
+      function nkIsContrast() {
+        try {
+          return ctx.theme === 'contrast' || (typeof document !== 'undefined' && (
+            (document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) ||
+            (document.body && document.body.classList && document.body.classList.contains('theme-contrast'))
+          ));
+        } catch (e) { return false; }
+      }
+
       // ── charts ──
       // The decay chain plotted on the chart of nuclides. `pick` is the row
       // currently open in the list below, so selecting a step lights up the
@@ -3775,11 +3784,14 @@
         var H = el.height = Math.round(oh * dpr);
         var c = el.getContext('2d');
         if (!c) return;
+        var hc = nkIsContrast();
         var padL = 40 * dpr, padR = 16 * dpr, padT = 16 * dpr, padB = 34 * dpr;
         var pw = W - padL - padR, ph = H - padT - padB;
-        var bg = isDark ? '#0b1120' : '#f8fafc';
-        var axisInk = isDark ? 'rgba(148,163,184,0.92)' : 'rgba(51,65,85,0.92)';
-        var A_COL = ink('#f87171'), B_COL = ink('#60a5fa'), GAS = ink('#fbbf24');
+        var bg = hc ? '#000000' : (isDark ? '#0b1120' : '#f8fafc');
+        var axisInk = hc ? '#ffffff' : (isDark ? 'rgba(148,163,184,0.92)' : 'rgba(51,65,85,0.92)');
+        var A_COL = hc ? '#ffff00' : ink('#f87171');
+        var B_COL = hc ? '#00ff00' : ink('#60a5fa');
+        var GAS = hc ? '#ffffff' : ink('#fbbf24');
         c.clearRect(0, 0, W, H);
         c.fillStyle = bg; c.fillRect(0, 0, W, H);
 
@@ -3787,7 +3799,7 @@
         function px(n) { return padL + (n - nMin) / (nMax - nMin) * pw; }
         function py(z) { return padT + (1 - (z - zMin) / (zMax - zMin)) * ph; }
 
-        c.strokeStyle = isDark ? 'rgba(148,163,184,0.13)' : 'rgba(100,116,139,0.13)';
+        c.strokeStyle = hc ? 'rgba(255,255,0,0.28)' : (isDark ? 'rgba(148,163,184,0.13)' : 'rgba(100,116,139,0.13)');
         c.lineWidth = Math.max(1, dpr);
         c.font = '600 ' + (9 * dpr) + 'px system-ui, sans-serif';
         c.fillStyle = axisInk;
@@ -3802,20 +3814,26 @@
           c.fillText(String(n), px(n), H - padB + 5 * dpr);
         }
 
-        // Steps, drawn as arrows from parent to daughter.
+        // Steps, drawn as arrows from parent to daughter with subtle luminous underlay.
         for (var i = 0; i < NK_CHAIN_XY.length - 1; i++) {
           var from = NK_CHAIN_XY[i], to = NK_CHAIN_XY[i + 1];
           var col = from.kind === 'alpha' ? A_COL : B_COL;
           var x0 = px(from.n), y0 = py(from.z), x1 = px(to.n), y1 = py(to.z);
           var ang = Math.atan2(y1 - y0, x1 - x0);
           var back = 6.5 * dpr;                       // stop short of the node
+          var sx0 = x0 + Math.cos(ang) * back, sy0 = y0 + Math.sin(ang) * back;
           var ex = x1 - Math.cos(ang) * back, ey = y1 - Math.sin(ang) * back;
-          c.strokeStyle = nkRgba(col, 0.85);
-          c.lineWidth = 1.8 * dpr; c.lineCap = 'round';
-          c.beginPath(); c.moveTo(x0 + Math.cos(ang) * back, y0 + Math.sin(ang) * back);
-          c.lineTo(ex, ey); c.stroke();
+          c.lineCap = 'round';
+          if (!hc) {
+            c.strokeStyle = nkRgba(col, isDark ? 0.24 : 0.16);
+            c.lineWidth = 4.6 * dpr;
+            c.beginPath(); c.moveTo(sx0, sy0); c.lineTo(ex, ey); c.stroke();
+          }
+          c.strokeStyle = hc ? col : nkRgba(col, 0.88);
+          c.lineWidth = 1.8 * dpr;
+          c.beginPath(); c.moveTo(sx0, sy0); c.lineTo(ex, ey); c.stroke();
           var head = 4.5 * dpr;
-          c.fillStyle = nkRgba(col, 0.9);
+          c.fillStyle = hc ? col : nkRgba(col, 0.92);
           c.beginPath();
           c.moveTo(ex, ey);
           c.lineTo(ex - Math.cos(ang - 0.42) * head, ey - Math.sin(ang - 0.42) * head);
@@ -3823,13 +3841,22 @@
           c.closePath(); c.fill();
         }
 
-        // Nodes.
-        NK_CHAIN_XY.forEach(function (nd) {
+        // Nodes with glowing radioactive halos for active selection & radon gas node.
+        for (var ndi = 0; ndi < NK_CHAIN_XY.length; ndi++) {
+          var nd = NK_CHAIN_XY[ndi];
           var x = px(nd.n), y = py(nd.z);
           var sel = pick === nd.i;
-          var col = nd.kind === 'stable' ? (isDark ? '#cbd5e1' : '#475569')
+          var col = nd.kind === 'stable' ? (hc ? '#ffffff' : (isDark ? '#cbd5e1' : '#475569'))
             : (nd.gas ? GAS : (nd.kind === 'alpha' ? A_COL : B_COL));
           var r = (nd.gas || nd.kind === 'stable') ? 6 * dpr : 4.6 * dpr;
+          if (!hc && (sel || nd.gas) && typeof c.createRadialGradient === 'function') {
+            var haloR = (sel ? 16 : 12) * dpr;
+            var ng = c.createRadialGradient(x, y, r * 0.4, x, y, haloR);
+            ng.addColorStop(0, nkRgba(col, sel ? 0.42 : 0.28));
+            ng.addColorStop(1, nkRgba(col, 0));
+            c.fillStyle = ng;
+            c.beginPath(); c.arc(x, y, haloR, 0, 6.2832); c.fill();
+          }
           if (sel) {
             c.beginPath(); c.arc(x, y, r + 4.5 * dpr, 0, 6.2832);
             c.strokeStyle = col; c.lineWidth = 2 * dpr; c.stroke();
@@ -3842,7 +3869,7 @@
             c.beginPath(); c.arc(x, y, r - 2.4 * dpr, 0, 6.2832);
             c.fillStyle = bg; c.fill();       // a ring: the chain stops here
           }
-        });
+        }
 
         // Only the three that carry the story get permanent labels; the rest
         // would collide, and the list underneath names every one anyway.
@@ -3940,8 +3967,9 @@
         var padL = (cfg.yTitle ? 56 : 44) * dpr, padR = 12 * dpr;
         var padT = 12 * dpr, padB = (cfg.xTitle ? 40 : 28) * dpr;
         var pw = W - padL - padR, ph = H - padT - padB;
-        var chartBg = isDark ? '#0b1120' : '#f8fafc';
-        var axisInk = isDark ? 'rgba(148,163,184,0.92)' : 'rgba(51,65,85,0.92)';
+        var hc = nkIsContrast();
+        var chartBg = hc ? '#000000' : (isDark ? '#0b1120' : '#f8fafc');
+        var axisInk = hc ? '#ffffff' : (isDark ? 'rgba(148,163,184,0.92)' : 'rgba(51,65,85,0.92)');
         c.clearRect(0, 0, W, H);
         c.fillStyle = chartBg;
         c.fillRect(0, 0, W, H);
@@ -3955,13 +3983,15 @@
         function py(v) { return padT + (1 - (v - yLo) / (yHi - yLo)) * ph; }
 
         // Shaded x-regions sit behind everything, so a band never hides a line.
-        (cfg.bands || []).forEach(function (b) {
-          var x0 = px(Math.max(b.from, cfg.xMin)), x1 = px(Math.min(b.to, cfg.xMax));
-          c.fillStyle = b.colour;
-          c.fillRect(x0, padT, Math.max(0, x1 - x0), ph);
-        });
+        if (!hc) {
+          (cfg.bands || []).forEach(function (b) {
+            var x0 = px(Math.max(b.from, cfg.xMin)), x1 = px(Math.min(b.to, cfg.xMax));
+            c.fillStyle = b.colour;
+            c.fillRect(x0, padT, Math.max(0, x1 - x0), ph);
+          });
+        }
 
-        c.strokeStyle = isDark ? 'rgba(148,163,184,0.18)' : 'rgba(100,116,139,0.18)';
+        c.strokeStyle = hc ? 'rgba(255,255,0,0.3)' : (isDark ? 'rgba(148,163,184,0.18)' : 'rgba(100,116,139,0.18)');
         c.lineWidth = Math.max(1, dpr);
         c.font = '600 ' + (9 * dpr) + 'px system-ui, sans-serif';
         c.fillStyle = axisInk;
@@ -3985,65 +4015,109 @@
         // tick labels instead of stopping at the frame.
         c.save();
         c.beginPath(); c.rect(padL, padT, pw, ph); c.clip();
-        (cfg.series || []).forEach(function (s) {
+        var canQuad = typeof c.quadraticCurveTo === 'function';
+        function traceSeriesPath(pts) {
+          c.beginPath();
+          var nPts = pts.length;
+          c.moveTo(px(pts[0][0]), py(pts[0][1]));
+          if (canQuad && nPts >= 3) {
+            for (var pi = 1; pi < nPts - 1; pi++) {
+              var x1 = px(pts[pi][0]), y1 = py(pts[pi][1]);
+              var mx = (x1 + px(pts[pi + 1][0])) * 0.5;
+              var my = (y1 + py(pts[pi + 1][1])) * 0.5;
+              c.quadraticCurveTo(x1, y1, mx, my);
+            }
+            c.lineTo(px(pts[nPts - 1][0]), py(pts[nPts - 1][1]));
+          } else {
+            for (var pj = 1; pj < nPts; pj++) c.lineTo(px(pts[pj][0]), py(pts[pj][1]));
+          }
+        }
+        (cfg.series || []).forEach(function (s, sIdx) {
           if (!s.points || !s.points.length) return;
-          if (s.fill) {
+          var sCol = hc ? (sIdx % 2 === 0 ? '#ffff00' : '#00ff00') : s.colour;
+          if (s.fill && !hc && typeof c.createLinearGradient === 'function') {
             var g = c.createLinearGradient(0, padT, 0, padT + ph);
-            g.addColorStop(0, nkRgba(s.colour, 0.34));
-            g.addColorStop(1, nkRgba(s.colour, 0.02));
+            g.addColorStop(0, nkRgba(sCol, 0.34));
+            g.addColorStop(1, nkRgba(sCol, 0.02));
             c.fillStyle = g;
             c.beginPath();
             c.moveTo(px(s.points[0][0]), py(yLo));
-            s.points.forEach(function (p) { c.lineTo(px(p[0]), py(p[1])); });
+            for (var fi = 0; fi < s.points.length; fi++) c.lineTo(px(s.points[fi][0]), py(s.points[fi][1]));
             c.lineTo(px(s.points[s.points.length - 1][0]), py(yLo));
             c.closePath(); c.fill();
           }
-          // Soft luminous underlay on primary solid curves (translucent so contrast checks stay pristine)
-          if (!s.dash) {
-            c.strokeStyle = nkRgba(s.colour, isDark ? 0.24 : 0.16);
-            c.lineWidth = ((s.width || 2) + 3.4) * dpr;
+          // Soft luminous underlay on primary solid curves (bypassed in High-Contrast)
+          if (!s.dash && !hc) {
+            c.strokeStyle = nkRgba(sCol, isDark ? 0.26 : 0.17);
+            c.lineWidth = ((s.width || 2) + 3.8) * dpr;
             c.lineJoin = 'round'; c.lineCap = 'round';
-            c.beginPath();
-            s.points.forEach(function (p, i) { var x = px(p[0]), y = py(p[1]); if (i === 0) c.moveTo(x, y); else c.lineTo(x, y); });
+            traceSeriesPath(s.points);
             c.stroke();
           }
-          c.strokeStyle = s.colour; c.lineWidth = (s.width || 2) * dpr;
+          c.strokeStyle = sCol; c.lineWidth = (s.width || 2) * dpr;
           c.lineJoin = 'round'; c.lineCap = 'round';
           if (s.dash) c.setLineDash([6 * dpr, 4 * dpr]);
-          c.beginPath();
-          s.points.forEach(function (p, i) { var x = px(p[0]), y = py(p[1]); if (i === 0) c.moveTo(x, y); else c.lineTo(x, y); });
+          traceSeriesPath(s.points);
           c.stroke();
+          if (!s.dash && !hc && isDark) {
+            c.strokeStyle = 'rgba(255,255,255,0.42)';
+            c.lineWidth = Math.max(0.8, 0.75 * dpr);
+            traceSeriesPath(s.points);
+            c.stroke();
+          }
           c.setLineDash([]);
           // Real measured nuclides, drawn as points, so the binding curve reads
           // as data rather than as a formula someone plotted.
           if (s.dots) {
-            s.points.forEach(function (p) {
-              c.beginPath(); c.arc(px(p[0]), py(p[1]), 2.6 * dpr, 0, 6.2832);
-              c.fillStyle = s.colour; c.fill();
+            for (var di = 0; di < s.points.length; di++) {
+              var dp = s.points[di];
+              c.beginPath(); c.arc(px(dp[0]), py(dp[1]), 2.6 * dpr, 0, 6.2832);
+              c.fillStyle = sCol; c.fill();
               c.lineWidth = 1.2 * dpr; c.strokeStyle = chartBg; c.stroke();
-            });
+            }
           }
         });
-        // half-life step markers make the halving visible rather than implied
+        // Half-life step markers + glowing intersection beacons make each halving shine
         (cfg.steps || []).forEach(function (st) {
-          c.strokeStyle = 'rgba(167,139,250,0.5)';
+          var stx = px(st[0]), sty = py(st[1]);
+          c.strokeStyle = hc ? '#00ff00' : 'rgba(167,139,250,0.52)';
+          c.lineWidth = Math.max(1, dpr);
           c.setLineDash([3 * dpr, 3 * dpr]);
           c.beginPath();
-          c.moveTo(px(st[0]), py(yLo)); c.lineTo(px(st[0]), py(st[1]));
-          c.lineTo(px(cfg.xMin), py(st[1]));
+          c.moveTo(stx, py(yLo)); c.lineTo(stx, sty);
+          c.lineTo(px(cfg.xMin), sty);
           c.stroke();
           c.setLineDash([]);
+          if (!hc) {
+            c.beginPath(); c.arc(stx, sty, 5 * dpr, 0, 6.2832);
+            c.fillStyle = 'rgba(167,139,250,0.22)'; c.fill();
+          }
+          c.beginPath(); c.arc(stx, sty, 2.3 * dpr, 0, 6.2832);
+          c.fillStyle = hc ? '#00ff00' : '#c4b5fd'; c.fill();
         });
         if (cfg.marker) {
-          // Ring in the chart's own background colour, so the marker stays
-          // legible sitting on top of a line of its own colour.
+          // Glowing half-life decay curve beacon with radial aura + crisp ring + core
           var mx = px(cfg.marker.x), my = py(cfg.marker.y);
-          c.beginPath(); c.arc(mx, my, 8.5 * dpr, 0, 6.2832);
-          c.fillStyle = nkRgba(cfg.marker.colour, isDark ? 0.24 : 0.18); c.fill();
-          c.beginPath(); c.arc(mx, my, 5.5 * dpr, 0, 6.2832);
+          var mCol = hc ? '#ffff00' : cfg.marker.colour;
+          if (!hc && typeof c.createRadialGradient === 'function') {
+            var mg = c.createRadialGradient(mx, my, 2 * dpr, mx, my, 15 * dpr);
+            mg.addColorStop(0, nkRgba(mCol, isDark ? 0.5 : 0.36));
+            mg.addColorStop(0.55, nkRgba(mCol, isDark ? 0.18 : 0.12));
+            mg.addColorStop(1, nkRgba(mCol, 0));
+            c.fillStyle = mg;
+            c.beginPath(); c.arc(mx, my, 15 * dpr, 0, 6.2832); c.fill();
+          } else if (!hc) {
+            c.beginPath(); c.arc(mx, my, 9.5 * dpr, 0, 6.2832);
+            c.fillStyle = nkRgba(mCol, isDark ? 0.24 : 0.18); c.fill();
+          }
+          c.beginPath(); c.arc(mx, my, 6 * dpr, 0, 6.2832);
           c.fillStyle = chartBg; c.fill();
-          c.beginPath(); c.arc(mx, my, 4 * dpr, 0, 6.2832);
-          c.fillStyle = cfg.marker.colour; c.fill();
+          c.beginPath(); c.arc(mx, my, 4.2 * dpr, 0, 6.2832);
+          c.fillStyle = mCol; c.fill();
+          if (!hc) {
+            c.beginPath(); c.arc(mx - 1.1 * dpr, my - 1.1 * dpr, 1.4 * dpr, 0, 6.2832);
+            c.fillStyle = 'rgba(255,255,255,0.88)'; c.fill();
+          }
         }
         c.restore();
 
@@ -4562,6 +4636,49 @@
         var frameQueued = false;
         var pageVisible = !document.hidden;
         var inView = true;
+        // Pre-allocated zero-GC pools for thermal-neutron comets & fission shockwave bursts
+        var NEUT_MAX = 18;
+        var nX = new Float32Array(NEUT_MAX), nY = new Float32Array(NEUT_MAX);
+        var nVx = new Float32Array(NEUT_MAX), nVy = new Float32Array(NEUT_MAX);
+        var nP1X = new Float32Array(NEUT_MAX), nP1Y = new Float32Array(NEUT_MAX);
+        var nP2X = new Float32Array(NEUT_MAX), nP2Y = new Float32Array(NEUT_MAX);
+        var nLife = new Float32Array(NEUT_MAX);
+        var nActive = new Uint8Array(NEUT_MAX);
+        var nCursor = 0;
+        var BURST_MAX = 8;
+        var bX = new Float32Array(BURST_MAX), bY = new Float32Array(BURST_MAX);
+        var bR = new Float32Array(BURST_MAX), bMaxR = new Float32Array(BURST_MAX);
+        var bAlpha = new Float32Array(BURST_MAX), bAng = new Float32Array(BURST_MAX);
+        var bActive = new Uint8Array(BURST_MAX);
+        var bCursor = 0;
+        var rxPrng = 1337;
+        function rxRand() {
+          rxPrng = (rxPrng * 1664525 + 1013904223) >>> 0;
+          return rxPrng / 4294967296;
+        }
+        function spawnNeutron(x0, y0, speedScale) {
+          var idx = nCursor;
+          nCursor = (nCursor + 1) % NEUT_MAX;
+          var ang = rxRand() * 6.2832;
+          var spd = (42 + rxRand() * 58) * speedScale * dpr;
+          nX[idx] = x0; nY[idx] = y0;
+          nP1X[idx] = x0; nP1Y[idx] = y0;
+          nP2X[idx] = x0; nP2Y[idx] = y0;
+          nVx[idx] = Math.cos(ang) * spd;
+          nVy[idx] = Math.sin(ang) * spd;
+          nLife[idx] = 0.7 + rxRand() * 0.6;
+          nActive[idx] = 1;
+        }
+        function spawnFissionBurst(fx, fy) {
+          var idx = bCursor;
+          bCursor = (bCursor + 1) % BURST_MAX;
+          bX[idx] = fx; bY[idx] = fy;
+          bR[idx] = 3 * dpr;
+          bMaxR[idx] = (18 + rxRand() * 14) * dpr;
+          bAlpha[idx] = 0.92;
+          bAng[idx] = rxRand() * Math.PI;
+          bActive[idx] = 1;
+        }
 
         function park() {
           if (frameQueued) cancelAnimationFrame(rxAnim.current);
@@ -4607,12 +4724,13 @@
               lastSig = '';
             }
             var r = advancing ? rxStep(s, dt, mode, scen) : rxReactivity(s, mode);
+            var hc = nkIsContrast();
 
             hist.push(Math.min(200, s.power));
             if (hist.length > 240) hist.shift();
 
             c.clearRect(0, 0, W, H);
-            c.fillStyle = '#0b1120';
+            c.fillStyle = hc ? '#000000' : '#0b1120';
             c.fillRect(0, 0, W, H);
 
             // Power trace, in a band that runs from just under the banner to
@@ -4622,19 +4740,113 @@
             // excursion drew itself along the top edge, half-clipped, at the
             // one moment the trace is worth looking at.
             var plotTop = 26 * dpr, plotBot = H - 46 * dpr;
+            var plotH = Math.max(1, plotBot - plotTop);
             function pwrY(pw) { return plotBot - (pw / 200) * (plotBot - plotTop); }
-            var traceCol = s.t > RX_T_CLAD ? '#f87171' : (s.power > 110 ? '#fbbf24' : '#34d399');
-            // Subtle Cherenkov underwater / thermal status bloom behind the scope
-            if (typeof c.createRadialGradient === 'function') {
-              var amb = c.createRadialGradient(W * 0.5, (plotTop + plotBot) * 0.55, 6 * dpr, W * 0.5, (plotTop + plotBot) * 0.55, Math.max(W * 0.58, H * 0.65));
-              amb.addColorStop(0, s.t > RX_T_CLAD ? 'rgba(248,113,113,0.16)' : (s.power > 110 ? 'rgba(251,191,36,0.14)' : 'rgba(14,165,233,0.15)'));
-              amb.addColorStop(0.6, s.t > RX_T_CLAD ? 'rgba(185,28,28,0.05)' : 'rgba(6,182,212,0.04)');
-              amb.addColorStop(1, 'rgba(11,17,32,0)');
-              c.fillStyle = amb;
-              c.fillRect(0, 0, W, plotBot + 4 * dpr);
+            var traceCol = hc ? '#ffff00' : (s.t > RX_T_CLAD ? '#f87171' : (s.power > 110 ? '#fbbf24' : '#34d399'));
+            var rodFrac = nkClamp((s.rods || 0) / 100, 0, 1);
+            var pwrFrac = nkClamp((s.power || 0) / 120, 0, 1.4);
+
+            // Layered Cherenkov-blue core glow + control-rod neutron-flux attenuation gradients
+            if (!hc) {
+              if (typeof c.createRadialGradient === 'function') {
+                var cherenkovStr = Math.max(0.14, Math.min(0.42, (0.16 + pwrFrac * 0.2) * (1 - rodFrac * 0.45)));
+                var amb = c.createRadialGradient(W * 0.5, (plotTop + plotBot) * 0.55, 6 * dpr, W * 0.5, (plotTop + plotBot) * 0.55, Math.max(W * 0.58, H * 0.65));
+                if (s.t > RX_T_CLAD) {
+                  amb.addColorStop(0, 'rgba(248,113,113,0.22)');
+                  amb.addColorStop(0.55, 'rgba(185,28,28,0.08)');
+                } else if (s.power > 110) {
+                  amb.addColorStop(0, 'rgba(251,191,36,0.20)');
+                  amb.addColorStop(0.55, 'rgba(14,165,233,0.08)');
+                } else {
+                  amb.addColorStop(0, 'rgba(0,229,255,' + (cherenkovStr * 0.68).toFixed(3) + ')');
+                  amb.addColorStop(0.48, 'rgba(14,165,233,' + (cherenkovStr * 0.34).toFixed(3) + ')');
+                }
+                amb.addColorStop(1, 'rgba(11,17,32,0)');
+                c.fillStyle = amb;
+                c.fillRect(0, 0, W, plotBot + 4 * dpr);
+              }
+              // Control-rod neutron-flux attenuation columns dropping from top by rod insertion %
+              if (rodFrac > 0.02 && typeof c.createLinearGradient === 'function') {
+                var rodDepth = plotH * rodFrac * 0.78;
+                var rodG = c.createLinearGradient(0, plotTop, 0, plotTop + rodDepth);
+                rodG.addColorStop(0, s.scrammed ? 'rgba(56,189,248,0.26)' : 'rgba(51,65,85,0.42)');
+                rodG.addColorStop(1, 'rgba(15,23,42,0.03)');
+                c.fillStyle = rodG;
+                for (var cri = 0; cri < 5; cri++) {
+                  var crx = W * (0.14 + cri * 0.18);
+                  c.fillRect(crx - 4 * dpr, plotTop, 8 * dpr, rodDepth);
+                }
+              }
+              // Zero-GC live thermal-neutron trajectory comet trails & fission shockwave burst halos
+              if (!nkReduceMotion) {
+                if (advancing && !s.scrammed && s.power > 4) {
+                  var spawnProb = Math.min(0.45, dt * (2.5 + pwrFrac * 9) * (1 - rodFrac * 0.55));
+                  if (rxRand() < spawnProb) {
+                    spawnNeutron(W * (0.1 + rxRand() * 0.8), plotTop + plotH * (0.15 + rxRand() * 0.7), 0.75 + pwrFrac * 0.55);
+                  }
+                  if (rxRand() < spawnProb * 0.42) {
+                    var fx = W * (0.15 + rxRand() * 0.7);
+                    var fy = plotTop + plotH * (0.2 + rxRand() * 0.6);
+                    spawnFissionBurst(fx, fy);
+                    spawnNeutron(fx, fy, 1.0);
+                    spawnNeutron(fx, fy, 0.9);
+                  }
+                }
+                c.save();
+                c.beginPath(); c.rect(0, plotTop, W, plotH); c.clip();
+                c.lineCap = 'round';
+                // Update & draw thermal-neutron comet trails
+                for (var ni = 0; ni < NEUT_MAX; ni++) {
+                  if (!nActive[ni]) continue;
+                  if (advancing) {
+                    nP2X[ni] = nP1X[ni]; nP2Y[ni] = nP1Y[ni];
+                    nP1X[ni] = nX[ni]; nP1Y[ni] = nY[ni];
+                    nX[ni] += nVx[ni] * dt;
+                    nY[ni] += nVy[ni] * dt;
+                    nLife[ni] -= dt * (0.65 + rodFrac * 0.9);
+                  }
+                  if (nLife[ni] <= 0 || nX[ni] < 0 || nX[ni] > W || nY[ni] < plotTop || nY[ni] > plotBot) {
+                    nActive[ni] = 0;
+                    continue;
+                  }
+                  var na = Math.min(0.75, nLife[ni] * 0.85);
+                  c.strokeStyle = 'rgba(56,189,248,' + (na * 0.55).toFixed(3) + ')';
+                  c.lineWidth = 1.6 * dpr;
+                  c.beginPath(); c.moveTo(nP2X[ni], nP2Y[ni]); c.lineTo(nP1X[ni], nP1Y[ni]); c.lineTo(nX[ni], nY[ni]); c.stroke();
+                  c.fillStyle = 'rgba(224,242,254,' + na.toFixed(3) + ')';
+                  c.beginPath(); c.arc(nX[ni], nY[ni], 1.7 * dpr, 0, 6.2832); c.fill();
+                }
+                // Update & draw fission shockwave burst halos + daughter-nucleus recoil streaks
+                for (var bi = 0; bi < BURST_MAX; bi++) {
+                  if (!bActive[bi]) continue;
+                  if (advancing) {
+                    bR[bi] += (bMaxR[bi] - bR[bi]) * Math.min(1, dt * 6.5) + 8 * dpr * dt;
+                    bAlpha[bi] -= dt * 1.45;
+                  }
+                  if (bAlpha[bi] <= 0.03 || bR[bi] >= bMaxR[bi]) {
+                    bActive[bi] = 0;
+                    continue;
+                  }
+                  var ba = bAlpha[bi];
+                  c.strokeStyle = 'rgba(56,189,248,' + (ba * 0.6).toFixed(3) + ')';
+                  c.lineWidth = 1.5 * dpr;
+                  c.beginPath(); c.arc(bX[bi], bY[bi], bR[bi], 0, 6.2832); c.stroke();
+                  // Two opposing daughter-nucleus recoil streaks (Ba-141 / Kr-92)
+                  var rLen = bR[bi] * 0.85;
+                  var rdx = Math.cos(bAng[bi]) * rLen, rdy = Math.sin(bAng[bi]) * rLen;
+                  c.strokeStyle = 'rgba(251,191,36,' + (ba * 0.72).toFixed(3) + ')';
+                  c.lineWidth = 1.8 * dpr;
+                  c.beginPath();
+                  c.moveTo(bX[bi] - rdx * 0.25, bY[bi] - rdy * 0.25); c.lineTo(bX[bi] - rdx, bY[bi] - rdy);
+                  c.moveTo(bX[bi] + rdx * 0.25, bY[bi] + rdy * 0.25); c.lineTo(bX[bi] + rdx, bY[bi] + rdy);
+                  c.stroke();
+                }
+                c.restore();
+              }
             }
+
             // Subtle oscilloscope vertical time-base ticks
-            c.strokeStyle = 'rgba(56,189,248,0.08)';
+            c.strokeStyle = hc ? 'rgba(255,255,0,0.22)' : 'rgba(56,189,248,0.08)';
             c.lineWidth = Math.max(1, dpr);
             for (var vti = 1; vti < 8; vti++) {
               var vtx = (vti / 8) * W;
@@ -4642,63 +4854,84 @@
             }
             c.font = '600 ' + (9 * dpr) + 'px system-ui, sans-serif';
             c.textAlign = 'left'; c.textBaseline = 'alphabetic';
-            [0, 100, 200].forEach(function (lv) {
-              c.strokeStyle = lv === 100 ? 'rgba(56,189,248,0.34)' : 'rgba(148,163,184,0.16)';
+            var lvs = [0, 100, 200];
+            for (var li = 0; li < lvs.length; li++) {
+              var lv = lvs[li];
+              c.strokeStyle = hc ? '#00ff00' : (lv === 100 ? 'rgba(56,189,248,0.34)' : 'rgba(148,163,184,0.16)');
               c.lineWidth = Math.max(1, dpr);
               if (lv === 200) c.setLineDash([4 * dpr, 4 * dpr]);
               c.beginPath(); c.moveTo(0, pwrY(lv)); c.lineTo(W, pwrY(lv)); c.stroke();
               c.setLineDash([]);
-              c.fillStyle = 'rgba(148,163,184,0.85)';
+              if (hc) { c.fillStyle = '#ffffff'; } else { c.fillStyle = 'rgba(148,163,184,0.85)'; }
               c.fillText(lv + '%', 4 * dpr, pwrY(lv) - 3 * dpr);
-            });
+            }
             // Luminous area gradient beneath the power trace
-            if (hist.length > 1) {
+            var hLen = hist.length;
+            if (!hc && hLen > 1 && typeof c.createLinearGradient === 'function') {
               var trGrad = c.createLinearGradient(0, plotTop, 0, plotBot);
               trGrad.addColorStop(0, nkRgba(traceCol, 0.28));
               trGrad.addColorStop(1, nkRgba(traceCol, 0.02));
               c.fillStyle = trGrad;
               c.beginPath();
               c.moveTo(0, plotBot);
-              hist.forEach(function (p, i) { c.lineTo((i / 240) * W, pwrY(p)); });
-              c.lineTo(((hist.length - 1) / 240) * W, plotBot);
+              for (var hi = 0; hi < hLen; hi++) c.lineTo((hi / 240) * W, pwrY(hist[hi]));
+              c.lineTo(((hLen - 1) / 240) * W, plotBot);
               c.closePath();
               c.fill();
             }
-            // Phosphor bloom underlay + crisp instrument trace
+            // Phosphor bloom underlay + crisp quadratic-smoothed instrument trace
+            var canQuadRx = typeof c.quadraticCurveTo === 'function';
+            function traceHist() {
+              c.beginPath();
+              if (!hLen) return;
+              c.moveTo(0, pwrY(hist[0]));
+              if (canQuadRx && hLen >= 3) {
+                for (var hj = 1; hj < hLen - 1; hj++) {
+                  var hx1 = (hj / 240) * W, hy1 = pwrY(hist[hj]);
+                  var hmx = (hx1 + ((hj + 1) / 240) * W) * 0.5;
+                  var hmy = (hy1 + pwrY(hist[hj + 1])) * 0.5;
+                  c.quadraticCurveTo(hx1, hy1, hmx, hmy);
+                }
+                c.lineTo(((hLen - 1) / 240) * W, pwrY(hist[hLen - 1]));
+              } else {
+                for (var hk = 1; hk < hLen; hk++) c.lineTo((hk / 240) * W, pwrY(hist[hk]));
+              }
+            }
             c.lineJoin = 'round'; c.lineCap = 'round';
-            c.strokeStyle = nkRgba(traceCol, 0.28);
-            c.lineWidth = 6 * dpr;
-            c.beginPath();
-            hist.forEach(function (p, i) {
-              var x = (i / 240) * W, y = pwrY(p);
-              if (i === 0) c.moveTo(x, y); else c.lineTo(x, y);
-            });
-            c.stroke();
+            if (!hc) {
+              c.strokeStyle = nkRgba(traceCol, 0.28);
+              c.lineWidth = 6 * dpr;
+              traceHist();
+              c.stroke();
+            }
             c.strokeStyle = traceCol;
-            c.lineWidth = 2.2 * dpr;
-            c.beginPath();
-            hist.forEach(function (p, i) {
-              var x = (i / 240) * W, y = pwrY(p);
-              if (i === 0) c.moveTo(x, y); else c.lineTo(x, y);
-            });
+            c.lineWidth = (hc ? 2.6 : 2.2) * dpr;
+            traceHist();
             c.stroke();
-            // Live trace tip beacon
-            if (hist.length) {
-              var tipX = ((hist.length - 1) / 240) * W;
-              var tipY = pwrY(hist[hist.length - 1]);
-              c.beginPath(); c.arc(tipX, tipY, 5.5 * dpr, 0, 6.2832);
-              c.fillStyle = nkRgba(traceCol, 0.32); c.fill();
-              c.beginPath(); c.arc(tipX, tipY, 2.6 * dpr, 0, 6.2832);
+            // Live trace tip beacon with Cherenkov pulse ring
+            if (hLen) {
+              var tipX = ((hLen - 1) / 240) * W;
+              var tipY = pwrY(hist[hLen - 1]);
+              if (!hc) {
+                var tipPulse = nkReduceMotion ? 0.5 : (0.5 + 0.5 * Math.sin((ts || 0) * 0.008));
+                c.strokeStyle = nkRgba(traceCol, 0.42);
+                c.lineWidth = 1.4 * dpr;
+                c.beginPath(); c.arc(tipX, tipY, (6 + tipPulse * 4) * dpr, 0, 6.2832); c.stroke();
+                c.beginPath(); c.arc(tipX, tipY, 5.5 * dpr, 0, 6.2832);
+                c.fillStyle = nkRgba(traceCol, 0.32); c.fill();
+              }
+              c.beginPath(); c.arc(tipX, tipY, 2.8 * dpr, 0, 6.2832);
               c.fillStyle = traceCol; c.fill();
             }
             // Readout bay top rule + dividers
-            c.strokeStyle = 'rgba(56,189,248,0.22)';
+            c.strokeStyle = hc ? '#ffff00' : 'rgba(56,189,248,0.22)';
             c.lineWidth = Math.max(1, dpr);
             c.beginPath(); c.moveTo(0, H - 44 * dpr); c.lineTo(W, H - 44 * dpr); c.stroke();
-            [0.245, 0.505, 0.765].forEach(function (frac) {
-              c.strokeStyle = 'rgba(148,163,184,0.16)';
-              c.beginPath(); c.moveTo(W * frac, H - 40 * dpr); c.lineTo(W * frac, H - 6 * dpr); c.stroke();
-            });
+            var divs = [0.245, 0.505, 0.765];
+            for (var di = 0; di < divs.length; di++) {
+              c.strokeStyle = hc ? 'rgba(255,255,0,0.45)' : 'rgba(148,163,184,0.16)';
+              c.beginPath(); c.moveTo(W * divs[di], H - 40 * dpr); c.lineTo(W * divs[di], H - 6 * dpr); c.stroke();
+            }
             // hist is clamped to 200, so past that the line goes flat along the
             // ceiling and reads as "power stopped rising" — the opposite of what
             // is happening. Say the real number instead.

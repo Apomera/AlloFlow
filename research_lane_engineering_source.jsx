@@ -1008,33 +1008,70 @@
   }
 
   function StageChipStrip(props) {
+    var t = props.t || function (k) { return k; };
     var activeStage = props.activeStage, onJump = props.onJump;
     var journalStageNotes = props.journalStageNotes || {};
     var buildVersionCount = props.buildVersionCount || 0;
+    var stageFlags = STAGES.map(function (s) {
+      var sn = journalStageNotes[s.key] || {};
+      return !!(sn.problemText || sn.designRationale || sn.tradeOffDeclaration || sn.text ||
+                (s.key === 'build_test' && buildVersionCount > 0) ||
+                (s.key === 'optimize' && buildVersionCount > 1));
+    });
+    var startedCount = stageFlags.filter(Boolean).length;
+    var activeObj = STAGE_BY_KEY[activeStage] || STAGES[0];
+    var pct = Math.round((startedCount / STAGES.length) * 100);
+    function onTabKeyDown(e, idx) {
+      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+      var nextIdx = null;
+      if (e.key === 'ArrowRight') nextIdx = (idx + 1) % STAGES.length;
+      else if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + STAGES.length) % STAGES.length;
+      else if (e.key === 'Home') nextIdx = 0;
+      else if (e.key === 'End') nextIdx = STAGES.length - 1;
+      if (nextIdx === null) return;
+      e.preventDefault();
+      if (typeof onJump === 'function') onJump(STAGES[nextIdx].key);
+      var parent = e.currentTarget && e.currentTarget.parentElement;
+      if (parent) {
+        var tabs = parent.querySelectorAll('[role="tab"]');
+        if (tabs[nextIdx]) tabs[nextIdx].focus();
+      }
+    }
     return (
-      <div role="tablist" aria-label="Stage navigation"
-        style={{ display: 'flex', flexWrap: 'wrap', gap: '6px',
-          padding: '6px 0', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
-        {STAGES.map(function (s, idx) {
-          var isActive = activeStage === s.key;
-          var sn = journalStageNotes[s.key] || {};
-          var hasWork = !!(sn.problemText || sn.designRationale || sn.tradeOffDeclaration || sn.text ||
-                          (s.key === 'build_test' && buildVersionCount > 0));
-          return (
-            <button key={s.key} type="button" role="tab" aria-selected={isActive}
-              onClick={function () { if (typeof onJump === 'function') onJump(s.key); }}
-              style={{ minHeight: '44px', padding: '6px 12px', borderRadius: '999px',
-                background: isActive ? s.color : '#ffffff',
-                color: isActive ? '#ffffff' : '#475569',
-                border: '1px solid ' + (isActive ? s.color : '#cbd5e1'),
-                fontWeight: 700, fontSize: '11px', cursor: 'pointer',
-                display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <span aria-hidden="true">{(idx + 1) + '. '}</span>
-              <span>{s.shortLabel}</span>
-              {hasWork && <span aria-hidden="true">{'\u{2713}'}</span>}
-            </button>
-          );
-        })}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div role="tablist" aria-label={t('engineering.aria_stage_nav') || 'Stage navigation'}
+          style={{ display: 'flex', flexWrap: 'wrap', gap: '6px',
+            padding: '6px 0', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
+          {STAGES.map(function (s, idx) {
+            var isActive = activeStage === s.key;
+            var hasWork = stageFlags[idx];
+            return (
+              <button key={s.key} type="button" role="tab" aria-selected={isActive}
+                tabIndex={isActive ? 0 : -1}
+                onKeyDown={function (e) { onTabKeyDown(e, idx); }}
+                onClick={function () { if (typeof onJump === 'function') onJump(s.key); }}
+                style={{ minHeight: '44px', padding: '6px 12px', borderRadius: '999px',
+                  background: isActive ? s.color : '#ffffff',
+                  color: isActive ? '#ffffff' : '#334155',
+                  border: '1px solid ' + (isActive ? s.color : '#cbd5e1'),
+                  fontWeight: 700, fontSize: '11px', cursor: 'pointer',
+                  display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <span aria-hidden="true">{(idx + 1) + '. '}</span>
+                <span>{s.shortLabel}</span>
+                {hasWork && <span aria-hidden="true">{'\u{2713}'}</span>}
+                {hasWork && <span className="sr-only"> (has work)</span>}
+              </button>
+            );
+          })}
+        </div>
+        <div data-lane-stage-progress="true" role="progressbar"
+          aria-label={t('engineering.stage_progress_aria') || 'Design cycle progress'}
+          aria-valuemin={0} aria-valuemax={STAGES.length} aria-valuenow={startedCount}
+          aria-valuetext={startedCount + ' of ' + STAGES.length + ' stages started, currently on ' + (activeObj ? activeObj.label : activeStage)}
+          style={{ height: '6px', width: '100%', borderRadius: '999px', background: '#e2e8f0', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: pct + '%', background: '#b45309',
+            transition: (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'none' : 'width 0.2s ease' }} />
+        </div>
       </div>
     );
   }
@@ -1048,14 +1085,17 @@
     var _other = useState(''); var otherText = _other[0]; var setOtherText = _other[1];
     var canCommit = !!chipId && (chipId !== 'other' || otherText.trim().length >= 10);
     var modalRef = useRef(null);
+    var backdropDownRef = useRef(false);
     useFocusTrap(modalRef, true, onCancel);
     return (
       <div ref={modalRef} role="dialog" aria-modal="true"
         aria-label={t('engineering.loopback_modal_title') || 'Why are you looping back?'}
+        aria-describedby="eng-loopback-help"
         style={{ position: 'fixed', inset: 0, zIndex: 80,
           background: 'rgba(15,23,42,0.7)', backdropFilter: 'blur(4px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
-        onClick={function (e) { if (e.target === e.currentTarget) onCancel(); }}>
+        onMouseDown={function (e) { backdropDownRef.current = (e.target === e.currentTarget); }}
+        onClick={function (e) { var ok = backdropDownRef.current; backdropDownRef.current = false; if (ok && e.target === e.currentTarget) onCancel(); }}>
         <div onClick={function (e) { e.stopPropagation(); }}
           style={{ background: '#fff', borderRadius: '16px', maxWidth: '480px', width: '100%',
             padding: '20px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
@@ -1063,7 +1103,7 @@
             <span aria-hidden="true">{'\u{1F501} '}</span>
             {t('engineering.loopback_modal_title') || 'Why are you looping back?'}
           </h3>
-          <p style={{ margin: '4px 0 12px', fontSize: '11px', color: '#64748b', lineHeight: 1.5 }}>
+          <p id="eng-loopback-help" style={{ margin: '4px 0 12px', fontSize: '11px', color: '#475569', lineHeight: 1.5 }}>
             {t('engineering.loopback_modal_help') ||
               'In engineering, loops are how the design gets better. Your downstream work is preserved as a record; you can return.'}
           </p>
@@ -1158,13 +1198,20 @@
   }
 
   function TextareaCard(props) {
+    var val = String(props.value || '');
+    var maxLen = props.max || 800;
     return (
       <div style={{ padding: '12px', borderRadius: '12px', background: '#fff', border: '1px solid #e2e8f0' }}>
         <label style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', display: 'block' }}>
-          {props.label}
+          <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' }}>
+            <span>{props.label}</span>
+            <span data-textarea-char-count="true" style={{ fontSize: '11px', fontWeight: 600, color: '#475569', fontVariantNumeric: 'tabular-nums' }}>
+              {val.length} / {maxLen}
+            </span>
+          </span>
           {props.help && (<span style={{ display: 'block', margin: '4px 0', fontSize: '11px', fontWeight: 400, color: '#475569', lineHeight: 1.5 }}>{props.help}</span>)}
-          <textarea value={props.value || ''} onChange={function (e) { props.onChange(e.target.value); }}
-            rows={props.rows || 3} maxLength={props.max || 800}
+          <textarea value={val} onChange={function (e) { props.onChange(e.target.value); }}
+            rows={props.rows || 3} maxLength={maxLen}
             placeholder={props.placeholder || ''}
             style={{ marginTop: '4px', width: '100%', boxSizing: 'border-box',
               padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1',
@@ -1427,13 +1474,14 @@
           <label style={{ fontSize: '11px', fontWeight: 700, color: '#7c2d12' }}>
             {t('engineering.stakeholder_name') || 'Name'} *
             <input type="text" value={draft.name || ''} maxLength={80}
+              aria-invalid={nameDenied ? 'true' : undefined}
               onChange={function (e) { setDraft(Object.assign({}, draft, { name: e.target.value })); }}
               placeholder={t('engineering.stakeholder_name_ph') || 'e.g. Ms. Patel, my neighbor Marcus'}
-              style={{ marginTop: '2px', width: '100%', boxSizing: 'border-box',
-                padding: '6px 8px', borderRadius: '6px', border: '1px solid ' + (nameDenied ? '#dc2626' : '#cbd5e1'),
+              style={{ marginTop: '2px', width: '100%', minHeight: '44px', boxSizing: 'border-box',
+                padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + (nameDenied ? '#dc2626' : '#cbd5e1'),
                 fontSize: '12px', fontFamily: 'inherit' }} />
             {nameDenied && (
-              <div style={{ marginTop: '2px', fontSize: '10px', color: '#dc2626' }}>
+              <div role="alert" style={{ marginTop: '2px', fontSize: '11px', color: '#b91c1c' }}>
                 {t('engineering.stakeholder_generic_warning') || "Too generic — pick a specific person, not a category."}
               </div>
             )}
@@ -1443,15 +1491,15 @@
             <input type="text" value={draft.group || ''} maxLength={80}
               onChange={function (e) { setDraft(Object.assign({}, draft, { group: e.target.value })); }}
               placeholder={t('engineering.stakeholder_group_ph') || 'e.g. cafeteria manager'}
-              style={{ marginTop: '2px', width: '100%', boxSizing: 'border-box',
-                padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1',
+              style={{ marginTop: '2px', width: '100%', minHeight: '44px', boxSizing: 'border-box',
+                padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1',
                 fontSize: '12px', fontFamily: 'inherit' }} />
           </label>
           <label style={{ fontSize: '11px', fontWeight: 700, color: '#7c2d12' }}>
             {t('engineering.stakeholder_access') || 'How can you reach them?'} *
             <select value={draft.accessNote || ''} onChange={function (e) { setDraft(Object.assign({}, draft, { accessNote: e.target.value })); }}
-              style={{ marginTop: '2px', width: '100%', padding: '6px 8px', borderRadius: '6px',
-                border: '1px solid #cbd5e1', fontSize: '12px', fontFamily: 'inherit' }}>
+              style={{ marginTop: '2px', width: '100%', minHeight: '44px', padding: '8px 10px', borderRadius: '6px',
+                border: '1px solid #cbd5e1', fontSize: '12px', fontFamily: 'inherit', background: '#fff' }}>
               <option value="">— pick —</option>
               <option value="direct">Direct (I can talk to them)</option>
               <option value="proxy">Proxy (through someone else)</option>
@@ -1461,8 +1509,8 @@
           <label style={{ fontSize: '11px', fontWeight: 700, color: '#7c2d12' }}>
             {t('engineering.stakeholder_epistemic') || 'How do you know what they need?'} *
             <select value={draft.epistemicStatus || ''} onChange={function (e) { setDraft(Object.assign({}, draft, { epistemicStatus: e.target.value })); }}
-              style={{ marginTop: '2px', width: '100%', padding: '6px 8px', borderRadius: '6px',
-                border: '1px solid #cbd5e1', fontSize: '12px', fontFamily: 'inherit' }}>
+              style={{ marginTop: '2px', width: '100%', minHeight: '44px', padding: '8px 10px', borderRadius: '6px',
+                border: '1px solid #cbd5e1', fontSize: '12px', fontFamily: 'inherit', background: '#fff' }}>
               <option value="">— pick —</option>
               <option value="invented">Invented (I made them up)</option>
               <option value="observed">Observed (I watched them, didn't talk)</option>
@@ -1472,7 +1520,12 @@
           </label>
         </div>
         <label style={{ fontSize: '11px', fontWeight: 700, color: '#7c2d12' }}>
-          {t('engineering.stakeholder_why') || 'Why this stakeholder, why now?'} * (≥{floors.stakeholderJust} chars)
+          <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' }}>
+            <span>{t('engineering.stakeholder_why') || 'Why this stakeholder, why now?'} * (≥{floors.stakeholderJust} chars)</span>
+            <span data-stakeholder-just-count="true" role="status" aria-live="polite" style={{ fontSize: '11px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: (draft.whyThisStakeholderJustification || '').trim().length >= floors.stakeholderJust ? '#166534' : '#7c2d12' }}>
+              {(draft.whyThisStakeholderJustification || '').trim().length} / {floors.stakeholderJust}+
+            </span>
+          </span>
           <textarea value={draft.whyThisStakeholderJustification || ''} rows={3} maxLength={800}
             onChange={function (e) { setDraft(Object.assign({}, draft, { whyThisStakeholderJustification: e.target.value })); }}
             placeholder={t('engineering.stakeholder_why_ph') || 'What is at stake for them? Why is this design for THEM and not a generic user?'}
@@ -1529,44 +1582,46 @@
         background: '#fff', border: '1px solid #cbd5e1',
         display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '6px' }}>
-          <label style={{ fontSize: '10px', fontWeight: 700, color: '#475569', gridColumn: '1 / -1' }}>
+          <label style={{ fontSize: '11px', fontWeight: 700, color: '#334155', gridColumn: '1 / -1' }}>
             {t('engineering.constraint_criterion') || 'Constraint description'} *
             <input type="text" value={draft.criterion || ''} maxLength={120}
               onChange={function (e) { setDraft(Object.assign({}, draft, { criterion: e.target.value })); }}
               placeholder={t('engineering.constraint_criterion_ph') || 'e.g. total cost, total mass, max temperature, time to set up'}
-              style={{ marginTop: '2px', width: '100%', boxSizing: 'border-box',
-                padding: '5px 8px', borderRadius: '6px', border: '1px solid #cbd5e1',
+              style={{ marginTop: '2px', width: '100%', minHeight: '44px', boxSizing: 'border-box',
+                padding: '8px 10px', borderRadius: '6px', border: '1px solid #cbd5e1',
                 fontSize: '12px', fontFamily: 'inherit' }} />
           </label>
-          <label style={{ fontSize: '10px', fontWeight: 700, color: '#475569' }}>
+          <label style={{ fontSize: '11px', fontWeight: 700, color: '#334155' }}>
             {t('engineering.constraint_target') || 'Numeric target'} *
             <input type="text" inputMode="decimal" value={draft.target || ''} maxLength={20}
+              aria-invalid={draft.target && !targetValid ? 'true' : undefined}
               onChange={function (e) { setDraft(Object.assign({}, draft, { target: e.target.value })); }}
               placeholder="e.g. 5"
-              style={{ marginTop: '2px', width: '100%', boxSizing: 'border-box',
-                padding: '5px 8px', borderRadius: '6px', border: '1px solid ' + (draft.target && !targetValid ? '#dc2626' : '#cbd5e1'),
+              style={{ marginTop: '2px', width: '100%', minHeight: '44px', boxSizing: 'border-box',
+                padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + (draft.target && !targetValid ? '#dc2626' : '#cbd5e1'),
                 fontSize: '12px', fontFamily: 'inherit' }} />
           </label>
-          <label style={{ fontSize: '10px', fontWeight: 700, color: '#475569' }}>
+          <label style={{ fontSize: '11px', fontWeight: 700, color: '#334155' }}>
             {t('engineering.constraint_unit') || 'Unit'} *
             <input type="text" value={draft.unit || ''} maxLength={24}
+              aria-invalid={draft.unit && !unitValid ? 'true' : undefined}
               onChange={function (e) { setDraft(Object.assign({}, draft, { unit: e.target.value })); }}
               placeholder="$ / g / kg / s / m / °C / %"
-              style={{ marginTop: '2px', width: '100%', boxSizing: 'border-box',
-                padding: '5px 8px', borderRadius: '6px', border: '1px solid ' + (draft.unit && !unitValid ? '#dc2626' : '#cbd5e1'),
+              style={{ marginTop: '2px', width: '100%', minHeight: '44px', boxSizing: 'border-box',
+                padding: '8px 10px', borderRadius: '6px', border: '1px solid ' + (draft.unit && !unitValid ? '#dc2626' : '#cbd5e1'),
                 fontSize: '12px', fontFamily: 'inherit' }} />
             {draft.unit && !unitValid && (
-              <div style={{ marginTop: '2px', fontSize: '9px', color: '#dc2626' }}>
+              <div role="alert" style={{ marginTop: '2px', fontSize: '11px', color: '#b91c1c' }}>
                 {t('engineering.unit_not_whitelisted') || "Unit not recognized — try $, g, kg, s, m, cm, °C, %, etc. 'good' is not a unit."}
               </div>
             )}
           </label>
-          <label style={{ fontSize: '10px', fontWeight: 700, color: '#475569' }}>
+          <label style={{ fontSize: '11px', fontWeight: 700, color: '#334155' }}>
             {t('engineering.constraint_source') || 'Source'} *
             <select value={draft.source || ''}
               onChange={function (e) { setDraft(Object.assign({}, draft, { source: e.target.value })); setSaneAck(false); }}
-              style={{ marginTop: '2px', width: '100%', padding: '5px 8px', borderRadius: '6px',
-                border: '1px solid #cbd5e1', fontSize: '12px', fontFamily: 'inherit' }}>
+              style={{ marginTop: '2px', width: '100%', minHeight: '44px', padding: '8px 10px', borderRadius: '6px',
+                border: '1px solid #cbd5e1', fontSize: '12px', fontFamily: 'inherit', background: '#fff' }}>
               <option value="">—</option>
               <option value="budget">budget</option>
               <option value="safety">safety</option>
@@ -1578,13 +1633,13 @@
               <option value="other">other</option>
             </select>
           </label>
-          <label style={{ fontSize: '10px', fontWeight: 700, color: '#475569' }}>
+          <label style={{ fontSize: '11px', fontWeight: 700, color: '#334155' }}>
             {t('engineering.constraint_tier') || 'Tier'} *
             <select value={draft.tier || 'hard'}
               onChange={function (e) { setDraft(Object.assign({}, draft, { tier: e.target.value })); }}
               disabled={tierDowngradeAttempted}
-              style={{ marginTop: '2px', width: '100%', padding: '5px 8px', borderRadius: '6px',
-                border: '1px solid #cbd5e1', fontSize: '12px', fontFamily: 'inherit' }}>
+              style={{ marginTop: '2px', width: '100%', minHeight: '44px', padding: '8px 10px', borderRadius: '6px',
+                border: '1px solid #cbd5e1', fontSize: '12px', fontFamily: 'inherit', background: '#fff' }}>
               <option value="hard">hard (must hold)</option>
               <option value="soft">soft (should hold)</option>
               <option value="preference">preference (nice to have)</option>
@@ -2235,9 +2290,10 @@
         <label style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>
           {t('engineering.tradeoff_rank') || 'How strongly I chose this'} (1 = reluctantly accepted, 5 = strongly chose)
           <input type="range" min="1" max="5" value={rank}
+            aria-valuetext={rank + ' of 5 (' + (rank <= 1 ? 'reluctantly accepted' : rank >= 5 ? 'strongly chose' : 'moderate preference') + ')'}
             onChange={function (e) { setRank(parseInt(e.target.value, 10)); }}
             style={{ width: '100%', marginTop: '4px' }} />
-          <div style={{ fontSize: '10px', color: '#64748b', textAlign: 'center' }}>{rank}</div>
+          <div style={{ fontSize: '11px', color: '#475569', textAlign: 'center', fontWeight: 700 }}>{rank} / 5</div>
         </label>
         <label style={{ fontSize: '11px', fontWeight: 700, color: '#7c2d12' }}>
           {t('engineering.tradeoff_whose') || "Whose interest does this serve?"} * (≥10 chars; not the same as the named stakeholder)

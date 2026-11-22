@@ -42,7 +42,7 @@
     <!-- Navbar -->
     <nav class="navbar" aria-label="Primary">
         <div class="navbar-inner">
-            <a href="./" class="nav-logo"><i data-lucide="layers" style="width:28px;height:28px"></i>
+            <a href="./" class="nav-logo"><i data-lucide="layers" aria-hidden="true" style="width:28px;height:28px"></i>
                 AlloFlow</a>
             <div class="nav-links" data-site-nav="primary">
                 <a href="tools.html">Find a Tool</a>
@@ -55,7 +55,7 @@
                 <a href="launch.html" class="cta-btn"><i data-lucide="rocket" aria-hidden="true" style="width:16px;height:16px"></i> Launch AlloFlow</a>
             </div>
             <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
-                aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
+                aria-label="Open menu"><i data-lucide="menu" aria-hidden="true" style="width:24px;height:24px"></i></button>
         </div>
     </nav>
     <!-- shared mobile nav:start -->
@@ -284,8 +284,8 @@
                         style="width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,0.08);font-size:0.95rem">
                         <thead>
                             <tr style="background:linear-gradient(135deg,#ecfeff,#eff6ff)">
-                                <th style="text-align:left;padding:14px 16px;font-weight:800;color:#1e293b;width:40%">Concern</th>
-                                <th style="text-align:left;padding:14px 16px;font-weight:800;color:#1e293b">Answer</th>
+                                <th scope="col" style="text-align:left;padding:14px 16px;font-weight:800;color:#1e293b;width:40%">Concern</th>
+                                <th scope="col" style="text-align:left;padding:14px 16px;font-weight:800;color:#1e293b">Answer</th>
                             </tr>
                         </thead>
                         <tbody style="color:#334155">
@@ -348,13 +348,13 @@
                 <div class="grid-3" style="margin-bottom:8px">
                     <div class="card">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#2563eb">
-                            <i data-lucide="graduation-cap" style="width:18px;height:18px"></i> For teachers
+                            <i data-lucide="graduation-cap" aria-hidden="true" style="width:18px;height:18px"></i> For teachers
                         </div>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.6"><strong>Fullpack</strong> drafts a set of resources from source material for teacher review. <strong>Live Session</strong> supports connected delivery and group differentiation. Interface language packs and read-aloud options vary in coverage; test the selected language, voice, and device, including any offline setup.</p>
                     </div>
                     <div class="card">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#7c3aed">
-                            <i data-lucide="swords" style="width:18px;height:18px"></i> For students
+                            <i data-lucide="swords" aria-hidden="true" style="width:18px;height:18px"></i> For students
                         </div>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.6">
                             Adventure Mode RPG with XP + AI-illustrated scenes. Boss Battle / Puzzle Challenge /
@@ -364,7 +364,7 @@
                     </div>
                     <div class="card">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#db2777">
-                            <i data-lucide="heart-pulse" style="width:18px;height:18px"></i> For SPED, SLPs, BCBAs
+                            <i data-lucide="heart-pulse" aria-hidden="true" style="width:18px;height:18px"></i> For SPED, SLPs, BCBAs
                         </div>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.6">
                             <strong>Symbol Studio</strong> (AAC): AI-generated PCS symbols, board builder, Carol Gray
@@ -374,23 +374,24 @@
                     </div>
                     <div class="card">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#047857">
-                            <i data-lucide="brain" style="width:18px;height:18px"></i> For school psychologists
+                            <i data-lucide="brain" aria-hidden="true" style="width:18px;height:18px"></i> For school psychologists
                         </div>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.6"><strong>Report Writer</strong> offers assessment presets, custom entry, reviewer verification, and AI-assisted consistency checks. A qualified professional must verify scores and interpretations; identifier scrubbing can miss details. <strong>Student Analytics</strong> supports reviewing recorded evidence. The <strong>PDF Accessibility Pipeline</strong> supports document review and remediation; automated findings do not establish conformance.</p>
                     </div>
                     <div class="card">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#92400e">
-                            <i data-lucide="flask-conical" style="width:18px;height:18px"></i> STEM Lab
+                            <i data-lucide="flask-conical" aria-hidden="true" style="width:18px;height:18px"></i> STEM Lab
                         </div>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.6">
                             <strong>152 STEM plugin files and 152 registered STEM IDs</strong> across math, life/earth/space science, physics/chemistry,
                             CS/tech, and creative/applied labs. Includes RoadReady driver's ed, Space Explorer
                             roguelike, LLM Literacy Lab, AppLab generative-AI mini-app builder.
+                            <a href="tools.html#directory-heading" style="color:#92400e;font-weight:700;text-decoration:underline;display:inline-block;margin-top:6px">Browse all 152 shareable Cloudflare links &rarr;</a>
                         </p>
                     </div>
                     <div class="card">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#047857">
-                            <i data-lucide="heart-handshake" style="width:18px;height:18px"></i> SEL Hub
+                            <i data-lucide="heart-handshake" aria-hidden="true" style="width:18px;height:18px"></i> SEL Hub
                         </div>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.6">
                             <strong>72 SEL tools</strong> aligned to CASEL's 5 competencies: self-awareness,
@@ -400,7 +401,7 @@
                     </div>
                     <div class="card">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0f766e">
-                            <i data-lucide="building-2" style="width:18px;height:18px"></i> For school leaders
+                            <i data-lucide="building-2" aria-hidden="true" style="width:18px;height:18px"></i> For school leaders
                         </div>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.6">
                             <strong><a href="educator-evaluation.html" style="color:inherit">Educator Growth &amp; Evaluation</a></strong>: walkthroughs, the full observation cycle, and growth trends in a private on-device workspace.
@@ -427,7 +428,7 @@
                 <div class="grid-4">
                     <div class="card">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0f766e">
-                            <i data-lucide="cloud" style="width:18px;height:18px"></i> 1. Gemini Canvas
+                            <i data-lucide="cloud" aria-hidden="true" style="width:18px;height:18px"></i> 1. Gemini Canvas
                         </div>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.6;margin-bottom:6px">
                             <strong>Zero install.</strong> Teachers launch AlloFlow in Google's Gemini Canvas when
@@ -437,7 +438,7 @@
                     </div>
                     <div class="card">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0f766e">
-                            <i data-lucide="monitor-down" style="width:18px;height:18px"></i> 2. AlloFlow Desktop
+                            <i data-lucide="monitor-down" aria-hidden="true" style="width:18px;height:18px"></i> 2. AlloFlow Desktop
                         </div>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.6;margin-bottom:6px">
                             <strong>Recommended local-first package.</strong> Runs the app locally for teacher laptops
@@ -450,7 +451,7 @@
                     </div>
                     <div class="card">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0f766e">
-                            <i data-lucide="server" style="width:18px;height:18px"></i> 3. Self-hosted Firebase
+                            <i data-lucide="server" aria-hidden="true" style="width:18px;height:18px"></i> 3. Self-hosted Firebase
                         </div>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.6;margin-bottom:6px">
                             <strong>District-controlled cloud.</strong> Hosts as a static site on your district's
@@ -464,7 +465,7 @@
                     <div class="card">
                         <div
                             style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;color:#0f766e">
-                            <i data-lucide="shield" style="width:18px;height:18px"></i> 4. Optional School Box Server
+                            <i data-lucide="shield" aria-hidden="true" style="width:18px;height:18px"></i> 4. Optional School Box Server
                         </div>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.6;margin-bottom:6px">
                             <strong>School-owned server stack.</strong> Docker-based services can run local model, DB,
@@ -550,7 +551,7 @@
                     &mdash; early-pilot districts receive direct support from the creator and help shape the roadmap.
                 </p>
                 <a href="mailto:aaron.pomeranz@maine.edu?subject=AlloFlow%20pilot%20interest" class="btn-primary"><i
-                        data-lucide="mail" style="width:18px;height:18px"></i> <span>Email about a pilot</span></a>
+                        data-lucide="mail" aria-hidden="true" style="width:18px;height:18px"></i> <span>Email about a pilot</span></a>
             </div>
         </section>
 
@@ -593,7 +594,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-inner">
-            <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
+            <div class="footer-logo"><i data-lucide="layers" aria-hidden="true" style="width:22px;height:22px;color:var(--indigo)"></i>
                 AlloFlow</div>
             <p>An open-source project for educators. Not affiliated with Google.</p>
             <!-- shared footer links:start -->
@@ -609,21 +610,39 @@
     </footer>
 
     <!-- Back to Top Button -->
-    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
-        <i data-lucide="chevron-up" style="width:20px;height:20px"></i>
+    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})" aria-label="Back to top">
+        <i data-lucide="chevron-up" aria-hidden="true" style="width:20px;height:20px"></i>
     </button>
 
     <script>
         // Initialize Lucide icons
         if (typeof lucide !== 'undefined') { lucide.createIcons(); }
 
-        // Reveal-on-scroll
-        const revealObserver = new IntersectionObserver(entries => {
-            entries.forEach(e => {
-                if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); }
+        // Reveal-on-scroll (respects prefers-reduced-motion)
+        const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReducedMotion || typeof IntersectionObserver === 'undefined') {
+            document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+        } else {
+            const revealObserver = new IntersectionObserver(entries => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); }
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+        }
+
+        // Track active jump-nav section with aria-current="location"
+        const jumpPills = Array.from(document.querySelectorAll('.jump-nav a[href^="#"]'));
+        const setActiveJumpPill = (hash) => {
+            jumpPills.forEach(pill => {
+                if (pill.getAttribute('href') === hash) pill.setAttribute('aria-current', 'location');
+                else pill.removeAttribute('aria-current');
             });
-        }, { threshold: 0.1 });
-        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+        };
+        jumpPills.forEach(pill => {
+            pill.addEventListener('click', () => setActiveJumpPill(pill.getAttribute('href')));
+        });
+        if (window.location.hash) setActiveJumpPill(window.location.hash);
 
         // Back to Top visibility
         const backBtn = document.querySelector('.back-to-top');

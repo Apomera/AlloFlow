@@ -78,11 +78,11 @@
     "testWiseness": {
       "keyedItemCount": 500,
       "keyCycleSharePercent": 24.8,
-      "keyLongestSharePercent": 27,
+      "keyLongestSharePercent": 20,
       "keyLongerByQuarterSharePercent": 3.6,
       "distractorRationaleCount": 1500,
-      "distinctDistractorRationaleCount": 682,
-      "repeatedDistractorRationaleSharePercent": 2.3,
+      "distinctDistractorRationaleCount": 291,
+      "repeatedDistractorRationaleSharePercent": 7.9,
       "largestSharedChoiceSet": 34,
       "advisories": [
         "shared-choice-sets"
@@ -135,13 +135,13 @@
   "inputs": {
     "pack": {
       "path": "test_prep/ap_psychology_pilot.json",
-      "byteLength": 2300929,
-      "sha256": "8078e0be84694ce110ca6114a60a393b460b81e9339156daa5222d8bf0de1dcf"
+      "byteLength": 2263768,
+      "sha256": "bc31e0efe2fa89a93fa164e8975837727b848c1f753a2701e2de153a3d184597"
     },
     "learningLibrary": {
       "path": "test_prep/ap_psychology_pilot_learning_library.json",
-      "byteLength": 454707,
-      "sha256": "adb370d048c1e22b8279fd1465db62e14b7d9bfe3d2ea3b90ab514c9ab89e2c6"
+      "byteLength": 454455,
+      "sha256": "79fd67d02e2f3d571cb006aa87dd2b7b6f78ca22fce0a1f235fbc4abd59e3508"
     }
   },
   "standard": {
@@ -376,16 +376,16 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "8078e0be84694ce110ca6114a60a393b460b81e9339156daa5222d8bf0de1dcf",
-      "deploySha256": "8078e0be84694ce110ca6114a60a393b460b81e9339156daa5222d8bf0de1dcf",
+      "sourceSha256": "bc31e0efe2fa89a93fa164e8975837727b848c1f753a2701e2de153a3d184597",
+      "deploySha256": "bc31e0efe2fa89a93fa164e8975837727b848c1f753a2701e2de153a3d184597",
       "note": "Source and deployment bytes are identical."
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "adb370d048c1e22b8279fd1465db62e14b7d9bfe3d2ea3b90ab514c9ab89e2c6",
-      "deploySha256": "adb370d048c1e22b8279fd1465db62e14b7d9bfe3d2ea3b90ab514c9ab89e2c6",
+      "sourceSha256": "79fd67d02e2f3d571cb006aa87dd2b7b6f78ca22fce0a1f235fbc4abd59e3508",
+      "deploySha256": "79fd67d02e2f3d571cb006aa87dd2b7b6f78ca22fce0a1f235fbc4abd59e3508",
       "note": "Source and deployment bytes are identical."
     }
   ],
@@ -1543,10 +1543,10 @@
       "accessibilityBoundaryItems": 500,
       "expertGateItems": 500,
       "psychometricBoundaryItems": 500,
-      "keyedOptionMeanWords": 4.348,
-      "distractorOptionMeanWords": 4.325,
-      "keyedToDistractorMeanRatio": 1.005,
-      "uniquelyLongestKeyedOptions": 57,
+      "keyedOptionMeanWords": 4.112,
+      "distractorOptionMeanWords": 4.085,
+      "keyedToDistractorMeanRatio": 1.007,
+      "uniquelyLongestKeyedOptions": 54,
       "severeKeyedLengthCueItems": 0,
       "optionLengthMetrics": [
         {
@@ -1593,7 +1593,7 @@
         },
         {
           "id": "ap-psych-u2-003",
-          "keyedWords": 10,
+          "keyedWords": 12,
           "longestDistractorWords": 12,
           "severeCue": false
         },
@@ -1695,7 +1695,7 @@
         },
         {
           "id": "ap-psych-u2-005",
-          "keyedWords": 9,
+          "keyedWords": 7,
           "longestDistractorWords": 11,
           "severeCue": false
         },
@@ -1707,7 +1707,7 @@
         },
         {
           "id": "ap-psych-u2-007",
-          "keyedWords": 11,
+          "keyedWords": 7,
           "longestDistractorWords": 9,
           "severeCue": false
         },
@@ -1731,55 +1731,55 @@
         },
         {
           "id": "ap-psych-u3-007",
-          "keyedWords": 9,
+          "keyedWords": 6,
           "longestDistractorWords": 8,
           "severeCue": false
         },
         {
           "id": "ap-psych-u3-008",
-          "keyedWords": 9,
+          "keyedWords": 10,
           "longestDistractorWords": 10,
           "severeCue": false
         },
         {
           "id": "ap-psych-u4-005",
-          "keyedWords": 10,
+          "keyedWords": 7,
           "longestDistractorWords": 9,
           "severeCue": false
         },
         {
           "id": "ap-psych-u4-006",
-          "keyedWords": 7,
+          "keyedWords": 6,
           "longestDistractorWords": 7,
           "severeCue": false
         },
         {
           "id": "ap-psych-u4-007",
-          "keyedWords": 10,
+          "keyedWords": 6,
           "longestDistractorWords": 9,
           "severeCue": false
         },
         {
           "id": "ap-psych-u4-008",
-          "keyedWords": 12,
-          "longestDistractorWords": 13,
+          "keyedWords": 9,
+          "longestDistractorWords": 14,
           "severeCue": false
         },
         {
           "id": "ap-psych-u5-005",
-          "keyedWords": 12,
+          "keyedWords": 7,
           "longestDistractorWords": 9,
           "severeCue": false
         },
         {
           "id": "ap-psych-u5-006",
-          "keyedWords": 13,
+          "keyedWords": 12,
           "longestDistractorWords": 14,
           "severeCue": false
         },
         {
           "id": "ap-psych-u5-007",
-          "keyedWords": 12,
+          "keyedWords": 11,
           "longestDistractorWords": 12,
           "severeCue": false
         },
@@ -2073,8 +2073,8 @@
         },
         {
           "id": "ap-psych-u2-020",
-          "keyedWords": 11,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 9,
           "severeCue": false
         },
         {
@@ -2157,14 +2157,14 @@
         },
         {
           "id": "ap-psych-u1-022",
-          "keyedWords": 11,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 9,
           "severeCue": false
         },
         {
           "id": "ap-psych-u1-023",
-          "keyedWords": 14,
-          "longestDistractorWords": 15,
+          "keyedWords": 11,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -2175,8 +2175,8 @@
         },
         {
           "id": "ap-psych-u2-021",
-          "keyedWords": 14,
-          "longestDistractorWords": 15,
+          "keyedWords": 11,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -2223,8 +2223,8 @@
         },
         {
           "id": "ap-psych-u4-021",
-          "keyedWords": 11,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 9,
           "severeCue": false
         },
         {
@@ -2265,8 +2265,8 @@
         },
         {
           "id": "ap-psych-u5-024",
-          "keyedWords": 11,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 9,
           "severeCue": false
         },
         {
@@ -2337,8 +2337,8 @@
         },
         {
           "id": "ap-psych-u3-028",
-          "keyedWords": 14,
-          "longestDistractorWords": 15,
+          "keyedWords": 11,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -2595,8 +2595,8 @@
         },
         {
           "id": "ap-psych-u4-035",
-          "keyedWords": 14,
-          "longestDistractorWords": 15,
+          "keyedWords": 11,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -2637,8 +2637,8 @@
         },
         {
           "id": "ap-psych-u1-038",
-          "keyedWords": 11,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 9,
           "severeCue": false
         },
         {
@@ -2649,8 +2649,8 @@
         },
         {
           "id": "ap-psych-u1-040",
-          "keyedWords": 14,
-          "longestDistractorWords": 16,
+          "keyedWords": 10,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -2679,7 +2679,7 @@
         },
         {
           "id": "ap-psych-u3-037",
-          "keyedWords": 7,
+          "keyedWords": 9,
           "longestDistractorWords": 8,
           "severeCue": false
         },
@@ -2793,8 +2793,8 @@
         },
         {
           "id": "ap-psych-u2-044",
-          "keyedWords": 11,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 9,
           "severeCue": false
         },
         {
@@ -2847,8 +2847,8 @@
         },
         {
           "id": "ap-psych-u5-041",
-          "keyedWords": 11,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 9,
           "severeCue": false
         },
         {
@@ -2865,8 +2865,8 @@
         },
         {
           "id": "ap-psych-u5-044",
-          "keyedWords": 14,
-          "longestDistractorWords": 15,
+          "keyedWords": 11,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -3111,8 +3111,8 @@
         },
         {
           "id": "ap-psych-u1-053",
-          "keyedWords": 11,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 9,
           "severeCue": false
         },
         {
@@ -3123,8 +3123,8 @@
         },
         {
           "id": "ap-psych-u1-055",
-          "keyedWords": 14,
-          "longestDistractorWords": 15,
+          "keyedWords": 11,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -3147,14 +3147,14 @@
         },
         {
           "id": "ap-psych-u2-055",
-          "keyedWords": 11,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 9,
           "severeCue": false
         },
         {
           "id": "ap-psych-u2-056",
-          "keyedWords": 14,
-          "longestDistractorWords": 16,
+          "keyedWords": 10,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -3279,7 +3279,7 @@
         },
         {
           "id": "ap-psych-u3-057",
-          "keyedWords": 7,
+          "keyedWords": 9,
           "longestDistractorWords": 8,
           "severeCue": false
         },
@@ -3291,8 +3291,8 @@
         },
         {
           "id": "ap-psych-u3-059",
-          "keyedWords": 14,
-          "longestDistractorWords": 16,
+          "keyedWords": 10,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -3321,8 +3321,8 @@
         },
         {
           "id": "ap-psych-u4-060",
-          "keyedWords": 11,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 9,
           "severeCue": false
         },
         {
@@ -3345,8 +3345,8 @@
         },
         {
           "id": "ap-psych-u5-060",
-          "keyedWords": 11,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 9,
           "severeCue": false
         },
         {
@@ -3423,8 +3423,8 @@
         },
         {
           "id": "ap-psych-u4-061",
-          "keyedWords": 14,
-          "longestDistractorWords": 16,
+          "keyedWords": 10,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -3789,8 +3789,8 @@
         },
         {
           "id": "ap-psych-u4-074",
-          "keyedWords": 14,
-          "longestDistractorWords": 15,
+          "keyedWords": 11,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -3897,8 +3897,8 @@
         },
         {
           "id": "ap-psych-u3-080",
-          "keyedWords": 14,
-          "longestDistractorWords": 15,
+          "keyedWords": 11,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -3945,8 +3945,8 @@
         },
         {
           "id": "ap-psych-u5-080",
-          "keyedWords": 11,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 9,
           "severeCue": false
         },
         {
@@ -3969,8 +3969,8 @@
         },
         {
           "id": "ap-psych-u1-084",
-          "keyedWords": 11,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 11,
           "severeCue": false
         },
         {
@@ -4047,8 +4047,8 @@
         },
         {
           "id": "ap-psych-u5-081",
-          "keyedWords": 14,
-          "longestDistractorWords": 16,
+          "keyedWords": 10,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -4071,8 +4071,8 @@
         },
         {
           "id": "ap-psych-u1-085",
-          "keyedWords": 14,
-          "longestDistractorWords": 16,
+          "keyedWords": 10,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -4113,8 +4113,8 @@
         },
         {
           "id": "ap-psych-u2-088",
-          "keyedWords": 14,
-          "longestDistractorWords": 15,
+          "keyedWords": 11,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -4149,8 +4149,8 @@
         },
         {
           "id": "ap-psych-u4-086",
-          "keyedWords": 11,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 11,
           "severeCue": false
         },
         {
@@ -4443,8 +4443,8 @@
         },
         {
           "id": "ap-psych-u1-099",
-          "keyedWords": 11,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 9,
           "severeCue": false
         },
         {
@@ -4473,8 +4473,8 @@
         },
         {
           "id": "ap-psych-u2-100",
-          "keyedWords": 14,
-          "longestDistractorWords": 16,
+          "keyedWords": 10,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -4497,8 +4497,8 @@
         },
         {
           "id": "ap-psych-u3-100",
-          "keyedWords": 14,
-          "longestDistractorWords": 16,
+          "keyedWords": 10,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -4521,8 +4521,8 @@
         },
         {
           "id": "ap-psych-u4-100",
-          "keyedWords": 14,
-          "longestDistractorWords": 16,
+          "keyedWords": 10,
+          "longestDistractorWords": 12,
           "severeCue": false
         },
         {
@@ -4533,8 +4533,8 @@
         },
         {
           "id": "ap-psych-u5-098",
-          "keyedWords": 11,
-          "longestDistractorWords": 12,
+          "keyedWords": 9,
+          "longestDistractorWords": 9,
           "severeCue": false
         },
         {
@@ -4545,8 +4545,8 @@
         },
         {
           "id": "ap-psych-u5-100",
-          "keyedWords": 14,
-          "longestDistractorWords": 15,
+          "keyedWords": 11,
+          "longestDistractorWords": 12,
           "severeCue": false
         }
       ],
@@ -4820,21 +4820,8 @@
         {
           "id": "ap-psych-u4-008",
           "keyedCueTerms": [],
-          "distractorCueChoices": [
-            {
-              "index": 0,
-              "terms": [
-                "always"
-              ]
-            },
-            {
-              "index": 1,
-              "terms": [
-                "every"
-              ]
-            }
-          ],
-          "advisory": true
+          "distractorCueChoices": [],
+          "advisory": false
         },
         {
           "id": "ap-psych-u5-005",
@@ -4845,14 +4832,7 @@
         {
           "id": "ap-psych-u5-006",
           "keyedCueTerms": [],
-          "distractorCueChoices": [
-            {
-              "index": 2,
-              "terms": [
-                "only"
-              ]
-            }
-          ],
+          "distractorCueChoices": [],
           "advisory": false
         },
         {
@@ -8219,12 +8199,10 @@
         },
         {
           "id": "ap-psych-u1-002",
-          "keyedOverlap": 3,
+          "keyedOverlap": 2,
           "maxDistractorOverlap": 5,
-          "keyOverlapAdvantage": -2,
-          "uniqueStemKeyTerms": [
-            "conclusion"
-          ],
+          "keyOverlapAdvantage": -3,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -8269,13 +8247,10 @@
         },
         {
           "id": "ap-psych-u2-003",
-          "keyedOverlap": 4,
+          "keyedOverlap": 2,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "correctly",
-            "errors"
-          ],
+          "keyOverlapAdvantage": -2,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -8320,22 +8295,18 @@
         },
         {
           "id": "ap-psych-u4-003",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "policy"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-002",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "attitude"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -8348,12 +8319,10 @@
         },
         {
           "id": "ap-psych-u5-001",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "average"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -8400,12 +8369,10 @@
         },
         {
           "id": "ap-psych-u1-007",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 2,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "quietly"
-          ],
+          "keyOverlapAdvantage": -2,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -8418,23 +8385,18 @@
         },
         {
           "id": "ap-psych-u2-005",
-          "keyedOverlap": 2,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 2,
-          "uniqueStemKeyTerms": [
-            "after",
-            "later"
-          ],
-          "advisory": true
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
         },
         {
           "id": "ap-psych-u2-006",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "meaningful"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -8447,22 +8409,18 @@
         },
         {
           "id": "ap-psych-u2-008",
-          "keyedOverlap": 4,
+          "keyedOverlap": 3,
           "maxDistractorOverlap": 2,
-          "keyOverlapAdvantage": 2,
-          "uniqueStemKeyTerms": [
-            "delayed"
-          ],
+          "keyOverlapAdvantage": 1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u3-005",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "prenatal"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -8475,32 +8433,26 @@
         },
         {
           "id": "ap-psych-u3-007",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "rule"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u3-008",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "same"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-005",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "people"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -8529,32 +8481,26 @@
         },
         {
           "id": "ap-psych-u5-005",
-          "keyedOverlap": 2,
+          "keyedOverlap": 1,
           "maxDistractorOverlap": 2,
-          "keyOverlapAdvantage": 0,
+          "keyOverlapAdvantage": -1,
           "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-006",
-          "keyedOverlap": 4,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 3,
-          "uniqueStemKeyTerms": [
-            "distress",
-            "impairment",
-            "unusual"
-          ],
-          "advisory": true
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
         },
         {
           "id": "ap-psych-u5-007",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "cases"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -8767,12 +8713,10 @@
         },
         {
           "id": "ap-psych-u2-014",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "figure"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -8817,12 +8761,10 @@
         },
         {
           "id": "ap-psych-u3-016",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -8907,78 +8849,58 @@
         },
         {
           "id": "ap-psych-u1-019",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u1-020",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 3,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "involving",
-            "performance",
-            "reading"
-          ],
+          "keyOverlapAdvantage": -3,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u2-017",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u2-018",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "grouping",
-            "involving",
-            "visual"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u2-019",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u2-020",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -3,
-          "uniqueStemKeyTerms": [
-            "measures"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u3-017",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "change",
-            "involving",
-            "related"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -9015,34 +8937,26 @@
         },
         {
           "id": "ap-psych-u4-018",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-019",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "behavioral",
-            "explanation",
-            "involving"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-020",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -9079,22 +8993,18 @@
         },
         {
           "id": "ap-psych-u1-021",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u1-022",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -3,
-          "uniqueStemKeyTerms": [
-            "measures"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -9155,12 +9065,10 @@
         },
         {
           "id": "ap-psych-u3-022",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "period"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -9181,12 +9089,10 @@
         },
         {
           "id": "ap-psych-u4-021",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -3,
-          "uniqueStemKeyTerms": [
-            "measures"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -9215,44 +9121,34 @@
         },
         {
           "id": "ap-psych-u5-021",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-022",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "exposure",
-            "involving",
-            "stress"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-023",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-024",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 5,
-          "keyOverlapAdvantage": -4,
-          "uniqueStemKeyTerms": [
-            "measures"
-          ],
+          "keyOverlapAdvantage": -5,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -9321,34 +9217,26 @@
         },
         {
           "id": "ap-psych-u3-025",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u3-026",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "exposure",
-            "involving",
-            "prenatal"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u3-027",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -9457,35 +9345,26 @@
         },
         {
           "id": "ap-psych-u2-029",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u2-030",
-          "keyedOverlap": 4,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "involving",
-            "problem",
-            "solving",
-            "strategy"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u2-031",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -9506,12 +9385,10 @@
         },
         {
           "id": "ap-psych-u3-030",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "identity"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -9556,12 +9433,10 @@
         },
         {
           "id": "ap-psych-u4-032",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -9614,24 +9489,18 @@
         },
         {
           "id": "ap-psych-u1-035",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u1-036",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "heart",
-            "involving",
-            "rate"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -9684,44 +9553,34 @@
         },
         {
           "id": "ap-psych-u3-035",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "orientation"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u3-036",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-033",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "attitude",
-            "change",
-            "involving"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-034",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -9758,12 +9617,10 @@
         },
         {
           "id": "ap-psych-u5-035",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "self"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -9776,22 +9633,18 @@
         },
         {
           "id": "ap-psych-u1-037",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u1-038",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 5,
-          "keyOverlapAdvantage": -4,
-          "uniqueStemKeyTerms": [
-            "measures"
-          ],
+          "keyOverlapAdvantage": -5,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -9844,25 +9697,18 @@
         },
         {
           "id": "ap-psych-u3-037",
-          "keyedOverlap": 4,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 6,
-          "keyOverlapAdvantage": -2,
-          "uniqueStemKeyTerms": [
-            "expectation",
-            "involving",
-            "role",
-            "social"
-          ],
+          "keyOverlapAdvantage": -6,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u3-038",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -9923,35 +9769,26 @@
         },
         {
           "id": "ap-psych-u5-038",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-039",
-          "keyedOverlap": 4,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "being",
-            "involving",
-            "practice",
-            "well"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-040",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -9988,44 +9825,34 @@
         },
         {
           "id": "ap-psych-u2-041",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u2-042",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "encoding",
-            "information",
-            "involving"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u2-043",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u2-044",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 5,
-          "keyOverlapAdvantage": -4,
-          "uniqueStemKeyTerms": [
-            "measures"
-          ],
+          "keyOverlapAdvantage": -5,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -10078,42 +9905,34 @@
         },
         {
           "id": "ap-psych-u4-043",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "responsibility"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-044",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-041",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 5,
-          "keyOverlapAdvantage": -4,
-          "uniqueStemKeyTerms": [
-            "measures"
-          ],
+          "keyOverlapAdvantage": -5,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-042",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 2,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "consent"
-          ],
+          "keyOverlapAdvantage": -2,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -10206,55 +10025,42 @@
         },
         {
           "id": "ap-psych-u3-046",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u3-047",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "involving",
-            "reasoning",
-            "task"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u3-048",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-045",
-          "keyedOverlap": 2,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 3,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "context",
-            "involving"
-          ],
+          "keyOverlapAdvantage": -3,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-046",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -10315,34 +10121,26 @@
         },
         {
           "id": "ap-psych-u1-050",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u1-051",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 5,
-          "keyOverlapAdvantage": -2,
-          "uniqueStemKeyTerms": [
-            "intensity",
-            "involving",
-            "stimulus"
-          ],
+          "keyOverlapAdvantage": -5,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u1-052",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -10371,12 +10169,10 @@
         },
         {
           "id": "ap-psych-u2-052",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -10477,12 +10273,10 @@
         },
         {
           "id": "ap-psych-u1-053",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -3,
-          "uniqueStemKeyTerms": [
-            "measures"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -10511,33 +10305,26 @@
         },
         {
           "id": "ap-psych-u2-053",
-          "keyedOverlap": 2,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -2,
-          "uniqueStemKeyTerms": [
-            "involving",
-            "strategy"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u2-054",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u2-055",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 3,
-          "keyOverlapAdvantage": -2,
-          "uniqueStemKeyTerms": [
-            "measures"
-          ],
+          "keyOverlapAdvantage": -3,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -10574,12 +10361,10 @@
         },
         {
           "id": "ap-psych-u3-056",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -10624,12 +10409,10 @@
         },
         {
           "id": "ap-psych-u5-054",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "cultural"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -10714,25 +10497,18 @@
         },
         {
           "id": "ap-psych-u3-057",
-          "keyedOverlap": 4,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "child",
-            "involving",
-            "language",
-            "sample"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u3-058",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -10753,86 +10529,66 @@
         },
         {
           "id": "ap-psych-u4-057",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-058",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "interaction",
-            "involving",
-            "therapy"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-059",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-060",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -3,
-          "uniqueStemKeyTerms": [
-            "measures"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-057",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-058",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "involving",
-            "pattern",
-            "symptom"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-059",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-060",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -3,
-          "uniqueStemKeyTerms": [
-            "measures"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -10877,12 +10633,10 @@
         },
         {
           "id": "ap-psych-u2-062",
-          "keyedOverlap": 1,
-          "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "memory"
-          ],
+          "keyedOverlap": 0,
+          "maxDistractorOverlap": 1,
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -10951,12 +10705,10 @@
         },
         {
           "id": "ap-psych-u4-063",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "five"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -10969,13 +10721,10 @@
         },
         {
           "id": "ap-psych-u5-061",
-          "keyedOverlap": 2,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 2,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "consent",
-            "participant"
-          ],
+          "keyOverlapAdvantage": -2,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -11012,67 +10761,50 @@
         },
         {
           "id": "ap-psych-u1-066",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u1-067",
-          "keyedOverlap": 4,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 5,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "activity",
-            "brain",
-            "involving",
-            "region"
-          ],
+          "keyOverlapAdvantage": -5,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u1-068",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u2-065",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u2-066",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "interval",
-            "involving",
-            "retention"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u2-067",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -11101,24 +10833,18 @@
         },
         {
           "id": "ap-psych-u3-067",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u3-068",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 3,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "caregiver",
-            "interaction",
-            "involving"
-          ],
+          "keyOverlapAdvantage": -3,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -11147,12 +10873,10 @@
         },
         {
           "id": "ap-psych-u4-068",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "person"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -11253,12 +10977,10 @@
         },
         {
           "id": "ap-psych-u3-069",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -11287,44 +11009,34 @@
         },
         {
           "id": "ap-psych-u4-069",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "situation"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-070",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-071",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 5,
-          "keyOverlapAdvantage": -2,
-          "uniqueStemKeyTerms": [
-            "involving",
-            "measure",
-            "personality"
-          ],
+          "keyOverlapAdvantage": -5,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-072",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -11337,12 +11049,10 @@
         },
         {
           "id": "ap-psych-u5-070",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "traumatic"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -11419,12 +11129,10 @@
         },
         {
           "id": "ap-psych-u2-076",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -11541,12 +11249,10 @@
         },
         {
           "id": "ap-psych-u1-079",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "activation"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -11559,23 +11265,18 @@
         },
         {
           "id": "ap-psych-u2-077",
-          "keyedOverlap": 2,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -2,
-          "uniqueStemKeyTerms": [
-            "involving",
-            "retrieval"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u2-078",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -11596,33 +11297,26 @@
         },
         {
           "id": "ap-psych-u3-077",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u3-078",
-          "keyedOverlap": 2,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -2,
-          "uniqueStemKeyTerms": [
-            "involving",
-            "learned"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u3-079",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -11667,86 +11361,66 @@
         },
         {
           "id": "ap-psych-u5-077",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-078",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "clinical",
-            "involving",
-            "presentation"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-079",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-080",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -3,
-          "uniqueStemKeyTerms": [
-            "measures"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u1-081",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u1-082",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 3,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "involving",
-            "sleep",
-            "timing"
-          ],
+          "keyOverlapAdvantage": -3,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u1-083",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u1-084",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 3,
-          "keyOverlapAdvantage": -2,
-          "uniqueStemKeyTerms": [
-            "measures"
-          ],
+          "keyOverlapAdvantage": -3,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -11823,34 +11497,26 @@
         },
         {
           "id": "ap-psych-u4-082",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "needs"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-083",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-084",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 3,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "goal",
-            "involving",
-            "pursuit"
-          ],
+          "keyOverlapAdvantage": -3,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -11879,12 +11545,10 @@
         },
         {
           "id": "ap-psych-u5-084",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "behavioral"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -11929,24 +11593,18 @@
         },
         {
           "id": "ap-psych-u2-086",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u2-087",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 5,
-          "keyOverlapAdvantage": -2,
-          "uniqueStemKeyTerms": [
-            "information",
-            "involving",
-            "misleading"
-          ],
+          "keyOverlapAdvantage": -5,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -11983,32 +11641,26 @@
         },
         {
           "id": "ap-psych-u3-088",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-085",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-086",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 3,
-          "keyOverlapAdvantage": -2,
-          "uniqueStemKeyTerms": [
-            "measures"
-          ],
+          "keyOverlapAdvantage": -3,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -12125,14 +11777,10 @@
         },
         {
           "id": "ap-psych-u3-089",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "consequence",
-            "involving",
-            "pattern"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -12193,12 +11841,10 @@
         },
         {
           "id": "ap-psych-u5-089",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "serotonin"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -12235,12 +11881,10 @@
         },
         {
           "id": "ap-psych-u1-094",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "signal"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -12253,12 +11897,10 @@
         },
         {
           "id": "ap-psych-u1-096",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -12375,56 +12017,42 @@
         },
         {
           "id": "ap-psych-u5-095",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-096",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "component",
-            "involving",
-            "treatment"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u1-097",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "input",
-            "involving",
-            "sensory"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u1-098",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 1,
-          "keyOverlapAdvantage": 0,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": -1,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u1-099",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -3,
-          "uniqueStemKeyTerms": [
-            "measures"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -12477,12 +12105,10 @@
         },
         {
           "id": "ap-psych-u3-098",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -12503,24 +12129,18 @@
         },
         {
           "id": "ap-psych-u4-097",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "definition"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u4-098",
-          "keyedOverlap": 3,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 4,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "arousal",
-            "involving",
-            "physiological"
-          ],
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -12541,32 +12161,26 @@
         },
         {
           "id": "ap-psych-u5-097",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 0,
-          "keyOverlapAdvantage": 1,
-          "uniqueStemKeyTerms": [
-            "college"
-          ],
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-098",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 5,
-          "keyOverlapAdvantage": -4,
-          "uniqueStemKeyTerms": [
-            "measures"
-          ],
+          "keyOverlapAdvantage": -5,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
           "id": "ap-psych-u5-099",
-          "keyedOverlap": 1,
+          "keyedOverlap": 0,
           "maxDistractorOverlap": 2,
-          "keyOverlapAdvantage": -1,
-          "uniqueStemKeyTerms": [
-            "consent"
-          ],
+          "keyOverlapAdvantage": -2,
+          "uniqueStemKeyTerms": [],
           "advisory": false
         },
         {
@@ -17469,7 +17083,7 @@
     }
   },
   "editorialReviewQueue": {
-    "count": 15,
+    "count": 12,
     "advisories": [
       {
         "check": "categorical-cue-review",
@@ -17479,31 +17093,10 @@
         "requiresHumanJudgment": true
       },
       {
-        "check": "stem-key-lexical-cue-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u2-005",
-        "message": "The stem and key uniquely share after, later with a key-overlap advantage of 2; confirm this is content-relevant rather than a lexical giveaway.",
-        "requiresHumanJudgment": true
-      },
-      {
         "check": "categorical-cue-review",
         "asset": "pack",
         "recordId": "ap-psych-u2-008",
         "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "categorical-cue-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u4-008",
-        "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical.",
-        "requiresHumanJudgment": true
-      },
-      {
-        "check": "stem-key-lexical-cue-review",
-        "asset": "pack",
-        "recordId": "ap-psych-u5-006",
-        "message": "The stem and key uniquely share distress, impairment, unusual with a key-overlap advantage of 3; confirm this is content-relevant rather than a lexical giveaway.",
         "requiresHumanJudgment": true
       },
       {
@@ -17879,12 +17472,7 @@
       "practiceId": "P1",
       "answerIndex": 3,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "stem-key-lexical-cue-review",
-          "message": "The stem and key uniquely share after, later with a key-overlap advantage of 2; confirm this is content-relevant rather than a lexical giveaway."
-        }
-      ],
+      "editorialAdvisories": [],
       "rationaleWords": 21,
       "minimumChoiceFeedbackWords": 16,
       "sourceDetailCount": 1,
@@ -17898,7 +17486,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 21,
-      "minimumChoiceFeedbackWords": 15,
+      "minimumChoiceFeedbackWords": 17,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -17927,7 +17515,7 @@
         }
       ],
       "rationaleWords": 28,
-      "minimumChoiceFeedbackWords": 15,
+      "minimumChoiceFeedbackWords": 18,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -17951,7 +17539,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 23,
-      "minimumChoiceFeedbackWords": 15,
+      "minimumChoiceFeedbackWords": 17,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -17963,7 +17551,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 26,
-      "minimumChoiceFeedbackWords": 15,
+      "minimumChoiceFeedbackWords": 17,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18011,7 +17599,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 22,
-      "minimumChoiceFeedbackWords": 15,
+      "minimumChoiceFeedbackWords": 18,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18021,14 +17609,9 @@
       "practiceId": "P2",
       "answerIndex": 2,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "categorical-cue-review",
-          "message": "Categorical wording appears in at least two distractors but not the key; confirm it does not make elimination mechanical."
-        }
-      ],
+      "editorialAdvisories": [],
       "rationaleWords": 26,
-      "minimumChoiceFeedbackWords": 15,
+      "minimumChoiceFeedbackWords": 16,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18050,14 +17633,9 @@
       "practiceId": "P1",
       "answerIndex": 0,
       "findings": [],
-      "editorialAdvisories": [
-        {
-          "check": "stem-key-lexical-cue-review",
-          "message": "The stem and key uniquely share distress, impairment, unusual with a key-overlap advantage of 3; confirm this is content-relevant rather than a lexical giveaway."
-        }
-      ],
+      "editorialAdvisories": [],
       "rationaleWords": 23,
-      "minimumChoiceFeedbackWords": 15,
+      "minimumChoiceFeedbackWords": 17,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18117,7 +17695,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 31,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18129,7 +17707,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 31,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18141,7 +17719,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 40,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18153,7 +17731,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 40,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18165,7 +17743,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18177,7 +17755,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18189,7 +17767,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18201,7 +17779,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18213,7 +17791,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18225,7 +17803,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18237,7 +17815,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18249,7 +17827,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18261,7 +17839,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18273,7 +17851,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18285,7 +17863,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18297,7 +17875,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18309,7 +17887,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18321,7 +17899,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18333,7 +17911,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18345,7 +17923,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18357,7 +17935,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18369,7 +17947,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18381,7 +17959,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18393,7 +17971,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18405,7 +17983,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18417,7 +17995,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18429,7 +18007,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 49,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18441,7 +18019,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 49,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18453,7 +18031,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18465,7 +18043,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18477,7 +18055,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18489,7 +18067,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18501,7 +18079,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18513,7 +18091,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18525,7 +18103,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18537,7 +18115,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18549,7 +18127,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18561,7 +18139,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18573,7 +18151,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 49,
-      "minimumChoiceFeedbackWords": 35,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18585,7 +18163,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 49,
-      "minimumChoiceFeedbackWords": 35,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18597,7 +18175,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18609,7 +18187,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18621,7 +18199,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18633,7 +18211,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18645,7 +18223,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18657,7 +18235,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18669,7 +18247,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18681,7 +18259,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18717,7 +18295,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18729,7 +18307,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18741,7 +18319,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18753,7 +18331,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18765,7 +18343,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18777,7 +18355,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18789,7 +18367,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18801,7 +18379,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18813,7 +18391,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18825,7 +18403,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18842,7 +18420,7 @@
         }
       ],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18854,7 +18432,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18871,7 +18449,7 @@
         }
       ],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18883,7 +18461,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18895,7 +18473,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18907,7 +18485,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18919,7 +18497,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 48,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18931,7 +18509,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 48,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18967,7 +18545,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18979,7 +18557,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18991,7 +18569,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19003,7 +18581,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19015,7 +18593,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19027,7 +18605,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19039,7 +18617,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19051,7 +18629,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19063,7 +18641,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19075,7 +18653,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19087,7 +18665,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 50,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19099,7 +18677,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 50,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19111,7 +18689,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19123,7 +18701,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19135,7 +18713,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19147,7 +18725,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19159,7 +18737,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19171,7 +18749,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19183,7 +18761,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19200,7 +18778,7 @@
         }
       ],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19212,7 +18790,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19224,7 +18802,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19236,7 +18814,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19248,7 +18826,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19260,7 +18838,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19272,7 +18850,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19308,7 +18886,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19320,7 +18898,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19332,7 +18910,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19344,7 +18922,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19356,7 +18934,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19368,7 +18946,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19380,7 +18958,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19392,7 +18970,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19404,7 +18982,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 39,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19416,7 +18994,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 39,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19428,7 +19006,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 25,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19440,7 +19018,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 25,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19452,7 +19030,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19464,7 +19042,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19476,7 +19054,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19488,7 +19066,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19500,7 +19078,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19512,7 +19090,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19524,7 +19102,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19536,7 +19114,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19548,7 +19126,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19560,7 +19138,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19572,7 +19150,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19584,7 +19162,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19596,7 +19174,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19608,7 +19186,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19620,7 +19198,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19632,7 +19210,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19644,7 +19222,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 25,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19656,7 +19234,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 25,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19668,7 +19246,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 40,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 25,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19680,7 +19258,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19692,7 +19270,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19704,7 +19282,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19721,7 +19299,7 @@
         }
       ],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19793,7 +19371,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19805,7 +19383,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19817,7 +19395,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19829,7 +19407,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19841,7 +19419,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19853,7 +19431,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19865,7 +19443,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 40,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19877,7 +19455,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 40,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19889,7 +19467,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19901,7 +19479,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19913,7 +19491,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19925,7 +19503,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19985,7 +19563,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19997,7 +19575,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20009,7 +19587,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20021,7 +19599,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20081,7 +19659,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20093,7 +19671,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20105,7 +19683,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20117,7 +19695,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20129,7 +19707,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20141,7 +19719,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20153,7 +19731,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20189,7 +19767,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20201,7 +19779,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20213,7 +19791,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20225,7 +19803,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20237,7 +19815,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20249,7 +19827,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20266,7 +19844,7 @@
         }
       ],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20278,7 +19856,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20290,7 +19868,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20302,7 +19880,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20314,7 +19892,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20326,7 +19904,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20338,7 +19916,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20350,7 +19928,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20362,7 +19940,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20386,7 +19964,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20398,7 +19976,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20410,7 +19988,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20422,7 +20000,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20434,7 +20012,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20446,7 +20024,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20458,7 +20036,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20470,7 +20048,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20482,7 +20060,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20494,7 +20072,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 49,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20506,7 +20084,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 49,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20518,7 +20096,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 48,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20530,7 +20108,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20542,7 +20120,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20554,7 +20132,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20566,7 +20144,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20578,7 +20156,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 39,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20590,7 +20168,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 39,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20602,7 +20180,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20614,7 +20192,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20710,7 +20288,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 31,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20722,7 +20300,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 31,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20734,7 +20312,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20746,7 +20324,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20758,7 +20336,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20770,7 +20348,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20787,7 +20365,7 @@
         }
       ],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20811,7 +20389,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20823,7 +20401,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20835,7 +20413,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20847,7 +20425,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20871,7 +20449,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 26,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20883,7 +20461,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 26,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20895,7 +20473,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20907,7 +20485,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20919,7 +20497,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20955,7 +20533,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20967,7 +20545,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20979,7 +20557,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20991,7 +20569,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21051,7 +20629,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21063,7 +20641,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21075,7 +20653,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21087,7 +20665,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21099,7 +20677,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21111,7 +20689,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21123,7 +20701,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21135,7 +20713,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 50,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21147,7 +20725,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21159,7 +20737,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21171,7 +20749,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21183,7 +20761,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21195,7 +20773,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21207,7 +20785,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21219,7 +20797,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21231,7 +20809,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21291,7 +20869,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21303,7 +20881,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21315,7 +20893,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21327,7 +20905,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21339,7 +20917,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 50,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21375,7 +20953,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21387,7 +20965,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21399,7 +20977,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21411,7 +20989,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21423,7 +21001,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 40,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21435,7 +21013,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21447,7 +21025,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21459,7 +21037,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21471,7 +21049,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 31,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21495,7 +21073,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21507,7 +21085,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21519,7 +21097,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21531,7 +21109,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21543,7 +21121,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21555,7 +21133,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21567,7 +21145,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21579,7 +21157,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21591,7 +21169,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21603,7 +21181,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21615,7 +21193,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21627,7 +21205,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 40,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21639,7 +21217,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 48,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21651,7 +21229,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 48,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21663,7 +21241,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21675,7 +21253,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 31,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21687,7 +21265,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21699,7 +21277,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21711,7 +21289,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21723,7 +21301,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21735,7 +21313,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21747,7 +21325,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21759,7 +21337,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21771,7 +21349,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 27,
+      "minimumChoiceFeedbackWords": 25,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21783,7 +21361,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 27,
+      "minimumChoiceFeedbackWords": 25,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21795,7 +21373,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 27,
+      "minimumChoiceFeedbackWords": 25,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21807,7 +21385,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 27,
+      "minimumChoiceFeedbackWords": 25,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21819,7 +21397,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21831,7 +21409,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21843,7 +21421,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21855,7 +21433,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21867,7 +21445,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21879,7 +21457,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21891,7 +21469,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21903,7 +21481,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21915,7 +21493,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21927,7 +21505,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 49,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21939,7 +21517,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 49,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21951,7 +21529,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 48,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21963,7 +21541,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21975,7 +21553,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21987,7 +21565,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -21999,7 +21577,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22011,7 +21589,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 48,
-      "minimumChoiceFeedbackWords": 27,
+      "minimumChoiceFeedbackWords": 25,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22023,7 +21601,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 48,
-      "minimumChoiceFeedbackWords": 27,
+      "minimumChoiceFeedbackWords": 25,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22047,7 +21625,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22059,7 +21637,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22071,7 +21649,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22083,7 +21661,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22095,7 +21673,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22107,7 +21685,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22124,7 +21702,7 @@
         }
       ],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22136,7 +21714,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22148,7 +21726,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22160,7 +21738,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 48,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22172,7 +21750,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 49,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22184,7 +21762,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 49,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22196,7 +21774,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 31,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22208,7 +21786,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22220,7 +21798,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22232,7 +21810,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22244,7 +21822,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22256,7 +21834,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22268,7 +21846,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22280,7 +21858,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22292,7 +21870,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22304,7 +21882,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22316,7 +21894,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22328,7 +21906,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22345,7 +21923,7 @@
         }
       ],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22357,7 +21935,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22369,7 +21947,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22381,7 +21959,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22393,7 +21971,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22405,7 +21983,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22417,7 +21995,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22429,7 +22007,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22441,7 +22019,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22453,7 +22031,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22465,7 +22043,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22477,7 +22055,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22489,7 +22067,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22501,7 +22079,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22513,7 +22091,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22525,7 +22103,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22537,7 +22115,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22549,7 +22127,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22561,7 +22139,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22573,7 +22151,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22585,7 +22163,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22597,7 +22175,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 51,
-      "minimumChoiceFeedbackWords": 36,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22609,7 +22187,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 51,
-      "minimumChoiceFeedbackWords": 36,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22621,7 +22199,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22633,7 +22211,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22645,7 +22223,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22657,7 +22235,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22669,7 +22247,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22681,7 +22259,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22693,7 +22271,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22705,7 +22283,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 39,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22717,7 +22295,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 39,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22729,7 +22307,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22741,7 +22319,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22753,7 +22331,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22765,7 +22343,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22782,7 +22360,7 @@
         }
       ],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22794,7 +22372,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22806,7 +22384,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22818,7 +22396,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22830,7 +22408,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22842,7 +22420,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22854,7 +22432,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22866,7 +22444,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22878,7 +22456,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 31,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22890,7 +22468,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22902,7 +22480,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22914,7 +22492,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 31,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22926,7 +22504,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 31,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22938,7 +22516,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22950,7 +22528,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22962,7 +22540,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22974,7 +22552,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22986,7 +22564,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22998,7 +22576,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23010,7 +22588,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23022,7 +22600,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 40,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23034,7 +22612,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23046,7 +22624,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23058,7 +22636,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23070,7 +22648,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23082,7 +22660,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 31,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23094,7 +22672,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23106,7 +22684,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23118,7 +22696,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23130,7 +22708,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 52,
-      "minimumChoiceFeedbackWords": 36,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23142,7 +22720,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 52,
-      "minimumChoiceFeedbackWords": 36,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23154,7 +22732,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23166,7 +22744,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23178,7 +22756,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23190,7 +22768,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 48,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23202,7 +22780,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 48,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23214,7 +22792,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23226,7 +22804,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 40,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23238,7 +22816,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 40,
-      "minimumChoiceFeedbackWords": 27,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23250,7 +22828,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 40,
-      "minimumChoiceFeedbackWords": 27,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23262,7 +22840,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 27,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23274,7 +22852,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23286,7 +22864,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23298,7 +22876,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23310,7 +22888,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 28,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23322,7 +22900,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23334,7 +22912,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23346,7 +22924,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23358,7 +22936,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 30,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23370,7 +22948,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23382,7 +22960,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23394,7 +22972,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23406,7 +22984,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23418,7 +22996,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23430,7 +23008,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23442,7 +23020,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23454,7 +23032,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23466,7 +23044,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 27,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23478,7 +23056,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 27,
+      "minimumChoiceFeedbackWords": 26,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23490,7 +23068,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23502,7 +23080,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23514,7 +23092,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 42,
-      "minimumChoiceFeedbackWords": 32,
+      "minimumChoiceFeedbackWords": 29,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23526,7 +23104,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23538,7 +23116,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23550,7 +23128,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23562,7 +23140,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 24,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23574,7 +23152,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 22,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23586,7 +23164,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 28,
+      "minimumChoiceFeedbackWords": 27,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23598,7 +23176,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 45,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23610,7 +23188,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 46,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23622,7 +23200,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 41,
-      "minimumChoiceFeedbackWords": 34,
+      "minimumChoiceFeedbackWords": 23,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23634,7 +23212,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23651,7 +23229,7 @@
         }
       ],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 37,
+      "minimumChoiceFeedbackWords": 24,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     }

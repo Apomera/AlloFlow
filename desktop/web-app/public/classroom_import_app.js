@@ -180,15 +180,16 @@
     if (busy || !connector || !courses.some(course => course.id === courseId)) return;
     clearPreview(); busy = true; controls();
     const epoch = generation;
+    const capturedLink = linkContext;
     say('Reading every roster page. Nothing will be exported until you review the complete result.');
     try {
       const snapshot = await connector.readSelectedCourse({ courseId });
-      if (epoch !== generation) return;
+      if (epoch !== generation || linkContext !== capturedLink) return;
       const mode = linkMode();
       const converted = mode === 'replace' || typeof service.convertLinkedSnapshot !== 'function'
         ? service.convertSnapshot(snapshot, { destinationRoster: null })
-        : await service.convertLinkedSnapshot(snapshot, { syncKey: linkContext.syncKey, classId: mode === 'sync' ? linkContext.classId : null, existing: mode === 'sync' ? linkContext.existing : {}, reservedCodenames: mode === 'sync' ? linkContext.reservedCodenames : [] });
-      if (epoch !== generation) return;
+        : await service.convertLinkedSnapshot(snapshot, { syncKey: capturedLink.syncKey, classId: mode === 'sync' ? capturedLink.classId : null, existing: mode === 'sync' ? capturedLink.existing : {}, reservedCodenames: mode === 'sync' ? capturedLink.reservedCodenames : [] });
+      if (epoch !== generation || linkContext !== capturedLink) return;
       result = converted;
       missingNames = converted.preview.some(student => typeof student.fullName !== 'string' || !student.fullName.trim());
       for (const student of converted.preview) {
@@ -240,14 +241,14 @@
   $('send-classroom').onclick = function () {
     if (!handoff || busy || !result || missingNames || !$('confirm-new-class').checked) return;
     if (handoff.closed) {
-      say('The AlloFlow tab is no longer open. Download the roster instead.');
+      say(linkContext ? 'The AlloFlow tab is no longer open. Reopen this helper from AlloFlow to send the linked update.' : 'The AlloFlow tab is no longer open. Download the roster instead.');
       return;
     }
     const epoch = ++handoffEpoch;
     try {
       handoff.postMessage({ type: 'alloflow-classroom-roster', protocol: 1, json: result.json, mode: linkMode() }, location.origin);
     } catch (_) {
-      say('The roster could not be sent to AlloFlow. Download it instead.');
+      say(linkContext ? 'The roster could not be sent to AlloFlow. Reopen this helper from AlloFlow and try again.' : 'The roster could not be sent to AlloFlow. Download it instead.');
       return;
     }
     $('confirm-new-class').checked = false; controls();
@@ -256,7 +257,7 @@
     if (handoffTimer) clearTimeout(handoffTimer);
     handoffTimer = setTimeout(() => {
       if (epoch !== handoffEpoch) return;
-      say('AlloFlow has not confirmed the roster yet. If nothing appeared there, download the roster instead.');
+      say(linkContext ? 'AlloFlow has not confirmed the roster yet. Switch back to AlloFlow or reopen this helper from the roster panel.' : 'AlloFlow has not confirmed the roster yet. If nothing appeared there, download the roster instead.');
     }, 20000);
   };
   window.addEventListener('message', event => {
@@ -270,18 +271,19 @@
       }
       const existing = data.existing;
       const reserved = data.reservedCodenames === undefined ? [] : data.reservedCodenames;
+      const existingKeys = existing && typeof existing === 'object' && !Array.isArray(existing) && Object.prototype.toString.call(existing) === '[object Object]' ? Object.keys(existing) : null;
       const valid = (data.mode === 'link' || data.mode === 'sync') && typeof data.syncKey === 'string' && /^[A-Za-z0-9_-]{43}$/.test(data.syncKey) &&
-        existing && typeof existing === 'object' && !Array.isArray(existing) && Object.prototype.toString.call(existing) === '[object Object]' &&
+        existingKeys !== null && existingKeys.length <= 500 && existingKeys.every(k => typeof existing[k] === 'string' && existing[k].length <= 120) &&
         Array.isArray(reserved) && reserved.length <= 1000 && reserved.every(name => typeof name === 'string') &&
-        (data.mode === 'link' ? data.classId === null && Object.keys(existing).length === 0 : typeof data.classId === 'string' && data.classId.length <= 60);
+        (data.mode === 'link' ? data.classId === null && existingKeys.length === 0 : typeof data.classId === 'string' && data.classId.length <= 60);
       if (!valid) return;
       const cleanExisting = Object.create(null);
-      for (const key of Object.keys(existing)) {
+      for (const key of existingKeys) {
         if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
         cleanExisting[key] = existing[key];
       }
       linkContext = Object.freeze({ mode: data.mode, syncKey: data.syncKey, classId: data.classId, existing: Object.freeze(cleanExisting), reservedCodenames: Object.freeze(reserved.slice()) });
-      if (result) { clearPreview(); say('AlloFlow updated this helper’s class link. Read the roster again.'); }
+      if (result || busy) { clearPreview(); say('AlloFlow updated this helper’s class link. Read the roster again.'); }
       describeMode(); controls();
       return;
     }
@@ -290,7 +292,7 @@
     const message = String(data.message || '').slice(0, 320);
     if (data.pending === true && data.ok) { say(message || 'Switch to the AlloFlow tab to confirm the roster there.'); return; }
     say(data.ok ? (linkMode() === 'sync' ? 'AlloFlow received the update. ' : 'AlloFlow imported the roster. ') + message + ' Keep this private preview only as long as needed.'
-      : 'AlloFlow did not import the roster. ' + (message || 'Download the roster instead.'));
+      : 'AlloFlow did not import the roster. ' + (message || (linkContext ? 'Reopen this helper from AlloFlow and try again.' : 'Download the roster instead.')));
   });
   $('clear-classroom').onclick = () => clearSession('Session cleared. Local access token and private roster preview were discarded. Google’s authorization grant still exists until revoked.');
   $('cancel-classroom').onclick = () => clearSession('Import cancelled and private data cleared. Late responses cannot restore the preview.');

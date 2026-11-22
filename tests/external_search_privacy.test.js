@@ -113,7 +113,7 @@ describe('search query rule',()=>{
 
   it('sends the tidied query with a personal key and no referrer',async()=>{
     localStorage.setItem('alloflow_ai_config','{"serperApiKey":"synthetic-test-key"}');
-    const fetch=vi.fn(async()=>({ok:true,json:async()=>({organic:[]})}));vi.stubGlobal('fetch',fetch);
+    const fetch=vi.fn(async()=>new Response(JSON.stringify({organic:[]}),{status:200,headers:{'content-type':'application/json'}}));vi.stubGlobal('fetch',fetch);
     await provider._fetchSerperDirect('  The   American Revolution  ',3);
     expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({q:'The American Revolution',num:3});
     expect(fetch.mock.calls[0][1]).toMatchObject({referrerPolicy:'no-referrer',credentials:'omit'});
@@ -150,9 +150,9 @@ describe('search query rule',()=>{
   });
 
   it('refuses identifiers at the Firebase proxy before sending anything to Serper',async()=>{
-    const fetch=vi.fn(async()=>({ok:true,json:async()=>({organic:[]})}));
+    const fetch=vi.fn(async()=>new Response(JSON.stringify({organic:[]}),{status:200,headers:{'content-type':'application/json'}}));
     const admin={apps:[{}],auth:()=>({verifyIdToken:async()=>({uid:'synthetic'})}),appCheck:()=>({verifyToken:async()=>({appId:'synthetic'})}),firestore:Object.assign(()=>({collection:()=>({doc:()=>({})}),runTransaction:async()=>{}}),{Timestamp:{fromMillis:()=>0}})};
-    const context={exports:{},require:name=>name==='firebase-admin'?admin:name==='firebase-functions/v2/https'?{onRequest:(opts,handler)=>handler}:name==='firebase-functions/params'?{defineSecret:()=>({value:()=> 'synthetic'}),defineString:()=>({value:()=> 'https://app.test'})}:name==='./public_search_policy'?policy:name==='./web_source_fetch'?{}:require(name),process:{env:{}},fetch,console,URL,AbortController,setTimeout,clearTimeout};
+    const context={exports:{},require:name=>name==='firebase-admin'?admin:name==='firebase-functions/v2/https'?{onRequest:(opts,handler)=>handler}:name==='firebase-functions/params'?{defineSecret:()=>({value:()=> 'synthetic'}),defineString:()=>({value:()=> 'https://app.test'})}:name==='./public_search_policy'?policy:name==='./web_source_fetch'?{}:require(name),process:{env:{}},fetch,console,URL,AbortController,TextDecoder,Buffer,setTimeout,clearTimeout};
     vm.runInNewContext(fs.readFileSync('desktop/web-app/functions/index.js','utf8'),context);
     for(const q of [...denied,'The American Revolution']){
       let status=200,body;

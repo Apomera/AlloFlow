@@ -222,10 +222,10 @@
           "id": "sc5422-ch-01-check-01",
           "prompt": "A principal asks the school counselor to describe the central purpose of a comprehensive school counseling program. Which response is best?",
           "choices": [
-            "It provides planned academic, career, and social/emotional supports that improve access and outcomes for every student.",
-            "It primarily offers therapy to students with diagnosed mental-health disorders.",
-            "It exists mainly to complete scheduling and testing paperwork for administrators.",
-            "It serves only students referred because of severe behavior concerns."
+            "Planned academic, career, and social/emotional supports that expand access and outcomes for every student.",
+            "Ongoing clinical therapy provided mainly to students who arrive at school with diagnosed mental-health disorders.",
+            "Administrative support centered on completing master-schedule updates and standardized testing paperwork for staff.",
+            "Targeted individual sessions reserved for students who are referred to the office for severe behavior incidents."
           ],
           "answerIndex": 0,
           "rationale": "A comprehensive program is preventive, developmental, data informed, and available to all students across academic, career, and social/emotional development.",
@@ -241,10 +241,10 @@
           "id": "sc5422-ch-01-check-02",
           "prompt": "A counselor is assigned to coordinate all standardized testing for three weeks, leaving no time for counseling services. What is the most appropriate response?",
           "choices": [
-            "Accept the assignment permanently because administrators define every counselor duty.",
-            "Use role and time-use data to explain the impact, propose an appropriate staffing solution, and advocate for counseling services.",
-            "Refuse publicly without discussing student impact or possible solutions.",
-            "Cancel only services for students who have not requested individual counseling."
+            "Accept the testing role as a lasting duty because building principals have full authority to define counselor tasks.",
+            "Use role and schedule data to show student impact, propose a staffing alternative, and advocate for student access.",
+            "Refuse the assignment publicly in a staff meeting without reviewing student impact or offering a workable alternative.",
+            "Pause classroom lessons and groups while continuing individual meetings for students who ask for appointments."
           ],
           "answerIndex": 1,
           "rationale": "Testing coordination and routine discipline supervision are generally inappropriate noncounseling assignments; advocacy should be collaborative, documented, and centered on student access.",
@@ -260,10 +260,10 @@
           "id": "sc5422-ch-01-check-03",
           "prompt": "Course-failure data show a persistent gap for students entering ninth grade from one feeder school. Which action best demonstrates the counselor as a leader and advocate?",
           "choices": [
-            "Offer encouragement only to students who independently request help.",
-            "Assume the gap reflects fixed differences in student motivation.",
-            "Disaggregate the data, engage affected students and partners, identify the systemic barrier, and lead a measurable change strategy.",
-            "Wait until every individual student has failed before discussing the pattern."
+            "Offer extra encouragement and study tips to affected students who independently request counseling meetings.",
+            "Conclude that the persistent gap reflects lower motivation among students from the underrepresented group.",
+            "Disaggregate records, engage affected students and partners, locate the systemic barrier, and lead change.",
+            "Wait until individual students fail their semester courses before raising the broader disparity with staff."
           ],
           "answerIndex": 2,
           "rationale": "Leadership and advocacy use disaggregated evidence and stakeholder voice to remove systemic barriers rather than locating the problem solely within students.",
@@ -279,10 +279,10 @@
           "id": "sc5422-ch-01-check-04",
           "prompt": "A new counselor is aligning lessons to student standards. Which three areas should be represented across the program?",
           "choices": [
-            "Attendance, discipline, and testing administration.",
-            "Diagnosis, psychotherapy, and medication management.",
-            "Elementary, middle, and high school scheduling.",
-            "Academic development, career development, and social/emotional development."
+            "Attendance monitoring, student discipline enforcement, and standardized testing administration across grades.",
+            "Clinical psychiatric diagnosis, long-term psychotherapy, and medication management for school-age youth.",
+            "Elementary classroom placement, middle school team assignment, and high school course scheduling tasks.",
+            "Academic development, career development, and social/emotional development across all grade levels."
           ],
           "answerIndex": 3,
           "rationale": "The school counseling program addresses academic, career, and social/emotional development; the areas interact and should be supported developmentally.",
@@ -298,10 +298,10 @@
           "id": "sc5422-ch-01-check-05",
           "prompt": "Why is active participation in a school-counseling professional organization useful?",
           "choices": [
-            "It supports access to current standards, research, consultation, advocacy, and continuing professional learning.",
-            "It transfers ethical responsibility from the counselor to the organization.",
-            "It replaces the need to follow state credential and district requirements.",
-            "It guarantees that every shared practice is evidence based."
+            "It gives access to current standards, research, consultation, advocacy, and ongoing professional learning.",
+            "It transfers individual ethical liability from the school counselor to the professional association during disputes.",
+            "It replaces the obligation to comply with state credentialing rules and local school district board policies.",
+            "It ensures that each strategy shared at association conferences is empirically validated for all student groups."
           ],
           "answerIndex": 0,
           "rationale": "Professional organizations support learning and connection, but the counselor remains responsible for evaluating evidence and following current law, ethics, credentials, and policy.",
@@ -407,12 +407,12 @@
           "id": "sc5422-ch-02-check-01",
           "prompt": "A ninth grader is exploring values, peer groups, and possible future roles. Which Eriksonian task is most relevant?",
           "choices": [
+            "Generativity versus stagnation.",
             "Identity versus role confusion.",
             "Industry versus inferiority.",
-            "Intimacy versus isolation.",
-            "Generativity versus stagnation."
+            "Intimacy versus isolation."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Erikson associated adolescence with forming a coherent identity by exploring roles, beliefs, relationships, and future possibilities.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -425,12 +425,12 @@
           "id": "sc5422-ch-02-check-02",
           "prompt": "An elementary student takes pride in mastering multiplication and compares work with classmates. Which Eriksonian task is most relevant?",
           "choices": [
+            "Integrity versus despair.",
             "Trust versus mistrust.",
             "Industry versus inferiority.",
-            "Identity versus role confusion.",
-            "Integrity versus despair."
+            "Identity versus role confusion."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "School-age children develop industry through successful participation and competence; repeated failure or unfavorable comparison can contribute to inferiority.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -443,12 +443,12 @@
           "id": "sc5422-ch-02-check-03",
           "prompt": "A counselor asks middle-grade students to sort concrete examples before discussing an abstract fairness principle. Which developmental idea supports this sequence?",
           "choices": [
-            "Preoperational learners already reason systematically about all hypotheticals.",
-            "Formal operations requires avoiding any use of concrete examples.",
-            "Concrete operational learners reason more effectively from tangible examples before highly abstract possibilities.",
-            "Sensorimotor learning is the typical mode throughout middle school."
+            "Sensorimotor exploration remains the primary mode of problem solving for most students in middle school.",
+            "Preoperational learners reason systematically across multiple hypothetical scenarios when guided by adults.",
+            "Formal operational thinking requires setting aside concrete examples once students enter the middle grades.",
+            "Concrete operational learners reason best from tangible objects first, then move toward broader ideals."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Concrete operational thinking is logical about tangible situations; instruction can bridge from observable examples toward more abstract reasoning.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -461,12 +461,12 @@
           "id": "sc5422-ch-02-check-04",
           "prompt": "A counselor asks students to compare several hypothetical consequences of different postsecondary choices. Which capacity is being supported?",
           "choices": [
-            "Object permanence in the sensorimotor period.",
-            "Centration in preoperational thinking.",
-            "Reflexive behavior before symbolic thought.",
-            "Formal operational reasoning about abstract and hypothetical possibilities."
+            "Formal operational reasoning about abstract variables and imagined future possibilities.",
+            "Object permanence developed during the sensorimotor period through physical exploration of objects.",
+            "Centration typical of preoperational thinking when a child focuses on one salient visual feature.",
+            "Reflexive motor responses that appear before a young child develops symbolic mental representation."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Formal operational thinking includes reasoning systematically about abstractions, hypotheses, and possible futures, though development and context vary.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -479,12 +479,12 @@
           "id": "sc5422-ch-02-check-05",
           "prompt": "A student can set a weekly goal with guided prompts but not yet independently. Which support best reflects Vygotsky’s theory?",
           "choices": [
-            "Provide temporary scaffolding within the student’s zone of proximal development and fade it as competence grows.",
-            "Wait for the skill to emerge without social support.",
-            "Provide the answer permanently so errors never occur.",
-            "Use punishment whenever the learner needs a prompt."
+            "Apply a mild behavioral consequence whenever the student asks for a prompt during weekly goal planning.",
+            "Provide temporary scaffolding in the zone of proximal development and fade assistance as skills grow.",
+            "Wait for independent goal-setting skills to emerge naturally without offering social prompts or guidance.",
+            "Supply completed weekly goals permanently so the student experiences success without making planning errors."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Vygotsky emphasized socially supported learning within the zone between independent performance and performance possible with skilled assistance.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -602,12 +602,12 @@
           "id": "sc5422-ch-03-check-01",
           "prompt": "Before beginning brief individual counseling, what should a counselor explain to a student?",
           "choices": [
-            "Explain the service, privacy expectations, and foreseeable limits to confidentiality in developmentally appropriate language.",
-            "Promise that nothing discussed will ever be shared.",
-            "Discuss limits only after a safety concern occurs.",
-            "Guarantee that peers will keep every group disclosure private."
+            "Wait to explain confidentiality limits until a safety concern arises so the student feels relaxed at first.",
+            "Assure the student that peers in any future counseling group will keep shared personal disclosures private.",
+            "Explain the service, privacy expectations, and foreseeable confidentiality limits in accessible language.",
+            "Promise the student that everything discussed in the office will remain private under all circumstances."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Students should understand privacy and its limits from the outset. School counselors protect confidentiality as much as possible but cannot promise absolute secrecy.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -623,12 +623,12 @@
           "id": "sc5422-ch-03-check-02",
           "prompt": "A student describes a specific suicide plan, access to the means, and intent to act today. What should the counselor do first?",
           "choices": [
-            "Promise secrecy so the student will continue talking.",
-            "Maintain supervision, activate the school crisis protocol immediately, and involve required caregivers or emergency supports under law and policy.",
-            "Schedule a routine follow-up for the next school week.",
-            "Send the student back to class while checking whether the story is accurate."
+            "Schedule a routine check-in for the next school week so the student has time to try a coping strategy first.",
+            "Send the student back to class briefly while the counselor verifies whether the plan and access are accurate.",
+            "Promise strict secrecy so the student stays willing to keep talking through the crisis during the session.",
+            "Maintain supervision, activate the school crisis protocol immediately, and involve caregivers or emergency help."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "An imminent safety threat requires immediate protective action under current crisis policy and law; the student should not be left unsupported while required help is activated.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -644,12 +644,12 @@
           "id": "sc5422-ch-03-check-03",
           "prompt": "A student gives information that reasonably suggests possible child abuse. What is the counselor’s best response?",
           "choices": [
-            "Wait for proof beyond all doubt before reporting.",
-            "Interview alleged witnesses until the counselor can determine guilt.",
             "Follow current mandated-reporting law and district procedure promptly without conducting an independent investigation.",
-            "Promise the student that no other adult will be told."
+            "Promise the student that no outside adult will be notified so the counseling relationship remains completely safe.",
+            "Wait to file a report until physical proof beyond reasonable doubt confirms that abuse has occurred at home.",
+            "Interview classmates, relatives, and alleged witnesses at school until the counselor can determine who is at fault."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Mandated-reporting thresholds and procedures are jurisdiction specific. Counselors report as required, document appropriately, and avoid investigative actions outside their role.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -665,12 +665,12 @@
           "id": "sc5422-ch-03-check-04",
           "prompt": "A coach asks for detailed counseling notes about a student because the coach is concerned. What should guide the counselor’s response?",
           "choices": [
-            "Share the full record because every school employee has automatic access.",
-            "Post a summary in the shared staff calendar.",
-            "Refuse all communication even if an emergency exception later applies.",
-            "Apply FERPA, current law, district policy, and ethical need-to-know principles before disclosing only authorized information."
+            "Decline any communication with the coach, even if an authorized safety exception were to apply later.",
+            "Apply FERPA, current law, district policy, and need-to-know ethics, sharing authorized information only.",
+            "Provide the complete counseling file because employed school staff hold automatic access to student records.",
+            "Post a brief behavioral summary on the shared athletics calendar so each coach stays aware of the concern."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Employment in the school does not by itself authorize unlimited disclosure. The counselor should verify legitimate educational interest, consent, and applicable exceptions.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -686,12 +686,12 @@
           "id": "sc5422-ch-03-check-05",
           "prompt": "A counselor is offered an expensive personal gift by a student’s family during an active counseling relationship. What is the best response?",
           "choices": [
-            "Examine the boundary and power risks, consult policy and ethics, and decline or manage the situation to protect objectivity and the student.",
-            "Accept because good intentions eliminate all conflicts.",
-            "End student services abruptly without explanation or continuity.",
-            "Let the student decide whether the dual relationship is ethical."
+            "End counseling services for the student right away without explaining the reason or arranging continuity.",
+            "Ask the student to decide whether accepting the family’s gift creates a dual-relationship concern at school.",
+            "Examine boundary and power risks, consult policy and ethics, and decline or manage it to protect objectivity.",
+            "Accept the gift warmly because warm family intentions prevent any ethical conflict or appearance of favoritism."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Multiple relationships and gifts require attention to power, objectivity, exploitation, culture, policy, and student welfare; consultation and documentation support sound boundaries.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -802,12 +802,12 @@
           "id": "sc5422-ch-04-check-01",
           "prompt": "A student feels unheard while describing a peer conflict. Which counselor response best reflects a person-centered approach?",
           "choices": [
-            "Reflect the student’s meaning and feeling accurately, remain genuine, and communicate nonjudgmental regard.",
-            "Immediately interpret an unconscious motive.",
-            "Give a detailed solution before clarifying the concern.",
-            "Challenge the student with a consequence contract first."
+            "Interpret an unconscious childhood motive behind the peer conflict during the opening minutes of the session.",
+            "Present a step-by-step conflict solution right away before clarifying how the student views the situation.",
+            "Introduce a written behavioral consequence contract first so expectations for peer conduct are unmistakable.",
+            "Reflect the student’s meaning and feelings accurately while remaining genuine and nonjudgmental."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Person-centered conditions emphasize empathy, congruence, and unconditional positive regard so the student can explore experience and choices safely.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -821,12 +821,12 @@
           "id": "sc5422-ch-04-check-02",
           "prompt": "A student says, “I failed one quiz, so I will fail every class.” Which cognitive-behavioral response is best?",
           "choices": [
-            "Treat the thought as a fact that should guide avoidance.",
-            "Help identify the overgeneralized thought, examine evidence, generate a more balanced statement, and test a useful action.",
-            "Focus only on early childhood memories without a present goal.",
-            "Remove every difficult situation so the belief is never challenged."
+            "Identify the overgeneralized thought, test the evidence, form a balanced thought, and try a useful step.",
+            "Explore early childhood school memories for the full session without setting a present academic coping goal.",
+            "Ask teachers to remove graded quizzes from the class so the student’s negative belief is not triggered again.",
+            "Accept the prediction as accurate and help the student avoid challenging courses to protect self-esteem."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "CBT links thoughts, feelings, and behavior. Collaborative evidence review and behavioral practice can replace an unhelpful distortion with a more accurate and useful response.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -840,12 +840,12 @@
           "id": "sc5422-ch-04-check-03",
           "prompt": "A student says mornings are always chaotic, but recalls one day that went smoothly. What would a solution-focused counselor ask next?",
           "choices": [
-            "Diagnose a stable personality deficit from the usual pattern.",
-            "Spend the session proving that the student’s description is inconsistent.",
-            "Explore what was different during the exception and identify a small step that can be repeated.",
-            "Require a complete life history before discussing any next step."
+            "Spend the session pointing out that the student’s broad complaint contradicts the successful exception.",
+            "Explore what worked differently during that exception and pick one small step to repeat next.",
+            "Gather a complete developmental life history across prior grades before discussing any small next step.",
+            "Identify a stable executive-function deficit from the usual problem pattern before considering supports."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Solution-focused brief counseling identifies exceptions, strengths, preferred outcomes, and small observable steps rather than treating the problem as fixed.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -859,12 +859,12 @@
           "id": "sc5422-ch-04-check-04",
           "prompt": "A counselor asks, “On a scale from 0 to 10, where are you now, and what would one point higher look like?” What is the purpose?",
           "choices": [
-            "To convert the response into a clinical diagnosis.",
-            "To prove that the student lacks motivation.",
-            "To replace all other assessment and follow-up.",
-            "To make change observable, identify existing resources, and define a manageable next step."
+            "To demonstrate to the student that low self-ratings reflect insufficient effort and weak academic motivation.",
+            "To replace all other progress monitoring, teacher input, and follow-up once the student picks a number.",
+            "To make progress observable, surface existing strengths, and define a small, concrete next step.",
+            "To convert the student’s self-rating into a formal clinical severity score for diagnostic documentation."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Scaling questions support collaborative goal definition and notice progress; they are not diagnostic scores or substitutes for appropriate safety and needs assessment.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -878,12 +878,12 @@
           "id": "sc5422-ch-04-check-05",
           "prompt": "During counseling, which response is the best example of an open question followed by reflection?",
           "choices": [
-            "“What happened after lunch?” followed by a concise reflection of the student’s central meaning and emotion.",
-            "“You were angry, weren’t you?” followed by advice.",
-            "“Why did you make that bad choice?” followed by silence.",
-            "Several rapid yes-or-no questions followed by a lecture."
+            "“You were angry about that, weren’t you?” followed by immediate advice on how to handle the peer.",
+            "“Why did you make such a poor choice?” followed by extended silence until the student apologizes.",
+            "Three rapid yes-or-no questions about the incident followed by a short lecture on school conduct.",
+            "“What happened after lunch?” followed by paraphrasing the student’s core meaning and emotion."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Open questions invite the student’s frame, while accurate reflections communicate understanding and help organize meaning without interrogation or premature advice.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -992,10 +992,10 @@
           "id": "sc5422-ch-05-check-01",
           "prompt": "A counselor is forming a grief-support group. Which screening practice is best?",
           "choices": [
-            "Assess each student’s needs, readiness, safety, goals, and fit with the group’s purpose and available supports.",
-            "Enroll every referred student without an individual conversation.",
-            "Select students only because their schedules align.",
-            "Exclude students who have any different background from one another."
+            "Assess each student’s needs, readiness, safety, goals, and fit with the group’s purpose and supports.",
+            "Enroll each referred student directly from the teacher referral list without holding an individual screening.",
+            "Select members primarily because they share an open study-hall period that makes group scheduling easier.",
+            "Restrict the group to students from highly similar family backgrounds so personal experiences match closely."
           ],
           "answerIndex": 0,
           "rationale": "Careful screening supports safety, cohesion, developmental fit, informed participation, and referral when a student needs a different level or type of service.",
@@ -1011,10 +1011,10 @@
           "id": "sc5422-ch-05-check-02",
           "prompt": "What should students understand before joining a counseling group?",
           "choices": [
-            "That every statement is legally protected from all disclosure.",
-            "The purpose, expectations, voluntary or required conditions, counselor privacy limits, and the fact that peer confidentiality cannot be guaranteed.",
-            "That members must reveal their most private experience.",
-            "That the counselor will share weekly details with all teachers."
+            "That statements made in the school group are legally shielded from disclosure under every circumstance.",
+            "Purpose, norms, voluntary or required status, counselor limits, and that peer privacy is not guaranteed.",
+            "That members are expected to share their most private personal experiences during the opening group sessions.",
+            "That the counselor will send brief weekly summaries of each student’s comments to classroom teachers."
           ],
           "answerIndex": 1,
           "rationale": "Informed participation includes developmentally clear expectations and realistic privacy limits. Counselors protect information but cannot guarantee other members’ behavior.",
@@ -1030,10 +1030,10 @@
           "id": "sc5422-ch-05-check-03",
           "prompt": "Members of a new group are polite but hesitant and look to the counselor for structure. What is the best leader response?",
           "choices": [
-            "Demand immediate deep disclosure from every member.",
-            "Withdraw all structure so the group becomes independent at once.",
+            "Ask each member to share a deeply personal challenge in the first meeting to break through early silence.",
+            "Step back and remove leader structure right away so group members learn to direct discussions themselves.",
             "Clarify purpose and norms, build safety, model participation, and use structured low-risk activities.",
-            "Interpret hesitation as resistance requiring removal."
+            "Interpret the students’ polite hesitation as resistance and remove quiet members from the group roster."
           ],
           "answerIndex": 2,
           "rationale": "Early group stages benefit from predictable structure, norm building, modeling, and gradual participation as trust and cohesion develop.",
@@ -1049,10 +1049,10 @@
           "id": "sc5422-ch-05-check-04",
           "prompt": "During a classroom lesson, several students call out while others disengage. Which response best supports instruction?",
           "choices": [
-            "End the lesson and assign punishment to the whole class.",
-            "Continue lecturing more loudly without checking the task.",
-            "Send every student who spoke to individual counseling.",
-            "Restate and model the participation routine, reinforce appropriate engagement, and adjust pacing or task supports using observation data."
+            "Stop the counseling lesson early and assign a written reflection penalty to the entire classroom group.",
+            "Continue delivering the prepared lecture at a louder volume without checking whether the task fits learners.",
+            "Remove each student who called out and place them on the individual counseling schedule for follow-up.",
+            "Restate and model the participation routine, reinforce engagement, and adjust pacing or task scaffolds."
           ],
           "answerIndex": 3,
           "rationale": "Proactive classroom management teaches clear routines, provides active practice, reinforces participation, and adjusts instructional conditions instead of relying on broad punishment.",
@@ -1068,10 +1068,10 @@
           "id": "sc5422-ch-05-check-05",
           "prompt": "Which lesson objective is most useful for a conflict-resolution unit?",
           "choices": [
-            "A specific observable student behavior, the conditions for using it, and a criterion or evidence of successful performance.",
-            "A list of activities the counselor plans to complete.",
-            "A broad hope that students will understand everything.",
-            "A statement that the lesson will be enjoyable."
+            "A specific observable student behavior, the conditions for using it, and a criterion of success.",
+            "A chronological list of slides, role-plays, and handouts the counselor plans to deliver during class.",
+            "A broad aspirational statement expressing hope that students will understand peaceful conflict resolution.",
+            "A student-satisfaction goal stating that learners will rate the conflict-resolution lesson as enjoyable."
           ],
           "answerIndex": 0,
           "rationale": "An observable objective anchors instruction and assessment to what students will know or do, not merely what the counselor will present.",
@@ -1192,12 +1192,12 @@
           "id": "sc5422-ch-06-check-01",
           "prompt": "In a teacher consultation, who remains responsible for implementing the agreed classroom strategy?",
           "choices": [
-            "The teacher retains responsibility for classroom action while the counselor and teacher collaboratively define, plan, and evaluate support.",
-            "The counselor takes over the classroom and becomes solely responsible.",
-            "The teacher gives the counselor authority to change grades.",
-            "The student is excluded from all planning because consultation is indirect."
+            "The student is left out of input and goal check-ins because consultation is strictly an adult conversation.",
+            "The teacher retains responsibility for classroom action while both collaborate to plan and evaluate it.",
+            "The counselor takes over daily classroom management and assumes full responsibility for the intervention.",
+            "The teacher delegates grading authority to the counselor while the agreed behavioral strategy is tested."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Consultation is a collaborative, often triadic process that builds the consultee’s capacity while respecting roles and sharing relevant outcome information.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -1213,12 +1213,12 @@
           "id": "sc5422-ch-06-check-02",
           "prompt": "A family disagrees with the school’s interpretation of an attendance concern. What is the best counselor response?",
           "choices": [
-            "Defend the school’s initial interpretation before hearing details.",
-            "Listen for family knowledge and priorities, clarify evidence and rights in accessible language, and co-create feasible next steps with follow-up.",
-            "Use technical terminology to establish professional authority.",
-            "Exclude the family until staff reach a final decision."
+            "Finalize the support plan among school staff first and invite the family afterward to sign the agreement.",
+            "Defend the school’s initial interpretation firmly at the start of the meeting before hearing the family’s view.",
+            "Listen for family knowledge and priorities, explain evidence and rights clearly, and co-plan follow-up.",
+            "Rely on formal policy and psychometric jargon so the family recognizes the school team’s expertise."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Family partnership is reciprocal and culturally responsive. Meaningful participation requires accessible communication and genuine influence on decisions.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -1234,12 +1234,12 @@
           "id": "sc5422-ch-06-check-03",
           "prompt": "A teacher says a student “does not care.” What is the strongest consultation question?",
           "choices": [
-            "Agree with the label to preserve rapport.",
-            "Recommend a consequence before defining the concern.",
-            "Ask for observable examples, contexts, exceptions, current supports, and evidence that would indicate improvement.",
-            "Assume the cause is entirely within the family."
+            "Assume the student’s lack of engagement originates primarily in home routines outside the school’s reach.",
+            "Agree with the teacher’s description of apathy first to preserve strong rapport during the consultation.",
+            "Suggest a classroom consequence right away so the teacher leaves the brief meeting with an immediate plan.",
+            "Ask for observable examples, contexts, exceptions, current supports, and signs that would show progress."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Operational definitions and contextual evidence replace global labels with a shared problem that can be assessed, addressed, and monitored.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -1255,12 +1255,12 @@
           "id": "sc5422-ch-06-check-04",
           "prompt": "Most students benefit from a universal help-seeking lesson, but some continue to need more support. What is the next MTSS step?",
           "choices": [
-            "Remove universal support once any student needs Tier 2.",
-            "Refer every student directly for special education evaluation.",
-            "Wait for severe failure before increasing intensity.",
-            "Use data to add targeted evidence-informed support for the smaller group while maintaining universal services and monitoring response."
+            "Use data to add targeted evidence-informed support for that group while keeping universal services.",
+            "Discontinue universal classroom lessons once data show that a subgroup of students requires Tier 2 support.",
+            "Refer each student who did not respond to the universal lesson directly for a special education evaluation.",
+            "Wait until grades or attendance decline sharply before adding more intensive targeted counseling supports."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "MTSS uses layered prevention and intervention, screening and progress data, and increasing intensity matched to need; tiers are supports, not permanent student labels.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -1276,12 +1276,12 @@
           "id": "sc5422-ch-06-check-05",
           "prompt": "A student receiving targeted support shows little improvement. What should the team examine before intensifying?",
           "choices": [
-            "Review outcome trend, implementation fidelity, attendance or dosage, access, and whether the intervention matches the defined need.",
-            "Assume the student chose not to benefit.",
-            "Change several variables without documenting them.",
-            "Keep the same plan indefinitely because it is evidence based."
+            "Continue the exact same targeted plan indefinitely because published research classifies it as evidence based.",
+            "Review trend data, implementation fidelity, attendance or dosage, access, and fit with the defined need.",
+            "Conclude that the student chose not to engage with the support and note low motivation in the team record.",
+            "Adjust the group size, curriculum, schedule, and incentive system at once without documenting each change."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Response data are interpretable only with information about implementation, opportunity, fit, and access. The team can then intensify or adapt deliberately.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -1392,12 +1392,12 @@
           "id": "sc5422-ch-07-check-01",
           "prompt": "What distinguishes a program vision from a program mission?",
           "choices": [
-            "The vision describes a desired future for students; the mission states the program’s current purpose, population, approach, and contribution.",
-            "The vision lists daily tasks; the mission predicts test scores.",
-            "The vision and mission must be identical.",
-            "The mission applies only to counselors, while the vision excludes students."
+            "The vision and mission should use identical sentences so stakeholders receive one consistent program slogan.",
+            "The mission guides counselors’ internal tasks, whereas the vision describes district staffing goals instead.",
+            "The vision paints a desired student future; the mission states current purpose, audience, and approach.",
+            "The vision lists daily counseling duties, while the mission projects next year’s standardized test averages."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "A future-oriented vision and action-oriented mission should align with the school, center student success and equity, and guide program decisions.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -1411,12 +1411,12 @@
           "id": "sc5422-ch-07-check-02",
           "prompt": "How should a school counseling program connect to the school’s educational mission?",
           "choices": [
-            "Operate as a separate clinical service unrelated to learning.",
-            "Align program priorities and services with student needs and school goals while preserving the counselor’s professional role and comprehensive program.",
-            "Adopt every administrative task regardless of student impact.",
-            "Focus only on activities that cannot be measured."
+            "Accept every administrative duty the school needs covered so the program stays visible to building leaders.",
+            "Concentrate on informal relationship building that avoids measurable links to school improvement targets.",
+            "Run the counseling office as an independent clinical practice separate from classroom learning priorities.",
+            "Align priorities and services with student needs and school goals while preserving the counselor role."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "School counseling is integral to education and contributes to academic, career, and social/emotional outcomes through role-appropriate, data-informed services.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -1430,12 +1430,12 @@
           "id": "sc5422-ch-07-check-03",
           "prompt": "A school is designing its counseling program from the beginning. Which sequence is strongest?",
           "choices": [
-            "Select popular activities first and decide goals afterward.",
-            "Copy another school’s calendar without examining local data.",
-            "Assess needs and context, define foundations and goals, plan and deliver aligned services, then evaluate outcomes and improve.",
-            "Evaluate only after several years of unchanged implementation."
+            "Assess local needs, define foundations and goals, deliver aligned services, then evaluate and improve.",
+            "Deliver the initial program unchanged for three full years before collecting any formative or outcome data.",
+            "Launch popular classroom activities right away and write annual program goals later to match what ran well.",
+            "Adopt a neighboring school’s yearly counseling calendar directly without examining local student outcome data."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Program design is a continuous cycle that connects evidence, foundations, goals, delivery, management, assessment, and improvement.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -1449,12 +1449,12 @@
           "id": "sc5422-ch-07-check-04",
           "prompt": "What is the main purpose of an annual administrative conference?",
           "choices": [
-            "To transfer all program decisions to the administrator.",
-            "To evaluate individual student therapy records.",
-            "To replace ongoing communication for the rest of the year.",
-            "To reach shared understanding about program priorities, counselor responsibilities, use of time, resources, and how progress will be reviewed."
+            "Replace ongoing collaboration and check-ins for the remainder of the academic year with one document.",
+            "Reach shared agreement on priorities, counselor duties, time use, resources, and progress review.",
+            "Transfer full decision-making authority for the counseling program to the building principal each fall.",
+            "Review confidential individual counseling case notes together so administration tracks student details."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "The conference supports alignment and accountability through role clarity, priorities, resources, time use, and agreed follow-up; current templates and local expectations should be verified.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -1468,12 +1468,12 @@
           "id": "sc5422-ch-07-check-05",
           "prompt": "A weekly calendar shows little time for direct or indirect student services. What is the best use of the data?",
           "choices": [
-            "Compare time use with program priorities, show the impact on student access, and negotiate changes and supports with administration.",
-            "Hide the calendar because time allocation is private.",
-            "Eliminate all planning and evaluation time.",
-            "Count every administrative task as direct student service."
+            "Eliminate planning, consultation, and evaluation blocks so more minutes appear under student contact.",
+            "Reclassify testing coordination and lunch supervision as direct services to raise the reported totals.",
+            "Compare time use against program goals, show student-access impact, and negotiate role adjustments.",
+            "Keep the weekly time log private so administrators cannot question how counseling hours are scheduled."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Calendars and time-use data make opportunity costs visible and support collaborative advocacy for a balanced, effective program.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -1582,12 +1582,12 @@
           "id": "sc5422-ch-08-check-01",
           "prompt": "Which statement best distinguishes participation data from outcome data?",
           "choices": [
-            "Attendance at the lessons is participation data; change in course completion is outcome data.",
-            "Both are participation data because the counselor delivered the lessons.",
-            "Course completion is a Mindsets & Behaviors measure only.",
-            "The number of lessons is student outcome data."
+            "Both attendance and course completion count as participation data because the counselor ran the unit.",
+            "Course completion is strictly a Mindsets & Behaviors measure rather than an academic outcome indicator.",
+            "The total number of lessons delivered serves as the primary student outcome measure for the program.",
+            "Lesson attendance is participation data; change in course completion is student outcome data."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Participation data describe who received what service; outcome data describe changes in achievement, attendance, or behavior associated with the targeted concern.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -1601,12 +1601,12 @@
           "id": "sc5422-ch-08-check-02",
           "prompt": "A lesson check asks students to demonstrate a help-seeking skill. What type of evidence is this?",
           "choices": [
-            "Participation data showing only who attended.",
-            "Mindsets & Behaviors or learning evidence showing what students know, believe, or can do.",
-            "Long-term outcome data proving graduation effects.",
-            "A counselor performance evaluation."
+            "Mindsets & Behaviors or learning data showing what learners know, believe, or can perform.",
+            "Long-term outcome data demonstrating that the lesson raised graduation and attendance rates schoolwide.",
+            "A formal counselor performance rating measuring how smoothly the lesson activities were facilitated.",
+            "Participation data documenting who was present in the classroom during the scheduled counseling lesson."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Learning evidence captures targeted knowledge, attitudes, or skills. It differs from service participation and broader achievement, attendance, or discipline outcomes.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -1620,12 +1620,12 @@
           "id": "sc5422-ch-08-check-03",
           "prompt": "Which annual student outcome goal is best constructed?",
           "choices": [
-            "Improve attendance for everyone as much as possible.",
-            "Deliver ten attendance lessons by spring.",
-            "By a specified date, reduce the defined chronic-absence rate for an identified student group from a documented baseline to a realistic target.",
-            "Encourage students to come to school more often."
+            "Deliver ten engaging classroom attendance lessons to middle-grade students before spring break begins.",
+            "By a set date, reduce chronic absence for a named learner group from baseline to a realistic target.",
+            "Encourage students and families through newsletters to prioritize coming to school on time more often.",
+            "Improve daily attendance across every grade level in the building as much as possible during the year."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "A useful outcome goal names the population, baseline, target outcome, magnitude or criterion, timeframe, and equity context; activities belong in the action plan.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -1639,12 +1639,12 @@
           "id": "sc5422-ch-08-check-04",
           "prompt": "After selecting an annual outcome goal, what should an action plan specify?",
           "choices": [
-            "Only the final percentage target.",
-            "A list of activities without responsibility or evidence.",
-            "Every possible intervention regardless of feasibility.",
-            "Evidence-informed strategies, student standards, responsible people, timeline, resources, participation and learning measures, outcome measures, and review points."
+            "A chronological list of planned lessons and assemblies without assigned staff roles or evaluation measures.",
+            "Every available schoolwide and small-group intervention on the topic regardless of staffing or time limits.",
+            "Evidence-based strategies, standards, roles, timeline, resources, learning and impact metrics, and review.",
+            "The final target percentage alone so counselors stay flexible in choosing day-to-day interventions later."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "An action plan connects the goal to coherent delivery and measurement so implementation and outcomes can be reviewed and adjusted.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -1658,12 +1658,12 @@
           "id": "sc5422-ch-08-check-05",
           "prompt": "A needs survey has low response from several student groups. What is the best next step?",
           "choices": [
-            "Examine response bias, add accessible outreach and other data sources, and avoid treating the survey as a complete picture.",
-            "Use the results unchanged because all students had the same link.",
-            "Discard all stakeholder input permanently.",
-            "Infer that nonrespondents have no counseling needs."
+            "Report the survey findings unchanged because sending the same online link gave every student equal access.",
+            "Discard stakeholder survey input altogether and rely on administrative attendance records for planning.",
+            "Conclude that student groups with low response rates have fewer counseling needs than active respondents.",
+            "Check response bias, add accessible outreach and other data sources, and avoid treating results as complete."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Needs assessment should consider representation, access, nonresponse, wording, and triangulation with qualitative and administrative evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -1772,10 +1772,10 @@
           "id": "sc5422-ch-09-check-01",
           "prompt": "A counselor has simultaneous requests for a classroom lesson, routine schedule change, and a student with an immediate safety concern. How should work be prioritized?",
           "choices": [
-            "Address safety first under protocol, then sequence time-sensitive student services and routine tasks using program priorities and role clarity.",
-            "Complete requests strictly in the order received.",
-            "Ignore every noncrisis responsibility indefinitely.",
-            "Delegate the safety assessment to an untrained student helper."
+            "Address crisis risk first under protocol, then sequence urgent student needs and routine tasks in order.",
+            "Handle each request strictly in the chronological order it arrived so triage stays neutral and predictable.",
+            "Postpone planned classroom lessons and routine duties indefinitely whenever crisis demands appear busy.",
+            "Ask a trained peer helper to sit with the student in crisis while the counselor completes the lesson first."
           ],
           "answerIndex": 0,
           "rationale": "Triage protects safety while transparent priorities, backup procedures, documentation, and follow-up keep the rest of the program functioning.",
@@ -1791,10 +1791,10 @@
           "id": "sc5422-ch-09-check-02",
           "prompt": "A large caseload limits access to individual counseling. Which management response is most appropriate?",
           "choices": [
-            "Place every student on an indefinite individual-counseling list.",
-            "Use needs and time data to balance universal, targeted, and individual services, establish referral pathways, and advocate for adequate staffing and resources.",
-            "Eliminate preventive lessons to preserve only reactive work.",
-            "Serve students solely on a first-come basis without triage."
+            "Place each referred student onto an open-ended individual counseling waitlist until an appointment opens.",
+            "Use needs and time data to balance tiered services, build referral pathways, and advocate for staffing.",
+            "Drop classroom lessons and small groups so the counselor’s full week goes to reactive individual crises.",
+            "See students strictly on a first-come basis without triaging urgency, need severity, or tiered alternatives."
           ],
           "answerIndex": 1,
           "rationale": "A comprehensive program uses multiple delivery modes, ethical triage, referral and continuity systems, and data-based advocacy rather than relying on individual sessions alone.",
@@ -1810,10 +1810,10 @@
           "id": "sc5422-ch-09-check-03",
           "prompt": "A limited grant can fund only one of several proposed supports. Which allocation process is most defensible?",
           "choices": [
-            "Give it to the group that requests it most loudly.",
-            "Divide it equally even when need and access differ substantially.",
-            "Use disaggregated need, expected benefit, access barriers, evidence, feasibility, and stakeholder input, then monitor who benefits.",
-            "Select the newest program without reviewing evidence."
+            "Award the grant to the department that submits the strongest and most persistent advocacy emails.",
+            "Split the small grant evenly across every proposed activity even where need and access differ sharply.",
+            "Weigh disaggregated need, expected benefit, access barriers, evidence, feasibility, and input, then monitor.",
+            "Choose the newest commercial program on the market so students benefit from current instructional design."
           ],
           "answerIndex": 2,
           "rationale": "Equitable allocation is transparent and need responsive, considers barriers and likely effects, and monitors reach and outcomes rather than confusing equality with equity.",
@@ -1829,10 +1829,10 @@
           "id": "sc5422-ch-09-check-04",
           "prompt": "A dashboard will show counseling outcomes to staff. Which design best protects students?",
           "choices": [
-            "Publish names so staff can verify the totals.",
-            "Assume removing names always prevents reidentification.",
-            "Include detailed counseling notes to explain each result.",
-            "Use aggregate or appropriately suppressed data, limit access, minimize fields, and check whether small cells or combinations could identify students."
+            "Display student names beside outcome counts so teachers can verify totals for their own homerooms.",
+            "Assume stripping student names from the table protects privacy even when subgroups contain two students.",
+            "Attach brief individual counseling notes to dashboard rows so staff understand why specific numbers shifted.",
+            "Report aggregate or suppressed data, restrict access, minimize fields, and block small-cell disclosure."
           ],
           "answerIndex": 3,
           "rationale": "Program reporting should communicate useful evidence while applying privacy, data minimization, secure access, suppression, and current legal and district rules.",
@@ -1848,10 +1848,10 @@
           "id": "sc5422-ch-09-check-05",
           "prompt": "What should a program communication plan include?",
           "choices": [
-            "Provide recurring accessible multilingual information about services, access routes, privacy limits, urgent-help procedures, and opportunities for stakeholder input.",
-            "Rely on one technical handbook posted at the start of the year.",
-            "Advertise guaranteed outcomes to increase referrals.",
-            "Describe confidential student cases as examples."
+            "Provide recurring accessible multilingual info on services, access, privacy limits, urgent help, and input.",
+            "Post one detailed technical handbook on the district website in August and refer families there all year.",
+            "Highlight promised improvement rates in flyers so more families feel confident referring their children.",
+            "Include real confidential student stories with minor name changes so community readers grasp counseling work."
           ],
           "answerIndex": 0,
           "rationale": "Transparent, accessible communication clarifies program scope and access while protecting privacy and avoiding promises beyond the counselor’s role.",
@@ -1962,12 +1962,12 @@
           "id": "sc5422-ch-10-check-01",
           "prompt": "Why should a counseling team complete a program assessment?",
           "choices": [
-            "Compare current program implementation with defined standards, identify strengths and gaps, and prioritize an improvement plan.",
-            "Convert every activity into an official effectiveness score.",
-            "Evaluate individual students’ diagnoses.",
-            "Replace outcome evaluation with a checklist."
+            "Replace annual student outcome evaluation with a self-scored checklist of completed program components.",
+            "Compare current delivery with program standards, spot strengths and gaps, and set improvement priorities.",
+            "Convert every counseling workshop and check-in into an official numerical effectiveness score for the year.",
+            "Evaluate individual students’ diagnostic profiles to confirm whether outside clinical labels are accurate."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Program assessment examines implementation and alignment. It supports improvement but does not by itself establish student outcomes.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -1981,12 +1981,12 @@
           "id": "sc5422-ch-10-check-02",
           "prompt": "What is the purpose of a professional standards and competencies assessment?",
           "choices": [
-            "Produce an ETS scaled score.",
-            "Identify current strengths and development needs, inform learning goals and supervision, and support reflection over time.",
-            "Replace credentialing and administrator evaluation requirements.",
-            "Rank students by counseling need."
+            "Rank individual students on the caseload by urgency so counselors know who needs immediate intervention.",
+            "Generate an official ETS scaled readiness score showing whether a counselor meets state licensure cutoffs.",
+            "Identify practice strengths and growth areas, guide learning and supervision goals, and track reflection.",
+            "Replace state credential renewal rules and annual building administrator evaluations with self-assessment."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "A competency self-assessment supports reflective professional development; results require honest evidence, context, goals, and follow-up rather than punitive overinterpretation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -2000,12 +2000,12 @@
           "id": "sc5422-ch-10-check-03",
           "prompt": "A team evaluates a new ninth-grade transition program. Why collect baseline data?",
           "choices": [
-            "Proof that any later change was caused by the program.",
-            "A substitute for implementation data.",
-            "A defined starting level against which later change can be compared.",
-            "The national percentile rank for every student."
+            "A national percentile rank showing how each participating student compares with peers in other states.",
+            "Direct proof that any subsequent gain in student outcomes was caused solely by the counseling program.",
+            "A reliable substitute for tracking whether planned intervention sessions were actually delivered faithfully.",
+            "A defined starting benchmark against which later changes in target outcomes can be compared."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Baseline data establish the initial condition and help set targets and interpret trends; causal conclusions still require appropriate design and consideration of alternatives.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -2019,12 +2019,12 @@
           "id": "sc5422-ch-10-check-04",
           "prompt": "A lesson series shows no outcome improvement, but half the planned sessions were canceled. What should the team conclude?",
           "choices": [
-            "The intervention theory is definitively ineffective.",
-            "Students are unwilling to improve.",
-            "Fidelity never matters when outcome data are available.",
-            "Implementation was insufficient, so the team cannot fairly judge the planned intervention without addressing delivery and collecting new evidence."
+            "Delivery was too incomplete to judge the plan fairly; fix implementation and collect fresh outcome data.",
+            "The underlying intervention theory is shown to be ineffective for this school and should be retired.",
+            "Students in the grade level lacked willingness to engage with the lessons and apply the skills taught.",
+            "Implementation fidelity does not alter conclusions once pre- and post-outcome numbers are available."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Outcome interpretation must include adherence, dosage, quality, participation, and contextual disruptions. Weak implementation and weak theory require different responses.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -2038,12 +2038,12 @@
           "id": "sc5422-ch-10-check-05",
           "prompt": "Which evaluation plan best assesses a classroom lesson series?",
           "choices": [
-            "Define the target, use aligned pre/post or repeated measures plus implementation and participation data, disaggregate results, and gather student feedback.",
-            "Count slides delivered and infer mastery.",
-            "Ask one satisfied student whether the program worked.",
-            "Use an unrelated standardized score because it is objective."
+            "Use an unrelated statewide math test score because standardized scores appear more objective to leaders.",
+            "Define the target, pair aligned pre/post measures with fidelity and reach data, disaggregate, and ask students.",
+            "Count how many slide decks and handouts were completed and infer that students mastered the objectives.",
+            "Interview one enthusiastic student after the final class to confirm whether the lesson series succeeded."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "A coherent evaluation aligns measures with the goal and includes implementation, learning, outcomes, equity, and stakeholder experience.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -2157,12 +2157,12 @@
           "id": "sc5422-ch-11-check-01",
           "prompt": "A program’s overall attendance improved, but one student group’s gap widened. What is the best interpretation?",
           "choices": [
-            "Report both the aggregate improvement and disaggregated disparity, investigate barriers, and adjust the program rather than relying on the average.",
-            "Report only the favorable schoolwide result.",
-            "Conclude the group caused the disparity.",
-            "Suppress all group analysis because it may be uncomfortable."
+            "Conclude that the subgroup caused its own widening gap and add individual accountability contracts.",
+            "Omit subgroup disaggregation from stakeholder reports because discussing disparities can feel uncomfortable.",
+            "Report both the schoolwide gain and the growing subgroup disparity, study barriers, and refine services.",
+            "Highlight the favorable schoolwide trend in the report while saving subgroup disaggregation tables for later."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Aggregate results can conceal inequitable outcomes. Ethical evaluation disaggregates responsibly and uses the pattern to examine systems and target improvement.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -2177,12 +2177,12 @@
           "id": "sc5422-ch-11-check-02",
           "prompt": "A results report says a group “caused” higher graduation rates because participants improved. What is the main problem?",
           "choices": [
-            "All school data are too subjective to report.",
-            "Without a design that addresses selection and other explanations, the evidence supports contribution or association more cautiously than causation.",
-            "Participation counts always prove causality.",
-            "Causal claims require that every student improve equally."
+            "Strong group participation counts establish direct causation whenever participants graduate at higher rates.",
+            "Causation can be claimed only when every participant in the group achieves the exact same grade-point gain.",
+            "School-level graduation records are too subjective to cite in a public results summary for stakeholders.",
+            "Without controlling selection and outside factors, data support association or contribution, not causation."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Pre/post or comparison patterns can be useful, but selection, maturation, other supports, and context limit causal inference unless the design addresses them.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -2197,12 +2197,12 @@
           "id": "sc5422-ch-11-check-03",
           "prompt": "A needs survey asks, “How helpful was our excellent counseling program?” What is the main concern?",
           "choices": [
-            "The item is invalid only if it has fewer than five response options.",
-            "Positive wording guarantees honest feedback.",
-            "The leading wording can bias responses; use neutral, clear items and pilot them with the intended audience.",
-            "Survey wording does not affect results."
+            "The leading phrasing biases responses upward; revise into neutral, clear items and pilot with users.",
+            "Item phrasing rarely influences survey results as long as students submit their ratings anonymously.",
+            "The survey item is problematic only if the rating scale offers fewer than five numbered response choices.",
+            "Positive wording encourages honest engagement and helps respondents recall helpful counseling moments."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Neutral wording, accessible language, appropriate response options, piloting, and attention to nonresponse improve the usefulness of survey evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -2217,12 +2217,12 @@
           "id": "sc5422-ch-11-check-04",
           "prompt": "Which results-report format best supports stakeholder understanding?",
           "choices": [
-            "Provide raw identifiable student files for transparency.",
-            "Show only activities completed and omit outcomes.",
-            "Use technical statistics without definitions or context.",
-            "State the goal, services, reach, learning and outcome results, disaggregated patterns, limitations, student voice, next actions, and privacy protections in plain language."
+            "Display dense statistical tables without plain-language definitions so the report looks rigorously technical.",
+            "Share goal, services, reach, learning and outcome data, gaps, limits, student voice, actions, and privacy.",
+            "Attach raw identifiable student spreadsheets to the report so families and leaders can inspect every case.",
+            "Present a detailed count of meetings and lessons completed while leaving student outcomes out for brevity."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "A clear results report connects purpose, implementation, evidence, limitations, equity, and decisions while protecting confidentiality.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -2237,12 +2237,12 @@
           "id": "sc5422-ch-11-check-05",
           "prompt": "Three data sources point in different directions about school belonging. What should the counselor do?",
           "choices": [
-            "Examine measure quality, populations, timing, implementation, and context; seek additional evidence rather than forcing one simple conclusion.",
-            "Discard every source except the one with the largest sample.",
-            "Average unrelated indicators into one score.",
-            "Report that the program succeeded because one measure improved."
+            "Average the three different belonging indicators together into one composite number to resolve conflict.",
+            "Report that belonging improved because at least one of the three sources moved in a positive direction.",
+            "Check measure quality, groups, timing, delivery, and context, and gather more evidence instead of forcing fit.",
+            "Drop the two smaller data sources and base every program decision on whichever dataset had the most replies."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Triangulation is not automatic agreement. Divergence can reveal subgroup differences, measurement limitations, timing effects, or new questions requiring follow-up.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -2357,12 +2357,12 @@
           "id": "sc5422-ch-12-check-01",
           "prompt": "A targeted intervention met its average outcome goal but not for students who missed sessions because of transportation barriers. What is the best next step?",
           "choices": [
-            "Retain effective components, address the access barrier, adapt delivery, and monitor participation and outcomes for the affected students.",
-            "Declare full success because the average target was met.",
-            "Lower the goal only for students facing the barrier.",
-            "End the intervention for everyone."
+            "Declare the targeted initiative a complete success because the group met its average outcome benchmark.",
+            "Lower the outcome target for students facing transit barriers so their final numbers meet the goal.",
+            "Cancel the intervention for every student next term because it did not work equally for all participants.",
+            "Keep effective elements, remove the transit barrier, adapt delivery, and monitor affected students’ gains."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Continuous improvement distinguishes effectiveness from reach and equity, preserves helpful elements, removes access barriers, and tests adaptations with data.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -2377,12 +2377,12 @@
           "id": "sc5422-ch-12-check-02",
           "prompt": "A program result is weaker than expected. How should the counselor communicate it?",
           "choices": [
-            "Hide the result to protect program credibility.",
-            "Report the result and limitations honestly, explain what was learned, and present a specific evidence-informed revision and review plan.",
-            "Select a different outcome after seeing the data and call it the original goal.",
-            "Blame students or families for the shortfall."
+            "Report the shortfall and limits honestly, explain lessons learned, and share a specific revision plan.",
+            "Substitute a different indicator that improved after seeing results and present it as the original target.",
+            "Explain that student and family follow-through caused the gap while keeping the current plan unchanged.",
+            "Withhold the weaker outcome from the annual report so stakeholders maintain confidence in the program."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Transparent reporting builds trust and learning. A missed goal can guide improvement when evidence, limitations, and next decisions are communicated without blame.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -2397,12 +2397,12 @@
           "id": "sc5422-ch-12-check-03",
           "prompt": "Which evidence makes the strongest case for adding another counselor position?",
           "choices": [
-            "A national ratio quoted without local context.",
-            "A statement that counselors feel busy.",
-            "Local needs, service-access and time-use data, outcome gaps, program capacity, credible research, a defined staffing plan, and measures for evaluating impact.",
-            "Confidential anecdotes identifying vulnerable students."
+            "A brief written statement explaining that current counselors feel stretched thin during busy months.",
+            "Local needs, access and time-use data, gaps, capacity, research, a staffing plan, and impact metrics.",
+            "Confidential student stories with recognizable details illustrating how severe individual crises have become.",
+            "A national counselor-to-student ratio guideline quoted alone without local caseload or outcome context."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Data-based advocacy integrates local need, capacity, equity, research, feasible resources, privacy, and an evaluation plan.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -2417,12 +2417,12 @@
           "id": "sc5422-ch-12-check-04",
           "prompt": "A closing-the-gap initiative reduces a course-access disparity. What should happen next?",
           "choices": [
-            "Assume the improvement will persist without monitoring.",
-            "Return immediately to the former procedure.",
-            "Expand districtwide before checking implementation quality.",
-            "Monitor durability and unintended effects, gather stakeholder feedback, refine procedures, and consider responsible expansion."
+            "Revert to the previous enrollment procedure right away now that this year’s disparity numbers improved.",
+            "Mandate the initiative across every district school immediately before checking local implementation quality.",
+            "Monitor durability and unintended effects, collect stakeholder feedback, refine steps, and scale thoughtfully.",
+            "Move focus elsewhere and assume the narrowed course-access gap will stay closed without routine checks."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Improvement requires follow-up for maintenance, equity, implementation, and unintended consequences before scaling.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",
@@ -2437,12 +2437,12 @@
           "id": "sc5422-ch-12-check-05",
           "prompt": "How should a counselor choose the next program priority after annual evaluation?",
           "choices": [
-            "Integrate outcome gaps, student and family voice, urgency and safety, equity, feasibility, evidence, and alignment with the program mission.",
-            "Select the easiest activity regardless of need.",
-            "Use counselor preference as the only criterion.",
-            "Choose the concern with the highest raw count without examining rates or impact."
+            "Choose the simplest activity to run next year so the team can post quick early wins regardless of need.",
+            "Select whichever topic aligns most closely with the counselor’s favorite workshop materials and interests.",
+            "Pick the issue with the largest raw incident count without examining subgroup rates, severity, or impact.",
+            "Integrate outcome gaps, student and family voice, urgency, safety, equity, feasibility, evidence, and mission."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Program priorities require transparent judgment across need, voice, risk, equity, feasibility, evidence, alignment, and available capacity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw1272f63e/pdfs/5422.pdf",

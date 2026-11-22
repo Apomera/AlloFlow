@@ -195,7 +195,10 @@ Object.freeze(TOOL_CATALOG);
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
 function _sanitizeCatalogText(value, limit) {
-  return String(value == null ? '' : value)
+  if (value == null || typeof value === 'symbol') return '';
+  let str = '';
+  try { str = String(value); } catch (_) { return ''; }
+  return str
     .replace(/[\u0000-\u001F\u007F]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
@@ -206,7 +209,7 @@ function _validCatalog(catalog) {
   if (!Array.isArray(catalog)) return TOOL_CATALOG;
   return catalog
     .slice(0, 200)
-    .filter(t => t && typeof t === 'object' && typeof t.id === 'string' && t.id.trim());
+    .filter(t => t && typeof t === 'object' && typeof t.id === 'string' && _sanitizeCatalogText(t.id, 80).length > 0);
 }
 
 // Comma-separated tool IDs, e.g. for "Valid Tools: analysis, simplified, ..."
@@ -242,7 +245,9 @@ function formatToolCatalogInline(catalog) {
 // Lookup by id (returns entry or undefined).
 function getToolEntry(id, catalog) {
   if (typeof id !== 'string' || !id) return undefined;
-  return _validCatalog(catalog).find(t => t.id === id);
+  const cleanId = _sanitizeCatalogText(id, 80);
+  if (!cleanId) return undefined;
+  return _validCatalog(catalog).find(t => t.id === id || _sanitizeCatalogText(t.id, 80) === cleanId);
 }
 
 // All tool IDs as an array.
@@ -253,21 +258,23 @@ function getToolIds(catalog) {
 // ─── Registration ──────────────────────────────────────────────────────────
 // Publish on window.AlloModules.ToolCatalog AND mirror onto window.* for
 // convenience (modifyBlueprintWithAI reads window.TOOL_CATALOG directly).
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.ToolCatalog = Object.freeze({
-  TOOL_CATALOG,
-  getToolIdsCsv,
-  formatToolCatalogForPrompt,
-  formatToolCatalogInline,
-  getToolEntry,
-  getToolIds,
-});
-window.TOOL_CATALOG = TOOL_CATALOG;
-window.formatToolCatalogForPrompt = formatToolCatalogForPrompt;
-window.formatToolCatalogInline = formatToolCatalogInline;
-window.getToolIdsCsv = getToolIdsCsv;
+if (typeof window !== 'undefined') {
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.ToolCatalog = Object.freeze({
+    TOOL_CATALOG,
+    getToolIdsCsv,
+    formatToolCatalogForPrompt,
+    formatToolCatalogInline,
+    getToolEntry,
+    getToolIds,
+  });
+  window.TOOL_CATALOG = TOOL_CATALOG;
+  window.formatToolCatalogForPrompt = formatToolCatalogForPrompt;
+  window.formatToolCatalogInline = formatToolCatalogInline;
+  window.getToolIdsCsv = getToolIdsCsv;
 
-if (typeof window._upgradeToolCatalog === 'function') {
-  try { window._upgradeToolCatalog(); } catch (_) {}
+  if (typeof window._upgradeToolCatalog === 'function') {
+    try { window._upgradeToolCatalog(); } catch (_) {}
+  }
 }
 console.log('[ToolCatalog] ' + TOOL_CATALOG.length + ' tools registered.');

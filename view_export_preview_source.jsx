@@ -14333,27 +14333,54 @@ const _downloadBRF = (brf) => {
                         }
                       } else if (result && result.html && result.html !== currentHtml && doc) {
                         const sanitizeWorkbenchHtml = (rawHtml) => {
+                          const scrubCss = (css) => String(css || '')
+                            .replace(/<\/?style\b[^>]*>/gi, '')
+                            .replace(/[<\\]/g, '')
+                            .replace(/@import\s+[^;\n}]+;?/gi, '')
+                            .replace(/url\s*\([^)]*\)/gi, 'none')
+                            .replace(/image-set\s*\([^)]*\)/gi, 'none')
+                            .replace(/expression\s*\([^)]*\)/gi, 'none')
+                            .replace(/behavior\s*:\s*[^;}\n]+;?/gi, '')
+                            .replace(/-moz-binding\s*:\s*[^;}\n]+;?/gi, '')
+                            .replace(/(?:javascript|vbscript)\s*:/gi, '');
                           try {
                             const parser = new DOMParser();
                             const parsed = parser.parseFromString(String(rawHtml || ''), 'text/html');
-                            parsed.querySelectorAll('script, iframe, object, embed, base, meta[http-equiv="refresh"]').forEach((node) => node.remove());
+                            parsed.querySelectorAll('script, iframe, frame, frameset, object, embed, base, link, meta[http-equiv], noscript, template, svg, foreignObject, animate, set, animateMotion, animateTransform, handler, feImage').forEach((node) => node.remove());
+                            parsed.querySelectorAll('style').forEach((styleEl) => {
+                              styleEl.textContent = scrubCss(styleEl.textContent || '');
+                            });
                             parsed.querySelectorAll('*').forEach((el) => {
                               Array.from(el.attributes || []).forEach((attr) => {
                                 const attrName = String(attr.name || '').toLowerCase();
                                 const attrVal = String(attr.value || '').trim();
-                                if (attrName.startsWith('on')) {
+                                const normVal = attrVal.replace(/[\u0000-\u0020]+/g, '');
+                                if (attrName.startsWith('on') || attrName === 'srcdoc' || attrName === 'srcset') {
                                   el.removeAttribute(attr.name);
-                                } else if ((attrName === 'href' || attrName === 'src' || attrName === 'xlink:href' || attrName === 'formaction') && /^(?:javascript|vbscript):/i.test(attrVal)) {
-                                  el.removeAttribute(attr.name);
+                                } else if (attrName === 'style') {
+                                  el.setAttribute('style', scrubCss(attrVal));
+                                } else if (attrName === 'href' || attrName === 'xlink:href' || attrName === 'action' || attrName === 'formaction' || attrName === 'data') {
+                                  if (/^(?:javascript|vbscript|data|file):/i.test(normVal)) {
+                                    el.removeAttribute(attr.name);
+                                  }
+                                } else if (attrName === 'src' || attrName === 'poster' || attrName === 'background') {
+                                  const isSafeRasterData = /^data:image\/(?:png|jpeg|jpg|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(normVal);
+                                  if (/^(?:javascript|vbscript|file):/i.test(normVal) || (/^data:/i.test(normVal) && !isSafeRasterData)) {
+                                    el.removeAttribute(attr.name);
+                                  }
                                 }
                               });
                             });
                             return '<!DOCTYPE html>\n' + parsed.documentElement.outerHTML;
                           } catch (_) {
-                            return String(rawHtml || '').replace(/<script[\s\S]*?<\/script>/gi, '');
+                            return null;
                           }
                         };
                         const safeResultHtml = sanitizeWorkbenchHtml(result.html);
+                        if (!safeResultHtml) {
+                          addToast('Workbench output could not be safely sanitized and was not applied.', 'error');
+                          return;
+                        }
                         try { delete doc.__alloPasteGuard; } catch (_) {}
                         doc.open(); doc.write(safeResultHtml); doc.close();
                         exportPreviewRef.current.__alloInitializeBuilderDocument?.(doc);

@@ -152,6 +152,14 @@
                     <p class="promo-kicker">Three routes</p>
                     <h2 id="routes-heading">Choose the channel that fits</h2>
                     <p id="feedbackContext" class="feedback-context" role="status" aria-live="polite" hidden></p>
+                    <div class="feedback-tool-picker" style="margin:14px 0 18px;max-width:520px">
+                        <label for="feedbackToolInput" style="display:block;font-size:0.85rem;font-weight:700;color:#1e293b;margin-bottom:6px">Pre-fill a tool or workflow name (optional)</label>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                            <input id="feedbackToolInput" type="search" autocomplete="off" maxlength="120" placeholder="e.g., Water Cycle, Symbol Studio, PDF Remediation" aria-describedby="feedbackToolHint" style="flex:1 1 240px;min-height:44px;padding:8px 12px;border:1px solid #94a3b8;border-radius:10px;font:inherit;font-size:0.95rem;color:#0f172a;background:#fff">
+                            <button type="button" id="feedbackToolClear" class="promo-button-secondary" hidden style="min-height:44px">Clear</button>
+                        </div>
+                        <p id="feedbackToolHint" style="margin:6px 0 0;font-size:0.8rem;color:#475569">Updates the draft links below right in your browser — nothing is sent until you open and submit a route. Press Escape to clear.</p>
+                    </div>
                     <p>AlloFlow does not collect your feedback on this page. A link opens either a public GitHub issue
                         or a draft in your email app, so you can review everything before sending it.</p>
                 </div>

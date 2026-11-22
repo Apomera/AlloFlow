@@ -137,9 +137,9 @@ module.exports = {
     'x^(x-1)': 'This lowers the exponent by 1 without even the factor x or logarithmic differentiation for the variable exponent.',
   },
   'item-028': {
-    'Only the power rule is needed for this': 'Neither e^(x^2) nor the rational quotient structure can be differentiated using the power rule alone.',
-    'Only implicit differentiation is needed': 'The function is already solved explicitly in terms of x, so implicit differentiation is unnecessary.',
-    'The Fundamental Theorem of Calculus only': 'The Fundamental Theorem differentiates integrals with variable limits, not an explicit exponential quotient.',
+    'The power rule alone suffices for this': 'Neither e^(x^2) nor the rational quotient structure can be differentiated using the power rule alone.',
+    'Implicit differentiation alone suffices': 'The function is already solved explicitly in terms of x, so implicit differentiation is unnecessary.',
+    'The Fundamental Theorem of Calculus alone': 'The Fundamental Theorem differentiates integrals with variable limits, not an explicit exponential quotient.',
   },
   'item-029': {
     '12x^2-12x': 'This stops after the second derivative f double prime(x) instead of differentiating one more time.',
@@ -212,9 +212,9 @@ module.exports = {
     'The interval contains negative inputs.': 'The Mean Value Theorem applies to intervals containing negative, zero, or positive inputs alike.',
   },
   'item-043': {
-    'Only the function values at the two endpoints of it': 'An absolute extremum can occur at an interior peak or valley, so checking endpoints alone can miss it.',
-    'Only the points where the derivative is equal to zero': 'Monotonic or clipped curves often attain their absolute maximum or minimum at the interval endpoints.',
-    'Only the values taken by the second derivative there': 'Second-derivative values describe concavity, not the heights of f(x) needed to compare absolute extrema.',
+    'Just the function values at the two interval endpoints': 'An absolute extremum can occur at an interior peak or valley, so checking endpoints alone can miss it.',
+    'Just the interior points where the derivative equals zero': 'Monotonic or clipped curves often attain their absolute maximum or minimum at the interval endpoints.',
+    'Just the values taken by the second derivative there': 'Second-derivative values describe concavity, not the heights of f(x) needed to compare absolute extrema.',
   },
   'item-044': {
     'Every critical number is a maximum': 'At x=0, f(x)=x^3 has neither a maximum nor a minimum because f prime(x)=3x^2 never changes sign.',
@@ -227,9 +227,9 @@ module.exports = {
     'Increasing on (-2,1)': 'Testing x=0 gives f prime(0)=-2<0, so f is decreasing rather than increasing on (-2,1).',
   },
   'item-046': {
-    "f'(c)=0 only": 'A zero derivative identifies only a stationary candidate; as x^3 shows, f prime can be 0 without a local minimum.',
+    'f\'(c)=0 alone': 'A zero derivative identifies only a stationary candidate; as x^3 shows, f prime can be 0 without a local minimum.',
     "f' changes from positive to negative": 'Changing from increasing to decreasing produces a local maximum, not a local minimum.',
-    "f''(c)=0 only": 'A zero second derivative signals a possible inflection point and does not establish a local minimum.',
+    'f\'\'(c)=0 alone': 'A zero second derivative signals a possible inflection point and does not establish a local minimum.',
   },
   'item-047': {
     'x<2': 'For x<2, 6x-12 is negative, which makes f concave down rather than concave up.',

@@ -302,7 +302,15 @@
         {renderRecording && renderRecording('definition-meaning-' + key, null, sense.definition, 'English', lookupDictionaryText(t, 'simplified.lookup_listen_meaning', 'Listen to this meaning'))}
       </div>;
     };
-    var sourceUrl = dict.sourceUrl || (dict.word ? 'https://en.wiktionary.org/wiki/' + encodeURIComponent(dict.word) : '');
+    var safeDictUrl = function (raw) {
+      var s = typeof raw === 'string' ? raw.trim() : '';
+      if (!s) return '';
+      try {
+        var u = new URL(s);
+        return (u.protocol === 'https:' || u.protocol === 'http:') && !u.username && !u.password ? u.href : '';
+      } catch (_) { return ''; }
+    };
+    var sourceUrl = safeDictUrl(dict.sourceUrl) || (dict.word ? 'https://en.wiktionary.org/wiki/' + encodeURIComponent(dict.word) : '');
     return <div data-dictionary-panel className="mt-3 border-t border-emerald-200 pt-3">
       <p className="text-xs font-bold text-emerald-800">{lookupDictionaryText(t, 'glossary.popups.dictionary', 'Dictionary')}</p>
       {renderDictionaryPronunciations(dict, t, renderRecording, 'definition')}
@@ -2674,6 +2682,15 @@
         var domain = ''; try { domain = new URL(source.url).hostname; } catch (_) {}
         var sourceTitle = source.kind === 'document' && !source.shareExcerpt ? label('simplified.sources_teacher_source', 'Teacher-provided source') : source.title;
         var metadata = [domain, ...types.map(evidenceLabel)].filter(Boolean).join(' · ');
+        var safeSourceHref = function (raw) {
+          var s = typeof raw === 'string' ? raw.trim() : '';
+          if (!s) return '';
+          try {
+            var u = new URL(s);
+            return (u.protocol === 'https:' || u.protocol === 'http:') && !u.username && !u.password ? u.href : '';
+          } catch (_) { return ''; }
+        };
+        var verifiedSourceUrl = safeSourceHref(source.url);
         return <li key={source.id} className="min-w-0 py-2" style={{ overflowWrap: 'anywhere' }}>
           <details data-student-source={source.id}>
             <summary ref={node => { if (node) summaries.current.set(source.id, node); else summaries.current.delete(source.id); }} className="min-h-11 cursor-pointer rounded px-1 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
@@ -2681,15 +2698,16 @@
               {metadata && <span className="mt-1 block text-xs text-slate-600">{metadata}</span>}
             </summary>
             <div className="min-w-0 space-y-3 px-1 pb-3">
-              {source.url && <a href={source.url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" className="inline-flex min-h-11 items-center rounded text-indigo-800 underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{label('simplified.sources_open_source', 'Open source')}</a>}
+              {verifiedSourceUrl && <a href={verifiedSourceUrl} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" className="inline-flex min-h-11 items-center rounded text-indigo-800 underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{label('simplified.sources_open_source', 'Open source')}</a>}
               {!passages.length && <p>{source.kind === 'document' ? label('simplified.sources_not_shared', 'The source text has not been shared with students.') : label('simplified.sources_link_only', 'Only a source link is available; no page passage was saved.')}</p>}
               {passages.map((passage, index) => {
-                var clip = api?.videoClipDetails?.(passage, source.url);
+                var clip = api?.videoClipDetails?.(passage, verifiedSourceUrl || source.url);
+                var safeClipUrl = clip ? safeSourceHref(clip.url) : '';
                 return <div key={index} className="min-w-0">
                 <p className="mb-1 text-xs font-semibold text-slate-600">{evidenceLabel(passage.evidenceType)}{passage.locatorLabel ? ': ' + passage.locatorLabel : ''}</p>
-                {clip && <p className="mb-2 text-xs">
+                {clip && safeClipUrl && <p className="mb-2 text-xs">
                   {!passage.locatorLabel?.includes(clip.label) && <span>{label('simplified.sources_video_clip', 'Requested clip {start} to {end}', { start: clip.startLabel, end: clip.endLabel })}{' '}</span>}
-                  <a href={clip.url} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" className="inline-flex min-h-11 items-center rounded text-indigo-800 underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{label('simplified.sources_open_clip_start', 'Open clip start')}</a>
+                  <a href={safeClipUrl} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" className="inline-flex min-h-11 items-center rounded text-indigo-800 underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{label('simplified.sources_open_clip_start', 'Open clip start')}</a>
                 </p>}
                 {passage.evidenceType === 'Search snippet' && <p className="mb-2 text-xs">{label('simplified.sources_snippet_limit', 'This is a search preview, not a passage from a page that was read.')}</p>}
                 {passage.evidenceType === 'Source-linked AI note' && <p className="mb-2 text-xs">{label('simplified.sources_ai_note_limit', 'This is an AI note linked to the source, not the source\'s exact wording.')}</p>}
@@ -3585,8 +3603,21 @@
       stopEditAudioPlayback();
       editAudioRecordTokenRef.current += 1;
       setEditAudioMicRequestKey(null);
+      setEditAudioRecordingKey(null);
+      setEditAudioRecordingSaveKey(null);
+      if (editAudioRecordingTimerRef.current) clearTimeout(editAudioRecordingTimerRef.current);
+      editAudioRecordingTimerRef.current = null;
       var recorder = editAudioMediaRecorderRef.current;
-      try { if (recorder && recorder.state !== 'inactive') recorder.stop(); } catch (_) {}
+      try {
+        if (recorder) {
+          recorder.onstop = null;
+          recorder.onerror = null;
+          if (recorder.state !== 'inactive') recorder.stop();
+        }
+      } catch (_) {}
+      editAudioMediaRecorderRef.current = null;
+      editAudioChunksRef.current = [];
+      releaseEditAudioStream();
     }, [canManageNarration]);
     React.useEffect(function () {
       setEditAudioOpen(false);
@@ -4235,6 +4266,7 @@
           if (editAudioMediaRecorderRef.current === recorder) editAudioMediaRecorderRef.current = null;
           releaseEditAudioStream();
           setEditAudioRecordingKey(null);
+          if (requestToken !== editAudioRecordTokenRef.current) return;
           var durationMs = Math.max(0, Date.now() - (recorder._alloStartedAt || editAudioRecordingStartedAtRef.current || Date.now()));
           if (recorder._alloFailed) return;
           if (!chunks.length) {
@@ -4312,8 +4344,18 @@
         stopEditAudioPlayback();
         editAudioRecordTokenRef.current += 1;
         setEditAudioMicRequestKey(null);
+        setEditAudioRecordingKey(null);
         var recorder = editAudioMediaRecorderRef.current;
-        try { if (recorder && recorder.state !== 'inactive') recorder.stop(); } catch (_) {}
+        try {
+          if (recorder && recorder.state !== 'inactive') {
+            recorder.onstop = null;
+            recorder.onerror = null;
+            recorder.stop();
+          }
+        } catch (_) {}
+        editAudioMediaRecorderRef.current = null;
+        editAudioChunksRef.current = [];
+        releaseEditAudioStream();
       }
       setEditAudioOpen(next);
     };

@@ -13,16 +13,8 @@ function AllobotSearchSettings({
     const value = typeof t === 'function' ? t(key) : '';
     return value && value !== key ? value : fallback;
   };
-  const isLocked = () => typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window.__alloStudentAiDisabled === true);
+  const isLocked = () => typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.__alloStudentAiDisabled === true);
   const [locked, setLocked] = React.useState(isLocked);
-  React.useEffect(() => {
-    const sync = () => setLocked(isLocked());
-    const events = ['alloflow:ai-key-lock-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-config-changed'];
-    events.forEach(ev => window.addEventListener(ev, sync));
-    return () => {
-      events.forEach(ev => window.removeEventListener(ev, sync));
-    };
-  }, []);
   const read = () => {
     try {
       const parsed = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
@@ -32,7 +24,7 @@ function AllobotSearchSettings({
     }
   };
   const managed = typeof window !== 'undefined' ? window.ALLOFLOW_MANAGED_AI_POLICY : null;
-  const managedSearchOff = managed != null && (managed.version !== 1 || managed.allowExternalSearch !== true);
+  const managedSearchOff = managed != null && (managed.version !== 1 || !Array.isArray(managed.connections) || managed.allowExternalSearch !== true);
   const [key, setKey] = React.useState(() => isLocked() ? '' : String(read().serperApiKey || ''));
   const [hasSavedKey, setHasSavedKey] = React.useState(() => !isLocked() && Boolean(String(read().serperApiKey || '').trim()));
   const [enabled, setEnabled] = React.useState(() => {
@@ -43,9 +35,35 @@ function AllobotSearchSettings({
   const [saved, setSaved] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
   React.useEffect(() => {
+    const sync = () => {
+      const nextLocked = isLocked();
+      setLocked(nextLocked);
+      if (nextLocked) {
+        setKey('');
+        setHasSavedKey(false);
+        setEnabled(false);
+        setSaved(false);
+        setFailed(false);
+      } else {
+        const cfg = read();
+        const savedKey = String(cfg.serperApiKey || '');
+        setKey(savedKey);
+        setHasSavedKey(Boolean(savedKey.trim()));
+        setEnabled(cfg.allobotWebSearch === true || cfg.allobotWebSearch !== false && (!cfg.backend || cfg.backend === 'gemini'));
+      }
+    };
+    const events = ['alloflow:ai-key-lock-changed', 'alloflow:student-ai-config-changed', 'alloflow:ai-config-changed', 'storage'];
+    events.forEach(ev => window.addEventListener(ev, sync));
+    return () => {
+      events.forEach(ev => window.removeEventListener(ev, sync));
+    };
+  }, []);
+  React.useEffect(() => {
     if (locked) {
       setKey('');
       setHasSavedKey(false);
+      setSaved(false);
+      setFailed(false);
     }
   }, [locked]);
   if (locked) return null;
@@ -68,12 +86,14 @@ function AllobotSearchSettings({
       setSaved(false);
     }
   };
-  const focusBtn = 'min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-sm font-medium text-slate-800 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+  const helpId = React.useId();
+  const focusBtn = 'min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-sm font-medium text-slate-800 hover:bg-slate-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
   return /*#__PURE__*/React.createElement("section", {
     "aria-label": tx('chat_guide.search_settings', 'Allobot web sources'),
     className: "border-t border-slate-200 pt-4 space-y-2 text-slate-800"
   }, managed != null && /*#__PURE__*/React.createElement("p", {
     role: "status",
+    "aria-live": "polite",
     className: "text-xs"
   }, tx('chat_guide.managed_policy', 'Managed AI restrictions are active. Requests to unapproved endpoints or credentials are blocked. This policy currently permits approved text connections only; media generation is disabled. Your administrator controls external research access.')), /*#__PURE__*/React.createElement("h3", {
     className: "font-bold text-sm"
@@ -101,9 +121,19 @@ function AllobotSearchSettings({
     value: key,
     placeholder: "serper.dev",
     disabled: managedSearchOff,
+    "aria-describedby": helpId + '-key',
     onChange: event => {
       setKey(event.target.value);
       setSaved(false);
+    },
+    onKeyDown: event => {
+      if (event.nativeEvent && event.nativeEvent.isComposing || event.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Enter' && !managedSearchOff) {
+        event.preventDefault();
+        save({
+          serperApiKey: key.trim()
+        });
+      }
     },
     className: "min-h-11 w-full min-w-0 rounded-lg border border-slate-300 p-2 text-slate-900 bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50"
   })), /*#__PURE__*/React.createElement("div", {
@@ -126,9 +156,12 @@ function AllobotSearchSettings({
       });
     }
   }, tx('chat_guide.remove_search_key', 'Remove personal key'))), /*#__PURE__*/React.createElement("p", {
-    role: "status",
-    className: "text-xs"
+    role: failed ? 'alert' : 'status',
+    "aria-live": failed ? 'assertive' : 'polite',
+    "aria-atomic": "true",
+    className: 'text-xs ' + (failed ? 'font-semibold text-red-700' : 'text-slate-700')
   }, failed ? tx('chat_guide.search_save_failed', 'Could not save these settings in this browser.') : saved ? tx('chat_guide.search_saved', 'Search settings saved.') : ''), /*#__PURE__*/React.createElement("p", {
+    id: helpId + '-key',
     className: "text-xs leading-relaxed"
   }, tx('chat_guide.search_key_help', 'Leave blank to use the configured search service or Gemini Google grounding when available. A saved personal key takes priority for Allobot lookups and Serper searches. It is stored in this browser and can be read by code running in the app; use a personal key, not a shared district secret.')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs leading-relaxed"
@@ -368,7 +401,7 @@ function AiBackendSettingsView(props) {
         }));
       } catch (_) {}
     },
-    className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-1 text-sm font-medium text-slate-700"
+    className: "w-full min-h-11 p-2.5 border-2 border-slate-300 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-1 text-sm font-medium text-slate-800"
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-1"
   }, t('canvas_settings.wolfram_unused_note') || 'No tool uses this yet. It is kept on this device only; clear the box to remove it.')) : null, window.AlloModules && window.AlloModules.ModelDiagnosticsSection && React.createElement(window.AlloModules.ModelDiagnosticsSection, {
@@ -380,19 +413,21 @@ function AiBackendSettingsView(props) {
   }), /*#__PURE__*/React.createElement("div", {
     className: "border-t border-slate-100 pt-4"
   }, /*#__PURE__*/React.createElement("h3", {
-    className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5"
+    className: "block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5"
   }, t('canvas_settings.device_storage_label') || 'Device Storage'), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-600 mb-2"
+    className: "text-xs text-slate-700 mb-2"
   }, t('canvas_settings.device_storage_hint2') || 'Open your saved resource packs to restore, pin, export, or erase them. Everything is kept on this device only, nothing goes to a server.'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: openCanvasRecoveryManager,
     className: "min-h-11 bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors motion-reduce:transition-none motion-reduce:transform-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-1"
-  }, "\uD83D\uDDC2\uFE0F ", t('canvas_settings.device_storage_btn2') || 'Open saved work')), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "\uD83D\uDDC2\uFE0F "), t('canvas_settings.device_storage_btn2') || 'Open saved work')), /*#__PURE__*/React.createElement("div", {
     className: "border-t border-slate-100 pt-4"
   }, /*#__PURE__*/React.createElement("h3", {
-    className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5"
+    className: "block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5"
   }, t('canvas_settings.diagnostics_label') || 'Diagnostics & Logs'), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-600 mb-2"
+    className: "text-xs text-slate-700 mb-2"
   }, t('canvas_settings.diagnostics_hint') || 'View captured errors and the read-aloud (text-to-speech) activity trace — useful when audio stalls without a visible error.'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
@@ -404,7 +439,9 @@ function AiBackendSettingsView(props) {
       window.__alloOpenDiagnosticsLog(hasErrors ? 'errors' : 'tts');
     },
     className: "min-h-11 bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors motion-reduce:transition-none motion-reduce:transform-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-1"
-  }, "\uD83E\uDE7A ", t('canvas_settings.diagnostics_btn') || 'Open error & read-aloud log')), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "\uD83E\uDE7A "), t('canvas_settings.diagnostics_btn') || 'Open error & read-aloud log')), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-end pt-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -429,6 +466,7 @@ function LmsAuditBannerView(props) {
     startNewPdfAudit,
     t
   } = props;
+  const [fetchingUrl, setFetchingUrl] = React.useState('');
   React.useEffect(() => () => {
     try {
       lmsAuditFetchControllerRef?.current?.abort();
@@ -444,17 +482,22 @@ function LmsAuditBannerView(props) {
     try {
       if (typeof startNewPdfAudit === 'function') startNewPdfAudit();
     } catch (_) {}
+    setFetchingUrl('');
     if (typeof setIsExtracting === 'function') setIsExtracting(false);
     if (typeof setGenerationStep === 'function') setGenerationStep('');
     setLmsAuditUrls([]);
   };
   return /*#__PURE__*/React.createElement("div", {
+    role: "region",
+    "aria-label": t('lms.audit_banner_aria') || 'LMS document queue',
     className: "bg-gradient-to-r from-green-700 to-emerald-700 text-white px-4 py-3 z-[500]"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-sm"
-  }, "\u267F ", t(lmsAuditUrls.length === 1 ? 'lms.queued_one' : 'lms.queued_other', {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "\u267F "), t(lmsAuditUrls.length === 1 ? 'lms.queued_one' : 'lms.queued_other', {
     count: lmsAuditUrls.length
   }) || `${lmsAuditUrls.length} document${lmsAuditUrls.length !== 1 ? 's' : ''} queued from LMS`), /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -479,9 +522,12 @@ function LmsAuditBannerView(props) {
       const rawName = String(url || '').split('/').pop().split('?')[0];
       name = rawName || name;
     }
+    const isFetchingThis = fetchingUrl === url;
     return /*#__PURE__*/React.createElement("button", {
       type: "button",
       key: i,
+      disabled: Boolean(fetchingUrl),
+      "aria-busy": isFetchingThis ? 'true' : undefined,
       onClick: async () => {
         const check = _validateSafeLmsUrl(url);
         if (!check.ok) {
@@ -490,6 +536,7 @@ function LmsAuditBannerView(props) {
           }) || `Blocked unsafe LMS document link: ${check.reason}`, 'error');
           return;
         }
+        setFetchingUrl(url);
         const documentIntakeEpoch = startNewPdfAudit();
         const fetchController = typeof AbortController !== 'undefined' ? new AbortController() : null;
         lmsAuditFetchControllerRef.current = fetchController;
@@ -651,10 +698,11 @@ function LmsAuditBannerView(props) {
           }) || `Failed to fetch ${name}: ${reason}. The file may require LMS authentication.`, 'error');
         } finally {
           clearTimeout(fetchTimeout);
+          setFetchingUrl(prev => prev === url ? '' : prev);
           if (lmsAuditFetchControllerRef.current === fetchController) lmsAuditFetchControllerRef.current = null;
         }
       },
-      className: "min-h-11 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-emerald-800 flex items-center gap-1.5"
+      className: "min-h-11 bg-white/20 hover:bg-white/30 disabled:opacity-60 disabled:cursor-wait px-3 py-2 rounded-lg text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-emerald-800 flex items-center gap-1.5"
     }, /*#__PURE__*/React.createElement("span", {
       className: "bg-white/20 px-1 py-0.5 rounded text-xs font-bold"
     }, name.split('.').pop()?.toUpperCase() || 'FILE'), /*#__PURE__*/React.createElement("span", {
@@ -822,7 +870,9 @@ function ReadThisPagePanelView(props) {
       background: rtpPlaybackState === 'reading' ? '#15803d' : '#7c3aed'
     },
     "aria-pressed": rtpPlaybackState === 'reading'
-  }, '\u25B6', " ", t('read_this_page.read_all_button') || 'Read All'), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, '\u25B6', " "), t('read_this_page.read_all_button') || 'Read All'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     id: "rtp-read-selection-btn",
     "data-rtp-read-selection": "true",
@@ -833,19 +883,25 @@ function ReadThisPagePanelView(props) {
     },
     "aria-pressed": readingSelection,
     title: t('read_this_page.read_selection_title') || 'Read highlighted text aloud on any view (no AI needed)'
-  }, '\u{1F50A}', " ", t('read_this_page.read_selection_button') || 'Selection'), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, '\u{1F50A}', " "), t('read_this_page.read_selection_button') || 'Selection'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleStop,
     className: "min-h-11 px-2.5 py-2 rounded-lg text-white text-xs font-bold hover:bg-red-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900",
     style: {
       background: '#b91c1c'
     }
-  }, '\u23F9', " ", t('read_this_page.stop_button') || 'Stop'), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, '\u23F9', " "), t('read_this_page.stop_button') || 'Stop'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: closeReadThisPage,
     "aria-label": (t('common.close') || 'Close') + ': ' + (t('read_this_page.title') || 'Read This Page'),
     className: "min-w-11 min-h-11 inline-flex items-center justify-center ms-1 px-2 py-2 rounded-lg text-slate-200 hover:text-white hover:bg-slate-700 transition-colors motion-reduce:transition-none text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900"
-  }, '\u2715'))), selectionNote && /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, '\u2715')))), selectionNote && /*#__PURE__*/React.createElement("div", {
     role: "status",
     className: "px-3 py-1.5 text-xs border-b",
     style: {
@@ -853,7 +909,32 @@ function ReadThisPagePanelView(props) {
       color: theme === 'contrast' ? '#fbbf24' : '#38bdf8',
       background: theme === 'contrast' ? '#000' : 'rgba(14,165,233,0.12)'
     }
-  }, selectionNote), /*#__PURE__*/React.createElement("div", {
+  }, selectionNote), items.length > 0 && Number.isInteger(rtpCurrentIndex) && rtpCurrentIndex >= 0 && rtpCurrentIndex < items.length && (() => {
+    const pct = Math.round((rtpCurrentIndex + 1) / items.length * 100);
+    return /*#__PURE__*/React.createElement("div", {
+      className: "px-3 py-1.5 border-b",
+      style: {
+        borderColor: theme === 'contrast' ? '#fbbf24' : '#334155'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      role: "progressbar",
+      "aria-label": t('read_this_page.progress_aria') || 'Reading progress',
+      "aria-valuemin": 1,
+      "aria-valuemax": items.length,
+      "aria-valuenow": rtpCurrentIndex + 1,
+      "aria-valuetext": `Item ${rtpCurrentIndex + 1} of ${items.length} (${pct}%)`,
+      className: "w-full h-1.5 rounded-full overflow-hidden",
+      style: {
+        background: theme === 'contrast' ? '#333' : '#1e293b'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "h-full rounded-full",
+      style: {
+        width: `${pct}%`,
+        background: theme === 'contrast' ? '#fbbf24' : '#a855f7'
+      }
+    })));
+  })(), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3 px-3 py-2 border-b",
     style: {
       borderColor: theme === 'contrast' ? '#fbbf24' : '#334155'
@@ -864,7 +945,7 @@ function ReadThisPagePanelView(props) {
     type: "checkbox",
     checked: focusNarrationEnabled,
     onChange: e => setFocusNarrationEnabled(e.target.checked),
-    className: "w-4 h-4 rounded accent-purple-500",
+    className: "w-4 h-4 rounded accent-purple-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400",
     "aria-describedby": focusNarrationEnabled ? 'focus-narration-sr-warning' : undefined
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold"
@@ -889,18 +970,20 @@ function ReadThisPagePanelView(props) {
     }
   }, items.map((item, idx) => {
     const itemText = String(item?.text || '');
+    const isActive = rtpCurrentIndex === idx;
     return /*#__PURE__*/React.createElement("div", {
       key: idx,
       "data-rtp-idx": idx,
       onClick: () => handleItemClick(idx),
-      className: "px-3 py-2 rounded-lg cursor-pointer transition-colors motion-reduce:transition-none hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400",
+      className: "min-h-11 flex items-start justify-between gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors motion-reduce:transition-none hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400",
       style: {
         color: theme === 'contrast' ? '#fbbf24' : typeColors[item.type] || '#cbd5e1',
         lineHeight: 1.5,
-        background: rtpCurrentIndex === idx ? theme === 'contrast' ? '#333300' : '#7c3aed33' : 'none'
+        background: isActive ? theme === 'contrast' ? '#333300' : '#7c3aed33' : 'none'
       },
       role: "button",
       tabIndex: 0,
+      "aria-current": isActive ? 'step' : undefined,
       "aria-label": t('read_this_page.item_aria', {
         text: itemText
       }) || `Click to hear: ${itemText}`,
@@ -910,10 +993,17 @@ function ReadThisPagePanelView(props) {
           handleItemClick(idx);
         }
       }
-    }, /*#__PURE__*/React.createElement("span", {
+    }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("span", {
       className: "me-1",
       "aria-hidden": "true"
-    }, typeIcons[item.type] || '\u{1F50A}'), itemText);
+    }, typeIcons[item.type] || '\u{1F50A}'), itemText), isActive && /*#__PURE__*/React.createElement("span", {
+      "data-rtp-active-badge": "true",
+      className: "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider border",
+      style: {
+        borderColor: theme === 'contrast' ? '#fbbf24' : '#c084fc',
+        color: theme === 'contrast' ? '#fbbf24' : '#f3e8ff'
+      }
+    }, t('read_this_page.reading_now') || 'Reading'));
   })), /*#__PURE__*/React.createElement("div", {
     className: "px-3 py-2 text-xs border-t",
     style: {

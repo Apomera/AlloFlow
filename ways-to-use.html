@@ -37,6 +37,9 @@
     <link rel="stylesheet" href="promotion-wave2.css">
     <script src="site.js" defer></script>
     <script src="vendor/lucide-1.31.0.umd.min.js"></script>
+    <style>
+        .comparison-wrap:focus-visible { outline: 3px solid var(--indigo, #4f46e5); outline-offset: 2px; border-radius: 10px; }
+    </style>
 </head>
 
 <body class="promo-page">
@@ -44,7 +47,7 @@
 
     <nav class="navbar" aria-label="Primary">
         <div class="navbar-inner">
-            <a href="./" class="nav-logo"><i data-lucide="layers"
+            <a href="./" class="nav-logo"><i data-lucide="layers" aria-hidden="true"
                     style="width:28px;height:28px"></i>AlloFlow</a>
             <div class="nav-links" data-site-nav="primary">
                 <a href="tools.html">Find a Tool</a>
@@ -57,7 +60,7 @@
                 <a href="launch.html" class="cta-btn"><i data-lucide="rocket" aria-hidden="true" style="width:16px;height:16px"></i> Launch AlloFlow</a>
             </div>
             <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
-                aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
+                aria-label="Open menu"><i data-lucide="menu" aria-hidden="true" style="width:24px;height:24px"></i></button>
         </div>
     </nav>
 
@@ -241,7 +244,7 @@
                     <h3 id="ways-student-ai-heading">Student AI is off by default in teacher-prepared shared resources</h3>
                     <p>Optional student bring-your-own-key access must be explicitly authorized by the activity policy
                         and pass connection and capability checks. The default shared-resource experience does not ask a
-                        student for an AI key.</p>
+                        student for an AI key. <a href="tools.html#directory-heading">See all 152 shareable Cloudflare STEAM tool links &rarr;</a></p>
                 </aside>
             </div>
         </section>
@@ -310,7 +313,7 @@
 
     <footer class="footer">
         <div class="footer-inner">
-            <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
+            <div class="footer-logo"><i data-lucide="layers" aria-hidden="true" style="width:22px;height:22px;color:var(--indigo)"></i>
                 AlloFlow</div>
             <p>One open-source platform with access paths for different technical and institutional contexts.</p>
             <!-- shared footer links:start -->
@@ -326,13 +329,15 @@
     </footer>
 
     <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})"
-        aria-label="Back to top"><i data-lucide="chevron-up" style="width:20px;height:20px"></i></button>
+        aria-label="Back to top"><i data-lucide="chevron-up" aria-hidden="true" style="width:20px;height:20px"></i></button>
     <script>
         if (window.lucide) lucide.createIcons();
         const backBtn = document.querySelector('.back-to-top');
-        window.addEventListener('scroll', function () {
-            backBtn.classList.toggle('visible', window.scrollY > 500);
-        }, { passive: true });
+        if (backBtn) {
+            window.addEventListener('scroll', function () {
+                backBtn.classList.toggle('visible', window.scrollY > 500);
+            }, { passive: true });
+        }
     </script>
 </body>
 

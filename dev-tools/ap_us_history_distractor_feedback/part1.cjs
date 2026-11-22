@@ -61,9 +61,9 @@ module.exports = {
     'The colonial assemblies had ceased debating both taxation and representation altogether.': 'Assemblies became more vocal about taxation after 1763, not silent.',
   },
   'item-012': {
-    'Whether the colonies should eliminate all of their elected assemblies entirely.': 'Colonists defended their assemblies as the bodies entitled to consent to taxes; eliminating them was never the issue.',
+    'Whether the colonies should dissolve their own locally elected assemblies soon.': 'Colonists defended their assemblies as the bodies entitled to consent to taxes; eliminating them was never the issue.',
     'Whether Britain should expand its hereditary monarchy further into North America.': 'The dispute was about Parliament’s taxing power, not about extending monarchy.',
-    'Whether the taxation could be collected only during periods of open warfare.': 'The argument concerned who could consent to taxes, not when they could be collected.',
+    'Whether imperial taxes could be collected in wartime rather than during peace.': 'The argument concerned who could consent to taxes, not when they could be collected.',
   },
   'item-013': {
     'The pamphlet could not have been read by any colonist anywhere at the time when it was first written.': 'Pamphlets circulated widely in 1776; readership is not the limitation in question.',
@@ -82,8 +82,8 @@ module.exports = {
   },
   'item-016': {
     'The Constitution required all national leaders to join one permanent political party from the very beginning.': 'The Constitution does not mention parties; they arose outside it from policy disagreements.',
-    'Political parties in the United States formed only after the Civil War had finally come to an end in the 1860s.': 'Federalists and Democratic-Republicans organized in the 1790s, decades before the Civil War.',
-    'The early political parties all agreed that federal power should never expand in any direction at all in those years.': 'Federalists favored a stronger national government; disagreement over federal power was the parties’ dividing line.',
+    'Political parties in the United States first formed after the Civil War had finally come to an end in the 1860s.': 'Federalists and Democratic-Republicans organized in the 1790s, decades before the Civil War.',
+    'The early political parties shared consensus against expanding federal power in any direction at all in those years.': 'Federalists favored a stronger national government; disagreement over federal power was the parties’ dividing line.',
   },
   'item-017': {
     'The United States became economically identical across every one of its regions.': 'Lower transport costs encouraged regions to specialize in different products, increasing rather than erasing differences.',
@@ -92,8 +92,8 @@ module.exports = {
   },
   'item-018': {
     'Women and enslaved people gained fully equal voting rights during the same period.': 'Jacksonian suffrage expansion applied to white men; women and enslaved people remained excluded.',
-    'The president surrendered all of his policy authority to the Congress entirely here.': 'Jackson’s Bank veto and removal policy were assertions of executive power, not surrenders of it.',
-    'The expansion of voting ended political parties and popular campaigning entirely.': 'Mass suffrage fueled party organization and popular campaigns instead of ending them.',
+    'The president surrendered most of his executive policy authority directly to Congress.': 'Jackson’s Bank veto and removal policy were assertions of executive power, not surrenders of it.',
+    'The expansion of voting brought an end to political parties and popular campaigning.': 'Mass suffrage fueled party organization and popular campaigns instead of ending them.',
   },
   'item-019': {
     'The complete end of all religious disagreement across the United States during that whole period of time.': 'Revivals multiplied denominations and religious argument rather than ending it.',
@@ -121,13 +121,13 @@ module.exports = {
     'The war immediately granted citizenship to every person in North America.': 'The treaty addressed residents of the ceded land, and Indigenous and many Mexican residents did not receive equal citizenship.',
   },
   'item-024': {
-    'They abolished slavery in every one of the states immediately and permanently everywhere at once.': 'Compromises preserved slavery where it existed; abolition came only with the Thirteenth Amendment.',
-    'They removed the issue of slavery from all of the western territorial politics entirely and at once.': 'Each compromise addressed slavery in the territories and left the question to reopen with the next acquisition.',
+    'They abolished slavery across all states right away and settled the issue permanently everywhere.': 'Compromises preserved slavery where it existed; abolition came only with the Thirteenth Amendment.',
+    'They removed the issue of slavery from all western territorial politics across the nation right away.': 'Each compromise addressed slavery in the territories and left the question to reopen with the next acquisition.',
     'They ended the political importance of sectional identity across the whole of the country at once.': 'Sectional identity hardened with each compromise rather than fading.',
   },
   'item-025': {
-    'The amendment applied only to territories and the proclamation applied everywhere.': 'This reverses their scope: the proclamation covered areas in rebellion, and the amendment applied nationwide.',
-    'The proclamation created permanent citizenship while the amendment addressed military enlistment only.': 'Citizenship came with the Fourteenth Amendment; the Thirteenth abolished slavery, and neither concerned only enlistment.',
+    'The amendment applied to western territories while the proclamation applied nationwide.': 'This reverses their scope: the proclamation covered areas in rebellion, and the amendment applied nationwide.',
+    'The proclamation granted permanent citizenship while the amendment governed wartime military enlistment.': 'Citizenship came with the Fourteenth Amendment; the Thirteenth abolished slavery, and neither concerned only enlistment.',
     'The two measures had identical legal scope and purpose.': 'One was a wartime executive order limited to rebel territory; the other was a permanent constitutional ban.',
   },
   'item-026': {
@@ -141,9 +141,9 @@ module.exports = {
     'The new rights applied equally and securely to every resident of the whole state.': 'Suppression of Black voters shows the rights were neither secure nor equally enjoyed.',
   },
   'item-028': {
-    'Reconstruction changed nothing at all, because the Constitution was never amended at any single point during those postwar years.': 'Three amendments were ratified during Reconstruction, ending slavery and defining citizenship and voting rights.',
-    'Reconstruction completely eliminated racial inequality everywhere in the United States by the time that it finally ended in 1877.': 'By 1877 federal retreat and white supremacist violence had already limited Reconstruction’s reach.',
-    'Reconstruction was only an economic program that had no effect at all on the constitutional meaning of citizenship itself at all.': 'Birthright citizenship and equal protection were constitutional changes, not economic programs.',
+    'Reconstruction changed nothing at all, because the Constitution went unamended at every single point during those postwar years.': 'Three amendments were ratified during Reconstruction, ending slavery and defining citizenship and voting rights.',
+    'Reconstruction swept away racial inequality everywhere across the United States by the time that federal oversight ended in 1877.': 'By 1877 federal retreat and white supremacist violence had already limited Reconstruction’s reach.',
+    'Reconstruction was a narrow economic program that had no effect at all on the constitutional meaning of citizenship itself at all.': 'Birthright citizenship and equal protection were constitutional changes, not economic programs.',
   },
   'item-029': {
     'A policy that returned western lands to Indigenous nations without reservation boundaries.': 'Federal policy took Indigenous land for railroads and settlers; it did not return it.',
@@ -166,9 +166,9 @@ module.exports = {
     'The strike could not have affected production because newspapers were privately owned.': 'Newspaper ownership has nothing to do with whether a strike halted production.',
   },
   'item-033': {
-    'Both of the groups agreed that all immigration into the country should end immediately and entirely.': 'Employers wanted immigrant labor to continue; only nativists sought to restrict it.',
-    'Immigrants worked entirely outside of the industrial labor markets throughout that whole period.': 'Immigrants filled factory, mine, and railroad jobs, which is why employers recruited them.',
-    'Nativism was caused only by the absence of urban growth in the industrial cities of that era.': 'Nativism rose in fast-growing industrial cities, so urban growth accompanied it rather than being absent.',
+    'Both of the groups agreed that all immigration into the country should come to a halt across the nation.': 'Employers wanted immigrant labor to continue; only nativists sought to restrict it.',
+    'Immigrants worked outside of the industrial labor markets in every region throughout that whole period.': 'Immigrants filled factory, mine, and railroad jobs, which is why employers recruited them.',
+    'Nativism was driven by the absence of urban growth in the industrial cities of that late-century era.': 'Nativism rose in fast-growing industrial cities, so urban growth accompanied it rather than being absent.',
   },
   'item-034': {
     'Industrial disputes remained isolated because the firms had no national connections of any kind at all then.': 'Railroad and steel strikes spread across states precisely because firms and markets were national.',
@@ -191,8 +191,8 @@ module.exports = {
     'World War I prevented African Americans from entering any of the northern labor markets during all those war years.': 'Wartime labor shortages opened northern jobs to African Americans for the first time on a large scale.',
   },
   'item-038': {
-    'The 1920s eliminated racial inequality entirely across the whole United States during the decade.': 'The decade saw Klan revival and segregation; Harlem’s creativity flourished despite inequality, not in its absence.',
-    'The Harlem Renaissance occurred outside of the migration and urbanization patterns entirely.': 'Harlem’s cultural life grew directly out of the Great Migration into New York.',
+    'The 1920s eliminated racial inequality across every region of the United States during the decade.': 'The decade saw Klan revival and segregation; Harlem’s creativity flourished despite inequality, not in its absence.',
+    'The Harlem Renaissance occurred apart from Great Migration and urban demographic patterns.': 'Harlem’s cultural life grew directly out of the Great Migration into New York.',
     'Cultural production had no connection at all to any political or social identity at all.': 'Harlem writers and musicians used art to assert Black identity and challenge racial assumptions.',
   },
   'item-039': {
@@ -202,8 +202,8 @@ module.exports = {
   },
   'item-040': {
     'A poster encouraging the purchase of war bonds that makes no reference at all to the incarceration policy.': 'A bond poster says nothing about whether incarceration was a security necessity.',
-    'A factory report showing only that wartime industrial production increased sharply in the months that followed.': 'Production figures cannot evaluate a claim about disloyalty or military necessity.',
-    'A speech that discusses only European diplomacy and never once mentions the incarceration policy anywhere.': 'European diplomacy is unrelated to the treatment of Japanese Americans at home.',
+    'A factory report showing that wartime industrial production increased sharply during the months that followed.': 'Production figures cannot evaluate a claim about disloyalty or military necessity.',
+    'A speech focused on European diplomacy that omits any mention of the domestic wartime incarceration policy.': 'European diplomacy is unrelated to the treatment of Japanese Americans at home.',
   },
   'item-041': {
     'The United States and the Soviet Union had become one single shared political system after the war.': 'The two powers had opposing systems; their rivalry is what containment responded to.',
@@ -241,14 +241,14 @@ module.exports = {
     'Globalization ended the importance of both immigration and of internal migration within the whole country.': 'Labor migration increased as work shifted, so migration remained central.',
   },
   'item-048': {
-    'Oral histories make all quantitative data completely unnecessary for any historian studying migration.': 'Oral histories cannot show the scale of migration; census data supply the patterns.',
+    'Oral histories make quantitative data unnecessary for historians who study twentieth-century migration.': 'Oral histories cannot show the scale of migration; census data supply the patterns.',
     'Census data alone can explain every individual motivation without any other kind of evidence at all.': 'Census counts record movement, not the reasons people give for it.',
-    'The two kinds of source cannot be compared at all, because they rely on entirely different methods of study.': 'Different methods are the reason to combine them; each answers what the other cannot.',
+    'The two kinds of source cannot be compared at all, because they rely on incompatible methods of research.': 'Different methods are the reason to combine them; each answers what the other cannot.',
   },
   'item-049': {
     'Recent events simply cannot be studied historically in any way at all until several more decades have finally gone past us.': 'Recent events can be studied historically; they simply require care about what was known when.',
-    'Dates matter only for those events that took place before the federal Constitution was first written in the year 1787 itself here.': 'Dating evidence matters for every period, especially when knowledge changed quickly.',
-    'A single later interpretation automatically resolves all of the earlier uncertainty that surrounds any period of history.': 'Later views can reflect hindsight; they do not erase the uncertainty people faced at the time.',
+    'Dates matter primarily for events that took place before the federal Constitution was first written in the year 1787 itself here.': 'Dating evidence matters for every period, especially when knowledge changed quickly.',
+    'A single later interpretation directly resolves all of the earlier uncertainty that surrounds any period of modern history.': 'Later views can reflect hindsight; they do not erase the uncertainty people faced at the time.',
   },
   'item-050': {
     'The period after 1980 had one single uncontested political and economic direction that nearly everyone in the country accepted without any argument.': 'Debates over government, inequality, and identity persisted throughout the period.',
@@ -306,8 +306,8 @@ module.exports = {
     'Both of the regions developed identical settlement patterns because English law eliminated all environmental and demographic differences.': 'Dispersed plantations and clustered towns show settlement diverged despite shared English law.',
   },
   'item-061': {
-    'Indigenous nations served only as passive territories over which European empires competed with one another for control.': 'The Iroquois and others played empires against each other as active diplomats.',
-    'Diplomacy mattered only after Indigenous political authority in the region had already come to a complete end everywhere.': 'Indigenous authority persisted, and diplomacy mattered because nations still held power.',
+    'Indigenous nations served merely as passive territories over which European empires competed with one another for control.': 'The Iroquois and others played empires against each other as active diplomats.',
+    'Diplomacy began to matter after Indigenous political authority in the region had already come to a full end everywhere.': 'Indigenous authority persisted, and diplomacy mattered because nations still held power.',
     'European empires avoided all Indigenous alliances because all colonial trade occurred directly across the Atlantic Ocean.': 'The fur trade and frontier wars depended on Indigenous alliances.',
   },
   'item-062': {
@@ -332,8 +332,8 @@ module.exports = {
   },
   'item-066': {
     'Federalists opposed any national government at all, while Anti-Federalists demanded a hereditary monarchy for the whole of the new nation.': 'Federalists championed the national government, and no side wanted a monarchy.',
-    'Both of the groups agreed that all of the state governments should be abolished immediately after the ratification had been fully completed.': 'Both sides assumed the states would continue; Anti-Federalists defended them strongly.',
-    'Federalists and Anti-Federalists disagreed only about foreign trade and never about representation or about the extent of federal power at all.': 'Representation and the scope of federal power were the heart of the debate.',
+    'Both of the groups agreed that all of the state governments should be abolished right after the ratification process had been fully completed.': 'Both sides assumed the states would continue; Anti-Federalists defended them strongly.',
+    'Federalists and Anti-Federalists disagreed mainly about foreign trade rather than about representation or the extent of federal power at all.': 'Representation and the scope of federal power were the heart of the debate.',
   },
   'item-067': {
     'Political identity changed because the new republic immediately granted full equal citizenship to every single resident.': 'Enslaved people, women, and Indigenous peoples were excluded from citizenship.',
@@ -362,8 +362,8 @@ module.exports = {
   },
   'item-072': {
     'Both of them eliminated the importance of rivers and ports by making geography irrelevant to commerce of every possible kind.': 'Canals and steamboats made rivers and ports more valuable, not irrelevant.',
-    'Canals affected only military affairs, while steamboats had no influence at all on agriculture or on any of the urban growth.': 'Both carried farm goods to market and spurred towns along their routes.',
-    'Neither of the technologies changed travel or trade at all, because nearly all production remained entirely local in character.': 'Falling freight costs drew local producers into regional and national markets.',
+    'Canals served military operations, while steamboats had no measurable influence on agriculture or on regional urban growth.': 'Both carried farm goods to market and spurred towns along their routes.',
+    'Neither of the technologies changed travel or trade at all, because nearly all production remained strictly local in character.': 'Falling freight costs drew local producers into regional and national markets.',
   },
   'item-073': {
     'African Americans accepted that republican rights applied only to white men and made no political claims.': 'The petition is a political claim that rejects such limits.',
@@ -381,9 +381,9 @@ module.exports = {
     'Expansion created agreement because northern and southern leaders supported the same policy for every territory.': 'The Wilmot Proviso and popular sovereignty show leaders deeply divided.',
   },
   'item-076': {
-    'It immediately abolished slavery in every one of the existing states and in all of the federal territories.': 'The proviso only proposed banning slavery in land taken from Mexico and never passed.',
+    'It swiftly abolished slavery across every one of the existing states and throughout all federal territories.': 'The proviso only proposed banning slavery in land taken from Mexico and never passed.',
     'It settled the question of popular sovereignty by receiving unanimous support from both sections of the country.': 'Votes split along sectional lines, which is why it inflamed tensions.',
-    'It addressed only foreign trade and had no relationship at all to territorial expansion or to slavery at all.': 'The proviso was explicitly about slavery in newly acquired territory.',
+    'It focused on foreign trade policy and had no relationship at all to territorial expansion or to slavery.': 'The proviso was explicitly about slavery in newly acquired territory.',
   },
   'item-077': {
     'To present a private diary with no intention at all of influencing public opinion or any political action.': 'An ordinance is a public legal act meant to justify and authorize secession.',
@@ -392,8 +392,8 @@ module.exports = {
   },
   'item-078': {
     'Both sides had identical industrial resources and used exactly the same strategy to finance their entire war effort right through it.': 'The Union had far more factories and financed the war with bonds and greenbacks; the Confederacy leaned on inflationary currency.',
-    'The Confederacy possessed the larger population and manufacturing base, while the Union depended entirely on foreign armies instead.': 'The Union had the larger population and industry, and no foreign armies fought for it.',
-    'Neither government expanded its authority at all, because the war left taxation, conscription, and wartime production entirely unchanged.': 'Both governments adopted conscription, new taxes, and wartime economic controls.',
+    'The Confederacy possessed the larger population and manufacturing base, while the Union relied primarily on foreign armies instead.': 'The Union had the larger population and industry, and no foreign armies fought for it.',
+    'Neither government expanded its authority at all, because the war left taxation, conscription, and wartime production mostly unchanged.': 'Both governments adopted conscription, new taxes, and wartime economic controls.',
   },
   'item-079': {
     'They produced immediate and permanent equality because constitutional amendments automatically changed local practices.': 'Local practice resisted the amendments; enforcement remained contested for a century.',
@@ -427,8 +427,8 @@ module.exports = {
   },
   'item-085': {
     'The United States had no industrial cities at all and therefore faced no domestic reform pressures of any kind whatsoever then.': 'Industrial cities were the setting for Progressive reform.',
-    'Overseas expansion ended entirely because business leaders rejected all foreign markets and every form of strategic influence.': 'Business and naval interests pushed expansion in the 1890s.',
-    'Progressive reformers all agreed that federal power should be reduced and that public regulation should be abandoned entirely.': 'Progressives generally sought more regulation, not less.',
+    'Overseas expansion halted altogether because business leaders rejected all foreign markets and every form of strategic influence.': 'Business and naval interests pushed expansion in the 1890s.',
+    'Progressive reformers all agreed that federal power should be reduced and that public regulation should be abandoned in full.': 'Progressives generally sought more regulation, not less.',
   },
   'item-086': {
     'The war ended all American involvement outside the continent and removed debates about national power.': 'The war brought new overseas territories and intense debate over empire.',
@@ -447,8 +447,8 @@ module.exports = {
   },
   'item-089': {
     'It eliminated both poverty and discrimination, because the federal programs reached every single group in the country equally.': 'Agricultural and domestic workers, many of them Black, were excluded from key programs.',
-    'It reduced the responsibilities of the federal government by transferring all relief entirely to the local charities of the time.': 'Federal agencies took over relief on an unprecedented scale.',
-    'It had no lasting political effect at all, because voters immediately rejected every kind of federal economic action outright.': 'Roosevelt won reelection three times, and the coalition endured for decades.',
+    'It reduced the responsibilities of the federal government by transferring all public relief directly to local charities of the time.': 'Federal agencies took over relief on an unprecedented scale.',
+    'It had no lasting political effect at all, because voters swiftly rejected every kind of federal economic intervention outright.': 'Roosevelt won reelection three times, and the coalition endured for decades.',
   },
   'item-090': {
     'The United States withdrew entirely from global affairs and experienced no postwar economic or demographic change of any kind at all.': 'The Cold War, the baby boom, and suburbanization all reshaped postwar life.',
@@ -457,8 +457,8 @@ module.exports = {
   },
   'item-091': {
     'They prohibited home ownership and higher education for all of the returning veterans regardless of their race or of their income.': 'The programs expanded ownership and education for millions of veterans.',
-    'They ended all residential segregation, because the federal programs required every single suburb to integrate itself immediately.': 'Federal lending rules often reinforced segregation rather than ending it.',
-    'They affected only rural agriculture and had no relationship at all to metropolitan growth or to any kind of household wealth here.': 'Mortgages and college benefits built suburbs and middle-class wealth.',
+    'They ended all residential segregation, because federal housing programs required every single suburb to integrate without delay.': 'Federal lending rules often reinforced segregation rather than ending it.',
+    'They focused on rural agriculture and had no relationship at all to metropolitan growth or to any kind of household wealth here.': 'Mortgages and college benefits built suburbs and middle-class wealth.',
   },
   'item-092': {
     'To argue that all public schools should be abolished because education had no connection at all to citizenship.': 'The brief treats education as central to citizenship and seeks integration, not abolition.',
@@ -472,8 +472,8 @@ module.exports = {
   },
   'item-094': {
     'The United States used exactly the same institutions and the same goals everywhere, because local political conditions did not matter at all.': 'NATO in Europe differed from interventions in Asia and Latin America because local conditions differed.',
-    'Cold War policy ignored Europe altogether and focused only on domestic economic reform inside each one of the newly independent nations here.': 'Europe was the first priority, through the Marshall Plan and NATO.',
-    'The newly independent nations had no influence on American policy at all, because they were treated only as former European colonies back then.': 'Nationalist movements shaped and often frustrated American strategy.',
+    'Cold War policy ignored Europe altogether and focused narrowly on domestic economic reform inside each one of the newly independent nations.': 'Europe was the first priority, through the Marshall Plan and NATO.',
+    'The newly independent nations had no influence on American policy at all, because Washington treated them as mere former European colonies.': 'Nationalist movements shaped and often frustrated American strategy.',
   },
   'item-095': {
     'Environmental politics grew because industrial production and suburban expansion had both ended across the whole nation.': 'Both continued and generated the pollution that prompted regulation.',

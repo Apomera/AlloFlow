@@ -1,6 +1,6 @@
 (function() {
 'use strict';
-if (window.AlloModules && window.AlloModules.PyodideRuntime) {
+if (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PyodideRuntime) {
   console.log('[CDN] PyodideRuntime already loaded, skipping');
   return;
 }
@@ -1550,9 +1550,15 @@ function verifyFormJs(form, poemText, targetWord = null) {
     else if (Number.isFinite(expectedSyl) && expectedSyl > 0) exp = expectedSyl;
     // PoetTree's counter reads the CMU-based word table; the rule below is
     // only what is left when PoetTree is not on the page.
-    const info = shared ? shared.line(text, exp) : null;
+    let info = null;
+    if (shared) {
+      try {
+        const res = shared.line(text, exp);
+        if (res && typeof res === 'object' && Number.isFinite(res.count)) info = res;
+      } catch (_) { info = null; }
+    }
     const syl = info ? info.count : words.reduce((acc, w) => acc + _heuristicSyllablesJs(w), 0);
-    const match = info ? info.match : (exp == null ? true : syl === exp);
+    const match = info ? !!info.match : (exp == null ? true : syl === exp);
     if (!match) {
       findings.push({
         severity: 'medium',
@@ -1565,13 +1571,19 @@ function verifyFormJs(form, poemText, targetWord = null) {
       syllables_actual: syl,
       syllables_expected: exp,
       syllables_match: match,
-      unknown_words: info ? info.unknown : words,
+      unknown_words: (info && Array.isArray(info.unknown)) ? info.unknown : words,
       stress_pattern: null,
       rhyme_class: _rhymeClassJs(lastWord),
     };
   });
   if (spec.id === 'acrostic' && targetWord) {
     const target = String(targetWord).replace(/[^a-zA-Z]/g, '').toUpperCase();
+    if (target.length > 0 && rawLines.length !== target.length) {
+      findings.push({
+        severity: 'high',
+        message: `Acrostic: expected ${target.length} lines for "${target}", found ${rawLines.length}.`,
+      });
+    }
     for (let i = 0; i < Math.min(rawLines.length, target.length); i++) {
       const m = rawLines[i].match(/[a-zA-Z]/);
       const got = m ? m[0].toUpperCase() : '';
@@ -1629,12 +1641,15 @@ function _applySharedSyllables(result) {
   const shared = _sharedSyllables();
   if (!shared || !result || result.error || !Array.isArray(result.lines)) return result;
   result.lines.forEach((ln, idx) => {
+    if (!ln || typeof ln !== 'object') return;
     const exp = Number.isFinite(ln.syllables_expected) && ln.syllables_expected > 0 ? ln.syllables_expected : null;
-    const info = shared.line(ln.text, exp);
+    let info = null;
+    try { info = shared.line(String(ln.text || ''), exp); } catch (_) { info = null; }
+    if (!info || typeof info !== 'object') return;
     if (ln.line_num == null) ln.line_num = idx + 1;
     ln.syllables_actual = info.count;
-    ln.syllables_match = info.match;
-    ln.unknown_words = info.unknown;
+    ln.syllables_match = !!info.match;
+    ln.unknown_words = Array.isArray(info.unknown) ? info.unknown : [];
     ln.method = info.estimated ? 'word-table+estimate' : 'word-table';
   });
   const kept = (Array.isArray(result.findings) ? result.findings : []).filter(f => f && f.kind !== 'syllables');
@@ -1654,6 +1669,9 @@ function _loadPyodideScript() {
     return Promise.reject(new Error('External Pyodide runtime is disabled in offline or desktop mode.'));
   }
   if (typeof window.loadPyodide === 'function') return Promise.resolve();
+  if (typeof document === 'undefined' || !document.head) {
+    return Promise.reject(new Error('DOM unavailable for loading pyodide.js.'));
+  }
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.integrity = PYODIDE_JS_SRI;
@@ -1677,6 +1695,10 @@ function _loadPyodideScript() {
     const timer = setTimeout(() => fail(new Error('Timed out loading pyodide.js from ' + script.src)), 30000);
     script.onload = () => {
       if (settled) return;
+      if (typeof window.loadPyodide !== 'function') {
+        fail(new Error('pyodide.js loaded without window.loadPyodide from ' + script.src));
+        return;
+      }
       settled = true;
       cleanup();
       resolve();
@@ -1691,7 +1713,15 @@ async function _init() {
   _loadStartedAt = Date.now();
   console.log('[PyodideRuntime] Initializing… (~10MB download on first load)');
   await _loadPyodideScript();
-  const py = await window.loadPyodide({ indexURL: PYODIDE_CDN });
+  let initTimer = null;
+  const py = await Promise.race([
+    window.loadPyodide({ indexURL: PYODIDE_CDN }),
+    new Promise((_, reject) => {
+      initTimer = setTimeout(() => reject(new Error('Timed out initializing Pyodide WASM runtime.')), 60000);
+    }),
+  ]).finally(() => {
+    if (initTimer) clearTimeout(initTimer);
+  });
   // Inject both Python modules into the Pyodide filesystem so we can
   // `import report_checks` / `import poetry_checks` cleanly from any caller.
   py.runPython('import sys; sys.path.insert(0, "/")');
@@ -1733,7 +1763,7 @@ const PyodideRuntime = {
 
   /** Phase 2 smoke test — confirms Pyodide is alive end-to-end. */
   async smokeTest() {
-    const py = await this.warmup();
+    const py = await PyodideRuntime.warmup();
     const result = py.runPython('import report_checks, json; json.dumps(report_checks.smoke_test())');
     return JSON.parse(result);
   },
@@ -1750,20 +1780,34 @@ const PyodideRuntime = {
    * @param {array}  opts.factChunks       [{ id, type, text, verified, ... }]
    * @param {array}  opts.scoreEntries     [{ assessment, subtest, score, scoreType, classification, ... }]
    */
-  async runAudit({ reportSections = {}, factChunks = [], scoreEntries = [] } = {}) {
-    const py = await this.warmup();
+  async runAudit(opts) {
+    const safeOpts = (opts && typeof opts === 'object' && !Array.isArray(opts)) ? opts : {};
+    const reportSections = (safeOpts.reportSections && typeof safeOpts.reportSections === 'object' && !Array.isArray(safeOpts.reportSections))
+      ? safeOpts.reportSections : {};
+    const factChunks = Array.isArray(safeOpts.factChunks) ? safeOpts.factChunks : [];
+    const scoreEntries = Array.isArray(safeOpts.scoreEntries) ? safeOpts.scoreEntries : [];
+    const py = await PyodideRuntime.warmup();
     // Pass everything through JSON to avoid Pyodide proxy lifetime headaches.
     const sectionsJson = JSON.stringify(reportSections);
     const chunksJson = JSON.stringify(factChunks);
     const scoresJson = JSON.stringify(scoreEntries);
     // Bind into the Python globals so we don't have to escape them into a code string.
-    py.globals.set('_rw_sections_json', sectionsJson);
-    py.globals.set('_rw_chunks_json', chunksJson);
-    py.globals.set('_rw_scores_json', scoresJson);
-    const result = py.runPython(
-      'import report_checks; ' +
-      'report_checks.audit(_rw_sections_json, _rw_chunks_json, _rw_scores_json)'
-    );
+    let result;
+    try {
+      py.globals.set('_rw_sections_json', sectionsJson);
+      py.globals.set('_rw_chunks_json', chunksJson);
+      py.globals.set('_rw_scores_json', scoresJson);
+      result = py.runPython(
+        'import report_checks; ' +
+        'report_checks.audit(_rw_sections_json, _rw_chunks_json, _rw_scores_json)'
+      );
+    } finally {
+      if (py && py.globals && typeof py.globals.delete === 'function') {
+        try { py.globals.delete('_rw_sections_json'); } catch (_) {}
+        try { py.globals.delete('_rw_chunks_json'); } catch (_) {}
+        try { py.globals.delete('_rw_scores_json'); } catch (_) {}
+      }
+    }
     // An unreadable answer is a check that did not happen, not a clean pass:
     // the caller reports "did not run" on a throw.
     let findings;
@@ -1798,7 +1842,7 @@ const PyodideRuntime = {
 
   /** Smoke test for poetry_checks — confirms CMU dict is alive. */
   async poetrySmokeTest() {
-    const py = await this.warmupPoetry();
+    const py = await PyodideRuntime.warmupPoetry();
     const result = py.runPython('import poetry_checks, json; json.dumps(poetry_checks.smoke_test())');
     return JSON.parse(result);
   },
@@ -1815,21 +1859,26 @@ const PyodideRuntime = {
    * @returns {Promise<object>}        Structured verification result; see
    *                                   poetry_checks.verify_form for shape.
    */
-  async runPoetryCheck({ form, poemText, targetWord = null, offlineOnly = false } = {}) {
+  async runPoetryCheck(opts) {
+    const safeOpts = (opts && typeof opts === 'object' && !Array.isArray(opts)) ? opts : {};
+    const form = (safeOpts.form && typeof safeOpts.form === 'object' && !Array.isArray(safeOpts.form)) ? safeOpts.form : {};
+    const poemText = typeof safeOpts.poemText === 'string' ? safeOpts.poemText : '';
+    const targetWord = typeof safeOpts.targetWord === 'string' ? safeOpts.targetWord : null;
+    const offlineOnly = !!safeOpts.offlineOnly;
     await _loadSyllableTable();
     if (offlineOnly || !_canLoadExternalPyodide()) {
       return verifyFormJs(form, poemText, targetWord);
     }
     let py;
     try {
-      py = await this.warmupPoetry();
+      py = await PyodideRuntime.warmupPoetry();
     } catch (_) {
       return verifyFormJs(form, poemText, targetWord);
     }
     let result;
     try {
-      py.globals.set('_pc_form_json', JSON.stringify(form || {}));
-      py.globals.set('_pc_poem_text', poemText || '');
+      py.globals.set('_pc_form_json', JSON.stringify(form));
+      py.globals.set('_pc_poem_text', poemText);
       py.globals.set('_pc_target_word', targetWord);
       result = py.runPython(
         'import poetry_checks; ' +
@@ -1838,6 +1887,12 @@ const PyodideRuntime = {
     } catch (e) {
       console.error('[PyodideRuntime] runPoetryCheck failed; falling back to JS:', e);
       return verifyFormJs(form, poemText, targetWord);
+    } finally {
+      if (py && py.globals && typeof py.globals.delete === 'function') {
+        try { py.globals.delete('_pc_form_json'); } catch (_) {}
+        try { py.globals.delete('_pc_poem_text'); } catch (_) {}
+        try { py.globals.delete('_pc_target_word'); } catch (_) {}
+      }
     }
     try { return _applySharedSyllables(JSON.parse(result)); }
     catch (e) {

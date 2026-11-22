@@ -2285,21 +2285,41 @@
           if (announceToSR) announceToSR(msg);
         }
 
-        /* ── Canvas (callback ref, no useEffect) ── */
+        /* ── Canvas (callback ref, zero-GC live-motion engine, no useEffect) ── */
         var canvasRef = function(canvas) {
-          if (!canvas || !window.math) return;
-          var c = canvas.getContext('2d');
+          if (!canvas) return;
+          if (!window.math) return;
+          var c = canvas._gcCtx || (canvas._gcCtx = canvas.getContext('2d'));
           if (!c) return;
           var dpr = window.devicePixelRatio || 1;
           var W = canvas.offsetWidth || 600;
           var H = canvas.offsetHeight || 420;
-          canvas.width = W * dpr; canvas.height = H * dpr; c.scale(dpr, dpr);
+          if (canvas._gcW !== W || canvas._gcH !== H || canvas._gcDpr !== dpr) {
+            canvas.width = W * dpr; canvas.height = H * dpr;
+            canvas._gcW = W; canvas._gcH = H; canvas._gcDpr = dpr;
+            c.scale(dpr, dpr);
+          } else if (typeof c.setTransform === 'function') {
+            c.setTransform(dpr, 0, 0, dpr, 0, 0);
+          }
 
           function toPixelX(mx) { return (mx - win.xmin) / ((win.xmax - win.xmin) || 1) * W; }
           function toPixelY(my) { return H - (my - win.ymin) / ((win.ymax - win.ymin) || 1) * H; }
           function toMathX(px) { return win.xmin + px / W * (win.xmax - win.xmin); }
           canvas._toMathX = toMathX;
 
+          function gcParseRgb(hex, outArr, offset) {
+            var r = 129, g = 140, b = 248;
+            if (typeof hex === 'string' && hex.charAt(0) === '#') {
+              var h2 = hex.slice(1);
+              if (h2.length === 3) h2 = h2[0] + h2[0] + h2[1] + h2[1] + h2[2] + h2[2];
+              var n = parseInt(h2, 16);
+              if (isFinite(n)) { r = (n >> 16) & 255; g = (n >> 8) & 255; b = n & 255; }
+            }
+            outArr[offset] = r; outArr[offset + 1] = g; outArr[offset + 2] = b;
+          }
+          function gcRgbStr(r, g, b, alpha) {
+            return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+          }
           function gcHexToRgba(hex, alpha) {
             if (typeof hex !== 'string' || hex.charAt(0) !== '#') return 'rgba(129,140,248,' + alpha + ')';
             var h2 = hex.slice(1);
@@ -2323,391 +2343,709 @@
             c.closePath();
           }
 
-          // Literal theme colours (canvas cannot resolve CSS var()): light canvas in the light app theme.
-          var P = gcPal || { theme: 'dark', bg: '#0f172a', grid: '#3a4a61', axis: '#94a3b8', label: '#e2e8f0', muted: '#cbd5e1' };
-          var isHC = P.theme === 'contrast', isDarkTheme = P.theme === 'dark';
-          c.fillStyle = P.bg; c.fillRect(0, 0, W, H);
-
-          // Subtle oscilloscope / studio screen ambient depth (uses path+fill, never extra fillRect)
-          if (!isHC && typeof c.createRadialGradient === 'function') {
-            var scrGrad = c.createRadialGradient(W * 0.5, H * 0.45, Math.min(W, H) * 0.08, W * 0.5, H * 0.5, Math.max(W, H) * 0.72);
-            if (scrGrad && typeof scrGrad.addColorStop === 'function') {
-              if (isDarkTheme) {
-                scrGrad.addColorStop(0, 'rgba(30,58,138,0.16)');
-                scrGrad.addColorStop(0.65, 'rgba(15,23,42,0.02)');
-                scrGrad.addColorStop(1, 'rgba(2,6,23,0.42)');
-              } else {
-                scrGrad.addColorStop(0, 'rgba(255,255,255,0)');
-                scrGrad.addColorStop(0.75, 'rgba(241,245,249,0.22)');
-                scrGrad.addColorStop(1, 'rgba(226,232,240,0.48)');
-              }
-              c.beginPath(); c.rect(0, 0, W, H); c.fillStyle = scrGrad; c.fill();
-            }
+          // Pre-allocated zero-GC motion pool attached once per canvas element
+          var GC_MAX_CURVES = 6, GC_MAX_PTS = 860, GC_MAX_ASYM = 16, GC_RIPPLES = 8, GC_MAX_EXT = 12;
+          var M = canvas._gcMotion;
+          if (!M) {
+            var rm = false;
+            try { rm = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (_) {}
+            M = canvas._gcMotion = {
+              start: (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now(),
+              reduceMotion: rm,
+              rafId: 0,
+              visHandler: null,
+              prevParamSig: '',
+              ptX: new Float32Array(GC_MAX_CURVES * GC_MAX_PTS),
+              ptY: new Float32Array(GC_MAX_CURVES * GC_MAX_PTS),
+              ptBreak: new Uint8Array(GC_MAX_CURVES * GC_MAX_PTS),
+              ptLen: new Int32Array(GC_MAX_CURVES),
+              asymX: new Float32Array(GC_MAX_CURVES * GC_MAX_ASYM),
+              asymLen: new Int32Array(GC_MAX_CURVES),
+              curveActive: new Uint8Array(GC_MAX_CURVES),
+              curveRgb: new Uint8Array(GC_MAX_CURVES * 3),
+              curveHex: new Array(GC_MAX_CURVES),
+              curveDash: new Array(GC_MAX_CURVES),
+              traceActive: new Uint8Array(GC_MAX_CURVES),
+              tracePy: new Float32Array(GC_MAX_CURVES),
+              traceTxt: new Array(GC_MAX_CURVES),
+              extX: new Float32Array(GC_MAX_EXT),
+              extY: new Float32Array(GC_MAX_EXT),
+              extMax: new Uint8Array(GC_MAX_EXT),
+              extLen: 0,
+              ripStart: new Float64Array(GC_RIPPLES),
+              ripX: new Float32Array(GC_RIPPLES),
+              ripY: new Float32Array(GC_RIPPLES),
+              ripRgb: new Uint8Array(GC_RIPPLES * 3),
+              ripWrite: 0,
+              snap: null
+            };
           }
 
-          // Grid: minor subdivision mesh + major grid hierarchy + 12 px labels spaced so they never collide.
+          var nowMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+          var P = gcPal || { theme: 'dark', bg: '#0f172a', grid: '#3a4a61', axis: '#94a3b8', label: '#e2e8f0', muted: '#cbd5e1' };
+          var isHC = P.theme === 'contrast', isDarkTheme = P.theme === 'dark';
           var xRange = win.xmax - win.xmin; var yRange = win.ymax - win.ymin;
           function gcStep(range, px, minPx) { return GA ? GA.niceStep(range, px, minPx) : Math.pow(10, Math.floor(Math.log10(range / 5))); }
           var xStep = gcStep(xRange, W, 24), yStep = gcStep(yRange, H, 24);
           var xLabelStep = gcStep(xRange, W, 56), yLabelStep = gcStep(yRange, H, 30);
-          function onStep(v, s) { var q = v / s; return Math.abs(q - Math.round(q)) < 1e-6; }
-          if (!isHC) {
-            var xMinor = xStep / 2, yMinor = yStep / 2;
-            c.strokeStyle = isDarkTheme ? 'rgba(148,163,184,0.09)' : 'rgba(148,163,184,0.24)';
-            c.lineWidth = 0.7;
-            c.beginPath();
-            for (var mgx = Math.ceil(win.xmin / xMinor) * xMinor; mgx <= win.xmax; mgx += xMinor) {
-              if (onStep(mgx, xStep)) continue;
-              var mgpx = toPixelX(mgx); c.moveTo(mgpx, 0); c.lineTo(mgpx, H);
-            }
-            for (var mgy = Math.ceil(win.ymin / yMinor) * yMinor; mgy <= win.ymax; mgy += yMinor) {
-              if (onStep(mgy, yStep)) continue;
-              var mgpy = toPixelY(mgy); c.moveTo(0, mgpy); c.lineTo(W, mgpy);
-            }
-            c.stroke();
-          }
-          c.strokeStyle = P.grid; c.lineWidth = 1;
-          for (var gx = Math.ceil(win.xmin / xStep) * xStep; gx <= win.xmax; gx += xStep) {
-            var gpx = toPixelX(gx); c.beginPath(); c.moveTo(gpx, 0); c.lineTo(gpx, H); c.stroke();
-            if (Math.abs(gx) > xStep * 0.01 && onStep(gx, xLabelStep)) { c.fillStyle = P.label; c.font = '12px system-ui'; c.textAlign = 'center'; c.fillText(Number(gx.toPrecision(6)), gpx, Math.min(Math.max(toPixelY(0) + 16, 14), H - 6)); }
-          }
-          for (var gy = Math.ceil(win.ymin / yStep) * yStep; gy <= win.ymax; gy += yStep) {
-            var gpy = toPixelY(gy); c.beginPath(); c.moveTo(0, gpy); c.lineTo(W, gpy); c.stroke();
-            if (Math.abs(gy) > yStep * 0.01 && onStep(gy, yLabelStep)) { c.fillStyle = P.label; c.font = '12px system-ui'; c.textAlign = 'right'; c.fillText(Number(gy.toPrecision(6)), Math.min(Math.max(toPixelX(0) - 5, 36), W - 4), gpy + 4); }
-          }
-
-          // Principal axes with subtle luminous under-glow + precision ticks + origin reticle
           var ax = toPixelY(0), ay = toPixelX(0);
-          if (!isHC) {
-            c.strokeStyle = isDarkTheme ? 'rgba(129,140,248,0.22)' : 'rgba(99,102,241,0.12)';
-            c.lineWidth = 5;
-            if (ax >= 0 && ax <= H) { c.beginPath(); c.moveTo(0, ax); c.lineTo(W, ax); c.stroke(); }
-            if (ay >= 0 && ay <= W) { c.beginPath(); c.moveTo(ay, 0); c.lineTo(ay, H); c.stroke(); }
-          }
-          c.strokeStyle = P.axis; c.lineWidth = 2;
-          if (ax >= 0 && ax <= H) { c.beginPath(); c.moveTo(0, ax); c.lineTo(W, ax); c.stroke(); }
-          if (ay >= 0 && ay <= W) { c.beginPath(); c.moveTo(ay, 0); c.lineTo(ay, H); c.stroke(); }
-          if (!isHC && ax >= 0 && ax <= H && ay >= 0 && ay <= W) {
-            c.strokeStyle = isDarkTheme ? 'rgba(165,180,252,0.5)' : 'rgba(79,70,229,0.38)';
-            c.lineWidth = 1.25;
-            c.beginPath(); c.arc(ay, ax, 4.5, 0, Math.PI * 2); c.stroke();
-          }
 
-          // Graph functions: dual-pass luminous traces + specular core + subtle gradient under-wash + asymptote hairlines
+          // Sample active curves once per commit into pre-allocated typed arrays (zero per-frame math evaluation)
           var graphCount = 0; var usedTrig = false;
           var sA = {};
           if (d.sliderA != null) sA.a = d.sliderA; if (d.sliderB != null) sA.b = d.sliderB; if (d.sliderC != null) sA.c = d.sliderC;
           var legendEntries = [];
-          funcs.forEach(function(fn, fi) {
-            if (!fn.expr || !fn.expr.trim()) return;
+          var sampleCols = Math.min(GC_MAX_PTS - 2, Math.max(240, Math.floor(W)));
+          var plotStep = xRange / sampleCols;
+
+          for (var ci = 0; ci < GC_MAX_CURVES; ci++) {
+            M.curveActive[ci] = 0; M.ptLen[ci] = 0; M.asymLen[ci] = 0; M.traceActive[ci] = 0;
+            var fn = funcs[ci];
+            if (!fn || !fn.expr || !fn.expr.trim()) continue;
             try {
               var expr = gcCleanExpr(fn.expr);
               if (/sin|cos|tan/.test(expr)) usedTrig = true;
               var compiled = math.compile(expr);
-              var cs = gcCurveStyle(fi);
-              var plotStep = xRange / Math.max(W, 240);
-              var runs = [], curRun = null, prevPpy = null, asymptoteXs = [];
-              for (var mx = win.xmin; mx <= win.xmax; mx += plotStep) {
+              var cs = gcCurveStyle(ci);
+              M.curveHex[ci] = cs.color;
+              M.curveDash[ci] = cs.dash || [];
+              gcParseRgb(cs.color, M.curveRgb, ci * 3);
+              var basePt = ci * GC_MAX_PTS, count = 0, aBase = ci * GC_MAX_ASYM, aCount = 0;
+              var prevPpy = null, needBreak = 1;
+              for (var si = 0; si <= sampleCols && count < GC_MAX_PTS; si++) {
+                var mx = win.xmin + si * plotStep;
                 try {
                   var my = compiled.evaluate(Object.assign({ x: mx }, sA));
                   if (typeof my === 'number' && isFinite(my) && my >= win.ymin - yRange && my <= win.ymax + yRange) {
-                    var ppx = toPixelX(mx); var ppy = toPixelY(my);
+                    var ppx = toPixelX(mx), ppy = toPixelY(my);
                     if (prevPpy !== null && Math.abs(ppy - prevPpy) > H) {
-                      if ((ppy < 0 && prevPpy > H) || (ppy > H && prevPpy < 0) || Math.abs(ppy - prevPpy) > H * 1.15) {
-                        asymptoteXs.push(ppx);
+                      if (((ppy < 0 && prevPpy > H) || (ppy > H && prevPpy < 0) || Math.abs(ppy - prevPpy) > H * 1.15) && aCount < GC_MAX_ASYM) {
+                        M.asymX[aBase + aCount] = ppx; aCount++;
                       }
-                      curRun = null;
+                      needBreak = 1;
                     }
-                    if (!curRun) { curRun = []; runs.push(curRun); }
-                    curRun.push([ppx, ppy]);
-                    prevPpy = ppy;
-                  } else { curRun = null; prevPpy = null; }
-                } catch (e) { curRun = null; prevPpy = null; }
+                    var idx = basePt + count;
+                    M.ptX[idx] = ppx; M.ptY[idx] = ppy; M.ptBreak[idx] = needBreak;
+                    count++; needBreak = 0; prevPpy = ppy;
+                  } else { needBreak = 1; prevPpy = null; }
+                } catch (e) { needBreak = 1; prevPpy = null; }
               }
+              M.ptLen[ci] = count;
+              M.asymLen[ci] = aCount;
+              M.curveActive[ci] = 1;
+              graphCount++;
+              legendEntries.push({ text: 'y' + (ci + 1) + ' = ' + fn.expr, color: cs.color, fi: ci });
+              if (d.traceMode) {
+                try {
+                  var trY = compiled.evaluate(Object.assign({ x: traceX }, sA));
+                  if (typeof trY === 'number' && isFinite(trY)) {
+                    M.traceActive[ci] = 1;
+                    M.tracePy[ci] = toPixelY(trY);
+                    M.traceTxt[ci] = '(' + Number(traceX.toPrecision(4)) + ', ' + Number(trY.toPrecision(4)) + ')';
+                  }
+                } catch (e2) {}
+              }
+            } catch (e) { /* invalid */ }
+          }
 
-              // Subtle luminous dashed asymptote hairlines where the curve jumps across the screen
-              if (!isHC && asymptoteXs.length && asymptoteXs.length <= 12) {
+          // Pre-pack analyzed local extrema focus beacons (only when analysisCurrent is active)
+          M.extLen = 0;
+          if (analysisCurrent && gaInfo && gaInfo.desc && gaInfo.desc.features && Array.isArray(gaInfo.desc.features.extrema)) {
+            var extList = gaInfo.desc.features.extrema;
+            for (var ei = 0; ei < extList.length && M.extLen < GC_MAX_EXT; ei++) {
+              var ep = extList[ei];
+              if (ep && isFinite(ep.x) && isFinite(ep.y) && ep.x >= win.xmin && ep.x <= win.xmax && ep.y >= win.ymin && ep.y <= win.ymax) {
+                M.extX[M.extLen] = toPixelX(ep.x);
+                M.extY[M.extLen] = toPixelY(ep.y);
+                M.extMax[M.extLen] = ep.kind === 'max' ? 1 : 0;
+                M.extLen++;
+              }
+            }
+          }
+
+          // Detect parameter-sweep changes (sliderA/B/C or window) -> emit zero-GC feedback ripple
+          var paramSig = String(d.sliderA) + '|' + String(d.sliderB) + '|' + String(d.sliderC);
+          if (M.prevParamSig && M.prevParamSig !== paramSig && !isHC && !M.reduceMotion) {
+            var slot = M.ripWrite % GC_RIPPLES;
+            M.ripWrite = (M.ripWrite + 1) % GC_RIPPLES;
+            M.ripStart[slot] = nowMs;
+            M.ripX[slot] = (ay >= 24 && ay <= W - 24) ? ay : W * 0.5;
+            M.ripY[slot] = (ax >= 24 && ax <= H - 24) ? ax : H * 0.5;
+            var activeIdx = M.curveActive[gaFn] ? gaFn : 0;
+            M.ripRgb[slot * 3] = M.curveActive[activeIdx] ? M.curveRgb[activeIdx * 3] : 99;
+            M.ripRgb[slot * 3 + 1] = M.curveActive[activeIdx] ? M.curveRgb[activeIdx * 3 + 1] : 102;
+            M.ripRgb[slot * 3 + 2] = M.curveActive[activeIdx] ? M.curveRgb[activeIdx * 3 + 2] : 241;
+          }
+          M.prevParamSig = paramSig;
+
+          // Pre-sample secondary overlays once per commit
+          var fitPtsCache = null;
+          if (gcDataParsed && gcDataParsed.points.length && gcFitResult && gcFitResult.predict) {
+            fitPtsCache = [];
+            for (var fx = 0; fx <= 300; fx++) { var fxv = win.xmin + (win.xmax - win.xmin) * fx / 300; fitPtsCache.push({ x: fxv, y: gcFitResult.predict(fxv) }); }
+          }
+          var reflPtsCache = null, reflColor = null;
+          if (gcInvInfo && gaInfo) {
+            reflColor = gcCurveStyle(gaInfo.index === 2 ? 3 : 2).color;
+            reflPtsCache = GA.sample(gaInfo.evaluate, win.xmin, win.xmax, 801).map(function(p) { return p.y === null || p.y < win.xmin || p.y > win.xmax || p.x < win.ymin || p.x > win.ymax ? null : { x: p.y, y: p.x }; });
+          }
+
+          M.snap = {
+            W: W, H: H, P: P, isHC: isHC, isDarkTheme: isDarkTheme,
+            win: win, xRange: xRange, yRange: yRange,
+            xStep: xStep, yStep: yStep, xLabelStep: xLabelStep, yLabelStep: yLabelStep,
+            ax: ax, ay: ay, gaFn: gaFn, legendEntries: legendEntries,
+            gcPwPlan: gcPwPlan, pwColor: gcCurveStyle(4).color,
+            gcDataParsed: gcDataParsed, gcFitResult: gcFitResult, fitPtsCache: fitPtsCache, gcDataResid: !!(gcData && gcData.resid),
+            gcInvInfo: gcInvInfo, gaInfo: gaInfo, reflColor: reflColor, reflPtsCache: reflPtsCache, gcHlY: gcHlY, gcHlXs: gcHlXs,
+            analysisCurrent: analysisCurrent, zeros: d._zeros, intersections: d._intersections,
+            showDeriv: !!(d.showDeriv && funcs[0] && funcs[0].expr), derivX: derivX, tangentEstimate: tangentEstimate,
+            traceMode: !!d.traceMode, traceX: traceX, gaPoint: gaPoint,
+            gcRocPts: gcRocPts, rocColor: gaInfo ? gcCurveStyle(gaInfo.index === 4 ? 1 : 4).color : '#6d28d9'
+          };
+
+          function drawFrame(frameNow) {
+            var S = M.snap;
+            if (!S) return;
+            var W2 = S.W, H2 = S.H, P2 = S.P, hc = S.isHC, dk = S.isDarkTheme;
+            var w2 = S.win, xR2 = S.xRange, yR2 = S.yRange;
+            var t = (hc || M.reduceMotion) ? 0 : (frameNow - M.start) / 1000;
+            function pxX(mx) { return (mx - w2.xmin) / (xR2 || 1) * W2; }
+            function pxY(my) { return H2 - (my - w2.ymin) / (yR2 || 1) * H2; }
+            function onStep(v, s) { var q = v / s; return Math.abs(q - Math.round(q)) < 1e-6; }
+            function onCanvas(x, y) { return isFinite(x) && isFinite(y) && x >= w2.xmin && x <= w2.xmax && y >= w2.ymin - yR2 && y <= w2.ymax + yR2; }
+            function strokeRun(pts) {
+              var open = false, prevX = null, prevY = null;
+              c.beginPath();
+              for (var k = 0; k < pts.length; k++) {
+                var p = pts[k];
+                if (!p || !onCanvas(p.x, p.y)) { open = false; prevX = null; prevY = null; continue; }
+                var xp = pxX(p.x), yp = pxY(p.y);
+                if (!open || (prevY !== null && Math.abs(yp - prevY) > H2) || (prevX !== null && Math.abs(xp - prevX) > W2)) { c.moveTo(xp, yp); open = true; } else c.lineTo(xp, yp);
+                prevX = xp; prevY = yp;
+              }
+              c.stroke();
+            }
+
+            // Frame background clear (exact single fillRect per frame)
+            c.fillStyle = P2.bg; c.fillRect(0, 0, W2, H2);
+
+            // Subtle oscilloscope / studio screen ambient depth (uses path+fill, never extra fillRect)
+            if (!hc && typeof c.createRadialGradient === 'function') {
+              var scrGrad = c.createRadialGradient(W2 * 0.5, H2 * 0.45, Math.min(W2, H2) * 0.08, W2 * 0.5, H2 * 0.5, Math.max(W2, H2) * 0.72);
+              if (scrGrad && typeof scrGrad.addColorStop === 'function') {
+                if (dk) {
+                  scrGrad.addColorStop(0, 'rgba(30,58,138,0.16)');
+                  scrGrad.addColorStop(0.65, 'rgba(15,23,42,0.02)');
+                  scrGrad.addColorStop(1, 'rgba(2,6,23,0.42)');
+                } else {
+                  scrGrad.addColorStop(0, 'rgba(255,255,255,0)');
+                  scrGrad.addColorStop(0.75, 'rgba(241,245,249,0.22)');
+                  scrGrad.addColorStop(1, 'rgba(226,232,240,0.48)');
+                }
+                c.beginPath(); c.rect(0, 0, W2, H2); c.fillStyle = scrGrad; c.fill();
+              }
+            }
+
+            // Grid: minor subdivision mesh + crisp polar reference rings around origin + major grid + 12px labels
+            var ax2 = S.ax, ay2 = S.ay;
+            if (!hc) {
+              var xMinor = S.xStep / 2, yMinor = S.yStep / 2;
+              c.strokeStyle = dk ? 'rgba(148,163,184,0.09)' : 'rgba(148,163,184,0.24)';
+              c.lineWidth = 0.7;
+              c.beginPath();
+              for (var mgx = Math.ceil(w2.xmin / xMinor) * xMinor; mgx <= w2.xmax; mgx += xMinor) {
+                if (onStep(mgx, S.xStep)) continue;
+                var mgpx = pxX(mgx); c.moveTo(mgpx, 0); c.lineTo(mgpx, H2);
+              }
+              for (var mgy = Math.ceil(w2.ymin / yMinor) * yMinor; mgy <= w2.ymax; mgy += yMinor) {
+                if (onStep(mgy, S.yStep)) continue;
+                var mgpy = pxY(mgy); c.moveTo(0, mgpy); c.lineTo(W2, mgpy);
+              }
+              c.stroke();
+
+              // Crisp subtle polar-grid reference rings & diagonal bearings centered at origin when visible
+              if (ax2 >= 0 && ax2 <= H2 && ay2 >= 0 && ay2 <= W2) {
+                var unitPxX = Math.abs(pxX(S.xStep) - ay2);
+                var unitPxY = Math.abs(pxY(S.yStep) - ax2);
+                var polarStep = Math.max(26, (unitPxX + unitPxY) * 0.5);
+                var maxRad = Math.min(Math.max(W2, H2) * 0.65, polarStep * 4.5);
+                c.strokeStyle = dk ? 'rgba(99,102,241,0.11)' : 'rgba(79,70,229,0.08)';
+                c.lineWidth = 0.85;
+                c.beginPath();
+                for (var pr = polarStep; pr <= maxRad; pr += polarStep) {
+                  c.moveTo(ay2 + pr, ax2);
+                  c.arc(ay2, ax2, pr, 0, Math.PI * 2);
+                }
+                c.stroke();
+              }
+            }
+
+            c.strokeStyle = P2.grid; c.lineWidth = 1;
+            for (var gx = Math.ceil(w2.xmin / S.xStep) * S.xStep; gx <= w2.xmax; gx += S.xStep) {
+              var gpx = pxX(gx); c.beginPath(); c.moveTo(gpx, 0); c.lineTo(gpx, H2); c.stroke();
+              if (Math.abs(gx) > S.xStep * 0.01 && onStep(gx, S.xLabelStep)) { c.fillStyle = P2.label; c.font = '12px system-ui'; c.textAlign = 'center'; c.fillText(Number(gx.toPrecision(6)), gpx, Math.min(Math.max(ax2 + 16, 14), H2 - 6)); }
+            }
+            for (var gy = Math.ceil(w2.ymin / S.yStep) * S.yStep; gy <= w2.ymax; gy += S.yStep) {
+              var gpy = pxY(gy); c.beginPath(); c.moveTo(0, gpy); c.lineTo(W2, gpy); c.stroke();
+              if (Math.abs(gy) > S.yStep * 0.01 && onStep(gy, S.yLabelStep)) { c.fillStyle = P2.label; c.font = '12px system-ui'; c.textAlign = 'right'; c.fillText(Number(gy.toPrecision(6)), Math.min(Math.max(ay2 - 5, 36), W2 - 4), gpy + 4); }
+            }
+
+            // Principal axes with luminous under-glow + breathing Cartesian crosshair origin reticle
+            if (!hc) {
+              var axisGlowA = (dk ? 0.22 : 0.12) + (M.reduceMotion ? 0 : Math.sin(t * 1.6) * 0.04);
+              c.strokeStyle = dk ? 'rgba(129,140,248,' + axisGlowA.toFixed(3) + ')' : 'rgba(99,102,241,' + axisGlowA.toFixed(3) + ')';
+              c.lineWidth = 5;
+              if (ax2 >= 0 && ax2 <= H2) { c.beginPath(); c.moveTo(0, ax2); c.lineTo(W2, ax2); c.stroke(); }
+              if (ay2 >= 0 && ay2 <= W2) { c.beginPath(); c.moveTo(ay2, 0); c.lineTo(ay2, H2); c.stroke(); }
+            }
+            c.strokeStyle = P2.axis; c.lineWidth = 2;
+            if (ax2 >= 0 && ax2 <= H2) { c.beginPath(); c.moveTo(0, ax2); c.lineTo(W2, ax2); c.stroke(); }
+            if (ay2 >= 0 && ay2 <= W2) { c.beginPath(); c.moveTo(ay2, 0); c.lineTo(ay2, H2); c.stroke(); }
+            if (!hc && ax2 >= 0 && ax2 <= H2 && ay2 >= 0 && ay2 <= W2) {
+              var origPulse = M.reduceMotion ? 0 : Math.sin(t * 2.1) * 1.1;
+              c.strokeStyle = dk ? 'rgba(165,180,252,0.52)' : 'rgba(79,70,229,0.38)';
+              c.lineWidth = 1.25;
+              c.beginPath(); c.arc(ay2, ax2, 4.5 + origPulse * 0.4, 0, Math.PI * 2); c.stroke();
+              c.strokeStyle = dk ? 'rgba(129,140,248,0.22)' : 'rgba(99,102,241,0.16)';
+              c.lineWidth = 1;
+              c.beginPath(); c.arc(ay2, ax2, 9 + origPulse, 0, Math.PI * 2); c.stroke();
+            }
+
+            // Smooth animated parameter-sweep feedback ripples (zero-GC ring buffer)
+            if (!hc && !M.reduceMotion) {
+              for (var ri2 = 0; ri2 < GC_RIPPLES; ri2++) {
+                var rStart = M.ripStart[ri2];
+                if (!rStart) continue;
+                var age = (frameNow - rStart) / 850;
+                if (age >= 1) { M.ripStart[ri2] = 0; continue; }
+                if (age < 0) continue;
+                var ease = 1 - (1 - age) * (1 - age) * (1 - age);
+                var rad = 12 + ease * Math.min(W2, H2) * 0.42;
+                var rA = (1 - age) * (dk ? 0.44 : 0.3);
+                var rR = M.ripRgb[ri2 * 3], rG = M.ripRgb[ri2 * 3 + 1], rB = M.ripRgb[ri2 * 3 + 2];
+                c.strokeStyle = gcRgbStr(rR, rG, rB, rA.toFixed(3));
+                c.lineWidth = 2.4 * (1 - age * 0.65);
+                c.beginPath(); c.arc(M.ripX[ri2], M.ripY[ri2], rad, 0, Math.PI * 2); c.stroke();
+                if (age < 0.72) {
+                  c.strokeStyle = gcRgbStr(rR, rG, rB, (rA * 0.55).toFixed(3));
+                  c.lineWidth = 1.2;
+                  c.beginPath(); c.arc(M.ripX[ri2], M.ripY[ri2], Math.max(6, rad * 0.64), 0, Math.PI * 2); c.stroke();
+                }
+              }
+            }
+
+            // Graph functions from pre-allocated Float32Array pools: zero-GC phosphor bloom + comet beacon
+            function traceCachedCurve(ci2) {
+              var base = ci2 * GC_MAX_PTS, len = M.ptLen[ci2];
+              c.beginPath();
+              for (var k = 0; k < len; k++) {
+                var idx = base + k;
+                if (M.ptBreak[idx]) c.moveTo(M.ptX[idx], M.ptY[idx]);
+                else c.lineTo(M.ptX[idx], M.ptY[idx]);
+              }
+            }
+
+            for (var fi = 0; fi < GC_MAX_CURVES; fi++) {
+              if (!M.curveActive[fi] || M.ptLen[fi] < 2) continue;
+              var cHex = M.curveHex[fi], cDash = M.curveDash[fi];
+              var cr = M.curveRgb[fi * 3], cg = M.curveRgb[fi * 3 + 1], cb = M.curveRgb[fi * 3 + 2];
+              var breath = (hc || M.reduceMotion) ? 0 : Math.sin(t * 2.1 + fi * 1.1);
+
+              // Animated marching dashed asymptote hairlines
+              var aLen = M.asymLen[fi];
+              if (!hc && aLen > 0 && aLen <= 12) {
+                var aBase = fi * GC_MAX_ASYM;
                 c.save();
-                c.strokeStyle = gcHexToRgba(cs.color, isDarkTheme ? 0.36 : 0.28);
+                c.strokeStyle = gcRgbStr(cr, cg, cb, dk ? 0.38 : 0.28);
                 c.lineWidth = 1.25; c.setLineDash([5, 5]);
-                asymptoteXs.forEach(function(asx) { c.beginPath(); c.moveTo(asx, 0); c.lineTo(asx, H); c.stroke(); });
+                if (!M.reduceMotion && 'lineDashOffset' in c) c.lineDashOffset = -(t * 22) % 10;
+                for (var ai = 0; ai < aLen; ai++) {
+                  var asx = M.asymX[aBase + ai];
+                  c.beginPath(); c.moveTo(asx, 0); c.lineTo(asx, H2); c.stroke();
+                }
                 c.setLineDash([]);
                 c.restore();
               }
 
               // Subtle gradient-shaded region under the primary active curve toward the x-axis
-              if (!isHC && fi === gaFn && runs.length && typeof c.createLinearGradient === 'function') {
-                var baseAxisY = Math.max(0, Math.min(H, ax));
-                var areaG = c.createLinearGradient(0, 0, 0, H);
+              if (!hc && fi === S.gaFn && typeof c.createLinearGradient === 'function') {
+                var baseAxisY = Math.max(0, Math.min(H2, ax2));
+                var areaG = c.createLinearGradient(0, 0, 0, H2);
                 if (areaG && typeof areaG.addColorStop === 'function') {
-                  areaG.addColorStop(0, gcHexToRgba(cs.color, isDarkTheme ? 0.14 : 0.08));
-                  areaG.addColorStop(0.5, gcHexToRgba(cs.color, isDarkTheme ? 0.05 : 0.03));
-                  areaG.addColorStop(1, gcHexToRgba(cs.color, isDarkTheme ? 0.12 : 0.07));
+                  var topA = (dk ? 0.14 : 0.08) + breath * 0.025;
+                  var midA = (dk ? 0.05 : 0.03) + breath * 0.01;
+                  areaG.addColorStop(0, gcRgbStr(cr, cg, cb, topA.toFixed(3)));
+                  areaG.addColorStop(0.5, gcRgbStr(cr, cg, cb, midA.toFixed(3)));
+                  areaG.addColorStop(1, gcRgbStr(cr, cg, cb, (topA * 0.85).toFixed(3)));
                   c.save();
                   c.fillStyle = areaG;
-                  runs.forEach(function(run) {
-                    if (run.length < 3) return;
-                    c.beginPath();
-                    c.moveTo(run[0][0], baseAxisY);
-                    for (var ri = 0; ri < run.length; ri++) c.lineTo(run[ri][0], run[ri][1]);
-                    c.lineTo(run[run.length - 1][0], baseAxisY);
-                    c.closePath();
-                    c.fill();
-                  });
+                  var base = fi * GC_MAX_PTS, len = M.ptLen[fi];
+                  var runStart = -1;
+                  for (var k = 0; k <= len; k++) {
+                    var atEnd = k === len || (k > runStart && runStart >= 0 && M.ptBreak[base + k]);
+                    if (atEnd && runStart >= 0) {
+                      if (k - runStart >= 3) {
+                        c.beginPath();
+                        c.moveTo(M.ptX[base + runStart], baseAxisY);
+                        for (var rj = runStart; rj < k; rj++) c.lineTo(M.ptX[base + rj], M.ptY[base + rj]);
+                        c.lineTo(M.ptX[base + k - 1], baseAxisY);
+                        c.closePath();
+                        c.fill();
+                      }
+                      runStart = k < len ? k : -1;
+                    } else if (runStart < 0 && k < len) {
+                      runStart = k;
+                    }
+                  }
                   c.restore();
                 }
-              }
-
-              function traceRuns() {
-                c.beginPath();
-                runs.forEach(function(run) {
-                  if (run.length < 2) return;
-                  c.moveTo(run[0][0], run[0][1]);
-                  for (var ri = 1; ri < run.length; ri++) c.lineTo(run[ri][0], run[ri][1]);
-                });
               }
 
               c.lineCap = 'round'; c.lineJoin = 'round';
-              // Pass 1: luminous outer phosphor halo (uses rgba so curveStrokes literal hex count stays exact)
-              if (!isHC) {
-                c.strokeStyle = gcHexToRgba(cs.color, isDarkTheme ? 0.24 : 0.14);
-                c.lineWidth = 7.5; c.setLineDash(cs.dash);
-                traceRuns(); c.stroke();
+              // Pass 1: luminous outer phosphor bloom (uses rgba so primary literal hex stroke count stays exact)
+              if (!hc) {
+                var haloA = (dk ? 0.25 : 0.15) + breath * 0.05;
+                c.strokeStyle = gcRgbStr(cr, cg, cb, haloA.toFixed(3));
+                c.lineWidth = 7.6 + breath * 0.9; c.setLineDash(cDash);
+                traceCachedCurve(fi); c.stroke();
               }
               // Pass 2: primary crisp curve with exact colour & accessible dash pattern
-              c.strokeStyle = cs.color; c.lineWidth = 3; c.setLineDash(cs.dash);
-              c.shadowColor = cs.color; c.shadowBlur = isDarkTheme ? 8 : (isHC ? 0 : 2);
-              traceRuns(); c.stroke();
+              c.strokeStyle = cHex; c.lineWidth = 3; c.setLineDash(cDash);
+              c.shadowColor = cHex; c.shadowBlur = dk ? 8 : (hc ? 0 : 2);
+              traceCachedCurve(fi); c.stroke();
               c.shadowBlur = 0; c.setLineDash([]);
               // Pass 3: crisp specular core filament on solid curves
-              if (!isHC && (!cs.dash || !cs.dash.length)) {
-                c.strokeStyle = isDarkTheme ? 'rgba(255,255,255,0.56)' : 'rgba(255,255,255,0.42)';
+              if (!hc && (!cDash || !cDash.length)) {
+                c.strokeStyle = dk ? 'rgba(255,255,255,0.56)' : 'rgba(255,255,255,0.42)';
                 c.lineWidth = 0.95;
-                traceRuns(); c.stroke();
+                traceCachedCurve(fi); c.stroke();
               }
 
-              graphCount++;
-              legendEntries.push({ text: 'y' + (fi + 1) + ' = ' + fn.expr, color: cs.color, fi: fi });
-            } catch (e) { /* invalid */ }
-          });
-
-          function onCanvas(x, y) { return isFinite(x) && isFinite(y) && x >= win.xmin && x <= win.xmax && y >= win.ymin - yRange && y <= win.ymax + yRange; }
-          function strokeRun(pts, toX, toY) {
-            var open = false, prevX = null, prevY = null;
-            c.beginPath();
-            pts.forEach(function(p) {
-              if (!p || !onCanvas(p.x, p.y)) { open = false; prevX = null; prevY = null; return; }
-              var px = toX(p), py = toY(p);
-              if (!open || (prevY !== null && Math.abs(py - prevY) > H) || (prevX !== null && Math.abs(px - prevX) > W)) { c.moveTo(px, py); open = true; } else c.lineTo(px, py);
-              prevX = px;
-              prevY = py;
-            });
-            c.stroke();
-          }
-          // Piecewise rule: each piece on its interval; a filled dot includes its endpoint, a hollow dot leaves it out.
-          if (gcPwPlan) {
-            var pwStyle = gcCurveStyle(4);
-            if (!isHC) {
-              c.strokeStyle = gcHexToRgba(pwStyle.color, isDarkTheme ? 0.24 : 0.14); c.lineWidth = 7; c.setLineDash([]);
-              gcPwPlan.pieces.forEach(function(pc) { strokeRun(pc.points, function(p) { return toPixelX(p.x); }, function(p) { return toPixelY(p.y); }); });
-            }
-            c.strokeStyle = pwStyle.color; c.lineWidth = 3; c.setLineDash([]);
-            gcPwPlan.pieces.forEach(function(pc) { strokeRun(pc.points, function(p) { return toPixelX(p.x); }, function(p) { return toPixelY(p.y); }); });
-            gcPwPlan.dots.forEach(function(dot) {
-              if (dot.y < win.ymin || dot.y > win.ymax) return;
-              c.save(); c.shadowColor = pwStyle.color; c.shadowBlur = isDarkTheme ? 7 : 0;
-              c.beginPath(); c.arc(toPixelX(dot.x), toPixelY(dot.y), 6, 0, Math.PI * 2);
-              c.fillStyle = dot.closed ? pwStyle.color : P.bg; c.fill();
-              c.strokeStyle = pwStyle.color; c.lineWidth = 2.5; c.stroke();
-              c.restore();
-            });
-          }
-          // Data: square markers, the fitted curve (dashed) and, on request, residual segments.
-          if (gcDataParsed && gcDataParsed.points.length) {
-            var dataInk = P.theme === 'contrast' ? '#00ffff' : P.theme === 'dark' ? '#5eead4' : '#0f766e';
-            if (gcFitResult && gcFitResult.predict) {
-              var fitPts = [];
-              for (var fx = 0; fx <= 300; fx++) { var fxv = win.xmin + (win.xmax - win.xmin) * fx / 300; fitPts.push({ x: fxv, y: gcFitResult.predict(fxv) }); }
-              if (!isHC) {
-                c.strokeStyle = gcHexToRgba(dataInk, isDarkTheme ? 0.24 : 0.14); c.lineWidth = 6.5; c.setLineDash([8, 5]);
-                strokeRun(fitPts, function(p) { return toPixelX(p.x); }, function(p) { return toPixelY(p.y); });
+              // Pass 4: Silky trace-head comet beacon gliding along active curves (zero-GC, skipped in HC)
+              if (!hc && fi < 3 && M.ptLen[fi] > 20) {
+                var cLen = M.ptLen[fi], cBase = fi * GC_MAX_PTS;
+                var headFrac = M.reduceMotion ? (0.62 - fi * 0.12) : ((t * 0.16 + fi * 0.27) % 1);
+                var headIdx = Math.min(cLen - 1, Math.max(0, Math.floor(headFrac * (cLen - 1))));
+                var hx = M.ptX[cBase + headIdx], hy = M.ptY[cBase + headIdx];
+                if (hy >= 4 && hy <= H2 - 4 && hx >= 4 && hx <= W2 - 4) {
+                  if (!M.reduceMotion) {
+                    var tailSteps = 14;
+                    for (var ts = 0; ts < tailSteps; ts++) {
+                      var i0 = headIdx - ts, i1 = headIdx - ts - 1;
+                      if (i1 < 0 || M.ptBreak[cBase + i0]) break;
+                      var x0 = M.ptX[cBase + i0], y0 = M.ptY[cBase + i0];
+                      var x1 = M.ptX[cBase + i1], y1 = M.ptY[cBase + i1];
+                      if (Math.abs(y0 - y1) > H2 * 0.35) break;
+                      var tf = 1 - ts / tailSteps;
+                      c.strokeStyle = gcRgbStr(cr, cg, cb, (tf * (dk ? 0.72 : 0.48)).toFixed(3));
+                      c.lineWidth = 1.4 + tf * 3.8;
+                      c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+                    }
+                  }
+                  if (typeof c.createRadialGradient === 'function') {
+                    var cHalo = c.createRadialGradient(hx, hy, 0.5, hx, hy, 12);
+                    if (cHalo && typeof cHalo.addColorStop === 'function') {
+                      cHalo.addColorStop(0, gcRgbStr(cr, cg, cb, dk ? 0.68 : 0.42));
+                      cHalo.addColorStop(1, gcRgbStr(cr, cg, cb, 0));
+                      c.fillStyle = cHalo;
+                      c.beginPath(); c.arc(hx, hy, 12, 0, Math.PI * 2); c.fill();
+                    }
+                  }
+                  c.fillStyle = '#ffffff';
+                  c.beginPath(); c.arc(hx, hy, 2.8, 0, Math.PI * 2); c.fill();
+                }
               }
-              c.strokeStyle = dataInk; c.lineWidth = 2.5; c.setLineDash([8, 5]);
-              strokeRun(fitPts, function(p) { return toPixelX(p.x); }, function(p) { return toPixelY(p.y); });
-              c.setLineDash([]);
-              if (gcData.resid) gcFitResult.residuals.forEach(function(r) {
-                if (!onCanvas(r.x, r.y) || !isFinite(r.fit)) return;
-                c.strokeStyle = P.muted; c.lineWidth = 1.5; c.beginPath(); c.moveTo(toPixelX(r.x), toPixelY(r.y)); c.lineTo(toPixelX(r.x), toPixelY(r.fit)); c.stroke();
-              });
             }
-            gcDataParsed.points.forEach(function(pt) {
-              if (pt.x < win.xmin || pt.x > win.xmax || pt.y < win.ymin || pt.y > win.ymax) return;
-              c.fillStyle = dataInk; c.fillRect(toPixelX(pt.x) - 4, toPixelY(pt.y) - 4, 8, 8);
-              c.strokeStyle = P.label; c.lineWidth = 1; c.strokeRect(toPixelX(pt.x) - 4, toPixelY(pt.y) - 4, 8, 8);
-            });
-          }
-          // Inverse: the line y = x, the reflection (x, y) -> (y, x), and the horizontal-line test.
-          if (gcInvInfo && gaInfo) {
-            c.strokeStyle = P.muted; c.lineWidth = 1.5; c.setLineDash([4, 6]); c.beginPath();
-            var lo = Math.max(win.xmin, win.ymin), hi = Math.min(win.xmax, win.ymax);
-            if (hi > lo) { c.moveTo(toPixelX(lo), toPixelY(lo)); c.lineTo(toPixelX(hi), toPixelY(hi)); c.stroke(); }
-            var refl = gcCurveStyle(gaInfo.index === 2 ? 3 : 2);
-            c.strokeStyle = refl.color; c.lineWidth = 2.5; c.setLineDash([2, 5]);
-            var reflPts = GA.sample(gaInfo.evaluate, win.xmin, win.xmax, 801).map(function(p) { return p.y === null || p.y < win.xmin || p.y > win.xmax || p.x < win.ymin || p.x > win.ymax ? null : { x: p.y, y: p.x }; });
-            strokeRun(reflPts, function(p) { return toPixelX(p.x); }, function(p) { return toPixelY(p.y); });
-            c.setLineDash([10, 4]); c.strokeStyle = P.label; c.lineWidth = 1.5; c.beginPath(); c.moveTo(0, toPixelY(gcHlY)); c.lineTo(W, toPixelY(gcHlY)); c.stroke(); c.setLineDash([]);
-            (gcHlXs || []).forEach(function(hx) { c.beginPath(); c.arc(toPixelX(hx), toPixelY(gcHlY), 6, 0, Math.PI * 2); c.fillStyle = P.label; c.fill(); });
-          }
 
-          // Zeros & intersections — glowing crosshair target beacons
-          if (analysisCurrent && d._zeros) d._zeros.forEach(function(z) {
-            var zx = toPixelX(z.x); var zy = toPixelY(0);
-            if (!isHC) {
-              c.strokeStyle = 'rgba(52,211,153,0.45)'; c.lineWidth = 1;
-              c.beginPath(); c.moveTo(zx - 11, zy); c.lineTo(zx + 11, zy); c.moveTo(zx, zy - 11); c.lineTo(zx, zy + 11); c.stroke();
-              c.beginPath(); c.arc(zx, zy, 10, 0, Math.PI * 2); c.fillStyle = 'rgba(52,211,153,0.2)'; c.fill();
+            // Piecewise rule: each piece on its interval; a filled dot includes its endpoint, a hollow dot leaves it out.
+            if (S.gcPwPlan) {
+              var pwCol = S.pwColor;
+              if (!hc) {
+                c.strokeStyle = gcHexToRgba(pwCol, dk ? 0.24 : 0.14); c.lineWidth = 7; c.setLineDash([]);
+                for (var pi2 = 0; pi2 < S.gcPwPlan.pieces.length; pi2++) strokeRun(S.gcPwPlan.pieces[pi2].points);
+              }
+              c.strokeStyle = pwCol; c.lineWidth = 3; c.setLineDash([]);
+              for (var pi3 = 0; pi3 < S.gcPwPlan.pieces.length; pi3++) strokeRun(S.gcPwPlan.pieces[pi3].points);
+              for (var di2 = 0; di2 < S.gcPwPlan.dots.length; di2++) {
+                var dot = S.gcPwPlan.dots[di2];
+                if (dot.y < w2.ymin || dot.y > w2.ymax) continue;
+                c.save(); c.shadowColor = pwCol; c.shadowBlur = dk ? 7 : 0;
+                c.beginPath(); c.arc(pxX(dot.x), pxY(dot.y), 6, 0, Math.PI * 2);
+                c.fillStyle = dot.closed ? pwCol : P2.bg; c.fill();
+                c.strokeStyle = pwCol; c.lineWidth = 2.5; c.stroke();
+                c.restore();
+              }
             }
-            c.save(); c.shadowColor = '#34d399'; c.shadowBlur = isDarkTheme ? 9 : 0; c.beginPath(); c.arc(zx, zy, 5.5, 0, Math.PI * 2); c.fillStyle = '#34d399'; c.fill(); c.restore(); c.strokeStyle = P.label; c.lineWidth = 1.8; c.stroke();
-            c.fillStyle = P.label; c.font = 'bold 12px system-ui'; c.textAlign = 'center'; c.fillText('x=' + Number(z.x.toPrecision(4)), zx, zy - 13);
-          });
-          if (analysisCurrent && d._intersections) d._intersections.forEach(function(pt) {
-            var ipx = toPixelX(pt.x); var ipy = toPixelY(pt.y);
-            if (!isHC) {
-              c.strokeStyle = 'rgba(244,114,182,0.5)'; c.lineWidth = 1;
-              c.beginPath(); c.moveTo(ipx - 11, ipy); c.lineTo(ipx + 11, ipy); c.moveTo(ipx, ipy - 11); c.lineTo(ipx, ipy + 11); c.stroke();
-              c.beginPath(); c.arc(ipx, ipy, 10, 0, Math.PI * 2); c.fillStyle = 'rgba(244,114,182,0.22)'; c.fill();
+            // Data: square markers, the fitted curve (dashed) and, on request, residual segments.
+            if (S.gcDataParsed && S.gcDataParsed.points.length) {
+              var dataInk = hc ? '#00ffff' : dk ? '#5eead4' : '#0f766e';
+              if (S.fitPtsCache) {
+                if (!hc) {
+                  c.strokeStyle = gcHexToRgba(dataInk, dk ? 0.24 : 0.14); c.lineWidth = 6.5; c.setLineDash([8, 5]);
+                  strokeRun(S.fitPtsCache);
+                }
+                c.strokeStyle = dataInk; c.lineWidth = 2.5; c.setLineDash([8, 5]);
+                strokeRun(S.fitPtsCache);
+                c.setLineDash([]);
+                if (S.gcDataResid && S.gcFitResult && S.gcFitResult.residuals) {
+                  for (var rdi = 0; rdi < S.gcFitResult.residuals.length; rdi++) {
+                    var res = S.gcFitResult.residuals[rdi];
+                    if (!onCanvas(res.x, res.y) || !isFinite(res.fit)) continue;
+                    c.strokeStyle = P2.muted; c.lineWidth = 1.5; c.beginPath(); c.moveTo(pxX(res.x), pxY(res.y)); c.lineTo(pxX(res.x), pxY(res.fit)); c.stroke();
+                  }
+                }
+              }
+              for (var dpi = 0; dpi < S.gcDataParsed.points.length; dpi++) {
+                var dpt = S.gcDataParsed.points[dpi];
+                if (dpt.x < w2.xmin || dpt.x > w2.xmax || dpt.y < w2.ymin || dpt.y > w2.ymax) continue;
+                c.fillStyle = dataInk; c.fillRect(pxX(dpt.x) - 4, pxY(dpt.y) - 4, 8, 8);
+                c.strokeStyle = P2.label; c.lineWidth = 1; c.strokeRect(pxX(dpt.x) - 4, pxY(dpt.y) - 4, 8, 8);
+              }
             }
-            c.save(); c.shadowColor = '#f472b6'; c.shadowBlur = isDarkTheme ? 9 : 0; c.beginPath(); c.arc(ipx, ipy, 5.5, 0, Math.PI * 2); c.fillStyle = '#f472b6'; c.fill(); c.restore(); c.strokeStyle = P.label; c.lineWidth = 1.8; c.stroke();
-            c.fillStyle = P.label; c.font = 'bold 12px system-ui'; c.textAlign = 'center'; c.fillText('(' + Number(pt.x.toPrecision(3)) + ',' + Number(pt.y.toPrecision(3)) + ')', ipx, ipy - 13);
-          });
+            // Inverse: the line y = x, the reflection (x, y) -> (y, x), and the horizontal-line test.
+            if (S.gcInvInfo && S.gaInfo && S.reflPtsCache) {
+              c.strokeStyle = P2.muted; c.lineWidth = 1.5; c.setLineDash([4, 6]); c.beginPath();
+              var lo = Math.max(w2.xmin, w2.ymin), hi = Math.min(w2.xmax, w2.ymax);
+              if (hi > lo) { c.moveTo(pxX(lo), pxY(lo)); c.lineTo(pxX(hi), pxY(hi)); c.stroke(); }
+              c.strokeStyle = S.reflColor; c.lineWidth = 2.5; c.setLineDash([2, 5]);
+              strokeRun(S.reflPtsCache);
+              c.setLineDash([10, 4]); c.strokeStyle = P2.label; c.lineWidth = 1.5; c.beginPath(); c.moveTo(0, pxY(S.gcHlY)); c.lineTo(W2, pxY(S.gcHlY)); c.stroke(); c.setLineDash([]);
+              if (S.gcHlXs) {
+                for (var hi2 = 0; hi2 < S.gcHlXs.length; hi2++) {
+                  c.beginPath(); c.arc(pxX(S.gcHlXs[hi2]), pxY(S.gcHlY), 6, 0, Math.PI * 2); c.fillStyle = P2.label; c.fill();
+                }
+              }
+            }
 
-          // Derivative tangent — luminous dual-pass tangent ray
-          if (d.showDeriv && funcs[0] && funcs[0].expr) {
-            try {
-              var dx = derivX, yAtX = tangentEstimate.y, slope = tangentEstimate.slope;
+            // Analyzed zeros, intersections & extrema — pulsing sonar focus rings
+            function drawFocusPulse(fx, fy, r, g, b, seed) {
+              if (hc) return;
+              var ph = M.reduceMotion ? 0.35 : ((t * 0.72 + seed * 0.29) % 1);
+              var rOuter = 8 + ph * 13;
+              var aOuter = (1 - ph) * (dk ? 0.58 : 0.42);
+              c.strokeStyle = gcRgbStr(r, g, b, aOuter.toFixed(3));
+              c.lineWidth = 1.5;
+              c.beginPath(); c.arc(fx, fy, rOuter, 0, Math.PI * 2); c.stroke();
+            }
+            if (S.analysisCurrent && S.zeros) {
+              for (var zi = 0; zi < S.zeros.length; zi++) {
+                var z = S.zeros[zi];
+                var zx = pxX(z.x), zy = pxY(0);
+                if (!hc) {
+                  drawFocusPulse(zx, zy, 52, 211, 153, zi);
+                  c.strokeStyle = 'rgba(52,211,153,0.45)'; c.lineWidth = 1;
+                  c.beginPath(); c.moveTo(zx - 11, zy); c.lineTo(zx + 11, zy); c.moveTo(zx, zy - 11); c.lineTo(zx, zy + 11); c.stroke();
+                  c.beginPath(); c.arc(zx, zy, 10, 0, Math.PI * 2); c.fillStyle = 'rgba(52,211,153,0.2)'; c.fill();
+                }
+                c.save(); c.shadowColor = '#34d399'; c.shadowBlur = dk ? 9 : 0; c.beginPath(); c.arc(zx, zy, 5.5, 0, Math.PI * 2); c.fillStyle = '#34d399'; c.fill(); c.restore(); c.strokeStyle = P2.label; c.lineWidth = 1.8; c.stroke();
+                c.fillStyle = P2.label; c.font = 'bold 12px system-ui'; c.textAlign = 'center'; c.fillText('x=' + Number(z.x.toPrecision(4)), zx, zy - 13);
+              }
+            }
+            if (S.analysisCurrent && S.intersections) {
+              for (var ii2 = 0; ii2 < S.intersections.length; ii2++) {
+                var ipt = S.intersections[ii2];
+                var ipx = pxX(ipt.x), ipy = pxY(ipt.y);
+                if (!hc) {
+                  drawFocusPulse(ipx, ipy, 244, 114, 182, ii2 + 3);
+                  c.strokeStyle = 'rgba(244,114,182,0.5)'; c.lineWidth = 1;
+                  c.beginPath(); c.moveTo(ipx - 11, ipy); c.lineTo(ipx + 11, ipy); c.moveTo(ipx, ipy - 11); c.lineTo(ipx, ipy + 11); c.stroke();
+                  c.beginPath(); c.arc(ipx, ipy, 10, 0, Math.PI * 2); c.fillStyle = 'rgba(244,114,182,0.22)'; c.fill();
+                }
+                c.save(); c.shadowColor = '#f472b6'; c.shadowBlur = dk ? 9 : 0; c.beginPath(); c.arc(ipx, ipy, 5.5, 0, Math.PI * 2); c.fillStyle = '#f472b6'; c.fill(); c.restore(); c.strokeStyle = P2.label; c.lineWidth = 1.8; c.stroke();
+                c.fillStyle = P2.label; c.font = 'bold 12px system-ui'; c.textAlign = 'center'; c.fillText('(' + Number(ipt.x.toPrecision(3)) + ',' + Number(ipt.y.toPrecision(3)) + ')', ipx, ipy - 13);
+              }
+            }
+            if (S.analysisCurrent && M.extLen > 0) {
+              for (var ei2 = 0; ei2 < M.extLen; ei2++) {
+                var exPx = M.extX[ei2], exPy = M.extY[ei2], isMax = M.extMax[ei2] === 1;
+                var er = isMax ? 192 : 34, eg = isMax ? 132 : 211, eb = isMax ? 252 : 238;
+                var eHex = isMax ? (dk ? '#c084fc' : '#9333ea') : (dk ? '#22d3ee' : '#0891b2');
+                if (!hc) {
+                  drawFocusPulse(exPx, exPy, er, eg, eb, ei2 + 6);
+                  c.beginPath(); c.arc(exPx, exPy, 8.5, 0, Math.PI * 2); c.fillStyle = gcRgbStr(er, eg, eb, 0.18); c.fill();
+                }
+                c.beginPath(); c.arc(exPx, exPy, 4.5, 0, Math.PI * 2);
+                c.fillStyle = P2.bg; c.fill();
+                c.strokeStyle = hc ? P2.label : eHex; c.lineWidth = 2; c.stroke();
+              }
+            }
+
+            // Derivative tangent — luminous dual-pass tangent ray + pulsing slope halo
+            if (S.showDeriv && S.tangentEstimate) {
+              var dx = S.derivX, yAtX = S.tangentEstimate.y, slope = S.tangentEstimate.slope;
               if (typeof slope === 'number' && isFinite(slope)) {
-                var tanInk = P.theme === 'light' ? '#c2410c' : '#fb923c';
-                if (!isHC) {
-                  c.strokeStyle = gcHexToRgba(tanInk, isDarkTheme ? 0.25 : 0.16); c.lineWidth = 6; c.beginPath();
-                  c.moveTo(toPixelX(win.xmin), toPixelY(yAtX + slope * (win.xmin - dx)));
-                  c.lineTo(toPixelX(win.xmax), toPixelY(yAtX + slope * (win.xmax - dx)));
+                var tanInk = P2.theme === 'light' ? '#c2410c' : '#fb923c';
+                if (!hc) {
+                  c.strokeStyle = gcHexToRgba(tanInk, dk ? 0.26 : 0.16); c.lineWidth = 6; c.beginPath();
+                  c.moveTo(pxX(w2.xmin), pxY(yAtX + slope * (w2.xmin - dx)));
+                  c.lineTo(pxX(w2.xmax), pxY(yAtX + slope * (w2.xmax - dx)));
                   c.stroke();
                 }
-                c.strokeStyle = tanInk; c.lineWidth = 2.5; c.setLineDash([6, 3]); c.beginPath();
-                c.moveTo(toPixelX(win.xmin), toPixelY(yAtX + slope * (win.xmin - dx)));
-                c.lineTo(toPixelX(win.xmax), toPixelY(yAtX + slope * (win.xmax - dx)));
+                c.save();
+                c.strokeStyle = tanInk; c.lineWidth = 2.5; c.setLineDash([6, 3]);
+                if (!hc && !M.reduceMotion && 'lineDashOffset' in c) c.lineDashOffset = -(t * 18) % 9;
+                c.beginPath();
+                c.moveTo(pxX(w2.xmin), pxY(yAtX + slope * (w2.xmin - dx)));
+                c.lineTo(pxX(w2.xmax), pxY(yAtX + slope * (w2.xmax - dx)));
                 c.stroke(); c.setLineDash([]);
-                var tpx = toPixelX(dx), tpy = toPixelY(yAtX);
-                if (!isHC) { c.beginPath(); c.arc(tpx, tpy, 10, 0, Math.PI * 2); c.fillStyle = gcHexToRgba(tanInk, 0.22); c.fill(); }
-                c.beginPath(); c.arc(tpx, tpy, 6, 0, Math.PI * 2);
-                c.fillStyle = tanInk; c.fill(); c.strokeStyle = P.label; c.lineWidth = 2; c.stroke();
-              }
-            } catch (e) { /* skip */ }
-          }
-
-          // Interactive trace-cursor crosshair & coordinate reticle beacon
-          if (d.traceMode) {
-            var trX = toPixelX(traceX);
-            if (!isHC) {
-              c.strokeStyle = isDarkTheme ? 'rgba(56,189,248,0.22)' : 'rgba(79,70,229,0.14)'; c.lineWidth = 4.5;
-              c.beginPath(); c.moveTo(trX, 0); c.lineTo(trX, H); c.stroke();
-            }
-            c.strokeStyle = isHC ? P.label : (isDarkTheme ? '#7dd3fc' : '#4338ca'); c.lineWidth = 1.5; c.setLineDash([4, 3]);
-            c.beginPath(); c.moveTo(trX, 0); c.lineTo(trX, H); c.stroke(); c.setLineDash([]);
-            c.font = 'bold 12px monospace';
-            funcs.forEach(function(fn, fi) {
-              if (!fn.expr || !fn.expr.trim()) return;
-              try {
-                var trY = math.compile(gcCleanExpr(fn.expr)).evaluate(Object.assign({ x: traceX }, sA));
-                if (typeof trY === 'number' && isFinite(trY)) {
-                  var trPy = toPixelY(trY), trCol = gcCurveStyle(fi).color;
-                  if (!isHC && trPy >= 0 && trPy <= H) {
-                    c.strokeStyle = gcHexToRgba(trCol, isDarkTheme ? 0.35 : 0.25); c.lineWidth = 1; c.setLineDash([3, 3]);
-                    c.beginPath(); c.moveTo(0, trPy); c.lineTo(W, trPy); c.stroke(); c.setLineDash([]);
-                    c.beginPath(); c.arc(trX, trPy, 10, 0, Math.PI * 2); c.fillStyle = gcHexToRgba(trCol, 0.22); c.fill();
-                    c.beginPath(); c.arc(trX, trPy, 8, 0, Math.PI * 2); c.strokeStyle = gcHexToRgba(trCol, 0.65); c.lineWidth = 1.2; c.stroke();
-                  }
-                  c.save(); c.shadowColor = trCol; c.shadowBlur = isDarkTheme ? 8 : 0;
-                  c.beginPath(); c.arc(trX, trPy, 5, 0, Math.PI * 2); c.fillStyle = trCol; c.fill();
-                  c.restore();
-                  if (!isHC) { c.beginPath(); c.arc(trX, trPy, 2, 0, Math.PI * 2); c.fillStyle = '#ffffff'; c.fill(); }
-                  var coordTxt = '(' + Number(traceX.toPrecision(4)) + ', ' + Number(trY.toPrecision(4)) + ')';
-                  var lx = trX > W - 150 ? trX - 10 : trX + 10;
-                  c.textAlign = trX > W - 150 ? 'right' : 'left';
-                  c.fillStyle = P.label;
-                  c.fillText(coordTxt, lx, Math.max(16, Math.min(H - 8, trPy - 8)));
+                c.restore();
+                var tpx = pxX(dx), tpy = pxY(yAtX);
+                if (!hc) {
+                  drawFocusPulse(tpx, tpy, 251, 146, 60, 1.5);
+                  c.beginPath(); c.arc(tpx, tpy, 10, 0, Math.PI * 2); c.fillStyle = gcHexToRgba(tanInk, 0.22); c.fill();
                 }
-              } catch (e) { /* skip */ }
-            });
-          }
-
-          // Keyboard explorer position (Describe and Hear panel)
-          if (gaPoint && gaPoint.y !== null) {
-            var exX = toPixelX(gaPoint.x), exY = toPixelY(gaPoint.y);
-            c.strokeStyle = P.muted; c.lineWidth = 1.5; c.setLineDash([4, 4]);
-            c.beginPath(); c.moveTo(exX, 0); c.lineTo(exX, H); c.stroke(); c.setLineDash([]);
-            if (!isHC) { c.beginPath(); c.arc(exX, exY, 12, 0, Math.PI * 2); c.fillStyle = isDarkTheme ? 'rgba(226,232,240,0.14)' : 'rgba(15,23,42,0.08)'; c.fill(); }
-            c.beginPath(); c.arc(exX, exY, 8, 0, Math.PI * 2); c.strokeStyle = P.label; c.lineWidth = 3; c.stroke();
-          }
-
-          // Rate of change: A and B, the dashed secant and its slope triangle with Δx and Δy.
-          if (gcRocPts && gcRocPts.dy !== null) {
-            var rInk = gcCurveStyle(gaInfo.index === 4 ? 1 : 4).color;
-            var rax = toPixelX(gcRocPts.x1), ray = toPixelY(gcRocPts.y1), rbx = toPixelX(gcRocPts.x2), rby = toPixelY(gcRocPts.y2);
-            if (!isHC) {
-              c.fillStyle = gcHexToRgba(rInk, isDarkTheme ? 0.1 : 0.07);
-              c.beginPath(); c.moveTo(rax, ray); c.lineTo(rbx, ray); c.lineTo(rbx, rby); c.closePath(); c.fill();
+                c.beginPath(); c.arc(tpx, tpy, 6, 0, Math.PI * 2);
+                c.fillStyle = tanInk; c.fill(); c.strokeStyle = P2.label; c.lineWidth = 2; c.stroke();
+              }
             }
-            c.strokeStyle = rInk; c.lineWidth = 2.5; c.setLineDash([6, 4]); c.beginPath(); c.moveTo(rax, ray); c.lineTo(rbx, rby); c.stroke(); c.setLineDash([]);
-            c.lineWidth = 2; c.beginPath(); c.moveTo(rax, ray); c.lineTo(rbx, ray); c.lineTo(rbx, rby); c.stroke();
-            c.fillStyle = P.label; c.font = 'bold 12px system-ui'; c.textAlign = 'center';
-            c.fillText('Δx = ' + GA.formatNumber(gcRocPts.dx), (rax + rbx) / 2, ray + (rby < ray ? 16 : -6));
-            c.textAlign = rbx > W - 90 ? 'right' : 'left';
-            c.fillText('Δy = ' + GA.formatNumber(gcRocPts.dy), rbx + (rbx > W - 90 ? -8 : 8), (ray + rby) / 2 + 4);
-            [['A', rax, ray], ['B', rbx, rby]].forEach(function(pt) {
-              c.beginPath(); c.arc(pt[1], pt[2], 7, 0, Math.PI * 2); c.fillStyle = P.bg; c.fill(); c.strokeStyle = rInk; c.lineWidth = 3; c.stroke();
-              c.fillStyle = P.label; c.textAlign = 'center'; c.fillText(pt[0], pt[1], pt[2] - 12);
-            });
-          }
 
-          // Top-left luminous equation badges (uses rounded path+fill, never extra fillRect)
-          legendEntries.forEach(function(item, li) {
-            var ly = 18 + li * 20;
-            c.font = 'bold 12px system-ui'; c.textAlign = 'left';
-            if (!isHC) {
-              var tw = (typeof c.measureText === 'function' && c.measureText(item.text)) ? (c.measureText(item.text).width || 96) : 96;
-              gcPillPath(6, ly - 13, Math.min(W - 16, tw + 22), 18, 5);
-              c.fillStyle = isDarkTheme ? 'rgba(15,23,42,0.78)' : 'rgba(255,255,255,0.88)';
-              c.fill();
-              c.strokeStyle = gcHexToRgba(item.color, 0.45); c.lineWidth = 1; c.stroke();
-              c.beginPath(); c.arc(14, ly - 4, 3.2, 0, Math.PI * 2); c.fillStyle = item.color; c.fill();
-              c.fillStyle = item.color;
-              c.fillText(item.text, 22, ly);
-            } else {
-              c.fillStyle = item.color;
-              c.fillText(item.text, 8, ly);
+            // Interactive trace-cursor crosshair & coordinate reticle beacon
+            if (S.traceMode) {
+              var trX = pxX(S.traceX);
+              if (!hc) {
+                var trGlow = (dk ? 0.22 : 0.14) + (M.reduceMotion ? 0 : Math.sin(t * 2.8) * 0.05);
+                c.strokeStyle = dk ? 'rgba(56,189,248,' + trGlow.toFixed(3) + ')' : 'rgba(79,70,229,' + trGlow.toFixed(3) + ')';
+                c.lineWidth = 4.5;
+                c.beginPath(); c.moveTo(trX, 0); c.lineTo(trX, H2); c.stroke();
+              }
+              c.strokeStyle = hc ? P2.label : (dk ? '#7dd3fc' : '#4338ca'); c.lineWidth = 1.5; c.setLineDash([4, 3]);
+              c.beginPath(); c.moveTo(trX, 0); c.lineTo(trX, H2); c.stroke(); c.setLineDash([]);
+              c.font = 'bold 12px monospace';
+              for (var tfi = 0; tfi < GC_MAX_CURVES; tfi++) {
+                if (!M.traceActive[tfi]) continue;
+                var trPy = M.tracePy[tfi], trCol = M.curveHex[tfi];
+                var trR = M.curveRgb[tfi * 3], trG = M.curveRgb[tfi * 3 + 1], trB = M.curveRgb[tfi * 3 + 2];
+                if (!hc && trPy >= 0 && trPy <= H2) {
+                  c.strokeStyle = gcRgbStr(trR, trG, trB, dk ? 0.35 : 0.25); c.lineWidth = 1; c.setLineDash([3, 3]);
+                  c.beginPath(); c.moveTo(0, trPy); c.lineTo(W2, trPy); c.stroke(); c.setLineDash([]);
+                  drawFocusPulse(trX, trPy, trR, trG, trB, tfi + 0.5);
+                  c.beginPath(); c.arc(trX, trPy, 10, 0, Math.PI * 2); c.fillStyle = gcRgbStr(trR, trG, trB, 0.22); c.fill();
+                  c.beginPath(); c.arc(trX, trPy, 8, 0, Math.PI * 2); c.strokeStyle = gcRgbStr(trR, trG, trB, 0.65); c.lineWidth = 1.2; c.stroke();
+                }
+                c.save(); c.shadowColor = trCol; c.shadowBlur = dk ? 8 : 0;
+                c.beginPath(); c.arc(trX, trPy, 5, 0, Math.PI * 2); c.fillStyle = trCol; c.fill();
+                c.restore();
+                if (!hc) { c.beginPath(); c.arc(trX, trPy, 2, 0, Math.PI * 2); c.fillStyle = '#ffffff'; c.fill(); }
+                var lx = trX > W2 - 150 ? trX - 10 : trX + 10;
+                c.textAlign = trX > W2 - 150 ? 'right' : 'left';
+                c.fillStyle = P2.label;
+                c.fillText(M.traceTxt[tfi], lx, Math.max(16, Math.min(H2 - 8, trPy - 8)));
+              }
             }
-          });
 
-          // Subtle oscilloscope bezel inner frame & corner reticles
-          if (!isHC) {
-            c.strokeStyle = isDarkTheme ? 'rgba(129,140,248,0.22)' : 'rgba(148,163,184,0.34)';
-            c.lineWidth = 1;
-            c.beginPath(); c.rect(0.5, 0.5, W - 1, H - 1); c.stroke();
-            var cr = 9;
-            c.strokeStyle = isDarkTheme ? 'rgba(56,189,248,0.45)' : 'rgba(79,70,229,0.28)';
-            c.lineWidth = 1.5;
-            c.beginPath();
-            c.moveTo(2, 2 + cr); c.lineTo(2, 2); c.lineTo(2 + cr, 2);
-            c.moveTo(W - 2 - cr, 2); c.lineTo(W - 2, 2); c.lineTo(W - 2, 2 + cr);
-            c.moveTo(2, H - 2 - cr); c.lineTo(2, H - 2); c.lineTo(2 + cr, H - 2);
-            c.moveTo(W - 2 - cr, H - 2); c.lineTo(W - 2, H - 2); c.lineTo(W - 2, H - 2 - cr);
-            c.stroke();
+            // Keyboard explorer position (Describe and Hear panel)
+            if (S.gaPoint && S.gaPoint.y !== null) {
+              var exX = pxX(S.gaPoint.x), exY = pxY(S.gaPoint.y);
+              c.strokeStyle = P2.muted; c.lineWidth = 1.5; c.setLineDash([4, 4]);
+              c.beginPath(); c.moveTo(exX, 0); c.lineTo(exX, H2); c.stroke(); c.setLineDash([]);
+              if (!hc) { c.beginPath(); c.arc(exX, exY, 12, 0, Math.PI * 2); c.fillStyle = dk ? 'rgba(226,232,240,0.14)' : 'rgba(15,23,42,0.08)'; c.fill(); }
+              c.beginPath(); c.arc(exX, exY, 8, 0, Math.PI * 2); c.strokeStyle = P2.label; c.lineWidth = 3; c.stroke();
+            }
+
+            // Rate of change: A and B, the dashed secant and its slope triangle with Δx and Δy.
+            if (S.gcRocPts && S.gcRocPts.dy !== null) {
+              var rInk = S.rocColor;
+              var rax = pxX(S.gcRocPts.x1), ray = pxY(S.gcRocPts.y1), rbx = pxX(S.gcRocPts.x2), rby = pxY(S.gcRocPts.y2);
+              if (!hc) {
+                c.fillStyle = gcHexToRgba(rInk, dk ? 0.1 : 0.07);
+                c.beginPath(); c.moveTo(rax, ray); c.lineTo(rbx, ray); c.lineTo(rbx, rby); c.closePath(); c.fill();
+              }
+              c.strokeStyle = rInk; c.lineWidth = 2.5; c.setLineDash([6, 4]); c.beginPath(); c.moveTo(rax, ray); c.lineTo(rbx, rby); c.stroke(); c.setLineDash([]);
+              c.lineWidth = 2; c.beginPath(); c.moveTo(rax, ray); c.lineTo(rbx, ray); c.lineTo(rbx, rby); c.stroke();
+              c.fillStyle = P2.label; c.font = 'bold 12px system-ui'; c.textAlign = 'center';
+              c.fillText('Δx = ' + GA.formatNumber(S.gcRocPts.dx), (rax + rbx) / 2, ray + (rby < ray ? 16 : -6));
+              c.textAlign = rbx > W2 - 90 ? 'right' : 'left';
+              c.fillText('Δy = ' + GA.formatNumber(S.gcRocPts.dy), rbx + (rbx > W2 - 90 ? -8 : 8), (ray + rby) / 2 + 4);
+              var rPts = [['A', rax, ray], ['B', rbx, rby]];
+              for (var rpi = 0; rpi < 2; rpi++) {
+                var rpt = rPts[rpi];
+                c.beginPath(); c.arc(rpt[1], rpt[2], 7, 0, Math.PI * 2); c.fillStyle = P2.bg; c.fill(); c.strokeStyle = rInk; c.lineWidth = 3; c.stroke();
+                c.fillStyle = P2.label; c.textAlign = 'center'; c.fillText(rpt[0], rpt[1], rpt[2] - 12);
+              }
+            }
+
+            // Top-left luminous equation badges (uses rounded path+fill, never extra fillRect)
+            for (var li = 0; li < S.legendEntries.length; li++) {
+              var item = S.legendEntries[li];
+              var ly = 18 + li * 20;
+              c.font = 'bold 12px system-ui'; c.textAlign = 'left';
+              if (!hc) {
+                var tw = (typeof c.measureText === 'function' && c.measureText(item.text)) ? (c.measureText(item.text).width || 96) : 96;
+                gcPillPath(6, ly - 13, Math.min(W2 - 16, tw + 22), 18, 5);
+                c.fillStyle = dk ? 'rgba(15,23,42,0.78)' : 'rgba(255,255,255,0.88)';
+                c.fill();
+                c.strokeStyle = gcHexToRgba(item.color, 0.45); c.lineWidth = 1; c.stroke();
+                c.beginPath(); c.arc(14, ly - 4, 3.2, 0, Math.PI * 2); c.fillStyle = item.color; c.fill();
+                c.fillStyle = item.color;
+                c.fillText(item.text, 22, ly);
+              } else {
+                c.fillStyle = item.color;
+                c.fillText(item.text, 8, ly);
+              }
+            }
+
+            // Subtle oscilloscope bezel inner frame & corner reticles
+            if (!hc) {
+              c.strokeStyle = dk ? 'rgba(129,140,248,0.22)' : 'rgba(148,163,184,0.34)';
+              c.lineWidth = 1;
+              c.beginPath(); c.rect(0.5, 0.5, W2 - 1, H2 - 1); c.stroke();
+              var cr2 = 9;
+              c.strokeStyle = dk ? 'rgba(56,189,248,0.45)' : 'rgba(79,70,229,0.28)';
+              c.lineWidth = 1.5;
+              c.beginPath();
+              c.moveTo(2, 2 + cr2); c.lineTo(2, 2); c.lineTo(2 + cr2, 2);
+              c.moveTo(W2 - 2 - cr2, 2); c.lineTo(W2 - 2, 2); c.lineTo(W2 - 2, 2 + cr2);
+              c.moveTo(2, H2 - 2 - cr2); c.lineTo(2, H2 - 2); c.lineTo(2 + cr2, H2 - 2);
+              c.moveTo(W2 - 2 - cr2, H2 - 2); c.lineTo(W2 - 2, H2 - 2); c.lineTo(W2 - 2, H2 - 2 - cr2);
+              c.stroke();
+            }
+
+            // Window info
+            c.fillStyle = P2.muted; c.font = '12px system-ui'; c.textAlign = 'right';
+            c.fillText('[' + w2.xmin + ', ' + w2.xmax + '] x [' + w2.ymin + ', ' + w2.ymax + ']', W2 - 6, H2 - 6);
           }
 
-          // Window info
-          c.fillStyle = P.muted; c.font = '12px system-ui'; c.textAlign = 'right';
-          c.fillText('[' + win.xmin + ', ' + win.xmax + '] x [' + win.ymin + ', ' + win.ymax + ']', W - 6, H - 6);
+          // Synchronous initial frame render
+          drawFrame(nowMs);
+          M.drawFrame = drawFrame;
+
+          // Live motion loop (strictly guarded: skipped in High Contrast, Reduced Motion, hidden tabs, or detached DOM)
+          function stopLoop() {
+            if (M.rafId && typeof cancelAnimationFrame === 'function') { cancelAnimationFrame(M.rafId); M.rafId = 0; }
+          }
+          function tickLoop() {
+            M.rafId = 0;
+            if (!canvas.isConnected) {
+              if (M.visHandler && typeof document !== 'undefined') { document.removeEventListener('visibilitychange', M.visHandler); M.visHandler = null; }
+              return;
+            }
+            var curS = M.snap;
+            if (!curS || curS.isHC || M.reduceMotion || (typeof document !== 'undefined' && document.hidden)) return;
+            var ts = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+            if (typeof M.drawFrame === 'function') M.drawFrame(ts);
+            if (typeof requestAnimationFrame === 'function') M.rafId = requestAnimationFrame(tickLoop);
+          }
+          function syncLoop() {
+            var curS = M.snap;
+            var want = !!(curS && !curS.isHC && !M.reduceMotion && canvas.isConnected && !(typeof document !== 'undefined' && document.hidden) && typeof requestAnimationFrame === 'function');
+            if (want && !M.rafId) M.rafId = requestAnimationFrame(tickLoop);
+            else if (!want) stopLoop();
+          }
+          M.syncLoop = syncLoop;
+          syncLoop();
+          if (!M.visHandler && typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+            M.visHandler = function() {
+              if (!canvas.isConnected) {
+                document.removeEventListener('visibilitychange', M.visHandler);
+                M.visHandler = null;
+                stopLoop();
+                return;
+              }
+              if (typeof M.syncLoop === 'function') M.syncLoop();
+            };
+            document.addEventListener('visibilitychange', M.visHandler);
+          }
 
           // Track state. This ref is new each render, so React calls it on every
           // commit: write only a changed value, or each write re-renders and loops.

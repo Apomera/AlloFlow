@@ -47,6 +47,12 @@ function HomeworkQrDialogView(props) {
   };
   const fallbackQrDialogRef = React.useRef(null);
   const activeQrDialogRef = homeworkQrDialogRef || fallbackQrDialogRef;
+  const [copiedHomeworkLink, setCopiedHomeworkLink] = React.useState(false);
+  const copyTimerRef = React.useRef(null);
+  const qrFocusBtn = 'transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2';
+  React.useEffect(() => () => {
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+  }, []);
   React.useEffect(() => {
     const dialog = activeQrDialogRef && activeQrDialogRef.current;
     if (!dialog || typeof document === 'undefined') return undefined;
@@ -199,18 +205,22 @@ function HomeworkQrDialogView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setQrShareModal(null),
-    className: "absolute top-3 right-3 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:bg-slate-100",
+    className: `absolute top-3 right-3 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:bg-slate-100 ${qrFocusBtn}`,
     "aria-label": t('common.close') || 'Close'
   }, /*#__PURE__*/React.createElement(X, {
-    size: 20
+    size: 20,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": "true",
     className: "mx-auto mb-3 w-14 h-14 rounded-2xl bg-violet-700 text-white flex items-center justify-center shadow-lg shadow-violet-200"
   }, /*#__PURE__*/React.createElement(ClipboardList, {
-    size: 28
+    size: 28,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("div", {
     className: "inline-flex items-center gap-1.5 rounded-full bg-amber-100 border border-amber-300 px-3 py-1 text-xs font-black uppercase tracking-wider text-amber-900 mb-2"
   }, /*#__PURE__*/React.createElement(BookOpen, {
-    size: 13
+    size: 13,
+    "aria-hidden": "true"
   }), " ", t('share_collect.take_home_assignment') || 'Take-home assignment'), /*#__PURE__*/React.createElement("h2", {
     id: "alloflow-homework-qr-title",
     className: "text-2xl font-black text-slate-900 mb-1"
@@ -334,34 +344,48 @@ function HomeworkQrDialogView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: testHomeworkAsStudent,
-    className: "flex min-h-10 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-xs font-bold text-emerald-900 hover:border-emerald-500"
+    className: `flex min-h-11 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-xs font-bold text-emerald-900 hover:border-emerald-500 ${qrFocusBtn}`
   }, t('share_collect.test_as_student') || 'Test as student', " ", /*#__PURE__*/React.createElement(ExternalLink, {
-    size: 12
+    size: 12,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => printQrSheet(qrShareSvg, 'AlloFlow homework assignment', qrShareModal.title, `${deliveryText('share_collect.print_sheet_resources', 'Teacher-prepared resources')} · ${qrShareModal.aiPolicy === 'student-byok' ? deliveryText('share_collect.personal_ai_optional', 'Personal AI optional') : deliveryText('share_collect.student_ai_off', 'Student AI off')} · ${deliveryText('share_collect.no_live_session', 'No live session')}`),
     disabled: !qrShareSvg,
-    className: "flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white p-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
+    className: `flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white p-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50 ${qrFocusBtn}`
   }, t('share_collect.print_qr') || 'Print QR', " ", /*#__PURE__*/React.createElement(Printer, {
-    size: 12
+    size: 12,
+    "aria-hidden": "true"
   }))), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: () => copyToClipboard(qrShareModal.url),
-    className: "w-full flex items-center justify-center gap-2 text-xs font-bold text-violet-900 hover:text-violet-950 bg-violet-100 border border-violet-300 hover:border-violet-500 rounded-lg p-2 transition-all break-all"
-  }, qrShareModal.type === 'assignment-pack-hosted' ? deliveryText('share_collect.copy_hosted_link', 'Copy hosted homework link') : qrShareModal.type === 'assignment-pack' ? deliveryText('share_collect.copy_self_contained_link', 'Copy self-contained link') : deliveryText('share_collect.copy_homework_link', 'Copy homework link'), " ", /*#__PURE__*/React.createElement(Copy, {
-    size: 12
-  })), /*#__PURE__*/React.createElement("input", {
+    onClick: () => {
+      if (typeof copyToClipboard === 'function') copyToClipboard(qrShareModal.url);
+      setCopiedHomeworkLink(true);
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => setCopiedHomeworkLink(false), 2200);
+    },
+    className: `w-full min-h-11 flex items-center justify-center gap-2 text-xs font-bold rounded-lg p-2 break-all border ${qrFocusBtn} ${copiedHomeworkLink ? 'text-emerald-950 bg-emerald-100 border-emerald-400' : 'text-violet-900 hover:text-violet-950 bg-violet-100 border-violet-300 hover:border-violet-500'}`
+  }, copiedHomeworkLink ? deliveryText('share_collect.link_copied_button', 'Link copied!') : qrShareModal.type === 'assignment-pack-hosted' ? deliveryText('share_collect.copy_hosted_link', 'Copy hosted homework link') : qrShareModal.type === 'assignment-pack' ? deliveryText('share_collect.copy_self_contained_link', 'Copy self-contained link') : deliveryText('share_collect.copy_homework_link', 'Copy homework link'), " ", /*#__PURE__*/React.createElement(Copy, {
+    size: 12,
+    "aria-hidden": "true"
+  })), copiedHomeworkLink && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "sr-only"
+  }, deliveryText('share_collect.link_copied_announce', 'Homework link copied to clipboard.')), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('share_collect.link_aria') || 'Selectable homework link',
     readOnly: true,
     value: qrShareModal.url || '',
     onFocus: event => event.target.select(),
-    className: "mt-2 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-violet-500"
+    className: "mt-2 min-h-11 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-violet-600"
   }), qrShareModal.type !== 'assignment-pack' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: revokeHomeworkAssignment,
-    className: "w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-red-800 bg-red-50 border border-red-300 hover:border-red-500 rounded-lg p-2 transition-all"
+    className: `w-full min-h-11 mt-2 flex items-center justify-center gap-2 text-xs font-bold text-red-800 bg-red-50 border border-red-300 hover:border-red-500 rounded-lg p-2 ${qrFocusBtn}`
   }, t('share_collect.revoke_homework_link') || 'Revoke homework link', " ", /*#__PURE__*/React.createElement(Trash2, {
-    size: 12
+    size: 12,
+    "aria-hidden": "true"
   })), qrShareModal.type === 'assignment-pack' && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-amber-800 mt-2"
   }, t('share_collect.self_contained_links_cannot_be_remotely') || 'Self-contained links cannot be remotely revoked; their built-in expiration still applies.'), (qrShareModal.type === 'assignment' || qrShareModal.type === 'assignment-pack') && (() => {
@@ -387,18 +411,20 @@ function HomeworkQrDialogView(props) {
         if (canConvertSelection) createSelfContainedHomeworkLink(conversionIds.slice(), buildConversionOptions(false));
       },
       disabled: !canConvertSelection,
-      className: "w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+      className: `w-full min-h-11 mt-2 flex items-center justify-center gap-2 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 disabled:opacity-60 disabled:cursor-not-allowed ${qrFocusBtn}`
     }, t('share_collect.make_self_contained_version_no_accounts') || 'Make self-contained version (no accounts needed)', " ", /*#__PURE__*/React.createElement(Share2, {
-      size: 12
+      size: 12,
+      "aria-hidden": "true"
     })), /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: () => {
         if (canConvertSelection) hostPackOnMailbox(conversionIds.slice(), buildConversionOptions(true));
       },
       disabled: mbBusy || !canConvertSelection,
-      className: "w-full mt-2 flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60"
+      className: `w-full min-h-11 mt-2 flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 disabled:opacity-60 ${qrFocusBtn}`
     }, mbBusy ? deliveryText('share_collect.uploading_to_mailbox', 'Uploading to your mailbox…') : deliveryText('share_collect.host_on_mailbox', 'Host on Class Mailbox (small QR, images OK)'), " ", /*#__PURE__*/React.createElement(Share2, {
-      size: 12
+      size: 12,
+      "aria-hidden": "true"
     })));
   })(), qrShareModal.type === 'assignment-pack-hosted' ? /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-3"
@@ -483,6 +509,27 @@ function ClassMailboxSetupView(props) {
   const restoreFocusAfterCancelRef = React.useRef(false);
   const [confirmRotateToken, setConfirmRotateToken] = React.useState(false);
   const [confirmForgetMailbox, setConfirmForgetMailbox] = React.useState(false);
+  const [copiedState, setCopiedState] = React.useState({
+    kind: '',
+    message: ''
+  });
+  const copiedTimerRef = React.useRef(null);
+  const mbFocusBtn = 'transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
+  React.useEffect(() => () => {
+    if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+  }, []);
+  const copyWithFeedback = (value, kind, message) => {
+    if (typeof copyToClipboard === 'function') copyToClipboard(value);
+    setCopiedState({
+      kind,
+      message
+    });
+    if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+    copiedTimerRef.current = setTimeout(() => setCopiedState({
+      kind: '',
+      message: ''
+    }), 2200);
+  };
   React.useEffect(() => {
     if (restoreFocusAfterCancelRef.current && !pendingMailboxShare) {
       restoreFocusAfterCancelRef.current = false;
@@ -497,19 +544,29 @@ function ClassMailboxSetupView(props) {
   const connectLabel = mbBusy ? pendingMailboxShare ? tx('mailbox.connecting_pending', 'Connecting…') : tx('mailbox.testing_connection', 'Testing…') : pendingMailboxShare ? tx('mailbox.connect_and_share', 'Connect and share') : tx('mailbox.connect_self_test', 'Connect & self-test');
   return /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative text-left max-h-[90vh] overflow-y-auto",
-    onClick: e => e.stopPropagation()
+    onClick: e => e.stopPropagation(),
+    onKeyDown: event => {
+      if (event.key === 'Escape' && (confirmRotateToken || confirmForgetMailbox)) {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        event.preventDefault();
+        event.stopPropagation();
+        setConfirmRotateToken(false);
+        setConfirmForgetMailbox(false);
+      }
+    }
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     ref: closeButtonRef,
     onClick: closeSetup,
-    className: "absolute top-3 right-3 p-2 rounded-full text-slate-600 hover:bg-slate-100",
+    className: `absolute top-3 right-3 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:bg-slate-100 ${mbFocusBtn}`,
     "aria-label": t('common.close') || 'Close'
   }, /*#__PURE__*/React.createElement(X, {
-    size: 20
+    size: 20,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("h2", {
-    className: "text-xl font-black text-slate-900 mb-1"
+    className: "pr-10 text-xl font-black text-slate-900 mb-1"
   }, t('mailbox.live_class_without_accounts') || 'Live class without accounts', " ", /*#__PURE__*/React.createElement("span", {
-    className: "text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 rounded px-1.5 py-0.5 align-middle"
+    className: "text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 rounded px-1.5 py-0.5 align-middle"
   }, "beta")), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mb-3"
   }, t('mailbox.runs_from_a_google_apps_script') || 'Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.'), pendingMailboxShare && /*#__PURE__*/React.createElement("section", {
@@ -534,13 +591,13 @@ function ClassMailboxSetupView(props) {
   }, tx('mailbox.pending_needs_update', 'Update the mailbox script to v{version} or newer before sharing.').replace('{version}', String(pendingMailboxShare.requiredMailboxVersion))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: cancelWaitingShare,
-    className: "mt-3 min-h-10 w-full rounded-lg border border-indigo-300 bg-white px-3 py-2 text-xs font-bold text-indigo-900 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+    className: `mt-3 min-h-11 w-full rounded-lg border border-indigo-300 bg-white px-3 py-2 text-xs font-bold text-indigo-900 hover:bg-indigo-100 ${mbFocusBtn}`
   }, tx('mailbox.cancel_pending_share', 'Cancel pending share')), mbConfig && /*#__PURE__*/React.createElement("button", {
     type: "button",
     ref: connectionButtonRef,
     onClick: connectMailbox,
     disabled: mbBusy,
-    className: "mt-2 min-h-10 w-full rounded-lg bg-indigo-600 p-2.5 text-xs font-bold text-white hover:bg-indigo-700 disabled:opacity-60"
+    className: `mt-2 min-h-11 w-full rounded-lg bg-indigo-600 p-2.5 text-xs font-bold text-white hover:bg-indigo-700 disabled:opacity-60 ${mbFocusBtn}`
   }, connectLabel)), /*#__PURE__*/React.createElement("div", {
     className: "space-y-2 mb-4"
   }, /*#__PURE__*/React.createElement("details", {
@@ -611,7 +668,7 @@ function ClassMailboxSetupView(props) {
     value: mbUrlInput,
     onChange: e => setMbUrlInput(e.target.value),
     placeholder: "https://script.google.com/macros/s/\u2026/exec",
-    className: "w-full text-xs border border-slate-300 rounded-lg p-2 mb-2 font-mono",
+    className: "min-h-11 w-full text-xs border border-slate-300 rounded-lg p-2 mb-2 font-mono placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600",
     "aria-label": t('mailbox.webapp_url_aria') || 'Class Mailbox web app URL'
   }), /*#__PURE__*/React.createElement("input", {
     type: "password",
@@ -620,14 +677,14 @@ function ClassMailboxSetupView(props) {
     value: mbAdminInput,
     onChange: e => setMbAdminInput(e.target.value),
     placeholder: tx('mailbox.owner_admin_token_placeholder', 'Admin token from Apps Script properties'),
-    className: "w-full text-xs border border-slate-200 rounded-lg p-2 mb-2 font-mono",
+    className: "min-h-11 w-full text-xs border border-slate-300 rounded-lg p-2 mb-2 font-mono placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600",
     "aria-label": tx('mailbox.owner_admin_token_aria', 'Class Mailbox admin token')
   }), /*#__PURE__*/React.createElement("button", {
     type: "button",
     ref: connectionButtonRef,
     onClick: connectMailbox,
     disabled: mbBusy,
-    className: "w-full flex items-center justify-center gap-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg p-2.5 transition-all disabled:opacity-60"
+    className: `w-full min-h-11 flex items-center justify-center gap-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg p-2.5 disabled:opacity-60 ${mbFocusBtn}`
   }, connectLabel), typeof importMailboxConfig === 'function' && /*#__PURE__*/React.createElement("div", {
     className: "mt-2.5 flex flex-col items-center gap-1 border-t border-slate-200 pt-2"
   }, /*#__PURE__*/React.createElement("label", {
@@ -702,68 +759,77 @@ function ClassMailboxSetupView(props) {
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold uppercase tracking-wider text-slate-600 mb-1"
   }, t('mailbox.admin_token_save_it_like_a') || 'Admin token — save it like a password'), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-2"
+    className: "flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-mono text-slate-700 truncate flex-1",
     title: mbShowAdmin ? mbConfig.admin : 'Hidden'
   }, mbShowAdmin ? mbConfig.admin : '••••••••••••••••••••••••'), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    "aria-pressed": mbShowAdmin,
     onClick: () => setMbShowAdmin(v => !v),
-    className: "p-1.5 text-slate-600 hover:text-slate-900",
+    className: `min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-200 hover:text-slate-900 ${mbFocusBtn}`,
     title: mbShowAdmin ? 'Hide admin token' : 'Reveal admin token',
     "aria-label": mbShowAdmin ? 'Hide admin token' : 'Reveal admin token'
   }, mbShowAdmin ? /*#__PURE__*/React.createElement(EyeOff, {
-    size: 15
+    size: 15,
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Eye, {
-    size: 15
+    size: 15,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: () => copyToClipboard(mbConfig.admin),
-    className: "p-1.5 text-indigo-700 hover:text-indigo-900",
+    onClick: () => copyWithFeedback(mbConfig.admin, 'admin', tx('mailbox.admin_token_copied', 'Admin token copied to clipboard.')),
+    className: `min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg text-indigo-700 hover:bg-indigo-100 hover:text-indigo-900 ${mbFocusBtn}`,
     title: t('mailbox.copy_admin_token') || 'Copy admin token',
     "aria-label": t('mailbox.copy_admin_token') || 'Copy admin token'
   }, /*#__PURE__*/React.createElement(Copy, {
-    size: 15
+    size: 15,
+    "aria-hidden": "true"
   }))), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-1"
   }, t('mailbox.students_never_receive_this_token_the') || 'Students never receive this token. The QR contains only a one-session join secret.'), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2 mt-2"
-  }, /*#__PURE__*/React.createElement("button", {
+    className: "flex flex-wrap gap-2 mt-2"
+  }, confirmRotateToken ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
-      if (!confirmRotateToken) {
-        setConfirmRotateToken(true);
-        return;
-      }
       setConfirmRotateToken(false);
       rotateMailboxAdmin();
     },
-    onBlur: () => {
-      if (confirmRotateToken) setConfirmRotateToken(false);
+    disabled: mbBusy || mbResumable.length > 0,
+    className: `flex-1 min-h-11 text-xs font-bold border border-amber-600 bg-amber-600 text-white hover:bg-amber-700 rounded-md px-2 py-1.5 disabled:opacity-50 ${mbFocusBtn}`
+  }, t('mailbox.confirm_rotate_token') || 'Confirm rotate token'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setConfirmRotateToken(false),
+    className: `min-h-11 text-xs font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 rounded-md px-3 py-1.5 ${mbFocusBtn}`
+  }, t('common.cancel') || 'Cancel')) : /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => {
+      setConfirmForgetMailbox(false);
+      setConfirmRotateToken(true);
     },
     disabled: mbBusy || mbResumable.length > 0,
-    className: `flex-1 text-xs font-bold border rounded-md px-2 py-1.5 disabled:opacity-50 ${confirmRotateToken ? 'border-amber-500 bg-amber-50 text-amber-900' : 'border-slate-300'}`,
+    className: `flex-1 min-h-11 text-xs font-bold border border-slate-300 bg-white text-slate-800 hover:bg-slate-100 rounded-md px-2 py-1.5 disabled:opacity-50 ${mbFocusBtn}`,
     title: mbResumable.length ? 'Close active sessions before rotating' : 'Invalidate the old admin token'
-  }, confirmRotateToken ? t('mailbox.confirm_rotate_token') || 'Tap again to rotate token' : t('mailbox.rotate_token') || 'Rotate token'), mbResumable.length > 0 && /*#__PURE__*/React.createElement("button", {
+  }, t('mailbox.rotate_token') || 'Rotate token'), mbResumable.length > 0 && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: closeAllMailboxSessions,
     disabled: mbBusy,
-    className: "flex-1 text-xs font-bold border border-rose-300 text-rose-700 rounded-md px-2 py-1.5 disabled:opacity-50"
+    className: `flex-1 min-h-11 text-xs font-bold border border-rose-300 text-rose-700 hover:bg-rose-50 rounded-md px-2 py-1.5 disabled:opacity-50 ${mbFocusBtn}`
   }, t('mailbox.close_all_sessions') || 'Close all sessions'))), /*#__PURE__*/React.createElement("p", {
     className: "mb-3 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-xs font-semibold text-emerald-900"
   }, t('mailbox.completed_student_submissions_save_automatically') || 'Completed student submissions save automatically as JSON files in your private Drive mailbox folder. Students receive a local backup download if delivery fails. To review them, download the JSON files from Drive and import them through AlloFlow’s Submission Inbox.', " ", tx('mailbox.inbox_pickup_v29', 'With mailbox script v29 or newer, skip the Drive download: in the Submission Inbox, choose Get submissions from Class Mailbox.')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: startMailboxLiveSession,
     disabled: mbBusy,
-    className: "w-full flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl p-3 transition-all disabled:opacity-60"
+    className: `w-full min-h-11 flex items-center justify-center gap-2 text-sm font-black text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl p-3 disabled:opacity-60 ${mbFocusBtn}`
   }, mbBusy ? 'Starting…' : 'Teach live'), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 flex flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: exportMailboxConfig,
-    className: "flex-1 text-xs font-bold text-sky-700 underline underline-offset-2 hover:text-sky-900"
+    className: `flex-1 min-h-11 rounded-lg px-2 text-xs font-bold text-sky-700 underline underline-offset-2 hover:text-sky-900 ${mbFocusBtn}`
   }, t('mailbox.save_setup_to_a_file') || 'Save setup to a file'), /*#__PURE__*/React.createElement("label", {
-    className: "flex-1 cursor-pointer text-center text-xs font-bold text-sky-700 underline underline-offset-2 hover:text-sky-900"
+    className: "flex-1 min-h-11 inline-flex items-center justify-center cursor-pointer rounded-lg px-2 text-center text-xs font-bold text-sky-700 underline underline-offset-2 hover:text-sky-900 focus-within:ring-2 focus-within:ring-indigo-600"
   }, t('mailbox.restore_from_a_file') || 'Restore from a file', /*#__PURE__*/React.createElement("input", {
     type: "file",
     accept: "application/json,.json",
@@ -776,7 +842,7 @@ function ClassMailboxSetupView(props) {
   }))), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-xs leading-relaxed text-slate-600"
   }, t('mailbox.the_saved_file_holds_an_access') || 'The saved file holds an access key for your mailbox. Keep it somewhere you would keep a password, and it will restore this setup on another device or after storage is cleared.'), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2 mt-2"
+    className: "flex flex-wrap gap-2 mt-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
@@ -784,14 +850,10 @@ function ClassMailboxSetupView(props) {
       setMbConfig(null);
       setMbStatus('');
     },
-    className: "flex-1 text-xs font-bold text-slate-600 hover:text-slate-700 underline underline-offset-2"
-  }, t('mailbox.change_mailbox') || 'Change mailbox'), /*#__PURE__*/React.createElement("button", {
+    className: `flex-1 min-h-11 rounded-lg px-2 text-xs font-bold text-slate-600 hover:text-slate-800 underline underline-offset-2 ${mbFocusBtn}`
+  }, t('mailbox.change_mailbox') || 'Change mailbox'), confirmForgetMailbox ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
-      if (!confirmForgetMailbox) {
-        setConfirmForgetMailbox(true);
-        return;
-      }
       setConfirmForgetMailbox(false);
       cancelPendingMailboxShare?.();
       /* Clears the BRIDGE as well as the cache. Without this the hydrate on next load would resurrect a mailbox the teacher just forgot. */
@@ -800,19 +862,27 @@ function ClassMailboxSetupView(props) {
       setMbUrlInput('');
       setMbStatus('Mailbox forgotten on this device. To reconnect later you may need to reset the admin token (see the setup guide).');
     },
-    onBlur: () => {
-      if (confirmForgetMailbox) setConfirmForgetMailbox(false);
-    },
-    className: `flex-1 text-xs font-bold underline underline-offset-2 ${confirmForgetMailbox ? 'text-rose-700 bg-rose-50 rounded px-1.5 py-0.5 border border-rose-300 no-underline' : 'text-rose-600 hover:text-rose-700'}`
-  }, confirmForgetMailbox ? t('mailbox.confirm_forget_mailbox') || 'Confirm forget mailbox' : t('mailbox.forget_mailbox') || 'Forget mailbox'))), mbConfig && mbLive && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("button", {
+    className: `flex-1 min-h-11 rounded-lg border border-rose-700 bg-rose-700 px-2 text-xs font-bold text-white hover:bg-rose-800 ${mbFocusBtn}`
+  }, t('mailbox.confirm_forget_mailbox') || 'Confirm forget mailbox'), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: "w-full bg-indigo-50 border-2 border-indigo-100 rounded-2xl p-4 mb-3 text-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
-    onClick: () => copyToClipboard(mbLive.code),
+    onClick: () => setConfirmForgetMailbox(false),
+    className: `min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-100 ${mbFocusBtn}`
+  }, t('common.cancel') || 'Cancel')) : /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => {
+      setConfirmRotateToken(false);
+      setConfirmForgetMailbox(true);
+    },
+    className: `flex-1 min-h-11 rounded-lg px-2 text-xs font-bold text-rose-700 hover:text-rose-800 underline underline-offset-2 ${mbFocusBtn}`
+  }, t('mailbox.forget_mailbox') || 'Forget mailbox'))), mbConfig && mbLive && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: `w-full min-h-11 bg-indigo-50 border-2 border-indigo-200 hover:border-indigo-400 rounded-2xl p-4 mb-3 text-center cursor-pointer ${mbFocusBtn}`,
+    onClick: () => copyWithFeedback(mbLive.code, 'code', tx('mailbox.class_code_copied', 'Class code copied to clipboard.')),
     title: t('mailbox.copy_class_code') || 'Copy class code'
   }, /*#__PURE__*/React.createElement("span", {
-    className: "block text-xs font-bold uppercase tracking-widest text-indigo-500 mb-1"
-  }, t('mailbox.class_code_tap_to_copy') || 'Class code (tap to copy)'), /*#__PURE__*/React.createElement("span", {
-    className: "block text-4xl font-black tracking-[0.3em] text-indigo-800"
+    className: "block text-xs font-bold uppercase tracking-widest text-indigo-800 mb-1"
+  }, copiedState.kind === 'code' ? t('mailbox.class_code_copied_short') || 'Class code copied!' : t('mailbox.class_code_tap_to_copy') || 'Class code (tap to copy)'), /*#__PURE__*/React.createElement("span", {
+    className: "block text-4xl font-black tracking-[0.3em] text-indigo-900"
   }, mbLive.code)), mbQrSvg ? /*#__PURE__*/React.createElement("div", {
     className: "flex justify-center mb-3"
   }, /*#__PURE__*/React.createElement("div", {
@@ -836,38 +906,42 @@ function ClassMailboxSetupView(props) {
     className: "mb-3 grid grid-cols-1 gap-2 sm:grid-cols-4"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: () => copyToClipboard(mbLive.joinUrl),
-    className: "flex min-h-10 items-center justify-center gap-1 rounded-lg border border-indigo-300 bg-white p-2 text-xs font-bold text-indigo-800 hover:border-indigo-500"
-  }, t('mailbox.copy_link') || 'Copy link', " ", /*#__PURE__*/React.createElement(Copy, {
-    size: 12
+    onClick: () => copyWithFeedback(mbLive.joinUrl, 'joinUrl', tx('mailbox.join_link_copied', 'Live session link copied to clipboard.')),
+    className: `flex min-h-11 items-center justify-center gap-1 rounded-lg border p-2 text-xs font-bold ${mbFocusBtn} ${copiedState.kind === 'joinUrl' ? 'border-emerald-400 bg-emerald-50 text-emerald-900' : 'border-indigo-300 bg-white text-indigo-800 hover:border-indigo-500'}`
+  }, copiedState.kind === 'joinUrl' ? t('mailbox.copied_short') || 'Copied!' : t('mailbox.copy_link') || 'Copy link', " ", /*#__PURE__*/React.createElement(Copy, {
+    size: 12,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => openStudentQrPreview(mbLive.joinUrl, 'live-session link as a student'),
-    className: "flex min-h-10 items-center justify-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-xs font-bold text-emerald-900 hover:border-emerald-500"
+    className: `flex min-h-11 items-center justify-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-xs font-bold text-emerald-900 hover:border-emerald-500 ${mbFocusBtn}`
   }, t('mailbox.test') || 'Test', " ", /*#__PURE__*/React.createElement(ExternalLink, {
-    size: 12
+    size: 12,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => printQrSheet(mbQrSvg, 'AlloFlow live session', 'Class code ' + mbLive.code, `Class Mailbox QR join · ${mbLive.aiPolicy === 'student-byok' ? 'Personal AI optional' : 'Student AI off'}`, mbLive.code),
     disabled: !mbQrSvg,
-    className: "flex min-h-10 items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white p-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
+    className: `flex min-h-11 items-center justify-center gap-1 rounded-lg border border-slate-300 bg-white p-2 text-xs font-bold text-slate-800 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50 ${mbFocusBtn}`
   }, t('mailbox.print') || 'Print', " ", /*#__PURE__*/React.createElement(Printer, {
-    size: 12
+    size: 12,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
       closeSetup();
       setShowSessionModal(true);
     },
-    className: "flex min-h-10 items-center justify-center gap-1 rounded-lg border border-cyan-300 bg-cyan-50 p-2 text-xs font-bold text-cyan-900 hover:border-cyan-500"
+    className: `flex min-h-11 items-center justify-center gap-1 rounded-lg border border-cyan-300 bg-cyan-50 p-2 text-xs font-bold text-cyan-900 hover:border-cyan-500 ${mbFocusBtn}`
   }, t('mailbox.project') || 'Project', " ", /*#__PURE__*/React.createElement(Maximize, {
-    size: 12
+    size: 12,
+    "aria-hidden": "true"
   }))), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('mailbox.join_link_aria') || 'Selectable mailbox live join link',
     readOnly: true,
     value: mbLive.joinUrl || '',
     onFocus: event => event.target.select(),
-    className: "mb-3 w-full rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+    className: "mb-3 min-h-11 w-full rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-indigo-600"
   }), /*#__PURE__*/React.createElement("div", {
     className: "mb-3 max-h-36 overflow-y-auto border border-slate-200 rounded-xl p-2"
   }, /*#__PURE__*/React.createElement("p", {
@@ -907,18 +981,20 @@ function ClassMailboxSetupView(props) {
     role: "switch",
     "aria-checked": mbMode === 'sync',
     onClick: () => setMbMode(m => m === 'sync' ? 'async' : 'sync'),
-    className: `w-full flex items-center justify-center gap-2 text-xs font-bold rounded-lg p-2 transition-all mb-2 border ${mbMode === 'sync' ? 'text-emerald-800 bg-emerald-50 border-emerald-300' : 'text-sky-800 bg-sky-50 border-sky-300'}`
-  }, mbMode === 'sync' ? 'Teacher-led: students follow your screen (tap to switch)' : 'Student-paced: students explore independently (tap to switch)'), /*#__PURE__*/React.createElement("button", {
+    className: `w-full min-h-11 flex items-center justify-between gap-2 text-xs font-bold rounded-lg px-3 py-2 mb-2 border text-left ${mbFocusBtn} ${mbMode === 'sync' ? 'text-emerald-900 bg-emerald-50 border-emerald-300' : 'text-sky-900 bg-sky-50 border-sky-300'}`
+  }, /*#__PURE__*/React.createElement("span", null, mbMode === 'sync' ? 'Teacher-led: students follow your screen (tap to switch)' : 'Student-paced: students explore independently (tap to switch)'), /*#__PURE__*/React.createElement("span", {
+    className: `shrink-0 rounded-full px-2 py-0.5 text-[11px] font-black uppercase ${mbMode === 'sync' ? 'bg-emerald-700 text-white' : 'bg-sky-700 text-white'}`
+  }, mbMode === 'sync' ? 'Sync' : 'Self-paced')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: shareFullPackToMailbox,
     disabled: mbBusy,
-    className: "w-full flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60 mb-2"
+    className: `w-full min-h-11 flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 disabled:opacity-60 mb-2 ${mbFocusBtn}`
   }, t('mailbox.re_send_full_pack_troubleshooting_it') || 'Re-send full pack (troubleshooting — it already syncs automatically)'), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mb-2 text-center"
   }, t('mailbox.your_resource_pack_shares_to_the') || 'Your resource pack shares to the class automatically, like a regular live session.'), /*#__PURE__*/React.createElement("div", {
     className: "border-t border-indigo-100 pt-2 mb-2"
   }, mbDirectionsDraft ? /*#__PURE__*/React.createElement("div", {
-    className: "space-y-1 mb-2"
+    className: "space-y-1.5 mb-2"
   }, /*#__PURE__*/React.createElement("input", {
     value: mbDirectionsDraft.title || '',
     onChange: e => setMbDirectionsDraft(p => ({
@@ -927,7 +1003,7 @@ function ClassMailboxSetupView(props) {
     })),
     placeholder: t('directions.title_placeholder') || "Title (e.g. Tonight's homework)",
     "aria-label": t('directions.title_aria') || 'Directions title',
-    className: "w-full text-xs border border-slate-300 rounded p-1.5 bg-white text-slate-800"
+    className: "min-h-11 w-full text-xs border border-slate-300 rounded p-2 bg-white text-slate-800 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
   }), /*#__PURE__*/React.createElement("textarea", {
     value: mbDirectionsDraft.body || '',
     onChange: e => setMbDirectionsDraft(p => ({
@@ -937,9 +1013,9 @@ function ClassMailboxSetupView(props) {
     placeholder: t('directions.body_placeholder') || 'Directions for students: the steps, and what finished work looks like.',
     "aria-label": t('directions.body_aria') || 'Directions for students',
     rows: 3,
-    className: "w-full text-xs border border-slate-300 rounded p-1.5 bg-white text-slate-800"
+    className: "w-full text-xs border border-slate-300 rounded p-2 bg-white text-slate-800 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
   }), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-1 gap-1 sm:grid-cols-2"
+    className: "grid grid-cols-1 gap-1.5 sm:grid-cols-2"
   }, /*#__PURE__*/React.createElement("input", {
     value: mbDirectionsDraft.due || '',
     onChange: e => setMbDirectionsDraft(p => ({
@@ -948,7 +1024,7 @@ function ClassMailboxSetupView(props) {
     })),
     placeholder: t('directions.due_placeholder') || 'Due (optional, e.g. Friday)',
     "aria-label": t('directions.due_aria') || 'Due date',
-    className: "w-full text-xs border border-slate-300 rounded p-1.5 bg-white text-slate-800"
+    className: "min-h-11 w-full text-xs border border-slate-300 rounded p-2 bg-white text-slate-800 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
   }), /*#__PURE__*/React.createElement("input", {
     type: "datetime-local",
     value: mbDirectionsDraft.dueAt || '',
@@ -980,7 +1056,7 @@ function ClassMailboxSetupView(props) {
       });
     },
     "aria-label": t('directions.due_datetime_aria') || 'Optional exact due date and time',
-    className: "w-full text-xs border border-slate-300 rounded p-1.5 bg-white text-slate-800"
+    className: "min-h-11 w-full text-xs border border-slate-300 rounded p-2 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600"
   })), (() => {
     const mbTextAiReady = typeof window !== 'undefined' && (typeof window.__alloAiUsable === 'function' ? !!window.__alloAiUsable('text', window.callGemini) : Boolean(typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked && !window._alloQrBlocked && !window.__alloStudentAiDisabled && !window.__alloAiSecretsLocked));
     return /*#__PURE__*/React.createElement("button", {
@@ -988,7 +1064,7 @@ function ClassMailboxSetupView(props) {
       onClick: deriveDirectionsDraft,
       disabled: directionsDeriving || !mbTextAiReady,
       title: !mbTextAiReady ? t('directions.draft_ai_off') || 'AI setup is required to auto-draft directions. Write your directions above.' : undefined,
-      className: "w-full flex items-center justify-center gap-1 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-1.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      className: `w-full min-h-11 flex items-center justify-center gap-1 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 disabled:opacity-50 disabled:cursor-not-allowed ${mbFocusBtn}`
     }, /*#__PURE__*/React.createElement(Sparkles, {
       size: 12,
       "aria-hidden": "true"
@@ -996,32 +1072,36 @@ function ClassMailboxSetupView(props) {
   })(), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setShowDirectionsComposer(true),
-    className: "w-full text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 hover:border-amber-400 rounded-lg p-1 transition-all"
-  }, "\uD83C\uDFAF ", mbDirectionsDraft?.choiceBoard?.enabled ? 'Edit goals and activity choices (full composer)' : mbDirectionsDraft?.objectives?.length ? t('directions.edit_goals_n', {
+    className: `w-full min-h-11 text-xs font-bold text-amber-900 bg-amber-50 border border-amber-300 hover:border-amber-500 rounded-lg p-2 ${mbFocusBtn}`
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "\uD83C\uDFAF"), " ", mbDirectionsDraft?.choiceBoard?.enabled ? 'Edit goals and activity choices (full composer)' : mbDirectionsDraft?.objectives?.length ? t('directions.edit_goals_n', {
     count: mbDirectionsDraft.objectives.length
   }) || mbDirectionsDraft.objectives.length + ' goal(s) — edit in full composer' : t('directions.add_goals') || 'Add goals or activity choices (full composer)'), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-1"
+    className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: addDirectionsToPack,
-    className: "flex-1 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-1.5 transition-all"
+    className: `flex-1 min-h-11 text-xs font-bold text-emerald-900 hover:text-emerald-950 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 ${mbFocusBtn}`
   }, t('mailbox.add_to_pack') || 'Add to pack'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setMbDirectionsDraft(null),
-    className: "text-xs text-slate-600 hover:text-slate-700 border border-slate-200 rounded-lg px-2 transition-all"
+    className: `min-h-11 text-xs font-bold text-slate-700 hover:bg-slate-100 border border-slate-300 rounded-lg px-3 ${mbFocusBtn}`
   }, t('mailbox.cancel') || 'Cancel'))) : /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setMbDirectionsDraft({}),
-    className: "w-full flex items-center justify-center gap-2 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all mb-1"
+    className: `w-full min-h-11 flex items-center justify-center gap-2 text-xs font-bold text-emerald-900 hover:text-emerald-950 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 mb-1.5 ${mbFocusBtn}`
   }, /*#__PURE__*/React.createElement(ClipboardList, {
-    size: 13
+    size: 13,
+    "aria-hidden": "true"
   }), " ", t('mailbox.write_assignment_directions') || 'Write assignment directions'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: sendPackHome,
     disabled: mbBusy,
-    className: "w-full flex items-center justify-center gap-2 text-xs font-bold text-amber-800 hover:text-amber-900 bg-amber-50 border border-amber-300 hover:border-amber-400 rounded-lg p-2 transition-all disabled:opacity-60"
+    className: `w-full min-h-11 flex items-center justify-center gap-2 text-xs font-bold text-amber-900 hover:text-amber-950 bg-amber-50 border border-amber-300 hover:border-amber-400 rounded-lg p-2 disabled:opacity-60 ${mbFocusBtn}`
   }, /*#__PURE__*/React.createElement(FolderDown, {
-    size: 13
+    size: 13,
+    "aria-hidden": "true"
   }), " ", t('mailbox.send_home_saves_on_student_devices') || 'Send home (saves on student devices)'), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-1 text-center"
   }, t('mailbox.students_keep_the_pack_directions_on') || 'Students keep the pack + directions on their device for homework — no code needed at home.'), Object.keys(mbHwEvidence).length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -1029,8 +1109,10 @@ function ClassMailboxSetupView(props) {
     role: "region",
     "aria-label": t('takehome.evidence_title') || 'Homework check-ins'
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold text-indigo-700 mb-1"
-  }, "\uD83D\uDCE5 ", t('takehome.evidence_title') || 'Homework check-ins', " ", /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-bold text-indigo-800 mb-1"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "\uD83D\uDCE5"), " ", t('takehome.evidence_title') || 'Homework check-ins', " ", /*#__PURE__*/React.createElement("span", {
     className: "font-normal text-slate-600"
   }, "(", t('takehome.evidence_caveat') || 'student-device reported — formative, not a grade', ")")), Object.values(mbHwEvidence).sort((a, b) => (b.at || 0) - (a.at || 0)).slice(0, 12).map(ev => {
     // Split the count: goals the device observed vs goals the
@@ -1053,8 +1135,13 @@ function ClassMailboxSetupView(props) {
   }))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: requestEndLiveSession,
-    className: "w-full text-xs font-bold text-rose-800 hover:text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 transition-all"
-  }, t('mailbox.end_session') || 'End session')), mbStatus && /*#__PURE__*/React.createElement("p", {
+    className: `w-full min-h-11 text-xs font-bold text-rose-800 hover:bg-rose-100 bg-rose-50 border border-rose-300 rounded-lg p-2 ${mbFocusBtn}`
+  }, t('mailbox.end_session') || 'End session')), copiedState.message && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "sr-only"
+  }, copiedState.message), mbStatus && /*#__PURE__*/React.createElement("p", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",

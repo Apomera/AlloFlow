@@ -313,7 +313,7 @@ function FeaturedCard({ item }) {
   const ExternalLink = window.ExternalLink || noop;
   const Code = window.Code || noop;
   return (
-    <div className="min-w-0 bg-white rounded-xl border border-slate-200 p-4 flex flex-col shadow-sm hover:shadow-md hover:border-indigo-200 transition-all">
+    <div className="min-w-0 bg-white rounded-xl border border-slate-200 p-4 flex flex-col shadow-sm hover:shadow-md hover:border-indigo-200 transition-all motion-reduce:transition-none">
       <div className="min-w-0 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-1">
         <h5 className="min-w-0 break-words font-bold text-slate-800 text-sm leading-tight">{item.name}</h5>
         <span className="max-w-full self-start sm:self-auto text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-2 py-0.5 whitespace-normal break-words">{item.license}</span>
@@ -349,6 +349,17 @@ function OpenSourceTab({ t }) {
         <p className="text-sm leading-relaxed text-slate-700">
           {t('about.oss_credits_intro') || 'AlloFlow is free and open source (AGPL-3.0), built on the generous work of the projects below. Thank you to their authors and communities. The projects highlighted first are ones you can explore directly inside AlloFlow.'}
         </p>
+        <div role="group" className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-indigo-900" aria-label="Open-source attribution summary">
+          <span className="inline-flex items-center rounded-full bg-white/90 border border-indigo-200 px-2.5 py-1">
+            {FEATURED_OSS.length} integrated learning tools
+          </span>
+          <span className="inline-flex items-center rounded-full bg-white/90 border border-indigo-200 px-2.5 py-1">
+            {OSS_TOTAL} credited libraries
+          </span>
+          <span className="inline-flex items-center rounded-full bg-white/90 border border-indigo-200 px-2.5 py-1">
+            {READING_SOURCE_TOTAL} reading catalog sources
+          </span>
+        </div>
       </div>
 
       <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
@@ -360,7 +371,7 @@ function OpenSourceTab({ t }) {
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {MEDIA_SOURCE_GUIDE.map((item) => (
-            <a key={item.name} href={item.url} target="_blank" rel="noopener noreferrer" className="block rounded-lg border border-emerald-100 bg-white p-3 hover:border-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600">
+            <a key={item.name} href={item.url} target="_blank" rel="noopener noreferrer" className="block rounded-lg border border-emerald-100 bg-white p-3 hover:border-emerald-300 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600">
               <span className="flex items-start justify-between gap-2">
                 <strong className="text-xs text-slate-800">{item.name}</strong>
                 <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">{item.status}</span>
@@ -924,6 +935,156 @@ const ATLAS_HUBS = [
     ]
   }
 ];
+const ATLAS_STEAM_DIRECT_LINKS = {
+  "Number Line": "https://alloflow-cdn.pages.dev/numberline",
+  "Area Model": "https://alloflow-cdn.pages.dev/areamodel",
+  "Arithmetic Strategy Studio": "https://alloflow-cdn.pages.dev/arithmetic-studio",
+  "Fraction Lab": "https://alloflow-cdn.pages.dev/fraction-viz",
+  "Math Manipulatives": "https://alloflow-cdn.pages.dev/base10",
+  "Multiplication Table": "https://alloflow-cdn.pages.dev/multtable",
+  "Ratios, Rates & Proportions Lab": "https://alloflow-cdn.pages.dev/ratio-lab",
+  "Money Math": "https://alloflow-cdn.pages.dev/money-math",
+  "Unit Converter": "https://alloflow-cdn.pages.dev/unit-convert",
+  "Time & Schedule Lab": "https://alloflow-cdn.pages.dev/time-schedule",
+  "Function Grapher": "https://alloflow-cdn.pages.dev/func-grapher",
+  "Inequality Grapher": "https://alloflow-cdn.pages.dev/inequality",
+  "Calculus Visualizer": "https://alloflow-cdn.pages.dev/calculus",
+  "Algebra Solver": "https://alloflow-cdn.pages.dev/algebra-cas",
+  "Graphing Calculator": "https://alloflow-cdn.pages.dev/graph-calc",
+  "3D Volume Explorer": "https://alloflow-cdn.pages.dev/volume",
+  "Area & Perimeter Lab": "https://alloflow-cdn.pages.dev/area-perimeter",
+  "Coordinate Grid": "https://alloflow-cdn.pages.dev/coordinate",
+  "Angle Explorer": "https://alloflow-cdn.pages.dev/protractor",
+  "Geometry Sandbox": "https://alloflow-cdn.pages.dev/geo-sandbox",
+  "Geometry Prover": "https://alloflow-cdn.pages.dev/geometry-prover",
+  "Geometry World": "https://alloflow-cdn.pages.dev/geometry-world",
+  "Probability": "https://alloflow-cdn.pages.dev/probability",
+  "Statistical Tests": "https://alloflow-cdn.pages.dev/stats-lab",
+  "Charts & Graphs": "https://alloflow-cdn.pages.dev/data-studio",
+  "CODAP Data Science": "https://alloflow-cdn.pages.dev/data-lab",
+  "Lumen Research Canvas": "https://alloflow-cdn.pages.dev/lumen",
+  "Cell Simulator": "https://alloflow-cdn.pages.dev/cell",
+  "Dissection Lab": "https://alloflow-cdn.pages.dev/dissection",
+  "Tree Life Lab": "https://alloflow-cdn.pages.dev/tree-lab",
+  "Cell Atlas Lab": "https://alloflow-cdn.pages.dev/cell-atlas-lab",
+  "DNA Lab": "https://alloflow-cdn.pages.dev/dna-lab",
+  "Punnett Square": "https://alloflow-cdn.pages.dev/punnett",
+  "Microbiology Lab": "https://alloflow-cdn.pages.dev/microbiology",
+  "Epidemic Simulator": "https://alloflow-cdn.pages.dev/epidemic-sim",
+  "EvoLab: Evolution": "https://alloflow-cdn.pages.dev/evo-lab",
+  "Taxonomy Explorer": "https://alloflow-cdn.pages.dev/organism-id",
+  "Dino Lab": "https://alloflow-cdn.pages.dev/dino-lab",
+  "AlphaFold Explorer": "https://alloflow-cdn.pages.dev/alpha-fold-explorer",
+  "Human Anatomy": "https://alloflow-cdn.pages.dev/anatomy",
+  "Brain Atlas": "https://alloflow-cdn.pages.dev/brain-atlas",
+  "NutritionLab: Nutrition Science": "https://alloflow-cdn.pages.dev/nutrition-lab",
+  "First Response Lab": "https://alloflow-cdn.pages.dev/first-response",
+  "Kitchen Lab": "https://alloflow-cdn.pages.dev/kitchen-lab",
+  "Ecosystem": "https://alloflow-cdn.pages.dev/ecosystem",
+  "Companion Planting Lab": "https://alloflow-cdn.pages.dev/companion-planting",
+  "Butterfly Habitat Lab": "https://alloflow-cdn.pages.dev/butterfly",
+  "Beehive Colony Simulator": "https://alloflow-cdn.pages.dev/beehive",
+  "Climate Explorer": "https://alloflow-cdn.pages.dev/climate-explorer",
+  "Environmental Stewardship Campaigns": "https://alloflow-cdn.pages.dev/stewardship-hub",
+  "Field Journeys (Pilot)": "https://alloflow-cdn.pages.dev/field-journeys",
+  "Fire Ecology & Indigenous Stewardship": "https://alloflow-cdn.pages.dev/fire-ecology",
+  "Renewables Lab": "https://alloflow-cdn.pages.dev/renewables-lab",
+  "Aquaculture & Ocean Lab": "https://alloflow-cdn.pages.dev/aquarium",
+  "BirdLab: I-Spy Ornithology": "https://alloflow-cdn.pages.dev/bird-lab",
+  "Raptor Hunt: Predator Physics + Biology": "https://alloflow-cdn.pages.dev/raptor-hunt",
+  "Animal Migration Lab": "https://alloflow-cdn.pages.dev/migration",
+  "Cephalopod Lab": "https://alloflow-cdn.pages.dev/cephalopod-lab",
+  "Coral Reef Survey Lab": "https://alloflow-cdn.pages.dev/coral-reef",
+  "Science of Pets Lab": "https://alloflow-cdn.pages.dev/pets-lab",
+  "Decomposer": "https://alloflow-cdn.pages.dev/decomposer",
+  "Rocks & Minerals": "https://alloflow-cdn.pages.dev/rocks",
+  "Rock Cycle": "https://alloflow-cdn.pages.dev/rock-cycle",
+  "Water Cycle": "https://alloflow-cdn.pages.dev/water-cycle",
+  "Weather Systems & Forecasting": "https://alloflow-cdn.pages.dev/weather-systems",
+  "Plate Tectonics": "https://alloflow-cdn.pages.dev/plate-tectonics",
+  "Geology Explorer": "https://alloflow-cdn.pages.dev/geology-explorer",
+  "Geography Explorer": "https://alloflow-cdn.pages.dev/geo-quiz",
+  "GIS Studio": "https://alloflow-cdn.pages.dev/gis-studio",
+  "Night Sky & Astronomy": "https://alloflow-cdn.pages.dev/astronomy",
+  "Solar System": "https://alloflow-cdn.pages.dev/solar-system",
+  "Moon Mission": "https://alloflow-cdn.pages.dev/moon-mission",
+  "Space Station": "https://alloflow-cdn.pages.dev/space-station",
+  "Galaxy Explorer": "https://alloflow-cdn.pages.dev/galaxy",
+  "Universe Time-Lapse": "https://alloflow-cdn.pages.dev/universe",
+  "Zoom Gallery": "https://alloflow-cdn.pages.dev/zoom-gallery",
+  "Scale Explorer": "https://alloflow-cdn.pages.dev/scale-explorer",
+  "Wave Simulator": "https://alloflow-cdn.pages.dev/wave",
+  "Heat & Thermodynamics Lab": "https://alloflow-cdn.pages.dev/heat-lab",
+  "Nuclear & Radiation Lab": "https://alloflow-cdn.pages.dev/nuclear-lab",
+  "Echolocation Lab": "https://alloflow-cdn.pages.dev/echolocation",
+  "Magnetism Lab": "https://alloflow-cdn.pages.dev/magnetism",
+  "Physics Simulator": "https://alloflow-cdn.pages.dev/physics",
+  "OpticsLab AP": "https://alloflow-cdn.pages.dev/optics-lab",
+  "Particle Lab 3D": "https://alloflow-cdn.pages.dev/particle-lab3d",
+  "Coaster Lab": "https://alloflow-cdn.pages.dev/coaster-lab",
+  "Molecule Builder": "https://alloflow-cdn.pages.dev/molecule",
+  "ChemLab: Reactions & Elements": "https://alloflow-cdn.pages.dev/chem-balance",
+  "Titration Lab": "https://alloflow-cdn.pages.dev/titration-lab",
+  "Baking Lab": "https://alloflow-cdn.pages.dev/baking-science",
+  "Machine Lab": "https://alloflow-cdn.pages.dev/machine-lab",
+  "Circuit Builder": "https://alloflow-cdn.pages.dev/circuit",
+  "Semiconductor Lab": "https://alloflow-cdn.pages.dev/semiconductor",
+  "Bridge Engineering Lab": "https://alloflow-cdn.pages.dev/bridge-lab",
+  "3D Print Lab": "https://alloflow-cdn.pages.dev/print-lab",
+  "PrintingPress": "https://alloflow-cdn.pages.dev/printing-press",
+  "Architecture Studio": "https://alloflow-cdn.pages.dev/arch-studio",
+  "OpenBIM Companion": "https://alloflow-cdn.pages.dev/open-bim",
+  "City Planning Lab": "https://alloflow-cdn.pages.dev/city-lab",
+  "Coding Playground": "https://alloflow-cdn.pages.dev/coding-playground",
+  "Trajectory Computing Lab": "https://alloflow-cdn.pages.dev/trajectory-computing",
+  "Game Studio": "https://alloflow-cdn.pages.dev/game-studio",
+  "AppLab: AI App Generator": "https://alloflow-cdn.pages.dev/app-lab",
+  "Logic Lab": "https://alloflow-cdn.pages.dev/logic-lab",
+  "Cellular Automaton Lab": "https://alloflow-cdn.pages.dev/cellular-lab",
+  "Cyber Defense Lab": "https://alloflow-cdn.pages.dev/cyber-defense",
+  "Tool Forge": "https://alloflow-cdn.pages.dev/forge",
+  "Digital Accessibility Lab": "https://alloflow-cdn.pages.dev/a11y-auditor",
+  "AI Literacy Lab": "https://alloflow-cdn.pages.dev/llm-literacy",
+  "Access Lens": "https://alloflow-cdn.pages.dev/access-lens",
+  "Typing Practice": "https://alloflow-cdn.pages.dev/typing-practice",
+  "Sim Shelf": "https://alloflow-cdn.pages.dev/sim-shelf",
+  "Music Synthesizer": "https://alloflow-cdn.pages.dev/music-synth",
+  "Art & Design Studio": "https://alloflow-cdn.pages.dev/art-studio",
+  "Sourcebook": "https://alloflow-cdn.pages.dev/sourcebook",
+  "Wheel & Fire: Pottery Lab": "https://alloflow-cdn.pages.dev/wheel-and-fire",
+  "Free Forms": "https://alloflow-cdn.pages.dev/free-forms",
+  "Voice & Singing Lab": "https://alloflow-cdn.pages.dev/singing",
+  "Oratory & Speech Lab": "https://alloflow-cdn.pages.dev/oratory",
+  "Echo Navigator": "https://alloflow-cdn.pages.dev/echo-trainer",
+  "WriteCraft": "https://alloflow-cdn.pages.dev/world-builder",
+  "Perception Lab": "https://alloflow-cdn.pages.dev/perception-lab",
+  "Behavior Shaping Lab": "https://alloflow-cdn.pages.dev/behavior-lab",
+  "School Behavior Toolkit": "https://alloflow-cdn.pages.dev/school-behavior-toolkit",
+  "Learning Lab: How Learning Works": "https://alloflow-cdn.pages.dev/learning-lab",
+  "Consciousness Theory Lab": "https://alloflow-cdn.pages.dev/consciousness-lab",
+  "Assessment Literacy Lab": "https://alloflow-cdn.pages.dev/assessment-literacy",
+  "Education Law Navigator": "https://alloflow-cdn.pages.dev/law-navigator",
+  "Science of Parenting Lab": "https://alloflow-cdn.pages.dev/parenting-lab",
+  "Economics Lab": "https://alloflow-cdn.pages.dev/economics-lab",
+  "PaperTrail: Official Documents": "https://alloflow-cdn.pages.dev/paper-trail",
+  "Life Skills Lab": "https://alloflow-cdn.pages.dev/life-skills",
+  "RoadReady: Driver's Ed": "https://alloflow-cdn.pages.dev/road-ready",
+  "Auto Repair Shop": "https://alloflow-cdn.pages.dev/auto-repair",
+  "WeldLab: Welding & Metal Joining": "https://alloflow-cdn.pages.dev/weld-lab",
+  "BikeLab: Physics & Repair": "https://alloflow-cdn.pages.dev/bike-lab",
+  "SkySchool": "https://alloflow-cdn.pages.dev/flight-sim",
+  "ATC Tower": "https://alloflow-cdn.pages.dev/atc-tower",
+  "FisherLab: Boating & Fishing Sim": "https://alloflow-cdn.pages.dev/fisher-lab",
+  "AquacultureLab: Mussel Farm Sim": "https://alloflow-cdn.pages.dev/aquaculture-lab",
+  "ThrowLab: Sports Physics": "https://alloflow-cdn.pages.dev/throwlab",
+  "SkateLab: Skate + BMX Physics": "https://alloflow-cdn.pages.dev/skatelab",
+  "PlayLab: Strategy on the Field": "https://alloflow-cdn.pages.dev/playlab",
+  "SwimLab": "https://alloflow-cdn.pages.dev/swim-lab",
+  "Arc City": "https://alloflow-cdn.pages.dev/arccity",
+  "Kepler Colony": "https://alloflow-cdn.pages.dev/space-colony",
+  "Space Explorer": "https://alloflow-cdn.pages.dev/space-explorer",
+  "AlloBot: Starbound Sage": "https://alloflow-cdn.pages.dev/allo-bot-sage"
+};
 /* ATLAS_DATA_END */
 
 // The visual layer stays hand-authored while the directory data above remains
@@ -1087,7 +1248,46 @@ function AtlasHighlight({ text, query }) {
   );
 }
 
+function copyAtlasLinkText(text) {
+  const value = String(text || '');
+  if (!value) return Promise.resolve(false);
+  if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    return navigator.clipboard.writeText(value).then(() => true).catch(() => copyAtlasLinkFallback(value));
+  }
+  return Promise.resolve(copyAtlasLinkFallback(value));
+}
+
+function copyAtlasLinkFallback(value) {
+  try {
+    if (typeof document === 'undefined' || !document.body) return false;
+    const ta = document.createElement('textarea');
+    ta.value = value;
+    ta.setAttribute('readonly', '');
+    ta.setAttribute('aria-label', 'Temporary clipboard text');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    ta.style.pointerEvents = 'none';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = typeof document.execCommand === 'function' ? document.execCommand('copy') : false;
+    document.body.removeChild(ta);
+    return !!ok;
+  } catch (_) {
+    return false;
+  }
+}
+
 function AtlasAreaCard({ cat, index, visual, forceOpen, query }) {
+  const [selectedTool, setSelectedTool] = React.useState('');
+  const [showAllLinks, setShowAllLinks] = React.useState(false);
+  const [copiedTool, setCopiedTool] = React.useState('');
+  const [copyStatus, setCopyStatus] = React.useState('');
+  const copyTimerRef = React.useRef(null);
+
+  React.useEffect(() => () => {
+    if (copyTimerRef.current) window.clearTimeout(copyTimerRef.current);
+  }, []);
+
   const sampleTools = cat.tools.slice(0, 3);
   const originalTotal = cat.originalTotal || cat.tools.length;
   const countText = originalTotal > cat.tools.length
@@ -1095,6 +1295,26 @@ function AtlasAreaCard({ cat, index, visual, forceOpen, query }) {
     : String(cat.tools.length);
   const areaDescription = getAtlasAreaDescription(cat.name, originalTotal);
   const areaLens = getAtlasAreaLens(cat.name);
+  const linkedTools = cat.tools.filter((tool) => Object.prototype.hasOwnProperty.call(ATLAS_STEAM_DIRECT_LINKS, tool));
+  const activeUrl = selectedTool && Object.prototype.hasOwnProperty.call(ATLAS_STEAM_DIRECT_LINKS, selectedTool)
+    ? ATLAS_STEAM_DIRECT_LINKS[selectedTool]
+    : '';
+  const allLinksListId = 'atlas-links-' + String(cat.name || 'area').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + index;
+
+  const handleCopyToolLink = (toolName, url) => {
+    copyAtlasLinkText(url).then((ok) => {
+      if (copyTimerRef.current) window.clearTimeout(copyTimerRef.current);
+      if (ok) {
+        setCopiedTool(toolName);
+        setCopyStatus('Copied Cloudflare link for ' + toolName + '.');
+        copyTimerRef.current = window.setTimeout(() => {
+          setCopiedTool('');
+        }, 2500);
+      } else {
+        setCopyStatus('Select and copy the Cloudflare link for ' + toolName + ': ' + url);
+      }
+    });
+  };
 
   return (
     <details open={forceOpen || undefined} className="rounded-xl border border-slate-200 bg-slate-50/70 shadow-sm">
@@ -1128,14 +1348,143 @@ function AtlasAreaCard({ cat, index, visual, forceOpen, query }) {
         </span>
       </summary>
       <div className="px-3 pb-3 pt-1 border-t border-slate-200/80">
-        <p className="text-[9px] font-black uppercase tracking-wider text-slate-600 mb-2">Catalog entries in this area</p>
-        <div role="list" className="flex flex-wrap gap-1.5" aria-label={cat.name + ' catalog entries'}>
-          {cat.tools.map((tool, i) => (
-            <span role="listitem" key={tool + i} className="text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-full px-2 py-0.5">
-              <AtlasHighlight text={tool} query={query} />
-            </span>
-          ))}
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <p className="text-[9px] font-black uppercase tracking-wider text-slate-600 mb-2">Catalog entries in this area</p>
+          {linkedTools.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowAllLinks((open) => !open)}
+              aria-expanded={showAllLinks}
+              aria-controls={allLinksListId}
+              data-atlas-area-links-toggle="true"
+              className="min-h-11 inline-flex items-center gap-1.5 rounded-lg border border-sky-200 bg-white px-2.5 py-1.5 text-xs font-bold text-sky-800 hover:bg-sky-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
+            >
+              {showAllLinks ? 'Hide Cloudflare links' : 'Show Cloudflare links (' + linkedTools.length + ')'}
+            </button>
+          )}
         </div>
+        {linkedTools.length > 0 && (
+          <p className="text-xs text-slate-600 mb-2">
+            Select any tool to view or copy its direct Cloudflare link (opens standalone, no signup).
+          </p>
+        )}
+        <div role="list" className="flex flex-wrap gap-1.5" aria-label={cat.name + ' catalog entries'}>
+          {cat.tools.map((tool, i) => {
+            const directUrl = Object.prototype.hasOwnProperty.call(ATLAS_STEAM_DIRECT_LINKS, tool)
+              ? ATLAS_STEAM_DIRECT_LINKS[tool]
+              : '';
+            if (!directUrl) {
+              return (
+                <span role="listitem" key={tool + i} className="text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-full px-2 py-0.5">
+                  <AtlasHighlight text={tool} query={query} />
+                </span>
+              );
+            }
+            const isSelected = selectedTool === tool;
+            return (
+              <span role="listitem" key={tool + i} className="inline-flex">
+                <button
+                  type="button"
+                  onClick={() => setSelectedTool((current) => (current === tool ? '' : tool))}
+                  aria-pressed={isSelected}
+                  aria-label={tool + ' — view shareable Cloudflare direct link'}
+                  data-atlas-steam-tool={tool}
+                  className={'min-h-11 inline-flex items-center gap-1.5 text-xs font-medium rounded-full px-3 py-1.5 border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ' + (isSelected ? 'bg-sky-700 text-white border-sky-700 shadow-sm' : 'bg-white text-slate-700 border-sky-200 hover:border-sky-500 hover:bg-sky-50')}
+                >
+                  <AtlasHighlight text={tool} query={query} />
+                  <span aria-hidden="true" className={'text-[10px] font-bold ' + (isSelected ? 'text-sky-100' : 'text-sky-700')}>&#8599;</span>
+                </button>
+              </span>
+            );
+          })}
+        </div>
+
+        {activeUrl && (
+          <div
+            role="region"
+            aria-label={'Shareable Cloudflare link for ' + selectedTool}
+            data-atlas-selected-link="true"
+            className="mt-3 rounded-xl border border-sky-200 bg-white p-3 shadow-sm space-y-2"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-black text-slate-800">{selectedTool}</p>
+                <p className="text-xs text-slate-600 mt-0.5">Direct Cloudflare link — opens standalone with no account or signup.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedTool('')}
+                aria-label={'Hide Cloudflare link for ' + selectedTool}
+                className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+              >
+                Hide
+              </button>
+            </div>
+            <code className="block w-full rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-xs font-mono text-slate-800 break-all select-all">
+              {activeUrl}
+            </code>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => handleCopyToolLink(selectedTool, activeUrl)}
+                aria-label={'Copy Cloudflare link for ' + selectedTool}
+                className="min-h-11 inline-flex items-center justify-center rounded-lg bg-sky-700 px-3 py-2 text-xs font-bold text-white hover:bg-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+              >
+                {copiedTool === selectedTool ? 'Copied link' : 'Copy Cloudflare link'}
+              </button>
+              <a
+                href={activeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="min-h-11 inline-flex items-center justify-center gap-1 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-bold text-sky-900 hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+              >
+                Open standalone <span aria-hidden="true">&#8599;</span>
+              </a>
+            </div>
+          </div>
+        )}
+
+        {showAllLinks && linkedTools.length > 0 && (
+          <div id={allLinksListId} className="mt-3 rounded-xl border border-sky-200 bg-white p-3 space-y-2">
+            <p className="text-xs font-black text-slate-800">All Cloudflare direct links in {cat.name}</p>
+            <ul className="space-y-2 list-none p-0 m-0" aria-label={cat.name + ' Cloudflare direct links'}>
+              {linkedTools.map((tool) => {
+                const url = ATLAS_STEAM_DIRECT_LINKS[tool];
+                return (
+                  <li key={'cf-' + tool} className="rounded-lg border border-slate-200 bg-slate-50/70 p-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <span className="block text-xs font-bold text-slate-800">{tool}</span>
+                      <code className="block text-xs font-mono text-slate-700 break-all select-all mt-0.5">{url}</code>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleCopyToolLink(tool, url)}
+                        aria-label={'Copy Cloudflare link for ' + tool}
+                        className="min-h-11 inline-flex items-center justify-center rounded-lg border border-sky-300 bg-white px-3 py-1.5 text-xs font-bold text-sky-900 hover:bg-sky-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                      >
+                        {copiedTool === tool ? 'Copied' : 'Copy'}
+                      </button>
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={'Open ' + tool + ' standalone on Cloudflare'}
+                        className="min-h-11 inline-flex items-center justify-center rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
+                      >
+                        Open <span aria-hidden="true" className="ml-1">&#8599;</span>
+                      </a>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+
+        <p role="status" aria-live="polite" className={copyStatus ? 'mt-2 text-xs font-bold text-emerald-800' : 'sr-only'}>
+          {copyStatus}
+        </p>
       </div>
     </details>
   );
@@ -1147,6 +1496,7 @@ function AtlasHubCard({ hub, isOpen, onToggle, cardRef, isFiltered, query, onLau
   const catCount = hub.categories ? hub.categories.length : 0;
   const visual = ATLAS_HUB_VISUALS[hub.hub] || ATLAS_DEFAULT_VISUAL;
   const resultLabel = hub.total + (hub.total === 1 ? ' matching entry' : ' matching entries');
+  const isSteamHub = hub.hub === 'STEAM Lab';
   return (
     <details
       id={atlasHubId(hub.hub)}
@@ -1183,6 +1533,24 @@ function AtlasHubCard({ hub, isOpen, onToggle, cardRef, isFiltered, query, onLau
             >
               {visual.launchLabel} <span aria-hidden="true">&rarr;</span>
             </button>
+          </div>
+        )}
+        {isSteamHub && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-sky-200 bg-sky-50/70 p-3">
+            <div>
+              <p className="text-xs font-black text-sky-900">Shareable Cloudflare direct links</p>
+              <p className="text-xs leading-relaxed text-slate-700 mt-0.5">
+                Every STEAM Lab tool below includes a direct <code className="font-mono text-sky-900">alloflow-cdn.pages.dev</code> link that opens that single tool with no account or signup.
+              </p>
+            </div>
+            <a
+              href="https://alloflow-cdn.pages.dev/tools.html#directory-heading"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="min-h-11 shrink-0 inline-flex items-center justify-center gap-1.5 rounded-lg border border-sky-300 bg-white px-3 py-2 text-xs font-bold text-sky-900 hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+            >
+              Full Cloudflare directory <span aria-hidden="true">&#8599;</span>
+            </a>
           </div>
         )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1809,6 +2177,7 @@ function InfoModal({
   const panelRef = React.useRef(null);
   const [selectedFeature, setSelectedFeature] = React.useState(null);
   const [featureQuery, setFeatureQuery] = React.useState('');
+  const [featureCategory, setFeatureCategory] = React.useState('all');
   const featureBackRef = React.useRef(null);
   const featureReturnFocusRef = React.useRef(null);
   const featureReturnFocusKeyRef = React.useRef('');
@@ -2006,6 +2375,7 @@ function InfoModal({
   }, [infoModalTab, selectedFeature]);
 
   const handleTabKeyDown = (event) => {
+    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
     const tabs = Array.from(event.currentTarget.parentElement.querySelectorAll('[role="tab"]'));
@@ -2047,12 +2417,22 @@ function InfoModal({
     return feature;
   });
   const normalizedFeatureQuery = featureQuery.trim().toLocaleLowerCase();
-  const visibleFeatureItems = normalizedFeatureQuery
-    ? featureCatalogItems.filter((feature) => {
-        const categoryName = featuresList?.categories?.[feature.category] || feature.category || '';
-        return [feature.title, feature.desc, categoryName].some((value) => String(value || '').toLocaleLowerCase().includes(normalizedFeatureQuery));
-      })
-    : featureCatalogItems;
+  const featureCategoryCounts = featureCatalogItems.reduce((acc, feature) => {
+    const key = feature?.category;
+    if (key) acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  const availableFeatureCategories = ['creation', 'activities', 'assessment', 'platform']
+    .filter((key) => (featureCategoryCounts[key] || 0) > 0);
+  const activeFeatureCategory = featureCategory !== 'all' && (featureCategoryCounts[featureCategory] || 0) > 0
+    ? featureCategory
+    : 'all';
+  const visibleFeatureItems = featureCatalogItems.filter((feature) => {
+    if (activeFeatureCategory !== 'all' && feature.category !== activeFeatureCategory) return false;
+    if (!normalizedFeatureQuery) return true;
+    const categoryName = featuresList?.categories?.[feature.category] || feature.category || '';
+    return [feature.title, feature.desc, categoryName].some((value) => String(value || '').toLocaleLowerCase().includes(normalizedFeatureQuery));
+  });
 
   return (
     <div role="presentation" className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[300] flex items-stretch sm:items-center justify-center p-0 sm:p-4 motion-safe:animate-in motion-reduce:animate-none motion-safe:fade-in motion-safe:duration-200" onClick={handleSetShowInfoModalToFalse}>
@@ -2133,23 +2513,23 @@ function InfoModal({
                   </span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <button type="button" onClick={handleSetInfoModalTabToAtlas} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
+                  <button type="button" onClick={handleSetInfoModalTabToAtlas} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
                     <span className="flex items-center gap-2 text-sm font-bold"><Layers size={16} className="text-indigo-300" aria-hidden="true" /> Map the platform</span>
                     <span className="block text-xs text-slate-300 mt-1">Explore major regions, area maps, searchable entries, and source notes.</span>
                   </button>
-                  <button type="button" onClick={handleSetInfoModalTabToFeatures} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
+                  <button type="button" onClick={handleSetInfoModalTabToFeatures} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
                     <span className="flex items-center gap-2 text-sm font-bold"><Sparkles size={16} className="text-indigo-300" aria-hidden="true" /> Browse guided workflows</span>
                     <span className="block text-xs text-slate-300 mt-1">See inputs, processing steps, outputs, and practical tips.</span>
                   </button>
-                  <button type="button" onClick={handleSetInfoModalTabToPrivacy} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
+                  <button type="button" onClick={handleSetInfoModalTabToPrivacy} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
                     <span className="flex items-center gap-2 text-sm font-bold"><ShieldCheck size={16} className="text-indigo-300" aria-hidden="true" /> Review data paths</span>
                     <span className="block text-xs text-slate-300 mt-1">Compare local, classroom-session, and hosted-service choices.</span>
                   </button>
-                  <button type="button" onClick={() => openCommandPaletteFromInfo('', 'about')} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
+                  <button type="button" onClick={() => openCommandPaletteFromInfo('', 'about')} className="min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
                     <span className="flex items-center gap-2 text-sm font-bold"><Search size={16} className="text-indigo-300" aria-hidden="true" /> Find any tool</span>
                     <span className="block text-xs text-slate-300 mt-1">Open the command palette and search the live app.</span>
                   </button>
-                  <button type="button" onClick={openVideoLibraryFromInfo} className="sm:col-span-2 min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
+                  <button type="button" onClick={openVideoLibraryFromInfo} className="sm:col-span-2 min-h-11 rounded-lg border border-slate-700 bg-slate-800 p-3 text-left hover:border-indigo-400 hover:bg-slate-800/80 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">
                     <span className="flex items-center gap-2 text-sm font-bold"><MonitorPlay size={16} className="text-indigo-300" aria-hidden="true" /> Watch how it works</span>
                     <span className="block text-xs text-slate-300 mt-1">A short tour of the platform. Streams from the AlloFlow CDN, not a video platform.</span>
                   </button>
@@ -2318,7 +2698,7 @@ function InfoModal({
                 ref={featureBackRef}
                 type="button"
                 onClick={closeFeatureDetails}
-                className="min-h-11 flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 rounded px-3 py-2 cursor-pointer"
+                className="min-h-11 flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-bold text-sm transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-600 rounded px-3 py-2 cursor-pointer"
               >
                 <ArrowLeft size={16} aria-hidden="true"/> Back to Feature Guide
               </button>
@@ -2348,13 +2728,34 @@ function InfoModal({
                 <p className="text-sm leading-relaxed opacity-95 mt-2">{selectedFeature.desc}</p>
               </div>
 
-              <button
-                type="button"
-                onClick={() => openCommandPaletteFromInfo(selectedFeature.title, 'feature-guide')}
-                className="min-h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
-              >
-                <Search size={16} aria-hidden="true" /> Find this in AlloFlow
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => openCommandPaletteFromInfo(selectedFeature.title, 'feature-guide')}
+                  className="min-h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                >
+                  <Search size={16} aria-hidden="true" /> Find this in AlloFlow
+                </button>
+                {/\b(steam|stem)\b/i.test(String(selectedFeature.title || '')) && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleSetInfoModalTabToAtlas}
+                      className="min-h-11 inline-flex items-center justify-center gap-2 rounded-lg border border-sky-300 bg-sky-50 px-3.5 py-2 text-sm font-bold text-sky-900 hover:bg-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                    >
+                      <Layers size={16} aria-hidden="true" /> View Cloudflare links in Atlas
+                    </button>
+                    <a
+                      href="https://alloflow-cdn.pages.dev/tools.html#directory-heading"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="min-h-11 inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-bold text-slate-800 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                    >
+                      Public Cloudflare directory <span aria-hidden="true">&#8599;</span>
+                    </a>
+                  </>
+                )}
+              </div>
 
               {/* Visual Flowchart */}
               <div className="space-y-3">
@@ -2480,13 +2881,42 @@ function InfoModal({
                     />
                   </div>
                   {featureQuery && (
-                    <button type="button" onClick={() => setFeatureQuery('')} className="min-h-11 rounded-lg px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+                    <button type="button" onClick={() => setFeatureQuery('')} className="min-h-11 rounded-lg px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
                       Clear
                     </button>
                   )}
                 </div>
+                {availableFeatureCategories.length >= 2 && (
+                  <div role="group" aria-label="Filter guided workflows by category" className="mt-2.5 flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      data-feature-category="all"
+                      aria-pressed={activeFeatureCategory === 'all'}
+                      onClick={() => setFeatureCategory('all')}
+                      className={`min-h-11 rounded-full border px-3 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${activeFeatureCategory === 'all' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'}`}
+                    >
+                      All ({featureCatalogItems.length})
+                    </button>
+                    {availableFeatureCategories.map((catKey) => {
+                      const catLabel = featuresList?.categories?.[catKey] || catKey;
+                      const isActive = activeFeatureCategory === catKey;
+                      return (
+                        <button
+                          key={catKey}
+                          type="button"
+                          data-feature-category={catKey}
+                          aria-pressed={isActive}
+                          onClick={() => setFeatureCategory(catKey)}
+                          className={`min-h-11 rounded-full border px-3 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${isActive ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'}`}
+                        >
+                          {catLabel} ({featureCategoryCounts[catKey]})
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
                 <p role="status" aria-live="polite" className="text-xs text-slate-600 mt-1.5">
-                  Showing {visibleFeatureItems.length} of {featureCatalogItems.length} guides
+                  Showing {visibleFeatureItems.length} of {featureCatalogItems.length} guides{activeFeatureCategory !== 'all' ? ` in ${featuresList?.categories?.[activeFeatureCategory] || activeFeatureCategory}` : ''}
                 </p>
               </div>
 
@@ -2519,7 +2949,7 @@ function InfoModal({
                             key={feature.title || idx}
                             data-feature-guide-key={feature.title}
                             onClick={(event) => openFeatureDetails(feature, categoryTitle, event.currentTarget)}
-                            className={`w-full min-h-11 p-3 rounded-lg border hover:shadow-md transition-all cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${colorClass}`}
+                            className={`w-full min-h-11 p-3 rounded-lg border hover:shadow-md transition-all motion-reduce:transition-none cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${colorClass}`}
                           >
                             <span className="font-bold flex items-center gap-2 mb-1 text-sm">
                               <IconComponent size={16} aria-hidden="true"/> {feature.title}
@@ -2535,10 +2965,12 @@ function InfoModal({
 
               {visibleFeatureItems.length === 0 && (
                 <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
-                  <p className="text-sm font-bold text-slate-700">No guided workflows match “{featureQuery.trim()}”.</p>
-                  <p className="text-xs text-slate-600 mt-1">Clear the search or use Atlas for the complete directory.</p>
-                  <button type="button" onClick={() => setFeatureQuery('')} className="min-h-11 mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">
-                    Clear search
+                  <p className="text-sm font-bold text-slate-700">
+                    {featureQuery.trim() ? `No guided workflows match “${featureQuery.trim()}”.` : 'No guided workflows match the current filter.'}
+                  </p>
+                  <p className="text-xs text-slate-600 mt-1">Clear the search or category filter, or use Atlas for the complete directory.</p>
+                  <button type="button" onClick={() => { setFeatureQuery(''); setFeatureCategory('all'); }} className="min-h-11 mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">
+                    {activeFeatureCategory !== 'all' ? 'Reset filters' : 'Clear search'}
                   </button>
                 </div>
               )}

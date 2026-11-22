@@ -587,7 +587,7 @@ export async function rejectUpload(
            grant_hash = NULL,
            grant_used_at = ?,
            updated_at = ?
-       WHERE id = ? AND deleted_at IS NULL`,
+       WHERE id = ? AND status = 'uploading' AND deleted_at IS NULL`,
     )
     .bind(now, now, uploadId)
     .run();
@@ -1640,57 +1640,58 @@ export async function finalizeCancel(
     throw new PilotError("invalid_job_attempt", 500);
   }
   const now = nowSeconds();
-  await database(env)
-    .prepare(
-      `UPDATE jobs
-       SET status = 'cancelled',
-           error_code = COALESCE(error_code, 'cancelled_by_user'),
-           input_key = NULL,
-           result_key = NULL,
-           report_key = NULL,
-           report_size_bytes = NULL,
-           report_sha256 = NULL,
-           checkpoint_seq = NULL,
-           checkpoint_key = NULL,
-           checkpoint_sha256 = NULL,
-           checkpoint_size_bytes = NULL,
-           checkpoint_stage = NULL,
-           checkpoint_schema = NULL,
-           checkpoint_input_sha256 = NULL,
-           checkpoint_options_sha256 = NULL,
-           checkpoint_engine_sha256 = NULL,
-           checkpoint_created_at = NULL,
-           completed_at = COALESCE(completed_at, ?),
-           lease_expires_at = NULL,
-           run_stage = 'cancelled',
-           updated_at = ?
-       WHERE id = ?
-         AND status IN ('cancelling', 'cancelled')
-         AND (
-           attempt_id = ?
-           OR (attempt_id IS NULL AND ? IS NULL)
-         )`,
-    )
-    .bind(now, now, jobId, attemptId, attemptId)
-    .run();
-  await database(env)
-    .prepare(
-      `UPDATE uploads
-       SET status = 'deleted', deleted_at = COALESCE(deleted_at, ?), updated_at = ?
-       WHERE id = (
-         SELECT upload_id
-         FROM jobs
+  const db = database(env);
+  await db.batch([
+    db
+      .prepare(
+        `UPDATE jobs
+         SET status = 'cancelled',
+             error_code = COALESCE(error_code, 'cancelled_by_user'),
+             input_key = NULL,
+             result_key = NULL,
+             report_key = NULL,
+             report_size_bytes = NULL,
+             report_sha256 = NULL,
+             checkpoint_seq = NULL,
+             checkpoint_key = NULL,
+             checkpoint_sha256 = NULL,
+             checkpoint_size_bytes = NULL,
+             checkpoint_stage = NULL,
+             checkpoint_schema = NULL,
+             checkpoint_input_sha256 = NULL,
+             checkpoint_options_sha256 = NULL,
+             checkpoint_engine_sha256 = NULL,
+             checkpoint_created_at = NULL,
+             completed_at = COALESCE(completed_at, ?),
+             lease_expires_at = NULL,
+             run_stage = 'cancelled',
+             updated_at = ?
          WHERE id = ?
-           AND status = 'cancelled'
+           AND status IN ('cancelling', 'cancelled')
            AND (
              attempt_id = ?
              OR (attempt_id IS NULL AND ? IS NULL)
-           )
-       )
-         AND status <> 'deleted'`,
-    )
-    .bind(now, now, jobId, attemptId, attemptId)
-    .run();
+           )`,
+      )
+      .bind(now, now, jobId, attemptId, attemptId),
+    db
+      .prepare(
+        `UPDATE uploads
+         SET status = 'deleted', deleted_at = COALESCE(deleted_at, ?), updated_at = ?
+         WHERE id = (
+           SELECT upload_id
+           FROM jobs
+           WHERE id = ?
+             AND status = 'cancelled'
+             AND (
+               attempt_id = ?
+               OR (attempt_id IS NULL AND ? IS NULL)
+             )
+         )
+           AND status <> 'deleted'`,
+      )
+      .bind(now, now, jobId, attemptId, attemptId),
+  ]);
 }
 
 export async function beginDelete(
@@ -1727,62 +1728,63 @@ export async function finalizeDelete(
     throw new PilotError("invalid_job_attempt", 500);
   }
   const now = nowSeconds();
-  await database(env)
-    .prepare(
-      `UPDATE jobs
-       SET status = 'deleted',
-           input_key = NULL,
-           result_key = NULL,
-           report_key = NULL,
-           result_content_type = NULL,
-           result_size_bytes = NULL,
-           result_sha256 = NULL,
-           report_size_bytes = NULL,
-           report_sha256 = NULL,
-           download_grant_hash = NULL,
-           checkpoint_seq = NULL,
-           checkpoint_key = NULL,
-           checkpoint_sha256 = NULL,
-           checkpoint_size_bytes = NULL,
-           checkpoint_stage = NULL,
-           checkpoint_schema = NULL,
-           checkpoint_input_sha256 = NULL,
-           checkpoint_options_sha256 = NULL,
-           checkpoint_engine_sha256 = NULL,
-           checkpoint_created_at = NULL,
-           deleted_at = COALESCE(deleted_at, ?),
-           lease_expires_at = NULL,
-           run_stage = 'deleted',
-           updated_at = ?
-       WHERE id = ?
-         AND status IN ('completed', 'deleting', 'deleted')
-         AND (
-           attempt_id = ?
-           OR (attempt_id IS NULL AND ? IS NULL)
-         )`,
-    )
-    .bind(now, now, jobId, attemptId, attemptId)
-    .run();
-  await database(env)
-    .prepare(
-      `UPDATE uploads
-       SET status = 'deleted',
-           grant_hash = NULL,
-           deleted_at = COALESCE(deleted_at, ?),
-           updated_at = ?
-       WHERE id = (
-         SELECT upload_id
-         FROM jobs
+  const db = database(env);
+  await db.batch([
+    db
+      .prepare(
+        `UPDATE jobs
+         SET status = 'deleted',
+             input_key = NULL,
+             result_key = NULL,
+             report_key = NULL,
+             result_content_type = NULL,
+             result_size_bytes = NULL,
+             result_sha256 = NULL,
+             report_size_bytes = NULL,
+             report_sha256 = NULL,
+             download_grant_hash = NULL,
+             checkpoint_seq = NULL,
+             checkpoint_key = NULL,
+             checkpoint_sha256 = NULL,
+             checkpoint_size_bytes = NULL,
+             checkpoint_stage = NULL,
+             checkpoint_schema = NULL,
+             checkpoint_input_sha256 = NULL,
+             checkpoint_options_sha256 = NULL,
+             checkpoint_engine_sha256 = NULL,
+             checkpoint_created_at = NULL,
+             deleted_at = COALESCE(deleted_at, ?),
+             lease_expires_at = NULL,
+             run_stage = 'deleted',
+             updated_at = ?
          WHERE id = ?
-           AND status = 'deleted'
+           AND status IN ('completed', 'deleting', 'deleted')
            AND (
              attempt_id = ?
              OR (attempt_id IS NULL AND ? IS NULL)
-           )
-       )`,
-    )
-    .bind(now, now, jobId, attemptId, attemptId)
-    .run();
+           )`,
+      )
+      .bind(now, now, jobId, attemptId, attemptId),
+    db
+      .prepare(
+        `UPDATE uploads
+         SET status = 'deleted',
+             grant_hash = NULL,
+             deleted_at = COALESCE(deleted_at, ?),
+             updated_at = ?
+         WHERE id = (
+           SELECT upload_id
+           FROM jobs
+           WHERE id = ?
+             AND status = 'deleted'
+             AND (
+               attempt_id = ?
+               OR (attempt_id IS NULL AND ? IS NULL)
+             )
+         )`,
+      )
+      .bind(now, now, jobId, attemptId, attemptId),
+  ]);
 }
 
 export async function clearTerminalArtifacts(
@@ -1794,58 +1796,59 @@ export async function clearTerminalArtifacts(
     throw new PilotError("invalid_job_attempt", 500);
   }
   const now = nowSeconds();
-  await database(env)
-    .prepare(
-      `UPDATE jobs
-       SET input_key = NULL,
-           result_key = NULL,
-           report_key = NULL,
-           result_content_type = NULL,
-           result_size_bytes = NULL,
-           result_sha256 = NULL,
-           report_size_bytes = NULL,
-           report_sha256 = NULL,
-           download_grant_hash = NULL,
-           checkpoint_seq = NULL,
-           checkpoint_key = NULL,
-           checkpoint_sha256 = NULL,
-           checkpoint_size_bytes = NULL,
-           checkpoint_stage = NULL,
-           checkpoint_schema = NULL,
-           checkpoint_input_sha256 = NULL,
-           checkpoint_options_sha256 = NULL,
-           checkpoint_engine_sha256 = NULL,
-           checkpoint_created_at = NULL,
-           updated_at = ?
-       WHERE id = ?
-         AND status IN ('failed', 'cancelled')
-         AND (
-           attempt_id = ?
-           OR (attempt_id IS NULL AND ? IS NULL)
-         )`,
-    )
-    .bind(now, jobId, attemptId, attemptId)
-    .run();
-  await database(env)
-    .prepare(
-      `UPDATE uploads
-       SET status = 'deleted',
-           grant_hash = NULL,
-           deleted_at = COALESCE(deleted_at, ?),
-           updated_at = ?
-       WHERE id = (
-         SELECT upload_id
-         FROM jobs
+  const db = database(env);
+  await db.batch([
+    db
+      .prepare(
+        `UPDATE jobs
+         SET input_key = NULL,
+             result_key = NULL,
+             report_key = NULL,
+             result_content_type = NULL,
+             result_size_bytes = NULL,
+             result_sha256 = NULL,
+             report_size_bytes = NULL,
+             report_sha256 = NULL,
+             download_grant_hash = NULL,
+             checkpoint_seq = NULL,
+             checkpoint_key = NULL,
+             checkpoint_sha256 = NULL,
+             checkpoint_size_bytes = NULL,
+             checkpoint_stage = NULL,
+             checkpoint_schema = NULL,
+             checkpoint_input_sha256 = NULL,
+             checkpoint_options_sha256 = NULL,
+             checkpoint_engine_sha256 = NULL,
+             checkpoint_created_at = NULL,
+             updated_at = ?
          WHERE id = ?
            AND status IN ('failed', 'cancelled')
            AND (
              attempt_id = ?
              OR (attempt_id IS NULL AND ? IS NULL)
-           )
-       )`,
-    )
-    .bind(now, now, jobId, attemptId, attemptId)
-    .run();
+           )`,
+      )
+      .bind(now, jobId, attemptId, attemptId),
+    db
+      .prepare(
+        `UPDATE uploads
+         SET status = 'deleted',
+             grant_hash = NULL,
+             deleted_at = COALESCE(deleted_at, ?),
+             updated_at = ?
+         WHERE id = (
+           SELECT upload_id
+           FROM jobs
+           WHERE id = ?
+             AND status IN ('failed', 'cancelled')
+             AND (
+               attempt_id = ?
+               OR (attempt_id IS NULL AND ? IS NULL)
+             )
+         )`,
+      )
+      .bind(now, now, jobId, attemptId, attemptId),
+  ]);
 }
 
 export async function listCleanupJobs(
@@ -1892,6 +1895,7 @@ export async function listCleanupJobs(
     .bind(now, now, legacyRunningCutoff)
     .run();
 
+  const completedGraceCutoff = now - 300;
   const result = await database(env)
     .prepare(
       `SELECT *
@@ -1900,10 +1904,12 @@ export async function listCleanupJobs(
          (
            status = 'completed'
            AND (
-             input_key IS NOT NULL
-             OR output_expires_at IS NULL
+             output_expires_at IS NULL
              OR output_expires_at <= ?
-             OR checkpoint_key IS NOT NULL
+             OR (
+               (input_key IS NOT NULL OR checkpoint_key IS NOT NULL)
+               AND (completed_at IS NULL OR completed_at <= ?)
+             )
            )
          )
          OR status = 'deleting'
@@ -1921,7 +1927,7 @@ export async function listCleanupJobs(
        ORDER BY updated_at ASC
        LIMIT ?`,
     )
-    .bind(now, limit)
+    .bind(now, completedGraceCutoff, limit)
     .all<JobRow>();
   return result.results;
 }
@@ -1958,6 +1964,38 @@ export async function listExpiredUploads(
   return result.results;
 }
 
+export async function claimExpiredUploadForDeletion(
+  env: PilotEnv,
+  uploadId: string,
+): Promise<boolean> {
+  const now = nowSeconds();
+  const result = await database(env)
+    .prepare(
+      `UPDATE uploads
+       SET status = 'deleting',
+           grant_hash = NULL,
+           updated_at = ?
+       WHERE id = ?
+         AND input_expires_at <= ?
+         AND deleted_at IS NULL
+         AND (
+           status IN ('pending', 'uploading', 'uploaded', 'rejected', 'deleting')
+           OR (
+             status = 'processing'
+             AND NOT EXISTS (
+               SELECT 1
+               FROM jobs
+               WHERE jobs.upload_id = uploads.id
+                 AND jobs.deleted_at IS NULL
+             )
+           )
+         )`,
+    )
+    .bind(now, uploadId, now)
+    .run();
+  return result.meta.changes === 1;
+}
+
 export async function markUploadDeleted(
   env: PilotEnv,
   uploadId: string,
@@ -1970,7 +2008,19 @@ export async function markUploadDeleted(
            grant_hash = NULL,
            deleted_at = COALESCE(deleted_at, ?),
            updated_at = ?
-       WHERE id = ?`,
+       WHERE id = ?
+         AND (
+           status IN ('pending', 'uploading', 'uploaded', 'rejected', 'deleting')
+           OR (
+             status = 'processing'
+             AND NOT EXISTS (
+               SELECT 1
+               FROM jobs
+               WHERE jobs.upload_id = uploads.id
+                 AND jobs.deleted_at IS NULL
+             )
+           )
+         )`,
     )
     .bind(now, now, uploadId)
     .run();
@@ -1978,8 +2028,25 @@ export async function markUploadDeleted(
 
 export async function listDispatchPendingJobs(
   env: PilotEnv,
+  config?: PilotConfig,
   limit = 25,
 ): Promise<JobRow[]> {
+  if (config) {
+    const queueCutoff = nowSeconds() - config.unstartedInputTtlSeconds;
+    const result = await database(env)
+      .prepare(
+        `SELECT *
+         FROM jobs
+         WHERE status = 'queued'
+           AND deleted_at IS NULL
+           AND created_at > ?
+         ORDER BY created_at ASC
+         LIMIT ?`,
+      )
+      .bind(queueCutoff, limit)
+      .all<JobRow>();
+    return result.results;
+  }
   const result = await database(env)
     .prepare(
       `SELECT *
@@ -2002,6 +2069,9 @@ export async function purgeOldMetadata(
     .prepare(
       `DELETE FROM jobs
        WHERE checkpoint_key IS NULL
+         AND input_key IS NULL
+         AND result_key IS NULL
+         AND report_key IS NULL
          AND (
            (deleted_at IS NOT NULL AND deleted_at <= ?)
            OR (

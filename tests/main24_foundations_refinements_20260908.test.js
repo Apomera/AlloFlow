@@ -36,9 +36,9 @@ const faq=(overrides={})=>({
 });
 describe('FAQ audio request ownership and recovery',()=>{
   it('reports unavailable audio tools and allows retry after they load',async()=>{
-    mount('FaqView',faq());click(byText('Save TTS'));expect(host.textContent).toContain('still loading');
+    mount('FaqView',faq());click(byText('Save audio'));expect(host.textContent).toContain('still loading');
     window.__alloPrepareReadAloud=vi.fn(async()=>({ok:true}));
-    click(byText('Save TTS'));await settle();expect(host.querySelector('[role=status]').textContent).toContain('saved for all');
+    click(byText('Save audio'));await settle();expect(host.querySelector('[role=status]').textContent).toContain('saved for all');
   });
   it('catches save failures and retries without duplicate submissions',async()=>{
     const pending=deferred();window.__alloPrepareReadAloud=vi.fn(()=>pending.promise);
@@ -46,21 +46,21 @@ describe('FAQ audio request ownership and recovery',()=>{
     window.__alloInspectReadAloudAudio=entry=>({status:'missing',segment:{resourceId:'faq-a',segmentId:entry.segmentId,spokenText:entry.text}});
     mount('FaqView',faq());
     expect([...host.querySelectorAll('button[aria-label*="Regenerate audio"]')].some(b=>b.getAttribute('aria-disabled')==='false')).toBe(true);
-    const save=byText('Save TTS');click(save);
+    const save=byText('Save audio');click(save);
     expect(window.__alloPrepareReadAloud).toHaveBeenCalledOnce();
     expect([...host.querySelectorAll('button[aria-label*="Regenerate audio"]')].every(b=>b.getAttribute('aria-disabled')==='true')).toBe(true);
     await act(async()=>pending.reject(new Error('provider offline')));
-    expect(host.textContent).toContain('could not be saved');expect(byText('Save TTS').disabled).toBe(false);
-    window.__alloPrepareReadAloud.mockResolvedValue({ok:true});click(byText('Save TTS'));await settle();expect(window.__alloPrepareReadAloud).toHaveBeenCalledTimes(2);
+    expect(host.textContent).toContain('could not be saved');expect(byText('Save audio').disabled).toBe(false);
+    window.__alloPrepareReadAloud.mockResolvedValue({ok:true});click(byText('Save audio'));await settle();expect(window.__alloPrepareReadAloud).toHaveBeenCalledTimes(2);
   });
   it('announces partial preparation rather than claiming everything is saved',async()=>{
     window.__alloPrepareReadAloud=vi.fn(async()=>({ok:false,remaining:1}));
-    mount('FaqView',faq());click(byText('Save TTS'));await settle();
+    mount('FaqView',faq());click(byText('Save audio'));await settle();
     expect(host.querySelector('[role=status]').textContent).toContain('still missing');
   });
   it('stops its own save through an AbortSignal',async()=>{
     const pending=deferred();window.__alloPrepareReadAloud=vi.fn(()=>pending.promise);
-    mount('FaqView',faq());click(byText('Save TTS'));
+    mount('FaqView',faq());click(byText('Save audio'));
     const signal=window.__alloPrepareReadAloud.mock.calls[0][2].signal;
     click(host.querySelector('button[aria-busy=true]'));expect(signal.aborted).toBe(true);
     await act(async()=>pending.resolve({ok:false,remaining:1}));
@@ -68,10 +68,10 @@ describe('FAQ audio request ownership and recovery',()=>{
   });
   it('ignores old progress and completion after navigating to another FAQ',async()=>{
     const old=deferred(),next=deferred();window.__alloPrepareReadAloud=vi.fn().mockReturnValueOnce(old.promise).mockReturnValueOnce(next.promise);
-    mount('FaqView',faq());click(byText('Save TTS'));
+    mount('FaqView',faq());click(byText('Save audio'));
     const progress=window.__alloPrepareReadAloud.mock.calls[0][1],signal=window.__alloPrepareReadAloud.mock.calls[0][2].signal;
     mount('FaqView',faq({generatedContent:{id:'faq-b',data:[{question:'What next?',answer:'Another answer.'}]}}));
-    expect(signal.aborted).toBe(true);click(byText('Save TTS'));
+    expect(signal.aborted).toBe(true);click(byText('Save audio'));
     act(()=>progress(88,100));expect(host.textContent).not.toContain('88/100');
     await act(async()=>old.reject(new Error('late error')));
     expect(host.textContent).not.toContain('could not be saved');
@@ -83,7 +83,7 @@ describe('FAQ audio request ownership and recovery',()=>{
     window.__alloInspectReadAloudAudio=entry=>({status:'missing',segment:{resourceId:'faq-a',segmentId:entry.segmentId,spokenText:entry.text}});
     mount('FaqView',faq());click(host.querySelector('button[aria-label*="Regenerate audio"]'));await settle();
     expect(window.__alloRegenerateSentenceAudio).toHaveBeenCalledOnce();
-    expect(host.textContent).toContain('could not be generated');expect(byText('Save TTS').disabled).toBe(false);
+    expect(host.textContent).toContain('could not be generated');expect(byText('Save audio').disabled).toBe(false);
   });
   it('resets disclosure state between resources and reflects external speed changes',()=>{
     const props=faq({isEditingFaq:false,isPlaying:true,playingContentId:'faq-active'});
@@ -95,7 +95,7 @@ describe('FAQ audio request ownership and recovery',()=>{
   });
   it('aborts preparation on unmount without unhandled rejection',async()=>{
     const pending=deferred();window.__alloPrepareReadAloud=vi.fn(()=>pending.promise);
-    mount('FaqView',faq());click(byText('Save TTS'));
+    mount('FaqView',faq());click(byText('Save audio'));
     const signal=window.__alloPrepareReadAloud.mock.calls[0][2].signal;
     act(()=>root.unmount());root=null;expect(signal.aborted).toBe(true);
     await act(async()=>pending.reject(new Error('late')));
@@ -161,6 +161,11 @@ describe('Word Sounds deferred practice launches stay with their lesson',()=>{
     let confirm;const p=props({requestIncompleteAudioConfirmation:(_,run)=>{confirm=run;}});
     mount('WordSoundsPreviewView',p);click(byText('Start Practice'));act(()=>root.unmount());root=null;
     act(()=>confirm());expect(p.setIsWordSoundsMode).not.toHaveBeenCalled();
+  });
+  it('renders safely when readinessApi.inspect returns null for legacy resources missing type',()=>{
+    const p=props({generatedContent:{id:'ws-legacy',title:'Legacy Word Sounds',data:[{word:'rain'}]}});
+    expect(()=>mount('WordSoundsPreviewView',p)).not.toThrow();
+    expect(byText('Start Practice')).toBeTruthy();
   });
 });
 function readingProps(){

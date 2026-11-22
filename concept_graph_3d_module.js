@@ -38,6 +38,7 @@
  */
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.ConceptGraph3D) {
     console.log('[ConceptGraph3D] Already loaded, skipping');
     return;
@@ -66,7 +67,7 @@
   }
   var SR_ONLY = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;';
 
-  function engine() { return window.AlloModules && window.AlloModules.ConceptGraphEngine; }
+  function engine() { return typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConceptGraphEngine; }
 
   function computeBounds(nodes) {
     if (!nodes.length) return { min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 }, center: { x: 0, y: 0, z: 0 }, radius: 1 };
@@ -1083,7 +1084,7 @@
       if (routeProgress) routeProgress.setAttribute('aria-label', routeProgress.textContent);
       if (!selectedId || !nodeById3d[selectedId]) { panel.style.display = 'none'; return; }
       var n = nodeById3d[selectedId].node;
-      panel.innerHTML = '';
+      panel.textContent = '';
       var close = document.createElement('button'); close.textContent = '✕'; close.setAttribute('aria-label', t('common.close') || 'Close');
       close.style.cssText = 'float:right;border:1px solid transparent;background:transparent;color:#cbd5e1;cursor:pointer;font-size:15px;line-height:1;min-width:44px;min-height:44px;border-radius:8px;';
       close.onclick = function () { selectNode(null); };
@@ -1808,6 +1809,11 @@
       // never re-queue rAF (that would double-run the loop).
       var presenting = false;
       try { presenting = !!(renderer.xr && renderer.xr.isPresenting); } catch (e) {}
+      if (!presenting && typeof document !== 'undefined' && document.hidden) {
+        state.loopPaused = true;
+        state.raf = 0;
+        return;
+      }
       if (!presenting) {
         if (!dragging && !reduce && opts.autoRotate !== false) tTheta += 0.0016;
         theta += (tTheta - theta) * 0.12;          // damping toward targets
@@ -1882,15 +1888,34 @@
           renderer.setViewport(0, 0, cw, ch); renderer.setScissor(0, 0, cw, ch); renderer.setScissorTest(false);
         } catch (e) {}
       }
-      if (!presenting) state.raf = (window.requestAnimationFrame || function () { return 0; })(tick);
+      if (!presenting) state.raf = state.loopPaused ? 0 : (window.requestAnimationFrame || function () { return 0; })(tick);
     }
-    tick();
+    function _pauseLoop() {
+      state.loopPaused = true;
+      if (state.raf) { try { (window.cancelAnimationFrame || function () {})(state.raf); } catch (e) {} state.raf = 0; }
+    }
+    function _resumeLoop() {
+      if (state.disposed) return;
+      state.loopPaused = false;
+      if (!state.raf) tick();
+    }
+    function _onVisibility() {
+      if (typeof document !== 'undefined' && document.hidden) _pauseLoop();
+      else _resumeLoop();
+    }
+    if (typeof document !== 'undefined' && document.addEventListener) {
+      document.addEventListener('visibilitychange', _onVisibility);
+      state.cleanup.push(function () { try { document.removeEventListener('visibilitychange', _onVisibility); } catch (e) {} });
+    }
+    if (typeof document !== 'undefined' && document.hidden) state.loopPaused = true;
+    else tick();
 
     state.onResize = function () {
       var presenting = false;
       try { presenting = !!(renderer.xr && renderer.xr.isPresenting); } catch (e) {}
       if (presenting) return;                      // XR owns the framebuffer size
       var W = holder.clientWidth || w, H = holder.clientHeight || hgt;
+      if (!W || !H) return;
       cw = W; ch = H;
       camera.aspect = W / H; camera.updateProjectionMatrix(); renderer.setSize(W, H);
       if (composer && composer.setSize) composer.setSize(W, H);
@@ -1932,7 +1957,7 @@
     opts = opts || {};
     var out = {};
     if (!input || typeof input !== 'object') return out;
-    var P = (window.AlloModules && window.AlloModules.Prim3D) || null;
+    var P = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.Prim3D) || null;
     var maxUrl = isNum(opts.maxDataUrl) ? opts.maxDataUrl : 3500000;   // ~3.5 MB
     var MAX = isNum(opts.maxNodes) ? opts.maxNodes : 500;
     var ids = Object.keys(input), count = 0;
@@ -2044,7 +2069,13 @@
     }).then(function (THREE) {
       if (!THREE || state.disposed) return;
       try { mountGL(holder, THREE, scene, opts, state); }
-      catch (e) { console.warn('[ConceptGraph3D] GL mount failed:', e && e.message); showFallback(t('cg3d.gl_error') || 'The 3D view could not start. Showing the reading-order outline instead.'); }
+      catch (e) {
+        console.warn('[ConceptGraph3D] GL mount failed:', e && e.message);
+        try { destroy(); } catch (_) {}
+        try { if (holder && holder.parentNode) holder.parentNode.removeChild(holder); } catch (_) {}
+        state.disposed = false;
+        showFallback(t('cg3d.gl_error') || 'The 3D view could not start. Showing the reading-order outline instead.');
+      }
     }).catch(function (e) {
       if (state.disposed) return;
       console.warn('[ConceptGraph3D] three.js load failed:', e && e.message);
@@ -2062,7 +2093,7 @@
 
   // ── Optional React wrapper (lifecycle-managed). React read lazily. ──
   function View(props) {
-    var React = window.React;
+    var React = typeof window !== 'undefined' ? window.React : null;
     if (!React) return null;
     var h = React.createElement;
     var t = props.t || function (k) { return k; };

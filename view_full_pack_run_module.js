@@ -400,6 +400,8 @@ function FullPackRunView(props) {
     const retryable = allRows.some(row => row && ['partial', 'failed', 'interrupted', 'stopped'].includes(row.status) && row.retryable !== false);
     const hasFailureDiagnostics = Boolean(fullPackRun.reason) || allRows.some(row => row && (row.reason || ['partial', 'failed', 'interrupted', 'stopped'].includes(row.status)));
     const completedRows = allRows.filter(row => row && ['landed', 'completed'].includes(row.status)).length;
+    const inProgressRows = allRows.filter(row => row && ['queued', 'running', 'retrying'].includes(row.status)).length;
+    const attentionRows = allRows.filter(row => row && ['partial', 'failed', 'interrupted', 'stopped'].includes(row.status)).length;
     const progress = total ? Math.round(settled / total * 100) : 0;
     const elapsedSeconds = Math.max(0, Math.round(Number(fullPackRun.elapsedMs || 0) / 1000));
     const currentRosterSignature = JSON.stringify(Object.entries(rosterKey?.groups || {}).sort(([a], [b]) => String(a).localeCompare(String(b))).map(([id, group]) => {
@@ -497,7 +499,16 @@ function FullPackRunView(props) {
       className: "text-xs font-black uppercase tracking-wide text-slate-800"
     }, fullPackRun.status === 'ready' ? t('fullpack.panel_plan') || 'Full Pack plan' : t('fullpack.panel_progress') || 'Full Pack progress'), /*#__PURE__*/React.createElement("div", {
       className: "mt-0.5 text-xs text-slate-600"
-    }, planSummaries.length ? `${planSelected} ${t('fullpack.resources_in_pack') || 'resources in your pack'}` : t('fullpack.preparing_plan') || 'Preparing generation plan…')), /*#__PURE__*/React.createElement("span", {
+    }, planSummaries.length ? `${planSelected} ${t('fullpack.resources_in_pack') || 'resources in your pack'}` : t('fullpack.preparing_plan') || 'Preparing generation plan…'), fullPackRun.status === 'ready' && planSummaries.length > 0 && /*#__PURE__*/React.createElement("div", {
+      "data-testid": "full-pack-plan-pills",
+      className: "mt-1.5 flex flex-wrap items-center gap-1 text-[11px] font-bold"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "rounded-full border border-slate-200 bg-white px-2 py-0.5 text-slate-700 tabular-nums"
+    }, "~", Math.max(1, planMinutes), " ", t('fullpack.minutes') || 'minutes'), planReused > 0 && /*#__PURE__*/React.createElement("span", {
+      className: "rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-emerald-800 tabular-nums"
+    }, planReused, " ", t('fullpack.reused_short') || 'reused'), planImageCalls > 0 && /*#__PURE__*/React.createElement("span", {
+      className: "rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-indigo-800 tabular-nums"
+    }, planImageCalls, " ", t('fullpack.image_calls') || 'image calls'))), /*#__PURE__*/React.createElement("span", {
       className: `shrink-0 rounded-full border px-2 py-1 text-xs font-black uppercase tracking-wide ${statusStyles[fullPackRun.status] || statusStyles.queued}`
     }, statusLabels[fullPackRun.status] || fullPackRun.status)), fullPackRun.persistenceWarning && /*#__PURE__*/React.createElement("div", {
       "data-testid": "full-pack-storage-warning",
@@ -630,7 +641,18 @@ function FullPackRunView(props) {
       style: {
         width: `${progress}%`
       }
-    }))), /*#__PURE__*/React.createElement("div", {
+    })), /*#__PURE__*/React.createElement("div", {
+      "data-testid": "full-pack-status-breakdown",
+      className: "mt-2 flex flex-wrap items-center gap-1.5 text-[11px] font-bold tabular-nums"
+    }, completedRows > 0 && /*#__PURE__*/React.createElement("span", {
+      className: "rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-emerald-800"
+    }, "\u2713 ", completedRows, " ", t('fullpack.status_complete') || 'Complete'), inProgressRows > 0 && /*#__PURE__*/React.createElement("span", {
+      className: "rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-blue-800"
+    }, inProgressRows, " ", t('fullpack.in_progress_short') || 'in progress'), attentionRows > 0 && /*#__PURE__*/React.createElement("span", {
+      className: "rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-rose-800"
+    }, attentionRows, " ", t('fullpack.status_failed') || 'Needs attention'), elapsedSeconds > 0 && /*#__PURE__*/React.createElement("span", {
+      className: "ms-auto rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-slate-700"
+    }, elapsedSeconds, "s"))), /*#__PURE__*/React.createElement("div", {
       className: "max-h-[60vh] space-y-3 overflow-y-auto px-3 py-2.5"
     }, fullPackRun.status === 'ready' && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       className: "text-xs font-bold text-slate-800"

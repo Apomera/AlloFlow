@@ -77,7 +77,10 @@ function useFocusTrap(dialogRef, isOpen, onEscape) {
       root: dialog
     };
     trapStack.push(trap);
-    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const isTopTrap = () => {
+      const top = trapStack[trapStack.length - 1];
+      return top === trap || Boolean(top && top.root && typeof top.root.contains === 'function' && top.root.contains(dialog));
+    };
     const getFocusable = () => Array.from(dialog.querySelectorAll(['button:not([disabled])', 'input:not([disabled])', 'select:not([disabled])', 'textarea:not([disabled])', '[href]', 'summary', '[contenteditable="true"]', '[tabindex]:not([tabindex="-1"])'].join(','))).filter(element => {
       if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = element.closest('details:not([open])');
@@ -199,21 +202,61 @@ function AssignmentCenterModal({
 }) {
   const dialogRef = React.useRef(null);
   const backdropPressRef = React.useRef(false);
-  useFocusTrap(dialogRef, isOpen, onClose);
+  const useSafeState = initial => typeof React.useState === 'function' ? React.useState(initial) : [typeof initial === 'function' ? initial() : initial, assignmentCenterNoop];
+  const [confirmRemoveKey, setConfirmRemoveKey] = useSafeState('');
+  const [copiedRowKey, setCopiedRowKey] = useSafeState('');
+  const [rowQuery, setRowQuery] = useSafeState('');
+  const copyTimerRef = React.useRef(null);
+  const removeFocusTimerRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!isOpen) {
+      setConfirmRemoveKey('');
+      setCopiedRowKey('');
+      setRowQuery('');
+    }
+    return () => {
+      if (copyTimerRef.current) {
+        clearTimeout(copyTimerRef.current);
+        copyTimerRef.current = null;
+      }
+      if (removeFocusTimerRef.current) {
+        clearTimeout(removeFocusTimerRef.current);
+        removeFocusTimerRef.current = null;
+      }
+    };
+  }, [isOpen]);
+  const handleDialogEscape = () => {
+    if (confirmRemoveKey) {
+      setConfirmRemoveKey('');
+      return;
+    }
+    if (rowQuery) {
+      setRowQuery('');
+      return;
+    }
+    onClose();
+  };
+  useFocusTrap(dialogRef, isOpen, handleDialogEscape);
   if (!isOpen) return null;
   const XIcon = window.AlloIcons && window.AlloIcons.X || window.X || (() => null);
   const safeRows = Array.isArray(rowViews) ? rowViews : [];
   const safeVisibleRows = Array.isArray(visibleRowViews) ? visibleRowViews : safeRows;
   const safeSurveyItems = Array.isArray(surveyItems) ? surveyItems : [];
-  const [confirmRemoveKey, setConfirmRemoveKey] = React.useState('');
-  React.useEffect(() => {
-    if (!isOpen) setConfirmRemoveKey('');
-  }, [isOpen]);
+  const showRowSearch = safeVisibleRows.length >= 4 || Boolean(rowQuery);
+  const normalizedRowQuery = rowQuery.trim().toLocaleLowerCase();
+  const displayedRows = normalizedRowQuery ? safeVisibleRows.filter(row => {
+    const titleText = String(row && row.title || '').toLocaleLowerCase();
+    const typeText = String(row && row.activityType || '').toLocaleLowerCase();
+    const lifeText = String(row && (row.lifecycleLabel || row.lifecycle) || '').toLocaleLowerCase();
+    return titleText.includes(normalizedRowQuery) || typeText.includes(normalizedRowQuery) || lifeText.includes(normalizedRowQuery);
+  }) : safeVisibleRows;
+  const focusBtn = 'transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
   const activeCount = safeRows.filter(row => row && row.lifecycle === 'active').length;
   const awaitingCount = safeRows.reduce((sum, row) => sum + Math.max(0, Number(row && row.pendingCount) || 0), 0);
   const responseCount = safeRows.reduce((sum, row) => sum + Math.max(0, Number(row && row.participantCount) || 0), 0);
   const closedCount = safeRows.filter(row => row && row.lifecycle !== 'active').length;
-  const hasPollOptionLines = String(activityOptionsText || '').split(/\r?\n/).some(line => line.trim());
+  const pollOptionCount = String(activityOptionsText || '').split(/\r?\n/).filter(line => line.trim()).length;
+  const hasPollOptionLines = pollOptionCount > 0;
   const surveyHasNamedQuestion = safeSurveyItems.some(item => String(item && item.text || '').trim());
   const surveyInvalidChoice = safeSurveyItems.some(item => item && String(item.text || '').trim() && item.type === 'choice' && !String(item.optionsText || '').split(/\r?\n/).some(line => line.trim()));
   const surveyInvalidRange = safeSurveyItems.some(item => {
@@ -236,12 +279,14 @@ function AssignmentCenterModal({
     onActivityChange({
       enabled: Boolean(nextType),
       type: nextType || activityType,
-      prompt: nextType ? prompts[nextType] || activityPrompt : activityPrompt
+      prompt: nextType && Object.prototype.hasOwnProperty.call(prompts, nextType) ? prompts[nextType] : activityPrompt
     });
   };
   const handleSurveyItemRemove = surveyIndex => {
     onSurveyItemRemove(surveyIndex);
-    setTimeout(() => {
+    if (removeFocusTimerRef.current) clearTimeout(removeFocusTimerRef.current);
+    removeFocusTimerRef.current = setTimeout(() => {
+      removeFocusTimerRef.current = null;
       const dialog = dialogRef.current;
       if (!dialog || !dialog.isConnected) return;
       const remainingQuestions = Array.from(dialog.querySelectorAll('[data-assignment-survey-question]'));
@@ -276,7 +321,7 @@ function AssignmentCenterModal({
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onClose,
-    className: "absolute right-3 top-3 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100",
+    className: `absolute right-3 top-3 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 ${focusBtn}`,
     "aria-label": tx('share_collect.close_aria', 'Close Share & Collect')
   }, /*#__PURE__*/React.createElement(XIcon, {
     size: 20,
@@ -317,15 +362,19 @@ function AssignmentCenterModal({
     value: "survey"
   }, tx('share_collect.type_survey', 'Survey (multiple questions)')))), activityEnabled && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
     className: "mt-3 block text-xs font-black text-slate-700"
-  }, tx('share_collect.prompt_label', 'What people see'), /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "flex items-center justify-between gap-2"
+  }, /*#__PURE__*/React.createElement("span", null, tx('share_collect.prompt_label', 'What people see')), /*#__PURE__*/React.createElement("span", {
+    className: "font-semibold text-slate-600"
+  }, String(activityPrompt || '').length, "/240")), /*#__PURE__*/React.createElement("input", {
     type: "text",
     value: String(activityPrompt || ''),
     onChange: event => onActivityChange({
       prompt: event.target.value.slice(0, 240)
     }),
-    className: "mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
+    className: "mt-1 min-h-11 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-600"
   })), (activityType === 'availability' || activityType === 'signup') && (() => {
-    const acTextAiReady = typeof window !== 'undefined' && (typeof window.__alloAiUsable === 'function' ? !!window.__alloAiUsable('text', window.callGemini) : Boolean(typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked && !window._alloQrBlocked && !window.__alloStudentAiDisabled && !window.__alloAiSecretsLocked));
+    const acTextAiReady = typeof window !== 'undefined' && !window._alloQrBlocked && !window.__alloStudentAiDisabled && !window.__alloAiSecretsLocked && (typeof window.__alloAiUsable === 'function' ? !!window.__alloAiUsable('text') : typeof window.__alloAiSetupDoorway === 'function' ? !(window.__alloAiSetupDoorway('text', t) && window.__alloAiSetupDoorway('text', t).disabled) : true);
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       className: "mt-3 rounded-lg border border-sky-200 bg-white p-3"
     }, /*#__PURE__*/React.createElement("label", {
@@ -336,26 +385,30 @@ function AssignmentCenterModal({
       onChange: event => onPollAskChange(event.target.value.slice(0, 160)),
       placeholder: tx('share_collect.window_placeholder', '45 minutes next week, weekday afternoons'),
       disabled: !acTextAiReady,
-      className: "mt-1 w-full rounded-md border border-sky-300 px-2 py-2 text-sm font-semibold text-slate-800 disabled:bg-slate-50 disabled:text-slate-500"
+      className: "mt-1 min-h-11 w-full rounded-md border border-sky-300 px-2 py-2 text-sm font-semibold text-slate-800 placeholder:text-slate-600 disabled:bg-slate-50 disabled:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-600"
     })), /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: onSuggestPollTimes,
       disabled: !acTextAiReady || pollSuggestionBusy || !String(pollAsk || '').trim(),
       title: !acTextAiReady ? tx('share_collect.suggest_ai_off', 'AI setup is required to auto-suggest times. Type your own options below.') : undefined,
-      className: "mt-2 rounded-md bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50 disabled:cursor-not-allowed"
+      className: `mt-2 min-h-11 rounded-md bg-sky-700 px-3 py-2 text-xs font-black text-white hover:bg-sky-800 disabled:opacity-50 disabled:cursor-not-allowed ${focusBtn}`
     }, pollSuggestionBusy ? tx('share_collect.thinking', 'Thinking...') : tx('share_collect.suggest_options', 'Suggest options')), /*#__PURE__*/React.createElement("p", {
       className: "mt-1 text-xs leading-relaxed text-slate-600"
     }, acTextAiReady ? tx('share_collect.suggest_note', 'Suggestions land in the box below for you to edit. Nothing is shared until you create the link.') : tx('share_collect.suggest_ai_off', 'AI is currently off — type your options directly in the box below.'))));
   })(), (activityType === 'availability' || activityType === 'signup') && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
     className: "mt-3 block text-xs font-black text-slate-700"
-  }, tx('share_collect.options_label', 'Options, one per line'), /*#__PURE__*/React.createElement("textarea", {
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "flex items-center justify-between gap-2"
+  }, /*#__PURE__*/React.createElement("span", null, tx('share_collect.options_label', 'Options, one per line')), /*#__PURE__*/React.createElement("span", {
+    className: "font-semibold text-slate-600"
+  }, pollOptionCount, " ", pollOptionCount === 1 ? 'option' : 'options')), /*#__PURE__*/React.createElement("textarea", {
     value: String(activityOptionsText || ''),
     onChange: event => onActivityChange({
       optionsText: event.target.value
     }),
     rows: 6,
     placeholder: tx('share_collect.options_placeholder', 'Tue Mar 4, 3:15pm\nWed Mar 5, 3:15pm\nThu Mar 6, 3:15pm'),
-    className: "mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
+    className: "mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-600"
   })), !hasPollOptionLines && /*#__PURE__*/React.createElement("p", {
     role: "status",
     "aria-live": "polite",
@@ -411,123 +464,130 @@ function AssignmentCenterModal({
     })
   }), tx('share_collect.multi_select', 'People can pick more than one')))), activityType === 'survey' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "mt-3 space-y-2"
-  }, safeSurveyItems.map((surveyItem, surveyIndex) => /*#__PURE__*/React.createElement("div", {
-    key: surveyItem.viewKey || surveyIndex,
-    "data-assignment-survey-question": "true",
-    className: "min-w-0 rounded-lg border border-sky-200 bg-white p-2"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-start gap-2"
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    "aria-label": tx('share_collect.q_aria', 'Question ' + (surveyIndex + 1), {
-      n: surveyIndex + 1
-    }),
-    value: String(surveyItem.text || ''),
-    onChange: event => onSurveyItemChange(surveyIndex, {
-      text: event.target.value.slice(0, 240)
-    }),
-    placeholder: tx('share_collect.q_aria', 'Question ' + (surveyIndex + 1), {
-      n: surveyIndex + 1
-    }),
-    className: "min-w-0 flex-1 rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
-  }), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": tx('share_collect.q_remove_aria', 'Remove question ' + (surveyIndex + 1), {
-      n: surveyIndex + 1
-    }),
-    onClick: () => handleSurveyItemRemove(surveyIndex),
-    className: "shrink-0 rounded-md border border-rose-200 px-2 py-1 text-xs font-black text-rose-700"
-  }, "\u2716")), /*#__PURE__*/React.createElement("div", {
-    className: "mt-2 flex flex-wrap items-center gap-2"
-  }, /*#__PURE__*/React.createElement("select", {
-    "aria-label": tx('share_collect.q_type_aria', 'Answer type for question ' + (surveyIndex + 1), {
-      n: surveyIndex + 1
-    }),
-    value: surveyItem.type || 'likert',
-    onChange: event => onSurveyItemChange(surveyIndex, {
-      type: event.target.value
-    }),
-    className: "min-w-0 max-w-full rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "likert"
-  }, tx('share_collect.q_type_likert', 'Scale (agree to disagree)')), /*#__PURE__*/React.createElement("option", {
-    value: "choice"
-  }, tx('share_collect.q_type_choice', 'Multiple choice')), /*#__PURE__*/React.createElement("option", {
-    value: "freetext"
-  }, tx('share_collect.q_type_freetext', 'Short answer')), /*#__PURE__*/React.createElement("option", {
-    value: "numeric"
-  }, tx('share_collect.q_type_numeric', 'Number'))), (surveyItem.type || 'likert') === 'likert' && /*#__PURE__*/React.createElement("select", {
-    "aria-label": tx('share_collect.q_steps_aria', 'Scale steps for question ' + (surveyIndex + 1), {
-      n: surveyIndex + 1
-    }),
-    value: Number(surveyItem.steps) || 5,
-    onChange: event => onSurveyItemChange(surveyIndex, {
-      steps: parseInt(event.target.value, 10)
-    }),
-    className: "min-w-0 max-w-full rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
-  }, [3, 4, 5, 7].map(stepCount => /*#__PURE__*/React.createElement("option", {
-    key: stepCount,
-    value: stepCount
-  }, tx('share_collect.q_steps_n', stepCount + '-point', {
-    n: stepCount
-  })))), /*#__PURE__*/React.createElement("label", {
-    className: "flex items-center gap-1 text-xs font-bold text-slate-700"
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "checkbox",
-    checked: surveyItem.required === true,
-    onChange: event => onSurveyItemChange(surveyIndex, {
-      required: event.target.checked
-    })
-  }), tx('share_collect.q_required', 'Required'))), (surveyItem.type || 'likert') === 'likert' && /*#__PURE__*/React.createElement("div", {
-    className: "mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2"
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    "aria-label": tx('share_collect.scale_low_aria', 'Label for the low end'),
-    value: surveyItem.lowLabel ?? tx('share_collect.scale_low_default', 'Strongly disagree'),
-    onChange: event => onSurveyItemChange(surveyIndex, {
-      lowLabel: event.target.value.slice(0, 60)
-    }),
-    className: "rounded-md border border-sky-200 px-2 py-1 text-xs text-slate-700"
-  }), /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    "aria-label": tx('share_collect.scale_high_aria', 'Label for the high end'),
-    value: surveyItem.highLabel ?? tx('share_collect.scale_high_default', 'Strongly agree'),
-    onChange: event => onSurveyItemChange(surveyIndex, {
-      highLabel: event.target.value.slice(0, 60)
-    }),
-    className: "rounded-md border border-sky-200 px-2 py-1 text-xs text-slate-700"
-  })), surveyItem.type === 'choice' && /*#__PURE__*/React.createElement("textarea", {
-    "aria-label": tx('share_collect.q_choices_aria', 'Choices for question ' + (surveyIndex + 1) + ', one per line', {
-      n: surveyIndex + 1
-    }),
-    value: String(surveyItem.optionsText || ''),
-    onChange: event => onSurveyItemChange(surveyIndex, {
-      optionsText: event.target.value
-    }),
-    rows: 3,
-    placeholder: tx('share_collect.signup_slots_placeholder', 'Read-aloud\nGlossary\nPictures'),
-    className: "mt-2 w-full rounded-md border border-sky-200 px-2 py-1 text-xs text-slate-700"
-  }), surveyItem.type === 'numeric' && /*#__PURE__*/React.createElement("div", {
-    className: "mt-2 grid grid-cols-1 gap-2 text-xs font-bold text-slate-700 sm:grid-cols-2"
-  }, /*#__PURE__*/React.createElement("label", {
-    className: "block"
-  }, tx('share_collect.q_min', 'Min'), /*#__PURE__*/React.createElement("input", {
-    type: "number",
-    value: surveyItem.min ?? '',
-    onChange: event => onSurveyItemChange(surveyIndex, {
-      min: event.target.value
-    }),
-    className: "mt-1 w-full rounded-md border border-sky-200 px-2 py-1"
-  })), /*#__PURE__*/React.createElement("label", {
-    className: "block"
-  }, tx('share_collect.q_max', 'Max'), /*#__PURE__*/React.createElement("input", {
-    type: "number",
-    value: surveyItem.max ?? '',
-    onChange: event => onSurveyItemChange(surveyIndex, {
-      max: event.target.value
-    }),
-    className: "mt-1 w-full rounded-md border border-sky-200 px-2 py-1"
-  })))))), safeSurveyItems.length < 12 && /*#__PURE__*/React.createElement("button", {
+  }, safeSurveyItems.map((rawSurveyItem, surveyIndex) => {
+    const surveyItem = rawSurveyItem && typeof rawSurveyItem === 'object' ? rawSurveyItem : {};
+    return /*#__PURE__*/React.createElement("div", {
+      key: surveyItem.viewKey || surveyIndex,
+      "data-assignment-survey-question": "true",
+      className: "min-w-0 rounded-lg border border-sky-200 bg-white p-2"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "text",
+      "aria-label": tx('share_collect.q_aria', 'Question ' + (surveyIndex + 1), {
+        n: surveyIndex + 1
+      }),
+      value: String(surveyItem.text || ''),
+      onChange: event => onSurveyItemChange(surveyIndex, {
+        text: event.target.value.slice(0, 240)
+      }),
+      placeholder: tx('share_collect.q_aria', 'Question ' + (surveyIndex + 1), {
+        n: surveyIndex + 1
+      }),
+      className: "min-w-0 flex-1 rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
+    }), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "aria-label": tx('share_collect.q_remove_aria', 'Remove question ' + (surveyIndex + 1), {
+        n: surveyIndex + 1
+      }),
+      onClick: () => handleSurveyItemRemove(surveyIndex),
+      className: `shrink-0 min-h-11 min-w-11 inline-flex items-center justify-center rounded-md border border-rose-200 px-2 py-1 text-xs font-black text-rose-700 hover:bg-rose-50 ${focusBtn}`
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "\u2716"))), /*#__PURE__*/React.createElement("div", {
+      className: "mt-2 flex flex-wrap items-center gap-2"
+    }, /*#__PURE__*/React.createElement("select", {
+      "aria-label": tx('share_collect.q_type_aria', 'Answer type for question ' + (surveyIndex + 1), {
+        n: surveyIndex + 1
+      }),
+      value: surveyItem.type || 'likert',
+      onChange: event => onSurveyItemChange(surveyIndex, {
+        type: event.target.value
+      }),
+      className: "min-w-0 max-w-full rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
+    }, /*#__PURE__*/React.createElement("option", {
+      value: "likert"
+    }, tx('share_collect.q_type_likert', 'Scale (agree to disagree)')), /*#__PURE__*/React.createElement("option", {
+      value: "choice"
+    }, tx('share_collect.q_type_choice', 'Multiple choice')), /*#__PURE__*/React.createElement("option", {
+      value: "freetext"
+    }, tx('share_collect.q_type_freetext', 'Short answer')), /*#__PURE__*/React.createElement("option", {
+      value: "numeric"
+    }, tx('share_collect.q_type_numeric', 'Number'))), (surveyItem.type || 'likert') === 'likert' && /*#__PURE__*/React.createElement("select", {
+      "aria-label": tx('share_collect.q_steps_aria', 'Scale steps for question ' + (surveyIndex + 1), {
+        n: surveyIndex + 1
+      }),
+      value: Number(surveyItem.steps) || 5,
+      onChange: event => onSurveyItemChange(surveyIndex, {
+        steps: parseInt(event.target.value, 10)
+      }),
+      className: "min-w-0 max-w-full rounded-md border border-sky-300 px-2 py-1.5 text-xs font-semibold text-slate-800"
+    }, [3, 4, 5, 7].map(stepCount => /*#__PURE__*/React.createElement("option", {
+      key: stepCount,
+      value: stepCount
+    }, tx('share_collect.q_steps_n', stepCount + '-point', {
+      n: stepCount
+    })))), /*#__PURE__*/React.createElement("label", {
+      className: "flex items-center gap-1 text-xs font-bold text-slate-700"
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      checked: surveyItem.required === true,
+      onChange: event => onSurveyItemChange(surveyIndex, {
+        required: event.target.checked
+      })
+    }), tx('share_collect.q_required', 'Required'))), (surveyItem.type || 'likert') === 'likert' && /*#__PURE__*/React.createElement("div", {
+      className: "mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2"
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "text",
+      "aria-label": tx('share_collect.scale_low_aria', 'Label for the low end'),
+      value: surveyItem.lowLabel ?? tx('share_collect.scale_low_default', 'Strongly disagree'),
+      onChange: event => onSurveyItemChange(surveyIndex, {
+        lowLabel: event.target.value.slice(0, 60)
+      }),
+      className: "rounded-md border border-sky-200 px-2 py-1 text-xs text-slate-700"
+    }), /*#__PURE__*/React.createElement("input", {
+      type: "text",
+      "aria-label": tx('share_collect.scale_high_aria', 'Label for the high end'),
+      value: surveyItem.highLabel ?? tx('share_collect.scale_high_default', 'Strongly agree'),
+      onChange: event => onSurveyItemChange(surveyIndex, {
+        highLabel: event.target.value.slice(0, 60)
+      }),
+      className: "rounded-md border border-sky-200 px-2 py-1 text-xs text-slate-700"
+    })), surveyItem.type === 'choice' && /*#__PURE__*/React.createElement("textarea", {
+      "aria-label": tx('share_collect.q_choices_aria', 'Choices for question ' + (surveyIndex + 1) + ', one per line', {
+        n: surveyIndex + 1
+      }),
+      value: String(surveyItem.optionsText || ''),
+      onChange: event => onSurveyItemChange(surveyIndex, {
+        optionsText: event.target.value
+      }),
+      rows: 3,
+      placeholder: tx('share_collect.signup_slots_placeholder', 'Read-aloud\nGlossary\nPictures'),
+      className: "mt-2 w-full rounded-md border border-sky-200 px-2 py-1 text-xs text-slate-700"
+    }), surveyItem.type === 'numeric' && /*#__PURE__*/React.createElement("div", {
+      className: "mt-2 grid grid-cols-1 gap-2 text-xs font-bold text-slate-700 sm:grid-cols-2"
+    }, /*#__PURE__*/React.createElement("label", {
+      className: "block"
+    }, tx('share_collect.q_min', 'Min'), /*#__PURE__*/React.createElement("input", {
+      type: "number",
+      value: surveyItem.min ?? '',
+      onChange: event => onSurveyItemChange(surveyIndex, {
+        min: event.target.value
+      }),
+      className: "mt-1 w-full rounded-md border border-sky-200 px-2 py-1"
+    })), /*#__PURE__*/React.createElement("label", {
+      className: "block"
+    }, tx('share_collect.q_max', 'Max'), /*#__PURE__*/React.createElement("input", {
+      type: "number",
+      value: surveyItem.max ?? '',
+      onChange: event => onSurveyItemChange(surveyIndex, {
+        max: event.target.value
+      }),
+      className: "mt-1 w-full rounded-md border border-sky-200 px-2 py-1"
+    }))));
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 flex flex-wrap items-center justify-between gap-2"
+  }, safeSurveyItems.length < 12 && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-assignment-add-question": "true",
     onClick: () => onSurveyItemAdd({
@@ -536,8 +596,10 @@ function AssignmentCenterModal({
       steps: 5,
       required: false
     }),
-    className: "mt-2 rounded-md border border-sky-300 bg-white px-3 py-1.5 text-xs font-black text-sky-800"
-  }, tx('share_collect.add_question', '+ Add question')), !surveyHasNamedQuestion && /*#__PURE__*/React.createElement("p", {
+    className: `min-h-11 rounded-md border border-sky-300 bg-white px-3 py-2 text-xs font-black text-sky-800 hover:bg-sky-50 ${focusBtn}`
+  }, tx('share_collect.add_question', '+ Add question')), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-semibold text-slate-600"
+  }, safeSurveyItems.length, "/12 questions")), !surveyHasNamedQuestion && /*#__PURE__*/React.createElement("p", {
     role: "status",
     "aria-live": "polite",
     className: "mt-2 text-xs font-bold text-amber-800"
@@ -549,7 +611,11 @@ function AssignmentCenterModal({
     className: "mt-1 text-xs font-bold text-rose-800"
   }, tx('share_collect.survey_range_invalid', 'Numeric questions must have a Min less than or equal to Max.')), /*#__PURE__*/React.createElement("label", {
     className: "mt-3 block text-xs font-black text-slate-700"
-  }, tx('share_collect.about_survey_label', 'About this survey (optional, shown to respondents)'), /*#__PURE__*/React.createElement("textarea", {
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "flex items-center justify-between gap-2"
+  }, /*#__PURE__*/React.createElement("span", null, tx('share_collect.about_survey_label', 'About this survey (optional, shown to respondents)')), /*#__PURE__*/React.createElement("span", {
+    className: "font-semibold text-slate-600"
+  }, String(surveyInfo || '').length, "/600")), /*#__PURE__*/React.createElement("textarea", {
     value: String(surveyInfo || ''),
     onChange: event => onActivityChange({
       surveyInfo: event.target.value.slice(0, 600)
@@ -557,7 +623,7 @@ function AssignmentCenterModal({
     rows: 3,
     maxLength: 600,
     placeholder: tx('share_collect.intro_placeholder', 'Who is asking, what the answers are for, and that taking part is voluntary.'),
-    className: "mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-xs text-slate-800"
+    className: "mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-xs text-slate-800 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-600"
   })), /*#__PURE__*/React.createElement("label", {
     className: "mt-3 block text-xs font-black text-slate-700"
   }, tx('share_collect.identity_answer_label', 'Who is answering'), /*#__PURE__*/React.createElement("select", {
@@ -590,7 +656,7 @@ function AssignmentCenterModal({
     type: "button",
     onClick: onCreateLink,
     disabled: createDisabled,
-    className: "mt-4 w-full rounded-lg bg-sky-700 px-3 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50"
+    className: `mt-4 min-h-11 w-full rounded-lg bg-sky-700 px-3 py-2 text-sm font-black text-white hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-50 ${focusBtn}`
   }, tx('share_collect.create_link', 'Create the link and QR code')))), /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
@@ -622,17 +688,17 @@ function AssignmentCenterModal({
   }, closedCount), /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-black uppercase text-slate-600"
   }, tx('share_collect.stat_closed', 'Closed')))), /*#__PURE__*/React.createElement("div", {
-    className: "mt-3 rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2"
+    className: "mt-3 rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2.5"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-indigo-900"
   }, tx('share_collect.privacy_note', 'Only aggregate counts and moderation totals are cached or exported; response text, links, private keys, and participant tokens stay out of reports.')), /*#__PURE__*/React.createElement("div", {
-    className: "mt-2 flex flex-wrap items-end gap-2"
+    className: "mt-2 flex flex-wrap items-center gap-2"
   }, /*#__PURE__*/React.createElement("label", {
-    className: "text-xs font-black uppercase text-indigo-900"
+    className: "text-xs font-black uppercase text-indigo-900 inline-flex items-center"
   }, tx('share_collect.show_label', 'Show'), /*#__PURE__*/React.createElement("select", {
     value: filter,
     onChange: event => onFilterChange(event.target.value),
-    className: "ml-2 min-h-9 rounded-lg border border-indigo-300 bg-white px-2 text-xs normal-case text-slate-900"
+    className: "ml-2 min-h-11 rounded-lg border border-indigo-300 bg-white px-2.5 text-xs normal-case text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600"
   }, /*#__PURE__*/React.createElement("option", {
     value: "all"
   }, tx('share_collect.filter_all', 'All assignments')), /*#__PURE__*/React.createElement("option", {
@@ -648,18 +714,53 @@ function AssignmentCenterModal({
     onClick: onRefresh,
     disabled: refreshing,
     "aria-busy": refreshing,
-    className: "min-h-9 rounded-lg border border-indigo-300 bg-white px-3 text-xs font-black text-indigo-900 disabled:opacity-60"
+    className: `min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-xs font-black text-indigo-900 hover:bg-indigo-100 disabled:opacity-60 ${focusBtn}`
   }, refreshing ? tx('share_collect.refreshing', 'Refreshing…') : tx('share_collect.refresh_status', 'Refresh status')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onExportCsv,
     disabled: !safeRows.length,
-    className: "min-h-9 rounded-lg border border-indigo-300 bg-white px-3 text-xs font-black text-indigo-900 disabled:opacity-60"
+    className: `min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-xs font-black text-indigo-900 hover:bg-indigo-100 disabled:opacity-60 ${focusBtn}`
   }, tx('share_collect.export_csv', 'Export aggregate CSV')), typeof onOpenSubmissionInbox === 'function' && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-assignment-open-inbox": "",
     onClick: onOpenSubmissionInbox,
-    className: "min-h-9 rounded-lg border border-emerald-300 bg-emerald-50 px-3 text-xs font-black text-emerald-900 hover:bg-emerald-100"
-  }, tx('share_collect.open_submission_inbox', 'Open Submission Inbox')))), showHostedMutationUpgradeNotice && /*#__PURE__*/React.createElement("p", {
+    className: `min-h-11 rounded-lg border border-emerald-300 bg-emerald-50 px-3 text-xs font-black text-emerald-900 hover:bg-emerald-100 ${focusBtn}`
+  }, tx('share_collect.open_submission_inbox', 'Open Submission Inbox'))), showRowSearch && /*#__PURE__*/React.createElement("div", {
+    className: "mt-2.5 flex items-center gap-2",
+    role: "search",
+    "aria-label": tx('share_collect.search_assignments_aria', 'Search assignments')
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: "assignment-center-search",
+    className: "sr-only"
+  }, tx('share_collect.search_assignments_aria', 'Search assignments')), /*#__PURE__*/React.createElement("input", {
+    id: "assignment-center-search",
+    type: "search",
+    value: rowQuery,
+    onChange: event => setRowQuery(event.target.value),
+    onKeyDown: event => {
+      if (event.key === 'Escape' && rowQuery) {
+        if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+        event.preventDefault();
+        event.stopPropagation();
+        setRowQuery('');
+      }
+    },
+    placeholder: tx('share_collect.search_assignments_placeholder', 'Search assignments by title or type…'),
+    className: "min-h-11 flex-1 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+  }), rowQuery && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setRowQuery(''),
+    className: `min-h-11 shrink-0 rounded-lg border border-indigo-300 bg-white px-3 text-xs font-bold text-indigo-900 hover:bg-indigo-100 ${focusBtn}`
+  }, tx('common.clear', 'Clear'))), normalizedRowQuery && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    className: "mt-1.5 text-xs font-semibold text-indigo-900"
+  }, "Showing ", displayedRows.length, " of ", safeVisibleRows.length, " assignments")), copiedRowKey && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "sr-only"
+  }, tx('share_collect.link_copied_announce', 'Assignment link copied to clipboard.')), showHostedMutationUpgradeNotice && /*#__PURE__*/React.createElement("p", {
     className: "mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-900"
   }, tx('share_collect.mailbox_v12_note', 'Class Mailbox v12 is required only for deadline changes and fresh copies. Existing assignments and status viewing still work.')), /*#__PURE__*/React.createElement("div", {
     className: "mt-4 space-y-3"
@@ -671,8 +772,19 @@ function AssignmentCenterModal({
     role: "status",
     "aria-live": "polite",
     className: "rounded-xl border border-slate-200 bg-slate-50 p-4 text-center text-sm text-slate-600"
-  }, tx('share_collect.none_match', 'No assignments match this filter.')), safeVisibleRows.map((row, index) => {
+  }, tx('share_collect.none_match', 'No assignments match this filter.')), safeVisibleRows.length > 0 && !displayedRows.length && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    className: "rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-bold text-slate-700"
+  }, tx('share_collect.none_match_search', 'No assignments match your search.')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setRowQuery(''),
+    className: `mt-2 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-800 ${focusBtn}`
+  }, tx('share_collect.reset_search', 'Reset search'))), displayedRows.map((row, index) => {
     const view = row || {};
+    const rowKey = view.viewKey || 'row-' + index;
     const closed = view.lifecycle !== 'active';
     const actionBusy = Boolean(view.actionKind);
     const activityLabel = view.activityType === 'rating' ? tx('share_collect.activity_rating', 'Shared rating') : view.activityType === 'survey' ? tx('share_collect.activity_survey', 'Shared survey') : view.activityType === 'question_board' ? tx('share_collect.activity_question_board', 'Driving questions board') : view.activityType === 'availability' ? tx('share_collect.activity_availability', 'Availability poll') : view.activityType === 'signup' ? tx('share_collect.activity_signup', 'Sign-up sheet') : view.activityType === 'poll' ? tx('share_collect.activity_poll', 'Shared poll') : view.activityType === 'discussion' ? tx('share_collect.activity_discussion', 'Shared discussion') : view.activityType === 'exit-ticket' ? tx('share_collect.activity_exit_ticket', 'Exit ticket') : view.hasSharedActivity ? tx('share_collect.activity_wordcloud', 'Shared Word Cloud') : tx('share_collect.activity_resource', 'Resource assignment');
@@ -684,7 +796,7 @@ function AssignmentCenterModal({
       if (typeof callback === 'function') callback();
     };
     return /*#__PURE__*/React.createElement("article", {
-      key: view.viewKey || index,
+      key: rowKey,
       "aria-labelledby": 'assignment-center-row-title-' + index,
       "data-assignment-lifecycle": view.lifecycle,
       className: "rounded-xl border border-slate-200 p-3"
@@ -749,39 +861,55 @@ function AssignmentCenterModal({
         invoke(view.onManage);
         onClose();
       },
-      className: "min-h-10 rounded-lg border border-violet-300 bg-violet-50 px-2 text-xs font-bold text-violet-900 disabled:opacity-50"
+      className: `min-h-11 rounded-lg border border-violet-300 bg-violet-50 px-2 text-xs font-bold text-violet-900 hover:bg-violet-100 disabled:opacity-50 ${focusBtn}`
     }, tx('share_collect.action_manage', 'Manage')), /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: closed || actionBusy || typeof view.onCopyLink !== 'function',
-      onClick: () => invoke(view.onCopyLink),
-      className: "min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-800 disabled:opacity-50"
-    }, tx('share_collect.action_copy_link', 'Copy active link')), view.canImportResearch && /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        invoke(view.onCopyLink);
+        setCopiedRowKey(rowKey);
+        if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+        copyTimerRef.current = setTimeout(() => setCopiedRowKey(''), 2200);
+      },
+      className: `min-h-11 rounded-lg border px-2 text-xs font-bold disabled:opacity-50 ${focusBtn} ${copiedRowKey === rowKey ? 'border-emerald-400 bg-emerald-50 text-emerald-900' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50'}`
+    }, copiedRowKey === rowKey ? tx('share_collect.action_copied', 'Copied!') : tx('share_collect.action_copy_link', 'Copy active link')), view.canImportResearch && /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: actionBusy || typeof view.onImportResearch !== 'function',
       onClick: () => invoke(view.onImportResearch),
-      className: "min-h-10 rounded-lg border border-purple-300 bg-white px-3 text-xs font-bold text-purple-800 hover:bg-purple-50 disabled:opacity-50"
+      className: `min-h-11 rounded-lg border border-purple-300 bg-white px-3 text-xs font-bold text-purple-800 hover:bg-purple-50 disabled:opacity-50 ${focusBtn}`
     }, tx('share_collect.action_import_research', 'Import results to Research Suite')), view.canExtend && /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: actionBusy || !hostedMutationAvailable || typeof view.onExtend !== 'function',
       onClick: () => invoke(view.onExtend),
-      className: "min-h-10 rounded-lg border border-sky-300 bg-sky-50 px-2 text-xs font-bold text-sky-900 disabled:opacity-50"
+      className: `min-h-11 rounded-lg border border-sky-300 bg-sky-50 px-2 text-xs font-bold text-sky-900 hover:bg-sky-100 disabled:opacity-50 ${focusBtn}`
     }, view.actionKind === 'extending' ? tx('share_collect.action_extending', 'Extending…') : tx('share_collect.action_extend_days', 'Extend ' + homeworkExpiryDays + ' days', {
       days: homeworkExpiryDays
     })), view.canDuplicate && /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: actionBusy || !hostedMutationAvailable || typeof view.onDuplicate !== 'function',
       onClick: () => invoke(view.onDuplicate),
-      className: "min-h-10 rounded-lg border border-emerald-300 bg-emerald-50 px-2 text-xs font-bold text-emerald-900 disabled:opacity-50"
+      className: `min-h-11 rounded-lg border border-emerald-300 bg-emerald-50 px-2 text-xs font-bold text-emerald-900 hover:bg-emerald-100 disabled:opacity-50 ${focusBtn}`
     }, view.actionKind === 'duplicating' ? tx('share_collect.action_duplicating', 'Creating copy…') : tx('share_collect.action_create_copy', 'Create fresh copy')), view.canRevoke && /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: actionBusy || typeof view.onRevoke !== 'function',
       onClick: () => invoke(view.onRevoke),
-      className: "min-h-10 rounded-lg border border-rose-300 bg-rose-50 px-2 text-xs font-bold text-rose-800 disabled:opacity-50"
+      className: `min-h-11 rounded-lg border border-rose-300 bg-rose-50 px-2 text-xs font-bold text-rose-800 hover:bg-rose-100 disabled:opacity-50 ${focusBtn}`
     }, view.actionKind === 'revoking' ? tx('share_collect.action_revoking', 'Revoking…') : tx('share_collect.action_revoke', 'Revoke now')), (() => {
-      const rowKey = view.viewKey || 'row-' + index;
       const needsConfirm = !closed && confirmRemoveKey !== rowKey;
       const confirming = !closed && confirmRemoveKey === rowKey;
-      return /*#__PURE__*/React.createElement("button", {
+      return confirming ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        disabled: actionBusy || typeof view.onRemoveRecord !== 'function',
+        onClick: () => {
+          setConfirmRemoveKey('');
+          invoke(view.onRemoveRecord);
+        },
+        className: `min-h-11 rounded-lg border border-rose-700 bg-rose-700 px-2 text-xs font-bold text-white hover:bg-rose-800 disabled:opacity-50 ${focusBtn}`
+      }, tx('share_collect.action_confirm_remove_record', 'Confirm remove')), /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        onClick: () => setConfirmRemoveKey(''),
+        className: `min-h-11 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-700 hover:bg-slate-100 ${focusBtn}`
+      }, tx('common.cancel', 'Cancel'))) : /*#__PURE__*/React.createElement("button", {
         type: "button",
         disabled: actionBusy || typeof view.onRemoveRecord !== 'function',
         onClick: () => {
@@ -792,11 +920,8 @@ function AssignmentCenterModal({
           setConfirmRemoveKey('');
           invoke(view.onRemoveRecord);
         },
-        onBlur: () => {
-          if (confirming) setConfirmRemoveKey('');
-        },
-        className: `min-h-10 rounded-lg border px-2 text-xs font-bold disabled:opacity-50 ${confirming ? 'border-rose-500 bg-rose-50 text-rose-800' : 'border-slate-300 bg-white text-slate-700'}`
-      }, confirming ? tx('share_collect.action_confirm_remove_record', 'Confirm remove') : tx('share_collect.action_remove_record', 'Remove record'));
+        className: `min-h-11 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 ${focusBtn}`
+      }, tx('share_collect.action_remove_record', 'Remove record'));
     })()), view.showExpiredCopyNote && /*#__PURE__*/React.createElement("p", {
       className: "mt-2 text-xs text-slate-600"
     }, tx('share_collect.expired_copy_note', 'A fresh copy receives a new private link and empty student activity. Revoked assignments cannot be copied because their hosted data is deleted.')));

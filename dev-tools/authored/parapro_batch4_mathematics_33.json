@@ -17,7 +17,7 @@
     "choiceRationales": [
       "This is correct because 24 multiplied by 119 equals 2,856, accounting for every sticker in equal packets.",
       "This is 10 stickers too few per packet; 24 times 109 is only 2,616, leaving 240 stickers unassigned.",
-      "This is 10 stickers too many per packet; 24 times 129 is 3,096, which exceeds the available total.",
+      "Assigning 129 stickers to each of the 24 packets would require 3,096 stickers altogether, exceeding the school’s supply by 240 stickers.",
       "This comes from subtracting or combining the given numbers rather than dividing the total into 24 equal groups."
     ],
     "skillIds": [
@@ -57,8 +57,8 @@
     "choiceRationales": [
       "This results from combining parts of the mixed numbers without correctly multiplying the two complete factors.",
       "This is correct because (8/3) times (3/2) simplifies to 8/2, or 4 square feet.",
-      "This adds an unnecessary sixth after the product has simplified to the whole number 4.",
-      "This is the sum of 2 2/3 and 1 1/2 rather than the product required to find rectangular area."
+      "Multiplying 8/3 by 3/2 yields 24/6, which simplifies cleanly to the whole number 4 without any leftover fractional sixth.",
+      "Adding 2 2/3 and 1 1/2 yields 4 1/2, yet rectangular area requires multiplying width and height rather than summing them."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -135,9 +135,9 @@
     "answerIndex": 3,
     "rationale": "The expression 72 divided by 9 describes separating a total of 72 into 9 equal groups and finding the size of each group. Each shelf would receive 8 books.",
     "choiceRationales": [
-      "Receiving 9 more books represents the addition expression 72 + 9, not equal sharing.",
-      "Removing 9 books represents the subtraction expression 72 - 9, not division into groups.",
-      "Nine groups of 72 represents multiplication, 9 times 72, and produces a much larger total.",
+      "Placing 9 extra books onto a shelf that holds 72 combines two quantities through addition (72 + 9) instead of equal partitioning.",
+      "Taking 9 books off a 72-book shelf models the subtraction expression 72 - 9 rather than dividing 72 evenly into 9 groups.",
+      "Having 9 shelves with 72 books on every shelf represents repeated groups, or 9 times 72, producing a total of 648 books.",
       "This is correct because the 72 books are partitioned into 9 equal groups, exactly modeling 72 divided by 9."
     ],
     "skillIds": [
@@ -177,7 +177,7 @@
     "choiceRationales": [
       "This is correct because 9 is the addend whose value remains fixed regardless of the value assigned to m.",
       "The number 4 is the coefficient, or numerical factor multiplying m, rather than the separate constant term.",
-      "This adds 9 and 4 even though unlike terms cannot be combined before a value of m is known.",
+      "Adding 9 and 4 gives 13 only by improperly combining a constant term with the variable term’s coefficient before m is known.",
       "This multiplies 9 by 4 without justification and does not identify a term appearing in the expression."
     ],
     "skillIds": [
@@ -215,10 +215,10 @@
     "answerIndex": 1,
     "rationale": "Writing each value as a decimal gives -0.30, -0.28, -0.31, and -0.35. Among negative numbers, the value closest to zero is greatest, so -0.28 is greatest.",
     "choiceRationales": [
-      "Negative 0.30 lies to the left of negative 0.28 on a number line, so it is smaller.",
+      "On a horizontal number line, -0.30 sits farther left than -0.28, making -0.30 strictly less than the greatest listed number.",
       "This is correct because -0.28 is closest to zero among the four equivalent decimal comparisons.",
-      "Negative 31 percent equals -0.31, which is less than -0.28 because it lies farther from zero.",
-      "Negative 7/20 equals -0.35, making it the least, rather than the greatest, of the listed values."
+      "Converting -31% to a decimal gives -0.31, which lies farther left of zero than -0.28 and is therefore a smaller value.",
+      "Rewriting -7/20 as a decimal gives -0.35, placing it farthest from zero on the negative side and making it the least option."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -255,10 +255,10 @@
     "answerIndex": 2,
     "rationale": "Digits to the right of the decimal point represent tenths, hundredths, thousandths, and ten-thousandths in order. The 7 is the third digit to the right, so it is in the thousandths place.",
     "choiceRationales": [
-      "The hundredths digit is 4, the second digit to the right of the decimal point.",
-      "The ten-thousandths digit is 2, the fourth digit to the right of the decimal point.",
+      "In 508.0472, the hundredths place sits two positions right of the decimal point and holds the digit 4 rather than 7.",
+      "The ten-thousandths place is the fourth position right of the decimal point in 508.0472, which contains the digit 2 instead of 7.",
       "This is correct because the third position to the right of the decimal point is the thousandths place.",
-      "The tenths digit is 0, the first digit immediately to the right of the decimal point."
+      "Immediately to the right of the decimal point is the tenths place, which holds the placeholder digit 0 rather than the digit 7."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -296,7 +296,7 @@
     "rationale": "Convert 18% to 0.18 and multiply by the whole: 0.18 times 250 = 45. Equivalently, 10% is 25 and 8% is 20, giving 45 folders altogether.",
     "choiceRationales": [
       "This does not equal 18 percent of 250 and may result from applying the percent to an incorrect base.",
-      "This accounts for only 16 percent of 250, not the stated 18 percent.",
+      "Choosing 40 represents only 16% of the 250 folders in the supply cabinet, falling five folders short of the stated 18%.",
       "This is one short of the product and reflects an arithmetic error when combining the partial percentages.",
       "This is correct because 0.18 multiplied by 250 equals 45 green folders."
     ],
@@ -336,9 +336,9 @@
     "rationale": "An exponent tells how many times the base is used as a factor. Because 3 appears as a factor four times, the product is represented by 3^4, which has a value of 81.",
     "choiceRationales": [
       "This is correct because the base 3 is repeated as a factor exactly four times.",
-      "This uses 4 as the base three times, producing 64 rather than the displayed product of four threes.",
+      "Swapping base and exponent makes 4 the repeated factor three times (4 times 4 times 4 = 64) instead of multiplying four factors of 3.",
       "This treats repeated multiplication as addition and uses the sum 12 as a base instead of preserving the factors.",
-      "This includes only three factors of 3, so it represents 27 rather than the four-factor product."
+      "Writing an exponent of 3 includes only three factors of 3, which evaluates to 27 instead of matching the four-factor product."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -375,10 +375,10 @@
     "answerIndex": 1,
     "rationale": "Evaluate the parentheses first: 3 + 3 = 6. Then complete division and multiplication before addition: 36 divided by 6 is 6, 4 times 2 is 8, and 6 + 8 = 14.",
     "choiceRationales": [
-      "This does not include both the quotient 6 and the product 8 in the final addition.",
+      "Obtaining 10 omits part of the final sum because 36 divided by 6 equals 6 and 4 times 2 equals 8, which total 14.",
       "This is correct because the ordered operations produce 36/6 + 8 = 6 + 8 = 14.",
-      "This can result from adding intermediate values without following the division and multiplication structure.",
-      "This adds or combines the written numbers before completing the grouped and multiplicative operations."
+      "Reaching 20 happens when intermediate steps are combined out of order, such as evaluating 36/3 = 12 and adding 8 without grouping (3 + 3).",
+      "Arriving at 56 results from ignoring operator precedence and combining numbers left to right before completing the grouped division and multiplication."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -455,9 +455,9 @@
     "answerIndex": 3,
     "rationale": "The trays contain 15 times 18 = 270 muffins. Dividing the total by 6 muffins per box gives 270 divided by 6 = 45 full boxes.",
     "choiceRationales": [
-      "This combines the numbers without first finding and repartitioning the full total of 270 muffins.",
-      "This is six boxes short and does not account for all 270 muffins in equal groups of 6.",
-      "This is three boxes short; 42 boxes would contain only 252 of the 270 muffins.",
+      "Adding 15 and 18 gives 33 without calculating the 270 total muffins or dividing that total into equal boxes of 6.",
+      "Filling 39 boxes uses only 234 muffins, leaving 36 of the 270 delivered muffins unpacked and falling six boxes short.",
+      "Packing 42 boxes accounts for just 252 muffins out of 270, leaving 18 muffins—enough for three additional full boxes—uncounted.",
       "This is correct because 15 times 18 produces 270 muffins and 270 divided by 6 equals 45."
     ],
     "skillIds": [
@@ -496,9 +496,9 @@
     "rationale": "The situation is represented by 17.5 + x = 46.2. Subtracting 17.5 from the goal gives x = 28.7, and adding $28.70 to $17.50 verifies the $46.20 total.",
     "choiceRationales": [
       "This is correct because 46.2 - 17.5 = 28.7 and the inverse addition returns 46.2.",
-      "This is one too large and reflects an error when regrouping across the decimal places.",
-      "This adds the two given values instead of using subtraction to undo the added 17.5.",
-      "This is one more than the sum of the given values and does not satisfy the original equation."
+      "Reporting 29.7 is one whole dollar too high, reflecting a regrouping slip when subtracting 17.50 from the $46.20 goal.",
+      "Adding $17.50 and $46.20 produces 63.7, which combines the savings and goal instead of finding how much remains to be saved.",
+      "Selecting 64.7 exceeds even the sum of both amounts by one dollar and fails to satisfy the balance equation 17.5 + x = 46.2."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -535,10 +535,10 @@
     "answerIndex": 1,
     "rationale": "Each term is twice the preceding term: 3 times 2 is 6, 6 times 2 is 12, and the same rule continues. Therefore, the next term is 48 times 2 = 96.",
     "choiceRationales": [
-      "This adds 24 to 48, but the amount added is not constant across the displayed sequence.",
+      "Adding 24 to 48 assumes a constant additive jump, yet the differences between earlier terms (3, 6, 12, 24) double at each stage.",
       "This is correct because applying the repeated doubling rule to 48 gives 96.",
-      "This triples 48 even though every consecutive pair shows multiplication by 2.",
-      "This multiplies 48 by 4 and skips the immediate next term produced by one doubling."
+      "Multiplying 48 by 3 yields 144, which contradicts the rule established across stages 1 through 5 where each count doubles.",
+      "Multiplying 48 by 4 produces stage 7’s count of 192, skipping right past the single doubling needed to reach stage 6."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -575,8 +575,8 @@
     "answerIndex": 2,
     "rationale": "From 9:38 to 10:00 is 22 minutes, from 10:00 to 11:00 is 60 minutes, and from 11:00 to 11:05 is 5 minutes. The total is 22 + 60 + 5 = 87 minutes.",
     "choiceRationales": [
-      "This omits 20 minutes from the elapsed-time count and does not span the full interval.",
-      "This is 10 minutes too short, likely from subtracting clock digits without regrouping an hour.",
+      "Reporting 67 minutes undercounts the workshop duration by 20 minutes, likely dropping almost all of the 22-minute span before 10:00 a.m.",
+      "Getting 77 minutes falls 10 minutes short of the true elapsed time, a common slip when regrouping minutes across an hour boundary.",
       "This is correct because the three consecutive intervals total 22 + 60 + 5 = 87 minutes.",
       "This treats the hour-and-minute notation as a base-ten decimal subtraction rather than a base-60 time measure."
     ],
@@ -615,9 +615,9 @@
     "answerIndex": 3,
     "rationale": "Each yard equals 3 feet, so 3 yards equals 9 feet. Adding the remaining 2 feet gives 9 + 2 = 11 feet in all.",
     "choiceRationales": [
-      "This adds the 3 yards and 2 feet as though their units were already the same.",
-      "This subtracts one foot from the 9-foot yard conversion instead of adding the extra 2 feet.",
-      "This converts the 3 yards correctly but omits the additional 2 feet stated in the measurement.",
+      "Summing 3 and 2 directly to get 5 treats yards and feet as equivalent units without converting each yard into 3 feet first.",
+      "Arriving at 8 feet falls three feet short of the full rope length, as though feet were subtracted rather than added after converting 3 yards.",
+      "Stating 9 feet accurately converts the 3 yards into feet, yet it leaves out the extra 2 feet included in the rope’s measurement.",
       "This is correct because 3 yards is 9 feet and 9 feet plus 2 feet equals 11 feet."
     ],
     "skillIds": [
@@ -656,9 +656,9 @@
     "rationale": "Every rectangle has four right angles, and its two diagonals are equal in length. A rectangle has two pairs of parallel sides, but it does not have to have four equal sides.",
     "choiceRationales": [
       "This is correct because the diagonals of every rectangle are congruent, even when adjacent sides differ in length.",
-      "Four equal sides are required for a square or rhombus but are not required for every rectangle.",
-      "A rectangle has two pairs of parallel opposite sides, not exactly one pair.",
-      "Every rectangle has four right angles, so this statement contradicts a defining property."
+      "Having four congruent sides defines a rhombus or square, whereas many rectangles have longer bases than heights and still qualify.",
+      "Exactly one pair of parallel sides characterizes a trapezoid under exclusive definitions, while a rectangle always has two parallel pairs.",
+      "Every rectangle is defined by having four 90-degree corners, so claiming it lacks right angles directly contradicts the shape’s definition."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -695,10 +695,10 @@
     "answerIndex": 1,
     "rationale": "For a rectangular prism, volume equals length times width times height. The base area is 6 times 5 = 30 square inches, and 120 divided by 30 gives a height of 4 inches.",
     "choiceRationales": [
-      "A height of 3 inches would produce only 6 times 5 times 3 = 90 cubic inches.",
+      "Testing a height of 3 inches yields 6 times 5 times 3 = 90 cubic inches, which is 30 cubic inches below the stated volume.",
       "This is correct because 6 times 5 times 4 equals the given volume of 120 cubic inches.",
-      "This divides the volume by only the length and ignores the box's 5-inch width.",
-      "This is the base area in square inches, not the missing linear height of the box."
+      "Dividing 120 by 6 yields 20, which accounts for only the length and overlooks dividing by the box’s 5-inch width as well.",
+      "Multiplying 6 by 5 produces 30 square inches—the area of the rectangular base—rather than the missing linear height in inches."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -735,8 +735,8 @@
     "answerIndex": 2,
     "rationale": "Moving left from the origin makes the x-coordinate negative, giving x = -4. Moving above the origin makes the y-coordinate positive, giving y = 3, so the point is (-4, 3).",
     "choiceRationales": [
-      "This point is 4 units right and 3 units below the origin, reversing both stated directions.",
-      "This swaps the horizontal and vertical distances, placing the point 3 left and 4 above.",
+      "Plotting (4, -3) moves 4 units to the right and 3 units downward from the origin, inverting both the horizontal and vertical directions.",
+      "Using (-3, 4) reverses the x- and y-coordinates, placing the point 3 units left and 4 units above instead of 4 left and 3 above.",
       "This is correct because left corresponds to x = -4 and above corresponds to y = 3.",
       "This point is 4 units right, rather than left, of the origin even though its vertical coordinate is correct."
     ],
@@ -775,9 +775,9 @@
     "answerIndex": 3,
     "rationale": "The only decrease occurs from Monday's 42 students to Tuesday's 39 students. Subtracting 39 from 42 shows that the count decreased by 3 students.",
     "choiceRationales": [
-      "The size of the difference is 3, but the direction is a decrease from 42 to 39, not an increase.",
-      "The count rises from 39 to 44 during this interval, so it increases by 5 rather than decreasing.",
-      "Both days show 44 students, so this interval has no change rather than a decrease of 1.",
+      "Although the magnitude of change from Monday to Tuesday is 3 students, moving from 42 to 39 is a drop rather than an increase.",
+      "Between Tuesday’s 39 students and Wednesday’s 44 students, attendance climbs upward by 5 students rather than declining.",
+      "Both Wednesday and Thursday record exactly 44 students, showing zero change across that interval instead of a 1-student decrease.",
       "This is correct because the count moves downward from 42 to 39, a difference of 3 students."
     ],
     "skillIds": [
@@ -816,9 +816,9 @@
     "rationale": "The values total 25, so their mean is 25 divided by 5 = 5. The middle ordered value is 4, making the median 4; the repeated value 4 is also the mode.",
     "choiceRationales": [
       "This is correct because the arithmetic mean is 5 and the center of the ordered list is 4.",
-      "The mode is 4, but the median is also 4, not 5; 5 is the calculated mean.",
-      "The mean and mode have been reversed: the mean is 5, while the only repeated value is 4.",
-      "The median is 4, but 10 occurs only once and therefore is not the mode."
+      "While 4 is indeed the mode, the middle value of the ordered list 2, 4, 4, 5, 10 is also 4; the value 5 is the arithmetic mean.",
+      "This option swaps two measures: dividing the sum 25 by 5 gives a mean of 5, whereas 4 is the only value occurring more than once.",
+      "Although 4 is the median, the value 10 appears just once in the data set and therefore cannot be the most frequent value, or mode."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -855,10 +855,10 @@
     "answerIndex": 1,
     "rationale": "Multiples of 15 include all four data values, and a scale from 0 through 180 contains them while beginning at zero. Thus each bar can end at an accurately labeled tick mark.",
     "choiceRationales": [
-      "This range is too small to include any of the four totals, which are all at least 120.",
+      "Stopping the vertical axis at 18 excludes every single category total, since the four counts range from 120 up to 165.",
       "This is correct because 120, 135, 150, and 165 are all multiples of 15 between 0 and 180.",
       "These ticks include the values, but the scale begins at 120 rather than at the required zero baseline.",
-      "This range begins at zero, but 135, 150, and 165 do not fall on labeled 40-unit tick marks."
+      "Stepping by 40 places ticks at 0, 40, 80, 120, and 160, leaving 135, 150, and 165 between tick marks instead of on labeled gridlines."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -889,7 +889,7 @@
     "choices": [
       "Ask the student to copy the division fact until the answer is memorized.",
       "Confirm that 42 is correct, because both subtraction and division will always make the starting number smaller than it was.",
-      "Have the student arrange 48 counters into groups of 6, count the 8 groups, and connect the model to 48 divided by 6 = 8.",
+      "Have the student sort 48 counters into equal sets of 6, count the 8 sets, and link that model to 48 ÷ 6 = 8.",
       "Have the student add 6 to 48 and label the resulting 54 as the quotient."
     ],
     "answerIndex": 2,
@@ -937,7 +937,7 @@
     "choiceRationales": [
       "This represents five complete wholes partitioned into sixths, not one quantity of 5/6 shared among five groups.",
       "Joining five copies models (5/6) times 5, which is the operation behind the student's incorrect result.",
-      "Adding more sixths increases the original amount and does not partition it into equal shares.",
+      "Shading five additional sixths models adding 5/6 + 5/6 to enlarge the quantity instead of partitioning 5/6 into five equal shares.",
       "This is correct because distributing the five one-sixth pieces one per group shows that each share is 1/6."
     ],
     "skillIds": [
@@ -967,7 +967,7 @@
     "difficulty": "application",
     "prompt": "A student tries to find 12% of 75 by calculating 75 divided by 12 and reports 6.25. Which response best develops an accurate percent strategy?",
     "choices": [
-      "Find 10% of 75 as 7.5 and 2% as 1.5, then combine the parts to obtain 9.",
+      "Compute 10% of 75 as 7.5 and 2% as 1.5, then add those parts to get 9.",
       "Round 12% to 10%, use 7.5 as the exact answer, and omit the remaining 2%.",
       "Multiply 75 by the whole number 12 and report 900 because percent always means multiplication.",
       "Subtract 12 from 75 and report 63 because the percent sign can be ignored."
@@ -976,7 +976,7 @@
     "rationale": "Decomposing 12% into 10% and 2% connects percent to parts per hundred. Ten percent of 75 is 7.5 and two percent is 1.5, so 12% of 75 equals 9.",
     "choiceRationales": [
       "This is correct because the two benchmark-percent parts total 12% and their values combine to 9.",
-      "Rounding can estimate the result, but 7.5 omits 2% of 75 and is not the requested exact value.",
+      "Using 10% gives a quick mental estimate of 7.5, yet dropping the remaining 2% leaves out 1.5 and fails to produce the exact value.",
       "A percent must be written as 0.12 or 12/100 before multiplying; using 12 makes the result 100 times too large.",
       "Subtracting the numeral 12 treats a rate as a count and does not calculate a percentage of the whole."
     ],
@@ -1018,7 +1018,7 @@
       "Changing the given equation alters the problem instead of applying an inverse operation to an equivalent equation.",
       "This is correct because adding 8 to both sides isolates p and substitution verifies the solution 27.",
       "Multiplying by 8 does not undo subtraction and would not isolate the variable in the stated equation.",
-      "Although 19 - 8 equals 11, substituting 11 for p gives 3, so it fails the original equality."
+      "Even though 19 - 8 is true arithmetic, plugging 11 into p - 8 = 19 yields 3 = 19, proving that 11 does not solve the equation."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -1058,7 +1058,7 @@
       "Time notation is base 60 in the minute position, so ordinary whole-number subtraction misinterprets the units.",
       "This reverses the minute subtraction and also ignores the transition from the 10 o'clock hour to the 11 o'clock hour.",
       "This is correct because the two adjacent elapsed-time intervals, 8 and 26 minutes, total 34 minutes.",
-      "Adding the displayed clock numerals has no relationship to the duration between the two times."
+      "Adding the four-digit clock numerals 1052 and 1126 has no mathematical connection to measuring the minutes elapsed between two times."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -1095,7 +1095,7 @@
     "answerIndex": 3,
     "rationale": "Volume counts unit cubes filling three-dimensional space. Two layers with 5 times 3 = 15 cubes per layer contain 30 cubes, concretely connecting the dimensions to multiplication.",
     "choiceRationales": [
-      "One edge is a linear measure and cannot represent the number of unit cubes that fill the prism.",
+      "Measuring a single outer edge captures only one-dimensional length, not the three-dimensional count of unit cubes filling the prism.",
       "Corners are features of the solid, not cubic units of space, so counting them does not model volume.",
       "Reordering the same incorrect addition confirms a sum but does not explain why three dimensions must be multiplied.",
       "This is correct because the cube layers visibly show 15 cubes per layer times 2 layers, or 30 cubic units."
@@ -1136,9 +1136,9 @@
     "rationale": "Ordered pairs use x first and y second. For (-3, 2), the negative x-coordinate directs a move 3 units left, and the positive y-coordinate directs a move 2 units up.",
     "choiceRationales": [
       "This is correct because it explicitly links coordinate order and sign to the required horizontal and vertical moves.",
-      "Coordinate order is essential; reversing the coordinates generally identifies a different point on the plane.",
+      "Ordered pairs depend strictly on sequence: reversing the two numbers switches horizontal and vertical moves and lands on a different point.",
       "This reverses both signs and would lead to (3, -2), which is neither the given point nor the student's point.",
-      "The points (-3, 2) and (2, -3) occupy different locations, so they cannot be labeled equivalent."
+      "Points (-3, 2) and (2, -3) lie in completely different quadrants of the coordinate plane, so sharing the same digits never makes them equivalent."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -1168,7 +1168,7 @@
     "prompt": "The scores are 6, 8, 8, and 10. A student adds to get 32 but divides by 3 because there are three different score values. Which response best addresses the error?",
     "choices": [
       "Remove one of the repeated 8s so the number of observations matches the divisor 3.",
-      "Have the student count every observation, including both 8s, and divide 32 by 4 to obtain a mean of 8.",
+      "Guide the learner to count every observation, including both 8s, and divide 32 by 4 to get a mean of 8.",
       "Divide 32 by the greatest score, 10, because the largest value determines the mean.",
       "Use 8 as the mean only because it occurs most often, without calculating from all observations."
     ],
@@ -1218,7 +1218,7 @@
       "Measurements on different dates are not parts that combine into one meaningful whole, so a circle graph misrepresents the data.",
       "Date order is essential for interpreting change over time, and removing labels would make the display unusable.",
       "This is correct because an ordered, labeled line graph displays both the measurements and their trend over time.",
-      "One endpoint cannot show how the plant changed across the three recorded dates."
+      "Recording only Friday’s height captures a single ending snapshot and hides how rapidly or steadily the seedling grew across the week."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -1250,14 +1250,14 @@
       "Keep the existing labels, because the intervals on a graph may change size without any visual indication given to the reader at all.",
       "Move 15 closer to 5 while leaving the tick marks equally spaced.",
       "Remove all numerical labels and judge values from bar heights alone.",
-      "Redraw the axis with equally spaced ticks labeled in equal increments, such as 0, 5, 10, 15, and 20, before plotting the data."
+      "Redraw the grid ticks in uniform increments—0, 5, 10, 15, and 20—using equal spacing before plotting the data."
     ],
     "answerIndex": 3,
     "rationale": "Equal physical spacing on a numerical axis must represent equal numerical intervals. Redrawing five evenly spaced ticks for 0, 5, 10, 15, and 20 creates consistent increments and permits accurate reading of values.",
     "choiceRationales": [
-      "Unmarked changes in interval size distort the relationship between position and numerical value.",
+      "Allowing identical visual gaps to represent both 5 units and 10 units misleads readers by distorting how bar height maps to numeric value.",
       "Changing a label's visual position without rebuilding all ticks does not establish a consistent numerical scale.",
-      "Without numerical labels, readers cannot determine values or verify whether the spacing represents equal intervals.",
+      "Stripping away numeric labels leaves viewers unable to read exact values or verify whether equal visual distances represent equal intervals.",
       "This is correct because redrawing the scale gives every equal physical interval the same 5-unit numerical value."
     ],
     "skillIds": [
@@ -1289,14 +1289,14 @@
     "choices": [
       "Estimate 728 as 80, divide by 8, and accept any answer near 10.",
       "Multiply 728 by 8 and use 5,824 as the estimated quotient.",
-      "Use the compatible number 720: since 720 divided by 8 is 90, the quotient should be near 90; the exact quotient is 91.",
+      "Use the compatible number 720: since 720 ÷ 8 is 90, the quotient belongs near 90, pointing to the exact value 91.",
       "Confirm that 9.1 is correct, because division always turns a three-digit number into a smaller one-digit decimal number."
     ],
     "answerIndex": 2,
     "rationale": "The nearby compatible number 720 divides evenly by 8 to give 90, establishing the quotient's reasonable magnitude. Exact division gives 91, so 9.1 is ten times too small.",
     "choiceRationales": [
       "Rounding 728 all the way to 80 changes its magnitude by nearly a factor of ten and cannot provide a useful estimate.",
-      "Multiplication reverses the requested operation and produces a product, not an estimate of the quotient.",
+      "Multiplying 728 by 8 applies the inverse operation and produces a huge product (5,824) instead of estimating a reasonable quotient.",
       "This is correct because 720/8 = 90 anchors the magnitude and supports the exact quotient 728/8 = 91.",
       "Division does not guarantee a one-digit result; the sizes of both dividend and divisor determine the quotient."
     ],

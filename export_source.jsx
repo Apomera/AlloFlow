@@ -4408,7 +4408,7 @@ const createExport = (deps) => {
                         });
                         summary = preparedText.text;
                         if (preparedText.recovery?.state === 'session-only') summaryWarning = 'The epilogue is available for this session but could not be saved on this device. Keep this page open to retry, or keep the download.';
-                    } else if (typeof window.callGemini === 'function') {
+                    } else if (typeof window !== 'undefined' && (typeof window.__alloAiUsable === 'function' ? !!window.__alloAiUsable('text', window.callGemini) : typeof window.callGemini === 'function')) {
                         summary = String(await window.callGemini(prompt, false, false, null, null, options.signal) || '').trim();
                     } else {
                         throw new Error('AI helper unavailable.');

@@ -528,13 +528,13 @@ function ProjectSettingsView(props) {
     var checked = studentProjectSettings[settingKey];
     if (checked === undefined) checked = defaultValue;
     return (
-      <label htmlFor={id} className={`flex min-h-[88px] cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors ${checked ? 'border-indigo-200 bg-indigo-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+      <label htmlFor={id} className={`flex min-h-[88px] cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors motion-reduce:transition-none ${checked ? 'border-indigo-200 bg-indigo-50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
         <input
           id={id}
           type="checkbox"
           checked={Boolean(checked)}
           onChange={(event) => updateSetting(settingKey, event.target.checked)}
-          className="mt-0.5 h-5 w-5 flex-none cursor-pointer rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+          className="mt-0.5 h-5 w-5 flex-none cursor-pointer rounded border-slate-300 text-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
         />
         <span>
           <span className="block text-sm font-bold text-slate-800">{label}</span>
@@ -549,7 +549,7 @@ function ProjectSettingsView(props) {
     if (checked === undefined) checked = defaultValue;
     var danger = tone === 'danger';
     return (
-      <label htmlFor={id} className={`flex cursor-pointer items-start justify-between gap-4 rounded-lg border p-3 ${danger ? 'border-rose-200 bg-rose-50' : 'border-slate-200 bg-white'}`}>
+      <label htmlFor={id} className={`flex cursor-pointer items-start justify-between gap-4 rounded-lg border p-3 transition-colors motion-reduce:transition-none ${danger ? 'border-rose-200 bg-rose-50' : 'border-slate-200 bg-white'}`}>
         <span>
           <span className={`block text-sm font-bold ${danger ? 'text-rose-800' : 'text-slate-800'}`}>{label}</span>
           {description && <span className={`mt-0.5 block text-xs leading-relaxed ${danger ? 'text-rose-700' : 'text-slate-600'}`}>{description}</span>}
@@ -559,11 +559,30 @@ function ProjectSettingsView(props) {
           type="checkbox"
           checked={Boolean(checked)}
           onChange={(event) => updatePermission(permissionKey, event.target.checked)}
-          className={`mt-0.5 h-5 w-5 flex-none cursor-pointer rounded border-slate-300 focus:ring-2 ${danger ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-indigo-500'}`}
+          className={`mt-0.5 h-5 w-5 flex-none cursor-pointer rounded border-slate-300 focus-visible:ring-2 focus-visible:ring-offset-1 ${danger ? 'text-rose-600 focus-visible:ring-rose-600' : 'text-indigo-600 focus-visible:ring-indigo-600'}`}
         />
       </label>
     );
   };
+
+  var activePresetLabel = presetMatches('guided')
+    ? tx('project_settings.preset_guided', 'Guided')
+    : presetMatches('balanced')
+      ? tx('project_settings.preset_balanced', 'Balanced')
+      : presetMatches('open')
+        ? tx('project_settings.preset_open', 'Open exploration')
+        : tx('project_settings.preset_custom', 'Custom');
+  var studentAiHidden = Boolean(studentProjectSettings.hideStudentAiFeatures);
+  var enabledSupportsCount = ['allowDictation', 'allowSocraticTutor', 'allowFreeResponse', 'allowPersonaFreeResponse']
+    .filter(function(key) { return studentProjectSettings[key] !== false; }).length;
+  var adventureEnabledFlag = studentProjectSettings.adventureEnabled !== false;
+  var adventureLockedFlag = Boolean(permissions.lockAllSettings);
+  var advancedSummaryTags = [];
+  if (!adventureEnabledFlag) advancedSummaryTags.push(tx('project_settings.tag_adv_off', 'Adventure off'));
+  else if (adventureLockedFlag) advancedSummaryTags.push(tx('project_settings.tag_locked', 'Locked'));
+  if (String(studentProjectSettings.socraticCustomInstructions || '').trim()) advancedSummaryTags.push(tx('project_settings.tag_tutor_notes', 'Tutor notes set'));
+  if (Number(studentProjectSettings.adventureUnlockXP || 0) > 0 || Number(studentProjectSettings.adventureMinXP || 0) > 0) advancedSummaryTags.push(tx('project_settings.tag_xp_gated', 'XP milestones set'));
+  if (String(studentProjectSettings.nickname || '').trim()) advancedSummaryTags.push(tx('project_settings.tag_codename', 'Codename set'));
 
   var presetOptions = [
     {
@@ -617,6 +636,26 @@ function ProjectSettingsView(props) {
         </header>
 
         <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-5 sm:px-6">
+          <div data-project-settings-summary="true" className="flex flex-wrap items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold">
+            <span className="text-slate-600">{tx('project_settings.active_posture', 'Current setup')}:</span>
+            <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-indigo-800">{activePresetLabel}</span>
+            <span className={`rounded-full border px-2.5 py-0.5 ${studentAiHidden ? 'border-amber-300 bg-amber-50 text-amber-900' : 'border-emerald-200 bg-emerald-50 text-emerald-800'}`}>
+              {studentAiHidden ? tx('project_settings.posture_ai_hidden', 'Student AI hidden') : tx('project_settings.posture_ai_on', 'Student AI available')}
+            </span>
+            <span className="rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-slate-700 tabular-nums">
+              {enabledSupportsCount}/4 {tx('project_settings.posture_supports', 'supports on')}
+            </span>
+            {!adventureEnabledFlag && (
+              <span className="rounded-full border border-slate-300 bg-slate-100 px-2.5 py-0.5 text-slate-700">{tx('project_settings.tag_adv_off', 'Adventure off')}</span>
+            )}
+            {adventureEnabledFlag && adventureLockedFlag && (
+              <span className="rounded-full border border-rose-200 bg-rose-50 px-2.5 py-0.5 text-rose-800">{tx('project_settings.posture_adv_locked', 'Adventure locked')}</span>
+            )}
+            {studentProjectSettings.workStoryEnabled === true && (
+              <span className="rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-violet-800">{tx('project_settings.posture_work_story', 'Work Story ON')}</span>
+            )}
+          </div>
+
           <fieldset>
             <legend className="text-xs font-black uppercase tracking-wider text-slate-600">
               {tx('project_settings.starting_point', 'Starting point')}
@@ -702,7 +741,14 @@ function ProjectSettingsView(props) {
           <details className="group rounded-xl border border-slate-200 bg-slate-50">
             <summary className="min-h-11 flex cursor-pointer list-none items-center justify-between gap-4 rounded-xl px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-600">
               <span>
-                <span className="flex items-center gap-2 text-sm font-black text-slate-900"><Settings2 size={16} aria-hidden="true"/> {tx('project_settings.advanced_title', 'Advanced lesson configuration')}</span>
+                <span className="flex flex-wrap items-center gap-2 text-sm font-black text-slate-900">
+                  <Settings2 size={16} aria-hidden="true"/> {tx('project_settings.advanced_title', 'Advanced lesson configuration')}
+                  {advancedSummaryTags.length > 0 && (
+                    <span data-project-settings-advanced-badge="true" className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[11px] font-bold text-indigo-800">
+                      {advancedSummaryTags.join(' · ')}
+                    </span>
+                  )}
+                </span>
                 <span className="mt-1 block text-xs text-slate-600">{tx('project_settings.advanced_desc', 'Learner identity, tutor guidance, XP pacing, permissions, and privacy.')}</span>
               </span>
               <span className="text-lg font-bold text-indigo-600 transition-transform motion-reduce:transition-none group-open:rotate-45" aria-hidden="true">+</span>

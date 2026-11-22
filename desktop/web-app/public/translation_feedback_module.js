@@ -26,6 +26,7 @@
  */
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.TranslationFeedback) {
     console.log('[TranslationFeedback] Already loaded, skipping');
     return;
@@ -41,9 +42,8 @@
   function communityFeedbackBlocked() {
     try {
       return Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SUPPORT_REPORTING_POLICY')
-        || window._isDesktopBundledApp === true
-        || window.__alloStudentView === true
-        || window.__alloQrStudentMode === true
+        || window._isDesktopBundledApp === true || window.__alloStudentView === true
+        || Boolean(window.__alloQrStudentMode)
         || window._alloQrBlocked === true
         || window.__alloOfflineOnly === true;
     }
@@ -133,6 +133,7 @@
           var j = txt.replace(/^[^{]*/, '').replace(/;?\s*$/, '');
           var parsed = safeJsonParse(j);
           if (parsed && typeof parsed === 'object') EN = flatten(parsed);
+          else EN_LOADING = false;
         })
         .catch(function () { EN_LOADING = false; })
         .finally(function () { if (enTimer) clearTimeout(enTimer); });
@@ -151,18 +152,23 @@
   var modalTokenSeq = 0;
   var currentModalToken = 0;
   function validOpenerEl(el) {
+    if (typeof document === 'undefined') return false;
     return !!(el && el !== document.body && el !== document.documentElement
       && (el.isConnected === true || (el.isConnected === undefined && typeof document.contains === 'function' && document.contains(el)))
       && typeof el.focus === 'function');
   }
   function ensureA11yStyle() {
+    if (typeof document === 'undefined') return;
     if (document.getElementById('allo-tfb-a11y-style')) return;
+    var target = document.head || document.body || document.documentElement;
+    if (!target) return;
     var st = document.createElement('style');
     st.id = 'allo-tfb-a11y-style';
     st.textContent = '#allo-tfb-pill:focus-visible,[data-allo-tfb-modal] :is(button,input,textarea):focus-visible{outline:2px solid #0f766e;outline-offset:2px;}';
-    (document.head || document.body || document.documentElement).appendChild(st);
+    target.appendChild(st);
   }
   function ensurePill() {
+    if (typeof document === 'undefined' || !document.body) return;
     ensureA11yStyle();
     if (pill) return;
     pill = document.createElement('button');
@@ -179,7 +185,7 @@
     pill.onclick = function () { hidePill(); openModal(lastContext); };
     pill.onkeydown = function (ev) {
       if (ev.isComposing || ev.keyCode === 229) return;
-      if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); hidePill(); }
+      if (ev.key === 'Escape' && !ev.ctrlKey && !ev.metaKey && !ev.altKey) { ev.preventDefault(); ev.stopPropagation(); hidePill(); }
     };
     document.body.appendChild(pill);
   }
@@ -187,10 +193,10 @@
 
   // Public: called from the host's help-mode click handler.
   function offerFor(ctx) {
-    if (!ctx || !document.body
+    if (typeof document === 'undefined' || !ctx || !document.body
       || window._isDesktopBundledApp === true
       || window.__alloStudentView === true
-      || window.__alloQrStudentMode === true
+      || Boolean(window.__alloQrStudentMode)
       || window._alloQrBlocked === true
       || window.__alloOfflineOnly === true) return;
     if (validOpenerEl(document.activeElement) && document.activeElement !== pill) {
@@ -199,6 +205,7 @@
     lastContext = { key: stripControlChars(ctx.key || '').trim().slice(0, 160), current: stripControlChars(ctx.current || '').trim().slice(0, 1000), language: stripControlChars(currentLanguage(ctx)).trim().slice(0, 60) || 'English' };
     if (!communityFeedbackBlocked()) loadEnglish();
     ensurePill();
+    if (!pill) return;
     pill.innerHTML = '<span aria-hidden="true">✎</span><span></span>';
     pill.lastChild.textContent = ' Suggest a better ' + lastContext.language + ' translation';
     pill.style.display = 'inline-flex';
@@ -208,6 +215,7 @@
 
   // ── The modal ──
   function openModal(ctx) {
+    if (typeof document === 'undefined' || !document.body) return;
     ctx = ctx || lastContext || { key: '', current: '', language: currentLanguage(null) };
     var activeNow = document.activeElement;
     var nextOpener = (validOpenerEl(activeNow) && activeNow !== pill) ? activeNow : openerBeforePill;

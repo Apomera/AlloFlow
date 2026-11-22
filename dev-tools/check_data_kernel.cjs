@@ -19,8 +19,16 @@ const MIME = {
 function serveFile(req, res) {
   const pathname = decodeURIComponent(new URL(req.url, 'http://127.0.0.1').pathname);
   if (pathname === '/data-kernel-smoke.html') {
+    const manifestJson = fs.readFileSync(path.join(ROOT, 'data_kernel_runtime_integrity.json'), 'utf8')
+      .replace(/</g, '\\u003c');
     res.writeHead(200, { 'content-type': MIME['.html'] });
-    res.end('<!doctype html><meta charset="utf-8"><script src="/data_kernel_loader.js"></script>');
+    res.end(
+      '<!doctype html><meta charset="utf-8">' +
+      '<script src="/runtime_graph_delivery_policy.js"></script>' +
+      '<script src="/runtime_graph_host.js"></script>' +
+      '<script>_alloInstallRuntimeGraphHost(' + manifestJson + ', window);</script>' +
+      '<script src="/data_kernel_loader.js"></script>'
+    );
     return;
   }
   const candidate = path.resolve(ROOT, '.' + pathname);

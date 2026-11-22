@@ -67,9 +67,24 @@
       '.theme-contrast .selh-bridgelab .bl-preset-chip[aria-pressed="true"]{background:#ffff00!important;color:#000!important;}';
     document.head.appendChild(_blVars);
   }
-  if (!window.StemLab || !window.StemLab.registerTool) {
+  if (typeof window === 'undefined' || !window.StemLab || !window.StemLab.registerTool) {
     console.warn('[StemLab] stem_tool_bridgelab.js loaded before StemLab registry — bailing');
     return;
+  }
+
+  function _blIsGlobalMuted() {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+    } catch (_) {}
+    return typeof window !== 'undefined' && !!(window.__alloGlobalMuted || window._alloGlobalMute);
+  }
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function' && !window.__alloBlMuteListenerAdded) {
+    window.__alloBlMuteListenerAdded = true;
+    window.addEventListener('alloflow-mute-changed', function() {
+      if (_blIsGlobalMuted() && typeof window.speechSynthesis !== 'undefined') {
+        try { window.speechSynthesis.cancel(); } catch (_) {}
+      }
+    });
   }
 
   // Per-item accent colours (#dc2626, #a855f7 ...) are chosen for swatches and strokes. Where one becomes TEXT
@@ -2903,7 +2918,19 @@
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
-      var setLabToolData = ctx.setToolData;
+      var _rawSetLabToolData = ctx.setToolData;
+      var setLabToolData = typeof _rawSetLabToolData === 'function' ? function(updater) {
+        if (typeof updater === 'function') {
+          return _rawSetLabToolData(function(prev) {
+            var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            if (!base.bridgeLab || typeof base.bridgeLab !== 'object' || Array.isArray(base.bridgeLab)) {
+              base = Object.assign({}, base, { bridgeLab: {} });
+            }
+            return updater(base);
+          });
+        }
+        return _rawSetLabToolData(updater);
+      } : function() {};
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var callGemini = ctx.callGemini;
@@ -3210,6 +3237,7 @@
       // ── Web Audio API Sound Effects Engine ──
       // (_bridgeACRef is declared above the loading gate — Rules of Hooks.)
       function getBridgeAC() {
+        if (_blIsGlobalMuted()) return null;
         if (!_bridgeACRef.current) {
           try { _bridgeACRef.current = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {}
         }
@@ -3219,6 +3247,7 @@
         return _bridgeACRef.current;
       }
       function playBridgeTone(freq, dur, type, vol) {
+        if (_blIsGlobalMuted()) return;
         var ac = getBridgeAC(); if (!ac) return;
         try {
           var osc = ac.createOscillator(); var gain = ac.createGain();
@@ -3230,6 +3259,7 @@
         } catch(e) {}
       }
       var playBridgeSound = function(type) {
+        if (_blIsGlobalMuted()) return;
         try {
           switch (type) {
             case 'click':
@@ -3237,11 +3267,11 @@
               break;
             case 'drive':
               playBridgeTone(140, 0.06, 'triangle', 0.05);
-              setTimeout(function() { playBridgeTone(180, 0.05, 'triangle', 0.04); }, 40);
+              setTimeout(function() { if (!_blIsGlobalMuted()) playBridgeTone(180, 0.05, 'triangle', 0.04); }, 40);
               break;
             case 'creak':
               playBridgeTone(220, 0.1, 'sawtooth', 0.05);
-              setTimeout(function() { playBridgeTone(260, 0.08, 'sawtooth', 0.04); }, 50);
+              setTimeout(function() { if (!_blIsGlobalMuted()) playBridgeTone(260, 0.08, 'sawtooth', 0.04); }, 50);
               break;
             case 'collapse':
               playBridgeTone(120, 0.25, 'sawtooth', 0.1);
@@ -3249,8 +3279,8 @@
               break;
             case 'success':
               playBridgeTone(523, 0.08, 'sine', 0.08);
-              setTimeout(function() { playBridgeTone(659, 0.08, 'sine', 0.08); }, 70);
-              setTimeout(function() { playBridgeTone(784, 0.12, 'sine', 0.1); }, 140);
+              setTimeout(function() { if (!_blIsGlobalMuted()) playBridgeTone(659, 0.08, 'sine', 0.08); }, 70);
+              setTimeout(function() { if (!_blIsGlobalMuted()) playBridgeTone(784, 0.12, 'sine', 0.1); }, 140);
               break;
             default:
               playBridgeTone(440, 0.06, 'sine', 0.05);
@@ -3314,6 +3344,7 @@
       var visibleBridgeTabs = showFullBridgeNav ? TABS : TABS.filter(function(tab) { return BRIDGE_CORE_TABS.indexOf(tab.id) !== -1; });
       var currentBridgeTab = TABS.find(function(tab) { return tab.id === d.tab; }) || TABS[0];
       var bridgeTabKeyDown = function(e, index) {
+        if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         var nextIndex = -1;
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % visibleBridgeTabs.length;
         else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + visibleBridgeTabs.length - 1) % visibleBridgeTabs.length;
@@ -5308,6 +5339,7 @@
             }
           },
           onKeyDown: function(event) {
+            if (event.isComposing || event.keyCode === 229) return;
             if (d.seismicSceneFocus && !d.seismicReadoutCollapsed && event.key === 'Escape') {
               event.preventDefault(); event.stopPropagation(); bridgeToolsReturnFocus.current = true;
               upd({ seismicReadoutCollapsed: true });
@@ -5668,7 +5700,7 @@
                     onFocus: function() { bridgeInspectSeismic(inspectionTime); },
                     onChange: function(event) { inspectNumber(event.currentTarget, false); },
                     onBlur: function(event) { inspectNumber(event.currentTarget, true); },
-                    onKeyDown: function(event) { if (event.key === 'Enter') { event.preventDefault(); inspectNumber(event.currentTarget, true); } },
+                    onKeyDown: function(event) { if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; if (event.key === 'Enter') { event.preventDefault(); inspectNumber(event.currentTarget, true); } },
                     style: { display: 'block', width: '100%', minWidth: 0, minHeight: 36, padding: 7, marginTop: 4, border: '1px solid #64748b', borderRadius: 5, background: '#0f172a', color: ink, font: 'inherit', fontVariantNumeric: 'tabular-nums' } })),
                 h('label', { style: { display: 'block', marginTop: 8, minWidth: 0 } },
                   __alloT('stem.bridgelab.guide_decay_time_scrub', 'Scrub energy after shaking'),
@@ -6478,6 +6510,7 @@
             'aria-valuetext': sample.timeS.toFixed(3) + ' s · ' + phase, 'aria-orientation': 'horizontal',
             style: { position: 'relative', touchAction: 'pan-y', cursor: 'crosshair', outlineOffset: 4, borderRadius: 4 },
             onKeyDown: function(event) {
+              if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
               var changes = { ArrowRight: 0.05, ArrowUp: 0.05, ArrowLeft: -0.05, ArrowDown: -0.05, PageUp: 1, PageDown: -1 };
               if (event.key !== 'Home' && event.key !== 'End' && changes[event.key] === undefined) return;
               event.preventDefault();
@@ -6684,6 +6717,7 @@
                 'aria-valuenow': selected.frequencyHz, 'aria-valuetext': __alloAriaFill(__alloT('stem.bridgelab.a11y_hz', '{frequencyHz} Hz · {value1} {unit}'), { frequencyHz: selected.frequencyHz.toFixed(2), value1: bridgeRecordedNumberText(selected[chart.field]), unit: chart.unit }),
                 style: { position: 'relative', outlineOffset: 4, cursor: 'crosshair', touchAction: 'pan-y' },
                 onKeyDown: function(event) {
+                  if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
                   var steps = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1, PageUp: 5, PageDown: -5 };
                   if (event.key !== 'Home' && event.key !== 'End' && steps[event.key] === undefined) return;
                   event.preventDefault(); select(event.key === 'Home' ? 0 : event.key === 'End' ? 56 : scan.selected + steps[event.key]);
@@ -7533,6 +7567,7 @@
                   // keyboard and switch users.
                   tabIndex: show3d ? 0 : -1,
                   onKeyDown: function (ev) {
+                    if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
                     if (immersive) {
                       var change = {};
                       if (onBank) {

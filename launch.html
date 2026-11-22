@@ -66,7 +66,7 @@
     }
     .tagline {
       font-size: 0.875rem;
-      color: #94a3b8;
+      color: #cbd5e1;
       margin: 0 0 2rem;
     }
     .status {
@@ -131,10 +131,11 @@
     .secondary-btn, .secondary-link {
       flex: 1 1 auto;
       min-width: 9rem;
+      min-height: 2.75rem;
       padding: 0.625rem 1rem;
       font-size: 0.875rem;
       font-weight: 500;
-      color: #cbd5e1;
+      color: #e2e8f0;
       background: rgba(148, 163, 184, 0.08);
       border: 1px solid rgba(148, 163, 184, 0.25);
       border-radius: 0.5rem;
@@ -212,11 +213,11 @@
     }
     .browser-ai-note {
       margin: 0.7rem 0 0;
-      color: #94a3b8;
+      color: #cbd5e1;
       font-size: 0.75rem;
       line-height: 1.5;
     }
-    .browser-ai-note strong { color: #cbd5e1; }
+    .browser-ai-note strong { color: #f1f5f9; }
     .browser-project-note a { color: #bae6fd; text-decoration: underline; }
     .browser-project-note a:focus-visible { outline: 2px solid #bae6fd; outline-offset: 3px; }
     .ai-access-details {
@@ -231,10 +232,10 @@
       min-height: 2.75rem;
       padding: 0.72rem 0.75rem;
       cursor: pointer;
-      color: #cbd5e1;
+      color: #e2e8f0;
       font-weight: 600;
     }
-    .ai-access-details summary:hover { color: #f1f5f9; }
+    .ai-access-details summary:hover { color: #ffffff; }
     .ai-access-details summary:focus-visible {
       outline: 3px solid #bae6fd;
       outline-offset: 2px;
@@ -242,7 +243,7 @@
     }
     .ai-access-details-content {
       padding: 0 0.75rem 0.8rem;
-      color: #94a3b8;
+      color: #cbd5e1;
       line-height: 1.55;
     }
     .ai-access-details-content p { margin: 0 0 0.55rem; }
@@ -268,11 +269,12 @@
     footer {
       margin-top: 1.5rem;
       font-size: 0.75rem;
-      color: #94a3b8;
+      color: #cbd5e1;
       text-align: center;
     }
-    footer a { color: #94a3b8; text-decoration: none; }
-    footer a:hover { color: #e2e8f0; text-decoration: underline; }
+    footer a { color: #cbd5e1; text-decoration: none; }
+    footer a:hover { color: #ffffff; text-decoration: underline; }
+    footer a:focus-visible { outline: 2px solid #bae6fd; outline-offset: 2px; border-radius: 0.125rem; }
     /* Interstitial */
     .interstitial-overlay {
       position: fixed; inset: 0;
@@ -304,23 +306,24 @@
     }
     .interstitial-card strong { color: #fde68a; }
     .interstitial-countdown {
-      font-size: 0.75rem;
-      color: #94a3b8;
+      font-size: 0.8125rem;
+      color: #cbd5e1;
       margin-bottom: 1rem;
     }
     .interstitial-actions { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
     .interstitial-actions button {
-      padding: 0.5rem 1rem;
+      min-height: 2.75rem;
+      padding: 0.625rem 1rem;
       font-size: 0.85rem;
-      font-weight: 500;
+      font-weight: 600;
       border-radius: 0.5rem;
       cursor: pointer;
       font-family: inherit;
-      border: 1px solid rgba(148, 163, 184, 0.3);
-      background: rgba(148, 163, 184, 0.1);
-      color: #e2e8f0;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(148, 163, 184, 0.12);
+      color: #f1f5f9;
     }
-    .interstitial-actions button:hover { background: rgba(148, 163, 184, 0.2); }
+    .interstitial-actions button:hover { background: rgba(148, 163, 184, 0.22); }
     .interstitial-actions button:focus-visible { outline: 2px solid #c7d2fe; outline-offset: 2px; }
     .interstitial-actions .primary {
       background: #4f46e5; border-color: #4f46e5; color: #ffffff;
@@ -337,11 +340,18 @@
       .brand { font-size: 1.75rem; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .launch-btn, .browser-app-btn { transition: none; }
+      .launch-btn, .browser-app-btn, .secondary-btn, .secondary-link { transition: none; }
     }
     .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 999; background: #1e1b4b; color: #ffffff; padding: 10px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; }
     .skip-link:focus { left: 12px; outline: 3px solid #facc15; outline-offset: 2px; }
-    @media (forced-colors: active) { .brand { -webkit-text-fill-color: CanvasText; color: CanvasText; background: none; } a:focus-visible, button:focus-visible { outline: 3px solid Highlight; outline-offset: 2px; } }
+    @media (forced-colors: active) {
+      body, .card, .tagline, .status, .status[data-state="live"], .status[data-state="fallback"], .tool-note, .tool-note strong, .browser-access h2, .browser-access-intro, .browser-ai-note, .browser-ai-note strong, .ai-access-details, .ai-access-details summary, .ai-access-details-content, .copy-feedback, footer, .interstitial-card, .interstitial-card h2, .interstitial-card p, .interstitial-card strong, .interstitial-countdown { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; box-shadow: none !important; }
+      .brand { -webkit-text-fill-color: CanvasText; color: CanvasText; background: none; }
+      .secondary-btn, .secondary-link, .browser-app-btn, .interstitial-actions button { background: ButtonFace !important; color: ButtonText !important; border: 1px solid ButtonText !important; }
+      .launch-btn, .interstitial-actions .primary { background: Highlight !important; color: HighlightText !important; border: 1px solid Highlight !important; }
+      .browser-project-note a, .ai-access-details-content a, footer a { color: LinkText !important; }
+      a:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; }
+    }
   </style>
 </head>
 <body>
@@ -437,9 +447,10 @@
         <br><br>
         Bookmark <strong>this launcher</strong> instead &mdash; it always points at the current release.
       </p>
-      <p id="inter-countdown" class="interstitial-countdown" aria-live="polite">Continuing in 3...</p>
+      <p id="inter-countdown" class="interstitial-countdown" role="status" aria-live="polite">Continuing in 3...</p>
       <div class="interstitial-actions">
         <button id="inter-continue" type="button" class="primary">Got it, continue</button>
+        <button id="inter-pause" type="button" aria-pressed="false">Pause countdown</button>
         <button id="inter-dismiss" type="button">Don't show again</button>
       </div>
     </div>
@@ -586,6 +597,9 @@
           // Fallback for older browsers
           try {
             const ta = document.createElement('textarea');
+            ta.setAttribute('aria-label', 'Canvas launch link');
+            ta.setAttribute('aria-hidden', 'true');
+            ta.tabIndex = -1;
             ta.value = text; ta.setAttribute('readonly', '');
             ta.style.position = 'absolute'; ta.style.left = '-9999px';
             document.body.appendChild(ta);
@@ -604,6 +618,7 @@
 
       const overlay = document.getElementById('interstitial');
       const continueBtn = document.getElementById('inter-continue');
+      const pauseBtn = document.getElementById('inter-pause');
       const dismissBtn = document.getElementById('inter-dismiss');
       const countdownEl = document.getElementById('inter-countdown');
 
@@ -622,34 +637,82 @@
         // Initial focus for accessibility
         setTimeout(function () { continueBtn.focus(); }, 50);
         let remaining = 3;
-        countdownEl.textContent = 'You can continue in ' + remaining + '...';
-        const tick = setInterval(function () {
-          remaining -= 1;
-          if (remaining > 0) {
-            countdownEl.textContent = 'You can continue in ' + remaining + '...';
-          } else {
+        let isPaused = false;
+        let tick = null;
+        function stopTimer() {
+          if (tick !== null) {
+            clearInterval(tick);
+            tick = null;
+          }
+        }
+        function startTimer() {
+          stopTimer();
+          if (remaining <= 0) {
             countdownEl.textContent = 'Ready.';
-            clearInterval(tick);
+            if (pauseBtn) pauseBtn.hidden = true;
+            return;
           }
-        }, 1000);
+          countdownEl.textContent = 'You can continue in ' + remaining + '...';
+          tick = setInterval(function () {
+            if (isPaused) return;
+            remaining -= 1;
+            if (remaining > 0) {
+              countdownEl.textContent = 'You can continue in ' + remaining + '...';
+            } else {
+              countdownEl.textContent = 'Ready.';
+              if (pauseBtn) pauseBtn.hidden = true;
+              stopTimer();
+            }
+          }, 1000);
+        }
+        startTimer();
 
-        continueBtn.addEventListener('click', function () {
-          clearInterval(tick);
+        if (pauseBtn) {
+          pauseBtn.addEventListener('click', function () {
+            isPaused = !isPaused;
+            pauseBtn.setAttribute('aria-pressed', isPaused ? 'true' : 'false');
+            pauseBtn.textContent = isPaused ? 'Resume countdown' : 'Pause countdown';
+            if (isPaused) {
+              stopTimer();
+              countdownEl.textContent = 'Countdown paused (' + remaining + 's remaining).';
+            } else {
+              startTimer();
+            }
+          });
+        }
+
+        function closeInterstitial(persist) {
+          stopTimer();
+          if (persist) persistDismiss();
+          document.removeEventListener('keydown', onKey, true);
           hideInterstitial();
-        });
-        dismissBtn.addEventListener('click', function () {
-          clearInterval(tick);
-          persistDismiss();
-          hideInterstitial();
-        });
-        // Esc closes (but does NOT persist - it's a one-time view either way)
-        document.addEventListener('keydown', function onKey(e) {
-          if (e.key === 'Escape' && !overlay.hidden) {
-            clearInterval(tick);
-            hideInterstitial();
-            document.removeEventListener('keydown', onKey);
+        }
+        continueBtn.addEventListener('click', function () { closeInterstitial(false); });
+        dismissBtn.addEventListener('click', function () { closeInterstitial(true); });
+        // Esc closes & Tab stays trapped inside the modal dialog
+        function onKey(e) {
+          if (overlay.hidden) return;
+          if (e.isComposing || e.keyCode === 229) return;
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            closeInterstitial(false);
+            return;
           }
-        });
+          if (e.key === 'Tab') {
+            const focusables = Array.from(overlay.querySelectorAll('button:not([hidden]):not([disabled]), a[href]:not([hidden])'));
+            if (!focusables.length) return;
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+            if (e.shiftKey && (document.activeElement === first || !overlay.contains(document.activeElement))) {
+              e.preventDefault();
+              last.focus();
+            } else if (!e.shiftKey && (document.activeElement === last || !overlay.contains(document.activeElement))) {
+              e.preventDefault();
+              first.focus();
+            }
+          }
+        }
+        document.addEventListener('keydown', onKey, true);
       }
     })();
   </script>

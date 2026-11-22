@@ -612,7 +612,7 @@
     return col.trim().replace(/^["']+|["']+$/g, '').trim();
   }
   function batchList() {
-    var seen = {}, out = { names: [], twice: [], unusable: [], over: 0 };
+    var seen = Object.create(null), out = { names: [], twice: [], unusable: [], over: 0 };
     String(($('f-batch-names') && $('f-batch-names').value) || '').replace(/^\uFEFF/, '').split(/\r?\n/).forEach(function (line) {
       if (!line.trim()) return;
       var cleaned = cleanRosterLine(line);

@@ -23,14 +23,14 @@ module.exports = {
     'The right to keep and bear arms': 'The Second Amendment is unrelated to a newspaper being blocked from publishing.',
   },
   'ap-usg-u3-053': {
-    'The Second Amendment applies only to organized state militias and protects no individual right at all.': 'Heller rejected the militia-only reading and recognized an individual right to keep a handgun at home.',
+    'The Second Amendment governs organized state militias without recognizing a personal firearm right.': 'Heller rejected the militia-only reading and recognized an individual right to keep a handgun at home.',
     'The Second Amendment prevents every form of firearm regulation by federal, state, or local government.': 'Heller stated the right is not unlimited and left room for many regulations, such as bans on felon possession.',
-    'The Second Amendment applies only to voting rights in federal elections and not to any other activity.': 'The amendment concerns arms, not voting; voting rights come from other provisions.',
+    'The Second Amendment governs voting access in federal elections rather than private firearm possession.': 'The amendment concerns arms, not voting; voting rights come from other provisions.',
   },
   'ap-usg-u3-054': {
-    'A government interest in public safety automatically eliminates every constitutional protection a person might raise.': 'Safety interests are weighed against rights; they do not erase the Fourth Amendment.',
-    'Individual rights become relevant only in the cases where the government can identify no interest of its own.': 'Rights matter most when government has an interest; the balancing exists because both sides count.',
-    'The Fourth Amendment applies only to searches by private businesses and never to actions by government officers.': 'The Fourth Amendment restrains government searches; it does not bind private businesses at all.',
+    'A government interest in public safety routinely overrides any constitutional protection a person might raise.': 'Safety interests are weighed against rights; they do not erase the Fourth Amendment.',
+    'Individual rights carry weight primarily in cases where the government identifies no public interest of its own.': 'Rights matter most when government has an interest; the balancing exists because both sides count.',
+    'The Fourth Amendment governs searches by private businesses rather than actions taken by government officers.': 'The Fourth Amendment restrains government searches; it does not bind private businesses at all.',
   },
   'ap-usg-u3-055': {
     'The process by which Congress decides which of the states may take part in the voting during federal elections.': 'Every state votes in federal elections; incorporation is a judicial doctrine about rights, not congressional selection of states.',
@@ -58,8 +58,8 @@ module.exports = {
     'A state weather agency publishes its regular forecast for the coming week.': 'A forecast is routine administration unrelated to civil rights or national legislation.',
   },
   'ap-usg-u3-060': {
-    'Majorities are never allowed to take part in the elections that decide questions of public policy.': 'Majorities routinely win elections; the limit is on what majorities may do to protected rights.',
-    'Constitutional rights apply only to elected officials and not to the citizens they represent.': 'Rights protect all persons, and they restrain officials rather than belonging only to them.',
+    'Majorities are barred from participating in elections that decide contested questions of public policy.': 'Majorities routinely win elections; the limit is on what majorities may do to protected rights.',
+    'Constitutional rights protect elected officials rather than the ordinary citizens they represent.': 'Rights protect all persons, and they restrain officials rather than belonging only to them.',
     'Courts must approve every private disagreement between citizens before it is allowed to occur.': 'Courts resolve legal disputes brought to them; they do not pre-approve private disagreements.',
   },
   'ap-usg-u3-061': {
@@ -103,14 +103,14 @@ module.exports = {
     'The Second Amendment gives Congress the power to appoint the police chiefs who serve in local communities across the entire country.': 'Police chiefs are chosen locally, and the amendment protects a right rather than granting appointment power.',
   },
   'ap-usg-u3-154': {
-    'The rule is automatically invalid, because speech can never be regulated in any public place for any reason whatsoever.': 'Content-neutral time, place, and manner limits on public speech are permitted when properly tailored.',
-    'The rule is automatically valid, because a public-safety justification overrides every constitutional protection at issue.': 'Safety justifies regulation only if the rule is neutral, tailored, and leaves alternatives; it does not override the First Amendment.',
+    'The rule is invalid on its face, because public expression is exempt from local regulation in every public setting.': 'Content-neutral time, place, and manner limits on public speech are permitted when properly tailored.',
+    'The rule is valid on its face, because a public-safety justification overrides every constitutional protection at issue.': 'Safety justifies regulation only if the rule is neutral, tailored, and leaves alternatives; it does not override the First Amendment.',
     'The rule counts as a treaty, because it applies to an international organization operating inside the limits of the city.': 'A city ordinance is not a treaty, and no international organization is involved.',
   },
   'ap-usg-u3-155': {
-    'Every provision of each state constitution automatically applies to the United States Congress.': 'Incorporation runs from the federal Bill of Rights to the states, not from state constitutions to Congress.',
+    'Every provision of each state constitution directly binds the United States Congress.': 'Incorporation runs from the federal Bill of Rights to the states, not from state constitutions to Congress.',
     'The president decides which of the rights the state courts will be required to enforce in each case.': 'The Supreme Court, through the Fourteenth Amendment, determines which protections apply to states; the president has no role.',
-    'The Bill of Rights applies only to federal agencies and never to any of the state governments.': 'That was the pre-incorporation rule; selective incorporation extended most protections to the states.',
+    'The Bill of Rights binds federal agencies without extending to state or local governments.': 'That was the pre-incorporation rule; selective incorporation extended most protections to the states.',
   },
   'ap-usg-u3-156': {
     'The right to counsel applies only in civil disputes concerning property ownership.': 'Gideon concerned criminal prosecution; the Sixth Amendment right to counsel applies to criminal cases.',
@@ -123,9 +123,9 @@ module.exports = {
     'The issue proves that all government records are public documents by default.': 'Nothing in the scenario makes records public; it involves government gathering private data.',
   },
   'ap-usg-u3-158': {
-    'Social movements must rely only on presidential executive orders to achieve any change.': 'The movement used courts, boycotts, and demonstrations; nothing limits movements to executive orders.',
+    'Social movements must depend strictly on presidential executive orders to achieve change.': 'The movement used courts, boycotts, and demonstrations; nothing limits movements to executive orders.',
     'Litigation prevents citizens from using any other form of political participation at all.': 'Litigation is one form of participation and was combined here with protests and boycotts.',
-    'A movement succeeds automatically whenever it files a single lawsuit in a federal court.': 'Lawsuits can be lost, and change usually requires sustained action across several strategies.',
+    'A movement succeeds promptly whenever it files a single lawsuit in a federal court.': 'Lawsuits can be lost, and change usually requires sustained action across several strategies.',
   },
   'ap-usg-u3-159': {
     'A state has withdrawn from the federal system.': 'A federal antidiscrimination law shows national authority in use; no state has left the union.',
@@ -133,9 +133,9 @@ module.exports = {
     'The law demonstrates that social movements cannot affect policy.': 'The law followed sustained activism, showing movements can influence policy.',
   },
   'ap-usg-u3-160': {
-    'The majority may always remove minority rights through a simple vote.': 'Constitutional rights, including equal access to a public forum, are not subject to repeal by majority vote.',
-    'Minority rights apply only when the minority is large enough to win an election.': 'Rights protect individuals and groups regardless of their electoral strength.',
-    'The policy is automatically valid because public forums are never subject to constitutional rules.': 'Public forums are where First Amendment rules apply most strongly.',
+    'The majority may freely curtail minority rights through a simple vote.': 'Constitutional rights, including equal access to a public forum, are not subject to repeal by majority vote.',
+    'Minority rights take effect once a minority grows large enough to win an election.': 'Rights protect individuals and groups regardless of their electoral strength.',
+    'The policy is presumptively valid because public forums fall outside constitutional rules.': 'Public forums are where First Amendment rules apply most strongly.',
   },
   'ap-usg-u3-161': {
     'Whether every applicant will receive exactly the same outcome regardless of qualifications or of the policy design.': 'Equal protection concerns fair treatment and classifications, not guaranteed identical outcomes.',
@@ -144,8 +144,8 @@ module.exports = {
   },
   'ap-usg-u3-162': {
     'The school may suppress any unpopular view without considering disruption.': 'Student expression can be limited for substantial disruption, not for being unpopular with officials.',
-    'The case concerns only the federal taxing power.': 'A school removing an article for its viewpoint is a First Amendment question, not a tax question.',
-    'The First Amendment protects only speech written by government officials.': 'The First Amendment protects private speakers from government; officials’ speech is not the concern.',
+    'The dispute rests strictly on the federal taxing power.': 'A school removing an article for its viewpoint is a First Amendment question, not a tax question.',
+    'The First Amendment covers speech authored by government officials.': 'The First Amendment protects private speakers from government; officials’ speech is not the concern.',
   },
   'ap-usg-u3-163': {
     'The Tenth Amendment reservation of unlisted powers to the states and the people': 'The Tenth Amendment concerns federalism, not custodial interrogation.',
@@ -168,8 +168,8 @@ module.exports = {
     'The denial is a valid use of judicial review by a local city administrator acting alone.': 'Judicial review belongs to courts, and viewpoint discrimination by an administrator is not valid under any label.',
   },
   'ap-usg-u3-228': {
-    'The case concerns only the Senate\'s power to confirm judges to the federal courts.': 'Blocking publication is a press-freedom question; confirmations are unrelated.',
-    'The case proves that all leaked information is automatically protected from publication.': 'The presumption against prior restraint is strong but not absolute; it does not make every leak protected.',
+    'The dispute centers strictly on Senate confirmation of federal judges.': 'Blocking publication is a press-freedom question; confirmations are unrelated.',
+    'The dispute proves that leaked records are categorically barred from publication.': 'The presumption against prior restraint is strong but not absolute; it does not make every leak protected.',
     'The case transfers all press regulation to the local school boards in the state.': 'School boards have no authority over newspapers; the issue is government censorship before publication.',
   },
   'ap-usg-u3-229': {
@@ -203,9 +203,9 @@ module.exports = {
     'Coalition building eliminates disagreement within every social movement.': 'Coalitions manage disagreement; they do not remove it.',
   },
   'ap-usg-u3-235': {
-    'Federal legislation makes enforcement unnecessary, because discrimination ends automatically once a law passes.': 'Laws do not enforce themselves; the agency investigation exists because compliance must be secured.',
-    'Administrative agencies may enforce only the state constitutions and never any federal statute passed by Congress.': 'Federal agencies enforce federal statutes, as this one does.',
-    'Civil-rights policy is limited to judicial opinions and can never involve Congress or the federal agencies at all.': 'Congress enacted the law in the scenario, so civil-rights policy clearly involves the legislature.',
+    'Federal legislation makes enforcement unnecessary, because discrimination ceases promptly once a law passes.': 'Laws do not enforce themselves; the agency investigation exists because compliance must be secured.',
+    'Administrative agencies enforce state constitutions rather than federal statutes passed by Congress.': 'Federal agencies enforce federal statutes, as this one does.',
+    'Civil-rights policy rests in judicial rulings without active participation from Congress or federal agencies.': 'Congress enacted the law in the scenario, so civil-rights policy clearly involves the legislature.',
   },
   'ap-usg-u3-236': {
     'Majority rule requires the courts to uphold every policy that a clear majority supports.': 'Courts must enforce constitutional limits even against popular policies; that is the point of the decision.',
@@ -213,8 +213,8 @@ module.exports = {
     'The decision illustrates only federal spending rules and not constitutional democracy.': 'No spending is involved; the case is about rights limiting majority action.',
   },
   'ap-usg-u3-237': {
-    'Affirmative action automatically requires identical admission outcomes for every group of applicants involved.': 'Such policies concern opportunity and process; they do not mandate identical outcomes.',
-    'The policy is unrelated to equal protection, because admissions decisions are never governmental in character.': 'Public universities are government actors, so equal protection applies to their admissions.',
+    'Affirmative action routinely requires identical admission outcomes for every group of applicants involved.': 'Such policies concern opportunity and process; they do not mandate identical outcomes.',
+    'The policy is unrelated to equal protection, because admissions decisions fall outside public authority.': 'Public universities are government actors, so equal protection applies to their admissions.',
     'The policy eliminates any need to examine the evidence about unequal opportunity documented at the university.': 'Evidence of unequal opportunity is part of the justification a court would examine, not something the policy makes unnecessary.',
   },
 };

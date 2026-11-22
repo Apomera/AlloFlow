@@ -34,7 +34,7 @@ function __alloAST(k, fb) {
     document.head.appendChild(st);
   })();
   (function() {
-    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
@@ -43,7 +43,7 @@ function __alloAST(k, fb) {
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
-    if (document.getElementById('allo-live-archstudio')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-archstudio')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-archstudio';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -54,19 +54,43 @@ function __alloAST(k, fb) {
     document.body.appendChild(liveRegion);
   })();
 
-  if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
+  if (typeof window === 'undefined' || !window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
   // ══════════════════════════════════════════════════════════════
-  // ── Sound Effects Engine (Web Audio API) ──
+  // ── Sound Effects Engine (Web Audio API) & safety helpers ──
   // ══════════════════════════════════════════════════════════════
+  function _archIsGlobalMuted() {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+    } catch (_) {}
+    return typeof window !== 'undefined' && !!(window.__alloGlobalMuted || window._alloGlobalMute || window.__alloMuted);
+  }
+  function _archSafeJsonParse(raw) {
+    return JSON.parse(raw, function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+  }
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function' && !window.__alloArchMuteListenerAdded) {
+    window.__alloArchMuteListenerAdded = true;
+    window.addEventListener('alloflow-mute-changed', function () {
+      if (_archIsGlobalMuted() && typeof window.speechSynthesis !== 'undefined') {
+        try { window.speechSynthesis.cancel(); } catch (_) {}
+      }
+    });
+  }
   var _audioCtx = null;
   function getAudioCtx() {
+    if (_archIsGlobalMuted()) return null;
     if (!_audioCtx) {
       try { _audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch (e) { /* silent */ }
+    }
+    if (_audioCtx && _audioCtx.state === 'suspended' && typeof _audioCtx.resume === 'function') {
+      try { _audioCtx.resume(); } catch (_) {}
     }
     return _audioCtx;
   }
   function playTone(freq, dur, type, vol) {
+    if (_archIsGlobalMuted()) return;
     var ac = getAudioCtx(); if (!ac) return;
     try {
       var osc = ac.createOscillator();
@@ -101,7 +125,7 @@ function __alloAST(k, fb) {
   var STORAGE_KEY = 'alloflow_archstudio_builds';
   function loadGallery() {
     try {
-      var parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      var parsed = _archSafeJsonParse(localStorage.getItem(STORAGE_KEY) || '[]');
       if (!Array.isArray(parsed)) return [];
       return parsed.slice(-50).map(function (item, index) {
         if (!item || typeof item !== 'object') return null;
@@ -1285,6 +1309,7 @@ function __alloAST(k, fb) {
 
     function frame(now) {
       if (state !== 'ready' || !pending) { rafId = 0; return; }
+      if (typeof document !== 'undefined' && document.hidden) { rafId = 0; lastT = 0; return; }
       var m = pending;
       now = now || (typeof performance !== 'undefined' ? performance.now() : Date.now());
       var dt = lastT ? Math.min(0.1, Math.max(0.001, (now - lastT) / 1000)) : 1 / 60;
@@ -1568,6 +1593,7 @@ function __alloAST(k, fb) {
       unmount: function () {
         mountGeneration++;
         state = 'disposing';
+        cancelArchHover();
         if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
         if (contextRestoreTimer) { clearTimeout(contextRestoreTimer); contextRestoreTimer = 0; }
         detachContextHandlers();
@@ -2370,7 +2396,7 @@ function __alloAST(k, fb) {
     var data;
     try {
       if (typeof input === 'string' && input.length > ARCH_PROJECT_FILE_LIMIT) return { ok: false, code: 'size' };
-      data = typeof input === 'string' ? JSON.parse(input) : input;
+      data = typeof input === 'string' ? _archSafeJsonParse(input) : input;
     } catch (_) { return { ok: false, code: 'json' }; }
     if (!data || data.format !== ARCH_PROJECT_FORMAT || data.version !== 1) return { ok: false, code: 'format' };
     if (!data.project || typeof data.project.name !== 'string' || typeof data.project.notes !== 'string'
@@ -2729,7 +2755,7 @@ function __alloAST(k, fb) {
     var fit = archDrawingFit(size.width, size.height, zoom);
     function change(direction) { zoomState[1](function (old) { return archDrawingZoom(old, direction); }); }
     function onKey(event) {
-      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
       var key = event.key, direction = key === '+' || key === '=' ? 'in' : key === '-' || key === '−' ? 'out' : key === '0' || key === 'Home' ? 'fit' : '';
       if (direction) { event.preventDefault(); event.stopPropagation(); change(direction); return; }
       var move = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[key];
@@ -3198,6 +3224,23 @@ function __alloAST(k, fb) {
       var t = ctx.t || function (k, fb) { return fb != null ? fb : k; };
     var React = ctx.React;
     var el = React.createElement;
+    var _rawArchSetToolData = ctx.setToolData;
+    if (typeof _rawArchSetToolData === 'function') {
+      ctx = Object.assign({}, ctx, {
+        setToolData: function (updater) {
+          if (typeof updater === 'function') {
+            return _rawArchSetToolData(function (rawPrev) {
+              var safePrev = (rawPrev && typeof rawPrev === 'object' && !Array.isArray(rawPrev)) ? rawPrev : {};
+              var rawA = safePrev.archStudio;
+              var normPrev = (rawA && typeof rawA === 'object' && !Array.isArray(rawA)) ? safePrev : Object.assign({}, safePrev, { archStudio: {} });
+              var out = updater(normPrev);
+              return out === normPrev ? rawPrev : out;
+            });
+          }
+          return _rawArchSetToolData(updater);
+        }
+      });
+    }
     var d = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData) && ctx.toolData.archStudio && typeof ctx.toolData.archStudio === 'object' && !Array.isArray(ctx.toolData.archStudio)) ? ctx.toolData.archStudio : {};
     var upd = function (key, val) {
       if (d.sidebarCollapsed === true && ARCH_SIDEBAR_PANELS.some(function (name) {
@@ -3213,7 +3256,13 @@ function __alloAST(k, fb) {
       else { ctx.update('archStudio', key, val); }
     };
     // Host-handed fn only (a window fallback re-armed AI the host withheld); null hides the AI Architect.
-    var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function') ? ctx.callGemini : null;
+    var _archWin = (typeof window !== 'undefined') ? window : {};
+    var _archPolicy = (_archWin.ALLOFLOW_MANAGED_AI_POLICY && typeof _archWin.ALLOFLOW_MANAGED_AI_POLICY === 'object') ? _archWin.ALLOFLOW_MANAGED_AI_POLICY : null;
+    var _archPolicyDeny = !!(_archPolicy && (_archPolicy.studentAiDisabled === true || _archPolicy.aiDisabled === true || _archPolicy.allowAi === false || _archPolicy.disabled === true || _archPolicy.locked === true || _archPolicy.enabled === false));
+    var _archAiUsableFnDeny = false;
+    try { if (typeof _archWin.__alloAiUsable === 'function' && !_archWin.__alloAiUsable('text', ctx.callGemini)) _archAiUsableFnDeny = true; } catch (_) {}
+    var _archAiHardDeny = !!(ctx.aiAvailable === false || _archWin._alloQrBlocked === true || (ctx.callGemini && ctx.callGemini._alloQrBlocked) || _archWin.__alloStudentAiDisabled === true || _archWin.__alloAiSecretsLocked === true || _archWin.__alloQrStudentMode === true || _archWin.__alloAiUsable === false || _archAiUsableFnDeny || _archPolicyDeny);
+    var callGemini = (!_archAiHardDeny && typeof ctx.callGemini === 'function') ? ctx.callGemini : null;
     var announceToSR = ctx.announceToSR;
     // typeof-guarded at both call sites, so it never threw — it just meant the
     // "3D view could not load, showing floor plans" notice never appeared, which
@@ -4163,7 +4212,7 @@ function __alloAST(k, fb) {
       var notice = d.templateNotice && d.templateNotice.id === selected.id && d.templateNotice.signature === currentBuildSignature ? d.templateNotice : null;
       function select(patch) { upd(Object.assign({ templateNotice: null }, patch)); }
       return el('section', { id: 'arch-template-library', 'aria-labelledby': 'arch-template-heading',
-        onKeyDown: function (event) { if (event.key === 'Escape' && event.target.tagName !== 'SELECT') { event.stopPropagation(); closeTemplates(); } } },
+        onKeyDown: function (event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return; if (event.key === 'Escape' && event.target.tagName !== 'SELECT') { event.stopPropagation(); closeTemplates(); } } },
         el('div', { className: 'arch-template-header' },
           el('h2', { id: 'arch-template-heading', tabIndex: -1 }, templateText('title')),
           el('button', { type: 'button', className: 'arch-template-close', 'aria-label': templateText('close'), onClick: closeTemplates }, '×')),
@@ -4309,7 +4358,7 @@ function __alloAST(k, fb) {
       Promise.resolve(request).then(function (resp) {
         if (thisReqId !== window.__archAiReqId) return;
         try {
-          var parsed = typeof resp === 'string' ? JSON.parse(resp.replace(/```json\s*/g, '').replace(/```/g, '').trim()) : resp;
+          var parsed = typeof resp === 'string' ? _archSafeJsonParse(resp.replace(/```json\s*/g, '').replace(/```/g, '').trim()) : resp;
           var advice = '';
           if (parsed.tips) parsed.tips.forEach(function (t, i) { advice += (i > 0 ? '\n' : '') + t; });
           if (parsed.funFact) advice += '\n\n\uD83C\uDFDB\uFE0F ' + parsed.funFact;
@@ -4339,8 +4388,10 @@ function __alloAST(k, fb) {
         transaction.reported = true;
         var result = transaction.result;
         if (ctx.addToast) ctx.addToast('\uD83C\uDF0B Earthquake ' + result.intensity + '/10: ' + result.rating + ' (' + result.fallen + ' blocks fell)', result.pct >= 70 ? 'success' : 'error');
-        playTone(80, 0.4, 'sawtooth', 0.15);
-        setTimeout(function () { playTone(60, 0.5, 'sawtooth', 0.12); }, 200);
+        if (soundEnabled) {
+          playTone(80, 0.4, 'sawtooth', 0.15);
+          setTimeout(function () { playTone(60, 0.5, 'sawtooth', 0.12); }, 200);
+        }
       };
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
@@ -4456,7 +4507,7 @@ function __alloAST(k, fb) {
         var trimmedCode = String(code).trim();
         if (!trimmedCode || trimmedCode.length > 500000) throw new Error('Invalid size');
         var json = atob(trimmedCode);
-        var data = JSON.parse(json);
+        var data = _archSafeJsonParse(json);
         if (!data || data.v !== 1 || !Array.isArray(data.b) || data.b.length > ARCH_MAX_BLOCKS) throw new Error('Invalid');
         var decoded = data.b.map(function (arr) {
           if (!Array.isArray(arr)) return null;
@@ -4594,8 +4645,10 @@ function __alloAST(k, fb) {
         }
         if (ctx.addToast) ctx.addToast('\u2B07\uFE0F Gravity applied! ' + transaction.moved + ' block' + (transaction.moved !== 1 ? 's' : '') + ' dropped.', 'info');
         if (announceToSR) announceToSR('Gravity applied. ' + transaction.moved + ' block' + (transaction.moved !== 1 ? 's' : '') + ' dropped to the ground or nearest support.');
-        playTone(200, 0.3, 'sine', 0.1);
-        setTimeout(function () { playTone(120, 0.4, 'sine', 0.08); }, 150);
+        if (soundEnabled) {
+          playTone(200, 0.3, 'sine', 0.1);
+          setTimeout(function () { playTone(120, 0.4, 'sine', 0.08); }, 150);
+        }
       };
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
@@ -5123,7 +5176,7 @@ function __alloAST(k, fb) {
         finally { if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
       }
       return el('section', { id: 'arch-schedule-panel', 'aria-labelledby': 'arch-schedule-heading',
-        onKeyDown: function (event) { if (event.key === 'Escape' && event.target.tagName !== 'SELECT') { event.stopPropagation(); closeSchedule(); } } },
+        onKeyDown: function (event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return; if (event.key === 'Escape' && event.target.tagName !== 'SELECT') { event.stopPropagation(); closeSchedule(); } } },
         el('div', { className: 'arch-schedule-heading-row' },
           el('div', null, el('p', { className: 'arch-schedule-eyebrow' }, scheduleText('eyebrow')),
             el('h2', { id: 'arch-schedule-heading', tabIndex: -1 }, scheduleText('title'))),
@@ -5270,6 +5323,7 @@ function __alloAST(k, fb) {
             catalog.map(function (item) { return renderItem(item, false); }))),
         toolBrowserOpen && el('section', { id: 'arch-tool-browser', 'aria-labelledby': 'arch-tool-browser-heading',
           onKeyDown: function (event) {
+            if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
             if (event.key === 'Escape' && event.target.tagName !== 'SELECT') {
               event.preventDefault(); event.stopPropagation(); closeToolBrowser();
             }
@@ -5375,7 +5429,7 @@ function __alloAST(k, fb) {
         setTimeout(function () { var target = document.getElementById('arch-filter-heading'); if (target) { target.focus(); target.scrollIntoView({ block: 'nearest' }); } }, 0);
       }
       return el('section', { id: 'arch-composition-panel', className: 'arch-composition-panel', 'aria-labelledby': 'arch-composition-heading',
-        onKeyDown: function (event) { if (event.key === 'Escape' && event.target.tagName !== 'SELECT') { event.preventDefault(); event.stopPropagation(); toggleComposition(); } } },
+        onKeyDown: function (event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return; if (event.key === 'Escape' && event.target.tagName !== 'SELECT') { event.preventDefault(); event.stopPropagation(); toggleComposition(); } } },
         el('div', { className: 'arch-composition-header' },
           el('h3', { id: 'arch-composition-heading', tabIndex: -1 }, compositionText('title')),
           el('button', { type: 'button', 'aria-label': compositionText('close'), onClick: toggleComposition }, compositionText('close_short'))),
@@ -5472,7 +5526,7 @@ function __alloAST(k, fb) {
         }, 0);
       }
       return el('section', { id: 'arch-floor-panel', className: 'arch-floor-panel', 'aria-labelledby': 'arch-floor-heading',
-        onKeyDown: function (event) { if (event.key === 'Escape' && event.target.tagName !== 'SELECT') { event.preventDefault(); event.stopPropagation(); toggleFloorExplorer(); } } },
+        onKeyDown: function (event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return; if (event.key === 'Escape' && event.target.tagName !== 'SELECT') { event.preventDefault(); event.stopPropagation(); toggleFloorExplorer(); } } },
         el('div', { className: 'arch-floor-header' },
           el('h3', { id: 'arch-floor-heading', tabIndex: -1 }, floorText('title')),
           el('button', { type: 'button', 'aria-label': floorText('close'), onClick: toggleFloorExplorer }, floorText('close_short'))),
@@ -5579,7 +5633,7 @@ function __alloAST(k, fb) {
         retainSectionFocus(control, 'arch-section-page');
       }
       return el('section', { id: 'arch-section-panel', className: 'arch-section-panel', 'aria-labelledby': 'arch-section-heading',
-        onKeyDown: function (event) { if (event.key === 'Escape' && event.target.tagName !== 'SELECT') { event.preventDefault(); event.stopPropagation(); toggleSectionPanel(); } } },
+        onKeyDown: function (event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return; if (event.key === 'Escape' && event.target.tagName !== 'SELECT') { event.preventDefault(); event.stopPropagation(); toggleSectionPanel(); } } },
         el('div', { className: 'arch-section-header' },
           el('h3', { id: 'arch-section-heading', tabIndex: -1 }, sectionText('title')),
           el('button', { type: 'button', 'aria-label': sectionText('close'), onClick: toggleSectionPanel }, sectionText('close_short'))),
@@ -5656,7 +5710,7 @@ function __alloAST(k, fb) {
       var summary = summarizeArchFilters(archReplayFrame, filterMaterial, filterShape);
       var hiddenMatches = summary.count > archDisplayBlocks.length;
       return el('section', { id: 'arch-filter-panel', className: 'arch-filter-panel', 'aria-labelledby': 'arch-filter-heading',
-        onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); toggleFilterPanel(); } } },
+        onKeyDown: function (event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return; if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); toggleFilterPanel(); } } },
         el('div', { className: 'arch-filter-header' },
           el('h3', { id: 'arch-filter-heading', tabIndex: -1 }, filterText('title')),
           el('button', { type: 'button', 'aria-label': filterText('close'), onClick: toggleFilterPanel }, filterText('close_short'))),
@@ -5742,7 +5796,7 @@ function __alloAST(k, fb) {
       var values = { step: summary.step + 1, total: summary.total, count: summary.count };
       var maxCount = Math.max.apply(Math, summary.counts.concat([1]));
       return el('section', { id: 'arch-replay-panel', className: 'arch-replay-panel', 'aria-labelledby': 'arch-replay-heading',
-        onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); exitReplay(); } } },
+        onKeyDown: function (event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return; if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); exitReplay(); } } },
         el('div', { className: 'arch-replay-heading-row' },
           el('h3', { id: 'arch-replay-heading', tabIndex: -1 }, replayText('title')),
           el('span', { className: 'arch-replay-badge' }, replayText('readonly'))),
@@ -5948,6 +6002,7 @@ function __alloAST(k, fb) {
       });
       var rowElements = [];
       var onGridCellKeyDown = function (ev, x, z) {
+        if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.altKey) return;
         if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight' && ev.key !== 'ArrowUp' && ev.key !== 'ArrowDown'
           && ev.key !== 'Home' && ev.key !== 'End') return;
         ev.preventDefault();
@@ -6073,6 +6128,7 @@ function __alloAST(k, fb) {
     // ══════════════════════════════════════════════════════════════
     // ── Keyboard shortcuts (WCAG 2.1.1): P/E/A/I switch mode, R rotates ──
     function onArchKey(e) {
+      if (e.isComposing || e.keyCode === 229) return;
       var tgt = e.target || {};
       var tn = (tgt.tagName || '').toUpperCase();
       if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
@@ -6515,7 +6571,7 @@ function __alloAST(k, fb) {
         finally { if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
       }
       return el('section', { id: 'arch-drawings-desk', 'data-arch-drawings': 'true', 'aria-labelledby': 'arch-drawings-heading',
-        onKeyDown: function (event) { if (event.key === 'Escape') { event.stopPropagation(); closeDrawings(); } },
+        onKeyDown: function (event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return; if (event.key === 'Escape') { event.stopPropagation(); closeDrawings(); } },
         style: { flex: 1, minHeight: 0, overflow: 'auto', padding: 16, background: '#0f172a' } },
         el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 } },
           el('div', null, el('h2', { id: 'arch-drawings-heading', style: { margin: '0 0 5px', fontSize: 18, color: '#f0fdfa' } }, drawingText('title')),
@@ -7854,6 +7910,7 @@ function __alloAST(k, fb) {
             onContextMenu: function (ev) { ev.preventDefault(); },
             onClick: editAtPointer,
             onKeyDown: function (ev) {
+              if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
               var cameraKeys = {
                 ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down',
                 '+': 'zoomIn', '=': 'zoomIn', '-': 'zoomOut', '_': 'zoomOut', Home: 'reset', '0': 'reset'

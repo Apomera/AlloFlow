@@ -23,6 +23,7 @@ import {
   isOpaqueId,
   jsonError,
   noStoreHeaders,
+  nowSeconds,
   readBoundedBytes,
   readBoundedText,
   sha256Base64Url,
@@ -37,6 +38,40 @@ type JobOutboundParams = {
 const MAX_CHECKPOINT_BYTES = 32 * 1024 * 1024;
 const SHA256_HEX_RE = /^[0-9a-f]{64}$/u;
 const CHECKPOINT_STAGES = new Set(["extraction", "primary", "round"]);
+const MODEL_NAME_RE = /^[A-Za-z0-9._-]{2,100}$/u;
+
+function resolvedFallbackModel(env: PilotEnv): string {
+  const candidate = typeof env.GEMINI_FALLBACK_MODEL === "string"
+    ? env.GEMINI_FALLBACK_MODEL.trim()
+    : "";
+  if (candidate && MODEL_NAME_RE.test(candidate)) {
+    return candidate;
+  }
+  return env.GEMINI_MODEL || "";
+}
+
+function isRunningJobLeaseActive(job: JobRow, attemptId: string): boolean {
+  if (job.status !== "running" || job.attempt_id !== attemptId) {
+    return false;
+  }
+  if (job.lease_expires_at !== null && job.lease_expires_at <= nowSeconds()) {
+    return false;
+  }
+  return true;
+}
+
+function sanitizeRetryAfterHeader(raw: string | null): string | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (!trimmed || trimmed.length > 64 || /[\r\n\u0000-\u001f\u007f]/u.test(trimmed)) {
+    return null;
+  }
+  if (/^[0-9]{1,6}$/u.test(trimmed)) {
+    return trimmed;
+  }
+  const parsed = Date.parse(trimmed);
+  return Number.isFinite(parsed) ? trimmed : null;
+}
 
 function runnerEnvironment(
   env: PilotEnv,
@@ -50,7 +85,7 @@ function runnerEnvironment(
     ALLOFLOW_MCP_GEMINI_BASE:
       "http://gemini.internal/v1beta/models",
     ALLOFLOW_MCP_GEMINI_MODEL: env.GEMINI_MODEL || "",
-    ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL: env.GEMINI_MODEL || "",
+    ALLOFLOW_MCP_GEMINI_FALLBACK_MODEL: resolvedFallbackModel(env),
     ALLOFLOW_MCP_MAX_RUN_MINUTES: String(
       config.remediationMaxRunMinutes,
     ),
@@ -206,10 +241,7 @@ async function storageOutbound(
       throw new PilotError("runner_storage_denied", 403);
     }
     const job = await getInternalJob(env, jobId);
-    if (
-      job.status !== "running" ||
-      job.attempt_id !== attemptId
-    ) {
+    if (!isRunningJobLeaseActive(job, attemptId)) {
       throw new PilotError("runner_storage_denied", 403);
     }
     const url = new URL(request.url);
@@ -351,19 +383,48 @@ async function storageOutbound(
         }
         throw new PilotError("runner_checkpoint_invalid", 400);
       }
-      const committed = await commitJobCheckpoint(
-        env,
-        jobId,
-        attemptId,
-        checkpoint,
-      );
+      let committed;
+      try {
+        committed = await commitJobCheckpoint(
+          env,
+          jobId,
+          attemptId,
+          checkpoint,
+        );
+      } catch (err) {
+        // Avoid leaking an orphaned R2 checkpoint object if this PUT created it
+        // but D1 commitJobCheckpoint failed (e.g., CAS conflict or lost lease).
+        if (createdByThisPut) {
+          try {
+            const current = await getInternalJob(env, jobId);
+            if (current.checkpoint_key !== checkpoint.key) {
+              await env.DOCUMENTS.delete(checkpoint.key);
+            }
+          } catch {
+            console.warn(
+              JSON.stringify({
+                event: "orphaned_checkpoint_delete_failed",
+                jobId,
+              }),
+            );
+          }
+        }
+        throw err;
+      }
       if (
         committed.supersededCheckpoint &&
         committed.supersededCheckpoint.key !== committed.checkpoint.key
       ) {
         await env.DOCUMENTS.delete(
           committed.supersededCheckpoint.key,
-        );
+        ).catch(() => {
+          console.warn(
+            JSON.stringify({
+              event: "superseded_checkpoint_delete_failed",
+              jobId,
+            }),
+          );
+        });
       }
       return Response.json(
         { ok: true, sequence: committed.checkpoint.seq },
@@ -401,6 +462,7 @@ async function storageOutbound(
         new PilotError("runner_output_invalid", 400),
       );
       const stored = await env.DOCUMENTS.put(job.result_key, boundedPdfBody, {
+        onlyIf: { etagDoesNotMatch: "*" },
         httpMetadata: {
           contentType: "application/pdf",
           cacheControl: "no-store",
@@ -412,6 +474,32 @@ async function storageOutbound(
           artifact: "tagged_pdf",
         },
       });
+      if (!stored) {
+        const existing = await env.DOCUMENTS.head(job.result_key);
+        const matchesExisting = Boolean(
+          existing &&
+          existing.size === size &&
+          existing.httpMetadata?.contentType === "application/pdf" &&
+          checksumHex(existing.checksums.sha256) === declaredSha256 &&
+          existing.customMetadata?.jobId === jobId &&
+          existing.customMetadata?.attemptId === attemptId &&
+          existing.customMetadata?.artifact === "tagged_pdf",
+        );
+        if (!matchesExisting) {
+          throw new PilotError("runner_output_conflict", 409);
+        }
+        const current = await getInternalJob(env, jobId);
+        if (
+          (current.status !== "running" && current.status !== "completed") ||
+          current.attempt_id !== attemptId
+        ) {
+          throw new PilotError("runner_storage_denied", 403);
+        }
+        return Response.json(
+          { ok: true, size },
+          { status: 200, headers: noStoreHeaders() },
+        );
+      }
       if (
         stored.size !== size ||
         checksumHex(stored.checksums.sha256) !== declaredSha256
@@ -424,7 +512,9 @@ async function storageOutbound(
         current.status !== "running" ||
         current.attempt_id !== attemptId
       ) {
-        await env.DOCUMENTS.delete(job.result_key);
+        if (!(current.status === "completed" && current.attempt_id === attemptId)) {
+          await env.DOCUMENTS.delete(job.result_key);
+        }
         throw new PilotError("runner_storage_denied", 403);
       }
       return Response.json(
@@ -454,7 +544,7 @@ async function storageOutbound(
       ) {
         throw new PilotError("runner_output_invalid", 400);
       }
-      const size = contentLength(request, 2 * 1024 * 1024);
+      const size = contentLength(request, 1024 * 1024);
       const declaredSha256 = sha256.toLowerCase();
       const boundedReportBody = exactLengthBodyStream(
         request.body,
@@ -463,6 +553,7 @@ async function storageOutbound(
         new PilotError("runner_output_invalid", 400),
       );
       const stored = await env.DOCUMENTS.put(job.report_key, boundedReportBody, {
+        onlyIf: { etagDoesNotMatch: "*" },
         httpMetadata: {
           contentType: "application/json",
           cacheControl: "no-store",
@@ -474,6 +565,32 @@ async function storageOutbound(
           artifact: "report",
         },
       });
+      if (!stored) {
+        const existing = await env.DOCUMENTS.head(job.report_key);
+        const matchesExisting = Boolean(
+          existing &&
+          existing.size === size &&
+          existing.httpMetadata?.contentType === "application/json" &&
+          checksumHex(existing.checksums.sha256) === declaredSha256 &&
+          existing.customMetadata?.jobId === jobId &&
+          existing.customMetadata?.attemptId === attemptId &&
+          existing.customMetadata?.artifact === "report",
+        );
+        if (!matchesExisting) {
+          throw new PilotError("runner_output_conflict", 409);
+        }
+        const current = await getInternalJob(env, jobId);
+        if (
+          (current.status !== "running" && current.status !== "completed") ||
+          current.attempt_id !== attemptId
+        ) {
+          throw new PilotError("runner_storage_denied", 403);
+        }
+        return Response.json(
+          { ok: true, size },
+          { status: 200, headers: noStoreHeaders() },
+        );
+      }
       if (
         stored.size !== size ||
         checksumHex(stored.checksums.sha256) !== declaredSha256
@@ -486,7 +603,9 @@ async function storageOutbound(
         current.status !== "running" ||
         current.attempt_id !== attemptId
       ) {
-        await env.DOCUMENTS.delete(job.report_key);
+        if (!(current.status === "completed" && current.attempt_id === attemptId)) {
+          await env.DOCUMENTS.delete(job.report_key);
+        }
         throw new PilotError("runner_storage_denied", 403);
       }
       return Response.json(
@@ -516,22 +635,23 @@ async function geminiOutbound(
       attemptId.length > 255 ||
       !env.GEMINI_API_KEY ||
       !model ||
-      !/^[A-Za-z0-9._-]{2,100}$/u.test(model)
+      !MODEL_NAME_RE.test(model)
     ) {
       throw new PilotError("model_not_configured", 503);
     }
     const job = await getInternalJob(env, jobId);
-    if (
-      job.status !== "running" ||
-      job.attempt_id !== attemptId
-    ) {
+    if (!isRunningJobLeaseActive(job, attemptId)) {
       throw new PilotError("model_request_denied", 403);
     }
     const incoming = new URL(request.url);
-    const expectedPath = `/v1beta/models/${model}:generateContent`;
+    const allowedPaths = new Set([`/v1beta/models/${model}:generateContent`]);
+    const fallbackModel = resolvedFallbackModel(env);
+    if (fallbackModel && fallbackModel !== model) {
+      allowedPaths.add(`/v1beta/models/${fallbackModel}:generateContent`);
+    }
     if (
       request.method !== "POST" ||
-      incoming.pathname !== expectedPath ||
+      !allowedPaths.has(incoming.pathname) ||
       incoming.search !== "" ||
       request.headers.get("Content-Type")?.split(";", 1)[0] !==
         "application/json" ||
@@ -546,7 +666,7 @@ async function geminiOutbound(
     );
 
     const upstream = await fetch(
-      `https://generativelanguage.googleapis.com${expectedPath}`,
+      `https://generativelanguage.googleapis.com${incoming.pathname}`,
       {
         method: "POST",
         headers: {
@@ -554,7 +674,9 @@ async function geminiOutbound(
           Accept: "application/json",
           "x-goog-api-key": env.GEMINI_API_KEY,
         },
-        body: Uint8Array.from(bodyBytes).buffer,
+        body: bodyBytes.buffer.byteLength === bodyBytes.byteLength && bodyBytes.byteOffset === 0
+          ? (bodyBytes.buffer as ArrayBuffer)
+          : bodyBytes.slice().buffer,
         redirect: "error",
         signal: AbortSignal.timeout(90_000),
       },
@@ -566,6 +688,12 @@ async function geminiOutbound(
     const upstreamLength = upstream.headers.get("Content-Length");
     if (upstreamLength && !upstream.headers.has("Content-Encoding")) {
       headers.set("Content-Length", upstreamLength);
+    }
+    const retryAfter = sanitizeRetryAfterHeader(
+      upstream.headers.get("Retry-After"),
+    );
+    if (retryAfter) {
+      headers.set("Retry-After", retryAfter);
     }
     return new Response(upstream.body, {
       status: upstream.status,

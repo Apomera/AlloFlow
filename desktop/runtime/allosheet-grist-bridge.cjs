@@ -622,6 +622,13 @@ function createAlloSheetGristBridge(options = {}) {
       && managedSessionPromiseCredential === credential
     ) {
       await managedSessionPromise;
+      if (managedSessionOrigin !== origin || managedSessionCredential !== credential) {
+        throw new AlloSheetBridgeError(
+          'The managed spreadsheet engine changed while authenticating.',
+          503,
+          'managed-engine-unavailable'
+        );
+      }
       return cookieHeaderFromJar(managedSessionCookies);
     }
 
@@ -641,6 +648,13 @@ function createAlloSheetGristBridge(options = {}) {
         managedSessionPromiseOrigin = '';
         managedSessionPromiseCredential = '';
       }
+    }
+    if (managedSessionOrigin !== origin || managedSessionCredential !== credential) {
+      throw new AlloSheetBridgeError(
+        'The managed spreadsheet engine changed while authenticating.',
+        503,
+        'managed-engine-unavailable'
+      );
     }
     return cookieHeaderFromJar(managedSessionCookies);
   }

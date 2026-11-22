@@ -1617,7 +1617,9 @@ function managedExternalSearchAllowed() {
   try { const snapshot = managedAISnapshot(); return !snapshot.policy || snapshot.policy.allowExternalSearch; }
   catch (_) { return false; }
 }
-async function assertManagedAIConnection({ backend, baseUrl, apiKey = '', canvasHost = false, operation = 'text', search = false }) {
+async function assertManagedAIConnection(rawArgs) {
+  if (!rawArgs || typeof rawArgs !== 'object' || Array.isArray(rawArgs)) throw managedAIError();
+  const { backend, baseUrl, apiKey = '', canvasHost = false, operation = 'text', search = false } = rawArgs;
   const snapshot = managedAISnapshot(), guard = managedAIDispatchGuard(snapshot), policy = snapshot.policy;
   if (!policy) return guard;
   // Version 1 deliberately covers text inference. Media routes can use separate
@@ -1625,7 +1627,7 @@ async function assertManagedAIConnection({ backend, baseUrl, apiKey = '', canvas
   if (operation !== 'text' || (search && !policy.allowExternalSearch) || typeof apiKey !== 'string') throw managedAIError();
   const endpoint = managedAIEndpoint(baseUrl);
   const entries = policy.connections.filter(row => row.backend === backend && endpoint && row.baseUrl === endpoint);
-  if (entries.some(entry => (canvasHost && entry.canvasHost) || (!apiKey && entry.keyless))) { guard(); return guard; }
+  if (entries.some(entry => (canvasHost === true && entry.canvasHost) || (!apiKey && entry.keyless))) { guard(); return guard; }
   if (apiKey && entries.some(entry => entry.apiKeySha256.length) && globalThis.crypto?.subtle) {
     let digest;
     try { digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(apiKey)); }

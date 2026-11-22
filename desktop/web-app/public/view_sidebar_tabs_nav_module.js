@@ -27,24 +27,29 @@ function SidebarTabsNav({
   const browserHistoryConstructor = window.history && window.history.constructor;
   const History = window.AlloIcons && window.AlloIcons.History || typeof window.History === "function" && window.History !== browserHistoryConstructor && !(window.History.prototype && typeof window.History.prototype.pushState === "function") && window.History || noop;
   const translatedLabel = (key, fallback) => {
-    const value = t(key);
+    const value = typeof t === "function" ? t(key) : void 0;
     return value && value !== key ? value : fallback;
   };
   const createLabel = translatedLabel("sidebar.create_tab", "Create");
   const historyLabel = !isTeacherMode || isIndependentMode ? translatedLabel("sidebar.my_resources_tab", "My Resources") : isParentMode ? translatedLabel("sidebar.materials_tab", "Materials") : translatedLabel("sidebar.class_materials_tab", "Class & Materials");
   const createTabRef = React.useRef(null);
   const historyTabRef = React.useRef(null);
+  const isComposingEvent = (event) => Boolean(
+    event && (event.isComposing || event.nativeEvent && event.nativeEvent.isComposing || event.keyCode === 229)
+  );
   const focusSiblingTab = (event, targetRef) => {
     event.preventDefault();
     targetRef.current?.focus();
   };
-  return /* @__PURE__ */ React.createElement(
+  const hasUnreadHistoryCue = Boolean(isHistoryPulsing && activeSidebarTab !== "history");
+  const newItemCueText = hasUnreadHistoryCue ? `${translatedLabel("sidebar.new_item_available_prefix", "New saved item available in")} ${historyLabel}` : "";
+  return /* @__PURE__ */ React.createElement("div", { className: "mb-4 shrink-0" }, /* @__PURE__ */ React.createElement(
     "div",
     {
       "aria-label": translatedLabel("common.content_tabs", "Content tabs"),
       "aria-orientation": "horizontal",
       role: "tablist",
-      className: "grid grid-cols-2 gap-1 rounded-xl border border-slate-200/90 bg-slate-100/90 p-1 mb-4 shrink-0 shadow-inner shadow-slate-200/60"
+      className: "grid grid-cols-2 gap-1 rounded-xl border border-slate-200/90 bg-slate-100/90 p-1 shadow-inner shadow-slate-200/60"
     },
     /* @__PURE__ */ React.createElement(
       "button",
@@ -56,8 +61,11 @@ function SidebarTabsNav({
         tabIndex: activeSidebarTab === "create" ? 0 : -1,
         "aria-controls": "sidebar-create-panel",
         id: "tab-create",
-        onClick: handleSetActiveSidebarTabToCreate,
+        onClick: () => {
+          if (typeof handleSetActiveSidebarTabToCreate === "function") handleSetActiveSidebarTabToCreate();
+        },
         onKeyDown: (event) => {
+          if (isComposingEvent(event)) return;
           if (event.key === "ArrowLeft" || event.key === "ArrowRight" || event.key === "End") focusSiblingTab(event, historyTabRef);
           else if (event.key === "Home") focusSiblingTab(event, createTabRef);
         },
@@ -66,7 +74,8 @@ function SidebarTabsNav({
       },
       /* @__PURE__ */ React.createElement(Sparkles, { size: 16, className: "shrink-0", "aria-hidden": "true" }),
       " ",
-      /* @__PURE__ */ React.createElement("span", { className: "min-w-0 break-words leading-tight" }, createLabel)
+      /* @__PURE__ */ React.createElement("span", { className: "min-w-0 break-words leading-tight" }, createLabel),
+      activeSidebarTab === "create" && /* @__PURE__ */ React.createElement("span", { className: "pointer-events-none absolute inset-x-3 bottom-0.5 h-0.5 rounded-full bg-indigo-600", "aria-hidden": "true" })
     ),
     /* @__PURE__ */ React.createElement(
       "button",
@@ -79,10 +88,11 @@ function SidebarTabsNav({
         "aria-controls": "sidebar-history-panel",
         id: "tab-history",
         onClick: () => {
-          setActiveSidebarTab("history");
-          setIsHistoryPulsing(false);
+          if (typeof setActiveSidebarTab === "function") setActiveSidebarTab("history");
+          if (typeof setIsHistoryPulsing === "function") setIsHistoryPulsing(false);
         },
         onKeyDown: (event) => {
+          if (isComposingEvent(event)) return;
           if (event.key === "ArrowLeft" || event.key === "ArrowRight" || event.key === "Home") focusSiblingTab(event, createTabRef);
           else if (event.key === "End") focusSiblingTab(event, historyTabRef);
         },
@@ -92,9 +102,20 @@ function SidebarTabsNav({
       /* @__PURE__ */ React.createElement(History, { size: 16, className: "shrink-0", "aria-hidden": "true" }),
       " ",
       /* @__PURE__ */ React.createElement("span", { className: "min-w-0 break-words leading-tight" }, historyLabel),
-      isHistoryPulsing && activeSidebarTab !== "history" && /* @__PURE__ */ React.createElement("span", { className: "absolute right-2 top-2 h-2 w-2 rounded-full bg-indigo-600 ring-2 ring-white", "aria-hidden": "true" })
+      activeSidebarTab === "history" && /* @__PURE__ */ React.createElement("span", { className: "pointer-events-none absolute inset-x-3 bottom-0.5 h-0.5 rounded-full bg-indigo-600", "aria-hidden": "true" }),
+      hasUnreadHistoryCue && /* @__PURE__ */ React.createElement("span", { className: "absolute right-2 top-2 h-2 w-2 rounded-full bg-indigo-600 ring-2 ring-white animate-pulse motion-reduce:animate-none", "aria-hidden": "true" })
     )
-  );
+  ), /* @__PURE__ */ React.createElement(
+    "span",
+    {
+      role: "status",
+      "aria-live": "polite",
+      "aria-atomic": "true",
+      "data-sidebar-pulse-status": "",
+      className: "sr-only"
+    },
+    newItemCueText
+  ));
 }
 
   window.AlloModules = window.AlloModules || {};

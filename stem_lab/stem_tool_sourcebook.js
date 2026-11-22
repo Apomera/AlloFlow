@@ -6313,8 +6313,11 @@
   // Theme CSS is code, not copy: it must never pass through the translation layer.
   // Dark theme needs nothing here: the STEM shell renders tools on a light card and the host's
   // dark rules are scoped away from that card, so the authored light palette applies as-is.
-  var SOURCEBOOK_THEME_CSS = ".sourcebook-tool{--sb-ink:#18352d;--sb-paper:#f7f3e9;background-image:radial-gradient(ellipse 85% 42% at 50% 0%,rgba(232,239,233,0.75) 0%,rgba(247,244,237,0) 68%)}.sourcebook-tool header{background-image:radial-gradient(circle at 12% 14%,rgba(255,253,245,0.78) 0%,rgba(232,239,233,0.2) 52%,rgba(209,224,215,0.45) 100%)}.sourcebook-tool input[type=range]{min-height:28px}.sourcebook-tool .sb-detail{scrollbar-gutter:stable;overscroll-behavior:contain;background-image:linear-gradient(180deg,#faf7ef 0%,#f5f1e8 48%,#efe9dc 100%)}.sourcebook-tool .sb-subject-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:9999px;border:1px solid #2e6656;background:#183b32;color:#f7f2e7;font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}.sourcebook-tool .sb-telemetry-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:9999px;border:1px solid #a7c0b5;background:rgba(255,255,255,0.88);color:#2d4f44;font-size:11px;font-weight:700}.sourcebook-tool .sb-telemetry-pill strong{color:#183b32;font-weight:800}.sourcebook-tool .sb-workflow-btn{transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}.sourcebook-tool .sb-workflow-btn:not(:disabled):hover{transform:translateY(-1px);border-color:#2e6656;box-shadow:0 4px 12px rgba(24,59,50,0.1)}@media(max-width:700px){.sourcebook-tool .sb-board{grid-template-columns:1fr!important}}@media print{.sourcebook-tool .sb-no-print{display:none!important}}"
-    + ".theme-contrast .sourcebook-tool,.theme-contrast .sourcebook-tool header,.theme-contrast .sourcebook-tool .sb-detail{background-image:none!important}.theme-contrast .sourcebook-tool :is(a,strong,b,em,i,legend,footer,dt,dd,summary,small,td,th,figcaption,cite,time,abbr){color:#ffff00!important}.theme-contrast .sourcebook-tool a{text-decoration:underline!important}.theme-contrast .sourcebook-tool [class*=\"bg-gradient\"]{background-image:none!important}.theme-contrast .sourcebook-tool [class*=\"border-[#\"]{border-color:#ffff00!important}.theme-contrast .sourcebook-tool [aria-pressed=\"true\"]:not([data-sourcebook-inspect]){box-shadow:inset 0 0 0 3px #ffff00!important;text-decoration:underline!important}.theme-contrast .sourcebook-tool .sb-subject-badge,.theme-contrast .sourcebook-tool .sb-telemetry-pill{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}";
+  var SOURCEBOOK_THEME_CSS = ".sourcebook-tool{--sb-ink:#18352d;--sb-paper:#f7f3e9;background-image:radial-gradient(ellipse 85% 42% at 50% 0%,rgba(232,239,233,0.75) 0%,rgba(247,244,237,0) 68%)}.sourcebook-tool header{background-image:radial-gradient(circle at 12% 14%,rgba(255,253,245,0.78) 0%,rgba(232,239,233,0.2) 52%,rgba(209,224,215,0.45) 100%)}.sourcebook-tool input[type=range]{min-height:28px}.sourcebook-tool .sb-detail{scrollbar-gutter:stable;overscroll-behavior:contain;background-image:linear-gradient(180deg,#faf7ef 0%,#f5f1e8 48%,#efe9dc 100%)}.sourcebook-tool .sb-subject-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:9999px;border:1px solid #2e6656;background:#183b32;color:#f7f2e7;font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}.sourcebook-tool .sb-telemetry-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:9999px;border:1px solid #a7c0b5;background:rgba(255,255,255,0.88);color:#2d4f44;font-size:11px;font-weight:700}.sourcebook-tool .sb-telemetry-pill strong{color:#183b32;font-weight:800}.sourcebook-tool .sb-workflow-btn{transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}.sourcebook-tool .sb-workflow-btn:not(:disabled):hover{transform:translateY(-1px);border-color:#2e6656;box-shadow:0 4px 12px rgba(24,59,50,0.1)}"
+    + "@keyframes sbGraticuleDrift{from{stroke-dashoffset:0}to{stroke-dashoffset:-30}}@keyframes sbGraticuleRev{from{stroke-dashoffset:0}to{stroke-dashoffset:28}}@keyframes sbCompassSettle{0%,100%{transform:rotate(-2.2deg)}50%{transform:rotate(2.2deg)}}@keyframes sbMeridianBreath{0%,100%{opacity:.36}50%{opacity:.82}}@keyframes sbLoupeRing{0%,100%{opacity:.26;transform:scale(.92)}50%{opacity:.78;transform:scale(1.16)}}@keyframes sbLoupeSheen{0%,100%{opacity:.42}50%{opacity:.98}}@keyframes sbFolioLine{0%,100%{opacity:.55}50%{opacity:1}}@keyframes sbGaugeSheen{0%,100%{opacity:.52}50%{opacity:.95}}@keyframes sbMilestoneHalo{0%,100%{opacity:.24;transform:scale(.88)}50%{opacity:.78;transform:scale(1.36)}}"
+    + ".sourcebook-tool .sb-graticule-outer{animation:sbGraticuleDrift 12s linear infinite}.sourcebook-tool .sb-graticule-inner{animation:sbGraticuleRev 10s linear infinite}.sourcebook-tool .sb-compass-rose{transform-box:fill-box;transform-origin:center;animation:sbCompassSettle 8.5s ease-in-out infinite}.sourcebook-tool .sb-meridian-breathe{animation:sbMeridianBreath 5.4s ease-in-out infinite}.sourcebook-tool .sb-loupe-ring{transform-box:fill-box;transform-origin:center;animation:sbLoupeRing 3.4s ease-in-out infinite}.sourcebook-tool .sb-loupe-sheen{animation:sbLoupeSheen 3.2s ease-in-out infinite}.sourcebook-tool .sb-folio-line{animation:sbFolioLine 4.2s ease-in-out infinite}.sourcebook-tool .sb-gauge-sheen{animation:sbGaugeSheen 4.4s ease-in-out infinite}.sourcebook-tool .sb-milestone-halo{transform-box:fill-box;transform-origin:center;animation:sbMilestoneHalo 3.1s ease-in-out infinite}"
+    + "@media(prefers-reduced-motion:reduce){.sourcebook-tool .sb-workflow-btn,.sourcebook-tool svg *{animation:none!important;transition:none!important;transform:none!important}}@media(max-width:700px){.sourcebook-tool .sb-board{grid-template-columns:1fr!important}}@media print{.sourcebook-tool .sb-no-print{display:none!important}}"
+    + ".theme-contrast .sourcebook-tool,.theme-contrast .sourcebook-tool header,.theme-contrast .sourcebook-tool .sb-detail{background-image:none!important}.theme-contrast .sourcebook-tool svg *{animation:none!important;transform:none!important}.theme-contrast .sourcebook-tool :is(a,strong,b,em,i,legend,footer,dt,dd,summary,small,td,th,figcaption,cite,time,abbr){color:#ffff00!important}.theme-contrast .sourcebook-tool a{text-decoration:underline!important}.theme-contrast .sourcebook-tool [class*=\"bg-gradient\"]{background-image:none!important}.theme-contrast .sourcebook-tool [class*=\"border-[#\"]{border-color:#ffff00!important}.theme-contrast .sourcebook-tool [aria-pressed=\"true\"]:not([data-sourcebook-inspect]){box-shadow:inset 0 0 0 3px #ffff00!important;text-decoration:underline!important}.theme-contrast .sourcebook-tool .sb-subject-badge,.theme-contrast .sourcebook-tool .sb-telemetry-pill{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}";
 
   function sourcebookDocument() {
     if (typeof window !== 'undefined' && window.document && typeof window.document.createElement === 'function') return window.document;
@@ -10622,25 +10625,27 @@
           h('div', { 'aria-hidden': 'true', className: 'absolute -right-12 -top-16 w-64 h-64 rounded-full border-[36px] border-[#c8ddd4] opacity-70' }),
           h('svg', { 'aria-hidden': 'true', focusable: 'false', viewBox: '0 0 120 120', width: 120, height: 120, className: 'pointer-events-none absolute right-6 bottom-0 opacity-30 text-[#2e6656]' },
             // Cartographic relief graticule rings & degree compass rose
-            h('circle', { cx: 60, cy: 60, r: 52, fill: 'none', stroke: 'currentColor', strokeWidth: 0.9, strokeDasharray: '2 3' }),
-            h('circle', { cx: 60, cy: 60, r: 44, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeDasharray: '4 3' }),
+            h('circle', { className: 'sb-graticule-outer', cx: 60, cy: 60, r: 52, fill: 'none', stroke: 'currentColor', strokeWidth: 0.9, strokeDasharray: '2 3' }),
+            h('circle', { className: 'sb-graticule-inner', cx: 60, cy: 60, r: 44, fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeDasharray: '4 3' }),
             h('circle', { cx: 60, cy: 60, r: 28, fill: 'none', stroke: 'currentColor', strokeWidth: 1.1 }),
-            h('ellipse', { cx: 60, cy: 60, rx: 44, ry: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 0.8, opacity: 0.6 }),
-            h('ellipse', { cx: 60, cy: 60, rx: 18, ry: 44, fill: 'none', stroke: 'currentColor', strokeWidth: 0.8, opacity: 0.6 }),
-            // Secondary intercardinal star facets
-            h('polygon', { points: '60,60 82,38 66,54', fill: 'currentColor', opacity: 0.45 }),
-            h('polygon', { points: '60,60 82,82 66,66', fill: 'currentColor', opacity: 0.45 }),
-            h('polygon', { points: '60,60 38,82 54,66', fill: 'currentColor', opacity: 0.45 }),
-            h('polygon', { points: '60,60 38,38 54,54', fill: 'currentColor', opacity: 0.45 }),
-            // Primary 4-point shaded compass rose needles
-            h('polygon', { points: '60,12 66,54 60,60', fill: 'currentColor' }),
-            h('polygon', { points: '60,12 54,54 60,60', fill: 'none', stroke: 'currentColor', strokeWidth: 1 }),
-            h('polygon', { points: '108,60 66,66 60,60', fill: 'currentColor' }),
-            h('polygon', { points: '108,60 66,54 60,60', fill: 'none', stroke: 'currentColor', strokeWidth: 1 }),
-            h('polygon', { points: '60,108 54,66 60,60', fill: 'currentColor' }),
-            h('polygon', { points: '60,108 66,66 60,60', fill: 'none', stroke: 'currentColor', strokeWidth: 1 }),
-            h('polygon', { points: '12,60 54,54 60,60', fill: 'currentColor' }),
-            h('polygon', { points: '12,60 54,66 60,60', fill: 'none', stroke: 'currentColor', strokeWidth: 1 }),
+            h('ellipse', { className: 'sb-meridian-breathe', cx: 60, cy: 60, rx: 44, ry: 18, fill: 'none', stroke: 'currentColor', strokeWidth: 0.8, opacity: 0.6 }),
+            h('ellipse', { className: 'sb-meridian-breathe', style: { animationDelay: '0.9s' }, cx: 60, cy: 60, rx: 18, ry: 44, fill: 'none', stroke: 'currentColor', strokeWidth: 0.8, opacity: 0.6 }),
+            h('g', { className: 'sb-compass-rose' },
+              // Secondary intercardinal star facets
+              h('polygon', { points: '60,60 82,38 66,54', fill: 'currentColor', opacity: 0.45 }),
+              h('polygon', { points: '60,60 82,82 66,66', fill: 'currentColor', opacity: 0.45 }),
+              h('polygon', { points: '60,60 38,82 54,66', fill: 'currentColor', opacity: 0.45 }),
+              h('polygon', { points: '60,60 38,38 54,54', fill: 'currentColor', opacity: 0.45 }),
+              // Primary 4-point shaded compass rose needles
+              h('polygon', { points: '60,12 66,54 60,60', fill: 'currentColor' }),
+              h('polygon', { points: '60,12 54,54 60,60', fill: 'none', stroke: 'currentColor', strokeWidth: 1 }),
+              h('polygon', { points: '108,60 66,66 60,60', fill: 'currentColor' }),
+              h('polygon', { points: '108,60 66,54 60,60', fill: 'none', stroke: 'currentColor', strokeWidth: 1 }),
+              h('polygon', { points: '60,108 54,66 60,60', fill: 'currentColor' }),
+              h('polygon', { points: '60,108 66,66 60,60', fill: 'none', stroke: 'currentColor', strokeWidth: 1 }),
+              h('polygon', { points: '12,60 54,54 60,60', fill: 'currentColor' }),
+              h('polygon', { points: '12,60 54,66 60,60', fill: 'none', stroke: 'currentColor', strokeWidth: 1 })
+            ),
             h('circle', { cx: 60, cy: 60, r: 4, fill: '#f7f3e9', stroke: 'currentColor', strokeWidth: 1.4 }),
             h('text', { x: 60, y: 9, textAnchor: 'middle', fill: 'currentColor', fontSize: 7.5, fontWeight: 900 }, 'N')
           ),
@@ -10671,12 +10676,12 @@
                     ),
                     h('path', { d: 'M8 11C13 9.5 18 10 21.5 12.5V33C18 30.8 13 30.2 8 31.8Z', fill: 'url(#sb-folio-l)', stroke: '#c7ddd3', strokeWidth: 1.2, strokeLinejoin: 'round' }),
                     h('path', { d: 'M36 11C31 9.5 26 10 22.5 12.5V33C26 30.8 31 30.2 36 31.8Z', fill: 'url(#sb-folio-r)', stroke: '#c7ddd3', strokeWidth: 1.2, strokeLinejoin: 'round' }),
-                    h('line', { x1: 11, y1: 16, x2: 18, y2: 16.5, stroke: '#507064', strokeWidth: 1.2, strokeLinecap: 'round' }),
-                    h('line', { x1: 11, y1: 20.5, x2: 18, y2: 21, stroke: '#507064', strokeWidth: 1.2, strokeLinecap: 'round' }),
-                    h('line', { x1: 11, y1: 25, x2: 16.5, y2: 25.4, stroke: '#507064', strokeWidth: 1.2, strokeLinecap: 'round' }),
-                    h('circle', { cx: 29, cy: 22, r: 7.4, fill: 'none', stroke: '#fbbf24', strokeWidth: 1, opacity: 0.35 }),
+                    h('line', { className: 'sb-folio-line', x1: 11, y1: 16, x2: 18, y2: 16.5, stroke: '#507064', strokeWidth: 1.2, strokeLinecap: 'round' }),
+                    h('line', { className: 'sb-folio-line', style: { animationDelay: '0.45s' }, x1: 11, y1: 20.5, x2: 18, y2: 21, stroke: '#507064', strokeWidth: 1.2, strokeLinecap: 'round' }),
+                    h('line', { className: 'sb-folio-line', style: { animationDelay: '0.9s' }, x1: 11, y1: 25, x2: 16.5, y2: 25.4, stroke: '#507064', strokeWidth: 1.2, strokeLinecap: 'round' }),
+                    h('circle', { className: 'sb-loupe-ring', cx: 29, cy: 22, r: 7.4, fill: 'none', stroke: '#fbbf24', strokeWidth: 1, opacity: 0.35 }),
                     h('circle', { cx: 29, cy: 22, r: 5.6, fill: 'url(#sb-loupe-lens)', stroke: '#f59e0b', strokeWidth: 2 }),
-                    h('path', { d: 'M26 19.6 A 4 4 0 0 1 30.5 18.4', fill: 'none', stroke: '#ffffff', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.78 }),
+                    h('path', { className: 'sb-loupe-sheen', d: 'M26 19.6 A 4 4 0 0 1 30.5 18.4', fill: 'none', stroke: '#ffffff', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.78 }),
                     h('line', { x1: 33, y1: 26, x2: 37.5, y2: 30.5, stroke: '#f59e0b', strokeWidth: 2.5, strokeLinecap: 'round' })
                   )
                 ),
@@ -10740,7 +10745,7 @@
                   pdW > 0 && h('rect', { x: 12, y: 24, width: pdW, height: 11, rx: 4, fill: '#183b32' }),
                   cc0W > 0 && h('rect', { x: 12 + pdW, y: 24, width: cc0W, height: 11, fill: '#2e7d63' }),
                   ccbyW > 0 && ccbyCount > 0 && h('rect', { x: 12 + pdW + cc0W, y: 24, width: ccbyW, height: 11, rx: 4, fill: '#b45309' }),
-                  h('rect', { x: 12, y: 24, width: barW, height: 11, rx: 5.5, fill: 'url(#sb-bar-sheen)' }),
+                  h('rect', { className: 'sb-gauge-sheen', x: 12, y: 24, width: barW, height: 11, rx: 5.5, fill: 'url(#sb-bar-sheen)' }),
                   h('text', { x: 12, y: 47, fill: '#183b32', fontSize: 10, fontWeight: 700 }, 'PD ' + pdCount),
                   h('text', { x: 110, y: 47, textAnchor: 'middle', fill: '#1f5e4a', fontSize: 10, fontWeight: 700 }, 'CC0 ' + cc0Count),
                   h('text', { x: 208, y: 47, textAnchor: 'end', fill: '#8a3f12', fontSize: 10, fontWeight: 700 }, 'CC BY ' + ccbyCount),
@@ -10749,11 +10754,12 @@
                   h('text', { x: 208, y: 71, textAnchor: 'end', fill: '#183b32', fontSize: 10, fontWeight: 800 }, selectedItems.length + ' / ' + paletteTarget),
                   h('rect', { x: 12, y: 78, width: barW, height: 9, rx: 4.5, fill: '#e2ece7' }),
                   palFillW > 0 && h('rect', { x: 12, y: 78, width: palFillW, height: 9, rx: 4.5, fill: 'url(#sb-pal-brass)' }),
-                  palFillW > 0 && h('rect', { x: 12, y: 78, width: palFillW, height: 9, rx: 4.5, fill: 'url(#sb-bar-sheen)' }),
+                  palFillW > 0 && h('rect', { className: 'sb-gauge-sheen', style: { animationDelay: '0.6s' }, x: 12, y: 78, width: palFillW, height: 9, rx: 4.5, fill: 'url(#sb-bar-sheen)' }),
                   [0.25, 0.5, 0.75].map(function (q) {
                     var qx = 12 + Math.round(barW * q);
                     return h('line', { key: 'qt-' + q, x1: qx, y1: 78, x2: qx, y2: 87, stroke: 'rgba(255,255,255,0.55)', strokeWidth: 1 });
                   }),
+                  palFillW > 2 && h('circle', { className: 'sb-milestone-halo', cx: 12 + palFillW, cy: 82.5, r: 7, fill: 'none', stroke: '#f59e0b', strokeWidth: 1.4, opacity: 0.5 }),
                   palFillW > 2 && h('circle', { cx: 12 + palFillW, cy: 82.5, r: 4, fill: '#f59e0b', stroke: '#ffffff', strokeWidth: 1.4 })
                 )
               );

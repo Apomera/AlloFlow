@@ -307,7 +307,7 @@
           "id": "sp5547-ch-01-check-05",
           "prompt": "When interpreting development, context, and variability for a learner with intensive support needs, a student with a disability is embarrassed when an adult uses age-inappropriate materials for a functional routine. What principle should guide revision?",
           "choices": [
-            "Use age-respectful materials while adapting task steps and supports to current learner needs.",
+            "Use age-respectful materials while adapting task steps and scaffolds to current skill levels.",
             "Select instructional materials strictly by developmental age estimate so the formatting matches early-childhood readiness charts.",
             "Postpone functional and daily-living instruction until the student achieves independent mastery on grade-level academic standards.",
             "Assign helpful classmates to perform the functional routine for the student so embarrassing instructional materials are unnecessary."
@@ -427,12 +427,12 @@
           "id": "sp5547-ch-02-check-01",
           "prompt": "A learner with severe or profound disabilities uses AAC to select relevant ideas but needs support organizing them in a shared written paragraph. Which response is best?",
           "choices": [
+            "Have an adult staff member select the ideas and compose each finished paragraph to keep pace with class deadlines.",
             "Model an age-respectful example with AAC access, use a visual organizer, and fade prompts while preserving authorship.",
             "Deliver identical remedial drills across every academic subject regardless of the learner’s demonstrated idea-selection strengths.",
-            "Conclude that the learner lacks grade-level ideas to contribute because spoken verbal output is limited during class.",
-            "Have an adult staff member select the ideas and compose each finished paragraph to keep pace with class deadlines."
+            "Conclude that the learner lacks grade-level ideas to contribute because spoken verbal output is limited during class."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "The instructional response should presume competence, preserve authorship, and target the observed organization need through accessible communication, explicit modeling, guided participation, and systematic prompt fading.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -447,12 +447,12 @@
           "id": "sp5547-ch-02-check-02",
           "prompt": "When analyzing an individualized profile with possible co-occurring needs, a student with autism covers their ears during fire-drill announcements and then misses directions. Which support is most responsive?",
           "choices": [
+            "Continue using loud, unannounced signals without preparation so the student gradually desensitizes through repeated exposure.",
             "Treat covering the ears and missing directions as task refusal and apply standard classroom behavior consequences.",
             "Build a predictable warning and accessible cueing routine while teaching the student how to use it.",
-            "Excuse the student from participating in future schoolwide drills or timed transitions to avoid triggering sensory distress.",
-            "Continue using loud, unannounced signals without preparation so the student gradually desensitizes through repeated exposure."
+            "Excuse the student from participating in future schoolwide drills or timed transitions to avoid triggering sensory distress."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Sensory and communication needs can affect access and behavior. A predictable warning, accessible direction, and taught coping or communication response support participation while preserving safety requirements. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -467,12 +467,12 @@
           "id": "sp5547-ch-02-check-03",
           "prompt": "When analyzing an individualized profile with possible co-occurring needs, a student with ADHD begins work when directions are chunked and a checklist is visible. What does this pattern suggest?",
           "choices": [
+            "The student’s uneven project completion reflects limited intellectual understanding of the content rather than self-regulation.",
             "The student already mastered the self-management skills needed and had been choosing not to start earlier assignments.",
             "Adding checklists and interim milestones has lowered the rigor of the grade-level academic standard being assessed.",
-            "Executive-function scaffolds are strengthening task initiation, planning, and self-monitoring.",
-            "The student’s uneven project completion reflects limited intellectual understanding of the content rather than self-regulation."
+            "Executive-function scaffolds are strengthening task initiation, planning, and self-monitoring."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "ADHD may affect executive functions such as initiation, working memory, inhibition, and organization. External structures can support performance without changing the learning target or implying weak ability. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -487,12 +487,12 @@
           "id": "sp5547-ch-02-check-04",
           "prompt": "A learner with severe or profound disabilities shows distress during a noisy group routine but participates in a predictable small group with communication and sensory supports. What perspective is most useful?",
           "choices": [
+            "Examine interactions among expressive access, environmental load, health, task demands, scaffolds, and outcomes.",
             "Expect the same level of behavioral distress across every school routine because it stems from disability severity.",
             "Attribute the student’s behavioral distress solely to classmates’ social habits during whole-group lessons.",
-            "Remove the student permanently from all peer-group instruction and shift entirely to solitary adult-led work.",
-            "Examine interactions among communication access, sensory load, health, task demands, supports, and consequences."
+            "Remove the student permanently from all peer-group instruction and shift entirely to solitary adult-led work."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "An ecological, person-centered analysis uses the contrast across routines to identify access needs, coordinate supports, teach a usable communication response, and monitor safe, meaningful participation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -507,12 +507,12 @@
           "id": "sp5547-ch-02-check-05",
           "prompt": "Which evidence is essential when planning age-respectful support for a learner with severe or profound disabilities?",
           "choices": [
+            "One classroom adult’s personal expectations without input from the learner, family, or related-service specialists.",
             "Integrated data on communication, health, sensory-motor access, adaptive-academic skills, preferences, and settings.",
             "A single standardized oral reading score collected during a brief general education screening window.",
-            "The student’s primary eligibility label paired with general impressions of physical appearance and diagnosis.",
-            "One classroom adult’s personal expectations without input from the learner, family, or related-service specialists."
+            "The student’s primary eligibility label paired with general impressions of physical appearance and diagnosis."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Person-centered planning integrates multiple sources to identify strengths, preferences, access needs, safety considerations, meaningful goals, and supports across environments. Severity labels alone do not determine a program.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -627,12 +627,12 @@
           "id": "sp5547-ch-03-check-01",
           "prompt": "When removing sensory, physical, communication, or health access barriers, a student with low vision receives a worksheet containing a dense unlabeled diagram. What is the best access response?",
           "choices": [
-            "Provide an equivalent accessible format—such as a verbal description, tactile graphic, or usable enlargement.",
-            "Substitute an easier vocabulary activity from an earlier unit so the student can work independently without visual media.",
             "Provide a classmate’s completed responses so the student can record the conclusions without interpreting the figure.",
-            "Allow extended time on the original worksheet while keeping the dense visual graphic unchanged in size and contrast."
+            "Allow extended time on the original worksheet while keeping the dense visual graphic unchanged in size and contrast.",
+            "Provide an equivalent accessible format—such as a verbal description, tactile graphic, or usable enlargement.",
+            "Substitute an easier vocabulary activity from an earlier unit so the student can work independently without visual media."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Access means preserving the intended concept while changing how information is perceived when necessary. The appropriate representation depends on the learner’s assessed media and access needs. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -647,12 +647,12 @@
           "id": "sp5547-ch-03-check-02",
           "prompt": "When removing sensory, physical, communication, or health access barriers, a student who is deaf uses sign language and will join a fast-paced seminar. Which plan best supports communication access?",
           "choices": [
-            "Assign front-row seating near the teacher’s desk as the primary accommodation for full seminar participation.",
-            "Address communication mode, direct interaction opportunities, acoustics, assistive technology, and speaker visibility.",
             "Replace live seminar discussions with written summaries so the student can earn participation credit independently.",
-            "Maintain rapid open-floor discussions without turn-taking cues so the student experiences realistic peer pacing."
+            "Maintain rapid open-floor discussions without turn-taking cues so the student experiences realistic peer pacing.",
+            "Assign front-row seating near the teacher’s desk as the primary accommodation for full seminar participation.",
+            "Address expressive modality, direct interaction, acoustics, assistive technology, and clear speaker visibility."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Communication access is broader than hearing volume. Planning should address the learner’s language and mode, visibility or audibility of speakers, technology, peer access, and direct instruction needs. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -667,12 +667,12 @@
           "id": "sp5547-ch-03-check-03",
           "prompt": "When removing sensory, physical, communication, or health access barriers, a student with a physical disability needs support positioning materials during science lab. What is the teacher’s best action?",
           "choices": [
+            "Collaborate with the student and specialists to arrange safe, accessible setup and active lab participation.",
+            "Ask a lab partner to make experimental decisions and manipulate every tool while the student watches the steps.",
             "Assign the student to record observations from the side of the room during laboratory investigations for safety.",
-            "Adjust the student’s wheelchair seating and lab reach setup independently based on quick classroom judgment.",
-            "Collaborate with the student and specialists to arrange safe, accessible positioning and active lab participation.",
-            "Ask a lab partner to make experimental decisions and manipulate every tool while the student watches the steps."
+            "Adjust the student’s wheelchair seating and lab reach setup independently based on quick classroom judgment."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Physical access should enable meaningful participation and follow established safety, positioning, and equipment guidance. Collaboration prevents unsafe improvisation and avoids unnecessary removal of learner agency. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -687,12 +687,12 @@
           "id": "sp5547-ch-03-check-04",
           "prompt": "When removing sensory, physical, communication, or health access barriers, a student has a documented seizure action plan. During a classroom seizure, what should staff do first?",
           "choices": [
-            "Improvise a quick classroom response based on staff intuition rather than pausing to follow written health protocols.",
-            "Offer water, a small snack, or an unprescribed comfort remedy to help stabilize the student during the episode.",
             "Wait to initiate school emergency procedures until a parent or guardian can be reached by telephone for guidance.",
-            "Follow the individualized emergency plan, protect safety, and activate trained medical procedures."
+            "Follow the individualized emergency protocol, protect safety, and activate trained medical procedures.",
+            "Improvise a quick classroom response based on staff intuition rather than pausing to follow written health protocols.",
+            "Offer water, a small snack, or an unprescribed comfort remedy to help stabilize the student during the episode."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Health supports in school must follow the individualized plan, staff training, delegation rules, and emergency procedures. Improvised treatment can create risk and exceed an educator’s role. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -707,12 +707,12 @@
           "id": "sp5547-ch-03-check-05",
           "prompt": "When removing sensory, physical, communication, or health access barriers, which goal best addresses adaptive behavior?",
           "choices": [
-            "Given a visual checklist, the student will complete four cafeteria-purchasing steps in four of five trials.",
-            "Over the upcoming grading period, the student will demonstrate noticeably greater daily independence across school routines.",
             "By the end of the annual review cycle, the student will achieve higher composite scores on a standardized intelligence test.",
-            "During school hours, the student will perform everyday self-care and social routines identically to same-age classmates."
+            "During school hours, the student will perform everyday self-care and social routines identically to same-age classmates.",
+            "Given a visual checklist, the student will complete four cafeteria-purchasing steps in four of five trials.",
+            "Over the upcoming grading period, the student will demonstrate noticeably greater daily independence across school routines."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Adaptive goals should identify a meaningful conceptual, social, or practical routine and specify observable conditions, performance, and criteria. Vague comparisons do not support instruction or progress monitoring. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -827,12 +827,12 @@
           "id": "sp5547-ch-04-check-01",
           "prompt": "During person-centered IEP and transition planning, a student’s goal targets independent paragraph planning, but the service description addresses only oral reading. What should the team do?",
           "choices": [
-            "Align specially designed instruction, related services, supports, and monitoring with the stated goal.",
             "Leave the service grid unchanged because annual IEP goals and service minutes are developed as independent sections.",
             "Remove the unaligned annual goal from the draft IEP so the documented need matches the existing service schedule.",
-            "Substitute a standard district service package associated with the student’s primary eligibility category instead."
+            "Substitute a standard district service package associated with the student’s primary eligibility category instead.",
+            "Align specially designed instruction, related services, supports, and monitoring with the stated goal."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "IEP components should form a coherent program: present needs lead to measurable goals, services and supports address those goals, and progress measures show whether the program is effective. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -847,12 +847,12 @@
           "id": "sp5547-ch-04-check-02",
           "prompt": "During person-centered IEP and transition planning, a student is allowed to use a calculator on a test that measures multistep problem solving, not computation. This is best described as what?",
           "choices": [
-            "A curricular modification that lowers the grade-level performance expectation being evaluated on the task.",
             "An accommodation altering access or response conditions without changing the target construct.",
             "An alternate assessment pathway assigned whenever a student qualifies for special education services.",
-            "A restrictive placement determination that shifts how instructional minutes are delivered across settings."
+            "A restrictive placement determination that shifts how instructional minutes are delivered across settings.",
+            "A curricular modification that lowers the grade-level performance expectation being evaluated on the task."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "An accommodation changes how a learner accesses or responds while preserving what is measured. A modification changes the expected content, complexity, or performance standard. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -867,12 +867,12 @@
           "id": "sp5547-ch-04-check-03",
           "prompt": "During person-centered IEP and transition planning, when should assistive technology be considered?",
           "choices": [
-            "Defer assistive technology consideration until low-technology classroom strategies have been documented as unsuccessful for a year.",
             "Limit assistive technology planning to devices that the student’s family has purchased and brought from home.",
             "Consider at every IEP review whether assistive technology devices or services are needed for the student.",
-            "Reserve assistive technology consideration for students whose primary eligibility involves physical or sensory impairments."
+            "Reserve assistive technology consideration for students whose primary eligibility involves physical or sensory impairments.",
+            "Defer assistive technology consideration until low-technology classroom strategies have been documented as unsuccessful for a year."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "IDEA requires the IEP team to consider whether the child needs assistive technology. Consideration is individualized and task-based; it is not restricted to a disability type or private purchase. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -887,12 +887,12 @@
           "id": "sp5547-ch-04-check-04",
           "prompt": "During person-centered IEP and transition planning, which information must the IEP team consider during development?",
           "choices": [
-            "Standardized subtest weaknesses that fall furthest below national grade-level averages on the evaluation report.",
             "Existing intervention blocks, staff schedules, and instructional programs currently open within the student’s home school.",
             "The special educator’s preferred curriculum sequence and service delivery model from the prior academic year.",
-            "The student’s strengths, parent concerns, evaluation results, and academic, developmental, and functional needs."
+            "The student’s strengths, parent concerns, evaluation results, and academic, developmental, and functional needs.",
+            "Standardized subtest weaknesses that fall furthest below national grade-level averages on the evaluation report."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Federal IEP requirements direct the team to consider strengths, parent concerns, evaluation results, and the child’s academic, developmental, and functional needs rather than start from a preset service menu. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -905,14 +905,14 @@
         },
         {
           "id": "sp5547-ch-04-check-05",
-          "prompt": "During person-centered IEP and transition planning, a student can make progress in general education with supplementary aids, but the team prefers a separate class because scheduling is easier. What should govern placement?",
+          "prompt": "During person-centered IEP and transition planning, a student makes progress in an inclusive classroom with added supports, yet the team prefers a separate room for easier scheduling. What should govern placement?",
           "choices": [
-            "Base placement on the IEP and LRE, asking whether general education succeeds with supplementary aids.",
             "Prioritize building-wide staffing schedules and master-schedule efficiency when selecting special education settings.",
             "Match classroom placement directly to the student’s primary IDEA eligibility category across the district.",
-            "Assign the classroom that houses the greatest concentration of specialized materials regardless of individualized need."
+            "Assign the classroom that houses the greatest concentration of specialized materials regardless of individualized need.",
+            "Base placement on the IEP and LRE, asking whether general education succeeds with supplementary aids."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Placement is individually determined, based on the IEP, and as close as possible to the child’s home. Removal from regular education occurs only when education there cannot be achieved satisfactorily with supports. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -1027,7 +1027,7 @@
           "id": "sp5547-ch-05-check-01",
           "prompt": "During explicit, systematic instruction for meaningful participation, a teacher introduces a new strategy by naming it, modeling a think-aloud, guiding several examples, checking responses, and then assigning independent practice. What approach is this?",
           "choices": [
-            "Model the strategy, guide structured practice with feedback, and release to independent practice.",
+            "Structured demonstration, guided rehearsal with feedback, and gradual release to independent work.",
             "Open-ended discovery exploration in which students invent their own procedures before seeing any teacher demonstration.",
             "Continuous adult prompting throughout every class assignment so students do not risk making an independent mistake.",
             "Repeated independent worksheet drills that assign the same problems daily without modeling or step-by-step feedback."
@@ -1107,7 +1107,7 @@
           "id": "sp5547-ch-05-check-05",
           "prompt": "During explicit, systematic instruction for meaningful participation, a student guesses unfamiliar words from pictures. Which instructional response best targets decoding?",
           "choices": [
-            "Explicit, cumulative practice linking phonemes to graphemes and blending them to decode words.",
+            "Direct, cumulative practice linking phonemes to graphemes and blending sounds to decode words.",
             "Increasing daily silent reading minutes with self-selected books while avoiding direct word-level intervention.",
             "Coaching the student to inspect story illustrations closely before attempting unfamiliar words in text.",
             "Encouraging the student to skip unknown words and infer their identity from surrounding sentence context."
@@ -1227,12 +1227,12 @@
           "id": "sp5547-ch-06-check-01",
           "prompt": "When designing a predictable, communication-accessible learning environment, a class loses instructional time because arrival routines change each day. Which preventive support is best?",
           "choices": [
+            "Vary arrival directions each morning so students learn to adapt rapidly to unpredictable classroom procedures.",
             "Teach, model, practice, and visually post a concise arrival routine, then reinforce consistent use.",
             "Wait for off-task behavior during arrival and issue progressively firmer disciplinary consequences for delays.",
-            "Post a comprehensive twenty-rule classroom contract on the bulletin board without rehearsing entry expectations.",
-            "Vary arrival directions each morning so students learn to adapt rapidly to unpredictable classroom procedures."
+            "Post a comprehensive twenty-rule classroom contract on the bulletin board without rehearsing entry expectations."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Predictable routines reduce ambiguity and increase available learning time. Expectations become useful when they are explicitly taught, practiced in context, prompted as needed, and reinforced consistently. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -1247,12 +1247,12 @@
           "id": "sp5547-ch-06-check-02",
           "prompt": "When designing a predictable, communication-accessible learning environment, a student tears worksheets after receiving a long independent assignment, and the task is then removed. Which information is most relevant to a functional hypothesis?",
           "choices": [
+            "A standard schoolwide discipline chart listing consequences previously assigned to classmates for similar incidents.",
             "Trait-based personality inventories estimating whether the student prefers independent or social school tasks.",
-            "The antecedent demand, observable behavior, and resulting escape or delay from the task.",
-            "Anecdotal staff ratings describing how frustrating the student’s behavior feels during whole-class instruction.",
-            "A standard schoolwide discipline chart listing consequences previously assigned to classmates for similar incidents."
+            "The antecedent demand, observable behavior, and resulting escape or delay from the work.",
+            "Anecdotal staff ratings describing how frustrating the student’s behavior feels during whole-class instruction."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Functional assessment examines relationships among antecedents, observable behavior, and consequences. Repeated removal of a difficult task may maintain behavior through escape, a hypothesis that must be tested with data. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -1267,12 +1267,12 @@
           "id": "sp5547-ch-06-check-03",
           "prompt": "When designing a predictable, communication-accessible learning environment, an FBA suggests that disruption reliably produces peer attention. Which BIP component is most important?",
           "choices": [
+            "Teach the student to request quiet hallway breaks even though FBA data point to attention rather than escape.",
             "Apply a generic loss-of-privilege consequence that does not address how attention is delivered in class.",
             "Suspend group academic instruction for the student until calling out or disruption stops for a full month.",
-            "Teach and reinforce an appropriate attention-requesting skill while altering maintaining triggers and responses.",
-            "Teach the student to request quiet hallway breaks even though FBA data point to attention rather than escape."
+            "Teach and reinforce an appropriate attention-requesting skill while altering maintaining triggers and responses."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "A function-based plan should prevent predictable triggers, teach a socially appropriate replacement that serves the same function, and arrange consequences so the replacement is more efficient and successful. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -1287,12 +1287,12 @@
           "id": "sp5547-ch-06-check-04",
           "prompt": "When designing a predictable, communication-accessible learning environment, which replacement behavior is best for a student who leaves work to escape confusing directions?",
           "choices": [
+            "Use a taught help card to ask for clarification or a brief guided start on the first step.",
             "Sit quietly at the desk without speaking or signaling until the instructional period ends.",
             "Raise a hand to share an unrelated personal story with classmates whenever frustration builds.",
-            "Put away the confusing assignment and transition independently to a preferred classroom center.",
-            "Use a taught help card to ask for clarification or a brief guided start on the first step."
+            "Put away the confusing assignment and transition independently to a preferred classroom center."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "A replacement behavior must be teachable, efficient, and serve the same function as the problem behavior. Requesting clarification addresses escape from confusion while keeping the learner engaged in the task. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -1307,12 +1307,12 @@
           "id": "sp5547-ch-06-check-05",
           "prompt": "When designing a predictable, communication-accessible learning environment, a teacher says, “You opened your notebook and began within one minute—that followed our start routine.” Why is this feedback effective?",
           "choices": [
-            "It gives prompt, behavior-specific feedback linking the observable action to the taught routine.",
+            "It compares the student’s starting speed favorably against slower classmates in the same row.",
+            "It offers prompt, behavior-specific praise linking the observable action to a taught expectation.",
             "It highlights an innate personal strength rather than naming the student’s specific classroom action.",
-            "It accumulates general approval points to be reviewed during a summary conference at month’s end.",
-            "It compares the student’s starting speed favorably against slower classmates in the same row."
+            "It accumulates general approval points to be reviewed during a summary conference at month’s end."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Behavior-specific praise names the observable action and its connection to an expectation. Immediate, contingent feedback helps learners identify what to repeat and is more informative than global approval. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -1427,12 +1427,12 @@
           "id": "sp5547-ch-07-check-01",
           "prompt": "When selecting and administering an accessible assessment, a newly arrived multilingual learner is assessed only in rapid academic English. What is the central evaluation concern?",
           "choices": [
-            "Assess in the language or communication mode most likely to yield accurate evidence of knowledge.",
-            "Convert the resulting test score into a translated report while keeping the original administration format.",
             "Interpret low performance under standard administration as reliable proof of an underlying disability.",
-            "Omit parent interviews and language-history records so the evaluation relies on uniform school testing."
+            "Omit parent interviews and language-history records so the evaluation relies on uniform school testing.",
+            "Assess in the language or communication mode most likely to yield accurate evidence of knowledge.",
+            "Convert the resulting test score into a translated report while keeping the original administration format."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Evaluation procedures must reduce racial, cultural, linguistic, sensory, manual, and communication barriers so results reflect the intended aptitude or achievement rather than an access limitation. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -1447,12 +1447,12 @@
           "id": "sp5547-ch-07-check-02",
           "prompt": "When selecting and administering an accessible assessment, which assessment is most useful for adjusting tomorrow’s instruction?",
           "choices": [
-            "An annual statewide accountability score report summarizing broad end-of-year proficiency bands.",
-            "A brief formative check aligned to the taught steps, paired with targeted error analysis.",
             "A norm-referenced intelligence battery administered by a school psychologist for triennial review.",
-            "A final cumulative semester grade calculated after the instructional unit has already concluded."
+            "A final cumulative semester grade calculated after the instructional unit has already concluded.",
+            "An annual statewide accountability score report summarizing broad end-of-year proficiency bands.",
+            "A brief formative check aligned to the taught steps, paired with targeted error analysis."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Formative assessment supplies timely, instructionally relevant evidence during learning. Alignment and error analysis help the teacher decide what to reteach, model differently, or release to independent practice. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -1467,12 +1467,12 @@
           "id": "sp5547-ch-07-check-03",
           "prompt": "When selecting and administering an accessible assessment, a reading assessment is intended to measure comprehension, but a student’s documented motor disability prevents use of the response booklet. What is the best response?",
           "choices": [
+            "Provide an access accommodation removing the physical barrier without altering the construct.",
+            "Offer leading verbal cues that point the student toward the intended correct content responses.",
             "Reduce the grade-level content rigor of the test items so the student can finish fewer questions.",
-            "Score all unmarked answer bubbles as incorrect because standardized booklets must stay unmodified.",
-            "Provide a response accommodation removing the motor barrier while preserving the content construct.",
-            "Offer leading verbal cues that point the student toward the intended correct content responses."
+            "Score all unmarked answer bubbles as incorrect because standardized booklets must stay unmodified."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "An appropriate accommodation improves access while preserving the construct. The team should avoid both construct-irrelevant motor barriers and supports that supply the knowledge being measured. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -1487,12 +1487,12 @@
           "id": "sp5547-ch-07-check-04",
           "prompt": "When selecting and administering an accessible assessment, what does a criterion-referenced interpretation show?",
           "choices": [
-            "The student’s percentile rank compared with a nationally representative norming sample of peers.",
-            "The statistical consistency of rubric scores across multiple independent examiners on the task.",
             "The primary biological or environmental cause underlying the student’s identified disability.",
-            "Performance relative to specified skills or standards rather than relative standing among peers."
+            "Performance relative to specified skills or standards rather than relative standing among peers.",
+            "The student’s percentile rank compared with a nationally representative norming sample of peers.",
+            "The statistical consistency of rubric scores across multiple independent examiners on the task."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Criterion-referenced results describe mastery of defined content or performance criteria. Norm-referenced results describe relative position within a comparison group; neither alone establishes disability cause. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -1507,12 +1507,12 @@
           "id": "sp5547-ch-07-check-05",
           "prompt": "When selecting and administering an accessible assessment, which observation definition is most useful for collecting behavior data?",
           "choices": [
-            "“Leaves seat” means both feet cross the desk-area boundary without teacher permission during seatwork.",
-            "“Disruptive behavior” means any classroom action that interferes with a calm instructional atmosphere.",
             "“Poor behavior” means acting inappropriately too frequently during structured daily school routines.",
-            "“Negative attitude” means displaying visible resistance or reluctance toward teacher assignments."
+            "“Negative attitude” means displaying visible resistance or reluctance toward teacher assignments.",
+            "“Leaves seat” means both feet cross the desk-area boundary without teacher permission during seatwork.",
+            "“Disruptive behavior” means any classroom action that interferes with a calm instructional atmosphere."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "An operational definition is observable, measurable, and bounded enough for different people to identify the same event. Labels and inferred attitudes do not produce dependable observation data. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -1627,12 +1627,12 @@
           "id": "sp5547-ch-08-check-01",
           "prompt": "During a comprehensive, multidisciplinary evaluation, a general education team sees persistent difficulty and begins a targeted intervention. What is an appropriate prereferral practice?",
           "choices": [
-            "Define the skill concern, deliver an evidence-based intervention with fidelity, and monitor progress.",
             "Monitor regular classroom grades for another semester without altering instructional intensity or scaffolds.",
             "Inform the family that strong or weak prereferral response will settle IDEA eligibility by itself.",
-            "Assign supplemental general review worksheets that do not target the specific documented skill gap."
+            "Assign supplemental general review worksheets that do not target the specific documented skill gap.",
+            "Define the skill concern, deliver an evidence-based support with fidelity, and monitor progress."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Prereferral intervention should be specific, evidence based, implemented as intended, and monitored. It can improve instruction and contribute data, but it does not predetermine eligibility. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -1647,12 +1647,12 @@
           "id": "sp5547-ch-08-check-02",
           "prompt": "During a comprehensive, multidisciplinary evaluation, a school says it will not evaluate a student until every tier of intervention has been completed. What is the problem?",
           "choices": [
-            "General education interventions must stop as soon as a multidisciplinary evaluation is discussed.",
             "RTI procedures cannot be used to delay or deny a timely IDEA evaluation when disability is suspected.",
             "A written parent evaluation request establishes IDEA eligibility before testing is conducted.",
-            "Once an evaluation begins, teams are restricted to standardized cognitive tests rather than RTI data."
+            "Once an evaluation begins, teams are restricted to standardized cognitive tests rather than RTI data.",
+            "General education interventions must stop as soon as a multidisciplinary evaluation is discussed."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Multi-tiered supports and evaluation can inform one another, but an intervention process cannot become a barrier to IDEA evaluation duties. The agency must follow notice, consent, and timeline requirements. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -1667,12 +1667,12 @@
           "id": "sp5547-ch-08-check-03",
           "prompt": "During a comprehensive, multidisciplinary evaluation, what is the role of parent information in an evaluation?",
           "choices": [
-            "Set family observations aside because formal school evaluations rely on clinician-administered protocols.",
             "Treat the parent’s home description as the decisive criterion establishing eligibility and services.",
             "Integrate parent input as required evidence alongside academic, developmental, and functional data.",
-            "File the family’s observations for review after eligibility and classroom placement have been finalized."
+            "File the family’s observations for review after eligibility and classroom placement have been finalized.",
+            "Set family observations aside because formal school evaluations rely on clinician-administered protocols."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "IDEA explicitly includes information provided by parents among the sources used in evaluation. It should be integrated with other evidence, not dismissed or made the only basis for a decision. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -1687,12 +1687,12 @@
           "id": "sp5547-ch-08-check-04",
           "prompt": "During a comprehensive, multidisciplinary evaluation, a student is referred for reading difficulty, but records also show significant hearing and communication concerns. How broad should the evaluation be?",
           "choices": [
-            "Restrict evaluation tools strictly to the original referral concern listed on the initial screening form.",
             "Administer one broad intellectual screening measure to represent every developmental domain efficiently.",
             "Defer assessing hearing, motor, or language concerns until eligibility is confirmed at the next annual review.",
-            "Assess all areas related to the suspected disability and identify all special education needs."
+            "Assess all areas related to the suspected disability and identify all special education needs.",
+            "Restrict evaluation tools strictly to the original referral concern listed on the initial screening form."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Evaluation must be comprehensive enough to identify special education and related-service needs, including needs not commonly linked to the eventual support profile. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -1707,12 +1707,12 @@
           "id": "sp5547-ch-08-check-05",
           "prompt": "During a comprehensive, multidisciplinary evaluation, why can no single test score determine special education eligibility?",
           "choices": [
-            "Synthesize multiple technically sound measures, observations, histories, and context as a team.",
             "Disregard classroom work samples that conflict with the lowest standardized assessment result.",
             "Compute a mathematical average of all numerical scores across different academic and cognitive tests.",
-            "Follow the test publisher’s cutoff table as the binding determinant of IDEA eligibility classification."
+            "Follow the test publisher’s cutoff table as the binding determinant of IDEA eligibility classification.",
+            "Synthesize multiple technically sound measures, observations, histories, and context as a team."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "No single measure may serve as the sole criterion. Teams evaluate patterns, validity, access, instruction, exclusionary factors, functional impact, and need for specially designed instruction. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -1827,7 +1827,7 @@
           "id": "sp5547-ch-09-check-01",
           "prompt": "When reviewing repeated progress and implementation data, a student’s weekly reading-fluency scores are 62, 64, 63, 65, and 64 while the goal line rises steadily. What is the best interpretation?",
           "choices": [
-            "Growth trails the aim line, so check implementation fidelity and adjust instruction before annual review.",
+            "Growth trails the target slope, so check delivery fidelity and adjust instruction before annual review.",
             "The slight upward uptick between earlier and later probes confirms the student will meet the goal on time.",
             "Consistent scores across consecutive weeks indicate the student has stabilized at independent skill mastery.",
             "Weekly progress charts should be archived for documentation and revisited at the scheduled annual IEP meeting."
@@ -1848,7 +1848,7 @@
           "prompt": "When reviewing repeated progress and implementation data, what is the purpose of a goal line on a progress graph?",
           "choices": [
             "The median weekly score earned by same-grade classmates on the same curriculum probe.",
-            "The expected rate of improvement connecting baseline performance to the target goal.",
+            "The expected rate of improvement connecting baseline performance to the target score.",
             "A formal commitment guaranteeing that the student will reach the target score on schedule.",
             "The test-retest reliability index quantifying measurement error across repeated probe forms."
           ],
@@ -2027,12 +2027,12 @@
           "id": "sp5547-ch-10-check-01",
           "prompt": "When applying legal, ethical, and equity safeguards, which progress-monitoring decision rule is most defensible for guiding instructional changes?",
           "choices": [
+            "Lower the annual IEP mastery criterion whenever a student misses items on a weekly progress probe.",
             "When four consecutive comparable points fall below the aim line with adequate fidelity, adjust instruction.",
             "Replace the instructional intervention whenever a student earns a single probe score below the aim line.",
-            "Keep the original instructional plan unchanged through the end of the school year regardless of trend.",
-            "Lower the annual IEP mastery criterion whenever a student misses items on a weekly progress probe."
+            "Keep the original instructional plan unchanged through the end of the school year regardless of trend."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "A prespecified rule based on multiple comparable observations, trend, and fidelity reduces overreaction to measurement noise while still prompting timely response to an inadequate trajectory. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2047,12 +2047,12 @@
           "id": "sp5547-ch-10-check-02",
           "prompt": "When applying legal, ethical, and equity safeguards, what does FAPE require at a foundational level under IDEA?",
           "choices": [
+            "A qualifying disability classification determines a uniform instructional program across the district.",
             "Public schools must ensure that every eligible student reaches identical standardized achievement benchmarks.",
             "Eligible students receive public special education and related services through an appropriate IEP.",
-            "Families share tuition or co-payment expenses for specialized related services written into the IEP.",
-            "A qualifying disability classification determines a uniform instructional program across the district."
+            "Families share tuition or co-payment expenses for specialized related services written into the IEP."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "FAPE concerns an individualized public educational program and required services provided without charge under IDEA procedures. It does not promise a specific score or justify a category-based program. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2067,12 +2067,12 @@
           "id": "sp5547-ch-10-check-03",
           "prompt": "When applying legal, ethical, and equity safeguards, a school suspects a disability in a student who is passing classes with extensive informal help. What duty remains relevant?",
           "choices": [
+            "Special education referral procedures begin once a student fails at least one required core academic course.",
             "District staff must wait for parents or guardians to initiate a formal written concern before reviewing needs.",
             "Passing report-card grades and grade-level promotion suspend the district’s IDEA evaluation obligations.",
-            "Child Find requires locating, identifying, and evaluating children who may need special education, even if advancing grades.",
-            "Special education referral procedures begin once a student fails at least one required core academic course."
+            "Child Find requires locating, identifying, and evaluating children who may need special education, even if advancing grades."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Child Find is an affirmative obligation and is not limited to students who are failing or already referred. The school should follow screening, referral, notice, consent, and evaluation procedures as appropriate. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2085,14 +2085,14 @@
         },
         {
           "id": "sp5547-ch-10-check-04",
-          "prompt": "When applying legal, ethical, and equity safeguards, a district proposes changing a student’s placement. What procedural communication is required?",
+          "prompt": "When applying legal, ethical, and equity protections, a district proposes changing a student’s placement. What required communication must go to parents?",
           "choices": [
+            "Prior written notice explaining the proposed or refused action, reasons, evidence, and procedural safeguards.",
             "A brief informal phone call summarizing the administrative decision after the classroom change takes effect.",
             "A shared building memo naming the student so staff across departments know the updated schedule.",
-            "Internal administrative notes kept in the district office without written notice when staff agree on the choice.",
-            "Prior written notice explaining the proposed or refused action, reasons, evidence, and procedural safeguards."
+            "Internal administrative notes kept in the district office without written notice when staff agree on the choice."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Prior written notice supports informed participation by documenting what the agency proposes or refuses and why, the records or assessments used, alternatives considered, and available safeguards. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2107,12 +2107,12 @@
           "id": "sp5547-ch-10-check-05",
           "prompt": "When applying legal, ethical, and equity safeguards, a teacher wants to discuss a student’s IEP in a public elevator with a colleague who does not serve the student. What should the teacher do?",
           "choices": [
+            "Omit the student’s first name during the public conversation while describing specific classroom details.",
             "Protect confidentiality by discussing records in private authorized channels with staff who hold a legitimate role.",
             "Discuss the IEP openly with fellow building staff because school employment grants broad access to student files.",
-            "Display an abbreviated IEP accommodation chart on a shared clipboard where substitutes and visitors can consult it.",
-            "Omit the student’s first name during the public conversation while describing specific classroom details."
+            "Display an abbreviated IEP accommodation chart on a shared clipboard where substitutes and visitors can consult it."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Confidentiality protects personally identifiable educational information. Professionals should use secure channels, limit access to legitimate educational interests, and follow federal, state, and local record policies. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2227,12 +2227,12 @@
           "id": "sp5547-ch-11-check-01",
           "prompt": "During person-centered collaboration among the learner, family, and school team, what is the special educator’s role?",
           "choices": [
-            "Share planning, instruction, assessment, and responsibility for all learners while contributing specialized expertise.",
-            "Serve primarily as a classroom assistant preparing photocopies and circulating while the general educator teaches.",
             "Manage whole-class behavioral reminders while the general educator directs all curriculum planning and grading.",
-            "Work separately at a back table with students who have IEPs during every shared instructional period."
+            "Work separately at a back table with students who have IEPs during every shared instructional period.",
+            "Share planning, instruction, assessment, and responsibility for all learners while contributing specialized expertise.",
+            "Serve primarily as a classroom assistant preparing photocopies and circulating while the general educator teaches."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Co-teaching is a partnership with shared ownership. Roles may vary by lesson, but both educators contribute to planning, instruction, assessment, classroom management, and access for the whole class. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2247,12 +2247,12 @@
           "id": "sp5547-ch-11-check-02",
           "prompt": "During person-centered collaboration among the learner, family, and school team, how should a special educator work with a paraprofessional?",
           "choices": [
-            "Delegate annual IEP goal drafting, instructional planning, and summative grading to the paraprofessional.",
-            "Provide clear direction, training, boundaries, observation, and feedback while retaining instructional responsibility.",
             "Encourage the paraprofessional to design and improvise specialized communication interventions independently.",
-            "Withhold relevant communication goals and prompt hierarchies from the paraprofessional to protect student privacy."
+            "Withhold relevant communication goals and prompt hierarchies from the paraprofessional to protect student privacy.",
+            "Delegate annual IEP goal drafting, instructional planning, and summative grading to the paraprofessional.",
+            "Provide clear direction, training, boundaries, observation, and feedback while retaining instructional responsibility."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Teachers remain accountable for instruction and supervision. Paraprofessionals need enough authorized information, modeling, and feedback to implement supports consistently without being assigned professional duties outside their role. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2267,12 +2267,12 @@
           "id": "sp5547-ch-11-check-03",
           "prompt": "During person-centered collaboration among the learner, family, and school team, a family disagrees with the team’s interpretation of progress data. What is the best first response?",
           "choices": [
-            "Explain that standardized school probes carry greater weight than informal family observations during homework.",
-            "Pause the conference and reschedule once the family is ready to accept the team’s written progress summary.",
             "Listen carefully, clarify concerns, review evidence together, invite home context, and plan next steps.",
-            "Revise the student’s annual IEP goals on the spot to match the parent’s impression before checking data."
+            "Revise the student’s annual IEP goals on the spot to match the parent’s impression before checking data.",
+            "Explain that standardized school probes carry greater weight than informal family observations during homework.",
+            "Pause the conference and reschedule once the family is ready to accept the team’s written progress summary."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Family collaboration is reciprocal. Respectful inquiry can reveal contextual variables and improve the evidence base, while shared review keeps decisions connected to student needs and procedural requirements. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2287,12 +2287,12 @@
           "id": "sp5547-ch-11-check-04",
           "prompt": "During person-centered collaboration among the learner, family, and school team, a student’s occupational therapist recommends a classroom positioning support. How should the teacher proceed?",
           "choices": [
-            "Keep the positioning or communication strategy confined to pull-out therapy sessions rather than classroom lessons.",
-            "Alter the specialist’s recommended setup unilaterally whenever classroom furniture or grouping feels tight.",
             "Ask the related-service specialist to assume primary responsibility for teaching the student’s classroom units.",
-            "Clarify the goal, embed the support into authentic routines, define roles, and share outcome data."
+            "Clarify the goal, embed the strategy into authentic routines, define roles, and share outcome data.",
+            "Keep the positioning or communication strategy confined to pull-out therapy sessions rather than classroom lessons.",
+            "Alter the specialist’s recommended setup unilaterally whenever classroom furniture or grouping feels tight."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Related services support educational access. Coordination connects specialist expertise with classroom routines, promotes consistency, and creates shared data for determining whether the support is feasible and effective. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2307,12 +2307,12 @@
           "id": "sp5547-ch-11-check-05",
           "prompt": "During person-centered collaboration among the learner, family, and school team, how can a student contribute meaningfully to an IEP meeting?",
           "choices": [
-            "Prepare the student to share strengths, preferences, goals, and helpful supports via an accessible mode.",
-            "Hand the student a prewritten script to read aloud at the meeting without inviting personal input or choices.",
             "Conduct the postsecondary goal discussion privately among adults so the student avoids feeling overwhelmed.",
-            "Invite the student to sit in the meeting room without previewing the agenda, terms, or participation options."
+            "Invite the student to sit in the meeting room without previewing the agenda, terms, or participation options.",
+            "Prepare the student to share strengths, preferences, goals, and helpful supports via an accessible mode.",
+            "Hand the student a prewritten script to read aloud at the meeting without inviting personal input or choices."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Student participation supports self-determination when learners understand the process and can communicate preferences, evaluate supports, and contribute to goals with whatever access tools they need. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2427,12 +2427,12 @@
           "id": "sp5547-ch-12-check-01",
           "prompt": "Within a severe-disabilities educator’s professional role, which reflection question is most useful after an instructional unit?",
           "choices": [
-            "Which students met the target, what error patterns emerged, and what evidence should guide next lessons?",
             "Did the pacing calendar allow the class to finish every slide deck and worksheet scheduled for the unit?",
             "Did most students appear warm, enthusiastic, and personally comfortable with the teacher’s classroom style?",
-            "Could most unfinished assignments be explained by fluctuating student motivation rather than lesson design?"
+            "Could most unfinished assignments be explained by fluctuating student motivation rather than lesson design?",
+            "Which students met the target, what error patterns emerged, and what evidence should guide next lessons?"
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Professional reflection links educator actions to observable learner outcomes and implementation evidence. It identifies a specific change to test instead of relying on coverage, popularity, or blame. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2447,12 +2447,12 @@
           "id": "sp5547-ch-12-check-02",
           "prompt": "Within a severe-disabilities educator’s professional role, how should a teacher choose professional development?",
           "choices": [
-            "Register for whichever district workshop fits an open afternoon slot regardless of alignment to classroom needs.",
-            "Choose credible training matched to the practice gap, apply it with coaching, and check student outcomes.",
+            "Select credible training matched to the practice gap, apply it with coaching, and check student outcomes.",
             "Complete short online modules mainly to accumulate renewal certificates without altering instructional routines.",
-            "Gather quick classroom tips from unvetted educator social-media threads instead of evidence-based workshops."
+            "Gather quick classroom tips from unvetted educator social-media threads instead of evidence-based workshops.",
+            "Register for whichever district workshop fits an open afternoon slot regardless of alignment to classroom needs."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "High-value professional learning is targeted, evidence informed, applied in authentic work, supported by feedback, and evaluated through implementation and learner outcomes rather than attendance alone. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2467,12 +2467,12 @@
           "id": "sp5547-ch-12-check-03",
           "prompt": "Within a severe-disabilities educator’s professional role, a student lacks an accessible communication tool needed to participate. What is an appropriate advocacy step?",
           "choices": [
-            "Assure the family verbally that the teacher will arrange specialized equipment outside district approval channels.",
             "Share details of the student’s unmet IEP accommodations publicly with community members to build pressure.",
             "Document educational impact, use formal team and administrative channels, propose solutions, and follow up.",
-            "Adjust classroom activities quietly around the missing support without notifying the IEP team or administration."
+            "Adjust classroom activities quietly around the missing support without notifying the IEP team or administration.",
+            "Assure the family verbally that the teacher will arrange specialized equipment outside district approval channels."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Professional advocacy is specific, evidence based, collaborative, and persistent. It protects confidentiality, stays within role, and uses formal channels to address barriers to services, resources, and equitable participation. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2487,12 +2487,12 @@
           "id": "sp5547-ch-12-check-04",
           "prompt": "Within a severe-disabilities educator’s professional role, a student reveals information suggesting immediate risk of harm and asks the teacher to keep it secret. What should the teacher do?",
           "choices": [
-            "Conduct private follow-up interviews with peers and family members to verify the report before notifying authorities.",
             "Agree to keep the student’s disclosure completely confidential so counseling trust and rapport remain intact.",
             "Consult informally with several colleagues in the staff lounge to gauge whether the concern warrants reporting.",
-            "Follow mandatory reporting and safety protocols promptly, share with authorized personnel, and avoid promising secrecy."
+            "Follow mandatory reporting and safety protocols promptly, share with authorized personnel, and avoid promising secrecy.",
+            "Conduct private follow-up interviews with peers and family members to verify the report before notifying authorities."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Safety and reporting duties override a promise of secrecy. Educators should know their jurisdiction and policy, report through required channels, preserve privacy, and avoid conducting an unauthorized investigation. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",
@@ -2507,12 +2507,12 @@
           "id": "sp5547-ch-12-check-05",
           "prompt": "Within a severe-disabilities educator’s professional role, a transition team wants an adult-service agency representative to attend an IEP meeting. What safeguard matters?",
           "choices": [
-            "Secure required parent or adult-student consent before inviting an outside agency likely to fund or deliver services.",
             "Send a meeting invitation to the outside agency automatically because transition planning is on the agenda.",
             "Transfer ongoing IDEA transition obligations to the outside employment agency once its representative attends.",
-            "Wait until after the student graduates from high school before coordinating contacts with adult-service agencies."
+            "Wait until after the student graduates from high school before coordinating contacts with adult-service agencies.",
+            "Secure required parent or adult-student consent before inviting an outside agency likely to fund or deliver services."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Transition collaboration can improve continuity, but outside-agency participation must follow consent and confidentiality requirements. The public agency retains its IDEA responsibilities even when another agency is involved. For 5547 preparation, preserve dignity and meaningful participation while coordinating communication, health, sensory, motor, behavioral, academic, adaptive, and transition supports; use individualized evidence rather than assumptions based on disability severity.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5547.pdf",

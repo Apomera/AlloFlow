@@ -16,20 +16,30 @@
   var MAX_FIELD = 600;
   var MAX_URLS = 12;
   var MAX_RELATIONSHIPS = 12;
-  var TEXT_ACCESS_EXPECTATIONS = [
+  var TEXT_ACCESS_EXPECTATIONS = Object.freeze([
     'unspecified',
     'preserve-primary',
     'supplemental-adaptation-permitted',
     'educator-directed',
     'adaptation-prohibited'
-  ];
+  ]);
 
   var hasOwn = Object.prototype.hasOwnProperty;
 
+  function own(obj, key) {
+    return isObject(obj) && hasOwn.call(obj, key) ? obj[key] : undefined;
+  }
+
   function text(value, limit) {
     if (value === undefined || value === null) return '';
-    var out = String(value).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
-    return out.slice(0, limit || MAX_FIELD);
+    var raw = '';
+    if (typeof value === 'string') raw = value;
+    else if (typeof value === 'number' || typeof value === 'boolean') raw = String(value);
+    else return '';
+    var maxLen = limit || MAX_FIELD;
+    var bounded = raw.length > maxLen * 4 ? raw.slice(0, maxLen * 4) : raw;
+    var out = bounded.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
+    return out.slice(0, maxLen);
   }
 
   function isObject(value) {
@@ -38,7 +48,7 @@
 
   function safeUrl(value, limit) {
     var raw = text(value, limit || MAX_FIELD);
-    if (!raw) return '';
+    if (!raw || /[\s"'<>\\]/.test(raw)) return '';
     if (typeof URL === 'function') {
       try {
         var parsed = new URL(raw);
@@ -48,7 +58,7 @@
         return '';
       }
     }
-    return /^https?:\/\/[^@\s]+$/i.test(raw) ? raw : '';
+    return /^https?:\/\/[^@\s"'<>\\]+$/i.test(raw) ? raw : '';
   }
 
   function uniqueSafeUrls(values, limit) {
@@ -72,7 +82,10 @@
   }
 
   function normalizeRelationship(value) {
-    if (typeof value === 'string') return { label: text(value, MAX_FIELD) };
+    if (typeof value === 'string') {
+      var label = text(value, MAX_FIELD);
+      return label ? { label: label } : null;
+    }
     if (!isObject(value)) return null;
     var out = {
       id: pick(value, ['id', 'standardId', 'identifier', 'code']),
@@ -85,17 +98,17 @@
   function normalizeInstructionalConstraints(value) {
     var source = isObject(value) ? value : {};
     var expectation = text(
-      source.textAccessExpectation || source.primaryTextPolicy || source.expectation,
+      own(source, 'textAccessExpectation') || own(source, 'primaryTextPolicy') || own(source, 'expectation'),
       80
     );
     if (TEXT_ACCESS_EXPECTATIONS.indexOf(expectation) === -1) expectation = 'unspecified';
-    var basis = text(source.basis || source.source || source.authority, 240);
-    var safeSourceUrl = safeUrl(source.sourceUrl || source.url, MAX_FIELD);
+    var basis = text(own(source, 'basis') || own(source, 'source') || own(source, 'authority'), 240);
+    var safeSourceUrl = safeUrl(own(source, 'sourceUrl') || own(source, 'url'), MAX_FIELD);
     return {
       textAccessExpectation: expectation,
       basis: basis,
       sourceUrl: safeSourceUrl,
-      notes: text(source.notes || source.description, MAX_FIELD),
+      notes: text(own(source, 'notes') || own(source, 'description'), MAX_FIELD),
       sourced: !!(safeSourceUrl || basis)
     };
   }
@@ -106,10 +119,13 @@
     var label = pick(source, ['label', 'title', 'name', 'standard', 'statement', 'description', 'text']) || code;
     var statement = pick(source, ['text', 'statement', 'description', 'officialText', 'definition']);
     var relationships = [];
+    var relA = own(source, 'relationships');
+    var relB = own(source, 'relatedStandards');
+    var relC = own(source, 'prerequisites');
     var rawRelationships = [].concat(
-      Array.isArray(source.relationships) ? source.relationships.slice(0, MAX_RELATIONSHIPS) : [],
-      Array.isArray(source.relatedStandards) ? source.relatedStandards.slice(0, MAX_RELATIONSHIPS) : [],
-      Array.isArray(source.prerequisites) ? source.prerequisites.slice(0, MAX_RELATIONSHIPS) : []
+      Array.isArray(relA) ? relA.slice(0, MAX_RELATIONSHIPS) : [],
+      Array.isArray(relB) ? relB.slice(0, MAX_RELATIONSHIPS) : [],
+      Array.isArray(relC) ? relC.slice(0, MAX_RELATIONSHIPS) : []
     );
     for (var i = 0; i < rawRelationships.length && relationships.length < MAX_RELATIONSHIPS; i++) {
       var relationship = normalizeRelationship(rawRelationships[i]);
@@ -126,16 +142,17 @@
       grade: pick(source, ['grade', 'gradeLevel', 'band']),
       subject: pick(source, ['subject', 'discipline']),
       sourceUrl: safeUrl(pick(source, ['sourceUrl', 'url', 'officialUrl']), MAX_FIELD),
-      sourceUrls: uniqueSafeUrls(source.sourceUrls, MAX_URLS),
+      sourceUrls: uniqueSafeUrls(own(source, 'sourceUrls'), MAX_URLS),
       relationships: relationships,
       instructionalConstraints: normalizeInstructionalConstraints(
-        source.instructionalConstraints || source.textAccessPolicy
+        own(source, 'instructionalConstraints') || own(source, 'textAccessPolicy')
       )
     };
   }
 
   function extractSource(input) {
-    if (isObject(input) && isObject(input.standardsContext)) return input.standardsContext;
+    var nested = own(input, 'standardsContext');
+    if (isObject(nested)) return nested;
     return input;
   }
 
@@ -145,10 +162,12 @@
       return source.slice(0, MAX_INPUT * 4).split(/[;\n]+/).map(function (part) { return part.trim(); }).filter(Boolean).slice(0, MAX_ENTRIES);
     }
     if (!isObject(source)) return [];
-    if (Array.isArray(source.standards)) return source.standards.slice(0, MAX_ENTRIES);
-    if (Array.isArray(source.entries)) return source.entries.slice(0, MAX_ENTRIES);
-    if (source.standard !== undefined) return [source.standard];
-    if (source.code || source.standardCode || source.identifier || source.id || source.label || source.title || source.text) return [source];
+    var stds = own(source, 'standards');
+    if (Array.isArray(stds)) return stds.slice(0, MAX_ENTRIES);
+    var ents = own(source, 'entries');
+    if (Array.isArray(ents)) return ents.slice(0, MAX_ENTRIES);
+    if (own(source, 'standard') !== undefined) return [own(source, 'standard')];
+    if (own(source, 'code') || own(source, 'standardCode') || own(source, 'identifier') || own(source, 'id') || own(source, 'label') || own(source, 'title') || own(source, 'text')) return [source];
     return [];
   }
 
@@ -176,45 +195,48 @@
     }
     var sourceObject = isObject(source) ? source : {};
     var inputText = text(
-      sourceObject.inputText || sourceObject.rawInput || (typeof input === 'string' ? input : ''),
+      own(sourceObject, 'inputText') || own(sourceObject, 'rawInput') || (typeof input === 'string' ? input : ''),
       MAX_INPUT
     );
-    var promptText = buildPrompt(entries, text(sourceObject.promptText || inputText, MAX_PROMPT));
+    var promptText = buildPrompt(entries, text(own(sourceObject, 'promptText') || inputText, MAX_PROMPT));
+    var ownSourceUrls = own(sourceObject, 'sourceUrls');
+    var ownSourceUrl = own(sourceObject, 'sourceUrl');
     var sourceUrls = uniqueSafeUrls([].concat(
-      Array.isArray(sourceObject.sourceUrls) ? sourceObject.sourceUrls : [],
-      sourceObject.sourceUrl ? [sourceObject.sourceUrl] : [],
+      Array.isArray(ownSourceUrls) ? ownSourceUrls : [],
+      ownSourceUrl ? [ownSourceUrl] : [],
       entries.reduce(function (all, entry) {
         return all.concat(entry.sourceUrl ? [entry.sourceUrl] : [], entry.sourceUrls || []);
       }, [])
     ), MAX_URLS);
-    var provider = text(sourceObject.provider || sourceObject.resolver || opts.provider, 160) || 'user-input';
-    var datasetVersion = text(sourceObject.datasetVersion || sourceObject.snapshotId || opts.datasetVersion, 160);
-    var resolutionStatus = text(sourceObject.resolutionStatus || sourceObject.status || opts.resolutionStatus, 80);
+    var provider = text(own(sourceObject, 'provider') || own(sourceObject, 'resolver') || own(opts, 'provider'), 160) || 'user-input';
+    var datasetVersion = text(own(sourceObject, 'datasetVersion') || own(sourceObject, 'snapshotId') || own(opts, 'datasetVersion'), 160);
+    var resolutionStatus = text(own(sourceObject, 'resolutionStatus') || own(sourceObject, 'status') || own(opts, 'resolutionStatus'), 80);
     if (['unresolved', 'partial', 'resolved'].indexOf(resolutionStatus) === -1) {
       resolutionStatus = entries.some(function (entry) { return !!(entry.code && (entry.text || entry.sourceUrl || entry.sourceUrls.length)); })
         ? (entries.every(function (entry) { return !!(entry.code && (entry.text || entry.sourceUrl || entry.sourceUrls.length)); }) ? 'resolved' : 'partial')
         : (entries.length ? 'unresolved' : 'unresolved');
     }
-    var existingProvenance = isObject(sourceObject.provenance) ? sourceObject.provenance : {};
+    var rawExistingProv = own(sourceObject, 'provenance');
+    var existingProvenance = isObject(rawExistingProv) ? rawExistingProv : {};
     var provenance = {
       provider: provider,
       datasetVersion: datasetVersion,
-      snapshotId: text(sourceObject.snapshotId || existingProvenance.snapshotId, 160),
-      sourceUrls: sourceUrls,
+      snapshotId: text(own(sourceObject, 'snapshotId') || own(existingProvenance, 'snapshotId'), 160),
+      sourceUrls: sourceUrls.slice(),
       resolutionStatus: resolutionStatus,
-      retrievedAt: text(sourceObject.retrievedAt || existingProvenance.retrievedAt, 80),
-      license: text(sourceObject.license || existingProvenance.license, 240),
-      attribution: text(sourceObject.attribution || existingProvenance.attribution, 600)
+      retrievedAt: text(own(sourceObject, 'retrievedAt') || own(existingProvenance, 'retrievedAt'), 80),
+      license: text(own(sourceObject, 'license') || own(existingProvenance, 'license'), 240),
+      attribution: text(own(sourceObject, 'attribution') || own(existingProvenance, 'attribution'), 600)
     };
     var sourceConstraints = normalizeInstructionalConstraints(
-      sourceObject.instructionalConstraints || sourceObject.textAccessPolicy
+      own(sourceObject, 'instructionalConstraints') || own(sourceObject, 'textAccessPolicy')
     );
     if (sourceConstraints.textAccessExpectation === 'unspecified') {
       var constrainedEntry = entries.find(function (entry) {
         return entry.instructionalConstraints
           && entry.instructionalConstraints.textAccessExpectation !== 'unspecified';
       });
-      if (constrainedEntry) sourceConstraints = constrainedEntry.instructionalConstraints;
+      if (constrainedEntry) sourceConstraints = Object.assign({}, constrainedEntry.instructionalConstraints);
     }
     return {
       version: VERSION,
@@ -236,8 +258,8 @@
     var context = normalize(input);
     var opts = isObject(options) ? options : {};
     if (isEmpty(context)) return '';
-    var resourceType = text(opts.resourceType, 80) || 'resource';
-    var textRole = text(opts.textRole, 80);
+    var resourceType = text(own(opts, 'resourceType'), 80) || 'resource';
+    var textRole = text(own(opts, 'textRole'), 80);
     var lines = [
       'STANDARDS FIDELITY: Use the cited standard text as the instructional target.',
       'Preserve its required content, cognitive verbs, and evidence or product expectations; do not reduce cognitive demand merely to simplify language.'
@@ -262,15 +284,15 @@
     return !context || !Array.isArray(context.standards) || context.standards.length === 0;
   }
 
-  var API = {
+  var API = Object.freeze({
     VERSION: VERSION,
     normalize: normalize,
     resolve: normalize,
     isEmpty: isEmpty,
     normalizeInstructionalConstraints: normalizeInstructionalConstraints,
-    TEXT_ACCESS_EXPECTATIONS: TEXT_ACCESS_EXPECTATIONS.slice(),
+    TEXT_ACCESS_EXPECTATIONS: TEXT_ACCESS_EXPECTATIONS,
     buildResourceDirective: buildResourceDirective
-  };
+  });
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   if (typeof window !== 'undefined') {

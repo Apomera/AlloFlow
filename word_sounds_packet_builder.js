@@ -182,14 +182,22 @@
       if (bare(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).charAt(0) !== '#') return 'a link to something outside the drawing';
     }
     if (/[\s"'\/]src(?:doc)?\s*=/i.test(plain)) return 'a link to something outside the drawing';
-    // A style block may not load anything: no @import, no url(), no font.
-    var style = /<\s*(?:[^\s<>"'=/:]+:)?style\b(?:"[^"]*"|'[^']*'|[^>"'])*>/gi;
-    while ((m = style.exec(plain))) {
-      if (/\/\s*>$/.test(m[0])) continue;
-      var end = plain.slice(style.lastIndex).search(/<\s*\/\s*(?:[^\s<>"'=/:]+:)?style\s*>/i);
-      var css = end < 0 ? plain.slice(style.lastIndex) : plain.slice(style.lastIndex, style.lastIndex + end);
-      if (end < 0 || /@import|@font-face|@namespace|url\s*\(|image-set\s*\(|expression\s*\(/i.test(css)) return 'a style block that loads something';
-    }
+    if (/(?:-[a-z]+-)?image-set\s*\(|expression\s*\(/i.test(plain)) return 'a style block that loads something';
+    // A style block may not load anything: no @import, no url(), no font. Check both raw and decoded text so entity-encoded quotes cannot fake "/>".
+    var checkStyleIn = function (src) {
+      var style = /<\s*(?:[^\s<>"'=/:]+:)?style\b(?:"[^"]*"|'[^']*'|[^>"'])*>/gi;
+      var sm;
+      while ((sm = style.exec(src))) {
+        var rest = src.slice(style.lastIndex);
+        var end = rest.search(/<\s*\/\s*(?:[^\s<>"'=/:]+:)?style\s*>/i);
+        if (/\/\s*>$/.test(sm[0]) && end < 0) continue;
+        var css = end < 0 ? rest : rest.slice(0, end);
+        if (end < 0 || /@import|@font-face|@namespace|url\s*\(|(?:-[a-z]+-)?image-set\s*\(|expression\s*\(/i.test(css)) return 'a style block that loads something';
+      }
+      return '';
+    };
+    var styleBad = checkStyleIn(text) || checkStyleIn(plain);
+    if (styleBad) return styleBad;
     // Anywhere else, url(...) may only name something inside the drawing: fill="url(#a)".
     var url = /url\s*\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))/gi;
     while ((m = url.exec(plain))) {
@@ -403,7 +411,7 @@
     blocks.forEach(function (b) { b.items.forEach(function (it) { usual.push(String(it.id)); }); });
     var ids;
     if (Array.isArray(order)) {
-      var byKey = {}, used = {};
+      var byKey = Object.create(null), used = Object.create(null);
       blocks.forEach(function (b) { b.items.forEach(function (it) { byKey[String(b.activity) + '|' + String(it.word || '').toLowerCase()] = String(it.id); }); });
       ids = [];
       order.forEach(function (key) {
@@ -1276,7 +1284,7 @@
     var from = at + open.length, to = html.indexOf('</script>', from);
     if (to < 0) return { html: html, done: false };
     var manifest;
-    try { manifest = JSON.parse(html.slice(from, to)); } catch (_) { return { html: html, done: false }; }
+    try { manifest = JSON.parse(html.slice(from, to), function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }); } catch (_) { return { html: html, done: false }; }
     if (!manifest || typeof manifest !== 'object') return { html: html, done: false };
     Object.keys(extra).forEach(function (key) {
       if (key === 'attributions') manifest.attributions = (Array.isArray(manifest.attributions) ? manifest.attributions : []).concat(extra.attributions.filter(function (line) { return (manifest.attributions || []).indexOf(line) < 0; }));

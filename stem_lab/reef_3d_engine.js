@@ -264,7 +264,7 @@
         .replace('#include <color_fragment>', function (m) { return m + '\n' + apply; })
         .replace('#include <roughnessmap_fragment>', function (m) { return m + '\nif(vReefFishPart>1.5)roughnessFactor=0.19;else if(vReefFishPart<0.5)roughnessFactor+=reefFishScale(vReefFishPos)*0.2;'; })
         .replace('#include <normal_fragment_maps>', function (m) { return m + '\n#ifdef REEF_DERIVATIVES\nif(vReefFishPart<0.5){float reefH=reefFishScale(vReefFishPos)*0.00016;vec3 reefSX=dFdx(-vViewPosition),reefSY=dFdy(-vViewPosition);vec3 reefR1=cross(reefSY,normal),reefR2=cross(normal,reefSX);float reefDet=dot(reefSX,reefR1);normal=normalize(abs(reefDet)*normal-sign(reefDet)*(dFdx(reefH)*reefR1+dFdy(reefH)*reefR2));}\n#endif'; })
-        .replace('#include <lights_fragment_end>', function (m) { return m + '\nif(vReefFishPart<0.5){float reefFresnel=pow(1.0-clamp(abs(dot(normalize(vViewPosition),normal)),0.0,1.0),3.2);reflectedLight.indirectSpecular+=vec3(0.08,0.22,0.25)*reefFresnel*0.28;}'; });
+        .replace('#include <lights_fragment_end>', function (m) { return m + '\n{float reefFresnel=pow(1.0-clamp(abs(dot(normalize(vViewPosition),normal)),0.0,1.0),3.0);if(vReefFishPart<0.5){reflectedLight.indirectSpecular+=vec3(0.09,0.24,0.28)*reefFresnel*0.32;}else if(vReefFishPart<1.5){reflectedLight.directDiffuse+=diffuseColor.rgb*vec3(0.85,1.05,1.02)*reefFresnel*0.24;}}'; });
     };
     material.customProgramCacheKey = function () { return 'reef3d-fish-' + family + '-v4|' + (derivatives ? 'd' : 'n'); };
     var bodyGeo = body.build(T), tailGeo = tail.build(T);
@@ -501,8 +501,21 @@
       var caps = renderer.capabilities || {}, ext = renderer.extensions;
       var derivatives = !!(caps.isWebGL2 || (ext && typeof ext.has === 'function' && ext.has('OES_standard_derivatives')));
       if (staged) clearToWater(THREE, renderer);
+      var highContrastMode = !!options.highContrast;
+      if (!highContrastMode) {
+        try {
+          if (typeof document !== 'undefined') {
+            var docEl = document.documentElement, bodyEl = document.body;
+            if ((docEl && (docEl.classList.contains('theme-contrast') || docEl.classList.contains('high-contrast') || docEl.getAttribute('data-theme') === 'high-contrast')) ||
+                (bodyEl && (bodyEl.classList.contains('theme-contrast') || bodyEl.classList.contains('high-contrast')))) highContrastMode = true;
+          }
+          if (!highContrastMode && typeof global !== 'undefined' && typeof global.matchMedia === 'function') {
+            if (global.matchMedia('(forced-colors: active)').matches || global.matchMedia('(prefers-contrast: more)').matches) highContrastMode = true;
+          }
+        } catch (ignore) {}
+      }
       loadStep(6, function () {
-        habitat = Habitat.create(THREE, { layout: options.layout, seed: options.seed, quality: quality, reducedMotion: reducedMotion, derivatives: derivatives });
+        habitat = Habitat.create(THREE, { layout: options.layout, seed: options.seed, quality: quality, reducedMotion: reducedMotion, derivatives: derivatives, highContrast: highContrastMode });
         scene.add(habitat.root);
       });
       loadStep(2, function () {
@@ -511,30 +524,33 @@
         // The habitat's materials mix the water column in linear light (as in Reef3DExplore).
         var water = habitat.water || null;
         if (typeof habitat.setWater === 'function') habitat.setWater({ scatter: pal.fog.clone().convertSRGBToLinear(), extinction: pal.extinction, top: pal.top, deep: pal.fog });
-        // Water column dome with Snell's window and a soft sun (adapted from
-        // createCLHuntWaterBackdrop and Reef3DExplore); follows the camera.
-        var backdrop = new THREE.Mesh(own(new THREE.SphereGeometry(1, 24, 16)), own(new THREE.ShaderMaterial({
+        // Water column dome with Snell's window, prismatic critical-angle rim and swaying god-ray curtains; follows the camera.
+        var backdropMat = typeof THREE.ShaderMaterial === 'function' ? own(new THREE.ShaderMaterial({
           side: THREE.BackSide, depthWrite: false, fog: false,
-          uniforms: { topColor: { value: pal.top }, bottomColor: { value: pal.fog.clone() }, sunDir: { value: sunDir }, reefCausticTime: water ? water.time : { value: 4 } },
+          uniforms: { topColor: { value: pal.top }, bottomColor: { value: pal.fog.clone() }, sunDir: { value: sunDir }, reefCausticTime: water ? water.time : { value: 4 }, uAtmosphere: { value: highContrastMode ? 0.0 : 1.0 } },
           vertexShader: 'varying vec3 vReefDir;void main(){vReefDir=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
-          fragmentShader: 'uniform vec3 topColor;uniform vec3 bottomColor;uniform vec3 sunDir;uniform float reefCausticTime;varying vec3 vReefDir;void main(){vec3 d=normalize(vReefDir);' +
+          fragmentShader: 'uniform vec3 topColor;uniform vec3 bottomColor;uniform vec3 sunDir;uniform float reefCausticTime;uniform float uAtmosphere;varying vec3 vReefDir;void main(){vec3 d=normalize(vReefDir);' +
             'float sunward=max(0.0,dot(d,sunDir));float up=smoothstep(-0.10,0.98,d.y);' +
             'vec3 column=bottomColor*mix(0.63,1.0,smoothstep(-0.85,-0.06,d.y));column=mix(column,topColor,up*0.70);' +
             'float swell=sin(d.x*15.0+d.z*8.0-reefCausticTime*0.16+sin(d.z*7.0)*0.55);' +
             'float ripple=sin(d.z*24.0-d.x*11.0+reefCausticTime*0.21+sin(d.x*9.0+d.z*5.0)*0.60);' +
-            'float window=smoothstep(0.43,0.89,d.y+swell*0.030+ripple*0.018);' +
+            'float snellWin=smoothstep(0.42,0.89,d.y+swell*0.032+ripple*0.019);' +
             'float lace=sin(d.x*48.0-d.z*31.0+sin(d.z*17.0+d.x*8.0)*1.1+reefCausticTime*0.24);' +
             'float waterfold=sin(d.z*37.0+d.x*19.0+sin(d.x*13.0-d.z*9.0)*0.8-reefCausticTime*0.19);' +
-            'float silver=pow(max(0.0,swell*ripple*0.6+lace*waterfold*0.4),4.0);' +
-            'float snellEdge=smoothstep(0.36,0.52,d.y+swell*0.025)*(1.0-smoothstep(0.56,0.74,d.y+swell*0.025));' +
+            'float silver=pow(max(0.0,swell*ripple*0.6+lace*waterfold*0.4),3.6);' +
+            'float snellEdge=smoothstep(0.35,0.52,d.y+swell*0.028)*(1.0-smoothstep(0.55,0.75,d.y+swell*0.028));' +
+            'vec3 snellPrism=mix(vec3(0.03,0.13,0.16),vec3(0.14,0.15,0.08),smoothstep(0.40,0.64,d.y+ripple*0.025));' +
             'float rayAz=atan(d.z-sunDir.z*0.35,d.x-sunDir.x*0.35);' +
-            'float curtain=(0.5+0.5*sin(rayAz*9.0+reefCausticTime*0.18))*(0.5+0.5*sin(rayAz*17.0-reefCausticTime*0.12))*smoothstep(-0.08,0.48,d.y)*(1.0-smoothstep(0.55,0.92,d.y));' +
-            'column=mix(column,topColor,window*0.35);column*=1.0+(swell*ripple*0.042+lace*waterfold*0.027)*window;column+=topColor*silver*window*0.072;' +
-            'column+=vec3(0.04,0.12,0.13)*snellEdge*(0.55+0.45*swell)*0.45+max(topColor-bottomColor,vec3(0.0))*curtain*pow(sunward,1.6)*0.16;' +
-            'vec3 scatter=max(topColor-bottomColor,vec3(0.0))*(0.14*pow(sunward,4.0)+0.24*pow(sunward,25.0))*smoothstep(0.05,0.72,d.y);' +
-            'vec3 sunlight=vec3(1.0,0.97,0.85)*(pow(sunward,92.0)*0.05+pow(sunward,1350.0)*0.25)*window;' +
+            'float curtainA=(0.5+0.5*sin(rayAz*9.0+reefCausticTime*0.18))*(0.5+0.5*sin(rayAz*17.0-reefCausticTime*0.12));' +
+            'float curtainB=(0.5+0.5*sin(rayAz*23.0-reefCausticTime*0.24+swell*1.4))*0.55;' +
+            'float curtain=(curtainA+curtainB)*smoothstep(-0.08,0.48,d.y)*(1.0-smoothstep(0.54,0.92,d.y));' +
+            'column=mix(column,topColor,snellWin*0.37*uAtmosphere);column*=1.0+(swell*ripple*0.048+lace*waterfold*0.032)*snellWin*uAtmosphere;column+=topColor*silver*snellWin*0.088*uAtmosphere;' +
+            'column+=(snellPrism*snellEdge*(0.58+0.42*swell)*0.54+max(topColor-bottomColor,vec3(0.0))*curtain*(0.24+0.76*pow(sunward,1.4))*0.18)*uAtmosphere;' +
+            'vec3 scatter=max(topColor-bottomColor,vec3(0.0))*(0.15*pow(sunward,4.0)+0.26*pow(sunward,24.0))*smoothstep(0.05,0.72,d.y)*uAtmosphere;' +
+            'vec3 sunlight=vec3(1.0,0.97,0.85)*(pow(sunward,88.0)*0.058+pow(sunward,1250.0)*0.27)*snellWin*uAtmosphere;' +
             'gl_FragColor=vec4(min(column+scatter+sunlight,vec3(1.0)),1.0);}'
-        })));
+        })) : own(new THREE.MeshBasicMaterial({ color: pal.fog.clone(), side: THREE.BackSide, depthWrite: false, fog: false }));
+        var backdrop = new THREE.Mesh(own(new THREE.SphereGeometry(1, 24, 16)), backdropMat);
         backdrop.name = 'reef-water-backdrop'; backdrop.renderOrder = -10; backdrop.frustumCulled = false;
         backdrop.onBeforeRender = function (r, s, cam) {
           this.position.setFromMatrixPosition(cam.matrixWorld); this.scale.setScalar(cam.far * 0.9); this.updateMatrixWorld();
@@ -568,8 +584,8 @@
     }
 
     function buildBubbles(water) {
-      if (!THREE.Points || !THREE.PointsMaterial || !water) return;
-      var count = high ? 110 : 45, pos = new Float32Array(count * 3), seedArr = new Float32Array(count * 2);
+      if (!THREE.Points || !water || highContrastMode) return;
+      var count = high ? 128 : 52, pos = new Float32Array(count * 3), seedArr = new Float32Array(count * 2);
       var spanY = Math.max(2.2, habitat.surfaceY - 0.6);
       for (var bi = 0; bi < count; bi++) {
         var h1 = hashString('bub-x-' + bi), h2 = hashString('bub-z-' + bi), h3 = hashString('bub-y-' + bi);
@@ -583,39 +599,58 @@
       geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
       geo.setAttribute('reefBubSeed', new THREE.Float32BufferAttribute(seedArr, 2));
       geo.computeBoundingSphere();
-      var mat = own(new THREE.PointsMaterial({
-        color: new THREE.Color(0xdcf7f9).convertSRGBToLinear(),
-        size: 0.042, sizeAttenuation: true, transparent: true, opacity: 0.56, depthWrite: false, fog: false
-      }));
-      mat.onBeforeCompile = function (shader) {
-        shader.uniforms.reefBubTime = water.time;
-        shader.uniforms.reefBubEye = water.eye;
-        shader.uniforms.reefBubSpanY = { value: spanY };
-        shader.vertexShader = 'uniform float reefBubTime;uniform vec3 reefBubEye;uniform float reefBubSpanY;attribute vec2 reefBubSeed;varying float vBubDist;varying float vBubSize;\n' +
-          shader.vertexShader.replace('#include <begin_vertex>', [
-            '#include <begin_vertex>',
-            'float bubRate=0.22+0.32*reefBubSeed.x;',
-            'float bubY=mod(position.y-0.25+reefBubTime*bubRate,reefBubSpanY)+0.25;',
-            'float bubAng=reefBubTime*(1.1+reefBubSeed.y*0.9)+reefBubSeed.y*6.283;',
-            'transformed.x=position.x+cos(bubAng)*(0.06+0.05*reefBubSeed.x);',
-            'transformed.y=bubY;',
-            'transformed.z=position.z+sin(bubAng)*(0.06+0.05*reefBubSeed.x);',
-            'vBubDist=length(transformed-reefBubEye);',
-            'vBubSize=0.55+0.9*reefBubSeed.x;'
-          ].join('\n')).replace('#include <logdepthbuf_vertex>', '#include <logdepthbuf_vertex>\ngl_PointSize*=vBubSize;');
-        shader.fragmentShader = 'varying float vBubDist;varying float vBubSize;\n' +
-          shader.fragmentShader.replace('#include <color_fragment>', [
-            '#include <color_fragment>',
-            'vec2 bubC=gl_PointCoord*2.0-1.0;float bubR=length(bubC);if(bubR>1.0)discard;',
-            'float bubRim=smoothstep(0.56,0.92,bubR)*(1.0-smoothstep(0.92,1.0,bubR));',
-            'float bubSpec=exp(-dot(bubC-vec2(-0.34,-0.34),bubC-vec2(-0.34,-0.34))*18.0);',
-            'float bubCore=(1.0-bubR*bubR)*0.18;',
-            'float bubFade=smoothstep(0.55,1.6,vBubDist)*(1.0-smoothstep(6.5,14.0,vBubDist));',
-            'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(1.0,1.0,1.0),clamp(bubSpec*0.9+bubRim*0.45,0.0,1.0));',
-            'diffuseColor.a*=clamp(bubRim*0.75+bubSpec*0.95+bubCore,0.0,1.0)*bubFade;'
-          ].join('\n'));
-      };
-      mat.customProgramCacheKey = function () { return 'reef3d-bubbles-v1'; };
+      var mat;
+      if (typeof THREE.ShaderMaterial === 'function') {
+        mat = own(new THREE.ShaderMaterial({
+          transparent: true, depthWrite: false, fog: false,
+          uniforms: {
+            reefBubTime: water.time,
+            reefBubEye: water.eye,
+            reefBubSpanY: { value: spanY },
+            reefBubPixelRatio: { value: Math.min((global && global.devicePixelRatio) || 1, high ? 1.75 : 1) }
+          },
+          vertexShader: [
+            'uniform float reefBubTime; uniform vec3 reefBubEye; uniform float reefBubSpanY; uniform float reefBubPixelRatio;',
+            'attribute vec2 reefBubSeed;',
+            'varying float vBubDist; varying float vBubSize; varying float vBubKind; varying float vBubTwinkle;',
+            'void main(){',
+            '  float bubRate = 0.20 + 0.30 * reefBubSeed.x;',
+            '  float bubY = mod(position.y - 0.25 + reefBubTime * bubRate, reefBubSpanY) + 0.25;',
+            '  float bubAng = reefBubTime * (1.05 + reefBubSeed.y * 0.95) + reefBubSeed.y * 6.28318;',
+            '  vec3 p = vec3(position.x + cos(bubAng) * (0.065 + 0.05 * reefBubSeed.x), bubY, position.z + sin(bubAng) * (0.065 + 0.05 * reefBubSeed.x));',
+            '  vBubDist = length(p - reefBubEye);',
+            '  vBubSize = 0.55 + 0.95 * reefBubSeed.x;',
+            '  vBubKind = reefBubSeed.y;',
+            '  vBubTwinkle = 0.65 + 0.35 * sin(reefBubTime * 2.1 + reefBubSeed.x * 24.0);',
+            '  vec4 mvPos = modelViewMatrix * vec4(p, 1.0);',
+            '  float depth = max(0.5, -mvPos.z);',
+            '  gl_PointSize = clamp((13.5 * vBubSize) * reefBubPixelRatio / depth, 1.5, 22.0);',
+            '  gl_Position = projectionMatrix * mvPos;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'varying float vBubDist; varying float vBubSize; varying float vBubKind; varying float vBubTwinkle;',
+            'void main(){',
+            '  vec2 bubC = gl_PointCoord * 2.0 - 1.0; float bubR = length(bubC); if (bubR > 1.0) discard;',
+            '  float bubFade = smoothstep(0.55, 1.6, vBubDist) * (1.0 - smoothstep(6.5, 14.5, vBubDist));',
+            '  float bubRim = smoothstep(0.54, 0.92, bubR) * (1.0 - smoothstep(0.92, 1.0, bubR));',
+            '  float bubSpec = exp(-dot(bubC - vec2(-0.34, -0.34), bubC - vec2(-0.34, -0.34)) * 18.0);',
+            '  float bubCore = (1.0 - bubR * bubR) * 0.20;',
+            '  vec3 aquaTint = mix(vec3(0.84, 0.97, 0.99), vec3(0.66, 0.98, 0.94), vBubKind * 0.45);',
+            '  vec3 col = mix(aquaTint, vec3(1.0, 1.0, 0.97), clamp(bubSpec * 0.92 + bubRim * 0.45, 0.0, 1.0));',
+            '  float alpha = clamp(bubRim * 0.78 + bubSpec * 0.96 + bubCore, 0.0, 1.0) * bubFade * 0.58 * vBubTwinkle;',
+            '  gl_FragColor = vec4(col, alpha);',
+            '}'
+          ].join('\n')
+        }));
+      } else if (THREE.PointsMaterial) {
+        mat = own(new THREE.PointsMaterial({
+          color: new THREE.Color(0xdcf7f9).convertSRGBToLinear(),
+          size: 0.042, sizeAttenuation: true, transparent: true, opacity: 0.56, depthWrite: false, fog: false
+        }));
+      } else {
+        return;
+      }
       var bubbles = new THREE.Points(geo, mat);
       bubbles.name = 'reef-bubbles'; bubbles.frustumCulled = false; bubbles.renderOrder = 5;
       scene.add(bubbles);

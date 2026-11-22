@@ -132,7 +132,7 @@
   var myWords = root.AlloPacketMyWords || null;
   var wp = root.AlloModules && root.AlloModules.WordPractice ? root.AlloModules.WordPractice : null;
 
-  var phonemeBank = {};
+  var phonemeBank = Object.create(null);
   var symbolPngCache = Object.create(null);
   var controller = null;
   var lastPack = null;
@@ -230,23 +230,25 @@
     };
   }
 
+  function hasOwn(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
+  function isAudioUri(u) { return typeof u === 'string' && /^data:audio\//i.test(u); }
   function ensurePptx() {
     if (typeof root.PptxGenJS === 'function') return Promise.resolve(root.PptxGenJS);
     if (pptxPromise) return pptxPromise;
     pptxPromise = new Promise(function (resolve, reject) {
-      if (!doc || !doc.head) { reject(new Error('Document unavailable')); return; }
-      var script = doc.createElement('script');
+      if (!doc || !doc.head) { pptxPromise = null; reject(new Error('Document unavailable')); return; }
+      var script = doc.createElement('script'), done = false;
+      var stop = function (err) {
+        if (done) return; done = true;
+        if (timer && typeof root.clearTimeout === 'function') root.clearTimeout(timer);
+        if (err) { try { script.remove(); } catch (_) {} pptxPromise = null; reject(err); }
+        else resolve(root.PptxGenJS);
+      };
+      var timer = typeof root.setTimeout === 'function' ? root.setTimeout(function () { stop(new Error('Timed out loading vendor/pptxgenjs-3.12.0.bundle.js.')); }, 20000) : 0;
       script.src = 'vendor/pptxgenjs-3.12.0.bundle.js';
       script.async = true;
-      script.onload = function () {
-        if (typeof root.PptxGenJS === 'function') resolve(root.PptxGenJS);
-        else { pptxPromise = null; reject(new Error('Could not start PowerPoint export.')); }
-      };
-      script.onerror = function () {
-        script.remove();
-        pptxPromise = null;
-        reject(new Error('Could not load vendor/pptxgenjs-3.12.0.bundle.js.'));
-      };
+      script.onload = function () { stop(typeof root.PptxGenJS === 'function' ? null : new Error('Could not start PowerPoint export.')); };
+      script.onerror = function () { stop(new Error('Could not load vendor/pptxgenjs-3.12.0.bundle.js.')); };
       doc.head.appendChild(script);
     });
     return pptxPromise;
@@ -403,7 +405,7 @@
   }
 
   function applyStarter(id) {
-    var starter = STARTERS[id];
+    var starter = hasOwn(STARTERS, id) ? STARTERS[id] : null;
     if (!starter || !controller) return;
     var words = enrichItems(starter.title, starter.words);
     setControllerPack({
@@ -464,7 +466,7 @@
         if (symbolPngCache[key] && symbolPngCache[key].none === true) {
           delete symbolPngCache[key];
         }
-        if (saved && saved.picture && saved.picture.dataUri) {
+        if (saved && saved.picture && isAllowedCustomPicture(saved.picture.dataUri)) {
           symbolPngCache[key] = {
             src: saved.picture.dataUri,
             alt: word,
@@ -499,7 +501,7 @@
         }).catch(function () { return null; });
       })).then(function () {
         var existingPack = typeof controller.getPack === 'function' ? controller.getPack() : lastPack;
-        var byWord = {};
+        var byWord = Object.create(null);
         var existingList = existingPack && Array.isArray(existingPack.items)
           ? existingPack.items
           : (existingPack && Array.isArray(existingPack.words) ? existingPack.words : []);
@@ -510,14 +512,14 @@
           var prev = byWord[word.toLowerCase()] || lastPackItemsByWord[word.toLowerCase()];
           var saved = savedByWord[word] || savedByWord[word.toLowerCase()];
           var rec = prev ? Object.assign({}, prev, { word: word }) : { word: word };
-          if (saved && saved.clip && saved.clip.dataUri && !rec.wordAudio) rec.wordAudio = saved.clip.dataUri;
+          if (saved && saved.clip && isAudioUri(saved.clip.dataUri) && !rec.wordAudio) rec.wordAudio = saved.clip.dataUri;
           if (saved && saved.sounds && Array.isArray(saved.sounds.sounds) && (!rec.phonemes || !rec.phonemes.length)) rec.phonemes = saved.sounds.sounds;
           if (saved && saved.picture && saved.picture.none === true) {
             clearPictureRecord(rec);
             rec.pictureNone = true;
           } else {
             delete rec.pictureNone;
-            if (saved && saved.picture && saved.picture.dataUri && !rec.image && !(rec.picture && rec.picture.src)) {
+            if (saved && saved.picture && isAllowedCustomPicture(saved.picture.dataUri) && !rec.image && !(rec.picture && rec.picture.src)) {
               applyPictureRecord(rec, saved.picture.dataUri, word, saved.picture.credit, 'Saved in My words');
             }
           }
@@ -566,7 +568,7 @@
 
   function isAllowedCustomPicture(uri) {
     if (typeof uri !== 'string' || uri.length > 450000) return false;
-    var m = /^data:image\/(png|jpeg|svg\+xml);base64,([A-Za-z0-9+/=]+)$/i.exec(uri);
+    var m = /^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml);base64,([A-Za-z0-9+/=]+)$/i.exec(uri);
     if (!m) return false;
     if (m[1].toLowerCase() !== 'svg+xml') return true;
     var svgText = '';
@@ -619,7 +621,7 @@
       var key = word.toLowerCase();
       if (seen[key]) return;
       seen[key] = true;
-      var wEdit = wordEdits[key] || wordEdits[word] || null;
+      var wEdit = (hasOwn(wordEdits, key) ? wordEdits[key] : null) || (hasOwn(wordEdits, word) ? wordEdits[word] : null);
       var senses = vocabBank && typeof vocabBank.ready === 'function' && vocabBank.ready() && typeof vocabBank.senses === 'function'
         ? (vocabBank.senses(word) || [])
         : [];
@@ -637,7 +639,7 @@
         if (!chosen) chosen = senses[0];
       }
       var sId = (chosen && chosen.id) || (wEdit && wEdit.sense) || '';
-      var sEdit = sId && senseEdits[sId] ? senseEdits[sId] : null;
+      var sEdit = sId && hasOwn(senseEdits, sId) ? senseEdits[sId] : null;
       var def = (wEdit && wEdit.def) || (sEdit && sEdit.def) || (chosen && chosen.def) || '';
       var example = (wEdit && wEdit.example) || (sEdit && sEdit.example) || (chosen && chosen.example) || '';
       var rec = { word: word };
@@ -716,11 +718,11 @@
           var e = (savedByWord && (savedByWord[item.word] || savedByWord[item.word.toLowerCase()])) || null;
           var rec = { word: item.word };
           if (e && e.sounds && Array.isArray(e.sounds.sounds)) rec.phonemes = e.sounds.sounds;
-          if (e && e.clip && e.clip.dataUri) rec.wordAudio = e.clip.dataUri;
+          if (e && e.clip && isAudioUri(e.clip.dataUri)) rec.wordAudio = e.clip.dataUri;
           if (e && e.picture && e.picture.none === true) {
             symbolPngCache[item.word.toLowerCase()] = { none: true };
             rec.pictureNone = true;
-          } else if (e && e.picture && e.picture.dataUri) {
+          } else if (e && e.picture && isAllowedCustomPicture(e.picture.dataUri)) {
             applyPictureRecord(rec, e.picture.dataUri, item.word, e.picture.credit, 'Saved in My words');
           }
           return rec;
@@ -753,81 +755,38 @@
     return { syllables: !!($('pe-opt-syllables') && $('pe-opt-syllables').checked), bold: !!($('pe-opt-bold') && $('pe-opt-bold').checked) };
   }
 
+  // One builder for the app and for Packets: word_practice_media.js, loaded by this page.
+  function sheetInput(packArg, fallbackTitle) {
+    var pack = activePack(packArg), items = packItemsOf(pack), opts = pack.options || {};
+    return [{ title: String(pack.title || fallbackTitle), language: pack.language || 'en', items: items, words: items, options: opts }, opts];
+  }
   function buildFlashcardsHtml(packArg) {
-    var pack = activePack(packArg);
-    var title = String(pack.title || 'Word Flashcards');
-    var items = packItemsOf(pack);
-    // One builder for the app and for Packets: word_practice_media.js, loaded by this page.
-    return root.AlloWordPracticeMedia.buildFlashcardsHtml(
-      { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
-      pack.options || {}
-    );
+    var a = sheetInput(packArg, 'Word Flashcards');
+    return root.AlloWordPracticeMedia.buildFlashcardsHtml(a[0], a[1]);
   }
-
   function buildFrayerHtml(packArg) {
-    var pack = activePack(packArg);
-    var title = String(pack.title || 'Frayer Study Sheets');
-    var items = packItemsOf(pack);
-    // One builder for the app and for Packets: word_practice_media.js, loaded by this page.
-    return root.AlloWordPracticeMedia.buildFrayerHtml(
-      { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
-      pack.options || {}
-    );
+    var a = sheetInput(packArg, 'Frayer Study Sheets');
+    return root.AlloWordPracticeMedia.buildFrayerHtml(a[0], a[1]);
   }
-
   function buildSortingCardsHtml(packArg) {
-    var pack = activePack(packArg);
-    var title = String(pack.title || 'Word Sorting Cards');
-    var items = packItemsOf(pack);
-    // One builder for the app and for Packets: word_practice_media.js, loaded by this page.
-    return root.AlloWordPracticeMedia.buildSortingCardsHtml(
-      { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
-      pack.options || {}
-    );
+    var a = sheetInput(packArg, 'Word Sorting Cards');
+    return root.AlloWordPracticeMedia.buildSortingCardsHtml(a[0], a[1]);
   }
-
   function buildWorksheetHtml(packArg) {
-    var pack = activePack(packArg);
-    var title = String(pack.title || 'Vocabulary Study Worksheet');
-    var items = packItemsOf(pack);
-    // One builder for the app and for Packets: word_practice_media.js, loaded by this page.
-    return root.AlloWordPracticeMedia.buildWorksheetHtml(
-      { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
-      pack.options || {}
-    );
+    var a = sheetInput(packArg, 'Vocabulary Study Worksheet');
+    return root.AlloWordPracticeMedia.buildWorksheetHtml(a[0], a[1]);
   }
-
   function buildBingoHtml(packArg) {
-    var pack = activePack(packArg);
-    var title = String(pack.title || 'Vocabulary Classroom Bingo');
-    var items = packItemsOf(pack);
-    // One builder for the app and for Packets: word_practice_media.js, loaded by this page.
-    return root.AlloWordPracticeMedia.buildBingoHtml(
-      { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
-      pack.options || {}
-    );
+    var a = sheetInput(packArg, 'Vocabulary Classroom Bingo');
+    return root.AlloWordPracticeMedia.buildBingoHtml(a[0], a[1]);
   }
-
   function buildLoopGameHtml(packArg) {
-    var pack = activePack(packArg);
-    var title = String(pack.title || 'I Have, Who Has Loop Cards');
-    var items = packItemsOf(pack);
-    // One builder for the app and for Packets: word_practice_media.js, loaded by this page.
-    return root.AlloWordPracticeMedia.buildLoopGameHtml(
-      { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
-      pack.options || {}
-    );
+    var a = sheetInput(packArg, 'I Have, Who Has Loop Cards');
+    return root.AlloWordPracticeMedia.buildLoopGameHtml(a[0], a[1]);
   }
-
   function buildWordWallHtml(packArg) {
-    var pack = activePack(packArg);
-    var title = String(pack.title || 'Classroom Word Wall Cards');
-    var items = packItemsOf(pack);
-    // One builder for the app and for Packets: word_practice_media.js, loaded by this page.
-    return root.AlloWordPracticeMedia.buildWordWallHtml(
-      { title: title, language: pack.language || 'en', items: items, words: items, options: pack.options || {} },
-      pack.options || {}
-    );
+    var a = sheetInput(packArg, 'Classroom Word Wall Cards');
+    return root.AlloWordPracticeMedia.buildWordWallHtml(a[0], a[1]);
   }
 
   function openInSymbolRunner(packArg) {
@@ -864,7 +823,7 @@
     doc.body.appendChild(a);
     a.click();
     doc.body.removeChild(a);
-    setTimeout(function () { try { root.URL.revokeObjectURL(url); } catch (_) {} }, 1000);
+    setTimeout(function () { try { root.URL.revokeObjectURL(url); } catch (_) {} }, 15000);
   }
 
   function slugTitle(textVal) {
@@ -926,12 +885,12 @@
             var rec = {
               word: w,
               phonemes: e.sounds && Array.isArray(e.sounds.sounds) ? e.sounds.sounds : undefined,
-              wordAudio: e.clip && e.clip.dataUri ? e.clip.dataUri : undefined,
+              wordAudio: e.clip && isAudioUri(e.clip.dataUri) ? e.clip.dataUri : undefined,
             };
             if (e.picture && e.picture.none === true) {
               symbolPngCache[String(w).toLowerCase()] = { none: true };
               rec.pictureNone = true;
-            } else if (e.picture && e.picture.dataUri) {
+            } else if (e.picture && isAllowedCustomPicture(e.picture.dataUri)) {
               applyPictureRecord(rec, e.picture.dataUri, w, e.picture.credit, 'Saved in My words');
             }
             return rec;
@@ -1006,7 +965,7 @@
     if (sheetDownloadBtn && sheetTypeSelect) {
       sheetDownloadBtn.addEventListener('click', function () {
         var key = sheetTypeSelect.value;
-        var spec = SHEET_SPECS[key] || SHEET_SPECS.flashcards;
+        var spec = hasOwn(SHEET_SPECS, key) ? SHEET_SPECS[key] : SHEET_SPECS.flashcards;
         var pack = activePack();
         var items = packItemsOf(pack);
         if (!items.length) {
@@ -1070,10 +1029,10 @@
     var hashWords = [];
     if (wordsMatch) {
       try {
-        var decoded = decodeURIComponent(wordsMatch[1]);
-        var seenHash = {};
+        var decoded = decodeURIComponent(wordsMatch[1].slice(0, 4000));
+        var seenHash = Object.create(null);
         decoded.split(/[,;\r\n]+/).forEach(function (w) {
-          var clean = String(w || '').replace(/\s+/g, ' ').trim();
+          var clean = String(w || '').replace(/\s+/g, ' ').trim().slice(0, 80);
           var key = clean.toLowerCase();
           if (!clean || seenHash[key] || hashWords.length >= 60) return;
           seenHash[key] = true;

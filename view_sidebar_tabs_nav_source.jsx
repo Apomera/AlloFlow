@@ -37,7 +37,7 @@ function SidebarTabsNav({
       && window.History)
     || noop;
   const translatedLabel = (key, fallback) => {
-    const value = t(key);
+    const value = typeof t === 'function' ? t(key) : undefined;
     return value && value !== key ? value : fallback;
   };
   const createLabel = translatedLabel('sidebar.create_tab', 'Create');
@@ -48,60 +48,88 @@ function SidebarTabsNav({
       : translatedLabel('sidebar.class_materials_tab', 'Class & Materials');
   const createTabRef = React.useRef(null);
   const historyTabRef = React.useRef(null);
+  const isComposingEvent = (event) => Boolean(
+    event && (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229)
+  );
   const focusSiblingTab = (event, targetRef) => {
     event.preventDefault();
     targetRef.current?.focus();
   };
+  const hasUnreadHistoryCue = Boolean(isHistoryPulsing && activeSidebarTab !== 'history');
+  const newItemCueText = hasUnreadHistoryCue
+    ? `${translatedLabel('sidebar.new_item_available_prefix', 'New saved item available in')} ${historyLabel}`
+    : '';
 
   return (
-    <div
-      aria-label={translatedLabel('common.content_tabs', 'Content tabs')}
-      aria-orientation="horizontal"
-      role="tablist"
-      className="grid grid-cols-2 gap-1 rounded-xl border border-slate-200/90 bg-slate-100/90 p-1 mb-4 shrink-0 shadow-inner shadow-slate-200/60"
-    >
-      <button
-        ref={createTabRef}
-        type="button"
-        role="tab"
-        aria-selected={activeSidebarTab === 'create'}
-        tabIndex={activeSidebarTab === 'create' ? 0 : -1}
-        aria-controls="sidebar-create-panel"
-        id="tab-create"
-        onClick={handleSetActiveSidebarTabToCreate}
-        onKeyDown={(event) => {
-          if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'End') focusSiblingTab(event, historyTabRef);
-          else if (event.key === 'Home') focusSiblingTab(event, createTabRef);
-        }}
-        className={`relative min-h-11 min-w-0 px-3 py-2 text-sm font-bold rounded-lg border transition-[background-color,color,border-color,box-shadow] motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${activeSidebarTab === 'create' ? 'bg-white text-indigo-700 border-slate-200 shadow-sm shadow-slate-900/5' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/70'}`}
-        data-help-key="sidebar_tab_create"
+    <div className="mb-4 shrink-0">
+      <div
+        aria-label={translatedLabel('common.content_tabs', 'Content tabs')}
+        aria-orientation="horizontal"
+        role="tablist"
+        className="grid grid-cols-2 gap-1 rounded-xl border border-slate-200/90 bg-slate-100/90 p-1 shadow-inner shadow-slate-200/60"
       >
-        <Sparkles size={16} className="shrink-0" aria-hidden="true" /> <span className="min-w-0 break-words leading-tight">{createLabel}</span>
-      </button>
-      <button
-        ref={historyTabRef}
-        type="button"
-        role="tab"
-        aria-selected={activeSidebarTab === 'history'}
-        tabIndex={activeSidebarTab === 'history' ? 0 : -1}
-        aria-controls="sidebar-history-panel"
-        id="tab-history"
-        onClick={() => {
-          setActiveSidebarTab('history');
-          setIsHistoryPulsing(false);
-        }}
-        onKeyDown={(event) => {
-          if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'Home') focusSiblingTab(event, createTabRef);
-          else if (event.key === 'End') focusSiblingTab(event, historyTabRef);
-        }}
-        className={`relative min-h-11 min-w-0 px-3 py-2 text-sm font-bold rounded-lg border transition-[background-color,color,border-color,box-shadow] motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${activeSidebarTab === 'history' ? 'bg-white text-indigo-700 border-slate-200 shadow-sm shadow-slate-900/5' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/70'} ${isHistoryPulsing ? 'ring-2 ring-indigo-200 ring-offset-1 ring-offset-slate-100' : ''}`}
-        data-help-key="sidebar_tab_history"
+        <button
+          ref={createTabRef}
+          type="button"
+          role="tab"
+          aria-selected={activeSidebarTab === 'create'}
+          tabIndex={activeSidebarTab === 'create' ? 0 : -1}
+          aria-controls="sidebar-create-panel"
+          id="tab-create"
+          onClick={() => {
+            if (typeof handleSetActiveSidebarTabToCreate === 'function') handleSetActiveSidebarTabToCreate();
+          }}
+          onKeyDown={(event) => {
+            if (isComposingEvent(event)) return;
+            if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'End') focusSiblingTab(event, historyTabRef);
+            else if (event.key === 'Home') focusSiblingTab(event, createTabRef);
+          }}
+          className={`relative min-h-11 min-w-0 px-3 py-2 text-sm font-bold rounded-lg border transition-[background-color,color,border-color,box-shadow] motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${activeSidebarTab === 'create' ? 'bg-white text-indigo-700 border-slate-200 shadow-sm shadow-slate-900/5' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/70'}`}
+          data-help-key="sidebar_tab_create"
+        >
+          <Sparkles size={16} className="shrink-0" aria-hidden="true" /> <span className="min-w-0 break-words leading-tight">{createLabel}</span>
+          {activeSidebarTab === 'create' && (
+            <span className="pointer-events-none absolute inset-x-3 bottom-0.5 h-0.5 rounded-full bg-indigo-600" aria-hidden="true" />
+          )}
+        </button>
+        <button
+          ref={historyTabRef}
+          type="button"
+          role="tab"
+          aria-selected={activeSidebarTab === 'history'}
+          tabIndex={activeSidebarTab === 'history' ? 0 : -1}
+          aria-controls="sidebar-history-panel"
+          id="tab-history"
+          onClick={() => {
+            if (typeof setActiveSidebarTab === 'function') setActiveSidebarTab('history');
+            if (typeof setIsHistoryPulsing === 'function') setIsHistoryPulsing(false);
+          }}
+          onKeyDown={(event) => {
+            if (isComposingEvent(event)) return;
+            if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'Home') focusSiblingTab(event, createTabRef);
+            else if (event.key === 'End') focusSiblingTab(event, historyTabRef);
+          }}
+          className={`relative min-h-11 min-w-0 px-3 py-2 text-sm font-bold rounded-lg border transition-[background-color,color,border-color,box-shadow] motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${activeSidebarTab === 'history' ? 'bg-white text-indigo-700 border-slate-200 shadow-sm shadow-slate-900/5' : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-white/70'} ${isHistoryPulsing ? 'ring-2 ring-indigo-200 ring-offset-1 ring-offset-slate-100' : ''}`}
+          data-help-key="sidebar_tab_history"
+        >
+          <History size={16} className="shrink-0" aria-hidden="true" /> <span className="min-w-0 break-words leading-tight">{historyLabel}</span>
+          {activeSidebarTab === 'history' && (
+            <span className="pointer-events-none absolute inset-x-3 bottom-0.5 h-0.5 rounded-full bg-indigo-600" aria-hidden="true" />
+          )}
+          {hasUnreadHistoryCue && (
+            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-indigo-600 ring-2 ring-white animate-pulse motion-reduce:animate-none" aria-hidden="true" />
+          )}
+        </button>
+      </div>
+      <span
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-sidebar-pulse-status=""
+        className="sr-only"
       >
-        <History size={16} className="shrink-0" aria-hidden="true" /> <span className="min-w-0 break-words leading-tight">{historyLabel}</span>
-        {isHistoryPulsing && activeSidebarTab !== 'history' && (
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-indigo-600 ring-2 ring-white" aria-hidden="true" />
-        )}
-      </button>
+        {newItemCueText}
+      </span>
     </div>
   );
 }

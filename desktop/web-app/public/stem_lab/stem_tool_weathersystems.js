@@ -17,8 +17,14 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   var __alloFill = function (template, values) { return __alloOneWord(String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; })); };
   'use strict';
 
-  if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
+  if (typeof window === 'undefined' || !window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
   if (window.StemLab.isRegistered && window.StemLab.isRegistered('weatherSystems')) return;
+
+  function _wsSafeJsonParse(raw) {
+    return JSON.parse(raw, function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+  }
 
   function clamp(value, low, high) {
     return Math.max(low, Math.min(high, Number(value) || 0));
@@ -4174,7 +4180,7 @@ var GEOGRAPHY_PROFILES = {
       var binary = atob(normalized);
       var encoded = '';
       for (var i = 0; i < binary.length; i += 1) encoded += '%' + ('00' + binary.charCodeAt(i).toString(16)).slice(-2);
-      return JSON.parse(decodeURIComponent(encoded));
+      return _wsSafeJsonParse(decodeURIComponent(encoded));
     } catch (error) { return null; }
   }
 
@@ -6010,8 +6016,9 @@ var GEOGRAPHY_PROFILES = {
 
       function update(patch) {
         setToolData(function (prev) {
-          var next = Object.assign({}, prev);
-          var previousWeather = prev.weatherSystems || {};
+          var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var next = Object.assign({}, base);
+          var previousWeather = (base.weatherSystems && typeof base.weatherSystems === 'object' && !Array.isArray(base.weatherSystems)) ? base.weatherSystems : {};
           next.weatherSystems = Object.assign({}, previousWeather, typeof patch === 'function' ? patch(previousWeather) : patch);
           return next;
         });
@@ -6149,7 +6156,7 @@ var GEOGRAPHY_PROFILES = {
         if (decodeWeatherSession(window.location && window.location.hash)) return;
         try {
           var raw = window.localStorage && window.localStorage.getItem(IMMERSIVE_LOCAL_WORKSPACE_KEY);
-          var restoredPatch = raw ? validateImmersiveLocalWorkspacePayload(JSON.parse(raw)) : null;
+          var restoredPatch = raw ? validateImmersiveLocalWorkspacePayload(_wsSafeJsonParse(raw)) : null;
           if (!restoredPatch) return;
           classroomThermometerUndoRef.current = null;
           classroomThermometerFocusRef.current = null;
@@ -7868,6 +7875,10 @@ function openImmersiveTourStep(stepId) {
         var reduce = false;
         try { reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { reduce = false; }
         function draw() {
+          if (typeof document !== 'undefined' && document.hidden) {
+            if (state.motion && !reduce) frame = window.requestAnimationFrame(draw);
+            return;
+          }
           drawWeatherScene(canvasRef.current, state, scenario, selectedStation, state.motion && !reduce ? Date.now() - started : 0, dark, contrast);
           if (state.motion && !reduce) frame = window.requestAnimationFrame(draw);
         }
@@ -9555,6 +9566,7 @@ var geographyGroup = new THREE.Group();
           callout.style.top = top + '%';
         }
         renderer.setAnimationLoop(function () {
+          if (typeof document !== 'undefined' && document.hidden) { clock.getDelta(); return; }
           var delta = Math.min(0.05, clock.getDelta());
           var sceneSeconds = clock.elapsedTime;
           var hcNow = weatherIsHighContrast();
@@ -10209,9 +10221,11 @@ var geographyGroup = new THREE.Group();
       React.useEffect(function () {
         if (!d.playing || d.tab === 'forecast' || d.tab === 'experiment' || d.tab === 'atmosphere' || d.tab === 'observations') return undefined;
         var timer = window.setInterval(function () {
+          if (typeof document !== 'undefined' && document.hidden) return;
           setToolData(function (prev) {
-            var root = Object.assign({}, prev);
-            var old = root.weatherSystems || {};
+            var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            var root = Object.assign({}, base);
+            var old = (root.weatherSystems && typeof root.weatherSystems === 'object' && !Array.isArray(root.weatherSystems)) ? root.weatherSystems : {};
             var now = old.simHour != null ? Number(old.simHour) : 0;
             root.weatherSystems = Object.assign({}, old, { simHour: now >= 24 ? 0 : now + 1, timeAdvanced: true });
             return root;
@@ -10463,8 +10477,10 @@ var geographyGroup = new THREE.Group();
                 h('button', {
                   type: 'button',
                   onClick: function () {
-                    var snapshots = ctx.toolSnapshots || [];
-                    if (ctx.setToolSnapshots) ctx.setToolSnapshots(snapshots.concat([{ id: 'weather-' + Date.now(), tool: 'weatherSystems', label: scenario.name + ' at T+' + state.simHour, data: Object.assign({}, d), timestamp: Date.now() }]));
+                    if (ctx.setToolSnapshots) ctx.setToolSnapshots(function (prev) {
+                      var list = Array.isArray(prev) ? prev : (Array.isArray(ctx.toolSnapshots) ? ctx.toolSnapshots : []);
+                      return list.concat([{ id: 'weather-' + Date.now(), tool: 'weatherSystems', label: scenario.name + ' at T+' + state.simHour, data: Object.assign({}, d), timestamp: Date.now() }]);
+                    });
                     if (addToast) addToast('Weather snapshot saved.', 'success');
                   },
                   className: 'min-h-11 rounded-xl border px-3 py-2 text-xs font-black transition-colors focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:outline-none',
@@ -10487,6 +10503,7 @@ var geographyGroup = new THREE.Group();
                 'aria-controls': 'weather-panel-' + tab.id,
                 onClick: function () { update(tab.id === 'atmosphere' || tab.id === 'forecast' || tab.id === 'experiment' || tab.id === 'observations' ? { tab: tab.id, playing: false } : { tab: tab.id }); },
                 onKeyDown: function (event) {
+                  if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
                   var nextIndex = null;
                   if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (tabIndex + 1) % tabs.length;
                   if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (tabIndex - 1 + tabs.length) % tabs.length;

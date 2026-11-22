@@ -51,6 +51,7 @@
   var SUPPORTED = Object.freeze({ es: 1, fr: 1, de: 1, zh: 1, ar: 1, ru: 1, hi: 1, vi: 1, it: 1 });
 
   var _libPromise = null;          // memoized transformers.js module
+  var _libLoaded = false;          // true only after ESM import + pipeline verified
   var _pipes = Object.create(null); // pair key → memoized pipeline promise
 
   function stripCtl(s) {
@@ -61,8 +62,8 @@
     if (!lang || typeof lang !== 'string') return '';
     var s = lang.toLowerCase().trim().slice(0, 60);
     if (hasOwn.call(LANG_TO_CODE, s)) return LANG_TO_CODE[s];
-    var two = s.slice(0, 2);
-    return hasOwn.call(LANG_TO_CODE, two) ? LANG_TO_CODE[two] : '';
+    var m = s.match(/^([a-z]{2})(?:[-_]|$)/);
+    return m && hasOwn.call(LANG_TO_CODE, m[1]) ? LANG_TO_CODE[m[1]] : '';
   }
   // A pair is on-device-translatable when both map to a code, they differ, and
   // exactly one side is English with the other in the verified opus-mt set.
@@ -79,7 +80,10 @@
       return window._isDesktopBundledApp === true
         || window.__alloOfflineOnly === true
         || window.__alloQrStudentMode === true
-        || window._alloQrBlocked === true;
+        || window._alloQrBlocked === true
+        || window.__alloStudentAiDisabled === true
+        || window.ALLOFLOW_MANAGED_AI_POLICY != null
+        || (typeof navigator !== 'undefined' && navigator.onLine === false);
     } catch (_) { return true; }
   }
 
@@ -94,9 +98,10 @@
         var lib = m && (m.pipeline ? m : (m.default && m.default.pipeline ? m.default : null));
         if (!lib || typeof lib.pipeline !== 'function') throw new Error('transformers.js: no pipeline export');
         try { if (lib.env) { lib.env.allowLocalModels = false; lib.env.useBrowserCache = true; } } catch (_) {}
+        _libLoaded = true;
         return lib;
       }).catch(function () { return tryAt(i + 1); });
-    })(0).catch(function (e) { _libPromise = null; throw e; });
+    })(0).catch(function (e) { _libLoaded = false; _libPromise = null; throw e; });
     return _libPromise;
   }
 
@@ -110,7 +115,7 @@
   }
 
   window.AlloTranslate = Object.freeze({
-    ready: function () { return !!_libPromise; },
+    ready: function () { return _libLoaded; },
     /** Is there an on-device model for this language pair? */
     supports: function (fromLang, toLang) {
       return !!pairModel(codeOf(fromLang), codeOf(toLang));

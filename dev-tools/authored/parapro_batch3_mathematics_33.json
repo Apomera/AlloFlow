@@ -16,9 +16,9 @@
     "rationale": "The weekly total is found by addition: 1,375 + 948 = 2,323. Regrouping 13 ones, 12 tens, and 13 hundreds produces 2 thousands, 3 hundreds, 2 tens, and 3 ones.",
     "choiceRationales": [
       "This is correct because adding the two nonoverlapping attendance totals gives 1,375 + 948 = 2,323.",
-      "This result is 100 too small and reflects an error when regrouping the hundreds column.",
-      "This result is 100 too large and reflects adding an extra hundred during regrouping.",
-      "This is the difference between the totals, not the requested combined five-day total."
+      "Obtaining 2,223 leaves the sum 100 short because the hundred regrouped from adding 7 tens and 4 tens plus 1 ten was dropped.",
+      "Getting 2,423 overshoots the five-day total by 100, which happens when an extra hundred is carried into the hundreds column.",
+      "Calculating 427 subtracts 948 from 1,375 instead of combining the early-week and late-week breakfast counts across all five days."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -55,10 +55,10 @@
     "answerIndex": 1,
     "rationale": "Dividing the total mass equally gives 14.7 / 6 = 2.45 kilograms per table. Multiplying 2.45 by 6 returns 14.7, which verifies both the quotient and decimal placement.",
     "choiceRationales": [
-      "This quotient comes from mishandling the tenths during long division; 2.05 times 6 is only 12.3.",
+      "Recording 2.05 misplaces the tenths digit during long division; multiplying 2.05 by 6 yields only 12.3 kilograms rather than 14.7.",
       "This is correct because 14.7 divided into 6 equal shares gives 2.45 kilograms per share.",
-      "This subtracts 6 from 14.7 instead of partitioning the full amount into equal groups.",
-      "This multiplies 14.7 by 6, reversing the equal-sharing operation described in the question."
+      "Finding 8.7 subtracts the 6 art tables from 14.7 kilograms instead of splitting the clay into six equal portions.",
+      "Computing 88.2 multiplies 14.7 by 6, which reverses the division required to share a single container evenly among six tables."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -96,9 +96,9 @@
     "rationale": "Rewrite 2 1/4 as 2 3/12 and 5/6 as 10/12. Regrouping one whole gives 1 15/12 - 10/12 = 1 5/12 yards remaining on the roll.",
     "choiceRationales": [
       "This reverses the fractional subtraction, using 10/12 - 3/12, and reduces the whole-number part by one instead of regrouping correctly.",
-      "This treats the 5/6 yard used as a full yard and ignores the remaining fractional difference.",
+      "Leaving 1 1/4 yards treats the 5/6 yard cut off as if a full yard had been removed, overlooking the unused 1/6-yard difference.",
       "This is correct because 2 1/4 - 5/6 becomes 1 15/12 - 10/12 = 1 5/12.",
-      "This adds the used amount to the original length instead of subtracting it: 2 1/4 + 5/6 = 3 1/12."
+      "Getting 3 1/12 yards combines 2 1/4 and 5/6 through addition rather than subtracting the ribbon already cut from the roll."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -135,9 +135,9 @@
     "answerIndex": 3,
     "rationale": "Each bundle contains 36 / 12 = 3 red pencils and 48 / 12 = 4 blue pencils. Therefore, each bundle contains 3 + 4 = 7 pencils altogether.",
     "choiceRationales": [
-      "This is the number of red pencils in each bundle but omits the blue pencils.",
-      "This is the number of blue pencils in each bundle but omits the red pencils.",
-      "This doubles the 3 red pencils in a bundle instead of adding the 4 blue pencils.",
+      "Dividing 36 by 12 gives 3 red pencils per bundle, but this partial result leaves out the blue pencils packed alongside them.",
+      "Dividing 48 by 12 produces 4 blue pencils per bundle, omitting the 3 red pencils that also belong in every supply bundle.",
+      "Doubling the 3 red pencils per bundle gives 6, overlooking that each bundle receives 4 blue pencils rather than a second set of 3.",
       "This is correct because each bundle has 3 red pencils and 4 blue pencils, for 7 pencils altogether."
     ],
     "skillIds": [
@@ -175,10 +175,10 @@
     "answerIndex": 2,
     "rationale": "If 42 is 60% of the total T, then 0.60T = 42. Dividing by 0.60 gives T = 70; checking shows that 60% of 70 is 42.",
     "choiceRationales": [
-      "This is approximately 60% of 42, but the question gives the part and asks for the larger whole.",
-      "This treats the percentage value 60 as though it were the number of enrolled students.",
+      "Rounding 60% of 42 to 25 treats 42 as the entire enrollment rather than recognizing it as the 60% subset of a larger group.",
+      "Choosing 60 confuses the stated percentage rate with the headcount of students enrolled in the after-school program.",
       "This is correct because 42 / 0.60 = 70 and 0.60 times 70 equals 42.",
-      "This adds 60 to 42 even though a percent must be expressed as a proportional relationship."
+      "Adding 60 and 42 to reach 102 treats a percentage as an additive quantity rather than solving the proportional equation 0.60T = 42."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -216,9 +216,9 @@
     "rationale": "The total drop is 2 x 4 = 8 degrees Celsius. Starting at 3 degrees Celsius gives 3 - 8 = -5 degrees Celsius.",
     "choiceRationales": [
       "This is correct because two 4-degree drops total 8 degrees, and 3 - 8 = -5.",
-      "This applies only one of the two 4-degree drops: 3 - 4 = -1.",
-      "This adds the 2 hours to the starting temperature instead of applying the hourly drop.",
-      "This adds the total 8-degree change to 3, treating a drop as an increase."
+      "Subtracting 4 only once gives -1 degrees Celsius, accounting for just the first hour's cooling instead of both hours.",
+      "Reaching 5 degrees adds the elapsed 2 hours to the starting temperature of 3 instead of applying two 4-degree decreases.",
+      "Computing 11 adds the 8-degree total change onto 3 degrees, reversing the downward direction of a temperature drop."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -255,9 +255,9 @@
     "answerIndex": 3,
     "rationale": "Expressing all values as decimals gives 0.620, 0.625, 0.630, and 0.700. Therefore, the ascending order is 0.62, 5/8, 63%, and 0.7.",
     "choiceRationales": [
-      "This incorrectly places 0.625 before 0.620; comparing thousandths shows 0.620 is smaller.",
-      "This incorrectly places 0.630 before 0.625; 63% is slightly greater than 5/8.",
-      "This lists the values from greatest to least rather than from least to greatest.",
+      "Listing 5/8 before 0.62 reverses their order because 5/8 equals 0.625, which is five thousandths greater than 0.620.",
+      "Placing 63% ahead of 5/8 puts 0.630 before 0.625, overlooking that 63% is five thousandths greater than the fraction 5/8.",
+      "Starting with 0.7 and ending with 0.62 arranges the four numbers from greatest to least instead of ascending order.",
       "This is correct because the equivalent decimals increase as 0.620, 0.625, 0.630, and 0.700."
     ],
     "skillIds": [
@@ -295,7 +295,7 @@
     "answerIndex": 1,
     "rationale": "The map length 12.5 centimeters is 2.5 times 5 centimeters. Multiplying the corresponding actual distance by the same factor gives 18 x 2.5 = 45 kilometers.",
     "choiceRationales": [
-      "This divides 18 by the scale factor 2.5 instead of multiplying the actual distance by 2.5.",
+      "Dividing 18 kilometers by the scale ratio 2.5 gives 7.2, shrinking the real distance instead of scaling it up to match 12.5 centimeters.",
       "This is correct because 12.5 / 5 = 2.5 and 18 times 2.5 equals 45 kilometers.",
       "This adds 12.5 and 18 even though the quantities use different units and must be related by a scale factor.",
       "This multiplies 18 by 5 and ignores that 12.5 centimeters is 2.5, not 5, times the given map length."
@@ -336,7 +336,7 @@
     "rationale": "In 4^3, 4 is the base and 3 is the exponent. The exponent tells how many times the base is used as a factor, so 4^3 = 4 x 4 x 4 = 64. The proposed repeated addition equals 12 and does not represent the power.",
     "choiceRationales": [
       "Adding three copies of 4 gives 12, but an exponent represents repeated multiplication rather than repeated addition.",
-      "This repeats the exponent as the factor and ignores that 4, not 3, is the base of the power.",
+      "Writing 3 x 3 x 3 swaps the roles of the two numbers, mistakenly using the exponent as the repeated factor instead of the base 4.",
       "This is correct because the exponent 3 directs the student to use the base 4 as a factor three times.",
       "Multiplying 4 by 3 gives 12, but the exponent does not mean multiply the base and exponent together."
     ],
@@ -376,8 +376,8 @@
     "rationale": "The fixed registration fee contributes $12 once, while the hourly charge contributes $4.50 for each of h hours. Combining those parts gives 12 + 4.5h.",
     "choiceRationales": [
       "This adds the two rates and then charges the registration fee once per hour, which is not described.",
-      "This multiplies the one-time $12 fee by the hours and treats $4.50 as a fixed charge.",
-      "This distributes to 4.5h + 54, incorrectly multiplying the registration fee by 4.5.",
+      "Writing 12h + 4.5 attaches the hour variable to the one-time $12 registration fee while treating the $4.50 hourly rate as flat.",
+      "Distributing 4.5(h + 12) yields 4.5h + 54, which wrongly multiplies the fixed $12 registration fee by the hourly charge.",
       "This is correct because it adds the fixed $12 fee to $4.50 multiplied by the number of hours."
     ],
     "skillIds": [
@@ -416,9 +416,9 @@
     "rationale": "Multiplying both sides of y / 5 = 1.8 by 5 gives y = 1.8 x 5 = 9. Substitution verifies that 9 / 5 = 1.8.",
     "choiceRationales": [
       "This is correct because multiplying 1.8 by 5 gives 9, and 9 / 5 = 1.8.",
-      "This divides 1.8 by 5, applying division again instead of undoing it.",
-      "This subtracts 1.8 from 5, which is not the inverse operation needed to isolate y.",
-      "This adds 5 to 1.8 rather than multiplying by 5."
+      "Calculating 0.36 divides 1.8 by 5 a second time instead of using multiplication as the inverse operation to isolate y.",
+      "Subtracting 1.8 from 5 gives 3.2, applying subtraction rather than undoing the division by 5 shown on the left side.",
+      "Adding 5 to 1.8 yields 6.8, which treats the equation as subtraction instead of multiplying 1.8 by 5 to undo division."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -455,10 +455,10 @@
     "answerIndex": 1,
     "rationale": "Each term is 7 less than the preceding term: 48 - 7 = 41, 41 - 7 = 34, and 34 - 7 = 27. Therefore, the next term is 27 - 7 = 20.",
     "choiceRationales": [
-      "This subtracts 6 even though every displayed consecutive difference is -7.",
+      "Stepping down by 6 to get 21 breaks the sequence rule, since every prior pair in the list decreases by exactly 7.",
       "This is correct because continuing the repeated subtraction of 7 gives 27 - 7 = 20.",
-      "This subtracts 8 instead of continuing the established difference of -7.",
-      "This subtracts 13 and does not continue the constant-difference pattern."
+      "Subtracting 8 from 27 produces 19, dropping one unit too far instead of keeping the steady constant difference of -7.",
+      "Jumping from 27 down to 14 subtracts 13 rather than extending the consistent 7-unit decline between neighboring terms."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -495,10 +495,10 @@
     "answerIndex": 2,
     "rationale": "The phrase no more than 20 means that 20 is the greatest allowed value and is included. Therefore, the number of books must satisfy b <= 20.",
     "choiceRationales": [
-      "This represents more than 20 books, which exceeds the cart's limit.",
-      "This represents at least 20 books and allows values above 20, which the cart cannot hold.",
+      "Writing b > 20 requires strictly more than 20 books, describing loads that go over the cart's maximum capacity.",
+      "Using b >= 20 permits 20 or any larger count, which includes overloaded stacks exceeding the cart's 20-book ceiling.",
       "This is correct because it includes 20 and every smaller permissible number of books.",
-      "This excludes exactly 20 books even though the cart can hold 20."
+      "Selecting b < 20 excludes a full cart of exactly 20 books, even though the phrase \"no more than 20\" permits 20 itself."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -536,9 +536,9 @@
     "rationale": "Circumference is pi times diameter. Substituting the given values gives (22/7)(14) = 44 feet; the factor of 14 cancels with the denominator 7 to leave 22 times 2.",
     "choiceRationales": [
       "This is correct because circumference equals pi times diameter, and (22/7) times 14 equals 44.",
-      "This uses the radius 7 in the circumference formula without including the required factor of 2.",
-      "This is the circle area, (22/7)(7 squared) = 154 square feet, rather than its circumference.",
-      "This squares the diameter and omits pi, confusing a linear circumference with an area-style calculation."
+      "Multiplying 22/7 by the radius 7 gives 22 feet, leaving out the factor of 2 required when using radius instead of diameter.",
+      "Computing (22/7)(7^2) produces 154 square feet, which measures the circle's interior area rather than the distance around its edge.",
+      "Squaring the 14-foot diameter to get 196 drops pi altogether and performs a square-area product instead of a circumference calculation."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -575,8 +575,8 @@
     "answerIndex": 3,
     "rationale": "The full rectangle has area 12 x 9 = 108 square feet. The missing corner has area 4 x 3 = 12 square feet, so the L-shaped area is 108 - 12 = 96 square feet.",
     "choiceRationales": [
-      "This subtracts 24 square feet, doubling the area of the 4-by-3 missing corner.",
-      "This is the area of the entire bounding rectangle and does not remove the cutout.",
+      "Arriving at 84 square feet subtracts 24 instead of 12, mistakenly deducting twice the area of the missing 4-by-3 corner.",
+      "Reporting 108 square feet measures the full 12-by-9 outer rectangle without subtracting the 12-square-foot corner that was removed.",
       "This multiplies the reduced width, 12 - 4 = 8, by the full height 9, removing a 4-by-9 strip rather than only the 4-by-3 corner.",
       "This is correct because the 12-square-foot corner is removed from the 108-square-foot outer rectangle."
     ],
@@ -615,10 +615,10 @@
     "answerIndex": 1,
     "rationale": "The x-coordinate records the day number, 3, and the y-coordinate records the number of books, 5. Therefore, the data point is (3, 5).",
     "choiceRationales": [
-      "This uses a negative day number even though the observation is for day 3.",
+      "Plotting (-3, 5) assigns a negative value to the horizontal day axis even though the observation took place on positive day 3.",
       "This is correct because the ordered pair places the day value first and the books-read value second.",
-      "This reverses the meanings of the axes by placing books read before the day number.",
-      "This uses a negative number of books even though the student read 5 books."
+      "Choosing (5, 3) swaps the two coordinates, placing the 5 books read on the day axis and day 3 on the books axis.",
+      "Graphing (3, -5) records a negative book count on the vertical axis despite the student having read 5 books that day."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -656,7 +656,7 @@
     "rationale": "An isosceles triangle has at least two congruent sides. This triangle has two sides of length 5 centimeters, so it is isosceles.",
     "choiceRationales": [
       "A longest side by itself does not establish a right angle, and the stated side lengths instead show a pair of equal sides.",
-      "The side lengths are not all different because two sides are each 5 centimeters long.",
+      "Calling the figure scalene requires all three sides to have distinct lengths, which fails because two sides each measure 5 centimeters.",
       "This is correct because two sides have the same length, which defines an isosceles triangle.",
       "The three sides are not all equal because the 8-centimeter side differs from the two 5-centimeter sides."
     ],
@@ -695,9 +695,9 @@
     "answerIndex": 3,
     "rationale": "Each square face has area 4 x 4 = 16 square centimeters. A cube has 6 congruent faces, so its total surface area is 6 x 16 = 96 square centimeters.",
     "choiceRationales": [
-      "This is the area of one face only and does not account for all six faces of the cube.",
-      "This is the cube's volume, 4 cubed, and uses cubic reasoning instead of surface area.",
-      "This counts five square faces rather than all six faces on the closed display case.",
+      "Finding 16 square centimeters computes the area of only a single 4-by-4 square face rather than summing all six exterior faces.",
+      "Cubing the edge length to obtain 64 calculates the display case's interior volume in cubic units instead of its outer surface area.",
+      "Multiplying 16 by 5 yields 80 square centimeters, counting just five faces and omitting the sixth face of the closed cube.",
       "This is correct because six faces of 16 square centimeters each have total area 96 square centimeters."
     ],
     "skillIds": [
@@ -735,10 +735,10 @@
     "answerIndex": 1,
     "rationale": "The mode is the value that occurs most often. Seven appears three times, more frequently than 5, which appears twice, or any of the other values, which each appear once.",
     "choiceRationales": [
-      "Five occurs twice, but 7 occurs three times and therefore has the greatest frequency.",
+      "Selecting 5 identifies a value that repeats twice, yet 7 shows up three times and therefore occurs more often than any other count.",
       "This is correct because 7 appears more often than every other value in the data set.",
-      "Six is near the center of the ordered data but occurs only once, so it is not the mode.",
-      "This is the arithmetic mean of the eight values, not the value occurring most often."
+      "Picking 6 highlights a number near the middle of the sorted list, but 6 appears only once and cannot be the most frequent value.",
+      "Reporting 6.125 calculates the average of all eight checkouts rather than identifying which single value appears most frequently."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -776,9 +776,9 @@
     "rationale": "With six ordered values, the median is the mean of the third and fourth values. Those values are 8 and 10, so the median is (8 + 10) / 2 = 9 minutes.",
     "choiceRationales": [
       "This is correct because 9 is halfway between the two middle values, 8 and 10.",
-      "This selects only the lower of the two middle values instead of averaging both middle values.",
-      "This selects only the upper of the two middle values instead of averaging both middle values.",
-      "This is the sum of all six values, not the median."
+      "Choosing 8 minutes stops at the lower middle observation instead of averaging the third and fourth readings in an even-sized data set.",
+      "Picking 10 minutes reports only the upper middle observation rather than finding the midpoint between 8 and 10.",
+      "Summing all six reading durations gives 54 minutes, which is the combined total rather than the middle measure of center."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -815,10 +815,10 @@
     "answerIndex": 2,
     "rationale": "The number of visits rises from 18 to 23, remains at 23, and then rises to 29. Thus, visits increase overall but do not change from Week 2 to Week 3.",
     "choiceRationales": [
-      "The values never decrease; they rise, remain level once, and rise again.",
-      "Only Weeks 2 and 3 have 23 visits; Weeks 1 and 4 have different values.",
+      "Claiming a weekly drop contradicts the table, because visits never go down; they climb from 18 to 23, hold steady, and climb to 29.",
+      "Stating visits stayed at 23 across all four weeks overlooks the lower start of 18 in Week 1 and the rise to 29 in Week 4.",
       "This is correct because the total rises from 18 to 29 while Weeks 2 and 3 are equal.",
-      "The changes are +5, 0, and +6, so the weekly increase is not constant."
+      "Describing an identical increase every week ignores the actual weekly changes of +5, 0, and +6, which are clearly not uniform."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -855,10 +855,10 @@
     "answerIndex": 1,
     "rationale": "A mean of 18 for five scores requires a total of 5 x 18 = 90. The four known scores total 72, so the missing score is 90 - 72 = 18.",
     "choiceRationales": [
-      "Using 16 would produce a total of 88 and a mean of 17.6 rather than the stated mean of 18.",
+      "Substituting 16 as the fifth score brings the five-score sum to only 88, producing an average of 17.6 instead of the required 18.",
       "This is correct because the required total 90 minus the known-score total 72 equals 18.",
-      "Using 20 would produce a total of 92 and a mean of 18.4, which is too high.",
-      "This results from subtracting only part of the known total and would make the overall mean 18.8."
+      "Trying 20 lifts the five-score total to 92 and pushes the mean up to 18.4, which exceeds the given average of 18.",
+      "Choosing 22 creates a combined total of 94 and an overall mean of 18.8, reflecting an incomplete subtraction of the four known scores."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -890,7 +890,7 @@
       "Tell the student to place 3.6 above 0.48 so the final digits always line up, then try again.",
       "Have the student add 36 and 48 and place the decimal point two places from the right.",
       "Ask the student to round both of the addends to whole numbers and then use that estimate as the exact answer.",
-      "Use a place-value chart to rewrite 3.6 as 3.60, align equal place values, and show that the sum is 4.08."
+      "Use a tenths-and-hundredths chart to write 3.6 as 3.60, align matching columns, and show the sum is 4.08."
     ],
     "answerIndex": 3,
     "rationale": "Rewriting 3.6 as 3.60 makes the ones, tenths, and hundredths explicit. Aligning equal place values then produces 3.60 + 0.48 = 4.08 and directly corrects the student's misconception.",
@@ -969,13 +969,13 @@
     "choices": [
       "Tell the student that 2(n - 7) and 2n - 7 are equivalent because both contain 2, n, and 7.",
       "Replace n with 7 only, note that the two expressions give different values, and then simply stop the discussion at that point.",
-      "Use n = 10 to act out twice the number and then subtract 7, compare 13 with 2(10 - 7) = 6, and connect the actions to 2n - 7.",
+      "Use n = 10 to double the input before subtracting 7, compare 13 with 2(10 - 7) = 6, and connect those steps to 2n - 7.",
       "Ask the student to copy the expression 2n - 7 several times until the wording is memorized."
     ],
     "answerIndex": 2,
     "rationale": "Using a concrete input exposes the grouping difference: twice 10 and then 7 less is 20 - 7 = 13, while doubling the quantity after decreasing it gives 2(3) = 6. The enacted order supports 2n - 7.",
     "choiceRationales": [
-      "The expressions are not equivalent; distributing shows that 2(n - 7) equals 2n - 14.",
+      "Sharing the same symbols 2, n, and 7 does not make two expressions equal; distributing 2(n - 7) yields 2n - 14 rather than 2n - 7.",
       "A single substitution reveals a difference but does not connect the language, operation order, and grouping to the correct expression.",
       "This is correct because the acted sequence and contrasting values make the location of the subtraction and grouping explicit.",
       "Copying a rule provides no conceptual explanation and is unlikely to correct the student's interpretation of the phrase."
@@ -1016,7 +1016,7 @@
     "rationale": "The consecutive differences are all 5: 9 - 4 = 5, 14 - 9 = 5, and 19 - 14 = 5. Making those differences explicit helps the student continue the pattern accurately to 19 + 5 = 24.",
     "choiceRationales": [
       "The differences can be calculated exactly, and an increase of 4 does not match any consecutive pair.",
-      "Providing the answer without examining the pattern does not address the student's inaccurate difference.",
+      "Simply stating 24 and moving on corrects one answer on paper without helping the learner inspect the constant +5 increase between terms.",
       "A mean summarizes the displayed values but does not determine the next term in this constant-difference sequence.",
       "This is correct because checking every consecutive difference establishes the exact repeated rule and gives 24."
     ],
@@ -1057,7 +1057,7 @@
     "choiceRationales": [
       "This is correct because it holds perimeter constant while producing two different areas, directly disproving the claim.",
       "Congruent rectangles confirm only that identical dimensions yield identical measures and do not test the student's generalization.",
-      "Repeating one perimeter calculation offers no comparison of different rectangles or evidence about their areas.",
+      "Recomputing the perimeter of a single shape checks arithmetic consistency but never compares two distinct rectangles with equal perimeters and unequal areas.",
       "Perimeter measures boundary length and area measures surface coverage, so they need not change in the same way."
     ],
     "skillIds": [
@@ -1129,7 +1129,7 @@
     "choices": [
       "Have the student add all four side lengths and label the result square centimeters.",
       "Tell the student that the area is 40 square centimeters without discussing which measurements determine it.",
-      "Cut a triangular piece from one side and shift it to form an 8-by-5 rectangle, connecting the rearrangement to base times perpendicular height.",
+      "Cut a triangular end off and slide it to form an 8-by-5 rectangle, linking the transformed shape to bottom length times vertical altitude.",
       "Ask the student to multiply all three of the given measurements together, because using more dimensions makes any area result far more accurate."
     ],
     "answerIndex": 2,

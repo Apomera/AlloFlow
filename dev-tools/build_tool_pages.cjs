@@ -133,6 +133,7 @@ function render(tool) {
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(tool.desc)}">
@@ -148,6 +149,7 @@ function render(tool) {
 <meta name="twitter:description" content="${esc(tool.desc)}">
 <link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="tool-page.css">
+<script src="tool-page.js" defer></script>
 <script type="application/ld+json">${JSON.stringify(ld, null, 1)}</script>
 </head>
 <body>
@@ -163,7 +165,7 @@ function render(tool) {
         </div>
     </div>
 </nav>
-<main id="tool-main" class="tool-page">
+<main id="tool-main" tabindex="-1" class="tool-page">
     <nav class="tool-page-crumbs" aria-label="Breadcrumb">
         <ol>
             <li><a href="./">AlloFlow</a></li>

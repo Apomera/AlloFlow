@@ -852,29 +852,30 @@ function PdfDiffViewer(props) {
                   >
                     <button type="button"
                       onClick={() => setRangeRejected(diffSelection.firstId, diffSelection.lastId, true)}
-                      className="px-2 py-1 rounded bg-rose-600 hover:bg-rose-700 font-bold"
+                      className="min-h-11 px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-700 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                     >{t('diff_view.reject_selection') || 'Reject selection'}</button>
                     <button type="button"
                       onClick={() => setRangeRejected(diffSelection.firstId, diffSelection.lastId, false)}
-                      className="px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-700 font-bold"
+                      className="min-h-11 px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                     >{t('diff_view.keep_selection') || 'Keep selection'}</button>
                     <button type="button"
                       onClick={_refineSelection}
                       disabled={applyingRemarkup}
-                      className="px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-700 font-bold disabled:opacity-50"
+                      aria-busy={applyingRemarkup ? 'true' : undefined}
+                      className="min-h-11 px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 font-bold disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                       title={t('diff_view.refine_title') || 'Rewrite ONLY this selection with AI — precise, reviewable, revertible'}
                     >{applyingRemarkup ? '…' : (t('diff_view.refine_selection') || '✨ Refine with AI')}</button>
                     <button type="button"
                       onClick={() => setDiffSelection(null)}
-                      className="px-1.5 py-1 rounded hover:bg-slate-700"
+                      className="min-w-11 min-h-11 inline-flex items-center justify-center px-1.5 py-1 rounded hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                       aria-label={t('diff_view.dismiss_toolbar_aria') || 'Dismiss toolbar'}
-                    >✕</button>
+                    ><span aria-hidden="true">✕</span></button>
                   </div>
                 )}
               </div>
-              <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 text-xs text-slate-600 flex items-center gap-3 flex-wrap">
-                <span>📚 jsdiff@5.2.0</span>
-                <span className="text-slate-600">·</span>
+              <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 text-xs text-slate-700 flex items-center gap-3 flex-wrap">
+                <span><span aria-hidden="true">📚 </span>jsdiff@5.2.0</span>
+                <span className="text-slate-600" aria-hidden="true">·</span>
                 <span>{t('diff_view.footer_help') || 'Click spans or drag-select to edit. Pairs toggle together.'}</span>
                 {/* Revert button — only rendered when there's a snapshot
                     to restore (i.e., the user has previously clicked Apply
@@ -884,20 +885,21 @@ function PdfDiffViewer(props) {
                   <button type="button"
                     onClick={_revertLastApply}
                     disabled={applyingRemarkup}
-                    className="ml-auto px-3 py-1.5 bg-white border border-slate-400 hover:bg-slate-100 disabled:opacity-60 text-slate-700 rounded-md font-bold inline-flex items-center gap-1.5"
+                    className="ml-auto min-h-11 px-3 py-1.5 bg-white border border-slate-400 hover:bg-slate-100 disabled:opacity-60 text-slate-800 rounded-md font-bold inline-flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700"
                     title={t('diff_view.revert_tooltip') || 'Restore the accessible HTML to the state before your last Apply & Export'}
                   >
-                    ↶ {dvText('revert_button', 'Revert last Apply')}
+                    <span aria-hidden="true">↶ </span>{dvText('revert_button', 'Revert last Apply')}
                   </button>
                 )}
                 {_rejCount > 0 && (
                   <button type="button"
                     onClick={_applyAndExport}
                     disabled={applyingRemarkup}
-                    className={(_canRevert ? '' : 'ml-auto ') + 'px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-md font-bold inline-flex items-center gap-1.5 shadow'}
+                    aria-busy={applyingRemarkup ? 'true' : undefined}
+                    className={(_canRevert ? '' : 'ml-auto ') + 'min-h-11 px-3 py-1.5 bg-indigo-700 hover:bg-indigo-800 disabled:opacity-60 text-white rounded-md font-bold inline-flex items-center gap-1.5 shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-1'}
                     title={t('diff_view.apply_export_tooltip') || "Apply rejections via text surgery (preserves all markup, instant, no Gemini call). Falls back to Gemini round-trip only if surgery can't map some chunks."}
                   >
-                    {applyingRemarkup ? <><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {dvText('applying', 'Applying…')}</> : <>✓ {dvText('apply_export_button', 'Apply & Export ({count})', { count: _rejCount })}</>}
+                    {applyingRemarkup ? <><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> {dvText('applying', 'Applying…')}</> : <><span aria-hidden="true">✓ </span>{dvText('apply_export_button', 'Apply & Export ({count})', { count: _rejCount })}</>}
                   </button>
                 )}
               </div>
@@ -914,8 +916,8 @@ function PdfDiffViewer(props) {
                   <h3 id="allo-diff-confirm-title" className="text-lg font-black text-slate-900">{diffConfirmation.title}</h3>
                   <p id="allo-diff-confirm-message" className="mt-2 text-sm leading-relaxed text-slate-700">{diffConfirmation.message}</p>
                   <div className="mt-5 flex flex-wrap justify-end gap-2">
-                    <button ref={diffConfirmCancelRef} type="button" onClick={() => finishDiffConfirmation(false)} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50">{diffConfirmation.cancelLabel || 'Cancel'}</button>
-                    <button type="button" onClick={() => finishDiffConfirmation(true)} className="rounded-lg bg-amber-700 px-4 py-2 text-sm font-bold text-white hover:bg-amber-800">{diffConfirmation.confirmLabel || 'Continue'}</button>
+                    <button ref={diffConfirmCancelRef} type="button" onClick={() => finishDiffConfirmation(false)} className="min-h-11 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700">{diffConfirmation.cancelLabel || 'Cancel'}</button>
+                    <button type="button" onClick={() => finishDiffConfirmation(true)} className="min-h-11 rounded-lg bg-amber-700 px-4 py-2 text-sm font-bold text-white hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-800 focus-visible:ring-offset-1">{diffConfirmation.confirmLabel || 'Continue'}</button>
                   </div>
                 </div>
               </div>
@@ -1095,45 +1097,52 @@ function GroupSessionModal(props) {
             <div ref={groupDialogRef} tabIndex={-1} onKeyDown={containGroupFocus} className="bg-white rounded-2xl shadow-2xl w-[95vw] h-[90vh] relative animate-in motion-reduce:animate-none zoom-in-95 duration-200 flex flex-col overflow-hidden" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="group-session-title" aria-describedby="group-session-description">
                 <div className="flex flex-wrap items-center justify-between gap-3 p-5 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-indigo-50 flex-shrink-0">
                     <div className="flex items-center gap-4">
-                        <div className="bg-purple-600 p-3 rounded-xl shadow-md">
-                            <Users size={28} className="text-white" />
+                        <div className="bg-purple-600 p-3 rounded-xl shadow-md" aria-hidden="true">
+                            <Users size={28} className="text-white" aria-hidden="true" />
                         </div>
                         <div>
-                            <h2 id="group-session-title" className="text-2xl font-black text-slate-800">{t('groups.modal_title')}</h2>
-                            <p id="group-session-description" className="text-sm text-slate-600">{t('groups.modal_subtitle')}</p>
+                            <h2 id="group-session-title" className="text-2xl font-black text-slate-800">{t('groups.modal_title') || 'Group Session Manager'}</h2>
+                            <p id="group-session-description" className="text-sm text-slate-700">{t('groups.modal_subtitle') || 'Organize groups and assign resources'}</p>
                         </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
-                        <input aria-label={t('common.groups_new_group_placeholder')}
+                        <input aria-label={t('common.groups_new_group_placeholder') || 'New group name'}
                             type="text"
                             value={newGroupName}
                             onChange={(e) => setNewGroupName(e.target.value)}
-                            placeholder={t('groups.new_group_placeholder')}
+                            onKeyDown={(e) => {
+                                if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+                                if (e.key === 'Enter' && newGroupName.trim()) {
+                                    e.preventDefault();
+                                    handleCreateGroup();
+                                }
+                            }}
+                            placeholder={t('groups.new_group_placeholder') || 'New group name…'}
                             className="min-h-11 text-sm p-3 rounded-lg border border-slate-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none w-48"
                             data-help-key="group_create_input"
                         />
                         <button type="button"
-                            aria-label={t('common.add')}
+                            aria-label={t('common.add') || 'Add group'}
                             onClick={() => handleCreateGroup()}
                             disabled={!newGroupName.trim()}
-                            className="min-h-11 bg-purple-600 text-white px-5 py-3 rounded-lg text-sm font-bold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center gap-2"
+                            className="min-h-11 bg-purple-700 text-white px-5 py-3 rounded-lg text-sm font-bold hover:bg-purple-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-1 shadow-sm flex items-center gap-2"
                             data-help-key="group_create_button"
                         >
-                            <Plus size={18} /> {t('groups.add_button')}
+                            <Plus size={18} aria-hidden="true" /> {t('groups.add_button') || 'Add Group'}
                         </button>
                     </div>
-                    <button ref={groupCloseRef} type="button" onClick={handleSetShowGroupModalToFalse} className="min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-800 hover:bg-white/80 transition-colors" aria-label={t('common.close')}>
-                        <X size={24}/>
+                    <button ref={groupCloseRef} type="button" onClick={handleSetShowGroupModalToFalse} className="min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-700 hover:text-slate-900 hover:bg-white/80 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700" aria-label={t('common.close') || 'Close'}>
+                        <X size={24} aria-hidden="true"/>
                     </button>
                 </div>
                 <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 p-5 overflow-hidden">
                     <div className="lg:col-span-2 flex flex-col min-h-0" data-help-key="group_resource_library">
                         <div className="flex items-center gap-2 mb-3">
-                            <FileText size={16} className="text-indigo-600" />
-                            <h3 className="text-sm font-bold text-indigo-600 uppercase tracking-wider">{t('groups.resource_library')}</h3>
+                            <FileText size={16} className="text-indigo-600" aria-hidden="true" />
+                            <h3 className="text-sm font-bold text-indigo-700 uppercase tracking-wider">{t('groups.resource_library') || 'Resource Library'}</h3>
                             <span className="text-xs text-slate-600 ml-2">{gsText('resource_count', '({count} items)', { count: sessionData.resources?.length || 0 })}</span>
                             <span className="text-xs text-purple-700 ml-auto italic flex items-center gap-1">
-                                <GripVertical size={12} /> {t('groups.drag_to_reorder') || 'Drag or use Move earlier/later'}
+                                <GripVertical size={12} aria-hidden="true" /> {t('groups.drag_to_reorder') || 'Drag or use Move earlier/later'}
                             </span>
                         </div>
                         <div className="flex-1 bg-gradient-to-br from-indigo-50/80 to-purple-50/80 rounded-xl p-4 border border-indigo-100 overflow-y-auto custom-scrollbar">
@@ -1211,8 +1220,8 @@ function GroupSessionModal(props) {
                                                     </div>
                                                 )}
                                                 <div role="group" aria-label={gsText('reorder_aria', 'Reorder {title}', { title: res.title || (t('common.untitled') || 'Untitled') })} className="mt-2 grid grid-cols-2 gap-1">
-                                                    <button type="button" onClick={() => moveResourceBy(res.id, -1)} disabled={index === 0} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={gsText('move_earlier_aria', 'Move {title} earlier', { title: res.title || gsText('untitled_resource', 'resource') })}>← {gsText('move_earlier', 'Earlier')}</button>
-                                                    <button type="button" onClick={() => moveResourceBy(res.id, 1)} disabled={index === sessionData.resources.length - 1} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={gsText('move_later_aria', 'Move {title} later', { title: res.title || gsText('untitled_resource', 'resource') })}>{gsText('move_later', 'Later')} →</button>
+                                                    <button type="button" onClick={() => moveResourceBy(res.id, -1)} disabled={index === 0} className="min-h-11 rounded border border-slate-300 bg-white px-1.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 disabled:opacity-40" aria-label={gsText('move_earlier_aria', 'Move {title} earlier', { title: res.title || gsText('untitled_resource', 'resource') })}><span aria-hidden="true">← </span>{gsText('move_earlier', 'Earlier')}</button>
+                                                    <button type="button" onClick={() => moveResourceBy(res.id, 1)} disabled={index === sessionData.resources.length - 1} className="min-h-11 rounded border border-slate-300 bg-white px-1.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 disabled:opacity-40" aria-label={gsText('move_later_aria', 'Move {title} later', { title: res.title || gsText('untitled_resource', 'resource') })}>{gsText('move_later', 'Later')}<span aria-hidden="true"> →</span></button>
                                                 </div>
                                             </div>
                                         );
@@ -1227,12 +1236,12 @@ function GroupSessionModal(props) {
                     </div>
                     <div className="flex flex-col gap-5 min-h-0">
                         <div className="flex-1 flex flex-col min-h-0">
-                            <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <Layers size={14} /> {t('groups.active_groups')}
+                            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <Layers size={14} aria-hidden="true" /> {t('groups.active_groups') || 'Active Groups'}
                             </h3>
                             <div className="flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-1" data-help-key="group_active_list">
                                 {sessionData.groups && activeSessionGroups.map(([gid, group]) => (
-                                    <div key={gid} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow">
+                                    <div key={gid} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow motion-reduce:transition-none">
                                         <div className="flex justify-between items-center mb-3">
                                             <span className="font-bold text-slate-700">{group.name}</span>
                                             <button
@@ -1243,14 +1252,14 @@ function GroupSessionModal(props) {
                                                     handleDeleteGroup(gid);
                                                 }}
                                                 onBlur={() => { if (confirmDeleteGroupId === gid) setConfirmDeleteGroupId(''); }}
-                                                className={`min-w-11 min-h-11 inline-flex items-center justify-center px-2 py-1.5 rounded-lg text-xs font-bold transition-colors ${confirmDeleteGroupId === gid ? 'bg-red-600 text-white hover:bg-red-700' : 'text-red-800 hover:text-red-900 hover:bg-red-50'}`}
+                                                className={`min-w-11 min-h-11 inline-flex items-center justify-center px-2 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 ${confirmDeleteGroupId === gid ? 'bg-red-600 text-white hover:bg-red-700' : 'text-red-800 hover:text-red-900 hover:bg-red-50'}`}
                                                 aria-label={(confirmDeleteGroupId === gid ? 'Confirm delete' : (t('common.delete') || 'Delete')) + ': ' + (group.name || '')}
                                             >
                                                 {confirmDeleteGroupId === gid ? (t('common.confirm_delete') || 'Delete?') : <X size={16} aria-hidden="true"/>}
                                             </button>
                                         </div>
-                                        <label htmlFor={`group-resource-${gid}`} className="text-xs font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2">
-                                            {t('groups.assign_resource_label')}
+                                        <label htmlFor={`group-resource-${gid}`} className="text-xs font-bold text-slate-700 uppercase mb-1 block flex items-center gap-2">
+                                            {t('groups.assign_resource_label') || 'Assign Resource'}
                                             {isPushingResource[gid] === 'pushing' && (
                                                 <span role="status" aria-live="polite" className="flex items-center gap-1 text-xs text-purple-700 font-bold normal-case">
                                                     <RefreshCw size={11} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> {t('groups.pushing') || 'Pushing…'}
@@ -1266,9 +1275,9 @@ function GroupSessionModal(props) {
                                             value={group.resourceId || ""}
                                             onChange={(e) => handleSetGroupResource(gid, e.target.value || null)}
                                             disabled={isPushingResource[gid] === 'pushing'}
-                                            className="w-full text-sm p-2 rounded-lg border border-slate-400 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-purple-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full min-h-11 text-sm p-2 rounded-lg border border-slate-400 bg-slate-50 text-slate-700 focus:ring-2 focus:ring-purple-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            <option value="">{t('groups.assign_resource_placeholder')}</option>
+                                            <option value="">{t('groups.assign_resource_placeholder') || 'Select a resource…'}</option>
                                             {sessionData.resources && sessionData.resources.map(res => {
                                                 const icon = typeIcons[res.type] || typeIcons.default;
                                                 const desc = getResourceDescription(res);
@@ -1282,13 +1291,13 @@ function GroupSessionModal(props) {
                                     </div>
                                 ))}
                                 {(!sessionData.groups || Object.values(sessionData.groups).filter(g => g !== null).length === 0) && (
-                                    <div className="text-sm text-slate-600 italic text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">{t('groups.no_groups')}</div>
+                                    <div className="text-sm text-slate-600 italic text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">{t('groups.no_groups') || 'No groups yet'}</div>
                                 )}
                             </div>
                         </div>
                         <div className="flex-1 flex flex-col min-h-0">
-                            <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <UserCheck size={14} /> {t('groups.roster_assignment')}
+                            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <UserCheck size={14} aria-hidden="true" /> {t('groups.roster_assignment') || 'Roster Assignment'}
                             </h3>
                             <div className="flex-1 bg-slate-50 rounded-xl p-3 overflow-y-auto custom-scrollbar" data-help-key="group_roster_list">
                                  {sessionData.roster && Object.entries(sessionData.roster).length > 0 ? (
@@ -1296,7 +1305,8 @@ function GroupSessionModal(props) {
                                         {Object.entries(sessionData.roster).map(([uid, student]) => (
                                             <div key={uid} className="flex items-center justify-between gap-3 bg-white p-3 rounded-lg border border-slate-100">
                                                 <div className="flex items-center gap-2 overflow-hidden">
-                                                    <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${student.connected ? 'bg-green-500 animate-pulse motion-reduce:animate-none' : 'bg-slate-300'}`}></div>
+                                                    <div aria-hidden="true" className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${student.connected ? 'bg-green-500 animate-pulse motion-reduce:animate-none' : 'bg-slate-300'}`}></div>
+                                                    <span className="sr-only">{student.connected ? (t('groups.student_online') || 'Connected:') : (t('groups.student_offline') || 'Disconnected:')} </span>
                                                     <span className="truncate font-medium text-slate-700 text-sm" title={student.name}>{student.name}</span>
                                                 </div>
                                                 <select aria-label={(t('groups.assign_student_group_aria') || 'Assign group for') + ' ' + (student.name || 'student')}
@@ -1304,7 +1314,7 @@ function GroupSessionModal(props) {
                                                     onChange={(e) => handleAssignStudent(uid, e.target.value)}
                                                     className="min-h-11 text-xs p-2 rounded-lg border border-slate-400 bg-white focus:ring-2 focus:ring-purple-300 outline-none min-w-[100px]"
                                                 >
-                                                    <option value="">{t('groups.unassigned')}</option>
+                                                    <option value="">{t('groups.unassigned') || 'Unassigned'}</option>
                                                     {sessionData.groups && activeSessionGroups.map(([gid, group]) => (
                                                         <option key={gid} value={gid}>{group.name}</option>
                                                     ))}
@@ -1313,7 +1323,7 @@ function GroupSessionModal(props) {
                                         ))}
                                     </div>
                                  ) : (
-                                     <div className="flex items-center justify-center h-full text-sm text-slate-600 italic">{t('session.waiting_for_students')}</div>
+                                     <div className="flex items-center justify-center h-full text-sm text-slate-600 italic">{t('session.waiting_for_students') || 'Waiting for students to join…'}</div>
                                  )}
                             </div>
                         </div>
@@ -1322,9 +1332,9 @@ function GroupSessionModal(props) {
                 <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end flex-shrink-0">
                     <button type="button"
                         onClick={handleSetShowGroupModalToFalse}
-                        className="px-8 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-full transition-colors shadow-md flex items-center gap-2"
+                        className="min-h-11 px-8 py-3 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-2 shadow-md flex items-center gap-2"
                     >
-                        <Check size={18} /> {t('groups.done_button')}
+                        <Check size={18} aria-hidden="true" /> {t('groups.done_button') || 'Done'}
                     </button>
                 </div>
             </div>
@@ -1500,53 +1510,53 @@ function FluencyModePanel(props) {
                 ref={fluencyModalRef}
                 role="dialog"
                 aria-modal="true"
-                aria-label={t('fluency.tool_label')}
+                aria-label={t('fluency.tool_label') || 'Reading Fluency Check'}
                 className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl relative border-4 border-rose-200 overflow-hidden flex flex-col h-[80vh]"
                 data-help-key="fluency_mode_panel"
             >
                 <div className="bg-rose-50 p-4 border-b border-rose-100 flex justify-between items-center shrink-0">
                     <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center border border-rose-200 shadow-sm">
-                             {partnerMode ? <Users size={20} className="text-rose-700"/> : <Mic size={20} className="text-rose-700"/>}
+                         <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center border border-rose-200 shadow-sm" aria-hidden="true">
+                             {partnerMode ? <Users size={20} className="text-rose-700" aria-hidden="true"/> : <Mic size={20} className="text-rose-700" aria-hidden="true"/>}
                          </div>
                          <div>
-                             <h3 className="font-black text-lg text-slate-800 leading-tight">{t('fluency.title')}</h3>
-                             <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('fluency.instruction')}</p>
+                             <h3 className="font-black text-lg text-slate-800 leading-tight">{t('fluency.title') || 'Reading Fluency'}</h3>
+                             <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('fluency.instruction') || 'Read aloud to check accuracy and pace'}</p>
                          </div>
                     </div>
                     <div className="flex items-center gap-4">
                         {fluencyStatus === 'idle' && !partnerMode && (
                             <div className="flex items-center gap-2">
-                                <label className="text-xs font-bold text-slate-600">{t('fluency.time_limit')}</label>
-                                <select aria-label={t('common.selection')}
+                                <label className="text-xs font-bold text-slate-700">{t('fluency.time_limit') || 'Time limit'}</label>
+                                <select aria-label={t('fluency.time_limit') || 'Time limit'}
                                     value={fluencyTimeLimit}
                                     onChange={(e) => { setFluencyTimeLimit(parseInt(e.target.value)); setFluencyTimeRemaining(parseInt(e.target.value)); }}
-                                    className="text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
+                                    className="min-h-11 text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus:ring-2 focus:ring-rose-300"
                                     data-help-key="fluency_mode_time_limit"
                                 >
-                                    <option value={0}>{t('fluency.time_limit_none')}</option>
+                                    <option value={0}>{t('fluency.time_limit_none') || 'No time limit'}</option>
                                     {[30, 60, 90, 120].map(sec => (
                                         <option key={sec} value={sec}>{flText('time_limit_seconds', '{seconds} sec', { seconds: sec })}</option>
                                     ))}
                                 </select>
                                 {fluencyTimeLimit > 0 && (
-                                    <select aria-label={t('common.timer_display')}
+                                    <select aria-label={t('common.timer_display') || 'Timer display'}
                                         value={fluencyTimerVisibility}
                                         onChange={(e) => setFluencyTimerVisibility(e.target.value)}
-                                        className="text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-300 ml-1"
+                                        className="min-h-11 text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus:ring-2 focus:ring-rose-300 ml-1"
                                     >
-                                        <option value="visible">{t('math.timer_visible')}</option>
-                                        <option value="hidden">{t('math.timer_hidden')}</option>
+                                        <option value="visible">{t('math.timer_visible') || 'Visible'}</option>
+                                        <option value="hidden">{t('math.timer_hidden') || 'Hidden'}</option>
                                     </select>
                                 )}
                             </div>
                         )}
                         <button type="button"
                             onClick={() => { resetPartnerCheck(); setIsFluencyMode(false); setFluencyStatus('idle'); setFluencyTimeRemaining(fluencyTimeLimit); setIsReviewingFluency(false); setFluencyReviewDraft(null); }}
-                            className="p-1.5 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-                            aria-label={t('fluency.close_label')}
+                            className="min-w-11 min-h-11 inline-flex items-center justify-center p-1.5 rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-700"
+                            aria-label={t('fluency.close_label') || 'Close fluency check'}
                         >
-                            <X size={24} />
+                            <X size={24} aria-hidden="true" />
                         </button>
                     </div>
                 </div>
@@ -1592,18 +1602,18 @@ function FluencyModePanel(props) {
                                 </div>
                             </div>
                             {!hideBenchmarkForPartner && (<>
-                            <div className="flex justify-center gap-3 mb-4 items-center">
-                                <label className="text-xs font-bold text-slate-600 uppercase">{t('fluency.benchmark_title')}</label>
-                                <select aria-label={t('common.grade')} value={fluencyBenchmarkGrade} onChange={(e) => setFluencyBenchmarkGrade(e.target.value)} className="text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                                    {Object.keys(FLUENCY_BENCHMARKS).map(g => (<option key={g} value={g}>{t('fluency.grade_select')} {g}</option>))}
+                            <div className="flex flex-wrap justify-center gap-3 mb-4 items-center">
+                                <label className="text-xs font-bold text-slate-700 uppercase">{t('fluency.benchmark_title') || 'Benchmark'}</label>
+                                <select aria-label={t('common.grade') || 'Benchmark grade'} value={fluencyBenchmarkGrade} onChange={(e) => setFluencyBenchmarkGrade(e.target.value)} className="min-h-11 text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus:ring-2 focus:ring-indigo-300">
+                                    {Object.keys(FLUENCY_BENCHMARKS).map(g => (<option key={g} value={g}>{t('fluency.grade_select') || 'Grade'} {g}</option>))}
                                     <option value="custom">{t('fluency.custom_norms') || 'Custom (Manual)'}</option>
                                 </select>
-                                <select aria-label={t('common.season')} value={fluencyBenchmarkSeason} onChange={(e) => setFluencyBenchmarkSeason(e.target.value)} className="text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                                    <option value="fall">{t('fluency.season_fall')}</option>
-                                    <option value="winter">{t('fluency.season_winter')}</option>
-                                    <option value="spring">{t('fluency.season_spring')}</option>
+                                <select aria-label={t('common.season') || 'Benchmark season'} value={fluencyBenchmarkSeason} onChange={(e) => setFluencyBenchmarkSeason(e.target.value)} className="min-h-11 text-xs font-bold border border-slate-400 rounded-lg px-2 py-1 bg-white text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus:ring-2 focus:ring-indigo-300">
+                                    <option value="fall">{t('fluency.season_fall') || 'Fall'}</option>
+                                    <option value="winter">{t('fluency.season_winter') || 'Winter'}</option>
+                                    <option value="spring">{t('fluency.season_spring') || 'Spring'}</option>
                                 </select>
-                                <span className="text-xs text-slate-600">{t('fluency.benchmark_target')}: {benchmarkResult.target} WCPM</span>
+                                <span className="text-xs text-slate-700">{t('fluency.benchmark_target') || 'Target'}: {benchmarkResult.target} WCPM</span>
                             </div>
                             {fluencyBenchmarkGrade === 'custom' && (
                                 <div className="flex justify-center gap-3 mb-4 items-center animate-in motion-reduce:animate-none slide-in-from-top duration-200">
@@ -1688,15 +1698,23 @@ function FluencyModePanel(props) {
                                         return (
                                             <div key={key} className={`${tone.card} border rounded-xl p-3 text-center`}>
                                                 <div className={`text-2xl font-black ${tone.text}`}>{val}<span className="text-sm font-bold text-slate-600">/5</span></div>
-                                                <div className="text-xs font-bold text-slate-600 uppercase mb-1.5">{label}</div>
-                                                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                                                <div className="text-xs font-bold text-slate-700 uppercase mb-1.5">{label}</div>
+                                                <div
+                                                    role="progressbar"
+                                                    aria-label={label}
+                                                    aria-valuemin={0}
+                                                    aria-valuemax={5}
+                                                    aria-valuenow={val}
+                                                    aria-valuetext={`${label}: ${val} of 5`}
+                                                    className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden"
+                                                >
                                                     <div className={`h-full ${tone.bar} rounded-full transition-all motion-reduce:transition-none duration-500`} style={{ width: `${pct}%` }}></div>
                                                 </div>
                                             </div>
                                         );
                                     })}
                                     {Boolean(fluencyResult.prosody.note) && (
-                                        <div className="col-span-3 text-xs text-slate-600 italic text-center mt-1">{fluencyResult.prosody.note}</div>
+                                        <div className="col-span-3 text-xs text-slate-700 italic text-center mt-1">{fluencyResult.prosody.note}</div>
                                     )}
                                 </div>
                             )}
@@ -1704,31 +1722,31 @@ function FluencyModePanel(props) {
                             {fluencyResult.confidence && (
                                 <div className={`rounded-xl p-4 mb-4 border ${fluencyResult.confidence.overall >= 7 ? 'bg-green-50 border-green-200' : fluencyResult.confidence.overall >= 4 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
                                     <div className="flex items-center gap-3 mb-2">
-                                        <div className={`text-2xl font-black ${fluencyResult.confidence.overall >= 7 ? 'text-green-600' : fluencyResult.confidence.overall >= 4 ? 'text-amber-600' : 'text-red-600'}`}>
-                                            {fluencyResult.confidence.overall}<span className="text-sm opacity-60">/10</span>
+                                        <div className={`text-2xl font-black ${fluencyResult.confidence.overall >= 7 ? 'text-green-800' : fluencyResult.confidence.overall >= 4 ? 'text-amber-800' : 'text-red-800'}`}>
+                                            {fluencyResult.confidence.overall}<span className="text-sm opacity-75">/10</span>
                                         </div>
                                         <div>
-                                            <div className="text-xs font-bold text-slate-700">{t('fluency.ai_confidence_title') || 'AI Confidence in This Analysis'}</div>
-                                            <div className="text-xs text-slate-600">{fluencyResult.confidence.overall >= 7
+                                            <div className="text-xs font-bold text-slate-800">{t('fluency.ai_confidence_title') || 'AI Confidence in This Analysis'}</div>
+                                            <div className="text-xs text-slate-700">{fluencyResult.confidence.overall >= 7
                                                 ? flText('confidence_high', 'High confidence')
                                                 : fluencyResult.confidence.overall >= 4
                                                     ? flText('confidence_moderate', 'Moderate confidence — some results may be inaccurate')
                                                     : flText('confidence_low', 'Low confidence — human verification recommended')}</div>
                                         </div>
                                     </div>
-                                    <div className="flex gap-3 text-xs mb-2">
-                                        <span className="text-slate-600">🎙️ {flText('audio_label', 'Audio:')} {fluencyResult.confidence.audioQuality}/10</span>
-                                        <span className="text-slate-600">🗣️ {flText('clarity_label', 'Clarity:')} {fluencyResult.confidence.speakerClarity}/10</span>
-                                        {fluencyResult.confidence.accentDetected && <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">{t('fluency.accent_detected_badge') || 'Accent detected — scored conservatively'}</span>}
-                                        {fluencyResult.confidence.youngVoiceDetected && <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold">{t('fluency.young_voice_badge') || 'Young voice detected'}</span>}
-                                        {fluencyResult.confidence.dialectalPatternsDetected && <span className="bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold">{t('fluency.dialectal_patterns_badge') || 'Dialectal patterns respected'}</span>}
+                                    <div className="flex flex-wrap gap-3 text-xs mb-2">
+                                        <span className="text-slate-700"><span aria-hidden="true">🎙️ </span>{flText('audio_label', 'Audio:')} {fluencyResult.confidence.audioQuality}/10</span>
+                                        <span className="text-slate-700"><span aria-hidden="true">🗣️ </span>{flText('clarity_label', 'Clarity:')} {fluencyResult.confidence.speakerClarity}/10</span>
+                                        {fluencyResult.confidence.accentDetected && <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-bold">{t('fluency.accent_detected_badge') || 'Accent detected — scored conservatively'}</span>}
+                                        {fluencyResult.confidence.youngVoiceDetected && <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-bold">{t('fluency.young_voice_badge') || 'Young voice detected'}</span>}
+                                        {fluencyResult.confidence.dialectalPatternsDetected && <span className="bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full font-bold">{t('fluency.dialectal_patterns_badge') || 'Dialectal patterns respected'}</span>}
                                     </div>
                                     {fluencyResult.confidence.lowConfidenceWordCount > 0 && (
-                                        <div className="text-xs text-amber-700 font-medium">⚠ {flText('low_confidence_words', '{count} word(s) marked with low confidence — look for ⚠ in the word display below', { count: fluencyResult.confidence.lowConfidenceWordCount })}</div>
+                                        <div className="text-xs text-amber-800 font-medium"><span aria-hidden="true">⚠ </span>{flText('low_confidence_words', '{count} word(s) marked with low confidence — look for ⚠ in the word display below', { count: fluencyResult.confidence.lowConfidenceWordCount })}</div>
                                     )}
-                                    {fluencyResult.confidence.note && <div className="text-xs text-slate-600 mt-1 italic">{fluencyResult.confidence.note}</div>}
+                                    {fluencyResult.confidence.note && <div className="text-xs text-slate-700 mt-1 italic">{fluencyResult.confidence.note}</div>}
                                     {fluencyResult.confidence.limitationsApplied && fluencyResult.confidence.limitationsApplied !== 'none' && fluencyResult.confidence.limitationsApplied !== 'none detected' && (
-                                        <div className="text-xs text-slate-600 mt-1">{flText('research_basis', 'Research basis:')} {fluencyResult.confidence.limitationsApplied}</div>
+                                        <div className="text-xs text-slate-700 mt-1">{flText('research_basis', 'Research basis:')} {fluencyResult.confidence.limitationsApplied}</div>
                                     )}
                                 </div>
                             )}
@@ -1737,7 +1755,7 @@ function FluencyModePanel(props) {
                             {fluencyFeedback && (
                                 <div className="mb-6 animate-in motion-reduce:animate-none slide-in-from-bottom-2 fade-in">
                                     <div className="flex items-start gap-2 text-left bg-indigo-50 p-3 rounded-lg border border-indigo-100">
-                                        <div className="bg-indigo-100 p-1.5 rounded-full text-indigo-600 mt-0.5 shrink-0"><Sparkles size={14}/></div>
+                                        <div className="bg-indigo-100 p-1.5 rounded-full text-indigo-600 mt-0.5 shrink-0" aria-hidden="true"><Sparkles size={14} aria-hidden="true"/></div>
                                         <div className="text-sm text-indigo-900 leading-relaxed font-medium">
                                             {fluencyFeedback}
                                         </div>
@@ -1922,26 +1940,26 @@ function FluencyModePanel(props) {
                             <div className="mt-6 pt-4 border-t border-slate-100 flex justify-center gap-3 flex-wrap">
                                 <button type="button"
                                     onClick={() => generateFluencyScoreSheet(fluencyResult, typeof generatedContent?.data === 'string' ? generatedContent.data : '')}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors"
-                                    aria-label={t('common.print_score_sheet')}
+                                    className="min-h-11 flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700"
+                                    aria-label={t('common.print_score_sheet') || 'Print Score Sheet'}
                                     data-help-key="fluency_mode_print_score_sheet_btn"
                                 >
-                                    <FileText size={15} /> {t('common.print_score_sheet') || 'Print Score Sheet'}
+                                    <FileText size={15} aria-hidden="true" /> {t('common.print_score_sheet') || 'Print Score Sheet'}
                                 </button>
                                 <button type="button"
                                     onClick={exportFluencyCSV}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors"
-                                    aria-label={t('common.export_fluency_csv')}
+                                    className="min-h-11 flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
+                                    aria-label={t('common.export_fluency_csv') || 'Export Fluency CSV'}
                                     data-help-key="fluency_mode_export_csv_btn"
                                 >
-                                    <Download size={15} /> {t('common.export_fluency_csv') || 'Export Fluency CSV'}
+                                    <Download size={15} aria-hidden="true" /> {t('common.export_fluency_csv') || 'Export Fluency CSV'}
                                 </button>
                             </div>
                         </div>
                     ) : (
                         <div className="max-w-2xl w-full">
                              {recordingAvailable && fluencyStatus === 'idle' && partnerPhase === 'setup' && (
-                                <div role="group" aria-label={t('fluency.tool_label')} className="flex flex-wrap justify-center gap-2 mb-6">
+                                <div role="group" aria-label={t('fluency.tool_label') || 'Reading Fluency Check'} className="flex flex-wrap justify-center gap-2 mb-6">
                                     <button type="button" aria-pressed={!partnerMode} onClick={() => setFluencyMethod('record')} className={`min-h-11 inline-flex items-center gap-2 rounded-xl border-2 px-4 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-300 ${!partnerMode ? 'border-indigo-600 bg-indigo-50 text-indigo-900' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}>
                                         <Mic size={16} aria-hidden="true" /> {t('simplified.record_my_reading') || 'Record my reading'}
                                     </button>
@@ -2050,16 +2068,16 @@ function FluencyModePanel(props) {
                                     setFluencyStatus('idle');
                                     resetPartnerCheck();
                                 }}
-                                className="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
-                                aria-label={t('fluency.reset_label')}
+                                className="min-h-11 flex items-center gap-2 px-6 py-3 rounded-full font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700"
+                                aria-label={t('fluency.reset_label') || 'Try again'}
                             >
-                                <RefreshCw size={18} /> {t('fluency.try_again')}
+                                <RefreshCw size={18} aria-hidden="true" /> {t('fluency.try_again') || 'Try again'}
                             </button>
                         )}
                     </div>
                     ) : (<>
                     {fluencyStatus === 'listening' && fluencyTimeLimit > 0 && fluencyTimerVisibility === 'visible' && (
-                        <div className={`text-4xl font-black tabular-nums transition-colors ${
+                        <div className={`text-4xl font-black tabular-nums transition-colors motion-reduce:transition-none ${
                             fluencyTimeRemaining <= 10 ? 'text-red-600 animate-pulse motion-reduce:animate-none' :
                             fluencyTimeRemaining <= 30 ? 'text-amber-700' :
                             'text-indigo-600'
@@ -2067,15 +2085,15 @@ function FluencyModePanel(props) {
                             {Math.floor(fluencyTimeRemaining / 60)}:{(fluencyTimeRemaining % 60).toString().padStart(2, '0')}
                         </div>
                     )}
-                    <div className={`text-sm font-bold uppercase tracking-widest transition-colors ${
-                        fluencyStatus === 'listening' ? 'text-red-600' :
-                        fluencyStatus === 'processing' ? 'text-indigo-600 animate-pulse motion-reduce:animate-none' :
-                        'text-slate-600'
+                    <div role="status" aria-live="polite" className={`text-sm font-bold uppercase tracking-widest transition-colors motion-reduce:transition-none ${
+                        fluencyStatus === 'listening' ? 'text-red-700' :
+                        fluencyStatus === 'processing' ? 'text-indigo-700 animate-pulse motion-reduce:animate-none' :
+                        'text-slate-700'
                     }`}>
-                        {fluencyStatus === 'listening' ? t('fluency.listening') :
-                         fluencyStatus === 'processing' ? t('fluency.processing') :
-                         fluencyStatus === 'complete' ? t('fluency.complete') :
-                         t('fluency.prompt')}
+                        {fluencyStatus === 'listening' ? (t('fluency.listening') || 'Listening…') :
+                         fluencyStatus === 'processing' ? (t('fluency.processing') || 'Processing…') :
+                         fluencyStatus === 'complete' ? (t('fluency.complete') || 'Complete') :
+                         (t('fluency.prompt') || 'Press the button and read aloud')}
                     </div>
                     <div className="flex gap-4 items-center">
                         {fluencyStatus === 'complete' && (
@@ -2088,33 +2106,34 @@ function FluencyModePanel(props) {
                                     setFluencyFeedback('');
                                     setFluencyStatus('idle');
                                 }}
-                                className="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors animate-in motion-reduce:animate-none slide-in-from-right-4"
-                                aria-label={t('fluency.reset_label')}
+                                className="min-h-11 flex items-center gap-2 px-6 py-3 rounded-full font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 animate-in motion-reduce:animate-none slide-in-from-right-4"
+                                aria-label={t('fluency.reset_label') || 'Try again'}
                             >
-                                <RefreshCw size={18} /> {t('fluency.try_again')}
+                                <RefreshCw size={18} aria-hidden="true" /> {t('fluency.try_again') || 'Try again'}
                             </button>
                         )}
                         <button type="button"
                             onClick={toggleFluencyRecording}
                             disabled={fluencyStatus === 'processing'}
+                            aria-busy={fluencyStatus === 'processing' ? 'true' : undefined}
                             data-help-key="fluency_mode_record_btn"
-                            className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl transition-all transform border-4 ${
+                            className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl transition-all motion-reduce:transition-none transform motion-reduce:transform-none border-4 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500 ${
                                 fluencyStatus === 'listening'
                                 ? 'bg-red-700 text-white animate-pulse motion-reduce:animate-none border-red-200 shadow-red-500/30 hover:scale-105 active:scale-95'
                                 : fluencyStatus === 'complete'
-                                ? 'bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50 hover:scale-105 active:scale-95'
+                                ? 'bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50 hover:scale-105 active:scale-95'
                                 : fluencyStatus === 'processing'
-                                ? 'bg-slate-300 text-slate-600 border-slate-200 cursor-not-allowed'
-                                : 'bg-indigo-600 text-white hover:bg-indigo-700 border-indigo-100 shadow-indigo-500/30 hover:scale-105 active:scale-95'
+                                ? 'bg-slate-300 text-slate-700 border-slate-200 cursor-not-allowed'
+                                : 'bg-indigo-700 text-white hover:bg-indigo-800 border-indigo-100 shadow-indigo-500/30 hover:scale-105 active:scale-95'
                             }`}
                             aria-label={
-                                fluencyStatus === 'listening' ? t('fluency.stop_recording') :
-                                fluencyStatus === 'processing' ? t('fluency.processing') :
-                                t('fluency.start_recording')
+                                fluencyStatus === 'listening' ? (t('fluency.stop_recording') || 'Stop recording') :
+                                fluencyStatus === 'processing' ? (t('fluency.processing') || 'Processing recording') :
+                                (t('fluency.start_recording') || 'Start recording')
                             }
                         >
-                            {fluencyStatus === 'listening' ? <StopCircle size={32} className="fill-current"/> :
-                             fluencyStatus === 'processing' ? <RefreshCw size={32} className="animate-spin motion-reduce:animate-none"/> :
+                            {fluencyStatus === 'listening' ? <StopCircle size={32} className="fill-current" aria-hidden="true"/> :
+                             fluencyStatus === 'processing' ? <RefreshCw size={32} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> :
                              fluencyStatus === 'complete' ? <RefreshCw size={32}/> :
                              <Mic size={32} className="fill-current"/>}
                         </button>
@@ -2479,9 +2498,9 @@ function SourceDuplicateChoice({ info, onChoose, text }) {
     <p className="text-xs text-slate-700">{info.incoming.title || info.incoming.fileName}</p>
     <p className="text-xs text-slate-700">{info.identical ? text('input.my_sources_duplicate_identical', 'This file has the same contents as the saved document.') : text('input.my_sources_duplicate_different', 'This file has different contents. Choose how to save it.')}</p>
     <div className="flex flex-wrap gap-2">
-      <button type="button" onClick={() => onChoose('keep-both')} className="min-h-11 px-3 rounded border border-purple-500 font-bold text-purple-900">{text('input.my_sources_keep_both', 'Keep both')}</button>
-      <button type="button" onClick={() => onChoose('replace')} className="min-h-11 px-3 rounded border border-rose-500 font-bold text-rose-800">{text('input.my_sources_replace', 'Replace saved document')}</button>
-      <button type="button" onClick={() => onChoose('skip')} className="min-h-11 px-3 rounded border border-slate-400 text-slate-700">{text('input.my_sources_skip_duplicate', 'Skip this file')}</button>
+      <button type="button" onClick={() => onChoose('keep-both')} className="min-h-11 px-3 rounded border border-purple-500 font-bold text-purple-900 hover:bg-purple-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700">{text('input.my_sources_keep_both', 'Keep both')}</button>
+      <button type="button" onClick={() => onChoose('replace')} className="min-h-11 px-3 rounded border border-rose-500 font-bold text-rose-800 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-700">{text('input.my_sources_replace', 'Replace saved document')}</button>
+      <button type="button" onClick={() => onChoose('skip')} className="min-h-11 px-3 rounded border border-slate-400 text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700">{text('input.my_sources_skip_duplicate', 'Skip this file')}</button>
     </div>
   </div>;
 }
@@ -2553,10 +2572,10 @@ function SourceResearchDialog({ title, onClose, children, sourceText, busy, scro
   };
   const dialog = <div className="fixed inset-0 z-[10000] bg-black/40 flex items-center justify-center p-2 sm:p-4" onMouseDown={event => { if (event.target === event.currentTarget && !busy) onClose(); }}>
     <section ref={ref} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} onKeyDown={containFocus}
-      className="w-full max-w-2xl rounded-md bg-white text-slate-900 shadow-xl flex flex-col overflow-hidden outline-none" style={{ maxHeight: 'calc(100dvh - 2rem)' }}>
+      className="w-full max-w-2xl rounded-md bg-white text-slate-900 shadow-xl flex flex-col overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-purple-600" style={{ maxHeight: 'calc(100dvh - 2rem)' }}>
       <header className="flex items-center justify-between gap-3 px-4 py-2 border-b border-slate-200 shrink-0">
         <h2 className="font-bold text-base">{title}</h2>
-        <button type="button" disabled={busy} onClick={onClose} className="w-11 h-11 shrink-0 flex items-center justify-center rounded hover:bg-slate-100 disabled:opacity-50" title={sourceText('common.close', 'Close')} aria-label={sourceText('common.close', 'Close')}><X size={20} aria-hidden="true" /></button>
+        <button type="button" disabled={busy} onClick={onClose} className="w-11 h-11 shrink-0 flex items-center justify-center rounded hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 disabled:opacity-50" title={sourceText('common.close', 'Close')} aria-label={sourceText('common.close', 'Close')}><X size={20} aria-hidden="true" /></button>
       </header>
       <div className={scrollBody ? 'p-4 overflow-y-auto overscroll-contain space-y-4 min-h-0' : 'flex flex-col flex-1 min-h-0 overflow-hidden'}>{children}</div>
     </section>
@@ -4304,15 +4323,35 @@ function TourOverlay(props) {
                     </div>
                 ) : (
                     <>
-                        <div className="flex justify-between items-start shrink-0">
+                        <div className="flex justify-between items-start gap-2 shrink-0">
                             <h4 className="font-bold text-indigo-900 text-lg">{activeTourStep?.title || ''}</h4>
-                            <span data-tour-progress className="shrink-0 text-xs font-bold bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full">
+                            <span data-tour-progress className="shrink-0 text-xs font-bold bg-indigo-100 text-indigo-800 px-2.5 py-1 rounded-full">
                                 {tourProgress ? `${tourProgress.label} · ${tourProgress.current} / ${tourProgress.total}` : `${tourStep + 1} / ${(Array.isArray(tourSteps) ? tourSteps.length : 0)}`}
                             </span>
                         </div>
+                        {(() => {
+                            const totalSteps = tourProgress ? tourProgress.total : (Array.isArray(tourSteps) ? tourSteps.length : 0);
+                            const currentStepNum = tourProgress ? tourProgress.current : (tourStep + 1);
+                            if (totalSteps <= 1) return null;
+                            const pct = Math.min(100, Math.max(0, Math.round((currentStepNum / totalSteps) * 100)));
+                            return (
+                                <div
+                                    data-tour-progress-bar="true"
+                                    role="progressbar"
+                                    aria-label={t('tour.progress_aria') || 'Tour progress'}
+                                    aria-valuemin={1}
+                                    aria-valuemax={totalSteps}
+                                    aria-valuenow={currentStepNum}
+                                    aria-valuetext={`Step ${currentStepNum} of ${totalSteps} (${pct}%)`}
+                                    className="shrink-0 h-1.5 w-full rounded-full bg-indigo-100 overflow-hidden"
+                                >
+                                    <div className="h-full bg-indigo-600 transition-all motion-reduce:transition-none duration-200" style={{ width: `${pct}%` }} />
+                                </div>
+                            );
+                        })()}
                         {tourNavigator && (
                             <div data-tour-navigator className="shrink-0 flex flex-wrap items-center gap-2">
-                                <label htmlFor="allo-tour-jump" className="text-xs font-bold text-slate-600">{t('tour.jump_to') || 'Jump to'}</label>
+                                <label htmlFor="allo-tour-jump" className="text-xs font-bold text-slate-700">{t('tour.jump_to') || 'Jump to'}</label>
                                 <select
                                     id="allo-tour-jump"
                                     value={tourStep}
@@ -4329,7 +4368,7 @@ function TourOverlay(props) {
                                     data-tour-section-toggle
                                     aria-pressed={!!tourNavigator.activeSection}
                                     onClick={tourNavigator.onToggleSection}
-                                    className={`rounded-lg border px-3 text-xs font-bold ${tourNavigator.activeSection ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50'}`}
+                                    className={`min-h-11 rounded-lg border px-3 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 ${tourNavigator.activeSection ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-indigo-300 bg-white text-indigo-800 hover:bg-indigo-50'}`}
                                 >
                                     {t('tour.section_only') || 'Only this section'}
                                 </button>
@@ -4391,27 +4430,27 @@ function TourOverlay(props) {
                                 e.stopPropagation();
                                 closeTourOverlay();
                             }}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm w-full"
+                            className="min-h-11 bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 shadow-sm w-full"
                         >
-                            {t('common.close')}
+                            {t('common.close') || 'Close'}
                         </button>
                     ) : (
                         <>
-                            <button type="button" onClick={handleSetRunTourToFalse} className="text-xs font-bold text-slate-600 hover:text-slate-600">{t('tour.exit') || 'Exit tour'}</button>
+                            <button type="button" onClick={handleSetRunTourToFalse} className="min-h-11 px-2 -ml-2 rounded-lg text-xs font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700">{t('tour.exit') || 'Exit tour'}</button>
                             <div className="flex gap-2">
                                 <button type="button"
                                     aria-label={t('common.back') || 'Back'}
                                     onClick={handlePrevTourStep}
                                     disabled={!canGoBack}
-                                    className="text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-30"
+                                    className="min-h-11 text-slate-700 hover:text-indigo-700 hover:bg-indigo-50 px-3 py-2 rounded-lg text-sm font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 disabled:opacity-30"
                                 >
-                                    {t('common.back')}
+                                    {t('common.back') || 'Back'}
                                 </button>
                                 <button type="button" aria-label={!canGoForward ? (t('common.finish') || 'Finish') : (t('common.next') || 'Next')}
                                     onClick={handleNextTourStep}
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm flex items-center gap-2"
+                                    className="min-h-11 bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-1 shadow-sm flex items-center gap-2"
                                 >
-                                    {!canGoForward ? t('common.finish') : t('common.next')} <ArrowRight size={14}/>
+                                    {!canGoForward ? (t('common.finish') || 'Finish') : (t('common.next') || 'Next')} <ArrowRight size={14} aria-hidden="true"/>
                                 </button>
                             </div>
                         </>
@@ -4581,33 +4620,33 @@ function VolumeBuilderView(props) {
                             const vbHideAnswer = !!cubeChallenge && !(cubeFeedback && cubeFeedback.correct);
                             return (
                             <div className="space-y-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1" data-help-key="volume_builder_panel">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
-                                        📦 {t('volume_builder.title') || '3D Volume Explorer'}
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                    <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
+                                        <span aria-hidden="true">📦</span> {t('volume_builder.title') || '3D Volume Explorer'}
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        <button type="button" onClick={() => setCubeScale(s => Math.max(0.4, s - 0.15))} className="w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center" aria-label={t('volume_builder.zoom_out_aria') || 'Zoom out'}>−</button>
-                                        <span className="text-xs text-emerald-600 font-mono w-10 text-center">{Math.round(cubeScale * 100)}%</span>
-                                        <button type="button" onClick={() => setCubeScale(s => Math.min(2.5, s + 0.15))} className="w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center" aria-label={t('volume_builder.zoom_in_aria') || 'Zoom in'}>+</button>
-                                        <button type="button" onClick={() => { setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }} className="ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-xs hover:bg-emerald-100 transition-all" aria-label={t('volume_builder.reset_view_aria') || 'Reset view'}>↺</button>
+                                        <button type="button" onClick={() => setCubeScale(s => Math.max(0.4, s - 0.15))} className="min-w-11 min-h-11 rounded-full bg-white border border-emerald-300 text-emerald-800 font-bold text-sm hover:bg-emerald-100 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 flex items-center justify-center" aria-label={t('volume_builder.zoom_out_aria') || 'Zoom out'}><span aria-hidden="true">−</span></button>
+                                        <span className="text-xs text-emerald-800 font-mono w-10 text-center font-bold">{Math.round(cubeScale * 100)}%</span>
+                                        <button type="button" onClick={() => setCubeScale(s => Math.min(2.5, s + 0.15))} className="min-w-11 min-h-11 rounded-full bg-white border border-emerald-300 text-emerald-800 font-bold text-sm hover:bg-emerald-100 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 flex items-center justify-center" aria-label={t('volume_builder.zoom_in_aria') || 'Zoom in'}><span aria-hidden="true">+</span></button>
+                                        <button type="button" onClick={() => { setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }} className="ml-1 min-w-11 min-h-11 px-2.5 py-1 rounded-md bg-white border border-emerald-300 text-emerald-800 font-bold text-xs hover:bg-emerald-100 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 inline-flex items-center justify-center" aria-label={t('volume_builder.reset_view_aria') || 'Reset view'}><span aria-hidden="true">↺</span></button>
                                     </div>
                                 </div>
                                 <div role="group" aria-label={t('volume_builder.rotate_group_aria') || 'Rotate 3D volume'} className="flex flex-wrap items-center gap-1.5">
-                                    <span className="text-xs font-bold text-emerald-800 mr-1">{t('volume_builder.rotate_label') || 'Rotate:'}</span>
-                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, y: prev.y - 15 }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label={t('volume_builder.rotate_left_aria') || 'Rotate volume left'}>{t('volume_builder.rotate_left') || 'Left'}</button>
-                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, y: prev.y + 15 }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label={t('volume_builder.rotate_right_aria') || 'Rotate volume right'}>{t('volume_builder.rotate_right') || 'Right'}</button>
-                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, x: Math.max(-80, prev.x - 10) }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label={t('volume_builder.tilt_up_aria') || 'Tilt volume up'}>{t('volume_builder.tilt_up') || 'Up'}</button>
-                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, x: Math.min(10, prev.x + 10) }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label={t('volume_builder.tilt_down_aria') || 'Tilt volume down'}>{t('volume_builder.tilt_down') || 'Down'}</button>
-                                    <output className="ml-auto text-xs font-mono text-emerald-700" aria-live="polite">{vbText('orientation_status', 'Tilt {tilt} degrees, turn {turn} degrees, zoom {zoom} percent', { tilt: Math.round(cubeRotation.x), turn: Math.round(cubeRotation.y), zoom: Math.round(cubeScale * 100) })}</output>
+                                    <span className="text-xs font-bold text-emerald-900 mr-1">{t('volume_builder.rotate_label') || 'Rotate:'}</span>
+                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, y: prev.y - 15 }))} className="min-h-11 rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-900 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700" aria-label={t('volume_builder.rotate_left_aria') || 'Rotate volume left'}>{t('volume_builder.rotate_left') || 'Left'}</button>
+                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, y: prev.y + 15 }))} className="min-h-11 rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-900 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700" aria-label={t('volume_builder.rotate_right_aria') || 'Rotate volume right'}>{t('volume_builder.rotate_right') || 'Right'}</button>
+                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, x: Math.max(-80, prev.x - 10) }))} className="min-h-11 rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-900 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700" aria-label={t('volume_builder.tilt_up_aria') || 'Tilt volume up'}>{t('volume_builder.tilt_up') || 'Up'}</button>
+                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, x: Math.min(10, prev.x + 10) }))} className="min-h-11 rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-900 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700" aria-label={t('volume_builder.tilt_down_aria') || 'Tilt volume down'}>{t('volume_builder.tilt_down') || 'Down'}</button>
+                                    <output className="ml-auto text-xs font-mono text-emerald-800" aria-live="polite">{vbText('orientation_status', 'Tilt {tilt} degrees, turn {turn} degrees, zoom {zoom} percent', { tilt: Math.round(cubeRotation.x), turn: Math.round(cubeRotation.y), zoom: Math.round(cubeScale * 100) })}</output>
                                 </div>
-                                <p className="text-xs text-emerald-700/70">{t('volume_builder.help_caption') || 'Use the rotate and zoom buttons, or drag and scroll, to inspect rectangular prisms and L-blocks (5.MD.3-5).'}</p>
+                                <p className="text-xs text-emerald-900">{t('volume_builder.help_caption') || 'Use the rotate and zoom buttons, or drag and scroll, to inspect rectangular prisms and L-blocks (5.MD.3-5).'}</p>
                                 {/* Shape selector — toggle between a solid rectangular prism
                                     and an L-block (rectangular base with a corner notch carved
                                     out so volume becomes additive: V = L*W*H − notch_l*notch_w*notch_h). */}
                                 <div className="flex gap-2 justify-center" role="radiogroup" aria-label={t('volume_builder.shape_radiogroup_aria') || 'Volume Builder shape'} data-help-key="volume_builder_shape_selector">
                                     {[
-                                        { id: 'rect',   label: '🧊 ' + (t('volume_builder.shape_rect') || 'Rectangular') },
-                                        { id: 'lblock', label: '📐 ' + (t('volume_builder.shape_lblock') || 'L-Block') },
+                                        { id: 'rect', icon: '🧊', text: t('volume_builder.shape_rect') || 'Rectangular' },
+                                        { id: 'lblock', icon: '📐', text: t('volume_builder.shape_lblock') || 'L-Block' },
                                     ].map(s => {
                                         const sel = cubeShape === s.id;
                                         return (
@@ -4616,10 +4655,10 @@ function VolumeBuilderView(props) {
                                                 role="radio"
                                                 aria-checked={sel}
                                                 onClick={() => { setCubeShape(s.id); setCubeChallenge(null); setCubeFeedback(null); }}
-                                                className={'px-3 py-1.5 rounded-full text-xs font-bold transition-all border-2 ' + (sel
+                                                className={'min-h-11 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-1 inline-flex items-center gap-1.5 ' + (sel
                                                     ? 'bg-emerald-700 text-white border-emerald-700 shadow'
-                                                    : 'bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50')}
-                                            >{s.label}</button>
+                                                    : 'bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-50')}
+                                            ><span aria-hidden="true">{s.icon}</span><span>{s.text}</span></button>
                                         );
                                     })}
                                 </div>
@@ -4630,12 +4669,13 @@ function VolumeBuilderView(props) {
                                             : (t('volume_builder.dim_height') || 'Height');
                                         return (
                                         <div key={dim}>
-                                            <label className="block text-xs text-slate-600 mb-1 font-bold uppercase">{dimLabel}</label>
+                                            <label className="block text-xs text-slate-700 mb-1 font-bold uppercase">{dimLabel}</label>
                                             <input type="range" min="1" max="10" value={cubeDims[dim]}
                                                 onChange={(e) => { setCubeDims(prev => ({...prev, [dim]: parseInt(e.target.value)})); setCubeChallenge(null); setCubeFeedback(null); setCubeShowLayers(null); }}
-                                                className="w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
-                                                aria-label={dimLabel} />
-                                            <div className="text-center text-sm font-bold text-emerald-700 mt-1">{cubeDims[dim]}</div>
+                                                className="w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
+                                                aria-label={dimLabel}
+                                                aria-valuetext={`${dimLabel}: ${cubeDims[dim]} ${cubeDims[dim] === 1 ? 'unit' : 'units'}`} />
+                                            <div className="text-center text-sm font-bold text-emerald-800 mt-1">{cubeDims[dim]}</div>
                                         </div>
                                         );
                                     })}
@@ -4655,14 +4695,16 @@ function VolumeBuilderView(props) {
                                             const notchAria = dim === 'l' ? (t('volume_builder.notch_aria_length') || 'Notch length')
                                                 : dim === 'w' ? (t('volume_builder.notch_aria_width') || 'Notch width')
                                                 : (t('volume_builder.notch_aria_height') || 'Notch height');
+                                            const clampedNotch = Math.min(cubeNotch[dim], Math.max(1, cubeDims[dim] - 1));
                                             return (
                                             <div key={'notch-' + dim}>
-                                                <label className="block text-xs text-amber-700 mb-1 font-bold uppercase">{notchLabel}</label>
-                                                <input type="range" min="1" max={Math.max(1, cubeDims[dim] - 1)} value={Math.min(cubeNotch[dim], Math.max(1, cubeDims[dim] - 1))}
+                                                <label className="block text-xs text-amber-800 mb-1 font-bold uppercase">{notchLabel}</label>
+                                                <input type="range" min="1" max={Math.max(1, cubeDims[dim] - 1)} value={clampedNotch}
                                                     onChange={(e) => { setCubeNotch(prev => ({...prev, [dim]: parseInt(e.target.value)})); setCubeChallenge(null); setCubeFeedback(null); }}
-                                                    className="w-full h-2 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
-                                                    aria-label={notchAria} />
-                                                <div className="text-center text-xs font-bold text-amber-700 mt-1">{Math.min(cubeNotch[dim], Math.max(1, cubeDims[dim] - 1))}</div>
+                                                    className="w-full h-2 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"
+                                                    aria-label={notchAria}
+                                                    aria-valuetext={`${notchAria}: ${clampedNotch} ${clampedNotch === 1 ? 'unit' : 'units'}`} />
+                                                <div className="text-center text-xs font-bold text-amber-800 mt-1">{clampedNotch}</div>
                                             </div>
                                             );
                                         })}
@@ -4693,13 +4735,14 @@ function VolumeBuilderView(props) {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 bg-white/80 rounded-lg p-2 border border-emerald-100">
-                                    <span className="text-xs font-bold text-emerald-700 whitespace-nowrap">{t('volume_builder.layers_label') || 'Layers:'}</span>
+                                    <span className="text-xs font-bold text-emerald-800 whitespace-nowrap">{t('volume_builder.layers_label') || 'Layers:'}</span>
                                     <input type="range" min="1" max={cubeDims.h} value={cubeShowLayers !== null ? cubeShowLayers : cubeDims.h}
                                         aria-label={t('stem.layers_slider') || 'Visible layers'}
+                                        aria-valuetext={`Showing ${cubeShowLayers !== null ? cubeShowLayers : cubeDims.h} of ${cubeDims.h} layers`}
                                         onChange={(e) => setCubeShowLayers(parseInt(e.target.value))}
-                                        className="flex-1 h-1.5 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" />
-                                    <span className="text-xs font-mono text-emerald-600 w-12 text-center">{cubeShowLayers !== null ? cubeShowLayers : cubeDims.h} / {cubeDims.h}</span>
-                                    {cubeShowLayers !== null && cubeShowLayers < cubeDims.h && <button type="button" onClick={() => setCubeShowLayers(null)} className="text-xs text-emerald-700 hover:text-emerald-900 font-bold">{t('volume_builder.layers_all') || 'All'}</button>}
+                                        className="flex-1 h-1.5 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700" />
+                                    <span className="text-xs font-mono text-emerald-800 font-bold w-12 text-center">{cubeShowLayers !== null ? cubeShowLayers : cubeDims.h} / {cubeDims.h}</span>
+                                    {cubeShowLayers !== null && cubeShowLayers < cubeDims.h && <button type="button" onClick={() => setCubeShowLayers(null)} className="min-h-11 px-2.5 rounded-lg text-xs text-emerald-800 hover:text-emerald-950 hover:bg-emerald-100 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">{t('volume_builder.layers_all') || 'All'}</button>}
                                 </div>
                                 <div className="bg-white/80 rounded-lg p-3 border border-emerald-100" data-help-key="volume_builder_volume_readout">
                                     <div className="grid grid-cols-2 gap-3">
@@ -4752,17 +4795,17 @@ function VolumeBuilderView(props) {
                                         setCubeAnswer('');
                                         setCubeFeedback(null);
                                         setCubeShowLayers(null);
-                                    }} className="flex-1 py-2 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-lg text-sm hover:from-emerald-800 hover:to-teal-800 transition-all shadow-md" data-help-key="volume_builder_random_challenge_btn">
-                                        🎲 {t('volume_builder.random_challenge') || 'Random Challenge'}
+                                    }} className="flex-1 min-h-11 py-2 px-3 bg-gradient-to-r from-emerald-700 to-teal-700 text-white font-bold rounded-lg text-sm hover:from-emerald-800 hover:to-teal-800 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-1 shadow-md" data-help-key="volume_builder_random_challenge_btn">
+                                        <span aria-hidden="true">🎲 </span>{t('volume_builder.random_challenge') || 'Random Challenge'}
                                     </button>
                                     <button type="button" onClick={() => { setCubeDims({ l: 3, w: 2, h: 2 }); setCubeChallenge(null); setCubeFeedback(null); setCubeShowLayers(null); setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }}
-                                        className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all" data-help-key="volume_builder_reset_btn">
-                                        ↺ {t('common.reset') || 'Reset'}
+                                        className="min-h-11 px-4 py-2 bg-slate-200 text-slate-800 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-1" data-help-key="volume_builder_reset_btn">
+                                        <span aria-hidden="true">↺ </span>{t('common.reset') || 'Reset'}
                                     </button>
                                 </div>
                                 {cubeChallenge && (
                                     <div className="bg-amber-50 rounded-lg p-3 border border-amber-200">
-                                        <p className="text-sm font-bold text-amber-800 mb-2">🤔 {cubeChallenge.shape === 'lblock'
+                                        <p className="text-sm font-bold text-amber-900 mb-2"><span aria-hidden="true">🤔 </span>{cubeChallenge.shape === 'lblock'
                                             ? (t('volume_builder.challenge_prompt_lblock') || 'What is the volume of this L-block?')
                                             : (t('volume_builder.challenge_prompt_rect') || 'What is the volume of this rectangular prism?')}</p>
                                         <div className="flex gap-2 items-center">
@@ -4770,17 +4813,17 @@ function VolumeBuilderView(props) {
                                                 onChange={(e) => setCubeAnswer(e.target.value)}
                                                 onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter' && cubeAnswer) checkCubeAnswer(); }}
                                                 placeholder={t('volume_builder.answer_placeholder') || 'Enter volume...'}
-                                                className="flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-amber-400 outline-none"
+                                                className="flex-1 min-h-11 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-amber-500 outline-none bg-white"
                                                 aria-label={t('volume_builder.answer_aria') || 'Volume answer'}
                                                 data-help-key="volume_builder_answer_field" />
                                             <button type="button" onClick={checkCubeAnswer}
                                                 disabled={!cubeAnswer}
-                                                className="min-h-11 px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 disabled:opacity-40 transition-all motion-reduce:transition-none"
+                                                className="min-h-11 px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 disabled:opacity-40 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-800 focus-visible:ring-offset-1"
                                                 data-help-key="volume_builder_check_btn">
                                                 {t('volume_builder.check') || 'Check'}
                                             </button>
                                         </div>
-                                        {cubeFeedback && <p role="status" aria-live="polite" className={'text-sm font-bold mt-2 ' + (cubeFeedback.correct ? 'text-green-700' : 'text-red-700')}>{cubeFeedback.msg}</p>}
+                                        {cubeFeedback && <p role="status" aria-live="polite" className={'text-sm font-bold mt-2 ' + (cubeFeedback.correct ? 'text-green-800' : 'text-red-800')}>{cubeFeedback.msg}</p>}
                                     </div>
                                 )}
                             </div>

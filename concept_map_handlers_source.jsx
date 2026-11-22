@@ -1,10 +1,19 @@
 // Pure flow layout is colocated with its only consumer.
+const _cmapIsQrBlocked = () => {
+  if (typeof window === 'undefined') return false;
+  if (window._alloQrBlocked === true || window.__alloQrStudentMode === true) return true;
+  const qr = window.__alloQrStudentMode;
+  return Boolean(qr && typeof qr === 'object' && qr.active === true && qr.allowAi === false);
+};
 const _cmapAiUsable = (kind, fn) => {
   if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
-  if (typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || window.__alloQrStudentMode === true)) return false;
+  if (typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || _cmapIsQrBlocked())) return false;
   try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable(kind, fn)); } catch (_) { return false; }
   return true;
 };
+const _cmapIsSafeRasterDataUrl = (url) => (
+  typeof url === 'string' && /^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(url.trim())
+);
 const calculateFlowLayout = (nodes, containerWidth = 800) => {
     const centerX = containerWidth / 2;
     let currentY = 50;
@@ -401,21 +410,22 @@ const handleInitializeMap = async (deps) => {
 const beginMapLayoutRequest = (deps, nodes, edges) => {
   const ref = deps.mapLayoutScopeRef;
   const initial = ref && ref.current ? { ...ref.current } : null;
+  if (ref && !initial) return null;
   if (initial?.request?.isCurrent()) return null;
   if (initial?.request) initial.request.cancelled = true;
   const graphKey = JSON.stringify([nodes, edges]);
   const request = { cancelled: false, nodesKey: JSON.stringify(nodes) };
   request.scopeMatches = () => {
     const current = ref && ref.current;
-    return !request.cancelled && (!ref || !!current && current.alive
+    return !request.cancelled && (!ref || (!!initial && !!current && current.alive
       && current.resourceId === initial.resourceId && current.dataKey === initial.dataKey
       && current.activeView === initial.activeView && current.teacher === initial.teacher
-      && current.profile === initial.profile);
+      && current.profile === initial.profile));
   };
   request.isCurrent = () => {
     const current = ref && ref.current;
-    return request.scopeMatches() && (!ref || current.request === request
-      && (current.graphKey === graphKey || current.nodes === initial.nodes && current.edges === initial.edges));
+    return request.scopeMatches() && (!ref || (!!initial && !!current && current.request === request
+      && (current.graphKey === graphKey || current.nodes === initial.nodes && current.edges === initial.edges)));
   };
   request.finish = () => {
     if (!ref || ref.current?.request === request) {
@@ -547,11 +557,13 @@ const handleAutoLayout = async (nodesInput, edgesInput, deps) => {
       }
 };
 
+let _batchRosterInFlight = false;
 const handleBatchGenerateForRoster = async (resourceTypes = ['simplified'], deps) => {
   const { rosterKey, history, inputText, gradeLevel, leveledTextLanguage, studentInterests, dokLevel, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setStandardInputValue, setUseEmojis, setTextFormat, setIsProcessing, setGenerationStep, addToast, t, warnLog, handleGenerate } = deps;
   try { if (window._DEBUG_CMAP_HANDLERS) console.log("[CmapHandlers] handleBatchGenerateForRoster fired"); } catch(_) {}
+      if (_batchRosterInFlight) return;
       if (!Array.isArray(resourceTypes) || resourceTypes.length === 0) return;
-      const _batchAiBlocked = (typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || window.__alloQrStudentMode === true))
+      const _batchAiBlocked = (typeof window !== 'undefined' && (window.__alloAiSecretsLocked === true || window.__alloStudentAiDisabled === true || _cmapIsQrBlocked()))
           || (typeof deps.callGemini === 'function' && !_cmapAiUsable('text', deps.callGemini))
           || (() => {
               try {
@@ -580,8 +592,13 @@ const handleBatchGenerateForRoster = async (resourceTypes = ['simplified'], deps
           addToast(t('process.enter_text') || 'Please enter or paste text first', 'warning');
           return;
       }
-      const groupEntries = Object.entries(rosterKey.groups);
+      const groupEntries = Object.entries(rosterKey.groups).filter(([, g]) => g && typeof g === 'object');
+      if (groupEntries.length === 0) {
+          addToast(t('roster.no_groups_to_generate') || 'Add groups to your roster key first', 'warning');
+          return;
+      }
       const totalSteps = groupEntries.length * resourceTypes.length;
+      _batchRosterInFlight = true;
       setIsProcessing(true);
       let successCount = 0;
       let currentStep = 0;
@@ -655,6 +672,7 @@ const handleBatchGenerateForRoster = async (resourceTypes = ['simplified'], deps
           warnLog("Roster batch generation error:", e);
           addToast(t('roster.batch_failed') || 'Batch generation failed', 'error');
       } finally {
+          _batchRosterInFlight = false;
           setIsProcessing(false);
           setGenerationStep('');
       }
@@ -825,7 +843,14 @@ const cleanCorrectionReply = (raw, chunk) => {
   }
   return text;
 };
-const _linkTargets = (text) => (String(text || '').match(/\]\([^)\s]+\)/g) || []).sort().join('\n');
+const _linkTargets = (text) => (String(text || '').match(/\]\([^)]+\)/g) || []).sort().join('\n');
+const _hasUnsafeMarkdownLink = (text) => {
+  const matches = String(text || '').match(/\]\([^)]+\)/g) || [];
+  return matches.some((m) => {
+    const inner = m.slice(2, -1).replace(/[\x00-\x20]+/g, '');
+    return /^(?:javascript|vbscript|data):/i.test(inner);
+  });
+};
 const prepareFactualCorrection = async ({ sourceText, notes, callGemini, chunkText, onStep }) => {
   const original = String(sourceText || '');
   const openNotes = (Array.isArray(notes) ? notes : []).filter(isOpenFactualNote);
@@ -843,7 +868,7 @@ const prepareFactualCorrection = async ({ sourceText, notes, callGemini, chunkTe
     const cleaned = cleanCorrectionReply(await callGemini(buildFactualCorrectionPrompt(core, openNotes, i, chunks.length)), core);
     if (!cleaned) return { ok: false, reason: 'empty' };
     if (Math.abs(cleaned.length - core.length) > Math.max(core.length * FACTUAL_FIX_MAX_CHANGE, FACTUAL_FIX_MIN_ALLOWANCE)) return { ok: false, reason: 'length' };
-    if (_linkTargets(cleaned) !== _linkTargets(core)) return { ok: false, reason: 'citations' };
+    if (_hasUnsafeMarkdownLink(cleaned) || _linkTargets(cleaned) !== _linkTargets(core)) return { ok: false, reason: 'citations' };
     if (cleaned === core) parts.push(joiner ? core : chunk);
     else {
       changedChunks++;
@@ -879,6 +904,7 @@ const handleAutoCorrectSource = async (deps) => {
   }
 };
 
+let _refinePanelEpoch = 0;
 const handleRefinePanel = async (panelIdx, editInstruction, deps) => {
   const { generatedContent, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, addToast, t, warnLog, callGeminiImageEdit } = deps;
   try { if (window._DEBUG_CMAP_HANDLERS) console.log("[CmapHandlers] handleRefinePanel fired"); } catch(_) {}
@@ -886,19 +912,21 @@ const handleRefinePanel = async (panelIdx, editInstruction, deps) => {
       const plan = generatedContent?.data.visualPlan;
       if (!Array.isArray(plan?.panels)) return;
       const panel = plan.panels[panelIdx];
-      if (!panel?.imageUrl) return;
+      if (!panel?.imageUrl || !_cmapIsSafeRasterDataUrl(panel.imageUrl)) return;
       if (!_cmapAiUsable('imageEdit', callGeminiImageEdit)) {
           if (typeof addToast === 'function') addToast(t('visual_director.refine_failed') || 'Refinement failed', 'error');
           return;
       }
-      const rawBase64 = typeof panel.imageUrl === 'string' ? panel.imageUrl.split(',')[1] : '';
+      const rawBase64 = panel.imageUrl.trim().split(',')[1] || '';
       if (!rawBase64) return;
       const targetId = generatedContent.id;
+      const myEpoch = ++_refinePanelEpoch;
       setIsProcessing(true);
       setGenerationStep(t('visual_director.refining_panel') || 'Refining panel...');
       try {
           const refinedUrl = await callGeminiImageEdit(editInstruction, rawBase64);
-          if (!refinedUrl) {
+          if (myEpoch !== _refinePanelEpoch) return;
+          if (!refinedUrl || !_cmapIsSafeRasterDataUrl(refinedUrl)) {
               addToast(t('visual_director.refine_failed') || 'Refinement failed', 'error');
               return;
           }
@@ -918,11 +946,14 @@ const handleRefinePanel = async (panelIdx, editInstruction, deps) => {
           setHistory(prev => Array.isArray(prev) ? prev.map(patchResource) : prev);
           addToast(t('visual_director.panel_refined') || 'Panel refined!', 'success');
       } catch (e) {
+          if (myEpoch !== _refinePanelEpoch) return;
           warnLog('[ArtDirector] Panel refinement failed:', e);
           addToast(t('visual_director.refine_failed') || 'Refinement failed', 'error');
       } finally {
-          setIsProcessing(false);
-          if (typeof setGenerationStep === 'function') setGenerationStep('');
+          if (myEpoch === _refinePanelEpoch) {
+              setIsProcessing(false);
+              if (typeof setGenerationStep === 'function') setGenerationStep('');
+          }
       }
 };
 

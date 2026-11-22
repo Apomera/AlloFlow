@@ -9,20 +9,26 @@
 (function () {
   'use strict';
 
-  var MIME_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+  var MIME_TYPES = Object.freeze(['image/png', 'image/jpeg', 'image/webp']);
   var HANDLE_RE = /^asset_[A-Za-z0-9_-]{8,128}$/;
   var ID_RE = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
-  var FORBIDDEN_META_KEY_RE = /^(?:path|url|uri|data|filePath|localPath)$|(?:^|[_-]|(?=[A-Z]))(?:api|access|private|auth|signing|client)?[_-]?keys?$|token|secret|password|passwd|credential|authorization|bearer|cookie/i;
+  var FORBIDDEN_META_KEY_RE = /^(?:path|url|uri|data|filePath|localPath|__proto__|constructor|prototype)$|(?:^|[_-]|(?=[A-Z]))(?:api|access|private|auth|signing|client)?[_-]?keys?$|token|secret|password|passwd|credential|authorization|bearer|cookie/i;
   var DEFAULT_MAX_ASSETS = 256;
   var DEFAULT_MAX_ASSET_BYTES = 25 * 1024 * 1024;
   var DEFAULT_MAX_TOTAL_BYTES = 100 * 1024 * 1024;
+  var MAX_ATTACHMENTS_PER_ASSET = 1000;
+
+  function stripControlChars(str) {
+    return String(str == null ? '' : str).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+  }
 
   function looksLikeActiveMarkup(bytes) {
     if (!bytes || bytes.byteLength < 4) return false;
-    var limit = Math.min(bytes.byteLength, 64);
+    var start = (bytes.byteLength >= 3 && bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) ? 3 : 0;
+    var limit = Math.min(bytes.byteLength, start + 64);
     var head = '';
-    for (var i = 0; i < limit; i++) head += String.fromCharCode(bytes[i]);
-    return /^\s*(?:<\?xml|<!doctype\s+html|<html\b|<svg\b|<script\b)/i.test(head);
+    for (var i = start; i < limit; i++) head += String.fromCharCode(bytes[i]);
+    return /^\s*(?:<\?xml|<!doctype\s+html|<html\b|<svg\b|<script\b|<iframe\b|<object\b|<embed\b)/i.test(head);
   }
 
   function matchesMagicBytes(bytes, mimeType) {
@@ -130,9 +136,9 @@
         byteLength: bytes.byteLength,
         width: width,
         height: height,
-        altText: typeof value.altText === 'string' ? value.altText.slice(0, 2000) : '',
-        sourceDeclaration: typeof value.sourceDeclaration === 'string' ? value.sourceDeclaration.slice(0, 500) : '',
-        licenseDeclaration: typeof value.licenseDeclaration === 'string' ? value.licenseDeclaration.slice(0, 500) : '',
+        altText: typeof value.altText === 'string' ? stripControlChars(value.altText).slice(0, 2000) : '',
+        sourceDeclaration: typeof value.sourceDeclaration === 'string' ? stripControlChars(value.sourceDeclaration).slice(0, 500) : '',
+        licenseDeclaration: typeof value.licenseDeclaration === 'string' ? stripControlChars(value.licenseDeclaration).slice(0, 500) : '',
         createdAt: String(now()),
         attachments: []
       };
@@ -160,7 +166,10 @@
       var exists = record.attachments.some(function (item) {
         return item.artifactId === value.artifactId && item.slot === value.slot;
       });
-      if (!exists) record.attachments.push({ artifactId: value.artifactId, slot: value.slot });
+      if (!exists) {
+        if (record.attachments.length >= MAX_ATTACHMENTS_PER_ASSET) throw new Error('Attachment limit reached for managed asset');
+        record.attachments.push({ artifactId: value.artifactId, slot: value.slot });
+      }
       return cloneMetadata(record);
     }
 
@@ -192,7 +201,7 @@
       var record = requireHandle(handle);
       if (record.attachments.length) throw new Error('Attached assets cannot be removed');
       records.delete(handle);
-      totalBytes -= record.byteLength;
+      totalBytes = Math.max(0, totalBytes - record.byteLength);
       record.bytes.fill(0);
       return true;
     }
@@ -201,7 +210,7 @@
       return { assetCount: records.size, totalBytes: totalBytes, maxAssets: maxAssets, maxAssetBytes: maxAssetBytes, maxTotalBytes: maxTotalBytes };
     }
 
-    return {
+    return Object.freeze({
       importAsset: importAsset,
       getMetadata: getMetadata,
       readBytesForAdapter: readBytesForAdapter,
@@ -210,14 +219,14 @@
       detachAllForArtifact: detachAllForArtifact,
       remove: remove,
       getStats: getStats
-    };
+    });
   }
 
-  var API = {
+  var API = Object.freeze({
     createManagedAssetStore: createManagedAssetStore,
     HANDLE_RE: HANDLE_RE,
-    MIME_TYPES: MIME_TYPES.slice()
-  };
+    MIME_TYPES: Object.freeze(MIME_TYPES.slice())
+  });
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   if (typeof window !== 'undefined') {

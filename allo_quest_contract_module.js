@@ -146,7 +146,22 @@
   var hasOwn = Object.prototype.hasOwnProperty;
 
   function _stripCtrl(value) {
-    return String(value == null ? '' : value).replace(/[\u0000-\u001f\u007f]/g, ' ').trim();
+    if (typeof value !== 'string') {
+      if (typeof value === 'number' && Number.isFinite(value)) value = String(value);
+      else return '';
+    }
+    return value.slice(0, 4096).replace(/[\u0000-\u001f\u007f]/g, ' ').trim();
+  }
+
+  function _finiteNumber(value) {
+    if (typeof value === 'number') return Number.isFinite(value) ? value : NaN;
+    if (typeof value === 'string') {
+      var trimmed = value.trim();
+      if (!trimmed) return NaN;
+      var parsed = Number(trimmed);
+      return Number.isFinite(parsed) ? parsed : NaN;
+    }
+    return NaN;
   }
 
   function _kindSpec(kind) {
@@ -165,12 +180,16 @@
   // Returns null for anything unmappable, so callers can drop it rather than
   // render a quest nobody can ever satisfy.
   function _describe(engine, map, quest, refField) {
-    if (!quest || typeof quest !== 'object') return null;
-    var kind = _canonicalize(map, quest.type || quest.kind);
+    if (!quest || typeof quest !== 'object' || Array.isArray(quest)) return null;
+    var rawType = hasOwn.call(quest, 'type') ? quest.type : undefined;
+    var rawKind = hasOwn.call(quest, 'kind') ? quest.kind : undefined;
+    var nativeType = rawType || rawKind;
+    var kind = _canonicalize(map, nativeType);
     if (!kind) return null;
     var spec = _kindSpec(kind);
     if (!spec) return null;
-    var params = (quest.params && typeof quest.params === 'object') ? quest.params : quest;
+    var rawParams = hasOwn.call(quest, 'params') ? quest.params : null;
+    var params = (rawParams && typeof rawParams === 'object' && !Array.isArray(rawParams)) ? rawParams : quest;
     var target = null;
     if (spec.target) {
       var raw = hasOwn.call(params, spec.target) ? params[spec.target] : undefined;
@@ -180,11 +199,12 @@
     var safeRef = (typeof rawRef === 'string' || (typeof rawRef === 'number' && Number.isFinite(rawRef)))
       ? (typeof rawRef === 'string' ? _stripCtrl(rawRef).slice(0, 128) || null : rawRef)
       : null;
+    var rawLabel = hasOwn.call(quest, 'label') ? quest.label : '';
     return {
       engine: engine,
       kind: kind,
-      native: quest.type || quest.kind,
-      label: typeof quest.label === 'string' ? _stripCtrl(quest.label).slice(0, 240) : '',
+      native: nativeType,
+      label: typeof rawLabel === 'string' ? _stripCtrl(rawLabel).slice(0, 240) : '',
       target: target,
       ref: safeRef,
       selfReported: isSelfReported(kind)
@@ -202,9 +222,9 @@
     var spec = _kindSpec(kind);
     if (!spec) return '';
     if (spec.measure === MEASURES.BOOLEAN) return '';
-    var rawCur = Number(current);
+    var rawCur = _finiteNumber(current);
     var cur = (Number.isFinite(rawCur) && rawCur > 0) ? rawCur : 0;
-    var tgt = Number(target);
+    var tgt = _finiteNumber(target);
     if (!Number.isFinite(tgt) || tgt <= 0) return '';
     var shown = Math.min(cur, tgt);
     return shown + '/' + tgt + (spec.unit ? ' ' + spec.unit : '');
@@ -214,9 +234,9 @@
     var spec = _kindSpec(kind);
     if (!spec) return false;
     if (spec.measure === MEASURES.BOOLEAN) return !!current;
-    var rawCur = Number(current);
+    var rawCur = _finiteNumber(current);
     var cur = Number.isFinite(rawCur) ? rawCur : 0;
-    var tgt = Number(target);
+    var tgt = _finiteNumber(target);
     if (!Number.isFinite(tgt) || tgt <= 0) return false;
     return cur >= tgt;
   }
@@ -228,7 +248,7 @@
   Object.freeze(STEM_KIND_MAP);
   Object.freeze(SEL_KIND_MAP);
 
-  var AlloQuestContract = {
+  var AlloQuestContract = Object.freeze({
     VERSION: 1,
     ENGAGEMENT_TIMEOUT_MS: ENGAGEMENT_TIMEOUT_MS,
     MEASURES: MEASURES,
@@ -242,7 +262,7 @@
     fromSel: fromSel,
     formatProgress: formatProgress,
     isComplete: isComplete
-  };
+  });
 
   if (typeof module !== 'undefined' && module.exports) module.exports = AlloQuestContract;
   if (typeof window !== 'undefined') {

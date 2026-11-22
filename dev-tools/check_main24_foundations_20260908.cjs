@@ -24,14 +24,22 @@ const OUT=path.join(ROOT,'reports/main24-foundations-20260908');fs.mkdirSync(OUT
   for(const width of [1280,390,320]){
    await page.setViewportSize({width,height:900});
    for(const name of ['FaqView','WordSoundsPreviewView','SimplifiedView']){
-    await page.evaluate(name=>renderView(name),name);await page.locator('#view button').first().waitFor();
+    await page.evaluate(name=>renderView(name),name);await page.locator('#view button:visible').first().waitFor();
     if(name==='FaqView')await page.locator('button[aria-expanded]').first().click();
     if(name==='SimplifiedView'){
      const toggle=page.locator('[data-help-key=simplified_teacher_tools]');
-     await toggle.focus();await page.keyboard.press('Tab');
-     if(await page.evaluate(()=>!!document.activeElement.closest('#simplified-teacher-tools-panel')))throw Error('Closed teacher tools received focus');
-     await page.evaluate(()=>renderView('SimplifiedView',{isTeacherToolbarExpanded:true}));await toggle.waitFor();await toggle.focus();await page.keyboard.press('Tab');
-     if(!await page.evaluate(()=>!!document.activeElement.closest('#simplified-teacher-tools-panel')))throw Error('Expanded teacher tools did not receive focus');
+     const panelId=await toggle.getAttribute('aria-controls');
+     if(!panelId)throw Error('Teacher tools toggle missing aria-controls');
+     await toggle.focus();
+     for(let i=0;i<3;i++){await page.keyboard.press('Tab');if(await page.evaluate(id=>!!document.activeElement.closest('#'+CSS.escape(id)),panelId))throw Error('Closed teacher tools received focus');}
+     await page.evaluate(()=>renderView('SimplifiedView',{isTeacherToolbarExpanded:true}));
+     const expandedToggle=page.locator('[data-help-key=simplified_teacher_tools][aria-expanded="true"]');
+     await expandedToggle.waitFor();
+     const expandedPanelId=await expandedToggle.getAttribute('aria-controls');
+     await expandedToggle.focus();
+     let entered=false;
+     for(let i=0;i<10;i++){await page.keyboard.press('Tab');if(await page.evaluate(id=>!!document.activeElement.closest('#'+CSS.escape(id)),expandedPanelId)){entered=true;break;}}
+     if(!entered)throw Error('Expanded teacher tools did not receive focus');
     }
     const bodyWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
     if(bodyWidth>width+2){console.log(await page.evaluate(()=>[...document.querySelectorAll('main *')].filter(el=>el.getBoundingClientRect().right>innerWidth).map(el=>({tag:el.tagName,cls:el.className,text:el.textContent.slice(0,65),right:el.getBoundingClientRect().right})).slice(-15)));await page.screenshot({path:path.join(OUT,'overflow.png'),fullPage:true});throw Error(name+' overflows at '+width+': '+bodyWidth);}

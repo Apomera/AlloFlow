@@ -16,11 +16,11 @@ narrative lives in `FEATURE_INVENTORY.md`; this file is the count-and-name layer
 | stemTools | 152 |
 | selTools | 72 |
 | alloPacks | 67 |
-| hubCards | 73 |
+| hubCards | 77 |
 | appsScripts | 6 |
 | modules | 222 |
 | langPacks | 63 |
-| unitTestFiles | 9601 |
+| unitTestFiles | 9654 |
 | e2eSpecs | 1956 |
 
 ## Command palette
@@ -617,9 +617,9 @@ lesson (Help me build a lesson), lumen (Lumen), document (Document Hub), whitebo
 
 lumen-study (Lumen Study), reading-library (Reading Library), stem-lab (STEAM Lab), text-inquiry (Text Inquiry Studio), lingua-practice (Lingua Practice), test-prep (Test Prep Hub), sel-hub (SEL Hub), screen-coach (Screen Coach), research-hub (Research Hub), learning-web-explorer (Learning Web: Explore), timeline-studio (Timeline Studio), storyforge (StoryForge), litlab (LitLab), poettree (PoetTree), open-groove (Open Groove Studio), allohaven (AlloHaven)
 
-### Leadership Hub (11)
+### Leadership Hub (15)
 
-announcements (Family Announcements), diagnosisEligibility (Diagnosis, Evaluation & School Eligibility), dispro (Disproportionality Analyzer), evaluation (Educator Evaluation), maineSldPractice (Maine SLD Case Lab), meetings (Meeting Documentation), mtss (MTSS Triage), rewards (School Rewards & Store), timelines (SpEd Timelines), walkthrough (UDL Walkthrough), walkthroughCopilot (Walkthrough Copilot)
+all (All tools), announcements (Family Announcements), coaching (Instruction & Coaching), diagnosisEligibility (Diagnosis, Evaluation & School Eligibility), dispro (Disproportionality Analyzer), equity (MTSS & Equity), evaluation (Educator Evaluation), maineSldPractice (Maine SLD Case Lab), meetings (Meeting Documentation), mtss (MTSS Triage), rewards (School Rewards & Store), sped (SpEd, Meetings & Family), timelines (SpEd Timelines), walkthrough (UDL Walkthrough), walkthroughCopilot (Walkthrough Copilot)
 
 ### Research Hub (9)
 
@@ -657,5 +657,5 @@ accessibility_evidence_module.js, accessibility_lab_module.js, adaptive_controll
 
 ## Tests
 
-- Unit test files: 9601
+- Unit test files: 9654
 - End-to-end specs: 1956

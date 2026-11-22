@@ -8511,7 +8511,10 @@ const exportMailboxConfig = () => {
 const suggestPollTimes = async () => {
     const ask = String(__d.pollAsk || '').trim();
     if (!ask || __d.pollAiBusy) return;
-    if (typeof window.callGemini !== 'function') {
+    const pollAiUsable = typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function'
+      ? !!window.__alloAiUsable('text', window.callGemini)
+      : (typeof window !== 'undefined' && typeof window.callGemini === 'function');
+    if (!pollAiUsable) {
       __d.addToast((tr => tr('host.toast.the_assistant_is_not_available_right_now_you', 'The assistant is not available right now. You can still type the options yourself.'))(typeof window !== 'undefined' && typeof window.__alloT === 'function' ? window.__alloT : (_, f) => f), 'info');
       return;
     }

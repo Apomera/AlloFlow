@@ -4,7 +4,8 @@
 const fs = require('fs');
 const path = require('path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
-const skillBanks = require('./esol_5362/item_content.cjs');
+const { applyChoiceOverrides } = require('./esol_5362/choice_overrides/index.cjs');
+const skillBanks = applyChoiceOverrides(require('./esol_5362/item_content.cjs'));
 const root = path.resolve(__dirname, '..');
 const reviewedAt = '2026-07-14';
 const expectedCounts = {
@@ -46,6 +47,8 @@ function ensure(value, minimum, suffix) {
 function itemFromSpec(skill, spec, batchNumber, batchPosition) {
   const answerIndex = (batchPosition - 1) % 4;
   const rationale = ensure(spec.rationale, 120, 'The response connects linguistic or learner evidence with the language function, instructional or assessment purpose, multilingual assets, cultural context, professional role, access boundary, and an observable next step.');
+  const notes = Array.isArray(spec.distractorNotes) ? spec.distractorNotes : [];
+  if (notes.length !== 3 || notes.some((note) => String(note || '').trim().length < 100)) throw new Error('Missing authored distractorNotes for ' + skill.id + ' #' + batchPosition);
   const choices = [];
   const choiceRationales = [];
   let distractorIndex = 0;
@@ -54,9 +57,10 @@ function itemFromSpec(skill, spec, batchNumber, batchPosition) {
       choices.push(spec.correct);
       choiceRationales.push(ensure('Correct. ' + rationale, 100, 'It addresses the full ESOL construct and preserves learner access, rigor, identity, and evidence.'));
     } else {
+      const note = String(notes[distractorIndex]).trim();
       const distractor = spec.distractors[distractorIndex++];
       choices.push(distractor);
-      choiceRationales.push(ensure('Not the best answer. "' + distractor + '" misses or conflicts with a controlling linguistic, instructional, assessment, cultural, or professional principle. ' + rationale, 100, 'Compare the evidence, objective, construct, interaction, access, role, and follow-up.'));
+      choiceRationales.push(note);
     }
   }
   if (new Set(choices).size !== 4) throw new Error(skill.id + ' contains duplicate choices.');

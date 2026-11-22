@@ -23,8 +23,27 @@
     var nativeBounds = null, nativeMeshes = 0, nativeVertices = 0, textureBytes = null;
     var canvasContexts = [], outputCanvases = [options.wideCanvas, options.referenceCanvas, options.eagleCanvas];
     var center = null, currentSettings = null;
+    var wideDecorGroup = null, sceneTimeUniform = { value: 2.6 }, sceneHcUniform = { value: 0.0 };
     var catalogVegetation = { mode: 'fallback', fallback: true, reason: 'unavailable', assets: [],
       placement: { sceneUnits: 'metres', animated: false, protectsDetailFov: .75, throughDistanceM: 300 } };
+
+    function prefersReducedMotion() {
+      try {
+        return typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
+          !!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      } catch (e) { return false; }
+    }
+    function isHighContrast(el) {
+      try {
+        if (el && el.closest && (el.closest('.theme-contrast') || el.closest('[data-theme="contrast"]') || el.closest('[data-theme="high-contrast"]'))) return true;
+        var root = typeof document !== 'undefined' && document.documentElement;
+        if (root && (root.classList.contains('theme-contrast') || root.getAttribute('data-theme') === 'contrast' || root.getAttribute('data-theme') === 'high-contrast')) return true;
+        if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-contrast')) return true;
+        if (typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
+            (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches)) return true;
+      } catch (e) {}
+      return false;
+    }
 
     function own(resource) { resources.push(resource); allocations++; return resource; }
     function material(color, extra) {
@@ -65,6 +84,7 @@
       }
       clearOutputs();
       bird = null; placement = null; scene = null; camera = null; texture = null; textureBytes = null;
+      wideDecorGroup = null;
       renderer = null;
     }
     function vegetationData() {
@@ -173,31 +193,48 @@
       // without touching the MeshBasicMaterial stripe plaque.
       var skyRim = new THREE.DirectionalLight(0xdcebf8, .24); skyRim.position.set(5, 4, -5); scene.add(skyRim);
 
-      // Fixed-output atmospheric sky dome with sunlit zenith gradient, horizon glow and high cumulus bands.
+      wideDecorGroup = new THREE.Group();
+      wideDecorGroup.name = 'distance-wide-atmosphere';
+      scene.add(wideDecorGroup);
+
+      // Fixed-output atmospheric sky dome with golden-hour Rayleigh horizon scattering and layered FBM savanna clouds.
+      // Directly behind the 0.75° target plaque (alt near 0), luminance stays calm and uniform for acuity integrity.
       if (typeof THREE.ShaderMaterial === 'function' && typeof THREE.SphereGeometry === 'function') {
         var skyMat = own(new THREE.ShaderMaterial({
           side: THREE.BackSide, depthWrite: false, fog: false, toneMapped: false,
           uniforms: {
-            zenith: { value: new THREE.Color(0x7ca7cf) },
+            uTime: sceneTimeUniform,
+            uHighContrast: sceneHcUniform,
+            zenith: { value: new THREE.Color(0x74a2ce) },
             horizon: { value: new THREE.Color(0xcfdcd1) },
+            goldenScatter: { value: new THREE.Color(0xf6dfb8) },
             sunGlow: { value: new THREE.Color(0xfff4d8) },
             sunDir: { value: new THREE.Vector3(-3, 6, 4).normalize() }
           },
           vertexShader: 'varying vec3 vSkyDir; void main(){ vSkyDir = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
           fragmentShader: [
-            'uniform vec3 zenith; uniform vec3 horizon; uniform vec3 sunGlow; uniform vec3 sunDir; varying vec3 vSkyDir;',
-            'float skyHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
-            'float skyNoise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);',
+            'uniform float uTime; uniform float uHighContrast;',
+            'uniform vec3 zenith; uniform vec3 horizon; uniform vec3 goldenScatter; uniform vec3 sunGlow; uniform vec3 sunDir;',
+            'varying vec3 vSkyDir;',
+            'float skyHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }',
+            'float skyNoise(vec2 p){ vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);',
             '  return mix(mix(skyHash(i), skyHash(i + vec2(1.0, 0.0)), f.x), mix(skyHash(i + vec2(0.0, 1.0)), skyHash(i + vec2(1.0, 1.0)), f.x), f.y); }',
+            'float skyFbm(vec2 p){ float v = 0.0; float a = 0.54; for(int i = 0; i < 3; i++){ v += a * skyNoise(p); p = p * 2.12 + vec2(4.1, 1.7); a *= 0.48; } return v; }',
             'void main(){',
             '  vec3 d = normalize(vSkyDir); float alt = max(0.0, d.y);',
-            '  vec3 col = mix(horizon, zenith, smoothstep(0.02, 0.58, alt));',
-            '  float sunward = max(0.0, dot(d, sunDir));',
-            '  col = mix(col, sunGlow, (pow(sunward, 10.0) * 0.14 + pow(sunward, 64.0) * 0.16) * smoothstep(0.01, 0.24, alt));',
-            '  vec2 cuv = d.xz / max(0.14, alt + 0.05) * 0.65;',
-            '  float cloud = skyNoise(cuv) * 0.62 + skyNoise(cuv * 2.3 + vec2(4.1, 1.7)) * 0.38;',
-            '  float puff = smoothstep(0.54, 0.78, cloud) * smoothstep(0.06, 0.22, alt) * (1.0 - smoothstep(0.55, 0.92, alt));',
-            '  col = mix(col, vec3(0.95, 0.96, 0.94), puff * 0.42);',
+            '  float rayleigh = smoothstep(0.02, 0.58, alt);',
+            '  vec3 col = mix(horizon, zenith, rayleigh);',
+            '  if (uHighContrast < 0.5) {',
+            '    float horizonBand = exp(-alt * 7.5) * smoothstep(0.015, 0.09, alt);',
+            '    col = mix(col, goldenScatter, horizonBand * 0.28);',
+            '    float sunward = max(0.0, dot(d, sunDir));',
+            '    col = mix(col, sunGlow, (pow(sunward, 9.0) * 0.16 + pow(sunward, 56.0) * 0.18) * smoothstep(0.01, 0.24, alt));',
+            '    vec2 cuv = d.xz / max(0.14, alt + 0.05) * 0.62 + vec2(uTime * 0.008, uTime * 0.003);',
+            '    float cloud = skyFbm(cuv);',
+            '    float puff = smoothstep(0.50, 0.78, cloud) * smoothstep(0.06, 0.22, alt) * (1.0 - smoothstep(0.56, 0.92, alt));',
+            '    vec3 cloudCol = mix(vec3(0.95, 0.96, 0.94), sunGlow, 0.22 * pow(sunward, 2.0));',
+            '    col = mix(col, cloudCol, puff * 0.44);',
+            '  }',
             '  gl_FragColor = vec4(col, 1.0);',
             '}'
           ].join('\n')
@@ -206,12 +243,12 @@
         skyDome.name = 'distance-sky-dome';
       }
 
-      // Distant layered valley hills & horizon ridge silhouette (kept far beyond 300 m target corridor).
+      // Distant layered valley hills & horizon ridge silhouette with atmospheric distance depth (kept far beyond 300 m target corridor).
       if (typeof THREE.BufferGeometry === 'function') {
-        var rPos = [], rCol = [], rIdx = [];
+        var rPos = [], rCol = [], rDepth = [], rIdx = [];
         var ridgeLayers = [
-          { radius: 580, baseH: -2, amp: 24, freq: 5, phase: 0.7, top: [0.56, 0.65, 0.57], bot: [0.68, 0.75, 0.68] },
-          { radius: 860, baseH: -4, amp: 52, freq: 4, phase: 2.1, top: [0.64, 0.72, 0.73], bot: [0.76, 0.82, 0.79] }
+          { radius: 580, baseH: -2, amp: 24, freq: 5, phase: 0.7, depth: 0.45, top: [0.56, 0.65, 0.57], bot: [0.68, 0.75, 0.68] },
+          { radius: 860, baseH: -4, amp: 52, freq: 4, phase: 2.1, depth: 0.85, top: [0.64, 0.72, 0.73], bot: [0.76, 0.82, 0.79] }
         ];
         ridgeLayers.forEach(function (layer) {
           var segs = 48, baseVertex = rPos.length / 3;
@@ -223,6 +260,7 @@
             var h = layer.amp * (0.45 + 0.32 * Math.sin(ang * layer.freq + layer.phase) + 0.23 * Math.cos(ang * (layer.freq * 2 + 1) - layer.phase)) * sightDamp;
             rPos.push(rx, layer.baseH, rz, rx, Math.max(2, h), rz);
             rCol.push(layer.bot[0], layer.bot[1], layer.bot[2], layer.top[0], layer.top[1], layer.top[2]);
+            rDepth.push(layer.depth, 0.0, layer.depth, 1.0);
             if (s < segs) {
               var i0 = baseVertex + s * 2;
               rIdx.push(i0, i0 + 2, i0 + 1, i0 + 1, i0 + 2, i0 + 3);
@@ -232,22 +270,183 @@
         var ridgeGeo = own(new THREE.BufferGeometry());
         ridgeGeo.setAttribute('position', new THREE.Float32BufferAttribute(rPos, 3));
         ridgeGeo.setAttribute('color', new THREE.Float32BufferAttribute(rCol, 3));
+        ridgeGeo.setAttribute('aColor', new THREE.Float32BufferAttribute(rCol, 3));
+        ridgeGeo.setAttribute('aLayer', new THREE.Float32BufferAttribute(rDepth, 2));
         ridgeGeo.setIndex(rIdx);
-        var ridgeMat = own(new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, fog: false, toneMapped: false }));
+        var ridgeMat = null;
+        if (typeof THREE.ShaderMaterial === 'function') {
+          ridgeMat = own(new THREE.ShaderMaterial({
+            side: THREE.DoubleSide, fog: false, toneMapped: false,
+            uniforms: {
+              uHighContrast: sceneHcUniform,
+              uHazeColor: { value: new THREE.Color(0xdbe3d8) },
+              uWarmRim: { value: new THREE.Color(0xf6e4be) }
+            },
+            vertexShader: [
+              'attribute vec3 aColor; attribute vec2 aLayer;',
+              'varying vec3 vCol; varying vec2 vLayer;',
+              'void main(){ vCol = aColor; vLayer = aLayer; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform float uHighContrast; uniform vec3 uHazeColor; uniform vec3 uWarmRim;',
+              'varying vec3 vCol; varying vec2 vLayer;',
+              'void main(){',
+              '  vec3 col = vCol;',
+              '  if (uHighContrast < 0.5) {',
+              '    float baseMist = (1.0 - smoothstep(0.0, 0.55, vLayer.y)) * (0.20 + 0.34 * vLayer.x);',
+              '    col = mix(col, uHazeColor, baseMist);',
+              '    float crestRim = smoothstep(0.76, 1.0, vLayer.y) * (1.0 - vLayer.x * 0.45);',
+              '    col = mix(col, uWarmRim, crestRim * 0.24);',
+              '  }',
+              '  gl_FragColor = vec4(col, 1.0);',
+              '}'
+            ].join('\n')
+          }));
+        } else {
+          ridgeMat = own(new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, fog: false, toneMapped: false }));
+        }
         var ridges = mesh(ridgeGeo, ridgeMat);
         ridges.name = 'distance-horizon-ridges';
       }
 
-      // Subtle high-altitude thermal updraft arcs in the wide 20° valley sky (well above the 0.75° detail FOV).
-      if (typeof THREE.TorusGeometry === 'function' && typeof THREE.MeshBasicMaterial === 'function') {
-        var thermalMat = own(new THREE.MeshBasicMaterial({ color: 0xf4f8f5, transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide, fog: false, toneMapped: false }));
-        var thermalGeo = own(new THREE.TorusGeometry(4.2, 0.14, 6, 28, Math.PI * 1.15));
-        [[-16, 17, -140, 0.4], [-14.5, 21.5, -142, 2.2], [19, 19, -165, 1.3], [17.5, 24, -168, 3.1]].forEach(function (t, ti) {
-          var arc = mesh(thermalGeo, thermalMat);
-          arc.position.set(t[0], t[1], t[2]);
-          arc.rotation.set(Math.PI * 0.44, t[3], 0.12 * (ti % 2 ? 1 : -1));
-          arc.name = 'distance-thermal-wisp-' + ti;
-        });
+      // GLSL Savanna Horizon Heat-Haze ribbon (strictly in wideDecorGroup so 0.75° detail FOV acuity is 100% untouched).
+      if (typeof THREE.ShaderMaterial === 'function' && typeof THREE.CylinderGeometry === 'function') {
+        var hazeGeo = own(new THREE.CylinderGeometry(490, 490, 26, 48, 1, true));
+        var hazeMat = own(new THREE.ShaderMaterial({
+          transparent: true, depthWrite: false, side: THREE.BackSide, fog: false, toneMapped: false,
+          blending: THREE.AdditiveBlending || THREE.NormalBlending,
+          uniforms: {
+            uTime: sceneTimeUniform,
+            uColor: { value: new THREE.Color(0xfaeccd) }
+          },
+          vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+          fragmentShader: [
+            'uniform float uTime; uniform vec3 uColor; varying vec2 vUv;',
+            'void main(){',
+            '  float vMask = smoothstep(0.0, 0.28, vUv.y) * smoothstep(1.0, 0.18, vUv.y);',
+            '  float waveA = sin(vUv.x * 62.8318 + vUv.y * 14.0 - uTime * 1.15);',
+            '  float waveB = sin(vUv.x * 113.097 - vUv.y * 22.0 + uTime * 0.85);',
+            '  float shimmer = 0.55 + 0.45 * (waveA * 0.58 + waveB * 0.42);',
+            '  float alpha = vMask * shimmer * 0.14;',
+            '  if (alpha < 0.002) discard;',
+            '  gl_FragColor = vec4(uColor, alpha);',
+            '}'
+          ].join('\n')
+        }));
+        var hazeBand = mesh(hazeGeo, hazeMat, wideDecorGroup);
+        hazeBand.position.set(0, 10, 0);
+        hazeBand.renderOrder = 2;
+        hazeBand.name = 'distance-savanna-heat-haze';
+      }
+
+      // Subtle high-altitude thermal updraft shimmer arcs in the wide 20° valley sky (well above the 0.75° detail FOV).
+      if (typeof THREE.TorusGeometry === 'function') {
+        var thermalMat = null;
+        if (typeof THREE.ShaderMaterial === 'function') {
+          thermalMat = own(new THREE.ShaderMaterial({
+            transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, toneMapped: false,
+            blending: THREE.AdditiveBlending || THREE.NormalBlending,
+            uniforms: {
+              uTime: sceneTimeUniform,
+              uColor: { value: new THREE.Color(0xfff6e2) }
+            },
+            vertexShader: [
+              'varying vec2 vUv; varying vec3 vViewNormal; varying vec3 vViewDir;',
+              'void main(){',
+              '  vUv = uv;',
+              '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+              '  vViewNormal = normalize(normalMatrix * normal);',
+              '  vViewDir = normalize(-mv.xyz);',
+              '  gl_Position = projectionMatrix * mv;',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform float uTime; uniform vec3 uColor;',
+              'varying vec2 vUv; varying vec3 vViewNormal; varying vec3 vViewDir;',
+              'void main(){',
+              '  float taper = sin(vUv.x * 3.14159265);',
+              '  float flow = 0.52 + 0.48 * sin(vUv.x * 15.7079 - uTime * 1.35);',
+              '  float rim = 0.45 + 0.55 * abs(dot(normalize(vViewNormal), normalize(vViewDir)));',
+              '  float alpha = taper * flow * rim * 0.28;',
+              '  if (alpha < 0.002) discard;',
+              '  gl_FragColor = vec4(uColor, alpha);',
+              '}'
+            ].join('\n')
+          }));
+        } else if (typeof THREE.MeshBasicMaterial === 'function') {
+          thermalMat = own(new THREE.MeshBasicMaterial({ color: 0xf4f8f5, transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide, fog: false, toneMapped: false }));
+        }
+        if (thermalMat) {
+          var thermalGeo = own(new THREE.TorusGeometry(4.2, 0.16, 6, 28, Math.PI * 1.15));
+          [[-16, 17, -140, 0.4], [-14.5, 21.5, -142, 2.2], [19, 19, -165, 1.3], [17.5, 24, -168, 3.1]].forEach(function (t, ti) {
+            var arc = mesh(thermalGeo, thermalMat, wideDecorGroup);
+            arc.position.set(t[0], t[1], t[2]);
+            arc.rotation.set(Math.PI * 0.44, t[3], 0.12 * (ti % 2 ? 1 : -1));
+            arc.name = 'distance-thermal-wisp-' + ti;
+          });
+        }
+      }
+
+      // Sunlit meadow seeds & thermal-updraft dust motes (wide 20° view only, strictly outside the 0.75° detail corridor).
+      if (typeof THREE.Points === 'function' && typeof THREE.BufferGeometry === 'function' && typeof THREE.ShaderMaterial === 'function') {
+        var moteCount = 120;
+        var mPos = new Float32Array(moteCount * 3);
+        var mSeeds = new Float32Array(moteCount);
+        var mSizes = new Float32Array(moteCount);
+        for (var mi = 0; mi < moteCount; mi++) {
+          var mSide = mi % 2 ? 1 : -1;
+          var h1 = Math.sin(mi * 12.9898 + 3.17) * 43758.5453; h1 -= Math.floor(h1);
+          var h2 = Math.sin(mi * 78.233 + 7.41) * 43758.5453; h2 -= Math.floor(h2);
+          var h3 = Math.sin(mi * 39.425 + 1.93) * 43758.5453; h3 -= Math.floor(h3);
+          mPos[mi * 3] = mSide * (4.5 + h1 * 28.0);
+          mPos[mi * 3 + 1] = 1.2 + h2 * 14.0;
+          mPos[mi * 3 + 2] = -6.0 - h3 * 135.0;
+          mSeeds[mi] = h1 * 6.28318 + h2 * 3.14159;
+          mSizes[mi] = 0.8 + h3 * 1.1;
+        }
+        var moteGeo = own(new THREE.BufferGeometry());
+        moteGeo.setAttribute('position', new THREE.Float32BufferAttribute(mPos, 3));
+        moteGeo.setAttribute('aSeed', new THREE.Float32BufferAttribute(mSeeds, 1));
+        moteGeo.setAttribute('aSize', new THREE.Float32BufferAttribute(mSizes, 1));
+        var moteMat = own(new THREE.ShaderMaterial({
+          transparent: true, depthWrite: false, fog: false, toneMapped: false,
+          blending: THREE.AdditiveBlending || THREE.NormalBlending,
+          uniforms: {
+            uTime: sceneTimeUniform,
+            uColor: { value: new THREE.Color(0xfff4d4) }
+          },
+          vertexShader: [
+            'attribute float aSeed; attribute float aSize;',
+            'uniform float uTime;',
+            'varying float vSparkle;',
+            'void main(){',
+            '  vec3 p = position;',
+            '  float t = uTime * 0.65;',
+            '  p.x += sin(t + aSeed) * 0.55;',
+            '  p.y += sin(t * 0.8 + aSeed * 1.3) * 0.65;',
+            '  p.z += cos(t * 0.7 + aSeed * 0.9) * 0.45;',
+            '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
+            '  float dist = max(5.0, -mv.z);',
+            '  gl_PointSize = clamp(aSize * (220.0 / dist), 1.8, 7.5);',
+            '  vSparkle = (0.55 + 0.45 * sin(uTime * 1.4 + aSeed * 2.1)) * smoothstep(260.0, 28.0, dist);',
+            '  gl_Position = projectionMatrix * mv;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform vec3 uColor; varying float vSparkle;',
+            'void main(){',
+            '  vec2 c = gl_PointCoord - vec2(0.5);',
+            '  float r2 = dot(c, c);',
+            '  if (r2 > 0.25) discard;',
+            '  float soft = exp(-r2 * 13.0);',
+            '  gl_FragColor = vec4(uColor, soft * vSparkle * 0.55);',
+            '}'
+          ].join('\n')
+        }));
+        var motePoints = new THREE.Points(moteGeo, moteMat);
+        motePoints.renderOrder = 3;
+        motePoints.name = 'distance-thermal-motes';
+        wideDecorGroup.add(motePoints);
       }
 
       // Lightweight procedural textures for sunlit meadow turf, gravel field path, and cedar observation woodwork.
@@ -370,8 +569,14 @@
       var referenceSigma = model.gaussianSigmaPixels(60, WIDTH), eagleSigma = model.gaussianSigmaPixels(140, WIDTH);
       if (!Number.isFinite(referenceSigma) || referenceSigma < 0 || !Number.isFinite(eagleSigma) || eagleSigma < 0) throw new Error('The detail filter is unavailable.');
       pattern(currentSettings);
+      var hc = isHighContrast(options.wideCanvas);
+      sceneHcUniform.value = hc ? 1.0 : 0.0;
+      sceneTimeUniform.value = prefersReducedMotion() ? 2.6 : (2.6 + (currentSettings.distance || 80) * 0.015 + drawCount * 0.12);
+      if (wideDecorGroup) wideDecorGroup.visible = !hc;
       var wide = setCamera(20, currentSettings.distance);
       renderer.render(scene, camera); drawCount++; copy(canvasContexts[0], 0);
+      // Hide wide-only savanna haze & motes before the 0.75° detail render so angular resolution and contrast stay untouched.
+      if (wideDecorGroup) wideDecorGroup.visible = false;
       var detail = setCamera(.75, currentSettings.distance);
       renderer.render(scene, camera); drawCount++;
       // Both conditions copy this exact last rendering. Neither camera, object

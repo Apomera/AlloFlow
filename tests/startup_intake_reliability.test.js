@@ -239,6 +239,6 @@ describe('desktop startup assets',()=>{
 describe('tool catalog host paths',()=>{
   it.each([['http://localhost/app/','http://localhost/app/tool_index.json'],['http://127.0.0.1/','http://127.0.0.1/tool_index.json'],['https://alloflow.org/app/','https://alloflow.org/tool_index.json'],['https://gemini.google.com/app/123','https://alloflow-cdn.pages.dev/tool_index.json']])('loads the catalog from the correct host for %s',(href,expected)=>{
     const start=source.lastIndexOf('(function () {',source.indexOf('var _tiUrl'));const end=source.indexOf('})();',start)+5;const fetch=vi.fn(()=>Promise.resolve({ok:false}));
-    vm.runInNewContext(source.slice(start,end),{window:{location:new URL(href)},fetch,URL});expect(fetch).toHaveBeenCalledWith(expected,{cache:'no-cache'});
+    vm.runInNewContext(source.slice(start,end),{window:{location:new URL(href)},fetch,URL});expect(fetch).toHaveBeenCalledWith(expected,{cache:'no-cache',credentials:'omit',referrerPolicy:'no-referrer'});
   });
 });

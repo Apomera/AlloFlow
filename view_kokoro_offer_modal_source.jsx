@@ -102,6 +102,7 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
     };
   }, []);
   const studentAiOff = typeof window !== 'undefined' && window.__alloStudentAiDisabled === true;
+  const alreadyDownloading = typeof window !== 'undefined' && window.__kokoroTTSDownloading === true;
   return (
     <div className="fixed inset-0 z-[9998] bg-black/60 flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none" role="presentation" onClick={() => setShowKokoroOfferModal(false)}>
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="kokoro-offer-title" aria-describedby="kokoro-offer-reason kokoro-offer-description kokoro-offer-note" tabIndex={-1} className="allo-docsuite bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-6 max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto animate-in zoom-in-95 duration-200 motion-reduce:animate-none" onClick={(e) => e.stopPropagation()}>
@@ -112,12 +113,33 @@ function KokoroOfferModal({ setShowKokoroOfferModal, setSelectedVoice, addToast 
             <p id="kokoro-offer-reason" className="text-xs text-slate-600 dark:text-slate-300">{tr('voice_engine.kokoro_offer_reason', 'Cloud speech did not complete. Check the audio status or technical details for the reported cause.')}</p>
           </div>
         </div>
+        <div data-testid="kokoro-offer-facts" className="flex flex-wrap gap-1.5 mb-3">
+          <span className="rounded-full border border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-0.5 text-xs font-bold text-indigo-900 dark:text-indigo-200">
+            {tr('voice_engine.kokoro_fact_size', '~88 MB one-time')}
+          </span>
+          <span className="rounded-full border border-emerald-200 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 text-xs font-bold text-emerald-900 dark:text-emerald-200">
+            {tr('voice_engine.kokoro_fact_local', 'Runs on this device')}
+          </span>
+          <span className="rounded-full border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-xs font-bold text-slate-700 dark:text-slate-200">
+            {tr('voice_engine.kokoro_fact_free', 'Free · English')}
+          </span>
+        </div>
         <p id="kokoro-offer-description" className="text-sm text-slate-600 dark:text-slate-300 mb-4">
           {tr('voice_engine.kokoro_offer_description', 'Download Kokoro, a free voice model (~88MB). Once ready on this device, it generates English speech locally. The first clip may still take time to generate.')}
         </p>
         <p id="kokoro-offer-note" className="text-xs text-slate-600 dark:text-slate-300 mb-4">
           {tr('voice_engine.kokoro_offer_note', "This download prepares the voice model. Preparing and saving sentence clips for offline playback are separate steps. Model retention depends on this browser's storage; clearing it may require another download.")}
         </p>
+        {studentAiOff && (
+          <p role="status" data-testid="kokoro-student-notice" className="mb-4 rounded-xl border border-amber-300 bg-amber-50 dark:bg-amber-950/50 px-3 py-2 text-xs font-semibold text-amber-950 dark:text-amber-200">
+            {tr('voice_engine.kokoro_student_disabled', 'Voice model downloads are turned off in Student Mode. Your device voice is ready to use.')}
+          </p>
+        )}
+        {!studentAiOff && alreadyDownloading && (
+          <p role="status" data-testid="kokoro-downloading-notice" className="mb-4 rounded-xl border border-indigo-200 bg-indigo-50 dark:bg-indigo-950/50 px-3 py-2 text-xs font-semibold text-indigo-900 dark:text-indigo-200">
+            {tr('voice_engine.kokoro_prep_running', 'Voice model preparation is already running. Check audio status for progress.')}
+          </p>
+        )}
         <div className="flex flex-col sm:flex-row gap-3">
           <button type="button" onClick={() => { setShowKokoroOfferModal(false); window.__kokoroOfferDeclined = true; }} className="flex-1 min-h-11 py-2.5 px-4 rounded-xl font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-600 transition-colors motion-reduce:transition-none text-sm">
             {tr('voice_engine.kokoro_offer_decline', 'No Thanks')}

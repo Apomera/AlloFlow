@@ -1,7 +1,7 @@
 const fs = require('fs'), path = require('path'), assert = require('assert/strict');
 const { chromium } = require('playwright');
 const wr = require('module').createRequire(path.resolve('desktop/web-app/package.json'));
-const out = path.resolve(process.argv[2] || 'reports/concept-quest-solo-supports-2026-10-18');
+const out = path.resolve(process.argv.slice(2).find(arg => !arg.startsWith('--')) || 'reports/concept-quest-solo-supports-2026-10-18');
 const fallback = process.argv.includes('--fallback');
 fs.mkdirSync(out, { recursive: true });
 
@@ -21,7 +21,22 @@ fs.mkdirSync(out, { recursive: true });
         await page.addScriptTag({ path: 'concept_quest_solo_module.js' });
         await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });
         await page.evaluate(({ scenario, fallback }) => {
-          const visual = (label, color = '#0f766e') => 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="100"><rect width="320" height="100" rx="12" fill="#f0fdfa"/><circle cx="45" cy="50" r="22" fill="' + color + '"/><text x="82" y="55" font-family="Arial" font-size="18" fill="#0f172a">' + label + '</text></svg>');
+          const visual = (label, color = '#0f766e') => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 320;
+            canvas.height = 100;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#f0fdfa';
+            ctx.fillRect(0, 0, 320, 100);
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(45, 50, 22, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#0f172a';
+            ctx.font = '18px Arial';
+            ctx.fillText(label, 82, 55);
+            return canvas.toDataURL('image/png');
+          };
           const shared = { question: 'Quel choix respecte "x" < 3 && y >= 2 ?', question_en: 'Which choice keeps "x" < 3 && y >= 2? <script>literal text</script>' };
           const fixtures = {
             mcq: { ...shared, type: 'mcq', options: ['x < 3', 'x > 3'], options_en: ['Less than three, including negative values', 'Greater than three'], correctAnswer: 'x < 3', optionImageUrls: [visual('Less than three'), visual('Greater than three')], optionImageAltTexts: ['Number line shaded below three', 'Number line shaded above three'] },

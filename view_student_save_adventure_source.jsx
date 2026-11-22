@@ -215,6 +215,16 @@ function StudentSaveAdventurePanel({
   const unlockXp = Math.max(1, rawUnlockXp || 1);
   const boundedPoints = Math.max(0, Math.min(safePoints, unlockXp));
   const adventureProgress = Math.min(100, (boundedPoints / unlockXp) * 100);
+  const adventureRemainingXp = Math.max(0, rawUnlockXp - boundedPoints);
+  const adventurePercent = Math.round(adventureProgress);
+  const tr = (key, fallback, vars) => {
+    try {
+      const value = typeof t === 'function' ? t(key, vars) : '';
+      let text = typeof value === 'string' && value.trim() && value !== key ? value : fallback;
+      Object.keys(vars || {}).forEach((name) => { text = text.split('{' + name + '}').join(String(vars[name])); });
+      return text;
+    } catch (_) { return fallback; }
+  };
   const adventureAvailable = isAdventureAvailable !== false;
   const soloAdventureAiOff = !activeSessionCode && !_aiUsable('text', typeof window !== 'undefined' ? window.callGemini : undefined);
   const offlineAdventurePlay = !activeSessionCode && !!offlineAdventure && (soloAdventureAiOff || offlineAdventure.offlineOnly === true);
@@ -253,6 +263,11 @@ function StudentSaveAdventurePanel({
           <div>
             <h4 id={saveTitleId} className={cx('font-bold text-sm', styles.saveTitle)}>{t('student.save_banner_title')}</h4>
             <p className={cx('text-xs', styles.saveText)}>{t('student.save_banner_desc')}</p>
+            {hasSaveableWork === false && (
+              <p data-student-save-empty-hint="true" className={cx('text-[11px] mt-1 font-medium', styles.muted)}>
+                {tr('student.save_empty_hint', 'Open or complete an activity first to enable saving.')}
+              </p>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -319,8 +334,11 @@ function StudentSaveAdventurePanel({
                   style={{ width: `${adventureProgress}%` }}
                 ></div>
               </div>
-              <div id={adventureProgressId} className={cx('text-[11px] text-right font-mono', styles.progressLabel)}>
-                {safePoints} / {rawUnlockXp} XP
+              <div id={adventureProgressId} className={cx('flex items-center justify-between gap-2 text-[11px] font-mono', styles.progressLabel)}>
+                <span data-student-adventure-remaining="true" className="font-sans font-bold">
+                  {tr('adventure.xp_to_go', '{remaining} XP to go ({percent}%)', { remaining: adventureRemainingXp, percent: adventurePercent })}
+                </span>
+                <span>{safePoints} / {rawUnlockXp} XP</span>
               </div>
             </div>
           ) : (

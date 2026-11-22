@@ -348,7 +348,11 @@ The schema objects illustrate fields only; return a COMPLETE room of 7-12 object
   var _cerAiUnavailable = (fn) => {
     if (typeof fn !== "function" || fn._alloQrBlocked) return true;
     const win = typeof globalThis !== "undefined" ? globalThis.window : void 0;
-    if (win && (win.__alloAiSecretsLocked === true || win.__alloStudentAiDisabled === true)) return true;
+    if (win) {
+      if (win.__alloAiSecretsLocked === true || win.__alloStudentAiDisabled === true || win._alloQrBlocked === true) return true;
+      const qr = win.__alloQrStudentMode;
+      if (qr === true || qr && typeof qr === "object" && qr.active === true && qr.allowAi === false) return true;
+    }
     try {
       if (win && typeof win.__alloAiUsable === "function" && !win.__alloAiUsable("text", fn)) return true;
     } catch (_) {
@@ -698,23 +702,31 @@ The schema objects illustrate fields only; return a COMPLETE room of 7-12 object
 
   // connected_escape_room_collaboration.jsx
   var React4 = window.React;
-  var { useState, useEffect } = React4;
+  var { useState, useEffect, useRef } = React4;
   var tr4 = (t, key, fallback, params = {}) => {
     const full = "connected_escape." + key, value = typeof t === "function" ? t(full, params) : "";
     return Object.entries(params).reduce((s, [k, v]) => s.replaceAll("{" + k + "}", String(v)), typeof value === "string" && value && value !== full ? value : fallback);
   };
   var cerMd4 = () => window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown || { inline: (v) => v == null ? "" : String(v), block: (v) => v == null ? "" : String(v), plain: (v) => v == null ? "" : String(v) };
+  function loadRoomWorkspace(room, storageKey) {
+    try {
+      const saved = storageKey && sessionStorage.getItem(storageKey);
+      if (saved && saved.length < 1e4) return restoreWorkspace(room, JSON.parse(saved));
+    } catch (_) {
+    }
+    return restoreWorkspace(room, null);
+  }
   function useRoomWorkspace(room, storageKey) {
-    const [workspace, setWorkspace] = useState(() => {
-      try {
-        const saved = storageKey && sessionStorage.getItem(storageKey);
-        if (saved && saved.length < 1e4) return restoreWorkspace(room, JSON.parse(saved));
-      } catch (_) {
-      }
-      return restoreWorkspace(room, null);
-    });
+    const [workspace, setWorkspace] = useState(() => loadRoomWorkspace(room, storageKey));
     const [storageStatus, setStorageStatus] = useState("");
+    const loadedKeyRef = useRef(storageKey);
     useEffect(() => {
+      if (loadedKeyRef.current !== storageKey) {
+        loadedKeyRef.current = storageKey;
+        setWorkspace(loadRoomWorkspace(room, storageKey));
+        setStorageStatus("");
+        return;
+      }
       if (!storageKey) return;
       try {
         sessionStorage.setItem(storageKey, JSON.stringify(workspace));
@@ -722,7 +734,7 @@ The schema objects illustrate fields only; return a COMPLETE room of 7-12 object
       } catch (_) {
         setStorageStatus("unavailable");
       }
-    }, [storageKey, workspace]);
+    }, [storageKey, workspace, room]);
     return [workspace, setWorkspace, storageStatus];
   }
   function TeamActivityBoard({ room, progress, actions, attemptId, uid, roster, onSelect, t }) {
@@ -738,7 +750,7 @@ The schema objects illustrate fields only; return a COMPLETE room of 7-12 object
 
   // connected_escape_room_support.jsx
   var React5 = window.React;
-  var { useState: useState2, useRef, useEffect: useEffect2 } = React5;
+  var { useState: useState2, useRef: useRef2, useEffect: useEffect2 } = React5;
   var tr5 = (t, key, fallback, params = {}) => {
     const full = "connected_escape." + key, value = typeof t === "function" ? t(full, params) : "";
     return Object.entries(params).reduce((s, [k, v]) => s.replaceAll("{" + k + "}", String(v)), typeof value === "string" && value && value !== full ? value : fallback);
@@ -748,11 +760,11 @@ The schema objects illustrate fields only; return a COMPLETE room of 7-12 object
     const hintId = React5.useId(), md = cerMd5();
     const [selection, setSelection] = useState2({ nodeId: "", level: 1 }), [reason, setReason] = useState2("guidance");
     const [confirmation, setConfirmation] = useState2(null), [notice, setNotice] = useState2("");
-    const pickerRef = useRef(null), cancelRef = useRef(null), rescueRef = useRef(null), mounted = useRef(true), sending = useRef(false), restoreRescue = useRef(false), focusPicker = useRef(false), lastFocus = useRef(null), shareRef = useRef(null), focusHint = useRef(false);
+    const pickerRef = useRef2(null), cancelRef = useRef2(null), rescueRef = useRef2(null), mounted = useRef2(true), sending = useRef2(false), restoreRescue = useRef2(false), focusPicker = useRef2(false), lastFocus = useRef2(null), shareRef = useRef2(null), focusHint = useRef2(false);
     const finished = complete(room, progress), ready = finished ? [] : room.nodes.filter((n) => progress?.solved?.[n.id] !== true && available(room, progress, n));
     const target = ready.find((n) => n.id === selection.nodeId), level = target ? hintLevel(progress, target.id) : 0;
     const shared = !!target && selection.level <= level;
-    const latest = useRef({ room, progress });
+    const latest = useRef2({ room, progress });
     latest.current = { room, progress };
     useEffect2(() => {
       mounted.current = true;
@@ -852,7 +864,7 @@ The schema objects illustrate fields only; return a COMPLETE room of 7-12 object
     if (typeof text2 !== "string" || text2.length > MAX_ROOM_FILE_CHARS) throw Error("room-file-size");
     let raw;
     try {
-      raw = JSON.parse(text2.replace(/^\uFEFF/, ""));
+      raw = JSON.parse(text2.replace(/^\uFEFF/, ""), (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v);
     } catch (_) {
       throw Error("room-file-format");
     }
@@ -884,7 +896,7 @@ The schema objects illustrate fields only; return a COMPLETE room of 7-12 object
 
   // connected_escape_room_transfer.jsx
   var React6 = window.React;
-  var { useState: useState3, useEffect: useEffect3, useRef: useRef2 } = React6;
+  var { useState: useState3, useEffect: useEffect3, useRef: useRef3 } = React6;
   var tr6 = (t, key, fallback, params = {}) => {
     const full = "connected_escape." + key, value = typeof t === "function" ? t(full, params) : "";
     return Object.entries(params).reduce((s, [k, v]) => s.replaceAll("{" + k + "}", String(v)), typeof value === "string" && value && value !== full ? value : fallback);
@@ -892,7 +904,7 @@ The schema objects illustrate fields only; return a COMPLETE room of 7-12 object
   var cerMd6 = () => window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown || { inline: (v) => v == null ? "" : String(v), block: (v) => v == null ? "" : String(v), plain: (v) => v == null ? "" : String(v) };
   function RoomTransfer({ room, source, language, disabled, unsaved, onOpen, onReading, t }) {
     const [candidate, setCandidate] = useState3(null), [error, setError] = useState3(""), [notice, setNotice] = useState3("");
-    const request = useRef2(0), inputRef = useRef2(null), summaryRef = useRef2(null), urls = useRef2(/* @__PURE__ */ new Map());
+    const request = useRef3(0), inputRef = useRef3(null), summaryRef = useRef3(null), urls = useRef3(/* @__PURE__ */ new Map());
     useEffect3(() => () => {
       request.current++;
       urls.current.forEach((timer, url) => {
@@ -965,7 +977,7 @@ The schema objects illustrate fields only; return a COMPLETE room of 7-12 object
 
   // connected_escape_room_navigation.jsx
   var React7 = window.React;
-  var { useState: useState4, useEffect: useEffect4, useRef: useRef3 } = React7;
+  var { useState: useState4, useEffect: useEffect4, useRef: useRef4 } = React7;
   var tr7 = (t, key, fallback, params = {}) => {
     const full = "connected_escape." + key, value = typeof t === "function" ? t(full, params) : "";
     return Object.entries(params).reduce((s, [k, v]) => s.replaceAll("{" + k + "}", String(v)), typeof value === "string" && value && value !== full ? value : fallback);
@@ -977,7 +989,7 @@ The schema objects illustrate fields only; return a COMPLETE room of 7-12 object
   }
   function DiscoveryUpdate({ room, progress, solo, onSelect, t }) {
     const roomKey = JSON.stringify(room), md = cerMd7();
-    const previous = useRef3({ roomKey, progress }), [update, setUpdate] = useState4({ discoveries: [], opened: [] });
+    const previous = useRef4({ roomKey, progress }), [update, setUpdate] = useState4({ discoveries: [], opened: [] });
     const fingerprint = room.nodes.map((n) => progress?.solved?.[n.id] === true ? "1" : "0").join("");
     useEffect4(() => {
       if (previous.current.roomKey !== roomKey) setUpdate({ discoveries: [], opened: [] });
@@ -1002,6 +1014,7 @@ The schema objects illustrate fields only; return a COMPLETE room of 7-12 object
   var legacyRoomKey = (source) => "allo-connected-room-v1:" + hashText(source);
   var libraryKey = (source, language) => "allo-connected-library-v2:" + hashText(JSON.stringify([source, language]));
   var sameRoom = (a, b) => !!a && !!b && JSON.stringify(a) === JSON.stringify(b);
+  var safeJsonParse = (text2) => JSON.parse(text2, (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v);
   function readLibrary(storage, source, language) {
     const empty = { version: 2, source, language, entries: [], selectedId: "" };
     const stored = storage.getItem(libraryKey(source, language));
@@ -1009,7 +1022,7 @@ The schema objects illustrate fields only; return a COMPLETE room of 7-12 object
       if (stored.length > MAX_LIBRARY_CHARS) throw Error("library-invalid");
       let raw;
       try {
-        raw = JSON.parse(stored);
+        raw = safeJsonParse(stored);
       } catch (_) {
         throw Error("library-invalid");
       }
@@ -1031,7 +1044,7 @@ The schema objects illustrate fields only; return a COMPLETE room of 7-12 object
     }
     const legacy = storage.getItem(legacyRoomKey(source));
     if (legacy && legacy.length < 4e4) try {
-      const candidate = JSON.parse(legacy);
+      const candidate = safeJsonParse(legacy);
       if (candidate?.language === language) {
         const room = prepareRoom(candidate.room, source), id = "saved_legacy";
         empty.entries = [{ id, savedAt: 0, room }];
@@ -1108,7 +1121,7 @@ PLAYER MATERIAL END
     if (answer !== null) {
       if (node.type === "use-tool") {
         if (typeof answer !== "string" || !playerReviewCase(room, node.id).interaction.tools.some((tool) => tool.id === answer)) throw Error("The AI returned an invalid tool choice.");
-        value = String(room.nodes.findIndex((n) => n.reward.id === answer));
+        value = String(room.nodes.findIndex((n) => n && n.reward && n.reward.id === answer));
       } else {
         const count = node.type === "configure" ? node.controls.length : node.type === "sequence" ? node.items.length : 2;
         if (!Array.isArray(answer) || answer.length !== count || !answer.every(Number.isInteger)) throw Error("The AI returned invalid device settings.");
@@ -1241,7 +1254,7 @@ PLAYER MATERIAL END
 
   // connected_escape_room_source.jsx
   var React8 = window.React;
-  var { useState: useState5, useEffect: useEffect6, useRef: useRef4, useMemo } = React8;
+  var { useState: useState5, useEffect: useEffect6, useRef: useRef5, useMemo } = React8;
   var tr8 = (t, key, fallback, params = {}) => {
     const full = "connected_escape." + key, value = typeof t === "function" ? t(full, params) : "";
     return Object.entries(params).reduce((s, [k, v]) => s.replaceAll("{" + k + "}", String(v)), typeof value === "string" && value && value !== full ? value : fallback);
@@ -1273,7 +1286,7 @@ PLAYER MATERIAL END
     }, []);
     return runtime.errors.get(scope) || "";
   }
-  var css = `.cer{--control:#778198;--cb:#f6f7fc;--cp:#fff;--ci:#20243d;--cs:#535d75;--cl:#ccd2e3;--ca:#5036ab;--cf:#eeebfc;color:var(--ci);background:var(--cb);font:400 1rem/1.55 system-ui,sans-serif;overflow-wrap:anywhere}.dark .cer,.theme-dark .cer{--control:#8c99b5;--cb:#171b29;--cp:#232a3c;--ci:#f4f5fb;--cs:#c3cbe0;--cl:#4f5b77;--ca:#c6b9ff;--cf:#393250}.theme-contrast .cer{--control:#facc15;--cb:#000;--cp:#000;--ci:#fff;--cs:#fde047;--cl:#facc15;--ca:#facc15;--cf:#1a1a00}.cer *{box-sizing:border-box}.cer h2{font-size:1.5em;font-weight:750;margin:0 0 8px}.cer h3{font-size:1.1em;font-weight:700;margin:0 0 10px}.cer p{margin:8px 0 14px}.cer button,.cer input,.cer select,.cer textarea{font:inherit}.cer button{min-width:44px;min-height:44px;padding:9px 13px;border:1px solid var(--cl);border-radius:10px;background:var(--cp);color:var(--ci);cursor:pointer}.cer button:hover:enabled,.cer button[aria-pressed=true]{background:var(--cf);border-color:var(--ca)}.cer button:disabled,.cer button[aria-disabled=true]{opacity:.6;cursor:default}.cer :focus-visible{outline:3px solid var(--ca);outline-offset:3px}.cer .cer-primary{background:var(--ca);color:var(--cp);font-weight:650}.dark .cer .cer-primary,.theme-dark .cer .cer-primary{color:#171b29}.theme-contrast .cer .cer-primary{color:#000}.cer .cer-primary:hover:enabled{background:var(--ci);color:var(--cp)}.cer input,.cer select,.cer textarea{width:100%;min-width:0;min-height:44px;border:1px solid var(--cl);border-radius:8px;border-color:var(--control);background:var(--cp);color:var(--ci);padding:8px}.cer textarea{min-height:90px}.cer label{display:block;margin:9px 0}.cer small,.cer .cer-muted{color:var(--cs);font-size:.87em}.cer .cer-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.cer .cer-between{justify-content:space-between}.cer .cer-panel{background:var(--cp);border:1px solid var(--cl);padding:18px;border-radius:14px;min-width:0}.cer .cer-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px;margin-top:18px}.cer .cer-objects{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0}.cer .cer-objects button{text-align:left;min-height:75px}.cer .cer-objects small{display:block;margin-top:4px}.cer .cer-journal p{border-left:3px solid var(--cl);padding-left:12px;white-space:pre-wrap}.cer .cer-journal h3{margin-top:15px}.cer .cer-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}.cer .cer-sequence{list-style:none;padding:0}.cer .cer-sequence li{display:flex;align-items:center;gap:7px;margin:7px 0;padding:7px 0;border-bottom:1px solid var(--cl)}.cer .cer-sequence li span{flex:1;min-width:0}.cer .cer-alert{padding:12px;border:1px solid var(--cl);border-radius:10px;background:var(--cf);margin:12px 0}.cer .cer-error{color:#9e1d36;background:#fff1f3;border-color:#e4a1ad}.dark .cer .cer-error,.theme-dark .cer .cer-error{color:#ffdbe1;background:#4c2031}.theme-contrast .cer .cer-error{color:#fff;background:#000;border-color:#facc15}.cer details{margin:12px 0;border-top:1px solid var(--cl);padding-top:10px}.cer summary{cursor:pointer;font-weight:650;min-height:44px;padding:10px 0}.cer .cer-progress{height:8px;border-radius:5px;background:var(--cl);overflow:hidden;margin:14px 0}.cer .cer-progress>div{height:100%;background:var(--ca)}.cer-overlay{position:fixed;inset:0;z-index:9999;overflow:auto}.cer-shell{max-width:1150px;margin:0 auto;padding:22px}.cer-modal-backdrop{position:fixed;inset:0;z-index:10000;background:#101528bb;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:24px 12px}.cer-modal{width:min(1050px,100%);padding:24px;border-radius:18px;box-shadow:0 15px 60px #0005}.cer-teacher{border:1px solid var(--cl);border-radius:16px;padding:20px}.cer .cer-map{display:block;width:100%;max-width:420px;margin:auto}.cer .cer-map text{font:16px system-ui;fill:var(--ci)}.cer .cer-map line{stroke:var(--control);stroke-width:1}.cer .cer-map circle{fill:var(--ca)}.cer .cer-directions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-width:310px;margin:10px auto}.cer .cer-directions button:first-child{grid-column:2}.cer .cer-directions button:nth-child(2){grid-column:1}.cer .cer-evidence-context{background:var(--cf);border:1px solid var(--cl);border-radius:10px;padding:14px;margin:14px 0}.cer .cer-evidence-context h4{margin:0 0 10px;font-size:1em}.cer .cer-evidence-context p{white-space:pre-wrap;margin:4px 0 12px}.cer .cer-evidence-context div:last-child p{margin-bottom:0}.cer .cer-activity-list{list-style:none;padding:0;display:grid;gap:10px}.cer .cer-activity-list li{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.cer .cer-activity-list small{flex-basis:100%}.cer .cer-activity-waiting{color:var(--ca)}.cer .cer-guide-areas{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:16px}.cer .cer-guide-objects{list-style:none;margin:0;padding:0;display:grid;gap:8px}.cer .cer-guide-objects button{width:100%;text-align:left}.cer .cer-guide-objects small{display:block}.cer .cer-reading-nav{margin:14px 0}.cer .cer-debrief{margin:16px 0}.cer .cer-debrief h4{margin:12px 0 6px}.cer blockquote{margin:12px 0;border-left:3px solid var(--cl);padding-left:12px;white-space:pre-wrap}.cer .cer-library{background:var(--cp);border:1px solid var(--cl);border-radius:12px;padding:12px}.cer .cer-facts{padding-left:20px}.cer .cer-facts li{margin:8px 0}.cer [tabindex],.cer button,.cer summary{scroll-margin:16px}.cer .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(forced-colors:active){.cer button,.cer input,.cer select,.cer textarea,.cer-panel{border:1px solid ButtonText}.cer :focus-visible{outline:3px solid Highlight}.cer .cer-progress>div{background:Highlight}.cer .cer-map circle{fill:CanvasText}.cer .cer-map line{stroke:CanvasText}.cer .cer-map text{fill:CanvasText}}@media(max-width:640px){.cer .cer-layout{grid-template-columns:1fr}.cer-shell,.cer-modal{padding:15px}.cer .cer-panel{padding:14px}.cer .cer-objects{grid-template-columns:repeat(2,minmax(0,1fr))}.cer .cer-controls{grid-template-columns:1fr}.cer-modal-backdrop{padding:12px 6px}.cer input,.cer select,.cer textarea{font-size:max(1rem,16px)}}`;
+  var css = `.cer{--control:#778198;--cb:#f6f7fc;--cp:#fff;--ci:#20243d;--cs:#535d75;--cl:#ccd2e3;--ca:#5036ab;--cf:#eeebfc;--cok:#15803d;color:var(--ci);background:var(--cb);font:400 1rem/1.55 system-ui,sans-serif;overflow-wrap:anywhere}.dark .cer,.theme-dark .cer{--control:#8c99b5;--cb:#171b29;--cp:#232a3c;--ci:#f4f5fb;--cs:#c3cbe0;--cl:#4f5b77;--ca:#c6b9ff;--cf:#393250;--cok:#4ade80}.theme-contrast .cer{--control:#facc15;--cb:#000;--cp:#000;--ci:#fff;--cs:#fde047;--cl:#facc15;--ca:#facc15;--cf:#1a1a00;--cok:#facc15}.cer *{box-sizing:border-box}.cer h2{font-size:1.5em;font-weight:750;margin:0 0 8px}.cer h3{font-size:1.1em;font-weight:700;margin:0 0 10px}.cer p{margin:8px 0 14px}.cer button,.cer input,.cer select,.cer textarea{font:inherit}.cer button{min-width:44px;min-height:44px;padding:9px 13px;border:1px solid var(--cl);border-radius:10px;background:var(--cp);color:var(--ci);cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.cer button:hover:enabled,.cer button[aria-pressed=true]{background:var(--cf);border-color:var(--ca)}.cer button:disabled,.cer button[aria-disabled=true]{opacity:.6;cursor:default}.cer :focus-visible{outline:3px solid var(--ca);outline-offset:3px}.cer .cer-primary{background:var(--ca);color:var(--cp);font-weight:650}.dark .cer .cer-primary,.theme-dark .cer .cer-primary{color:#171b29}.theme-contrast .cer .cer-primary{color:#000}.cer .cer-primary:hover:enabled{background:var(--ci);color:var(--cp)}.cer input,.cer select,.cer textarea{width:100%;min-width:0;min-height:44px;border:1px solid var(--cl);border-radius:8px;border-color:var(--control);background:var(--cp);color:var(--ci);padding:8px}.cer textarea{min-height:90px}.cer label{display:block;margin:9px 0}.cer small,.cer .cer-muted{color:var(--cs);font-size:.87em}.cer .cer-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.cer .cer-between{justify-content:space-between}.cer .cer-status-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--cl);background:var(--cf);font-size:.85em;font-weight:700}.cer .cer-panel{background:var(--cp);border:1px solid var(--cl);padding:18px;border-radius:14px;min-width:0}.cer .cer-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px;margin-top:18px}.cer .cer-objects{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0}.cer .cer-objects button{text-align:left;min-height:75px}.cer .cer-objects button[data-object-status=solved]{border-left:4px solid var(--cok)}.cer .cer-objects button[data-object-status=available]{border-left:4px solid var(--ca)}.cer .cer-objects button[data-object-status=locked]{border-style:dashed;opacity:.85}.cer .cer-objects small{display:block;margin-top:4px}.cer .cer-journal p{border-left:3px solid var(--cl);padding-left:12px;white-space:pre-wrap}.cer .cer-journal h3{margin-top:15px}.cer .cer-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}.cer .cer-sequence{list-style:none;padding:0}.cer .cer-sequence li{display:flex;align-items:center;gap:7px;margin:7px 0;padding:7px 0;border-bottom:1px solid var(--cl)}.cer .cer-sequence li span{flex:1;min-width:0}.cer .cer-alert{padding:12px;border:1px solid var(--cl);border-radius:10px;background:var(--cf);margin:12px 0}.cer .cer-error{color:#9e1d36;background:#fff1f3;border-color:#e4a1ad}.dark .cer .cer-error,.theme-dark .cer .cer-error{color:#ffdbe1;background:#4c2031}.theme-contrast .cer .cer-error{color:#fff;background:#000;border-color:#facc15}.cer details{margin:12px 0;border-top:1px solid var(--cl);padding-top:10px}.cer summary{cursor:pointer;font-weight:650;min-height:44px;padding:10px 0}.cer .cer-progress{height:8px;border-radius:5px;background:var(--cl);overflow:hidden;margin:14px 0}.cer .cer-progress>div{height:100%;background:var(--ca);transition:width .25s ease}.cer-overlay{position:fixed;inset:0;z-index:9999;overflow:auto}.cer-shell{max-width:1150px;margin:0 auto;padding:22px}.cer-modal-backdrop{position:fixed;inset:0;z-index:10000;background:#101528bb;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:24px 12px}.cer-modal{width:min(1050px,100%);padding:24px;border-radius:18px;box-shadow:0 15px 60px #0005}.cer-teacher{border:1px solid var(--cl);border-radius:16px;padding:20px}.cer .cer-map{display:block;width:100%;max-width:420px;margin:auto}.cer .cer-map text{font:16px system-ui;fill:var(--ci)}.cer .cer-map line{stroke:var(--control);stroke-width:1}.cer .cer-map circle{fill:var(--ca)}.cer .cer-directions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-width:310px;margin:10px auto}.cer .cer-directions button:first-child{grid-column:2}.cer .cer-directions button:nth-child(2){grid-column:1}.cer .cer-evidence-context{background:var(--cf);border:1px solid var(--cl);border-radius:10px;padding:14px;margin:14px 0}.cer .cer-evidence-context h4{margin:0 0 10px;font-size:1em}.cer .cer-evidence-context p{white-space:pre-wrap;margin:4px 0 12px}.cer .cer-evidence-context div:last-child p{margin-bottom:0}.cer .cer-activity-list{list-style:none;padding:0;display:grid;gap:10px}.cer .cer-activity-list li{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.cer .cer-activity-list small{flex-basis:100%}.cer .cer-activity-waiting{color:var(--ca)}.cer .cer-guide-areas{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:16px}.cer .cer-guide-objects{list-style:none;margin:0;padding:0;display:grid;gap:8px}.cer .cer-guide-objects button{width:100%;text-align:left}.cer .cer-guide-objects small{display:block}.cer .cer-reading-nav{margin:14px 0}.cer .cer-debrief{margin:16px 0}.cer .cer-debrief h4{margin:12px 0 6px}.cer blockquote{margin:12px 0;border-left:3px solid var(--cl);padding-left:12px;white-space:pre-wrap}.cer .cer-library{background:var(--cp);border:1px solid var(--cl);border-radius:12px;padding:12px}.cer .cer-facts{padding-left:20px}.cer .cer-facts li{margin:8px 0}.cer [tabindex],.cer button,.cer summary{scroll-margin:16px}.cer .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(prefers-reduced-motion:reduce){.cer *{transition:none!important;animation:none!important}}@media(forced-colors:active){.cer button,.cer input,.cer select,.cer textarea,.cer-panel{border:1px solid ButtonText}.cer :focus-visible{outline:3px solid Highlight}.cer .cer-progress>div{background:Highlight}.cer .cer-map circle{fill:CanvasText}.cer .cer-map line{stroke:CanvasText}.cer .cer-map text{fill:CanvasText}}@media(max-width:640px){.cer .cer-layout{grid-template-columns:1fr}.cer-shell,.cer-modal{padding:15px}.cer .cer-panel{padding:14px}.cer .cer-objects{grid-template-columns:repeat(2,minmax(0,1fr))}.cer .cer-controls{grid-template-columns:1fr}.cer-modal-backdrop{padding:12px 6px}.cer input,.cer select,.cer textarea{font-size:max(1rem,16px)}}`;
   function Styles() {
     return /* @__PURE__ */ React8.createElement("style", null, css);
   }
@@ -1295,13 +1308,23 @@ PLAYER MATERIAL END
   }
   function RouteMap({ node, position, onChange, disabled, t }) {
     const size = node.grid.size, step = 230 / (size - 1);
-    return /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement("svg", { className: "cer-map", viewBox: "0 0 300 295", role: "img", "aria-label": tr8(t, "position", "Position: column {x}, row {y}.", { x: position[0], y: position[1] }) }, /* @__PURE__ */ React8.createElement("text", { x: "150", y: "20", textAnchor: "middle" }, tr8(t, "north_rows", "North \u2191 \xB7 Rows")), Array.from({ length: size }, (_, i) => /* @__PURE__ */ React8.createElement("g", { key: i }, /* @__PURE__ */ React8.createElement("line", { x1: 40 + i * step, y1: "35", x2: 40 + i * step, y2: "265" }), /* @__PURE__ */ React8.createElement("line", { x1: "40", y1: 35 + i * step, x2: "270", y2: 35 + i * step }), /* @__PURE__ */ React8.createElement("text", { x: 40 + i * step, y: "288", textAnchor: "middle" }, i + 1), /* @__PURE__ */ React8.createElement("text", { x: "21", y: 271 - i * step, textAnchor: "middle" }, i + 1))), /* @__PURE__ */ React8.createElement("circle", { cx: 40 + (position[0] - 1) * step, cy: 265 - (position[1] - 1) * step, r: "8" })), /* @__PURE__ */ React8.createElement("p", { role: "status", "aria-live": "polite", "aria-atomic": "true" }, tr8(t, "position", "Position: column {x}, row {y}.", { x: position[0], y: position[1] }), " ", tr8(t, "axis_rule", "East increases columns; north increases rows.")), /* @__PURE__ */ React8.createElement("div", { className: "cer-directions" }, [["north", "North", 0, 1], ["west", "West", -1, 0], ["south", "South", 0, -1], ["east", "East", 1, 0]].map(([id, label, dx, dy]) => /* @__PURE__ */ React8.createElement("button", { type: "button", key: id, "data-direction": id, disabled, "aria-disabled": disabled || position[0] + dx < 1 || position[0] + dx > size || position[1] + dy < 1 || position[1] + dy > size, onClick: () => {
+    const moveBy = (dx, dy) => {
+      if (disabled) return;
       const next = [position[0] + dx, position[1] + dy];
       if (next.every((value) => value >= 1 && value <= size)) onChange(next);
-    } }, tr8(t, id, label)))));
+    };
+    const onDirectionKeyDown = (event) => {
+      if (disabled || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+      const deltas = { ArrowUp: [0, 1], ArrowDown: [0, -1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
+      const delta = deltas[event.key];
+      if (!delta) return;
+      event.preventDefault();
+      moveBy(delta[0], delta[1]);
+    };
+    return /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement("svg", { className: "cer-map", viewBox: "0 0 300 295", role: "img", "aria-label": tr8(t, "position", "Position: column {x}, row {y}.", { x: position[0], y: position[1] }) }, /* @__PURE__ */ React8.createElement("text", { x: "150", y: "20", textAnchor: "middle" }, tr8(t, "north_rows", "North \u2191 \xB7 Rows")), Array.from({ length: size }, (_, i) => /* @__PURE__ */ React8.createElement("g", { key: i }, /* @__PURE__ */ React8.createElement("line", { x1: 40 + i * step, y1: "35", x2: 40 + i * step, y2: "265" }), /* @__PURE__ */ React8.createElement("line", { x1: "40", y1: 35 + i * step, x2: "270", y2: 35 + i * step }), /* @__PURE__ */ React8.createElement("text", { x: 40 + i * step, y: "288", textAnchor: "middle" }, i + 1), /* @__PURE__ */ React8.createElement("text", { x: "21", y: 271 - i * step, textAnchor: "middle" }, i + 1))), /* @__PURE__ */ React8.createElement("circle", { cx: 40 + (position[0] - 1) * step, cy: 265 - (position[1] - 1) * step, r: "8" })), /* @__PURE__ */ React8.createElement("p", { role: "status", "aria-live": "polite", "aria-atomic": "true" }, tr8(t, "position", "Position: column {x}, row {y}.", { x: position[0], y: position[1] }), " ", tr8(t, "axis_rule", "East increases columns; north increases rows.")), /* @__PURE__ */ React8.createElement("div", { className: "cer-directions", role: "group", "aria-label": tr8(t, "move_controls", "Direction controls"), onKeyDown: onDirectionKeyDown }, [["north", "North", 0, 1], ["west", "West", -1, 0], ["south", "South", 0, -1], ["east", "East", 1, 0]].map(([id, label, dx, dy]) => /* @__PURE__ */ React8.createElement("button", { type: "button", key: id, "data-direction": id, disabled, "aria-disabled": disabled || position[0] + dx < 1 || position[0] + dx > size || position[1] + dy < 1 || position[1] + dy > size, onClick: () => moveBy(dx, dy) }, tr8(t, id, label)))));
   }
   function RoomView({ room, progress, onAction, disabled = false, notice = "", workspaceKey, activityData, pendingAction, solo = false, t }) {
-    const [workspace, setWorkspace, storageStatus] = useRoomWorkspace(room, workspaceKey), detailRef = useRef4(null), journalRef = useRef4(null), focusSelection = useRef4(false), submittedFocus = useRef4(null), debriefRef = useRef4(null), noticeRef = useRef4(null), pendingControlRef = useRef4(null);
+    const [workspace, setWorkspace, storageStatus] = useRoomWorkspace(room, workspaceKey), detailRef = useRef5(null), journalRef = useRef5(null), focusSelection = useRef5(false), submittedFocus = useRef5(null), debriefRef = useRef5(null), noticeRef = useRef5(null), pendingControlRef = useRef5(null);
     const md = cerMd8();
     const [movementNotice, setMovementNotice] = useState5("");
     const { selectedId, drafts } = workspace;
@@ -1334,9 +1357,21 @@ PLAYER MATERIAL END
     const missing = node.requires.filter((id) => !found.some((item) => item.id === id)).map((id) => md.plain(room.nodes.find((n) => n.reward.id === id)?.reward.name || id));
     const draft = drafts[node.id] ?? initialDraft(node), change = (value2) => setWorkspace((previous) => ({ ...previous, drafts: { ...previous.drafts, [node.id]: value2 } }));
     const value = Array.isArray(draft) ? draft.join(",") : String(draft), incomplete = node.type === "configure" ? draft.some((v) => v === "") : node.type === "use-tool" ? draft === "" : false, hintCount = hintLevel(progress, node.id);
-    return /* @__PURE__ */ React8.createElement("div", { className: "cer-room" }, /* @__PURE__ */ React8.createElement("header", null, /* @__PURE__ */ React8.createElement("h2", null, md.inline(room.title)), /* @__PURE__ */ React8.createElement("p", null, md.inline(room.mission)), /* @__PURE__ */ React8.createElement("div", { className: "cer-row cer-between" }, /* @__PURE__ */ React8.createElement("span", null, solo ? tr8(t, "solo_room", "Solo room \xB7 Explore at your own pace") : tr8(t, "shared_room", "One room \xB7 Shared discoveries")), /* @__PURE__ */ React8.createElement("span", { "aria-live": "polite" }, tr8(t, "progress", "{count} of {total} discoveries", { count: found.length, total: room.nodes.length }))), /* @__PURE__ */ React8.createElement("div", { className: "cer-progress", role: "progressbar", "aria-label": solo ? tr8(t, "solo_progress", "Your progress") : tr8(t, "team_progress", "Team progress"), "aria-valuemin": 0, "aria-valuemax": room.nodes.length, "aria-valuenow": found.length }, /* @__PURE__ */ React8.createElement("div", { style: { width: 100 * found.length / room.nodes.length + "%" } }))), storageStatus === "unavailable" && /* @__PURE__ */ React8.createElement("p", { className: "cer-alert", role: "status" }, tr8(t, "draft_unavailable", "Draft recovery is unavailable in this tab. Keep the room open to preserve your unfinished settings.")), !finished && workspaceKey && storageStatus === "saved" && Object.keys(drafts).length > 0 && /* @__PURE__ */ React8.createElement("p", { className: "cer-muted" }, tr8(t, "draft_saved", "Your unfinished settings are saved in this tab.")), /* @__PURE__ */ React8.createElement("p", { ref: noticeRef, tabIndex: -1, "data-action-feedback": true, className: notice ? "cer-alert" : "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, notice), /* @__PURE__ */ React8.createElement("p", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, movementNotice), /* @__PURE__ */ React8.createElement(PendingActionNotice, { room, action: pendingAction, onSelect: (id) => selectObject(id, true), onControlFocus: (element) => {
+    const progressPct = room.nodes.length ? Math.round(100 * found.length / room.nodes.length) : 0;
+    const activeAreaNodes = room.nodes.filter((n) => n.areaId === areaId);
+    const activeAreaSolved = activeAreaNodes.filter((n) => progress.solved?.[n.id] === true).length;
+    return /* @__PURE__ */ React8.createElement("div", { className: "cer-room" }, /* @__PURE__ */ React8.createElement("header", null, /* @__PURE__ */ React8.createElement("h2", null, md.inline(room.title)), /* @__PURE__ */ React8.createElement("p", null, md.inline(room.mission)), /* @__PURE__ */ React8.createElement("div", { className: "cer-row cer-between" }, /* @__PURE__ */ React8.createElement("span", null, solo ? tr8(t, "solo_room", "Solo room \xB7 Explore at your own pace") : tr8(t, "shared_room", "One room \xB7 Shared discoveries")), /* @__PURE__ */ React8.createElement("span", { "aria-live": "polite" }, tr8(t, "progress", "{count} of {total} discoveries", { count: found.length, total: room.nodes.length }), " (", progressPct, "%)")), /* @__PURE__ */ React8.createElement("div", { className: "cer-progress", role: "progressbar", "aria-label": solo ? tr8(t, "solo_progress", "Your progress") : tr8(t, "team_progress", "Team progress"), "aria-valuemin": 0, "aria-valuemax": room.nodes.length, "aria-valuenow": found.length, "aria-valuetext": tr8(t, "progress", "{count} of {total} discoveries", { count: found.length, total: room.nodes.length }) + " (" + progressPct + "%)" }, /* @__PURE__ */ React8.createElement("div", { style: { width: progressPct + "%" } }))), storageStatus === "unavailable" && /* @__PURE__ */ React8.createElement("p", { className: "cer-alert", role: "status" }, tr8(t, "draft_unavailable", "Draft recovery is unavailable in this tab. Keep the room open to preserve your unfinished settings.")), !finished && workspaceKey && storageStatus === "saved" && Object.keys(drafts).length > 0 && /* @__PURE__ */ React8.createElement("p", { className: "cer-muted" }, tr8(t, "draft_saved", "Your unfinished settings are saved in this tab.")), /* @__PURE__ */ React8.createElement("p", { ref: noticeRef, tabIndex: -1, "data-action-feedback": true, className: notice ? "cer-alert" : "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, notice), /* @__PURE__ */ React8.createElement("p", { className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, movementNotice), /* @__PURE__ */ React8.createElement(PendingActionNotice, { room, action: pendingAction, onSelect: (id) => selectObject(id, true), onControlFocus: (element) => {
       pendingControlRef.current = element;
-    }, t }), /* @__PURE__ */ React8.createElement(RoomDebrief, { room, progress, solo, reflectionScope: workspaceKey, headingRef: debriefRef, onSelect: (id) => selectObject(id, true), t }), /* @__PURE__ */ React8.createElement(DiscoveryUpdate, { room, progress, solo, onSelect: (id) => selectObject(id, true), t }), /* @__PURE__ */ React8.createElement(InvestigationGuide, { room, progress, selectedId: node.id, onSelect: (id) => selectObject(id, true), t }), activityData && /* @__PURE__ */ React8.createElement(TeamActivityBoard, { room, progress, ...activityData, onSelect: (id) => selectObject(id, true), t }), /* @__PURE__ */ React8.createElement("nav", { className: "cer-row", "aria-label": tr8(t, "areas", "Room areas") }, room.areas.map((area) => /* @__PURE__ */ React8.createElement("button", { type: "button", key: area.id, "aria-pressed": areaId === area.id, onClick: () => selectObject(room.nodes.find((n) => n.areaId === area.id)?.id || selectedId) }, md.inline(area.name)))), /* @__PURE__ */ React8.createElement("p", { className: "cer-muted" }, md.inline(room.areas.find((a) => a.id === areaId)?.description)), /* @__PURE__ */ React8.createElement("div", { role: "group", className: "cer-objects", "aria-label": tr8(t, "objects", "Objects to inspect") }, room.nodes.filter((n) => n.areaId === areaId).map((n) => /* @__PURE__ */ React8.createElement("button", { type: "button", key: n.id, "data-object": n.id, "aria-pressed": node.id === n.id, onClick: () => selectObject(n.id) }, md.inline(n.name), /* @__PURE__ */ React8.createElement("small", null, progress.solved?.[n.id] ? tr8(t, "complete", "Complete") : available(room, progress, n) ? tr8(t, "available", "Ready to investigate") : tr8(t, "needs_discoveries", "Needs discoveries"))))), /* @__PURE__ */ React8.createElement("div", { className: "cer-row cer-reading-nav" }, finished && /* @__PURE__ */ React8.createElement("button", { type: "button", onClick: () => debriefRef.current?.focus() }, tr8(t, "jump_debrief", "Jump to room debrief")), /* @__PURE__ */ React8.createElement("button", { type: "button", onClick: () => detailRef.current?.focus() }, tr8(t, "jump_object", "Jump to selected object")), /* @__PURE__ */ React8.createElement("button", { type: "button", onClick: () => journalRef.current?.focus() }, tr8(t, "jump_journal", "Jump to journal"))), /* @__PURE__ */ React8.createElement("div", { className: "cer-layout" }, /* @__PURE__ */ React8.createElement("section", { className: "cer-panel", "aria-label": md.plain(node.name) }, /* @__PURE__ */ React8.createElement("h3", { ref: detailRef, tabIndex: -1 }, md.inline(node.name)), /* @__PURE__ */ React8.createElement("p", null, md.inline(node.description)), !accessible && /* @__PURE__ */ React8.createElement("div", { className: "cer-alert" }, /* @__PURE__ */ React8.createElement("p", null, tr8(t, "requires", "Needed: {items}", { items: missing.join(" \xB7 ") })), /* @__PURE__ */ React8.createElement("div", { className: "cer-row" }, node.requires.filter((id) => !found.some((item) => item.id === id)).map((id) => {
+    }, t }), /* @__PURE__ */ React8.createElement(RoomDebrief, { room, progress, solo, reflectionScope: workspaceKey, headingRef: debriefRef, onSelect: (id) => selectObject(id, true), t }), /* @__PURE__ */ React8.createElement(DiscoveryUpdate, { room, progress, solo, onSelect: (id) => selectObject(id, true), t }), /* @__PURE__ */ React8.createElement(InvestigationGuide, { room, progress, selectedId: node.id, onSelect: (id) => selectObject(id, true), t }), activityData && /* @__PURE__ */ React8.createElement(TeamActivityBoard, { room, progress, ...activityData, onSelect: (id) => selectObject(id, true), t }), /* @__PURE__ */ React8.createElement("nav", { className: "cer-row", "aria-label": tr8(t, "areas", "Room areas") }, room.areas.map((area) => {
+      const areaNodes = room.nodes.filter((n) => n.areaId === area.id);
+      const areaSolved = areaNodes.filter((n) => progress.solved?.[n.id] === true).length;
+      return /* @__PURE__ */ React8.createElement("button", { type: "button", key: area.id, "data-area-id": area.id, "data-area-solved": areaSolved, "data-area-total": areaNodes.length, title: `${areaSolved} of ${areaNodes.length} complete`, "aria-pressed": areaId === area.id, onClick: () => selectObject(areaNodes[0]?.id || selectedId) }, md.inline(area.name));
+    })), /* @__PURE__ */ React8.createElement("div", { className: "cer-row cer-between" }, /* @__PURE__ */ React8.createElement("p", { className: "cer-muted", style: { margin: "8px 0 4px" } }, md.inline(room.areas.find((a) => a.id === areaId)?.description)), /* @__PURE__ */ React8.createElement("span", { className: "cer-status-pill", "data-active-area-progress": true }, activeAreaSolved === activeAreaNodes.length && activeAreaNodes.length > 0 ? `All ${activeAreaNodes.length} complete in this area` : `${activeAreaSolved}/${activeAreaNodes.length} complete in this area`)), /* @__PURE__ */ React8.createElement("div", { role: "group", className: "cer-objects", "aria-label": tr8(t, "objects", "Objects to inspect") }, activeAreaNodes.map((n) => {
+      const isSolved = progress.solved?.[n.id] === true;
+      const isReady = !isSolved && available(room, progress, n);
+      const status = isSolved ? "solved" : isReady ? "available" : "locked";
+      return /* @__PURE__ */ React8.createElement("button", { type: "button", key: n.id, "data-object": n.id, "data-object-status": status, "aria-pressed": node.id === n.id, onClick: () => selectObject(n.id) }, md.inline(n.name), /* @__PURE__ */ React8.createElement("small", null, isSolved ? tr8(t, "complete", "Complete") : isReady ? tr8(t, "available", "Ready to investigate") : tr8(t, "needs_discoveries", "Needs discoveries")));
+    })), /* @__PURE__ */ React8.createElement("div", { className: "cer-row cer-reading-nav" }, finished && /* @__PURE__ */ React8.createElement("button", { type: "button", onClick: () => debriefRef.current?.focus() }, tr8(t, "jump_debrief", "Jump to room debrief")), /* @__PURE__ */ React8.createElement("button", { type: "button", onClick: () => detailRef.current?.focus() }, tr8(t, "jump_object", "Jump to selected object")), /* @__PURE__ */ React8.createElement("button", { type: "button", onClick: () => journalRef.current?.focus() }, tr8(t, "jump_journal", "Jump to journal"))), /* @__PURE__ */ React8.createElement("div", { className: "cer-layout" }, /* @__PURE__ */ React8.createElement("section", { className: "cer-panel", "aria-label": md.plain(node.name) }, /* @__PURE__ */ React8.createElement("h3", { ref: detailRef, tabIndex: -1 }, md.inline(node.name)), /* @__PURE__ */ React8.createElement("p", null, md.inline(node.description)), !accessible && /* @__PURE__ */ React8.createElement("div", { className: "cer-alert" }, /* @__PURE__ */ React8.createElement("p", null, tr8(t, "requires", "Needed: {items}", { items: missing.join(" \xB7 ") })), /* @__PURE__ */ React8.createElement("div", { className: "cer-row" }, node.requires.filter((id) => !found.some((item) => item.id === id)).map((id) => {
       const origin = room.nodes.find((n) => n.reward.id === id);
       return /* @__PURE__ */ React8.createElement("button", { type: "button", key: id, "data-find-clue": id, onClick: () => selectObject(origin.id, true) }, tr8(t, "find_clue", "Investigate {object}", { object: md.plain(origin.name) }));
     }))), !solved && /* @__PURE__ */ React8.createElement(EvidenceContext, { node, found, t }), solved ? /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement("p", null, md.inline(node.reward.text)), progress.assisted?.[node.id] && /* @__PURE__ */ React8.createElement("small", null, tr8(t, "teacher_assisted", "Completed with teacher support"))) : /* @__PURE__ */ React8.createElement(React8.Fragment, null, /* @__PURE__ */ React8.createElement("p", null, md.inline(node.instruction)), /* @__PURE__ */ React8.createElement("fieldset", { disabled: blocked, style: { border: 0, padding: 0, margin: 0, minWidth: 0 } }, /* @__PURE__ */ React8.createElement("legend", { className: "sr-only" }, md.inline(node.name)), node.type === "configure" && /* @__PURE__ */ React8.createElement("div", { className: "cer-controls" }, node.controls.map((control, i) => /* @__PURE__ */ React8.createElement("label", { key: i }, md.inline(control.label), /* @__PURE__ */ React8.createElement("select", { "data-control": i, value: draft[i], onChange: (event) => change(draft.map((v, j) => j === i ? event.target.value : v)) }, /* @__PURE__ */ React8.createElement("option", { value: "" }, tr8(t, "choose_setting", "Choose a setting")), control.options.map((option, j) => /* @__PURE__ */ React8.createElement("option", { key: j, value: j }, md.plain(option))))))), node.type === "use-tool" && /* @__PURE__ */ React8.createElement("label", null, tr8(t, "inventory_tool", "Tool from your inventory"), /* @__PURE__ */ React8.createElement("select", { "data-tool": true, value: draft, onChange: (event) => change(event.target.value) }, /* @__PURE__ */ React8.createElement("option", { value: "" }, tr8(t, "choose_tool", "Choose a tool")), found.filter((item) => item.kind === "tool").map((item) => /* @__PURE__ */ React8.createElement("option", { key: item.id, value: room.nodes.findIndex((n) => n.reward.id === item.id) }, md.plain(item.name))))), node.type === "sequence" && /* @__PURE__ */ React8.createElement("ol", { className: "cer-sequence" }, draft.map((itemIndex, i) => /* @__PURE__ */ React8.createElement("li", { key: itemIndex }, /* @__PURE__ */ React8.createElement("span", null, i + 1, ". ", md.inline(node.items[itemIndex])), /* @__PURE__ */ React8.createElement("button", { type: "button", "data-move-up": itemIndex, "aria-label": tr8(t, "move_up", "Move {item} earlier", { item: md.plain(node.items[itemIndex]) }), disabled: blocked, "aria-disabled": blocked || i === 0, onClick: () => {
@@ -1367,7 +1402,7 @@ PLAYER MATERIAL END
       }
     });
     const [notice, setNotice] = useState5(""), [storageError, setStorageError] = useState5(false), [confirm, setConfirm] = useState5(false);
-    const current = useRef4(state), exitRef = useRef4(null), restartRef = useRef4(null), cancelRef = useRef4(null);
+    const current = useRef5(state), exitRef = useRef5(null), restartRef = useRef5(null), cancelRef = useRef5(null);
     const workspaceKey = storageKey + ":workspace:" + state.attemptId;
     current.current = state;
     useEffect6(() => {
@@ -1417,7 +1452,7 @@ PLAYER MATERIAL END
   function ConnectedSetup({ callGemini, inputText, generatedContent, language = "English", activeSessionCode, appId, sessionData, onClose, onLaunched, user, allowLive = !!activeSessionCode, learnerMode = false, t }) {
     const source = useMemo(() => sourceText(inputText, generatedContent), [inputText, generatedContent]), md = cerMd8();
     const [room, setRoom] = useState5(null), [stage, setStage] = useState5(""), [error, setError] = useState5("");
-    const [library, setLibrary] = useState5({ entries: [] }), [libraryChoice, setLibraryChoice] = useState5(null), libraryCancelRef = useRef4(null), libraryPickerRef = useRef4(null), librarySummaryRef = useRef4(null), previousLibraryChoice = useRef4(null);
+    const [library, setLibrary] = useState5({ entries: [] }), [libraryChoice, setLibraryChoice] = useState5(null), libraryCancelRef = useRef5(null), libraryPickerRef = useRef5(null), librarySummaryRef = useRef5(null), previousLibraryChoice = useRef5(null);
     useEffect6(() => {
       if (libraryChoice) libraryCancelRef.current?.focus();
       else if (previousLibraryChoice.current) (libraryPickerRef.current || librarySummaryRef.current)?.focus();
@@ -1436,7 +1471,7 @@ PLAYER MATERIAL END
     }
     const [view, setView] = useState5(firstView), [preview, setPreview] = useState5(emptyProgress), [previewNotice, setPreviewNotice] = useState5(""), [saved, setSaved] = useState5(false);
     const [failure, setFailure] = useState5(null), [confirmLaunch, setConfirmLaunch] = useState5(false), [showSolutions, setShowSolutions] = useState5(!learnerMode);
-    const requestRef = useRef4(0), dialogRef = useRef4(null), closeRef = useRef4(onClose), scopeRef = useRef4("");
+    const requestRef = useRef5(0), dialogRef = useRef5(null), closeRef = useRef5(onClose), scopeRef = useRef5("");
     const scope = appId + ":" + activeSessionCode + ":" + language + ":" + source;
     scopeRef.current = scope;
     closeRef.current = stage === "launching" ? null : onClose;
@@ -1690,7 +1725,7 @@ PLAYER MATERIAL END
       const check = !review ? "none" : !review.complete ? "incomplete" : review.checks.every((c) => c.status === "matched") ? "matched" : "concerns";
       return { tried, total: room ? room.nodes.length : 0, check, ready: tried > 0 || check === "matched" };
     })();
-    const launchConfirmRef = useRef4(null);
+    const launchConfirmRef = useRef5(null);
     useEffect6(() => {
       if (confirmLaunch) launchConfirmRef.current?.focus();
     }, [confirmLaunch]);
@@ -1741,7 +1776,7 @@ PLAYER MATERIAL END
   runtime.cooldowns = /* @__PURE__ */ new Map();
   function ConnectedHost({ sessionData, activeSessionCode, appId }) {
     const state = sessionData?.escapeRoomState, scope = appId + ":" + activeSessionCode + ":" + state?.attemptId;
-    const [retry, setRetry] = useState5(0), timerRef = useRef4(null), mounted = useRef4(true);
+    const [retry, setRetry] = useState5(0), timerRef = useRef5(null), mounted = useRef5(true);
     useEffect6(() => {
       mounted.current = true;
       const listener = () => setRetry((n) => n + 1);
@@ -1806,7 +1841,7 @@ PLAYER MATERIAL END
     const state = sessionData?.escapeRoomState, room = state?.connectedRoom, progress = progressOf(state);
     const scope = targetAppId + ":" + activeSessionCode + ":" + state?.attemptId + ":" + user?.uid;
     const [pending, setPending] = useState5(null), [sending, setSending] = useState5(false), [error, setError] = useState5(""), [notice, setNotice] = useState5(""), [joining, setJoining] = useState5(false), [slow, setSlow] = useState5(false), [recovered, setRecovered] = useState5(false);
-    const scopeRef = useRef4(scope), pendingRef = useRef4(null), mounted = useRef4(true), joinRef = useRef4(false), sendRef = useRef4(null), overlayRef = useRef4(null);
+    const scopeRef = useRef5(scope), pendingRef = useRef5(null), mounted = useRef5(true), joinRef = useRef5(false), sendRef = useRef5(null), overlayRef = useRef5(null);
     scopeRef.current = scope;
     const storageKey = "allo-connected-pending:" + scope, currentReceipt = matchingReceipt(progress, pending, user?.uid);
     const overlayOpen = Boolean(room && state?.mode === "connected-room" && state.isActive);
@@ -1978,7 +2013,7 @@ PLAYER MATERIAL END
     const { sessionData, activeSessionCode, appId, t } = props, md = cerMd8();
     const state = sessionData?.escapeRoomState, room = state?.connectedRoom, progress = progressOf(state);
     const [busy, setBusy] = useState5(false), [error, setError] = useState5(""), [confirm, setConfirm] = useState5("");
-    const busyRef = useRef4(false), scopeRef = useRef4(""), mountedRef = useRef4(true), confirmCancelRef = useRef4(null), confirmTriggerRef = useRef4(null);
+    const busyRef = useRef5(false), scopeRef = useRef5(""), mountedRef = useRef5(true), confirmCancelRef = useRef5(null), confirmTriggerRef = useRef5(null);
     useEffect6(() => {
       mountedRef.current = true;
       return () => {
@@ -2029,6 +2064,8 @@ PLAYER MATERIAL END
     const invalid = validateRoom(room);
     if (invalid.length) return /* @__PURE__ */ React8.createElement("div", { className: "cer cer-teacher" }, /* @__PURE__ */ React8.createElement(Styles, null), /* @__PURE__ */ React8.createElement("p", { role: "alert" }, tr8(t, "invalid_room", "This room could not be opened. Ask the teacher to regenerate it.")), /* @__PURE__ */ React8.createElement("button", { type: "button", disabled: busy, onClick: () => write({ "escapeRoomState.isActive": false }) }, tr8(t, "end", "End room")));
     const found = inventory(room, progress);
+    const teacherPct = room.nodes.length ? Math.round(100 * found.length / room.nodes.length) : 0;
+    const teacherState = state.isPaused ? "paused" : complete(room, progress) ? "complete" : "live";
     const waiting = pendingHostActions(state, sessionData?.roster, progress).length;
     const changeLifecycle = async (action) => {
       if (action === "restart") {
@@ -2037,7 +2074,7 @@ PLAYER MATERIAL END
       }
       if (action === "end" && await write({ "escapeRoomState.isActive": false, "escapeRoomState.isPaused": false }) && mountedRef.current) setConfirm("");
     };
-    return /* @__PURE__ */ React8.createElement("section", { className: "cer cer-teacher", "aria-label": tr8(t, "teacher_controls", "Escape room teacher controls") }, /* @__PURE__ */ React8.createElement(Styles, null), /* @__PURE__ */ React8.createElement(ConnectedHost, { ...props }), /* @__PURE__ */ React8.createElement("header", { className: "cer-row cer-between" }, /* @__PURE__ */ React8.createElement("div", null, /* @__PURE__ */ React8.createElement("h2", null, md.inline(room.title)), /* @__PURE__ */ React8.createElement("p", null, tr8(t, "teacher_intro", "Everyone investigates the same room. Discoveries and hints are shared."))), /* @__PURE__ */ React8.createElement("strong", null, state.isPaused ? tr8(t, "paused_short", "Paused") : complete(room, progress) ? tr8(t, "complete", "Complete") : tr8(t, "live", "Live"))), /* @__PURE__ */ React8.createElement("p", { role: "status" }, tr8(t, "teacher_progress", "{count}/{total} discoveries \xB7 {waiting} actions awaiting confirmation", { count: found.length, total: room.nodes.length, waiting })), (error || hostError) && /* @__PURE__ */ React8.createElement("p", { role: "alert", className: "cer-alert cer-error" }, error || hostError), /* @__PURE__ */ React8.createElement("div", { className: "cer-row" }, /* @__PURE__ */ React8.createElement("button", { type: "button", disabled: busy || runtime.locks.has(scope), onClick: () => write({ "escapeRoomState.isPaused": !state.isPaused }) }, state.isPaused ? tr8(t, "resume", "Resume room") : tr8(t, "pause", "Pause room")), /* @__PURE__ */ React8.createElement("button", { type: "button", disabled: busy, onClick: (event) => {
+    return /* @__PURE__ */ React8.createElement("section", { className: "cer cer-teacher", "aria-label": tr8(t, "teacher_controls", "Escape room teacher controls") }, /* @__PURE__ */ React8.createElement(Styles, null), /* @__PURE__ */ React8.createElement(ConnectedHost, { ...props }), /* @__PURE__ */ React8.createElement("header", { className: "cer-row cer-between" }, /* @__PURE__ */ React8.createElement("div", null, /* @__PURE__ */ React8.createElement("h2", null, md.inline(room.title)), /* @__PURE__ */ React8.createElement("p", null, tr8(t, "teacher_intro", "Everyone investigates the same room. Discoveries and hints are shared."))), /* @__PURE__ */ React8.createElement("strong", { className: "cer-status-pill", "data-room-state": teacherState }, state.isPaused ? tr8(t, "paused_short", "Paused") : complete(room, progress) ? tr8(t, "complete", "Complete") : tr8(t, "live", "Live"))), /* @__PURE__ */ React8.createElement("p", { role: "status" }, tr8(t, "teacher_progress", "{count}/{total} discoveries \xB7 {waiting} actions awaiting confirmation", { count: found.length, total: room.nodes.length, waiting }), " (", teacherPct, "%)"), /* @__PURE__ */ React8.createElement("div", { className: "cer-progress", role: "progressbar", "aria-label": tr8(t, "team_progress", "Team progress"), "aria-valuemin": 0, "aria-valuemax": room.nodes.length, "aria-valuenow": found.length, "aria-valuetext": `${found.length} of ${room.nodes.length} discoveries (${teacherPct}%)` }, /* @__PURE__ */ React8.createElement("div", { style: { width: teacherPct + "%" } })), (error || hostError) && /* @__PURE__ */ React8.createElement("p", { role: "alert", className: "cer-alert cer-error" }, error || hostError), /* @__PURE__ */ React8.createElement("div", { className: "cer-row" }, /* @__PURE__ */ React8.createElement("button", { type: "button", disabled: busy || runtime.locks.has(scope), onClick: () => write({ "escapeRoomState.isPaused": !state.isPaused }) }, state.isPaused ? tr8(t, "resume", "Resume room") : tr8(t, "pause", "Pause room")), /* @__PURE__ */ React8.createElement("button", { type: "button", disabled: busy, onClick: (event) => {
       confirmTriggerRef.current = event.currentTarget;
       setConfirm("restart");
     } }, tr8(t, "restart", "Restart this room")), /* @__PURE__ */ React8.createElement("button", { type: "button", disabled: busy, onClick: (event) => {
@@ -2049,7 +2086,11 @@ PLAYER MATERIAL END
         event.stopPropagation();
         setConfirm("");
       }
-    } }, /* @__PURE__ */ React8.createElement("p", null, confirm === "restart" ? tr8(t, "restart_confirm", "Restart this room for everyone? Shared progress and hints will reset. The generated room stays the same.") : tr8(t, "end_confirm", "End this room for everyone and return to the lesson?")), /* @__PURE__ */ React8.createElement("div", { className: "cer-row" }, /* @__PURE__ */ React8.createElement("button", { type: "button", disabled: busy || runtime.locks.has(scope), onClick: () => changeLifecycle(confirm) }, confirm === "restart" ? tr8(t, "confirm_restart", "Restart for everyone") : tr8(t, "confirm_end", "End for everyone")), /* @__PURE__ */ React8.createElement("button", { ref: confirmCancelRef, type: "button", disabled: busy, onClick: () => setConfirm("") }, tr8(t, "cancel", "Cancel")))), /* @__PURE__ */ React8.createElement(TeamActivityBoard, { room, progress, actions: state.teamProgress?.All?.connectedActions, attemptId: state.attemptId, roster: sessionData.roster, t }), /* @__PURE__ */ React8.createElement("div", { className: "cer-layout" }, /* @__PURE__ */ React8.createElement("section", null, /* @__PURE__ */ React8.createElement("h3", null, tr8(t, "team_path", "Team discovery path")), room.areas.map((a) => /* @__PURE__ */ React8.createElement("div", { key: a.id }, /* @__PURE__ */ React8.createElement("h3", null, md.inline(a.name)), /* @__PURE__ */ React8.createElement("ul", { className: "cer-facts" }, room.nodes.filter((n) => n.areaId === a.id).map((n) => /* @__PURE__ */ React8.createElement("li", { key: n.id }, /* @__PURE__ */ React8.createElement("strong", null, md.inline(n.name)), " \xB7 ", progress.solved?.[n.id] ? tr8(t, "complete", "Complete") : available(room, progress, n) ? tr8(t, "available", "Ready to investigate") : tr8(t, "needs_discoveries", "Needs discoveries"), " ", hintLevel(progress, n.id) > 0 && /* @__PURE__ */ React8.createElement("small", null, " \xB7 ", tr8(t, "hint_count", "{count}/3 hints shared", { count: hintLevel(progress, n.id) })), progress.assisted?.[n.id] && /* @__PURE__ */ React8.createElement("small", null, " \xB7 ", tr8(t, "teacher_assisted", "Completed with teacher support")))))))), /* @__PURE__ */ React8.createElement(TeacherSupport, { key: scope, room, progress, busy: busy || !!confirm || runtime.locks.has(scope), onWrite: (patch) => write(scopedPatch(state, patch)), t })), /* @__PURE__ */ React8.createElement("details", null, /* @__PURE__ */ React8.createElement("summary", null, tr8(t, "solutions", "Teacher clues and solutions")), room.nodes.map((n) => /* @__PURE__ */ React8.createElement("section", { key: n.id }, /* @__PURE__ */ React8.createElement("h3", null, md.inline(n.name)), /* @__PURE__ */ React8.createElement("p", null, md.inline(n.instruction)), /* @__PURE__ */ React8.createElement("div", null, md.block(n.explanation || n.reward.text)), /* @__PURE__ */ React8.createElement("ol", null, n.hints.map((h, i) => /* @__PURE__ */ React8.createElement("li", { key: i }, md.inline(h))))))), /* @__PURE__ */ React8.createElement(RoomDebrief, { room, progress, teacher: true, t }));
+    } }, /* @__PURE__ */ React8.createElement("p", null, confirm === "restart" ? tr8(t, "restart_confirm", "Restart this room for everyone? Shared progress and hints will reset. The generated room stays the same.") : tr8(t, "end_confirm", "End this room for everyone and return to the lesson?")), /* @__PURE__ */ React8.createElement("div", { className: "cer-row" }, /* @__PURE__ */ React8.createElement("button", { type: "button", disabled: busy || runtime.locks.has(scope), onClick: () => changeLifecycle(confirm) }, confirm === "restart" ? tr8(t, "confirm_restart", "Restart for everyone") : tr8(t, "confirm_end", "End for everyone")), /* @__PURE__ */ React8.createElement("button", { ref: confirmCancelRef, type: "button", disabled: busy, onClick: () => setConfirm("") }, tr8(t, "cancel", "Cancel")))), /* @__PURE__ */ React8.createElement(TeamActivityBoard, { room, progress, actions: state.teamProgress?.All?.connectedActions, attemptId: state.attemptId, roster: sessionData.roster, t }), /* @__PURE__ */ React8.createElement("div", { className: "cer-layout" }, /* @__PURE__ */ React8.createElement("section", null, /* @__PURE__ */ React8.createElement("h3", null, tr8(t, "team_path", "Team discovery path")), room.areas.map((a) => {
+      const areaNodes = room.nodes.filter((n) => n.areaId === a.id);
+      const areaSolved = areaNodes.filter((n) => progress.solved?.[n.id] === true).length;
+      return /* @__PURE__ */ React8.createElement("div", { key: a.id }, /* @__PURE__ */ React8.createElement("h3", null, md.inline(a.name), " ", /* @__PURE__ */ React8.createElement("small", null, "(", areaSolved, "/", areaNodes.length, ")")), /* @__PURE__ */ React8.createElement("ul", { className: "cer-facts" }, areaNodes.map((n) => /* @__PURE__ */ React8.createElement("li", { key: n.id }, /* @__PURE__ */ React8.createElement("strong", null, md.inline(n.name)), " \xB7 ", progress.solved?.[n.id] ? tr8(t, "complete", "Complete") : available(room, progress, n) ? tr8(t, "available", "Ready to investigate") : tr8(t, "needs_discoveries", "Needs discoveries"), " ", hintLevel(progress, n.id) > 0 && /* @__PURE__ */ React8.createElement("small", null, " \xB7 ", tr8(t, "hint_count", "{count}/3 hints shared", { count: hintLevel(progress, n.id) })), progress.assisted?.[n.id] && /* @__PURE__ */ React8.createElement("small", null, " \xB7 ", tr8(t, "teacher_assisted", "Completed with teacher support"))))));
+    })), /* @__PURE__ */ React8.createElement(TeacherSupport, { key: scope, room, progress, busy: busy || !!confirm || runtime.locks.has(scope), onWrite: (patch) => write(scopedPatch(state, patch)), t })), /* @__PURE__ */ React8.createElement("details", null, /* @__PURE__ */ React8.createElement("summary", null, tr8(t, "solutions", "Teacher clues and solutions")), room.nodes.map((n) => /* @__PURE__ */ React8.createElement("section", { key: n.id }, /* @__PURE__ */ React8.createElement("h3", null, md.inline(n.name)), /* @__PURE__ */ React8.createElement("p", null, md.inline(n.instruction)), /* @__PURE__ */ React8.createElement("div", null, md.block(n.explanation || n.reward.text)), /* @__PURE__ */ React8.createElement("ol", null, n.hints.map((h, i) => /* @__PURE__ */ React8.createElement("li", { key: i }, md.inline(h))))))), /* @__PURE__ */ React8.createElement(RoomDebrief, { room, progress, teacher: true, t }));
   }
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.ConnectedEscapeRoomEngine = connected_escape_room_engine_exports;

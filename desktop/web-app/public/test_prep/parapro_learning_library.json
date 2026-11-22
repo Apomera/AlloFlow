@@ -244,10 +244,10 @@
           "skillId": "reading-main-evidence",
           "prompt": "Which statement best distinguishes a topic from a main idea?",
           "choices": [
-            "A topic names the subject; a main idea states the central point about it.",
-            "A topic is always a sentence; a main idea is always one word.",
-            "A topic gives evidence; a main idea lists every minor detail.",
-            "A topic is an opinion; a main idea must contain a number."
+            "A topic names the subject; a main idea states the key point.",
+            "A topic is a complete sentence; a main idea is a single word.",
+            "A topic gives factual evidence; a main idea lists every detail.",
+            "A topic states a personal view; a main idea requires a number."
           ],
           "answerIndex": 0,
           "rationale": "Topic and main idea operate at different levels: one identifies the subject and the other communicates the authors central point about that subject.",
@@ -262,10 +262,10 @@
           "skillId": "reading-main-evidence",
           "prompt": "Which detail is most relevant to a claim that library use increased after Saturday hours were added?",
           "choices": [
-            "The library walls were painted cream.",
-            "Average Saturday visits rose from 18 to 31 after the schedule changed.",
-            "The building contains two staircases.",
-            "Several books have blue covers."
+            "The neighborhood library walls were painted soft cream.",
+            "Weekend attendance rose from 18 to 31 visitors weekly.",
+            "The renovated library building contains two staircases.",
+            "Several new picture books have bright blue cloth covers."
           ],
           "answerIndex": 1,
           "rationale": "The before-and-after visit counts directly measure the outcome named in the claim; the other details have no meaningful connection to library use.",
@@ -280,10 +280,10 @@
           "skillId": "reading-main-evidence",
           "prompt": "What should an accurate summary avoid?",
           "choices": [
-            "The central idea of the passage",
-            "An essential cause-and-effect relationship",
-            "A conclusion or opinion not supported by the passage",
-            "A concise paraphrase of major points"
+            "The central governing idea of the reading passage",
+            "An essential cause-and-effect link from the text",
+            "Claims or opinions not backed by the passage",
+            "A concise paraphrase capturing major text points"
           ],
           "answerIndex": 2,
           "rationale": "A summary represents the source rather than adding a readers new judgment. Central ideas and essential relationships belong when they are supported.",
@@ -298,10 +298,10 @@
           "skillId": "reading-main-evidence",
           "prompt": "A possible main idea fits only one sentence in a five-paragraph passage. What is the best next step?",
           "choices": [
-            "Assume the longest sentence must be central.",
-            "Delete every paragraph that does not match.",
-            "Treat the statement as correct because it appears first.",
-            "Reconsider whether the statement is only a minor detail."
+            "Assume the longest sentence must state the main idea.",
+            "Delete every other paragraph that does not match it.",
+            "Treat the line as central because it appears first.",
+            "Check whether the sentence is just a minor detail."
           ],
           "answerIndex": 3,
           "rationale": "A main idea must account for the important content across the passage. A statement matching one sentence is more likely a detail unless the rest develops it.",
@@ -316,10 +316,10 @@
           "skillId": "reading-main-evidence",
           "prompt": "Which prompt best supports a student without giving away the main idea?",
           "choices": [
-            "What do the important details collectively show about the topic?",
-            "Copy the first sentence and stop.",
-            "Use the longest word as the answer.",
-            "I will tell you the answer before you reread."
+            "What do the key details show together about the topic?",
+            "Copy the opening sentence verbatim and stop reading there.",
+            "Choose whichever sentence holds the longest vocabulary word.",
+            "Let me tell you the main idea before you reread the passage."
           ],
           "answerIndex": 0,
           "rationale": "The prompt directs the learner to synthesize evidence while preserving the reasoning task, which supports independence and transfer.",
@@ -430,10 +430,10 @@
           "skillId": "reading-inference-vocabulary",
           "prompt": "What makes an inference evidence based?",
           "choices": [
-            "The conclusion is the most dramatic possibility.",
-            "The reader can identify clues and explain how they support the conclusion.",
-            "The reader has believed it for a long time.",
-            "The conclusion uses a word from the question."
+            "The chosen conclusion sounds like the most dramatic guess.",
+            "The reader cites clues and explains how they fit.",
+            "The reader has held that same personal belief for years.",
+            "The proposed conclusion repeats a word from the question."
           ],
           "answerIndex": 1,
           "rationale": "An inference becomes defensible when its textual clues and reasoning can be made explicit; familiarity or dramatic wording does not supply evidence.",
@@ -464,12 +464,12 @@
         {
           "id": "parapro-ch-02-check-3",
           "skillId": "reading-inference-vocabulary",
-          "prompt": "In The arid plain received almost no rain, which phrase is the strongest context clue for arid?",
+          "prompt": "In \"The arid plain received almost no rain,\" which part of the sentence gives the strongest context clue for arid?",
           "choices": [
             "The word plain",
             "The capital letter at the start",
             "The number of words in the sentence",
-            "Received almost no rain"
+            "The final four words at the end"
           ],
           "answerIndex": 3,
           "rationale": "Almost no rain describes the condition directly and supports the meaning very dry; the other features do not define the word.",
@@ -502,10 +502,10 @@
           "skillId": "reading-inference-vocabulary",
           "prompt": "Which student prompt best develops inference reasoning?",
           "choices": [
-            "Can you say the answer more loudly?",
-            "Which clues led you to that conclusion, and how do they connect?",
-            "Which option has the most words?",
-            "Would you like me to choose for you?"
+            "Can you repeat your spoken answer more loudly right now?",
+            "Which text clues led you there, and how do they link?",
+            "Which multiple-choice option contains the greatest words?",
+            "Would you like me to select the best inference for you?"
           ],
           "answerIndex": 1,
           "rationale": "The prompt elicits both evidence and the reasoning bridge instead of shifting attention to irrelevant surface features.",
@@ -672,10 +672,10 @@
           "skillId": "reading-structure-sources",
           "prompt": "Which is most clearly a primary source for a 1952 school opening?",
           "choices": [
-            "A textbook published in 2025",
-            "A diary entry written by a student on opening day",
-            "A modern encyclopedia summary",
-            "A recent documentary narration"
+            "A school history textbook published in 2025",
+            "A student diary entry written that first day",
+            "A modern online encyclopedia article summary",
+            "A recent television documentary voice narration"
           ],
           "answerIndex": 1,
           "rationale": "The diary is contemporaneous firsthand evidence. The later sources interpret or synthesize earlier material.",
@@ -690,10 +690,10 @@
           "skillId": "reading-structure-sources",
           "prompt": "Two sources share facts but emphasize different consequences. What should a reader conclude first?",
           "choices": [
-            "One source must be entirely false.",
-            "The event occurred twice.",
-            "Their perspectives differ even if the shared facts do not.",
-            "All differences are spelling errors."
+            "At least one of the two published accounts is false.",
+            "The exact same historical event must have happened twice.",
+            "Their viewpoints differ even when core details match.",
+            "Every difference between accounts reflects typos alone."
           ],
           "answerIndex": 2,
           "rationale": "Differences in selection and emphasis can reflect perspective without creating a factual contradiction.",
@@ -804,10 +804,10 @@
           "skillId": "reading-classroom-support",
           "prompt": "A student reads accurately but word by word. Which support best matches the need?",
           "choices": [
-            "A harder silent passage with no feedback",
-            "Unrelated spelling lists only",
-            "Supplying every next word immediately",
-            "Modeled and repeated oral reading with phrasing feedback"
+            "A harder silent reading passage with zero feedback",
+            "Unrelated weekly spelling lists without oral reading",
+            "Pronouncing every next printed word immediately aloud",
+            "Modeled repeated oral reading with phrasing tips"
           ],
           "answerIndex": 3,
           "rationale": "Accuracy is present, so support should target phrasing and smooth connected reading rather than increase difficulty or remove practice.",
@@ -822,10 +822,10 @@
           "skillId": "reading-classroom-support",
           "prompt": "What is the best first step before selecting a reading scaffold?",
           "choices": [
-            "Describe the observed difficulty and task demand",
-            "Assume the learner lacks motivation",
-            "Choose the most intensive support automatically",
-            "Complete the assignment for the learner"
+            "Name the observed gap and specific task demand",
+            "Assume the struggling learner lacks classroom effort",
+            "Pick the most intensive support right away by default",
+            "Complete the challenging reading task for the learner"
           ],
           "answerIndex": 0,
           "rationale": "Support should respond to a specific observed barrier. Assumptions and task completion do not identify or remediate the reading need.",
@@ -840,10 +840,10 @@
           "skillId": "reading-classroom-support",
           "prompt": "Which sequence reflects gradual release?",
           "choices": [
-            "Test, label, and permanently provide the answer",
-            "Explain and model, guide practice, then support independent use",
-            "Assign independent work before instruction",
-            "Model forever without student practice"
+            "Test once, label the gap, and supply answers permanently",
+            "Model clearly, guide practice, then fade to independence",
+            "Assign unguided independent practice before any modeling",
+            "Continue teacher modeling indefinitely without student turns"
           ],
           "answerIndex": 1,
           "rationale": "Gradual release moves responsibility from explicit modeling through guided practice to increasingly independent performance.",
@@ -858,10 +858,10 @@
           "skillId": "reading-classroom-support",
           "prompt": "Which response best supports a multilingual learner with dense directions?",
           "choices": [
-            "Replace the task with unrelated coloring",
-            "Repeat the full directions faster",
-            "Chunk the same task, add relevant visuals, and check each step",
-            "Finish the work without explanation"
+            "Swap the grade-level task for unrelated coloring sheets",
+            "Repeat the exact same dense directions much more rapidly",
+            "Chunk directions, add clear visuals, and check each step",
+            "Finish the written assignment without reviewing any steps"
           ],
           "answerIndex": 2,
           "rationale": "Chunking and visuals increase access while preserving the intended task and the learners active role.",
@@ -874,12 +874,12 @@
         {
           "id": "parapro-ch-04-check-5",
           "skillId": "reading-classroom-support",
-          "prompt": "When should a scaffold be faded?",
+          "prompt": "During guided instruction, when should an instructional scaffold be faded?",
           "choices": [
-            "Never, once it has been introduced",
-            "Immediately after one incorrect response",
-            "Only when the entire class finishes",
-            "When evidence shows the learner can perform the supported step more independently"
+            "Keep every scaffold permanently once it is introduced",
+            "Remove the scaffold immediately after one wrong try",
+            "Wait until every classmate finishes the full unit",
+            "When evidence shows the learner handles the step solo"
           ],
           "answerIndex": 3,
           "rationale": "Scaffolds are temporary supports. Performance evidence should guide gradual removal so assistance does not become unnecessary dependence.",
@@ -989,10 +989,10 @@
           "skillId": "mathematics-number-operations",
           "prompt": "Why is a common denominator needed for fraction addition?",
           "choices": [
-            "The fractions must name parts of the same size.",
-            "The numerators must become zero.",
-            "Every fraction must become greater than one.",
-            "Denominators are always added first."
+            "Fractions must name equal-sized parts.",
+            "Both numerators must first reduce to zero.",
+            "Every fraction must exceed one whole unit.",
+            "Denominators are summed before numerators."
           ],
           "answerIndex": 0,
           "rationale": "Addition combines like units. Equivalent fractions with a common denominator express the quantities using the same-sized fractional parts.",
@@ -1005,7 +1005,7 @@
         {
           "id": "parapro-ch-05-check-2",
           "skillId": "mathematics-number-operations",
-          "prompt": "Which value is greater?",
+          "prompt": "Comparing negative integers -6 and -2 on a number line, which value is greater?",
           "choices": [
             "-6",
             "-2",
@@ -1023,7 +1023,7 @@
         {
           "id": "parapro-ch-05-check-3",
           "skillId": "mathematics-number-operations",
-          "prompt": "What is 25 percent of 48?",
+          "prompt": "What whole number is equal to 25 percent of 48?",
           "choices": [
             "19.2",
             "23",
@@ -1192,10 +1192,10 @@
           "skillId": "mathematics-ratio-algebra",
           "prompt": "What must remain true in equivalent ratios?",
           "choices": [
-            "Both quantities increase by one.",
-            "The difference is always zero.",
-            "Both quantities are scaled by the same factor.",
-            "The units may be exchanged randomly."
+            "Both quantities increase by adding one.",
+            "The difference between terms stays zero.",
+            "Both terms scale by the same factor.",
+            "Measurement units swap around freely."
           ],
           "answerIndex": 2,
           "rationale": "Equivalent ratios preserve a multiplicative relationship by applying the same nonzero scale factor to corresponding quantities.",
@@ -1246,10 +1246,10 @@
           "skillId": "mathematics-ratio-algebra",
           "prompt": "What is the strongest check of an equation solution?",
           "choices": [
-            "Choose the largest answer.",
-            "Substitute it into the original equation.",
-            "Count the symbols in the equation.",
-            "Round the solution without checking."
+            "Pick whichever candidate value is largest.",
+            "Substitute it back into the given problem.",
+            "Count how many symbols appear in the problem.",
+            "Round the draft solution without verifying it."
           ],
           "answerIndex": 1,
           "rationale": "Substitution directly verifies whether the proposed value makes the original equality true.",
@@ -1358,7 +1358,7 @@
         {
           "id": "parapro-ch-07-check-1",
           "skillId": "mathematics-geometry-measurement",
-          "prompt": "Which quantity uses square units?",
+          "prompt": "In two-dimensional geometry, which measured quantity is reported in square units?",
           "choices": [
             "Perimeter",
             "Length",
@@ -1545,7 +1545,7 @@
         {
           "id": "parapro-ch-08-check-1",
           "skillId": "mathematics-data-support",
-          "prompt": "Which graph usually best compares several categories?",
+          "prompt": "Which data display usually best compares several categories?",
           "choices": [
             "Unlabeled line",
             "Circle for every data point",
@@ -1601,10 +1601,10 @@
           "skillId": "mathematics-data-support",
           "prompt": "What should happen first in mathematical error analysis?",
           "choices": [
-            "Give the final answer immediately.",
-            "Assume the student guessed.",
-            "Elicit the students strategy and locate the first incorrect step.",
-            "Assign unrelated computation."
+            "Give the corrected final answer right away.",
+            "Assume the student guessed without checking.",
+            "Review student steps and spot the misstep.",
+            "Assign unrelated arithmetic drills instead."
           ],
           "answerIndex": 2,
           "rationale": "Understanding the learners reasoning identifies the specific misconception and supports a targeted representation or prompt.",
@@ -1619,10 +1619,10 @@
           "skillId": "mathematics-data-support",
           "prompt": "Why use a balance model for equations?",
           "choices": [
-            "It converts every equation into geometry.",
-            "It removes the need to calculate.",
-            "It proves the variable is always positive.",
-            "It shows that equal operations preserve equality."
+            "It converts every algebra equation into shapes.",
+            "It removes any need to calculate the solution.",
+            "It guarantees the unknown variable is positive.",
+            "It shows equal steps keep both sides balanced."
           ],
           "answerIndex": 3,
           "rationale": "The balance model represents the defining relationship in an equation and makes one-sided operations visibly invalid.",
@@ -1769,10 +1769,10 @@
           "skillId": "writing-grammar-mechanics",
           "prompt": "What is wrong with When the meeting ended?",
           "choices": [
-            "It contains too many subjects.",
-            "It must use a semicolon after when.",
-            "It is a dependent fragment without a main clause.",
-            "Ended can never be a verb."
+            "It contains far too many separate grammatical subjects.",
+            "It requires placing a semicolon directly after \"When.\"",
+            "It is a dependent fragment lacking a main clause.",
+            "The word \"ended\" cannot function as an action verb."
           ],
           "answerIndex": 2,
           "rationale": "When introduces a dependent clause. The words need an independent clause, such as the committee left, to form a complete sentence.",
@@ -1805,10 +1805,10 @@
           "skillId": "writing-grammar-mechanics",
           "prompt": "Why can a misplaced modifier be confusing?",
           "choices": [
-            "It appears to describe the wrong word or actor.",
-            "It always changes a noun to a verb.",
-            "It removes every punctuation mark.",
-            "It makes the sentence a direct quotation."
+            "It seems to describe the wrong word or actor.",
+            "It turns a regular noun into an action verb.",
+            "It strips out every punctuation mark nearby.",
+            "It turns the sentence into a direct quotation."
           ],
           "answerIndex": 0,
           "rationale": "Modifier placement creates a grammatical attachment. When that attachment is illogical, the sentence can assign an action or quality to the wrong subject.",
@@ -1958,10 +1958,10 @@
           "skillId": "writing-revision-clarity",
           "prompt": "How can a writer remove an ambiguous pronoun?",
           "choices": [
-            "Add another unclear pronoun.",
-            "Delete every noun in the sentence.",
-            "Change all verbs to future tense.",
-            "Repeat or replace it with the intended noun."
+            "Insert a second unclear pronoun beside the first.",
+            "Delete every specific noun inside the sentence.",
+            "Shift every verb in the paragraph to future tense.",
+            "Replace the vague pronoun with the intended noun."
           ],
           "answerIndex": 3,
           "rationale": "Naming the intended person or object makes the reference explicit; adding pronouns or changing tense does not identify the antecedent.",
@@ -1975,7 +1975,7 @@
         {
           "id": "parapro-ch-10-check-4",
           "skillId": "writing-revision-clarity",
-          "prompt": "Which transition signals contrast?",
+          "prompt": "When revising a paragraph, which transition word signals a contrast between two ideas?",
           "choices": [
             "However",
             "Therefore",
@@ -1996,9 +1996,9 @@
           "skillId": "writing-revision-clarity",
           "prompt": "What does active voice usually place in subject position?",
           "choices": [
-            "The punctuation mark",
-            "The actor performing the action",
-            "An unrelated observer",
+            "The closing punctuation mark",
+            "The actor doing the action",
+            "An unrelated background object",
             "The final word alphabetically"
           ],
           "answerIndex": 1,
@@ -2113,10 +2113,10 @@
           "skillId": "writing-organization-evidence",
           "prompt": "What is the main function of a topic sentence?",
           "choices": [
-            "List every source in the paper",
-            "Correct all punctuation errors",
-            "State or frame the paragraph controlling idea",
-            "Provide an unrelated example"
+            "List every cited source in the paper",
+            "Fix every comma and spelling mistake",
+            "State the paragraph’s controlling idea",
+            "Add an unrelated personal anecdote"
           ],
           "answerIndex": 2,
           "rationale": "A topic sentence orients readers to the idea the paragraph will develop; sources and details then support that focus.",
@@ -2151,10 +2151,10 @@
           "skillId": "writing-organization-evidence",
           "prompt": "Which evidence best supports a proposed morning tutoring program?",
           "choices": [
-            "Attendance and completion data from a comparable program",
-            "The color of hallway paint",
-            "A list of unrelated clubs",
-            "One writers favorite time of day"
+            "Attendance and achievement data from a pilot",
+            "The paint color along the school hallway walls",
+            "A directory of unrelated after-school art clubs",
+            "One writer’s personal favorite time of the day"
           ],
           "answerIndex": 0,
           "rationale": "Comparable program data directly address use and academic outcomes, whereas the other details are unrelated or merely personal.",
@@ -2189,10 +2189,10 @@
           "skillId": "writing-organization-evidence",
           "prompt": "Why revise organization before final proofreading?",
           "choices": [
-            "Proofreading is never useful.",
-            "Organization affects only handwriting.",
-            "Structural changes may move or remove sentences.",
-            "Every paragraph must be alphabetized."
+            "Proofreading grammar adds no real value.",
+            "Organization changes handwriting neatness.",
+            "Big edits may move or cut whole sentences.",
+            "Every body paragraph must be alphabetized."
           ],
           "answerIndex": 2,
           "rationale": "Document-level revision can substantially alter text, so polishing sentence mechanics first may waste effort.",
@@ -2311,7 +2311,7 @@
             "One comma only",
             "Handwriting color",
             "Alphabetical paragraph order",
-            "Organization and reasoning"
+            "Overall structure and logic"
           ],
           "answerIndex": 3,
           "rationale": "Higher-level revision should precede final editing because changes to organization may move, combine, or remove sentences.",
@@ -2325,12 +2325,12 @@
         {
           "id": "parapro-ch-12-check-2",
           "skillId": "writing-classroom-support",
-          "prompt": "What makes feedback transferable?",
+          "prompt": "During writing support, what makes instructional feedback transferable to future drafts?",
           "choices": [
-            "It identifies a goal, exact text, effect, and reusable strategy.",
-            "It rewrites every sentence.",
-            "It gives only a score.",
-            "It focuses on personal preference."
+            "It names a goal, text line, effect, and reusable step.",
+            "It rewrites every rough sentence directly for the author.",
+            "It gives a single numeric score without written comments.",
+            "It centers on personal style tastes outside the rubric."
           ],
           "answerIndex": 0,
           "rationale": "Specific strategy-based feedback helps the student make the current change and apply the same reasoning in future writing.",
@@ -2344,12 +2344,12 @@
         {
           "id": "parapro-ch-12-check-3",
           "skillId": "writing-classroom-support",
-          "prompt": "Which prompt supports elaboration?",
+          "prompt": "When coaching a young writer on a narrative draft, which question best supports elaboration?",
           "choices": [
-            "Can you repeat messy five times?",
-            "What objects, sounds, or actions would help readers picture the scene?",
-            "Should we delete the setting?",
-            "Can you add an unrelated building?"
+            "Can you repeat the word messy five times in a row?",
+            "Which sights, sounds, or actions picture the scene?",
+            "Should we delete the entire story setting instead?",
+            "Can you add a fact about an unrelated tall building?"
           ],
           "answerIndex": 1,
           "rationale": "The prompt requests concrete relevant detail that allows the writer to show the condition rather than merely label it.",
@@ -2365,10 +2365,10 @@
           "skillId": "writing-classroom-support",
           "prompt": "How should support preserve student authorship?",
           "choices": [
-            "Write the final response for the student.",
-            "Require the adults preferred opinion.",
-            "Use models and prompts while leaving decisions and wording to the student.",
-            "Replace the assignment with unrelated work."
+            "Draft the polished final paragraph directly for the child.",
+            "Require the student to adopt the adult’s preferred view.",
+            "Offer models and prompts while the learner owns wording.",
+            "Replace the writing assignment with unrelated worksheets."
           ],
           "answerIndex": 2,
           "rationale": "Scaffolding supports the process but keeps the learner responsible for meaning, evidence, and final expression.",
@@ -2384,10 +2384,10 @@
           "skillId": "writing-classroom-support",
           "prompt": "Which change most improves an acronym-heavy family notice?",
           "choices": [
-            "Add more abbreviations.",
-            "Hide actions in a footnote.",
-            "Combine everything into one paragraph.",
-            "Define terms, use headings, and state actions plainly."
+            "Insert extra formal school abbreviations into the letter.",
+            "Place required family steps inside a tiny bottom footnote.",
+            "Merge every school announcement into one unbroken block.",
+            "Define acronyms, add headings, and state actions clearly."
           ],
           "answerIndex": 3,
           "rationale": "Defined terms, clear hierarchy, and direct action language improve navigation and comprehension for a varied audience.",

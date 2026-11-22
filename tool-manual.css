@@ -44,6 +44,11 @@
         --mn-accent-bd: #33456e;
         --mn-code-bg: #172033;
     }
+    main.manual-page p a:not(.btn-primary):not(.btn-secondary),
+    main.manual-page li a:not(.btn-primary):not(.btn-secondary),
+    .manual-page a:not(.btn-primary):not(.btn-secondary) {
+        color: var(--mn-accent);
+    }
 }
 
 body {
@@ -65,10 +70,10 @@ body {
 }
 
 .skip-link {
-    position: absolute;
+    position: fixed;
     left: -9999px;
     top: 0;
-    z-index: 100;
+    z-index: 1000;
     padding: 12px 18px;
     background: var(--mn-panel);
     color: var(--mn-accent);
@@ -77,6 +82,7 @@ body {
 }
 .skip-link:focus {
     left: 0;
+    transform: none;
 }
 
 .manual-crumbs {
@@ -142,6 +148,13 @@ body {
 }
 .manual-page .manual-open:visited {
     color: #fff;
+}
+@media (prefers-color-scheme: dark) {
+    .manual-page .manual-open,
+    .manual-page .manual-open:visited,
+    .manual-page .manual-open:hover {
+        color: #0d1424;
+    }
 }
 .manual-note {
     font-size: .92rem;

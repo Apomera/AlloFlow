@@ -426,18 +426,21 @@ const ReadAloudArtifactContract = (() => {
             const sceneTitle = readText(scene.title == null ? '' : scene.title, path + '.title', errors, { required: false, max: 300 });
             const rawSegments = ensureArray(scene.segments, path + '.segments', errors, limits.maxSegments);
             if (!rawSegments.length) errors.push(issue('empty-scene', path + '.segments', 'Every scene needs at least one spoken segment.'));
-            let segments = rawSegments.map((segment, segmentIndex) => {
+            const segments = [];
+            for (let segmentIndex = 0; segmentIndex < rawSegments.length; segmentIndex += 1) {
+                const segment = rawSegments[segmentIndex];
                 const segmentPath = path + '.segments[' + segmentIndex + ']';
-                if (!strictKeys(segment, ['segmentId', 'order', 'text', 'speaker', 'audio'], segmentPath, errors)) return null;
+                totalSegments += 1;
+                if (totalSegments > limits.maxSegments) {
+                    errors.push(issue('too-many-items', segmentPath, 'The storybook exceeds its total segment limit.'));
+                    break;
+                }
+                if (!strictKeys(segment, ['segmentId', 'order', 'text', 'speaker', 'audio'], segmentPath, errors)) continue;
                 const segmentId = readStableId(segment.segmentId, segmentPath + '.segmentId', errors);
                 if (segmentId && segmentIds.has(segmentId)) {
                     errors.push(issue('duplicate-stable-id', segmentPath + '.segmentId', 'Segment ids must be unique across the storybook.'));
                 }
                 if (segmentId) segmentIds.add(segmentId);
-                totalSegments += 1;
-                if (totalSegments > limits.maxSegments) {
-                    errors.push(issue('too-many-items', segmentPath, 'The storybook exceeds its total segment limit.'));
-                }
                 const output = {
                     segmentId: segmentId || '',
                     order: readOrder(segment.order, segmentIndex, segmentPath + '.order', errors),
@@ -446,14 +449,14 @@ const ReadAloudArtifactContract = (() => {
                 };
                 const audio = normalizeAudio(segment.audio, segmentPath + '.audio', errors, limits, budget);
                 if (audio) output.audio = audio;
-                return output;
-            }).filter(Boolean);
-            segments = sortedByOrder(segments, 'segmentId', path + '.segments', errors);
+                segments.push(output);
+            }
+            const sortedSegments = sortedByOrder(segments, 'segmentId', path + '.segments', errors);
             return {
                 sceneId: sceneId || '',
                 order: readOrder(scene.order, sceneIndex, path + '.order', errors),
                 title: sceneTitle,
-                segments,
+                segments: sortedSegments,
             };
         }).filter(Boolean);
         scenes = sortedByOrder(scenes, 'sceneId', 'scenes', errors);
@@ -570,14 +573,19 @@ const ReadAloudArtifactContract = (() => {
                 rawChunks = ensureArray(message.chunks, path + '.chunks', errors, limits.maxChunks);
             }
             if (!rawChunks.length) errors.push(issue('empty-message', path + '.chunks', 'Every message needs at least one transcript chunk.'));
-            let chunks = rawChunks.map((chunk, chunkIndex) => {
+            const chunkList = [];
+            for (let chunkIndex = 0; chunkIndex < rawChunks.length; chunkIndex += 1) {
+                const chunk = rawChunks[chunkIndex];
                 const chunkPath = path + '.chunks[' + chunkIndex + ']';
-                if (!strictKeys(chunk, ['chunkId', 'order', 'text', 'audio'], chunkPath, errors)) return null;
+                totalChunks += 1;
+                if (totalChunks > limits.maxChunks) {
+                    errors.push(issue('too-many-items', chunkPath, 'The session exceeds its total chunk limit.'));
+                    break;
+                }
+                if (!strictKeys(chunk, ['chunkId', 'order', 'text', 'audio'], chunkPath, errors)) continue;
                 const chunkId = readStableId(chunk.chunkId, chunkPath + '.chunkId', errors);
                 if (chunkId && chunkIds.has(chunkId)) errors.push(issue('duplicate-stable-id', chunkPath + '.chunkId', 'Chunk ids must be unique across the session.'));
                 if (chunkId) chunkIds.add(chunkId);
-                totalChunks += 1;
-                if (totalChunks > limits.maxChunks) errors.push(issue('too-many-items', chunkPath, 'The session exceeds its total chunk limit.'));
                 const output = {
                     chunkId: chunkId || '',
                     order: readOrder(chunk.order, chunkIndex, chunkPath + '.order', errors),
@@ -585,11 +593,11 @@ const ReadAloudArtifactContract = (() => {
                 };
                 const audio = normalizeAudio(chunk.audio, chunkPath + '.audio', errors, limits, budget);
                 if (audio) output.audio = audio;
-                return output;
-            }).filter(Boolean);
-            chunks = sortedByOrder(chunks, 'chunkId', path + '.chunks', errors);
+                chunkList.push(output);
+            }
+            const chunks = sortedByOrder(chunkList, 'chunkId', path + '.chunks', errors);
             if (message.text != null && message.chunks != null) {
-                const suppliedText = readText(message.text, path + '.text', errors);
+                const suppliedText = readText(message.text, path + '.text', errors, { max: limits.maxTextChars });
                 const chunkText = chunks.map((chunk) => chunk.text).join(' ');
                 if (suppliedText !== chunkText) {
                     errors.push(issue('message-text-mismatch', path + '.text', 'Message text must equal its ordered chunk text.'));

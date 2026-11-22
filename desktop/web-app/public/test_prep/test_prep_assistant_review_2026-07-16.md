@@ -4,7 +4,7 @@ Status: **Reviewed — 500-distinct-question target not met.** This is a complet
 
 ## Bottom line
 
-The 22 non-EPPP packs contain **11,000 learning activities**. The current strict audit found **2,257 normalized kernels among the original source banks**, **900 newly assistant-authored independent practice questions**, **3,157 distinct independent-practice content kernels overall**, and **5,700 source-derived guided-review activities**. Reaching 500 genuinely distinct questions in every pack requires **7,843 additional independently authored questions**.
+The 22 non-EPPP packs contain **11,000 learning activities**. The current strict audit found **2,784 normalized kernels among the original source banks**, **900 newly assistant-authored independent practice questions**, **3,684 distinct independent-practice content kernels overall**, and **5,700 source-derived guided-review activities**. Reaching 500 genuinely distinct questions in every pack requires **7,316 additional independently authored questions**.
 
 Structural integrity and guided-answer derivation passed. New independent additions were reviewed for blueprint alignment, keyed-answer defensibility, distractor plausibility, feedback, citations, originality, and answer balance. Guided additions remain approved for guided practice only and are excluded from diagnostic analytics.
 
@@ -18,28 +18,28 @@ Assistant review is separate from licensed subject-matter endorsement, field tes
 
 | Pack | Original source questions | New independent questions | Distinct independent kernels | Parallel independent variants | Guided review | New independent items needed |
 |---|---:|---:|---:|---:|---:|---:|
-| Audiology 5343 diagnostics | 200 | 100 | 204 | 96 | 200 | 296 |
-| Early Childhood Education (5025) | 200 | 100 | 205 | 95 | 200 | 295 |
-| Educational Leadership (5412) | 200 | 100 | 200 | 100 | 200 | 300 |
-| Praxis ESOL (5362) | 200 | 0 | 100 | 100 | 300 | 400 |
+| Audiology 5343 diagnostics | 200 | 100 | 252 | 48 | 200 | 248 |
+| Early Childhood Education (5025) | 200 | 100 | 222 | 78 | 200 | 278 |
+| Educational Leadership (5412) | 200 | 100 | 229 | 71 | 200 | 271 |
+| Praxis ESOL (5362) | 200 | 0 | 129 | 71 | 300 | 371 |
 | ParaPro diagnostic batches 1-2 | 200 | 300 | 500 | 0 | 0 | 0 |
-| PLT: Grades 5–9 (5623) | 200 | 0 | 100 | 100 | 300 | 400 |
-| PLT: Grades 7–12 (5624) | 200 | 0 | 100 | 100 | 300 | 400 |
-| PLT: Early Childhood (5621) | 200 | 0 | 100 | 100 | 300 | 400 |
-| PLT K–6 (5622) | 200 | 0 | 100 | 100 | 300 | 400 |
-| Praxis Core (5752) | 200 | 0 | 107 | 93 | 300 | 393 |
-| Reading Specialist 5302 diagnostics | 200 | 0 | 100 | 100 | 300 | 400 |
-| School Counselor 5422 diagnostics | 200 | 100 | 200 | 100 | 200 | 300 |
-| School Librarian (5312) | 200 | 100 | 135 | 165 | 200 | 365 |
-| School Psychologist 5403 diagnostics | 200 | 100 | 200 | 100 | 200 | 300 |
-| Special Education 5355 diagnostics | 200 | 0 | 100 | 100 | 300 | 400 |
-| Behavioral Disorders and Emotional Disturbances (5372) | 200 | 0 | 100 | 100 | 300 | 400 |
-| Special Education EC/EI (5692) | 200 | 0 | 100 | 100 | 300 | 400 |
-| Teaching Students with Intellectual Disabilities (5322) | 200 | 0 | 100 | 100 | 300 | 400 |
-| Teaching Students with Learning Disabilities (5383) | 200 | 0 | 103 | 97 | 300 | 397 |
-| Special Education Severe to Profound (5547) | 200 | 0 | 103 | 97 | 300 | 397 |
-| Speech-Language Pathology 5331 diagnostics | 200 | 0 | 100 | 100 | 300 | 400 |
-| Teaching Reading: Elementary (5205) | 200 | 0 | 100 | 100 | 300 | 400 |
+| PLT: Grades 5–9 (5623) | 200 | 0 | 144 | 56 | 300 | 356 |
+| PLT: Grades 7–12 (5624) | 200 | 0 | 143 | 57 | 300 | 357 |
+| PLT: Early Childhood (5621) | 200 | 0 | 143 | 57 | 300 | 357 |
+| PLT K–6 (5622) | 200 | 0 | 143 | 57 | 300 | 357 |
+| Praxis Core (5752) | 200 | 0 | 127 | 73 | 300 | 373 |
+| Reading Specialist 5302 diagnostics | 200 | 0 | 138 | 62 | 300 | 362 |
+| School Counselor 5422 diagnostics | 200 | 100 | 206 | 94 | 200 | 294 |
+| School Librarian (5312) | 200 | 100 | 143 | 157 | 200 | 357 |
+| School Psychologist 5403 diagnostics | 200 | 100 | 201 | 99 | 200 | 299 |
+| Special Education 5355 diagnostics | 200 | 0 | 109 | 91 | 300 | 391 |
+| Behavioral Disorders and Emotional Disturbances (5372) | 200 | 0 | 115 | 85 | 300 | 385 |
+| Special Education EC/EI (5692) | 200 | 0 | 134 | 66 | 300 | 366 |
+| Teaching Students with Intellectual Disabilities (5322) | 200 | 0 | 101 | 99 | 300 | 399 |
+| Teaching Students with Learning Disabilities (5383) | 200 | 0 | 113 | 87 | 300 | 387 |
+| Special Education Severe to Profound (5547) | 200 | 0 | 130 | 70 | 300 | 370 |
+| Speech-Language Pathology 5331 diagnostics | 200 | 0 | 110 | 90 | 300 | 390 |
+| Teaching Reading: Elementary (5205) | 200 | 0 | 152 | 48 | 300 | 348 |
 
 ## Corrections and additions completed
 
@@ -51,4 +51,4 @@ Assistant review is separate from licensed subject-matter endorsement, field tes
 
 ## Next release standard
 
-Author the 7,843-question remaining gap pack by pack in 100-item stages. Every addition should use a new credential-specific stimulus, plausible distractors, item-specific feedback, and directly relevant sources. Guided-review activities should remain available as a separate learning tool.
+Author the 7,316-question remaining gap pack by pack in 100-item stages. Every addition should use a new credential-specific stimulus, plausible distractors, item-specific feedback, and directly relevant sources. Guided-review activities should remain available as a separate learning tool.

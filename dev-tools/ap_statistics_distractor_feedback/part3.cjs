@@ -313,9 +313,9 @@ module.exports = {
     'The chi-square statistic.': 'A chi-square statistic belongs to a different procedure and is not the center of a proportion interval.',
   },
   'item-223': {
-    'Small expected counts always prove complete independence here.': 'Expected counts come from the totals and say nothing about whether the variables are associated.',
+    'Small expected counts routinely prove total independence here.': 'Expected counts come from the totals and say nothing about whether the variables are associated.',
     'They make the two variables into quantitative measurements here.': 'The variables remain categorical; expected counts are a computational check, not a change of variable type.',
-    'They guarantee that the p-value will always be very small in every case.': 'Small expected counts make the p-value unreliable; they do not push it in a particular direction.',
+    'They ensure that the p-value will stay very small in every case.': 'Small expected counts make the p-value unreliable; they do not push it in a particular direction.',
   },
   'item-224': {
     '5': '5 is the number of categories; the degrees of freedom subtract 1 from it.',

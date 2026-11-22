@@ -11,15 +11,26 @@
  */
 function ClozeInteractionPanel(props) {
   const noop = () => null;
-  const Globe = window.Globe || noop;
-  const RefreshCw = window.RefreshCw || noop;
-  const X = window.X || noop;
+  const _w = typeof window !== 'undefined' ? window : {};
+  const Globe = _w.Globe || noop;
+  const RefreshCw = _w.RefreshCw || noop;
+  const X = _w.X || noop;
   const {
     activeView, handleBankMouseDown, handleSetInteractionModeToRead,
     interactionMode, latestGlossary, leveledTextLanguage, playSound, activityScope,
-    setClozeCompletedSet, setClozeInstanceSet, t, wordBankPosition, wordBankRef, completedBlankCount,
-  } = props;
+    setClozeCompletedSet, setClozeInstanceSet, t: rawT, wordBankPosition, wordBankRef, completedBlankCount,
+  } = props || {};
+  const t = typeof rawT === 'function' ? rawT : (k => k);
   const tx = (key, fallback) => { const value = typeof t === 'function' ? t(key) : ''; return typeof value === 'string' && value.trim() && value !== key ? value : fallback; };
+  const isGlobalMuted = () => {
+    if (typeof window === 'undefined') return false;
+    try {
+      if (window.__alloMuted === true || window._alloGlobalMute === true || window._alloGlobalMuted === true) return true;
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+    } catch (_) {}
+    return false;
+  };
+  const spokeViaSynthRef = React.useRef(false);
   const bionicOn = (typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function') ? window.__alloUseBionic() : false;
   const bt = s => (bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function') ? window.__alloBionicReact(s) : s;
   const controlSize = { minHeight: 44, minWidth: 44 };
@@ -44,7 +55,7 @@ function ClozeInteractionPanel(props) {
   // Tap path (WCAG 2.5.7): tap a chip to pick it up, then tap a blank. The
   // blanks (ClozeInput, misc_components) read window.__alloClozeBankPick and
   // the 'allo-cloze-bank-pick' event; a blank sends detail null once placed.
-  const safeGlossary = Array.isArray(latestGlossary) ? latestGlossary : [];
+  const safeGlossary = Array.isArray(latestGlossary) ? latestGlossary.filter(item => item && typeof item === 'object') : [];
   const bankEntries = safeGlossary.map((item) => {
       const englishTerm = item?.term || '';
       // A translation is usable even without the "term: definition"
@@ -52,11 +63,16 @@ function ClozeInteractionPanel(props) {
       // back to English, which is why the bank so often looked
       // English-only even for a translated passage.
       let translatedTerm = '';
-      if (!isEnglishPassage && item.translations && item.translations[leveledTextLanguage]) {
-          const transString = String(item.translations[leveledTextLanguage]);
-          translatedTerm = transString.includes(':')
-              ? transString.split(':')[0].trim()
-              : transString.trim();
+      if (!isEnglishPassage && item.translations && typeof item.translations === 'object' && Object.prototype.hasOwnProperty.call(item.translations, leveledTextLanguage)) {
+          const rawVal = item.translations[leveledTextLanguage];
+          const transString = typeof rawVal === 'string'
+              ? rawVal
+              : (rawVal && typeof rawVal === 'object' && typeof rawVal.term === 'string' ? rawVal.term : '');
+          if (transString) {
+              translatedTerm = /[:：]/.test(transString)
+                  ? transString.split(/[:：]/)[0].trim()
+                  : transString.trim();
+          }
       }
       // What the chip shows. What it CARRIES on drop is always the
       // target-language word when one exists, so the solved sentence
@@ -88,20 +104,30 @@ function ClozeInteractionPanel(props) {
       )
   );
   const speakBankWord = (word) => {
+      if (isGlobalMuted()) return;
       const clean = String(word || '').trim();
       if (!clean) return;
+      const targetLang = bankLang === 'english' ? 'English' : (leveledTextLanguage || 'English');
       try {
           if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
-              Promise.resolve(window.AlloSpeechPlayer.speak(clean, { language: bankLang === 'english' ? 'English' : (leveledTextLanguage || 'English') })).catch(() => {});
+              Promise.resolve(window.AlloSpeechPlayer.speak(clean, { language: targetLang })).catch(() => {});
               return;
           }
           if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
               window.speechSynthesis.cancel();
-              window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(clean));
+              const utter = new window.SpeechSynthesisUtterance(clean);
+              if (typeof window.languageToTTSCode === 'function') {
+                  try { const code = window.languageToTTSCode(targetLang); if (code) utter.lang = code; } catch (_) {}
+              }
+              spokeViaSynthRef.current = true;
+              utter.onend = () => { spokeViaSynthRef.current = false; };
+              utter.onerror = () => { spokeViaSynthRef.current = false; };
+              window.speechSynthesis.speak(utter);
           }
-      } catch (_) {}
+      } catch (_) { spokeViaSynthRef.current = false; }
   };
   const sendPick = (word) => {
+      if (typeof window === 'undefined') return;
       window.__alloClozeBankPick = word || null;
       try { window.dispatchEvent(new CustomEvent('allo-cloze-bank-pick', { detail: word || null })); } catch (_) {}
   };
@@ -109,54 +135,77 @@ function ClozeInteractionPanel(props) {
       const next = pickedIdx === idx ? null : idx;
       setPicked(next === null ? null : { idx: next, activityScope, contentScope });
       sendPick(next === null ? null : word);
-      if (next !== null && playSound) playSound('click');
+      if (next !== null && typeof playSound === 'function' && !isGlobalMuted()) playSound('click');
   };
   const closeReset = (event, confirmed) => {
       if (confirmed && (!resetOpen || !hasCompletedAnswers)) return;
       resetFocusRef.current = { from: event.currentTarget, scope: resetScope, cleared: confirmed };
       setResetPrompt(null);
       if (confirmed) {
-          setClozeCompletedSet(new Set());
+          if (typeof setClozeCompletedSet === 'function') setClozeCompletedSet(new Set());
           if (typeof setClozeInstanceSet === 'function') setClozeInstanceSet(new Set());
           setPicked(null);
           sendPick(null);
           setResetStatus(tx('simplified.cloze_reset_done', 'Completed answers cleared.'));
-          if (playSound) playSound('click');
+          if (typeof playSound === 'function' && !isGlobalMuted()) playSound('click');
       }
   };
   React.useLayoutEffect(() => {
+      if (typeof document === 'undefined') return;
       const pending = resetFocusRef.current;
       resetFocusRef.current = null;
       if (!pending || pending.scope !== resetScope) return;
       const active = document.activeElement;
-      if (active !== document.body && active !== pending.from && !pending.from.contains(active)) return;
+      if (active !== document.body && active !== pending.from && !(pending.from && typeof pending.from.contains === 'function' && pending.from.contains(active))) return;
       const target = pending.cleared ? bankHeadingRef.current : resetButtonRef.current;
       if (target && target.isConnected && !target.disabled) target.focus();
   });
   React.useEffect(() => {
+      if (typeof window === 'undefined') return undefined;
       const onPick = (e) => { if (!e.detail) setPicked(null); };
       window.addEventListener('allo-cloze-bank-pick', onPick);
-      return () => { window.removeEventListener('allo-cloze-bank-pick', onPick); sendPick(null); };
+      return () => {
+          window.removeEventListener('allo-cloze-bank-pick', onPick);
+          sendPick(null);
+          if (spokeViaSynthRef.current && window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') {
+              try { window.speechSynthesis.cancel(); } catch (_) {}
+              spokeViaSynthRef.current = false;
+          }
+      };
   }, []);
   // Clear old payloads for a new passage or a changed word bank, not equivalent rerenders.
   React.useEffect(() => { setPicked(null); sendPick(null); setResetPrompt(null); setResetStatus(''); setBankFilter(''); resetFocusRef.current = null; }, [activityScope, contentScope]);
+  const safeBankPos = (() => {
+      if (!wordBankPosition || typeof wordBankPosition !== 'object') return null;
+      const rawX = Number(wordBankPosition.x);
+      const rawY = Number(wordBankPosition.y);
+      if (!Number.isFinite(rawX) || !Number.isFinite(rawY)) return null;
+      const vw = typeof window !== 'undefined' && window.innerWidth ? window.innerWidth : 1024;
+      const vh = typeof window !== 'undefined' && window.innerHeight ? window.innerHeight : 768;
+      return {
+          x: Math.max(8, Math.min(Math.max(8, vw - 160), rawX)),
+          y: Math.max(8, Math.min(Math.max(8, vh - 80), rawY)),
+      };
+  })();
   return (
               <div
                   ref={wordBankRef}
+                  role="region"
+                  aria-label={tx('simplified.word_bank', 'Word Bank')}
                   style={dockTop ? {
                       position: 'fixed',
                       left: '50%',
                       top: '16px',
                       bottom: 'auto',
                       transform: 'translateX(-50%)'
-                  } : (wordBankPosition ? {
+                  } : (safeBankPos ? {
                       position: 'fixed',
-                      left: wordBankPosition.x,
-                      top: wordBankPosition.y,
+                      left: safeBankPos.x,
+                      top: safeBankPos.y,
                       bottom: 'auto',
                       transform: 'none'
                   } : {})}
-                  className={`z-40 w-[90%] max-w-3xl bg-blue-50/95 backdrop-blur-md p-4 rounded-xl border-2 border-blue-300 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] animate-in fade-in motion-reduce:animate-none duration-300 ${!wordBankPosition && !dockTop ? 'absolute bottom-28 left-1/2 -translate-x-1/2 slide-in-from-bottom-10' : ''}`}
+                  className={`z-40 w-[90%] max-w-3xl bg-blue-50/95 backdrop-blur-md p-4 rounded-xl border-2 border-blue-300 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] animate-in fade-in motion-reduce:animate-none duration-300 ${!safeBankPos && !dockTop ? 'absolute bottom-28 left-1/2 -translate-x-1/2 slide-in-from-bottom-10' : ''}`}
               >
                   <div
                       onMouseDown={handleBankMouseDown}
@@ -164,11 +213,11 @@ function ClozeInteractionPanel(props) {
                   >
                       <div className="flex flex-wrap items-center gap-2 pointer-events-none">
                         <h4 ref={bankHeadingRef} tabIndex={-1} className="font-bold text-blue-800 flex items-center gap-2 text-sm uppercase tracking-wider">
-                            <Globe size={16} /> {t('simplified.word_bank')}
+                            <Globe size={16} aria-hidden="true" /> {t('simplified.word_bank')}
                         </h4>
                         {Number.isInteger(completedBlankCount) && completedBlankCount > 0 && (
                           <span data-cloze-progress-pill className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
-                            ✓ {tx('simplified.cloze_solved_count', '{count} solved').replace('{count}', String(completedBlankCount))}
+                            <span aria-hidden="true">✓</span> {tx('simplified.cloze_solved_count', '{count} solved').replace('{count}', String(completedBlankCount))}
                           </span>
                         )}
                       </div>
@@ -181,7 +230,7 @@ function ClozeInteractionPanel(props) {
                             aria-label={dockTop ? (t('simplified.dock_bottom') || 'Move word bank to bottom') : (t('simplified.dock_top') || 'Move word bank to top')}
                             title={dockTop ? (t('simplified.dock_bottom') || 'Move word bank to bottom') : (t('simplified.dock_top') || 'Move word bank to top')}
                         >
-                            {dockTop ? '⬇' : '⬆'}
+                            <span aria-hidden="true">{dockTop ? '⬇' : '⬆'}</span>
                         </button>
                         <button type="button" style={controlSize}
                             data-cloze-minimize-toggle="true"
@@ -191,7 +240,7 @@ function ClozeInteractionPanel(props) {
                             aria-label={isMinimized ? (t('simplified.expand_word_bank') || 'Expand word bank') : (t('simplified.minimize_word_bank') || 'Minimize word bank')}
                             title={isMinimized ? (t('simplified.expand_word_bank') || 'Expand word bank') : (t('simplified.minimize_word_bank') || 'Minimize word bank')}
                         >
-                            {isMinimized ? '+' : '−'}
+                            <span aria-hidden="true">{isMinimized ? '+' : '−'}</span>
                         </button>
                         <button type="button" style={controlSize} ref={resetButtonRef}
                             data-cloze-reset disabled={!hasCompletedAnswers}
@@ -200,15 +249,15 @@ function ClozeInteractionPanel(props) {
                             className="text-blue-800 hover:text-blue-800 bg-blue-100/50 hover:bg-blue-100 px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
                             title={t('simplified.reset_activity')}
                         >
-                            <RefreshCw size={12}/> {tx('common.reset', 'Reset')}
+                            <RefreshCw size={12} aria-hidden="true"/> {tx('common.reset', 'Reset')}
                         </button>
                         <button type="button" style={controlSize}
                             aria-label={t('common.close')}
-                            onClick={handleSetInteractionModeToRead}
+                            onClick={() => { if (typeof handleSetInteractionModeToRead === 'function') handleSetInteractionModeToRead(); }}
                             className="text-blue-700 hover:text-blue-700 bg-blue-100/50 hover:bg-blue-100 p-1 rounded-full transition-colors flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
                             title={t('simplified.exit_cloze')}
                         >
-                            <X size={14}/>
+                            <X size={14} aria-hidden="true"/>
                         </button>
                       </div>
                   </div>
@@ -271,7 +320,7 @@ function ClozeInteractionPanel(props) {
                             onClick={() => setBankFilter('')}
                             aria-label={tx('common.clear', 'Clear filter')}
                             className="absolute right-0.5 top-1/2 -translate-y-1/2 min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:bg-blue-50 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
-                          >✕</button>
+                          ><span aria-hidden="true">✕</span></button>
                         )}
                       </div>
                     </div>
@@ -290,9 +339,9 @@ function ClozeInteractionPanel(props) {
                                 data-cloze-bank-chip="true"
                                 className={`inline-flex items-center min-h-11 px-3 py-1.5 font-bold text-sm rounded-lg border shadow-sm cursor-grab active:cursor-grabbing hover:scale-105 motion-reduce:transform-none hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${isPicked ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-700 ring-offset-1' : 'bg-white text-blue-700 border-blue-200'}`}
                                 draggable="true"
-                                onDragStart={(e) => e.dataTransfer.setData("text/plain", payload)}
+                                onDragStart={(e) => { if (e.dataTransfer && typeof e.dataTransfer.setData === 'function') e.dataTransfer.setData("text/plain", payload); }}
                                 onClick={() => pickChip(idx, payload)}
-                                onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickChip(idx, payload); } }}
+                                onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickChip(idx, payload); } }}
                               >
                                 {/* Pointer alternative to dragging: tap the chip, then tap a blank. Blanks also accept typing. */}
                                   {bt(label)}

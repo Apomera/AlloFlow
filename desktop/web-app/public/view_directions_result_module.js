@@ -161,7 +161,7 @@ function DirectionsResultView({
     listen: 'directions.listen',
     stopListening: 'directions.stop_listening'
   };
-  const text = (key, fallback, maxLength, params) => directionsResultTranslation(t, translationKeys[key] || key, fallback, params, maxLength);
+  const text = (key, fallback, maxLength, params) => directionsResultTranslation(t, Object.prototype.hasOwnProperty.call(translationKeys, key) ? translationKeys[key] : key, fallback, params, maxLength);
 
   // Keep the complete host-provided assignment; validate display records without
   // silently removing stations or goals.
@@ -234,6 +234,9 @@ function DirectionsResultView({
   const canFilterGoals = goals.length >= 3 && openGoalCount > 0 && doneCount > 0;
   const effectiveGoalFilter = canFilterGoals && goalFilter === 'open' ? 'open' : 'all';
   const displayedGoals = effectiveGoalFilter === 'open' ? goals.filter(goal => !goal.done) : goals;
+  const mountedRef = typeof React.useRef === 'function' ? React.useRef(true) : {
+    current: true
+  };
   const speakingRef = typeof React.useRef === 'function' ? React.useRef(false) : {
     current: false
   };
@@ -248,22 +251,35 @@ function DirectionsResultView({
     speechListenerRef.current = null;
   };
   if (typeof React.useEffect === 'function') {
-    React.useEffect(() => () => {
-      detachSpeechListener();
-      if (!speakingRef.current || typeof window === 'undefined') return;
-      try {
-        if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop();else if (window.speechSynthesis) window.speechSynthesis.cancel();
-      } catch (_) {}
+    React.useEffect(() => {
+      mountedRef.current = true;
+      return () => {
+        mountedRef.current = false;
+        detachSpeechListener();
+        if (!speakingRef.current || typeof window === 'undefined') return;
+        try {
+          if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop();
+        } catch (_) {}
+        try {
+          if (window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel();
+        } catch (_) {}
+      };
     }, []);
   }
   const htmlToPlainText = rawHtml => {
     if (!rawHtml) return '';
-    if (typeof document !== 'undefined') {
+    if (typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function' && typeof document !== 'undefined') {
       try {
         const scratch = document.createElement('div');
-        const safe = typeof window !== 'undefined' && typeof window.sanitizeHtml === 'function' ? window.sanitizeHtml(rawHtml) : String(rawHtml).replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<style[\s\S]*?<\/style>/gi, '');
-        scratch.innerHTML = safe;
+        scratch.innerHTML = window.sanitizeHtml(rawHtml);
         return String(scratch.textContent || '').replace(/\s+/g, ' ').trim();
+      } catch (_) {}
+    }
+    if (typeof DOMParser === 'function') {
+      try {
+        const parsedDoc = new DOMParser().parseFromString(String(rawHtml), 'text/html');
+        parsedDoc.querySelectorAll('script,style').forEach(node => node.remove());
+        return String(parsedDoc.body && parsedDoc.body.textContent || '').replace(/\s+/g, ' ').trim();
       } catch (_) {}
     }
     return String(rawHtml).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -280,15 +296,22 @@ function DirectionsResultView({
     const player = window.AlloSpeechPlayer;
     const done = () => {
       detachSpeechListener();
-      updateSpeaking(false);
+      if (mountedRef.current) updateSpeaking(false);
     };
     detachSpeechListener();
     if (isSpeaking) {
-      if (player && typeof player.stop === 'function') player.stop();else if (window.speechSynthesis) window.speechSynthesis.cancel();
+      try {
+        if (player && typeof player.stop === 'function') player.stop();
+      } catch (_) {}
+      try {
+        if (window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel();
+      } catch (_) {}
       updateSpeaking(false);
       return;
     }
-    if (window.__alloMuted === true) return;
+    try {
+      if (window.__alloMuted === true || window._alloGlobalMute === true || window._alloGlobalMuted === true || typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return;
+    } catch (_) {}
     if (player && typeof player.speak === 'function') {
       if (typeof player.isPlaying === 'function' && player.isPlaying() && typeof player.stop === 'function') {
         player.stop();
@@ -309,9 +332,10 @@ function DirectionsResultView({
         if (result === null && ourId === null) done();
       }, done);
     } else if (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
-      window.speechSynthesis.cancel();
+      if (typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel();
       const utterance = new window.SpeechSynthesisUtterance(speechText);
-      utterance.rate = window.__alloPlaybackRate || 1;
+      const rawRate = Number(window.__alloPlaybackRate);
+      utterance.rate = Number.isFinite(rawRate) && rawRate > 0 ? Math.max(0.5, Math.min(2, rawRate)) : 1;
       utterance.volume = Number.isFinite(window.__alloVoiceVolume) ? Math.max(0, Math.min(1, window.__alloVoiceVolume)) : 1;
       utterance.onend = done;
       utterance.onerror = done;
@@ -404,7 +428,8 @@ function DirectionsResultView({
     y: "92",
     textAnchor: "middle",
     fontSize: "7.5",
-    fill: "#92400e",
+    fill: "currentColor",
+    className: "text-amber-800",
     fontWeight: "bold"
   }, text('mapStart', 'Start here')), stations.map((station, index) => {
     const x = nodeX(index);
@@ -424,7 +449,7 @@ function DirectionsResultView({
       "aria-label": (station.title || station.typeLabel) + (station.visited ? ", " + text('mapVisitedSr', 'already visited') : ""),
       onClick: () => travelTo(station),
       onKeyDown: event => {
-        if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
+        if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
           travelTo(station);
@@ -461,13 +486,15 @@ function DirectionsResultView({
       y: y + 26,
       textAnchor: "middle",
       fontSize: "7",
-      fill: "#475569"
+      fill: "currentColor",
+      className: "text-slate-600"
     }, (station.title || station.typeLabel).slice(0, 14)), /*#__PURE__*/React.createElement("text", {
       x: x,
       y: y + 34,
       textAnchor: "middle",
       fontSize: "6",
-      fill: isNext ? '#b45309' : '#475569',
+      fill: "currentColor",
+      className: isNext ? 'text-amber-800' : 'text-slate-600',
       fontWeight: isNext ? 'bold' : 'normal'
     }, isNext ? text('mapNextPin', 'NEXT') : station.typeLabel.slice(0, 16)));
   }), goals.map((goal, index) => /*#__PURE__*/React.createElement("g", {

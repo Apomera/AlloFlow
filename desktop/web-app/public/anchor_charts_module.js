@@ -60,10 +60,24 @@ const t = function() {
 const _AC_COMPLETION_XP = 30;
 function _ac_aiUsable(kind, fn) {
   try {
-    if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return window.__alloAiUsable(kind, fn);
+    if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return !!window.__alloAiUsable(kind, fn);
+    if (typeof fn !== "function" || fn._alloQrBlocked) return false;
+    if (typeof window !== "undefined") {
+      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return false;
+      const qr = window.__alloQrStudentMode;
+      if (qr === true || qr && typeof qr === "object" && qr.active === true && qr.allowAi === false) return false;
+    }
+    return true;
   } catch (_) {
+    return false;
   }
-  return typeof fn === "function" && !fn._alloQrBlocked && !(typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+}
+function _ac_isSafeIconUrl(url) {
+  if (typeof url !== "string") return false;
+  const trimmed = url.trim();
+  if (!trimmed) return false;
+  if (/^blob:/i.test(trimmed)) return true;
+  return /^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(trimmed);
 }
 const _ac_sanitizeUntrusted = (val) => String(val == null ? "" : val).replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, "");
 const _ac_fenceUntrusted = (tag, val) => "<UNTRUSTED_" + tag + ">\n" + _ac_sanitizeUntrusted(val) + "\n</UNTRUSTED_" + tag + ">";
@@ -331,7 +345,7 @@ ${_ac_fenceUntrusted("REFINE_PROMPT", trimmed)}`;
       alignItems: "center",
       justifyContent: "center",
       position: "relative"
-    } }, iconUrl ? /* @__PURE__ */ React.createElement("img", { src: iconUrl, alt: iconAlt, role: iconAlt ? void 0 : "presentation", style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) : isRegeneratingIcon ? /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 animate-pulse motion-reduce:animate-none", role: "status" }, "Drawing\u2026") : viewerIsStudent ? null : /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic text-center leading-tight" }, iconPrompt || "icon"), isEditing && onRegenIcon ? /* @__PURE__ */ React.createElement(
+    } }, _ac_isSafeIconUrl(iconUrl) ? /* @__PURE__ */ React.createElement("img", { src: iconUrl.trim(), alt: iconAlt, role: iconAlt ? void 0 : "presentation", style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" } }) : isRegeneratingIcon ? /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 animate-pulse motion-reduce:animate-none", role: "status" }, "Drawing\u2026") : viewerIsStudent ? null : /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic text-center leading-tight" }, iconPrompt || "icon"), isEditing && onRegenIcon ? /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -384,7 +398,7 @@ ${_ac_fenceUntrusted("REFINE_PROMPT", trimmed)}`;
         type: "button",
         "data-ac-listen": sectionIndex,
         onClick: () => {
-          const spoken = (isInteractiveStudent ? [label] : [label, ...bullets]).filter(Boolean).join(". ").replace(/\s+/g, " ").trim();
+          const spoken = (isInteractiveStudent || props.studyMasked ? [label] : [label, ...bullets]).filter(Boolean).join(". ").replace(/\s+/g, " ").trim();
           if (!spoken) return;
           try {
             if (typeof window !== "undefined" && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === "function") {
@@ -880,15 +894,18 @@ ${bulletText}`;
     setShowInteractiveDialog(false);
     setRegenKeys({});
   }, [generatedContent?.id, isTeacherMode]);
-  const writeIcon = (resourceId, sectionId, iconUrl, expectedPrompt) => {
+  const writeIcon = (resourceId, sectionId, iconUrl, expectedPrompt, opts) => {
+    const requireAi = !(opts && opts.requireAi === false);
+    const normalizedUrl = iconUrl === "" || iconUrl == null ? "" : _ac_isSafeIconUrl(iconUrl) ? iconUrl.trim() : null;
+    if (normalizedUrl === null) return;
     const update = (resource) => {
       if (!resource || resource.id !== resourceId || resource.type !== "anchor-chart") return resource;
       const latest = normalizeSections(resource.data);
       const section = latest.find((row) => row.id === sectionId);
       if (!section || expectedPrompt !== void 0 && (section.iconPrompt || section.label || "") !== expectedPrompt) return resource;
-      return { ...resource, data: { ...resource.data, sections: latest.map((row) => row.id === sectionId ? _ac_withIcon(row, iconUrl) : row) } };
+      return { ...resource, data: { ...resource.data, sections: latest.map((row) => row.id === sectionId ? _ac_withIcon(row, normalizedUrl) : row) } };
     };
-    if (!currentChart.current.isTeacherMode || !currentChart.current.allowRuntimeAi) return;
+    if (!currentChart.current.isTeacherMode || requireAi && !currentChart.current.allowRuntimeAi) return;
     if (typeof props.onUpdateResource === "function") props.onUpdateResource(resourceId, update);
     else if (mounted.current && currentChart.current.id === resourceId) handleNoteUpdate("sections", (previous) => update({ id: resourceId, type: "anchor-chart", data: { sections: previous } }).data.sections);
   };
@@ -1012,6 +1029,7 @@ ${bulletText}`;
           }
         }
       });
+      if (!mounted.current) return;
       const dataUrl = canvas.toDataURL("image/png");
       const a = document.createElement("a");
       a.href = dataUrl;
@@ -1110,9 +1128,9 @@ ${bulletText}`;
     sections.forEach((s) => {
       if (!s) return;
       const sid = s.id || s.label;
-      const sectionAns = studentAnswers[sid] || {};
+      const sectionAns = sid && Object.prototype.hasOwnProperty.call(studentAnswers, sid) && studentAnswers[sid] && typeof studentAnswers[sid] === "object" ? studentAnswers[sid] : {};
       const activeKeys = Array.isArray(s.bulletIds) && s.bulletIds.length ? s.bulletIds : Object.keys(sectionAns);
-      const items = activeKeys.map((k) => sectionAns[k]).filter((v) => typeof v === "string" && v.trim());
+      const items = activeKeys.map((k) => Object.prototype.hasOwnProperty.call(sectionAns, k) ? sectionAns[k] : void 0).filter((v) => typeof v === "string" && v.trim());
       if (items.length) {
         out.push({ section: s.label || "(untitled)", answers: items });
       }
@@ -1195,7 +1213,10 @@ ${bulletText}`;
   };
   const handleFinishChart = () => {
     if (studentGradingOn || isTeacherMode) return;
-    const prompts = sections.flatMap((s) => s && Array.isArray(s.bulletIds) ? s.bulletIds.map((id) => String(studentAnswers[s.id]?.[id] || "").trim()) : []);
+    const prompts = sections.flatMap((s) => {
+      const secAns = s && s.id && Object.prototype.hasOwnProperty.call(studentAnswers, s.id) && studentAnswers[s.id] && typeof studentAnswers[s.id] === "object" ? studentAnswers[s.id] : null;
+      return s && Array.isArray(s.bulletIds) ? s.bulletIds.map((id) => String((secAns && Object.prototype.hasOwnProperty.call(secAns, id) ? secAns[id] : "") || "").trim()) : [];
+    });
     if (!prompts.length || prompts.some((text) => !text)) {
       addToastProp(tx("anchor_chart.finish_incomplete", "Fill in every answer to finish your chart."));
       return;
@@ -1309,7 +1330,10 @@ ${bulletText}`;
     tx("anchor_chart.response_mode", "Student response mode")
   ) : null, !isEditing && !isTeacherMode && interactive.armed && sections.length > 0 ? (() => {
     const totalSlots = sections.reduce((n, s) => n + (Array.isArray(s?.bulletIds) ? s.bulletIds.length : 0), 0);
-    const filledSlots = sections.reduce((n, s) => n + (Array.isArray(s?.bulletIds) ? s.bulletIds.filter((id) => String(studentAnswers[s.id]?.[id] || "").trim()).length : 0), 0);
+    const filledSlots = sections.reduce((n, s) => {
+      const secAns = s && s.id && Object.prototype.hasOwnProperty.call(studentAnswers, s.id) && studentAnswers[s.id] && typeof studentAnswers[s.id] === "object" ? studentAnswers[s.id] : null;
+      return n + (Array.isArray(s?.bulletIds) ? s.bulletIds.filter((id) => String((secAns && Object.prototype.hasOwnProperty.call(secAns, id) ? secAns[id] : "") || "").trim()).length : 0);
+    }, 0);
     if (!totalSlots) return null;
     return /* @__PURE__ */ React.createElement("span", { "data-anchor-student-progress": true, className: `px-2.5 py-1 text-xs font-bold rounded-full border ${filledSlots === totalSlots ? "bg-emerald-50 text-emerald-800 border-emerald-300" : "bg-white text-amber-900 border-amber-300"}` }, filledSlots === totalSlots ? "\u2713 " + tx("anchor_chart.all_filled", "All {total} filled").replace("{total}", String(totalSlots)) : tx("anchor_chart.progress_filled", "{done}/{total} filled").replace("{done}", String(filledSlots)).replace("{total}", String(totalSlots)));
   })() : null, !isEditing && !(!isTeacherMode && interactive.armed) && sections.length > 0 ? /* @__PURE__ */ React.createElement(
@@ -1491,7 +1515,7 @@ ${bulletText}`;
             stepLabel: chartMeta.badge === "number" ? tx("anchor_chart.step_label", "Step {n}").replace("{n}", String(idx + 1)) : "",
             isEditing,
             onChange: (next) => updateSection(idx, next),
-            onIconChange: (iconUrl) => writeIcon(generatedContent.id, s.id, iconUrl),
+            onIconChange: (iconUrl) => writeIcon(generatedContent.id, s.id, iconUrl, void 0, { requireAi: false }),
             allowRuntimeAi,
             onRegenIcon: handleRegenIcon,
             isRegeneratingIcon: !!regenKeys[`${generatedContent?.id || ""}:${s.id || idx}`],
@@ -1499,7 +1523,10 @@ ${bulletText}`;
             viewerIsStudent: !isTeacherMode,
             studyMasked: studySelfTest && !isEditing && !(!isTeacherMode && interactive.armed) && !revealedSections.has(idx),
             onRevealStudy: () => toggleRevealChartSection(idx),
-            studentAnswers: s.bulletIds.map((id) => studentAnswers[s.id]?.[id] || ""),
+            studentAnswers: s.bulletIds.map((id) => {
+              const secAns = s.id && Object.prototype.hasOwnProperty.call(studentAnswers, s.id) && studentAnswers[s.id] && typeof studentAnswers[s.id] === "object" ? studentAnswers[s.id] : null;
+              return (secAns && Object.prototype.hasOwnProperty.call(secAns, id) ? secAns[id] : "") || "";
+            }),
             onStudentAnswerChange: (bidx, text) => handleStudentAnswerChange(s.id, s.bulletIds[bidx], text),
             callGeminiImageEdit,
             addToast: addToastProp,

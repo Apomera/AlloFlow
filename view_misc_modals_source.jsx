@@ -238,7 +238,7 @@ function AllobotLessonRevision({ revision, operationId, tx, disabled, styles, on
   };
   const warningText = warning => typeof warning === 'string' ? warning : warning?.message || warning?.label || '';
   return <section className="min-w-0 mt-3 space-y-3" data-testid="lesson-revision" aria-label={tx('chat_guide.revision_title', 'Revise existing lesson')}>
-    <h3 ref={headingRef} tabIndex={-1} className="font-bold text-sm outline-none" data-testid="lesson-revision-heading">
+    <h3 ref={headingRef} tabIndex={-1} className="font-bold text-sm rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" data-testid="lesson-revision-heading">
       {revision.mode === 'review' ? tx('chat_guide.revision_review', 'Review proposed edits')
         : revision.mode === 'applied' ? tx('chat_guide.revision_applied', 'Revision applied')
         : revision.mode === 'undone' ? tx('chat_guide.revision_undone', 'Revision undone')
@@ -743,8 +743,8 @@ function UDLGuideModal(props) {
                             className="absolute right-0 z-50 mt-1 w-60 rounded-xl border border-slate-200 bg-white p-1 text-slate-800 shadow-xl">
                             <button role="menuitemcheckbox" aria-checked={isShowMeMode ? 'true' : 'false'} type="button"
                                 onClick={() => { handleToggleIsShowMeMode(); setChatMenuOpen(false); }}
-                                className="flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100">
-                                <Eye size={14} className="mt-0.5 shrink-0"/>
+                                className="flex w-full min-h-11 items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+                                <Eye size={14} className="mt-0.5 shrink-0" aria-hidden="true"/>
                                 <span>
                                     <span className="font-bold">{t('chat_guide.show_me', 'Point things out on screen')}</span>
                                     <span className="block text-xs text-slate-600">{isShowMeMode ? t('common.on', 'On') : t('common.off', 'Off')} — {t('chat_guide.show_me_desc', 'Asking “where is…” always points, with or without this.')}</span>
@@ -754,38 +754,38 @@ function UDLGuideModal(props) {
                                 disabled={isChatProcessing || aiOff}
                                 title={aiTitle}
                                 onClick={() => { handleSendUDLMessage({ action: 'lesson-revision-start' }); setChatMenuOpen(false); }}
-                                className="flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100 disabled:opacity-40" style={{ minHeight: 44 }}>
+                                className="flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-40" style={{ minHeight: 44 }}>
                                 <span className="font-bold">{tx('chat_guide.revision_title', 'Revise existing lesson')}</span>
                             </button>}
                             <button role="menuitem" type="button"
                                 onClick={() => { saveFullChat(); setChatMenuOpen(false); }}
-                                className="flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100">
-                                <Save size={14} className="mt-0.5 shrink-0"/>
+                                className="flex w-full min-h-11 items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+                                <Save size={14} className="mt-0.5 shrink-0" aria-hidden="true"/>
                                 <span className="font-bold">{t('chat_guide.save_chat', 'Save this chat')}</span>
                             </button>
                         </div>
                     )}
                 </div>
                 <button type="button"
-                    aria-label={isUDLGuideExpanded ? t('common.minimize') : t('common.maximize')}
+                    aria-label={isUDLGuideExpanded ? (t('common.minimize') || 'Minimize') : (t('common.maximize') || 'Maximize')}
                     data-help-key="chat_expand"
                     onClick={handleToggleIsUDLGuideExpanded}
-                    className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors"
-                    title={isUDLGuideExpanded ? t('common.minimize') : t('common.maximize')}
+                    className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/90"
+                    title={isUDLGuideExpanded ? (t('common.minimize') || 'Minimize') : (t('common.maximize') || 'Maximize')}
                 >
-                    {isUDLGuideExpanded ? <Minimize size={18}/> : <Maximize size={18}/>}
+                    {isUDLGuideExpanded ? <Minimize size={18} aria-hidden="true"/> : <Maximize size={18} aria-hidden="true"/>}
                 </button>
                 <button
                     type="button"
                     data-help-key="chat_collapse"
                     onClick={() => setIsCollapsed(true)}
-                    className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors"
+                    className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/90"
                     title={t('chat_guide.collapse') || 'Collapse to a bar (keeps the conversation)'}
                     aria-label={t('chat_guide.collapse') || 'Collapse to a bar (keeps the conversation)'}
                 >
-                    <ChevronDown size={18}/>
+                    <ChevronDown size={18} aria-hidden="true"/>
                 </button>
-                <button type="button" data-help-key="chat_close" onClick={closeGuide} className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded" aria-label={t('common.close')}><X size={18}/></button>
+                <button type="button" data-help-key="chat_close" onClick={closeGuide} className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/90" aria-label={t('common.close') || 'Close'}><X size={18} aria-hidden="true"/></button>
           </div>
         </div>
         {revisionOwnsComposer ? <section className={`rounded-lg border p-2 text-xs ${chatStyles.body}`} data-testid="lesson-revision-context" aria-label={tx('chat_guide.revision_chat_context', 'Proposal follow-up context')}>
@@ -817,7 +817,7 @@ function UDLGuideModal(props) {
                 <div role="alert" className={`max-w-[92%] p-3 rounded-xl text-sm ${chatStyles.modelBubble}`}>
                   {renderFormattedText(msg.text)}
                   {AiNotice && <div data-chat-error-ai-setup className="mt-2"><AiNotice t={t} /></div>}
-                  <button type="button" disabled={isChatProcessing || aiOff} title={aiTitle} className={`block mt-2 px-3 py-1.5 rounded-lg ${chatStyles.secondaryButton}`}
+                  <button type="button" disabled={isChatProcessing || aiOff} title={aiTitle} className={`block mt-2 min-h-11 px-3 py-1.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${chatStyles.secondaryButton}`}
                     onClick={() => handleSendUDLMessage({ action: 'retry-chat', text: msg.retryText })}>
                     {tx('chat_guide.retry_reply', 'Retry response')}
                   </button>
@@ -846,7 +846,7 @@ function UDLGuideModal(props) {
                                       }
                                       handleSendUDLMessage(choice.value);
                                   }}
-                                  className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${choice.tone === 'secondary' ? chatStyles.secondaryButton : chatStyles.button}`}
+                                  className={`min-h-11 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed ${choice.tone === 'secondary' ? chatStyles.secondaryButton : chatStyles.button}`}
                               >
                                   {choice.label}
                               </button>
@@ -1082,7 +1082,7 @@ function UDLGuideModal(props) {
           <div
             ref={previewRef}
             tabIndex={-1}
-            className={`absolute inset-0 z-20 flex flex-col outline-none ${theme === 'dark' ? 'bg-slate-900' : 'bg-white'}`}
+            className={`absolute inset-0 z-20 flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 ${theme === 'dark' ? 'bg-slate-900' : 'bg-white'}`}
             role="dialog"
             aria-modal="true"
             aria-labelledby="bp-preview-title"
@@ -1098,10 +1098,10 @@ function UDLGuideModal(props) {
                 type="button"
                 data-testid="bp-preview-close"
                 onClick={closeBlueprintPreview}
-                aria-label={t('common.close')}
-                className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-slate-500/20 p-1 rounded transition-colors"
+                aria-label={t('common.close') || 'Close'}
+                className="inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-slate-500/20 p-1 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
               >
-                <X size={18} />
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
             <div className="flex-1 overflow-auto p-4 custom-scrollbar">
@@ -1137,17 +1137,17 @@ function UDLGuideModal(props) {
               aria-expanded={standardToolsOpen}
               aria-controls="udl-standard-tools"
               data-help-key="chat_standard_tools_toggle"
-              className={`w-full mb-2 flex items-center gap-1.5 px-1 py-1 min-h-[24px] rounded text-xs font-medium transition-colors ${chatStyles.subText}`}
+              className={`w-full mb-2 flex items-center gap-1.5 px-2 py-1 min-h-11 rounded-lg text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${chatStyles.subText}`}
           >
-              {standardToolsOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-              <ShieldCheck size={11} />
+              {standardToolsOpen ? <ChevronDown size={12} aria-hidden="true" /> : <ChevronRight size={12} aria-hidden="true" />}
+              <ShieldCheck size={11} aria-hidden="true" />
               {tx('chat_guide.curriculum_standards', 'Find or discuss curriculum standards')}
           </button>
           <div id="udl-standard-tools" hidden={!standardToolsOpen}>
           <div className={`mb-3 p-2 rounded-lg border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : theme === 'contrast' ? 'bg-black border-white' : 'bg-slate-50 border-slate-200'}`}>
               <div className="flex justify-between items-center mb-2">
                   <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}`}>
-                      <Search size={10} /> {t('standards.finder_header')}
+                      <Search size={10} aria-hidden="true" /> {t('standards.finder_header')}
                   </label>
               </div>
               <div className="flex gap-2 mb-2">
@@ -1156,7 +1156,7 @@ function UDLGuideModal(props) {
                       value={aiStandardRegion}
                       onChange={(e) => setAiStandardRegion(e.target.value)}
                       data-help-key="standards_region_input" placeholder={t('standards.region_framework_placeholder')}
-                      className={`w-1/3 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 ${chatStyles.input}`}
+                      className={`w-1/3 min-h-11 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow motion-reduce:transition-none duration-300 ${chatStyles.input}`}
                   />
                   <input aria-label={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.skill_search_placeholder')}
                       type="text"
@@ -1169,12 +1169,13 @@ function UDLGuideModal(props) {
                           }
                       }}
                       placeholder={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.skill_search_placeholder')}
-                      className={`flex-grow text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`}
+                      className={`flex-grow min-h-11 text-xs rounded p-1.5 focus:ring-2 focus:ring-indigo-500 outline-none ${chatStyles.input}`}
                   />
                   <button type="button"
                       onClick={handleFindStandards}
                       disabled={isFindingStandards || !aiStandardQuery.trim() || aiOff}
-                      className={`p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm ${chatStyles.button}`}
+                      aria-busy={isFindingStandards ? 'true' : undefined}
+                      className={`min-w-11 min-h-11 inline-flex items-center justify-center p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 shadow-sm ${chatStyles.button}`}
                       title={aiTitle || t('standards.search_button_title')}
                       aria-label={t('standards.search_button_title')}
                   >
@@ -1224,7 +1225,7 @@ function UDLGuideModal(props) {
           <div className={`mb-3 p-2 rounded-lg border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : theme === 'contrast' ? 'bg-black border-white' : 'bg-slate-50 border-slate-200'}`}>
               <div className="flex justify-between items-center mb-1.5">
                   <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}`}>
-                      <ShieldCheck size={10} /> {t('standards.consult_header')}
+                      <ShieldCheck size={10} aria-hidden="true" /> {t('standards.consult_header')}
                   </label>
               </div>
               <div className="flex gap-2">
@@ -1232,7 +1233,7 @@ function UDLGuideModal(props) {
                       data-help-key="chat_framework_select"
                       value={udlStandardFramework}
                       onChange={(e) => setUdlStandardFramework(e.target.value)}
-                      className={`flex-1 text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`}
+                      className={`flex-1 min-h-11 text-xs rounded p-1.5 focus:ring-2 focus:ring-indigo-500 outline-none ${chatStyles.input}`}
                       aria-label={tx('standards.framework_aria', 'Standards framework')}
                   >
                       <option value="Common Core ELA">{t('standards.frameworks.ccss_ela')}</option>
@@ -1247,7 +1248,7 @@ function UDLGuideModal(props) {
                       data-help-key="chat_grade_select"
                       value={udlStandardGrade}
                       onChange={(e) => setUdlStandardGrade(e.target.value)}
-                      className={`w-28 text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`}
+                      className={`w-28 min-h-11 text-xs rounded p-1.5 focus:ring-2 focus:ring-indigo-500 outline-none ${chatStyles.input}`}
                   >
                       <option value="Kindergarten">{t('standards.grades.k')}</option>
                       <option value="1st Grade">{t('standards.grades.1')}</option>
@@ -1267,10 +1268,10 @@ function UDLGuideModal(props) {
                       aria-label={t('standards.consult_btn_title')}
                       data-help-key="chat_consult_btn" disabled={aiOff}
                       onClick={() => handleSendUDLMessage(t('standards.prompts.identify_key_standards', { framework: udlStandardFramework, grade: udlStandardGrade }))}
-                      className={`p-1.5 rounded transition-colors border disabled:opacity-50 disabled:cursor-not-allowed ${theme === 'dark' ? 'bg-indigo-900 border-indigo-700 text-indigo-300 hover:bg-indigo-800' : theme === 'contrast' ? 'bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-200'}`}
+                      className={`min-w-11 min-h-11 inline-flex items-center justify-center p-1.5 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 border disabled:opacity-50 disabled:cursor-not-allowed ${theme === 'dark' ? 'bg-indigo-900 border-indigo-700 text-indigo-300 hover:bg-indigo-800' : theme === 'contrast' ? 'bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-200'}`}
                       title={aiTitle || t('standards.consult_btn_title')}
                   >
-                      <ArrowRight size={14} />
+                      <ArrowRight size={14} aria-hidden="true" />
                   </button>
               </div>
           </div>
@@ -1317,19 +1318,20 @@ function UDLGuideModal(props) {
                     if (!isChatProcessing && udlInput.trim()) handleSendUDLMessage();
                 }}
                 placeholder={isShowMeMode ? t('chat_guide.input_placeholder_showme') : t('chat_guide.input_placeholder_default')}
-                className={`flex-grow text-sm p-2 border rounded-lg focus:ring-2 outline-none ${chatStyles.input}`}
+                className={`flex-grow min-h-11 text-sm p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none ${chatStyles.input}`}
                 data-help-key="chat_input"
              />
              <button type="button"
                  aria-label={isShowMeMode
                      ? tx('chat_guide.send_showme_aria', 'Show me where this is on screen')
                      : tx('chat_guide.send_aria', 'Send message')}
+                aria-busy={isChatProcessing ? 'true' : undefined}
                 onClick={() => handleSendUDLMessage()}
                 disabled={!udlInput.trim() || isChatProcessing}
-                className={`p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${chatStyles.button}`}
+                className={`min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${chatStyles.button}`}
                 data-help-key="chat_send"
              >
-                {isShowMeMode ? <Eye size={18}/> : <Send size={18} />}
+                {isShowMeMode ? <Eye size={18} aria-hidden="true"/> : <Send size={18} aria-hidden="true" />}
              </button>
           </div>
         </div>
@@ -2638,14 +2640,14 @@ function AIBackendModalBody(props) {
     <div id="ai-backend-engine-strip" style={{ display: 'none' }} aria-live="polite" ref={(node) => { if (node && !node.dataset.engineInit) { node.dataset.engineInit = '1'; setTimeout(refreshEngineStrip, 0); } }}></div>
   );
   const guidedStepHeading = (text) => (
-    <p ref={guidedHeadingRef} tabIndex={-1} role="status" aria-live="polite" className="text-xs font-black text-violet-700 uppercase tracking-wider outline-none">{text}</p>
+    <p ref={guidedHeadingRef} tabIndex={-1} role="status" aria-live="polite" className="text-xs font-black text-violet-700 uppercase tracking-wider rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">{text}</p>
   );
   const guidedBackBtn = (target) => (
-    <button type="button" data-help-key="ai_backend_guided_back_btn" onClick={() => { setGuidedReady(false); setGuidedView(target); }} className="text-xs font-bold text-slate-600 hover:text-violet-700 transition-colors">◀ {t('ai_backend.guided_back') || 'Back'}</button>
+    <button type="button" data-help-key="ai_backend_guided_back_btn" onClick={() => { setGuidedReady(false); setGuidedView(target); }} className="min-h-11 inline-flex items-center gap-1 px-2 -ml-2 rounded-lg text-xs font-bold text-slate-700 hover:text-violet-700 hover:bg-violet-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700"><span aria-hidden="true">◀</span><span>{t('ai_backend.guided_back') || 'Back'}</span></button>
   );
   const guidedCard = (keyProps, onClick, emoji, title, badge, body, req) => (
     <button {...keyProps} type="button" onClick={onClick}
-        className="w-full text-left border-2 border-slate-200 rounded-2xl p-4 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99] motion-reduce:transition-none motion-reduce:transform-none">
+        className="w-full min-h-11 text-left border-2 border-slate-200 rounded-2xl p-4 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99] motion-reduce:transition-none motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-1">
         <span className="flex items-center gap-2">
             <span aria-hidden="true">{emoji}</span>
             <span className="font-black text-sm text-slate-800">{title}</span>
@@ -2859,9 +2861,9 @@ function AIBackendModalBody(props) {
             if (e.target === e.currentTarget && allow) setShowAIBackendModal(false);
           }}>
           <div ref={aiBackendDialogRef} data-help-key="ai_backend_modal_panel" data-student-ai-setup="false" className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-title" tabIndex={-1} onKeyDown={handleAIBackendDialogKeyDown} onClick={e => e.stopPropagation()}>
-            <button type="button" onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
+            <button type="button" onClick={() => setShowAIBackendModal(false)} className="absolute top-3 right-3 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 z-10" aria-label={t('common.close') || "Close"}><X size={20} aria-hidden="true"/></button>
             <div className="flex items-center gap-2 mb-4 text-violet-900">
-                <div className="bg-violet-100 p-2 rounded-full"><Unplug size={20} className="text-violet-600"/></div>
+                <div className="bg-violet-100 p-2 rounded-full" aria-hidden="true"><Unplug size={20} className="text-violet-600" aria-hidden="true"/></div>
                 <h3 id="ai-backend-title" className="font-black text-lg">{t('ai_backend.key_lock_locked_title') || 'Saved AI key is locked'}</h3>
             </div>
             <p className="text-sm leading-relaxed text-slate-700">{t('ai_backend.key_lock_locked_body') || 'Enter your educator access code to use or change the AI key saved on this device.'}</p>
@@ -2877,14 +2879,14 @@ function AIBackendModalBody(props) {
             />
             {keyLockMessage && <p role="status" className="mt-2 text-xs font-bold text-rose-800">{keyLockMessage}</p>}
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <button type="button" disabled={keyLockBusy || !keyLockCode} onClick={unlock} className="min-h-11 rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800 disabled:opacity-60">
+                <button type="button" disabled={keyLockBusy || !keyLockCode} aria-busy={keyLockBusy ? 'true' : undefined} onClick={unlock} className="min-h-11 rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2 disabled:opacity-60">
                     {t('ai_backend.key_lock_unlock_btn') || 'Unlock'}
                 </button>
                 {!confirmForgetKey ? (
                   <button
                       type="button"
                       onClick={() => setConfirmForgetKey(true)}
-                      className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"
+                      className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-700"
                   >
                       {t('ai_backend.key_lock_forget_btn') || 'Forgot your code? Remove saved key'}
                   </button>
@@ -2900,14 +2902,14 @@ function AIBackendModalBody(props) {
                             setConfigRevision((revision) => revision + 1);
                             setKeyLockTick((tick) => tick + 1);
                         }}
-                        className="min-h-9 rounded-lg bg-rose-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-800"
+                        className="min-h-11 rounded-lg bg-rose-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-1"
                     >
                         {t('common.remove') || 'Remove'}
                     </button>
                     <button
                         type="button"
                         onClick={() => setConfirmForgetKey(false)}
-                        className="min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                        className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700"
                     >
                         {t('common.cancel') || 'Cancel'}
                     </button>
@@ -2948,9 +2950,9 @@ function AIBackendModalBody(props) {
                 display: none !important;
               }
             `}</style>}
-            <button type="button" onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
+            <button type="button" onClick={() => setShowAIBackendModal(false)} className="absolute top-3 right-3 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 z-10" aria-label={t('common.close') || "Close"}><X size={20} aria-hidden="true"/></button>
             <div className="flex items-center gap-2 mb-6 text-violet-900">
-                <div className="bg-violet-100 p-2 rounded-full"><Unplug size={20} className="text-violet-600"/></div>
+                <div className="bg-violet-100 p-2 rounded-full" aria-hidden="true"><Unplug size={20} className="text-violet-600" aria-hidden="true"/></div>
                 <h3 id="ai-backend-title" className="font-black text-lg">{isStudentAiSetup ? (t('ai_backend.personal_title') || 'Connect Personal AI') : (t('sidebar.ai_setup_name') || 'AI setup')}</h3>
             </div>
             <div className="space-y-4">
@@ -3030,9 +3032,9 @@ function AIBackendModalBody(props) {
                 {/* ─── Ready banner (guided path, after a successful test) ─── */}
                 {!advancedOpen && guidedReady && (
                   <div className="rounded-xl border border-green-200 bg-green-50 p-3">
-                    <p className="text-xs font-black text-green-900">✅ {(t('ai_backend.guided_ready') || "You're ready — AlloFlow is using") + ' ' + (GUIDED_BACKEND_LABELS[readAIBackendConfig().backend || 'gemini'] || readAIBackendConfig().backend) + '.'}</p>
+                    <p className="text-xs font-black text-green-900"><span aria-hidden="true">✅ </span>{(t('ai_backend.guided_ready') || "You're ready — AlloFlow is using") + ' ' + (GUIDED_BACKEND_LABELS[readAIBackendConfig().backend || 'gemini'] || readAIBackendConfig().backend) + '.'}</p>
                     <p className="text-xs text-green-800 mt-1">{t('ai_backend.guided_ready_note') || 'Your choice is active now — close this window and start working.'}</p>
-                    <button type="button" data-help-key="ai_backend_guided_done_btn" onClick={() => setShowAIBackendModal(false)} className="mt-2 bg-green-700 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-800 transition-all active:scale-95">{t('ai_backend.guided_done') || 'Done'}</button>
+                    <button type="button" data-help-key="ai_backend_guided_done_btn" onClick={() => setShowAIBackendModal(false)} className="mt-2 min-h-11 bg-green-700 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-800 transition-all motion-reduce:transition-none active:scale-95 motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2">{t('ai_backend.guided_done') || 'Done'}</button>
                   </div>
                 )}
                 {guidedTestVisible && (<>
@@ -3121,7 +3123,7 @@ function AIBackendModalBody(props) {
                             btn.removeAttribute('aria-busy');
                             btn.textContent = '🔌 Test Connection';
                         }}
-                        className="flex-1 bg-violet-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-violet-700 transition-all shadow-lg shadow-violet-200 active:scale-95"
+                        className="flex-1 min-h-11 bg-violet-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-violet-800 transition-all motion-reduce:transition-none shadow-lg shadow-violet-200 active:scale-95 motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2"
                     >
                         🔌 Test Connection
                     </button>
@@ -3148,7 +3150,7 @@ function AIBackendModalBody(props) {
                             if (ig) ig.value = 'auto';
                             if (s) { s.textContent = isStudentAiSetup ? 'Disconnected. The session key was erased.' : '🔄 Reset to defaults — reload page to apply'; s.className = 'text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100'; }
                         }}
-                        className="bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all active:scale-95"
+                        className="min-h-11 bg-slate-200 text-slate-800 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all motion-reduce:transition-none active:scale-95 motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2"
                     >
                         {isStudentAiSetup ? 'Disconnect & erase key' : '↩ Reset'}
                     </button>}
@@ -3160,12 +3162,12 @@ function AIBackendModalBody(props) {
                 {/* ─── Section 2: Model Selection ─── */}
                 <div className="pt-3 border-t-2 border-violet-50">
                     <div className="flex items-center gap-2 mb-3">
-                        <div className="bg-blue-100 p-1.5 rounded-lg"><Cpu size={14} className="text-blue-600"/></div>
+                        <div className="bg-blue-100 p-1.5 rounded-lg" aria-hidden="true"><Cpu size={14} className="text-blue-600" aria-hidden="true"/></div>
                         <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">{t('ai_backend.model_selection_header') || 'Model Selection'}</h4>
                     </div>
                     <div className="space-y-3">
                         <div>
-                            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{t('ai_backend.default_model_label') || 'Default Model'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.default_model_hint') || '(text generation)'}</span></label>
+                            <label htmlFor="ai-backend-model-default" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{t('ai_backend.default_model_label') || 'Default Model'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.default_model_hint') || '(text generation)'}</span></label>
                             <select
                                 data-help-key="ai_backend_model_select"
                                 aria-label={t('ai_backend.default_model_aria') || 'Default AI model'}
@@ -3177,13 +3179,13 @@ function AIBackendModalBody(props) {
                                     if (!e.target.value) delete models.default;
                                     writeAIBackendConfig({ ...current, models });
                                 }}
-                                className="w-full p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
+                                className="w-full min-h-11 p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
                             >
                                 <option value="">{t('ai_backend.auto_server_default') || 'Auto (server default)'}</option>
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{t('ai_backend.fallback_model_label') || 'Fallback Model'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.fallback_model_hint') || '(rate-limit cascade)'}</span></label>
+                            <label htmlFor="ai-backend-model-fallback" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{t('ai_backend.fallback_model_label') || 'Fallback Model'} <span className="normal-case font-normal text-slate-600">{t('ai_backend.fallback_model_hint') || '(rate-limit cascade)'}</span></label>
                             <select
                                 aria-label={t('ai_backend.fallback_model_aria') || 'Fallback AI model'}
                                 id="ai-backend-model-fallback"
@@ -3194,19 +3196,19 @@ function AIBackendModalBody(props) {
                                     if (!e.target.value) delete models.fallback;
                                     writeAIBackendConfig({ ...current, models });
                                 }}
-                                className="w-full p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
+                                className="w-full min-h-11 p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
                             >
                                 <option value="">{t('ai_backend.same_as_default') || 'Same as default'}</option>
                             </select>
                         </div>
-                        <p className="text-xs text-slate-600 italic">💡 Click "Test Connection" above to auto-populate available models from your backend.</p>
+                        <p className="text-xs text-slate-700 italic"><span aria-hidden="true">💡 </span>Click "Test Connection" above to auto-populate available models from your backend.</p>
                     </div>
                 </div>
 
                 {/* ─── Section 3: TTS Provider ─── */}
                 <div className="pt-3 border-t-2 border-violet-50">
                     <div className="flex items-center gap-2 mb-3">
-                        <div className="bg-emerald-100 p-1.5 rounded-lg"><Headphones size={14} className="text-emerald-600"/></div>
+                        <div className="bg-emerald-100 p-1.5 rounded-lg" aria-hidden="true"><Headphones size={14} className="text-emerald-600" aria-hidden="true"/></div>
                         <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">Text-to-Speech</h4>
                     </div>
                     <select
@@ -3218,7 +3220,7 @@ function AIBackendModalBody(props) {
                             const current = readAIBackendConfig();
                             writeAIBackendConfig({ ...current, ttsProvider: e.target.value }, { preserveValidation: true });
                         }}
-                        className="w-full p-2 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
+                        className="w-full min-h-11 p-2 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
                     >
                         <option value="auto">🔄 Auto (match backend)</option>
                         <option value="gemini">✨ Gemini Cloud TTS</option>
@@ -3227,7 +3229,7 @@ function AIBackendModalBody(props) {
                         <option value="off">🔇 Off (disable narration)</option>
                     </select>
                     <div className="mt-2 bg-emerald-50 p-2 rounded-lg border border-emerald-100">
-                        <p className="text-xs text-emerald-700 font-medium leading-relaxed">
+                        <p className="text-xs text-emerald-800 font-medium leading-relaxed">
                             <strong>Auto:</strong> Gemini voices for cloud backends, Edge TTS voices for local backends.
                             Narrator voice selection is in the header bar (🎧 button).
                         </p>
@@ -3240,7 +3242,7 @@ function AIBackendModalBody(props) {
                 {/* ─── Section 4: Image Generation ─── */}
                 <div className="pt-3 border-t-2 border-violet-50">
                     <div className="flex items-center gap-2 mb-3">
-                        <div className="bg-amber-100 p-1.5 rounded-lg"><ImageIcon size={14} className="text-amber-600"/></div>
+                        <div className="bg-amber-100 p-1.5 rounded-lg" aria-hidden="true"><ImageIcon size={14} className="text-amber-600" aria-hidden="true"/></div>
                         <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">{t('ai_backend.image_generation_header') || 'Image Generation'}</h4>
                     </div>
                     <select
@@ -3251,7 +3253,7 @@ function AIBackendModalBody(props) {
                             const current = readAIBackendConfig();
                             writeAIBackendConfig({ ...current, imageProvider: e.target.value }, { preserveValidation: true });
                         }}
-                        className="w-full p-2 border-2 border-slate-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
+                        className="w-full min-h-11 p-2 border-2 border-slate-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
                     >
                         <option value="auto">🔄 Auto (match backend)</option>
                         <option value="sd-local">🏫 SD-Turbo (this computer — no account)</option>
@@ -3260,7 +3262,7 @@ function AIBackendModalBody(props) {
                         <option value="off">🚫 Off (disable image generation)</option>
                     </select>
                     <div className="mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100">
-                        <p className="text-xs text-amber-700 font-medium leading-relaxed">
+                        <p className="text-xs text-amber-900 font-medium leading-relaxed">
                             <strong>Imagen:</strong> Google Cloud (requires Blaze plan). High quality, fast.
                         </p>
                         <p className="text-[11px] text-amber-800 mt-1">
@@ -3280,12 +3282,12 @@ function AIBackendModalBody(props) {
                      backend is the app origin's own IndexedDB; same panel. */}
                 <div id="ai-backend-device-storage-section" className="border-t border-slate-100 pt-4">
                     <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.device_storage_label') || 'Device Storage'}</label>
-                    <p className="text-xs text-slate-600 mb-2">{t('canvas_settings.device_storage_hint') || 'Work and settings are saved on this device only — nothing goes to a server. Review, export, or erase what is stored here.'}</p>
+                    <p className="text-xs text-slate-700 mb-2">{t('canvas_settings.device_storage_hint') || 'Work and settings are saved on this device only — nothing goes to a server. Review, export, or erase what is stored here.'}</p>
                     <button type="button"
                         onClick={openDeviceStorageManager}
-                        className="bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
+                        className="min-h-11 bg-white text-violet-800 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors motion-reduce:transition-none active:scale-95 motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2"
                     >
-                        🔌 {t('canvas_settings.device_storage_btn') || 'Manage device storage'}
+                        <span aria-hidden="true">🔌 </span>{t('canvas_settings.device_storage_btn') || 'Manage device storage'}
                     </button>
                 </div>
 
@@ -3296,7 +3298,7 @@ function AIBackendModalBody(props) {
                      trace tab with zero captured errors. */}
                 <div id="ai-backend-diagnostics-section" className="border-t border-slate-100 pt-4">
                     <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.diagnostics_label') || 'Diagnostics & Logs'}</label>
-                    <p className="text-xs text-slate-600 mb-2">{t('canvas_settings.diagnostics_hint') || 'View captured errors and the read-aloud (text-to-speech) activity trace — useful when audio stalls without a visible error.'}</p>
+                    <p className="text-xs text-slate-700 mb-2">{t('canvas_settings.diagnostics_hint') || 'View captured errors and the read-aloud (text-to-speech) activity trace — useful when audio stalls without a visible error.'}</p>
                     <button type="button"
                         onClick={() => {
                             if (typeof window.__alloOpenDiagnosticsLog !== 'function') return;
@@ -3305,20 +3307,20 @@ function AIBackendModalBody(props) {
                             if (typeof setShowAIBackendModal === 'function') setShowAIBackendModal(false);
                             window.__alloOpenDiagnosticsLog(hasErrors ? 'errors' : 'tts');
                         }}
-                        className="bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
+                        className="min-h-11 bg-white text-violet-800 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors motion-reduce:transition-none active:scale-95 motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2"
                     >
-                        🩺 {t('canvas_settings.diagnostics_btn') || 'Open error & read-aloud log'}
+                        <span aria-hidden="true">🩺 </span>{t('canvas_settings.diagnostics_btn') || 'Open error & read-aloud log'}
                     </button>
                 </div>
 
                 {/* ─── Active Config Summary ─── */}
                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                        <strong className="text-slate-600">Active:</strong>{' '}
+                    <p className="text-xs text-slate-700 font-medium leading-relaxed">
+                        <strong className="text-slate-800">Active:</strong>{' '}
                         {(() => { try { const c = readAIBackendConfig(); return c.backend ? (c.backend.charAt(0).toUpperCase() + c.backend.slice(1)) + (c.baseUrl ? ' → ' + c.baseUrl : '') : 'Gemini (default)'; } catch { return 'Gemini (default)'; } })()}
                     </p>
-                    {!isStudentAiSetup && <p className="text-xs text-slate-600 font-medium mt-1">⚡ {t('ai_backend.reload_after_change') || 'Reload page after changing backend to apply.'}</p>}
-                    {isStudentAiSetup && <p className="text-xs text-slate-600 font-medium mt-1">{t('ai_backend.student_verified_note') || 'Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified.'}</p>}
+                    {!isStudentAiSetup && <p className="text-xs text-slate-700 font-medium mt-1"><span aria-hidden="true">⚡ </span>{t('ai_backend.reload_after_change') || 'Reload page after changing backend to apply.'}</p>}
+                    {isStudentAiSetup && <p className="text-xs text-slate-700 font-medium mt-1">{t('ai_backend.student_verified_note') || 'Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified.'}</p>}
                 </div>
                 </>)}
 
@@ -3330,9 +3332,9 @@ function AIBackendModalBody(props) {
                       type="button"
                       aria-expanded={advancedOpen}
                       onClick={() => { setGuidedReady(false); setAdvancedOpen((v) => !v); }}
-                      className="w-full flex items-center justify-center gap-1.5 text-xs font-bold text-slate-600 hover:text-violet-700 border-t border-slate-100 pt-3 transition-colors"
+                      className="w-full min-h-11 flex items-center justify-center gap-1.5 rounded-xl text-xs font-bold text-slate-700 hover:text-violet-700 hover:bg-violet-50/50 border-t border-slate-100 pt-3 pb-2 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700"
                   >
-                      <span aria-hidden="true" className={'inline-block transition-transform ' + (advancedOpen ? 'rotate-180' : '')}>▼</span>
+                      <span aria-hidden="true" className={'inline-block transition-transform motion-reduce:transition-none ' + (advancedOpen ? 'rotate-180' : '')}>▼</span>
                       {advancedOpen ? (t('ai_backend.advanced_toggle_close') || 'Back to guided setup') : (t('ai_backend.advanced_toggle') || 'Advanced settings')}
                   </button>
                 )}

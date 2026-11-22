@@ -141,7 +141,7 @@
     // 2026-11-18: in the file's own order (lesson.sequence), as its player shows them, so the bar names the question on
     // screen and an edit changes that one. Used, as the player uses it, only when it names each question once.
     if (lesson && Array.isArray(lesson.sequence) && lesson.mode !== 'probe' && lesson.sequence.length === items.length) {
-      var byId = {}, taken = {};
+      var byId = Object.create(null), taken = Object.create(null);
       items.forEach(function (it) { byId[String(it.itemId)] = it; });
       var ordered = lesson.sequence.map(function (id) { var k = String(id), it = byId[k]; if (!it || taken[k]) return null; taken[k] = true; return it; });
       if (ordered.every(Boolean)) items = ordered;

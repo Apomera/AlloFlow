@@ -52,22 +52,31 @@ function SocraticChat({
   warnLog,
 }) {
   const noop = () => null;
-  const MessageCircleQuestion = window.MessageCircleQuestion || noop;
-  const Volume2 = window.Volume2 || noop;
-  const Mic = window.Mic || noop;
-  const Maximize2 = window.Maximize2 || noop;
-  const Minimize2 = window.Minimize2 || noop;
-  const X = window.X || noop;
-  const RefreshCw = window.RefreshCw || noop;
-  const Send = window.Send || noop;
+  const _w = typeof window !== 'undefined' ? window : {};
+  const MessageCircleQuestion = _w.MessageCircleQuestion || noop;
+  const Volume2 = _w.Volume2 || noop;
+  const Mic = _w.Mic || noop;
+  const Maximize2 = _w.Maximize2 || noop;
+  const Minimize2 = _w.Minimize2 || noop;
+  const X = _w.X || noop;
+  const RefreshCw = _w.RefreshCw || noop;
+  const Send = _w.Send || noop;
+  const _rawT = t;
+  t = typeof _rawT === 'function' ? _rawT : (k => k);
   const previousFocusRef = React.useRef(typeof document !== 'undefined' ? document.activeElement : null);
   const socraticInputRef = React.useRef(null);
   const isComposingRef = React.useRef(false);
+  const spokeViaSynthRef = React.useRef(false);
+  const [crisisNotice, setCrisisNotice] = React.useState('');
   const isDictatingRef = React.useRef(!!isSocraticDictating);
   isDictatingRef.current = !!isSocraticDictating;
   const bionicOn = (typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function') ? window.__alloUseBionic() : false;
   const bt = s => (bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function') ? window.__alloBionicReact(s) : s;
   React.useEffect(() => () => {
+    if (spokeViaSynthRef.current && typeof window !== 'undefined' && window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') {
+      try { window.speechSynthesis.cancel(); } catch (_) {}
+      spokeViaSynthRef.current = false;
+    }
     if (isDictatingRef.current) {
       try { if (typeof setIsSocraticDictating === 'function') setIsSocraticDictating(false); } catch (_) {}
       try { if (recognitionRef && recognitionRef.current && typeof recognitionRef.current.stop === 'function') recognitionRef.current.stop(); } catch (_) {}
@@ -110,7 +119,7 @@ function SocraticChat({
     let out = fallback;
     if (vars && typeof vars === 'object') {
       Object.keys(vars).forEach((k) => {
-        out = out.replace(new RegExp(`\\{${k}\\}`, 'g'), String(vars[k] == null ? '' : vars[k]));
+        out = out.split('{' + k + '}').join(String(vars[k] == null ? '' : vars[k]));
       });
     }
     return out;
@@ -158,7 +167,16 @@ function SocraticChat({
   const clampedY = hasCustomPos ? Math.min(Math.max(8, viewportH - panelH - 8), Math.max(8, Number(socraticPosition.y) || 8)) : null;
   const defaultRight = viewportW < 440 ? '0.5rem' : '6rem';
   const defaultBottom = viewportH < 520 ? '0.5rem' : '6rem';
+  const _isSocraticGlobalMuted = () => {
+    if (typeof window === 'undefined') return false;
+    try {
+      if (window.__alloMuted === true || window._alloGlobalMute === true || window._alloGlobalMuted === true) return true;
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+    } catch (_) {}
+    return false;
+  };
   const _speakSocraticMessage = (text) => {
+    if (_isSocraticGlobalMuted()) return;
     const cleanText = String(text || '')
       .replace(/\[([^\]\n]+)\]\([^)]+\)/g, '$1')
       .replace(/[*_`~#>]+/g, ' ')
@@ -172,16 +190,23 @@ function SocraticChat({
     try {
       if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
         window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(cleanText));
+        spokeViaSynthRef.current = true;
+        const utter = new window.SpeechSynthesisUtterance(cleanText);
+        utter.onend = () => { spokeViaSynthRef.current = false; };
+        utter.onerror = () => { spokeViaSynthRef.current = false; };
+        window.speechSynthesis.speak(utter);
       }
     } catch (err) {
+      spokeViaSynthRef.current = false;
       if (typeof warnLog === 'function') warnLog('Socratic TTS replay failed:', err && err.message ? err.message : err);
     }
   };
   const startSocraticDrag = (clientX, clientY, targetEl, currentTargetEl) => {
     if (targetEl && targetEl.closest && targetEl.closest('button')) return false;
-    setIsSocraticDragging(true);
-    const rect = currentTargetEl.parentElement.getBoundingClientRect();
+    const parentEl = currentTargetEl && currentTargetEl.parentElement;
+    if (!parentEl || typeof parentEl.getBoundingClientRect !== 'function') return false;
+    if (typeof setIsSocraticDragging === 'function') setIsSocraticDragging(true);
+    const rect = parentEl.getBoundingClientRect();
     if (socraticDragOffset) socraticDragOffset.current = { x: clientX - rect.left, y: clientY - rect.top };
     if (socraticLivePos) socraticLivePos.current = { x: rect.left, y: rect.top };
     return true;
@@ -189,14 +214,33 @@ function SocraticChat({
   const handleSubmitForm = (e) => {
     if (e?.nativeEvent?.isComposing || isComposingRef.current) { e.preventDefault(); return; }
     e.preventDefault();
-    if (!socraticAiAvailable || !String(socraticInput || '').trim() || isSocraticThinking) return;
-    handleSocraticSubmit();
+    const trimmed = String(socraticInput || '').trim();
+    if (!socraticAiAvailable || !trimmed || isSocraticThinking) return;
+    try {
+      const selHub = typeof window !== 'undefined' ? window.SelHub : null;
+      const safetyChecker = typeof window !== 'undefined' ? window.SafetyContentChecker : null;
+      const checkRes = (selHub && typeof selHub.safeRehearseCheck === 'function')
+        ? selHub.safeRehearseCheck(trimmed, { toolId: 'socratic_chat' })
+        : (safetyChecker && typeof safetyChecker.check === 'function' ? safetyChecker.check(trimmed) : null);
+      if (checkRes && (checkRes.action === 'block' || checkRes.tier >= 3 || checkRes.blocked === true)) {
+        setCrisisNotice(socraticLabel('socratic.crisis_support', 'It sounds like you may be going through a hard time. Please talk with a trusted adult, school counselor, or call/text 988 (Suicide & Crisis Lifeline) or text HOME to 741741 (Crisis Text Line).'));
+        return;
+      }
+    } catch (_) {}
+    if (crisisNotice) setCrisisNotice('');
+    if (typeof handleSocraticSubmit === 'function') handleSocraticSubmit();
   };
-  const safeMessages = Array.isArray(socraticMessages) ? socraticMessages : [];
+  React.useEffect(() => {
+    if (!socraticAiAvailable && socraticChatRef && socraticChatRef.current && typeof socraticChatRef.current.focus === 'function') {
+      try { socraticChatRef.current.focus(); } catch (_) {}
+    }
+  }, [socraticAiAvailable]);
+  const safeMessages = Array.isArray(socraticMessages) ? socraticMessages.filter(m => m && typeof m === 'object') : [];
 
   return (
     <div
       ref={socraticChatRef}
+      tabIndex={-1}
       className={`fixed z-[110] ${_container} rounded-2xl flex flex-col overflow-hidden animate-in motion-reduce:animate-none slide-in-from-bottom-10 fade-in duration-300 ${isSocraticExpanded ? 'w-[48rem] h-[44rem]' : 'w-80 h-[28rem]'} max-w-[calc(100vw-1rem)] max-h-[calc(100dvh-1rem)]`}
       role="dialog"
       aria-modal="false"
@@ -281,6 +325,11 @@ function SocraticChat({
         aria-relevant="additions text"
         aria-label={t('socratic.title')}
       >
+        {crisisNotice && (
+          <div role="alert" data-socratic-crisis-notice className="rounded-xl border-2 border-rose-500 bg-rose-50 p-3 text-xs font-semibold text-rose-900">
+            {crisisNotice}
+          </div>
+        )}
         {!socraticAiAvailable && (
           <div role="status" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs font-semibold text-amber-900">
             {socraticLabel('socratic.ai_unavailable', 'AI tutor is currently unavailable (AI is off or locked). Existing messages remain readable below.')}
@@ -348,15 +397,15 @@ function SocraticChat({
           onClick={() => {
             if (!canDictate || !socraticAiAvailable) return;
             if (isSocraticDictating) {
-              setIsSocraticDictating(false);
+              if (typeof setIsSocraticDictating === 'function') setIsSocraticDictating(false);
               try { if (recognitionRef && recognitionRef.current) recognitionRef.current.stop(); } catch (_) {}
             } else {
               if (!recognitionRef || !recognitionRef.current) return;
-              setIsSocraticDictating(true);
+              if (typeof setIsSocraticDictating === 'function') setIsSocraticDictating(true);
               try {
                 recognitionRef.current.start();
               } catch(e) {
-                setIsSocraticDictating(false);
+                if (typeof setIsSocraticDictating === 'function') setIsSocraticDictating(false);
                 if (typeof warnLog === 'function') warnLog('Caught error:', e?.message || e);
               }
             }
@@ -373,8 +422,8 @@ function SocraticChat({
           data-help-key="socratic_input"
           type="text"
           maxLength={2000}
-          value={socraticInput}
-          onChange={(e) => setSocraticInput(e.target.value)}
+          value={socraticInput ?? ''}
+          onChange={(e) => { if (crisisNotice) setCrisisNotice(''); if (typeof setSocraticInput === 'function') setSocraticInput(e.target.value); }}
           onCompositionStart={() => { isComposingRef.current = true; }}
           onCompositionEnd={() => { isComposingRef.current = false; }}
           onKeyDown={(e) => { if (e.key === 'Enter' && (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229 || isComposingRef.current)) { e.preventDefault(); } }}

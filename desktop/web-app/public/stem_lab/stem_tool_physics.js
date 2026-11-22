@@ -2556,6 +2556,33 @@ window.StemLab = window.StemLab || {
             var impactParticles = canvasEl._impactParticles || [];
 
             var landingMarkers = canvasEl._landingMarkers || [];
+
+            // Pre-allocated zero-GC shockwave ring pool & breech recoil spring state
+            var shockwaves = canvasEl._shockwaves;
+            if (!Array.isArray(shockwaves) || shockwaves.length !== 10) {
+              shockwaves = [];
+              for (var swi = 0; swi < 10; swi++) {
+                shockwaves.push({ active: false, mX: 0, mY: 0, screenX: 0, screenY: 0, useWorld: true, r: 0, maxR: 36, life: 0, speed: 1, hue: 38, kind: 'impact' });
+              }
+              canvasEl._shockwaves = shockwaves;
+            }
+            var muzzleRecoil = typeof canvasEl._muzzleRecoil === 'number' ? canvasEl._muzzleRecoil : 0;
+            function spawnShockwave(x, y, maxR, hue, kind, useWorld) {
+              for (var si = 0; si < shockwaves.length; si++) {
+                var sw = shockwaves[si];
+                if (!sw.active) {
+                  sw.active = true;
+                  sw.useWorld = useWorld !== false;
+                  sw.mX = x; sw.mY = y;
+                  sw.screenX = x; sw.screenY = y;
+                  sw.r = 2; sw.maxR = maxR || 36;
+                  sw.life = 1; sw.speed = kind === 'secondary' ? 0.028 : 0.042;
+                  sw.hue = hue == null ? 38 : hue;
+                  sw.kind = kind || 'impact';
+                  return;
+                }
+              }
+            }
             function restorePhysicsRecordings(records) {
               if (launched || trails.length || !records.length) return false;
               var restored = records.map(physRestoreRecordedFlight).filter(Boolean);
@@ -3017,6 +3044,26 @@ window.StemLab = window.StemLab || {
               launched = true;
 
               impactParticles = [];
+              for (var rsw = 0; rsw < shockwaves.length; rsw++) shockwaves[rsw].active = false;
+              muzzleRecoil = physMotionReduced ? 0 : 1.0;
+              if (!physMotionReduced) {
+                spawnShockwave(0, launchHeight, 22 + Math.min(20, vel * 0.4), 196, 'muzzle', true);
+                var mzx = mToScreenX(0), mzy = mToScreenY(launchHeight);
+                var dirX = Math.cos(rad), dirY = -Math.sin(rad);
+                for (var mp = 0; mp < 10; mp++) {
+                  var spread = (Math.random() - 0.5) * 0.55;
+                  var pSpd = 1.8 + Math.random() * 3.8;
+                  var ca = Math.cos(spread), sa = Math.sin(spread);
+                  impactParticles.push({
+                    x: mzx + dirX * 4, y: mzy + dirY * 4,
+                    vx: (dirX * ca - dirY * sa) * pSpd,
+                    vy: (dirX * sa + dirY * ca) * pSpd,
+                    life: 0.42 + Math.random() * 0.3,
+                    size: 0.9 + Math.random() * 1.1,
+                    type: mp < 7 ? 'spark' : 'smoke'
+                  });
+                }
+              }
 
               canvasEl._apex = null; // reset apex snapshot for new flight
 
@@ -3027,6 +3074,7 @@ window.StemLab = window.StemLab || {
               canvasEl._launched = true;
               canvasEl._trails = trails;
               canvasEl._impactParticles = impactParticles;
+              canvasEl._muzzleRecoil = muzzleRecoil;
               schedulePhysicsFrame();
 
               // Canvas Narration: launch event
@@ -3257,8 +3305,18 @@ window.StemLab = window.StemLab || {
                 ctx.save();
                 ctx.lineCap = 'round'; ctx.lineJoin = 'round';
                 if (!highContrast) {
-                  ctx.strokeStyle = 'rgba(147,197,253,0.26)'; ctx.lineWidth = 6 * dpr;
+                  // Dual-pass luminous bloom on resultant velocity vector & arrowhead
+                  ctx.strokeStyle = 'rgba(56,189,248,0.16)'; ctx.lineWidth = 9.5 * dpr;
                   ctx.beginPath(); ctx.moveTo(x * dpr, y * dpr); ctx.lineTo(endX * dpr, endY * dpr); ctx.stroke();
+                  ctx.strokeStyle = 'rgba(147,197,253,0.34)'; ctx.lineWidth = 5 * dpr;
+                  ctx.beginPath(); ctx.moveTo(x * dpr, y * dpr); ctx.lineTo(endX * dpr, endY * dpr); ctx.stroke();
+                  if (typeof ctx.createRadialGradient === 'function' && arrowLen > 4) {
+                    var tipGlow = ctx.createRadialGradient(endX * dpr, endY * dpr, 0, endX * dpr, endY * dpr, 9 * dpr);
+                    tipGlow.addColorStop(0, 'rgba(186,230,253,0.55)');
+                    tipGlow.addColorStop(1, 'rgba(56,189,248,0)');
+                    ctx.fillStyle = tipGlow;
+                    ctx.beginPath(); ctx.arc(endX * dpr, endY * dpr, 9 * dpr, 0, Math.PI * 2); ctx.fill();
+                  }
                 }
                 ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 2.2 * dpr;
                 ctx.beginPath(); ctx.moveTo(x * dpr, y * dpr); ctx.lineTo(endX * dpr, endY * dpr);
@@ -3271,7 +3329,9 @@ window.StemLab = window.StemLab || {
                   if (length === 0) return;
                   var angle = Math.atan2(toY - y, toX - x), head = Math.min(5, length / 3);
                   if (!highContrast) {
-                    ctx.save(); ctx.globalAlpha = 0.2; ctx.strokeStyle = color; ctx.lineWidth = 4.2 * dpr; ctx.setLineDash([]);
+                    ctx.save(); ctx.globalAlpha = 0.14; ctx.strokeStyle = color; ctx.lineWidth = 7 * dpr; ctx.setLineDash([]);
+                    ctx.beginPath(); ctx.moveTo(x * dpr, y * dpr); ctx.lineTo(toX * dpr, toY * dpr); ctx.stroke();
+                    ctx.globalAlpha = 0.28; ctx.lineWidth = 3.8 * dpr;
                     ctx.beginPath(); ctx.moveTo(x * dpr, y * dpr); ctx.lineTo(toX * dpr, toY * dpr); ctx.stroke(); ctx.restore();
                   }
                   ctx.strokeStyle = color; ctx.lineWidth = 1.6 * dpr; ctx.setLineDash([4 * dpr, 3 * dpr]);
@@ -3285,6 +3345,10 @@ window.StemLab = window.StemLab || {
                 componentArrow(x, endY, '#c4b5fd');
                 var gravityLength = Math.max(0, Math.min(point.gravity * 1.5, 25, groundYCSS - y - 8));
                 var gravityHead = Math.min(4, gravityLength / 3);
+                if (!highContrast && gravityLength > 2) {
+                  ctx.save(); ctx.globalAlpha = 0.22; ctx.strokeStyle = '#fb7185'; ctx.lineWidth = 5 * dpr; ctx.setLineDash([]);
+                  ctx.beginPath(); ctx.moveTo(x * dpr, y * dpr); ctx.lineTo(x * dpr, (y + gravityLength) * dpr); ctx.stroke(); ctx.restore();
+                }
                 ctx.strokeStyle = '#fda4af'; ctx.lineWidth = 1.5 * dpr; ctx.setLineDash([2 * dpr, 3 * dpr]);
                 ctx.beginPath(); ctx.moveTo(x * dpr, y * dpr); ctx.lineTo(x * dpr, (y + gravityLength) * dpr); ctx.stroke();
                 ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(x * dpr, (y + gravityLength) * dpr);
@@ -3331,12 +3395,28 @@ window.StemLab = window.StemLab || {
               ctx.beginPath(); ctx.moveTo(launcherX * dpr, plotTop * dpr); ctx.lineTo(launcherX * dpr, groundY); ctx.lineTo(cW - 20 * dpr, groundY); ctx.stroke();
               ctx.fillStyle = scene.muted; ctx.textAlign = 'left'; ctx.fillText((canvasEl._L || {}).height || 'Height (m)', 12 * dpr, (plotTop - 12) * dpr);
               ctx.textAlign = 'right'; ctx.fillText((canvasEl._L || {}).distance || 'Distance (m)', cW - 20 * dpr, groundY + 40 * dpr);
-              targets.forEach(function(tgt) {
+              targets.forEach(function(tgt, tIdx) {
                 var tx = mToScreenX(tgt.dist) * dpr;
                 if (tx > cW - 26 * dpr || canvasEl._settings.targetMode) return;
-                ctx.strokeStyle = tgt.hit ? '#fde68a' : '#94a3b8'; ctx.lineWidth = 1.5 * dpr;
-                ctx.beginPath(); ctx.moveTo(tx, groundY); ctx.lineTo(tx, groundY - 20 * dpr); ctx.stroke();
-                ctx.fillStyle = tgt.hit ? '#fde68a' : '#94a3b8'; ctx.beginPath(); ctx.moveTo(tx, groundY - 20 * dpr); ctx.lineTo(tx + 8 * dpr, groundY - 16 * dpr); ctx.lineTo(tx, groundY - 12 * dpr); ctx.fill();
+                var flagCol = highContrast ? (tgt.hit ? '#ffff00' : '#00ff00') : (tgt.hit ? '#fde68a' : (tgt.color || '#38bdf8'));
+                var sway = (!highContrast && !physMotionReduced) ? Math.sin(tick * 0.08 + tIdx * 1.4) * 1.6 * dpr : 0;
+                ctx.save();
+                if (!highContrast) {
+                  ctx.fillStyle = tgt.hit ? 'rgba(253,230,138,0.22)' : 'rgba(56,189,248,0.16)';
+                  ctx.beginPath(); ctx.arc(tx, groundY, 5.5 * dpr, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.strokeStyle = tgt.hit ? '#fde68a' : '#cbd5e1'; ctx.lineWidth = 1.6 * dpr;
+                ctx.beginPath(); ctx.moveTo(tx, groundY); ctx.lineTo(tx, groundY - 22 * dpr); ctx.stroke();
+                ctx.fillStyle = flagCol;
+                ctx.beginPath();
+                ctx.moveTo(tx, groundY - 22 * dpr);
+                ctx.quadraticCurveTo(tx + 5.5 * dpr, groundY - 19.5 * dpr + sway * 0.5, tx + 11 * dpr, groundY - 17.5 * dpr + sway);
+                ctx.quadraticCurveTo(tx + 5.5 * dpr, groundY - 15 * dpr + sway * 0.4, tx, groundY - 12.5 * dpr);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = flagCol;
+                ctx.beginPath(); ctx.arc(tx, groundY, 2.2 * dpr, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
               });
 
               // ── Predicted-landing marker on the ground ──
@@ -3451,13 +3531,35 @@ window.StemLab = window.StemLab || {
                 var alpha = isActive ? 1 : overlayMode ? (highContrast ? 1 : .85) : inspection ? .10 : .18;
                 var trajectoryRow = trajectoryRows.filter(function(row) { return row.trail === trail; })[0];
 
-                // Dual-pass luminous glow aura for active parabolic trajectory
+                // Dual-pass luminous glow aura + translucent kinetic-potential arc energy wash for active parabolic trajectory
 
                 if (isActive && !highContrast) {
 
                   ctx.save();
 
                   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+                  // Soft vertical arc energy wash beneath the trajectory curve
+                  if (trail.length >= 3 && typeof ctx.createLinearGradient === 'function') {
+                    var washTopY = groundY;
+                    for (var tw = 0; tw < trail.length; tw++) {
+                      var wyPt = mToScreenY(trail[tw].mY) * dpr;
+                      if (wyPt < washTopY) washTopY = wyPt;
+                    }
+                    var washGrad = ctx.createLinearGradient(0, Math.min(washTopY, groundY - 4 * dpr), 0, groundY);
+                    washGrad.addColorStop(0, 'rgba(56,189,248,0.11)');
+                    washGrad.addColorStop(0.55, 'rgba(251,191,36,0.055)');
+                    washGrad.addColorStop(1, 'rgba(15,23,42,0)');
+                    ctx.fillStyle = washGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(mToScreenX(trail[0].mX) * dpr, groundY);
+                    for (var wf = 0; wf < trail.length; wf++) {
+                      ctx.lineTo(mToScreenX(trail[wf].mX) * dpr, mToScreenY(trail[wf].mY) * dpr);
+                    }
+                    ctx.lineTo(mToScreenX(trail[trail.length - 1].mX) * dpr, groundY);
+                    ctx.closePath();
+                    ctx.fill();
+                  }
 
                   ctx.beginPath(); ctx.moveTo(mToScreenX(trail[0].mX) * dpr, mToScreenY(trail[0].mY) * dpr);
 
@@ -3467,7 +3569,7 @@ window.StemLab = window.StemLab || {
 
                   }
 
-                  ctx.lineWidth = 10 * dpr; ctx.globalAlpha = 0.14; ctx.strokeStyle = '#38bdf8'; ctx.stroke();
+                  ctx.lineWidth = 10.5 * dpr; ctx.globalAlpha = 0.14; ctx.strokeStyle = '#38bdf8'; ctx.stroke();
                   ctx.lineWidth = 5.5 * dpr; ctx.globalAlpha = 0.28; ctx.strokeStyle = '#fbbf24'; ctx.stroke();
                   ctx.restore();
 
@@ -3484,7 +3586,7 @@ window.StemLab = window.StemLab || {
                   ctx.stroke(); ctx.restore();
                 } else {
                   // The focused flight keeps the continuous cyan → amber → rose speed scale.
-                  ctx.lineWidth = (isActive ? 2.5 : 1.5) * dpr; ctx.lineCap = 'round';
+                  ctx.lineWidth = (isActive ? 2.6 : 1.5) * dpr; ctx.lineCap = 'round';
                   ctx.setLineDash(isActive ? [] : [4 * dpr, 3 * dpr]);
                   for (var ti = 1; ti < trail.length; ti++) {
                     var p0 = trail[ti - 1], p1 = trail[ti];
@@ -3498,6 +3600,32 @@ window.StemLab = window.StemLab || {
                     ctx.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
                     ctx.beginPath(); ctx.moveTo(mToScreenX(p0.mX) * dpr, mToScreenY(p0.mY) * dpr);
                     ctx.lineTo(mToScreenX(p1.mX) * dpr, mToScreenY(p1.mY) * dpr); ctx.stroke();
+                  }
+                  // Equal-time faded strobe-ghost positions along active flight trail (static crisp markers in reduced-motion)
+                  if (isActive && !highContrast && trail.length >= 6) {
+                    var strobeStep = Math.max(4, Math.floor(trail.length / 9));
+                    ctx.save();
+                    for (var si = strobeStep; si < trail.length - 1; si += strobeStep) {
+                      var sp = trail[si];
+                      var spX = mToScreenX(sp.mX) * dpr, spY = mToScreenY(sp.mY) * dpr;
+                      var spSpd = Math.sqrt(Math.pow(sp.mVx || 0, 2) + Math.pow(sp.mVy || 0, 2));
+                      var spNorm = Math.min(1, spSpd / 60);
+                      var recency = si / trail.length;
+                      var strobeAlpha = physMotionReduced ? 0.24 : (0.14 + recency * 0.28);
+                      var sR = Math.round(103 + spNorm * 148);
+                      var sG = Math.round(232 - spNorm * 72);
+                      var sB = Math.round(249 - spNorm * 140);
+                      ctx.fillStyle = 'rgba(' + sR + ',' + sG + ',' + sB + ',' + (strobeAlpha * 0.6).toFixed(3) + ')';
+                      ctx.beginPath();
+                      ctx.arc(spX, spY, (3.2 + recency * 1.6) * dpr, 0, Math.PI * 2);
+                      ctx.fill();
+                      ctx.strokeStyle = 'rgba(248,250,252,' + (strobeAlpha * 0.85).toFixed(3) + ')';
+                      ctx.lineWidth = 0.9 * dpr;
+                      ctx.beginPath();
+                      ctx.arc(spX, spY, (3.8 + recency * 1.8) * dpr, 0, Math.PI * 2);
+                      ctx.stroke();
+                    }
+                    ctx.restore();
                   }
                 }
                 ctx.setLineDash([]);
@@ -3559,6 +3687,14 @@ window.StemLab = window.StemLab || {
               if (displayedApex && displayedApex.tSec > .001) {
                 var ap = displayedApex, ax = mToScreenX(ap.mX), ay = mToScreenY(ap.mY);
                 if (pointInPlot(ax, ay)) {
+                  if (!highContrast) {
+                    var apexPulse = physMotionReduced ? 0.5 : (0.5 + 0.5 * Math.sin(tick * 0.14));
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(253,230,138,' + (0.20 + apexPulse * 0.18).toFixed(3) + ')';
+                    ctx.lineWidth = 2.5 * dpr;
+                    ctx.beginPath(); ctx.arc(ax * dpr, ay * dpr, (7.5 + apexPulse * 3) * dpr, 0, Math.PI * 2); ctx.stroke();
+                    ctx.restore();
+                  }
                   ctx.strokeStyle = '#fde68a'; ctx.lineWidth = 2 * dpr;
                   ctx.beginPath(); ctx.arc(ax * dpr, ay * dpr, 5 * dpr, 0, Math.PI * 2); ctx.stroke();
                   reserveMarker(ax, ay, 5);
@@ -3615,6 +3751,22 @@ window.StemLab = window.StemLab || {
 
                 }
 
+                // ── Grounded altitude-scaled shadow beneath flying projectile ──
+                if (!highContrast && !inspection && pointInPlot(ballScreenX, groundYCSS)) {
+                  var altFactor = Math.max(0.22, 1 / (1 + Math.max(0, ball.mY) * 0.055));
+                  ctx.save();
+                  ctx.globalAlpha = 0.42 * altFactor;
+                  ctx.fillStyle = '#020617';
+                  ctx.beginPath();
+                  if (typeof ctx.ellipse === 'function') {
+                    ctx.ellipse(ballScreenX * dpr, groundY + 1.5 * dpr, (9.5 * altFactor + 2) * dpr, (2.4 * altFactor + 0.6) * dpr, 0, 0, Math.PI * 2);
+                  } else {
+                    ctx.arc(ballScreenX * dpr, groundY + 1.5 * dpr, (6 * altFactor + 1.5) * dpr, 0, Math.PI * 2);
+                  }
+                  ctx.fill();
+                  ctx.restore();
+                }
+
                 // ── Metallic cannonball ──
 
                 reserveMarker(ballScreenX, ballScreenY, 7);
@@ -3623,23 +3775,31 @@ window.StemLab = window.StemLab || {
 
                 var bx = ballScreenX * dpr, by = ballScreenY * dpr, br = 7 * dpr;
 
-                // Outer glow
-
-                ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 18 * dpr;
+                // Outer luminous kinetic bloom (bypassed in High-Contrast)
+                if (!highContrast) {
+                  var kGlowNorm = Math.min(1, (ball.speed || 0) / 55);
+                  ctx.shadowColor = kGlowNorm > 0.6 ? '#fb7185' : '#fbbf24';
+                  ctx.shadowBlur = (14 + kGlowNorm * 10) * dpr;
+                }
 
                 ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2);
 
-                var ballGrad = ctx.createRadialGradient(bx - br * 0.3, by - br * 0.3, br * 0.1, bx, by, br);
+                if (typeof ctx.createRadialGradient === 'function') {
+                  var ballGrad = ctx.createRadialGradient(bx - br * 0.3, by - br * 0.3, br * 0.1, bx, by, br);
 
-                ballGrad.addColorStop(0, '#e2e8f0');
+                  ballGrad.addColorStop(0, '#f1f5f9');
 
-                ballGrad.addColorStop(0.35, '#94a3b8');
+                  ballGrad.addColorStop(0.35, '#94a3b8');
 
-                ballGrad.addColorStop(0.7, '#475569');
+                  ballGrad.addColorStop(0.7, '#475569');
 
-                ballGrad.addColorStop(1, '#1e293b');
+                  ballGrad.addColorStop(1, '#1e293b');
 
-                ctx.fillStyle = ballGrad; ctx.fill();
+                  ctx.fillStyle = ballGrad;
+                } else {
+                  ctx.fillStyle = highContrast ? '#ffff00' : '#94a3b8';
+                }
+                ctx.fill();
 
                 ctx.shadowBlur = 0;
 
@@ -3740,18 +3900,21 @@ window.StemLab = window.StemLab || {
                     }, 0);
                   }
 
-                  // Spawn enhanced impact dust & spark burst particles (gated by reduced motion)
+                  // Spawn enhanced impact shockwaves & dust/spark micro-burst particles (gated by reduced motion)
 
                   if (!physMotionReduced) {
                   var impactSX = mToScreenX(ball.mX);
 
                   var impactSY = groundYCSS;
+                  var impactEnergyScale = Math.min(1.6, 0.75 + (ball.speed || 20) / 48);
+                  spawnShockwave(ball.mX, 0, 34 * impactEnergyScale, 42, 'impact', true);
+                  spawnShockwave(ball.mX, 0, 22 * impactEnergyScale, 196, 'secondary', true);
 
-                  for (var ep = 0; ep < 35; ep++) {
+                  for (var ep = 0; ep < 38; ep++) {
 
                     var epAngle = Math.random() * Math.PI;
 
-                    var epSpeed = 1 + Math.random() * 5;
+                    var epSpeed = (1 + Math.random() * 5.2) * Math.min(1.35, 0.7 + (ball.speed || 20) / 55);
 
                     var pType = Math.random();
 
@@ -3765,9 +3928,9 @@ window.StemLab = window.StemLab || {
 
                       life: 0.7 + Math.random() * 0.6,
 
-                      size: pType < 0.3 ? 0.5 + Math.random() * 1 : 1 + Math.random() * 2.5,
+                      size: pType < 0.36 ? 0.7 + Math.random() * 1.1 : 1 + Math.random() * 2.5,
 
-                      type: pType < 0.3 ? 'spark' : pType < 0.65 ? 'debris' : 'smoke'
+                      type: pType < 0.36 ? 'spark' : pType < 0.68 ? 'debris' : 'smoke'
 
                     });
 
@@ -3782,7 +3945,50 @@ window.StemLab = window.StemLab || {
 
               }
 
-              // ── Impact particles (multi-type) ──
+              // ── Elastic/inelastic collision & muzzle shockwave rings (zero-allocation pool) ──
+              var hasActiveShockwave = false;
+              for (var swDraw = 0; swDraw < shockwaves.length; swDraw++) {
+                var swItem = shockwaves[swDraw];
+                if (!swItem.active) continue;
+                swItem.life -= swItem.speed;
+                swItem.r = (1 - swItem.life) * swItem.maxR;
+                if (swItem.life <= 0) { swItem.active = false; continue; }
+                hasActiveShockwave = true;
+                if (inspection || highContrast) continue;
+                var swX = (swItem.useWorld ? mToScreenX(swItem.mX) : swItem.screenX) * dpr;
+                var swY = (swItem.useWorld ? mToScreenY(swItem.mY) : swItem.screenY) * dpr;
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(launcherX * dpr, plotTop * dpr, Math.max(0, cssW - launcherX - 20) * dpr, Math.max(0, groundYCSS - plotTop + 8) * dpr);
+                ctx.clip();
+                if (swItem.kind === 'impact' && swItem.life > 0.55 && typeof ctx.createRadialGradient === 'function') {
+                  var flashA = (swItem.life - 0.55) / 0.45;
+                  var flashR = (10 + (1 - flashA) * 18) * dpr;
+                  var flashGrad = ctx.createRadialGradient(swX, swY, 0, swX, swY, flashR);
+                  flashGrad.addColorStop(0, 'rgba(255,250,220,' + (0.65 * flashA).toFixed(3) + ')');
+                  flashGrad.addColorStop(0.45, 'rgba(251,191,36,' + (0.32 * flashA).toFixed(3) + ')');
+                  flashGrad.addColorStop(1, 'rgba(251,146,60,0)');
+                  ctx.fillStyle = flashGrad;
+                  ctx.beginPath(); ctx.arc(swX, swY, flashR, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.strokeStyle = 'hsla(' + swItem.hue + ',95%,74%,' + (swItem.life * 0.72).toFixed(3) + ')';
+                ctx.lineWidth = (1.1 + swItem.life * 2.2) * dpr;
+                ctx.beginPath();
+                if (swItem.kind !== 'muzzle' && typeof ctx.ellipse === 'function') {
+                  ctx.ellipse(swX, swY, swItem.r * dpr, swItem.r * 0.34 * dpr, 0, Math.PI, Math.PI * 2);
+                  ctx.stroke();
+                  ctx.strokeStyle = 'hsla(' + swItem.hue + ',100%,84%,' + (swItem.life * 0.38).toFixed(3) + ')';
+                  ctx.lineWidth = (0.9 + swItem.life * 1.2) * dpr;
+                  ctx.beginPath();
+                  ctx.ellipse(swX, swY, swItem.r * 0.78 * dpr, swItem.r * 0.55 * dpr, 0, Math.PI, Math.PI * 2);
+                } else {
+                  ctx.arc(swX, swY, swItem.r * dpr, 0, Math.PI * 2);
+                }
+                ctx.stroke();
+                ctx.restore();
+              }
+
+              // ── Impact particles (multi-type with ground restitution bounce on sparks) ──
 
               for (var ipi = impactParticles.length - 1; ipi >= 0; ipi--) {
 
@@ -3793,6 +3999,11 @@ window.StemLab = window.StemLab || {
                 ip.vy += (ip.type === 'smoke' ? 0.02 : 0.15);
 
                 if (ip.type === 'smoke') { ip.vy -= 0.08; ip.vx *= 0.97; }
+                else if (ip.type === 'spark' && ip.y > groundYCSS && ip.vy > 0) {
+                  ip.y = groundYCSS;
+                  ip.vy = -ip.vy * 0.42;
+                  ip.vx *= 0.78;
+                }
 
                 ip.life -= (ip.type === 'smoke' ? 0.012 : 0.02);
 
@@ -3801,13 +4012,13 @@ window.StemLab = window.StemLab || {
                 // Impact effects belong to the current flight, so keep them
                 // out of an inspection of recorded evidence. Their life still
                 // advances normally without changing any flight samples.
-                if (inspection) continue;
+                if (inspection || highContrast) continue;
 
                 ctx.save();
 
                 if (ip.type === 'spark') {
 
-                  // Bright spark with tail
+                  // Bright spark with warm tail + white-hot core
 
                   ctx.globalCompositeOperation = 'lighter';
 
@@ -3821,11 +4032,17 @@ window.StemLab = window.StemLab || {
 
                   ctx.beginPath();
 
-                  ctx.moveTo((ip.x - ip.vx * 1.5) * dpr, (ip.y - ip.vy * 1.5) * dpr);
+                  ctx.moveTo((ip.x - ip.vx * 1.7) * dpr, (ip.y - ip.vy * 1.7) * dpr);
 
                   ctx.lineTo(ip.x * dpr, ip.y * dpr);
 
                   ctx.stroke();
+                  if (ip.life > 0.35) {
+                    ctx.fillStyle = 'rgba(255,252,235,' + (ip.life * 0.85).toFixed(3) + ')';
+                    ctx.beginPath();
+                    ctx.arc(ip.x * dpr, ip.y * dpr, ip.size * 0.65 * dpr, 0, Math.PI * 2);
+                    ctx.fill();
+                  }
 
                 } else if (ip.type === 'debris') {
 
@@ -3833,13 +4050,18 @@ window.StemLab = window.StemLab || {
 
                   ctx.beginPath(); ctx.arc(ip.x * dpr, ip.y * dpr, ip.size * dpr, 0, Math.PI * 2);
 
-                  var debrisGrad = ctx.createRadialGradient(ip.x * dpr, ip.y * dpr, 0, ip.x * dpr, ip.y * dpr, ip.size * dpr);
+                  if (typeof ctx.createRadialGradient === 'function') {
+                    var debrisGrad = ctx.createRadialGradient(ip.x * dpr, ip.y * dpr, 0, ip.x * dpr, ip.y * dpr, ip.size * dpr);
 
-                  debrisGrad.addColorStop(0, 'rgba(180,100,30,' + ip.life + ')');
+                    debrisGrad.addColorStop(0, 'rgba(180,100,30,' + ip.life + ')');
 
-                  debrisGrad.addColorStop(1, 'rgba(80,40,10,' + (ip.life * 0.5) + ')');
+                    debrisGrad.addColorStop(1, 'rgba(80,40,10,' + (ip.life * 0.5) + ')');
 
-                  ctx.fillStyle = debrisGrad; ctx.fill();
+                    ctx.fillStyle = debrisGrad;
+                  } else {
+                    ctx.fillStyle = 'rgba(180,100,30,' + ip.life + ')';
+                  }
+                  ctx.fill();
 
                 } else {
 
@@ -3898,6 +4120,33 @@ window.StemLab = window.StemLab || {
               barrelExclusions.forEach(function(box) { ctx.rect(box.x, box.y, box.width, box.height); });
               ctx.clip('evenodd');
               ctx.translate(cxC * dpr, cyC * dpr); ctx.rotate(-rad);
+              // Recoil damper spring with damped harmonic compression & tension/compression stress-color sheen
+              if (!physMotionReduced && muzzleRecoil > 0.005) {
+                muzzleRecoil = Math.max(0, muzzleRecoil - 0.045);
+              } else if (physMotionReduced) {
+                muzzleRecoil = 0;
+              }
+              var recoilOsc = muzzleRecoil > 0 ? Math.exp(-(1 - muzzleRecoil) * 2.4) * Math.cos((1 - muzzleRecoil) * 11) * muzzleRecoil : 0;
+              var recoilShift = Math.max(-4.5, Math.min(2.5, -recoilOsc * 4.5));
+              var springStart = -30 * dpr, springEnd = (-21 + recoilShift * 0.7) * dpr;
+              var springColor = highContrast ? '#ffff00' : (recoilShift < -0.5 ? '#fb7185' : recoilShift > 0.3 ? '#38bdf8' : '#94a3b8');
+              ctx.save();
+              ctx.strokeStyle = springColor;
+              ctx.lineWidth = 1.35 * dpr;
+              ctx.lineJoin = 'round';
+              ctx.beginPath();
+              var coilCount = 5, coilSpan = Math.max(4 * dpr, springEnd - springStart);
+              ctx.moveTo(springStart, 0);
+              for (var ci = 0; ci < coilCount; ci++) {
+                var cx1 = springStart + ((ci + 0.25) / coilCount) * coilSpan;
+                var cx2 = springStart + ((ci + 0.75) / coilCount) * coilSpan;
+                ctx.lineTo(cx1, -3.2 * dpr);
+                ctx.lineTo(cx2, 3.2 * dpr);
+              }
+              ctx.lineTo(springEnd, 0);
+              ctx.stroke();
+              ctx.restore();
+              ctx.translate(recoilShift * dpr, 0);
               var barrelGrad = ctx.createLinearGradient(0, -7 * dpr, 0, 7 * dpr);
               barrelGrad.addColorStop(0, highContrast ? '#666666' : '#94a3b8');
               barrelGrad.addColorStop(0.35, highContrast ? '#888888' : '#cbd5e1');
@@ -3911,6 +4160,22 @@ window.StemLab = window.StemLab || {
               ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 1 * dpr;
               ctx.beginPath(); ctx.moveTo(-26 * dpr, -3.5 * dpr); ctx.lineTo(-8 * dpr, -2 * dpr); ctx.stroke();
               ctx.restore();
+              if (!highContrast && rad > 0.03) {
+                var arcR = 26 * dpr;
+                ctx.save();
+                ctx.fillStyle = 'rgba(56,189,248,0.11)';
+                ctx.beginPath();
+                ctx.moveTo(cxC * dpr, cyC * dpr);
+                ctx.arc(cxC * dpr, cyC * dpr, arcR, 0, -rad, true);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(103,232,249,0.52)';
+                ctx.lineWidth = 1.35 * dpr;
+                ctx.beginPath();
+                ctx.arc(cxC * dpr, cyC * dpr, arcR, 0, -rad, true);
+                ctx.stroke();
+                ctx.restore();
+              }
               if (!highContrast) {
                 ctx.save(); ctx.strokeStyle = 'rgba(103,232,249,0.28)'; ctx.lineWidth = 4.5 * dpr;
                 ctx.beginPath(); ctx.arc(cxC * dpr, cyC * dpr, 7 * dpr, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
@@ -3953,6 +4218,12 @@ window.StemLab = window.StemLab || {
               if (latestLanding) {
                 var lx = mToScreenX(latestLanding.mX);
                 if (pointInPlot(lx, groundYCSS)) {
+                  if (!highContrast && physMotionReduced) {
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(253,230,138,0.34)'; ctx.lineWidth = 1.5 * dpr;
+                    ctx.beginPath(); ctx.arc(lx * dpr, groundY, 9.5 * dpr, 0, Math.PI * 2); ctx.stroke();
+                    ctx.restore();
+                  }
                   ctx.strokeStyle = '#fde68a'; ctx.lineWidth = 2 * dpr;
                   ctx.beginPath(); ctx.arc(lx * dpr, groundY, 5 * dpr, 0, Math.PI * 2); ctx.stroke();
                   reserveMarker(lx, groundYCSS, 5);
@@ -4334,7 +4605,10 @@ window.StemLab = window.StemLab || {
                   ctx.strokeStyle = t.color; ctx.lineWidth = dpr; ctx.globalAlpha = highContrast ? 1 : .72;
                   ctx.beginPath(); ctx.moveTo(chosen.connector.from.x * dpr, chosen.connector.from.y * dpr); ctx.lineTo(chosen.connector.to.x * dpr, chosen.connector.to.y * dpr); ctx.stroke(); ctx.restore();
                   ctx.fillStyle = scene.panel;
-                  ctx.beginPath(); ctx.roundRect(chosen.x * dpr, chosen.y * dpr, width * dpr, height * dpr, 6 * dpr); ctx.fill();
+                  ctx.beginPath();
+                  if (typeof ctx.roundRect === 'function') ctx.roundRect(chosen.x * dpr, chosen.y * dpr, width * dpr, height * dpr, 6 * dpr);
+                  else ctx.rect(chosen.x * dpr, chosen.y * dpr, width * dpr, height * dpr);
+                  ctx.fill();
                   ctx.strokeStyle = t.color; ctx.lineWidth = dpr; ctx.stroke();
                   ctx.fillStyle = t.color; ctx.textAlign = 'left';
                   lines.forEach(function(line, i) { ctx.fillText(line, (chosen.x + 9) * dpr, (chosen.y + 19 + i * 17) * dpr); });
@@ -4349,10 +4623,11 @@ window.StemLab = window.StemLab || {
               canvasEl._tick = tick; canvasEl._trails = trails; canvasEl._ball = ball;
 
               canvasEl._launched = launched; canvasEl._impactParticles = impactParticles; canvasEl._landingMarkers = landingMarkers;
+              canvasEl._shockwaves = shockwaves; canvasEl._muzzleRecoil = muzzleRecoil;
 
               // Idle and paused canvases redraw on changes or resize. They do
               // not keep repainting a static scene sixty times per second.
-              if ((launched && _ss > 0) || (!physMotionReduced && impactParticles.length > 0)) schedulePhysicsFrame();
+              if ((launched && _ss > 0) || (!physMotionReduced && (impactParticles.length > 0 || hasActiveShockwave || muzzleRecoil > 0.01))) schedulePhysicsFrame();
 
             }
 

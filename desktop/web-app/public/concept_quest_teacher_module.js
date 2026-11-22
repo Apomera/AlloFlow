@@ -535,6 +535,22 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
   }));
   const debrief = engine.createDebrief(quest);
   const phaseLabel = tr(`phase_${quest.phase}`, quest.phase);
+  const voteTotal = Object.keys(votes).length;
+  const actionTotal = Object.keys(actions).length;
+  const partyHpPct = quest.party?.maxHp > 0 ? Math.min(100, Math.max(0, Math.round(quest.party.hp / quest.party.maxHp * 100))) : 0;
+  const votePct = participantCount > 0 ? Math.min(100, Math.round(voteTotal / participantCount * 100)) : 0;
+  const actionPct = participantCount > 0 ? Math.min(100, Math.round(actionTotal / participantCount * 100)) : 0;
+  const sigilPct = neededSigils > 0 ? Math.min(100, Math.round((quest.sigils || []).length / neededSigils * 100)) : 100;
+  const maxVoteCount = voteCounts.reduce((best, entry) => Math.max(best, entry.count), 0);
+  const enemyHpPct = enemy && enemy.maxHp > 0 ? Math.min(100, Math.max(0, Math.round(enemy.hp / enemy.maxHp * 100))) : 0;
+  const phaseSubmissions = quest.phase === 'battle' ? actionTotal : quest.phase === 'explore' ? voteTotal : 0;
+  const allSubmitted = participantCount > 0 && (quest.phase === 'battle' || quest.phase === 'explore') && phaseSubmissions >= participantCount;
+  const liveStatusText = escapeState.isPaused ? tr('paused_badge', 'Paused') : (quest.phase === 'battle' || quest.phase === 'explore') && participantCount > 0 ? allSubmitted ? tr('all_submitted', 'All {count} ready ✓', {
+    count: participantCount
+  }) : tr('waiting_submissions', '{done}/{total} ready', {
+    done: phaseSubmissions,
+    total: participantCount
+  }) : '';
   return /*#__PURE__*/React.createElement("div", {
     "aria-busy": syncing || busy,
     className: "mb-4 rounded-2xl border-2 border-indigo-300 bg-gradient-to-br from-indigo-50 to-purple-50 p-4 shadow-lg"
@@ -546,9 +562,14 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
     className: "rounded-lg bg-red-100 p-3 text-red-900"
   }, syncError), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center justify-between gap-3"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-2"
+  }, /*#__PURE__*/React.createElement("h3", {
     className: "text-lg font-black text-indigo-950"
-  }, tr('teacher_heading', '🗺️ Concept Quest · Teacher co-GM')), /*#__PURE__*/React.createElement("p", {
+  }, tr('teacher_heading', '🗺️ Concept Quest · Teacher co-GM')), liveStatusText && /*#__PURE__*/React.createElement("span", {
+    "data-testid": "cq-live-status",
+    className: `inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold ${escapeState.isPaused ? 'border-amber-400 bg-amber-100 text-amber-950' : allSubmitted ? 'border-emerald-300 bg-emerald-100 text-emerald-900' : 'border-indigo-200 bg-white text-indigo-900'}`
+  }, liveStatusText)), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-indigo-700"
   }, tr('turn_room_phase', 'Turn {turn} · {room} · {phase}', {
     turn: quest.turn,
@@ -563,7 +584,7 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
     onClick: () => sync({
       'escapeRoomState.isPaused': !escapeState.isPaused
     }),
-    className: "min-h-11 rounded-lg bg-amber-100 px-3 text-sm font-bold text-amber-900"
+    className: "min-h-11 rounded-lg bg-amber-100 px-3 text-sm font-bold text-amber-900 hover:bg-amber-200 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, escapeState.isPaused ? tr('resume', 'Resume') : tr('pause', 'Pause')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: syncing,
@@ -571,7 +592,7 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
       endTriggerRef.current = event.currentTarget;
       setEndConfirm(true);
     },
-    className: "min-h-11 rounded-lg bg-red-600 px-3 text-sm font-bold text-white"
+    className: "min-h-11 rounded-lg bg-red-600 px-3 text-sm font-bold text-white hover:bg-red-700 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1"
   }, tr('end_quest', 'End quest')))), debrief.coverage && /*#__PURE__*/React.createElement("p", {
     "data-concept-quest-coverage": true,
     role: "status",
@@ -603,19 +624,51 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
     className: "rounded-lg bg-emerald-50 p-2"
   }, /*#__PURE__*/React.createElement("strong", {
     className: "block text-lg text-emerald-700"
-  }, quest.party.hp, "/", quest.party.maxHp), tr('party_hp', 'Party HP')), /*#__PURE__*/React.createElement("div", {
+  }, quest.party.hp, "/", quest.party.maxHp), tr('party_hp', 'Party HP'), /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": "true",
+    className: "mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-emerald-200/80"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: `block h-full rounded-full transition-all motion-reduce:transition-none ${partyHpPct < 30 ? 'bg-red-600' : partyHpPct < 60 ? 'bg-amber-600' : 'bg-emerald-600'}`,
+    style: {
+      width: `${partyHpPct}%`
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "rounded-lg bg-blue-50 p-2"
   }, /*#__PURE__*/React.createElement("strong", {
     className: "block text-lg text-blue-700"
-  }, Object.keys(votes).length, "/", participantCount), tr('votes', 'Votes')), /*#__PURE__*/React.createElement("div", {
+  }, voteTotal, "/", participantCount), tr('votes', 'Votes'), /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": "true",
+    className: "mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-blue-200/80"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "block h-full rounded-full bg-blue-600 transition-all motion-reduce:transition-none",
+    style: {
+      width: `${votePct}%`
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "rounded-lg bg-purple-50 p-2"
   }, /*#__PURE__*/React.createElement("strong", {
     className: "block text-lg text-purple-700"
-  }, Object.keys(actions).length, "/", participantCount), tr('actions', 'Actions')), /*#__PURE__*/React.createElement("div", {
+  }, actionTotal, "/", participantCount), tr('actions', 'Actions'), /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": "true",
+    className: "mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-purple-200/80"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "block h-full rounded-full bg-purple-600 transition-all motion-reduce:transition-none",
+    style: {
+      width: `${actionPct}%`
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "rounded-lg bg-cyan-50 p-2"
   }, /*#__PURE__*/React.createElement("strong", {
     className: "block text-lg text-cyan-700"
-  }, (quest.sigils || []).length, "/", neededSigils), tr('concept_sigils', 'Concept sigils'))), /*#__PURE__*/React.createElement("div", {
+  }, (quest.sigils || []).length, "/", neededSigils), tr('concept_sigils', 'Concept sigils'), /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": "true",
+    className: "mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-cyan-200/80"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "block h-full rounded-full bg-cyan-700 transition-all motion-reduce:transition-none",
+    style: {
+      width: `${sigilPct}%`
+    }
+  })))), /*#__PURE__*/React.createElement("div", {
     role: "group",
     className: "mt-3 flex flex-wrap gap-1.5",
     "aria-label": tr('role_distribution_aria', 'Party role distribution')
@@ -645,19 +698,19 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => adjustEncounter('heal', 3),
-    className: "min-h-11 rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white"
+    className: "min-h-11 rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white hover:bg-emerald-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, tr('rally_hp', 'Rally +3 HP')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => adjustEncounter('shield', 2),
-    className: "min-h-11 rounded-lg bg-blue-700 px-3 text-xs font-bold text-white"
+    className: "min-h-11 rounded-lg bg-blue-700 px-3 text-xs font-bold text-white hover:bg-blue-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, tr('grant_shield', 'Grant +2 shield')), quest.phase === 'battle' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => adjustEncounter('enemy', -3),
-    className: "min-h-11 rounded-lg bg-purple-700 px-3 text-xs font-bold text-white"
+    className: "min-h-11 rounded-lg bg-purple-700 px-3 text-xs font-bold text-white hover:bg-purple-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, tr('soften_enemy', 'Soften enemy −3')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => adjustEncounter('enemy', 3),
-    className: "min-h-11 rounded-lg border border-purple-300 bg-white px-3 text-xs font-bold text-purple-800"
+    className: "min-h-11 rounded-lg border border-purple-300 bg-white px-3 text-xs font-bold text-purple-800 hover:bg-purple-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, tr('harden_enemy', 'Harden enemy +3'))))), quest.phase === 'explore' && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 space-y-2"
   }, /*#__PURE__*/React.createElement("p", {
@@ -665,24 +718,41 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
   }, tr('select_connected_room', 'Select a connected room or honor the leading vote.')), voteCounts.map(({
     room,
     count
-  }) => /*#__PURE__*/React.createElement("button", {
-    key: room.id,
-    type: "button",
-    disabled: busy || escapeState.isPaused || !canTravelTo(room),
-    onClick: () => resolveTravel(room.id),
-    className: "flex min-h-11 w-full items-center justify-between rounded-lg border border-indigo-200 px-3 text-sm font-bold text-indigo-800 hover:bg-indigo-50"
-  }, /*#__PURE__*/React.createElement("span", null, canTravelTo(room) ? room.emoji : '🔒', " ", room.name, !canTravelTo(room) && /*#__PURE__*/React.createElement("span", {
-    className: "block text-xs font-normal"
-  }, tr('travel_gate_locked', 'The Mastery Gate needs {count} more concept sigil(s).', {
-    count: neededSigils - (quest.sigils || []).length
-  }))), /*#__PURE__*/React.createElement("span", null, tr(count === 1 ? 'vote_count_one' : 'vote_count_many', count === 1 ? '{count} vote' : '{count} votes', {
-    count
-  }))))), quest.phase === 'battle' && /*#__PURE__*/React.createElement("div", {
+  }) => {
+    const isLeading = maxVoteCount > 0 && count === maxVoteCount && canTravelTo(room);
+    return /*#__PURE__*/React.createElement("button", {
+      key: room.id,
+      type: "button",
+      disabled: busy || escapeState.isPaused || !canTravelTo(room),
+      onClick: () => resolveTravel(room.id),
+      className: `flex min-h-11 w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-sm font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:opacity-60 ${isLeading ? 'border-indigo-500 bg-indigo-50 text-indigo-950 hover:bg-indigo-100' : 'border-indigo-200 bg-white text-indigo-800 hover:bg-indigo-50'}`
+    }, /*#__PURE__*/React.createElement("span", null, canTravelTo(room) ? room.emoji : '🔒', " ", room.name, !canTravelTo(room) && /*#__PURE__*/React.createElement("span", {
+      className: "block text-xs font-normal"
+    }, tr('travel_gate_locked', 'The Mastery Gate needs {count} more concept sigil(s).', {
+      count: neededSigils - (quest.sigils || []).length
+    }))), /*#__PURE__*/React.createElement("span", {
+      className: "inline-flex items-center gap-1.5 shrink-0"
+    }, isLeading && /*#__PURE__*/React.createElement("span", {
+      "data-testid": "cq-leading-vote",
+      className: "rounded-full bg-indigo-700 px-2 py-0.5 text-xs font-bold text-white"
+    }, tr('leading_vote', 'Leading')), /*#__PURE__*/React.createElement("span", null, tr(count === 1 ? 'vote_count_one' : 'vote_count_many', count === 1 ? '{count} vote' : '{count} votes', {
+      count
+    }))));
+  })), quest.phase === 'battle' && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 rounded-lg bg-fuchsia-50 p-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "font-bold text-fuchsia-900"
-  }, enemy?.emoji, " ", enemy?.name, ": ", enemy?.hp, "/", enemy?.maxHp, " HP"), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-sm text-slate-700"
+  }, enemy?.emoji, " ", enemy?.name, ": ", enemy?.hp, "/", enemy?.maxHp, " HP"), enemy && enemy.maxHp > 0 && /*#__PURE__*/React.createElement("div", {
+    "data-testid": "cq-enemy-hp-bar",
+    "aria-hidden": "true",
+    className: "mt-1.5 h-2 w-full overflow-hidden rounded-full bg-fuchsia-200"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "block h-full rounded-full bg-fuchsia-700 transition-all motion-reduce:transition-none",
+    style: {
+      width: `${enemyHpPct}%`
+    }
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1.5 text-sm text-slate-700"
   }, md.inline(currentRoom?.challenge?.prompt)), currentRoom?.kind === 'puzzle' && /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-xs font-bold text-cyan-800"
   }, tr('reasoning_lock_teacher', 'Reasoning Lock: two-thirds accuracy unlocks bonus damage.')), currentRoom?.kind === 'boss' && /*#__PURE__*/React.createElement("p", {
@@ -693,11 +763,11 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
     count: Object.values(actions).filter(action => action?.supportTargetUid).length
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    disabled: busy || escapeState.isPaused || !Object.keys(actions).length,
+    disabled: busy || escapeState.isPaused || !actionTotal,
     onClick: resolveRound,
-    className: "mt-3 min-h-11 w-full rounded-lg bg-fuchsia-700 px-3 font-bold text-white disabled:opacity-50"
-  }, tr(Object.keys(actions).length === 1 ? 'resolve_action_one' : 'resolve_actions_many', Object.keys(actions).length === 1 ? 'Resolve {count} action' : 'Resolve {count} actions', {
-    count: Object.keys(actions).length
+    className: "mt-3 min-h-11 w-full rounded-lg bg-fuchsia-700 px-3 font-bold text-white hover:bg-fuchsia-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:opacity-50"
+  }, tr(actionTotal === 1 ? 'resolve_action_one' : 'resolve_actions_many', actionTotal === 1 ? 'Resolve {count} action' : 'Resolve {count} actions', {
+    count: actionTotal
   }))), (quest.phase === 'complete' || quest.phase === 'defeat') && /*#__PURE__*/React.createElement("p", {
     className: "mt-3 rounded-lg bg-slate-100 p-3 text-sm text-slate-700"
   }, tr('story_reached', 'The story reached {phase}. You can still publish an epilogue, support item, or new encounter.', {
@@ -766,12 +836,12 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: manualDraft,
-    className: "min-h-11 flex-1 rounded-lg border border-indigo-300 px-3 text-sm font-bold text-indigo-800"
+    className: "min-h-11 flex-1 rounded-lg border border-indigo-300 px-3 text-sm font-bold text-indigo-800 hover:bg-indigo-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, tr('manual_draft', 'Manual draft')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: busy,
     onClick: aiDraft,
-    className: "min-h-11 flex-1 rounded-lg bg-indigo-700 px-3 text-sm font-bold text-white disabled:opacity-50"
+    className: "min-h-11 flex-1 rounded-lg bg-indigo-700 px-3 text-sm font-bold text-white hover:bg-indigo-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:opacity-50"
   }, busy ? tr('working', 'Working…') : tr('ai_draft', 'AI draft'))), gmDraft && /*#__PURE__*/React.createElement("div", {
     role: "group",
     className: "mt-3 rounded-lg border-2 border-amber-300 bg-amber-50 p-3",
@@ -988,12 +1058,12 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setGmDraft(null),
-    className: "min-h-11 flex-1 rounded-lg bg-slate-200 font-bold text-slate-700"
+    className: "min-h-11 flex-1 rounded-lg bg-slate-200 font-bold text-slate-700 hover:bg-slate-300 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, tr('discard', 'Discard')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: draftScope !== latestScopeRef.current,
     onClick: publishDraft,
-    className: "min-h-11 flex-1 rounded-lg bg-emerald-700 font-bold text-white"
+    className: "min-h-11 flex-1 rounded-lg bg-emerald-700 font-bold text-white hover:bg-emerald-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:opacity-50"
   }, tr('publish_to_class', 'Publish to class')))))), /*#__PURE__*/React.createElement("p", {
     className: "mt-4 text-sm font-bold text-emerald-900"
   }, debrief.completeHistory === false ? tr('available_evidence', 'Learning evidence · {count} available saved rounds', {
@@ -1120,7 +1190,7 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
     type: "button",
     disabled: syncing,
     onClick: () => setEndConfirm(false),
-    className: "min-h-11 flex-1 rounded-lg bg-slate-200 px-3 font-bold text-slate-900"
+    className: "min-h-11 flex-1 rounded-lg bg-slate-200 px-3 font-bold text-slate-900 hover:bg-slate-300 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, tr('keep_playing', 'Keep playing')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: syncing,
@@ -1131,7 +1201,7 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
         'escapeRoomState.isGameOver': false
       })) && mountedRef.current) setEndConfirm(false);
     },
-    className: "min-h-11 flex-1 rounded-lg bg-red-700 px-3 font-bold text-white"
+    className: "min-h-11 flex-1 rounded-lg bg-red-700 px-3 font-bold text-white hover:bg-red-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1"
   }, tr('end_quest', 'End quest'))))));
 });
   window.AlloModules = window.AlloModules || {};

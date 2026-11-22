@@ -99,8 +99,20 @@ function VideoRefPlayerOverlay({
   addToast,
   t
 }) {
-  const MonitorPlay = window.MonitorPlay || (() => null);
-  const ExternalLink = window.ExternalLink || (() => null);
+  const _w = typeof window !== 'undefined' ? window : {};
+  const _icons = _w.AlloIcons || {};
+  const MonitorPlay = _icons.MonitorPlay || _w.MonitorPlay || (() => null);
+  const ExternalLink = _icons.ExternalLink || _w.ExternalLink || (() => null);
+  const tr = k => typeof t === 'function' ? t(k) : '';
+  const notify = typeof addToast === 'function' ? addToast : () => {};
+  const isGlobalMuted = () => {
+    if (typeof window === 'undefined') return false;
+    try {
+      if (window.__alloMuted === true || window._alloGlobalMute === true || window._alloGlobalMuted === true) return true;
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+    } catch (_) {}
+    return false;
+  };
   const ref = item && item.data || {};
   const [videoUrl, setVideoUrl] = React.useState(null);
   const [vttUrl, setVttUrl] = React.useState(null);
@@ -111,6 +123,7 @@ function VideoRefPlayerOverlay({
   const [busy, setBusy] = React.useState(false);
   const [playbackRate, setPlaybackRate] = React.useState(1);
   const urlsRef = React.useRef([]);
+  const helperPollTimerRef = React.useRef(null);
   const mountedRef = React.useRef(true);
   const rootRef = React.useRef(null);
   const videoRef = React.useRef(null);
@@ -167,7 +180,8 @@ function VideoRefPlayerOverlay({
     const body = document.body;
     const scrollLock = typeof window !== 'undefined' ? window.__alloScrollLockState || (window.__alloScrollLockState = {
       count: 0,
-      prev: ''
+      prev: '',
+      overflow: ''
     }) : null;
     let scrollLocked = false;
     try {
@@ -175,11 +189,12 @@ function VideoRefPlayerOverlay({
         scrollLocked = true;
         if (++scrollLock.count === 1) {
           scrollLock.prev = body.style.overflow;
+          scrollLock.overflow = scrollLock.prev;
           body.style.overflow = 'hidden';
         }
       }
     } catch (_) {}
-    const getFocusable = () => Array.from(dialog.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(el => {
+    const getFocusable = () => Array.from(dialog.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, video[controls], audio[controls], [tabindex]:not([tabindex="-1"])')).filter(el => {
       if (!el || el.hidden || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       let ancestor = el.parentElement;
       while (ancestor && ancestor !== dialog) {
@@ -242,7 +257,7 @@ function VideoRefPlayerOverlay({
       try {
         if (scrollLocked && body && scrollLock) {
           scrollLock.count = Math.max(0, scrollLock.count - 1);
-          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev ?? scrollLock.overflow ?? '';
         }
       } catch (_) {}
       isolated.forEach(({
@@ -272,12 +287,26 @@ function VideoRefPlayerOverlay({
           } catch (_) {}
         }
       });
-      const wasTopTrap = !trapStack || trapStack[trapStack.length - 1] === trap;
+      let wasTopTrap = true;
       if (trapStack) {
+        for (let i = trapStack.length - 1; i >= 0 && trapStack[i] !== trap; i--) {
+          const other = trapStack[i] && trapStack[i].root;
+          if (!other || !(other === dialog || typeof other.contains === 'function' && (other.contains(dialog) || dialog.contains(other)))) {
+            wasTopTrap = false;
+            break;
+          }
+        }
         const idx = trapStack.lastIndexOf(trap);
         if (idx >= 0) trapStack.splice(idx, 1);
       }
       mountedRef.current = false;
+      if (helperPollTimerRef.current) {
+        clearInterval(helperPollTimerRef.current);
+        helperPollTimerRef.current = null;
+      }
+      try {
+        videoRef.current?.pause();
+      } catch (_) {}
       revokeObjectUrls(urlsRef.current.splice(0));
       if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
         try {
@@ -293,6 +322,7 @@ function VideoRefPlayerOverlay({
     picker.tabIndex = 0;
     picker.setAttribute('role', 'button');
     const activate = event => {
+      if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
       if (event.key !== 'Enter' && event.key !== ' ') return;
       event.preventDefault();
       try {
@@ -312,16 +342,29 @@ function VideoRefPlayerOverlay({
       return;
     }
     let waited = 0;
+    if (helperPollTimerRef.current) {
+      clearInterval(helperPollTimerRef.current);
+      helperPollTimerRef.current = null;
+    }
     const timer = setInterval(() => {
+      if (!mountedRef.current) {
+        clearInterval(timer);
+        if (helperPollTimerRef.current === timer) helperPollTimerRef.current = null;
+        reject(new Error('Video player closed'));
+        return;
+      }
       const moduleApi = window.AlloModules && window.AlloModules.VideoStudio;
       if (moduleApi && typeof moduleApi.vsReadZip === 'function') {
         clearInterval(timer);
+        if (helperPollTimerRef.current === timer) helperPollTimerRef.current = null;
         resolve(moduleApi);
       } else if ((waited += 200) > 12000) {
         clearInterval(timer);
+        if (helperPollTimerRef.current === timer) helperPollTimerRef.current = null;
         reject(new Error('Video Studio helpers did not load'));
       }
     }, 200);
+    helperPollTimerRef.current = timer;
   });
   const handleFile = async file => {
     if (!file || busy) return;
@@ -335,8 +378,8 @@ function VideoRefPlayerOverlay({
       let videoName = file.name;
       if (/\.allopack$/i.test(file.name)) {
         const moduleApi = await loadStudioHelpers();
-        const entries = moduleApi.vsReadZip(bytes) || [];
-        const video = entries.filter(entry => /\.(webm|mp4|mov|m4v|mkv)$/i.test(entry.name)).sort((a, b) => b.data.length - a.data.length)[0];
+        const entries = (moduleApi.vsReadZip(bytes) || []).filter(entry => entry && typeof entry === 'object' && entry.data && typeof entry.data.length === 'number');
+        const video = entries.filter(entry => /\.(webm|mp4|mov|m4v|mkv)$/i.test(String(entry.name || ''))).sort((a, b) => b.data.length - a.data.length)[0];
         if (!video) throw new Error('no video file inside this .allopack');
         const vttEntries = entries.filter(entry => /\.vtt$/i.test(String(entry.name || '')));
         const vtt = vttEntries.find(entry => /(?:caption|subtitle)/i.test(String(entry.name || ''))) || vttEntries.find(entry => !/(?:description|visual)/i.test(String(entry.name || '')));
@@ -384,13 +427,15 @@ function VideoRefPlayerOverlay({
       setActiveDescriptionText('');
       setVerify(verdict);
       if (descriptionsInvalid) {
-        addToast(t('video_ref.descriptions_ignored') || 'Video opened, but its visual descriptions were ignored because that file was not valid.', 'warning');
+        notify(tr('video_ref.descriptions_ignored') || 'Video opened, but its visual descriptions were ignored because that file was not valid.', 'warning');
       }
     } catch (error) {
       revokeObjectUrls(createdUrls);
-      addToast((t('video_ref.attach_failed') || 'Could not open that file: ') + String(error && error.message || error).slice(0, 120), 'error');
+      if (mountedRef.current) {
+        notify((tr('video_ref.attach_failed') || 'Could not open that file: ') + String(error && error.message || error).slice(0, 120), 'error');
+      }
     }
-    setBusy(false);
+    if (mountedRef.current) setBusy(false);
   };
   const syncActiveDescription = event => {
     const currentTime = Number(event && event.currentTarget && event.currentTarget.currentTime);
@@ -433,33 +478,64 @@ function VideoRefPlayerOverlay({
     if (!video) return undefined;
     videoRef.current = video;
     video.tabIndex = 0;
+    try {
+      if (isGlobalMuted()) video.muted = true;
+    } catch (_) {}
+    const onMuteChanged = () => {
+      try {
+        if (isGlobalMuted()) video.muted = true;
+      } catch (_) {}
+    };
+    if (typeof window !== 'undefined') window.addEventListener('alloflow-mute-changed', onMuteChanged);
     const sync = () => syncActiveDescription({
       currentTarget: video
     });
     ['timeupdate', 'seeked', 'loadedmetadata'].forEach(name => video.addEventListener(name, sync));
     const clear = () => setActiveDescriptionText('');
     video.addEventListener('ended', clear);
-    video.setAttribute('aria-label', String(ref.title || item && item.title || t('video_ref.player_title') || 'Video reference'));
+    video.setAttribute('aria-label', String(ref.title || item && item.title || tr('video_ref.player_title') || 'Video reference'));
     if (visualDescriptions.length) video.setAttribute('aria-describedby', 'video-ref-description-summary');else video.removeAttribute('aria-describedby');
     let track = null;
     if (descriptionVttUrl) {
       track = document.createElement('track');
       track.kind = 'descriptions';
       track.src = descriptionVttUrl;
-      track.label = t('video_ref.descriptions_track') || 'Visual descriptions';
+      track.label = tr('video_ref.descriptions_track') || 'Visual descriptions';
       video.appendChild(track);
     }
     return () => {
+      if (typeof window !== 'undefined') window.removeEventListener('alloflow-mute-changed', onMuteChanged);
       ['timeupdate', 'seeked', 'loadedmetadata'].forEach(name => video.removeEventListener(name, sync));
       video.removeEventListener('ended', clear);
+      try {
+        video.pause();
+      } catch (_) {}
       if (track && track.parentNode === video) video.removeChild(track);
       if (videoRef.current === video) videoRef.current = null;
     };
   }, [videoUrl, descriptionVttUrl, visualDescriptions]);
-  const badges = [ref.hasCaptions && (t('video_ref.badge_captions') || 'captions'), ref.hasChapters && (t('video_ref.badge_chapters') || 'chapters'), ref.hasVisualDescriptions && (t('video_ref.badge_descriptions') || 'visual descriptions'), ref.hasLocalizations && (t('video_ref.badge_localizations') || 'localizations')].filter(Boolean).join(' · ');
+  const badges = [ref.hasCaptions && (tr('video_ref.badge_captions') || 'captions'), ref.hasChapters && (tr('video_ref.badge_chapters') || 'chapters'), ref.hasVisualDescriptions && (tr('video_ref.badge_descriptions') || 'visual descriptions'), ref.hasLocalizations && (tr('video_ref.badge_localizations') || 'localizations')].filter(Boolean).join(' · ');
   const _totalSec = Math.floor(Math.max(0, Number(ref.durationSec) || 0));
   const durationLabel = `${Math.floor(_totalSec / 60)}:${String(_totalSec % 60).padStart(2, '0')}`;
-  const hostedUrl = typeof ref.hostedUrl === 'string' && /^https?:\/\//i.test(ref.hostedUrl.trim()) ? ref.hostedUrl.trim() : '';
+  const hostedUrl = (() => {
+    if (typeof ref.hostedUrl !== 'string') return '';
+    const raw = ref.hostedUrl.trim();
+    if (!raw) return '';
+    try {
+      const parsed = new URL(raw);
+      if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && !parsed.username && !parsed.password && parsed.hostname) {
+        return parsed.href;
+      }
+    } catch (_) {}
+    return '';
+  })();
+  const safeThumb = (() => {
+    if (typeof ref.thumb !== 'string') return '';
+    const trimmed = ref.thumb.trim();
+    if (/^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(trimmed)) return trimmed;
+    if (/^blob:/i.test(trimmed)) return trimmed;
+    return '';
+  })();
   const safeTitle = String(ref.title || item && item.title || 'Teacher video');
   return /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-[210] flex items-center justify-center p-4",
@@ -489,7 +565,7 @@ function VideoRefPlayerOverlay({
     onClick: onClose,
     "data-alloflow-close-on-escape": "true",
     className: "min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 text-2xl leading-none px-2 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600",
-    "aria-label": t('video_ref.close') || 'Close video card'
+    "aria-label": tr('video_ref.close') || 'Close video card'
   }, "\xD7")), /*#__PURE__*/React.createElement("div", {
     className: "p-5 overflow-y-auto flex-1"
   }, /*#__PURE__*/React.createElement("p", {
@@ -509,40 +585,40 @@ function VideoRefPlayerOverlay({
     kind: "captions",
     src: vttUrl,
     default: true,
-    label: t('video_ref.captions_track') || 'Captions'
+    label: tr('video_ref.captions_track') || 'Captions'
   })), /*#__PURE__*/React.createElement("div", {
     "data-video-ref-controls": "true",
     className: "mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center gap-1.5",
     role: "group",
-    "aria-label": t('video_ref.skip_controls_group') || 'Skip playback time'
+    "aria-label": tr('video_ref.skip_controls_group') || 'Skip playback time'
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-video-ref-rewind": "true",
     onClick: () => jumpVideoSeconds(-10),
-    "aria-label": t('video_ref.rewind_10s_aria') || 'Rewind 10 seconds',
+    "aria-label": tr('video_ref.rewind_10s_aria') || 'Rewind 10 seconds',
     className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, "\u21BA 10s"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-video-ref-forward": "true",
     onClick: () => jumpVideoSeconds(10),
-    "aria-label": t('video_ref.forward_10s_aria') || 'Skip forward 10 seconds',
+    "aria-label": tr('video_ref.forward_10s_aria') || 'Skip forward 10 seconds',
     className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, "10s \u21BB")), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center gap-1.5",
     role: "group",
-    "aria-label": t('video_ref.playback_speed_group') || 'Playback speed'
+    "aria-label": tr('video_ref.playback_speed_group') || 'Playback speed'
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-semibold text-slate-700"
-  }, t('video_ref.speed_label') || 'Speed:'), [0.75, 1, 1.25, 1.5].map(rate => {
+  }, tr('video_ref.speed_label') || 'Speed:'), [0.75, 1, 1.25, 1.5].map(rate => {
     const active = playbackRate === rate;
     return /*#__PURE__*/React.createElement("button", {
       key: rate,
       type: "button",
       "data-video-ref-speed": String(rate),
       "aria-pressed": active,
-      "aria-label": (t('video_ref.speed_aria') || 'Playback speed {rate}x').replace('{rate}', String(rate)),
+      "aria-label": (tr('video_ref.speed_aria') || 'Playback speed {rate}x').replace('{rate}', String(rate)),
       onClick: () => setPlaybackRate(rate),
       className: 'min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (active ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100')
     }, rate, "\xD7");
@@ -552,17 +628,17 @@ function VideoRefPlayerOverlay({
   }, /*#__PURE__*/React.createElement("h3", {
     id: "video-ref-visual-descriptions-title",
     className: "text-sm font-bold text-violet-950"
-  }, t('video_ref.descriptions_title') || 'Reviewed visual descriptions'), /*#__PURE__*/React.createElement("p", {
+  }, tr('video_ref.descriptions_title') || 'Reviewed visual descriptions'), /*#__PURE__*/React.createElement("p", {
     id: "video-ref-description-summary",
     className: "text-xs text-violet-800 mt-1"
-  }, t('video_ref.descriptions_summary') || 'Descriptions are separate from captions. They appear at their reviewed timestamps; choose a time to move the video there.'), /*#__PURE__*/React.createElement("div", {
+  }, tr('video_ref.descriptions_summary') || 'Descriptions are separate from captions. They appear at their reviewed timestamps; choose a time to move the video there.'), /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
     className: activeDescriptionText ? 'mt-2 rounded-lg bg-white px-3 py-2 text-sm text-slate-800' : 'sr-only'
   }, activeDescriptionText && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
     className: "sr-only"
-  }, t('video_ref.current_description') || 'Current visual description: '), activeDescriptionText)), /*#__PURE__*/React.createElement("ol", {
+  }, tr('video_ref.current_description') || 'Current visual description: '), activeDescriptionText)), /*#__PURE__*/React.createElement("ol", {
     className: "mt-2 space-y-1"
   }, visualDescriptions.map((entry, index) => /*#__PURE__*/React.createElement("li", {
     key: entry.start + '-' + entry.end + '-' + index
@@ -577,19 +653,22 @@ function VideoRefPlayerOverlay({
     className: "ml-2"
   }, entry.description)))))), verify === 'match' && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-emerald-700 mt-2"
-  }, "\u2713 ", t('video_ref.verified') || 'File verified — matches the checksum saved with this card.'), verify === 'mismatch' && /*#__PURE__*/React.createElement("p", {
+  }, "\u2713 ", tr('video_ref.verified') || 'File verified — matches the checksum saved with this card.'), verify === 'mismatch' && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-amber-700 mt-2"
-  }, "\u26A0 ", t('video_ref.mismatch') || 'This file does not match the saved checksum. It may be a different export of the same lesson — check before sharing.')) : ref.thumb && /*#__PURE__*/React.createElement("img", {
-    src: ref.thumb,
-    alt: t('video_ref.thumb_alt') || 'Video thumbnail',
+  }, "\u26A0 ", tr('video_ref.mismatch') || 'This file does not match the saved checksum. It may be a different export of the same lesson — check before sharing.')) : safeThumb && /*#__PURE__*/React.createElement("img", {
+    src: safeThumb,
+    alt: tr('video_ref.thumb_alt') || 'Video thumbnail',
     className: "w-full max-h-64 object-contain rounded-xl bg-slate-900 mb-3"
   }), hostedUrl && /*#__PURE__*/React.createElement("a", {
     href: hostedUrl,
     target: "_blank",
     rel: "noopener noreferrer",
-    className: "inline-flex items-center gap-2 min-h-11 px-4 py-2 rounded-lg bg-violet-700 text-white text-sm font-semibold hover:bg-violet-600 mb-3"
-  }, "\u25B6 ", t('video_ref.watch_hosted') || 'Watch hosted video', " ", /*#__PURE__*/React.createElement(ExternalLink, {
-    size: 14
+    className: "inline-flex items-center gap-2 min-h-11 px-4 py-2 rounded-lg bg-violet-700 text-white text-sm font-semibold hover:bg-violet-600 mb-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "\u25B6"), " ", tr('video_ref.watch_hosted') || 'Watch hosted video', " ", /*#__PURE__*/React.createElement(ExternalLink, {
+    size: 14,
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("div", {
     className: "border-2 border-dashed border-slate-300 rounded-xl p-4 text-center text-sm text-slate-600",
     onDragOver: event => event.preventDefault(),
@@ -599,9 +678,9 @@ function VideoRefPlayerOverlay({
     }
   }, /*#__PURE__*/React.createElement("p", {
     className: "mb-2"
-  }, busy ? t('video_ref.attach_busy') || 'Opening the file…' : t('video_ref.attach_hint') || 'Have the downloaded file? Drop the .webm/.mp4 or .allopack here to play it on this device — nothing is uploaded.'), /*#__PURE__*/React.createElement("label", {
-    className: "inline-flex items-center min-h-11 px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 cursor-pointer"
-  }, t('video_ref.attach_btn') || 'Choose file…', /*#__PURE__*/React.createElement("input", {
+  }, busy ? tr('video_ref.attach_busy') || 'Opening the file…' : tr('video_ref.attach_hint') || 'Have the downloaded file? Drop the .webm/.mp4 or .allopack here to play it on this device — nothing is uploaded.'), /*#__PURE__*/React.createElement("label", {
+    className: "inline-flex items-center min-h-11 px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, tr('video_ref.attach_btn') || 'Choose file…', /*#__PURE__*/React.createElement("input", {
     type: "file",
     accept: "video/*,.webm,.mp4,.mov,.m4v,.mkv,.allopack",
     hidden: true,
@@ -611,7 +690,7 @@ function VideoRefPlayerOverlay({
     }
   }))), !hostedUrl && !videoUrl && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-3"
-  }, t('video_ref.no_hosted_hint') || 'Tip: in Video Studio’s gallery you can paste a hosted link (YouTube/Drive/LMS) so colleagues can watch without the file.'))));
+  }, tr('video_ref.no_hosted_hint') || 'Tip: in Video Studio’s gallery you can paste a hosted link (YouTube/Drive/LMS) so colleagues can watch without the file.'))));
 }
 
   window.AlloModules = window.AlloModules || {};

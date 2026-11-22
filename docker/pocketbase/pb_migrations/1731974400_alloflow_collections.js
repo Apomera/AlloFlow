@@ -113,11 +113,23 @@ migrate((db) => {
     }
   ];
 
+  const createV23Field = (f) => {
+    if (f.type === "json" && typeof JSONField === "function") return new JSONField(f);
+    if (f.type === "text" && typeof TextField === "function") return new TextField(f);
+    if (typeof Field === "function") return new Field(f);
+    return f;
+  };
+
+  const extractIndexName = (sql) => {
+    const m = String(sql || "").match(/INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?[`"'\[]?([a-z0-9_]+)[`"'\]]?/i);
+    return m ? m[1].toLowerCase() : String(sql || "").trim().toLowerCase();
+  };
+
   const ensureFieldsAndIndexes = (collection, def) => {
     if (isV23 && collection.fields && typeof collection.fields.getByName === "function") {
       for (const f of def.fields) {
         if (!collection.fields.getByName(f.name)) {
-          collection.fields.add(new Field(f));
+          collection.fields.add(createV23Field(f));
         }
       }
     } else if (collection.schema && typeof collection.schema.getFieldByName === "function") {
@@ -129,9 +141,12 @@ migrate((db) => {
     }
     if (Array.isArray(def.indexes)) {
       const existingIndexes = Array.isArray(collection.indexes) ? collection.indexes : [];
+      const existingNames = new Set(existingIndexes.map(extractIndexName));
       for (const idx of def.indexes) {
-        if (!existingIndexes.includes(idx)) {
+        const idxName = extractIndexName(idx);
+        if (!existingNames.has(idxName)) {
           existingIndexes.push(idx);
+          existingNames.add(idxName);
         }
       }
       collection.indexes = existingIndexes;

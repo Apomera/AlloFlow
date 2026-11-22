@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-const fs=require('fs'),path=require('path'),banks=require('./school_librarian_5312/item_content.cjs'),root=path.resolve(__dirname,'..');
+const fs=require('fs'),path=require('path'),{applyChoiceOverrides}=require('./school_librarian_5312/choice_overrides/index.cjs'),banks=applyChoiceOverrides(require('./school_librarian_5312/item_content.cjs')),root=path.resolve(__dirname,'..');
 const refs=[...new Set(banks.flatMap(bank=>bank.references))];
 const chapterPlan=[
   ['program-administration','Program Vision, Needs Assessment, and Improvement'],['program-administration','Operations, Budget, Policy, and Evaluation'],

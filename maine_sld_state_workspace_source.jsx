@@ -67,10 +67,18 @@ function MaineSldStateRequirements(props) {
   const deferFocus = (action, expectedState) => { const selectedState = expectedState !== undefined ? expectedState : state, origin = document.activeElement; window.requestAnimationFrame(() => { if (!aliveRef.current || !contextRef.current.visible || !contextRef.current.open || contextRef.current.state !== selectedState) return; if (document.activeElement !== origin && !(origin && !origin.isConnected && document.activeElement === document.body)) return; action(); }); };
   const focusTitle = () => deferFocus(() => { if (titleRef.current && titleRef.current.isConnected && !titleRef.current.closest('[hidden], [inert], [aria-hidden="true"], details:not([open])')) { titleRef.current.scrollIntoView({ block: 'center' }); titleRef.current.focus({ preventScroll: true }); } });
   const runConfirmed = (message, opts, onConfirmed, onCancelled) => {
+    const startState = state;
     if (typeof window !== 'undefined' && window.AlloFlowUX && typeof window.AlloFlowUX.confirm === 'function') {
       window.AlloFlowUX.confirm(message, opts)
-        .then(ok => { if (ok) onConfirmed(); else if (onCancelled) onCancelled(); })
-        .catch(() => { if (onCancelled) onCancelled(); });
+        .then(ok => {
+          if (!aliveRef.current || !contextRef.current.visible || !contextRef.current.open || contextRef.current.state !== startState) return;
+          if (ok) onConfirmed();
+          else if (onCancelled) onCancelled();
+        })
+        .catch(() => {
+          if (!aliveRef.current) return;
+          if (onCancelled) onCancelled();
+        });
       return;
     }
     const ok = typeof window !== 'undefined' && typeof window.confirm === 'function' ? !!window.confirm(message) : false;
@@ -171,10 +179,11 @@ function MaineSldStateRequirements(props) {
     withReplaceDraftGuard(() => { replaceDraft(source, false); setStatus('Editing your saved reference. Save reference to keep changes.'); });
   };
   const removeReference = source => {
+    const selectedState = state;
     const performRemove = () => {
       retire();
       try {
-        const next = MState.removeSource(workspace, state, source.id); setWorkspace(next);
+        setWorkspace(prev => MState.removeSource(prev, selectedState, source.id));
         if (draft.id === source.id) { setDraft(MState.emptySource()); setDraftDirty(false); }
         setError(''); setStatus('Reference removed. Your practice worksheet is unchanged.');
         deferFocus(() => { if (newDraftRef.current) newDraftRef.current.focus(); });

@@ -226,10 +226,10 @@
           "id": "core5752-ch-01-check-01",
           "prompt": "Read the original passage: \"After the town converted an unused rail corridor into a walking path, nearby shops reported more weekend customers. The path did not solve every traffic problem, but residents gained a safe route between two neighborhoods.\" Which choice best states the main idea?",
           "choices": [
-            "A practical community resource produced useful benefits while retaining clear limits.",
-            "The project completely eliminated the community problem.",
-            "Businesses opposed every change to public space.",
-            "Residents used the resource only for entertainment."
+            "A practical community resource produced real benefits while retaining clear limits.",
+            "The new public initiative resolved the community's underlying problem across every setting.",
+            "Local merchants and staff objected to expanding community access beyond traditional services.",
+            "Community members used the newly offered resource primarily for leisure rather than daily needs."
           ],
           "answerIndex": 0,
           "rationale": "The best main idea captures the resource, its demonstrated benefit, and the qualification without exaggerating a detail.",
@@ -245,10 +245,10 @@
           "id": "core5752-ch-01-check-02",
           "prompt": "Read the original passage: \"Mira expected the seedlings beneath the blue lamp to grow fastest. Her measurements showed that those beneath the white lamp grew slightly taller, so she repeated the trial before revising her claim.\" Which statement best describes the researcher?",
           "choices": [
-            "The researcher ignores results that conflict with the prediction.",
-            "The researcher lets repeated observations influence the conclusion.",
-            "The researcher assumes one measurement proves a universal rule.",
-            "The researcher changes the measurements to protect the prediction."
+            "The researcher discounts measurements that fail to support the opening prediction.",
+            "The researcher lets replicated observations guide the final conclusion.",
+            "The researcher treats the earliest single trial as proof of a universal pattern.",
+            "The researcher alters experimental notes to make results match the initial guess."
           ],
           "answerIndex": 1,
           "rationale": "The passage directly shows an initial prediction followed by repeated measurement and a conclusion responsive to the evidence.",
@@ -264,10 +264,10 @@
           "id": "core5752-ch-01-check-03",
           "prompt": "Read the original passage: \"The museum label originally described only the finished canoe. A revised label also identified the builders, materials, community uses, and the source of the museum collection.\" Which detail most clearly shows the revision added context?",
           "choices": [
-            "The institution kept every label the same length.",
-            "The collection contains no unfinished work.",
-            "The revision identifies creators, use or setting, and provenance rather than only the object or date.",
-            "Visitors are required to memorize the catalog."
+            "The staff kept every descriptive entry at the exact same word count as the older display.",
+            "The revised catalog confirms that every archived item entered the collection in finished form.",
+            "The updated text adds creators, setting or use, and provenance beyond the bare object or date.",
+            "The institution now asks visitors to review the full acquisition ledger before viewing displays."
           ],
           "answerIndex": 2,
           "rationale": "The supporting detail is the explicit addition of creator, context, and source information; the other choices are absent or contradicted.",
@@ -283,10 +283,10 @@
           "id": "core5752-ch-01-check-04",
           "prompt": "Read the original passage: \"During the first rehearsal, the quartet repeatedly lost the beat at one transition. They practiced the two measures before and after that point, then restored the transition to the full piece.\" Why did the group isolate a small section?",
           "choices": [
-            "To avoid ever completing the full task.",
-            "To prove that every other section was flawless.",
-            "To replace practice with discussion.",
-            "To diagnose and repair a specific weakness before checking it within the whole performance."
+            "To postpone returning to the full performance or workflow until a later project cycle.",
+            "To confirm that every surrounding step in the sequence already worked without flaw.",
+            "To replace hands-on testing and rehearsal with extended planning meetings among members.",
+            "To diagnose and fix a specific trouble spot prior to rechecking the full sequence."
           ],
           "answerIndex": 3,
           "rationale": "The sequence identifies a problem area, isolates it for focused work, and then reintegrates it into the complete task.",
@@ -302,10 +302,10 @@
           "id": "core5752-ch-01-check-05",
           "prompt": "Read the original passage: \"A neighborhood survey found strong support for more trees, but residents disagreed about species and placement. The planning group therefore scheduled a site walk before proposing locations.\" What problem does the group still need to resolve?",
           "choices": [
-            "How to implement a broadly supported goal in specific locations and ways.",
-            "Whether anyone supports the general goal.",
-            "Whether all evidence should be discarded.",
-            "Whether the group has authority to discuss options."
+            "How to carry out a broadly supported goal across specific sites and details.",
+            "Whether enough residents or faculty members actually favor the overarching goal.",
+            "Whether the preliminary survey or faculty feedback should be set aside entirely.",
+            "Whether the planning committee holds formal authority to gather local input."
           ],
           "answerIndex": 0,
           "rationale": "Support for the overall goal is stated; disagreement concerns implementation details, which explains the next evidence-gathering step.",
@@ -416,12 +416,12 @@
           "id": "core5752-ch-02-check-01",
           "prompt": "Read the original passage: \"The council first mapped flooded intersections. Next, engineers compared drainage capacity. Finally, the council ranked repairs by risk and cost.\" How is the passage organized?",
           "choices": [
-            "As a sequence of evidence-gathering and decision steps.",
-            "As a debate between two unnamed opponents.",
-            "As a description with no time or logic order.",
-            "As a fictional flashback."
+            "As an anecdotal flashback revisiting an earlier crisis before explaining current policy.",
+            "As a chronological sequence moving from evidence gathering to prioritized action.",
+            "As an adversarial debate comparing two unnamed speakers with opposing philosophies.",
+            "As a spatial description of a facility presented without chronological or logical order."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Transition words and successive actions establish a procedural sequence from evidence to decision. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -435,12 +435,12 @@
           "id": "core5752-ch-02-check-02",
           "prompt": "Read the original passage: \"The proposal is ambitious, perhaps too ambitious for the current budget, yet its pilot results deserve careful attention.\" Which description best captures the author's tone?",
           "choices": [
-            "Completely dismissive and unwilling to consider evidence.",
-            "Cautiously receptive: the author notes reservations while acknowledging meaningful evidence.",
-            "Uncritically enthusiastic about every feature.",
-            "Indifferent to both costs and results."
+            "Detached and indifferent to both the practical drawbacks and the measured gains.",
+            "Flatly dismissive and unwilling to weigh the reported pilot or delivery outcomes.",
+            "Cautiously receptive: noting clear reservations while respecting meaningful evidence.",
+            "Uncritically enthusiastic about every operational detail of the proposed change."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "The qualifying language expresses concern, while the final clause signals openness based on evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -454,12 +454,12 @@
           "id": "core5752-ch-02-check-03",
           "prompt": "Read the original passage: \"To keep the seedlings from becoming leggy, the gardener moved them closer to the lamp. Here, \"leggy\" means tall and weak from insufficient light.\" What does the quoted word mean in context?",
           "choices": [
-            "Physically narrow in every possible sense.",
-            "Deliberately humorous.",
-            "Insufficiently developed for the purpose described.",
-            "Legally prohibited."
+            "Formally disqualified under institutional policy or legal guidelines.",
+            "Physically narrow or slender in its literal geometric dimensions.",
+            "Intentionally lighthearted or playful in its rhetorical delivery.",
+            "Insufficiently developed or substantiated for the intended purpose."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "The surrounding explanation supplies the contextual meaning: development is inadequate for the stated purpose.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -473,12 +473,12 @@
           "id": "core5752-ch-02-check-04",
           "prompt": "Read the original passage: \"Unlike the northern route, which crosses steep terrain, the river route is longer but maintains a gentle grade.\" What is the role of \"Unlike\"?",
           "choices": [
-            "It introduces a cause that guarantees an effect.",
-            "It signals that the alternatives are identical.",
-            "It marks a quotation from an expert.",
-            "It introduces a contrast between two alternatives with different tradeoffs."
+            "It introduces a contrast between two options that carry distinct tradeoffs.",
+            "It introduces a direct cause that inevitably produces the outcome described next.",
+            "It signals that the two named formats or routes function identically in practice.",
+            "It attributes the upcoming comparison to an external expert quotation or source."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "The transition explicitly frames differences and tradeoffs between the alternatives. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -492,12 +492,12 @@
           "id": "core5752-ch-02-check-05",
           "prompt": "Read the original passage: \"The author describes the battery as a bridge technology: useful for reducing fuel use now, though not the final answer for every route.\" What function does the metaphor serve?",
           "choices": [
-            "It characterizes the option as useful and temporary rather than complete or permanent.",
-            "It proves the option has no practical value.",
-            "It indicates the option is a literal structure crossing water.",
-            "It claims the option will never change."
+            "It implies that once installed, the interim solution will remain unchanged indefinitely.",
+            "It frames the option as practical in the near term without serving as a permanent fix.",
+            "It argues that the option delivers too little practical benefit to justify using it now.",
+            "It denotes a literal physical crossing or barrier built to manage local site traffic."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "The figurative term condenses the qualified relationship between immediate usefulness and long-term limits.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -606,12 +606,12 @@
           "id": "core5752-ch-03-check-01",
           "prompt": "Read the original passage: \"A survey of 80 volunteers found that those who chose morning exercise reported more energy. The report concludes that morning exercise causes higher energy for all adults.\" Which fact most weakens the conclusion?",
           "choices": [
-            "Participants selected their own group, so preexisting differences could explain the association.",
-            "The report includes a table.",
-            "Some participants completed every question.",
-            "The conclusion uses the word energy."
+            "Most respondents answered all of the survey questions before submitting their responses.",
+            "The report summarizes findings in plain everyday phrasing rather than statistical jargon.",
+            "Respondents selected their own group, so prior differences could explain the pattern.",
+            "The published summary organizes the survey percentages inside a compact reference table."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Self-selection creates a plausible alternative explanation and limits both causal and universal inference.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -625,12 +625,12 @@
           "id": "core5752-ch-03-check-02",
           "prompt": "Read the original passage: \"One editorial argues that downtown parking should be cheaper to attract shoppers. Another argues that better transit, not cheaper parking, is the stronger long-term investment.\" On what point do the texts disagree?",
           "choices": [
-            "Whether any practical goal exists.",
-            "Which strategy best addresses the shared practical goal.",
-            "Whether evidence can ever inform policy.",
-            "Whether the two texts use written language."
+            "Whether empirical evidence or budget projections can inform local planning.",
+            "Whether written editorials or internal memos are suitable formats for debate.",
+            "Whether supporting shoppers or workplace collaboration is a worthwhile goal.",
+            "Which approach best achieves the shared practical objective."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Both texts address the same broad goal but recommend different mechanisms or investments. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -644,12 +644,12 @@
           "id": "core5752-ch-03-check-03",
           "prompt": "Read the original passage: \"The chart shows library visits rising from January through April while online renewals remain nearly level.\" Which interpretation is supported?",
           "choices": [
-            "Both activities doubled each month.",
-            "The comparison activity fell to zero.",
-            "One measured activity increased while the comparison activity changed little.",
-            "The graph establishes why the increase occurred."
+            "One tracked activity climbed while the comparison activity remained steady.",
+            "The plotted lines prove which specific policy change caused the upward climb.",
+            "Both tracked activities doubled in volume during every successive month shown.",
+            "The steadier comparison activity declined steadily until it approached zero."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "The description supports a comparative trend but not exact doubling, disappearance, or causation. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -663,12 +663,12 @@
           "id": "core5752-ch-03-check-04",
           "prompt": "Read the original passage: \"An argument assumes that extending store hours will increase sales because customers want later access.\" Which evidence would most strengthen the argument?",
           "choices": [
-            "The building has the same exterior color as last year.",
-            "Employees prefer several unrelated benefits.",
-            "Daytime demand is never measured.",
-            "A representative survey shows substantial unmet demand during the proposed later hours."
+            "Administrative logs show that daytime demand has not yet been tracked systematically.",
+            "A representative survey documents strong unmet demand during the proposed evening times.",
+            "Facility records confirm that the building exterior kept the same paint color as last year.",
+            "Staff interviews highlight strong interest in several unrelated workplace scheduling perks."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Evidence of unmet demand during the exact proposed hours directly supports the mechanism connecting the change to the outcome.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -682,12 +682,12 @@
           "id": "core5752-ch-03-check-05",
           "prompt": "Read the original passage: \"Passage 1 says community gardens build social ties through shared work. Passage 2 says gardens improve access to fresh produce but require stable water and leadership.\" Which synthesis is best supported?",
           "choices": [
-            "The shared resource may provide social and practical benefits when operational supports are sustained.",
-            "The resource has only social benefits and no requirements.",
-            "The resource automatically succeeds without leadership.",
-            "The passages agree that the resource should close."
+            "The shared space sustains broad community access without dedicated leadership or training.",
+            "Both passages conclude that operational demands outweigh benefits and warrant closing.",
+            "The shared space can deliver social and practical gains when operational supports hold.",
+            "The shared space produces social connections alone while carrying no practical upkeep needs."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "The synthesis includes complementary benefits and the stated implementation conditions without erasing either text.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -796,12 +796,12 @@
           "id": "core5752-ch-04-check-01",
           "prompt": "A draft argues that a city should add shaded bus stops. Which thesis is most focused and defensible?",
           "choices": [
-            "The city should prioritize shade at the busiest stops because heat exposure and long waits create a documented access barrier.",
-            "Bus stops are things that cities often have.",
-            "Shade is always good everywhere for every reason.",
-            "This essay will discuss transportation."
+            "Municipal transit systems across the country operate many different types of bus stops and commuter shelters each day.",
+            "Adding overhead shade structures at public transit stops improves urban life across every neighborhood without drawbacks.",
+            "This essay will examine several broad issues related to city transportation planning, summer weather, and commuter habits.",
+            "The city should prioritize shade at its busiest stops because heat exposure and long waits create a documented barrier."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "A strong argumentative thesis states a specific claim, a reason, and a manageable scope that the essay can support with relevant evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -815,12 +815,12 @@
           "id": "core5752-ch-04-check-02",
           "prompt": "A paragraph begins with survey results showing that students want more evening advising, then jumps to the history of the campus seal. Which revision best improves unity?",
           "choices": [
-            "Add more details about the unrelated topic.",
-            "Remove the unrelated sentence or relocate it only if another section gives it a clear purpose.",
-            "Move the unrelated sentence to the paragraph opening without explanation.",
-            "Repeat the unrelated sentence as the conclusion."
+            "Remove the unrelated sentence or move it to a separate section where it serves a clear purpose.",
+            "Move the unrelated sentence to the beginning of the paragraph so readers encounter the extra fact right away.",
+            "Repeat the unrelated detail in the concluding sentence to make the ending echo the middle of the paragraph.",
+            "Expand the unrelated detail with two additional background sentences so that it feels more balanced in length."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Paragraph unity requires each sentence to develop the controlling idea; irrelevant material should be removed or deliberately relocated.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -834,12 +834,12 @@
           "id": "core5752-ch-04-check-03",
           "prompt": "Which transition best completes this reasoning? \"The pilot reduced processing time. ____, it did not include the most complex applications, so further testing is needed.\"",
           "choices": [
-            "For example",
             "Similarly",
             "However",
-            "Therefore"
+            "Therefore",
+            "For example"
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "However signals the necessary contrast between a favorable result and a limitation that qualifies its interpretation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -853,12 +853,12 @@
           "id": "core5752-ch-04-check-04",
           "prompt": "A writer has evidence about cost, user access, and maintenance for two software options. Which organization best supports a comparison?",
           "choices": [
-            "Describe one option emotionally and omit the other.",
-            "Alternate criteria randomly with no headings or transitions.",
-            "Present the conclusion before defining either option and provide no evidence.",
-            "Use the same criteria in the same order for both alternatives, then synthesize the tradeoffs."
+            "Discuss criteria in whatever order the notes appear so each paragraph covers a mixed set of points.",
+            "State the final recommendation first and omit the criteria definitions so readers move quickly to the end.",
+            "Apply the same criteria in the same order to both products, then synthesize the tradeoffs.",
+            "Focus thoroughly on the writer's preferred option and leave the competing option to a brief footnote."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Parallel organization lets readers compare like with like and supports a synthesis grounded in consistently applied criteria.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -872,12 +872,12 @@
           "id": "core5752-ch-04-check-05",
           "prompt": "Which revision is most concise without losing meaning? \"Due to the fact that the meeting was postponed, the committee met at a later point in time.\"",
           "choices": [
-            "Because the meeting was postponed, the committee met later.",
-            "The meeting, due to the fact of postponement, was later in temporal time.",
-            "The committee met later because of a postponement that postponed it.",
-            "It was due to the fact that later was when the committee had a meeting."
+            "The meeting, due to the fact of its postponement, occurred at a subsequent point in time.",
+            "The committee met later on account of a postponement that postponed the scheduled meeting.",
+            "It was due to the fact that the meeting was postponed that the committee later convened.",
+            "Because the meeting was postponed, the committee met later."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "The revision preserves the causal meaning while replacing inflated phrases and redundant wording with direct language.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -1005,10 +1005,10 @@
           "id": "core5752-ch-05-check-02",
           "prompt": "Which sentence uses pronouns clearly and consistently?",
           "choices": [
-            "When Lena spoke with Priya, she clarified that it had changed.",
+            "When Lena spoke with Priya, she clarified that the grant deadline had changed.",
             "When Lena spoke with Priya, Lena clarified that the grant deadline had changed.",
-            "Lena told Priya that she changed it, which was clear.",
-            "They discussed it because she knew what this meant."
+            "Lena told Priya that she changed the grant deadline, which seemed clear enough.",
+            "They discussed the grant update because she already knew what that change meant."
           ],
           "answerIndex": 1,
           "rationale": "Repeating the needed noun may be less compact, but it removes uncertainty about who clarified what. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
@@ -1044,7 +1044,7 @@
           "prompt": "Which sentence avoids a comma splice?",
           "choices": [
             "The sample was small, the researchers described the findings as preliminary.",
-            "The sample was small, describing the findings, preliminary.",
+            "The sample was small, describing the findings as preliminary for readers.",
             "The sample was small so, the researchers described the findings as preliminary.",
             "The sample was small, so the researchers described the findings as preliminary."
           ],
@@ -1063,9 +1063,9 @@
           "prompt": "Which revision fixes the misplaced modifier? \"Walking through the gallery, the new exhibit impressed Mateo.\"",
           "choices": [
             "Walking through the gallery, Mateo was impressed by the new exhibit.",
-            "Walking through the gallery, the new exhibit was impressive to Mateo.",
-            "The new exhibit, walking through the gallery, impressed Mateo.",
-            "Mateo, the gallery walking, found the exhibit new."
+            "Walking through the gallery, the new exhibit looked very impressive to Mateo.",
+            "The new exhibit, walking through the gallery, immediately impressed Mateo.",
+            "Mateo, the gallery walking through, found the new exhibit very impressive."
           ],
           "answerIndex": 0,
           "rationale": "The introductory modifier must logically describe the grammatical subject that immediately follows it.",
@@ -1176,12 +1176,12 @@
           "id": "core5752-ch-06-check-01",
           "prompt": "A writer needs current statewide graduation totals. Which source is most appropriate as the starting point?",
           "choices": [
-            "The responsible government agency's current data release or official record, with definitions and revision date.",
-            "An undated advertisement that cites no data.",
-            "A personal post recalling one school.",
-            "A search-result snippet with no source page."
+            "A search-engine preview snippet showing two quoted lines without opening the host page, date, or full text.",
+            "The responsible government agency's latest official release or record, including definitions and revision date.",
+            "An undated commercial summary page that highlights headline numbers without linking to the underlying agency data.",
+            "A personal blog post describing one local resident's experience and recollection of the recent policy or school year."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "The authoritative primary source is best for current official totals or legal text, while definitions and dates help verify scope and currency.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -1195,12 +1195,12 @@
           "id": "core5752-ch-06-check-02",
           "prompt": "Which information is essential when evaluating a study cited in an essay?",
           "choices": [
-            "Only the article title font.",
-            "The research question, sample and selection method, measures, comparison, results, limitations, and funding or conflicts.",
-            "Only whether the result agrees with the writer.",
-            "Only the number of pages."
+            "The overall page count of the report and the total number of subheadings used in the executive summary.",
+            "The visual formatting of the publication, including typography, page layout, and chart color scheme.",
+            "The research question, sampling method, measures, comparison, limitations, and potential conflicts.",
+            "Whether the reported conclusion aligns smoothly with the writer's preexisting thesis and viewpoint."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Credibility and applicability depend on how evidence was produced, analyzed, bounded, and potentially influenced.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -1214,12 +1214,12 @@
           "id": "core5752-ch-06-check-03",
           "prompt": "A paragraph closely paraphrases a source's distinctive reasoning. What is required?",
           "choices": [
-            "Change two words and omit attribution.",
-            "Use quotation marks around the writer's own sentence but name no source.",
-            "Use genuinely independent wording and structure while clearly citing the source of the idea.",
-            "Treat paraphrased ideas as common knowledge automatically."
+            "Omit attribution whenever a published analysis is rewritten smoothly because ideas become common knowledge.",
+            "Swap several key synonyms in the original sentences and omit the citation because the wording changed.",
+            "Place quotation marks around the writer's own paraphrased sentences while omitting the author's name.",
+            "Use genuinely independent wording and structure while clearly citing the source of the idea."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Paraphrasing changes expression, not intellectual ownership; both authentic rewording and attribution are needed.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -1233,12 +1233,12 @@
           "id": "core5752-ch-06-check-04",
           "prompt": "A website claims a supplement improves memory but sells the product and links no study. How should a writer use it?",
           "choices": [
-            "Use the claim as conclusive because the page is polished.",
-            "Cite the claim repeatedly until it becomes credible.",
-            "Assume commercial or advocacy interest never matters.",
-            "Treat the unsupported claim cautiously and locate the underlying independent evidence before relying on it."
+            "Treat the unsupported claim cautiously and locate independent underlying evidence before relying on it.",
+            "Cite the page as authoritative proof because its polished layout and confident claims look professional.",
+            "Repeat the claim across several paragraphs alongside other promotional pages to strengthen its credibility.",
+            "Dismiss the commercial or advocacy connection as irrelevant because financial motives do not affect claims."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "A relevant conflict and missing evidence do not automatically make a claim false, but they require verification from traceable sources.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -1252,12 +1252,12 @@
           "id": "core5752-ch-06-check-05",
           "prompt": "Which note-taking practice best reduces accidental plagiarism?",
           "choices": [
-            "Record full source details and page or section locations while clearly distinguishing quotations, paraphrases, and the writer's own analysis.",
-            "Copy all notes into one document without labels.",
-            "Plan to reconstruct citations from memory later.",
-            "Remove quotation marks from copied language before drafting."
+            "Strip quotation marks from copied passages during early note-taking so every sentence blends smoothly.",
+            "Log full citation details and page numbers while clearly marking quotations, paraphrases, and your own notes.",
+            "Paste excerpts from multiple sources into one running document without labels so drafting flows quickly.",
+            "Wait until the final proofread to match copied phrases back to their original authors and page numbers."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Clear source metadata and labeling preserve provenance and make accurate citation and paraphrase possible.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -1366,12 +1366,12 @@
           "id": "core5752-ch-07-check-01",
           "prompt": "A supply order contains 18 boxes with 24 markers in each box. How many markers are ordered?",
           "choices": [
-            "432",
-            "42",
             "192",
-            "442"
+            "442",
+            "432",
+            "42"
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Multiplication represents equal groups: 18 times 24 and 27 times 16 both equal 432. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -1385,12 +1385,12 @@
           "id": "core5752-ch-07-check-02",
           "prompt": "Evaluate 3/4 + 5/8 and express the result in simplest form.",
           "choices": [
-            "1 1/8",
-            "1 3/8",
             "8/12",
-            "3/8"
+            "3/8",
+            "1 1/8",
+            "1 3/8"
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Using eighths, 3/4 + 5/8 = 6/8 + 5/8 = 11/8, and 1 7/8 - 4/8 = 1 3/8. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -1404,12 +1404,12 @@
           "id": "core5752-ch-07-check-03",
           "prompt": "A 12.5-meter roll is cut into pieces 0.5 meter long. How many complete pieces result?",
           "choices": [
-            "6",
-            "15",
             "25",
-            "250"
+            "250",
+            "6",
+            "15"
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Division finds how many equal-sized units fit in the total: 12.5 divided by 0.5 and 7.5 divided by 0.3 both equal 25.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -1423,12 +1423,12 @@
           "id": "core5752-ch-07-check-04",
           "prompt": "Which value is greatest: -1.2, -1.02, -1.22, or -1.202?",
           "choices": [
-            "-1.2",
-            "-1.22",
             "-1.202",
-            "-1.02"
+            "-1.02",
+            "-1.2",
+            "-1.22"
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "For negative numbers, the value closest to zero is greatest. Writing equal decimal places shows that -1.020 is greater than the other values.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -1442,12 +1442,12 @@
           "id": "core5752-ch-07-check-05",
           "prompt": "What is the prime factorization of 360?",
           "choices": [
-            "2^3 x 3^2 x 5",
-            "2 x 3 x 60",
             "2^2 x 3^2 x 10",
-            "3^3 x 5"
+            "3^3 x 5",
+            "2^3 x 3^2 x 5",
+            "2 x 3 x 60"
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Since 360 = 8 x 9 x 5, its prime factorization is 2^3 x 3^2 x 5; the correct expression uses primes only.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -1556,13 +1556,13 @@
           "id": "core5752-ch-08-check-01",
           "prompt": "A recipe uses 3 cups of flour for 2 batches. At the same rate, how much flour is needed for 5 batches?",
           "choices": [
-            "7.5",
             "3.3",
             "6",
-            "10"
+            "10",
+            "7.5"
           ],
-          "answerIndex": 0,
-          "rationale": "The unit rate is 3/2 = 1.5 per batch or run; multiplying by 5 gives 7.5. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
+          "answerIndex": 3,
+          "rationale": "The unit rate is 3/2 = 1.5 per batch; multiplying 1.5 by 5 batches gives 7.5 cups of flour. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -1575,12 +1575,12 @@
           "id": "core5752-ch-08-check-02",
           "prompt": "A jacket priced at $80 is discounted 25%. What is the sale price?",
           "choices": [
-            "$20",
             "$60",
             "$55",
-            "$75"
+            "$75",
+            "$20"
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "The remaining fraction is 75% of $80, or 50% of $120; each calculation gives $60. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -1594,12 +1594,12 @@
           "id": "core5752-ch-08-check-03",
           "prompt": "A car travels 180 miles in 3 hours at a constant rate. What is the rate?",
           "choices": [
-            "45 per hour",
             "120 per hour",
             "60 per hour",
-            "540 per hour"
+            "540 per hour",
+            "45 per hour"
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "A constant unit rate is total quantity divided by time: 180/3 and 240/4 both equal 60 per hour. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -1611,14 +1611,14 @@
         },
         {
           "id": "core5752-ch-08-check-04",
-          "prompt": "Convert 2.4 meters to centimeters.",
+          "prompt": "Convert a measurement of 2.4 meters into centimeters.",
           "choices": [
-            "0.024",
             "24",
             "2,400",
-            "240"
+            "240",
+            "0.024"
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "There are 100 centimeters per meter and 1,000 meters per kilometer, so both conversions produce 240 in the requested unit.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -1632,12 +1632,12 @@
           "id": "core5752-ch-08-check-05",
           "prompt": "On a map, 1 inch represents 12 miles. Two towns are 3.5 inches apart. What is the actual distance?",
           "choices": [
-            "42",
             "15.5",
             "36",
-            "48"
+            "48",
+            "42"
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Multiply the scale value, 12, by the measured length, 3.5, to obtain 42 actual units. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -1784,10 +1784,10 @@
           "id": "core5752-ch-09-check-03",
           "prompt": "A bar chart uses a vertical axis beginning at 95 rather than 0 to compare values 98 and 100. What is the main interpretation risk?",
           "choices": [
-            "The graph makes both values equal.",
-            "The axis proves the difference is causal.",
-            "The truncated axis can make a small absolute difference look visually large.",
-            "A truncated axis always makes data false."
+            "Starting the axis above zero forces both displayed bars to appear identical in height.",
+            "Narrowing the vertical scale proves that one group caused the difference in the other.",
+            "The truncated axis can make a small absolute difference look visually dramatic.",
+            "Using a non-zero baseline automatically makes the underlying numerical values inaccurate."
           ],
           "answerIndex": 2,
           "rationale": "Narrowing an axis can be legitimate, but it magnifies visual differences, so readers must inspect the scale and absolute values.",
@@ -1803,10 +1803,10 @@
           "id": "core5752-ch-09-check-04",
           "prompt": "A scatterplot shows points generally rising from left to right. Which description is best?",
           "choices": [
-            "The variables have a perfect negative association.",
-            "One variable necessarily causes the other.",
-            "No relationship of any kind is visible.",
-            "The variables show a positive association, but the plot alone does not establish causation."
+            "The variables display an exact negative linear relationship across every plotted observation.",
+            "The upward pattern proves that increasing the horizontal variable directly causes higher outcomes.",
+            "Because points do not lie on a single straight line, no statistical relationship is present.",
+            "The variables show a positive association, though the plot alone cannot establish causation."
           ],
           "answerIndex": 3,
           "rationale": "An upward pattern indicates positive association; observational association alone is not proof of a causal mechanism.",
@@ -1936,12 +1936,12 @@
           "id": "core5752-ch-10-check-01",
           "prompt": "What is the range of 4, 9, 11, 15, and 18?",
           "choices": [
+            "22",
             "14",
             "9",
-            "11.4",
-            "22"
+            "11.4"
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Range is maximum minus minimum: 18 - 4 and 36 - 22 both equal 14. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -1955,12 +1955,12 @@
           "id": "core5752-ch-10-check-02",
           "prompt": "A fair six-sided number cube is rolled once. What is the probability of rolling an even number?",
           "choices": [
+            "3",
             "1/3",
             "1/2",
-            "2/3",
-            "3"
+            "2/3"
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "There are three favorable outcomes among six equally likely outcomes, giving 3/6 = 1/2. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -1974,12 +1974,12 @@
           "id": "core5752-ch-10-check-03",
           "prompt": "Two fair coins are flipped. What is the probability of exactly one head?",
           "choices": [
+            "1",
             "1/4",
             "3/4",
-            "1/2",
-            "1"
+            "1/2"
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "The four equally likely ordered outcomes include two favorable mixed outcomes, so the probability is 2/4 = 1/2.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -1993,12 +1993,12 @@
           "id": "core5752-ch-10-check-04",
           "prompt": "A data set has one extremely high outlier. Which measure of center is generally less affected?",
           "choices": [
+            "The median",
             "The mean",
             "The range",
-            "The maximum",
-            "The median"
+            "The maximum"
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "The median depends on order and is typically resistant to an extreme value, whereas the mean is pulled toward it.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -2012,12 +2012,12 @@
           "id": "core5752-ch-10-check-05",
           "prompt": "A study randomly assigns participants to two treatments. What is the main benefit of random assignment?",
           "choices": [
-            "It helps balance other variables across groups, strengthening causal comparison.",
-            "It guarantees the sample represents every population.",
-            "It eliminates all measurement error.",
-            "It makes every participant receive both treatments."
+            "It requires every individual participant to complete both treatments in the exact same sequence.",
+            "It helps balance background variables across groups, strengthening causal inference.",
+            "It ensures that a convenience volunteer group mirrors the demographics of every national population.",
+            "It removes scoring mistakes, instrument error, and participant fatigue from the outcome measurements."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Random assignment supports internal validity by reducing systematic preexisting group differences; it does not guarantee population representativeness.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -2124,14 +2124,14 @@
       "knowledgeChecks": [
         {
           "id": "core5752-ch-11-check-01",
-          "prompt": "Solve 3x + 7 = 25.",
+          "prompt": "What value of x satisfies the linear equation 3x + 7 = 25?",
           "choices": [
-            "x = 6",
-            "x = 4",
             "x = 8",
-            "x = 10"
+            "x = 10",
+            "x = 6",
+            "x = 4"
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Subtract 7 from both sides to get 3x = 18, then divide both sides by 3 to get x = 6. Substitution verifies the solution because 3(6) + 7 = 25.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -2143,14 +2143,14 @@
         },
         {
           "id": "core5752-ch-11-check-02",
-          "prompt": "Simplify 4(2x - 3) + 5.",
+          "prompt": "Which algebraic expression is equivalent to 4(2x - 3) + 5 after expanding and combining terms?",
           "choices": [
-            "8x - 12",
-            "8x - 7",
             "6x - 7",
-            "8x + 7"
+            "8x + 7",
+            "8x - 12",
+            "8x - 7"
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Distribute and combine constants: 8x - 12 + 5 and 8x + 2 - 9 both simplify to 8x - 7. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -2162,15 +2162,15 @@
         },
         {
           "id": "core5752-ch-11-check-03",
-          "prompt": "A plan charges $12 plus $4 per month. Which expression gives the cost after m months?",
+          "prompt": "A subscription plan charges $12 plus $4 per month. Which expression gives the total cost after m months?",
           "choices": [
-            "16m",
-            "12m + 4",
             "12 + 4m",
-            "48m"
+            "48m",
+            "16m",
+            "12m + 4"
           ],
-          "answerIndex": 2,
-          "rationale": "The fixed charge is the constant 12 and the repeated charge is 4 times the number of months or visits.",
+          "answerIndex": 0,
+          "rationale": "The fixed charge is the constant 12 and the repeated charge is 4 times the number of months. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -2181,15 +2181,15 @@
         },
         {
           "id": "core5752-ch-11-check-04",
-          "prompt": "If f(x) = 2x^2 - 3, what is f(3)?",
+          "prompt": "Given the quadratic function f(x) = 2x^2 - 3, what is the output value of f(3)?",
           "choices": [
-            "3",
-            "9",
             "33",
-            "15"
+            "15",
+            "3",
+            "9"
           ],
-          "answerIndex": 3,
-          "rationale": "Substitution gives 2(3^2) - 3 = 18 - 3 = 15; the paired form also gives 3(6) - 3 = 15. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
+          "answerIndex": 1,
+          "rationale": "Substitution gives 2(3^2) - 3 = 18 - 3 = 15, evaluating the exponent before multiplying by 2 and subtracting 3.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
             "https://praxis.ets.org/test/core-combined-subtests-5752.html",
@@ -2200,14 +2200,14 @@
         },
         {
           "id": "core5752-ch-11-check-05",
-          "prompt": "A line passes through (0, 5) and (4, 13). What is its slope?",
+          "prompt": "A line in the coordinate plane passes through (0, 5) and (4, 13). What is its slope?",
           "choices": [
-            "2",
-            "1/2",
             "4",
-            "8"
+            "8",
+            "2",
+            "1/2"
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Slope is change in y divided by change in x: (13 - 5)/(4 - 0) and (15 - 7)/(6 - 2) both equal 2. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -2316,12 +2316,12 @@
           "id": "core5752-ch-12-check-01",
           "prompt": "A rectangle has length 9 and width 6. What is its area?",
           "choices": [
-            "54 square units",
             "30 square units",
             "45 square units",
-            "108 square units"
+            "108 square units",
+            "54 square units"
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Rectangle area is 9 times 6, and triangle area is one-half times 12 times 9; both equal 54 square units.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -2335,12 +2335,12 @@
           "id": "core5752-ch-12-check-02",
           "prompt": "A circle has radius 5. What is its circumference in terms of pi?",
           "choices": [
-            "5pi",
             "10pi",
             "20pi",
-            "25pi"
+            "25pi",
+            "5pi"
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Circumference is 2pi times radius or pi times diameter; both forms give 10pi. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -2354,12 +2354,12 @@
           "id": "core5752-ch-12-check-03",
           "prompt": "A right triangle has legs 6 and 8. What is the hypotenuse?",
           "choices": [
-            "7",
             "12",
             "10",
-            "14"
+            "14",
+            "7"
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "The Pythagorean theorem gives c squared = 36 + 64 = 100, so the positive length is 10. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -2373,12 +2373,12 @@
           "id": "core5752-ch-12-check-04",
           "prompt": "Two angles form a linear pair. One angle is 68 degrees. What is the other?",
           "choices": [
-            "22 degrees",
             "68 degrees",
             "292 degrees",
-            "112 degrees"
+            "112 degrees",
+            "22 degrees"
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Angles in a linear pair are supplementary, so the missing measure is 180 - 68 = 112 degrees. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -2392,12 +2392,12 @@
           "id": "core5752-ch-12-check-05",
           "prompt": "A rectangular prism measures 3 by 4 by 7. What is its volume?",
           "choices": [
-            "84 cubic units",
             "28 cubic units",
             "56 cubic units",
-            "168 cubic units"
+            "168 cubic units",
+            "84 cubic units"
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Volume is the product of length, width, and height: 3 x 4 x 7 and 2 x 6 x 7 both equal 84. The response follows the passage evidence, writing purpose and convention, research boundary, or quantitative relationship while preserving scope, units, and a verifiable reasoning chain.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -2419,7 +2419,7 @@
       "domainId": "reading-key-ideas-details",
       "domain": "Reading: Key Ideas and Details",
       "front": "Read the original passage: \"After the town converted an unused rail corridor into a walking path, nearby shops reported more weekend customers. The path did not solve every traffic problem, but residents gained a safe route between two neighborhoods.\" Which choice best states the main idea?",
-      "back": "A practical community resource produced useful benefits while retaining clear limits.",
+      "back": "A practical community resource produced real benefits while retaining clear limits.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2435,7 +2435,7 @@
       "domainId": "reading-key-ideas-details",
       "domain": "Reading: Key Ideas and Details",
       "front": "Read the original passage: \"Mira expected the seedlings beneath the blue lamp to grow fastest. Her measurements showed that those beneath the white lamp grew slightly taller, so she repeated the trial before revising her claim.\" Which statement best describes the researcher?",
-      "back": "The researcher lets repeated observations influence the conclusion.",
+      "back": "The researcher lets repeated observations guide the final conclusion.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2451,7 +2451,7 @@
       "domainId": "reading-key-ideas-details",
       "domain": "Reading: Key Ideas and Details",
       "front": "Read the original passage: \"The museum label originally described only the finished canoe. A revised label also identified the builders, materials, community uses, and the source of the museum collection.\" Which detail most clearly shows the revision added context?",
-      "back": "The revision identifies creators, use or setting, and provenance rather than only the object or date.",
+      "back": "The revision adds creators, setting or use, and provenance beyond the bare object or date.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2467,7 +2467,7 @@
       "domainId": "reading-key-ideas-details",
       "domain": "Reading: Key Ideas and Details",
       "front": "Read the original passage: \"During the first rehearsal, the quartet repeatedly lost the beat at one transition. They practiced the two measures before and after that point, then restored the transition to the full piece.\" Why did the group isolate a small section?",
-      "back": "To diagnose and repair a specific weakness before checking it within the whole performance.",
+      "back": "To diagnose and fix a specific trouble spot before rechecking the full sequence.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2483,7 +2483,7 @@
       "domainId": "reading-key-ideas-details",
       "domain": "Reading: Key Ideas and Details",
       "front": "Read the original passage: \"A neighborhood survey found strong support for more trees, but residents disagreed about species and placement. The planning group therefore scheduled a site walk before proposing locations.\" What problem does the group still need to resolve?",
-      "back": "How to implement a broadly supported goal in specific locations and ways.",
+      "back": "How to carry out a broadly supported goal across specific locations and details.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2499,7 +2499,7 @@
       "domainId": "reading-key-ideas-details",
       "domain": "Reading: Key Ideas and Details",
       "front": "Read the original passage: \"The first bus reached the transfer station at 8:05, five minutes after the connecting bus departed. Because the next connection was at 8:35, Lena called the clinic to explain the delay.\" Why did Lena call the clinic?",
-      "back": "A missed timing connection created a delay that another party needed to know about.",
+      "back": "A missed timing handoff caused a delay that another party needed to know about.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2515,7 +2515,7 @@
       "domainId": "reading-craft-structure-language",
       "domain": "Reading: Craft, Structure, and Language",
       "front": "Read the original passage: \"The council first mapped flooded intersections. Next, engineers compared drainage capacity. Finally, the council ranked repairs by risk and cost.\" How is the passage organized?",
-      "back": "As a sequence of evidence-gathering and decision steps.",
+      "back": "As a chronological sequence moving from evidence gathering to prioritized action.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2531,7 +2531,7 @@
       "domainId": "reading-craft-structure-language",
       "domain": "Reading: Craft, Structure, and Language",
       "front": "Read the original passage: \"The proposal is ambitious, perhaps too ambitious for the current budget, yet its pilot results deserve careful attention.\" Which description best captures the author's tone?",
-      "back": "Cautiously receptive: the author notes reservations while acknowledging meaningful evidence.",
+      "back": "Cautiously receptive: noting clear reservations while respecting meaningful evidence.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2547,7 +2547,7 @@
       "domainId": "reading-craft-structure-language",
       "domain": "Reading: Craft, Structure, and Language",
       "front": "Read the original passage: \"To keep the seedlings from becoming leggy, the gardener moved them closer to the lamp. Here, \"leggy\" means tall and weak from insufficient light.\" What does the quoted word mean in context?",
-      "back": "Insufficiently developed for the purpose described.",
+      "back": "Insufficiently developed or substantiated for the intended purpose.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2563,7 +2563,7 @@
       "domainId": "reading-craft-structure-language",
       "domain": "Reading: Craft, Structure, and Language",
       "front": "Read the original passage: \"Unlike the northern route, which crosses steep terrain, the river route is longer but maintains a gentle grade.\" What is the role of \"Unlike\"?",
-      "back": "It introduces a contrast between two alternatives with different tradeoffs.",
+      "back": "It introduces a contrast between two options that carry distinct tradeoffs.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2579,7 +2579,7 @@
       "domainId": "reading-craft-structure-language",
       "domain": "Reading: Craft, Structure, and Language",
       "front": "Read the original passage: \"The author describes the battery as a bridge technology: useful for reducing fuel use now, though not the final answer for every route.\" What function does the metaphor serve?",
-      "back": "It characterizes the option as useful and temporary rather than complete or permanent.",
+      "back": "It frames the option as practical in the near term without serving as a permanent fix.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2595,7 +2595,7 @@
       "domainId": "reading-craft-structure-language",
       "domain": "Reading: Craft, Structure, and Language",
       "front": "Read the original passage: \"Some residents feared that closing one block to cars would hurt stores. During the trial, however, customer counts rose on weekends.\" What role does the final sentence play?",
-      "back": "It presents evidence that challenges an earlier concern.",
+      "back": "It introduces observed evidence that counters an earlier expectation.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2611,7 +2611,7 @@
       "domainId": "reading-integration-knowledge-ideas",
       "domain": "Reading: Integration of Knowledge and Ideas",
       "front": "Read the original passage: \"A survey of 80 volunteers found that those who chose morning exercise reported more energy. The report concludes that morning exercise causes higher energy for all adults.\" Which fact most weakens the conclusion?",
-      "back": "Participants selected their own group, so preexisting differences could explain the association.",
+      "back": "Respondents chose their own group, so preexisting differences could explain the pattern.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2627,7 +2627,7 @@
       "domainId": "reading-integration-knowledge-ideas",
       "domain": "Reading: Integration of Knowledge and Ideas",
       "front": "Read the original passage: \"One editorial argues that downtown parking should be cheaper to attract shoppers. Another argues that better transit, not cheaper parking, is the stronger long-term investment.\" On what point do the texts disagree?",
-      "back": "Which strategy best addresses the shared practical goal.",
+      "back": "Which approach best achieves the shared practical objective.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2643,7 +2643,7 @@
       "domainId": "reading-integration-knowledge-ideas",
       "domain": "Reading: Integration of Knowledge and Ideas",
       "front": "Read the original passage: \"The chart shows library visits rising from January through April while online renewals remain nearly level.\" Which interpretation is supported?",
-      "back": "One measured activity increased while the comparison activity changed little.",
+      "back": "One tracked activity climbed while the comparison activity remained steady.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2659,7 +2659,7 @@
       "domainId": "reading-integration-knowledge-ideas",
       "domain": "Reading: Integration of Knowledge and Ideas",
       "front": "Read the original passage: \"An argument assumes that extending store hours will increase sales because customers want later access.\" Which evidence would most strengthen the argument?",
-      "back": "A representative survey shows substantial unmet demand during the proposed later hours.",
+      "back": "A representative survey documents substantial unmet demand during the proposed evening hours.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2675,7 +2675,7 @@
       "domainId": "reading-integration-knowledge-ideas",
       "domain": "Reading: Integration of Knowledge and Ideas",
       "front": "Read the original passage: \"Passage 1 says community gardens build social ties through shared work. Passage 2 says gardens improve access to fresh produce but require stable water and leadership.\" Which synthesis is best supported?",
-      "back": "The shared resource may provide social and practical benefits when operational supports are sustained.",
+      "back": "The shared space can deliver social and practical gains when operational supports hold.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2691,7 +2691,7 @@
       "domainId": "reading-integration-knowledge-ideas",
       "domain": "Reading: Integration of Knowledge and Ideas",
       "front": "Read the original passage: \"A columnist claims the river is cleaner because one photograph shows clear water near the park.\" What is the strongest criticism?",
-      "back": "A single convenient observation is not enough to establish a broad trend.",
+      "back": "One isolated, convenient observation cannot establish a broad or sustained trend.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5713.pdf",
@@ -2707,7 +2707,7 @@
       "domainId": "writing-text-types-production",
       "domain": "Writing: Text Types, Purposes, and Production",
       "front": "A draft argues that a city should add shaded bus stops. Which thesis is most focused and defensible?",
-      "back": "The city should prioritize shade at the busiest stops because heat exposure and long waits create a documented access barrier.",
+      "back": "The city should prioritize shade at its busiest stops because heat exposure and long waits create a documented barrier.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -2723,7 +2723,7 @@
       "domainId": "writing-text-types-production",
       "domain": "Writing: Text Types, Purposes, and Production",
       "front": "A paragraph begins with survey results showing that students want more evening advising, then jumps to the history of the campus seal. Which revision best improves unity?",
-      "back": "Remove the unrelated sentence or relocate it only if another section gives it a clear purpose.",
+      "back": "Remove the unrelated sentence or move it to a separate section where it serves a clear purpose.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -2755,7 +2755,7 @@
       "domainId": "writing-text-types-production",
       "domain": "Writing: Text Types, Purposes, and Production",
       "front": "A writer has evidence about cost, user access, and maintenance for two software options. Which organization best supports a comparison?",
-      "back": "Use the same criteria in the same order for both alternatives, then synthesize the tradeoffs.",
+      "back": "Apply the same criteria in the same order to both options, then synthesize the tradeoffs.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -2787,7 +2787,7 @@
       "domainId": "writing-text-types-production",
       "domain": "Writing: Text Types, Purposes, and Production",
       "front": "A source-based paragraph quotes one source and then summarizes a second. What should the writer do to make the relationship clear?",
-      "back": "Identify each source, explain how the evidence agrees or differs, and connect that relationship to the paragraph claim.",
+      "back": "Attribute each source, explain where their evidence agrees or diverges, and tie that link to the claim.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -2899,7 +2899,7 @@
       "domainId": "writing-language-research",
       "domain": "Writing: Language and Research Skills",
       "front": "A writer needs current statewide graduation totals. Which source is most appropriate as the starting point?",
-      "back": "The responsible government agency's current data release or official record, with definitions and revision date.",
+      "back": "The responsible government agency's current official release or record, including definitions and revision date.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -2915,7 +2915,7 @@
       "domainId": "writing-language-research",
       "domain": "Writing: Language and Research Skills",
       "front": "Which information is essential when evaluating a study cited in an essay?",
-      "back": "The research question, sample and selection method, measures, comparison, results, limitations, and funding or conflicts.",
+      "back": "The research question, sampling method, measures, comparison, limitations, and potential conflicts.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -2947,7 +2947,7 @@
       "domainId": "writing-language-research",
       "domain": "Writing: Language and Research Skills",
       "front": "A website claims a supplement improves memory but sells the product and links no study. How should a writer use it?",
-      "back": "Treat the unsupported claim cautiously and locate the underlying independent evidence before relying on it.",
+      "back": "Treat the unsupported claim cautiously and locate independent underlying evidence before relying on it.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -2963,7 +2963,7 @@
       "domainId": "writing-language-research",
       "domain": "Writing: Language and Research Skills",
       "front": "Which note-taking practice best reduces accidental plagiarism?",
-      "back": "Record full source details and page or section locations while clearly distinguishing quotations, paraphrases, and the writer's own analysis.",
+      "back": "Log full citation details and page numbers while clearly marking quotations, paraphrases, and your own notes.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -2979,7 +2979,7 @@
       "domainId": "writing-language-research",
       "domain": "Writing: Language and Research Skills",
       "front": "Two credible sources report different unemployment rates for the same region. What should a writer check first?",
-      "back": "Definitions, population, time period, data revisions, and measurement methods.",
+      "back": "Definitions, target population, time period, data revisions, and measurement methods.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5723.pdf",
@@ -3219,7 +3219,7 @@
       "domainId": "math-data-statistics-probability",
       "domain": "Mathematics: Data, Statistics, and Probability",
       "front": "A bar chart uses a vertical axis beginning at 95 rather than 0 to compare values 98 and 100. What is the main interpretation risk?",
-      "back": "The truncated axis can make a small absolute difference look visually large.",
+      "back": "The truncated axis can make a small absolute difference look visually dramatic.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -3235,7 +3235,7 @@
       "domainId": "math-data-statistics-probability",
       "domain": "Mathematics: Data, Statistics, and Probability",
       "front": "A scatterplot shows points generally rising from left to right. Which description is best?",
-      "back": "The variables show a positive association, but the plot alone does not establish causation.",
+      "back": "The variables show a positive association, though the plot alone cannot establish causation.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -3267,7 +3267,7 @@
       "domainId": "math-data-statistics-probability",
       "domain": "Mathematics: Data, Statistics, and Probability",
       "front": "A line graph shows sales of 20, 24, 24, and 28 over four quarters. Which statement is accurate?",
-      "back": "The measure rose overall, with no change between the second and third observations.",
+      "back": "The measure increased overall, staying flat between the second and third observations.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -3347,7 +3347,7 @@
       "domainId": "math-data-statistics-probability",
       "domain": "Mathematics: Data, Statistics, and Probability",
       "front": "A study randomly assigns participants to two treatments. What is the main benefit of random assignment?",
-      "back": "It helps balance other variables across groups, strengthening causal comparison.",
+      "back": "It helps balance background variables across groups, strengthening causal inference.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
         "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5733.pdf",
@@ -3378,7 +3378,7 @@
       "skillId": "math-algebra-functions",
       "domainId": "math-algebra-geometry",
       "domain": "Mathematics: Algebra and Geometry",
-      "front": "Solve 3x + 7 = 25. Show the complete reasoning and verify the result.",
+      "front": "What value of x satisfies the linear equation 3x + 7 = 25?",
       "back": "x = 6 Use the relevant evidence, convention, source boundary, operation, representation, unit, and verification step.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3394,7 +3394,7 @@
       "skillId": "math-algebra-functions",
       "domainId": "math-algebra-geometry",
       "domain": "Mathematics: Algebra and Geometry",
-      "front": "Simplify 4(2x - 3) + 5.",
+      "front": "Which algebraic expression is equivalent to 4(2x - 3) + 5 after expanding and combining terms?",
       "back": "8x - 7 Use the relevant evidence, convention, source boundary, operation, representation, unit, and verification step.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3410,7 +3410,7 @@
       "skillId": "math-algebra-functions",
       "domainId": "math-algebra-geometry",
       "domain": "Mathematics: Algebra and Geometry",
-      "front": "A plan charges $12 plus $4 per month. Which expression gives the cost after m months?",
+      "front": "A subscription plan charges $12 plus $4 per month. Which expression gives the total cost after m months?",
       "back": "12 + 4m Use the relevant evidence, convention, source boundary, operation, representation, unit, and verification step.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3426,7 +3426,7 @@
       "skillId": "math-algebra-functions",
       "domainId": "math-algebra-geometry",
       "domain": "Mathematics: Algebra and Geometry",
-      "front": "If f(x) = 2x^2 - 3, what is f(3)?",
+      "front": "Given the quadratic function f(x) = 2x^2 - 3, what is the output value of f(3)?",
       "back": "15 Use the relevant evidence, convention, source boundary, operation, representation, unit, and verification step.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3442,7 +3442,7 @@
       "skillId": "math-algebra-functions",
       "domainId": "math-algebra-geometry",
       "domain": "Mathematics: Algebra and Geometry",
-      "front": "A line passes through (0, 5) and (4, 13). What is its slope?",
+      "front": "A line in the coordinate plane passes through (0, 5) and (4, 13). What is its slope?",
       "back": "2 Use the relevant evidence, convention, source boundary, operation, representation, unit, and verification step.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [
@@ -3458,7 +3458,7 @@
       "skillId": "math-algebra-functions",
       "domainId": "math-algebra-geometry",
       "domain": "Mathematics: Algebra and Geometry",
-      "front": "Solve the inequality 2x - 5 > 9.",
+      "front": "Which set of values satisfies the linear inequality 2x - 5 > 9?",
       "back": "x > 7 Use the relevant evidence, convention, source boundary, operation, representation, unit, and verification step.",
       "reviewStatus": "source-reviewed-editorial-pass",
       "references": [

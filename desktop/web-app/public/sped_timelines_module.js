@@ -396,7 +396,32 @@ function SpedTimelinesPanel(props) {
   const today = spedToday();
   const rollup = spedRollup(cases, today);
   const [dueDateManual, setDueDateManual] = React.useState(false);
+  const [dashBandFilter, setDashBandFilter] = React.useState("all");
+  const [dashProviderFilter, setDashProviderFilter] = React.useState("");
+  const [casesStatusFilter, setCasesStatusFilter] = React.useState("all");
+  const [casesQuery, setCasesQuery] = React.useState("");
   const backdropDownRef = React.useRef(false);
+  const openCases = rollup.cases.filter((c) => c.band !== "done");
+  const doneCount = rollup.counts.done || 0;
+  const filteredOpenCases = openCases.filter((c) => {
+    if (dashBandFilter !== "all" && c.band !== dashBandFilter) return false;
+    if (dashProviderFilter) {
+      const prov = String(c.provider || "").trim() || "(unassigned)";
+      if (prov !== dashProviderFilter) return false;
+    }
+    return true;
+  });
+  const hasDashFilter = dashBandFilter !== "all" || !!dashProviderFilter;
+  const normalizedCasesQuery = casesQuery.trim().toLowerCase();
+  const filteredAllCases = rollup.cases.filter((c) => {
+    if (casesStatusFilter === "open" && c.band === "done") return false;
+    if (casesStatusFilter === "done" && c.band !== "done") return false;
+    if (normalizedCasesQuery) {
+      const hay = (String(c.code || "") + " " + String(c.provider || "") + " " + String(c.type || "")).toLowerCase();
+      if (hay.indexOf(normalizedCasesQuery) === -1) return false;
+    }
+    return true;
+  });
   const updateForm = (patch) => {
     if (patch.dueDate !== void 0) setDueDateManual(!!patch.dueDate);
     setForm((f) => {
@@ -553,7 +578,45 @@ function SpedTimelinesPanel(props) {
         className: "min-h-11 px-3 py-2 rounded-lg border border-violet-300 bg-violet-50 text-violet-800 text-xs font-bold hover:bg-violet-100"
       },
       tt("spedtl.eligibility_link", "Review evaluation, eligibility & safeguards")
-    ), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, tt("spedtl.eligibility_link_note", "Opens the generic guide; no timeline data is transferred."))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "spedtl-tabpanel", "aria-labelledby": "spedtl-tab-" + tab, tabIndex: -1 }, tab === "dashboard" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3" }, ["overdue", "urgent", "soon", "ok"].map((band) => /* @__PURE__ */ React.createElement("div", { key: band, className: "p-3 rounded-xl border text-center " + SPED_BAND_META[band].cls }, /* @__PURE__ */ React.createElement("span", { className: "block text-2xl font-bold" }, rollup.counts[band]), /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold" }, tt("spedtl.band_" + band, SPED_BAND_META[band].label))))), cases.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("spedtl.empty", "No timelines yet — add them on the Timelines tab.")), rollup.cases.filter((c) => c.band !== "done").length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-2 mb-3 overflow-x-auto" }, /* @__PURE__ */ React.createElement("table", { className: "w-full text-xs border-collapse" }, /* @__PURE__ */ React.createElement("caption", { className: "text-left text-sm font-bold text-slate-700 p-1" }, tt("spedtl.open_caption", "Open timelines, most urgent first")), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1.5 text-slate-600" }, tt("spedtl.col_student", "Student")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1.5 text-slate-600" }, tt("spedtl.col_type", "Type")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1.5 text-slate-600" }, tt("spedtl.col_provider", "Provider")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-600" }, tt("spedtl.col_due", "Due")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-600" }, tt("spedtl.col_days", "Days")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, tt("spedtl.col_done", "Mark complete"))))), /* @__PURE__ */ React.createElement("tbody", null, rollup.cases.filter((c) => c.band !== "done").map((c) => /* @__PURE__ */ React.createElement("tr", { key: c.id, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "text-left p-1.5 font-bold text-slate-800" }, c.code), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-slate-700" }, typeLabel(c.type)), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-slate-700" }, c.provider || "—"), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center text-slate-700" }, c.dueDate || "—"), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block px-1.5 py-0.5 rounded border text-xs font-bold " + SPED_BAND_META[c.band].cls }, c.daysUntil == null ? "—" : c.daysUntil < 0 ? Math.abs(c.daysUntil) + " " + tt("spedtl.days_over", "over") : c.daysUntil)), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center" }, /* @__PURE__ */ React.createElement("label", { className: "min-w-11 min-h-11 inline-flex items-center justify-center cursor-pointer" }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, tt("spedtl.eligibility_link_note", "Opens the generic guide; no timeline data is transferred."))), /* @__PURE__ */ React.createElement("div", { className: "p-4", role: "tabpanel", id: "spedtl-tabpanel", "aria-labelledby": "spedtl-tab-" + tab, tabIndex: -1 }, tab === "dashboard" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3" }, ["overdue", "urgent", "soon", "ok"].map((band) => {
+      const activeBand = dashBandFilter === band;
+      return /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          key: band,
+          type: "button",
+          "data-spedtl-band-filter": band,
+          "aria-pressed": activeBand,
+          onClick: () => setDashBandFilter((cur) => cur === band ? "all" : band),
+          className: "min-h-11 p-3 rounded-xl border text-center cursor-pointer transition-all motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 " + SPED_BAND_META[band].cls + (activeBand ? " ring-2 ring-indigo-600 shadow-sm" : " hover:opacity-90")
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "block text-2xl font-bold tabular-nums" }, rollup.counts[band]),
+        /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold" }, tt("spedtl.band_" + band, SPED_BAND_META[band].label))
+      );
+    })), hasDashFilter && /* @__PURE__ */ React.createElement("div", { "data-spedtl-dash-filter-bar": "true", className: "mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-900" }, tt("spedtl.showing_prefix", "Showing"), " ", filteredOpenCases.length, " ", tt("spedtl.of_word", "of"), " ", openCases.length, " ", tt("spedtl.open_short", "open"), dashBandFilter !== "all" ? " · " + tt("spedtl.band_" + dashBandFilter, SPED_BAND_META[dashBandFilter].label) : "", dashProviderFilter ? " · " + dashProviderFilter : ""), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-spedtl-dash-clear": "true",
+        onClick: () => {
+          setDashBandFilter("all");
+          setDashProviderFilter("");
+        },
+        className: "min-h-11 px-3 py-1 rounded-lg border border-indigo-300 bg-white text-indigo-800 font-bold hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
+      },
+      tt("spedtl.clear_filters", "Clear filters")
+    )), cases.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("spedtl.empty", "No timelines yet — add them on the Timelines tab.")), openCases.length > 0 && filteredOpenCases.length === 0 && hasDashFilter && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3 mb-3 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-700" }, tt("spedtl.no_matching_open", "No open timelines match the current filter.")), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          setDashBandFilter("all");
+          setDashProviderFilter("");
+        },
+        className: "min-h-11 px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
+      },
+      tt("spedtl.show_all_open", "Show all open")
+    )), filteredOpenCases.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-2 mb-3 overflow-x-auto" }, /* @__PURE__ */ React.createElement("table", { className: "w-full text-xs border-collapse" }, /* @__PURE__ */ React.createElement("caption", { className: "text-left text-sm font-bold text-slate-700 p-1" }, tt("spedtl.open_caption", "Open timelines, most urgent first")), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1.5 text-slate-600" }, tt("spedtl.col_student", "Student")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1.5 text-slate-600" }, tt("spedtl.col_type", "Type")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1.5 text-slate-600" }, tt("spedtl.col_provider", "Provider")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-600" }, tt("spedtl.col_due", "Due")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-600" }, tt("spedtl.col_days", "Days")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, tt("spedtl.col_done", "Mark complete"))))), /* @__PURE__ */ React.createElement("tbody", null, filteredOpenCases.map((c) => /* @__PURE__ */ React.createElement("tr", { key: c.id, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "text-left p-1.5 font-bold text-slate-800" }, c.code), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-slate-700" }, typeLabel(c.type)), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-slate-700" }, c.provider || "—"), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center text-slate-700" }, c.dueDate || "—"), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block px-1.5 py-0.5 rounded border text-xs font-bold " + SPED_BAND_META[c.band].cls }, c.daysUntil == null ? "—" : c.daysUntil < 0 ? Math.abs(c.daysUntil) + " " + tt("spedtl.days_over", "over") : c.daysUntil)), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center" }, /* @__PURE__ */ React.createElement("label", { className: "min-w-11 min-h-11 inline-flex items-center justify-center cursor-pointer" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "checkbox",
@@ -562,7 +625,22 @@ function SpedTimelinesPanel(props) {
         "aria-label": tt("spedtl.done_aria", "Mark complete:") + " " + c.code + " " + typeLabel(c.type),
         className: "w-4 h-4"
       }
-    )))))))), rollup.byProvider.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, tt("spedtl.caseload_title", "Caseload by provider")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1" }, rollup.byProvider.map((p) => /* @__PURE__ */ React.createElement("li", { key: p.provider, className: "text-xs p-2 rounded-lg border " + (p.overdue > 0 ? "bg-rose-50 border-rose-300" : "bg-slate-50 border-slate-200") }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-800" }, p.provider), " — ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, p.open, " ", tt("spedtl.open_short", "open"), p.overdue > 0 ? ", " + p.overdue + " " + tt("spedtl.overdue_short", "overdue") : "", p.urgent > 0 ? ", " + p.urgent + " " + tt("spedtl.urgent_short", "due ≤14d") : ""))))), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-xs text-slate-600" }, tt("spedtl.integrity_note", "Due dates are working prefills: the evaluation clock uses the IDEA fallback of 60 calendar days from consent (34 CFR 300.301(c)) unless you set a different count, and annual/triennial dates are anniversaries. States set their own timeframes — several count school days, which a calendar can’t compute — so always confirm against your state rule and district calendar. Urgency bands (14/30 days) are working conventions, not legal thresholds."))), tab === "cases" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-1" }, tt("spedtl.add_title", "Add a timeline")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, tt("spedtl.code_note", "Use initials or a code, not full names — this tool needs deadlines, not student records.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "spedtl-code", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("spedtl.code_label", "Student code / initials")), /* @__PURE__ */ React.createElement(
+    )))))))), rollup.byProvider.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, tt("spedtl.caseload_title", "Caseload by provider")), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, tt("spedtl.caseload_filter_hint", "Select a provider to filter above"))), /* @__PURE__ */ React.createElement("ul", { className: "mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1.5" }, rollup.byProvider.map((p) => {
+      const activeProv = dashProviderFilter === p.provider;
+      return /* @__PURE__ */ React.createElement("li", { key: p.provider }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "data-spedtl-provider-filter": p.provider,
+          "aria-pressed": activeProv,
+          onClick: () => setDashProviderFilter((cur) => cur === p.provider ? "" : p.provider),
+          className: "w-full min-h-11 text-left text-xs p-2 rounded-lg border transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 " + (activeProv ? "bg-indigo-50 border-indigo-500 ring-1 ring-indigo-500" : p.overdue > 0 ? "bg-rose-50 border-rose-300 hover:bg-rose-100" : "bg-slate-50 border-slate-200 hover:bg-slate-100")
+        },
+        /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-800" }, p.provider),
+        " — ",
+        /* @__PURE__ */ React.createElement("span", { className: "text-slate-700" }, p.open, " ", tt("spedtl.open_short", "open"), p.overdue > 0 ? ", " + p.overdue + " " + tt("spedtl.overdue_short", "overdue") : "", p.urgent > 0 ? ", " + p.urgent + " " + tt("spedtl.urgent_short", "due ≤14d") : "")
+      ));
+    }))), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-xs text-slate-600" }, tt("spedtl.integrity_note", "Due dates are working prefills: the evaluation clock uses the IDEA fallback of 60 calendar days from consent (34 CFR 300.301(c)) unless you set a different count, and annual/triennial dates are anniversaries. States set their own timeframes — several count school days, which a calendar can’t compute — so always confirm against your state rule and district calendar. Urgency bands (14/30 days) are working conventions, not legal thresholds."))), tab === "cases" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-1" }, tt("spedtl.add_title", "Add a timeline")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, tt("spedtl.code_note", "Use initials or a code, not full names — this tool needs deadlines, not student records.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "spedtl-code", className: "block text-xs font-bold text-slate-600 mb-1" }, tt("spedtl.code_label", "Student code / initials")), /* @__PURE__ */ React.createElement(
       "input",
       {
         id: "spedtl-code",
@@ -625,7 +703,53 @@ function SpedTimelinesPanel(props) {
         },
         className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
       }
-    )), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addCase, className: "min-h-11 flex-1 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, tt("spedtl.add", "Add"))))), /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-1" }, tt("spedtl.all_title", "All timelines")), cases.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("spedtl.none", "Nothing tracked yet.")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, rollup.cases.map((c) => /* @__PURE__ */ React.createElement("li", { key: c.id, className: "flex items-center gap-2 p-2 rounded-xl border text-xs " + (c.band === "overdue" ? "bg-rose-50 border-rose-300" : "bg-white border-slate-300") }, /* @__PURE__ */ React.createElement("label", { className: "min-w-11 min-h-11 inline-flex items-center justify-center shrink-0 cursor-pointer" }, /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addCase, className: "min-h-11 flex-1 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, tt("spedtl.add", "Add"))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700" }, tt("spedtl.all_title", "All timelines"), " (", cases.length, ")"), cases.length >= 4 && /* @__PURE__ */ React.createElement("div", { "data-spedtl-cases-filter": "true", className: "flex flex-wrap items-center gap-1.5" }, [
+      { id: "all", label: tt("spedtl.filter_all", "All") + " (" + cases.length + ")" },
+      { id: "open", label: tt("spedtl.filter_open", "Open") + " (" + openCases.length + ")" },
+      { id: "done", label: tt("spedtl.filter_done", "Completed") + " (" + doneCount + ")" }
+    ].map((opt) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: opt.id,
+        type: "button",
+        "data-spedtl-status-filter": opt.id,
+        "aria-pressed": casesStatusFilter === opt.id,
+        onClick: () => setCasesStatusFilter(opt.id),
+        className: "min-h-11 px-2.5 py-1 rounded-full border text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 " + (casesStatusFilter === opt.id ? "bg-indigo-600 text-white border-indigo-700" : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100")
+      },
+      opt.label
+    )), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        id: "spedtl-cases-search",
+        type: "search",
+        value: casesQuery,
+        onChange: (e) => setCasesQuery(e.target.value),
+        onKeyDown: (e) => {
+          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
+          if (e.key === "Escape" && casesQuery) {
+            e.preventDefault();
+            e.stopPropagation();
+            setCasesQuery("");
+          }
+        },
+        "aria-label": tt("spedtl.search_aria", "Filter timelines by student code or provider"),
+        placeholder: tt("spedtl.search_placeholder", "Find code or provider…"),
+        className: "min-h-11 w-44 rounded-lg border border-slate-300 bg-white px-2.5 text-xs text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
+      }
+    ))), cases.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("spedtl.none", "Nothing tracked yet.")), cases.length > 0 && filteredAllCases.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3 mb-2 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-700" }, tt("spedtl.no_matching_cases", "No timelines match your filter.")), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-spedtl-cases-clear": "true",
+        onClick: () => {
+          setCasesStatusFilter("all");
+          setCasesQuery("");
+        },
+        className: "min-h-11 px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
+      },
+      tt("spedtl.clear_filters", "Clear filters")
+    )), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, filteredAllCases.map((c) => /* @__PURE__ */ React.createElement("li", { key: c.id, className: "flex items-center gap-2 p-2 rounded-xl border text-xs " + (c.band === "overdue" ? "bg-rose-50 border-rose-300" : "bg-white border-slate-300") }, /* @__PURE__ */ React.createElement("label", { className: "min-w-11 min-h-11 inline-flex items-center justify-center shrink-0 cursor-pointer" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "checkbox",

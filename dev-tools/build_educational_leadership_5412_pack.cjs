@@ -4,7 +4,8 @@
 const fs = require('fs');
 const path = require('path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
-const skillBanks = require('./educational_leadership_5412/item_content.cjs');
+const { applyChoiceOverrides } = require('./educational_leadership_5412/choice_overrides/index.cjs');
+const skillBanks = applyChoiceOverrides(require('./educational_leadership_5412/item_content.cjs'));
 const root = path.resolve(__dirname, '..');
 const reviewedAt = '2026-07-14';
 const expectedCounts = {
@@ -38,6 +39,8 @@ function ensure(value, minimum, suffix) {
 function itemFromSpec(skill, spec, batchNumber, batchPosition) {
   const answerIndex = (batchPosition - 1) % 4;
   const rationale = ensure(spec.rationale, 120, 'This response best integrates student-centered leadership, representative evidence, ethical and legal responsibilities, equitable access, implementation capacity, transparent decision making, and measurable follow-up.');
+  const notes = Array.isArray(spec.distractorNotes) ? spec.distractorNotes : [];
+  if (notes.length !== 3 || notes.some((note) => String(note || '').trim().length < 100)) throw new Error('Missing authored distractorNotes for ' + skill.id + ' #' + batchPosition);
   const choices = [];
   const choiceRationales = [];
   let distractorIndex = 0;
@@ -46,9 +49,10 @@ function itemFromSpec(skill, spec, batchNumber, batchPosition) {
       choices.push(spec.correct);
       choiceRationales.push(ensure('Correct. ' + rationale, 100, 'It addresses the complete leadership decision and appropriate follow-up.'));
     } else {
+      const note = String(notes[distractorIndex]).trim();
       const distractor = spec.distractors[distractorIndex++];
       choices.push(distractor);
-      choiceRationales.push(ensure('Not the best answer. "' + distractor + '" misses or conflicts with the controlling educational-leadership principle. ' + rationale, 100, 'Compare evidence, authority, equity, feasibility, safety, process, and follow-up requirements.'));
+      choiceRationales.push(note);
     }
   }
   return {

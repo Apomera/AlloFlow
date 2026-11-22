@@ -3479,6 +3479,7 @@ function SequenceSenseCard(p) {
     q: q
   }))), !grade && /*#__PURE__*/React.createElement("div", {
     "data-assessment-sequence-steps": true,
+    role: "group",
     className: "mb-3 flex items-center gap-1.5 flex-wrap text-xs",
     "aria-label": "Sequence progress"
   }, sequenceTrail.map(function (st, stIdx) {
@@ -4833,7 +4834,8 @@ function LiveResultsDashboard(p) {
           expectedAnswer: [item.q.rubric ? 'Rubric: ' + item.q.rubric : '', item.q.expectedAnswer || item.q.exemplarAnswer || item.q.expectedFill || ''].filter(Boolean).join('\n'),
           studentResponse: item.text,
           gradeLevel: p.gradeLevel,
-          callGemini: p.callGemini
+          callGemini: p.callGemini,
+          onSafetyFlag: p.onSafetyFlag
         });
       }).catch(function (error) {
         return {
@@ -10348,6 +10350,7 @@ function FreeformItemsBlock(p) {
         draftNamespace: p.draftNamespace,
         registerVoiceController: p.registerVoiceController,
         callGemini: p.callGemini,
+        onSafetyFlag: p.onSafetyFlag,
         callTTS: p.callTTS,
         gradeLevel: p.gradeLevel,
         QuizAIHelpers: p.QuizAIHelpers,
@@ -10502,6 +10505,7 @@ function FreeformItemCard(p) {
     });
     var graderArgs = {
       callGemini: _quizAiOn(p.callGemini) ? p.callGemini : null,
+      onSafetyFlag: p.onSafetyFlag,
       gradeLevel: p.gradeLevel,
       studentCriteria: q.studentCriteria || []
     };
@@ -11272,7 +11276,7 @@ function AssessmentPresentationItem(p) {
         onClick: function () {
           setDiscussionPollVal(picked ? null : n);
         },
-        className: 'rounded-xl border-2 p-4 text-center text-xl font-bold transition-colors motion-reduce:transition-none ' + (picked ? 'border-teal-600 bg-teal-600 text-white' : 'border-teal-200 bg-teal-50/40 text-teal-900 hover:bg-teal-100')
+        className: 'rounded-xl border-2 p-4 text-center text-xl font-bold transition-colors motion-reduce:transition-none ' + (picked ? 'border-teal-700 bg-teal-700 text-white' : 'border-teal-200 bg-teal-50/40 text-teal-900 hover:bg-teal-100')
       }, n) : /*#__PURE__*/React.createElement("div", {
         key: n,
         className: "rounded-xl border-2 border-teal-200 bg-teal-50/40 p-4 text-center text-xl font-bold text-teal-900"
@@ -16850,6 +16854,7 @@ function QuizViewContent(props) {
     appId: appId,
     activeSessionCode: activeSessionCode,
     callGemini: props.callGemini,
+    onSafetyFlag: props.onSafetyFlag,
     callTTS: props.callTTS,
     gradeLevel: props.gradeLevel,
     conceptMasteryByUid: props.conceptMasteryByUid,
@@ -17733,6 +17738,7 @@ function QuizViewContent(props) {
     onToggleFlag: toggleQuestionFlag,
     draftNamespace: draftNamespace,
     callGemini: props.callGemini,
+    onSafetyFlag: props.onSafetyFlag,
     callTTS: props.callTTS,
     gradeLevel: props.gradeLevel,
     QuizAIHelpers: window.AlloModules && window.AlloModules.QuizAIHelpers,
@@ -17757,13 +17763,13 @@ function QuizViewContent(props) {
     loading: "lazy",
     className: "w-full max-h-64 object-contain rounded-lg border border-slate-200 bg-slate-50"
   }), renderImageRefineOverlay(i, 'question', null, false)), /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-between items-start mb-4 gap-4"
+    className: "flex flex-wrap justify-between items-start mb-4 gap-3"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex-grow flex gap-3"
+    className: "flex-grow min-w-0 flex gap-3"
   }, /*#__PURE__*/React.createElement("span", {
     className: "bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 mt-1.5"
   }, i + 1), /*#__PURE__*/React.createElement("div", {
-    className: "flex-grow space-y-2"
+    className: "flex-grow min-w-0 space-y-2"
   }, isEditingQuiz ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('quiz.edit_question') || 'Edit question',
     value: q.question,
@@ -17779,12 +17785,12 @@ function QuizViewContent(props) {
     rows: getRows(q.question_en || ''),
     placeholder: t('common.placeholder_english_trans')
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
-    className: "font-bold text-slate-800 px-2 py-1"
+    className: "font-bold text-slate-800 px-2 py-1 break-words"
   }, _quizRich(q.question)), q.question_en && /*#__PURE__*/React.createElement(QuizTranslationText, {
     as: "p",
-    className: "text-sm text-slate-600 italic px-2"
+    className: "text-sm text-slate-600 italic px-2 break-words"
   }, _quizRich(q.question_en))))), /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-1.5 shrink-0 flex-wrap justify-end"
+    className: "flex items-center gap-1.5 max-w-full flex-wrap justify-end"
   }, !isEditingQuiz && /*#__PURE__*/React.createElement(QuizListenButton, {
     q: q,
     questionIdx: i,
@@ -18024,10 +18030,11 @@ function QuizViewContent(props) {
     }, renderFormattedText(_quizFactCheckText(q.factCheck)))));
   }())), (Array.isArray(generatedContent?.data?.reflections) && (generatedContent.data.reflections.length > 0 || isEditingQuiz) || generatedContent?.data?.reflection) && /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 mt-8"
-  }, /*#__PURE__*/React.createElement("h4", {
+  }, /*#__PURE__*/React.createElement("h2", {
     className: "font-bold text-indigo-900 mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(PenTool, {
-    size: 16
+    size: 16,
+    "aria-hidden": "true"
   }), " ", t('quiz.reflections')), Array.isArray(generatedContent?.data?.reflections) ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, generatedContent.data.reflections.map((ref, i) => {

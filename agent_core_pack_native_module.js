@@ -8,8 +8,10 @@
   var MAX_ERRORS = 100;
   var hasOwn = Object.prototype.hasOwnProperty;
   var UNSAFE_URL_SCHEME_RE = /^\s*(?:javascript|vbscript|data|file|blob)\s*:/i;
+  function isUnsafeKey(key) { return key === '__proto__' || key === 'constructor' || key === 'prototype'; }
+  function own(obj, key) { return obj && hasOwn.call(obj, key) ? obj[key] : undefined; }
   function record(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
-  function issue(code, path, message) { return { code: code, path: path.slice(0, 600), message: message.slice(0, 2000) }; }
+  function issue(code, path, message) { return { code: code, path: String(path == null ? '' : path).slice(0, 600), message: String(message == null ? '' : message).slice(0, 2000) }; }
   function appendIssue(items, entry) {
     if (items.length < MAX_ERRORS - 1) items.push(entry);
     else if (items.length === MAX_ERRORS - 1) items.push(issue('diagnostics-truncated', entry.path, 'The diagnostic limit was reached. Correct the reported issues and validate again; additional issues may remain.'));
@@ -27,8 +29,21 @@
     function safeUrl(value, path) {
       if (value === undefined || value === null || value === '') return true;
       if (typeof value !== 'string') return false;
-      var stripped = value.replace(/[\u0000-\u0020\u007F]/g, '');
-      if (UNSAFE_URL_SCHEME_RE.test(stripped)) { fail(path, 'URL scheme is not allowed.', 'unsafe-url'); return false; }
+      var stripped = value.replace(/[\u0000-\u0020\u007F-\u009F\u00AD\uFEFF]/g, '');
+      if (UNSAFE_URL_SCHEME_RE.test(stripped) || /^\/\//.test(stripped)) { fail(path, 'URL scheme is not allowed.', 'unsafe-url'); return false; }
+      if (/^[a-z][a-z0-9+.-]*:/i.test(stripped)) {
+        if (!/^https?:/i.test(stripped)) { fail(path, 'URL scheme is not allowed.', 'unsafe-url'); return false; }
+        try {
+          var parsed = new URL(stripped);
+          if ((parsed.protocol !== 'http:' && parsed.protocol !== 'https:') || parsed.username || parsed.password) {
+            fail(path, 'URL scheme or embedded credentials are not allowed.', 'unsafe-url');
+            return false;
+          }
+        } catch (_) {
+          fail(path, 'URL is malformed.', 'unsafe-url');
+          return false;
+        }
+      }
       return true;
     }
     function obj(value, path, optional) {
@@ -89,15 +104,21 @@
     }
     report(d, p);
     c.fields(d, p, [], ['sourceLanguage', 'reportLanguage', 'displayReportLanguage']);
-    if (c.obj(d.sourceTranslations, p + '.sourceTranslations', true)) {
+    if (c.obj(own(d, 'sourceTranslations'), p + '.sourceTranslations', true)) {
       var stKeys = Object.keys(d.sourceTranslations);
       if (stKeys.length > 100) c.fail(p + '.sourceTranslations', 'Expected at most 100 translation entries.');
-      c.each(stKeys.slice(0, 100), function (lang) { c.str(d.sourceTranslations[lang], p + '.sourceTranslations.' + lang); });
+      c.each(stKeys.slice(0, 100), function (lang) {
+        if (isUnsafeKey(lang)) { c.fail(p + '.sourceTranslations.' + lang, 'Prototype-polluting key is not allowed.', 'unsafe-key'); return; }
+        c.str(d.sourceTranslations[lang], p + '.sourceTranslations.' + lang);
+      });
     }
-    if (c.obj(d.reportTranslations, p + '.reportTranslations', true)) {
+    if (c.obj(own(d, 'reportTranslations'), p + '.reportTranslations', true)) {
       var rtKeys = Object.keys(d.reportTranslations);
       if (rtKeys.length > 100) c.fail(p + '.reportTranslations', 'Expected at most 100 report translation entries.');
-      c.each(rtKeys.slice(0, 100), function (lang) { report(d.reportTranslations[lang], p + '.reportTranslations.' + lang); });
+      c.each(rtKeys.slice(0, 100), function (lang) {
+        if (isUnsafeKey(lang)) { c.fail(p + '.reportTranslations.' + lang, 'Prototype-polluting key is not allowed.', 'unsafe-key'); return; }
+        report(d.reportTranslations[lang], p + '.reportTranslations.' + lang);
+      });
     }
     if (c.obj(d.localStats, p + '.localStats', true)) ['score', 'words', 'sentences', 'syllables'].forEach(function (k) { c.num(hasOwn.call(d.localStats, k) ? d.localStats[k] : undefined, p + '.localStats.' + k, k === 'score' ? -100 : 0, 10000000); });
     c.warn('analysis-review-required', p, 'Reading-level, accuracy, and depth-of-knowledge claims are authored estimates; validation does not independently verify them.');
@@ -152,7 +173,10 @@
       if (hasOwn.call(d, k) && c.obj(d[k], p + '.' + k, true)) {
         var vKeys = Object.keys(d[k]);
         if (vKeys.length > 100) c.fail(p + '.' + k, 'Expected at most 100 voice entries.');
-        c.each(vKeys.slice(0, 100), function (name) { c.str(d[k][name], p + '.' + k + '.' + name, false, 240); });
+        c.each(vKeys.slice(0, 100), function (name) {
+          if (isUnsafeKey(name)) { c.fail(p + '.' + k + '.' + name, 'Prototype-polluting key is not allowed.', 'unsafe-key'); return; }
+          c.str(d[k][name], p + '.' + k + '.' + name, false, 240);
+        });
       }
     });
     if (c.obj(d.soundParams, p + '.soundParams', true)) c.fields(d.soundParams, p + '.soundParams', [], ['atmosphere', 'element']);
@@ -191,8 +215,8 @@
       var ids = Object.create(null);
       c.list(person.quests, pp + '.quests', 0, 50, function (q, qp) {
         if (!c.obj(q, qp)) return;
-        c.fields(q, qp, ['id', 'text']); c.num(q.difficulty, qp + '.difficulty', 0, 100, true); c.bool(q.isCompleted, qp + '.isCompleted');
-        if (typeof q.id === 'string') { if (ids[q.id]) c.fail(qp + '.id', 'Quest IDs must be unique within a persona.'); ids[q.id] = true; }
+        c.fields(q, qp, ['id', 'text']); c.num(own(q, 'difficulty'), qp + '.difficulty', 0, 100, true); c.bool(own(q, 'isCompleted'), qp + '.isCompleted');
+        if (typeof q.id === 'string' && q.id.trim()) { if (ids[q.id]) c.fail(qp + '.id', 'Quest IDs must be unique within a persona.'); ids[q.id] = true; }
       }, true);
     });
     c.warn('persona-simulation-review-required', p, 'Personas are authored simulations, not statements by the represented people. Continuing an interview requires the configured runtime model.');
@@ -206,11 +230,11 @@
       if (!c.obj(doc, dp)) return;
       c.fields(doc, dp, ['id', 'title', 'source', 'excerpt'], ['sourceUrl', 'perspective', 'author', 'date']);
       if (hasOwn.call(doc, 'sourceUrl')) c.safeUrl(doc.sourceUrl, dp + '.sourceUrl');
-      c.enumeration(doc.excerptKind, dp + '.excerptKind', ['verbatim', 'adapted', 'reconstructed']);
-      c.enumeration(doc.documentType, dp + '.documentType', ['primary', 'secondary', 'data', 'visual', 'testimony', 'linked', 'reconstructed'], true);
-      if (typeof doc.id === 'string') { if (ids[doc.id]) c.fail(dp + '.id', 'Document IDs must be unique.'); ids[doc.id] = true; }
-      if (c.obj(doc.happPrompts, dp + '.happPrompts', true)) c.fields(doc.happPrompts, dp + '.happPrompts', [], ['historical', 'audience', 'purpose', 'pointOfView']);
-      ['sourcingQuestions', 'analysisQuestions', 'sentenceStarters'].forEach(function (key) { c.strings(doc[key], dp + '.' + key, true, 0, 30); });
+      c.enumeration(own(doc, 'excerptKind'), dp + '.excerptKind', ['verbatim', 'adapted', 'reconstructed']);
+      c.enumeration(own(doc, 'documentType'), dp + '.documentType', ['primary', 'secondary', 'data', 'visual', 'testimony', 'linked', 'reconstructed'], true);
+      if (typeof doc.id === 'string' && doc.id.trim()) { if (ids[doc.id]) c.fail(dp + '.id', 'Document IDs must be unique.'); ids[doc.id] = true; }
+      if (c.obj(own(doc, 'happPrompts'), dp + '.happPrompts', true)) c.fields(doc.happPrompts, dp + '.happPrompts', [], ['historical', 'audience', 'purpose', 'pointOfView']);
+      ['sourcingQuestions', 'analysisQuestions', 'sentenceStarters'].forEach(function (key) { c.strings(own(doc, key), dp + '.' + key, true, 0, 30); });
     });
     function references(value, path) {
       c.strings(value, path, false, 0, 30);
@@ -218,7 +242,9 @@
     }
     c.list(d.corroborationClaims, p + '.corroborationClaims', 0, 50, function (claim, cp) {
       if (!c.obj(claim, cp)) return;
-      c.fields(claim, cp, ['claim'], ['guideQuestion']); references(claim.supportingDocs || [], cp + '.supportingDocs'); references(claim.challengingDocs || [], cp + '.challengingDocs');
+      c.fields(claim, cp, ['claim'], ['guideQuestion']);
+      references(own(claim, 'supportingDocs') == null ? [] : claim.supportingDocs, cp + '.supportingDocs');
+      references(own(claim, 'challengingDocs') == null ? [] : claim.challengingDocs, cp + '.challengingDocs');
     }, true);
     c.list(d.perspectives, p + '.perspectives', 0, 12, function (perspective, pp) {
       if (!c.obj(perspective, pp)) return;
@@ -264,13 +290,17 @@
     var walkNodes = 0;
     var MAX_WALK_NODES = 10000;
     function walk(value, path, depth) {
-      if (!value || typeof value !== 'object' || depth > 24 || c.exhausted()) return;
+      if (!value || typeof value !== 'object' || c.exhausted()) return;
+      if (depth > 24) { c.fail(path, 'Audit payload nesting exceeds the supported limit.', 'payload-too-deep'); return; }
       if (++walkNodes > MAX_WALK_NODES) { c.fail(path, 'Audit payload exceeds node traversal budget.', 'payload-too-large'); return; }
+      if (Array.isArray(value) && value.length > MAX_WALK_NODES) { c.fail(path, 'Audit payload exceeds node traversal budget.', 'payload-too-large'); return; }
       if (visited.has(value)) { c.fail(path, 'Expected acyclic JSON data.'); return; }
       visited.add(value);
+      var isArr = Array.isArray(value);
       c.each(Object.keys(value), function (key) {
-        var child = value[key], cp = path + '.' + key;
-        if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        if (++walkNodes > MAX_WALK_NODES) { c.fail(path, 'Audit payload exceeds node traversal budget.', 'payload-too-large'); return; }
+        var child = value[key], cp = isArr ? (path + '[' + key + ']') : (path + '.' + key);
+        if (isUnsafeKey(key)) {
           c.fail(cp, 'Prototype-polluting key is not allowed.', 'unsafe-key');
           return;
         }
@@ -307,8 +337,8 @@
       ['graphemes', 'rhymes', 'rhymeDistractors', 'blendingDistractors', 'orthographyDistractors', 'sentenceDistractors', 'story', 'familyMembers', 'syllableBlendingOptions'].forEach(function (key) { c.strings(word[key], wp + '.' + key, true, 0, 100); });
       if (Array.isArray(word.syllables)) c.strings(word.syllables, wp + '.syllables', false, 1, 40);
       else c.num(word.syllables, wp + '.syllables', 1, 40, true, true);
-      c.num(word.phonemeCount, wp + '.phonemeCount', 1, 40, true, true);
-      if (Array.isArray(word.phonemes) && word.phonemeCount !== undefined && word.phonemeCount !== word.phonemes.length) c.fail(wp + '.phonemeCount', 'phonemeCount must match the phonemes array.');
+      c.num(own(word, 'phonemeCount'), wp + '.phonemeCount', 1, 40, true, true);
+      if (Array.isArray(word.phonemes) && word.phonemeCount !== undefined && word.phonemeCount !== null && word.phonemeCount !== word.phonemes.length) c.fail(wp + '.phonemeCount', 'phonemeCount must match the phonemes array.');
       if (c.obj(word.manipulationTask, wp + '.manipulationTask', true)) {
         c.fields(word.manipulationTask, wp + '.manipulationTask', ['instruction', 'answer'], ['type', 'targetPhoneme']);
         c.strings(word.manipulationTask.distractors, wp + '.manipulationTask.distractors', false, 2, 12);
@@ -380,11 +410,14 @@
   // __ALLO_STATIC_SVG_POLICY_END__
   function validateMathGraph(value, path, errors) {
     if (value === undefined || value === null || value === '') return;
-    if (!validateStaticSvg(value)) appendIssue(errors, issue('unsafe-math-graph', path, 'Use static SVG shapes and text with presentation attributes, at most 120000 characters, 2048 elements and 32 levels. Scripts, animation, links, embedded images, foreign content, CSS, and external references are not supported.'));
+    var errList = Array.isArray(errors) ? errors : [];
+    if (!validateStaticSvg(value)) appendIssue(errList, issue('unsafe-math-graph', path, 'Use static SVG shapes and text with presentation attributes, at most 120000 characters, 2048 elements and 32 levels. Scripts, animation, links, embedded images, foreign content, CSS, and external references are not supported.'));
   }
 
   function validateMathData(d, p, errors, warnings) {
-    var c = checkContext(errors, warnings || []);
+    var errList = Array.isArray(errors) ? errors : [];
+    var warnList = Array.isArray(warnings) ? warnings : [];
+    var c = checkContext(errList, warnList);
     if (!c.obj(d, p)) return true;
     c.str(d.problem !== undefined ? d.problem : d.question, p + (d.problem !== undefined ? '.problem' : '.question'));
     if (typeof d.answer === 'number') c.num(d.answer, p + '.answer', -1e100, 1e100); else c.str(d.answer, p + '.answer');
@@ -393,14 +426,15 @@
       if (typeof step === 'string') c.str(step, sp);
       else if (c.obj(step, sp)) c.fields(step, sp, ['explanation'], ['latex']);
     }, true);
-    validateMathGraph(d.graphData, p + '.graphData', errors);
+    validateMathGraph(d.graphData, p + '.graphData', errList);
     return true;
   }
 
   function validateResource(item, path, errors, warnings) {
     if (!item || typeof item.type !== 'string' || TYPES.indexOf(item.type) < 0) return false;
     var errList = Array.isArray(errors) ? errors : [];
-    var c = checkContext(errList, warnings || []), p = path + '.data', d = item.data;
+    var warnList = Array.isArray(warnings) ? warnings : [];
+    var c = checkContext(errList, warnList), p = String(path == null ? '' : path) + '.data', d = item.data;
     if (item.type === 'analysis') analysis(d, p, c);
     else if (item.type === 'brainstorm') brainstorm(d, p, c);
     else if (item.type === 'adventure') adventure(d, p, c);

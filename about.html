@@ -307,6 +307,7 @@
                 <p>Review the public catalog, read the implementation material, or launch AlloFlow from the official site.</p>
                 <div class="about-actions">
                     <a class="btn-primary" href="tools.html">Explore the tools</a>
+                    <a class="btn-secondary" href="tools.html#directory-heading">STEAM Cloudflare links</a>
                     <a class="btn-secondary" href="manuals.html">Read the manuals</a>
                     <a class="btn-secondary" href="launch.html">Launch AlloFlow</a>
                 </div>
@@ -330,9 +331,17 @@
         </div>
     </footer>
 
-    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})" aria-label="Back to top">
         <i data-lucide="chevron-up" aria-hidden="true" style="width:20px;height:20px"></i>
     </button>
+    <script>
+        const backBtn = document.querySelector('.back-to-top');
+        if (backBtn) {
+            window.addEventListener('scroll', function () {
+                backBtn.classList.toggle('visible', window.scrollY > 500);
+            }, { passive: true });
+        }
+    </script>
 </body>
 
 </html>

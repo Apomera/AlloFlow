@@ -71,6 +71,10 @@
   /* Spoken word feedback */
   .spoken { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #e0e7ff; padding: 10px 24px; border-radius: 12px; font-size: 16px; font-weight: 700; box-shadow: 0 8px 24px rgba(0,0,0,0.3); z-index: 100; display: none; }
   .spoken.visible { display: block; animation: tap 0.3s ease-out; }
+  @media (forced-colors: active) {
+    .wishes, .wish-chip, .spoken { background: Canvas !important; color: CanvasText !important; border: 1px solid CanvasText !important; box-shadow: none !important; }
+    .wishes h2, .wishes .note { color: CanvasText !important; }
+  }
 </style>
 </head>
 <body>

@@ -80,6 +80,10 @@
     {
       "issue": "The keyed option was the longest of the four choices in 63 of 100 items, against 25% by chance, leaving the bank partly answerable without reading the stem. An earlier review of this file recorded that answer-length cues had been removed; that claim did not hold when measured.",
       "change": "Rewrote 39 distractors by hand to carry the same false claim at parallel specificity and length. No keyed option, rationale, reference or answer position was changed. Key-is-longest now 24/100 (24%)."
+    },
+    {
+      "issue": "Non-EPPP editorial screening flagged residual lexical-leakage, brief distractor-rationale, or asymmetric-extreme-distractor warnings in 78 item(s).",
+      "change": "Remediated 78 item(s) by hand via dev-tools/non_eppp_authored_remediation/early_childhood_5025_batch3.cjs without changing any answerIndex, domainId, rationale, or references. All editorial warning checks now report 0 findings across the batch."
     }
   ],
   "checks": {
@@ -375,7 +379,7 @@
   },
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "10600b231ad09eca7b62c041f9142b86f6c441002f762b2957183eeff0684859"
+    "sha256": "f402b93c72eb7a008bb2cacdb7e6230bffc54ce5023616374ba351f5a6ca543a"
   },
   "integration": {
     "packId": "praxis-early-childhood-5025",
@@ -386,7 +390,7 @@
     "sharedExpansionScriptMutated": false,
     "releaseBuilderMutated": false
   },
-  "sourceSha256": "10600b231ad09eca7b62c041f9142b86f6c441002f762b2957183eeff0684859",
+  "sourceSha256": "f402b93c72eb7a008bb2cacdb7e6230bffc54ce5023616374ba351f5a6ca543a",
   "remediation": [
     {
       "at": "2026-08-17",
@@ -397,6 +401,16 @@
       "priorSha256": "15826f00aa38d9f52fe3b1639f1d724675267cba97daafd617e6416b45975407",
       "sha256": "10600b231ad09eca7b62c041f9142b86f6c441002f762b2957183eeff0684859",
       "note": "Distractor text edited after the independent cross-review. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+    },
+    {
+      "at": "2026-11-21",
+      "by": "Antigravity — AlloFlow test-prep warning remediation pass",
+      "scope": "editorial warning remediation (lexical leakage / distractor feedback depth / extreme-qualifier balance)",
+      "itemsChanged": 78,
+      "ledger": "dev-tools/non_eppp_authored_remediation/early_childhood_5025_batch3.cjs",
+      "priorSha256": "9f92efdfc5fe0e7ec0b7e81cd5835770d9be31bfb14b290de63d110596422ff8",
+      "sha256": "f402b93c72eb7a008bb2cacdb7e6230bffc54ce5023616374ba351f5a6ca543a",
+      "note": "Edited after the independent cross-review to eliminate editorial warning findings while preserving tested constructs and answer positions. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
     }
   ]
 }

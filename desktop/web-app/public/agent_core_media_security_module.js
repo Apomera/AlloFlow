@@ -9,21 +9,34 @@
   'use strict';
 
   var SECRET_FIELD_RE = /(?:^|[_-]|(?=[A-Z]))(?:api|access|private|auth|signing|client)?[_-]?keys?$|token|secret|password|passwd|credential|authorization|bearer|privatekey|cookie/i;
-  var FORBIDDEN_RESULT_KEYS = { prompt: true, chainOfThought: true, reasoning: true };
+  var FORBIDDEN_RESULT_KEYS = Object.assign(Object.create(null), { prompt: true, chainOfThought: true, reasoning: true });
   var IDENTIFIER_RE = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
   var MAX_DEPTH = 8;
+  var MAX_SCAN_NODES = 10000;
+  var MAX_SCAN_ERRORS = 100;
 
-  function scanForbiddenResultFields(value, path, errors, depth) {
+  function isPrototypeKey(key) {
+    return key === '__proto__' || key === 'constructor' || key === 'prototype';
+  }
+
+  function scanForbiddenResultFields(value, path, errors, depth, state) {
     if (!value || typeof value !== 'object') return;
+    var ctx = state || { visited: new Set(), nodes: 0 };
+    if (errors.length >= MAX_SCAN_ERRORS) return;
     if (depth > MAX_DEPTH) return;
-    Object.keys(value).forEach(function (key) {
+    if (ctx.visited.has(value) || ++ctx.nodes > MAX_SCAN_NODES) return;
+    ctx.visited.add(value);
+    var keys = Object.keys(value);
+    for (var i = 0; i < keys.length && errors.length < MAX_SCAN_ERRORS; i++) {
+      var key = keys[i];
       var nextPath = path ? path + '.' + key : key;
       if (Object.prototype.hasOwnProperty.call(FORBIDDEN_RESULT_KEYS, key) && value[key] !== undefined) {
         errors.push(issue('forbidden-result-field', nextPath, 'Media results must not store prompts or model reasoning.'));
-        return;
+        continue;
       }
-      scanForbiddenResultFields(value[key], nextPath, errors, depth + 1);
-    });
+      scanForbiddenResultFields(value[key], nextPath, errors, depth + 1, ctx);
+    }
+    ctx.visited.delete(value);
   }
 
   function getDependencies(injected) {
@@ -39,20 +52,41 @@
     return { code: code, path: path, message: message };
   }
 
-  function scanSecrets(value, path, errors, depth) {
+  function scanSecrets(value, path, errors, depth, state) {
     if (!value || typeof value !== 'object') return;
+    var ctx = state || { visited: new Set(), nodes: 0, limitReported: false };
+    if (errors.length >= MAX_SCAN_ERRORS) return;
     if (depth > MAX_DEPTH) {
       errors.push(issue('payload-too-deep', path, 'Media payload exceeds the security scan depth.'));
       return;
     }
-    Object.keys(value).forEach(function (key) {
+    if (ctx.visited.has(value)) {
+      errors.push(issue('cyclic-payload', path, 'Media payload must be acyclic JSON data.'));
+      return;
+    }
+    if (++ctx.nodes > MAX_SCAN_NODES) {
+      if (!ctx.limitReported) {
+        ctx.limitReported = true;
+        errors.push(issue('payload-too-large', path, 'Media payload exceeds the security scan node budget.'));
+      }
+      return;
+    }
+    ctx.visited.add(value);
+    var keys = Object.keys(value);
+    for (var i = 0; i < keys.length && errors.length < MAX_SCAN_ERRORS; i++) {
+      var key = keys[i];
       var nextPath = path ? path + '.' + key : key;
+      if (isPrototypeKey(key)) {
+        errors.push(issue('unsafe-key', nextPath, 'Prototype-polluting key "' + key + '" is not allowed in media payloads.'));
+        continue;
+      }
       if (SECRET_FIELD_RE.test(key)) {
         errors.push(issue('secret-like-field', nextPath, 'Runtime credentials may not appear in agent-visible media payloads.'));
-        return;
+        continue;
       }
-      scanSecrets(value[key], nextPath, errors, depth + 1);
-    });
+      scanSecrets(value[key], nextPath, errors, depth + 1, ctx);
+    }
+    ctx.visited.delete(value);
   }
 
   function validateProviderInventory(input, injected) {
@@ -94,7 +128,7 @@
     var opts = options || {};
     if (typeof opts.authorizeByteRead !== 'function') throw new Error('authorizeByteRead callback is required');
     var base = dependencies.assetStore.createManagedAssetStore(opts);
-    return {
+    return Object.freeze({
       importAsset: base.importAsset,
       getMetadata: base.getMetadata,
       attach: base.attach,
@@ -103,20 +137,30 @@
       remove: base.remove,
       getStats: base.getStats,
       readBytesForAdapter: function (handle, request) {
-        var purpose = request && typeof request.purpose === 'string' ? request.purpose.trim() : '';
-        if (!purpose || opts.authorizeByteRead({ handle: handle, purpose: purpose }) !== true) {
+        var rawPurpose = request && typeof request.purpose === 'string'
+          ? request.purpose.replace(/[\u0000-\u001F\u007F]/g, '').trim().slice(0, 200)
+          : '';
+        var authorized = false;
+        if (rawPurpose) {
+          try {
+            authorized = opts.authorizeByteRead({ handle: handle, purpose: rawPurpose }) === true;
+          } catch (_) {
+            authorized = false;
+          }
+        }
+        if (!authorized) {
           throw new Error('Managed asset byte read was not authorized by the runtime');
         }
-        return base.readBytesForAdapter(handle, { approved: true, purpose: purpose });
+        return base.readBytesForAdapter(handle, { approved: true, purpose: rawPurpose });
       }
-    };
+    });
   }
 
-  var API = {
+  var API = Object.freeze({
     validateProviderInventory: validateProviderInventory,
     validateMediaResult: validateMediaResult,
     createManagedAssetStore: createManagedAssetStore
-  };
+  });
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   if (typeof window !== 'undefined') {

@@ -77,6 +77,7 @@ function parse(bytes) {
     p += 46 + nameLen + extraLen + commentLen;
   }
   if (p !== end) reject('unaccounted central directory data');
+  if (total > LIMITS.ratioFloorBytes && total > Math.max(1, bytes.length) * LIMITS.ratio) reject('inflated size or compression ratio limit exceeded');
   for (const item of entries) {
     for (let i = 1; i < item.segments.length; i++) if (names.get(item.segments.slice(0, i).join('/').toLowerCase()) === false) reject('file and directory path conflict');
   }

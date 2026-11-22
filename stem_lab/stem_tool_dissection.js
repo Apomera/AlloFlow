@@ -3353,7 +3353,16 @@
     }
     return inspection;
   }
-  function disSoundEnabled() { try { return window.__alloDissectionSoundEnabled !== false; } catch (e) { return true; } }
+  function disSoundEnabled() {
+    try {
+      if (typeof window !== 'undefined') {
+        if (window.__alloMuted === true || window._alloGlobalMute === true || window._alloGlobalMuted === true) return false;
+        if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return false;
+        if (window.__alloDissectionSoundEnabled === false) return false;
+      }
+      return true;
+    } catch (e) { return true; }
+  }
   function currentDissectionSaveStatus(key, owner) {
     var slot = key ? dissectionSaveSlot(key, owner) : null;
     return slot && _disSaveStatusByKey[slot] ? _disSaveStatusByKey[slot] : _disSaveStatus;
@@ -3676,7 +3685,26 @@
     });
     return normalized;
   }
-  function getDisAC() { if (!_disAC) { try { _disAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_disAC && _disAC.state === 'suspended') { try { _disAC.resume(); } catch(e) {} } return _disAC; }
+  var _disMuteBound = false;
+  function getDisAC() {
+    if (!disSoundEnabled()) return null;
+    if (typeof window === 'undefined') return null;
+    if (!_disAC) {
+      try { _disAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {}
+    }
+    if (!_disMuteBound) {
+      _disMuteBound = true;
+      try {
+        window.addEventListener('alloflow-mute-changed', function() {
+          if (!disSoundEnabled() && _disAC && typeof _disAC.suspend === 'function' && _disAC.state === 'running') {
+            try { _disAC.suspend(); } catch (_) {}
+          }
+        });
+      } catch (_) {}
+    }
+    if (_disAC && _disAC.state === 'suspended') { try { _disAC.resume(); } catch(e) {} }
+    return _disAC;
+  }
   function disTone(f,d,tp,v) { if (!disSoundEnabled()) return; var ac = getDisAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function disNoise(dur,vol,hz) { if (!disSoundEnabled()) return; var ac = getDisAC(); if (!ac) return; try { var bs = Math.floor(ac.sampleRate*(dur||0.05)); var b = ac.createBuffer(1,bs,ac.sampleRate); var dd = b.getChannelData(0); for(var i=0;i<bs;i++) dd[i]=(Math.random()*2-1)*(1-i/bs); var s = ac.createBufferSource(); s.buffer=b; var f = ac.createBiquadFilter(); f.type='lowpass'; f.frequency.value=hz||600; var g = ac.createGain(); g.gain.setValueAtTime(vol||0.04,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(dur||0.05)); s.connect(f); f.connect(g); g.connect(ac.destination); s.start(); } catch(e) {} }
   function sfxDisCut() { disNoise(0.06, 0.05, 800); disTone(300, 0.08, 'sawtooth', 0.05); }
@@ -3875,10 +3903,12 @@
       if (!pointer || event.pointerId !== pointer.id) return;
       if (!pointer.moved && !lost) {
         var rect = canvas.getBoundingClientRect();
-        var ray = new THREE.Raycaster();
-        ray.setFromCamera(new THREE.Vector2((event.clientX - rect.left) / rect.width * 2 - 1, 1 - (event.clientY - rect.top) / rect.height * 2), camera);
-        var hits = ray.intersectObjects(meshes, false);
-        if (hits.length) onSelect(hits[0].object.userData.partId);
+        if (rect && rect.width && rect.height) {
+          var ray = new THREE.Raycaster();
+          ray.setFromCamera(new THREE.Vector2((event.clientX - rect.left) / rect.width * 2 - 1, 1 - (event.clientY - rect.top) / rect.height * 2), camera);
+          var hits = ray.intersectObjects(meshes, false);
+          if (hits.length) onSelect(hits[0].object.userData.partId);
+        }
       }
       release();
     }
@@ -4104,8 +4134,9 @@
       open && h('dialog', { ref: dialogRef, className: 'diss-diagram-reader', 'aria-label': props.title + ' — ' + t('stem.dissection.diagram_reading_view', 'Diagram reading view'),
         onClose: finish, onKeyDown: function (event) {
           event.stopPropagation();
-          if (event.key !== 'Tab') return;
+          if (event.isComposing || event.keyCode === 229 || event.key !== 'Tab') return;
           var targets = event.currentTarget.querySelectorAll('button:not([disabled]), [tabindex="0"]');
+          if (!targets.length) return;
           var first = targets[0], last = targets[targets.length - 1];
           if (event.shiftKey && event.target === first) { event.preventDefault(); last.focus(); }
           else if (!event.shiftKey && event.target === last) { event.preventDefault(); first.focus(); }
@@ -4487,7 +4518,7 @@
     var selected = DISSECTION_EYE_STUDY_PARTS.find(function (part) { return part.id === state.selected; }) || DISSECTION_EYE_STUDY_PARTS[3];
     function home() { patch({ yaw: -0.65, elevation: 0.45, distance: 6.8, preset: 'oblique' }); }
     function keyboard(event) {
-      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
       var value;
       if (event.key === 'ArrowLeft') value = { yaw: state.yaw - 0.2, preset: 'custom' };
       if (event.key === 'ArrowRight') value = { yaw: state.yaw + 0.2, preset: 'custom' };
@@ -4568,6 +4599,7 @@
   }
 
 
+  if (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.registerTool === 'function')
   window.StemLab.registerTool('dissection', {
     icon: "🔪",
     label: "Virtual Dissection Lab",
@@ -4600,7 +4632,14 @@
       var setToolSnapshots = ctx.setToolSnapshots;
       var addToast = ctx.addToast;
       var t = ctx.t;
-      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked) ? ctx.callGemini : null; // null = AI Explain hidden
+      var callGemini = (function () {
+        if (ctx.aiAvailable === false || typeof ctx.callGemini !== 'function' || ctx.callGemini._alloQrBlocked) return null;
+        if (typeof window !== 'undefined') {
+          if (window._alloQrBlocked === true || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return null;
+          if (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', ctx.callGemini)) return null;
+        }
+        return ctx.callGemini;
+      })(); // null = AI Explain hidden
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -4611,7 +4650,6 @@
       var getStemXP = ctx.getXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
-      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked) ? ctx.callGemini : null; // null = AI Explain hidden
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
@@ -4681,9 +4719,15 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
           };
 
 
-          var upd = function (k, v) { setLabToolData(function (p) { return Object.assign({}, p, { dissection: Object.assign({}, p.dissection, (function () {
+          var safeDissectionPrev = function (p) {
+            var safeP = (p && typeof p === 'object' && !Array.isArray(p)) ? p : {};
+            var cur = (safeP.dissection && typeof safeP.dissection === 'object' && !Array.isArray(safeP.dissection)) ? safeP.dissection : {};
+            return { safeP: safeP, cur: cur };
+          };
+          var upd = function (k, v) { setLabToolData(function (p) { var s = safeDissectionPrev(p); return Object.assign({}, s.safeP, { dissection: Object.assign({}, s.cur, (function () {
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-dissection')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-dissection';
@@ -4697,16 +4741,18 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
  var o = {}; o[k] = v; return o; })()) }); }); };
           var updMany = function (patch) {
             setLabToolData(function (p) {
-              var current = p.dissection || {};
+              var s = safeDissectionPrev(p);
+              var current = s.cur;
               var nextPatch = typeof patch === 'function' ? patch(current) : patch;
-              return Object.assign({}, p, { dissection: Object.assign({}, current, nextPatch || {}) });
+              return Object.assign({}, s.safeP, { dissection: Object.assign({}, current, nextPatch || {}) });
             });
           };
           var updManyForSpecimen = function (expectedSpecimen, patch) {
             setLabToolData(function (p) {
-              var currentDissection = p.dissection || {};
+              var s = safeDissectionPrev(p);
+              var currentDissection = s.cur;
               if ((currentDissection.specimen || 'frog') !== expectedSpecimen) return p;
-              return Object.assign({}, p, { dissection: Object.assign({}, currentDissection, patch || {}) });
+              return Object.assign({}, s.safeP, { dissection: Object.assign({}, currentDissection, patch || {}) });
             });
           };
           // Canvas 2D cannot parse a CSS custom property. `ctx.fillStyle = 'var(--x, #fff)'` is
@@ -4766,12 +4812,13 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
           }
           function clearOwnedTimedDissectionState(field, startedAt, expectedSpecimen) {
             setLabToolData(function (p) {
-              var currentDissection = p.dissection || {};
+              var s = safeDissectionPrev(p);
+              var currentDissection = s.cur;
               if ((currentDissection.specimen || 'frog') !== expectedSpecimen) return p;
               var currentTimedState = currentDissection[field];
               if (!currentTimedState || Number(currentTimedState.startedAt) !== Number(startedAt)) return p;
               var timedPatch = {}; timedPatch[field] = null;
-              return Object.assign({}, p, { dissection: Object.assign({}, currentDissection, timedPatch) });
+              return Object.assign({}, s.safeP, { dissection: Object.assign({}, currentDissection, timedPatch) });
             });
           }
           try { window.__alloDissectionSoundEnabled = d.soundEnabled !== false; } catch (e) {}
@@ -12122,7 +12169,8 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
 
           function canvasPointFromEvent(e) {
-            var canvas = e.currentTarget || e.target, rect = canvas.getBoundingClientRect();
+            var canvas = e.currentTarget || e.target, rect = canvas && canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : null;
+            if (!rect || !rect.width || !rect.height) return { x: 0.5, y: 0.5 };
             var rawX = (e.clientX - rect.left) / rect.width, rawY = (e.clientY - rect.top) / rect.height;
             var zoom = Number(canvas._interactionZoom) || d.canvasZoom || 1, panX = Number(canvas._interactionPanX); if (!isFinite(panX)) panX = d.canvasPanX || 0; var panY = Number(canvas._interactionPanY); if (!isFinite(panY)) panY = d.canvasPanY || 0;
             var logicalWidth = canvas._logicalW || canvas.width || 500, logicalHeight = canvas._logicalH || canvas.height || 600;
@@ -24772,14 +24820,13 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
 
           // Simple sound effects via Web Audio API
 
-          var audioCtx = null;
-
           function playDissectSound(type) {
 
             if (!disSoundEnabled()) return;
             try {
 
-              if (!audioCtx) audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)());
+              var audioCtx = getDisAC();
+              if (!audioCtx) return;
 
               var osc = audioCtx.createOscillator();
 
@@ -24867,6 +24914,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
             if (canvas._suppressToolClick) { canvas._suppressToolClick = false; return; }
 
             var rect = canvas.getBoundingClientRect();
+            if (!rect || !rect.width || !rect.height) return;
 
             var rawX = (e.clientX - rect.left) / rect.width, rawY = (e.clientY - rect.top) / rect.height;
             canvas._parallaxTargetX = parallaxDepth ? (rawX - 0.5) * 8 : 0;
@@ -24953,6 +25001,7 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
           var canvasHover = function (e) {
 
             var canvas = e.target; var rect = canvas.getBoundingClientRect();
+            if (!rect || !rect.width || !rect.height) return;
 
             var rawX = (e.clientX - rect.left) / rect.width, rawY = (e.clientY - rect.top) / rect.height;
             canvas._parallaxTargetX = parallaxDepth ? (rawX - 0.5) * 8 : 0;
@@ -27841,10 +27890,11 @@ var d = (labToolData && labToolData.dissection && typeof labToolData.dissection 
               }
               root._alloDissectionRefreshSaveAccess = function () {
                 setLabToolData(function (previousToolData) {
-                  var previousDissection = previousToolData.dissection || {};
+                  var s = safeDissectionPrev(previousToolData);
+                  var previousDissection = s.cur;
                   var previousKey = 'dissection_progress_' + (previousDissection.specimen || 'frog');
                   if (previousKey !== activeDissectionSaveKey) return previousToolData;
-                  return Object.assign({}, previousToolData, { dissection: Object.assign({}, previousDissection, { _dissSaveAccessRefreshAt: Date.now() }) });
+                  return Object.assign({}, s.safeP, { dissection: Object.assign({}, previousDissection, { _dissSaveAccessRefreshAt: Date.now() }) });
                 });
               };
             },

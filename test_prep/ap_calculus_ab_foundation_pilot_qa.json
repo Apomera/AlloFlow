@@ -112,7 +112,7 @@
     "testWiseness": {
       "keyedItemCount": 160,
       "keyCycleSharePercent": 100,
-      "keyLongestSharePercent": 18.1,
+      "keyLongestSharePercent": 3.1,
       "keyLongerByQuarterSharePercent": 0,
       "distractorRationaleCount": 480,
       "distinctDistractorRationaleCount": 480,
@@ -233,7 +233,7 @@
     "everyTopicHasDiagnosticAndRemediation": true
   },
   "inputs": {
-    "packSha256": "79ed54bdc06a37f7c6bb540f617cb9c11e163e972846630d991f1e51f8a18384",
+    "packSha256": "19afc22fae386484e0f79680486a865c2fac699018837ed8a404d789acc8c676",
     "learningLibrarySha256": "74140810a6b836d2c67fb938971a2ca7ed895bba44ce884684e5f4c515957522",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
     "officialExamUrl": "https://apcentral.collegeboard.org/courses/ap-calculus-ab/exam",

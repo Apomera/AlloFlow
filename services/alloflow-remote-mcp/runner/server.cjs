@@ -156,8 +156,22 @@ function validateJobId(value) {
   return value;
 }
 
+function safeJsonReviver(key, value) {
+  if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+    return undefined;
+  }
+  return value;
+}
+
 function normalizeInternalUrl(value, allowedHosts) {
-  if (typeof value !== 'string' || value.length > 2048 || value.includes('?') || value.includes('#')) {
+  if (
+    typeof value !== 'string' ||
+    value.length > 2048 ||
+    value.includes('?') ||
+    value.includes('#') ||
+    value.includes('\\') ||
+    /[\x00-\x1f\x7f]/.test(value)
+  ) {
     throw new RunnerError('invalid_storage_url', 400);
   }
 
@@ -169,6 +183,7 @@ function normalizeInternalUrl(value, allowedHosts) {
   }
 
   const hostname = url.hostname.toLowerCase();
+  const rawPath = value.slice(value.indexOf(url.host) + url.host.length);
   if (
     url.protocol !== 'http:' ||
     url.port ||
@@ -178,7 +193,9 @@ function normalizeInternalUrl(value, allowedHosts) {
     url.hash ||
     !allowedHosts.has(hostname) ||
     !url.pathname.startsWith('/') ||
-    url.pathname.startsWith('//')
+    url.pathname.startsWith('//') ||
+    /(^|\/)\.\.?(\/|$)/.test(rawPath) ||
+    /%2e/i.test(rawPath)
   ) {
     throw new RunnerError('invalid_storage_url', 400);
   }
@@ -254,6 +271,9 @@ function validateRunPayload(value, allowedHosts) {
   const taggedPdfUrl = normalizeInternalUrl(value.output.taggedPdfUrl, allowedHosts);
   const reportUrl = normalizeInternalUrl(value.output.reportUrl, allowedHosts);
   if (taggedPdfUrl === reportUrl) throw new RunnerError('duplicate_output_url', 400);
+  if (inputUrl === taggedPdfUrl || inputUrl === reportUrl) {
+    throw new RunnerError('duplicate_storage_url', 400);
+  }
 
   let checkpoint;
   if (hasCheckpoint) {
@@ -806,6 +826,9 @@ function sendError(res, error) {
     ...(status === 401
       ? { 'WWW-Authenticate': 'Bearer realm="alloflow-runner"' }
       : {}),
+    ...(status === 413
+      ? { Connection: 'close' }
+      : {}),
     ...(known && Number.isSafeInteger(error.retryAfterMs)
       ? { 'Retry-After': String(Math.max(0, Math.ceil(error.retryAfterMs / 1000))) }
       : {}),
@@ -839,7 +862,7 @@ async function readJsonBody(req) {
 
   let parsed;
   try {
-    parsed = JSON.parse(Buffer.concat(chunks, bytes).toString('utf8'));
+    parsed = JSON.parse(Buffer.concat(chunks, bytes).toString('utf8'), safeJsonReviver);
   } catch {
     throw new RunnerError('invalid_json', 400);
   }
@@ -848,7 +871,7 @@ async function readJsonBody(req) {
 
 function bearerMatches(req, expectedToken) {
   const header = req.headers.authorization;
-  if (typeof header !== 'string' || !header.startsWith('Bearer ')) return false;
+  if (typeof header !== 'string' || header.length > 1024 || !header.startsWith('Bearer ')) return false;
   if (typeof expectedToken !== 'string' || !expectedToken) return false;
   const given = header.slice(7);
   if (!given) return false;
@@ -911,7 +934,7 @@ function createStateStore(root) {
   async function read(jobId) {
     const files = pathsFor(jobId);
     try {
-      const parsed = JSON.parse(await fsp.readFile(files.state, 'utf8'));
+      const parsed = JSON.parse(await fsp.readFile(files.state, 'utf8'), safeJsonReviver);
       return isPlainObject(parsed) ? parsed : null;
     } catch (error) {
       if (error && error.code === 'ENOENT') return null;
@@ -924,7 +947,7 @@ function createStateStore(root) {
     await fsp.mkdir(files.dir, { recursive: true, mode: 0o700 });
     const temp = path.join(files.dir, `.state-${process.pid}-${crypto.randomUUID()}.tmp`);
     try {
-      await fsp.writeFile(temp, JSON.stringify(value), { encoding: 'utf8', mode: 0o600 });
+      await fsp.writeFile(temp, JSON.stringify(value), { encoding: 'utf8', mode: 0o600, flag: 'wx' });
     } catch (error) {
       await fsp.rm(temp, { force: true }).catch(() => {});
       throw error;
@@ -1010,6 +1033,9 @@ function timedResponseBody(body, controller, parentSignal, cleanup) {
 }
 
 async function fetchWithTimeout(fetchImpl, url, init, timeoutMs, parentSignal) {
+  if (parentSignal && parentSignal.aborted) {
+    throwIfCancelled(parentSignal);
+  }
   const controller = new AbortController();
   let timer = null;
   let cleaned = false;
@@ -1118,7 +1144,6 @@ async function readBoundedBody(response, maximum, errorCode) {
       const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
       size += buffer.length;
       if (size > maximum) {
-        await response.body.cancel().catch(() => {});
         return null;
       }
       chunks.push(buffer);
@@ -1177,7 +1202,7 @@ async function loadCheckpoint(fetchImpl, url, expected, signal) {
     await response.body?.cancel().catch(() => {});
     return { baseSequence: baseFromHeaders, resumeCheckpoint: null };
   }
-  const compressed = await readBoundedBody(
+  let compressed = await readBoundedBody(
     response,
     MAX_CHECKPOINT_COMPRESSED_BYTES,
     'checkpoint_fetch_failed',
@@ -1189,6 +1214,7 @@ async function loadCheckpoint(fetchImpl, url, expected, signal) {
   ) {
     return { baseSequence: baseFromHeaders, resumeCheckpoint: null };
   }
+  const compressedBytes = compressed.length;
 
   let json;
   try {
@@ -1197,15 +1223,20 @@ async function loadCheckpoint(fetchImpl, url, expected, signal) {
     });
   } catch {
     return { baseSequence: baseFromHeaders, resumeCheckpoint: null };
+  } finally {
+    compressed = null;
   }
   if (!json || json.length === 0 || json.length > MAX_CHECKPOINT_JSON_BYTES) {
     return { baseSequence: baseFromHeaders, resumeCheckpoint: null };
   }
+  const uncompressedBytes = json.length;
   let parsed;
   try {
-    parsed = JSON.parse(json.toString('utf8'));
+    parsed = JSON.parse(json.toString('utf8'), safeJsonReviver);
   } catch {
     return { baseSequence: baseFromHeaders, resumeCheckpoint: null };
+  } finally {
+    json = null;
   }
   const baseSequence = Math.max(
     baseFromHeaders,
@@ -1229,8 +1260,8 @@ async function loadCheckpoint(fetchImpl, url, expected, signal) {
     telemetry: {
       stage: envelope.stage,
       sequence: envelope.sequence,
-      compressedBytes: compressed.length,
-      uncompressedBytes: json.length,
+      compressedBytes,
+      uncompressedBytes,
     },
   };
 }
@@ -1426,12 +1457,44 @@ async function writeBufferAtomic(destination, buffer) {
   const temp = `${destination}.${crypto.randomUUID()}.tmp`;
   await fsp.mkdir(path.dirname(destination), { recursive: true, mode: 0o700 });
   try {
-    await fsp.writeFile(temp, buffer, { mode: 0o600 });
+    await fsp.writeFile(temp, buffer, { mode: 0o600, flag: 'wx' });
   } catch (error) {
     await fsp.rm(temp, { force: true }).catch(() => {});
     throw error;
   }
   await atomicReplaceFile(temp, destination);
+}
+
+async function verifyLocalArtifact(filePath, metadata) {
+  if (
+    !metadata ||
+    !Number.isSafeInteger(metadata.size) ||
+    metadata.size < 1 ||
+    typeof metadata.sha256 !== 'string' ||
+    !SHA256_RE.test(metadata.sha256)
+  ) {
+    return false;
+  }
+  let stat;
+  try {
+    stat = await fsp.stat(filePath);
+  } catch {
+    return false;
+  }
+  if (!stat.isFile() || stat.size !== metadata.size) return false;
+  const hash = crypto.createHash('sha256');
+  let readBytes = 0;
+  try {
+    for await (const chunk of fs.createReadStream(filePath)) {
+      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      readBytes += buf.length;
+      if (readBytes > metadata.size) return false;
+      hash.update(buf);
+    }
+  } catch {
+    return false;
+  }
+  return readBytes === metadata.size && hash.digest('hex') === metadata.sha256;
 }
 
 async function putArtifact(fetchImpl, url, filePath, contentType, metadata, signal) {
@@ -1630,7 +1693,8 @@ function buildReport(spec, inputMetadata, result, taggedMetadata, quality, pdfUa
 }
 
 function publicStatus(state, active) {
-  if (!state && active) {
+  if (state && state.status === 'succeeded' && state.result) return state.result;
+  if (active) {
     return {
       schema: RUN_SCHEMA,
       jobId: active.jobId,
@@ -1638,10 +1702,8 @@ function publicStatus(state, active) {
     };
   }
   if (!state) return null;
-  if (state.status === 'succeeded' && state.result) return state.result;
   const status = (
-    !active &&
-    ['receiving', 'running', 'uploading'].includes(state.status)
+    ['receiving', 'running', 'validating', 'uploading'].includes(state.status)
   ) ? 'interrupted' : state.status;
   return {
     schema: RUN_SCHEMA,
@@ -1673,7 +1735,7 @@ function classifyDriverFailure(error) {
   if (/\[model_quota_exhausted\]/i.test(message)) {
     return new RunnerError('model_quota_exhausted', 429, false);
   }
-  if (/model_throttled|quota|RESOURCE_EXHAUSTED|429/i.test(message)) {
+  if (/\b(?:model_throttled|RESOURCE_EXHAUSTED|rate[ _-]?limit|429)\b|quota\s+(?:exceeded|exhausted|limit)/i.test(message)) {
     const retryAfterMatch = /retryAfterMs=(\d{1,9})/i.exec(message);
     const retryAfterMs = retryAfterMatch ? Number(retryAfterMatch[1]) : undefined;
     const retryBudgetExhausted = /retryBudgetExhausted=true/i.test(message);
@@ -1684,7 +1746,7 @@ function classifyDriverFailure(error) {
       { retryAfterMs, retryBudgetExhausted },
     );
   }
-  if (/API_AUTH_FAILED|API key|401|403|permission/i.test(message)) {
+  if (/\b(?:API_AUTH_FAILED|API[ _-]?key|401|403)\b|permission\s+denied/i.test(message)) {
     return new RunnerError('model_route_rejected', 502, false);
   }
   if (/Playwright|Chromium|browser binary|module file/i.test(message)) {
@@ -1728,6 +1790,9 @@ function defaultDriverFactory(options) {
     baseUrl.protocol !== 'http:' ||
     baseUrl.hostname !== 'gemini.internal' ||
     baseUrl.port ||
+    baseUrl.username ||
+    baseUrl.password ||
+    baseUrl.pathname.startsWith('//') ||
     baseUrl.search ||
     baseUrl.hash
   ) {
@@ -1798,12 +1863,12 @@ function createRunnerServer(options = {}) {
     let reportMetadata = previous && previous.reportMetadata;
     let pendingResult = previous && previous.pendingResult;
 
-    const localOutputsReady = (
+    const localOutputsReady = Boolean(
       taggedMetadata &&
       reportMetadata &&
       pendingResult &&
-      fs.existsSync(files.taggedPdf) &&
-      fs.existsSync(files.report)
+      await verifyLocalArtifact(files.taggedPdf, taggedMetadata) &&
+      await verifyLocalArtifact(files.report, reportMetadata),
     );
 
     try {
@@ -1851,26 +1916,35 @@ function createRunnerServer(options = {}) {
           resumeCheckpoint = loadedCheckpoint.resumeCheckpoint;
           context.checkpointTelemetry.resumed =
             loadedCheckpoint.telemetry || null;
-          onCheckpoint = async (snapshot) => {
-            const saved = await putCheckpoint(
-              fetchImpl, spec.checkpoint.writeUrl, spec.jobId, snapshot,
-              compatibility, checkpointSequenceValue + 1, context.abort.signal,
-            );
-            if (saved.saved) {
-              checkpointSequenceValue = saved.sequence;
-              if (
-                context.checkpointTelemetry.saved.length <
-                MAX_CHECKPOINT_TELEMETRY_EVENTS
-              ) {
-                context.checkpointTelemetry.saved.push({
-                  stage: saved.stage,
-                  sequence: saved.sequence,
-                  compressedBytes: saved.size,
-                  uncompressedBytes: saved.jsonSize,
-                });
+          let checkpointChain = Promise.resolve();
+          onCheckpoint = (snapshot) => {
+            const task = checkpointChain.then(async () => {
+              throwIfCancelled(context.abort.signal);
+              if (checkpointSequenceValue >= 1_000_000) {
+                throw new RunnerError('checkpoint_sequence_overflow', 500, false);
               }
-            }
-            return saved;
+              const saved = await putCheckpoint(
+                fetchImpl, spec.checkpoint.writeUrl, spec.jobId, snapshot,
+                compatibility, checkpointSequenceValue + 1, context.abort.signal,
+              );
+              if (saved.saved) {
+                checkpointSequenceValue = saved.sequence;
+                if (
+                  context.checkpointTelemetry.saved.length <
+                  MAX_CHECKPOINT_TELEMETRY_EVENTS
+                ) {
+                  context.checkpointTelemetry.saved.push({
+                    stage: saved.stage,
+                    sequence: saved.sequence,
+                    compressedBytes: saved.size,
+                    uncompressedBytes: saved.jsonSize,
+                  });
+                }
+              }
+              return saved;
+            });
+            checkpointChain = task.then(() => undefined, () => undefined);
+            return task;
           };
         }
 
@@ -1942,6 +2016,7 @@ function createRunnerServer(options = {}) {
           sha256: sha256(taggedPdf),
         };
         await writeBufferAtomic(files.taggedPdf, taggedPdf);
+        remediation.taggedPdfB64 = null;
 
         let pdfUaValidation = {
           status: 'not_run',
@@ -2051,14 +2126,15 @@ function createRunnerServer(options = {}) {
         { jobId: spec.jobId, sha256: reportMetadata.sha256 },
         context.abort.signal,
       );
-      throwIfCancelled(context.abort.signal);
-
-      await persist(spec.jobId, {
-        schema: RUN_SCHEMA,
-        jobId: spec.jobId,
-        requestDigest: digest,
-        status: 'succeeded',
-        result: pendingResult,
+      await withStateLock(async () => {
+        throwIfCancelled(context.abort.signal);
+        await persist(spec.jobId, {
+          schema: RUN_SCHEMA,
+          jobId: spec.jobId,
+          requestDigest: digest,
+          status: 'succeeded',
+          result: pendingResult,
+        });
       });
       await fsp.rm(files.taggedPdf, { force: true }).catch(() => {});
       await fsp.rm(files.report, { force: true }).catch(() => {});
@@ -2101,10 +2177,14 @@ function createRunnerServer(options = {}) {
 
       const timing = attemptTiming(spec.options.maxRunMinutes);
       const abort = new AbortController();
+      let resolveDone;
+      const done = new Promise((resolve) => { resolveDone = resolve; });
       const context = {
         jobId: spec.jobId,
         stage: 'receiving',
         abort,
+        done,
+        resolveDone,
         ...timing,
         driver: null,
         driverTelemetrySuppressed: false,
@@ -2150,51 +2230,59 @@ function createRunnerServer(options = {}) {
       const normalized = error instanceof RunnerError
         ? error
         : new RunnerError('internal_error', 500, false);
-      const abortReason = context.abort.signal.reason;
-      const cancelled = normalized instanceof CancelledError ||
-        abortReason instanceof CancelledError;
-      const terminal = cancelled
-        ? new CancelledError()
-        : (abortReason instanceof RunnerError ? abortReason : normalized);
-      const latest = terminal.retryable
-        ? await store.read(spec.jobId).catch(() => null)
-        : null;
-      const resumable = latest && latest.requestDigest === digest
-        ? {
-            inputMetadata: latest.inputMetadata,
-            taggedMetadata: latest.taggedMetadata,
-            reportMetadata: latest.reportMetadata,
-            pendingResult: latest.pendingResult,
-          }
-        : {};
-      await persist(spec.jobId, {
-        schema: RUN_SCHEMA,
-        jobId: spec.jobId,
-        requestDigest: digest,
-        ...resumable,
-        status: cancelled ? 'cancelled' : (terminal.retryable ? 'retryable' : 'failed'),
-        error: {
-          code: terminal.code,
-          retryable: terminal.retryable,
-          ...(Number.isSafeInteger(terminal.retryAfterMs)
-            ? { retryAfterMs: terminal.retryAfterMs }
-            : {}),
-          ...(terminal.retryBudgetExhausted === true
-            ? { retryBudgetExhausted: true }
-            : {}),
-        },
-      }).catch(() => {});
-      if (!terminal.retryable) {
-        const cleanupPaths = store.pathsFor(spec.jobId);
-        await fsp.rm(cleanupPaths.taggedPdf, { force: true }).catch(() => {});
-        await fsp.rm(cleanupPaths.report, { force: true }).catch(() => {});
-      }
+      const terminal = await withStateLock(async () => {
+        const abortReason = context.abort.signal.reason;
+        const cancelled = normalized instanceof CancelledError ||
+          abortReason instanceof CancelledError;
+        const chosen = cancelled
+          ? new CancelledError()
+          : (abortReason instanceof RunnerError ? abortReason : normalized);
+        const latest = chosen.retryable
+          ? await store.read(spec.jobId).catch(() => null)
+          : null;
+        const resumable = latest && latest.requestDigest === digest
+          ? {
+              inputMetadata: latest.inputMetadata,
+              taggedMetadata: latest.taggedMetadata,
+              reportMetadata: latest.reportMetadata,
+              pendingResult: latest.pendingResult,
+            }
+          : {};
+        await persist(spec.jobId, {
+          schema: RUN_SCHEMA,
+          jobId: spec.jobId,
+          requestDigest: digest,
+          ...resumable,
+          status: cancelled ? 'cancelled' : (chosen.retryable ? 'retryable' : 'failed'),
+          error: {
+            code: chosen.code,
+            retryable: chosen.retryable,
+            ...(Number.isSafeInteger(chosen.retryAfterMs)
+              ? { retryAfterMs: chosen.retryAfterMs }
+              : {}),
+            ...(chosen.retryBudgetExhausted === true
+              ? { retryBudgetExhausted: true }
+              : {}),
+          },
+        }).catch(() => {});
+        if (!chosen.retryable) {
+          const cleanupPaths = store.pathsFor(spec.jobId);
+          await fsp.rm(cleanupPaths.taggedPdf, { force: true }).catch(() => {});
+          await fsp.rm(cleanupPaths.report, { force: true }).catch(() => {});
+        }
+        return chosen;
+      });
       throw terminal;
     } finally {
       clearTimeout(deadlineTimer);
       req.removeListener('aborted', clientAbort);
       res.removeListener('close', responseAbort);
-      if (active === context) active = null;
+      await withStateLock(async () => {
+        if (active === context) active = null;
+      }).catch(() => {
+        if (active === context) active = null;
+      });
+      context.resolveDone?.();
     }
   }
 
@@ -2278,7 +2366,7 @@ function createRunnerServer(options = {}) {
       } catch {
         throw new RunnerError('invalid_request_url', 400);
       }
-      if (req.method === 'GET' && url.pathname === '/healthz' && !url.search) {
+      if (req.method === 'GET' && url.pathname === '/healthz' && !rawUrl.includes('?')) {
         sendJson(res, shuttingDown ? 503 : 200, {
           ok: !shuttingDown,
           service: SERVICE_NAME,
@@ -2296,7 +2384,7 @@ function createRunnerServer(options = {}) {
 
       if (shuttingDown) throw new RunnerError('runner_shutting_down', 503, true);
       requireAuth(req);
-      if (req.method === 'POST' && url.pathname === '/v1/run' && !url.search) {
+      if (req.method === 'POST' && url.pathname === '/v1/run' && !rawUrl.includes('?')) {
         await handleRun(req, res);
         return;
       }
@@ -2304,7 +2392,7 @@ function createRunnerServer(options = {}) {
         await handleStatus(url, res);
         return;
       }
-      if (req.method === 'POST' && url.pathname === '/v1/cancel' && !url.search) {
+      if (req.method === 'POST' && url.pathname === '/v1/cancel' && !rawUrl.includes('?')) {
         await handleCancel(req, res);
         return;
       }
@@ -2322,21 +2410,37 @@ function createRunnerServer(options = {}) {
   server.requestTimeout = 30_000;
   server.keepAliveTimeout = 5_000;
 
-  async function shutdown() {
-    if (shuttingDown) return;
+  let shutdownPromise = null;
+  function shutdown() {
+    if (shutdownPromise) return shutdownPromise;
     shuttingDown = true;
-    const current = active;
-    if (current) {
-      if (!current.abort.signal.aborted) {
-        current.abort.abort(new RunnerError('runner_shutting_down', 503, true));
+    shutdownPromise = (async () => {
+      const current = active;
+      if (current) {
+        if (!current.abort.signal.aborted) {
+          current.abort.abort(new RunnerError('runner_shutting_down', 503, true));
+        }
+        if (current.driver && typeof current.driver.cancelActiveRun === 'function') {
+          await Promise.resolve().then(() => current.driver.cancelActiveRun()).catch(() => {});
+        }
+        if (current.done) {
+          let drainTimer = null;
+          await Promise.race([
+            current.done,
+            new Promise((resolve) => {
+              drainTimer = setTimeout(resolve, 5_000);
+              drainTimer.unref?.();
+            }),
+          ]);
+          clearTimeout(drainTimer);
+        }
       }
-      if (current.driver && typeof current.driver.cancelActiveRun === 'function') {
-        await Promise.resolve().then(() => current.driver.cancelActiveRun()).catch(() => {});
+      if (server.listening) {
+        server.closeIdleConnections?.();
+        await new Promise((resolve) => server.close(resolve));
       }
-    }
-    if (server.listening) {
-      await new Promise((resolve) => server.close(resolve));
-    }
+    })();
+    return shutdownPromise;
   }
 
   return {
@@ -2365,6 +2469,10 @@ async function main() {
     process.exitCode = 1;
     return;
   }
+  app.server.on('error', () => {
+    process.stderr.write('[alloflow-runner] startup_error=listen_failed\n');
+    process.exitCode = 1;
+  });
   app.server.listen(port, '0.0.0.0', () => {
     process.stderr.write(`[alloflow-runner] listening port=${port}\n`);
   });

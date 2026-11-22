@@ -166,7 +166,7 @@ Column 3</textarea>
           <div class="form-grid advanced-form-grid">
             <label>
               Workbook address
-              <input id="documentUrlInput" type="url" inputmode="url" autocomplete="off" aria-describedby="advancedConnectionDetail advancedConnectionError" placeholder="https://spreadsheets.example.edu/document">
+              <input id="documentUrlInput" type="url" inputmode="url" maxlength="2048" autocomplete="off" aria-describedby="advancedConnectionDetail advancedConnectionError" placeholder="https://spreadsheets.example.edu/document">
               <span class="field-hint">Used only to show or open the administrator-provided workbook.</span>
             </label>
             <label>
@@ -269,7 +269,7 @@ Column 3</textarea>
               </label>
               <label>
                 Filter value
-                <input id="analysisFilterValue" type="text" maxlength="1200" disabled>
+                <input id="analysisFilterValue" type="text" maxlength="1200" autocomplete="off" disabled>
               </label>
             </div>
           </fieldset>
@@ -350,11 +350,11 @@ Column 3</textarea>
             <div class="form-grid">
               <label>
                 Casebook title
-                <input id="casebookTitleInput" type="text" maxlength="120" value="My observation casebook" required aria-describedby="casebookSetupError">
+                <input id="casebookTitleInput" type="text" maxlength="120" value="My observation casebook" autocomplete="off" required aria-describedby="casebookSetupError">
               </label>
               <label>
                 What is one case called?
-                <input id="casebookCaseLabelInput" type="text" maxlength="40" value="Case" required aria-describedby="casebookSetupError">
+                <input id="casebookCaseLabelInput" type="text" maxlength="40" value="Case" autocomplete="off" required aria-describedby="casebookSetupError">
               </label>
             </div>
             <label>
@@ -443,7 +443,7 @@ Case 2</textarea>
               <form id="casebookCaseContextForm" class="casebook-context-form" novalidate>
                 <label>
                   <span id="casebookCaseContextLabel">Case description / stable context (optional)</span>
-                  <textarea id="casebookCaseContext" rows="4" maxlength="1200" aria-describedby="casebookCaseContextHint casebookCaseContextStatus casebookCaseContextError"></textarea>
+                  <textarea id="casebookCaseContext" rows="4" maxlength="1200" autocomplete="off" aria-describedby="casebookCaseContextHint casebookCaseContextStatus casebookCaseContextError"></textarea>
                 </label>
                 <p id="casebookCaseContextHint" class="field-hint">Use this for stable setup or background. Changing it does not rewrite earlier observations, and it is not included in agent reflection unless you explicitly select the Cases table.</p>
                 <div class="button-row casebook-context-actions">
@@ -456,7 +456,7 @@ Case 2</textarea>
               <div class="casebook-inline-add">
                 <label>
                   Add another case
-                  <input id="casebookNewCaseName" type="text" maxlength="100" aria-describedby="casebookCaseError">
+                  <input id="casebookNewCaseName" type="text" maxlength="100" autocomplete="off" aria-describedby="casebookCaseError">
                 </label>
                 <button id="casebookAddCaseButton" type="button" class="quiet-button">Add case</button>
               </div>
@@ -473,7 +473,7 @@ Case 2</textarea>
                 </label>
                 <label>
                   Tell AlloSheet what you observed
-                  <textarea id="casebookNarrative" rows="5" maxlength="1200" required aria-describedby="casebookVoiceDisclosure casebookCaptureError" placeholder="Example: Tank 1 at 78 degrees, pH 7.4. Activity: lower than yesterday; one fish stayed near the filter."></textarea>
+                  <textarea id="casebookNarrative" rows="5" maxlength="1200" autocomplete="off" required aria-describedby="casebookVoiceDisclosure casebookCaptureError" placeholder="Example: Tank 1 at 78 degrees, pH 7.4. Activity: lower than yesterday; one fish stayed near the filter."></textarea>
                 </label>
                 <div class="button-row">
                   <button id="casebookVoiceButton" type="button" class="quiet-button" aria-pressed="false" aria-controls="casebookNarrative" aria-describedby="casebookVoiceDisclosure casebookCaptureStatus casebookCaptureError">Dictate observation</button>
@@ -508,11 +508,11 @@ Case 2</textarea>
             <div id="casebookDraftFields" class="casebook-draft-fields"></div>
             <label>
               Qualitative note (recorded evidence)
-              <textarea id="casebookDraftNote" rows="4" maxlength="1200"></textarea>
+              <textarea id="casebookDraftNote" rows="4" maxlength="1200" autocomplete="off"></textarea>
             </label>
             <label>
               Human interpretation (optional)
-              <textarea id="casebookDraftInterpretation" rows="3" maxlength="1200" placeholder="Keep your interpretation separate from what was directly observed."></textarea>
+              <textarea id="casebookDraftInterpretation" rows="3" maxlength="1200" autocomplete="off" placeholder="Keep your interpretation separate from what was directly observed."></textarea>
             </label>
             <ul id="casebookDraftWarnings" class="warning-list" aria-label="Checks to review"></ul>
             <p id="casebookDraftError" class="form-error" role="alert" tabindex="-1" hidden></p>

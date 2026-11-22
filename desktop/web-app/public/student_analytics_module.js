@@ -3667,11 +3667,11 @@ try {
               'aria-live': 'assertive',
               'aria-atomic': 'true',
               'aria-label': probeType + ' begins in ' + countdown,
-              className: 'text-[10rem] font-black text-white animate-pulse',
+              className: 'text-[10rem] font-black text-white animate-pulse motion-reduce:animate-none',
               style: { textShadow: '0 0 60px rgba(99,102,241,0.5)' }
             }, countdown),
-            h('div', { className: 'text-2xl text-white/60 font-bold mt-4' }, probeType + ' — Get Ready'),
-            instruction && h('div', { className: 'text-lg text-white/40 mt-2 max-w-md mx-auto' }, instruction)
+            h('div', { className: 'text-2xl text-slate-200 font-bold mt-4' }, probeType + ' — Get Ready'),
+            instruction && h('div', { className: 'text-lg text-slate-300 mt-2 max-w-md mx-auto' }, instruction)
           )
         ), document.body
       );
@@ -3699,9 +3699,9 @@ try {
           ),
           h('div', { className: 'flex items-center gap-4' },
             // Score tally
-            h('div', { className: 'flex items-center gap-3 text-sm font-bold' },
-              h('span', { className: 'text-green-600' }, '\u2705 ' + correctCount),
-              h('span', { className: 'text-red-500' }, '\u274C ' + incorrectCount)
+            h('div', { className: 'flex items-center gap-3 text-sm font-bold', role: 'status', 'aria-live': 'polite' },
+              h('span', { className: 'text-emerald-700' }, h('span', { 'aria-hidden': 'true' }, '\u2705 '), correctCount, h('span', { className: 'sr-only' }, ' correct')),
+              h('span', { className: 'text-red-700' }, h('span', { 'aria-hidden': 'true' }, '\u274C '), incorrectCount, h('span', { className: 'sr-only' }, ' incorrect'))
             ),
             // Timer
             timer !== undefined && h('div', {
@@ -3710,11 +3710,11 @@ try {
               'aria-live': isTimeLow ? 'polite' : 'off',
               'aria-atomic': 'true',
               className: 'flex items-center gap-2 px-4 py-2 rounded-xl text-lg font-black tabular-nums ' +
-                (isTimeLow ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700')
+                (isTimeLow ? 'bg-red-100 text-red-700 animate-pulse motion-reduce:animate-none' : 'bg-slate-100 text-slate-700')
             }, '\u23F1 ' + timerMin + ':' + timerSec),
-            h('button', { "aria-label": "End Early",
+            h('button', { type: 'button', "aria-label": "End Early",
               onClick: onEndEarly,
-              className: 'px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-50 rounded-lg transition-colors'
+              className: 'min-h-11 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-50 rounded-lg transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1'
             }, '\u23F9 End Early')
           )
         ),
@@ -3723,7 +3723,7 @@ try {
           h('div', { role: 'progressbar', 'aria-label': 'Probe time remaining',
             'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(timerPct),
             'aria-valuetext': (timer || 0) + ' seconds remaining',
-            className: 'h-full transition-all duration-1000 rounded-r ' + (isTimeLow ? 'bg-red-500' : 'bg-indigo-500'),
+            className: 'h-full transition-all duration-1000 motion-reduce:transition-none rounded-r ' + (isTimeLow ? 'bg-red-500' : 'bg-indigo-500'),
             style: { width: timerPct + '%' }
           })
         ),
@@ -6944,25 +6944,31 @@ try {
       }, 'Research Mode'), researchMode && researchMode.active ? React.createElement('span', {
         className: 'flex items-center gap-1 bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full text-xs font-bold'
       }, React.createElement('span', {
-        className: 'w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse'
+        'aria-hidden': 'true',
+        className: 'w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse motion-reduce:animate-none'
       }), 'Active') : null), React.createElement('button', {
-        className: 'px-3 py-1 rounded-lg text-xs font-bold transition-all ' + (researchMode && researchMode.active ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'),
+        type: 'button',
+        className: 'min-h-11 px-3 py-1 rounded-lg text-xs font-bold transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ' + (researchMode && researchMode.active ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'),
         onClick: () => researchMode && researchMode.active ? toggleResearchMode(null) : setShowResearchSetup(true)
       }, researchMode && researchMode.active ? '\u{23F9} End Study' : '\u{1F52C} Start Study')), React.createElement('div', {
         className: 'grid grid-cols-2 gap-2'
       }, React.createElement('button', {
-        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-indigo-400 hover:bg-indigo-50 transition-all text-xs font-medium text-slate-700',
+        type: 'button',
+        className: 'flex items-center gap-2 min-h-11 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-indigo-400 hover:bg-indigo-50 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 text-xs font-medium text-slate-700',
         onClick: exportResearchCSV
-      }, React.createElement('span', null, '\u{1F4C4}'), 'Export Research CSV'), React.createElement('button', {
-        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-blue-400 hover:bg-blue-50 transition-all text-xs font-medium text-slate-700',
+      }, React.createElement('span', { 'aria-hidden': 'true' }, '\u{1F4C4}'), 'Export Research CSV'), React.createElement('button', {
+        type: 'button',
+        className: 'flex items-center gap-2 min-h-11 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-blue-400 hover:bg-blue-50 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 text-xs font-medium text-slate-700',
         onClick: exportSessionLogCSV
-      }, React.createElement('span', null, '\u{1F4C5}'), 'Session Log CSV'), React.createElement('button', {
-        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-violet-400 hover:bg-violet-50 transition-all text-xs font-medium text-slate-700',
+      }, React.createElement('span', { 'aria-hidden': 'true' }, '\u{1F4C5}'), 'Session Log CSV'), React.createElement('button', {
+        type: 'button',
+        className: 'flex items-center gap-2 min-h-11 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-violet-400 hover:bg-violet-50 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 text-xs font-medium text-slate-700',
         onClick: exportSurveyCSV
-      }, React.createElement('span', null, '\u{1F4DD}'), 'Survey CSV'), React.createElement('button', {
-        className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-emerald-400 hover:bg-emerald-50 transition-all text-xs font-medium text-slate-700',
+      }, React.createElement('span', { 'aria-hidden': 'true' }, '\u{1F4DD}'), 'Survey CSV'), React.createElement('button', {
+        type: 'button',
+        className: 'flex items-center gap-2 min-h-11 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-emerald-400 hover:bg-emerald-50 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 text-xs font-medium text-slate-700',
         onClick: () => setShowCBMModal(true)
-      }, React.createElement('span', null, '\u{1F4CB}'), 'Import CBM Score', cbmCount > 0 ? React.createElement('span', {
+      }, React.createElement('span', { 'aria-hidden': 'true' }, '\u{1F4CB}'), 'Import CBM Score', cbmCount > 0 ? React.createElement('span', {
         className: 'bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full text-xs font-bold'
       }, cbmCount) : null), React.createElement('button', {
         className: 'flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-400 hover:border-purple-400 hover:bg-purple-50 transition-all text-xs font-medium text-slate-700',
@@ -7280,15 +7286,18 @@ try {
       }, React.createElement('div', {
         className: 'flex items-center gap-2'
       }, React.createElement('span', {
+        'aria-hidden': 'true',
         className: 'text-lg'
       }, '\u{1F52C}'), React.createElement('h4', {
         className: 'text-sm font-bold text-emerald-800 uppercase tracking-wider'
       }, 'Research Dashboard'), React.createElement('span', {
-        className: 'flex items-center gap-1 bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full text-xs font-bold animate-pulse'
+        className: 'flex items-center gap-1 bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full text-xs font-bold animate-pulse motion-reduce:animate-none'
       }, React.createElement('span', {
+        'aria-hidden': 'true',
         className: 'w-1.5 h-1.5 bg-emerald-600 rounded-full'
       }), 'ACTIVE')), React.createElement('button', {
-        className: 'text-xs text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors',
+        type: 'button',
+        className: 'min-h-11 text-xs font-semibold text-red-700 hover:text-red-800 hover:bg-red-50 px-3 py-1 rounded-lg transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1',
         onClick: () => {
           toggleResearchMode(null);
           addToast && addToast(t('toasts.research_mode_deactivated'), 'info');
@@ -9464,9 +9473,12 @@ try {
     }, /*#__PURE__*/React.createElement(Trash2, {
       size: 16
     }), t('class_analytics.clear_data'))), isProcessing && importProgress.total > 0 && /*#__PURE__*/React.createElement("div", {
-      className: "flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg animate-pulse border border-indigo-200 ml-auto"
+      role: "status",
+      "aria-live": "polite",
+      className: "flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg animate-pulse motion-reduce:animate-none border border-indigo-200 ml-auto"
     }, /*#__PURE__*/React.createElement("div", {
-      className: "animate-spin rounded-full h-4 w-4 border-2 border-indigo-600 border-t-transparent"
+      "aria-hidden": "true",
+      className: "animate-spin motion-reduce:animate-none rounded-full h-4 w-4 border-2 border-indigo-600 border-t-transparent"
     }), /*#__PURE__*/React.createElement("span", {
       className: "text-sm font-medium"
     }, "Processing: ", importProgress.current, "/", importProgress.total))), classSummary && /*#__PURE__*/React.createElement("div", {
@@ -10118,7 +10130,11 @@ try {
     }, "Word ", nwfProbeIndex + 1, " of ", nwfProbeWords.length)), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-3"
     }, /*#__PURE__*/React.createElement("span", {
-      className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${nwfProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'}`
+      role: "timer",
+      "aria-label": "NWF time remaining: " + nwfProbeTimer + " seconds",
+      "aria-live": nwfProbeTimer <= 10 ? "polite" : "off",
+      "aria-atomic": "true",
+      className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${nwfProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse motion-reduce:animate-none' : 'bg-slate-100 text-slate-700'}`
     }, "\u23F1 ", Math.floor(nwfProbeTimer / 60), ":", String(nwfProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
       onClick: async () => {
         if (await askStudentAnalyticsConfirmation("End NWF probe early?", { title: 'End NWF probe', confirmText: 'End probe' })) {
@@ -10301,7 +10317,11 @@ try {
     }, "Letter ", lnfProbeIndex + 1, " of ", lnfProbeLetters.length)), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-3"
     }, /*#__PURE__*/React.createElement("span", {
-      className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${lnfProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'}`
+      role: "timer",
+      "aria-label": "LNF time remaining: " + lnfProbeTimer + " seconds",
+      "aria-live": lnfProbeTimer <= 10 ? "polite" : "off",
+      "aria-atomic": "true",
+      className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${lnfProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse motion-reduce:animate-none' : 'bg-slate-100 text-slate-700'}`
     }, "\u23F1 ", Math.floor(lnfProbeTimer / 60), ":", String(lnfProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
       onClick: async () => {
         if (await askStudentAnalyticsConfirmation("End LNF probe early?", { title: 'End LNF probe', confirmText: 'End probe' })) {
@@ -10675,7 +10695,7 @@ try {
       "aria-label": "ORF time remaining: " + orfProbeTimer + " seconds",
       "aria-live": orfProbeTimer <= 10 ? "polite" : "off",
       "aria-atomic": "true",
-      className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${orfProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'}`
+      className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${orfProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse motion-reduce:animate-none' : 'bg-slate-100 text-slate-700'}`
     }, "\u23F1 ", Math.floor(orfProbeTimer / 60), ":", String(orfProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
       onClick: async () => {
         if (await askStudentAnalyticsConfirmation("End ORF probe early?", { title: 'End ORF probe', confirmText: 'End probe' })) {
@@ -10961,7 +10981,11 @@ try {
     }, "Problem ", mnProbeIndex + 1, " of ", mnProbeProblems.length)), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-3"
     }, /*#__PURE__*/React.createElement("span", {
-      className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${mnProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'}`
+      role: "timer",
+      "aria-label": "Missing Number time remaining: " + mnProbeTimer + " seconds",
+      "aria-live": mnProbeTimer <= 10 ? "polite" : "off",
+      "aria-atomic": "true",
+      className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${mnProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse motion-reduce:animate-none' : 'bg-slate-100 text-slate-700'}`
     }, "\u23F1 ", Math.floor(mnProbeTimer / 60), ":", String(mnProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
       onClick: async () => {
         if (await askStudentAnalyticsConfirmation("End probe early? The answers so far are kept, and you choose whether to save them.", { title: 'End missing number probe', confirmText: 'End probe' })) {
@@ -10988,7 +11012,7 @@ try {
       "aria-valuemax": 100,
       "aria-valuenow": Math.round(mnProbeIndex / Math.max(mnProbeProblems.length, 1) * 100),
       "aria-valuetext": "Item " + Math.min(mnProbeIndex + 1, mnProbeProblems.length) + " of " + mnProbeProblems.length,
-      className: "bg-purple-500 h-2 rounded-full transition-all",
+      className: "bg-purple-500 h-2 rounded-full transition-all motion-reduce:transition-none",
       style: {
         width: `${mnProbeIndex / Math.max(mnProbeProblems.length, 1) * 100}%`
       }
@@ -11044,9 +11068,10 @@ try {
         value: mnProbeAnswer,
         onChange: e => setMnProbeAnswer(saCleanProbeAnswer(e.target.value)),
         onKeyDown: e => {
+          if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
           if (e.key === 'Enter') { e.preventDefault(); submitMnAnswer(); }
         },
-        className: "w-24 text-center text-2xl font-bold border-2 border-purple-600 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400",
+        className: "w-24 text-center text-2xl font-bold border-2 border-purple-600 rounded-xl px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-1",
         style: { width: "8rem", fontSize: "2.25rem", lineHeight: 1.2 },
         placeholder: "?",
         autoFocus: true
@@ -11054,8 +11079,9 @@ try {
         type: "button",
         "data-mn-submit": "true",
         onClick: () => { submitMnAnswer(); setTimeout(() => mnProbeInputRef.current?.focus(), 50); },
-        className: "px-5 py-3 min-h-[44px] bg-purple-700 text-white rounded-xl font-bold text-base hover:bg-purple-600"
+        className: "px-5 py-3 min-h-[44px] bg-purple-700 text-white rounded-xl font-bold text-base hover:bg-purple-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-2 transition-colors motion-reduce:transition-none"
       }, "Enter \u21B5"), /*#__PURE__*/React.createElement("button", {
+        type: "button",
         onClick: () => {
           // Skip button
           const updated = [...mnProbeProblems];
@@ -11082,7 +11108,7 @@ try {
             setMnProbeActive(false);
           }
         },
-        className: "text-sm text-slate-600 hover:text-slate-600 font-bold"
+        className: "min-h-11 px-3 py-2 rounded-lg text-sm text-slate-700 hover:text-slate-900 hover:bg-slate-100 font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 transition-colors motion-reduce:transition-none"
       }, "Skip \u2192")));
     })() : /*#__PURE__*/React.createElement("div", {
       className: "text-center py-4"
@@ -11220,7 +11246,11 @@ try {
     }, "Item ", qdProbeIndex + 1, " of ", qdProbeProblems.length)), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-3"
     }, /*#__PURE__*/React.createElement("span", {
-      className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${qdProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'}`
+      role: "timer",
+      "aria-label": "Quantity Discrimination time remaining: " + qdProbeTimer + " seconds",
+      "aria-live": qdProbeTimer <= 10 ? "polite" : "off",
+      "aria-atomic": "true",
+      className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${qdProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse motion-reduce:animate-none' : 'bg-slate-100 text-slate-700'}`
     }, "\u23F1 ", Math.floor(qdProbeTimer / 60), ":", String(qdProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
       onClick: async () => {
         if (await askStudentAnalyticsConfirmation("End probe early?", { title: 'End quantity discrimination probe', confirmText: 'End probe' })) {

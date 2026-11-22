@@ -187,6 +187,20 @@ function StudentSaveAdventurePanel({
   const unlockXp = Math.max(1, rawUnlockXp || 1);
   const boundedPoints = Math.max(0, Math.min(safePoints, unlockXp));
   const adventureProgress = Math.min(100, boundedPoints / unlockXp * 100);
+  const adventureRemainingXp = Math.max(0, rawUnlockXp - boundedPoints);
+  const adventurePercent = Math.round(adventureProgress);
+  const tr = (key, fallback, vars) => {
+    try {
+      const value = typeof t === "function" ? t(key, vars) : "";
+      let text = typeof value === "string" && value.trim() && value !== key ? value : fallback;
+      Object.keys(vars || {}).forEach((name) => {
+        text = text.split("{" + name + "}").join(String(vars[name]));
+      });
+      return text;
+    } catch (_) {
+      return fallback;
+    }
+  };
   const adventureAvailable = isAdventureAvailable !== false;
   const soloAdventureAiOff = !activeSessionCode && !_aiUsable("text", typeof window !== "undefined" ? window.callGemini : void 0);
   const offlineAdventurePlay = !activeSessionCode && !!offlineAdventure && (soloAdventureAiOff || offlineAdventure.offlineOnly === true);
@@ -215,7 +229,7 @@ function StudentSaveAdventurePanel({
       className: cx(styles.savePanel, "rounded-3xl p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in slide-in-from-left-4 motion-reduce:animate-none shadow-lg"),
       "aria-labelledby": saveTitleId
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx(styles.saveIcon, "p-2 rounded-full"), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Save, { size: 20 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: saveTitleId, className: cx("font-bold text-sm", styles.saveTitle) }, t("student.save_banner_title")), /* @__PURE__ */ React.createElement("p", { className: cx("text-xs", styles.saveText) }, t("student.save_banner_desc")))),
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: cx(styles.saveIcon, "p-2 rounded-full"), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Save, { size: 20 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: saveTitleId, className: cx("font-bold text-sm", styles.saveTitle) }, t("student.save_banner_title")), /* @__PURE__ */ React.createElement("p", { className: cx("text-xs", styles.saveText) }, t("student.save_banner_desc")), hasSaveableWork === false && /* @__PURE__ */ React.createElement("p", { "data-student-save-empty-hint": "true", className: cx("text-[11px] mt-1 font-medium", styles.muted) }, tr("student.save_empty_hint", "Open or complete an activity first to enable saving.")))),
     /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -271,7 +285,7 @@ function StudentSaveAdventurePanel({
         style: { width: `${adventureProgress}%` }
       }
     )
-  ), /* @__PURE__ */ React.createElement("div", { id: adventureProgressId, className: cx("text-[11px] text-right font-mono", styles.progressLabel) }, safePoints, " / ", rawUnlockXp, " XP")) : offlineAdventurePlay ? /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { id: adventureProgressId, className: cx("flex items-center justify-between gap-2 text-[11px] font-mono", styles.progressLabel) }, /* @__PURE__ */ React.createElement("span", { "data-student-adventure-remaining": "true", className: "font-sans font-bold" }, tr("adventure.xp_to_go", "{remaining} XP to go ({percent}%)", { remaining: adventureRemainingXp, percent: adventurePercent })), /* @__PURE__ */ React.createElement("span", null, safePoints, " / ", rawUnlockXp, " XP"))) : offlineAdventurePlay ? /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

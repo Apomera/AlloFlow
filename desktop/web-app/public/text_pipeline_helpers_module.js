@@ -1268,7 +1268,7 @@ const filterEducationalSources = (chunks) => {
                 return true;
             }
         }
-        if (!/^https?:$/i.test(parsed.protocol)) return true;
+        if (!/^https?:$/i.test(parsed.protocol) || parsed.username || parsed.password) return true;
         const hostname = parsed.hostname.toLowerCase().replace(/\.$/, '');
         if (hostnameMatches(hostname, 'youtube.com') &&
             /^\/watch(?:\/|$)/i.test(parsed.pathname)) return true;
@@ -1307,9 +1307,11 @@ const generateBibliographyString = (metadata, citationStyle = 'Links Only', titl
     let bib = `\n\n### ${title}\n\n*${_caveat}*\n\n`;
     entries.forEach(({ chunk, originalIndex }) => {
         const num = originalIndex + 1;
-        const title = chunk.web?.title || "Unknown Source";
-        const uri = chunk.web?.uri || "#";
-        bib += `${num}. [${title}](${uri})\n\n`;
+        const rawTitle = String(chunk.web?.title || "Unknown Source").replace(/[\r\n\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, 240) || "Unknown Source";
+        const safeTitle = rawTitle.replace(/[\[\]\\]/g, ch => '\\' + ch).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const rawUri = String(chunk.web?.uri || "#").trim();
+        const safeUri = rawUri === '#' ? '#' : rawUri.replace(/\s+/g, '%20').replace(/\(/g, '%28').replace(/\)/g, '%29');
+        bib += `${num}. [${safeTitle}](${safeUri})\n\n`;
     });
     return bib;
 };
@@ -1476,7 +1478,8 @@ const processGrounding = (text, metadata, citationStyle = 'Links Only', isJson =
                 if (typeof formatSourceMarker === 'function') return formatSourceMarker(originalIndex);
                 const entry = entriesByOriginalIndex.get(originalIndex);
                 const label = `⁽${toSuperscript(originalIndex + 1)}⁾`;
-                const uri = entry.chunk?.web?.uri;
+                const rawUri = entry.chunk?.web?.uri;
+                const uri = typeof rawUri === 'string' && rawUri.trim() ? rawUri.trim().replace(/\s+/g, '%20').replace(/\(/g, '%28').replace(/\)/g, '%29') : '';
                 return uri ? `[${label}](${uri})` : label;
             })
             .filter(Boolean).join(' ');

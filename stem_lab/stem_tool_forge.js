@@ -953,6 +953,36 @@
     var heroFg = hc ? HC_FG : '#ffffff';
     var heroSub = hc ? HC_FG : '#e0e7ff';
 
+    var rm = !!ctx.reduceMotion;
+    var studioClass = 'allo-forge-studio' + (hc ? ' allo-forge-hc' : '') + (rm ? ' allo-forge-rm' : '');
+    var FORGE_MOTION_CSS = [
+      '@keyframes fg-spark-pulse{0%,100%{opacity:0.72;transform:scale(0.94)}50%{opacity:1;transform:scale(1.09)}}',
+      '@keyframes fg-orbit-twinkle{0%,100%{opacity:0.42;transform:scale(0.82)}50%{opacity:1;transform:scale(1.25)}}',
+      '@keyframes fg-flow-dash{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}',
+      '@keyframes fg-beacon-pulse{0%,100%{opacity:0.22;transform:scale(0.95)}50%{opacity:0.54;transform:scale(1.16)}}',
+      '@keyframes fg-sheen-sweep{0%,18%{transform:translateX(-140px);opacity:0}38%{opacity:0.32}58%{transform:translateX(150px);opacity:0}100%{transform:translateX(150px);opacity:0}}',
+      '@keyframes fg-play-breath{0%,100%{opacity:0.38;transform:scale(0.92)}50%{opacity:0.82;transform:scale(1.08)}}',
+      '@keyframes fg-chassis-dash{from{stroke-dashoffset:18}to{stroke-dashoffset:0}}',
+      '@keyframes fg-phase-beacon{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0.45)}50%{box-shadow:0 0 0 5px rgba(99,102,241,0)}}',
+      '.allo-forge-studio .fg-spark-aura,.allo-forge-studio .fg-spark-star,.allo-forge-studio .fg-spark-dot-a,.allo-forge-studio .fg-spark-dot-b,.allo-forge-studio .fg-beacon-ring,.allo-forge-studio .fg-play-aura{transform-box:fill-box;transform-origin:center}',
+      '.allo-forge-studio .fg-spark-aura{animation:fg-spark-pulse 3.4s ease-in-out infinite}',
+      '.allo-forge-studio .fg-spark-star{animation:fg-spark-pulse 3.4s ease-in-out infinite}',
+      '.allo-forge-studio .fg-spark-dot-a{animation:fg-orbit-twinkle 2.7s ease-in-out infinite}',
+      '.allo-forge-studio .fg-spark-dot-b{animation:fg-orbit-twinkle 3.3s ease-in-out 0.9s infinite}',
+      '.allo-forge-studio .fg-pipe-flow{animation:fg-flow-dash 1.8s linear infinite}',
+      '.allo-forge-studio .fg-pipe-flow-idle{animation:fg-flow-dash 3.2s linear infinite}',
+      '.allo-forge-studio .fg-beacon-ring{animation:fg-beacon-pulse 2.6s ease-in-out infinite}',
+      '.allo-forge-studio .fg-card-sheen{animation:fg-sheen-sweep 5.6s ease-in-out infinite}',
+      '.allo-forge-studio .fg-play-aura{animation:fg-play-breath 3.2s ease-in-out infinite}',
+      '.allo-forge-studio .fg-chassis-dash{animation:fg-chassis-dash 4.8s linear infinite}',
+      '.allo-forge-studio .fg-phase-active{animation:fg-phase-beacon 1.9s ease-in-out infinite}',
+      '@media (prefers-reduced-motion:reduce){.allo-forge-studio *{animation:none!important;transition:none!important}.allo-forge-studio .fg-card-sheen{display:none!important}}',
+      '.allo-forge-rm *{animation:none!important;transition:none!important}.allo-forge-rm .fg-card-sheen{display:none!important}',
+      '.theme-contrast .allo-forge-studio *,.allo-forge-hc *{animation:none!important;transition:none!important}',
+      '.theme-contrast .allo-forge-studio .fg-decor-only,.allo-forge-hc .fg-decor-only{display:none!important}',
+      '@media (forced-colors:active){.allo-forge-studio *{animation:none!important;transition:none!important}.allo-forge-studio .fg-decor-only{display:none!important}}'
+    ].join('');
+
     function renderForgeEmblem() {
       return h('svg', { width: 42, height: 42, viewBox: '0 0 42 42', 'aria-hidden': 'true', focusable: 'false', style: { flexShrink: 0, marginTop: 2 } },
         h('defs', null,
@@ -975,14 +1005,14 @@
         h('rect', { x: 2, y: 2, width: 38, height: 38, rx: 10, fill: hc ? HC_BG : 'url(#fg-emb-bg)', stroke: hc ? HC_FG : '#a5b4fc', strokeWidth: 1.4 }),
         !hc && h('path', { d: 'M9 5 H33', stroke: '#e0e7ff', strokeWidth: 0.9, opacity: 0.4, strokeLinecap: 'round' }),
         // Glowing forge spark aura above anvil
-        !hc && h('circle', { cx: 23, cy: 13, r: 9.5, fill: 'url(#fg-spark-aura)' }),
+        !hc && h('circle', { className: 'fg-decor-only fg-spark-aura', cx: 23, cy: 13, r: 9.5, fill: 'url(#fg-spark-aura)' }),
         // Metallic anvil silhouette with top specular edge
         h('path', { d: 'M8 20 H31 C33.5 20 35 21.8 34 24 L29.5 25.5 V29 H33 V32 H12 V29 H15.5 V25.5 L11.5 24 C9 23.2 8 21.6 8 20 Z', fill: hc ? HC_FG : 'url(#fg-anvil-metal)', stroke: hc ? HC_FG : '#f8fafc', strokeWidth: 0.9, strokeLinejoin: 'round' }),
         !hc && h('line', { x1: 11, y1: 21.2, x2: 30, y2: 21.2, stroke: '#ffffff', strokeWidth: 1, opacity: 0.65, strokeLinecap: 'round' }),
         // Forge sparks
-        h('path', { d: 'M23 7.5 L24.2 11.4 L28 12.5 L24.2 13.6 L23 17.5 L21.8 13.6 L18 12.5 L21.8 11.4 Z', fill: hc ? HC_BTN : '#fde047' }),
-        h('circle', { cx: 15, cy: 11, r: 1.4, fill: hc ? HC_FG : '#fb923c' }),
-        h('circle', { cx: 30, cy: 10.5, r: 1.2, fill: hc ? HC_FG : '#38bdf8' })
+        h('path', { className: !hc ? 'fg-spark-star' : undefined, d: 'M23 7.5 L24.2 11.4 L28 12.5 L24.2 13.6 L23 17.5 L21.8 13.6 L18 12.5 L21.8 11.4 Z', fill: hc ? HC_BTN : '#fde047' }),
+        h('circle', { className: !hc ? 'fg-spark-dot-a' : undefined, cx: 15, cy: 11, r: 1.4, fill: hc ? HC_FG : '#fb923c' }),
+        h('circle', { className: !hc ? 'fg-spark-dot-b' : undefined, cx: 30, cy: 10.5, r: 1.2, fill: hc ? HC_FG : '#38bdf8' })
       );
     }
 
@@ -1015,7 +1045,17 @@
           h('linearGradient', { id: 'fg-card-fail', x1: '0', y1: '0', x2: '0', y2: '1' },
             h('stop', { offset: '0%', stopColor: '#dc2626', stopOpacity: 0.36 }),
             h('stop', { offset: '100%', stopColor: '#450a0a', stopOpacity: 0.58 })
-          )
+          ),
+          !hc && h('linearGradient', { id: 'fg-card-sheen-grad', x1: '0', y1: '0', x2: '1', y2: '0.25' },
+            h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
+            h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.32 }),
+            h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+          ),
+          !hc && stages.map(function (st, idx) {
+            return h('clipPath', { key: 'cp-' + idx, id: 'fg-card-clip-' + idx },
+              h('rect', { x: 10 + idx * 140, y: 13, width: 112, height: 42, rx: 10 })
+            );
+          })
         ),
         !hc && h('rect', { x: 2, y: 4, width: 556, height: 60, rx: 13, fill: 'url(#fg-pipe-rail)', stroke: 'rgba(165,180,252,0.2)', strokeWidth: 1 }),
         stages.slice(0, -1).map(function (st, idx) {
@@ -1023,8 +1063,9 @@
           var x2 = x1 + 26;
           var lineCol = hc ? HC_FG : (st.done ? '#4ade80' : 'rgba(224,231,255,0.42)');
           return h('g', { key: 'ln-' + idx },
-            !hc && st.done && h('line', { x1: x1, y1: 34, x2: x2 - 4, y2: 34, stroke: '#4ade80', strokeWidth: 6, opacity: 0.24 }),
-            h('line', { x1: x1, y1: 34, x2: x2 - 4, y2: 34, stroke: lineCol, strokeWidth: st.done ? 2.4 : 1.5, strokeDasharray: st.done ? undefined : '4 3' }),
+            !hc && st.done && h('line', { className: 'fg-decor-only', x1: x1, y1: 34, x2: x2 - 4, y2: 34, stroke: '#4ade80', strokeWidth: 6, opacity: 0.24 }),
+            h('line', { className: !hc && !st.done ? 'fg-pipe-flow-idle' : undefined, x1: x1, y1: 34, x2: x2 - 4, y2: 34, stroke: lineCol, strokeWidth: st.done ? 2.4 : 1.5, strokeDasharray: st.done ? undefined : '4 3' }),
+            !hc && st.done && h('line', { className: 'fg-decor-only fg-pipe-flow', x1: x1, y1: 34, x2: x2 - 4, y2: 34, stroke: '#dcfce7', strokeWidth: 2, strokeDasharray: '4 8', strokeLinecap: 'round', opacity: 0.9 }),
             h('polygon', { points: (x2 - 5) + ',30 ' + x2 + ',34 ' + (x2 - 5) + ',38', fill: lineCol })
           );
         }),
@@ -1034,10 +1075,13 @@
           var stk = hc ? (st.done ? HC_BTN : HC_FG) : (st.fail ? '#fca5a5' : st.done ? '#4ade80' : 'rgba(199,210,254,0.48)');
           var badgeText = st.fail ? '✖' : (st.done ? '✔' : st.num);
           return h('g', { key: st.num },
-            !hc && (st.done || st.fail) && h('rect', { x: x, y: 13, width: 112, height: 42, rx: 10, fill: 'none', stroke: stk, strokeWidth: 5, opacity: 0.16 }),
+            !hc && (st.done || st.fail) && h('rect', { className: 'fg-decor-only', x: x, y: 13, width: 112, height: 42, rx: 10, fill: 'none', stroke: stk, strokeWidth: 5, opacity: 0.16 }),
             h('rect', { x: x, y: 13, width: 112, height: 42, rx: 10, fill: fill, stroke: stk, strokeWidth: st.done || st.fail ? 1.8 : 1.2 }),
+            !hc && st.done && h('g', { clipPath: 'url(#fg-card-clip-' + idx + ')', className: 'fg-decor-only', style: { pointerEvents: 'none' } },
+              h('rect', { className: 'fg-card-sheen', x: x - 20, y: 10, width: 44, height: 48, fill: 'url(#fg-card-sheen-grad)', style: { animationDelay: (idx * 0.7) + 's' } })
+            ),
             !hc && h('line', { x1: x + 10, y1: 14.5, x2: x + 102, y2: 14.5, stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.28 }),
-            !hc && (st.done || st.fail) && h('circle', { cx: x + 22, cy: 34, r: 14, fill: st.fail ? '#dc2626' : '#16a34a', opacity: 0.22 }),
+            !hc && (st.done || st.fail) && h('circle', { className: 'fg-decor-only fg-beacon-ring', cx: x + 22, cy: 34, r: 14, fill: st.fail ? '#dc2626' : '#16a34a', opacity: 0.26 }),
             h('circle', { cx: x + 22, cy: 34, r: 11, fill: hc ? HC_BG : (st.fail ? '#dc2626' : st.done ? '#16a34a' : 'rgba(255,255,255,0.16)'), stroke: stk, strokeWidth: 1.2 }),
             h('text', { x: x + 22, y: 37.5, textAnchor: 'middle', fill: hc ? (st.done ? HC_BTN : HC_FG) : '#ffffff', fontSize: 9.5, fontWeight: '800' }, badgeText),
             h('text', { x: x + 40, y: 31, fill: hc ? HC_FG : '#ffffff', fontSize: 10.5, fontWeight: '800' }, st.name),
@@ -1138,7 +1182,8 @@
     ];
 
     if (!ctx.isTeacherMode) {
-      return h('div', { style: { padding: 18, color: fg, maxWidth: 740, margin: '0 auto', background: hc ? HC_BG : (dark ? '#0f172a' : '#f8fafc'), border: (hc ? '2px solid ' : '1px solid ') + border, borderRadius: 16 } },
+      return h('div', { className: studioClass, style: { padding: 18, color: fg, maxWidth: 740, margin: '0 auto', background: hc ? HC_BG : (dark ? '#0f172a' : '#f8fafc'), border: (hc ? '2px solid ' : '1px solid ') + border, borderRadius: 16 } },
+        h('style', { id: 'allo-forge-motion-css' }, FORGE_MOTION_CSS),
         h('div', { style: { padding: 18, borderRadius: 12, background: heroBg, border: hc ? '2px solid ' + HC_FG : '1px solid rgba(165,180,252,0.3)', color: heroFg } },
           h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12 } },
             renderForgeEmblem(),
@@ -1160,7 +1205,8 @@
       { id: 'fixer', label: t('stem.forge.fixer', 'Fixer') }
     ];
 
-    return h('div', { style: { color: fg, padding: 14, display: 'flex', flexDirection: 'column', gap: 14, minHeight: 480, background: hc ? HC_BG : (dark ? '#0b1220' : '#f8fafc'), border: (hc ? '2px solid ' : '1px solid ') + border, borderRadius: 16 } },
+    return h('div', { className: studioClass, style: { color: fg, padding: 14, display: 'flex', flexDirection: 'column', gap: 14, minHeight: 480, background: hc ? HC_BG : (dark ? '#0b1220' : '#f8fafc'), border: (hc ? '2px solid ' : '1px solid ') + border, borderRadius: 16 } },
+      h('style', { id: 'allo-forge-motion-css' }, FORGE_MOTION_CSS),
       // Hero Workbench Header
       h('header', { style: { padding: 16, borderRadius: 14, background: heroBg, border: hc ? '2px solid ' + HC_FG : '1px solid rgba(165,180,252,0.28)', color: heroFg, boxShadow: hc ? 'none' : '0 10px 26px rgba(30,27,75,0.22)' } },
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' } },
@@ -1277,7 +1323,7 @@
                 busy ? h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }, 'aria-hidden': true },
                   PHASES.map(function (p) {
                     var active = phase === p.id;
-                    return h('span', { key: p.id, style: { fontSize: 12, padding: '3px 8px', borderRadius: 999, border: '1px solid ' + border, background: active ? accent : 'transparent', color: active ? '#fff' : sub } }, p.label);
+                    return h('span', { key: p.id, className: active && !hc ? 'fg-phase-active' : undefined, style: { fontSize: 12, padding: '3px 8px', borderRadius: 999, border: '1px solid ' + border, background: active ? accent : 'transparent', color: active ? '#fff' : sub } }, p.label);
                   })
                 ) : null,
                 h('p', { style: { fontSize: 12, color: sub, lineHeight: 1.5, margin: 0 } }, t('stem.forge.ai_note', 'The generator drafts a conforming plugin, then self-reviews and fixes against the contract. Always review the validator and the live preview before submitting.'))
@@ -1353,10 +1399,21 @@
                       h('radialGradient', { id: 'fg-play-aura', cx: '50%', cy: '50%', r: '50%' },
                         h('stop', { offset: '0%', stopColor: '#818cf8', stopOpacity: 0.44 }),
                         h('stop', { offset: '100%', stopColor: '#4f46e5', stopOpacity: 0 })
+                      ),
+                      !hc && h('linearGradient', { id: 'fg-prev-sheen', x1: '0', y1: '0', x2: '1', y2: '0.2' },
+                        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
+                        h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: dark ? 0.16 : 0.42 }),
+                        h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+                      ),
+                      !hc && h('clipPath', { id: 'fg-prev-clip' },
+                        h('rect', { x: 8, y: 8, width: 264, height: 80, rx: 10 })
                       )
                     ),
                     // Polished studio preview chassis + top window header bar
-                    h('rect', { x: 8, y: 8, width: 264, height: 80, rx: 10, fill: hc ? HC_BG : 'url(#fg-prev-bg)', stroke: hc ? HC_FG : (dark ? 'rgba(129,140,248,0.45)' : '#cbd5e1'), strokeWidth: 1.5, strokeDasharray: '5 4' }),
+                    h('rect', { className: !hc ? 'fg-chassis-dash' : undefined, x: 8, y: 8, width: 264, height: 80, rx: 10, fill: hc ? HC_BG : 'url(#fg-prev-bg)', stroke: hc ? HC_FG : (dark ? 'rgba(129,140,248,0.45)' : '#cbd5e1'), strokeWidth: 1.5, strokeDasharray: '5 4' }),
+                    !hc && h('g', { clipPath: 'url(#fg-prev-clip)', className: 'fg-decor-only', style: { pointerEvents: 'none' } },
+                      h('rect', { className: 'fg-card-sheen', x: 60, y: 4, width: 58, height: 88, fill: 'url(#fg-prev-sheen)' })
+                    ),
                     !hc && h('path', { d: 'M9 24 H271', stroke: dark ? 'rgba(148,163,184,0.22)' : '#e2e8f0', strokeWidth: 1 }),
                     h('circle', { cx: 20, cy: 16, r: 2.5, fill: hc ? HC_FG : '#fb7185' }),
                     h('circle', { cx: 29, cy: 16, r: 2.5, fill: hc ? HC_FG : '#fbbf24' }),
@@ -1367,7 +1424,8 @@
                     h('rect', { x: 24, y: 65, width: 74, height: 13, rx: 6.5, fill: hc ? HC_BTN : accent, fillOpacity: 0.8 }),
                     !hc && h('line', { x1: 30, y1: 67, x2: 92, y2: 67, stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.4 }),
                     // Glowing play-sandbox medallion
-                    !hc && h('circle', { cx: 232, cy: 54, r: 26, fill: 'url(#fg-play-aura)' }),
+                    !hc && h('circle', { className: 'fg-decor-only fg-play-aura', cx: 232, cy: 54, r: 26, fill: 'url(#fg-play-aura)' }),
+                    !hc && h('circle', { className: 'fg-decor-only fg-beacon-ring', cx: 232, cy: 54, r: 21, fill: 'none', stroke: '#818cf8', strokeWidth: 1.2, opacity: 0.45 }),
                     h('circle', { cx: 232, cy: 54, r: 18, fill: hc ? HC_BG : 'rgba(79,70,229,0.2)', stroke: hc ? HC_BTN : '#818cf8', strokeWidth: 1.8 }),
                     h('polygon', { points: '227,46 241,54 227,62', fill: hc ? HC_BTN : '#818cf8' })
                   ),

@@ -461,19 +461,19 @@ const flattenObject = (obj, prefix = '') => {
 const unflattenObject = (data) => {
     const result = {};
     if (!data || typeof data !== 'object') return result;
-    const UNSAFE_KEYS = { '__proto__': true, 'constructor': true, 'prototype': true };
+    const UNSAFE_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
     const ownKeys = Object.keys(data);
     for (let k = 0; k < ownKeys.length; k++) {
         const i = ownKeys[k];
         const keys = i.split('.');
-        if (keys.some((key) => UNSAFE_KEYS[key])) continue;
+        if (keys.some((key) => UNSAFE_KEYS.has(key))) continue;
         let acc = result;
         for (let idx = 0; idx < keys.length; idx++) {
             const key = keys[idx];
             if (idx === keys.length - 1) {
                 acc[key] = data[i];
             } else {
-                if (!acc[key] || typeof acc[key] !== 'object' || Array.isArray(acc[key])) {
+                if (!Object.prototype.hasOwnProperty.call(acc, key) || !acc[key] || typeof acc[key] !== 'object' || Array.isArray(acc[key])) {
                     acc[key] = {};
                 }
                 acc = acc[key];
@@ -539,7 +539,7 @@ const _dsMirrorSet = (key, storedValue) => {
 // workspace verifies their encrypted migration. window.__alloPrefsHydrated +
 // the allo-prefs-hydrated event let the monolith's mount gate hold first
 // paint briefly so boot-time reads (theme, a11y) see restored values.
-const _isPrivateClassroomStorageKey = (key) => key === 'alloflow_classroom_roster_state_v1' || key === 'alloflow_classroom_sync_keys';
+const _isPrivateClassroomStorageKey = (key) => key === 'alloflow_classroom_roster_state_v1' || key === 'alloflow_classroom_sync_keys' || key === 'alloflow_reading_places_v1';
 const _isProtectedClinicalStorageKey = (key) => typeof key === 'string' && [
   'behaviorLens_', 'bl_', 'allo_behaviorlens_',
   'alloflow_dynamic_assessment_', 'alloflow_da_', 'allo_rw_'
@@ -1284,12 +1284,17 @@ const _isPrivateOrLocalHost = (rawHost) => {
         if (h.slice(0, 7).every((v) => v === 0) && h[7] === 1) return true;
         if ((h[0] & 0xfe00) === 0xfc00 || (h[0] & 0xffc0) === 0xfe80 || (h[0] & 0xffc0) === 0xfec0 || (h[0] & 0xff00) === 0xff00) return true;
         const isMappedV4 = h.slice(0, 5).every((v) => v === 0) && (h[5] === 0xffff || h[5] === 0);
+        const isTranslatedV4 = h.slice(0, 4).every((v) => v === 0) && h[4] === 0xffff && h[5] === 0;
         const isNat64 = h[0] === 0x0064 && h[1] === 0xff9b && h.slice(2, 6).every((v) => v === 0);
-        if (isMappedV4 || isNat64) return _isPrivateIpv4Uint32(((h[6] << 16) | h[7]) >>> 0);
+        const isLocalNat64 = h[0] === 0x0064 && h[1] === 0xff9b && h[2] === 0x0001;
+        if (isLocalNat64) return true;
+        if (h[0] === 0x2002) return _isPrivateIpv4Uint32(((h[1] << 16) | h[2]) >>> 0);
+        if (isMappedV4 || isTranslatedV4 || isNat64) return _isPrivateIpv4Uint32(((h[6] << 16) | h[7]) >>> 0);
         return false;
     }
     const ipv4 = _parseIpv4ToUint32(host);
     if (ipv4 !== null) return _isPrivateIpv4Uint32(ipv4);
+    if (!host.includes('.')) return true;
     return false;
 };
 const _normalizeSafeExternalHttpUrl = (rawUrl) => {
@@ -1350,8 +1355,16 @@ const isYouTubeUrl = (url) => {
 const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
     // Student AI-off / policy: no Gemini URL Context or YouTube transcript (blocked fns are truthy).
     const cloudAiOk = (() => {
-        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', geminiCaller); } catch (_) {}
-        return !(geminiCaller && geminiCaller._alloQrBlocked) && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+        try {
+            if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', geminiCaller);
+            if (geminiCaller && geminiCaller._alloQrBlocked) return false;
+            if (typeof window !== 'undefined') {
+                if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return false;
+                const qr = window.__alloQrStudentMode;
+                if (qr === true || (qr && typeof qr === 'object' && qr.active === true && qr.allowAi === false)) return false;
+            }
+            return true;
+        } catch (_) { return false; }
     })();
     if (!url || !url.trim()) return null;
     const blockedImport = () => {
@@ -1383,6 +1396,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
     assertLegacyImportAllowed();
     let targetUrl = url.trim();
     const resolveRuntimeGeminiKey = () => {
+        if (!cloudAiOk) return '';
         try {
             if (typeof window !== 'undefined') {
                 if (window.__alloAiSecretsLocked === true) return '';
@@ -1612,7 +1626,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
         text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
         text = text.replace(/\[\d+\]/g, '');
         text = text.replace(/^\[.+\]:\s*http.+$/gm, '');
-        if (geminiCaller) {
+        if (geminiCaller && cloudAiOk) {
             assertLegacyImportAllowed();
             const safeExtracted = text.substring(0, 50000).replace(/"""/g, '"\\""');
             const cleanPrompt = `
@@ -1661,15 +1675,15 @@ const optimizeImage = (base64Str, maxWidth = 800, quality = 0.9) => {
             return;
         }
         const img = new Image();
-        img.src = base64Str;
         img.crossOrigin = "Anonymous";
+        img.src = base64Str;
         img.onload = () => {
             try {
                 const canvas = document.createElement('canvas');
                 canvas.setAttribute('aria-hidden', 'true');
                 let width = img.width;
                 let height = img.height;
-                if (width > maxWidth) {
+                if (width > 0 && maxWidth > 0 && width > maxWidth) {
                     height = Math.round(height * (maxWidth / width));
                     width = maxWidth;
                 }
@@ -1726,19 +1740,24 @@ function _renderDiagramSvg(tool, state, titleText) {
   if (tool === 'numberline') {
     var range = state.range || {};
     var min = num(range.min, 0), max = num(range.max, 10);
+    if (Math.abs(min) > 1e12 || Math.abs(max) > 1e12) return unavailable('Number line range');
     if (max <= min) max = min + 10;
     var W = 380, padX = 24, axisY = 46;
-    var sx = function (v) { return padX + ((num(v, min) - min) / (max - min)) * (W - 2 * padX); };
     var span = max - min;
+    if (!isFinite(span) || span <= 0) return unavailable('Number line range');
+    var sx = function (v) { return padX + ((num(v, min) - min) / span) * (W - 2 * padX); };
     var step = span <= 10 ? 1 : span <= 20 ? 2 : span <= 50 ? 5 : Math.ceil(span / 10);
-    var ticks = '';
-    for (var tv = Math.ceil(min); tv <= max; tv += step) {
+    if (!isFinite(step) || step <= 0) return unavailable('Number line range');
+    var ticks = '', tickCount = 0;
+    for (var tv = Math.ceil(min); tv <= max && tickCount < 100; tv += step) {
+      tickCount++;
       var tx = sx(tv);
       ticks += '<line x1="' + tx + '" y1="' + (axisY - 5) + '" x2="' + tx + '" y2="' + (axisY + 5) + '" stroke="#475569" stroke-width="1.5"/>'
         + '<text x="' + tx + '" y="' + (axisY + 20) + '" font-size="11" fill="#475569" text-anchor="middle">' + esc(tv) + '</text>';
+      if (tv + step <= tv) break;
     }
     var markers = '', descParts = [];
-    (Array.isArray(state.markers) ? state.markers : []).forEach(function (m) {
+    (Array.isArray(state.markers) ? state.markers.slice(0, 100) : []).forEach(function (m) {
       var mv = num(m && m.value, null);
       if (mv == null) return;
       var mx = sx(mv);
@@ -1754,9 +1773,10 @@ function _renderDiagramSvg(tool, state, titleText) {
       + ticks + markers + '</svg>';
   }
   if (tool === 'coordinate') {
-    var pts = Array.isArray(state.points) ? state.points.filter(function (p) { return p && isFinite(Number(p.x)) && isFinite(Number(p.y)); }) : [];
+    var pts = Array.isArray(state.points) ? state.points.filter(function (p) { return p && isFinite(Number(p.x)) && isFinite(Number(p.y)); }).slice(0, 100) : [];
     var coords = pts.map(function (p) { return Math.abs(Number(p.x)); }).concat(pts.map(function (p) { return Math.abs(Number(p.y)); }));
-    var R = coords.length ? Math.max(5, Math.ceil(Math.max.apply(null, coords))) : 10;
+    var maxCoord = coords.reduce(function (a, b) { return b > a ? b : a; }, 0);
+    var R = coords.length ? Math.max(5, Math.ceil(maxCoord)) : 10;
     if (R > 20) return unavailable('Coordinates: ' + pts.map(function(p) { return '(' + p.x + ', ' + p.y + ')'; }).join('; '));
     var S = 240, pad = 16, origin = S / 2, unit = (S / 2 - pad) / R;
     var cx = function (x) { return origin + num(x, 0) * unit; };

@@ -88,10 +88,11 @@ function assignStableNodeIds(doc) {
       used.add(existing);
       return;
     }
-    let candidate = 'sem-' + fnv1a(semanticIdSeed(element));
+    const base = 'sem-' + fnv1a(semanticIdSeed(element));
+    let candidate = base;
     let suffix = 2;
     while (used.has(candidate)) {
-      candidate = 'sem-' + fnv1a(semanticIdSeed(element)) + '-' + suffix;
+      candidate = base + '-' + suffix;
       suffix += 1;
     }
     element.setAttribute(SEMANTIC_ID_ATTRIBUTE, candidate);
@@ -119,9 +120,17 @@ function imageForNode(element) {
   return element.tagName.toLowerCase() === 'img' ? element : element.querySelector('img');
 }
 
+function directTableRows(table) {
+  return Array.from(table.querySelectorAll('tr')).filter((row) => row.closest('table') === table);
+}
+
+function directTableHeaders(table) {
+  return Array.from(table.querySelectorAll('th')).filter((header) => header.closest('table') === table);
+}
+
 function tableProperties(table) {
-  const rows = Array.from(table.querySelectorAll('tr'));
-  const headers = Array.from(table.querySelectorAll('th'));
+  const rows = directTableRows(table);
+  const headers = directTableHeaders(table);
   const firstRowCells = rows[0] ? Array.from(rows[0].children).filter((cell) => /^(TD|TH)$/.test(cell.tagName)) : [];
   const firstColumnCells = rows.map((row) => row.children[0]).filter((cell) => cell && /^(TD|TH)$/.test(cell.tagName));
   return {
@@ -224,7 +233,7 @@ function buildSemanticTree(html) {
     flat,
     document: {
       language: doc.documentElement.getAttribute('lang') || '',
-      title: normalizedText(doc.querySelector('title')?.textContent || doc.querySelector('h1')?.textContent, 200),
+      title: normalizedText(doc.querySelector('title')?.textContent, 200) || normalizedText(doc.querySelector('h1')?.textContent, 200),
     },
     ...idResult,
     truncated: elements.length >= MAX_TREE_NODES,
@@ -232,8 +241,8 @@ function buildSemanticTree(html) {
 }
 
 function findSemanticNode(doc, nodeId) {
-  if (!nodeId) return null;
-  return Array.from(doc.body.querySelectorAll('[' + SEMANTIC_ID_ATTRIBUTE + ']'))
+  if (typeof nodeId !== 'string' || !ID_PATTERN.test(nodeId)) return null;
+  return Array.from(doc.body.querySelectorAll('[' + SEMANTIC_ID_ATTRIBUTE + ']')).slice(0, MAX_TREE_NODES)
     .find((element) => element.getAttribute(SEMANTIC_ID_ATTRIBUTE) === nodeId) || null;
 }
 
@@ -255,7 +264,7 @@ function setCellHeader(doc, cell, scope) {
 }
 
 function applyTableHeaders(doc, table, mode) {
-  const rows = Array.from(table.querySelectorAll('tr'));
+  const rows = directTableRows(table);
   if (!rows.length) return false;
   if (mode === 'first-row' || mode === 'both') {
     Array.from(rows[0].children).filter((cell) => /^(TD|TH)$/.test(cell.tagName)).forEach((cell) => setCellHeader(doc, cell, 'col'));
@@ -271,8 +280,14 @@ function applyTableHeaders(doc, table, mode) {
   return true;
 }
 
+function _safeCommandStr(v) {
+  if (v == null) return '';
+  if (typeof v === 'symbol') return '';
+  try { return String(v); } catch (_) { return ''; }
+}
+
 function commandFailure(html, command, error, targetId) {
-  return { ok: false, changed: false, html, entry: null, summary: '', targetId: targetId || '', reason: '', error, command: command || null };
+  return { ok: false, changed: false, html, entry: null, summary: '', targetId: _safeCommandStr(targetId), reason: '', error, command: command || null };
 }
 
 function applySemanticCommand(html, command) {
@@ -281,7 +296,7 @@ function applySemanticCommand(html, command) {
   if (!command || typeof command !== 'object' || typeof command.type !== 'string') return commandFailure(serializeDocument(doc), command, 'invalid-command', command?.nodeId);
   assignStableNodeIds(doc);
   const type = command.type;
-  let targetId = String(command.nodeId || '');
+  let targetId = _safeCommandStr(command.nodeId);
   let target = targetId ? findSemanticNode(doc, targetId) : null;
   if (type !== 'set-language' && !target) return commandFailure(serializeDocument(doc), command, 'node-not-found', targetId);
   if (type === 'set-language' && targetId && !target) return commandFailure(serializeDocument(doc), command, 'node-not-found', targetId);
@@ -289,7 +304,7 @@ function applySemanticCommand(html, command) {
   let summary = '';
 
   if (type === 'retag') {
-    const newTag = String(command.tag || '').toLowerCase();
+    const newTag = _safeCommandStr(command.tag).toLowerCase();
     if (!RETAG_TARGETS.has(newTag)) return commandFailure(before, command, 'unsupported-tag', targetId);
     if (!RETAG_TARGETS.has(target.tagName.toLowerCase())) return commandFailure(before, command, 'target-cannot-be-retagged', targetId);
     if (target.tagName.toLowerCase() !== newTag) replaceTag(target, doc, newTag);
@@ -301,8 +316,10 @@ function applySemanticCommand(html, command) {
     if (sibling && target.parentNode) {
       if (direction === 'up') target.parentNode.insertBefore(target, sibling);
       else target.parentNode.insertBefore(sibling, target);
+      summary = 'Moved ' + targetId + ' ' + direction + ' in reading order';
+    } else {
+      summary = targetId + ' is already at the ' + (direction === 'up' ? 'start' : 'end') + ' of reading order';
     }
-    summary = 'Moved ' + targetId + ' ' + direction + ' in reading order';
   } else if (type === 'set-artifact') {
     const tag = target.tagName.toLowerCase();
     if (tag !== 'img' && tag !== 'figure') return commandFailure(before, command, 'target-is-not-an-image', targetId);
@@ -328,7 +345,7 @@ function applySemanticCommand(html, command) {
     }
     summary = 'Updated alternative text for ' + targetId;
   } else if (type === 'set-language') {
-    const language = String(command.language || '').trim();
+    const language = _safeCommandStr(command.language).trim();
     if (!LANGUAGE_PATTERN.test(language)) return commandFailure(before, command, 'invalid-language', targetId || 'document');
     const languageTarget = target || doc.documentElement;
     languageTarget.setAttribute('lang', language);
@@ -366,13 +383,15 @@ function applySemanticCommand(html, command) {
   };
 }
 
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.SemanticReview = Object.freeze({
-  SEMANTIC_ID_ATTRIBUTE,
-  EVIDENCE_INVALIDATION_REASON,
-  TAG_TO_PDF_ROLE,
-  ensureStableNodeIds,
-  buildSemanticTree,
-  applySemanticCommand,
-});
-window.AlloModules.SemanticReviewModule = true;
+if (typeof window !== 'undefined') {
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.SemanticReview = Object.freeze({
+    SEMANTIC_ID_ATTRIBUTE,
+    EVIDENCE_INVALIDATION_REASON,
+    TAG_TO_PDF_ROLE,
+    ensureStableNodeIds,
+    buildSemanticTree,
+    applySemanticCommand,
+  });
+  window.AlloModules.SemanticReviewModule = true;
+}

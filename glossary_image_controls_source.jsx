@@ -1,9 +1,14 @@
 // Image changes use the host's resource/entry task, shared with AI generation.
 // Mulberry is fetched only when its picker opens, a search is submitted, or a result is selected.
 // Host "Needs AI setup" doorway for teacher AI actions; null on old hosts.
-function _isGlossaryAiBlocked() {
+function _isGlossaryAiBlocked(fn) {
   if (typeof window === 'undefined') return false;
-  return window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true;
+  if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window.__alloOfflineOnly === true) return true;
+  if (fn && fn._alloQrBlocked === true) return true;
+  try {
+    if (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('images', fn)) return true;
+  } catch (_) {}
+  return false;
 }
 function glossaryAiDoor(kind, t) {
   try {
@@ -24,7 +29,7 @@ function _isSafeGlossaryMulberryUrl(rawUrl) {
     const host = (parsed.hostname || '').toLowerCase().replace(/^\[|\]$/g, '');
     if (!host || host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal')) return false;
     if (/^(0\.|10\.|127\.|169\.254\.|192\.168\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host)) return false;
-    if (host === '::1' || host === '::' || /^(fc|fd|fe80:)/i.test(host) || host.startsWith('::ffff:')) return false;
+    if (host === '::1' || host === '::' || /^(fc|fd|fe[89ab][0-9a-f]:)/i.test(host) || host.startsWith('::ffff:')) return false;
     return true;
   } catch (_) {
     return false;
@@ -75,6 +80,7 @@ async function prepareGlossaryMulberry(result, signal) {
   if (!_isSafeGlossaryMulberryUrl(result?.url)) throw new Error('This symbol has no usable image.');
   const response = await fetch(result.url, { signal, credentials: 'omit', referrerPolicy: 'no-referrer' });
   if (!response.ok) throw new Error('The symbol could not be downloaded. Please try again.');
+  if (response.url && !_isSafeGlossaryMulberryUrl(response.url)) throw new Error('The symbol redirected to an unsupported address.');
   const declaredLen = Number(response.headers?.get?.('content-length') || 0);
   if (Number.isFinite(declaredLen) && declaredLen > 10 * 1024 * 1024) throw new Error('The symbol image exceeds the 10 MB limit.');
   const source = await readGlossaryImageFile(await response.blob(), signal, true);

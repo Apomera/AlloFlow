@@ -439,8 +439,10 @@
     };
     // Codenames become roster object keys: refuse prototype names and control characters.
     function checkedCodename(codename) {
-        if (typeof codename !== 'string' || !codename.trim() || [...codename].length > 80
-            || ['__proto__', 'constructor', 'prototype'].includes(codename) || /[\u0000-\u001f\u007f]/.test(codename)) fail('MALFORMED_REQUEST');
+        const trimmedLower = typeof codename === 'string' ? codename.trim().toLowerCase() : '';
+        if (typeof codename !== 'string' || !trimmedLower || [...codename].length > 80
+            || ['__proto__', 'constructor', 'prototype', 'tostring', 'valueof', 'hasownproperty'].includes(trimmedLower)
+            || /[\u0000-\u001f\u007f]/.test(codename)) fail('MALFORMED_REQUEST');
         const key = codenameKey(codename);
         if (!key) fail('MALFORMED_REQUEST');
         return key;

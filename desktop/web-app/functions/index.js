@@ -99,13 +99,39 @@ async function verifyCaller(req) {
   return { uid: user.uid, appId: appCheck.appId };
 }
 
-function clientIpHash(req) {
-  const fastly = String(req.get("Fastly-Client-IP") || "").trim();
-  const xffParts = String(req.get("X-Forwarded-For") || "").split(",").map((s) => s.trim()).filter(Boolean);
-  const candidate = fastly || (xffParts.length ? xffParts[xffParts.length - 1] : String(req.ip || "").trim());
-  if (!candidate) return "";
+function isTrustedHostingForward(req) {
+  const fwdHost = String(req.get("X-Forwarded-Host") || "").split(",")[0].trim().toLowerCase();
+  if (!fwdHost) return false;
+  for (const origin of configuredOrigins()) {
+    try {
+      if (new URL(origin).host.toLowerCase() === fwdHost) return true;
+    } catch (_) {}
+  }
+  return false;
+}
+
+function hashIpBucket(label, ip) {
+  if (!ip) return "";
   const salt = String(process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || "alloflow");
-  return crypto.createHash("sha256").update(salt + ":ip:" + candidate).digest("hex");
+  return crypto.createHash("sha256").update(salt + ":" + label + ":" + ip).digest("hex");
+}
+
+function resolveRateLimitIpKeys(req) {
+  if (!req) return { clientIpKey: "", directIpKey: "" };
+  const xffParts = String(req.get("X-Forwarded-For") || "").split(",").map((s) => s.trim()).filter(Boolean);
+  const fastly = String(req.get("Fastly-Client-IP") || "").trim();
+  const rightmost = xffParts.length ? xffParts[xffParts.length - 1] : String(req.ip || "").trim();
+  // On legitimate Firebase Hosting rewrites (Fastly -> GFE -> Cloud Run), Fastly
+  // forwards the client IP as Fastly-Client-IP and XFF[n-2], while GFE appends
+  // Fastly's shared PoP egress IP as XFF[n-1]. Only trust Fastly-Client-IP when
+  // both X-Forwarded-Host matches a configured Hosting origin and XFF[n-2] agrees;
+  // in that case bucket on the real client IP without colliding all schools on the
+  // shared Fastly PoP egress IP. Otherwise ignore Fastly-Client-IP completely so
+  // direct Cloud Run callers cannot spoof a victim school's IP bucket.
+  if (fastly && isTrustedHostingForward(req) && xffParts.length >= 2 && xffParts[xffParts.length - 2] === fastly) {
+    return { clientIpKey: hashIpBucket("ip", fastly), directIpKey: "" };
+  }
+  return { clientIpKey: "", directIpKey: hashIpBucket("direct_ip", rightmost) };
 }
 
 async function readBoundedResponseText(response, maxBytes) {
@@ -145,29 +171,20 @@ async function readBoundedResponseText(response, maxBytes) {
   return new TextDecoder("utf-8").decode(combined);
 }
 
-function directIpHash(req) {
-  const xffParts = String(req.get("X-Forwarded-For") || "").split(",").map((s) => s.trim()).filter(Boolean);
-  const candidate = xffParts.length ? xffParts[xffParts.length - 1] : String(req.ip || "").trim();
-  if (!candidate) return "";
-  const salt = String(process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || "alloflow");
-  return crypto.createHash("sha256").update(salt + ":direct_ip:" + candidate).digest("hex");
-}
-
 async function enforceRateLimit(uid, scope = "search", limit = SEARCH_REQUESTS_PER_MINUTE, req = null) {
   const key = crypto.createHash("sha256").update(uid).digest("hex");
   const safeScope = String(scope || "request").replace(/[^a-z0-9_-]/gi, "_").slice(0, 32);
   const refs = [
     { ref: db.collection("_alloflowRateLimits").doc(safeScope + "_" + key), max: limit },
   ];
-  const ipKey = req ? clientIpHash(req) : "";
-  if (ipKey) {
+  const { clientIpKey, directIpKey } = resolveRateLimitIpKeys(req);
+  if (clientIpKey) {
     // Classroom NAT allowance: 4x single-user ceiling per shared school IP.
-    refs.push({ ref: db.collection("_alloflowRateLimits").doc(safeScope + "_ip_" + ipKey), max: limit * 4 });
+    refs.push({ ref: db.collection("_alloflowRateLimits").doc(safeScope + "_ip_" + clientIpKey), max: limit * 4 });
   }
-  const directKey = req ? directIpHash(req) : "";
-  if (directKey) {
-    // Second bucket bound to rightmost XFF / socket IP so direct Cloud Run callers cannot spoof Fastly-Client-IP.
-    refs.push({ ref: db.collection("_alloflowRateLimits").doc(safeScope + "_dip_" + directKey), max: limit * 4 });
+  if (directIpKey) {
+    // Direct Cloud Run requests bucket on the rightmost GFE-appended XFF / socket IP.
+    refs.push({ ref: db.collection("_alloflowRateLimits").doc(safeScope + "_dip_" + directIpKey), max: limit * 4 });
   }
   const now = Date.now();
   await db.runTransaction(async (transaction) => {
@@ -247,11 +264,21 @@ exports.searchProxy = onRequest(
     let caller;
     try {
       caller = await verifyCaller(req);
-      await enforceRateLimit(caller.uid, "search", SEARCH_REQUESTS_PER_MINUTE, req);
     } catch (error) {
       const status = error && error.status || 401;
       if (status >= 500) console.error("[searchProxy] caller verification failed", error);
-      sendError(res, status, status === 429 ? "rate-limited" : "unauthorized");
+      sendError(res, status, "unauthorized");
+      return;
+    }
+    try {
+      await enforceRateLimit(caller.uid, "search", SEARCH_REQUESTS_PER_MINUTE, req);
+    } catch (error) {
+      if (error && error.status === 429) {
+        sendError(res, 429, "rate-limited");
+        return;
+      }
+      console.error("[searchProxy] rate limit check failed", error);
+      sendError(res, 503, "rate-limit-unavailable");
       return;
     }
 
@@ -349,11 +376,21 @@ exports.sourceFetchProxy = onRequest(
     let caller;
     try {
       caller = await verifyCaller(req);
-      await enforceRateLimit(caller.uid, "source_fetch", SOURCE_FETCH_REQUESTS_PER_MINUTE, req);
     } catch (error) {
       const status = error && error.status || 401;
       if (status >= 500) console.error("[sourceFetchProxy] caller verification failed", error);
-      sendError(res, status, status === 429 ? "rate-limited" : "unauthorized");
+      sendError(res, status, "unauthorized");
+      return;
+    }
+    try {
+      await enforceRateLimit(caller.uid, "source_fetch", SOURCE_FETCH_REQUESTS_PER_MINUTE, req);
+    } catch (error) {
+      if (error && error.status === 429) {
+        sendError(res, 429, "rate-limited");
+        return;
+      }
+      console.error("[sourceFetchProxy] rate limit check failed", error);
+      sendError(res, 503, "rate-limit-unavailable");
       return;
     }
 

@@ -51,7 +51,6 @@ body.site-menu-open {
     font-weight: 700;
     box-shadow: 0 4px 18px rgba(15, 23, 42, 0.22);
     transform: translateY(-160%);
-    transition: transform 0.15s ease;
 }
 
 .skip-link:focus {

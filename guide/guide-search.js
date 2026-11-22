@@ -218,6 +218,16 @@
         render(panel, records, input.value);
       });
 
+      input.addEventListener('keydown', function (event) {
+        if (event.isComposing || event.keyCode === 229) return;
+        if (event.key === 'Escape' && input.value) {
+          event.preventDefault();
+          input.value = '';
+          render(panel, records, '');
+          syncLocation('');
+        }
+      });
+
       window.addEventListener('popstate', function () {
         input.value = queryFromLocation();
         render(panel, records, input.value);
@@ -385,14 +395,22 @@
     return make('label', {}, [d.createTextNode(label + ' '), r]);
   }
 
-  var panel = make('div', { class: 'rtools-panel', id: 'rtools-panel', hidden: '' }, [
+  var statusNode = make('span', {
+    id: 'rt-status',
+    role: 'status',
+    'aria-live': 'polite',
+    style: 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0'
+  });
+
+  var panel = make('div', { class: 'rtools-panel', id: 'rtools-panel', role: 'region', 'aria-label': 'Reading tools', hidden: '' }, [
     selectField('rt-font', 'Font', FONTS),
     rangeField('rt-size', 'Size', '0.85', '1.6', '0.05'),
     rangeField('rt-line', 'Line', '1.2', '2.4', '0.1'),
     rangeField('rt-letter', 'Letter', '0', '0.14', '0.01'),
     selectField('rt-theme', 'Theme', THEMES),
-    make('button', { type: 'button', id: 'rt-ruler', 'aria-pressed': 'false', text: 'Reading ruler' }),
-    make('button', { type: 'button', id: 'rt-reset', text: 'Reset' })
+    make('button', { type: 'button', id: 'rt-ruler', 'aria-pressed': 'false', 'aria-keyshortcuts': 'ArrowUp ArrowDown', text: 'Reading ruler' }),
+    make('button', { type: 'button', id: 'rt-reset', text: 'Reset' }),
+    statusNode
   ]);
   var toggle = make('button', {
     type: 'button', id: 'rt-toggle', class: 'rtools-toggle',
@@ -410,6 +428,12 @@
   }
   d.body.appendChild(make('div', { id: 'rtools-ruler', 'aria-hidden': 'true' }));
 
+  function announceReader(msg) {
+    if (!statusNode) return;
+    statusNode.textContent = '';
+    setTimeout(function () { statusNode.textContent = msg; }, 20);
+  }
+
   function apply() {
     var b = d.body;
     var sizeNum = Number(prefs.size);
@@ -426,10 +450,16 @@
     else root.removeAttribute('data-allo-theme');
     if (prefs.ruler) root.setAttribute('data-allo-ruler', '1');
     else root.removeAttribute('data-allo-ruler');
+    var appliedSize = validSize ? sizeNum : 1;
+    var appliedLine = validLine ? lineNum : 1.6;
+    var appliedLetter = validLetter ? letterNum : 0;
     $('rt-font').value = typeof prefs.font === 'string' ? prefs.font : '';
-    $('rt-size').value = validSize ? sizeNum : 1;
-    $('rt-line').value = validLine ? lineNum : 1.6;
-    $('rt-letter').value = validLetter ? letterNum : 0;
+    $('rt-size').value = appliedSize;
+    $('rt-size').setAttribute('aria-valuetext', Math.round(appliedSize * 100) + '% text size');
+    $('rt-line').value = appliedLine;
+    $('rt-line').setAttribute('aria-valuetext', appliedLine.toFixed(1) + ' line spacing');
+    $('rt-letter').value = appliedLetter;
+    $('rt-letter').setAttribute('aria-valuetext', appliedLetter > 0 ? ('+' + appliedLetter.toFixed(2) + ' em letter spacing') : 'Default letter spacing');
     $('rt-theme').value = typeof prefs.theme === 'string' && prefs.theme ? prefs.theme : 'default';
     $('rt-ruler').setAttribute('aria-pressed', prefs.ruler ? 'true' : 'false');
   }
@@ -439,19 +469,56 @@
   on('rt-line', 'input', function (e) { prefs.line = parseFloat(e.target.value); save(); apply(); });
   on('rt-letter', 'input', function (e) { prefs.letter = parseFloat(e.target.value); save(); apply(); });
   on('rt-theme', 'change', function (e) { prefs.theme = e.target.value; save(); apply(); });
-  on('rt-ruler', 'click', function () { prefs.ruler = !prefs.ruler; save(); apply(); });
-  on('rt-reset', 'click', function () { prefs = {}; save(); apply(); });
+  on('rt-ruler', 'click', function () {
+    prefs.ruler = !prefs.ruler;
+    save();
+    apply();
+    if (prefs.ruler) moveRuler(rulerTop);
+    announceReader(prefs.ruler ? 'Reading ruler on. Use Arrow Up and Arrow Down on this button to move it.' : 'Reading ruler off.');
+  });
+  on('rt-reset', 'click', function () {
+    prefs = {};
+    save();
+    apply();
+    announceReader('Reading tools reset to defaults.');
+  });
   on('rt-toggle', 'click', function () {
     var opening = panel.hasAttribute('hidden');
     if (opening) panel.removeAttribute('hidden'); else panel.setAttribute('hidden', '');
     toggle.setAttribute('aria-expanded', opening ? 'true' : 'false');
   });
+  panel.addEventListener('keydown', function (e) {
+    if (e.isComposing || e.keyCode === 229) return;
+    if (e.key === 'Escape' && !panel.hasAttribute('hidden')) {
+      e.preventDefault();
+      panel.setAttribute('hidden', '');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.focus();
+    }
+  });
 
   var ruler = $('rtools-ruler');
+  var rulerTop = Math.max(0, Math.round(window.innerHeight / 2));
+  function moveRuler(top) {
+    if (!ruler) return;
+    rulerTop = Math.max(0, Math.min(window.innerHeight - ruler.offsetHeight, top));
+    ruler.style.top = rulerTop + 'px';
+  }
   d.addEventListener('mousemove', function (e) {
     if (ruler && root.getAttribute('data-allo-ruler') === '1') {
-      ruler.style.top = (e.clientY - ruler.offsetHeight / 2) + 'px';
+      moveRuler(e.clientY - ruler.offsetHeight / 2);
     }
+  });
+  d.addEventListener('focusin', function (e) {
+    if (!ruler || root.getAttribute('data-allo-ruler') !== '1' || !e.target || !e.target.getBoundingClientRect) return;
+    var rect = e.target.getBoundingClientRect();
+    moveRuler(rect.top + rect.height / 2 - ruler.offsetHeight / 2);
+  });
+  on('rt-ruler', 'keydown', function (e) {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    if (!prefs.ruler) { prefs.ruler = true; save(); apply(); }
+    moveRuler(rulerTop + (e.key === 'ArrowDown' ? 20 : -20));
   });
   apply();
 }());

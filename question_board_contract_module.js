@@ -32,7 +32,7 @@
     // Deliberately the MAILBOX's limits, not Firestore's. Spec §10 design rule 1:
     // a board built to the tighter ceiling runs unmodified on both transports;
     // the reverse silently breaks. Sources are apps_script/session_mailbox/Code.gs.
-    const LIMITS = {
+    const LIMITS = Object.freeze({
         DOC_BYTES: 85 * 1024,      // MAX_DOC_CHARS
         PATCH_FIELDS: 60,          // MAX_PATCH_FIELDS
         PARTICIPANTS: 250,         // MAX_ACTIVITY_PARTICIPANTS
@@ -42,33 +42,37 @@
         ITEM_CHARS: 200,
         ANSWER_NOTE_CHARS: 240,
         ITEMS_PER_STUDENT_MAX: 10
-    };
+    });
 
     // ── The authoritative invariant list (spec §10.3) ───────────────────────
     // Both adapters cite these ids. The conformance suite asserts every one.
-    const INVARIANTS = [
-        { id: 'HELD_HIDDEN_FROM_PEERS', statement: 'An item that is not approved is never readable by another participant.' },
-        { id: 'OWN_ALWAYS_VISIBLE', statement: 'An author can always read their own item, whatever its status.' },
-        { id: 'HOST_SEES_ALL', statement: 'The host can read every item, whatever its status.' },
-        { id: 'STATUS_IS_HOST_ONLY', statement: 'Only the host may write status or answered.' },
-        { id: 'AUTHORSHIP_NOT_FORGEABLE', statement: 'A participant may only create items attributed to their own uid.' },
-        { id: 'ITEM_CAP_PER_STUDENT', statement: 'A participant cannot exceed itemsPerStudent items on a board.' },
-        { id: 'PARTICIPANT_CAP', statement: 'A board cannot exceed LIMITS.PARTICIPANTS distinct authors.' },
-        { id: 'BOARD_CAP', statement: 'A board rejects writes that would push it past its byte ceiling.' },
-        { id: 'K_ANONYMITY_FLOOR', statement: 'Peer items stay hidden until minParticipants distinct authors have posted; own items are exempt.' },
-        { id: 'EXPIRY_IS_READ_ONLY', statement: 'After expiresAt a board accepts no new items and no edits, but remains readable.' },
-        { id: 'TEXT_IS_SANITIZED', statement: 'Stored item text has control characters stripped and is clamped to LIMITS.ITEM_CHARS.' }
-    ];
+    const INVARIANTS = Object.freeze([
+        Object.freeze({ id: 'HELD_HIDDEN_FROM_PEERS', statement: 'An item that is not approved is never readable by another participant.' }),
+        Object.freeze({ id: 'OWN_ALWAYS_VISIBLE', statement: 'An author can always read their own item, whatever its status.' }),
+        Object.freeze({ id: 'HOST_SEES_ALL', statement: 'The host can read every item, whatever its status.' }),
+        Object.freeze({ id: 'STATUS_IS_HOST_ONLY', statement: 'Only the host may write status or answered.' }),
+        Object.freeze({ id: 'AUTHORSHIP_NOT_FORGEABLE', statement: 'A participant may only create items attributed to their own uid.' }),
+        Object.freeze({ id: 'ITEM_CAP_PER_STUDENT', statement: 'A participant cannot exceed itemsPerStudent items on a board.' }),
+        Object.freeze({ id: 'PARTICIPANT_CAP', statement: 'A board cannot exceed LIMITS.PARTICIPANTS distinct authors.' }),
+        Object.freeze({ id: 'BOARD_CAP', statement: 'A board rejects writes that would push it past its byte ceiling.' }),
+        Object.freeze({ id: 'K_ANONYMITY_FLOOR', statement: 'Peer items stay hidden until minParticipants distinct authors have posted; own items are exempt.' }),
+        Object.freeze({ id: 'EXPIRY_IS_READ_ONLY', statement: 'After expiresAt a board accepts no new items and no edits, but remains readable.' }),
+        Object.freeze({ id: 'TEXT_IS_SANITIZED', statement: 'Stored item text has control characters stripped and is clamped to LIMITS.ITEM_CHARS.' })
+    ]);
 
     // ── Sanitizers ──────────────────────────────────────────────────────────
     // Mirrors the Apps Script normalizer so both transports store byte-identical
     // text: strip control chars, collapse whitespace, trim, clamp.
     function sanitizeText(raw, maxChars) {
-        return String(raw == null ? '' : raw)
-            .replace(/[\u0000-\u001f\u007f]/g, ' ')
+        if (raw == null || typeof raw === 'symbol') return '';
+        let str;
+        try { str = String(raw); } catch (_) { return ''; }
+        const cleaned = str
+            .replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g, ' ')
             .replace(/\s+/g, ' ')
-            .trim()
-            .slice(0, maxChars);
+            .trim();
+        const limit = (typeof maxChars === 'number' && isFinite(maxChars) && maxChars >= 0) ? Math.floor(maxChars) : LIMITS.PROMPT_CHARS;
+        return cleaned.slice(0, limit);
     }
 
     function clampInt(value, min, max, fallback) {
@@ -167,7 +171,8 @@
         if (!a) return [];
         if (isHost(a)) return items.slice();                          // HOST_SEES_ALL
 
-        const config = (board && board.config) || {};
+        const rawCfg = board && board.config;
+        const config = (rawCfg && typeof rawCfg === 'object' && !Array.isArray(rawCfg)) ? rawCfg : {};
         const floor = clampInt(config.minParticipants, 3, 10, 3);
         const reportedParticipants = (board && typeof board.participantCount === 'number' && Number.isFinite(board.participantCount))
             ? Math.max(0, Math.floor(board.participantCount))
@@ -189,7 +194,8 @@
         const a = normalizeActor(actor);
         if (!a) return { ok: false, reason: 'no-actor', invariant: 'AUTHORSHIP_NOT_FORGEABLE' };
 
-        const config = (board && board.config) || {};
+        const rawCfg = board && board.config;
+        const config = (rawCfg && typeof rawCfg === 'object' && !Array.isArray(rawCfg)) ? rawCfg : {};
         const items = (board && Array.isArray(board.items)) ? board.items : [];
 
         if (op === 'setStatus' || op === 'setAnswered' || op === 'configure') {
@@ -204,7 +210,8 @@
         // is a record, not a surface (spec §8.4).
         if (isExpired(board)) return { ok: false, reason: 'expired', invariant: 'EXPIRY_IS_READ_ONLY' };
 
-        const claimedUid = String((payload && payload.uid) || a.uid);
+        const rawClaimed = (payload && payload.uid != null && payload.uid !== '') ? sanitizeText(payload.uid, 128) : a.uid;
+        const claimedUid = rawClaimed || a.uid;
         if (!isHost(a) && claimedUid !== a.uid) {
             return { ok: false, reason: 'forged-authorship', invariant: 'AUTHORSHIP_NOT_FORGEABLE' };
         }
@@ -230,7 +237,7 @@
 
     function isExpired(board) {
         const at = board && board.config && board.config.expiresAt;
-        if (!at) return false;
+        if (typeof at !== 'string' || !at.trim()) return false;
         const t = Date.parse(at);
         return isFinite(t) && Date.now() > t;
     }
@@ -242,6 +249,8 @@
         if (!text || !a) return null;
         const rawTs = Number(raw && raw.createdAt);
         const createdAt = (Number.isFinite(rawTs) && rawTs > 0) ? rawTs : Date.now();
+        const rawStatus = raw && raw.status;
+        const safeStatus = (rawStatus === 'held' || rawStatus === 'hidden' || rawStatus === 'rejected') ? rawStatus : 'approved';
         return {
             id: sanitizeText((raw && raw.id) || '', 128),
             uid: a.uid,
@@ -250,7 +259,7 @@
             // auto_publish is the intended default (spec §8.2); teacher_review holds.
             // The AI pre-screen sits in FRONT of this, in the adapter, and may pass
             // 'held' explicitly for anything it flags.
-            status: raw && raw.status === 'held' ? 'held' : 'approved',
+            status: safeStatus,
             answered: false,
             createdAt: createdAt
         };
@@ -303,7 +312,7 @@
         const results = [];
         const record = (invariant, ok, detail) => results.push({ invariant, ok: !!ok, detail: detail || '' });
 
-        const cfg = normalizeBoardConfig(Object.assign({
+        const cfg = normalizeBoardConfig(safeAssign({
             activityId: 'AC-' + '0123abcd-0123-4567-89ab-0123456789ab'.slice(0, 36),
             type: 'question_board',
             prompt: 'What do you wonder about ecosystems?',
@@ -388,12 +397,18 @@
     function createReferenceAdapter() {
         return {
             createBoard(config) { return { config, items: [] }; },
-            snapshot(board) { return { config: board.config, items: board.items.slice() }; },
+            snapshot(board) {
+                const items = (board && Array.isArray(board.items)) ? board.items.slice() : [];
+                return { config: board ? board.config : null, items: items };
+            },
             listVisible(board, actor) { return visibleItemsFor(actor, board); },
             addItem(board, actor, payload) {
+                if (!board || !Array.isArray(board.items)) return { ok: false, reason: 'invalid-board' };
                 const verdict = authorize(actor, 'create', board, payload);
                 if (!verdict.ok) return verdict;
-                const effectivePayload = (board && board.config && board.config.revealPolicy === 'teacher_review' && !(payload && payload.status))
+                const a = normalizeActor(actor);
+                const mustHold = board.config && board.config.revealPolicy === 'teacher_review' && !isHost(a);
+                const effectivePayload = mustHold
                     ? safeAssign(safeAssign({}, payload), { status: 'held' })
                     : payload;
                 const item = normalizeItem(effectivePayload, actor);
@@ -403,9 +418,10 @@
                 return { ok: true, id: item.id };
             },
             setStatus(board, actor, itemId, status) {
+                if (!board || !Array.isArray(board.items)) return { ok: false, reason: 'invalid-board' };
                 const verdict = authorize(actor, 'setStatus', board, null);
                 if (!verdict.ok) return verdict;
-                const item = board.items.filter((i) => i.id === itemId)[0];
+                const item = board.items.filter((i) => i && i.id === itemId)[0];
                 if (!item) return { ok: false, reason: 'no-item' };
                 item.status = status === 'approved' ? 'approved' : (status === 'hidden' ? 'hidden' : (status === 'rejected' ? 'rejected' : 'held'));
                 return { ok: true };

@@ -10,7 +10,7 @@ const AllobotEvidence = (() => {
     try {
       const url = new URL(String(value || ''));
       if (url.protocol !== 'https:' || url.username || url.password) return '';
-      const host = String(url.hostname || '').toLowerCase().replace(/^\[|\]$/g, '');
+      const host = String(url.hostname || '').toLowerCase().replace(/^\[|\]$/g, '').replace(/\.+$/, '');
       if (!host || !host.includes('.') || host.includes(':')) return '';
       if (/^(?:localhost|127\.|10\.|192\.168\.|169\.254\.|0\.|172\.(?:1[6-9]|2\d|3[01])\.|100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.|22[4-9]\.|2[3-5]\d\.)/i.test(host) || /\.(?:local|internal|localhost)$/i.test(host)) return '';
       return url.href;
@@ -20,7 +20,20 @@ const AllobotEvidence = (() => {
   // (email, phone, ID number) a question tied to "my student", "my child" or "a student named"
   // is not searched. Topic words (address, birth, IEP, diagnosis) and names are not blocked.
   const studentContext = /\b(?:my|our)\s+(?:students?|child|children|kids?|sons?|daughters?|class|learners?|pupils?)\b|\b(?:student|child|learner|pupil)\s+named\b/i;
-  const sensitive = text => studentContext.test(String(text || '')) || ['email', 'phone', 'id-number'].includes(window.WebSearchProvider?.publicSearchQuery?.reason?.(String(text || '')) || '');
+  const localPiiReason = raw => {
+    const s = String(raw || '');
+    if (/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(s)) return 'email';
+    if (/\b\d{3}-\d{2}-\d{4}\b|\b(?:student|learner|pupil|iep|medicaid|state)\s*(?:id|#|number)\s*[:#-]?\s*[A-Z0-9-]{4,}\b|\b\d{7,}\b/i.test(s)) return 'id-number';
+    if (/(?:\+?1[-.\s]?)?(?:\(\d{3}\)|\b\d{3})[-.\s]?\d{3}[-.\s]\d{4}\b/.test(s)) return 'phone';
+    return '';
+  };
+  const sensitive = (text, provider) => {
+    const s = String(text || '');
+    if (studentContext.test(s)) return true;
+    const providerReasonFn = (provider || (typeof window !== 'undefined' ? window.WebSearchProvider : null))?.publicSearchQuery?.reason;
+    const reason = typeof providerReasonFn === 'function' ? (providerReasonFn(s) || '') : localPiiReason(s);
+    return ['email', 'phone', 'id-number'].includes(reason);
+  };
   function plan(userText) {
     const text = String(userText || '').trim();
     if (/\b(?:don'?t|do not|without|no)\s+(?:web\s+)?(?:search|research|sources?|citations?)\b/i.test(text)) return null;
@@ -66,7 +79,7 @@ const AllobotEvidence = (() => {
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') {
       return Boolean(window.__alloAiUsable(kind, fn));
     }
-    return typeof fn === 'function' && !fn._alloQrBlocked && (typeof window === 'undefined' || (window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true));
+    return typeof fn === 'function' && !fn._alloQrBlocked && (typeof window === 'undefined' || (window.__alloQrStudentMode !== true && window._alloQrBlocked !== true && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true));
   }
   function _evSanitizeUntrusted(value) {
     return String(value == null ? '' : value).replace(/<\/?UNTRUSTED_[A-Z0-9_]+>/gi, '[redacted-tag]');
@@ -78,16 +91,21 @@ const AllobotEvidence = (() => {
     const request = plan(userText);
     if (!request) return null;
     const base = { ...request, sources: [], checkedAt: new Date().toISOString() };
+    if (typeof window !== 'undefined' && (window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.__alloStudentAiDisabled === true)) {
+      return { ...base, query: undefined, status: 'disabled' };
+    }
     const backend = window.AlloFlowChatPrivacy?.destination?.(deps.callGemini)?.backend || config().backend || 'gemini';
     if (config().allobotWebSearch === false || (backend !== 'gemini' && config().allobotWebSearch !== true)) return { ...base, status: 'disabled' };
     const managed = window.ALLOFLOW_MANAGED_AI_POLICY;
-    if (managed != null && (managed.version !== 1 || managed.allowExternalSearch !== true)) return { ...base, query: undefined, status: 'managed-disabled' };
+    if (managed != null && (managed.version !== 1 || !Array.isArray(managed.connections) || managed.allowExternalSearch !== true)) return { ...base, query: undefined, status: 'managed-disabled' };
     if (request.status) return base;
     if (typeof navigator !== 'undefined' && navigator.onLine === false) return { ...base, status: 'unavailable' };
     const provider = deps.webSearchProvider || window.WebSearchProvider;
+    if (sensitive(request.query, provider)) return { ...base, query: undefined, status: 'private-query' };
     const isCanvas = provider?._isCanvas || /googleusercontent|scf\.usercontent|idx\.google/.test(window.location.hostname) || window.location.protocol === 'blob:';
+    const hasSerperKey = (typeof window === 'undefined' || window.__alloAiSecretsLocked !== true) && Boolean(config().serperApiKey);
     // A user-supplied Serper key deliberately opts this lookup into that provider.
-    const viaSearch = isCanvas || backend !== 'gemini' || Boolean(config().serperApiKey);
+    const viaSearch = isCanvas || backend !== 'gemini' || hasSerperKey;
     try {
       if (viaSearch) {
         if (typeof provider?.search !== 'function') return { ...base, status: 'unavailable' };
@@ -121,12 +139,19 @@ const AllobotEvidence = (() => {
     if (!evidence) return text;
     const sources = evidence.sources || [];
     // Only provider-supplied destinations can become links in an evidence reply.
-    return String(text || '').replace(/!?\[([^\]]*)\]\([^\n)]*\)/g, '$1')
+    let stripped = String(text || '');
+    for (let pass = 0; pass < 5; pass++) {
+      const next = stripped.replace(/!?\[([^\]]*)\]\([^\n)]*\)/g, '$1');
+      if (next === stripped) break;
+      stripped = next;
+    }
+    return stripped
       .replace(/<[^>]*>/g, '')
       .replace(/https?:\/\/[^\s<>]+/gi, '')
       .replace(/\[(?:Source\s+)?(\d+)\]/gi, (match, id) => {
         const source = sources.find(row => row.id === Number(id));
-        return source ? `[${id}](${source.url.replace(/\(/g, '%28').replace(/\)/g, '%29')})` : '';
+        const href = source ? safeUrl(source.url) : '';
+        return href ? `[${id}](${href.replace(/\(/g, '%28').replace(/\)/g, '%29')})` : '';
       });
   }
   return { plan, retrieve, prompt, cite, safeUrl };

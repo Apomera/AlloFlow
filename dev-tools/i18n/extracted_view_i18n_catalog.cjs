@@ -45,6 +45,9 @@ const DIRECTION_ALIASES = {
   chooseActivity: 'directions.choose_activity',
   openActivity: 'directions.open_activity',
   choiceHint: 'directions.choice_hint',
+  listenDirections: 'directions.listen_directions',
+  listen: 'directions.listen',
+  stopListening: 'directions.stop_listening',
 };
 
 const directionKeys = unique(
@@ -101,6 +104,14 @@ const directionEnglish = {
   open_activity: 'Open activity',
   choice_hint: 'Choose one activity to begin. You can return here and choose another card later.',
   single_choice_hint: 'Open the remaining activity, or ask your teacher for an updated board.',
+  all_goals_done: 'All goals complete!',
+  goal_filter_all: 'All',
+  goal_filter_group: 'Filter goals',
+  goal_filter_open: 'To do',
+  goal_go: 'Go',
+  listen: 'Listen',
+  listen_directions: 'Listen to directions',
+  stop_listening: 'Stop listening',
 };
 
 const directionEnglishKeys = Object.keys(directionEnglish).map((key) => `directions.${key}`);

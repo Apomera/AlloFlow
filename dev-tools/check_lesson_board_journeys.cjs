@@ -83,6 +83,7 @@ const cases = [{width:1440, theme:'river'}, {width:390, theme:'garden'}, {width:
       await page.locator('[data-board-play-solo]').click(); await page.getByRole('button',{name:'Board view',exact:true}).click();
       const initial = await page.evaluate(() => snapshot());
       expect(initial.progress.visited).toHaveLength(5); expect(initial.progress.position).toBe('cooler');
+      await page.locator('[data-field-approach="lead"]').click();
       const offer = page.locator('[data-field-lead-offer]'), offeredPlanner = offer.locator('[data-journey="sequence"]');
       await stats(offeredPlanner,{segments:2,investigations:2,turns:2}); await expect(offeredPlanner.locator('[data-journey-next]')).toHaveAttribute('data-journey-next','weather');
       await offeredPlanner.locator('[data-journey-option="discovery"]').click(); await stats(offeredPlanner,{segments:5,investigations:1,turns:2});

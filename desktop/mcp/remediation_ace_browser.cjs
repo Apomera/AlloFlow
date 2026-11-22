@@ -16,10 +16,16 @@ function install(puppeteer, { epubRoot, trustedScriptRoot }) {
   const root = fs.realpathSync(epubRoot), scripts = fs.realpathSync(trustedScriptRoot);
   const launch = puppeteer.launch;
   if (typeof launch !== 'function') throw Error('Ace browser launch policy is unavailable.');
+  const BLOCKED_FILE_TYPES = new Set(['script', 'xhr', 'fetch', 'websocket', 'eventsource', 'media', 'ping']);
+  const MAX_DOC_BYTES = 32 * 1024 * 1024;
+  const MAX_SCRIPT_BYTES = 16 * 1024 * 1024;
   const allowed = (value, type) => {
     try {
       const url = new URL(value);
-      if (url.protocol === 'file:') return !url.hostname && !!containedFile(root, fileURLToPath(url));
+      if (url.protocol === 'file:') {
+        if (BLOCKED_FILE_TYPES.has(String(type || '').toLowerCase())) return false;
+        return !url.hostname && !!containedFile(root, fileURLToPath(url));
+      }
       if (value === 'about:blank') return true;
       // Only passive raster data images are needed by supported EPUB content.
       return type === 'image' && /^data:image\/(?:png|jpeg|jpg|gif|webp|avif);base64,[A-Za-z0-9+/=]+$/i.test(value);
@@ -28,7 +34,7 @@ function install(puppeteer, { epubRoot, trustedScriptRoot }) {
   puppeteer.launch = async function(options = {}) {
     // Upstream Ace disables Chromium's OS sandbox. Remove those switches and
     // never retry without the sandbox if the host cannot launch safely.
-    const args = (options.args || []).filter(arg => !/^(?:--no-sandbox|--disable-.*sandbox|--single-process|--no-zygote|--disable-web-security|--allow-file-access-from-files)(?:=|$)/.test(arg));
+    const args = (Array.isArray(options.args) ? options.args : []).filter(arg => typeof arg === 'string' && !/^(?:--no-sandbox|--disable-.*sandbox|--single-process|--no-zygote|--disable-web-security|--allow-file-access-from-files|--allow-running-insecure-content|--disable-site-isolation-trials|--disable-features|--proxy-server|--proxy-pac-url|--host-resolver-rules|--remote-debugging-port|--remote-debugging-pipe|--load-extension|--disable-extensions-except|--user-data-dir|--js-flags)(?:=|$)/i.test(arg));
     const browser = await launch.call(puppeteer, { ...options, args, headless: true, pipe: true, ignoreDefaultArgs: false });
     const newPage = browser.newPage.bind(browser);
     browser.newPage = async function(...args) {
@@ -58,10 +64,13 @@ function install(puppeteer, { epubRoot, trustedScriptRoot }) {
           };
         }
         const on = page.on.bind(page);
+        const once = typeof page.once === 'function' ? page.once.bind(page) : null;
+        const prependListener = typeof page.prependListener === 'function' ? page.prependListener.bind(page) : null;
+        const prependOnceListener = typeof page.prependOnceListener === 'function' ? page.prependOnceListener.bind(page) : null;
         on('request', request => {
           if (!allowed(request.url(), request.resourceType())) {
             Promise.resolve(request.abort('blockedbyclient')).catch(() => browser.close());
-          } else if (request.resourceType() === 'document' && request.url().startsWith('file:')) {
+          } else if (request.resourceType() === 'document' && /^file:/i.test(request.url())) {
             // Validate containment before Node reads any document bytes. This
             // response takes precedence over upstream's unrestricted file read.
             let fd;
@@ -69,7 +78,8 @@ function install(puppeteer, { epubRoot, trustedScriptRoot }) {
               const file = containedFile(root, fileURLToPath(request.url()));
               if (!file) throw Error('Ace document escaped its private EPUB tree.');
               fd = fs.openSync(file, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0));
-              if (!fs.fstatSync(fd).isFile()) throw Error('Ace document is not a regular file.');
+              const stat = fs.fstatSync(fd);
+              if (!stat.isFile() || stat.size > MAX_DOC_BYTES) throw Error('Ace document is not a valid bounded regular file.');
               const body = fs.readFileSync(fd, 'utf8');
               const contentType = /\.html?$/i.test(file) ? 'text/html' : /\.svg$/i.test(file) ? 'image/svg+xml' : 'application/xhtml+xml';
               Promise.resolve(request.respond({ status: 200, contentType,
@@ -81,9 +91,22 @@ function install(puppeteer, { epubRoot, trustedScriptRoot }) {
         });
         // Run before upstream's HTML interceptor, which otherwise reads local
         // file URLs in Node. Do not let a second listener resume denied requests.
-        page.on = (event, listener) => on(event, event === 'request' ? request => {
+        const guardListener = (event, listener) => event === 'request' ? request => {
           if (!request.isInterceptResolutionHandled()) return listener(request);
-        } : listener);
+        } : listener;
+        page.on = (event, listener) => on(event, guardListener(event, listener));
+        page.addListener = page.on;
+        if (once) page.once = (event, listener) => once(event, guardListener(event, listener));
+        if (prependListener) {
+          page.prependListener = (event, listener) => event === 'request'
+            ? on(event, guardListener(event, listener))
+            : prependListener(event, listener);
+        }
+        if (prependOnceListener) {
+          page.prependOnceListener = (event, listener) => event === 'request'
+            ? (once ? once(event, guardListener(event, listener)) : on(event, guardListener(event, listener)))
+            : prependOnceListener(event, listener);
+        }
         // EPUB scripts are blocked by document CSP. Ace's trusted audit scripts
         // execute through CDP without disabling CSP for the EPUB content.
         page.addScriptTag = async options => {
@@ -92,12 +115,22 @@ function install(puppeteer, { epubRoot, trustedScriptRoot }) {
           if (options.path) {
             const file = containedFile(scripts, options.path);
             if (!file) throw Error('Ace audit script escaped its bundled runtime.');
-            source = fs.readFileSync(file, 'utf8');
+            let sfd;
+            try {
+              sfd = fs.openSync(file, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0));
+              const sstat = fs.fstatSync(sfd);
+              if (!sstat.isFile() || sstat.size > MAX_SCRIPT_BYTES) throw Error('Ace audit script is not a bounded regular file.');
+              source = fs.readFileSync(sfd, 'utf8');
+            } finally {
+              if (sfd !== undefined) fs.closeSync(sfd);
+            }
+          } else if (source.length > MAX_SCRIPT_BYTES) {
+            throw Error('Ace audit script exceeds size limit.');
           }
           await page.evaluate(source);
           return page.evaluateHandle(() => {
             const element = document.createElement('script');
-            element.setAttribute('data-ace', ''); document.head.appendChild(element); return element;
+            element.setAttribute('data-ace', ''); (document.head || document.documentElement).appendChild(element); return element;
           });
         };
         return page;

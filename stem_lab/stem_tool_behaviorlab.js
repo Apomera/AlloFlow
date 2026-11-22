@@ -5,6 +5,7 @@
 // ═══════════════════════════════════════════
 
 // ═══ Defensive StemLab guard ═══
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -26,10 +27,11 @@ window.StemLab = window.StemLab || {
     try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
   }
 };
+}
 // ═══ End Guard ═══
 
 // Dedup: skip if already registered (hub may have loaded inline copy)
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))) {
+if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))) {
 
 (function() {
   'use strict';
@@ -44,7 +46,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
   })();
   // end WCAG 1.4.3 high contrast
   (function() {
-    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
@@ -53,7 +55,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
-    if (document.getElementById('allo-live-behaviorlab')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-behaviorlab')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-behaviorlab';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -65,7 +67,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
   })();
 
   // Scoped responsive workspace for Behavior Lab.
-  if (!document.getElementById('behaviorlab-workspace-css')) {
+  if (typeof document !== 'undefined' && document.head && !document.getElementById('behaviorlab-workspace-css')) {
     var behaviorLabStyle = document.createElement('style');
     behaviorLabStyle.id = 'behaviorlab-workspace-css';
     behaviorLabStyle.textContent = [
@@ -1160,7 +1162,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
 
       // ── Tool body (behaviorLab) ──
       return (function() {
-var d = labToolData || {};
+var d = (labToolData && typeof labToolData === 'object' && !Array.isArray(labToolData)) ? labToolData : {};
 // Live ref to `d` for the rAF chamber loop. The animation useEffect's
 // deps are [blPhase, blPaused, d.blSpeed] but the loop body reads
 // d.blWeights (line ~1125), d.blTotalTicks (~1385), d.blPosHistory
@@ -1181,7 +1183,7 @@ dataRef.current = d;
             }, { debounce: 800 });
           }
 
-          var upd = function (k, v) { setLabToolData(function (p) { var n = Object.assign({}, p); n[k] = v; return n; }); };
+          var upd = function (k, v) { setLabToolData(function (p) { var base = (p && typeof p === 'object' && !Array.isArray(p)) ? p : {}; var n = Object.assign({}, base); n[k] = v; return n; }); };
 
 
           // ── Level definitions ──
@@ -1978,7 +1980,18 @@ dataRef.current = d;
           var blIsContrast = !!ctx.isContrast;
           // House default-OFF AI gate. Both halves matter: no switch, no traffic;
           // no callGemini, no button that pretends there could be.
-          var blAiOn = !!(ctx.aiHintsEnabled && typeof callGemini === 'function');
+          var _blAiBlocked = (function () {
+            if (ctx.aiAvailable === false) return true;
+            if (typeof window === 'undefined') return false;
+            try {
+              if (window._alloQrBlocked || window.__alloStudentAiDisabled || window.__alloAiSecretsLocked || window.__alloQrStudentMode) return true;
+              if (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable()) return true;
+              var mp = window.ALLOFLOW_MANAGED_AI_POLICY;
+              if (mp && (mp.disabled === true || mp.aiEnabled === false || mp.allowAi === false || mp.locked === true)) return true;
+            } catch (_) {}
+            return false;
+          })();
+          var blAiOn = !!(!_blAiBlocked && ctx.aiHintsEnabled && typeof callGemini === 'function');
 
           var blFoodTime = d.blFoodTime || 0;
 
@@ -2222,7 +2235,7 @@ dataRef.current = d;
               // rasterising a canvas nobody can see.
               // document.hidden covers the backgrounded tab; the observer covers the
               // far more common case of the chamber being scrolled off a very long page.
-              if (d.blChamberView !== '3d' && _blSeenRef.current && !document.hidden) {
+              if (d.blChamberView !== '3d' && _blSeenRef.current && (typeof document === 'undefined' || !document.hidden)) {
                 drawChamber(cv2, st);
               }
               _blAnimId.current = requestAnimationFrame(blFrame);
@@ -2242,13 +2255,38 @@ dataRef.current = d;
 
           var _blAudioCtx = null;
 
+          function _blIsGlobalMuted() {
+            if (typeof window === 'undefined') return false;
+            try {
+              if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+              if (window.__alloGlobalMuted || window._alloGlobalMute || window.__alloMuted) return true;
+              if (window.localStorage && window.localStorage.getItem('alloflow_global_mute') === 'true') return true;
+            } catch (_) {}
+            return false;
+          }
+
+          React.useEffect(function () {
+            if (typeof window === 'undefined' || !window.addEventListener) return;
+            var onMute = function (ev) {
+              var muted = (ev && ev.detail && typeof ev.detail.muted === 'boolean') ? ev.detail.muted : _blIsGlobalMuted();
+              if (muted && _blAudioCtx && typeof _blAudioCtx.suspend === 'function') {
+                try { _blAudioCtx.suspend(); } catch (_) {}
+              }
+            };
+            window.addEventListener('alloflow-mute-changed', onMute);
+            return function () { window.removeEventListener('alloflow-mute-changed', onMute); };
+          }, []);
+
           function blBeep(freq, dur, vol) {
 
-            if (!blSoundOn) return;
+            if (!blSoundOn || _blIsGlobalMuted()) return;
 
             try {
 
               if (!_blAudioCtx) _blAudioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)());
+              if (_blAudioCtx && _blAudioCtx.state === 'suspended' && typeof _blAudioCtx.resume === 'function') {
+                try { _blAudioCtx.resume(); } catch (_) {}
+              }
 
               var osc = _blAudioCtx.createOscillator();
 
@@ -2463,10 +2501,12 @@ dataRef.current = d;
           // captured-array write would drop whichever of the two lost the race.
           function markReinforcementOnRecord() {
             setLabToolData(function (prev) {
-              var next = Object.assign({}, prev);
-              var rec = (next.blCumRecord || []).slice();
-              if (!rec.length) return prev;
-              rec[rec.length - 1] = Object.assign({}, rec[rec.length - 1], { reinf: true });
+              var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+              var next = Object.assign({}, base);
+              var rec = Array.isArray(next.blCumRecord) ? next.blCumRecord.slice() : [];
+              if (!rec.length) return base;
+              var last = (rec[rec.length - 1] && typeof rec[rec.length - 1] === 'object') ? rec[rec.length - 1] : {};
+              rec[rec.length - 1] = Object.assign({}, last, { reinf: true });
               next.blCumRecord = rec;
               return next;
             });
@@ -4457,6 +4497,7 @@ dataRef.current = d;
           window._blAdvanceTickFn = advanceTick; // live rebind — the tick interval must never call a stale closure (same fix class as dataRef above)
           React.useEffect(function () {
             var handler = function (e) {
+              if (e.isComposing || e.keyCode === 229) return;
               var target = e.target || {};
               var tag = target.tagName || '';
               var interactive = ['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT', 'SUMMARY', 'A'].indexOf(tag) >= 0 || target.isContentEditable;
@@ -4495,7 +4536,7 @@ dataRef.current = d;
             }
             var tickDelay = (d.blSpeed || 1) === 3 ? 2000 : (d.blSpeed || 1) === 2 ? 3500 : 5000;
             if (_blTickTimer.current) clearInterval(_blTickTimer.current);
-            _blTickTimer.current = setInterval(function() { (window._blAdvanceTickFn || advanceTick)(); }, tickDelay);
+            _blTickTimer.current = setInterval(function() { if (typeof document !== 'undefined' && document.hidden) return; (window._blAdvanceTickFn || advanceTick)(); }, tickDelay);
             return function() { if (_blTickTimer.current) { clearInterval(_blTickTimer.current); _blTickTimer.current = null; } };
           }, [blPhase, blPaused, d.blSpeed]);
 
@@ -4867,7 +4908,7 @@ dataRef.current = d;
 
                   function explain() {
 
-                    if (typeof callGemini !== 'function') { upd('aiError_' + blLevel, 'AI tutor not available.'); return; }
+                    if (!blAiOn || typeof callGemini !== 'function') { upd('aiError_' + blLevel, 'AI tutor not available.'); return; }
 
                     upd('aiLoading_' + blLevel, true); upd('aiError_' + blLevel, ''); upd('aiExplain_' + blLevel, '');
 
@@ -4881,7 +4922,7 @@ dataRef.current = d;
 
                       + 'No markdown, no bullets, no headings. Plain prose only.';
 
-                    callGemini(prompt, false, false, 0.5).then(function (resp) {
+                    Promise.resolve().then(function () { return callGemini(prompt, false, false, 0.5); }).then(function (resp) {
 
                       upd('aiExplain_' + blLevel, String(resp || '').trim());
 
@@ -5589,6 +5630,8 @@ dataRef.current = d;
                   'data-behaviorlab-3d': 'true',
                   'aria-label': __alloT('stem.behaviorlab.chamber_3d_label', 'Operant chamber, 3D. Interactive: drag or use arrow keys to rotate, plus and minus to zoom, zero to reset. Every part is also a button below, and the diagram view carries the same information.'),
                   onKeyDown: function (e) {
+                    if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+                    if (e.ctrlKey || e.metaKey || e.altKey) return;
                     var k = e.key, handled = true;
                     if (k === 'ArrowLeft') BL_CHAMBER3D.nudge(-0.17, 0);
                     else if (k === 'ArrowRight') BL_CHAMBER3D.nudge(0.17, 0);
@@ -6683,7 +6726,7 @@ dataRef.current = d;
                   var badge = LEVEL_BADGES[l.id];
                   var earned = blCompletedLevels.indexOf(l.id) >= 0;
                   var isCurrent = blLevel === l.id;
-                  return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: l.id,
+                  return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } },  key: l.id,
                     // opacity-50 dropped the locked badges' label to 4.33:1 against
                     // the panel. Greyscale plus the 🔒 glyph already say "locked"
                     // without leaning on the alpha, so the dimming is gentler now.
@@ -7349,7 +7392,7 @@ dataRef.current = d;
                 React.createElement("div", { className: "flex items-center text-[0.6875rem] font-bold text-green-400 uppercase pr-1" }, __alloT('stem.behaviorlab.increase_behavior', "\u2B06 Increase Behavior")),
                 REINFORCE_MATRIX.filter(function(m) { return m.row === 0; }).map(function(m, mi) {
                   var isActive = blMatrixIdx === m.id;
-                  return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: m.id,
+                  return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } },  key: m.id,
                     onClick: function() { upd('blMatrixIdx', isActive ? null : m.id); },
                     className: "cursor-pointer rounded-xl p-2 border-2 text-center transition-all  hover:shadow-md hover:-translate-y-0.5" + (isActive ? 'scale-105 shadow-lg' : 'hover:scale-[1.02]'),
                     style: { borderColor: isActive ? m.color : m.color + '40', background: isActive ? m.color + '20' : 'rgba(30,41,59,0.6)' }
@@ -7365,7 +7408,7 @@ dataRef.current = d;
                 React.createElement("div", { className: "flex items-center text-[0.6875rem] font-bold text-red-400 uppercase pr-1" }, __alloT('stem.behaviorlab.decrease_behavior', "\u2B07 Decrease Behavior")),
                 REINFORCE_MATRIX.filter(function(m) { return m.row === 1; }).map(function(m, mi) {
                   var isActive = blMatrixIdx === m.id;
-                  return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: m.id,
+                  return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } },  key: m.id,
                     onClick: function() { upd('blMatrixIdx', isActive ? null : m.id); },
                     className: "cursor-pointer rounded-xl p-2 border-2 text-center transition-all  hover:shadow-md hover:-translate-y-0.5" + (isActive ? 'scale-105 shadow-lg' : 'hover:scale-[1.02]'),
                     style: { borderColor: isActive ? m.color : m.color + '40', background: isActive ? m.color + '20' : 'rgba(30,41,59,0.6)' }
@@ -7611,7 +7654,7 @@ dataRef.current = d;
                 React.createElement("div", { className: "space-y-0.5 max-h-64 overflow-y-auto" },
                   ABA_GLOSSARY.map(function(gl, gli) {
                     var isActive = d.blGlossaryIdx === gli;
-                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: gli,
+                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } },  key: gli,
                       onClick: function() { upd('blGlossaryIdx', isActive ? null : gli); },
                       className: "cursor-pointer rounded-lg p-1.5 border transition-all " + (isActive ? 'bg-slate-700 border-amber-500/50' : 'transition-colors bg-slate-700/20 border-slate-700 hover:border-slate-500')
                     },
@@ -7664,7 +7707,7 @@ dataRef.current = d;
 
                       'aria-expanded': mmActive ? 'true' : 'false',
 
-                      onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); upd('blMeasurementIdx', mmActive ? null : mmi); } },
+                      onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === "Enter" || e.key === " ") { e.preventDefault(); upd('blMeasurementIdx', mmActive ? null : mmi); } },
 
                       onClick: function() { upd('blMeasurementIdx', mmActive ? null : mmi); },
 

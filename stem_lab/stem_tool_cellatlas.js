@@ -6,6 +6,7 @@
 // - The cluster positions are an illustrative teaching layout, not a published UMAP.
 // - Expression values are teaching-normalized marker evidence (0-100), not raw counts.
 (function () {
+  'use strict';
   // Translator reachable from module scope, IIFE-private so it is not a global.
   // Installed because this tool had no fallback-aware helper: labels built in
   // helpers defined above render() could not see a render-scoped one, and a
@@ -16,7 +17,6 @@
     try { v = (__alloCellAtlasCtx && typeof __alloCellAtlasCtx.t === "function") ? __alloCellAtlasCtx.t(k, fb) : null; } catch (e) { v = null; }
     return (v == null) ? (fb != null ? fb : k) : v;
   };
-  'use strict';
 
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
@@ -783,11 +783,11 @@
         return {
           actualId: cellId,
           actualLabel: cellById(cellId, 'pancreas').label,
-          predictedId: ranking[0].id,
-          predictedLabel: ranking[0].label,
-          aligned: ranking[0].id === cellId,
-          score: ranking[0].score,
-          margin: ranking[0].score - ranking[1].score,
+          predictedId: ranking[0] ? ranking[0].id : cellId,
+          predictedLabel: ranking[0] ? ranking[0].label : cellById(cellId, 'pancreas').label,
+          aligned: !!ranking[0] && ranking[0].id === cellId,
+          score: ranking[0] ? ranking[0].score : 0,
+          margin: ranking.length > 1 ? (ranking[0].score - ranking[1].score) : (ranking[0] ? ranking[0].score : 0),
           cellCount: heldOut.cellTypes[cellId].cellCount,
           lowCellCount: !!heldOut.cellTypes[cellId].lowCellCount,
           ranking: ranking.slice(0, 3)
@@ -811,15 +811,20 @@
   }
 
   function wilsonInterval(successes, trials) {
-    var n = Number(trials) || 0;
-    var k = Number(successes) || 0;
-    if (!n) return { lowPct: 0, highPct: 0 };
+    var n = Number(trials);
+    var k = Number(successes);
+    if (!Number.isFinite(n) || n <= 0) return { lowPct: 0, highPct: 0 };
+    if (!Number.isFinite(k)) k = 0;
     var z = 1.96;
-    var proportion = k / n;
+    var proportion = Math.max(0, Math.min(1, k / n));
     var denominator = 1 + z * z / n;
     var center = (proportion + z * z / (2 * n)) / denominator;
-    var half = z * Math.sqrt(proportion * (1 - proportion) / n + z * z / (4 * n * n)) / denominator;
-    return { lowPct: (center - half) * 100, highPct: (center + half) * 100 };
+    var rad = Math.max(0, proportion * (1 - proportion) / n + z * z / (4 * n * n));
+    var half = z * Math.sqrt(rad) / denominator;
+    return {
+      lowPct: Math.max(0, Math.min(100, (center - half) * 100)),
+      highPct: Math.max(0, Math.min(100, (center + half) * 100))
+    };
   }
 
   function replicateDetectionSummary(snapshot, cellId, geneId) {
@@ -932,6 +937,24 @@
       '.cal-source-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.cal-source-list{margin:9px 0 0;padding-left:18px;color:var(--cal-muted);font-size:11px;line-height:1.6}.cal-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}.cal-links a{color:#075985;font-size:11px;font-weight:900}.cal-boundary{border-left:5px solid #b45309;background:#fffbeb}.cal-af-return{border-left:5px solid #0e7490;background:linear-gradient(135deg,#f0fdfa,#f0f9ff)}.cal-af-return-meta{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}.cal-af-return-meta span{padding:5px 8px;border-radius:999px;background:#cffafe;color:#155e75;font-size:9px;font-weight:900}.cal-af-record-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}.cal-af-record-item{padding:11px;border:1px solid #bae6fd;border-radius:12px;background:#fff}.cal-af-record-item span{display:block;color:#0e7490;font-size:8px;font-weight:950;text-transform:uppercase}.cal-af-record-item p{margin:6px 0 0;color:#334e68;font-size:10px;line-height:1.5}.cal-af-atlas-evidence{padding:10px;border-left:4px solid #0e7490;background:#ecfeff;color:#164e63;font-size:10px;line-height:1.5}.cal-af-review{margin-top:13px;padding:12px;border:1px solid #c4b5fd;border-radius:13px;background:#faf5ff}.cal-af-review h4{margin:0;color:#5b21b6;font-size:13px}.cal-af-review-intro{margin:5px 0 9px;color:#6b21a8;font-size:9px;line-height:1.45}.cal-af-review-table{width:100%;border-collapse:collapse;font-size:10px}.cal-af-review-table th,.cal-af-review-table td{border-bottom:1px solid #ddd6fe;padding:7px;text-align:left;vertical-align:top}.cal-af-review-table th{color:#5b21b6;font-size:9px;text-transform:uppercase}.cal-af-review-score{font-weight:950;color:#6d28d9;white-space:nowrap}.cal-af-review-total{margin-top:9px;color:#5b21b6;font-size:10px;font-weight:900}.cal-af-review textarea{width:100%;min-height:62px;margin-top:8px;border:1px solid #c4b5fd;border-radius:9px;padding:8px;color:var(--cal-ink);resize:vertical;font-size:10px;line-height:1.4}.cal-af-review .cal-actions{margin-top:8px}.cal-footer{margin-top:14px;padding:11px 13px;border:1px solid var(--cal-line);border-radius:12px;background:#f8fafc;color:var(--cal-muted);font-size:10px;line-height:1.5}',
       '@media(max-width:850px){.cal-mission,.cal-layout,.cal-mystery,.cal-cross-grid,.cal-cer,.cal-pipeline,.cal-design-controls,.cal-rubric,.cal-case-grid,.cal-real-meta,.cal-benchmark-grid,.cal-ablation-controls,.cal-ablation-results,.cal-stability-grid,.cal-replicate-tabs,.cal-replicate-controls,.cal-transfer-summary,.cal-pseudo-grid,.cal-af-record-grid,.cal-af-review-table{grid-template-columns:1fr}.cal-source-chip{display:none}.cal-source-grid{grid-template-columns:1fr}}',
       '@media(max-width:560px){.cal-top{align-items:flex-start}.cal-tissues{grid-template-columns:1fr}.cal-progress{grid-template-columns:1fr}.cal-compare-controls{grid-template-columns:1fr}.cal-compare-vs{padding:0}.cal-choice-grid{grid-template-columns:1fr}}',
+      '@keyframes cal-fluo-breathe{0%,100%{opacity:.72;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}',
+      '@keyframes cal-optics-sheen{0%,100%{opacity:.58}50%{opacity:.9}}',
+      '@keyframes cal-pathway-flow{from{stroke-dashoffset:0}to{stroke-dashoffset:-32}}',
+      '@keyframes cal-reticle-pulse{0%,100%{opacity:.22;transform:scale(1)}50%{opacity:.56;transform:scale(1.06)}}',
+      '@keyframes cal-reticle-orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}',
+      '@keyframes cal-bar-sheen{0%,100%{opacity:.28}50%{opacity:.78}}',
+      '@keyframes cal-beacon-ring{0%{opacity:.52;transform:scale(.92)}75%{opacity:0;transform:scale(1.38)}100%{opacity:0;transform:scale(1.38)}}',
+      '.cal-shell .cal-anim-fluo{transform-box:fill-box;transform-origin:center;animation:cal-fluo-breathe 3.8s ease-in-out infinite}',
+      '.cal-shell .cal-anim-sheen{animation:cal-optics-sheen 5.2s ease-in-out infinite}',
+      '.cal-shell .cal-anim-flow{animation:cal-pathway-flow 2.4s linear infinite}',
+      '.cal-shell .cal-anim-reticle{transform-box:fill-box;transform-origin:center;animation:cal-reticle-pulse 2.8s ease-in-out infinite}',
+      '.cal-shell .cal-anim-orbit{transform-box:fill-box;transform-origin:center;animation:cal-reticle-orbit 28s linear infinite}',
+      '.cal-shell .cal-anim-orbit-slow{transform-box:fill-box;transform-origin:center;animation:cal-reticle-orbit 48s linear infinite}',
+      '.cal-shell .cal-anim-bar-sheen{animation:cal-bar-sheen 3.1s ease-in-out infinite}',
+      '.cal-shell .cal-anim-beacon{transform-box:fill-box;transform-origin:center;animation:cal-beacon-ring 3s cubic-bezier(.22,.61,.36,1) infinite}',
+      '.cal-shell .cal-tissue[aria-pressed=true] .cal-tissue-icon{display:inline-block;animation:cal-fluo-breathe 3.4s ease-in-out infinite}',
+      '.theme-contrast .cal-shell .cal-anim-fluo,.theme-contrast .cal-shell .cal-anim-sheen,.theme-contrast .cal-shell .cal-anim-flow,.theme-contrast .cal-shell .cal-anim-reticle,.theme-contrast .cal-shell .cal-anim-orbit,.theme-contrast .cal-shell .cal-anim-orbit-slow,.theme-contrast .cal-shell .cal-anim-bar-sheen,.theme-contrast .cal-shell .cal-anim-beacon,.theme-contrast .cal-shell .cal-tissue[aria-pressed=true] .cal-tissue-icon{animation:none!important}',
+      '.theme-contrast .cal-shell .cal-decor-only{display:none!important}',
       '@media(prefers-reduced-motion:reduce){.cal-shell *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}'
     ].join('');
     if (document.head) document.head.appendChild(style);
@@ -1055,8 +1078,8 @@
       __alloCellAtlasCtx = ctx;
       var React = ctx.React;
       var h = React.createElement;
-      var data = ctx.toolData || {};
-      var d = data.cellAtlasLab || {};
+      var data = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
+      var d = (data.cellAtlasLab && typeof data.cellAtlasLab === 'object' && !Array.isArray(data.cellAtlasLab)) ? data.cellAtlasLab : {};
       var alphaFoldEvidenceRecord = d.alphaFoldEvidenceRecord && typeof d.alphaFoldEvidenceRecord === 'object' && d.alphaFoldEvidenceRecord.kind === 'cell-atlas-alphafold-evidence' ? d.alphaFoldEvidenceRecord : null;
       var setToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
@@ -1072,7 +1095,7 @@
           link.download = filename;
           link.rel = 'noopener';
           link.click();
-          setTimeout(function () { URL.revokeObjectURL(url); }, 0);
+          setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
           return true;
         } catch (error) {
           return false;
@@ -1205,18 +1228,44 @@
       var detectionReplicateTransfer = leaveOneReplicateOutTransfer(realSnapshot, 'detectionPct');
       var activeReplicateTransfer = replicateMetricId === 'detectionPct' ? detectionReplicateTransfer : relativeReplicateTransfer;
       var selectedReplicate = replicateOptions.filter(function (item) { return item.id === d.replicateId; })[0] || replicateOptions[0] || null;
-      var replicateCellId = selectedReplicate && selectedReplicate.cellTypes[d.replicateCell] && selectedReplicate.cellTypes[d.replicateCell].available ? d.replicateCell : 'endothelial';
-      var replicateGeneId = realSnapshot && realSnapshot.genes.indexOf(d.replicateGene) >= 0 ? d.replicateGene : localCellById(replicateCellId).marker;
+      var replicateCellId = selectedReplicate && selectedReplicate.cellTypes && selectedReplicate.cellTypes[d.replicateCell] && selectedReplicate.cellTypes[d.replicateCell].available ? d.replicateCell : 'endothelial';
+      var replicateGeneId = realSnapshot && Array.isArray(realSnapshot.genes) && realSnapshot.genes.indexOf(d.replicateGene) >= 0 ? d.replicateGene : localCellById(replicateCellId).marker;
       var selectedTransferAudit = selectedReplicate && activeReplicateTransfer.filter(function (item) { return item.replicateId === selectedReplicate.id; })[0];
-      var pseudorepCellId = realSnapshot && realSnapshot.cellTypes[d.pseudorepCell] && realSnapshot.cellTypes[d.pseudorepCell].available ? d.pseudorepCell : 'stellate';
-      var pseudorepGeneId = realSnapshot && realSnapshot.genes.indexOf(d.pseudorepGene) >= 0 ? d.pseudorepGene : 'KRT19';
+      var pseudorepCellId = realSnapshot && realSnapshot.cellTypes && realSnapshot.cellTypes[d.pseudorepCell] && realSnapshot.cellTypes[d.pseudorepCell].available ? d.pseudorepCell : 'stellate';
+      var pseudorepGeneId = realSnapshot && Array.isArray(realSnapshot.genes) && realSnapshot.genes.indexOf(d.pseudorepGene) >= 0 ? d.pseudorepGene : 'KRT19';
       var pseudorepSummary = replicateDetectionSummary(realSnapshot, pseudorepCellId, pseudorepGeneId);
 
       function patch(nextPatch) {
+        if (typeof setToolData !== 'function') return;
         setToolData(function (prev) {
-          var next = Object.assign({}, prev || {});
-          next.cellAtlasLab = Object.assign({}, next.cellAtlasLab || {}, nextPatch || {});
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var next = Object.assign({}, safePrev);
+          var prevLab = (next.cellAtlasLab && typeof next.cellAtlasLab === 'object' && !Array.isArray(next.cellAtlasLab)) ? next.cellAtlasLab : {};
+          next.cellAtlasLab = Object.assign({}, prevLab, nextPatch || {});
           return next;
+        });
+      }
+
+      function copyPacketText(report, statusField) {
+        var writer = (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.writeClipboard === 'function')
+          ? window.StemLab.writeClipboard
+          : ((typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function')
+            ? function (value) { return navigator.clipboard.writeText(value); }
+            : null);
+        if (!writer) {
+          var unavail = {};
+          unavail[statusField] = 'unavailable';
+          patch(unavail);
+          return;
+        }
+        Promise.resolve().then(function () { return writer(report); }).then(function () {
+          var ok = {};
+          ok[statusField] = 'copied';
+          patch(ok);
+        }).catch(function () {
+          var fail = {};
+          fail[statusField] = 'failed';
+          patch(fail);
         });
       }
 
@@ -1392,17 +1441,20 @@
       }
 
       function openConnected(toolId, stateKey, statePatch, label) {
-        setToolData(function (prev) {
-          var next = Object.assign({}, prev || {});
-          next[stateKey] = Object.assign({}, next[stateKey] || {}, statePatch || {}, { _scaleJourneySource: 'cellAtlasLab' });
-          var handoffs = Object.assign({}, (next.cellAtlasLab && next.cellAtlasLab.journeyHandoffs) || {});
-          handoffs[tissue.id] = true;
-          next.cellAtlasLab = Object.assign({}, next.cellAtlasLab || {}, {
-            journeyHandoffs: handoffs,
-            alphaFoldHandoff: toolId === 'alphaFoldExplorer' ? true : !!(next.cellAtlasLab && next.cellAtlasLab.alphaFoldHandoff)
+        if (typeof setToolData === 'function') {
+          setToolData(function (prev) {
+            var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            var next = Object.assign({}, safePrev);
+            next[stateKey] = Object.assign({}, next[stateKey] || {}, statePatch || {}, { _scaleJourneySource: 'cellAtlasLab' });
+            var handoffs = Object.assign({}, (next.cellAtlasLab && next.cellAtlasLab.journeyHandoffs) || {});
+            handoffs[tissue.id] = true;
+            next.cellAtlasLab = Object.assign({}, next.cellAtlasLab || {}, {
+              journeyHandoffs: handoffs,
+              alphaFoldHandoff: toolId === 'alphaFoldExplorer' ? true : !!(next.cellAtlasLab && next.cellAtlasLab.alphaFoldHandoff)
+            });
+            return next;
           });
-          return next;
-        });
+        }
         if (typeof setStemLabTab === 'function') setStemLabTab('explore');
         if (typeof setStemLabTool === 'function') setStemLabTool(toolId);
         announce('Cell Atlas journey: opening ' + label + '.');
@@ -1637,9 +1689,7 @@
           ].join('\n');
         }
         function copyTeacherPacket() {
-          var report = teacherPacket();
-          if (!navigator.clipboard || !navigator.clipboard.writeText) { patch({ alphaFoldTeacherReviewStatus: 'unavailable' }); return; }
-          (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report).then(function () { patch({ alphaFoldTeacherReviewStatus: 'copied' }); }).catch(function () { patch({ alphaFoldTeacherReviewStatus: 'failed' }); });
+          copyPacketText(teacherPacket(), 'alphaFoldTeacherReviewStatus');
         }
         function learnerPacket() {
           return [
@@ -1657,9 +1707,7 @@
           ].join('\n');
         }
         function copyLearnerPacket() {
-          var report = learnerPacket();
-          if (!navigator.clipboard || !navigator.clipboard.writeText) { patch({ alphaFoldLearnerExportStatus: 'unavailable' }); return; }
-          (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report).then(function () { patch({ alphaFoldLearnerExportStatus: 'copied' }); }).catch(function () { patch({ alphaFoldLearnerExportStatus: 'failed' }); });
+          copyPacketText(learnerPacket(), 'alphaFoldLearnerExportStatus');
         }
         return h('section', { className: 'cal-card cal-af-return', 'aria-labelledby': 'cal-af-return-title' },
           h('p', { className: 'cal-kicker' }, 'Returned from AlphaFold'),
@@ -1886,9 +1934,7 @@
           ].join('\n');
         }
         function copyReproducibilityPacket() {
-          var report = reproducibilityPacket();
-          if (!navigator.clipboard || !navigator.clipboard.writeText) { patch({ reproducibilityPacketStatus: 'unavailable' }); return; }
-          (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report).then(function () { patch({ reproducibilityPacketStatus: 'copied' }); }).catch(function () { patch({ reproducibilityPacketStatus: 'failed' }); });
+          copyPacketText(reproducibilityPacket(), 'reproducibilityPacketStatus');
         }
         function reproducibilityArtifact() {
           return buildExportArtifact('reproducibility-audit', 'Cell Atlas reproducibility audit', reproducibilityPacket(), {
@@ -2297,11 +2343,11 @@
                     ),
                     // Optical-microscope dark-field stage & radial condenser illumination
                     h('rect', { x: 0, y: 0, width: 680, height: 430, fill: isHC ? '#000000' : '#051526' }),
-                    !isHC && h('circle', { cx: 340, cy: 215, r: 295, fill: 'url(#cal-bg-glow)' }),
+                    !isHC && h('circle', { cx: 340, cy: 215, r: 295, fill: 'url(#cal-bg-glow)', className: 'cal-anim-sheen cal-decor-only' }),
                     !isHC && h('rect', { x: 0, y: 0, width: 680, height: 430, fill: 'url(#cal-vignette)', pointerEvents: 'none' }),
                     // Concentric optical-microscope field calibration rings
                     !isHC && [96, 178, 258].map(function (rr) {
-                      return h('circle', { key: 'opt-' + rr, cx: 340, cy: 215, r: rr, fill: 'none', stroke: 'rgba(125,211,252,0.1)', strokeWidth: 1, strokeDasharray: rr === 178 ? '4 6' : undefined });
+                      return h('circle', { key: 'opt-' + rr, cx: 340, cy: 215, r: rr, fill: 'none', stroke: 'rgba(125,211,252,0.12)', strokeWidth: 1, strokeDasharray: rr === 178 ? '4 6' : undefined, className: rr === 178 ? 'cal-anim-orbit-slow cal-decor-only' : 'cal-decor-only' });
                     }),
                     // Subtle expression-space gridlines
                     [140, 260, 380, 500, 620].map(function (gx) {
@@ -2310,16 +2356,35 @@
                     [90, 170, 250, 330].map(function (gy) {
                       return h('line', { key: 'gy-' + gy, x1: 30, y1: gy, x2: 662, y2: gy, stroke: isHC ? '#333333' : '#16324f', strokeWidth: 0.9, strokeDasharray: '3 5' });
                     }),
+                    // Flowing paracrine signaling / vesicle pathways between selected cluster and nearest neighbors
+                    !isHC && (function () {
+                      var neighbors = CELL_TYPES.filter(function (c) { return c.id !== selectedCell.id; }).sort(function (a, b) {
+                        var da = Math.hypot(a.center[0] - selCx, a.center[1] - selCy);
+                        var db = Math.hypot(b.center[0] - selCx, b.center[1] - selCy);
+                        return da - db;
+                      }).slice(0, 2);
+                      return h('g', { 'aria-hidden': 'true', pointerEvents: 'none', className: 'cal-decor-only' }, neighbors.map(function (nb, ni) {
+                        var nx = nb.center[0], ny = nb.center[1];
+                        var mx = Math.round((selCx + nx) / 2 + (ni === 0 ? -16 : 16));
+                        var my = Math.round((selCy + ny) / 2 + (ni === 0 ? -18 : 18));
+                        var pD = 'M ' + selCx + ' ' + selCy + ' Q ' + mx + ' ' + my + ' ' + nx + ' ' + ny;
+                        return h('g', { key: 'sig-' + nb.id },
+                          h('path', { d: pD, fill: 'none', stroke: '#2dd4bf', strokeWidth: 3.5, opacity: 0.1 }),
+                          h('path', { d: pD, fill: 'none', stroke: '#5eead4', strokeWidth: 1.25, strokeDasharray: '4 10', opacity: 0.48, className: 'cal-anim-flow', style: { animationDelay: (ni * 0.65) + 's' } })
+                        );
+                      }));
+                    })(),
                     // Glowing anatomical callout leader line linking selected cluster to telemetry pill
                     h('g', { 'aria-hidden': 'true' },
-                      !isHC && h('path', { d: 'M ' + selCx + ' ' + selCy + ' Q ' + Math.round((selCx + 454) / 2) + ' ' + Math.max(24, Math.min(selCy, 92)) + ' 454 30', fill: 'none', stroke: '#38bdf8', strokeWidth: 4, opacity: 0.14 }),
-                      h('path', { d: 'M ' + selCx + ' ' + selCy + ' Q ' + Math.round((selCx + 454) / 2) + ' ' + Math.max(24, Math.min(selCy, 92)) + ' 454 30', fill: 'none', stroke: isHC ? '#00ff00' : '#7dd3fc', strokeWidth: 1.2, strokeDasharray: '4 4', opacity: isHC ? 0.85 : 0.55 }),
+                      !isHC && h('path', { d: 'M ' + selCx + ' ' + selCy + ' Q ' + Math.round((selCx + 454) / 2) + ' ' + Math.max(24, Math.min(selCy, 92)) + ' 454 30', fill: 'none', stroke: '#38bdf8', strokeWidth: 4, opacity: 0.14, className: 'cal-decor-only' }),
+                      h('path', { d: 'M ' + selCx + ' ' + selCy + ' Q ' + Math.round((selCx + 454) / 2) + ' ' + Math.max(24, Math.min(selCy, 92)) + ' 454 30', fill: 'none', stroke: isHC ? '#00ff00' : '#7dd3fc', strokeWidth: 1.25, strokeDasharray: '4 4', opacity: isHC ? 0.85 : 0.62, className: !isHC ? 'cal-anim-flow' : undefined }),
+                      !isHC && h('circle', { cx: 454, cy: 30, r: 6.5, fill: 'none', stroke: '#38bdf8', strokeWidth: 1.2, className: 'cal-anim-beacon cal-decor-only' }),
                       h('circle', { cx: 454, cy: 30, r: 3, fill: isHC ? '#00ff00' : '#38bdf8' })
                     ),
                     // Top-right in-SVG expression legend pill
                     h('g', { 'aria-hidden': 'true' },
                       h('rect', { x: 454, y: 12, width: 214, height: 34, rx: 10, fill: isHC ? '#000000' : '#082038', stroke: isHC ? '#ffff00' : '#38bdf8', strokeWidth: 1.1, strokeOpacity: isHC ? 1 : 0.6 }),
-                      !isHC && h('line', { x1: 464, y1: 13.5, x2: 658, y2: 13.5, stroke: '#bae6fd', strokeWidth: 0.9, opacity: 0.35 }),
+                      !isHC && h('line', { x1: 464, y1: 13.5, x2: 658, y2: 13.5, stroke: '#bae6fd', strokeWidth: 0.9, opacity: 0.35, className: 'cal-anim-bar-sheen cal-decor-only' }),
                       h('text', { x: 466, y: 27, fill: isHC ? '#ffff00' : '#7dd3fc', fontSize: 9.5, fontWeight: 800 }, 'MARKER: ' + selectedGene.id),
                       h('circle', { cx: 562, cy: 24, r: 3.5, fill: isHC ? '#ffff00' : '#94a3b8', opacity: isHC ? 0.65 : 0.45 }),
                       h('text', { x: 570, y: 27, fill: isHC ? '#ffff00' : '#cbd5e1', fontSize: 8.5 }, 'Low'),
@@ -2330,7 +2395,7 @@
                     ),
                     h('text', { className: 'cal-axis', x: 15, y: 215, transform: 'rotate(-90 15 215)' }, 'illustrative expression neighborhood 2'),
                     h('text', { className: 'cal-axis', x: 245, y: 418 }, 'illustrative expression neighborhood 1'),
-                    CELL_TYPES.map(function (cell) {
+                    CELL_TYPES.map(function (cell, cellIdx) {
                       var rawStrength = currentEvidenceValue(cell.id, selectedGene.id);
                       var strength = rawStrength === null ? 0 : rawStrength;
                       var radius = 4.5 + strength / 22;
@@ -2347,13 +2412,14 @@
                         onClick: function () { chooseCell(cell.id); },
                         onKeyDown: function (event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); chooseCell(cell.id); } }
                       },
-                        // Soft optical density cloud & outer translucent membrane aura
-                        !isHC && isSelected && h('circle', { cx: cx0, cy: cy0, r: 48, fill: 'url(#cal-sel-beacon)' }),
-                        !isHC && h('circle', { cx: cx0, cy: cy0, r: 32 + strength / 11, fill: cell.color, opacity: rawStrength === null ? 0.04 : 0.1 + (strength / 460) }),
+                        // Soft optical density cloud & luminous fluorescence-channel breathing halo
+                        !isHC && isSelected && h('circle', { cx: cx0, cy: cy0, r: 48, fill: 'url(#cal-sel-beacon)', className: 'cal-anim-fluo cal-decor-only' }),
+                        !isHC && h('circle', { cx: cx0, cy: cy0, r: 32 + strength / 11, fill: cell.color, opacity: rawStrength === null ? 0.04 : 0.1 + (strength / 460), className: isPeak ? 'cal-anim-fluo cal-decor-only' : 'cal-decor-only', style: isPeak ? { animationDelay: (cellIdx * 0.35) + 's' } : undefined }),
                         h('circle', { cx: cx0, cy: cy0, r: 28 + strength / 15, fill: 'none', stroke: isHC ? (isSelected ? '#00ff00' : '#ffff00') : cell.color, strokeWidth: isPeak ? 1.5 : 0.9, opacity: rawStrength === null ? 0.12 : (isPeak ? 0.55 : 0.25) }),
                         // Active selection dual-pass telemetry reticle + optical crosshair ticks
-                        isSelected && !isHC && h('circle', { cx: cx0, cy: cy0, r: 38, fill: 'none', stroke: '#38bdf8', strokeWidth: 5.5, opacity: 0.22 }),
-                        isSelected && h('circle', { cx: cx0, cy: cy0, r: 38, fill: 'none', stroke: isHC ? '#00ff00' : '#38bdf8', strokeWidth: 2, strokeDasharray: '5 3' }),
+                        isSelected && !isHC && h('circle', { cx: cx0, cy: cy0, r: 42, fill: 'none', stroke: '#38bdf8', strokeWidth: 1.4, className: 'cal-anim-beacon cal-decor-only' }),
+                        isSelected && !isHC && h('circle', { cx: cx0, cy: cy0, r: 38, fill: 'none', stroke: '#38bdf8', strokeWidth: 5.5, opacity: 0.22, className: 'cal-anim-reticle cal-decor-only' }),
+                        isSelected && h('circle', { cx: cx0, cy: cy0, r: 38, fill: 'none', stroke: isHC ? '#00ff00' : '#38bdf8', strokeWidth: 2, strokeDasharray: '5 3', className: !isHC ? 'cal-anim-orbit' : undefined }),
                         isSelected && h('path', { d: 'M' + (cx0 - 44) + ',' + cy0 + ' H' + (cx0 - 34) + ' M' + (cx0 + 34) + ',' + cy0 + ' H' + (cx0 + 44) + ' M' + cx0 + ',' + (cy0 - 44) + ' V' + (cy0 - 34) + ' M' + cx0 + ',' + (cy0 + 34) + ' V' + (cy0 + 44), stroke: isHC ? '#00ff00' : '#7dd3fc', strokeWidth: 1.5, strokeLinecap: 'round' }),
                         // Translucent membrane / organelle cells with specular catchlights
                         offsets.map(function (point, index) {
@@ -2361,7 +2427,7 @@
                           var rCell = radius + (index % 2);
                           return h('g', { key: index },
                             h('circle', { cx: px, cy: py, r: rCell, fill: isHC ? (isSelected || isPeak ? '#00ff00' : '#ffff00') : ('url(#cal-cell-grad-' + cell.id + ')'), opacity: isHC ? (rawStrength === null ? 0.25 : 0.92) : Math.min(0.98, opacity), stroke: (isSelected || isPeak) ? '#f8fafc' : 'rgba(255,255,255,.35)', strokeWidth: (isSelected || isPeak) ? 1.8 : 1 }),
-                            !isHC && (isSelected || isPeak || index % 2 === 0) && h('circle', { cx: px - rCell * 0.28, cy: py - rCell * 0.28, r: Math.max(1.2, rCell * 0.28), fill: '#ffffff', opacity: isPeak ? 0.72 : 0.42 })
+                            !isHC && (isSelected || isPeak || index % 2 === 0) && h('circle', { cx: px - rCell * 0.28, cy: py - rCell * 0.28, r: Math.max(1.2, rCell * 0.28), fill: '#ffffff', opacity: isPeak ? 0.72 : 0.42, className: (isSelected || isPeak) ? 'cal-anim-bar-sheen cal-decor-only' : 'cal-decor-only', style: (isSelected || isPeak) ? { animationDelay: (index * 0.32) + 's' } : undefined })
                           );
                         }),
                         h('text', { x: cx0, y: cy0 + 41, textAnchor: 'middle', fill: isHC ? (isSelected ? '#00ff00' : '#ffff00') : ((isSelected || isPeak) ? '#ffffff' : '#cbd5e1') }, (isSelected ? '▸ ' : '') + cell.label + (rawStrength === null ? ' *' : ''))
@@ -2482,12 +2548,14 @@
                   return h('g', { key: 'bf-' + gene.id },
                     h('rect', { x: midL - maxBar, y: y, width: maxBar, height: 12, rx: 3.5, fill: isHC ? '#111111' : '#0b223a', stroke: isHC ? '#333333' : 'rgba(56,189,248,0.12)', strokeWidth: 0.7 }),
                     h('rect', { x: midL - wa, y: y, width: wa, height: 12, rx: 3.5, fill: isHC ? '#00ff00' : 'url(#cal-bf-a)' }),
-                    !isHC && wa > 8 && h('line', { x1: midL - wa + 2, y1: y + 2, x2: midL - 2, y2: y + 2, stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.4 }),
+                    !isHC && wa > 8 && h('line', { x1: midL - wa + 2, y1: y + 2, x2: midL - 2, y2: y + 2, stroke: '#ffffff', strokeWidth: 1.05, className: 'cal-anim-bar-sheen cal-decor-only', style: { animationDelay: (idx * 0.24) + 's' } }),
+                    !isHC && a >= 75 && h('circle', { cx: midL - wa + 3.5, cy: y + 6, r: 3.5, fill: '#bae6fd', opacity: 0.7, className: 'cal-anim-reticle cal-decor-only' }),
                     h('text', { x: midL - maxBar - 6, y: y + 9.5, textAnchor: 'end', fill: isHC ? '#00ff00' : '#bae6fd', fontSize: 9, fontWeight: 800 }, Math.round(a)),
                     h('text', { x: W / 2, y: y + 9.5, textAnchor: 'middle', fill: isHC ? '#ffff00' : '#f8fafc', fontSize: 9.5, fontWeight: 900 }, gene.id),
                     h('rect', { x: midR, y: y, width: maxBar, height: 12, rx: 3.5, fill: isHC ? '#111111' : '#0b223a', stroke: isHC ? '#333333' : 'rgba(251,191,36,0.12)', strokeWidth: 0.7 }),
                     h('rect', { x: midR, y: y, width: wb, height: 12, rx: 3.5, fill: isHC ? '#ffff00' : 'url(#cal-bf-b)' }),
-                    !isHC && wb > 8 && h('line', { x1: midR + 2, y1: y + 2, x2: midR + wb - 2, y2: y + 2, stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.4 }),
+                    !isHC && wb > 8 && h('line', { x1: midR + 2, y1: y + 2, x2: midR + wb - 2, y2: y + 2, stroke: '#ffffff', strokeWidth: 1.05, className: 'cal-anim-bar-sheen cal-decor-only', style: { animationDelay: (idx * 0.24 + 0.15) + 's' } }),
+                    !isHC && b >= 75 && h('circle', { cx: midR + wb - 3.5, cy: y + 6, r: 3.5, fill: '#fef08a', opacity: 0.7, className: 'cal-anim-reticle cal-decor-only' }),
                     h('text', { x: midR + maxBar + 6, y: y + 9.5, textAnchor: 'start', fill: isHC ? '#ffff00' : '#fef08a', fontSize: 9, fontWeight: 800 }, Math.round(b))
                   );
                 })
@@ -2593,9 +2661,7 @@
           ].join('\n');
         }
         function copyDesignPacket() {
-          var report = designPacket();
-          if (!navigator.clipboard || !navigator.clipboard.writeText) { patch({ designPacketStatus: 'unavailable' }); return; }
-          (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report).then(function () { patch({ designPacketStatus: 'copied' }); }).catch(function () { patch({ designPacketStatus: 'failed' }); });
+          copyPacketText(designPacket(), 'designPacketStatus');
         }
         function designArtifact() {
           return buildExportArtifact('study-design', 'Cell Atlas study-design packet', designPacket(), {
@@ -2717,9 +2783,7 @@
           ].join('\n');
         }
         function copyCrossTissuePacket() {
-          var report = crossTissuePacket();
-          if (!navigator.clipboard || !navigator.clipboard.writeText) { patch({ crossTissuePacketStatus: 'unavailable' }); return; }
-          (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report).then(function () { patch({ crossTissuePacketStatus: 'copied' }); }).catch(function () { patch({ crossTissuePacketStatus: 'failed' }); });
+          copyPacketText(crossTissuePacket(), 'crossTissuePacketStatus');
         }
         function crossTissueArtifact() {
           return buildExportArtifact('cross-tissue-cer', 'Cell Atlas cross-tissue CER packet', crossTissuePacket(), {
@@ -2957,9 +3021,7 @@
         ].join('\n');
       }
       function copyCellAtlasTeacherReview() {
-        var report = cellAtlasTeacherPacket();
-        if (typeof navigator === 'undefined' || !navigator.clipboard || !navigator.clipboard.writeText) { patch({ cellAtlasTeacherReviewStatus: 'unavailable' }); return; }
-        (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(report).then(function () { patch({ cellAtlasTeacherReviewStatus: 'copied' }); }).catch(function () { patch({ cellAtlasTeacherReviewStatus: 'failed' }); });
+        copyPacketText(cellAtlasTeacherPacket(), 'cellAtlasTeacherReviewStatus');
       }
 
       function renderSource() {
@@ -3058,9 +3120,9 @@
               h('div', { className: 'cal-self-check-options', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_confidence_level', 'Confidence level') },
                 [{ id: 'uncertain', label: 'I need more evidence' }, { id: 'developing', label: 'I can explain a tentative claim' }, { id: 'confident', label: 'I can defend the claim and its limits' }].map(function (option) { return h('button', { key: option.id, type: 'button', 'aria-pressed': learnerSelfCheck.confidence === option.id ? 'true' : 'false', onClick: function () { patch({ cellAtlasLearnerSelfCheck: Object.assign({}, learnerSelfCheck, { confidence: option.id }), cellAtlasPortfolioStatus: '' }); } }, option.label); })),
               h('label', { htmlFor: 'cal-self-check-evidence' }, 'Strongest evidence I used'),
-              h('textarea', { id: 'cal-self-check-evidence', rows: 2, maxLength: 500, value: learnerSelfCheck.strongestEvidence || '', placeholder: __alloT('stem.cellatlas.name_the_marker_comparison_or_source_detail','Name the marker, comparison, or source detail that most supports your claim.'), onChange: function (event) { patch({ cellAtlasLearnerSelfCheck: Object.assign({}, learnerSelfCheck, { strongestEvidence: portfolioSafeText(event.target.value, '').slice(0, 500) }), cellAtlasPortfolioStatus: '' }); } }),
+              h('textarea', { id: 'cal-self-check-evidence', rows: 2, maxLength: 500, value: learnerSelfCheck.strongestEvidence || '', placeholder: __alloT('stem.cellatlas.name_the_marker_comparison_or_source_detail','Name the marker, comparison, or source detail that most supports your claim.'), onChange: function (event) { patch({ cellAtlasLearnerSelfCheck: Object.assign({}, learnerSelfCheck, { strongestEvidence: String(event.target.value == null ? '' : event.target.value).replace(/\b[ACGTN]{16,}\b/gi, '[sequence omitted]').slice(0, 500) }), cellAtlasPortfolioStatus: '' }); } }),
               h('label', { htmlFor: 'cal-self-check-uncertainty' }, 'What remains uncertain?'),
-              h('textarea', { id: 'cal-self-check-uncertainty', rows: 2, maxLength: 500, value: learnerSelfCheck.uncertainty || '', placeholder: __alloT('stem.cellatlas.name_one_limitation_alternative_explanation','Name one limitation, alternative explanation, or next test.'), onChange: function (event) { patch({ cellAtlasLearnerSelfCheck: Object.assign({}, learnerSelfCheck, { uncertainty: portfolioSafeText(event.target.value, '').slice(0, 500) }), cellAtlasPortfolioStatus: '' }); } })),
+              h('textarea', { id: 'cal-self-check-uncertainty', rows: 2, maxLength: 500, value: learnerSelfCheck.uncertainty || '', placeholder: __alloT('stem.cellatlas.name_one_limitation_alternative_explanation','Name one limitation, alternative explanation, or next test.'), onChange: function (event) { patch({ cellAtlasLearnerSelfCheck: Object.assign({}, learnerSelfCheck, { uncertainty: String(event.target.value == null ? '' : event.target.value).replace(/\b[ACGTN]{16,}\b/gi, '[sequence omitted]').slice(0, 500) }), cellAtlasPortfolioStatus: '' }); } })),
             h('div', { className: 'cal-portfolio-head' }, h('h4', { id: 'cal-portfolio-title' }, 'Revision portfolio'), h('span', null, portfolioAttempts.length + '/8 attempts saved')),
             h('div', { className: 'cal-portfolio-delta', 'data-direction': teacherPortfolioDelta.direction, role: 'status' }, h('strong', null, teacherPortfolioDelta.label), ' ', teacherPortfolioDelta.detail),
             portfolioAttempts.length ? h('ol', { className: 'cal-portfolio-list', 'aria-label': __alloT('stem.cellatlas.a11y_saved_revision_attempts', 'Saved revision attempts') }, portfolioAttempts.slice(-4).reverse().map(function (attempt) { var previous = portfolioAttempts[portfolioAttempts.indexOf(attempt) - 1]; var delta = cellAtlasPortfolioDelta(attempt, previous); return h('li', { key: attempt.id, 'data-direction': delta.direction }, String(attempt.createdAt || '').slice(0, 10) + ' - ' + attempt.total + '/16 - ' + (attempt.imported ? 'imported' : 'local') + ' - ' + delta.label); })) : h('p', { className: 'cal-card-intro' }, 'No saved attempts yet. Save one after reviewing this work to begin a revision history.'),
@@ -3122,17 +3184,17 @@
                 h('stop', { offset: '100%', stopColor: '#b45309' })
               )
             ),
-            h('rect', { x: 2, y: 2, width: 38, height: 38, rx: 11, fill: 'url(#cal-emblem-bg)', stroke: '#99f6e4', strokeWidth: 1.4 }),
-            h('path', { d: 'M9 5.5 H33', stroke: '#e0f2fe', strokeWidth: 1, strokeLinecap: 'round', opacity: 0.42 }),
-            h('circle', { cx: 21, cy: 21, r: 14, fill: 'none', stroke: '#38bdf8', strokeWidth: 2.8, opacity: 0.16 }),
-            h('circle', { cx: 21, cy: 21, r: 12.2, fill: 'none', stroke: '#bae6fd', strokeWidth: 1, strokeDasharray: '2.5 2', opacity: 0.8 }),
-            h('circle', { cx: 16, cy: 17, r: 4.5, fill: 'url(#cal-emb-orb-a)', stroke: '#ffffff', strokeWidth: 0.9 }),
-            h('circle', { cx: 14.7, cy: 15.6, r: 1.1, fill: '#ffffff', opacity: 0.85 }),
-            h('circle', { cx: 26, cy: 16, r: 3.5, fill: '#5eead4', stroke: '#ffffff', strokeWidth: 0.9 }),
-            h('circle', { cx: 25, cy: 14.9, r: 0.9, fill: '#ffffff', opacity: 0.8 }),
-            h('circle', { cx: 22, cy: 26, r: 4.8, fill: 'url(#cal-emb-orb-b)', stroke: '#ffffff', strokeWidth: 0.9 }),
-            h('circle', { cx: 20.6, cy: 24.5, r: 1.2, fill: '#ffffff', opacity: 0.85 }),
-            h('circle', { cx: 13, cy: 26, r: 2.2, fill: '#e0f2fe', opacity: 0.9 })
+            h('rect', { x: 2, y: 2, width: 38, height: 38, rx: 11, fill: ctx && ctx.isContrast ? '#000000' : 'url(#cal-emblem-bg)', stroke: ctx && ctx.isContrast ? '#ffff00' : '#99f6e4', strokeWidth: 1.4 }),
+            h('path', { d: 'M9 5.5 H33', stroke: '#e0f2fe', strokeWidth: 1, strokeLinecap: 'round', opacity: 0.42, className: 'cal-anim-bar-sheen cal-decor-only' }),
+            h('circle', { cx: 21, cy: 21, r: 14, fill: 'none', stroke: '#38bdf8', strokeWidth: 2.8, opacity: 0.18, className: 'cal-anim-reticle cal-decor-only' }),
+            h('circle', { cx: 21, cy: 21, r: 12.2, fill: 'none', stroke: ctx && ctx.isContrast ? '#00ff00' : '#bae6fd', strokeWidth: 1, strokeDasharray: '2.5 2', opacity: 0.8, className: !(ctx && ctx.isContrast) ? 'cal-anim-orbit' : undefined }),
+            h('circle', { cx: 16, cy: 17, r: 4.5, fill: ctx && ctx.isContrast ? '#00ff00' : 'url(#cal-emb-orb-a)', stroke: '#ffffff', strokeWidth: 0.9, className: !(ctx && ctx.isContrast) ? 'cal-anim-fluo' : undefined }),
+            h('circle', { cx: 14.7, cy: 15.6, r: 1.1, fill: '#ffffff', opacity: 0.85, className: 'cal-decor-only' }),
+            h('circle', { cx: 26, cy: 16, r: 3.5, fill: ctx && ctx.isContrast ? '#ffff00' : '#5eead4', stroke: '#ffffff', strokeWidth: 0.9, className: !(ctx && ctx.isContrast) ? 'cal-anim-fluo' : undefined, style: { animationDelay: '0.7s' } }),
+            h('circle', { cx: 25, cy: 14.9, r: 0.9, fill: '#ffffff', opacity: 0.8, className: 'cal-decor-only' }),
+            h('circle', { cx: 22, cy: 26, r: 4.8, fill: ctx && ctx.isContrast ? '#ffff00' : 'url(#cal-emb-orb-b)', stroke: '#ffffff', strokeWidth: 0.9, className: !(ctx && ctx.isContrast) ? 'cal-anim-fluo' : undefined, style: { animationDelay: '1.3s' } }),
+            h('circle', { cx: 20.6, cy: 24.5, r: 1.2, fill: '#ffffff', opacity: 0.85, className: 'cal-decor-only' }),
+            h('circle', { cx: 13, cy: 26, r: 2.2, fill: ctx && ctx.isContrast ? '#00ff00' : '#e0f2fe', opacity: 0.9 })
           ),
           h('div', { className: 'cal-brand' },
             h('p', { className: 'cal-kicker' }, 'Tissue to cell to gene to protein'),

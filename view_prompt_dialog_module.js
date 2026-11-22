@@ -216,15 +216,23 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
   const X = typeof window !== "undefined" && (window.AlloIcons && window.AlloIcons.X || window.X) || (() => null);
   const [value, setValue] = React.useState(promptDialog.defaultValue != null ? String(promptDialog.defaultValue) : "");
   const [error, setError] = React.useState(null);
+  const [choiceQuery, setChoiceQuery] = React.useState("");
   const inputRef = React.useRef(null);
   const dialogRef = React.useRef(null);
   const backdropDownRef = React.useRef(null);
   const settledRef = React.useRef(false);
   const choiceMode = Array.isArray(promptDialog.choices);
   const choices = choiceMode ? promptDialog.choices.filter((choice) => choice && choice.value != null && String(choice.value)) : [];
+  const normalizedChoiceQuery = choices.length >= 6 ? choiceQuery.trim().toLowerCase() : "";
+  const visibleChoices = normalizedChoiceQuery ? choices.filter((choice) => {
+    const hay = (String(choice.label || choice.value) + " " + String(choice.description || "")).toLowerCase();
+    return hay.includes(normalizedChoiceQuery) || String(choice.value) === value;
+  }) : choices;
   const validChoice = choices.some((choice) => String(choice.value) === value);
-  const checkedChoiceIndex = choices.findIndex((choice) => String(choice.value) === value);
+  const checkedChoiceIndex = visibleChoices.findIndex((choice) => String(choice.value) === value);
   const initialChoiceFocusIndex = checkedChoiceIndex >= 0 ? checkedChoiceIndex : 0;
+  const maxLen = Number.isFinite(Number(promptDialog.maxLength)) && Number(promptDialog.maxLength) > 0 ? Math.trunc(Number(promptDialog.maxLength)) : 0;
+  const nearMaxLen = maxLen > 0 && value.length >= Math.floor(maxLen * 0.9);
   const handleCancel = React.useCallback(() => {
     if (settledRef.current) return;
     settledRef.current = true;
@@ -266,6 +274,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
     settledRef.current = false;
     const nextValue = promptDialog.defaultValue != null ? String(promptDialog.defaultValue) : "";
     setValue(nextValue);
+    setChoiceQuery("");
     setError(null);
     try {
       if (Array.isArray(promptDialog.choices) && dialogRef.current) {
@@ -281,7 +290,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
   }, [promptDialog]);
   const handleDialogKeyDown = React.useCallback((e) => {
     if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229) return;
-    if (e.target?.closest?.("button")) return;
+    if (e.target?.closest?.("button") || e.target?.getAttribute?.("data-prompt-choice-filter") === "true") return;
     if (e.key === "Enter" && !promptDialog.multiline) {
       e.preventDefault();
       handleSubmit();
@@ -345,7 +354,27 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
         /* @__PURE__ */ React.createElement(X, { size: 16, "aria-hidden": "true" })
       )),
       /* @__PURE__ */ React.createElement("p", { id: "alloflow-prompt-description", className: "text-sm text-slate-700 leading-relaxed mb-4 whitespace-pre-wrap" }, promptDialog.message),
-      choiceMode ? /* @__PURE__ */ React.createElement("fieldset", { className: "min-w-0 space-y-3", "aria-describedby": error ? "alloflow-prompt-error" : void 0 }, /* @__PURE__ */ React.createElement("legend", { className: "sr-only" }, promptDialog.message), choices.map((choice, index) => {
+      choiceMode ? /* @__PURE__ */ React.createElement("fieldset", { className: "min-w-0 space-y-3", "aria-describedby": error ? "alloflow-prompt-error" : void 0 }, /* @__PURE__ */ React.createElement("legend", { className: "sr-only" }, promptDialog.message), /* @__PURE__ */ React.createElement("div", { "data-testid": "prompt-dialog-choice-status", className: "flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, choices.length, " ", _promptCopy(t, "prompt_dialog.options_count", choices.length === 1 ? "option" : "options")), /* @__PURE__ */ React.createElement("span", { className: "rounded-full px-2 py-0.5 font-bold " + (validChoice ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-slate-100 text-slate-700") }, validChoice ? _promptCopy(t, "prompt_dialog.selected_badge", "\u2713 Selected") : _promptCopy(t, "prompt_dialog.select_one_badge", "Select one"))), choices.length >= 6 && /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "search",
+          "data-prompt-choice-filter": "true",
+          value: choiceQuery,
+          "aria-label": _promptCopy(t, "prompt_dialog.filter_options", "Filter options"),
+          placeholder: _promptCopy(t, "prompt_dialog.filter_options_ph", "Find option\u2026"),
+          onChange: (e) => setChoiceQuery(e.target.value),
+          onKeyDown: (e) => {
+            if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+            if (e.key === "Escape" && choiceQuery) {
+              e.preventDefault();
+              e.stopPropagation();
+              setChoiceQuery("");
+            }
+          },
+          style: { minHeight: "44px" },
+          className: "w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+        }
+      ), visibleChoices.map((choice, index) => {
         const choiceValue = String(choice.value);
         const checked = value === choiceValue;
         return /* @__PURE__ */ React.createElement("label", { key: choiceValue, className: "flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 transition-colors motion-reduce:transition-none focus-within:ring-4 focus-within:ring-indigo-500/20 " + (checked ? "border-indigo-600 bg-indigo-50" : "border-slate-300 bg-white hover:border-indigo-400") }, /* @__PURE__ */ React.createElement(
@@ -366,7 +395,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
             className: "mt-1 h-4 w-4 shrink-0 accent-indigo-600"
           }
         ), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 break-words [overflow-wrap:anywhere]" }, /* @__PURE__ */ React.createElement("span", { id: "alloflow-prompt-choice-" + index, className: "block text-sm font-semibold text-slate-900" }, choice.label || choiceValue), choice.description && /* @__PURE__ */ React.createElement("span", { id: "alloflow-prompt-preview-" + index, className: "mt-1 block text-xs leading-relaxed text-slate-700" }, choice.description)));
-      })) : promptDialog.multiline ? /* @__PURE__ */ React.createElement("textarea", { ...inputCommonProps, rows: 4 }) : /* @__PURE__ */ React.createElement("input", { ...inputCommonProps, type: promptDialog.inputType || "text" }),
+      })) : /* @__PURE__ */ React.createElement("div", null, promptDialog.multiline ? /* @__PURE__ */ React.createElement("textarea", { ...inputCommonProps, rows: 4 }) : /* @__PURE__ */ React.createElement("input", { ...inputCommonProps, type: promptDialog.inputType || "text" }), (maxLen > 0 || promptDialog.multiline) && /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, promptDialog.multiline ? _promptCopy(t, "prompt_dialog.multiline_hint", "Ctrl/Cmd + Enter to submit") : ""), maxLen > 0 && /* @__PURE__ */ React.createElement("span", { "data-testid": "prompt-dialog-char-count", className: "font-mono font-semibold " + (nearMaxLen ? "text-amber-800" : "text-slate-600") }, value.length, " / ", maxLen))),
       error && /* @__PURE__ */ React.createElement("p", { id: "alloflow-prompt-error", role: "alert", className: "text-xs text-red-600 mt-2 font-semibold" }, error),
       /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-end mt-5" + (choiceMode ? " flex-col sm:flex-row" : "") }, /* @__PURE__ */ React.createElement(
         "button",

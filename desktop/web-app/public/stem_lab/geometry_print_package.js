@@ -123,7 +123,7 @@
     });
   }
   function json(bytes,name) {
-    try {return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));}
+    try {return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes), function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });}
     catch (_) {throw new Error(name+' does not contain readable JSON.');}
   }
   function validateManifest(manifest) {

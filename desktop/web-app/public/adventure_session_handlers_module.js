@@ -1127,13 +1127,15 @@ const generateNarrativeLedger = async (currentHistory, deps) => {
           `;
           const result = await callGemini(prompt);
           if (ledgerEpoch !== getNarrativeLedgerEpoch(setAdventureState)) return;
+          const nextLedger = typeof result === 'string' ? result.trim() : '';
+          if (!nextLedger) return;
           setAdventureState(prev => {
               if (!prev || (!prev.currentScene && (!Array.isArray(prev.history) || prev.history.length === 0))) {
                   return prev;
               }
               return {
                   ...prev,
-                  narrativeLedger: result
+                  narrativeLedger: nextLedger
               };
           });
           if (ledgerEpoch === getNarrativeLedgerEpoch(setAdventureState)) {

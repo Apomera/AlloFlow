@@ -48,7 +48,7 @@ function pdfCounts(value, compliant) {
 function parsePdfUaCliReport(parsed, exitCode) {
   const report = parsed && parsed.report;
   const jobs = report && report.jobs;
-  const validations = Array.isArray(jobs) && jobs.length === 1 && jobs[0].validationResult;
+  const validations = Array.isArray(jobs) && jobs.length === 1 && jobs[0] && jobs[0].validationResult;
   const validation = Array.isArray(validations) && validations.length === 1 && validations[0];
   if (validation && typeof validation === 'object' && validation.jobEndStatus !== undefined && validation.jobEndStatus !== 'normal') partialPdfEvidence(validation);
   if (!validation || typeof validation.compliant !== 'boolean' || !validation.details)
@@ -104,16 +104,33 @@ function pdfUaEvidence(raw, options) {
   if(!o.requested)return {...base,status:'not-run',reason:'Independent PDF validation was not requested.'};
   if(!raw||raw.error)return {...base,status:'unavailable',error:String(raw?.error||'Validator returned no evidence.').slice(0,1000)};
   const shaMatch=typeof raw.inputSha256==='string'&&typeof o.sha256==='string'&&/^[a-f0-9]{64}$/i.test(raw.inputSha256)&&raw.inputSha256.toLowerCase()===o.sha256.toLowerCase();
-  const bound=shaMatch&&raw.inputBytes===o.bytes&&raw.profile==='ua1'&&/^veraPDF(?: CLI| browser)?$/.test(raw.validator||'');
+  const bytesValid=Number.isSafeInteger(o.bytes)&&o.bytes>=5&&Number.isSafeInteger(raw.inputBytes)&&raw.inputBytes===o.bytes;
+  const bound=shaMatch&&bytesValid&&raw.profile==='ua1'&&/^veraPDF(?: CLI| browser)?$/.test(raw.validator||'');
   const counts=['failedChecks','failedRuleCount'];
   const badPassed=raw.passedChecks!==undefined&&(!Number.isSafeInteger(raw.passedChecks)||raw.passedChecks<0||(Number.isSafeInteger(raw.failedChecks)&&raw.passedChecks+raw.failedChecks<=0));
+  const rawFailedRules=Array.isArray(raw.failedRules)?raw.failedRules.slice(0,100):[];
   if(!bound||typeof raw.compliant!=='boolean'||counts.some(k=>!Number.isSafeInteger(raw[k])||raw[k]<0)||badPassed)
     return {...base,status:'unavailable',reason:bound?'Incomplete validator result.':'Validator evidence does not match the emitted PDF bytes and profile.'};
-  const passed=raw.compliant===true&&raw.failedChecks===0&&raw.failedRuleCount===0;
-  return {...base,status:passed?'passed':'failed',compliant:passed,validator:raw.validator,validatorVersion:raw.validatorVersion||null,
-    inputSha256:raw.inputSha256.toLowerCase(),inputBytes:raw.inputBytes,validatedAt:raw.validatedAt||null,validationDurationMs:raw.validationDurationMs??null,
+  const passed=raw.compliant===true&&raw.failedChecks===0&&raw.failedRuleCount===0&&rawFailedRules.length===0;
+  const safeVersion=typeof raw.validatorVersion==='string'?raw.validatorVersion.slice(0,64):null;
+  const safeValidatedAt=typeof raw.validatedAt==='string'&&Number.isFinite(Date.parse(raw.validatedAt))?raw.validatedAt.slice(0,64):null;
+  const safeDuration=Number.isSafeInteger(raw.validationDurationMs)&&raw.validationDurationMs>=0?raw.validationDurationMs:null;
+  const safeFailedRules=rawFailedRules.map(r=>{
+    if(typeof r==='string')return r.slice(0,240);
+    if(!r||typeof r!=='object'||Array.isArray(r))return null;
+    const out={};
+    for(const k of ['clause','specification','testNumber','ruleId','status','description','message','checks','failedChecks']){
+      if(!Object.prototype.hasOwnProperty.call(r,k))continue;
+      const v=r[k];
+      if(typeof v==='string')out[k]=v.slice(0,300);
+      else if(Number.isSafeInteger(v)&&v>=0)out[k]=v;
+    }
+    return Object.keys(out).length?out:null;
+  }).filter(Boolean);
+  return {...base,status:passed?'passed':'failed',compliant:passed,validator:raw.validator,validatorVersion:safeVersion,
+    inputSha256:raw.inputSha256.toLowerCase(),inputBytes:raw.inputBytes,validatedAt:safeValidatedAt,validationDurationMs:safeDuration,
     ...(raw.passedChecks!==undefined?{passedChecks:raw.passedChecks}:{}),
-    failedChecks:raw.failedChecks,failedRuleCount:raw.failedRuleCount,failedRules:Array.isArray(raw.failedRules)?raw.failedRules.slice(0,100):[]};
+    failedChecks:raw.failedChecks,failedRuleCount:raw.failedRuleCount,failedRules:safeFailedRules};
 }
 function applyPdfDeliveryEvidence(summary,evidence) {
   summary.pdfUa=evidence;
@@ -183,7 +200,7 @@ function normalizeDecisionGuides(value){
 // Picture and AI chart descriptions (<figcaption>, <details>) put colours into words, which is the fix, so they are
 // skipped. Corpus (~60 delivered outputs): only the newsletter's calendar text and key match. Returns [{match, quote}].
 function colourMeaningCues(html,limit){
-  const text=String(html||'').replace(/<(script|style|head|template|noscript|details|figcaption)\b[\s\S]*?<\/\1\s*>/gi,' ')
+  const text=String(html||'').slice(0,2*1024*1024).replace(/<(script|style|head|template|noscript|details|figcaption)\b[\s\S]*?<\/\1\s*>/gi,' ')
     .replace(/<br\s*\/?>/gi,' ').replace(/<\/(p|li|dt|dd|td|th|h[1-6]|div|caption|summary)>/gi,' \n ').replace(/<[^>]+>/g,' ')
     .replace(/&nbsp;/g,' ').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&').replace(/[ \t]+/g,' ');
   const C='(?:red|green|blue|yellow|orange|purple|pink|gr[ae]y|brown|black|white|gold|teal|maroon|navy|tan)';
@@ -203,7 +220,8 @@ function colourMeaningCues(html,limit){
     const around=text.slice(from,to).replace(/\s+/g,' ').trim();
     if(stop.test(text.slice(Math.max(0,m.index-12),m.index+m[0].length+14)))continue;
     if(!out.some(o=>o.quote===around))out.push({match:m[0].trim().slice(0,60),quote:around.slice(0,240)});}}
-  return out.slice(0,Number(limit)||5);
+  const lim=Number.isFinite(Number(limit))&&Number(limit)>0?Math.min(40,Math.floor(Number(limit))):5;
+  return out.slice(0,lim);
 }
 function explainDelivery(summary){
   const s=summary||{},items=[];
@@ -410,7 +428,7 @@ function coverageReleaseStatus(s){
   if(c.extraction&&c.extraction.pageErrorCount>0)return no('unread-pages','Some pages of the original could not be read, so a list of missing words cannot be complete. Run the document again.');
   if(coverageOpen&&(typeof c.tokenRecall!=='number'||c.tokenRecall<0.9))return no('too-much-missing','More than a tenth of the original\'s words were not matched, so the accessible version should be fixed rather than confirmed.');
   const words=Array.isArray(c.missingWords)?c.missingWords.filter(w=>w&&typeof w.word==='string'):[];
-  if(coverageOpen&&words.reduce((n,w)=>n+(Number(w.count)||0),0)!==c.missingTokens)return no('words-not-all-listed','Too many different words were not matched to list them all, so a person could not check every one.');
+  if(coverageOpen&&(!words.every(w=>Number.isSafeInteger(w.count)&&w.count>0)||words.reduce((n,w)=>n+w.count,0)!==c.missingTokens))return no('words-not-all-listed','Too many different words were not matched to list them all, so a person could not check every one.');
   const fixes=corr&&Array.isArray(corr.corrections)?corr.corrections.filter(k=>k&&typeof k.from==='string'&&typeof k.to==='string'):[];
   // An older record or a capped list has corrections nobody can see; confirming what is shown would not cover them.
   if(corr&&(!Number.isSafeInteger(corr.correctionCount)||corr.correctionCount<1||fixes.length!==corr.correctionCount))return no('corrections-not-all-listed','The corrections could not all be listed, so a person could not check every one. Run the document again.');
@@ -431,19 +449,23 @@ function applyCoverageRelease(report,o){
   const words=(c.missingWords||[]).map(w=>'"'+w.word+'"'+(w.count>1?' (x'+w.count+')':'')).join(', ');
   const corr=correctionNote(s),fixes=corr&&Array.isArray(corr.corrections)?corr.corrections.filter(k=>k&&typeof k.from==='string'&&typeof k.to==='string'):[];
   const n=c.missingTokens,fingerprint=coverageReleaseFingerprint(c,fixes);
-  const when=new Date(o.at),day=when.getFullYear()+'-'+String(when.getMonth()+1).padStart(2,'0')+'-'+String(when.getDate()).padStart(2,'0'); // the person's own date, not UTC's
+  const when=new Date(o.at);
+  if(!Number.isFinite(when.getTime()))throw new Error('Invalid confirmation timestamp.');
+  const day=when.getFullYear()+'-'+String(when.getMonth()+1).padStart(2,'0')+'-'+String(when.getDate()).padStart(2,'0'); // the person's own date, not UTC's
+  const cleanBy=String(o.confirmedBy||'').replace(/[\r\n\x00-\x1f\x7f]+/g,' ').trim().slice(0,200);
+  const cleanNote=o.note?String(o.note).replace(/[\r\n\x00-\x1f\x7f]+/g,' ').trim().slice(0,600):'';
   const parts=[];
   if(n>0)parts.push((n===1?'the 1 word':'the '+n+' words')+' the coverage check could not match '+(n===1?'is':'are')+' not lost: '+(words.length>500?words.slice(0,500).replace(/,[^,]*$/,'')+', and more':words));
   if(fixes.length){const nums=fixes.filter(k=>k.number===true).length,shown=fixes.slice().sort((a,b)=>(b.number===true)-(a.number===true)).slice(0,8).map(k=>'"'+k.from+'" to "'+k.to+'"').join(', ');
     parts.push('the '+fixes.length+' scan correction'+(fixes.length===1?'':'s')+(nums?' ('+nums+' involving a number)':'')+' are right, such as '+shown);}
-  const line='A person ('+o.confirmedBy+') confirmed on '+day+' that '+parts.join(', and that ')+'. AlloFlow records this statement and cannot verify it.';
+  const line='A person ('+cleanBy+') confirmed on '+day+' that '+parts.join(', and that ')+'. AlloFlow records this statement and cannot verify it.';
   const reasons=s.verdictReasons&&typeof s.verdictReasons==='object'?s.verdictReasons:{};
   const review=(Array.isArray(reasons.review)?reasons.review:[]).filter(x=>!COVERAGE_LINE.test(String(x))&&!(fixes.length&&FIDELITY_LINE.test(String(x))));
   s.verdictReasons={...reasons,review,cautions:[...(Array.isArray(reasons.cautions)?reasons.cautions:[]),line]};
   const v=s.verdict||{},removed=(Array.isArray(reasons.review)?reasons.review.length:0)-review.length;
   const reviewCount=Math.max(0,(v.reviewCount||0)-removed);
   s.verdict={...v,level:reviewCount>0?'review':'caution',reviewCount,cautionCount:(v.cautionCount||0)+1};
-  s.contentCoverage={...c,status:c.status==='review_required'?'person_confirmed':c.status,reviewRequired:false,personConfirmation:{confirmedBy:o.confirmedBy,confirmedAt:o.at,...(o.note?{note:o.note}:{}),fingerprint,missingTokens:n,missingWords:c.missingWords,...(fixes.length?{corrections:fixes}:{}),basis:'As stated to AlloFlow; not verified by it.'}};
+  s.contentCoverage={...c,status:c.status==='review_required'?'person_confirmed':c.status,reviewRequired:false,personConfirmation:{confirmedBy:cleanBy,confirmedAt:o.at,...(cleanNote?{note:cleanNote}:{}),fingerprint,missingTokens:n,missingWords:c.missingWords,...(fixes.length?{corrections:fixes}:{}),basis:'As stated to AlloFlow; not verified by it.'}};
   s.files={...s.files,taggedPdf:o.taggedPdfPath};delete s.files.heldTaggedPdf;
   s.taggedPdfDelivery=held.delivery&&held.delivery.ok===true?held.delivery:{ok:true,code:'verified'};
   s.taggedPdfExportMode=held.exportMode||'original_layout';
@@ -529,10 +551,14 @@ function compactVerificationEvidence(source) {
   const out = { ai: null, axe: null, equalAccess: null };
   if (ai && typeof ai === 'object' && !Array.isArray(ai)) {
     const issues = Array.isArray(ai.issues) ? ai.issues : null;
+    const listedCount = issues ? issues.length : null;
+    const reportedCount = count(ai.issueCount);
+    const listedReview = issues ? issues.filter((i) => i && i.requiresManualReview === true).length : null;
+    const reportedReview = count(ai.reviewIssueCount);
     out.ai = {
       score: num(ai.score),
-      issueCount: issues ? issues.length : count(ai.issueCount),
-      reviewIssueCount: issues ? issues.filter((i) => i && i.requiresManualReview === true).length : count(ai.reviewIssueCount),
+      issueCount: reportedCount !== null && listedCount !== null ? Math.max(reportedCount, listedCount) : (listedCount !== null ? listedCount : reportedCount),
+      reviewIssueCount: reportedReview !== null && listedReview !== null ? Math.max(reportedReview, listedReview) : (listedReview !== null ? listedReview : reportedReview),
       passCount: Array.isArray(ai.passes) ? ai.passes.length : count(ai.passCount),
       chunksAudited: count(ai.chunksAudited),
       chunksRequested: count(ai.chunksRequested),

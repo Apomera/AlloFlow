@@ -324,9 +324,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
       if (!paths.has(p.d)) paths.set(p.d, new Path2D(p.d));
       shape = paths.get(p.d);
     } else if (node.type === 'ellipse' || node.type === 'circle') {
-      shape = new Path2D(); shape.ellipse(p.cx || 0, p.cy || 0, p.rx || p.r || 0, p.ry || p.r || 0, 0, 0, Math.PI * 2);
+      shape = new Path2D();
+      if (typeof shape.ellipse === 'function') shape.ellipse(p.cx || 0, p.cy || 0, p.rx || p.r || 0, p.ry || p.r || 0, 0, 0, Math.PI * 2);
+      else shape.arc(p.cx || 0, p.cy || 0, p.rx || p.r || 0, 0, Math.PI * 2);
     } else if (node.type === 'rect') {
-      shape = new Path2D(); shape.roundRect(p.x || 0, p.y || 0, p.width, p.height, p.rx || 0);
+      shape = new Path2D();
+      cpRoundRect(shape, p.x || 0, p.y || 0, p.width, p.height, p.rx || 0);
     }
     if (shape) {
       if (p.fill !== 'none') ctx.fill(shape);
@@ -972,10 +975,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
       ctx.beginPath();ctx.moveTo(x-size,y);ctx.lineTo(x+size,y);ctx.moveTo(x,y-size);ctx.lineTo(x,y+size);ctx.stroke();
     });ctx.restore();
   }
+
+  // ── Zero-GC pre-allocated typed-array pools & cross-browser safe canvas helpers ──
+  var CP_POLLEN_N = 28;
+  var _cpPollenX = new Float32Array(CP_POLLEN_N);
+  var _cpPollenY = new Float32Array(CP_POLLEN_N);
+  var _cpPollenSpd = new Float32Array(CP_POLLEN_N);
+  var _cpPollenPhase = new Float32Array(CP_POLLEN_N);
+  var _cpPollenSize = new Float32Array(CP_POLLEN_N);
+  var CP_RHIZO_N = 18;
+  var _cpRhizoT = new Float32Array(CP_RHIZO_N);
+  var _cpRhizoSpd = new Float32Array(CP_RHIZO_N);
+  var _cpRhizoKind = new Uint8Array(CP_RHIZO_N);
+  (function() {
+    for (var i = 0; i < CP_POLLEN_N; i++) {
+      _cpPollenX[i] = ((i * 37 + 13) % 100) / 100;
+      _cpPollenY[i] = 0.14 + ((i * 53 + 7) % 72) / 100;
+      _cpPollenSpd[i] = 0.012 + (i % 5) * 0.004;
+      _cpPollenPhase[i] = i * 1.43;
+      _cpPollenSize[i] = 1.6 + (i % 3) * 0.75;
+    }
+    for (var j = 0; j < CP_RHIZO_N; j++) {
+      _cpRhizoT[j] = j / CP_RHIZO_N;
+      _cpRhizoSpd[j] = 0.18 + (j % 4) * 0.035;
+      _cpRhizoKind[j] = j & 1;
+    }
+  })();
+  function cpIsHighContrast() {
+    try {
+      if (typeof document === 'undefined') return false;
+      var de = document.documentElement, bd = document.body;
+      return !!((de && de.classList && de.classList.contains('theme-contrast')) || (bd && bd.classList && bd.classList.contains('theme-contrast')));
+    } catch (e) { return false; }
+  }
+  function cpEllipse(ctx, x, y, rx, ry, rot, sa, ea) {
+    if (!ctx || !(rx > 0) || !(ry > 0)) return;
+    if (typeof ctx.ellipse === 'function') {
+      ctx.ellipse(x, y, rx, ry, rot || 0, sa || 0, ea == null ? Math.PI * 2 : ea);
+    } else {
+      ctx.save();
+      ctx.translate(x, y);
+      if (rot) ctx.rotate(rot);
+      ctx.scale(rx, ry);
+      ctx.arc(0, 0, 1, sa || 0, ea == null ? Math.PI * 2 : ea);
+      ctx.restore();
+    }
+  }
+  function cpRoundRect(ctx, x, y, w, h, r) {
+    if (!ctx) return;
+    var rad = Math.max(0, Math.min(r || 0, Math.abs(w) / 2, Math.abs(h) / 2));
+    ctx.moveTo(x + rad, y);
+    ctx.lineTo(x + w - rad, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + rad);
+    ctx.lineTo(x + w, y + h - rad);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - rad, y + h);
+    ctx.lineTo(x + rad, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - rad);
+    ctx.lineTo(x, y + rad);
+    ctx.quadraticCurveTo(x, y, x + rad, y);
+    ctx.closePath();
+  }
+
   function companionDrawGardenScene(ctx, canvas, React, frame, plants, relationships, time, reducedMotion) {
+    if (!ctx || !canvas) return;
     var W = canvas.width, H = canvas.height;
     // Hidden workspaces can briefly report a zero-sized canvas during layout changes.
     if (W <= 0 || H <= 0) return;
+    var isHC = cpIsHighContrast();
+    var hasLG = typeof ctx.createLinearGradient === 'function';
+    var hasRG = typeof ctx.createRadialGradient === 'function';
     var geo = companionGardenTileSize(W, H);
     var tw = geo.width, th = geo.height, cg = frame.cg, grid = frame.grid, season = frame.season;
     var cropConditions = grid.map(function(cell){return companionCropCondition(plants[cell.plantId],cell);});
@@ -1018,7 +1086,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
       if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = width || 1; ctx.stroke(); }
     }
     function oval(x, y, rx, ry, fill, angle) {
-      ctx.fillStyle = fill; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, angle || 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = fill; ctx.beginPath(); cpEllipse(ctx, x, y, rx, ry, angle || 0, 0, Math.PI * 2); ctx.fill();
     }
     function line(x, y, xx, yy, color, width) {
       ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(xx, yy); ctx.stroke();
@@ -1036,9 +1104,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
       ctx.bezierCurveTo(rx * 1.24, ry * 0.36, rx * 0.49, ry * 0.8, rx * 0.19, ry * 0.6);
       ctx.bezierCurveTo(-rx * 0.16, ry * 0.89, -rx * 0.83, ry * 0.72, -rx * 0.92, ry * 0.18);
       ctx.closePath();
-      var foliage = ctx.createLinearGradient(-rx * 0.3, -ry, rx * 0.6, ry);
-      foliage.addColorStop(0, light); foliage.addColorStop(1, shade);
-      ctx.fillStyle = foliage; ctx.fill(); ctx.clip();
+      var foliage = hasLG ? ctx.createLinearGradient(-rx * 0.3, -ry, rx * 0.6, ry) : null;
+      if (foliage) { foliage.addColorStop(0, light); foliage.addColorStop(1, shade); }
+      ctx.fillStyle = foliage || light; ctx.fill(); ctx.clip();
       for (var leaf = 0; leaf < 12; leaf++) {
         var lx = Math.sin(leaf * 2.7 + seed) * rx * 0.85, ly = Math.cos(leaf * 4.1 + seed) * ry * 0.8;
         oval(lx, ly, 4 + leaf % 3 * 2, 2.2 + leaf % 2, leaf % 3 ? '#edf3c020' : '#284f3920', -0.5);
@@ -1049,7 +1117,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
       ctx.font = '600 ' + (size || 22) + 'px system-ui';
       var bw = ctx.measureText(text).width + 24, bh = (size || 22) + 18;
       x = Math.max(10, Math.min(W - bw - 10, x - bw / 2));
-      ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(x, y, bw, bh, 10); ctx.fill();
+      ctx.fillStyle = bg; ctx.beginPath(); cpRoundRect(ctx, x, y, bw, bh, 10); ctx.fill();
       ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x + bw / 2, y + bh / 2);
       ctx.textBaseline = 'alphabetic';
     }
@@ -1066,7 +1134,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
       }
       ctx.save(); ctx.translate(x, y);
       var wilt = Math.max(0, (30 - frame.moisture) / 30);
-      ctx.rotate(plant.isStructure ? 0 : Math.sin(elapsed * 1.3 + phase) * 0.018 * (1 - cropCondition.stress * .55) + wilt * 0.1);
+      var breezeMicro = reducedMotion ? 0 : (Math.sin(elapsed * 1.3 + phase) * 0.018 + Math.sin(elapsed * 2.5 + phase * 1.7) * 0.007) * (1 - cropCondition.stress * .55);
+      ctx.rotate(plant.isStructure ? 0 : breezeMicro + wilt * 0.1);
       ctx.scale(scale, scale * (1 - (plant.isStructure ? 0 : wilt) * 0.12)); ctx.translate(-60, -103);
       ctx.globalAlpha = ghost ? 0.46 : 1;
       companionPaintBotanical(ctx, canvas._cgBotanicalNodes.get(key), canvas._cgBotanicalPaths);
@@ -1088,10 +1157,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
     sky.addColorStop(0, palette.sky); sky.addColorStop(1, palette.horizon); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
     var sunX = W * (small ? 0.58 : 0.76) + Math.sin(elapsed * 0.008) * W * (small ? 0.02 : 0.06), sunY = H * (small ? 0.12 : 0.13);
     ctx.save(); ctx.globalAlpha = lighting.sun;
-    var sunlight = ctx.createRadialGradient(sunX, sunY, 10, sunX, sunY, W * 0.3);
-    sunlight.addColorStop(0, '#fff6c960'); sunlight.addColorStop(1, '#fff6c900');
-    ctx.fillStyle = sunlight; ctx.fillRect(0, 0, W, H * 0.6);
-    oval(sunX, sunY, 43, 43, '#f4dd9d20'); oval(sunX, sunY, 25, 25, '#fff0bd'); ctx.restore();
+    if (!isHC && hasRG) {
+      var sunlight = ctx.createRadialGradient(sunX, sunY, 10, sunX, sunY, W * 0.3);
+      sunlight.addColorStop(0, '#fff6c960'); sunlight.addColorStop(1, '#fff6c900');
+      ctx.fillStyle = sunlight; ctx.fillRect(0, 0, W, H * 0.6);
+    }
+    oval(sunX, sunY, 43, 43, '#f4dd9d20'); oval(sunX, sunY, 25, 25, '#fff0bd');
+    // Soft diagonal golden sunlight shafts streaming across the garden canopy
+    if (!isHC && season !== 3 && lighting.sun > 0.14 && hasLG) {
+      for (var shaft = 0; shaft < 3; shaft++) {
+        var sSway = reducedMotion ? 0 : Math.sin(elapsed * 0.35 + shaft * 1.9) * 18;
+        var sBaseX = W * (0.24 + shaft * 0.23) + sSway;
+        var sWidth = W * (0.065 + (shaft % 2) * 0.025);
+        var sAlpha = (0.065 + 0.03 * (reducedMotion ? 0.5 : (0.5 + 0.5 * Math.sin(elapsed * 0.6 + shaft * 2.1)))) * lighting.sun;
+        var shaftG = ctx.createLinearGradient(sunX, sunY, sBaseX, H * 0.78);
+        shaftG.addColorStop(0, 'rgba(255,248,205,' + (sAlpha * 1.35).toFixed(3) + ')');
+        shaftG.addColorStop(0.55, 'rgba(254,240,175,' + sAlpha.toFixed(3) + ')');
+        shaftG.addColorStop(1, 'rgba(254,240,175,0)');
+        ctx.fillStyle = shaftG;
+        ctx.beginPath();
+        ctx.moveTo(sunX - 18 + shaft * 14, sunY + 10);
+        ctx.lineTo(sunX + 20 + shaft * 14, sunY + 10);
+        ctx.lineTo(sBaseX + sWidth, H * 0.78);
+        ctx.lineTo(sBaseX - sWidth, H * 0.78);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    ctx.restore();
     ctx.fillStyle = 'rgba(235,162,114,' + (lighting.twilight * 0.24) + ')'; ctx.fillRect(0, 0, W, H);
     for (var cloud = 0; cloud < 4; cloud++) {
       var cx = ((cloud * W * 0.29 + elapsed * 4) % (W + 280)) - 100, cy = 90 + cloud % 2 * 46;
@@ -1237,7 +1330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
       poly([{x:-44,y:0},{x:36,y:0},{x:46,y:11},{x:-34,y:11}], '#dbc18c'); ctx.restore();
       var can = point(4.5, 1.2);
       ctx.save(); ctx.translate(can.x, can.y); ctx.scale(tw / 260, tw / 260);
-      oval(3, 8, 26, 8, '#36543c25'); ctx.fillStyle = '#618e89'; ctx.beginPath(); ctx.roundRect(-15, -21, 30, 27, 5); ctx.fill();
+      oval(3, 8, 26, 8, '#36543c25'); ctx.fillStyle = '#618e89'; ctx.beginPath(); cpRoundRect(ctx, -15, -21, 30, 27, 5); ctx.fill();
       oval(0, -21, 15, 5, '#91b4a5'); line(13, -6, 31, -24, '#618e89', 7); line(28, -25, 35, -21, '#a9c7b4', 7);
       ctx.strokeStyle = '#618e89'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(-16, -9, 10, Math.PI * 0.4, Math.PI * 1.65); ctx.stroke(); ctx.restore();
     }
@@ -1347,7 +1440,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
         // Plot numbers are always visible; names appear on focus/hover.
         var tagX = p.x, tagY = p.y + bh * 0.34, tagW = Math.max(27, tw * 0.12), tagH = Math.max(22, tw * 0.071);
         if((lens.id==='natural'&&!cropConditions[index].attention&&!readyPlots[index])||(lens.id!=='natural'&&(!lensEntry||!lensEntry.crop))){
-          ctx.fillStyle = '#ecdcba'; ctx.beginPath(); ctx.roundRect(tagX - tagW / 2, tagY - tagH / 2, tagW, tagH, 4); ctx.fill();
+          ctx.fillStyle = '#ecdcba'; ctx.beginPath(); cpRoundRect(ctx, tagX - tagW / 2, tagY - tagH / 2, tagW, tagH, 4); ctx.fill();
           ctx.fillStyle = '#544c34'; ctx.font = '700 ' + Math.max(18, tw * 0.052) + 'px system-ui'; ctx.textAlign = 'center'; ctx.fillText(String(index + 1).padStart(2, '0'), tagX, tagY + tagH * 0.28);
         }
         if (!planted && frame.phase === 'plan' && index !== active) {
@@ -1390,43 +1483,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
       var emphasized=selectedPair<0||selectedPair===path.index,color=path.bonus>0?'#d9edb6':'#f0b9a4';
       var glowColor=path.bonus>0?'#86efac':'#fb923c';
       ctx.save();ctx.globalAlpha=emphasized?1:.24;
-      // Luminous subterranean root-symbiosis & nitrogen-fixing arc curving beneath the bed link
+      // Luminous subterranean root-symbiosis & mycorrhizal nutrient-exchange arc beneath companion links
       if (path.bonus > 0) {
-        var rootCy = (path.from.y + path.to.y) / 2 + Math.min(26, tw * 0.09);
+        var rootCy = (path.from.y + path.to.y) / 2 + Math.min(28, tw * 0.10);
+        var mycoCy = (path.from.y + path.to.y) / 2 + Math.min(40, tw * 0.14);
         ctx.save();
-        ctx.strokeStyle = 'rgba(56,189,248,0.34)';
-        ctx.lineWidth = emphasized ? 4.5 : 2.5;
+        ctx.strokeStyle = isHC ? '#00ffff' : 'rgba(56,189,248,0.38)';
+        ctx.lineWidth = emphasized ? 4.2 : 2.4;
         ctx.setLineDash([4, 6]);
         ctx.beginPath();
         ctx.moveTo(path.from.x, path.from.y + th * 0.06);
         ctx.quadraticCurveTo(path.cx, rootCy, path.to.x, path.to.y + th * 0.06);
         ctx.stroke();
-        ctx.setLineDash([]);
-        if (!reducedMotion && emphasized) {
-          var nPulse = (elapsed * 0.34 + path.index * 0.19) % 1;
-          var nu = 1 - nPulse;
-          var nx = nu * nu * path.from.x + 2 * nu * nPulse * path.cx + nPulse * nPulse * path.to.x;
-          var ny = nu * nu * (path.from.y + th * 0.06) + 2 * nu * nPulse * rootCy + nPulse * nPulse * (path.to.y + th * 0.06);
-          oval(nx, ny, 6.2, 4.4, 'rgba(56,189,248,0.28)');
-          oval(nx, ny, 3, 2.3, '#e0f2fe');
+        if (!isHC) {
+          ctx.strokeStyle = 'rgba(196,181,253,0.34)';
+          ctx.lineWidth = emphasized ? 2.6 : 1.6;
+          ctx.setLineDash([2, 5]);
+          ctx.beginPath();
+          ctx.moveTo(path.from.x, path.from.y + th * 0.09);
+          ctx.quadraticCurveTo(path.cx, mycoCy, path.to.x, path.to.y + th * 0.09);
+          ctx.stroke();
         }
+        ctx.setLineDash([]);
+        if (!isHC && emphasized) {
+          for (var rb = 0; rb < 4; rb++) {
+            var isMyco = _cpRhizoKind[rb] === 1;
+            var rT = reducedMotion ? ((rb + 0.5) / 4) : ((_cpRhizoT[rb] + elapsed * _cpRhizoSpd[rb] + path.index * 0.17) % 1);
+            var rDirT = isMyco ? (1 - rT) : rT;
+            var ru = 1 - rDirT;
+            var rCtrlY = isMyco ? mycoCy : rootCy;
+            var rOffY = isMyco ? th * 0.09 : th * 0.06;
+            var rpx = ru * ru * path.from.x + 2 * ru * rDirT * path.cx + rDirT * rDirT * path.to.x;
+            var rpy = ru * ru * (path.from.y + rOffY) + 2 * ru * rDirT * rCtrlY + rDirT * rDirT * (path.to.y + rOffY);
+            oval(rpx, rpy, isMyco ? 5.6 : 6.4, isMyco ? 4.0 : 4.6, isMyco ? 'rgba(196,181,253,0.34)' : 'rgba(56,189,248,0.32)');
+            oval(rpx, rpy, isMyco ? 2.6 : 3.0, isMyco ? 2.0 : 2.4, isMyco ? '#f5f3ff' : '#e0f2fe');
+          }
+        }
+        ctx.restore();
+      } else if (path.bonus < 0 && emphasized) {
+        // Subtle allelopathy boundary ripples around conflicting root zones
+        ctx.save();
+        var ripCount = (reducedMotion || isHC) ? 1 : 2;
+        for (var ar = 0; ar < ripCount; ar++) {
+          var arPh = (reducedMotion || isHC) ? 0.45 : ((elapsed * 0.42 + ar * 0.5 + path.index * 0.13) % 1);
+          var arAlpha = isHC ? 0.9 : (1 - arPh) * (1 - arPh) * 0.55;
+          ctx.strokeStyle = isHC ? '#ff5555' : ('rgba(251,113,133,' + arAlpha.toFixed(3) + ')');
+          ctx.lineWidth = isHC ? 2.2 : (2.4 - arPh * 1.2);
+          ctx.setLineDash([5, 5]);
+          var arScale = 0.12 + arPh * 0.18;
+          ctx.beginPath(); cpEllipse(ctx, path.to.x, path.to.y, tw * arScale, th * arScale * 0.78, 0, 0, Math.PI * 2); ctx.stroke();
+        }
+        ctx.setLineDash([]);
         ctx.restore();
       }
       ctx.strokeStyle='#32473870';ctx.lineWidth=emphasized?8.5:5;traceLink(path);ctx.stroke();
       if(path.bonus<0)ctx.setLineDash([9,7]);
       ctx.save();
-      ctx.shadowColor = glowColor;
-      ctx.shadowBlur = emphasized ? 10 : 4;
+      if (!isHC) { ctx.shadowColor = glowColor; ctx.shadowBlur = emphasized ? 10 : 4; }
       ctx.strokeStyle=color;ctx.lineWidth=emphasized?3.2:2;traceLink(path);ctx.stroke();
       ctx.restore();
       ctx.setLineDash([]);
       [path.from,path.to].forEach(function(p){
-        ctx.strokeStyle=glowColor;ctx.lineWidth=emphasized?3.5:2;ctx.globalAlpha=emphasized?0.35:0.15;
-        ctx.beginPath();ctx.ellipse(p.x,p.y,tw*.125,th*.098,0,0,Math.PI*2);ctx.stroke();
+        if (!isHC) {
+          ctx.strokeStyle=glowColor;ctx.lineWidth=emphasized?3.5:2;ctx.globalAlpha=emphasized?0.35:0.15;
+          ctx.beginPath();cpEllipse(ctx,p.x,p.y,tw*.125,th*.098,0,0,Math.PI*2);ctx.stroke();
+        }
         ctx.globalAlpha=emphasized?1:.24;
-        ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y,tw*.1,th*.08,0,0,Math.PI*2);ctx.stroke();
+        ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();cpEllipse(ctx,p.x,p.y,tw*.1,th*.08,0,0,Math.PI*2);ctx.stroke();
       });
-      if(!reducedMotion&&emphasized){
+      if(!reducedMotion&&!isHC&&emphasized){
         var pulse=(elapsed*.23+path.index*.13)%1;
         [pulse,1-pulse].forEach(function(t){
           var p=linkPoint(path,t);
@@ -1448,19 +1573,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
     // The basket sits beyond the planting footprint. Its contents describe the latest batch.
     ctx.save();ctx.translate(basketPos.x,basketPos.y);ctx.scale(basketScale,basketScale);
     oval(1,13,46,12,'#34453030');oval(-1,9,35,7,'#2e3b3033');
-    ctx.strokeStyle='#81623e';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,-23,25,34,0,Math.PI,Math.PI*2);ctx.stroke();
-    ctx.strokeStyle='#d8b67e';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,-23,25,34,0,Math.PI,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle='#81623e';ctx.lineWidth=5;ctx.beginPath();cpEllipse(ctx,0,-23,25,34,0,Math.PI,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle='#d8b67e';ctx.lineWidth=2;ctx.beginPath();cpEllipse(ctx,0,-23,25,34,0,Math.PI,Math.PI*2);ctx.stroke();
     oval(0,-13,40,14,'#795b3c');oval(0,-15,37,10,'#554b32');
     var basketProduce=[];
     basket.items.slice(0,6).forEach(function(item){for(var n=0;n<Math.min(2,Math.floor(item.count))&&basketProduce.length<6;n++)basketProduce.push(item.plantId);});
     basketProduce.forEach(function(id,index){companionDrawProduce(ctx,id,(index-(basketProduce.length-1)/2)*10,-20-(index%2)*7,.63,(index-(basketProduce.length-1)/2)*.15);});
-    var weave=ctx.createLinearGradient(-37,-11,30,16);weave.addColorStop(0,'#ccaa72');weave.addColorStop(.5,'#b38a55');weave.addColorStop(1,'#987246');
+    var weave=typeof ctx.createLinearGradient==='function'?ctx.createLinearGradient(-37,-11,30,16):'#b38a55';if(typeof weave!=='string'){weave.addColorStop(0,'#ccaa72');weave.addColorStop(.5,'#b38a55');weave.addColorStop(1,'#987246');}
     ctx.beginPath();ctx.moveTo(-39,-13);ctx.quadraticCurveTo(0,5,39,-13);ctx.lineTo(31,13);ctx.quadraticCurveTo(0,28,-31,13);ctx.closePath();ctx.fillStyle=weave;ctx.fill();
     ctx.save();ctx.clip();
     for(var reed=-38;reed<=38;reed+=7)line(reed,-15,reed*.8,21,'#e1bd803f',2);
-    for(var band=0;band<4;band++){ctx.strokeStyle=band%2?'#d7b47b':'#80614055';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,-14+band*7,39-band*1.5,12,0,0,Math.PI);ctx.stroke();}
+    for(var band=0;band<4;band++){ctx.strokeStyle=band%2?'#d7b47b':'#80614055';ctx.lineWidth=2;ctx.beginPath();cpEllipse(ctx,0,-14+band*7,39-band*1.5,12,0,0,Math.PI);ctx.stroke();}
     ctx.restore();
-    ctx.strokeStyle='#dfc18d';ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(0,-13,39,12,0,0,Math.PI);ctx.stroke();
+    ctx.strokeStyle='#dfc18d';ctx.lineWidth=4;ctx.beginPath();cpEllipse(ctx,0,-13,39,12,0,0,Math.PI);ctx.stroke();
     line(-33,-2,-30,11,'#ead0a0',2);line(34,-2,31,11,'#86613c',2);
     ctx.restore();
     if (careMoment) careMoment.plots.forEach(function(item) {
@@ -1492,22 +1617,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
       oval(p.x - tw * 0.06, baseY + th * 0.065, tw * (0.07 + growthState.value * 0.2), th * (0.045 + growthState.value * 0.085), '#292d2526', -0.18);
       oval(p.x, baseY + th * 0.02, tw * (0.045 + growthState.value * 0.13), th * (0.035 + growthState.value * 0.045), '#292d2540');
       oval(p.x, baseY, tw * 0.035, th * 0.025, '#211e2252');
-      // Subtle aromatic companion & pollinator botanical aura ring around thriving herbs/flowers
-      if (growthState.value >= 0.35 && !plant.isStructure && (plant.pollinator || ['basil','marigold','lavender','mint','garlic','dill','nasturtium','yarrow','borage','clover','chives','rosemary'].indexOf(cell.plantId) >= 0)) {
+      // Subtle companion-synergy botanical aura ring (pollinator gold, nitrogen-fixer emerald, aromatic violet)
+      if (!isHC && growthState.value >= 0.35 && !plant.isStructure && (plant.pollinator || plant.nitrogenFixer || ['basil','marigold','lavender','mint','garlic','dill','nasturtium','yarrow','borage','clover','chives','rosemary','beans','peas'].indexOf(cell.plantId) >= 0)) {
         var auraBreath = reducedMotion ? 0.5 : (0.5 + 0.5 * Math.sin(elapsed * 1.4 + index * 1.1));
-        var auraCol = plant.pollinator ? 'rgba(250,204,21,' : 'rgba(167,139,250,';
+        var isNFix = !!(plant.nitrogenFixer || cell.plantId === 'beans' || cell.plantId === 'peas' || cell.plantId === 'clover');
+        var auraCol = plant.pollinator ? 'rgba(250,204,21,' : isNFix ? 'rgba(52,211,153,' : 'rgba(167,139,250,';
         ctx.save();
         ctx.strokeStyle = auraCol + (0.16 + auraBreath * 0.14).toFixed(2) + ')';
-        ctx.lineWidth = 1.6;
+        ctx.lineWidth = 1.8;
         ctx.setLineDash([4, 5]);
         ctx.beginPath();
-        ctx.ellipse(p.x, baseY, tw * (0.25 + auraBreath * 0.04), th * (0.15 + auraBreath * 0.025), 0, 0, Math.PI * 2);
+        cpEllipse(ctx, p.x, baseY, tw * (0.24 + auraBreath * 0.045), th * (0.145 + auraBreath * 0.025), 0, 0, Math.PI * 2);
         ctx.stroke();
+        if (!reducedMotion) {
+          ctx.setLineDash([]);
+          ctx.strokeStyle = auraCol + (0.09 + (1 - auraBreath) * 0.10).toFixed(2) + ')';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          cpEllipse(ctx, p.x, baseY, tw * (0.30 + (1 - auraBreath) * 0.03), th * (0.18 + (1 - auraBreath) * 0.02), 0, 0, Math.PI * 2);
+          ctx.stroke();
+        }
         ctx.setLineDash([]);
         ctx.restore();
       }
       if (readyPlots[index]) {
-        mature++; ctx.strokeStyle = '#efcc7880'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(p.x, baseY, tw * 0.23, th * 0.14, 0, 0, Math.PI * 2); ctx.stroke();
+        mature++; ctx.strokeStyle = '#efcc7880'; ctx.lineWidth = 2; ctx.beginPath(); cpEllipse(ctx, p.x, baseY, tw * 0.23, th * 0.14, 0, 0, Math.PI * 2); ctx.stroke();
       }
       crop(cell.plantId, plant, growthState.value, p.x, baseY - seedLift, scale * rise, index * 0.9, cell.health, false, wildlife.flowers.indexOf(index) >= 0 ? index : null);
       if (cell.watered) {
@@ -1584,7 +1718,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
         var px=start.x+(basketPos.x-start.x)*blend;
         var py=start.y-tw*.19+(basketPos.y-24*basketScale-start.y+tw*.19)*blend-Math.sin(travel*Math.PI)*Math.min(125,tw*.55);
         ctx.save();ctx.globalAlpha=Math.min(1,(1-travel)*6);
-        if(travel<.35){ctx.strokeStyle='#efd08b';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(start.x,start.y,tw*(.17+travel*.3),th*(.1+travel*.15),0,0,Math.PI*2);ctx.stroke();}
+        if(travel<.35){ctx.strokeStyle='#efd08b';ctx.lineWidth=2;ctx.beginPath();cpEllipse(ctx,start.x,start.y,tw*(.17+travel*.3),th*(.1+travel*.15),0,0,Math.PI*2);ctx.stroke();}
         oval(px,py+8,18,7,'#f3d79924');
         companionDrawProduce(ctx,item.plantId,px,py,(tw/240)*(1-blend)+basketScale*.6*blend,Math.sin(travel*Math.PI)*.3+(index%3-1)*.13);
         ctx.restore();
@@ -1594,6 +1728,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
       var rippleAge = (performance.now() - canvas._clickRipple.t0) / 700;
       if (rippleAge >= 1) canvas._clickRipple = null;
       else if (!reducedMotion) { ctx.strokeStyle = 'rgba(250,239,200,' + (1 - rippleAge) + ')'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(canvas._clickRipple.x, canvas._clickRipple.y, 8 + rippleAge * 35, 0, Math.PI * 2); ctx.stroke(); }
+    }
+    // Zero-GC drifting golden pollen motes across sunlit garden air (bypassed in HC / winter / night)
+    if (!isHC && season !== 3 && night < 0.45) {
+      var moteCount = small ? 14 : 24;
+      var dayVis = Math.max(0, 1 - night / 0.45);
+      ctx.save();
+      for (var pm = 0; pm < moteCount; pm++) {
+        var pmX = ((_cpPollenX[pm] + (reducedMotion ? 0 : elapsed * _cpPollenSpd[pm])) % 1) * W;
+        var pmBaseY = _cpPollenY[pm] * H;
+        var pmY = pmBaseY + (reducedMotion ? 0 : Math.sin(elapsed * 0.9 + _cpPollenPhase[pm]) * 14);
+        var pmPulse = reducedMotion ? 0.65 : (0.35 + 0.65 * (0.5 + 0.5 * Math.sin(elapsed * 1.8 + _cpPollenPhase[pm])));
+        var pmR = _cpPollenSize[pm];
+        ctx.globalAlpha = dayVis * pmPulse * 0.28;
+        ctx.fillStyle = '#fde68a';
+        ctx.beginPath(); ctx.arc(pmX, pmY, pmR * 2.4, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = dayVis * pmPulse * 0.78;
+        ctx.fillStyle = '#fef9c3';
+        ctx.beginPath(); ctx.arc(pmX, pmY, pmR, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
     }
     // Seasonal drift stays around the perimeter; it never obscures crops or plot values.
     if (season === 0 || season === 2) {
@@ -1694,7 +1848,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
       var previewLabel = 'Preview · ' + plants[preview.plantId].label + ' · Plot ' + (preview.plot + 1);
       ctx.font = '700 ' + (small ? 20 : 24) + 'px system-ui';
       var previewWidth = Math.min(W - 56, Math.max(ctx.measureText(previewLabel).width + 24, small ? 320 : 370));
-      ctx.fillStyle = '#ede6faf2'; ctx.beginPath(); ctx.roundRect(22, 96, previewWidth, 62, 9); ctx.fill();
+      ctx.fillStyle = '#ede6faf2'; ctx.beginPath(); cpRoundRect(ctx, 22, 96, previewWidth, 62, 9); ctx.fill();
       ctx.fillStyle = '#503d70'; ctx.textAlign = 'left'; ctx.fillText(previewLabel, 34, 121, W - 80);
       ctx.font = '500 ' + (small ? 18 : 20) + 'px system-ui';
       ctx.fillText(plants[preview.plantId].isStructure ? 'Preview only · confirm to install' : 'Future shape · seeds start at day 0', 34, 146, W - 80);
@@ -1703,7 +1857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('companionPlant
       var selectionLabel = neighborhood ? 'Exploring Plot '+(selectedPlot+1)+' · '+neighborhood.plant.label : 'Selected '+inspection.label;
       ctx.font='700 '+(small?20:24)+'px system-ui';
       var selectionWidth=Math.min(W-56,ctx.measureText(selectionLabel).width+24);
-      ctx.fillStyle=night>.3?'#2d453de8':'#f7edcfe8';ctx.beginPath();ctx.roundRect(22,96,selectionWidth,34,8);ctx.fill();
+      ctx.fillStyle=night>.3?'#2d453de8':'#f7edcfe8';ctx.beginPath();cpRoundRect(ctx,22,96,selectionWidth,34,8);ctx.fill();
       ctx.fillStyle=night>.3?'#fff0c9':'#405334';ctx.textAlign='left';ctx.fillText(selectionLabel,34,120,W-80);
     }
     var footer = Math.min(H - 72, Math.max(bedBottom.y + 52, H - 108));
@@ -2886,25 +3040,26 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
 
               ctx.beginPath();
 
-              ctx.ellipse(cx, cy + h * 0.7, w * 1.2, h * 0.5, 0, 0, Math.PI * 2);
+              cpEllipse(ctx, cx, cy + h * 0.7, w * 1.2, h * 0.5, 0, 0, Math.PI * 2);
 
               ctx.fill();
 
               // Topsoil / mound
 
-              var moundGrad = ctx.createRadialGradient(cx, cy - h * 0.1, 0, cx, cy, w);
+              var moundGrad = typeof ctx.createRadialGradient === 'function' ? ctx.createRadialGradient(cx, cy - h * 0.1, 0, cx, cy, w) : '#3E2723';
+              if (typeof moundGrad !== 'string') {
+                moundGrad.addColorStop(0, '#5C4033');
 
-              moundGrad.addColorStop(0, '#5C4033');
+                moundGrad.addColorStop(0.6, '#3E2723');
 
-              moundGrad.addColorStop(0.6, '#3E2723');
-
-              moundGrad.addColorStop(1, '#2E1A0E');
+                moundGrad.addColorStop(1, '#2E1A0E');
+              }
 
               ctx.fillStyle = moundGrad;
 
               ctx.beginPath();
 
-              ctx.ellipse(cx, cy, w, h, 0, 0, Math.PI * 2);
+              cpEllipse(ctx, cx, cy, w, h, 0, 0, Math.PI * 2);
 
               ctx.fill();
 
@@ -2914,7 +3069,7 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
 
               ctx.beginPath();
 
-              ctx.ellipse(cx - w * 0.2, cy - h * 0.3, w * 0.3, h * 0.2, -0.3, 0, Math.PI * 2);
+              cpEllipse(ctx, cx - w * 0.2, cy - h * 0.3, w * 0.3, h * 0.2, -0.3, 0, Math.PI * 2);
 
               ctx.fill();
 
@@ -2946,19 +3101,24 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
 
               }
 
-              // Bean root nodules (nitrogen-fixing!)
+              // Bean root nodules (nitrogen-fixing — deterministic zero-flicker positions + pulsing halos)
 
               if (_beans && gt > 0.2) {
 
-                var noduleGlow = 0.3 + 0.4 * Math.sin(tick * 0.03);
+                var noduleGlow = 0.38 + 0.35 * Math.sin(tick * 0.03);
 
                 for (var ni = 0; ni < 6; ni++) {
 
-                  var nx = cx + (Math.random() - 0.5) * w * 0.8;
+                  var nx = cx + Math.sin(ni * 2.17 + 0.5) * w * 0.38;
 
-                  var ny = cy + h * (0.3 + Math.random() * 0.4);
+                  var ny = cy + h * (0.32 + ((ni * 37) % 100) / 100 * 0.36);
 
-                  ctx.fillStyle = 'rgba(120,255,180,' + (noduleGlow * gt) + ')';
+                  if (!cpIsHighContrast()) {
+                    ctx.fillStyle = 'rgba(74,222,128,' + (noduleGlow * gt * 0.35).toFixed(3) + ')';
+                    ctx.beginPath(); ctx.arc(nx, ny, 4.5 + gt * 4.5, 0, Math.PI * 2); ctx.fill();
+                  }
+
+                  ctx.fillStyle = 'rgba(120,255,180,' + (noduleGlow * gt).toFixed(3) + ')';
 
                   ctx.beginPath();
 
@@ -2970,7 +3130,7 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
 
                   if (ni < 2 && gt > 0.5) {
 
-                    ctx.fillStyle = 'rgba(100,255,160,' + (noduleGlow * 0.7) + ')';
+                    ctx.fillStyle = 'rgba(100,255,160,' + (noduleGlow * 0.7).toFixed(3) + ')';
 
                     ctx.font = (8 + gt * 4) + 'px monospace';
 
@@ -3030,21 +3190,32 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
 
                 }
 
-                // Nutrient transfer indicators (small dots flowing along threads)
+                // Zero-GC bidirectional nitrogen-fixation & mycorrhizal nutrient-exchange pulse beads
 
-                if (gt > 0.5) {
+                if (gt > 0.4) {
 
-                  for (var nd = 0; nd < 4; nd++) {
+                  var moundHC = cpIsHighContrast();
+                  var moundRM = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                  for (var nd = 0; nd < 8; nd++) {
 
-                    var ndFrac = ((tick * 0.01 + nd * 0.25) % 1);
+                    var ndBase = _cpRhizoT[nd % CP_RHIZO_N];
+                    var ndKind = _cpRhizoKind[nd % CP_RHIZO_N];
+                    var ndFrac = moundRM ? ndBase : ((ndBase + tick * 0.0085 * _cpRhizoSpd[nd % CP_RHIZO_N] * 4) % 1);
+                    var ndDir = ndKind === 0 ? ndFrac : (1 - ndFrac);
 
-                    var ndX = cx - netSpanX * 0.4 + ndFrac * netSpanX * 0.8;
+                    var ndX = cx - netSpanX * 0.42 + ndDir * netSpanX * 0.84;
 
-                    var ndY = netY0 + (netY1 - netY0) * 0.3 + Math.sin(ndFrac * Math.PI * 2 + nd) * 6;
+                    var ndY = netY0 + (netY1 - netY0) * (0.24 + (nd % 3) * 0.22) + Math.sin(ndDir * Math.PI * 2 + nd) * 5.5;
+                    var ndPulse = moundRM ? 0.68 : (0.42 + 0.42 * Math.sin(tick * 0.045 + nd * 1.3));
+                    var ndRGB = ndKind === 0 ? '74,222,128' : '216,180,254';
 
-                    ctx.fillStyle = 'rgba(255,215,100,' + (0.3 + 0.4 * Math.sin(tick * 0.04 + nd)) + ')';
+                    if (!moundHC) {
+                      ctx.fillStyle = 'rgba(' + ndRGB + ',' + (ndPulse * 0.28).toFixed(3) + ')';
+                      ctx.beginPath(); ctx.arc(ndX, ndY, 4.2, 0, Math.PI * 2); ctx.fill();
+                    }
+                    ctx.fillStyle = 'rgba(' + (ndKind === 0 ? '134,239,172' : '255,225,130') + ',' + ndPulse.toFixed(3) + ')';
 
-                    ctx.beginPath(); ctx.arc(ndX, ndY, 1.8, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(ndX, ndY, 1.9, 0, Math.PI * 2); ctx.fill();
 
                   }
 
@@ -3731,8 +3902,10 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
               // path; this is the fail-safe if that path is ever missed.
               if (!document.contains(canvasEl)) { cancelAnimationFrame(canvasEl._gardenAnim); return; }
 
-              // Use time-based animation for smooth, frame-rate-independent motion
-              var elapsed = (performance.now() - animStartTime) / 1000; // seconds (continuous float)
+              // Use time-based animation for smooth, frame-rate-independent motion (respecting reduced motion)
+              var cpRM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+              var cpHC = cpIsHighContrast();
+              var elapsed = cpRM ? 10 : ((performance.now() - animStartTime) / 1000); // seconds (continuous float)
               tick = elapsed * 60; // continuous (NOT rounded) — smoother sin() curves
 
               // Read data attrs for latest state
@@ -3846,6 +4019,24 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
                 ctx.fillRect(sunX - sunSize * 4, sunY - sunSize * 4, sunSize * 8, sunSize * 8);
                 ctx.fillStyle = _season === 3 ? '#B0BEC5' : '#FDD835';
                 ctx.beginPath(); ctx.arc(sunX, sunY, sunSize, 0, Math.PI * 2); ctx.fill();
+                // Soft golden sunlight shafts across Three Sisters mound
+                if (!cpHC && _season !== 3 && typeof ctx.createLinearGradient === 'function') {
+                  for (var sh2 = 0; sh2 < 3; sh2++) {
+                    var shTargetX = cW * (0.28 + sh2 * 0.22) + (cpRM ? 0 : Math.sin(elapsed * 0.4 + sh2 * 1.7) * 14);
+                    var shGrad = ctx.createLinearGradient(sunX, sunY, shTargetX, cH * 0.58);
+                    var shA = (0.07 + 0.03 * Math.sin(elapsed * 0.7 + sh2)) * dayBrightness;
+                    shGrad.addColorStop(0, 'rgba(255,248,195,' + (shA * 1.4).toFixed(3) + ')');
+                    shGrad.addColorStop(1, 'rgba(255,248,195,0)');
+                    ctx.fillStyle = shGrad;
+                    ctx.beginPath();
+                    ctx.moveTo(sunX - 10 + sh2 * 6, sunY + 4);
+                    ctx.lineTo(sunX + 10 + sh2 * 6, sunY + 4);
+                    ctx.lineTo(shTargetX + 38, cH * 0.62);
+                    ctx.lineTo(shTargetX - 38, cH * 0.62);
+                    ctx.closePath();
+                    ctx.fill();
+                  }
+                }
               } else {
                 // Moon: traverses east → west during night, with crescent shadow
                 var moonSize = 12;
@@ -3943,7 +4134,7 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
 
                 ctx.moveTo(gx, gy);
 
-                ctx.lineTo(gx + gSway, gy - 6 - Math.random() * 6);
+                ctx.lineTo(gx + gSway, gy - 6 - ((gi * 29) % 7));
 
                 ctx.stroke();
 
@@ -4021,21 +4212,33 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
 
                   // Pollen with glow
 
-                  ctx.fillStyle = 'rgba(255,235,59,' + (pAlpha * 0.5) + ')';
+                  ctx.fillStyle = 'rgba(255,235,59,' + (pAlpha * 0.55) + ')';
 
                   ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill();
 
-                  // Pollen glow halo
+                  // Pollen glow halo (bypassed in High Contrast)
 
-                  ctx.fillStyle = 'rgba(255,235,59,' + (pAlpha * 0.15) + ')';
+                  if (!cpHC) {
+                    ctx.fillStyle = 'rgba(255,235,59,' + (pAlpha * 0.18) + ')';
 
-                  ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 3.6, 0, Math.PI * 2); ctx.fill();
+                  }
 
                 } else if (p.type === 'butterfly' && _gt > 30) {
 
+                  // Subtle beneficial-pollinator golden flight wake trail (bypassed in HC / reduced motion)
+                  if (!cpHC && !cpRM) {
+                    for (var wk = 1; wk <= 3; wk++) {
+                      var wkx = p.x - (p.vx + Math.sin(tick * 0.01 + p.life * 0.1) * 0.2) * wk * 7;
+                      var wky = p.y - p.vy * wk * 7 + Math.sin(tick * 0.05 + wk + p.life) * 1.4;
+                      ctx.fillStyle = 'rgba(253,224,71,' + (pAlpha * (0.34 - wk * 0.09)).toFixed(3) + ')';
+                      ctx.beginPath(); ctx.arc(wkx, wky, Math.max(0.7, 1.8 - wk * 0.35), 0, Math.PI * 2); ctx.fill();
+                    }
+                  }
+
                   // Enhanced butterfly with detailed wings
 
-                  var wingFlap = Math.sin(tick * 0.08 + p.life) * 0.5;
+                  var wingFlap = cpRM ? 0.25 : Math.sin(tick * 0.08 + p.life) * 0.5;
 
                   var bfSize = 3.5;
 
@@ -4047,7 +4250,7 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
 
                   ctx.beginPath();
 
-                  ctx.ellipse(-bfSize * 0.7, -bfSize * 0.15, bfSize * 0.9 * (0.5 + wingFlap * 0.5), bfSize * 0.55, -0.2, 0, Math.PI * 2);
+                  cpEllipse(ctx, -bfSize * 0.7, -bfSize * 0.15, bfSize * 0.9 * (0.5 + wingFlap * 0.5), bfSize * 0.55, -0.2, 0, Math.PI * 2);
 
                   ctx.fillStyle = 'rgba(255,152,0,' + (pAlpha * 0.7) + ')';
 
@@ -4057,7 +4260,7 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
 
                   ctx.beginPath();
 
-                  ctx.ellipse(bfSize * 0.7, -bfSize * 0.15, bfSize * 0.9 * (0.5 + wingFlap * 0.5), bfSize * 0.55, 0.2, 0, Math.PI * 2);
+                  cpEllipse(ctx, bfSize * 0.7, -bfSize * 0.15, bfSize * 0.9 * (0.5 + wingFlap * 0.5), bfSize * 0.55, 0.2, 0, Math.PI * 2);
 
                   ctx.fill();
 
@@ -4065,7 +4268,7 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
 
                   ctx.beginPath();
 
-                  ctx.ellipse(-bfSize * 0.5, bfSize * 0.25, bfSize * 0.55 * (0.5 + wingFlap * 0.5), bfSize * 0.35, -0.3, 0, Math.PI * 2);
+                  cpEllipse(ctx, -bfSize * 0.5, bfSize * 0.25, bfSize * 0.55 * (0.5 + wingFlap * 0.5), bfSize * 0.35, -0.3, 0, Math.PI * 2);
 
                   ctx.fillStyle = 'rgba(255,183,77,' + (pAlpha * 0.6) + ')';
 
@@ -4075,7 +4278,7 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
 
                   ctx.beginPath();
 
-                  ctx.ellipse(bfSize * 0.5, bfSize * 0.25, bfSize * 0.55 * (0.5 + wingFlap * 0.5), bfSize * 0.35, 0.3, 0, Math.PI * 2);
+                  cpEllipse(ctx, bfSize * 0.5, bfSize * 0.25, bfSize * 0.55 * (0.5 + wingFlap * 0.5), bfSize * 0.35, 0.3, 0, Math.PI * 2);
 
                   ctx.fill();
 
@@ -4091,7 +4294,7 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
 
                   ctx.beginPath();
 
-                  ctx.ellipse(0, 0, bfSize * 0.08, bfSize * 0.45, 0, 0, Math.PI * 2);
+                  cpEllipse(ctx, 0, 0, bfSize * 0.08, bfSize * 0.45, 0, 0, Math.PI * 2);
 
                   ctx.fillStyle = 'rgba(40,40,40,' + pAlpha + ')';
 
@@ -4273,7 +4476,7 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
 
                 ctx.beginPath();
 
-                ctx.roundRect(hudX, hudY, hudW, hudH, 6);
+                cpRoundRect(ctx, hudX, hudY, hudW, hudH, 6);
 
                 ctx.fill();
 
@@ -6511,9 +6714,9 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
                       // Large central vacuole
                       var vacX = MW * 0.5; var vacY = MH * 0.5;
                       mx.fillStyle = 'rgba(80,160,220,0.15)';
-                      mx.beginPath(); mx.ellipse(vacX, vacY, MW * 0.28, MH * 0.28, 0, 0, Math.PI * 2); mx.fill();
+                      mx.beginPath(); cpEllipse(mx, vacX, vacY, MW * 0.28, MH * 0.28, 0, 0, Math.PI * 2); mx.fill();
                       mx.strokeStyle = 'rgba(80,160,220,0.3)'; mx.lineWidth = 1;
-                      mx.beginPath(); mx.ellipse(vacX, vacY, MW * 0.28, MH * 0.28, 0, 0, Math.PI * 2); mx.stroke();
+                      mx.beginPath(); cpEllipse(mx, vacX, vacY, MW * 0.28, MH * 0.28, 0, 0, Math.PI * 2); mx.stroke();
                       mx.fillStyle = 'rgba(100,180,240,0.08)'; mx.font = '10px system-ui'; mx.textAlign = 'center';
                       mx.fillText('Central Vacuole', vacX, vacY + 4);
                       // Nucleus
@@ -6533,7 +6736,7 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
                         var distVac = Math.sqrt((chx - vacX) * (chx - vacX) + (chy - vacY) * (chy - vacY));
                         if (distNuc < 35 || distVac < MW * 0.25) continue;
                         mx.fillStyle = 'rgba(50,160,50,' + (0.5 + Math.sin(mt * 2 + ch) * 0.15) + ')';
-                        mx.beginPath(); mx.ellipse(chx, chy, 8, 4, ch * 0.5 + Math.sin(mt * 0.5 + ch) * 0.2, 0, Math.PI * 2); mx.fill();
+                        mx.beginPath(); cpEllipse(mx, chx, chy, 8, 4, ch * 0.5 + Math.sin(mt * 0.5 + ch) * 0.2, 0, Math.PI * 2); mx.fill();
                         // Thylakoid stacks (internal lines)
                         mx.strokeStyle = 'rgba(30,120,30,0.4)'; mx.lineWidth = 0.5;
                         for (var th = -2; th <= 2; th++) {
@@ -6547,7 +6750,7 @@ var d = (rawCp && typeof rawCp === 'object' && !Array.isArray(rawCp)) ? rawCp : 
                         var mix = MW * 0.6 + (mi * 37) % (MW * 0.3);
                         var miy = MH * 0.55 + (mi * 23) % (MH * 0.3);
                         mx.fillStyle = 'rgba(220,130,50,' + (0.4 + Math.sin(mt * 1.5 + mi) * 0.1) + ')';
-                        mx.beginPath(); mx.ellipse(mix, miy, 6, 3, mi * 0.8, 0, Math.PI * 2); mx.fill();
+                        mx.beginPath(); cpEllipse(mx, mix, miy, 6, 3, mi * 0.8, 0, Math.PI * 2); mx.fill();
                         // Cristae folds
                         mx.strokeStyle = 'rgba(180,100,30,0.3)'; mx.lineWidth = 0.5;
                         mx.beginPath(); mx.moveTo(mix - 3, miy); mx.quadraticCurveTo(mix, miy - 2, mix + 3, miy); mx.stroke();

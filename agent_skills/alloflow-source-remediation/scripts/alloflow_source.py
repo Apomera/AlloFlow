@@ -153,6 +153,8 @@ def validate_plan(plan: Dict[str, Any], root: Path) -> Dict[str, Any]:
             continue
         if find == replace:
             errors.append(where + " find and replace are identical.")
+        if "changes_rendered_text" in patch and not isinstance(patch.get("changes_rendered_text"), bool):
+            errors.append(where + ".changes_rendered_text must be a boolean (true or false).")
         if len(rationale.strip()) < 20:
             errors.append(where + ".rationale must say what this fixes (at least 20 characters).")
         if rel not in texts:
@@ -376,12 +378,23 @@ def cmd_compare(args: argparse.Namespace) -> Dict[str, Any]:
                 node_improvements += 1
 
     text_changed = before["text"]["sha256"] != after["text"]["sha256"]
-    disclosed = bool(plan and any(p.get("changes_rendered_text") for p in plan.get("patches", [])))
+    disclosed = bool(plan and any(p.get("changes_rendered_text") is True for p in plan.get("patches", [])))
 
     unreachable_before = len(before["keyboard"]["unreachable"])
     unreachable_after = len(after["keyboard"]["unreachable"])
     trap_before = bool(before["keyboard"].get("suspectedTrap"))
     trap_after = bool(after["keyboard"].get("suspectedTrap"))
+
+    outline_before = before.get("outline") or {}
+    outline_after = after.get("outline") or {}
+    img_no_alt_before = int(outline_before.get("imagesWithoutAlt") or 0)
+    img_no_alt_after = int(outline_after.get("imagesWithoutAlt") or 0)
+    unlabeled_before = int(outline_before.get("unlabeledControls") or 0)
+    unlabeled_after = int(outline_after.get("unlabeledControls") or 0)
+    lang_before = str(outline_before.get("lang") or "").strip()
+    lang_after = str(outline_after.get("lang") or "").strip()
+    incomplete_before = int(before_axe.get("incomplete") or 0)
+    incomplete_after = int(after_axe.get("incomplete") or 0)
 
     problems: List[str] = []
     if not axe_before_available or not axe_after_available:
@@ -401,6 +414,20 @@ def cmd_compare(args: argparse.Namespace) -> Dict[str, Any]:
             "Existing axe violations regressed in failing node count: "
             + ", ".join(f"{r['id']} ({r['before']}->{r['after']})" for r in node_regressions)
         )
+    if axe_complete and incomplete_after > incomplete_before:
+        problems.append(
+            f"axe incomplete/needs-review items increased ({incomplete_before}->{incomplete_after})."
+        )
+    if img_no_alt_after > img_no_alt_before:
+        problems.append(
+            f"Outline regression: visible images without alt increased ({img_no_alt_before}->{img_no_alt_after})."
+        )
+    if unlabeled_after > unlabeled_before:
+        problems.append(
+            f"Outline regression: unlabeled form controls increased ({unlabeled_before}->{unlabeled_after})."
+        )
+    if lang_before and not lang_after:
+        problems.append(f"Outline regression: document lang '{lang_before}' was removed.")
     if unreachable_after > unreachable_before:
         problems.append("Keyboard reachability regressed.")
     if trap_after:

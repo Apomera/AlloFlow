@@ -29,6 +29,7 @@
 // college automotive programs (linked in resources).
 // ═══════════════════════════════════════════
 
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
@@ -36,15 +37,16 @@ window.StemLab = window.StemLab || {
   getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
 };
+}
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair'))) {
+if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair'))) {
 
 (function() {
   'use strict';
 
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
-    if (typeof document === 'undefined') return;
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-autorepair')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-autorepair';
@@ -12070,7 +12072,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('input', { id: 'ar-activity-search', type: 'search', value: activityQuery, maxLength: 120, autoComplete: 'off',
                 placeholder: __alloT('stem.autorepair.try_oil_change_battery_3d_or_costs','Try oil change, battery, 3D, or costs'), 'aria-controls': 'ar-menu-categories', 'aria-describedby': 'ar-activity-search-help ar-activity-search-status',
                 onChange: function (event) { setActivityQuery(event.target.value, false); },
-                onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); setActivityQuery('', true); } },
+                onKeyDown: function (event) { if (event.isComposing || event.keyCode === 229) return; if (event.key === 'Escape') { event.preventDefault(); setActivityQuery('', true); } },
                 style: { flex: 1, minWidth: 0, width: '100%', minHeight: 44, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + T.border, background: T.cardAlt, color: T.text, fontSize: 16 } }),
               activityQuery && h('button', { type: 'button', 'data-ar-search-clear': true, onClick: function () { setActivityQuery('', true); }, style: btnSecondary({ minHeight: 44 }) }, 'Clear')),
             h('p', { id: 'ar-activity-search-help', style: { margin: '8px 0', fontSize: 12, color: T.muted } }, 'Search topics, tools, or activity names. Press Enter to reach the first result; Escape clears the search.'),
@@ -12782,6 +12784,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }
 
         function dxTabKeyDown(e, index) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           e.preventDefault();
@@ -13865,6 +13868,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           setTimeout(function() { var target = document.querySelector(selector); if (target && typeof target.focus === 'function') target.focus(); }, 30);
         }
         function toolsTabKeyDown(e, index) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           e.preventDefault(); var nextIndex = index;
@@ -14162,6 +14166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         };
 
         function careerTabKeyDown(e, index) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           e.preventDefault();
@@ -14980,6 +14985,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var ucView = d.ucView || 'overview';
         var USED_CAR_TAB_IDS = ['overview', 'flags', 'walk'];
         function usedCarTabKeyDown(e, index) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           e.preventDefault();
@@ -15125,6 +15131,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         };
 
         function usedCarTabKeyDown(e, index) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           e.preventDefault();
@@ -15419,6 +15426,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           diffs: { icon: '🔄', label: 'vs ICE', note: EV_KEY_DIFFERENCES.length + ' service shifts' }
         };
         function evTabKeyDown(e, index) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           e.preventDefault();
@@ -15896,6 +15904,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var rsView = RS_TAB_IDS.indexOf(d.rsView) >= 0 ? d.rsView : 'overview';
 
         function rsTabKeyDown(e, index) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           e.preventDefault();
@@ -20414,6 +20423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var sceneMeta = TIRE_SCENE_META[tView];
 
         function tireTabKeyDown(e, index) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
           e.preventDefault();
@@ -21184,6 +21194,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var st3 = (V.status() === 'failed') ? 'failed' : (d.uh3dStatus || 'idle');
         var note = st3 === 'failed' ? cfg.failText : (st3 === 'loading' ? cfg.loadText : null);
         function onKey(e) {
+          if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
           var k = e.key;
           var handled = true;
           if (k === 'ArrowLeft') V.nudge(-0.16, 0);
@@ -21322,7 +21333,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('p', null, 'Its instrument setup, captured reading and service record will return with this attempt.')),
             request && !valid && h('p', { role: 'status', 'data-ar-attempt-stale': true }, 'The work order or previous attempt changed. Review the action again before continuing.'),
             valid && h('div', { id: 'ar-attempt-review', tabIndex: -1, role: 'group', 'aria-labelledby': 'ar-attempt-title', 'aria-describedby': 'ar-attempt-effect',
-              onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); cancelAttempt(); } } },
+              onKeyDown: function (event) { if (event.isComposing || event.keyCode === 229) return; if (event.key === 'Escape') { event.preventDefault(); cancelAttempt(); } } },
               h('h3', { id: 'ar-attempt-title', style: { fontSize: 15, marginTop: 12 } }, request.action === 'restart' ? 'Start a new attempt?' : 'Restore the previous attempt?'),
               h('p', { id: 'ar-attempt-effect' }, request.action === 'restart'
                 ? 'This job returns to its first task. Your current progress, measurements and handoff become its one recoverable previous attempt.' + (previous ? ' This replaces the older previous attempt shown above.' : '')

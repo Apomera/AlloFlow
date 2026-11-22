@@ -28,19 +28,27 @@
       return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
     });
   }
-  function isSafeRevision(value) {
+  var hasOwn = Object.prototype.hasOwnProperty;
+
+  function isPlainObject(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    var proto = Object.getPrototypeOf(value);
+    return proto === Object.prototype || proto === null;
+  }
+  function isSafeReadRevision(value) {
     return Number.isSafeInteger(value) && value >= 0;
   }
   function isValidExpectedRevision(expected) {
-    if (isSafeRevision(expected)) return true;
-    if (!expected || typeof expected !== 'object' || Array.isArray(expected)) return false;
-    if (expected.mode === 'absent') return true;
-    if (expected.mode === 'value' && Object.prototype.hasOwnProperty.call(expected, 'value')) return true;
+    if (Number.isSafeInteger(expected) && expected >= 1 && expected < Number.MAX_SAFE_INTEGER) return true;
+    if (!isPlainObject(expected)) return false;
+    var mode = hasOwn.call(expected, 'mode') ? expected.mode : undefined;
+    if (mode === 'absent') return true;
+    if (mode === 'value' && hasOwn.call(expected, 'value') && expected.value !== undefined) return true;
     return false;
   }
   function normalizeScope(value, fallback, label) {
     if (value === undefined || value === null || value === '') return fallback;
-    if (typeof value !== 'string' || !SCOPE_RE.test(value) || value === '__proto__' || value === 'constructor' || value === 'prototype' || value.indexOf('..') !== -1) {
+    if (typeof value !== 'string' || !SCOPE_RE.test(value) || value === '.' || value.indexOf('__') === 0 || value === '__proto__' || value === 'constructor' || value === 'prototype' || value.indexOf('..') !== -1) {
       fail('VAULT_STORAGE_INVALID_SCOPE', 'Invalid recovery-vault ' + label + '.');
     }
     return value;
@@ -54,7 +62,7 @@
 
   function createDeviceRepository(storage, options) {
     storage = requireStorage(storage);
-    options = (options && typeof options === 'object') ? options : {};
+    options = (options && typeof options === 'object' && !Array.isArray(options)) ? options : {};
     var namespace = normalizeScope(options.namespace, DEFAULT_NAMESPACE, 'namespace');
     var key = normalizeScope(options.key, DEFAULT_KEY, 'key');
     var queue = options.queue === true;
@@ -64,7 +72,7 @@
         if (current == null) {
           return { revision: { mode: 'absent' }, store: null };
         }
-        if (typeof current === 'object' && !Array.isArray(current) && isSafeRevision(current.revision)) {
+        if (typeof current === 'object' && !Array.isArray(current) && hasOwn.call(current, 'revision') && isSafeReadRevision(current.revision)) {
           return { revision: current.revision, store: clone(current) };
         }
         // Only the legacy plaintext store is revisionless. Passing its exact
@@ -78,14 +86,18 @@
         if (!isValidExpectedRevision(expected)) {
           fail('VAULT_REVISION_INVALID', 'A valid optimistic-concurrency revision token is required.');
         }
-        if (!nextStore || typeof nextStore !== 'object' || Array.isArray(nextStore)) {
+        if (!isPlainObject(nextStore)) {
+          fail('VAULT_STORE_INVALID', 'The next recovery-vault store must be an object.');
+        }
+        var clonedNext = clone(nextStore);
+        if (!clonedNext || typeof clonedNext !== 'object' || Array.isArray(clonedNext)) {
           fail('VAULT_STORE_INVALID', 'The next recovery-vault store must be an object.');
         }
         var result = await storage.compareAndSwap(
           namespace,
           key,
           clone(expected),
-          clone(nextStore),
+          clonedNext,
           { queue: queue }
         );
         return !!(result && result.applied === true);
@@ -102,7 +114,7 @@
   }
 
   function createController(storage, options) {
-    options = (options && typeof options === 'object') ? options : {};
+    options = (options && typeof options === 'object' && !Array.isArray(options)) ? options : {};
     var vault = resolveVaultModule(options.vaultModule);
     if (!vault || typeof vault.createRecoveryVaultController !== 'function') {
       fail('VAULT_MODULE_UNAVAILABLE', 'The recovery-vault security module has not loaded.');

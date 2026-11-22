@@ -87,7 +87,8 @@ const addGlossaryTerm = async (rawWord, deps, quick = false) => {
         const prompt2 = "Icon style illustration of " + JSON.stringify(newTermItem.term) + " (Context: " + newTermItem.def + "). " + (style ? "Style: " + style + "." : "Simple, clear, flat vector art style.") + " White background. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.";
         let image = await callImagen(prompt2, void 0, void 0, { signal: task?.signal });
         if (!current()) return false;
-        if (autoRemoveWords && image && typeof callGeminiImageEdit === "function") {
+        const imageEditAiUsable = typeof window !== "undefined" && typeof window.__alloAiUsable === "function" ? !!window.__alloAiUsable("imageEdit", callGeminiImageEdit) : typeof callGeminiImageEdit === "function";
+        if (autoRemoveWords && image && imageEditAiUsable) {
           try {
             image = await callGeminiImageEdit("Remove all text, labels, letters, and words from the image. Keep the illustration clean.", image.split(",")[1], void 0, void 0, null, { signal: task?.signal });
           } catch (error) {

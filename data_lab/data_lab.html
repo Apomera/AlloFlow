@@ -60,12 +60,13 @@
   applyAlloFlowTheme(new URLSearchParams(window.location.search).get('theme'));
   function isTrustedThemeOrigin(origin) {
     if (!origin) return false;
-    if (origin === 'null' || origin === window.location.origin) return true;
+    if (origin === 'null') return window.location && window.location.origin === 'null';
+    if (origin === window.location.origin) return true;
     try {
       var u = new URL(origin), h = u.hostname.toLowerCase();
       if (u.protocol === 'http:' && (h === 'localhost' || h === '127.0.0.1' || h === '[::1]')) return true;
       if (u.protocol !== 'https:') return false;
-      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
+      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
     } catch (_) { return false; }
   }
   window.addEventListener('message', function (event) {
@@ -79,7 +80,7 @@
 </script>
 <style>
   :root {
-    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
+    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #718096;
     --text: #e2e8f0; --dim: #94a3b8; --accent: #4f46e5; --ok: #4ade80; --warn: #fbbf24;
     --heading: #a5b4fc; --note-bg: #1f2a44; --bad: #fca5a5;
   }
@@ -181,7 +182,7 @@
   .workspace-status p { max-width: 36rem; margin: 0; font-size: 14px; line-height: 1.5; }
   .workspace-status button { background: #4f46e5; color: #fff; }
   .workspace-status button:hover { background: #4338ca; }
-  .workspace-status button:focus-visible { outline-color: #b45309; }
+  .workspace-status button:focus-visible { outline-color: #1d4ed8 !important; }
   @media (max-width: 760px) { .wrap { flex-direction: column; } .tutor { flex: 0 0 55%; border-inline-end: 0; border-bottom: 1px solid var(--line); } }
 </style>
 </head>
@@ -444,7 +445,7 @@
   // Group comparison: median of inv.attr inside each category of inv.group.
   function evaluateGroup(dataset, inv) {
     var g = column(dataset, inv.group), v = column(dataset, inv.attr);
-    var by = {}, order = [];
+    var by = Object.create(null), order = [];
     for (var i = 0; i < g.length; i++) {
       if (g[i] === '' || g[i] == null || typeof v[i] !== 'number' || !isFinite(v[i])) continue;
       var k = String(g[i]);
@@ -459,13 +460,13 @@
     return { top: top.label, groups: groups, overlap: overlap };
   }
   function groupLabels(dataset, key) {
-    var seen = {}, out = [];
+    var seen = Object.create(null), out = [];
     column(dataset, key).forEach(function (v) { var s = String(v == null ? '' : v); if (s && !seen[s]) { seen[s] = 1; out.push(s); } });
     return out;
   }
   // Most common answer in a category column: { tops: [labels], n, total } or null.
   function evaluateMode(dataset, inv) {
-    var counts = {}, order = [], total = 0;
+    var counts = Object.create(null), order = [], total = 0;
     column(dataset, inv.attr).forEach(function (v) {
       var s = String(v == null ? '' : v).trim();
       if (!s) return;
@@ -1062,14 +1063,22 @@
     aiStateEl.className = cls;
     aiStateEl.textContent = S(key);
   }
+  var checkOpenerInterval = null;
+  function stopOpenerCheck() {
+    if (checkOpenerInterval !== null) {
+      clearInterval(checkOpenerInterval);
+      checkOpenerInterval = null;
+    }
+  }
   function checkOpener() {
     if (openerOk && (!window.opener || window.opener.closed)) {
       openerOk = false;
       openerClosed = true;
+      stopOpenerCheck();
       renderAiState();
     }
   }
-  setInterval(checkOpener, 3000);
+  checkOpenerInterval = setInterval(checkOpener, 3000);
 
   // ── Built-in Socratic bank (the zero-AI path is still a real tutor) ──
   var BANK_KEYS = ['bank_1', 'bank_2', 'bank_3', 'bank_4', 'bank_5', 'bank_6', 'bank_7', 'bank_8', 'bank_9', 'bank_10'];
@@ -1107,18 +1116,20 @@
   function isTrustedDataLabOpener(origin) {
     if (!origin) return false;
     if (lockedOpenerOrigin && origin !== lockedOpenerOrigin) return false;
-    if (origin === 'null' || origin === window.location.origin) return true;
+    if (origin === 'null') return window.location && window.location.origin === 'null';
+    if (origin === window.location.origin) return true;
     try {
       var u = new URL(origin), h = u.hostname.toLowerCase();
       if (u.protocol === 'http:' && (h === 'localhost' || h === '127.0.0.1' || h === '[::1]')) return true;
       if (u.protocol !== 'https:') return false;
-      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
+      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
     } catch (_) { return false; }
   }
   function toOpener(payload) {
     try {
       var isHandshake = !!(payload && (payload.type === 'allodatalab-hello' || payload.type === 'allodatalab-closed'));
-      var targetOrigin = (openerOrigin && openerOrigin !== 'null') ? openerOrigin : ((isHandshake || (openerOk && lockedOpenerOrigin === 'null')) ? '*' : '');
+      var allowOpaque = !!(window.location && window.location.origin === 'null' && openerOk && lockedOpenerOrigin === 'null');
+      var targetOrigin = (openerOrigin && openerOrigin !== 'null') ? openerOrigin : ((isHandshake || allowOpaque) ? '*' : '');
       if (targetOrigin && window.opener && !window.opener.closed) { window.opener.postMessage(payload, targetOrigin); return true; }
     } catch (_) {}
     return false;
@@ -1336,7 +1347,7 @@
   function freshInv(dsId, invId) { return { dsId: dsId, invId: invId, prediction: null, loaded: false, attempts: 0, passed: false, revealReady: false, revealed: false, graphAttempts: 0, graphPassed: false }; }
   var inv = freshInv('', '');
   var datasetQueue = [];
-  var codapContexts = {};   // dataset id -> CODAP data context names this window made
+  var codapContexts = Object.create(null);   // dataset id -> CODAP data context names this window made
   var surveyRows = [];      // class survey answers: this window only, never saved
   var surveySent = 0;       // how many of surveyRows are already in CODAP
   var surveySig = '';
@@ -2168,7 +2179,8 @@
   hello();
   setTimeout(hello, 900);
   setTimeout(function () { renderAiState(); }, 2600);
-  window.addEventListener('beforeunload', function () { toOpener({ type: 'allodatalab-closed' }); });
+  window.addEventListener('pagehide', stopOpenerCheck);
+  window.addEventListener('beforeunload', function () { stopOpenerCheck(); toOpener({ type: 'allodatalab-closed' }); });
 })();
 </script>
 </body>

@@ -575,6 +575,25 @@ function OnboardingCoach(props) {
       bestIf: t("onboarding.educator_best_if") || "Best if you\u2019re a teacher, clinician, or school psychologist on a password-protected workstation."
     }
   ];
+  var starterPrompts = roleDoors ? [
+    copy("onboarding.starter_role_teacher", "Which workspace fits a first-time teacher?"),
+    copy("onboarding.starter_role_student", "How do students join a class?"),
+    copy("onboarding.starter_role_offline", "What works offline without AI?")
+  ] : [
+    copy("onboarding.starter_mode_guided", "What is the difference between Guided and Full mode?"),
+    copy("onboarding.starter_mode_learning", "Which tools are best for independent students?"),
+    copy("onboarding.starter_mode_offline", "What works offline without AI?")
+  ];
+  var applyStarterPrompt = function(promptText) {
+    setInputText(promptText);
+    setCoachError(null);
+    if (inputRef.current && typeof inputRef.current.focus === "function") {
+      try {
+        inputRef.current.focus();
+      } catch (_) {
+      }
+    }
+  };
   var toggleTTS = function() {
     var next = !ttsEnabled;
     var ao = window.AlloOnboarding;
@@ -618,6 +637,7 @@ function OnboardingCoach(props) {
       },
       "aria-label": t("onboarding.ask_allobot_aria") || "Open AlloBot onboarding help",
       "data-help-key": "onboarding_ask_allobot_button",
+      className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2",
       style: {
         position: props.embedded ? "relative" : "fixed",
         bottom: props.embedded ? void 0 : "24px",
@@ -714,6 +734,7 @@ function OnboardingCoach(props) {
           type: "button",
           onClick: closePanel,
           "aria-label": t("common.close") || "Close",
+          className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-700",
           style: {
             background: "rgba(255,255,255,0.18)",
             color: "#fff",
@@ -751,7 +772,7 @@ function OnboardingCoach(props) {
           color: "#1e293b",
           display: "block",
           cursor: "pointer"
-        } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A} "), t("onboarding.tts_toggle_label") || "Read help aloud"), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "11px", color: "#475569", lineHeight: 1.4 } }, globalMuted ? t("onboarding.tts_unavailable_globally_muted") || "Sound is muted globally. Un-mute in the main toolbar to hear AlloBot." : t("onboarding.tts_toggle_sublabel") || "Off by default. If you use a screen reader, leave this off \u2014 your reader already reads this panel.")),
+        } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A} "), t("onboarding.tts_toggle_label") || "Read help aloud"), /* @__PURE__ */ React.createElement("p", { style: { margin: "2px 0 0", fontSize: "12px", color: "#475569", lineHeight: 1.45 } }, globalMuted ? t("onboarding.tts_unavailable_globally_muted") || "Sound is muted globally. Un-mute in the main toolbar to hear AlloBot." : t("onboarding.tts_toggle_sublabel") || "Off by default. If you use a screen reader, leave this off \u2014 your reader already reads this panel.")),
         /* @__PURE__ */ React.createElement(
           "button",
           {
@@ -761,6 +782,7 @@ function OnboardingCoach(props) {
             "aria-checked": ttsEnabled,
             "aria-label": t("onboarding.tts_toggle_label") || "Read help aloud",
             onClick: toggleTTS,
+            className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2 rounded-full",
             style: {
               flexShrink: 0,
               display: "inline-flex",
@@ -807,6 +829,7 @@ function OnboardingCoach(props) {
           )
         )
       ), modes.map(function(m) {
+        var isProtectedMode = m.key === "educator" || m.key === "specialist";
         return /* @__PURE__ */ React.createElement(
           "div",
           {
@@ -819,17 +842,53 @@ function OnboardingCoach(props) {
               background: "#fafafa",
               display: "flex",
               alignItems: "flex-start",
-              gap: "14px"
+              gap: "14px",
+              flexWrap: "wrap"
             }
           },
           /* @__PURE__ */ React.createElement("span", { style: { fontSize: "34px", flexShrink: 0, lineHeight: 1 }, "aria-hidden": "true" }, m.icon),
-          /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ React.createElement("h3", { style: { margin: 0, fontSize: "15px", fontWeight: 800, color: "#1e293b" } }, m.title), m.desc ? /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 6px", fontSize: "12px", color: "#475569", lineHeight: 1.5 } }, m.desc) : null, /* @__PURE__ */ React.createElement("p", { style: {
+          /* @__PURE__ */ React.createElement("div", { style: { flex: "1 1 240px", minWidth: 0 } }, /* @__PURE__ */ React.createElement("h3", { style: { margin: 0, fontSize: "15px", fontWeight: 800, color: "#1e293b" } }, m.title), m.desc ? /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 6px", fontSize: "12px", color: "#475569", lineHeight: 1.5 } }, m.desc) : null, /* @__PURE__ */ React.createElement("p", { style: {
             margin: m.desc ? 0 : "4px 0 0",
-            fontSize: "11px",
-            color: "#7c3aed",
+            fontSize: "12px",
+            color: "#6d28d9",
             fontWeight: 700,
-            lineHeight: 1.4
-          } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1} "), m.bestIf), m.alt ? /* @__PURE__ */ React.createElement("p", { "data-coach-alt": "", style: { margin: "6px 0 0", fontSize: "11px", color: "#475569", lineHeight: 1.4 } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u21AA "), m.alt) : null)
+            lineHeight: 1.45
+          } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1} "), m.bestIf), m.alt ? /* @__PURE__ */ React.createElement("p", { "data-coach-alt": "", style: { margin: "6px 0 0", fontSize: "12px", color: "#475569", lineHeight: 1.45 } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u21AA "), m.alt) : null),
+          pickMode && /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              type: "button",
+              "data-coach-pick-mode": m.key,
+              "aria-label": copy("onboarding.choose_mode_prefix", "Choose") + " " + m.title + (isProtectedMode ? " (" + copy("onboarding.password_protected", "password-protected") + ")" : ""),
+              onClick: function() {
+                closePanel();
+                try {
+                  pickMode(m.key);
+                } catch (_) {
+                }
+              },
+              className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2",
+              style: {
+                minHeight: "44px",
+                padding: "8px 14px",
+                borderRadius: "999px",
+                background: "#fff",
+                border: "1px solid #c4b5fd",
+                color: "#5b21b6",
+                fontWeight: 700,
+                fontSize: "12px",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+                alignSelf: "center",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px"
+              }
+            },
+            /* @__PURE__ */ React.createElement("span", null, copy("onboarding.choose_mode_cta", "Choose")),
+            isProtectedMode && /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "12px" } }, "\u{1F510}")
+          )
         );
       }), typeof setRunTour === "function" && /* @__PURE__ */ React.createElement(
         "div",
@@ -848,12 +907,13 @@ function OnboardingCoach(props) {
             flexWrap: "wrap"
           }
         },
-        /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: "200px" } }, /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "13px", fontWeight: 700, color: "#78350f" } }, t("onboarding.tour_offer_title") || "Want me to show you around first?"), /* @__PURE__ */ React.createElement("p", { style: { margin: "3px 0 0", fontSize: "11px", color: "#92400e" } }, t("onboarding.tour_offer_desc") || "I\u2019ll walk you through the workspace before you choose.")),
+        /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: "200px" } }, /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "13px", fontWeight: 700, color: "#78350f" } }, t("onboarding.tour_offer_title") || "Want me to show you around first?"), /* @__PURE__ */ React.createElement("p", { style: { margin: "3px 0 0", fontSize: "12px", color: "#78350f" } }, t("onboarding.tour_offer_desc") || "I\u2019ll walk you through the workspace before you choose.")),
         /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
             onClick: openTour,
+            className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-900 focus-visible:ring-offset-2",
             style: {
               minHeight: "44px",
               padding: "10px 18px",
@@ -892,6 +952,7 @@ function OnboardingCoach(props) {
             },
             "aria-expanded": chatExpanded,
             "aria-controls": "onboarding-coach-qa-body",
+            className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-violet-700",
             style: {
               width: "100%",
               minHeight: "44px",
@@ -906,10 +967,25 @@ function OnboardingCoach(props) {
               gap: "8px"
             }
           },
-          /* @__PURE__ */ React.createElement("span", { style: { display: "flex", alignItems: "center", gap: "10px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "20px" } }, "\u{1F4AC}"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "13px", fontWeight: 800, color: "#1e293b" } }, t("onboarding.coach_ask_disclosure") || "Have a question? Ask AlloBot")),
+          /* @__PURE__ */ React.createElement("span", { style: { display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "20px" } }, "\u{1F4AC}"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "13px", fontWeight: 800, color: "#1e293b" } }, t("onboarding.coach_ask_disclosure") || "Have a question? Ask AlloBot"), conversation.length > 0 && /* @__PURE__ */ React.createElement(
+            "span",
+            {
+              "data-coach-message-count": conversation.length,
+              style: {
+                fontSize: "12px",
+                fontWeight: 700,
+                color: "#5b21b6",
+                background: "#f5f3ff",
+                border: "1px solid #ddd6fe",
+                borderRadius: "999px",
+                padding: "1px 8px"
+              }
+            },
+            conversation.length + " " + (conversation.length === 1 ? copy("onboarding.message_singular", "message") : copy("onboarding.message_plural", "messages"))
+          )),
           /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: {
             fontSize: "12px",
-            color: "#7c3aed",
+            color: "#6d28d9",
             fontWeight: 700,
             transform: chatExpanded ? "rotate(180deg)" : "rotate(0)",
             transition: typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "none" : "transform 0.15s"
@@ -1102,6 +1178,40 @@ function OnboardingCoach(props) {
           },
           /* @__PURE__ */ React.createElement("strong", null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u26A0\uFE0F "), scrubPreview.riskLevel === "high" ? t("onboarding.coach_pii_high_warn") || "Looks like student data." : t("onboarding.coach_pii_low_warn") || "Looks like a real name."),
           /* @__PURE__ */ React.createElement("div", { style: { marginTop: "3px" } }, scrubPreview.riskLevel === "high" ? t("onboarding.coach_pii_high_advice") || "AlloBot will scrub this before sending. To send anyway, rephrase without identifiers." : t("onboarding.coach_pii_low_advice") || "AlloBot can scrub the name before sending, or you can send as typed.")
+        ), coachAvailable && conversation.length === 0 && !inFlight && /* @__PURE__ */ React.createElement(
+          "div",
+          {
+            "data-coach-starter-chips": "",
+            style: { marginBottom: "10px" }
+          },
+          /* @__PURE__ */ React.createElement("p", { style: { margin: "0 0 6px", fontSize: "12px", fontWeight: 700, color: "#475569" } }, copy("onboarding.starter_prompts_heading", "Try asking:")),
+          /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: "8px" } }, starterPrompts.map(function(promptText, pIdx) {
+            return /* @__PURE__ */ React.createElement(
+              "button",
+              {
+                key: pIdx,
+                type: "button",
+                "data-coach-starter-prompt": pIdx,
+                onClick: function() {
+                  applyStarterPrompt(promptText);
+                },
+                className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2",
+                style: {
+                  minHeight: "44px",
+                  padding: "8px 12px",
+                  borderRadius: "999px",
+                  background: "#f5f3ff",
+                  border: "1px solid #ddd6fe",
+                  color: "#4c1d95",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  textAlign: "left"
+                }
+              },
+              promptText
+            );
+          }))
         ), coachAvailable && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "8px", alignItems: "flex-end" } }, /* @__PURE__ */ React.createElement("div", { style: { flex: 1 } }, /* @__PURE__ */ React.createElement(
           "textarea",
           {
@@ -1112,7 +1222,16 @@ function OnboardingCoach(props) {
               setInputText(e.target.value);
             },
             onKeyDown: function(e) {
-              if (e.key === "Enter" && !e.shiftKey && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) {
+              var composing = !!(e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229);
+              if (composing) return;
+              if (e.key === "Escape" && inputText) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.nativeEvent && typeof e.nativeEvent.preventDefault === "function") e.nativeEvent.preventDefault();
+                setInputText("");
+                return;
+              }
+              if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 handleSendClick();
               }
@@ -1122,6 +1241,7 @@ function OnboardingCoach(props) {
             disabled: inFlight,
             placeholder: t("onboarding.coach_input_placeholder") || "Ask AlloBot anything about getting started\u2026",
             "aria-label": t("onboarding.coach_input_aria") || "Ask AlloBot a question",
+            className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-1",
             style: {
               width: "100%",
               boxSizing: "border-box",
@@ -1137,21 +1257,35 @@ function OnboardingCoach(props) {
               color: "#0f172a"
             }
           }
-        ), (inputText.length > 450 || usage.remaining <= 5) && /* @__PURE__ */ React.createElement("div", { style: {
-          marginTop: "3px",
+        ), /* @__PURE__ */ React.createElement("div", { style: {
+          marginTop: "4px",
           display: "flex",
           justifyContent: "space-between",
-          fontSize: "10px",
+          alignItems: "center",
+          gap: "8px",
+          flexWrap: "wrap",
+          fontSize: "12px",
           color: "#475569"
-        } }, /* @__PURE__ */ React.createElement("span", null, usage.remaining <= 5 ? usage.remaining === 0 ? t("onboarding.coach_limit_reached") || "You've used today's coach quota. Reload to reset." : usage.remaining + " " + (t("onboarding.coach_questions_remaining") || "questions left this session") : ""), /* @__PURE__ */ React.createElement("span", { style: {
-          color: inputText.length > 480 ? "#92400e" : "#475569"
-        } }, inputText.length, "/500"))), /* @__PURE__ */ React.createElement(
+        } }, /* @__PURE__ */ React.createElement("span", null, usage.remaining <= 5 ? usage.remaining === 0 ? t("onboarding.coach_limit_reached") || "You've used today's coach quota. Reload to reset." : usage.remaining + " " + (t("onboarding.coach_questions_remaining") || "questions left this session") : copy("onboarding.coach_input_hint", "Enter to send \xB7 Shift+Enter for new line \xB7 Esc clears draft")), (inputText.length > 0 || usage.remaining <= 5) && /* @__PURE__ */ React.createElement(
+          "span",
+          {
+            "data-coach-char-count": "",
+            style: {
+              color: inputText.length > 480 ? "#92400e" : "#475569",
+              fontWeight: inputText.length > 450 ? 700 : 500,
+              fontVariantNumeric: "tabular-nums"
+            }
+          },
+          inputText.length,
+          "/500"
+        ))), /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
             onClick: handleSendClick,
             disabled: !canSend,
             "aria-label": t("onboarding.coach_send") || "Send question to AlloBot",
+            className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2",
             style: {
               padding: "10px 16px",
               minHeight: "44px",
@@ -1174,6 +1308,7 @@ function OnboardingCoach(props) {
           {
             type: "button",
             onClick: handleResetConversation,
+            className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2 rounded",
             style: {
               background: "transparent",
               border: "none",
@@ -1182,8 +1317,8 @@ function OnboardingCoach(props) {
               display: "inline-flex",
               alignItems: "center",
               color: confirmReset ? "#991b1b" : "#475569",
-              fontSize: "11px",
-              fontWeight: confirmReset ? 700 : 400,
+              fontSize: "12px",
+              fontWeight: confirmReset ? 700 : 500,
               cursor: "pointer",
               textDecoration: "underline"
             }
@@ -1196,6 +1331,7 @@ function OnboardingCoach(props) {
             onClick: function() {
               setConfirmReset(false);
             },
+            className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2 rounded",
             style: {
               background: "transparent",
               border: "none",
@@ -1204,7 +1340,7 @@ function OnboardingCoach(props) {
               display: "inline-flex",
               alignItems: "center",
               color: "#475569",
-              fontSize: "11px",
+              fontSize: "12px",
               cursor: "pointer",
               textDecoration: "underline"
             }
@@ -1213,7 +1349,7 @@ function OnboardingCoach(props) {
         )))
       ), /* @__PURE__ */ React.createElement("p", { style: {
         margin: "10px 0 0",
-        fontSize: "10px",
+        fontSize: "12px",
         color: "#475569",
         textAlign: "center",
         fontStyle: "italic"
@@ -1261,12 +1397,13 @@ function OnboardingCoach(props) {
           ref: consentDeclineRef,
           type: "button",
           onClick: handleConsentDecline,
+          className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 focus-visible:ring-offset-2",
           style: {
             padding: "10px 16px",
             minHeight: "44px",
             borderRadius: "999px",
             background: "#f1f5f9",
-            color: "#475569",
+            color: "#334155",
             border: "none",
             fontWeight: 700,
             fontSize: "13px",
@@ -1279,6 +1416,7 @@ function OnboardingCoach(props) {
         {
           type: "button",
           onClick: handleConsentAccept,
+          className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2",
           style: {
             padding: "10px 18px",
             minHeight: "44px",

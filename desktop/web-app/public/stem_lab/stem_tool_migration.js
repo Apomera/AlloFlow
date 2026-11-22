@@ -24,6 +24,7 @@
 // ═══════════════════════════════════════════
 
 // ═══ Defensive StemLab guard ═══
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
@@ -31,15 +32,16 @@ window.StemLab = window.StemLab || {
   getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
 };
+}
 // ═══ End Guard ═══
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) {
+if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) {
 
 (function() {
   'use strict';
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
-    if (document.getElementById('allo-live-migration')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-migration')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-migration';
     lr.setAttribute('aria-live', 'polite');
@@ -50,7 +52,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     document.body.appendChild(lr);
   })();
 
-  if (!document.getElementById('migration-workspace-css')) {
+  if (typeof document !== 'undefined' && document.head && !document.getElementById('migration-workspace-css')) {
     var migrationStyle = document.createElement('style');
     migrationStyle.id = 'migration-workspace-css';
     migrationStyle.textContent = [
@@ -259,11 +261,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
   // ── Audio + WCAG (auto-injected) ──
   var _migrAC = null;
-  function getMigrAC() { if (!_migrAC) { try { _migrAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_migrAC && _migrAC.state==="suspended") { try { _migrAC.resume(); } catch(e) {} } return _migrAC; }
-  function migrTone(f,d,tp,v) { var ac=getMigrAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function _migrGlobalMuted() {
+    try {
+      if (typeof window === 'undefined') return true;
+      if (window.__alloFlowMuted === true || window.__alloSoundMuted === true) return true;
+      if (typeof window.isAlloMuted === 'function' && window.isAlloMuted()) return true;
+      if (window.localStorage && window.localStorage.getItem('alloflow_muted') === '1') return true;
+    } catch (e) {}
+    return false;
+  }
+  function _migrAiAllowed() {
+    try {
+      if (typeof window === 'undefined') return false;
+      if (window.__alloAiSecretsLocked === true) return false;
+      if (window.__alloQrStudentMode === true) return false;
+      var pol = window.ALLOFLOW_MANAGED_AI_POLICY;
+      if (pol && typeof pol === 'object' && (pol.enabled === false || pol.allowAI === false || pol.disabled === true || pol.aiEnabled === false || pol.mode === 'disabled' || pol.mode === 'off')) return false;
+      if (window.StudentPolicy && typeof window.StudentPolicy.isAiDisabled === 'function' && window.StudentPolicy.isAiDisabled()) return false;
+      if (window.StudentPolicy && typeof window.StudentPolicy.aiAllowed === 'function' && !window.StudentPolicy.aiAllowed()) return false;
+    } catch (e) {}
+    return true;
+  }
+  function _migrSafeJsonParse(raw) {
+    return JSON.parse(raw, function(k, v) {
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') return undefined;
+      return v;
+    });
+  }
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function' && !window.__migrMuteBound) {
+    window.__migrMuteBound = true;
+    window.addEventListener('alloflow-mute-changed', function(ev) {
+      var muted = (ev && ev.detail && typeof ev.detail.muted === 'boolean') ? ev.detail.muted : _migrGlobalMuted();
+      if (muted && _migrAC && _migrAC.state === 'running' && typeof _migrAC.suspend === 'function') {
+        try { _migrAC.suspend(); } catch (e) {}
+      }
+    });
+  }
+  function getMigrAC() { if (_migrGlobalMuted()) return null; if (!_migrAC) { try { _migrAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_migrAC && _migrAC.state==="suspended") { try { _migrAC.resume(); } catch(e) {} } return _migrAC; }
+  function migrTone(f,d,tp,v) { if (_migrGlobalMuted()) return; var ac=getMigrAC(); if(!ac) return; try { var o=ac.createOscillator(); var g=ac.createGain(); o.type=tp||"sine"; o.frequency.value=f; g.gain.setValueAtTime(v||0.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxMigrClick() { migrTone(600,0.03,"sine",0.04); }
   function sfxMigrSuccess() { migrTone(523,0.08,"sine",0.07); setTimeout(function(){migrTone(659,0.08,"sine",0.07);},70); setTimeout(function(){migrTone(784,0.1,"sine",0.08);},140); }
-  if(!document.getElementById("migr-a11y")){var _s=document.createElement("style");_s.id="migr-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0s!important}}";document.head.appendChild(_s);}
+  if(typeof document!=="undefined"&&document.head&&!document.getElementById("migr-a11y")){var _s=document.createElement("style");_s.id="migr-a11y";_s.textContent="@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0s!important}}";document.head.appendChild(_s);}
 
 
   // ── Colour helpers ─────────────────────────────────────────────────────────
@@ -2651,11 +2689,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var WORLD_FLYWAYS = migrLocalizedWorldFlyways(t);
       var GLOBAL_MIGRANTS = migrLocalizedGlobalMigrants(t);
       var MIGRANT_KINDS = migrLocalizedKinds(t);
-      var callGemini = ctx.callGemini;
-      var callTTS = ctx.callTTS;
+      var _migrRawGemini = typeof ctx.callGemini === 'function' ? ctx.callGemini : null;
+      var callGemini = (_migrRawGemini && _migrAiAllowed()) ? function() {
+        if (!_migrAiAllowed()) return Promise.resolve(null);
+        return _migrRawGemini.apply(null, arguments);
+      } : null;
+      var _migrRawTTS = typeof ctx.callTTS === 'function' ? ctx.callTTS : null;
+      var callTTS = _migrRawTTS ? function() {
+        if (_migrGlobalMuted() || !_migrAiAllowed()) return;
+        return _migrRawTTS.apply(null, arguments);
+      } : null;
       var awardXP = ctx.awardXP;
       var celebrate = ctx.celebrate;
-      var beep = ctx.beep;
+      var _migrRawBeep = typeof ctx.beep === 'function' ? ctx.beep : null;
+      var beep = _migrRawBeep ? function() {
+        if (_migrGlobalMuted()) return;
+        return _migrRawBeep.apply(null, arguments);
+      } : null;
       var isDark = ctx.isDark;
       var isContrast = ctx.isContrast;
       var gradeLevel = ctx.gradeLevel;
@@ -7044,6 +7094,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         if (!engineNow || engineNow.host !== host) return;
         engineNow.animate = function(timestamp) {
           if (engineNow.disposed || token !== _f3dBootRef.current || !host.isConnected) return;
+          if (typeof document !== 'undefined' && document.hidden) { engineNow.lastFrame = 0; engineNow.raf = requestAnimationFrame(engineNow.animate); return; }
           var delta = engineNow.lastFrame ? Math.min(0.05, (timestamp - engineNow.lastFrame) / 1000) : 0.016;
           engineNow.lastFrame = timestamp;
           var live = _liveVals.current;
@@ -9078,7 +9129,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             onLostPointerCapture: function(event) { endStudyDrag(event, false); },
             onKeyDown: function(event) {
               if (event.target !== event.currentTarget) return;
-              if (event.ctrlKey || event.metaKey || event.altKey) return;
+              if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
               if (event.repeat && ['1', '2', '3', '4', ' '].indexOf(event.key) !== -1) {
                 event.preventDefault();
                 return;
@@ -10419,7 +10470,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               className: 'migration-investigation-reset-review', 'data-investigation-reset-review': '', hidden: !resetRequest,
               role: 'group', 'aria-labelledby': migrationDomId('migration-investigation-reset-title'), 'aria-describedby': migrationDomId('migration-investigation-reset-help'),
               onKeyDown: function(event) {
-                if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return;
+                if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
                 event.preventDefault(); event.stopPropagation(); cancelInvestigationReset(event, true);
               } },
               h('h4', { id: migrationDomId('migration-investigation-reset-title'), 'data-migration-id': 'migration-investigation-reset-title' }, t('stem.migration.experiment_reset_review_title', 'Clear this investigation?')),
@@ -10659,6 +10710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var _vfFrameId = null, _vfDisposed = false;
           function frame() {
             if (_vfDisposed || !document.contains(canvas)) return;
+            if (typeof document !== 'undefined' && document.hidden) { _vfFrameId = requestAnimationFrame(frame); animRef.current = _vfFrameId; return; }
             var displayedWidth = Math.max(1, Math.round(canvas.clientWidth || W));
             if (displayedWidth !== W) {
               resizeFormationCanvas(displayedWidth);
@@ -11112,7 +11164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               'aria-describedby': 'migration-formation-help-' + formationControlId + ' migration-formation-position-' + formationControlId + ' ' + formationWakeId,
               tabIndex: 0,
               onKeyDown: function(event) {
-                if (event.ctrlKey || event.metaKey || event.altKey) return;
+                if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
                 var direction = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' }[event.key];
                 if (direction) { event.preventDefault(); moveFormationBird(direction, event.shiftKey); return; }
                 var key = event.key.toLowerCase();
@@ -11603,6 +11655,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var _wcStillSig = null;
           var _wcStillObjects = null;
           function frame() {
+            if (typeof document !== 'undefined' && !document.contains(canvas)) return;
+            if (typeof document !== 'undefined' && document.hidden) { animRef.current = requestAnimationFrame(frame); return; }
             var lv = _liveVals.current;
             if (reducedMotionRef.current) {
               var _wcSig = [lv.isDark, lv.showStreamlines, lv.windDir, lv.windSpeed,
@@ -11904,7 +11958,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               'data-wind-placement-canvas': '',
               tabIndex: 0,
               onKeyDown: function(e) {
-                if (e.ctrlKey || e.metaKey || e.altKey || e.target !== e.currentTarget) return;
+                if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey || e.target !== e.currentTarget) return;
                 var live = _liveVals.current.placingObj;
                 if (live && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
                   e.preventDefault();
@@ -12029,7 +12083,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               role: 'radiogroup',
               'aria-label': t('stem.migration.wind_direction', 'Wind direction'),
               onKeyDown: function(e) {
-                if (e.ctrlKey || e.metaKey || e.altKey) return;
+                if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 var radios = e.currentTarget.querySelectorAll('[role="radio"]');
                 var index = Array.prototype.indexOf.call(radios, e.target), nextIndex = index;
                 if (index < 0) return;
@@ -12251,6 +12305,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           var _flyIdlePainted = false;
           var _rtStillSig = null;
           function frame() {
+            if (typeof document !== 'undefined' && !document.contains(canvas)) return;
+            if (typeof document !== 'undefined' && document.hidden) { animRef.current = requestAnimationFrame(frame); return; }
             // The _rtInit guard means this closure is the FIRST render's, so
             // anything read from render scope is frozen at mount. Shadow the
             // stale names with the live ref: every reference below is then live.
@@ -12890,6 +12946,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               'aria-label': t('stem.migration.aria_routes_map', 'Migration route map of North America showing four flyways: Atlantic, Mississippi, Central, and Pacific.') + ' ' + (selectedSpecies ? t('stem.migration.currently_tracking', 'Currently tracking') + ' ' + getSpeciesById(selectedSpecies).name : t('stem.migration.select_a_species', 'Select a species to see its route.')),
               tabIndex: 0,
               onKeyDown: function(e) {
+                if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 // Arrow keys to cycle species
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
                   e.preventDefault();
@@ -13440,6 +13497,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           var _arStillSig = null;
           function frame() {
+            if (typeof document !== 'undefined' && !document.contains(canvas)) return;
+            if (typeof document !== 'undefined' && document.hidden) { animRef.current = requestAnimationFrame(frame); return; }
             // Read fresh values from live ref
             var lv = _liveVals.current;
             if (reducedMotionRef.current) {
@@ -13987,6 +14046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               'aria-label': t('stem.migration.aria_aero_canvas', 'Aerodynamics lab showing airfoil cross-section with streamlines.') + ' ' + t('stem.migration.aria_aoa', 'Angle of attack') + ': ' + aoa + ' ' + t('stem.migration.degrees_word', 'degrees') + '. ' + (isStalling ? t('stem.migration.wing_is_stalling', 'Wing is stalling, flow separation occurring.') : t('stem.migration.lift_coefficient', 'Lift coefficient') + ': ' + cl.toFixed(2) + ', ' + t('stem.migration.drag_coefficient', 'Drag coefficient') + ': ' + cd.toFixed(3) + ', ' + t('stem.migration.ld_ratio', 'L over D ratio') + ': ' + ldRatio.toFixed(1)),
               tabIndex: 0,
               onKeyDown: function(e) {
+                if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 if (e.key === 'ArrowUp' && aoa < 20) { e.preventDefault(); upd('aoa', aoa + 1); }
                 else if (e.key === 'ArrowDown' && aoa > 0) { e.preventDefault(); upd('aoa', aoa - 1); }
               },
@@ -14203,6 +14263,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
           var _nvStillSig = null;
           function frame() {
+            if (typeof document !== 'undefined' && !document.contains(canvas)) return;
+            if (typeof document !== 'undefined' && document.hidden) { navAnimRef.current = requestAnimationFrame(frame); return; }
             if (reducedMotionRef.current) {
               var _nvLv = _liveVals.current;
               var _nvSig = [_nvLv.isDark, _nvLv.tab].join('|');
@@ -14589,7 +14651,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               if (startIdx >= 0 && endIdx > startIdx) {
                 jsonStr = jsonStr.substring(startIdx, endIdx + 1);
               }
-              var parsed = JSON.parse(jsonStr);
+              var parsed = _migrSafeJsonParse(jsonStr);
               // A string has a length, so the old check passed
               // {"choices": "push through"} straight through to a render that
               // then threw. Require a real array of usable rows.
@@ -14726,6 +14788,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               'aria-label': t('stem.migration.animated_night_sky_showing_nocturnal_b', 'Animated night sky showing nocturnal bird migration. Stars twinkle around Polaris, magnetic field lines curve across the sky, and a small flock migrates through the scene. Demonstrates how birds use stars and magnetic sense to navigate at night.'),
               tabIndex: 0,
               onKeyDown: function(e) {
+                if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                 if (e.key === 'r' || e.key === 'R') {
                   if (callTTS) callTTS(t('stem.migration.tts_navigation', 'Birds navigate using a combination of star patterns, Earth\'s magnetic field, the sun\'s position, landmarks, and even smell. Many songbirds migrate at night when the air is calmer and stars are visible.'), undefined, undefined, { force: true });
                 }
@@ -14989,7 +15052,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             'aria-label': tb.label,
             tabIndex: active ? 0 : -1,
             onKeyDown: function(e) {
-              if (!currentTabAction(e) || e.target !== e.currentTarget || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+              if (e.isComposing || e.keyCode === 229 || !currentTabAction(e) || e.target !== e.currentTarget || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
               var nextIdx = ti;
               if (e.key === 'ArrowRight') nextIdx = (ti + 1) % TABS.length;
               else if (e.key === 'ArrowLeft') nextIdx = (ti - 1 + TABS.length) % TABS.length;

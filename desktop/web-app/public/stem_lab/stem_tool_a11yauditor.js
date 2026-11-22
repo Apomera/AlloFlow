@@ -24,17 +24,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
     document.head.appendChild(st);
   })();
-  // Scoped Accessibility Lab workbench polish + high-contrast safety
+  // Scoped Accessibility Lab workbench polish, GPU-composited SVG live motion + high-contrast safety
   (function() {
     if (typeof document === 'undefined' || !document.head || typeof document.getElementById !== 'function' || document.getElementById('allo-a11yauditor-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-a11yauditor-css';
     st.textContent = [
+      '@keyframes alloA11yReticleSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }',
+      '@keyframes alloA11yReticleBloom { 0%, 100% { opacity: 0.24; transform: scale(0.95); } 50% { opacity: 0.46; transform: scale(1.06); } }',
+      '@keyframes alloA11yRailFlow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -28; } }',
+      '@keyframes alloA11yBeaconPulse { 0%, 100% { opacity: 0.20; transform: scale(0.88); } 50% { opacity: 0.52; transform: scale(1.24); } }',
+      '@keyframes alloA11yHaloBreathe { 0%, 100% { opacity: 0.14; transform: scale(0.94); } 50% { opacity: 0.32; transform: scale(1.10); } }',
+      '@keyframes alloA11ySheenDrift { 0% { transform: translateX(-100px); opacity: 0; } 18% { opacity: 0.42; } 82% { opacity: 0.42; } 100% { transform: translateX(350px); opacity: 0; } }',
+      '@keyframes alloA11yArcBreathe { 0%, 100% { opacity: 0.20; } 50% { opacity: 0.44; } }',
       '#allo-a11y-lab .al-panel { box-shadow: 0 8px 20px -14px rgba(15,118,110,0.22); }',
       '#allo-a11y-lab .al-card { transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease; }',
       '#allo-a11y-lab .al-card:hover { transform: translateY(-1px); box-shadow: 0 8px 18px -12px rgba(15,118,110,0.28); }',
+      '#allo-a11y-lab .al-reticle-orbit { transform-box: fill-box; transform-origin: center; animation: alloA11yReticleSpin 28s linear infinite; will-change: transform; }',
+      '#allo-a11y-lab .al-reticle-bloom { transform-box: fill-box; transform-origin: center; animation: alloA11yReticleBloom 4.4s ease-in-out infinite; will-change: transform, opacity; }',
+      '#allo-a11y-lab .al-rail-flow { animation: alloA11yRailFlow 2.6s linear infinite; will-change: stroke-dashoffset; }',
+      '#allo-a11y-lab .al-beacon-pulse { transform-box: fill-box; transform-origin: center; animation: alloA11yBeaconPulse 2.8s ease-in-out infinite; will-change: transform, opacity; }',
+      '#allo-a11y-lab .al-halo-breathe { transform-box: fill-box; transform-origin: center; animation: alloA11yHaloBreathe 3.8s ease-in-out infinite; will-change: transform, opacity; }',
+      '#allo-a11y-lab .al-sheen-sweep { animation: alloA11ySheenDrift 5.4s cubic-bezier(0.4, 0, 0.2, 1) infinite; will-change: transform, opacity; }',
+      '#allo-a11y-lab .al-arc-breathe { animation: alloA11yArcBreathe 3.6s ease-in-out infinite; will-change: opacity; }',
       '.theme-contrast #allo-a11y-lab .al-hero, .theme-contrast #allo-a11y-lab .al-panel { background: #000000 !important; color: #ffffff !important; border-color: #fbbf24 !important; box-shadow: none !important; }',
-      '@media (prefers-reduced-motion: reduce) { #allo-a11y-lab .al-card { transition: none !important; transform: none !important; } }'
+      '.theme-contrast #allo-a11y-lab .al-sheen-sweep, .theme-contrast #allo-a11y-lab .al-reticle-bloom, .theme-contrast #allo-a11y-lab .al-halo-breathe, .theme-contrast #allo-a11y-lab .al-arc-breathe { display: none !important; animation: none !important; }',
+      '.theme-contrast #allo-a11y-lab .al-reticle-orbit, .theme-contrast #allo-a11y-lab .al-rail-flow, .theme-contrast #allo-a11y-lab .al-beacon-pulse { animation: none !important; }',
+      '@media (prefers-reduced-motion: reduce) { #allo-a11y-lab .al-card, #allo-a11y-lab .al-reticle-orbit, #allo-a11y-lab .al-reticle-bloom, #allo-a11y-lab .al-rail-flow, #allo-a11y-lab .al-beacon-pulse, #allo-a11y-lab .al-halo-breathe, #allo-a11y-lab .al-arc-breathe { animation: none !important; transition: none !important; transform: none !important; } #allo-a11y-lab .al-sheen-sweep { display: none !important; animation: none !important; } }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -1011,9 +1027,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 h('stop', { offset: '0%', stopColor: isContrast ? '#94a3b8' : '#64748b' }),
                 h('stop', { offset: '100%', stopColor: isContrast ? '#64748b' : '#475569' })
               ),
-              h('linearGradient', { id: 'a11y-mbar-pass', x1: '0', y1: '0', x2: '0', y2: '1' },
+                h('linearGradient', { id: 'a11y-mbar-pass', x1: '0', y1: '0', x2: '0', y2: '1' },
                 h('stop', { offset: '0%', stopColor: isContrast ? '#38bdf8' : '#10b981' }),
                 h('stop', { offset: '100%', stopColor: isContrast ? '#0ea5e9' : '#047857' })
+              ),
+              h('linearGradient', { id: 'a11y-mbar-sheen', x1: '0', y1: '0', x2: '1', y2: '0' },
+                h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
+                h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.55 }),
+                h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+              ),
+              h('clipPath', { id: 'a11y-mbar-clip' },
+                h('rect', { x: 1, y: 1.5, width: 318, height: 15, rx: 7.5 })
               )
             ),
             h('rect', { x: 0.5, y: 1, width: 319, height: 16, rx: 8, fill: 'url(#a11y-mbar-well)', stroke: isContrast ? '#fde047' : '#94a3b8', strokeOpacity: isContrast ? 1 : 0.45, strokeWidth: 1 }),
@@ -1021,7 +1045,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             wWarn > 0 && h('rect', { x: wFail, y: 1.5, width: wWarn, height: 15, fill: 'url(#a11y-mbar-warn)' }),
             wBp > 0 && h('rect', { x: wFail + wWarn, y: 1.5, width: wBp, height: 15, fill: 'url(#a11y-mbar-bp)' }),
             wPass > 0 && h('rect', { x: wFail + wWarn + wBp, y: 1.5, width: Math.max(0, wPass - 1), height: 15, rx: 4, fill: 'url(#a11y-mbar-pass)' }),
-            !isContrast && h('rect', { x: 4, y: 2.5, width: 312, height: 4, rx: 2, fill: '#ffffff', opacity: 0.24 }),
+            !isContrast && h('g', { clipPath: 'url(#a11y-mbar-clip)' },
+              h('rect', { x: 4, y: 2.5, width: 312, height: 4, rx: 2, fill: '#ffffff', opacity: 0.24 }),
+              h('rect', { x: 0, y: 1.5, width: 68, height: 15, fill: 'url(#a11y-mbar-sheen)', className: 'al-sheen-sweep' })
+            ),
             [80, 160, 240].map(function (tx) {
               return h('line', { key: tx, x1: tx, y1: 2, x2: tx, y2: 16, stroke: isContrast ? '#000000' : '#ffffff', strokeOpacity: isContrast ? 0.85 : 0.35, strokeWidth: 1 });
             })
@@ -1085,9 +1112,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                     h('stop', { offset: '100%', stopColor: isContrast ? '#000000' : '#ccfbf1' })
                   )
                 ),
-                h('circle', { cx: 20, cy: 20, r: 18, fill: 'url(#a11y-emblem-aura)' }),
+                !isContrast && h('circle', { cx: 20, cy: 20, r: 18, fill: 'url(#a11y-emblem-aura)', className: 'al-reticle-bloom' }),
                 // Outer optical inspection reticle ticks
-                h('circle', { cx: 20, cy: 20, r: 16.5, fill: 'none', stroke: isContrast ? '#fde047' : '#5eead4', strokeWidth: 0.9, strokeDasharray: '3 3', opacity: isContrast ? 0.95 : 0.65 }),
+                h('circle', { cx: 20, cy: 20, r: 16.5, fill: 'none', stroke: isContrast ? '#fde047' : '#5eead4', strokeWidth: 0.9, strokeDasharray: '3 3', opacity: isContrast ? 0.95 : 0.65, className: isContrast ? undefined : 'al-reticle-orbit' }),
+                !isContrast && h('circle', { cx: 20, cy: 20, r: 14.2, fill: 'none', stroke: '#99f6e4', strokeWidth: 0.7, strokeDasharray: '2 5', opacity: 0.42, className: 'al-reticle-orbit', style: { animationDirection: 'reverse', animationDuration: '38s' } }),
                 h('path', { d: 'M20 1.5 V4.5 M20 35.5 V38.5 M1.5 20 H4.5 M35.5 20 H38.5', stroke: isContrast ? '#fde047' : '#99f6e4', strokeWidth: 1.4, strokeLinecap: 'round' }),
                 // Sculpted shield
                 h('path', { d: 'M20 5.5 L31.5 9.8 V19 C31.5 26.2 26.6 31.6 20 34 C13.4 31.6 8.5 26.2 8.5 19 V9.8 Z', fill: 'url(#a11y-shield-face)', stroke: isContrast ? '#fde047' : '#5eead4', strokeWidth: 1.5 }),
@@ -1454,7 +1482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                     h('circle', { cx: 60, cy: 60, r: 56, fill: 'url(#a11y-dial-well)', stroke: isContrast ? '#fde047' : 'rgba(255,255,255,0.28)', strokeWidth: 1.2 }),
                     h('circle', { cx: 60, cy: 60, r: rRing, fill: 'none', stroke: isContrast ? 'rgba(253,224,71,0.3)' : 'rgba(255,255,255,0.18)', strokeWidth: 8.5 }),
                     // Inner calibration reticle ring & 12 ticks
-                    h('circle', { cx: 60, cy: 60, r: 38.5, fill: 'none', stroke: isContrast ? '#fde047' : 'rgba(255,255,255,0.22)', strokeWidth: 0.8, strokeDasharray: '2 4' }),
+                    h('circle', { cx: 60, cy: 60, r: 38.5, fill: 'none', stroke: isContrast ? '#fde047' : 'rgba(255,255,255,0.28)', strokeWidth: 0.85, strokeDasharray: '2 4', className: isContrast ? undefined : 'al-reticle-orbit' }),
                     ticks.map(function (idx) {
                       var a = (-90 + idx * 30) * Math.PI / 180;
                       var major = idx % 3 === 0;
@@ -1468,12 +1496,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                     }),
                     // Dual-pass luminous arc: outer soft glow + crisp inner arc
                     clamped > 0 && !isContrast && h('circle', { cx: 60, cy: 60, r: rRing, fill: 'none', stroke: '#ffffff', strokeOpacity: 0.28, strokeWidth: 13.5, strokeLinecap: 'round',
-                      strokeDasharray: arcLen.toFixed(1) + ' ' + circ.toFixed(1), transform: 'rotate(-90 60 60)' }),
+                      strokeDasharray: arcLen.toFixed(1) + ' ' + circ.toFixed(1), transform: 'rotate(-90 60 60)', className: 'al-arc-breathe' }),
                     clamped > 0 && h('circle', { cx: 60, cy: 60, r: rRing, fill: 'none', stroke: 'url(#a11y-score-arc)', strokeWidth: 8.5, strokeLinecap: 'round',
                       strokeDasharray: arcLen.toFixed(1) + ' ' + circ.toFixed(1), transform: 'rotate(-90 60 60)' }),
                     // Calibrated endpoint beacon
                     clamped > 0 && h('g', null,
-                      !isContrast && h('circle', { cx: tipX.toFixed(1), cy: tipY.toFixed(1), r: 6.5, fill: '#ffffff', opacity: 0.28 }),
+                      !isContrast && h('circle', { cx: tipX.toFixed(1), cy: tipY.toFixed(1), r: 8.2, fill: 'none', stroke: '#ccfbf1', strokeWidth: 1.2, opacity: 0.42, className: 'al-beacon-pulse' }),
+                      !isContrast && h('circle', { cx: tipX.toFixed(1), cy: tipY.toFixed(1), r: 6.5, fill: '#ffffff', opacity: 0.28, className: 'al-beacon-pulse' }),
                       h('circle', { cx: tipX.toFixed(1), cy: tipY.toFixed(1), r: 3.6, fill: isContrast ? '#fde047' : '#ffffff', stroke: isContrast ? '#000000' : 'rgba(15,23,42,0.35)', strokeWidth: 1.2 })
                     ),
                     h('text', { x: 60, y: 65, textAnchor: 'middle', fill: '#ffffff', fontSize: 28, fontWeight: 900 }, auditResult.score),
@@ -1592,23 +1621,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   h('stop', { offset: '100%', stopColor: isContrast ? '#fde047' : '#b45309' })
                 )
               ),
-              // Subtle connecting alignment rail behind pillars
-              h('line', { x1: 55, y1: 27, x2: 385, y2: 27, stroke: 'url(#a11y-pour-rail)', strokeWidth: 2, strokeDasharray: '4 3', opacity: isContrast ? 0.9 : 0.45 }),
+              // Subtle connecting alignment & tab-order flow rail behind pillars
+              !isContrast && h('line', { x1: 55, y1: 27, x2: 385, y2: 27, stroke: 'url(#a11y-pour-rail)', strokeWidth: 5.5, opacity: 0.16, strokeLinecap: 'round', className: 'al-arc-breathe' }),
+              h('line', { x1: 55, y1: 27, x2: 385, y2: 27, stroke: 'url(#a11y-pour-rail)', strokeWidth: 2, strokeDasharray: '6 4', opacity: isContrast ? 0.9 : 0.65, className: isContrast ? undefined : 'al-rail-flow' }),
               [
                 { x: 6, c: '#0f766e', c2: '#14b8a6', bg: '#f0fdfa', ltr: 'P', name: 'Perceivable', sub: 'Alt text · Contrast' },
                 { x: 116, c: '#1d4ed8', c2: '#3b82f6', bg: '#eff6ff', ltr: 'O', name: 'Operable', sub: 'Keyboard · Focus' },
                 { x: 226, c: '#7c3aed', c2: '#a78bfa', bg: '#f5f3ff', ltr: 'U', name: 'Understandable', sub: 'Labels · Language' },
                 { x: 336, c: '#b45309', c2: '#f59e0b', bg: '#fffbeb', ltr: 'R', name: 'Robust', sub: 'Name · Role · Value' }
-              ].map(function(pl) {
+              ].map(function(pl, plIdx) {
                 var strokeCol = isContrast ? '#fde047' : pl.c;
                 var cardFill = isContrast ? '#000000' : pl.bg;
+                var haloDelay = (plIdx * 0.45).toFixed(2) + 's';
                 return h('g', { key: pl.ltr },
                   !isContrast && h('rect', { x: pl.x + 1.5, y: 7.5, width: 98, height: 73, rx: 11, fill: pl.c, opacity: 0.1 }),
                   h('rect', { x: pl.x, y: 5, width: 98, height: 73, rx: 11, fill: cardFill, stroke: strokeCol, strokeWidth: 1.6 }),
                   // Top specular accent bar
                   h('rect', { x: pl.x + 12, y: 5.8, width: 74, height: 3, rx: 1.5, fill: isContrast ? '#fde047' : pl.c2, opacity: isContrast ? 0.95 : 0.72 }),
-                  // Dual-ring luminous emblem medallion
-                  !isContrast && h('circle', { cx: pl.x + 49, cy: 27, r: 14.5, fill: pl.c2, opacity: 0.18 }),
+                  // Dual-ring luminous landmark hierarchy halo & medallion
+                  !isContrast && h('circle', { cx: pl.x + 49, cy: 27, r: 16.2, fill: 'none', stroke: pl.c2, strokeWidth: 1.1, opacity: 0.3, className: 'al-halo-breathe', style: { animationDelay: haloDelay } }),
+                  !isContrast && h('circle', { cx: pl.x + 49, cy: 27, r: 14.5, fill: pl.c2, opacity: 0.18, className: 'al-halo-breathe', style: { animationDelay: haloDelay } }),
                   h('circle', { cx: pl.x + 49, cy: 27, r: 11.5, fill: isContrast ? '#fde047' : pl.c, stroke: isContrast ? '#ffffff' : '#ffffff', strokeWidth: 1.4 }),
                   h('text', { x: pl.x + 49, y: 31.2, textAnchor: 'middle', fill: isContrast ? '#000000' : '#ffffff', fontSize: 12.5, fontWeight: 900 }, pl.ltr),
                   h('text', { x: pl.x + 49, y: 53, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#0f172a', fontSize: 10.5, fontWeight: 800 }, pl.name),
@@ -1691,6 +1723,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   h('linearGradient', { id: 'a11y-cc-aaa', x1: '0', y1: '0', x2: '0', y2: '1' },
                     h('stop', { offset: '0%', stopColor: isContrast ? '#ffffff' : '#14b8a6' }),
                     h('stop', { offset: '100%', stopColor: isContrast ? '#e2e8f0' : '#0f766e' })
+                  ),
+                  h('linearGradient', { id: 'a11y-cc-sheen', x1: '0', y1: '0', x2: '1', y2: '0' },
+                    h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
+                    h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.58 }),
+                    h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+                  ),
+                  h('clipPath', { id: 'a11y-cc-bar-clip' },
+                    h('rect', { x: 18, y: 18, width: 324, height: 12, rx: 4 })
                   )
                 ),
                 // Recessed optical instrument housing
@@ -1702,14 +1742,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                 h('rect', { x: xOf(3), y: 18, width: xOf(4.5) - xOf(3), height: 12, fill: 'url(#a11y-cc-lg)' }),
                 h('rect', { x: xOf(4.5), y: 18, width: xOf(7) - xOf(4.5), height: 12, fill: 'url(#a11y-cc-aa)' }),
                 h('rect', { x: xOf(7), y: 18, width: 342 - xOf(7), height: 12, rx: 4, fill: 'url(#a11y-cc-aaa)' }),
-                // Top glass specular sheen across the optical bar
-                !isContrast && h('rect', { x: 20, y: 19, width: 320, height: 3.5, rx: 1.75, fill: '#ffffff', opacity: 0.28 }),
+                // Top glass specular sheen + animated AA/AAA compliance gauge sweep
+                !isContrast && h('g', { clipPath: 'url(#a11y-cc-bar-clip)' },
+                  h('rect', { x: 20, y: 19, width: 320, height: 3.5, rx: 1.75, fill: '#ffffff', opacity: 0.28 }),
+                  h('rect', { x: 18, y: 18, width: 72, height: 12, fill: 'url(#a11y-cc-sheen)', className: 'al-sheen-sweep' })
+                ),
                 // Minor logarithmic calibration ticks
                 [2, 10, 15].map(function (mr) {
                   var mx = xOf(mr);
                   return h('line', { key: 'm' + mr, x1: mx.toFixed(1), y1: 30, x2: mx.toFixed(1), y2: 34, stroke: isContrast ? '#fde047' : '#64748b', strokeWidth: 0.9, opacity: 0.7 });
                 }),
-                // Major threshold ticks + WCAG AA / AAA laser markers
+                // Major threshold ticks + WCAG AA / AAA laser markers & tracking beacons
                 [
                   { r: 1, lbl: '1:1', laser: false },
                   { r: 3, lbl: '3:1', laser: false },
@@ -1718,20 +1761,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   { r: 21, lbl: '21:1', laser: false }
                 ].map(function(tk) {
                   var tx = xOf(tk.r);
+                  var met = tk.laser && ratio >= tk.r;
                   return h('g', { key: tk.lbl },
-                    tk.laser && !isContrast && h('line', { x1: tx.toFixed(1), y1: 12, x2: tx.toFixed(1), y2: 36, stroke: tk.col, strokeOpacity: 0.24, strokeWidth: 5, strokeLinecap: 'round' }),
+                    tk.laser && !isContrast && h('line', { x1: tx.toFixed(1), y1: 12, x2: tx.toFixed(1), y2: 36, stroke: tk.col, strokeOpacity: met ? 0.34 : 0.2, strokeWidth: 5, strokeLinecap: 'round', className: met ? 'al-arc-breathe' : undefined }),
                     h('line', { x1: tx.toFixed(1), y1: tk.laser ? 13 : 16, x2: tx.toFixed(1), y2: 37, stroke: tk.laser ? tk.col : (isContrast ? '#fde047' : '#334155'), strokeWidth: tk.laser ? 1.8 : 1.1 }),
+                    tk.laser && !isContrast && h('circle', { cx: tx.toFixed(1), cy: 13, r: met ? 5.2 : 3.8, fill: tk.col, opacity: met ? 0.34 : 0.16, className: 'al-beacon-pulse' }),
                     tk.laser && h('circle', { cx: tx.toFixed(1), cy: 13, r: 2.2, fill: tk.col }),
                     h('text', { x: tx.toFixed(1), y: 50, textAnchor: tk.r === 1 ? 'start' : tk.r === 21 ? 'end' : 'middle', fontSize: 9, fontWeight: tk.laser ? 800 : 700, fill: tk.laser ? tk.col : (isContrast ? '#ffffff' : '#334155') }, tk.lbl)
                   );
                 }),
-                // Live optical inspection reticle pointer
+                // Live optical inspection reticle pointer with subtle scanner bloom
                 (function () {
                   var zoneCol = isContrast ? '#fde047' : (ratio >= 7 ? '#0f766e' : ratio >= 4.5 ? '#047857' : ratio >= 3 ? '#b45309' : '#dc2626');
                   return h('g', null,
-                    !isContrast && h('line', { x1: curX.toFixed(1), y1: 11, x2: curX.toFixed(1), y2: 35, stroke: zoneCol, strokeOpacity: 0.3, strokeWidth: 6, strokeLinecap: 'round' }),
+                    !isContrast && h('line', { x1: curX.toFixed(1), y1: 11, x2: curX.toFixed(1), y2: 35, stroke: zoneCol, strokeOpacity: 0.3, strokeWidth: 6, strokeLinecap: 'round', className: 'al-arc-breathe' }),
                     h('line', { x1: curX.toFixed(1), y1: 12, x2: curX.toFixed(1), y2: 35, stroke: isContrast ? '#ffffff' : '#0f172a', strokeWidth: 2 }),
                     h('polygon', { points: curX.toFixed(1) + ',16 ' + (curX - 6).toFixed(1) + ',7 ' + (curX + 6).toFixed(1) + ',7', fill: isContrast ? '#fde047' : '#0f172a', stroke: isContrast ? '#000000' : '#ffffff', strokeWidth: 1 }),
+                    !isContrast && h('circle', { cx: curX.toFixed(1), cy: 24, r: 7.4, fill: zoneCol, opacity: 0.24, className: 'al-beacon-pulse' }),
                     h('circle', { cx: curX.toFixed(1), cy: 24, r: 4.2, fill: '#ffffff', stroke: zoneCol, strokeWidth: 2 })
                   );
                 })()

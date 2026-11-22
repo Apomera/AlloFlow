@@ -136,7 +136,7 @@ function AiBackendSettingsView(props) {
                                 localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...current, wolframAppId: e.target.value }));
                             } catch (_) {}
                         }}
-                        className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-1 text-sm font-medium text-slate-700"
+                        className="w-full min-h-11 p-2.5 border-2 border-slate-300 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-1 text-sm font-medium text-slate-800"
                     />
                     <p className="text-xs text-slate-600 mt-1">{t('canvas_settings.wolfram_unused_note') || 'No tool uses this yet. It is kept on this device only; clear the box to remove it.'}</p>
                 </div>) : null}
@@ -161,13 +161,13 @@ function AiBackendSettingsView(props) {
                     probe moved to Platform Diagnostics with an honest label, and
                     Ctrl+Alt+Shift+D still reaches it. */}
                 <div className="border-t border-slate-100 pt-4">
-                    <h3 className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.device_storage_label') || 'Device Storage'}</h3>
-                    <p className="text-xs text-slate-600 mb-2">{t('canvas_settings.device_storage_hint2') || 'Open your saved resource packs to restore, pin, export, or erase them. Everything is kept on this device only, nothing goes to a server.'}</p>
+                    <h3 className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">{t('canvas_settings.device_storage_label') || 'Device Storage'}</h3>
+                    <p className="text-xs text-slate-700 mb-2">{t('canvas_settings.device_storage_hint2') || 'Open your saved resource packs to restore, pin, export, or erase them. Everything is kept on this device only, nothing goes to a server.'}</p>
                     <button type="button"
                         onClick={openCanvasRecoveryManager}
                         className="min-h-11 bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors motion-reduce:transition-none motion-reduce:transform-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-1"
                     >
-                        🗂️ {t('canvas_settings.device_storage_btn2') || 'Open saved work'}
+                        <span aria-hidden="true">🗂️ </span>{t('canvas_settings.device_storage_btn2') || 'Open saved work'}
                     </button>
                 </div>
                 {/* Diagnostics & logs (2026-07-20): always-available entry into the
@@ -175,8 +175,8 @@ function AiBackendSettingsView(props) {
                     captured, but a stuck read-aloud rarely throws. Opens straight
                     to the read-aloud/TTS trace tab when no errors are buffered. */}
                 <div className="border-t border-slate-100 pt-4">
-                    <h3 className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t('canvas_settings.diagnostics_label') || 'Diagnostics & Logs'}</h3>
-                    <p className="text-xs text-slate-600 mb-2">{t('canvas_settings.diagnostics_hint') || 'View captured errors and the read-aloud (text-to-speech) activity trace — useful when audio stalls without a visible error.'}</p>
+                    <h3 className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">{t('canvas_settings.diagnostics_label') || 'Diagnostics & Logs'}</h3>
+                    <p className="text-xs text-slate-700 mb-2">{t('canvas_settings.diagnostics_hint') || 'View captured errors and the read-aloud (text-to-speech) activity trace — useful when audio stalls without a visible error.'}</p>
                     <button type="button"
                         onClick={() => {
                             if (typeof window.__alloOpenDiagnosticsLog !== 'function') return;
@@ -186,7 +186,7 @@ function AiBackendSettingsView(props) {
                         }}
                         className="min-h-11 bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors motion-reduce:transition-none motion-reduce:transform-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-1"
                     >
-                        🩺 {t('canvas_settings.diagnostics_btn') || 'Open error & read-aloud log'}
+                        <span aria-hidden="true">🩺 </span>{t('canvas_settings.diagnostics_btn') || 'Open error & read-aloud log'}
                     </button>
                 </div>
                 <div className="flex justify-end pt-2">
@@ -206,6 +206,7 @@ function AiBackendSettingsView(props) {
 // Extracted from AlloFlowANTI.txt (lms-audit-banner).
 function LmsAuditBannerView(props) {
   const { addToast, isPdfDocumentIntakeCurrent, lmsAuditFetchControllerRef, lmsAuditUrls, setGenerationStep, setIsExtracting, setLmsAuditUrls, setPdfAuditResult, setPendingPdfBase64, setPendingPdfFile, startNewPdfAudit, t } = props;
+  const [fetchingUrl, setFetchingUrl] = React.useState('');
   React.useEffect(() => () => {
     try { lmsAuditFetchControllerRef?.current?.abort(); } catch (_) {}
     try { if (typeof startNewPdfAudit === 'function') startNewPdfAudit(); } catch (_) {}
@@ -213,14 +214,15 @@ function LmsAuditBannerView(props) {
   const handleDismiss = () => {
     try { lmsAuditFetchControllerRef?.current?.abort(); } catch (_) {}
     try { if (typeof startNewPdfAudit === 'function') startNewPdfAudit(); } catch (_) {}
+    setFetchingUrl('');
     if (typeof setIsExtracting === 'function') setIsExtracting(false);
     if (typeof setGenerationStep === 'function') setGenerationStep('');
     setLmsAuditUrls([]);
   };
   return (
-<div className="bg-gradient-to-r from-green-700 to-emerald-700 text-white px-4 py-3 z-[500]">
+<div role="region" aria-label={t('lms.audit_banner_aria') || 'LMS document queue'} className="bg-gradient-to-r from-green-700 to-emerald-700 text-white px-4 py-3 z-[500]">
           <div className="flex items-center justify-between gap-2 mb-2">
-            <span className="font-bold text-sm">♿ {t(lmsAuditUrls.length === 1 ? 'lms.queued_one' : 'lms.queued_other', { count: lmsAuditUrls.length }) || `${lmsAuditUrls.length} document${lmsAuditUrls.length !== 1 ? 's' : ''} queued from LMS`}</span>
+            <span className="font-bold text-sm"><span aria-hidden="true">♿ </span>{t(lmsAuditUrls.length === 1 ? 'lms.queued_one' : 'lms.queued_other', { count: lmsAuditUrls.length }) || `${lmsAuditUrls.length} document${lmsAuditUrls.length !== 1 ? 's' : ''} queued from LMS`}</span>
             <button type="button" onClick={handleDismiss} className="min-h-11 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-md text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-emerald-800">{t('lms.dismiss_button') || 'Dismiss'}</button>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -237,13 +239,15 @@ function LmsAuditBannerView(props) {
                 const rawName = String(url || '').split('/').pop().split('?')[0];
                 name = rawName || name;
               }
+              const isFetchingThis = fetchingUrl === url;
               return (
-                <button type="button" key={i} onClick={async () => {
+                <button type="button" key={i} disabled={Boolean(fetchingUrl)} aria-busy={isFetchingThis ? 'true' : undefined} onClick={async () => {
                   const check = _validateSafeLmsUrl(url);
                   if (!check.ok) {
                     addToast(t('lms.blocked_url', { reason: check.reason }) || `Blocked unsafe LMS document link: ${check.reason}`, 'error');
                     return;
                   }
+                  setFetchingUrl(url);
                   const documentIntakeEpoch = startNewPdfAudit();
                   const fetchController = typeof AbortController !== 'undefined' ? new AbortController() : null;
                   lmsAuditFetchControllerRef.current = fetchController;
@@ -349,9 +353,10 @@ function LmsAuditBannerView(props) {
                     addToast(t('lms.fetch_failed', { name, error: reason }) || `Failed to fetch ${name}: ${reason}. The file may require LMS authentication.`, 'error');
                   } finally {
                     clearTimeout(fetchTimeout);
+                    setFetchingUrl((prev) => (prev === url ? '' : prev));
                     if (lmsAuditFetchControllerRef.current === fetchController) lmsAuditFetchControllerRef.current = null;
                   }
-                }} className="min-h-11 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-emerald-800 flex items-center gap-1.5">
+                }} className="min-h-11 bg-white/20 hover:bg-white/30 disabled:opacity-60 disabled:cursor-wait px-3 py-2 rounded-lg text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-emerald-800 flex items-center gap-1.5">
                   <span className="bg-white/20 px-1 py-0.5 rounded text-xs font-bold">{name.split('.').pop()?.toUpperCase() || 'FILE'}</span>
                   <span className="max-w-[200px] truncate">{name}</span>
                   {hostLabel && <span className="text-emerald-100 text-[11px] font-normal max-w-[140px] truncate">({hostLabel})</span>}
@@ -460,21 +465,21 @@ function ReadThisPagePanelView(props) {
                               className="min-h-11 px-2.5 py-2 rounded-lg text-white text-xs font-bold transition-colors motion-reduce:transition-none hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900"
                               style={{ background: rtpPlaybackState === 'reading' ? '#15803d' : '#7c3aed' }}
                               aria-pressed={rtpPlaybackState === 'reading'}
-                          >{'\u25B6'} {t('read_this_page.read_all_button') || 'Read All'}</button>
+                          ><span aria-hidden="true">{'\u25B6'} </span>{t('read_this_page.read_all_button') || 'Read All'}</button>
                           <button type="button" id="rtp-read-selection-btn" data-rtp-read-selection="true" onClick={handleReadSelection}
                               className="min-h-11 px-2.5 py-2 rounded-lg text-white text-xs font-bold transition-colors motion-reduce:transition-none hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900"
                               style={{ background: readingSelection ? '#15803d' : '#0369a1' }}
                               aria-pressed={readingSelection}
                               title={t('read_this_page.read_selection_title') || 'Read highlighted text aloud on any view (no AI needed)'}
-                          >{'\u{1F50A}'} {t('read_this_page.read_selection_button') || 'Selection'}</button>
+                          ><span aria-hidden="true">{'\u{1F50A}'} </span>{t('read_this_page.read_selection_button') || 'Selection'}</button>
                           <button type="button" onClick={handleStop}
                               className="min-h-11 px-2.5 py-2 rounded-lg text-white text-xs font-bold hover:bg-red-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900"
                               style={{ background: '#b91c1c' }}
-                          >{'\u23F9'} {t('read_this_page.stop_button') || 'Stop'}</button>
+                          ><span aria-hidden="true">{'\u23F9'} </span>{t('read_this_page.stop_button') || 'Stop'}</button>
                           <button type="button" onClick={closeReadThisPage}
                               aria-label={(t('common.close') || 'Close') + ': ' + (t('read_this_page.title') || 'Read This Page')}
                               className="min-w-11 min-h-11 inline-flex items-center justify-center ms-1 px-2 py-2 rounded-lg text-slate-200 hover:text-white hover:bg-slate-700 transition-colors motion-reduce:transition-none text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900"
-                          >{'\u2715'}</button>
+                          ><span aria-hidden="true">{'\u2715'}</span></button>
                       </div>
                   </div>
                   {selectionNote && (
@@ -482,6 +487,25 @@ function ReadThisPagePanelView(props) {
                           {selectionNote}
                       </div>
                   )}
+                  {items.length > 0 && Number.isInteger(rtpCurrentIndex) && rtpCurrentIndex >= 0 && rtpCurrentIndex < items.length && (() => {
+                      const pct = Math.round(((rtpCurrentIndex + 1) / items.length) * 100);
+                      return (
+                          <div className="px-3 py-1.5 border-b" style={{ borderColor: theme === 'contrast' ? '#fbbf24' : '#334155' }}>
+                              <div
+                                  role="progressbar"
+                                  aria-label={t('read_this_page.progress_aria') || 'Reading progress'}
+                                  aria-valuemin={1}
+                                  aria-valuemax={items.length}
+                                  aria-valuenow={rtpCurrentIndex + 1}
+                                  aria-valuetext={`Item ${rtpCurrentIndex + 1} of ${items.length} (${pct}%)`}
+                                  className="w-full h-1.5 rounded-full overflow-hidden"
+                                  style={{ background: theme === 'contrast' ? '#333' : '#1e293b' }}
+                              >
+                                  <div className="h-full rounded-full" style={{ width: `${pct}%`, background: theme === 'contrast' ? '#fbbf24' : '#a855f7' }} />
+                              </div>
+                          </div>
+                      );
+                  })()}
                   {/* Focus Narration Toggle */}
                   {/* This feature is for users WITHOUT a real screen reader (struggling
                       readers, ELL students, low-vision users using a magnifier). If a
@@ -492,7 +516,7 @@ function ReadThisPagePanelView(props) {
                   <div className="flex items-center gap-3 px-3 py-2 border-b" style={{ borderColor: theme === 'contrast' ? '#fbbf24' : '#334155' }}>
                       <label className="flex items-center gap-2 cursor-pointer select-none flex-1 min-h-11">
                           <input type="checkbox" checked={focusNarrationEnabled} onChange={(e) => setFocusNarrationEnabled(e.target.checked)}
-                              className="w-4 h-4 rounded accent-purple-500"
+                              className="w-4 h-4 rounded accent-purple-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
                               aria-describedby={focusNarrationEnabled ? 'focus-narration-sr-warning' : undefined}
                           />
                           <span className="text-xs font-bold">{t('read_this_page.focus_narration_label') || 'Keyboard Focus Narration'}</span>
@@ -508,17 +532,19 @@ function ReadThisPagePanelView(props) {
                   <div className="flex-1 overflow-y-auto p-2 space-y-1" style={{ maxHeight: 'calc(100vh - 12rem)' }}>
                       {items.map((item, idx) => {
                           const itemText = String(item?.text || '');
+                          const isActive = rtpCurrentIndex === idx;
                           return (
                           <div key={idx} data-rtp-idx={idx}
                               onClick={() => handleItemClick(idx)}
-                              className="px-3 py-2 rounded-lg cursor-pointer transition-colors motion-reduce:transition-none hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
-                              style={{ color: theme === 'contrast' ? '#fbbf24' : (typeColors[item.type] || '#cbd5e1'), lineHeight: 1.5, background: rtpCurrentIndex === idx ? (theme === 'contrast' ? '#333300' : '#7c3aed33') : 'none' }}
+                              className="min-h-11 flex items-start justify-between gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors motion-reduce:transition-none hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+                              style={{ color: theme === 'contrast' ? '#fbbf24' : (typeColors[item.type] || '#cbd5e1'), lineHeight: 1.5, background: isActive ? (theme === 'contrast' ? '#333300' : '#7c3aed33') : 'none' }}
                               role="button" tabIndex={0}
+                              aria-current={isActive ? 'step' : undefined}
                               aria-label={t('read_this_page.item_aria', { text: itemText }) || `Click to hear: ${itemText}`}
                               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleItemClick(idx); } }}
                           >
-                              <span className="me-1" aria-hidden="true">{typeIcons[item.type] || '\u{1F50A}'}</span>
-                              {itemText}
+                              <span><span className="me-1" aria-hidden="true">{typeIcons[item.type] || '\u{1F50A}'}</span>{itemText}</span>
+                              {isActive && <span data-rtp-active-badge="true" className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider border" style={{ borderColor: theme === 'contrast' ? '#fbbf24' : '#c084fc', color: theme === 'contrast' ? '#fbbf24' : '#f3e8ff' }}>{t('read_this_page.reading_now') || 'Reading'}</span>}
                           </div>
                           );
                       })}

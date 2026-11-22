@@ -1,6 +1,6 @@
 # Praxis PLT K–6 (5622) QA report
 
-Generated: 2026-11-21T04:37:38.266Z
+Generated: 2026-11-21T15:38:26.597Z
 
 ## Result
 
@@ -14,4 +14,4 @@ Generated: 2026-11-21T04:37:38.266Z
 
 > This is not ETS or CCSSO approval, independent practicing K–6 educator validation, field testing, psychometric calibration, a scaled-score model, official constructed-response scoring, legal advice, a mandated-reporting or disability determination, a licensure decision, or an emergency directive.
 
-- Independent-batch audit: 200 original source questions plus 0 assistant-authored independent practice questions produce 100 distinct independent content kernels. 300 additional activities remain guided review only. 400 new independent questions remain to reach 500.
+- Independent-batch audit: 200 original source questions plus 0 assistant-authored independent practice questions produce 143 distinct independent content kernels. 300 additional activities remain guided review only. 357 new independent questions remain to reach 500.

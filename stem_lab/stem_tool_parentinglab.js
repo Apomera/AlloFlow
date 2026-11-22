@@ -1306,7 +1306,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('parentingLab')
             // shared slice (_alloCitations) rather than inside either tool's
             // own state, so neither tool owns the other's data.
             (function() {
-              var cites = (labToolData && labToolData._alloCitations) || [];
+              var cites = (labToolData && Array.isArray(labToolData._alloCitations)) ? labToolData._alloCitations.filter(function(c) { return c && typeof c === 'object'; }) : [];
               if (!cites.length) return null;
               return h('div', { className: 'rounded-xl p-3 mb-3', style: { background: pal.panel, border: '1px solid ' + pal.border } },
                 h('div', { className: 'text-xs font-black mb-1', style: { color: pal.text, background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },

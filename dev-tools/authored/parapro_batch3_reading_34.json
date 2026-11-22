@@ -16,9 +16,9 @@
     "rationale": "The passage connects instruction in mending and organized materials with repaired costumes and fewer purchases, so the first choice captures the central idea without adding unsupported claims.",
     "choiceRationales": [
       "This choice includes the department's new approach and both important results described in the passage.",
-      "Spring is mentioned only as the former disposal period; no production schedule is provided.",
+      "Spring appears in the passage solely as the time when damaged costumes used to be discarded; no schedule for the department's largest production is ever mentioned.",
       "The passage describes instruction and organized scraps, so claiming one action was the only cause is too strong.",
-      "Students repaired missing buttons; the passage never suggests eliminating costumes that have buttons."
+      "Volunteers taught students how to sew missing buttons back onto damaged garments rather than suggesting that the department stop using buttoned costumes."
     ],
     "skillIds": [
       "reading-main-evidence"
@@ -47,17 +47,17 @@
     "prompt": "Read the passage. When Imani's first paper bridge sagged during testing, she marked the two places where its sides bent. Before a second test, she added triangular braces at those exact points. The revised bridge supported twice as many books. Which detail best supports the conclusion that Imani used test results to improve her design?",
     "choices": [
       "The bridge was made from paper rather than from wood.",
-      "She placed braces at the same locations where the first bridge had bent.",
+      "She placed reinforcements at the spots where the initial bridge buckled.",
       "The books used during the second test all came from a nearby classroom shelf.",
       "She completed both tests before the end of the school day."
     ],
     "answerIndex": 1,
     "rationale": "The matching locations link Imani's observation from the first test to a specific design change, directly supporting the conclusion that test evidence guided her revision.",
     "choiceRationales": [
-      "The material identifies what she built but does not show how she responded to the test results.",
+      "Naming paper as the construction material identifies what Imani built, yet it offers no evidence explaining how testing guided her structural adjustments.",
       "This detail connects the observed failure points to the locations of Imani's corrective changes.",
-      "The books' storage location does not explain why Imani changed the bridge's structure.",
-      "The completion time provides no connection between evidence from testing and the revision."
+      "Knowing where the weighted books were stored describes a minor classroom detail rather than connecting observed trial failures to any change in the bridge.",
+      "Finishing both trials within a single school day tells only when the work occurred and never links diagnostic test observations to the later redesign."
     ],
     "skillIds": [
       "reading-main-evidence"
@@ -87,16 +87,16 @@
     "choices": [
       "Amir has permanently lost interest in playing soccer.",
       "The ecology mentor had asked Amir to repair the broken greenhouse clock outside.",
-      "Amir plans to participate in a scheduled observation activity during lunch.",
+      "Amir plans to join a scheduled nature observation instead of midday soccer.",
       "Amir intends to lend his field equipment to the soccer team."
     ],
     "answerIndex": 2,
     "rationale": "Amir's field tools, notebook, meeting place, and attention to the mentor's arrival collectively support a scheduled observation activity; the other conclusions require facts not given.",
     "choiceRationales": [
-      "Missing one usual soccer period does not show that Amir has permanently abandoned the activity.",
-      "Checking the time indicates waiting, not a request to repair a clock inside the greenhouse.",
+      "Skipping his routine game on one Thursday suggests a single schedule change rather than evidence that Amir has permanently given up playing soccer.",
+      "Glancing at the clock twice shows Amir tracking an expected arrival time, not responding to a request to fix damaged greenhouse equipment.",
       "The materials and planned meeting with an ecology mentor provide converging evidence for an observation activity.",
-      "Nothing connects the field equipment to the soccer team or suggests that Amir will lend it."
+      "Bringing maps and specimen supplies to the greenhouse points to an ecology meeting; nothing suggests Amir intends to share that gear with teammates."
     ],
     "skillIds": [
       "reading-inference-vocabulary"
@@ -132,9 +132,9 @@
     "answerIndex": 3,
     "rationale": "Penciling in dates, requesting feedback, and delaying room reservations show that the schedule was provisional rather than final, which establishes the contextual meaning of tentative.",
     "choiceRationales": [
-      "The sentence does not describe the schedule as confusing or containing too many steps.",
-      "Requesting feedback indicates that the plan is being shared rather than kept secret.",
-      "The lack of reservations and request for feedback show uncertainty, not guaranteed approval.",
+      "Describing penciled dates and requests for input points to flexibility rather than a schedule that is overly intricate or hard to follow.",
+      "Inviting group feedback demonstrates that the draft calendar is being circulated openly for review instead of being withheld from the public.",
+      "Holding off on room reservations while asking for comments signals that the proposed dates remain uncertain rather than guaranteed to pass.",
       "This meaning fits all three clues that the proposed dates may be revised before commitments are made."
     ],
     "skillIds": [
@@ -172,9 +172,9 @@
     "rationale": "The dated examples move from 1998 to a decade later and then to 2024, tracing how the school's announcement format changed over time in chronological sequence.",
     "choiceRationales": [
       "The dates and progression from tapes to files to a live podcast establish chronological organization.",
-      "The formats belong to different time periods rather than two programs operating at the same time.",
-      "No central problem is identified, and the formats are developments rather than competing solutions.",
-      "The passage supplies no popularity data and does not state that its order is a ranking."
+      "Cassette tapes, website files, and live podcasts represent sequential eras spanning decades rather than two programs running side by side today.",
+      "Each delivery format reflects technological evolution over the years; the passage never frames an obstacle or evaluates competing remedies for it.",
+      "No listener counts or preference ratings appear in the text, so the sequence of formats cannot be interpreted as a ranking by popularity."
     ],
     "skillIds": [
       "reading-structure-sources"
@@ -203,17 +203,17 @@
     "prompt": "Read the studio notice. Wet clay may look firm before it is ready to move. Leave all unlabeled pieces on the drying shelves, and ask the instructor before touching another student's work. Lifting a piece too soon can bend its base or leave fingerprints. What is the notice's primary purpose?",
     "choices": [
       "To advertise a sale of finished ceramic pieces",
-      "To warn students about damage and explain how to handle unfinished work safely",
+      "To warn students about damage and explain how to handle unfinished items safely",
       "To compare clay sculpture with other forms of art",
       "To entertain students in the studio with a story about a memorable pottery mistake"
     ],
     "answerIndex": 1,
     "rationale": "The notice identifies ways wet clay can be damaged and gives direct handling rules, so its purpose is to warn and instruct rather than advertise, compare, or entertain.",
     "choiceRationales": [
-      "Nothing is being sold, and the notice concerns unfinished rather than completed pieces.",
+      "No pricing or sale event is mentioned anywhere in the notice, which addresses drying ceramic pieces still in progress rather than finished goods.",
       "The cautions and imperative directions work together to prevent damage to students' clay work.",
-      "No other artistic medium is discussed, so comparison is not the organizing purpose.",
-      "The text gives practical rules and consequences, not characters or events arranged as a story."
+      "Because clay is the sole medium discussed in the studio guidelines, comparing it with painting or other visual art forms is absent from the text.",
+      "Practical studio rules and warnings about ruined bases lack characters, plot development, or narrative events meant to amuse the audience."
     ],
     "skillIds": [
       "reading-structure-sources"
@@ -243,16 +243,16 @@
     "choices": [
       "The community center needs a larger closet for all of its stored boxes.",
       "Residents prefer handwritten newsletters to every form of digital communication.",
-      "Students preserved fragile local records and made them easier for the public to use.",
+      "Students preserved aging local records and broadened public access to them.",
       "A history class wrote new newsletters describing the community center."
     ],
     "answerIndex": 2,
     "rationale": "The third choice includes both essential outcomes of the class project—preserving deteriorating records digitally and improving access—without introducing claims absent from the passage.",
     "choiceRationales": [
-      "Storage space is not the central issue, and scanning reduces the need to handle the boxes.",
-      "The passage reports access to digitized records but never compares residents' communication preferences.",
+      "Closet capacity is never raised as an issue, and digitizing the pages protects the deteriorating newsletters rather than expanding physical storage.",
+      "Reporting that residents can browse the archive online neither states nor implies that they favor handwritten papers over digital formats.",
       "This choice concisely represents the problem, the students' response, and the public benefit.",
-      "Students scanned and indexed existing newsletters; they did not create replacement newsletters."
+      "The class digitized, labeled, and archived historical neighborhood newsletters instead of authoring brand-new issues about the community center."
     ],
     "skillIds": [
       "reading-main-evidence"
@@ -283,14 +283,14 @@
       "The cafeteria manager expects every single visitor to the fair to speak three languages.",
       "The fair will serve only foods that contain common allergens.",
       "Servers have been asked to memorize every ingredient in every dish.",
-      "The manager is trying to make food and allergy information accessible to more visitors."
+      "The manager aims to make menu details and safety guidance easier for guests to access."
     ],
     "answerIndex": 3,
     "rationale": "Photographs, multilingual labels, a visible binder, and prepared servers are complementary access supports, making broader access to food and allergy information the best-supported inference.",
     "choiceRationales": [
-      "Multiple languages increase access; they do not imply that each individual speaks all three.",
-      "Providing allergy information does not establish that every offered food contains an allergen.",
-      "Servers practice directing visitors to the binder rather than memorizing all ingredient lists.",
+      "Providing labels in three languages expands readability across diverse families; it does not imply that any single guest is expected to speak all three.",
+      "Stationing an allergen reference at the door helps attendees check ingredients safely rather than indicating that every dish contains a common allergen.",
+      "Staff rehearsed guiding attendees toward the reference binder at the entrance, not committing every single dish's ingredient list to memory.",
       "Each preparation removes a different barrier to locating or understanding important food information."
     ],
     "skillIds": [
@@ -328,8 +328,8 @@
     "rationale": "The numerical clue that only six of sixty members attended defines sparse as limited or few in this context, while the other choices conflict with or exceed the sentence.",
     "choiceRationales": [
       "The small fraction of members who arrived directly supports the meaning limited or few.",
-      "The sentence describes the number of attendees, not the amount of time between arrivals.",
-      "No information about volume or behavior indicates that the rehearsal was noisy.",
+      "Saying only six of sixty choir members attended specifies a small headcount rather than describing regular intervals between arrival times.",
+      "No details about sound volume, chatter, or rehearsal behavior appear in the sentence to suggest that the sunrise gathering was loud.",
       "The word optional and the low attendance directly contradict the idea that everyone was required to attend."
     ],
     "skillIds": [
@@ -366,10 +366,10 @@
     "answerIndex": 1,
     "rationale": "Camera records of peregrines feeding chicks in a nest on the platform directly demonstrate successful nesting use; the other details concern visibility, construction, or unrelated birds.",
     "choiceRationales": [
-      "Being visible to walkers does not establish that peregrines occupied or nested on the platform.",
+      "Sightlines from a nearby trail confirm that people can spot the structure, yet visibility alone never demonstrates that falcons nested there.",
       "The recorded adults, chicks, feeding behavior, and exact location directly verify successful use.",
-      "Painting is a preparation detail and supplies no evidence about what happened after installation.",
-      "General migration through the region does not show that peregrines used this particular platform."
+      "Painting the box prior to placement documents routine preparation work and offers zero proof that any birds occupied the platform afterward.",
+      "Seasonal passage of assorted migratory species through the wider area does not verify that peregrine falcons settled on this specific structure."
     ],
     "skillIds": [
       "reading-main-evidence"
@@ -405,10 +405,10 @@
     "answerIndex": 2,
     "rationale": "The passage first identifies blocked communication as a problem, then presents relay stations as the response and explains the improved result, which forms a problem-solution structure.",
     "choiceRationales": [
-      "The passage contains no person's life history and is not organized around biographical milestones.",
-      "It does not develop two alternatives through corresponding similarities and differences.",
+      "No individual's life story or sequence of personal milestones is traced here; the passage focuses on resolving canyon radio dead zones.",
+      "Rather than weighing two competing communication systems point by point, the text introduces an operational barrier and the fix that resolved it.",
       "The communication obstacle is followed by an installed solution and evidence that the solution worked.",
-      "No explicit question is posed and answered; the opening statement instead describes a practical problem."
+      "The paragraph never poses a direct question for the reader to answer; instead, it opens by stating a concrete signal obstruction faced by staff."
     ],
     "skillIds": [
       "reading-structure-sources"
@@ -434,19 +434,19 @@
     "domainId": "reading",
     "contentFocus": "basic-skills-knowledge",
     "difficulty": "advanced",
-    "prompt": "Read the passage. The final activity bus leaves at 4:15 p.m., while tutoring ends at 4:30 p.m. The transportation office estimates that a later Tuesday route would cost $180 per month. Last month, twenty-eight students attended at least one tutoring session. Given those figures, a later Tuesday departure would be a wise investment. Which sentence is presented as an opinion rather than a verifiable fact?",
+    "prompt": "Read the passage. (1) The final activity bus leaves at 4:15 p.m., while tutoring ends at 4:30 p.m. (2) The transportation office estimates that a later Tuesday route would cost $180 per month. (3) Last month, twenty-eight students attended at least one tutoring session. (4) Given those figures, a later Tuesday departure would be a wise investment. Which sentence is presented as an opinion rather than a verifiable fact?",
     "choices": [
-      "The final activity bus leaves at 4:15 p.m., while tutoring ends at 4:30 p.m.",
-      "The transportation office estimates that a later Tuesday route would cost $180 per month.",
-      "Last month, twenty-eight students attended at least one tutoring session.",
-      "Given those figures, a later Tuesday departure would be a wise investment."
+      "Sentence 1, reporting the scheduled bus and tutoring times",
+      "Sentence 2, reporting the monthly cost estimate for a later Tuesday route",
+      "Sentence 3, reporting last month's student tutoring attendance",
+      "Sentence 4, judging the added afternoon service to be worthwhile"
     ],
     "answerIndex": 3,
     "rationale": "The schedule, cost estimate, and attendance count can be checked against records. Calling the departure a wise investment expresses a value judgment, so the final sentence is presented as opinion.",
     "choiceRationales": [
-      "Published bus and tutoring schedules can verify both stated times.",
-      "The transportation office's documented estimate can be checked even though the eventual cost could differ.",
-      "Attendance records can verify how many students participated during the stated period.",
+      "Official district calendars and published after-school schedules make both the 4:15 p.m. bus departure and 4:30 p.m. dismissal directly verifiable.",
+      "Although actual expenses may vary later, records from the transportation office can confirm whether staff produced the $180 monthly projection.",
+      "Sign-in sheets and monthly tutoring logs provide objective documentation to verify whether twenty-eight learners attended at least one session.",
       "The word wise evaluates the proposal's value rather than reporting a directly verifiable condition."
     ],
     "skillIds": [
@@ -475,7 +475,7 @@
     "difficulty": "developing",
     "prompt": "Read the passage. The local museum began offering a quiet hour before regular opening. During that hour, lights remain low, attendance is limited, and visitors receive maps marking calm spaces. Families who had previously avoided crowded exhibits now report visiting more often. Which statement best expresses the main idea?",
     "choices": [
-      "The museum's quiet hour reduced barriers for some families who had previously avoided crowded exhibits.",
+      "The museum's sensory-friendly early hour lowered barriers for families who once skipped busy exhibits.",
       "All of the museum’s visitors prefer low lighting and small groups at every hour of every single day of the week.",
       "Museum maps are useful only when they identify rooms without exhibits.",
       "The museum shortened its regular hours because families stopped attending."
@@ -484,8 +484,8 @@
     "rationale": "The passage centers on several quiet-hour adjustments and increased participation by families who had avoided crowded exhibits, making improved access the appropriately broad central idea.",
     "choiceRationales": [
       "This choice synthesizes the quiet-hour changes and the reported participation outcome without adding a diagnosis or universal claim.",
-      "The passage reports one option for particular families, not a universal preference among all visitors.",
-      "The maps identify calm spaces, but the passage never limits their usefulness to empty rooms.",
+      "Adding one specialized hour for interested families does not show that every museum guest favors dim lights and smaller crowds throughout the week.",
+      "Guide maps highlight calmer areas during the early session, yet the passage never claims those maps are helpful only when rooms hold no displays.",
       "A quiet hour was added before opening; no reduction in regular hours or general attendance is stated."
     ],
     "skillIds": [
@@ -522,9 +522,9 @@
     "answerIndex": 1,
     "rationale": "Documenting tracks and installing a camera are investigative actions aimed at collecting additional evidence, so the biologist is trying to determine what occurred rather than acting on certainty.",
     "choiceRationales": [
-      "Collecting multiple forms of evidence suggests that the cause is not yet known with certainty.",
+      "Photographing tracks, measuring prints, and setting up a camera indicate active inquiry rather than prior certainty about what damaged the shell.",
       "The photographs, measurements, and camera all serve the shared purpose of investigating the nest event.",
-      "No relocation plan is mentioned, and evidence from one nest would not justify moving every nest.",
+      "Monitoring a single disturbed site involves observation, not a plan to relocate every shorebird nest across the entire stretch of shoreline.",
       "A camera records activity; the passage gives no reason to believe it will block or deter every animal."
     ],
     "skillIds": [
@@ -555,16 +555,16 @@
     "choices": [
       "recorded without changing",
       "made impossible to count",
-      "reduced in number or severity",
+      "reduced in scale or severity",
       "moved to a different weekday"
     ],
     "answerIndex": 2,
     "rationale": "The contrast with did not eliminate and the decline from nineteen late arrivals to seven show that the problem became smaller, which establishes that mitigated means reduced.",
     "choiceRationales": [
-      "The numerical decrease shows a change in the problem, not merely an act of recording it.",
-      "The sentence supplies exact counts, so the arrivals clearly remained possible to count.",
+      "Dropping from nineteen weekly late arrivals down to seven demonstrates an actual reduction in the problem rather than passive record-keeping.",
+      "Exact weekly counts of nineteen and seven appear right in the sentence, proving that late arrivals remained straightforward to tally.",
       "This definition fits both the partial improvement signaled by the contrast and the lower count.",
-      "The weekly totals changed, but no information indicates that arrivals shifted to another day."
+      "Reporting smaller weekly totals reflects fewer late arrivals overall without suggesting that tardiness simply shifted to another day of the week."
     ],
     "skillIds": [
       "reading-inference-vocabulary"
@@ -631,7 +631,7 @@
     "difficulty": "developing",
     "prompt": "Read the excerpt. During the first mile of the trip, Lila gripped her ticket so tightly that its edges folded. When she spotted her aunt's red scarf beyond the station gate, her shoulders loosened and she carefully smoothed the ticket on her knee. Which detail most strongly supports the inference that Lila became less anxious?",
     "choices": [
-      "After seeing her aunt, Lila's shoulders loosened and she smoothed the crumpled ticket.",
+      "Upon seeing her aunt, Lila relaxed her posture and flattened the crumpled pass.",
       "Lila had traveled for at least one full mile before finally reaching the station gate outside.",
       "Her aunt wore a red scarf while waiting beyond the gate.",
       "The ticket's edges had folded while Lila held it."
@@ -671,7 +671,7 @@
     "prompt": "Read the paragraph. Families may borrow a violin, flute, or clarinet from the district instrument bank for one semester at no charge. Students enrolled in a school music course are eligible. Request forms are available from music teachers and must be returned by September 8. What is the author's primary purpose?",
     "choices": [
       "To argue that every student should learn the violin",
-      "To inform families about eligibility and procedures for borrowing an instrument",
+      "To inform households about eligibility and steps for borrowing music equipment",
       "To describe in detail how woodwind and string instruments are manufactured and sold",
       "To tell a story about a student's first music lesson"
     ],
@@ -680,8 +680,8 @@
     "choiceRationales": [
       "The paragraph presents three instruments and makes no claim that everyone should select one of them.",
       "This choice accounts for the eligibility rule, request process, deadline, and loan terms.",
-      "No materials, factory processes, or construction methods for instruments are described.",
-      "The text contains no character, sequence of events, or personal experience forming a narrative."
+      "Although violins, flutes, and clarinets are listed as loan options, the paragraph says nothing about crafting, assembling, or selling those items.",
+      "Supplying loan terms, eligibility criteria, and a return deadline conveys practical program rules rather than a narrative about a student's lesson."
     ],
     "skillIds": [
       "reading-structure-sources"
@@ -711,16 +711,16 @@
     "choices": [
       "Longtime residents agree about every change that occurred in the neighborhood.",
       "Digital maps are more accurate than all photographs and spoken memories.",
-      "Students combined interviews and historical materials to create a multilayered record of neighborhood change.",
+      "Learners combined interviews and historical materials to build a multilayered record of neighborhood change.",
       "The neighborhood replaced all of its shops with a single new museum devoted only to local transportation history."
     ],
     "answerIndex": 2,
     "rationale": "The passage emphasizes students integrating interviews, images, and mapped locations to represent multiple perspectives on change, which the third choice captures at the right level of generality.",
     "choiceRationales": [
-      "The exhibit preserves several perspectives, but the passage never says those perspectives agree completely.",
+      "Gathering multiple viewpoints lets visitors hear varied memories, yet the passage never implies that longtime residents agreed on every shift.",
       "The materials serve complementary purposes; the passage does not rank one type as universally more accurate.",
       "This choice synthesizes the students' method, source types, and historical purpose without adding information.",
-      "Shops and transportation are interview topics, not evidence that shops were replaced by a museum."
+      "Local shops and transit routes appear solely as interview subjects; nothing in the passage suggests stores were torn down for a transit museum."
     ],
     "skillIds": [
       "reading-main-evidence"
@@ -756,9 +756,9 @@
     "answerIndex": 3,
     "rationale": "Dev's clean hands, support of the covers and binding, and slow page turning are protective handling measures, strongly supporting the inference that the old ledger is fragile.",
     "choiceRationales": [
-      "Careful page handling supports preservation, not an intention to replace the original handwriting.",
-      "The date and document type do not establish the geographic scope of the records inside.",
-      "The passage describes one old ledger and does not state a universal rule for books after a date.",
+      "Washing hands, cradling the covers on foam, and turning leaves slowly reflect archival preservation rather than plans to transcribe the book.",
+      "Knowing the ledger dates to 1910 identifies its age and subject, not whether its attendance entries cover a single building or an entire state.",
+      "Describing how Dev handled one century-old ledger illustrates care for a delicate artifact rather than a blanket rule for all books printed since 1910.",
       "Every observed action reduces physical stress or contamination, which is consistent with handling a fragile object."
     ],
     "skillIds": [
@@ -798,7 +798,7 @@
       "This meaning directly explains why even experienced readers could not determine what to do.",
       "The sentence provides no information about the paper or other physical medium used for the directions.",
       "Experienced members were also confused, so the context does not indicate that they were the intended audience.",
-      "Difficulty understanding content says nothing about length, and memorability would not explain the confusion."
+      "Difficulty identifying required supplies or a first step points to murky wording rather than brevity or ease of memorization."
     ],
     "skillIds": [
       "reading-inference-vocabulary"
@@ -834,10 +834,10 @@
     "answerIndex": 1,
     "rationale": "The increases are 8 books for Class A, 5 for Class B, 12 for Class C, and 7 for Class D. Class C therefore had the greatest increase, and the other conclusions conflict with the displayed values.",
     "choiceRationales": [
-      "Class B increased from 24 to 29 books, an increase of 5 rather than 15.",
+      "Comparing Week 1 and Week 2 for Class B shows a gain from 24 to 29 books, an increase of 5 rather than the claimed jump of 15.",
       "Class C increased from 21 to 33 books, so its increase of 12 is the largest of the four.",
-      "Class A increased by 8 books; it did not collect fewer books during Week 2.",
-      "Every class collected more in Week 2, making the combined Week 2 total larger, not smaller."
+      "Class A moved upward from 18 books in Week 1 to 26 in Week 2, representing an 8-book gain rather than an 8-book decline.",
+      "Because all four classes raised their counts between Week 1 and Week 2, the combined total grew from 90 to 122 books instead of shrinking."
     ],
     "skillIds": [
       "reading-structure-sources"
@@ -863,20 +863,20 @@
     "domainId": "reading",
     "contentFocus": "basic-skills-knowledge",
     "difficulty": "developing",
-    "prompt": "Read the astronomy-night announcement. Friday's program begins at 8:00 p.m. in the east field. It includes a telescope demonstration and a star-map activity. The telescope demonstration will be the evening's most fascinating event. Portable restrooms will be available near the field. Which sentence is presented as an opinion rather than a verifiable fact?",
+    "prompt": "Read the astronomy-night announcement. (1) Friday's program begins at 8:00 p.m. in the east field. (2) It includes a telescope demonstration and a star-map activity. (3) The telescope demonstration will be the evening's most fascinating event. (4) Portable restrooms will be available near the field. Which sentence is presented as an opinion rather than a verifiable fact?",
     "choices": [
-      "Friday's program begins at 8:00 p.m. in the east field.",
-      "It includes a telescope demonstration and a guided star-map activity for families.",
-      "The telescope demonstration will be the evening's most fascinating event.",
-      "Portable restrooms will be available near the field."
+      "Sentence 1, giving the 8:00 p.m. start time and east field location",
+      "Sentence 2, listing the telescope demonstration alongside the star-map activity",
+      "Sentence 3, praising the stargazing demo as the standout part of the outing",
+      "Sentence 4, noting that portable restrooms will be placed near the field"
     ],
     "answerIndex": 2,
     "rationale": "The schedule, activities, and available facilities can be verified. Describing one event as the most fascinating expresses a judgment about interest, so the third sentence is opinion.",
     "choiceRationales": [
-      "The announced starting time and location can be checked against the program schedule.",
-      "The program listing can verify whether both named activities are included.",
+      "Event flyers and school calendars allow anyone to confirm whether the astronomy gathering is scheduled to start at 8:00 p.m. in the east field.",
+      "Checking the official activity itinerary can directly verify whether organizers planned both the telescope demonstration and the star-map station.",
       "Most fascinating is a subjective evaluation that different attendees could reasonably judge differently.",
-      "The facilities plan can verify whether portable restrooms will be available at the stated location."
+      "Site logistics and campus event plans can objectively confirm whether portable restrooms have been arranged near the field for attendees."
     ],
     "skillIds": [
       "reading-structure-sources"
@@ -907,14 +907,14 @@
       "Tell the student that opening sentences are never important to a passage and should therefore always be crossed out before reading begins.",
       "Provide the correct main idea before the student rereads so the student can copy it.",
       "Ask the student to count the words in each sentence and select the longest sentence.",
-      "Have the student group recurring ideas across paragraphs, propose a statement that covers them, and cite details that support it."
+      "Have the student group recurring ideas across sections, propose a statement that covers them, and cite details that support it."
     ],
     "answerIndex": 3,
     "rationale": "Grouping recurring ideas, proposing a central statement, and testing it against evidence directly develops main-idea reasoning while leaving the analysis and decision with the student.",
     "choiceRationales": [
       "Opening sentences sometimes are important, so an absolute rejection would replace one faulty rule with another.",
       "Supplying an answer removes the reasoning opportunity and provides little evidence that the student can transfer the skill.",
-      "Sentence length is a surface feature that does not determine which idea controls an entire passage.",
+      "Counting words focuses purely on surface sentence length, which gives no reliable clue about which statement unifies the whole passage's meaning.",
       "This scaffold directs attention to coverage and evidence, then requires the student to construct and defend the main idea."
     ],
     "skillIds": [
@@ -944,7 +944,7 @@
     "difficulty": "advanced",
     "prompt": "After reading a story, a student says, \"The character will leave the team because I just know it,\" but cannot identify a textual clue. What is the most appropriate next step for the paraprofessional?",
     "choices": [
-      "Ask the student to record a specific clue, explain how it connects to the prediction, and revise the prediction if the evidence does not support it.",
+      "Ask the student to record a specific detail, explain how it connects to the prediction, and revise the prediction if the evidence does not support it.",
       "Accept the prediction because any possible ending is an equally valid inference.",
       "Reveal the story's ending and ask the student to copy the final event into a notebook.",
       "Shift immediately to an unrelated spelling exercise so that the unsupported prediction never has to be discussed with the student at all during the lesson."
@@ -953,9 +953,9 @@
     "rationale": "An evidence-and-reasoning prompt makes the inference process observable and invites revision based on the text, teaching the student to distinguish a supported inference from a guess.",
     "choiceRationales": [
       "This response explicitly links a conclusion to evidence while preserving the student's responsibility to evaluate it.",
-      "Possibility alone is insufficient; an inference should be traceable to relevant textual clues.",
-      "Giving away the ending replaces inferential reasoning with copying and changes the task being assessed.",
-      "Avoiding the misconception forfeits an immediate opportunity to teach evidence-based reasoning."
+      "Treating every imaginable plot twist as equally sound ignores that valid inferences must rest on identifiable evidence grounded in the story.",
+      "Disclosing how the story concludes replaces inferential thinking with transcription and undermines the comprehension goal of the lesson.",
+      "Pivoting abruptly to an unrelated spelling drill leaves the unfounded guess unexamined and misses a clear chance to coach evidence-based reading."
     ],
     "skillIds": [
       "reading-classroom-support"
@@ -985,7 +985,7 @@
     "prompt": "A student does not know the meaning of resilient in this sentence: \"The resilient beach grass was flattened by the storm, but by morning its flexible stems had risen upright again.\" Which prompt would best help the student determine the word's meaning from context?",
     "choices": [
       "What is the first letter of resilient, and which dictionary page contains words beginning with that letter?",
-      "What happened to the grass after it was flattened, and what meaning for resilient fits that contrast?",
+      "What happened to the plants after being pressed down, and what sense of resilient fits that contrast?",
       "Can you replace resilient with the longest word you know and keep reading without checking the sentence?",
       "How many times does the letter i appear in the sentence containing resilient?"
     ],
@@ -994,7 +994,7 @@
     "choiceRationales": [
       "Alphabetical location may help with later dictionary use but does not draw meaning from the supplied context.",
       "The grass's recovery and the contrast signal provide direct clues for a meaning such as able to recover.",
-      "Word length is unrelated to meaning, and skipping verification encourages guessing rather than contextual analysis.",
+      "Swapping in a long familiar word without rereading ignores contextual clues and trains blind guessing instead of word-meaning analysis.",
       "Counting letters attends to spelling features but does not connect the unfamiliar word with the surrounding idea."
     ],
     "skillIds": [
@@ -1026,16 +1026,16 @@
     "choices": [
       "Replace the assigned text with a completely unrelated book that contains much shorter and much simpler sentences.",
       "Read every page aloud while the student listens without following the print.",
-      "Offer a line guide, teach the student to move it after each line, and fade it as tracking becomes consistent.",
+      "Offer a tracking strip, teach the student to slide it down each row, and fade it as visual tracking steadies.",
       "Ask the student to memorize the page before attempting to read it from print."
     ],
     "answerIndex": 2,
     "rationale": "A line guide directly addresses visual tracking while preserving the assigned text and independent reading task; teaching its use and fading it also supports eventual independence.",
     "choiceRationales": [
       "Changing both the text and task may remove the grade-level goal without first addressing the observed access barrier.",
-      "Listening can support comprehension, but doing all the reading prevents practice with print tracking.",
+      "Listening while an adult reads every page can aid understanding, yet doing all the decoding denies the learner essential practice tracking print.",
       "This targeted, temporary support matches the observed need and includes a plan to reduce assistance.",
-      "Memorization does not teach tracking and imposes an unnecessary demand unrelated to the reading goal."
+      "Requiring the learner to memorize an entire page adds an unnecessary memory burden and fails to build visual tracking skills on printed text."
     ],
     "skillIds": [
       "reading-classroom-support"
@@ -1067,12 +1067,12 @@
       "Set a faster copying deadline so the student has less time to include details.",
       "Tell the student to summarize only the final sentence of the passage, regardless of what any of the earlier paragraphs explain.",
       "Delete half of the copied sentences for the student without discussing why they are unnecessary.",
-      "Have the student state each paragraph's gist, combine the essential ideas, and justify why specific examples can be omitted."
+      "Have the student state each paragraph's gist, merge the core ideas, and justify why specific illustrations can be omitted."
     ],
     "answerIndex": 3,
     "rationale": "Identifying paragraph gists and distinguishing essential ideas from illustrative examples teaches the decisions underlying summarization while keeping those decisions with the student.",
     "choiceRationales": [
-      "Increasing speed does not teach how to distinguish central ideas from minor or repeated information.",
+      "Imposing a tighter time limit rushes transcription without teaching how to separate central ideas from minor illustrations or repetition.",
       "A final sentence may not represent the whole text, so this fixed rule can produce incomplete summaries.",
       "Silent deletion may improve one product but does not reveal the reasoning the student needs to transfer.",
       "This process makes selection and compression explicit and asks the student to explain omissions using the text's structure."
@@ -1104,7 +1104,7 @@
     "difficulty": "advanced",
     "prompt": "A science article alternates between threats facing sea turtles and conservation responses to each threat. A student incorrectly arranges the information only by the dates mentioned in examples. Which support would best highlight the article's actual structure?",
     "choices": [
-      "Guide the student to place each threat beside its corresponding response in a problem-solution chart and cite signal language from the article.",
+      "Guide the student to place each hazard beside its corresponding remedy in a problem-solution chart and cite signal language from the article.",
       "Ask the student to copy every single date from the article into a much longer timeline and then ignore all of the surrounding explanatory sentences.",
       "Provide a list of sea turtle species and ask the student to alphabetize it.",
       "Tell the student the structure is chronological and praise the first organizer."
@@ -1113,8 +1113,8 @@
     "rationale": "Pairing each threat with its response represents the article's recurring problem-solution relationships, while citing signal language helps the student ground the structural analysis in text.",
     "choiceRationales": [
       "This organizer maps the passage's meaningful relationships and requires evidence for the selected structure.",
-      "Dates embedded in examples do not necessarily control organization, and isolating them reinforces the misconception.",
-      "Alphabetizing species neither represents threats and responses nor addresses text-structure understanding.",
+      "Incidental dates embedded within supporting examples do not govern the article's overall layout, so building a larger timeline reinforces the error.",
+      "Sorting turtle species into alphabetical order neither captures the text's hazard-and-response pattern nor builds awareness of passage structure.",
       "Confirming an inaccurate label prevents the student from revising the organizer in response to textual evidence."
     ],
     "skillIds": [
@@ -1152,10 +1152,10 @@
     "answerIndex": 1,
     "rationale": "Identifying the prefix, root, and suffix, blending the parts into the whole word, and rereading in context provide a reproducible decoding process and a meaning check rather than encouraging first-letter guessing.",
     "choiceRationales": [
-      "Skipping removes practice and may obscure meaning because transportation is likely important in geography text.",
+      "Skipping an unfamiliar multisyllabic term forfeits decoding practice and can cloud comprehension when transportation is central to the geography text.",
       "This prompt names meaningful word parts, requires whole-word blending, and uses the sentence to verify pronunciation and meaning.",
-      "Substituting an unrelated word changes the text and does not help the student read the target word.",
-      "Repeating the same first-letter strategy preserves the behavior that produced the inaccurate attempt."
+      "Inserting an unrelated short word starting with t distorts the author's message and prevents the student from learning to decode the printed word.",
+      "Prompting another wild guess from the opening letter alone reinforces the same flawed habit that led to the initial misreading."
     ],
     "skillIds": [
       "reading-classroom-support"
@@ -1192,10 +1192,10 @@
     "answerIndex": 2,
     "rationale": "Coordinating the caption, labels, arrows, and a related sentence teaches the student to integrate visual and verbal evidence while retaining responsibility for explaining the relationship.",
     "choiceRationales": [
-      "Removing the visual source prevents practice with the integration skill the task requires.",
+      "Hiding the diagram removes the graphic evidence altogether and prevents the student from practicing how text and visuals work together.",
       "Giving a complete explanation may solve the immediate question but does not elicit the student's analysis.",
       "This prompt directs attention to relevant features and asks the student to connect them explicitly with the prose.",
-      "Copying isolated words does not require interpreting arrows or relating visual information to the paragraph."
+      "Transcribing the caption three times without looking at the graphic focuses on rote copying rather than interpreting arrows alongside the text."
     ],
     "skillIds": [
       "reading-classroom-support"
@@ -1227,13 +1227,13 @@
       "Select definition 1 because the first dictionary meaning must fit every sentence.",
       "Select definition 2 because channel is commonly associated with television.",
       "Combine all three of the dictionary definitions and treat the sentence as carrying all three of those meanings at the very same time as one another.",
-      "Notice that channel follows will and is followed by funds toward repairs, then test definition 3 by substituting it and rereading the sentence."
+      "Check the verb position and nearby context clues around channel, then test definition 3 by substituting that meaning and rereading the sentence."
     ],
     "answerIndex": 3,
     "rationale": "The grammar after will identifies channel as a verb, and funds toward repairs supplies a purpose being directed. Substituting definition 3 and rereading uses both the dictionary and sentence context to confirm the correct sense.",
     "choiceRationales": [
-      "Dictionary meanings are not ranked as universally correct; the sentence determines which sense applies.",
-      "A familiar association does not override the word's grammatical role and the surrounding context.",
+      "Dictionary entries are not ordered by universal applicability; readers must inspect how a word functions in the sentence to choose the right sense.",
+      "Relying on a familiar television association overlooks both the verb grammar in the sentence and the surrounding context about allocating grant money.",
       "A word normally carries one relevant sense in a particular use, so merging incompatible meanings creates nonsense.",
       "This response uses syntax and nearby meaning clues, then verifies the selected dictionary sense in the original sentence."
     ],
@@ -1305,16 +1305,16 @@
     "prompt": "A student can use headings to predict a section's content, but only after the paraprofessional points to each heading and asks what it means. Recent work shows the predictions are usually accurate. What is the best next instructional move?",
     "choices": [
       "Continue giving every prompt indefinitely, because the student’s accurate performance proves that the prompts themselves are still necessary.",
-      "Fade the support by asking the student to preview headings independently, then review the prediction and provide a prompt only when needed.",
+      "Fade the support by asking the student to preview headings independently, then review the prediction and provide a prompt if needed.",
       "Stop allowing the student to use headings and require predictions from page numbers alone.",
       "Advance immediately to a much harder text and remove all opportunities for feedback."
     ],
     "answerIndex": 1,
     "rationale": "Because performance is accurate with the scaffold, a planned reduction in prompting tests and develops independent strategy use while retaining responsive feedback if the student needs it.",
     "choiceRationales": [
-      "Maintaining unnecessary prompts can create dependence and provides no information about independent use.",
+      "Keeping full adult prompting in place indefinitely fosters prompt dependence and yields no evidence about whether the student can initiate the strategy.",
       "This gradual-release step preserves the strategy, shifts initiation to the student, and keeps support available based on performance.",
-      "Headings are relevant text features; banning them changes an effective strategy rather than increasing independence.",
+      "Forbidding the use of headings discards a valuable comprehension feature and replaces an effective preview routine with guesswork from page numbers.",
       "An abrupt jump in difficulty with no feedback does not provide a measured transition from guided to independent practice."
     ],
     "skillIds": [

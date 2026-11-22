@@ -8,21 +8,21 @@
 // Category: self-direction
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
+if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
   isRegistered: function(id) { return !!this._registry[id]; },
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
 };
 
-if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) {
+if (typeof window !== 'undefined' && window.SelHub && !(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) {
 (function() {
   'use strict';
 
   // Reduced-motion CSS (WCAG 2.3.3) + focus-visible rings (WCAG 2.4.7) — scoped to
   // this tool's class so it does not leak into the rest of AlloFlow.
   (function() {
-    if (document.getElementById('allo-howl-a11y-css')) return;
+    if (typeof document === 'undefined' || !(document.head || document.documentElement) || document.getElementById('allo-howl-a11y-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-howl-a11y-css';
     st.textContent = [
@@ -47,7 +47,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
 
   // WCAG 4.1.3: status live region for dynamic content announcements
   (function() {
-    if (document.getElementById('allo-live-howl')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-howl')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-howl';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -56,15 +56,6 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
     liveRegion.className = 'sr-only';
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
-  })();
-
-  // Reduced motion CSS
-  (function() {
-    if (document.getElementById('allo-howl-motion-reduce')) return;
-    var st = document.createElement('style');
-    st.id = 'allo-howl-motion-reduce';
-    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
-    if (document.head) document.head.appendChild(st);
   })();
 
   // ═══════════════════════════════════════════════════════════
@@ -12294,6 +12285,194 @@ var EXPEDITION_CONNECTIONS = [
     ].forEach(function (pair) { if (pair[1]) _howScrubConstants(pair[0], pair[1]); });
   } catch (e) {}
 
+  // ─── Hoisted Media Capture component (audio + sketch) ───
+  // Stable module-scope identity prevents unmount/remount on every parent keystroke
+  // and ensures active MediaRecorder / microphone streams are cleaned up on unmount.
+  function HowlMediaCapture(props) {
+    var React = props.React || (typeof window !== 'undefined' && window.React);
+    if (!React) return null;
+    var h = React.createElement;
+    var _howBg = props._howBg || function(c) { return c; };
+    var _howFg = props._howFg || function(c) { return c; };
+    var hwId = props.hwId, hwColor = props.hwColor;
+    var audio = props.audio, sketch = props.sketch;
+    var recState = React.useState({ recording: false, supported: true });
+    var rec = recState[0]; var setRec = recState[1];
+    var sketchState = React.useState({ active: false, lastX: 0, lastY: 0 });
+    var sk = sketchState[0]; var setSk = sketchState[1];
+    var recorderRef = React.useRef(null);
+    var streamRef = React.useRef(null);
+    var mountedRef = React.useRef(true);
+    var chunksRef = React.useRef([]);
+    var canvasRef = React.useRef(null);
+    var consentState = React.useState(false);
+    var consented = consentState[0]; var setConsented = consentState[1];
+    var consentPromptState = React.useState(false);
+    var showConsent = consentPromptState[0]; var setShowConsent = consentPromptState[1];
+
+    React.useEffect(function() {
+      mountedRef.current = true;
+      return function() {
+        mountedRef.current = false;
+        try {
+          if (recorderRef.current && recorderRef.current.state !== 'inactive') {
+            recorderRef.current.onstop = null;
+            recorderRef.current.stop();
+          }
+        } catch (_) {}
+        try {
+          if (streamRef.current) {
+            streamRef.current.getTracks().forEach(function(t) { t.stop(); });
+            streamRef.current = null;
+          }
+        } catch (_) {}
+      };
+    }, []);
+
+    function startRec() {
+      if (typeof navigator === 'undefined' || !navigator.mediaDevices || typeof window === 'undefined' || !window.MediaRecorder) {
+        setRec({ recording: false, supported: false });
+        return;
+      }
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+        if (!mountedRef.current) {
+          try { stream.getTracks().forEach(function(t) { t.stop(); }); } catch (_) {}
+          return;
+        }
+        streamRef.current = stream;
+        try {
+          var mr = new MediaRecorder(stream);
+          chunksRef.current = [];
+          mr.ondataavailable = function(e) { if (e.data && e.data.size > 0) chunksRef.current.push(e.data); };
+          mr.onstop = function() {
+            var blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+            var reader = new FileReader();
+            reader.onloadend = function() { if (mountedRef.current && typeof props.onSetAudio === 'function') props.onSetAudio(reader.result); };
+            reader.readAsDataURL(blob);
+            try { stream.getTracks().forEach(function(t) { t.stop(); }); } catch (_) {}
+            if (streamRef.current === stream) streamRef.current = null;
+          };
+          mr.start();
+          recorderRef.current = mr;
+          setRec({ recording: true, supported: true });
+        } catch (err) {
+          try { stream.getTracks().forEach(function(t) { t.stop(); }); } catch (_) {}
+          streamRef.current = null;
+          if (mountedRef.current) setRec({ recording: false, supported: false });
+        }
+      }).catch(function() {
+        if (mountedRef.current) setRec({ recording: false, supported: false });
+      });
+    }
+    function stopRec() {
+      if (recorderRef.current && recorderRef.current.state !== 'inactive') {
+        recorderRef.current.stop();
+        setRec({ recording: false, supported: true });
+      }
+    }
+    function clearAudio() { if (typeof props.onSetAudio === 'function') props.onSetAudio(null); }
+
+    function getCanvas() { return canvasRef.current; }
+    function startSketch(e) {
+      var c = getCanvas(); if (!c) return;
+      var rect = c.getBoundingClientRect();
+      var pt = e.touches ? e.touches[0] : e;
+      if (!pt) return;
+      setSk({ active: true, lastX: pt.clientX - rect.left, lastY: pt.clientY - rect.top });
+    }
+    function moveSketch(e) {
+      if (!sk.active) return;
+      var c = getCanvas(); if (!c) return;
+      var rect = c.getBoundingClientRect();
+      var pt = e.touches ? e.touches[0] : e;
+      if (!pt) return;
+      var x = pt.clientX - rect.left, y = pt.clientY - rect.top;
+      var ctxC = c.getContext('2d');
+      if (!ctxC) return;
+      ctxC.strokeStyle = hwColor || _howFg('#e2e8f0');
+      ctxC.lineWidth = 2;
+      ctxC.lineCap = 'round';
+      ctxC.beginPath();
+      ctxC.moveTo(sk.lastX, sk.lastY);
+      ctxC.lineTo(x, y);
+      ctxC.stroke();
+      setSk({ active: true, lastX: x, lastY: y });
+      if (e.preventDefault) e.preventDefault();
+    }
+    function endSketch() {
+      if (!sk.active) return;
+      setSk({ active: false, lastX: 0, lastY: 0 });
+      var c = getCanvas(); if (!c) return;
+      try { if (typeof props.onSetSketch === 'function') props.onSetSketch(c.toDataURL('image/png')); } catch (_) {}
+    }
+    function clearSketch() {
+      var c = getCanvas(); if (!c) return;
+      var ctxC = c.getContext('2d');
+      if (ctxC) ctxC.clearRect(0, 0, c.width, c.height);
+      if (typeof props.onSetSketch === 'function') props.onSetSketch(null);
+    }
+    React.useEffect(function() {
+      var c = getCanvas(); if (!c || !sketch) return;
+      var img = new Image();
+      img.onload = function() {
+        var ctxC = c.getContext('2d');
+        if (ctxC) ctxC.drawImage(img, 0, 0);
+      };
+      img.src = sketch;
+    }, [sketch]);
+
+    return h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(15,23,42,0.5)', borderRadius: 6, border: '1px dashed #334155' } },
+      h('div', { style: { fontSize: 10, color: _howFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '🎤 / ✏️ Alt evidence (optional)'),
+      rec.supported && h('div', { style: { fontSize: 9.5, color: _howFg('#fca5a5'), marginBottom: 6, lineHeight: 1.4 } }, '🔒 A voice recording is saved inside this project file (your teacher can open it later).'),
+      h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 } },
+        !audio && !rec.recording && rec.supported && h('button', { type: 'button', onClick: consented ? startRec : function() { setShowConsent(true); }, 'aria-label': 'Record voice evidence',
+          style: { padding: '6px 10px', borderRadius: 6, border: '1px solid #ec4899', background: 'rgba(236,72,153,0.10)', color: _howFg('#fbcfe8'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } },
+          '🎤 Record voice'),
+        !audio && rec.recording && h('button', { type: 'button', onClick: stopRec, 'aria-label': 'Stop recording',
+          style: { padding: '6px 10px', borderRadius: 6, border: '1px solid #ef4444', background: _howBg('#ef4444'), color: _howFg('#fff'), cursor: 'pointer', fontSize: 11, fontWeight: 700, animation: 'pulse 1.5s infinite' } },
+          '⏹ Stop · recording...'),
+        !rec.supported && h('span', { style: { fontSize: 10, color: _howFg('#fca5a5') } }, 'Voice recording not supported in this browser.'),
+        audio && h('audio', { controls: true, src: audio, style: { maxWidth: 220, height: 32 } }),
+        audio && h('button', { type: 'button', onClick: clearAudio, 'aria-label': 'Remove voice note',
+          style: { padding: '4px 8px', borderRadius: 4, border: '1px solid #475569', background: 'transparent', color: _howFg('#94a3b8'), cursor: 'pointer', fontSize: 10 } }, '× Remove')
+      ),
+      showConsent && !consented && !audio && !rec.recording && h('div', {
+        role: 'alertdialog', 'aria-modal': 'false', 'aria-label': 'Voice recording privacy notice',
+        onKeyDown: function(e) {
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+          if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setShowConsent(false); }
+        },
+        style: { marginBottom: 6, padding: 10, borderRadius: 6, background: 'rgba(127,29,29,0.18)', border: '1px solid #b91c1c' }
+      },
+        h('div', { style: { fontSize: 11, color: _howFg('#fecaca'), lineHeight: 1.5, marginBottom: 8 } },
+          'Before you record: your voice will be saved inside this project file, which your teacher can open later. Only record if that’s okay with you and your teacher.'),
+        h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+          h('button', { type: 'button', onClick: function() { setShowConsent(false); setConsented(true); startRec(); }, 'aria-label': 'I understand, start recording',
+            style: { padding: '6px 10px', borderRadius: 6, border: '1px solid #ec4899', background: _howBg('#ec4899'), color: _howFg('#fff'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'I understand — record'),
+          h('button', { type: 'button', onClick: function() { setShowConsent(false); }, 'aria-label': 'Cancel recording',
+            style: { padding: '6px 10px', borderRadius: 6, border: '1px solid #475569', background: 'transparent', color: _howFg('#cbd5e1'), cursor: 'pointer', fontSize: 11 } }, 'Not now')
+        )
+      ),
+      h('details', null,
+        h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _howFg('#a78bfa'), fontWeight: 700, padding: '4px 0' } }, '✏️ Sketch evidence ' + (sketch ? '(saved)' : '')),
+        h('div', { style: { marginTop: 6 } },
+          h('canvas', {
+            role: 'img',
+            'aria-label': 'Optional freehand sketch evidence for ' + props.hwName + '. A text evidence field is also available.',
+            ref: canvasRef, width: 320, height: 160,
+            onMouseDown: startSketch, onMouseMove: moveSketch, onMouseUp: endSketch, onMouseLeave: endSketch,
+            onTouchStart: startSketch, onTouchMove: moveSketch, onTouchEnd: endSketch,
+            style: { width: '100%', maxWidth: 320, height: 160, background: _howBg('#1e293b'), borderRadius: 4, border: '1px solid #334155', cursor: 'crosshair', touchAction: 'none' }
+          }),
+          h('div', { style: { marginTop: 4 } },
+            h('button', { type: 'button', onClick: clearSketch, 'aria-label': 'Clear sketch',
+              style: { padding: '4px 8px', borderRadius: 4, border: '1px solid #475569', background: 'transparent', color: _howFg('#94a3b8'), cursor: 'pointer', fontSize: 10 } }, '× Clear sketch')
+          )
+        )
+      )
+    );
+  }
+
   window.SelHub.registerTool('howlTracker', {
     icon: '🧭',
     label: 'HOWL Tracker',
@@ -12322,185 +12501,47 @@ var EXPEDITION_CONNECTIONS = [
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
 
       // ─── State plumbing ───
-      var d = labToolData.howlTracker || defaultHowlState();
+      var _rawHowl = labToolData.howlTracker;
+      var d = (_rawHowl && typeof _rawHowl === 'object' && !Array.isArray(_rawHowl)) ? _rawHowl : defaultHowlState();
       function setHowl(patch) {
+        if (typeof setLabToolData !== 'function') return;
         setLabToolData(function(prev) {
-          var prior = (prev && prev.howlTracker) || defaultHowlState();
-          return Object.assign({}, prev, { howlTracker: Object.assign({}, prior, patch) });
+          var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var priorSlot = basePrev.howlTracker;
+          var prior = (priorSlot && typeof priorSlot === 'object' && !Array.isArray(priorSlot)) ? priorSlot : defaultHowlState();
+          return Object.assign({}, basePrev, { howlTracker: Object.assign({}, prior, patch) });
         });
       }
 
-      var howls = (Array.isArray(d.howls) ? d.howls : DEFAULT_HOWLS);
+      var howls = (Array.isArray(d.howls) ? d.howls.filter(Boolean) : DEFAULT_HOWLS);
       var activeIds = Array.isArray(d.activeHowls) ? d.activeHowls : howls.map(function(h2) { return h2.id; });
       var activeHowls = howls.filter(function(h2) { return activeIds.indexOf(h2.id) >= 0; });
       var qid = (typeof d.currentQuarter === 'string' ? d.currentQuarter : currentQuarterId());
-      var goals = (d.goalsByQuarter && d.goalsByQuarter[qid]) || {};
-      var checkins = (Array.isArray(d.weeklyCheckins) ? d.weeklyCheckins : []);
-      var quarterCheckins = checkins.filter(function(c) { return c.quarter === qid; });
+      var goals = (d.goalsByQuarter && typeof d.goalsByQuarter === 'object' && d.goalsByQuarter[qid]) || {};
+      var checkins = (Array.isArray(d.weeklyCheckins) ? d.weeklyCheckins.filter(Boolean) : []);
+      var quarterCheckins = checkins.filter(function(c) { return c && c.quarter === qid; });
       var view = d.view || 'home';
 
       function goto(v) { setHowl({ view: v }); }
-
-      // ─── Media capture component (audio + sketch) ───
-      // Inline React functional component used in renderCheckin for alt-evidence
-      // capture. Stays inside render() so React hooks resolve. Uses MediaRecorder
-      // for audio (with graceful fallback) and an inline canvas for sketches.
-      // Stored as base64 data URIs in the check-in entry.
-      function HowlMediaCapture(props) {
-        var hwId = props.hwId, hwColor = props.hwColor;
-        var audio = props.audio, sketch = props.sketch;
-        var recState = React.useState({ recording: false, supported: true });
-        var rec = recState[0]; var setRec = recState[1];
-        var sketchState = React.useState({ active: false, lastX: 0, lastY: 0 });
-        var sk = sketchState[0]; var setSk = sketchState[1];
-        var recorderRef = React.useRef(null);
-        var chunksRef = React.useRef([]);
-        var canvasRef = React.useRef(null);
-        // Informed-consent gate for voice capture: the recording is saved (base64)
-        // into the project file, so a minor's voice must never be captured silently.
-        var consentState = React.useState(false);
-        var consented = consentState[0]; var setConsented = consentState[1];
-        var consentPromptState = React.useState(false);
-        var showConsent = consentPromptState[0]; var setShowConsent = consentPromptState[1];
-
-        function startRec() {
-          if (!navigator.mediaDevices || !window.MediaRecorder) {
-            setRec({ recording: false, supported: false });
-            return;
+      function _howlCheckCrisis(text) {
+        try {
+          var trimmed = String(text || '').trim();
+          if (!trimmed || typeof window === 'undefined' || !window.SelHub) return false;
+          if (typeof window.SelHub.safeRehearseCheck === 'function') {
+            var chk = window.SelHub.safeRehearseCheck(trimmed, { toolId: 'howlTracker', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null });
+            if (chk && chk.action === 'block') return true;
+          } else if (typeof window.SelHub.scanForCrisis === 'function') {
+            var scan = window.SelHub.scanForCrisis(trimmed);
+            if (scan && (scan.triggered || scan.tier >= 3)) return true;
           }
-          navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
-            try {
-              var mr = new MediaRecorder(stream);
-              chunksRef.current = [];
-              mr.ondataavailable = function(e) { if (e.data && e.data.size > 0) chunksRef.current.push(e.data); };
-              mr.onstop = function() {
-                var blob = new Blob(chunksRef.current, { type: 'audio/webm' });
-                var reader = new FileReader();
-                reader.onloadend = function() { props.onSetAudio(reader.result); };
-                reader.readAsDataURL(blob);
-                stream.getTracks().forEach(function(t) { t.stop(); });
-              };
-              mr.start();
-              recorderRef.current = mr;
-              setRec({ recording: true, supported: true });
-            } catch (err) {
-              setRec({ recording: false, supported: false });
-            }
-          }).catch(function() {
-            setRec({ recording: false, supported: false });
-          });
-        }
-        function stopRec() {
-          if (recorderRef.current && recorderRef.current.state !== 'inactive') {
-            recorderRef.current.stop();
-            setRec({ recording: false, supported: true });
-          }
-        }
-        function clearAudio() { props.onSetAudio(null); }
-
-        // Sketch: handle pointer events on canvas
-        function getCanvas() { return canvasRef.current; }
-        function startSketch(e) {
-          var c = getCanvas(); if (!c) return;
-          var rect = c.getBoundingClientRect();
-          var pt = e.touches ? e.touches[0] : e;
-          setSk({ active: true, lastX: pt.clientX - rect.left, lastY: pt.clientY - rect.top });
-        }
-        function moveSketch(e) {
-          if (!sk.active) return;
-          var c = getCanvas(); if (!c) return;
-          var rect = c.getBoundingClientRect();
-          var pt = e.touches ? e.touches[0] : e;
-          var x = pt.clientX - rect.left, y = pt.clientY - rect.top;
-          var ctxC = c.getContext('2d');
-          ctxC.strokeStyle = hwColor || _howFg('#e2e8f0');
-          ctxC.lineWidth = 2;
-          ctxC.lineCap = 'round';
-          ctxC.beginPath();
-          ctxC.moveTo(sk.lastX, sk.lastY);
-          ctxC.lineTo(x, y);
-          ctxC.stroke();
-          setSk({ active: true, lastX: x, lastY: y });
-          if (e.preventDefault) e.preventDefault();
-        }
-        function endSketch() {
-          if (!sk.active) return;
-          setSk({ active: false, lastX: 0, lastY: 0 });
-          var c = getCanvas(); if (!c) return;
-          props.onSetSketch(c.toDataURL('image/png'));
-        }
-        function clearSketch() {
-          var c = getCanvas(); if (!c) return;
-          var ctxC = c.getContext('2d');
-          ctxC.clearRect(0, 0, c.width, c.height);
-          props.onSetSketch(null);
-        }
-        // On mount, re-paint existing sketch onto canvas
-        React.useEffect(function() {
-          var c = getCanvas(); if (!c || !sketch) return;
-          var img = new Image();
-          img.onload = function() { c.getContext('2d').drawImage(img, 0, 0); };
-          img.src = sketch;
-        }, [sketch]);
-
-        return h('div', { style: { marginTop: 10, padding: 8, background: 'rgba(15,23,42,0.5)', borderRadius: 6, border: '1px dashed #334155' } },
-          h('div', { style: { fontSize: 10, color: _howFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 6 } }, '🎤 / ✏️ Alt evidence (optional)'),
-
-          // Privacy disclosure — always visible so a student knows a voice recording is persisted.
-          rec.supported && h('div', { style: { fontSize: 9.5, color: _howFg('#fca5a5'), marginBottom: 6, lineHeight: 1.4 } }, '🔒 A voice recording is saved inside this project file (your teacher can open it later).'),
-
-          // Audio row
-          h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 } },
-            !audio && !rec.recording && rec.supported && h('button', { onClick: consented ? startRec : function() { setShowConsent(true); }, 'aria-label': 'Record voice evidence',
-              style: { padding: '6px 10px', borderRadius: 6, border: '1px solid #ec4899', background: 'rgba(236,72,153,0.10)', color: _howFg('#fbcfe8'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } },
-              '🎤 Record voice'),
-            !audio && rec.recording && h('button', { onClick: stopRec, 'aria-label': 'Stop recording',
-              style: { padding: '6px 10px', borderRadius: 6, border: '1px solid #ef4444', background: _howBg('#ef4444'), color: _howFg('#fff'), cursor: 'pointer', fontSize: 11, fontWeight: 700, animation: 'pulse 1.5s infinite' } },
-              '⏹ Stop · recording...'),
-            !rec.supported && h('span', { style: { fontSize: 10, color: _howFg('#fca5a5') } }, 'Voice recording not supported in this browser.'),
-            audio && h('audio', { controls: true, src: audio, style: { maxWidth: 220, height: 32 } }),
-            audio && h('button', { onClick: clearAudio, 'aria-label': 'Remove voice note',
-              style: { padding: '4px 8px', borderRadius: 4, border: '1px solid #475569', background: 'transparent', color: _howFg('#94a3b8'), cursor: 'pointer', fontSize: 10 } }, '× Remove')
-          ),
-
-          // Informed-consent confirmation, shown on the first record attempt this session.
-          showConsent && !consented && !audio && !rec.recording && h('div', { role: 'alertdialog', 'aria-label': 'Voice recording privacy notice',
-            style: { marginBottom: 6, padding: 10, borderRadius: 6, background: 'rgba(127,29,29,0.18)', border: '1px solid #b91c1c' } },
-            h('div', { style: { fontSize: 11, color: _howFg('#fecaca'), lineHeight: 1.5, marginBottom: 8 } },
-              'Before you record: your voice will be saved inside this project file, which your teacher can open later. Only record if that’s okay with you and your teacher.'),
-            h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
-              h('button', { onClick: function() { setShowConsent(false); setConsented(true); startRec(); }, 'aria-label': 'I understand, start recording',
-                style: { padding: '6px 10px', borderRadius: 6, border: '1px solid #ec4899', background: _howBg('#ec4899'), color: _howFg('#fff'), cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'I understand — record'),
-              h('button', { onClick: function() { setShowConsent(false); }, 'aria-label': 'Cancel recording',
-                style: { padding: '6px 10px', borderRadius: 6, border: '1px solid #475569', background: 'transparent', color: _howFg('#cbd5e1'), cursor: 'pointer', fontSize: 11 } }, 'Not now')
-            )
-          ),
-
-          // Sketch row
-          h('details', null,
-            h('summary', { style: { cursor: 'pointer', fontSize: 11, color: _howFg('#a78bfa'), fontWeight: 700, padding: '4px 0' } }, '✏️ Sketch evidence ' + (sketch ? '(saved)' : '')),
-            h('div', { style: { marginTop: 6 } },
-              h('canvas', {
-                role: 'img',
-                'aria-label': 'Optional freehand sketch evidence for ' + props.hwName + '. A text evidence field is also available.',
-                ref: canvasRef, width: 320, height: 160,
-                onMouseDown: startSketch, onMouseMove: moveSketch, onMouseUp: endSketch, onMouseLeave: endSketch,
-                onTouchStart: startSketch, onTouchMove: moveSketch, onTouchEnd: endSketch,
-                style: { width: '100%', maxWidth: 320, height: 160, background: _howBg('#1e293b'), borderRadius: 4, border: '1px solid #334155', cursor: 'crosshair', touchAction: 'none' }
-              }),
-              h('div', { style: { marginTop: 4 } },
-                h('button', { onClick: clearSketch, 'aria-label': 'Clear sketch',
-                  style: { padding: '4px 8px', borderRadius: 4, border: '1px solid #475569', background: 'transparent', color: _howFg('#94a3b8'), cursor: 'pointer', fontSize: 10 } }, '× Clear sketch')
-              )
-            )
-          )
-        );
+        } catch (_) {}
+        return false;
       }
 
       // ─── Common header ───
       function header(title, subtitle) {
         return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
-          ArrowLeft ? h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
+          ArrowLeft ? h('button', { type: 'button', onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
             style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _howFg('#cbd5e1'), fontSize: 14 } }, '← Back') : null,
           h('div', { style: { flex: 1, minWidth: 240 } },
             h('h2', { style: { margin: 0, color: _howFg('#a78bfa'), fontSize: 22, fontWeight: 900 } }, '🧭 ' + (title || 'HOWL Tracker')),
@@ -12550,7 +12591,7 @@ var EXPEDITION_CONNECTIONS = [
         var showLeader = !!d.showLeaderTabs || leaderTabs.some(function(t) { return t.id === view; });
         function tabButton(t) {
           var active = view === t.id;
-          return h('button', { key: t.id, onClick: function() { goto(t.id); },
+          return h('button', { type: 'button', key: t.id, onClick: function() { goto(t.id); },
             role: 'tab', 'aria-selected': active,
             title: t.desc,
             style: { padding: '6px 14px', borderRadius: 8, border: '1px solid ' + (active ? _howFg('#a78bfa') : '#334155'),
@@ -12674,7 +12715,7 @@ var EXPEDITION_CONNECTIONS = [
               h('ul', { style: { listStyle: 'none', margin: 0, padding: 0 } },
                 picks.map(function(m) {
                   return h('li', { key: m.id, style: { display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 6 } },
-                    h('button', { onClick: function() { addSuggested(hw.id, m.action); }, 'aria-label': 'Add micro-action: ' + m.action,
+                    h('button', { type: 'button', onClick: function() { addSuggested(hw.id, m.action); }, 'aria-label': 'Add micro-action: ' + m.action,
                       style: { minHeight: 36, padding: '6px 10px', borderRadius: 8, border: '1px solid ' + hw.color, background: 'transparent', color: hw.color, cursor: 'pointer', fontSize: 12, fontWeight: 800, flexShrink: 0 } }, '+ Add'),
                     h('div', null,
                       h('div', { style: { fontSize: 13, color: _howFg('#e2e8f0') } }, m.action),
@@ -12685,7 +12726,7 @@ var EXPEDITION_CONNECTIONS = [
               )
             );
           }),
-          h('button', { onClick: function() { setHowl({ microSeed: seed + 3 }); if (typeof announceToSR === 'function') announceToSR('Showing different micro-actions'); },
+          h('button', { type: 'button', onClick: function() { setHowl({ microSeed: seed + 3 }); if (typeof announceToSR === 'function') announceToSR('Showing different micro-actions'); },
             style: { minHeight: 40, padding: '8px 14px', borderRadius: 8, border: '1px solid ' + _howBd('#475569'), background: _howBg('#1e293b'), color: _howFg('#e2e8f0'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, 'Show me different ones')),
           '#fbbf24');
       }
@@ -12704,7 +12745,7 @@ var EXPEDITION_CONNECTIONS = [
             h('div', { role: 'group', 'aria-label': 'Coaching move category', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
               cats.map(function(c) {
                 var on = cat === c;
-                return h('button', { key: c, onClick: function() { setHowl({ coachCategory: c }); }, 'aria-pressed': on ? 'true' : 'false',
+                return h('button', { type: 'button', key: c, onClick: function() { setHowl({ coachCategory: c }); }, 'aria-pressed': on ? 'true' : 'false',
                   style: { minHeight: 36, padding: '6px 12px', borderRadius: 999, border: '1px solid ' + (on ? '#5eead4' : _howBd('#475569')), background: on ? 'rgba(20,184,166,0.18)' : _howBg('#1e293b'), color: on ? _howFg('#5eead4') : _howFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, c);
               })
             ),
@@ -12884,32 +12925,32 @@ var EXPEDITION_CONNECTIONS = [
                   : '30 seconds to name how today is going.'),
               h('div', { style: { fontSize: 10, color: _howFg('#94a3b8'), marginTop: 4, fontFamily: 'ui-monospace, Menlo, monospace' } }, '📊 Rhythm: ' + rhythm.recent + ' of ' + rhythm.possible + ' weekdays this window' + (rhythm.longestRecent > 1 ? ' · longest run ' + rhythm.longestRecent : ''))
             ),
-            h('button', { onClick: function() { goto('pulse'); },
+            h('button', { type: 'button', onClick: function() { goto('pulse'); },
               style: { padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: todaysPulse ? '#22c55e' : _howBg('#ec4899'), color: _howFg('#fff'), fontWeight: 700, fontSize: 12 } }, todaysPulse ? 'View pulses →' : 'Do today\'s pulse →')
           ),
 
           // Calls to action
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
-            !hasGoals ? h('button', { onClick: function() { goto('goals'); },
+            !hasGoals ? h('button', { type: 'button', onClick: function() { goto('goals'); },
               style: { padding: 14, borderRadius: 12, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _howFg('#fff'), fontWeight: 800, fontSize: 14, textAlign: 'left' } },
               h('div', { style: { fontSize: 24, marginBottom: 4 } }, '🎯'),
               h('div', null, 'Set your quarter goals'),
               h('div', { style: { fontSize: 11, fontWeight: 400, marginTop: 4, opacity: 0.9 } }, 'Start here. One goal per HOWL.')
             ) : null,
 
-            !thisWeekCheckin ? h('button', { onClick: function() { goto('checkin'); },
+            !thisWeekCheckin ? h('button', { type: 'button', onClick: function() { goto('checkin'); },
               style: { padding: 14, borderRadius: 12, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)', color: _howFg('#fff'), fontWeight: 800, fontSize: 14, textAlign: 'left' } },
               h('div', { style: { fontSize: 24, marginBottom: 4 } }, '✏️'),
               h('div', null, 'Do this week\'s check-in'),
               h('div', { style: { fontSize: 11, fontWeight: 400, marginTop: 4, opacity: 0.9 } }, 'Rate yourself 1 to 4 on each HOWL.')
-            ) : h('button', { onClick: function() { goto('checkin'); },
+            ) : h('button', { type: 'button', onClick: function() { goto('checkin'); },
               style: { padding: 14, borderRadius: 12, border: '1px solid #334155', cursor: 'pointer', background: _howBg('#1e293b'), color: _howFg('#cbd5e1'), fontWeight: 700, fontSize: 13, textAlign: 'left' } },
               h('div', { style: { fontSize: 22, marginBottom: 4 } }, '✓'),
               h('div', null, 'Edit this week\'s check-in'),
               h('div', { style: { fontSize: 11, color: _howFg('#94a3b8'), marginTop: 4 } }, 'You already saved one this week.')
             ),
 
-            h('button', { onClick: function() { goto('history'); },
+            h('button', { type: 'button', onClick: function() { goto('history'); },
               style: { padding: 14, borderRadius: 12, border: '1px solid #334155', cursor: 'pointer', background: _howBg('#1e293b'), color: _howFg('#cbd5e1'), fontWeight: 700, fontSize: 13, textAlign: 'left' } },
               h('div', { style: { fontSize: 22, marginBottom: 4 } }, '📈'),
               h('div', null, 'See your trend'),
@@ -13007,6 +13048,7 @@ var EXPEDITION_CONNECTIONS = [
                 actions.map(function(a) {
                   return h('div', { key: a.id, style: { display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6 } },
                     h('button', {
+                      type: 'button',
                       onClick: function() { updateAction(a.id, { doneOn: a.doneOn ? null : todayISO() }); },
                       'aria-label': a.doneOn ? 'Mark as not done' : 'Mark as done',
                       'aria-pressed': !!a.doneOn,
@@ -13023,12 +13065,13 @@ var EXPEDITION_CONNECTIONS = [
                     }),
                     a.doneOn && h('span', { style: { fontSize: 9, color: _howFg('#86efac'), fontFamily: 'ui-monospace, Menlo, monospace' } }, a.doneOn),
                     h('button', {
+                      type: 'button',
                       onClick: function() { removeAction(a.id); }, 'aria-label': 'Remove action',
                       style: { background: 'transparent', border: 'none', color: _howFg('#94a3b8'), cursor: 'pointer', fontSize: 14, padding: 2 }
                     }, '×')
                   );
                 }),
-                h('button', { onClick: addAction,
+                h('button', { type: 'button', onClick: addAction,
                   style: { marginTop: 4, padding: '6px 10px', borderRadius: 6, border: '1px dashed ' + hw.color + '88', background: 'transparent', color: hw.color, cursor: 'pointer', fontSize: 11, fontWeight: 700 } },
                   '+ Add a weekly micro-action'),
                 actions.length === 0 && h('div', { style: { fontSize: 11, color: _howFg('#94a3b8'), fontStyle: 'italic', marginTop: 4, lineHeight: 1.55 } },
@@ -13036,7 +13079,7 @@ var EXPEDITION_CONNECTIONS = [
               )
             );
           }),
-          h('button', { onClick: function() { goto('home'); if (announceToSR) announceToSR('Goals saved'); },
+          h('button', { type: 'button', onClick: function() { goto('home'); if (announceToSR) announceToSR('Goals saved'); },
             style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: _howBg('#b45309'), color: _howFg('#fff'), fontWeight: 800, fontSize: 13 } }, 'Save and return to home →')
         );
       }
@@ -13080,7 +13123,7 @@ var EXPEDITION_CONNECTIONS = [
                 h('div', { style: { fontSize: 11, color: _howFg('#94a3b8'), marginBottom: 4 } }, it.station),
                 h('div', { role: 'group', 'aria-label': 'Use \u201c' + it.label + '\u201d as evidence for', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                   activeHowls.map(function (hw2) {
-                    return h('button', { key: hw2.id, onClick: function () {
+                    return h('button', { type: 'button', key: hw2.id, onClick: function () {
                         var prev = (current.perHowl[hw2.id] || {}).evidence || '';
                         var line = it.label + (it.when ? ' (' + it.when.toLocaleDateString() + ')' : '');
                         if (prev.indexOf(line) >= 0) { if (typeof addToast === 'function') addToast('Already in your ' + hw2.name + ' evidence.', 'info'); return; }
@@ -13125,7 +13168,7 @@ var EXPEDITION_CONNECTIONS = [
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, marginBottom: 8 } },
                 [1, 2, 3, 4].map(function(r) {
                   var picked = rating === r;
-                  return h('button', { key: r, onClick: function() { updateEntry(hw.id, 'rating', r); },
+                  return h('button', { type: 'button', key: r, onClick: function() { updateEntry(hw.id, 'rating', r); },
                     'aria-pressed': picked, 'aria-label': 'Rate ' + r,
                     style: { padding: '8px 4px', borderRadius: 6, border: '2px solid ' + (picked ? rubricColor(r) : '#334155'),
                       background: picked ? rubricColor(r) + '22' : _howBg('#1e293b'),
@@ -13174,6 +13217,7 @@ var EXPEDITION_CONNECTIONS = [
               // uses MediaRecorder; sketch uses an inline canvas. Both stored as
               // base64 data URIs alongside the text evidence.
               h(HowlMediaCapture, {
+                React: React, _howBg: _howBg, _howFg: _howFg,
                 hwId: hw.id, hwColor: hw.color, hwName: hw.name,
                 audio: entry.audio || null, sketch: entry.sketch || null,
                 onSetAudio: function(b64) { updateEntry(hw.id, 'audio', b64); },
@@ -13181,7 +13225,7 @@ var EXPEDITION_CONNECTIONS = [
               })
             );
           }),
-          h('button', { onClick: function() { goto('home'); if (addToast) addToast('Check-in saved', 'success'); if (announceToSR) announceToSR('Weekly check-in saved'); },
+          h('button', { type: 'button', onClick: function() { goto('home'); if (addToast) addToast('Check-in saved', 'success'); if (announceToSR) announceToSR('Weekly check-in saved'); },
             style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: _howBg('#7c3aed'), color: _howFg('#fff'), fontWeight: 800, fontSize: 13 } }, '✓ Save and return to home')
         );
       }
@@ -13314,7 +13358,7 @@ var EXPEDITION_CONNECTIONS = [
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
             activeHowls.map(function(hw) {
               var picked = focusId === hw.id;
-              return h('button', { key: hw.id, onClick: function() { pickHowl(hw.id); },
+              return h('button', { type: 'button', key: hw.id, onClick: function() { pickHowl(hw.id); },
                 style: { padding: 10, borderRadius: 10, border: '2px solid ' + (picked ? hw.color : '#334155'),
                   background: picked ? hw.color + '22' : '#0f172a',
                   cursor: 'pointer', textAlign: 'left', color: picked ? hw.color : _howFg('#cbd5e1') } },
@@ -13338,15 +13382,16 @@ var EXPEDITION_CONNECTIONS = [
           ),
 
           h('div', { style: { display: 'flex', gap: 8 } },
-            h('button', { onClick: prevPrompt, 'aria-label': 'Previous prompt',
+            h('button', { type: 'button', onClick: prevPrompt, 'aria-label': 'Previous prompt',
               style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #334155', cursor: 'pointer', background: _howBg('#1e293b'), color: _howFg('#cbd5e1'), fontWeight: 700, fontSize: 12 } }, '← Previous'),
-            h('button', { onClick: nextPrompt, 'aria-label': 'Next prompt',
+            h('button', { type: 'button', onClick: nextPrompt, 'aria-label': 'Next prompt',
               style: { padding: '8px 14px', borderRadius: 8, border: '1px solid ' + focusHowl.color, cursor: 'pointer', background: focusHowl.color + '22', color: focusHowl.color, fontWeight: 700, fontSize: 12 } }, 'Next →')
           ),
 
           // Facilitator-mode toggle
           h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginTop: 14, marginBottom: 8 } },
             h('button', {
+              type: 'button',
               onClick: function() { setHowl({ facilitatorMode: !facilitatorMode }); },
               'aria-pressed': facilitatorMode,
               style: { padding: '6px 12px', borderRadius: 6, border: '1px solid ' + (facilitatorMode ? _howFg('#a78bfa') : '#334155'),
@@ -13425,7 +13470,7 @@ var EXPEDITION_CONNECTIONS = [
             'Print or save as PDF for your Crew binder, student-led conference, or IEP meeting. Includes your goals, your most recent rating per HOWL, and your quarter average per HOWL.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)', color: _howFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { type: 'button', onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)', color: _howFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
 
           h('style', null,
@@ -13534,7 +13579,7 @@ var EXPEDITION_CONNECTIONS = [
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6, marginBottom: 12 } },
               moods.map(function(m) {
                 var picked = todaysPulse && todaysPulse.mood === m.v;
-                return h('button', { key: m.v, onClick: function() { setPulse(m.v); },
+                return h('button', { type: 'button', key: m.v, onClick: function() { setPulse(m.v); },
                   'aria-pressed': picked, 'aria-label': m.label,
                   style: { padding: 12, borderRadius: 10, border: '2px solid ' + (picked ? _howBg('#ec4899') : '#334155'),
                     background: picked ? 'rgba(236,72,153,0.18)' : _howBg('#1e293b'),
@@ -13564,7 +13609,7 @@ var EXPEDITION_CONNECTIONS = [
                   ? h('div', { style: { fontSize: 18, fontWeight: 800, color: _howFg('#94a3b8'), marginTop: 4 } }, '⏸ Paused until ' + d.pulsePaused)
                   : h('div', { style: { fontSize: 20, fontWeight: 900, color: _howFg('#86efac'), marginTop: 4 } }, rhythm.recent + ' of ' + rhythm.possible + ' weekdays · longest run ' + rhythm.longestRecent)
               ),
-              h('button', { onClick: togglePause,
+              h('button', { type: 'button', onClick: togglePause,
                 style: { padding: '6px 12px', borderRadius: 6, border: '1px solid #475569', cursor: 'pointer', background: paused ? '#22c55e' : _howBg('#1e293b'), color: paused ? _howFg('#fff') : _howFg('#cbd5e1'), fontSize: 11, fontWeight: 700 } },
                 paused ? '▶ Resume' : '⏸ Pause for a week')
             ),
@@ -13649,7 +13694,7 @@ var EXPEDITION_CONNECTIONS = [
 
           // Mode toggle
           h('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: 12 } },
-            h('button', { onClick: function() { setHowl({ climateFacilitatorMode: !isFacilitator }); },
+            h('button', { type: 'button', onClick: function() { setHowl({ climateFacilitatorMode: !isFacilitator }); },
               'aria-pressed': isFacilitator,
               style: { padding: '6px 12px', borderRadius: 6, border: '1px solid ' + (isFacilitator ? _howFg('#38bdf8') : '#334155'),
                 background: isFacilitator ? 'rgba(56,189,248,0.18)' : '#0f172a',
@@ -13678,7 +13723,7 @@ var EXPEDITION_CONNECTIONS = [
                   })
                 )
               : h('p', { style: { fontSize: 12, color: _howFg('#94a3b8'), fontStyle: 'italic' } }, 'Waiting for votes...'),
-            h('button', { onClick: closePoll,
+            h('button', { type: 'button', onClick: closePoll,
               style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #ef4444', cursor: 'pointer', background: _howBg('#0f172a'), color: _howFg('#fca5a5'), fontSize: 12, fontWeight: 700, marginTop: 12 } }, '⏹ Close poll')
           ),
 
@@ -13688,7 +13733,7 @@ var EXPEDITION_CONNECTIONS = [
             h('p', { style: { margin: '0 0 14px', fontSize: 16, color: _howFg('#fff'), lineHeight: 1.6, fontWeight: 500 } }, '"' + activePoll.prompt + '"'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 } },
               [1, 2, 3, 4, 5].map(function(r) {
-                return h('button', { key: r, onClick: function() { castVote(r); },
+                return h('button', { type: 'button', key: r, onClick: function() { castVote(r); },
                   'aria-label': 'Rate ' + r + ' of 5',
                   style: { padding: 14, borderRadius: 10, border: '2px solid ' + rubricColor(r),
                     background: _howBg('#1e293b'), color: rubricColor(r), cursor: 'pointer', fontWeight: 900, fontSize: 22 } }, r);
@@ -13703,7 +13748,7 @@ var EXPEDITION_CONNECTIONS = [
             h('div', { style: { fontSize: 12, color: _howFg('#bae6fd'), fontWeight: 800, marginBottom: 10 } }, 'Open a new climate poll'),
             activeHowls.map(function(hw) {
               var defaultPrompt = 'On a 1–5 scale, how is our Crew doing on ' + hw.name.toLowerCase() + ' this week?';
-              return h('button', { key: hw.id, onClick: function() { startPoll(hw.id, defaultPrompt); },
+              return h('button', { type: 'button', key: hw.id, onClick: function() { startPoll(hw.id, defaultPrompt); },
                 style: { display: 'block', width: '100%', padding: 10, borderRadius: 8, border: '1px solid ' + hw.color + '55', cursor: 'pointer',
                   background: _howBg('#1e293b'), color: _howFg('#cbd5e1'), textAlign: 'left', marginBottom: 6, fontSize: 12.5 } },
                 h('strong', { style: { color: hw.color } }, hw.icon + ' ' + hw.name + ': '),
@@ -13746,7 +13791,7 @@ var EXPEDITION_CONNECTIONS = [
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 6, marginBottom: 14 } },
             CREW_PROTOCOLS.map(function(p) {
               var picked = protocolId === p.id;
-              return h('button', { key: p.id, onClick: function() { pickProtocol(p.id); },
+              return h('button', { type: 'button', key: p.id, onClick: function() { pickProtocol(p.id); },
                 style: { padding: 8, borderRadius: 8, border: '2px solid ' + (picked ? '#14b8a6' : '#334155'),
                   background: picked ? 'rgba(20,184,166,0.18)' : '#0f172a',
                   cursor: 'pointer', textAlign: 'left', color: picked ? '#5eead4' : _howFg('#cbd5e1') } },
@@ -13878,7 +13923,7 @@ var EXPEDITION_CONNECTIONS = [
           h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
             activeHowls.map(function(hw) {
               var picked = coachHowlId === hw.id;
-              return h('button', { key: hw.id, onClick: function() { setHowl({ goalCoachHowl: hw.id }); },
+              return h('button', { type: 'button', key: hw.id, onClick: function() { setHowl({ goalCoachHowl: hw.id }); },
                 style: { padding: '8px 12px', borderRadius: 8, border: '2px solid ' + (picked ? hw.color : '#334155'),
                   background: picked ? hw.color + '22' : '#0f172a',
                   cursor: 'pointer', color: picked ? hw.color : _howFg('#cbd5e1'), fontSize: 12, fontWeight: 700 } },
@@ -14045,7 +14090,7 @@ var EXPEDITION_CONNECTIONS = [
             steps.map(function(s, i) {
               var active = i === step;
               var done = i < step;
-              return h('button', { key: s.id, onClick: function() { gotoStep(i); },
+              return h('button', { type: 'button', key: s.id, onClick: function() { gotoStep(i); },
                 style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (active ? _howFg('#a78bfa') : (done ? '#22c55e' : '#334155')),
                   background: active ? 'rgba(167,139,250,0.18)' : (done ? 'rgba(34,197,94,0.08)' : '#0f172a'),
                   color: active ? _howFg('#e9d5ff') : (done ? _howFg('#86efac') : _howFg('#94a3b8')),
@@ -14064,7 +14109,7 @@ var EXPEDITION_CONNECTIONS = [
               activeHowls.map(function(hw) {
                 var picked = !!pickedHowls[hw.id];
                 var latest = latestByHowl[hw.id];
-                return h('button', { key: hw.id, onClick: function() { togglePicked(hw.id); },
+                return h('button', { type: 'button', key: hw.id, onClick: function() { togglePicked(hw.id); },
                   'aria-pressed': picked,
                   style: { padding: 10, borderRadius: 10, border: '2px solid ' + (picked ? hw.color : '#334155'),
                     background: picked ? hw.color + '22' : _howBg('#1e293b'),
@@ -14094,13 +14139,13 @@ var EXPEDITION_CONNECTIONS = [
 
             // Nav buttons
             h('div', { style: { display: 'flex', gap: 8, marginTop: 14, justifyContent: 'space-between', flexWrap: 'wrap' } },
-              h('button', { onClick: function() { if (step > 0) gotoStep(step - 1); }, disabled: step === 0,
+              h('button', { type: 'button', onClick: function() { if (step > 0) gotoStep(step - 1); }, disabled: step === 0,
                 style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #334155', cursor: step === 0 ? 'not-allowed' : 'pointer', background: _howBg('#1e293b'), color: step === 0 ? _howFg('#64748b') : _howFg('#cbd5e1'), fontWeight: 700, fontSize: 12, opacity: step === 0 ? 0.5 : 1 } }, '← Previous'),
               h('div', { style: { fontSize: 11, color: _howFg('#94a3b8') } }, 'Step ' + (step + 1) + ' of ' + steps.length),
               step < steps.length - 1
-                ? h('button', { onClick: function() { gotoStep(step + 1); },
+                ? h('button', { type: 'button', onClick: function() { gotoStep(step + 1); },
                     style: { padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _howBg('#7c3aed'), color: _howFg('#fff'), fontWeight: 700, fontSize: 12 } }, 'Next →')
-                : h('button', { onClick: function() { gotoStep(0); if (addToast) addToast('Conference rehearsal saved — visit Print to export', 'success'); },
+                : h('button', { type: 'button', onClick: function() { gotoStep(0); if (addToast) addToast('Conference rehearsal saved — visit Print to export', 'success'); },
                     style: { padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _howBg('#15803d'), color: _howFg('#fff'), fontWeight: 700, fontSize: 12 } }, '✓ Save draft')
             )
           ),
@@ -14142,7 +14187,7 @@ var EXPEDITION_CONNECTIONS = [
           h('div', { style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
             activeHowls.map(function(hw) {
               var picked = libHowlId === hw.id;
-              return h('button', { key: hw.id, onClick: function() { setHowl({ libraryHowl: hw.id }); },
+              return h('button', { type: 'button', key: hw.id, onClick: function() { setHowl({ libraryHowl: hw.id }); },
                 style: { padding: '10px 14px', borderRadius: 10, border: '2px solid ' + (picked ? hw.color : '#334155'),
                   background: picked ? hw.color + '22' : '#0f172a',
                   cursor: 'pointer', color: picked ? hw.color : _howFg('#cbd5e1'), fontSize: 13, fontWeight: 700 } },
@@ -14228,6 +14273,13 @@ var EXPEDITION_CONNECTIONS = [
         var int = setInterval(function() { upd({ pfNow: Date.now() }); }, 1000);
         return function() { clearInterval(int); };
       }, [activeTab, d.pfRunning]);
+      React.useEffect(function() {
+        if (activeTab !== 'protocol_run' || !d.pfId || typeof EXT_PROTOCOLS === 'undefined' || !EXT_PROTOCOLS.length) return undefined;
+        if (!EXT_PROTOCOLS.some(function(x) { return x && x.id === d.pfId; })) {
+          upd({ pfId: null, pfRunning: false });
+        }
+        return undefined;
+      }, [activeTab, d.pfId]);
       // === SPLICE_VISUALS_HERE ===
 // Part 1 of visual components for sel_tool_howl.js
 
@@ -14237,7 +14289,18 @@ var EXPEDITION_CONNECTIONS = [
 // ══════════════════════════════════════════════════════════
 var radarContent = null;
 if (activeTab === 'radar') {
-  var ratings = (d.checkins && d.checkins.length) ? d.checkins[d.checkins.length - 1].ratings || {} : {};
+  var ratings = {};
+  if (Array.isArray(d.checkins) && d.checkins.length && d.checkins[d.checkins.length - 1] && d.checkins[d.checkins.length - 1].ratings) {
+    ratings = d.checkins[d.checkins.length - 1].ratings;
+  } else {
+    var _latestWeekly = quarterCheckins.length ? quarterCheckins[quarterCheckins.length - 1] : (checkins.length ? checkins[checkins.length - 1] : null);
+    if (_latestWeekly && _latestWeekly.perHowl && typeof _latestWeekly.perHowl === 'object') {
+      Object.keys(_latestWeekly.perHowl).forEach(function(k) {
+        var row = _latestWeekly.perHowl[k];
+        if (row && Number.isFinite(Number(row.rating)) && Number(row.rating) > 0) ratings[k] = Number(row.rating);
+      });
+    }
+  }
   var howlList = howls;
   if (!howlList.length) {
     radarContent = h('div', { style: { padding: 40, textAlign: 'center', color: _howFg('#94a3b8') } }, 'No HOWL configuration loaded.');
@@ -14288,7 +14351,7 @@ if (activeTab === 'radar') {
       ),
       h('div', { style: { marginTop: 14, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 } },
         howlList.map(function(h2) {
-          var lvl = ratings[h2.id] || 0;
+          var lvl = Math.max(0, Math.min(4, Math.round(Number(ratings[h2.id]) || 0)));
           return h('div', { key: h2.id, style: { padding: 12, borderRadius: 10, background: _howBg('#1e293b'), border: '1px solid ' + h2.color + '55', borderLeft: '4px solid ' + h2.color } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 4 } },
               h2.icon ? h('span', { style: { fontSize: 18 } }, h2.icon) : null,
@@ -14341,7 +14404,7 @@ if (activeTab === 'goal_lab') {
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
         howlList.map(function(h2) {
           var sel = glHowl === h2.id;
-          return h('button', { key: h2.id, onClick: function() { upd({ glHowl: h2.id }); },
+          return h('button', { type: 'button', key: h2.id, onClick: function() { upd({ glHowl: h2.id }); },
             style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: sel ? _howInk(h2.color) : _howFg('#cbd5e1'), fontSize: 12, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
           }, (h2.icon || '') + ' ' + h2.name);
         })
@@ -14389,7 +14452,7 @@ if (activeTab === 'goal_lab') {
           'In Crew, I will ___ once per session for ___ weeks.',
           'When I get stuck, I will try ___ approaches before asking for help.'
         ].map(function(stem, i) {
-          return h('button', { key: i, onClick: function() { upd({ glText: stem }); },
+          return h('button', { type: 'button', key: i, onClick: function() { upd({ glText: stem }); },
             style: { padding: '6px 10px', borderRadius: 6, border: '1px solid #475569', background: _howBg('#0f172a'), color: _howFg('#cbd5e1'), fontSize: 12, cursor: 'pointer', textAlign: 'left' }
           }, '+ ' + stem);
         })
@@ -14424,7 +14487,7 @@ if (activeTab === 'rubric') {
           [1, 2, 3, 4].map(function(lvl) {
             var desc = (h2.levels && h2.levels[lvl - 1]) || ('Level ' + lvl);
             var sel = selected === lvl;
-            return h('button', { key: lvl, onClick: function() {
+            return h('button', { type: 'button', key: lvl, onClick: function() {
                 var n = Object.assign({}, ruRatings); n[h2.id] = lvl; upd({ ruRatings: n });
               },
               style: { padding: 10, borderRadius: 8, border: '2px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: _howFg('#cbd5e1'), textAlign: 'left', cursor: 'pointer' }
@@ -14437,7 +14500,7 @@ if (activeTab === 'rubric') {
       );
     }),
     h('div', { style: { marginTop: 14, textAlign: 'center' } },
-      h('button', { onClick: function() {
+      h('button', { type: 'button', onClick: function() {
           var newCheckins = (d.checkins || []).concat([{ date: new Date().toISOString(), ratings: ruRatings }]);
           upd({ checkins: newCheckins, ruRatings: {} });
           addToast && addToast('Self-assessment saved!', 'success');
@@ -14477,7 +14540,7 @@ if (activeTab === 'protocol_run') {
             h('h5', { style: { margin: 0, color: _howFg('#f1f5f9'), fontSize: 14, fontWeight: 700 } }, p.name),
             h('div', { style: { color: _howFg('#94a3b8'), fontSize: 11, marginTop: 2 } }, (p.origin || '') + ' · ' + (p.durationMin || '?') + ' min · ' + (p.groupSize || '?')),
             h('p', { style: { margin: '6px 0', color: _howFg('#cbd5e1'), fontSize: 12, lineHeight: 1.5 } }, p.forWhat),
-            h('button', { onClick: function() { upd({ pfId: p.id, pfPhase: 0, pfStart: Date.now(), pfRunning: false }); if (soundEnabled) sfxClick(); },
+            h('button', { type: 'button', onClick: function() { upd({ pfId: p.id, pfPhase: 0, pfStart: Date.now(), pfRunning: false }); if (soundEnabled) sfxClick(); },
               style: { padding: '6px 14px', borderRadius: 6, border: 'none', background: _howBg('#7c3aed'), color: _howHC ? _howFg('#0f172a') : '#ffffff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
             }, '▶ Use this protocol')
           );
@@ -14486,7 +14549,7 @@ if (activeTab === 'protocol_run') {
     );
   } else {
     var p = EXT_PROTOCOLS.find(function(x) { return x.id === pfId; });
-    if (!p) { upd({ pfId: null }); protocolFacilitatorContent = h('div', null, 'Loading...'); }
+    if (!p) { protocolFacilitatorContent = h('div', { style: { padding: 24, textAlign: 'center', color: _howFg('#94a3b8') } }, 'Loading...'); }
     else {
       var phase = p.steps && p.steps[pfPhase];
       var phaseDur = phase ? (phase.durationMin || 5) * 60 : 60;
@@ -14505,7 +14568,7 @@ if (activeTab === 'protocol_run') {
         h('div', { style: { padding: 12, borderRadius: 10, background: _howBg('#1e293b'), marginBottom: 12 } },
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' } },
             h('h4', { style: { margin: 0, color: _howFg('#a78bfa'), fontSize: 16, fontWeight: 800 } }, p.name),
-            h('button', { onClick: function() { upd({ pfId: null, pfPhase: 0, pfRunning: false }); if (soundEnabled) sfxClick(); },
+            h('button', { type: 'button', onClick: function() { upd({ pfId: null, pfPhase: 0, pfRunning: false }); if (soundEnabled) sfxClick(); },
               style: { padding: '4px 10px', borderRadius: 6, border: '1px solid #475569', background: _howBg('#0f172a'), color: _howFg('#94a3b8'), fontSize: 11, cursor: 'pointer' }
             }, '← Choose another')
           ),
@@ -14513,7 +14576,7 @@ if (activeTab === 'protocol_run') {
         ),
         // big timer
         h('div', { style: { padding: 20, borderRadius: 12, background: _howBg('#0f172a'), textAlign: 'center', marginBottom: 12 } },
-          h('div', { style: { color: pfRunning && remaining < 30 ? _howBg('#ef4444') : _howFg('#fbbf24'), fontSize: 56, fontWeight: 800, fontFamily: 'monospace' } }, minLeft + ':' + (secLeft < 10 ? '0' : '') + secLeft),
+          h('div', { style: { color: pfRunning && remaining < 30 ? _howFg('#fca5a5') : _howFg('#fbbf24'), fontSize: 56, fontWeight: 800, fontFamily: 'monospace' } }, minLeft + ':' + (secLeft < 10 ? '0' : '') + secLeft),
           h('div', { style: { color: _howFg('#94a3b8'), fontSize: 11 } }, pfRunning ? 'remaining' : 'set')
         ),
         phase ? h('div', { style: { padding: 16, borderRadius: 12, background: _howBg('#1e1b4b'), border: '2px solid #a78bfa', marginBottom: 12 } },
@@ -14526,14 +14589,14 @@ if (activeTab === 'protocol_run') {
           phase.participantAction ? h('div', { style: { marginTop: 8, padding: '6px 10px', borderRadius: 6, background: _howBg('#042f2e'), color: _howFg('#5eead4'), fontSize: 12, lineHeight: 1.55 } }, '👤 Participants: ' + phase.participantAction) : null
         ) : null,
         h('div', { style: { display: 'flex', gap: 10, justifyContent: 'space-between', marginBottom: 14 } },
-          h('button', { onClick: function() { if (pfPhase > 0) upd({ pfPhase: pfPhase - 1, pfStart: Date.now() }); },
+          h('button', { type: 'button', onClick: function() { if (pfPhase > 0) upd({ pfPhase: pfPhase - 1, pfStart: Date.now() }); },
             disabled: pfPhase === 0,
             style: { padding: '10px 16px', borderRadius: 6, border: '1px solid #475569', background: _howBg('#0f172a'), color: pfPhase === 0 ? _howFg('#475569') : _howFg('#94a3b8'), fontSize: 13, cursor: pfPhase === 0 ? 'not-allowed' : 'pointer' }
           }, '← Previous phase'),
-          h('button', { onClick: function() { upd({ pfRunning: !pfRunning, pfStart: pfRunning ? d.pfStart : Date.now() }); if (soundEnabled) sfxClick(); },
+          h('button', { type: 'button', onClick: function() { upd({ pfRunning: !pfRunning, pfStart: pfRunning ? d.pfStart : Date.now() }); if (soundEnabled) sfxClick(); },
             style: { padding: '12px 28px', borderRadius: 8, border: 'none', background: pfRunning ? _howBg('#ef4444') : '#5eead4', color: pfRunning ? _howFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
           }, pfRunning ? '⏸ Pause' : '▶ Start phase'),
-          h('button', { onClick: function() { if (pfPhase < (p.steps || []).length - 1) upd({ pfPhase: pfPhase + 1, pfStart: Date.now() }); else upd({ pfRunning: false }); },
+          h('button', { type: 'button', onClick: function() { if (pfPhase < (p.steps || []).length - 1) upd({ pfPhase: pfPhase + 1, pfStart: Date.now() }); else upd({ pfRunning: false }); },
             style: { padding: '10px 16px', borderRadius: 6, border: '1px solid #475569', background: _howBg('#0f172a'), color: _howFg('#94a3b8'), fontSize: 13, cursor: 'pointer' }
           }, 'Next phase →')
         ),
@@ -14614,7 +14677,7 @@ if (activeTab === 'climate_gauge') {
           h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
             DIMENSIONS.map(function(dim) {
               var sel = cgDimension === dim.id;
-              return h('button', { key: dim.id, onClick: function() { upd({ cgDimension: dim.id }); },
+              return h('button', { type: 'button', key: dim.id, onClick: function() { upd({ cgDimension: dim.id }); },
                 style: { padding: '4px 8px', borderRadius: 8, border: '1px solid ' + (sel ? color : _howFg('#475569')), background: sel ? color + '33' : '#0f172a', color: sel ? _howInk(color) : _howFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
               }, dim.label);
             })
@@ -14637,7 +14700,7 @@ if (activeTab === 'climate_gauge') {
         onChange: function(e) { upd({ cgMyScore: parseInt(e.target.value, 10) }); },
         style: { width: '100%' }
       }),
-      h('button', { onClick: _addScore,
+      h('button', { type: 'button', onClick: _addScore,
         style: { marginTop: 10, padding: '10px 18px', borderRadius: 6, border: 'none', background: _howBg('#5eead4'), color: _howFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, '✓ Add my score')
     )
@@ -14685,7 +14748,7 @@ if (activeTab === 'opener_random') {
           h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
             cats.map(function(c) {
               var sel = orCategory === c;
-              return h('button', { key: c, onClick: function() { upd({ orCategory: c }); },
+              return h('button', { type: 'button', key: c, onClick: function() { upd({ orCategory: c }); },
                 style: { padding: '4px 8px', borderRadius: 12, border: '1px solid ' + (sel ? _howFg('#fbbf24') : _howFg('#475569')), background: sel ? '#fbbf2433' : '#0f172a', color: sel ? _howFg('#fde68a') : _howFg('#cbd5e1'), fontSize: 10, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
               }, c);
             })
@@ -14710,21 +14773,21 @@ if (activeTab === 'opener_random') {
           h('p', { style: { margin: 0, color: _howFg('#fde68a'), fontSize: 12, fontStyle: 'italic' } }, orPicked.facilitatorTip)
         ) : null,
         h('div', { style: { marginTop: 14, display: 'flex', gap: 10 } },
-          h('button', { onClick: function() { var n = orUsed.concat([orPicked.id]); upd({ orUsed: n }); _pick(); },
+          h('button', { type: 'button', onClick: function() { var n = orUsed.concat([orPicked.id]); upd({ orUsed: n }); _pick(); },
             style: { padding: '10px 18px', borderRadius: 6, border: 'none', background: _howBg('#5eead4'), color: _howFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
           }, '✓ Used it — pick another'),
-          h('button', { onClick: _pick,
+          h('button', { type: 'button', onClick: _pick,
             style: { padding: '10px 14px', borderRadius: 6, border: '1px solid #a78bfa', background: _howBg('#0f172a'), color: _howFg('#c4b5fd'), fontSize: 13, cursor: 'pointer' }
           }, '🎲 Different opener')
         )
       ) : h('div', { style: { padding: 30, borderRadius: 12, background: _howBg('#0f172a'), textAlign: 'center' } },
-        h('button', { onClick: _pick,
+        h('button', { type: 'button', onClick: _pick,
           style: { padding: '14px 28px', borderRadius: 8, border: 'none', background: _howBg('#7c3aed'), color: _howHC ? _howFg('#0f172a') : '#ffffff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
         }, '🎲 Pick an opener')
       ),
       orUsed.length > 0 ? h('div', { style: { marginTop: 14, padding: 10, borderRadius: 10, background: _howBg('#1e293b') } },
         h('div', { style: { color: _howFg('#94a3b8'), fontSize: 11 } }, 'Used this round: ' + orUsed.length),
-        h('button', { onClick: function() { upd({ orUsed: [] }); },
+        h('button', { type: 'button', onClick: function() { upd({ orUsed: [] }); },
           style: { marginTop: 6, padding: '4px 10px', borderRadius: 6, border: '1px solid #475569', background: _howBg('#0f172a'), color: _howFg('#94a3b8'), fontSize: 11, cursor: 'pointer' }
         }, 'Clear used list')
       ) : null
@@ -14830,10 +14893,10 @@ if (activeTab === 'goals_lib') {
         )
       ),
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
-        h('button', { onClick: function() { upd({ glLibHowl: 'all' }); }, style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (glLibHowl === 'all' ? _howFg('#fbbf24') : _howFg('#475569')), background: glLibHowl === 'all' ? '#fbbf2433' : '#0f172a', color: glLibHowl === 'all' ? _howFg('#fde68a') : _howFg('#cbd5e1'), fontSize: 11, fontWeight: glLibHowl === 'all' ? 700 : 500, cursor: 'pointer' } }, 'all'),
+        h('button', { type: 'button', onClick: function() { upd({ glLibHowl: 'all' }); }, style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (glLibHowl === 'all' ? _howFg('#fbbf24') : _howFg('#475569')), background: glLibHowl === 'all' ? '#fbbf2433' : '#0f172a', color: glLibHowl === 'all' ? _howFg('#fde68a') : _howFg('#cbd5e1'), fontSize: 11, fontWeight: glLibHowl === 'all' ? 700 : 500, cursor: 'pointer' } }, 'all'),
         howlList2.map(function(h2) {
           var sel = glLibHowl === h2.id;
-          return h('button', { key: h2.id, onClick: function() { upd({ glLibHowl: h2.id }); },
+          return h('button', { type: 'button', key: h2.id, onClick: function() { upd({ glLibHowl: h2.id }); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: sel ? _howInk(h2.color) : _howFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
           }, h2.name);
         })
@@ -14841,7 +14904,7 @@ if (activeTab === 'goals_lib') {
       h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 14 } },
         [0, 1, 2, 3].map(function(lvl) {
           var sel = glLibLevel === lvl;
-          return h('button', { key: lvl, onClick: function() { upd({ glLibLevel: lvl }); },
+          return h('button', { type: 'button', key: lvl, onClick: function() { upd({ glLibLevel: lvl }); },
             style: { padding: '4px 8px', borderRadius: 10, border: '1px solid ' + (sel ? _howFg('#a78bfa') : _howFg('#475569')), background: sel ? _howBg('#1e1b4b') : '#0f172a', color: sel ? _howFg('#c4b5fd') : _howFg('#94a3b8'), fontSize: 11, cursor: 'pointer' }
           }, lvl === 0 ? 'all starting levels' : 'starting L' + lvl);
         })
@@ -14890,10 +14953,10 @@ if (activeTab === 'evidence_lib') {
         )
       ),
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
-        h('button', { onClick: function() { upd({ elHowl: 'all' }); }, style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (elHowl === 'all' ? _howFg('#fbbf24') : _howFg('#475569')), background: elHowl === 'all' ? '#fbbf2433' : '#0f172a', color: elHowl === 'all' ? _howFg('#fde68a') : _howFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' } }, 'all HOWLs'),
+        h('button', { type: 'button', onClick: function() { upd({ elHowl: 'all' }); }, style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (elHowl === 'all' ? _howFg('#fbbf24') : _howFg('#475569')), background: elHowl === 'all' ? '#fbbf2433' : '#0f172a', color: elHowl === 'all' ? _howFg('#fde68a') : _howFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' } }, 'all HOWLs'),
         howlList3.map(function(h2) {
           var sel = elHowl === h2.id;
-          return h('button', { key: h2.id, onClick: function() { upd({ elHowl: h2.id }); },
+          return h('button', { type: 'button', key: h2.id, onClick: function() { upd({ elHowl: h2.id }); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: sel ? _howInk(h2.color) : _howFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
           }, h2.name.split(' ')[0]);
         })
@@ -14901,7 +14964,7 @@ if (activeTab === 'evidence_lib') {
       h('div', { style: { display: 'flex', gap: 4, marginBottom: 14 } },
         [0, 1, 2, 3, 4].map(function(lvl) {
           var sel = elLevel === lvl;
-          return h('button', { key: lvl, onClick: function() { upd({ elLevel: lvl }); },
+          return h('button', { type: 'button', key: lvl, onClick: function() { upd({ elLevel: lvl }); },
             style: { padding: '4px 10px', borderRadius: 10, border: '1px solid ' + (sel ? _howFg('#a78bfa') : _howFg('#475569')), background: sel ? _howBg('#1e1b4b') : '#0f172a', color: sel ? _howFg('#c4b5fd') : _howFg('#94a3b8'), fontSize: 11, cursor: 'pointer' }
           }, lvl === 0 ? 'all' : 'L' + lvl);
         })
@@ -14942,10 +15005,10 @@ if (activeTab === 'exemplars') {
         )
       ),
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
-        h('button', { onClick: function() { upd({ exHowl: 'all' }); }, style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (exHowl === 'all' ? _howFg('#fbbf24') : _howFg('#475569')), background: exHowl === 'all' ? '#fbbf2433' : '#0f172a', color: exHowl === 'all' ? _howFg('#fde68a') : _howFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' } }, 'all'),
+        h('button', { type: 'button', onClick: function() { upd({ exHowl: 'all' }); }, style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (exHowl === 'all' ? _howFg('#fbbf24') : _howFg('#475569')), background: exHowl === 'all' ? '#fbbf2433' : '#0f172a', color: exHowl === 'all' ? _howFg('#fde68a') : _howFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' } }, 'all'),
         howlList4.map(function(h2) {
           var sel = exHowl === h2.id;
-          return h('button', { key: h2.id, onClick: function() { upd({ exHowl: h2.id }); },
+          return h('button', { type: 'button', key: h2.id, onClick: function() { upd({ exHowl: h2.id }); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: sel ? _howInk(h2.color) : _howFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
           }, h2.name.split(' ')[0]);
         })
@@ -14959,7 +15022,7 @@ if (activeTab === 'exemplars') {
             h('h4', { style: { margin: '4px 0', color: _howFg('#fde68a'), fontSize: 14, fontWeight: 800 } }, e.studentPseudonym),
             h('div', { style: { color: _howFg('#94a3b8'), fontSize: 11, marginBottom: 6 } }, e.studentBio),
             h('p', { style: { margin: '6px 0', color: _howFg('#e2e8f0'), fontSize: 13, lineHeight: 1.65 } }, e.narrative),
-            (e.whyThisIsLevelN || e.growthEdge || e.ifThisWereYou) && h('button', { onClick: function() { upd({ exOpen: isOpen ? null : e.id }); },
+            (e.whyThisIsLevelN || e.growthEdge || e.ifThisWereYou) && h('button', { type: 'button', onClick: function() { upd({ exOpen: isOpen ? null : e.id }); },
               style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : hh.color, color: isOpen ? _howFg('#94a3b8') : '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'Why is this L' + e.level + '?'),
             isOpen ? h('div', { style: { marginTop: 8 } },
@@ -15006,7 +15069,7 @@ if (activeTab === 'reflection_prompts') {
       h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 10 } },
         cats.map(function(c) {
           var sel = rpCategory === c;
-          return h('button', { key: c, onClick: function() { upd({ rpCategory: c }); },
+          return h('button', { type: 'button', key: c, onClick: function() { upd({ rpCategory: c }); },
             style: { padding: '4px 8px', borderRadius: 12, border: '1px solid ' + (sel ? _howFg('#fbbf24') : _howFg('#475569')), background: sel ? '#fbbf2433' : '#0f172a', color: sel ? _howFg('#fde68a') : _howFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
           }, c);
         })
@@ -15021,11 +15084,11 @@ if (activeTab === 'reflection_prompts') {
             rpPicked.followUpQuestions.map(function(q, i) { return h('li', { key: i }, q); })
           )
         ) : null,
-        h('button', { onClick: _pickPrompt,
+        h('button', { type: 'button', onClick: _pickPrompt,
           style: { marginTop: 14, padding: '8px 16px', borderRadius: 6, border: 'none', background: _howBg('#5eead4'), color: _howFg('#0f172a'), fontSize: 12, fontWeight: 700, cursor: 'pointer' }
         }, '🎲 Pick another')
       ) : h('div', { style: { padding: 20, textAlign: 'center' } },
-        h('button', { onClick: _pickPrompt,
+        h('button', { type: 'button', onClick: _pickPrompt,
           style: { padding: '14px 28px', borderRadius: 8, border: 'none', background: _howBg('#5eead4'), color: _howFg('#0f172a'), fontSize: 14, fontWeight: 700, cursor: 'pointer' }
         }, '🎲 Pick a prompt')
       )
@@ -15054,10 +15117,10 @@ if (activeTab === 'misconceptions') {
         )
       ),
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
-        h('button', { onClick: function() { upd({ mcHowl: 'all' }); }, style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (mcHowl === 'all' ? _howFg('#fbbf24') : _howFg('#475569')), background: mcHowl === 'all' ? '#fbbf2433' : '#0f172a', color: mcHowl === 'all' ? _howFg('#fde68a') : _howFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' } }, 'all'),
+        h('button', { type: 'button', onClick: function() { upd({ mcHowl: 'all' }); }, style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (mcHowl === 'all' ? _howFg('#fbbf24') : _howFg('#475569')), background: mcHowl === 'all' ? '#fbbf2433' : '#0f172a', color: mcHowl === 'all' ? _howFg('#fde68a') : _howFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' } }, 'all'),
         howlList6.map(function(h2) {
           var sel = mcHowl === h2.id;
-          return h('button', { key: h2.id, onClick: function() { upd({ mcHowl: h2.id }); },
+          return h('button', { type: 'button', key: h2.id, onClick: function() { upd({ mcHowl: h2.id }); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? h2.color : _howFg('#475569')), background: sel ? h2.color + '33' : '#0f172a', color: sel ? _howInk(h2.color) : _howFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
           }, h2.name.split(' ')[0]);
         })
@@ -15068,7 +15131,7 @@ if (activeTab === 'misconceptions') {
           var hh = howlList6.find(function(h2) { return h2.id === m.howl; }) || { color: _howFg('#fbbf24') };
           return h('div', { key: m.id, style: { padding: 12, borderRadius: 10, background: _howBg('#1e293b'), border: '1px solid #334155', borderLeft: '4px solid ' + hh.color } },
             h('div', { style: { padding: '6px 10px', borderRadius: 6, background: _howBg('#451a03'), color: _howFg('#fde68a'), fontSize: 13, fontStyle: 'italic', lineHeight: 1.55 } }, '🗣 "' + m.misconception + '"'),
-            h('button', { onClick: function() { upd({ mcOpen: isOpen ? null : m.id }); },
+            h('button', { type: 'button', onClick: function() { upd({ mcOpen: isOpen ? null : m.id }); },
               style: { marginTop: 8, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : hh.color, color: isOpen ? _howFg('#94a3b8') : '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'Reframe'),
             isOpen ? h('div', { style: { marginTop: 10 } },
@@ -15168,7 +15231,7 @@ if (activeTab === 'rituals') {
     h('div', { style: { display: 'flex', gap: 6, marginBottom: 14 } },
       ['openers','closers','celebrations'].map(function(t) {
         var sel = ritType === t;
-        return h('button', { key: t, onClick: function() { upd({ ritType: t }); },
+        return h('button', { type: 'button', key: t, onClick: function() { upd({ ritType: t }); },
           style: { padding: '8px 16px', borderRadius: 8, border: '1px solid ' + (sel ? _howFg('#a78bfa') : _howFg('#475569')), background: sel ? _howBg('#1e1b4b') : '#0f172a', color: sel ? _howFg('#c4b5fd') : _howFg('#cbd5e1'), fontSize: 13, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
         }, t);
       })
@@ -15210,7 +15273,7 @@ if (activeTab === 'portrait') {
             h('h5', { style: { margin: 0, color: _howFg('#fde68a'), fontSize: 14, fontWeight: 800 } }, p.trait),
             p.description ? h('p', { style: { margin: '6px 0', color: _howFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } }, p.description) : null,
             p.showsAsHOWL ? h('div', { style: { color: _howFg('#a78bfa'), fontSize: 11, fontStyle: 'italic' } }, '→ Cultivated via: ' + p.showsAsHOWL) : null,
-            h('button', { onClick: function() { upd({ ptOpen: isOpen ? null : p.id }); },
+            h('button', { type: 'button', onClick: function() { upd({ ptOpen: isOpen ? null : p.id }); },
               style: { marginTop: 6, padding: '5px 10px', borderRadius: 6, border: 'none', background: isOpen ? '#334155' : '#5eead4', color: isOpen ? _howFg('#94a3b8') : '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'Deeper'),
             isOpen ? h('div', { style: { marginTop: 8 } },

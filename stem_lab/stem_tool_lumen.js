@@ -2350,11 +2350,40 @@
           '.allo-lumen-mode-card{transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;}',
           '.allo-lumen-mode-card:hover{transform:translateY(-2px);}',
           '.allo-lumen-preset-chip{transition:background-color .15s ease,border-color .15s ease;}',
-          '@media(prefers-reduced-motion:reduce){.allo-lumen-mode-card,.allo-lumen-preset-chip{transition:none!important;transform:none!important;}}',
+          '@keyframes alloLumenCorona{0%,100%{opacity:.78;transform:scale(.96);}50%{opacity:1;transform:scale(1.06);}}',
+          '@keyframes alloLumenPhotonDash{0%{stroke-dashoffset:14;opacity:.22;}45%{opacity:.95;}100%{stroke-dashoffset:-14;opacity:.22;}}',
+          '@keyframes alloLumenBloom{0%,100%{opacity:.58;}50%{opacity:1;}}',
+          '@keyframes alloLumenBandBreath{0%,100%{opacity:.82;}50%{opacity:1;}}',
+          '@keyframes alloLumenSheen{0%,100%{opacity:.38;}50%{opacity:.92;}}',
+          '@keyframes alloLumenBeacon{0%,100%{opacity:.52;transform:scale(.88);}50%{opacity:1;transform:scale(1.24);}}',
+          '@keyframes alloLumenDashFlow{from{stroke-dashoffset:0;}to{stroke-dashoffset:-24;}}',
+          '@keyframes alloLumenDashFlowSlow{from{stroke-dashoffset:0;}to{stroke-dashoffset:-16;}}',
+          '.allo-lumen-prism-svg{overflow:visible;}',
+          '.allo-lumen-prism-corona,.allo-lumen-beam-cone{transform-box:fill-box;transform-origin:center;animation:alloLumenCorona 4.6s ease-in-out infinite;}',
+          '.allo-lumen-beam-cone{animation-duration:5.2s;animation-delay:.4s;}',
+          '.allo-lumen-ray-bloom{animation:alloLumenBloom 3.8s ease-in-out infinite;}',
+          '.allo-lumen-photon-ray{animation:alloLumenPhotonDash 2.6s linear infinite;}',
+          '.allo-lumen-prism-sheen{animation:alloLumenSheen 3.4s ease-in-out infinite;}',
+          '.allo-lumen-prism-beacon{transform-box:fill-box;transform-origin:center;animation:alloLumenBeacon 3.1s ease-in-out infinite;}',
+          '.allo-lumen-ladder-glow{animation:alloLumenBloom 3.4s ease-in-out infinite;}',
+          '.allo-lumen-ladder-sheen{animation:alloLumenSheen 4.4s ease-in-out infinite;}',
+          '.allo-lumen-ladder-dash{animation:alloLumenDashFlowSlow 5.5s linear infinite;}',
+          '.allo-lumen-ladder-pip{transform-box:fill-box;transform-origin:center;animation:alloLumenBeacon 3.2s ease-in-out infinite;}',
+          '#lumen-chart-main,#lumen-chart-present{box-shadow:0 2px 14px rgba(180,83,9,0.06),0 0 0 1px rgba(14,116,144,0.04);transition:box-shadow .24s ease;}',
+          '#lumen-chart-main:hover,#lumen-chart-present:hover{box-shadow:0 4px 20px rgba(180,83,9,0.10),0 0 16px rgba(14,116,144,0.08);}',
+          '#lumen-chart-main path[fill^="url(#lumenBandGrad)"],#lumen-chart-present path[fill^="url(#lumenBandGrad)"]{animation:alloLumenBandBreath 5.2s ease-in-out infinite;}',
+          '#lumen-chart-main path[stroke-width="6.5"],#lumen-chart-present path[stroke-width="6.5"],#lumen-chart-main path[stroke-width="5.5"],#lumen-chart-present path[stroke-width="5.5"],#lumen-chart-main path[stroke-width="5"],#lumen-chart-present path[stroke-width="5"],#lumen-chart-main line[stroke-width="6.5"],#lumen-chart-present line[stroke-width="6.5"],#lumen-chart-main line[stroke-width="5"],#lumen-chart-present line[stroke-width="5"],#lumen-chart-main line[stroke-width="4.5"],#lumen-chart-present line[stroke-width="4.5"]{animation:alloLumenBloom 3.8s ease-in-out infinite;}',
+          '#lumen-chart-main line[stroke="#0e7490"][stroke-dasharray],#lumen-chart-present line[stroke="#0e7490"][stroke-dasharray]{animation:alloLumenDashFlow 4.2s linear infinite;}',
+          '#lumen-chart-main path[stroke-dasharray="4 3"],#lumen-chart-present path[stroke-dasharray="4 3"],#lumen-chart-main line[stroke="#0f172a"][stroke-dasharray],#lumen-chart-present line[stroke="#0f172a"][stroke-dasharray]{animation:alloLumenDashFlowSlow 5.6s linear infinite;}',
+          '#lumen-chart-main line[stroke="#ffffff"][stroke-linecap="round"],#lumen-chart-present line[stroke="#ffffff"][stroke-linecap="round"]{animation:alloLumenSheen 3.6s ease-in-out infinite;}',
+          '#lumen-chart-main circle[stroke="#ffffff"],#lumen-chart-present circle[stroke="#ffffff"]{transform-box:fill-box;transform-origin:center;transition:transform .18s ease;}',
+          '#lumen-chart-main circle[stroke="#ffffff"]:hover,#lumen-chart-present circle[stroke="#ffffff"]:hover{transform:scale(1.28);}',
+          '@media(prefers-reduced-motion:reduce){.allo-lumen-mode-card,.allo-lumen-preset-chip,.allo-lumen-prism-corona,.allo-lumen-beam-cone,.allo-lumen-ray-bloom,.allo-lumen-photon-ray,.allo-lumen-prism-sheen,.allo-lumen-prism-beacon,.allo-lumen-ladder-glow,.allo-lumen-ladder-sheen,.allo-lumen-ladder-dash,.allo-lumen-ladder-pip,#lumen-chart-main,#lumen-chart-present,#lumen-chart-main *,#lumen-chart-present *{animation:none!important;transition:none!important;transform:none!important;}}',
           '.theme-contrast .allo-lumen-home{background:#000000!important;color:#ffff00!important;border:2px solid #ffff00!important;box-shadow:none!important;}',
           '.theme-contrast .allo-lumen-home .allo-lumen-surface{background:#000000!important;color:#ffff00!important;border-color:#ffff00!important;box-shadow:none!important;}',
           '.theme-contrast .allo-lumen-home button:focus-visible{outline:3px solid #ffffff!important;outline-offset:2px;}',
           '.theme-contrast .allo-lumen-home svg text{fill:#ffff00!important;}',
+          '.theme-contrast .allo-lumen-home svg *,.theme-contrast #lumen-chart-main,.theme-contrast #lumen-chart-present,.theme-contrast #lumen-chart-main *,.theme-contrast #lumen-chart-present *,[data-lumen-theme="contrast"] #lumen-chart-main,[data-lumen-theme="contrast"] #lumen-chart-present,[data-lumen-theme="contrast"] #lumen-chart-main *,[data-lumen-theme="contrast"] #lumen-chart-present *{animation:none!important;box-shadow:none!important;filter:none!important;}',
           '.theme-contrast #lumen-chart-main,.theme-contrast #lumen-chart-present{background:#000000!important;border:2px solid #ffff00!important;}',
           '.theme-contrast #lumen-chart-main text,.theme-contrast #lumen-chart-present text{fill:#ffff00!important;}'
         ].join('\n');
@@ -2532,6 +2561,7 @@
                   // Bespoke Inline SVG: Lumen Optical Prism & Provenance Spectrum Emblem
                   h('svg', {
                     width: 48, height: 48, viewBox: '0 0 48 48', role: 'img',
+                    className: 'allo-lumen-prism-svg',
                     'aria-label': __alloT('stem.lumen.emblem_alt', 'Lumen optical prism emblem refracting light into evidence channels'),
                     style: { flexShrink: 0, display: 'block' }
                   },
@@ -2555,22 +2585,27 @@
                       )
                     ) : null,
                     h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: isContrast ? '#000000' : 'url(#lumen-emblem-bg)', stroke: themeAccent, strokeWidth: 1.5 }),
-                    !isContrast ? h('circle', { cx: 24, cy: 25, r: 17, fill: 'url(#lumen-prism-corona)' }) : null,
+                    !isContrast ? h('circle', { className: 'allo-lumen-prism-corona', cx: 24, cy: 25, r: 17, fill: 'url(#lumen-prism-corona)' }) : null,
                     // Volumetric refracted spectrum fan
-                    !isContrast ? h('polygon', { points: '29,21 43,13 43,37 31,29', fill: 'url(#lumen-beam-cone)' }) : null,
-                    // Incident beam + soft optical bloom
-                    !isContrast ? h('line', { x1: 6, y1: 27, x2: 18, y2: 24, stroke: isDark ? '#fef08a' : '#f59e0b', strokeWidth: 5, strokeLinecap: 'round', opacity: 0.26 }) : null,
+                    !isContrast ? h('polygon', { className: 'allo-lumen-beam-cone', points: '29,21 43,13 43,37 31,29', fill: 'url(#lumen-beam-cone)' }) : null,
+                    // Incident beam + soft optical bloom + traveling photon pulse
+                    !isContrast ? h('line', { className: 'allo-lumen-ray-bloom', x1: 6, y1: 27, x2: 18, y2: 24, stroke: isDark ? '#fef08a' : '#f59e0b', strokeWidth: 5, strokeLinecap: 'round', opacity: 0.26 }) : null,
                     h('line', { x1: 6, y1: 27, x2: 18, y2: 24, stroke: isContrast ? '#ffffff' : (isDark ? '#f8fafc' : '#0f172a'), strokeWidth: 2.2, strokeLinecap: 'round' }),
-                    // Faceted glass prism with internal specular edge
+                    !isContrast ? h('line', { className: 'allo-lumen-photon-ray', x1: 6, y1: 27, x2: 18, y2: 24, stroke: '#fef08a', strokeWidth: 2, strokeLinecap: 'round', strokeDasharray: '3 11' }) : null,
+                    // Faceted glass prism with internal specular edge + refraction-apex beacon
                     h('polygon', { points: '24,10 14,34 34,34', fill: isContrast ? '#000000' : 'url(#lumen-prism-glass)', stroke: themeAccent, strokeWidth: 1.8, strokeLinejoin: 'round' }),
-                    !isContrast ? h('line', { x1: 24, y1: 12.5, x2: 17.5, y2: 31.5, stroke: '#ffffff', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.65 }) : null,
-                    // Dispersed provenance spectrum rays (SRC teal, L3 amber, SYN violet)
-                    !isContrast ? h('line', { x1: 29, y1: 21, x2: 42, y2: 15, stroke: '#0e7490', strokeWidth: 4.5, strokeLinecap: 'round', opacity: 0.2 }) : null,
+                    !isContrast ? h('line', { className: 'allo-lumen-prism-sheen', x1: 24, y1: 12.5, x2: 17.5, y2: 31.5, stroke: '#ffffff', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.65 }) : null,
+                    !isContrast ? h('circle', { className: 'allo-lumen-prism-beacon', cx: 24, cy: 24, r: 2.1, fill: isDark ? '#fef08a' : '#f59e0b', opacity: 0.72 }) : null,
+                    // Dispersed provenance spectrum rays (SRC teal, L3 amber, SYN violet) + traveling spectral pulses
+                    !isContrast ? h('line', { className: 'allo-lumen-ray-bloom', style: { animationDelay: '0.2s' }, x1: 29, y1: 21, x2: 42, y2: 15, stroke: '#0e7490', strokeWidth: 4.5, strokeLinecap: 'round', opacity: 0.2 }) : null,
                     h('line', { x1: 29, y1: 21, x2: 42, y2: 15, stroke: isContrast ? '#ffff00' : '#0e7490', strokeWidth: 2, strokeLinecap: 'round' }),
-                    !isContrast ? h('line', { x1: 30, y1: 25, x2: 42, y2: 25, stroke: '#d97706', strokeWidth: 4.5, strokeLinecap: 'round', opacity: 0.22 }) : null,
+                    !isContrast ? h('line', { className: 'allo-lumen-photon-ray', style: { animationDelay: '0.35s' }, x1: 29, y1: 21, x2: 42, y2: 15, stroke: '#67e8f9', strokeWidth: 1.8, strokeLinecap: 'round', strokeDasharray: '3 11' }) : null,
+                    !isContrast ? h('line', { className: 'allo-lumen-ray-bloom', style: { animationDelay: '0.6s' }, x1: 30, y1: 25, x2: 42, y2: 25, stroke: '#d97706', strokeWidth: 4.5, strokeLinecap: 'round', opacity: 0.22 }) : null,
                     h('line', { x1: 30, y1: 25, x2: 42, y2: 25, stroke: isContrast ? '#ffff00' : '#d97706', strokeWidth: 2, strokeLinecap: 'round' }),
-                    !isContrast ? h('line', { x1: 31, y1: 29, x2: 42, y2: 35, stroke: '#7c3aed', strokeWidth: 4.5, strokeLinecap: 'round', opacity: 0.2 }) : null,
-                    h('line', { x1: 31, y1: 29, x2: 42, y2: 35, stroke: isContrast ? '#ffff00' : '#7c3aed', strokeWidth: 2, strokeLinecap: 'round', strokeDasharray: '2.5 2' })
+                    !isContrast ? h('line', { className: 'allo-lumen-photon-ray', style: { animationDelay: '0.75s' }, x1: 30, y1: 25, x2: 42, y2: 25, stroke: '#fde68a', strokeWidth: 1.8, strokeLinecap: 'round', strokeDasharray: '3 11' }) : null,
+                    !isContrast ? h('line', { className: 'allo-lumen-ray-bloom', style: { animationDelay: '1.0s' }, x1: 31, y1: 29, x2: 42, y2: 35, stroke: '#7c3aed', strokeWidth: 4.5, strokeLinecap: 'round', opacity: 0.2 }) : null,
+                    h('line', { x1: 31, y1: 29, x2: 42, y2: 35, stroke: isContrast ? '#ffff00' : '#7c3aed', strokeWidth: 2, strokeLinecap: 'round', strokeDasharray: '2.5 2' }),
+                    !isContrast ? h('line', { className: 'allo-lumen-photon-ray', style: { animationDelay: '1.15s' }, x1: 31, y1: 29, x2: 42, y2: 35, stroke: '#ddd6fe', strokeWidth: 1.8, strokeLinecap: 'round', strokeDasharray: '3 11' }) : null
                   ),
                   h('div', { className: 'flex-1', style: { minWidth: 0 } },
                     h('h1', { className: 'font-extrabold text-xl m-0', style: { color: themeInk } }, 'Lumen'),
@@ -2594,6 +2629,7 @@
                 ),
                 h('svg', {
                   viewBox: '0 0 640 84', width: '100%', role: 'img',
+                  className: 'allo-lumen-ladder-svg',
                   'aria-label': __alloT('stem.lumen.ladder_svg_aria', 'Four-level provenance ladder from L0 Observed to L1 Derived math, L2 AI-organized, and L3 AI reading'),
                   style: { display: 'block', height: 'auto' }
                 },
@@ -2612,19 +2648,19 @@
                     var bx = 12 + i * 156;
                     return h('g', { key: st.lvl },
                       i > 0 ? h('g', null,
-                        !isContrast ? h('line', { x1: bx - 10, y1: 42, x2: bx - 2, y2: 42, stroke: themeAccent, strokeWidth: 5, opacity: 0.2 }) : null,
+                        !isContrast ? h('line', { className: 'allo-lumen-ladder-glow', style: { animationDelay: (i * 0.45) + 's' }, x1: bx - 10, y1: 42, x2: bx - 2, y2: 42, stroke: themeAccent, strokeWidth: 5, opacity: 0.2 }) : null,
                         h('path', { d: 'M' + (bx - 10) + ' 42 H' + (bx - 2) + ' M' + (bx - 5) + ' 38.5 L' + (bx - 1.5) + ' 42 L' + (bx - 5) + ' 45.5', fill: 'none', stroke: themeAccent, strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' })
                       ) : null,
                       !isContrast ? h('rect', { x: bx + 1.5, y: 14, width: 146, height: 60, rx: 8, fill: 'rgba(15,23,42,0.08)' }) : null,
-                      h('rect', { x: bx, y: 12, width: 146, height: 60, rx: 8, fill: themeSurface, stroke: st.col, strokeWidth: 1.4, strokeDasharray: st.lvl === 'L3' ? '5 3' : undefined }),
-                      !isContrast ? h('rect', { x: bx + 1, y: 13, width: 144, height: 22, rx: 7, fill: 'url(#lumen-card-sheen)' }) : null,
+                      h('rect', { className: st.lvl === 'L3' ? 'allo-lumen-ladder-dash' : undefined, x: bx, y: 12, width: 146, height: 60, rx: 8, fill: themeSurface, stroke: st.col, strokeWidth: 1.4, strokeDasharray: st.lvl === 'L3' ? '5 3' : undefined }),
+                      !isContrast ? h('rect', { className: 'allo-lumen-ladder-sheen', style: { animationDelay: (i * 0.55) + 's' }, x: bx + 1, y: 13, width: 144, height: 22, rx: 7, fill: 'url(#lumen-card-sheen)' }) : null,
                       h('rect', { x: bx + 1.5, y: 18, width: 3.5, height: 48, rx: 1.75, fill: st.col }),
                       h('text', { x: bx + 13, y: 34, fontSize: 13, fontWeight: 900, fill: st.col }, st.glyph + ' ' + st.title),
                       h('text', { x: bx + 13, y: 54, fontSize: 10.5, fontWeight: 600, fill: themeMuted }, st.desc),
                       // Calibrated certainty gauge dots along bottom-right of each step card
                       [0, 1, 2, 3].map(function (pip) {
                         var active = pip <= (3 - i);
-                        return h('circle', { key: 'p' + pip, cx: bx + 108 + pip * 8, cy: 64, r: 2, fill: active ? st.col : themeBorder, opacity: active ? 0.85 : 0.45 });
+                        return h('circle', { key: 'p' + pip, className: active && !isContrast ? 'allo-lumen-ladder-pip' : undefined, style: active && !isContrast ? { animationDelay: ((i * 0.4) + (pip * 0.22)) + 's' } : undefined, cx: bx + 108 + pip * 8, cy: 64, r: 2, fill: active ? st.col : themeBorder, opacity: active ? 0.85 : 0.45 });
                       })
                     );
                   })

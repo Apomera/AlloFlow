@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Zoom Gallery — AlloFlow</title>
 <meta name="description" content="Zoom deep into real, openly-licensed images — Smithsonian Open Access artifacts (CC0) and famous NASA photographs (public domain) — in OpenSeadragon, the viewer museums use. Magnify to the pixel: the Pillars of Creation, an Apollo bootprint, the Apollo 11 capsule, a coral fan. A Notice → Wonder coach sits beside the vi">
@@ -17,6 +18,7 @@
 <meta name="twitter:description" content="Zoom deep into real, openly-licensed images — Smithsonian Open Access artifacts (CC0) and famous NASA photographs (public domain) — in OpenSeadragon, the viewer museums use. Magnify to the pixel: the Pillars of Creation, an Apollo bootprint, the Apollo 11 capsule, a coral fan. A Notice → Wonder coach sits beside the vi">
 <link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="tool-page.css">
+<script src="tool-page.js" defer></script>
 <script type="application/ld+json">{
  "@context": "https://schema.org",
  "@type": "SoftwareApplication",
@@ -50,7 +52,7 @@
         </div>
     </div>
 </nav>
-<main id="tool-main" class="tool-page">
+<main id="tool-main" tabindex="-1" class="tool-page">
     <nav class="tool-page-crumbs" aria-label="Breadcrumb">
         <ol>
             <li><a href="./">AlloFlow</a></li>

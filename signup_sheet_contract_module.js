@@ -29,21 +29,33 @@
 
     // The mailbox's limits, deliberately: a sheet built to the tighter ceiling
     // runs unmodified on both transports and the reverse silently breaks.
-    const LIMITS = {
+    const LIMITS = Object.freeze({
         OPTIONS: 50,               // MAX_POLL_OPTIONS
         CAPACITY: 500,             // MAX_SIGNUP_CAPACITY
         PARTICIPANTS: 250,         // MAX_ACTIVITY_PARTICIPANTS
         OPTION_LABEL_CHARS: 80,
         NAME_CHARS: 40
-    };
+    });
+
+    function isSafeKey(key) {
+        return typeof key === 'string' && key.length > 0 && key !== '__proto__' && key !== 'constructor' && key !== 'prototype';
+    }
+    function safeTimestamp(val) {
+        if (typeof val !== 'string' && typeof val !== 'number') return NaN;
+        return Date.parse(val);
+    }
+    function resolveNow(now) {
+        return (typeof now === 'number' && Number.isFinite(now)) ? now : Date.now();
+    }
 
     function capacityFor(config, optionId) {
-        const options = Array.isArray(config && config.options) ? config.options : [];
+        if (!isSafeKey(optionId)) return 0;
+        const options = Array.isArray(config && config.options) ? config.options.slice(0, LIMITS.OPTIONS) : [];
         for (let i = 0; i < options.length; i++) {
             if (options[i] && options[i].id === optionId) {
                 const parsed = parseInt(options[i].capacity, 10);
                 if (!Number.isFinite(parsed)) return 1;
-                return Math.max(0, parsed);
+                return Math.min(LIMITS.CAPACITY, Math.max(0, parsed));
             }
         }
         return 0;
@@ -55,20 +67,21 @@
     // respondent loses their seat to themselves.
     function takenCounts(config, responses, exceptUid) {
         const counts = Object.create(null);
-        const options = Array.isArray(config && config.options) ? config.options : [];
+        const options = Array.isArray(config && config.options) ? config.options.slice(0, LIMITS.OPTIONS) : [];
         options.forEach(function (opt) {
-            if (opt && typeof opt.id === 'string' && opt.id && opt.id !== '__proto__' && opt.id !== 'constructor' && opt.id !== 'prototype') {
+            if (opt && isSafeKey(opt.id) && !Object.prototype.hasOwnProperty.call(counts, opt.id)) {
                 counts[opt.id] = 0;
             }
         });
-        const rows = responses && typeof responses === 'object' ? responses : {};
-        Object.keys(rows).forEach(function (uid) {
+        const rows = responses && typeof responses === 'object' && !Array.isArray(responses) ? responses : {};
+        Object.keys(rows).slice(0, LIMITS.PARTICIPANTS).forEach(function (uid) {
+            if (!isSafeKey(uid)) return;
             if (exceptUid != null && uid === exceptUid) return;
             const claims = rows[uid] && rows[uid].claims;
             if (!Array.isArray(claims)) return;
             const seenForUser = new Set();
-            claims.forEach(function (id) {
-                if (typeof id !== 'string' || seenForUser.has(id)) return;
+            claims.slice(0, LIMITS.OPTIONS).forEach(function (id) {
+                if (!isSafeKey(id) || seenForUser.has(id)) return;
                 if (Object.prototype.hasOwnProperty.call(counts, id)) {
                     seenForUser.add(id);
                     counts[id]++;
@@ -80,18 +93,24 @@
 
     function remainingFor(config, counts) {
         const safeCounts = counts && typeof counts === 'object' ? counts : Object.create(null);
-        const options = Array.isArray(config && config.options) ? config.options : [];
-        return options.filter(function (opt) { return opt && typeof opt === 'object'; }).map(function (opt) {
+        const options = Array.isArray(config && config.options) ? config.options.slice(0, LIMITS.OPTIONS) : [];
+        const seenIds = Object.create(null);
+        const out = [];
+        options.forEach(function (opt) {
+            if (!opt || typeof opt !== 'object' || !isSafeKey(opt.id) || Object.prototype.hasOwnProperty.call(seenIds, opt.id)) return;
+            seenIds[opt.id] = true;
             const cap = capacityFor(config, opt.id);
-            const taken = Object.prototype.hasOwnProperty.call(safeCounts, opt.id) ? (parseInt(safeCounts[opt.id], 10) || 0) : 0;
-            return {
+            const rawTaken = Object.prototype.hasOwnProperty.call(safeCounts, opt.id) ? parseInt(safeCounts[opt.id], 10) : 0;
+            const taken = Number.isFinite(rawTaken) && rawTaken > 0 ? rawTaken : 0;
+            out.push({
                 id: opt.id,
                 label: opt.label,
                 capacity: cap,
                 taken: taken,
                 remaining: Math.max(0, cap - taken)
-            };
+            });
         });
+        return out;
     }
 
     // ── The allocation rule ──────────────────────────────────────────────────
@@ -102,14 +121,14 @@
         const requested = Array.isArray(wanted) ? wanted : null;
         if (!requested) return { ok: false, reason: 'bad-claims', full: [] };
         const parsedMax = parseInt(config && config.maxPerPerson, 10);
-        const maxPerPerson = Number.isFinite(parsedMax) && parsedMax >= 1 ? parsedMax : 1;
+        const maxPerPerson = Number.isFinite(parsedMax) && parsedMax >= 1 ? Math.min(LIMITS.OPTIONS, parsedMax) : 1;
         if (requested.length > maxPerPerson) {
             return { ok: false, reason: 'too-many', full: [] };
         }
         const seenWanted = new Set();
         for (let i = 0; i < requested.length; i++) {
             const id = requested[i];
-            if (typeof id !== 'string' || seenWanted.has(id)) {
+            if (!isSafeKey(id) || seenWanted.has(id)) {
                 return { ok: false, reason: 'bad-claims', full: [] };
             }
             seenWanted.add(id);
@@ -139,13 +158,13 @@
     }
 
     function isClosed(config, now) {
-        const closesAt = Date.parse(config && config.closesAt);
-        return isFinite(closesAt) && (now == null ? Date.now() : now) >= closesAt;
+        const closesAt = safeTimestamp(config && config.closesAt);
+        return isFinite(closesAt) && resolveNow(now) >= closesAt;
     }
 
     function retentionDue(config, now) {
-        const deleteAt = Date.parse(config && config.deleteAt);
-        return isFinite(deleteAt) && (now == null ? Date.now() : now) >= deleteAt;
+        const deleteAt = safeTimestamp(config && config.deleteAt);
+        return isFinite(deleteAt) && resolveNow(now) >= deleteAt;
     }
 
     // ── Conformance ──────────────────────────────────────────────────────────
@@ -234,6 +253,9 @@
     })();
 
     function runConformanceSuite(adapter) {
+        if (!adapter || typeof adapter !== 'object') {
+            return { ok: false, failures: [{ fixture: '*', check: 'adapter', expected: 'object', actual: String(adapter) }], fixtures: FIXTURES.length };
+        }
         const failures = [];
         const note = function (fixture, check, expected, actual) {
             failures.push({
@@ -286,7 +308,8 @@
         return { ok: failures.length === 0, failures: failures, fixtures: FIXTURES.length };
     }
 
-    return {
+    Object.freeze(FIXTURES);
+    return Object.freeze({
         VERSION: VERSION,
         LIMITS: LIMITS,
         capacityFor: capacityFor,
@@ -298,5 +321,5 @@
         retentionDue: retentionDue,
         FIXTURES: FIXTURES,
         runConformanceSuite: runConformanceSuite
-    };
+    });
 });

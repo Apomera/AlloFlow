@@ -2481,12 +2481,18 @@ window.StemLab = window.StemLab || {
     c.restore();
   }
   function iaPaintLysosome(c, env, sc, st, it) {
-    var x = it.x, y = it.y, R = it.R, k = env.k;
+    var x = it.x, y = it.y, R = it.R, k = env.k, hc = st.contrast;
+    if (!hc && typeof c.createRadialGradient === 'function') {
+      var lyHalo = c.createRadialGradient(x, y, R * 0.65, x, y, R + 5.5 * k);
+      lyHalo.addColorStop(0, 'rgba(244,114,182,0.26)');
+      lyHalo.addColorStop(1, 'rgba(244,114,182,0)');
+      c.fillStyle = lyHalo; c.beginPath(); c.arc(x, y, R + 5.5 * k, 0, IA_TAU); c.fill();
+    }
     c.fillStyle = 'rgba(1,8,14,0.3)'; c.beginPath(); c.arc(x + 1.5 * k, y + 2 * k, R + 1 * k, 0, IA_TAU); c.fill();
     var gr = c.createRadialGradient(x - R * 0.35, y - R * 0.4, R * 0.05, x, y, R);
     gr.addColorStop(0, '#fce7f3'); gr.addColorStop(0.4, '#ec4899'); gr.addColorStop(1, '#831843');
     c.fillStyle = gr; c.beginPath(); c.arc(x, y, R, 0, IA_TAU); c.fill();
-    c.strokeStyle = st.contrast ? '#f8fafc' : '#fbcfe8'; c.lineWidth = (st.contrast ? 1.8 : 1.1) * k; c.stroke();
+    c.strokeStyle = hc ? '#f8fafc' : '#fbcfe8'; c.lineWidth = (hc ? 1.8 : 1.1) * k; c.stroke();
     c.fillStyle = 'rgba(80,7,36,0.75)'; c.beginPath();
     for (var i = 0; i < 5; i++) { var a = _ih(i + it.i * 7) * IA_TAU, r = R * (0.2 + _ih(i + 31 + it.i) * 0.45), px = x + Math.cos(a) * r, py = y + Math.sin(a) * r, pr = R * (0.1 + _ih(i + 3) * 0.08); c.moveTo(px + pr, py); c.arc(px, py, pr, 0, IA_TAU); }
     c.fill();
@@ -2494,12 +2500,18 @@ window.StemLab = window.StemLab || {
     c.fillStyle = 'rgba(255,255,255,0.3)'; c.beginPath(); c.ellipse(x - R * 0.35, y - R * 0.42, R * 0.3, R * 0.16, -0.6, 0, IA_TAU); c.fill();
   }
   function iaPaintPeroxisome(c, env, sc, st, it) {
-    var x = it.x, y = it.y, R = it.R, k = env.k;
+    var x = it.x, y = it.y, R = it.R, k = env.k, hc = st.contrast;
+    if (!hc && typeof c.createRadialGradient === 'function') {
+      var pxHalo = c.createRadialGradient(x, y, R * 0.65, x, y, R + 5.5 * k);
+      pxHalo.addColorStop(0, 'rgba(96,165,250,0.26)');
+      pxHalo.addColorStop(1, 'rgba(96,165,250,0)');
+      c.fillStyle = pxHalo; c.beginPath(); c.arc(x, y, R + 5.5 * k, 0, IA_TAU); c.fill();
+    }
     c.fillStyle = 'rgba(1,8,14,0.3)'; c.beginPath(); c.arc(x + 1.5 * k, y + 2 * k, R + 1 * k, 0, IA_TAU); c.fill();
     var gr = c.createRadialGradient(x - R * 0.3, y - R * 0.35, R * 0.05, x, y, R);
     gr.addColorStop(0, '#dbeafe'); gr.addColorStop(0.55, '#60a5fa'); gr.addColorStop(1, '#1d4ed8');
     c.fillStyle = gr; c.beginPath(); c.arc(x, y, R, 0, IA_TAU); c.fill();
-    c.strokeStyle = st.contrast ? '#f8fafc' : '#bfdbfe'; c.lineWidth = (st.contrast ? 1.8 : 1.1) * k; c.stroke();
+    c.strokeStyle = hc ? '#f8fafc' : '#bfdbfe'; c.lineWidth = (hc ? 1.8 : 1.1) * k; c.stroke();
     c.fillStyle = 'rgba(219,234,254,0.4)'; c.beginPath();
     for (var i = 0; i < 12; i++) { var a = _ih(i + 71) * IA_TAU, r = R * Math.sqrt(_ih(i + 91)) * 0.8, px = x + Math.cos(a) * r, py = y + Math.sin(a) * r; c.moveTo(px + 0.7 * k, py); c.arc(px, py, 0.7 * k, 0, IA_TAU); }
     c.fill();
@@ -2549,6 +2561,12 @@ window.StemLab = window.StemLab || {
   function iaPaintChloroplast(c, env, sc, st, it, extra) {
     var R = it.R, k = env.k, hc = st.contrast, a = R * 1.02, b = R * 0.6;
     c.save(); c.translate(it.x, it.y); c.rotate(extra ? it.rot : 0.5 + it.phase);
+    if (!hc && typeof c.createRadialGradient === 'function') {
+      var chlHalo = c.createRadialGradient(0, 0, Math.min(a, b) * 0.55, 0, 0, a + 6 * k);
+      chlHalo.addColorStop(0, 'rgba(74,222,128,0.24)');
+      chlHalo.addColorStop(1, 'rgba(74,222,128,0)');
+      c.fillStyle = chlHalo; c.beginPath(); c.ellipse(0, 0, a + 6 * k, b + 5.5 * k, 0, 0, IA_TAU); c.fill();
+    }
     c.fillStyle = 'rgba(1,10,6,0.32)'; c.beginPath(); c.ellipse(1.5 * k, 2.2 * k, a + 1 * k, b + 1 * k, 0, 0, IA_TAU); c.fill();
     c.fillStyle = hc ? '#ecfccb' : '#bbf7d0'; c.beginPath(); c.ellipse(0, 0, a, b, 0, 0, IA_TAU); c.fill();
     c.fillStyle = '#14532d'; c.beginPath(); c.ellipse(0, 0, a - 1.3 * k, b - 1.3 * k, 0, 0, IA_TAU); c.fill();
@@ -2810,10 +2828,19 @@ window.StemLab = window.StemLab || {
   }
   function iaPaintMito(c, env, st, it, tt, on) {
     var k = env.k, hc = st.contrast, ph = it.phase, R = it.R;
+    var hasRad = typeof c.createRadialGradient === 'function';
     var flex = st.reduced ? 0.07 * Math.sin(ph * 2 + 1) : 0.1 * Math.sin(tt * 0.9 + ph * 1.7);
+    var atpPulse = st.reduced ? 0.55 : (0.5 + 0.5 * Math.sin(tt * 2.1 + ph * 2.3));
     var L = R * 1.2 * (1 + (st.reduced ? 0 : 0.03 * Math.sin(tt * 0.7 + ph))), Wd = R * 0.56;
     var x = it.x + (st.reduced ? 0 : Math.sin(tt * 0.5 + ph) * 1.2 * k), y = it.y + (st.reduced ? 0 : Math.cos(tt * 0.43 + ph) * 0.9 * k);
     c.save(); c.translate(x, y); c.rotate(ph * 1.1);
+    if (!hc && hasRad) {
+      var mitoAura = c.createRadialGradient(0, 0, Wd * 0.5, 0, 0, L + 7.5 * k);
+      mitoAura.addColorStop(0, 'rgba(253,164,175,' + (0.20 + atpPulse * 0.14).toFixed(3) + ')');
+      mitoAura.addColorStop(0.6, 'rgba(250,204,21,' + (0.09 + atpPulse * 0.08).toFixed(3) + ')');
+      mitoAura.addColorStop(1, 'rgba(250,204,21,0)');
+      c.fillStyle = mitoAura; c.beginPath(); c.ellipse(0, 0, L + 7.5 * k, Wd + 6.5 * k, 0, 0, IA_TAU); c.fill();
+    }
     c.fillStyle = 'rgba(1,8,14,0.32)'; c.save(); c.translate(1.5 * k, 2.2 * k); c.beginPath(); iaMitoOutline(c, L + 0.6 * k, Wd + 0.6 * k, flex); c.fill(); c.restore();
     c.fillStyle = hc ? '#ffe4e6' : '#fecdd3'; c.beginPath(); iaMitoOutline(c, L, Wd, flex); c.fill();
     if (on) { c.strokeStyle = 'rgba(254,249,195,0.55)'; c.lineWidth = 5 * k; c.stroke(); c.strokeStyle = '#fef9c3'; c.lineWidth = 1.4 * k; c.stroke(); }
@@ -2840,18 +2867,36 @@ window.StemLab = window.StemLab || {
     c.restore();
     c.fillStyle = 'rgba(255,241,242,0.28)'; c.beginPath(); c.ellipse(-L * 0.32, -Wd * 0.45, L * 0.38, Wd * 0.16, -0.08, 0, IA_TAU); c.fill();
     c.restore();
-    // ATP leaves for the rest of the cell with a soft golden halo
+    // ATP leaves for the rest of the cell with pulsing bioluminescent energy sparks
     c.save();
     var baseAlpha = c.globalAlpha;
-    for (var a = 0; a < 3; a++) {
-      var p2 = st.reduced ? 0.25 + a * 0.22 : (tt * 0.22 + a / 3 + ph * 0.17) % 1, ang = a / 3 * IA_TAU + ph * 0.8, rr = R * (0.9 + p2 * 1.5);
-      var atpX = x + Math.cos(ang) * rr, atpY = y + Math.sin(ang) * rr * 0.75, atpR = Math.max(1.1 * k, R * 0.07);
-      var fade = Math.max(0, 1 - p2);
+    for (var a = 0; a < 4; a++) {
+      var p2 = st.reduced ? 0.2 + a * 0.2 : (tt * 0.24 + a * 0.25 + ph * 0.17) % 1;
+      var ang = a * 0.25 * IA_TAU + ph * 0.8 + (st.reduced ? 0 : Math.sin(p2 * Math.PI) * 0.22);
+      var rr = R * (0.85 + p2 * 1.65);
+      var atpX = x + Math.cos(ang) * rr, atpY = y + Math.sin(ang) * rr * 0.78;
+      var atpR = Math.max(1.1 * k, R * 0.072);
+      var fade = Math.max(0, Math.sin(p2 * Math.PI));
       if (!hc) {
-        c.globalAlpha = baseAlpha * fade * 0.36; c.fillStyle = '#fde047';
-        c.beginPath(); c.arc(atpX, atpY, atpR * 2.4, 0, IA_TAU); c.fill();
+        if (!st.reduced) {
+          var prevR = Math.max(R * 0.72, rr - 5.5 * k);
+          c.globalAlpha = baseAlpha * fade * 0.44;
+          c.strokeStyle = '#fde047'; c.lineWidth = Math.max(0.8, 1.2 * k); c.lineCap = 'round';
+          c.beginPath(); c.moveTo(x + Math.cos(ang) * prevR, y + Math.sin(ang) * prevR * 0.78); c.lineTo(atpX, atpY); c.stroke();
+        }
+        if (hasRad) {
+          var sparkGlow = c.createRadialGradient(atpX, atpY, 0.2, atpX, atpY, atpR * 3.2);
+          sparkGlow.addColorStop(0, 'rgba(254,249,195,' + (0.85 * fade).toFixed(3) + ')');
+          sparkGlow.addColorStop(0.45, 'rgba(250,204,21,' + (0.42 * fade).toFixed(3) + ')');
+          sparkGlow.addColorStop(1, 'rgba(250,204,21,0)');
+          c.globalAlpha = baseAlpha; c.fillStyle = sparkGlow;
+          c.beginPath(); c.arc(atpX, atpY, atpR * 3.2, 0, IA_TAU); c.fill();
+        } else {
+          c.globalAlpha = baseAlpha * fade * 0.36; c.fillStyle = '#fde047';
+          c.beginPath(); c.arc(atpX, atpY, atpR * 2.4, 0, IA_TAU); c.fill();
+        }
       }
-      c.globalAlpha = baseAlpha * fade * 0.94; c.fillStyle = '#fef08a';
+      c.globalAlpha = baseAlpha * Math.max(0.2, fade * 0.96); c.fillStyle = '#fef9c3';
       c.beginPath(); c.arc(atpX, atpY, atpR, 0, IA_TAU); c.fill();
     }
     c.restore();
@@ -2859,6 +2904,12 @@ window.StemLab = window.StemLab || {
   function iaPaintVesicle(c, env, st, it, tt, on) {
     var k = env.k, R = it.R, bob = st.reduced ? 0 : Math.sin(tt * 1.3 + it.phase * 2) * 1.1 * k;
     var x = it.x + bob, y = it.y - bob * 0.6;
+    if (!st.contrast && typeof c.createRadialGradient === 'function') {
+      var vHalo = c.createRadialGradient(x, y, R * 0.5, x, y, R + 4.5 * k);
+      vHalo.addColorStop(0, 'rgba(251,191,36,0.28)');
+      vHalo.addColorStop(1, 'rgba(251,191,36,0)');
+      c.fillStyle = vHalo; c.beginPath(); c.arc(x, y, R + 4.5 * k, 0, IA_TAU); c.fill();
+    }
     var gr = c.createRadialGradient(x - R * 0.35, y - R * 0.4, 0, x, y, R);
     gr.addColorStop(0, '#fff7ed'); gr.addColorStop(0.45, CELL_ORGANELLES.vesicle.color); gr.addColorStop(1, '#92400e');
     c.fillStyle = gr; c.beginPath(); c.arc(x, y, R, 0, IA_TAU); c.fill();
@@ -2944,10 +2995,30 @@ window.StemLab = window.StemLab || {
     c.restore();
   }
   function iaPaintDynamic(c, env, sc, st, tt) {
-    var type = env.type, g = env.g, k = env.k;
+    var type = env.type, g = env.g, k = env.k, hc = st.contrast;
+    var hasRad = typeof c.createRadialGradient === 'function';
     c.save(); traceInteriorBoundary(c, g, type, 0); c.clip();
-    // cytoplasmic streaming / molecular jostling
-    c.fillStyle = type === 'bacterium' ? 'rgba(191,219,254,0.3)' : 'rgba(165,243,252,0.28)'; c.beginPath();
+    // cytoplasmic streaming / molecular jostling with translucent velocity wisps
+    if (!st.reduced && !hc && sc.stream.length) {
+      c.save();
+      c.strokeStyle = type === 'bacterium' ? 'rgba(191,219,254,0.18)' : 'rgba(165,243,252,0.20)';
+      c.lineWidth = Math.max(0.7, 0.9 * k); c.lineCap = 'round';
+      c.beginPath();
+      for (var si = 0; si < sc.stream.length; si++) {
+        var sm = sc.stream[si], sx = sm[0], sy = sm[1], sx0 = sm[0], sy0 = sm[1], dtBack = 0.22;
+        if (type === 'bacterium') {
+          sx += Math.sin(tt * 3.1 + sm[3]) * 1.6 * k; sy += Math.cos(tt * 2.7 + sm[3] * 1.3) * 1.6 * k;
+          sx0 += Math.sin((tt - dtBack) * 3.1 + sm[3]) * 1.6 * k; sy0 += Math.cos((tt - dtBack) * 2.7 + sm[3] * 1.3) * 1.6 * k;
+        } else {
+          sx += Math.sin(tt * sm[4] + sm[3]) * 7 * k; sy += Math.cos(tt * sm[4] * 0.8 + sm[3]) * 4.5 * k;
+          sx0 += Math.sin((tt - dtBack) * sm[4] + sm[3]) * 7 * k; sy0 += Math.cos((tt - dtBack) * sm[4] * 0.8 + sm[3]) * 4.5 * k;
+        }
+        c.moveTo(sx0, sy0); c.lineTo(sx, sy);
+      }
+      c.stroke();
+      c.restore();
+    }
+    c.fillStyle = type === 'bacterium' ? 'rgba(191,219,254,0.34)' : 'rgba(165,243,252,0.34)'; c.beginPath();
     sc.stream.forEach(function (s) {
       var x = s[0], y = s[1];
       if (type === 'bacterium') { x += Math.sin(tt * 3.1 + s[3]) * 1.6 * k; y += Math.cos(tt * 2.7 + s[3] * 1.3) * 1.6 * k; }
@@ -2957,13 +3028,41 @@ window.StemLab = window.StemLab || {
     c.fill();
     if (sc.cyclosis.length) {
       // cyclosis: actin-myosin streaming carries particles round the peripheral cytoplasm
-      c.fillStyle = 'rgba(204,251,241,0.45)'; c.beginPath();
+      if (!st.reduced && !hc) {
+        c.save();
+        c.strokeStyle = 'rgba(153,246,228,0.26)'; c.lineWidth = Math.max(0.8, 1.0 * k); c.lineCap = 'round';
+        c.beginPath();
+        for (var ci = 0; ci < sc.cyclosis.length; ci++) {
+          var cp = sc.cyclosis[ci], cf = (cp[0] + tt * 0.011) % 1, cf0 = (cf - 0.012 + 1) % 1;
+          var cq = interiorBoundaryPoint(g, type, cf, cp[1] + 5 * k);
+          if (iaInVacuole(sc, cq[0], cq[1], 0)) continue;
+          var cq0 = interiorBoundaryPoint(g, type, cf0, cp[1] + 5 * k);
+          c.moveTo(cq0[0], cq0[1]); c.lineTo(cq[0], cq[1]);
+        }
+        c.stroke();
+        c.restore();
+      }
+      c.fillStyle = 'rgba(204,251,241,0.5)'; c.beginPath();
       sc.cyclosis.forEach(function (p) { var f = (p[0] + tt * 0.011) % 1, q = interiorBoundaryPoint(g, type, f, p[1] + 5 * k); if (iaInVacuole(sc, q[0], q[1], 0)) return; c.moveTo(q[0] + p[2], q[1]); c.arc(q[0], q[1], p[2], 0, IA_TAU); });
       c.fill();
     }
-    // vesicles walked along microtubules by motor proteins
+    // vesicles walked along microtubules by motor proteins (with cargo halo & wake)
     sc.traffic.forEach(function (f, i) {
-      var u = 0.18 + 0.64 * (0.5 - 0.5 * Math.cos(tt * 0.32 + i * 1.9)), p = iaBezPt(f.b, u);
+      var phase = tt * 0.32 + i * 1.9;
+      var u = 0.18 + 0.64 * (0.5 - 0.5 * Math.cos(phase)), p = iaBezPt(f.b, u);
+      if (!st.reduced && !hc) {
+        var uPrev = 0.18 + 0.64 * (0.5 - 0.5 * Math.cos(phase - 0.14)), pPrev = iaBezPt(f.b, uPrev);
+        c.save();
+        c.strokeStyle = 'rgba(253,224,71,0.34)'; c.lineWidth = 2.0 * k; c.lineCap = 'round';
+        c.beginPath(); c.moveTo(pPrev[0], pPrev[1]); c.lineTo(p[0], p[1]); c.stroke();
+        if (hasRad) {
+          var cargoGlow = c.createRadialGradient(p[0], p[1], 0.5, p[0], p[1], 6.5 * k);
+          cargoGlow.addColorStop(0, 'rgba(254,240,138,0.55)');
+          cargoGlow.addColorStop(1, 'rgba(251,191,36,0)');
+          c.fillStyle = cargoGlow; c.beginPath(); c.arc(p[0], p[1], 6.5 * k, 0, IA_TAU); c.fill();
+        }
+        c.restore();
+      }
       c.fillStyle = '#fcd34d'; c.beginPath(); c.arc(p[0], p[1], 2.7 * k, 0, IA_TAU); c.fill();
       c.strokeStyle = 'rgba(120,53,15,0.8)'; c.lineWidth = 0.7 * k; c.stroke();
       c.fillStyle = 'rgba(255,251,235,0.9)'; c.beginPath(); c.arc(p[0] - 0.9 * k, p[1] - 0.9 * k, 0.9 * k, 0, IA_TAU); c.fill();
@@ -2971,7 +3070,7 @@ window.StemLab = window.StemLab || {
     iaEach(c, sc, st, 'vesicle', function (it) { iaPaintVesicle(c, env, st, it, tt, st.sel === 'vesicle'); });
     iaEach(c, sc, st, 'mitochondria', function (it) { iaPaintMito(c, env, st, it, tt, st.sel === 'mitochondria'); });
     if (sc.byKey.chloroplast) {
-      // light arrives from the upper left; oxygen leaves as a product
+      // light arrives from the upper left; oxygen & photosynthetic ATP sparks leave as products
       c.save(); c.lineCap = 'round';
       sc.byKey.chloroplast.forEach(function (it) {
         var R = it.R;
@@ -2981,19 +3080,65 @@ window.StemLab = window.StemLab || {
         }
         var o2 = st.reduced ? 0.4 : (tt * 0.2 + it.phase * 0.19) % 1;
         c.strokeStyle = 'rgba(165,243,252,' + Math.max(0.15, 0.75 - o2 * 0.6).toFixed(2) + ')'; c.lineWidth = 0.9 * k; c.beginPath(); c.arc(it.x + R * (0.8 + o2 * 0.9), it.y - R * (0.3 + o2), (1.4 + o2) * k, 0, IA_TAU); c.stroke();
+        // Photosynthetic ATP/NADPH energy sparks radiating gently from the grana
+        for (var e = 0; e < 2; e++) {
+          var ep = st.reduced ? (0.3 + e * 0.35) : ((tt * 0.26 + e * 0.5 + it.phase * 0.23) % 1);
+          var eAng = (e === 0 ? 0.45 : -2.35) + it.phase * 0.6;
+          var ex = it.x + Math.cos(eAng) * R * (0.85 + ep * 1.15);
+          var ey = it.y + Math.sin(eAng) * R * (0.65 + ep * 0.95);
+          var eFade = Math.sin(ep * Math.PI);
+          if (!hc && hasRad) {
+            var eGlow = c.createRadialGradient(ex, ey, 0.2, ex, ey, 3.6 * k);
+            eGlow.addColorStop(0, 'rgba(217,249,157,' + (0.8 * eFade).toFixed(3) + ')');
+            eGlow.addColorStop(0.5, 'rgba(74,222,128,' + (0.35 * eFade).toFixed(3) + ')');
+            eGlow.addColorStop(1, 'rgba(74,222,128,0)');
+            c.fillStyle = eGlow; c.beginPath(); c.arc(ex, ey, 3.6 * k, 0, IA_TAU); c.fill();
+          }
+          c.fillStyle = 'rgba(254,249,195,' + Math.max(0.18, eFade * 0.92).toFixed(3) + ')';
+          c.beginPath(); c.arc(ex, ey, 1.15 * k, 0, IA_TAU); c.fill();
+        }
       });
       c.restore();
     }
     iaPaintSelection(c, env, sc, st, tt, 'inside');
     c.restore();
-    // membrane shimmer: a slow highlight travelling round the bilayer
-    c.save(); c.lineCap = 'round'; c.lineJoin = 'round';
-    [0, 0.5].forEach(function (off) {
-      var f0 = ((st.reduced ? 0.12 : tt * 0.018) + off) % 1;
-      c.strokeStyle = 'rgba(224,251,255,0.2)'; c.lineWidth = 5 * k; c.beginPath();
-      for (var i = 0; i <= 14; i++) { var q = interiorBoundaryPoint(g, type, f0 + i * 0.005, 5.3 * k); if (i === 0) c.moveTo(q[0], q[1]); else c.lineTo(q[0], q[1]); }
-      c.stroke();
-    });
+    // lipid-bilayer fluid-mosaic shimmer & gentle undulation wave around the membrane
+    if (!hc) {
+      c.save(); c.lineCap = 'round'; c.lineJoin = 'round';
+      [0, 0.5].forEach(function (off) {
+        var f0 = ((st.reduced ? 0.12 : tt * 0.018) + off) % 1;
+        c.strokeStyle = 'rgba(224,251,255,0.22)'; c.lineWidth = 5 * k; c.beginPath();
+        for (var i = 0; i <= 14; i++) {
+          var waveOff = st.reduced ? 5.3 * k : (5.3 + Math.sin(i * 0.55 + tt * 2.4) * 0.85) * k;
+          var q = interiorBoundaryPoint(g, type, f0 + i * 0.005, waveOff);
+          if (i === 0) c.moveTo(q[0], q[1]); else c.lineTo(q[0], q[1]);
+        }
+        c.stroke();
+      });
+      c.restore();
+    }
+    // live ion-channel transport flashes synced to the 18 transmembrane channels
+    c.save();
+    for (var ch = 0; ch < 6; ch++) {
+      var protIdx = ch * 3;
+      var chF = (protIdx + 0.37) / 18;
+      var chCycle = st.reduced ? (0.38 + (ch % 3) * 0.18) : ((tt * 0.36 + ch * 0.19) % 1);
+      var chFade = Math.sin(chCycle * Math.PI);
+      if (chFade < 0.08) continue;
+      var inbound = ch % 2 === 0;
+      var depth = inbound ? (-4.5 + chCycle * 19.5) * k : (15.0 - chCycle * 19.5) * k;
+      var ionPt = interiorBoundaryPoint(g, type, chF, depth);
+      var chMid = interiorBoundaryPoint(g, type, chF, 5.35 * k);
+      var ionCol = inbound ? '103,232,249' : '253,224,71';
+      if (!hc && hasRad) {
+        var chGlow = c.createRadialGradient(chMid[0], chMid[1], 0.5, chMid[0], chMid[1], 6.5 * k);
+        chGlow.addColorStop(0, 'rgba(' + ionCol + ',' + (0.42 * chFade).toFixed(3) + ')');
+        chGlow.addColorStop(1, 'rgba(' + ionCol + ',0)');
+        c.fillStyle = chGlow; c.beginPath(); c.arc(chMid[0], chMid[1], 6.5 * k, 0, IA_TAU); c.fill();
+      }
+      c.fillStyle = hc ? '#fef08a' : ('rgba(' + ionCol + ',' + (0.9 * chFade).toFixed(3) + ')');
+      c.beginPath(); c.arc(ionPt[0], ionPt[1], 1.65 * k, 0, IA_TAU); c.fill();
+    }
     c.restore();
     if (type === 'bacterium') iaPaintFlagellum(c, env, sc, st, tt, st.sel === 'flagellum');
     iaPaintSelection(c, env, sc, st, tt, 'outside');

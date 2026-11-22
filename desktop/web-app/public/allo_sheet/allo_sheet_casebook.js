@@ -100,6 +100,9 @@
 
     function safeString(value, label, maximum, options) {
       options = options || {};
+      if (value !== null && value !== undefined && typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') {
+        fail(label + ' must be text.');
+      }
       var text = String(value == null ? '' : value);
       if (options.trim !== false) text = text.trim();
       if (options.required && !text) fail(label + ' is required.');
@@ -116,7 +119,7 @@
     }
 
     function strictNumber(value, label, allowBlank) {
-      if (value === null || value === undefined || String(value).trim() === '') {
+      if (value === null || value === undefined) {
         if (allowBlank) return null;
         fail(label + ' must be a number.');
       }
@@ -124,7 +127,12 @@
         if (Number.isFinite(value)) return value;
         fail(label + ' must be a finite number.');
       }
-      var text = String(value).trim();
+      if (typeof value !== 'string') fail(label + ' must be a number.');
+      var text = value.trim();
+      if (text === '') {
+        if (allowBlank) return null;
+        fail(label + ' must be a number.');
+      }
       if (!NUMBER_TEXT.test(text)) fail(label + ' must be a number.');
       var result = Number(text);
       if (!Number.isFinite(result)) fail(label + ' must be a finite number.');
@@ -382,7 +390,9 @@
       if (!table || !Array.isArray(table.columnDetails)) return result;
       table.columnDetails.forEach(function (column) {
         if (!column || typeof column !== 'object') return;
-        result[String(column.key)] = String(column.label);
+        if (typeof column.key !== 'string' || !column.key || BLOCKED_KEYS.indexOf(column.key) >= 0) return;
+        if (typeof column.label !== 'string' || !column.label || BLOCKED_KEYS.indexOf(column.label) >= 0) return;
+        result[column.key] = column.label;
       });
       return result;
     }
@@ -416,24 +426,28 @@
         var definitionRecord = definitionTable.records && definitionTable.records[0];
         if (!definitionRecord || fieldByKey(definitionTable, definitionRecord, 'schema_kind') !== KIND) return null;
         if (Number(fieldByKey(definitionTable, definitionRecord, 'schema_version')) !== VERSION) return null;
+        if (Array.isArray(casesTable.records) && casesTable.records.length > LIMITS.maxCases) return null;
+        if (Array.isArray(parametersTable.records) && parametersTable.records.length > LIMITS.maxParameters) return null;
+        var casesMap = tableColumnMap(casesTable);
+        var parametersMap = tableColumnMap(parametersTable);
         var caseItems = (casesTable.records || []).map(function (record) {
           return {
-            id: safeString(fieldByKey(casesTable, record, 'case_id'), 'Case ID', 120, { required: true, singleLine: true }),
-            name: safeString(fieldByKey(casesTable, record, 'case_name'), 'Case name', LIMITS.maxCaseNameChars, { required: true, singleLine: true }),
-            status: safeString(fieldByKey(casesTable, record, 'status'), 'Case status', 80, { singleLine: true }),
-            context: safeString(fieldByKey(casesTable, record, 'context'), 'Case context', LIMITS.maxNarrativeChars)
+            id: safeString(fieldByKey(casesTable, record, 'case_id', casesMap), 'Case ID', 120, { required: true, singleLine: true }),
+            name: safeString(fieldByKey(casesTable, record, 'case_name', casesMap), 'Case name', LIMITS.maxCaseNameChars, { required: true, singleLine: true }),
+            status: safeString(fieldByKey(casesTable, record, 'status', casesMap), 'Case status', 80, { singleLine: true }),
+            context: safeString(fieldByKey(casesTable, record, 'context', casesMap), 'Case context', LIMITS.maxNarrativeChars)
           };
         });
         var parameterInputs = (parametersTable.records || []).map(function (record) {
           return {
-            key: fieldByKey(parametersTable, record, 'parameter_key'),
-            label: fieldByKey(parametersTable, record, 'label'),
-            type: fieldByKey(parametersTable, record, 'type'),
-            unit: fieldByKey(parametersTable, record, 'unit'),
-            minimum: fieldByKey(parametersTable, record, 'expected_minimum'),
-            maximum: fieldByKey(parametersTable, record, 'expected_maximum'),
-            prompt: fieldByKey(parametersTable, record, 'prompt'),
-            aliases: String(fieldByKey(parametersTable, record, 'aliases') || '').split('|')
+            key: fieldByKey(parametersTable, record, 'parameter_key', parametersMap),
+            label: fieldByKey(parametersTable, record, 'label', parametersMap),
+            type: fieldByKey(parametersTable, record, 'type', parametersMap),
+            unit: fieldByKey(parametersTable, record, 'unit', parametersMap),
+            minimum: fieldByKey(parametersTable, record, 'expected_minimum', parametersMap),
+            maximum: fieldByKey(parametersTable, record, 'expected_maximum', parametersMap),
+            prompt: fieldByKey(parametersTable, record, 'prompt', parametersMap),
+            aliases: String(fieldByKey(parametersTable, record, 'aliases', parametersMap) || '').split('|')
           };
         });
         var normalized = normalizeDefinition({
@@ -445,17 +459,20 @@
           parameters: parameterInputs
         });
         var knownCases = Object.create(null);
-        caseItems.forEach(function (item) { knownCases[item.id] = true; });
+        for (var ci = 0; ci < caseItems.length; ci += 1) {
+          if (knownCases[caseItems[ci].id]) return null;
+          knownCases[caseItems[ci].id] = true;
+        }
         var observationMap = tableColumnMap(observationsTable);
         if (!normalized.parameters.every(function (parameter) { return !!observationMap[parameter.key]; })) return null;
         var cellIssues = [];
         var observations = (observationsTable.records || []).map(function (record) {
-          var obsId = String(fieldByKey(observationsTable, record, 'observation_id') || record.id || '');
-          var caseId = String(fieldByKey(observationsTable, record, 'case_id') || '');
+          var obsId = String(fieldByKey(observationsTable, record, 'observation_id', observationMap) || record.id || '');
+          var caseId = String(fieldByKey(observationsTable, record, 'case_id', observationMap) || '');
           var values = Object.create(null);
           var rowIssues = [];
           normalized.parameters.forEach(function (parameter) {
-            var rawCell = fieldByKey(observationsTable, record, parameter.key);
+            var rawCell = fieldByKey(observationsTable, record, parameter.key, observationMap);
             try {
               values[parameter.key] = coerceValue(parameter, rawCell);
             } catch (cellError) {
@@ -581,7 +598,11 @@
     }
 
     function findParameterPhrase(narrative, parameter) {
-      var aliases = (Array.isArray(parameter && parameter.aliases) ? parameter.aliases : []).slice().sort(function (a, b) { return b.length - a.length; });
+      var aliases = (Array.isArray(parameter && parameter.aliases) ? parameter.aliases : [])
+        .filter(function (alias) { return typeof alias === 'string' && alias.trim().length > 0 && alias.trim().length <= LIMITS.maxParameterLabelChars; })
+        .map(function (alias) { return alias.trim(); })
+        .slice(0, LIMITS.maxAliases)
+        .sort(function (a, b) { return b.length - a.length; });
       var alternation = aliases.map(escapeRegExp).join('|');
       if (!alternation) return null;
       if (parameter.type === 'number') {
@@ -591,7 +612,7 @@
           var parsedNum = Number(numberMatch[1]);
           return Number.isFinite(parsedNum) ? { value: parsedNum, text: numberMatch[0].trim() } : null;
         }
-        if (/^°[FC]$/i.test(parameter.unit)) {
+        if (typeof parameter.unit === 'string' && /^°[FC]$/i.test(parameter.unit)) {
           var degreePattern = /(?:^|\b)(?:at\s+)?([+-]?(?:\d+(?:\.\d*)?|\.\d+))\s*(?:°\s*[fc]|degrees?(?:\s+(?:fahrenheit|celsius))?)/i;
           var degreeMatch = degreePattern.exec(narrative);
           if (degreeMatch) {
@@ -702,7 +723,8 @@
       if (!isPlainObject(input)) fail('The observation draft is invalid.');
       var caseId = safeString(input.caseId, 'Case', 120, { required: true, singleLine: true });
       if (!book.cases.some(function (item) { return item.id === caseId; })) fail('Choose a valid case.');
-      var timestamp = String(input.observedAt || '');
+      if (typeof input.observedAt !== 'string' || !input.observedAt.trim() || input.observedAt.length > 80) fail('Choose a valid observation date and time.');
+      var timestamp = input.observedAt.trim();
       if (!Number.isFinite(Date.parse(timestamp))) fail('Choose a valid observation date and time.');
       timestamp = new Date(timestamp).toISOString();
       var values = Object.create(null);
@@ -926,10 +948,16 @@
       var numericValues = points.map(function (point) { return point.value; }).filter(function (value) {
         return typeof value === 'number' && Number.isFinite(value);
       });
-      var numericRange = numericValues.length ? {
-        min: Math.min.apply(Math, numericValues),
-        max: Math.max.apply(Math, numericValues)
-      } : null;
+      var numericRange = null;
+      if (numericValues.length) {
+        var minVal = numericValues[0];
+        var maxVal = numericValues[0];
+        for (var ni = 1; ni < numericValues.length; ni += 1) {
+          if (numericValues[ni] < minVal) minVal = numericValues[ni];
+          if (numericValues[ni] > maxVal) maxVal = numericValues[ni];
+        }
+        numericRange = { min: minVal, max: maxVal };
+      }
 
       return {
         case: { id: selected.caseItem.id, name: selected.caseItem.name },

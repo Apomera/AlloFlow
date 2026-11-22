@@ -187,23 +187,28 @@ const _PB_DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 const _PB_SAFE_FIELD_RE = /^[A-Za-z_][A-Za-z0-9_.]*$/;
 
 function _pbSafeBaseUrl(rawUrl) {
-    const candidate = String(rawUrl || 'http://localhost:8090').trim().replace(/\/$/, '');
+    const candidate = String(rawUrl || 'http://localhost:8090').trim();
     let parsed;
     try { parsed = new URL(candidate); } catch {
         throw new Error('PocketBase baseUrl must be a valid http(s) URL.');
     }
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-        throw new Error('PocketBase baseUrl must use http: or https:.');
+    if ((parsed.protocol !== 'http:' && parsed.protocol !== 'https:')
+        || parsed.username || parsed.password || parsed.search || parsed.hash) {
+        throw new Error('PocketBase baseUrl must use http: or https: without credentials, query, or fragment.');
     }
-    return candidate;
+    return `${parsed.origin}${parsed.pathname}`.replace(/\/+$/, '');
 }
 
-function _pbSafeSegment(value, label) {
+function _pbSafeRawSegment(value, label) {
     const s = String(value == null ? '' : value).trim();
     if (!s || s.length > 128 || s === '.' || s === '..' || /[\\/?#%\u0000-\u001f\u007f]/.test(s) || s.includes('..')) {
         throw new Error(`Invalid PocketBase ${label || 'identifier'}.`);
     }
-    return encodeURIComponent(s);
+    return s;
+}
+
+function _pbSafeSegment(value, label) {
+    return encodeURIComponent(_pbSafeRawSegment(value, label));
 }
 
 function _pbSafeField(field) {
@@ -262,17 +267,18 @@ class PocketBaseAdapter {
     }
 
     async _fetch(path, options = {}) {
-        const headers = { 'Content-Type': 'application/json', ...options.headers };
-        if (this._authToken) headers['Authorization'] = `Bearer ${this._authToken}`;
-        const controller = typeof AbortController !== 'undefined' && !options.signal ? new AbortController() : null;
+        const { skipAuth = false, ...fetchOpts } = options;
+        const headers = { 'Content-Type': 'application/json', ...fetchOpts.headers };
+        if (this._authToken && !skipAuth) headers['Authorization'] = `Bearer ${this._authToken}`;
+        const controller = typeof AbortController !== 'undefined' && !fetchOpts.signal ? new AbortController() : null;
         const timer = controller ? setTimeout(() => controller.abort(), 15000) : null;
         try {
             const res = await fetch(`${this.baseUrl}${path}`, {
                 credentials: 'omit',
                 referrerPolicy: 'no-referrer',
-                ...options,
+                ...fetchOpts,
                 headers,
-                signal: options.signal || (controller ? controller.signal : undefined),
+                signal: fetchOpts.signal || (controller ? controller.signal : undefined),
             });
             if (!res.ok) {
                 const errData = await res.json().catch(() => ({ message: res.statusText }));
@@ -333,11 +339,14 @@ class PocketBaseAdapter {
     }
 
     async getDoc(collectionPath, docId) {
+        const col = this._col(collectionPath);
+        const id = this._doc(docId);
         try {
-            const record = await this._fetch(`/api/collections/${this._col(collectionPath)}/records/${this._doc(docId)}`);
+            const record = await this._fetch(`/api/collections/${col}/records/${id}`);
             return record ? { id: record.id, ...record } : null;
-        } catch {
-            return null;
+        } catch (err) {
+            if (err && err.status === 404) return null;
+            throw err;
         }
     }
 
@@ -388,13 +397,15 @@ class PocketBaseAdapter {
 
     onSnapshot(collectionPath, docId, callback) {
         // Validate collection and record id BEFORE opening EventSource or polling
-        const topic = docId
-            ? `${this._col(collectionPath)}/${this._doc(docId)}`
-            : this._col(collectionPath);
+        const rawCol = _pbSafeRawSegment(collectionPath, 'collection');
+        const rawDoc = docId ? _pbSafeRawSegment(docId, 'record id') : null;
+        const topic = rawDoc ? `${rawCol}/${rawDoc}` : rawCol;
         // PocketBase supports SSE (Server-Sent Events) for real-time
         const url = `${this.baseUrl}/api/realtime`;
         let eventSource = null;
         let active = true;
+        let refreshSeq = 0;
+        const subId = Symbol('pb-sub');
 
         try {
             eventSource = new EventSource(url);
@@ -422,9 +433,10 @@ class PocketBaseAdapter {
                         callback(data.record ? { id: data.record.id, ...data.record } : null);
                     }
                 } else {
-                    // For collection subscriptions, re-fetch the full list
+                    // For collection subscriptions, re-fetch the full list with monotonic sequence check
+                    const seq = ++refreshSeq;
                     this.getDocs(collectionPath).then((docs) => {
-                        if (active) callback(docs);
+                        if (active && seq === refreshSeq) callback(docs);
                     }).catch(err =>
                         this.warnLog('[DataProvider] SSE collection refresh error:', err)
                     );
@@ -437,9 +449,11 @@ class PocketBaseAdapter {
         } catch (err) {
             if (eventSource) { try { eventSource.close(); } catch (_) {} eventSource = null; }
             this.warnLog('[DataProvider] SSE not available, falling back to polling');
-            // Fallback: poll every 3 seconds
+            let inFlight = false;
+            // Fallback: poll every 3 seconds without overlapping requests
             const interval = setInterval(async () => {
-                if (!active) return;
+                if (!active || inFlight) return;
+                inFlight = true;
                 try {
                     if (docId) {
                         const doc = await this.getDoc(collectionPath, docId);
@@ -450,16 +464,30 @@ class PocketBaseAdapter {
                     }
                 } catch (err) {
                     this.warnLog('[DataProvider] Polling error:', err);
+                } finally {
+                    inFlight = false;
                 }
             }, 3000);
-            return () => { active = false; clearInterval(interval); };
+            const unsubPoll = () => { active = false; clearInterval(interval); this._subscriptions.delete(subId); };
+            this._subscriptions.set(subId, unsubPoll);
+            return unsubPoll;
         }
 
         // Return unsubscribe function
-        return () => {
+        const unsubSse = () => {
             active = false;
+            this._subscriptions.delete(subId);
             if (eventSource) { try { eventSource.close(); } catch (_) {} eventSource = null; }
         };
+        this._subscriptions.set(subId, unsubSse);
+        return unsubSse;
+    }
+
+    dispose() {
+        for (const unsub of Array.from(this._subscriptions.values())) {
+            try { unsub(); } catch (_) {}
+        }
+        this._subscriptions.clear();
     }
 
     async writeBatch(operations) {
@@ -476,9 +504,10 @@ class PocketBaseAdapter {
         try {
             const uid = 'anon_' + _secureToken(10);
             const password = _secureToken(24);
-            // Create user
+            // Create user (omit any stale Authorization header)
             await this._fetch('/api/collections/users/records', {
                 method: 'POST',
+                skipAuth: true,
                 body: JSON.stringify({
                     username: uid,
                     password: password,
@@ -489,8 +518,12 @@ class PocketBaseAdapter {
             // Auth with new user
             const authResult = await this._fetch('/api/collections/users/auth-with-password', {
                 method: 'POST',
+                skipAuth: true,
                 body: JSON.stringify({ identity: uid, password }),
             });
+            if (!authResult || typeof authResult.token !== 'string' || !authResult.token || !authResult.record || !authResult.record.id) {
+                throw new Error('PocketBase returned an invalid authentication response.');
+            }
             this._authToken = authResult.token;
             this._userId = authResult.record.id;
             this._notifyAuthCallbacks({ uid: this._userId, isAnonymous: true });
@@ -582,9 +615,24 @@ class LocalStorageAdapter {
     _key(collection, docId) { return `${this._prefix}${encodeURIComponent(String(collection))}/${docId}`; }
     _collPrefix(collection) { return `${this._prefix}${encodeURIComponent(String(collection))}/`; }
 
-    async setDoc(collectionPath, docId, data) {
-        const resolved = this._resolveFieldOps(data, collectionPath, docId, false);
-        localStorage.setItem(this._key(collectionPath, docId), JSON.stringify(resolved));
+    async setDoc(collectionPath, docId, data, options = {}) {
+        const merge = Boolean(options && options.merge === true);
+        const resolved = this._resolveFieldOps(data, collectionPath, docId, merge);
+        if (merge) {
+            const existing = await this.getDoc(collectionPath, docId);
+            const merged = existing && typeof existing === 'object' ? { ...existing } : {};
+            if (resolved && typeof resolved === 'object') {
+                for (const [k, v] of Object.entries(resolved)) {
+                    if (_PB_DANGEROUS_KEYS.has(k)) continue;
+                    if (v === _LOCAL_DELETE_FIELD) delete merged[k];
+                    else merged[k] = v;
+                }
+            }
+            merged.id = docId;
+            localStorage.setItem(this._key(collectionPath, docId), JSON.stringify(merged));
+        } else {
+            localStorage.setItem(this._key(collectionPath, docId), JSON.stringify(resolved));
+        }
         this._notifySubscribers(collectionPath, docId);
     }
 
@@ -658,14 +706,20 @@ class LocalStorageAdapter {
                     return c.direction === 'desc' ? -cmp : cmp;
                 });
             } else if (c.type === 'limit') {
-                filtered = filtered.slice(0, c.value);
+                const lim = Math.max(0, Math.floor(Number(c.value) || 0));
+                filtered = filtered.slice(0, lim);
             }
         }
         return filtered;
     }
 
+    _subKey(collectionPath, docId) {
+        const col = encodeURIComponent(String(collectionPath));
+        return docId ? `${col}/${docId}` : col;
+    }
+
     onSnapshot(collectionPath, docId, callback) {
-        const key = docId ? `${collectionPath}/${docId}` : collectionPath;
+        const key = this._subKey(collectionPath, docId);
         let active = true;
         const handler = async () => {
             if (!active) return;
@@ -696,22 +750,23 @@ class LocalStorageAdapter {
 
     _notifySubscribers(collectionPath, docId) {
         // Notify document-level subscribers
-        const docKey = `${collectionPath}/${docId}`;
+        const docKey = this._subKey(collectionPath, docId);
         (this._subscriptions.get(docKey) || []).forEach(h => h().catch(err => this.warnLog('[DataProvider] Local snapshot notify error:', err)));
         // Notify collection-level subscribers
-        (this._subscriptions.get(collectionPath) || []).forEach(h => h().catch(err => this.warnLog('[DataProvider] Local snapshot notify error:', err)));
+        const colKey = this._subKey(collectionPath, null);
+        (this._subscriptions.get(colKey) || []).forEach(h => h().catch(err => this.warnLog('[DataProvider] Local snapshot notify error:', err)));
     }
 
     async writeBatch(operations) {
         for (const op of operations) {
-            if (op.type === 'set') await this.setDoc(op.collection, op.docId, op.data);
+            if (op.type === 'set') await this.setDoc(op.collection, op.docId, op.data, op.options);
             else if (op.type === 'update') await this.updateDoc(op.collection, op.docId, op.data);
             else if (op.type === 'delete') await this.deleteDoc(op.collection, op.docId);
         }
     }
 
     async signInAnonymously() {
-        this._userId = localStorage.getItem('alloflow_anon_uid') || ('local_' + Date.now());
+        this._userId = localStorage.getItem('alloflow_anon_uid') || ('local_' + _secureToken(12));
         localStorage.setItem('alloflow_anon_uid', this._userId);
         const user = { uid: this._userId, isAnonymous: true };
         this._notifyAuthCallbacks(user);
@@ -733,8 +788,11 @@ class LocalStorageAdapter {
         for (const cb of this._authCallbacks) { try { cb(user); } catch { } }
     }
 
-    _resolveFieldOps(data, collectionPath, docId, preserveDeletes = false) {
+    _resolveFieldOps(data, collectionPath, docId, preserveDeletes = false, existingNode = undefined) {
         if (!data || typeof data !== 'object') return data;
+        const baseNode = existingNode !== undefined
+            ? (existingNode && typeof existingNode === 'object' ? existingNode : {})
+            : (_pbSafeJsonParse(localStorage.getItem(this._key(collectionPath, docId)), {}) || {});
         const resolved = {};
         for (const [key, value] of Object.entries(data)) {
             if (_PB_DANGEROUS_KEYS.has(key)) continue;
@@ -742,22 +800,19 @@ class LocalStorageAdapter {
                 switch (value.__op) {
                     case 'serverTimestamp': resolved[key] = new Date().toISOString(); break;
                     case 'arrayUnion': {
-                        const existing = _pbSafeJsonParse(localStorage.getItem(this._key(collectionPath, docId)), {}) || {};
-                        const prevVal = Object.prototype.hasOwnProperty.call(existing, key) ? existing[key] : undefined;
+                        const prevVal = Object.prototype.hasOwnProperty.call(baseNode, key) ? baseNode[key] : undefined;
                         const arr = Array.isArray(prevVal) ? prevVal : [];
                         resolved[key] = [...new Set([...arr, ...value.elements])];
                         break;
                     }
                     case 'arrayRemove': {
-                        const existing2 = _pbSafeJsonParse(localStorage.getItem(this._key(collectionPath, docId)), {}) || {};
-                        const prevVal2 = Object.prototype.hasOwnProperty.call(existing2, key) ? existing2[key] : undefined;
+                        const prevVal2 = Object.prototype.hasOwnProperty.call(baseNode, key) ? baseNode[key] : undefined;
                         const arr2 = Array.isArray(prevVal2) ? prevVal2 : [];
                         resolved[key] = arr2.filter(el => !value.elements.includes(el));
                         break;
                     }
                     case 'increment': {
-                        const existing3 = _pbSafeJsonParse(localStorage.getItem(this._key(collectionPath, docId)), {}) || {};
-                        const prevVal3 = Object.prototype.hasOwnProperty.call(existing3, key) ? existing3[key] : 0;
+                        const prevVal3 = Object.prototype.hasOwnProperty.call(baseNode, key) ? baseNode[key] : 0;
                         resolved[key] = (typeof prevVal3 === 'number' ? prevVal3 : 0) + value.value;
                         break;
                     }
@@ -769,7 +824,8 @@ class LocalStorageAdapter {
             } else if (Array.isArray(value)) {
                 resolved[key] = value;
             } else if (typeof value === 'object' && value !== null) {
-                resolved[key] = this._resolveFieldOps(value, collectionPath, docId, false);
+                const nestedExisting = Object.prototype.hasOwnProperty.call(baseNode, key) ? baseNode[key] : {};
+                resolved[key] = this._resolveFieldOps(value, collectionPath, docId, false, nestedExisting);
             } else {
                 resolved[key] = value;
             }

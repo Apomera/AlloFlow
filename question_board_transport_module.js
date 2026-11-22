@@ -29,11 +29,11 @@
 (function (root, factory) {
     if (typeof module === 'object' && module.exports) {
         module.exports = factory();
-    } else {
+    } else if (root) {
         root.AlloModules = root.AlloModules || {};
         root.AlloModules.QuestionBoardTransport = factory();
     }
-}(typeof self !== 'undefined' ? self : this, function () {
+}(typeof window !== 'undefined' ? window : (typeof self !== 'undefined' ? self : (typeof globalThis !== 'undefined' ? globalThis : null)), function () {
     'use strict';
 
     const VERSION = '1.0.0';
@@ -42,7 +42,7 @@
     const MAX_BOARD_ITEMS = 500;
     const MAX_ITEM_TEXT_CHARS = 2000;
     const MAX_NOTE_CHARS = 1000;
-    const ALLOWED_STATUSES = { 'held': 1, 'approved': 1, 'hidden': 1 };
+    const ALLOWED_STATUSES = Object.freeze({ 'held': 1, 'approved': 1, 'hidden': 1 });
 
     function stripCtrl(value) {
         return String(value == null ? '' : value).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '');
@@ -66,7 +66,7 @@
 
     // Server code → contract reason. Anything unlisted surfaces as 'error',
     // which the UI renders as a generic retry rather than inventing a cause.
-    const REASONS = {
+    const REASONS = Object.freeze({
         'denied': 'denied',
         'expired': 'expired',
         'item-cap': 'item-cap',
@@ -79,7 +79,7 @@
         'not-admin': 'host-only',
         'rate-limited': 'rate-limited',
         'busy': 'busy'
-    };
+    });
 
     function reasonFor(code) {
         const key = String(code || '');
@@ -105,21 +105,28 @@
      * mailbox's central advantage over Firestore-on-Canvas (spec §10.4b) and
      * this function must not paper over it by re-adding anything.
      */
+    function nonNegNum(value, fallback, minVal) {
+        const n = finiteNum(value, fallback);
+        const floor = typeof minVal === 'number' ? minVal : 0;
+        return n >= floor ? n : fallback;
+    }
+
     function boardFromSummary(summary) {
-        if (!summary || typeof summary !== 'object' || summary.ok === false) return null;
+        if (!summary || typeof summary !== 'object' || Array.isArray(summary) || summary.ok === false) return null;
         const items = Array.isArray(summary.items) ? summary.items.slice(0, MAX_BOARD_ITEMS) : [];
+        const rawPolicy = stripCtrl(summary.revealPolicy || 'auto_publish').trim();
         return {
             config: {
                 activityId: stripCtrl(summary.activityId || '').slice(0, 128),
                 type: 'question_board',
                 prompt: stripCtrl(summary.prompt || '').slice(0, 1000),
-                revealPolicy: stripCtrl(summary.revealPolicy || 'auto_publish').slice(0, 64),
-                minParticipants: finiteNum(summary.minParticipants, 3),
-                itemsPerStudent: finiteNum(summary.itemsPerStudent, 5),
-                boardCap: finiteNum(summary.boardCap, 400),
+                revealPolicy: rawPolicy === 'teacher_review' ? 'teacher_review' : 'auto_publish',
+                minParticipants: nonNegNum(summary.minParticipants, 3, 1),
+                itemsPerStudent: nonNegNum(summary.itemsPerStudent, 5, 1),
+                boardCap: nonNegNum(summary.boardCap, 400, 1),
                 expiresAt: stripCtrl(summary.expiresAt || '').slice(0, 64)
             },
-            items: items.filter(function (it) { return it && typeof it === 'object'; }).map(function (it) {
+            items: items.filter(function (it) { return it && typeof it === 'object' && !Array.isArray(it); }).map(function (it) {
                 const rawStatus = it.status === 'pending' ? 'held' : String(it.status || 'held');
                 const safeStatus = hasOwn.call(ALLOWED_STATUSES, rawStatus) ? rawStatus : 'held';
                 return {
@@ -134,18 +141,18 @@
                     answered: (it.answered && typeof it.answered === 'object' && !Array.isArray(it.answered))
                         ? Object.assign(
                             {},
-                            typeof it.answered.at === 'number' && Number.isFinite(it.answered.at) ? { at: it.answered.at } : {},
+                            typeof it.answered.at === 'number' && Number.isFinite(it.answered.at) && it.answered.at >= 0 ? { at: it.answered.at } : {},
                             typeof it.answered.by === 'string' && it.answered.by ? { by: stripCtrl(it.answered.by).slice(0, 64) } : {},
                             typeof it.answered.note === 'string' && it.answered.note ? { note: stripCtrl(it.answered.note).slice(0, MAX_NOTE_CHARS) } : {},
                             typeof it.answered.resourceId === 'string' && it.answered.resourceId ? { resourceId: stripCtrl(it.answered.resourceId).slice(0, 128) } : {}
                         )
                         : (it.answered === true),
-                    createdAt: finiteNum(it.createdAt, 0)
+                    createdAt: nonNegNum(it.createdAt, 0, 0)
                 };
             }),
-            version: finiteNum(summary.version, 0),
-            updatedAt: finiteNum(summary.updatedAt, 0),
-            participantCount: finiteNum(summary.participantCount, 0)
+            version: nonNegNum(summary.version, 0, 0),
+            updatedAt: nonNegNum(summary.updatedAt, 0, 0),
+            participantCount: nonNegNum(summary.participantCount, 0, 0)
         };
     }
 
@@ -166,10 +173,13 @@
         const call = opts.call;
         if (typeof call !== 'function') throw new Error('createMailboxTransport requires options.call');
 
-        const url = stripCtrl(opts.url || '').trim();
-        const hasScheme = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(url);
-        const safeScheme = /^https:\/\/[^\s]+$|^http:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?(?:\/[^\s]*)?$/i.test(url);
-        if (!url || /^\/\//.test(url) || (hasScheme && !safeScheme)) {
+        const rawUrl = String(opts.url == null ? '' : opts.url).trim();
+        const url = stripCtrl(rawUrl).trim();
+        const hasControlOrSpace = /[\u0000-\u0020\u007f]/.test(rawUrl);
+        const collapsedForScheme = rawUrl.replace(/[\u0000-\u0020\u007f]+/g, '');
+        const hasScheme = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(collapsedForScheme);
+        const safeScheme = /^https:\/\/[^\/\s@]+(?:\/[^\s]*)?$|^http:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?(?:\/[^\s]*)?$/i.test(url);
+        if (!url || hasControlOrSpace || /^\/\//.test(url) || (hasScheme && !safeScheme)) {
             throw new Error('createMailboxTransport rejected unsafe URL scheme');
         }
         const packId = String(opts.packId || '');
@@ -183,7 +193,7 @@
             ''
         ).trim().slice(0, 64);
         let storage = opts.storage || null;
-        if (!learnerScope && typeof globalThis !== 'undefined' && globalThis.__alloQrStudentMode) {
+        if (!learnerScope && typeof globalThis !== 'undefined' && (globalThis.__alloQrStudentMode || globalThis.__alloStudentView === true)) {
             try {
                 if (typeof window !== 'undefined' && window.localStorage && storage === window.localStorage) {
                     storage = window.sessionStorage || null;
@@ -198,12 +208,14 @@
 
         let credential = null;
         let joinPromise = null;
+        let joinGen = 0;
         let displayName = stripCtrl(opts.displayName || '').slice(0, 40);
 
         function validCred(value) {
-            return !!(value && typeof value === 'object'
-                && typeof value.uid === 'string' && value.uid.length > 0 && value.uid.length <= 200
-                && typeof value.pt === 'string' && value.pt.length > 0 && value.pt.length <= 512);
+            return !!(value && typeof value === 'object' && !Array.isArray(value)
+                && hasOwn.call(value, 'uid') && hasOwn.call(value, 'pt')
+                && typeof value.uid === 'string' && value.uid.length > 0 && value.uid.length <= 200 && !/[\u0000-\u001f\u007f]/.test(value.uid)
+                && typeof value.pt === 'string' && value.pt.length > 0 && value.pt.length <= 512 && !/[\u0000-\u001f\u007f]/.test(value.pt));
         }
 
         function readSaved() {
@@ -223,6 +235,7 @@
         }
 
         function forget() {
+            joinGen += 1;
             credential = null;
             joinPromise = null;
             if (storage) { try { storage.removeItem(storageKey); } catch (e) {} }
@@ -240,7 +253,8 @@
             const saved = readSaved();
             if (saved) { credential = saved; return saved; }
             if (joinPromise) return joinPromise;
-            joinPromise = (async function () {
+            const myGen = joinGen;
+            const pending = (async function () {
                 const joined = await call(url, {
                     a: 'joinactivity', id: packId, k: packSecret, aid: activityId
                 });
@@ -249,12 +263,15 @@
                     err.code = String((joined && joined.e) || 'denied');
                     throw err;
                 }
-                return remember({ uid: joined.uid, pt: joined.pt });
+                const next = { uid: joined.uid, pt: joined.pt };
+                if (myGen !== joinGen) return next;
+                return remember(next);
             })();
+            joinPromise = pending;
             try {
-                return await joinPromise;
+                return await pending;
             } finally {
-                joinPromise = null;
+                if (joinPromise === pending) joinPromise = null;
             }
         }
 
@@ -325,9 +342,12 @@
                         });
                     }
                     if (!result || result.ok === false) return refusal((result && result.e) || 'error', false);
-                    return { ok: true, board: boardFromSummary(result) };
+                    const board = boardFromSummary(result);
+                    if (!board) return refusal('error', false);
+                    return { ok: true, board: board };
                 } catch (e) {
-                    return refusal((e && e.code) || 'unreachable', true);
+                    const isJoinRefusal = !!(e && e.message === 'join-failed');
+                    return refusal((e && e.code) || (isJoinRefusal ? 'denied' : 'unreachable'), !isJoinRefusal);
                 }
             },
 
@@ -351,9 +371,12 @@
                         return payload;
                     });
                     if (!result || result.ok === false) return refusal((result && result.e) || 'error', false);
-                    return { ok: true, board: boardFromSummary(result) };
+                    const board = boardFromSummary(result);
+                    if (!board) return refusal('error', false);
+                    return { ok: true, board: board };
                 } catch (e) {
-                    return refusal((e && e.code) || 'unreachable', true);
+                    const isJoinRefusal = !!(e && e.message === 'join-failed');
+                    return refusal((e && e.code) || (isJoinRefusal ? 'denied' : 'unreachable'), !isJoinRefusal);
                 }
             },
 
@@ -365,6 +388,9 @@
              */
             async setStatus(authorUid, itemId, status) {
                 if (!isTeacher || !admin) return { ok: false, reason: 'host-only', code: '', transport: false };
+                const cleanUid = stripCtrl(authorUid || '').trim().slice(0, 128);
+                const cleanItemId = stripCtrl(itemId || '').trim().slice(0, 128);
+                if (!cleanUid || !cleanItemId) return refusal('error', false);
                 const rawStatus = String(status || '');
                 const wireStatus = rawStatus === 'held' ? 'pending' : rawStatus;
                 if (wireStatus !== 'pending' && wireStatus !== 'approved' && wireStatus !== 'hidden') {
@@ -373,13 +399,13 @@
                 try {
                     const result = await call(url, {
                         a: 'moderateactivity', admin: admin, id: packId, aid: activityId,
-                        uid: String(authorUid || ''), itemId: String(itemId || ''),
+                        uid: cleanUid, itemId: cleanItemId,
                         // The view speaks the contract's vocabulary; the wire
                         // speaks the mailbox's.
                         status: wireStatus
                     });
                     if (!result || result.ok === false) return refusal((result && result.e) || 'error', false);
-                    return { ok: true, version: finiteNum(result.version, 0) };
+                    return { ok: true, version: nonNegNum(result.version, 0, 0) };
                 } catch (e) {
                     return refusal((e && e.code) || 'unreachable', true);
                 }
@@ -392,17 +418,20 @@
              */
             async setAnswered(authorUid, itemId, answered, note, resourceId) {
                 if (!isTeacher || !admin) return { ok: false, reason: 'host-only', code: '', transport: false };
+                const cleanUid = stripCtrl(authorUid || '').trim().slice(0, 128);
+                const cleanItemId = stripCtrl(itemId || '').trim().slice(0, 128);
+                if (!cleanUid || !cleanItemId) return refusal('error', false);
                 try {
                     const payload = {
                         a: 'moderateactivity', admin: admin, id: packId, aid: activityId,
-                        uid: String(authorUid || ''), itemId: String(itemId || ''),
+                        uid: cleanUid, itemId: cleanItemId,
                         answered: answered === true
                     };
                     if (answered === true && note) payload.note = stripCtrl(note).slice(0, MAX_NOTE_CHARS);
                     if (answered === true && resourceId) payload.resourceId = stripCtrl(resourceId).slice(0, 128);
                     const result = await call(url, payload);
                     if (!result || result.ok === false) return refusal((result && result.e) || 'error', false);
-                    return { ok: true, version: finiteNum(result.version, 0) };
+                    return { ok: true, version: nonNegNum(result.version, 0, 0) };
                 } catch (e) {
                     return refusal((e && e.code) || 'unreachable', true);
                 }

@@ -1334,7 +1334,7 @@ function MathView(props) {
                                             {mathProblems.map((prob, idx) => {
                                                 var st = statuses[idx];
                                                 var pillTone = st === 'correct'
-                                                    ? 'bg-emerald-600 text-white border-emerald-700'
+                                                    ? 'bg-emerald-700 text-white border-emerald-800'
                                                     : st === 'partial'
                                                         ? 'bg-amber-100 text-amber-900 border-amber-400'
                                                         : st === 'incorrect'

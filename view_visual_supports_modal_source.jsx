@@ -100,7 +100,8 @@ function PausableImage(props) {
         <span
           role="img"
           aria-label={tr('paused_label', 'Paused animation: {name}', { name })}
-          style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', color: '#475569', fontSize: 20 }}
+          className="bg-slate-50 text-slate-600"
+          style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}
         >⏸</span>
       )}
       {isAnimated && (
@@ -147,7 +148,7 @@ function safeVisualSupportImageUrl(raw) {
       const body = trimmed.slice(comma + 1);
       decoded = /;base64/i.test(meta) ? atob(body) : decodeURIComponent(body);
     } catch (_) { return ''; }
-    if (/<script\b|<foreignObject\b|\bon[a-z]+\s*=|javascript:/i.test(decoded)) return '';
+    if (/<script\b|<foreignObject\b|<(?:iframe|object|embed|meta|base|link|animate|set)\b|<!ENTITY|&#|\bon[a-z]+\s*=|(?:xlink:)?href\s*=\s*["']?\s*(?:javascript:|data:)|javascript:|@import|expression\s*\(/i.test(decoded)) return '';
     return trimmed;
   }
   if (/^blob:/i.test(trimmed)) return trimmed;
@@ -428,7 +429,10 @@ function VisualSupportScheduleCard(props) {
   const [armReset, setArmReset] = React.useState(false);
   React.useEffect(() => {
     if (!armReset) return undefined;
-    const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setArmReset(false); } };
+    const onKey = (e) => {
+      if (e.isComposing || e.keyCode === 229) return;
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setArmReset(false); }
+    };
     document.addEventListener('keydown', onKey, true);
     return () => document.removeEventListener('keydown', onKey, true);
   }, [armReset]);
@@ -533,10 +537,10 @@ function VisualSupportScheduleCard(props) {
                   </span>
                   {nowItem && (
                     <>
-                      <div style={{width:'100%',height:112,border:'1px solid #e2e8f0',borderRadius:12,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',background:'#f8fafc'}}>
+                      <div className="w-full h-28 border border-slate-300 rounded-xl overflow-hidden flex items-center justify-center bg-slate-50">
                         {nowItem.image
                           ? <PausableImage src={nowItem.image} alt={nowItem.label} globalPaused={pauseAnimations} tr={tr} style={{width:'100%',height:'100%'}}/>
-                          : <span aria-hidden="true" style={{fontSize:34,color:'#94a3b8'}}>{allDone ? '✓' : '?'}</span>}
+                          : <span aria-hidden="true" className="text-3xl text-slate-500">{allDone ? '✓' : '?'}</span>}
                       </div>
                       <p className="text-base font-bold text-slate-900">{nowItem.label}</p>
                       {!completed[currentStep] ? (
@@ -560,10 +564,10 @@ function VisualSupportScheduleCard(props) {
                   </span>
                   {nextItem ? (
                     <>
-                      <div style={{width:'100%',height:112,border:'1px solid #e2e8f0',borderRadius:12,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center',background:'#f8fafc'}}>
+                      <div className="w-full h-28 border border-slate-300 rounded-xl overflow-hidden flex items-center justify-center bg-slate-50">
                         {nextItem.image
                           ? <PausableImage src={nextItem.image} alt={nextItem.label} globalPaused={pauseAnimations} tr={tr} style={{width:'100%',height:'100%'}}/>
-                          : <span aria-hidden="true" style={{fontSize:34,color:'#94a3b8'}}>?</span>}
+                          : <span aria-hidden="true" className="text-3xl text-slate-500">?</span>}
                       </div>
                       <p className="text-base font-bold text-slate-800">{nextItem.label}</p>
                     </>
@@ -629,7 +633,17 @@ function VisualSupportsModal(props) {
   // live HERE (vsTab/setVsTab scope) — it was accidentally defined inside
   // PausableImage, leaving the JSX reference below a free variable that
   // crashed this modal on render (caught by check_render_refs).
+  const tabFocusTimerRef = React.useRef(null);
+  React.useEffect(function () {
+    return function () {
+      if (tabFocusTimerRef.current !== null) {
+        clearTimeout(tabFocusTimerRef.current);
+        tabFocusTimerRef.current = null;
+      }
+    };
+  }, []);
   const handleTabKeyDown = function (event) {
+    if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
     const tabs = ['boards', 'schedules'];
     const current = tabs.indexOf(vsTab);
     let next = null;
@@ -640,9 +654,11 @@ function VisualSupportsModal(props) {
     if (next === null) return;
     event.preventDefault();
     setVsTab(tabs[next]);
-    window.setTimeout(function () {
+    if (tabFocusTimerRef.current !== null) clearTimeout(tabFocusTimerRef.current);
+    tabFocusTimerRef.current = window.setTimeout(function () {
+      tabFocusTimerRef.current = null;
       const tab = document.getElementById('visual-supports-tab-' + tabs[next]);
-      if (tab) tab.focus();
+      if (tab && tab.isConnected) tab.focus();
     }, 0);
   };
   const dialogRef = React.useRef(null);
@@ -801,7 +817,7 @@ function VisualSupportsModal(props) {
     const cleanText = visualSupportText(text, '');
     if (!cleanText) return;
     try {
-      if (typeof window.__alloIsGlobalMuted === 'function' ? window.__alloIsGlobalMuted() : window._alloGlobalMute) {
+      if ((typeof window.__alloIsGlobalMuted === 'function' ? window.__alloIsGlobalMuted() : window._alloGlobalMute) || window.__alloMuted === true) {
         if (vsMountedRef.current) setStatusMessage('');
         return;
       }
@@ -847,20 +863,30 @@ function VisualSupportsModal(props) {
     }
   }, [props.language]);
 
+  const hasOwnProgress = function (map, key) {
+    return !!(map && typeof map === 'object' && Object.prototype.hasOwnProperty.call(map, key));
+  };
+  const setScheduleProgressEntry = function (previous, schedId, value) {
+    const next = Object.create(null);
+    if (previous && typeof previous === 'object') {
+      Object.keys(previous).forEach(function (k) { next[k] = previous[k]; });
+    }
+    next[schedId] = value;
+    return next;
+  };
   const setCurrentScheduleStep = function (schedule, stepIndex) {
-    const currentProgress = scheduleProgressRef.current[schedule.id] || getInitialScheduleProgress(schedule);
+    const currentProgress = hasOwnProgress(scheduleProgressRef.current, schedule.id) ? scheduleProgressRef.current[schedule.id] : getInitialScheduleProgress(schedule);
     const nextProgress = Object.assign({}, currentProgress, { current: stepIndex });
     const items = Array.isArray(schedule.items) ? schedule.items : [];
     const nextNowId = items[stepIndex] ? items[stepIndex].id : '';
-    const completedById = {};
+    const completedById = Object.create(null);
     items.forEach(function (it, idx) {
       if (it && it.id) completedById[it.id] = !!(nextProgress.completed && nextProgress.completed[idx]);
     });
     persistVisualScheduleProgress(activeProfileId, schedule.id, nextNowId, completedById);
     setScheduleProgress(function (previous) {
-      return Object.assign({}, previous, {
-        [schedule.id]: Object.assign({}, previous[schedule.id] || getInitialScheduleProgress(schedule), { current: stepIndex }),
-      });
+      const existing = hasOwnProgress(previous, schedule.id) ? previous[schedule.id] : getInitialScheduleProgress(schedule);
+      return setScheduleProgressEntry(previous, schedule.id, Object.assign({}, existing, { current: stepIndex }));
     });
     setSupportData(function (previous) {
       if (!previous || !Array.isArray(previous.schedules)) return previous;
@@ -873,7 +899,7 @@ function VisualSupportsModal(props) {
     setStatusMessage(tr('step_now', '{step} is now the current step.', { step: schedule.items[stepIndex] ? schedule.items[stepIndex].label : tr('step_n', 'Step {n}', { n: stepIndex + 1 }) }));
   };
   const toggleScheduleStepComplete = function (schedule, stepIndex) {
-    const currentProgress = scheduleProgressRef.current[schedule.id] || getInitialScheduleProgress(schedule);
+    const currentProgress = hasOwnProgress(scheduleProgressRef.current, schedule.id) ? scheduleProgressRef.current[schedule.id] : getInitialScheduleProgress(schedule);
     const completed = Object.assign({}, currentProgress.completed || {});
     completed[stepIndex] = !completed[stepIndex];
     let current = Number.isInteger(currentProgress.current) ? currentProgress.current : 0;
@@ -883,15 +909,13 @@ function VisualSupportsModal(props) {
       if (nextIncomplete >= 0) current = nextIncomplete;
     }
     const nextNowId = items[current] ? items[current].id : '';
-    const completedById = {};
+    const completedById = Object.create(null);
     items.forEach(function (it, idx) {
       if (it && it.id) completedById[it.id] = !!completed[idx];
     });
     persistVisualScheduleProgress(activeProfileId, schedule.id, nextNowId, completedById);
     setScheduleProgress(function (previous) {
-      return Object.assign({}, previous, {
-        [schedule.id]: { current, completed },
-      });
+      return setScheduleProgressEntry(previous, schedule.id, { current, completed });
     });
     setSupportData(function (previous) {
       if (!previous || !Array.isArray(previous.schedules)) return previous;
@@ -912,13 +936,11 @@ function VisualSupportsModal(props) {
   const resetScheduleProgress = function (schedule) {
     const items = Array.isArray(schedule.items) ? schedule.items : [];
     const nextNowId = items[0] ? items[0].id : '';
-    const completedById = {};
+    const completedById = Object.create(null);
     items.forEach(function (it) { if (it && it.id) completedById[it.id] = false; });
     persistVisualScheduleProgress(activeProfileId, schedule.id, nextNowId, completedById);
     setScheduleProgress(function (previous) {
-      return Object.assign({}, previous, {
-        [schedule.id]: { current: 0, completed: {} },
-      });
+      return setScheduleProgressEntry(previous, schedule.id, { current: 0, completed: {} });
     });
     setSupportData(function (previous) {
       if (!previous || !Array.isArray(previous.schedules)) return previous;
@@ -1011,7 +1033,7 @@ function VisualSupportsModal(props) {
                 {vsTab === 'schedules' && (visibleSchedules.length === 0
                   ? <div className="text-center py-16 text-slate-600"><div className="text-5xl mb-3" aria-hidden="true">📅</div><p className="font-semibold">{vsSchedules.length === 0 ? tr('no_schedules', 'No saved schedules yet') : tr('no_schedules_match', 'No schedules match your search')}</p><p className="text-sm mt-1">{vsSchedules.length === 0 ? tr('no_schedules_hint', 'Save schedules in Symbol Studio to see them here') : tr('no_schedules_match_hint', 'Try a schedule title or step name')}</p></div>
                   : visibleSchedules.map((schedule, scheduleIndex) => (
-                    <VisualSupportScheduleCard key={schedule.id + '-' + scheduleIndex} schedule={schedule} cardIndex={scheduleIndex} progress={scheduleProgress[schedule.id]} pauseAnimations={pauseAnim} onSpeak={speakSupportText} onSetCurrent={setCurrentScheduleStep} onToggleComplete={toggleScheduleStepComplete} onResetSchedule={resetScheduleProgress} tr={tr} />
+                    <VisualSupportScheduleCard key={schedule.id + '-' + scheduleIndex} schedule={schedule} cardIndex={scheduleIndex} progress={hasOwnProgress(scheduleProgress, schedule.id) ? scheduleProgress[schedule.id] : undefined} pauseAnimations={pauseAnim} onSpeak={speakSupportText} onSetCurrent={setCurrentScheduleStep} onToggleComplete={toggleScheduleStepComplete} onResetSchedule={resetScheduleProgress} tr={tr} />
                   ))
                 )}
               </div>

@@ -51,7 +51,7 @@
 .manual-finder p {
     max-width: 680px;
     margin: 0;
-    color: #64748b;
+    color: #475569;
     line-height: 1.65;
 }
 
@@ -77,7 +77,8 @@
 }
 
 .manual-search input:focus-visible,
-.manual-filter-list button:focus-visible {
+.manual-filter-list button:focus-visible,
+.manual-reset-btn:focus-visible {
     outline: 3px solid #4f46e5;
     outline-offset: 2px;
 }
@@ -90,7 +91,7 @@
 }
 
 .manual-filter-list button {
-    min-height: 42px;
+    min-height: 44px;
     padding: 8px 13px;
     border: 1px solid #c7d2fe;
     border-radius: 999px;
@@ -112,6 +113,30 @@
     grid-column: 1 / -1;
     font-size: .88rem;
     font-weight: 700;
+}
+
+.manual-reset-btn {
+    grid-column: 1 / -1;
+    justify-self: start;
+    min-height: 44px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid #a5b4fc;
+    background: #ffffff;
+    color: #312e81;
+    font: inherit;
+    font-size: .88rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.manual-reset-btn:hover {
+    background: #eef2ff;
+    border-color: #4f46e5;
+}
+
+.manual-reset-btn[hidden] {
+    display: none;
 }
 
 .manuals-section {
@@ -137,7 +162,7 @@
 .manuals-section-lede {
     max-width: 760px;
     margin: 0 0 28px;
-    color: #64748b;
+    color: #475569;
     line-height: 1.7;
 }
 
@@ -190,9 +215,13 @@
 }
 
 .manual-card .manual-card__meta {
-    color: #64748b;
-    font-size: .78rem;
+    color: #475569;
+    font-size: .82rem;
     font-weight: 750;
+}
+
+.manual-card .manual-card__meta code {
+    overflow-wrap: anywhere;
 }
 
 .manual-card__actions {
@@ -208,11 +237,14 @@
 }
 
 .manual-card__try {
-    padding: 8px 12px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 14px;
     border: 1px solid #c7d2fe;
     border-radius: 999px;
     background: #eef2ff;
-    font-size: .82rem;
+    font-size: .84rem;
 }
 
 .manual-card a {
@@ -227,6 +259,19 @@
 .manuals-roadmap a:hover,
 .manuals-roadmap a:focus-visible {
     text-decoration: underline;
+}
+
+.manual-card a:focus-visible,
+.manuals-note a:focus-visible {
+    outline: 3px solid #4f46e5;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.manuals-roadmap a:focus-visible {
+    outline: 3px solid #99f6e4;
+    outline-offset: 2px;
+    border-radius: 4px;
 }
 
 .manuals-note {
@@ -321,5 +366,21 @@ main .manuals-roadmap p a:not(.btn-primary):not(.btn-secondary) {
     .manual-finder,
     .manuals-roadmap__current {
         border: 2px solid CanvasText;
+    }
+
+    .manuals-roadmap,
+    .manuals-roadmap__current {
+        background: Canvas !important;
+        color: CanvasText !important;
+    }
+
+    .manuals-roadmap h2,
+    .manuals-roadmap p,
+    .manuals-roadmap .manual-card__eyebrow {
+        color: CanvasText !important;
+    }
+
+    main .manuals-roadmap p a:not(.btn-primary):not(.btn-secondary) {
+        color: LinkText !important;
     }
 }

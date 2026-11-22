@@ -1057,8 +1057,19 @@
   function u16le(b, off) { return b[off] | (b[off + 1] << 8); }
   function u32le(b, off) { return (b[off] | (b[off + 1] << 8) | (b[off + 2] << 16) | (b[off + 3] << 24)) >>> 0; }
   function zipCleanName(raw) {
-    var clean = String(raw || '').replace(/\\/g, '/').replace(/[\u0000-\u001f\u007f]/g, '').replace(/^\/+/, '');
-    return clean.slice(0, 160);
+    var s = String(raw || '').replace(/\\/g, '/').replace(/[\u0000-\u001f\u007f]/g, '');
+    var parts = s.split('/').filter(function (seg) { return seg && seg !== '.' && seg !== '..'; });
+    if (!parts.length) return '';
+    var clean = parts.join('/');
+    if (clean.length <= 160) return clean;
+    var base = parts[parts.length - 1];
+    if (base.length <= 160) return base;
+    var dot = base.lastIndexOf('.');
+    if (dot > 0 && base.length - dot <= 16) {
+      var ext = base.slice(dot);
+      return base.slice(0, 160 - ext.length) + ext;
+    }
+    return base.slice(0, 160);
   }
   function zipSkipMeta(name) {
     if (!name || /\/$/.test(name)) return true;

@@ -33,6 +33,7 @@
 // ═══════════════════════════════════════════
 
 // ═══ Defensive StemLab guard ═══
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -54,10 +55,11 @@ window.StemLab = window.StemLab || {
     try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
   }
 };
+}
 // ═══ End Guard ═══
 
 // Dedup: skip if already registered (hub may have loaded an inline copy)
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
+if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
 (function() {
   'use strict';
@@ -73,12 +75,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
   // ── Audio (shared house style: short, quiet, never blocking) ──
   var _treeAC = null;
+  function _treeGlobalMuted() {
+    try {
+      if (typeof window === 'undefined') return true;
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+      if (window._alloGlobalMute === true || window.__alloFlowMuted === true || window.__alloSoundMuted === true) return true;
+      if (typeof window.isAlloMuted === 'function' && window.isAlloMuted()) return true;
+      if (window.localStorage && window.localStorage.getItem('alloflow_muted') === '1') return true;
+    } catch (e) {}
+    return false;
+  }
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function' && !window.__treeMuteBound) {
+    window.__treeMuteBound = true;
+    window.addEventListener('alloflow-mute-changed', function (ev) {
+      var muted = (ev && ev.detail && typeof ev.detail.muted === 'boolean') ? ev.detail.muted : _treeGlobalMuted();
+      if (muted) {
+        if (_treeAC && _treeAC.state === 'running' && typeof _treeAC.suspend === 'function') {
+          try { _treeAC.suspend(); } catch (e) {}
+        }
+        try { if (window.speechSynthesis && window.speechSynthesis.speaking) window.speechSynthesis.cancel(); } catch (e) {}
+      }
+    });
+  }
   function getTreeAC() {
+    if (_treeGlobalMuted()) return null;
     if (!_treeAC) { try { _treeAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch (e) {} }
     if (_treeAC && _treeAC.state === 'suspended') { try { _treeAC.resume(); } catch (e) {} }
     return _treeAC;
   }
   function treeTone(f, d, tp, v) {
+    if (_treeGlobalMuted()) return;
     var ac = getTreeAC(); if (!ac) return;
     try {
       var o = ac.createOscillator(); var g = ac.createGain();
@@ -4532,6 +4558,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       id = setInterval(function () {
         var now = Date.now();
         if (now - lastSeen > HEARTBEAT_STALE_MS) { stop(); return; }
+        if (typeof document !== 'undefined' && document.hidden) { lastTickAt = now; return; }
         if (!onTick) return;
         // setInterval is delayed by WebGL and busy school devices. Advance by real
         // elapsed time, but cap one callback at a second so a suspended tab cannot
@@ -4731,8 +4758,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       function upd(k, v) {
         if (k && typeof k === 'object') { return updMulti(k); }
         ctx.setToolData(function (prev) {
-          var copy = Object.assign({}, prev);
-          var td = Object.assign({}, copy.treeLab || {});
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var copy = Object.assign({}, safePrev);
+          var rawTd = copy.treeLab;
+          var td = Object.assign({}, (rawTd && typeof rawTd === 'object' && !Array.isArray(rawTd)) ? rawTd : {});
           td[k] = (typeof v === 'function') ? v(td[k]) : v;
           copy.treeLab = td;
           return copy;
@@ -4740,8 +4769,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       }
       function updMulti(obj) {
         ctx.setToolData(function (prev) {
-          var copy = Object.assign({}, prev);
-          var td = Object.assign({}, copy.treeLab || {});
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var copy = Object.assign({}, safePrev);
+          var rawTd = copy.treeLab;
+          var td = Object.assign({}, (rawTd && typeof rawTd === 'object' && !Array.isArray(rawTd)) ? rawTd : {});
           Object.keys(obj).forEach(function (k) { td[k] = obj[k]; });
           copy.treeLab = td;
           return copy;
@@ -5662,7 +5693,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         upd(stateKey, false);
       }
       function speakText(text, stateKey) {
-        if (!speechReady() || !text) return;
+        if (!speechReady() || !text || _treeGlobalMuted()) return;
         try {
           window.speechSynthesis.cancel();
           var utterance = new SpeechSynthesisUtterance(text);
@@ -6219,6 +6250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       }
 
       function handleFullScreenKey(e) {
+        if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.key === 'Escape' || e.key === 'Esc') {
           e.preventDefault();
           e.stopPropagation();
@@ -11336,9 +11368,11 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
       //   cell: mode defaults to 'observe'; the organelles live in 'interior'.
       function handoff(toolId, labelTxt) {
         ctx.setToolData(function (prev) {
-          var next = Object.assign({}, prev || {});
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var next = Object.assign({}, safePrev);
           if (toolId === 'cell') {
-            next.cell = Object.assign({}, next.cell || {}, { mode: 'interior' });
+            var rawCell = next.cell;
+            next.cell = Object.assign({}, (rawCell && typeof rawCell === 'object' && !Array.isArray(rawCell)) ? rawCell : {}, { mode: 'interior' });
           }
           return next;
         });
@@ -14349,6 +14383,7 @@ slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC,
               ref: selected ? function (node) { revealTabNode(node, null); } : undefined,
               onClick: function () { activateChapter(t.id, null); },
               onKeyDown: function (e) {
+                if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
                 var k = e.key;
                 if (k !== 'ArrowRight' && k !== 'ArrowLeft' && k !== 'Home' && k !== 'End') return;
                 e.preventDefault();

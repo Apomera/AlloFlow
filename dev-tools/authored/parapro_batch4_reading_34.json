@@ -7,7 +7,7 @@
     "difficulty": "developing",
     "prompt": "Read the passage. The school library once kept packets of vegetable seeds in an unmarked drawer. Few students knew they could borrow them. This year, the librarian placed the packets in a labeled cabinet, created simple planting cards, and displayed student-grown herbs beside the checkout desk. Seed borrowing tripled within two months. Which statement best expresses the main idea?",
     "choices": [
-      "Making the seed collection visible and easier to use increased student participation in the program.",
+      "Making the seed collection visible and easier to use increased learner participation in the program.",
       "Herbs are the only plants that students can successfully grow from borrowed seeds.",
       "The librarian removed books from the checkout desk to make room for a seed cabinet.",
       "Students clearly preferred writing the planting cards to checking out any materials from the library."
@@ -18,7 +18,7 @@
       "This choice accurately combines the librarian's access improvements with the reported rise in participation.",
       "Herbs are displayed as an example, but the passage never says they are the only plants available or successful.",
       "No books were said to be removed, and the cabinet is not described as replacing anything at the desk.",
-      "Students' preferences about writing cards are not discussed; the librarian created the planting cards."
+      "The passage never mentions students wanting to author cards; the librarian prepared those planting guides to help borrowers use the packets."
     ],
     "skillIds": [
       "reading-main-evidence"
@@ -47,17 +47,17 @@
     "prompt": "Read the passage. A custodian placed two identical thermometers on the playground at noon. One was beneath the new fabric shade and read 78 degrees Fahrenheit. The other was beside an unshaded bench and read 91 degrees Fahrenheit. Which detail most directly supports the conclusion that the fabric shade reduced heat exposure?",
     "choices": [
       "The measurements were taken at noon rather than before school.",
-      "The thermometer under the shade recorded a temperature 13 degrees lower than the thermometer in the sun.",
+      "The covered thermometer registered a temperature 13°F cooler than the instrument resting in full sun.",
       "Students often sit on the playground benches during recess.",
       "The custodian used two thermometers that happened to be exactly the same size, the same shape, and the same color."
     ],
     "answerIndex": 1,
     "rationale": "The 13-degree difference between otherwise comparable locations directly measures the effect relevant to heat exposure. The other facts concern timing, use, or appearance without demonstrating a reduction under the shade.",
     "choiceRationales": [
-      "The time provides context but does not by itself show that shade changed the temperature.",
+      "Noting that readings occurred at midday establishes timing context, yet a clock hour alone cannot prove that the overhead fabric lowered heat.",
       "This comparison directly shows substantially cooler conditions beneath the fabric shade.",
-      "Bench use may explain why heat matters, but it supplies no evidence that the shade reduced it.",
-      "Matching appearance is not the measured outcome and does not establish a temperature difference."
+      "Knowing where children gather during recess helps explain why playground comfort matters, but it offers no measured evidence of cooling.",
+      "Confirming identical size, shape, and color only addresses equipment consistency; it does not supply the contrasting readings that show reduced heat."
     ],
     "skillIds": [
       "reading-main-evidence"
@@ -87,16 +87,16 @@
     "choices": [
       "Elena plans to donate both coats to the school office.",
       "Elena has decided to take a different bus home.",
-      "Elena is trying to recover her own coat and return one that was mistakenly left for her.",
+      "Elena is trying to recover her own jacket and return one swapped with hers by mistake.",
       "Elena is preparing a photography project about the clothing labels she collected at home."
     ],
     "answerIndex": 2,
     "rationale": "Recording identifying information about her raincoat and bringing a different coat to the office are complementary actions consistent with a coat mix-up. The other choices require intentions or events that the passage does not suggest.",
     "choiceRationales": [
-      "A claim form indicates an effort to identify property, not a plan to donate it.",
+      "Filling out a lost-item claim form and photographing a personal tag indicate an attempt to identify missing belongings, not a charitable donation.",
       "Writing a bus number can help the office contact or identify Elena; it does not indicate a route change.",
       "Both the claim information and the coat she carries support this explanation of a mistaken exchange.",
-      "The photograph records an identifying label, and no assignment or broader photography activity is mentioned."
+      "Taking a quick picture of an inside name tag simply documents ownership details; the passage mentions no class assignment or photography project."
     ],
     "skillIds": [
       "reading-inference-vocabulary"
@@ -132,9 +132,9 @@
     "answerIndex": 3,
     "rationale": "Checking measurements, aligning every edge, and removing tiny amounts of glue all show unusually close attention to detail. Those context clues establish that meticulous means extremely careful rather than fast, confused, or changeable.",
     "choiceRationales": [
-      "The sentence emphasizes precision, not speed or competition with other students.",
-      "Malik's accurate, organized actions do not suggest that the directions confused him.",
-      "Nothing indicates a different purpose for the model; the details concern how he assembled it.",
+      "Checking measurements twice and clearing tiny specks of glue highlight thorough precision rather than haste or racing against classmates.",
+      "Malik’s methodical measuring and neat alignment demonstrate clear command of the build steps instead of bewilderment over written directions.",
+      "Every clue in the sentence illustrates how carefully Malik built the model, whereas nothing suggests he wanted to alter what the model was for.",
       "This definition fits the repeated examples of careful checking and attention to very small features."
     ],
     "skillIds": [
@@ -172,9 +172,9 @@
     "rationale": "Signal words such as first, next, after, and finally place the team's actions in the order they occurred, making the passage a sequence describing the development and testing of one product.",
     "choiceRationales": [
       "This choice matches both the time-order signals and the progression from sketch to finished cart.",
-      "Only one team and one design process appear, so no team comparison is developed.",
-      "The actions are chronological and are not evaluated or ranked by importance.",
-      "The passage reports a process rather than presenting competing positions about storage."
+      "The passage follows a single robotics group through one design cycle, so it never contrasts rival teams or compares competing approaches.",
+      "Time transitions organize the build stages chronologically from sketch to final wooden cart rather than ordering attributes by priority.",
+      "Rather than advancing a debate claim and counterargument about classroom storage, the paragraph recounts a straightforward engineering workflow."
     ],
     "skillIds": [
       "reading-structure-sources"
@@ -213,7 +213,7 @@
       "The creek is mentioned only to explain the consequence of improper disposal, not to recount its history.",
       "This choice captures both the directions and the stated reason for following them.",
       "No brush brands or performance differences are presented, so the notice is not a product comparison.",
-      "The notice concerns cleanup after projects and specifically warns against emptying paint outdoors."
+      "Rather than inviting outdoor painting near the water, the notice gives indoor cleanup rules and explicitly forbids pouring paint outside."
     ],
     "skillIds": [
       "reading-structure-sources"
@@ -243,14 +243,14 @@
     "choices": [
       "Visitors were required to complete a written survey form before they were allowed to enter the main campus.",
       "Longtime staff members replaced all photographs in the history display.",
-      "Students added oral-history recordings to an overlooked display, increasing visitor engagement and recall.",
+      "Learners added oral-history recordings to an overlooked exhibit, boosting visitor engagement and recall.",
       "Scannable codes are too difficult for most campus visitors to use."
     ],
     "answerIndex": 2,
     "rationale": "The third choice includes the initial problem, the students' meaningful response, and the measured outcomes without preserving minor procedural details or introducing a claim not found in the passage.",
     "choiceRationales": [
-      "The survey measured results afterward; the passage never describes it as an entry requirement.",
-      "Staff contributed interviews, while the existing photographs remained and received codes.",
+      "The follow-up survey evaluated visitor learning after the exhibit was updated; nothing in the passage portrays it as a mandatory admission step.",
+      "Veteran staff members shared oral interviews for the audio stories, while the existing display pictures stayed up with newly attached codes.",
       "This choice concisely represents the project and both reported effects on visitors.",
       "The longer visits and improved recall contradict the claim that the codes were generally too difficult."
     ],
@@ -283,14 +283,14 @@
       "Darius is carefully measuring the stage area so that new curtains can eventually be ordered.",
       "Darius wants the back row to choose the assembly's music.",
       "Darius is hiding a damaged section of the stage with colored tape.",
-      "Darius is selecting a visible position for a speaker to stand during the assembly."
+      "Darius is marking a clear spot for a presenter to stand during the upcoming program."
     ],
     "answerIndex": 3,
     "rationale": "Testing visibility from the back row and aligning the microphone with the final mark strongly indicate that the mark identifies where an assembly speaker should stand. The alternatives do not explain both actions.",
     "choiceRationales": [
       "No dimensions or curtains are mentioned, and visibility of a floor mark would not determine curtain size.",
-      "The classmate reports visibility, not a music preference or selection.",
-      "Moving the mark and placing a microphone over it are inconsistent with concealing fixed damage.",
+      "Checking whether a classmate in the back row can see the floor mark tests sightlines, not musical taste or song selection for the event.",
+      "Relocating the tape twice and centering a microphone directly above it contradict the idea that Darius was covering a fixed defect in the floor.",
       "This inference accounts for the visibility test, the adjusted mark, and the microphone placement."
     ],
     "skillIds": [
@@ -328,9 +328,9 @@
     "rationale": "The contrast between the garden's January condition and the shoots that emerged with warmth shows that growth had paused temporarily rather than ended. This context supports the meaning temporarily inactive.",
     "choiceRationales": [
       "This meaning fits a garden that is not visibly growing for a time but resumes growth later.",
-      "New shoots demonstrate continuing life, so the garden was not permanently damaged.",
-      "No one is described as gathering plants, and harvesting does not fit the later emergence of shoots.",
-      "The sentence describes seasonal activity rather than the number or spacing of plants."
+      "Fresh green sprouts appearing after warm weather prove the plants remained alive underground, ruling out any lasting or irreversible harm.",
+      "Nothing in the sentence describes workers gathering crops, and a harvested bed would not explain why dormant shoots later emerged in mild soil.",
+      "The contrast between midwinter stillness and spring sprouting signals a seasonal pause in growth rather than dense spacing among plants."
     ],
     "skillIds": [
       "reading-inference-vocabulary"
@@ -399,16 +399,16 @@
     "choices": [
       "All three sentences express judgments that cannot be checked.",
       "Only the sentence about fourteen species is an opinion.",
-      "The planting date and camera count are verifiable, while the claim about the finest lunch spot expresses an opinion.",
+      "The first two statements can be checked against records, whereas calling the site an unmatched dining area is a judgment.",
       "The word unquestionably turns every sentence in the newsletter excerpt into a fully verified statement of established fact."
     ],
     "answerIndex": 2,
     "rationale": "Records and camera data can verify when six shrubs were planted and how many species were observed. Calling the habitat the finest lunch spot is an evaluative judgment whose truth depends on preference, even when phrased confidently.",
     "choiceRationales": [
-      "The first two statements contain specific events and quantities that records or observations can verify.",
+      "Both the March shrub planting and the count of fourteen observed birds cite concrete events and numbers that records can objectively check.",
       "A camera record provides evidence for a count, so the fourteen-species statement is factual rather than merely personal.",
       "This choice correctly distinguishes checkable evidence from the superlative evaluation in the final sentence.",
-      "A confidence word does not transform a subjective evaluation into an objectively verifiable statement."
+      "Emphatic wording such as \"unquestionably\" signals strong personal conviction, yet strong phrasing never converts a value judgment into checkable fact."
     ],
     "skillIds": [
       "reading-main-evidence"
@@ -444,9 +444,9 @@
     "answerIndex": 3,
     "rationale": "Adding the two Citation Tools entries gives 24 plus 19, or 43. The remaining statements conflict with the listed counts: 18 differs from 21, Tuesday plus Wednesday is 45, and Thursday's 19 is below Wednesday's 21.",
     "choiceRationales": [
-      "The two Research Basics counts are 18 and 21, so they are not equal.",
-      "Tuesday and Wednesday total 24 plus 21, which is 45 rather than 40.",
-      "Thursday's Citation Tools attendance of 19 is lower than Wednesday's Research Basics attendance of 21.",
+      "Monday’s Research Basics session drew 18 attendees while Wednesday’s drew 21, so attendance clearly differed across those two offerings.",
+      "Combining Tuesday’s 24 attendees with Wednesday’s 21 attendees yields 45 participants altogether rather than the stated figure of 40.",
+      "Although Tuesday’s Citation Tools session was highest at 24, Thursday’s count of 19 fell below Wednesday’s 21 Research Basics participants.",
       "The two relevant entries sum correctly to 43 and require no unsupported comparison."
     ],
     "skillIds": [
@@ -475,7 +475,7 @@
     "difficulty": "developing",
     "prompt": "Read the recording-kit directions. Reserve a kit online. At checkout, present the confirmation and school identification, inspect the numbered contents with a staff member, and sign the condition form. Which student followed all of the directions?",
     "choices": [
-      "Nia reserved a kit, presented both documents, inspected the contents with staff, and signed after the inspection.",
+      "Nia booked a kit, showed both documents, checked every piece alongside an employee, and signed afterward.",
       "Owen reserved a kit and signed the form but took the unopened case without presenting identification.",
       "Priya presented identification and inspected a kit alone but had not made a reservation.",
       "Luis reserved a kit and presented both of the documents but declined the joint inspection and the required condition form."
@@ -484,9 +484,9 @@
     "rationale": "Nia completes every required action in a workable sequence: reservation, document presentation, joint inspection, and signature. Each other student omits at least one explicit requirement, so only Nia fully follows the text.",
     "choiceRationales": [
       "Nia performs every stated requirement, including inspecting the numbered contents with a staff member before signing.",
-      "Owen omits both required identification and the joint inspection, despite completing two other actions.",
-      "Priya has no reservation and inspects alone, so she fails two explicit conditions.",
-      "Luis completes the reservation and document steps but omits both inspection and signature."
+      "Even though Owen booked ahead and signed the form, leaving without showing identification or checking the case breaks two explicit rules.",
+      "Priya skipped the required online reservation and examined the kit by herself instead of conducting the joint check with a staff member.",
+      "Although Luis completed the reservation and presented both papers, refusing the joint review and leaving the condition form unsigned omit two mandatory steps."
     ],
     "skillIds": [
       "reading-structure-sources"
@@ -522,10 +522,10 @@
     "answerIndex": 1,
     "rationale": "The passage first identifies paper missing the bin, then describes a wider opening and visual direction, and finally reports a cleaner result. This creates a clear problem-response-outcome structure.",
     "choiceRationales": [
-      "Only one classroom recycling situation is described, so there is no two-site comparison.",
+      "The paragraph centers on a single classroom’s paper bin rather than contrasting two separate rooms or evaluating parallel programs.",
       "This choice accurately traces the obstruction, the facilities team's changes, and the observed improvement.",
-      "No opposing positions or arguments about the value of recycling appear in the text.",
-      "The materials are not cataloged or ordered by size; size matters only as part of the solution."
+      "Rather than presenting opposing viewpoints on whether schools ought to recycle, the passage describes a practical fix for overflowing paper.",
+      "The text never catalogs recyclable items by dimension; large sheets are mentioned solely to explain why the narrow bin lid failed."
     ],
     "skillIds": [
       "reading-structure-sources"
@@ -555,16 +555,16 @@
     "choices": [
       "made mainly for performances",
       "capable of carrying sound",
-      "without the thing named by the base word",
+      "lacking the item named by the base word",
       "located a long distance away"
     ],
     "answerIndex": 2,
     "rationale": "The suffix -less means without or lacking. Combined with wire, it indicates that the microphone operates without a wire, a meaning reinforced by the detail that the presenter does not drag a cord.",
     "choiceRationales": [
-      "The performance setting comes from the sentence, not from the suffix -less.",
-      "A microphone carries sound, but that function is not the meaning contributed by -less.",
+      "The stage performance context comes from surrounding words in the sentence, not from the meaning that the suffix -less adds to a base.",
+      "Carrying audio is the function of a microphone itself, whereas the suffix -less modifies the base word wire rather than describing sound transmission.",
       "This choice correctly combines the base wire with the suffix meaning without.",
-      "The presenter moves across a stage, but -less does not encode distance."
+      "Walking across the stage explains how the speaker used the device, but the suffix -less never communicates physical span or remoteness."
     ],
     "skillIds": [
       "reading-inference-vocabulary"
@@ -600,9 +600,9 @@
     "answerIndex": 3,
     "rationale": "The surrounding references to a river, kayakers, safety, and paddling upstream identify current as moving water. Although the word has several meanings, only the water-flow definition fits every contextual clue.",
     "choiceRationales": [
-      "Nothing in the sentence concerns popularity, trends, or a fashionable subject.",
-      "Current can mean present, but that adjective meaning does not fit after the possessive river's.",
-      "Electrical current is a valid meaning, but no circuit, wire, or charge appears in this context.",
+      "Nothing in the sentence mentions popular trends or fashionable subjects; the kayakers are evaluating physical river conditions before launching.",
+      "Although \"current\" can mean happening now as an adjective, the possessive \"river’s\" requires a noun naming a feature of the river itself.",
+      "Moving electric charge is a genuine definition of the word, yet no wires, batteries, or circuits appear anywhere in this boating scenario.",
       "This definition explains why direction and strength would affect paddling upstream safely."
     ],
     "skillIds": [
@@ -640,9 +640,9 @@
     "rationale": "In context, brief describes limited duration, and short preserves that meaning as well as the cause of families having time afterward. Mandatory, delayed, and repeated describe different properties of an event.",
     "choiceRationales": [
       "Short is a context-appropriate synonym that retains the original relationship between duration and available time.",
-      "Mandatory concerns whether attendance is required, not how long the orientation lasts.",
-      "Delayed changes when the event begins and does not preserve the meaning of brief.",
-      "Repeated indicates frequency and could actually increase total time rather than preserve the stated meaning."
+      "Substituting \"mandatory\" indicates that families were required to attend rather than expressing the limited duration that left extra visiting time.",
+      "Using \"delayed\" implies the event started behind schedule, which shifts the timing and would normally reduce rather than protect classroom visiting time.",
+      "Replacing the word with \"repeated\" means the session happened more than once, which could lengthen total time instead of keeping it concise."
     ],
     "skillIds": [
       "reading-inference-vocabulary"
@@ -671,17 +671,17 @@
     "prompt": "The sentence \"The club will expand its tutoring program next fall\" uses expand to mean increase its reach. Which sentence uses a word or phrase with the opposite meaning of expand?",
     "choices": [
       "The club will publicize its tutoring schedule next fall.",
-      "The club will reduce the program to one campus next fall.",
+      "The club will reduce its tutoring to one campus next fall.",
       "The club will evaluate its tutoring materials next fall.",
       "The club will organize volunteer training next fall."
     ],
     "answerIndex": 1,
     "rationale": "Reducing the program to one campus decreases its reach, the opposite of expanding to a broader scope. Publicizing, evaluating, and organizing may occur during either growth or reduction and therefore are not antonyms.",
     "choiceRationales": [
-      "Publicizing communicates information but does not necessarily change the program's size or reach.",
+      "Advertising the tutoring calendar spreads awareness among families, yet publicity alone neither shrinks nor expands the scope of services offered.",
       "Reducing the program expresses the opposite change in scope from expanding it.",
       "Evaluation judges the program and can take place regardless of whether its reach increases or decreases.",
-      "Organization concerns arrangement or planning rather than an opposite change in extent."
+      "Arranging volunteer training sessions describes logistical preparation, which can happen whether the tutoring effort grows larger or scales back."
     ],
     "skillIds": [
       "reading-inference-vocabulary"
@@ -717,8 +717,8 @@
     "answerIndex": 2,
     "rationale": "Cooper belongs after Coleman. Both begin Co, but at the first differing letter Coleman has l and Cooper has o; because l precedes o alphabetically, Coleman must come first.",
     "choiceRationales": [
-      "A C name cannot precede Alvarez because A comes before C.",
-      "Cooper begins with C and therefore follows both the A entry and the earlier C entries.",
+      "Because the letter A precedes C in alphabetical order, a card beginning with Co cannot be filed ahead of Alvarez.",
+      "Both Chen and Cooper begin with C, and Ch comes before Co, so Cooper must follow Chen rather than sit between Alvarez and Chen.",
       "This placement correctly compares Coleman and Cooper through their first differing letter.",
       "Chen begins Ch, which alphabetically precedes names beginning Co, so Cooper cannot be inserted before Coleman."
     ],
@@ -751,14 +751,14 @@
       "the sentence contains no action verb",
       "the word schedule has no dictionary meaning",
       "a comma must always follow the word club",
-      "the pronoun its could refer to either the debate team or the drama club"
+      "the pronoun its could point to either of the two student organizations"
     ],
     "answerIndex": 3,
     "rationale": "Both the debate team and the drama club are singular collective nouns that could possess an adviser, so the pronoun its has two plausible antecedents. Naming the organization would remove the ambiguity.",
     "choiceRationales": [
-      "Met and explained are both action verbs, so the sentence does contain expressed actions.",
-      "Schedule is a standard word whose meaning is clear in context; the problem is who has the adviser.",
-      "No rule requires a comma at that location, and punctuation there would not identify the antecedent.",
+      "Both \"met\" and \"explained\" function as clear action verbs, so the ambiguity stems from pronoun reference rather than a missing verb.",
+      "Readers readily understand \"schedule\" as a standard English word; the confusion arises because the sentence fails to specify whose adviser spoke.",
+      "A comma already follows \"club\" after the introductory clause, and altering punctuation there would still leave the pronoun’s owner unclear.",
       "This choice identifies the actual syntactic ambiguity created by two possible antecedents."
     ],
     "skillIds": [
@@ -796,9 +796,9 @@
     "rationale": "Giant begins with the /j/ sound, and jelly begins with the same sound even though it uses the letter j. Garden and ghost begin with hard /g/, while kite begins with /k/.",
     "choiceRationales": [
       "Jelly begins with /j/, matching the initial sound in giant.",
-      "Garden begins with hard /g/, which differs from the soft g sound in giant.",
-      "Ghost also begins with hard /g/ and therefore does not match giant's first sound.",
-      "Kite begins with /k/, which does not match the /j/ sound at the beginning of giant."
+      "Although \"garden\" shares the initial letter g, it starts with the hard /g/ phoneme rather than the soft /j/ sound heard in \"giant.\"",
+      "The silent h in \"ghost\" still leaves an initial hard /g/ consonant sound, which contrasts with the soft /j/ beginning of \"giant.\"",
+      "The word \"kite\" opens with the voiceless /k/ stop sound, making its initial consonant clearly different from the /j/ sound in \"giant.\""
     ],
     "skillIds": [
       "reading-inference-vocabulary"
@@ -834,9 +834,9 @@
     "answerIndex": 1,
     "rationale": "The prefix mis- means wrongly or incorrectly, so it adds the error meaning to interpret. The root names the act of explaining or understanding, and -tion changes the word into a noun.",
     "choiceRationales": [
-      "The suffix -tion forms a noun but does not supply the meaning wrongly.",
+      "Adding the suffix -tion turns the verb into a noun naming an act or result, yet it carries no built-in sense of mistake or error.",
       "Mis- directly contributes the idea of an incorrect or mistaken interpretation.",
-      "Ta is part of the word's syllable pattern but is not a meaningful affix carrying the error concept.",
+      "The syllable \"ta\" appears inside the pronunciation of the base-plus-suffix combination, but it is not a meaningful morpheme expressing error.",
       "Interpret identifies understanding or explaining, but by itself it does not indicate that the result was wrong."
     ],
     "skillIds": [
@@ -867,16 +867,16 @@
     "choices": [
       "Every student who visited in December waited exactly seven minutes.",
       "Adding a second staff member was the only possible cause of shorter waits.",
-      "The months with two staff members had lower average wait times than the months with one staff member.",
+      "Mean waiting periods were shorter during the two-person months than during the single-person months.",
       "The health office served fewer students in November and December than in September and October."
     ],
     "answerIndex": 2,
     "rationale": "The chart directly supports a comparison of the displayed averages: 8 and 7 minutes with two staff members are below 14 and 13 with one. It does not establish individual waits, sole causation, or visit totals.",
     "choiceRationales": [
-      "An average does not mean every individual observation equaled that value.",
+      "A monthly mean of seven minutes summarizes many visits together; individual students could have waited more or less than seven minutes.",
       "The association is visible, but the chart does not rule out other changes that could affect waiting time.",
       "This statement reports exactly the relationship shown without making an unsupported causal claim.",
-      "No student-volume data appear, so the number of visitors cannot be inferred from wait averages."
+      "Because the table lists only typical wait duration and staffing level, it provides no visitor counts from which to infer lower attendance."
     ],
     "skillIds": [
       "reading-structure-sources"
@@ -912,8 +912,8 @@
     "answerIndex": 3,
     "rationale": "Both errors omit the second letter in an initial consonant digraph. Explicitly connecting each two-letter spelling with its sound, followed by blending and contextual rereading, targets the demonstrated decoding need.",
     "choiceRationales": [
-      "Memorizing complete sentences does not teach the digraph relationships causing the repeated errors.",
-      "Substitution removes practice with the target pattern and changes the teacher-selected text.",
+      "Having the student recite whole sentences by memory bypasses word-level phonics and leaves the consonant-digraph confusion unaddressed.",
+      "Swapping in simpler words alters the teacher’s planned text and strips away the practice needed to master initial sh and ch spellings.",
       "Final sounds are not the source of these errors, and guessing would reinforce an inaccurate strategy.",
       "This response directly teaches the two digraphs, elicits accurate blending, and checks the words in meaningful context."
     ],
@@ -954,7 +954,7 @@
     "choiceRationales": [
       "This prereading routine activates useful concepts and establishes purposes without supplying the text's conclusions.",
       "Reading and explaining the full article completes much of the comprehension work instead of preparing students to do it.",
-      "Copying unknown words before even previewing the topic does not activate organized, relevant background knowledge.",
+      "Copying isolated vocabulary before even previewing the title turns prereading into mechanical busywork without mobilizing relevant prior concepts.",
       "A title signals a topic but cannot replace the evidence, explanations, and details within the article."
     ],
     "skillIds": [
@@ -985,17 +985,17 @@
     "prompt": "A student can recall details from a biography but does not notice how the subject's early failures influenced later decisions. Which teacher-directed paraprofessional question would best promote deeper comprehension?",
     "choices": [
       "How many paragraphs and commas are on this page?",
-      "How did the failed first expedition affect the subject's planning for the second expedition, and which details support your answer?",
+      "How did the failed first expedition shape this leader’s plan for the second journey, and what evidence proves your point?",
       "What is the longest word in the account of the second expedition?",
       "Can you repeat the final sentence of the biography exactly, without referring back to any of the earlier events described in the text?"
     ],
     "answerIndex": 1,
     "rationale": "The second question directs the student to connect events across the text and support a causal interpretation with evidence, moving beyond isolated recall while keeping the reasoning with the student.",
     "choiceRationales": [
-      "Counting text features does not examine the relationship between the subject's experiences and choices.",
+      "Tallying paragraphs and punctuation marks checks surface layout alone without guiding the student to connect early setbacks with later choices.",
       "This question explicitly targets the causal connection and requires evidence from both relevant portions of the biography.",
-      "Word length is unrelated to how an earlier event shaped a later decision.",
-      "Exact repetition of one sentence neither connects events nor asks the student to explain influence."
+      "Spotting the longest word focuses on spelling length rather than helping the learner trace how an earlier failure redirected later actions.",
+      "Reciting the closing sentence word for word tests verbatim memory and deliberately cuts off the cross-text comparison needed to see influence."
     ],
     "skillIds": [
       "reading-classroom-support"
@@ -1026,16 +1026,16 @@
     "choices": [
       "The student seemed to like the passage's illustration.",
       "The passage contained more than one paragraph.",
-      "Across several words, the student omitted or altered inflectional endings while usually preserving the base word.",
+      "On several items, the student dropped or altered inflectional suffixes while usually preserving the root form.",
       "The student should be described simply as a poor reader, without any specific examples drawn from the new passage."
     ],
     "answerIndex": 2,
     "rationale": "The three examples reveal a consistent, instructionally relevant pattern involving endings such as -ed and -ing. Recording the pattern and examples gives the teacher actionable evidence without assigning a broad label.",
     "choiceRationales": [
-      "A preference inferred from an illustration does not document the oral-reading behavior the teacher requested.",
-      "Passage length is contextual information but does not characterize the student's repeated word-reading errors.",
+      "Guessing that the learner enjoyed a picture records a subjective impression instead of the concrete oral-reading behavior the teacher requested.",
+      "Noting that the text spans multiple paragraphs states a surface fact about the page without describing the student’s recurring decoding errors.",
       "This statement accurately synthesizes the observed errors while retaining concrete evidence for planning.",
-      "A global judgment is neither objective nor specific enough to guide targeted instruction."
+      "Applying a broad negative label without citing specific misread examples fails to give the teacher objective, actionable data for planning."
     ],
     "skillIds": [
       "reading-classroom-support"
@@ -1067,14 +1067,14 @@
       "Choose the first page because every word beginning har appears there.",
       "Search under n because harness contains two n's.",
       "Use the page containing harvest, because harness must always come after every single word that begins with the letters h-a-r-m in order.",
-      "Compare harness with the guide words letter by letter; because it falls after harmony but before harvest, search the second page."
+      "Check harness letter by letter against both header terms; because it sits alphabetically between them, search the second page."
     ],
     "answerIndex": 3,
     "rationale": "Guide words state the first and last entries on a page. Letter-by-letter comparison places harness after harmony and before harvest, so the second page contains its alphabetical location and the prompt teaches a transferable lookup process.",
     "choiceRationales": [
-      "A shared three-letter beginning is not enough to determine the page when many entries begin har.",
+      "Matching only the opening three letters cannot narrow down a dictionary page when numerous consecutive entries all share the same har prefix.",
       "Dictionary entries are located from their initial letters in sequence, not by a repeated interior letter.",
-      "Harness does not come after harvest; n precedes v at the first differing position after har.",
+      "Knowing that harness follows h-a-r-m entries checks only the lower boundary and ignores whether harness also precedes the upper guide word harvest.",
       "This prompt correctly uses both boundary words and asks the student to perform the relevant alphabetical comparison."
     ],
     "skillIds": [
@@ -1104,7 +1104,7 @@
     "difficulty": "developing",
     "prompt": "A student labels the sentence \"The fundraiser collected $2,400, proving it was the school's best event\" entirely as fact because it contains a number. Which teacher-directed response would best correct the misconception?",
     "choices": [
-      "Have the student verify the dollar amount in a record, then discuss why best remains a judgment unless a measurable criterion is defined and compared.",
+      "Have the student check the dollar total in a record, then discuss why calling the occasion top-ranked remains a judgment without clear criteria.",
       "Tell the student that any sentence containing a specific number must always be accepted as wholly factual regardless of the rest of its actual wording.",
       "Ask the student to replace $2,400 with the word many and keep the same label.",
       "Explain that fundraising records are opinions because people write them."
@@ -1186,16 +1186,16 @@
     "choices": [
       "Tell the student that sale and sail are interchangeable because they sound alike.",
       "Ask the student to choose the homophone sale instead, because that spelling appears far more often in everyday advertisements and printed store signs than the nautical meaning does in ordinary classroom reading.",
-      "Compare the meaning of sale in a sentence about selling goods with the meaning of sail as material that catches wind to move a boat, then use crew, raised, and harbor to confirm the intended meaning.",
+      "Contrast the retail meaning of sale with the wind-catching boat fabric meant by sail, then guide the student to verify that sense using the surrounding boating clues.",
       "Replace the entire sentence so the student does not need to examine the target word."
     ],
     "answerIndex": 2,
     "rationale": "Sale and sail sound alike but have different meanings. Contrasting their meanings and applying the clues crew, raised, and harbor teaches the student to identify the nautical meaning through context rather than pronunciation alone.",
     "choiceRationales": [
-      "Homophones share pronunciation but are not interchangeable because their meanings and spellings differ.",
+      "Words that sound identical do not share definitions or spellings, so treating sale and sail as interchangeable creates serious reading errors.",
       "A word being familiar from advertisements does not show that its meaning fits this nautical sentence.",
       "This response explicitly links each homophone to its meaning and uses the surrounding nautical clues to verify the intended sense of sail.",
-      "Avoiding the word removes the opportunity to learn how context distinguishes the homophones."
+      "Removing the sentence altogether sidesteps the misconception and denies the learner guided practice using context to separate homophones."
     ],
     "skillIds": [
       "reading-classroom-support"
@@ -1234,7 +1234,7 @@
     "choiceRationales": [
       "Supplying the location completes this lookup but does not teach how to navigate from a nearby guide word.",
       "Sharing three initial letters does not guarantee the words appear on one page, especially in a compact dictionary.",
-      "Alphabetical lookup begins with the first letter and proceeds forward, not from the word's ending.",
+      "Dictionary entries are ordered from left to right starting with the initial letter, so looking up the trailing e will never locate conserve.",
       "This scaffold pinpoints the relevant comparison and tells the student which direction to search next."
     ],
     "skillIds": [
@@ -1264,7 +1264,7 @@
     "difficulty": "developing",
     "prompt": "During a teacher-planned laboratory activity, a student repeatedly begins measuring before completing the instruction \"Zero the digital scale, place the empty container on it, press tare, and then add the sample.\" Which reading support is most appropriate?",
     "choices": [
-      "Ask the student to number the four actions, point to each one while performing it, and pause after press tare to verify the display reads zero before adding the sample.",
+      "Ask the student to number all four clauses, point to each clause while carrying it out, and check that the readout resets to 0 prior to placing the material.",
       "Remove the directions and complete all measurements while the student watches silently.",
       "Tell the student to perform the steps in any order because each verb is equally important.",
       "Have the student copy the written instruction five times after the laboratory period has ended, without ever practicing the step in the actual laboratory activity itself."
@@ -1273,9 +1273,9 @@
     "rationale": "Chunking and numbering the procedural sentence, pairing each clause with its action, and checking the critical intermediate result directly support accurate reading and execution of the ordered directions.",
     "choiceRationales": [
       "This support makes sequence visible, connects language with action, and builds in a comprehension check.",
-      "Taking over the task prevents the student from practicing how to follow the written procedure.",
-      "The order matters because adding the sample before taring would produce an inaccurate measurement.",
-      "Copying later does not provide immediate guided practice with interpreting and following the sequence."
+      "Confiscating the directions and performing every measurement for the learner eliminates any chance to practice decoding sequential lab text.",
+      "Procedural order is critical here because adding the substance prior to resetting the balance includes the container’s mass in the measurement.",
+      "Transcribing the sentence repeatedly after class finishes offers mechanical handwriting drill rather than real-time scaffolding with the sequence."
     ],
     "skillIds": [
       "reading-classroom-support"
@@ -1305,17 +1305,17 @@
     "prompt": "A student reads a passage stating that cafeteria food waste decreased after a share table opened, but the accompanying bar graph shows that the decrease began one month earlier. Which teacher-directed prompt would best help the student integrate the sources critically?",
     "choices": [
       "Ignore the accompanying graph entirely, because prose explanations always provide stronger and more reliable evidence than any visual display of the same information can offer to a reader.",
-      "Ask when the graph shows the decline began, compare that date with the table's opening date in the passage, and revise any claim that the share table alone caused the entire decline.",
+      "Ask when the plotted drop started, compare that date against the opening timeline given in the text, and narrow any claim that the new station alone drove the full drop.",
       "Have the student copy the graph title without examining its dates or bars.",
       "Tell the student that two sources included on the same page cannot disagree."
     ],
     "answerIndex": 1,
     "rationale": "The prompt directs attention to the relevant evidence in both representations and distinguishes sequence from causation. It supports a warranted revision without telling the student to discard either source.",
     "choiceRationales": [
-      "Source format alone does not determine credibility, and ignoring relevant data prevents integration.",
+      "Text format by itself does not make prose automatically more trustworthy than charted data, and discarding the visual prevents cross-source checking.",
       "This response makes the student reconcile the timing evidence and limit a causal conclusion that the combined sources do not support.",
       "Copying a title does not require interpreting the temporal pattern or comparing it with the passage.",
-      "Sources can qualify one another, and recognizing tension is part of critical comprehension."
+      "Paired texts and graphics can qualify or complicate one another, so recognizing a timing discrepancy is essential to critical reading."
     ],
     "skillIds": [
       "reading-classroom-support"

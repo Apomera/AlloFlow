@@ -33,7 +33,7 @@
       "domain": "Social & Cultural Bases of Behavior",
       "prompt": "Maria presents especially well at one workplace: most colleagues also present well there, Maria presents less well in other settings, and this workplace pattern recurs. In Kelley's canonical covariation model, which inference best fits the stated information?",
       "choices": [
-        "Attribute the effect mainly to the workplace presentation setting, because consensus, distinctiveness, and consistency are all high in the canonical pattern",
+        "Attribute the strong performance mainly to the stimulus setting, because consensus, distinctiveness, and consistency are all elevated here",
         "Attribute the effect mainly to Maria's stable disposition, because high consistency by itself overrides consensus and distinctiveness information",
         "Attribute the effect to a transient circumstance, because repeated performance in the same setting is the model's definition of low consistency",
         "Withhold every attribution, because the covariation model treats consensus and distinctiveness as irrelevant whenever performance is favorable"
@@ -68,7 +68,7 @@
       "prompt": "A clinician has motivation, time, and relevant background knowledge to evaluate a personally important health message. Under the elaboration likelihood model, which prediction is most defensible?",
       "choices": [
         "The clinician must accept the message, because high elaboration converts every carefully considered communication into durable agreement",
-        "Issue-relevant argument quality should exert more influence, but careful scrutiny can support acceptance, rejection, or no attitude change",
+        "Substantive argument quality should carry greater weight, yet careful scrutiny can lead to acceptance, rejection, or no attitude shift",
         "Source expertise becomes completely inert, because a variable can function only as a peripheral cue and never as evidence or a biasing factor",
         "Any attitude formed will remain permanent, because motivation and ability eliminate later counterarguments, new evidence, and contextual change"
       ],
@@ -108,9 +108,9 @@
       "domain": "Social & Cultural Bases of Behavior",
       "prompt": "Partners report strong closeness and long-term commitment but little passion. What is the most defensible application of Sternberg's triangular theory of love?",
       "choices": [
-        "Diagnose a healthy relationship, because the component label determines clinical functioning without information about either partner's experience",
+        "Diagnose a fully healthy partnership because Sternberg's love taxonomy determines clinical functioning without checking either partner's lived satisfaction",
         "Predict that passion cannot change, because the three components are fixed traits once a relationship has lasted beyond its initial period",
-        "Describe the reported intimacy-plus-commitment pattern as companionate love within the model, while assessing satisfaction, safety, context, and change separately",
+        "Classify this intimacy-and-decision blend as companionate love in the model, while assessing satisfaction, safety, context, and change separately",
         "Diagnose an attachment disorder in one partner, because low passion establishes an individual psychopathology rather than a relationship description"
       ],
       "answerIndex": 2,
@@ -145,7 +145,7 @@
         "Complete the difficult steps for the learner each time, because successful task completion is sufficient evidence that control has transferred",
         "Repeat one standardized hint after every response, because keeping assistance constant prevents performance data from altering instruction",
         "Withhold instruction until unaided mastery appears, because supported performance falls outside the zone of proximal development by definition",
-        "Offer only enough support to enable the next step, monitor the response, adjust assistance contingently, and fade it as the learner gains control"
+        "Give just enough support for the next step, monitor performance closely, adapt assistance contingently, and fade cues as competence grows"
       ],
       "answerIndex": 3,
       "rationale": "Wood, Bruner, and Ross described effective tutoring as recruiting the learner's interest, simplifying or reducing degrees of freedom in the task, maintaining direction, marking critical features, controlling frustration, and demonstrating solutions when appropriate. The defining instructional logic is contingent support that makes performance possible while preserving the learner's active role and progressively transferring control. Completing every step may produce a finished product without independent learning; an invariant hint ignores performance; and waiting for unaided mastery abandons the very assisted-learning space that the ZPD identifies. Scaffolding and the ZPD are related educational concepts, but they are not synonyms and the term scaffolding was introduced by Wood and colleagues rather than by Vygotsky. Whether support is effective must be evaluated through learning and transfer, not immediate completion alone.",
@@ -183,7 +183,7 @@
       "domain": "Growth & Lifespan Development",
       "prompt": "A student commits to the family profession without meaningfully considering alternatives, although the student may explore other life domains. In Marcia's identity-status framework, what is the best current classification?",
       "choices": [
-        "Foreclosure in the vocational domain, because commitment is present with little prior exploration, without treating the status as a permanent diagnosis",
+        "Foreclosure in the vocational domain, reflecting commitment with minimal prior exploration rather than a permanent global diagnosis",
         "Identity achievement across the whole person, because any firm commitment demonstrates that exploration has already occurred in every important domain",
         "Moratorium in the vocational domain, because adopting a family expectation is equivalent to active exploration without a meaningful commitment",
         "Identity diffusion across the whole person, because commitment to an inherited option demonstrates neither commitment nor engagement anywhere else"
@@ -225,7 +225,7 @@
       "prompt": "A researcher uses emerging adulthood to interpret prolonged role exploration among some people in their late teens and twenties. Which use of the construct is most defensible?",
       "choices": [
         "Treat it as a universal neurologic stage beginning at age 18, because chronological age establishes the same experience across all societies",
-        "Use it as a contextual framework where social conditions permit prolonged exploration, while testing cultural, economic, historical, and individual variation",
+        "Apply it as a contextual lens where social conditions allow extended exploration, testing cultural, economic, and individual variation",
         "Diagnose it when a young adult lives with family, because residential independence is the defining clinical criterion for adult development",
         "Infer that assuming adult roles before age 25 is unhealthy, because exploration and stable work or family commitments cannot coexist"
       ],

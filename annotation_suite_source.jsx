@@ -446,7 +446,7 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
         className="flex items-center justify-between gap-2 px-2 py-1 text-xs font-bold uppercase tracking-wide rounded-t-lg"
         style={{ background: palette.border, color: palette.text }}
       >
-        <span>📝 {a.author === 'teacher' ? 'Teacher note' : (a.authorName || 'Student note')}</span>
+        <span><span aria-hidden="true">📝 </span>{a.author === 'teacher' ? 'Teacher note' : (a.authorName || 'Student note')}</span>
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -483,7 +483,8 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
           commit();
         }}
         onKeyDown={function (e) {
-          if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); commit(); }
+          if (e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229)) return;
+          if (e.key === 'Escape' || ((e.ctrlKey || e.metaKey) && e.key === 'Enter')) { e.preventDefault(); e.stopPropagation(); commit(); }
         }}
         placeholder={t("placeholders.type_note")}
         rows={3}
@@ -491,6 +492,16 @@ function NoteBubble({ a, onChange, onDelete, draggable, onMove }) {
         style={{ color: palette.text, minHeight: 60 }}
         aria-label={t("a11y.note_content")}
       />
+      {isEditable && (
+        <div
+          data-allo-note-footer="true"
+          className="flex items-center justify-between gap-2 px-2 pb-1.5 text-xs opacity-80"
+          style={{ color: palette.text }}
+        >
+          <span>Esc to save</span>
+          {draft.length > 0 && <span className="tabular-nums">{draft.length} chars</span>}
+        </div>
+      )}
     </div>
   );
 }
@@ -1904,13 +1915,40 @@ function Sidebar(props) {
   const onClose = props.onClose || function () {};
   const onImport = typeof props.onImport === 'function' ? props.onImport : null;
   const [filter, setFilter] = React.useState('all'); // 'all' | 'teacher' | 'mine'
+  const [kindFilter, setKindFilter] = React.useState('all'); // 'all' | 'note' | 'highlight' | 'sticker' | 'voice' | 'draw'
+  const [searchQuery, setSearchQuery] = React.useState('');
   const counts = countByAuthor(annotations);
+  const kindCounts = { note: 0, highlight: 0, sticker: 0, voice: 0, draw: 0 };
+  annotations.forEach(function (a) {
+    if (!a) return;
+    const k = a.kind || 'sticker';
+    if (Object.prototype.hasOwnProperty.call(kindCounts, k)) kindCounts[k] += 1;
+  });
+  const activeKinds = ANNOTATION_KINDS.filter(function (k) { return kindCounts[k] > 0; });
+  const kindMeta = {
+    note: { icon: '📝', label: 'Notes' },
+    highlight: { icon: '🖍', label: 'Highlights' },
+    sticker: { icon: '⭐', label: 'Stickers' },
+    voice: { icon: '🎤', label: 'Voice' },
+    draw: { icon: '✏️', label: 'Drawings' },
+  };
+  const normalizedQuery = searchQuery.trim().toLowerCase();
   const visible = annotations.filter(function (a) {
     if (!a) return false;
-    if (filter === 'teacher') return a.author === 'teacher';
-    if (filter === 'student') return a.author === 'student';
-    if (filter === 'mine') {
-      return isTeacher ? a.author === 'teacher' : a.author === 'student';
+    if (filter === 'teacher' && a.author !== 'teacher') return false;
+    if (filter === 'student' && a.author !== 'student') return false;
+    if (filter === 'mine' && (isTeacher ? a.author !== 'teacher' : a.author !== 'student')) return false;
+    const k = a.kind || 'sticker';
+    if (kindFilter !== 'all' && k !== kindFilter) return false;
+    if (normalizedQuery) {
+      const hay = [
+        annotationPreview(a),
+        buildStickerTitle(a),
+        a.content || '',
+        a.text || '',
+        k,
+      ].join(' ').toLowerCase();
+      if (hay.indexOf(normalizedQuery) === -1) return false;
     }
     return true;
   });
@@ -1921,6 +1959,12 @@ function Sidebar(props) {
     }
     return (b.createdAt || '').localeCompare(a.createdAt || '');
   });
+  const hasSidebarFilters = filter !== 'all' || kindFilter !== 'all' || !!normalizedQuery;
+  const resetSidebarFilters = function () {
+    setFilter('all');
+    setKindFilter('all');
+    setSearchQuery('');
+  };
   const Pill = function (key, label, count) {
     const active = filter === key;
     return (
@@ -1928,7 +1972,7 @@ function Sidebar(props) {
         key={key}
         type="button"
         onClick={function () { setFilter(key); }}
-        className={'min-h-6 px-2 py-0.5 rounded-full text-xs font-bold transition-colors motion-reduce:transition-none ' + (active ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}
+        className={'min-h-6 px-2 py-0.5 rounded-full text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 ' + (active ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}
         aria-pressed={active}
       >
         {label} {count > 0 ? '(' + count + ')' : ''}
@@ -1942,39 +1986,104 @@ function Sidebar(props) {
       style={{ width: 300, maxHeight: 'calc(100vh - 120px)' }}
       role="region"
       aria-labelledby="annotation-list-title"
+      onKeyDown={function (e) {
+        if (e && (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229)) return;
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          if (searchQuery) setSearchQuery('');
+          else onClose();
+        }
+      }}
     >
       <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-200 bg-slate-50 rounded-t-xl">
         <h2 id="annotation-list-title" className="text-xs font-bold text-slate-700">
-          📋 Annotations <span className="text-slate-600 font-normal">({counts.total})</span>
+          <span aria-hidden="true">📋 </span>Annotations <span className="text-slate-600 font-normal">({hasSidebarFilters ? visible.length + '/' + counts.total : counts.total})</span>
         </h2>
         <div className="flex items-center gap-1">
           {onImport && (
             <button
               type="button"
               onClick={onImport}
-              className="min-h-6 px-2 py-0.5 text-xs font-bold text-slate-600 hover:text-indigo-700 rounded hover:bg-white border border-slate-300"
+              className="min-h-6 px-2 py-0.5 text-xs font-bold text-slate-600 hover:text-indigo-700 rounded hover:bg-white border border-slate-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
               aria-label="Import annotations from a saved file"
               title="Import annotations from a file (e.g., a student's downloaded annotations)"
-            >📂 Import</button>
+            ><span aria-hidden="true">📂 </span>Import</button>
           )}
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex min-h-6 min-w-6 items-center justify-center p-1 text-slate-600 hover:text-red-500 rounded-full hover:bg-white"
+            className="inline-flex min-h-6 min-w-6 items-center justify-center p-1 text-slate-600 hover:text-red-500 rounded-full hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
             aria-label="Close annotation list"
             title="Close"
-          >{X ? <X size={14} /> : <span>✕</span>}</button>
+          >{X ? <X size={14} aria-hidden="true" /> : <span aria-hidden="true">✕</span>}</button>
         </div>
       </div>
-      <div className="flex items-center gap-1 px-3 py-2 border-b border-slate-200" role="group" aria-label="Filter annotations">
+      <div className="flex flex-wrap items-center gap-1 px-3 py-2 border-b border-slate-200" role="group" aria-label="Filter annotations">
         {Pill('all', 'All', counts.total)}
         {Pill('teacher', 'Teacher', counts.teacher)}
         {isTeacher ? Pill('student', 'Students', counts.student) : Pill('mine', 'Mine', mineCount)}
       </div>
+      {activeKinds.length >= 2 && (
+        <div className="flex flex-wrap items-center gap-1 px-3 py-1.5 border-b border-slate-200 bg-slate-50/70" role="group" aria-label="Filter by annotation type" data-anno-kind-filters="true">
+          {activeKinds.map(function (k) {
+            const info = kindMeta[k];
+            const active = kindFilter === k;
+            return (
+              <button
+                key={k}
+                type="button"
+                data-anno-kind-filter={k}
+                onClick={function () { setKindFilter(active ? 'all' : k); }}
+                aria-pressed={active}
+                className={'min-h-6 px-2 py-0.5 rounded-full text-xs font-semibold transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 ' + (active ? 'bg-indigo-100 text-indigo-800 border border-indigo-300' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100')}
+              >
+                <span aria-hidden="true">{info.icon} </span>{info.label} ({kindCounts[k]})
+              </button>
+            );
+          })}
+        </div>
+      )}
+      {annotations.length >= 4 && (
+        <div className="px-3 py-2 border-b border-slate-200 bg-white">
+          <div className="relative flex items-center">
+            <input
+              type="search"
+              data-anno-sidebar-search="true"
+              value={searchQuery}
+              onChange={function (e) { setSearchQuery(e.target.value); }}
+              placeholder="Find annotation…"
+              aria-label="Search annotations"
+              className="w-full min-h-8 rounded-lg border border-slate-300 bg-white px-2.5 pr-8 text-xs text-slate-800 placeholder:text-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                data-anno-sidebar-search-clear="true"
+                onClick={function () { setSearchQuery(''); }}
+                aria-label="Clear annotation search"
+                className="absolute right-1 inline-flex min-h-6 min-w-6 items-center justify-center rounded text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
+              >
+                {X ? <X size={12} aria-hidden="true" /> : <span aria-hidden="true">✕</span>}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
       <div className="overflow-y-auto flex-1 px-1 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-indigo-600" style={{ minHeight: 100 }} role="list" aria-label="Annotations" tabIndex={0}>
         {visible.length === 0 && (
           <div role="listitem" className="px-3 py-6 text-center text-xs text-slate-600 italic">
-            No annotations match this filter.
+            <div>No annotations match this filter.</div>
+            {hasSidebarFilters && (
+              <button
+                type="button"
+                data-anno-sidebar-reset="true"
+                onClick={resetSidebarFilters}
+                className="mt-2 inline-flex min-h-8 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-bold not-italic text-indigo-700 hover:bg-indigo-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
+              >
+                Reset filters
+              </button>
+            )}
           </div>
         )}
         {visible.map(function (a) {
@@ -2001,10 +2110,10 @@ function Sidebar(props) {
                   <button
                     type="button"
                     onClick={function (e) { e.stopPropagation(); onDelete(a.id); }}
-                    className="inline-flex min-h-6 min-w-6 items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none p-0.5 text-slate-600 hover:text-red-500 rounded"
+                    className="inline-flex min-h-6 min-w-6 items-center justify-center opacity-70 group-hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 transition-opacity motion-reduce:transition-none p-0.5 text-slate-600 hover:text-red-500 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
                     aria-label={'Delete ' + annotationPreview(a)}
                     title="Delete"
-                  >{X ? <X size={12} /> : <span>✕</span>}</button>
+                  >{X ? <X size={12} aria-hidden="true" /> : <span aria-hidden="true">✕</span>}</button>
                 )}
               </div>
             </div>
@@ -2502,7 +2611,7 @@ function Workspace(props) {
             onPickTemplate={setNoteTemplate} onPickDrawColor={setDrawColor} onPickDrawWidth={setDrawWidth} onPickDrawShape={setDrawShape}
             onClear={function () { stopVoice(true); commit(latest.current.filter(function (a) { return !canEdit(a); })); }} t={tt} />
           <button type="button" data-allo-undo-btn="true" onClick={undoCount ? undo : undefined} disabled={!undoCount}
-            className={'min-h-11 min-w-11 py-2 rounded-full flex items-center justify-center gap-1 text-xs font-bold px-2.5 ' + (undoCount ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-300 cursor-not-allowed')}
+            className={'min-h-11 min-w-11 py-2 rounded-full flex items-center justify-center gap-1 text-xs font-bold px-2.5 ' + (undoCount ? 'text-slate-600 hover:bg-slate-100' : 'text-slate-500 cursor-not-allowed')}
             aria-label={say('annotation.undo_aria', 'Undo last annotation')}>{say('annotation.undo_button', '↩ Undo')}</button>
           <button type="button" aria-pressed={showList} onClick={function () { setShowList(function (v) { return !v; }); }}
             className={'min-h-11 min-w-11 py-2 rounded-full flex items-center justify-center gap-1 text-xs font-bold px-2.5 ' + (showList ? 'bg-slate-200 text-slate-700' : 'text-slate-600 hover:bg-slate-100')}

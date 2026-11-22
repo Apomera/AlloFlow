@@ -41,11 +41,22 @@ var _usePersonaAiConfigTick = function() {
     }, []);
 };
 
+var _pSay = function(t, key, fallback, opts) {
+    try {
+        if (typeof t !== 'function' || !key) return fallback;
+        var val = opts ? t(key, opts) : t(key);
+        return typeof val === 'string' && val && val !== key ? val : fallback;
+    } catch (_) {
+        return fallback;
+    }
+};
+
 const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
     const { t } = useContext(LanguageContext);
     const [newConcept, setNewConcept] = useState('');
     const [newTerm, setNewTerm] = useState('');
     const [focusDetailsOpen, setFocusDetailsOpen] = useState(Boolean(isEditing));
+    const [threadStatus, setThreadStatus] = useState('');
     useEffect(() => {
         if (isEditing) setFocusDetailsOpen(true);
     }, [isEditing]);
@@ -72,9 +83,12 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
         if (concepts.indexOf(v) !== -1) { setNewConcept(''); return; }
         writeDNA({ goldenThread: concepts.concat([v]) });
         setNewConcept('');
+        setThreadStatus(`Added concept "${v}".`);
     };
     const removeConcept = (idx) => {
+        const removed = concepts[idx];
         writeDNA({ goldenThread: concepts.filter(function(_, i) { return i !== idx; }) });
+        if (removed) setThreadStatus(`Removed concept "${removed}".`);
     };
     const addTerm = () => {
         const v = (newTerm || '').trim().slice(0, 200);
@@ -82,40 +96,48 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
         if (terms.indexOf(v) !== -1) { setNewTerm(''); return; }
         writeDNA({ keyTerms: terms.concat([v]) });
         setNewTerm('');
+        setThreadStatus(`Added vocabulary term "${v}".`);
     };
     const removeTerm = (idx) => {
+        const removed = terms[idx];
         writeDNA({ keyTerms: terms.filter(function(_, i) { return i !== idx; }) });
+        if (removed) setThreadStatus(`Removed vocabulary term "${removed}".`);
     };
+    const totalFocusItems = concepts.length + terms.length;
     return (
         <div className="mb-4 p-3 rounded-lg bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200">
+            <div data-golden-thread-status="true" role="status" aria-live="polite" aria-atomic="true" className="sr-only">{threadStatus}</div>
             <div className="flex items-center gap-2 mb-2">
-                <Sparkles size={14} aria-hidden="true" className="text-amber-500 fill-current" />
-                <h5 className="text-xs font-bold text-amber-900 uppercase tracking-wider">{t('blueprint.lesson_focus') || 'Lesson focus'}</h5>
-                {isEditing && <span className="text-xs text-amber-800 italic ml-auto">{t('persona.edits_apply_before_generation') || 'Edits apply before generation'}</span>}
+                <Sparkles size={14} aria-hidden="true" className="text-amber-600 fill-current" />
+                <h5 className="text-xs font-bold text-amber-900 uppercase tracking-wider">{_pSay(t, 'blueprint.lesson_focus', 'Lesson focus')}</h5>
+                {isEditing && <span className="text-xs text-amber-900 italic ml-auto">{_pSay(t, 'persona.edits_apply_before_generation', 'Edits apply before generation')}</span>}
             </div>
             <div className="mb-2">
-                <p className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-0.5">{t('persona.essential_question') || 'Essential Question'}</p>
+                <p className="text-xs font-bold text-amber-900 uppercase tracking-wider mb-0.5">{_pSay(t, 'persona.essential_question', 'Essential Question')}</p>
                 {isEditing ? (
                     <textarea
-                        aria-label={t('persona.essential_question') || 'Essential Question'}
+                        aria-label={_pSay(t, 'persona.essential_question', 'Essential Question')}
                         value={eq}
                         onChange={(e) => writeDNA({ essentialQuestion: e.target.value.slice(0, 1200) })}
                         maxLength={1200}
-                        placeholder={t('persona.essential_question_placeholder') || 'The ONE main learning question students will answer...'}
+                        placeholder={_pSay(t, 'persona.essential_question_placeholder', 'The ONE main learning question students will answer...')}
                         rows={2}
-                        className="min-h-11 w-full text-sm text-slate-700 italic bg-white border border-amber-200 rounded p-1.5 focus:border-amber-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 resize-none"
+                        className="min-h-11 w-full text-sm text-slate-800 italic bg-white border border-amber-300 rounded p-1.5 focus:border-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 resize-none"
                     />
                 ) : (
-                    eq ? <p className="text-sm text-slate-700 italic leading-relaxed">"{eq}"</p> : <p className="text-xs text-slate-600 italic">{t('persona.none_set') || '(none set)'}</p>
+                    eq ? <p className="text-sm text-slate-800 italic leading-relaxed">"{eq}"</p> : <p className="text-xs text-slate-700 italic">{_pSay(t, 'persona.none_set', '(none set)')}</p>
                 )}
             </div>
             <details data-testid="bp-lesson-focus-details" open={focusDetailsOpen} onToggle={(e) => setFocusDetailsOpen(e.currentTarget.open)} className="group/focus border-t border-amber-200 pt-1">
               <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded text-xs font-semibold text-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 [&::-webkit-details-marker]:hidden">
-                {t('blueprint.concepts_and_vocabulary') || 'Concepts and vocabulary'}
+                <span>
+                  {_pSay(t, 'blueprint.concepts_and_vocabulary', 'Concepts and vocabulary')}
+                  {totalFocusItems > 0 && <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-amber-950 font-bold">{totalFocusItems}</span>}
+                </span>
                 <ChevronDown size={14} aria-hidden="true" className="shrink-0 transition-transform motion-reduce:transition-none group-open/focus:rotate-180" />
               </summary>
             <div className="mb-2">
-                <p className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">{t('persona.core_concepts') || 'Core Concepts'}</p>
+                <p className="text-xs font-bold text-amber-900 uppercase tracking-wider mb-1">{_pSay(t, 'persona.core_concepts', 'Core Concepts')}</p>
                 <div className="flex flex-wrap gap-1 items-center">
                     {concepts.map(function(c, i) {
                         return (
@@ -125,8 +147,8 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                                     <button
                                         type="button"
                                         onClick={() => removeConcept(i)}
-                                        aria-label={t('persona.remove_concept_aria', { concept: c }) || ('Remove concept ' + c)}
-                                        className="ml-1 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full text-amber-800 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 font-bold leading-none"
+                                        aria-label={_pSay(t, 'persona.remove_concept_aria', 'Remove concept ' + c, { concept: c })}
+                                        className="ml-1 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full text-amber-900 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 font-bold leading-none"
                                     >×</button>
                                 )}
                             </span>
@@ -136,21 +158,32 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                         <span className="inline-flex items-center gap-1">
                             <input
                                 type="text"
-                                aria-label={t('persona.add_concept_placeholder') || 'Add concept'}
+                                aria-label={_pSay(t, 'persona.add_concept_placeholder', 'Add concept')}
                                 value={newConcept}
                                 maxLength={200}
                                 onChange={(e) => setNewConcept(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) { e.preventDefault(); addConcept(); } }}
-                                placeholder={t('persona.add_concept_placeholder') || '+ add concept'}
-                                className="min-h-11 text-xs px-3 py-1 bg-white border border-amber-300 rounded-full focus:border-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 w-32"
+                                placeholder={_pSay(t, 'persona.add_concept_placeholder', '+ add concept')}
+                                className="min-h-11 text-xs px-3 py-1 bg-white border border-amber-300 rounded-full focus:border-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 w-36"
                             />
+                            {newConcept.trim().length > 0 && (
+                                <button
+                                    type="button"
+                                    data-golden-add-concept="true"
+                                    onClick={addConcept}
+                                    aria-label={_pSay(t, 'persona.add_concept_btn', 'Add concept')}
+                                    className="min-h-11 px-3 rounded-full bg-amber-800 text-white text-xs font-bold hover:bg-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-1"
+                                >
+                                    {_pSay(t, 'common.add', 'Add')}
+                                </button>
+                            )}
                         </span>
                     )}
-                    {!isEditing && concepts.length === 0 && <span className="text-xs text-slate-600 italic">{t('persona.none_set') || '(none set)'}</span>}
+                    {!isEditing && concepts.length === 0 && <span className="text-xs text-slate-700 italic">{_pSay(t, 'persona.none_set', '(none set)')}</span>}
                 </div>
             </div>
             <div>
-                <p className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">{t('persona.key_vocabulary') || 'Key Vocabulary'}</p>
+                <p className="text-xs font-bold text-amber-900 uppercase tracking-wider mb-1">{_pSay(t, 'persona.key_vocabulary', 'Key Vocabulary')}</p>
                 <div className="flex flex-wrap gap-1 items-center">
                     {terms.map(function(term, i) {
                         return (
@@ -160,8 +193,8 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                                     <button
                                         type="button"
                                         onClick={() => removeTerm(i)}
-                                        aria-label={t('persona.remove_term_aria', { term: term }) || ('Remove term ' + term)}
-                                        className="ml-1 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full text-indigo-800 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 font-bold leading-none"
+                                        aria-label={_pSay(t, 'persona.remove_term_aria', 'Remove term ' + term, { term: term })}
+                                        className="ml-1 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full text-indigo-900 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 font-bold leading-none"
                                     >×</button>
                                 )}
                             </span>
@@ -171,17 +204,28 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
                         <span className="inline-flex items-center gap-1">
                             <input
                                 type="text"
-                                aria-label={t('persona.add_term_placeholder') || 'Add term'}
+                                aria-label={_pSay(t, 'persona.add_term_placeholder', 'Add term')}
                                 value={newTerm}
                                 maxLength={200}
                                 onChange={(e) => setNewTerm(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) { e.preventDefault(); addTerm(); } }}
-                                placeholder={t('persona.add_term_placeholder') || '+ add term'}
-                                className="min-h-11 text-xs px-3 py-1 bg-white border border-indigo-300 rounded-full focus:border-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 w-32"
+                                placeholder={_pSay(t, 'persona.add_term_placeholder', '+ add term')}
+                                className="min-h-11 text-xs px-3 py-1 bg-white border border-indigo-300 rounded-full focus:border-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 w-36"
                             />
+                            {newTerm.trim().length > 0 && (
+                                <button
+                                    type="button"
+                                    data-golden-add-term="true"
+                                    onClick={addTerm}
+                                    aria-label={_pSay(t, 'persona.add_term_btn', 'Add vocabulary term')}
+                                    className="min-h-11 px-3 rounded-full bg-indigo-700 text-white text-xs font-bold hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
+                                >
+                                    {_pSay(t, 'common.add', 'Add')}
+                                </button>
+                            )}
                         </span>
                     )}
-                    {!isEditing && terms.length === 0 && <span className="text-xs text-slate-600 italic">{t('persona.none_set') || '(none set)'}</span>}
+                    {!isEditing && terms.length === 0 && <span className="text-xs text-slate-700 italic">{_pSay(t, 'persona.none_set', '(none set)')}</span>}
                 </div>
             </div>
             </details>
@@ -196,6 +240,11 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
   const [items, setItems] = useState([]);
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
   const [reorderStatus, setReorderStatus] = useState('');
+  const [diagCopied, setDiagCopied] = useState(false);
+  const diagCopyTimerRef = useRef(null);
+  useEffect(() => () => {
+    if (diagCopyTimerRef.current) clearTimeout(diagCopyTimerRef.current);
+  }, []);
   const [isEditing, setIsEditing] = useState(false);
   useEffect(() => {
     if (isRunning) setIsEditing(false);
@@ -562,10 +611,10 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
             </div>
             <div>
                 <h4 className="font-bold text-indigo-900 text-sm">
-                    {t('blueprint.header')} {isEditing ? `(${t('common.edit')})` : ""}
+                    {_pSay(t, 'blueprint.header', 'Lesson Blueprint')} {isEditing ? `(${_pSay(t, 'common.edit', 'Edit')})` : ""}
                 </h4>
                 <p className="text-xs text-slate-600">
-                    {isEditing ? (t('blueprint.drag_instruction') + ' ' + (t('blueprint.keyboard_reorder_instruction') || 'Use Move up and Move down to reorder without dragging.')) : isRunning ? (t('fullpack.running_help') || 'Follow progress below. Keep this page open while resources are created.') : (runHasFinished ? (t('blueprint.results_overview_help') || 'Review your resources below. Use Edit plan to make changes.') : (t('blueprint.overview_help') || 'Review the resources below, then generate. Use Edit plan to make changes.'))}
+                    {isEditing ? (_pSay(t, 'blueprint.drag_instruction', 'Drag steps to reorder.') + ' ' + _pSay(t, 'blueprint.keyboard_reorder_instruction', 'Use Move up and Move down to reorder without dragging.')) : isRunning ? _pSay(t, 'fullpack.running_help', 'Follow progress below. Keep this page open while resources are created.') : (runHasFinished ? _pSay(t, 'blueprint.results_overview_help', 'Review your resources below. Use Edit plan to make changes.') : _pSay(t, 'blueprint.overview_help', 'Review the resources below, then generate. Use Edit plan to make changes.'))}
                 </p>
             </div>
         </div>
@@ -580,23 +629,24 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                 data-testid="bp-open-error-log"
                 onClick={onOpenErrorLog}
                 className="inline-flex min-h-11 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600"
-                title={t('blueprint.open_error_log') || 'Open error log'}
-                aria-label={t('blueprint.open_error_log') || 'Open error log'}
+                title={_pSay(t, 'blueprint.open_error_log', 'Open error log')}
+                aria-label={_pSay(t, 'blueprint.open_error_log', 'Open error log')}
             >
-                <AlertTriangle size={14} aria-hidden="true" /><span>{t('blueprint.open_error_log') || 'Open error log'}</span>
+                <AlertTriangle size={14} aria-hidden="true" /><span>{_pSay(t, 'blueprint.open_error_log', 'Open error log')}</span>
             </button>
         )}
         <button
             type="button"
             data-help-key="blueprint_edit_toggle_btn"
-            aria-label={isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan')}
+            aria-pressed={isEditing}
+            aria-label={isEditing ? _pSay(t, 'blueprint.done_editing', 'Done editing') : _pSay(t, 'blueprint.edit_plan', 'Edit plan')}
             disabled={!!isRunning}
-            title={isRunning ? (t('blueprint.wait_for_run') || 'Wait for the run to finish (or stop it) before editing.') : undefined}
+            title={isRunning ? _pSay(t, 'blueprint.wait_for_run', 'Wait for the run to finish (or stop it) before editing.') : undefined}
             onClick={() => setIsEditing(prev => !prev)}
-            className={`min-h-11 p-2 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none flex items-center gap-2 border disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${isEditing ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+            className={`min-h-11 p-2 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none flex items-center gap-2 border disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${isEditing ? 'bg-indigo-100 text-indigo-800 border-indigo-300' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'}`}
         >
             {isEditing ? <CheckCircle2 size={14} aria-hidden="true"/> : <Pencil size={14} aria-hidden="true"/>}
-            {isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan')}
+            {isEditing ? _pSay(t, 'blueprint.done_editing', 'Done editing') : _pSay(t, 'blueprint.edit_plan', 'Edit plan')}
         </button>
         </div>
       </div>
@@ -697,25 +747,39 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
           const _total = _rows.length;
           const _settled = _rows.filter(r => r && (r.status === 'landed' || r.status === 'partial' || r.status === 'failed' || r.status === 'interrupted')).length;
           const _active = _rows.find(r => r && r.status === 'running');
+          const _pct = _total > 0 ? Math.round((_settled / _total) * 100) : 0;
           return (
-              <div data-testid="bp-run-progress" className="flex items-center gap-2 mb-3 p-2 rounded-lg bg-indigo-50 border border-indigo-100">
-                  <RefreshCw size={13} className="text-indigo-600 animate-spin motion-reduce:animate-none shrink-0" aria-hidden="true" />
-                  <p className="flex-grow text-xs text-indigo-900 font-medium" aria-live="polite">
-                      {(t('blueprint.progress_line', { done: _settled, total: _total }) || `Building — ${_settled} of ${_total} steps finished`)}
-                      {_active ? ` · ${getToolLabel(_active.tool)}` : ''}
-                  </p>
-                  {typeof onStopRun === 'function' && (
-                      <button
-                          type="button"
-                          data-testid="bp-stop-run"
-                          data-help-key="blueprint_stop_run_btn"
-                          onClick={onStopRun}
-                          className="shrink-0 min-h-11 text-xs font-bold px-2.5 py-1.5 rounded border border-red-300 text-red-700 bg-white hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
-                          title={t('blueprint.stop_run_hint') || 'Finishes the step in progress, then stops. Finished resources are kept.'}
-                      >
-                          {t('blueprint.stop_run') || 'Stop after this step'}
-                      </button>
-                  )}
+              <div data-testid="bp-run-progress" className="mb-3 p-2.5 rounded-lg bg-indigo-50 border border-indigo-200 space-y-2">
+                  <div className="flex items-center gap-2">
+                      <RefreshCw size={13} className="text-indigo-600 animate-spin motion-reduce:animate-none shrink-0" aria-hidden="true" />
+                      <p className="flex-grow text-xs text-indigo-900 font-medium" aria-live="polite">
+                          {(_pSay(t, 'blueprint.progress_line', `Building — ${_settled} of ${_total} steps finished`, { done: _settled, total: _total }))}
+                          {_active ? ` · ${getToolLabel(_active.tool)}` : ''}
+                      </p>
+                      {typeof onStopRun === 'function' && (
+                          <button
+                              type="button"
+                              data-testid="bp-stop-run"
+                              data-help-key="blueprint_stop_run_btn"
+                              onClick={onStopRun}
+                              className="shrink-0 min-h-11 text-xs font-bold px-2.5 py-1.5 rounded border border-red-300 text-red-700 bg-white hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
+                              title={_pSay(t, 'blueprint.stop_run_hint', 'Finishes the step in progress, then stops. Finished resources are kept.')}
+                          >
+                              {_pSay(t, 'blueprint.stop_run', 'Stop after this step')}
+                          </button>
+                      )}
+                  </div>
+                  <div
+                      role="progressbar"
+                      aria-label={_pSay(t, 'blueprint.run_progress_label', 'Blueprint generation progress')}
+                      aria-valuemin={0}
+                      aria-valuemax={Math.max(1, _total)}
+                      aria-valuenow={_settled}
+                      aria-valuetext={`${_settled} of ${_total} steps finished (${_pct}%)${_active ? `, currently building ${getToolLabel(_active.tool)}` : ''}`}
+                      className="w-full h-2 rounded-full bg-indigo-100 overflow-hidden"
+                  >
+                      <div className="h-full rounded-full bg-indigo-600 transition-all motion-reduce:transition-none" style={{ width: `${_pct}%` }} />
+                  </div>
               </div>
           );
       })()}
@@ -752,7 +816,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                         </div>
                         <div className="min-w-0 flex-grow grid grid-cols-1 gap-2">
                             <div className="col-span-1">
-                                <select aria-label={t('common.selection')}
+                                <select aria-label={`${_pSay(t, 'common.selection', 'Resource type')} ${idx + 1}`}
                                     value={item.type}
                                     onChange={(e) => handleTypeChange(idx, e.target.value)}
                                     className="min-h-11 w-full text-xs font-bold text-slate-700 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
@@ -779,32 +843,32 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                 )}
                             </div>
                             <div className="col-span-1">
-                                <textarea aria-label={(t('fullpack.instruction') || 'Instruction') + ': ' + getToolLabel(item.type)}
+                                <textarea aria-label={_pSay(t, 'fullpack.instruction', 'Instruction') + ': ' + getToolLabel(item.type)}
                                     rows={2}
                                     value={item.directive}
                                     onChange={(e) => handleDirectiveChange(idx, e.target.value)}
-                                    className="min-h-11 w-full resize-y text-xs text-slate-600 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 placeholder:italic"
-                                    placeholder={t('blueprint.placeholder_instruction')}
+                                    className="min-h-11 w-full resize-y text-xs text-slate-700 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 placeholder:italic"
+                                    placeholder={_pSay(t, 'blueprint.placeholder_instruction', 'Optional focus or instructions for this step...')}
                                 />
                             </div>
                         </div>
                         <button
                             type="button"
-                            aria-label={t('common.delete')}
+                            aria-label={`${_pSay(t, 'common.delete', 'Delete')}: ${getToolLabel(item.type)} (${idx + 1})`}
                             onClick={() => handleDelete(idx)}
-                            className="mt-1.5 min-w-11 min-h-11 inline-flex items-center justify-center text-slate-600 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
-                            title={t('blueprint.remove_step_tooltip')}
+                            className="mt-1.5 min-w-11 min-h-11 inline-flex items-center justify-center text-slate-700 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
+                            title={_pSay(t, 'blueprint.remove_step_tooltip', 'Remove step')}
                         >
                             <Trash2 size={14} aria-hidden="true" />
                         </button>
                     </div>
                 ))}
             </div>
-            <button type="button" data-help-key="blueprint_add_step_btn" aria-label={t('blueprint.add_step')}
+            <button type="button" data-help-key="blueprint_add_step_btn" aria-label={_pSay(t, 'blueprint.add_step', 'Add step')}
                 onClick={handleAddStep}
-                className="min-h-11 w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 text-xs font-bold hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-300 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 flex items-center justify-center gap-2 mb-4"
+                className="min-h-11 w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-slate-700 text-xs font-bold hover:bg-slate-50 hover:text-indigo-700 hover:border-indigo-300 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 flex items-center justify-center gap-2 mb-4"
             >
-                <Plus size={14} aria-hidden="true" /> {t('blueprint.add_step')}
+                <Plus size={14} aria-hidden="true" /> {_pSay(t, 'blueprint.add_step', 'Add step')}
             </button>
           </>
       ) : (
@@ -827,12 +891,12 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                   const _rowRun = (run && run.rows && Object.prototype.hasOwnProperty.call(run.rows, item.id) && run.rows[item.id]) || null;
                   const _status = _rowRun && _rowRun.status;
                   const _statusMap = {
-                      planned:     { label: t('blueprint.status_planned') || 'Planned',        cls: 'bg-slate-100 text-slate-600 border-slate-200' },
-                      running:     { label: t('blueprint.status_running') || 'Building...',    cls: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
-                      landed:      { label: t('blueprint.status_landed') || 'Done',            cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-                      partial:     { label: t('blueprint.status_partial') || 'Partial',         cls: 'bg-amber-50 text-amber-900 border-amber-300' },
-                      failed:      { label: t('blueprint.status_failed') || 'Failed',          cls: 'bg-red-50 text-red-700 border-red-200' },
-                      interrupted: { label: t('blueprint.status_interrupted') || 'Interrupted', cls: 'bg-amber-50 text-amber-800 border-amber-200' },
+                      planned:     { label: _pSay(t, 'blueprint.status_planned', 'Planned'),        icon: '○', cls: 'bg-slate-100 text-slate-700 border-slate-300' },
+                      running:     { label: _pSay(t, 'blueprint.status_running', 'Building...'),    icon: '◌', cls: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
+                      landed:      { label: _pSay(t, 'blueprint.status_landed', 'Done'),            icon: '✓', cls: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+                      partial:     { label: _pSay(t, 'blueprint.status_partial', 'Partial'),        icon: '!', cls: 'bg-amber-50 text-amber-900 border-amber-300' },
+                      failed:      { label: _pSay(t, 'blueprint.status_failed', 'Failed'),          icon: '×', cls: 'bg-red-50 text-red-800 border-red-200' },
+                      interrupted: { label: _pSay(t, 'blueprint.status_interrupted', 'Interrupted'), icon: '!', cls: 'bg-amber-50 text-amber-900 border-amber-300' },
                   };
                   const _statusStyle = (typeof _status === 'string' && Object.prototype.hasOwnProperty.call(_statusMap, _status)) ? _statusMap[_status] : null;
                   // Raw provider text can include credentials, prompt excerpts,
@@ -945,12 +1009,13 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                               the per-step warnLog line the executor emits. */}
                           {_statusStyle && !_suppressStatusBadge && (
                               <span
-                                  className={`ml-2 text-xs font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${_statusStyle.cls}`}
+                                  className={`ml-2 inline-flex items-center gap-1 text-xs font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${_statusStyle.cls}`}
                                   role="status"
                                   aria-live={_status === 'running' ? 'polite' : 'off'}
                                   title={(_safeFailure && _safeFailure.summary) || undefined}
                               >
-                                  {_statusStyle.label}
+                                  <span aria-hidden="true">{_statusStyle.icon}</span>
+                                  <span>{_statusStyle.label}</span>
                               </span>
                           )}
                           {_auditBadge && (
@@ -1156,8 +1221,8 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
               })}
               {items.length === 0 && (
                   <div data-testid="bp-empty-plan" className="text-center text-slate-600 text-sm py-4">
-                      <p>{t('blueprint.empty_plan')}</p>
-                      <p className="mt-1 text-xs">{t('blueprint.empty_plan_help') || 'Choose Edit plan, then Add step to add a resource.'}</p>
+                      <p>{_pSay(t, 'blueprint.empty_plan', 'No resources in this plan yet.')}</p>
+                      <p className="mt-1 text-xs">{_pSay(t, 'blueprint.empty_plan_help', 'Choose Edit plan, then Add step to add a resource.')}</p>
                   </div>
               )}
           </div>
@@ -1171,11 +1236,11 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
               type="button"
               data-help-key="blueprint_cancel_btn"
               disabled={!!isRunning}
-              aria-label={t('common.cancel')}
+              aria-label={_pSay(t, 'common.cancel', 'Cancel')}
             onClick={onCancel}
-            className="flex-1 min-h-11 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex-1 min-h-11 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {t('blueprint.cancel')}
+            {_pSay(t, 'blueprint.cancel', 'Cancel')}
           </button>
           {/* Disabled during a run. The mutex already rejects a second run
               safely (and now sits above the config setters), but a live-looking
@@ -1185,6 +1250,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
               type="button"
               data-help-key="blueprint_generate_pack_btn"
               aria-label={generateActionLabel}
+              aria-busy={isRunning ? 'true' : undefined}
             disabled={!!isRunning || items.length === 0 || !aiTextUsable}
             onClick={() => { setIsEditing(false); if (typeof onConfirm === 'function') onConfirm(); }}
             className="flex-[2] min-h-11 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-md transition-transform motion-reduce:transition-none active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 flex items-center justify-center gap-2"
@@ -1214,12 +1280,12 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
               }}
               className="min-h-11 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
             >
-              {t('blueprint.save_template') || 'Save as template'}
+              {_pSay(t, 'blueprint.save_template', 'Save as template')}
             </button>
           ) : (
             <div className="space-y-2">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600" htmlFor="bp-template-name">
-                {t('blueprint.template_name_label') || 'Template name'}
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700" htmlFor="bp-template-name">
+                {_pSay(t, 'blueprint.template_name_label', 'Template name')}
               </label>
               <input
                 id="bp-template-name"
@@ -1228,11 +1294,23 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                 value={templateName}
                 maxLength={80}
                 onChange={(e) => setTemplateName(e.target.value)}
-                placeholder={t('blueprint.template_name_placeholder') || 'e.g. Vocabulary-first informational text'}
+                onKeyDown={(e) => {
+                  if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+                  if (e.key === 'Escape') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowTemplateSave(false);
+                  } else if (e.key === 'Enter' && templateName.trim()) {
+                    e.preventDefault();
+                    onSaveTemplate({ name: templateName.trim(), directives: directivePolicy });
+                    setShowTemplateSave(false);
+                  }
+                }}
+                placeholder={_pSay(t, 'blueprint.template_name_placeholder', 'e.g. Vocabulary-first informational text')}
                 className="min-h-11 w-full text-sm border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
               />
               <p className="text-xs text-slate-600">
-                {t('blueprint.template_directive_help') || 'Keep the instructions that would suit any topic. Clear the ones that describe THIS lesson.'}
+                {_pSay(t, 'blueprint.template_directive_help', 'Keep the instructions that would suit any topic. Clear the ones that describe THIS lesson.')}
               </p>
               <ul className="space-y-1 max-h-48 overflow-y-auto">
                 {items.filter((it) => (it.directive || '').trim()).map((it) => {
@@ -1266,7 +1344,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                   }}
                   className="min-h-11 text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                 >
-                  {t('blueprint.template_save_confirm') || 'Save template'}
+                  {_pSay(t, 'blueprint.template_save_confirm', 'Save template')}
                 </button>
                 <button
                   type="button"
@@ -1274,7 +1352,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                   onClick={() => setShowTemplateSave(false)}
                   className="min-h-11 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                 >
-                  {t('common.cancel') || 'Cancel'}
+                  {_pSay(t, 'common.cancel', 'Cancel')}
                 </button>
               </div>
             </div>
@@ -1284,21 +1362,26 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
       {run && (typeof onCopyDiagnostics === 'function' || typeof onDownloadDiagnostics === 'function') && (
         <details data-testid="bp-troubleshooting" className="group/support mt-3 border-t border-slate-200 text-xs text-slate-600">
           <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded pt-2 font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 [&::-webkit-details-marker]:hidden">
-            {t('fullpack.troubleshooting') || 'Troubleshooting'}
+            {_pSay(t, 'fullpack.troubleshooting', 'Troubleshooting')}
             <ChevronDown size={14} aria-hidden="true" className="shrink-0 transition-transform motion-reduce:transition-none group-open/support:rotate-180" />
           </summary>
-          <p className="my-2 leading-relaxed">{t('fullpack.troubleshooting_help') || 'Technical details for investigating a generation problem.'}</p>
-          <div className="flex flex-wrap gap-2">
+          <p className="my-2 leading-relaxed">{_pSay(t, 'fullpack.troubleshooting_help', 'Technical details for investigating a generation problem.')}</p>
+          <div className="flex flex-wrap items-center gap-2">
         {run && typeof onCopyDiagnostics === 'function' && (
             <button
                 type="button"
                 data-testid="bp-copy-diagnostics"
-                onClick={onCopyDiagnostics}
-                className="inline-flex min-h-11 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
-                title={t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics'}
-                aria-label={t('blueprint.copy_diagnostics') || 'Copy sanitized Blueprint diagnostics'}
+                onClick={() => {
+                  onCopyDiagnostics();
+                  setDiagCopied(true);
+                  if (diagCopyTimerRef.current) clearTimeout(diagCopyTimerRef.current);
+                  diagCopyTimerRef.current = setTimeout(() => setDiagCopied(false), 2000);
+                }}
+                className="inline-flex min-h-11 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                title={_pSay(t, 'blueprint.copy_diagnostics', 'Copy sanitized Blueprint diagnostics')}
+                aria-label={_pSay(t, 'blueprint.copy_diagnostics', 'Copy sanitized Blueprint diagnostics')}
             >
-                <Copy size={14} aria-hidden="true" />{t('fullpack.copy_diagnostics') || 'Copy diagnostics'}
+                <Copy size={14} aria-hidden="true" />{diagCopied ? _pSay(t, 'common.copied', 'Copied!') : _pSay(t, 'fullpack.copy_diagnostics', 'Copy diagnostics')}
             </button>
         )}
         {run && typeof onDownloadDiagnostics === 'function' && (
@@ -1306,13 +1389,16 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                 type="button"
                 data-testid="bp-download-diagnostics"
                 onClick={onDownloadDiagnostics}
-                className="inline-flex min-h-11 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
-                title={t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report'}
-                aria-label={t('blueprint.download_diagnostics') || 'Download Blueprint diagnostic report'}
+                className="inline-flex min-h-11 items-center gap-1.5 p-2 rounded-lg text-xs font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                title={_pSay(t, 'blueprint.download_diagnostics', 'Download Blueprint diagnostic report')}
+                aria-label={_pSay(t, 'blueprint.download_diagnostics', 'Download Blueprint diagnostic report')}
             >
-                <Download size={14} aria-hidden="true" />{t('fullpack.download_report') || 'Download report'}
+                <Download size={14} aria-hidden="true" />{_pSay(t, 'fullpack.download_report', 'Download report')}
             </button>
         )}
+            <span data-bp-copy-status="true" role="status" aria-live="polite" className="sr-only">
+              {diagCopied ? _pSay(t, 'blueprint.diagnostics_copied', 'Sanitized Blueprint diagnostics copied.') : ''}
+            </span>
           </div>
         </details>
       )}
@@ -1324,22 +1410,26 @@ const HarmonyMeter = ({ score }) => {
     const { t } = useContext(LanguageContext);
     const numericScore = Number(score);
     const safeScore = Number.isFinite(numericScore) ? Math.max(0, Math.min(100, Math.round(numericScore))) : 0;
+    const harmonyLabel = _pSay(t, 'persona.harmony_label', 'Harmony');
+    const harmonyScoreText = _pSay(t, 'persona.harmony_score', `${safeScore}%`, { score: safeScore });
+    const commonGroundText = _pSay(t, 'persona.common_ground', 'Common Ground Found!');
+    const harmonyDescriptor = safeScore >= 80 ? commonGroundText : (safeScore >= 50 ? 'Building consensus' : 'Diverging perspectives');
     return (
-    <div className="w-full max-w-md mx-auto bg-white/50 backdrop-blur-sm p-2 rounded-xl border border-indigo-100 shadow-sm animate-in motion-reduce:animate-none slide-in-from-top-2">
+    <div className="w-full max-w-md mx-auto bg-white/80 backdrop-blur-sm p-2.5 rounded-xl border border-indigo-200 shadow-sm animate-in motion-reduce:animate-none slide-in-from-top-2">
         <div className="flex justify-between items-end mb-1 px-1">
-            <span className="text-xs font-black uppercase tracking-widest text-indigo-600">{t('persona.harmony_label')}</span>
-            <span className="text-xs font-bold text-indigo-700">{t('persona.harmony_score', { score: safeScore })}</span>
+            <span className="text-xs font-black uppercase tracking-widest text-indigo-800">{harmonyLabel}</span>
+            <span className="text-xs font-bold text-indigo-900">{harmonyScoreText}</span>
         </div>
-        <div role="progressbar" aria-label={t('persona.harmony_label')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={safeScore} className="h-3 w-full bg-slate-200 rounded-full overflow-hidden relative">
+        <div role="progressbar" aria-label={harmonyLabel} aria-valuemin={0} aria-valuemax={100} aria-valuenow={safeScore} aria-valuetext={`${safeScore}% — ${harmonyDescriptor}`} className="h-3 w-full bg-slate-200 rounded-full overflow-hidden relative">
             <div
-                className="h-full bg-gradient-to-r from-red-400 via-yellow-400 to-green-500 transition-all motion-reduce:transition-none duration-1000 ease-out"
+                className="h-full bg-gradient-to-r from-red-500 via-amber-400 to-emerald-600 transition-all motion-reduce:transition-none duration-1000 ease-out"
                 style={{ width: `${safeScore}%` }}
             ></div>
-            <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/50 z-10"></div>
+            <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/70 z-10" aria-hidden="true"></div>
         </div>
         {safeScore >= 80 && (
             <div role="status" className="text-center mt-1 text-xs font-bold text-emerald-800 animate-pulse motion-reduce:animate-none">
-                {t('persona.common_ground')}
+                <span aria-hidden="true">✓ </span>{commonGroundText}
             </div>
         )}
     </div>
@@ -1354,7 +1444,7 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
         const number = Number(value);
         return Number.isFinite(number) ? Math.max(min, Math.min(max, Math.round(number))) : fallback;
     };
-    const characterName = typeof character.name === 'string' && character.name.trim() ? character.name.trim().slice(0, 120) : t('persona.character_fallback');
+    const characterName = typeof character.name === 'string' && character.name.trim() ? character.name.trim().slice(0, 120) : _pSay(t, 'persona.character_fallback', 'Character');
     const characterRole = typeof character.role === 'string' ? character.role.trim().slice(0, 160) : '';
     const safeColumnAvatarUrl = (raw) => {
         if (typeof raw !== 'string') return null;
@@ -1373,6 +1463,9 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
     const characterAvatarUrl = safeColumnAvatarUrl(character.avatarUrl);
     const rapport = safeNumber(character.rapport ?? character.initialRapport, 0, 100, 30);
     const xp = safeNumber(character.accumulatedXP, 0, 300, 0);
+    const rapportLabel = _pSay(t, 'persona.rapport_label', 'Rapport');
+    const xpLabel = _pSay(t, 'common.xp', 'XP');
+    const rapportDescriptor = rapport >= 70 ? 'High trust' : (rapport >= 40 ? 'Growing trust' : 'Building trust');
     // Active objectives first — what the student can still pursue belongs on
     // top; completed secrets settle to the bottom (matches single-mode order
     // and quest-log convention).
@@ -1389,6 +1482,7 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
         if (a.isCompleted === b.isCompleted) return 0;
         return a.isCompleted ? 1 : -1;
     });
+    const completedQuestCount = sortedQuests.filter((q) => q.isCompleted).length;
     return (
     <div className="flex flex-col items-center text-center h-full p-2">
         <div className={`
@@ -1403,11 +1497,11 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
                 />
             ) : (
                 <div className="w-full h-full bg-slate-100 flex flex-col items-center justify-center gap-2 p-4">
-                    <span className="text-3xl text-slate-600 font-bold">?</span>
+                    <span className="text-3xl text-slate-600 font-bold" aria-hidden="true">?</span>
                     {onRetryPortrait && _personaUiAiUsable('images') && (
                         <button
                             type="button"
-                            aria-label={t('persona.generate_portrait_for', { name: characterName })}
+                            aria-label={_pSay(t, 'persona.generate_portrait_for', `Generate portrait for ${characterName}`, { name: characterName })}
                             onClick={() => onRetryPortrait(character)}
                             disabled={Boolean(character.isUpdating)}
                             aria-busy={character.isUpdating ? 'true' : 'false'}
@@ -1418,62 +1512,67 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
                             }`}
                         >
                             <RefreshCw size={12} aria-hidden="true" />
-                            {t('persona.generate_portrait')}
+                            {_pSay(t, 'persona.generate_portrait', 'Generate Portrait')}
                         </button>
                     )}
                 </div>
             )}
             {character.isUpdating && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px] z-30 pointer-events-auto" role="status" aria-live="polite" aria-label={t('persona.status_generating_portrait', { name: characterName })}>
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px] z-30 pointer-events-auto" role="status" aria-live="polite" aria-label={_pSay(t, 'persona.status_generating_portrait', `Generating portrait for ${characterName}`, { name: characterName })}>
                     <RefreshCw size={32} aria-hidden="true" className="text-white animate-spin motion-reduce:animate-none"/>
                 </div>
             )}
-            <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-md p-2 text-white border-t border-white/10">
+            <div className="absolute bottom-0 left-0 right-0 bg-black/75 backdrop-blur-md p-2 text-white border-t border-white/15">
                 <h3 className="break-words [overflow-wrap:anywhere] font-black text-lg leading-none mb-1">{characterName}</h3>
-                {characterRole && <p className="break-words [overflow-wrap:anywhere] text-xs font-bold uppercase tracking-wider opacity-80">{characterRole}</p>}
+                {characterRole && <p className="break-words [overflow-wrap:anywhere] text-xs font-bold uppercase tracking-wider text-slate-100">{characterRole}</p>}
             </div>
         </div>
         <div className="w-full max-w-[260px] px-2">
-            <div className="flex justify-between text-xs font-bold text-slate-600 uppercase mb-1">
-                <span>{t('persona.rapport_label')}</span>
-                <span className={`${rapport >= 70 ? 'text-emerald-800' : 'text-slate-600'}`}>{rapport}%</span>
+            <div className="flex justify-between text-xs font-bold text-slate-700 uppercase mb-1">
+                <span>{rapportLabel}</span>
+                <span className={`${rapport >= 70 ? 'text-emerald-800' : 'text-slate-700'}`}>{rapport}%</span>
             </div>
-            <div role="progressbar" aria-label={(t('persona.rapport_label') || 'Rapport') + ': ' + characterName} aria-valuemin={0} aria-valuemax={100} aria-valuenow={rapport} className="w-full h-2 bg-slate-200 rounded-full overflow-hidden border border-slate-400">
+            <div role="progressbar" aria-label={`${rapportLabel}: ${characterName}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={rapport} aria-valuetext={`${characterName} rapport: ${rapport}% (${rapportDescriptor})`} className="w-full h-2 bg-slate-200 rounded-full overflow-hidden border border-slate-400">
                 <div
-                    className={`h-full transition-all motion-reduce:transition-none duration-500 ${side === 'left' ? 'bg-indigo-500' : 'bg-rose-500'}`}
+                    className={`h-full transition-all motion-reduce:transition-none duration-500 ${side === 'left' ? 'bg-indigo-600' : 'bg-rose-600'}`}
                     style={{ width: `${rapport}%` }}
                 ></div>
             </div>
         </div>
         <div className="w-full max-w-[260px] px-2 mt-3">
-            <div className="flex justify-between text-xs font-bold text-slate-600 uppercase mb-1"><span>{t('common.xp')}</span><span>{xp}/300</span></div>
-            <div role="progressbar" aria-label={t('persona.xp_progress', { name: characterName, xp })} aria-valuemin={0} aria-valuemax={300} aria-valuenow={xp} className="w-full h-2 bg-slate-200 rounded-full overflow-hidden border border-slate-400">
-                <div className="h-full bg-amber-500 transition-all motion-reduce:transition-none duration-500" style={{ width: `${(xp / 300) * 100}%` }} />
+            <div className="flex justify-between text-xs font-bold text-slate-700 uppercase mb-1"><span>{xpLabel}</span><span>{xp}/300</span></div>
+            <div role="progressbar" aria-label={(() => { const v = t('persona.xp_progress', { name: characterName, xp }); return typeof v === 'string' && v && v !== 'persona.xp_progress' ? v : `${characterName} XP: ${xp} of 300`; })()} aria-valuemin={0} aria-valuemax={300} aria-valuenow={xp} aria-valuetext={`${characterName} XP: ${xp} of 300 (${Math.round((xp / 300) * 100)}%)`} className="w-full h-2 bg-slate-200 rounded-full overflow-hidden border border-slate-400">
+                <div className="h-full bg-amber-600 transition-all motion-reduce:transition-none duration-500" style={{ width: `${(xp / 300) * 100}%` }} />
             </div>
         </div>
-        <div className="w-full max-w-[280px] text-left flex-1 min-h-0 overflow-y-auto custom-scrollbar mt-4 px-1">
-            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2 flex items-center gap-1">
-                 <Search size={10} aria-hidden="true"/> {t('persona.objectives_label')}
+        <div tabIndex={sortedQuests.length > 0 ? 0 : undefined} className="w-full max-w-[280px] text-left flex-1 min-h-0 overflow-y-auto custom-scrollbar mt-4 px-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">
+            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest mb-2 flex items-center justify-between gap-1">
+                 <span className="inline-flex items-center gap-1"><Search size={10} aria-hidden="true"/> {_pSay(t, 'persona.objectives_label', 'Objectives')}</span>
+                 {sortedQuests.length > 0 && (
+                     <span data-character-objectives-summary="true" className="px-1.5 py-0.5 rounded-full bg-slate-100 border border-slate-300 text-slate-700 font-bold normal-case tracking-normal">
+                         {completedQuestCount}/{sortedQuests.length}
+                     </span>
+                 )}
             </h4>
             <div className="space-y-2">
                 {sortedQuests.map((q, i) => {
                     const isLocked = rapport < q.difficulty;
-                    const completedLabel = t('common.completed') && t('common.completed') !== 'common.completed' ? t('common.completed') : 'Completed';
-                    const lockedLabel = t('common.locked') && t('common.locked') !== 'common.locked' ? t('common.locked') : 'Locked';
+                    const completedLabel = _pSay(t, 'common.completed', 'Completed');
+                    const lockedLabel = _pSay(t, 'common.locked', 'Locked');
                     return (
                         <div key={q.id || i} className={`
                             p-2.5 rounded border text-xs leading-tight transition-all motion-reduce:transition-none relative overflow-hidden
                             ${q.isCompleted
-                                ? 'bg-green-50 border-green-200 text-green-800'
+                                ? 'bg-green-50 border-green-300 text-green-900'
                                 : isLocked
-                                    ? 'bg-slate-50 border-slate-200 text-slate-600'
-                                    : 'bg-white border-indigo-200 text-slate-600'}
+                                    ? 'bg-slate-50 border-slate-300 text-slate-700'
+                                    : 'bg-white border-indigo-200 text-slate-700'}
                         `}>
                             <div className="flex gap-2 items-start relative z-10">
                                  <div className="mt-0.5 shrink-0">
                                     {q.isCompleted ? <CheckCircle2 size={12} aria-hidden="true"/> :
                                      isLocked ? <Lock size={12} aria-hidden="true"/> :
-                                     <div aria-hidden="true" className="w-3 h-3 border-2 border-indigo-200 rounded-full"></div>}
+                                     <div aria-hidden="true" className="w-3 h-3 border-2 border-indigo-300 rounded-full"></div>}
                                  </div>
                                  <div className="flex-grow">
                                      <span className={`break-words [overflow-wrap:anywhere] font-bold block ${q.isCompleted ? 'line-through text-emerald-900' : ''}`}>
@@ -1482,7 +1581,7 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
                                      </span>
                                      {!q.isCompleted && isLocked && (
                                          <span className="text-xs uppercase font-bold text-slate-700 mt-1 block">
-                                             {(() => { const value = t('persona.inquiry.bonus'); return value && value !== 'persona.inquiry.bonus' ? value : 'Optional story bonus at rapport'; })()} {q.difficulty}
+                                             {_pSay(t, 'persona.inquiry.bonus', 'Optional story bonus at rapport')} {q.difficulty}
                                          </span>
                                      )}
                                  </div>

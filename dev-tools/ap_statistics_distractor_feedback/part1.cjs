@@ -51,13 +51,13 @@ module.exports = {
     'Class B must therefore have a higher maximum score.': 'A larger IQR means a wider middle half, but the maximum is an extreme value the IQR does not determine.',
   },
   'item-010': {
-    'It guarantees that the study will end up with a much larger random sample of people.': 'Rewording a question changes nothing about how many people are sampled or how they were selected.',
-    'It turns an observational study into a completely randomized experiment instead.': 'An experiment requires imposing treatments with random assignment; changing survey wording does not do that.',
+    'It ensures that the study will end up with a much larger random sample of people.': 'Rewording a question changes nothing about how many people are sampled or how they were selected.',
+    'It turns an observational study into a fully randomized experiment instead.': 'An experiment requires imposing treatments with random assignment; changing survey wording does not do that.',
     'It eliminates all of the response bias from every one of the survey responses given.': 'Wording chosen to chase a result is more likely to introduce response bias than to remove it.',
   },
   'item-011': {
     'A cluster random sample': 'Cluster sampling selects whole groups and surveys everyone inside them; here every grade contributes a random sample, which is stratification.',
-    'A voluntary response sample': 'A voluntary response sample lets people opt in; this design uses random selection within each grade.',
+    'A voluntary response sample': 'Voluntary response lets people opt in on their own; this design uses random selection within each grade.',
     'A systematic sample': 'A systematic sample takes every kth person from a list after a random start; no such rule is used here.',
   },
   'item-012': {
@@ -316,8 +316,8 @@ module.exports = {
     'A sample size cannot affect the sampling distribution': 'Sample size is the main factor that makes the sampling distribution of the mean more nearly normal.',
   },
   'item-063': {
-    'The data being analyzed are entirely categorical rather than quantitative in nature.': 'A confidence interval for a mean requires quantitative data; the t-distribution is about estimating sigma, not about data type.',
-    'The population mean is always exactly zero in every one of the samples that could be drawn.': 'The population mean is unknown and is what the interval estimates; it has no fixed value.',
+    'The data being analyzed are purely categorical rather than quantitative in nature.': 'A confidence interval for a mean requires quantitative data; the t-distribution is about estimating sigma, not about data type.',
+    'The population mean stays fixed at zero in every one of the samples that could be drawn.': 'The population mean is unknown and is what the interval estimates; it has no fixed value.',
     'A t-distribution has no tails at all, and so it cannot be used for any interval here.': 't-distributions have heavier tails than the normal, which is exactly how they account for the extra uncertainty.',
   },
   'item-064': {
@@ -401,8 +401,8 @@ module.exports = {
     'It changes from a mean interval to a proportion interval.': 'The confidence level does not change the parameter being estimated.',
   },
   'item-080': {
-    'The null value is rejected only when it falls inside the confidence interval.': 'Values inside the interval are plausible, so the null is not rejected when it lies there.',
+    'The null value is rejected strictly when it falls inside the confidence interval.': 'Values inside the interval are plausible, so the null is not rejected when it lies there.',
     'The interval must contain every individual observation in the whole sample.': 'A confidence interval estimates a parameter; it says nothing about containing individual data values.',
-    'The test and the interval always use two different population parameters.': 'The matched test and interval concern the same parameter, which is why their conclusions agree.',
+    'The test and the interval routinely target two different population parameters.': 'The matched test and interval concern the same parameter, which is why their conclusions agree.',
   },
 };

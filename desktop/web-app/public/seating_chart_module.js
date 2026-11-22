@@ -993,6 +993,8 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
   };
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [trayQuery, setTrayQuery] = useState("");
+  const [listQuery, setListQuery] = useState("");
   const [showConstraints, setShowConstraints] = useState(false);
   const [lastSolve, setLastSolve] = useState(null);
   const [confirmState, setConfirmState] = useState(null);
@@ -1371,7 +1373,18 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
     [hasLive, mode, rosterKey]
   );
   if (!isOpen) return null;
-  const btn = "min-h-11 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none disabled:opacity-40";
+  const btn = "min-h-11 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:opacity-40";
+  const seatedCount = Math.max(0, studentNames.length - unassigned.length);
+  const openSeatsCount = layout ? Math.max(0, layout.seats.length - Object.keys(layout.assignments || {}).filter((sid) => layout.assignments[sid]).length) : 0;
+  const seatedPct = studentNames.length > 0 ? Math.min(100, Math.round(seatedCount / studentNames.length * 100)) : 0;
+  const normalizedTrayQuery = trayQuery.trim().toLowerCase();
+  const visibleUnassigned = normalizedTrayQuery ? unassigned.filter((n2) => String(displayNameOf(n2) || "").toLowerCase().indexOf(normalizedTrayQuery) !== -1) : unassigned;
+  const normalizedListQuery = listQuery.trim().toLowerCase();
+  const visibleSortedSeats = normalizedListQuery && layout ? sortedSeats.filter((s) => {
+    const seatText = ("seat " + seatNumberOf[s.id]).toLowerCase();
+    const stuName = layout.assignments[s.id] ? String(displayNameOf(layout.assignments[s.id]) || "").toLowerCase() : "empty";
+    return seatText.indexOf(normalizedListQuery) !== -1 || stuName.indexOf(normalizedListQuery) !== -1;
+  }) : sortedSeats;
   return /* @__PURE__ */ React.createElement(
     "div",
     {
@@ -1560,7 +1573,26 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
         })
       )) : (
         /* List view — same data, native controls, full AT parity. */
-        /* @__PURE__ */ React.createElement("table", { className: "w-full text-sm border-collapse" }, /* @__PURE__ */ React.createElement("caption", { className: "sr-only" }, tr("Seat assignments, front to back")), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { className: "text-left text-xs text-slate-600 uppercase tracking-wide" }, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "py-1.5 pr-3" }, tr("Seat")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "py-1.5" }, tr("Student")), mode === "live" && /* @__PURE__ */ React.createElement("th", { scope: "col", className: "py-1.5 ps-3" }, tr("Live")))), /* @__PURE__ */ React.createElement("tbody", null, sortedSeats.map((s) => {
+        /* @__PURE__ */ React.createElement("div", null, sortedSeats.length >= 6 && /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            id: "seating-list-search",
+            type: "search",
+            value: listQuery,
+            onChange: (e) => setListQuery(e.target.value),
+            onKeyDown: (e) => {
+              if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+              if (e.key === "Escape" && listQuery) {
+                e.preventDefault();
+                e.stopPropagation();
+                setListQuery("");
+              }
+            },
+            "aria-label": tr("Filter seats by number or student"),
+            placeholder: tr("Find seat or student\u2026"),
+            className: "min-h-11 w-52 rounded-lg border border-slate-300 bg-white px-2.5 text-xs text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
+          }
+        ), normalizedListQuery && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-slate-600 tabular-nums" }, visibleSortedSeats.length, " / ", sortedSeats.length)), /* @__PURE__ */ React.createElement("table", { className: "w-full text-sm border-collapse" }, /* @__PURE__ */ React.createElement("caption", { className: "sr-only" }, tr("Seat assignments, front to back")), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { className: "text-left text-xs text-slate-600 uppercase tracking-wide" }, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "py-1.5 pr-3" }, tr("Seat")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "py-1.5" }, tr("Student")), mode === "live" && /* @__PURE__ */ React.createElement("th", { scope: "col", className: "py-1.5 ps-3" }, tr("Live")))), /* @__PURE__ */ React.createElement("tbody", null, visibleSortedSeats.map((s) => {
           const name = layout.assignments[s.id] || "";
           return /* @__PURE__ */ React.createElement("tr", { key: s.id, className: "border-t border-slate-100" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "py-1.5 pr-3 font-bold text-slate-700" }, tr("Seat {n}", { n: seatNumberOf[s.id] })), /* @__PURE__ */ React.createElement("td", { className: "py-1.5" }, /* @__PURE__ */ React.createElement(
             "select",
@@ -1600,7 +1632,7 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
               "\u{1F33F}"
             )));
           })());
-        })))
+        }), visibleSortedSeats.length === 0 && /* @__PURE__ */ React.createElement("tr", { className: "border-t border-slate-100" }, /* @__PURE__ */ React.createElement("td", { colSpan: mode === "live" ? 3 : 2, className: "py-3 text-center text-xs text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, tr("No seats match your filter.")), " ", /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setListQuery(""), className: "min-h-11 px-2.5 py-1 rounded-lg border border-slate-300 bg-white font-bold text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600" }, tr("Clear")))))))
       )), /* @__PURE__ */ React.createElement("div", { className: "w-full md:w-64 max-h-60 md:max-h-none shrink-0 border-t md:border-t-0 md:border-l border-slate-100 flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 flex-1 overflow-y-auto custom-scrollbar space-y-3" }, mode === "live" && livePods.length > 0 && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black text-emerald-700 uppercase tracking-wide mb-1.5" }, tr("Recognize a pod")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, livePods.map((pod) => {
         const podUids = pod.students.map((n2) => liveInfoFor(n2)).filter(Boolean).map((entry) => entry.uid);
         const disabled = !live.recognitionEnabled || podUids.length === 0;
@@ -1620,7 +1652,32 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
           podUids.length,
           ")"
         );
-      })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tr("Pod goals with tokens live in the Live Dock\u2019s Class Goals; this strip sends the standard recognition."))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black text-slate-600 uppercase tracking-wide mb-1.5" }, tr("Unseated"), " (", unassigned.length, ")"), unassigned.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic" }, tr("Everyone has a seat.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, unassigned.map((n2) => /* @__PURE__ */ React.createElement(
+      })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tr("Pod goals with tokens live in the Live Dock\u2019s Class Goals; this strip sends the standard recognition."))), studentNames.length > 0 && /* @__PURE__ */ React.createElement("div", { "data-seating-occupancy": "true", className: "rounded-xl border border-slate-200 bg-slate-50 p-2.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-1 text-xs font-bold text-slate-700 tabular-nums" }, /* @__PURE__ */ React.createElement("span", null, seatedCount, "/", studentNames.length, " ", tr("seated")), /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-slate-600" }, openSeatsCount, " ", tr("open"))), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 h-2 w-full rounded-full bg-slate-200 overflow-hidden", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          className: "h-full rounded-full transition-all motion-reduce:transition-none " + (seatedCount >= studentNames.length ? "bg-emerald-600" : "bg-indigo-600"),
+          style: { width: seatedPct + "%" }
+        }
+      ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black text-slate-600 uppercase tracking-wide mb-1.5" }, tr("Unseated"), " (", unassigned.length, ")"), unassigned.length >= 6 && /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          id: "seating-unseated-search",
+          type: "search",
+          value: trayQuery,
+          onChange: (e) => setTrayQuery(e.target.value),
+          onKeyDown: (e) => {
+            if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+            if (e.key === "Escape" && trayQuery) {
+              e.preventDefault();
+              e.stopPropagation();
+              setTrayQuery("");
+            }
+          },
+          "aria-label": tr("Filter unseated students"),
+          placeholder: tr("Find student\u2026"),
+          className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2.5 text-xs text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
+        }
+      )), unassigned.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic" }, tr("Everyone has a seat.")), unassigned.length > 0 && visibleUnassigned.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 text-xs text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, tr("No unseated students match.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setTrayQuery(""), className: "min-h-11 px-2.5 py-1 rounded-lg border border-slate-300 bg-white font-bold text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600" }, tr("Clear"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, visibleUnassigned.map((n2) => /* @__PURE__ */ React.createElement(
         "button",
         {
           key: n2,
@@ -1631,10 +1688,19 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
             setMode("assign");
           },
           style: { borderColor: groupColorOf(n2) },
-          className: "min-h-11 px-3 py-1 rounded-full text-xs font-bold border-2 " + (selectedStudent === n2 ? "bg-amber-100 text-amber-900" : "bg-white text-slate-700 hover:bg-slate-50")
+          className: "min-h-11 px-3 py-1 rounded-full text-xs font-bold border-2 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none " + (selectedStudent === n2 ? "bg-amber-100 text-amber-900" : "bg-white text-slate-700 hover:bg-slate-50")
         },
         displayNameOf(n2)
-      ))), selectedStudent && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 mt-1.5" }, tr("Now click a seat for {name}.", { name: displayNameOf(selectedStudent) }))), showConstraints && /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 pt-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black text-slate-600 uppercase tracking-wide mb-1.5" }, tr("Constraints")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, tr("Your professional judgment, encoded once \u2014 Auto-arrange honors it every time.")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5 mb-2" }, seating.constraints.map((c) => {
+      ))), selectedStudent && /* @__PURE__ */ React.createElement("div", { "data-seating-placing-banner": "true", className: "mt-2 flex items-center justify-between gap-2 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs text-amber-900" }, /* @__PURE__ */ React.createElement("span", { className: "font-semibold" }, tr("Now click a seat for {name}.", { name: displayNameOf(selectedStudent) })), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "data-seating-cancel-select": "true",
+          onClick: () => setSelectedStudent(null),
+          className: "shrink-0 min-h-11 px-2.5 py-1 rounded-lg border border-amber-400 bg-white font-bold text-amber-900 hover:bg-amber-100 focus-visible:ring-2 focus-visible:ring-indigo-600 transition-colors motion-reduce:transition-none"
+        },
+        t && t("common.cancel") || tr("Cancel")
+      ))), showConstraints && /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 pt-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black text-slate-600 uppercase tracking-wide mb-1.5" }, tr("Constraints")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, tr("Your professional judgment, encoded once \u2014 Auto-arrange honors it every time.")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5 mb-2" }, seating.constraints.map((c) => {
         const unmet = liveScore.violations.some((v) => v.id === c.id);
         const gap = gaps.some((g) => g.id === c.id);
         const armed = armRemoveConstraintId === c.id;

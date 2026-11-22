@@ -40,16 +40,21 @@ function makeGsSandbox({ now = Date.now } = {}) {
             return svc;
         })(),
         DriveApp: { getFoldersByName: () => ({ hasNext: () => true, next: () => folder }), createFolder: () => folder },
+        Session: {
+            getActiveUser: () => ({ getEmail: () => 'owner@fixture.test' }),
+            getEffectiveUser: () => ({ getEmail: () => 'owner@fixture.test' }),
+        },
         Utilities: {
             getUuid: () => 'aaaaaaaa-bbbb-cccc-dddd-' + String(uuidCounter++).padStart(12, '0'),
             computeHmacSha256Signature: (value, key) => Array.from(Buffer.from((String(key) + '|' + String(value)).repeat(8)).subarray(0, 32)),
             base64EncodeWebSafe: bytes => Buffer.from(bytes).toString('base64url'),
         },
     };
-    const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle };');
+    const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle, setupMailboxOwner: setupMailboxOwner };');
     const api = factory(...Object.values(services));
     const call = payload => JSON.parse(api.handle(payload).getContent());
-    return { call, driveFiles, readDocument: (code, token = 's') => JSON.parse(cache.get('d:' + code + ':' + token) || 'null')?.d };
+    const setupOwner = () => { api.setupMailboxOwner(); return props.get('admin'); };
+    return { call, setupOwner, driveFiles, readDocument: (code, token = 's') => JSON.parse(cache.get('d:' + code + ':' + token) || 'null')?.d };
 }
 
 module.exports = { makeGsSandbox };

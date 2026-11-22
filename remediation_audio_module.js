@@ -19,7 +19,7 @@ var _fallbackAudioCtx = null;
 var _isMuted = function () {
     try {
         if (typeof window === 'undefined') return false;
-        if (window.__alloMuted === true) return true;
+        if (window.__alloMuted === true || window.__alloGlobalMuted === true || window._alloGlobalMute === true) return true;
         if (typeof window.__alloIsGlobalMuted === 'function') return Boolean(window.__alloIsGlobalMuted());
         if (typeof window.isGlobalMuted === 'function') return Boolean(window.isGlobalMuted());
         try {
@@ -48,6 +48,15 @@ const remediationAudio = (() => {
   const MAX_PENDING_TIMERS = 24;
   const ALLOWED_TYPES = ['sine', 'triangle', 'square', 'sawtooth'];
   const pendingTimers = new Set();
+  const activeNodes = new Set();
+  const stopActiveNodes = () => {
+    activeNodes.forEach((entry) => {
+      try { if (entry.osc && typeof entry.osc.stop === 'function') entry.osc.stop(); } catch (_) {}
+      try { if (entry.osc && typeof entry.osc.disconnect === 'function') entry.osc.disconnect(); } catch (_) {}
+      try { if (entry.g && typeof entry.g.disconnect === 'function') entry.g.disconnect(); } catch (_) {}
+    });
+    activeNodes.clear();
+  };
   const clearPendingTimers = () => {
     pendingTimers.forEach((id) => { try { clearTimeout(id); } catch (_) {} });
     pendingTimers.clear();
@@ -55,7 +64,10 @@ const remediationAudio = (() => {
   if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
     try {
       window.addEventListener('alloflow-mute-changed', (ev) => {
-        if ((ev && ev.detail && ev.detail.muted === true) || _isMuted()) clearPendingTimers();
+        if ((ev && ev.detail && ev.detail.muted === true) || _isMuted()) {
+          clearPendingTimers();
+          stopActiveNodes();
+        }
       });
     } catch (_) {}
   }
@@ -87,6 +99,9 @@ const remediationAudio = (() => {
     const safeAttack = Number.isFinite(attack) ? Math.max(0.001, Math.min(1, attack)) : 0.005;
     const safeRelease = Number.isFinite(release) ? Math.max(0.005, Math.min(2, release)) : 0.08;
     const safeType = ALLOWED_TYPES.indexOf(type) !== -1 ? type : 'sine';
+    let osc = null;
+    let g = null;
+    let nodeEntry = null;
     try {
       const ctx = _getAudioCtx();
       if (!ctx || ctx.state === 'closed') return;
@@ -95,19 +110,26 @@ const remediationAudio = (() => {
         return;
       }
       if (ctx.state && ctx.state !== 'running') return;
-      const osc = ctx.createOscillator();
-      const g = ctx.createGain();
+      osc = ctx.createOscillator();
+      g = ctx.createGain();
+      nodeEntry = { osc, g };
+      activeNodes.add(nodeEntry);
       osc.type = safeType;
       osc.frequency.value = safeFreq;
       const now = Number.isFinite(ctx.currentTime) ? ctx.currentTime : 0;
+      const endAt = Math.max(now + safeAttack + 0.005, now + safeDur + safeRelease);
       g.gain.setValueAtTime(0.0001, now);
       g.gain.exponentialRampToValueAtTime(safeGain, now + safeAttack);
-      g.gain.exponentialRampToValueAtTime(0.0001, now + safeDur + safeRelease);
+      g.gain.exponentialRampToValueAtTime(0.0001, endAt);
       osc.connect(g); g.connect(ctx.destination);
-      osc.onended = () => { try { osc.disconnect(); } catch (_) {} try { g.disconnect(); } catch (_) {} };
+      osc.onended = () => { activeNodes.delete(nodeEntry); try { osc.disconnect(); } catch (_) {} try { g.disconnect(); } catch (_) {} };
       osc.start(now);
-      osc.stop(now + safeDur + safeRelease + 0.02);
-    } catch(e) { /* non-blocking */ }
+      osc.stop(endAt + 0.02);
+    } catch(e) {
+      if (nodeEntry) activeNodes.delete(nodeEntry);
+      try { if (osc) osc.disconnect(); } catch (_) {}
+      try { if (g) g.disconnect(); } catch (_) {}
+    }
   };
 
   // Play a chord: array of frequencies, layered
@@ -119,6 +141,7 @@ const remediationAudio = (() => {
   return Object.freeze({
     // Chunk completed — good score (≥80): soft high tick, debounced
     chunkGood: () => {
+      if (!canPlay()) return;
       const now = Date.now();
       if (now - lastChunkSoundAt < DEBOUNCE_MS) return;
       lastChunkSoundAt = now;
@@ -126,6 +149,7 @@ const remediationAudio = (() => {
     },
     // Chunk completed — borderline score (60-79): medium tick
     chunkMedium: () => {
+      if (!canPlay()) return;
       const now = Date.now();
       if (now - lastChunkSoundAt < DEBOUNCE_MS) return;
       lastChunkSoundAt = now;
@@ -133,6 +157,7 @@ const remediationAudio = (() => {
     },
     // Chunk completed — bad score (<60) or fell back to original: low thud
     chunkBad: () => {
+      if (!canPlay()) return;
       const now = Date.now();
       if (now - lastChunkSoundAt < DEBOUNCE_MS) return;
       lastChunkSoundAt = now;
@@ -167,9 +192,11 @@ const remediationAudio = (() => {
 
 
 // ─── Registration ───────────────────────────────────────────────────────────
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.RemediationAudio = remediationAudio;
-window.remediationAudio = remediationAudio;
+if (typeof window !== 'undefined') {
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.RemediationAudio = remediationAudio;
+  window.remediationAudio = remediationAudio;
+}
 console.log('[RemediationAudioModule] remediationAudio registered.');
 
 window.AlloModules.RemediationAudioModule = true;

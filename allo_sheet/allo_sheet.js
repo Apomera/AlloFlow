@@ -168,10 +168,13 @@
         result.bridgeToken = token;
         result.hostOrigin = parsedOrigin;
       }
-      if (window.history && typeof window.history.replaceState === 'function') {
-        window.history.replaceState(null, '', window.location.pathname + window.location.search);
-      }
-    } catch (_) {}
+    } catch (_) {} finally {
+      try {
+        if (window.history && typeof window.history.replaceState === 'function') {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      } catch (_) {}
+    }
     return result;
   }
 
@@ -3429,7 +3432,6 @@
     if (casebookUi) {
       byId('casebookTab').addEventListener('click', function () {
         setView('casebook');
-        casebookUi.refresh();
       });
       byId('showCasebookButton').addEventListener('click', casebookUi.openBuilder);
       casebookUi.bind();

@@ -444,8 +444,11 @@
       if (value.length > 500) throw new Error('Use up to 500 annotations per card.');
       const number = n => Math.max(-100000, Math.min(100000, Number(n) || 0));
       const point = p => ({ x: number(p && p.x), y: number(p && p.y) });
-      return value.filter(a => a && !a.pending && (['note', 'highlight', 'voice', 'draw', 'sticker'].includes(a.kind) || ['star','check','idea','love','question','important','fire','target','thumbsup','party','rocket','flag'].includes(a.type))).map((a, index) => {
-        const out = { id: (typeof a.id === 'number' && Number.isFinite(a.id)) ? a.id : text(a.id, 200) || 'annotation-' + index, kind: a.kind || 'sticker', type: text(a.type, 24), author: a.author === 'student' ? 'student' : 'teacher', authorName: text(a.authorName, 160), createdAt: text(a.createdAt, 80), ...point(a) };
+      const allowedStickers = ['star','check','idea','love','question','important','fire','target','thumbsup','party','rocket','flag'];
+      return value.filter(a => a && !a.pending && (['note', 'highlight', 'voice', 'draw', 'sticker'].includes(a.kind) || allowedStickers.includes(a.type))).map((a, index) => {
+        const kind = ['note', 'highlight', 'voice', 'draw', 'sticker'].includes(a.kind) ? a.kind : 'sticker';
+        const rawType = text(a.type, 24);
+        const out = { id: (typeof a.id === 'number' && Number.isFinite(a.id)) ? a.id : text(a.id, 200) || 'annotation-' + index, kind, type: kind === 'sticker' ? (allowedStickers.includes(rawType) ? rawType : 'star') : rawType, author: a.author === 'student' ? 'student' : 'teacher', authorName: text(a.authorName, 160), createdAt: text(a.createdAt, 80), ...point(a) };
         if (a.recallClue === true) out.recallClue = true;
         ['w', 'h', 'width', 'durationSec'].forEach(k => { if (a[k] != null) out[k] = Math.max(0, number(a[k])); });
         out.color = (typeof a.color === 'string' && /^(#[a-f0-9]{3,8}|red|blue|green|yellow|black|pink|purple)$/i.test(a.color)) ? a.color : 'yellow';
@@ -467,7 +470,12 @@
         }
         if (a.kind === 'voice') {
           const mime = text(a.mimeType, 80), data = safeAudio('data:' + mime + ';base64,' + (a.audioBase64 || ''));
-          if (data) { out.mimeType = mime; out.audioBase64 = data.split(',')[1]; out.pending = false; }
+          if (data) {
+            const semi = data.indexOf(';');
+            out.mimeType = semi > 5 ? data.slice(5, semi) : mime;
+            out.audioBase64 = data.split(',')[1];
+            out.pending = false;
+          }
         }
         return out;
       });
@@ -493,12 +501,12 @@
       const assets = new Map();
       function addAssets(source, destination) {
         if (!source || typeof source !== 'object') return;
-        Object.keys(source).forEach(name => { if (!['__proto__', 'constructor', 'prototype'].includes(name)) destination[key(name)] = source[name]; });
+        Object.keys(source).forEach(name => { if (name !== '__proto__') destination[key(name)] = source[name]; });
       }
       function addSharedAssets(source, fallbackLanguage) {
         if (!source || typeof source !== 'object') return;
         Object.keys(source).forEach(name => {
-          if (['__proto__', 'constructor', 'prototype'].includes(name)) return;
+          if (name === '__proto__') return;
           const wordKey = key(name);
           if (!audioWordKeys.has(wordKey)) return;
           const value = source[name] && typeof source[name] === 'object' ? source[name] : {};

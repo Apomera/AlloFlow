@@ -6,6 +6,8 @@ function LiveSessionDockView(props) {
   const [showOrganizerReview, setShowOrganizerReview] = React.useState(false);
   const [confirmStopOrganizer, setConfirmStopOrganizer] = React.useState(false);
   const [confirmRemoveGoalId, setConfirmRemoveGoalId] = React.useState('');
+  const [rosterFilter, setRosterFilter] = React.useState('all');
+  const [rosterSearch, setRosterSearch] = React.useState('');
   const reviewApi = window.AlloModules?.ViewRenderers;
   const reviewLabel = reviewApi?.organizerReviewText?.(props.t, 'review_title', 'Review organizer reflections') || 'Review organizer reflections';
   const imageApi = window.AlloModules?.LiveAac;
@@ -826,23 +828,111 @@ function LiveSessionDockView(props) {
                   const rows = studentUids
                     .map(uid => ({ uid, entry: rosterEntries[uid] || {} }))
                     .sort((a, b) => String(a.entry.name || '').localeCompare(String(b.entry.name || '')));
+                  const enrichedRows = rows.map(({ uid, entry }) => {
+                    const target = targetFor(entry);
+                    const targetId = target && target.resourceId;
+                    const targetAt = target ? Number(target.resourceAt) : NaN;
+                    const viewing = entry.viewingResourceId || null;
+                    const assigned = !!(targetId && Number.isFinite(targetAt) && targetAt > 0);
+                    const hasAssignmentAck = Object.prototype.hasOwnProperty.call(entry, 'viewingResourceAt');
+                    const onTarget = !!(targetId && viewing === targetId && (!assigned
+                      || (hasAssignmentAck
+                        ? Number(entry.viewingResourceAt) === targetAt
+                        : Number(entry.viewingAt) >= targetAt)));
+                    const deliveryStatusMatches = assigned && Number(entry.viewingResourceAt) === targetAt;
+                    const deliveryStatus = deliveryStatusMatches ? entry.viewingResourceStatus : null;
+                    const presenceState = classifyLiveRosterPresence({ entry, now: dockNow });
+                    const wsAudioState = resolveWordSoundsAudioDeliveryState({ progress: entry.wsProgress, targetAt: assigned ? targetAt : null, now: liveAudioStatusNow });
+                    const activeOrganizer = sessionData?.interactiveOrganizer;
+                    const rawOrganizerProgress = normalizeLiveOrganizerProgress(entry.organizerProgress);
+                    const organizerProgress = rawOrganizerProgress?.status === 'loading' && Date.now() - rawOrganizerProgress.at > 30000 ? { ...rawOrganizerProgress, status: 'failed' } : rawOrganizerProgress;
+                    const organizerProgressIsCurrent = !!(activeOrganizer?.activityId && organizerProgress?.activityId === activeOrganizer.activityId);
+                    const needsAttention = presenceState.status === 'quiet'
+                      || presenceState.status === 'disconnected'
+                      || deliveryStatus === 'failed'
+                      || (assigned && !onTarget)
+                      || Boolean(wsAudioState && wsAudioState.needsAttention)
+                      || (organizerProgressIsCurrent && organizerProgress.status === 'failed');
+                    return { uid, entry, target, targetId, targetAt, viewing, assigned, onTarget, deliveryStatus, presenceState, wsAudioState, activeOrganizer, organizerProgress, organizerProgressIsCurrent, needsAttention };
+                  });
+                  const attentionCount = enrichedRows.filter(r => r.needsAttention).length;
+                  const effectiveRosterFilter = rosterFilter === 'attention' && attentionCount > 0 ? 'attention' : 'all';
+                  const query = rosterSearch.trim().toLowerCase();
+                  const visibleRows = enrichedRows.filter(r => {
+                    if (effectiveRosterFilter === 'attention' && !r.needsAttention) return false;
+                    if (query && !String(r.entry.name || 'Student').toLowerCase().includes(query)) return false;
+                    return true;
+                  });
                   return (
                     <>
                       <div style={dockGroupLabel}>{(t('live_dock.group_students') || 'Students') + ' (' + rows.length + ')'}</div>
-                      <div style={{display:'flex',flexDirection:'column',gap:4,maxHeight:170,overflowY:'auto'}}>
-                        {rows.map(({ uid, entry }) => {
-                          const target = targetFor(entry);
-                          const targetId = target && target.resourceId;
-                          const targetAt = target ? Number(target.resourceAt) : NaN;
-                          const viewing = entry.viewingResourceId || null;
-                          const assigned = !!(targetId && Number.isFinite(targetAt) && targetAt > 0);
-                          const hasAssignmentAck = Object.prototype.hasOwnProperty.call(entry, 'viewingResourceAt');
-                          const onTarget = !!(targetId && viewing === targetId && (!assigned
-                            || (hasAssignmentAck
-                              ? Number(entry.viewingResourceAt) === targetAt
-                              : Number(entry.viewingAt) >= targetAt)));
-                          const deliveryStatusMatches = assigned && Number(entry.viewingResourceAt) === targetAt;
-                          const deliveryStatus = deliveryStatusMatches ? entry.viewingResourceStatus : null;
+                      {rows.length >= 2 && (attentionCount > 0 || rows.length >= 4) && (
+                        <div data-live-dock-roster-controls="true" style={{display:'flex',flexWrap:'wrap',alignItems:'center',gap:6,marginBottom:6}}>
+                          {attentionCount > 0 && (
+                            <div role="group" aria-label={t('live_dock.roster_filter_aria') || 'Filter connected students'} style={{display:'flex',flexWrap:'wrap',gap:4}}>
+                              <button
+                                type="button"
+                                data-live-dock-roster-filter="all"
+                                aria-pressed={effectiveRosterFilter === 'all'}
+                                onClick={() => setRosterFilter('all')}
+                                className="focus-visible:ring-2 focus-visible:ring-indigo-600"
+                                style={{minHeight:44,padding:'0.25rem 0.6rem',borderRadius:8,fontSize:'0.72rem',fontWeight:800,cursor:'pointer',border:effectiveRosterFilter === 'all' ? '1px solid #3730a3' : '1px solid #cbd5e1',background:effectiveRosterFilter === 'all' ? '#3730a3' : '#ffffff',color:effectiveRosterFilter === 'all' ? '#ffffff' : '#334155'}}
+                              >
+                                {(t('live_dock.filter_all') || 'All') + ' (' + rows.length + ')'}
+                              </button>
+                              <button
+                                type="button"
+                                data-live-dock-roster-filter="attention"
+                                aria-pressed={effectiveRosterFilter === 'attention'}
+                                onClick={() => setRosterFilter(effectiveRosterFilter === 'attention' ? 'all' : 'attention')}
+                                className="focus-visible:ring-2 focus-visible:ring-amber-600"
+                                style={{minHeight:44,padding:'0.25rem 0.6rem',borderRadius:8,fontSize:'0.72rem',fontWeight:800,cursor:'pointer',border:effectiveRosterFilter === 'attention' ? '1px solid #92400e' : '1px solid #f59e0b',background:effectiveRosterFilter === 'attention' ? '#92400e' : '#fffbeb',color:effectiveRosterFilter === 'attention' ? '#ffffff' : '#92400e'}}
+                              >
+                                {(t('live_dock.filter_attention') || 'Needs attention') + ' (' + attentionCount + ')'}
+                              </button>
+                            </div>
+                          )}
+                          {rows.length >= 4 && (
+                            <div style={{display:'flex',alignItems:'center',gap:4,flex:'1 1 140px',minWidth:0}}>
+                              <input
+                                type="search"
+                                data-live-dock-roster-search="true"
+                                value={rosterSearch}
+                                onChange={event => setRosterSearch(event.target.value)}
+                                aria-label={t('live_dock.find_student_aria') || 'Find student by codename'}
+                                placeholder={t('live_dock.find_student_placeholder') || 'Find student…'}
+                                className="focus-visible:ring-2 focus-visible:ring-indigo-600"
+                                style={{minHeight:44,width:'100%',minWidth:0,padding:'0.25rem 0.6rem',borderRadius:8,border:'1px solid #cbd5e1',fontSize:'0.75rem',color:'#0f172a',background:'#ffffff'}}
+                              />
+                              {rosterSearch.trim() && (
+                                <button
+                                  type="button"
+                                  data-live-dock-roster-clear="true"
+                                  onClick={() => setRosterSearch('')}
+                                  className="focus-visible:ring-2 focus-visible:ring-indigo-600"
+                                  style={{minHeight:44,padding:'0.25rem 0.55rem',borderRadius:8,border:'1px solid #cbd5e1',background:'#ffffff',color:'#334155',fontSize:'0.72rem',fontWeight:700,cursor:'pointer'}}
+                                >
+                                  {t('common.clear') || 'Clear'}
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <div style={{display:'flex',flexDirection:'column',gap:4,maxHeight:240,overflowY:'auto'}}>
+                        {visibleRows.length === 0 ? (
+                          <div style={{display:'flex',flexWrap:'wrap',alignItems:'center',justifyContent:'space-between',gap:8,padding:'0.5rem 0.6rem',borderRadius:8,border:'1px solid #e2e8f0',background:'#f8fafc',fontSize:'0.75rem',color:'#475569'}}>
+                            <span>{t('live_dock.no_matching_students') || 'No students match this filter.'}</span>
+                            <button
+                              type="button"
+                              onClick={() => { setRosterFilter('all'); setRosterSearch(''); }}
+                              className="focus-visible:ring-2 focus-visible:ring-indigo-600"
+                              style={{minHeight:44,padding:'0.25rem 0.6rem',borderRadius:8,border:'1px solid #cbd5e1',background:'#ffffff',color:'#1e3a8a',fontSize:'0.72rem',fontWeight:800,cursor:'pointer'}}
+                            >
+                              {t('live_dock.show_all_students') || 'Show all students'}
+                            </button>
+                          </div>
+                        ) : visibleRows.map(({ uid, entry, targetId, targetAt, viewing, assigned, onTarget, deliveryStatus, presenceState, wsAudioState, activeOrganizer, organizerProgress, organizerProgressIsCurrent }) => {
                           const statusDot = !targetId
                             ? { glyph: '.', color: '#94a3b8', label: t('live_dock.status_free') || 'no target' }
                             : deliveryStatus === 'failed'
@@ -861,11 +951,6 @@ function LiveSessionDockView(props) {
                                       ? { glyph: 'o', color: '#b45309', label: t('live_dock.status_elsewhere') || 'elsewhere' }
                                       : { glyph: '-', color: '#94a3b8', label: t('live_dock.status_unknown') || 'no signal' };
                           const viewingTitle = titleFor(viewing);
-                          // Presence (2026-07-16): from roster.{uid}.lastSeen heartbeats. Bands are
-                          // generous vs the ~60s beat (>=2 missed = quiet, >=3 = likely gone).
-                          // Freshness re-evaluates whenever any snapshot re-renders the dock —
-                          // heartbeats themselves arrive as snapshots, so it stays current.
-                          const presenceState = classifyLiveRosterPresence({ entry, now: dockNow });
                           const presence = presenceState.status === 'connected'
                             ? { color: '#16a34a', label: t('live_dock.presence_here') || 'connected' }
                             : presenceState.status === 'quiet'
@@ -876,7 +961,6 @@ function LiveSessionDockView(props) {
                           const rewardTokensUsed = getAlloHavenSessionRecognitionTokens(entry, havenRewardDraftsRef.current[uid]);
                           const rewardTokensRemaining = Math.max(0, havenRecognitionConfig.perStudentTokenCap - rewardTokensUsed);
                           const canRecognizeStudent = havenRecognitionConfig.enabled && rewardTokensRemaining >= havenRewardAmount && !havenConfigBusy && !havenRewardBusy;
-                          const wsAudioState = resolveWordSoundsAudioDeliveryState({ progress: entry.wsProgress, targetAt: assigned ? targetAt : null, now: liveAudioStatusNow });
                           const wsAudioStatus = wsAudioState.status;
                           const wsAudioNeedsAttention = wsAudioState.needsAttention;
                           const wsAudioStalled = wsAudioState.stalled;
@@ -890,11 +974,6 @@ function LiveSessionDockView(props) {
                                       : wsAudioStatus === 'damaged' ? (t('word_sounds.audio_status_damaged') || 'Audio damaged')
                                         : (t('word_sounds.audio_status_missing', { ready: entry.wsProgress?.audioReady || 0, total: entry.wsProgress?.audioTotal || 0 }) || ('Audio missing ' + (entry.wsProgress?.audioReady || 0) + '/' + (entry.wsProgress?.audioTotal || 0)));
                           const wsAudioPrimaryLabel = wsAudioStatus === 'damaged' ? (t('word_sounds.audio_resend') || 'Resend audio') : wsAudioLabel;
-                          const activeOrganizer = sessionData?.interactiveOrganizer;
-                          const rawOrganizerProgress = normalizeLiveOrganizerProgress(entry.organizerProgress);
-                          const organizerProgress = rawOrganizerProgress?.status === 'loading' && Date.now() - rawOrganizerProgress.at > 30000 ? { ...rawOrganizerProgress, status: 'failed' } : rawOrganizerProgress;
-                          const organizerProgressIsCurrent = !!(activeOrganizer?.activityId
-                            && organizerProgress?.activityId === activeOrganizer.activityId);
                           const organizerProgressLabel = !organizerProgressIsCurrent ? null
                             : organizerProgress.status === 'complete'
                               ? (organizerProgress.type === 'reflection' ? `Reflection submitted${organizerProgress.attempts > 1 ? ` · revision ${organizerProgress.attempts}` : ''}` : `Organizer complete${organizerProgress.total ? ` ${organizerProgress.correct}/${organizerProgress.total}` : ''}`)

@@ -87,7 +87,11 @@ async function main() {
   const exportsList = await buildExports(browser, dir);
   const states = [];
   for (const e of exportsList) {
-    states.push({ name: e.pack + ' / ' + e.variant + ' / name prompt open', e, prompt: true });
+    // Printable worksheets (`data-alloflow-output="worksheet"`) deliberately suppress the
+    // blocking learner-name modal so print/PDF export never stalls on a prompt.
+    if (e.variant !== 'worksheet') {
+      states.push({ name: e.pack + ' / ' + e.variant + ' / name prompt open', e, prompt: true });
+    }
     states.push({ name: e.pack + ' / ' + e.variant, e });
     // Only a self-checked quiz with choices has a Check button (teacher-graded quizzes have none, by design).
     if (e.hasQuiz && e.variant === 'interactive') states.push({ name: e.pack + ' / quiz feedback', e, quiz: true });

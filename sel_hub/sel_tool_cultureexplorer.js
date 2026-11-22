@@ -1275,7 +1275,7 @@ window.SelHub = window.SelHub || {
         return h('section', { 'data-ce-teacher-editor': 'true', 'aria-labelledby': 'ce-teacher-editor-title', className: 'bg-cyan-50 rounded-xl border border-cyan-300 p-4 space-y-3' },
           h('h3', { id: 'ce-teacher-editor-title', className: 'text-sm font-black text-cyan-900' }, '🧑‍🏫 ' + __alloT('sel.cultureExplorer.teacher.editor_title', 'Teacher: culture cards for this station') + (stName ? ' · ' + stName : '')),
           h('p', { className: 'text-xs text-cyan-900 leading-relaxed' }, __alloT('sel.cultureExplorer.teacher.guidance', 'Students see these cards first, read-only, and no AI is needed. Write about a community the way its members would recognize: show variety within it, use the names people use for themselves, credit people’s own words, and name your sources. Avoid costumes, “exotic” framing and jokes. Never put students’ or families’ private details on a card.')),
-          d.tcNotice ? h('p', { role: 'status', className: 'text-xs font-bold text-cyan-900' }, d.tcNotice) : null,
+          typeof d.tcNotice === 'string' && d.tcNotice ? h('p', { role: 'status', className: 'text-xs font-bold text-cyan-900' }, d.tcNotice) : null,
           tcAllCards.length > 0 && h('ul', { className: 'space-y-1' }, tcAllCards.map(function(card) {
             return h('li', { key: card.id, className: 'flex flex-wrap items-center gap-2 text-sm text-slate-800 bg-white rounded-lg px-2 py-1' },
               h('span', { className: 'flex-1 font-bold' }, card.subject || '—'),

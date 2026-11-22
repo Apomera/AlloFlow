@@ -8,6 +8,7 @@
   'use strict';
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
+    if (typeof document === 'undefined' || !document.head) return;
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
@@ -15,8 +16,54 @@
     document.head.appendChild(st);
   })();
 
+  // ── Scoped GPU-composited culinary motion choreography (zero per-frame DOM thrashing) ──
+  (function() {
+    if (typeof document === 'undefined' || !document.head) return;
+    if (document.getElementById('allo-baking-motion-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-baking-motion-css';
+    st.textContent = [
+      '@keyframes bakingBubbleRise { 0% { transform: translateY(0) scale(0.72); opacity: 0; } 20% { opacity: 0.92; } 85% { opacity: 0.78; } 100% { transform: translateY(-128px) scale(1.1); opacity: 0; } }',
+      '@keyframes bkCo2Float { 0%, 100% { transform: translateY(0px) scale(1); opacity: 0.86; } 50% { transform: translateY(-4px) scale(1.06); opacity: 1; } }',
+      '@keyframes bkMicroBubbleAscend { 0% { transform: translateY(10px) scale(0.65); opacity: 0; } 22% { opacity: 0.85; } 82% { opacity: 0.58; } 100% { transform: translateY(-28px) scale(1.08); opacity: 0; } }',
+      '@keyframes bkConvectionFlow { from { stroke-dashoffset: 32; } to { stroke-dashoffset: 0; } }',
+      '@keyframes bkSteamDrift { 0% { transform: translateY(3px); opacity: 0.24; } 50% { transform: translateY(-3.5px); opacity: 0.9; } 100% { transform: translateY(-9px); opacity: 0.14; } }',
+      '@keyframes bkOvenGlowPulse { 0%, 100% { opacity: 0.72; } 50% { opacity: 1; } }',
+      '@keyframes bkCrustSheenSweep { 0% { transform: translateX(-46px); opacity: 0; } 30% { opacity: 0.52; } 70% { opacity: 0.44; } 100% { transform: translateX(62px); opacity: 0; } }',
+      '@keyframes bkGlutenTensile { from { stroke-dashoffset: 48; } to { stroke-dashoffset: 0; } }',
+      '@keyframes bkCrosslinkPulse { 0%, 100% { opacity: 0.18; transform: scale(0.95); } 50% { opacity: 0.52; transform: scale(1.16); } }',
+      '@keyframes bkBeaconPulse { 0%, 100% { opacity: 0.24; transform: scale(0.9); } 50% { opacity: 0.62; transform: scale(1.25); } }',
+      '@keyframes bkDropletFloat { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-2.4px); } }',
+      '@keyframes bkLecithinDash { from { stroke-dashoffset: 20; } to { stroke-dashoffset: 0; } }',
+      '@keyframes bkKineticTrace { from { stroke-dashoffset: 36; } to { stroke-dashoffset: 0; } }',
+      '@keyframes bkBarSheen { 0%, 100% { opacity: 0.26; } 50% { opacity: 0.54; } }',
+      '@keyframes bkGelWave { 0%, 100% { transform: translateX(-8px); opacity: 0.22; } 50% { transform: translateX(8px); opacity: 0.48; } }',
+      '[data-baking-theme] .bk-co2-float { transform-box: fill-box; transform-origin: center; animation: bkCo2Float 3.4s ease-in-out infinite; }',
+      '[data-baking-theme] .bk-micro-bubble { transform-box: fill-box; transform-origin: center; animation: bkMicroBubbleAscend 2.9s ease-out infinite; }',
+      '[data-baking-theme] .bk-convection { animation: bkConvectionFlow 3.2s linear infinite; }',
+      '[data-baking-theme] .bk-steam-drift { transform-box: fill-box; transform-origin: center; animation: bkSteamDrift 2.8s ease-in-out infinite; }',
+      '[data-baking-theme] .bk-oven-glow { animation: bkOvenGlowPulse 3.6s ease-in-out infinite; }',
+      '[data-baking-theme] .bk-crust-sheen { transform-box: fill-box; transform-origin: center; animation: bkCrustSheenSweep 4.4s ease-in-out infinite; }',
+      '[data-baking-theme] .bk-gluten-tensile { animation: bkGlutenTensile 3.4s linear infinite; }',
+      '[data-baking-theme] .bk-crosslink-pulse { transform-box: fill-box; transform-origin: center; animation: bkCrosslinkPulse 2.8s ease-in-out infinite; }',
+      '[data-baking-theme] .bk-beacon { transform-box: fill-box; transform-origin: center; animation: bkBeaconPulse 2.4s ease-in-out infinite; }',
+      '[data-baking-theme] .bk-droplet-float { transform-box: fill-box; transform-origin: center; animation: bkDropletFloat 3.6s ease-in-out infinite; }',
+      '[data-baking-theme] .bk-lecithin-dash { animation: bkLecithinDash 4.2s linear infinite; }',
+      '[data-baking-theme] .bk-kinetic-trace { animation: bkKineticTrace 2.8s linear infinite; }',
+      '[data-baking-theme] .bk-bar-sheen { animation: bkBarSheen 3.2s ease-in-out infinite; }',
+      '[data-baking-theme] .bk-gel-wave { transform-box: fill-box; transform-origin: center; animation: bkGelWave 3.8s ease-in-out infinite; }',
+      '[data-baking-theme] .bk-skillet-sheen { position: relative; overflow: hidden; }',
+      '[data-baking-theme] .bk-skillet-sheen::after { content: ""; position: absolute; inset: -10%; background: linear-gradient(112deg, transparent 32%, rgba(254,243,199,0.52) 50%, transparent 68%); transform: translateX(-110%); animation: bkCrustSheenSweep 3.8s ease-in-out infinite; pointer-events: none; }',
+      '@media (prefers-reduced-motion: reduce) { [data-baking-theme] .bk-co2-float, [data-baking-theme] .bk-micro-bubble, [data-baking-theme] .bk-convection, [data-baking-theme] .bk-steam-drift, [data-baking-theme] .bk-oven-glow, [data-baking-theme] .bk-crust-sheen, [data-baking-theme] .bk-gluten-tensile, [data-baking-theme] .bk-crosslink-pulse, [data-baking-theme] .bk-beacon, [data-baking-theme] .bk-droplet-float, [data-baking-theme] .bk-lecithin-dash, [data-baking-theme] .bk-kinetic-trace, [data-baking-theme] .bk-bar-sheen, [data-baking-theme] .bk-gel-wave, [data-baking-theme] .bk-skillet-sheen::after { animation: none !important; transition: none !important; } [data-baking-theme] .bk-crust-sheen, [data-baking-theme] .bk-skillet-sheen::after { opacity: 0 !important; } }',
+      '.theme-contrast [data-baking-theme] .bk-co2-float, .theme-contrast [data-baking-theme] .bk-micro-bubble, .theme-contrast [data-baking-theme] .bk-convection, .theme-contrast [data-baking-theme] .bk-steam-drift, .theme-contrast [data-baking-theme] .bk-oven-glow, .theme-contrast [data-baking-theme] .bk-crust-sheen, .theme-contrast [data-baking-theme] .bk-gluten-tensile, .theme-contrast [data-baking-theme] .bk-crosslink-pulse, .theme-contrast [data-baking-theme] .bk-beacon, .theme-contrast [data-baking-theme] .bk-droplet-float, .theme-contrast [data-baking-theme] .bk-lecithin-dash, .theme-contrast [data-baking-theme] .bk-kinetic-trace, .theme-contrast [data-baking-theme] .bk-bar-sheen, .theme-contrast [data-baking-theme] .bk-gel-wave, .theme-contrast [data-baking-theme] .bk-skillet-sheen::after, [data-baking-theme="contrast"] .bk-co2-float, [data-baking-theme="contrast"] .bk-micro-bubble, [data-baking-theme="contrast"] .bk-convection, [data-baking-theme="contrast"] .bk-steam-drift, [data-baking-theme="contrast"] .bk-oven-glow, [data-baking-theme="contrast"] .bk-crust-sheen, [data-baking-theme="contrast"] .bk-gluten-tensile, [data-baking-theme="contrast"] .bk-crosslink-pulse, [data-baking-theme="contrast"] .bk-beacon, [data-baking-theme="contrast"] .bk-droplet-float, [data-baking-theme="contrast"] .bk-lecithin-dash, [data-baking-theme="contrast"] .bk-kinetic-trace, [data-baking-theme="contrast"] .bk-bar-sheen, [data-baking-theme="contrast"] .bk-gel-wave, [data-baking-theme="contrast"] .bk-skillet-sheen::after { animation: none !important; }',
+      '.theme-contrast [data-baking-theme] .bk-motion-deco, [data-baking-theme="contrast"] .bk-motion-deco, .theme-contrast [data-baking-theme] .bk-skillet-sheen::after, [data-baking-theme="contrast"] .bk-skillet-sheen::after { opacity: 0 !important; display: none !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-baking')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-baking';
@@ -27,6 +74,9 @@
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
   })();
+
+  if (typeof window === 'undefined') return;
+  var _leavTimer = null;
 
   window.StemLab = window.StemLab || {
     _registry: {}, _order: [],
@@ -426,7 +476,8 @@
       var announceToSR = ctx.announceToSR;
       var awardXP = ctx.awardXP;
       var celebrate = ctx.celebrate;
-      var callGemini = ctx.callGemini;
+      var _aiUsable = ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+      var callGemini = _aiUsable ? ctx.callGemini : null;
       var band = getGradeBand(ctx);
       // i18n helper: {var} tokens are substituted; falls back to English if key is missing.
       var t = function(key, vars) {
@@ -441,19 +492,23 @@
       };
 
       return (function() {
-        var d = labToolData.bakingScience || {};
+        var d = (labToolData && labToolData.bakingScience) || {};
 
         var upd = function(key, val) {
+          if (typeof setLabToolData !== 'function') return;
           setLabToolData(function(prev) {
-            var cb = Object.assign({}, prev.bakingScience || {});
+            var base = (prev && typeof prev === 'object') ? prev : {};
+            var cb = Object.assign({}, base.bakingScience || {});
             cb[key] = val;
-            return Object.assign({}, prev, { bakingScience: cb });
+            return Object.assign({}, base, { bakingScience: cb });
           });
         };
         var updMulti = function(obj) {
+          if (typeof setLabToolData !== 'function') return;
           setLabToolData(function(prev) {
-            var cb = Object.assign({}, prev.bakingScience || {}, obj);
-            return Object.assign({}, prev, { bakingScience: cb });
+            var base = (prev && typeof prev === 'object') ? prev : {};
+            var cb = Object.assign({}, base.bakingScience || {}, obj);
+            return Object.assign({}, base, { bakingScience: cb });
           });
         };
 
@@ -511,6 +566,20 @@
 
         // Shared quick-switch workbench bar for hopping between sub-tools without losing flow
         var renderSubtoolNav = function(activeId) {
+          var selectSubtoolTab = function(nextIdx) {
+            var next = SUBTOOLS[nextIdx];
+            if (!next) return;
+            var nextLabel = subtoolLabel(next);
+            upd('subtool', next.id);
+            announceToSR && announceToSR('Switched to ' + nextLabel);
+            playBeep('click');
+            if (typeof document !== 'undefined') {
+              setTimeout(function() {
+                var el = document.getElementById('baking-tab-' + next.id);
+                if (el && typeof el.focus === 'function') el.focus();
+              }, 0);
+            }
+          };
           return h('div', {
             className: 'mb-4 flex items-center gap-1.5 flex-wrap pb-3 border-b',
             style: { borderColor: themeBorder },
@@ -522,16 +591,35 @@
               var label = subtoolLabel(st);
               return h('button', {
                 key: st.id,
+                id: 'baking-tab-' + st.id,
                 type: 'button',
                 role: 'tab',
+                tabIndex: active ? 0 : -1,
                 'aria-selected': active,
+                'aria-controls': 'baking-panel-' + st.id,
                 onClick: function() { upd('subtool', st.id); announceToSR && announceToSR('Switched to ' + label); playBeep('click'); },
+                onKeyDown: function(e) {
+                  var k = e.key;
+                  if (k === 'ArrowRight' || k === 'ArrowDown') {
+                    e.preventDefault();
+                    selectSubtoolTab((i + 1) % SUBTOOLS.length);
+                  } else if (k === 'ArrowLeft' || k === 'ArrowUp') {
+                    e.preventDefault();
+                    selectSubtoolTab((i - 1 + SUBTOOLS.length) % SUBTOOLS.length);
+                  } else if (k === 'Home') {
+                    e.preventDefault();
+                    selectSubtoolTab(0);
+                  } else if (k === 'End') {
+                    e.preventDefault();
+                    selectSubtoolTab(SUBTOOLS.length - 1);
+                  }
+                },
                 className: 'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer border',
                 style: active
                   ? {
-                      background: isContrast ? '#00ff00' : (isDark ? '#d97706' : '#9a3412'),
-                      color: isContrast ? '#000000' : '#ffffff',
-                      borderColor: isContrast ? '#00ff00' : (isDark ? '#fbbf24' : '#9a3412'),
+                      background: isContrast ? '#000000' : (isDark ? '#b45309' : '#9a3412'),
+                      color: isContrast ? '#00ff00' : '#ffffff',
+                      borderColor: isContrast ? '#ffff00' : (isDark ? '#fbbf24' : '#9a3412'),
                       boxShadow: isContrast ? 'none' : '0 2px 6px rgba(154,52,18,0.22)'
                     }
                   : {
@@ -647,41 +735,55 @@
                           h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.72 }),
                           h('stop', { offset: '55%', stopColor: '#d97706', stopOpacity: 0.36 }),
                           h('stop', { offset: '100%', stopColor: '#92400e', stopOpacity: 0.55 })
+                        ),
+                        !isContrast && h('linearGradient', { id: 'bkHeroSheen', x1: '0', y1: '0', x2: '1', y2: '0' },
+                          h('stop', { offset: '0%', stopColor: '#fef3c7', stopOpacity: 0 }),
+                          h('stop', { offset: '50%', stopColor: '#fef3c7', stopOpacity: 0.55 }),
+                          h('stop', { offset: '100%', stopColor: '#fef3c7', stopOpacity: 0 })
+                        ),
+                        !isContrast && h('clipPath', { id: 'bkHeroLoafClip' },
+                          h('path', { d: 'M 30 90 C 30 44, 152 44, 152 90 Z' })
                         )
                       ),
                       // Oven chamber backdrop + warm radiative glow
                       h('rect', { x: 8, y: 8, width: 264, height: 100, rx: 10, fill: isContrast ? '#000000' : '#1c1917', stroke: isContrast ? '#ffff00' : '#78350f', strokeWidth: 1.5 }),
-                      !isContrast && h('rect', { x: 9, y: 9, width: 262, height: 98, rx: 9, fill: 'url(#bkHeroOvenGlow)' }),
-                      // Subtle convection streamlines inside oven chamber
-                      !isContrast && h('g', { fill: 'none', stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.28 },
+                      !isContrast && h('rect', { x: 9, y: 9, width: 262, height: 98, rx: 9, fill: 'url(#bkHeroOvenGlow)', className: 'bk-oven-glow bk-motion-deco' }),
+                      // Subtle animated convection streamlines inside oven chamber
+                      !isContrast && h('g', { fill: 'none', stroke: '#fbbf24', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.32, className: 'bk-convection bk-motion-deco' },
                         h('path', { d: 'M 22 48 Q 36 22, 92 20 Q 148 22, 162 48' }),
                         h('path', { d: 'M 26 66 Q 32 34, 92 30 Q 152 34, 158 66' })
                       ),
                       // Baking deck shelf + loaf contact shadow
                       h('line', { x1: 20, y1: 92, x2: 164, y2: 92, stroke: isContrast ? '#ffff00' : '#a8a29e', strokeWidth: 3, strokeLinecap: 'round' }),
                       !isContrast && h('ellipse', { cx: 91, cy: 91, rx: 64, ry: 3.5, fill: 'rgba(0,0,0,0.45)' }),
-                      // Artisan loaf dome & shaded crumb cutaway
+                      // Artisan loaf dome & shaded crumb cutaway + golden Maillard crust sheen
                       h('path', { d: 'M 30 90 C 30 44, 152 44, 152 90 Z', fill: 'url(#bkLoafCrust)', stroke: isContrast ? '#ffff00' : '#f59e0b', strokeWidth: 1.5 }),
+                      !isContrast && h('g', { clipPath: 'url(#bkHeroLoafClip)', className: 'bk-motion-deco' },
+                        h('rect', { x: 46, y: 42, width: 32, height: 50, fill: 'url(#bkHeroSheen)', className: 'bk-crust-sheen' })
+                      ),
                       !isContrast && h('path', { d: 'M 48 56 Q 91 46, 134 56', fill: 'none', stroke: '#fef3c7', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.45 }),
                       h('path', { d: 'M 40 88 C 42 56, 140 56, 142 88 Z', fill: 'url(#bkCrumbGrad)', stroke: isContrast ? '#00ff00' : '#d97706', strokeWidth: 1 }),
-                      // Glossy CO2 alveoli bubbles inside crumb
+                      // Glossy CO2 alveoli bubbles inside crumb (buoyant gentle breath)
                       [{ cx: 64, cy: 76, r: 5 }, { cx: 82, cy: 68, r: 6.5 }, { cx: 102, cy: 74, r: 5.5 }, { cx: 120, cy: 78, r: 4 }, { cx: 92, cy: 81, r: 3.5 }].map(function(al, ai) {
-                        return h('g', { key: 'al' + ai },
+                        return h('g', { key: 'al' + ai, className: isContrast ? undefined : 'bk-co2-float', style: isContrast ? undefined : { animationDelay: (ai * 0.48) + 's' } },
                           h('circle', { cx: al.cx, cy: al.cy, r: al.r, fill: isContrast ? '#000000' : 'url(#bkAlveoli)', stroke: isContrast ? '#ffff00' : '#b45309', strokeWidth: 0.6, opacity: isContrast ? 1 : 0.9 }),
                           !isContrast && h('circle', { cx: al.cx - al.r * 0.28, cy: al.cy - al.r * 0.28, r: Math.max(0.9, al.r * 0.24), fill: '#ffffff', opacity: 0.72 })
                         );
                       }),
                       // Rising steam / CO2 wisps
-                      h('path', { d: 'M 64 40 Q 60 30, 66 22', fill: 'none', stroke: isContrast ? '#00ff00' : '#fde68a', strokeWidth: 1.6, strokeLinecap: 'round' }),
-                      h('path', { d: 'M 92 36 Q 88 26, 94 18', fill: 'none', stroke: isContrast ? '#00ff00' : '#fbbf24', strokeWidth: 1.8, strokeLinecap: 'round' }),
-                      h('path', { d: 'M 118 40 Q 114 30, 120 22', fill: 'none', stroke: isContrast ? '#00ff00' : '#fde68a', strokeWidth: 1.6, strokeLinecap: 'round' }),
-                      // Right telemetry card inside SVG with calibrated reaction-zone beacons
+                      h('path', { d: 'M 64 40 Q 60 30, 66 22', fill: 'none', stroke: isContrast ? '#00ff00' : '#fde68a', strokeWidth: 1.6, strokeLinecap: 'round', className: isContrast ? undefined : 'bk-steam-drift', style: isContrast ? undefined : { animationDelay: '0s' } }),
+                      h('path', { d: 'M 92 36 Q 88 26, 94 18', fill: 'none', stroke: isContrast ? '#00ff00' : '#fbbf24', strokeWidth: 1.8, strokeLinecap: 'round', className: isContrast ? undefined : 'bk-steam-drift', style: isContrast ? undefined : { animationDelay: '0.65s' } }),
+                      h('path', { d: 'M 118 40 Q 114 30, 120 22', fill: 'none', stroke: isContrast ? '#00ff00' : '#fde68a', strokeWidth: 1.6, strokeLinecap: 'round', className: isContrast ? undefined : 'bk-steam-drift', style: isContrast ? undefined : { animationDelay: '1.25s' } }),
+                      // Right telemetry card inside SVG with calibrated pulsing reaction-zone beacons
                       h('rect', { x: 174, y: 18, width: 88, height: 80, rx: 8, fill: isContrast ? '#000000' : '#292524', stroke: isContrast ? '#00ff00' : '#57534e', strokeWidth: 1 }),
                       h('text', { x: 218, y: 34, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: isContrast ? '#ffff00' : '#fde68a' }, 'LAB REACTIONS'),
+                      !isContrast && h('circle', { cx: 181, cy: 48, r: 4.5, fill: '#fbbf24', opacity: 0.3, className: 'bk-beacon bk-motion-deco', style: { animationDelay: '0s' } }),
                       h('circle', { cx: 181, cy: 48, r: 2.3, fill: isContrast ? '#00ff00' : '#fbbf24' }),
                       h('text', { x: 187, y: 51, fontSize: 8.5, fontWeight: 700, fill: isContrast ? '#00ff00' : '#fbbf24' }, 'CO\u2082  212\u00B0F'),
+                      !isContrast && h('circle', { cx: 181, cy: 63, r: 4.5, fill: '#fb923c', opacity: 0.3, className: 'bk-beacon bk-motion-deco', style: { animationDelay: '0.7s' } }),
                       h('circle', { cx: 181, cy: 63, r: 2.3, fill: isContrast ? '#ffff00' : '#fb923c' }),
                       h('text', { x: 187, y: 66, fontSize: 8.5, fontWeight: 700, fill: isContrast ? '#ffff00' : '#fb923c' }, 'Maillard 285\u00B0F'),
+                      !isContrast && h('circle', { cx: 181, cy: 78, r: 4.5, fill: '#f87171', opacity: 0.3, className: 'bk-beacon bk-motion-deco', style: { animationDelay: '1.4s' } }),
                       h('circle', { cx: 181, cy: 78, r: 2.3, fill: isContrast ? '#00ff00' : '#f87171' }),
                       h('text', { x: 187, y: 81, fontSize: 8.5, fontWeight: 700, fill: isContrast ? '#00ff00' : '#f87171' }, 'Caramel 320\u00B0F'),
                       h('rect', { x: 182, y: 88, width: 72, height: 4, rx: 2, fill: isContrast ? '#333333' : '#44403c' }),
@@ -858,12 +960,24 @@
           else                    verdictText = tr('baking.leavening.verdict_peak',   'Maximum lift! Think souffl\u00e9 or tall layer cake.');
 
           var runReaction = function() {
+            if (running) return;
             upd('leavRunning', true);
             playBeep('fizz');
-            setTimeout(function() {
-              upd('leavRunning', false);
+            if (_leavTimer) { clearTimeout(_leavTimer); _leavTimer = null; }
+            _leavTimer = setTimeout(function() {
+              _leavTimer = null;
+              if (typeof setLabToolData === 'function') {
+                setLabToolData(function(prev) {
+                  var base = (prev && typeof prev === 'object') ? prev : {};
+                  var cb = Object.assign({}, base.bakingScience || {});
+                  var curExt = Object.assign({}, cb._bakingExt || ext);
+                  curExt.leaveningRuns = (Number(curExt.leaveningRuns) || 0) + 1;
+                  cb.leavRunning = false;
+                  cb._bakingExt = curExt;
+                  return Object.assign({}, base, { bakingScience: cb });
+                });
+              }
               playBeep('bubble');
-              updExt({ leaveningRuns: (ext.leaveningRuns || 0) + 1 });
               awardXP && awardXP(10, 'Mixed a leavening reaction');
               announceToSR && announceToSR('Reaction complete. ' + yieldPct + ' percent rise. ' + verdictText);
             }, 1600);
@@ -926,7 +1040,7 @@
                   onClick: function() { updMulti({ leavAcid: p.acid, leavBase: p.base, leavAmount: p.amount }); playBeep('click'); },
                   className: 'px-2.5 py-1 rounded-full text-xs font-bold border transition-colors cursor-pointer',
                   style: isMatch
-                    ? { background: isContrast ? '#00ff00' : '#b45309', color: isContrast ? '#000000' : '#ffffff', borderColor: isContrast ? '#00ff00' : '#b45309' }
+                    ? { background: isContrast ? '#000000' : '#b45309', color: isContrast ? '#00ff00' : '#ffffff', borderColor: isContrast ? '#ffff00' : '#b45309' }
                     : { background: themeCard, color: themeInk, borderColor: themeBorder }
                 }, p.label);
               })
@@ -946,7 +1060,7 @@
                         onClick: function() { upd('leavAcid', a.id); playBeep('click'); },
                         className: 'rounded-xl border-2 p-2 text-center text-xs font-bold transition-all cursor-pointer',
                         style: active
-                          ? { background: isContrast ? '#00ff00' : '#b45309', color: isContrast ? '#000000' : '#ffffff', borderColor: isContrast ? '#00ff00' : '#92400e' }
+                          ? { background: isContrast ? '#000000' : '#b45309', color: isContrast ? '#00ff00' : '#ffffff', borderColor: isContrast ? '#ffff00' : '#92400e' }
                           : { background: themeSubtle, color: themeInk, borderColor: themeBorder },
                         'aria-pressed': active,
                         'aria-label': a.name
@@ -969,7 +1083,7 @@
                         onClick: function() { upd('leavBase', b.id); playBeep('click'); },
                         className: 'rounded-xl border-2 p-3 text-center text-xs font-bold transition-all cursor-pointer',
                         style: active
-                          ? { background: isContrast ? '#00ff00' : '#c2410c', color: isContrast ? '#000000' : '#ffffff', borderColor: isContrast ? '#00ff00' : '#9a3412' }
+                          ? { background: isContrast ? '#000000' : '#c2410c', color: isContrast ? '#00ff00' : '#ffffff', borderColor: isContrast ? '#ffff00' : '#9a3412' }
                           : { background: themeSubtle, color: themeInk, borderColor: themeBorder },
                         'aria-pressed': active,
                         'aria-label': b.name
@@ -1003,7 +1117,7 @@
                     disabled: running,
                     className: 'flex-grow px-5 py-3 rounded-full font-black text-sm shadow-md disabled:opacity-50 transition-all active:scale-95 cursor-pointer',
                     style: isContrast
-                      ? { background: '#00ff00', color: '#000000', border: '2px solid #ffff00' }
+                      ? { background: '#000000', color: '#00ff00', border: '2px solid #ffff00' }
                       : { background: 'linear-gradient(90deg, #b45309, #e11d48)', color: '#ffffff' }
                   }, running ? tr('baking.leavening.mix_running', 'Reacting\u2026') : (tr('baking.leavening.mix_btn', 'Mix & React') + ' \uD83E\uDDEA'))
                 )
@@ -1062,6 +1176,9 @@
                           h('stop', { offset: '18%', stopColor: '#ffffff', stopOpacity: 0 }),
                           h('stop', { offset: '86%', stopColor: '#0f172a', stopOpacity: 0 }),
                           h('stop', { offset: '100%', stopColor: '#0f172a', stopOpacity: 0.12 })
+                        ),
+                        !isContrast && h('clipPath', { id: 'bkBeakerDoughClip' },
+                          h('rect', { x: 41, y: Math.max(12, topY - 12), width: 128, height: 146 - Math.max(12, topY - 12), rx: 4 })
                         )
                       ),
                       !isContrast && h('ellipse', { cx: 105, cy: 151, rx: 66, ry: 3.5, fill: 'rgba(15,23,42,0.16)' }),
@@ -1069,18 +1186,49 @@
                       h('path', { d: 'M 38 16 L 38 140 Q 38 148 46 148 L 164 148 Q 172 148 172 140 L 172 16', fill: isContrast ? '#000000' : (isDark ? '#1e293b' : '#fffbeb'), stroke: 'none' }),
                       // Translucent batter/dough fill
                       h('rect', { x: 41, y: topY, width: 128, height: 146 - topY, rx: 4, fill: 'url(#bkDoughFill)' }),
-                      // Foamy dome crown + top highlight
+                      // Foamy dome crown + warm top breathing highlight
                       yieldPct > 15 && h('path', {
                         d: 'M 41 ' + topY + ' Q 105 ' + Math.max(12, topY - (overLeavened ? 4 : 14)) + ', 169 ' + topY,
                         fill: isContrast ? '#00ff00' : (overLeavened ? '#fca5a5' : '#fef3c7'),
                         stroke: isContrast ? '#ffff00' : '#d97706',
                         strokeWidth: 1.5
                       }),
+                      !isContrast && yieldPct > 15 && h('path', {
+                        d: 'M 54 ' + topY + ' Q 105 ' + Math.max(15, topY - (overLeavened ? 2 : 10)) + ', 156 ' + topY,
+                        fill: 'none',
+                        stroke: '#ffffff',
+                        strokeWidth: 1.6,
+                        strokeLinecap: 'round',
+                        className: 'bk-bar-sheen bk-motion-deco'
+                      }),
+                      // Rising CO2 leavening micro-bubbles ascending through the dough column
+                      !isContrast && yieldPct > 8 && h('g', { clipPath: 'url(#bkBeakerDoughClip)', className: 'bk-motion-deco' },
+                        [
+                          { cx: 56, cy: 138, r: 2.1, d: '0s', dur: '2.4s' },
+                          { cx: 78, cy: 132, r: 1.8, d: '0.55s', dur: '2.8s' },
+                          { cx: 102, cy: 136, r: 2.4, d: '1.1s', dur: '2.2s' },
+                          { cx: 126, cy: 134, r: 1.9, d: '0.3s', dur: '2.6s' },
+                          { cx: 148, cy: 139, r: 2.2, d: '0.9s', dur: '3.0s' },
+                          { cx: 90, cy: 120, r: 1.7, d: '1.5s', dur: '2.5s' }
+                        ].slice(0, Math.max(2, Math.round((yieldPct / 100) * 6))).map(function(mb, mbi) {
+                          return h('circle', {
+                            key: 'mb' + mbi,
+                            cx: mb.cx,
+                            cy: Math.max(topY + 12, mb.cy),
+                            r: mb.r,
+                            fill: '#ffffff',
+                            stroke: '#f59e0b',
+                            strokeWidth: 0.5,
+                            className: 'bk-micro-bubble',
+                            style: { animationDelay: mb.d, animationDuration: mb.dur }
+                          });
+                        })
+                      ),
                       // Glossy rising CO2 bubbles trapped inside dough
                       bubbleSeeds.slice(0, visibleBubbles).map(function(b, bi) {
                         var by = 142 - Math.min(fillH - 8, b.dy);
                         if (by < topY + 4) return null;
-                        return h('g', { key: 'sb' + bi },
+                        return h('g', { key: 'sb' + bi, className: isContrast ? undefined : 'bk-co2-float', style: isContrast ? undefined : { animationDelay: (bi * 0.36) + 's' } },
                           h('circle', {
                             cx: b.cx, cy: by, r: b.r,
                             fill: isContrast ? '#000000' : 'url(#bkBubbleGloss)',
@@ -1208,7 +1356,7 @@
                     onClick: function() { upd('emulGoal', g.id); playBeep('click'); },
                     className: 'px-3 py-2 rounded-full text-xs font-bold transition-all border cursor-pointer',
                     style: active
-                      ? { background: isContrast ? '#00ff00' : '#854d0e', color: isContrast ? '#000000' : '#ffffff', borderColor: isContrast ? '#00ff00' : '#854d0e' }
+                      ? { background: isContrast ? '#000000' : '#854d0e', color: isContrast ? '#00ff00' : '#ffffff', borderColor: isContrast ? '#ffff00' : '#854d0e' }
                       : { background: themeSubtle, color: themeInk, borderColor: themeBorder },
                     'aria-pressed': active
                   }, g.label);
@@ -1254,7 +1402,7 @@
                   onClick: checkMix,
                   className: 'w-full px-5 py-3 rounded-full font-black text-sm shadow-md transition-all active:scale-95 cursor-pointer',
                   style: isContrast
-                    ? { background: '#00ff00', color: '#000000', border: '2px solid #ffff00' }
+                    ? { background: '#000000', color: '#00ff00', border: '2px solid #ffff00' }
                     : { background: 'linear-gradient(90deg, #a16207, #b45309)', color: '#ffffff' }
                 }, tr('baking.emulsion.shake_btn', 'Shake & check') + ' \uD83E\uDD64')
               ),
@@ -1321,8 +1469,8 @@
                       broken ? h('g', null,
                         h('rect', { x: 8, y: 8, width: 274, height: oilH, rx: 6, fill: isContrast ? '#ffff00' : 'url(#bkOilLayer)' }),
                         h('rect', { x: 8, y: 8 + oilH, width: 274, height: 140 - oilH, rx: 6, fill: isContrast ? '#000000' : 'url(#bkWaterLayer)', stroke: isContrast ? '#00ff00' : '#0284c7', strokeWidth: 1 }),
-                        !isContrast && h('line', { x1: 12, y1: 10 + oilH, x2: 278, y2: 10 + oilH, stroke: '#ffffff', strokeWidth: 2, opacity: 0.45 }),
-                        h('line', { x1: 8, y1: 8 + oilH, x2: 282, y2: 8 + oilH, stroke: isContrast ? '#00ff00' : '#b45309', strokeWidth: 2, strokeDasharray: '6 4' }),
+                        !isContrast && h('line', { x1: 12, y1: 10 + oilH, x2: 278, y2: 10 + oilH, stroke: '#ffffff', strokeWidth: 2, opacity: 0.45, className: 'bk-bar-sheen bk-motion-deco' }),
+                        h('line', { x1: 8, y1: 8 + oilH, x2: 282, y2: 8 + oilH, stroke: isContrast ? '#00ff00' : '#b45309', strokeWidth: 2, strokeDasharray: '6 4', className: isContrast ? undefined : 'bk-convection' }),
                         h('text', { x: 145, y: Math.max(24, 8 + oilH / 2 + 4), textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#000000' }, tr('baking.emulsion.oil_layer', 'Oil layer') + ' (' + oilPct + '%)'),
                         h('text', { x: 145, y: Math.min(140, 8 + oilH + (140 - oilH) / 2 + 4), textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: isContrast ? '#00ff00' : '#0c4a6e' }, tr('baking.emulsion.water_layer', 'Water layer') + ' (' + waterPct + '%)')
                       ) : h('g', null,
@@ -1331,8 +1479,8 @@
                         // Glossy 3D oil droplets + lecithin amphiphilic coats
                         droplets.slice(0, count).map(function(dr, di) {
                           var rr = Math.max(6, Math.round(dr.r * (stable ? 0.85 : 1.1)));
-                          return h('g', { key: 'dr' + di },
-                            !isContrast && hasLecithin && h('circle', { cx: dr.cx, cy: dr.cy, r: rr + 6, fill: '#10b981', opacity: 0.14 }),
+                          return h('g', { key: 'dr' + di, className: isContrast ? undefined : 'bk-droplet-float', style: isContrast ? undefined : { animationDelay: (di * 0.42) + 's' } },
+                            !isContrast && hasLecithin && h('circle', { cx: dr.cx, cy: dr.cy, r: rr + 6, fill: '#10b981', opacity: 0.16, className: 'bk-beacon bk-motion-deco', style: { animationDelay: (di * 0.35) + 's' } }),
                             h('circle', {
                               cx: dr.cx, cy: dr.cy, r: rr,
                               fill: isContrast ? '#ffff00' : 'url(#bkOilDrop)',
@@ -1345,7 +1493,8 @@
                               fill: 'none',
                               stroke: isContrast ? '#00ff00' : '#047857',
                               strokeWidth: 2,
-                              strokeDasharray: '3 2'
+                              strokeDasharray: '3 2',
+                              className: isContrast ? undefined : 'bk-lecithin-dash'
                             })
                           );
                         }),
@@ -1387,13 +1536,14 @@
           var baselineFlourGrams = flour ? flour.grams : 0;
 
           // Factor is derived from either the slider (free mode) or from the flour-weight target (lock mode).
-          var lockedFlourTarget = d.scaleLockFlourGrams != null ? d.scaleLockFlourGrams : baselineFlourGrams;
+          var lockedFlourTarget = (typeof d.scaleLockFlourGrams === 'number' && isFinite(d.scaleLockFlourGrams) && d.scaleLockFlourGrams > 0) ? d.scaleLockFlourGrams : baselineFlourGrams;
           var factor;
           if (lockFlour && baselineFlourGrams > 0) {
             factor = lockedFlourTarget / baselineFlourGrams;
           } else {
             factor = (typeof d.scaleFactor === 'number' && isFinite(d.scaleFactor)) ? d.scaleFactor : 1;
           }
+          if (!isFinite(factor)) factor = 1;
           factor = Math.max(0.1, Math.min(10, factor));
 
           // Compute hydration (liquid / flour) — uses grams, ignores factor since it cancels.
@@ -1468,7 +1618,7 @@
                     onClick: function() { upd('scaleRecipe', r.id); playBeep('click'); },
                     className: 'px-3 py-2 rounded-full text-xs font-bold transition-all border cursor-pointer',
                     style: active
-                      ? { background: isContrast ? '#00ff00' : '#c2410c', color: isContrast ? '#000000' : '#ffffff', borderColor: isContrast ? '#00ff00' : '#c2410c' }
+                      ? { background: isContrast ? '#000000' : '#c2410c', color: isContrast ? '#00ff00' : '#ffffff', borderColor: isContrast ? '#ffff00' : '#c2410c' }
                       : { background: themeSubtle, color: themeInk, borderColor: themeBorder },
                     'aria-pressed': active
                   }, r.label);
@@ -1536,7 +1686,7 @@
                               onClick: function() { upd('scaleFactor', mult); playBeep('click'); },
                               className: 'px-2 py-0.5 rounded-full text-[0.6875rem] font-bold border cursor-pointer',
                               style: active
-                                ? { background: isContrast ? '#00ff00' : '#c2410c', color: isContrast ? '#000000' : '#ffffff', borderColor: isContrast ? '#00ff00' : '#c2410c' }
+                                ? { background: isContrast ? '#000000' : '#c2410c', color: isContrast ? '#00ff00' : '#ffffff', borderColor: isContrast ? '#ffff00' : '#c2410c' }
                                 : { background: themeSubtle, color: themeInk, borderColor: themeBorder }
                             }, mult + '\u00D7');
                           })
@@ -1555,7 +1705,7 @@
                         onClick: function() { upd('scaleUnit', u); },
                         className: 'flex-1 px-2 py-1.5 rounded-full text-xs font-bold border cursor-pointer',
                         style: active
-                          ? { background: isContrast ? '#00ff00' : '#c2410c', color: isContrast ? '#000000' : '#ffffff', borderColor: isContrast ? '#00ff00' : '#c2410c' }
+                          ? { background: isContrast ? '#000000' : '#c2410c', color: isContrast ? '#00ff00' : '#ffffff', borderColor: isContrast ? '#ffff00' : '#c2410c' }
                           : { background: themeSubtle, color: themeInk, borderColor: themeBorder },
                         'aria-pressed': active
                       }, u);
@@ -1589,7 +1739,7 @@
                   onClick: applyScale,
                   className: 'w-full px-5 py-3 rounded-full font-black text-sm shadow-md transition-all active:scale-95 cursor-pointer',
                   style: isContrast
-                    ? { background: '#00ff00', color: '#000000', border: '2px solid #ffff00' }
+                    ? { background: '#000000', color: '#00ff00', border: '2px solid #ffff00' }
                     : { background: 'linear-gradient(90deg, #c2410c, #e11d48)', color: '#ffffff' }
                 }, tr('baking.scaler.save_btn', 'Save scaled recipe') + ' \uD83D\uDCBE')
               ),
@@ -1627,11 +1777,15 @@
                             stroke: isContrast ? '#000000' : themeCard,
                             strokeWidth: 1.5
                           }),
-                          !isContrast && segW > 6 && h('rect', { x: xCursor + 1.5, y: 7, width: Math.max(0, segW - 3), height: 6.5, rx: 2, fill: 'url(#bkMassSheen)' })
+                          !isContrast && segW > 6 && h('rect', { x: xCursor + 1.5, y: 7, width: Math.max(0, segW - 3), height: 6.5, rx: 2, fill: 'url(#bkMassSheen)', className: 'bk-bar-sheen bk-motion-deco' })
                         );
                         xCursor += w;
                         return seg;
                       }),
+                      !isContrast && hydrationPct > 0 && h('g', { className: 'bk-motion-deco' },
+                        h('circle', { cx: 302, cy: 34, r: 5, fill: '#0284c7', opacity: 0.28, className: 'bk-beacon' }),
+                        h('circle', { cx: 302, cy: 34, r: 2.3, fill: '#0284c7' })
+                      ),
                       h('text', { x: 10, y: 37, fontSize: 9, fontWeight: 700, fill: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#57534e') }, 'Flour 100% anchor \u00B7 ratios stay invariant at ' + factor.toFixed(2) + '\u00D7')
                     ),
                     h('div', { className: 'mt-1.5 flex items-center gap-3 flex-wrap text-[0.6875rem] font-bold' },
@@ -1777,7 +1931,7 @@
                       onClick: function() { upd('ovenUnit', u); },
                       className: 'px-2.5 py-0.5 rounded-full text-xs font-black transition-colors cursor-pointer',
                       style: active
-                        ? { background: isContrast ? '#00ff00' : '#e11d48', color: isContrast ? '#000000' : '#ffffff' }
+                        ? { background: isContrast ? '#000000' : '#e11d48', color: isContrast ? '#00ff00' : '#ffffff' }
                         : { background: 'transparent', color: themeInk },
                       'aria-pressed': active
                     }, '\u00B0' + u);
@@ -1814,13 +1968,21 @@
                       h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.34 }),
                       h('stop', { offset: '55%', stopColor: '#ffffff', stopOpacity: 0 }),
                       h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.28 })
+                    ),
+                    h('linearGradient', { id: 'bkOvenCrustSheen', x1: '0', y1: '0', x2: '1', y2: '0' },
+                      h('stop', { offset: '0%', stopColor: '#fef3c7', stopOpacity: 0 }),
+                      h('stop', { offset: '50%', stopColor: '#fde68a', stopOpacity: 0.52 }),
+                      h('stop', { offset: '100%', stopColor: '#fef3c7', stopOpacity: 0 })
+                    ),
+                    h('clipPath', { id: 'bkOvenLoafClip' },
+                      h('path', { d: 'M 102 95 C 102 ' + (68 - domeRise) + ', 218 ' + (68 - domeRise) + ', 218 95 Z' })
                     )
                   ),
                   h('rect', { x: 10, y: 8, width: 300, height: 116, rx: 12, fill: isContrast ? '#000000' : '#090d16', stroke: isContrast ? '#ffff00' : '#475569', strokeWidth: 3 }),
                   // Warm golden-orange oven cavity radiative glow
-                  !isContrast && h('rect', { x: 12, y: 10, width: 296, height: 112, rx: 10, fill: 'url(#bkOvenRadGlow)' }),
-                  // Subtle convection airflow streamlines at baking temperatures
-                  !isContrast && temp >= 200 && h('g', { fill: 'none', stroke: '#fb923c', strokeWidth: 1.1, strokeDasharray: '4 4', opacity: Math.min(0.45, coilGlow * 0.45) },
+                  !isContrast && h('rect', { x: 12, y: 10, width: 296, height: 112, rx: 10, fill: 'url(#bkOvenRadGlow)', className: temp >= 140 ? 'bk-oven-glow bk-motion-deco' : undefined }),
+                  // Subtle animated convection airflow streamlines at baking temperatures
+                  !isContrast && temp >= 200 && h('g', { fill: 'none', stroke: '#fb923c', strokeWidth: 1.1, strokeDasharray: '4 4', opacity: Math.min(0.45, coilGlow * 0.45), className: 'bk-convection bk-motion-deco' },
                     h('path', { d: 'M 38 78 Q 48 38, 160 36 Q 268 38, 282 78' }),
                     h('path', { d: 'M 54 90 Q 68 50, 160 46 Q 252 50, 266 90' })
                   ),
@@ -1831,7 +1993,8 @@
                     stroke: '#f97316',
                     strokeWidth: 10,
                     strokeLinecap: 'round',
-                    opacity: coilGlow * 0.3
+                    opacity: coilGlow * 0.3,
+                    className: 'bk-oven-glow bk-motion-deco'
                   }),
                   h('path', {
                     d: 'M 36 22 Q 70 28, 104 22 T 172 22 T 240 22 T 284 22',
@@ -1847,13 +2010,14 @@
                     stroke: '#fef08a',
                     strokeWidth: 1.4,
                     strokeLinecap: 'round',
-                    opacity: coilGlow * 0.75
+                    opacity: coilGlow * 0.75,
+                    className: 'bk-bar-sheen bk-motion-deco'
                   }),
                   // Oven rack
                   h('line', { x1: 28, y1: 102, x2: 292, y2: 102, stroke: isContrast ? '#ffff00' : '#94a3b8', strokeWidth: 3 }),
                   // Metallic baking tray + shadow
                   h('rect', { x: 86, y: 95, width: 148, height: 7, rx: 2, fill: isContrast ? '#ffff00' : 'url(#bkOvenTray)' }),
-                  // Rising & browning dough dome with 3D crust shading
+                  // Rising & browning dough dome with 3D crust shading + starch-gelatinization / Maillard sheen
                   h('path', {
                     d: 'M 102 95 C 102 ' + (68 - domeRise) + ', 218 ' + (68 - domeRise) + ', 218 95 Z',
                     fill: isContrast ? '#000000' : foodColor,
@@ -1864,6 +2028,17 @@
                     d: 'M 102 95 C 102 ' + (68 - domeRise) + ', 218 ' + (68 - domeRise) + ', 218 95 Z',
                     fill: 'url(#bkLoafHighlight)'
                   }),
+                  // Starch gelatinization internal hydration shimmer wave (180F - 309F)
+                  !isContrast && temp >= 180 && temp < 310 && h('g', { clipPath: 'url(#bkOvenLoafClip)', className: 'bk-motion-deco' },
+                    h('path', {
+                      d: 'M 108 ' + (88 - Math.round(domeRise * 0.2)) + ' Q 134 ' + (82 - Math.round(domeRise * 0.25)) + ', 160 ' + (88 - Math.round(domeRise * 0.2)) + ' T 212 ' + (88 - Math.round(domeRise * 0.2)),
+                      fill: 'none', stroke: '#fef9c3', strokeWidth: 2.2, strokeLinecap: 'round', className: 'bk-gel-wave'
+                    })
+                  ),
+                  // Golden Maillard / Caramelization specular crust sheen sweep (285F - 399F)
+                  !isContrast && temp >= 285 && temp < 400 && h('g', { clipPath: 'url(#bkOvenLoafClip)', className: 'bk-motion-deco' },
+                    h('rect', { x: 132, y: Math.max(40, 62 - domeRise), width: 34, height: 55, fill: 'url(#bkOvenCrustSheen)', className: 'bk-crust-sheen' })
+                  ),
                   // Score mark on loaf
                   h('path', {
                     d: 'M 140 ' + (78 - Math.round(domeRise * 0.6)) + ' Q 160 ' + (70 - Math.round(domeRise * 0.6)) + ', 180 ' + (78 - Math.round(domeRise * 0.6)),
@@ -1872,16 +2047,16 @@
                     strokeWidth: 2,
                     strokeLinecap: 'round'
                   }),
-                  // Steam or smoke wisps
+                  // Steam or smoke wisps (animated buoyant drift)
                   hasSteam && h('g', { stroke: isContrast ? '#00ff00' : '#e0f2fe', strokeWidth: 1.8, fill: 'none', strokeLinecap: 'round', opacity: 0.85 },
-                    h('path', { d: 'M 130 56 Q 124 44, 132 34' }),
-                    h('path', { d: 'M 160 52 Q 154 40, 162 30' }),
-                    h('path', { d: 'M 190 56 Q 184 44, 192 34' })
+                    h('path', { d: 'M 130 56 Q 124 44, 132 34', className: isContrast ? undefined : 'bk-steam-drift', style: isContrast ? undefined : { animationDelay: '0s' } }),
+                    h('path', { d: 'M 160 52 Q 154 40, 162 30', className: isContrast ? undefined : 'bk-steam-drift', style: isContrast ? undefined : { animationDelay: '0.6s' } }),
+                    h('path', { d: 'M 190 56 Q 184 44, 192 34', className: isContrast ? undefined : 'bk-steam-drift', style: isContrast ? undefined : { animationDelay: '1.2s' } })
                   ),
                   hasSmoke && h('g', { stroke: isContrast ? '#ffff00' : '#fca5a5', strokeWidth: 2.2, fill: 'none', strokeLinecap: 'round' },
-                    h('path', { d: 'M 136 52 Q 128 38, 140 28' }),
-                    h('path', { d: 'M 166 48 Q 158 34, 170 26' }),
-                    h('path', { d: 'M 194 54 Q 186 40, 198 30' })
+                    h('path', { d: 'M 136 52 Q 128 38, 140 28', className: isContrast ? undefined : 'bk-steam-drift', style: isContrast ? undefined : { animationDelay: '0s' } }),
+                    h('path', { d: 'M 166 48 Q 158 34, 170 26', className: isContrast ? undefined : 'bk-steam-drift', style: isContrast ? undefined : { animationDelay: '0.5s' } }),
+                    h('path', { d: 'M 194 54 Q 186 40, 198 30', className: isContrast ? undefined : 'bk-steam-drift', style: isContrast ? undefined : { animationDelay: '1.0s' } })
                   ),
                   // Thermometer readout pill inside oven glass
                   h('rect', { x: 228, y: 34, width: 68, height: 26, rx: 6, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.88)', stroke: isContrast ? '#00ff00' : '#fb7185', strokeWidth: 1.2 }),
@@ -1935,7 +2110,7 @@
                     onClick: function() { upd('ovenTemp', z.from); recordNewEvents(z.from); playBeep('click'); },
                     className: 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.6875rem] font-bold transition-all border cursor-pointer',
                     style: inZone
-                      ? { background: isContrast ? '#00ff00' : '#ffffff', color: isContrast ? '#000000' : '#881337', borderColor: isContrast ? '#00ff00' : '#ffffff' }
+                      ? { background: isContrast ? '#000000' : '#ffffff', color: isContrast ? '#00ff00' : '#881337', borderColor: isContrast ? '#ffff00' : '#ffffff' }
                       : { background: isContrast ? '#000000' : 'rgba(255,255,255,0.12)', color: isContrast ? '#ffff00' : '#ffe4e6', borderColor: isContrast ? '#ffff00' : 'rgba(255,255,255,0.22)' },
                     title: formatTemp(z.from) + (z.to !== z.from ? '\u2013' + formatTemp(z.to) : '')
                   },
@@ -1961,16 +2136,16 @@
                         h('stop', { offset: '78%', stopColor: '#f97316' }),
                         h('stop', { offset: '100%', stopColor: '#dc2626' }))),
                     h('rect', { x: x0, y: yBar, width: x1 - x0, height: hBar, rx: 5, fill: 'url(#bakeTempGrad)' }),
-                    !isContrast && h('rect', { x: x0 + 2, y: yBar + 1.5, width: x1 - x0 - 4, height: 3, rx: 1.5, fill: '#ffffff', opacity: 0.32 }),
-                    marks.map(function(m) {
+                    !isContrast && h('rect', { x: x0 + 2, y: yBar + 1.5, width: x1 - x0 - 4, height: 3, rx: 1.5, fill: '#ffffff', opacity: 0.32, className: 'bk-bar-sheen bk-motion-deco' }),
+                    marks.map(function(m, mi) {
                       var reachedM = temp >= m.f;
                       return h('g', { key: m.f },
-                        !isContrast && reachedM && h('circle', { cx: sx(m.f), cy: yBar + hBar / 2, r: 6.5, fill: '#fbbf24', opacity: 0.28 }),
+                        !isContrast && reachedM && h('circle', { cx: sx(m.f), cy: yBar + hBar / 2, r: 6.5, fill: '#fbbf24', opacity: 0.28, className: 'bk-beacon bk-motion-deco', style: { animationDelay: (mi * 0.45) + 's' } }),
                         h('line', { x1: sx(m.f), y1: yBar - 3, x2: sx(m.f), y2: yBar + hBar + 3, stroke: '#ffffff', strokeWidth: 1.5, opacity: 0.92 }),
                         h('circle', { cx: sx(m.f), cy: yBar + hBar / 2, r: 2.3, fill: reachedM ? (isContrast ? '#00ff00' : '#fef08a') : '#ffffff', stroke: '#0f172a', strokeWidth: 0.7 }),
                         h('text', { x: sx(m.f), y: yBar - 7, textAnchor: 'middle', fontSize: 8.5, fill: isContrast ? '#ffff00' : (reachedM ? '#fde047' : '#fef3c7'), fontWeight: 700 }, m.label));
                     }),
-                    !isContrast && h('circle', { cx: sx(temp), cy: yBar + hBar + 6, r: 7, fill: '#fb7185', opacity: 0.24 }),
+                    !isContrast && h('circle', { cx: sx(temp), cy: yBar + hBar + 6, r: 7, fill: '#fb7185', opacity: 0.28, className: 'bk-beacon bk-motion-deco' }),
                     h('polygon', { points: (sx(temp) - 4.5) + ',' + (yBar + hBar + 3) + ' ' + (sx(temp) + 4.5) + ',' + (yBar + hBar + 3) + ' ' + sx(temp) + ',' + (yBar + hBar + 10), fill: isContrast ? '#00ff00' : '#ffffff' }),
                     h('text', { x: Math.max(x0 + 18, Math.min(x1 - 18, sx(temp))), y: H - 2, textAnchor: 'middle', fontSize: 9.5, fill: isContrast ? '#00ff00' : '#ffffff', fontWeight: 800 }, formatTemp(temp))
                   )
@@ -2295,7 +2470,7 @@
                 disabled: !selected,
                 className: 'px-5 py-2.5 rounded-full font-black text-sm shadow-md disabled:opacity-40 transition-all active:scale-95 cursor-pointer',
                 style: isContrast
-                  ? { background: '#00ff00', color: '#000000', border: '2px solid #ffff00' }
+                  ? { background: '#000000', color: '#00ff00', border: '2px solid #ffff00' }
                   : { background: 'linear-gradient(90deg, #db2777, #e11d48)', color: '#ffffff' }
               }, tr('baking.diagnosis.check', 'Check answer') + ' \uD83D\uDD0E'),
               revealed && h('button', {
@@ -2303,7 +2478,7 @@
                 onClick: nextScenario,
                 className: 'px-5 py-2.5 rounded-full font-black text-sm shadow-md transition-all active:scale-95 cursor-pointer',
                 style: isContrast
-                  ? { background: '#00ff00', color: '#000000', border: '2px solid #ffff00' }
+                  ? { background: '#000000', color: '#00ff00', border: '2px solid #ffff00' }
                   : { background: 'linear-gradient(90deg, #db2777, #e11d48)', color: '#ffffff' }
               }, tr('baking.diagnosis.next', 'Next scenario') + ' \u2192')
             ),
@@ -2459,7 +2634,7 @@
                         onClick: function() { upd('glutenProtein', fp.protein); },
                         className: 'px-2.5 py-0.5 rounded-full text-[0.6875rem] font-bold transition-colors border cursor-pointer',
                         style: active
-                          ? { background: isContrast ? '#00ff00' : '#0f766e', color: isContrast ? '#000000' : '#ffffff', borderColor: isContrast ? '#00ff00' : '#0f766e' }
+                          ? { background: isContrast ? '#000000' : '#0f766e', color: isContrast ? '#00ff00' : '#ffffff', borderColor: isContrast ? '#ffff00' : '#0f766e' }
                           : { background: themeSubtle, color: themeInk, borderColor: themeBorder }
                       }, fp.label);
                     })
@@ -2512,7 +2687,7 @@
                   onClick: matchTarget,
                   className: 'w-full px-5 py-3 rounded-full font-black text-sm shadow-md transition-all active:scale-95 cursor-pointer',
                   style: isContrast
-                    ? { background: '#00ff00', color: '#000000', border: '2px solid #ffff00' }
+                    ? { background: '#000000', color: '#00ff00', border: '2px solid #ffff00' }
                     : { background: 'linear-gradient(90deg, #0f766e, #047857)', color: '#ffffff' }
                 }, tr('baking.gluten.check_btn', 'Check against targets') + ' \uD83C\uDFAF')
               ),
@@ -2542,21 +2717,33 @@
                       )
                     ),
                     !isContrast && h('rect', { x: 2, y: 2, width: svgW - 4, height: svgH - 4, rx: 8, fill: 'url(#bkGlutenField)' }),
-                    // Elastic gluten-network strands with layered 3D depth shadow & specular filament sheen
+                    // Elastic gluten-network strands with layered 3D depth shadow & animated tensile filament sheen
                     strandPaths.map(function(p, i) {
                       var col = isContrast ? (overworked ? '#ffff00' : '#00ff00') : strokeColor;
                       var op = isContrast ? 1 : (0.45 + hydrationFactor * 0.5);
+                      var tensileDur = Math.max(1.8, 4.4 - (strength / 42)).toFixed(2) + 's';
                       return h('g', { key: 'sp' + i },
                         !isContrast && h('path', { d: p, stroke: '#0f172a', strokeWidth: thickness + 2, fill: 'none', strokeLinecap: 'round', opacity: 0.1, transform: 'translate(0, 2.2)' }),
                         h('path', { d: p, stroke: col, strokeWidth: thickness, fill: 'none', strokeLinecap: 'round', opacity: op }),
-                        !isContrast && thickness >= 2 && h('path', { d: p, stroke: '#ffffff', strokeWidth: Math.max(0.8, thickness * 0.28), fill: 'none', strokeLinecap: 'round', opacity: 0.42, transform: 'translate(0, -0.8)' })
+                        !isContrast && thickness >= 2 && h('path', { d: p, stroke: '#ffffff', strokeWidth: Math.max(0.8, thickness * 0.28), fill: 'none', strokeLinecap: 'round', opacity: 0.42, transform: 'translate(0, -0.8)' }),
+                        !isContrast && strength >= 18 && h('path', {
+                          d: p,
+                          stroke: overworked ? '#fecaca' : '#ccfbf1',
+                          strokeWidth: Math.max(0.9, thickness * 0.36),
+                          fill: 'none',
+                          strokeLinecap: 'round',
+                          strokeDasharray: '10 38',
+                          opacity: Math.min(0.75, 0.28 + strength / 160),
+                          className: 'bk-gluten-tensile bk-motion-deco',
+                          style: { animationDuration: tensileDur, animationDelay: (i * 0.24) + 's' }
+                        })
                       );
                     }),
-                    // Glowing disulfide (S-S) crosslinks with specular junction nodes
+                    // Glowing disulfide (S-S) crosslinks with pulsing specular junction nodes
                     crosslinks.map(function(c, i) {
                       var col = isContrast ? '#ffff00' : strokeColor;
                       return h('g', { key: 'cl' + i },
-                        !isContrast && h('line', { x1: c.x, y1: c.y1, x2: c.x + 5, y2: c.y2, stroke: col, strokeWidth: Math.max(3.5, thickness * 1.4), opacity: 0.18, strokeLinecap: 'round' }),
+                        !isContrast && h('line', { x1: c.x, y1: c.y1, x2: c.x + 5, y2: c.y2, stroke: col, strokeWidth: Math.max(3.5, thickness * 1.4), opacity: 0.22, strokeLinecap: 'round', className: 'bk-crosslink-pulse bk-motion-deco', style: { animationDelay: (i * 0.28) + 's' } }),
                         h('line', {
                           x1: c.x, y1: c.y1, x2: c.x + 5, y2: c.y2,
                           stroke: col,
@@ -2564,10 +2751,15 @@
                           strokeLinecap: 'round',
                           opacity: isContrast ? 1 : 0.78
                         }),
+                        !isContrast && h('circle', { cx: c.x, cy: c.y1, r: 4.8, fill: col, opacity: 0.22, className: 'bk-beacon bk-motion-deco', style: { animationDelay: (i * 0.32) + 's' } }),
                         h('circle', { cx: c.x, cy: c.y1, r: 2.6, fill: col, stroke: '#ffffff', strokeWidth: 0.6 }),
                         h('circle', { cx: c.x + 5, cy: c.y2, r: 2.6, fill: col, stroke: '#ffffff', strokeWidth: 0.6 })
                       );
                     }),
+                    !isContrast && h('g', { className: 'bk-motion-deco' },
+                      h('circle', { cx: svgW - 14, cy: 141, r: 4.5, fill: '#0ea5e9', opacity: 0.28, className: 'bk-beacon' }),
+                      h('circle', { cx: svgW - 14, cy: 141, r: 2.1, fill: '#0ea5e9' })
+                    ),
                     h('text', { x: 10, y: 144, fontSize: 8.5, fontWeight: 700, fill: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569') },
                       strandCount + ' protein strands \u00B7 ' + crosslinks.length + ' disulfide crosslinks'
                     )
@@ -2760,7 +2952,7 @@
                     onClick: function() { upd('brownFood', f.id); playBeep('click'); },
                     className: 'rounded-xl border-2 p-2 text-center text-xs font-bold transition-all cursor-pointer',
                     style: active
-                      ? { background: isContrast ? '#00ff00' : '#c2410c', color: isContrast ? '#000000' : '#ffffff', borderColor: isContrast ? '#00ff00' : '#9a3412' }
+                      ? { background: isContrast ? '#000000' : '#c2410c', color: isContrast ? '#00ff00' : '#ffffff', borderColor: isContrast ? '#ffff00' : '#9a3412' }
                       : { background: themeSubtle, color: themeInk, borderColor: themeBorder },
                     'aria-pressed': active,
                     'aria-label': f.label
@@ -2825,7 +3017,7 @@
                         onClick: function() { upd('brownDry', opt.id); playBeep('click'); },
                         className: 'flex-1 px-2 py-1.5 rounded-full text-xs font-bold transition-colors border cursor-pointer',
                         style: active
-                          ? { background: isContrast ? '#00ff00' : '#0369a1', color: isContrast ? '#000000' : '#ffffff', borderColor: isContrast ? '#00ff00' : '#0369a1' }
+                          ? { background: isContrast ? '#000000' : '#0369a1', color: isContrast ? '#00ff00' : '#ffffff', borderColor: isContrast ? '#ffff00' : '#0369a1' }
                           : { background: themeSubtle, color: themeInk, borderColor: themeBorder },
                         'aria-pressed': active
                       }, opt.label);
@@ -2838,7 +3030,7 @@
                   onClick: cook,
                   className: 'w-full px-5 py-3 rounded-full font-black text-sm shadow-md transition-all active:scale-95 cursor-pointer',
                   style: isContrast
-                    ? { background: '#00ff00', color: '#000000', border: '2px solid #ffff00' }
+                    ? { background: '#000000', color: '#00ff00', border: '2px solid #ffff00' }
                     : { background: 'linear-gradient(90deg, #c2410c, #b45309)', color: '#ffffff' }
                 }, tr('baking.browning.cook_btn', 'Cook it') + ' \uD83D\uDD25')
               ),
@@ -2857,7 +3049,7 @@
                   style: { background: isContrast ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), borderColor: themeBorder }
                 },
                   h('div', {
-                    className: 'w-20 h-20 rounded-full shadow-inner flex items-center justify-center text-3xl transition-all border-2',
+                    className: 'w-20 h-20 rounded-full shadow-inner flex items-center justify-center text-3xl transition-all border-2' + (!isContrast && totalBrown >= 0.35 && !isBurnt ? ' bk-skillet-sheen' : ''),
                     style: {
                       background: foodColor,
                       borderColor: isContrast ? '#ffff00' : '#9a3412',
@@ -2920,6 +3112,10 @@
                         strokeWidth: 2.3,
                         strokeLinecap: 'round'
                       }),
+                      !isContrast && temp >= 285 && food.protein > 0 && h('path', {
+                        d: 'M ' + xAt(285) + ' ' + yBase + ' Q ' + xAt(340) + ' ' + mPeakY + ', ' + xAt(420) + ' ' + mPeakY + ' L ' + xAt(450) + ' ' + (mPeakY + 8),
+                        fill: 'none', stroke: '#fecaca', strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: '8 28', opacity: 0.78, className: 'bk-kinetic-trace bk-motion-deco'
+                      }),
                       // Caramelization area & luminous curve (320F+)
                       !isContrast && h('path', {
                         d: 'M ' + xAt(320) + ' ' + yBase + ' Q ' + xAt(365) + ' ' + cPeakY + ', ' + xAt(430) + ' ' + cPeakY + ' L ' + xAt(450) + ' ' + (cPeakY + 6) + ' L ' + xAt(450) + ' ' + yBase + ' Z',
@@ -2936,11 +3132,15 @@
                         strokeWidth: 2.3,
                         strokeLinecap: 'round'
                       }),
+                      !isContrast && temp >= 320 && food.sugars > 0 && h('path', {
+                        d: 'M ' + xAt(320) + ' ' + yBase + ' Q ' + xAt(365) + ' ' + cPeakY + ', ' + xAt(430) + ' ' + cPeakY + ' L ' + xAt(450) + ' ' + (cPeakY + 6),
+                        fill: 'none', stroke: '#fef08a', strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: '8 28', opacity: 0.82, className: 'bk-kinetic-trace bk-motion-deco', style: { animationDelay: '0.6s' }
+                      }),
                       // Burn / pyrolysis zone (400F+)
-                      h('rect', { x: xAt(400), y: 12, width: xAt(450) - xAt(400), height: yBase - 12, fill: isContrast ? '#ffff00' : '#dc2626', opacity: isContrast ? 0.18 : 0.1 }),
-                      // Live temp cursor & concentric luminous beacon
+                      h('rect', { x: xAt(400), y: 12, width: xAt(450) - xAt(400), height: yBase - 12, fill: isContrast ? '#ffff00' : '#dc2626', opacity: isContrast ? 0.18 : 0.1, className: (!isContrast && temp >= 400) ? 'bk-oven-glow bk-motion-deco' : undefined }),
+                      // Live temp cursor & concentric luminous pulsing beacon
                       h('line', { x1: curX, y1: 10, x2: curX, y2: yBase, stroke: isContrast ? '#ffff00' : (isDark ? '#f8fafc' : '#0f172a'), strokeWidth: 1.8, strokeDasharray: '2 2' }),
-                      !isContrast && h('circle', { cx: curX, cy: yBase - Math.round(totalBrown * (yBase - yTop)), r: 7.5, fill: '#ea580c', opacity: 0.24 }),
+                      !isContrast && h('circle', { cx: curX, cy: yBase - Math.round(totalBrown * (yBase - yTop)), r: 7.5, fill: '#ea580c', opacity: 0.28, className: 'bk-beacon bk-motion-deco' }),
                       h('circle', { cx: curX, cy: yBase - Math.round(totalBrown * (yBase - yTop)), r: 4.2, fill: isContrast ? '#00ff00' : '#ea580c', stroke: '#ffffff', strokeWidth: 1.3 }),
                       !isContrast && h('circle', { cx: curX - 1.1, cy: yBase - Math.round(totalBrown * (yBase - yTop)) - 1.1, r: 1.1, fill: '#ffffff', opacity: 0.85 }),
                       // X-axis ticks
@@ -3023,6 +3223,7 @@
         // ═══════════════════════════════════════
         var _BK_SUBTOOL_IDS = SUBTOOLS.map(function (s) { return s.id; });
         function onBakeKey(e) {
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
           var tgt = e.target || {};
           var tn = (tgt.tagName || '').toUpperCase();
           if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;
@@ -3072,7 +3273,8 @@
               + 'No markdown, no bullets, no headings. Plain prose.';
             callGemini(prompt, false, false, 0.5).then(function (resp) {
               if (thisReqId !== window.__bakingAiReqId) return;
-              upd('aiExplain', String(resp || '').trim());
+              var rawResp = typeof resp === 'string' ? resp : ((resp && (resp.text || resp.output || resp.response)) || '');
+              upd('aiExplain', String(rawResp).trim());
               upd('aiLoading', false);
               if (typeof announceToSR === 'function') announceToSR(__alloT('stem.bakingscience.sr_explanation_ready', 'Explanation ready.'));
             }).catch(function () {
@@ -3103,7 +3305,7 @@
                     'aria-pressed': active,
                     className: 'px-2 py-0.5 rounded text-[0.6875rem] font-bold border cursor-pointer',
                     style: active
-                      ? { background: isContrast ? '#00ff00' : '#7c3aed', color: isContrast ? '#000000' : '#ffffff', borderColor: isContrast ? '#00ff00' : '#7c3aed' }
+                      ? { background: isContrast ? '#000000' : '#7c3aed', color: isContrast ? '#00ff00' : '#ffffff', borderColor: isContrast ? '#ffff00' : '#7c3aed' }
                       : { background: themeCard, color: isContrast ? '#ffff00' : (isDark ? '#ddd6fe' : '#6d28d9'), borderColor: isContrast ? '#ffff00' : '#7c3aed' }
                   }, L.label);
                 })
@@ -3116,7 +3318,7 @@
                 'aria-label': 'Generate AI explanation at ' + ((LEVELS.find(function (L) { return L.id === aiLevel; }) || {}).label || 'Grade 5') + ' level',
                 className: 'px-3 py-1 rounded-lg text-[0.6875rem] font-bold disabled:opacity-50 cursor-pointer',
                 style: isContrast
-                  ? { background: '#00ff00', color: '#000000', border: '1px solid #ffff00' }
+                  ? { background: '#000000', color: '#00ff00', border: '1px solid #ffff00' }
                   : { background: '#7c3aed', color: '#ffffff' }
               }, aiLoading ? '\u23F3 Thinking...' : (aiText ? '\uD83D\uDD04 Re-explain' : '\uD83E\uDDE0 Explain'))
             ),
@@ -3127,6 +3329,13 @@
         }
 
         function wrapWithA11y(child) {
+          var content = subtool && subtool !== 'menu'
+            ? h('div', {
+                role: 'tabpanel',
+                id: 'baking-panel-' + subtool,
+                'aria-labelledby': 'baking-tab-' + subtool
+              }, child)
+            : child;
           return h('div', {
             className: 'outline-none focus:ring-4 focus:ring-amber-400 focus:ring-inset rounded-lg',
             'data-baking-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'),
@@ -3135,7 +3344,7 @@
             'aria-label': 'Baking Lab. Keyboard shortcuts: 1 through ' + _BK_SUBTOOL_IDS.length + ' pick an activity, M or Escape returns to menu.',
             tabIndex: 0,
             onKeyDown: onBakeKey
-          }, child, makeAiPanel());
+          }, content, makeAiPanel());
         }
 
         // === H7b'' inquiry widget: caramel discovery ===
@@ -3191,7 +3400,7 @@
                   )
                 ),
                 // Warm burner heat halo under copper saucepan
-                !isContrast && h('ellipse', { cx: 60, cy: 66, rx: 50, ry: 12, fill: 'url(#bkBurnerGlow)' }),
+                !isContrast && h('ellipse', { cx: 60, cy: 66, rx: 50, ry: 12, fill: 'url(#bkBurnerGlow)', className: 'bk-oven-glow bk-motion-deco' }),
                 // Copper saucepan handle with metallic sheen
                 h('line', { x1: 102, y1: 42, x2: 132, y2: 34, stroke: isContrast ? '#ffff00' : '#9a3412', strokeWidth: 6.5, strokeLinecap: 'round' }),
                 !isContrast && h('line', { x1: 104, y1: 40.5, x2: 130, y2: 33, stroke: '#fed7aa', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.72 }),
@@ -3199,17 +3408,17 @@
                 h('ellipse', { cx: 60, cy: 48, rx: 46, ry: 22, fill: isContrast ? '#000000' : 'url(#bkCopperPan)', stroke: isContrast ? '#ffff00' : '#f59e0b', strokeWidth: 2.4 }),
                 // Discrete 4-band sugar surface inside pan
                 h('ellipse', { cx: 60, cy: 46, rx: 38, ry: 16, fill: isContrast ? (stage === 'raw' ? '#000000' : (stage === 'burnt' ? '#333333' : '#ffff00')) : stageMeta.panFill, stroke: isContrast ? '#00ff00' : '#78350f', strokeWidth: 1.5 }),
-                !isContrast && stage !== 'burnt' && h('ellipse', { cx: 48, cy: 40, rx: 14, ry: 4.5, fill: '#ffffff', opacity: stage === 'raw' ? 0.35 : 0.28 }),
+                !isContrast && stage !== 'burnt' && h('ellipse', { cx: 48, cy: 40, rx: 14, ry: 4.5, fill: '#ffffff', opacity: stage === 'raw' ? 0.35 : 0.28, className: (stage === 'light' || stage === 'perfect') ? 'bk-bar-sheen bk-motion-deco' : undefined }),
                 // Discrete visual cues per stage (strictly 4 states)
                 stage === 'raw' && h('g', { fill: isContrast ? '#ffff00' : '#cbd5e1' },
                   h('circle', { cx: 48, cy: 44, r: 2.2 }), h('circle', { cx: 60, cy: 48, r: 2.2 }), h('circle', { cx: 72, cy: 43, r: 2.2 }), h('circle', { cx: 56, cy: 41, r: 2 })
                 ),
-                stage === 'light' && h('path', { d: 'M 42 46 Q 60 52, 78 46', fill: 'none', stroke: isContrast ? '#000000' : '#fffbeb', strokeWidth: 2, opacity: 0.85 }),
-                stage === 'perfect' && h('path', { d: 'M 40 45 Q 60 37, 80 45', fill: 'none', stroke: isContrast ? '#000000' : '#fef3c7', strokeWidth: 2.5, strokeLinecap: 'round' }),
+                stage === 'light' && h('path', { d: 'M 42 46 Q 60 52, 78 46', fill: 'none', stroke: isContrast ? '#000000' : '#fffbeb', strokeWidth: 2, opacity: 0.85, className: isContrast ? undefined : 'bk-bar-sheen' }),
+                stage === 'perfect' && h('path', { d: 'M 40 45 Q 60 37, 80 45', fill: 'none', stroke: isContrast ? '#000000' : '#fef3c7', strokeWidth: 2.5, strokeLinecap: 'round', className: isContrast ? undefined : 'bk-bar-sheen' }),
                 stage === 'burnt' && h('g', { stroke: isContrast ? '#ffff00' : '#94a3b8', strokeWidth: 2, fill: 'none', strokeLinecap: 'round' },
-                  h('path', { d: 'M 46 32 Q 42 20, 48 12' }),
-                  h('path', { d: 'M 62 30 Q 58 18, 64 10' }),
-                  h('path', { d: 'M 76 32 Q 72 20, 78 12' })
+                  h('path', { d: 'M 46 32 Q 42 20, 48 12', className: isContrast ? undefined : 'bk-steam-drift', style: isContrast ? undefined : { animationDelay: '0s' } }),
+                  h('path', { d: 'M 62 30 Q 58 18, 64 10', className: isContrast ? undefined : 'bk-steam-drift', style: isContrast ? undefined : { animationDelay: '0.55s' } }),
+                  h('path', { d: 'M 76 32 Q 72 20, 78 12', className: isContrast ? undefined : 'bk-steam-drift', style: isContrast ? undefined : { animationDelay: '1.1s' } })
                 )
               ),
               h('div', { className: 'text-center sm:text-left flex-1', style: { minWidth: 0 } },
@@ -3243,7 +3452,7 @@
                       'aria-label': m === 'dry' ? __alloT('stem.bakingscience.moisture_dry', 'Dry moisture') : __alloT('stem.bakingscience.moisture_wet', 'Wet moisture'),
                       className: 'px-3 py-1 rounded text-xs font-bold border transition-colors cursor-pointer',
                       style: active
-                        ? { background: isContrast ? '#00ff00' : '#b45309', color: isContrast ? '#000000' : '#ffffff', borderColor: isContrast ? '#00ff00' : '#92400e' }
+                        ? { background: isContrast ? '#000000' : '#b45309', color: isContrast ? '#00ff00' : '#ffffff', borderColor: isContrast ? '#ffff00' : '#92400e' }
                         : { background: themeSubtle, color: themeInk, borderColor: themeBorder } }, m);
                   })))
             ),

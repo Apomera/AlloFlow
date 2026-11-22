@@ -447,8 +447,27 @@ function DisproTrendChart({ trend, tt }) {
 // ── Results block (shared by live analysis and saved view) ──────────
 function DisproResults({ analysis, result, tt }) {
   const flagged = result.rows.filter((r) => r.flags.length > 0);
+  const overallRate = result.totals.enrollment > 0
+    ? disproFmtPct(result.totals.students / result.totals.enrollment)
+    : '—';
   return (
     <div>
+      <div data-dispro-highlights="true" className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+          <span className="block text-[11px] font-bold uppercase tracking-wide text-slate-600">{tt('dispro.hl_enrollment', 'Total enrolled')}</span>
+          <span className="block text-base font-bold text-slate-900 tabular-nums">{result.totals.enrollment.toLocaleString()}</span>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+          <span className="block text-[11px] font-bold uppercase tracking-wide text-slate-600">{tt('dispro.hl_overall', 'Overall outcome rate')}</span>
+          <span className="block text-base font-bold text-slate-900 tabular-nums">{overallRate} <span className="text-xs font-normal text-slate-600">({result.totals.students.toLocaleString()})</span></span>
+        </div>
+        <div className={'rounded-xl border px-3 py-2 ' + (flagged.length > 0 ? 'border-amber-300 bg-amber-50' : 'border-emerald-200 bg-emerald-50')}>
+          <span className={'block text-[11px] font-bold uppercase tracking-wide ' + (flagged.length > 0 ? 'text-amber-900' : 'text-emerald-900')}>{tt('dispro.hl_stability', 'Cell stability')}</span>
+          <span className={'block text-sm font-bold ' + (flagged.length > 0 ? 'text-amber-900' : 'text-emerald-900')}>
+            {flagged.length > 0 ? (flagged.length + ' ' + tt('dispro.hl_flagged', 'group(s) with caution †')) : tt('dispro.hl_stable', 'All cells meet floor')}
+          </span>
+        </div>
+      </div>
       <div className="overflow-x-auto bg-white border border-slate-300 rounded-xl p-2 mt-2">
         <table className="w-full text-xs border-collapse">
           <caption className="text-left text-sm font-bold text-slate-700 p-1">{(analysis.outcomeLabel || tt('dispro.results_caption', 'Results'))} — {analysis.date}</caption>
@@ -714,6 +733,85 @@ function DisproAnalyzerPanel(props) {
   };
 
   const viewAnalysis = viewId ? analyses.find((a) => a.id === viewId) : null;
+  const [copiedSummaryKey, setCopiedSummaryKey] = React.useState(null);
+  const [savedQuery, setSavedQuery] = React.useState('');
+  const copyTimerRef = React.useRef(null);
+  const mountedRef = React.useRef(true);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (copyTimerRef.current) { clearTimeout(copyTimerRef.current); copyTimerRef.current = null; }
+    };
+  }, []);
+
+  const hasDraftData = (draft.groups || []).some((g) => g && (String(g.name || '').trim() || String(g.enrollment || '').trim() || String(g.students || '').trim()));
+
+  const loadSampleCounts = () => {
+    setArmClear(false);
+    setDraft((d) => ({
+      ...d,
+      title: d.title || tt('dispro.sample_title', 'Sample — Review counts'),
+      groups: [
+        { name: 'Students with IEPs', enrollment: '120', students: '18' },
+        { name: 'All other students', enrollment: '880', students: '44' },
+      ],
+    }));
+    disproAnnounce(tt('dispro.sample_loaded_announce', 'Sample aggregate counts loaded. Replace with your school’s counts before saving.'));
+  };
+
+  const copySummaryFor = React.useCallback((key, analysis, res) => {
+    if (!res || !res.valid) return;
+    const lines = [];
+    lines.push((analysis.title || analysis.outcomeLabel || tt('dispro.results_caption', 'Disproportionality analysis')) + (analysis.date ? (' (' + analysis.date + ')') : ''));
+    lines.push(tt('dispro.outcome_label', 'Outcome') + ': ' + (analysis.outcomeLabel || '—'));
+    lines.push('');
+    res.rows.forEach((r) => {
+      const rrText = disproFmtRatio(r.riskRatio);
+      const altText = r.altRiskRatio != null && (r.flags.indexOf('small_comparison') !== -1 || r.flags.indexOf('zero_comparison_risk') !== -1)
+        ? (' (alt ' + r.altRiskRatio.toFixed(2) + ')')
+        : '';
+      lines.push('- ' + r.name + (r.flags.length ? ' †' : '') + ': ' + r.students + '/' + r.enrollment + ' (' + disproFmtPct(r.risk) + '), RR ' + rrText + altText);
+    });
+    lines.push('Total: ' + res.totals.students + '/' + res.totals.enrollment + ' (' + (res.totals.enrollment > 0 ? disproFmtPct(res.totals.students / res.totals.enrollment) : '—') + ')');
+    lines.push('');
+    lines.push('Descriptive risk ratios only (34 CFR 300.647 comparison vs. all other students; unduplicated student counts). States set their own thresholds and cell minimums; verify locally.');
+    const payload = lines.join('\n');
+    const markCopied = () => {
+      if (!mountedRef.current) return;
+      setCopiedSummaryKey(key);
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => { if (mountedRef.current) setCopiedSummaryKey(null); }, 2200);
+      disproAnnounce(tt('dispro.copied_announce', 'Analysis summary copied.'));
+    };
+    const fallbackCopy = () => {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = payload;
+        ta.setAttribute('readonly', '');
+        ta.setAttribute('aria-hidden', 'true');
+        ta.setAttribute('aria-label', 'Clipboard copy helper');
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand && document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (ok) { markCopied(); return; }
+      } catch (_) {}
+      addToast(tt('dispro.copy_failed', 'Could not copy automatically — use Export results (CSV) instead.'), 'warning');
+    };
+    if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      Promise.resolve(navigator.clipboard.writeText(payload)).then(markCopied, fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+  }, [addToast, tt]);
+
+  const normalizedSavedQuery = savedQuery.trim().toLowerCase();
+  const filteredAnalyses = normalizedSavedQuery
+    ? analyses.filter((a) => (String(a.title || '') + ' ' + String(a.outcomeLabel || '') + ' ' + String(a.date || '')).toLowerCase().indexOf(normalizedSavedQuery) !== -1)
+    : analyses;
 
   const tabs = [
     { id: 'analyze', label: tt('dispro.tab_analyze', 'Analyze'), icon: '⚖️' },
@@ -831,9 +929,18 @@ function DisproAnalyzerPanel(props) {
                 <div className="mt-1.5 flex flex-wrap gap-2">
                   <button type="button" onClick={addRow} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100">+ {tt('dispro.add_row', 'Add group')}</button>
                   <button type="button" aria-expanded={pasteOpen} onClick={() => setPasteOpen((v) => !v)} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100"><span aria-hidden="true">📋</span> {tt('dispro.paste_toggle', 'Paste rows')}</button>
+                  {!hasDraftData && (
+                    <button
+                      type="button"
+                      data-dispro-load-sample="true"
+                      onClick={loadSampleCounts}
+                      className="min-h-11 px-3 py-2 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-800 text-sm font-bold hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
+                    >
+                      <span aria-hidden="true">✨</span> {tt('dispro.load_sample', 'Load example')}
+                    </button>
+                  )}
                   <button type="button" onClick={() => {
-                    const hasData = (draft.groups || []).some((g) => g && (String(g.name || '').trim() || String(g.enrollment || '').trim() || String(g.students || '').trim()));
-                    if (hasData && !armClear) {
+                    if (hasDraftData && !armClear) {
                       setArmClear(true);
                       disproAnnounce(tt('dispro.clear_arm_announce', 'Activate Clear again to erase all entered counts.'));
                       return;
@@ -889,32 +996,54 @@ function DisproAnalyzerPanel(props) {
                 <p className="mt-2 text-xs text-slate-600">{tt('dispro.need_rows', 'Enter at least two groups (e.g. the group of interest and everyone else, or every demographic group) — results appear automatically.')}</p>
               )}
               {result.valid && (
-                <div className="mt-2">
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    data-dispro-copy-summary="draft"
+                    onClick={() => copySummaryFor('draft', draft, result)}
+                    className={'min-h-11 px-3 py-2 rounded-lg border text-sm font-bold focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none ' + (copiedSummaryKey === 'draft' ? 'border-emerald-400 bg-emerald-50 text-emerald-800' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100')}
+                  >
+                    {copiedSummaryKey === 'draft' ? ('✓ ' + tt('dispro.copied_short', 'Copied')) : ('📋 ' + tt('dispro.copy_summary', 'Copy summary'))}
+                  </button>
                   <button type="button" onClick={() => exportCsvFor({ ...draft })} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100"><span aria-hidden="true">⬇️</span> {tt('dispro.export_csv', 'Export results (CSV)')}</button>
                 </div>
               )}
             </div>
           )}
 
-          {tab === 'saved' && viewAnalysis && (
-            <div>
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <button type="button" onClick={() => setViewId(null)} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50"><span aria-hidden="true">←</span> {tt('dispro.back_saved', 'All analyses')}</button>
-                <div className="flex gap-2">
-                  <button type="button" onClick={() => exportCsvFor(viewAnalysis)} className="min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700"><span aria-hidden="true">⬇️</span> {tt('dispro.export_csv', 'Export results (CSV)')}</button>
-                  <button type="button"
-                    onClick={() => {
-                      if (armDelete === viewAnalysis.id) { setAnalyses((a) => a.filter((x) => x.id !== viewAnalysis.id)); setViewId(null); setArmDelete(null); addToast(tt('dispro.deleted_toast', 'Analysis deleted.'), 'info'); }
-                      else { setArmDelete(viewAnalysis.id); disproAnnounce(tt('dispro.delete_arm_announce', 'Activate delete again to permanently remove this analysis.')); }
-                    }}
-                    className={'min-h-11 px-3 py-2 rounded-lg border text-sm font-bold ' + (armDelete === viewAnalysis.id ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50')}
-                  >{armDelete === viewAnalysis.id ? tt('dispro.delete_confirm', 'Tap again to delete') : tt('dispro.delete', 'Delete')}</button>
+          {tab === 'saved' && viewAnalysis && (() => {
+            const savedRes = disproCompute(viewAnalysis.groups, viewAnalysis.altComparison);
+            const savedCopyKey = 'saved:' + viewAnalysis.id;
+            return (
+              <div>
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <button type="button" onClick={() => setViewId(null)} className="min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50"><span aria-hidden="true">←</span> {tt('dispro.back_saved', 'All analyses')}</button>
+                  <div className="flex flex-wrap gap-2">
+                    {savedRes.valid && (
+                      <button
+                        type="button"
+                        data-dispro-copy-summary="saved"
+                        onClick={() => copySummaryFor(savedCopyKey, viewAnalysis, savedRes)}
+                        className={'min-h-11 px-3 py-2 rounded-lg border text-sm font-bold focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none ' + (copiedSummaryKey === savedCopyKey ? 'border-emerald-400 bg-emerald-50 text-emerald-800' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100')}
+                      >
+                        {copiedSummaryKey === savedCopyKey ? ('✓ ' + tt('dispro.copied_short', 'Copied')) : ('📋 ' + tt('dispro.copy_summary', 'Copy summary'))}
+                      </button>
+                    )}
+                    <button type="button" onClick={() => exportCsvFor(viewAnalysis)} className="min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700"><span aria-hidden="true">⬇️</span> {tt('dispro.export_csv', 'Export results (CSV)')}</button>
+                    <button type="button"
+                      onClick={() => {
+                        if (armDelete === viewAnalysis.id) { setAnalyses((a) => a.filter((x) => x.id !== viewAnalysis.id)); setViewId(null); setArmDelete(null); addToast(tt('dispro.deleted_toast', 'Analysis deleted.'), 'info'); }
+                        else { setArmDelete(viewAnalysis.id); disproAnnounce(tt('dispro.delete_arm_announce', 'Activate delete again to permanently remove this analysis.')); }
+                      }}
+                      className={'min-h-11 px-3 py-2 rounded-lg border text-sm font-bold ' + (armDelete === viewAnalysis.id ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50')}
+                    >{armDelete === viewAnalysis.id ? tt('dispro.delete_confirm', 'Tap again to delete') : tt('dispro.delete', 'Delete')}</button>
+                  </div>
                 </div>
+                <h3 className="text-sm font-bold text-slate-800">{viewAnalysis.title}</h3>
+                <DisproResults analysis={viewAnalysis} result={savedRes} tt={tt} />
               </div>
-              <h3 className="text-sm font-bold text-slate-800">{viewAnalysis.title}</h3>
-              <DisproResults analysis={viewAnalysis} result={disproCompute(viewAnalysis.groups, viewAnalysis.altComparison)} tt={tt} />
-            </div>
-          )}
+            );
+          })()}
 
           {tab === 'trends' && (() => {
             const trends = disproTrendSeries(analyses);
@@ -935,10 +1064,33 @@ function DisproAnalyzerPanel(props) {
 
           {tab === 'saved' && !viewAnalysis && (
             <div>
-              <h3 className="text-sm font-bold text-slate-700 mb-2">{tt('dispro.saved_title', 'Saved analyses')}</h3>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <h3 className="text-sm font-bold text-slate-700">{tt('dispro.saved_title', 'Saved analyses')} ({analyses.length})</h3>
+                {analyses.length >= 4 && (
+                  <input
+                    id="dispro-saved-search"
+                    type="search"
+                    value={savedQuery}
+                    onChange={(e) => setSavedQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
+                      if (e.key === 'Escape' && savedQuery) { e.preventDefault(); e.stopPropagation(); setSavedQuery(''); }
+                    }}
+                    aria-label={tt('dispro.saved_search_aria', 'Filter saved analyses by title or outcome')}
+                    placeholder={tt('dispro.saved_search_placeholder', 'Find analysis or outcome…')}
+                    className="min-h-11 w-48 rounded-lg border border-slate-300 bg-white px-2.5 text-xs text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
+                  />
+                )}
+              </div>
               {analyses.length === 0 && <p className="text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3">{tt('dispro.no_saved', 'Nothing saved yet. Build an analysis on the Analyze tab and save it.')}</p>}
+              {analyses.length > 0 && filteredAnalyses.length === 0 && (
+                <div className="bg-white border border-slate-300 rounded-xl p-3 mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm text-slate-700">{tt('dispro.no_matching_saved', 'No saved analyses match your search.')}</p>
+                  <button type="button" onClick={() => setSavedQuery('')} className="min-h-11 px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none">{tt('dispro.clear_search', 'Clear')}</button>
+                </div>
+              )}
               <ul className="space-y-1.5">
-                {analyses.map((a) => (
+                {filteredAnalyses.map((a) => (
                   <li key={a.id}>
                     <button type="button" onClick={() => { setViewId(a.id); setArmDelete(null); }}
                       className="w-full min-h-11 flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-300 bg-white hover:bg-indigo-50 text-left">

@@ -5765,20 +5765,25 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               repairIssue = 'too_long';
           }
           if (repairIssue) {
-              const guardedRepair = await runCitationGuardedTransform(
-                  trimmedTarget,
-                  (protectedText, isRetry) => repairGeneratedText(
-                      protectedText,
-                      repairIssue,
-                      targetWords,
-                      `${repairCtx}.${hasProtectedCitationTokens(protectedText) ? ' Protected citation tokens matching ⟦ALLOFLOW_CITATION_####⟧ must each remain exactly once.' : ' Do not add citation markers or tokens.'}${isRetry ? ' This is a retry after citation validation failed.' : ''}`,
-                      false
-                  ),
-                  `length-repair-${repairIssue}`,
-                  trimmedTarget
-              );
-              if (guardedRepair.valid && guardedRepair.text.trim() !== trimmedTarget) {
-                  repaired = guardedRepair.text.trim();
+              try {
+                  const guardedRepair = await runCitationGuardedTransform(
+                      trimmedTarget,
+                      (protectedText, isRetry) => repairGeneratedText(
+                          protectedText,
+                          repairIssue,
+                          targetWords,
+                          `${repairCtx}.${hasProtectedCitationTokens(protectedText) ? ' Protected citation tokens matching ⟦ALLOFLOW_CITATION_####⟧ must each remain exactly once.' : ' Do not add citation markers or tokens.'}${isRetry ? ' This is a retry after citation validation failed.' : ''}`,
+                          false
+                      ),
+                      `length-repair-${repairIssue}`,
+                      trimmedTarget
+                  );
+                  if (guardedRepair.valid && guardedRepair.text.trim() !== trimmedTarget) {
+                      repaired = guardedRepair.text.trim();
+                  }
+              } catch (_repairErr) {
+                  throwIfGenerationAborted();
+                  warnLog(`[GenDispatcher] Optional length repair (${repairIssue}) skipped; keeping completed adaptation:`, _repairErr?.message || _repairErr);
               }
           }
           // Declared OUTSIDE both blocks: the second `if (repaired)` below both

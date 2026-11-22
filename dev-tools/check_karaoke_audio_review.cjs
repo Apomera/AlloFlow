@@ -1,7 +1,7 @@
 const fs=require('fs'),path=require('path'),assert=require('assert');const {chromium}=require('playwright');
 const ROOT=path.resolve(__dirname,'..'),OUT=path.join(ROOT,'reports/karaoke-tts-review');fs.mkdirSync(OUT,{recursive:true});
 const host=fs.readFileSync(path.join(ROOT,'AlloFlowANTI.txt'),'utf8').replace(/\r\n/g,'\n');
-const start=host.indexOf('  const _encodeReadAloudBridgeAudio ='),end=host.indexOf('  const _getReadAloudBridge',start);
+const start=host.indexOf('  const _encodeReadAloudBridgeAudio ='),end=host.indexOf('  window.__alloReadAloudProfileRevision',start);
 const encoderSource=host.slice(start,end)+'\nreturn _encodeReadAloudBridgeAudio;';
 (async()=>{
  const browser=await chromium.launch({headless:true});

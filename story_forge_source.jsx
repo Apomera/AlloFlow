@@ -2395,7 +2395,8 @@ const StoryForge = React.memo(({
   onClose,
   onCallImagen,
   onCallGeminiImageEdit,
-  onCallGemini,
+  onCallGemini: _rawOnCallGemini,
+  onSafetyFlag,
   onCallTTS,
   onCallGeminiVision,
   selectedVoice,
@@ -2441,7 +2442,30 @@ const StoryForge = React.memo(({
     try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
     return !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
   };
-  const sfTextAi = _sfAiCheck('text', onCallGemini);
+  const sfTextAi = _sfAiCheck('text', _rawOnCallGemini);
+  // Central self-harm safety gate for all StoryForge AI writing surfaces.
+  // Scoped to self_harm so creative fiction (dragons, battles, mysteries)
+  // never false-positives, while real student distress is caught before AI.
+  const onCallGemini = typeof _rawOnCallGemini === 'function' ? function(prompt, ...rest) {
+    const msg = String(prompt || '');
+    if (msg && typeof window !== 'undefined') {
+      const checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+      let flags = null;
+      try { flags = (checker && typeof checker.check === 'function') ? checker.check(msg) : null; } catch (_) { flags = null; }
+      const hit = Array.isArray(flags) && flags.find(f => f && f.category === 'self_harm' && f.severity === 'critical');
+      if (hit) {
+        if (typeof onSafetyFlag === 'function') {
+          try { onSafetyFlag(Object.assign({}, hit, { source: 'story_forge_ai', context: msg.slice(0, 100), aiGenerated: false })); } catch (_) {}
+        }
+        if (addToast) addToast('We paused StoryForge AI for a moment because what was written sounds heavy. Please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). You are not alone.', 'warn');
+        if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+          try { window.SelHub.showCrisisModal({ toolName: 'StoryForge', contentSnippet: msg.slice(0, 200) }); } catch (_) {}
+        }
+        return Promise.reject(Object.assign(new Error('Paused for safety'), { code: 'safety-paused' }));
+      }
+    }
+    return _rawOnCallGemini(prompt, ...rest);
+  } : _rawOnCallGemini;
   const sfVisionAi = _sfAiCheck('vision', onCallGeminiVision);
   const sfImageEditAi = _sfAiCheck('imageEdit', onCallGeminiImageEdit);
   const sfImagenAi = _sfAiCheck('images', onCallImagen);

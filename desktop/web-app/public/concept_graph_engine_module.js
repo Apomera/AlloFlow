@@ -30,19 +30,115 @@
  */
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.ConceptGraphEngine) {
     console.log('[ConceptGraphEngine] Already loaded, skipping');
     return;
   }
 
   var VERSION = 'acg/v1';
-  var EDGE_TYPES = {
+  var EDGE_TYPES = Object.freeze({
     sequence: 1, prerequisite: 1, cause: 1, contrast: 1, elaborates: 1, associates: 1,
     alignedTo: 1, evidencedBy: 1, assessedBy: 1, contains: 1, relatedTo: 1, generatedFor: 1
-  };
+  });
 
-  function isNum(v) { return typeof v === 'number' && !isNaN(v); }
+  function hasOwn(obj, key) { return !!obj && Object.prototype.hasOwnProperty.call(obj, key); }
+  function isUnsafeKey(key) { return key === '__proto__' || key === 'prototype' || key === 'constructor'; }
+  function isNum(v) { return typeof v === 'number' && isFinite(v); }
   function num(v, d) { return isNum(v) ? v : d; }
+
+  function safeShallowCopy(src) {
+    var out = {};
+    if (!src || typeof src !== 'object') return out;
+    var keys = Object.keys(src);
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      if (!isUnsafeKey(k)) out[k] = src[k];
+    }
+    return out;
+  }
+
+  function safeJsonParse(str, maxBytes) {
+    var cap = maxBytes || 512000;
+    if (typeof str !== 'string' || !str || str.length > cap) return null;
+    try {
+      return JSON.parse(str, function (key, val) {
+        return isUnsafeKey(key) ? undefined : val;
+      });
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function sanitizeSourceUrl(value) {
+    var raw = auditText(value);
+    if (!raw || raw.length > 2048 || /[\u0000-\u001F\u007F\s"'<>`\\]/.test(raw)) return null;
+    try {
+      var parsed = new URL(raw);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+      if (parsed.username || parsed.password || !parsed.hostname) return null;
+      return raw;
+    } catch (e) {
+      return /^https?:\/\/[^\s"'<>`\\]+$/i.test(raw) ? raw : null;
+    }
+  }
+
+  function sanitizeRelationSource(value) {
+    var raw = auditText(value).slice(0, 400);
+    if (!raw) return null;
+    if (/^(?:javascript|vbscript|data):/i.test(raw.replace(/[\u0000-\u0020]+/g, ''))) return null;
+    return raw;
+  }
+
+  function promptLine(value, maxLen) {
+    var cap = maxLen || 200;
+    if (value == null) return '';
+    return String(value).replace(/[\r\n\u0000-\u001F\u007F]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, cap);
+  }
+
+  function sanitizeAxisDescriptor(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    var out = {};
+    if (typeof raw.label === 'string') out.label = raw.label.slice(0, 200);
+    if (typeof raw.labelKey === 'string' && raw.labelKey) out.labelKey = raw.labelKey.slice(0, 120);
+    if (typeof raw.kind === 'string' && raw.kind) out.kind = raw.kind.slice(0, 40);
+    if (Array.isArray(raw.categories)) {
+      out.categories = raw.categories.slice(0, 100).filter(function (c) { return typeof c === 'string' && c; }).map(function (c) { return c.slice(0, 160); });
+    }
+    return Object.keys(out).length ? out : null;
+  }
+
+  function sanitizeAxesObject(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    var out = {};
+    ['x', 'y', 'z'].forEach(function (axis) {
+      if (hasOwn(raw, axis)) {
+        var clean = sanitizeAxisDescriptor(raw[axis]);
+        if (clean) out[axis] = clean;
+      }
+    });
+    return Object.keys(out).length ? out : null;
+  }
+
+  function canUseAi(fn) {
+    if (typeof fn !== 'function') return false;
+    if (fn._alloQrBlocked === true) return false;
+    if (typeof window !== 'undefined') {
+      if (window.__alloStudentAiDisabled === true) return false;
+      if (window.__alloAiSecretsLocked === true) return false;
+      if (window._alloQrBlocked === true) return false;
+      var qr = window.__alloQrStudentMode;
+      if (qr === true || (qr && typeof qr === 'object' && (qr.aiDisabled === true || qr.aiPolicy === 'off'))) return false;
+      if (typeof window.__alloAiUsable === 'function') {
+        try {
+          if (window.__alloAiUsable('text', fn) === false) return false;
+        } catch (e) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 
   function emptyGraph() {
     return { version: VERSION, title: '', axes: null, nodes: [], edges: [], layers: [], meta: {} };
@@ -54,21 +150,48 @@
   // load-bearing accessibility artifact (the print/copy/screen-reader order),
   // so it MUST stay behaviourally identical to Throughline's.
   function deriveOutline(graph) {
-    var nodes = (graph && Array.isArray(graph.nodes)) ? graph.nodes.slice() : [];
-    var edges = (graph && Array.isArray(graph.edges)) ? graph.edges : [];
+    var nodes = (graph && Array.isArray(graph.nodes)) ? graph.nodes.filter(function (n) { return !!n && typeof n === 'object'; }) : [];
+    var edges = (graph && Array.isArray(graph.edges)) ? graph.edges.filter(function (e) { return !!e && typeof e === 'object'; }) : [];
     var byX = nodes.slice().sort(function (a, b) { return (num(a.x, 0) - num(b.x, 0)) || (num(a.y, 0) - num(b.y, 0)); });
     var indeg = Object.create(null), adj = Object.create(null);
     nodes.forEach(function (n) { indeg[n.id] = 0; adj[n.id] = []; });
     edges.forEach(function (e) { if (adj[e.fromId] && indeg[e.toId] != null) { adj[e.fromId].push(e.toId); indeg[e.toId]++; } });
-    var ready = byX.filter(function (n) { return indeg[n.id] === 0; }).map(function (n) { return n.id; });
-    var order = [];
     var localIndeg = Object.create(null); nodes.forEach(function (n) { localIndeg[n.id] = indeg[n.id]; });
     var posOf = Object.create(null); byX.forEach(function (n, i) { posOf[n.id] = i; });
-    while (ready.length) {
-      ready.sort(function (a, b) { return posOf[a] - posOf[b]; });
-      var id = ready.shift();
+    var heap = [];
+    function heapPush(id) {
+      heap.push(id);
+      var i = heap.length - 1;
+      while (i > 0) {
+        var p = (i - 1) >> 1;
+        if (posOf[heap[p]] <= posOf[heap[i]]) break;
+        var tmp = heap[p]; heap[p] = heap[i]; heap[i] = tmp;
+        i = p;
+      }
+    }
+    function heapPop() {
+      var top = heap[0];
+      var last = heap.pop();
+      if (heap.length) {
+        heap[0] = last;
+        var i = 0, len = heap.length;
+        while (true) {
+          var l = (i << 1) + 1, r = l + 1, sm = i;
+          if (l < len && posOf[heap[l]] < posOf[heap[sm]]) sm = l;
+          if (r < len && posOf[heap[r]] < posOf[heap[sm]]) sm = r;
+          if (sm === i) break;
+          var tmp = heap[i]; heap[i] = heap[sm]; heap[sm] = tmp;
+          i = sm;
+        }
+      }
+      return top;
+    }
+    byX.forEach(function (n) { if (indeg[n.id] === 0) heapPush(n.id); });
+    var order = [];
+    while (heap.length) {
+      var id = heapPop();
       order.push(id);
-      (adj[id] || []).forEach(function (to) { localIndeg[to]--; if (localIndeg[to] === 0) ready.push(to); });
+      (adj[id] || []).forEach(function (to) { localIndeg[to]--; if (localIndeg[to] === 0) heapPush(to); });
     }
     if (order.length !== nodes.length) {
       return { order: byX.map(function (n) { return n.id; }), hasCycle: true };
@@ -101,6 +224,7 @@
   // something (and keeps it reproducible/testable). Nodes without axisValues
   // keep whatever x/y they already have (manual drag / legacy layout).
   function project(graph, opts) {
+    if (!graph || typeof graph !== 'object') return emptyGraph();
     opts = opts || {};
     var width = num(opts.width, 2000), height = num(opts.height, 1200), planeGap = num(opts.planeGap, 300);
     var catDepth = opts.categoryDepth !== false;   // category-lane → depth plane, even without axisValues
@@ -115,7 +239,9 @@
         else ungroupedPlane = l.index;
       });
     }
-    var nodes = graph.nodes.map(function (n) {
+    var rawNodes = Array.isArray(graph.nodes) ? graph.nodes : [];
+    var nodes = rawNodes.map(function (n) {
+      if (!n || typeof n !== 'object') return n;
       var av = (n.axisValues && typeof n.axisValues === 'object') ? n.axisValues : null;
       var cat = (typeof n.category === 'string' && n.category) ? n.category : null;
       var hasX = !!(av && isNum(av.x)), hasY = !!(av && isNum(av.y));
@@ -143,7 +269,8 @@
     graph = normalizeGraph(graph);
     var axisValues = {}, categories = {};
     (graph.nodes || []).forEach(function (n) {
-      if (n.axisValues && typeof n.axisValues === 'object' && Object.keys(n.axisValues).length) axisValues[n.id] = Object.assign({}, n.axisValues);
+      if (!n || typeof n !== 'object' || n.id == null || isUnsafeKey(String(n.id))) return;
+      if (n.axisValues && typeof n.axisValues === 'object' && Object.keys(n.axisValues).length) axisValues[n.id] = safeShallowCopy(n.axisValues);
       if (typeof n.category === 'string' && n.category) categories[n.id] = n.category;
     });
     return { axes: graph.axes || null, axisValues: axisValues, categories: categories };
@@ -151,15 +278,29 @@
 
   function applyArrangement(graph, arrangement) {
     graph = normalizeGraph(graph);
-    if (!arrangement || typeof arrangement !== 'object') return graph;
-    var av = arrangement.axisValues || {}, cats = arrangement.categories || {};
-    var nodes = graph.nodes.map(function (n) {
+    if (!arrangement || typeof arrangement !== 'object' || Array.isArray(arrangement)) return graph;
+    var av = (arrangement.axisValues && typeof arrangement.axisValues === 'object' && !Array.isArray(arrangement.axisValues)) ? arrangement.axisValues : {};
+    var cats = (arrangement.categories && typeof arrangement.categories === 'object' && !Array.isArray(arrangement.categories)) ? arrangement.categories : {};
+    var nodes = (Array.isArray(graph.nodes) ? graph.nodes : []).map(function (n) {
+      if (!n || typeof n !== 'object') return n;
       var patch = null;
-      if (typeof cats[n.id] === 'string' && cats[n.id] && cats[n.id] !== n.category) { patch = patch || {}; patch.category = cats[n.id]; }
-      if (av[n.id] && typeof av[n.id] === 'object') { patch = patch || {}; patch.axisValues = Object.assign({}, n.axisValues || {}, av[n.id]); }
+      if (hasOwn(cats, n.id) && typeof cats[n.id] === 'string' && cats[n.id] && cats[n.id] !== n.category) {
+        patch = patch || {};
+        patch.category = cats[n.id];
+      }
+      if (hasOwn(av, n.id) && av[n.id] && typeof av[n.id] === 'object' && !Array.isArray(av[n.id])) {
+        var incoming = av[n.id];
+        var mergedAv = safeShallowCopy(n.axisValues || {});
+        if (hasOwn(incoming, 'x') && isNum(incoming.x)) mergedAv.x = incoming.x;
+        if (hasOwn(incoming, 'y') && isNum(incoming.y)) mergedAv.y = incoming.y;
+        if (hasOwn(incoming, 'z') && (typeof incoming.z === 'string' || isNum(incoming.z))) mergedAv.z = incoming.z;
+        patch = patch || {};
+        patch.axisValues = mergedAv;
+      }
       return patch ? Object.assign({}, n, patch) : n;
     });
-    var g = Object.assign({}, graph, { nodes: nodes, axes: arrangement.axes || graph.axes });
+    var nextAxes = sanitizeAxesObject(arrangement.axes) || graph.axes;
+    var g = Object.assign({}, graph, { nodes: nodes, axes: nextAxes });
     g.layers = deriveLanes(g);
     return g;
   }
@@ -173,17 +314,18 @@
     graph = normalizeGraph(graph);
     var outline = deriveOutline(graph);
     var span = Math.max(1, outline.order.length - 1);
-    var pos = {}; outline.order.forEach(function (id, i) { pos[id] = i; });
+    var pos = Object.create(null); outline.order.forEach(function (id, i) { pos[id] = i; });
     var Y_BY_TYPE = { main: 0.12, branch: 0.45, item: 0.78 };
     var changed = false;
-    var nodes = graph.nodes.map(function (n) {
+    var nodes = (Array.isArray(graph.nodes) ? graph.nodes : []).map(function (n) {
+      if (!n || typeof n !== 'object') return n;
       var hasAv = n.axisValues && (isNum(n.axisValues.x) || isNum(n.axisValues.y));
       var hasCoords = (isNum(n.x) && n.x !== 0) || (isNum(n.y) && n.y !== 0);
       if (hasAv || hasCoords) return n;
       changed = true;
-      var av = Object.assign({}, n.axisValues || {});
+      var av = safeShallowCopy(n.axisValues || {});
       av.x = (pos[n.id] != null ? pos[n.id] : 0) / span;
-      av.y = Y_BY_TYPE[n.type] != null ? Y_BY_TYPE[n.type] : 0.5;
+      av.y = hasOwn(Y_BY_TYPE, n.type) ? Y_BY_TYPE[n.type] : 0.5;
       if (av.z == null && typeof n.category === 'string' && n.category) av.z = n.category;
       return Object.assign({}, n, { axisValues: av });
     });
@@ -225,7 +367,7 @@
     var B = ctx.branches;
     if (B.length < 2 || B.length > 3) return null;
     var A = B[0], Bb = B[1], SH = B[2] || null;
-    var pos = {};
+    var pos = Object.create(null);
     if (ctx.main) pos[ctx.main.id] = { x: 0.5, y: 0.04, z: 0.5 };
     pos[A.node.id] = { x: 0.13, y: 0.24, z: 0.5 };
     pos[Bb.node.id] = { x: 0.87, y: 0.24, z: 0.5 };
@@ -250,7 +392,7 @@
   function _layoutTChart(ctx) {
     var B = ctx.branches;
     if (B.length !== 2) return null;
-    var pos = {};
+    var pos = Object.create(null);
     if (ctx.main) pos[ctx.main.id] = { x: 0.5, y: 0.08, z: 0.5 };
     B.forEach(function (b, side) {
       var wx = side === 0 ? 0.2 : 0.8;
@@ -280,7 +422,7 @@
   function _layoutFishbone(ctx) {
     var B = ctx.branches;
     if (B.length < 2) return null;
-    var pos = {};
+    var pos = Object.create(null);
     if (ctx.main) pos[ctx.main.id] = { x: 0.94, y: 0.5, z: 0.5 };
     var pairs = Math.max(1, Math.ceil(B.length / 2) - 1);
     B.forEach(function (b, k) {
@@ -313,7 +455,7 @@
     var B = ctx.branches;
     if (B.length < 2 || B.length > 3 || !ctx.main) return null;
     var C = B[0], Ef = B[1], CH = B[2] || null;
-    var pos = {}, extraEdges = [];
+    var pos = Object.create(null), extraEdges = [];
     pos[ctx.main.id] = { x: 0.5, y: 0.42, z: 0.5 };
     pos[C.node.id] = { x: 0.13, y: 0.16, z: 0.5 };
     pos[Ef.node.id] = { x: 0.87, y: 0.16, z: 0.5 };
@@ -349,7 +491,7 @@
   function _layoutQuadrants(ctx) {
     var B = ctx.branches;
     if (B.length !== 4) return null;
-    var pos = {};
+    var pos = Object.create(null);
     if (ctx.main) pos[ctx.main.id] = { x: 0.5, y: 0.5, z: 0.5 };
     var corners = [
       { x: 0.17, y: 0.2, z: 0.36 }, { x: 0.83, y: 0.2, z: 0.64 },
@@ -374,7 +516,7 @@
   function _layoutJourney(ctx) {
     var B = ctx.branches;
     if (B.length !== 3) return null;
-    var pos = {}, extraEdges = [], zones = [];
+    var pos = Object.create(null), extraEdges = [], zones = [];
     if (ctx.main) pos[ctx.main.id] = { x: 0.5, y: 0.05, z: 0.35 };
     var st = [{ x: 0.12, z: 0.3 }, { x: 0.5, z: 0.68 }, { x: 0.88, z: 0.3 }];
     B.forEach(function (b, k) {
@@ -397,7 +539,7 @@
     var B = ctx.branches;
     if (B.length !== 3) return null;
     var CL = B[0], EV = B[1], RE = B[2];
-    var pos = {}, extraEdges = [];
+    var pos = Object.create(null), extraEdges = [];
     if (ctx.main) pos[ctx.main.id] = { x: 0.5, y: 0.02, z: 0.5 };
     pos[CL.node.id] = { x: 0.5, y: 0.16, z: 0.5 };
     CL.items.forEach(function (it, i) { pos[it.id] = { x: 0.5 + (i - (CL.items.length - 1) / 2) * 0.14, y: 0.3, z: 0.5 }; });
@@ -428,7 +570,7 @@
   function _layoutArc(ctx) {
     var B = ctx.branches;
     if (B.length !== 5) return null;
-    var pos = {}, extraEdges = [];
+    var pos = Object.create(null), extraEdges = [];
     if (ctx.main) pos[ctx.main.id] = { x: 0.5, y: 0.03, z: 0.75 };
     var st = [
       { x: 0.07, y: 0.82, z: 0.3 }, { x: 0.28, y: 0.5, z: 0.4 }, { x: 0.5, y: 0.1, z: 0.5 },
@@ -457,9 +599,9 @@
   function _layoutFlow(ctx) {
     var B = ctx.branches;
     if (B.length < 2) return null;
-    var pos = {}, extraEdges = [];
+    var pos = Object.create(null), extraEdges = [];
     if (ctx.main) pos[ctx.main.id] = { x: 0.02, y: 0.5, z: 0.5 };
-    var hasSeq = (ctx.graph.edges || []).some(function (e) { return e.type === 'sequence'; });
+    var hasSeq = (Array.isArray(ctx.graph.edges) ? ctx.graph.edges : []).some(function (e) { return e && e.type === 'sequence'; });
     B.forEach(function (b, k) {
       var tt = k / (B.length - 1);
       var ang = tt * Math.PI * 1.6;
@@ -482,7 +624,7 @@
   function _layoutOrbital(ctx) {
     var B = ctx.branches;
     if (!B.length) return null;
-    var pos = {}, zones = [];
+    var pos = Object.create(null), zones = [];
     if (ctx.main) pos[ctx.main.id] = { x: 0.5, y: 0.45, z: 0.5 };
     B.forEach(function (b, k) {
       var a = (k / B.length) * Math.PI * 2;
@@ -507,7 +649,7 @@
   function _layoutCascade(ctx) {
     var B = ctx.branches;
     if (B.length < 2) return null;
-    var pos = {}, extraEdges = [], zones = [];
+    var pos = Object.create(null), extraEdges = [], zones = [];
     if (ctx.main) pos[ctx.main.id] = { x: 0.06, y: 0.05, z: 0.5 };
     var K = B.length;
     B.forEach(function (b, k) {
@@ -528,7 +670,7 @@
 
   // structureType → builder. Types NOT here ('3D Concept Space',
   // unknown/custom) keep the generic strand-plane layout on purpose.
-  var STRUCTURE_LAYOUTS = {
+  var STRUCTURE_LAYOUTS = Object.freeze({
     'Structured Outline': _layoutCascade,
     'Venn Diagram': _layoutVenn,
     'T-Chart': _layoutTChart,
@@ -542,7 +684,7 @@
     'Flow Chart': _layoutFlow,
     'Key Concept Map': _layoutOrbital,
     'Problem Solution': _layoutOrbital
-  };
+  });
 
   // Apply the organizer-shaped layout for the graph's structureType (or
   // opts.structureType). Writes numeric axisValues for every node the builder
@@ -561,10 +703,12 @@
       || (graph.meta && graph.meta.conceptMap && graph.meta.conceptMap.structureType)
       || (graph.meta && graph.meta.layout && graph.meta.layout.structureType)
       || null;
-    var builder = type ? STRUCTURE_LAYOUTS[type] : null;
+    var builder = (typeof type === 'string' && hasOwn(STRUCTURE_LAYOUTS, type)) ? STRUCTURE_LAYOUTS[type] : null;
     if (!builder) return graph;
-    var main = null, branches = [], byCat = {};
-    graph.nodes.forEach(function (n) {
+    var main = null, branches = [], byCat = Object.create(null);
+    var rawNodes = Array.isArray(graph.nodes) ? graph.nodes : [];
+    rawNodes.forEach(function (n) {
+      if (!n || typeof n !== 'object') return;
       if (n.type === 'main' && !main) main = n;
       else if (n.type === 'branch') {
         var b = { node: n, items: [] };
@@ -573,16 +717,19 @@
         if (key && !byCat[key]) byCat[key] = b;
       }
     });
-    graph.nodes.forEach(function (n) {
-      if (n.type === 'item' && byCat[n.category]) byCat[n.category].items.push(n);
+    rawNodes.forEach(function (n) {
+      if (n && typeof n === 'object' && n.type === 'item' && typeof n.category === 'string' && byCat[n.category]) {
+        byCat[n.category].items.push(n);
+      }
     });
     var res = builder({ graph: graph, main: main, branches: branches });
     if (!res || !res.pos) return graph;
     var only = null;
-    if (Array.isArray(opts.onlyIds)) { only = {}; opts.onlyIds.forEach(function (id) { only[id] = 1; }); }
+    if (Array.isArray(opts.onlyIds)) { only = Object.create(null); opts.onlyIds.forEach(function (id) { only[id] = 1; }); }
     var changed = false;
-    var nodes = graph.nodes.map(function (n) {
-      var p = res.pos[n.id];
+    var nodes = rawNodes.map(function (n) {
+      if (!n || typeof n !== 'object') return n;
+      var p = hasOwn(res.pos, n.id) ? res.pos[n.id] : null;
       if (!p || (only && !only[n.id])) return n;
       changed = true;
       return Object.assign({}, n, { axisValues: Object.assign({}, n.axisValues || {}, { x: clamp01(p.x), y: clamp01(p.y), z: clamp01(p.z) }) });
@@ -593,16 +740,17 @@
       g.axes = res.axes || g.axes;
       g.meta = Object.assign({}, g.meta, { layout: Object.assign({ structureType: type }, res.layout || {}) });
       if (Array.isArray(res.extraEdges) && res.extraEdges.length) {
-        var have = {}; (g.edges || []).forEach(function (e) { if (e && e.id) have[e.id] = 1; });
+        var existingEdges = Array.isArray(g.edges) ? g.edges : [];
+        var have = Object.create(null); existingEdges.forEach(function (e) { if (e && e.id) have[e.id] = 1; });
         var add = [];
         res.extraEdges.forEach(function (e) {
           if (!e || !e.fromId || !e.toId) return;
           var id = 'e_layout_' + e.fromId + '_' + e.toId;
           if (have[id]) return;
           have[id] = 1;
-          add.push({ id: id, fromId: e.fromId, toId: e.toId, type: EDGE_TYPES[e.type] ? e.type : 'sequence' });
+          add.push({ id: id, fromId: e.fromId, toId: e.toId, type: (typeof e.type === 'string' && hasOwn(EDGE_TYPES, e.type)) ? e.type : 'sequence' });
         });
-        if (add.length) g.edges = (g.edges || []).concat(add);
+        if (add.length) g.edges = existingEdges.concat(add);
       }
     }
     return g;
@@ -615,10 +763,10 @@
     graph = normalizeGraph(graph);
     var cat = (typeof category === 'string' && category) ? category : null;
     var found = false;
-    var nodes = graph.nodes.map(function (n) {
-      if (n.id !== id) return n;
+    var nodes = (Array.isArray(graph.nodes) ? graph.nodes : []).map(function (n) {
+      if (!n || typeof n !== 'object' || n.id !== id) return n;
       found = true;
-      var av = Object.assign({}, n.axisValues || {});
+      var av = safeShallowCopy(n.axisValues || {});
       if (cat) av.z = cat; else delete av.z;
       return Object.assign({}, n, { category: cat, axisValues: av });
     });
@@ -636,15 +784,17 @@
     graph = normalizeGraph(graph);
     if (axis !== 'x' && axis !== 'y') return graph;
     opts = opts || {};
-    var scale = axis === 'x' ? num(opts.width, 2000) : num(opts.height, 1200);
+    var rawScale = axis === 'x' ? num(opts.width, 2000) : num(opts.height, 1200);
+    var scale = rawScale > 0 ? rawScale : (axis === 'x' ? 2000 : 1200);
+    var rawNodes = Array.isArray(graph.nodes) ? graph.nodes : [];
     var node = null;
-    for (var i = 0; i < graph.nodes.length; i++) { if (graph.nodes[i].id === id) { node = graph.nodes[i]; break; } }
+    for (var i = 0; i < rawNodes.length; i++) { if (rawNodes[i] && rawNodes[i].id === id) { node = rawNodes[i]; break; } }
     if (!node) return graph;
     var cur = (node.axisValues && isNum(node.axisValues[axis])) ? node.axisValues[axis] : clamp01(num(node[axis], 0) / scale);
     var next = clamp01(cur + (isNum(delta) ? delta : 0));
-    var nodes = graph.nodes.map(function (n) {
-      if (n.id !== id) return n;
-      var av = Object.assign({}, n.axisValues || {});
+    var nodes = rawNodes.map(function (n) {
+      if (!n || typeof n !== 'object' || n.id !== id) return n;
+      var av = safeShallowCopy(n.axisValues || {});
       av[axis] = next;
       return Object.assign({}, n, { axisValues: av });
     });
@@ -660,22 +810,23 @@
   // unit-testable without WebGL.
   function buildStrandChallenge(graph) {
     graph = normalizeGraph(graph);
-    var answerKey = {}, targets = [], strands = [], seenStrand = {};
-    graph.nodes.forEach(function (n) {
-      if (n.type === 'item' && typeof n.category === 'string' && n.category) {
-        answerKey[n.id] = n.category;
+    var answerKey = {}, targets = [], strands = [], seenStrand = Object.create(null);
+    var rawNodes = Array.isArray(graph.nodes) ? graph.nodes : [];
+    rawNodes.forEach(function (n) {
+      if (n && typeof n === 'object' && n.type === 'item' && typeof n.category === 'string' && n.category) {
+        if (n.id != null && !isUnsafeKey(String(n.id))) answerKey[n.id] = n.category;
         targets.push(n.id);
         if (!seenStrand[n.category]) { seenStrand[n.category] = true; strands.push(n.category); }
       }
     });
     var targetSet = Object.create(null); targets.forEach(function (id) { targetSet[id] = 1; });
-    var nodes = graph.nodes.map(function (n) {
-      if (!targetSet[n.id]) return n;
-      var av = Object.assign({}, n.axisValues || {});
+    var nodes = rawNodes.map(function (n) {
+      if (!n || typeof n !== 'object' || !targetSet[n.id]) return n;
+      var av = safeShallowCopy(n.axisValues || {});
       delete av.z;
       return Object.assign({}, n, { category: null, z: 0, axisValues: av });
     });
-    var edges = (graph.edges || []).filter(function (e) { return !targetSet[e.fromId] && !targetSet[e.toId]; });
+    var edges = (Array.isArray(graph.edges) ? graph.edges : []).filter(function (e) { return e && !targetSet[e.fromId] && !targetSet[e.toId]; });
     var g = Object.assign({}, graph, { nodes: nodes, edges: edges });
     g.layers = deriveLanes(g);
     return { graph: g, answerKey: answerKey, targets: targets, strands: strands };
@@ -686,14 +837,17 @@
   // the concept is/does. PURE (string builder); the host owns the callGemini.
   function buildStrandHintPrompt(opts) {
     opts = opts || {};
-    var strands = Array.isArray(opts.strands) ? opts.strands : [];
-    var label = String(opts.itemLabel || 'this concept');
+    var strands = (Array.isArray(opts.strands) ? opts.strands : []).slice(0, 40).map(function (s) { return promptLine(s, 120); }).filter(Boolean);
+    var label = promptLine(opts.itemLabel, 160) || 'this concept';
+    var topic = promptLine(opts.topic, 200);
+    var gradeLevel = promptLine(opts.gradeLevel, 80);
+    var placedStrand = promptLine(opts.placedStrand, 120);
     return [
-      opts.topic ? 'Topic: ' + opts.topic : '',
-      opts.gradeLevel ? 'Grade band: ' + opts.gradeLevel : '',
+      topic ? 'Topic: ' + topic : '',
+      gradeLevel ? 'Grade band: ' + gradeLevel : '',
       'A student is sorting concepts onto thematic strands: ' + JSON.stringify(strands) + '.',
-      (opts.placedStrand
-        ? 'They placed the concept "' + label + '" on the strand "' + opts.placedStrand + '", which is not where it belongs.'
+      (placedStrand
+        ? 'They placed the concept "' + label + '" on the strand "' + placedStrand + '", which is not where it belongs.'
         : 'They have not yet placed the concept "' + label + '".'),
       'Give ONE short hint (maximum 2 sentences, student-friendly) that helps them think about what "' + label + '" is, does, or is part of —',
       'WITHOUT naming or revealing the correct strand, WITHOUT listing the strands, and WITHOUT the words "correct" or "wrong".',
@@ -710,15 +864,17 @@
   // exactly the way the palace does. PURE builder; the host owns callGemini.
   function buildNodeMnemonicPrompt(items, opts) {
     opts = opts || {};
-    var list = (Array.isArray(items) ? items : []).map(function (it) {
+    var topic = promptLine(opts.topic, 200);
+    var gradeLevel = promptLine(opts.gradeLevel, 80);
+    var list = (Array.isArray(items) ? items : []).slice(0, 120).map(function (it) {
       return {
-        id: String((it && it.id != null) ? it.id : ''),
-        label: String((it && it.label != null) ? it.label : '')
+        id: promptLine(it && it.id, 120),
+        label: promptLine(it && it.label, 200)
       };
     }).filter(function (it) { return it.id && it.label; });
     return [
-      opts.topic ? 'Topic: ' + opts.topic : '',
-      opts.gradeLevel ? 'Grade band: ' + opts.gradeLevel : '',
+      topic ? 'Topic: ' + topic : '',
+      gradeLevel ? 'Grade band: ' + gradeLevel : '',
       'For each concept below write ONE vivid, concrete picture that stands for it — the kind of image a method-of-loci memory practice uses.',
       'Rules: describe something a person could actually SEE (objects, exaggerated size, action, colour); one sentence, under 20 words;',
       'the image must be a HONEST cue for the concept (never a pun or a visual that would teach the wrong idea); school-appropriate; no text or lettering in the picture.',
@@ -732,30 +888,32 @@
   // reply degrades to "some nodes keep their label" rather than failing the batch.
   function parseNodeMnemonics(text) {
     var out = {};
-    var s = String(text || '').trim();
+    var raw = typeof text === 'string' ? text : (text == null ? '' : String(text));
+    if (!raw || raw.length > 512000) return out;
+    var s = raw.trim();
     if (!s) return out;
     s = s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
     var a = s.indexOf('['), b = s.lastIndexOf(']');
     if (a < 0 || b <= a) return out;
-    var arr;
-    try { arr = JSON.parse(s.slice(a, b + 1)); } catch (e) { return out; }
+    var arr = safeJsonParse(s.slice(a, b + 1), 512000);
     if (!Array.isArray(arr)) return out;
-    arr.forEach(function (row) {
+    arr.slice(0, 500).forEach(function (row) {
       if (!row || typeof row !== 'object') return;
-      var id = (typeof row.id === 'string') ? row.id.trim() : '';
+      var id = (typeof row.id === 'string') ? row.id.trim().slice(0, 240) : '';
       var m = (typeof row.mnemonic === 'string') ? row.mnemonic.trim() : '';
-      if (id && m) out[id] = m.slice(0, 240);
+      if (id && m && !isUnsafeKey(id)) out[id] = m.slice(0, 240);
     });
     return out;
   }
 
   // placed = {nodeId: strand} (from the emitted arrangement's categories).
   function scoreStrandChallenge(answerKey, placed) {
-    placed = placed || {};
+    placed = (placed && typeof placed === 'object') ? placed : {};
     var results = {}, total = 0, correct = 0, unplaced = 0, incorrect = 0;
     Object.keys(answerKey || {}).forEach(function (id) {
+      if (isUnsafeKey(id)) return;
       total++;
-      var p = placed[id];
+      var p = hasOwn(placed, id) ? placed[id] : undefined;
       if (!p) { results[id] = 'unplaced'; unplaced++; }
       else if (p === answerKey[id]) { results[id] = 'correct'; correct++; }
       else { results[id] = 'incorrect'; incorrect++; }
@@ -767,33 +925,33 @@
   function fromThroughlineUnit(unit) {
     var g = emptyGraph();
     if (!unit || typeof unit !== 'object') return g;
-    var meta = Object.assign({}, unit); delete meta.nodes; delete meta.edges;
+    var meta = safeShallowCopy(unit); delete meta.nodes; delete meta.edges;
     g.meta = { throughline: meta };
     g.title = unit.title || '';
-    g.nodes = (Array.isArray(unit.nodes) ? unit.nodes : []).map(function (n) {
-      var node = Object.assign({}, n);
+    g.nodes = (Array.isArray(unit.nodes) ? unit.nodes : []).filter(function (n) { return !!n && typeof n === 'object'; }).map(function (n) {
+      var node = safeShallowCopy(n);
       node.id = n.nodeId; delete node.nodeId;
       node.z = isNum(n.z) ? n.z : 0;
       node.label = (typeof n.label === 'string') ? n.label : '';
       return node;
     });
-    g.edges = (Array.isArray(unit.edges) ? unit.edges : []).map(function (e) {
-      return { fromId: e.from, toId: e.to, type: EDGE_TYPES[e.type] ? e.type : 'sequence' };
+    g.edges = (Array.isArray(unit.edges) ? unit.edges : []).filter(function (e) { return !!e && typeof e === 'object'; }).map(function (e) {
+      return { fromId: e.from, toId: e.to, type: (typeof e.type === 'string' && hasOwn(EDGE_TYPES, e.type)) ? e.type : 'sequence' };
     });
     g.layers = deriveLanes(g);
     return g;
   }
   function toThroughlineUnit(graph) {
     graph = normalizeGraph(graph);
-    var unit = Object.assign({}, (graph.meta && graph.meta.throughline) || {});
-    unit.nodes = (graph.nodes || []).map(function (node) {
-      var n = Object.assign({}, node);
+    var unit = safeShallowCopy((graph.meta && graph.meta.throughline) || {});
+    unit.nodes = (Array.isArray(graph.nodes) ? graph.nodes : []).filter(function (n) { return !!n && typeof n === 'object'; }).map(function (node) {
+      var n = safeShallowCopy(node);
       n.nodeId = node.id; delete n.id;
       delete n.z; delete n.label; delete n.axisValues;   // throughline stores none of these
       return n;
     });
-    unit.edges = (graph.edges || []).map(function (e) {
-      return { from: e.fromId, to: e.toId, type: EDGE_TYPES[e.type] ? e.type : 'sequence' };
+    unit.edges = (Array.isArray(graph.edges) ? graph.edges : []).filter(function (e) { return !!e && typeof e === 'object'; }).map(function (e) {
+      return { from: e.fromId, to: e.toId, type: (typeof e.type === 'string' && hasOwn(EDGE_TYPES, e.type)) ? e.type : 'sequence' };
     });
     return unit;
   }
@@ -802,15 +960,15 @@
   function fromConceptMap(nodes, edges, structureType) {
     var g = emptyGraph();
     g.meta = { conceptMap: { structureType: structureType || null } };
-    g.nodes = (Array.isArray(nodes) ? nodes : []).map(function (n) {
-      var node = Object.assign({}, n);          // carry id,x,y,text,type,colorVariant,…
+    g.nodes = (Array.isArray(nodes) ? nodes : []).filter(function (n) { return !!n && typeof n === 'object'; }).map(function (n) {
+      var node = safeShallowCopy(n);          // carry id,x,y,text,type,colorVariant,…
       node.label = (typeof n.text === 'string') ? n.text : (n.label || '');
       node.z = isNum(n.z) ? n.z : 0;
       return node;
     });
-    g.edges = (Array.isArray(edges) ? edges : []).map(function (e) {
-      var edge = Object.assign({}, e);          // carry id,fromId,toId,style,color,status,…
-      edge.type = EDGE_TYPES[e.type] ? e.type : 'associates';
+    g.edges = (Array.isArray(edges) ? edges : []).filter(function (e) { return !!e && typeof e === 'object'; }).map(function (e) {
+      var edge = safeShallowCopy(e);          // carry id,fromId,toId,style,color,status,…
+      edge.type = (typeof e.type === 'string' && hasOwn(EDGE_TYPES, e.type)) ? e.type : 'associates';
       return edge;
     });
     g.layers = deriveLanes(g);
@@ -818,14 +976,14 @@
   }
   function toConceptMap(graph) {
     graph = normalizeGraph(graph);
-    var nodes = (graph.nodes || []).map(function (node) {
-      var n = Object.assign({}, node);
+    var nodes = (Array.isArray(graph.nodes) ? graph.nodes : []).filter(function (n) { return !!n && typeof n === 'object'; }).map(function (node) {
+      var n = safeShallowCopy(node);
       if (typeof n.text !== 'string' && typeof node.label === 'string') n.text = node.label;
       delete n.label; delete n.z; delete n.axisValues;   // concept-map node = {id,x,y,text,type,colorVariant?}
       return n;
     });
-    var edges = (graph.edges || []).map(function (e) {
-      var edge = Object.assign({}, e); delete edge.type;   // concept-map native edge has no `type` (acg-only)
+    var edges = (Array.isArray(graph.edges) ? graph.edges : []).filter(function (e) { return !!e && typeof e === 'object'; }).map(function (e) {
+      var edge = safeShallowCopy(e); delete edge.type;   // concept-map native edge has no `type` (acg-only)
       return edge;
     });
     var structureType = (graph.meta && graph.meta.conceptMap && graph.meta.conceptMap.structureType) || null;
@@ -842,27 +1000,29 @@
     g.meta = { generated: { structureType: (gen && gen.structureType) || null } };
     var rootId = 'root';
     g.nodes.push({ id: rootId, label: g.title, type: 'main', x: 0, y: 0, z: 0, category: null });
-    var branches = (gen && Array.isArray(gen.branches)) ? gen.branches : [];
+    var branches = (gen && Array.isArray(gen.branches)) ? gen.branches.slice(0, 200) : [];
     var branchIds = branches.map(function (_, bi) { return 'b' + bi; });
     branches.forEach(function (b, bi) {
       var bid = branchIds[bi];
       var title = (b && b.title != null) ? String(b.title) : ('Branch ' + (bi + 1));
       g.nodes.push({ id: bid, label: title, type: 'branch', x: 0, y: 0, z: 0, category: title });
       g.edges.push({ id: 'e_' + rootId + '_' + bid, fromId: rootId, toId: bid, type: 'elaborates' });
-      var items = (b && Array.isArray(b.items)) ? b.items : [];
+      var items = (b && Array.isArray(b.items)) ? b.items.slice(0, 200) : [];
       items.forEach(function (it, ii) {
         var iid = bid + '_i' + ii;
         // Items can be plain strings or {text: …} objects (seeded/template organizers).
-        var label = (it && typeof it === 'object') ? String(it.text || '') : String(it);
+        var label = (it && typeof it === 'object') ? String(it.text || '') : (it == null ? '' : String(it));
         g.nodes.push({ id: iid, label: label, type: 'item', x: 0, y: 0, z: 0, category: title });
         g.edges.push({ id: 'e_' + bid + '_' + iid, fromId: bid, toId: iid, type: 'elaborates' });
       });
     });
     branches.forEach(function (b, bi) {
-      var ct = (b && Array.isArray(b.connectsTo)) ? b.connectsTo : [];
+      var ct = (b && Array.isArray(b.connectsTo)) ? b.connectsTo.slice(0, 50) : [];
+      var seenCt = Object.create(null);
       ct.forEach(function (target) {
         var idx = Number(target);
-        if (Number.isInteger(idx) && idx >= 0 && idx < branchIds.length && idx !== bi) {
+        if (Number.isInteger(idx) && idx >= 0 && idx < branchIds.length && idx !== bi && !seenCt[idx]) {
+          seenCt[idx] = true;
           g.edges.push({ id: 'e_ct' + bi + '_' + idx, fromId: branchIds[bi], toId: branchIds[idx], type: 'sequence' });
         }
       });
@@ -932,7 +1092,7 @@
       framework: auditText(record && record.framework) || null,
       frameworkId: auditText(record && record.frameworkId) || null,
       text: auditText(record && (record.text || record.description)) || null,
-      sourceUrl: auditText(record && record.sourceUrl) || null
+      sourceUrl: sanitizeSourceUrl(record && record.sourceUrl)
     };
   }
   function contextRelationshipType(type) {
@@ -968,7 +1128,8 @@
     else if (root && root.comprehensive) root = root.comprehensive;
     if (!root || typeof root !== 'object') root = {};
     var standards = (root.standards && typeof root.standards === 'object') ? root.standards : root;
-    var reports = Array.isArray(input) ? input : (Array.isArray(standards.perStandard) ? standards.perStandard : (Array.isArray(standards.reports) ? standards.reports : []));
+    var rawReports = Array.isArray(input) ? input : (Array.isArray(standards.perStandard) ? standards.perStandard : (Array.isArray(standards.reports) ? standards.reports : []));
+    var reports = rawReports.slice(0, 200);
     var standardsContext = opts.standardsContext || root.standardsContext || standards.standardsContext || null;
     var auditScope = opts.auditScope || root.auditScope || standards.auditScope || null;
     var contextProvenance = standardsContext && typeof standardsContext === 'object' && standardsContext.provenance ? standardsContext.provenance : null;
@@ -988,9 +1149,9 @@
         standardsCount: reports.length,
         passCount: typeof standards.passCount === 'number' ? standards.passCount : null,
         reviseCount: typeof standards.reviseCount === 'number' ? standards.reviseCount : null,
-        provenance: provenance && typeof provenance === 'object' ? Object.assign({}, provenance) : null,
-        auditScope: auditScope && typeof auditScope === 'object' ? Object.assign({}, auditScope) : null,
-        standardsContext: standardsContext && typeof standardsContext === 'object' ? Object.assign({}, standardsContext) : null
+        provenance: provenance && typeof provenance === 'object' ? safeShallowCopy(provenance) : null,
+        auditScope: auditScope && typeof auditScope === 'object' ? safeShallowCopy(auditScope) : null,
+        standardsContext: standardsContext && typeof standardsContext === 'object' ? safeShallowCopy(standardsContext) : null
       }
     };
 
@@ -1019,9 +1180,9 @@
       provenancePolicy: 'explicit-attribution-only',
       attributionSources: ['audit-model', 'teacher', 'deterministic-check', 'unknown']
     };
-    var contextNodeIds = {};
-    var contextEdgeKeys = {};
-    var contextGraphIds = {};
+    var contextNodeIds = Object.create(null);
+    var contextEdgeKeys = Object.create(null);
+    var contextGraphIds = Object.create(null);
     function ensureContextNode(record) {
       var key = auditText(record && record.id);
       if (!key) return null;
@@ -1034,18 +1195,23 @@
     }
     var auditId = 'alignment-audit';
     g.nodes.push({ id: auditId, label: title, type: 'audit', category: 'Audit', status: auditStatus });
+    var usedIncludedIdsFallback = false;
     var scopeArtifacts = auditScope && Array.isArray(auditScope.includedArtifacts) ? auditScope.includedArtifacts.slice(0, 100) : [];
     if (!scopeArtifacts.length && auditScope && Array.isArray(auditScope.includedArtifactIds)) {
+      usedIncludedIdsFallback = true;
       scopeArtifacts = auditScope.includedArtifactIds.slice(0, 100).map(function (id) { return { id: id, title: 'Audited artifact ' + id, type: 'unknown' }; });
     }
     if (auditScope && typeof auditScope === 'object') {
+      var scopeTruncated = usedIncludedIdsFallback
+        ? (Array.isArray(auditScope.includedArtifactIds) && auditScope.includedArtifactIds.length > scopeArtifacts.length)
+        : (Array.isArray(auditScope.includedArtifacts) && auditScope.includedArtifacts.length > scopeArtifacts.length);
       g.meta.alignmentAudit.auditScopeGraph = {
         nodeCount: scopeArtifacts.length,
-        truncated: Array.isArray(auditScope.includedArtifacts) && auditScope.includedArtifacts.length > scopeArtifacts.length,
+        truncated: scopeTruncated,
         selectionMode: auditText(auditScope.selectionMode) || null
       };
     }
-    var scopeArtifactNodeIds = {};
+    var scopeArtifactNodeIds = Object.create(null);
     var attributionStats = { mode: 'explicit-only', evidenceLinks: 0, findingLinks: 0, evidenceBySource: {}, findingBySource: {} };
     function noteAttribution(kind, source) {
       var key = kind === 'finding' ? 'findingBySource' : 'evidenceBySource';
@@ -1083,22 +1249,30 @@
     });
     function explicitArtifactIds(value) {
       if (!Array.isArray(value)) return [];
-      var seen = {};
-      return value.map(function (id) { return auditText(id); }).filter(function (id) {
+      var seen = Object.create(null);
+      return value.slice(0, 100).map(function (id) { return auditText(id); }).filter(function (id) {
         if (!id || !scopeArtifactNodeIds[id] || seen[id]) return false;
         seen[id] = true;
         return true;
       }).slice(0, 12);
     }
-    function explicitFindingAttribution(report, gap, gapText) {
+    function buildFindingAttributionMap(report) {
+      var map = Object.create(null);
+      var attributions = report && Array.isArray(report.findingAttributions) ? report.findingAttributions.slice(0, 200) : [];
+      for (var attributionIndex = 0; attributionIndex < attributions.length; attributionIndex++) {
+        var attribution = attributions[attributionIndex];
+        if (!attribution || typeof attribution !== 'object') continue;
+        var textKey = auditText(attribution.text);
+        if (textKey && !map[textKey]) map[textKey] = attribution;
+      }
+      return map;
+    }
+    function explicitFindingAttribution(findingAttributionMap, gap, gapText) {
       var direct = gap && typeof gap === 'object' ? gap : null;
       var directIds = direct && (direct.artifactIds || direct.findingArtifactIds);
       if (Array.isArray(directIds)) return { artifactIds: explicitArtifactIds(directIds), attributionSource: direct.attributionSource };
-      var attributions = report && Array.isArray(report.findingAttributions) ? report.findingAttributions : [];
-      for (var attributionIndex = 0; attributionIndex < attributions.length; attributionIndex++) {
-        var attribution = attributions[attributionIndex];
-        if (attribution && auditText(attribution.text) === gapText) return { artifactIds: explicitArtifactIds(attribution.artifactIds || attribution.findingArtifactIds), attributionSource: attribution.attributionSource };
-      }
+      var attribution = findingAttributionMap && findingAttributionMap[gapText];
+      if (attribution) return { artifactIds: explicitArtifactIds(attribution.artifactIds || attribution.findingArtifactIds), attributionSource: attribution.attributionSource };
       return { artifactIds: [], attributionSource: null };
     }
     g.meta.alignmentAudit.evidenceAttribution = attributionStats;
@@ -1116,7 +1290,7 @@
         role: 'target',
         status: standardStatus,
         rawStatus: auditText(standardRawStatus) || null,
-        standardBreakdown: report.standardBreakdown && typeof report.standardBreakdown === 'object' ? Object.assign({}, report.standardBreakdown) : null
+        standardBreakdown: report.standardBreakdown && typeof report.standardBreakdown === 'object' ? safeShallowCopy(report.standardBreakdown) : null
       };
       g.nodes.push(standardNode);
       g.edges.push({ id: 'contains-' + auditId + '-' + standardId, fromId: auditId, toId: standardId, type: 'contains', status: standardStatus, provenance: 'alloflow-audit', attributionSource: 'deterministic-check' });
@@ -1125,12 +1299,18 @@
         var contextRecord = contextResolution.record;
         standardNode.standardsContext = standardsContextNode(contextRecord, auditText(contextRecord.id) || standardId);
         if (standardsProvider && typeof standardsProvider.getNeighborhood === 'function') {
+          var reqDepth = Number(opts.standardsContextDepth);
+          var reqMaxNodes = Number(opts.standardsContextMaxNodes);
+          var reqMaxEdges = Number(opts.standardsContextMaxEdges);
+          var safeDepth = (isNum(reqDepth) && reqDepth > 0) ? Math.max(1, Math.min(4, Math.floor(reqDepth))) : 2;
+          var safeMaxNodes = (isNum(reqMaxNodes) && reqMaxNodes > 0) ? Math.max(1, Math.min(100, Math.floor(reqMaxNodes))) : 24;
+          var safeMaxEdges = (isNum(reqMaxEdges) && reqMaxEdges > 0) ? Math.max(1, Math.min(200, Math.floor(reqMaxEdges))) : 48;
           var neighborhood = null;
           try {
             neighborhood = standardsProvider.getNeighborhood(contextRecord.id, {
-              depth: Number(opts.standardsContextDepth) || 2,
-              maxNodes: Number(opts.standardsContextMaxNodes) || 24,
-              maxEdges: Number(opts.standardsContextMaxEdges) || 48
+              depth: safeDepth,
+              maxNodes: safeMaxNodes,
+              maxEdges: safeMaxEdges
             });
           } catch (e) {
             neighborhood = null;
@@ -1138,13 +1318,13 @@
           if (neighborhood && Array.isArray(neighborhood.nodes)) {
             standardsGraph.matchedTargets++;
             if (neighborhood.truncated) standardsGraph.truncatedTargets++;
-            var contextRecordsById = {};
-            neighborhood.nodes.forEach(function (node) {
+            var contextRecordsById = Object.create(null);
+            neighborhood.nodes.slice(0, Math.max(100, safeMaxNodes * 2)).forEach(function (node) {
               var nodeKey = auditText(node && node.id);
               if (nodeKey) contextRecordsById[nodeKey] = node;
               if (nodeKey && nodeKey !== auditText(contextRecord.id)) ensureContextNode(node);
             });
-            (Array.isArray(neighborhood.relationships) ? neighborhood.relationships : []).forEach(function (relationship, relationIndex) {
+            (Array.isArray(neighborhood.relationships) ? neighborhood.relationships.slice(0, Math.max(200, safeMaxEdges * 2)) : []).forEach(function (relationship, relationIndex) {
               var fromKey = auditText(relationship && relationship.fromId);
               var toKey = auditText(relationship && relationship.toId);
               var fromId = fromKey === auditText(contextRecord.id) ? standardId : ensureContextNode(contextRecordsById[fromKey]);
@@ -1162,7 +1342,7 @@
                 type: edgeType,
                 relationType: relationType,
                 direction: relationship.direction || null,
-                source: relationship.source || null,
+                source: sanitizeRelationSource(relationship.source),
                 provenance: 'standards-provider',
                 attributionSource: 'deterministic-check'
               });
@@ -1235,11 +1415,12 @@
         });
       });
 
-      (Array.isArray(report.gaps) ? report.gaps : []).forEach(function (gap, gi) {
+      var findingAttributionMap = buildFindingAttributionMap(report);
+      (Array.isArray(report.gaps) ? report.gaps.slice(0, 100) : []).forEach(function (gap, gi) {
         var gapValue = gap && typeof gap === 'object' ? (gap.text || gap.finding || gap.label) : gap;
         var gapText = auditText(gapValue);
         if (!gapText) return;
-        var findingAttribution = explicitFindingAttribution(report, gap, gapText);
+        var findingAttribution = explicitFindingAttribution(findingAttributionMap, gap, gapText);
         var findingArtifactIds = findingAttribution.artifactIds;
         var findingAttributionSource = findingArtifactIds.length ? normalizeAttributionSource(findingAttribution.attributionSource, 'audit-model') : null;
         var findingId = standardId + '-finding-' + gi;
@@ -1280,19 +1461,19 @@
   function confirmExplicitAttributions(input, confirmations, opts) {
     opts = opts || {};
     var graph = normalizeGraph(input);
-    var requests = Array.isArray(confirmations) ? confirmations : [];
-    var requested = {};
+    var requests = Array.isArray(confirmations) ? confirmations.slice(0, 200) : [];
+    var requested = Object.create(null);
     requests.forEach(function (confirmation) {
       if (!confirmation || typeof confirmation !== 'object') return;
       var ids = Array.isArray(confirmation.edgeIds)
-        ? confirmation.edgeIds
+        ? confirmation.edgeIds.slice(0, 100)
         : (confirmation.edgeId != null ? [confirmation.edgeId] : []);
       ids.forEach(function (id) {
         var key = auditText(id);
         if (key) requested[key] = confirmation;
       });
     });
-    var nodeById = {};
+    var nodeById = Object.create(null);
     (Array.isArray(graph.nodes) ? graph.nodes : []).forEach(function (node) {
       if (node && node.id) nodeById[node.id] = node;
     });
@@ -1319,14 +1500,17 @@
         source: 'teacher',
         role: 'confirmation',
         method: 'teacher-confirmed',
-        confirmedAt: auditText(request.confirmedAt || opts.confirmedAt) || null,
-        confirmedBy: auditText(request.confirmedBy || opts.confirmedBy) || null,
-        note: auditText(request.note || opts.note) || null
+        confirmedAt: auditText(request.confirmedAt || opts.confirmedAt).slice(0, 80) || null,
+        confirmedBy: auditText(request.confirmedBy || opts.confirmedBy).slice(0, 120) || null,
+        note: auditText(request.note || opts.note).slice(0, 500) || null
       });
+      var trimmedHistory = history.length <= 8
+        ? history
+        : (history[0] && history[0].role === 'producer' ? [history[0]].concat(history.slice(-7)) : history.slice(-8));
       changedEdgeIds.push(edge.id);
       return Object.assign({}, edge, {
         attributionSource: 'teacher',
-        attributionHistory: history.slice(-8)
+        attributionHistory: trimmedHistory
       });
     });
     var alignmentMap = graph.meta && graph.meta.alignmentMap ? graph.meta.alignmentMap : {};
@@ -1354,20 +1538,24 @@
   // accepts only the explicit export schema and the alignment-map metadata; it does
   // not infer evidence links from labels, phrases, or node proximity.
   var ALIGNMENT_EXPORT_SCHEMA = 'alloflow-alignment-graph-export/v1';
-  var ALIGNMENT_NODE_TYPES = ['audit', 'standard', 'standardsContext', 'auditArtifact', 'auditEvidence', 'auditFinding', 'auditRecommendation'];
-  var ALIGNMENT_ATTRIBUTION_SOURCES = ['audit-model', 'teacher', 'deterministic-check', 'unknown'];
+  var ALIGNMENT_NODE_TYPES = Object.freeze(['audit', 'standard', 'standardsContext', 'auditArtifact', 'auditEvidence', 'auditFinding', 'auditRecommendation']);
+  var ALIGNMENT_ATTRIBUTION_SOURCES = Object.freeze(['audit-model', 'teacher', 'deterministic-check', 'unknown']);
 
   function alignmentStringList(value) {
     if (!Array.isArray(value)) return [];
-    var seen = {};
-    return value.map(function (item) { return auditText(item).toLowerCase(); }).filter(function (item) {
+    var seen = Object.create(null);
+    return value.slice(0, 200).map(function (item) { return auditText(item).toLowerCase(); }).filter(function (item) {
       if (!item || seen[item]) return false;
       seen[item] = true;
       return true;
     });
   }
-  var ALIGNMENT_IMPORT_LIMITS = { maxString: 4000, maxDepth: 8, maxKeys: 80, maxArray: 500, maxTotalText: 600000 };
-  function sanitizeAlignmentValue(value, depth, state) {
+  var ALIGNMENT_IMPORT_LIMITS = Object.freeze({ maxString: 4000, maxDepth: 8, maxKeys: 80, maxArray: 500, maxTotalText: 600000 });
+  var ALIGNMENT_MAX_VISITED = 50000;
+  function sanitizeAlignmentValue(value, depth, state, ancestors) {
+    if (!state) state = { text: 0, visited: 0 };
+    if (state.visited == null) state.visited = 0;
+    if (++state.visited > ALIGNMENT_MAX_VISITED) return null;
     if (value == null || typeof value === 'boolean') return value;
     if (typeof value === 'number') return Number.isFinite(value) ? value : null;
     if (typeof value === 'string') {
@@ -1377,26 +1565,34 @@
       return out;
     }
     if (depth >= ALIGNMENT_IMPORT_LIMITS.maxDepth) return null;
-    if (Array.isArray(value)) {
-      return value.slice(0, ALIGNMENT_IMPORT_LIMITS.maxArray).map(function (item) {
-        return sanitizeAlignmentValue(item, depth + 1, state);
-      }).filter(function (item) { return item !== undefined; });
-    }
     if (typeof value !== 'object') return null;
-    var outObject = {};
-    Object.keys(value).slice(0, ALIGNMENT_IMPORT_LIMITS.maxKeys).forEach(function (key) {
-      if (key === '__proto__' || key === 'prototype' || key === 'constructor') return;
-      var safeKey = String(key).slice(0, 120);
-      var safeValue = sanitizeAlignmentValue(value[key], depth + 1, state);
-      if (safeValue !== undefined) outObject[safeKey] = safeValue;
-    });
-    return outObject;
+    var stack = ancestors || [];
+    if (stack.indexOf(value) !== -1) return null;
+    stack.push(value);
+    var res;
+    if (Array.isArray(value)) {
+      res = value.slice(0, ALIGNMENT_IMPORT_LIMITS.maxArray).map(function (item) {
+        return sanitizeAlignmentValue(item, depth + 1, state, stack);
+      }).filter(function (item) { return item !== undefined; });
+    } else {
+      var outObject = {};
+      Object.keys(value).slice(0, ALIGNMENT_IMPORT_LIMITS.maxKeys).forEach(function (key) {
+        if (isUnsafeKey(key)) return;
+        var safeKey = String(key).slice(0, 120);
+        state.text = Math.min(ALIGNMENT_IMPORT_LIMITS.maxTotalText, state.text + safeKey.length);
+        var safeValue = sanitizeAlignmentValue(value[key], depth + 1, state, stack);
+        if (safeValue !== undefined) outObject[safeKey] = safeValue;
+      });
+      res = outObject;
+    }
+    stack.pop();
+    return res;
   }
   function boundedAlignmentGraph(graph, opts) {
     opts = opts || {};
     var maxNodes = Math.max(1, Math.min(500, parseInt(opts.maxNodes, 10) || 240));
     var maxEdges = Math.max(1, Math.min(1000, parseInt(opts.maxEdges, 10) || 480));
-    var state = { text: 0 };
+    var state = { text: 0, visited: 0 };
     var sourceNodes = graph && Array.isArray(graph.nodes) ? graph.nodes : [];
     var nodeIds = Object.create(null);
     var nodes = sourceNodes.slice(0, maxNodes).map(function (node) {
@@ -1405,6 +1601,10 @@
       var id = auditText(safe.id).slice(0, 240);
       if (!id || nodeIds[id]) return null;
       safe.id = id;
+      if (hasOwn(safe, 'sourceUrl')) safe.sourceUrl = sanitizeSourceUrl(safe.sourceUrl);
+      if (safe.standardsContext && typeof safe.standardsContext === 'object' && hasOwn(safe.standardsContext, 'sourceUrl')) {
+        safe.standardsContext.sourceUrl = sanitizeSourceUrl(safe.standardsContext.sourceUrl);
+      }
       nodeIds[id] = true;
       return safe;
     }).filter(Boolean);
@@ -1413,8 +1613,9 @@
       : {};
     var safeAxes = sanitizeAlignmentValue(graph && graph.axes, 0, state);
     var sourceEdges = graph && Array.isArray(graph.edges) ? graph.edges : [];
+    var scanLimit = Math.min(sourceEdges.length, Math.max(maxEdges * 20, 10000));
     var eligibleEdges = [];
-    for (var ei = 0; ei < sourceEdges.length && eligibleEdges.length < maxEdges; ei++) {
+    for (var ei = 0; ei < scanLimit && eligibleEdges.length < maxEdges; ei++) {
       var rawEdge = sourceEdges[ei];
       if (!rawEdge || typeof rawEdge !== 'object') continue;
       var rawFrom = auditText(rawEdge.fromId).slice(0, 240);
@@ -1426,11 +1627,12 @@
       if (!safe || typeof safe !== 'object') return null;
       safe.fromId = auditText(safe.fromId).slice(0, 240);
       safe.toId = auditText(safe.toId).slice(0, 240);
+      if (hasOwn(safe, 'source')) safe.source = sanitizeRelationSource(safe.source);
       return nodeIds[safe.fromId] && nodeIds[safe.toId] ? safe : null;
     }).filter(Boolean);
     var viewMeta = graphMeta.alignmentView && typeof graphMeta.alignmentView === 'object' ? graphMeta.alignmentView : {};
     var meta = Object.assign({}, graphMeta, {
-      alignmentView: Object.assign({}, viewMeta, { bounded: true, maxNodes: maxNodes, maxEdges: maxEdges, truncated: nodes.length < sourceNodes.length || edges.length < sourceEdges.length })
+      alignmentView: Object.assign({}, viewMeta, { bounded: true, maxNodes: maxNodes, maxEdges: maxEdges, truncated: Boolean(viewMeta.truncated) || nodes.length < sourceNodes.length || edges.length < sourceEdges.length })
     });
     var bounded = {
       version: VERSION,
@@ -1454,11 +1656,16 @@
       payload = { schema: ALIGNMENT_EXPORT_SCHEMA, graph: input };
     }
     if (!payload || typeof payload !== 'object' || payload.schema !== ALIGNMENT_EXPORT_SCHEMA) return alignmentExportError('invalid-export-schema');
-    var graph = normalizeGraph(payload.graph);
+    var rawGraph = payload.graph;
+    var rawMeta = rawGraph && typeof rawGraph === 'object' && rawGraph.meta && typeof rawGraph.meta === 'object' ? rawGraph.meta.alignmentMap : null;
+    if (!rawGraph || rawGraph.version !== VERSION || !Array.isArray(rawGraph.nodes) || !rawMeta || rawMeta.version !== 'alloflow-alignment-map/v2') {
+      return alignmentExportError('invalid-alignment-graph');
+    }
+    var graph = normalizeGraph(rawGraph);
     var alignmentMeta = graph && graph.meta && graph.meta.alignmentMap;
     if (!graph || graph.version !== VERSION || !alignmentMeta || alignmentMeta.version !== 'alloflow-alignment-map/v2') return alignmentExportError('invalid-alignment-graph');
     var originalGraph = null;
-    if (payload.originalGraph && typeof payload.originalGraph === 'object') {
+    if (payload.originalGraph && typeof payload.originalGraph === 'object' && payload.originalGraph.version === VERSION && Array.isArray(payload.originalGraph.nodes)) {
       var candidate = normalizeGraph(payload.originalGraph);
       var candidateMeta = candidate && candidate.meta && candidate.meta.alignmentMap;
       if (candidate && candidate.version === VERSION && candidateMeta && candidateMeta.version === 'alloflow-alignment-map/v2') originalGraph = boundedAlignmentGraph(candidate, opts);
@@ -1469,7 +1676,7 @@
       schema: payload.schema,
       graph: bounded,
       originalGraph: originalGraph,
-      audit: payload.audit && typeof payload.audit === 'object' ? sanitizeAlignmentValue(payload.audit, 0, { text: 0 }) : null,
+      audit: payload.audit && typeof payload.audit === 'object' ? sanitizeAlignmentValue(payload.audit, 0, { text: 0, visited: 0 }) : null,
       filters: null,
       counts: { nodes: bounded.nodes.length, edges: bounded.edges.length }
     };
@@ -1490,18 +1697,18 @@
     var requestedSources = alignmentStringList(filters.attributionSources || filters.sources);
     var query = auditText(filters.query).toLowerCase();
     var keepStructure = filters.keepStructure !== false;
-    var edgeSources = {};
+    var edgeSources = Object.create(null);
     (graph.edges || []).forEach(function (edge) {
       var source = normalizeAttributionSource(edge && edge.attributionSource, 'unknown');
       if (!edge || !source) return;
       [edge.fromId, edge.toId].forEach(function (id) {
         if (!id) return;
-        edgeSources[id] = edgeSources[id] || {};
+        if (!edgeSources[id]) edgeSources[id] = Object.create(null);
         edgeSources[id][source] = true;
       });
     });
-    var nodeById = {};
-    var visible = {};
+    var nodeById = Object.create(null);
+    var visible = Object.create(null);
     var visibleNodes = [];
     (graph.nodes || []).forEach(function (node) {
       if (!node || !node.id) return;
@@ -1538,16 +1745,21 @@
     var sourceCounts = {};
     visibleNodes.forEach(function (node) {
       var source = auditText(node.attributionSource).toLowerCase();
-      if (source) sourceCounts[source] = (sourceCounts[source] || 0) + 1;
+      if (source && !isUnsafeKey(source)) sourceCounts[source] = (hasOwn(sourceCounts, source) ? sourceCounts[source] : 0) + 1;
     });
     visibleEdges.forEach(function (edge) {
       var source = auditText(edge.attributionSource).toLowerCase();
-      if (source) sourceCounts[source] = (sourceCounts[source] || 0) + 1;
+      if (source && !isUnsafeKey(source)) sourceCounts[source] = (hasOwn(sourceCounts, source) ? sourceCounts[source] : 0) + 1;
     });
+    var visibleNodeTypes = visibleNodes.reduce(function (out, node) {
+      var type = auditText(node.type).toLowerCase() || 'node';
+      if (!isUnsafeKey(type)) out[type] = (hasOwn(out, type) ? out[type] : 0) + 1;
+      return out;
+    }, {});
     filtered.meta = Object.assign({}, filtered.meta, {
       alignmentView: Object.assign({}, filtered.meta && filtered.meta.alignmentView || {}, {
         filters: { nodeTypes: requestedTypes, attributionSources: requestedSources, query: query, keepStructure: keepStructure },
-        visibleNodeTypes: visibleNodes.reduce(function (out, node) { var type = auditText(node.type).toLowerCase() || 'node'; out[type] = (out[type] || 0) + 1; return out; }, {}),
+        visibleNodeTypes: visibleNodeTypes,
         visibleAttributionSources: sourceCounts
       })
     });
@@ -1579,11 +1791,19 @@
   // given nodes (by id) on declared axes; parseSemanticGraph validates+clamps;
   // layoutWithGemini ties them to a callGemini and merges axisValues back onto the
   // graph (project() then turns those into real, interpretable 3D coordinates).
-  var DEFAULT_AXES = {
-    x: { label: 'Teaching sequence / chronology (taught first -> last)', labelKey: 'concept_graph.axis_teaching_sequence', kind: 'ordinal' },
-    y: { label: 'Cognitive depth (concrete/recall -> abstract/create, Bloom)', labelKey: 'concept_graph.axis_cognitive_depth', kind: 'ordinal' },
-    z: { label: 'Strand / theme', labelKey: 'concept_graph.axis_strand', kind: 'categorical' }
-  };
+  var DEFAULT_AXES = Object.freeze({
+    x: Object.freeze({ label: 'Teaching sequence / chronology (taught first -> last)', labelKey: 'concept_graph.axis_teaching_sequence', kind: 'ordinal' }),
+    y: Object.freeze({ label: 'Cognitive depth (concrete/recall -> abstract/create, Bloom)', labelKey: 'concept_graph.axis_cognitive_depth', kind: 'ordinal' }),
+    z: Object.freeze({ label: 'Strand / theme', labelKey: 'concept_graph.axis_strand', kind: 'categorical' })
+  });
+
+  function cloneDefaultAxes() {
+    return {
+      x: Object.assign({}, DEFAULT_AXES.x),
+      y: Object.assign({}, DEFAULT_AXES.y),
+      z: Object.assign({}, DEFAULT_AXES.z)
+    };
+  }
 
   function buildSemanticGraphPrompt(graph, opts) {
     opts = opts || {};
@@ -1594,19 +1814,29 @@
       y: (rawAxes.y && typeof rawAxes.y.label === 'string' && rawAxes.y.label) ? rawAxes.y : DEFAULT_AXES.y,
       z: (rawAxes.z && typeof rawAxes.z.label === 'string' && rawAxes.z.label) ? rawAxes.z : DEFAULT_AXES.z
     };
+    var rawNodes = Array.isArray(graph.nodes) ? graph.nodes.filter(function (n) { return !!n && typeof n === 'object'; }).slice(0, 200) : [];
     var strands = [], seen = Object.create(null);
-    graph.nodes.forEach(function (n) { var c = (typeof n.category === 'string' && n.category) ? n.category : null; if (c && !seen[c]) { seen[c] = true; strands.push(c); } });
-    var nodeList = graph.nodes.map(function (n) { return '- id "' + n.id + '": ' + (n.label || n.text || n.id); }).join('\n');
+    rawNodes.forEach(function (n) {
+      var c = (typeof n.category === 'string' && n.category) ? promptLine(n.category, 120) : null;
+      if (c && !seen[c] && strands.length < 40) { seen[c] = true; strands.push(c); }
+    });
+    var nodeList = rawNodes.map(function (n) {
+      var safeId = promptLine(n.id, 120);
+      var safeLabel = promptLine(n.label || n.text || n.id, 200);
+      return '- id "' + safeId + '": ' + safeLabel;
+    }).join('\n');
     var zLine = strands.length
       ? 'z = one of these strands (assign each node its best fit): ' + JSON.stringify(strands)
       : 'z = a short strand/theme label you choose (reuse the same label for related nodes)';
+    var topic = promptLine(opts.topic, 200);
+    var gradeLevel = promptLine(opts.gradeLevel, 80);
     return [
-      (opts.topic ? 'Topic / unit: ' + opts.topic : ''),
-      (opts.gradeLevel ? 'Grade band: ' + opts.gradeLevel : ''),
+      (topic ? 'Topic / unit: ' + topic : ''),
+      (gradeLevel ? 'Grade band: ' + gradeLevel : ''),
       'You are arranging a concept map in 3D so that POSITION carries meaning. Do NOT output pixel coordinates.',
       'Score EACH node below on three named axes:',
-      '  x = ' + axes.x.label + '  (a number from 0.0 to 1.0)',
-      '  y = ' + axes.y.label + '  (a number from 0.0 to 1.0)',
+      '  x = ' + promptLine(axes.x.label, 200) + '  (a number from 0.0 to 1.0)',
+      '  y = ' + promptLine(axes.y.label, 200) + '  (a number from 0.0 to 1.0)',
       '  ' + zLine + '.',
       '',
       'Nodes:',
@@ -1630,37 +1860,44 @@
 
   function parseSemanticGraph(text) {
     var out = { axes: null, nodes: [] };
-    var parsed;
-    try { parsed = JSON.parse(_stripToJson(text)); } catch (e) { return out; }
-    if (!parsed || typeof parsed !== 'object') return out;
-    if (parsed.axes && typeof parsed.axes === 'object') out.axes = parsed.axes;
-    var nodes = Array.isArray(parsed.nodes) ? parsed.nodes : [];
+    var raw = typeof text === 'string' ? text : (text == null ? '' : String(text));
+    if (!raw || raw.length > 512000) return out;
+    var parsed = safeJsonParse(_stripToJson(raw), 512000);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return out;
+    var cleanAxes = sanitizeAxesObject(parsed.axes);
+    if (cleanAxes) out.axes = cleanAxes;
+    var nodes = Array.isArray(parsed.nodes) ? parsed.nodes.slice(0, 500) : [];
     out.nodes = nodes.map(function (n) {
-      if (!n || typeof n.id !== 'string') return null;
-      var av = (n.axisValues && typeof n.axisValues === 'object') ? n.axisValues : {};
+      if (!n || typeof n !== 'object' || typeof n.id !== 'string') return null;
+      var id = n.id.slice(0, 240);
+      var av = (n.axisValues && typeof n.axisValues === 'object' && !Array.isArray(n.axisValues)) ? n.axisValues : {};
       var clean = {};
       if (isNum(av.x)) clean.x = clamp01(av.x);
       if (isNum(av.y)) clean.y = clamp01(av.y);
-      if (typeof av.z === 'string' && av.z) clean.z = av.z; else if (isNum(av.z)) clean.z = clamp01(av.z);
-      return { id: n.id, axisValues: clean };
+      if (typeof av.z === 'string' && av.z) clean.z = av.z.slice(0, 200); else if (isNum(av.z)) clean.z = clamp01(av.z);
+      return { id: id, axisValues: clean };
     }).filter(Boolean);
     return out;
   }
 
   // Merge AI-scored axisValues onto the graph (does NOT call project — the renderer
-  // does). Rejects if callGemini is absent. Returns the merged ConceptGraph.
+  // does). Rejects if callGemini is absent or AI is disabled by FERPA/QR/student
+  // privacy locks. Returns the merged ConceptGraph.
   function layoutWithGemini(graph, callGemini, opts) {
     graph = normalizeGraph(graph);
     if (typeof callGemini !== 'function') return Promise.reject(new Error('callGemini not available'));
+    if (!canUseAi(callGemini)) return Promise.reject(new Error('AI layout disabled'));
     var prompt = buildSemanticGraphPrompt(graph, opts || {});
-    return Promise.resolve(callGemini(prompt)).then(function (res) {
+    return Promise.resolve().then(function () { return callGemini(prompt); }).then(function (res) {
       var text = (typeof res === 'string') ? res : (res && (res.text || res.output || res.response)) || '';
       var parsed = parseSemanticGraph(text);
-      var avById = {};
+      var avById = Object.create(null);
       parsed.nodes.forEach(function (n) { avById[n.id] = n.axisValues; });
       return Object.assign({}, graph, {
-        axes: parsed.axes || graph.axes || DEFAULT_AXES,
-        nodes: graph.nodes.map(function (n) { return avById[n.id] ? Object.assign({}, n, { axisValues: avById[n.id] }) : n; })
+        axes: parsed.axes || graph.axes || cloneDefaultAxes(),
+        nodes: (Array.isArray(graph.nodes) ? graph.nodes : []).map(function (n) {
+          return (n && typeof n === 'object' && avById[n.id]) ? Object.assign({}, n, { axisValues: avById[n.id] }) : n;
+        })
       });
     });
   }
@@ -1668,8 +1905,8 @@
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.ConceptGraphEngine = {
     version: VERSION,
-    EDGE_TYPES: EDGE_TYPES,
-    DEFAULT_AXES: DEFAULT_AXES,
+    EDGE_TYPES: Object.assign({}, EDGE_TYPES),
+    DEFAULT_AXES: cloneDefaultAxes(),
     emptyGraph: emptyGraph,
     normalizeGraph: normalizeGraph,
     deriveOutline: deriveOutline,

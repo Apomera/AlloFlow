@@ -291,20 +291,26 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
         const basePool = isSelectedKokoro ? kokoroCandidates : (Array.isArray(AVAILABLE_VOICES) ? AVAILABLE_VOICES : []);
         const voicePool = basePool.filter(v => v !== selectedVoice);
         if (voicePool.length === 0) voicePool.push(selectedVoice || (isSelectedKokoro ? 'af_heart' : 'Kore'));
-        if (!persistentVoiceMapRef.current) {
-            const initMap = Object.create(null);
-            initMap["Narrator"] = selectedVoice;
-            initMap._poolIndex = 0;
-            persistentVoiceMapRef.current = initMap;
+        if (!persistentVoiceMapRef.current || persistentVoiceMapRef.current.isKokoro !== isSelectedKokoro || !persistentVoiceMapRef.current.speakers) {
+            const speakers = Object.create(null);
+            speakers["Narrator"] = selectedVoice;
+            persistentVoiceMapRef.current = {
+                isKokoro: isSelectedKokoro,
+                speakers,
+                poolIndex: 0,
+            };
         }
-        const voiceMap = persistentVoiceMapRef.current;
+        const voiceState = persistentVoiceMapRef.current;
+        const voiceMap = voiceState.speakers;
         voiceMap["Narrator"] = selectedVoice;
         const getVoiceFor = (name) => {
-            if (Object.prototype.hasOwnProperty.call(voiceMap, name) && voiceMap[name]) return voiceMap[name];
-            const poolIndex = voiceMap._poolIndex || 0;
+            if (Object.prototype.hasOwnProperty.call(voiceMap, name) && voiceMap[name] && (name === "Narrator" || basePool.includes(voiceMap[name]))) {
+                return voiceMap[name];
+            }
+            const poolIndex = voiceState.poolIndex || 0;
             const assignedVoice = voicePool[poolIndex % voicePool.length];
             voiceMap[name] = assignedVoice;
-            voiceMap._poolIndex = poolIndex + 1;
+            voiceState.poolIndex = poolIndex + 1;
             return assignedVoice;
         };
         let segments = [];

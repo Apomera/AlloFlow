@@ -16,9 +16,9 @@
     "rationale": "The subject is the singular pronoun \"One,\" so the singular verb \"has\" is required. The plural noun \"kits\" appears in the prepositional phrase \"of the science kits\" and does not control agreement.",
     "choiceRationales": [
       "\"Has\" agrees with the singular subject \"One\" and correctly expresses possession of a missing item.",
-      "\"Have\" incorrectly agrees with the nearby plural noun \"kits\" rather than the singular subject.",
-      "\"Are having\" is plural and also uses an unnecessarily progressive construction for possession.",
-      "\"Contain\" is plural and would not agree with the singular subject \"One.\""
+      "Choosing \"have\" mistakenly matches the plural noun \"kits\" inside the prepositional phrase rather than the singular subject \"One.\"",
+      "Using \"are having\" creates a plural verb mismatch with \"One\" and applies an awkward progressive tense to simple possession.",
+      "The plural form \"contain\" fails subject-verb agreement because the sentence’s true subject is the singular pronoun \"One.\""
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -55,10 +55,10 @@
     "answerIndex": 1,
     "rationale": "The pronoun is an object of the preposition \"with,\" so it must be in the objective case. Removing \"Lena and\" makes the correct form easy to hear: the coach spoke with me.",
     "choiceRationales": [
-      "\"I\" is a subjective pronoun, but the sentence requires an object of the preposition \"with.\"",
+      "The pronoun \"I\" belongs in the subject position, whereas this blank sits after the preposition \"with\" and requires objective case.",
       "\"Me\" is the objective-case pronoun required after \"with\" in the compound object.",
-      "\"Myself\" is reflexive or intensive and is not a substitute for the ordinary objective pronoun here.",
-      "\"Mine\" is possessive and would indicate ownership rather than identify the person spoken with."
+      "The reflexive pronoun \"myself\" should refer back to a subject \"I,\" not replace an ordinary object pronoun inside a compound prepositional phrase.",
+      "Using the possessive pronoun \"mine\" signals ownership rather than naming the person who spoke with the coach after rehearsal."
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -95,8 +95,8 @@
     "answerIndex": 2,
     "rationale": "The name \"Jordan\" directly identifies the person being addressed and interrupts the sentence, so it must be set off with a comma before and after it. The other commas do not mark both boundaries correctly.",
     "choiceRationales": [
-      "This choice has a closing comma after the name but lacks the opening comma before it.",
-      "This choice opens the direct address with a comma but fails to place a second comma after \"Jordan.\"",
+      "Placing a single comma after \"Jordan\" closes the direct address properly but omits the opening comma needed before the name.",
+      "Setting a comma before \"Jordan\" opens the interruption, yet omitting the closing comma afterward leaves the name run into the verb \"place.\"",
       "The two commas correctly enclose the name used in direct address without separating other sentence parts.",
       "The comma after \"place\" incorrectly separates the verb from its direct object and does not set off the name."
     ],
@@ -129,15 +129,15 @@
     "choices": [
       "donated novels",
       "arrived before noon",
-      "boxes",
+      "Several boxes",
       "Several boxes of donated novels"
     ],
     "answerIndex": 3,
     "rationale": "The complete subject includes the simple subject \"boxes\" and all words that modify it: \"Several boxes of donated novels.\" The words \"arrived before noon\" form the predicate.",
     "choiceRationales": [
-      "\"Donated novels\" is part of a prepositional phrase modifying \"boxes,\" not the full subject.",
-      "\"Arrived before noon\" tells what the subject did and therefore belongs to the predicate.",
-      "\"Boxes\" is the simple subject, but the question asks for the complete subject with its modifiers.",
+      "Although \"donated novels\" appears inside the subject half, it is only the object of the preposition \"of\" rather than the complete subject.",
+      "The phrase \"arrived before noon\" states what happened and when, making it the complete predicate instead of the sentence’s subject.",
+      "Including \"Several boxes\" captures the simple subject and one determiner, yet it drops the prepositional modifier \"of donated novels.\"",
       "This phrase includes the simple subject and every modifier attached to it, so it is the complete subject."
     ],
     "skillIds": [
@@ -177,8 +177,8 @@
     "choiceRationales": [
       "\"Although\" is a subordinating conjunction because it introduces a dependent clause and signals contrast.",
       "A preposition normally introduces a noun phrase as its object; here, a full clause follows the word.",
-      "A pronoun substitutes for a noun, which \"Although\" does not do in this sentence.",
-      "An adjective modifies a noun or pronoun, but \"Although\" instead links two clauses."
+      "Pronouns stand in for nouns or noun phrases, whereas \"Although\" introduces a dependent clause and never replaces a naming word.",
+      "Adjectives describe nouns or pronouns, yet \"Although\" links a subordinate clause to the main clause rather than modifying a single noun."
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -215,10 +215,10 @@
     "answerIndex": 1,
     "rationale": "The phrase \"By next Friday\" points to an action that will be completed before a specified future time. The future perfect form \"will have printed\" expresses that relationship correctly.",
     "choiceRationales": [
-      "\"Printed\" is simple past and does not express completion relative to a future deadline.",
+      "Simple past \"printed\" places the action strictly in the past and cannot match the upcoming deadline signaled by \"By next Friday.\"",
       "\"Will have printed\" is the correctly formed future perfect verb phrase for the stated deadline.",
-      "The modal \"will\" must be followed by a base verb, not directly by the past-tense form \"printed.\"",
-      "The auxiliary \"has\" requires the past participle \"printed,\" not the base form \"print.\""
+      "Pairing the modal \"will\" directly with \"printed\" is ungrammatical because \"will\" must be followed by a base verb form such as \"have.\"",
+      "Combining \"has\" with the base form \"print\" breaks verb formation—present perfect requires the past participle \"printed\"—and misses the future timeframe."
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -256,9 +256,9 @@
     "rationale": "\"Raise\" means to lift something and takes the direct object \"the flag.\" It also agrees with the plural subject \"two student volunteers\" in the simple present tense.",
     "choiceRationales": [
       "\"Rise\" is intransitive and means to move upward on one's own, so it cannot take \"the flag\" as an object.",
-      "\"Risen\" is a past participle and requires a helping verb; it cannot serve as the finite verb here.",
+      "The past participle \"risen\" needs an auxiliary verb to form a complete predicate and also carries the intransitive meaning of moving upward alone.",
       "\"Raise\" correctly expresses lifting an object and agrees with the plural subject.",
-      "\"Raises\" is singular and would not agree with the plural subject \"volunteers.\""
+      "Third-person singular \"raises\" disagrees with the plural subject \"two student volunteers,\" which calls for the base plural verb form."
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -296,8 +296,8 @@
     "rationale": "The day name \"Friday,\" the final word in the institution's proper name, \"Museum,\" and the city name \"Washington\" all require initial capitals. \"National,\" \"Air,\" and \"Space\" are already capitalized correctly in the draft.",
     "choiceRationales": [
       "Friday needs a capital, but this choice overlooks the lowercase words museum and washington in proper names.",
-      "Friday and Museum need capitals, but this choice omits the city name Washington.",
-      "Museum and Washington need capitals, but the day name Friday also requires one.",
+      "Capitalizing \"Friday\" and \"Museum\" fixes two errors, yet it still leaves the proper city name \"washington\" incorrectly lowercase.",
+      "Fixing \"Museum\" and \"Washington\" addresses the institution and city, but days of the week such as \"Friday\" must also be capitalized.",
       "This set identifies every incorrectly lowercase proper-name word without including words that are already capitalized correctly."
     ],
     "skillIds": [
@@ -336,9 +336,9 @@
     "rationale": "A comparison between exactly two routes requires the comparative adjective \"shorter.\" The superlative \"shortest\" is generally used for three or more, and adding \"more\" or \"most\" creates a double comparison.",
     "choiceRationales": [
       "\"Shorter\" is the standard comparative form used to compare the two named routes.",
-      "\"Shortest\" is a superlative form and is not the appropriate form for a comparison of two.",
-      "\"More shorter\" incorrectly combines two ways of forming the comparative degree.",
-      "\"Most shortest\" is a redundant double superlative and does not express the comparison correctly."
+      "Using the superlative \"shortest\" applies to comparisons among three or more routes rather than a choice between exactly two paths.",
+      "Writing \"more shorter\" creates a double comparative by stacking the modifier \"more\" onto an adjective that already carries the -er ending.",
+      "Pairing \"most\" with \"shortest\" forms a redundant double superlative and also uses the wrong degree for comparing only two routes."
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -375,10 +375,10 @@
     "answerIndex": 1,
     "rationale": "\"Interruptions\" is a plural count noun, so \"fewer\" is the appropriate comparative quantifier. \"Less\" is generally used with noncount quantities, such as less noise or less time.",
     "choiceRationales": [
-      "\"Less\" is normally used with a noncount noun, but individual interruptions can be counted.",
+      "Standard edited English pairs \"less\" with uncountable mass nouns such as time or noise, whereas individual interruptions can be counted.",
       "\"Fewer\" correctly modifies the plural count noun \"interruptions.\"",
-      "\"Fewest than\" incorrectly combines a superlative form with the comparative marker \"than.\"",
-      "\"Lesser\" generally refers to reduced importance or degree and does not quantify countable interruptions here."
+      "Combining the superlative \"fewest\" with \"than\" mixes two incompatible comparison structures and fails to fit the sentence cleanly.",
+      "The adjective \"lesser\" typically denotes lower rank or significance rather than quantifying a smaller number of countable interruptions."
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -416,7 +416,7 @@
     "rationale": "The interrupting phrase \"originally planned for outdoors\" must be enclosed by matching punctuation at its two boundaries. The paired dashes in the third sentence do that without splitting any grammatical unit.",
     "choiceRationales": [
       "This choice begins the interruption with a dash but closes it with a comma, creating mismatched punctuation.",
-      "The first dash incorrectly separates the adverb \"originally\" from the participial phrase it modifies.",
+      "Putting the opening dash after \"originally\" splits that adverb away from \"planned for outdoors,\" leaving half of the modifier outside the pair.",
       "The two dashes correctly enclose the entire interrupting phrase and leave the main sentence intact.",
       "These dashes divide the phrase and the predicate at illogical points rather than marking the interruption's boundaries."
     ],
@@ -455,9 +455,9 @@
     "answerIndex": 3,
     "rationale": "The sentence means that Nia is excluded from the group that submitted a card, so the preposition \"except\" is correct. The other choices have different meanings or grammatical functions.",
     "choiceRationales": [
-      "\"Accepted\" is a past-tense verb meaning received or agreed to and does not express exclusion.",
-      "\"Accept\" is a verb meaning receive or agree to; the sentence needs a preposition before \"Nia.\"",
-      "\"Expect\" is a verb meaning anticipate and does not convey that Nia is the exception.",
+      "Past-tense \"accepted\" functions as a verb meaning received or approved, so it cannot serve as a preposition excluding Nia from the group.",
+      "The verb \"accept\" means to receive or agree to something, whereas the blank requires a preposition introducing the one excluded person.",
+      "Using the verb \"expect\" expresses anticipation rather than establishing that Nia is the lone exception among everyone submitting cards.",
       "\"Except\" correctly means excluding and links the excluded person to the rest of the sentence."
     ],
     "skillIds": [
@@ -488,7 +488,7 @@
     "prompt": "What is the simple predicate in the sentence \"The student volunteers will distribute fresh notebooks after lunch\"?",
     "choices": [
       "will distribute",
-      "fresh notebooks",
+      "will distribute fresh notebooks",
       "after lunch",
       "student volunteers"
     ],
@@ -496,9 +496,9 @@
     "rationale": "The simple predicate is the complete verb phrase that states the action performed by the subject. In this sentence, the helping verb \"will\" and main verb \"distribute\" form that verb phrase.",
     "choiceRationales": [
       "\"Will distribute\" is the full verb phrase and therefore the sentence's simple predicate.",
-      "\"Fresh notebooks\" is the direct object that receives the action, not the predicate.",
-      "\"After lunch\" is a prepositional phrase telling when the action will occur.",
-      "\"Student volunteers\" names who performs the action and is part of the subject."
+      "Including \"fresh notebooks\" adds the direct object to the verb phrase, which gives part of the complete predicate rather than just the simple predicate.",
+      "The prepositional phrase \"after lunch\" acts as an adverbial telling when the action happens, not the core verb phrase forming the simple predicate.",
+      "The noun phrase \"student volunteers\" identifies who performs the action, placing it inside the sentence’s subject rather than its predicate."
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -537,8 +537,8 @@
     "choiceRationales": [
       "An adjective modifies a noun, but \"inside\" instead introduces a phrase showing where the costumes were stored.",
       "\"Inside\" functions as a preposition because it takes \"the cabinet\" as its object.",
-      "A pronoun replaces a noun phrase, which \"inside\" does not do in this sentence.",
-      "A conjunction connects words, phrases, or clauses; \"inside\" instead expresses a spatial relationship."
+      "Pronouns stand in for nouns or noun phrases, whereas \"inside\" introduces a location phrase and never replaces a person, place, or thing.",
+      "Conjunctions join equal elements or link clauses together, while \"inside\" connects the object \"the cabinet\" to show where the costumes were kept."
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -575,10 +575,10 @@
     "answerIndex": 2,
     "rationale": "Changing the noun phrase \"conducted an evaluation of\" to the precise verb \"evaluated\" removes unnecessary words while preserving the original meaning and clearly identifying the actor.",
     "choiceRationales": [
-      "This revision adds the unnecessary helper \"did\" and a wordy relative clause without improving meaning.",
-      "The passive and indirect construction is longer and less clear than the original sentence.",
+      "Adding the emphatic helper \"did\" alongside the wordy clause \"that was about\" inflates the sentence without contributing any new meaning.",
+      "Turning the sentence passive and inserting the vague filler \"was something conducted by\" makes the statement longer and less direct.",
       "This revision uses a precise active verb to express the same idea directly and concisely.",
-      "This wording is awkward, obscures who evaluated what, and incorrectly links \"conducted\" to the proposal."
+      "The tangled phrase \"in terms of evaluation\" sounds clumsy and illogically makes the proposal—rather than the evaluation—the thing conducted."
     ],
     "skillIds": [
       "writing-revision-clarity"
@@ -618,7 +618,7 @@
     "choiceRationales": [
       "In standard edited English, \"haven't\" and \"no\" create a double negative, and \"saw\" is not the participle required after \"have.\"",
       "In standard edited English, \"didn't\" and \"none\" combine two negatives where the intended form calls for \"any.\"",
-      "In standard edited English, \"haven't\" and \"never\" combine two negative forms for the intended meaning.",
+      "Pairing the contraction \"haven’t\" with \"never\" stacks two negative words in one clause, creating a nonstandard double negative.",
       "This sentence uses one negative verb phrase with the nonnegative determiner \"any,\" so its intended meaning is clear."
     ],
     "skillIds": [
@@ -657,9 +657,9 @@
     "rationale": "\"Maintenance\" is spelled correctly in the first sentence. The misspelled words in the other sentences should be written \"accommodations,\" \"embarrassed,\" and \"recommendation.\"",
     "choiceRationales": [
       "Every word in this sentence, including the often-misspelled word \"maintenance,\" is spelled correctly.",
-      "\"Accomodations\" is missing a second c; the standard spelling is \"accommodations.\"",
-      "\"Embarassed\" is missing a second r; the standard spelling is \"embarrassed.\"",
-      "\"Recomendation\" is missing a second m; the standard spelling is \"recommendation.\""
+      "The word \"accomodations\" drops the second c, whereas standard English spelling doubles both consonants to write \"accommodations\" with two c’s and two m’s.",
+      "Writing \"embarassed\" omits a second r, whereas the standard spelling \"embarrassed\" contains both a double r and a double s.",
+      "The spelling \"recomendation\" leaves out a second m; the accepted form is \"recommendation\" with one c and two m’s."
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -686,9 +686,9 @@
     "domainId": "writing",
     "contentFocus": "basic-skills-knowledge",
     "difficulty": "foundation",
-    "prompt": "In the sentence \"The unusually bright mural transformed the lobby,\" which word is an adverb modifying an adjective?",
+    "prompt": "In the sentence \"The unusually bright mural transformed the lobby,\" which choice isolates the adverb modifying an adjective?",
     "choices": [
-      "bright",
+      "unusually bright",
       "unusually",
       "mural",
       "transformed"
@@ -696,10 +696,10 @@
     "answerIndex": 1,
     "rationale": "\"Unusually\" is an adverb that modifies the adjective \"bright\" by indicating its degree. The adjective \"bright\" in turn modifies the noun \"mural.\"",
     "choiceRationales": [
-      "\"Bright\" is the adjective being modified; it describes the noun \"mural.\"",
+      "Pairing \"unusually\" with \"bright\" captures the entire adjective phrase instead of isolating only the single adverb that modifies the adjective.",
       "\"Unusually\" is an adverb of degree that modifies the adjective \"bright.\"",
-      "\"Mural\" is a noun naming the thing that transformed the lobby.",
-      "\"Transformed\" is the sentence's past-tense verb, not an adverb modifying an adjective."
+      "The word \"mural\" serves as the sentence’s subject noun naming the artwork, not an adverb describing the degree of an adjective.",
+      "Acting as the past-tense main verb, \"transformed\" expresses what the mural did to the lobby rather than modifying an adjective."
     ],
     "skillIds": [
       "writing-grammar-mechanics"
@@ -730,16 +730,16 @@
     "choices": [
       "A current thesaurus entry for the word \"resolution\"",
       "A historical novel that is set in the same community during the 1990s",
-      "The official archived minutes from the 1998 school board meeting",
+      "The official archived minutes from that governing body’s meeting",
       "An anonymous online comment recalling the meeting"
     ],
     "answerIndex": 2,
     "rationale": "Official archived meeting minutes are a primary institutional record likely to preserve both the resolution's exact language and the date on which the board acted. The other sources cannot reliably establish both facts.",
     "choiceRationales": [
-      "A thesaurus explains word relationships but does not document the board's wording or action date.",
-      "A historical novel is a creative secondary work and is not an official record of the resolution.",
+      "A thesaurus lists synonyms and antonyms for vocabulary words, so it cannot verify historical wording or an official adoption date.",
+      "Even when grounded in real settings, a historical novel is fictionalized storytelling rather than a primary record of board actions.",
       "Archived official minutes directly document the board meeting, making them the strongest source for the requested details.",
-      "An anonymous recollection is not authoritative and may not reproduce the wording or date accurately."
+      "An unsigned online memory lacks institutional authority and frequently introduces errors in exact phrasing or dates from decades earlier."
     ],
     "skillIds": [
       "writing-organization-evidence"
@@ -777,9 +777,9 @@
     "answerIndex": 3,
     "rationale": "Collecting runoff for later irrigation directly explains how a roof feature conserves water, so it supports the outline heading. The other details do not address the roof's role in conserving resources.",
     "choiceRationales": [
-      "The history of the mascot has no logical connection to roof features or resource conservation.",
-      "Auditorium capacity concerns a different part of the building and does not explain conservation.",
-      "The roof's visibility describes location but does not show that the roof conserves a resource.",
+      "Noting when the school mascot was chosen offers historical trivia with no link to rooftop design or conserving resources.",
+      "Stating how many seats fill the auditorium describes an unrelated interior space and explains nothing about roof-based conservation.",
+      "Mentioning that the roof is visible from the athletic field describes sightlines rather than showing how the structure saves resources.",
       "Capturing rainwater for garden use is a specific example of conserving water through a roof-related system."
     ],
     "skillIds": [
@@ -821,7 +821,7 @@
       "This statement makes a focused claim and previews the three adaptation categories the report can explain.",
       "Calling a topic interesting is vague and does not state what the report will explain about the plants.",
       "This broad question does not present a controlling statement or establish clear categories for the report.",
-      "Describing document features does not express the report's central idea about desert-plant adaptations."
+      "Counting paragraphs and images merely summarizes the physical layout of the document instead of advancing a focused claim about plant adaptations."
     ],
     "skillIds": [
       "writing-organization-evidence"
@@ -859,10 +859,10 @@
     "answerIndex": 1,
     "rationale": "The second sentence reports a central idea from the article in neutral, precise language without adding personal judgment or addressing the reader. That tone fits a formal informational summary.",
     "choiceRationales": [
-      "The first-person reaction and the word \"awesome\" emphasize personal opinion rather than objective summary.",
+      "Starting with first-person \"I thought\" and using slang like \"incredibly awesome\" express personal enthusiasm rather than neutral summary.",
       "This sentence neutrally attributes and explains information from the article in an appropriately formal style.",
-      "Direct address and the exclamation create a promotional, conversational tone rather than an objective one.",
-      "\"Obviously\" and the criticism of dissenting readers introduce unsupported judgment and an inappropriate tone."
+      "Speaking directly to \"you\" and ending with an exclamation point produce an informal, sensationalized voice unsuitable for formal science writing.",
+      "Inserting \"Obviously\" and mocking readers who disagree inject personal bias and dismissive judgment into what should remain an impartial summary."
     ],
     "skillIds": [
       "writing-revision-clarity"
@@ -894,16 +894,16 @@
     "choices": [
       "Select one animal and write the report's thesis for the student.",
       "Tell the student to keep every collected fact and simply reduce the font size until all of them fit within the assigned three report pages.",
-      "Help the student list possible audiences and subtopics, choose one focused question, and sort only relevant notes under that question.",
+      "Guide the student to list possible audiences and subtopics, pick one focused question, and sort only relevant notes under it.",
       "Begin correcting commas in the notes before the student narrows the topic."
     ],
     "answerIndex": 2,
     "rationale": "Considering audience and subtopics helps the student turn an overly broad subject into a manageable inquiry. Sorting relevant notes then creates a useful bridge from topic selection to organization without transferring authorship.",
     "choiceRationales": [
       "Choosing the focus and writing the thesis for the student removes essential prewriting decisions from the learner.",
-      "Keeping unrelated facts does not solve the problems of focus, relevance, or manageable scope.",
+      "Shrinking the type to cram disconnected trivia onto three pages ignores the real prewriting needs of narrowing scope and selecting relevant evidence.",
       "This scaffold supports narrowing, purpose, and organization while leaving the substantive choices to the student.",
-      "Sentence-level editing is premature because the student is still selecting and organizing ideas."
+      "Proofreading punctuation before the writer even settles on a narrower topic wastes time on notes that may never enter the final draft."
     ],
     "skillIds": [
       "writing-classroom-support"
@@ -943,7 +943,7 @@
     "choiceRationales": [
       "Frequency within the student's draft does not establish which word has the required meaning and grammatical role.",
       "An unexplained adult correction fixes one sentence but does not teach the student how to resolve the distinction later.",
-      "A vote reflects classmates' impressions, not authoritative information about usage.",
+      "Polling classmates merely gathers informal guesses and fails to teach the writer how to consult an authoritative usage reference.",
       "This method uses an appropriate reference, attends to meaning and grammar, and requires the student to apply the evidence."
     ],
     "skillIds": [
@@ -974,7 +974,7 @@
     "difficulty": "applied",
     "prompt": "A report introduction presents data about shade and summer temperatures in neighborhoods with different amounts of tree cover but ends with the sentence \"Trees are interesting.\" Which revision prompt would best help the student develop a focused thesis?",
     "choices": [
-      "What relationship do your data show between tree cover, shade, and neighborhood temperature, and how can you state that relationship in one sentence?",
+      "What pattern do your data show linking canopy, shade, and neighborhood temperature, and how can you express that link in a single clear claim?",
       "Can you replace \"interesting\" with the longest synonym in a thesaurus?",
       "Can you add three more interesting facts about indoor houseplants, even if they do not relate at all to the neighborhood shade and temperature data set?",
       "Can you copy the title of the first source and use it as your thesis?"
@@ -983,8 +983,8 @@
     "rationale": "The keyed prompt directs the student back to the report's own evidence and asks for the relationship that should control the paper. It supports a specific thesis while leaving the wording and inference to the student.",
     "choiceRationales": [
       "This question helps the student derive a focused controlling idea from the relevant data already presented.",
-      "A longer synonym would not make the sentence state the report's main finding or relationship.",
-      "Unrelated facts about houseplants would weaken the report's focus rather than clarify its thesis.",
+      "Swapping \"interesting\" for a fancier thesaurus word still leaves a vague opinion and never articulates the core finding supported by the data.",
+      "Inserting extra trivia about indoor plants pulls readers further away from the neighborhood cooling data instead of sharpening the controlling idea.",
       "A source title may not express the student's own evidence-based focus, and copying it would not develop authorship."
     ],
     "skillIds": [
@@ -1016,7 +1016,7 @@
     "prompt": "A student's paragraph explains how lunar phases result from the Moon's changing position relative to Earth and the Sun. One sentence describes the food astronauts eat in orbit. Which support best helps the student improve paragraph unity?",
     "choices": [
       "Ask the student to add several more descriptive details about astronaut meals and their daily training routines throughout the paragraph.",
-      "Have the student state the paragraph's main idea, test each sentence against it, and remove or relocate the astronaut-food sentence.",
+      "Have the student state the paragraph’s main idea, test every line against it, and cut or relocate the sentence about astronaut meals.",
       "Correct the spelling in the unrelated sentence and leave it in place.",
       "Replace the paragraph with a diagram created entirely by the paraeducator."
     ],
@@ -1025,8 +1025,8 @@
     "choiceRationales": [
       "Adding more unrelated meal details would move the paragraph farther from its stated explanation of lunar phases.",
       "This support teaches a transferable relevance check and keeps the revision decision with the student.",
-      "Mechanical correctness does not make a sentence relevant to the paragraph's controlling idea.",
-      "An adult-created replacement removes the student's opportunity to revise and demonstrate understanding."
+      "Polishing spelling inside an off-topic sentence fixes surface mechanics while leaving the break in paragraph unity completely unresolved.",
+      "Substituting a paraeducator-drawn diagram takes ownership away from the writer and bypasses practice in evaluating paragraph relevance."
     ],
     "skillIds": [
       "writing-classroom-support"
@@ -1056,16 +1056,16 @@
     "difficulty": "applied",
     "prompt": "A student ends a report about three local water-conservation methods by introducing a brand-new statistic that the report never explains. Which feedback would best support revision of the conclusion?",
     "choices": [
-      "Keep the new statistic in the conclusion, because all of the most important new information should always appear in the very final paragraph of any report.",
-      "Delete the entire conclusion and end the report immediately after the final body paragraph.",
-      "If the statistic is relevant, develop it in the body; then revise the conclusion to synthesize the three methods and explain their overall significance.",
+      "Keep the new statistic in the conclusion, because a report’s most important fresh evidence belongs primarily in the very final closing paragraph of a paper.",
+      "Delete the entire conclusion and finish the report right after the final body paragraph.",
+      "If the statistic fits, develop it inside a body section; then revise the closing to pull together those approaches and explain their overall significance.",
       "Replace the statistic with an unrelated quotation so the ending sounds more formal."
     ],
     "answerIndex": 2,
     "rationale": "A conclusion should draw together ideas that the report has already developed rather than introduce unexplained evidence. The keyed feedback preserves a relevant statistic by placing it where it can be explained and guides synthesis at the end.",
     "choiceRationales": [
-      "Conclusions generally should not be the only location for significant new evidence that requires explanation.",
-      "Removing the conclusion would lose the opportunity to synthesize the report's findings and provide closure.",
+      "Introducing major unexplained evidence for the first time in the closing paragraph leaves readers without context and weakens the report’s organization.",
+      "Dropping the closing paragraph altogether cuts the paper short and forfeits the chance to connect key takeaways and underscore their importance.",
       "This feedback places evidence where it can be developed and gives the conclusion an appropriate synthesizing purpose.",
       "An unrelated quotation would create a new relevance problem and would not synthesize the report's methods."
     ],
@@ -1105,9 +1105,9 @@
     "answerIndex": 3,
     "rationale": "Clause color coding makes the two independent units visible, and modeling valid boundaries gives the student usable options. Choosing and explaining corrections requires application and supports transfer to later writing.",
     "choiceRationales": [
-      "Removing all commas teaches an inaccurate rule and damages punctuation that may already be correct.",
+      "Stripping every comma out of the paper introduces a bogus rule and destroys legitimate punctuation in series and introductory phrases.",
       "Copying adult corrections may clean the page but does not teach the student to recognize or repair comma splices.",
-      "An arbitrary word limit does not teach clause boundaries and would severely restrict expression.",
+      "Imposing a five-word cap avoids teaching independent clause boundaries and produces choppy, unnatural writing across the draft.",
       "This sequence combines explicit analysis, models, guided choice, and explanation to build independent editing skill."
     ],
     "skillIds": [
@@ -1138,7 +1138,7 @@
     "difficulty": "applied",
     "prompt": "A student often omits small words while drafting and then reads the intended words into the text during proofreading. Which teacher-directed support would best help the student detect these omissions independently?",
     "choices": [
-      "Have the student use text-to-speech while tracking each printed word, pause where the spoken sentence sounds incomplete, and compare that location with the intended sentence.",
+      "Have the student use read-aloud software while tracking each printed word, pause where the spoken line sounds incomplete, and compare that spot against the intended sentence.",
       "Insert every missing word for the student before the student rereads the draft.",
       "Tell the student to trust that first silent rereading completely, because writers always see exactly what is actually on the page rather than what they had intended to write there.",
       "Ask the student to correct punctuation first and skip any sentence that sounds incomplete."
@@ -1180,7 +1180,7 @@
     "prompt": "A student must turn a detailed fire-drill handbook page into a 45-second morning announcement for middle school students. Which guidance best addresses the new form, audience, and purpose?",
     "choices": [
       "Read the entire handbook page rapidly so every sentence is included.",
-      "Select the few actions students must take, state them in concise spoken language and logical order, and repeat only the most critical time or location detail.",
+      "Select the few essential steps listeners need to take, state them in concise spoken language and logical order, and repeat only the key time or location cue.",
       "Replace the safety directions with a personal story about an unrelated school day.",
       "Use longer and more technical terms wherever possible throughout the announcement, so that the finished morning broadcast sounds considerably more official to listeners."
     ],
@@ -1189,8 +1189,8 @@
     "choiceRationales": [
       "Rapidly reading all source text would overload listeners and ignore the strict time limit and spoken format.",
       "This plan selects essential content, organizes it for listening, and preserves the announcement's safety function.",
-      "An unrelated story would not provide the actions students need to follow during the drill.",
-      "Unnecessary technical vocabulary could reduce comprehension and does not make the directions more accurate."
+      "Swapping emergency procedures for an unrelated personal anecdote abandons the safety purpose of the announcement and leaves listeners unprepared.",
+      "Packing a 45-second broadcast with dense technical jargon makes urgent directions harder to follow on first hearing without adding accuracy."
     ],
     "skillIds": [
       "writing-classroom-support"
@@ -1222,16 +1222,16 @@
     "choices": [
       "Have the student write out all of the salt-marsh facts first and all of the wetland facts second, without ever identifying any shared comparison criteria.",
       "Remove every difference so the report discusses only similarities.",
-      "Use a comparison matrix for shared criteria such as water, plants, and animals, then organize paragraphs by those criteria with comparison transitions.",
+      "Use a comparison matrix for shared criteria such as water, plants, and animals, then group paragraphs around those points using comparison transitions.",
       "Write the finished comparison for the student and ask the student to add a title."
     ],
     "answerIndex": 2,
     "rationale": "A shared-criteria matrix requires the student to align comparable information before drafting. Organizing by those criteria and using transitions then makes relationships between the ecosystems explicit for readers.",
     "choiceRationales": [
       "Two separate fact lists may remain disconnected and do not necessarily reveal direct similarities and differences.",
-      "A compare-and-contrast task requires relevant differences as well as similarities.",
+      "Cutting out every difference violates the assignment prompt, which explicitly asks students to examine how the two wetlands differ as well as align.",
       "This scaffold aligns evidence by common dimensions and provides a clear structure for the required mode.",
-      "Adult composition would remove the student's responsibility for selecting, comparing, and organizing information."
+      "Drafting the essay on the student’s behalf shifts authorship to the adult and deprives the learner of practice in selecting and structuring evidence."
     ],
     "skillIds": [
       "writing-classroom-support"
@@ -1269,9 +1269,9 @@
     "answerIndex": 3,
     "rationale": "Focused questions and a limited set of strategies make the revision task manageable while leaving decisions and language production with the student. This provides scaffolding without substituting adult writing.",
     "choiceRationales": [
-      "Dictation transfers the wording and substantive revision work from the student to the paraeducator.",
-      "Revising the draft privately removes the learner from the process and prevents skill development.",
-      "Refusing all support ignores the paraeducator's role in providing appropriate instructional scaffolds.",
+      "Dictating finished sentences word for word transfers authorship to the adult instead of coaching the student to make independent revision choices.",
+      "Editing the paper privately away from the student turns the work into an adult draft and removes any opportunity to build revision skills.",
+      "Withholding all guidance misinterprets student independence and neglects the paraeducator’s instructional responsibility to offer structured, non-directive scaffolds during revision.",
       "This approach clarifies expectations and offers structure while preserving the student's choices and composition."
     ],
     "skillIds": [
@@ -1305,13 +1305,13 @@
       "Add decorative adjectives to every step without changing the directions.",
       "Alphabetize all words in the draft to make them easier to locate.",
       "Have the paraeducator silently rewrite the entire calibration procedure and simply replace the student’s original draft with that corrected version before it is ever submitted.",
-      "Ask a peer to follow the directions literally while the writer notes breakdowns, then have the writer add needed quantities and separate actions into an accurate sequence."
+      "Ask a peer to follow the directions literally while the writer notes breakdowns, then have the writer add missing amounts and split each step into a clear order."
     ],
     "answerIndex": 3,
     "rationale": "A literal user test reveals where the intended audience lacks information or cannot follow the sequence. Having the student observe and revise those points connects authentic feedback to clearer, more complete procedural writing.",
     "choiceRationales": [
-      "Decorative description would not supply missing measurements or clarify the order of operations.",
-      "Alphabetizing individual words would destroy sentence meaning and would not improve procedural usability.",
+      "Sprinkling decorative adjectives throughout the procedure adds stylistic fluff without supplying omitted measurements or separating bundled tasks.",
+      "Sorting all the words alphabetically scrambles sentence grammar and destroys the chronological order required for usable calibration instructions.",
       "An adult rewrite might produce clear directions but would prevent the student from learning through revision.",
       "This support tests the draft with its audience and gives the student concrete evidence for revising completeness and sequence."
     ],

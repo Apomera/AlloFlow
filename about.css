@@ -329,4 +329,22 @@
     .about-answer-list {
         border: 2px solid CanvasText;
     }
+
+    .about-section--dark {
+        background: Canvas;
+        color: CanvasText;
+        border-top: 1px solid CanvasText;
+        border-bottom: 1px solid CanvasText;
+    }
+
+    .about-section--dark .about-eyebrow,
+    .about-section--dark h2,
+    .about-section--dark h3,
+    .about-section--dark p {
+        color: CanvasText;
+    }
+
+    .about-section--dark a:not(.btn-primary):not(.btn-secondary) {
+        color: LinkText;
+    }
 }

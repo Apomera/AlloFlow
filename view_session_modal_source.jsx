@@ -436,6 +436,24 @@ function SessionModal({
     return text;
   }, [t]);
   const [isProjectionMode, setIsProjectionMode] = React.useState(false);
+  const [copiedTarget, setCopiedTarget] = React.useState('');
+  const copiedTimerRef = React.useRef(null);
+  const modalMountedRef = React.useRef(true);
+  React.useEffect(() => {
+    modalMountedRef.current = true;
+    return () => {
+      modalMountedRef.current = false;
+      if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+    };
+  }, []);
+  const handleCopyValue = React.useCallback((targetKey, value) => {
+    try { if (typeof copyToClipboard === 'function') copyToClipboard(value); } catch (_) {}
+    if (modalMountedRef.current) setCopiedTarget(targetKey);
+    if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+    copiedTimerRef.current = setTimeout(() => {
+      if (modalMountedRef.current) setCopiedTarget('');
+    }, 2000);
+  }, [copyToClipboard]);
   const lanJoinUrl = Array.isArray(sessionData?.joinUrls) ? sessionData.joinUrls[0] : '';
   const isLocalOnly = sessionData?.isLocalOnly === true || sessionData?.transport === 'local-preview';
   // Gemini Canvas injects Google's own managed Firebase project, and its rules
@@ -657,19 +675,26 @@ function SessionModal({
           </div>
         </div>
         <h2 id="alloflow-session-modal-title" className="text-2xl font-black text-slate-800 mb-2">{isLocalOnly ? 'Local preview' : isMailboxSession ? 'Class Mailbox live session' : t('session.live_title')}</h2>
+        {isProjectionMode && (
+          <div data-session-projection-count="true" role="status" aria-live="polite" aria-atomic="true" className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-4 py-1.5 text-sm font-black text-emerald-900">
+            <Users size={16} aria-hidden="true" />
+            <span>{connectedStudentCount === 1 ? tr('session.projection_one_joined', '1 student joined') : tr('session.projection_many_joined', '{count} students joined', { count: connectedStudentCount })}</span>
+          </div>
+        )}
         <p id="alloflow-session-modal-description" className="text-slate-600 mb-6 font-medium">{isLocalOnly ? 'Firebase did not create a shareable session. This preview stays on the teacher device.' : isMailboxSession ? 'Students join through your Class Mailbox without accounts.' : t('session.live_instruction')}</p>
         <button
           type="button"
+          data-session-copy="code"
           aria-label={`${activeSessionCode}. ${t('session.click_to_copy')}`}
-          className={`w-full bg-indigo-50 border-4 border-indigo-100 rounded-2xl cursor-pointer hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors group relative ${isProjectionMode ? 'mx-auto max-w-4xl p-4 mb-4' : 'p-4 sm:p-6 mb-6'}`}
-          onClick={() => copyToClipboard(activeSessionCode)}
+          className={`w-full bg-indigo-50 border-4 border-indigo-100 rounded-2xl cursor-pointer hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 transition-colors group relative ${isProjectionMode ? 'mx-auto max-w-4xl p-4 mb-4' : 'p-4 sm:p-6 mb-6'}`}
+          onClick={() => handleCopyValue('code', activeSessionCode)}
           title={t('common.click_to_copy')}
         >
           <div className={`font-black text-indigo-600 tracking-[0.16em] sm:tracking-widest font-mono ${isProjectionMode ? 'text-6xl sm:text-8xl' : 'text-5xl sm:text-7xl'}`}>
             {activeSessionCode}
           </div>
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs font-bold text-indigo-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center gap-1">
-            <Copy size={10} aria-hidden="true"/> {t('session.click_to_copy')}
+          <div className={`absolute bottom-2 left-1/2 -translate-x-1/2 text-xs font-bold uppercase tracking-widest transition-opacity flex items-center gap-1 ${copiedTarget === 'code' ? 'opacity-100 text-emerald-800' : 'opacity-0 text-indigo-600 group-hover:opacity-100 group-focus-within:opacity-100'}`}>
+            {copiedTarget === 'code' ? (<>✓ {tr('common.copied', 'Copied!')}</>) : (<><Copy size={10} aria-hidden="true"/> {t('session.click_to_copy')}</>)}
           </div>
         </button>
         {liveJoinUrl && !isCanvasManagedBackend && (
@@ -688,10 +713,11 @@ function SessionModal({
               <li className="flex items-center justify-center gap-1.5 rounded-lg bg-white px-2 py-2 font-bold text-emerald-800">{liveQrSvg && <CheckCircle2 size={14} aria-hidden="true"/>} <span role="status" aria-live="polite" aria-atomic="true">{qrStatusText}</span></li>
             </ul>
             <button type="button"
-              onClick={() => copyToClipboard(liveJoinUrl)}
-              className="w-full min-h-11 flex items-center justify-center gap-2 text-xs font-bold text-cyan-800 hover:text-cyan-900 bg-white border border-cyan-300 hover:border-cyan-400 rounded-lg p-2 transition-all break-all"
+              data-session-copy="join"
+              onClick={() => handleCopyValue('join', liveJoinUrl)}
+              className={`w-full min-h-11 flex items-center justify-center gap-2 text-xs font-bold rounded-lg p-2 transition-all motion-reduce:transition-none break-all focus-visible:ring-2 focus-visible:ring-cyan-600 border ${copiedTarget === 'join' ? 'border-emerald-400 bg-emerald-50 text-emerald-900' : 'text-cyan-800 hover:text-cyan-900 bg-white border-cyan-300 hover:border-cyan-400'}`}
             >
-              Copy student join link <Copy size={12} aria-hidden="true"/>
+              {copiedTarget === 'join' ? (<>✓ {tr('session.join_link_copied', 'Student join link copied')}</>) : (<>Copy student join link <Copy size={12} aria-hidden="true"/></>)}
             </button>
             <input aria-label="Selectable student join link" readOnly value={liveJoinUrl} onFocus={event => event.target.select()} className="mt-2 min-h-11 w-full rounded-lg border border-cyan-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-cyan-500" />
             <div className={`mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 ${isProjectionMode ? 'hidden' : ''}`}>
@@ -732,11 +758,12 @@ function SessionModal({
           <div className="mb-6 bg-emerald-50 p-3 rounded-xl border border-emerald-200">
             <p className="text-xs text-emerald-700 font-bold uppercase tracking-wider mb-1">Local network join link</p>
             <button type="button"
+              data-session-copy="lan"
               aria-label={`${t('common.copy')} ${lanJoinUrl}`}
-              onClick={() => copyToClipboard(lanJoinUrl)}
-              className="w-full min-h-11 flex items-center justify-center gap-2 text-xs font-mono font-bold text-emerald-800 hover:text-emerald-900 bg-white border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all break-all"
+              onClick={() => handleCopyValue('lan', lanJoinUrl)}
+              className="w-full min-h-11 flex items-center justify-center gap-2 text-xs font-mono font-bold text-emerald-800 hover:text-emerald-900 bg-white border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all motion-reduce:transition-none break-all focus-visible:ring-2 focus-visible:ring-emerald-600"
             >
-              {lanJoinUrl} <Copy size={12} aria-hidden="true"/>
+              {lanJoinUrl} {copiedTarget === 'lan' ? <span className="font-sans text-emerald-900">✓ {tr('common.copied', 'Copied')}</span> : <Copy size={12} aria-hidden="true"/>}
             </button>
           </div>
         )}
@@ -744,11 +771,12 @@ function SessionModal({
           <div className="mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">
             <p className="text-xs text-slate-600 font-bold uppercase tracking-wider mb-1">{t('session.host_id_share')}</p>
             <button type="button"
+              data-session-copy="host"
               aria-label={`${t('common.copy')} ${appId}`}
-              onClick={() => copyToClipboard(appId)}
-              className="w-full min-h-11 flex items-center justify-center gap-2 text-xs font-mono font-bold text-slate-600 hover:text-indigo-600 bg-white border border-slate-400 hover:border-indigo-200 rounded-lg p-2 transition-all"
+              onClick={() => handleCopyValue('host', appId)}
+              className="w-full min-h-11 flex items-center justify-center gap-2 text-xs font-mono font-bold text-slate-600 hover:text-indigo-600 bg-white border border-slate-400 hover:border-indigo-200 rounded-lg p-2 transition-all motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600"
             >
-              {appId} <Copy size={12} aria-hidden="true"/>
+              {appId} {copiedTarget === 'host' ? <span className="font-sans text-emerald-800">✓ {tr('common.copied', 'Copied')}</span> : <Copy size={12} aria-hidden="true"/>}
             </button>
           </div>
         )}
@@ -790,7 +818,7 @@ function SessionModal({
         <div className={`flex flex-col sm:flex-row gap-3 justify-center ${isProjectionMode ? 'hidden' : ''}`}>
           <button type="button"
             onClick={handleSetShowSessionModalToFalse}
-            className="w-full sm:w-auto px-8 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full transition-colors"
+            className="min-h-11 w-full sm:w-auto px-8 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600"
           >
             {t('session.action_close')}
           </button>
@@ -799,7 +827,7 @@ function SessionModal({
               if (typeof onRequestEndSession === 'function') onRequestEndSession();
               else setConfirmDialog({ message: t('session.end_confirm') || 'Are you sure you want to end this session?', onConfirm: () => { setActiveSessionCode(null); setSessionData(null); setShowSessionModal(false); } });
             }}
-            className="w-full sm:w-auto px-8 py-3 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold rounded-full transition-colors flex items-center justify-center gap-2"
+            className="min-h-11 w-full sm:w-auto px-8 py-3 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold rounded-full transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-red-600"
           >
             <XCircle size={18} aria-hidden="true"/> {t('session.action_end')}
           </button>

@@ -5,12 +5,13 @@ const hashText = text => { let hash = 2166136261; for (let i = 0; i < text.lengt
 export const legacyRoomKey = source => 'allo-connected-room-v1:' + hashText(source);
 export const libraryKey = (source, language) => 'allo-connected-library-v2:' + hashText(JSON.stringify([source, language]));
 export const sameRoom = (a, b) => !!a && !!b && JSON.stringify(a) === JSON.stringify(b);
+const safeJsonParse = text => JSON.parse(text, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
 export function readLibrary(storage, source, language) {
   const empty = { version: 2, source, language, entries: [], selectedId: '' };
   const stored = storage.getItem(libraryKey(source, language));
   if (stored) {
     if (stored.length > MAX_LIBRARY_CHARS) throw Error('library-invalid');
-    let raw; try { raw = JSON.parse(stored); } catch (_) { throw Error('library-invalid'); }
+    let raw; try { raw = safeJsonParse(stored); } catch (_) { throw Error('library-invalid'); }
     if (raw?.version !== 2 || raw.source !== source || raw.language !== language || !Array.isArray(raw.entries) || raw.entries.length > ROOM_LIBRARY_LIMIT) throw Error('library-invalid');
     const ids = new Set();
     for (const entry of raw.entries) {
@@ -25,7 +26,7 @@ export function readLibrary(storage, source, language) {
   // only when a new library write succeeds, so a full disk cannot lose that room.
   const legacy = storage.getItem(legacyRoomKey(source));
   if (legacy && legacy.length < 40000) try {
-    const candidate = JSON.parse(legacy);
+    const candidate = safeJsonParse(legacy);
     if (candidate?.language === language) { const room = prepareRoom(candidate.room, source), id = 'saved_legacy'; empty.entries = [{ id, savedAt: 0, room }]; empty.selectedId = id; }
   } catch (_) {}
   return empty;

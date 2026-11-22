@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rock Cycle — AlloFlow</title>
 <meta name="description" content="Earth Science: the rock cycle as a branching network, not a one-way circle. Animated cross-section diagram with all six pathways clickable, and a transformation machine that takes a named specimen and an agent of change and returns the specific named product with its real temperatures, depths, timescale and field evide">
@@ -17,6 +18,7 @@
 <meta name="twitter:description" content="Earth Science: the rock cycle as a branching network, not a one-way circle. Animated cross-section diagram with all six pathways clickable, and a transformation machine that takes a named specimen and an agent of change and returns the specific named product with its real temperatures, depths, timescale and field evide">
 <link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="tool-page.css">
+<script src="tool-page.js" defer></script>
 <script type="application/ld+json">{
  "@context": "https://schema.org",
  "@type": "SoftwareApplication",
@@ -50,7 +52,7 @@
         </div>
     </div>
 </nav>
-<main id="tool-main" class="tool-page">
+<main id="tool-main" tabindex="-1" class="tool-page">
     <nav class="tool-page-crumbs" aria-label="Breadcrumb">
         <ol>
             <li><a href="./">AlloFlow</a></li>

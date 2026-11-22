@@ -24,7 +24,7 @@
 //   sel_safety_layer.js (assessSafety / renderCrisisResources).
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
+if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
   isRegistered: function(id) { return !!this._registry[id]; },
@@ -33,9 +33,11 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
+  if (typeof window === 'undefined' || !window.SelHub) return;
 
   // ── WCAG: live region for screen-reader announcements ──
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-conflicttheater')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-conflicttheater';
@@ -47,12 +49,14 @@ window.SelHub = window.SelHub || {
     document.body.appendChild(lr);
   })();
   function announceSR(msg) {
+    if (typeof document === 'undefined') return;
     var el = document.getElementById('allo-live-conflicttheater');
     if (el) { el.textContent = ''; setTimeout(function() { el.textContent = msg; }, 50); }
   }
 
-  // ── WCAG 2.3.3: Reduced-motion guard + scene CSS ──
+  // ── WCAG 2.3.3: Reduced-motion guard + scene CSS (scoped to .ct-stage/.ct-*) ──
   (function() {
+    if (typeof document === 'undefined' || !document.head) return;
     if (document.getElementById('allo-conflicttheater-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-conflicttheater-css';
@@ -75,15 +79,22 @@ window.SelHub = window.SelHub || {
       '.ct-meter-fill { height: 100%; transition: width 0.5s ease, background 0.5s; border-radius: 4px; }',
       '.ct-flicker { animation: ctFlicker 4s ease-in-out infinite; }',
       '.ct-mood-pulse { animation: ctMoodPulse 0.6s ease-out 1; }',
-      '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }'
+      '@media (prefers-reduced-motion: reduce) { .ct-stage, .ct-stage *, .ct-bubble, .ct-meter-fill, .ct-flicker, .ct-mood-pulse { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }'
     ].join('\n');
     document.head.appendChild(st);
   })();
 
   // ── Sound effects (procedural Web Audio) ──
   var _ac = null;
-  function getAC() { if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } return _ac; }
-  function tone(f, d, t, v) { var ac = getAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t || 'sine'; o.frequency.value = f; g.gain.setValueAtTime(v || 0.06, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (d || 0.15)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (d || 0.15)); } catch(e) {} }
+  function _cftIsMuted() {
+    try {
+      if (typeof window !== 'undefined' && typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+      if (typeof window !== 'undefined' && window._alloGlobalMute) return true;
+    } catch (_) {}
+    return false;
+  }
+  function getAC() { if (_cftIsMuted()) return null; if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } return _ac; }
+  function tone(f, d, t, v) { if (_cftIsMuted()) return; var ac = getAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t || 'sine'; o.frequency.value = f; g.gain.setValueAtTime(v || 0.06, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (d || 0.15)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (d || 0.15)); } catch(e) {} }
   function sfxResolve() { tone(523, 0.12, 'sine', 0.05); setTimeout(function() { tone(659, 0.12, 'sine', 0.05); }, 100); setTimeout(function() { tone(784, 0.18, 'sine', 0.06); }, 200); }
   function sfxBreakdown() { tone(220, 0.4, 'sawtooth', 0.04); }
 
@@ -922,8 +933,8 @@ window.SelHub = window.SelHub || {
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _cftT = (ctx && ctx.theme) || {};
       var _cftHC = !!_cftT.isContrast, _cftL = !_cftHC && !_cftT.isDark;
-      var _cft_BGL = {'#1e293b':'#ffffff','#451a03':'#fff7ed','#0f172a':'#f8fafc'}, _cft_BGH = {'#1e293b':'#000000','#451a03':'#000000','#0f172a':'#000000','#14b8a6':'#000000','#0c4a6e':'#000000'};
-      var _cft_FGL = {'#f1f5f9':'#0f172a','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#cbd5e1':'#334155','#fbbf24':'#854d0e','#fde68a':'#92400e','#7dd3fc':'#075985'}, _cft_FGH = {'#fef3c7':'#ffff00','#f1f5f9':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#cbd5e1':'#ffff00','#fbbf24':'#ffff00','#64748b':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#22c55e':'#ffff00','#eab308':'#ffff00','#ef4444':'#ffff00','#7dd3fc':'#ffff00','#e0f2fe':'#ffff00','#a5f3fc':'#ffff00'};
+      var _cft_BGL = {'#1e293b':'#ffffff','#451a03':'#fff7ed','#0f172a':'#f8fafc','#0c4a6e':'#e0f2fe'}, _cft_BGH = {'#1e293b':'#000000','#451a03':'#000000','#0f172a':'#000000','#14b8a6':'#000000','#0c4a6e':'#000000'};
+      var _cft_FGL = {'#f1f5f9':'#0f172a','#94a3b8':'#475569','#e2e8f0':'#1e293b','#cbd5e1':'#334155','#fbbf24':'#854d0e','#fde68a':'#92400e','#7dd3fc':'#075985','#e0f2fe':'#0c4a6e','#a5f3fc':'#0e7490','#fef3c7':'#78350f','#86efac':'#166534','#14b8a6':'#0f766e'}, _cft_FGH = {'#fef3c7':'#ffff00','#f1f5f9':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#cbd5e1':'#ffff00','#fbbf24':'#ffff00','#64748b':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#22c55e':'#ffff00','#eab308':'#ffff00','#ef4444':'#ffff00','#7dd3fc':'#ffff00','#e0f2fe':'#ffff00','#a5f3fc':'#ffff00','#86efac':'#ffff00','#14b8a6':'#ffff00'};
       var _cft_BDL = {'#1e293b':'#e5e7eb','#334155':'#e2e8f0','#475569':'#cbd5e1'}, _cft_BDH = {'#f59e0b':'#ffff00','#1e293b':'#ffff00','#334155':'#ffff00','#92400e':'#ffff00','#14b8a6':'#ffff00','#0369a1':'#ffff00','#0891b2':'#ffff00','#475569':'#ffff00'};
       var _cftBg = function(h){ return _cftHC ? (_cft_BGH[h]||h) : (_cftL ? (_cft_BGL[h]||h) : h); };
       // Dark-mode foreground map. These accents are readable as TEXT only when
@@ -955,7 +966,9 @@ window.SelHub = window.SelHub || {
       var _cftTheme = _cftHC ? 'contrast' : (_cftL ? 'light' : 'dark');
       var _cftTr = typeof ctx.t === 'function' ? ctx.t : function(k) { return k; };
 
-      var d = (ctx.toolData && ctx.toolData.conflicttheater) || {};
+      var _cftPlain = function(v) { return !!v && typeof v === 'object' && !Array.isArray(v); };
+      var _cftHas = function(obj, k) { return typeof k === 'string' && Object.prototype.hasOwnProperty.call(obj, k); };
+      var d = (ctx.toolData && _cftPlain(ctx.toolData.conflicttheater)) ? ctx.toolData.conflicttheater : {};
       var upd = function(key, val) {
         if (typeof key === 'object') { if (ctx.updateMulti) ctx.updateMulti('conflicttheater', key); }
         else { if (ctx.update) ctx.update('conflicttheater', key, val); }
@@ -985,34 +998,34 @@ window.SelHub = window.SelHub || {
       var tsPlaying = d.teacherSceneId ? tsReady.filter(function(s) { return s.id === d.teacherSceneId; })[0] || null : null;
       // Without AI a saved live scene resumes as the scripted one.
       if (!_cftAiOn && mode === 'scene') mode = 'script';
-      var scenarioId = d.scenarioId || 'lunch-money';
-      var scenario = SCENARIOS[scenarioId] || SCENARIOS['lunch-money'];
-      var scene = SCENES[scenario.sceneId] || SCENES.cafeteria;
-      var dialogue = d.dialogue || [];
-      var harmony = typeof d.harmony === 'number' ? d.harmony : scenario.initialHarmony;
-      var principlesUsed = d.principlesUsed || {};
-      // Initialize moods from scenario's initialMoods (per-character starting state)
-      var charMoods = (d.charMoods && typeof d.charMoods === 'object' && !Array.isArray(d.charMoods)) ? d.charMoods : Object.assign({}, scenario.initialMoods || {});
+      var scenarioId = typeof d.scenarioId === 'string' && _cftHas(SCENARIOS, d.scenarioId) ? d.scenarioId : 'lunch-money';
+      var scenario = _cftHas(SCENARIOS, scenarioId) ? SCENARIOS[scenarioId] : SCENARIOS['lunch-money'];
+      var scene = _cftHas(SCENES, scenario.sceneId) ? SCENES[scenario.sceneId] : SCENES.cafeteria;
+      var dialogue = Array.isArray(d.dialogue) ? d.dialogue.filter(function(m) { return _cftPlain(m); }) : [];
+      var harmony = (typeof d.harmony === 'number' && Number.isFinite(d.harmony)) ? Math.max(0, Math.min(100, d.harmony)) : scenario.initialHarmony;
+      var principlesUsed = _cftPlain(d.principlesUsed) ? d.principlesUsed : {};
+      // Initialize moods from scenario's initialMoods (per-character starting state) — clone, never mutate d.charMoods
+      var charMoods = Object.assign({}, scenario.initialMoods || {}, _cftPlain(d.charMoods) ? d.charMoods : {});
       // Default any missing characters to 'calm'
       scenario.characterIds.forEach(function(cid) { if (!charMoods[cid]) charMoods[cid] = 'calm'; });
-      var addressing = d.addressing || 'both';
-      var studentInput = d.studentInput || '';
+      var addressing = typeof d.addressing === 'string' && d.addressing ? d.addressing : 'both';
+      var studentInput = typeof d.studentInput === 'string' ? d.studentInput : '';
       var loading = !!d.loading;
-      var turnCount = d.turnCount || 0;
-      var _userTier = d._userTier || 0;
+      var turnCount = (typeof d.turnCount === 'number' && Number.isFinite(d.turnCount)) ? d.turnCount : 0;
+      var _userTier = (typeof d._userTier === 'number' && Number.isFinite(d._userTier)) ? d._userTier : 0;
       var ttsEnabled = d.ttsEnabled !== false;
-      var endingType = d.ending || null;
+      var endingType = typeof d.ending === 'string' ? d.ending : null;
       // Portrait cache: portraits[characterId] = { calm, upset, 'closing-down', listening, regretful, _loading: { mood: bool } }
-      var portraits = d.portraits || {};
+      var portraits = _cftPlain(d.portraits) ? d.portraits : {};
       // Cross-session memory: memory[characterId] = { memoryNote, relationshipScore, scenariosPlayed, lastInteraction, lastScenarioId }
       // Persists across sessions via ctx.update → ctx.toolData.conflicttheater pipeline.
-      var memory = d.memory || {};
+      var memory = _cftPlain(d.memory) ? d.memory : {};
       // Mid-conversation coach hint (max one per scenario, dismissible)
       var coachHint = d.coachHint || null;
       var coachHintShown = !!d.coachHintShown;
       var coachHintDismissed = !!d.coachHintDismissed;
       // Per-scenario history of past attempts (for compare-to-previous)
-      var attemptHistory = d.attemptHistory || [];
+      var attemptHistory = Array.isArray(d.attemptHistory) ? d.attemptHistory.filter(function(a) { return _cftPlain(a); }) : [];
       var memoryResetConfirm = !!d.memoryResetConfirm;
 
       function focusConflictControl(id) {
@@ -1068,10 +1081,10 @@ window.SelHub = window.SelHub || {
           h('h2', { id: 'cft-memory-reset-title', style: { margin: '0 0 8px', fontSize: 19, fontWeight: 900, color: _cftFg('#f1f5f9') } }, 'Reset all character memory?'),
           h('p', { id: 'cft-memory-reset-description', style: { margin: '0 0 18px', fontSize: 13, lineHeight: 1.6, color: _cftFg('#cbd5e1') } }, 'This permanently removes every character memory from your past conversations. This cannot be undone.'),
           h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' } },
-            h('button', { id: 'cft-memory-reset-cancel', onClick: closeMemoryResetConfirm,
+            h('button', { type: 'button', id: 'cft-memory-reset-cancel', onClick: closeMemoryResetConfirm,
               style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #64748b', background: _cftBg('#1e293b'), color: _cftFg('#e2e8f0'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
             }, 'Cancel'),
-            h('button', { onClick: commitMemoryReset,
+            h('button', { type: 'button', onClick: commitMemoryReset,
               style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #f87171', background: '#b91c1c', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
             }, 'Reset character memory')
           )
@@ -1179,23 +1192,35 @@ window.SelHub = window.SelHub || {
 
         // Pre-flight regex gate: a critical keyword in the mediator's turn
         // breaks character on both AI actors and surfaces crisis support.
-        if (window.SelHub && window.SelHub.safeRehearseCheck) {
+        var _preflightBlocked = false;
+        var _preflightSev = 'high';
+        if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
           var _preflight = window.SelHub.safeRehearseCheck(msg, { toolId: 'conflicttheater', onSafetyFlag: onSafetyFlag });
-          if (_preflight.action === 'block') {
-            var _breakText = (window.SelHub.rehearseBreakCharacterText && window.SelHub.rehearseBreakCharacterText(_preflight.severity)) ||
-              'I want to step out of the scene for a moment. What you wrote sounds heavy, and that matters more than the practice. Please reach out to a trusted adult or one of the crisis lines below.';
-            var _firstResponder = (addressing === 'both' ? scenario.characterIds[0] : addressing);
-            upd({
-              dialogue: dialogue.concat([
-                { speaker: 'student', text: msg, ts: Date.now() },
-                { speaker: _firstResponder, text: _breakText, mood: 'calm', bodyLanguage: '', ts: Date.now(), _crisis: true }
-              ]),
-              studentInput: '',
-              _userTier: 3
-            });
-            announceSR('Practice paused. Please use the support resources below.');
-            return;
+          if (_preflight && _preflight.action === 'block') { _preflightBlocked = true; _preflightSev = _preflight.severity || 'high'; }
+        } else if (window.SelHub && typeof window.SelHub.scanForCrisis === 'function') {
+          var _scan = window.SelHub.scanForCrisis(msg);
+          if (_scan && _scan.isCrisis) {
+            _preflightBlocked = true;
+            if (typeof onSafetyFlag === 'function') { try { onSafetyFlag({ category: _scan.category || 'crisis', severity: 'critical', source: 'sel_conflicttheater', toolId: 'conflicttheater' }); } catch (_) {} }
           }
+        }
+        if (_preflightBlocked) {
+          var _breakText = (window.SelHub && typeof window.SelHub.rehearseBreakCharacterText === 'function' && window.SelHub.rehearseBreakCharacterText(_preflightSev)) ||
+            'I want to step out of the scene for a moment. What you wrote sounds heavy, and that matters more than the practice. Please reach out to a trusted adult or one of the crisis lines below.';
+          var _firstResponder = (addressing === 'both' ? scenario.characterIds[0] : addressing);
+          upd({
+            dialogue: dialogue.concat([
+              { speaker: 'student', text: msg, ts: Date.now() },
+              { speaker: _firstResponder, text: _breakText, mood: 'calm', bodyLanguage: '', ts: Date.now(), _crisis: true }
+            ]),
+            studentInput: '',
+            _userTier: 3
+          });
+          if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+            try { window.SelHub.showCrisisModal({ toolName: 'Conflict Theater', contentSnippet: msg.slice(0, 120) }); } catch (_) {}
+          }
+          announceSR('Practice paused. Please use the support resources below.');
+          return;
         }
 
         var newDialogue = dialogue.concat([{ speaker: 'student', text: msg, ts: Date.now() }]);
@@ -1381,10 +1406,10 @@ window.SelHub = window.SelHub || {
             });
           }
 
-          // Sequential TTS
-          if (ttsQueue.length && callTTS) {
+          // Sequential TTS (respect global mute)
+          if (ttsQueue.length && callTTS && !_cftIsMuted()) {
             (function playNext(i) {
-              if (i >= ttsQueue.length) return;
+              if (i >= ttsQueue.length || _cftIsMuted()) return;
               var t = ttsQueue[i];
               try {
                 var p = callTTS(t.text, { voice: t.voice });
@@ -1452,25 +1477,44 @@ window.SelHub = window.SelHub || {
       // No-AI modes (2026-11-04): scripted scene + student-written scene.
       // Zero AI calls: AdventureOffline is pure UI; safety is the local regex check.
       // ──────────────────────────────────────────────────────────
-      var scriptStory = tsPlaying ? tsPlaying.story : (CT_SCRIPTS[scenario.id] || CT_SCRIPTS['lunch-money']);
+      var scriptStory = tsPlaying ? tsPlaying.story : (_cftHas(CT_SCRIPTS, scenario.id) ? CT_SCRIPTS[scenario.id] : CT_SCRIPTS['lunch-money']);
       // Endings found / XP / reflections are keyed per script: a teacher scene is its own script.
       var scriptKey = tsPlaying ? 'teacher:' + tsPlaying.id : scenario.id;
       var _cftCrisis = (_userTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null;
-      var _cftCard = { background: _cftBg('#1e293b'), border: '1px solid #334155', borderRadius: 12, padding: 14, marginBottom: 12 };
-      var _cftBtn = { minHeight: 44, padding: '9px 16px', borderRadius: 10, border: '1px solid #475569', background: 'transparent', color: _cftFg('#e2e8f0'), fontSize: 13, fontWeight: 700, cursor: 'pointer' };
-      var _cftBtnPrimary = Object.assign({}, _cftBtn, { border: 'none', background: _cftHC ? _cftBg('#14b8a6') : '#0f766e', color: _cftFg('#fff') });
+      var _cftCard = { background: _cftBg('#1e293b'), border: '1px solid ' + _cftBd('#334155'), borderRadius: 12, padding: 14, marginBottom: 12 };
+      var _cftBtn = { minHeight: 44, padding: '9px 16px', borderRadius: 10, border: '1px solid ' + _cftBd('#475569'), background: 'transparent', color: _cftFg('#e2e8f0'), fontSize: 13, fontWeight: 700, cursor: 'pointer' };
+      var _cftBtnPrimary = Object.assign({}, _cftBtn, { border: _cftHC ? '2px solid #ffff00' : 'none', background: _cftHC ? _cftBg('#14b8a6') : '#0f766e', color: _cftFg('#fff') });
       function _scriptScene(id) {
-        for (var i = 0; i < scriptStory.scenes.length; i++) { if (scriptStory.scenes[i].id === id) return scriptStory.scenes[i]; }
+        var scenesList = (scriptStory && Array.isArray(scriptStory.scenes)) ? scriptStory.scenes : [];
+        for (var i = 0; i < scenesList.length; i++) { if (scenesList[i] && scenesList[i].id === id) return scenesList[i]; }
         return null;
       }
-      function _cftLocalSafety(text) {
-        if (!text || !window.SelHub || typeof window.SelHub.safeRehearseCheck !== 'function') return false;
-        var r = window.SelHub.safeRehearseCheck(String(text), { toolId: 'conflicttheater', onSafetyFlag: onSafetyFlag });
-        if (r && r.action === 'block') { upd('_userTier', 3); announceSR('Please use the support resources on this screen.'); return true; }
+      function _cftLocalSafety(text, skipUpd) {
+        if (!text) return false;
+        var s = String(text);
+        var blocked = false;
+        if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+          var r = window.SelHub.safeRehearseCheck(s, { toolId: 'conflicttheater', onSafetyFlag: onSafetyFlag });
+          if (r && r.action === 'block') blocked = true;
+        } else if (window.SelHub && typeof window.SelHub.scanForCrisis === 'function') {
+          var sr = window.SelHub.scanForCrisis(s);
+          if (sr && sr.isCrisis) {
+            blocked = true;
+            if (typeof onSafetyFlag === 'function') { try { onSafetyFlag({ category: sr.category || 'crisis', severity: 'critical', source: 'sel_conflicttheater_local', toolId: 'conflicttheater' }); } catch (_) {} }
+          }
+        }
+        if (blocked) {
+          if (!skipUpd) upd('_userTier', 3);
+          if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+            try { window.SelHub.showCrisisModal({ toolName: 'Conflict Theater', contentSnippet: s.slice(0, 120) }); } catch (_) {}
+          }
+          announceSR('Please use the support resources on this screen.');
+          return true;
+        }
         return false;
       }
       function startScript(sid) {
-        var id = (SCENARIOS[sid] && CT_SCRIPTS[sid]) ? sid : scenario.id;
+        var id = (_cftHas(SCENARIOS, sid) && _cftHas(CT_SCRIPTS, sid)) ? sid : scenario.id;
         upd({ scenarioId: id, teacherSceneId: null, mode: 'script', scriptEnding: null, scriptPath: null, scriptRun: (d.scriptRun || 0) + 1, scriptReflectDraft: '', scriptReflectSaved: false });
         announceSR('Scripted scene started: ' + (SCENARIOS[id] || scenario).title + '.');
       }
@@ -1479,7 +1523,7 @@ window.SelHub = window.SelHub || {
         announceSR('Scripted scene started: ' + (ts.title || _ctTx('sel.conflicttheater.teacher.from', 'From your teacher')) + '.');
       }
       function reachScriptEnding(endId) {
-        var done = Object.assign({}, d.scriptDone || {});
+        var done = Object.assign({}, _cftPlain(d.scriptDone) ? d.scriptDone : {});
         var firstForScenario = !Object.keys(done).some(function(k) { return k.indexOf(scriptKey + ':') === 0; });
         done[scriptKey + ':' + endId] = true;
         upd({ scriptEnding: endId, scriptDone: done, scriptReflectSaved: false });
@@ -1498,20 +1542,21 @@ window.SelHub = window.SelHub || {
       // Built-in player for an older host without AdventureOffline.
       function renderFallbackPlayer(story) {
         var path = (Array.isArray(d.scriptPath) ? d.scriptPath : []).filter(function(id) { return !!_scriptScene(id); });
-        if (!path.length) path = [story.start];
-        var cur = _scriptScene(path[path.length - 1]);
+        if (!path.length && story && story.start) path = [story.start];
+        var cur = path.length ? _scriptScene(path[path.length - 1]) : null;
+        if (!cur) return h('section', { 'data-ct-fallback-player': 'true', style: _cftCard }, h('p', { style: { margin: 0, color: _cftFg('#e2e8f0') } }, 'Scene unavailable.'));
         var go = function(to) { upd('scriptPath', path.concat([to])); var sc = _scriptScene(to); if (sc && sc.ending) reachScriptEnding(to); };
         return h('section', { 'data-ct-fallback-player': 'true', 'aria-label': story.title, style: Object.assign({}, _cftCard, { padding: 18 }) },
           h('h3', { style: { margin: '0 0 10px', fontSize: 16, fontWeight: 800, color: _cftFg('#f1f5f9') } }, cur.ending ? 'The end' : 'Step ' + path.length),
           h('div', { style: { whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.6, color: _cftFg('#e2e8f0') } }, cur.text),
           !cur.ending && h('div', { role: 'group', 'aria-label': 'Choices', style: { display: 'grid', gap: 8, marginTop: 14 } },
-            cur.choices.map(function(c, i) {
-              return h('button', { key: i, 'data-ct-choice': c.to, onClick: function() { go(c.to); }, style: Object.assign({}, _cftBtn, { textAlign: 'left', fontWeight: 600 }) }, c.label);
+            (Array.isArray(cur.choices) ? cur.choices : []).map(function(c, i) {
+              return h('button', { type: 'button', key: i, 'data-ct-choice': c.to, onClick: function() { go(c.to); }, style: Object.assign({}, _cftBtn, { textAlign: 'left', fontWeight: 600 }) }, c.label);
             })
           ),
           h('div', { style: { display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' } },
-            h('button', { disabled: path.length < 2, onClick: function() { upd({ scriptPath: path.slice(0, -1), scriptEnding: null }); }, style: _cftBtn }, '← Back'),
-            h('button', { disabled: path.length < 2, onClick: function() { upd({ scriptPath: [story.start], scriptEnding: null }); }, style: cur.ending ? _cftBtnPrimary : _cftBtn }, cur.ending ? '↺ Play again' : '↺ Start over')
+            h('button', { type: 'button', disabled: path.length < 2, onClick: function() { upd({ scriptPath: path.slice(0, -1), scriptEnding: null }); }, style: _cftBtn }, '← Back'),
+            h('button', { type: 'button', disabled: path.length < 2, onClick: function() { upd({ scriptPath: [story.start], scriptEnding: null }); }, style: cur.ending ? _cftBtnPrimary : _cftBtn }, cur.ending ? '↺ Play again' : '↺ Start over')
           )
         );
       }
@@ -1523,12 +1568,12 @@ window.SelHub = window.SelHub || {
             onChange: function(e) { upd(cfg.draftKey, e.target.value); },
             style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 10, border: '1px solid #475569', background: _cftBg('#0f172a'), color: _cftFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' } }),
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
-            h('button', { 'data-ct-reflect-save': cfg.id, disabled: !String(cfg.value || '').trim(), onClick: cfg.onSave, style: _cftBtnPrimary }, 'Save reflection'),
+            h('button', { type: 'button', 'data-ct-reflect-save': cfg.id, disabled: !String(cfg.value || '').trim(), onClick: cfg.onSave, style: _cftBtnPrimary }, 'Save reflection'),
             cfg.saved ? h('span', { role: 'status', style: { fontSize: 12, color: _cftFg('#94a3b8') } }, 'Saved to your work.') : null
           )
         );
       }
-      var _cftBackBtn = h('button', { onClick: function() { upd({ mode: 'select', teacherSceneId: null }); }, style: Object.assign({}, _cftBtn, { minHeight: 32, padding: '4px 12px', fontSize: 11, color: _cftFg('#94a3b8') }) }, '← All scenarios');
+      var _cftBackBtn = h('button', { type: 'button', onClick: function() { upd({ mode: 'select', teacherSceneId: null }); }, style: Object.assign({}, _cftBtn, { minHeight: 32, padding: '4px 12px', fontSize: 11, color: _cftFg('#94a3b8') }) }, '← All scenarios');
 
       // MODE: script (scripted branching scene, no AI)
       if (mode === 'script') {
@@ -1557,10 +1602,12 @@ window.SelHub = window.SelHub || {
             onSave: function() {
               var txt = String(d.scriptReflectDraft || '').trim();
               if (!txt) return;
-              _cftLocalSafety(txt);
+              var flagged = _cftLocalSafety(txt, true);
               var list = (Array.isArray(d.scriptReflections) ? d.scriptReflections : []).concat([{ scenarioId: scriptKey, ending: d.scriptEnding, text: txt.slice(0, 2000), ts: new Date().toISOString() }]).slice(-20);
-              upd({ scriptReflections: list, scriptReflectDraft: '', scriptReflectSaved: true });
-              announceSR('Reflection saved.');
+              var patch = { scriptReflections: list, scriptReflectDraft: '', scriptReflectSaved: true };
+              if (flagged) patch._userTier = 3;
+              upd(patch);
+              if (!flagged) announceSR('Reflection saved.');
             }
           }) : null,
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
@@ -1601,9 +1648,9 @@ window.SelHub = window.SelHub || {
             )
           ),
           canWrite ? h('div', { style: Object.assign({}, _cftCard, { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }) },
-            h('button', { 'data-ct-open-writer': 'true', onClick: function() { upd({ writeOpen: true, writePlay: false }); }, style: _cftBtnPrimary }, mine ? '✏️ Keep writing' : '✏️ Open the scene writer'),
+            h('button', { type: 'button', 'data-ct-open-writer': 'true', onClick: function() { upd({ writeOpen: true, writePlay: false }); }, style: _cftBtnPrimary }, mine ? '✏️ Keep writing' : '✏️ Open the scene writer'),
             myStory ? h('span', { style: { fontSize: 12, color: _cftFg('#cbd5e1') } }, (myStory.title || 'My conflict scene') + ' · ' + myStory.scenes.length + ' scenes · ' + (myOk ? 'ready to play' : 'not finished yet')) : null,
-            myOk ? h('button', { 'data-ct-play-mine': 'true', 'aria-pressed': d.writePlay ? 'true' : 'false', onClick: function() { upd('writePlay', !d.writePlay); }, style: _cftBtn }, d.writePlay ? 'Hide my scene' : '▶ Play my scene') : null
+            myOk ? h('button', { type: 'button', 'data-ct-play-mine': 'true', 'aria-pressed': d.writePlay ? 'true' : 'false', onClick: function() { upd('writePlay', !d.writePlay); }, style: _cftBtn }, d.writePlay ? 'Hide my scene' : '▶ Play my scene') : null
           ) : h('div', { role: 'status', 'data-ct-writer-loading': 'true', style: Object.assign({}, _cftCard, { fontSize: 13, color: _cftFg('#cbd5e1') }) }, 'The scene writer is still loading. Try again in a moment; if it does not appear, ask your teacher to reload AlloFlow.'),
           canWrite && myOk && d.writePlay ? h('div', { style: { marginBottom: 12 } }, h(_cftAO.Player, { key: 'mine', story: myStory, t: _cftTr, theme: _cftTheme })) : null,
           renderReflectBox({
@@ -1612,9 +1659,11 @@ window.SelHub = window.SelHub || {
             onSave: function() {
               var txt = String(d.writeReflectDraft || '').trim();
               if (!txt) return;
-              _cftLocalSafety(txt);
-              upd({ writeReflection: { text: txt.slice(0, 2000), ts: new Date().toISOString() }, writeReflectDraft: '', writeReflectSaved: true });
-              announceSR('Reflection saved.');
+              var flagged = _cftLocalSafety(txt, true);
+              var patch = { writeReflection: { text: txt.slice(0, 2000), ts: new Date().toISOString() }, writeReflectDraft: '', writeReflectSaved: true };
+              if (flagged) patch._userTier = 3;
+              upd(patch);
+              if (!flagged) announceSR('Reflection saved.');
             }
           }),
           d.writeReflection && d.writeReflection.text ? h('p', { style: { fontSize: 12, color: _cftFg('#94a3b8'), margin: '0 0 12px', fontStyle: 'italic' } }, 'Last saved reflection: "' + d.writeReflection.text + '"') : null,
@@ -1664,30 +1713,32 @@ window.SelHub = window.SelHub || {
               var sceneObj = SCENES[sc.sceneId] || SCENES.cafeteria;
               var charsInScenario = sc.characterIds.map(function(cid) { return CAST[cid]; }).filter(Boolean);
               var hasWarning = !!sc.contentWarning;
-              return h('button', {
-                key: sc.id,
-                role: 'listitem',
-                'aria-label': 'Pick scenario: ' + sc.title + (hasWarning ? ' (content warning)' : ''),
-                onClick: function() { startScenario(sc.id); announceSR('Selected scenario: ' + sc.title); },
-                style: { textAlign: 'left', padding: 12, borderRadius: 12, border: '1px solid ' + (hasWarning ? '#92400e' : '#334155'), background: _cftBg('#1e293b'), color: _cftFg('#e2e8f0'), cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 6 }
-              },
-                h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
-                  h('div', { style: { fontSize: 13, fontWeight: 800, color: _cftFg('#f1f5f9'), flex: 1 } }, sc.title),
-                  h('div', { style: { fontSize: 10, color: _cftFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: '0.05em' } }, sceneObj.label)
-                ),
-                h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', fontSize: 18 } },
-                  charsInScenario.map(function(c) {
-                    return h('span', { role: 'note', key: c.id, title: c.name, 'aria-label': c.name }, c.avatar);
-                  })
-                ),
-                h('p', { style: { fontSize: 11, color: _cftFg('#cbd5e1'), margin: 0, lineHeight: 1.5 } }, sc.setup.length > 140 ? sc.setup.slice(0, 140) + '...' : sc.setup),
-                hasWarning && h('div', { style: { fontSize: 10, color: _cftFg('#fbbf24'), fontWeight: 700, marginTop: 4 } }, '⚠️ Content warning')
+              return h('div', { key: sc.id, role: 'listitem', style: { display: 'flex' } },
+                h('button', {
+                  type: 'button',
+                  'aria-label': 'Pick scenario: ' + sc.title + (hasWarning ? ' (content warning)' : ''),
+                  onClick: function() { startScenario(sc.id); announceSR('Selected scenario: ' + sc.title); },
+                  style: { flex: 1, textAlign: 'left', padding: 12, borderRadius: 12, border: '1px solid ' + _cftBd(hasWarning ? '#92400e' : '#334155'), background: _cftBg('#1e293b'), color: _cftFg('#e2e8f0'), cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 6 }
+                },
+                  h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
+                    h('div', { style: { fontSize: 13, fontWeight: 800, color: _cftFg('#f1f5f9'), flex: 1 } }, sc.title),
+                    h('div', { style: { fontSize: 12, color: _cftFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: '0.05em' } }, sceneObj.label)
+                  ),
+                  h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', fontSize: 18 } },
+                    charsInScenario.map(function(c) {
+                      return h('span', { role: 'note', key: c.id, title: c.name, 'aria-label': c.name }, c.avatar);
+                    })
+                  ),
+                  h('p', { style: { fontSize: 12, color: _cftFg('#cbd5e1'), margin: 0, lineHeight: 1.5 } }, sc.setup.length > 140 ? sc.setup.slice(0, 140) + '...' : sc.setup),
+                  hasWarning && h('div', { style: { fontSize: 12, color: _cftFg('#fbbf24'), fontWeight: 700, marginTop: 4 } }, '⚠️ Content warning')
+                )
               );
             })
           ),
           h('p', { style: { fontSize: 10, color: _cftFg('#64748b'), textAlign: 'center', margin: 0 } }, 'Click any scenario to read the full setup and start.'),
           // ── Write your own scene (no AI) ──
           h('button', {
+            type: 'button',
             'data-ct-write-card': 'true',
             onClick: function() { upd({ mode: 'write' }); announceSR('Write your own conflict scene.'); },
             style: { width: '100%', textAlign: 'left', marginTop: 14, padding: 12, borderRadius: 12, border: '1px dashed #14b8a6', background: _cftBg('#1e293b'), color: _cftFg('#e2e8f0'), cursor: 'pointer' }
@@ -1698,6 +1749,7 @@ window.SelHub = window.SelHub || {
           ),
           // ── Conflict Replay launch card (camera wave; hidden when AI/vision is off) ──
           _cftVisionAiOn ? h('button', {
+            type: 'button',
             'aria-label': 'Open Conflict Replay: act a scene, record it, and watch the tagged replay',
             onClick: function() { upd('mode', 'replay'); announceSR('Conflict Replay opened.'); },
             style: { width: '100%', textAlign: 'left', marginTop: 14, padding: 12, borderRadius: 12, border: '1px dashed #f59e0b', background: _cftBg('#1e293b'), color: _cftFg('#e2e8f0'), cursor: 'pointer' }
@@ -1712,6 +1764,7 @@ window.SelHub = window.SelHub || {
               'Characters remember ' + Object.keys(memory).length + ' past conversation' + (Object.keys(memory).length === 1 ? '' : 's') + ' with you.'
             ),
             h('button', {
+              type: 'button',
               id: 'cft-memory-reset-trigger',
               onClick: openMemoryResetConfirm,
               style: { padding: '4px 10px', minHeight: 24, background: 'transparent', color: _cftFg('#64748b'), border: '1px solid #334155', borderRadius: 8, fontSize: 10, cursor: 'pointer' }
@@ -1729,6 +1782,7 @@ window.SelHub = window.SelHub || {
         return h('div', { style: { padding: 24, maxWidth: 560, margin: '0 auto' } },
           h('div', { style: { textAlign: 'center', marginBottom: 16 } },
             h('button', {
+              type: 'button',
               'aria-label': 'Back to scenario list',
               onClick: function() { upd({ mode: 'select' }); },
               style: { padding: '4px 10px', background: 'transparent', color: _cftFg('#94a3b8'), border: '1px solid #334155', borderRadius: 8, fontSize: 11, cursor: 'pointer', marginBottom: 12 }
@@ -1779,6 +1833,7 @@ window.SelHub = window.SelHub || {
           ),
           h('div', { style: { textAlign: 'center', display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
             h('button', {
+              type: 'button',
               'aria-label': 'Start scenario',
               autoFocus: true,
               // Without AI, Start plays the scripted version of the same scenario.
@@ -1786,6 +1841,7 @@ window.SelHub = window.SelHub || {
               style: { padding: '12px 32px', background: _cftHC ? _cftBg('#14b8a6') : '#0f766e', color: _cftFg('#fff'), border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', boxShadow: '0 2px 8px rgba(20,184,166,0.3)' }
             }, 'Start →'),
             _cftAiOn ? h('button', {
+              type: 'button',
               'data-ct-start-script': 'true',
               onClick: function() { startScript(scenario.id); },
               style: { padding: '12px 20px', background: 'transparent', color: _cftFg('#e2e8f0'), border: '1px solid #475569', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
@@ -1804,7 +1860,7 @@ window.SelHub = window.SelHub || {
           'partial': { icon: '🌤️', label: 'Partial — unfinished', color: _cftFg('#eab308'), summary: 'You moved things, but it’s not done. Sometimes that’s realistic. Try again with a different approach if you want.' },
           'deepened': { icon: '⛈️', label: 'Conflict deepened', color: _cftFg('#ef4444'), summary: 'It got worse. That happens. The thing to learn from is which moves shut things down vs opened them. Try again.' }
         };
-        var em = endingMeta[endingType] || endingMeta.partial;
+        var em = _cftHas(endingMeta, endingType) ? endingMeta[endingType] : endingMeta.partial;
         var principleList = ['acknowledged', 'madeSpace', 'identifiedHarm', 'proposedRepair', 'namedNeed'];
         var principleLabels = { acknowledged: 'Acknowledged feelings', madeSpace: 'Made space', identifiedHarm: 'Named the harm specifically', proposedRepair: 'Proposed concrete repair', namedNeed: 'Named a need' };
 
@@ -1828,7 +1884,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
               principleList.map(function(p) {
                 var hit = !!principlesUsed[p];
-                return h('div', { key: p, style: { fontSize: 12, color: hit ? '#86efac' : _cftFg('#64748b'), display: 'flex', alignItems: 'center', gap: 8 } },
+                return h('div', { key: p, style: { fontSize: 12, color: hit ? _cftFg('#86efac') : _cftFg('#64748b'), display: 'flex', alignItems: 'center', gap: 8 } },
                   h('span', { 'aria-hidden': 'true' }, hit ? '✓' : '·'),
                   h('span', null, principleLabels[p])
                 );
@@ -1869,6 +1925,7 @@ window.SelHub = window.SelHub || {
           // Buttons
           h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
             h('button', {
+              type: 'button',
               'aria-label': 'Try again with different choices',
               onClick: resetScenario,
               style: { padding: '10px 20px', background: _cftHC ? _cftBg('#14b8a6') : '#0f766e', color: _cftFg('#fff'), border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
@@ -1878,11 +1935,13 @@ window.SelHub = window.SelHub || {
               var sameScenario = (attemptHistory || []).filter(function(a) { return a.scenarioId === scenario.id; });
               if (sameScenario.length < 2) return null;
               return h('button', {
+                type: 'button',
                 onClick: function() { upd('mode', 'compare'); announceSR('Comparing this attempt to previous attempt.'); },
                 style: { padding: '10px 20px', background: _cftBg('#0f172a'), color: _cftFg('#a5f3fc'), border: '1px solid #0891b2', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '⇆ Compare to previous');
             })(),
             h('button', {
+              type: 'button',
               'aria-label': 'Print transcript',
               onClick: function() {
                 if (!window.SelHub || !window.SelHub.printDoc) return;
@@ -1904,6 +1963,7 @@ window.SelHub = window.SelHub || {
               style: { padding: '10px 20px', background: _cftBg('#0f172a'), color: _cftFg('#e2e8f0'), border: '1px solid #475569', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, '🖨 Print transcript'),
             h('button', {
+              type: 'button',
               'aria-label': 'Back to opt-in',
               onClick: function() { upd({ mode: 'select' }); },
               style: { padding: '10px 20px', background: 'transparent', color: _cftFg('#94a3b8'), border: '1px solid #475569', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
@@ -1924,7 +1984,7 @@ window.SelHub = window.SelHub || {
           // Defensive: shouldn't reach here, but render a fallback.
           return h('div', { style: { padding: 24, maxWidth: 560, margin: '0 auto', textAlign: 'center', color: _cftFg('#94a3b8') } },
             h('p', null, 'Need at least two attempts to compare. Try the scenario again first.'),
-            h('button', { onClick: function() { upd('mode', 'ending'); }, style: { padding: '8px 16px', background: _cftHC ? _cftBg('#14b8a6') : '#0f766e', color: _cftFg('#fff'), border: 'none', borderRadius: 8, cursor: 'pointer' } }, '← Back')
+            h('button', { type: 'button', onClick: function() { upd('mode', 'ending'); }, style: { padding: '8px 16px', background: _cftHC ? _cftBg('#14b8a6') : '#0f766e', color: _cftFg('#fff'), border: 'none', borderRadius: 8, cursor: 'pointer' } }, '← Back')
           );
         }
         var endingColor = function(end) { return end === 'resolved' ? _cftFg('#22c55e') : end === 'partial' ? _cftFg('#eab308') : _cftFg('#ef4444'); };
@@ -1932,10 +1992,10 @@ window.SelHub = window.SelHub || {
         function _renderColumn(att, label) {
           var transcript = (att.dialogue || []).map(function(m, i) {
             var who, color;
-            if (m.speaker === 'student') { who = 'You'; color = _cftBg('#14b8a6'); }
+            if (m.speaker === 'student') { who = 'You'; color = _cftFg('#14b8a6'); }
             else { var c = CAST[m.speaker]; who = c ? c.name : m.speaker; color = _cftFg('#cbd5e1'); }
-            return h('div', { key: i, style: { fontSize: 11, lineHeight: 1.5, marginBottom: 6, paddingLeft: 8, borderLeft: '2px solid ' + (m.speaker === 'student' ? _cftBg('#14b8a6') : '#475569') } },
-              h('span', { style: { fontWeight: 700, color: color, fontSize: 10, display: 'block', marginBottom: 1 } }, who),
+            return h('div', { key: i, style: { fontSize: 12, lineHeight: 1.5, marginBottom: 6, paddingLeft: 8, borderLeft: '2px solid ' + (m.speaker === 'student' ? _cftBd('#14b8a6') : _cftBd('#475569')) } },
+              h('span', { style: { fontWeight: 700, color: color, fontSize: 12, display: 'block', marginBottom: 1 } }, who),
               h('span', { style: { color: _cftFg('#e2e8f0') } }, m.text)
             );
           });
@@ -1955,7 +2015,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
               principleList.map(function(p) {
                 var hit = !!(att.principlesUsed && att.principlesUsed[p]);
-                return h('span', { key: p, title: principleLabels[p], style: { fontSize: 9, padding: '2px 6px', borderRadius: 6, background: hit ? '#134e4a' : _cftBg('#0f172a'), color: hit ? '#86efac' : '#475569', fontWeight: 600 } },
+                return h('span', { key: p, title: principleLabels[p], style: { fontSize: 12, padding: '2px 6px', borderRadius: 6, background: hit ? (_cftHC ? '#000000' : '#134e4a') : _cftBg('#0f172a'), border: _cftHC ? '1px solid #ffff00' : 'none', color: hit ? (_cftHC ? '#ffff00' : '#86efac') : _cftFg('#64748b'), fontWeight: 600 } },
                   (hit ? '✓ ' : '· ') + principleLabels[p]
                 );
               })
@@ -1971,6 +2031,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: 11, color: _cftFg('#94a3b8') } }, scenario.title)
             ),
             h('button', {
+              type: 'button',
               'aria-label': 'Back to outcome',
               onClick: function() { upd('mode', 'ending'); },
               style: { padding: '6px 14px', background: 'transparent', color: _cftFg('#94a3b8'), border: '1px solid #334155', borderRadius: 8, fontSize: 11, cursor: 'pointer' }
@@ -2010,13 +2071,13 @@ window.SelHub = window.SelHub || {
         ? window.SelHub.renderCrisisResources(h, band)
         : null;
 
-      // Lazy-trigger calm portrait generation for both characters on scene entry.
-      // Idempotent — no-op if already cached or in flight.
-      characters.forEach(function(c) { ensurePortrait(c.id, 'calm'); });
-      // Also pre-fetch the current mood variant if it differs from calm.
-      characters.forEach(function(c) {
-        var m = charMoods[c.id] || 'calm';
-        if (m !== 'calm') ensurePortrait(c.id, m);
+      // Lazy-trigger calm portrait generation asynchronously (never synchronously during render).
+      (typeof queueMicrotask === 'function' ? queueMicrotask : function(fn) { setTimeout(fn, 0); })(function() {
+        characters.forEach(function(c) { ensurePortrait(c.id, 'calm'); });
+        characters.forEach(function(c) {
+          var m = charMoods[c.id] || 'calm';
+          if (m !== 'calm') ensurePortrait(c.id, m);
+        });
       });
 
       // Render a single character's stage portrait: img if cached, emoji fallback.
@@ -2043,8 +2104,8 @@ window.SelHub = window.SelHub || {
         }
         return h('div', { style: Object.assign({ position: 'absolute', top: 70, textAlign: 'center', pointerEvents: 'none' }, sideStyle) },
           portraitNode,
-          h('div', { style: { fontSize: 11, fontWeight: 700, color: url ? _cftFg('#f1f5f9') : _cftBg('#1e293b'), marginTop: 4, textShadow: url ? '0 1px 3px rgba(0,0,0,0.6)' : 'none' } }, c.name),
-          isLoading && !url && h('div', { style: { fontSize: 9, color: _cftFg('#64748b'), marginTop: 2 } }, 'sketching...')
+          h('div', { style: { fontSize: 12, fontWeight: 700, display: 'inline-block', padding: '1px 6px', borderRadius: 4, background: _cftHC ? '#000000' : 'rgba(15,23,42,0.82)', color: _cftHC ? '#ffff00' : '#f8fafc', border: _cftHC ? '1px solid #ffff00' : 'none', marginTop: 4 } }, c.name),
+          isLoading && !url && h('div', { style: { fontSize: 12, color: _cftFg('#64748b'), marginTop: 2 } }, 'sketching...')
         );
       }
 
@@ -2097,23 +2158,41 @@ window.SelHub = window.SelHub || {
           h('div', { style: { fontSize: 12, color: _cftFg('#e0f2fe'), lineHeight: 1.5 } }, coachHint)
         ),
         h('button', {
+          type: 'button',
           'aria-label': 'Dismiss coach hint',
           onClick: function() { upd('coachHintDismissed', true); },
           style: { padding: '2px 8px', background: 'transparent', color: _cftFg('#7dd3fc'), border: '1px solid #0369a1', borderRadius: 6, fontSize: 10, cursor: 'pointer', flexShrink: 0 }
         }, 'Got it')
       ) : null;
 
-      // Addressing toggle
-      var addrToggle = h('div', { role: 'radiogroup', 'aria-label': 'Address', style: { display: 'flex', gap: 6, marginBottom: 8 } },
-        characters.concat([{ id: 'both', name: 'Mediate (both)' }]).map(function(opt) {
-          var on = addressing === opt.id;
-          return h('button', { key: opt.id,
-            role: 'radio', 'aria-checked': on ? 'true' : 'false', 'aria-label': 'Address ' + opt.name,
-            onClick: function() { upd('addressing', opt.id); },
-            style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (on ? _cftBg('#14b8a6') : '#475569'), background: on ? '#134e4a' : 'transparent', color: on ? '#ccfbf1' : _cftFg('#94a3b8'), fontSize: 11, fontWeight: 600, cursor: 'pointer' }
-          }, opt.name);
-        }),
-        h('label', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: _cftFg('#94a3b8'), cursor: 'pointer' } },
+      // Addressing toggle (radiogroup + separate Voice checkbox outside radiogroup)
+      var addrOpts = characters.concat([{ id: 'both', name: 'Mediate (both)' }]);
+      var addrToggle = h('div', { style: { display: 'flex', gap: 6, marginBottom: 8, alignItems: 'center', flexWrap: 'wrap' } },
+        h('div', { role: 'radiogroup', 'aria-label': 'Address', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+          addrOpts.map(function(opt, optIdx) {
+            var on = addressing === opt.id;
+            return h('button', { type: 'button', key: opt.id,
+              role: 'radio', 'aria-checked': on ? 'true' : 'false', 'aria-label': 'Address ' + opt.name,
+              tabIndex: on ? 0 : -1,
+              onKeyDown: function(e) {
+                if (e.ctrlKey || e.altKey || e.metaKey) return;
+                var nextIdx = -1;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (optIdx + 1) % addrOpts.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (optIdx + addrOpts.length - 1) % addrOpts.length;
+                else if (e.key === 'Home') nextIdx = 0;
+                else if (e.key === 'End') nextIdx = addrOpts.length - 1;
+                if (nextIdx < 0) return;
+                e.preventDefault();
+                upd('addressing', addrOpts[nextIdx].id);
+                var radios = e.currentTarget.parentNode && e.currentTarget.parentNode.querySelectorAll('[role="radio"]');
+                if (radios && radios[nextIdx]) radios[nextIdx].focus();
+              },
+              onClick: function() { upd('addressing', opt.id); },
+              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (on ? _cftBd('#14b8a6') : _cftBd('#475569')), background: on ? (_cftHC ? '#000000' : '#134e4a') : 'transparent', color: on ? (_cftHC ? '#ffff00' : '#ccfbf1') : _cftFg('#94a3b8'), fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+            }, opt.name);
+          })
+        ),
+        h('label', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: _cftFg('#94a3b8'), cursor: 'pointer' } },
           h('input', { type: 'checkbox', checked: ttsEnabled, onChange: function(e) { upd('ttsEnabled', e.target.checked); }, 'aria-label': 'Enable voice' }),
           'Voice'
         )
@@ -2124,22 +2203,24 @@ window.SelHub = window.SelHub || {
         h('textarea', { 'aria-label': 'Your message',
           value: studentInput,
           onChange: function(e) { upd('studentInput', e.target.value); },
-          onKeyDown: function(e) { if (e.key === 'Enter' && !e.shiftKey && studentInput.trim() && !loading) { e.preventDefault(); sendTurn(); } },
+          onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Enter' && !e.shiftKey && studentInput.trim() && !loading) { e.preventDefault(); sendTurn(); } },
           placeholder: addressing === 'both' ? 'Say something to both of them...' : 'Say something to ' + (CAST[addressing] ? CAST[addressing].name : '...'),
           rows: 2,
           disabled: loading,
-          style: { flex: 1, padding: 10, borderRadius: 10, border: '1px solid #334155', background: _cftBg('#0f172a'), color: _cftFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }
+          style: { flex: 1, padding: 10, borderRadius: 10, border: '1px solid ' + _cftBd('#334155'), background: _cftBg('#0f172a'), color: _cftFg('#e2e8f0'), fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }
         }),
         h('button', {
+          type: 'button',
           'aria-label': loading ? 'Waiting for characters to respond' : 'Send message',
           onClick: function() { if (studentInput.trim() && !loading) sendTurn(); },
           disabled: loading || !studentInput.trim(),
-          style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: loading || !studentInput.trim() ? '#334155' : _cftBg('#14b8a6'), color: _cftFg('#fff'), fontWeight: 700, fontSize: 13, cursor: loading || !studentInput.trim() ? 'default' : 'pointer' }
+          style: { padding: '10px 18px', borderRadius: 10, border: _cftHC ? '2px solid #ffff00' : 'none', background: loading || !studentInput.trim() ? (_cftHC ? '#000000' : '#334155') : (_cftHC ? _cftBg('#14b8a6') : '#0f766e'), color: _cftFg('#fff'), fontWeight: 700, fontSize: 13, cursor: loading || !studentInput.trim() ? 'default' : 'pointer' }
         }, loading ? '⋯' : '↑')
       );
 
       var exitBtn = h('div', { style: { textAlign: 'center', marginTop: 10 } },
         h('button', {
+          type: 'button',
           'aria-label': 'Exit scene',
           onClick: function() { upd({ mode: 'opt-in' }); },
           style: { padding: '6px 14px', background: 'transparent', color: _cftFg('#64748b'), border: '1px solid #334155', borderRadius: 8, fontSize: 11, cursor: 'pointer' }
@@ -2183,7 +2264,9 @@ window.SelHub = window.SelHub || {
     _crT.stream = null; _crT.rec = null; _crT.chunks = []; _crT.blob = null; _crT.url = null; _crT.timer = null; _crT.secs = 0; _crT.analyzing = false; _crT.err = null;
     if (full) { _crT.takes = [null, null]; }
   }
-  window.addEventListener('beforeunload', function() { _crRelease(true); });
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+    window.addEventListener('beforeunload', function() { _crRelease(true); });
+  }
 
   // INVARIANT-3 caption — rendered on every analysis surface.
   var _CR_CAPTION = 'These are conversation starters an AI noticed — not an assessment of any student.';
@@ -2223,10 +2306,10 @@ window.SelHub = window.SelHub || {
 
   window.SelHubConflictReplay = { render: function(ctx, env) {
     var h = env.h, fg = env.fg, bg = env.bg, d = env.d, upd = env.upd, announceSR = env.announceSR;
-    var r = d.replay || {};
+    var r = (d && d.replay && typeof d.replay === 'object' && !Array.isArray(d.replay)) ? d.replay : {};
     var updR = function(patch) { var next = Object.assign({}, r, patch); upd('replay', next); };
     var step = r.step || 'consent';
-    var take = r.take || 1;
+    var take = r.take === 2 ? 2 : 1;
     var visionUsable = (ctx.aiAvailable !== false)
       && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true))
       && (function(fn) {
@@ -2241,7 +2324,7 @@ window.SelHub = window.SelHub || {
       h('div', { style: { fontSize: 40 } }, '🎬'),
       h('h2', { tabIndex: -1, style: { fontSize: 20, fontWeight: 800, color: fg('#f1f5f9'), margin: '2px 0' } }, 'Conflict Replay'),
       h('p', { style: { fontSize: 12, color: fg('#94a3b8'), margin: 0 } }, 'Act it. Watch it back. Re-shoot it better. Take ' + take + ' of 2.'));
-    var backBtn = h('button', { onClick: exit, style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #475569', background: 'transparent', color: fg('#cbd5e1'), cursor: 'pointer', fontSize: 12 } }, '← Back to Conflict Theater');
+    var backBtn = h('button', { type: 'button', onClick: exit, style: { padding: '6px 12px', borderRadius: 8, border: '1px solid #475569', background: 'transparent', color: fg('#cbd5e1'), cursor: 'pointer', fontSize: 12 } }, '← Back to Conflict Theater');
 
     // ── Step: consent (INVARIANT-10 — the recorder is unreachable until affirmed) ──
     if (step === 'consent') {
@@ -2264,9 +2347,10 @@ window.SelHub = window.SelHub || {
         h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
           backBtn,
           h('button', {
+            type: 'button',
             disabled: !all || !vision,
             onClick: function() { if (all) { updR({ step: 'record' }); announceSR('Consent affirmed. Recorder ready.'); } },
-            style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: all && vision ? 'pointer' : 'not-allowed', background: all && vision ? '#f59e0b' : '#475569', color: '#1e293b' }
+            style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: all && vision ? 'pointer' : 'not-allowed', background: all && vision ? '#f59e0b' : '#475569', color: all && vision ? '#1e293b' : '#f8fafc' }
           }, vision ? '🎥 Open the recorder' : 'AI features are turned off')));
     }
 
@@ -2274,6 +2358,11 @@ window.SelHub = window.SelHub || {
     if (step === 'record') {
       var recording = !!(_crT.rec && _crT.rec.state === 'recording');
       var startRec = function() {
+        if (typeof navigator === 'undefined' || !navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function' || typeof MediaRecorder === 'undefined') {
+          _crT.err = 'Recording is not supported in this browser.';
+          updR({ step: 'record' });
+          return;
+        }
         navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(function(stream) {
           _crT.stream = stream; _crT.chunks = []; _crT.secs = 0;
           var v = document.getElementById('cr-live'); if (v) { v.srcObject = stream; v.muted = true; v.play().catch(function() {}); }
@@ -2297,7 +2386,7 @@ window.SelHub = window.SelHub || {
                 var parsed = _crParse(res);
                 if (parsed && parsed.crisis) {
                   _crRelease(); // INVARIANT-9: stop, discard, route to adults
-                  if (typeof ctx.onSafetyFlag === 'function') { try { ctx.onSafetyFlag({ tool: 'conflicttheater', kind: 'replay-crisis' }); } catch (_) {} }
+                  if (typeof ctx.onSafetyFlag === 'function') { try { ctx.onSafetyFlag({ category: 'replay_crisis', severity: 'critical', source: 'sel_conflicttheater_replay', tool: 'conflicttheater', kind: 'replay-crisis', aiGenerated: true }); } catch (_) {} }
                   updR({ step: 'crisis' }); return;
                 }
                 _crT.takes[take - 1] = parsed; // may be null → "analysis unavailable"
@@ -2327,8 +2416,8 @@ window.SelHub = window.SelHub || {
         h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center' } },
           backBtn,
           recording
-            ? h('button', { onClick: function() { if (_crT.timer) { clearInterval(_crT.timer); _crT.timer = null; } _crT.rec.stop(); }, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#b91c1c', color: '#fff' } }, '⏹ Stop & watch back')
-            : h('button', { onClick: startRec, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#f59e0b', color: '#1e293b' } }, '⏺ Action!')));
+            ? h('button', { type: 'button', onClick: function() { if (_crT.timer) { clearInterval(_crT.timer); _crT.timer = null; } if (_crT.rec && _crT.rec.state === 'recording') _crT.rec.stop(); }, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#b91c1c', color: '#fff' } }, '⏹ Stop & watch back')
+            : h('button', { type: 'button', onClick: startRec, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#f59e0b', color: '#1e293b' } }, '⏺ Action!')));
     }
 
     if (step === 'analyzing') {
@@ -2359,18 +2448,18 @@ window.SelHub = window.SelHub || {
         if (removed[take + ':' + i]) return null;
         var m = _CR_TAG_META[tg.type];
         return h('div', { key: i, style: { display: 'flex', gap: 8, alignItems: 'flex-start', padding: '7px 0', borderBottom: '1px solid #334155' } },
-          h('button', { onClick: function() { seek(tg.t); }, 'aria-label': 'Jump to ' + _crFmtT(tg.t), style: { fontVariantNumeric: 'tabular-nums', fontSize: 11.5, fontWeight: 800, color: fg('#7dd3fc'), background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 } }, _crFmtT(tg.t)),
+          h('button', { type: 'button', onClick: function() { seek(tg.t); }, 'aria-label': 'Jump to ' + _crFmtT(tg.t), style: { fontVariantNumeric: 'tabular-nums', fontSize: 11.5, fontWeight: 800, color: fg('#7dd3fc'), background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 } }, _crFmtT(tg.t)),
           h('div', { style: { flex: 1 } },
             h('div', { style: { fontSize: 12.5, fontWeight: 700, color: fg('#f1f5f9') } }, m.icon + ' ' + m.label + ' — Speaker ' + tg.speaker + (tg.type === 'bid' || tg.type === 'repair' ? (tg.received === true ? ' · received' : tg.received === false ? ' · missed' : '') : '')),
             h('div', { style: { fontSize: 12, color: fg('#cbd5e1'), lineHeight: 1.5 } }, tg.kidLine),
             tg.evidence ? h('div', { style: { fontSize: 10.5, color: fg('#94a3b8'), fontStyle: 'italic' } }, tg.evidence) : null),
-          h('button', { onClick: function() { var p = {}; p[take + ':' + i] = true; updR({ removedIdx: Object.assign({}, removed, p) }); }, 'aria-label': 'Remove this tag (adult)', title: 'Remove this tag (adult)', style: { border: 'none', background: 'transparent', color: fg('#94a3b8'), cursor: 'pointer', fontSize: 12 } }, '✕'));
+          h('button', { type: 'button', onClick: function() { var p = {}; p[take + ':' + i] = true; updR({ removedIdx: Object.assign({}, removed, p) }); }, 'aria-label': 'Remove this tag (adult)', title: 'Remove this tag (adult)', style: { border: 'none', background: 'transparent', color: fg('#94a3b8'), cursor: 'pointer', fontSize: 12 } }, '✕'));
       }).filter(Boolean) : null;
       return h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto' } }, head,
         card([
           _crT.url ? h('video', { key: 'v', id: 'cr-play', src: _crT.url, controls: true, playsInline: true, style: { width: '100%', borderRadius: 10, background: '#000' } }) : h('p', { key: 'nv', style: { color: fg('#94a3b8'), fontSize: 12 } }, 'The recording was already released.'),
           a && a.arc.length ? h('div', { role: 'group', key: 'arc', 'aria-label': 'Conflict arc', style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 8 } }, a.arc.map(function(ph, i) {
-            return h('button', { key: i, onClick: function() { seek(ph.t); }, style: { fontSize: 10.5, padding: '3px 8px', borderRadius: 999, border: '1px solid #475569', background: 'transparent', color: fg('#cbd5e1'), cursor: 'pointer' } }, ph.phase + ' ' + _crFmtT(ph.t));
+            return h('button', { type: 'button', key: i, onClick: function() { seek(ph.t); }, style: { fontSize: 10.5, padding: '3px 8px', borderRadius: 999, border: '1px solid #475569', background: 'transparent', color: fg('#cbd5e1'), cursor: 'pointer' } }, ph.phase + ' ' + _crFmtT(ph.t));
           })) : null,
           caption
         ]),
@@ -2380,14 +2469,14 @@ window.SelHub = window.SelHub || {
           h('h3', { key: 'h', style: { fontSize: 13.5, fontWeight: 800, color: fg('#f1f5f9'), marginTop: 0 } }, '⏸️ Pause and think'),
           a.pausePoints.map(function(pp, i) {
             return h('div', { key: i, style: { marginBottom: 8 } },
-              h('button', { onClick: function() { seek(pp.t); }, style: { fontSize: 11.5, fontWeight: 800, color: fg('#7dd3fc'), background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 } }, _crFmtT(pp.t) + (pp.why ? ' — ' + pp.why : '')),
+              h('button', { type: 'button', onClick: function() { seek(pp.t); }, style: { fontSize: 11.5, fontWeight: 800, color: fg('#7dd3fc'), background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 } }, _crFmtT(pp.t) + (pp.why ? ' — ' + pp.why : '')),
               h('p', { style: { fontSize: 12, color: fg('#cbd5e1'), margin: '2px 0 0', lineHeight: 1.5 } }, 'What did you see? What did you think it meant? What else could it have meant?'));
           })
         ]) : null,
         h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
           backBtn,
-          take === 1 && a && a.repairSuggestion ? h('button', { onClick: function() { updR({ step: 'record', take: 2, tryThis: a.repairSuggestion }); announceSR('Re-shoot with one change.'); }, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#f59e0b', color: '#1e293b' } }, '🎬 Re-shoot with one change') : null,
-          take === 2 ? h('button', { onClick: function() { updR({ step: 'debrief' }); }, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#22c55e', color: '#0f172a' } }, '🗣️ Debrief') : (a ? h('button', { onClick: function() { updR({ step: 'debrief' }); }, style: { padding: '8px 14px', borderRadius: 10, border: '1px solid #475569', background: 'transparent', color: fg('#cbd5e1'), fontSize: 12, cursor: 'pointer' } }, 'Skip to debrief') : null)));
+          take === 1 && a && a.repairSuggestion ? h('button', { type: 'button', onClick: function() { updR({ step: 'record', take: 2, tryThis: a.repairSuggestion }); announceSR('Re-shoot with one change.'); }, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#f59e0b', color: '#1e293b' } }, '🎬 Re-shoot with one change') : null,
+          take === 2 ? h('button', { type: 'button', onClick: function() { updR({ step: 'debrief' }); }, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#22c55e', color: '#0f172a' } }, '🗣️ Debrief') : (a ? h('button', { onClick: function() { updR({ step: 'debrief' }); }, style: { padding: '8px 14px', borderRadius: 10, border: '1px solid #475569', background: 'transparent', color: fg('#cbd5e1'), fontSize: 12, cursor: 'pointer' } }, 'Skip to debrief') : null)));
     }
 
     // ── Step: debrief (restorative + Peacemakers + emotion-coaching cue card) ──
@@ -2417,6 +2506,7 @@ window.SelHub = window.SelHub || {
         ]),
         h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
           h('button', {
+            type: 'button',
             onClick: function() {
               // Explicit adult action: the ONLY path by which any analysis output persists (de-identified tags, no footage).
               var save = { when: new Date().toISOString(), takes: [t1, t2].map(function(ta) { return ta ? { tags: ta.tags, arc: ta.arc } : null; }) };
@@ -2425,7 +2515,7 @@ window.SelHub = window.SelHub || {
             },
             style: { padding: '8px 14px', borderRadius: 10, border: '1px solid #475569', background: 'transparent', color: fg('#cbd5e1'), fontSize: 12, cursor: 'pointer' }
           }, '💾 Save tags (adult only)'),
-          h('button', { onClick: exit, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#22c55e', color: '#0f172a' } }, '✅ Finish (recordings deleted)')));
+          h('button', { type: 'button', onClick: exit, style: { padding: '8px 18px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 13, cursor: 'pointer', background: '#22c55e', color: '#0f172a' } }, '✅ Finish (recordings deleted)')));
     }
 
     return h('div', null, backBtn);

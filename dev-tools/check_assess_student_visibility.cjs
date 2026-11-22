@@ -105,7 +105,7 @@ fs.mkdirSync(out, { recursive: true });
       check(`${label}: Student View fits viewport`, !await overflow());
       await audit('student');
       await page.screenshot({ path: path.join(out, `student-${label}.png`), fullPage: true, animations: 'disabled' });
-      await btn('Review & submit').click(); await page.getByRole('dialog').waitFor();
+      await page.locator('[data-assessment-submit-footer]').getByRole('button', { name: /^Review & submit$/i }).click(); await page.getByRole('dialog').waitFor();
       check(`${label}: student can review before submission`, (await page.getByRole('dialog').innerText()).includes('Review'));
       await page.keyboard.press('Escape');
       await page.evaluate(() => setFixture({ isTeacherMode: true, isIndependentMode: true, isPresentationMode: false, isReviewGame: false, isEditingQuiz: false, showQuizAnswers: false, staleEscape: false, activeSessionCode: null }));

@@ -53,8 +53,12 @@
     };
     var elems = [];
     var activeRefs = new Set();
+    var MAX_STRUCT_ELEMS = 50000;
+    var MAX_VISITS = 200000;
+    var visits = 0;
 
     function walk(objIn, depth, parentRole) {
+      if (++visits > MAX_VISITS || elems.length >= MAX_STRUCT_ELEMS) return false;
       var refKey = (objIn instanceof PDFRef) ? String(objIn) : '';
       if (refKey && activeRefs.has(refKey)) return false;
       var obj = resolve(objIn);
@@ -63,7 +67,10 @@
       try {
         if (obj instanceof PDFArray) {
           var _any = false;
-          for (var i = 0; i < obj.size(); i++) { if (walk(obj.get(i), depth + 1, parentRole)) _any = true; }
+          for (var i = 0; i < obj.size(); i++) {
+            if (visits > MAX_VISITS || elems.length >= MAX_STRUCT_ELEMS) break;
+            if (walk(obj.get(i), depth + 1, parentRole)) _any = true;
+          }
           return _any;
         }
         if (obj instanceof PDFNumber) return true;
@@ -168,26 +175,28 @@
   // on past its last section: bullets decoded as "u", page numbers, axis ticks, a second H1. These are things a person
   // should look at, from the tree alone. They are NOTES: status 'warn', never counted as a failure, so they cannot
   // change a verdict or hold a PDF. `elems` in tree order (page: 1-based or null). Returns [{ id, count, detail }].
-  var READ_ROLES = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, Caption: 1, BlockQuote: 1, LBody: 1, Figure: 1, TH: 1, TD: 1 };
-  var FRAGMENT_ROLES = { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, Caption: 1, BlockQuote: 1 };
+  var READ_ROLES = Object.assign(Object.create(null), { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, Caption: 1, BlockQuote: 1, LBody: 1, Figure: 1, TH: 1, TD: 1 });
+  var FRAGMENT_ROLES = Object.assign(Object.create(null), { H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, P: 1, Caption: 1, BlockQuote: 1 });
   var PLACEHOLDER_ALT = 'Image (description unavailable)';
   function readingNotes(elems) {
+    if (!Array.isArray(elems)) return [];
+    var safeElems = elems.filter(function (e) { return e && typeof e === 'object'; });
     var notes = [];
     var quote = function (s, n) { var t = String(s || '').replace(/\s+/g, ' ').trim(); return '"' + (t.length > n ? t.slice(0, n).replace(/\s+\S*$/, '') + '…' : t) + '"'; };
     var label = function (e) { var t = e.role === 'Figure' ? e.altText : e.actualText; return t ? ' at ' + quote(t, 50) : ''; }; // a text form's paragraph stores no text
-    var h1 = elems.filter(function (e) { return e.role === 'H1'; });
+    var h1 = safeElems.filter(function (e) { return e.role === 'H1'; });
     if (h1.length > 1) notes.push({ id: 'several-h1', count: h1.length, detail: 'The tagged PDF has ' + h1.length + ' top-level headings (' + h1.slice(0, 3).map(function (e) { return quote(e.actualText, 40); }).join(', ') + (h1.length > 3 ? ', …' : '') + '). A document usually has one: a screen reader user may take a later one for a new document.' });
-    var seq = elems.filter(function (e) { return READ_ROLES[e.role] && e.hasContent && e.page != null; });
+    var seq = safeElems.filter(function (e) { return READ_ROLES[e.role] && e.hasContent && e.page != null; });
     var back = [];
     for (var i = 1; i < seq.length; i++) if (seq[i].page < seq[i - 1].page) back.push({ from: seq[i - 1].page, to: seq[i].page, at: seq[i] });
     if (back.length) notes.push({ id: 'goes-back', count: back.length, detail: 'A screen reader goes back to an earlier page ' + back.length + (back.length === 1 ? ' time' : ' times') + ' in the tagged PDF: from page ' + back[0].from + ' to page ' + back[0].to + label(back[0].at) + (back.length > 1 ? ', and more' : '') + '. Moved footnotes can do this; check that it reads in a sensible order.' });
-    var frags = elems.filter(function (e) {
+    var frags = safeElems.filter(function (e) {
       if (!FRAGMENT_ROLES[e.role] || !e.hasContent) return false;
       var t = String(e.actualText || '').trim();
       return /^[A-Za-z]$/.test(t) || /^[^\p{L}\p{N}\s]{1,3}$/u.test(t) || /^\d{1,4}$/.test(t);
     });
     if (frags.length) notes.push({ id: 'stray-fragments', count: frags.length, detail: frags.length + ' tiny ' + (frags.length === 1 ? 'piece' : 'pieces') + ' of text ' + (frags.length === 1 ? 'is' : 'are') + ' read on ' + (frags.length === 1 ? 'its' : 'their') + ' own in the tagged PDF (' + frags.slice(0, 4).map(function (e) { return quote(e.actualText, 8); }).join(', ') + (frags.length > 4 ? ', …' : '') + '): often bullets or page numbers that should be page decoration.' });
-    var ph = elems.filter(function (e) { return e.role === 'Figure' && e.altText === PLACEHOLDER_ALT; });
+    var ph = safeElems.filter(function (e) { return e.role === 'Figure' && e.altText === PLACEHOLDER_ALT; });
     if (ph.length) {
       var pgs = ph.map(function (e) { return e.page; }).filter(function (p, n, a) { return p != null && a.indexOf(p) === n; });
       notes.push({ id: 'placeholder-alt', count: ph.length, detail: ph.length + (ph.length === 1 ? ' picture' : ' pictures') + ' in the tagged PDF ' + (ph.length === 1 ? 'has' : 'have') + ' no description and ' + (ph.length === 1 ? 'reads' : 'read') + ' "' + PLACEHOLDER_ALT + '"' + (pgs.length ? ' (page' + (pgs.length === 1 ? ' ' : 's ') + pgs.slice(0, 6).join(', ') + (pgs.length > 6 ? ', …' : '') + ')' : '') + '.' });
@@ -195,10 +204,23 @@
     return notes;
   }
 
+  var MAX_PDF_BYTES = 100 * 1024 * 1024;
+  var MAX_XMP_BYTES = 1024 * 1024;
+
   // ── Main validator: takes PDF bytes (Uint8Array), returns a structured report ──
   async function validateExportedPdfBytes(bytes) {
     if (typeof window === 'undefined' || !window.PDFLib) {
       return { error: 'window.PDFLib not available — this module must run after pdf-lib is loaded' };
+    }
+    var pdfBytes = null;
+    if (bytes instanceof Uint8Array) pdfBytes = bytes;
+    else if (typeof ArrayBuffer === 'function' && bytes instanceof ArrayBuffer) pdfBytes = new Uint8Array(bytes);
+    else if (bytes && typeof bytes.byteLength === 'number' && typeof ArrayBuffer === 'function' && ArrayBuffer.isView && ArrayBuffer.isView(bytes)) pdfBytes = new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    if (!pdfBytes || pdfBytes.byteLength === 0) {
+      return { error: 'Invalid or empty PDF bytes', checks: [], summary: { overall: 'ERROR', pass: 0, fail: 0 } };
+    }
+    if (pdfBytes.byteLength > MAX_PDF_BYTES) {
+      return { error: 'PDF exceeds maximum validator size limit', checks: [], summary: { overall: 'ERROR', pass: 0, fail: 0 } };
     }
     var PDFLib = window.PDFLib;
     var PDFDocument = PDFLib.PDFDocument;
@@ -207,7 +229,7 @@
 
     var doc;
     try {
-      doc = await PDFDocument.load(bytes, { ignoreEncryption: true });
+      doc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
     } catch (e) {
       return { error: 'Failed to load PDF bytes: ' + (e && e.message), checks: [], summary: { overall: 'ERROR', pass: 0, fail: 0 } };
     }
@@ -218,7 +240,7 @@
       isEncrypted = doc.isEncrypted;
     } else {
       try {
-        await PDFDocument.load(bytes, { ignoreEncryption: false });
+        await PDFDocument.load(pdfBytes, { ignoreEncryption: false });
       } catch (e) {
         isEncrypted = /encrypted|password/i.test((e && e.message) || '');
       }
@@ -261,6 +283,9 @@
     // §7.21.4.1 divergence from veraPDF (pass-while-veraPDF-fails). (2026-06-19 parity)
     var fontsTotal = 0, fontsEmbedded = 0;
     var _seenFont = (typeof WeakSet === 'function') ? new WeakSet() : null;
+    var _seenResources = (typeof WeakSet === 'function') ? new WeakSet() : null;
+    var _fontWalkVisits = 0;
+    var MAX_FONT_WALK_VISITS = 5000;
     function _fontEmbedded(font) {
       if (!font || !font.get) return false;
       var sub = String(font.get(nm('Subtype')) || '');
@@ -275,10 +300,12 @@
       return false;
     }
     function _walkFonts(resources, depth) {
-      if (!resources || !resources.get || depth > 4) return;
+      if (!resources || !resources.get || depth > 4 || ++_fontWalkVisits > MAX_FONT_WALK_VISITS) return;
+      if (_seenResources) { if (_seenResources.has(resources)) return; _seenResources.add(resources); }
       var fontDict = resolve(resources.get(nm('Font')));
       if (fontDict && fontDict.entries) {
         try { for (var fp of fontDict.entries()) {
+          if (_fontWalkVisits > MAX_FONT_WALK_VISITS) break;
           var f = resolve(fp[1]);
           if (!f || !f.get) continue;
           if (_seenFont) { if (_seenFont.has(f)) continue; _seenFont.add(f); }
@@ -288,6 +315,7 @@
       var xobj = resolve(resources.get(nm('XObject')));
       if (xobj && xobj.entries) {
         try { for (var xp of xobj.entries()) {
+          if (_fontWalkVisits > MAX_FONT_WALK_VISITS) break;
           var xo = resolve(xp[1]);
           var xdict = xo && xo.dict ? xo.dict : (xo && xo.get ? xo : null);
           if (xdict && xdict.get && String(xdict.get(nm('Subtype')) || '') === '/Form') {
@@ -335,6 +363,7 @@
         var metaFilter = metaStream.dict && metaStream.dict.get ? metaStream.dict.get(nm('Filter')) : null;
         var metaBytes = metaStream.contents || (metaStream.getContents && metaStream.getContents());
         if (metaFilter) xmpUnreadable = true;
+        else if (metaBytes && metaBytes.byteLength > MAX_XMP_BYTES) xmpUnreadable = true;
         else if (metaBytes) xmpText = new TextDecoder('utf-8').decode(metaBytes);
       }
     } catch (_) { xmpUnreadable = true; }
@@ -418,19 +447,22 @@
     pass('XMP metadata stream present (/Metadata, PDF/UA 7.1)',
       hasMetadataStream,
       hasMetadataStream ? (xmpUnreadable ? 'present (compressed)' : 'present') : '(missing)');
-    pass('XMP dc:title non-empty (PDF/UA 7.1)',
-      xmpUnreadable ? true : (hasMetadataStream && !!xmpDcTitleText),
-      xmpUnreadable ? 'XMP stream is compressed/unreadable — checked externally via veraPDF instead'
-        : (xmpDcTitleText ? xmpDcTitleText.slice(0, 80) : '(missing/empty)'));
-    // The evidence-based declaration contract: a pdfuaid:part=1 claim in the
-    // XMP must be backed by zero orphaned content leaves. A WITHHELD claim is
-    // a PASS (that's the honesty design working) — the detail says why.
-    pass('PDF/UA declaration is evidence-backed (XMP ↔ content linkage)',
-      xmpUnreadable ? true : (!uaDeclaredInXmp || orphanedLeaves.length === 0),
-      xmpUnreadable ? 'XMP stream is compressed/unreadable — checked externally via veraPDF instead'
-        : (uaDeclaredInXmp
+    if (xmpUnreadable) {
+      checks.push({ rule: 'XMP dc:title non-empty (PDF/UA 7.1)', status: 'warn', detail: 'XMP stream is compressed/unreadable — checked externally via veraPDF instead' });
+      checks.push({ rule: 'PDF/UA declaration is evidence-backed (XMP ↔ content linkage)', status: 'warn', detail: 'XMP stream is compressed/unreadable — checked externally via veraPDF instead' });
+    } else {
+      pass('XMP dc:title non-empty (PDF/UA 7.1)',
+        hasMetadataStream && !!xmpDcTitleText,
+        xmpDcTitleText ? xmpDcTitleText.slice(0, 80) : '(missing/empty)');
+      // The evidence-based declaration contract: a pdfuaid:part=1 claim in the
+      // XMP must be backed by zero orphaned content leaves. A WITHHELD claim is
+      // a PASS (that's the honesty design working) — the detail says why.
+      pass('PDF/UA declaration is evidence-backed (XMP ↔ content linkage)',
+        !uaDeclaredInXmp || orphanedLeaves.length === 0,
+        uaDeclaredInXmp
           ? 'declared, ' + orphanedLeaves.length + ' orphaned leaves' + (orphanedLeaves.length > 0 ? ' — CLAIM NOT BACKED' : ' (backed)')
-          : 'declaration withheld (' + orphanedLeaves.length + ' orphaned leaves) — honest posture'));
+          : 'declaration withheld (' + orphanedLeaves.length + ' orphaned leaves) — honest posture');
+    }
     // §7.1/§7.2 coverage honesty (2026-06-19 parity): this self-check validates the STRUCTURE TREE +
     // key dictionary properties, but does NOT parse page content streams to confirm every operator is
     // marked /Artifact or tagged with a reachable MCID. That is exactly the gap the independent veraPDF
@@ -448,7 +480,7 @@
     var failCount = checks.filter(function (c) { return c.status === 'fail'; }).length;
 
     return {
-      byteLength: bytes.length,
+      byteLength: pdfBytes.byteLength,
       pageCount: pages.length,
       isEncrypted: isEncrypted,
       catalogChecks: {
@@ -505,9 +537,9 @@
   }
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.PdfValidator = {
+  window.AlloModules.PdfValidator = Object.freeze({
     validateExportedPdfBytes: validateExportedPdfBytes,
     readingNotes: readingNotes,
-  };
+  });
   try { console.log('[PdfValidator] Loaded — window.AlloModules.PdfValidator.validateExportedPdfBytes(bytes)'); } catch (_) {}
 })();

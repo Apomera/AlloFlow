@@ -853,16 +853,26 @@ const createPersonas = deps => {
       participants: defaults.participants
     };
   };
+  const PERSONA_CRISIS_PAUSE_TEXT = 'We paused this interview to step out of character. Your wellbeing matters more than any activity — please talk to a trusted adult (a teacher, counselor, or family member), call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line).';
   const recordPersonaSafety = (text, source, onFlag) => {
+    let hasSelfHarm = false;
     try {
-      (SafetyContentChecker && typeof SafetyContentChecker.check === 'function' ? SafetyContentChecker.check(text) : []).forEach(flag => {
-        if (typeof onFlag === 'function') onFlag({
-          ...flag,
-          source,
-          context: String(text).slice(0, 100)
+      const checker = SafetyContentChecker && typeof SafetyContentChecker.check === 'function' ? SafetyContentChecker : typeof window !== 'undefined' ? window.__alloShared && window.__alloShared.SafetyContentChecker || window.SafetyContentChecker : null;
+      const flags = checker && typeof checker.check === 'function' ? checker.check(text) : [];
+      if (Array.isArray(flags)) {
+        flags.forEach(flag => {
+          if (flag && flag.category === 'self_harm') hasSelfHarm = true;
+          if (typeof onFlag === 'function') onFlag({
+            ...flag,
+            source,
+            context: String(text).slice(0, 100)
+          });
         });
-      });
+      }
     } catch (_) {}
+    return {
+      hasSelfHarm
+    };
   };
   const isPersonaSuggestionSafe = text => {
     try {
@@ -2487,7 +2497,25 @@ const createPersonas = deps => {
       const currentNames = (Array.isArray(currentState.selectedCharacters) ? currentState.selectedCharacters : []).slice(0, 2).map(character => String(character && character.name || '').slice(0, 120));
       return activeTurnRequest === turnRequest && turnRequest.token === personaSessionToken && getPersonaResourceId(liveRef.current.generatedContent) === resourceId && resourceContainsPersonaParticipants(liveRef.current.generatedContent, participantNames) && currentState.mode === 'panel' && currentNames.join('\u0000') === participantNames.join('\u0000') && createPersonaRuntimeSettingsFingerprint(liveRef.current, liveRef.current.generatedContent) === settingsFingerprint && createInterviewFingerprint(resourceId, 'panel', participantNames, currentState.chatHistory) === optimisticHistoryFingerprint;
     };
-    recordPersonaSafety(userText, 'persona-panel', handleAiSafetyFlag);
+    const _panelSafety = recordPersonaSafety(userText, 'persona-panel', handleAiSafetyFlag);
+    if (_panelSafety && _panelSafety.hasSelfHarm) {
+      try {
+        if (typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.showCrisisModal === 'function') window.SelHub.showCrisisModal();
+      } catch (_) {}
+      setPersonaInput('');
+      setPersonaState(prev => ({
+        ...prev,
+        chatHistory: [...optimisticHistory, {
+          role: 'model',
+          speaker: 'Support',
+          text: PERSONA_CRISIS_PAUSE_TEXT,
+          safetyPaused: true
+        }],
+        isLoading: false,
+        turnError: null
+      }));
+      return;
+    }
     requestPersonaSafetyReview(userText, 'persona-panel', apiKey, handleAiSafetyFlag);
     const charA = personaState.selectedCharacters[0];
     const charB = personaState.selectedCharacters[1];
@@ -2845,7 +2873,25 @@ const createPersonas = deps => {
       const currentState = liveRef.current.personaState || {};
       return activeTurnRequest === turnRequest && turnRequest.token === personaSessionToken && getPersonaResourceId(liveRef.current.generatedContent) === resourceId && resourceContainsPersonaParticipants(liveRef.current.generatedContent, [characterName]) && currentState.mode !== 'panel' && currentState.selectedCharacter?.name === characterName && createPersonaRuntimeSettingsFingerprint(liveRef.current, liveRef.current.generatedContent) === settingsFingerprint && createInterviewFingerprint(resourceId, 'single', [characterName], currentState.chatHistory) === optimisticHistoryFingerprint;
     };
-    recordPersonaSafety(textToSend, 'persona', handleAiSafetyFlag);
+    const _personaSafety = recordPersonaSafety(textToSend, 'persona', handleAiSafetyFlag);
+    if (_personaSafety && _personaSafety.hasSelfHarm) {
+      try {
+        if (typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.showCrisisModal === 'function') window.SelHub.showCrisisModal();
+      } catch (_) {}
+      setPersonaInput('');
+      setPersonaState(prev => ({
+        ...prev,
+        chatHistory: [...optimisticHistory, {
+          role: 'model',
+          speaker: 'Support',
+          text: PERSONA_CRISIS_PAUSE_TEXT,
+          safetyPaused: true
+        }],
+        isLoading: false,
+        turnError: null
+      }));
+      return;
+    }
     requestPersonaSafetyReview(textToSend, 'persona', apiKey, handleAiSafetyFlag);
     const hintsWereViewed = personaTurnHintsViewed;
     const previousSuggestions = Array.isArray(personaState.suggestions) ? [...personaState.suggestions] : [];

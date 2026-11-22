@@ -25,6 +25,37 @@ function registrationResponse(
  * to OAuthProvider. Cloudflare's limiter is per-location/eventually
  * consistent, so the runbook also requires a zone-level rate-limit rule.
  */
+function normalizeRateLimitIp(rawIp: string | undefined): string {
+  if (!rawIp || !/^[A-Fa-f0-9:.]{2,64}$/u.test(rawIp)) {
+    return "";
+  }
+  if (!rawIp.includes(":")) {
+    return rawIp;
+  }
+  // Aggregate IPv6 clients to their /64 prefix (first 4 hextets) so an
+  // attacker cannot bypass the per-IP limiter by rotating host bits.
+  const lower = rawIp.toLowerCase();
+  const halves = lower.split("::");
+  if (halves.length > 2) {
+    return lower;
+  }
+  const left = halves[0] ? halves[0].split(":").filter(Boolean) : [];
+  const right = halves.length === 2 && halves[1]
+    ? halves[1].split(":").filter(Boolean)
+    : [];
+  const expanded: string[] = [];
+  if (halves.length === 2) {
+    const missing = Math.max(0, 8 - left.length - right.length);
+    expanded.push(...left, ...new Array<string>(missing).fill("0"), ...right);
+  } else {
+    expanded.push(...left);
+  }
+  if (expanded.length < 4) {
+    return lower;
+  }
+  return `${expanded.slice(0, 4).map((h) => h.padStart(4, "0")).join(":")}::/64`;
+}
+
 export async function guardClientRegistration(
   request: Request,
   env: PilotEnv,
@@ -49,18 +80,31 @@ export async function guardClientRegistration(
       .get("CF-Connecting-IP")
       ?.split(",", 1)[0]
       ?.trim();
-    const ipSegment =
-      rawIp && /^[A-Fa-f0-9:.]{2,64}$/u.test(rawIp) ? `:${rawIp}` : "";
+    const normalizedIp = normalizeRateLimitIp(rawIp);
+    const ipSegment = normalizedIp ? `:${normalizedIp}` : "";
     const { success } = await env.DCR_RATE_LIMITER.limit({
       key: `dcr:${env.INSTITUTION_ID}${ipSegment}:claude-public-client`,
     });
-    return success
-      ? undefined
-      : registrationResponse(
+    if (!success) {
+      return registrationResponse(
+        "registration_rate_limited",
+        429,
+        RETRY_AFTER_SECONDS,
+      );
+    }
+    if (ipSegment) {
+      const institutionLimit = await env.DCR_RATE_LIMITER.limit({
+        key: `dcr:${env.INSTITUTION_ID}:claude-public-client`,
+      });
+      if (!institutionLimit.success) {
+        return registrationResponse(
           "registration_rate_limited",
           429,
           RETRY_AFTER_SECONDS,
         );
+      }
+    }
+    return undefined;
   } catch {
     return registrationResponse(
       "registration_temporarily_unavailable",

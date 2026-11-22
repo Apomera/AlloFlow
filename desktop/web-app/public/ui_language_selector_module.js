@@ -183,9 +183,12 @@ const UiLanguageSelector = (props = {}) => {
   const handleManualSubmit = () => {
     const cleaned = String(manualInput || "").replace(/[\u0000-\u001f\u007f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 60);
     if (!cleaned) return;
-    const isDeployed = commonLanguages.some((l) => l.value.toLowerCase() === cleaned.toLowerCase());
-    if (!isDeployed && !_langAiUsable()) return;
-    setUiLanguage(cleaned);
+    const lower = cleaned.toLowerCase();
+    const matched = commonLanguages.find(
+      (l) => l.value.toLowerCase() === lower || String(l.endonym || "").toLowerCase() === lower
+    );
+    if (!matched && !_langAiUsable()) return;
+    setUiLanguage(matched ? matched.value : cleaned);
     setManualInput("");
   };
   const handleRegenerate = () => {
@@ -199,20 +202,36 @@ const UiLanguageSelector = (props = {}) => {
     }
   };
   if (isTranslating) {
-    return /* @__PURE__ */ React.createElement("div", { className: "flex flex-col justify-center min-w-[260px] px-4 py-3 select-none bg-white rounded-lg border border-indigo-100 shadow-md animate-in motion-reduce:animate-none fade-in zoom-in-95", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] font-black text-indigo-800 mb-3 uppercase tracking-wider items-center" }, /* @__PURE__ */ React.createElement("span", { className: "truncate max-w-[180px]" }, statusMessage || "Translating..."), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 ml-2" }, progress, "%")), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-4 overflow-hidden border border-slate-400 inner-shadow mb-2", dir: "ltr" }, /* @__PURE__ */ React.createElement(
+    const clampedProgress = Math.max(0, Math.min(100, Math.round(Number(progress) || 0)));
+    return /* @__PURE__ */ React.createElement("div", { className: "flex flex-col justify-center min-w-[260px] px-4 py-3 select-none bg-white rounded-lg border border-indigo-100 shadow-md animate-in motion-reduce:animate-none fade-in zoom-in-95", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-xs font-black text-indigo-800 mb-3 uppercase tracking-wider items-center" }, /* @__PURE__ */ React.createElement("span", { className: "truncate max-w-[180px]" }, statusMessage || "Translating..."), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 ml-2" }, clampedProgress, "%")), /* @__PURE__ */ React.createElement(
       "div",
       {
-        className: "bg-indigo-600 h-full transition-all motion-reduce:transition-none duration-300 ease-out",
-        style: { width: `${progress}%` }
-      }
-    )), /* @__PURE__ */ React.createElement("div", { className: "flex justify-start items-center gap-1 text-[11px] text-indigo-600 font-bold uppercase tracking-wider animate-pulse motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none" }), " ", languageCopy("language_selector.status_generating", "Generating translation...")));
+        role: "progressbar",
+        "aria-label": statusMessage || languageCopy("language_selector.status_generating", "Generating translation..."),
+        "aria-valuemin": 0,
+        "aria-valuemax": 100,
+        "aria-valuenow": clampedProgress,
+        className: "w-full bg-slate-100 rounded-full h-4 overflow-hidden border border-slate-400 inner-shadow mb-2",
+        dir: "ltr"
+      },
+      /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          className: "bg-indigo-600 h-full transition-all motion-reduce:transition-none duration-300 ease-out",
+          style: { width: `${clampedProgress}%` }
+        }
+      )
+    ), /* @__PURE__ */ React.createElement("div", { className: "flex justify-start items-center gap-1 text-xs text-indigo-700 font-bold uppercase tracking-wider animate-pulse motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, "aria-hidden": "true", className: "animate-spin motion-reduce:animate-none" }), " ", languageCopy("language_selector.status_generating", "Generating translation...")));
   }
-  return /* @__PURE__ */ React.createElement("div", { className: "relative group z-50 pointer-events-auto flex flex-col gap-1.5 items-end" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-xl shadow-sm p-1 flex items-center gap-1 transition-all hover:shadow-md hover:border-indigo-300" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-1.5 rounded-lg text-indigo-600" }, /* @__PURE__ */ React.createElement(Globe, { size: 14 })), /* @__PURE__ */ React.createElement(
+  const activeLanguageEntry = commonLanguages.find((l) => l.value === currentUiLanguage) || null;
+  const activeLanguageTitle = activeLanguageEntry ? optionLabel(activeLanguageEntry) : String(currentUiLanguage || "English");
+  return /* @__PURE__ */ React.createElement("div", { className: "relative group z-50 pointer-events-auto flex flex-col gap-1.5 items-end" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-xl shadow-sm p-1 flex items-center gap-1 transition-all motion-reduce:transition-none hover:shadow-md hover:border-indigo-300" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-1.5 rounded-lg text-indigo-700", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Globe, { size: 14, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement(
     "select",
     {
       value: commonLanguages.some((l) => l.value === currentUiLanguage) ? currentUiLanguage : "Custom",
       onChange: handleChange,
-      className: "bg-transparent text-xs font-bold text-slate-600 outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer py-1 pr-1 w-24 truncate",
+      title: activeLanguageTitle,
+      className: "bg-transparent text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer py-1 pr-1 w-24 truncate rounded",
       "aria-label": languageCopy("language_selector.select_label", "Select UI Language"),
       "data-help-key": "ui_language_select"
     },
@@ -223,13 +242,13 @@ const UiLanguageSelector = (props = {}) => {
     {
       type: "button",
       onClick: handleRegenerate,
-      className: "min-h-11 min-w-11 inline-flex items-center justify-center p-1 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors",
+      className: "min-h-11 min-w-11 inline-flex items-center justify-center p-1 text-slate-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-full transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-500",
       title: languageCopy("language_selector.regenerate_tooltip", "Regenerate Translations"),
       "aria-label": languageCopy("language_selector.regenerate_tooltip", "Regenerate Translations"),
       "data-help-key": "ui_lang_regenerate_btn"
     },
-    /* @__PURE__ */ React.createElement(RefreshCw, { size: 12 })
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-1 bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-lg p-1 shadow-sm transition-all hover:shadow-md hover:border-indigo-300" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, "aria-hidden": "true" })
+  )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-1 bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-lg p-1 shadow-sm transition-all motion-reduce:transition-none hover:shadow-md hover:border-indigo-300" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "file",
@@ -249,23 +268,23 @@ const UiLanguageSelector = (props = {}) => {
       type: "button",
       onClick: () => fileInputRef.current && fileInputRef.current.click(),
       "data-help-key": "ui_lang_import_btn",
-      className: "min-h-11 min-w-11 inline-flex items-center justify-center p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors",
+      className: "min-h-11 min-w-11 inline-flex items-center justify-center p-1.5 text-indigo-700 hover:bg-indigo-50 rounded transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-500",
       title: languageCopy("language_selector.upload_tooltip", "Import Language Pack"),
       "aria-label": languageCopy("language_selector.upload_tooltip", "Import Language Pack")
     },
-    /* @__PURE__ */ React.createElement(FolderOpen, { size: 12 })
+    /* @__PURE__ */ React.createElement(FolderOpen, { size: 12, "aria-hidden": "true" })
   ), currentUiLanguage !== "English" && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: exportLanguagePack,
-      className: "min-h-11 min-w-11 inline-flex items-center justify-center p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors",
+      className: "min-h-11 min-w-11 inline-flex items-center justify-center p-1.5 text-indigo-700 hover:bg-indigo-50 rounded transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-500",
       title: languageCopy("language_selector.download_tooltip", "Export Language Pack"),
       "aria-label": languageCopy("language_selector.download_tooltip", "Export Language Pack"),
       "data-help-key": "ui_lang_export_btn"
     },
-    /* @__PURE__ */ React.createElement(Download, { size: 12 })
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-lg p-1 shadow-sm transition-all hover:shadow-md hover:border-indigo-300" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement(Download, { size: 12, "aria-hidden": "true" })
+  )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-lg p-1 shadow-sm transition-all motion-reduce:transition-none hover:shadow-md hover:border-indigo-300" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -276,9 +295,13 @@ const UiLanguageSelector = (props = {}) => {
       onKeyDown: (e) => {
         if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
         if (e.key === "Enter") handleManualSubmit();
+        else if (e.key === "Escape" && manualInput) {
+          e.preventDefault();
+          setManualInput("");
+        }
       },
       placeholder: languageCopy("language_selector.search_placeholder", "Enter Language..."),
-      className: "text-xs bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 w-28 px-1 text-slate-600 placeholder:text-slate-600",
+      className: "text-xs bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-500 w-28 px-1 text-slate-700 placeholder:text-slate-600 rounded",
       "aria-label": languageCopy("language_selector.search_placeholder", "Enter Language..."),
       "data-help-key": "ui_lang_manual_input"
     }
@@ -288,11 +311,11 @@ const UiLanguageSelector = (props = {}) => {
       type: "button",
       onClick: handleManualSubmit,
       disabled: !manualInput.trim(),
-      className: "min-h-11 min-w-11 inline-flex items-center justify-center p-1 bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+      className: "min-h-11 min-w-11 inline-flex items-center justify-center p-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed",
       "aria-label": languageCopy("language_selector.set_custom_label", "Set Custom Language"),
       "data-help-key": "ui_lang_manual_submit"
     },
-    /* @__PURE__ */ React.createElement(ArrowRight, { size: 10 })
+    /* @__PURE__ */ React.createElement(ArrowRight, { size: 10, "aria-hidden": "true" })
   ))));
 };
 window.AlloModules = window.AlloModules || {};

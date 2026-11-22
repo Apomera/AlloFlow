@@ -273,12 +273,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
   var SCENARIO_TAGS = ['Rushed Signature', 'Pre-Interview SSN', 'Withheld Lease', 'Blank Line', 'IEP Pressure'];
   var WORK_TIMING_TAGS = ['Pre-Offer Form', 'Interview Test', 'On the Job', 'Interview Question'];
 
-  // Scoped styling for focus rings, reduced motion, responsive grids, and .theme-contrast parity
+  // Scoped styling for focus rings, GPU-composited SVG live motion, reduced motion, responsive grids, and .theme-contrast parity
   (function injectPaperTrailStyles() {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-papertrail-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-papertrail-css';
     st.textContent = [
+      '@keyframes alloPtChainFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-24}}',
+      '@keyframes alloPtNodeBeacon{0%,100%{opacity:0.16;transform:scale(0.88)}50%{opacity:0.46;transform:scale(1.24)}}',
+      '@keyframes alloPtLoupeGlint{0%,100%{opacity:0.35;transform:rotate(-5deg) scale(0.96)}50%{opacity:0.96;transform:rotate(6deg) scale(1.05)}}',
+      '@keyframes alloPtBarSheen{0%{transform:translateX(-90px);opacity:0}18%{opacity:0.44}82%{opacity:0.44}100%{transform:translateX(330px);opacity:0}}',
+      '@keyframes alloPtAuraBreathe{0%,100%{opacity:0.14}50%{opacity:0.32}}',
       '.allo-pt-shell{box-sizing:border-box;min-width:0;overflow-wrap:anywhere;}',
       '.allo-pt-shell *,.allo-pt-shell *::before,.allo-pt-shell *::after{box-sizing:border-box;}',
       '.allo-pt-shell button:focus-visible,.allo-pt-shell [tabindex]:focus-visible{outline:3px solid #d97706;outline-offset:2px;}',
@@ -287,12 +292,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
       '.allo-pt-tab[aria-selected="true"]{font-weight:900;}',
       '.allo-pt-grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}',
       '.allo-pt-grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}',
+      '.allo-pt-shell .allo-pt-chain-flow{animation:alloPtChainFlow 2.6s linear infinite;will-change:stroke-dashoffset;}',
+      '.allo-pt-shell .allo-pt-beacon{transform-box:fill-box;transform-origin:center;animation:alloPtNodeBeacon 3.0s ease-in-out infinite;will-change:transform,opacity;}',
+      '.allo-pt-shell .allo-pt-loupe-glint{transform-box:fill-box;transform-origin:center;animation:alloPtLoupeGlint 4.2s ease-in-out infinite;will-change:transform,opacity;}',
+      '.allo-pt-shell .allo-pt-bar-sheen{animation:alloPtBarSheen 5.2s cubic-bezier(0.4,0,0.2,1) infinite;will-change:transform,opacity;}',
+      '.allo-pt-shell .allo-pt-aura{animation:alloPtAuraBreathe 3.8s ease-in-out infinite;will-change:opacity;}',
       '@media(max-width:700px){.allo-pt-grid-2,.allo-pt-grid-3{grid-template-columns:minmax(0,1fr);}}',
-      '@media(prefers-reduced-motion:reduce){.allo-pt-card,.allo-pt-shell *{transition:none!important;animation:none!important;transform:none!important;}}',
+      '@media(prefers-reduced-motion:reduce){.allo-pt-card,.allo-pt-shell *{transition:none!important;animation:none!important;transform:none!important;}.allo-pt-shell .allo-pt-bar-sheen{display:none!important;}}',
       '.theme-contrast .allo-pt-shell{background:#000000!important;color:#ffff00!important;border-color:#ffff00!important;}',
       '.theme-contrast .allo-pt-shell button:focus-visible{outline:3px solid #ffffff!important;outline-offset:2px;}',
       '.theme-contrast .allo-pt-surface{background:#000000!important;border-color:#ffff00!important;color:#ffff00!important;}',
-      '.theme-contrast .allo-pt-btn-primary{background:#ffff00!important;color:#000000!important;border:2px solid #ffff00!important;}'
+      '.theme-contrast .allo-pt-btn-primary{background:#ffff00!important;color:#000000!important;border:2px solid #ffff00!important;}',
+      '.theme-contrast .allo-pt-shell .allo-pt-bar-sheen,.theme-contrast .allo-pt-shell .allo-pt-loupe-glint,.theme-contrast .allo-pt-shell .allo-pt-aura{display:none!important;animation:none!important;}',
+      '.theme-contrast .allo-pt-shell .allo-pt-chain-flow,.theme-contrast .allo-pt-shell .allo-pt-beacon{animation:none!important;}'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -581,11 +593,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
           h('rect', { x: 16.5, y: 22.3, width: 13.5, height: 3, rx: 1.4, fill: KIND.watch.bar }),
           h('circle', { cx: 13.5, cy: 29.8, r: 1.4, fill: KIND.danger.bar }),
           h('rect', { x: 16.5, y: 28.3, width: 11.5, height: 3, rx: 1.4, fill: KIND.danger.bar }),
-          h('line', { x1: 13, y1: 35.5, x2: 24, y2: 35.5, stroke: pal.svgInk, strokeWidth: 1.3, strokeDasharray: '2 2' }),
-          // Sculpted brass inspection loupe with active halo & specular crescent
-          !isContrast && h('circle', { cx: 33, cy: 32, r: 8.6, fill: '#f59e0b', opacity: 0.2 }),
+          h('line', { x1: 13, y1: 35.5, x2: 24, y2: 35.5, stroke: pal.svgInk, strokeWidth: 1.3, strokeDasharray: '2 2', className: isContrast ? undefined : 'allo-pt-chain-flow' }),
+          // Sculpted brass inspection loupe with active halo & animated archival specular glint
+          !isContrast && h('circle', { cx: 33, cy: 32, r: 8.8, fill: '#f59e0b', opacity: 0.22, className: 'allo-pt-beacon' }),
           h('circle', { cx: 33, cy: 32, r: 6.8, fill: pal.svgPaper, stroke: 'url(#pt-emblem-brass)', strokeWidth: 2.3 }),
-          !isContrast && h('path', { d: 'M29.4 28.5 A4.5 4.5 0 0 1 34.5 27.6', fill: 'none', stroke: '#ffffff', strokeWidth: 1.3, strokeLinecap: 'round', opacity: 0.85 }),
+          !isContrast && h('path', { d: 'M29.4 28.5 A4.5 4.5 0 0 1 34.5 27.6', fill: 'none', stroke: '#ffffff', strokeWidth: 1.35, strokeLinecap: 'round', opacity: 0.88, className: 'allo-pt-loupe-glint' }),
+          !isContrast && h('circle', { cx: 35.4, cy: 28.6, r: 1.05, fill: '#fef3c7', opacity: 0.85, className: 'allo-pt-loupe-glint' }),
           h('line', { x1: 38, y1: 37, x2: 42.4, y2: 41.4, stroke: 'url(#pt-emblem-brass)', strokeWidth: 2.8, strokeLinecap: 'round' }),
           h('path', { d: 'M30.5 32.1l1.8 1.8 3.3-3.5', fill: 'none', stroke: pal.safeText, strokeWidth: 1.9, strokeLinecap: 'round', strokeLinejoin: 'round' })
         );
@@ -748,10 +761,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
               h('stop', { offset: '0%', stopColor: isContrast ? '#111111' : '#dfd7c6' }),
               h('stop', { offset: '100%', stopColor: isContrast ? '#222222' : '#ece6d9' })
             ),
-            bars.map(function (b) {
-              return h('linearGradient', { key: b.id, id: 'pt-bar-' + b.id, x1: '0', y1: '0', x2: '1', y2: '0' },
-                h('stop', { offset: '0%', stopColor: b.color }),
-                h('stop', { offset: '100%', stopColor: b.hi })
+            h('linearGradient', { id: 'pt-bar-sheen', x1: '0', y1: '0', x2: '1', y2: '0' },
+              h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
+              h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.62 }),
+              h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+            ),
+            bars.map(function (b, bIdx) {
+              var bY = 17 + bIdx * 25;
+              var bW = Math.max(b.pct > 0 ? 12 : 0, Math.round(trackW * b.pct));
+              return h('g', { key: b.id },
+                h('linearGradient', { id: 'pt-bar-' + b.id, x1: '0', y1: '0', x2: '1', y2: '0' },
+                  h('stop', { offset: '0%', stopColor: b.color }),
+                  h('stop', { offset: '100%', stopColor: b.hi })
+                ),
+                bW > 0 && h('clipPath', { id: 'pt-bar-clip-' + b.id },
+                  h('rect', { x: trackX, y: bY, width: bW, height: 13, rx: 6.5 })
+                )
               );
             })
           ),
@@ -765,16 +790,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
             var y = 17 + idx * 25;
             var fillW = Math.max(b.pct > 0 ? 12 : 0, Math.round(trackW * b.pct));
             var tipX = trackX + fillW;
+            var dly = (idx * 0.55).toFixed(2) + 's';
             return h('g', { key: idx },
               h('circle', { cx: 14, cy: y + 6.5, r: 3.2, fill: b.pct > 0 ? b.color : 'none', stroke: b.color, strokeWidth: 1.4 }),
               h('text', { x: 24, y: y + 10.5, fontSize: 11, fontWeight: 700, fill: pal.svgInk }, b.label),
               h('rect', { x: trackX, y: y, width: trackW, height: 13, rx: 6.5, fill: 'url(#pt-ready-well)', stroke: isContrast ? '#ffff00' : '#d6c3a3', strokeOpacity: isContrast ? 0.85 : 0.55, strokeWidth: 0.8 }),
               fillW > 0 ? h('g', null,
-                !isContrast && h('rect', { x: trackX, y: y - 1, width: fillW, height: 15, rx: 7.5, fill: b.hi, opacity: 0.18 }),
+                !isContrast && h('rect', { x: trackX, y: y - 1, width: fillW, height: 15, rx: 7.5, fill: b.hi, opacity: 0.18, className: 'allo-pt-aura', style: { animationDelay: dly } }),
                 h('rect', { x: trackX, y: y, width: fillW, height: 13, rx: 6.5, fill: 'url(#pt-bar-' + b.id + ')' }),
                 !isContrast && h('rect', { x: trackX + 3, y: y + 1.5, width: Math.max(0, fillW - 6), height: 3.2, rx: 1.6, fill: '#ffffff', opacity: 0.28 }),
+                !isContrast && fillW > 14 && h('g', { clipPath: 'url(#pt-bar-clip-' + b.id + ')' },
+                  h('rect', { x: trackX, y: y, width: 64, height: 13, fill: 'url(#pt-bar-sheen)', className: 'allo-pt-bar-sheen', style: { animationDelay: dly } })
+                ),
                 // Active node endpoint halo beacon
-                !isContrast && h('circle', { cx: tipX - 5, cy: y + 6.5, r: 5.5, fill: b.hi, opacity: 0.28 }),
+                !isContrast && h('circle', { cx: tipX - 5, cy: y + 6.5, r: 5.8, fill: b.hi, opacity: 0.3, className: 'allo-pt-beacon', style: { animationDelay: dly } }),
                 h('circle', { cx: tipX - 5, cy: y + 6.5, r: 2.8, fill: isContrast ? '#000000' : '#ffffff', stroke: b.color, strokeWidth: 1.4 })
               ) : null,
               h('text', { x: W - 14, y: y + 10.5, textAnchor: 'end', fontSize: 11, fontWeight: 800, fill: pal.svgInk }, b.val)
@@ -814,15 +843,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
           h('path', { d: 'M14 2 H' + (W - 14) + ' Q' + (W - 2) + ' 2 ' + (W - 2) + ' 14 V38 H2 V14 Q2 2 14 2 Z', fill: 'url(#pt-doc-header)' }),
           h('line', { x1: 2, y1: 38, x2: W - 2, y2: 38, stroke: pal.border, strokeWidth: 1.2 }),
           // Official archival seal medallion in header
+          !isContrast && h('circle', { cx: 20, cy: 20, r: 10, fill: pal.accent, opacity: 0.16, className: 'allo-pt-beacon' }),
           h('circle', { cx: 20, cy: 20, r: 7.5, fill: isContrast ? '#000000' : '#ffffff', stroke: pal.accent, strokeWidth: 1.4 }),
           h('circle', { cx: 20, cy: 20, r: 4, fill: pal.accent }),
           h('text', { x: 34, y: 24, fontSize: 12, fontWeight: 900, fill: pal.svgInk }, doc.title.toUpperCase() + ' — ' + __alloT('stem.paperTrail.blueprint_tag', 'RISK MAP')),
           // Sample provenance stamp plaque
           h('rect', { x: W - 154, y: 10, width: 140, height: 20, rx: 10, fill: isContrast ? '#000000' : '#ffffff', stroke: pal.border, strokeWidth: 1 }),
           h('text', { x: W - 84, y: 23.5, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: pal.svgMuted }, __alloT('stem.paperTrail.sample_stamp', 'SAMPLE: SAM RIVERA')),
-          // Vertical dual-pass field-chain spine connecting provenance nodes
-          fields.length > 1 && !isContrast && h('line', { x1: chainX, y1: firstY, x2: chainX, y2: lastY, stroke: '#d97706', strokeOpacity: 0.22, strokeWidth: 5, strokeLinecap: 'round' }),
-          fields.length > 1 && h('line', { x1: chainX, y1: firstY, x2: chainX, y2: lastY, stroke: isContrast ? '#ffff00' : '#d6c3a3', strokeWidth: 1.6, strokeDasharray: '3 2' }),
+          // Vertical dual-pass flowing field-chain spine connecting provenance nodes
+          fields.length > 1 && !isContrast && h('line', { x1: chainX, y1: firstY, x2: chainX, y2: lastY, stroke: '#d97706', strokeOpacity: 0.22, strokeWidth: 5, strokeLinecap: 'round', className: 'allo-pt-aura' }),
+          fields.length > 1 && h('line', { x1: chainX, y1: firstY, x2: chainX, y2: lastY, stroke: isContrast ? '#ffff00' : '#b45309', strokeOpacity: isContrast ? 1 : 0.72, strokeWidth: 1.7, strokeDasharray: '5 3', className: isContrast ? undefined : 'allo-pt-chain-flow' }),
           fields.map(function(f, idx) {
             var y = headerH + idx * rowH;
             var cy = y + (rowH - 6) / 2;
@@ -832,8 +862,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
             return h('g', {
               key: f.id
             },
-              // Provenance node halo & badge on left spine
-              open && !isContrast && h('circle', { cx: chainX, cy: cy, r: 7.5, fill: k.bar, opacity: 0.24 }),
+              // Provenance node pulsing beacon halo & badge on left spine
+              open && !isContrast && h('circle', { cx: chainX, cy: cy, r: 8, fill: k.bar, opacity: 0.26, className: 'allo-pt-beacon', style: { animationDelay: (idx * 0.35).toFixed(2) + 's' } }),
               h('circle', { cx: chainX, cy: cy, r: open ? 4.4 : 3.4, fill: open ? k.bar : pal.svgPaper, stroke: k.bar, strokeWidth: 1.6 }),
               // Row strip with beveled reliability edge & active highlight
               open && !isContrast && h('rect', { x: 30, y: y - 1, width: W - 44, height: rowH - 4, rx: 7, fill: pal.accent, opacity: 0.12 }),
@@ -884,19 +914,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
           h('text', { x: 16, y: 21, fontSize: 10.8, fontWeight: 900, letterSpacing: '0.04em', fill: pal.accent }, __alloT('stem.paperTrail.proto_head', '4-STEP PRESSURE SHIELD PROTOCOL')),
           steps.map(function(st, i) {
             var bx = 14 + i * 130;
+            var dly = (i * 0.45).toFixed(2) + 's';
             return h('g', { key: i },
-              // Dual-pass luminous chain arc + directional arrowhead between step nodes
+              // Dual-pass flowing corroboration chain arc + directional arrowhead between step nodes
               i > 0 ? h('g', null,
-                !isContrast && h('path', { d: 'M' + (bx - 16) + ' 59 Q' + (bx - 8) + ' 51 ' + (bx - 3) + ' 59', fill: 'none', stroke: '#f59e0b', strokeOpacity: 0.32, strokeWidth: 5.5, strokeLinecap: 'round' }),
-                h('path', { d: 'M' + (bx - 16) + ' 59 Q' + (bx - 8) + ' 51 ' + (bx - 4) + ' 59', fill: 'none', stroke: pal.accent, strokeWidth: 1.9, strokeLinecap: 'round' }),
+                !isContrast && h('path', { d: 'M' + (bx - 16) + ' 59 Q' + (bx - 8) + ' 51 ' + (bx - 3) + ' 59', fill: 'none', stroke: '#f59e0b', strokeOpacity: 0.32, strokeWidth: 5.5, strokeLinecap: 'round', className: 'allo-pt-aura', style: { animationDelay: dly } }),
+                h('path', { d: 'M' + (bx - 16) + ' 59 Q' + (bx - 8) + ' 51 ' + (bx - 4) + ' 59', fill: 'none', stroke: pal.accent, strokeWidth: 1.9, strokeDasharray: isContrast ? undefined : '4 3', strokeLinecap: 'round', className: isContrast ? undefined : 'allo-pt-chain-flow' }),
                 h('polygon', { points: (bx - 5) + ',55.5 ' + (bx - 0.5) + ',59 ' + (bx - 5) + ',62.5', fill: pal.accent })
               ) : null,
               !isContrast && h('rect', { x: bx + 1.5, y: 34.5, width: 114, height: 55, rx: 9, fill: '#78350f', opacity: 0.08 }),
               h('rect', { x: bx, y: 32, width: 114, height: 55, rx: 9, fill: 'url(#pt-proto-card)', stroke: pal.border, strokeWidth: 1.3 }),
               // Top beveled accent sheen
               h('rect', { x: bx + 10, y: 32.8, width: 94, height: 2.8, rx: 1.4, fill: st.col, opacity: isContrast ? 1 : 0.72 }),
-              // Active node halo + medallion
-              !isContrast && h('circle', { cx: bx + 19, cy: 52, r: 12.5, fill: st.col, opacity: 0.16 }),
+              // Active node pulsing halo + medallion
+              !isContrast && h('circle', { cx: bx + 19, cy: 52, r: 12.8, fill: st.col, opacity: 0.18, className: 'allo-pt-beacon', style: { animationDelay: dly } }),
               h('circle', { cx: bx + 19, cy: 52, r: 9.8, fill: pal.accentBg, stroke: st.col, strokeWidth: 1.5 }),
               h('text', { x: bx + 19, y: 55.8, textAnchor: 'middle', fontSize: 11, fontWeight: 900, fill: st.col }, st.n),
               h('text', { x: bx + 35, y: 55, fontSize: 11.2, fontWeight: 900, fill: pal.svgInk }, st.t),
@@ -936,11 +967,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
           h('text', { x: 26, y: 76, fontSize: 11, fill: pal.svgMuted }, '• ' + __alloT('stem.paperTrail.cliff_s2', 'Written plan follows you')),
           h('text', { x: 26, y: 94, fontSize: 11, fill: pal.svgMuted }, '• ' + __alloT('stem.paperTrail.cliff_s3', 'Automatic class-to-class')),
           h('text', { x: 26, y: 114, fontSize: 10, fontWeight: 800, fill: pal.accent }, __alloT('stem.paperTrail.cliff_s4', 'ENDS AT GRADUATION')),
-          // Center dual-pass luminous transition bridge arc & Age 18 medallion
-          !isContrast && h('path', { d: 'M234 72 Q269 44 298 72', fill: 'none', stroke: '#f59e0b', strokeOpacity: 0.28, strokeWidth: 7, strokeLinecap: 'round' }),
-          h('path', { d: 'M234 72 Q269 44 297 72', fill: 'none', stroke: pal.accent, strokeWidth: 2.3, strokeDasharray: '5 3', strokeLinecap: 'round' }),
+          // Center dual-pass flowing transition bridge arc & Age 18 medallion
+          !isContrast && h('path', { d: 'M234 72 Q269 44 298 72', fill: 'none', stroke: '#f59e0b', strokeOpacity: 0.28, strokeWidth: 7, strokeLinecap: 'round', className: 'allo-pt-aura' }),
+          h('path', { d: 'M234 72 Q269 44 297 72', fill: 'none', stroke: pal.accent, strokeWidth: 2.3, strokeDasharray: '5 3', strokeLinecap: 'round', className: isContrast ? undefined : 'allo-pt-chain-flow' }),
           h('polygon', { points: '295,66.5 305,72 295,77.5', fill: pal.accent }),
-          !isContrast && h('circle', { cx: 269, cy: 56, r: 17, fill: '#f59e0b', opacity: 0.16 }),
+          !isContrast && h('circle', { cx: 269, cy: 56, r: 17, fill: '#f59e0b', opacity: 0.18, className: 'allo-pt-beacon' }),
           h('rect', { x: 245, y: 46, width: 48, height: 19, rx: 9.5, fill: pal.accentBg, stroke: pal.accent, strokeWidth: 1.3 }),
           h('text', { x: 269, y: 59, textAnchor: 'middle', fontSize: 9.5, fontWeight: 900, fill: pal.accent }, __alloT('stem.paperTrail.cliff_mid', 'AGE 18')),
           // Right card: Work (ADA Title I)
@@ -948,7 +979,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
           h('rect', { x: 308, y: 15, width: 216, height: 110, rx: 11, fill: 'url(#pt-cliff-card)', stroke: pal.accent, strokeWidth: 1.7 }),
           h('path', { d: 'M318 15 H514 Q524 15 524 25 V40 H308 V25 Q308 15 318 15 Z', fill: pal.accentBg }),
           h('line', { x1: 308, y1: 40, x2: 524, y2: 40, stroke: pal.border, strokeWidth: 1 }),
-          !isContrast && h('circle', { cx: 320, cy: 27.5, r: 6.5, fill: pal.accent, opacity: 0.2 }),
+          !isContrast && h('circle', { cx: 320, cy: 27.5, r: 6.8, fill: pal.accent, opacity: 0.22, className: 'allo-pt-beacon', style: { animationDelay: '0.6s' } }),
           h('circle', { cx: 320, cy: 27.5, r: 4, fill: pal.accent }),
           h('text', { x: 330, y: 31.5, fontSize: 11.5, fontWeight: 900, fill: pal.accent }, __alloT('stem.paperTrail.cliff_work', 'WORK · ADA TITLE I')),
           h('text', { x: 320, y: 58, fontSize: 11, fill: pal.svgInk }, '• ' + __alloT('stem.paperTrail.cliff_w1', 'Request-driven (you ask)')),

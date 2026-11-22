@@ -153,6 +153,10 @@ describe('Other resources polish — Wave 5 (Visual Supports Modal, Directions R
     const resetBtn = host.querySelector('[data-vs-schedule-reset]');
     expect(resetBtn).toBeTruthy();
     act(() => resetBtn.click());
+    const confirmResetBtn = host.querySelector('[data-vs-schedule-reset-confirm]');
+    if (confirmResetBtn) {
+      act(() => confirmResetBtn.click());
+    }
     expect(host.querySelector('[data-vs-schedule-progress]').getAttribute('aria-valuenow')).toBe('0');
     expect(host.querySelector('[data-vs-schedule-reset]')).toBeNull();
   });

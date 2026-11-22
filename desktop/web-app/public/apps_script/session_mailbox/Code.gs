@@ -1162,12 +1162,15 @@ function participantCanPatchSession(updates, uid, sessionData) {
     wsProgress: 1, wsProbeResult: 1, organizerProgress: 1, activityProgress: 1, imageDelivery: 1, lastSeen: 1,
     readingTheme: 1, readingThemeFavorites: 1, readingPreferenceAt: 1
   };
+  var questState = sessionData && sessionData.escapeRoomState || {};
+  var legacyEscapeActive = !!(sessionData && sessionData.escapeRoomState
+    && sessionData.escapeRoomState.isActive !== false
+    && (!questState.mode || questState.mode === 'escape-room'));
   var roots = [
     'bridgeReactions.' + uid,
-    'escapeRoomState.teams.' + uid,
-    'escapeRoomState.teamProgress'
+    'escapeRoomState.teams.' + uid
   ];
-  var questState = sessionData && sessionData.escapeRoomState || {};
+  if (legacyEscapeActive) roots.push('escapeRoomState.teamProgress');
   var currentQuest = questState.conceptQuest || {};
   var turnScoped = questState.mode === 'concept-quest' && currentQuest.actionSchema === 1;
   var questVoteTurnLeaf = 'escapeRoomState.teamProgress.All.questVoteTurns.' + uid;
@@ -1391,6 +1394,17 @@ function mbMakeDriveItemPrivate_(item) {
 function packFolder() {
   var it = DriveApp.getFoldersByName(FOLDER_NAME);
   if (it.hasNext()) return it.next();
+  var lock = (typeof LockService !== 'undefined' && LockService && LockService.getScriptLock) ? LockService.getScriptLock() : null;
+  if (lock) {
+    if (!lock.tryLock(5000)) throw new Error('Mailbox folder initialization is busy; retry shortly.');
+    try {
+      var it2 = DriveApp.getFoldersByName(FOLDER_NAME);
+      if (it2.hasNext()) return it2.next();
+      var lockedFolder = DriveApp.createFolder(FOLDER_NAME);
+      mbMakeDriveItemPrivate_(lockedFolder);
+      return lockedFolder;
+    } finally { lock.releaseLock(); }
+  }
   var folder = DriveApp.createFolder(FOLDER_NAME);
   mbMakeDriveItemPrivate_(folder);
   return folder;
@@ -2529,7 +2543,15 @@ function assignmentActivitySummaryFor(cache, context, uid) {
     cache.put(publicKey + ':erased', '1', ASYNC_ACTIVITY_CACHE_SEC);
   } else {
     if (applyActivityRetentionByType_(state)) {
-      writeAssignmentActivityState(state);
+      var wLock = LockService.getScriptLock();
+      if (wLock.tryLock(ACTIVITY_LOCK_MS)) {
+        try {
+          state = readAssignmentActivityState(context);
+          if (applyActivityRetentionByType_(state)) {
+            writeAssignmentActivityState(state);
+          }
+        } finally { wLock.releaseLock(); }
+      }
     }
     cacheAssignmentActivitySummary(cache, state);
   }
@@ -3319,18 +3341,16 @@ function deliveryFolder() {
   var it = parent.getFoldersByName(DELIVERY_FOLDER_NAME);
   if (it.hasNext()) return it.next();
   var lock = LockService.getScriptLock();
-  if (lock.tryLock(5000)) {
-    try {
-      var it2 = parent.getFoldersByName(DELIVERY_FOLDER_NAME);
-      if (it2.hasNext()) return it2.next();
-      var lockedFolder = parent.createFolder(DELIVERY_FOLDER_NAME);
-      mbMakeDriveItemPrivate_(lockedFolder);
-      return lockedFolder;
-    } finally { lock.releaseLock(); }
+  if (!lock.tryLock(5000)) {
+    throw new Error('Delivery folder initialization is busy; retry shortly.');
   }
-  var folder = parent.createFolder(DELIVERY_FOLDER_NAME);
-  mbMakeDriveItemPrivate_(folder);
-  return folder;
+  try {
+    var it2 = parent.getFoldersByName(DELIVERY_FOLDER_NAME);
+    if (it2.hasNext()) return it2.next();
+    var lockedFolder = parent.createFolder(DELIVERY_FOLDER_NAME);
+    mbMakeDriveItemPrivate_(lockedFolder);
+    return lockedFolder;
+  } finally { lock.releaseLock(); }
 }
 
 function safeFileName(value, fallback) {
@@ -3712,7 +3732,11 @@ function fetchPage(cache, p) {
         if (!baseOrigin) return out({ ok: false, e: 'bad-redirect' });
         if (loc.indexOf('//') === 0) nextUrl = ((currentUrl.match(/^(https?:)/i) || [])[1] || 'https:') + loc;
         else if (loc.charAt(0) === '/') nextUrl = baseOrigin + loc;
-        else nextUrl = currentUrl.replace(/[?#].*$/, '').replace(/[^\/]*$/, '') + loc;
+        else {
+          var basePath = currentUrl.slice(baseOrigin.length).replace(/[?#].*$/, '');
+          var dirPath = basePath.indexOf('/') === 0 ? basePath.replace(/[^\/]*$/, '') : '/';
+          nextUrl = baseOrigin + dirPath + loc;
+        }
       }
       if (nextUrl.length > 2048 || !/^https?:\/\/[^\s]+$/i.test(nextUrl)) return out({ ok: false, e: 'bad-url' });
       var nextHost = fetchPageExtractHost_(nextUrl);

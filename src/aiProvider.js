@@ -133,6 +133,10 @@ class AIProvider {
     }
 
     dispose() {
+        if (this._imagenCooldownTimer) {
+            clearTimeout(this._imagenCooldownTimer);
+            this._imagenCooldownTimer = null;
+        }
         if (typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
             for (const audioUrl of this._ttsCache.values()) {
                 try { URL.revokeObjectURL(audioUrl); } catch (_) {}
@@ -460,8 +464,11 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         switch (this.backend) {
             case 'gemini':
                 return this._geminiGenerateImage(prompt, width, quality);
-            case 'claude':
-            // Claude doesn't support image generation — fall through to OpenAI-compatible
+            case 'claude': {
+                const err = new Error('Image generation is not supported by the Claude backend.');
+                err.isConfigState = true;
+                throw err;
+            }
             case 'openai':
             case 'localai':
             case 'lmstudio':
@@ -492,8 +499,22 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         }
 
         const runPrimary = () => {
-            if (_imgOvr === 'imagen') return this._geminiGenerateImage(prompt, width, quality);
-            if (_imgOvr === 'flux') return this._openaiGenerateImage(prompt, width, quality);
+            if (_imgOvr === 'imagen') {
+                if (this.backend !== 'gemini') {
+                    const err = new Error('Imagen image override requires the Gemini backend so non-Gemini API keys are never sent with Gemini auth headers.');
+                    err.isConfigState = true;
+                    throw err;
+                }
+                return this._geminiGenerateImage(prompt, width, quality);
+            }
+            if (_imgOvr === 'flux') {
+                if (this.backend === 'gemini' || this.backend === 'claude') {
+                    const err = new Error('Flux image override requires a local or OpenAI-compatible backend so cloud text API keys are not forwarded as Bearer tokens.');
+                    err.isConfigState = true;
+                    throw err;
+                }
+                return this._openaiGenerateImage(prompt, width, quality);
+            }
             return this._generateImageByBackend(prompt, width, quality);
         };
 
@@ -553,6 +574,9 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             } finally {
                 if (timer) clearTimeout(timer);
             }
+            if (!data || typeof data !== 'object') {
+                throw new Error('Imagen returned an invalid JSON response');
+            }
             if (data.error) {
                 throw new Error(`Imagen API Error: ${data.error.message || JSON.stringify(data.error)}`);
             }
@@ -564,7 +588,11 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
             this._debugLog(`[AIProvider] ✅ Image generated: ${base64.length} chars`);
             if (this._imagenRateLimited) {
-                setTimeout(() => { this._imagenRateLimited = false; }, 30000);
+                if (this._imagenCooldownTimer) clearTimeout(this._imagenCooldownTimer);
+                this._imagenCooldownTimer = setTimeout(() => {
+                    this._imagenRateLimited = false;
+                    this._imagenCooldownTimer = null;
+                }, 30000);
             }
 
             const rawUrl = `data:image/png;base64,${base64}`;
@@ -647,11 +675,15 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         switch (this.backend) {
             case 'gemini':
                 return this._geminiEditImage(prompt, base64Image, width, quality, referenceBase64);
+            case 'claude': {
+                const err = new Error('Image editing is not supported by the Claude backend.');
+                err.isConfigState = true;
+                throw err;
+            }
             case 'openai':
             case 'localai':
             case 'lmstudio':
             case 'ollama':
-            case 'claude':
             case 'alloflow-local':
             case 'custom':
             default:
@@ -738,16 +770,43 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         switch (this.backend) {
             case 'gemini':
                 return this._geminiAnalyzeImage(prompt, base64Data, mimeType);
+            case 'claude':
+                return this._claudeAnalyzeImage(prompt, base64Data, mimeType);
             case 'openai':
             case 'localai':
             case 'lmstudio':
             case 'ollama':
-            case 'claude':
             case 'alloflow-local':
             case 'custom':
             default:
                 return this._openaiAnalyzeImage(prompt, base64Data, mimeType);
         }
+    }
+
+    async _claudeAnalyzeImage(prompt, base64Data, mimeType) {
+        const url = `${this.baseUrl}/v1/messages`;
+        const headers = {
+            'Content-Type': 'application/json',
+            'anthropic-version': '2023-06-01',
+        };
+        if (this.apiKey) headers['x-api-key'] = this.apiKey;
+        const data = await this._fetchJsonWithTimeout(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                model: this.models.vision || this.models.default,
+                max_tokens: 2048,
+                messages: [{
+                    role: 'user',
+                    content: [
+                        { type: 'image', source: { type: 'base64', media_type: mimeType || 'image/png', data: base64Data } },
+                        { type: 'text', text: prompt },
+                    ],
+                }],
+            }),
+        }, 60000);
+        const textBlock = Array.isArray(data?.content) ? data.content.find((b) => b && b.type === 'text') : null;
+        return textBlock?.text || '';
     }
 
     async _geminiAnalyzeImage(prompt, base64Data, mimeType) {
@@ -833,7 +892,12 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         const _ttsOvr = this._ttsProvider || null;
         if (_ttsOvr === 'off') return null;
         if (_ttsOvr === 'browser') return this._browserSpeechSynthesis(text, speed);
-        if (_ttsOvr === 'gemini') return this._geminiTTS(text, voice, speed);
+        if (_ttsOvr === 'gemini') {
+            if (this.backend !== 'gemini') {
+                throw new Error('Gemini TTS override requires the Gemini backend so non-Gemini API keys are not sent to Gemini headers.');
+            }
+            return this._geminiTTS(text, voice, speed);
+        }
         if (_ttsOvr === 'local') return this._openaiTTS(text, voice, speed);
 
         // Default: route by backend
@@ -878,6 +942,14 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         // Queue for serialization
         const task = this._ttsQueue.then(async () => {
+            if (Date.now() < this._ttsRateLimitedUntil) {
+                this._warnLog('[AIProvider TTS] Skipping queued request — rate-limit cooldown active');
+                return null;
+            }
+            if (this._ttsCache.has(cacheKey)) {
+                this._debugLog('⚡ TTS queued cache HIT:', text?.substring(0, 30));
+                return this._ttsCache.get(cacheKey);
+            }
             const url = `${this.baseUrl}/models/${this._safeModelSegment(this.models.tts)}:generateContent`;
 
             const payload = {
@@ -924,6 +996,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     } finally {
                         if (timer) clearTimeout(timer);
                     }
+                    if (!data || typeof data !== 'object') throw new Error('Invalid JSON response from TTS');
                     const audioPart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.data);
                     if (!audioPart) throw new Error('No audio in response');
 
@@ -957,11 +1030,15 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _openaiTTS(text, voice, speed) {
-        // TTS tiering: Kokoro (high quality) → Edge TTS (wide language) → browser fallback
-        const ttsEndpoints = [
-            'http://localhost:8880/v1/audio/speech',  // Kokoro (high quality, 8 langs)
-            'http://localhost:5500/v1/audio/speech',  // Edge TTS (40+ langs, OpenAI-compat)
-        ];
+        // TTS tiering: configured OpenAI-compatible backend (if applicable) → Kokoro → Edge TTS → browser fallback
+        const ttsEndpoints = [];
+        if (this.backend !== 'gemini' && this.backend !== 'claude' && this.baseUrl) {
+            ttsEndpoints.push({ url: `${this.baseUrl}/v1/audio/speech`, useAuth: Boolean(this.apiKey) });
+        }
+        ttsEndpoints.push(
+            { url: 'http://localhost:8880/v1/audio/speech', useAuth: false },  // Kokoro (high quality, 8 langs)
+            { url: 'http://localhost:5500/v1/audio/speech', useAuth: false },  // Edge TTS (40+ langs, OpenAI-compat)
+        );
 
         // Cache check
         const cacheKey = `${(text || '').toLowerCase().trim()}__${voice}__${speed}`;
@@ -970,7 +1047,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             return this._ttsCache.get(cacheKey);
         }
 
-        for (const url of ttsEndpoints) {
+        for (const ep of ttsEndpoints) {
             try {
                 const payload = {
                     model: this.models.tts,
@@ -979,19 +1056,21 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     speed: speed || 1,
                     response_format: 'wav',
                 };
+                const headers = { 'Content-Type': 'application/json' };
+                if (ep.useAuth && this.apiKey) headers['Authorization'] = `Bearer ${this.apiKey}`;
 
-                const blob = await this._fetchBlobWithTimeout(url, {
+                const blob = await this._fetchBlobWithTimeout(ep.url, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(payload),
                 }, 5000);
 
                 const audioUrl = URL.createObjectURL(blob);
                 this._cacheTtsUrl(cacheKey, audioUrl);
-                this._debugLog(`[AIProvider TTS] ✅ Success from ${url}`);
+                this._debugLog(`[AIProvider TTS] ✅ Success from ${ep.url}`);
                 return audioUrl;
             } catch (err) {
-                this._debugLog(`[AIProvider TTS] ${url} failed: ${err.message}, trying next...`);
+                this._debugLog(`[AIProvider TTS] ${ep.url} failed: ${err.message}, trying next...`);
             }
         }
 
@@ -1050,10 +1129,11 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 if (this.apiKey) headers['x-goog-api-key'] = this.apiKey;
                 break;
             case 'claude':
-                return [
-                    { id: 'claude-sonnet-4-20250514', type: 'text' },
-                    { id: 'claude-3-5-haiku-20241022', type: 'text' },
-                ];
+                if (!this.apiKey) throw new Error('Claude API key is required.');
+                url = `${this.baseUrl}/v1/models`;
+                headers['x-api-key'] = this.apiKey;
+                headers['anthropic-version'] = '2023-06-01';
+                break;
             default:
                 url = `${this.baseUrl}/v1/models`;
                 if (this.apiKey) headers['Authorization'] = `Bearer ${this.apiKey}`;

@@ -95,6 +95,7 @@ const html = '<!doctype html><html lang="en"><head><title>Tabletop expedition ve
         for(let guard=0;guard<45;guard++){
           const current=await page.evaluate(()=>{const value=saved(),board=JSON.parse(value.board),e=AlloModules.LessonBoardEngine;return {board,run:value.run,p:e.derive(board,value.run)};});
           if(current.p.complete)break;
+          if(await page.locator('[data-field-choice]').count())await page.locator('[data-field-choice]').first().click();
           await page.locator('[data-board-next]').click();
           const target=await page.evaluate(()=>{
             const value=saved(),board=JSON.parse(value.board),e=AlloModules.LessonBoardEngine,p=e.derive(board,value.run),targets=e.targets(board,value.run);

@@ -85,6 +85,36 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // Scoped GPU-composited live-motion polish for Number Line SVG visualizers
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-numberline-motion-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-numberline-motion-css';
+    st.textContent = [
+      '@keyframes nl-hop-flow{0%{stroke-dashoffset:0}100%{stroke-dashoffset:-24}}',
+      '@keyframes nl-arc-glow{0%,100%{opacity:.52}50%{opacity:1}}',
+      '@keyframes nl-landing-ripple{0%,100%{transform:scale(.92);opacity:.52}50%{transform:scale(1.18);opacity:1}}',
+      '@keyframes nl-ray-flow{0%{stroke-dashoffset:0}100%{stroke-dashoffset:-24}}',
+      '@keyframes nl-ray-glow{0%,100%{opacity:.48}50%{opacity:1}}',
+      '@keyframes nl-zero-glint{0%,100%{transform:scale(.9);opacity:.48}50%{transform:scale(1.22);opacity:1}}',
+      '@keyframes nl-zero-core{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}',
+      '@keyframes nl-bar-energy{0%,100%{opacity:.38}50%{opacity:.85}}',
+      '[data-stem-tool-shell="numberline"] .nl-hop-flow{animation:nl-hop-flow 1.9s linear infinite}',
+      '[data-stem-tool-shell="numberline"] .nl-hop-dash{animation:nl-hop-flow 2.8s linear infinite}',
+      '[data-stem-tool-shell="numberline"] .nl-arc-glow{animation:nl-arc-glow 3s ease-in-out infinite}',
+      '[data-stem-tool-shell="numberline"] .nl-landing-ripple{transform-box:fill-box;transform-origin:center;animation:nl-landing-ripple 2.5s ease-in-out infinite}',
+      '[data-stem-tool-shell="numberline"] .nl-ray-flow{animation:nl-ray-flow 2.1s linear infinite}',
+      '[data-stem-tool-shell="numberline"] .nl-ray-glow{animation:nl-ray-glow 2.8s ease-in-out infinite}',
+      '[data-stem-tool-shell="numberline"] .nl-zero-glint{transform-box:fill-box;transform-origin:center;animation:nl-zero-glint 3.2s ease-in-out infinite}',
+      '[data-stem-tool-shell="numberline"] .nl-zero-core{transform-box:fill-box;transform-origin:center;animation:nl-zero-core 3.2s ease-in-out infinite}',
+      '[data-stem-tool-shell="numberline"] .nl-bar-energy{animation:nl-bar-energy 3s ease-in-out infinite}',
+      '.theme-contrast [data-stem-tool-shell="numberline"] .nl-hop-flow,.theme-contrast [data-stem-tool-shell="numberline"] .nl-hop-dash,.theme-contrast [data-stem-tool-shell="numberline"] .nl-arc-glow,.theme-contrast [data-stem-tool-shell="numberline"] .nl-landing-ripple,.theme-contrast [data-stem-tool-shell="numberline"] .nl-ray-flow,.theme-contrast [data-stem-tool-shell="numberline"] .nl-ray-glow,.theme-contrast [data-stem-tool-shell="numberline"] .nl-zero-glint,.theme-contrast [data-stem-tool-shell="numberline"] .nl-zero-core,.theme-contrast [data-stem-tool-shell="numberline"] .nl-bar-energy{animation:none!important}',
+      '.theme-contrast [data-stem-tool-shell="numberline"] .allo-fd-marker,.theme-contrast [data-stem-tool-shell="numberline"] .allo-fd-repeat-dot{animation:none!important;filter:none!important}',
+      '@media (prefers-reduced-motion: reduce){[data-stem-tool-shell="numberline"] .nl-hop-flow,[data-stem-tool-shell="numberline"] .nl-hop-dash,[data-stem-tool-shell="numberline"] .nl-arc-glow,[data-stem-tool-shell="numberline"] .nl-landing-ripple,[data-stem-tool-shell="numberline"] .nl-ray-flow,[data-stem-tool-shell="numberline"] .nl-ray-glow,[data-stem-tool-shell="numberline"] .nl-zero-glint,[data-stem-tool-shell="numberline"] .nl-zero-core,[data-stem-tool-shell="numberline"] .nl-bar-energy{animation:none!important}}'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   // Number Line Studio workbench polish, 44px preset chips & Light/Dark/Contrast parity
   (function() {
     if (typeof document === 'undefined' || !document.head || document.getElementById('allo-numberline-workbench-css')) return;
@@ -2316,7 +2346,7 @@ window.StemLab = window.StemLab || {
             var markerEls = (markers || []).map(function(m, i) {
               var mx = X(m.value);
               return h('g', { key: 'marker-' + i },
-                nlRich && h('circle', { cx: mx, cy: 60, r: 14.5, fill: m.color || '#ef4444', fillOpacity: isDark ? 0.24 : 0.16 }),
+                nlRich && h('circle', { className: 'nl-landing-ripple', cx: mx, cy: 60, r: 14.5, fill: m.color || '#ef4444', fillOpacity: isDark ? 0.24 : 0.16, style: { animationDelay: ((i % 5) * 0.3) + 's' } }),
                 h('circle', { cx: mx, cy: 60, r: 10, fill: m.color || '#ef4444', stroke: P.bg, strokeWidth: 2, filter: nlRich ? 'url(#nl-sh-ex)' : undefined }),
                 nlRich && h('circle', { cx: mx - 3, cy: 56.5, r: 2.6, fill: '#ffffff', fillOpacity: 0.45 }),
                 h('text', { x: mx, y: 30, textAnchor: 'middle', fill: P.ink, fontSize: '12', fontWeight: 'bold' }, m.label || m.value)
@@ -2335,8 +2365,8 @@ window.StemLab = window.StemLab || {
                 var diff = +(b.value - a.value).toFixed(2);
                 var arcPeak = 78 + Math.min(22, (bx - ax) * 0.18);
                 distArcEls.push(h('g', { key: 'dist-' + dmi },
-                  nlRich && h('path', { d: 'M ' + ax + ' 75 Q ' + midDx + ' ' + arcPeak + ' ' + bx + ' 75', fill: 'none', stroke: P.bar, strokeWidth: 5, strokeOpacity: 0.18 }),
-                  h('path', { d: 'M ' + ax + ' 75 Q ' + midDx + ' ' + arcPeak + ' ' + bx + ' 75', fill: 'none', stroke: P.bar, strokeWidth: 1.8, strokeDasharray: '4 3' }),
+                  nlRich && h('path', { className: 'nl-arc-glow', d: 'M ' + ax + ' 75 Q ' + midDx + ' ' + arcPeak + ' ' + bx + ' 75', fill: 'none', stroke: P.bar, strokeWidth: 5, strokeOpacity: 0.18 }),
+                  h('path', { className: nlRich ? 'nl-hop-dash' : undefined, d: 'M ' + ax + ' 75 Q ' + midDx + ' ' + arcPeak + ' ' + bx + ' 75', fill: 'none', stroke: P.bar, strokeWidth: 1.8, strokeDasharray: '4 3' }),
                   h('rect', { x: midDx - 18, y: arcPeak - 4, width: 36, height: 13, rx: 6, fill: P.soft, stroke: P.bar, strokeWidth: 1, filter: nlRich ? 'url(#nl-sh-ex)' : undefined }),
                   h('text', { x: midDx, y: arcPeak + 6, textAnchor: 'middle', fill: P.bar, fontSize: 10, fontWeight: 'bold', fontFamily: 'monospace' }, 'Δ ' + diff)
                 ));
@@ -2392,10 +2422,10 @@ window.StemLab = window.StemLab || {
               if (pv != null) {
                 var px = X(pv);
                 probeEl = h('g', { key: 'probe', 'data-nl-probe': 'true' },
-                  nlRich && h('line', { x1: px, y1: 26, x2: px, y2: 60, stroke: P.student, strokeWidth: 7, strokeOpacity: 0.2 }),
+                  nlRich && h('line', { className: 'nl-ray-glow', x1: px, y1: 26, x2: px, y2: 60, stroke: P.student, strokeWidth: 7, strokeOpacity: 0.2 }),
                   h('line', { x1: px, y1: 26, x2: px, y2: 60, stroke: P.student, strokeWidth: 3 }),
                   h('polygon', { points: (px - 8) + ',22 ' + (px + 8) + ',22 ' + px + ',34', fill: P.student }),
-                  nlRich && h('circle', { cx: px, cy: 60, r: coarsePointer ? 17 : 13, fill: P.student, fillOpacity: isDark ? 0.26 : 0.18 }),
+                  nlRich && h('circle', { className: 'nl-landing-ripple', cx: px, cy: 60, r: coarsePointer ? 17 : 13, fill: P.student, fillOpacity: isDark ? 0.26 : 0.18 }),
                   h('circle', { cx: px, cy: 60, r: coarsePointer ? 12 : 8, fill: nlRich ? 'url(#nl-bead-stu-ex)' : P.student, stroke: P.bg, strokeWidth: 2, filter: nlRich ? 'url(#nl-sh-ex)' : undefined }),
                   h('text', { x: px, y: 16, textAnchor: 'middle', fill: P.student, fontSize: 14, fontWeight: 'bold', fontFamily: 'monospace' }, dispNum(pv)));
               }
@@ -2406,10 +2436,11 @@ window.StemLab = window.StemLab || {
                 nlDefs('ex'),
                 nlStage('ex', W, H, 10),
                 nlRich && h('rect', { x: PAD, y: 57, width: Math.max(2, W - 2 * PAD), height: 6, rx: 3, fill: 'url(#nl-rail-ex)', filter: 'url(#nl-sh-ex)' }),
+                nlRich && h('path', { className: 'nl-ray-flow', 'aria-hidden': 'true', d: 'M ' + (PAD + 6) + ' 60 H ' + (W - PAD - 6), fill: 'none', stroke: '#ffffff', strokeWidth: 1.5, strokeOpacity: isDark ? 0.28 : 0.34, strokeDasharray: '6 18', strokeLinecap: 'round', style: { pointerEvents: 'none' } }),
                 !nlRich && h('line', { x1: PAD, y1: 60, x2: W - PAD, y2: 60, stroke: P.axis, strokeWidth: 3, strokeLinecap: 'round' }),
-                nlRich && hasZero && h('circle', { cx: X(0), cy: 60, r: 9.5, fill: '#f59e0b', fillOpacity: isDark ? 0.26 : 0.2 }),
+                nlRich && hasZero && h('circle', { className: 'nl-zero-glint', cx: X(0), cy: 60, r: 9.5, fill: '#f59e0b', fillOpacity: isDark ? 0.26 : 0.2 }),
                 ticks,
-                nlRich && hasZero && h('circle', { cx: X(0), cy: 60, r: 4.2, fill: 'url(#nl-bead-zero-ex)', stroke: P.bg, strokeWidth: 1.4 }),
+                nlRich && hasZero && h('circle', { className: 'nl-zero-core', cx: X(0), cy: 60, r: 4.2, fill: 'url(#nl-bead-zero-ex)', stroke: P.bg, strokeWidth: 1.4 }),
                 arrowEl,
                 markerEls,
                 distArcEls,
@@ -2475,10 +2506,11 @@ window.StemLab = window.StemLab || {
             kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: LW, height: LH, rx: 12, fill: P.bg }));
             if (nlRich) kids.push(nlDefs('ln'));
             if (nlRich) kids.push(nlStage('ln', LW, LH, 12));
-            if (o.mirror) kids.push(h('line', { key: 'mirror', x1: X(0), y1: 12, x2: X(0), y2: LH - 12, stroke: P.muted, strokeWidth: 2, strokeDasharray: '6 5' }));
+            if (o.mirror) kids.push(h('line', { key: 'mirror', className: nlRich ? 'nl-hop-dash' : undefined, x1: X(0), y1: 12, x2: X(0), y2: LH - 12, stroke: P.muted, strokeWidth: 2, strokeDasharray: '6 5' }));
             if (nlRich) {
               kids.push(h('rect', { key: 'rail', x: LP - 16, y: AY - 3, width: LW - 2 * LP + 32, height: 6, rx: 3, fill: 'url(#nl-rail-ln)', filter: 'url(#nl-sh-ln)' }));
-              if (o.min < 0 && o.max > 0) kids.push(h('circle', { key: 'z-glow', cx: X(0), cy: AY, r: 9.5, fill: '#f59e0b', fillOpacity: isDark ? 0.26 : 0.2 }));
+              kids.push(h('path', { key: 'rail-flow', className: 'nl-ray-flow', 'aria-hidden': 'true', d: 'M ' + (LP - 10) + ' ' + AY + ' H ' + (LW - LP + 10), fill: 'none', stroke: '#ffffff', strokeWidth: 1.5, strokeOpacity: isDark ? 0.26 : 0.34, strokeDasharray: '6 18', strokeLinecap: 'round', style: { pointerEvents: 'none' } }));
+              if (o.min < 0 && o.max > 0) kids.push(h('circle', { key: 'z-glow', className: 'nl-zero-glint', cx: X(0), cy: AY, r: 9.5, fill: '#f59e0b', fillOpacity: isDark ? 0.26 : 0.2 }));
             } else {
               kids.push(h('line', { key: 'axis', x1: LP - 16, y1: AY, x2: LW - LP + 16, y2: AY, stroke: P.axis, strokeWidth: 3 }));
             }
@@ -2499,7 +2531,7 @@ window.StemLab = window.StemLab || {
             } else {
               [o.min, o.max].forEach(function(v, i) { kids.push(h('line', { key: 'end' + i, x1: X(v), y1: AY - 16, x2: X(v), y2: AY + 16, stroke: P.tick, strokeWidth: 2.5 })); });
             }
-            if (nlRich && o.min < 0 && o.max > 0) kids.push(h('circle', { key: 'z-dot', cx: X(0), cy: AY, r: 4, fill: 'url(#nl-bead-zero-ln)', stroke: P.bg, strokeWidth: 1.3 }));
+            if (nlRich && o.min < 0 && o.max > 0) kids.push(h('circle', { key: 'z-dot', className: 'nl-zero-core', cx: X(0), cy: AY, r: 4, fill: 'url(#nl-bead-zero-ln)', stroke: P.bg, strokeWidth: 1.3 }));
             (o.labels || []).forEach(function(v, i) {
               var lt = o.labelFmt ? o.labelFmt(v) : dispNum(v);
               kids.push(h('text', { key: 'lb' + i, x: X(v), y: AY + 38, textAnchor: 'middle', fill: P.label, fontSize: fsz(o.labelSize || 17), fontWeight: 'bold', fontFamily: 'monospace' },
@@ -2507,9 +2539,11 @@ window.StemLab = window.StemLab || {
             });
             (o.bars || []).forEach(function(b, i) {
               var x1 = X(Math.min(b.from, b.to)), x2 = X(Math.max(b.from, b.to)), by = AY - 30 - i * 18;
+              var bxFrom = X(b.from), bxTo = X(b.to);
               kids.push(h('g', { key: 'bar' + i },
                 h('rect', { x: x1, y: by, width: Math.max(2, x2 - x1), height: 8, rx: 4, fill: b.color || (nlRich ? 'url(#nl-bar-ln)' : P.bar), filter: nlRich ? 'url(#nl-sh-ln)' : undefined }),
-                nlRich && h('rect', { x: x1, y: by, width: Math.max(2, x2 - x1), height: 4, rx: 2, fill: 'url(#nl-sheen-ln)' }),
+                nlRich && h('rect', { className: 'nl-bar-energy', x: x1, y: by, width: Math.max(2, x2 - x1), height: 4, rx: 2, fill: 'url(#nl-sheen-ln)' }),
+                nlRich && Math.abs(bxTo - bxFrom) > 10 && h('path', { className: 'nl-ray-flow', 'aria-hidden': 'true', d: 'M ' + bxFrom + ' ' + (by + 4) + ' L ' + bxTo + ' ' + (by + 4), fill: 'none', stroke: '#ffffff', strokeWidth: 1.8, strokeOpacity: 0.65, strokeDasharray: '6 10', strokeLinecap: 'round', style: { pointerEvents: 'none' } }),
                 b.label && h('text', { x: (x1 + x2) / 2, y: by - 5, textAnchor: 'middle', fill: b.color || P.bar, fontSize: fsz(14), fontWeight: 'bold' }, b.label)));
             });
             (o.hops || []).forEach(function(hp, i) {
@@ -2517,22 +2551,23 @@ window.StemLab = window.StemLab || {
               var col = hp.color || P.hop, dir = hx2 >= hx1 ? 1 : -1;
               var hPath = 'M ' + hx1 + ' ' + (AY - 6) + ' Q ' + ((hx1 + hx2) / 2) + ' ' + (AY - 6 - lift * 2) + ' ' + hx2 + ' ' + (AY - 6);
               kids.push(h('g', { key: 'hop' + i },
-                nlRich && h('path', { d: hPath, fill: 'none', stroke: col, strokeWidth: 7.5, strokeOpacity: isDark ? 0.25 : 0.18, strokeLinecap: 'round' }),
+                nlRich && h('path', { className: 'nl-arc-glow', d: hPath, fill: 'none', stroke: col, strokeWidth: 7.5, strokeOpacity: isDark ? 0.25 : 0.18, strokeLinecap: 'round' }),
                 h('path', { d: hPath, fill: 'none', stroke: col, strokeWidth: 3, strokeLinecap: 'round' }),
+                nlRich && h('path', { className: 'nl-hop-flow', 'aria-hidden': 'true', d: hPath, fill: 'none', stroke: '#ffffff', strokeWidth: 1.8, strokeOpacity: 0.72, strokeDasharray: '5 9', strokeLinecap: 'round', style: { pointerEvents: 'none', animationDelay: (i * 0.25) + 's' } }),
                 h('polygon', { points: (hx2 - dir * 9) + ',' + (AY - 16) + ' ' + hx2 + ',' + (AY - 5) + ' ' + (hx2 - dir * 1) + ',' + (AY - 18), fill: col }),
                 hp.label && h('text', { x: (hx1 + hx2) / 2, y: AY - 10 - lift, textAnchor: 'middle', fill: col, fontSize: fsz(14), fontWeight: 'bold' }, hp.label)));
             });
             (o.points || []).forEach(function(pt, i) {
               var pc = pt.color || P.point;
               kids.push(h('g', { key: 'pt' + i },
-                nlRich && h('circle', { cx: X(pt.v), cy: AY, r: 11, fill: pc, fillOpacity: isDark ? 0.24 : 0.16 }),
+                nlRich && h('circle', { className: 'nl-landing-ripple', cx: X(pt.v), cy: AY, r: 11, fill: pc, fillOpacity: isDark ? 0.24 : 0.16, style: { animationDelay: ((i % 4) * 0.35) + 's' } }),
                 h('circle', { cx: X(pt.v), cy: AY, r: 7, fill: pt.color ? pt.color : (nlRich ? 'url(#nl-bead-pt-ln)' : P.point), stroke: P.bg, strokeWidth: 2, filter: nlRich ? 'url(#nl-sh-ln)' : undefined }),
                 pt.label && h('text', { x: X(pt.v), y: AY - 16 - (pt.level || 0) * 16, textAnchor: 'middle', fill: pc, fontSize: fsz(13), fontWeight: 'bold' }, pt.label)));
             });
             if (o.arrow != null) {
               var axX = X(o.arrow);
               kids.push(h('g', { key: 'arrow' },
-                nlRich && h('line', { x1: axX, y1: 10, x2: axX, y2: AY - 18, stroke: P.arrow, strokeWidth: 7, strokeOpacity: 0.2 }),
+                nlRich && h('line', { className: 'nl-ray-glow', x1: axX, y1: 10, x2: axX, y2: AY - 18, stroke: P.arrow, strokeWidth: 7, strokeOpacity: 0.2 }),
                 h('line', { x1: axX, y1: 10, x2: axX, y2: AY - 18, stroke: P.arrow, strokeWidth: 3 }),
                 h('polygon', { points: (axX - 8) + ',' + (AY - 20) + ' ' + (axX + 8) + ',' + (AY - 20) + ' ' + axX + ',' + (AY - 6), fill: P.arrow })));
             }
@@ -2545,10 +2580,10 @@ window.StemLab = window.StemLab || {
             if (o.marker != null && isFinite(o.marker)) {
               var mx = X(o.marker);
               kids.push(h('g', { key: 'marker' },
-                nlRich && h('line', { x1: mx, y1: 14, x2: mx, y2: AY, stroke: P.student, strokeWidth: 7, strokeOpacity: 0.2 }),
+                nlRich && h('line', { className: 'nl-ray-glow', x1: mx, y1: 14, x2: mx, y2: AY, stroke: P.student, strokeWidth: 7, strokeOpacity: 0.2 }),
                 h('line', { x1: mx, y1: 14, x2: mx, y2: AY, stroke: P.student, strokeWidth: 3 }),
                 h('polygon', { points: (mx - 10) + ',12 ' + (mx + 10) + ',12 ' + mx + ',28', fill: P.student }),
-                nlRich && h('circle', { cx: mx, cy: AY, r: coarsePointer && o.slider ? 18 : 12.5, fill: P.student, fillOpacity: isDark ? 0.26 : 0.18 }),
+                nlRich && h('circle', { className: 'nl-landing-ripple', cx: mx, cy: AY, r: coarsePointer && o.slider ? 18 : 12.5, fill: P.student, fillOpacity: isDark ? 0.26 : 0.18 }),
                 h('circle', { cx: mx, cy: AY, r: coarsePointer && o.slider ? 13 : 8, fill: nlRich ? 'url(#nl-bead-stu-ln)' : P.student, stroke: P.bg, strokeWidth: 2, filter: nlRich ? 'url(#nl-sh-ln)' : undefined })));
             }
             var props = { viewBox: '0 0 ' + LW + ' ' + LH, width: '100%', focusable: 'false', style: { display: 'block', maxWidth: '100%', height: 'auto' } };
@@ -3376,8 +3411,9 @@ window.StemLab = window.StemLab || {
               var hpCol = nlRich ? (isLatest ? P.hop : P.axis) : sk;
               var dArc = 'M '+x1+' 89 Q '+((x1+x2)/2)+' 33 '+x2+' 89';
               return h('g', {key:'hop-'+i,'data-skip-hop':i+1,'data-from':points[i],'data-to':value},
-                nlRich && h('path', {d:dArc,fill:'none',stroke:hpCol,strokeWidth:isLatest?7.5:4.5,strokeOpacity:isLatest?0.24:0.14,strokeLinecap:'round'}),
+                nlRich && h('path', {className:'nl-arc-glow',d:dArc,fill:'none',stroke:hpCol,strokeWidth:isLatest?7.5:4.5,strokeOpacity:isLatest?0.24:0.14,strokeLinecap:'round'}),
                 h('path', {d:dArc,fill:'none',stroke:hpCol,strokeWidth:isLatest?3:1.8,strokeLinecap:'round'}),
+                nlRich && h('path', {className:'nl-hop-flow','aria-hidden':'true',d:dArc,fill:'none',stroke:'#ffffff',strokeWidth:isLatest?1.7:1.1,strokeOpacity:isLatest?0.74:0.42,strokeDasharray:'4 8',strokeLinecap:'round',style:{pointerEvents:'none',animationDelay:((i%6)*0.2)+'s'}}),
                 h('path', {d:'M '+(x2-direction*5)+' 81 L '+x2+' 89 L '+(x2+direction*1)+' 80',fill:'none',stroke:hpCol,strokeWidth:isLatest?2.2:1.6,strokeLinecap:'round',strokeLinejoin:'round'}));
             });
             return h('div', {className:'space-y-4 allo-nl-bg-skipcount','data-skip-activity':true,style:{background:panel,color:ink}},
@@ -3417,7 +3453,7 @@ window.StemLab = window.StemLab || {
                     if (i===0) return h('rect',{key:i,'data-skip-marker':i,x:xAt(value)-4.5,y:89.5,width:9,height:9,rx:nlRich?2:0,fill:nlRich?P.axis:sk,stroke:nlRich?P.bg:undefined,strokeWidth:nlRich?1.4:undefined,filter:nlRich?'url(#nl-sh-sk)':undefined});
                     var isLast = i===shown;
                     return h('g',{key:i},
-                      nlRich && isLast && h('circle',{cx:xAt(value),cy:94,r:9.5,fill:P.hop,fillOpacity:0.24}),
+                      nlRich && isLast && h('circle',{className:'nl-landing-ripple',cx:xAt(value),cy:94,r:9.5,fill:P.hop,fillOpacity:0.24}),
                       h('circle',{'data-skip-marker':i,cx:xAt(value),cy:94,r:isLast?5.2:3.4,fill:nlRich?(isLast?P.hop:P.axis):sk,stroke:nlRich?P.bg:undefined,strokeWidth:nlRich?1.4:undefined}));
                   })),
                 h('p', {className:'text-sm',style:{color:soft}},t('stem.numberline.hop_scale_note','The spacing represents value. Square: start; circles: landings. The start is zero hops.')),
@@ -3741,7 +3777,7 @@ window.StemLab = window.StemLab || {
                 nlRich && h('line', { x1: 0, y1: 66, x2: 0, y2: 85, stroke: PF.marker, strokeWidth: 6.5, strokeOpacity: 0.2 }),
                 h('line', { x1: 0, y1: 30, x2: 0, y2: 44, stroke: PF.marker, strokeWidth: 2.5 }),
                 h('line', { x1: 0, y1: 66, x2: 0, y2: 85, stroke: PF.marker, strokeWidth: 2.5 }),
-                nlRich && h('circle', { cx: 0, cy: 85, r: 13.5, fill: PF.marker, fillOpacity: isDark ? 0.25 : 0.16 }),
+                nlRich && h('circle', { className: 'nl-landing-ripple', cx: 0, cy: 85, r: 13.5, fill: PF.marker, fillOpacity: isDark ? 0.25 : 0.16 }),
                 h('circle', { cx: 0, cy: 85, r: 9, fill: nlRich ? 'url(#nl-bead-fd-fdl)' : PF.marker, stroke: PF.bg, strokeWidth: 2, filter: nlRich ? 'url(#nl-sh-fdl)' : undefined }),
                 h('polygon', { points: '-6,30 6,30 0,40', fill: PF.marker }),
                 h('text', { x: 0, y: 24, textAnchor: 'middle', fill: PF.marker, fontSize: narrow ? 15 : 11, fontWeight: 'bold' }, decimal)
@@ -3787,6 +3823,7 @@ window.StemLab = window.StemLab || {
                 nlStage('fdl', W, svgH, 10),
                 nlRich ? h('rect', { x: PAD, y: 82, width: Math.max(2, W - 2 * PAD), height: 6, rx: 3, fill: 'url(#nl-fdrail-fdl)', opacity: 0.35 }) : h('line', { x1: PAD, y1: 85, x2: W - PAD, y2: 85, stroke: PF.line, strokeWidth: 3, strokeLinecap: 'round' }),
                 nlRich && spanX2 - spanX1 > 1 && h('rect', { x: spanX1, y: 81.5, width: spanX2 - spanX1, height: 7, rx: 3.5, fill: 'url(#nl-fdfill-fdl)', filter: 'url(#nl-sh-fdl)' }),
+                nlRich && spanX2 - spanX1 > 12 && h('path', { className: 'nl-ray-flow', 'aria-hidden': 'true', d: 'M ' + zeroX + ' 85 L ' + mx + ' 85', fill: 'none', stroke: '#ffffff', strokeWidth: 1.8, strokeOpacity: 0.62, strokeDasharray: '6 10', strokeLinecap: 'round', style: { pointerEvents: 'none' } }),
                 ticks,
                 trailEls,
                 markerEl,
@@ -4725,10 +4762,11 @@ window.StemLab = window.StemLab || {
               var zy = Y(0);
               kids.push(h('rect', { key: 'pos-z', x: AX - 14, y: TP - 8, width: 28, height: Math.max(2, zy - (TP - 8)), rx: 6, fill: isDark ? '#fbbf24' : '#f59e0b', fillOpacity: 0.08 }));
               kids.push(h('rect', { key: 'neg-z', x: AX - 14, y: zy, width: 28, height: Math.max(2, (VH - TP + 8) - zy), rx: 6, fill: isDark ? '#38bdf8' : '#0284c7', fillOpacity: 0.09 }));
-              kids.push(h('line', { key: 'zero-ref', x1: 16, y1: zy, x2: VW - 16, y2: zy, stroke: P.mid, strokeWidth: 1.2, strokeDasharray: '4 4', strokeOpacity: 0.55 }));
+              kids.push(h('line', { key: 'zero-ref', className: 'nl-hop-dash', x1: 16, y1: zy, x2: VW - 16, y2: zy, stroke: P.mid, strokeWidth: 1.2, strokeDasharray: '4 4', strokeOpacity: 0.55 }));
             }
             if (nlRich) {
               kids.push(h('rect', { key: 'vrail', x: AX - 3, y: TP - 16, width: 6, height: VH - 2 * TP + 32, rx: 3, fill: 'url(#nl-vrail-vl)', filter: 'url(#nl-sh-vl)' }));
+              if (o.min < 0 && o.max > 0) kids.push(h('circle', { key: 'vz-glow', className: 'nl-zero-glint', cx: AX, cy: Y(0), r: 9.5, fill: '#f59e0b', fillOpacity: isDark ? 0.26 : 0.2 }));
             } else {
               kids.push(h('line', { key: 'axis', x1: AX, y1: TP - 16, x2: AX, y2: VH - TP + 16, stroke: P.axis, strokeWidth: 3 }));
             }
@@ -4741,7 +4779,7 @@ window.StemLab = window.StemLab || {
               var tv = NLE.clean(k * o.step), isLab = !!labelSet[NLE.fmt(tv)], len = isLab ? 14 : 7;
               kids.push(h('line', { key: 'tk' + k, x1: AX - len, y1: Y(tv), x2: AX + len, y2: Y(tv), stroke: tv === 0 ? P.mid : P.tick, strokeWidth: isLab || tv === 0 ? 2.5 : 1.25 }));
             }
-            if (nlRich && o.min < 0 && o.max > 0) kids.push(h('circle', { key: 'vz-dot', cx: AX, cy: Y(0), r: 4.2, fill: 'url(#nl-bead-zero-vl)', stroke: P.bg, strokeWidth: 1.3 }));
+            if (nlRich && o.min < 0 && o.max > 0) kids.push(h('circle', { key: 'vz-dot', className: 'nl-zero-core', cx: AX, cy: Y(0), r: 4.2, fill: 'url(#nl-bead-zero-vl)', stroke: P.bg, strokeWidth: 1.3 }));
             (o.labels || []).forEach(function(v, i) {
               kids.push(h('text', { key: 'lb' + i, x: AX - 22, y: Y(v) + 6, textAnchor: 'end', fill: P.label, fontSize: 16, fontWeight: 'bold', fontFamily: 'monospace' }, dispNum(v)));
             });
@@ -4750,15 +4788,16 @@ window.StemLab = window.StemLab || {
               var y1 = Y(hp.from), y2 = Y(hp.to), lift = 34 + (hp.level || 0) * 18, col = hp.color || P.hop, dir = y2 >= y1 ? 1 : -1;
               var vd = 'M ' + (AX + 6) + ' ' + y1 + ' Q ' + (AX + 6 + lift * 2) + ' ' + ((y1 + y2) / 2) + ' ' + (AX + 6) + ' ' + y2;
               kids.push(h('g', { key: 'hop' + i },
-                nlRich && h('path', { d: vd, fill: 'none', stroke: col, strokeWidth: 7.5, strokeOpacity: isDark ? 0.24 : 0.18, strokeLinecap: 'round' }),
+                nlRich && h('path', { className: 'nl-arc-glow', d: vd, fill: 'none', stroke: col, strokeWidth: 7.5, strokeOpacity: isDark ? 0.24 : 0.18, strokeLinecap: 'round' }),
                 h('path', { d: vd, fill: 'none', stroke: col, strokeWidth: 3, strokeLinecap: 'round' }),
+                nlRich && h('path', { className: 'nl-hop-flow', 'aria-hidden': 'true', d: vd, fill: 'none', stroke: '#ffffff', strokeWidth: 1.8, strokeOpacity: 0.72, strokeDasharray: '5 9', strokeLinecap: 'round', style: { pointerEvents: 'none', animationDelay: (i * 0.25) + 's' } }),
                 h('polygon', { points: (AX + 16) + ',' + (y2 - dir * 9) + ' ' + (AX + 5) + ',' + y2 + ' ' + (AX + 18) + ',' + (y2 - dir * 1), fill: col }),
                 hp.label && h('text', { x: AX + 12 + lift, y: (y1 + y2) / 2 + 5, textAnchor: 'start', fill: col, fontSize: 14, fontWeight: 'bold' }, hp.label)));
             });
             (o.points || []).forEach(function(pt, i) {
               var pc = pt.color || P.point;
               kids.push(h('g', { key: 'pt' + i },
-                nlRich && h('circle', { cx: AX, cy: Y(pt.v), r: 11, fill: pc, fillOpacity: 0.2 }),
+                nlRich && h('circle', { className: 'nl-landing-ripple', cx: AX, cy: Y(pt.v), r: 11, fill: pc, fillOpacity: 0.2, style: { animationDelay: ((i % 4) * 0.35) + 's' } }),
                 h('circle', { cx: AX, cy: Y(pt.v), r: 7, fill: pt.color ? pt.color : (nlRich ? 'url(#nl-bead-pt-vl)' : P.point), stroke: P.bg, strokeWidth: 2, filter: nlRich ? 'url(#nl-sh-vl)' : undefined }),
                 pt.label && h('text', { x: AX + 16, y: Y(pt.v) + 5, textAnchor: 'start', fill: pc, fontSize: 13, fontWeight: 'bold' }, pt.label)));
             });
@@ -4771,10 +4810,10 @@ window.StemLab = window.StemLab || {
             if (o.marker != null && isFinite(o.marker)) {
               var my = Y(o.marker);
               kids.push(h('g', { key: 'marker' },
-                nlRich && h('line', { x1: AX, y1: my, x2: AX + 66, y2: my, stroke: P.student, strokeWidth: 7, strokeOpacity: 0.2 }),
+                nlRich && h('line', { className: 'nl-ray-glow', x1: AX, y1: my, x2: AX + 66, y2: my, stroke: P.student, strokeWidth: 7, strokeOpacity: 0.2 }),
                 h('line', { x1: AX, y1: my, x2: AX + 66, y2: my, stroke: P.student, strokeWidth: 3 }),
                 h('polygon', { points: (AX + 70) + ',' + (my - 10) + ' ' + (AX + 70) + ',' + (my + 10) + ' ' + (AX + 54) + ',' + my, fill: P.student }),
-                nlRich && h('circle', { cx: AX, cy: my, r: coarsePointer && o.slider ? 18 : 12.5, fill: P.student, fillOpacity: isDark ? 0.26 : 0.18 }),
+                nlRich && h('circle', { className: 'nl-landing-ripple', cx: AX, cy: my, r: coarsePointer && o.slider ? 18 : 12.5, fill: P.student, fillOpacity: isDark ? 0.26 : 0.18 }),
                 h('circle', { cx: AX, cy: my, r: coarsePointer && o.slider ? 13 : 8, fill: nlRich ? 'url(#nl-bead-stu-vl)' : P.student, stroke: P.bg, strokeWidth: 2, filter: nlRich ? 'url(#nl-sh-vl)' : undefined })));
             }
             var props = { viewBox: '0 0 ' + VW + ' ' + VH, width: '100%', focusable: 'false', 'data-nl-vertical': 'true', style: { display: 'block', maxWidth: 260, margin: '0 auto', height: 'auto' } };
@@ -5820,8 +5859,9 @@ window.StemLab = window.StemLab || {
                         )
                       ),
                       h('rect', { x: 0, y: 0, width: 640, height: 150, rx: 18, fill: nlRich ? 'url(#nlFocusBg)' : '#020617' }),
-                      nlRich && h('line', { x1: 54, y1: 82, x2: 586, y2: 82, stroke: 'url(#nlFocusTrack)', strokeWidth: 14, strokeOpacity: 0.22, strokeLinecap: 'round' }),
+                      nlRich && h('line', { className: 'nl-arc-glow', x1: 54, y1: 82, x2: 586, y2: 82, stroke: 'url(#nlFocusTrack)', strokeWidth: 14, strokeOpacity: 0.22, strokeLinecap: 'round' }),
                       h('line', { x1: 54, y1: 82, x2: 586, y2: 82, stroke: 'url(#nlFocusTrack)', strokeWidth: 6, strokeLinecap: 'round' }),
+                      nlRich && h('path', { className: 'nl-ray-flow', 'aria-hidden': 'true', d: 'M 60 82 H 580', fill: 'none', stroke: '#ffffff', strokeWidth: 2, strokeOpacity: 0.34, strokeDasharray: '8 20', strokeLinecap: 'round', style: { pointerEvents: 'none' } }),
                       labelValues.map(function(item) {
                         var x = mapX(item.value);
                         return h('g', { key: item.key },
@@ -5830,20 +5870,20 @@ window.StemLab = window.StemLab || {
                         );
                       }),
                       range.min < 0 && range.max > 0 && h('g', { key: 'zero' },
-                        nlRich && h('circle', { cx: mapX(0), cy: 82, r: 16, fill: '#facc15', fillOpacity: 0.22 }),
-                        h('circle', { cx: mapX(0), cy: 82, r: 10, fill: '#facc15', stroke: '#020617', strokeWidth: 2 }),
+                        nlRich && h('circle', { className: 'nl-zero-glint', cx: mapX(0), cy: 82, r: 16, fill: '#facc15', fillOpacity: 0.22 }),
+                        h('circle', { className: nlRich ? 'nl-zero-core' : undefined, cx: mapX(0), cy: 82, r: 10, fill: '#facc15', stroke: '#020617', strokeWidth: 2 }),
                         h('text', { x: mapX(0), y: 48, textAnchor: 'middle', fill: '#fde68a', fontSize: 13, fontWeight: '800' }, t('stem.numberline.zero_word', 'zero'))
                       ),
                       visibleMarkers.map(function(m, idx) {
                         var x = mapX(m.value);
                         return h('g', { key: 'focus-marker-' + idx },
-                          nlRich && h('circle', { cx: x, cy: 82, r: 13, fill: m.color || '#f97316', fillOpacity: 0.24 }),
+                          nlRich && h('circle', { className: 'nl-landing-ripple', cx: x, cy: 82, r: 13, fill: m.color || '#f97316', fillOpacity: 0.24, style: { animationDelay: ((idx % 5) * 0.3) + 's' } }),
                           h('circle', { cx: x, cy: 82, r: 8, fill: m.color || '#f97316', stroke: '#ffffff', strokeWidth: 2 }),
                           h('text', { x: x, y: 50, textAnchor: 'middle', fill: '#fed7aa', fontSize: 12, fontWeight: '800' }, m.label || m.value)
                         );
                       }),
                       h('g', { key: 'active-focus' },
-                        nlRich && h('line', { x1: focusX, y1: 28, x2: focusX, y2: 70, stroke: '#f97316', strokeWidth: 10, strokeOpacity: 0.24, strokeLinecap: 'round' }),
+                        nlRich && h('line', { className: 'nl-ray-glow', x1: focusX, y1: 28, x2: focusX, y2: 70, stroke: '#f97316', strokeWidth: 10, strokeOpacity: 0.24, strokeLinecap: 'round' }),
                         h('line', { x1: focusX, y1: 28, x2: focusX, y2: 70, stroke: '#f97316', strokeWidth: 4, strokeLinecap: 'round' }),
                         h('polygon', { points: (focusX - 10) + ',70 ' + (focusX + 10) + ',70 ' + focusX + ',88', fill: '#f97316' }),
                         h('text', { x: focusX, y: 22, textAnchor: 'middle', fill: '#fed7aa', fontSize: 13, fontWeight: '800' }, activeTab.label)

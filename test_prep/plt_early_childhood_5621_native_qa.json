@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-21T04:37:42.653Z",
+  "generatedAt": "2026-11-21T22:42:10.801Z",
   "packId": "praxis-plt-early-childhood-5621",
   "standard": {
     "label": "AlloFlow PLT Early Childhood 5621 source, structure, feedback, case-practice, linkage, and grade-band QA v2",
@@ -12,11 +12,11 @@
     "findings": [],
     "status": "pass",
     "sourceItems": 200,
-    "distinctSourceContentKernels": 100,
-    "parallelSourceVariants": 100,
+    "distinctSourceContentKernels": 143,
+    "parallelSourceVariants": 57,
     "guidedReasoningItems": 300,
     "independentQuestionTarget": 500,
-    "newIndependentItemsNeeded": 400,
+    "newIndependentItemsNeeded": 357,
     "structuralStatus": "pass",
     "contentDistinctnessStatus": "target-not-met",
     "assistantReviewVerdict": "reviewed-target-not-met",
@@ -29,7 +29,7 @@
       "expectedCode": "5621",
       "expectedPackId": "praxis-plt-early-childhood-5621",
       "sourceItemsReviewed": 200,
-      "allItemsReviewed": 500,
+      "allItemsReviewed": 200,
       "packIdentityMisses": 0,
       "sourceItemIdentityMisses": 0,
       "foreignCodeOccurrences": 0,
@@ -50,7 +50,13 @@
       "foreignBandOccurrences": 0,
       "outOfBandOccurrences": 0,
       "negativeGates": "pass"
-    }
+    },
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
+    "distinctIndependentContentKernels": 143,
+    "parallelIndependentVariants": 57,
+    "assistantAuthoredIndependentBanks": 0,
+    "independentDiagnosticBanks": 2
   },
   "expansion": {
     "independentQuestionTarget": 500,
@@ -58,10 +64,14 @@
     "batchSize": 100,
     "learningActivityBanks": 5,
     "sourceItems": 200,
-    "distinctSourceContentKernels": 100,
-    "parallelSourceVariants": 100,
+    "assistantAuthoredIndependentItems": 0,
+    "independentPracticeItems": 200,
+    "distinctSourceContentKernels": 143,
+    "parallelSourceVariants": 57,
+    "distinctIndependentContentKernels": 143,
+    "parallelIndependentVariants": 57,
     "guidedReasoningItems": 300,
-    "newIndependentItemsNeeded": 400,
+    "newIndependentItemsNeeded": 357,
     "structurallyReviewedItems": 500,
     "reviewer": "OpenAI Codex",
     "examItemReview": "reviewed-target-not-met",
@@ -70,7 +80,7 @@
       "principle-justification",
       "evidence-comparison"
     ],
-    "method": "The assistant reviewed structure and answer derivation across all activities and conducted a cross-domain qualitative sample. Normalized answer-set, rationale, and reference reuse was counted as one source content kernel. The 300 transformations are approved as guided practice only, not as independent exam items.",
+    "method": "Manifest-backed independent additions passed exact artifact review, blueprint, key, distractor, feedback, source, learning-link, originality, balance, and structural validation. Remaining transformations are guided practice only.",
     "findings": []
   },
   "contentBinding": {
@@ -78,8 +88,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "6ba54c4dcf7e61501a229ab921f8c0a5d1a62ef2e860fe83b9b4f096866b1e04",
-    "learningLibrarySha256": "ebe27d95cc0197ec048160100d2c44d425fad4f8a747083c3fcf396edef9d5e5",
+    "sourceItemsSha256": "c34776da65c02af06e040dfa81a7eb328784f45c8974d4fccfa39e99ab73a748",
+    "learningLibrarySha256": "1a56af553a2e382b84873f41880ba6e31fb5308d3028fe0ff5f14cba39013628",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

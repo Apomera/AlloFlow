@@ -29,9 +29,10 @@ export function renderBugInbox(nonce = '') {
     label { display: block; font-weight: 650; margin-bottom: 7px; }
     input, button, select, textarea { font: inherit; }
     input, select, textarea { min-height: 44px; width: 100%; border: 1px solid #64748b; border-radius: 7px; padding: 10px 12px; }
+    input::placeholder, textarea::placeholder { color: #475569; opacity: 1; }
     textarea { min-height: 110px; resize: vertical; }
-    .check { display: flex; gap: 9px; align-items: center; font-weight: 500; }
-    .check input { width: 18px; min-height: 18px; flex-shrink: 0; }
+    .check { display: flex; gap: 9px; align-items: center; font-weight: 500; min-height: 44px; padding: 6px 0; }
+    .check input { width: 18px; height: 18px; min-height: 18px; padding: 0; flex-shrink: 0; }
     .filters { display: grid; gap: 14px; margin-top: 16px; }
     .group { padding: 8px; border: 1px solid #cbd5e1; border-radius: 9px; }
     .group summary { padding: 8px; cursor: pointer; overflow-wrap: anywhere; line-height: 1.5; }
@@ -88,7 +89,7 @@ export function renderBugInbox(nonce = '') {
     </form>
   </section>
   <section id="inbox" aria-label="Submitted bug reports" hidden>
-    <div class="toolbar"><p id="report-count"></p><button id="refresh" type="button">Refresh reports</button></div>
+    <div class="toolbar"><p id="report-count" role="status" aria-live="polite" aria-atomic="true"></p><button id="refresh" type="button">Refresh reports</button></div>
     <label class="check"><input id="auto-refresh" type="checkbox">Refresh every 30 seconds while this page is visible</label>
     <p id="new-reports" role="status" aria-live="polite"></p>
     <div class="inbox-grid">
@@ -251,23 +252,31 @@ export function renderBugInbox(nonce = '') {
     byId('save-review').textContent = pendingSaves.has(id) ? 'Saving review…' : 'Save review';
     byId('refresh-review').disabled = pendingReads.has(id);
     const message = reviewMessages.get(id);
-    byId('review-message').textContent = message ? message.text : pendingReads.has(id) ? 'Loading review history…' : '';
-    byId('review-message').dataset.error = String(Boolean(message && message.error));
-    byId('review-history').replaceChildren();
-    review.events.slice().reverse().forEach(event => {
-      const row = document.createElement('li');
-      const meta = document.createElement('div');
-      meta.className = 'report-meta';
-      meta.textContent = dateText(event.created_at) + (event.status ? ' · Status: ' + event.status : '');
-      row.append(meta);
-      if (event.note) {
-        const note = document.createElement('p');
-        note.className = 'note-text';
-        note.textContent = event.note;
-        row.append(note);
-      }
-      byId('review-history').append(row);
-    });
+    const nextMsgText = message ? message.text : pendingReads.has(id) ? 'Loading review history…' : '';
+    const nextMsgError = String(Boolean(message && message.error));
+    const msgEl = byId('review-message');
+    if (msgEl.textContent !== nextMsgText) msgEl.textContent = nextMsgText;
+    if (msgEl.dataset.error !== nextMsgError) msgEl.dataset.error = nextMsgError;
+    const historySignature = id + '|' + review.events.map(e => (e.id || '') + ':' + (e.created_at || '') + ':' + (e.status || '') + ':' + (e.note || '').length).join(',');
+    const historyEl = byId('review-history');
+    if (historyEl.dataset.signature !== historySignature) {
+      historyEl.dataset.signature = historySignature;
+      historyEl.replaceChildren();
+      review.events.slice().reverse().forEach(event => {
+        const row = document.createElement('li');
+        const meta = document.createElement('div');
+        meta.className = 'report-meta';
+        meta.textContent = dateText(event.created_at) + (event.status ? ' · Status: ' + event.status : '');
+        row.append(meta);
+        if (event.note) {
+          const note = document.createElement('p');
+          note.className = 'note-text';
+          note.textContent = event.note;
+          row.append(note);
+        }
+        historyEl.append(row);
+      });
+    }
     byId('review-empty').hidden = review.events.length > 0;
     byId('review-empty').textContent = review.loaded ? 'No saved review events yet.' : 'Review history has not loaded yet.';
   }
@@ -588,12 +597,22 @@ export function renderBugInbox(nonce = '') {
     }
   }
 
+  byId('access-token').addEventListener('input', () => {
+    byId('access-token').removeAttribute('aria-invalid');
+  });
   byId('login-form').addEventListener('submit', event => {
     event.preventDefault();
     if (busy) return;
-    token = byId('access-token').value.trim();
-    byId('access-token').value = '';
-    if (!token) { status('Enter your inbox access token.', true); return; }
+    const tokenInput = byId('access-token');
+    token = tokenInput.value.trim();
+    tokenInput.value = '';
+    if (!token) {
+      tokenInput.setAttribute('aria-invalid', 'true');
+      status('Enter your inbox access token.', true);
+      tokenInput.focus();
+      return;
+    }
+    tokenInput.removeAttribute('aria-invalid');
     byId('sign-out').hidden = false;
     void loadReports();
   });

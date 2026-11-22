@@ -273,7 +273,7 @@
           "choices": [
             "Oral-language evidence can replace direct assessment of print skills such as decoding, spelling, and word recognition.",
             "Conversation samples establish a learner’s intelligence level, which then sets expectations for reading instruction.",
-            "Oral-language evidence helps explain comprehension and expression and guides language-rich literacy teaching.",
+            "Oral-language evidence helps explain comprehension and expression and guides language-rich reading teaching.",
             "Oral-language assessment matters mainly before kindergarten and adds little once formal reading instruction begins."
           ],
           "answerIndex": 2,
@@ -431,12 +431,12 @@
           "id": "tr5205-ch-02-check-01",
           "prompt": "While planning explicit emergent-literacy instruction, how do phonological awareness and phonemic awareness differ?",
           "choices": [
+            "Phonemic awareness concerns the meanings of words, while phonological awareness concerns how sentences are built.",
             "Phonological awareness spans spoken units such as syllables and rimes; phonemic awareness targets individual phonemes.",
             "Both phonological and phonemic awareness require printed letters, so neither can be practiced through oral activities.",
-            "Phonics is the broader oral category, and phonological awareness is one narrower part of letter-sound instruction.",
-            "Phonemic awareness concerns the meanings of words, while phonological awareness concerns how sentences are built."
+            "Phonics is the broader oral category, and phonological awareness is one narrower part of letter-sound instruction."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Phonological awareness includes words, syllables, onset-rime, and phonemes; phonemic awareness is the most specific level and can be practiced orally before or alongside graphemes. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -451,12 +451,12 @@
           "id": "tr5205-ch-02-check-02",
           "prompt": "While planning explicit emergent-literacy instruction, which task measures phoneme segmentation?",
           "choices": [
+            "Identifying the meaning of a morpheme within a word, such as explaining that un- in unhappy means not.",
             "Combining a sequence of spoken phonemes into a whole word, such as hearing /s/ /u/ /n/ and saying sun.",
             "Separating a spoken word into each of its individual phonemes, such as saying /m/ /a/ /p/ for map.",
-            "Naming each printed letter in a written word in order, such as reading the letters m, a, p aloud from a card.",
-            "Identifying the meaning of a morpheme within a word, such as explaining that un- in unhappy means not."
+            "Naming each printed letter in a written word in order, such as reading the letters m, a, p aloud from a card."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Segmentation requires identifying the sequence of phonemes in a spoken word; the number of sounds need not equal the number of printed letters. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -471,12 +471,12 @@
           "id": "tr5205-ch-02-check-03",
           "prompt": "While planning explicit emergent-literacy instruction, which task measures phoneme manipulation?",
           "choices": [
+            "Sorting picture cards into vocabulary categories such as animals, foods, and tools based on their meanings.",
             "Print-directionality knowledge, such as tracking text from left to right and returning to the next line correctly.",
             "Counting the syllables in multisyllable spoken words by clapping each beat without isolating individual sounds.",
-            "Phoneme substitution, such as changing the /k/ in cat to /h/ to say hat, which is a form of phoneme manipulation.",
-            "Sorting picture cards into vocabulary categories such as animals, foods, and tools based on their meanings."
+            "Sound substitution, such as changing /k/ in cat to /h/ to say hat, requiring a learner to alter an oral word."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Deleting, adding, or substituting phonemes requires deliberate manipulation of the sound sequence and is more complex than recognition alone. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -491,12 +491,12 @@
           "id": "tr5205-ch-02-check-04",
           "prompt": "While planning explicit emergent-literacy instruction, what is the alphabetic principle?",
           "choices": [
+            "Letters and letter patterns represent the phonemes of spoken language in systematic, learnable ways.",
             "Every letter in English represents exactly one sound, so each word can be decoded letter by letter in sequence.",
             "Word meaning can be derived from the visual shape of the letters, so readers rely mainly on word outlines.",
-            "Print is learned as whole visual pictures, so each new word is memorized separately from letter-sound knowledge.",
-            "Letters and letter patterns represent the phonemes of spoken language in systematic, learnable ways."
+            "Print is learned as whole visual pictures, so each new word is memorized separately from letter-sound knowledge."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "The alphabetic principle links phonology and orthography; English correspondences vary, so teaching progresses from common transparent patterns to more complex ones. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -511,12 +511,12 @@
           "id": "tr5205-ch-02-check-05",
           "prompt": "While planning explicit emergent-literacy instruction, which activity addresses concepts of print?",
           "choices": [
-            "Understanding how print works in books, such as directionality, word boundaries, and the parts of a book.",
+            "Interpreting norm-referenced scores to compare a learner’s reading performance with a national reference group.",
+            "Understanding how written text works in books, including directionality, word boundaries, and book parts.",
             "Analyzing advanced morphological structure, such as identifying Greek and Latin roots in academic vocabulary.",
-            "Measuring silent-reading rate on grade-level passages to estimate how quickly students process connected text.",
-            "Interpreting norm-referenced scores to compare a learner’s reading performance with a national reference group."
+            "Measuring silent-reading rate on grade-level passages to estimate how quickly students process connected text."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Concepts of print include directionality, word boundaries, book handling, and distinctions among letters, words, and sentences that support access to alphabetic instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -631,12 +631,12 @@
           "id": "tr5205-ch-03-check-01",
           "prompt": "During systematic K–6 phonics instruction, what is the best initial approach to teaching a new phonics pattern?",
           "choices": [
-            "Teach the sound–spelling link explicitly, guide blending and spelling, then apply it in words and connected text.",
-            "Ask students to infer the new pattern from an unrelated story during independent reading without teacher guidance.",
             "Have students memorize written definitions of the phonics rule and recite them before any word-reading practice.",
-            "Introduce several conflicting spelling exceptions first so students see the full complexity before the main pattern."
+            "Introduce several conflicting spelling exceptions first so students see the full complexity before the main pattern.",
+            "Teach the sound–spelling link explicitly, guide blending and spelling, then apply it in words and connected text.",
+            "Ask students to infer the new pattern from an unrelated story during independent reading without teacher guidance."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Explicit explanation, cumulative practice, corrective feedback, spelling, and connected-text application help students establish and generalize a new correspondence. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -651,12 +651,12 @@
           "id": "tr5205-ch-03-check-02",
           "prompt": "During systematic K–6 phonics instruction, why use decodable text during early phonics application?",
           "choices": [
-            "It keeps beginning readers in one controlled text type for the rest of the elementary grades to build confidence.",
-            "It offers many chances to apply recently taught decoding patterns accurately while reading connected text.",
             "It measures listening comprehension without print so teachers can separate language skills from decoding.",
-            "It replaces read-alouds and knowledge-building discussions because controlled text covers those goals as well."
+            "It replaces read-alouds and knowledge-building discussions because controlled text covers those goals as well.",
+            "It keeps beginning readers in one controlled text type for the rest of the elementary grades to build confidence.",
+            "It offers many chances to apply recently taught decoding patterns accurately while reading connected text."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Aligned decodable text supports transfer and accuracy while a complete literacy program also includes rich oral language, diverse texts, vocabulary, knowledge, and writing. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -671,12 +671,12 @@
           "id": "tr5205-ch-03-check-03",
           "prompt": "During systematic K–6 phonics instruction, how should irregular high-frequency words be taught?",
           "choices": [
-            "Treat every letter in an irregular word as arbitrary so students learn the full word as one unanalyzed unit.",
-            "Require visual memorization from flash cards without any analysis of the sounds represented by the letters.",
             "Map the regular sound-letter parts, flag the unexpected part, and connect pronunciation with meaning.",
-            "Avoid teaching the word until students have learned every exception pattern that could appear in later texts."
+            "Avoid teaching the word until students have learned every exception pattern that could appear in later texts.",
+            "Treat every letter in an irregular word as arbitrary so students learn the full word as one unanalyzed unit.",
+            "Require visual memorization from flash cards without any analysis of the sounds represented by the letters."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Analyzing what is regular and what is unusual supports orthographic learning more precisely than presenting the entire word as a visual shape. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -691,12 +691,12 @@
           "id": "tr5205-ch-03-check-04",
           "prompt": "During systematic K–6 phonics instruction, what supports accurate multisyllabic word reading?",
           "choices": [
-            "Counting the letters in each long word and choosing the shortest familiar pronunciation that seems to fit.",
-            "Using sentence context to replace word analysis so students can skip long words and keep reading smoothly.",
             "Memorizing one fixed pronunciation for every prefix and suffix and applying it the same way in each word.",
-            "Cumulative work on syllable patterns, vowel teams, morphology, flexible division, and meaning checks."
+            "Cumulative work on syllable patterns, vowel teams, morphology, flexible division, and meaning checks.",
+            "Counting the letters in each long word and choosing the shortest familiar pronunciation that seems to fit.",
+            "Using sentence context to replace word analysis so students can skip long words and keep reading smoothly."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Multisyllabic decoding integrates orthographic chunks, syllable and morpheme knowledge, pronunciation flexibility, vocabulary, and confirmation in context. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -711,12 +711,12 @@
           "id": "tr5205-ch-03-check-05",
           "prompt": "During systematic K–6 phonics instruction, why teach morphology?",
           "choices": [
-            "Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related word families.",
-            "Morphology is useful mainly for labeling grammar terms during isolated parts-of-speech worksheets.",
             "Morphology instruction removes the need for phonics because word parts cover all decoding demands.",
-            "Morphology applies only to short Anglo-Saxon base words rather than to academic Latin and Greek roots."
+            "Morphology applies only to short Anglo-Saxon base words rather than to academic Latin and Greek roots.",
+            "Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related word families.",
+            "Morphology is useful mainly for labeling grammar terms during isolated parts-of-speech worksheets."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Morphology links word form and meaning and becomes increasingly valuable in academic language while working alongside phonological, orthographic, and contextual knowledge. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -831,12 +831,12 @@
           "id": "tr5205-ch-04-check-01",
           "prompt": "When an elementary teacher analyzes decoding evidence, what does a phoneme-analysis error reveal?",
           "choices": [
-            "Explicit, supported phoneme segmentation linked to letters once the oral task is understood.",
             "Instruction in advanced figurative language such as metaphor and idiom within grade-level poetry.",
             "Longer silent-reading sessions designed to build stamina with self-selected chapter books each day.",
-            "Practice locating entries with dictionary guide words to strengthen alphabetical order and reference skills."
+            "Practice locating entries with dictionary guide words to strengthen alphabetical order and reference skills.",
+            "Explicit, supported speech-sound segmentation linked to letters once the oral task is understood."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "The contrast between blending and segmentation identifies a specific sound-analysis need that can be taught directly and connected to encoding and decoding. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -851,12 +851,12 @@
           "id": "tr5205-ch-04-check-02",
           "prompt": "When an elementary teacher analyzes decoding evidence, why use unfamiliar or pseudoword decoding tasks?",
           "choices": [
-            "Background knowledge of the story topic and the student’s ability to predict events from earlier pages.",
             "Applying sound-letter and word-analysis knowledge without relying on stored familiarity with real words.",
             "Writing organization, including paragraph structure, transitions, and the sequencing of ideas in essays.",
-            "Listening comprehension of short passages read aloud by the examiner without any printed text present."
+            "Listening comprehension of short passages read aloud by the examiner without any printed text present.",
+            "Background knowledge of the story topic and the student’s ability to predict events from earlier pages."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Novel-word tasks can sample generative decoding, but interpretation still requires appropriate language, pattern legality, instruction, and comparison with real-word and spelling evidence. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -871,12 +871,12 @@
           "id": "tr5205-ch-04-check-03",
           "prompt": "When an elementary teacher analyzes decoding evidence, what can an informal reading inventory contribute?",
           "choices": [
-            "A single standardized diagnosis that determines the student’s reading disability status without other data.",
             "Proof of an exact independent reading level that remains accurate across texts, genres, and topics.",
-            "Descriptive task evidence about accuracy, fluency, and comprehension, combined with more reliable measures.",
-            "A replacement for word-level analysis, since passage reading already shows each decoding skill needed."
+            "Descriptive task data about accuracy, fluency, and comprehension, paired with more reliable measures.",
+            "A replacement for word-level analysis, since passage reading already shows each decoding skill needed.",
+            "A single standardized diagnosis that determines the student’s reading disability status without other data."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Passage inventories reveal strategies and errors in context but their level labels and comprehension scores can be unstable; decisions need converging evidence. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -891,12 +891,12 @@
           "id": "tr5205-ch-04-check-04",
           "prompt": "When an elementary teacher analyzes decoding evidence, how should spelling errors be analyzed?",
           "choices": [
-            "Treat the misspelled words as random visual memory failures that do not reveal any spelling pattern.",
             "Assess reading comprehension instead of spelling, since comprehension better explains writing difficulties.",
             "Correct each misspelled word on the paper without identifying which spelling patterns caused the errors.",
-            "Examine sound representation, conventions, inflected endings, and doubling patterns, not just error counts."
+            "Examine sound representation, conventions, inflected endings, and doubling patterns, not just error counts.",
+            "Treat the misspelled words as random visual memory failures that do not reveal any spelling pattern."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Feature analysis shows what the learner represents and which phonological, orthographic, syllabic, or morphological patterns need explicit instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -911,12 +911,12 @@
           "id": "tr5205-ch-04-check-05",
           "prompt": "When an elementary teacher analyzes decoding evidence, how should an oral-reading-fluency score be interpreted?",
           "choices": [
-            "Rate is one indicator; accuracy, prosody, and comprehension show fluent reading is not yet secure.",
             "The student is fully fluent because the words-correct-per-minute score meets the grade-level benchmark.",
             "The passage was understood because the student missed very few words during the timed oral reading.",
-            "Prosody is unrelated to syntax or meaning, so phrasing problems can be set aside when interpreting scores."
+            "Prosody is unrelated to syntax or meaning, so phrasing problems can be set aside when interpreting scores.",
+            "Rate is one indicator; accuracy, prosody, and comprehension show fluent reading is not yet secure."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "A fluency decision integrates rate with accuracy, phrasing, expression, difficulty, and understanding rather than using a speed cutoff in isolation. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -1231,12 +1231,12 @@
           "id": "tr5205-ch-06-check-01",
           "prompt": "When using fluency evidence to guide instruction, what makes progress-monitoring scores comparable over time?",
           "choices": [
+            "Comparability matters mainly for norm-referenced tests and is less important for curriculum-based probes.",
             "Measures should sample the same outcome with equivalent forms and consistent administration and scoring.",
             "Each weekly probe should assess a different construct so the team builds a broad profile of the student.",
-            "The highest weekly score should replace the overall trend because it shows what the student can achieve.",
-            "Comparability matters mainly for norm-referenced tests and is less important for curriculum-based probes."
+            "The highest weekly score should replace the overall trend because it shows what the student can achieve."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Growth interpretation depends on technical adequacy and comparable measurement; uncontrolled changes can create score differences unrelated to learning. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -1251,12 +1251,12 @@
           "id": "tr5205-ch-06-check-02",
           "prompt": "When using fluency evidence to guide instruction, how should a baseline be established?",
           "choices": [
+            "Wait until the intervention ends to define the baseline so it reflects the student’s final performance.",
             "Select the lowest available score as the baseline so later results show the largest possible growth.",
             "Use several valid observations or the measure’s baseline procedure to limit one atypical score.",
-            "Use a score from an unrelated skill area because it is already available in the student’s records.",
-            "Wait until the intervention ends to define the baseline so it reflects the student’s final performance."
+            "Use a score from an unrelated skill area because it is already available in the student’s records."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "A representative baseline anchors level and growth decisions; multiple observations and standardized procedures reduce random error and reactivity. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -1271,12 +1271,12 @@
           "id": "tr5205-ch-06-check-03",
           "prompt": "When using fluency evidence to guide instruction, what makes a progress goal defensible?",
           "choices": [
+            "Base the goal mainly on the student’s stated preference for how much progress feels comfortable.",
             "Use the same numerical goal for every grade level so goals are easy to compare across the school.",
             "Choose the goal after reviewing the final data so it matches the growth the student actually made.",
-            "Set a time-bound goal from baseline, outcome expectations, measure guidance, evidence, and team judgment.",
-            "Base the goal mainly on the student’s stated preference for how much progress feels comfortable."
+            "Set a time-bound goal from baseline data, outcome expectations, measure norms, and team judgment."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Goals should be ambitious and attainable enough to guide action, with their rationale, timeline, measure, and decision rules explicit. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -1291,12 +1291,12 @@
           "id": "tr5205-ch-06-check-04",
           "prompt": "When using fluency evidence to guide instruction, how should level and slope be interpreted together?",
           "choices": [
+            "Weigh current level, growth rate, stability, time left, goal fit, fidelity, and diagnostic data.",
             "Disregard the trend line because the most recent score falls below the goal established for the student.",
             "Declare that the intervention has succeeded after a single score increase between consecutive probes.",
-            "Change the outcome measure immediately whenever the level and slope appear to tell different stories.",
-            "Current level, rate and stability of growth, remaining time, goal relevance, fidelity, and diagnostic data together."
+            "Change the outcome measure immediately whenever the level and slope appear to tell different stories."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Level describes current performance and slope describes change; a sound decision uses the full series and preestablished rules rather than one point. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -1311,12 +1311,12 @@
           "id": "tr5205-ch-06-check-05",
           "prompt": "When using fluency evidence to guide instruction, why check intervention fidelity before interpreting nonresponse?",
           "choices": [
+            "Leave attendance records out of the data discussion because absences are outside instructional control.",
             "Determine whether the planned content, dosage, grouping, and procedures were delivered adequately.",
             "Conclude that the student cannot learn the target skill because the planned intervention did not work.",
-            "Intensify the current program without reviewing what was actually delivered during the intervention.",
-            "Leave attendance records out of the data discussion because absences are outside instructional control."
+            "Intensify the current program without reviewing what was actually delivered during the intervention."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Response data cannot be attributed confidently to an intervention that was not implemented as planned; fidelity review precedes causal claims and guides next steps. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -1431,12 +1431,12 @@
           "id": "tr5205-ch-07-check-01",
           "prompt": "In a differentiated elementary reading block, what characterizes explicit literacy instruction?",
           "choices": [
-            "State the goal, model the thinking, guide practice with feedback, and move toward independent use.",
-            "Provide the answer before each student attempt throughout the year so learners never practice an error.",
             "Rely on open discovery alone for students with persistent difficulty so they construct strategies themselves.",
-            "Drop cumulative review once a skill has been introduced so lessons can cover more new content each week."
+            "Drop cumulative review once a skill has been introduced so lessons can cover more new content each week.",
+            "State the goal, model the thinking, guide practice with feedback, and move toward independent use.",
+            "Provide the answer before each student attempt throughout the year so learners never practice an error."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Explicit instruction makes the target and decision process visible, provides many successful responses and feedback, and fades support according to performance. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -1451,12 +1451,12 @@
           "id": "tr5205-ch-07-check-02",
           "prompt": "In a differentiated elementary reading block, what makes grouping flexible?",
           "choices": [
-            "Group students permanently using a single composite reading score gathered at the start of the school year.",
-            "Group for a specific, assessed purpose and change membership as skills, texts, and instructional needs shift.",
             "Use whole-class instruction for every lesson regardless of assessment evidence about differing student needs.",
-            "Reassign groups randomly each day without reference to data so students work with many different peers."
+            "Reassign groups randomly each day without reference to data so students work with many different peers.",
+            "Group students permanently using a single composite reading score gathered at the start of the school year.",
+            "Group for a specific, assessed purpose and change membership as skills, texts, and instructional needs shift."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Flexible grouping is temporary and purpose driven; it preserves access to rich instruction while allowing targeted teaching and response-based regrouping. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -1471,12 +1471,12 @@
           "id": "tr5205-ch-07-check-03",
           "prompt": "In a differentiated elementary reading block, how should differentiation preserve rigor?",
           "choices": [
-            "Replace the grade-level task with unrelated easier worksheets that students can complete independently.",
-            "Remove complex ideas from the unit so students who need support can finish assignments more quickly.",
             "Keep the core thinking goal while adding vocabulary support, chunking, accessible formats, and guidance.",
-            "Grade students who receive supports on a different goal that is not shared with them in advance."
+            "Grade students who receive supports on a different goal that is not shared with them in advance.",
+            "Replace the grade-level task with unrelated easier worksheets that students can complete independently.",
+            "Remove complex ideas from the unit so students who need support can finish assignments more quickly."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Differentiation changes access, scaffolding, intensity, materials, grouping, or response options while keeping the intended construct and meaningful learning visible. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -1491,12 +1491,12 @@
           "id": "tr5205-ch-07-check-04",
           "prompt": "In a differentiated elementary reading block, which support is appropriate for multilingual learners?",
           "choices": [
-            "Prohibit use of the home language during literacy lessons so students practice English more consistently.",
-            "Wait for conversational English fluency before beginning grade-level literacy and content instruction.",
             "Treat each English language error in reading or writing as a likely sign of an underlying disability.",
-            "Build on home-language knowledge, teach English forms explicitly, and pair content with language goals."
+            "Build on home-language knowledge, teach English forms explicitly, and pair content with language goals.",
+            "Prohibit use of the home language during literacy lessons so students practice English more consistently.",
+            "Wait for conversational English fluency before beginning grade-level literacy and content instruction."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Responsive instruction treats multilingualism as an asset and provides explicit access to the language of disciplinary texts without lowering intellectual demand. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -1511,12 +1511,12 @@
           "id": "tr5205-ch-07-check-05",
           "prompt": "In a differentiated elementary reading block, how can an intervention be intensified responsibly?",
           "choices": [
-            "Use diagnostic data to adjust explicitness, dosage, group size, or focus, then monitor the change.",
-            "Change several program elements at once without documenting which adjustments were made or when.",
             "Repeat the same intervention plan indefinitely because consistency matters more than student response.",
-            "Attribute limited progress to low motivation and keep the plan unchanged without gathering evidence."
+            "Attribute limited progress to low motivation and keep the plan unchanged without gathering evidence.",
+            "Use diagnostic data to adjust explicitness, dosage, group size, or focus, then monitor the change.",
+            "Change several program elements at once without documenting which adjustments were made or when."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Data-based intensification begins with fidelity and diagnostic review, makes a reasoned adaptation, documents it, and evaluates whether the change improves growth. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -1631,12 +1631,12 @@
           "id": "tr5205-ch-08-check-01",
           "prompt": "While teaching comprehension with a grade-level text, what supports literacy engagement?",
           "choices": [
-            "Pair achievable challenge, real choice, responsive texts, success supports, and feedback building agency.",
             "Offer prizes for the number of pages read so students accumulate reading time during independent periods.",
             "Lower every reading task below students’ current skill level so they experience frequent quick success.",
-            "Post public charts comparing each student’s reading speed with faster classmates to encourage effort."
+            "Post public charts comparing each student’s reading speed with faster classmates to encourage effort.",
+            "Pair achievable challenge, real choice, responsive texts, scaffolds, and feedback that builds agency."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Engagement grows through competence, relevance, identity, autonomy, belonging, and purpose; it complements rather than replaces high-quality skill and knowledge instruction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -1651,12 +1651,12 @@
           "id": "tr5205-ch-08-check-02",
           "prompt": "While teaching comprehension with a grade-level text, what makes a literacy-rich environment instructionally useful?",
           "choices": [
-            "Count decorations, posters, and displayed charts as evidence that students are growing as readers and writers.",
             "Make materials accessible, diverse, linked to instruction, inviting for real reading, and actively used.",
             "Display only teacher-created work on classroom walls so examples show students polished models of writing.",
-            "Organize classroom books by perceived student ability and restrict access to the shelves for each group."
+            "Organize classroom books by perceived student ability and restrict access to the shelves for each group.",
+            "Count decorations, posters, and displayed charts as evidence that students are growing as readers and writers."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "The environment matters when students actively use varied print, digital tools, language resources, and their own work for meaningful literacy purposes. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -1671,12 +1671,12 @@
           "id": "tr5205-ch-08-check-03",
           "prompt": "While teaching comprehension with a grade-level text, how should accessibility be incorporated into literacy instruction?",
           "choices": [
-            "Withhold the access tool until the student decodes grade-level text proficiently without any support.",
             "Use text-to-speech as evidence that decoding instruction is no longer needed for the student this year.",
-            "Provide the access tool for content goals while continuing direct teaching and measurement of decoding.",
-            "Score supported listening tasks as unaided decoding measures so progress reports stay consistent over time."
+            "Provide the access tool for content goals while continuing direct instruction and measurement of decoding.",
+            "Score supported listening tasks as unaided decoding measures so progress reports stay consistent over time.",
+            "Withhold the access tool until the student decodes grade-level text proficiently without any support."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Access and remediation can occur together when the team defines each task's construct, documents supports, and avoids confusing assisted performance with the skill being directly measured. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -1691,12 +1691,12 @@
           "id": "tr5205-ch-08-check-04",
           "prompt": "While teaching comprehension with a grade-level text, what is an asset-based approach to multilingual literacy?",
           "choices": [
-            "Set aside English instructional needs so learners can focus mainly on developing their home language first.",
             "Require students to think and plan in English during literacy tasks so translation habits fade quickly.",
             "Assume that literacy skills transfer identically across all languages without examining specific differences.",
-            "Identify linguistic, cultural, and knowledge resources that support English growth while teaching new forms."
+            "Identify linguistic, cultural, and knowledge resources that support English growth while modeling new forms.",
+            "Set aside English instructional needs so learners can focus mainly on developing their home language first."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Asset-based practice recognizes transferable knowledge and identity while examining language-specific differences, opportunity, explicit instruction, and individual performance. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -1711,12 +1711,12 @@
           "id": "tr5205-ch-08-check-05",
           "prompt": "While teaching comprehension with a grade-level text, how can cross-linguistic analysis support instruction?",
           "choices": [
-            "Determine whether the pattern reflects predictable transfer, teach the English contrast, and monitor growth.",
             "Count the cross-language spelling pattern as evidence of a disability that should be referred for evaluation.",
             "Disregard the pattern because cross-language influences fade over time without any targeted instruction.",
-            "Discourage the student from using both languages so the cross-language influence stops appearing in writing."
+            "Discourage the student from using both languages so the cross-language influence stops appearing in writing.",
+            "Determine whether the pattern reflects predictable transfer, teach the English contrast, and monitor growth."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Cross-linguistic analysis helps distinguish developing language from persistent difficulty and turns contrastive patterns into explicit instructional opportunities. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -1831,7 +1831,7 @@
           "id": "tr5205-ch-09-check-01",
           "prompt": "In a K–6 literary or informational text lesson, after learning a new text-structure routine, what action best helps a classroom teacher determine whether it improves comprehension?",
           "choices": [
-            "Plan an aligned lesson, model and guide the routine, collect student work, reflect on access, and adapt the next lesson.",
+            "Plan aligned tasks, model and guide the routine, review student work, note access, and adjust steps.",
             "Use the routine unchanged for the full year before examining any student work or discussion evidence.",
             "Ask another employee to certify the routine as effective without observing students use it in class.",
             "Replace the current curriculum promptly because the routine seemed engaging during the training session."
@@ -1873,7 +1873,7 @@
           "choices": [
             "Use student enjoyment as the sole measure because motivation shows that the target skill was learned.",
             "Count how many screens students opened without examining the credibility decisions they made.",
-            "Compare aligned student explanations and source choices over time, note access and misconceptions, and plan reteaching.",
+            "Track student explanations and credibility choices over time, note access gaps, and plan reteaching.",
             "Wait for an annual total score even though current student work can guide the next instructional step."
           ],
           "answerIndex": 2,
@@ -2031,12 +2031,12 @@
           "id": "tr5205-ch-10-check-01",
           "prompt": "When adapting comprehension instruction from evidence, a classroom teacher is piloting a new comprehension unit. What evidence can the teacher appropriately gather to inform future classroom use?",
           "choices": [
-            "Document implemented lessons, examine student work and growth by group, note access, gather input, and share limits.",
+            "Judge the unit materials from their cover design without examining instruction or student evidence.",
+            "Log implemented lessons, review group growth, note access barriers, collect input, and share limits.",
             "Decide independently that every classroom must adopt the unit after one successful lesson in the pilot.",
-            "Report only the highest student score and omit implementation differences or student access barriers.",
-            "Judge the unit materials from their cover design without examining instruction or student evidence."
+            "Report only the highest student score and omit implementation differences or student access barriers."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "A classroom teacher can contribute implementation details, student evidence, access observations, and stakeholder experience while clearly stating limitations. The teacher informs an established review process but does not claim unilateral authority to adopt or discontinue a schoolwide program. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -2051,12 +2051,12 @@
           "id": "tr5205-ch-10-check-02",
           "prompt": "When adapting comprehension instruction from evidence, before using an optional reading resource, how should a classroom teacher evaluate its suitability?",
           "choices": [
+            "Use the resource because another grade mentioned it, even if it conflicts with approved curriculum.",
             "Accept the vendor’s description as sufficient evidence and begin replacing required instruction right away.",
             "Examine independent evidence, the literacy target, learner and text fit, accessibility, demands, and curriculum alignment.",
-            "Choose the resource with the most colorful materials without checking which literacy skill it targets.",
-            "Use the resource because another grade mentioned it, even if it conflicts with approved curriculum."
+            "Choose the resource with the most colorful materials without checking which literacy skill it targets."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "The classroom teacher evaluates whether a resource addresses the intended skill, fits current learners and instruction, is accessible, and complies with adopted procedures. A vendor claim or popularity is not a substitute for independent evidence and curricular alignment. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -2071,12 +2071,12 @@
           "id": "tr5205-ch-10-check-03",
           "prompt": "When adapting comprehension instruction from evidence, a classroom teacher wants to share a student reading profile with staff members. What should the teacher do first?",
           "choices": [
+            "Replace the student name with initials and send all details through any convenient personal account.",
             "Send the complete profile to every employee because all school staff need access to each education record.",
             "Post the profile in a shared public folder so future collaborators can find it without requesting access.",
-            "Verify educational interest and policy, use an approved secure method, and share only what is needed.",
-            "Replace the student name with initials and send all details through any convenient personal account."
+            "Verify educational interest and policy, use an approved secure method, and send only what is needed."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "A classroom teacher must handle identifiable education records through purpose-limited, role-appropriate, secure procedures. Convenience or general employment does not establish legitimate educational interest, and removing a name may not remove identifiability. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -2091,12 +2091,12 @@
           "id": "tr5205-ch-10-check-04",
           "prompt": "When adapting comprehension instruction from evidence, a classroom teacher is offered compensation for promoting one commercial reading resource. What is the responsible response?",
           "choices": [
+            "Decline or disclose the offer, follow ethics and purchasing rules, share objective data, and step back.",
             "Accept the benefit privately because classroom expertise makes formal disclosure unnecessary in this case.",
             "Recommend the resource to families first and report the compensation later if someone happens to ask about it.",
-            "Hide the vendor relationship but promise to use the resource with students who volunteer to try it.",
-            "Decline or disclose the benefit, follow ethics and purchasing rules, present objective evidence, and step back if biased."
+            "Hide the vendor relationship but promise to use the resource with students who volunteer to try it."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "A classroom teacher protects students and public trust by disclosing or avoiding personal benefits, following school rules, and separating evidence from commercial influence. Recusal is appropriate when a financial interest prevents an impartial recommendation. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -2111,12 +2111,12 @@
           "id": "tr5205-ch-10-check-05",
           "prompt": "When adapting comprehension instruction from evidence, what is an evidence-based way for a classroom teacher to advocate for improved reading access?",
           "choices": [
+            "Demand a schoolwide purchase without describing the student need, evidence, implementation, or review plan.",
             "Combine student and family views with classroom evidence and research, propose a change through channels, and monitor it.",
             "Present one student story as proof that a single change will benefit every learner in every classroom.",
-            "Wait until all uncertainty disappears before communicating any documented barrier to reading access.",
-            "Demand a schoolwide purchase without describing the student need, evidence, implementation, or review plan."
+            "Wait until all uncertainty disappears before communicating any documented barrier to reading access."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Classroom advocacy is strongest when the teacher centers affected learners, connects experience with evidence, proposes a role-appropriate instructional response, collaborates through established channels, and checks consequences. One story can prompt inquiry but cannot establish a universal conclusion by itself. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -2231,12 +2231,12 @@
           "id": "tr5205-ch-11-check-01",
           "prompt": "During elementary writing instruction connected to reading, how are reading and writing instruction related?",
           "choices": [
-            "Reading supplies models and knowledge for writing, and writing deepens analysis of language and evidence.",
-            "Frequent writing practice resolves most decoding difficulties, so separate word-level instruction becomes unneeded.",
             "Reading and writing draw on no shared knowledge, so each should be scheduled and assessed in an unrelated block.",
-            "Composition should begin after students have mastered reading, since writing depends on finished reading skill."
+            "Composition should begin after students have mastered reading, since writing depends on finished reading skill.",
+            "Reading supplies models and knowledge for writing, and writing deepens analysis of language and evidence.",
+            "Frequent writing practice resolves most decoding difficulties, so separate word-level instruction becomes unneeded."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Reading and writing are reciprocal but not identical; effective instruction connects them while directly teaching the distinct transcription, language, comprehension, and composition skills learners need. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -2251,12 +2251,12 @@
           "id": "tr5205-ch-11-check-02",
           "prompt": "During elementary writing instruction connected to reading, what should writing assessment distinguish?",
           "choices": [
-            "Total word count on timed essays, treated as the main measure of a student’s overall writing ability.",
-            "Transcription fluency and accuracy, kept separate from planning, language, organization, and revision.",
             "Overall length of output, since short pieces reliably indicate that a student lacks knowledge of the topic.",
-            "Handwriting appearance, scored as part of reading comprehension when students answer written questions."
+            "Handwriting appearance, scored as part of reading comprehension when students answer written questions.",
+            "Total word count on timed essays, treated as the main measure of a student’s overall writing ability.",
+            "Transcription fluency and accuracy, kept separate from planning, language, organization, and revision."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Writing performance reflects interacting transcription and composition demands; separating components reveals whether instruction should address mechanics, language, strategy, access, or several areas. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -2271,12 +2271,12 @@
           "id": "tr5205-ch-11-check-03",
           "prompt": "During elementary writing instruction connected to reading, what is disciplinary literacy?",
           "choices": [
-            "Every school subject uses identical text conventions, so general reading strategies transfer without adjustment.",
-            "Content-area teachers should leave literacy instruction to language arts so subject lessons stay focused on facts.",
             "Each discipline uses distinct purposes, evidence, vocabulary, and reasoning that need explicit teaching.",
-            "Disciplinary literacy means simplifying science and history texts into short summaries for all readers."
+            "Disciplinary literacy means simplifying science and history texts into short summaries for all readers.",
+            "Every school subject uses identical text conventions, so general reading strategies transfer without adjustment.",
+            "Content-area teachers should leave literacy instruction to language arts so subject lessons stay focused on facts."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Students need general literacy skills and instruction in how experts in a discipline build claims, read sources, interpret representations, and communicate knowledge. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -2291,12 +2291,12 @@
           "id": "tr5205-ch-11-check-04",
           "prompt": "During elementary writing instruction connected to reading, how should a teacher support digital-text reading?",
           "choices": [
-            "Assume students’ everyday device use already provides the critical skills needed to read and evaluate online texts.",
-            "Block hyperlinks and online sources during lessons instead of teaching students how to evaluate digital information.",
             "Teach students to judge a website’s credibility mainly by its visual design, graphics, and professional appearance.",
-            "Teach navigation, source evaluation, lateral checking, synthesis across modes, and monitoring of purpose and focus."
+            "Teach navigation, source evaluation, lateral checking, synthesis across modes, and monitoring of purpose and focus.",
+            "Assume students’ everyday device use already provides the critical skills needed to read and evaluate online texts.",
+            "Block hyperlinks and online sources during lessons instead of teaching students how to evaluate digital information."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Digital literacy includes comprehension plus navigation, authorship and evidence checks, multimodal integration, privacy awareness, and strategic control of distraction. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -2311,12 +2311,12 @@
           "id": "tr5205-ch-11-check-05",
           "prompt": "During elementary writing instruction connected to reading, why use coherent text sets?",
           "choices": [
-            "Connected texts build vocabulary and knowledge while allowing comparison of claims, evidence, and perspectives.",
-            "A text set requires every selection to share the same difficulty level and viewpoint so comparisons stay simple.",
             "Organizing texts around one topic removes the need for explicit vocabulary and comprehension instruction.",
-            "Students should memorize isolated facts from one chapter rather than comparing claims across several sources."
+            "Students should memorize isolated facts from one chapter rather than comparing claims across several sources.",
+            "Linked texts build vocabulary and knowledge while allowing comparison of claims, evidence, and perspectives.",
+            "A text set requires every selection to share the same difficulty level and viewpoint so comparisons stay simple."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Purposefully sequenced text sets support cumulative knowledge and language while creating opportunities for synthesis and critical examination. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -2431,12 +2431,12 @@
           "id": "tr5205-ch-12-check-01",
           "prompt": "When using writing evidence to plan explicit instruction, how do screening and diagnostic assessment differ?",
           "choices": [
-            "It flags risk and the need for timely follow-up; diagnostic evidence then specifies skills to teach.",
             "It establishes a reading disability by itself, so a positive screen leads directly to formal eligibility.",
             "It dictates which commercial intervention program the student should receive for the rest of the year.",
-            "It proves that the student received inadequate classroom instruction during the previous school year."
+            "It proves that the student received inadequate classroom instruction during the previous school year.",
+            "It flags risk and the need for timely follow-up; targeted follow-up data then specify skills to teach."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Screening prioritizes efficient risk identification, whereas diagnostic assessment samples components and error patterns to guide hypotheses and teaching. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -2451,12 +2451,12 @@
           "id": "tr5205-ch-12-check-02",
           "prompt": "When using writing evidence to plan explicit instruction, what is the purpose of progress monitoring?",
           "choices": [
-            "To rediagnose the student every week so the team can update eligibility categories as scores change.",
             "To estimate growth toward a defined goal and guide decisions to continue, adjust, or intensify teaching.",
             "To replace a portion of daily instruction with testing time so the team collects as much data as possible.",
-            "To compare performance on a different, unrelated skill at each administration across the school year."
+            "To compare performance on a different, unrelated skill at each administration across the school year.",
+            "To rediagnose the student every week so the team can update eligibility categories as scores change."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Progress monitoring uses repeated technically adequate measures of the same broad outcome or defined skill to evaluate responsiveness over time. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -2471,12 +2471,12 @@
           "id": "tr5205-ch-12-check-03",
           "prompt": "When using writing evidence to plan explicit instruction, what does reliability mean in assessment?",
           "choices": [
-            "The cultural relevance of the passages selected for the assessment and the classroom book collection.",
             "The instructional intensity of the intervention that students receive after the assessment is scored.",
             "The consistency or precision of scores for the intended use across occasions, forms, or raters.",
-            "The visual attractiveness and readability of the score report that is shared with families and staff."
+            "The visual attractiveness and readability of the score report that is shared with families and staff.",
+            "The cultural relevance of the passages selected for the assessment and the classroom book collection."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Reliability concerns score consistency and measurement error; it is necessary but does not by itself establish that an interpretation is valid or fair. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -2491,12 +2491,12 @@
           "id": "tr5205-ch-12-check-04",
           "prompt": "When using writing evidence to plan explicit instruction, what does validity mean?",
           "choices": [
-            "The test must be invalid simply because it produces consistent, reliable scores across administrations.",
             "The student should retake the same test repeatedly until the score rises to the expected benchmark level.",
             "Validity is a permanent property of the test itself and stays the same regardless of the purpose of use.",
-            "The evidence does not support the intended interpretation and use of the scores for this purpose."
+            "Available data fail to support the intended interpretation and use of the scores for this purpose.",
+            "The test must be invalid simply because it produces consistent, reliable scores across administrations."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Validity concerns evidence for a particular interpretation and use in a defined population and context, not a universal label attached to an instrument. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",
@@ -2511,12 +2511,12 @@
           "id": "tr5205-ch-12-check-05",
           "prompt": "When using writing evidence to plan explicit instruction, why do sensitivity and specificity matter in screening?",
           "choices": [
-            "Correctly identifying students who have the risk and correctly excluding students who do not.",
             "Interrater reliability among scorers and the handwriting speed of students on written responses.",
             "The percentile rank and grade-equivalent score that the screener reports for each individual student.",
-            "Treatment fidelity during intervention and the social validity ratings collected from teachers afterward."
+            "Treatment fidelity during intervention and the social validity ratings collected from teachers afterward.",
+            "Correctly identifying students who have the risk and correctly excluding students who do not."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Sensitivity and specificity describe classification accuracy; thresholds should reflect prevalence, consequences, resources, equity, and the follow-up pathway. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/dw08f38395/pdfs/5205.pdf",

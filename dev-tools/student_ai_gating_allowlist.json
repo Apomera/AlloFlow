@@ -247,7 +247,7 @@
     {
       "file": "device_access_code_module.js",
       "rule": "raw-gemini-fetch",
-      "snippet": "var raw = cfg.baseUrl || AI_BACKEND_DEFAULTS[backend] || (backend === 'gemini' ? 'https://generativelanguage.googleapis.com' : '');",
+      "snippet": "var raw = cfg.baseUrl || defaultUrl || (backend === 'gemini' ? 'https://generativelanguage.googleapis.com' : '');",
       "class": "fine",
       "reason": "URL normalization string inside provider host check (not a direct Gemini fetch call). [2026-11-14 Pass 6]"
     },
@@ -602,14 +602,14 @@
     {
       "file": "tts_module.js",
       "rule": "raw-gemini-fetch",
-      "snippet": "const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${_directModel}:generateContent`;",
+      "snippet": "const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${safeDirectModel}:generateContent`;",
       "class": "fine",
       "reason": "Student-reachable read-aloud transport (Gemini TTS) with local/browser fallbacks. TTS is not an __alloAiUsable kind; whether student AI-off should also stop cloud TTS is a policy decision for the lead (not changed). [2026-11-04 GAPS lane] Decided 2026-11-04 (W4 TTS lane): cloud TTS is off for these students; _assertCloudTtsAllowed refuses this transport when window.__alloStudentAiDisabled is true (code BROWSER_TTS_REQUIRED), and callTTS/callTTSDirect return no URL before any engine, so callers read with the device voice."
     },
     {
       "file": "tts_module.js",
       "rule": "raw-gemini-fetch",
-      "snippet": "const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${requestedModel}:generateContent`;",
+      "snippet": "const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${safeRequestedModel}:generateContent`;",
       "class": "fine",
       "reason": "Student-reachable read-aloud transport (Gemini TTS) with local/browser fallbacks. TTS is not an __alloAiUsable kind; whether student AI-off should also stop cloud TTS is a policy decision for the lead (not changed). [2026-11-04 GAPS lane] Decided 2026-11-04 (W4 TTS lane): cloud TTS is off for these students; _assertCloudTtsAllowed refuses this transport when window.__alloStudentAiDisabled is true (code BROWSER_TTS_REQUIRED), and callTTS/callTTSDirect return no URL before any engine, so callers read with the device voice."
     },
@@ -623,14 +623,14 @@
     {
       "file": "utils_pure_module.js",
       "rule": "raw-gemini-fetch",
-      "snippet": "const urlCtxEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent`;",
+      "snippet": "const urlCtxEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${resolvedGeminiModels.default}:generateContent`;",
       "class": "fine",
       "reason": "fetchAndCleanUrl computes cloudAiOk via __alloAiUsable(\"text\", geminiCaller); URL Context and YouTube transcript are skipped when false (standard import still runs). [2026-11-04 GAPS lane]"
     },
     {
       "file": "utils_pure_module.js",
       "rule": "raw-gemini-fetch",
-      "snippet": "const ytUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent`;",
+      "snippet": "const ytUrl = `https://generativelanguage.googleapis.com/v1beta/models/${resolvedGeminiModels.default}:generateContent`;",
       "class": "fine",
       "reason": "fetchAndCleanUrl computes cloudAiOk via __alloAiUsable(\"text\", geminiCaller); URL Context and YouTube transcript are skipped when false (standard import still runs). [2026-11-04 GAPS lane]"
     },

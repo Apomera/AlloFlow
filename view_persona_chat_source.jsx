@@ -466,7 +466,10 @@ function PersonaChatView(props) {
     return <section data-persona-composer className="min-w-0 p-3 sm:p-4 bg-white text-slate-800">
       {renderPersonaTurnError()}
       {renderPersonaHintRecovery(panel)}
-      <label htmlFor={id} className="block text-sm font-bold mb-1">{composerLabel(panel ? 'panel_label' : 'single_label', panel ? 'Your question for the panel' : 'Your question')}</label>
+      <div className="mb-1 flex items-center justify-between gap-2">
+        <label htmlFor={id} className="block text-sm font-bold">{composerLabel(panel ? 'panel_label' : 'single_label', panel ? 'Your question for the panel' : 'Your question')}</label>
+        <span data-persona-composer-count className="text-xs font-medium text-slate-600 tabular-nums">{value.length} / 2000</span>
+      </div>
       <p id={id + '-guide'} className="text-xs leading-relaxed text-slate-600 mb-2">{composerLabel(panel ? 'panel_guide' : 'single_guide', panel ? 'Ask both figures to compare their ideas, explain a difference, or support a claim with evidence.' : 'Ask about an idea, request an example, or follow up with evidence from the lesson.')}</p>
       {/* Read-only, not disabled, while a reply is pending: disabling the focused box dropped focus out of the dialog. */}
       <textarea id={id} rows={2} maxLength={2000} value={value} onChange={(e) => setPersonaInput(e.target.value)}
@@ -476,7 +479,7 @@ function PersonaChatView(props) {
             e.preventDefault(); send();
           }
         }}
-        placeholder={panel ? t('persona.panel_question_placeholder') : t('persona.character_question_placeholder', { name: personaState.selectedCharacter?.name })}
+        placeholder={panel ? (t('persona.panel_question_placeholder') || 'Ask the panel a question…') : (t('persona.character_question_placeholder', { name: personaState.selectedCharacter?.name }) || 'Ask a question…')}
         readOnly={busy}
         aria-disabled={busy || undefined}
         className={"block w-full min-w-0 min-h-20 max-h-40 resize-y rounded-xl border-2 border-slate-300 bg-white p-3 text-base leading-relaxed text-slate-900 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" + (busy ? ' opacity-60 cursor-wait' : '')} />
@@ -498,11 +501,19 @@ function PersonaChatView(props) {
             },
           })}
         </div>
-        <button type="button" onClick={send} disabled={busy || !value.trim()} aria-busy={busy}
-          className="min-h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
-          {busy ? <RefreshCw size={16} aria-hidden="true" className="animate-spin motion-reduce:animate-none" /> : <Send size={16} aria-hidden="true" />}
-          {composerLabel('send', 'Send question')}
-        </button>
+        <div className="flex items-center gap-2">
+          {value.trim().length > 0 && !busy && (
+            <button type="button" data-persona-clear-draft onClick={() => setPersonaInput('')}
+              className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">
+              {composerLabel('clear', 'Clear')}
+            </button>
+          )}
+          <button type="button" onClick={send} disabled={busy || !value.trim()} aria-busy={busy}
+            className="min-h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-700 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            {busy ? <RefreshCw size={16} aria-hidden="true" className="animate-spin motion-reduce:animate-none" /> : <Send size={16} aria-hidden="true" />}
+            {composerLabel('send', 'Send question')}
+          </button>
+        </div>
       </div>
     </section>;
   };
@@ -1476,10 +1487,10 @@ function PersonaChatView(props) {
                         </span>
                     </span>
                     <span className="flex items-center gap-2 ml-auto">
-                        <button type="button" onClick={_handleResumeSnapshot} disabled={Boolean(personaState.isLoading || personaState.isGeneratingTopicSpark)} className="disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none">
+                        <button type="button" onClick={_handleResumeSnapshot} disabled={Boolean(personaState.isLoading || personaState.isGeneratingTopicSpark)} className="min-h-11 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-2">
                             {t('persona.resume_btn') || 'Resume'}
                         </button>
-                        <button type="button" onClick={_handleDiscardSnapshot} className="text-xs font-bold bg-white hover:bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1.5 rounded-full transition-colors motion-reduce:transition-none">
+                        <button type="button" onClick={_handleDiscardSnapshot} className="min-h-11 text-xs font-bold bg-white hover:bg-amber-100 text-amber-800 border border-amber-300 px-4 py-2 rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-2">
                             {t('persona.resume_discard_btn') || 'Discard'}
                         </button>
                     </span>
@@ -1508,72 +1519,72 @@ function PersonaChatView(props) {
                                 data-help-key="persona_close" data-help-ignore
                                 data-persona-initial-focus
                                 onClick={_handleCloseAndClearSnapshot}
-                                className="absolute right-4 p-2 text-slate-600 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors motion-reduce:transition-none"
-                                aria-label={t('common.close')}
+                                className="absolute right-4 min-w-11 min-h-11 inline-flex items-center justify-center p-2 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
+                                aria-label={t('common.close') || 'Close'}
                              >
-                                <X size={20} />
+                                <X size={20} aria-hidden="true" />
                              </button>
                         </div>
                         <div className="shrink-0 px-4 py-2 border-b border-slate-200 bg-slate-50/90 flex flex-wrap items-center justify-center gap-2">
                             <button type="button"
-                                aria-label={personaAutoRead ? t('persona.auto_read_off') : t('persona.auto_read_on')}
+                                aria-label={personaAutoRead ? (t('persona.auto_read_off') || 'Turn off auto-read') : (t('persona.auto_read_on') || 'Turn on auto-read')}
                                 onClick={() => {
                                     const newState = !personaAutoRead;
                                     setPersonaAutoRead(newState);
                                     if (!newState) stopPlayback();
                                 }}
-                                className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
+                                className={`min-h-11 px-3 py-2 rounded-lg border transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 flex items-center gap-2 ${
                                     personaAutoRead
                                     ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-sm'
                                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                                 }`}
-                                title={personaAutoRead ? t('persona.auto_read_off') : t('persona.auto_read_on')}
+                                title={personaAutoRead ? (t('persona.auto_read_off') || 'Turn off auto-read') : (t('persona.auto_read_on') || 'Turn on auto-read')}
                                 data-help-key="persona_auto_read"
                                 aria-pressed={personaAutoRead}
                             >
-                                {personaAutoRead ? <Volume2 size={16} className="animate-pulse motion-reduce:animate-none"/> : <VolumeX size={16}/>}
-                                <span className="text-xs font-bold">{t('persona.auto_read_label')}</span>
+                                {personaAutoRead ? <Volume2 size={16} aria-hidden="true" className="animate-pulse motion-reduce:animate-none"/> : <VolumeX size={16} aria-hidden="true"/>}
+                                <span className="text-xs font-bold">{t('persona.auto_read_label') || 'Auto-read'}</span>
                             </button>
                             {!showRoleSwap && (
                             <>
                             <button type="button"
                                 data-help-key="persona_auto_send"
-                                aria-label={personaAutoSend ? t('persona.turn_off_auto_send') : t('persona.turn_on_auto_send')}
+                                aria-label={personaAutoSend ? (t('persona.turn_off_auto_send') || 'Turn off auto-send') : (t('persona.turn_on_auto_send') || 'Turn on auto-send')}
                                 aria-pressed={personaAutoSend}
                                 onClick={handleTogglePersonaAutoSend}
-                                className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
+                                className={`min-h-11 px-3 py-2 rounded-lg border transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 flex items-center gap-2 ${
                                     personaAutoSend
                                     ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-sm'
                                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                                 }`}
-                                title={personaAutoSend ? t('persona.turn_off_auto_send') : t('persona.turn_on_auto_send')}
+                                title={personaAutoSend ? (t('persona.turn_off_auto_send') || 'Turn off auto-send') : (t('persona.turn_on_auto_send') || 'Turn on auto-send')}
                             >
-                                <Zap size={16} className={personaAutoSend ? "fill-current" : ""} />
-                                <span className="text-xs font-bold hidden sm:inline">{t('persona.auto_send')}</span>
+                                <Zap size={16} aria-hidden="true" className={personaAutoSend ? "fill-current" : ""} />
+                                <span className="text-xs font-bold hidden sm:inline">{t('persona.auto_send') || 'Auto-send'}</span>
                             </button>
                             <div className="w-px h-6 bg-slate-300 mx-1"></div>
                             {isPersonaFreeResponse && (
                                 <button type="button"
-                                    aria-label={showPersonaHints ? t('persona.hints_hide_tooltip') : t('persona.hints_show_tooltip')}
+                                    aria-label={showPersonaHints ? (t('persona.hints_hide_tooltip') || 'Hide question hints') : (t('persona.hints_show_tooltip') || 'Show question hints')}
                                     data-help-key="persona_show_hints"
                                     aria-pressed={showPersonaHints}
                                     onClick={handleToggleShowPersonaHints}
-                                    className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
+                                    className={`min-h-11 px-3 py-2 rounded-lg border transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 flex items-center gap-2 ${
                                         !showPersonaHints
                                         ? 'bg-red-50 text-red-700 border-red-200 shadow-inner'
                                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                                     }`}
-                                    title={showPersonaHints ? t('persona.hints_hide_tooltip') : t('persona.hints_show_tooltip')}
+                                    title={showPersonaHints ? (t('persona.hints_hide_tooltip') || 'Hide question hints') : (t('persona.hints_show_tooltip') || 'Show question hints')}
                                 >
-                                    {showPersonaHints ? <Eye size={16} /> : <EyeOff size={16} />}
+                                    {showPersonaHints ? <Eye size={16} aria-hidden="true" /> : <EyeOff size={16} aria-hidden="true" />}
                                     <span className="text-xs font-bold">
-                                        {showPersonaHints ? t('persona.hints_on') : t('persona.hints_off')}
+                                        {showPersonaHints ? (t('persona.hints_on') || 'Hints On') : (t('persona.hints_off') || 'Hints Off')}
                                     </span>
                                 </button>
                             )}
                             {(isTeacherMode || studentProjectSettings.allowPersonaFreeResponse) && (
                             <button type="button"
-                                aria-label={isPersonaFreeResponse ? t('persona.mode_switch_mc') : t('persona.mode_switch_free')}
+                                aria-label={isPersonaFreeResponse ? (t('persona.mode_switch_mc') || 'Switch to suggested choices') : (t('persona.mode_switch_free') || 'Switch to free response')}
                                 data-help-key="persona_response_mode"
                                 disabled={personaState.isLoading || panelChoicePending}
                                 aria-pressed={isPersonaFreeResponse}
@@ -1583,16 +1594,16 @@ function PersonaChatView(props) {
                                     setIsPersonaFreeResponse(newMode);
                                     if (!newMode) setShowPersonaHints(true);
                                 }}
-                                className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
+                                className={`min-h-11 px-3 py-2 rounded-lg border transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 flex items-center gap-2 ${
                                     !isPersonaFreeResponse
                                     ? 'bg-purple-100 text-purple-900 border-purple-300 shadow-sm ring-1 ring-purple-200'
                                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                                 }`}
-                                title={isPersonaFreeResponse ? t('persona.mode_switch_mc') : t('persona.mode_switch_free')}
+                                title={isPersonaFreeResponse ? (t('persona.mode_switch_mc') || 'Switch to suggested choices') : (t('persona.mode_switch_free') || 'Switch to free response')}
                             >
-                                {isPersonaFreeResponse ? <MessageSquare size={16} /> : <ListChecks size={16} />}
+                                {isPersonaFreeResponse ? <MessageSquare size={16} aria-hidden="true" /> : <ListChecks size={16} aria-hidden="true" />}
                                 <span className="text-xs font-bold">
-                                    {isPersonaFreeResponse ? t('persona.mode_free_label') : t('persona.mode_mc_label')}
+                                    {isPersonaFreeResponse ? (t('persona.mode_free_label') || 'Free response') : (t('persona.mode_mc_label') || 'Choices')}
                                 </span>
                             </button>
                             )}
@@ -1603,63 +1614,63 @@ function PersonaChatView(props) {
                                 onClick={_requestPersonaTopicSpark}
                                 disabled={personaState.isLoading || personaState.isGeneratingTopicSpark || topicSparkPending || topicSparkCount >= 2}
                                 aria-busy={(personaState.isGeneratingTopicSpark || topicSparkPending) ? 'true' : 'false'}
-                                className={`p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${
+                                className={`min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                                     topicSparkCount >= 2
                                     ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed'
                                     : 'bg-white text-indigo-600 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200'
                                 }`}
-                                title={t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', { remaining: topicSparkRemaining })}
-                                aria-label={t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', { remaining: topicSparkRemaining })}
+                                title={t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', { remaining: topicSparkRemaining }) || 'Spark a new topic'}
+                                aria-label={t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', { remaining: topicSparkRemaining }) || 'Spark a new topic'}
                             >
-                                <Lightbulb size={16} className={personaState.isGeneratingTopicSpark ? 'animate-pulse motion-reduce:animate-none' : ''}/>
+                                <Lightbulb size={16} aria-hidden="true" className={personaState.isGeneratingTopicSpark ? 'animate-pulse motion-reduce:animate-none' : ''}/>
                             </button>}
                             <div className="w-px h-6 bg-slate-300 mx-1"></div>
                             {renderRoleSwapToggle()}
                             <button type="button"
-                                aria-label={t('persona.archive_button')}
+                                aria-label={t('persona.archive_button') || 'Interview archive'}
                                 onClick={_openPersonaArchive}
-                                className="p-2 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition-all motion-reduce:transition-none flex items-center gap-2"
-                                title={t('persona.archive_button')}
+                                className="min-w-11 min-h-11 p-2 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 flex items-center justify-center gap-2"
+                                title={t('persona.archive_button') || 'Interview archive'}
                             >
-                                <FolderOpen size={16}/>
+                                <FolderOpen size={16} aria-hidden="true"/>
                             </button>
                             <button type="button"
-                                aria-label={transcriptSavePending ? t('persona.save_transcript_title_saving') : t('persona.save_transcript_title')}
+                                aria-label={transcriptSavePending ? (t('persona.save_transcript_title_saving') || 'Saving transcript…') : (t('persona.save_transcript_title') || 'Save transcript')}
                                 data-help-key="persona_save_chat"
                                 onClick={_savePersonaTranscript}
                                 disabled={personaState.chatHistory.length === 0 || personaState.isLoading || transcriptSavePending}
                                 aria-busy={transcriptSavePending ? 'true' : 'false'}
-                                className="p-2 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                title={transcriptSavePending ? t('persona.save_transcript_title_saving') : t('persona.save_transcript_title')}
+                                className="min-w-11 min-h-11 p-2 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200 hover:bg-emerald-200 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                title={transcriptSavePending ? (t('persona.save_transcript_title_saving') || 'Saving transcript…') : (t('persona.save_transcript_title') || 'Save transcript')}
                             >
-                                {transcriptSavePending ? <RefreshCw size={16} className="animate-spin motion-reduce:animate-none"/> : <Save size={16}/>}
+                                {transcriptSavePending ? <RefreshCw size={16} aria-hidden="true" className="animate-spin motion-reduce:animate-none"/> : <Save size={16} aria-hidden="true"/>}
                             </button>
                             {!personaStudentTextAiOff && <button type="button"
                                 onClick={_openPersonaSummary}
                                 disabled={!canGeneratePersonaSummary || summaryBusy}
-                                className="p-2 rounded-lg bg-violet-100 text-violet-700 border border-violet-200 hover:bg-violet-200 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                title={personaState.personaSummary ? t('persona.summary.view_btn') : t('persona.summary.generate_btn')}
-                                aria-label={personaState.personaSummary ? t('persona.summary.view_btn') : t('persona.summary.generate_btn')}
+                                className="min-w-11 min-h-11 p-2 rounded-lg bg-violet-100 text-violet-800 border border-violet-200 hover:bg-violet-200 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                title={personaState.personaSummary ? (t('persona.summary.view_btn') || 'View summary') : (t('persona.summary.generate_btn') || 'Summarize interview')}
+                                aria-label={personaState.personaSummary ? (t('persona.summary.view_btn') || 'View summary') : (t('persona.summary.generate_btn') || 'Summarize interview')}
                                 aria-busy={summaryBusy ? 'true' : 'false'}
                             >
-                                <Sparkles size={16} className={summaryBusy ? 'animate-pulse motion-reduce:animate-none' : ''}/>
+                                <Sparkles size={16} aria-hidden="true" className={summaryBusy ? 'animate-pulse motion-reduce:animate-none' : ''}/>
                             </button>}
                             {!personaStudentTextAiOff && <button type="button"
-                                aria-label={personaState.isLoading || isGeneratingReflectionPrompt ? t('persona.finish_current_turn') : (panelConcludeReady ? t('persona.conclude_button') : t('persona.conclude_locked_progress', { percent: panelUnlockPct }))}
+                                aria-label={personaState.isLoading || isGeneratingReflectionPrompt ? (t('persona.finish_current_turn') || 'Finish current turn first') : (panelConcludeReady ? (t('persona.conclude_button') || 'Conclude & Reflect') : (t('persona.conclude_locked_progress', { percent: panelUnlockPct }) || `Conclude interview (${panelUnlockPct}% unlocked)`))}
                                 data-help-key="persona_conclude"
                                 onClick={_openPersonaReflection}
                                 disabled={!panelConcludeReady || personaState.isLoading || isGeneratingReflectionPrompt}
-                                className={`relative overflow-hidden flex items-center gap-2 px-3 py-2 rounded-lg border shadow-md active:scale-95 transition-all motion-reduce:transition-none text-xs font-bold ${
+                                className={`min-h-11 relative overflow-hidden flex items-center gap-2 px-3 py-2 rounded-lg border shadow-md active:scale-95 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 text-xs font-bold ${
                                     panelConcludeReady
                                     ? 'bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-700'
                                     : 'bg-slate-200 text-slate-600 border-slate-300 cursor-not-allowed'
                                 }`}
-                                title={personaState.isLoading || isGeneratingReflectionPrompt ? t('persona.finish_current_turn') : (panelConcludeReady ? t('persona.conclude_tooltip') : t('persona.conclude_locked_progress', { percent: panelUnlockPct }))}
+                                title={personaState.isLoading || isGeneratingReflectionPrompt ? (t('persona.finish_current_turn') || 'Finish current turn first') : (panelConcludeReady ? (t('persona.conclude_tooltip') || 'Conclude interview and write a reflection') : (t('persona.conclude_locked_progress', { percent: panelUnlockPct }) || `Conclude interview (${panelUnlockPct}% unlocked)`))}
                             >
                                 {panelConcludeReady
-                                    ? <CheckCircle2 size={16}/>
-                                    : <Lock size={16}/>}
-                                <span className="hidden sm:inline">{t('persona.conclude_button')}</span>
+                                    ? <CheckCircle2 size={16} aria-hidden="true"/>
+                                    : <Lock size={16} aria-hidden="true"/>}
+                                <span className="hidden sm:inline">{t('persona.conclude_button') || 'Conclude'}</span>
                                 {!panelConcludeReady && <span className="hidden lg:inline text-xs font-black opacity-80">{panelUnlockPct}%</span>}
                                 {!panelConcludeReady && (
                                     <span className="absolute left-1 right-1 bottom-1 h-1 rounded-full bg-white/70 overflow-hidden">
@@ -1700,13 +1711,13 @@ function PersonaChatView(props) {
                                         <div role="group" className="border-t border-current/10 px-3 py-3 space-y-3 text-left" aria-label={t('persona.panelist_details', { name: char?.name || t('persona.character_fallback') })}>
                                             <div>
                                                 <div className="mb-1 flex justify-between font-bold"><span>{t('persona.rapport_label')}</span><span>{rapport}%</span></div>
-                                                <div role="progressbar" aria-label={(t('persona.rapport_label') || 'Rapport') + ': ' + (char?.name || t('persona.character_fallback') || 'Character')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={rapport} className="h-2 overflow-hidden rounded-full border border-slate-300 bg-white">
+                                                <div role="progressbar" aria-label={(t('persona.rapport_label') || 'Rapport') + ': ' + (char?.name || t('persona.character_fallback') || 'Character')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={rapport} aria-valuetext={`${rapport}%`} className="h-2 overflow-hidden rounded-full border border-slate-300 bg-white">
                                                     <div className={`h-full ${cIdx === 0 ? 'bg-indigo-500' : 'bg-rose-500'}`} style={{ width: `${Math.max(0, Math.min(100, rapport))}%` }} />
                                                 </div>
                                             </div>
                                             <div>
-                                                <div className="mb-1 flex justify-between font-bold"><span>{t('common.xp')}</span><span>{xp}/300</span></div>
-                                                <div role="progressbar" aria-label={t('persona.xp_progress', { name: char?.name, xp })} aria-valuemin={0} aria-valuemax={300} aria-valuenow={xp} className="h-2 overflow-hidden rounded-full border border-slate-300 bg-white">
+                                                <div className="mb-1 flex justify-between font-bold"><span>{t('common.xp') || 'XP'}</span><span>{xp}/300</span></div>
+                                                <div role="progressbar" aria-label={t('persona.xp_progress', { name: char?.name, xp }) || `${char?.name || 'Character'} XP`} aria-valuemin={0} aria-valuemax={300} aria-valuenow={xp} aria-valuetext={`${xp} of 300 XP`} className="h-2 overflow-hidden rounded-full border border-slate-300 bg-white">
                                                     <div className="h-full bg-amber-500" style={{ width: `${Math.max(0, Math.min(100, (xp / 300) * 100))}%` }} />
                                                 </div>
                                             </div>
@@ -2109,21 +2120,21 @@ function PersonaChatView(props) {
                                 ) : (
                                     <>
                                         <div className="text-center mb-6 relative">
-                                            <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 shadow-sm"><PenTool size={32} /></div>
-                                            <h2 id="persona-reflection-title" className="text-2xl font-black text-slate-800">{t('persona.reflection_title')}</h2>
-                                            <p className="text-slate-600 text-sm">{t('persona.reflection_subtitle')}</p>
+                                            <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 shadow-sm"><PenTool size={32} aria-hidden="true" /></div>
+                                            <h2 id="persona-reflection-title" className="text-2xl font-black text-slate-800">{t('persona.reflection_title') || 'Interview Reflection'}</h2>
+                                            <p className="text-slate-600 text-sm">{t('persona.reflection_subtitle') || 'Share what you learned from this conversation.'}</p>
                                         </div>
                                         <div className="flex-1 overflow-y-auto">
                                             <div className="space-y-4">
                                                 <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-                                                    <h4 className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2">{t('persona.reflection_prompt_label') || 'Reflection Question'}</h4>
+                                                    <h3 className="text-xs font-bold text-indigo-800 uppercase tracking-wider mb-2">{t('persona.reflection_prompt_label') || 'Reflection Question'}</h3>
                                                     {isGeneratingReflectionPrompt ? (
-                                                        <div role="status" aria-live="polite" className="flex items-center gap-2 text-indigo-500 text-sm italic"><RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> {t('persona.status_generating_prompt')}</div>
+                                                        <div role="status" aria-live="polite" className="flex items-center gap-2 text-indigo-700 text-sm italic"><RefreshCw size={14} aria-hidden="true" className="animate-spin motion-reduce:animate-none"/> {t('persona.status_generating_prompt') || 'Preparing reflection prompt…'}</div>
                                                     ) : (
-                                                        <p className="text-slate-700 text-sm leading-relaxed">{dynamicReflectionQuestion || t('persona.default_reflection_prompt')}</p>
+                                                        <p className="text-slate-700 text-sm leading-relaxed">{dynamicReflectionQuestion || t('persona.default_reflection_prompt') || 'What stood out most from this discussion?'}</p>
                                                     )}
                                                 </div>
-                                                <textarea id="persona-reflection-input" aria-label={t('persona.reflection_input') || 'Write your reflection'} aria-describedby="persona-reflection-count" maxLength={4000} value={personaReflectionText} onChange={(e) => setPersonaReflectionInput(e.target.value)} placeholder={t('persona.reflection_placeholder')} className="w-full h-48 p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none text-sm leading-relaxed resize-none disabled:bg-slate-50 disabled:text-slate-600" disabled={reflectionBusy || isGeneratingReflectionPrompt} />
+                                                <textarea id="persona-reflection-input" aria-label={t('persona.reflection_input') || 'Write your reflection'} aria-describedby="persona-reflection-count" maxLength={4000} value={personaReflectionText} onChange={(e) => setPersonaReflectionInput(e.target.value)} placeholder={t('persona.reflection_placeholder') || 'Write your reflection here…'} className="w-full h-48 p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 text-sm leading-relaxed resize-none disabled:bg-slate-50 disabled:text-slate-600" disabled={reflectionBusy || isGeneratingReflectionPrompt} />
                                                 <div className="mt-1 flex items-center justify-between gap-2 flex-wrap">
                                                     {typeof window !== 'undefined' && typeof window.AlloDictationButton === 'function' && React.createElement(window.AlloDictationButton, {
                                                         t,
@@ -2134,15 +2145,15 @@ function PersonaChatView(props) {
                                                             setPersonaReflectionInput((cur + sep + spoken).slice(0, 4000));
                                                         },
                                                     })}
-                                                    <p id="persona-reflection-count" className="ml-auto text-right text-xs font-medium text-slate-600">{t('persona.reflection_character_count', { count: personaReflectionText.length, limit: 4000 })}</p>
+                                                    <p id="persona-reflection-count" className="ml-auto text-right text-xs font-medium text-slate-600 tabular-nums">{t('persona.reflection_character_count', { count: personaReflectionText.length, limit: 4000 }) || `${personaReflectionText.length} / 4000`}</p>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="mt-6 flex gap-3">
-                                            <button type="button" aria-label={t('persona.back_to_chat')} onClick={handleSetIsPersonaReflectionOpenToFalse} disabled={reflectionBusy} className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed">{t('persona.back_to_chat')}</button>
-                                            <button type="button" aria-busy={reflectionBusy ? 'true' : 'false'} onClick={_submitPersonaReflection} disabled={!personaReflectionText.trim() || reflectionBusy || isGeneratingReflectionPrompt} className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                            <button type="button" aria-label={t('persona.back_to_chat') || 'Back to chat'} onClick={handleSetIsPersonaReflectionOpenToFalse} disabled={reflectionBusy} className="flex-1 min-h-11 py-3 text-slate-700 font-bold hover:bg-slate-100 rounded-xl transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">{t('persona.back_to_chat') || 'Back to chat'}</button>
+                                            <button type="button" aria-busy={reflectionBusy ? 'true' : 'false'} onClick={_submitPersonaReflection} disabled={!personaReflectionText.trim() || reflectionBusy || isGeneratingReflectionPrompt} className="flex-1 min-h-11 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                                                 {reflectionBusy ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Sparkles size={18} className="text-amber-200 fill-current" aria-hidden="true"/>}
-                                                {reflectionBusy ? t('persona.status_grading') : t('persona.submit_xp')}
+                                                {reflectionBusy ? (t('persona.status_grading') || 'Reviewing…') : (t('persona.submit_xp') || 'Submit reflection')}
                                             </button>
                                         </div>
                                     </>
@@ -2192,7 +2203,7 @@ function PersonaChatView(props) {
                              </div>
                          )}
                      </div>
-                     <h3 className="font-black text-2xl md:text-3xl text-slate-800 leading-tight mb-2">{personaState.selectedCharacter?.name || ''}</h3>
+                     <h2 className="font-black text-2xl md:text-3xl text-slate-800 leading-tight mb-2">{personaState.selectedCharacter?.name || ''}</h2>
                      <div className="bg-yellow-100 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-6 border border-yellow-200 shadow-sm">
                         {personaState.selectedCharacter?.role || ''}{personaState.selectedCharacter?.year ? ` (${personaState.selectedCharacter.year})` : ''}
                      </div>
@@ -2210,7 +2221,7 @@ function PersonaChatView(props) {
                                   {singleRapport}%
                              </span>
                          </div>
-                         <div role="progressbar" aria-label={t('persona.trust_rapport_label')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={singleRapport} className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-400">
+                         <div role="progressbar" aria-label={t('persona.trust_rapport_label') || 'Trust and rapport'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={singleRapport} aria-valuetext={`${singleRapport}%`} className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-400">
                              <div
                                  className={`h-full transition-all motion-reduce:transition-none duration-500 ease-out ${
                                       singleRapport >= 70 ? 'bg-green-500' :
@@ -2222,9 +2233,9 @@ function PersonaChatView(props) {
                      </div>
                      {personaState.selectedCharacter?.quests && personaState.selectedCharacter.quests.length > 0 && (
                          <div className="w-full mt-6 text-left">
-                             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1">
+                             <h3 className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1">
                                  <Search size={12} aria-hidden="true"/> {inquiryLabel('topics', 'Topics to explore')}
-                             </h4>
+                             </h3>
                              <div className="space-y-2">
                                  {personaState.selectedCharacter.quests.map((quest, qIdx) => {
                                      const isQuestLocked = singleRapport < Number(quest.difficulty || 0);
@@ -2262,7 +2273,7 @@ function PersonaChatView(props) {
                         data-persona-initial-focus
                                 onClick={_handleCloseAndClearSnapshot}
                         className="absolute top-4 right-4 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 z-50"
-                        aria-label={t('common.close')}
+                        aria-label={t('common.close') || 'Close'}
                     >
                         <X size={24} aria-hidden="true" />
                     </button>
@@ -2270,7 +2281,7 @@ function PersonaChatView(props) {
                         <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-50 to-amber-50 px-3 py-1.5 rounded-lg border border-yellow-200">
                             <Star size={16} className="text-amber-700" aria-hidden="true" />
                             <div className="flex flex-col">
-                                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('common.xp')}</span>
+                                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('common.xp') || 'XP'}</span>
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm font-black text-amber-800">
                                          {singleXp}
@@ -2278,7 +2289,7 @@ function PersonaChatView(props) {
                                     <span className="text-xs text-slate-600">/ 300</span>
                                 </div>
                             </div>
-                            <div role="progressbar" aria-label={t('common.xp') || 'Experience points'} aria-valuemin={0} aria-valuemax={300} aria-valuenow={singleXp} className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                            <div role="progressbar" aria-label={t('common.xp') || 'Experience points'} aria-valuemin={0} aria-valuemax={300} aria-valuenow={singleXp} aria-valuetext={`${singleXp} of 300 XP`} className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden">
                                 <div
                                     className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 transition-all motion-reduce:transition-none duration-500"
                                     style={{ width: `${Math.min(100, (singleXp / 300) * 100)}%` }}
@@ -2287,7 +2298,7 @@ function PersonaChatView(props) {
                         </div>
                         <div className="w-full xl:w-auto xl:flex-1 flex flex-wrap items-center justify-start xl:justify-end gap-2 min-w-0">
                         <button type="button"
-                            aria-label={personaAutoRead ? t('persona.auto_read_off') : t('persona.auto_read_on')}
+                            aria-label={personaAutoRead ? (t('persona.auto_read_off') || 'Turn off auto-read') : (t('persona.auto_read_on') || 'Turn on auto-read')}
                             data-help-key="persona_auto_read"
                                 aria-pressed={personaAutoRead}
                             onClick={() => {
@@ -2295,56 +2306,56 @@ function PersonaChatView(props) {
                                 setPersonaAutoRead(newState);
                                 if (!newState) stopPlayback();
                             }}
-                            className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
+                            className={`min-h-11 px-3 py-2 rounded-lg border transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 flex items-center gap-2 ${
                                 personaAutoRead
                                 ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-sm'
                                 : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                             }`}
-                            title={personaAutoRead ? t('persona.auto_read_off') : t('persona.auto_read_on')}
+                            title={personaAutoRead ? (t('persona.auto_read_off') || 'Turn off auto-read') : (t('persona.auto_read_on') || 'Turn on auto-read')}
                         >
-                            {personaAutoRead ? <Volume2 size={16} className="animate-pulse motion-reduce:animate-none"/> : <VolumeX size={16}/>}
-                            <span className="text-xs font-bold">{t('persona.auto_read_label')}</span>
+                            {personaAutoRead ? <Volume2 size={16} aria-hidden="true" className="animate-pulse motion-reduce:animate-none"/> : <VolumeX size={16} aria-hidden="true"/>}
+                            <span className="text-xs font-bold">{t('persona.auto_read_label') || 'Auto-read'}</span>
                         </button>
                         {!showRoleSwap && (
                         <>
                         <button type="button"
                             data-help-key="persona_auto_send"
-                            aria-label={personaAutoSend ? t('persona.turn_off_auto_send') : t('persona.turn_on_auto_send')}
+                            aria-label={personaAutoSend ? (t('persona.turn_off_auto_send') || 'Turn off auto-send') : (t('persona.turn_on_auto_send') || 'Turn on auto-send')}
                                 aria-pressed={personaAutoSend}
                             onClick={handleTogglePersonaAutoSend}
-                            className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
+                            className={`min-h-11 px-3 py-2 rounded-lg border transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 flex items-center gap-2 ${
                                 personaAutoSend
                                 ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-sm'
                                 : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                             }`}
-                            title={personaAutoSend ? t('persona.turn_off_auto_send') : t('persona.turn_on_auto_send')}
+                            title={personaAutoSend ? (t('persona.turn_off_auto_send') || 'Turn off auto-send') : (t('persona.turn_on_auto_send') || 'Turn on auto-send')}
                         >
-                            <Zap size={16} className={personaAutoSend ? "fill-current" : ""} />
-                            <span className="text-xs font-bold hidden sm:inline">{t('persona.auto_send')}</span>
+                            <Zap size={16} aria-hidden="true" className={personaAutoSend ? "fill-current" : ""} />
+                            <span className="text-xs font-bold hidden sm:inline">{t('persona.auto_send') || 'Auto-send'}</span>
                         </button>
                         <div className="w-px h-6 bg-slate-300 mx-1"></div>
                         {isPersonaFreeResponse && (
                         <button type="button"
-                            aria-label={showPersonaHints ? t('persona.hints_hide_tooltip') : t('persona.hints_show_tooltip')}
+                            aria-label={showPersonaHints ? (t('persona.hints_hide_tooltip') || 'Hide question hints') : (t('persona.hints_show_tooltip') || 'Show question hints')}
                             data-help-key="persona_hints_toggle"
                             aria-pressed={showPersonaHints}
                             onClick={handleToggleShowPersonaHints}
-                                className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
+                                className={`min-h-11 px-3 py-2 rounded-lg border transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 flex items-center gap-2 ${
                                     !showPersonaHints
                                     ? 'bg-red-50 text-red-700 border-red-200 shadow-inner'
                                     : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                                 }`}
-                                title={showPersonaHints ? t('persona.hints_hide_tooltip') : t('persona.hints_show_tooltip')}
+                                title={showPersonaHints ? (t('persona.hints_hide_tooltip') || 'Hide question hints') : (t('persona.hints_show_tooltip') || 'Show question hints')}
                             >
-                                {showPersonaHints ? <Eye size={16} /> : <EyeOff size={16} />}
+                                {showPersonaHints ? <Eye size={16} aria-hidden="true" /> : <EyeOff size={16} aria-hidden="true" />}
                                 <span className="text-xs font-bold">
-                                    {showPersonaHints ? t('persona.hints_on') : t('persona.hints_off')}
+                                    {showPersonaHints ? (t('persona.hints_on') || 'Hints On') : (t('persona.hints_off') || 'Hints Off')}
                                 </span>
                             </button>
                         )}
                         {(isTeacherMode || studentProjectSettings.allowPersonaFreeResponse) && (
                         <button type="button"
-                            aria-label={isPersonaFreeResponse ? t('persona.mode_switch_mc') : t('persona.mode_switch_free')}
+                            aria-label={isPersonaFreeResponse ? (t('persona.mode_switch_mc') || 'Switch to suggested choices') : (t('persona.mode_switch_free') || 'Switch to free response')}
                             data-help-key="persona_response_mode"
                                 disabled={personaState.isLoading || panelChoicePending || singleChoicePending}
                                 aria-pressed={isPersonaFreeResponse}
@@ -2354,16 +2365,16 @@ function PersonaChatView(props) {
                                 setIsPersonaFreeResponse(newMode);
                                 if (!newMode) setShowPersonaHints(true);
                             }}
-                            className={`p-2 rounded-lg border transition-all motion-reduce:transition-none flex items-center gap-2 ${
+                            className={`min-h-11 px-3 py-2 rounded-lg border transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 flex items-center gap-2 ${
                                 !isPersonaFreeResponse
                                 ? 'bg-purple-100 text-purple-900 border-purple-300 shadow-sm ring-1 ring-purple-200'
                                 : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                             }`}
-                            title={isPersonaFreeResponse ? t('persona.mode_switch_mc') : t('persona.mode_switch_free')}
+                            title={isPersonaFreeResponse ? (t('persona.mode_switch_mc') || 'Switch to suggested choices') : (t('persona.mode_switch_free') || 'Switch to free response')}
                         >
-                            {isPersonaFreeResponse ? <MessageSquare size={16} /> : <ListChecks size={16} />}
+                            {isPersonaFreeResponse ? <MessageSquare size={16} aria-hidden="true" /> : <ListChecks size={16} aria-hidden="true" />}
                             <span className="text-xs font-bold">
-                                {isPersonaFreeResponse ? t('persona.mode_free_label') : t('persona.mode_mc_label')}
+                                {isPersonaFreeResponse ? (t('persona.mode_free_label') || 'Free response') : (t('persona.mode_mc_label') || 'Choices')}
                             </span>
                         </button>
                         )}
@@ -2374,64 +2385,64 @@ function PersonaChatView(props) {
                             onClick={_requestPersonaTopicSpark}
                             disabled={personaState.isLoading || personaState.isGeneratingTopicSpark || topicSparkPending || topicSparkCount >= 2}
                             aria-busy={(personaState.isGeneratingTopicSpark || topicSparkPending) ? 'true' : 'false'}
-                            className={`p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${
+                            className={`min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-lg border shadow-sm transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                                 topicSparkCount >= 2
                                 ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed'
                                 : 'bg-white text-indigo-600 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200'
                             }`}
-                            title={t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', { remaining: topicSparkRemaining })}
-                            aria-label={t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', { remaining: topicSparkRemaining })}
+                            title={t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', { remaining: topicSparkRemaining }) || 'Spark a new topic'}
+                            aria-label={t(isPersonaFreeResponse ? 'persona.topic_spark_tooltip' : 'persona.topic_spark_mc_tooltip', { remaining: topicSparkRemaining }) || 'Spark a new topic'}
                         >
-                            <Lightbulb size={16} className={personaState.isGeneratingTopicSpark ? 'animate-pulse motion-reduce:animate-none' : ''}/>
+                            <Lightbulb size={16} aria-hidden="true" className={personaState.isGeneratingTopicSpark ? 'animate-pulse motion-reduce:animate-none' : ''}/>
                         </button>}
                         {renderRoleSwapToggle()}
                         <button type="button"
-                            aria-label={t('persona.archive_button')}
+                            aria-label={t('persona.archive_button') || 'Interview archive'}
                             onClick={_openPersonaArchive}
-                            className="p-2 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition-all motion-reduce:transition-none flex items-center gap-2"
-                            title={t('persona.archive_button')}
+                            className="min-w-11 min-h-11 p-2 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 flex items-center justify-center gap-2"
+                            title={t('persona.archive_button') || 'Interview archive'}
                         >
-                            <FolderOpen size={16}/>
+                            <FolderOpen size={16} aria-hidden="true"/>
                         </button>
                         <button type="button"
                             data-help-key="persona_save_chat"
                             onClick={_savePersonaTranscript}
                             disabled={personaState.chatHistory.length === 0 || personaState.isLoading || transcriptSavePending}
                             aria-busy={transcriptSavePending ? 'true' : 'false'}
-                            className="p-2 rounded-lg bg-white text-slate-600 border border-slate-400 shadow-sm hover:bg-slate-50 hover:border-indigo-200 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
-                            title={transcriptSavePending ? t('persona.save_transcript_title_saving') : t('persona.save_transcript_title')}
-                            aria-label={transcriptSavePending ? t('persona.save_transcript_title_saving') : t('persona.save_transcript_title')}
+                            className="min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-lg bg-white text-slate-600 border border-slate-400 shadow-sm hover:bg-slate-50 hover:border-indigo-200 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={transcriptSavePending ? (t('persona.save_transcript_title_saving') || 'Saving transcript…') : (t('persona.save_transcript_title') || 'Save transcript')}
+                            aria-label={transcriptSavePending ? (t('persona.save_transcript_title_saving') || 'Saving transcript…') : (t('persona.save_transcript_title') || 'Save transcript')}
                         >
-                            {transcriptSavePending ? <RefreshCw size={16} className="animate-spin motion-reduce:animate-none"/> : <Save size={16}/>}
+                            {transcriptSavePending ? <RefreshCw size={16} aria-hidden="true" className="animate-spin motion-reduce:animate-none"/> : <Save size={16} aria-hidden="true"/>}
                         </button>
                         {!personaStudentTextAiOff && <button type="button"
                             onClick={_openPersonaSummary}
                             disabled={!canGeneratePersonaSummary || summaryBusy}
-                            className="p-2 rounded-lg bg-violet-50 text-violet-700 border border-violet-200 shadow-sm hover:bg-violet-100 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
-                            title={personaState.personaSummary ? t('persona.summary.view_btn') : t('persona.summary.generate_btn')}
-                            aria-label={personaState.personaSummary ? t('persona.summary.view_btn') : t('persona.summary.generate_btn')}
+                            className="min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-lg bg-violet-50 text-violet-800 border border-violet-200 shadow-sm hover:bg-violet-100 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={personaState.personaSummary ? (t('persona.summary.view_btn') || 'View summary') : (t('persona.summary.generate_btn') || 'Summarize interview')}
+                            aria-label={personaState.personaSummary ? (t('persona.summary.view_btn') || 'View summary') : (t('persona.summary.generate_btn') || 'Summarize interview')}
                             aria-busy={summaryBusy ? 'true' : 'false'}
                         >
-                            <Sparkles size={16} className={summaryBusy ? 'animate-pulse motion-reduce:animate-none' : ''}/>
+                            <Sparkles size={16} aria-hidden="true" className={summaryBusy ? 'animate-pulse motion-reduce:animate-none' : ''}/>
                         </button>}
                         {!personaStudentTextAiOff && <button type="button"
-                            aria-label={personaState.isLoading || isGeneratingReflectionPrompt ? t('persona.finish_current_turn') : (singleConcludeReady ? t('persona.conclude_button') : t('persona.conclude_locked_progress', { percent: singleUnlockPct }))}
+                            aria-label={personaState.isLoading || isGeneratingReflectionPrompt ? (t('persona.finish_current_turn') || 'Finish current turn first') : (singleConcludeReady ? (t('persona.conclude_button') || 'Conclude & Reflect') : (t('persona.conclude_locked_progress', { percent: singleUnlockPct }) || `Conclude interview (${singleUnlockPct}% unlocked)`))}
                             data-help-key="persona_conclude"
                             onClick={_openPersonaReflection}
                             disabled={!singleConcludeReady || personaState.isLoading || isGeneratingReflectionPrompt}
-                            className={`relative overflow-hidden flex items-center gap-2 px-3 py-2 rounded-lg border shadow-md active:scale-95 transition-all motion-reduce:transition-none text-xs font-bold ${
+                            className={`min-h-11 relative overflow-hidden flex items-center gap-2 px-3 py-2 rounded-lg border shadow-md active:scale-95 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 text-xs font-bold ${
                                 singleConcludeReady
                                 ? 'bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-700'
                                 : 'bg-slate-200 text-slate-600 border-slate-300 cursor-not-allowed'
                             }`}
                             title={personaState.isLoading || isGeneratingReflectionPrompt
-                                ? t('persona.finish_current_turn')
-                                : (singleConcludeReady ? t('persona.conclude_tooltip') : t('persona.conclude_locked_progress', { percent: singleUnlockPct }))}
+                                ? (t('persona.finish_current_turn') || 'Finish current turn first')
+                                : (singleConcludeReady ? (t('persona.conclude_tooltip') || 'Conclude interview and write a reflection') : (t('persona.conclude_locked_progress', { percent: singleUnlockPct }) || `Conclude interview (${singleUnlockPct}% unlocked)`))}
                         >
                             {singleConcludeReady
-                                ? <CheckCircle2 size={16}/>
-                                : <Lock size={16}/>}
-                            <span className="hidden sm:inline">{t('persona.conclude_button')}</span>
+                                ? <CheckCircle2 size={16} aria-hidden="true"/>
+                                : <Lock size={16} aria-hidden="true"/>}
+                            <span className="hidden sm:inline">{t('persona.conclude_button') || 'Conclude'}</span>
                             {!singleConcludeReady && <span className="hidden lg:inline text-xs font-black opacity-80">{singleUnlockPct}%</span>}
                             {!singleConcludeReady && (
                                 <span className="absolute left-1 right-1 bottom-1 h-1 rounded-full bg-white/70 overflow-hidden">
@@ -2780,22 +2791,22 @@ function PersonaChatView(props) {
                                 <>
                                     <div className="text-center mb-6 relative">
                                         <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 shadow-sm">
-                                            <PenTool size={32} />
+                                            <PenTool size={32} aria-hidden="true" />
                                         </div>
-                                        <h2 id="persona-reflection-title" className="text-2xl font-black text-slate-800">{t('persona.reflection_title')}</h2>
-                                        <p className="text-slate-600 text-sm">{t('persona.reflection_subtitle')}</p>
+                                        <h2 id="persona-reflection-title" className="text-2xl font-black text-slate-800">{t('persona.reflection_title') || 'Interview Reflection'}</h2>
+                                        <p className="text-slate-600 text-sm">{t('persona.reflection_subtitle') || 'Share what you learned from this conversation.'}</p>
                                     </div>
                                     <div className="flex-1 overflow-y-auto">
                                         <div className="space-y-4">
                                             <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-                                                <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2">{t('persona.prompt_label')}</h4>
+                                                <h3 className="text-xs font-bold text-indigo-800 uppercase tracking-wider mb-2">{t('persona.prompt_label') || 'Reflection Prompt'}</h3>
                                                 {isGeneratingReflectionPrompt ? (
-                                                    <div role="status" aria-live="polite" className="flex items-center gap-2 text-indigo-600 font-medium animate-pulse motion-reduce:animate-none">
-                                                        <RefreshCw size={16} className="animate-spin motion-reduce:animate-none"/> {t('persona.generating_question')}
+                                                    <div role="status" aria-live="polite" className="flex items-center gap-2 text-indigo-700 font-medium animate-pulse motion-reduce:animate-none">
+                                                        <RefreshCw size={16} aria-hidden="true" className="animate-spin motion-reduce:animate-none"/> {t('persona.generating_question') || 'Preparing reflection prompt…'}
                                                     </div>
                                                 ) : (
                                                     <p className="text-slate-700 font-medium">
-                                                        {dynamicReflectionQuestion || t('persona.default_reflection_prompt_named', { name: personaState.selectedCharacter?.name || t('persona.character_fallback') })}
+                                                        {dynamicReflectionQuestion || t('persona.default_reflection_prompt_named', { name: personaState.selectedCharacter?.name || t('persona.character_fallback') || 'the speaker' }) || 'What stood out most from this conversation?'}
                                                     </p>
                                                 )}
                                             </div>
@@ -2806,7 +2817,7 @@ function PersonaChatView(props) {
                                                 maxLength={4000}
                                                 value={personaReflectionText} data-help-key="persona_reflection_input"
                                                 onChange={(e) => setPersonaReflectionInput(e.target.value)}
-                                                placeholder={t('persona.reflection_placeholder')}
+                                                placeholder={t('persona.reflection_placeholder') || 'Write your reflection here…'}
                                                 className="w-full h-48 p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 text-sm leading-relaxed resize-none disabled:bg-slate-50 disabled:text-slate-600"
                                                 disabled={reflectionBusy || isGeneratingReflectionPrompt}
                                             />
@@ -2820,27 +2831,27 @@ function PersonaChatView(props) {
                                                         setPersonaReflectionInput((cur + sep + spoken).slice(0, 4000));
                                                     },
                                                 })}
-                                                <p id="persona-reflection-count" className="ml-auto text-right text-xs font-medium text-slate-600">{t('persona.reflection_character_count', { count: personaReflectionText.length, limit: 4000 })}</p>
+                                                <p id="persona-reflection-count" className="ml-auto text-right text-xs font-medium text-slate-600 tabular-nums">{t('persona.reflection_character_count', { count: personaReflectionText.length, limit: 4000 }) || `${personaReflectionText.length} / 4000`}</p>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="mt-6 flex gap-3">
                                         <button type="button"
-                                            aria-label={t('persona.back_to_chat')}
+                                            aria-label={t('persona.back_to_chat') || 'Back to chat'}
                                             onClick={handleSetIsPersonaReflectionOpenToFalse} data-help-key="persona_back_btn"
                                             disabled={reflectionBusy}
-                                            className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="flex-1 min-h-11 py-3 text-slate-700 font-bold hover:bg-slate-100 rounded-xl transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            {t('persona.back_to_chat')}
+                                            {t('persona.back_to_chat') || 'Back to chat'}
                                         </button>
                                         <button type="button"
                                             aria-busy={reflectionBusy ? 'true' : 'false'}
                                             onClick={_submitPersonaReflection} data-help-key="persona_submit_btn"
                                             disabled={!personaReflectionText.trim() || reflectionBusy || isGeneratingReflectionPrompt}
-                                            className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                            className="flex-1 min-h-11 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                         >
                                             {reflectionBusy ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Sparkles size={18} className="text-amber-200 fill-current" aria-hidden="true"/>}
-                                            {reflectionBusy ? t('persona.status_grading') : t('persona.submit_xp')}
+                                            {reflectionBusy ? (t('persona.status_grading') || 'Reviewing…') : (t('persona.submit_xp') || 'Submit reflection')}
                                         </button>
                                     </div>
                                 </>

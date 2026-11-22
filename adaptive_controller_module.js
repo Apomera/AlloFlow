@@ -141,6 +141,31 @@ if (!window._alloGamepadGlobal) {
     } catch(e) { /* Vibration not supported — graceful no-op */ }
   };
 
+  const _gpadActiveModalRoot = () => {
+    try {
+      const stack = Array.isArray(window.__alloFocusTrapStack) ? window.__alloFocusTrapStack : [];
+      for (let i = stack.length - 1; i >= 0; i--) {
+        const entry = stack[i];
+        const cand = entry && (entry.root || entry.container || entry.element || entry);
+        if (cand && typeof cand.querySelectorAll === 'function' && cand.isConnected === true && !cand.closest?.('[hidden], [inert], [aria-hidden="true"]')) {
+          return cand;
+        }
+      }
+      const modals = Array.from(document.querySelectorAll('[aria-modal="true"]')).filter((m) => (
+        m && m.isConnected !== false && !m.closest('[hidden], [inert], [aria-hidden="true"]')
+      ));
+      if (modals.length > 0) return modals[modals.length - 1];
+    } catch (_) {}
+    return null;
+  };
+  const _gpadIsTargetAllowed = (target) => {
+    if (!target || target.disabled || target.getAttribute?.('aria-disabled') === 'true') return false;
+    if (target.closest?.('[hidden], [inert], [aria-hidden="true"], [aria-disabled="true"]')) return false;
+    const modalRoot = _gpadActiveModalRoot();
+    if (modalRoot && typeof modalRoot.contains === 'function' && !modalRoot.contains(target)) return false;
+    return true;
+  };
+
   function _gpadCursorClick() {
     if (!_gpad.cursorMode) return;
     try {
@@ -152,7 +177,7 @@ if (!window._alloGamepadGlobal) {
       }
       window._alloHaptic('click');
       const target = el.closest('button,a,[role="button"],input,select,textarea,[tabindex]') || el;
-      if (!target || target.disabled || target.closest?.('[hidden], [inert], [aria-hidden="true"]')) return;
+      if (!_gpadIsTargetAllowed(target)) return;
       if (typeof target.focus === 'function') target.focus();
       if (typeof target.click === 'function') target.click();
       const lbl = target.getAttribute('aria-label') || target.title || (target.textContent || '').trim().substring(0, 80);
@@ -171,28 +196,13 @@ if (!window._alloGamepadGlobal) {
   };
   const _gpadFocusableElements = () => {
     try {
-      const stack = Array.isArray(window.__alloFocusTrapStack) ? window.__alloFocusTrapStack : [];
-      let root = null;
-      for (let i = stack.length - 1; i >= 0; i--) {
-        const entry = stack[i];
-        const cand = entry && (entry.root || entry.container || entry.element || entry);
-        if (cand && typeof cand.querySelectorAll === 'function' && cand.isConnected === true && !cand.closest?.('[hidden], [inert], [aria-hidden="true"]')) {
-          root = cand;
-          break;
-        }
-      }
-      if (!root) {
-        const modals = Array.from(document.querySelectorAll('[aria-modal="true"]')).filter((m) => (
-          m && m.isConnected !== false && !m.closest('[hidden], [inert], [aria-hidden="true"]')
-        ));
-        if (modals.length > 0) root = modals[modals.length - 1];
-      }
+      const root = _gpadActiveModalRoot();
       const queryRoot = root || document;
       const layoutProbe = root || document.body;
       const hasLayout = Boolean(layoutProbe && typeof layoutProbe.getClientRects === 'function' && layoutProbe.getClientRects().length > 0);
       return Array.from(queryRoot.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), a[href], summary')).filter((el) => {
-        if (!el || el.disabled) return false;
-        if (el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+        if (!el || el.disabled || el.getAttribute?.('aria-disabled') === 'true') return false;
+        if (el.closest('[hidden], [inert], [aria-hidden="true"], [aria-disabled="true"]')) return false;
         const closedDetails = el.closest('details:not([open])');
         if (closedDetails && !(el.tagName === 'SUMMARY' && el.parentElement === closedDetails)) return false;
         if (typeof window.getComputedStyle === 'function') {
@@ -262,6 +272,10 @@ if (!window._alloGamepadGlobal) {
     _gpad.scrollAccum = 0;
   };
 
+  window.addEventListener('blur', () => {
+    _gpadReleaseAllKeys();
+    _gpadClearHover();
+  });
   window.addEventListener('gamepadconnected', (e) => {
     _gpad.connected = true;
     _gpadMountCursor();
@@ -344,7 +358,7 @@ if (!window._alloGamepadGlobal) {
           try {
             const hoverEl = document.elementFromPoint(_gpad.cursorX, _gpad.cursorY);
             const rawClickable = hoverEl?.closest('button,a,[role="button"],input,select,textarea,[tabindex]');
-            const clickable = rawClickable && !rawClickable.disabled && !rawClickable.closest?.('[hidden], [inert], [aria-hidden="true"]') ? rawClickable : null;
+            const clickable = _gpadIsTargetAllowed(rawClickable) ? rawClickable : null;
             if (clickable !== _gpad.lastHovered) {
               _gpadClearHover();
               if (clickable) {
@@ -485,7 +499,7 @@ if (!window._alloGamepadGlobal) {
     if (btns.length >= 12 && _gpadBtnEdge(11, _gpadBtnPressed(btns, 11))) {
       try {
         // First try: find an active, visible mic/dictation button in the current modal/view
-        const micBtn = _gpadFocusableElements().find((el) => /ictation|mic|icrophone/i.test(el.getAttribute('aria-label') || ''));
+        const micBtn = _gpadFocusableElements().find((el) => /\b(?:dictation|mic|microphone)\b/i.test(el.getAttribute('aria-label') || ''));
         if (micBtn) {
           micBtn.click();
         } else {

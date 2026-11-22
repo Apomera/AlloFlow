@@ -67,10 +67,10 @@
         sessionToken = window.sessionStorage ? (window.sessionStorage.getItem(TOKEN_KEY) || '') : '';
       } catch (err) { sessionToken = ''; }
       var saved = JSON.parse(raw);
-      if (saved && typeof saved.execUrl === 'string') {
+      if (saved && typeof saved.execUrl === 'string' && core.validateExecUrl(saved.execUrl).ok) {
         var legacyToken = typeof saved.token === 'string' ? saved.token : '';
         var resolvedToken = sessionToken || legacyToken;
-        state.delivery.execUrl = saved.execUrl;
+        state.delivery.execUrl = core.validateExecUrl(saved.execUrl).value;
         state.delivery.token = resolvedToken;
         state.delivery.owner = typeof saved.owner === 'string' ? saved.owner : '';
         if (Object.prototype.hasOwnProperty.call(saved, 'token')) {
@@ -123,16 +123,22 @@
   // trigger a CORS preflight it cannot respond to, so the body is sent as
   // text/plain and parsed as JSON on the other side.
   function postToScript(url, body) {
-    return window.fetch(url, {
+    var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (_) {} }, 25000) : null;
+    var init = {
       method: 'POST',
       credentials: 'omit',
       cache: 'no-store',
       referrerPolicy: 'no-referrer',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(body)
-    }).then(function (response) {
+    };
+    if (ctrl) init.signal = ctrl.signal;
+    return window.fetch(url, init).then(function (response) {
       if (response && response.ok === false) throw new Error('HTTP ' + response.status);
       return response.json();
+    }).finally(function () {
+      if (timer !== null) clearTimeout(timer);
     });
   }
 
@@ -538,6 +544,7 @@
     state.delivery.execUrl = check.value;
     var connectingUrl = check.value;
     var connectingToken = state.delivery.token;
+    var reqEpoch = ++deliveryEpoch;
     state.delivery.busy = true;
     state.delivery.message = 'Connecting...';
     state.delivery.tone = 'warn';
@@ -552,6 +559,7 @@
       return;
     }
     built.value.selfTest().then(function (result) {
+      if (reqEpoch !== deliveryEpoch) return;
       state.delivery.busy = false;
       if (state.delivery.execUrl !== connectingUrl || state.delivery.token !== connectingToken) {
         state.delivery.message = 'Connection details changed. Connect again to verify them.';
@@ -575,6 +583,7 @@
       render();
       say('Connected.');
     }, function (err) {
+      if (reqEpoch !== deliveryEpoch) return;
       state.delivery.busy = false;
       state.delivery.message = 'Could not reach the script. Check the URL, and that the deployment is set to "Anyone". (' + (err && err.message ? err.message : 'network error') + ')';
       state.delivery.tone = 'stop';
@@ -794,6 +803,11 @@
       state.approval = null;
       state.notes = '';
       state.draft = null;
+      state.context = {};
+      state.sendTo = '';
+      state.sendResult = null;
+      state.lastComparison = null;
+      state.manual = { componentId: '', quote: '', evidence: '', interpretation: '', message: '' };
       goto('capture');
       say('Back in practice mode.');
     }));
@@ -990,7 +1004,7 @@
     var box = el('div', 'field');
     box.style.marginTop = '.6rem';
     var label = el('label', null, 'Your wording for this feedback');
-    var id = 'edit-' + suggestion.id;
+    var id = 'edit-' + String(suggestion.id || '').replace(/[^A-Za-z0-9_-]/g, '_');
     label.setAttribute('for', id);
     var area = el('textarea');
     area.id = id;
@@ -1003,6 +1017,10 @@
     add(row, button('Save and approve this wording', 'primary', function () {
       decide(suggestion.id, 'edited', area.value);
     }, { describedBy: titleId }));
+    add(row, button('Cancel', null, function () {
+      if (box.parentNode) box.parentNode.removeChild(box);
+      say('Edit cancelled.');
+    }));
     add(box, row);
     add(card, box);
     area.focus();
@@ -1227,6 +1245,7 @@
 
   function copyText(text, what) {
     function fallback() {
+      var prevFocus = document.activeElement;
       var area = document.createElement('textarea');
       area.setAttribute('aria-label', 'Temporary field for copying walkthrough text');
       area.value = text;
@@ -1235,9 +1254,13 @@
       area.style.opacity = '0';
       document.body.appendChild(area);
       area.select();
-      try { document.execCommand('copy'); } catch (err) { /* reported below */ }
+      var copied = false;
+      try { copied = !!document.execCommand('copy'); } catch (err) { copied = false; }
       document.body.removeChild(area);
-      say(what + ' copied.');
+      if (prevFocus && typeof prevFocus.focus === 'function' && prevFocus.isConnected) {
+        try { prevFocus.focus(); } catch (_) {}
+      }
+      say(copied ? what + ' copied.' : 'Could not copy ' + what + ' automatically. Select the text below and copy it.');
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(function () {
@@ -1271,7 +1294,9 @@
       var box = el('div', 'out');
       var head = el('div', 'head');
       add(head, el('h3', null, fieldOut.key));
-      add(head, button('Copy', null, function () { copyText(fieldOut.text, fieldOut.key); }));
+      var ctxCopyBtn = button('Copy', null, function () { copyText(fieldOut.text, fieldOut.key); });
+      ctxCopyBtn.setAttribute('aria-label', 'Copy ' + fieldOut.key);
+      add(head, ctxCopyBtn);
       add(box, head);
       var pre = el('pre');
       pre.textContent = fieldOut.text;
@@ -1285,7 +1310,9 @@
       var title = el('h3', null, fieldOut.key);
       if (fieldOut.empty) add(title, el('span', 'pill', 'no evidence'));
       add(head, title);
-      add(head, button('Copy', null, function () { copyText(fieldOut.text, fieldOut.key); }));
+      var fieldCopyBtn = button('Copy', null, function () { copyText(fieldOut.text, fieldOut.key); });
+      fieldCopyBtn.setAttribute('aria-label', 'Copy ' + fieldOut.key);
+      add(head, fieldCopyBtn);
       add(box, head);
       var pre = el('pre');
       pre.textContent = fieldOut.text;
@@ -1369,10 +1396,26 @@
     state.draft = null;
     state.scenario = null;
     state.notes = '';
+    state.context = {};
+    state.sendTo = '';
+    state.sendResult = null;
+    state.approval = null;
+    state.manual = { componentId: '', quote: '', evidence: '', interpretation: '', message: '' };
     state.lastComparison = null;
     goto('capture');
     say('Cleared. Nothing was kept.');
   }
+
+  window.addEventListener('pagehide', function () {
+    core.clearDraft(state.draft);
+    state.draft = null;
+    state.notes = '';
+    state.context = {};
+    state.sendTo = '';
+    state.sendResult = null;
+    state.manual = { componentId: '', quote: '', evidence: '', interpretation: '', message: '' };
+    state.delivery.token = '';
+  });
 
   /* ---------------------------------------------------------------- *
    * Render

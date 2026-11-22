@@ -66,6 +66,7 @@
 // Canvas-based rendering with simplified flight physics
 // ═══════════════════════════════════════════
 
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
@@ -73,8 +74,9 @@ window.StemLab = window.StemLab || {
   getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
 };
+}
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) {
+if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) {
 
 (function() {
   'use strict';
@@ -98,6 +100,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
   }
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-flightsim')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-flightsim';
@@ -17424,14 +17427,22 @@ function getFlightCityLayout(city) {
           // draw. preventDefault is required for any restore. releaseGl force-loses only
           // canvases already removed (our own teardown), and the renderer check skips a
           // renderer disposeThree already dropped.
-          canvas.addEventListener('webglcontextlost', function(ev) {
+          var _fsCtxLostTimer = null;
+          var _fsOnContextLost = function(ev) {
             if (!canvas.isConnected) return;
             ev.preventDefault();
             if (threeRendererRef.current !== renderer) return;
-            setTimeout(function() {
+            if (_fsCtxLostTimer !== null) clearTimeout(_fsCtxLostTimer);
+            _fsCtxLostTimer = setTimeout(function() {
+              _fsCtxLostTimer = null;
               if (threeRendererRef.current === renderer) failThree(new Error('WebGL context lost'));
             }, 0);
-          });
+          };
+          canvas.addEventListener('webglcontextlost', _fsOnContextLost);
+          renderer._fsCleanupContextLost = function() {
+            if (_fsCtxLostTimer !== null) { clearTimeout(_fsCtxLostTimer); _fsCtxLostTimer = null; }
+            try { canvas.removeEventListener('webglcontextlost', _fsOnContextLost); } catch (_) {}
+          };
           var rendererDpr = Math.min(2, Math.max(1, Number(window.devicePixelRatio) || 1));
           renderer.setPixelRatio(rendererDpr);
           renderer.setSize(W, H, false);
@@ -18083,6 +18094,7 @@ function getFlightCityLayout(city) {
         try {
           if (threeRendererRef.current) {
             var renderer = threeRendererRef.current;
+            try { if (typeof renderer._fsCleanupContextLost === 'function') renderer._fsCleanupContextLost(); } catch (_) {}
             try{ if(renderer._alloComposer){ (renderer._alloComposer.passes||[]).forEach(function(p){if(p&&p.dispose)p.dispose();}); renderer._alloComposer=null; } }catch(e){}
             renderer.dispose(); if (window.StemLab && window.StemLab.releaseGl) window.StemLab.releaseGl(renderer);
             threeRendererRef.current = null;
@@ -20579,6 +20591,7 @@ function getFlightCityLayout(city) {
               e.preventDefault(); (e.shiftKey ? items[items.length - 1] : items[0]).focus();
             }
           }
+          if (e.isComposing || e.keyCode === 229) return;
           if (e.key === 'Escape' && !document.fullscreenElement) {
             e.preventDefault(); e.stopPropagation(); setFlightHelp(false);
           }
@@ -20717,7 +20730,7 @@ function getFlightCityLayout(city) {
             keysRef.current = {};
             return;
           }
-          if (e.defaultPrevented || e.isComposing || !isFlightSurface(e.target) || !FLIGHT_KEYS[k]) return;
+          if (e.defaultPrevented || e.isComposing || e.keyCode === 229 || !isFlightSurface(e.target) || !FLIGHT_KEYS[k]) return;
           // The first Escape leaves fullscreen; a later Escape ends flight.
           if (k === 'escape' && (document.fullscreenElement || document.webkitFullscreenElement ||
               deck && deck.hasAttribute('data-allo-fullscreen-active'))) return;
@@ -20763,6 +20776,7 @@ function getFlightCityLayout(city) {
       // document bubble: waiting until window bubble would then also end flight.
       useEffect(function() {
         var onEscKey = function(e) {
+          if (e.isComposing || e.keyCode === 229) return;
           if (e.key !== 'Escape' && e.keyCode !== 27) return;
           var deck = document.getElementById('skyschool-flight-container');
           if (!deck) return;
@@ -20820,7 +20834,7 @@ function getFlightCityLayout(city) {
         droneBriefingIsolationRef.current = releaseIsolation;
         if (first && typeof first.focus === 'function') first.focus({ preventScroll: true });
         var onKey = function(e) {
-          if (!active || !document.contains(dialog)) return;
+          if (!active || !document.contains(dialog) || e.isComposing || e.keyCode === 229) return;
           if (e.key === 'Escape' || e.keyCode === 27) {
             e.preventDefault(); e.stopPropagation();
             // Same effect as Cancel: the mission stays unselected, so Escape
@@ -20948,6 +20962,7 @@ function getFlightCityLayout(city) {
         // Values remain readable after keyboard, drag, or assistance changes.
         // These are ordinary text/slider values, never a streaming live region.
         var timer = setInterval(function() {
+          if (typeof document !== 'undefined' && document.hidden) return;
           if (tapPanelRef.current && tapPanelRef.current.open) syncTapControlUi();
         }, 200);
         return function() { clearInterval(timer); releaseTapControls(true); };
@@ -27364,7 +27379,7 @@ function getFlightCityLayout(city) {
           // Landing sound
           try {
             var lac = audioRef.current.ctx;
-            if (lac) {
+            if (lac && !_fsIsGlobalMuted()) {
               // Tire screech
               var scLen = Math.floor(lac.sampleRate * (0.1 + fpm / 2000));
               var scBuf = lac.createBuffer(1, scLen, lac.sampleRate);
@@ -27492,9 +27507,18 @@ function getFlightCityLayout(city) {
         }
       };
 
+      var _fsIsGlobalMuted = function() {
+        if (typeof window === 'undefined') return false;
+        try {
+          if (window.__alloMuted === true || window._alloGlobalMute === true || window._alloGlobalMuted === true) return true;
+          if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+        } catch (_) {}
+        return false;
+      };
       // ── Engine Sound (Web Audio) ──
       var audioRef = useRef({ ctx: null, osc: null, gain: null, started: false });
       var updateEngineSound = function(throttle, speed, altitude) {
+        if (_fsIsGlobalMuted()) { silenceFlightAudio(); return; }
         var a = audioRef.current;
         if (!a.started) {
           try {
@@ -27546,6 +27570,7 @@ function getFlightCityLayout(city) {
       // ── Wind Noise (scales with airspeed) ──
       var windRef = useRef({ src: null, gain: null, filter: null, started: false });
       var updateWindSound = function(speed, altitude) {
+        if (_fsIsGlobalMuted()) return;
         var w = windRef.current;
         if (!w.started) {
           try {
@@ -29297,6 +29322,7 @@ function getFlightCityLayout(city) {
       // ── Stall Horn Audio ──
       var stallHornRef = useRef({ osc: null, gain: null, ctx: null, active: false });
       var updateStallHorn = function(stalling) {
+        if (stalling && _fsIsGlobalMuted()) stalling = false;
         var sh = stallHornRef.current;
         if (stalling && !sh.active) {
           try {
@@ -30327,7 +30353,7 @@ function getFlightCityLayout(city) {
             loopPauseHeld = false;
             animRef.current = requestAnimationFrame(loop); return;
           }
-          if (d.showHelp) { animRef.current = requestAnimationFrame(loop); return; }
+          if (d.showHelp) { if (typeof document !== 'undefined' && document.hidden) { animRef.current = null; return; } animRef.current = requestAnimationFrame(loop); return; }
           // Questions remain operable while their flight is paused. Rotor Q
           // remains a held yaw control; sprints own their own questions.
           var ordinaryQuiz = geoQuizRef.current;
@@ -30373,7 +30399,7 @@ function getFlightCityLayout(city) {
             // Held: nothing to draw. First paused frame: fall through and
             // draw the scene once more, frozen (dt = 0), so the pause card
             // at the end of the frame sits over the world, not over black.
-            if (loopPauseHeld) { animRef.current = requestAnimationFrame(loop); return; }
+            if (loopPauseHeld) { if (typeof document !== 'undefined' && document.hidden) { animRef.current = null; return; } animRef.current = requestAnimationFrame(loop); return; }
             dt = 0;
             dtScale = 0;
           } else {
@@ -33388,6 +33414,7 @@ function getFlightCityLayout(city) {
             gfx.fillText('ALT ' + Math.round(flightRef.current.altitude).toLocaleString() + ' ft   SPD ' + ktsP + ' kts   HDG ' + String(Math.round(flightRef.current.heading)).padStart(3, '0') + '°', W / 2, pzY + 98);
           }
           loopErrCount = 0;
+          if (typeof document !== 'undefined' && document.hidden) { animRef.current = null; return; }
           animRef.current = requestAnimationFrame(loop);
           } catch(loopErr) {
             // Don't spin-log at 60 fps forever on a persistent draw error:
@@ -33395,15 +33422,30 @@ function getFlightCityLayout(city) {
             // of consecutive failures instead of masking a dead sim.
             loopErrCount++;
             if (loopErrCount === 1 || loopErrCount % 300 === 0) console.error('[SkySchool] Render loop error (frame ' + loopErrCount + '):', loopErr);
-            if (loopErrCount < 1800) { animRef.current = requestAnimationFrame(loop); }
-            else { console.error('[SkySchool] Render loop halted after repeated errors.'); }
+            if (loopErrCount < 1800 && !(typeof document !== 'undefined' && document.hidden)) { animRef.current = requestAnimationFrame(loop); }
+            else if (loopErrCount >= 1800) { console.error('[SkySchool] Render loop halted after repeated errors.'); }
+            else { animRef.current = null; }
           }
         };
 
+        var onLoopVisibility = function() {
+          if (typeof document !== 'undefined' && !document.hidden && flyingRef.current && !animRef.current) {
+            lastTs = 0;
+            animRef.current = requestAnimationFrame(loop);
+          }
+        };
+        var onFlightGlobalMute = function() {
+          if (_fsIsGlobalMuted()) silenceFlightAudio();
+        };
+        if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onLoopVisibility);
+        if (typeof window !== 'undefined') window.addEventListener('alloflow-mute-changed', onFlightGlobalMute);
         animRef.current = requestAnimationFrame(loop);
         return function() {
           flyingRef.current = false;
-          cancelAnimationFrame(animRef.current);
+          if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onLoopVisibility);
+          if (typeof window !== 'undefined') window.removeEventListener('alloflow-mute-changed', onFlightGlobalMute);
+          if (animRef.current) cancelAnimationFrame(animRef.current);
+          animRef.current = null;
           stopEngineSound(); stopWindSound();
           updateStallHorn(false);
           // Close stall horn audio context
@@ -35489,6 +35531,10 @@ function getFlightCityLayout(city) {
               border: primary ? '2px solid #fbbf24' : '1px solid #64748b', background: primary ? '#fbbf24' : 'transparent', color: primary ? '#111827' : '#e2e8f0' };
           };
           return h('div', { role: 'dialog', 'aria-modal': 'false', 'aria-labelledby': 'skyschool-landing-review-title', 'data-landing-review': review.kind,
+            onKeyDown: function(e) {
+              if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
+              if (e.key === 'Escape' && !crash) { e.preventDefault(); e.stopPropagation(); continueAfterLandingReview(); }
+            },
             style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 'min(440px, calc(100% - 24px))', maxHeight: 'calc(100% - 24px)', overflowY: 'auto',
               padding: '16px', borderRadius: '12px', background: 'rgba(2,6,23,0.96)', border: '2px solid ' + (crash ? '#f87171' : '#fb923c'), color: '#e2e8f0', fontSize: '13px', lineHeight: 1.55, zIndex: 40,
               boxShadow: '0 10px 30px rgba(0,0,0,0.7)' } },
@@ -38278,7 +38324,7 @@ function getFlightCityLayout(city) {
                     onChange: function(e) { changeIQNumber(control.key, e.target.value); },
                     onBlur: flushIQNumberDrafts,
                     onKeyDown: function(e) {
-                      if (e.key !== 'Enter' || e.isComposing || e.nativeEvent && e.nativeEvent.isComposing) return;
+                      if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229 || e.nativeEvent && e.nativeEvent.isComposing) return;
                       e.preventDefault();
                       // Apply the draft without discarding the learner's focus.
                       if (!e.repeat) flushIQNumberDrafts();

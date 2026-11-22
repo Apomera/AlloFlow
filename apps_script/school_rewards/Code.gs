@@ -1063,7 +1063,7 @@ var SR_REDACTED_TEXT = 'Redacted at district request';
 var SR_REDACTION_PLAN = [
   ['Students', 'Id', { FirstName: 'Redacted', LastInitial: '', Grade: '', Homeroom: '', Active: false }],
   ['Ledger', 'StudentId', { Reason: SR_REDACTED_TEXT }],
-  ['Receipts', 'StudentId', { RecipientEmail: '' }],
+  ['Receipts', 'StudentId', { RecipientEmail: '', Error: '' }],
   ['Statements', 'StudentId', { Error: '' }],
   ['Guardians', 'StudentId', { GuardianEmail: '', GuardianName: '', Relationship: '', Active: false }],
   ['GuardianDigests', 'StudentId', { GuardianEmailHash: '', Error: '' }],
@@ -1194,10 +1194,11 @@ function redactSchoolRewardsStudent(request) {
       var mailTouched = 0;
       mailOutbox_(book).forEach(function(delivery) {
         if (delivery.studentId !== studentId) return;
-        if (delivery.payloadJson === SR_REDACTED_MAIL_PAYLOAD && !delivery.error && !delivery.resolutionNote) return;
+        var expectedNote = delivery.status === 'FAILED' ? SR_REDACTED_TEXT : '';
+        if (delivery.payloadJson === SR_REDACTED_MAIL_PAYLOAD && !delivery.error && delivery.resolutionNote === expectedNote) return;
         delivery.payloadJson = SR_REDACTED_MAIL_PAYLOAD;
         delivery.error = '';
-        delivery.resolutionNote = '';
+        delivery.resolutionNote = expectedNote;
         signMailDelivery_(delivery);
         upsertMailOutbox_(book, delivery);
         mailTouched += 1;
@@ -1207,6 +1208,22 @@ function redactSchoolRewardsStudent(request) {
     if (book.getSheetByName('ClaimTokens')) {
       var claimTouched = redactSheetRows_(book, 'ClaimTokens', 'ClaimedByStudentId', studentId, { Reason: SR_REDACTED_TEXT });
       if (claimTouched) { cleared.ClaimTokens = claimTouched; rows += claimTouched; }
+    }
+    if (book.getSheetByName('Preferences')) {
+      var prefSheet = book.getSheetByName('Preferences');
+      var prefRows = rows_(prefSheet, 3), prefTouched = 0, prefValues = [];
+      for (var pi = 0; pi < prefRows.length; pi++) {
+        if (String(cell_(prefRows[pi][0])) === studentId && (String(cell_(prefRows[pi][1])) !== '' || String(cell_(prefRows[pi][2])) !== '')) {
+          prefValues.push(safeRow_([prefRows[pi][0], '', '']));
+          prefTouched += 1;
+        } else {
+          prefValues.push(safeRow_([prefRows[pi][0], prefRows[pi][1], prefRows[pi][2]]));
+        }
+      }
+      if (prefTouched) {
+        prefSheet.getRange(2, 1, prefValues.length, 3).setValues(prefValues);
+        cleared.Preferences = prefTouched; rows += prefTouched;
+      }
     }
     // Stamped only when something actually changed, so running this twice is a
     // genuine no-op rather than a second audited edit.
@@ -2217,10 +2234,13 @@ function verifySchoolRewardsAuditChain() {
 function auditChainStatus_() {
   var rows = rows_(sheet_(book_(), 'Audit'), 10), previous = 'GENESIS';
   for (var i = 0; i < rows.length; i++) {
-    var fields = rows[i].slice(0, 9).map(cell_);
+    var rawFields = rows[i].slice(0, 9).map(cell_);
+    var fields = rawFields.map(logicalCell_);
     if (fields[8] !== previous) return { ok: false, reason: 'link', brokenAtRow: i + 2, entryId: fields[0], verified: i };
-    var expected = hash_(fields.join('|')), actual = cell_(rows[i][9]);
-    if (actual !== expected && actual !== 'h_' + expected) return { ok: false, reason: 'content', brokenAtRow: i + 2, entryId: fields[0], verified: i };
+    var expected = hash_(fields.join('|')), legacyExpected = hash_(rawFields.join('|')), actual = cell_(rows[i][9]);
+    if (actual !== expected && actual !== 'h_' + expected && actual !== legacyExpected && actual !== 'h_' + legacyExpected) {
+      return { ok: false, reason: 'content', brokenAtRow: i + 2, entryId: fields[0], verified: i };
+    }
     previous = cell_(rows[i][9]);
   }
   return { ok: true, rows: rows.length, verified: rows.length };
@@ -2241,7 +2261,7 @@ function sendStatements_(period, limit, actor) {
       MailApp.sendEmail({ to: student.email, subject: statementCopy_(student.language).subject(config), name: (config.schoolName || 'School') + ' School Rewards', body: statementText_(student, availability, asOf, config, windowItem, prizes), htmlBody: statementHtml_(student, availability, asOf, config, windowItem, prizes) });
       sheet_(book, 'Statements').appendRow(safeRow_([statementId, student.id, period, availability.balance, 'SENT', asOf, ''])); sent++;
     } catch (err) {
-      sheet_(book, 'Statements').appendRow(safeRow_([statementId, student.id, period, availability.balance, 'FAILED', asOf, text_(err && err.message, 300, 'Mail send failed')])); failed++;
+      sheet_(book, 'Statements').appendRow(safeRow_([statementId, student.id, period, availability.balance, 'FAILED', asOf, mailSafeErrorText_(err)])); failed++;
     }
   }
   appendAudit_({ event: 'BALANCE_STATEMENTS_SENT', type: 'statement_batch', id: period, summary: sent + ' sent, ' + failed + ' failed' }, actor);
@@ -2260,7 +2280,7 @@ function sendOrderReceipt_(book, student, order, balance, kind) {
   try { target.appendRow(safeRow_([receiptId, order.id, student.id, kind, student.email, status, sentAt, ''])); }
   catch (persistError) { return { id: '', kind: kind, status: 'FAILED', sentAt: sentAt, points: movement }; }
   try { MailApp.sendEmail({ to: student.email, subject: subject, name: (config.schoolName || 'School') + ' School Rewards', body: plain.join('\n'), htmlBody: htmlBody }); status = 'SENT'; }
-  catch (err) { status = 'FAILED'; error = text_(err && err.message, 300, 'Mail send failed'); }
+  catch (err) { status = 'FAILED'; error = mailSafeErrorText_(err); }
   try { upsert_(target, 8, receiptId, safeRow_([receiptId, order.id, student.id, kind, student.email, status, sentAt, error])); }
   catch (persistError) { status = 'UNKNOWN'; }
   return { id: receiptId, kind: kind, status: status, sentAt: sentAt, points: movement };
@@ -2512,7 +2532,7 @@ function sisImportBySnapshotId_(book, snapshotId) { var list = sisImports_(book)
 function upsertSisImportRow_(book, item) { upsert_(sheet_(book, 'SisImports'), 11, item.id, safeRow_([item.id, item.snapshotId, item.formatVersion, item.contentHash, item.createdCount, item.updatedCount, item.unchangedCount, item.status, item.appliedAt, item.actorHash, item.createdAt])); }
 
 function categories_(book) { return rows_(sheet_(book, 'Categories'), 9).map(function(row) { return { id: String(row[0] || ''), name: String(row[1] || ''), description: String(row[2] || ''), framework: String(row[3] || ''), color: String(row[4] || ''), active: bool_(row[5]), sortOrder: number_(row[6]), createdAt: cell_(row[7]), updatedAt: cell_(row[8]) }; }).sort(function(a, b) { return a.sortOrder - b.sortOrder || a.name.localeCompare(b.name); }); }
-function normalizeCategory_(value) { value = object_(value); var framework = text_(value.framework, 30, 'CUSTOM').toUpperCase(); if (framework !== 'HOWL' && framework !== 'CUSTOM') framework = 'CUSTOM'; var color = text_(value.color, 20, '#6046b6'); if (!/^#[0-9a-f]{6}$/i.test(color)) throw srError_('bad_category', 'Pick a colour for the category from the colour picker.'); return { id: text_(value.id, 80, ''), name: text_(value.name, 80, ''), description: text_(value.description, 300, ''), framework: framework, color: color, active: value.active !== false, sortOrder: integer_(value.sortOrder == null ? 100 : value.sortOrder, 0, 10000, 'Sort order') }; }
+function normalizeCategory_(value) { value = object_(value); var framework = text_(value.framework, 30, 'CUSTOM').toUpperCase(); if (framework !== 'HOWL' && framework !== 'CUSTOM') framework = 'CUSTOM'; var color = text_(value.color, 20, '#6046b6'); if (!/^#[0-9a-f]{6}$/i.test(color)) throw srError_('bad_category', 'Pick a colour for the category from the colour picker.'); return { id: optionalId_(value.id, 'category'), name: text_(value.name, 80, ''), description: text_(value.description, 300, ''), framework: framework, color: color, active: value.active !== false, sortOrder: integer_(value.sortOrder == null ? 100 : value.sortOrder, 0, 10000, 'Sort order') }; }
 function upsertCategoryRow_(book, value) { if (!value.name) throw srError_('bad_category', 'Category name is required.'); var existing = categories_(book), categoryId = value.id || uuid_(), createdAt = now_(); existing.forEach(function(old) { if (old.id === categoryId) createdAt = old.createdAt || createdAt; }); var saved = { id: categoryId, name: value.name, description: value.description, framework: value.framework, color: value.color, active: value.active, sortOrder: value.sortOrder, createdAt: createdAt, updatedAt: now_() }; upsert_(sheet_(book, 'Categories'), 9, categoryId, safeRow_([saved.id, saved.name, saved.description, saved.framework, saved.color, saved.active, saved.sortOrder, saved.createdAt, saved.updatedAt])); return saved; }
 function requireCategory_(book, categoryId) { var list = categories_(book); for (var i = 0; i < list.length; i++) if (list[i].id === categoryId && list[i].active) return list[i]; throw srError_('not_found', 'That recognition category is no longer active. Choose another.'); }
 function seedHowlCategories_(book) { [
@@ -2524,7 +2544,7 @@ function seedHowlCategories_(book) { [
 ].forEach(function(item, index) { upsertCategoryRow_(book, normalizeCategory_({ name: item[0], description: item[1], framework: 'HOWL', color: item[2], sortOrder: (index + 1) * 10 })); }); }
 function normalizeLevelThresholds_(value) { var raw = Array.isArray(value) ? value : String(value == null ? '' : value).split(','); var clean = raw.map(Number).filter(function(number) { return isFinite(number) && Math.floor(number) === number && number >= 0 && number <= 100000; }).sort(function(a, b) { return a - b; }).filter(function(number, index, all) { return !index || number !== all[index - 1]; }); if (!clean.length || clean[0] !== 0) clean.unshift(0); if (clean.length < 2) clean = [0, 25, 75, 150, 300]; return clean.slice(0, 10); }
 function categoryProgress_(book, studentId, categories, config) {
-  var totals = {}, thresholds = normalizeLevelThresholds_(config.levelThresholds), levelNames = ['Starting', 'Growing', 'Practicing', 'Leading', 'Flourishing'];
+  var totals = Object.create(null), thresholds = normalizeLevelThresholds_(config.levelThresholds), levelNames = ['Starting', 'Growing', 'Practicing', 'Leading', 'Flourishing'];
   categories.forEach(function(category) { totals[category.id] = 0; });
   ledger_(book).forEach(function(entry) { if (entry.studentId === studentId && entry.categoryId && (entry.kind === 'EARN' || entry.kind === 'REVERSAL')) totals[entry.categoryId] = Math.max(0, (totals[entry.categoryId] || 0) + entry.amount); });
   return categories.map(function(category) {
@@ -2796,7 +2816,7 @@ function prepareCatalogIntent_(book, request, key, actor) {
 }
 function inventoryMovements_(book) {
   return rows_(sheet_(book, 'InventoryMovements'), 18).map(function(row) {
-    return { id: String(row[0] || ''), catalogId: String(row[1] || ''), version: number_(row[2]), kind: String(row[3] || ''), quantityDelta: number_(row[4]), beforeLimit: number_(row[5]), beforeRemaining: number_(row[6]), afterLimit: number_(row[7]), afterRemaining: number_(row[8]), referenceType: String(row[9] || ''), referenceId: String(row[10] || ''), actorEmail: String(row[11] || ''), actorRole: String(row[12] || ''), at: cell_(row[13]), idempotencyKey: String(row[14] || ''), reason: String(row[15] || ''), previousHash: String(row[16] || ''), hash: String(row[17] || '') };
+    return { id: String(row[0] || ''), catalogId: String(row[1] || ''), version: number_(row[2]), kind: String(row[3] || ''), quantityDelta: number_(row[4]), beforeLimit: number_(row[5]), beforeRemaining: number_(row[6]), afterLimit: number_(row[7]), afterRemaining: number_(row[8]), referenceType: String(row[9] || ''), referenceId: String(row[10] || ''), actorEmail: String(row[11] || ''), actorRole: String(row[12] || ''), at: cell_(row[13]), idempotencyKey: String(row[14] || ''), reason: logicalCell_(String(row[15] || '')), previousHash: String(row[16] || ''), hash: String(row[17] || '') };
   });
 }
 function inventoryMovementById_(book, movementId) { var list = inventoryMovements_(book); for (var i = 0; i < list.length; i++) if (list[i].id === movementId) return list[i]; return null; }
@@ -2805,8 +2825,8 @@ function inventoryMovementHashBody_(value) { return { id: value.id, catalogId: v
 function inventoryMovementHash_(value) { return 'i1_' + hash_(stableJson_(inventoryMovementHashBody_(value))); }
 function buildInventoryMovementSpec_(value) { value = inventoryMovementHashBody_(value); value.hash = inventoryMovementHash_(value); return value; }
 function newInventoryMovementSpec_(catalogId, version, kind, delta, beforeLimit, beforeRemaining, afterLimit, afterRemaining, referenceType, referenceId, actor, at, key, reason, previousHash) {
-  var storedReason = safeRow_([text_(reason, 180, '')])[0];
-  return buildInventoryMovementSpec_({ id: inventoryMovementId_(kind, key, catalogId, version), catalogId: catalogId, version: version, kind: kind, quantityDelta: delta, beforeLimit: beforeLimit, beforeRemaining: beforeRemaining, afterLimit: afterLimit, afterRemaining: afterRemaining, referenceType: referenceType, referenceId: referenceId, actorEmail: actor.email, actorRole: actor.role, at: at, idempotencyKey: key, reason: storedReason, previousHash: previousHash });
+  var logicalReason = text_(reason, 180, '');
+  return buildInventoryMovementSpec_({ id: inventoryMovementId_(kind, key, catalogId, version), catalogId: catalogId, version: version, kind: kind, quantityDelta: delta, beforeLimit: beforeLimit, beforeRemaining: beforeRemaining, afterLimit: afterLimit, afterRemaining: afterRemaining, referenceType: referenceType, referenceId: referenceId, actorEmail: actor.email, actorRole: actor.role, at: at, idempotencyKey: key, reason: logicalReason, previousHash: previousHash });
 }
 function sameInventorySnapshot_(item, limit, remaining, version) { return !!item && item.inventoryLimit === limit && item.remaining === remaining && item.inventoryVersion === version; }
 function assertInventoryChainTailMatchesCatalog_(book, item) {
@@ -2896,7 +2916,7 @@ function buildStoreInventoryMovements_(book, lines, direction, kind, key, refere
 function assertInventoryRestorable_(book, lines) { var byId = Object.create(null), quantities = Object.create(null); catalog_(book).forEach(function(item) { byId[item.id] = item; }); lines.forEach(function(line) { var quantity = Number(line.quantity); if (!isFinite(quantity) || Math.floor(quantity) !== quantity || quantity < 1) throw srError_('reconciliation', 'Refund order quantities are invalid.'); quantities[line.catalogId] = (quantities[line.catalogId] || 0) + quantity; }); return Object.keys(quantities).map(function(itemId) { var item = byId[itemId]; if (!item) throw srError_('catalog_changed', 'The item on this order has been removed from the catalog, so its stock cannot be restored automatically.'); if (item.inventoryLimit >= 0 && (item.remaining < 0 || item.remaining > item.inventoryLimit || item.remaining + quantities[itemId] > item.inventoryLimit)) throw srError_('reconciliation', 'Refund would make inventory exceed its configured limit for ' + item.name + '.'); return { catalogId: itemId, quantity: quantities[itemId] }; }); }
 
 function windows_(book) { return rows_(sheet_(book, 'StoreWindows'), 7).map(function(row) { return { id: String(row[0] || ''), name: String(row[1] || ''), startsAt: cell_(row[2]), endsAt: cell_(row[3]), status: String(row[4] || ''), createdAt: cell_(row[5]), updatedAt: cell_(row[6]) }; }); }
-function normalizeWindow_(value) { value = object_(value); var status = text_(value.status, 20, 'DRAFT').toUpperCase(); if (SR_WINDOW_STATES.indexOf(status) < 0) throw srError_('bad_window', 'Choose a store status: draft, preview, open, closed, or archived.'); var startsAt = iso_(value.startsAt), endsAt = iso_(value.endsAt); if (startsAt && endsAt && startsAt >= endsAt) throw srError_('bad_window', 'The store closing date must be after its opening date.'); return { id: text_(value.id, 80, ''), name: text_(value.name, 120, 'Trimester store'), startsAt: startsAt, endsAt: endsAt, status: status }; }
+function normalizeWindow_(value) { value = object_(value); var status = text_(value.status, 20, 'DRAFT').toUpperCase(); if (SR_WINDOW_STATES.indexOf(status) < 0) throw srError_('bad_window', 'Choose a store status: draft, preview, open, closed, or archived.'); var startsAt = iso_(value.startsAt), endsAt = iso_(value.endsAt); if (startsAt && endsAt && startsAt >= endsAt) throw srError_('bad_window', 'The store closing date must be after its opening date.'); return { id: optionalId_(value.id, 'store window'), name: text_(value.name, 120, 'Trimester store'), startsAt: startsAt, endsAt: endsAt, status: status }; }
 function upsertWindowRow_(book, value) { var existing = windows_(book), windowId = value.id || uuid_(), createdAt = now_(); existing.forEach(function(old) { if (old.id === windowId) createdAt = old.createdAt || createdAt; }); var saved = { id: windowId, name: value.name, startsAt: value.startsAt, endsAt: value.endsAt, status: value.status, createdAt: createdAt, updatedAt: now_() }; upsert_(sheet_(book, 'StoreWindows'), 7, windowId, safeRow_([saved.id, saved.name, saved.startsAt, saved.endsAt, saved.status, saved.createdAt, saved.updatedAt])); return saved; }
 function windowById_(book, windowId) { var list = windows_(book); for (var i = 0; i < list.length; i++) if (list[i].id === windowId) return list[i]; return null; }
 function windowTimeState_(item) { var at = new Date().getTime(), starts = item && item.startsAt ? new Date(item.startsAt).getTime() : null, ends = item && item.endsAt ? new Date(item.endsAt).getTime() : null; if (starts != null && at < starts) return 'NOT_STARTED'; if (ends != null && at >= ends) return 'ENDED'; return 'ACTIVE'; }
@@ -3821,7 +3841,7 @@ function weeklyMailPeriodKey_(value) {
   return 'weekly-' + date.toISOString().slice(0, 10);
 }
 
-function appendAudit_(value, actor) { var target = sheet_(book_(), 'Audit'), history = rows_(target, 10), previous = history.length ? cell_(history[history.length - 1][9]) : 'GENESIS'; var fields = safeRow_([uuid_(), value.event, value.type, value.id, text_(value.summary, 240, ''), actor.email, actor.role, now_()]).concat([previous]); target.appendRow(fields.concat(['h_' + hash_(fields.join('|'))])); }
+function appendAudit_(value, actor) { var target = sheet_(book_(), 'Audit'), history = rows_(target, 10), previous = history.length ? cell_(history[history.length - 1][9]) : 'GENESIS'; var logical = [uuid_(), value.event, value.type, value.id, text_(value.summary, 240, ''), actor.email, actor.role, now_(), previous]; var digest = 'h_' + hash_(logical.join('|')); target.appendRow(safeRow_(logical).concat([digest])); }
 function auditEventExists_(event, entityId) { return rows_(sheet_(book_(), 'Audit'), 10).some(function(row) { return String(row[1]) === event && String(row[3]) === entityId; }); }
 function appendAuditOnce_(value, actor) {
   if (auditEventExists_(value.event, value.id)) return;
@@ -3976,7 +3996,7 @@ function validateJournalInventoryMovements_(book, value, lines, direction, kind,
   lines.forEach(function(line) { lineById[line.catalogId] = line; });
   value.forEach(function(raw) {
     var movement = validateInventoryMovementEnvelope_(book, raw);
-    var line = lineById[movement.catalogId], expectedReason = safeRow_([text_(reason, 180, '')])[0];
+    var line = lineById[movement.catalogId], expectedReason = text_(reason, 180, '');
     if (!line || seen[movement.catalogId] || movement.kind !== kind || movement.quantityDelta !== direction * line.quantity ||
         movement.beforeLimit !== movement.afterLimit || movement.referenceType !== referenceType || movement.referenceId !== referenceId ||
         movement.actorEmail !== actor.email || movement.actorRole !== actor.role || movement.at !== at || movement.idempotencyKey !== key ||
@@ -4722,6 +4742,8 @@ function iso_(value) { if (!value) return ''; var date = new Date(String(value))
 function httpsUrl_(value) { var out = String(value || '').trim(); if (!out) return ''; if (!/^https:\/\/[A-Za-z0-9.-]+(?::\d{1,5})?(?:\/[^\s"'<>\\]*)?$/i.test(out) || /[\u0000-\u001f\u007f]/.test(out) || out.length > 600) throw srError_('bad_url', 'Use an HTTPS URL.'); return out; }
 function webAppUrl_(value) { var out = String(value || '').trim(); if (!out) return ''; if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(out)) throw srError_('bad_url', 'Use the Apps Script /exec URL.'); return out; }
 function safeRow_(values) { return values.map(function(value) { return typeof value === 'string' && /^(?:[\t\r\n]|[\s\u00A0]*[=+\-@|])/.test(value) ? "'" + value : value; }); }
+function logicalCell_(value) { return typeof value === 'string' && /^'(?:[\t\r\n]|[\s\u00A0]*[=+\-@|])/.test(value) ? value.slice(1) : value; }
+function mailSafeErrorText_(err) { return text_(err && err.message, 300, 'Mail send failed').replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '[redacted-email]'); }
 function assertPrivateStorage_(item) {
   try {
     if (!item || (typeof item.isTrashed === 'function' && item.isTrashed()) || item.getSharingAccess() !== DriveApp.Access.PRIVATE || item.isShareableByEditors() || item.getEditors().length || item.getViewers().length) throw new Error('Storage sharing mismatch');

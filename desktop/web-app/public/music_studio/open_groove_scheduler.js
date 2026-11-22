@@ -16,6 +16,20 @@
   var MAX_LOOP_SPANS = 256;
   var MAX_ARRANGEMENT_REPEATS = 1024;
   var MAX_LOOKAHEAD_TICKS = 1000000;
+  var MAX_TICK_VALUE = 1000000000;
+  var MAX_PLAN_EVENTS = 16384;
+
+  function clampTick(value, fallback) {
+    return Math.max(0, Math.min(MAX_TICK_VALUE, Math.round(finiteOr(value, fallback == null ? 0 : fallback))));
+  }
+
+  function patternHasAutomation(pattern) {
+    var events = pattern && Array.isArray(pattern.events) ? pattern.events : [];
+    for (var i = 0; i < events.length; i++) {
+      if (events[i] && events[i].type === 'automationPoint') return true;
+    }
+    return false;
+  }
 
   function finiteOr(value, fallback) {
     var n = Number(value);
@@ -69,14 +83,16 @@
 
   function ogEventPlaybackTick(event, project, options) {
     options = options || {};
-    var base = finiteOr(event && event.startTick, 0);
-    var nudge = event && event.type === 'drumHit' ? finiteOr(event.microtimingTicks, 0) : 0;
-    return Math.max(0, base + nudge + ogSwingOffsetTicks(project, event, options.stepsPerBar));
+    var base = Math.max(0, Math.min(MAX_TICK_VALUE, finiteOr(event && event.startTick, 0)));
+    var maxNudge = options.maxNudgeTicks != null ? Math.max(1, finiteOr(options.maxNudgeTicks, 3840)) : MAX_LOOKAHEAD_TICKS;
+    var rawNudge = event && event.type === 'drumHit' ? finiteOr(event.microtimingTicks, 0) : 0;
+    var nudge = Math.max(-maxNudge, Math.min(maxNudge, rawNudge));
+    return Math.max(0, Math.min(MAX_TICK_VALUE, base + nudge + ogSwingOffsetTicks(project, event, options.stepsPerBar)));
   }
 
-  function ogPlanMixerState(C, project, trackId, patternId, tick) {
+  function ogPlanMixerState(C, project, trackId, patternId, tick, hasAutomation) {
     if (C.ogTrackIsAudible && !C.ogTrackIsAudible(project, trackId)) return null;
-    var channel = C.ogResolveMixerChannelAtTick
+    var channel = hasAutomation && C.ogResolveMixerChannelAtTick
       ? C.ogResolveMixerChannelAtTick(project, patternId, trackId, tick)
       : C.ogGetMixerChannel ? C.ogGetMixerChannel(project, trackId) : { gain: 1 };
     var master = C.ogGetMixerChannel ? C.ogGetMixerChannel(project, 'master') : { gain: 1 };
@@ -104,17 +120,22 @@
     if (!pattern) return [];
     var bpm = Math.max(1, Math.min(1000, finiteOr(options.bpm, finiteOr(project && project.bpm, 120))));
     var ppq = Math.max(1, Math.min(96000, finiteOr(project && project.ppq, C.OG_DEFAULT_PPQ || 960)));
-    var fromTick = Math.max(0, Math.round(finiteOr(options.fromTick, 0)));
-    var defaultLength = Math.max(1, finiteOr(C.ogPatternLengthTicks(project, pattern), 3840));
-    var toTick = options.toTick == null ? defaultLength : Math.max(fromTick, Math.round(finiteOr(options.toTick, fromTick)));
-    var originTick = options.originTick == null ? fromTick : Math.round(finiteOr(options.originTick, fromTick));
+    var fromTick = clampTick(options.fromTick, 0);
+    var defaultLength = Math.max(1, Math.min(MAX_TICK_VALUE, finiteOr(C.ogPatternLengthTicks(project, pattern), 3840)));
+    var toTick = options.toTick == null ? defaultLength : Math.max(fromTick, clampTick(options.toTick, fromTick));
+    var originTick = options.originTick == null ? fromTick : clampTick(options.originTick, fromTick);
     var originTime = finiteOr(options.originTime, 0);
+    var hasAuto = patternHasAutomation(pattern);
     var plan = [];
+    var events = Array.isArray(pattern.events) ? pattern.events : [];
 
-    (Array.isArray(pattern.events) ? pattern.events : []).forEach(function (event) {
-      if (!event || typeof event !== 'object') return;
-      var playTick = ogEventPlaybackTick(event, project, { stepsPerBar: options.stepsPerBar || 16 });
-      if (playTick < fromTick || playTick >= toTick) return;
+    for (var idx = 0; idx < events.length; idx++) {
+      if (plan.length >= MAX_PLAN_EVENTS) break;
+      var event = events[idx];
+      if (!event || typeof event !== 'object') continue;
+      if (event.type === 'rest' || event.type === 'chord') continue;
+      var playTick = ogEventPlaybackTick(event, project, { stepsPerBar: options.stepsPerBar || 16, maxNudgeTicks: defaultLength });
+      if (playTick < fromTick || playTick >= toTick) continue;
       if (event.type === 'automationPoint') {
         plan.push({
           id: event.id,
@@ -129,9 +150,9 @@
           time: originTime + ogTicksToSeconds(playTick - originTick, bpm, ppq),
           event: event
         });
-        return;
+        continue;
       }
-      var durationTicks = Math.max(1, finiteOr(event.durationTicks, 1));
+      var durationTicks = Math.max(1, Math.min(MAX_TICK_VALUE, finiteOr(event.durationTicks, 1)));
       var track = C.ogFindTrack(project, event.trackId);
       var pad = null;
       if (track && Array.isArray(track.pads) && event.padId) {
@@ -142,10 +163,10 @@
           }
         }
       }
-      var mix = ogPlanMixerState(C, project, event.trackId, pattern.id, playTick);
-      if (!mix || !mix.outputGain) return;
+      var mix = ogPlanMixerState(C, project, event.trackId, pattern.id, playTick, hasAuto);
+      if (!mix || !mix.outputGain) continue;
       var eventVelocity = event.velocity == null ? 0.8 : Math.max(0, Math.min(1, finiteOr(event.velocity, 0.8)));
-      var effects = C.ogResolveTrackEffectsAtTick
+      var effects = hasAuto && C.ogResolveTrackEffectsAtTick
         ? C.ogResolveTrackEffectsAtTick(project, pattern.id, event.trackId, playTick)
         : C.ogGetTrackEffects ? C.ogGetTrackEffects(project, event.trackId) : [];
       plan.push({
@@ -177,7 +198,7 @@
         repeat: event.repeat || 1,
         event: event
       });
-    });
+    }
 
     plan.sort(function (a, b) {
       return (a.time - b.time) || String(a.id).localeCompare(String(b.id));
@@ -192,24 +213,30 @@
     if (!pattern) return [];
     var bpm = Math.max(1, Math.min(1000, finiteOr(options.bpm, finiteOr(project && project.bpm, 120))));
     var ppq = Math.max(1, Math.min(96000, finiteOr(project && project.ppq, C.OG_DEFAULT_PPQ || 960)));
-    var length = Math.max(1, finiteOr(C.ogPatternLengthTicks(project, pattern), 3840));
-    var startTick = Math.max(0, Math.round(finiteOr(options.transportTick, 0)));
+    var length = Math.max(1, Math.min(MAX_TICK_VALUE, finiteOr(C.ogPatternLengthTicks(project, pattern), 3840)));
+    var startTick = clampTick(options.transportTick, 0);
     var defaultLookahead = Math.max(1, finiteOr(C.ogTicksPerBeat(project), 960));
     var maxLookahead = Math.max(length * 16, MAX_LOOKAHEAD_TICKS);
     var lookaheadTicks = Math.max(1, Math.min(maxLookahead, Math.round(finiteOr(options.lookaheadTicks, defaultLookahead))));
-    var endTick = startTick + lookaheadTicks;
+    var endTick = Math.min(MAX_TICK_VALUE, startTick + lookaheadTicks);
     var originTime = finiteOr(options.originTime, 0);
     var firstLoop = Math.floor(startTick / length);
+    var scanStartLoop = Math.max(0, firstLoop - 1);
     var lastLoop = Math.min(firstLoop + MAX_LOOP_SPANS, Math.floor((endTick - 1) / length));
+    var hasAuto = patternHasAutomation(pattern);
     var plan = [];
+    var events = Array.isArray(pattern.events) ? pattern.events : [];
 
-    for (var loop = firstLoop; loop <= lastLoop; loop++) {
+    for (var loop = scanStartLoop; loop <= lastLoop && plan.length < MAX_PLAN_EVENTS; loop++) {
       var loopStart = loop * length;
-      (Array.isArray(pattern.events) ? pattern.events : []).forEach(function (event) {
-        if (!event || typeof event !== 'object') return;
-        var patternTick = ogEventPlaybackTick(event, project, { stepsPerBar: options.stepsPerBar || 16 });
+      for (var idx = 0; idx < events.length; idx++) {
+        if (plan.length >= MAX_PLAN_EVENTS) break;
+        var event = events[idx];
+        if (!event || typeof event !== 'object') continue;
+        if (event.type === 'rest' || event.type === 'chord') continue;
+        var patternTick = ogEventPlaybackTick(event, project, { stepsPerBar: options.stepsPerBar || 16, maxNudgeTicks: length });
         var absoluteTick = loopStart + patternTick;
-        if (absoluteTick < startTick || absoluteTick >= endTick) return;
+        if (absoluteTick < startTick || absoluteTick >= endTick) continue;
         if (event.type === 'automationPoint') {
           plan.push({
             id: event.id + '@' + loop,
@@ -226,9 +253,9 @@
             time: originTime + ogTicksToSeconds(absoluteTick - startTick, bpm, ppq),
             event: event
           });
-          return;
+          continue;
         }
-        var durationTicks = Math.max(1, finiteOr(event.durationTicks, 1));
+        var durationTicks = Math.max(1, Math.min(MAX_TICK_VALUE, finiteOr(event.durationTicks, 1)));
         var track = C.ogFindTrack(project, event.trackId);
         var pad = null;
         if (track && Array.isArray(track.pads) && event.padId) {
@@ -239,10 +266,10 @@
             }
           }
         }
-        var mix = ogPlanMixerState(C, project, event.trackId, pattern.id, patternTick);
-        if (!mix || !mix.outputGain) return;
+        var mix = ogPlanMixerState(C, project, event.trackId, pattern.id, patternTick, hasAuto);
+        if (!mix || !mix.outputGain) continue;
         var eventVelocity = event.velocity == null ? 0.8 : Math.max(0, Math.min(1, finiteOr(event.velocity, 0.8)));
-        var effects = C.ogResolveTrackEffectsAtTick
+        var effects = hasAuto && C.ogResolveTrackEffectsAtTick
           ? C.ogResolveTrackEffectsAtTick(project, pattern.id, event.trackId, patternTick)
           : C.ogGetTrackEffects ? C.ogGetTrackEffects(project, event.trackId) : [];
         plan.push({
@@ -276,7 +303,7 @@
           repeat: event.repeat || 1,
           event: event
         });
-      });
+      }
     }
 
     plan.sort(function (a, b) {
@@ -290,23 +317,35 @@
     options = options || {};
     var bpm = Math.max(1, Math.min(1000, finiteOr(options.bpm, finiteOr(project && project.bpm, 120))));
     var ppq = Math.max(1, Math.min(96000, finiteOr(project && project.ppq, C.OG_DEFAULT_PPQ || 960)));
-    var originTick = Math.max(0, Math.round(finiteOr(options.originTick, 0)));
+    var originTick = clampTick(options.originTick, 0);
     var originTime = finiteOr(options.originTime, 0);
+    var maxTick = options.toTick != null
+      ? Math.max(originTick, clampTick(options.toTick, originTick))
+      : (options.lookaheadTicks != null
+        ? Math.min(MAX_TICK_VALUE, originTick + Math.max(1, Math.min(MAX_LOOKAHEAD_TICKS, Math.round(finiteOr(options.lookaheadTicks, 960)))))
+        : Infinity);
     var timeline = C.ogBuildArrangementTimeline ? C.ogBuildArrangementTimeline(project) : [];
     var plan = [];
 
-    (Array.isArray(timeline) ? timeline : []).forEach(function (section) {
-      if (!section || typeof section !== 'object') return;
-      var sectionStart = Math.max(0, finiteOr(section.startTick, 0));
-      var sectionEnd = finiteOr(section.endTick, sectionStart + 1);
+    var sections = Array.isArray(timeline) ? timeline : [];
+    for (var sIdx = 0; sIdx < sections.length && plan.length < MAX_PLAN_EVENTS; sIdx++) {
+      var section = sections[sIdx];
+      if (!section || typeof section !== 'object') continue;
+      var sectionStart = clampTick(section.startTick, 0);
+      var sectionEnd = clampTick(section.endTick, sectionStart + 1);
+      if (sectionEnd <= originTick || sectionStart >= maxTick) continue;
       var sectionLengthTicks = Math.max(1, sectionEnd - sectionStart);
-      if (!Number.isFinite(sectionLengthTicks)) return;
-      (Array.isArray(section.patternIds) ? section.patternIds : []).forEach(function (patternId) {
-        var pattern = C.ogFindPattern(project, patternId);
-        if (!pattern) return;
-        var patternLength = Math.max(1, finiteOr(C.ogPatternLengthTicks(project, pattern), 3840));
-        for (var sectionOffsetTick = 0, repeatIndex = 0; sectionOffsetTick < sectionLengthTicks && repeatIndex < MAX_ARRANGEMENT_REPEATS; sectionOffsetTick += patternLength, repeatIndex += 1) {
+      if (!Number.isFinite(sectionLengthTicks)) continue;
+      var patIds = Array.isArray(section.patternIds) ? section.patternIds : [];
+      for (var pIdx = 0; pIdx < patIds.length && plan.length < MAX_PLAN_EVENTS; pIdx++) {
+        var pattern = C.ogFindPattern(project, patIds[pIdx]);
+        if (!pattern) continue;
+        var patternLength = Math.max(1, Math.min(MAX_TICK_VALUE, finiteOr(C.ogPatternLengthTicks(project, pattern), 3840)));
+        for (var sectionOffsetTick = 0, repeatIndex = 0; sectionOffsetTick < sectionLengthTicks && repeatIndex < MAX_ARRANGEMENT_REPEATS && plan.length < MAX_PLAN_EVENTS; sectionOffsetTick += patternLength, repeatIndex += 1) {
+          var repeatStartAbs = sectionStart + sectionOffsetTick;
+          if (repeatStartAbs >= maxTick) break;
           var repeatLength = Math.min(patternLength, sectionLengthTicks - sectionOffsetTick);
+          if (repeatStartAbs + repeatLength <= originTick) continue;
           var items = ogBuildPlaybackPlan(project, {
             patternId: pattern.id,
             fromTick: 0,
@@ -316,9 +355,10 @@
             bpm: bpm,
             stepsPerBar: options.stepsPerBar || 16
           });
-          items.forEach(function (item) {
-            var arrangementTick = sectionStart + sectionOffsetTick + item.playTick;
-            if (arrangementTick < originTick) return;
+          for (var iIdx = 0; iIdx < items.length && plan.length < MAX_PLAN_EVENTS; iIdx++) {
+            var item = items[iIdx];
+            var arrangementTick = repeatStartAbs + item.playTick;
+            if (arrangementTick < originTick || arrangementTick >= maxTick) continue;
             var next = Object.assign({}, item, {
               id: section.sceneId + ':' + pattern.id + ':' + item.id + ':' + section.index + ':' + repeatIndex,
               sourceId: item.id,
@@ -335,10 +375,10 @@
               time: originTime + ogTicksToSeconds(arrangementTick - originTick, bpm, ppq)
             });
             plan.push(next);
-          });
+          }
         }
-      });
-    });
+      }
+    }
 
     plan.sort(function (a, b) {
       return (a.time - b.time) || String(a.id).localeCompare(String(b.id));

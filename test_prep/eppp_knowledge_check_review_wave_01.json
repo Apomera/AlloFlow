@@ -37,10 +37,10 @@
       "domain": "Assessment & Diagnosis",
       "prompt": "An examinee scores below criterion on one stand-alone performance validity test. What is the most defensible conclusion?",
       "choices": [
-        "The examinee is malingering because a failed PVT proves intent",
-        "All neurological impairment can be ruled out",
-        "The affected cognitive scores may not validly estimate ability; integrate multiple validity indicators and context before drawing conclusions about cause or intent",
-        "The result should be ignored whenever the examinee has a diagnosed disorder"
+        "The failed performance validity measure establishes deliberate feigning for external gain, supporting malingering",
+        "Falling below cutoff on a forced-choice validity measure indicates that bona fide neurological conditions are unlikely",
+        "Affected cognitive scores may not accurately reflect true ability; weigh multiple validity indicators and context before inferring intent",
+        "Cognitive scores remain clinically interpretable as baseline ability estimates whenever the examinee carries a documented medical or mood diagnosis"
       ],
       "answerIndex": 2,
       "rationale": "The best answer preserves the boundary between score validity and motive. A performance-validity failure can indicate that affected cognitive scores may not support the intended ability inference, so the evaluator should integrate the full pattern of validity indicators, behavioral observations, history, context, and referral demands. One failed indicator does not by itself prove deception or establish malingering; that conclusion requires the broader clinical and forensic evidence and applicable criteria.",
@@ -78,10 +78,10 @@
       "domain": "Assessment & Diagnosis",
       "prompt": "A toddler has an elevated M-CHAT-R/F result and later exceeds an ADOS-2 classification threshold. What is the best next conclusion?",
       "choices": [
-        "ASD is confirmed because two instruments agree.",
-        "The child should wait six months before any referral so false positives can resolve.",
-        "A qualified clinician should integrate developmental and caregiver history, direct observation, language/cognitive/adaptive and sensory functioning, impairment, and differential diagnoses while connecting the child with indicated services.",
-        "The ADOS-2 result should replace caregiver and school information."
+        "Convergence across a parent-report screener and structured observational coding confirms an autism diagnosis.",
+        "Delay developmental referrals for six months and rescreen the toddler to allow transient delays or false positives to resolve.",
+        "Integrate developmental history, observation, cognitive-adaptive functioning, and differential diagnoses while arranging indicated supports.",
+        "Prioritize the standardized ADOS-2 classification over caregiver reports and early-childhood observations because direct coding is more objective."
       ],
       "answerIndex": 2,
       "rationale": "The best answer treats both instruments as evidence rather than as a self-executing diagnosis. CDC guidance states that no single tool should determine diagnosis; a qualified clinician integrates developmental and caregiver history, direct observation, functioning, diagnostic criteria, impairment, and plausible alternatives. A positive screen or concerning findings warrant timely comprehensive evaluation, and referral for indicated supports does not need to wait for a final diagnostic label.",
@@ -119,10 +119,10 @@
       "domain": "Ethical, Legal & Professional Issues",
       "prompt": "A psychologist’s established client temporarily relocates to another jurisdiction and requests continued video therapy. The psychologist has not verified that jurisdiction’s rules and holds no compact authority. What is the best next step?",
       "choices": [
-        "Continue because the original treatment relationship controls jurisdiction.",
-        "Continue because technology-specific informed consent replaces licensure requirements.",
-        "Pause interjurisdictional sessions while promptly verifying and, if needed, obtaining lawful authority in all relevant jurisdictions or arranging an appropriate continuity-of-care alternative.",
-        "Terminate immediately because cross-border telepsychology is always prohibited."
+        "Proceed with scheduled video appointments because the preexisting clinical relationship anchors regulatory oversight to the clinician's home state.",
+        "Proceed once the client signs an updated telehealth consent acknowledging cross-state delivery, which satisfies temporary practice requirements.",
+        "Pause cross-border sessions to verify or obtain lawful practice permission in the receiving state, or arrange safe continuity of care.",
+        "Close the case and issue a termination notice because remote psychotherapy across state lines violates statutes."
       ],
       "answerIndex": 2,
       "rationale": "The best answer is to pause the cross-jurisdiction session long enough to verify lawful authority and arrange safe continuity. The client?s actual location during telepsychology is commonly legally relevant, and compact practice has provider-location, client-location, credential, and receiving-jurisdiction requirements. An established relationship and telehealth informed consent do not replace a license, compact authority, temporary permission, or other valid legal basis. Emergency and continuity obligations still require prompt, context-sensitive planning.",
@@ -160,10 +160,10 @@
       "domain": "Ethical, Legal & Professional Issues",
       "prompt": "A psychologist is closing a practice and asks whether every record can be destroyed exactly seven years after the final session. What is the best answer?",
       "choices": [
-        "Yes. Seven years is a universal APA rule that overrides state law.",
-        "Yes, except records for minors must always be kept forever.",
-        "No. Determine retention and destruction requirements from current jurisdictional law, record type, client age, limitation periods, contracts and payers, institutional policy, and any litigation hold or pending proceeding.",
-        "No. Ethical records may never be destroyed."
+        "Yes; APA Record Keeping Guidelines set a uniform seven-year retention standard superseding state licensing rules.",
+        "Yes for adult charts, provided that clinical files for clients treated as minors are retained indefinitely after the practice formally closes.",
+        "No; base retention and disposal on governing state law, file type, client age, payer contracts, institutional policy, and any legal hold.",
+        "No; closing a private practice requires transferring every clinical file into permanent archival storage rather than disposal."
       ],
       "answerIndex": 2,
       "rationale": "The best answer rejects a universal seven-year rule. Retention and lawful destruction depend on the governing jurisdiction, record type, client age, limitation periods, payer or contract terms, institutional policy, and the purpose for which records may be needed. Destruction must also stop when litigation, an audit, a board matter, or another preservation duty creates a hold. The item tests a decision process, not a memorized national deadline, and it does not imply that records must be kept forever.",
@@ -201,10 +201,10 @@
       "domain": "Treatment, Intervention & Prevention",
       "prompt": "A recently bereaved client reports escalating alcohol use, hopelessness, a newly purchased firearm, and current thoughts of suicide. What is the best immediate response?",
       "choices": [
-        "Begin cognitive restructuring and defer direct suicide questions to preserve rapport.",
-        "Ask the client to sign a no-suicide contract and schedule next week.",
-        "Conduct a direct, structured assessment of current thoughts, plan, intent, access, past behavior, intoxication, supports, and ability to stay safe; do not leave the person alone if imminent risk is present, arrange the appropriate emergency disposition, and include collaborative lethal-means safety.",
-        "Provide a grief-group referral as the sole intervention because bereavement explains the thoughts."
+        "Focus the visit on cognitive restructuring for acute grief and postpone direct questioning about suicidal intent to avoid heightening distress or rupturing clinical rapport.",
+        "Obtain a signed no-harm agreement committing the client to call crisis services if urges rise, then schedule an earlier visit next week.",
+        "Conduct a direct structured evaluation of plan, intent, and means; maintain supervision for imminent danger, arrange emergency care, and address lethal-means safety.",
+        "Provide a structured bereavement support-group referral and psychoeducation on alcohol use as the primary plan because recent loss explains the acute distress and passive thoughts."
       ],
       "answerIndex": 2,
       "rationale": "The described combination calls for direct, structured assessment now: current thoughts, plan, intent, access to the firearm, prior suicidal behavior, intoxication, agitation, supports, and ability to remain safe. Current suicidal thoughts with feasible lethal-means access may require emergency evaluation and continuous supervision rather than a routine follow-up visit. Collaborative reduction of access to lethal means, an appropriate disposition, safety planning, treatment connection, and follow-up are coordinated parts of the response; none is a stand-alone risk guarantee.",
@@ -242,10 +242,10 @@
       "domain": "Treatment, Intervention & Prevention",
       "prompt": "Immediately after a disaster, an organization proposes requiring every survivor to recount the event in detail during a single group session to prevent PTSD. What is the best response?",
       "choices": [
-        "Require attendance because immediate emotional ventilation prevents PTSD.",
-        "Replace individualized triage with the group session so everyone receives identical care.",
-        "Do not require detailed recounting. Offer flexible, nonintrusive PFA-style safety, practical support, connection, coping information, and referral based on needs and preferences.",
-        "Avoid all contact because any early support interferes with natural recovery."
+        "Endorse mandatory attendance at a structured single-session debriefing because prompt emotional catharsis and narrative reconstruction lower later PTSD incidence.",
+        "Substitute standardized group recounting for individual screening during week one so every affected worker receives uniform trauma exposure.",
+        "Decline mandatory trauma recounting and offer flexible, nonintrusive psychological first aid targeting safety, practical needs, connection, and referral.",
+        "Withhold organized psychosocial outreach during the first month because early supportive contact disrupts spontaneous trauma recovery."
       ],
       "answerIndex": 2,
       "rationale": "The best answer declines compulsory detailed recounting. Systematic-review evidence does not support routine single-session psychological debriefing as a way to prevent PTSD and indicates that it may worsen outcomes for some people. WHO psychological first aid is humane, practical, culturally respectful, and nonintrusive: it supports safety, immediate needs, connection, coping information, and referral while respecting readiness and preference. This does not mean abandoning survivors or withholding indicated assessment and treatment.",
@@ -324,10 +324,10 @@
       "domain": "Biological Bases of Behavior",
       "prompt": "A 72-year-old retired professor presents with visual hallucinations of children playing in her living room, fluctuating alertness throughout the day, and mild Parkinsonian tremor. Her family reports she acts out her dreams at night. Her physician is considering prescribing haloperidol for the hallucinations. What is the most critical concern?",
       "choices": [
-        "Haloperidol may worsen her depression.",
-        "Lewy body dementia can confer severe neuroleptic sensitivity; typical antipsychotics such as haloperidol generally should be avoided, and any medication decision requires careful specialist risk–benefit assessment.",
-        "Haloperidol is contraindicated in patients over age 70.",
-        "Her symptoms suggest delirium, not dementia, so antipsychotics are unnecessary."
+        "Haloperidol blocks serotonin pathways and can precipitate severe depressive episodes or apathy in older adults with decline.",
+        "Lewy body dementia carries severe neuroleptic sensitivity; typical agents like haloperidol should generally be avoided pending specialist review.",
+        "Haloperidol is categorically contraindicated for patients over age 70 regardless of etiology, so an atypical agent should be substituted at standard adult doses.",
+        "Fluctuating alertness and vivid visual hallucinations point definitively to acute hospital delirium rather than dementia, making neuroleptic review unnecessary."
       ],
       "answerIndex": 1,
       "rationale": "The best answer recognizes marked antipsychotic sensitivity as an important Lewy body dementia safety clue. NINDS warns that antipsychotics can cause severe confusion, worsened parkinsonism, extreme sleepiness, hypotension, neuroleptic malignant syndrome, and death; typical agents such as haloperidol generally should not be prescribed. Hallucinations that are not distressing or dangerous may not require medication. If symptoms create serious risk, a knowledgeable clinician weighs non-drug measures and, when necessary, the lowest-risk medication strategy with close monitoring.",
@@ -356,12 +356,12 @@
       "sectionId": "ch-26-section-2",
       "domainId": 5,
       "domain": "Cognitive-Affective Bases of Behavior",
-      "prompt": "A screening test is positive for a rare condition. A clinician focuses on how closely the result resembles a typical positive case but does not consider the condition’s low prevalence or the test’s false-positive rate. Which error is most central?",
+      "prompt": "A screening test returns positive for a rare condition. A clinician focuses on how closely the presentation matches a textbook case while overlooking the disorder's low prevalence and false-positive frequency. Which reasoning error is most central?",
       "choices": [
-        "Availability heuristic",
-        "Representativeness with base-rate neglect",
-        "Hindsight bias",
-        "Sunk-cost effect"
+        "Availability heuristic — judging likelihood from how easily memorable prior cases come to mind",
+        "Representativeness with base-rate neglect — weighting prototype similarity over low prior probability",
+        "Hindsight bias — overestimating how predictable a diagnosis appeared once outcome data are known",
+        "Sunk-cost fallacy — continuing an ineffective diagnostic workup because substantial effort was already spent"
       ],
       "answerIndex": 1,
       "rationale": "The clinician is matching the vivid case to a prototype while underweighting how uncommon the disorder is in the relevant population, which is representativeness with base-rate neglect. Diagnostic reasoning should begin with an appropriate pretest probability and update it with the test?s performance, such as likelihood ratios, to estimate posttest probability. A highly representative description can still yield a low posterior probability when the base rate is very low. This is not a reason to ignore case evidence; it is a reason to combine it with prevalence and test accuracy.",
@@ -399,10 +399,10 @@
       "domain": "Cognitive-Affective Bases of Behavior",
       "prompt": "A school psychologist is asked to evaluate a 7-year-old bilingual Spanish-English student for intellectual disability. The child scored 78 on an English-administered WISC-V. What is the MOST appropriate next step?",
       "choices": [
-        "Diagnose intellectual disability based on the IQ score below 80",
-        "Re-administer the WISC-V in Spanish",
-        "Develop a multilingual, culturally and linguistically responsive evaluation using relevant-language measures, qualified bilingual support, reduced-language-demand tools where appropriate, adaptive functioning, records, observation, and validity evidence",
-        "Refer for adaptive behavior assessment only"
+        "Classify the student with intellectual disability because a Full Scale IQ below 80 satisfies standard cognitive eligibility cutoffs",
+        "Re-administer the entire WISC-V in Spanish with an untrained bilingual classroom aide translating directions and adopt the higher composite score as final",
+        "Plan a culturally and linguistically responsive evaluation using relevant-language and reduced-language tools, adaptive ratings, records, and observation",
+        "Accept the English WISC-V score as a valid baseline estimate of cognitive ability and request a single parent-rated adaptive behavior checklist to finalize placement"
       ],
       "answerIndex": 2,
       "rationale": "The best answer is a comprehensive, multilingual, culturally responsive evaluation rather than a diagnosis from one English-language score. Intellectual disability requires evidence of significant limitations in both intellectual functioning and adaptive behavior with developmental onset. Test interpretations must be supported for the intended person and use, and language proficiency, educational opportunity, acculturation, disability access, and culturally typical communication can create construct-irrelevant barriers. Qualified evaluators integrate appropriately selected measures, adaptive information across settings, history, observation, and strengths.",
@@ -447,10 +447,10 @@
       "domain": "Social & Cultural Bases of Behavior",
       "prompt": "What is the most accurate interpretation of Allport’s favorable contact conditions?",
       "choices": [
-        "Contact reduces prejudice only when all four conditions are present",
+        "Intergroup contact fails to produce measurable attitude change unless all four facilitating conditions are met simultaneously",
         "The conditions often facilitate stronger effects, while contact effects also depend on quality, power, norms, and context",
-        "Any contact is beneficial because familiarity always overrides conflict",
-        "The conditions diagnose whether an individual is prejudiced"
+        "Routine intergroup contact reliably lowers hostility because repeated familiarity outweighs institutional conflict",
+        "The four conditions serve as a structured clinical checklist for diagnosing whether an individual holds prejudice"
       ],
       "answerIndex": 1,
       "rationale": "The keyed answer identifies Allport?s optimal contact conditions: equal status within the situation, common goals, intergroup cooperation, and support from authorities, law, or custom. Meta-analytic evidence finds that intergroup contact typically relates to reduced prejudice and that these conditions tend to strengthen the effect. They are facilitative conditions, not a guarantee for every person or setting. Power, threat, institutional climate, contact quality, group status, voluntariness, and opportunities for meaningful interaction can change the outcome.",
@@ -486,12 +486,12 @@
       "sectionId": "ch-34-section-3",
       "domainId": 6,
       "domain": "Social & Cultural Bases of Behavior",
-      "prompt": "Which statement best qualifies Berry’s acculturation framework?",
+      "prompt": "Which statement best characterizes the scope and limitations of Berry's acculturation framework?",
       "choices": [
-        "Integration always produces the best outcome for every person",
-        "Marginalization is freely chosen and reflects poor coping",
-        "The labels describe patterns on two dimensions, while opportunity, discrimination, support, and context shape both pattern and outcome",
-        "Assimilation is required for healthy adaptation"
+        "Integration consistently produces optimal psychological adjustment across immigrant groups regardless of host-society receptivity",
+        "Marginalization represents an autonomous personal preference reflecting poor coping rather than structural exclusion",
+        "The four labels describe patterns across two dimensions, while opportunity, discrimination, support, and context shape outcomes",
+        "Full assimilation into the dominant receiving culture is developmentally necessary for long-term occupational and family adaptation"
       ],
       "answerIndex": 2,
       "rationale": "The best answer describes Berry?s integration pattern: maintaining meaningful participation in a heritage culture while also engaging with the larger receiving society. The framework uses two dimensions and supports four conceptual patterns, but it is not a personality test, diagnosis, fixed identity, or universal ranking of outcomes. A person?s pattern can vary across language, family, work, community, and time. Opportunity, discrimination, power, social support, migration history, intersectional identity, and the receiving context shape what options are actually available.",
@@ -527,12 +527,12 @@
       "sectionId": "ch-35-section-2",
       "domainId": 7,
       "domain": "Growth & Lifespan Development",
-      "prompt": "Which conclusion about prenatal exposure is most defensible?",
+      "prompt": "Which clinical conclusion regarding timing and risk of prenatal teratogenic exposure is most defensible?",
       "choices": [
-        "Any germinal-period exposure inevitably causes miscarriage",
+        "Teratogenic exposure during the germinal period uniformly produces spontaneous miscarriage rather than variable survival",
         "The embryonic period is often especially vulnerable to major structural disruption because organogenesis is occurring",
-        "The fetal period is safe because organs already exist",
-        "Prenatal alcohol exposure by itself establishes FASD"
+        "Once major organ systems form by week nine, the fetal period is largely insulated from functional or growth disruption",
+        "A documented history of prenatal alcohol exposure is sufficient to establish a fetal alcohol spectrum disorder diagnosis"
       ],
       "answerIndex": 1,
       "rationale": "The keyed developmental principle is that early embryonic organ formation can create particular vulnerability to structural disruption, while later fetal development also remains vulnerable to growth and functional effects. Timing can guide a cautious risk hypothesis, but an exposure report alone does not diagnose a condition, prove causation in an individual, or predict one inevitable outcome. Dose, pattern, co-exposures, genetics, maternal and placental factors, measurement limits, and postnatal context all matter. Any concern warrants qualified medical and developmental assessment.",
@@ -570,10 +570,10 @@
       "domain": "Growth & Lifespan Development",
       "prompt": "A bereaved person alternates between intense sadness and periods focused on work, childcare, and new routines. What is the best interpretation?",
       "choices": [
-        "The person is avoiding grief and must return to the depression stage",
+        "Shifting focus toward daily tasks signals defensive grief avoidance and stalled progression through depression",
         "Oscillation between loss- and restoration-oriented coping can be expected in the dual-process model",
-        "Periods of ordinary functioning rule out grief",
-        "Acceptance must occur before restoration-focused activity"
+        "Sustained engagement in routine caregiving and employment indicates that acute bereavement has already resolved",
+        "Adaptive rebuilding of daily roles requires first reaching stable emotional acceptance of the bereavement loss"
       ],
       "answerIndex": 1,
       "rationale": "The best answer is the dual-process model: bereaved people may oscillate between loss-oriented coping, such as yearning and sadness, and restoration-oriented coping, such as work, caregiving, changing roles, and new routines. Periods of ordinary functioning do not rule out grief, and restoration does not require completing an acceptance stage first. The model is descriptive and flexible, not a mandatory schedule. Diagnosis requires the full duration, symptom, impairment, and cultural-context criteria, not a person?s movement between these coping modes.",
@@ -611,10 +611,10 @@
       "domain": "Research Methods & Statistics",
       "prompt": "A study with 10,000 participants finds that a new antidepressant produces a statistically significant improvement over placebo (p < .001), but Cohen's d = 0.08. The MOST appropriate conclusion is:",
       "choices": [
-        "The treatment is highly effective because p < .001",
-        "The treatment is not effective because d = 0.08 is not significant",
-        "The estimated standardized mean difference is small; practical importance requires the outcome scale, uncertainty interval, benefits, harms, costs, and a meaningful-change threshold",
-        "The study lacks power and should be replicated"
+        "The small p-value confirms a substantial clinical benefit justifying first-line prescribing across outpatient clinics",
+        "An effect size of d = 0.08 indicates zero true drug benefit because standardized differences under 0.20 lack significance",
+        "The standardized difference is small; practical value depends on the outcome scale, confidence interval, benefits, harms, and clinical thresholds",
+        "The discrepancy between a tiny p-value and a small Cohen's d indicates inadequate statistical power, requiring a larger replication trial to stabilize estimates"
       ],
       "answerIndex": 2,
       "rationale": "A low p-value and a small effect size answer different questions. With a very large sample, a small average difference can produce p < .001; that p-value does not show that the benefit is large, clinically meaningful, or cost-effective. Cohen?s d = 0.08 describes a small standardized mean difference, but practical importance still depends on the outcome scale, confidence interval, baseline risk or severity, benefits, harms, costs, and a defensible meaningful-change threshold. The result should be interpreted with design quality and uncertainty, not dismissed or celebrated from one statistic.",
@@ -652,10 +652,10 @@
       "domain": "Research Methods & Statistics",
       "prompt": "A researcher designs a study that selectively recruits low-income participants because they are easier to recruit and less likely to refuse. The study involves moderate risk. This practice MOST violates which Belmont Report principle?",
       "choices": [
-        "Respect for Persons — failure to obtain informed consent",
-        "Beneficence — failure to minimize risks",
+        "Respect for Persons — inadequate comprehension safeguards during informed consent",
+        "Beneficence — failing to eliminate moderate procedural risks before enrollment",
         "Justice — unfair distribution of research burdens on a vulnerable population",
-        "Fidelity — failure to maintain professional relationships"
+        "Fidelity — undermining professional trust through unequal recruitment incentives"
       ],
       "answerIndex": 2,
       "rationale": "The best answer is justice. Belmont applies justice to fair subject selection and to the distribution of research burdens and benefits. Recruiting economically disadvantaged people specifically because they are convenient or less likely to refuse can place risk on an already burdened group without a scientific reason tied to that population. Respect for persons and beneficence still apply, but the distinctive defect described is inequitable selection. Fidelity is an APA ethical principle, not one of Belmont?s three principles.",

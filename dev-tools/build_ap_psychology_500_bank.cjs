@@ -8,6 +8,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { applyApPsychSeedOverride, applyApPsychItemOverride } = require('./ap_psychology_choice_overrides/index.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_psychology_pilot.json');
@@ -1309,7 +1310,7 @@ function conceptChoiceRationales(topicId, answerConceptIndex, choices, stemFocus
     if (concept.label === answer.label) {
       return `${concept.label} fits because ${answer.definition}. The example's defining pattern is ${stemFocus}, which matches this concept rather than a neighboring construct.`;
     }
-    return `${concept.label} refers to ${concept.definition}. That distinction does not match ${stemFocus}; the example instead describes ${answer.label}.`;
+    return `This option describes ${concept.definition}, which differs from the scenario's defining pattern rather than explaining the psychological mechanism shown here.`;
   });
 }
 
@@ -1479,7 +1480,7 @@ function researchBlueprint(plan, index, contextSeed = index) {
   const outcome = `a standardized score for ${plan.outcome}`;
   const patterns = [
     {
-      stem: `${context} studies whether ${plan.variable} is related to ${plan.outcome}. The team defines ${plan.variable} as ${measure}. Which research term describes that definition?`,
+      stem: `${context} studies whether ${plan.variable} is related to ${plan.outcome}. The team defines ${plan.variable} as ${measure}. Which research term describes that specification?`,
       answer: 'An operational definition',
       distractors: ['A confounding variable', 'A random sample', 'A replication failure'],
       why: `An operational definition states exactly how a construct will be measured or manipulated, as the team does for ${plan.variable}.`,
@@ -1487,28 +1488,28 @@ function researchBlueprint(plan, index, contextSeed = index) {
     },
     {
       stem: `${context} randomly assigns participants to receive either a structured activity involving ${plan.variable} or a comparison activity, then records ${outcome}. Which variable is the independent variable?`,
-      answer: 'The assigned condition involving ${plan.variable}',
+      answer: 'The manipulated regimen assigned by researchers',
       distractors: ['The recorded ${plan.outcome} score', 'The participants’ demographic characteristics', 'The number of researchers on the team'],
       why: `The independent variable is the condition the researchers assign or manipulate; here it is the condition involving ${plan.variable}.`,
       demand: 'research-design',
     },
     {
       stem: `${context} recruits volunteers from one introductory course to study ${plan.subject}. The researchers want to generalize to all students at the college. Which limitation is most important?`,
-      answer: 'The volunteer convenience sample may not represent the college population',
+      answer: 'The volunteer convenience cohort may not represent the wider campus',
       distractors: ['Random assignment would solve the sampling problem without changing recruitment', 'The dependent variable cannot be measured in a volunteer sample', 'A correlation would be required before making any population claim'],
       why: `Generalizability depends on how well the sample represents the target population; volunteers from one course may differ from the whole college.`,
       demand: 'research-analysis',
     },
     {
       stem: `${context} observes ${plan.variable} and ${plan.outcome} without assigning either one. The two measures are positively correlated. Which conclusion is justified?`,
-      answer: 'The measures vary together, but the design does not establish causation',
+      answer: 'Both variables covary, yet the design cannot establish causation',
       distractors: ['${plan.variable} definitely causes ${plan.outcome}', 'The study has no measurable variables', 'The participants were necessarily randomly assigned'],
       why: `A nonexperimental correlation can show an association, but directionality and third-variable explanations prevent a causal conclusion.`,
       demand: 'research-analysis',
     },
     {
       stem: `${context} plans a study involving ${plan.subject}. Before collecting data, the team explains foreseeable risks, allows refusal, and protects participants’ records. Which ethical principle is most directly represented?`,
-      answer: 'Informed consent and protection of participant welfare',
+      answer: 'Informed consent and protection of individual welfare',
       distractors: ['Deception without debriefing', 'A placebo effect', 'The law of effect'],
       why: `Participants should understand relevant procedures and risks, be free to decline, and receive protection for their welfare and privacy.`,
       demand: 'research-ethics',
@@ -1539,7 +1540,7 @@ function dataBlueprint(plan, index, contextSeed = index) {
     const strength = Math.abs(r) >= 0.5 ? 'moderate-to-strong' : 'weak-to-moderate';
     return {
       stem: `${context} reports a correlation of r = ${r.toFixed(2)} between ${plan.variable} and ${plan.outcome}. Which interpretation is most accurate?`,
-      answer: `There is a ${strength} ${direction} association, but the correlational design does not establish causation`,
+      answer: `It shows a ${strength} ${direction} link, not causation`,
       distractors: [
         `The association is ${direction === 'negative' ? 'positive' : 'negative'} and proves a causal effect`,
         'The correlation is zero because the coefficient is not exactly 1.00',
@@ -1589,7 +1590,7 @@ function dataBlueprint(plan, index, contextSeed = index) {
     const high = low + 12;
     return {
       stem: `${context} compares two groups on ${plan.outcome}. Group A has a mean of ${low + 4} with a standard deviation of 1.5; Group B has a mean of ${high - 4} with a standard deviation of 1.5. Which conclusion follows?`,
-      answer: `Group B has the higher average score, while the groups have equal reported variability`,
+      answer: `Group B averages higher, while both cohorts show identical spread`,
       distractors: ['Group A has the higher average score and greater variability', 'The standard deviations determine which group has the higher mean', 'No comparison is possible because means cannot be interpreted'],
       why: `The mean identifies the average level and the equal standard deviations indicate equal reported spread; neither statistic alone establishes causation.`,
     };
@@ -1621,7 +1622,7 @@ function researchTopicDetail(topicId, index, demand) {
     return `To distinguish ${first.label} from ${second.label}, the team kept ${third.label} separate from ${fourth.label} while specifying its variables before data collection.`;
   }
   if (demand === 'research-ethics') {
-    return `The consent materials described the study without treating ${first.label}, ${second.label}, ${third.label}, and ${fourth.label} as interchangeable.`;
+    return `The intake packet described the protocol without treating ${first.label}, ${second.label}, ${third.label}, and ${fourth.label} as interchangeable.`;
   }
   return `The researchers compared ${first.label} with ${second.label} and recorded ${third.label} separately from ${fourth.label} when interpreting the outcome.`;
 }
@@ -1739,7 +1740,7 @@ function makeGenericItem(topicId, plan, blueprint, practiceId, skillId, id, answ
   const longestChoiceWords = Math.max(...rawChoices.map(wordCount));
   const parallelChoices = rawChoices.map((choice, choiceIndex) => {
     let output = choice;
-    const suffixes = ['in this study', 'for these participants', 'as measured here', 'under these conditions'];
+    const suffixes = ['in this case', 'for these participants', 'as measured here', 'under these conditions'];
     let suffixIndex = 0;
     while (wordCount(output) < longestChoiceWords) {
       output += ` ${suffixes[(choiceIndex + suffixIndex) % suffixes.length]}`;
@@ -1753,7 +1754,7 @@ function makeGenericItem(topicId, plan, blueprint, practiceId, skillId, id, answ
   assert(answerPosition === answerIndex, `${id} answer position did not bind.`);
   const choiceRationales = choices.map((choice) => choice === answerChoice
     ? `"${choice}" is correct because ${blueprint.why} This conclusion matches the specific design or evidence described in the stem.`
-    : `"${choice}" is not the best answer. ${targetedDistractorFeedback(choice, blueprint, practiceId)}`);
+    : `This option misinterprets the study evidence: ${targetedDistractorFeedback(choice, blueprint, practiceId)}`);
   const normalizedBlueprintStem = `${blueprint.stem.charAt(0).toUpperCase()}${blueprint.stem.slice(1)}`;
   const promptStem = practiceId === 'P2'
     ? insertBeforeFinalQuestion(
@@ -1818,7 +1819,9 @@ function main() {
   const library = readJson(libraryPath);
   assert(pack.id === 'ap-psychology-pilot', 'Unexpected AP Psychology pack identity.');
   assert(library.packId === pack.id, 'Learning library is not bound to the AP Psychology pack.');
-  const originalItems = pack.items.filter((item) => Number(String(item.id).split('-').pop()) <= 8);
+  const originalItems = pack.items
+    .filter((item) => Number(String(item.id).split('-').pop()) <= 8)
+    .map(applyApPsychSeedOverride);
   assert(originalItems.length === 40, `Expected the reviewed 40-item seed, found ${originalItems.length}.`);
   const counts = existingCounts({ items: originalItems });
   const answerPositions = balancedAnswerPositions(460);
@@ -1875,7 +1878,7 @@ function main() {
     for (const unit of unitIds) newItems.push(...generatedByUnit.get(unit).slice(bank * 4, bank * 4 + 4));
   }
   assert(newItems.length === 460, 'Balanced bank assembly lost generated items.');
-  pack.items = [...originalItems, ...newItems];
+  pack.items = [...originalItems, ...newItems].map(applyApPsychItemOverride);
   pack.items.forEach(applyLearningRoute);
   updatePackMetadata(pack);
   library.version = version;

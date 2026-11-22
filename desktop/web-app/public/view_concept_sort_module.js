@@ -47,6 +47,25 @@ function _conceptSortImageAlt(item) {
   }
   return alt && alt !== String(item.content || '').trim() ? alt : '';
 }
+function _csSafeImageUrl(raw) {
+  if (typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+  if (/^data:image\/(?:png|jpe?g|gif|webp|avif);base64,/i.test(trimmed)) return trimmed;
+  if (/^data:image\/svg\+xml/i.test(trimmed)) {
+    try {
+      const comma = trimmed.indexOf(',');
+      if (comma < 0) return '';
+      const decoded = /;base64/i.test(trimmed.slice(0, comma)) ? atob(trimmed.slice(comma + 1)) : decodeURIComponent(trimmed.slice(comma + 1));
+      if (/<script\b|<foreignObject\b|<(?:iframe|object|embed|meta|base|link|animate|set)\b|<!ENTITY|&#|\bon[a-z]+\s*=|(?:xlink:)?href\s*=\s*["']?\s*(?:javascript:|data:)|javascript:|@import|expression\s*\(/i.test(decoded)) return '';
+      return trimmed;
+    } catch (_) {
+      return '';
+    }
+  }
+  if (/^(?:https?:|blob:|\/|\.{1,2}\/)/i.test(trimmed)) return trimmed;
+  return '';
+}
 function ConceptSortTextEditor({
   value,
   label,
@@ -92,12 +111,13 @@ function ConceptSortTextEditor({
       composing.current = false;
     },
     onKeyDown: event => {
-      if (composing.current || event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return;
+      if (composing.current || event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
       if (event.key === 'Enter') {
         event.preventDefault();
         save(true);
       } else if (event.key === 'Escape') {
         event.preventDefault();
+        event.stopPropagation();
         cancel();
       }
     },
@@ -126,14 +146,17 @@ function ConceptSortTextEditor({
   }, cancelText)));
 }
 function ConceptSortView(props) {
-  var t = props.t;
+  var t = typeof props.t === 'function' ? props.t : function () {
+    return '';
+  };
   var isTeacherMode = props.isTeacherMode;
   var isIndependentMode = props.isIndependentMode;
   var generatedContent = props.generatedContent;
-  var conceptSortImageScale = props.conceptSortImageScale || 2.0;
+  var rawScale = Number(props.conceptSortImageScale);
+  var conceptSortImageScale = Number.isFinite(rawScale) && rawScale > 0 ? rawScale : 2.0;
   var csEdit = props.csEdit;
   var csAddingCatId = props.csAddingCatId;
-  var csAddingText = props.csAddingText;
+  var csAddingText = typeof props.csAddingText === 'string' ? props.csAddingText : '';
   var csBusyId = props.csBusyId;
   var isConceptSortGame = props.isConceptSortGame;
   var _reasoningOpenState = React.useState(false);
@@ -144,24 +167,48 @@ function ConceptSortView(props) {
   var reviewFilter = _reviewFilterState[0],
     setReviewFilter = _reviewFilterState[1];
   var csResId = generatedContent && generatedContent.id;
+  var spokeRef = React.useRef(false);
+  var editFocusRafRef = React.useRef(null);
   React.useEffect(function () {
     setReviewFilter('');
   }, [csResId]);
+  React.useEffect(function () {
+    return function () {
+      if (editFocusRafRef.current !== null && typeof cancelAnimationFrame === 'function') {
+        cancelAnimationFrame(editFocusRafRef.current);
+        editFocusRafRef.current = null;
+      }
+      if (spokeRef.current && typeof window !== 'undefined') {
+        try {
+          if (window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.stop === 'function') window.AlloSpeechPlayer.stop();
+        } catch (_) {}
+        try {
+          if (window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel();
+        } catch (_) {}
+        spokeRef.current = false;
+      }
+    };
+  }, []);
   var speakConceptSortText = function (raw) {
     var clean = String(raw || '').replace(/\s+/g, ' ').trim();
     if (!clean) return;
     try {
+      if (typeof window !== 'undefined' && (window.__alloMuted === true || window._alloGlobalMute === true || window._alloGlobalMuted === true || typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted())) {
+        return;
+      }
+      spokeRef.current = true;
       if (typeof window !== 'undefined' && window.AlloSpeechPlayer && typeof window.AlloSpeechPlayer.speak === 'function') {
-        window.AlloSpeechPlayer.speak(clean);
+        Promise.resolve(window.AlloSpeechPlayer.speak(clean)).catch(function () {});
       } else if (typeof window !== 'undefined' && typeof window.callTTS === 'function') {
-        window.callTTS(clean);
+        Promise.resolve(window.callTTS(clean)).catch(function () {});
       } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(clean));
       }
     } catch (_) {}
   };
-  var studentReasoning = props.studentResponses && csResId != null && typeof props.studentResponses[csResId]?.reasoning === 'string' ? props.studentResponses[csResId].reasoning : _localReasoningState[0];
+  var ownResp = props.studentResponses && typeof props.studentResponses === 'object' && csResId != null && Object.prototype.hasOwnProperty.call(props.studentResponses, csResId) ? props.studentResponses[csResId] : null;
+  var studentReasoning = ownResp && typeof ownResp.reasoning === 'string' ? ownResp.reasoning : _localReasoningState[0];
   var updateStudentReasoning = function (val) {
     var nextVal = String(val || '').slice(0, 2000);
     _localReasoningState[1](nextVal);
@@ -169,13 +216,13 @@ function ConceptSortView(props) {
       props.handleStudentInput(csResId, 'reasoning', nextVal);
     }
   };
-  var setConceptSortImageScale = props.setConceptSortImageScale;
-  var setCsEdit = props.setCsEdit;
-  var setCsAddingCatId = props.setCsAddingCatId;
-  var setCsAddingText = props.setCsAddingText;
-  var handleSetIsConceptSortGameToTrue = props.handleSetIsConceptSortGameToTrue;
-  var csUpdateCategoryLabel = props.csUpdateCategoryLabel;
-  var csUpdateItemText = props.csUpdateItemText;
+  var setConceptSortImageScale = typeof props.setConceptSortImageScale === 'function' ? props.setConceptSortImageScale : function () {};
+  var setCsEdit = typeof props.setCsEdit === 'function' ? props.setCsEdit : function () {};
+  var setCsAddingCatId = typeof props.setCsAddingCatId === 'function' ? props.setCsAddingCatId : function () {};
+  var setCsAddingText = typeof props.setCsAddingText === 'function' ? props.setCsAddingText : function () {};
+  var handleSetIsConceptSortGameToTrue = typeof props.handleSetIsConceptSortGameToTrue === 'function' ? props.handleSetIsConceptSortGameToTrue : function () {};
+  var csUpdateCategoryLabel = typeof props.csUpdateCategoryLabel === 'function' ? props.csUpdateCategoryLabel : function () {};
+  var csUpdateItemText = typeof props.csUpdateItemText === 'function' ? props.csUpdateItemText : function () {};
   const editButtons = React.useRef(new Map()),
     editFocusTicket = React.useRef(0);
   const editKey = (kind, id) => JSON.stringify([generatedContent?.id, kind, id]);
@@ -194,7 +241,9 @@ function ConceptSortView(props) {
   const returnEditFocus = (kind, id) => {
     const key = editKey(kind, id),
       ticket = ++editFocusTicket.current;
-    requestAnimationFrame(() => {
+    if (editFocusRafRef.current !== null && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(editFocusRafRef.current);
+    editFocusRafRef.current = requestAnimationFrame(() => {
+      editFocusRafRef.current = null;
       const button = editButtons.current.get(key),
         active = document.activeElement;
       if (ticket === editFocusTicket.current && button?.isConnected && (!active || active === document.body || !active.isConnected)) button.focus();
@@ -205,20 +254,25 @@ function ConceptSortView(props) {
     setCsEdit(null);
     if (restore) returnEditFocus(kind, id);
   };
-  var csMoveItem = props.csMoveItem;
-  var csRegenerateItem = props.csRegenerateItem;
-  var csRegenerateItemImage = props.csRegenerateItemImage;
-  var csUploadItemImage = props.csUploadItemImage;
-  var csClearItemImage = props.csClearItemImage;
-  var csDeleteItem = props.csDeleteItem;
-  var csAddItem = props.csAddItem;
+  var csMoveItem = typeof props.csMoveItem === 'function' ? props.csMoveItem : function () {};
+  var csRegenerateItem = typeof props.csRegenerateItem === 'function' ? props.csRegenerateItem : function () {};
+  var csRegenerateItemImage = typeof props.csRegenerateItemImage === 'function' ? props.csRegenerateItemImage : function () {};
+  var csUploadItemImage = typeof props.csUploadItemImage === 'function' ? props.csUploadItemImage : function () {};
+  var csClearItemImage = typeof props.csClearItemImage === 'function' ? props.csClearItemImage : function () {};
+  var csDeleteItem = typeof props.csDeleteItem === 'function' ? props.csDeleteItem : function () {};
+  var csAddItem = typeof props.csAddItem === 'function' ? props.csAddItem : function () {};
   var csAddCategory = props.csAddCategory;
   var csDeleteCategory = props.csDeleteCategory;
   var csAddItemManual = props.csAddItemManual;
   // With no AI connected, a typed card is added exactly as written instead of through the AI.
+  var csAiHardBlocked = function () {
+    return typeof window !== 'undefined' && (window._alloQrBlocked === true || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true);
+  };
   var csAiTextOn = function () {
     try {
-      var resolve = window.__alloResolveAiCapability;
+      if (csAiHardBlocked()) return false;
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text')) return false;
+      var resolve = typeof window !== 'undefined' ? window.__alloResolveAiCapability : null;
       return typeof resolve === 'function' ? !!resolve().text : true;
     } catch (_) {
       return true;
@@ -227,15 +281,15 @@ function ConceptSortView(props) {
   var csAddTyped = function (catId, text, categories) {
     if (!csAiTextOn() && typeof csAddItemManual === 'function') {
       csAddItemManual(catId, text);
-      props.setCsAddingCatId(null);
-      props.setCsAddingText('');
+      setCsAddingCatId(null);
+      setCsAddingText('');
       return;
     }
     csAddItem(catId, text, categories);
   };
   // Image refinement (image-to-image edit) — mirrors glossary refine pattern.
   var csRefineItemImage = props.csRefineItemImage;
-  var csRefinementInputs = props.csRefinementInputs || {};
+  var csRefinementInputs = props.csRefinementInputs && typeof props.csRefinementInputs === 'object' ? props.csRefinementInputs : {};
   var setCsRefinementInputs = props.setCsRefinementInputs || function () {};
   var conceptSortAutoRemoveWords = props.conceptSortAutoRemoveWords;
   var setConceptSortAutoRemoveWords = props.setConceptSortAutoRemoveWords || function () {};
@@ -249,8 +303,8 @@ function ConceptSortView(props) {
   var ConceptSortGame = props.ConceptSortGame;
   // Cards whose categoryId names no category are invisible in the category
   // lists and left out of play; list them in their own group to be assigned.
-  var reviewCategories = generatedContent && generatedContent.data && generatedContent.data.categories || [];
-  var reviewItems = generatedContent && generatedContent.data && generatedContent.data.items || [];
+  var reviewCategories = Array.isArray(generatedContent && generatedContent.data && generatedContent.data.categories) ? generatedContent.data.categories.filter(Boolean) : [];
+  var reviewItems = Array.isArray(generatedContent && generatedContent.data && generatedContent.data.items) ? generatedContent.data.items.filter(Boolean) : [];
   var orphanItems = reviewItems.filter(function (it) {
     return it && !reviewCategories.some(function (c) {
       return String(c.id) === String(it.categoryId);
@@ -263,6 +317,16 @@ function ConceptSortView(props) {
   }]) : reviewCategories;
   var csAiDoor = function (kind) {
     try {
+      if (csAiHardBlocked()) return {
+        disabled: true,
+        title: _conceptSortText(t, 'ai.setup_required', 'AI setup required')
+      };
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable(kind || 'text')) {
+        return {
+          disabled: true,
+          title: _conceptSortText(t, 'ai.setup_required', 'AI setup required')
+        };
+      }
       return typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway(kind, t) : null;
     } catch (_) {
       return null;
@@ -313,13 +377,14 @@ function ConceptSortView(props) {
     className: "bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6 flex justify-between items-center flex-wrap gap-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-sm text-indigo-800"
-  }, /*#__PURE__*/React.createElement("strong", null, t('simplified.udl_goal').split(':')[0], ":"), " ", t('concept_sort.udl_goal_desc')), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("strong", null, String(t('simplified.udl_goal') || 'UDL Goal').split(':')[0], ":"), " ", t('concept_sort.udl_goal_desc')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleSetIsConceptSortGameToTrue,
     "data-help-key": "concept_sort_start_button",
     className: "min-h-11 flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all motion-reduce:transition-none shadow-sm"
   }, /*#__PURE__*/React.createElement(Filter, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }), " ", isTeacherMode && !isIndependentMode ? t('concept_sort.preview') : t('concept_sort.start')), csAnyAiDoorDisabled && typeof window !== 'undefined' && typeof window.AlloAiSetupNotice === 'function' && /*#__PURE__*/React.createElement("div", {
     className: "w-full"
   }, /*#__PURE__*/React.createElement(window.AlloAiSetupNotice, {
@@ -331,6 +396,7 @@ function ConceptSortView(props) {
     className: "bg-indigo-100 p-4 rounded-full"
   }, /*#__PURE__*/React.createElement(Filter, {
     size: 48,
+    "aria-hidden": "true",
     className: "text-indigo-500"
   })), /*#__PURE__*/React.createElement("h3", {
     className: "text-xl font-black text-slate-700"
@@ -495,7 +561,7 @@ function ConceptSortView(props) {
       'bg-violet-500': 'text-violet-800 bg-violet-50',
       'bg-fuchsia-500': 'text-fuchsia-800 bg-fuchsia-50'
     };
-    const colorClass = cat.__orphans ? 'text-rose-800 bg-rose-50' : _csToneMap[cat.color] || 'text-slate-800 bg-slate-50';
+    const colorClass = cat.__orphans ? 'text-rose-800 bg-rose-50' : Object.prototype.hasOwnProperty.call(_csToneMap, cat.color) ? _csToneMap[cat.color] : 'text-slate-800 bg-slate-50';
     return /*#__PURE__*/React.createElement("div", {
       key: cat.id,
       "data-help-key": "concept_sort_category",
@@ -560,15 +626,17 @@ function ConceptSortView(props) {
     }, "⚠ ", t('concept_sort.empty_category_warning') || 'No items in this category. Students will see an empty column.'), catItems.map(item => {
       const isEditingItem = csEdit && csEdit.kind === 'item' && csEdit.id === item.id;
       const isBusy = csBusyId === item.id;
-      const refineInput = csRefinementInputs[item.id] || '';
+      const rawRefine = Object.prototype.hasOwnProperty.call(csRefinementInputs, item.id) ? csRefinementInputs[item.id] : '';
+      const refineInput = typeof rawRefine === 'string' ? rawRefine : '';
+      const safeItemImage = _csSafeImageUrl(item.image);
       return /*#__PURE__*/React.createElement("div", {
         key: item.id,
         "data-help-key": "concept_sort_item",
         className: "flex flex-col gap-1 bg-white p-2 rounded-lg border border-slate-400 hover:border-slate-300 transition-colors motion-reduce:transition-none"
       }, /*#__PURE__*/React.createElement("div", {
         className: "flex flex-wrap items-center gap-2"
-      }, item.image ? /*#__PURE__*/React.createElement("img", {
-        src: item.image,
+      }, safeItemImage ? /*#__PURE__*/React.createElement("img", {
+        src: safeItemImage,
         alt: _conceptSortImageAlt(item),
         className: "object-contain rounded shrink-0 bg-white border border-slate-100",
         loading: "lazy",
@@ -670,7 +738,7 @@ function ConceptSortView(props) {
         "aria-hidden": "true"
       }, "📤")), /*#__PURE__*/React.createElement("input", {
         type: "file",
-        accept: "image/*",
+        accept: "image/png,image/jpeg,image/gif,image/webp,image/avif",
         hidden: true,
         tabIndex: -1,
         "aria-hidden": "true",
@@ -727,7 +795,7 @@ function ConceptSortView(props) {
           [item.id]: e.target.value
         })),
         onKeyDown: e => {
-          if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
+          if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
           if (!csEditDoor?.disabled && e.key === 'Enter' && refineInput.trim()) {
             csRefineItemImage(item.id);
           }
@@ -758,10 +826,12 @@ function ConceptSortView(props) {
       value: csAddingText,
       onChange: e => setCsAddingText(e.target.value),
       onKeyDown: e => {
-        if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
+        if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
         if (e.key === 'Enter' && csAddingText.trim()) {
           csAddTyped(cat.id, csAddingText, generatedContent?.data.categories || []);
         } else if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
           setCsAddingCatId(null);
           setCsAddingText('');
         }
@@ -791,12 +861,14 @@ function ConceptSortView(props) {
     value: csAddingText,
     onChange: e => setCsAddingText(e.target.value),
     onKeyDown: e => {
-      if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229) return;
+      if (e.nativeEvent?.isComposing || e.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
       if (e.key === 'Enter' && csAddingText.trim()) {
         csAddCategory(csAddingText);
         setCsAddingCatId(null);
         setCsAddingText('');
       } else if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
         setCsAddingCatId(null);
         setCsAddingText('');
       }
@@ -834,10 +906,10 @@ function ConceptSortView(props) {
     data: playableConceptSortData,
     onClose: closeConceptSort,
     playSound: playSound,
-    onGenerateItem: handleGenerateConceptItem,
+    onGenerateItem: !csTextDoor?.disabled ? handleGenerateConceptItem : undefined,
     onScoreUpdate: handleGameScoreUpdate,
     onGameComplete: handleGameCompletion,
-    onExplainIncorrect: handleExplainConceptSortItem,
+    onExplainIncorrect: !csTextDoor?.disabled ? handleExplainConceptSortItem : undefined,
     imageScale: conceptSortImageScale,
     onImageScaleChange: setConceptSortImageScale,
     allowAddItems: Boolean(isTeacherMode)

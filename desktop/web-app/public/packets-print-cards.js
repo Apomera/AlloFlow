@@ -157,11 +157,34 @@
       loadingSyllables = true;
       try {
         var sc = doc.createElement('script');
+        var settled = false;
+        var timer = typeof win.setTimeout === 'function' ? win.setTimeout(function () {
+          if (settled) return;
+          settled = true;
+          loadingSyllables = false;
+          try { if (sc.parentNode) sc.parentNode.removeChild(sc); } catch (_) {}
+        }, 15000) : 0;
+        var clear = function () { if (timer && typeof win.clearTimeout === 'function') win.clearTimeout(timer); timer = 0; };
         sc.src = 'syllable_table_en.js';
         sc.async = true;
         sc.setAttribute('data-allo-syllable-table', '1');
-        sc.onload = function () { loadingSyllables = false; draw(); };
-        sc.onerror = function () { loadingSyllables = false; };
+        sc.onload = function () {
+          if (settled) return;
+          settled = true;
+          clear();
+          loadingSyllables = false;
+          if (!(root.AlloModules && root.AlloModules.SyllableTableEn)) {
+            try { if (sc.parentNode) sc.parentNode.removeChild(sc); } catch (_) {}
+          }
+          draw();
+        };
+        sc.onerror = function () {
+          if (settled) return;
+          settled = true;
+          clear();
+          loadingSyllables = false;
+          try { if (sc.parentNode) sc.parentNode.removeChild(sc); } catch (_) {}
+        };
         (doc.head || doc.documentElement).appendChild(sc);
       } catch (_) { loadingSyllables = false; }
     }

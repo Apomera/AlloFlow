@@ -2478,10 +2478,12 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                                 ✏️ Refine
                                             </button>
                                             <button type="button" onClick={() => {
+                                                const portraitUrl = typeof char.portrait === 'string' ? char.portrait.trim() : '';
+                                                if (!/^(?:data:image\/(?:png|jpeg|jpg|webp|gif);base64,|blob:|https?:\/\/)/i.test(portraitUrl)) return;
                                                 const link = document.createElement('a');
-                                                link.href = char.portrait;
-                                                const ext = typeof char.portrait === 'string' && char.portrait.startsWith('data:image/jpeg') ? 'jpg' : 'png';
-                                                link.download = `${(char.name || 'character').replace(/\s+/g, '_')}_portrait.${ext}`;
+                                                link.href = portraitUrl;
+                                                const ext = /^data:image\/jpeg/i.test(portraitUrl) ? 'jpg' : 'png';
+                                                link.download = `${(char.name || 'character').replace(/[^a-z0-9_-]+/gi, '_')}_portrait.${ext}`;
                                                 document.body.appendChild(link);
                                                 link.click();
                                                 document.body.removeChild(link);

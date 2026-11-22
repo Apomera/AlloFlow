@@ -137,12 +137,13 @@ function doPost(e) {
   var token = props.getProperty(LHB_PROP_TOKEN);
   if (!token) return lhbJson_({ ok: false, error: 'not-set-up', hint: 'Run setup() in the script editor first.' });
   var cache = (typeof CacheService !== 'undefined' && CacheService && CacheService.getScriptCache) ? CacheService.getScriptCache() : null;
-  var failCount = parseInt((cache && cache.get('lhb_auth_fail')) || '0', 10) || 0;
+  var authBucketKey = 'lhb_auth_fail:' + Math.floor(Date.now() / 60000);
+  var failCount = parseInt((cache && cache.get(authBucketKey)) || '0', 10) || 0;
   if (failCount >= 20) {
     return lhbJson_({ ok: false, error: 'rate-limited' });
   }
   if (!lhbTimingSafeTokenEq(data.token, token)) {
-    if (cache) cache.put('lhb_auth_fail', String(failCount + 1), 60);
+    if (cache && failCount < 20) cache.put(authBucketKey, String(failCount + 1), 60);
     return lhbJson_({ ok: false, error: 'bad-token' });
   }
 
@@ -204,8 +205,11 @@ function lhbPrune_(folder) {
     if (f.getName().indexOf('alloflow-leadership-hub-backup-') === 0) files.push(f);
   }
   files.sort(function (a, b) {
-    var an = a.getName(), bn = b.getName();
-    return an === bn ? 0 : (bn < an ? -1 : 1);
+    var an = a.getName().replace(/\.json$/i, ''), bn = b.getName().replace(/\.json$/i, '');
+    if (an !== bn) return bn < an ? -1 : 1;
+    var at = (typeof a.getDateCreated === 'function' && a.getDateCreated()) ? a.getDateCreated().getTime() : 0;
+    var bt = (typeof b.getDateCreated === 'function' && b.getDateCreated()) ? b.getDateCreated().getTime() : 0;
+    return bt - at;
   });
   var pruned = 0;
   var kept = [];

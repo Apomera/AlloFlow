@@ -21,6 +21,7 @@
 'use strict';
 
 const fs = require('fs');
+const http = require('http');
 const path = require('path');
 
 const ROOT = process.cwd();
@@ -153,27 +154,77 @@ const NAV_CLICK = {
   const pageErrors = [];
   page.on('pageerror', (err) => pageErrors.push(String(err && err.message || err)));
 
-  // localStorage is denied on about:blank — serve the harness from a real
-  // file:// origin instead of page.setContent(). Written to the OS temp dir
-  // so the shot dir holds only reviewable screenshots.
-  const harnessPath = path.join(require('os').tmpdir(), 'da_visual_qa_harness.html');
-  fs.writeFileSync(harnessPath, '<!doctype html><html><head><meta charset="utf-8"><title>DA visual QA</title></head>' +
+  // Serve the harness over localhost (secure context for WebCrypto + localStorage)
+  // so the real SensitiveWorkspace encrypted boundary mounts authentically.
+  const harnessHtml = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>DA visual QA</title></head>' +
     '<body style="margin:0"><main class="theme-light"><div id="host-card" style="background:#ffffff;border-radius:16px;max-width:896px;margin:24px auto;">' +
-    '<div id="root"></div></div></main></body></html>');
-  await page.goto('file:///' + harnessPath.replace(/\\/g, '/'));
-  await page.addScriptTag({ path: path.join(MODULES, 'react', 'umd', 'react.development.js') });
-  await page.addScriptTag({ path: path.join(MODULES, 'react-dom', 'umd', 'react-dom.development.js') });
-  await page.addScriptTag({ path: path.join(PUBLIC, 'dynamic_assessment_module.js') });
-
+    '<div id="root"></div></div></main></body></html>';
+  const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(harnessHtml);
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const port = server.address().port;
   const problems = [];
   let shot = 0;
+  try {
+  await page.goto('http://127.0.0.1:' + port + '/');
+  await page.addScriptTag({ path: path.join(MODULES, 'react', 'umd', 'react.development.js') });
+  await page.addScriptTag({ path: path.join(MODULES, 'react-dom', 'umd', 'react-dom.development.js') });
+  await page.addScriptTag({ path: path.join(PUBLIC, 'allo_crypto_module.js') });
+  await page.addScriptTag({ path: path.join(PUBLIC, 'allo_device_vault_module.js') });
+  await page.addScriptTag({ path: path.join(PUBLIC, 'identifier_redaction_module.js') });
+  await page.addScriptTag({ path: path.join(PUBLIC, 'sensitive_workspace_module.js') });
+  await page.addScriptTag({ path: path.join(PUBLIC, 'dynamic_assessment_module.js') });
+
+  // Unlock the real in-memory SensitiveWorkspace clinical boundary once.
+  await page.evaluate(async () => {
+    const realApi = window.AlloModules.SensitiveWorkspace;
+    const cryptoMod = window.AlloModules.AlloCrypto;
+    const vaultMod = window.AlloModules.AlloDeviceVault;
+    let stored = null, revision = 0;
+    const clone = (x) => x == null ? x : JSON.parse(JSON.stringify(x));
+    const service = realApi.createService({
+      repository: {
+        read: async () => ({ store: clone(stored), revision }),
+        compareAndSwap: async (expected, next) => {
+          if (expected !== revision) return false;
+          stored = clone(next);
+          revision++;
+          return true;
+        }
+      },
+      vaultModule: vaultMod,
+      crypto: cryptoMod,
+      cryptoOptions: { iterations: cryptoMod.MIN_PBKDF2_ITERATIONS },
+      localStorage: window.localStorage,
+      sessionStorage: window.sessionStorage,
+      lifecycle: false,
+      saveDelayMs: 100000,
+      getContext: () => ({ learner: false, isCanvas: false }),
+      policy: { version: 1, allowExternalAi: [] },
+      confirmExport: () => true
+    });
+    await service.init();
+    await service.setup('Synthetic DA visual QA password');
+    const recoveryInput = service.getStatus().setupRecoveryCode;
+    await service.exportBackup();
+    await service.finishSetup({ recoveryInput, backupSaved: true });
+    window.__daQaService = service;
+    window.AlloModules.SensitiveWorkspace = Object.assign({}, realApi, {
+      Boundary: function (props) {
+        return window.React.createElement(realApi.Boundary, Object.assign({}, props, { service }));
+      }
+    });
+  });
 
   for (const sc of SCENARIOS) {
-    // Seed state + (re)mount fresh for the scenario.
+    // Seed state into the real protected clinical session + (re)mount fresh.
     await page.evaluate(([key, state]) => {
       if (window.__daQaRoot) { try { window.__daQaRoot.unmount(); } catch (_) {} }
       localStorage.clear();
-      localStorage.setItem(key, JSON.stringify(state));
+      const session = window.__daQaService.getSession('dynamic-assessment');
+      session.storage.setItem(key, JSON.stringify(state));
       const main = document.querySelector('main');
       main.className = 'theme-light';
       const DA = window.AlloModules.DynamicAssessment;
@@ -187,7 +238,7 @@ const NAV_CLICK = {
         outputLanguage: 'English'
       }));
     }, [STORAGE_KEY, sc.state]);
-    await page.waitForTimeout(250);
+    await page.waitForTimeout(300);
 
     // Navigate to a sub-view when requested.
     if (sc.nav) {
@@ -234,7 +285,10 @@ const NAV_CLICK = {
     }
   }
 
-  await browser.close();
+  } finally {
+    await browser.close();
+    server.close();
+  }
 
   if (pageErrors.length) {
     console.error('\n[check_da_visual_qa] PAGE ERRORS:');

@@ -2382,6 +2382,7 @@ function WalkthroughCopilotPanel(props) {
   const [realNotes, setRealNotes] = React.useState("");
   const [armForget, setArmForget] = React.useState(false);
   const [armClearReal, setArmClearReal] = React.useState(false);
+  const [copiedMap, setCopiedMap] = React.useState({});
   const dialogRef = React.useRef(null);
   const backdropDownRef = React.useRef(false);
   const mountedRef = React.useRef(true);
@@ -2617,6 +2618,7 @@ function WalkthroughCopilotPanel(props) {
     }
     setProblem("");
     setDraft(analyzed.value);
+    setCopiedMap({});
     setStage("analyze");
     wcopAnnounce("Notes locked. " + analyzed.value.suggestions.length + " suggestions to review.");
   }
@@ -2661,7 +2663,10 @@ function WalkthroughCopilotPanel(props) {
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(
-          () => wcopAnnounce(what + " copied."),
+          () => {
+            if (mountedRef.current && what) setCopiedMap((prev) => Object.assign({}, prev, { [what]: true }));
+            wcopAnnounce(what + " copied.");
+          },
           () => wcopAnnounce("Could not copy. Select the text and copy manually.")
         );
         return;
@@ -2815,6 +2820,7 @@ function WalkthroughCopilotPanel(props) {
     }
     setProblem("");
     setDraft(created.value);
+    setCopiedMap({});
     setStage("analyze");
     wcopAnnounce("Notes locked. Add the evidence you observed.");
   }
@@ -2856,6 +2862,7 @@ function WalkthroughCopilotPanel(props) {
     setEditText("");
     setProblem("");
     setComparison(null);
+    setCopiedMap({});
     setStage("capture");
     wcopAnnounce("Cleared. Nothing was kept.");
   }
@@ -2958,6 +2965,10 @@ function WalkthroughCopilotPanel(props) {
           value: realNotes,
           onChange: (e) => setRealNotes(e.target.value)
         }),
+        React.createElement("p", {
+          "data-wcop-notes-meta": "real",
+          className: "mt-1 text-xs text-slate-600 tabular-nums"
+        }, (realNotes.trim() ? realNotes.trim().split(/\r?\n/).filter((l) => l.trim()).length : 0) + " lines · " + (realNotes.trim() ? realNotes.trim().split(/\s+/).length : 0) + " words"),
         React.createElement(
           "div",
           { className: "flex flex-wrap gap-2 mt-3" },
@@ -3088,6 +3099,10 @@ function WalkthroughCopilotPanel(props) {
   } else if (stage === "analyze" && draft) {
     const total = draft.suggestions.length;
     const settled = draft.suggestions.filter((s) => s.decision !== "pending").length;
+    const keptCount = draft.suggestions.filter((s) => s.decision === "accepted").length;
+    const editedCount = draft.suggestions.filter((s) => s.decision === "edited").length;
+    const rejectedCount = draft.suggestions.filter((s) => s.decision === "rejected").length;
+    const decisionPct = total > 0 ? Math.round(settled / total * 100) : 0;
     bodyNode = React.createElement(
       "div",
       { className: "grid gap-4 md:grid-cols-[22rem_minmax(0,1fr)] items-start" },
@@ -3101,6 +3116,23 @@ function WalkthroughCopilotPanel(props) {
           { className: "text-sm font-bold text-teal-700 mb-1", role: "status", "aria-live": "polite" },
           total === 0 ? "0 of 0 decided. Add at least one piece of evidence before continuing." : settled === total ? "All " + total + " decided. You can move on." : settled + " of " + total + " decided."
         ),
+        total > 0 ? React.createElement(
+          "div",
+          { "data-wcop-decision-progress": "true", className: "mb-2" },
+          React.createElement(
+            "div",
+            { className: "h-2 w-full rounded-full bg-slate-200 overflow-hidden", "aria-hidden": "true" },
+            React.createElement("div", {
+              className: "h-full rounded-full bg-teal-600 transition-all motion-reduce:transition-none",
+              style: { width: decisionPct + "%" }
+            })
+          ),
+          settled > 0 ? React.createElement(
+            "p",
+            { className: "mt-1 text-xs font-medium text-slate-600 tabular-nums" },
+            keptCount + " kept · " + editedCount + " edited · " + rejectedCount + " rejected"
+          ) : null
+        ) : null,
         React.createElement(
           "p",
           { className: "text-xs text-slate-600 mb-3" },
@@ -3231,6 +3263,8 @@ function WalkthroughCopilotPanel(props) {
     );
   } else if (stage === "copy" && draft) {
     const output = core.buildFormOutput(draft, fixtures.SAMPLE_FIELD_MAP);
+    const copyFields = output.ok ? output.value.contextFields.concat(output.value.fields) : [];
+    const copiedFieldCount = copyFields.filter((f) => !!copiedMap[f.key]).length;
     bodyNode = output.ok ? React.createElement(
       "div",
       null,
@@ -3240,29 +3274,42 @@ function WalkthroughCopilotPanel(props) {
         { className: "text-xs text-slate-600 mb-3" },
         "This tool does not submit anything, send anything, or store anything. You paste these into the form your school already uses."
       ),
-      React.createElement("button", {
-        type: "button",
-        onClick: () => copyText(output.value.copyAll, "All fields"),
-        className: "min-h-11 px-4 py-2 rounded bg-teal-700 text-white text-sm font-semibold mb-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1"
-      }, "Copy everything"),
-      output.value.contextFields.concat(output.value.fields).map((f, i) => React.createElement(
+      React.createElement(
         "div",
-        {
-          key: "f" + i,
-          className: "rounded border border-slate-200 bg-white p-3 mb-2" + (f.empty ? " border-dashed" : "")
-        },
-        React.createElement(
+        { className: "flex flex-wrap items-center gap-2 mb-3" },
+        React.createElement("button", {
+          type: "button",
+          "data-wcop-copy-all": "true",
+          onClick: () => copyText(output.value.copyAll, "All fields"),
+          className: "min-h-11 px-4 py-2 rounded text-sm font-semibold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 " + (copiedMap["All fields"] ? "bg-emerald-700 text-white" : "bg-teal-700 text-white hover:bg-teal-800")
+        }, copiedMap["All fields"] ? "Copy everything · ✓ Copied" : "Copy everything"),
+        copiedFieldCount > 0 ? React.createElement("span", {
+          "data-wcop-copied-progress": "true",
+          className: "rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800 tabular-nums"
+        }, copiedFieldCount + "/" + copyFields.length + " fields copied") : null
+      ),
+      copyFields.map((f, i) => {
+        const isCopied = !!copiedMap[f.key];
+        return React.createElement(
           "div",
-          { className: "flex items-center justify-between gap-2" },
-          React.createElement("h4", { className: "font-semibold text-sm" }, f.key),
-          React.createElement("button", {
-            type: "button",
-            onClick: () => copyText(f.text, f.key),
-            className: "min-h-11 min-w-11 px-3 py-2 rounded border border-slate-300 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1"
-          }, "Copy")
-        ),
-        React.createElement("pre", { className: "whitespace-pre-wrap break-words text-[13px] mt-1 font-mono" }, f.text)
-      )),
+          {
+            key: "f" + i,
+            className: "rounded border p-3 mb-2 " + (isCopied ? "border-emerald-300 bg-emerald-50/40" : "border-slate-200 bg-white") + (f.empty ? " border-dashed" : "")
+          },
+          React.createElement(
+            "div",
+            { className: "flex items-center justify-between gap-2" },
+            React.createElement("h4", { className: "font-semibold text-sm" }, f.key),
+            React.createElement("button", {
+              type: "button",
+              "data-wcop-copy-field": f.key,
+              onClick: () => copyText(f.text, f.key),
+              className: "min-h-11 min-w-11 px-3 py-2 rounded border text-sm font-semibold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1 " + (isCopied ? "border-emerald-400 bg-emerald-50 text-emerald-800" : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50")
+            }, isCopied ? "Copy · ✓ Copied" : "Copy")
+          ),
+          React.createElement("pre", { className: "whitespace-pre-wrap break-words text-[13px] mt-1 font-mono" }, f.text)
+        );
+      }),
       React.createElement(
         "div",
         { className: "rounded-lg border border-slate-200 bg-white p-4 mt-3" },

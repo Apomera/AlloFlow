@@ -34,14 +34,16 @@ section { background: var(--panel); border: 1px solid var(--line); border-radius
 ul { margin: 8px 0 0; padding-left: 20px; }
 li + li { margin-top: 4px; }
 label { display: block; font-weight: 600; margin-bottom: 4px; }
-input[type="text"] { width: 100%; max-width: 420px; padding: 9px 10px; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--muted); border-radius: 4px; }
-.check { display: flex; gap: 8px; align-items: flex-start; font-weight: 400; margin-top: 12px; }
-.check input { margin-top: 5px; flex: none; }
+input[type="text"] { width: 100%; max-width: 420px; min-height: 44px; padding: 9px 10px; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--muted); border-radius: 4px; }
+.check { display: flex; gap: 8px; align-items: flex-start; min-height: 44px; font-weight: 400; margin-top: 12px; }
+.check input { margin-top: 5px; width: 18px; height: 18px; flex: none; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
-button { font: inherit; font-weight: 600; padding: 10px 16px; border-radius: 4px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
+button { font: inherit; font-weight: 600; min-height: 44px; padding: 10px 16px; border-radius: 4px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
 button.primary { background: var(--accent); color: var(--accent-ink); }
 button:disabled { opacity: .55; cursor: not-allowed; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@media (forced-colors: active) { section, button, .table-box, .alert { border: 2px solid CanvasText; } }
 progress { width: 100%; height: 12px; margin-top: 10px; display: block; accent-color: var(--accent); }
 #status { font-weight: 600; }
 dl { margin: 0; display: grid; grid-template-columns: minmax(150px, max-content) minmax(0, 1fr); gap: 6px 16px; }
@@ -101,7 +103,7 @@ textarea { width: 100%; min-height: 180px; padding: 10px; font: .85rem/1.4 var(-
     <h2 id="progress-h">Progress</h2>
     <p id="status" role="status" aria-live="polite">Not started.</p>
     <label class="note" for="bar" style="font-weight:400;margin:8px 0 0">Current step</label>
-    <progress id="bar" max="100" value="0"></progress>
+    <progress id="bar" max="100" value="0" aria-valuetext="0%: Not started."></progress>
   </section>
 
   <section aria-labelledby="result-h">
@@ -264,7 +266,13 @@ function loadState() { try { return JSON.parse(localStorage.getItem(SAVE_KEY) ||
 function clearState() { try { localStorage.removeItem(SAVE_KEY); } catch (_) {} }
 function setStatus(text, percent) {
   $('status').textContent = text;
-  if (percent == null) $('bar').removeAttribute('value'); else $('bar').value = percent;
+  if (percent == null) {
+    $('bar').removeAttribute('value');
+    $('bar').setAttribute('aria-valuetext', text);
+  } else {
+    $('bar').value = percent;
+    $('bar').setAttribute('aria-valuetext', Math.round(percent) + '%: ' + text);
+  }
 }
 
 function audio() {
@@ -564,6 +572,13 @@ $('start').addEventListener('click', function () { state = { results: {}, runnin
 $('resume').addEventListener('click', function () { runAll(); });
 $('stop').addEventListener('click', function () { active.stopped = true; $('stop').disabled = true; if (active.worker) active.worker.terminate(); setStatus('Stopping', null); });
 $('include-large').addEventListener('change', function () { state.large = $('include-large').checked; renderAll(); });
+$('device-model').addEventListener('keydown', function (event) {
+  if (event.isComposing || event.keyCode === 229) return;
+  if (event.key === 'Escape' && event.target.value) {
+    event.preventDefault();
+    event.target.value = '';
+  }
+});
 $('copy').addEventListener('click', async function () {
   var box = $('report');
   box.focus(); box.select();

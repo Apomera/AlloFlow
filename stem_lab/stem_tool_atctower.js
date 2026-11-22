@@ -2108,6 +2108,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         gameRef.current.radarAvailable = !!gfx;
 
         var lastFrameTime = null;
+        // Pre-allocated zero-GC NEXRAD storm cell & internal shimmer descriptors
+        var wxCells = [
+          { az: 0.72, dist: 0.62, r: 0.19, intensity: 0.85, flashPeriod: 5.4, flashOffset: 0.9 },
+          { az: 2.38, dist: 0.68, r: 0.16, intensity: 0.7,  flashPeriod: 7.1, flashOffset: 3.2 },
+          { az: 4.35, dist: 0.64, r: 0.21, intensity: 0.92, flashPeriod: 4.6, flashOffset: 2.1 }
+        ];
+        var wxShimmerSeeds = [
+          { dx: -0.34, dy: -0.22, s: 0.16, ph: 0.4 }, { dx: 0.28, dy: -0.31, s: 0.14, ph: 1.5 },
+          { dx: -0.12, dy: 0.29,  s: 0.18, ph: 2.7 }, { dx: 0.36, dy: 0.18,  s: 0.13, ph: 3.9 },
+          { dx: 0.04,  dy: -0.08, s: 0.20, ph: 5.1 }, { dx: -0.42, dy: 0.09, s: 0.12, ph: 1.1 }
+        ];
         var resetFrameClock = function() { lastFrameTime = null; };
         document.addEventListener('visibilitychange', resetFrameClock);
         var loop = function(frameTime) {
@@ -2249,7 +2260,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           if (game.touchdowns) game.touchdowns = game.touchdowns.filter(function(td) { return game.time - td.time < 3; });
           if (gfx) {
           // High contrast color scheme
-          var hc = !!latestDataRef.current.highContrast || !!(window.matchMedia && window.matchMedia('(forced-colors: active)').matches);
+          var hc = !!latestDataRef.current.highContrast || !!(window.matchMedia && window.matchMedia('(forced-colors: active)').matches) || !!(typeof document !== 'undefined' && (document.documentElement.classList.contains('theme-contrast') || (canvas && canvas.closest && canvas.closest('.theme-contrast'))));
           var colors = {
             bg: hc ? '#000000' : '#071522',
             radar: hc ? 'rgba(255,255,0,' : 'rgba(94,234,212,',
@@ -2261,33 +2272,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
 
           // Background — authentic phosphor-green/cyan CRT radar scope with radial depth
           var scopeR = Math.min(W, H) * 0.48;
-          var bgGrad = gfx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
-          bgGrad.addColorStop(0, hc ? '#0a0a0a' : '#08262b');
-          bgGrad.addColorStop(0.48, hc ? '#050505' : '#061a22');
-          bgGrad.addColorStop(0.84, hc ? '#000000' : '#041019');
-          bgGrad.addColorStop(1, hc ? '#000000' : '#02080f');
-          gfx.fillStyle = bgGrad;
+          if (typeof gfx.createRadialGradient === 'function') {
+            var bgGrad = gfx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
+            bgGrad.addColorStop(0, hc ? '#0a0a0a' : '#08262b');
+            bgGrad.addColorStop(0.48, hc ? '#050505' : '#061a22');
+            bgGrad.addColorStop(0.84, hc ? '#000000' : '#041019');
+            bgGrad.addColorStop(1, hc ? '#000000' : '#02080f');
+            gfx.fillStyle = bgGrad;
+          } else {
+            gfx.fillStyle = colors.bg;
+          }
           gfx.fillRect(0, 0, W, H);
 
-          // Subtle CRT phosphor scanlines & glass vignette inside scope
+          // Pre-compute clockwise sweep angle (0 = North / -Y) so NEXRAD & targets react live to beam pass
+          var sweepAngle = (game.time * 0.68) % (Math.PI * 2);
+
+          // Subtle CRT phosphor scanlines & glass curvature sheen inside scope
           if (!reducedMotion.current && !hc) {
             gfx.fillStyle = 'rgba(0,0,0,0.045)';
             for (var sl = 0; sl < H; sl += 3) { gfx.fillRect(0, sl, W, 1); }
           }
 
-          // Weather radar cell depth (NEXRAD-style multi-layered precipitation cells clipped to scope)
+          // Weather radar cell depth (NEXRAD-style multi-layered precipitation cells, internal shimmer & lightning pips)
           if (!hc && scopeR > 40) {
             gfx.save();
             gfx.beginPath(); gfx.arc(W / 2, H / 2, scopeR - 2, 0, Math.PI * 2); gfx.clip();
             var wxWindRad = toRad((game.wind.dir + 180) % 360);
             var wxDrift = reducedMotion.current ? 0 : (game.time * Math.max(4, game.wind.speed) * 0.14);
             var wxStrong = game.wind.speed >= 14;
-            var wxCells = [
-              { az: 0.72, dist: 0.62, r: 0.19, intensity: 0.85 },
-              { az: 2.38, dist: 0.68, r: 0.16, intensity: 0.7 },
-              { az: 4.35, dist: 0.64, r: 0.21, intensity: 0.92 }
-            ];
-            wxCells.forEach(function(cell, ci) {
+            for (var ci = 0; ci < wxCells.length; ci++) {
+              var cell = wxCells[ci];
               var baseX = W / 2 + Math.cos(cell.az) * scopeR * cell.dist;
               var baseY = H / 2 + Math.sin(cell.az) * scopeR * cell.dist;
               var shiftX = ((Math.sin(wxWindRad) * wxDrift + ci * 19) % 44) - 22;
@@ -2295,36 +2309,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               var cx = baseX + shiftX * scale * 0.55;
               var cy = baseY + shiftY * scale * 0.55;
               var cr = scopeR * cell.r * (0.85 + Math.min(game.wind.speed, 30) / 70);
+              // Radar-sweep NEXRAD echo illumination boost when beam sweeps over this cell
+              var wxSweepBoost = 0;
+              if (!reducedMotion.current) {
+                var cellBearing = (Math.atan2(cx - W / 2, -(cy - H / 2)) + Math.PI * 2) % (Math.PI * 2);
+                var cellDelta = (sweepAngle - cellBearing + Math.PI * 2) % (Math.PI * 2);
+                if (cellDelta < 2.2) wxSweepBoost = Math.exp(-cellDelta * 1.45);
+              }
+              var echoGain = 1 + wxSweepBoost * 0.48;
               if (typeof gfx.createRadialGradient === 'function') {
                 // Outer green precipitation echo
                 var wxG1 = gfx.createRadialGradient(cx, cy, cr * 0.1, cx, cy, cr);
-                wxG1.addColorStop(0, 'rgba(34,197,94,' + (0.14 * cell.intensity) + ')');
-                wxG1.addColorStop(0.55, 'rgba(16,185,129,' + (0.08 * cell.intensity) + ')');
+                wxG1.addColorStop(0, 'rgba(34,197,94,' + (0.14 * cell.intensity * echoGain).toFixed(3) + ')');
+                wxG1.addColorStop(0.55, 'rgba(16,185,129,' + (0.08 * cell.intensity * echoGain).toFixed(3) + ')');
                 wxG1.addColorStop(1, 'rgba(16,185,129,0)');
                 gfx.fillStyle = wxG1;
                 gfx.beginPath(); gfx.arc(cx, cy, cr, 0, Math.PI * 2); gfx.fill();
                 // Offset lobe for organic storm cell silhouette
                 var lx = cx + cr * 0.34, ly = cy - cr * 0.22;
                 var wxG2 = gfx.createRadialGradient(lx, ly, cr * 0.08, lx, ly, cr * 0.68);
-                wxG2.addColorStop(0, 'rgba(20,184,166,' + (0.13 * cell.intensity) + ')');
+                wxG2.addColorStop(0, 'rgba(20,184,166,' + (0.13 * cell.intensity * echoGain).toFixed(3) + ')');
                 wxG2.addColorStop(1, 'rgba(20,184,166,0)');
                 gfx.fillStyle = wxG2;
                 gfx.beginPath(); gfx.arc(lx, ly, cr * 0.68, 0, Math.PI * 2); gfx.fill();
                 // Moderate-to-heavy amber convective pocket when wind is elevated
                 if (wxStrong && ci !== 1) {
                   var wxCore = gfx.createRadialGradient(cx - cr * 0.12, cy + cr * 0.08, 1, cx - cr * 0.12, cy + cr * 0.08, cr * 0.42);
-                  wxCore.addColorStop(0, 'rgba(245,158,11,' + (0.19 * cell.intensity) + ')');
-                  wxCore.addColorStop(0.55, 'rgba(234,179,8,' + (0.09 * cell.intensity) + ')');
+                  wxCore.addColorStop(0, 'rgba(245,158,11,' + (0.19 * cell.intensity * echoGain).toFixed(3) + ')');
+                  wxCore.addColorStop(0.55, 'rgba(234,179,8,' + (0.09 * cell.intensity * echoGain).toFixed(3) + ')');
                   wxCore.addColorStop(1, 'rgba(245,158,11,0)');
                   gfx.fillStyle = wxCore;
                   gfx.beginPath(); gfx.arc(cx - cr * 0.12, cy + cr * 0.08, cr * 0.42, 0, Math.PI * 2); gfx.fill();
                 }
               }
+              // Internal NEXRAD precipitation shimmer micro-cells (static stipples under reduced-motion)
+              for (var si = 0; si < wxShimmerSeeds.length; si++) {
+                var sd = wxShimmerSeeds[si];
+                var shimWave = reducedMotion.current ? 0.55 : (0.35 + 0.65 * Math.pow(0.5 + 0.5 * Math.sin(game.time * (1.8 + si * 0.27) + sd.ph + ci * 1.9), 2));
+                var driftAng = reducedMotion.current ? 0 : (game.time * 0.35 + sd.ph);
+                var px2 = cx + sd.dx * cr + (reducedMotion.current ? 0 : Math.cos(driftAng) * cr * 0.06);
+                var py2 = cy + sd.dy * cr + (reducedMotion.current ? 0 : Math.sin(driftAng) * cr * 0.06);
+                var pr2 = Math.max(1.1, cr * sd.s * (0.45 + shimWave * 0.25));
+                gfx.fillStyle = (wxStrong && si % 3 === 0)
+                  ? ('rgba(251,191,36,' + (0.12 + shimWave * 0.14 * echoGain).toFixed(3) + ')')
+                  : ('rgba(52,211,153,' + (0.09 + shimWave * 0.13 * echoGain).toFixed(3) + ')');
+                gfx.beginPath(); gfx.arc(px2, py2, pr2, 0, Math.PI * 2); gfx.fill();
+              }
+              // Subtle convective lightning discharge pip (gated on !reducedMotion)
+              if (!reducedMotion.current && (wxStrong || cell.intensity >= 0.85)) {
+                var fCycle = (game.time + cell.flashOffset) % cell.flashPeriod;
+                if (fCycle < 0.22) {
+                  var fInt = Math.sin((fCycle / 0.22) * Math.PI);
+                  var boltX = cx - cr * 0.10 + Math.sin(Math.floor((game.time + cell.flashOffset) / cell.flashPeriod) * 4.3 + ci) * cr * 0.22;
+                  var boltY = cy + cr * 0.06 + Math.cos(Math.floor((game.time + cell.flashOffset) / cell.flashPeriod) * 3.1 + ci) * cr * 0.18;
+                  if (typeof gfx.createRadialGradient === 'function') {
+                    var lGlow = gfx.createRadialGradient(boltX, boltY, 0.5, boltX, boltY, cr * 0.28);
+                    lGlow.addColorStop(0, 'rgba(254,249,195,' + (0.55 * fInt).toFixed(3) + ')');
+                    lGlow.addColorStop(0.45, 'rgba(251,191,36,' + (0.22 * fInt).toFixed(3) + ')');
+                    lGlow.addColorStop(1, 'rgba(251,191,36,0)');
+                    gfx.fillStyle = lGlow;
+                    gfx.beginPath(); gfx.arc(boltX, boltY, cr * 0.28, 0, Math.PI * 2); gfx.fill();
+                  }
+                  // Crisp micro lightning zig-zag pip
+                  gfx.strokeStyle = 'rgba(254,252,232,' + (0.88 * fInt).toFixed(3) + ')';
+                  gfx.lineWidth = 1.1;
+                  gfx.beginPath();
+                  gfx.moveTo(boltX - 2.2, boltY - 4.2);
+                  gfx.lineTo(boltX + 1.2, boltY - 0.6);
+                  gfx.lineTo(boltX - 0.8, boltY + 0.5);
+                  gfx.lineTo(boltX + 2.4, boltY + 4.4);
+                  gfx.stroke();
+                }
+              }
               // Subtle reflectivity contour line
-              gfx.strokeStyle = 'rgba(52,211,153,0.14)'; gfx.lineWidth = 0.8; gfx.setLineDash([3, 4]);
+              gfx.strokeStyle = 'rgba(52,211,153,' + (0.14 + wxSweepBoost * 0.12).toFixed(3) + ')'; gfx.lineWidth = 0.8; gfx.setLineDash([3, 4]);
               gfx.beginPath(); gfx.arc(cx, cy, cr * 0.52, 0, Math.PI * 2); gfx.stroke();
               gfx.setLineDash([]);
-            });
+            }
             gfx.restore();
           }
 
@@ -2336,6 +2397,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.beginPath(); gfx.arc(W / 2, H / 2, scopeR - 2, 0, Math.PI * 2); gfx.stroke();
             gfx.strokeStyle = 'rgba(147,194,210,0.14)'; gfx.lineWidth = 1;
             gfx.beginPath(); gfx.arc(W / 2, H / 2, scopeR + 4, 0, Math.PI * 2); gfx.stroke();
+            // Subtle CRT glass dome highlight arc
+            gfx.strokeStyle = 'rgba(204,251,241,0.07)'; gfx.lineWidth = 2.2;
+            gfx.beginPath(); gfx.arc(W / 2, H / 2, scopeR - 6, -Math.PI * 0.78, -Math.PI * 0.34); gfx.stroke();
           }
 
           // Focus ring on canvas (WCAG 2.4.7)
@@ -2345,7 +2409,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           }
 
           // Authentic phosphor-green/cyan CRT radar sweep cone with decaying afterglow
-          var sweepAngle = (game.time * 0.68) % (Math.PI * 2); // 0 = North (-Y), rotating clockwise
           if (!reducedMotion.current) {
             gfx.save();
             gfx.beginPath(); gfx.arc(W / 2, H / 2, scopeR, 0, Math.PI * 2); gfx.clip();
@@ -2354,11 +2417,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               var sweepGrad = gfx.createConicGradient(conicStart, W / 2, H / 2);
               // Trailing phosphor persistence cone behind the clockwise-rotating beam
               sweepGrad.addColorStop(0, hc ? 'rgba(255,255,0,0.02)' : 'rgba(52,211,153,0)');
-              sweepGrad.addColorStop(0.62, 'rgba(16,185,129,0)');
-              sweepGrad.addColorStop(0.78, hc ? 'rgba(255,255,0,0.04)' : 'rgba(20,184,166,0.045)');
-              sweepGrad.addColorStop(0.91, hc ? 'rgba(255,255,0,0.10)' : 'rgba(45,212,191,0.12)');
-              sweepGrad.addColorStop(0.975, hc ? 'rgba(255,255,0,0.18)' : 'rgba(52,211,153,0.22)');
-              sweepGrad.addColorStop(1, hc ? 'rgba(255,255,0,0.24)' : 'rgba(153,246,228,0.28)');
+              sweepGrad.addColorStop(0.56, 'rgba(16,185,129,0)');
+              sweepGrad.addColorStop(0.76, hc ? 'rgba(255,255,0,0.04)' : 'rgba(20,184,166,0.05)');
+              sweepGrad.addColorStop(0.90, hc ? 'rgba(255,255,0,0.10)' : 'rgba(45,212,191,0.13)');
+              sweepGrad.addColorStop(0.97, hc ? 'rgba(255,255,0,0.19)' : 'rgba(52,211,153,0.24)');
+              sweepGrad.addColorStop(1, hc ? 'rgba(255,255,0,0.26)' : 'rgba(153,246,228,0.32)');
               gfx.fillStyle = sweepGrad;
               gfx.fillRect(W / 2 - scopeR, H / 2 - scopeR, scopeR * 2, scopeR * 2);
             } else {
@@ -2368,21 +2431,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               gfx.arc(W / 2, H / 2, scopeR, conicStart - 0.58, conicStart);
               gfx.closePath(); gfx.fill();
             }
-            // Bright dual-pass leading phosphor scan beam
+            // Bright dual-pass leading phosphor scan beam + outer rim glint
             gfx.translate(W / 2, H / 2);
             gfx.rotate(sweepAngle);
-            var bloomGrad = gfx.createLinearGradient(0, 0, 0, -scopeR);
-            bloomGrad.addColorStop(0, hc ? 'rgba(255,255,0,0.35)' : 'rgba(52,211,153,0.38)');
-            bloomGrad.addColorStop(0.65, hc ? 'rgba(255,255,0,0.2)' : 'rgba(45,212,191,0.24)');
-            bloomGrad.addColorStop(1, hc ? 'rgba(255,255,0,0.04)' : 'rgba(45,212,191,0.04)');
-            gfx.strokeStyle = bloomGrad; gfx.lineWidth = 5;
+            if (typeof gfx.createLinearGradient === 'function') {
+              var bloomGrad = gfx.createLinearGradient(0, 0, 0, -scopeR);
+              bloomGrad.addColorStop(0, hc ? 'rgba(255,255,0,0.35)' : 'rgba(52,211,153,0.42)');
+              bloomGrad.addColorStop(0.65, hc ? 'rgba(255,255,0,0.2)' : 'rgba(45,212,191,0.26)');
+              bloomGrad.addColorStop(1, hc ? 'rgba(255,255,0,0.06)' : 'rgba(94,234,212,0.14)');
+              gfx.strokeStyle = bloomGrad;
+            } else {
+              gfx.strokeStyle = hc ? 'rgba(255,255,0,0.25)' : 'rgba(52,211,153,0.28)';
+            }
+            gfx.lineWidth = 6;
             gfx.beginPath(); gfx.moveTo(0, 0); gfx.lineTo(0, -scopeR); gfx.stroke();
-            var lineGrad = gfx.createLinearGradient(0, 0, 0, -scopeR);
-            lineGrad.addColorStop(0, hc ? '#ffff00' : 'rgba(204,251,241,0.92)');
-            lineGrad.addColorStop(0.55, hc ? 'rgba(255,255,0,0.6)' : 'rgba(94,234,212,0.68)');
-            lineGrad.addColorStop(1, hc ? 'rgba(255,255,0,0.1)' : 'rgba(52,211,153,0.12)');
-            gfx.strokeStyle = lineGrad; gfx.lineWidth = 1.6;
+            if (typeof gfx.createLinearGradient === 'function') {
+              var lineGrad = gfx.createLinearGradient(0, 0, 0, -scopeR);
+              lineGrad.addColorStop(0, hc ? '#ffff00' : 'rgba(240,253,250,0.96)');
+              lineGrad.addColorStop(0.55, hc ? 'rgba(255,255,0,0.6)' : 'rgba(153,246,228,0.74)');
+              lineGrad.addColorStop(1, hc ? 'rgba(255,255,0,0.15)' : 'rgba(52,211,153,0.22)');
+              gfx.strokeStyle = lineGrad;
+            } else {
+              gfx.strokeStyle = hc ? '#ffff00' : '#99f6e4';
+            }
+            gfx.lineWidth = 1.6;
             gfx.beginPath(); gfx.moveTo(0, 0); gfx.lineTo(0, -scopeR); gfx.stroke();
+            // Subtle CRT phosphor rim-reflection hotspot where sweep beam meets bezel
+            if (!hc && typeof gfx.createRadialGradient === 'function') {
+              var tipGlow = gfx.createRadialGradient(0, -scopeR + 2, 0.5, 0, -scopeR + 2, 12);
+              tipGlow.addColorStop(0, 'rgba(204,251,241,0.48)');
+              tipGlow.addColorStop(1, 'rgba(45,212,191,0)');
+              gfx.fillStyle = tipGlow;
+              gfx.beginPath(); gfx.arc(0, -scopeR + 2, 12, 0, Math.PI * 2); gfx.fill();
+            }
             gfx.restore();
           }
 
@@ -2501,11 +2582,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.translate(rx - dx, ry - dy);
             gfx.rotate(rwyRad);
             var coneLen = 64 * scale;
-            var coneGrad = gfx.createLinearGradient(0, 0, 0, coneLen);
-            coneGrad.addColorStop(0, hc ? 'rgba(255,255,0,0.18)' : 'rgba(52,211,153,0.18)');
-            coneGrad.addColorStop(0.55, hc ? 'rgba(255,255,0,0.07)' : 'rgba(45,212,191,0.08)');
-            coneGrad.addColorStop(1, 'rgba(45,212,191,0)');
-            gfx.fillStyle = coneGrad;
+            if (typeof gfx.createLinearGradient === 'function') {
+              var coneGrad = gfx.createLinearGradient(0, 0, 0, coneLen);
+              coneGrad.addColorStop(0, hc ? 'rgba(255,255,0,0.18)' : 'rgba(52,211,153,0.18)');
+              coneGrad.addColorStop(0.55, hc ? 'rgba(255,255,0,0.07)' : 'rgba(45,212,191,0.08)');
+              coneGrad.addColorStop(1, 'rgba(45,212,191,0)');
+              gfx.fillStyle = coneGrad;
+            } else {
+              gfx.fillStyle = hc ? 'rgba(255,255,0,0.12)' : 'rgba(45,212,191,0.10)';
+            }
             gfx.beginPath(); gfx.moveTo(0, 0);
             gfx.lineTo(-17 * scale, coneLen);
             gfx.lineTo(17 * scale, coneLen);
@@ -2524,22 +2609,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               gfx.lineWidth = 1.1;
               gfx.beginPath(); gfx.moveTo(-mw, my); gfx.lineTo(mw, my); gfx.stroke();
             });
-            // Sequenced flashing ALSF-2 "Rabbit" approach lights cascading toward threshold
-            var rabbitIdx = reducedMotion.current ? -1 : (5 - (Math.floor(game.time * 7) % 6));
+            // Sequenced flashing ALSF-2 "Rabbit" approach strobes with smooth continuous refraction halos
+            var rabbitPos = reducedMotion.current ? -10 : (5.6 - ((game.time * 6.4) % 6.4));
             for (var al = 1; al <= 5; al++) {
               var alY = al * 11 * scale;
-              var isRabbit = !reducedMotion.current && al === rabbitIdx;
-              var alAlpha = isRabbit ? 0.96 : (0.45 - al * 0.05) * (reducedMotion.current ? 1 : 0.7 + 0.3 * Math.max(0, Math.sin(game.time * 2.5 + al * 1.1)));
-              if (isRabbit && !hc) {
-                gfx.fillStyle = 'rgba(254,249,195,0.35)';
-                gfx.beginPath(); gfx.arc(0, alY, 4.5, 0, Math.PI * 2); gfx.fill();
+              var rDist = al - rabbitPos;
+              var strobePeak = reducedMotion.current ? 0 : Math.exp(-(rDist * rDist) * 2.4);
+              var strobeTail = (!reducedMotion.current && rDist > 0 && rDist < 1.8) ? Math.exp(-rDist * 1.8) * 0.35 : 0;
+              var strobeEnergy = Math.min(1, strobePeak + strobeTail);
+              var baseGlow = (0.44 - al * 0.045) * (reducedMotion.current ? 1 : (0.78 + 0.22 * Math.sin(game.time * 2.2 + al * 0.9)));
+              var alAlpha = Math.min(0.98, baseGlow + strobeEnergy * 0.62);
+              // Multi-layer optical refraction halo + subtle anamorphic cross-flare (bypassed in HC / reduced motion)
+              if (strobeEnergy > 0.08 && !hc && !reducedMotion.current) {
+                var haloR = (4.2 + strobeEnergy * 4.8) * Math.max(0.85, scale);
+                if (typeof gfx.createRadialGradient === 'function') {
+                  var stHalo = gfx.createRadialGradient(0, alY, 0.4, 0, alY, haloR);
+                  stHalo.addColorStop(0, 'rgba(254,252,232,' + (0.62 * strobeEnergy).toFixed(3) + ')');
+                  stHalo.addColorStop(0.45, 'rgba(253,224,71,' + (0.28 * strobeEnergy).toFixed(3) + ')');
+                  stHalo.addColorStop(1, 'rgba(251,191,36,0)');
+                  gfx.fillStyle = stHalo;
+                  gfx.beginPath(); gfx.arc(0, alY, haloR, 0, Math.PI * 2); gfx.fill();
+                }
+                // Subtle anamorphic horizontal lens refraction flare
+                var flareSpan = (5.5 + strobeEnergy * 6.5) * Math.max(0.8, scale);
+                gfx.strokeStyle = 'rgba(254,249,195,' + (0.42 * strobeEnergy).toFixed(3) + ')';
+                gfx.lineWidth = 0.9;
+                gfx.beginPath(); gfx.moveTo(-flareSpan, alY); gfx.lineTo(flareSpan, alY); gfx.stroke();
               }
-              gfx.fillStyle = isRabbit ? '#fef9c3' : 'rgba(251,191,36,' + alAlpha + ')';
-              gfx.beginPath(); gfx.arc(0, alY, isRabbit ? 2.1 : 1.5, 0, Math.PI * 2); gfx.fill();
-              // Side approach bar lights
-              gfx.fillStyle = 'rgba(251,191,36,' + (alAlpha * 0.7) + ')';
-              gfx.beginPath(); gfx.arc(-5 * scale, alY, 1.0, 0, Math.PI * 2); gfx.fill();
-              gfx.beginPath(); gfx.arc(5 * scale, alY, 1.0, 0, Math.PI * 2); gfx.fill();
+              gfx.fillStyle = hc ? '#ffff00' : (strobeEnergy > 0.45 ? '#fefce8' : 'rgba(251,191,36,' + alAlpha.toFixed(3) + ')');
+              gfx.beginPath(); gfx.arc(0, alY, 1.45 + strobeEnergy * 0.95, 0, Math.PI * 2); gfx.fill();
+              // Side approach bar lights subtly energized by passing strobe
+              gfx.fillStyle = hc ? '#ffff00' : ('rgba(251,191,36,' + Math.min(0.92, alAlpha * 0.72 + strobeEnergy * 0.2).toFixed(3) + ')');
+              gfx.beginPath(); gfx.arc(-5 * scale, alY, 1.0 + strobeEnergy * 0.25, 0, Math.PI * 2); gfx.fill();
+              gfx.beginPath(); gfx.arc(5 * scale, alY, 1.0 + strobeEnergy * 0.25, 0, Math.PI * 2); gfx.fill();
+            }
+            // Threshold flash cascade when ALSF-2 strobe hits runway threshold
+            if (!reducedMotion.current && !hc && rabbitPos > -0.6 && rabbitPos < 1.1) {
+              var thPeak = Math.exp(-Math.pow((rabbitPos - 0.15) * 2.1, 2));
+              if (thPeak > 0.08 && typeof gfx.createRadialGradient === 'function') {
+                var thGrad = gfx.createRadialGradient(0, 0, 0.5, 0, 0, 10 * scale);
+                thGrad.addColorStop(0, 'rgba(167,243,208,' + (0.45 * thPeak).toFixed(3) + ')');
+                thGrad.addColorStop(1, 'rgba(52,211,153,0)');
+                gfx.fillStyle = thGrad;
+                gfx.beginPath(); gfx.arc(0, 0, 10 * scale, 0, Math.PI * 2); gfx.fill();
+              }
             }
             gfx.restore();
             // Taxiway stubs with blue edge glints
@@ -2577,11 +2690,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             var isConflict = conflicts.some(function(c) { return c.a.id === ac.id || c.b.id === ac.id; });
 
             // Sweep-pass phosphor illumination boost when radar beam sweeps across target azimuth
+            // Sharp leading-edge CRT excitation strike + smooth exponential P31 phosphor decay
             var sweepBoost = 0;
+            var sweepStrike = 0;
+            var deltaSwept = 99;
             if (!reducedMotion.current && !hc) {
               var acBearing = (Math.atan2(ax - W / 2, -(ay - H / 2)) + Math.PI * 2) % (Math.PI * 2);
-              var deltaSwept = (sweepAngle - acBearing + Math.PI * 2) % (Math.PI * 2);
-              if (deltaSwept < 1.15) sweepBoost = Math.pow(1 - deltaSwept / 1.15, 2);
+              deltaSwept = (sweepAngle - acBearing + Math.PI * 2) % (Math.PI * 2);
+              if (deltaSwept < 3.2) {
+                sweepBoost = Math.exp(-deltaSwept * 1.45);
+              }
+              if (deltaSwept < 0.34) {
+                sweepStrike = Math.pow(1 - deltaSwept / 0.34, 2);
+              }
             }
 
             // Recorded positions show the path actually flown, rendered as decaying CRT phosphor persistence trails.
@@ -2599,44 +2720,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               gfx.save();
               gfx.strokeStyle = hc ? '#ffff00' : (isSelected ? blipColor : '#34d399');
               gfx.lineWidth = isSelected ? 1.8 : 1.1;
-              gfx.globalAlpha = isSelected ? 0.45 : 0.22;
+              gfx.globalAlpha = isSelected ? 0.45 : (0.22 + sweepBoost * 0.16);
               gfx.beginPath();
               history.forEach(function(point, index) { if (index) gfx.lineTo(point.x * scale, point.y * scale); else gfx.moveTo(point.x * scale, point.y * scale); });
               gfx.lineTo(ax, ay); gfx.stroke();
-              // Decaying phosphor afterglow persistence pips along recent flight track
-              var trailSlice = history.slice(-14);
-              var trailLen = trailSlice.length;
-              trailSlice.forEach(function(point, idx) {
-                var ageFrac = (idx + 1) / (trailLen + 1); // 0 = oldest, 1 = freshest
+              // Decaying phosphor afterglow persistence pips along recent flight track (zero-slice indexing)
+              var trailStart = Math.max(0, history.length - 14);
+              var trailLen = history.length - trailStart;
+              for (var tidx = 0; tidx < trailLen; tidx++) {
+                var point = history[trailStart + tidx];
+                var ageFrac = (tidx + 1) / (trailLen + 1); // 0 = oldest, 1 = freshest
                 var px = point.x * scale, py = point.y * scale;
-                var pipAlpha = Math.pow(ageFrac, 1.65) * (isSelected ? 0.82 : 0.58) + sweepBoost * 0.18 * ageFrac;
-                var pipR = (0.9 + ageFrac * (isSelected ? 1.8 : 1.25));
+                var pipAlpha = Math.pow(ageFrac, 1.65) * (isSelected ? 0.82 : 0.58) + sweepBoost * 0.24 * ageFrac;
+                var pipR = (0.9 + ageFrac * (isSelected ? 1.8 : 1.25)) + sweepStrike * 0.45 * ageFrac;
                 gfx.globalAlpha = Math.min(1, pipAlpha);
                 gfx.fillStyle = hc ? '#ffff00' : (ageFrac > 0.6 ? blipColor : '#34d399');
                 gfx.beginPath(); gfx.arc(px, py, pipR, 0, Math.PI * 2); gfx.fill();
-              });
+              }
               gfx.restore();
             }
 
-            // Radar blip glow (CRT phosphor bloom — flares briefly as sweep passes)
-            var glowMult = (isSelected ? 2.4 : ac.emergency ? 2.1 : 1.65) + sweepBoost * 0.85;
-            var glowSize = ac.type.size * scale * glowMult;
-            var glowGrad = gfx.createRadialGradient(ax, ay, 0, ax, ay, glowSize);
-            glowGrad.addColorStop(0, blipColor + (isSelected || sweepBoost > 0.4 ? '78' : '48'));
-            glowGrad.addColorStop(0.5, blipColor + '1c');
-            glowGrad.addColorStop(1, blipColor + '00');
-            gfx.fillStyle = glowGrad;
-            gfx.fillRect(ax - glowSize, ay - glowSize, glowSize * 2, glowSize * 2);
+            // Radar blip glow (CRT phosphor bloom — flares crisply as sweep beam strikes target, then decays)
+            var trR = Math.max(7.5, ac.type.size * scale * 0.92);
+            if (!hc && typeof gfx.createRadialGradient === 'function') {
+              var glowMult = (isSelected ? 2.45 : ac.emergency ? 2.15 : 1.7) + sweepBoost * 1.15 + sweepStrike * 0.65;
+              var glowSize = ac.type.size * scale * glowMult;
+              var coreHex = (isSelected || sweepBoost > 0.42) ? '96' : (sweepBoost > 0.16 ? '6a' : '44');
+              var midHex = sweepBoost > 0.3 ? '30' : '1c';
+              var glowGrad = gfx.createRadialGradient(ax, ay, 0, ax, ay, glowSize);
+              glowGrad.addColorStop(0, blipColor + coreHex);
+              glowGrad.addColorStop(0.45, blipColor + midHex);
+              glowGrad.addColorStop(1, blipColor + '00');
+              gfx.fillStyle = glowGrad;
+              gfx.fillRect(ax - glowSize, ay - glowSize, glowSize * 2, glowSize * 2);
+              // Momentary hot white-cyan phosphor excitation core + expanding sweep-ping ring
+              if (sweepStrike > 0.04) {
+                var strikeR = trR * (1.15 + (1 - sweepStrike) * 1.1);
+                var strikeGrad = gfx.createRadialGradient(ax, ay, 0, ax, ay, strikeR);
+                strikeGrad.addColorStop(0, 'rgba(240,253,250,' + (0.62 * sweepStrike).toFixed(3) + ')');
+                strikeGrad.addColorStop(0.5, 'rgba(153,246,228,' + (0.24 * sweepStrike).toFixed(3) + ')');
+                strikeGrad.addColorStop(1, 'rgba(153,246,228,0)');
+                gfx.fillStyle = strikeGrad;
+                gfx.beginPath(); gfx.arc(ax, ay, strikeR, 0, Math.PI * 2); gfx.fill();
+              }
+              if (deltaSwept < 0.95) {
+                var pingFrac = deltaSwept / 0.95;
+                var pingR = trR + pingFrac * 11 * Math.max(0.8, scale);
+                gfx.save();
+                gfx.strokeStyle = blipColor;
+                gfx.globalAlpha = Math.pow(1 - pingFrac, 1.7) * 0.55;
+                gfx.lineWidth = 1.25 - pingFrac * 0.6;
+                gfx.beginPath(); gfx.arc(ax, ay, pingR, 0, Math.PI * 2); gfx.stroke();
+                gfx.restore();
+              }
+            }
 
             // Crisp STARS transponder target ring + corner acquisition brackets
-            var trR = Math.max(7.5, ac.type.size * scale * 0.92);
             gfx.save();
-            gfx.strokeStyle = hc ? '#ffff00' : blipColor;
-            gfx.globalAlpha = isSelected ? 0.82 : (0.34 + sweepBoost * 0.42);
-            gfx.lineWidth = isSelected ? 1.3 : 0.9;
+            gfx.strokeStyle = hc ? '#ffff00' : (sweepStrike > 0.35 ? '#ecfeff' : blipColor);
+            gfx.globalAlpha = isSelected ? 0.88 : Math.min(0.95, 0.34 + sweepBoost * 0.52);
+            gfx.lineWidth = isSelected ? 1.35 : (0.9 + sweepStrike * 0.45);
             gfx.beginPath(); gfx.arc(ax, ay, trR, 0, Math.PI * 2); gfx.stroke();
             var brk = trR + 2.8, blen = 3.2;
-            gfx.globalAlpha = isSelected ? 0.92 : (0.42 + sweepBoost * 0.35);
+            gfx.globalAlpha = isSelected ? 0.95 : Math.min(0.96, 0.42 + sweepBoost * 0.46);
             gfx.beginPath();
             gfx.moveTo(ax - brk, ay - brk + blen); gfx.lineTo(ax - brk, ay - brk); gfx.lineTo(ax - brk + blen, ay - brk);
             gfx.moveTo(ax + brk - blen, ay - brk); gfx.lineTo(ax + brk, ay - brk); gfx.lineTo(ax + brk, ay - brk + blen);
@@ -2738,23 +2884,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               gfx.restore();
             }
 
-            // Conflict ring (pulsing + distance line between conflicting aircraft)
+            // Conflict ring (live separation-conflict warning pulse halos — ONLY when separation is breached)
             if (isConflict) {
-              var confAlpha = reducedMotion.current ? 0.8 : 0.5 + Math.sin(game.time * 6) * 0.3;
-              gfx.strokeStyle = 'rgba(239,68,68,' + confAlpha + ')';
+              var confAlpha = reducedMotion.current ? 0.88 : 0.56 + Math.sin(game.time * 6.5) * 0.32;
+              // Soft radial breach warning bloom + dual-phase expanding radar warning pulse halos
+              if (!hc && !reducedMotion.current) {
+                if (typeof gfx.createRadialGradient === 'function') {
+                  var cBloomR = 26 * scale;
+                  var cBloom = gfx.createRadialGradient(ax, ay, 4 * scale, ax, ay, cBloomR);
+                  cBloom.addColorStop(0, 'rgba(239,68,68,' + (0.28 * confAlpha).toFixed(3) + ')');
+                  cBloom.addColorStop(0.55, 'rgba(244,63,94,' + (0.12 * confAlpha).toFixed(3) + ')');
+                  cBloom.addColorStop(1, 'rgba(239,68,68,0)');
+                  gfx.fillStyle = cBloom;
+                  gfx.beginPath(); gfx.arc(ax, ay, cBloomR, 0, Math.PI * 2); gfx.fill();
+                }
+                for (var wp = 0; wp < 2; wp++) {
+                  var pulsePhase = (game.time * 1.35 + wp * 0.5) % 1;
+                  var pulseR = (14 + pulsePhase * 18) * scale;
+                  var pulseA = Math.pow(1 - pulsePhase, 1.4) * 0.72;
+                  gfx.strokeStyle = 'rgba(251,113,133,' + pulseA.toFixed(3) + ')';
+                  gfx.lineWidth = Math.max(0.9, (2.2 - pulsePhase * 1.2));
+                  gfx.beginPath(); gfx.arc(ax, ay, pulseR, 0, Math.PI * 2); gfx.stroke();
+                }
+              } else if (reducedMotion.current) {
+                // Static double-ring crisp scientific breach indicator for reduced motion
+                gfx.strokeStyle = hc ? '#ff0000' : 'rgba(251,113,133,0.62)';
+                gfx.lineWidth = 1.2;
+                gfx.setLineDash([3, 3]);
+                gfx.beginPath(); gfx.arc(ax, ay, 21 * scale, 0, Math.PI * 2); gfx.stroke();
+                gfx.setLineDash([]);
+              }
+              gfx.strokeStyle = hc ? '#ff0000' : ('rgba(239,68,68,' + confAlpha.toFixed(3) + ')');
               gfx.lineWidth = 2;
               gfx.beginPath(); gfx.arc(ax, ay, 16 * scale, 0, Math.PI * 2); gfx.stroke();
               // Draw separation line to conflicting partner
               conflicts.forEach(function(c) {
                 if (c.a.id === ac.id) {
-                  gfx.strokeStyle = 'rgba(239,68,68,' + (confAlpha * 0.5) + ')'; gfx.lineWidth = 1;
-                  gfx.setLineDash([2, 2]);
-                  gfx.beginPath(); gfx.moveTo(ax, ay); gfx.lineTo(c.b.x * scale, c.b.y * scale); gfx.stroke();
+                  var bx = c.b.x * scale, by = c.b.y * scale;
+                  gfx.strokeStyle = hc ? '#ff0000' : ('rgba(239,68,68,' + (confAlpha * 0.65).toFixed(3) + ')'); gfx.lineWidth = 1.3;
+                  gfx.setLineDash([3, 3]);
+                  gfx.beginPath(); gfx.moveTo(ax, ay); gfx.lineTo(bx, by); gfx.stroke();
                   gfx.setLineDash([]);
-                  // Distance label on the line
-                  var midX = (ax + c.b.x * scale) / 2; var midY = (ay + c.b.y * scale) / 2;
-                  gfx.fillStyle = '#ef4444'; gfx.font = 'bold 10px monospace'; gfx.textAlign = 'center';
-                  gfx.fillText(c.dist.toFixed(1) + 'nm', midX, midY - 4);
+                  // Traveling warning pulse bead along breach vector (gated on !reducedMotion)
+                  if (!reducedMotion.current && !hc) {
+                    var beadT = (game.time * 1.6) % 1;
+                    var beadX = ax + (bx - ax) * beadT;
+                    var beadY = ay + (by - ay) * beadT;
+                    gfx.fillStyle = '#fecdd3';
+                    gfx.beginPath(); gfx.arc(beadX, beadY, 2.2, 0, Math.PI * 2); gfx.fill();
+                  }
+                  // High-legibility distance pill on the separation breach line
+                  var midX = (ax + bx) / 2; var midY = (ay + by) / 2;
+                  var distTxt = c.dist.toFixed(1) + 'nm';
+                  gfx.fillStyle = hc ? '#000000' : 'rgba(69,10,10,0.86)';
+                  gfx.strokeStyle = hc ? '#ff0000' : 'rgba(251,113,133,0.85)';
+                  gfx.lineWidth = 1;
+                  gfx.beginPath();
+                  if (typeof gfx.roundRect === 'function') gfx.roundRect(midX - 20, midY - 15, 40, 14, 4);
+                  else gfx.rect(midX - 20, midY - 15, 40, 14);
+                  gfx.fill(); gfx.stroke();
+                  gfx.fillStyle = hc ? '#ffff00' : '#fecdd3'; gfx.font = 'bold 10px monospace'; gfx.textAlign = 'center';
+                  gfx.fillText(distTxt, midX, midY - 5);
                 }
               });
             }
@@ -2808,7 +2998,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               gfx.lineWidth = 2 * (1 - age / 3);
               gfx.beginPath(); gfx.arc(td.x * scale, td.y * scale, radius, 0, Math.PI * 2); gfx.stroke();
               // Inner glow
-              if (age < 1) {
+              if (age < 1 && !hc && typeof gfx.createRadialGradient === 'function') {
                 var tdGlow = gfx.createRadialGradient(td.x * scale, td.y * scale, 0, td.x * scale, td.y * scale, radius * 0.6);
                 tdGlow.addColorStop(0, td.color + Math.round(alpha * 30).toString(16).padStart(2, '0'));
                 tdGlow.addColorStop(1, td.color + '00');
@@ -2862,7 +3052,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             gfx.globalAlpha = popAlpha;
             gfx.fillStyle = 'rgba(0,0,0,0.85)';
             var popW2 = 200; var popX2 = W - popW2 - 10; var popY2 = H - 160;
-            gfx.beginPath(); gfx.roundRect(popX2, popY2, popW2, 45, 8); gfx.fill();
+            gfx.beginPath();
+            if (typeof gfx.roundRect === 'function') gfx.roundRect(popX2, popY2, popW2, 45, 8);
+            else gfx.rect(popX2, popY2, popW2, 45);
+            gfx.fill();
             gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 2; gfx.stroke();
             gfx.fillStyle = '#fbbf24'; gfx.font = 'bold 10px system-ui'; gfx.textAlign = 'left';
             gfx.fillText('🏆 BADGE EARNED!', popX2 + 8, popY2 + 14);

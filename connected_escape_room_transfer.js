@@ -12,7 +12,7 @@ export function prepareRoomFile(raw) {
 }
 export function parseRoomFile(text) {
   if (typeof text !== 'string' || text.length > MAX_ROOM_FILE_CHARS) throw Error('room-file-size');
-  let raw; try { raw = JSON.parse(text.replace(/^\uFEFF/, '')); } catch (_) { throw Error('room-file-format'); }
+  let raw; try { raw = JSON.parse(text.replace(/^\uFEFF/, ''), (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v); } catch (_) { throw Error('room-file-format'); }
   return prepareRoomFile(raw);
 }
 export function exportRoomFile(room, source, language) {

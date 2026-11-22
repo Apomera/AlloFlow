@@ -101,7 +101,8 @@ function EndSessionPreview({
     const body = document.body;
     const scrollLock = typeof window !== 'undefined' ? window.__alloScrollLockState || (window.__alloScrollLockState = {
       count: 0,
-      prev: ''
+      prev: '',
+      overflow: ''
     }) : null;
     let scrollLocked = false;
     try {
@@ -109,6 +110,7 @@ function EndSessionPreview({
         scrollLocked = true;
         if (++scrollLock.count === 1) {
           scrollLock.prev = body.style.overflow;
+          scrollLock.overflow = scrollLock.prev;
           body.style.overflow = 'hidden';
         }
       }
@@ -142,6 +144,7 @@ function EndSessionPreview({
       if (event.key === 'Escape') {
         if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         event.preventDefault();
+        event.stopPropagation();
         const latest = endPreviewStateRef.current;
         if (!(latest.preview && (latest.preview.busy || latest.preview.followUpBusy)) && typeof latest.onKeepOpen === 'function') {
           latest.onKeepOpen();
@@ -193,7 +196,7 @@ function EndSessionPreview({
       try {
         if (scrollLocked && body && scrollLock) {
           scrollLock.count = Math.max(0, scrollLock.count - 1);
-          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev ?? scrollLock.overflow ?? '';
         }
       } catch (_) {}
       isolated.forEach(({
@@ -241,24 +244,34 @@ function EndSessionPreview({
   // Keep the extracted markup readable while exposing only the minimum host
   // controller surface. No roster identities or session transport objects cross
   // this presentation boundary.
-  const endSessionPreview = preview;
-  const endSessionNote = note;
+  const endSessionPreview = preview && typeof preview === 'object' ? preview : null;
+  const endSessionNote = typeof note === 'string' ? note : String(note ?? '');
   const endSessionPreviewRef = effectiveDialogRef;
   const setEndSessionNote = onNoteChange;
   const sendEndSessionEvidenceCohort = onSendCohort;
   const completeLiveSessionEnd = onComplete;
   const onKeepSessionOpen = onKeepOpen;
-  const rosterKey = canSaveSummary ? {
-    groups: Object.fromEntries(Object.entries(groupNamesById || {}).map(([id, name]) => [id, {
-      name
-    }]))
-  } : null;
+  const rosterKey = canSaveSummary ? (() => {
+    const groups = Object.create(null);
+    if (groupNamesById && typeof groupNamesById === 'object') {
+      Object.keys(groupNamesById).forEach(id => {
+        if (id === '__proto__' || id === 'constructor' || id === 'prototype') return;
+        groups[id] = {
+          name: groupNamesById[id]
+        };
+      });
+    }
+    return {
+      groups
+    };
+  })() : null;
   const resolveEndSessionCohortUids = codenames => ({
-    length: Math.max(0, Number(getConnectedCount(codenames)) || 0)
+    length: Math.max(0, Number(typeof getConnectedCount === 'function' ? getConnectedCount(codenames) : 0) || 0)
   });
   const setEndSessionPreview = updater => {
-    const next = typeof updater === 'function' ? updater(preview) : updater;
-    if (next && next.followUpResourceId !== preview.followUpResourceId) {
+    if (!endSessionPreview) return;
+    const next = typeof updater === 'function' ? updater(endSessionPreview) : updater;
+    if (next && next.followUpResourceId !== endSessionPreview.followUpResourceId && typeof onFollowUpResourceChange === 'function') {
       onFollowUpResourceChange(next.followUpResourceId || '');
     }
   };
@@ -273,14 +286,15 @@ function EndSessionPreview({
     };
   }, []);
   const handleCopyBrief = text => {
+    if (typeof copyToClipboard !== 'function') return;
     try {
       copyToClipboard(text);
+      if (briefMountedRef.current) setBriefCopied(true);
+      if (briefCopyTimerRef.current) clearTimeout(briefCopyTimerRef.current);
+      briefCopyTimerRef.current = setTimeout(() => {
+        if (briefMountedRef.current) setBriefCopied(false);
+      }, 2000);
     } catch (_) {}
-    if (briefMountedRef.current) setBriefCopied(true);
-    if (briefCopyTimerRef.current) clearTimeout(briefCopyTimerRef.current);
-    briefCopyTimerRef.current = setTimeout(() => {
-      if (briefMountedRef.current) setBriefCopied(false);
-    }, 2000);
   };
   const noteStarters = [{
     id: 'small-group',
@@ -305,6 +319,8 @@ function EndSessionPreview({
       if (box && typeof box.focus === 'function') box.focus();
     } catch (_) {}
   };
+  if (!endSessionPreview) return null;
+  const summary = endSessionPreview.summary && typeof endSessionPreview.summary === 'object' ? endSessionPreview.summary : {};
   return /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-[10020] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4",
     role: "presentation"
@@ -328,22 +344,22 @@ function EndSessionPreview({
     className: "rounded-xl bg-emerald-50 p-3 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-black text-emerald-700"
-  }, Object.keys(endSessionPreview.summary.participants || {}).length), /*#__PURE__*/React.createElement("div", {
+  }, Object.keys(summary.participants || {}).length), /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-emerald-800"
   }, tx('end_session.roster_matched', 'Roster matched'))), /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl bg-amber-50 p-3 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-black text-amber-700"
-  }, (endSessionPreview.summary.absentCodenames || []).length), /*#__PURE__*/React.createElement("div", {
+  }, (summary.absentCodenames || []).length), /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-amber-800"
   }, tx('end_session.not_present', 'Not present'))), /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl bg-rose-50 p-3 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-black text-rose-700"
-  }, (endSessionPreview.summary.unmatchedCodenames || []).length), /*#__PURE__*/React.createElement("div", {
+  }, (summary.unmatchedCodenames || []).length), /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-rose-800"
-  }, tx('end_session.unmatched', 'Unmatched')))), endSessionPreview.summary.organizerActivity && (() => {
-    const organizer = endSessionPreview.summary.organizerActivity;
+  }, tx('end_session.unmatched', 'Unmatched')))), summary.organizerActivity && (() => {
+    const organizer = summary.organizerActivity;
     const counts = organizer.statusCounts || {};
     const labels = [['complete', tx('end_session.status_complete', 'complete')], ['attempted', tx('end_session.status_attempted', 'attempted')], ['working', tx('end_session.status_working', 'working')], ['ready', tx('end_session.status_ready', 'ready')], ['loading', tx('end_session.status_loading', 'loading')], ['failed', tx('end_session.status_failed', 'failed')], ['waiting', tx('end_session.status_waiting', 'waiting')]].filter(([status]) => Number(counts[status]) > 0);
     return /*#__PURE__*/React.createElement("section", {
@@ -374,7 +390,7 @@ function EndSessionPreview({
     }, counts[status], " ", label))), /*#__PURE__*/React.createElement("p", {
       className: "mt-2 text-xs text-slate-600"
     }, tx('end_session.organizer_evidence_privacy', 'Saved evidence contains bounded status and score totals only—not card text, answers, account IDs, or resource IDs.')));
-  })(), endSessionPreview.summary.insightBrief && /*#__PURE__*/React.createElement("section", {
+  })(), summary.insightBrief && /*#__PURE__*/React.createElement("section", {
     className: "rounded-2xl border border-indigo-200 bg-indigo-50/60 p-4 mb-4",
     "aria-labelledby": "end-session-insight-title"
   }, /*#__PURE__*/React.createElement("div", {
@@ -388,10 +404,10 @@ function EndSessionPreview({
     type: "button",
     "data-end-session-copy-brief": "true",
     onClick: () => handleCopyBrief([tx('end_session.brief_heading', 'Live session insight brief'), tx('end_session.brief_counts', '{activities} activities · {submissions} submissions · {revisions} revisions', {
-      activities: endSessionPreview.summary.insightBrief.activityCount || 0,
-      submissions: endSessionPreview.summary.insightBrief.submissions || 0,
-      revisions: endSessionPreview.summary.insightBrief.revisions || 0
-    }), ...(endSessionPreview.summary.insightBrief.nextMoves || []).map(move => `${move.count}: ${move.label}`), tx('end_session.brief_privacy', 'Privacy: aggregate participation evidence only; no raw answers or account IDs.')].join('\n')),
+      activities: summary.insightBrief.activityCount || 0,
+      submissions: summary.insightBrief.submissions || 0,
+      revisions: summary.insightBrief.revisions || 0
+    }), ...(summary.insightBrief.nextMoves || []).map(move => `${move.count}: ${move.label}`), tx('end_session.brief_privacy', 'Privacy: aggregate participation evidence only; no raw answers or account IDs.')].join('\n')),
     className: "min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, briefCopied ? tx('end_session.brief_copied', '✓ Brief copied') : tx('end_session.copy_brief', 'Copy brief'))), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3"
@@ -399,34 +415,37 @@ function EndSessionPreview({
     className: "rounded-lg bg-white p-2 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-black text-indigo-800"
-  }, endSessionPreview.summary.insightBrief.activityCount || 0), /*#__PURE__*/React.createElement("div", {
+  }, summary.insightBrief.activityCount || 0), /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-slate-600"
   }, tx('end_session.activities', 'Activities'))), /*#__PURE__*/React.createElement("div", {
     className: "rounded-lg bg-white p-2 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-black text-indigo-800"
-  }, endSessionPreview.summary.insightBrief.submissions || 0), /*#__PURE__*/React.createElement("div", {
+  }, summary.insightBrief.submissions || 0), /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-slate-600"
   }, tx('end_session.submissions', 'Submissions'))), /*#__PURE__*/React.createElement("div", {
     className: "rounded-lg bg-white p-2 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-black text-indigo-800"
-  }, endSessionPreview.summary.insightBrief.revisions || 0), /*#__PURE__*/React.createElement("div", {
+  }, summary.insightBrief.revisions || 0), /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-slate-600"
   }, tx('end_session.revisions', 'Revisions'))), /*#__PURE__*/React.createElement("div", {
     className: "rounded-lg bg-white p-2 text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-black text-indigo-800"
-  }, (endSessionPreview.summary.insightBrief.followUpCodenames || []).length), /*#__PURE__*/React.createElement("div", {
+  }, (summary.insightBrief.followUpCodenames || []).length), /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-slate-600"
-  }, tx('end_session.follow_up', 'Follow-up')))), (endSessionPreview.summary.insightBrief.byKind || []).length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, tx('end_session.follow_up', 'Follow-up')))), (summary.insightBrief.byKind || []).length > 0 && /*#__PURE__*/React.createElement("div", {
     role: "group",
     className: "mt-3 flex flex-wrap gap-1.5",
     "aria-label": tx('end_session.activity_participation_by_type', 'Activity participation by type')
-  }, endSessionPreview.summary.insightBrief.byKind.map(item => /*#__PURE__*/React.createElement("span", {
-    key: item.kind,
-    className: "rounded-full border border-indigo-200 bg-white px-2 py-1 text-xs font-bold text-indigo-800"
-  }, tx('end_session.kind_' + item.kind, item.kind.replace(/_/g, ' ').replace(/^./, first => first.toUpperCase())), " \xB7 ", item.submitted, "/", item.invited))), (endSessionPreview.summary.insightBrief.evidenceCohorts || []).length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, summary.insightBrief.byKind.filter(item => item && typeof item === 'object').map((item, kIdx) => {
+    const safeKind = String(item.kind || 'activity');
+    return /*#__PURE__*/React.createElement("span", {
+      key: safeKind + '-' + kIdx,
+      className: "rounded-full border border-indigo-200 bg-white px-2 py-1 text-xs font-bold text-indigo-800"
+    }, tx('end_session.kind_' + safeKind, safeKind.replace(/_/g, ' ').replace(/^./, first => first.toUpperCase())), " \xB7 ", item.submitted, "/", item.invited);
+  })), (summary.insightBrief.evidenceCohorts || []).length > 0 && /*#__PURE__*/React.createElement("div", {
     role: "group",
     className: "mt-3 rounded-xl border border-violet-200 bg-white p-3",
     "aria-label": tx('end_session.evidence_cohorts_follow_up', 'Evidence cohorts and targeted follow-up')
@@ -450,7 +469,7 @@ function EndSessionPreview({
     value: resource.id
   }, resource.title)))), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 space-y-2"
-  }, endSessionPreview.summary.insightBrief.evidenceCohorts.map(cohort => {
+  }, summary.insightBrief.evidenceCohorts.map(cohort => {
     const connectedCount = resolveEndSessionCohortUids(cohort.codenames).length;
     const supportCohort = cohort.intent === 'support';
     const sending = endSessionPreview.followUpBusy === cohort.code;
@@ -475,14 +494,16 @@ function EndSessionPreview({
     }, cohort.recommendedAction)), supportCohort && connectedCount > 0 && (endSessionPreview.followUpResources || []).length > 0 && /*#__PURE__*/React.createElement("button", {
       type: "button",
       disabled: !!endSessionPreview.followUpBusy || endSessionPreview.busy,
-      onClick: () => sendEndSessionEvidenceCohort(cohort),
+      onClick: () => {
+        if (typeof sendEndSessionEvidenceCohort === 'function') sendEndSessionEvidenceCohort(cohort);
+      },
       "aria-label": sendActionLabel + '. ' + sendActionDescription,
-      className: "min-h-11 shrink-0 rounded-lg bg-violet-700 px-2.5 py-1.5 text-xs font-black text-white hover:bg-violet-800 disabled:opacity-50"
+      className: "min-h-11 shrink-0 rounded-lg bg-violet-700 px-2.5 py-1.5 text-xs font-black text-white hover:bg-violet-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
     }, sendActionLabel)), /*#__PURE__*/React.createElement("details", {
       className: "mt-1"
     }, /*#__PURE__*/React.createElement("summary", {
       tabIndex: 0,
-      className: "cursor-pointer rounded text-xs font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className: "min-h-11 inline-flex items-center cursor-pointer rounded text-xs font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
     }, tx('end_session.review_codenames', 'Review codenames')), /*#__PURE__*/React.createElement("div", {
       className: "mt-1 text-xs text-slate-600"
     }, (cohort.codenames || []).join(', '))));
@@ -490,38 +511,41 @@ function EndSessionPreview({
     role: "status",
     "aria-live": "polite",
     className: "mt-2 rounded-lg bg-violet-50 p-2 text-xs font-bold text-violet-900"
-  }, endSessionPreview.followUpStatus)), (endSessionPreview.summary.insightBrief.groups || []).some(group => group.followUpCount > 0) && /*#__PURE__*/React.createElement("div", {
+  }, endSessionPreview.followUpStatus)), (summary.insightBrief.groups || []).some(group => group.followUpCount > 0) && /*#__PURE__*/React.createElement("div", {
     className: "mt-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-black uppercase tracking-wide text-indigo-900"
   }, tx('end_session.group_patterns', 'Group patterns')), /*#__PURE__*/React.createElement("div", {
     className: "mt-1 flex flex-wrap gap-1.5"
-  }, endSessionPreview.summary.insightBrief.groups.filter(group => group.followUpCount > 0).map(group => /*#__PURE__*/React.createElement("span", {
-    key: group.groupId,
-    className: "rounded-full bg-amber-100 px-2 py-1 text-xs font-bold text-amber-900"
-  }, tx('end_session.group_follow_up', '{name}: {count} follow-up', {
-    name: rosterKey?.groups?.[group.groupId]?.name || group.groupId,
-    count: group.followUpCount
-  }))))), (endSessionPreview.summary.insightBrief.nextMoves || []).length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, summary.insightBrief.groups.filter(group => group.followUpCount > 0).map(group => {
+    const groupEntry = rosterKey && rosterKey.groups && Object.prototype.hasOwnProperty.call(rosterKey.groups, group.groupId) ? rosterKey.groups[group.groupId] : null;
+    return /*#__PURE__*/React.createElement("span", {
+      key: group.groupId,
+      className: "rounded-full bg-amber-100 px-2 py-1 text-xs font-bold text-amber-900"
+    }, tx('end_session.group_follow_up', '{name}: {count} follow-up', {
+      name: groupEntry && groupEntry.name || group.groupId,
+      count: group.followUpCount
+    }));
+  }))), (summary.insightBrief.nextMoves || []).length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mt-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-black uppercase tracking-wide text-indigo-900"
   }, tx('end_session.suggested_next_moves', 'Suggested next moves')), /*#__PURE__*/React.createElement("ul", {
     className: "mt-1 space-y-1 text-xs text-slate-700"
-  }, endSessionPreview.summary.insightBrief.nextMoves.map(move => /*#__PURE__*/React.createElement("li", {
+  }, summary.insightBrief.nextMoves.map(move => /*#__PURE__*/React.createElement("li", {
     key: move.code,
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-black text-indigo-700"
-  }, move.count), /*#__PURE__*/React.createElement("span", null, move.label))))), (endSessionPreview.summary.insightBrief.followUpCodenames || []).length > 0 && /*#__PURE__*/React.createElement("p", {
+  }, move.count), /*#__PURE__*/React.createElement("span", null, move.label))))), (summary.insightBrief.followUpCodenames || []).length > 0 && /*#__PURE__*/React.createElement("p", {
     className: "mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs font-semibold text-amber-900"
-  }, tx('end_session.connections_active_disclaimer', 'Connections remain active during this review. Use the cohort controls above or the companion view before ending; ending removes temporary student connections.'))), (endSessionPreview.summary.unmatchedCodenames || []).length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, tx('end_session.connections_active_disclaimer', 'Connections remain active during this review. Use the cohort controls above or the companion view before ending; ending removes temporary student connections.'))), (summary.unmatchedCodenames || []).length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl border border-rose-200 bg-rose-50 p-3 mb-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-black text-rose-800"
   }, tx('end_session.unmatched_codenames_notice', 'Unmatched codenames are not added automatically')), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-rose-700 mt-1"
-  }, endSessionPreview.summary.unmatchedCodenames.join(', '))), endSessionPreview.deliverySummary?.pending > 0 && /*#__PURE__*/React.createElement("div", {
+  }, summary.unmatchedCodenames.join(', '))), endSessionPreview.deliverySummary?.pending > 0 && /*#__PURE__*/React.createElement("div", {
     role: "alert",
     className: "rounded-xl border border-amber-300 bg-amber-50 p-3 mb-4"
   }, /*#__PURE__*/React.createElement("div", {
@@ -540,7 +564,7 @@ function EndSessionPreview({
     className: "rounded-xl border border-slate-200 p-3 mb-4"
   }, /*#__PURE__*/React.createElement("summary", {
     tabIndex: 0,
-    className: "cursor-pointer rounded text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+    className: "min-h-11 inline-flex items-center cursor-pointer rounded text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
   }, tx('end_session.what_will_be_saved', 'What will be saved?')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-2"
   }, tx('end_session.saved_summary_details', 'Date, duration, matched codenames, groups, response counts, organizer status and bounded score totals, and whether a resource was opened. A codename-only teacher note is saved if provided. Raw answers, organizer card text, resource IDs, account IDs, mailbox tokens, chat, and real names are not otherwise saved.'))), /*#__PURE__*/React.createElement("label", {
@@ -562,7 +586,9 @@ function EndSessionPreview({
     "aria-describedby": "end-session-note-privacy",
     value: endSessionNote,
     maxLength: 500,
-    onChange: event => setEndSessionNote(event.target.value.slice(0, 500)),
+    onChange: event => {
+      if (typeof setEndSessionNote === 'function') setEndSessionNote(event.target.value.slice(0, 500));
+    },
     rows: 3,
     placeholder: tx('end_session.teacher_note_placeholder', 'Example: Azure Fox may benefit from a fractions review'),
     className: "w-full rounded-xl border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none"
@@ -579,31 +605,41 @@ function EndSessionPreview({
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: endSessionPreview.busy || !!endSessionPreview.followUpBusy,
-    onClick: onKeepSessionOpen,
+    onClick: () => {
+      if (typeof onKeepSessionOpen === 'function') onKeepSessionOpen();
+    },
     className: "min-h-11 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50"
   }, tx('end_session.keep_open', 'Keep session open')), endSessionPreview.deliveryGuard ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: endSessionPreview.busy || !!endSessionPreview.followUpBusy,
     "aria-busy": !!endSessionPreview.busy,
-    onClick: () => completeLiveSessionEnd(false, true),
+    onClick: () => {
+      if (typeof completeLiveSessionEnd === 'function') completeLiveSessionEnd(false, true);
+    },
     className: "min-h-11 px-4 py-2.5 rounded-xl border border-rose-300 bg-rose-100 text-rose-800 font-bold hover:bg-rose-200 focus-visible:ring-2 focus-visible:ring-rose-600 disabled:opacity-50"
   }, endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.end_without_saving_anyway', 'End without saving anyway')), rosterKey && /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: endSessionPreview.busy || !!endSessionPreview.followUpBusy,
     "aria-busy": !!endSessionPreview.busy,
-    onClick: () => completeLiveSessionEnd(true, true),
+    onClick: () => {
+      if (typeof completeLiveSessionEnd === 'function') completeLiveSessionEnd(true, true);
+    },
     className: "min-h-11 px-4 py-2.5 rounded-xl bg-amber-700 text-white font-bold shadow-lg hover:bg-amber-800 focus-visible:ring-2 focus-visible:ring-amber-600 disabled:opacity-50"
   }, endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.save_summary_end_anyway', 'Save summary & end anyway'))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: endSessionPreview.busy || !!endSessionPreview.followUpBusy,
     "aria-busy": !!endSessionPreview.busy,
-    onClick: () => completeLiveSessionEnd(false),
+    onClick: () => {
+      if (typeof completeLiveSessionEnd === 'function') completeLiveSessionEnd(false);
+    },
     className: "min-h-11 px-4 py-2.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 font-bold hover:bg-rose-100 focus-visible:ring-2 focus-visible:ring-rose-600 disabled:opacity-50"
   }, endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.end_without_saving', 'End without saving')), rosterKey && /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: endSessionPreview.busy || !!endSessionPreview.followUpBusy,
     "aria-busy": !!endSessionPreview.busy,
-    onClick: () => completeLiveSessionEnd(true),
+    onClick: () => {
+      if (typeof completeLiveSessionEnd === 'function') completeLiveSessionEnd(true);
+    },
     className: "min-h-11 px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold shadow-lg hover:bg-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50"
   }, endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.save_summary_end', 'Save summary & end'))))));
 }

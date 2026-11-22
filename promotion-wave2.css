@@ -912,4 +912,27 @@
     .path-label {
         border: 1px solid ButtonText;
     }
+
+    .paper-download-bar,
+    .deadline-panel,
+    .home-deadline-note {
+        background: Canvas;
+        color: CanvasText;
+        border-top: 1px solid CanvasText;
+        border-bottom: 1px solid CanvasText;
+    }
+
+    .paper-download-inner p,
+    .deadline-panel h2,
+    .deadline-panel p,
+    .home-deadline-note p,
+    .home-deadline-note strong {
+        color: CanvasText;
+    }
+
+    .paper-download-inner a,
+    .deadline-panel a,
+    .home-deadline-note a {
+        color: LinkText;
+    }
 }

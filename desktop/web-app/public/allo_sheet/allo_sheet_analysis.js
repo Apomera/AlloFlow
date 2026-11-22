@@ -169,9 +169,25 @@
       === String(right == null ? '' : right).trim().toLocaleLowerCase();
   }
 
+  function arrayMin(values) {
+    var result = values[0];
+    for (var i = 1; i < values.length; i += 1) {
+      if (values[i] < result) result = values[i];
+    }
+    return result;
+  }
+
+  function arrayMax(values) {
+    var result = values[0];
+    for (var i = 1; i < values.length; i += 1) {
+      if (values[i] > result) result = values[i];
+    }
+    return result;
+  }
+
   function filterRecords(records, spec, columnTypes) {
     if (!spec.filterColumn) return (records || []).slice();
-    var target = spec.filterValue.trim();
+    var target = String(spec.filterValue == null ? '' : spec.filterValue).trim();
     var numericTarget = null;
     if (spec.filterOperator === 'gte' || spec.filterOperator === 'lte') {
       numericTarget = strictNumber(target);
@@ -257,9 +273,9 @@
     if (calculation === 'sum') {
       result = group.numericValues.reduce(function (sum, value) { return sum + value; }, 0);
     } else if (calculation === 'min') {
-      result = Math.min.apply(Math, group.numericValues);
+      result = arrayMin(group.numericValues);
     } else if (calculation === 'max') {
-      result = Math.max.apply(Math, group.numericValues);
+      result = arrayMax(group.numericValues);
     } else {
       var divisor = group.numericValues.length;
       result = group.numericValues.reduce(function (average, value) {
@@ -398,8 +414,8 @@
     if (timestamps.some(function (timestamp) { return !Number.isFinite(timestamp); })) {
       fail('Trend positions require valid ISO date groups.');
     }
-    var minimum = Math.min.apply(Math, timestamps);
-    var maximum = Math.max.apply(Math, timestamps);
+    var minimum = arrayMin(timestamps);
+    var maximum = arrayMax(timestamps);
     if (minimum === maximum) {
       return timestamps.map(function () { return 0.5; });
     }
@@ -440,7 +456,7 @@
     if (type === 'number' || type === 'duration') {
       var numericValues = values.map(strictNumber).filter(function (value) { return value !== null; });
       if (!numericValues.length) return null;
-      return { minimum: Math.min.apply(Math, numericValues), maximum: Math.max.apply(Math, numericValues), validCount: numericValues.length };
+      return { minimum: arrayMin(numericValues), maximum: arrayMax(numericValues), validCount: numericValues.length };
     }
     if (type === 'date') {
       var dates = values.map(function (value) { return String(value).trim(); }).filter(validIsoDate);

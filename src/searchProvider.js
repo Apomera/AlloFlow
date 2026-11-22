@@ -62,8 +62,21 @@ const WebSearchProvider = {
         }
     },
 
+    _bytesToAsciiFallback(bytes) {
+        const parts = [];
+        for (let i = 0; i < bytes.length; i += 8192) {
+            parts.push(String.fromCharCode.apply(null, bytes.subarray(i, i + 8192)));
+        }
+        return parts.join('');
+    },
+
     async _readBoundedJson(response, maxBytes = 2 * 1024 * 1024) {
         if (!response.body || typeof response.body.getReader !== 'function') {
+            if (typeof response.text === 'function') {
+                const text = await response.text();
+                if (text.length > maxBytes) throw new Error('Search response exceeded size limit');
+                return JSON.parse(text);
+            }
             return await response.json();
         }
         const reader = response.body.getReader();
@@ -80,7 +93,7 @@ const WebSearchProvider = {
                     try { await reader.cancel(); } catch (_) {}
                     throw new Error('Search response exceeded size limit');
                 }
-                chunks.push(decoder ? decoder.decode(bytes, { stream: true }) : String.fromCharCode.apply(null, bytes));
+                chunks.push(decoder ? decoder.decode(bytes, { stream: true }) : this._bytesToAsciiFallback(bytes));
             }
             if (decoder) chunks.push(decoder.decode());
             return JSON.parse(chunks.join(''));
@@ -131,6 +144,8 @@ const WebSearchProvider = {
         if (typeof query !== 'string' || query.trim().length < 3) {
             return { results: [], contextPrompt: '', groundingMetadata: null };
         }
+        const boundedMax = Math.max(1, Math.min(20, Math.floor(Number(maxResults) || 5)));
+        maxResults = boundedMax;
 
         // Offline / Desktop offline / managed policy check
         if (this._isBlockedByPolicy() || (typeof navigator !== 'undefined' && !navigator.onLine)) {
@@ -190,18 +205,20 @@ const WebSearchProvider = {
         const base = this._safeBaseUrl();
         if (!base) return false;
         const now = Date.now();
-        if (this._searxngAvailable !== null && (now - this._lastCheckTime) < 60000) {
+        if (this._searxngAvailable !== null && this._lastCheckedBaseUrl === base && (now - this._lastCheckTime) < 60000) {
             return this._searxngAvailable;
         }
 
         try {
             const resp = await this._fetchWithTimeout(`${base}/search?q=test&format=json`, {}, 2000);
-            this._searxngAvailable = Boolean(resp && resp.ok);
+            const ct = String((resp && resp.headers && typeof resp.headers.get === 'function' && resp.headers.get('content-type')) || '').toLowerCase();
+            this._searxngAvailable = Boolean(resp && resp.ok && (!ct || ct.includes('json')));
             try { await resp?.body?.cancel?.(); } catch (_) {}
         } catch {
             this._searxngAvailable = false;
         }
         this._lastCheckTime = now;
+        this._lastCheckedBaseUrl = base;
         console.log(`[WebSearch] SearXNG available: ${this._searxngAvailable}`);
         return this._searxngAvailable;
     },
@@ -224,7 +241,8 @@ const WebSearchProvider = {
         }
 
         const firstSentence = bounded.split(/[.!?\n]/).filter(s => s.trim().length > 10)[0] || '';
-        return firstSentence.trim().slice(0, 100);
+        const cleaned = firstSentence.trim().slice(0, 100);
+        return cleaned || bounded.replace(/\s+/g, ' ').trim().slice(0, 100);
     },
 
     // ─── SearXNG (Primary) ──────────────────────────────────────────────
@@ -359,7 +377,7 @@ const WebSearchProvider = {
     _buildContextPrompt(results) {
         if (!results.length) return '';
 
-        const stripFence = (s) => String(s || '').replace(/<\/?UNTRUSTED_WEB_SEARCH_RESULTS>/gi, '');
+        const stripFence = (s) => String(s || '').replace(/<\/?UNTRUSTED_[A-Z0-9_]+(?:\s[^>]*)?>/gi, '[redacted-tag]');
         const sources = results.map((r, i) =>
             `[Source ${i + 1}] ${stripFence(r.title)}\nURL: ${stripFence(r.url)}\n${stripFence(r.snippet)}`
         ).join('\n\n');
@@ -389,7 +407,7 @@ const WebSearchProvider = {
             },
         }));
 
-        const safeBase = (this._safeHttpUrl(this.searxngUrl) || 'https://duckduckgo.com').replace(/\/+$/, '').replace(/"/g, '%22');
+        const safeBase = (this._safeBaseUrl() || 'https://duckduckgo.com').replace(/\/+$/, '').replace(/"/g, '%22');
         return {
             groundingChunks,
             groundingSupports,

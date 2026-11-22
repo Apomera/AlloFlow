@@ -15,6 +15,7 @@
  * Registry: window.StemLab.registerTool()
  */
 // ═══ Defensive StemLab guard ═══
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -36,6 +37,7 @@ window.StemLab = window.StemLab || {
     try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
   }
 };
+}
 
 (function () {
   'use strict';
@@ -17312,6 +17314,7 @@ var CLASSIFY_CASES = [
     }
     function selectColumn(index) { if (typeof props.onSelect === 'function') props.onSelect(index); }
     function mapKey(event, column) {
+      if (event.isComposing || event.keyCode === 229 || event.altKey || event.metaKey) return;
       var row = column.row, col = column.col, next = null;
       if (event.key === 'ArrowRight') next = row * 6 + Math.min(5, col + 1);
       else if (event.key === 'ArrowLeft') next = row * 6 + Math.max(0, col - 1);
@@ -18966,7 +18969,7 @@ var CLASSIFY_CASES = [
               resetToolTarget(); invalidate(); queuePoseSave();
             }, { passive: false });
             listen(canvas, 'keydown', function (event) { var changed = true;
-              if (!alive || contextLost) return;
+              if (!alive || contextLost || event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
               if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','=','-','Enter',' '].indexOf(event.key) >= 0 && !ensureCameraInputPose()) return;
               if (event.key === 'ArrowLeft') pose.yaw -= .12; else if (event.key === 'ArrowRight') pose.yaw += .12;
               else if (event.key === 'ArrowUp') pose.pitch = Math.min(1.53, pose.pitch + .09); else if (event.key === 'ArrowDown') pose.pitch = Math.max(.12, pose.pitch - .09);
@@ -19026,6 +19029,7 @@ var CLASSIFY_CASES = [
     document.head.appendChild(st);
   })();
   // end WCAG 1.4.3 high contrast
+  if (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.registerTool === 'function')
   window.StemLab.registerTool('dinoLab', {
     name: 'Dino Lab',
     icon: '🦕',
@@ -19419,6 +19423,7 @@ var CLASSIFY_CASES = [
         }
       }
       function handleTabKeyDown(event, index) {
+        if (event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
         var nextIndex = null;
         if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = index + 1;
         else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = index - 1;
@@ -25357,7 +25362,9 @@ if (/Ceratops/i.test(cladeName)) {
               updateCameraView();
             }
             function pointerUp(ev) { dragging = false; interactionPauseUntil = performance.now() + 2200; if (canvas.releasePointerCapture) { try { canvas.releasePointerCapture(ev.pointerId); } catch (e) {} } }
-            function keyDown(ev) { notifyOrientationInteraction();
+            function keyDown(ev) {
+              if (ev.isComposing || ev.keyCode === 229 || ev.altKey || ev.ctrlKey || ev.metaKey) return;
+              notifyOrientationInteraction();
               var key = ev.key;
               if (key !== 'Home') setCameraPreset(null);
               pauseAutoRotate(2400);
@@ -25958,7 +25965,7 @@ if (/Ceratops/i.test(cladeName)) {
               el('input', { ref: partSearchRef, id: 'dinolab-part-search', type: 'search', value: partSearch.query, maxLength: 100,
                 placeholder: 'Try hand, manus, or frill', 'aria-describedby': 'dinolab-part-search-help', 'aria-controls': 'dinolab-part-search-results',
                 onChange: function (event) { updatePartSearch(event.target.value, section); },
-                onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); updatePartSearch('', section); } },
+                onKeyDown: function (event) { if (event.isComposing || event.keyCode === 229) return; if (event.key === 'Escape') { event.preventDefault(); updatePartSearch('', section); } },
                 style: { flex: '1 1 220px', minWidth: 0, width: '100%', minHeight: 44, border: '1px solid ' + T.border, borderRadius: 8, padding: '10px 12px', background: T.deep, color: T.text, font: 'inherit', boxSizing: 'border-box' } }),
               searching || section !== 'all' ? el('button', { type: 'button', onClick: clearPartSearch, style: { minHeight: 44, border: '1px solid ' + T.border, borderRadius: 8, padding: '8px 12px', background: T.deeper, color: T.text, font: 'inherit', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.dinolab.clear_part_search', 'Clear search')) : null),
             el('p', { id: 'dinolab-part-search-help', style: { margin: '6px 0 10px', color: T.soft, fontSize: 11.5 } }, 'Search familiar or anatomical names. Layer tags describe the model view; evidence is explained in each part’s guide.'),
@@ -27375,7 +27382,7 @@ var evidenceRoute = [
         ], { marginBottom: 12, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.32)' });
         return el('div', null,
           focusMode ? null : sectionTitle('3D', 'Field Station', 'A lightweight reconstruction lab. The model is procedural and scale-aware: it visualizes evidence and uncertainty instead of pretending we know every detail.'),
-          el('div', { className: 'dinolab-field-stage' + (focusMode ? ' dinolab-field-stage-focus' : ''), 'data-allo-fs-stage': 'dinolab-field', 'aria-label': focusMode ? 'Focused 3D Field Station' : '3D Field Station', onKeyDown: function (e) { if (e.key !== 'Escape') return; if (drawerOpen) { e.preventDefault(); closeFieldDrawer(); } else if (focusMode) { e.preventDefault(); toggleFieldFocus(); } }, style: { position: 'relative', background: T.canvas, color: T.text, overflowY: focusMode ? 'auto' : undefined } },
+          el('div', { className: 'dinolab-field-stage' + (focusMode ? ' dinolab-field-stage-focus' : ''), 'data-allo-fs-stage': 'dinolab-field', 'aria-label': focusMode ? 'Focused 3D Field Station' : '3D Field Station', onKeyDown: function (e) { if (e.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey || e.key !== 'Escape') return; if (drawerOpen) { e.preventDefault(); closeFieldDrawer(); } else if (focusMode) { e.preventDefault(); toggleFieldFocus(); } }, style: { position: 'relative', background: T.canvas, color: T.text, overflowY: focusMode ? 'auto' : undefined } },
             el('div', { key: 'viewer' },
               el('div', { className: 'dinolab-field-toolbar', style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10, alignItems: 'center' } },
                 focusMode ? el('div', { className: 'dinolab-field-focus-label', 'aria-label': 'Focused species: ' + dn.common, style: { flex: '1 1 240px', minWidth: 0, display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 8, rowGap: 2, color: T.text } }, el('span', { style: { fontSize: 11.5, fontWeight: 800, color: T.soft, letterSpacing: '0.04em', textTransform: 'uppercase' } }, '3D Field Station'), el('span', { style: { fontSize: 14, fontWeight: 900 } }, dn.common), el('span', { style: { fontSize: 11.5, color: T.soft, fontStyle: 'italic' } }, dn.name)) : el('select', { value: dn.id, 'aria-label': __alloT('stem.dinolab.a11y_choose_species_for_3d_field_station', 'Choose species for 3D field station'), onChange: function (e) { upd({ field3dShapeStudy: null, field3dWorkflowStarted: false, field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0, field3dSelected: e.target.value, selected: e.target.value, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: e.target.value, field3dAssemblyPlaced: {}, field3dAssemblySpecies: e.target.value, field3dAssemblyFocusIdx: 0, field3dClaimBone: null, field3dClaimBoneSpecies: e.target.value }); announceToSR('3D field station showing ' + (byId(e.target.value) || {}).common); }, style: { flex: '1 1 240px', minWidth: 220, padding: '9px 10px', borderRadius: 9, border: '1px solid ' + T.border, background: T.deeper, color: T.text, fontSize: 13 } }, options),
@@ -27834,6 +27841,7 @@ var evidenceRoute = [
           upd(patch); focusSoon('dino-dig-feedback');
         }
         function gridKey(event, cell) {
+          if (event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey) return;
           var next = event.key === 'ArrowRight' ? Math.min(23, cell + 1) : event.key === 'ArrowLeft' ? Math.max(0, cell - 1) : event.key === 'ArrowDown' ? Math.min(23, cell + 6) : event.key === 'ArrowUp' ? Math.max(0, cell - 6) : event.key === 'Home' ? 0 : event.key === 'End' ? 23 : null;
           if (next == null) return;
           event.preventDefault(); focusSoon('dino-dig-cell-' + next);

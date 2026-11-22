@@ -18,7 +18,18 @@
   }
   function isSafeCopyUrl(raw) {
     var s = String(raw || '').trim();
-    return /^https?:\/\/[^\s]+$/i.test(s) || /^\/p\/[A-Za-z0-9_-]+$/.test(s);
+    if (!s || /[\u0000-\u001f\u007f]/.test(s)) return false;
+    if (/^\/p\/[A-Za-z0-9_-]+$/.test(s)) return true;
+    try {
+      var parsed = new URL(s);
+      if (parsed.username || parsed.password) return false;
+      if (parsed.protocol === 'https:') return true;
+      if (parsed.protocol === 'http:') {
+        var host = (parsed.hostname || '').toLowerCase();
+        return host === 'localhost' || host === '127.0.0.1' || host === '[::1]';
+      }
+      return false;
+    } catch (_) { return false; }
   }
   function isSameOriginHttpUrl(raw) {
     try {
@@ -47,6 +58,7 @@
   }
   form.hidden = false;
   form.addEventListener('input', filter);
+  form.addEventListener('change', filter);
   form.addEventListener('submit', function (event) { event.preventDefault(); filter(); });
   form.addEventListener('reset', function () {
     if (search) search.value = '';
@@ -96,14 +108,43 @@
         var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
         var timer = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (_) {} }, 20000) : null;
         try {
-          var init = { credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' };
+          var MAX_PACK_BYTES = 25 * 1024 * 1024;
+          var init = { credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store', redirect: 'error' };
           if (ctrl) init.signal = ctrl.signal;
           var response = await fetch(url, init);
           if (!response.ok) throw new Error('Download unavailable');
           var lenHdr = Number(response.headers && response.headers.get && response.headers.get('content-length'));
-          if (Number.isFinite(lenHdr) && lenHdr > 25 * 1024 * 1024) throw new Error('Pack exceeds maximum size');
-          var bytes = await response.arrayBuffer();
-          if (bytes.byteLength > 25 * 1024 * 1024) throw new Error('Pack exceeds maximum size');
+          if (Number.isFinite(lenHdr) && lenHdr > MAX_PACK_BYTES) throw new Error('Pack exceeds maximum size');
+          var bytes;
+          if (response.body && typeof response.body.getReader === 'function') {
+            var reader = response.body.getReader();
+            var chunks = [], total = 0;
+            try {
+              while (true) {
+                var step = await reader.read();
+                if (step.done) break;
+                var val = step.value instanceof Uint8Array ? step.value : new Uint8Array(step.value);
+                total += val.byteLength;
+                if (total > MAX_PACK_BYTES) {
+                  try { await reader.cancel(); } catch (_) {}
+                  throw new Error('Pack exceeds maximum size');
+                }
+                chunks.push(val);
+              }
+            } finally {
+              try { reader.releaseLock(); } catch (_) {}
+            }
+            var combined = new Uint8Array(total);
+            var offset = 0;
+            for (var ci = 0; ci < chunks.length; ci++) {
+              combined.set(chunks[ci], offset);
+              offset += chunks[ci].byteLength;
+            }
+            bytes = combined.buffer;
+          } else {
+            bytes = await response.arrayBuffer();
+            if (bytes.byteLength > MAX_PACK_BYTES) throw new Error('Pack exceeds maximum size');
+          }
           var pack = JSON.parse(new TextDecoder().decode(bytes).replace(/^\uFEFF/, ''), function (k, v) {
             return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
           });
@@ -120,7 +161,7 @@
           bytes = await readPack(link.href);
         } catch (_) {
           var relPath = String(link.dataset.packDownload || '').replace(/^\/+/, '');
-          if (!/^[A-Za-z0-9_./-]+\.json$/.test(relPath) || relPath.indexOf('..') !== -1 || relPath.indexOf('//') !== -1) throw new Error('Invalid pack path');
+          if (!/^allopacks\/[A-Za-z0-9_./-]+\.json$/.test(relPath) || relPath.indexOf('..') !== -1 || relPath.indexOf('//') !== -1) throw new Error('Invalid pack path');
           bytes = await readPack('https://raw.githubusercontent.com/Apomera/AlloFlow/main/' + relPath);
         }
         var safeDownload = String(link.download || 'allopack.json').replace(/[^A-Za-z0-9._-]/g, '_').replace(/^\.+/, '').slice(0, 120) || 'allopack.json';

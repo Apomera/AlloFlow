@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cephalopod Lab — AlloFlow</title>
 <meta name="description" content="The intelligence + behavior + camouflage biology of octopuses, squid, cuttlefish, and nautilus. Headline: Hunter Sim — play a cephalopod hunter, pick species + habitat + prey + tactic, run the camouflage minigame, time the strike, learn the real biology behind each species' adaptations.">
@@ -17,6 +18,7 @@
 <meta name="twitter:description" content="The intelligence + behavior + camouflage biology of octopuses, squid, cuttlefish, and nautilus. Headline: Hunter Sim — play a cephalopod hunter, pick species + habitat + prey + tactic, run the camouflage minigame, time the strike, learn the real biology behind each species' adaptations.">
 <link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="tool-page.css">
+<script src="tool-page.js" defer></script>
 <script type="application/ld+json">{
  "@context": "https://schema.org",
  "@type": "SoftwareApplication",
@@ -50,7 +52,7 @@
         </div>
     </div>
 </nav>
-<main id="tool-main" class="tool-page">
+<main id="tool-main" tabindex="-1" class="tool-page">
     <nav class="tool-page-crumbs" aria-label="Breadcrumb">
         <ol>
             <li><a href="./">AlloFlow</a></li>

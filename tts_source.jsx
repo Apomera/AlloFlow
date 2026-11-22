@@ -2116,7 +2116,11 @@ let piperLoadPromise = null;
                             try { fetchController.abort(); } catch (_) {}
                         }, 'Direct TTS request timed out', _directSignal);
                     } catch (fetchError) {
-                        if (_directSignal?.aborted) { fetchError.name = 'AbortError'; throw fetchError; }
+                        if (_directSignal?.aborted) {
+                            const abortError = new Error('TTS request aborted');
+                            abortError.name = 'AbortError';
+                            throw abortError;
+                        }
                         if (fetchTimedOut) throw new Error('Direct TTS request timed out');
                         throw fetchError;
                     } finally {

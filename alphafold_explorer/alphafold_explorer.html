@@ -35,12 +35,13 @@
   applyAlloFlowTheme(new URLSearchParams(window.location.search).get('theme'));
   function isTrustedThemeOrigin(origin) {
     if (!origin) return false;
-    if (origin === 'null' || origin === window.location.origin) return true;
+    if (origin === 'null') return window.location && window.location.origin === 'null';
+    if (origin === window.location.origin) return true;
     try {
       var u = new URL(origin), h = u.hostname.toLowerCase();
       if (u.protocol === 'http:' && (h === 'localhost' || h === '127.0.0.1' || h === '[::1]')) return true;
       if (u.protocol !== 'https:') return false;
-      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
+      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
     } catch (_) { return false; }
   }
   window.addEventListener('message', function (event) {
@@ -70,6 +71,25 @@
     --red: #f87171;
     --green: #4ade80;
     --violet: #a78bfa;
+    --surface-header: #101827;
+    --surface-card: rgba(15, 23, 42, 0.58);
+    --surface-input: #0b1220;
+    --surface-control: #111a2c;
+    --surface-disabled: #172033;
+    --disabled-fg: #b9c8da;
+    --heading: #bdeee7;
+    --note-bg: rgba(245, 158, 11, 0.08);
+    --note-border: rgba(245, 158, 11, 0.45);
+    --note-fg: #fde68a;
+    --coach-bg: rgba(167, 139, 250, 0.10);
+    --coach-border: rgba(167, 139, 250, 0.35);
+    --coach-fg: #ddd6fe;
+    --code-bg: #09111e;
+    --code-fg: #dbeafe;
+    --link-fg: #7dd3fc;
+    --focus: #fbbf24;
+    --warn-fg: #fcd34d;
+    --primary-fg: #ffffff;
   }
   :root[data-theme="light"] {
     --bg: #f8fafc; --panel: #ffffff; --panel2: #f1f5f9; --stage: #e2e8f0;
@@ -77,6 +97,12 @@
     --muted: #475569; --soft: #334155; --accent: #1d4ed8; --accent2: #4338ca;
     --teal: #0f766e; --teal2: #115e59; --sky: #0369a1; --amber: #92400e;
     --red: #b91c1c; --green: #047857; --violet: #6d28d9; --ok: #047857; --warn: #92400e;
+    --surface-header: #ffffff; --surface-card: #ffffff; --surface-input: #ffffff;
+    --surface-control: #f1f5f9; --surface-disabled: #e2e8f0; --disabled-fg: #475569;
+    --heading: #0f766e; --note-bg: #fffbeb; --note-border: #d97706; --note-fg: #78350f;
+    --coach-bg: #f5f3ff; --coach-border: #7c3aed; --coach-fg: #3b0764;
+    --code-bg: #f1f5f9; --code-fg: #0f172a; --link-fg: #0369a1;
+    --focus: #1d4ed8; --warn-fg: #92400e; --primary-fg: #ffffff;
   }
   :root[data-theme="contrast"] {
     --bg: #000000; --panel: #000000; --panel2: #0a0a0a; --stage: #000000;
@@ -84,13 +110,19 @@
     --muted: #ffffff; --soft: #ffffff; --accent: #fbbf24; --accent2: #fbbf24;
     --teal: #00ffff; --teal2: #00ffff; --sky: #00ffff; --amber: #ffff00;
     --red: #ff6b6b; --green: #00ff66; --violet: #ffff00; --ok: #00ff66; --warn: #ffff00;
+    --surface-header: #000000; --surface-card: #000000; --surface-input: #000000;
+    --surface-control: #0a0a0a; --surface-disabled: #111111; --disabled-fg: #e2e8f0;
+    --heading: #00ffff; --note-bg: #000000; --note-border: #ffff00; --note-fg: #ffff00;
+    --coach-bg: #000000; --coach-border: #ffff00; --coach-fg: #ffffff;
+    --code-bg: #000000; --code-fg: #ffffff; --link-fg: #00ffff;
+    --focus: #ffff00; --warn-fg: #ffff00; --primary-fg: #000000;
   }
   :root[data-theme="contrast"] * { box-shadow: none !important; text-shadow: none !important; }
   :root[data-theme="contrast"] button,
   :root[data-theme="contrast"] input,
   :root[data-theme="contrast"] select,
   :root[data-theme="contrast"] textarea { border-color: var(--line) !important; }
-  :focus-visible { outline: 3px solid var(--line); outline-offset: 2px; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   @media (forced-colors: active) {
     button, input, select, textarea, a { forced-color-adjust: auto; }
   }
@@ -132,7 +164,7 @@
     gap: 12px;
     padding: 10px 16px;
     border-bottom: 1px solid var(--line);
-    background: #101827;
+    background: var(--surface-header);
   }
   .brand { display: flex; align-items: center; gap: 10px; min-width: 220px; }
   .mark {
@@ -141,8 +173,8 @@
     border-radius: 8px;
     display: grid;
     place-items: center;
-    background: #0f766e;
-    color: white;
+    background: var(--teal2);
+    color: var(--primary-fg);
     font-weight: 900;
     font-size: 18px;
   }
@@ -159,7 +191,7 @@
     border-radius: 8px;
     border: 1px solid var(--line2);
     color: var(--text);
-    background: #111a2c;
+    background: var(--surface-control);
     text-decoration: none;
     font-size: 12px;
     font-weight: 800;
@@ -188,7 +220,7 @@
   }
   section {
     border: 1px solid var(--line);
-    background: rgba(15, 23, 42, 0.58);
+    background: var(--surface-card);
     border-radius: 8px;
     padding: 12px;
     margin-bottom: 12px;
@@ -199,12 +231,12 @@
     line-height: 1.2;
     text-transform: uppercase;
     letter-spacing: 0;
-    color: #bdeee7;
+    color: var(--heading);
   }
   .note {
-    border-color: rgba(245, 158, 11, 0.45);
-    background: rgba(245, 158, 11, 0.08);
-    color: #fde68a;
+    border-color: var(--note-border);
+    background: var(--note-bg);
+    color: var(--note-fg);
     line-height: 1.45;
     font-size: 12.5px;
   }
@@ -217,7 +249,7 @@
     min-height: 34px;
     border: 1px solid var(--line2);
     border-radius: 8px;
-    background: #111a2c;
+    background: var(--surface-control);
     color: var(--soft);
     font: inherit;
     font-size: 11.5px;
@@ -225,7 +257,7 @@
     cursor: pointer;
   }
   .flowNav button[aria-pressed="true"] {
-    color: white;
+    color: var(--primary-fg);
     background: var(--teal2);
     border-color: var(--teal);
   }
@@ -250,13 +282,13 @@
     background: var(--teal2);
     border-color: var(--teal);
     text-align: center;
-    color: white;
+    color: var(--primary-fg);
   }
   button.primary:disabled, button.secondary:disabled {
     cursor: not-allowed;
     opacity: 1;
-    color: #b9c8da;
-    background: #172033;
+    color: var(--disabled-fg);
+    background: var(--surface-disabled);
     border-color: var(--line);
   }
   .row { display: flex; gap: 8px; align-items: center; }
@@ -266,7 +298,7 @@
     width: 100%;
     border: 1px solid var(--line2);
     border-radius: 8px;
-    background: #0b1220;
+    background: var(--surface-input);
     color: var(--text);
     font: inherit;
     font-size: 13px;
@@ -277,7 +309,7 @@
   ::placeholder { color: var(--muted); opacity: 1; }
   a:focus-visible, button:focus-visible, input:focus-visible,
   select:focus-visible, textarea:focus-visible, summary:focus-visible {
-    outline: 3px solid #fbbf24; outline-offset: 2px;
+    outline: 3px solid var(--focus); outline-offset: 2px;
   }
   textarea {
     min-height: 96px;
@@ -310,14 +342,14 @@
     border: 1px solid var(--line);
     border-radius: 8px;
     padding: 9px;
-    background: rgba(15, 23, 42, 0.48);
+    background: var(--surface-card);
   }
   details.advanced summary {
     display: flex;
     align-items: center;
     min-height: 32px;
     cursor: pointer;
-    color: #bdeee7;
+    color: var(--heading);
     font-size: 12px;
     font-weight: 900;
     text-transform: uppercase;
@@ -336,7 +368,7 @@
     line-height: 1.45;
   }
   .status.ok { color: var(--green); }
-  .status.warn { color: #fcd34d; }
+  .status.warn { color: var(--warn-fg); }
   .status.err { color: var(--red); }
   .complexPreview {
     display: grid;
@@ -476,8 +508,8 @@
     border: 1px solid var(--line);
     border-radius: 8px;
     padding: 9px;
-    background: #09111e;
-    color: #dbeafe;
+    background: var(--code-bg);
+    color: var(--code-fg);
     font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
     font-size: 11px;
     line-height: 1.4;
@@ -503,7 +535,7 @@
     min-height: 36px;
     padding: 7px 11px;
     text-align: center;
-    background: #101827;
+    background: var(--surface-header);
     border-color: var(--line2);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.34);
   }
@@ -567,7 +599,7 @@
   .loadmsg { display: none; z-index: 4; }
   .details {
     padding: 12px 14px;
-    background: #101827;
+    background: var(--surface-header);
     min-height: 158px;
     max-height: 38vh;
     overflow: auto;
@@ -606,13 +638,13 @@
     font-size: 13px;
     overflow-wrap: anywhere;
   }
-  .fact a { color: #7dd3fc; }
+  .fact a { color: var(--link-fg); }
   .coachbox {
-    border: 1px solid rgba(167, 139, 250, 0.35);
-    background: rgba(167, 139, 250, 0.10);
+    border: 1px solid var(--coach-border);
+    background: var(--coach-bg);
     border-radius: 8px;
     padding: 9px;
-    color: #ddd6fe;
+    color: var(--coach-fg);
     font-size: 12.5px;
     line-height: 1.45;
     white-space: pre-wrap;
@@ -1574,9 +1606,9 @@
       <textarea id="evidenceInput" class="mini" placeholder="Example: Most of the folded core is high confidence; the tail is lower confidence."></textarea>
       <label for="cautionInput">Limit or next test</label>
       <textarea id="cautionInput" class="mini" placeholder="Example: I would compare with an experiment or reference before claiming function."></textarea>
-      <div id="claimReview" class="reviewBox" aria-live="polite"></div>
-      <div id="rubricOutput" class="rubricGrid" aria-live="polite"></div>
-      <div id="misconceptionOutput" class="coachbox" aria-live="polite"></div>
+      <div id="claimReview" class="reviewBox"></div>
+      <div id="rubricOutput" class="rubricGrid"></div>
+      <div id="misconceptionOutput" class="coachbox"></div>
       <div class="activityActions">
         <button class="secondary" id="copyRubricBtn" type="button">Copy rubric feedback</button>
         <span class="status" id="rubricStatus" role="status"></span>
@@ -1626,12 +1658,12 @@
       </div>
       <div class="loadmsg" id="loadmsg" role="status"></div>
     </div>
-    <div class="details" aria-live="polite">
+    <div class="details">
       <h2 id="detailTitle">No structure loaded</h2>
       <div class="facts" id="facts">
         <div class="fact"><b>Status</b><span>Choose a public example or enter an accession.</span></div>
       </div>
-      <div id="accessibleSummary" class="summaryBox" aria-live="polite"></div>
+      <div id="accessibleSummary" class="summaryBox"></div>
       <div class="detailActions">
         <button class="secondary" id="copyCitationBtn" type="button" disabled>Copy citation</button>
         <button class="secondary" id="copyLabNoteBtn" type="button" disabled>Copy lab note</button>
@@ -3886,18 +3918,20 @@
   function isTrustedAlphaFoldOpener(origin) {
     if (!origin) return false;
     if (lockedOpenerOrigin && origin !== lockedOpenerOrigin) return false;
-    if (origin === 'null' || origin === window.location.origin) return true;
+    if (origin === 'null') return window.location && window.location.origin === 'null';
+    if (origin === window.location.origin) return true;
     try {
       var u = new URL(origin), h = u.hostname.toLowerCase();
       if (u.protocol === 'http:' && (h === 'localhost' || h === '127.0.0.1' || h === '[::1]')) return true;
       if (u.protocol !== 'https:') return false;
-      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
+      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
     } catch (_) { return false; }
   }
   function toOpener(payload) {
     try {
       var isHandshake = !!(payload && (payload.type === 'allocaf-hello' || payload.type === 'allocaf-closed'));
-      var targetOrigin = verifiedOpenerOrigin ? verifiedOpenerOrigin : ((isHandshake || (openerOk && lockedOpenerOrigin === 'null')) ? '*' : '');
+      var allowOpaque = !!(window.location && window.location.origin === 'null' && openerOk && lockedOpenerOrigin === 'null');
+      var targetOrigin = verifiedOpenerOrigin ? verifiedOpenerOrigin : ((isHandshake || allowOpaque) ? '*' : '');
       if (targetOrigin && window.opener && !window.opener.closed) {
         window.opener.postMessage(payload, targetOrigin);
         return true;
@@ -3910,9 +3944,9 @@
     if (!window.opener || event.source !== window.opener || !isTrustedAlphaFoldOpener(event.origin)) return;
     var data = event && event.data;
     if (!data || typeof data.type !== 'string') return;
-    if (!lockedOpenerOrigin) lockedOpenerOrigin = event.origin;
-    if (event.origin && event.origin !== 'null') verifiedOpenerOrigin = event.origin;
     if (data.type === 'allocaf-ready') {
+      if (!lockedOpenerOrigin) lockedOpenerOrigin = event.origin;
+      if (event.origin && event.origin !== 'null') verifiedOpenerOrigin = event.origin;
       openerOk = true;
       aiAvailable = Boolean(data.ai);
       cellAtlasHandoff = sanitizeCellAtlasHandoff(data.cellAtlasHandoff);
@@ -3920,6 +3954,7 @@
       renderCellAtlasReturn();
       return;
     }
+    if (!openerOk) return;
     if (data.type === 'allocaf-ai-response' && typeof data.id === 'string' && Object.prototype.hasOwnProperty.call(pending, data.id)) {
       var entry = pending[data.id];
       delete pending[data.id];
@@ -4099,10 +4134,10 @@
       activityCard: activityCardText(),
       claimReview: claimReviewSummary(),
       rubric: rubricFeedbackText(),
-      observation: noteInput.value.trim(),
-      claim: claimInput.value.trim(),
-      evidence: evidenceInput.value.trim(),
-      caution: cautionInput.value.trim(),
+      observation: redactSequenceLikeText(noteInput.value.trim()).slice(0, 600),
+      claim: redactSequenceLikeText(claimInput.value.trim()).slice(0, 600),
+      evidence: redactSequenceLikeText(evidenceInput.value.trim()).slice(0, 600),
+      caution: redactSequenceLikeText(cautionInput.value.trim()).slice(0, 600),
       sourceConfirmed: !!safetyConfirmInput.checked,
       completed: GUIDE_STEPS.filter(function (step) { return guideDone(step.key); }).map(function (step) { return step.label; }).join(', ')
     };
@@ -4125,6 +4160,18 @@
     return '';
   }
 
+  function safeApiUrl(url) {
+    try {
+      var u = new URL(url);
+      if (u.protocol !== 'https:') return '';
+      var h = String(u.hostname || '').toLowerCase();
+      if (h === 'alphafold.ebi.ac.uk' || h.endsWith('.ebi.ac.uk') || h === 'rest.uniprot.org' || h === 'www.uniprot.org' || h === 'uniprot.org') {
+        return u.toString();
+      }
+    } catch (_) {}
+    return '';
+  }
+
   function fallbackCifUrl(accession) {
     return 'https://alphafold.ebi.ac.uk/files/AF-' + encodeURIComponent(accession) + '-F1-model_v4.cif';
   }
@@ -4133,7 +4180,7 @@
     var rec = apiRecord || {};
     var acc = rec.uniprotAccession || rec.accession || requested;
     var entryId = rec.entryId || ('AF-' + acc + '-F1');
-    var modelUrl = safeUrl(rec.cifUrl || rec.bcifUrl || rec.pdbUrl || fallbackCifUrl(acc));
+    var modelUrl = safeApiUrl(rec.cifUrl || '') || safeApiUrl(rec.bcifUrl || '') || safeApiUrl(rec.pdbUrl || '') || fallbackCifUrl(acc);
     return {
       source: 'AlphaFold DB',
       accession: acc,
@@ -4143,11 +4190,11 @@
       gene: rec.gene || '',
       length: rec.sequenceLength || rec.length || '',
       modelUrl: modelUrl,
-      pdbUrl: safeUrl(rec.pdbUrl || ''),
-      cifUrl: safeUrl(rec.cifUrl || modelUrl),
-      paeUrl: safeUrl(rec.paeDocUrl || rec.paeImageUrl || ''),
-      paeDataUrl: safeUrl(rec.paeDocUrl || ''),
-      plddtUrl: safeUrl(rec.plddtDocUrl || ''),
+      pdbUrl: safeApiUrl(rec.pdbUrl || ''),
+      cifUrl: safeApiUrl(rec.cifUrl || '') || modelUrl,
+      paeUrl: safeApiUrl(rec.paeDocUrl || '') || safeApiUrl(rec.paeImageUrl || ''),
+      paeDataUrl: safeApiUrl(rec.paeDocUrl || ''),
+      plddtUrl: safeApiUrl(rec.plddtDocUrl || ''),
       uniprotUrl: acc ? 'https://www.uniprot.org/uniprotkb/' + encodeURIComponent(acc) + '/entry' : '',
       dbUrl: acc ? 'https://alphafold.ebi.ac.uk/entry/' + encodeURIComponent(acc) : '',
       confidence: summarizeConfidence(rec),
@@ -4352,12 +4399,51 @@
       [szx-sxz, sxy+syx, -sxx+syy-szz, syz+szy],
       [sxy-syx, szx+sxz, syz+szy, -sxx-syy+szz]
     ];
-    var quaternion = [1,0,0,0];
-    for (var iteration = 0; iteration < 80; iteration++) {
-      var next = n.map(function (row) { return row.reduce(function (sum, value, index) { return sum + value * quaternion[index]; }, 0); });
-      var norm = Math.sqrt(next.reduce(function (sum, value) { return sum + value * value; }, 0)) || 1;
-      quaternion = next.map(function (value) { return value / norm; });
+    // Exact 4x4 symmetric Jacobi eigensolver for Horn's quaternion matrix N:
+    // selects the eigenvector with the largest signed eigenvalue (handles 180-deg rotations accurately).
+    var a = n.map(function (row) { return row.slice(); });
+    var v = [
+      [1, 0, 0, 0],
+      [0, 1, 0, 0],
+      [0, 0, 1, 0],
+      [0, 0, 0, 1]
+    ];
+    for (var sweep = 0; sweep < 60; sweep++) {
+      var pIdx = 0, qIdx = 1, maxOff = 0;
+      for (var r = 0; r < 4; r++) {
+        for (var c = r + 1; c < 4; c++) {
+          var absVal = Math.abs(a[r][c]);
+          if (absVal > maxOff) { maxOff = absVal; pIdx = r; qIdx = c; }
+        }
+      }
+      if (maxOff < 1e-12) break;
+      var app = a[pIdx][pIdx], aqq = a[qIdx][qIdx], apq = a[pIdx][qIdx];
+      var phi = 0.5 * Math.atan2(2 * apq, aqq - app);
+      var cosP = Math.cos(phi), sinP = Math.sin(phi);
+      a[pIdx][pIdx] = cosP * cosP * app - 2 * sinP * cosP * apq + sinP * sinP * aqq;
+      a[qIdx][qIdx] = sinP * sinP * app + 2 * sinP * cosP * apq + cosP * cosP * aqq;
+      a[pIdx][qIdx] = 0;
+      a[qIdx][pIdx] = 0;
+      for (var k = 0; k < 4; k++) {
+        if (k !== pIdx && k !== qIdx) {
+          var akp = a[k][pIdx], akq = a[k][qIdx];
+          a[k][pIdx] = a[pIdx][k] = cosP * akp - sinP * akq;
+          a[k][qIdx] = a[qIdx][k] = sinP * akp + cosP * akq;
+        }
+      }
+      for (var rowIdx = 0; rowIdx < 4; rowIdx++) {
+        var vrp = v[rowIdx][pIdx], vrq = v[rowIdx][qIdx];
+        v[rowIdx][pIdx] = cosP * vrp - sinP * vrq;
+        v[rowIdx][qIdx] = sinP * vrp + cosP * vrq;
+      }
     }
+    var bestCol = 0;
+    for (var col = 1; col < 4; col++) {
+      if (a[col][col] > a[bestCol][bestCol]) bestCol = col;
+    }
+    var quaternion = [v[0][bestCol], v[1][bestCol], v[2][bestCol], v[3][bestCol]];
+    var qNorm = Math.sqrt(quaternion[0]*quaternion[0] + quaternion[1]*quaternion[1] + quaternion[2]*quaternion[2] + quaternion[3]*quaternion[3]) || 1;
+    quaternion = quaternion.map(function (value) { return value / qNorm; });
     var rotation = quaternionRotation(quaternion);
     var rotatedCenter = rotatePoint(rotation, variantCenter);
     var translation = originalCenter.map(function (value, i) { return value - rotatedCenter[i]; });
@@ -4473,6 +4559,13 @@
     return fitted === 2;
   }
 
+  var alignedObjectUrl = '';
+  function revokeObjectUrl(url) {
+    if (!url) return;
+    localObjectUrls = localObjectUrls.filter(function (item) { return item !== url; });
+    try { URL.revokeObjectURL(url); } catch (_) {}
+  }
+
   function deactivateComparison(announce) {
     stopComparisonCameraSync();
     comparisonLoaded = false;
@@ -4483,6 +4576,11 @@
     closeComparisonBtn.disabled = true;
     syncComparisonCameraInput.disabled = true;
     useComparisonEvidenceBtn.disabled = true;
+    if (alignedObjectUrl) { revokeObjectUrl(alignedObjectUrl); alignedObjectUrl = ''; }
+    if (comparisonUrls && comparisonUrls.length > 1) {
+      revokeObjectUrl(comparisonUrls[1]);
+      comparisonUrls = [comparisonUrls[0]];
+    }
     if (comparisonViewer) clearMolstar(comparisonViewer).catch(function () {});
     if (viewer && typeof viewer.handleResize === 'function') viewer.handleResize();
     if (announce) setStatus(comparisonStatus, 'Comparison closed. The original structure remains in the main viewer.', 'ok');
@@ -4518,7 +4616,10 @@
     showLoading('Loading original and variant structures into side-by-side Mol* viewers...');
     setStatus(comparisonStatus, 'Loading both local result files...', '');
 
-    Promise.all([ensureViewer(), ensureComparisonViewer()]).then(function (targets) {
+    var operation = structureLoadQueue.then(function () {
+      if (loadVersion !== structureLoadVersion) throw supersededLoadError();
+      return Promise.all([ensureViewer(), ensureComparisonViewer()]);
+    }).then(function (targets) {
       if (loadVersion !== structureLoadVersion) throw supersededLoadError();
       return Promise.all([clearMolstar(targets[0]), clearMolstar(targets[1])]).then(function () { return targets; });
     }).then(function (targets) {
@@ -4564,6 +4665,7 @@
       loadmsg.style.display = 'flex';
       setStatus(comparisonStatus, 'Comparison failed. Check that both files are valid supported structure results.', 'err');
     });
+    structureLoadQueue = operation.catch(function () {});
   }
 
   function closeStructureComparison() {
@@ -4710,8 +4812,15 @@
       endpoints.push(morphProjection(original), morphProjection(emphasizedVariant));
       currentPoints.push(morphProjection(original.map(function (value, index) { return value + (pair.variantAligned.point[index] - value) * frame * amplify; })));
     });
-    var xs = endpoints.map(function (point) { return point[0]; }), ys = endpoints.map(function (point) { return point[1]; });
-    var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs), minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (var ep = 0; ep < endpoints.length; ep++) {
+      var ex = endpoints[ep][0], ey = endpoints[ep][1];
+      if (ex < minX) minX = ex;
+      if (ex > maxX) maxX = ex;
+      if (ey < minY) minY = ey;
+      if (ey > maxY) maxY = ey;
+    }
+    if (!Number.isFinite(minX)) { minX = 0; maxX = 1; minY = 0; maxY = 1; }
     var width = 720, height = 320, padX = 42, padY = 34, spanX = Math.max(1, maxX - minX), spanY = Math.max(1, maxY - minY);
     var scale = Math.min((width - padX * 2) / spanX, (height - padY * 2) / spanY);
     function screen(point) { return [width / 2 + (point[0] - (minX + maxX) / 2) * scale, height / 2 + (point[1] - (minY + maxY) / 2) * scale]; }
@@ -4945,6 +5054,7 @@
   function resetCoordinateAnalysis() {
     coordinateAnalysisVersion += 1;
     stopCoordinateMorph();
+    if (alignedObjectUrl) { revokeObjectUrl(alignedObjectUrl); alignedObjectUrl = ''; }
     coordinateAnalysis = null;
     coordinateMorphPanel.hidden = true;
     coordinateHotspotTour.hidden = true;
@@ -4981,6 +5091,8 @@
       var alignment = calculateAlignment(matching.pairs), contacts = calculateContactAnalysis(matching.pairs);
       coordinateAnalysis = { original: original, variant: variant, pairs: matching.pairs, alignment: alignment, contacts: contacts, strategy: matching.strategy };
       var alignedPdb = transformPdbCoordinates(texts[1], alignment), alignedUrl = URL.createObjectURL(new Blob([alignedPdb], { type: 'chemical/x-pdb' }));
+      if (alignedObjectUrl) revokeObjectUrl(alignedObjectUrl);
+      alignedObjectUrl = alignedUrl;
       localObjectUrls.push(alignedUrl);
       return clearMolstar(comparisonViewer).then(function () {
         if (requestVersion !== coordinateAnalysisVersion) return;
@@ -5184,7 +5296,7 @@
   function addLinkFact(label, href) {
     var wrap = el('div', { class: 'fact' });
     wrap.appendChild(el('b', null, label));
-    var a = el('a', { href: href, target: '_blank', rel: 'noopener' }, href);
+    var a = el('a', { href: href, target: '_blank', rel: 'noopener noreferrer' }, href);
     wrap.appendChild(a);
     facts.appendChild(wrap);
   }
@@ -5300,9 +5412,16 @@
     reproducibility: { requiredFields: ['softwareVersion','sourceRecordId','parameters','randomSeed','limitations'] }
   };
   function redactSequenceLikeText(value) {
-    return String(value || '')
+    var text = String(value || '')
       .replace(/\b[ACGTUN]{40,}\b/gi, '[nucleic-acid sequence omitted]')
       .replace(/\b[ACDEFGHIKLMNPQRSTVWY]{40,}\b/gi, '[protein sequence omitted]');
+    // Also redact whitespace/digit-grouped FASTA blocks (e.g., 10-mer blocks separated by spaces/newlines/line numbers).
+    return text.replace(/(?:^|[\s:;])(?:[ACDEFGHIKLMNPQRSTVWY]{5,}(?:[\s\r\n]+\d*[\s\r\n]*[ACDEFGHIKLMNPQRSTVWY]{5,}){3,})(?=$|[\s.,;!?])/g, function (match) {
+      var letters = match.replace(/[^A-Z]/g, '');
+      if (letters.length < 40) return match;
+      var lead = /^\s/.test(match) ? match[0] : (match[0] === ':' || match[0] === ';' ? match[0] + ' ' : '');
+      return lead + (/^[ACGTUN]+$/.test(letters) ? '[nucleic-acid sequence omitted]' : '[protein sequence omitted]');
+    });
   }
 
   var alphaFoldResearchAdapter = null;
@@ -5530,14 +5649,18 @@
     setStatus(annotationStatus, selected.length ? 'Annotations loaded; ' + selected.length + ' feature' + (selected.length === 1 ? '' : 's') + ' overlap the selected residue.' : 'Annotations loaded; none overlap the selected residue.', selected.length ? 'ok' : 'warn');
   }
 
+  var annotationLoadVersion = 0;
   function loadAnnotations() {
     var file = annotationFileInput.files && annotationFileInput.files[0];
+    var loadVersion = ++annotationLoadVersion;
     useAnnotationEvidenceBtn.disabled = true; annotationEvidenceStatement = '';
     setStatus(annotationStatus, 'Reading UniProt JSON...', '');
     readJsonFile(file).then(function (payload) {
+      if (loadVersion !== annotationLoadVersion) return;
       importedAnnotations = normalizeUniProtAnnotations(payload);
       renderAnnotations();
     }).catch(function (error) {
+      if (loadVersion !== annotationLoadVersion) return;
       importedAnnotations = null; annotationPlot.hidden = true; annotationOutput.hidden = true;
       setStatus(annotationStatus, 'Annotation import unavailable: ' + String((error && error.message) || error).slice(0, 150), 'err');
     });
@@ -6144,7 +6267,7 @@
     busy = true;
     guideAiBtn.disabled = true;
     guideAiBtn.textContent = 'Guiding...';
-    askAi(meta, noteInput.value.trim(), 'allocaf-ai-guide-request', { guide: guideContext() }).then(function (res) {
+    askAi(meta, redactSequenceLikeText(noteInput.value.trim()).slice(0, 600), 'allocaf-ai-guide-request', { guide: guideContext() }).then(function (res) {
       var text = res && !res.error && res.text ? String(res.text).trim() : '';
       guideAiOutput.textContent = text || ('AI guide was unavailable. ' + guideFallback());
       guideAiOutput.hidden = false;
@@ -6156,7 +6279,7 @@
   }
 
   function coach() {
-    var note = noteInput.value.trim();
+    var note = redactSequenceLikeText(noteInput.value.trim()).slice(0, 600);
     var meta = current || {
       source: 'No structure loaded',
       name: 'No structure loaded',

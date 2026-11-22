@@ -44,7 +44,7 @@
 
     <nav class="navbar" aria-label="Primary">
         <div class="navbar-inner">
-            <a href="./" class="nav-logo"><i data-lucide="layers"
+            <a href="./" class="nav-logo"><i data-lucide="layers" aria-hidden="true"
                     style="width:28px;height:28px"></i>AlloFlow</a>
             <div class="nav-links" data-site-nav="primary">
                 <a href="tools.html">Find a Tool</a>
@@ -57,7 +57,7 @@
                 <a href="launch.html" class="cta-btn"><i data-lucide="rocket" aria-hidden="true" style="width:16px;height:16px"></i> Launch AlloFlow</a>
             </div>
             <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
-                aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
+                aria-label="Open menu"><i data-lucide="menu" aria-hidden="true" style="width:24px;height:24px"></i></button>
         </div>
     </nav>
 
@@ -198,7 +198,7 @@
                     <p><em>This section describes the pipeline at decision level. Reviewers who want the mechanisms
                         stated precisely, including the keep-best loop, the verifier stack, and the no-egress
                         configuration, should continue to <a href="#appendix-engineering">Appendix A</a>.</em></p>
-                    <div class="paper-flow">PDF / DOCX / PPTX
+                    <div class="paper-flow" role="region" aria-label="Remediation pipeline stages">PDF / DOCX / PPTX
         ↓
 source assessment + text/layout extraction + OCR when needed
         ↓
@@ -497,7 +497,7 @@ human source comparison and usability review</div>
 
     <footer class="footer">
         <div class="footer-inner">
-            <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
+            <div class="footer-logo"><i data-lucide="layers" aria-hidden="true" style="width:22px;height:22px;color:var(--indigo)"></i>
                 AlloFlow</div>
             <p>Public technical record for the document-accessibility workflow.</p>
             <!-- shared footer links:start -->
@@ -513,13 +513,26 @@ human source comparison and usability review</div>
     </footer>
 
     <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})"
-        aria-label="Back to top"><i data-lucide="chevron-up" style="width:20px;height:20px"></i></button>
+        aria-label="Back to top"><i data-lucide="chevron-up" aria-hidden="true" style="width:20px;height:20px"></i></button>
     <script>
         if (window.lucide) lucide.createIcons();
         const backBtn = document.querySelector('.back-to-top');
-        window.addEventListener('scroll', function () {
-            backBtn.classList.toggle('visible', window.scrollY > 500);
-        }, { passive: true });
+        if (backBtn) {
+            window.addEventListener('scroll', function () {
+                backBtn.classList.toggle('visible', window.scrollY > 500);
+            }, { passive: true });
+        }
+        const tocLinks = Array.from(document.querySelectorAll('.paper-toc a[href^="#"]'));
+        const setActiveToc = function (hash) {
+            tocLinks.forEach(function (link) {
+                if (link.getAttribute('href') === hash) link.setAttribute('aria-current', 'location');
+                else link.removeAttribute('aria-current');
+            });
+        };
+        tocLinks.forEach(function (link) {
+            link.addEventListener('click', function () { setActiveToc(link.getAttribute('href')); });
+        });
+        if (window.location.hash) setActiveToc(window.location.hash);
     </script>
 </body>
 

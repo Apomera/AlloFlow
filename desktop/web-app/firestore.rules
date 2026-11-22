@@ -683,6 +683,7 @@ service cloud.firestore {
             && request.resource.data.parentId is string
             && request.resource.data.parentId.size() >= 5
             && request.resource.data.parentId.size() <= 80
+            && request.resource.data.parentId.matches('^[A-Za-z0-9_-]{5,80}$')
             && request.resource.data.parentKind in ['live', 'assignment']
             && (!exists(newParentPath()) || get(newParentPath()).data.hostId == request.auth.uid)
             && request.resource.data.createdAt is timestamp

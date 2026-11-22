@@ -26,6 +26,7 @@ import {
   isOpaqueId,
   jsonError,
   noStoreHeaders,
+  nowSeconds,
   parseBearer,
   randomToken,
   sha256Base64Url,
@@ -360,9 +361,9 @@ async function uploadDocument(
       prefix[3] === 0x46 &&
       prefix[4] === 0x2d;
     if (!pdfSignature) {
-      rejected = true;
-      await env.DOCUMENTS.delete(upload.object_key);
+      await env.DOCUMENTS.delete(upload.object_key).catch(() => undefined);
       await rejectUpload(env, uploadId);
+      rejected = true;
       throw new PilotError("invalid_pdf_signature", 415);
     }
 
@@ -409,7 +410,12 @@ async function downloadDocument(
     throw new PilotError("pilot_not_configured", 503);
   }
 
-  if (!ownedJob.result_key) {
+  if (
+    ownedJob.status !== "completed" ||
+    !ownedJob.result_key ||
+    !ownedJob.output_expires_at ||
+    ownedJob.output_expires_at <= nowSeconds()
+  ) {
     throw new PilotError("result_not_ready", 409);
   }
   const token = parseBearer(request, "Download");

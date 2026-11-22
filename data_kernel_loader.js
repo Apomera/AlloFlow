@@ -226,20 +226,22 @@
     return runtimePromise;
   }
 
+  var workspaceSeq = 0;
+
   function safeQuery(sql) {
     var text = stripCtl(sql == null ? '' : sql).trim().replace(/;+\s*$/, '');
     if (!text) throw new Error('Enter a query first.');
     if (text.length > 5000) throw new Error('Query is limited to 5,000 characters.');
     var stripped = text.replace(/'(?:''|[^'])*'/g, "''");
-    if (/[;]/.test(stripped) || /--/.test(stripped) || /\/\*/.test(stripped) || /\$\$/.test(stripped)) {
+    if (/[;]/.test(stripped) || /--/.test(stripped) || /\/\*/.test(stripped) || /\$[A-Za-z0-9_]*\$/.test(stripped)) {
       throw new Error('Multiple SQL statements or SQL comments are not allowed.');
     }
     if (!/^(select|with|describe|summarize|show)\b/i.test(text)) throw new Error('Only read-only SELECT/WITH/DESCRIBE/SUMMARIZE/SHOW queries are allowed.');
-    // Block direct file-path table-function shorthand (e.g. FROM 'file.csv' / JOIN 'https://...')
-    if (/\b(?:from|join)\s+''/i.test(stripped)) {
+    // Block direct file-path table-function shorthand (e.g. FROM 'file.csv', FROM ['file.csv'], FROM data, 'file.csv')
+    if (/(?:\b(?:from|join)\s*(?:[\[(]\s*)?|,\s*)''/i.test(stripped)) {
       throw new Error('This workspace only permits queries against the local data table.');
     }
-    if (/(\b(attach|call|copy|create|delete|detach|drop|export|import|install|insert|load|pragma|pragma_[a-z0-9_]*|set|update|http[s]?|s3|gs|hf|file|ftp|read_csv|read_csv_auto|read_json|read_json_auto|read_json_objects|read_ndjson|read_ndjson_auto|read_ndjson_objects|read_parquet|read_xlsx|read_objects|parquet_scan|parquet_metadata|parquet_schema|parquet_file_metadata|parquet_kv_metadata|csv_scan|json_scan|sniff_csv|read_text|read_blob|st_read|iceberg_scan|delta_scan|sqlite_scan|sqlite_attach|postgres_scan|mysql_scan|from_substrait|from_substrait_json|duckdb_secrets|duckdb_settings|duckdb_extensions|duckdb_databases|duckdb_tables|duckdb_functions|duckdb_variables|current_setting|getenv|load_aws_credentials|query_table|glob)\b)/i.test(text)) {
+    if (/(\b(attach|call|copy|create|delete|detach|drop|export|import|install|insert|load|pragma|pragma_[a-z0-9_]*|set|update|http[s]?|s3|gs|hf|file|ftp|read_[a-z0-9_]*|[a-z0-9_]*_scan|parquet_[a-z0-9_]*|sniff_csv|st_read|sqlite_attach|from_substrait|from_substrait_json|duckdb_[a-z0-9_]*|which_secret|current_setting|getenv|load_aws_credentials|query_table|glob)\b)/i.test(text)) {
       throw new Error('This workspace only permits queries against the local data table.');
     }
     if (/\b(http[s]?|s3|gs|hf|file|ftp):\/\//i.test(text)) {
@@ -297,7 +299,7 @@
           close: function () { return Promise.resolve(); }
         };
       }
-      var fileName = 'alloflow_data_' + Date.now() + '.csv';
+      var fileName = 'alloflow_data_' + Date.now() + '_' + (++workspaceSeq) + '.csv';
       var connection = null;
       return runtime.db.registerFileText(fileName, rowsToCSV(normalized)).then(function () {
         return runtime.db.connect();
@@ -312,7 +314,9 @@
           normalized: normalized,
           summary: summary,
           query: function (sql) {
-            var statement = safeQuery(sql).replace(/\bdata\b/gi, '"data"');
+            var statement = safeQuery(sql).replace(/'(?:''|[^'])*'|"(?:""|[^"])*"|\bdata\b/gi, function (match) {
+              return /^data$/i.test(match) ? '"data"' : match;
+            });
             return connection.query(statement).then(function (result) {
               return { rows: tableRows(result), query: statement, backend: 'duckdb-wasm' };
             });

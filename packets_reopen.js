@@ -41,6 +41,71 @@
   var isObject = function (value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
   var own = function (object, key) { return Object.prototype.hasOwnProperty.call(object, key); };
   var list = function (value) { return Array.isArray(value) ? value : []; };
+  var MAX_AUDIO_URI_CHARS = 2 * 1024 * 1024;
+  var MAX_IMAGE_URI_CHARS = 600000;
+  var SAFE_AUDIO_URI = /^data:audio\/(?:wav|x-wav|wave|mpeg|mp3);base64,([A-Za-z0-9+/]+={0,2})$/i;
+  var SAFE_IMAGE_URI = /^data:image\/(png|jpeg|svg\+xml);base64,([A-Za-z0-9+/]+={0,2})$/i;
+  function decodeUtf8Base64(b64) {
+    if (typeof atob === 'function') {
+      var bin = atob(b64);
+      if (typeof TextDecoder === 'function') {
+        var bytes = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return new TextDecoder('utf-8').decode(bytes);
+      }
+      return decodeURIComponent(escape(bin));
+    }
+    if (typeof Buffer !== 'undefined') return Buffer.from(b64, 'base64').toString('utf8');
+    return '';
+  }
+  function isSafeSvgText(svg) {
+    var s = typeof svg === 'string' ? svg : '';
+    var stripped = s.replace(/^\s*<\?xml\s[^>]*\?>/i, '').replace(/^(?:\s*<!--[\s\S]*?-->)+/, '').trim();
+    if (!/^\s*<svg[\s>]/i.test(stripped) || !/<\/svg>\s*$/i.test(stripped)) return false;
+    if (s.length > 300000 || s.indexOf('\\') >= 0 || /<!(?:doctype|entity)/i.test(s) || /<\?(?!xml\s)/i.test(s)) return false;
+    var plain = s.replace(/&#x([0-9a-f]+);?/gi, function (_, hex) { return String.fromCharCode(parseInt(hex, 16) & 0xFFFF); })
+      .replace(/&#(\d+);?/g, function (_, dec) { return String.fromCharCode(Number(dec) & 0xFFFF); })
+      .replace(/&(colon|newline|tab);/gi, function (_, name) { return name.toLowerCase() === 'colon' ? ':' : ''; });
+    var packed = plain.replace(/[\x00-\x20]+/g, '');
+    var bare = function (value) { return String(value || '').replace(/[\x00-\x20]+/g, ''); };
+    if (/<\s*(?:[^\s<>"'=/:]+:)?(?:script|foreignObject|iframe|embed|object|audio|video|animate\w*|set|handler|listener)\b/i.test(plain)) return false;
+    if (/[\s"'\/]on[a-z]+\s*=/i.test(plain) || /(?:java|vb|live)script:/i.test(packed) || /xml:base\s*=/i.test(plain)) return false;
+    if (/[\s"'\/]src(?:doc)?\s*=/i.test(plain) || /(?:-(?:webkit|moz)-)?image-set\s*\(/i.test(plain)) return false;
+    var m, href = /(?:[\s"'\/])(?:[^\s<>"'=/:]+:)?href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*))/gi;
+    while ((m = href.exec(plain))) {
+      if (bare(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).charAt(0) !== '#') return false;
+    }
+    var styleRe = /<\s*(?:[^\s<>"'=/:]+:)?style\b(?:"[^"]*"|'[^']*'|[^>"'])*>/gi;
+    while ((m = styleRe.exec(plain))) {
+      if (/\/\s*>$/.test(m[0])) continue;
+      var end = plain.slice(styleRe.lastIndex).search(/<\s*\/\s*(?:[^\s<>"'=/:]+:)?style\s*>/i);
+      var css = end < 0 ? plain.slice(styleRe.lastIndex) : plain.slice(styleRe.lastIndex, styleRe.lastIndex + end);
+      if (end < 0 || /@import|@font-face|@namespace|url\s*\(|(?:-(?:webkit|moz)-)?image-set\s*\(|expression\s*\(/i.test(css)) return false;
+    }
+    var urlRe = /url\s*\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))/gi;
+    while ((m = urlRe.exec(plain))) {
+      if (bare(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).charAt(0) !== '#') return false;
+    }
+    return true;
+  }
+  function isSafeAudioDataUri(uri) {
+    if (typeof uri !== 'string' || uri.length > MAX_AUDIO_URI_CHARS) return false;
+    var m = SAFE_AUDIO_URI.exec(uri);
+    return !!(m && m[1].length % 4 === 0);
+  }
+  function isSafeImageDataUri(uri, customRefusal) {
+    if (typeof uri !== 'string' || uri.length > MAX_IMAGE_URI_CHARS) return false;
+    var m = SAFE_IMAGE_URI.exec(uri);
+    if (!m || m[2].length % 4 !== 0) return false;
+    if (m[1].toLowerCase() === 'svg+xml') {
+      try {
+        var decoded = decodeUtf8Base64(m[2]);
+        if (!decoded || !isSafeSvgText(decoded)) return false;
+        if (typeof customRefusal === 'function' && customRefusal(decoded)) return false;
+      } catch (_) { return false; }
+    }
+    return true;
+  }
   function listed(names) { return names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names.join(''); }
 
   // The words of the file, in the order they were given: each activity keeps that order, and a word that got no
@@ -199,9 +264,9 @@
       out.order = 'mixed';
       if (typeof m.builder.orderSeed === 'number') out.orderSeed = m.builder.orderSeed;
     } else if (Array.isArray(lesson.sequence) && orderKind === 'own') {
-      var keyOf = {};
+      var keyOf = Object.create(null);
       blocks.forEach(function (block) { block.items.forEach(function (item) { if (isObject(item)) keyOf[String(item.id)] = block.activity + '|' + String(item.word || '').toLowerCase(); }); });
-      var keys = lesson.sequence.map(function (id) { return keyOf[String(id)]; }).filter(Boolean);
+      var keys = lesson.sequence.map(function (id) { return own(keyOf, String(id)) ? keyOf[String(id)] : ''; }).filter(Boolean);
       if (keys.length) out.order = keys;
     }
     if (typeof m.learner === 'string') out.learner = typeof e.codeName === 'function' ? e.codeName(m.learner) : m.learner.slice(0, 40);
@@ -226,8 +291,8 @@
         if (typeof word !== 'string' || out.words.indexOf(word) < 0) return;
         var clip = '';
         itemsOf(blocks, null, word).some(function (item) {
-          var uri = typeof item.wordAudio === 'string' && isObject(lesson.audio) ? lesson.audio[item.wordAudio] : '';
-          if (typeof uri === 'string' && /^data:audio\/(?:wav|x-wav|wave|mpeg|mp3);base64,/i.test(uri)) { clip = uri; return true; }
+          var uri = typeof item.wordAudio === 'string' && isObject(lesson.audio) && own(lesson.audio, item.wordAudio) ? lesson.audio[item.wordAudio] : '';
+          if (isSafeAudioDataUri(uri)) { clip = uri; return true; }
           return false;
         });
         if (clip) entry(word).clip = { dataUri: clip, source: 'teacher' }; else lost.recordings.push(word);
@@ -236,8 +301,8 @@
         if (!isObject(row) || typeof row.word !== 'string' || out.words.indexOf(row.word) < 0) return;
         var uri = '';
         itemsOf(blocks, null, row.word).some(function (item) {
-          var at = typeof item.wordPicture === 'string' && isObject(lesson.images) ? lesson.images[item.wordPicture] : '';
-          if (typeof at === 'string' && /^data:image\/(?:png|jpeg|svg\+xml);base64,/.test(at)) { uri = at; return true; }
+          var at = typeof item.wordPicture === 'string' && isObject(lesson.images) && own(lesson.images, item.wordPicture) ? lesson.images[item.wordPicture] : '';
+          if (isSafeImageDataUri(at, e.svgRefusal)) { uri = at; return true; }
           return false;
         });
         var credit = creditOf(row.credit, e.creditLine);
@@ -476,7 +541,7 @@
       return out;
     }
     var block = got.blocks[0], audio = isObject(got.lesson.audio) ? got.lesson.audio : {};
-    var sentences = [], clips = {};
+    var sentences = [], clips = Object.create(null);
     list(block && block.items).forEach(function (item) {
       list(isObject(item) ? item.lines : []).forEach(function (line) {
         var lineText = isObject(line) ? String(line.text || '').replace(/\s+/g, ' ').trim() : '';
@@ -485,7 +550,7 @@
         if (line.para === true) row.para = true;
         sentences.push(row);
         var cid = typeof line.audio === 'string' ? line.audio : '';
-        if (cid && own(audio, cid) && typeof audio[cid] === 'string') clips[lineText] = audio[cid];
+        if (cid && own(audio, cid) && isSafeAudioDataUri(audio[cid])) clips[lineText] = audio[cid];
       });
     });
     if (!sentences.length) { out.kind = 'other'; out.why = 'This read-along file has no sentences.'; return out; }

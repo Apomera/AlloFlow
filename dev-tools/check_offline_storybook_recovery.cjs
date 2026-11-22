@@ -7,8 +7,8 @@ const { pathToFileURL } = require('node:url');
 const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '..');
 const read = name => fs.readFileSync(path.join(root, name), 'utf8');
-const modules = ['karaoke_audio_store_module.js', 'read_aloud_audio_service_module.js', 'read_aloud_artifact_audio_module.js', 'read_aloud_artifact_contract_module.js', 'export_module.js'];
-const html = '<!doctype html><meta charset="utf-8"><title>Disposable Storybook author</title>' + modules.map(name => '<script>' + read(name).replace(/<\/script/gi, '<\\/script') + '</script>').join('');
+const modules = ['karaoke_audio_store_module.js', 'read_aloud_audio_service_module.js', 'read_aloud_artifact_audio_module.js', 'read_aloud_artifact_contract_module.js', 'host_handlers_module.js', 'export_module.js'];
+const html = '<!doctype html><meta charset="utf-8"><title>Disposable Storybook author</title><script>window.React = {};</script>' + modules.map(name => '<script>' + read(name).replace(/<\/script/gi, '<\\/script') + '</script>').join('');
 const host = read('AlloFlowANTI.txt'), hostStart = host.indexOf('const artifactAudioRecoveryRef = useRef(null);');
 const hostWrapper = host.slice(hostStart, host.indexOf('  const _getPrivatePersonaArtifactStorage', hostStart));
 const utils = read('utils_pure_source.jsx'), writeStart = utils.indexOf('const writeVerifiedStorageSnapshot =');
@@ -37,14 +37,25 @@ async function exportFixture(page, failScene, offlineProviders = false, requeste
     const originalCreate = URL.createObjectURL.bind(URL);
     URL.createObjectURL = blob => { const url = originalCreate(blob); urls.set(url, blob); return url; };
     HTMLAnchorElement.prototype.click = function () { downloads.push({ filename: this.download, blob: urls.get(this.href) }); };
-    const prepare = new Function('useRef', 'callTTS', 'storageDB', 'selectedVoice', 'leveledTextLanguage', 'currentUiLanguage', 'voiceSpeed', '_aiConfig', 'GEMINI_MODELS',
-      hostWrapper + '; return { audio: prepareReadAloudArtifactAudio, summary: prepareStorybookSummary };')(() => ({ current: null }), async (text, _voice, _speed, options) => {
-        synthesis.push(text); if (offlineProviders || (failScene && text === 'First scene.')) throw new Error('Simulated network loss');
-        options.onResolvedProfile?.({ provider: 'local', engine: 'kokoro', model: 'fixture-local-fallback' });
-        // Match the host resolver's normal transport, including copying URL
-        // bytes into the checkpoint while retaining its resolved provenance.
-        return URL.createObjectURL(new Blob([Uint8Array.from(atob(wave), char => char.charCodeAt(0))], { type: 'audio/wav' }));
-      }, storage, 'Kore', 'English', 'English', 1, { ttsProvider: 'auto', backend: 'gemini', models: { tts: requestedModel } }, { tts: 'fixture-default-model' });
+    const recoveryRef = { current: null };
+    const callTTS = async (text, _voice, _speed, options) => {
+      synthesis.push(text); if (offlineProviders || (failScene && text === 'First scene.')) throw new Error('Simulated network loss');
+      options.onResolvedProfile?.({ provider: 'local', engine: 'kokoro', model: 'fixture-local-fallback' });
+      // Match the host resolver's normal transport, including copying URL
+      // bytes into the checkpoint while retaining its resolved provenance.
+      return URL.createObjectURL(new Blob([Uint8Array.from(atob(wave), char => char.charCodeAt(0))], { type: 'audio/wav' }));
+    };
+    const hostDeps = {
+      callTTS, storageDB: storage, selectedVoice: 'Kore', leveledTextLanguage: 'English', currentUiLanguage: 'English',
+      voiceSpeed: 1, _aiConfig: { ttsProvider: 'auto', backend: 'gemini', models: { tts: requestedModel } },
+      GEMINI_MODELS: { tts: 'fixture-default-model' }, artifactAudioRecoveryRef: recoveryRef,
+    };
+    let hostHandlersCache = null;
+    const _alloHostHandlers = () => (hostHandlersCache || (hostHandlersCache = window.AlloModules.HostHandlers(hostDeps)));
+    const prepare = new Function('useRef', 'callTTS', 'storageDB', 'selectedVoice', 'leveledTextLanguage', 'currentUiLanguage', 'voiceSpeed', '_aiConfig', 'GEMINI_MODELS', '_alloHostHandlers',
+      hostWrapper + '; return { audio: prepareReadAloudArtifactAudio, summary: prepareStorybookSummary };')(
+      () => recoveryRef, hostDeps.callTTS, hostDeps.storageDB, hostDeps.selectedVoice, hostDeps.leveledTextLanguage,
+      hostDeps.currentUiLanguage, hostDeps.voiceSpeed, hostDeps._aiConfig, hostDeps.GEMINI_MODELS, _alloHostHandlers);
     const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32; const paint = canvas.getContext('2d'); paint.fillStyle = '#15803d'; paint.fillRect(0, 0, 32, 32);
     const escape = text => String(text || '').replace(/[<>&"]/g, char => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[char]));
     window.callGemini = async prompt => { summaries.push(prompt); if (offlineProviders) throw new Error('Summary provider offline'); return 'You completed the journey.'; };

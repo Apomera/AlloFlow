@@ -3,7 +3,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const skillBanks = require('./school_psychologist_5403/item_content.cjs');
+const { applyChoiceOverrides } = require('./school_psychologist_5403/choice_overrides/index.cjs');
+const skillBanks = applyChoiceOverrides(require('./school_psychologist_5403/item_content.cjs'));
 const root = path.resolve(__dirname, '..');
 const reviewedAt = '2026-07-14';
 const expectedCounts = {
@@ -22,6 +23,8 @@ function ensure(value, minimum, suffix) {
 function itemFromSpec(skill, spec, batchNumber, batchPosition) {
   const answerIndex = (batchPosition - 1) % 4;
   const rationale = ensure(spec.rationale, 120, 'This response best connects the referral question, multiple sources of evidence, the student and system context, and the governing school-psychology principle.');
+  const notes = Array.isArray(spec.distractorNotes) ? spec.distractorNotes : [];
+  if (notes.length !== 3 || notes.some((note) => String(note || '').trim().length < 100)) throw new Error('Missing authored distractorNotes for ' + skill.id + ' #' + batchPosition);
   const choices = [];
   const choiceRationales = [];
   let distractorIndex = 0;
@@ -30,9 +33,10 @@ function itemFromSpec(skill, spec, batchNumber, batchPosition) {
       choices.push(spec.correct);
       choiceRationales.push(ensure('Correct. ' + rationale, 100, 'It addresses the complete decision and appropriate follow-up.'));
     } else {
+      const note = String(notes[distractorIndex]).trim();
       const distractor = spec.distractors[distractorIndex];
       choices.push(distractor);
-      choiceRationales.push(ensure('Not the best answer. "' + distractor + '" misses or conflicts with the controlling school-psychology principle. ' + rationale, 100, 'Compare validity, role, equity, safety, implementation, and outcome requirements.'));
+      choiceRationales.push(note);
       distractorIndex += 1;
     }
   }

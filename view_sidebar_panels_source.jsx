@@ -2766,7 +2766,10 @@ function SourceView(props) {
   const format = (kind) => { if (!readOnly && typeof handleFormatText === 'function') handleFormatText(kind, editorRef, text, setInputText); };
   const pasteImage = (event) => {
     const items = event.clipboardData && event.clipboardData.items;
-    if (!items || typeof callGeminiVision !== 'function' || !aiReady) return;
+    const visionUsable = typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function'
+      ? !!window.__alloAiUsable('vision', callGeminiVision)
+      : typeof callGeminiVision === 'function';
+    if (!items || !visionUsable || !aiReady) return;
     for (const item of items) {
       if (!item.type || !item.type.startsWith('image/')) continue;
       event.preventDefault();

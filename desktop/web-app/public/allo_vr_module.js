@@ -18,30 +18,47 @@
  */
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.AlloVR) {
     console.log('[AlloVR] Already loaded, skipping');
     return;
   }
 
   function _clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+  function _isFiniteNum(v) { return typeof v === 'number' && Number.isFinite(v); }
+  function _sanitizeStyleText(raw, fallback) {
+    if (typeof raw !== 'string') return fallback;
+    var s = raw.trim();
+    if (!s || s.length > 1000) return fallback;
+    if (/url\s*\(|expression\s*\(|@import|javascript:|behavior\s*:|-moz-binding/i.test(s)) return fallback;
+    return s;
+  }
 
   // ── isSupported(cb) — cb(true) only when an immersive-vr session can start ──
   function isSupported(cb) {
+    if (typeof cb !== 'function') return;
+    var safeCb = function (val) { try { cb(!!val); } catch (e) {} };
     try {
-      if (navigator.xr && navigator.xr.isSessionSupported) {
-        navigator.xr.isSessionSupported('immersive-vr').then(function (ok) { cb(!!ok); }).catch(function () { cb(false); });
-      } else cb(false);
-    } catch (e) { cb(false); }
+      if (typeof navigator !== 'undefined' && navigator.xr && typeof navigator.xr.isSessionSupported === 'function') {
+        Promise.resolve(navigator.xr.isSessionSupported('immersive-vr')).then(function (ok) { safeCb(!!ok); }).catch(function () { safeCb(false); });
+      } else safeCb(false);
+    } catch (e) { safeCb(false); }
   }
 
   // ── onSupportChange(cb) — cb(bool) now AND whenever a headset connects/unplugs.
   //    Returns an unsubscribe fn. This is what keeps the VR affordance out of the
   //    UI until a device is actually present, and brings it back live on connect.
   function onSupportChange(cb) {
-    isSupported(cb);
-    var handler = function () { isSupported(cb); };
-    try { if (navigator.xr && navigator.xr.addEventListener) navigator.xr.addEventListener('devicechange', handler); } catch (e) {}
-    return function () { try { if (navigator.xr && navigator.xr.removeEventListener) navigator.xr.removeEventListener('devicechange', handler); } catch (e) {} };
+    if (typeof cb !== 'function') return function () {};
+    var active = true;
+    var guarded = function (ok) { if (active) cb(!!ok); };
+    isSupported(guarded);
+    var handler = function () { if (active) isSupported(guarded); };
+    try { if (typeof navigator !== 'undefined' && navigator.xr && navigator.xr.addEventListener) navigator.xr.addEventListener('devicechange', handler); } catch (e) {}
+    return function () {
+      active = false;
+      try { if (typeof navigator !== 'undefined' && navigator.xr && navigator.xr.removeEventListener) navigator.xr.removeEventListener('devicechange', handler); } catch (e) {}
+    };
   }
 
   // ── enable(opts) → { enterVR, destroy, isPresenting, rig } ──
@@ -68,15 +85,23 @@
     // camera lives in a rig we seat/scale. At identity it's transform-neutral, so
     // the tool's existing camera/controls code is untouched in 2D.
     var rig = new THREE.Group(); scene.add(rig); rig.add(camera);
-    var seat = opts.seat || {};
-    var seatScale = (typeof seat.scale === 'number' && seat.scale > 0) ? seat.scale : 1;
-    var seatPos = seat.position || [0, 0, 0];
-    var seatYaw = seat.faceYaw || 0;
+    var seat = (opts.seat && typeof opts.seat === 'object') ? opts.seat : {};
+    var seatScale = (_isFiniteNum(seat.scale) && seat.scale > 0 && seat.scale <= 1000) ? seat.scale : 1;
+    var rawPos = Array.isArray(seat.position) ? seat.position : null;
+    var seatPos = [
+      (rawPos && _isFiniteNum(rawPos[0])) ? rawPos[0] : 0,
+      (rawPos && _isFiniteNum(rawPos[1])) ? rawPos[1] : 0,
+      (rawPos && _isFiniteNum(rawPos[2])) ? rawPos[2] : 0
+    ];
+    var seatYaw = _isFiniteNum(seat.faceYaw) ? seat.faceYaw : 0;
     function seatUser() { rig.scale.setScalar(seatScale); rig.position.set(seatPos[0], seatPos[1], seatPos[2]); rig.rotation.set(0, seatYaw, 0); }
     function unseat() { rig.scale.setScalar(1); rig.position.set(0, 0, 0); rig.rotation.set(0, 0, 0); }
 
-    var bounds = opts.bounds || null;
-    var MOVE_SPEED = (typeof seat.moveSpeed === 'number') ? seat.moveSpeed : 2.4;   // perceived m/s
+    var rawBounds = opts.bounds && typeof opts.bounds === 'object' ? opts.bounds : null;
+    var bounds = (rawBounds && _isFiniteNum(rawBounds.minX) && _isFiniteNum(rawBounds.maxX) && _isFiniteNum(rawBounds.minZ) && _isFiniteNum(rawBounds.maxZ))
+      ? { minX: Math.min(rawBounds.minX, rawBounds.maxX), maxX: Math.max(rawBounds.minX, rawBounds.maxX), minZ: Math.min(rawBounds.minZ, rawBounds.maxZ), maxZ: Math.max(rawBounds.minZ, rawBounds.maxZ) }
+      : null;
+    var MOVE_SPEED = _isFiniteNum(seat.moveSpeed) ? _clamp(seat.moveSpeed, 0.1, 20) : 2.4;   // perceived m/s
     var SNAP_DEG = 30, VIGNETTE_MAX = 0.6, PAD = 0;
     var grabFn = (typeof opts.grab === 'function') ? opts.grab : null;
 
@@ -277,10 +302,10 @@
     }
 
     function enterVR(btn) {
-      if (destroyed || inFlight || presenting || !navigator.xr) return;
+      if (destroyed || inFlight || presenting || typeof navigator === 'undefined' || !navigator.xr || typeof navigator.xr.requestSession !== 'function') return;
       inFlight = true;
       if (btn) btn.disabled = true;
-      navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] })
+      Promise.resolve(navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] }))
         .then(function (session) {
           if (destroyed) {
             inFlight = false;
@@ -294,7 +319,10 @@
           if (typeof opts.pauseLoop === 'function') { try { opts.pauseLoop(); } catch (e) {} }
           presenting = true;
           lastFrameMs = null;
+          var ended = false;
           var endHandler = function () {
+            if (ended) return;
+            ended = true;
             presenting = false;
             inFlight = false;
             lastFrameMs = null;
@@ -304,7 +332,7 @@
             if (typeof opts.onExit === 'function') { try { opts.onExit(); } catch (e) {} }
             if (typeof opts.resumeLoop === 'function') { try { opts.resumeLoop(); } catch (e) {} }
           };
-          session.addEventListener('end', endHandler);
+          try { if (session && typeof session.addEventListener === 'function') session.addEventListener('end', endHandler); } catch (e) {}
           Promise.resolve(renderer.xr.setSession(session)).then(function () {
             inFlight = false;
             if (destroyed) {
@@ -314,6 +342,7 @@
             renderer.setAnimationLoop(vrFrame);
             if (typeof opts.onEnter === 'function') { try { opts.onEnter(); } catch (e) {} }
           }).catch(function () {
+            ended = true;
             presenting = false;
             inFlight = false;
             try { renderer.setAnimationLoop(null); } catch (e) {}
@@ -355,7 +384,7 @@
       try { if (rig && rig.parent) rig.parent.remove(rig); } catch (e) {}
     }
 
-    return { enterVR: enterVR, destroy: destroy, isPresenting: function () { return presenting; }, rig: rig };
+    return Object.freeze({ enterVR: enterVR, destroy: destroy, isPresenting: function () { return presenting; }, rig: rig });
   }
 
   // ── mountButton(container, handle, t, opts) → cleanup fn ──
@@ -363,18 +392,19 @@
   // is present (reactive). For React tools, use onSupportChange for a state flag and
   // render your own button that calls handle.enterVR instead.
   function mountButton(container, handle, t, opts) {
-    opts = opts || {};
-    t = t || function (k, f) { return f || k; };
+    opts = opts && typeof opts === 'object' ? opts : {};
+    t = (typeof t === 'function') ? t : function (k, f) { return f || k; };
+    var DEFAULT_STYLE = 'border:none;background:#4f46e5;color:#fff;border-radius:999px;min-height:44px;min-width:44px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer;';
     var btn = null;
     function make() {
-      if (btn || !container) return;
+      if (btn || !container || typeof container.appendChild !== 'function') return;
       btn = document.createElement('button');
       btn.type = 'button';
       btn.textContent = '🥽 ' + t('vr.enter', 'VR');
       btn.setAttribute('aria-label', t('vr.enter_title', 'Enter VR (needs a headset)'));
       btn.title = t('vr.enter_title', 'Enter VR (needs a headset)');
-      btn.style.cssText = opts.style || 'border:none;background:#4f46e5;color:#fff;border-radius:999px;min-height:44px;min-width:44px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer;';
-      btn.onclick = function () { handle.enterVR(btn); };
+      btn.style.cssText = _sanitizeStyleText(opts.style, DEFAULT_STYLE);
+      btn.onclick = function () { if (handle && typeof handle.enterVR === 'function') handle.enterVR(btn); };
       container.appendChild(btn);
     }
     function remove() { if (btn) { try { if (btn.parentNode) btn.parentNode.removeChild(btn); } catch (e) {} btn = null; } }
@@ -383,12 +413,12 @@
   }
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloVR = {
+  window.AlloModules.AlloVR = Object.freeze({
     version: 'allovr/1',
     isSupported: isSupported,
     onSupportChange: onSupportChange,
     enable: enable,
     mountButton: mountButton
-  };
+  });
   console.log('[AlloVR] Registered (allovr/1 — reusable WebXR layer for three.js STEM scenes)');
 })();

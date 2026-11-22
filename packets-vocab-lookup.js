@@ -158,12 +158,16 @@
     var key = keyOf(found.word), edits;
     try {
       edits = JSON.parse(window.localStorage.getItem(EDITS_KEY) || 'null', function (k, v) {
-        return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+        return k === '__proto__' ? undefined : v;
       });
     } catch (_) { edits = null; }
-    if (!isObject(edits) || edits.v !== 1) edits = { v: 1, words: {}, senses: {} };
-    if (!isObject(edits.words)) edits.words = {};
-    if (!isObject(edits.senses)) edits.senses = {};
+    if (!isObject(edits) || edits.v !== 1) edits = { v: 1, words: Object.create(null), senses: Object.create(null) };
+    var wordsMap = Object.create(null);
+    if (isObject(edits.words)) Object.keys(edits.words).forEach(function (k) { wordsMap[k] = edits.words[k]; });
+    edits.words = wordsMap;
+    var sensesMap = Object.create(null);
+    if (isObject(edits.senses)) Object.keys(edits.senses).forEach(function (k) { sensesMap[k] = edits.senses[k]; });
+    edits.senses = sensesMap;
     var w = isObject(edits.words[key]) ? edits.words[key] : {};
     w.def = m.def;
     if (m.pos) w.pos = m.pos; else delete w.pos;

@@ -125,20 +125,29 @@
   }
 
   function sourceUrls(urls, settings) {
-    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+    if (typeof window !== 'undefined' && (
+      window._isDesktopBundledApp === true ||
+      window.__alloOfflineOnly === true ||
+      window.__ALLO_LOCAL_BOX === true ||
+      !!window.__alloQrStudentMode ||
+      window._alloQrBlocked === true
+    )) {
       return urls.slice(0, 1);
     }
     return settings.allowRemoteFallback ? urls.slice() : urls.slice(0, 1);
   }
 
-  var CDN_SRI_BY_URL = {
+  var CDN_SRI_BY_URL = Object.assign(Object.create(null), {
     'https://cdn.jsdelivr.net/npm/speech-rule-engine@4.1.4/lib/sre.js': 'sha384-RFEHlLg7RolVm5zsqvYvmFpV0NW1O62ov3t5grZyMEdgfyizSH9R2UuIcEFIme6q',
     'https://unpkg.com/speech-rule-engine@4.1.4/lib/sre.js': 'sha384-RFEHlLg7RolVm5zsqvYvmFpV0NW1O62ov3t5grZyMEdgfyizSH9R2UuIcEFIme6q',
     'https://cdn.jsdelivr.net/npm/temml@0.10.34/dist/temml.min.js': 'sha384-ISVKFwYYJAOKPcfkYhBVHjUVYLIiuwCEo/+yfuDsetu3KNavSmw5JEelaaIEItLj',
     'https://unpkg.com/temml@0.10.34/dist/temml.min.js': 'sha384-ISVKFwYYJAOKPcfkYhBVHjUVYLIiuwCEo/+yfuDsetu3KNavSmw5JEelaaIEItLj',
     'https://cdn.jsdelivr.net/npm/temml@0.10.34/dist/Temml-Local.css': 'sha384-xx094ITgUB4ApCj202/MtYiB+v/Be6wjvY5B9h5hUYuLQxcFzQTqe6Sr2kH9OvIJ',
     'https://unpkg.com/temml@0.10.34/dist/Temml-Local.css': 'sha384-xx094ITgUB4ApCj202/MtYiB+v/Be6wjvY5B9h5hUYuLQxcFzQTqe6Sr2kH9OvIJ'
-  };
+  });
+  CDN_SRI_BY_URL[LOCAL_ASSET_BASE + 'sre.js'] = 'sha384-RFEHlLg7RolVm5zsqvYvmFpV0NW1O62ov3t5grZyMEdgfyizSH9R2UuIcEFIme6q';
+  CDN_SRI_BY_URL[LOCAL_ASSET_BASE + 'temml.min.js'] = 'sha384-ISVKFwYYJAOKPcfkYhBVHjUVYLIiuwCEo/+yfuDsetu3KNavSmw5JEelaaIEItLj';
+  CDN_SRI_BY_URL[LOCAL_ASSET_BASE + 'Temml-Local.css'] = 'sha384-g7aaXcm3/LcshOWPkahv28esuvlffTucwvT79MJEaWF96iHphnpUD51XI3zWihUI';
 
   function loadScriptChain(urls, isReady) {
     return new Promise(function (resolve, reject) {
@@ -185,7 +194,14 @@
     return new Promise(function (resolve, reject) {
       (function tryAt(index) {
         if (index >= urls.length) { reject(new Error('all stylesheet sources failed')); return; }
-        var existing = document.querySelector('link[data-allo-temml-css="' + urls[index] + '"]');
+        var existing = null;
+        var existingLinks = document.querySelectorAll('link[data-allo-temml-css]');
+        for (var i = 0; i < existingLinks.length; i += 1) {
+          if (existingLinks[i].getAttribute('data-allo-temml-css') === urls[index]) {
+            existing = existingLinks[i];
+            break;
+          }
+        }
         if (existing) { resolve({ url: urls[index], index: index }); return; }
         var link = document.createElement('link');
         link.rel = 'stylesheet';
@@ -321,6 +337,7 @@
       if (_engineSignature && _engineSignature.indexOf(expectedPrefix) === 0) {
         return window.SRE.engineReady();
       }
+      _engineSignature = null;
       return setupEngineAt(locale, settings, sourceUrls(MATHMAPS_URLS, settings), 0);
     });
   }
@@ -407,7 +424,7 @@
       walk(root);
       var out = root.outerHTML;
       if (!out || !/^<math[\s>]/i.test(out)) return null;
-      if (/<(?:script|img|svg|iframe|object|embed|style|form|a)\b|\bon[a-z]+\s*=|(?:javascript|vbscript)\s*:/i.test(out)) return null;
+      if (/<(?:script|img|svg|iframe|object|embed|style|form|a)\b|<[^>]*\bon[a-z]+\s*=|<[^>]*\b(?:javascript|vbscript)\s*:/i.test(out)) return null;
       return out;
     } catch (_) {
       return null;

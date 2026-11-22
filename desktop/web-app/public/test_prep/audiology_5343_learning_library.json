@@ -222,10 +222,10 @@
           "id": "aud5343-ch-01-check-01",
           "prompt": "What is the primary function of the ossicular chain?",
           "choices": [
-            "They transform acoustic energy and improve impedance matching between air and cochlear fluid.",
-            "They generate neural action potentials.",
-            "They analyze speech meaning.",
-            "They equalize endolymph and perilymph composition."
+            "They transform acoustic energy and improve impedance matching between ear-canal air and cochlear fluid.",
+            "They generate electrical action potentials directly and send them along the eighth nerve to the brainstem.",
+            "They decode complex speech phonology and extract word meaning before signals reach the auditory cortex.",
+            "They pump ions across cochlear membranes to equalize endolymph and perilymph chemical concentrations."
           ],
           "answerIndex": 0,
           "rationale": "The middle-ear system transfers energy from air to fluid through area and lever relationships while preserving a usable acoustic signal.",
@@ -241,10 +241,10 @@
           "id": "aud5343-ch-01-check-02",
           "prompt": "Which cochlear region responds most strongly to high-frequency sound?",
           "choices": [
-            "The apical region near the helicotrema.",
-            "The basal region near the oval window.",
-            "The middle-ear cavity.",
-            "The auditory cortex before the cochlea."
+            "The apical end of the cochlea near the helicotrema.",
+            "The basal end of the cochlea near the oval window.",
+            "The air-filled middle-ear cavity behind the eardrum.",
+            "The primary auditory cortex prior to cochlear tuning."
           ],
           "answerIndex": 1,
           "rationale": "Cochlear tonotopy places high-frequency maxima toward the base and low-frequency maxima toward the apex.",
@@ -260,10 +260,10 @@
           "id": "aud5343-ch-01-check-03",
           "prompt": "What is the major role of outer hair cells?",
           "choices": [
-            "Inner hair cells contract the stapedius muscle.",
-            "Outer hair cells generate the endocochlear potential alone.",
-            "Outer hair cells provide cochlear amplification and improve frequency selectivity.",
-            "Outer hair cells carry all vestibular afferent signals."
+            "They contract the stapedius muscle reflexively to stiffen the ossicular chain during loud sound exposure.",
+            "They generate the resting endocochlear potential independently without contributions from the stria vascularis.",
+            "They provide active cochlear amplification and sharpen frequency selectivity along the basilar membrane.",
+            "They carry nearly all vestibular balance afferents from the semicircular canals into the central brainstem."
           ],
           "answerIndex": 2,
           "rationale": "Outer hair-cell motility enhances basilar-membrane motion at low levels and contributes to sensitivity, compression, and sharp tuning.",
@@ -279,10 +279,10 @@
           "id": "aud5343-ch-01-check-04",
           "prompt": "What is the primary sensory role of inner hair cells?",
           "choices": [
-            "They provide the main active cochlear amplifier.",
-            "They open the Eustachian tube.",
-            "They regulate middle-ear pressure.",
-            "Inner hair cells transduce cochlear motion into neural signals carried by auditory afferents."
+            "They serve as the main electromotile cochlear amplifier that sharpens mechanical basilar-membrane tuning.",
+            "They contract periodically during swallowing to open the Eustachian tube and ventilate the middle ear.",
+            "They regulate middle-ear static air pressure directly across changing ambient atmospheric altitudes.",
+            "They transduce cochlear motion into neural signals carried by most auditory-nerve afferent fibers."
           ],
           "answerIndex": 3,
           "rationale": "Inner hair cells are the principal sensory receptors for hearing and synapse with most type I auditory-nerve fibers.",
@@ -299,9 +299,9 @@
           "prompt": "Which cranial nerve carries cochlear and vestibular information?",
           "choices": [
             "The vestibulocochlear nerve, cranial nerve VIII.",
-            "The optic nerve, cranial nerve II.",
-            "The facial nerve, cranial nerve VII.",
-            "The hypoglossal nerve, cranial nerve XII."
+            "The visual optic nerve, cranial nerve II.",
+            "The motor facial nerve, cranial nerve VII.",
+            "The tongue hypoglossal nerve, cranial nerve XII."
           ],
           "answerIndex": 0,
           "rationale": "Cranial nerve VIII includes cochlear and vestibular divisions and carries sensory information toward the brainstem.",
@@ -417,12 +417,12 @@
           "id": "aud5343-ch-02-check-01",
           "prompt": "What does an auditory threshold represent?",
           "choices": [
-            "The lowest level detected under defined test conditions according to the chosen response criterion.",
-            "The most comfortable listening level.",
-            "The point of acoustic discomfort.",
-            "The level guaranteeing perfect speech recognition."
+            "The presentation level required to guarantee one hundred percent word recognition across noisy environments.",
+            "The lowest signal level detected under defined test conditions using a specified response criterion.",
+            "The most comfortable listening level at which everyday conversation feels effortless and clear to the listener.",
+            "The upper loudness discomfort level where acoustic signals begin to feel uncomfortably intense or painful."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Threshold is an operational estimate influenced by procedure, criterion, attention, noise, transducer, and auditory status.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -435,14 +435,14 @@
         },
         {
           "id": "aud5343-ch-02-check-02",
-          "prompt": "What is loudness recruitment?",
+          "prompt": "Which perceptual phenomenon in outer-hair-cell impairment narrows the usable span between audibility and discomfort?",
           "choices": [
-            "Conductive attenuation.",
-            "Loudness recruitment.",
-            "Diplacusis only.",
-            "Central masking release."
+            "Masking-level release: improved tone detection in noise created by an out-of-phase binaural masker.",
+            "Conductive attenuation: uniform sound reduction caused by middle-ear fluid blocking acoustic transmission.",
+            "Loudness recruitment: unusually rapid loudness growth once sounds exceed an elevated cochlear threshold.",
+            "Binaural diplacusis: pitch mismatch in which one pure tone sounds different in frequency between ears."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Recruitment is abnormally rapid loudness growth often associated with cochlear dysfunction and reduced dynamic range.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -455,14 +455,14 @@
         },
         {
           "id": "aud5343-ch-02-check-03",
-          "prompt": "What is energetic masking?",
+          "prompt": "What is energetic masking in auditory perception?",
           "choices": [
-            "Improved binaural summation.",
-            "Visual capture.",
-            "Masking caused by competing acoustic energy reducing detectability of the target.",
-            "Auditory adaptation with no competing sound."
+            "Gradual neural adaptation to a steady tone presented in quiet with no competing background noise present.",
+            "Enhanced loudness perception that occurs when the same quiet sound is presented simultaneously to both ears.",
+            "Visual dominance in which lipreading or visual location shifts where a listener perceives an auditory event.",
+            "Interference produced when competing acoustic energy overlaps the target’s cochlear excitation pattern."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Masking depends on masker level, spectrum, timing, and overlap with the target’s auditory filters. This answer applies the complete audiologic principle while preserving measurement validity, professional scope, safety, access, individual priorities, and appropriate follow-up.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -477,12 +477,12 @@
           "id": "aud5343-ch-02-check-04",
           "prompt": "What does the critical-band concept describe?",
           "choices": [
-            "Every cochlear location responds equally to all frequencies.",
-            "Masking depends only on visual attention.",
-            "Critical bands are middle-ear muscle contractions.",
-            "The auditory system analyzes sound through frequency-selective filters with limited bandwidth."
+            "The auditory system processes sound through frequency-selective filters of limited spectral bandwidth.",
+            "Every cochlear site responds with equal sensitivity across the entire audible frequency spectrum simultaneously.",
+            "Auditory masking strength depends primarily on visual distraction rather than spectral proximity to the tone.",
+            "Critical bands reflect middle-ear stapedius muscle contractions that selectively dampen narrow tone ranges."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Auditory-filter bandwidth helps explain masking, frequency selectivity, and how noise energy influences detection.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -497,12 +497,12 @@
           "id": "aud5343-ch-02-check-05",
           "prompt": "Which binaural cue is most useful for low-frequency localization?",
           "choices": [
-            "Interaural timing or phase differences.",
-            "Pinna spectral cues only.",
-            "Interaural level differences only at all frequencies.",
-            "Tympanometric peak pressure."
+            "Middle-ear tympanometric peak pressure measured across both canals.",
+            "Interaural timing and phase differences between the two ears.",
+            "High-frequency spectral filtering cues created by the outer pinna.",
+            "Interaural sound-level differences created by strong head shadow."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Low-frequency localization relies strongly on timing information, while high-frequency localization relies more on level differences.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -617,12 +617,12 @@
           "id": "aud5343-ch-03-check-01",
           "prompt": "What is the preferred first step in a hierarchy of controls for hazardous noise?",
           "choices": [
-            "Eliminate or reduce the noise at its source through engineering controls before relying only on personal protection.",
-            "Provide earplugs without examining the source.",
-            "Shorten the hearing test.",
-            "Wait until permanent threshold shift occurs."
+            "Shorten annual workplace hearing screening protocols so employees return to loud workstations more quickly.",
+            "Wait until serial audiograms confirm permanent threshold shifts before recommending workplace noise abatement.",
+            "Eliminate or reduce noise at its source through engineering changes before relying solely on earplugs.",
+            "Distribute disposable foam earplugs across the floor right away without measuring or modifying noisy machines."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Source and engineering controls reduce exposure broadly; administrative controls and well-fitted protection supplement rather than replace them.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -637,12 +637,12 @@
           "id": "aud5343-ch-03-check-02",
           "prompt": "What does a comprehensive hearing-conservation program include?",
           "choices": [
-            "Annual testing without noise control.",
-            "Exposure assessment, engineering and administrative controls, suitable protection and fit, education, audiometric monitoring, documentation, and follow-up.",
-            "Protection distribution without training or fit.",
-            "Counseling only after severe loss."
+            "Bulk distribution of single-size hearing protectors in break rooms without fit verification or staff education.",
+            "Individual audiologic counseling offered after employees develop severe permanent noise-induced hearing loss.",
+            "Annual pure-tone monitoring conducted routinely without implementing workplace noise controls or training.",
+            "Exposure surveys, engineering and work controls, fitted protection, training, audiometry, and follow-up."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Conservation requires coordinated prevention, monitoring, education, protection, and timely response under current occupational rules.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -657,12 +657,12 @@
           "id": "aud5343-ch-03-check-03",
           "prompt": "What is the purpose of ototoxicity monitoring?",
           "choices": [
-            "Guarantee that medication will be stopped.",
-            "Diagnose every medical side effect independently.",
-            "Detect clinically meaningful auditory change early enough to inform medical discussion, communication support, and monitoring decisions.",
-            "Replace informed medical management."
+            "Detect clinically meaningful auditory change early to inform medical discussion, communication support, and follow-up.",
+            "Replace ongoing physician and oncology treatment management with audiology-directed dosing adjustments.",
+            "Ensure that the prescribing physician halts the potentially ototoxic medication immediately upon any shift.",
+            "Diagnose systemic renal or neurological medication side effects independently during audiology appointments."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Ototoxic monitoring documents change using sensitive, repeatable methods and communicates results to the authorized medical team and patient.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -677,12 +677,12 @@
           "id": "aud5343-ch-03-check-04",
           "prompt": "How should hearing protection be selected?",
           "choices": [
-            "Choose the highest labeled attenuation for everyone.",
-            "Assume one earplug fits every canal.",
-            "Use protection instead of addressing excessive noise.",
-            "Match attenuation, fit, comfort, communication needs, compatibility, and measured exposure, and verify correct use."
+            "Use personal hearing protection in place of evaluating excessive noise levels or feasible engineering controls.",
+            "Match attenuation, fit, comfort, communication needs, gear compatibility, and measured exposure, then verify use.",
+            "Issue the highest labeled attenuation protector to every employee so maximum noise reduction applies universally.",
+            "Purchase one universal earplug style assuming standard canal sizes fit workers across the facility comfortably."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Over- or underprotection, poor fit, inconsistent use, and communication demands affect real-world protection and safety.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -697,12 +697,12 @@
           "id": "aud5343-ch-03-check-05",
           "prompt": "Which counseling message best supports recreational hearing safety?",
           "choices": [
-            "Manage level, duration, distance, recovery time, monitoring, and well-fitted protection while preserving communication and music goals.",
-            "Any sound exposure is equally harmful.",
-            "Temporary symptoms can always be ignored.",
-            "Only occupational noise can affect hearing."
+            "Reassure musicians that brief post-concert ringing or dullness can be disregarded once quiet returns.",
+            "Explain that only industrial occupational noise damages hearing while recreational music remains benign.",
+            "Manage level, duration, distance, recovery, monitoring, and fitted protection while preserving music goals.",
+            "Advise that every sound exposure carries identical cochlear hazard regardless of intensity level or duration."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Risk reflects exposure level, duration, spectrum, susceptibility, recovery, and repeated dose; individualized harm reduction supports adherence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -817,12 +817,12 @@
           "id": "aud5343-ch-04-check-01",
           "prompt": "What does a hearing screening result establish?",
           "choices": [
-            "The child needs timely follow-up; screening alone does not diagnose type, degree, or cause of hearing loss.",
-            "The child has confirmed sensorineural loss.",
-            "The child automatically needs amplification.",
-            "No further action is needed."
+            "The failed screening result confirms permanent sensorineural hearing loss in the tested classroom ear.",
+            "The screening result establishes that the student requires immediate fitting with personal amplification.",
+            "No clinical follow-up is necessary unless the teacher notices severe academic delays later in the term.",
+            "The child needs timely follow-up; screening alone cannot diagnose hearing-loss type, degree, or cause."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Screening identifies risk under defined conditions and requires clear referral, tracking, and diagnostic follow-up.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -837,12 +837,12 @@
           "id": "aud5343-ch-04-check-02",
           "prompt": "Why do newborn programs use OAE and/or automated ABR technologies?",
           "choices": [
-            "They directly measure language comprehension.",
-            "They can estimate auditory-system response without requiring a conditioned behavioral response.",
-            "They determine exact hearing-aid settings.",
-            "They eliminate the need for diagnostic follow-up."
+            "They estimate physiologic auditory-system responses without requiring a conditioned behavioral response.",
+            "They determine exact prescriptive hearing-aid gain targets across speech frequencies for immediate fitting.",
+            "They eliminate the need for diagnostic audiologic evaluation whenever an infant receives a refer outcome.",
+            "They directly measure early receptive language comprehension and emergent phonetic speech recognition."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Physiologic screening supports early identification, but pass or refer outcomes remain screening results and risk factors can require surveillance.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -857,12 +857,12 @@
           "id": "aud5343-ch-04-check-03",
           "prompt": "What should happen after an infant does not pass a rescreen?",
           "choices": [
-            "Wait until speech delay appears.",
-            "Fit a device without diagnosis.",
-            "Arrange prompt diagnostic audiologic evaluation and coordinated EHDI follow-up rather than repeating screening indefinitely.",
-            "Assume middle-ear fluid is the only possible cause."
+            "Fit bilateral hearing aids right away based on the failed newborn screen so auditory stimulation begins early.",
+            "Arrange prompt diagnostic audiologic evaluation and coordinated EHDI follow-up instead of endless rescreening.",
+            "Assume transient middle-ear fluid explains the refer result and schedule another routine screening next year.",
+            "Wait until the toddler shows observable speech or vocabulary delays before scheduling diagnostic audiology."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Timely diagnostic evaluation reduces loss to follow-up and supports informed family-centered intervention when indicated.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -877,12 +877,12 @@
           "id": "aud5343-ch-04-check-04",
           "prompt": "Which condition is essential for valid school pure-tone screening?",
           "choices": [
-            "Raise every screening level without documentation.",
-            "Mark all students as passing.",
-            "Ignore room noise because headphones block all sound.",
-            "Verify equipment and ambient-noise suitability and modify or relocate testing before interpreting results."
+            "Record students tested in the noisy room as passing to prevent inflating unnecessary clinic referral rates.",
+            "Proceed unchanged because standard supra-aural screening headphones block low-frequency ambient room noise fully.",
+            "Verify equipment calibration and ambient-noise limits and modify or relocate testing before interpreting data.",
+            "Raise every pure-tone screening intensity level informally without documentation so tones cut through room noise."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Ambient noise can mask screening signals and increase false referrals; quality control is essential.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -897,12 +897,12 @@
           "id": "aud5343-ch-04-check-05",
           "prompt": "Why can a child who passed newborn screening still need later surveillance?",
           "choices": [
-            "Some risk factors and conditions can produce later change, so developmental, medical, family, and school concerns may warrant monitoring or referral.",
-            "A newborn pass guarantees lifelong normal hearing.",
-            "Only congenital loss affects language.",
-            "School concerns should be ignored after a newborn pass."
+            "Passing a physiologic newborn hearing screen confirms lifelong normal peripheral hearing sensitivity.",
+            "Only congenital hearing loss present at birth influences speech, literacy, and classroom academic access.",
+            "Caregiver or teacher listening concerns can be set aside whenever hospital newborn records show a pass.",
+            "Risk factors can cause delayed shifts, so medical, family, or school concerns warrant follow-up."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Hearing can change after birth, and ongoing surveillance connects risk factors and functional concern with timely audiologic assessment.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -1017,10 +1017,10 @@
           "id": "aud5343-ch-05-check-01",
           "prompt": "What is the main purpose of comparing air- and bone-conduction thresholds?",
           "choices": [
-            "To help identify conductive, sensorineural, or mixed components of hearing loss.",
-            "To diagnose language disorder.",
-            "To measure vestibulo-ocular reflex gain.",
-            "To verify hearing-aid output."
+            "To differentiate conductive, sensorineural, and mixed components of a patient’s hearing loss.",
+            "To diagnose an expressive language disorder independently during a routine audiologic appointment.",
+            "To quantify vestibulo-ocular reflex gain across rapid head-impulse balance movements accurately.",
+            "To verify real-ear hearing-aid output targets inside the ear canal across soft and loud speech."
           ],
           "answerIndex": 0,
           "rationale": "Air–bone relationships contribute to type classification when masking, reliability, transducer, and physiologic evidence are considered.",
@@ -1037,10 +1037,10 @@
           "id": "aud5343-ch-05-check-02",
           "prompt": "When is masking required in threshold assessment?",
           "choices": [
-            "Increase signal duration only.",
-            "Apply appropriate masking when cross-hearing is possible so the response can be assigned to the test ear.",
-            "Assume ear-specific results without checking interaural attenuation.",
-            "Mask the test ear instead."
+            "Increase the pure-tone signal duration slightly so the test ear has longer to detect the tone clearly.",
+            "Apply contralateral masking whenever cross-hearing is possible so thresholds reflect the test ear.",
+            "Accept unmasked thresholds as ear specific whenever the patient points toward the test-ear earphone.",
+            "Deliver narrowband masking noise directly into the test ear to sharpen frequency discrimination."
           ],
           "answerIndex": 1,
           "rationale": "Masking prevents the non-test ear from responding and must be selected and monitored according to signal, transducer, thresholds, and plateau procedures.",
@@ -1057,10 +1057,10 @@
           "id": "aud5343-ch-05-check-03",
           "prompt": "How should speech-recognition threshold relate to pure-tone results?",
           "choices": [
-            "Average the values and stop.",
-            "Assume the audiometer is always correct.",
-            "Investigate instructions, reliability, language, stimulus familiarity, calibration, and test validity rather than accepting the discrepancy automatically.",
-            "Diagnose retrocochlear disorder from discrepancy alone."
+            "Average the discordant speech and pure-tone values together and finalize the audiogram without retesting.",
+            "Assume the calibrated audiometer rules out error and accept the discordant values as an unusual profile.",
+            "Check instructions, reliability, language, familiarity, calibration, and test validity instead of accepting mismatch.",
+            "Diagnose a retrocochlear lesion directly from the better speech threshold without cross-check measures."
           ],
           "answerIndex": 2,
           "rationale": "Cross-checks identify inconsistency and guide retest or modification; no single discrepancy supplies a complete diagnosis.",
@@ -1077,10 +1077,10 @@
           "id": "aud5343-ch-05-check-04",
           "prompt": "What does a word-recognition score measure?",
           "choices": [
-            "Everyday communication ability in all environments.",
-            "Middle-ear pressure.",
-            "Cochlear microphonic amplitude.",
-            "Recognition of the speech materials under the specified presentation and scoring conditions."
+            "Everyday real-world communication success across reverberant rooms, background talkers, and visual cues.",
+            "Static acoustic admittance and middle-ear air pressure measured across the tympanic membrane in quiet.",
+            "Electrical cochlear microphonic amplitude generated by outer hair cells in response to acoustic clicks.",
+            "Spoken-item identification for those specific materials under defined presentation and scoring rules."
           ],
           "answerIndex": 3,
           "rationale": "Word recognition depends on level, materials, language, audibility, presentation mode, cognition, and scoring and is not identical to real-world performance.",
@@ -1095,12 +1095,12 @@
         },
         {
           "id": "aud5343-ch-05-check-05",
-          "prompt": "Why include speech-in-noise testing?",
+          "prompt": "When an adult struggles in busy restaurants despite strong quiet word scores, which clinical step is most appropriate?",
           "choices": [
-            "Use an appropriate speech-in-noise measure and functional report to characterize suprathreshold communication demands.",
-            "Repeat tympanometry only.",
-            "Conclude there is no difficulty.",
-            "Use bone conduction as a communication outcome."
+            "Add a validated speech-in-noise measure and functional report to capture suprathreshold listening demands.",
+            "Repeat standard 226 Hz tympanometry alone to confirm whether middle-ear mobility explains restaurant trouble.",
+            "Reassure the client that strong quiet word scores prove no clinically meaningful listening difficulty exists.",
+            "Use bone-conduction pure-tone thresholds as the primary outcome measure for everyday noisy communication."
           ],
           "answerIndex": 0,
           "rationale": "Speech-in-noise testing samples complex listening more directly than quiet word recognition and can guide counseling and technology.",
@@ -1217,12 +1217,12 @@
           "id": "aud5343-ch-06-check-01",
           "prompt": "A flat tympanogram with a large ear-canal volume most strongly suggests what?",
           "choices": [
-            "A patent tympanostomy tube or tympanic-membrane perforation, interpreted with otoscopy and history.",
-            "Normal middle-ear mobility.",
-            "Cochlear synaptopathy.",
-            "Central auditory disorder."
+            "A central auditory processing disorder affecting binaural timing pathways within the upper brainstem.",
+            "A patent tympanostomy tube or eardrum perforation, interpreted with otoscopy and clinical history.",
+            "Typical healthy middle-ear mobility with intact ossicles and well-ventilated Eustachian-tube pressure.",
+            "Isolated cochlear synaptopathy affecting inner-hair-cell ribbon synapses behind an intact eardrum."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "A flat tracing requires ear-canal volume and otoscopic context; large volume can reflect an open path through the tympanic membrane.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -1237,12 +1237,12 @@
           "id": "aud5343-ch-06-check-02",
           "prompt": "A flat tympanogram with normal ear-canal volume is commonly associated with what?",
           "choices": [
-            "Normal ossicular mobility.",
-            "Markedly reduced middle-ear mobility such as middle-ear effusion, confirmed through the full evaluation.",
-            "High-frequency sensorineural loss only.",
-            "Vestibular migraine."
+            "Episodic vestibular migraine producing balance spells without altering mechanical middle-ear stiffness.",
+            "Healthy ossicular-chain mobility with normal compliance across positive and negative ear-canal pressures.",
+            "Markedly reduced middle-ear mobility such as effusion, confirmed through the complete evaluation.",
+            "An isolated high-frequency sensorineural hearing loss caused strictly by outer-hair-cell noise exposure."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "A flat normal-volume tracing often reflects fluid or other reduced mobility, but diagnosis integrates otoscopy, history, and additional findings.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -1257,12 +1257,12 @@
           "id": "aud5343-ch-06-check-03",
           "prompt": "What does markedly negative tympanometric peak pressure suggest?",
           "choices": [
-            "A complete cochlear dead region.",
-            "Normal vestibular function.",
-            "Negative middle-ear pressure consistent with Eustachian-tube dysfunction, interpreted in context.",
-            "Auditory neuropathy."
+            "Auditory neuropathy spectrum disorder marked by absent neural synchrony despite intact outer hair cells.",
+            "A complete high-frequency cochlear dead region where inner hair cells no longer transduce acoustic energy.",
+            "Healthy bilateral vestibular balance function verified across both semicircular canals and otolith organs.",
+            "Subatmospheric middle-ear air status consistent with Eustachian-tube dysfunction, read in context."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Peak pressure estimates the pressure at greatest admittance and can suggest pressure dysfunction without independently defining disease.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -1277,12 +1277,12 @@
           "id": "aud5343-ch-06-check-04",
           "prompt": "What do present otoacoustic emissions indicate?",
           "choices": [
-            "Normal hearing is guaranteed.",
-            "Auditory-nerve function is normal.",
-            "Middle-ear status is irrelevant.",
-            "Outer-hair-cell function is sufficiently intact under the test conditions, though hearing and neural function are not fully established."
+            "Outer-hair-cell function is intact under test conditions, though hearing and neural status stay unconfirmed.",
+            "Normal peripheral and central hearing sensitivity is guaranteed across every speech frequency tested.",
+            "Auditory-nerve neural synchrony and central brainstem conduction pathways are confirmed to be intact.",
+            "Middle-ear ventilation and ossicular mobility are irrelevant because emissions bypass the tympanic membrane."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "OAEs depend on cochlear and middle-ear transmission and do not directly measure perception or the full neural pathway.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -1297,12 +1297,12 @@
           "id": "aud5343-ch-06-check-05",
           "prompt": "Which ABR component is commonly used for threshold estimation?",
           "choices": [
-            "A repeatable wave-V response or its frequency-specific equivalent.",
-            "Tympanometric peak pressure.",
-            "The stapedius reflex only.",
-            "A behavioral word-recognition score."
+            "Behavioral monosyllabic word-recognition accuracy recorded in quiet sound booths.",
+            "A repeatable wave-V response or its frequency-specific tone-burst equivalent.",
+            "Tympanometric peak air pressure measured across an ear-canal pressure sweep.",
+            "Ipsilateral stapedius acoustic-reflex admittance shift evoked by loud pure tones."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Wave V is relatively robust near threshold, but estimated behavioral sensitivity depends on stimulus, correction, state, noise, and protocol.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -1417,12 +1417,12 @@
           "id": "aud5343-ch-07-check-01",
           "prompt": "What does caloric testing primarily compare?",
           "choices": [
+            "Vertical anterior and posterior semicircular-canal function isolated without stimulating the horizontal canal.",
+            "Cortical auditory speech-recognition performance measured during competing background conversation.",
             "Relative low-frequency horizontal semicircular-canal and superior vestibular-nerve function between ears.",
-            "High-frequency cochlear thresholds.",
-            "Vertical canal function only.",
-            "Cortical speech recognition."
+            "High-frequency cochlear outer-hair-cell hearing thresholds compared across both ears in quiet booths."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Caloric stimulation provides a low-frequency, largely ear-specific vestibular comparison and is one part of a broader balance evaluation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -1437,12 +1437,12 @@
           "id": "aud5343-ch-07-check-02",
           "prompt": "What does the video head impulse test assess?",
           "choices": [
-            "Middle-ear admittance.",
-            "High-frequency vestibulo-ocular reflex function for the stimulated semicircular-canal planes.",
-            "Low-frequency pure-tone thresholds.",
-            "Language comprehension."
+            "Low-frequency pure-tone behavioral hearing thresholds measured through insert earphones in quiet.",
+            "Receptive spoken-language comprehension across multi-step classroom directions in background noise.",
+            "Static middle-ear acoustic admittance and tympanic-membrane mobility across ear-canal pressures.",
+            "High-frequency vestibulo-ocular reflex gain and catch-up saccades across stimulated semicircular-canal planes."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "vHIT measures eye responses during rapid head movement and can identify reduced gain and corrective saccades.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -1457,12 +1457,12 @@
           "id": "aud5343-ch-07-check-03",
           "prompt": "What do vestibular evoked myogenic potentials assess?",
           "choices": [
-            "They directly measure cochlear word recognition.",
-            "They diagnose every cause of dizziness.",
-            "Cervical and ocular VEMPs sample saccular/inferior-nerve and utricular/superior-nerve pathways respectively, within protocol limits.",
-            "They replace positional testing."
+            "Cervical and ocular VEMPs sample saccular/inferior and utricular/superior nerve pathways within limits.",
+            "They replace Dix-Hallpike and positional maneuvers when evaluating brief positional vertigo episodes.",
+            "They directly quantify cochlear word-recognition clarity across quiet and noisy listening conditions.",
+            "They establish a single definitive diagnosis for every peripheral and central cause of patient dizziness."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "VEMPs are stimulus- and muscle-dependent pathway measures whose interpretation considers age, activation, symmetry, and other vestibular findings.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -1475,14 +1475,14 @@
         },
         {
           "id": "aud5343-ch-07-check-04",
-          "prompt": "Which finding is most characteristic of posterior-canal BPPV?",
+          "prompt": "Brief spinning episodes with torsional upbeat eye movements during Dix-Hallpike testing most strongly indicate which condition?",
           "choices": [
-            "A stable bilateral conductive loss.",
-            "A language-processing disorder.",
-            "Normal response by definition.",
-            "Benign paroxysmal positional vertigo affecting the canal indicated by the nystagmus pattern."
+            "A normal physiological positional response expected routinely during healthy Dix-Hallpike maneuvers.",
+            "Benign paroxysmal positional vertigo affecting the canal indicated by the nystagmus pattern.",
+            "A stable bilateral conductive hearing loss originating from chronic ossicular-chain fixation.",
+            "A developmental receptive-language processing disorder affecting spoken classroom comprehension."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "BPPV diagnosis uses characteristic position-evoked nystagmus and history while atypical or neurologic signs require appropriate referral.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -1495,14 +1495,14 @@
         },
         {
           "id": "aud5343-ch-07-check-05",
-          "prompt": "Which dizziness finding warrants urgent medical evaluation?",
+          "prompt": "During a balance evaluation, a patient develops acute focal neurological red flags with sudden ataxia. What is the best next step?",
           "choices": [
+            "Teach unsupervised home habituation balance exercises right away to help calm the acute dizziness.",
+            "Treat the sudden imbalance as routine peripheral BPPV and schedule a standard follow-up visit later.",
             "Stop routine testing as needed and activate urgent medical or emergency referral under current protocol.",
-            "Continue the full battery before communicating.",
-            "Provide unsupervised vestibular exercise.",
-            "Assume peripheral BPPV."
+            "Complete every remaining vestibular subtest first so physicians receive a full written summary afterward."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "New neurologic, cardiovascular, or other emergency signs take priority over completing audiologic or vestibular testing.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -1620,14 +1620,14 @@
       "knowledgeChecks": [
         {
           "id": "aud5343-ch-08-check-01",
-          "prompt": "Which pattern supports conductive hearing loss?",
+          "prompt": "Elevated air-conduction thresholds with normal bone-conduction thresholds and a wide air-bone gap point to which finding?",
           "choices": [
-            "A conductive component, integrated with immittance, otoscopy, masking, and history.",
-            "Pure sensorineural loss.",
-            "Normal hearing by definition.",
-            "Central auditory disorder only."
+            "A pure cochlear sensorineural hearing loss with normal middle-ear acoustic energy transmission.",
+            "Clinically normal peripheral hearing sensitivity across both outer, middle, and inner ear pathways.",
+            "An isolated central auditory brainstem processing disorder with intact peripheral thresholds.",
+            "A conductive component, integrated with immittance, otoscopy, masking, and medical history."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "A valid air–bone gap suggests impaired outer- or middle-ear transmission, but the complete test battery identifies reliability and likely site.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -1641,14 +1641,14 @@
         },
         {
           "id": "aud5343-ch-08-check-02",
-          "prompt": "Which pattern supports mixed hearing loss?",
+          "prompt": "Elevated bone-conduction thresholds accompanied by even poorer air-conduction thresholds and a clear air-bone gap indicate which condition?",
           "choices": [
-            "Conductive loss only.",
-            "Mixed hearing loss with both conductive and sensorineural components.",
-            "Normal cochlear sensitivity.",
-            "A vestibular disorder only."
+            "Mixed hearing loss combining both conductive and sensorineural components.",
+            "Normal inner-ear cochlear reserve paired with typical healthy middle-ear mobility.",
+            "An isolated peripheral vestibular balance disorder without auditory involvement.",
+            "Pure conductive hearing loss with normal cochlear bone-conduction thresholds."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Mixed loss combines impaired air conduction with elevated bone thresholds and requires cross-checking of masking and middle-ear evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -1664,12 +1664,12 @@
           "id": "aud5343-ch-08-check-03",
           "prompt": "What is the safest response to sudden unilateral sensorineural hearing change?",
           "choices": [
-            "Wait several months for routine retest.",
-            "Fit amplification before referral.",
-            "Arrange urgent medical evaluation according to current sudden-hearing-loss protocols while documenting audiologic findings.",
-            "Assume cerumen without examination."
+            "Fit a unilateral hearing aid immediately to restore audibility before initiating physician evaluation.",
+            "Arrange urgent medical evaluation under sudden-hearing-loss protocols while documenting audiologic findings.",
+            "Assume impacted earwax explains the rapid drop without performing otoscopy or medical referral.",
+            "Schedule a routine repeat audiogram several months later to check whether the sudden drop resolves naturally."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Sudden sensorineural change is time sensitive and requires prompt medical coordination rather than delayed routine management.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -1683,14 +1683,14 @@
         },
         {
           "id": "aud5343-ch-08-check-04",
-          "prompt": "Which pattern raises concern for auditory neuropathy spectrum disorder?",
+          "prompt": "Present otoacoustic emissions paired with absent or severely abnormal brainstem responses and absent acoustic reflexes point toward which condition?",
           "choices": [
-            "A guaranteed normal speech outcome.",
-            "Pure conductive loss only.",
-            "Normal neural timing.",
-            "Auditory neuropathy spectrum disorder, interpreted with middle-ear, behavioral, neurologic, and repeat evidence."
+            "An isolated conductive middle-ear effusion with normal retrocochlear neural timing and synchrony.",
+            "Healthy auditory-nerve temporal synchrony confirmed by the robust otoacoustic emission response alone.",
+            "Auditory neuropathy spectrum disorder, read with immittance, behavioral, neurologic, and repeat data.",
+            "A predictable, guaranteed typical spoken-language outcome requiring minimal ongoing audiologic follow-up."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "ANSD reflects disrupted neural synchrony with preserved evidence of cochlear receptor activity in some cases and variable perception.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -1706,12 +1706,12 @@
           "id": "aud5343-ch-08-check-05",
           "prompt": "What makes pediatric diagnostic conclusions developmentally appropriate?",
           "choices": [
-            "Integrate age-appropriate behavior, ABR, OAE, immittance, risk history, observation, and repeated cross-checks rather than waiting for adult responses.",
-            "Use adult word lists.",
-            "Rely on one parent observation.",
-            "Delay all conclusions until school age."
+            "Administer adult open-set monosyllabic word lists to estimate infant frequency-specific hearing sensitivity.",
+            "Base final pediatric diagnostic amplification decisions on a single informal caregiver sound observation.",
+            "Postpone all diagnostic conclusions and intervention planning until school-age hand-raise testing is possible.",
+            "Integrate age-fit behavior, ABR, OAE, immittance, history, observation, and cross-checks rather than waiting."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Pediatric assessment uses complementary methods matched to developmental ability and updates estimates as behavioral information grows.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -1827,10 +1827,10 @@
           "id": "aud5343-ch-09-check-01",
           "prompt": "What should drive hearing-aid candidacy and selection?",
           "choices": [
-            "Integrate audiologic findings with communication goals, environments, health, dexterity, cognition, preferences, access, support, and informed choice.",
-            "Choose the newest model automatically.",
-            "Use threshold degree alone.",
-            "Select based on clinician commission."
+            "Integrate audiologic data with goals, settings, health, dexterity, cognition, access, and informed choice.",
+            "Recommend the newest flagship model automatically because latest features outperform prior designs for everyone.",
+            "Select the device style strictly from pure-tone threshold degree without reviewing dexterity or daily settings.",
+            "Guide hearing-aid recommendations around whichever manufacturer offers the clinic the highest sales margin."
           ],
           "answerIndex": 0,
           "rationale": "Person-centered selection combines auditory needs, real contexts, device features, evidence, resources, and individual priorities.",
@@ -1847,10 +1847,10 @@
           "id": "aud5343-ch-09-check-02",
           "prompt": "What is the purpose of prescriptive fitting targets?",
           "choices": [
-            "Guarantee perfect speech understanding.",
-            "Estimate frequency-specific gain and output that support audibility while controlling loudness, then verify and individualize.",
-            "Replace real-ear verification.",
-            "Set identical gain for all users."
+            "Guarantee effortless one-hundred-percent speech recognition across crowded restaurants upon initial fitting.",
+            "Estimate frequency-specific gain and safe output for audibility and comfort, then verify and individualize.",
+            "Replace probe-microphone real-ear verification because published formulas already predict ear-canal output.",
+            "Program identical uniform amplification gain across all patients who share the same pure-tone average."
           ],
           "answerIndex": 1,
           "rationale": "Prescriptive targets provide an evidence-based starting point whose match and comfort must be measured and adjusted.",
@@ -1867,10 +1867,10 @@
           "id": "aud5343-ch-09-check-03",
           "prompt": "Why is real-ear measurement important?",
           "choices": [
-            "Assume the coupler prediction equals the individual ear.",
-            "Use sound-field thresholds as the only verification.",
-            "Measure output in the individual ear and compare aided response with prescriptive targets and safe output limits.",
-            "Skip verification when the client likes the device."
+            "Accept the manufacturer’s first-fit screen curve as accurate because software models individual canals closely.",
+            "Use aided sound-field pure-tone thresholds alone as the sole technical verification of hearing-aid output.",
+            "Measure probe-tube output in the ear canal and compare aided gain to prescriptive targets and safety limits.",
+            "Skip probe-microphone verification whenever the client reports that voices sound pleasant during fitting."
           ],
           "answerIndex": 2,
           "rationale": "Ear acoustics vary, so probe-microphone verification directly assesses aided output near the tympanic membrane.",
@@ -1887,10 +1887,10 @@
           "id": "aud5343-ch-09-check-04",
           "prompt": "What is the difference between verification and validation?",
           "choices": [
-            "Verification is a questionnaire and validation is calibration.",
-            "They are identical terms.",
-            "Validation replaces output safety checks.",
-            "Verification measures whether the device meets technical targets; validation evaluates benefit, satisfaction, function, and goals in real life."
+            "Verification is a self-report questionnaire, whereas validation measures electroacoustic ANSI calibration.",
+            "Verification and validation are interchangeable labels describing routine real-ear probe-microphone curves.",
+            "Client validation surveys replace technical real-ear output and maximum-power safety verification checks.",
+            "Verification checks technical targets; validation evaluates real-life benefit, function, and goals."
           ],
           "answerIndex": 3,
           "rationale": "Both are required: technical performance does not guarantee meaningful benefit, and self-report does not prove safe target match.",
@@ -1907,10 +1907,10 @@
           "id": "aud5343-ch-09-check-05",
           "prompt": "What is wide-dynamic-range compression intended to do?",
           "choices": [
-            "Place a broad range of environmental sounds within the listener’s reduced usable dynamic range while limiting excessive output.",
-            "Make every input equally loud.",
-            "Eliminate background noise completely.",
-            "Restore normal cochlear physiology."
+            "Pack broad environmental sound levels into a narrowed residual hearing span while capping loud peaks.",
+            "Amplify soft, average, and loud inputs to the exact same loudness so volume stays constant everywhere.",
+            "Eliminate competing background room noise completely before any speech reaches the user’s ear canal.",
+            "Restore healthy cochlear outer-hair-cell mechanics permanently through sustained acoustic conditioning."
           ],
           "answerIndex": 0,
           "rationale": "Compression maps input levels into a restricted dynamic range; settings affect audibility, comfort, sound quality, and cues.",
@@ -2032,12 +2032,12 @@
           "id": "aud5343-ch-10-check-01",
           "prompt": "What is the basic mechanism of a cochlear implant?",
           "choices": [
-            "It converts sound into electrical stimulation delivered to the auditory nerve through an intracochlear electrode array.",
-            "It amplifies sound through intact outer hair cells only.",
-            "It repairs the ossicular chain.",
-            "It stimulates the vestibular nerve for speech."
+            "It delivers electrical current directly into the semicircular canals to improve spoken speech clarity.",
+            "It converts sound into coded electrical pulses stimulating the auditory nerve via an intracochlear array.",
+            "It amplifies acoustic sound waves loudly so intact outer hair cells can drive stronger mechanical waves.",
+            "It reconstructs damaged middle-ear ossicles surgically to restore air-to-fluid acoustic impedance matching."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "A cochlear implant bypasses much of damaged cochlear transduction and directly stimulates auditory-nerve fibers with encoded signals.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -2053,12 +2053,12 @@
           "id": "aud5343-ch-10-check-02",
           "prompt": "What should cochlear-implant candidacy include?",
           "choices": [
-            "Promise candidacy from the audiogram alone.",
-            "Refer for comprehensive implant-team evaluation of audiologic benefit, communication goals, medical factors, support, expectations, and informed preferences.",
-            "Stop all communication support while waiting.",
-            "Assume age alone excludes evaluation."
+            "Inform older adults that advanced chronological age alone disqualifies them from cochlear-implant candidacy.",
+            "Promise surgical candidacy right away based on the client’s unaided pure-tone audiogram thresholds alone.",
+            "Refer for implant-team review of aided benefit, goals, health, supports, expectations, and informed choice.",
+            "Pause all hearing-aid wear and communication supports while waiting months for surgical team appointments."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Candidacy and likely benefit require multidisciplinary, person-centered evaluation under current device and payer criteria.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -2074,12 +2074,12 @@
           "id": "aud5343-ch-10-check-03",
           "prompt": "Why is cochlear-implant mapping an ongoing process?",
           "choices": [
-            "The initial map can never change.",
-            "Only speech therapy can alter device output.",
-            "Programming, comfort, audibility, electrode function, perception, goals, and outcomes should be monitored and adjusted over time.",
-            "Mapping is unrelated to listening outcomes."
+            "Electrical map parameters have minimal influence on real-world speech perception once surgery heals.",
+            "Initial activation map levels remain locked permanently because neural thresholds stay fixed after surgery.",
+            "Speech-language therapy exercises alone adjust electrical stimulation limits across the intracochlear electrodes.",
+            "Program levels, comfort, audibility, electrode integrity, perception, and goals require monitoring over time."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Neural response, experience, comfort, technology, and goals evolve, so programming and validation require repeated review.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -2093,14 +2093,14 @@
         },
         {
           "id": "aud5343-ch-10-check-04",
-          "prompt": "When can a bone-conduction hearing device be useful?",
+          "prompt": "For a patient with chronic ear-canal atresia and strong cochlear reserve who cannot wear earmolds, which option warrants consideration?",
           "choices": [
-            "A vestibular implant automatically.",
-            "A cochlear implant for every conductive loss.",
-            "No technology because the cochlea is usable.",
-            "A bone-conduction option after individualized audiologic and medical evaluation of anatomy, type of loss, goals, and alternatives."
+            "A bone-conduction device after individualized audiologic and medical review of anatomy, loss, and goals.",
+            "An implanted vestibular prosthesis recommended routinely whenever air-conduction earmolds cannot be worn.",
+            "A bilateral cochlear implant prescribed automatically for every chronic conductive outer- or middle-ear problem.",
+            "No amplification technology at all because intact inner-ear cochlear reserve eliminates hearing-device need."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Bone-conduction systems route vibration to cochlear function and may suit selected conductive, mixed, or single-sided profiles.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -2114,14 +2114,14 @@
         },
         {
           "id": "aud5343-ch-10-check-05",
-          "prompt": "Why are remote-microphone systems valuable in classrooms?",
+          "prompt": "Which classroom accommodation best improves speech signal-to-noise ratio across distance and reverberation?",
           "choices": [
-            "A properly selected and verified remote microphone that sends the talker’s signal to the student’s receiver.",
-            "A louder classroom fan.",
-            "A sound-field test tone only.",
-            "Turning off all visual supports."
+            "Removing visual slides and captions so the student relies strictly on auditory listening during lectures.",
+            "A verified remote microphone transmitting the talker’s voice directly to the student’s receiver.",
+            "Installing a louder hallway ventilation fan to create steady masking noise that blends classroom chatter.",
+            "Playing periodic pure-tone sound-field calibration signals in class to keep the student’s attention alert."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Remote microphones improve effective signal-to-noise ratio by reducing effects of distance and room noise when fitted and used correctly.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -2242,12 +2242,12 @@
           "id": "aud5343-ch-11-check-01",
           "prompt": "What is the purpose of audiologic rehabilitation?",
           "choices": [
-            "Reduce activity and participation barriers through technology, communication strategies, auditory and visual skills, counseling, partner training, and environmental change.",
-            "Device output only.",
-            "Threshold improvement as the sole goal.",
-            "Avoidance of difficult communication."
+            "Focus rehabilitation strictly on improving unaided pure-tone audiogram thresholds across follow-up visits.",
+            "Coach clients to avoid noisy restaurants and group events so frustrating communication moments stop occurring.",
+            "Reduce activity and participation barriers via technology, strategies, auditory-visual skills, counseling, and partners.",
+            "Fine-tune hearing-aid gain output alone without addressing communication habits or listening environments."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Rehabilitation integrates impairment, activity, participation, environment, identity, and person-selected outcomes.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -2263,12 +2263,12 @@
           "id": "aud5343-ch-11-check-02",
           "prompt": "Which communication strategy is most useful in noise?",
           "choices": [
-            "Speak from another room.",
-            "Improve proximity and lighting, face the talker, reduce competing noise, confirm key information, and use technology as appropriate.",
-            "Remove all visual cues.",
-            "Increase distance from the talker."
+            "Minimize lipreading and facial expression cues so the listener builds stronger auditory-only speech skills.",
+            "Sit farther back from the talker in the dining room to reduce sudden loud vocal peaks in conversation.",
+            "Have communication partners call out key details loudly from an adjacent table or separate room.",
+            "Improve proximity and lighting, face the talker, limit background sound, confirm details, and use tech."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Environmental and conversational strategies can improve signal access and repair while complementing hearing technology.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -2284,12 +2284,12 @@
           "id": "aud5343-ch-11-check-03",
           "prompt": "What makes auditory training functional?",
           "choices": [
-            "Repeat one syllable list indefinitely.",
-            "Avoid communication partners.",
-            "Use graded meaningful tasks that reflect real signals and environments, teach strategies, measure transfer, and adjust from outcomes.",
-            "Measure only clinic accuracy."
+            "Use graded meaningful tasks mirroring real signals and settings, teach strategies, track transfer, and adapt.",
+            "Evaluate training effectiveness solely from quiet sound-booth drill percentages without checking workplace transfer.",
+            "Repeat one identical closed-set syllable drill indefinitely until clinic accuracy stays near one hundred percent.",
+            "Keep communication partners and coworkers out of training sessions so progress stays purely individual."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Training should connect perceptual learning with actual participation and should not substitute for device verification or environmental supports.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -2305,12 +2305,12 @@
           "id": "aud5343-ch-11-check-04",
           "prompt": "What is person- and family-centered counseling?",
           "choices": [
-            "Direct the family to one method without alternatives.",
-            "Predict identical outcomes for every child.",
-            "Withhold uncertainty.",
-            "Provide balanced accessible information, elicit priorities and culture, support informed choice, coordinate resources, and revisit decisions as needs change."
+            "Withhold uncertainty about technology or developmental timelines so caregivers feel calmer during early visits.",
+            "Share balanced options, explore caregiver priorities and culture, support informed choice, and revisit plans.",
+            "Direct caregivers firmly toward one preferred communication method without outlining reasonable alternatives.",
+            "Predict identical spoken-language outcomes across every child who adopts the same early technology choice."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Family-centered care respects autonomy, language, culture, goals, and evolving evidence while ensuring access to qualified supports.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -2326,12 +2326,12 @@
           "id": "aud5343-ch-11-check-05",
           "prompt": "How should communication modality options be discussed?",
           "choices": [
-            "Explain options and resources without bias, support timely accessible language, and coordinate qualified providers around the family’s informed goals.",
-            "Present one modality as universally correct.",
-            "Delay language access until technology outcomes are known.",
-            "Treat visual language as a treatment failure."
+            "Delay starting accessible language exposure until months of trial show how well hearing technology performs.",
+            "Describe sign language or visual supports as a fallback indicating that auditory intervention has failed.",
+            "Present pathways neutrally, support timely accessible language, and align providers around family goals.",
+            "Present one single communication modality as universally superior for every deaf or hard-of-hearing child."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Children need accessible communication and language; counseling should be balanced, culturally responsive, and responsive to development and family choice.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -2462,12 +2462,12 @@
           "id": "aud5343-ch-12-check-01",
           "prompt": "What is required for informed consent in audiology?",
           "choices": [
-            "Purpose, nature, expected benefits, material risks, alternatives, limits, cost when relevant, and the right to ask questions and decide voluntarily.",
-            "Only the appointment time.",
-            "A guarantee of benefit.",
-            "A signature without explanation."
+            "The scheduled appointment length and parking directions alone so intake paperwork moves along quickly.",
+            "A clear written promise of successful clinical benefit so the client feels confident consenting to care.",
+            "A signed generic consent form collected at the front desk prior to any plain-language clinical explanation.",
+            "Purpose, nature, benefits, material risks, alternatives, limits, costs when relevant, and voluntary chance to decide."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Consent is an accessible ongoing process shaped by capacity, law, setting, and the specific service rather than merely a form.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -2485,12 +2485,12 @@
           "id": "aud5343-ch-12-check-02",
           "prompt": "How should an audiologist determine whether FERPA or HIPAA applies?",
           "choices": [
-            "Assume HIPAA governs every school record.",
-            "Identify the setting, record holder, applicable law and policy, authority, consent, and minimum necessary disclosure before sharing securely.",
-            "Share with any employee who asks.",
-            "Assume FERPA prohibits all emergency disclosures."
+            "Check setting, record holder, governing law, authority, consent, and minimum necessary secure sharing.",
+            "Release the complete audiology report to any school or clinic employee who requests information politely.",
+            "Treat FERPA privacy rules as prohibiting all emergency health or safety disclosures under every condition.",
+            "Assume HIPAA privacy rules automatically govern every school-maintained student audiology record."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Privacy obligations differ by context and can include FERPA, HIPAA, state law, consent, and organizational rules.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -2508,12 +2508,12 @@
           "id": "aud5343-ch-12-check-03",
           "prompt": "An audiologist is asked to perform an unfamiliar vestibular procedure. What is the ethical response?",
           "choices": [
-            "Proceed because the equipment gives automated results.",
-            "Delegate diagnosis to an assistant.",
-            "Obtain qualified training and supervision or refer, and do not practice beyond documented competence.",
-            "Hide limitations from the patient."
+            "Delegate administration and diagnostic interpretation of the unfamiliar procedure to a support assistant.",
+            "Obtain qualified training and supervision or refer, avoiding practice beyond documented competence.",
+            "Complete the procedure without mentioning training limits so the patient keeps full trust in the clinic.",
+            "Run the unfamiliar vestibular test anyway because built-in software prints automated diagnostic summaries."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Scope of competence depends on current education, training, experience, and available support, even when a task falls within the profession’s broad scope.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -2531,12 +2531,12 @@
           "id": "aud5343-ch-12-check-04",
           "prompt": "What is required when supervising an audiology assistant or student?",
           "choices": [
-            "The assistant independently diagnoses.",
-            "The client assumes responsibility.",
-            "Supervision ends after one correct task.",
-            "The qualified audiologist must delegate within rules and competence, provide required oversight, and retain responsibility for service quality."
+            "The client or family takes responsibility for verifying the clinical quality of delegated testing tasks.",
+            "Active supervisory oversight ends once the student or assistant completes one procedure without errors.",
+            "The qualified audiologist delegates within rules and competence, supervises, and keeps accountability.",
+            "The audiology assistant assumes independent legal authority to diagnose disorders after initial orientation."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Delegation does not transfer professional accountability and must follow licensure, credential, education, and organizational requirements.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",
@@ -2554,12 +2554,12 @@
           "id": "aud5343-ch-12-check-05",
           "prompt": "Before teleaudiology across state lines, what should be verified?",
           "choices": [
-            "Authority where the client is located, consent, privacy, technology validity, accessibility, emergency planning, and clinical appropriateness.",
-            "Only the clinician’s home license.",
-            "Internet speed alone.",
-            "That remote care removes the need for local referral."
+            "The clinician’s home-state audiology license alone because services originate from that physical office.",
+            "Broadband internet speed alone because clear video ensures equivalent diagnostic validity across states.",
+            "That remote teleaudiology eliminates any need for local in-person otoscopy or medical referral pathways.",
+            "Rules where the client is located, consent, privacy, tech validity, access, emergency plans, and fit."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Telepractice remains professional practice and requires jurisdictional, technical, privacy, safety, and quality safeguards.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5343.pdf",

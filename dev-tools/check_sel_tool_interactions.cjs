@@ -266,7 +266,7 @@ async function auditTool(page, scenario, tool) {
       hasStandardShell: !!shell,
       hasPrivateCheckpoint: /Private checkpoint/.test(text),
       hasSharePacketEligible: /Share Packet eligible/.test(text),
-      hasSavedWorkCue: /Tool checkpoints stay private here unless you choose them for a Share Packet/.test(text),
+      hasSavedWorkCue: /Tool checkpoints stay (?:on this device unless you save a project file or |private here unless you )choose them for a Share Packet/.test(text),
       hasExportButton: !!exportButton
     };
   });

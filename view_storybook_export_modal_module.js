@@ -208,19 +208,22 @@ function StorybookExportModal({
   };
   const progressTotal = progress && Number(progress.total) > 0 ? Number(progress.total) : 0;
   const progressCompleted = progressTotal ? Math.min(Number(progress.completed) || 0, progressTotal) : 0;
+  const progressPercent = progressTotal > 0 ? Math.round(progressCompleted / progressTotal * 100) : 0;
   const progressMessage = progress && progress.message ? progress.message : busy ? "Preparing your Storybook\u2026" : "";
-  const dragStartedInsideRef = React.useRef(false);
+  const progressPhase = progress && progress.phase ? progress.phase : busy ? "story" : "";
+  const progressToneClass = !progressMessage ? "text-slate-700" : progressPhase === "error" ? "rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-red-700 font-medium" : progressPhase === "cancelled" ? "rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-amber-900 font-medium" : busy ? "rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-indigo-900 font-medium" : "text-slate-700";
+  const pointerStartedInsideRef = React.useRef(false);
   return /* @__PURE__ */ React.createElement(
     "div",
     {
       role: "presentation",
       className: "fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none",
       onMouseDown: (event) => {
-        dragStartedInsideRef.current = event.target !== event.currentTarget;
+        pointerStartedInsideRef.current = event.target !== event.currentTarget;
       },
       onClick: (event) => {
-        if (dragStartedInsideRef.current) {
-          dragStartedInsideRef.current = false;
+        if (pointerStartedInsideRef.current) {
+          pointerStartedInsideRef.current = false;
           return;
         }
         if (!busy && event.target === event.currentTarget) handleSetShowStorybookExportModalToFalse();
@@ -238,13 +241,13 @@ function StorybookExportModal({
         "aria-describedby": "storybook-export-description storybook-export-progress",
         "aria-busy": busy,
         onMouseDown: () => {
-          dragStartedInsideRef.current = true;
+          pointerStartedInsideRef.current = true;
         },
         onClick: (event) => event.stopPropagation()
       },
       /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 24, className: "text-indigo-600", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "storybook-export-title", className: "text-xl font-bold text-slate-800" }, t("adventure.storybook")), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, t("adventure.export_options")))),
       /* @__PURE__ */ React.createElement("p", { id: "storybook-export-description", className: "text-slate-600 mb-5" }, t("adventure.storybook_export_description")),
-      /* @__PURE__ */ React.createElement("div", { className: "mb-5 rounded-xl border border-indigo-200 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: `mb-5 rounded-xl border p-4 transition-colors motion-reduce:transition-none ${includeNarration ? "border-indigo-400 bg-indigo-50" : "border-indigo-200 bg-indigo-50/70"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement(
         "input",
         {
           id: "storybook-include-narration",
@@ -253,9 +256,9 @@ function StorybookExportModal({
           "data-autofocus": "true",
           onChange: (event) => setIncludeNarration(event.target.checked),
           disabled: busy,
-          className: "mt-1 h-5 w-5 rounded border-slate-400 text-indigo-600 focus:ring-indigo-500"
+          className: "mt-1 h-5 w-5 rounded border-slate-400 text-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
         }
-      ), /* @__PURE__ */ React.createElement("label", { htmlFor: "storybook-include-narration", className: "cursor-pointer text-sm text-slate-800" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold" }, "Include narrated TTS audio"), /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-xs leading-relaxed text-slate-600" }, "Creates HTML and JSON downloads with embedded audio. A separate epilogue and narration recovery copy is saved on this device when space allows, so interrupted exports can resume. Unchanged journeys reuse their saved epilogue.")))),
+      ), /* @__PURE__ */ React.createElement("label", { htmlFor: "storybook-include-narration", className: "cursor-pointer text-sm text-slate-800 flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "flex flex-wrap items-center gap-2 font-bold" }, /* @__PURE__ */ React.createElement("span", null, "Include narrated TTS audio"), includeNarration && /* @__PURE__ */ React.createElement("span", { "data-storybook-narration-badge": "true", className: "inline-flex items-center rounded-full border border-indigo-300 bg-white px-2 py-0.5 text-[11px] font-bold text-indigo-800" }, "Narration ON")), /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-xs leading-relaxed text-slate-600" }, "Creates HTML and JSON downloads with embedded audio. A separate epilogue and narration recovery copy is saved on this device when space allows, so interrupted exports can resume. Unchanged journeys reuse their saved epilogue."))), /* @__PURE__ */ React.createElement("div", { "data-storybook-export-summary": "true", className: "mt-3 pt-2.5 border-t border-indigo-200/80 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold" }, "Included:"), includeNarration ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-white border border-indigo-200 px-2 py-0.5 text-indigo-900" }, "Offline HTML + JSON"), /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-white border border-indigo-200 px-2 py-0.5 text-indigo-900" }, "Embedded TTS audio"), /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-white border border-indigo-200 px-2 py-0.5 text-indigo-900" }, "Resumable backup")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-white border border-slate-200 px-2 py-0.5 text-slate-700" }, "Print-ready Storybook"), /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-white border border-slate-200 px-2 py-0.5 text-slate-700" }, "Opens right away")))),
       /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3" }, /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -302,7 +305,7 @@ function StorybookExportModal({
         "div",
         {
           id: "storybook-export-progress",
-          className: `mt-4 min-h-6 text-center text-sm ${progress && progress.phase === "error" ? "text-red-700" : "text-slate-700"}`,
+          className: `mt-4 min-h-6 text-center text-sm ${progressToneClass}`,
           role: "status",
           "aria-live": "polite",
           "aria-atomic": "true"
@@ -315,15 +318,15 @@ function StorybookExportModal({
           }
         ),
         progressMessage,
-        busy && progressTotal > 0 && /* @__PURE__ */ React.createElement(
+        busy && progressTotal > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("div", { "data-storybook-progress-meta": "true", className: "flex items-center justify-between text-xs font-semibold text-indigo-800 mb-1 tabular-nums" }, /* @__PURE__ */ React.createElement("span", null, progressCompleted, " of ", progressTotal, " segments"), /* @__PURE__ */ React.createElement("span", null, progressPercent, "%")), /* @__PURE__ */ React.createElement(
           "progress",
           {
-            className: "mt-2 block h-2 w-full",
+            className: "block h-2.5 w-full accent-indigo-600",
             max: progressTotal,
             value: progressCompleted,
             "aria-label": "Narration export progress"
           }
-        )
+        ))
       ),
       /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 text-center mt-3" }, t("adventure.storybook_image_warning"))
     )

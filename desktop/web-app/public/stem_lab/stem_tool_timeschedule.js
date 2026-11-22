@@ -378,7 +378,8 @@
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
       var isContrast = !!ctx.isContrast;
       var isDark = !isContrast && !!ctx.isDark;
-      var themeClass = isContrast ? ' time-schedule-lab--contrast' : (isDark ? ' time-schedule-lab--dark' : '');
+      var reduceMotion = !!ctx.reduceMotion;
+      var themeClass = (isContrast ? ' time-schedule-lab--contrast' : (isDark ? ' time-schedule-lab--dark' : '')) + (reduceMotion ? ' time-schedule-lab--rm' : '');
       var svgFace0 = isContrast ? '#000000' : (isDark ? '#1e293b' : '#ffffff');
       var svgFace1 = isContrast ? '#000000' : (isDark ? '#0f172a' : '#e0f2fe');
       var svgInk = isContrast ? '#ffffff' : (isDark ? '#f8fafc' : '#0f172a');
@@ -390,7 +391,22 @@
         '.time-schedule-lab button,.time-schedule-lab select,.time-schedule-lab input{transition:transform 120ms ease,background-color 140ms ease,border-color 140ms ease,box-shadow 140ms ease}',
         '.time-schedule-lab button:not([disabled]):hover{transform:translateY(-1px)}',
         '.time-schedule-lab :focus-visible{outline:3px solid #0284c7;outline-offset:2px}',
-        '@media (prefers-reduced-motion:reduce){.time-schedule-lab button,.time-schedule-lab select,.time-schedule-lab input{transition:none!important;transform:none!important}}',
+        '@keyframes ts-sweep-shimmer{0%,100%{opacity:0.78}50%{opacity:1}}',
+        '@keyframes ts-arc-flow{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}',
+        '@keyframes ts-beacon-pulse{0%,100%{opacity:0.24;transform:scale(0.92)}50%{opacity:0.56;transform:scale(1.16)}}',
+        '@keyframes ts-crystal-glint{0%,22%{transform:translateX(-180px);opacity:0}46%{opacity:0.32}70%{transform:translateX(220px);opacity:0}100%{transform:translateX(220px);opacity:0}}',
+        '@keyframes ts-block-sheen{0%,20%{transform:translateX(-120px);opacity:0}45%{opacity:0.42}70%{transform:translateX(220px);opacity:0}100%{transform:translateX(220px);opacity:0}}',
+        '.time-schedule-lab .ts-sweep-shimmer{animation:ts-sweep-shimmer 3.8s ease-in-out infinite}',
+        '.time-schedule-lab .ts-arc-flow{animation:ts-arc-flow 2.1s linear infinite}',
+        '.time-schedule-lab .ts-arc-flow-slow{animation:ts-arc-flow 6.5s linear infinite}',
+        '.time-schedule-lab .ts-beacon-pulse{transform-box:fill-box;transform-origin:center;animation:ts-beacon-pulse 2.7s ease-in-out infinite}',
+        '.time-schedule-lab .ts-crystal-glint{animation:ts-crystal-glint 7.2s ease-in-out infinite}',
+        '.time-schedule-lab .ts-sheen-bar{animation:ts-block-sheen 5.4s ease-in-out infinite}',
+        '@media (prefers-reduced-motion:reduce){.time-schedule-lab *,.time-schedule-lab button,.time-schedule-lab select,.time-schedule-lab input{animation:none!important;transition:none!important;transform:none!important}.time-schedule-lab .ts-crystal-glint,.time-schedule-lab .ts-sheen-bar{display:none!important}}',
+        '.time-schedule-lab--rm *{animation:none!important;transition:none!important}.time-schedule-lab--rm .ts-crystal-glint,.time-schedule-lab--rm .ts-sheen-bar{display:none!important}',
+        '.theme-contrast .time-schedule-lab *,.time-schedule-lab--contrast *{animation:none!important;transition:none!important}',
+        '.theme-contrast .time-schedule-lab .ts-decor-only,.time-schedule-lab--contrast .ts-decor-only{display:none!important}',
+        '@media (forced-colors:active){.time-schedule-lab *{animation:none!important;transition:none!important}.time-schedule-lab .ts-decor-only{display:none!important}}',
         '.time-schedule-lab--dark,.time-schedule-lab--contrast{padding:14px;border-radius:18px}',
         '.time-schedule-lab--dark{background:#020617;color:#f8fafc;border:1px solid #1e293b}',
         '.time-schedule-lab--dark [class*="bg-white"],.time-schedule-lab--dark [class*="bg-slate-50"],.time-schedule-lab--dark [class*="bg-sky-50"],.time-schedule-lab--dark [class*="bg-cyan-50"],.time-schedule-lab--dark [class*="bg-indigo-50"],.time-schedule-lab--dark [class*="bg-amber-50"],.time-schedule-lab--dark [class*="bg-violet-50"],.time-schedule-lab--dark [class*="bg-emerald-50"],.time-schedule-lab--dark [class*="bg-rose-50"],.time-schedule-lab--dark [class*="bg-slate-100"]{background-color:#0f172a!important;background-image:none!important}',
@@ -608,7 +624,13 @@
               !isContrast && h('linearGradient', { id: id + '-crystal', x1: '0', y1: '0', x2: '0.8', y2: '0.9' },
                 h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: isDark ? 0.16 : 0.42 }),
                 h('stop', { offset: '55%', stopColor: '#ffffff', stopOpacity: 0.03 }),
-                h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 }))),
+                h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })),
+              !isContrast && h('linearGradient', { id: id + '-glint', x1: '0', y1: '0', x2: '1', y2: '0.25' },
+                h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
+                h('stop', { offset: '50%', stopColor: '#e0f2fe', stopOpacity: isDark ? 0.2 : 0.42 }),
+                h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })),
+              !isContrast && h('clipPath', { id: id + '-dial-clip' },
+                h('circle', { cx: 160, cy: 160, r: 141 }))),
             // Outer brushed-metal horology case & recessed chapter bezel
             !isContrast && h('circle', { cx: 160, cy: 163, r: 151, fill: '#020617', opacity: isDark ? 0.45 : 0.14 }),
             h('circle', { cx: 160, cy: 160, r: 154, fill: 'none', stroke: isContrast ? svgSub : 'url(#' + id + '-bezel)', strokeWidth: 3.5, opacity: isContrast ? 0.55 : 0.85 }),
@@ -616,9 +638,10 @@
               stroke: isContrast ? svgRing : 'url(#' + id + '-bezel)', strokeWidth: 8 }),
             !isContrast && h('circle', { cx: 160, cy: 160, r: 141.5, fill: 'none', stroke: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.12)', strokeWidth: 1.2 }),
             !isContrast && h('circle', { cx: 160, cy: 160, r: 123, fill: 'none', stroke: svgSub, strokeWidth: 0.7, opacity: 0.28 }),
-            // Luminous elapsed-minute sector wedge
-            sweepPath && h('path', { d: sweepPath, fill: isContrast ? svgAccent : 'url(#' + id + '-sweep)', opacity: isContrast ? 0.18 : 1 }),
+            // Luminous elapsed-minute sector wedge (suppressed when hideTime is true — zero quiz spoilers)
+            sweepPath && h('path', { className: !isContrast ? 'ts-sweep-shimmer' : undefined, d: sweepPath, fill: isContrast ? svgAccent : 'url(#' + id + '-sweep)', opacity: isContrast ? 0.18 : 1 }),
             sweepPath && !isContrast && h('path', { d: 'M 160 38 A 122 122 0 ' + (minute > 30 ? 1 : 0) + ' 1 ' + (160 + 122 * Math.sin(ma)).toFixed(1) + ' ' + (160 - 122 * Math.cos(ma)).toFixed(1), fill: 'none', stroke: svgAccent, strokeWidth: 2.2, strokeOpacity: 0.55, strokeLinecap: 'round' }),
+            sweepPath && !isContrast && h('path', { className: 'ts-decor-only ts-arc-flow', d: 'M 160 38 A 122 122 0 ' + (minute > 30 ? 1 : 0) + ' 1 ' + (160 + 122 * Math.sin(ma)).toFixed(1) + ' ' + (160 - 122 * Math.cos(ma)).toFixed(1), fill: 'none', stroke: '#e0f2fe', strokeWidth: 1.6, strokeDasharray: '6 18', strokeOpacity: 0.8, strokeLinecap: 'round' }),
             ticks, labels,
             d.showMinuteLabels && !compact && Array.from({length:12},function(_,idx){var angle=idx*Math.PI/6;return h('text',{key:'minute-'+idx,x:160+86*Math.sin(angle),y:164-86*Math.cos(angle),textAnchor:'middle',fontSize:11.5,fontWeight:700,fill:svgAccent},idx*5);}),
             (!d.showMinuteLabels && outer24.length > 0) && outer24,
@@ -642,9 +665,12 @@
             !isContrast && h('line', { x1: 160, y1: 160, x2: 160 + 96 * Math.sin(ma),
               y2: 160 - 96 * Math.cos(ma), stroke: '#ffffff', strokeOpacity: 0.32, strokeWidth: 1.4,
               strokeLinecap: 'round' }),
-            // Specular crystal glass sheen arc across upper-left dial
+            // Specular crystal glass sheen arc + clipped crystal glint across dial
             !isContrast && h('path', { d: 'M 44 132 A 128 128 0 0 1 250 70 Q 152 128 44 132 Z', fill: 'url(#' + id + '-crystal)', style: { pointerEvents: 'none' } }),
+            !isContrast && h('g', { clipPath: 'url(#' + id + '-dial-clip)', className: 'ts-decor-only', style: { pointerEvents: 'none' } },
+              h('rect', { className: 'ts-crystal-glint', x: 70, y: 12, width: 62, height: 296, fill: 'url(#' + id + '-glint)' })),
             // Sculpted jewel center pinion
+            !isContrast && h('circle', { className: 'ts-decor-only ts-beacon-pulse', cx: 160, cy: 160, r: 15, fill: '#f97316', opacity: 0.26 }),
             h('circle', { cx: 160, cy: 160, r: 10.5, fill: isContrast ? '#ffff00' : '#f97316',
               stroke: svgCardBg, strokeWidth: 3 }),
             !isContrast && h('circle', { cx: 158, cy: 158, r: 2.6, fill: '#fff7ed', opacity: 0.85 })),
@@ -699,7 +725,8 @@
                       [68, 112, 156, 200, 244, 288, 332].map(function(tx) {
                         return h('line', { key: 'st-' + tx, x1: tx, y1: 13, x2: tx, y2: 27, stroke: isContrast ? '#ffff00' : 'rgba(255,255,255,0.28)', strokeWidth: tx === 200 ? 1.5 : 0.9 });
                       }),
-                      !isContrast && h('circle', { cx: pinX, cy: 19, r: 11.5, fill: '#f97316', opacity: 0.28 }),
+                      !isContrast && h('circle', { className: 'ts-decor-only ts-beacon-pulse', cx: pinX, cy: 19, r: 13.5, fill: 'none', stroke: '#fb923c', strokeWidth: 1.6, opacity: 0.5 }),
+                      !isContrast && h('circle', { className: 'ts-decor-only ts-beacon-pulse', cx: pinX, cy: 19, r: 11.5, fill: '#f97316', opacity: 0.28 }),
                       h('circle', { cx: pinX, cy: 19, r: 7, fill: isContrast ? '#00ff00' : '#f97316', stroke: '#ffffff', strokeWidth: 2 }),
                       !isContrast && h('circle', { cx: pinX - 1.8, cy: 17.2, r: 2, fill: '#fff7ed', opacity: 0.9 }),
                       [
@@ -882,13 +909,14 @@
                   var isStart = i === 0, isEnd = i === points.length - 1;
                   var nodeCol = isStart ? (isContrast ? '#ffff00' : '#f97316') : isEnd ? (isContrast ? '#00ff00' : '#10b981') : svgCardBg;
                   return h('g', { key: i },
-                    // Dual-pass luminous jump arc + pill badge
-                    i > 0 && !isContrast && h('path', { d: 'M ' + priorX + ' 91 Q ' + midX + ' 35 ' + x + ' 91', fill: 'none', stroke: arcCol, strokeWidth: 9, strokeOpacity: 0.16, strokeLinecap: 'round' }),
+                    // Dual-pass luminous jump arc + flowing energy dash + pill badge
+                    i > 0 && !isContrast && h('path', { className: 'ts-decor-only', d: 'M ' + priorX + ' 91 Q ' + midX + ' 35 ' + x + ' 91', fill: 'none', stroke: arcCol, strokeWidth: 9, strokeOpacity: 0.16, strokeLinecap: 'round' }),
                     i > 0 && h('path', { d: 'M ' + priorX + ' 91 Q ' + midX + ' 35 ' + x + ' 91', fill: 'none', stroke: arcCol, strokeWidth: 3.8, strokeLinecap: 'round' }),
+                    i > 0 && !isContrast && h('path', { className: 'ts-decor-only ts-arc-flow', d: 'M ' + priorX + ' 91 Q ' + midX + ' 35 ' + x + ' 91', fill: 'none', stroke: '#ffffff', strokeWidth: 1.8, strokeDasharray: '6 18', strokeOpacity: 0.78, strokeLinecap: 'round' }),
                     i > 0 && h('rect', { x: midX - pillW / 2, y: 15, width: pillW, height: 24, rx: 12, fill: svgCardBg, stroke: arcCol, strokeWidth: 1.6 }),
                     i > 0 && h('text', { x: midX, y: 31.5, textAnchor: 'middle', fill: svgInk, fontSize: 13.5, fontWeight: '800' }, jumpLbl),
                     // Sculpted waypoint beacon
-                    (isStart || isEnd) && !isContrast && h('circle', { cx: x, cy: 105, r: 15.5, fill: nodeCol, opacity: 0.22 }),
+                    (isStart || isEnd) && !isContrast && h('circle', { className: 'ts-decor-only ts-beacon-pulse', cx: x, cy: 105, r: 16, fill: nodeCol, opacity: 0.24 }),
                     h('circle', { cx: x, cy: 105, r: isStart || isEnd ? 10 : 7, fill: nodeCol, stroke: svgInk, strokeWidth: 3 }),
                     (isStart || isEnd) && !isContrast && h('circle', { cx: x - 2.4, cy: 102.6, r: 2.4, fill: '#ffffff', opacity: 0.8 }),
                     h('text', { x: x, y: 138 + i % 2 * 22, textAnchor: 'middle', fill: svgInk, fontSize: 14, fontWeight: '800' }, showTime(point.time, use24)));
@@ -945,14 +973,16 @@
                 h('line',{x1:32,x2:328,y1:64,y2:64,stroke:svgInk,strokeWidth:3.5,strokeLinecap:'round'}),
                 [focus.start,focus.end].map(function(value,i){var ex=xAt(value);return h('g',{key:i},
                   h('line',{x1:ex,x2:ex,y1:54,y2:74,stroke:svgInk,strokeWidth:2.6,strokeLinecap:'round'}),
+                  !isContrast && h('circle',{className:'ts-decor-only ts-beacon-pulse',cx:ex,cy:64,r:8.5,fill:i===0?'#f97316':'#10b981',opacity:0.26}),
                   h('circle',{cx:ex,cy:64,r:4.5,fill:i===0?(isContrast?'#ffff00':'#f97316'):(isContrast?'#00ff00':'#10b981'),stroke:svgInk,strokeWidth:1.5}));}),
                 worked ? parts.map(function(part,i){var x1=xAt(part.from),x2=xAt(part.to),mx=(x1+x2)/2;return h('g',{key:i,'data-schedule-jump':part.amount,'data-jump-start':part.from,'data-jump-end':part.to},
-                  !isContrast && h('path',{d:'M '+x1+' 61 Q '+mx+' 14 '+x2+' 61',fill:'none',stroke:svgAccent,strokeWidth:6,strokeOpacity:0.18,strokeLinecap:'round'}),
+                  !isContrast && h('path',{className:'ts-decor-only',d:'M '+x1+' 61 Q '+mx+' 14 '+x2+' 61',fill:'none',stroke:svgAccent,strokeWidth:6,strokeOpacity:0.18,strokeLinecap:'round'}),
                   h('path',{d:'M '+x1+' 61 Q '+mx+' 14 '+x2+' 61',fill:'none',stroke:svgAccent,strokeWidth:2.5,strokeLinecap:'round'}),
+                  !isContrast && h('path',{className:'ts-decor-only ts-arc-flow',d:'M '+x1+' 61 Q '+mx+' 14 '+x2+' 61',fill:'none',stroke:'#ffffff',strokeWidth:1.4,strokeDasharray:'5 19',strokeOpacity:0.82,strokeLinecap:'round'}),
                   h('rect',{x:mx-16,y:14,width:32,height:18,rx:9,fill:svgCardBg,stroke:svgAccent,strokeWidth:1.2}),
                   h('text',{x:mx,y:27,textAnchor:'middle',fill:svgInk,fontSize:11.5,fontWeight:'bold'},'+'+part.amount));})
                   : h('g',null,
-                    h('circle',{cx:180,cy:34,r:14,fill:svgCardBg,stroke:svgAccent,strokeWidth:1.8,strokeDasharray:'3 2'}),
+                    h('circle',{className:!isContrast?'ts-arc-flow-slow':undefined,cx:180,cy:34,r:14,fill:svgCardBg,stroke:svgAccent,strokeWidth:1.8,strokeDasharray:'3 2'}),
                     h('text',{x:180,y:40,textAnchor:'middle',fill:svgInk,fontSize:16,fontWeight:'bold'},'?'))),
             sq.type!=='time'&&h('div',{'data-schedule-endpoints':true,className:'grid grid-cols-2 gap-3 text-sm'},
               h('p',null,h('span',{className:'block text-xs'},t('stem.timeschedule.interval_from','From')),h('strong',null,questionTime(focus.start))),
@@ -1027,7 +1057,18 @@
                     !isContrast && h('defs', null,
                       h('pattern', { id: 'ts-gap-hatch', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' },
                         h('line', { x1: 0, y1: 0, x2: 0, y2: 8, stroke: isDark ? 'rgba(148,163,184,0.18)' : 'rgba(100,116,139,0.16)', strokeWidth: 2 })
-                      )
+                      ),
+                      h('linearGradient', { id: 'ts-gantt-sheen', x1: '0', y1: '0', x2: '1', y2: '0.2' },
+                        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
+                        h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.45 }),
+                        h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+                      ),
+                      timeline.map(function (item, idx) {
+                        var bx = gx(item.start), bw = Math.max(8, gx(item.end) - bx);
+                        return h('clipPath', { key: 'gc-' + idx, id: 'ts-gantt-clip-' + idx },
+                          h('rect', { x: bx, y: 23, width: bw, height: 26, rx: 5 })
+                        );
+                      })
                     ),
                     // Recessed timeline trough with free-gap hatch
                     h('rect', { x: 20, y: 20, width: 600, height: 32, rx: 7, fill: isContrast ? '#000000' : (isDark ? '#0f172a' : '#f1f5f9'), stroke: isContrast ? '#ffff00' : (isDark ? '#334155' : '#cbd5e1'), strokeWidth: 1.5 }),
@@ -1036,8 +1077,11 @@
                       var bx = gx(item.start), bw = Math.max(8, gx(item.end) - bx);
                       var focused = focus.rows.indexOf(idx) >= 0;
                       return h('g', { key: idx },
-                        !isContrast && focused && h('rect', { x: bx - 2, y: 21, width: bw + 4, height: 30, rx: 6, fill: item.event[3], opacity: 0.28 }),
+                        !isContrast && focused && h('rect', { className: 'ts-decor-only ts-beacon-pulse', x: bx - 2, y: 21, width: bw + 4, height: 30, rx: 6, fill: item.event[3], opacity: 0.28 }),
                         h('rect', { x: bx, y: 23, width: bw, height: 26, rx: 5, fill: isContrast ? '#000000' : item.event[3], opacity: focused ? 1 : 0.78, stroke: focused ? (isContrast ? '#00ff00' : svgInk) : (isContrast ? '#ffff00' : 'rgba(255,255,255,0.28)'), strokeWidth: focused ? 2.2 : 1 }),
+                        !isContrast && focused && bw > 14 && h('g', { clipPath: 'url(#ts-gantt-clip-' + idx + ')', className: 'ts-decor-only', style: { pointerEvents: 'none' } },
+                          h('rect', { className: 'ts-sheen-bar', x: bx, y: 21, width: 34, height: 30, fill: 'url(#ts-gantt-sheen)', style: { animationDelay: (idx * 0.45) + 's' } })
+                        ),
                         !isContrast && bw > 14 && h('rect', { x: bx + 2, y: 24.5, width: bw - 4, height: 4, rx: 2, fill: '#ffffff', opacity: focused ? 0.34 : 0.2 }),
                         bw > 34 && h('text', { x: bx + bw / 2, y: 40.5, textAnchor: 'middle', fontSize: 10.5, fontWeight: 800, fill: isContrast ? '#ffff00' : '#ffffff' }, String(idx + 1)));
                     }),
@@ -1314,22 +1358,25 @@
                       : challenge.kind === 'overnight'
                       ? h('g', null,
                           h('line', { x1: 26, y1: 88, x2: 194, y2: 88, stroke: svgInk, strokeWidth: 3.2, strokeLinecap: 'round' }),
-                          !isContrast && h('line', { x1: 110, y1: 32, x2: 110, y2: 102, stroke: svgAccent, strokeWidth: 6, strokeOpacity: 0.16 }),
-                          h('line', { x1: 110, y1: 32, x2: 110, y2: 102, stroke: svgAccent, strokeWidth: 2, strokeDasharray: '4 4' }),
+                          !isContrast && h('line', { className: 'ts-decor-only', x1: 110, y1: 32, x2: 110, y2: 102, stroke: svgAccent, strokeWidth: 6, strokeOpacity: 0.16 }),
+                          h('line', { className: !isContrast ? 'ts-arc-flow-slow' : undefined, x1: 110, y1: 32, x2: 110, y2: 102, stroke: svgAccent, strokeWidth: 2, strokeDasharray: '4 4' }),
                           h('rect', { x: 54, y: 15, width: 112, height: 16, rx: 8, fill: svgCardBg, stroke: svgAccent, strokeWidth: 1.1 }),
                           h('text', { x: 110, y: 26.5, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: svgAccent }, '00:00 MIDNIGHT'),
-                          !isContrast && h('path', { d: 'M46 84 Q110 38 174 84', fill: 'none', stroke: svgRing, strokeWidth: 7, strokeOpacity: 0.18 }),
+                          !isContrast && h('path', { className: 'ts-decor-only', d: 'M46 84 Q110 38 174 84', fill: 'none', stroke: svgRing, strokeWidth: 7, strokeOpacity: 0.18 }),
                           h('path', { d: 'M46 84 Q110 38 174 84', fill: 'none', stroke: svgRing, strokeWidth: 3, strokeLinecap: 'round' }),
+                          !isContrast && h('path', { className: 'ts-decor-only ts-arc-flow', d: 'M46 84 Q110 38 174 84', fill: 'none', stroke: '#ffffff', strokeWidth: 1.4, strokeDasharray: '5 19', strokeOpacity: 0.8, strokeLinecap: 'round' }),
                           h('circle', { cx: 46, cy: 88, r: 6.5, fill: '#f97316', stroke: svgInk, strokeWidth: 2 }),
                           h('circle', { cx: 174, cy: 88, r: 6.5, fill: '#10b981', stroke: svgInk, strokeWidth: 2 }),
                           h('text', { x: 46, y: 112, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: svgSub }, 'PM'),
                           h('text', { x: 174, y: 112, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: svgSub }, 'AM'))
                       : h('g', null,
                           h('line', { x1: 28, y1: 86, x2: 192, y2: 86, stroke: svgInk, strokeWidth: 3.2, strokeLinecap: 'round' }),
-                          !isContrast && h('path', { d: 'M42 80 Q76 40 110 80', fill: 'none', stroke: svgAccent, strokeWidth: 7, strokeOpacity: 0.18 }),
+                          !isContrast && h('path', { className: 'ts-decor-only', d: 'M42 80 Q76 40 110 80', fill: 'none', stroke: svgAccent, strokeWidth: 7, strokeOpacity: 0.18 }),
                           h('path', { d: 'M42 80 Q76 40 110 80', fill: 'none', stroke: svgAccent, strokeWidth: 3, strokeLinecap: 'round' }),
-                          !isContrast && h('path', { d: 'M110 80 Q144 40 178 80', fill: 'none', stroke: '#8b5cf6', strokeWidth: 7, strokeOpacity: 0.18 }),
+                          !isContrast && h('path', { className: 'ts-decor-only ts-arc-flow', d: 'M42 80 Q76 40 110 80', fill: 'none', stroke: '#ffffff', strokeWidth: 1.4, strokeDasharray: '5 19', strokeOpacity: 0.78, strokeLinecap: 'round' }),
+                          !isContrast && h('path', { className: 'ts-decor-only', d: 'M110 80 Q144 40 178 80', fill: 'none', stroke: '#8b5cf6', strokeWidth: 7, strokeOpacity: 0.18 }),
                           h('path', { d: 'M110 80 Q144 40 178 80', fill: 'none', stroke: isContrast ? '#ffff00' : '#8b5cf6', strokeWidth: 3, strokeLinecap: 'round' }),
+                          !isContrast && h('path', { className: 'ts-decor-only ts-arc-flow', d: 'M110 80 Q144 40 178 80', fill: 'none', stroke: '#ffffff', strokeWidth: 1.4, strokeDasharray: '5 19', strokeOpacity: 0.78, strokeLinecap: 'round' }),
                           h('circle', { cx: 42, cy: 86, r: 6.5, fill: '#f97316', stroke: svgInk, strokeWidth: 2 }),
                           h('circle', { cx: 110, cy: 86, r: 5, fill: svgCardBg, stroke: svgInk, strokeWidth: 2 }),
                           h('circle', { cx: 178, cy: 86, r: 6.5, fill: '#10b981', stroke: svgInk, strokeWidth: 2 }),
@@ -1428,7 +1475,7 @@
                       )
                     ),
                     h('circle', { cx: 22, cy: 22, r: 19, fill: isContrast ? '#000000' : 'url(#ts-em-dial)', stroke: isContrast ? '#ffff00' : 'url(#ts-em-rim)', strokeWidth: 2.4 }),
-                    h('circle', { cx: 22, cy: 22, r: 14.5, fill: 'none', stroke: isContrast ? '#00ff00' : '#bae6fd', strokeWidth: 0.9, strokeDasharray: '2 4', opacity: 0.7 }),
+                    h('circle', { className: !isContrast ? 'ts-arc-flow-slow' : undefined, cx: 22, cy: 22, r: 14.5, fill: 'none', stroke: isContrast ? '#00ff00' : '#bae6fd', strokeWidth: 0.9, strokeDasharray: '2 4', opacity: 0.7 }),
                     [0, 3, 6, 9].map(function(ci) {
                       var ca = ci * 30 * Math.PI / 180;
                       return h('line', { key: 'ct-' + ci, x1: (22 + 14.2 * Math.sin(ca)).toFixed(1), y1: (22 - 14.2 * Math.cos(ca)).toFixed(1), x2: (22 + 16.5 * Math.sin(ca)).toFixed(1), y2: (22 - 16.5 * Math.cos(ca)).toFixed(1), stroke: isContrast ? '#ffff00' : '#e0f2fe', strokeWidth: 1.5, strokeLinecap: 'round' });
@@ -1436,6 +1483,7 @@
                     !isContrast && h('path', { d: 'M 7 18 A 16 16 0 0 1 34 11 Q 22 18 7 18 Z', fill: '#ffffff', opacity: 0.14 }),
                     h('line', { x1: 22, y1: 22, x2: 22 + 9 * Math.sin(emHr), y2: 22 - 9 * Math.cos(emHr), stroke: isContrast ? '#ffff00' : '#ffffff', strokeWidth: 2.8, strokeLinecap: 'round' }),
                     h('line', { x1: 22, y1: 22, x2: 22 + 13 * Math.sin(emMin), y2: 22 - 13 * Math.cos(emMin), stroke: isContrast ? '#00ff00' : '#38bdf8', strokeWidth: 2, strokeLinecap: 'round' }),
+                    !isContrast && h('circle', { className: 'ts-decor-only ts-beacon-pulse', cx: 22, cy: 22, r: 5.2, fill: '#f97316', opacity: 0.35 }),
                     h('circle', { cx: 22, cy: 22, r: 2.8, fill: isContrast ? '#ffff00' : '#f97316', stroke: '#ffffff', strokeWidth: 0.8 })));
               })(),
               h('div', { className: 'min-w-0' },

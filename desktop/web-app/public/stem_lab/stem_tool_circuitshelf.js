@@ -33,6 +33,28 @@
     document.head.appendChild(st);
   })();
 
+  // Scoped GPU-composited schematic live motion
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-circuitshelf-motion-css')) return;
+    var mst = document.createElement('style');
+    mst.id = 'allo-circuitshelf-motion-css';
+    mst.textContent = [
+      '@keyframes csCurrentFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-24}}',
+      '@keyframes csScopeTrace{from{stroke-dashoffset:0}to{stroke-dashoffset:-18}}',
+      '@keyframes csNodeBeacon{0%,100%{transform:scale(.86);opacity:.18}50%{transform:scale(1.38);opacity:.48}}',
+      '@keyframes csCopperSheen{0%,100%{transform:translateX(-92px);opacity:0}18%{opacity:.2}50%{transform:translateX(632px);opacity:.28}82%{opacity:0}}',
+      '.cs-current-trace{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:5 19;animation:csCurrentFlow 2.6s linear infinite;pointer-events:none;}',
+      '.cs-scope-trace{animation:csScopeTrace 2.8s linear infinite;pointer-events:none;}',
+      '.cs-node-halo{transform-box:fill-box;transform-origin:center;animation:csNodeBeacon 3.1s ease-in-out infinite;pointer-events:none;}',
+      '.cs-pcb-sheen{animation:csCopperSheen 6.6s ease-in-out infinite;pointer-events:none;}',
+      '@media(prefers-reduced-motion:reduce){.cs-current-trace,.cs-scope-trace,.cs-node-halo,.cs-pcb-sheen{animation:none!important;}}',
+      '.theme-contrast [data-stem-tool-shell="circuitShelf"] .cs-node-halo,.theme-contrast [data-stem-tool-shell="circuitShelf"] .cs-pcb-sheen{display:none!important;}',
+      '.theme-contrast [data-stem-tool-shell="circuitShelf"] .cs-current-trace,.theme-contrast [data-stem-tool-shell="circuitShelf"] .cs-scope-trace{animation:none!important;}',
+      '@media(forced-colors:active){.cs-node-halo,.cs-pcb-sheen{display:none!important;}.cs-current-trace,.cs-scope-trace{animation:none!important;}}'
+    ].join('\n');
+    document.head.appendChild(mst);
+  })();
+
   var CIRCUIT_SHELF_CDN_URL = 'https://alloflow-cdn.pages.dev/circuit_shelf/circuit_shelf.html?v=1';
   function companionUrl(path, cdnUrl) {
     try {
@@ -273,9 +295,10 @@
       // Build schematic preview SVG elements tailored to the selected CircuitJS challenge (zero answer spoilers!)
       var mode = selectedStarter.mode;
       var schematicNodes = [];
-      var pinPad = function (k, x, y, col) {
+      var pinPad = function (k, x, y, col, delayIdx) {
+        var delayStyle = delayIdx ? { animationDelay: (delayIdx * 0.45) + 's' } : undefined;
         return h('g', { key: k },
-          !isContrast && h('circle', { cx: x, cy: y, r: 6.2, fill: col || pal.accent, opacity: 0.24 }),
+          !isContrast && h('circle', { className: 'cs-node-halo', cx: x, cy: y, r: 6.4, fill: col || pal.accent, opacity: 0.24, style: delayStyle }),
           h('circle', { cx: x, cy: y, r: 3.1, fill: isContrast ? '#000000' : '#0b1922', stroke: col || pal.accent, strokeWidth: 1.5 })
         );
       };
@@ -288,38 +311,42 @@
         h('line', { key: 'b3', x1: 57, y1: 74, x2: 75, y2: 74, stroke: pal.accent, strokeWidth: 2, strokeLinecap: 'round' }),
         !isContrast && h('line', { key: 'b4g', x1: 66, y1: 74, x2: 66, y2: 112, stroke: pal.wire, strokeWidth: 6, opacity: 0.2 }),
         h('line', { key: 'b4', x1: 66, y1: 74, x2: 66, y2: 112, stroke: pal.wire, strokeWidth: 2 }),
-        pinPad('bp1', 66, 36, pal.wire),
-        pinPad('bp2', 66, 112, pal.wire),
+        pinPad('bp1', 66, 36, pal.wire, 0),
+        pinPad('bp2', 66, 112, pal.wire, 1),
         h('text', { key: 'bt', x: 34, y: 74, fill: '#f8fafc', fontSize: 11, fontWeight: 700 }, 'V')
       );
       if (mode === 'rc-charging') {
         schematicNodes.push(
           !isContrast && h('polyline', { key: 'rcwg', points: '66,36 120,36 128,26 138,46 148,26 158,46 168,26 176,36 250,36 250,62', fill: 'none', stroke: pal.wire, strokeWidth: 6, opacity: 0.2 }),
           h('polyline', { key: 'rcw', points: '66,36 120,36 128,26 138,46 148,26 158,46 168,26 176,36 250,36 250,62', fill: 'none', stroke: pal.wire, strokeWidth: 2 }),
+          !isContrast && h('polyline', { key: 'rcwf', className: 'cs-current-trace', points: '66,36 120,36 128,26 138,46 148,26 158,46 168,26 176,36 250,36 250,62', stroke: '#bae6fd', strokeWidth: 1.8 }),
           !isContrast && h('line', { key: 'c1g', x1: 234, y1: 62, x2: 266, y2: 62, stroke: pal.accent, strokeWidth: 7, opacity: 0.24, strokeLinecap: 'round' }),
           h('line', { key: 'c1', x1: 234, y1: 62, x2: 266, y2: 62, stroke: pal.accent, strokeWidth: 3, strokeLinecap: 'round' }),
           h('line', { key: 'c2', x1: 234, y1: 74, x2: 266, y2: 74, stroke: pal.accent, strokeWidth: 3, strokeLinecap: 'round' }),
           !isContrast && h('polyline', { key: 'rcbg', points: '250,74 250,112 66,112', fill: 'none', stroke: pal.wire, strokeWidth: 6, opacity: 0.2 }),
           h('polyline', { key: 'rcb', points: '250,74 250,112 66,112', fill: 'none', stroke: pal.wire, strokeWidth: 2 }),
-          pinPad('rcp1', 250, 36, pal.accent),
-          pinPad('rcp2', 250, 112, pal.wire),
+          !isContrast && h('polyline', { key: 'rcbf', className: 'cs-current-trace', points: '250,74 250,112 66,112', stroke: '#bae6fd', strokeWidth: 1.8 }),
+          pinPad('rcp1', 250, 36, pal.accent, 2),
+          pinPad('rcp2', 250, 112, pal.wire, 3),
           h('text', { key: 'rl', x: 148, y: 20, textAnchor: 'middle', fill: pal.accent, fontSize: 11, fontWeight: 700 }, 'R'),
           h('text', { key: 'cl', x: 274, y: 72, fill: pal.accent, fontSize: 11, fontWeight: 700 }, 'C'),
           // Scope preview panel (dotted inquiry curve — no spoiler label)
           h('rect', { key: 'scb', x: 332, y: 22, width: 286, height: 96, rx: 8, fill: isContrast ? '#000000' : 'url(#cs-scope-bg)', stroke: pal.ok, strokeWidth: 1.4 }),
           h('line', { key: 'scg', x1: 348, y1: 98, x2: 602, y2: 98, stroke: '#475569', strokeWidth: 1 }),
           !isContrast && h('path', { key: 'sccg', d: 'M352 96 Q410 46 594 40', fill: 'none', stroke: pal.ok, strokeWidth: 6, opacity: 0.22 }),
-          h('path', { key: 'scc', d: 'M352 96 Q410 46 594 40', fill: 'none', stroke: pal.ok, strokeWidth: 2, strokeDasharray: '5 4' }),
+          h('path', { key: 'scc', className: 'cs-scope-trace', d: 'M352 96 Q410 46 594 40', fill: 'none', stroke: pal.ok, strokeWidth: 2, strokeDasharray: '5 4' }),
           h('text', { key: 'sct', x: 350, y: 38, fill: '#e2e8f0', fontSize: 11, fontWeight: 700 }, t('stem.circuitShelf.svg_scope_rc', 'SCOPE: Vc(t) = ?'))
         );
       } else if (mode === 'voltage-divider') {
         schematicNodes.push(
           !isContrast && h('polyline', { key: 'vd1g', points: '66,36 220,36 220,48 210,54 230,62 210,70 220,76 220,84 210,90 230,98 210,104 220,112 66,112', fill: 'none', stroke: pal.wire, strokeWidth: 6, opacity: 0.2 }),
           h('polyline', { key: 'vd1', points: '66,36 220,36 220,48 210,54 230,62 210,70 220,76 220,84 210,90 230,98 210,104 220,112 66,112', fill: 'none', stroke: pal.wire, strokeWidth: 2 }),
+          !isContrast && h('polyline', { key: 'vd1f', className: 'cs-current-trace', points: '66,36 220,36 220,48 210,54 230,62 210,70 220,76 220,84 210,90 230,98 210,104 220,112 66,112', stroke: '#bae6fd', strokeWidth: 1.8 }),
           !isContrast && h('line', { key: 'vdtg', x1: 220, y1: 78, x2: 292, y2: 78, stroke: pal.accent, strokeWidth: 6, opacity: 0.24 }),
           h('line', { key: 'vdt', x1: 220, y1: 78, x2: 292, y2: 78, stroke: pal.accent, strokeWidth: 2 }),
-          pinPad('vdp', 220, 78, pal.accent),
-          !isContrast && h('circle', { key: 'vdmg', cx: 312, cy: 78, r: 21, fill: pal.accent, opacity: 0.16 }),
+          !isContrast && h('line', { key: 'vdtf', className: 'cs-current-trace', x1: 220, y1: 78, x2: 292, y2: 78, stroke: '#fef08a', strokeWidth: 1.6 }),
+          pinPad('vdp', 220, 78, pal.accent, 2),
+          !isContrast && h('circle', { key: 'vdmg', className: 'cs-node-halo', cx: 312, cy: 78, r: 21, fill: pal.accent, opacity: 0.18 }),
           h('circle', { key: 'vdm', cx: 312, cy: 78, r: 16, fill: isContrast ? '#000000' : '#0f212b', stroke: pal.accent, strokeWidth: 1.8 }),
           h('text', { key: 'vdl', x: 312, y: 82, textAnchor: 'middle', fill: pal.accent, fontSize: 11, fontWeight: 800 }, 'V?'),
           h('text', { key: 'r1t', x: 194, y: 65, fill: '#f8fafc', fontSize: 11, fontWeight: 700 }, 'R1'),
@@ -331,10 +358,12 @@
         schematicNodes.push(
           !isContrast && h('line', { key: 'lag', x1: 110, y1: 50, x2: 185, y2: 50, stroke: pal.wire, strokeWidth: 6, opacity: 0.2 }),
           h('line', { key: 'la', x1: 110, y1: 50, x2: 185, y2: 50, stroke: pal.wire, strokeWidth: 2 }),
+          !isContrast && h('line', { key: 'laf', className: 'cs-current-trace', x1: 110, y1: 50, x2: 185, y2: 50, stroke: '#bae6fd', strokeWidth: 1.6 }),
           !isContrast && h('line', { key: 'lbg', x1: 110, y1: 92, x2: 185, y2: 92, stroke: pal.wire, strokeWidth: 6, opacity: 0.2 }),
           h('line', { key: 'lb', x1: 110, y1: 92, x2: 185, y2: 92, stroke: pal.wire, strokeWidth: 2 }),
-          pinPad('lp1', 110, 50, pal.accent),
-          pinPad('lp2', 110, 92, pal.accent),
+          !isContrast && h('line', { key: 'lbf', className: 'cs-current-trace', x1: 110, y1: 92, x2: 185, y2: 92, stroke: '#bae6fd', strokeWidth: 1.6, style: { animationDelay: '-1.1s' } }),
+          pinPad('lp1', 110, 50, pal.accent, 2),
+          pinPad('lp2', 110, 92, pal.accent, 3),
           h('text', { key: 'lat', x: 96, y: 54, fill: pal.accent, fontSize: 12, fontWeight: 700 }, 'A'),
           h('text', { key: 'lbt', x: 96, y: 96, fill: pal.accent, fontSize: 12, fontWeight: 700 }, 'B'),
           !isContrast && h('path', { key: 'lgg', d: 'M185 36 L225 36 A35 35 0 0 1 225 106 L185 106 Z', fill: 'none', stroke: pal.ok, strokeWidth: 6, opacity: 0.2 }),
@@ -342,7 +371,8 @@
           h('text', { key: 'lgt', x: 218, y: 75, textAnchor: 'middle', fill: '#ffffff', fontSize: 11, fontWeight: 800 }, 'AND/OR'),
           !isContrast && h('line', { key: 'lqg', x1: 260, y1: 71, x2: 316, y2: 71, stroke: pal.ok, strokeWidth: 6, opacity: 0.24 }),
           h('line', { key: 'lq', x1: 260, y1: 71, x2: 316, y2: 71, stroke: pal.ok, strokeWidth: 2 }),
-          !isContrast && h('circle', { key: 'lqcg', cx: 332, cy: 71, r: 19, fill: pal.accent, opacity: 0.16 }),
+          !isContrast && h('line', { key: 'lqf', className: 'cs-current-trace', x1: 260, y1: 71, x2: 316, y2: 71, stroke: '#a7f3d0', strokeWidth: 1.7 }),
+          !isContrast && h('circle', { key: 'lqcg', className: 'cs-node-halo', cx: 332, cy: 71, r: 19, fill: pal.accent, opacity: 0.18 }),
           h('circle', { key: 'lqc', cx: 332, cy: 71, r: 14, fill: isContrast ? '#000000' : '#0f212b', stroke: pal.accent, strokeWidth: 2 }),
           h('text', { key: 'lqt', x: 332, y: 75, textAnchor: 'middle', fill: pal.accent, fontSize: 11, fontWeight: 800 }, 'Q?'),
           h('text', { key: 'lgd', x: 368, y: 66, fill: '#e2e8f0', fontSize: 11, fontWeight: 700 }, t('stem.circuitShelf.svg_logic', 'Truth-Table Probe')),
@@ -352,14 +382,16 @@
         schematicNodes.push(
           !isContrast && h('polyline', { key: 'sc1g', points: '66,36 270,36 270,58', fill: 'none', stroke: pal.wire, strokeWidth: 6, opacity: 0.2 }),
           h('polyline', { key: 'sc1', points: '66,36 270,36 270,58', fill: 'none', stroke: pal.wire, strokeWidth: 2 }),
+          !isContrast && h('polyline', { key: 'sc1f', className: 'cs-current-trace', points: '66,36 270,36 270,58', stroke: '#bae6fd', strokeWidth: 1.7 }),
           h('circle', { key: 'scl', cx: 270, cy: 74, r: 15, fill: isContrast ? '#000000' : '#0f212b', stroke: pal.wire, strokeWidth: 2 }),
           h('text', { key: 'sclt', x: 270, y: 78, textAnchor: 'middle', fill: '#f8fafc', fontSize: 11, fontWeight: 700 }, 'R'),
           !isContrast && h('polyline', { key: 'sc2g', points: '270,89 270,112 66,112', fill: 'none', stroke: pal.wire, strokeWidth: 6, opacity: 0.2 }),
           h('polyline', { key: 'sc2', points: '270,89 270,112 66,112', fill: 'none', stroke: pal.wire, strokeWidth: 2 }),
+          !isContrast && h('polyline', { key: 'sc2f', className: 'cs-current-trace', points: '270,89 270,112 66,112', stroke: '#bae6fd', strokeWidth: 1.7 }),
           !isContrast && h('line', { key: 'scbg', x1: 168, y1: 36, x2: 168, y2: 112, stroke: pal.accent, strokeWidth: 7, opacity: 0.24 }),
-          h('line', { key: 'scb', x1: 168, y1: 36, x2: 168, y2: 112, stroke: pal.accent, strokeWidth: 2.5, strokeDasharray: '6 4' }),
-          pinPad('scp1', 168, 36, pal.accent),
-          pinPad('scp2', 168, 112, pal.accent),
+          h('line', { key: 'scb', className: 'cs-scope-trace', x1: 168, y1: 36, x2: 168, y2: 112, stroke: pal.accent, strokeWidth: 2.5, strokeDasharray: '6 4' }),
+          pinPad('scp1', 168, 36, pal.accent, 2),
+          pinPad('scp2', 168, 112, pal.accent, 3),
           h('text', { key: 'sct1', x: 178, y: 78, fill: pal.accent, fontSize: 11, fontWeight: 800 }, 'Bypass ?'),
           h('text', { key: 'sct2', x: 320, y: 64, fill: '#e2e8f0', fontSize: 11, fontWeight: 700 }, t('stem.circuitShelf.svg_short', 'Compare branch current')),
           h('text', { key: 'sct3', x: 320, y: 82, fill: '#cbd5e1', fontSize: 11 }, t('stem.circuitShelf.svg_short_sub', 'Predict meter spike I = ?'))
@@ -369,19 +401,22 @@
         schematicNodes.push(
           !isContrast && h('polyline', { key: 'df1g', points: '66,36 150,36', fill: 'none', stroke: pal.wire, strokeWidth: 6, opacity: 0.2 }),
           h('polyline', { key: 'df1', points: '66,36 150,36', fill: 'none', stroke: pal.wire, strokeWidth: 2 }),
-          !isContrast && h('circle', { key: 'dfag', cx: 168, cy: 36, r: 20, fill: pal.ok, opacity: 0.16 }),
+          !isContrast && h('polyline', { key: 'df1f', className: 'cs-current-trace', points: '66,36 150,36', stroke: '#bae6fd', strokeWidth: 1.8 }),
+          !isContrast && h('circle', { key: 'dfag', className: 'cs-node-halo', cx: 168, cy: 36, r: 20, fill: pal.ok, opacity: 0.18 }),
           h('circle', { key: 'dfa', cx: 168, cy: 36, r: 15, fill: isContrast ? '#000000' : '#0f212b', stroke: pal.ok, strokeWidth: 2 }),
           h('text', { key: 'dfat', x: 168, y: 40, textAnchor: 'middle', fill: pal.ok, fontSize: 11, fontWeight: 800 }, 'A?'),
           !isContrast && h('polyline', { key: 'df2g', points: '183,36 270,36 270,58', fill: 'none', stroke: pal.wire, strokeWidth: 6, opacity: 0.2 }),
           h('polyline', { key: 'df2', points: '183,36 270,36 270,58', fill: 'none', stroke: pal.wire, strokeWidth: 2 }),
-          !isContrast && h('circle', { key: 'dflg', cx: 270, cy: 74, r: 21, fill: pal.accent, opacity: 0.18 }),
+          !isContrast && h('polyline', { key: 'df2f', className: 'cs-current-trace', points: '183,36 270,36 270,58', stroke: '#bae6fd', strokeWidth: 1.8 }),
+          !isContrast && h('circle', { key: 'dflg', className: 'cs-node-halo', cx: 270, cy: 74, r: 21, fill: pal.accent, opacity: 0.2, style: { animationDelay: '-1.5s' } }),
           h('circle', { key: 'dfl', cx: 270, cy: 74, r: 15, fill: isContrast ? '#000000' : '#0f212b', stroke: pal.accent, strokeWidth: 2 }),
           h('line', { key: 'dfx1', x1: 261, y1: 65, x2: 279, y2: 83, stroke: pal.accent, strokeWidth: 1.6 }),
           h('line', { key: 'dfx2', x1: 279, y1: 65, x2: 261, y2: 83, stroke: pal.accent, strokeWidth: 1.6 }),
           !isContrast && h('polyline', { key: 'df3g', points: '270,89 270,112 66,112', fill: 'none', stroke: pal.wire, strokeWidth: 6, opacity: 0.2 }),
           h('polyline', { key: 'df3', points: '270,89 270,112 66,112', fill: 'none', stroke: pal.wire, strokeWidth: 2 }),
-          pinPad('dfp1', 270, 36, pal.wire),
-          pinPad('dfp2', 270, 112, pal.wire),
+          !isContrast && h('polyline', { key: 'df3f', className: 'cs-current-trace', points: '270,89 270,112 66,112', stroke: '#bae6fd', strokeWidth: 1.8 }),
+          pinPad('dfp1', 270, 36, pal.wire, 2),
+          pinPad('dfp2', 270, 112, pal.wire, 3),
           // Bench POE readouts on right
           h('rect', { key: 'p1', x: 326, y: 24, width: 294, height: 92, rx: 10, fill: isContrast ? '#000000' : 'url(#cs-scope-bg)', stroke: isContrast ? '#ffff00' : 'rgba(56,189,248,0.34)', strokeWidth: 1.4 }),
           !isContrast && h('line', { key: 'p1sh', x1: 336, y1: 25.5, x2: 610, y2: 25.5, stroke: '#bae6fd', strokeWidth: 0.9, opacity: 0.3 }),
@@ -452,9 +487,10 @@
               !isContrast && h('path', { d: 'M10 5.5 H38', stroke: '#fed7aa', strokeWidth: 0.9, opacity: 0.4, strokeLinecap: 'round' }),
               !isContrast && h('polyline', { points: '8,24 14,24 17,15 22,33 27,15 32,33 35,24 40,24', fill: 'none', stroke: '#fbbf24', strokeWidth: 5.5, opacity: 0.24, strokeLinejoin: 'round', strokeLinecap: 'round' }),
               h('polyline', { points: '8,24 14,24 17,15 22,33 27,15 32,33 35,24 40,24', fill: 'none', stroke: isContrast ? '#ffff00' : '#fbbf24', strokeWidth: 2.2, strokeLinejoin: 'round', strokeLinecap: 'round' }),
-              !isContrast && h('circle', { cx: 10, cy: 12, r: 5.5, fill: '#38bdf8', opacity: 0.24 }),
+              !isContrast && h('polyline', { className: 'cs-current-trace', points: '8,24 14,24 17,15 22,33 27,15 32,33 35,24 40,24', stroke: '#fef08a', strokeWidth: 1.4 }),
+              !isContrast && h('circle', { className: 'cs-node-halo', cx: 10, cy: 12, r: 5.5, fill: '#38bdf8', opacity: 0.24 }),
               h('circle', { cx: 10, cy: 12, r: 2.8, fill: isContrast ? '#00ffff' : '#38bdf8', stroke: '#ffffff', strokeWidth: 0.8 }),
-              !isContrast && h('circle', { cx: 38, cy: 36, r: 5.5, fill: '#34d399', opacity: 0.24 }),
+              !isContrast && h('circle', { className: 'cs-node-halo', cx: 38, cy: 36, r: 5.5, fill: '#34d399', opacity: 0.24, style: { animationDelay: '-1.5s' } }),
               h('circle', { cx: 38, cy: 36, r: 2.8, fill: isContrast ? '#66ff66' : '#34d399', stroke: '#ffffff', strokeWidth: 0.8 }),
               h('path', { d: 'M13 12 L22 12 M26 36 L35 36', stroke: isContrast ? '#00ffff' : '#38bdf8', strokeWidth: 1.4, strokeLinecap: 'round' })
             ),
@@ -502,10 +538,21 @@
                 h('linearGradient', { id: 'cs-scope-bg', x1: '0', y1: '0', x2: '0', y2: '1' },
                   h('stop', { offset: '0%', stopColor: '#0c2430' }),
                   h('stop', { offset: '100%', stopColor: '#07151e' })
+                ),
+                h('linearGradient', { id: 'cs-copper-sheen', x1: '0', y1: '0', x2: '1', y2: '0' },
+                  h('stop', { offset: '0%', stopColor: '#38bdf8', stopOpacity: 0 }),
+                  h('stop', { offset: '50%', stopColor: '#fed7aa', stopOpacity: 0.45 }),
+                  h('stop', { offset: '100%', stopColor: '#38bdf8', stopOpacity: 0 })
+                ),
+                h('clipPath', { id: 'cs-pcb-clip' },
+                  h('rect', { x: 4, y: 4, width: 632, height: 136, rx: 10 })
                 )
               ),
-              // Crisp PCB/blueprint schematic backdrop + drafting grid
+              // Crisp PCB/blueprint schematic backdrop + copper sheen + drafting grid
               !isContrast && h('rect', { x: 4, y: 4, width: 632, height: 136, rx: 10, fill: 'url(#cs-pcb-bg)', stroke: 'rgba(56,189,248,0.22)', strokeWidth: 1 }),
+              !isContrast && h('g', { clipPath: 'url(#cs-pcb-clip)' },
+                h('rect', { className: 'cs-pcb-sheen', x: 4, y: 4, width: 92, height: 136, fill: 'url(#cs-copper-sheen)' })
+              ),
               !isContrast && [80, 160, 240, 320, 400, 480, 560].map(function (gx) {
                 return h('line', { key: 'cgx-' + gx, x1: gx, y1: 16, x2: gx, y2: 128, stroke: 'rgba(56,189,248,0.08)', strokeWidth: 1 });
               }),

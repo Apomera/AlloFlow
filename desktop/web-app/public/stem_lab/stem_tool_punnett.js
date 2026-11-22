@@ -100,6 +100,43 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // ── Scoped GPU-composited genetics motion choreography (zero per-frame DOM thrashing) ──
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-punnett-motion-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-punnett-motion-css';
+    st.textContent = [
+      '@keyframes punGameteFlow { from { stroke-dashoffset: 28; } to { stroke-dashoffset: 0; } }',
+      '@keyframes punPedigreeFlow { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }',
+      '@keyframes punBarShimmer { 0%, 100% { opacity: 0.28; } 50% { opacity: 0.62; } }',
+      '@keyframes punBevelGlint { 0% { transform: translateX(-36px); opacity: 0; } 30% { opacity: 0.48; } 68% { opacity: 0.36; } 100% { transform: translateX(176px); opacity: 0; } }',
+      '@keyframes punBeaconPulse { 0%, 100% { opacity: 0.2; transform: scale(0.92); } 50% { opacity: 0.56; transform: scale(1.22); } }',
+      '@keyframes punLocusPulse { 0%, 100% { opacity: 0.18; } 50% { opacity: 0.46; } }',
+      '@keyframes punCarrierOrbit { from { stroke-dashoffset: 20; } to { stroke-dashoffset: 0; } }',
+      '@keyframes punOrbBreathe { 0%, 100% { opacity: 0.84; } 50% { opacity: 1; } }',
+      '@keyframes punRatioSheen { 0% { transform: translateX(-110%); opacity: 0; } 35% { opacity: 0.42; } 70% { opacity: 0.32; } 100% { transform: translateX(210%); opacity: 0; } }',
+      '@keyframes punCellRing { 0% { transform: scale(0.92); opacity: 0.72; } 100% { transform: scale(1.06); opacity: 0; } }',
+      '[data-punnett-root] .pun-gamete-flow { animation: punGameteFlow 2.6s linear infinite; }',
+      '[data-punnett-root] .pun-pedigree-flow { animation: punPedigreeFlow 3.4s linear infinite; }',
+      '[data-punnett-root] .pun-bar-shimmer { animation: punBarShimmer 3.2s ease-in-out infinite; }',
+      '[data-punnett-root] .pun-bevel-glint { transform-box: fill-box; transform-origin: center; animation: punBevelGlint 4.2s ease-in-out infinite; }',
+      '[data-punnett-root] .pun-beacon { transform-box: fill-box; transform-origin: center; animation: punBeaconPulse 2.6s ease-in-out infinite; }',
+      '[data-punnett-root] .pun-locus-pulse { animation: punLocusPulse 2.8s ease-in-out infinite; }',
+      '[data-punnett-root] .pun-carrier-orbit { animation: punCarrierOrbit 4.2s linear infinite; }',
+      '[data-punnett-root] .pun-orb-breathe { animation: punOrbBreathe 2.2s ease-in-out infinite; }',
+      '[data-punnett-root] .pun-ratio-bar { position: relative; overflow: hidden; }',
+      '[data-punnett-root] .pun-ratio-bar::after { content: ""; position: absolute; inset: 0; width: 45%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.48), transparent); animation: punRatioSheen 3.6s ease-in-out infinite; pointer-events: none; }',
+      '[data-punnett-root] .punnett-grid-shell td.punnett-cell { position: relative; transition: transform 180ms ease, box-shadow 180ms ease; }',
+      '[data-punnett-root] .punnett-grid-shell td.punnett-cell:hover { box-shadow: inset 0 0 0 2px rgba(124,58,237,0.45); }',
+      '[data-punnett-root] .punnett-grid-shell td.punnett-cell::after { content: ""; position: absolute; inset: 3px; border-radius: 8px; border: 2px solid rgba(124,58,237,0.55); opacity: 0; pointer-events: none; }',
+      '[data-punnett-root] .punnett-grid-shell td.punnett-cell:hover::after { animation: punCellRing 1.15s ease-out infinite; }',
+      '@media (prefers-reduced-motion: reduce) { [data-punnett-root] .pun-gamete-flow, [data-punnett-root] .pun-pedigree-flow, [data-punnett-root] .pun-bar-shimmer, [data-punnett-root] .pun-bevel-glint, [data-punnett-root] .pun-beacon, [data-punnett-root] .pun-locus-pulse, [data-punnett-root] .pun-carrier-orbit, [data-punnett-root] .pun-orb-breathe, [data-punnett-root] .pun-ratio-bar::after, [data-punnett-root] .punnett-grid-shell td.punnett-cell::after { animation: none !important; transition: none !important; } [data-punnett-root] .pun-bevel-glint, [data-punnett-root] .pun-ratio-bar::after { opacity: 0 !important; } }',
+      '.theme-contrast [data-punnett-root] .pun-gamete-flow, .theme-contrast [data-punnett-root] .pun-pedigree-flow, .theme-contrast [data-punnett-root] .pun-bar-shimmer, .theme-contrast [data-punnett-root] .pun-bevel-glint, .theme-contrast [data-punnett-root] .pun-beacon, .theme-contrast [data-punnett-root] .pun-locus-pulse, .theme-contrast [data-punnett-root] .pun-carrier-orbit, .theme-contrast [data-punnett-root] .pun-orb-breathe, .theme-contrast [data-punnett-root] .pun-ratio-bar::after, .theme-contrast [data-punnett-root] .punnett-grid-shell td.punnett-cell::after { animation: none !important; }',
+      '.theme-contrast [data-punnett-root] .pun-motion-deco, .theme-contrast [data-punnett-root] .pun-ratio-bar::after, .theme-contrast [data-punnett-root] .punnett-grid-shell td.punnett-cell::after { opacity: 0 !important; display: none !important; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-punnett')) return;
@@ -2253,12 +2290,14 @@ window.StemLab = window.StemLab || {
                   h('line', { x1: 14, y1: 20, x2: 26, y2: 20, stroke: isContrastNow ? '#00ff00' : '#67e8f9', strokeWidth: 1.8, strokeLinecap: 'round' }),
                   h('line', { x1: 15, y1: 28, x2: 25, y2: 28, stroke: isContrastNow ? '#ffff00' : '#fde68a', strokeWidth: 1.8, strokeLinecap: 'round' }),
                   // Dual-pass luminous double-helix backbones
-                  !isContrastNow && h('path', { d: 'M 12 8 C 28 14, 12 26, 28 32', fill: 'none', stroke: '#34d399', strokeWidth: 5, strokeLinecap: 'round', opacity: 0.24 }),
-                  !isContrastNow && h('path', { d: 'M 28 8 C 12 14, 28 26, 12 32', fill: 'none', stroke: '#c4b5fd', strokeWidth: 5, strokeLinecap: 'round', opacity: 0.24 }),
+                  !isContrastNow && h('path', { d: 'M 12 8 C 28 14, 12 26, 28 32', fill: 'none', stroke: '#34d399', strokeWidth: 5, strokeLinecap: 'round', opacity: 0.24, className: 'pun-locus-pulse pun-motion-deco' }),
+                  !isContrastNow && h('path', { d: 'M 28 8 C 12 14, 28 26, 12 32', fill: 'none', stroke: '#c4b5fd', strokeWidth: 5, strokeLinecap: 'round', opacity: 0.24, className: 'pun-locus-pulse pun-motion-deco', style: { animationDelay: '0.8s' } }),
                   h('path', { d: 'M 12 8 C 28 14, 12 26, 28 32', fill: 'none', stroke: isContrastNow ? '#00ff00' : '#34d399', strokeWidth: 2.4, strokeLinecap: 'round' }),
                   h('path', { d: 'M 28 8 C 12 14, 28 26, 12 32', fill: 'none', stroke: isContrastNow ? '#ffff00' : '#c4b5fd', strokeWidth: 2.4, strokeLinecap: 'round' }),
                   // Specular nexus beads
+                  !isContrastNow && h('circle', { cx: 20, cy: 15.6, r: 3.4, fill: '#34d399', opacity: 0.28, className: 'pun-beacon pun-motion-deco' }),
                   !isContrastNow && h('circle', { cx: 20, cy: 15.6, r: 1.6, fill: '#ffffff', opacity: 0.85 }),
+                  !isContrastNow && h('circle', { cx: 20, cy: 24.4, r: 3.4, fill: '#c4b5fd', opacity: 0.28, className: 'pun-beacon pun-motion-deco', style: { animationDelay: '1.2s' } }),
                   !isContrastNow && h('circle', { cx: 20, cy: 24.4, r: 1.6, fill: '#ffffff', opacity: 0.85 })
                 ),
                 h('div', { className: 'min-w-0' },
@@ -2579,7 +2618,7 @@ window.StemLab = window.StemLab || {
                           h('span', { style: { color: item.color, fontSize: 12, fontWeight: 900 } }, item.count + '/4 - ' + (item.count * 25) + '%')
                         ),
                         h('div', { style: { height: 7, borderRadius: 12, background: 'rgba(255,255,255,0.78)', overflow: 'hidden' } },
-                          h('div', { style: { width: (item.count * 25) + '%', height: '100%', background: item.color, borderRadius: 12 } })
+                          h('div', { className: !isContrastNow && item.count > 0 ? 'pun-ratio-bar' : undefined, style: { width: (item.count * 25) + '%', height: '100%', background: item.color, borderRadius: 12 } })
                         )
                       );
                     })
@@ -2638,20 +2677,28 @@ window.StemLab = window.StemLab || {
                         h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.36 }),
                         h('stop', { offset: '52%', stopColor: '#ffffff', stopOpacity: 0.04 }),
                         h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.14 })
+                      ),
+                      h('linearGradient', { id: 'pun-bevel-sweep', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
+                        h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.56 }),
+                        h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+                      ),
+                      h('clipPath', { id: 'pun-bar-clip' },
+                        h('rect', { x: 186, y: 32, width: totalBarW, height: 26, rx: 5 })
                       )
                     ),
                     // Left: Recessed laboratory genetics well for Parent 1 & Parent 2 Chromatid Pairs
                     h('rect', { x: 8, y: 8, width: 162, height: 82, rx: 10, fill: isContrastNow ? '#000000' : 'url(#pun-seg-well)', stroke: isContrastNow ? '#ffff00' : (isDarkNow ? '#334155' : '#cbd5e1'), strokeWidth: 1.4 }),
                     h('text', { x: 89, y: 22, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: isContrastNow ? '#ffff00' : (isDarkNow ? '#cbd5e1' : '#475569') }, 'GAMETE SEGREGATION'),
-                    // Parent 1 specular 3D-shaded paired chromosomes with glowing gene-locus bands
+                    // Parent 1 specular 3D-shaded paired chromosomes with pulsing gene-locus bands
                     [
                       { x: 24, lbl: p1a }, { x: 52, lbl: p1b }
                     ].map(function(ch, ci) {
                       return h('g', { key: 'p1c-' + ci },
                         !isContrastNow && h('rect', { x: ch.x + 1, y: 32, width: 22, height: 48, rx: 11, fill: '#7c3aed', opacity: 0.16 }),
                         h('rect', { x: ch.x, y: 30, width: 22, height: 48, rx: 11, fill: isContrastNow ? '#000000' : 'url(#pun-chr-p1)', stroke: isContrastNow ? '#00ff00' : '#7c3aed', strokeWidth: 2 }),
-                        // Glowing gene-locus band & centromere waist
-                        !isContrastNow && h('rect', { x: ch.x + 2, y: 51, width: 18, height: 6, rx: 3, fill: '#7c3aed', opacity: 0.25 }),
+                        // Pulsing gene-locus band & centromere waist
+                        !isContrastNow && h('rect', { x: ch.x + 2, y: 51, width: 18, height: 6, rx: 3, fill: '#7c3aed', opacity: 0.25, className: 'pun-locus-pulse pun-motion-deco', style: { animationDelay: (ci * 0.5) + 's' } }),
                         h('line', { x1: ch.x + 2, y1: 54, x2: ch.x + 20, y2: 54, stroke: isContrastNow ? '#00ff00' : '#7c3aed', strokeWidth: 3, strokeLinecap: 'round' }),
                         !isContrastNow && h('line', { x1: ch.x + 5, y1: 35, x2: ch.x + 5, y2: 73, stroke: '#ffffff', strokeWidth: 1.4, strokeLinecap: 'round', opacity: 0.55 }),
                         h('text', { x: ch.x + 11, y: 47, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrastNow ? '#00ff00' : '#4c1d95' }, ch.lbl)
@@ -2659,19 +2706,24 @@ window.StemLab = window.StemLab || {
                     }),
                     // Cross multiplier symbol
                     h('text', { x: 89, y: 58, textAnchor: 'middle', fontSize: 14, fontWeight: 900, fill: isContrastNow ? '#ffff00' : '#64748b' }, '\u00D7'),
-                    // Parent 2 specular 3D-shaded paired chromosomes with glowing gene-locus bands
+                    // Parent 2 specular 3D-shaded paired chromosomes with pulsing gene-locus bands
                     [
                       { x: 104, lbl: p2a }, { x: 132, lbl: p2b }
                     ].map(function(ch, ci) {
                       return h('g', { key: 'p2c-' + ci },
                         !isContrastNow && h('rect', { x: ch.x + 1, y: 32, width: 22, height: 48, rx: 11, fill: '#2563eb', opacity: 0.16 }),
                         h('rect', { x: ch.x, y: 30, width: 22, height: 48, rx: 11, fill: isContrastNow ? '#000000' : 'url(#pun-chr-p2)', stroke: isContrastNow ? '#ffff00' : '#2563eb', strokeWidth: 2 }),
-                        !isContrastNow && h('rect', { x: ch.x + 2, y: 51, width: 18, height: 6, rx: 3, fill: '#2563eb', opacity: 0.25 }),
+                        !isContrastNow && h('rect', { x: ch.x + 2, y: 51, width: 18, height: 6, rx: 3, fill: '#2563eb', opacity: 0.25, className: 'pun-locus-pulse pun-motion-deco', style: { animationDelay: (0.25 + ci * 0.5) + 's' } }),
                         h('line', { x1: ch.x + 2, y1: 54, x2: ch.x + 20, y2: 54, stroke: isContrastNow ? '#ffff00' : '#2563eb', strokeWidth: 3, strokeLinecap: 'round' }),
                         !isContrastNow && h('line', { x1: ch.x + 5, y1: 35, x2: ch.x + 5, y2: 73, stroke: '#ffffff', strokeWidth: 1.4, strokeLinecap: 'round', opacity: 0.55 }),
                         h('text', { x: ch.x + 11, y: 47, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrastNow ? '#ffff00' : '#1e3a8a' }, ch.lbl)
                       );
                     }),
+                    // Flowing parental gamete-to-offspring connector dashes bridging meiosis -> offspring ratios
+                    !isContrastNow && h('g', { fill: 'none', strokeWidth: 1.4, strokeDasharray: '4 3', strokeLinecap: 'round', className: 'pun-gamete-flow pun-motion-deco' },
+                      h('path', { d: 'M 74 54 C 118 24, 154 28, 185 39', stroke: '#7c3aed', opacity: 0.55 }),
+                      h('path', { d: 'M 154 54 C 166 54, 174 50, 185 48', stroke: '#2563eb', opacity: 0.65 })
+                    ),
                     // Right: Recessed stage + Glossy Beveled Proportional Offspring Genotype Bar
                     h('rect', { x: 178, y: 8, width: 174, height: 82, rx: 10, fill: isContrastNow ? '#000000' : 'url(#pun-seg-well)', stroke: isContrastNow ? '#ffff00' : (isDarkNow ? '#334155' : '#cbd5e1'), strokeWidth: 1.4 }),
                     h('text', { x: 265, y: 22, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: isContrastNow ? '#ffff00' : (isDarkNow ? '#cbd5e1' : '#475569') }, 'OFFSPRING GENOTYPE MIX'),
@@ -2682,16 +2734,25 @@ window.StemLab = window.StemLab || {
                         !isContrastNow && h('rect', { x: barX, y: 34, width: segW, height: 26, rx: 5, fill: segColors[gi % segColors.length], opacity: 0.2 }),
                         h('rect', { x: barX, y: 32, width: segW, height: 26, rx: 5, fill: segColors[gi % segColors.length], stroke: isContrastNow ? '#000000' : '#ffffff', strokeWidth: 1.5 }),
                         !isContrastNow && h('rect', { x: barX + 1, y: 33, width: Math.max(4, segW - 2), height: 24, rx: 4, fill: 'url(#pun-bar-gloss)' }),
-                        !isContrastNow && segW >= 14 && h('line', { x1: barX + 4, y1: 34.5, x2: barX + segW - 4, y2: 34.5, stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.6 }),
+                        !isContrastNow && segW >= 14 && h('line', { x1: barX + 4, y1: 34.5, x2: barX + segW - 4, y2: 34.5, stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.6, className: 'pun-bar-shimmer pun-motion-deco' }),
                         h('text', { x: barX + w / 2 - 1, y: 49, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: isContrastNow ? '#000000' : '#ffffff' }, gk)
                       );
                       barX += w;
                       return seg;
                     }),
-                    // Compact genotype ratio labels beneath bar
+                    // Clipped diagonal bevel glint sweep across offspring genotype ratio bar
+                    !isContrastNow && h('g', { clipPath: 'url(#pun-bar-clip)', className: 'pun-motion-deco' },
+                      h('rect', { x: 186, y: 30, width: 28, height: 30, fill: 'url(#pun-bevel-sweep)', className: 'pun-bevel-glint' })
+                    ),
+                    // Compact genotype ratio labels + pulsing highlight beacons beneath bar
                     gKeys.map(function(gk, gi) {
-                      var lx = 186 + gi * Math.floor(160 / Math.max(1, gKeys.length));
-                      return h('text', { key: 'gl' + gk, x: lx, y: 76, fontSize: 8.5, fontWeight: 800, fill: isContrastNow ? '#ffff00' : segColors[gi % segColors.length] }, gk + ':' + (counts[gk] * 25) + '%');
+                      var lx = 192 + gi * Math.floor(156 / Math.max(1, gKeys.length));
+                      var col = segColors[gi % segColors.length];
+                      return h('g', { key: 'gl' + gk },
+                        !isContrastNow && h('circle', { cx: lx - 5, cy: 73, r: 3.6, fill: col, opacity: 0.24, className: 'pun-beacon pun-motion-deco', style: { animationDelay: (gi * 0.55) + 's' } }),
+                        !isContrastNow && h('circle', { cx: lx - 5, cy: 73, r: 1.8, fill: col }),
+                        h('text', { x: lx, y: 76, fontSize: 8.5, fontWeight: 800, fill: isContrastNow ? '#ffff00' : col }, gk + ':' + (counts[gk] * 25) + '%')
+                      );
                     })
                   )
                 );
@@ -2727,7 +2788,7 @@ window.StemLab = window.StemLab || {
                         var cellEmoji = activePreset ? (p === 'Blended' || p === 'Codominant' ? (activePreset.blendEmoji || activePreset.domEmoji) : (p === 'Dominant' ? activePreset.domEmoji : activePreset.recEmoji)) : null;
                         return h('td', {
                           key: c,
-                          className: 'w-16 h-16 text-center border border-slate-400 relative transition-colors duration-300 ' + pc.bg,
+                          className: 'punnett-cell w-16 h-16 text-center border border-slate-400 relative transition-colors duration-300 ' + pc.bg,
                           'aria-label': __alloAriaFill(__alloT('stem.punnett.a11y_with_genotype', '{value1} with {value2}: genotype {g}, {cellLabel}'), { value1: parent1Gametes[r], value2: parent2Gametes[c], g: g, cellLabel: cellLabel })
                         },
                           h('span', { className: 'text-lg font-bold ' + pc.text }, g),
@@ -3012,7 +3073,7 @@ window.StemLab = window.StemLab || {
                             var dpc = diPhenoColor(dp);
                             return h('td', {
                               key: ci,
-                              className: 'w-14 h-14 text-center border border-slate-400 ' + dpc.bg,
+                              className: 'punnett-cell w-14 h-14 text-center border border-slate-400 ' + dpc.bg,
                               'aria-label': __alloAriaFill(__alloT('stem.punnett.a11y_with_genotype_phenotype', '{value1} with {value2}: genotype {geno}, phenotype {value3}'), { value1: diGametes1[ri], value2: diGametes2[ci], geno: geno, value3: diPhenoLabel(dp) })
                             },
                               h('span', { className: 'text-[0.6875rem] font-bold block ' + dpc.text }, geno.substring(0, 2)),
@@ -3203,33 +3264,35 @@ window.StemLab = window.StemLab || {
                       var lastChild = findMem(sg.children[sg.children.length - 1]);
                       if (!firstChild) return;
                       var sibY = midY + 45;
-                      // Vertical from couple + junction bead
+                      // Vertical from couple + junction bead + neutral generational flow dash overlay
                       lines.push(h('line', { key: 'v' + gi, x1: midX, y1: midY, x2: midX, y2: sibY, stroke: '#64748b', strokeWidth: 2 }));
+                      !isContrastNow && lines.push(h('line', { key: 'vf' + gi, x1: midX, y1: midY, x2: midX, y2: sibY, stroke: '#a78bfa', strokeWidth: 1.4, strokeDasharray: '3 5', opacity: 0.52, className: 'pun-pedigree-flow pun-motion-deco' }));
                       !isContrastNow && lines.push(h('circle', { key: 'jb' + gi, cx: midX, cy: midY, r: 2.5, fill: '#64748b' }));
                       // Horizontal sibling bar
                       lines.push(h('line', { key: 's' + gi, x1: firstChild.x, y1: sibY, x2: lastChild.x, y2: sibY, stroke: '#64748b', strokeWidth: 2, strokeLinecap: 'round' }));
-                      // Vertical to each child
+                      // Vertical to each child + neutral uniform descent dash overlay (zero inheritance spoilers)
                       sg.children.forEach(function(cid, ci) {
                         var child = findMem(cid);
                         if (child) {
                           lines.push(h('line', { key: 'k' + gi + '_' + ci, x1: child.x, y1: sibY, x2: child.x, y2: child.y - 16, stroke: '#64748b', strokeWidth: 2 }));
+                          !isContrastNow && lines.push(h('line', { key: 'kf' + gi + '_' + ci, x1: child.x, y1: sibY, x2: child.x, y2: child.y - 16, stroke: '#94a3b8', strokeWidth: 1.3, strokeDasharray: '3 5', opacity: 0.55, className: 'pun-pedigree-flow pun-motion-deco', style: { animationDelay: (ci * 0.28) + 's' } }));
                         }
                       });
                     });
                     return lines;
                   })(),
 
-                  // Members (luminous shaded inheritance nodes & carrier rings)
-                  currentPed.members.map(function(m) {
+                  // Members (luminous shaded inheritance nodes & pulsing highlight beacons)
+                  currentPed.members.map(function(m, mi) {
                     var els = [];
                     var showGeno = pedShowGeno && !pedSolveMode;
                     var affFill = isContrastNow ? '#7c3aed' : 'url(#pun-ped-aff)';
                     var unaffFill = isContrastNow ? 'white' : 'url(#pun-ped-unaff)';
                     var carFill = isContrastNow ? '#9c80e0' : 'url(#pun-ped-car)';
                     if (m.sex === 'M') {
-                      // Square with luminous affected/carrier halo
+                      // Square with pulsing affected/carrier beacon halo
                       if (!isContrastNow && (m.affected || m.carrier)) {
-                        els.push(h('rect', { key: m.id + 'hl', x: m.x - 19, y: m.y - 19, width: 38, height: 38, rx: 6, fill: m.affected ? '#7c3aed' : '#a78bfa', opacity: m.affected ? 0.16 : 0.14 }));
+                        els.push(h('rect', { key: m.id + 'hl', x: m.x - 19, y: m.y - 19, width: 38, height: 38, rx: 6, fill: m.affected ? '#7c3aed' : '#a78bfa', opacity: m.affected ? 0.18 : 0.15, className: 'pun-beacon pun-motion-deco', style: { animationDelay: (mi * 0.35) + 's' } }));
                       }
                       if (m.carrier) {
                         els.push(h('rect', { key: m.id + 'bg', x: m.x - 15, y: m.y - 15, width: 30, height: 30, rx: 3, fill: unaffFill, stroke: 'none' }));
@@ -3242,15 +3305,15 @@ window.StemLab = window.StemLab || {
                         els.push(h('line', { key: m.id + 'sp', x1: m.x - 11, y1: m.y - 12, x2: m.x + 11, y2: m.y - 12, stroke: '#ffffff', strokeWidth: 1.4, strokeLinecap: 'round', opacity: m.affected ? 0.45 : 0.85 }));
                       }
                     } else {
-                      // Circle with luminous affected/carrier halo ring
+                      // Circle with pulsing affected/carrier beacon halo ring
                       if (!isContrastNow && (m.affected || m.carrier)) {
-                        els.push(h('circle', { key: m.id + 'hl', cx: m.x, cy: m.y, r: 19, fill: m.affected ? '#7c3aed' : '#a78bfa', opacity: m.affected ? 0.16 : 0.14 }));
+                        els.push(h('circle', { key: m.id + 'hl', cx: m.x, cy: m.y, r: 19, fill: m.affected ? '#7c3aed' : '#a78bfa', opacity: m.affected ? 0.18 : 0.15, className: 'pun-beacon pun-motion-deco', style: { animationDelay: (mi * 0.35) + 's' } }));
                       }
                       if (m.carrier) {
                         els.push(h('circle', { key: m.id + 'bg', cx: m.x, cy: m.y, r: 15, fill: unaffFill, stroke: 'none' }));
                         els.push(h('path', { key: m.id + 'car', d: 'M ' + m.x + ' ' + (m.y - 15) + ' A 15 15 0 0 0 ' + m.x + ' ' + (m.y + 15) + ' Z', fill: carFill }));
                         els.push(h('circle', { key: m.id + 'brd', cx: m.x, cy: m.y, r: 15, fill: 'none', stroke: '#1e293b', strokeWidth: 2 }));
-                        !isContrastNow && els.push(h('circle', { key: m.id + 'cr', cx: m.x, cy: m.y, r: 18, fill: 'none', stroke: '#9c80e0', strokeWidth: 1, strokeDasharray: '3 2', opacity: 0.7 }));
+                        !isContrastNow && els.push(h('circle', { key: m.id + 'cr', cx: m.x, cy: m.y, r: 18, fill: 'none', stroke: '#9c80e0', strokeWidth: 1, strokeDasharray: '3 2', opacity: 0.72, className: 'pun-carrier-orbit pun-motion-deco' }));
                       } else {
                         els.push(h('circle', { key: m.id + 's', cx: m.x, cy: m.y, r: 15, fill: m.affected ? affFill : unaffFill, stroke: '#1e293b', strokeWidth: 2 }));
                       }
@@ -3549,12 +3612,14 @@ window.StemLab = window.StemLab || {
                     // Gradient area envelope under p
                     !isContrastNow && h('path', { d: pAreaD, fill: 'url(#pun-frq-p-area)' }),
                     // Dual-pass luminous p & q curves
-                    !isContrastNow && h('polyline', { fill: 'none', stroke: '#15803d', strokeWidth: 5.5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.16, points: pPts }),
+                    !isContrastNow && h('polyline', { fill: 'none', stroke: '#15803d', strokeWidth: 5.5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.16, points: pPts, className: 'pun-locus-pulse pun-motion-deco' }),
                     h('polyline', { fill: 'none', stroke: '#15803d', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round', points: pPts }),
-                    !isContrastNow && h('polyline', { fill: 'none', stroke: '#b45309', strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.14, points: qPts }),
-                    h('polyline', { fill: 'none', stroke: '#b45309', strokeWidth: 2.2, strokeDasharray: '4 3', strokeLinecap: 'round', points: qPts }),
-                    // Terminal endpoint beacons
+                    !isContrastNow && h('polyline', { fill: 'none', stroke: '#b45309', strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.14, points: qPts, className: 'pun-locus-pulse pun-motion-deco', style: { animationDelay: '0.7s' } }),
+                    h('polyline', { fill: 'none', stroke: '#b45309', strokeWidth: 2.2, strokeDasharray: '4 3', strokeLinecap: 'round', points: qPts, className: isContrastNow ? undefined : 'pun-gamete-flow' }),
+                    // Terminal endpoint beacons with pulsing outer halos
+                    !isContrastNow && h('circle', { cx: pLast[0], cy: pLast[1], r: 7.5, fill: '#15803d', opacity: 0.24, className: 'pun-beacon pun-motion-deco' }),
                     h('circle', { cx: pLast[0], cy: pLast[1], r: 3.6, fill: '#15803d', stroke: '#ffffff', strokeWidth: 1.4 }),
+                    !isContrastNow && h('circle', { cx: qLast[0], cy: qLast[1], r: 7.5, fill: '#b45309', opacity: 0.24, className: 'pun-beacon pun-motion-deco', style: { animationDelay: '0.9s' } }),
                     h('circle', { cx: qLast[0], cy: qLast[1], r: 3.6, fill: '#b45309', stroke: '#ffffff', strokeWidth: 1.4 }),
                     // Labels
                     h('text', { x: 328, textAnchor: 'end', y: Math.max(12, 136 - popHistory[popHistory.length - 1] * 124), style: { fontSize: '11px', fontWeight: 'bold', fill: '#15803d' } }, 'p'),
@@ -4248,16 +4313,27 @@ window.StemLab = window.StemLab || {
                           h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.36 }),
                           h('stop', { offset: '55%', stopColor: '#ffffff', stopOpacity: 0.04 }),
                           h('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.14 })
+                        ),
+                        h('linearGradient', { id: 'pun-hw-sweep', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                          h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
+                          h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.52 }),
+                          h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+                        ),
+                        h('clipPath', { id: 'pun-hw-clip' },
+                          h('rect', { x: 30, y: 20, width: barTotal, height: 18, rx: 3 })
                         )
                       ),
                       h('text', { x: 30, y: 14, fontSize: 9, fontWeight: 800, fill: isContrastNow ? '#ffff00' : '#475569' }, 'HARDY-WEINBERG GENOTYPES (p\u00B2 + 2pq + q\u00B2 = 1)'),
-                      // Recessed bar well + beveled genotype segments with glossy sheen
+                      // Recessed bar well + beveled genotype segments with glossy sheen & bevel glint
                       !isContrastNow && h('rect', { x: 29, y: 19, width: barTotal + 2, height: 20, rx: 4, fill: '#e2e8f0' }),
                       h('rect', { x: 30, y: 20, width: wAA, height: 18, rx: 3, fill: isContrastNow ? '#00ff00' : '#7c3aed' }),
                       h('rect', { x: 30 + wAA, y: 20, width: wAa, height: 18, rx: 3, fill: isContrastNow ? '#ffff00' : '#0ea5e9' }),
                       h('rect', { x: 30 + wAA + wAa, y: 20, width: waa, height: 18, rx: 3, fill: isContrastNow ? '#ffffff' : '#f59e0b' }),
                       !isContrastNow && h('rect', { x: 30, y: 20, width: barTotal, height: 18, rx: 3, fill: 'url(#pun-hw-gloss)' }),
-                      !isContrastNow && h('line', { x1: 33, y1: 22, x2: 307, y2: 22, stroke: '#ffffff', strokeWidth: 1, strokeLinecap: 'round', opacity: 0.5 }),
+                      !isContrastNow && h('g', { clipPath: 'url(#pun-hw-clip)', className: 'pun-motion-deco' },
+                        h('rect', { x: 30, y: 18, width: 42, height: 22, fill: 'url(#pun-hw-sweep)', className: 'pun-bevel-glint' })
+                      ),
+                      !isContrastNow && h('line', { x1: 33, y1: 22, x2: 307, y2: 22, stroke: '#ffffff', strokeWidth: 1, strokeLinecap: 'round', opacity: 0.5, className: 'pun-bar-shimmer pun-motion-deco' }),
                       h('text', { x: 30, y: 50, fontSize: 8.5, fontWeight: 800, fill: isContrastNow ? '#00ff00' : '#6d28d9' }, 'AA ' + Math.round(pp * 100) + '%'),
                       h('text', { x: 170, y: 50, textAnchor: 'middle', fontSize: 8.5, fontWeight: 800, fill: isContrastNow ? '#ffff00' : '#0369a1' }, 'Aa ' + Math.round(pq2 * 100) + '%'),
                       h('text', { x: 310, y: 50, textAnchor: 'end', fontSize: 8.5, fontWeight: 800, fill: isContrastNow ? '#ffffff' : '#b45309' }, 'aa ' + Math.round(qq * 100) + '%'),
@@ -4269,9 +4345,10 @@ window.StemLab = window.StemLab || {
                       }),
                       !isContrastNow && Math.abs(xNext - xCur) >= 2 && h('line', { x1: xCur, y1: 68, x2: xNext, y2: 68, stroke: '#dc2626', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.2 }),
                       Math.abs(xNext - xCur) >= 2 && h('line', { x1: xCur, y1: 68, x2: xNext, y2: 68, stroke: isContrastNow ? '#00ff00' : '#dc2626', strokeWidth: 3.5, strokeLinecap: 'round' }),
-                      !isContrastNow && h('circle', { cx: xCur, cy: 68, r: 8, fill: '#6d28d9', opacity: 0.16 }),
+                      !isContrastNow && Math.abs(xNext - xCur) >= 4 && h('line', { x1: xCur, y1: 68, x2: xNext, y2: 68, stroke: '#fecaca', strokeWidth: 1.5, strokeDasharray: '4 4', strokeLinecap: 'round', className: 'pun-gamete-flow pun-motion-deco' }),
+                      !isContrastNow && h('circle', { cx: xCur, cy: 68, r: 8, fill: '#6d28d9', opacity: 0.2, className: 'pun-beacon pun-motion-deco' }),
                       h('circle', { cx: xCur, cy: 68, r: 5, fill: isContrastNow ? '#ffff00' : '#6d28d9', stroke: '#ffffff', strokeWidth: 1.2 }),
-                      !isContrastNow && h('circle', { cx: xNext, cy: 68, r: 7.5, fill: '#dc2626', opacity: 0.2 }),
+                      !isContrastNow && h('circle', { cx: xNext, cy: 68, r: 7.5, fill: '#dc2626', opacity: 0.24, className: 'pun-beacon pun-motion-deco', style: { animationDelay: '0.8s' } }),
                       h('circle', { cx: xNext, cy: 68, r: 4.2, fill: isContrastNow ? '#00ff00' : '#dc2626', stroke: '#ffffff', strokeWidth: 1.4 }),
                       !isContrastNow && h('circle', { cx: xNext - 1.2, cy: 66.8, r: 1.1, fill: '#ffffff', opacity: 0.7 }),
                       h('text', { x: 170, y: 81, textAnchor: 'middle', fontSize: 8.5, fontWeight: 700, fill: isContrastNow ? '#ffff00' : '#475569' }, 'Next-generation shift: p = ' + iq.p + '% \u2192 p\u2032 = ' + (newP * 100).toFixed(1) + '%')

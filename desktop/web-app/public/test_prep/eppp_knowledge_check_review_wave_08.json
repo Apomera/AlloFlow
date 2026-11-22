@@ -37,9 +37,9 @@
       "domain": "Assessment & Diagnosis",
       "prompt": "A multicenter trial wants different trained clinicians to apply the same major-depressive-disorder criteria consistently when determining eligibility. Which plan best supports that goal?",
       "choices": [
-        "Use a validated disorder-appropriate structured or semistructured diagnostic interview, train and calibrate raters, and monitor agreement during implementation",
-        "Allow each clinician to conduct an entirely unstructured interview because clinical expertise makes explicit coding rules unnecessary",
-        "Select any interview called structured and assume its format alone guarantees accurate diagnoses across populations, languages, and settings",
+        "Adopt a validated, condition-appropriate structured or semistructured interview, calibrate raters, and monitor interrater agreement across sites",
+        "Allow each site clinician to conduct an unstandardized clinical interview because advanced diagnostic experience makes explicit scoring rules unnecessary",
+        "Select any interview labeled structured and assume that standardized question wording ensures diagnostic accuracy across languages, populations, and sites",
         "Replace diagnostic interviewing with a symptom checklist total because a numerical cutoff eliminates the need to evaluate criteria and impairment"
       ],
       "answerIndex": 0,
@@ -71,8 +71,8 @@
       "domain": "Assessment & Diagnosis",
       "prompt": "A client and clinician appear to understand the client's distress, causes, supports, and preferred care differently. What is the most defensible use of the DSM-5-TR Cultural Formulation Interview?",
       "choices": [
-        "Reserve it for clients whose race or ethnicity differs visibly from the clinician because culture is otherwise unlikely to affect assessment",
-        "Use its 16-question framework to elicit the client's cultural perspective and care context, then integrate that information with the rest of the assessment",
+        "Reserve the interview for clients whose visible race or ethnicity differs from the clinician's because culture rarely shapes clinical understanding otherwise",
+        "Apply its 16-question guide to explore the individual's cultural framing and treatment context, integrating findings across the full workup",
         "Score it as a stand-alone diagnostic test that determines whether the presentation meets criteria for a culture-bound disorder",
         "Administer it only after every standard diagnostic procedure has failed because cultural inquiry can contaminate objective clinical data"
       ],
@@ -149,7 +149,7 @@
         "Criticism, because any negative statement about a partner is classified as a character attack regardless of its form or relational position",
         "Defensiveness, because mockery and superiority primarily communicate innocent-victim status and countercomplaining",
         "Stonewalling, because visible eye movement is sufficient evidence that the partner has physiologically withdrawn from the interaction",
-        "Contempt, while recognizing that the model-specific label describes an interaction pattern rather than diagnosing the partner or determining the relationship's fate"
+        "Contempt, noting that this model-specific label marks an interpersonal style rather than diagnosing a person or predicting divorce"
       ],
       "answerIndex": 3,
       "rationale": "Within the Four Horsemen framework, contempt communicates disrespect or superiority and can appear as mockery, sarcasm, sneering, name-calling, or eye-rolling. Criticism frames a complaint as a defect in the partner, defensiveness wards off responsibility or counterattacks, and stonewalling involves disengagement. The behavior in the vignette therefore most clearly fits contempt. Longitudinal work links patterns of negative interaction with later relationship distress or dissolution, but a risk association is not an individual certainty. This classification does not diagnose the relationship or make divorce certain; assessment should separately address frequency, context, reciprocity, safety, coercion, culture, distress, strengths, and each partner's perspective.",
@@ -187,7 +187,7 @@
       "domain": "Cognitive-Affective Bases of Behavior",
       "prompt": "A child who correctly says \"walked\" also says \"goed,\" and can apply an English past-tense ending to a novel verb. What conclusion is best supported by this pattern?",
       "choices": [
-        "The child can generalize a productive morphological pattern beyond memorized adult word forms, while still learning exceptions",
+        "The child generalizes a productive morphological regularity beyond memorized adult word forms while still mastering irregulars",
         "The child must have heard and imitated the exact form \"goed,\" because novel inflections cannot be generated without direct reinforcement",
         "The error uniquely proves a specific innate language module and rules out statistical, analogy-based, and connectionist learning accounts",
         "The child has permanently lost the representation of irregular verbs and should therefore be assumed to have a language disorder"
@@ -257,7 +257,7 @@
       "choices": [
         "Left-skewed, because the observations with the greatest values pull the tail toward the lower end of the horizontal axis",
         "Symmetric, because the presence of one central cluster is sufficient to establish equal tail length around its center",
-        "Right-skewed or positively skewed, because the relatively long tail extends toward the larger observed values",
+        "Right-skewed or positively skewed, because the elongated tail stretches toward the higher observed values",
         "Bimodal, because every distribution containing outliers necessarily has a second local peak at the extreme values"
       ],
       "answerIndex": 2,
@@ -292,7 +292,7 @@
         "The association is too weak to matter, because only coefficients of at least .80 can represent a real relationship between measured variables",
         "The coefficient proves reverse causation, because drowning deaths necessarily cause later increases in community ice-cream purchases",
         "The coefficient of determination proves that temperature explains exactly 36% of drowning deaths, even though temperature was not measured",
-        "The variables are associated, but season or temperature is a plausible common cause and the correlation alone cannot establish ice cream as causal"
+        "The two measures covary, yet warm weather is a plausible third variable and correlation alone cannot show that ice cream drives mortality"
       ],
       "answerIndex": 3,
       "rationale": "A correlation of .60 describes a moderately strong positive linear association in the observed data; it does not identify the causal structure. Temperature or season plausibly affects both exposure to swimming and ice-cream sales, creating a common-cause explanation. Directionality, chance, selection, measurement, and other confounding explanations also require consideration. Squaring r yields .36 as shared linear variance between the two measured variables in that sample, not the percentage caused by an unmeasured temperature variable and not the proportion of individual deaths explained. The result does not establish that ice cream itself causes or prevents drowning. Causal inference requires design, temporal, measurement, and analytic assumptions beyond the coefficient alone.",
@@ -330,7 +330,7 @@
       "domain": "Social & Cultural Bases of Behavior",
       "prompt": "In an Asch-style line-judgment task, one confederate begins disagreeing with an otherwise unanimous incorrect majority. What is the best evidence-bounded prediction?",
       "choices": [
-        "Conformity will probably decrease relative to an otherwise unanimous majority, but the amount depends on the dissenter's response and the task and sample",
+        "Yielding will likely drop compared with full group consensus, though the size of the drop depends on the ally's answers, setting, and sample",
         "Conformity must fall to zero because any dissent gives every participant sufficient social support to answer independently on every trial",
         "Conformity must rise because any disagreement increases ambiguity even when the perceptual comparison remains objectively straightforward",
         "The manipulation proves that all earlier yielding was normative rather than informational, because behavior alone reveals each participant's motive"
@@ -364,9 +364,9 @@
       "domain": "Social & Cultural Bases of Behavior",
       "prompt": "A person suddenly collapses on a crowded platform while several observers look at one another. Which interpretation and immediate response are best supported?",
       "choices": [
-        "Assume stable apathy among all observers and wait for a person with a more prosocial personality to determine whether the event is real",
-        "Recognize diffusion and ambiguity as possible barriers; check scene safety, call or direct a specific person to call emergency services, and follow dispatcher guidance",
-        "Expect the largest crowd to respond fastest because social facilitation necessarily improves performance in every emergency",
+        "Attribute bystanders' hesitation to stable dispositional apathy and wait for someone with a stronger prosocial orientation to confirm the medical emergency",
+        "Note diffusion and ambiguity as barriers; verify safety, call or task one bystander to phone emergency services, and follow dispatcher advice",
+        "Expect the largest platform crowd to intervene fastest because social facilitation reliably accelerates complex rescue behavior during public emergencies",
         "Conclude that deindividuation has made intervention impossible and disperse the crowd before contacting emergency services"
       ],
       "answerIndex": 1,
@@ -407,7 +407,7 @@
       "choices": [
         "One measure must be invalid because a valid measure of object representation must produce identical behavior across looking and reaching tasks",
         "The infant has reached formal operations, because noticing an unexpected event is equivalent to abstract hypothetical-deductive reasoning",
-        "Looking and manual search impose partly different memory, inhibition, representation, motor, and social demands, so knowledge may not control both responses identically",
+        "Looking and reaching impose distinct memory, inhibitory, motor, and social demands, so emerging knowledge need not govern them equally",
         "The reach error proves the infant has no representation of the hidden object, making the looking-time difference necessarily random"
       ],
       "answerIndex": 2,
@@ -449,7 +449,7 @@
         "A moral choice reveals a Kohlberg stage directly, so the reasons offered, dilemma content, and scoring procedure are unnecessary",
         "Care and justice are mutually exclusive developmental stages, and every person permanently enters one according to sex assigned at birth",
         "Because average gender differences are not absolute, moral-reasoning structure, orientation, culture, relationships, and behavior should all be collapsed into one score",
-        "Reasoning structures and care or justice emphases can organize inquiry, but justification, context, measurement, and overlapping individual variation must be assessed separately"
+        "Care and justice themes can organize inquiry, yet reasoning structure, context, measurement, and overlapping individual variation must be evaluated separately"
       ],
       "answerIndex": 3,
       "rationale": "Kohlberg's approach concerns the structure of the justification offered for a moral judgment, not the chosen action alone. Gilligan's critique broadened attention to care, relationships, and dilemma context, but it should not be converted into a fixed binary by gender. A meta-analysis found only small average differences in moral orientation overall, with effects varying by how dilemmas and orientations were elicited. These data do not support a categorical women-care/men-justice rule, nor do they show that care and justice are mutually exclusive stages. A defensible contemporary use examines reasoning, content, context, culture, role opportunities, action, and measurement separately and avoids treating a framework as a diagnosis or deterministic developmental rank.",

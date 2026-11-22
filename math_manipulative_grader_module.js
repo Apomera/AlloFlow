@@ -6,6 +6,7 @@ window.AlloModules = window.AlloModules || {};
 if (window.AlloModules.MathManipulativeGraderModule) return;
 
 const OWN = Object.prototype.hasOwnProperty;
+const isBlockedKey = key => key === '__proto__' || key === 'constructor' || key === 'prototype';
 const MAX_COLLECTION_ITEMS = 256;
 const MAX_TEXT_LENGTH = 500;
 const MAX_FRACTION_DENOMINATOR = 20;
@@ -167,7 +168,7 @@ const graders = {
     if (target.mode && target.mode !== 'blocks') {
       if (actual.mode !== target.mode) return false;
       if (target.mode === 'tenFrame') return actual.tenFrameFilled === target.count;
-      if (target.mode === 'counters') return actual.counters.yellow - actual.counters.red === target.value;
+      if (target.mode === 'counters') return isRecord(actual.counters) && finite(actual.counters.yellow) && finite(actual.counters.red) && actual.counters.yellow - actual.counters.red === target.value;
       if (target.mode === 'fracBars') {
         if (!isRecord(actual.fbSelected)) return false;
         const sel = hasOwn(actual.fbSelected, target.denominator) ? actual.fbSelected[target.denominator] : [];
@@ -200,9 +201,9 @@ const graders = {
     return sameOrdered(actualValues, expectedValues, (value, expected) => tight(value, expected, 0.01));
   },
   fractions(actual, target) {
-    return isRecord(actual) && isRecord(target) && finite(actual.numerator) && finite(actual.denominator) &&
+    return isRecord(actual) && isRecord(target) && finite(actual.numerator) && finite(actual.denominator) && actual.denominator > 0 &&
       (target.match === 'equivalent'
-        ? actual.numerator * target.denominator === (target.numerator ?? 0) * actual.denominator
+        ? finite(target.denominator) && target.denominator > 0 && actual.numerator * target.denominator === (target.numerator ?? 0) * actual.denominator
         : actual.numerator === (target.numerator ?? 0) && actual.denominator === (target.denominator ?? 1));
   },
   volume(actual, target) {
@@ -451,6 +452,7 @@ const workspacePaths = Object.freeze({
   coordinate: ['_coordGrid', 'gridPoints']
 });
 const readMathViewState = (tool, snapshot, target = {}) => {
+  if (typeof tool !== 'string' || !tool || isBlockedKey(tool)) return undefined;
   const safeTarget = isRecord(target) ? target : {};
   const state = isRecord(snapshot) ? snapshot : {};
   const data = isRecord(state.labToolData) ? state.labToolData : {};
@@ -471,11 +473,19 @@ const readMathViewState = (tool, snapshot, target = {}) => {
   if (tool === 'circuit' && hasOwn(data, '_circuit')) return data._circuit;
   return hasOwn(data, tool) ? data[tool] : undefined;
 };
+const safeSpreadObj = obj => {
+  if (!isRecord(obj)) return {};
+  const out = {};
+  for (const key of Object.keys(obj)) {
+    if (!isBlockedKey(key)) out[key] = obj[key];
+  }
+  return out;
+};
 const writeMathViewState = (tool, previous, value, extra = {}) => {
-  const path = hasOwn(workspacePaths, tool) ? workspacePaths[tool] : null;
+  const path = typeof tool === 'string' && hasOwn(workspacePaths, tool) ? workspacePaths[tool] : null;
   if (!path) return previous;
   const data = isRecord(previous) ? previous : {};
-  if (tool === 'base10') value = { ones:0, tens:0, hundreds:0, thousands:0, ...value };
+  if (tool === 'base10') value = { ones:0, tens:0, hundreds:0, thousands:0, ...safeSpreadObj(value) };
   const modes = {
     base10: { mode: 'blocks', b10Challenge: null, b10Feedback: null, b10Solid: false },
     fractions: { navMode: 'learn', tab: 'practice', mode: 'pie', signedFractions: false, challenge: null, feedback: null },
@@ -483,7 +493,7 @@ const writeMathViewState = (tool, previous, value, extra = {}) => {
     volume: { mode: 'slider', allowFractional: true, challenge: null, feedback: null, showLayers: null },
     coordinate: { cgTab: 'explore', gridChallenge: null, gridFeedback: null }
   };
-  return { ...data, [path[0]]: { ...(isRecord(data[path[0]]) ? data[path[0]] : {}), ...modes[tool], ...extra, [path[1]]: value } };
+  return { ...data, [path[0]]: { ...(isRecord(data[path[0]]) ? data[path[0]] : {}), ...modes[tool], ...safeSpreadObj(extra), [path[1]]: value } };
 };
 const prepareHubActivity = (previous, target, support = false) => {
   if (!validHubActivity(target)) throw new Error('Invalid hands-on activity');
@@ -496,10 +506,10 @@ const prepareHubActivity = (previous, target, support = false) => {
   return {...data, _manipulatives:{...hub,...fields,mode:target.mode}};
 };
 const activityOptions = Object.freeze([
-  {id:'base10',label:'Base-ten blocks'}, {id:'base10:tenFrame',label:'Ten-frames'},
-  {id:'base10:counters',label:'Two-color counters'}, {id:'base10:fracBars',label:'Fraction bars'},
-  {id:'fractions',label:'Fraction circles'}, {id:'numberline',label:'Number line'},
-  {id:'coordinate',label:'Coordinate grid'}, {id:'volume',label:'Volume'}, {id:'protractor',label:'Angles'}
+  Object.freeze({id:'base10',label:'Base-ten blocks'}), Object.freeze({id:'base10:tenFrame',label:'Ten-frames'}),
+  Object.freeze({id:'base10:counters',label:'Two-color counters'}), Object.freeze({id:'base10:fracBars',label:'Fraction bars'}),
+  Object.freeze({id:'fractions',label:'Fraction circles'}), Object.freeze({id:'numberline',label:'Number line'}),
+  Object.freeze({id:'coordinate',label:'Coordinate grid'}), Object.freeze({id:'volume',label:'Volume'}), Object.freeze({id:'protractor',label:'Angles'})
 ]);
 const evaluateMathViewManipulativeResponse = (response, state) => {
   let tool = null;
@@ -516,7 +526,7 @@ const evaluateMathViewManipulativeResponse = (response, state) => {
 const gradeMathViewManipulativeResponse = (response, state) =>
   evaluateMathViewManipulativeResponse(response, state).correct;
 
-window.AlloModules.MathManipulativeGrader = {
+window.AlloModules.MathManipulativeGrader = Object.freeze({
   activityOptions,
   prepareHubActivity,
   readMathViewState,
@@ -531,6 +541,6 @@ window.AlloModules.MathManipulativeGrader = {
     maxTextLength: MAX_TEXT_LENGTH,
     maxFractionDenominator: MAX_FRACTION_DENOMINATOR
   })
-};
+});
 window.AlloModules.MathManipulativeGraderModule = true;
 })();

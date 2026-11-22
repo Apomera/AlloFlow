@@ -103,8 +103,11 @@
 
   var SafetyContentChecker = {
     patterns: {
-        self_harm: /\b(hurt myself|kill myself|suicide|want to die|end it all|self.?harm|cutting myself|don't want to live)\b/i,
-        harm_to_others: /\b(hurt (him|her|them|someone)|kill (him|her|them|someone|you)|bring a (gun|weapon|knife)|shoot|attack|bomb)\b/i,
+        self_harm: /\b(hurt myself|harm myself|kill myself|suicide|want to die|end it all|end my life|take my (own )?life|self.?harm|cutting myself|slit my wrists|don't want to (live|be alive)|do not want to (live|be alive)|wish i (were|was) dead|no reason to live|better off dead)\b/i,
+        // Match directed threats, not bare academic/clinical/game words like
+        // "panic attack", "heart attack", "attack on Pearl Harbor", "atomic bomb",
+        // or "shoot a rocket" (tightened 2026-11-21).
+        harm_to_others: /\b(hurt (him|her|them|someone|people|everybody|everyone)|kill (him|her|them|someone|you|people|everybody|everyone)|bring a (gun|weapon|knife)|shoot (up|him|her|them|someone|you|people|everybody|everyone|the school|my school)|attack (him|her|them|someone|you|people|the school|my school)|bomb (the school|my school|them|him|her|someone|this place)|plant a bomb|make a bomb)\b/i,
         bullying: /\b(hate (him|her|them|you)|loser|stupid|ugly|fat|worthless|kill yourself|nobody likes)\b/i,
         inappropriate_language: /\b(fuck|shit|damn|bitch|ass|dick|cock|pussy|slut|whore|n[i1]gg[ae3]r|f[a4]g)\b/i,
         concerning_content: /\b(abuse|molest|rape|touch me|scared of|hit me|hurt me|locked in|won't let me|secret|don't tell)\b/i,
@@ -115,7 +118,13 @@
     check: function (text) {
         if (!text || typeof text !== 'string') return [];
         var flags = [];
-        var lowerText = text.slice(0, MAX_SCAN_CHARS).replace(/[\u2018\u2019\u02bc]/g, "'").toLowerCase();
+        var rawSlice = text.slice(0, MAX_SCAN_CHARS);
+        try { rawSlice = rawSlice.normalize('NFKC'); } catch (_) {}
+        var lowerText = rawSlice
+            .replace(/[\u00AD\u034F\u061C\u180E\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, '')
+            .replace(/[\u2018\u2019\u02bc\uFF07]/g, "'")
+            .replace(/\s+/g, ' ')
+            .toLowerCase();
         for (var category in this.patterns) {
             if (!hasOwn.call(this.patterns, category)) continue;
             var pattern = this.patterns[category];

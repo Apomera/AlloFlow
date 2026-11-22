@@ -115,6 +115,8 @@ function isTrustedAlloSheetGristFrameRequest(details, companionOrigin, managedOr
   // Assets, XHR/fetch, and WebSocket requests must originate inside the
   // managed Grist frame. A foreign custom-widget frame in the same
   // WebContents does not inherit this authorization.
+  if (initiator && !hasExactOrigin(initiator, managedOrigin)) return false;
+  if (frameUrl && !hasExactOrigin(frameUrl, managedOrigin)) return false;
   return hasExactOrigin(frameUrl, managedOrigin)
     || hasExactOrigin(initiator, managedOrigin);
 }

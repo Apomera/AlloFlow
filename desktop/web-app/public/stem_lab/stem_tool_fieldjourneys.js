@@ -1030,14 +1030,17 @@
     shell.className = "landscape " + view.campaignId;
     const drawing = svg("svg", { viewBox: "0 0 640 455", "aria-hidden": "true", focusable: "false", preserveAspectRatio: "xMidYMid slice" });
     drawing.append(svg("rect", { width: 640, height: 455, fill: view.campaignId === "watershed" ? "#dfe8d3" : "#e5e7cd" }));
+    const waterPositions = { headwaterStreams: [51, 17], forestBuffer: [22, 39], floodplainWetlands: [42, 60], riverMainstem: [44, 85], agriculturalWatershed: [76, 49], suburbanEdges: [76, 82] };
+    const shortNames = { headwaterStreams: "Headwaters", forestBuffer: "Buffers", floodplainWetlands: "Wetlands", riverMainstem: "Mainstem", agriculturalWatershed: "Farms", suburbanEdges: "Town" };
     if (view.campaignId === "watershed") {
       drawing.append(svg("path", { d: "M0 0H640V115Q492 50 349 98T0 115Z", fill: "#c2d0b9" }));
-      drawing.append(svg("path", { d: "M0 50Q164-13 269 47T640 60", fill: "none", stroke: "#b5c5ae", "stroke-width": 2 }));
+      drawing.append(svg("path", { d: "M0 50Q164-13 269 47T640 60", fill: "none", stroke: "#b5c5ae", "stroke-width": 2, class: "fj-contour" }));
       drawing.append(svg("path", { d: "M-30 356Q146 229 275 318T690 351V470H-30Z", fill: "#c5d8b8" }));
-      for (let i = 0; i < 7; i++) drawing.append(svg("path", { d: "M-30 " + (130 + i * 38) + "Q100 " + (40 + i * 40) + " 223 " + (100 + i * 37) + "T680 " + (100 + i * 44), fill: "none", stroke: "#c9d5bd", "stroke-width": 1.5 }));
+      for (let i = 0; i < 7; i++) drawing.append(svg("path", { d: "M-30 " + (130 + i * 38) + "Q100 " + (40 + i * 40) + " 223 " + (100 + i * 37) + "T680 " + (100 + i * 44), fill: "none", stroke: "#c9d5bd", "stroke-width": 1.5, class: i % 2 === 0 ? "fj-contour" : "fj-contour fj-contour-alt" }));
       drawing.append(svg("path", { d: "M354-25C369 75 198 78 243 170S421 195 354 290S204 357 250 475", fill: "none", stroke: "#95beba", "stroke-width": 46 }));
       drawing.append(svg("path", { d: "M354-25C369 75 198 78 243 170S421 195 354 290S204 357 250 475", fill: "none", stroke: "#d5efed", "stroke-width": 28 }));
-      drawing.append(svg("path", { d: "M350-25C365 75 194 78 239 170S417 195 350 290S200 357 246 475", fill: "none", stroke: "#88babb", "stroke-width": 2, "stroke-dasharray": "20 12", opacity: 0.7 }));
+      drawing.append(svg("path", { d: "M350-25C365 75 194 78 239 170S417 195 350 290S200 357 246 475", fill: "none", stroke: "#7eb4b6", "stroke-width": 2.2, "stroke-dasharray": "20 12", "stroke-linecap": "round", opacity: 0.78, class: "fj-river-flow" }));
+      drawing.append(svg("path", { d: "M326 77 C240 116 184 152 141 177 C185 232 232 254 269 273 C325 256 410 242 486 223 C492 285 492 332 486 373 C418 386 340 390 282 387", fill: "none", stroke: "#2d6150", "stroke-width": 2, "stroke-dasharray": "7 5", "stroke-linecap": "round", opacity: 0.52, class: "fj-route-trail" }));
       [[70, 100, 1.1], [122, 158, 0.8], [167, 63, 0.9], [80, 277, 1.1], [126, 340, 0.75], [463, 87, 0.9], [523, 142, 0.8], [573, 71, 1.1], [522, 322, 0.85], [592, 390, 0.9]].forEach((t) => treeSymbol(drawing, ...t));
       for (let i = 0; i < 5; i++) drawing.append(svg("path", { d: "M420 " + (207 + i * 12) + "l118 27", stroke: "#b7bd85", "stroke-width": 7 }));
       [[410, 354], [451, 364], [489, 385]].forEach(([x, y]) => {
@@ -1045,17 +1048,38 @@
         drawing.append(svg("path", { d: "M" + (x - 4) + " " + y + "l16-12 16 12Z", fill: "#8d8b74" }));
       });
     } else {
+      for (let i = 0; i < 4; i++) drawing.append(svg("path", { d: "M-20 " + (88 + i * 98) + "Q190 " + (54 + i * 96) + " 360 " + (108 + i * 94) + "T660 " + (92 + i * 96), fill: "none", stroke: "#d4d8bd", "stroke-width": 1.4, class: i % 2 === 0 ? "fj-contour" : "fj-contour fj-contour-alt" }));
       view.locations.forEach((patch, i) => {
         const x = 42 + i % 3 * 188, y = 29 + Math.floor(i / 3) * 135;
         drawing.append(svg("rect", { x, y, width: 178, height: 125, rx: 20, fill: patch.habitat === "damp" ? "#c3d9c9" : patch.habitat === "sheltered" ? "#cfddbc" : "#e2d9b5", stroke: "#f4f1e4", "stroke-width": 3 }));
-        if (patch.gap) drawing.append(svg("ellipse", { cx: x + 87, cy: y + 46, rx: 56, ry: 29, fill: "#f4eec0", opacity: 0.8 }));
+        if (patch.gap) drawing.append(svg("ellipse", { cx: x + 87, cy: y + 46, rx: 56, ry: 29, fill: "#f4eec0", opacity: 0.8, class: "fj-canopy-glint" }));
         patch.trees.forEach((t, j) => treeSymbol(drawing, x + 42 + j * 42, y + 53, t.descendant ? 0.55 : 0.9, t.species === "aspen", t.descendant, true));
       });
+      drawing.append(svg("path", { d: "M131 118 L319 118 L507 118 C538 164 538 206 507 253 L319 253 L131 253", fill: "none", stroke: "#2d6150", "stroke-width": 1.9, "stroke-dasharray": "7 5", "stroke-linecap": "round", opacity: 0.45, class: "fj-route-trail" }));
       drawing.append(svg("path", { d: "M606 0q-28 93 2 158t-1 153t8 180", fill: "none", stroke: "#94b9b0", "stroke-width": 9 }));
+      drawing.append(svg("path", { d: "M606 0q-28 93 2 158t-1 153t8 180", fill: "none", stroke: "#e0f4f1", "stroke-width": 2, "stroke-dasharray": "16 12", "stroke-linecap": "round", opacity: 0.82, class: "fj-river-flow" }));
     }
+    const beaconLayer = svg("g", { class: "fj-beacons" });
+    for (const [i, loc] of view.locations.entries()) {
+      const coords = view.campaignId === "watershed" ? waterPositions[loc.id] : [20.5 + i % 3 * 29.3, 26 + Math.floor(i / 3) * 29.7];
+      if (!coords) continue;
+      const bx = +(coords[0] * 6.4).toFixed(1), by = +(coords[1] * 4.55).toFixed(1);
+      const isSelected = selected === loc.id;
+      beaconLayer.append(svg("circle", { cx: bx, cy: by, r: isSelected ? 22 : 16, fill: "none", stroke: isSelected ? "#1d5c47" : "#4b7b67", "stroke-width": isSelected ? 2.2 : 1.5, class: isSelected ? "fj-beacon-ring fj-beacon-active" : "fj-beacon-ring", style: "animation-delay:" + (i * 0.45).toFixed(2) + "s" }));
+      beaconLayer.append(svg("circle", { cx: bx, cy: by, r: 4.5, fill: isSelected ? "#1d5c47" : "#6b9078", opacity: 0.55, class: "fj-beacon-core" }));
+    }
+    drawing.append(beaconLayer);
+    const compass = svg("g", { transform: "translate(52 406)", class: "fj-compass" });
+    compass.append(svg("circle", { cx: 0, cy: 0, r: 22, fill: "#f6f4eb", "fill-opacity": 0.72, stroke: "#6c8475", "stroke-width": 1.3 }));
+    compass.append(svg("circle", { cx: 0, cy: 0, r: 16.5, fill: "none", stroke: "#99ad9f", "stroke-width": 0.9, "stroke-dasharray": "2 3" }));
+    compass.append(svg("path", { d: "M0-22V-17M0 17V22M-22 0H-17M17 0H22", stroke: "#486858", "stroke-width": 1.4, "stroke-linecap": "round" }));
+    const needle = svg("g", { class: "fj-compass-needle" });
+    needle.append(svg("polygon", { points: "0,-15 3.6,0 0,-2.6 -3.6,0", fill: "#a05c2b" }));
+    needle.append(svg("polygon", { points: "0,15 3.6,0 0,2.6 -3.6,0", fill: "#2d6150" }));
+    needle.append(svg("circle", { cx: 0, cy: 0, r: 2.3, fill: "#f6f4eb", stroke: "#2d6150", "stroke-width": 1.1 }));
+    compass.append(needle);
+    drawing.append(compass);
     shell.append(drawing);
-    const waterPositions = { headwaterStreams: [51, 17], forestBuffer: [22, 39], floodplainWetlands: [42, 60], riverMainstem: [44, 85], agriculturalWatershed: [76, 49], suburbanEdges: [76, 82] };
-    const shortNames = { headwaterStreams: "Headwaters", forestBuffer: "Buffers", floodplainWetlands: "Wetlands", riverMainstem: "Mainstem", agriculturalWatershed: "Farms", suburbanEdges: "Town" };
     for (const [i, loc] of view.locations.entries()) {
       const button = document.createElement("button");
       button.type = "button";
@@ -1189,7 +1213,7 @@
     }
     async function playSound() {
       stopSound();
-      if (!sound || !view || !view.sound || document.hidden || destroyed) return;
+      if (!sound || !view || !view.sound || document.hidden || destroyed || window._alloGlobalMuted || window.__alloAudio && window.__alloAudio.muted) return;
       const serial = soundSerial;
       try {
         if (options.ensureSound) await options.ensureSound();
@@ -1442,7 +1466,7 @@
         } catch {
         }
         renderJourney();
-        $("response-mode").focus();
+        $("response-mode")?.focus();
       });
       modeLabel.append(mode);
       decisions.append(modeLabel);
@@ -1531,11 +1555,14 @@
           }, "primary"));
         };
         form.append(button("Review my response", () => {
-          options.onFreeText?.(input.value);
+          if (options.onFreeText?.(input.value) === true) {
+            message("Practice paused. Support resources are shown above if you want to talk with someone.", true);
+            return;
+          }
           try {
             proposal = reviewResponse(adapter, run, input.value, { location: adapter.id === "watershed" ? selected : void 0 });
             showReview();
-            $("response-action").focus();
+            $("response-action")?.focus();
             announce(proposal.message);
           } catch (error) {
             message(error.message, true);
@@ -1745,13 +1772,16 @@
         options.onFreeText?.(input.value);
       });
       notes.append(label, input, button("Save field note", () => {
-        options.onFreeText?.(input.value);
+        if (options.onFreeText?.(input.value) === true) {
+          message("Practice paused. Support resources are shown above if you want to talk with someone.", true);
+          return;
+        }
         try {
           run = addNote(run, input.value);
           noteDrafts.delete(run.runId);
           persist();
           renderJourney();
-          $("field-note").focus();
+          $("field-note")?.focus();
         } catch (error) {
           message(error.message, true);
         }
@@ -1974,12 +2004,24 @@
     const [crisisTier, setCrisisTier] = React.useState(0);
     const onSafetyFlagRef = React.useRef(ctx.onSafetyFlag || null);
     onSafetyFlagRef.current = ctx.onSafetyFlag || null;
+    const updateRef = React.useRef(ctx.update || null);
+    updateRef.current = ctx.update || null;
+    const setSelToolRef = React.useRef(ctx.setSelHubTool || null);
+    setSelToolRef.current = ctx.setSelHubTool || null;
+    const setStemToolRef = React.useRef(ctx.setStemLabTool || null);
+    setStemToolRef.current = ctx.setStemLabTool || null;
+    const lastFlaggedRef = React.useRef({ text: "", at: 0, blocked: false });
     React.useEffect(() => {
+      if (!host.current) return;
       const toolId = kind === "sel" ? "practiceJourneys" : "fieldJourneys";
       const toolName = kind === "sel" ? "Practice Journeys" : "Field Journeys";
       const onFreeText = (text) => {
         const trimmed = String(text || "").trim();
         if (!trimmed) return false;
+        const now = Date.now();
+        if (lastFlaggedRef.current.text === trimmed && now - lastFlaggedRef.current.at < 1500) {
+          return lastFlaggedRef.current.blocked;
+        }
         const onFlag = typeof onSafetyFlagRef.current === "function" ? onSafetyFlagRef.current : null;
         let blocked = false;
         if (window.SelHub && typeof window.SelHub.safeRehearseCheck === "function") {
@@ -2007,7 +2049,7 @@
         }
         if (!blocked && window.SelHub && typeof window.SelHub.scanForCrisis === "function") {
           const scan = window.SelHub.scanForCrisis(trimmed);
-          if (scan && scan.triggered) {
+          if (scan && (scan.triggered || scan.tier >= 3)) {
             blocked = true;
             if (onFlag) {
               try {
@@ -2017,6 +2059,7 @@
             }
           }
         }
+        lastFlaggedRef.current = { text: trimmed, at: now, blocked };
         if (blocked) {
           setCrisisTier(3);
           if (window.SelHub && typeof window.SelHub.showCrisisModal === "function") {
@@ -2039,12 +2082,47 @@
         .map-location{font-size:10px}.grove .map-location{min-height:44px}
         .grove .map-location span{max-width:58px;white-space:normal}
       }
-      :host([data-theme="contrast"]){--ink:#fff;--muted:#eee;--paper:#000;--line:#aaa;--control-line:#aaa;--accent:#fff;color-scheme:dark}
-      :host([data-theme="contrast"]) :is(button,input,textarea,select,.scene,.campaign-card,.action,.location-info,.notice,.written-response,.encounter-panel,.encounter-feedback,.encounter-art){background:#000;color:#fff;border-color:#fff}
+      :host([data-theme="dark"]){--ink:#f1f5f9;--muted:#cbd5e1;--paper:#0f172a;--line:#334155;--control-line:#64748b;--accent:#34d399;color-scheme:dark}
+      :host([data-theme="dark"]) :is(.scene,.campaign-card,.action,.written-response,.encounter-panel,input,textarea,select){background:#1e293b;color:#f1f5f9;border-color:#475569}
+      :host([data-theme="dark"]) :is(.location-info,.encounter-feedback,.notice){background:#1e293b;color:#e2e8f0;border-color:#475569}
+      :host([data-theme="dark"]) :is(.scene-body,.scene-meta .eyebrow,.location-info p){color:#cbd5e1}
+      :host([data-theme="dark"]) .encounter-art{background:linear-gradient(135deg,#134e4a,#312e81);color:#f1f5f9}
+      :host([data-theme="dark"]) button{background:#1e293b;color:#f1f5f9;border-color:#64748b}
+      :host([data-theme="dark"]) button:hover:not(:disabled){background:#334155;color:#ffffff}
+      :host([data-theme="dark"]) button.primary{background:#0d9488;color:#ffffff;border-color:#14b8a6}
+      :host([data-theme="dark"]) button.primary:hover:not(:disabled){background:#0f766e;color:#ffffff}
+      :host([data-theme="contrast"]){--ink:#fff;--muted:#eee;--paper:#000;--line:#ff0;--control-line:#ff0;--accent:#ff0;color-scheme:dark}
+      :host([data-theme="contrast"]) :is(button,input,textarea,select,.scene,.campaign-card,.action,.location-info,.notice,.written-response,.encounter-panel,.encounter-feedback,.encounter-art){background:#000;color:#fff;border-color:#ff0}
+      :host([data-theme="contrast"]) button:hover:not(:disabled),
+      :host([data-theme="contrast"]) button.primary,
+      :host([data-theme="contrast"]) button.primary:hover:not(:disabled){background:#ff0;color:#000;border-color:#ff0}
+      :host([data-theme="contrast"]) button.primary .action-hint{color:#000}
       :host([data-theme="contrast"]) :is(p,.scene-meta .eyebrow,.action-hint,.map-caption,.location-info p){color:#eee}
       :host([data-theme="contrast"]) :is(button,a,input,textarea,select,summary,.receipts):focus-visible{outline:3px solid #ff0;outline-offset:4px}
       :host([data-theme="contrast"]) .map-location{background:#000;color:#fff}
       :host([data-theme="contrast"]) .map-location[aria-pressed=true]{outline:3px solid #ff0}
+      @keyframes fjRiverFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-64}}
+      @keyframes fjRouteFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-36}}
+      @keyframes fjBeaconPulse{0%,100%{transform:scale(.84);opacity:.58}50%{transform:scale(1.42);opacity:.12}}
+      @keyframes fjBeaconActive{0%,100%{transform:scale(.92);opacity:.84}50%{transform:scale(1.62);opacity:.14}}
+      @keyframes fjCompassDrift{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(6deg)}}
+      @keyframes fjContourGlint{0%,100%{opacity:.54}50%{opacity:.95}}
+      @keyframes fjCanopyBreath{0%,100%{opacity:.64}50%{opacity:.88}}
+      @keyframes fjSymbolBreath{0%,100%{opacity:.82;transform:scale(.96)}50%{opacity:1;transform:scale(1.06)}}
+      .fj-river-flow{animation:fjRiverFlow 4.2s linear infinite}
+      .fj-route-trail{animation:fjRouteFlow 3.6s linear infinite}
+      .fj-beacon-ring{transform-box:fill-box;transform-origin:center;animation:fjBeaconPulse 3.4s ease-in-out infinite;pointer-events:none}
+      .fj-beacon-ring.fj-beacon-active{animation:fjBeaconActive 2.6s ease-in-out infinite}
+      .fj-compass-needle{transform-box:fill-box;transform-origin:center;animation:fjCompassDrift 6.8s ease-in-out infinite}
+      .fj-contour{animation:fjContourGlint 5.6s ease-in-out infinite}
+      .fj-contour-alt{animation-delay:-2.8s}
+      .fj-canopy-glint{animation:fjCanopyBreath 5.2s ease-in-out infinite}
+      .encounter-symbol{display:inline-block;transform-origin:center;animation:fjSymbolBreath 4.6s ease-in-out infinite}
+      :host([data-theme="dark"]) .landscape{border-color:#334155}
+      :host([data-theme="contrast"]) .fj-beacon-ring,:host([data-theme="contrast"]) .fj-canopy-glint{display:none!important}
+      :host([data-theme="contrast"]) :is(.fj-river-flow,.fj-route-trail,.fj-compass-needle,.fj-contour,.encounter-symbol){animation:none!important}
+      @media(forced-colors:active){.fj-beacon-ring,.fj-canopy-glint{display:none!important}.fj-river-flow,.fj-route-trail,.fj-compass-needle,.fj-contour,.encounter-symbol{animation:none!important}}
+      @media(prefers-reduced-motion:reduce){.fj-river-flow,.fj-route-trail,.fj-beacon-ring,.fj-beacon-ring.fj-beacon-active,.fj-compass-needle,.fj-contour,.fj-canopy-glint,.encounter-symbol{animation:none!important}}
       @container(max-width:720px){.response-mode{align-items:start;flex-direction:column}.response-mode select{width:100%}}
     `;
       const main = document.createElement("main");
@@ -2063,8 +2141,14 @@
         if (path.includes(root.host) && path.some((node) => node?.matches?.("input,textarea,select")) && !["Tab", "Escape"].includes(event.key)) event.stopPropagation();
       };
       window.addEventListener("keydown", protectTyping, true);
-      const sessionStore = kind === "sel" ? createSessionStore(ctx.toolData?.practiceJourneys?.records, (records) => ctx.update("practiceJourneys", "records", records)) : void 0;
-      const journey = mountFieldJourneys(root, { embedded: true, hub: kind, storage: sessionStore, sessionOnly: kind === "sel", ensureSound, adapters: kind === "sel" ? [selfAdvocacyJourney] : void 0, initialCampaign: kind === "stem" ? ctx.journeyEntry : null, returnToSource: ctx.journeyEntry ? () => ctx.setStemLabTool("waterCycle") : null, openRelatedTool: kind === "sel" ? ctx.setSelHubTool : null, onFreeText });
+      const sessionStore = kind === "sel" ? createSessionStore(ctx.toolData?.practiceJourneys?.records, (records) => {
+        if (typeof updateRef.current === "function") updateRef.current("practiceJourneys", "records", records);
+      }) : void 0;
+      const journey = mountFieldJourneys(root, { embedded: true, hub: kind, storage: sessionStore, sessionOnly: kind === "sel", ensureSound, adapters: kind === "sel" ? [selfAdvocacyJourney] : void 0, initialCampaign: kind === "stem" ? ctx.journeyEntry : null, returnToSource: ctx.journeyEntry ? () => {
+        if (typeof setStemToolRef.current === "function") setStemToolRef.current("waterCycle");
+      } : null, openRelatedTool: kind === "sel" ? ((id) => {
+        if (typeof setSelToolRef.current === "function") setSelToolRef.current(id);
+      }) : null, onFreeText });
       return () => {
         journey.destroy();
         window.removeEventListener("keydown", protectTyping, true);
@@ -2072,6 +2156,8 @@
       };
     }, []);
     const crisisBanner = crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === "function" ? window.SelHub.renderCrisisResources(React.createElement, ctx.gradeBand || "high") : null;
+    const themeObj = ctx && typeof ctx.theme === "object" && ctx.theme !== null ? ctx.theme : null;
+    const resolvedTheme = typeof ctx.theme === "string" ? ctx.theme : ctx.isContrast || themeObj?.isContrast ? "contrast" : ctx.isDark || themeObj?.isDark ? "dark" : "light";
     return React.createElement(
       React.Fragment,
       null,
@@ -2080,7 +2166,7 @@
         ref: host,
         "data-field-journeys": "true",
         "data-journey-hub": kind,
-        "data-theme": typeof ctx.theme === "string" ? ctx.theme : ctx.isContrast ? "contrast" : ctx.isDark ? "dark" : "light",
+        "data-theme": resolvedTheme,
         style: { width: "100%", minWidth: 0 }
       })
     );

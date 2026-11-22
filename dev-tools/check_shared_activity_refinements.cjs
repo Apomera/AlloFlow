@@ -6,8 +6,8 @@ const { expect } = require('@playwright/test');
 const { makeGsSandbox } = require('./fixtures/shared_activity_mailbox.cjs');
 
 (async () => {
-  const { call } = makeGsSandbox();
-  const admin = call({a:'claim'}).admin;
+  const { call, setupOwner } = makeGsSandbox();
+  const admin = setupOwner();
   const id = 'PK-62345678-1234-1234-1234-123456789012';
   const secret = 'fixture_secret_fixture_secret';
   const activityId = n => `AC-62345678-1234-1234-1234-${String(n).padStart(12,'0')}`;

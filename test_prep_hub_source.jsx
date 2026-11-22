@@ -4092,6 +4092,7 @@ function TestPrepHub(props) {
     callTTS,
     callGemini,
     callGeminiAudio: providedCallGeminiAudio,
+    onSafetyFlag,
     selectedVoice = 'Puck',
     addToast,
     internalQaMode = false,
@@ -6366,6 +6367,37 @@ function TestPrepHub(props) {
       setClarificationStatus('ready');
       if (handsFreeEnabledRef.current) await speakTestPrepText(policy.response);
       return;
+    }
+    // Safety gate on the student's typed clarification question (never the test passage).
+    if (typeof window !== 'undefined' && policy.query && String(policy.query).trim()) {
+      const _tpQuery = String(policy.query).trim();
+      const _tpFlagFn = typeof onSafetyFlag === 'function' ? onSafetyFlag : null;
+      let _tpBlocked = false;
+      if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+        try {
+          const _tpRes = window.SelHub.safeRehearseCheck(_tpQuery, { toolId: 'test_prep_hub_clarification', onSafetyFlag: _tpFlagFn });
+          if (_tpRes && _tpRes.action === 'block') _tpBlocked = true;
+        } catch (_) {}
+      } else if (window.SafetyContentChecker && typeof window.SafetyContentChecker.check === 'function') {
+        try {
+          const _tpFlags = window.SafetyContentChecker.check(_tpQuery);
+          const _tpRes = Array.isArray(_tpFlags) && _tpFlags.find((f) => f && f.severity === 'critical');
+          if (_tpRes) {
+            _tpBlocked = true;
+            if (_tpFlagFn) {
+              try { _tpFlagFn({ tool: 'test_prep_hub_clarification', severity: 'critical', category: _tpRes.category || 'safety', timestamp: Date.now() }); } catch (_) {}
+            }
+          }
+        } catch (_) {}
+      }
+      if (_tpBlocked) {
+        const supportMsg = 'We paused AI clarification here. Your wellbeing matters more than any practice test — please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line).';
+        try { if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') window.SelHub.showCrisisModal(); } catch (_) {}
+        setClarificationResponse(supportMsg);
+        setClarificationStatus('ready');
+        if (handsFreeEnabledRef.current) await speakTestPrepText(supportMsg);
+        return;
+      }
     }
     const turnLimit = checked ? 5 : 3;
     if (clarificationHistory.length >= turnLimit) {

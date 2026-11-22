@@ -1362,7 +1362,28 @@ window.StemLab = window.StemLab || {
       var h = React.createElement;
       var rawD = ctx.toolData && ctx.toolData.epidemicSim;
       var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : {};
-      var callGemini = ctx.callGemini;
+      var _epiAiUsable = function (kind, fn) {
+        try {
+          if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable(kind, fn));
+          if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
+          if (typeof window !== 'undefined') {
+            if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return false;
+            var qr = window.__alloQrStudentMode;
+            if (qr === true || (qr && typeof qr === 'object' && qr.active === true && qr.allowAi === false)) return false;
+          }
+          return true;
+        } catch (_) { return false; }
+      };
+      var callGemini = _epiAiUsable('text', ctx.callGemini) ? ctx.callGemini : null;
+      var _epiExtractText = function (res) {
+        if (typeof res === 'string') return res;
+        if (res && typeof res === 'object' && typeof res.text === 'string') return res.text;
+        return '';
+      };
+      var _epiCall = function (prompt) {
+        if (!callGemini) return Promise.reject(new Error('AI unavailable'));
+        try { return Promise.resolve(callGemini(prompt)); } catch (err) { return Promise.reject(err); }
+      };
       // Never bound, yet the Outbreak Response module calls addToast in five
       // places. `if (addToast)` does not save it — a bare reference to an
       // undeclared name throws inside the if() itself; only typeof tolerates one.
@@ -1611,7 +1632,16 @@ window.StemLab = window.StemLab || {
       // Particle simulation state
       var particleRunning = d.particleRunning || false;
 
-      // ── Particle canvas logic (via callback ref) ──
+      function epidemicIsHighContrast() {
+        if (ctx.isContrast) return true;
+        try {
+          if (typeof document === 'undefined') return false;
+          return !!((document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) ||
+                    (document.body && document.body.classList && document.body.classList.contains('theme-contrast')));
+        } catch (e) { return false; }
+      }
+
+      // ── Particle canvas logic (via callback ref) — Zero-GC cinema-grade epidemiological engine ──
       function particleRef(canvas) {
         // React invokes an INLINE ref with null and then the element on every single
         // render, and the old body tore the loop down and rebuilt it each time. Because
@@ -1621,109 +1651,272 @@ window.StemLab = window.StemLab || {
         // now self-terminates once the canvas leaves the DOM, so the detach call no
         // longer has to cancel anything.
         if (!canvas) return;
-        var signature = particleRunning ? [r0, vaccRate, infectPeriod, popSize, reducedMotion ? 'static' : 'motion'].join('|') : 'stopped';
+        var isHCInit = epidemicIsHighContrast();
+        var signature = particleRunning ? [r0, vaccRate, infectPeriod, popSize, reducedMotion ? 'static' : 'motion', isHCInit ? 'hc' : 'std'].join('|') : ('stopped|' + (isHCInit ? 'hc' : 'std'));
         if (canvas._epiSignature === signature) return;
         canvas._epiSignature = signature;
         if (window._epiParticles) {
           cancelAnimationFrame(window._epiParticles);
           window._epiParticles = null;
         }
-        if (!particleRunning) return;
         var measuredWidth = canvas.clientWidth || (canvas.parentNode && canvas.parentNode.clientWidth) || 700;
         var cw = Math.max(240, Math.min(900, Math.round(measuredWidth))), ch = 200;
         // PL7 batch 3: HiDPI — scale internal buffer by dpr, keep CSS at logical.
         var _epiDpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-        canvas.width = Math.round(cw * _epiDpr);
-        canvas.height = Math.round(ch * _epiDpr);
+        var targetW = Math.round(cw * _epiDpr), targetH = Math.round(ch * _epiDpr);
+        if (canvas.width !== targetW) canvas.width = targetW;
+        if (canvas.height !== targetH) canvas.height = targetH;
         // Keep CSS width responsive; only the backing buffer uses the measured size.
         canvas.style.height = ch + 'px';
-        var cx = canvas.getContext && canvas.getContext('2d');
+        var cx = canvas._epiCtx || (canvas._epiCtx = canvas.getContext && canvas.getContext('2d'));
         if (!cx) return;
         cx.setTransform(_epiDpr, 0, 0, _epiDpr, 0, 0);
+
+        if (!particleRunning) {
+          // Clean static atmospheric preview backdrop when idle (no DOM/aria mutations, no rAF)
+          cx.clearRect(0, 0, cw, ch);
+          if (!isHCInit && typeof cx.createRadialGradient === 'function') {
+            var idleBg = cx.createRadialGradient(cw * 0.5, ch * 0.46, 14, cw * 0.5, ch * 0.5, Math.max(cw, ch) * 0.72);
+            idleBg.addColorStop(0, '#162544');
+            idleBg.addColorStop(0.58, '#0f172a');
+            idleBg.addColorStop(1, '#070b14');
+            cx.fillStyle = idleBg;
+          } else {
+            cx.fillStyle = isHCInit ? '#000000' : 'rgba(15,23,42,0.92)';
+          }
+          cx.fillRect(0, 0, cw, ch);
+          cx.save();
+          cx.strokeStyle = isHCInit ? 'rgba(255,255,255,0.28)' : 'rgba(148,163,184,0.10)';
+          cx.lineWidth = 0.75;
+          cx.beginPath();
+          for (var igx = 28; igx < cw; igx += 28) { cx.moveTo(igx, 0); cx.lineTo(igx, ch); }
+          for (var igy = 28; igy < ch; igy += 28) { cx.moveTo(0, igy); cx.lineTo(cw, igy); }
+          cx.stroke();
+          cx.strokeStyle = isHCInit ? '#ffff00' : 'rgba(56,189,248,0.12)';
+          cx.lineWidth = 1;
+          cx.beginPath();
+          cx.arc(cw * 0.5, ch * 0.5, Math.min(cw, ch) * 0.28, 0, Math.PI * 2);
+          cx.arc(cw * 0.5, ch * 0.5, Math.min(cw, ch) * 0.44, 0, Math.PI * 2);
+          cx.stroke();
+          cx.restore();
+          return;
+        }
+
+        // Pre-allocate ALL zero-GC agent pools, velocity-trail ring buffers, shockwave rings & SIR history
         var numP = Math.min(400, Math.max(80, Math.round(popSize / 5000)));
-        var particles = [];
-        var pulses = [];
+        var pX = new Float32Array(numP);
+        var pY = new Float32Array(numP);
+        var pVx = new Float32Array(numP);
+        var pVy = new Float32Array(numP);
+        var pState = new Uint8Array(numP); // 0=S, 1=I, 2=R
+        var pVacc = new Uint8Array(numP);  // 1=vaccinated, 0=unvaccinated
+        var pTicks = new Int32Array(numP);
+        var pPhase = new Float32Array(numP);
+        var pShield = new Float32Array(numP); // herd-immunity deflection flash (0..1)
+
+        // Velocity-scaled motion trail ring buffer per agent (zero-GC flat typed arrays)
+        var TRAIL_LEN = 6;
+        var tX = new Float32Array(numP * TRAIL_LEN);
+        var tY = new Float32Array(numP * TRAIL_LEN);
+        var trailHead = 0;
+        var trailFilled = 0;
+
+        // Zero-GC contagion aerosol shockwave & shield deflection ring pool
+        var MAX_RINGS = 48;
+        var ringX = new Float32Array(MAX_RINGS);
+        var ringY = new Float32Array(MAX_RINGS);
+        var ringSrcX = new Float32Array(MAX_RINGS);
+        var ringSrcY = new Float32Array(MAX_RINGS);
+        var ringR = new Float32Array(MAX_RINGS);
+        var ringMaxR = new Float32Array(MAX_RINGS);
+        var ringAlpha = new Float32Array(MAX_RINGS);
+        var ringKind = new Uint8Array(MAX_RINGS); // 0=contagion aerosol burst, 1=herd-immunity deflection, 2=recovery bloom
+        var ringCursor = 0;
+
+        // Zero-GC live SIR sparkline history buffer (upper-left glowing tracker)
+        var HIST_CAP = 140;
+        var histS = new Float32Array(HIST_CAP);
+        var histI = new Float32Array(HIST_CAP);
+        var histR = new Float32Array(HIST_CAP);
+        var histLen = 0;
+
         var infRadius = 12;
+        var infRadiusSq = infRadius * infRadius;
+        var shieldRadiusSq = (infRadius * 1.15) * (infRadius * 1.15);
         var pInf = Math.min(0.7, r0 * 0.04);
         var recoveryTicks = Math.round(infectPeriod * 8);
         var frameCount = 0;
+        var ambientPhase = 0;
+        var centroidX = cw * 0.5, centroidY = ch * 0.5;
+
+        function spawnRing(x, y, srcX, srcY, maxR, alpha, kind) {
+          var idx = ringCursor;
+          ringCursor = (ringCursor + 1) % MAX_RINGS;
+          ringX[idx] = x;
+          ringY[idx] = y;
+          ringSrcX[idx] = srcX;
+          ringSrcY[idx] = srcY;
+          ringR[idx] = 3.2;
+          ringMaxR[idx] = maxR;
+          ringAlpha[idx] = alpha;
+          ringKind[idx] = kind;
+        }
 
         function initParticles() {
-          particles = [];
-          pulses = [];
           var vaccCount = Math.round(numP * vaccRate / 100);
+          var cS = 0, cI = 0, cR = 0;
           for (var j = 0; j < numP; j++) {
-            var state = 'S';
-            var vaccinated = false;
-            if (j < vaccCount) { state = 'R'; vaccinated = true; }
-            else if (j < vaccCount + 3) state = 'I';
-            particles.push({
-              x: Math.random() * cw,
-              y: Math.random() * ch,
-              vx: (Math.random() - 0.5) * 2,
-              vy: (Math.random() - 0.5) * 2,
-              state: state,
-              vaccinated: vaccinated,
-              ticks: 0
-            });
+            var st = 0, vac = 0;
+            if (j < vaccCount) { st = 2; vac = 1; cR++; }
+            else if (j < vaccCount + 3) { st = 1; cI++; }
+            else { cS++; }
+            var ix = Math.random() * cw;
+            var iy = Math.random() * ch;
+            pX[j] = ix; pY[j] = iy;
+            pVx[j] = (Math.random() - 0.5) * 2.1;
+            pVy[j] = (Math.random() - 0.5) * 2.1;
+            pState[j] = st;
+            pVacc[j] = vac;
+            pTicks[j] = 0;
+            pPhase[j] = Math.random() * Math.PI * 2;
+            pShield[j] = 0;
+            var base = j * TRAIL_LEN;
+            for (var k = 0; k < TRAIL_LEN; k++) { tX[base + k] = ix; tY[base + k] = iy; }
           }
+          for (var ri = 0; ri < MAX_RINGS; ri++) ringAlpha[ri] = 0;
+          trailHead = 0; trailFilled = 1;
+          histS[0] = cS / numP; histI[0] = cI / numP; histR[0] = cR / numP;
+          histLen = 1;
         }
 
         function step() {
           frameCount++;
-          for (var a = 0; a < particles.length; a++) {
-            var p = particles[a];
-            p.x += p.vx;
-            p.y += p.vy;
-            if (p.x < 0 || p.x > cw) p.vx *= -1;
-            if (p.y < 0 || p.y > ch) p.vy *= -1;
-            p.x = Math.max(0, Math.min(cw, p.x));
-            p.y = Math.max(0, Math.min(ch, p.y));
-            if (p.state === 'I') {
-              p.ticks++;
-              if (p.ticks > recoveryTicks) p.state = 'R';
-              for (var b = 0; b < particles.length; b++) {
-                if (particles[b].state === 'S') {
-                  var dx = p.x - particles[b].x, dy = p.y - particles[b].y;
-                  if (dx * dx + dy * dy < infRadius * infRadius && Math.random() < pInf) {
-                    particles[b].state = 'I';
-                    if (!reducedMotion && pulses.length < 28) {
-                      pulses.push({ x: particles[b].x, y: particles[b].y, r: 3.5, maxR: infRadius * 2.15, alpha: 0.9 });
+          var recordTrail = (frameCount & 1) === 0;
+          if (recordTrail) {
+            trailHead = (trailHead + 1) % TRAIL_LEN;
+            if (trailFilled < TRAIL_LEN) trailFilled++;
+          }
+          var sumIx = 0, sumIy = 0, cntI = 0, cntS = 0, cntR = 0;
+          for (var a = 0; a < numP; a++) {
+            var nx = pX[a] + pVx[a];
+            var ny = pY[a] + pVy[a];
+            if (nx < 0 || nx > cw) { pVx[a] = -pVx[a]; nx = nx < 0 ? 0 : cw; }
+            if (ny < 0 || ny > ch) { pVy[a] = -pVy[a]; ny = ny < 0 ? 0 : ch; }
+            pX[a] = nx; pY[a] = ny;
+            if (recordTrail) {
+              var tb = a * TRAIL_LEN + trailHead;
+              tX[tb] = nx; tY[tb] = ny;
+            }
+            if (pShield[a] > 0) {
+              pShield[a] -= 0.055;
+              if (pShield[a] < 0) pShield[a] = 0;
+            }
+            var stA = pState[a];
+            if (stA === 1) {
+              sumIx += nx; sumIy += ny; cntI++;
+              pTicks[a]++;
+              if (pTicks[a] > recoveryTicks) {
+                pState[a] = 2;
+                if (!reducedMotion) spawnRing(nx, ny, nx, ny, infRadius * 1.45, 0.72, 2);
+                continue;
+              }
+              for (var b = 0; b < numP; b++) {
+                var stB = pState[b];
+                if (stB === 0) {
+                  var dx = nx - pX[b], dy = ny - pY[b];
+                  if (dx * dx + dy * dy < infRadiusSq && Math.random() < pInf) {
+                    pState[b] = 1;
+                    pTicks[b] = 0;
+                    if (!reducedMotion) spawnRing(pX[b], pY[b], nx, ny, infRadius * 2.45, 0.94, 0);
+                  }
+                } else if (stB === 2 && pShield[b] <= 0.05) {
+                  var sdx = nx - pX[b], sdy = ny - pY[b];
+                  if (sdx * sdx + sdy * sdy < shieldRadiusSq) {
+                    pShield[b] = 1.0;
+                    if (!reducedMotion && (frameCount & 3) === 0) {
+                      spawnRing(pX[b], pY[b], nx, ny, infRadius * 1.35, 0.65, 1);
                     }
                   }
                 }
               }
+            } else if (stA === 0) {
+              cntS++;
+            } else {
+              cntR++;
             }
           }
-          if (pulses.length) {
-            var nextPulses = [];
-            for (var pi = 0; pi < pulses.length; pi++) {
-              var rp = pulses[pi];
-              rp.r += 0.9;
-              rp.alpha *= 0.91;
-              if (rp.r < rp.maxR && rp.alpha > 0.04) nextPulses.push(rp);
+          if (cntI > 0) {
+            var targetCx = sumIx / cntI, targetCy = sumIy / cntI;
+            centroidX += (targetCx - centroidX) * 0.08;
+            centroidY += (targetCy - centroidY) * 0.08;
+          }
+          // Advance R0 supercriticality ambient wave phase
+          var effNow = r0 * (cntS / numP);
+          ambientPhase = (ambientPhase + 0.008 * Math.max(0.55, Math.min(3.2, effNow))) % 1;
+
+          // Update zero-GC shockwave rings in-place (zero allocations)
+          for (var pi = 0; pi < MAX_RINGS; pi++) {
+            var al = ringAlpha[pi];
+            if (al <= 0) continue;
+            var spd = ringKind[pi] === 0 ? 0.95 : 0.7;
+            ringR[pi] += spd;
+            al *= (ringKind[pi] === 0 ? 0.915 : 0.89);
+            if (ringR[pi] >= ringMaxR[pi] || al < 0.035) ringAlpha[pi] = 0;
+            else ringAlpha[pi] = al;
+          }
+
+          // Sample live SIR history every 4 frames into fixed-size sparkline ring
+          if ((frameCount & 3) === 0) {
+            if (histLen < HIST_CAP) {
+              histS[histLen] = cntS / numP;
+              histI[histLen] = cntI / numP;
+              histR[histLen] = cntR / numP;
+              histLen++;
+            } else {
+              for (var hi = 0; hi < HIST_CAP - 1; hi++) {
+                histS[hi] = histS[hi + 1];
+                histI[hi] = histI[hi + 1];
+                histR[hi] = histR[hi + 1];
+              }
+              histS[HIST_CAP - 1] = cntS / numP;
+              histI[HIST_CAP - 1] = cntI / numP;
+              histR[HIST_CAP - 1] = cntR / numP;
             }
-            pulses = nextPulses;
           }
         }
 
         function draw() {
+          var isHC = epidemicIsHighContrast();
+          var hasRG = typeof cx.createRadialGradient === 'function';
           cx.clearRect(0, 0, cw, ch);
+
+          // Count states in-place (zero allocations)
+          var cS = 0, cI = 0, cR = 0;
+          for (var ci = 0; ci < numP; ci++) {
+            var stC = pState[ci];
+            if (stC === 0) cS++;
+            else if (stC === 1) cI++;
+            else cR++;
+          }
+          var liveEffR0 = r0 * (cS / numP);
+          var infFrac = cI / numP;
+          var supercritical = liveEffR0 > 1.0 && cI > 0;
+
           // Atmospheric arena backdrop with soft central zone illumination
-          if (typeof cx.createRadialGradient === 'function') {
+          if (!isHC && hasRG) {
             var bgGrad = cx.createRadialGradient(cw * 0.5, ch * 0.46, 14, cw * 0.5, ch * 0.5, Math.max(cw, ch) * 0.72);
-            bgGrad.addColorStop(0, '#162544');
+            bgGrad.addColorStop(0, supercritical ? '#211b3a' : '#162544');
             bgGrad.addColorStop(0.58, '#0f172a');
             bgGrad.addColorStop(1, '#070b14');
             cx.fillStyle = bgGrad;
           } else {
-            cx.fillStyle = 'rgba(15,23,42,0.92)';
+            cx.fillStyle = isHC ? '#000000' : 'rgba(15,23,42,0.92)';
           }
           cx.fillRect(0, 0, cw, ch);
 
           // Subtle epidemiological arena coordinate grid & soft district zones
           cx.save();
-          cx.strokeStyle = 'rgba(148,163,184,0.10)';
+          cx.strokeStyle = isHC ? 'rgba(255,255,255,0.22)' : 'rgba(148,163,184,0.10)';
           cx.lineWidth = 0.75;
           var gridStep = 28;
           cx.beginPath();
@@ -1731,114 +1924,254 @@ window.StemLab = window.StemLab || {
           for (var gy = gridStep; gy < ch; gy += gridStep) { cx.moveTo(0, gy); cx.lineTo(cw, gy); }
           cx.stroke();
           // Soft concentric radar/zone rings
-          cx.strokeStyle = 'rgba(56,189,248,0.08)';
+          cx.strokeStyle = isHC ? 'rgba(255,255,0,0.45)' : 'rgba(56,189,248,0.08)';
           cx.lineWidth = 1;
           cx.beginPath();
           cx.arc(cw * 0.5, ch * 0.5, Math.min(cw, ch) * 0.28, 0, Math.PI * 2);
           cx.arc(cw * 0.5, ch * 0.5, Math.min(cw, ch) * 0.44, 0, Math.PI * 2);
           cx.stroke();
+
+          // R0 Supercriticality ambient radar pulses around active outbreak centroid (bypassed in High-Contrast)
+          if (!isHC) {
+            var maxWaveR = Math.min(cw, ch) * 0.62;
+            var waveCount = 3;
+            for (var wi = 0; wi < waveCount; wi++) {
+              var wp = reducedMotion ? ((wi + 0.5) / waveCount) : ((ambientPhase + wi / waveCount) % 1);
+              var wr = 14 + wp * maxWaveR;
+              var wFade = Math.sin(wp * Math.PI);
+              if (supercritical) {
+                var intensity = Math.min(1, 0.35 + (liveEffR0 - 1) * 0.28 + infFrac * 1.4);
+                var wCol = liveEffR0 >= 2.0 ? '239,68,68' : '245,158,11';
+                cx.strokeStyle = 'rgba(' + wCol + ',' + (wFade * 0.24 * intensity).toFixed(3) + ')';
+                cx.lineWidth = 1.6 - wp * 0.7;
+                cx.beginPath(); cx.arc(centroidX, centroidY, wr, 0, Math.PI * 2); cx.stroke();
+              } else if (vaccRate > 0) {
+                cx.strokeStyle = 'rgba(20,184,166,' + (wFade * 0.14).toFixed(3) + ')';
+                cx.lineWidth = 1.1;
+                cx.beginPath(); cx.arc(cw * 0.5, ch * 0.5, wr, 0, Math.PI * 2); cx.stroke();
+              }
+            }
+          }
           cx.restore();
 
-          var colors = { S: '#38bdf8', I: '#ef4444', R: '#22c55e', V: '#14b8a6' };
-          var stateCounts = { S: 0, I: 0, R: 0 };
-          for (var countIndex = 0; countIndex < particles.length; countIndex++) stateCounts[particles[countIndex].state]++;
-          var accessibleLabel = 'Particle simulation: ' + stateCounts.S + ' susceptible, ' + stateCounts.I + ' infected, ' + stateCounts.R + ' recovered agents.' + (reducedMotion ? ' Static view because reduced motion is enabled.' : '');
+          var accessibleLabel = 'Particle simulation: ' + cS + ' susceptible, ' + cI + ' infected, ' + cR + ' recovered agents.' + (reducedMotion ? ' Static view because reduced motion is enabled.' : '');
           if (canvas._epiLastLabel !== accessibleLabel) {
             canvas._epiLastLabel = accessibleLabel;
             canvas.setAttribute('aria-label', accessibleLabel);
             var particleStatus = canvas.parentNode && canvas.parentNode.querySelector('[data-epi-particle-status]');
-            if (particleStatus) particleStatus.textContent = 'S ' + stateCounts.S + ' · I ' + stateCounts.I + ' · R ' + stateCounts.R + (reducedMotion ? ' · static view' : '');
+            if (particleStatus) particleStatus.textContent = 'S ' + cS + ' \u00B7 I ' + cI + ' \u00B7 R ' + cR + (reducedMotion ? ' \u00B7 static view' : '');
           }
 
-          // Luminous status halos (infected transmission zones + soft susceptible/immune glow)
+          // Velocity-scaled motion trails (zero-GC ring traversal, skipped in reducedMotion & High-Contrast)
+          if (!reducedMotion && !isHC && trailFilled > 1) {
+            cx.save();
+            cx.lineCap = 'round';
+            for (var ta = 0; ta < numP; ta++) {
+              var spdSq = pVx[ta] * pVx[ta] + pVy[ta] * pVy[ta];
+              if (spdSq < 0.08) continue;
+              var spdNorm = Math.min(1, Math.sqrt(spdSq) * 0.68);
+              var stT = pState[ta];
+              var baseT = ta * TRAIL_LEN;
+              var oldestIdx = (trailHead - trailFilled + 1 + TRAIL_LEN) % TRAIL_LEN;
+              var prevX = tX[baseT + oldestIdx], prevY = tY[baseT + oldestIdx];
+              for (var stepT = 1; stepT < trailFilled; stepT++) {
+                var curIdx = (oldestIdx + stepT) % TRAIL_LEN;
+                var curX = tX[baseT + curIdx], curY = tY[baseT + curIdx];
+                // Skip wall-bounce discontinuities
+                if (Math.abs(curX - prevX) < 22 && Math.abs(curY - prevY) < 22) {
+                  var fracT = stepT / trailFilled;
+                  var alphaT = (fracT * fracT * spdNorm * (stT === 1 ? 0.58 : 0.28)).toFixed(3);
+                  cx.strokeStyle = stT === 1 ? ('rgba(248,113,113,' + alphaT + ')') :
+                                   stT === 2 ? (pVacc[ta] ? ('rgba(45,212,191,' + alphaT + ')') : ('rgba(74,222,128,' + alphaT + ')')) :
+                                   ('rgba(56,189,248,' + alphaT + ')');
+                  cx.lineWidth = (stT === 1 ? 1.1 : 0.7) + fracT * spdNorm * (stT === 1 ? 1.6 : 0.9);
+                  cx.beginPath(); cx.moveTo(prevX, prevY); cx.lineTo(curX, curY); cx.stroke();
+                }
+                prevX = curX; prevY = curY;
+              }
+            }
+            cx.restore();
+          }
+
+          // Luminous status halos, herd-immunity shield auras & contagion aerosol shockwaves
           cx.save();
-          cx.globalCompositeOperation = 'lighter';
-          var hasRadial = typeof cx.createRadialGradient === 'function';
-          for (var jh = 0; jh < particles.length; jh++) {
-            var ph = particles[jh];
-            if (ph.state === 'I' && hasRadial) {
-              var pulseScale = reducedMotion ? 1 : (0.94 + 0.1 * Math.sin(frameCount * 0.12 + jh));
+          if (!isHC) cx.globalCompositeOperation = 'lighter';
+          for (var jh = 0; jh < numP; jh++) {
+            var stH = pState[jh];
+            var hx = pX[jh], hy = pY[jh];
+            if (stH === 1) {
+              var pulseScale = reducedMotion ? 1 : (0.92 + 0.12 * Math.sin(frameCount * 0.11 + pPhase[jh]));
               var radI = infRadius * pulseScale;
-              var halo = cx.createRadialGradient(ph.x, ph.y, 0, ph.x, ph.y, radI);
-              halo.addColorStop(0, 'rgba(248,113,113,0.28)');
-              halo.addColorStop(0.55, 'rgba(239,68,68,0.11)');
-              halo.addColorStop(1, 'rgba(239,68,68,0)');
-              cx.fillStyle = halo;
-              cx.beginPath(); cx.arc(ph.x, ph.y, radI, 0, Math.PI * 2); cx.fill();
-            } else if (ph.state === 'R' && ph.vaccinated && hasRadial) {
-              var vHalo = cx.createRadialGradient(ph.x, ph.y, 0, ph.x, ph.y, 7.5);
-              vHalo.addColorStop(0, 'rgba(20,184,166,0.20)');
-              vHalo.addColorStop(1, 'rgba(20,184,166,0)');
-              cx.fillStyle = vHalo;
-              cx.beginPath(); cx.arc(ph.x, ph.y, 7.5, 0, Math.PI * 2); cx.fill();
+              if (!isHC && hasRG) {
+                var halo = cx.createRadialGradient(hx, hy, 0, hx, hy, radI);
+                halo.addColorStop(0, 'rgba(248,113,113,0.30)');
+                halo.addColorStop(0.55, 'rgba(239,68,68,0.12)');
+                halo.addColorStop(1, 'rgba(239,68,68,0)');
+                cx.fillStyle = halo;
+                cx.beginPath(); cx.arc(hx, hy, radI, 0, Math.PI * 2); cx.fill();
+              } else if (isHC) {
+                cx.strokeStyle = '#ff5555'; cx.lineWidth = 0.9;
+                cx.beginPath(); cx.arc(hx, hy, infRadius * 0.9, 0, Math.PI * 2); cx.stroke();
+              }
+            } else if (stH === 2) {
+              var shBoost = pShield[jh];
+              var vRad = (pVacc[jh] ? 8.2 : 6.4) + shBoost * 4.5;
+              if (!isHC && hasRG) {
+                var vHalo = cx.createRadialGradient(hx, hy, 0.5, hx, hy, vRad);
+                if (pVacc[jh]) {
+                  vHalo.addColorStop(0, 'rgba(45,212,191,' + (0.22 + shBoost * 0.42).toFixed(2) + ')');
+                  vHalo.addColorStop(0.65, 'rgba(20,184,166,' + (0.09 + shBoost * 0.18).toFixed(2) + ')');
+                  vHalo.addColorStop(1, 'rgba(20,184,166,0)');
+                } else {
+                  vHalo.addColorStop(0, 'rgba(74,222,128,' + (0.14 + shBoost * 0.28).toFixed(2) + ')');
+                  vHalo.addColorStop(1, 'rgba(34,197,94,0)');
+                }
+                cx.fillStyle = vHalo;
+                cx.beginPath(); cx.arc(hx, hy, vRad, 0, Math.PI * 2); cx.fill();
+              }
             }
           }
-          // Expanding radial transmission pulse rings on contagion events
-          for (var pr = 0; pr < pulses.length; pr++) {
-            var ring = pulses[pr];
-            cx.strokeStyle = 'rgba(251,113,133,' + (ring.alpha * 0.85).toFixed(2) + ')';
-            cx.lineWidth = 1.6;
-            cx.beginPath(); cx.arc(ring.x, ring.y, ring.r, 0, Math.PI * 2); cx.stroke();
+
+          // Expanding zero-GC contagion aerosol shockwave rings, transmission filaments & shield deflections
+          for (var pr = 0; pr < MAX_RINGS; pr++) {
+            var rAlpha = ringAlpha[pr];
+            if (rAlpha <= 0) continue;
+            var rx = ringX[pr], ry = ringY[pr], rr = ringR[pr], rk = ringKind[pr];
+            if (rk === 0) {
+              // Brief glowing contagion aerosol filament connecting infector -> newly infected
+              if (rAlpha > 0.45) {
+                cx.strokeStyle = isHC ? '#ffff00' : ('rgba(253,164,175,' + ((rAlpha - 0.4) * 1.1).toFixed(2) + ')');
+                cx.lineWidth = 1.1;
+                cx.beginPath(); cx.moveTo(ringSrcX[pr], ringSrcY[pr]); cx.lineTo(rx, ry); cx.stroke();
+              }
+              // Primary contagion aerosol shockwave front
+              cx.strokeStyle = isHC ? '#ffff00' : ('rgba(251,113,133,' + (rAlpha * 0.88).toFixed(2) + ')');
+              cx.lineWidth = isHC ? 1.8 : 1.7;
+              cx.beginPath(); cx.arc(rx, ry, rr, 0, Math.PI * 2); cx.stroke();
+              // Secondary trailing aerosol mist ring
+              if (!isHC && rr > 6) {
+                cx.strokeStyle = 'rgba(248,113,113,' + (rAlpha * 0.42).toFixed(2) + ')';
+                cx.lineWidth = 0.9;
+                cx.beginPath(); cx.arc(rx, ry, rr * 0.66, 0, Math.PI * 2); cx.stroke();
+              }
+            } else if (rk === 1) {
+              // Herd-immunity shield deflection ripple
+              cx.strokeStyle = isHC ? '#00ff00' : ('rgba(94,234,212,' + (rAlpha * 0.82).toFixed(2) + ')');
+              cx.lineWidth = 1.35;
+              cx.beginPath(); cx.arc(rx, ry, rr, 0, Math.PI * 2); cx.stroke();
+            } else {
+              // Recovery bloom ring
+              cx.strokeStyle = isHC ? '#00ff00' : ('rgba(74,222,128,' + (rAlpha * 0.72).toFixed(2) + ')');
+              cx.lineWidth = 1.2;
+              cx.beginPath(); cx.arc(rx, ry, rr, 0, Math.PI * 2); cx.stroke();
+            }
           }
           cx.restore();
 
           // Redundant shapes keep state legible for learners who cannot distinguish
           // the palette: susceptible=circle, recovered/vaccinated=square(+shield ring), infected=ring + cross.
-          for (var j = 0; j < particles.length; j++) {
-            var p = particles[j];
-            if (p.state === 'I') continue;
-            if (p.state === 'R') {
-              cx.fillStyle = p.vaccinated ? colors.V : colors.R;
-              cx.fillRect(p.x - 2.8, p.y - 2.8, 5.6, 5.6);
-              if (p.vaccinated) {
-                cx.strokeStyle = 'rgba(153,246,228,0.65)';
-                cx.lineWidth = 0.9;
-                cx.beginPath(); cx.arc(p.x, p.y, 5.2, 0, Math.PI * 2); cx.stroke();
+          var colS = isHC ? '#ffffff' : '#38bdf8';
+          var colI = isHC ? '#ff5555' : '#ef4444';
+          var colR = isHC ? '#00ff00' : '#22c55e';
+          var colV = isHC ? '#ffff00' : '#14b8a6';
+          for (var j = 0; j < numP; j++) {
+            var stJ = pState[j];
+            if (stJ === 1) continue;
+            var pxJ = pX[j], pyJ = pY[j];
+            if (stJ === 2) {
+              cx.fillStyle = pVacc[j] ? colV : colR;
+              cx.fillRect(pxJ - 2.8, pyJ - 2.8, 5.6, 5.6);
+              if (pVacc[j] || pShield[j] > 0.1) {
+                var shPulse = reducedMotion ? 1 : (0.94 + 0.08 * Math.sin(frameCount * 0.07 + pPhase[j]));
+                cx.strokeStyle = isHC ? '#00ff00' : ('rgba(153,246,228,' + (0.58 + pShield[j] * 0.4).toFixed(2) + ')');
+                cx.lineWidth = 0.95 + pShield[j] * 0.9;
+                cx.beginPath(); cx.arc(pxJ, pyJ, (5.2 + pShield[j] * 1.8) * shPulse, 0, Math.PI * 2); cx.stroke();
               }
             } else {
-              cx.fillStyle = colors.S;
-              cx.beginPath(); cx.arc(p.x, p.y, 3, 0, Math.PI * 2); cx.fill();
-              cx.fillStyle = 'rgba(224,242,254,0.65)';
-              cx.beginPath(); cx.arc(p.x - 0.9, p.y - 0.9, 0.95, 0, Math.PI * 2); cx.fill();
+              cx.fillStyle = colS;
+              cx.beginPath(); cx.arc(pxJ, pyJ, 3, 0, Math.PI * 2); cx.fill();
+              if (!isHC) {
+                cx.fillStyle = 'rgba(224,242,254,0.65)';
+                cx.beginPath(); cx.arc(pxJ - 0.9, pyJ - 0.9, 0.95, 0, Math.PI * 2); cx.fill();
+              }
             }
           }
 
-          // Infected dots last, with a luminous crimson glow + crisp white bio-cross
+          // Infected dots last, with a luminous crimson glow (bypassed in High-Contrast) + crisp white bio-cross
           cx.save();
-          cx.shadowColor = '#ef4444'; cx.shadowBlur = 10;
-          cx.fillStyle = colors.I;
-          for (var ji = 0; ji < particles.length; ji++) {
-            var pI = particles[ji];
-            if (pI.state !== 'I') continue;
+          if (!isHC) { cx.shadowColor = '#ef4444'; cx.shadowBlur = 10; }
+          cx.fillStyle = colI;
+          for (var ji = 0; ji < numP; ji++) {
+            if (pState[ji] !== 1) continue;
+            var ixJ = pX[ji], iyJ = pY[ji];
             cx.beginPath();
-            cx.arc(pI.x, pI.y, 3.6, 0, Math.PI * 2);
+            cx.arc(ixJ, iyJ, 3.6, 0, Math.PI * 2);
             cx.fill();
-            cx.strokeStyle = 'rgba(255,255,255,0.92)';
-            cx.lineWidth = 1;
+            cx.strokeStyle = isHC ? '#000000' : 'rgba(255,255,255,0.92)';
+            cx.lineWidth = 1.1;
             cx.beginPath();
-            cx.moveTo(pI.x - 1.9, pI.y - 1.9); cx.lineTo(pI.x + 1.9, pI.y + 1.9);
-            cx.moveTo(pI.x + 1.9, pI.y - 1.9); cx.lineTo(pI.x - 1.9, pI.y + 1.9);
+            cx.moveTo(ixJ - 1.9, iyJ - 1.9); cx.lineTo(ixJ + 1.9, iyJ + 1.9);
+            cx.moveTo(ixJ + 1.9, iyJ - 1.9); cx.lineTo(ixJ - 1.9, iyJ + 1.9);
             cx.stroke();
           }
           cx.restore();
 
+          // Live SIR mini-curve sparkline & glowing wavefront tracking beacons (top-left, zero new text)
+          if (histLen > 1 && cw >= 280) {
+            var spX = 6, spY = 4, spW = 104, spH = 36;
+            cx.save();
+            cx.fillStyle = isHC ? '#000000' : 'rgba(2,6,23,0.74)';
+            cx.fillRect(spX, spY, spW, spH);
+            cx.strokeStyle = isHC ? '#ffffff' : 'rgba(148,163,184,0.28)';
+            cx.lineWidth = 0.85;
+            cx.strokeRect(spX, spY, spW, spH);
+            var denomH = Math.max(1, histLen - 1);
+            var padS = 3, innerW = spW - padS * 2, innerH = spH - padS * 2;
+            for (var sCurve = 0; sCurve < 3; sCurve++) {
+              var arrH = sCurve === 0 ? histS : (sCurve === 1 ? histR : histI);
+              var strokeH = sCurve === 0 ? colS : (sCurve === 1 ? colR : colI);
+              cx.strokeStyle = strokeH;
+              cx.lineWidth = sCurve === 2 ? 1.7 : 1.15;
+              cx.beginPath();
+              for (var hk = 0; hk < histLen; hk++) {
+                var gxH = spX + padS + (hk / denomH) * innerW;
+                var gyH = spY + padS + (1 - arrH[hk]) * innerH;
+                if (hk === 0) cx.moveTo(gxH, gyH); else cx.lineTo(gxH, gyH);
+              }
+              cx.stroke();
+              // Glowing live tracking beacon at wavefront tip
+              var tipX = spX + padS + innerW;
+              var tipY = spY + padS + (1 - arrH[histLen - 1]) * innerH;
+              if (!isHC && sCurve === 2) {
+                var bPulse = reducedMotion ? 1 : (0.85 + 0.25 * Math.sin(frameCount * 0.16));
+                cx.fillStyle = 'rgba(239,68,68,0.34)';
+                cx.beginPath(); cx.arc(tipX, tipY, 4.2 * bPulse, 0, Math.PI * 2); cx.fill();
+              }
+              cx.fillStyle = strokeH;
+              cx.beginPath(); cx.arc(tipX, tipY, sCurve === 2 ? 2.1 : 1.5, 0, Math.PI * 2); cx.fill();
+            }
+            cx.restore();
+          }
+
           // Live agent counts HUD pill
           cx.save();
-          cx.fillStyle = 'rgba(2,6,23,0.72)';
+          cx.fillStyle = isHC ? '#000000' : 'rgba(2,6,23,0.76)';
           cx.fillRect(cw - 178, 4, 174, 18);
+          if (isHC) { cx.strokeStyle = '#ffff00'; cx.lineWidth = 1; cx.strokeRect(cw - 178, 4, 174, 18); }
           cx.font = 'bold 10.5px system-ui';
           cx.textAlign = 'right';
-          cx.fillStyle = 'rgba(226,232,240,0.96)';
-          cx.fillText('Agents  S ' + stateCounts.S + '  I ' + stateCounts.I + '  R ' + stateCounts.R, cw - 10, 16);
+          cx.fillStyle = isHC ? '#ffff00' : 'rgba(226,232,240,0.96)';
+          cx.fillText('Agents  S ' + cS + '  I ' + cI + '  R ' + cR, cw - 10, 16);
           cx.restore();
           // Legend strip
           cx.save();
-          cx.fillStyle = 'rgba(2,6,23,0.72)';
+          cx.fillStyle = isHC ? '#000000' : 'rgba(2,6,23,0.76)';
           cx.fillRect(4, ch - 19, Math.min(cw - 8, 316), 16);
+          if (isHC) { cx.strokeStyle = '#ffffff'; cx.lineWidth = 1; cx.strokeRect(4, ch - 19, Math.min(cw - 8, 316), 16); }
           cx.font = 'bold 10px system-ui';
-          cx.fillStyle = '#38bdf8'; cx.fillText('\u25CF S Susceptible', 10, ch - 7.5);
-          cx.fillStyle = '#f87171'; cx.fillText('\u2297 I Infected', 112, ch - 7.5);
-          cx.fillStyle = '#4ade80'; cx.fillText('\u25A0 R Immune/Vax', 198, ch - 7.5);
+          cx.fillStyle = colS; cx.fillText('\u25CF S Susceptible', 10, ch - 7.5);
+          cx.fillStyle = isHC ? '#ff5555' : '#f87171'; cx.fillText('\u2297 I Infected', 112, ch - 7.5);
+          cx.fillStyle = isHC ? '#00ff00' : '#4ade80'; cx.fillText('\u25A0 R Immune/Vax', 198, ch - 7.5);
           cx.restore();
         }
 
@@ -1986,7 +2319,7 @@ window.StemLab = window.StemLab || {
           }
         }
 
-        // interactive hover overlay
+        // interactive hover overlay with smooth glowing SIR/SEIR tracking beacons
         var hoverDay = d.hoverDay;
         var hoverElements = [];
         if (hoverDay != null && data.length > 0) {
@@ -1995,10 +2328,17 @@ window.StemLab = window.StemLab || {
             if (Math.abs(data[hi].day - hoverDay) < Math.abs(closest.day - hoverDay)) closest = data[hi];
           }
           var hx = xPos(closest.day);
-          hoverElements.push(h('line', { key: 'hline', x1: hx, x2: hx, y1: padT, y2: padT + plotH, stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3,2' }));
+          if (!ctx.isContrast) {
+            hoverElements.push(h('line', { key: 'hline-glow', x1: hx, x2: hx, y1: padT, y2: padT + plotH, stroke: '#6366f1', strokeWidth: 5, opacity: 0.14 }));
+          }
+          hoverElements.push(h('line', { key: 'hline', x1: hx, x2: hx, y1: padT, y2: padT + plotH, stroke: ctx.isContrast ? '#ffff00' : '#94a3b8', strokeWidth: ctx.isContrast ? 1.5 : 1, strokeDasharray: '3,2' }));
           compartments.forEach(function(comp, ci) {
             var hy = yPos(closest[comp]);
-            hoverElements.push(h('circle', { key: 'hc' + comp, cx: hx, cy: hy, r: 4, fill: compColors[comp], stroke: 'white', strokeWidth: 1.5 }));
+            if (!ctx.isContrast) {
+              hoverElements.push(h('circle', { key: 'hbh' + comp, cx: hx, cy: hy, r: comp === 'I' ? 11 : 8.5, fill: gradHex[comp] || compColors[comp], opacity: comp === 'I' ? 0.22 : 0.15 }));
+              hoverElements.push(h('circle', { key: 'hbr' + comp, cx: hx, cy: hy, r: comp === 'I' ? 7.2 : 6, fill: 'none', stroke: gradHex[comp] || compColors[comp], strokeWidth: 1.25, opacity: 0.65 }));
+            }
+            hoverElements.push(h('circle', { key: 'hc' + comp, cx: hx, cy: hy, r: comp === 'I' ? 4.4 : 4, fill: compColors[comp], stroke: 'white', strokeWidth: 1.6 }));
           });
           // tooltip
           hoverElements.push(h('rect', { key: 'ttbg', x: Math.min(hx + 8, w - 138), y: padT, width: 128, height: 18 + compartments.length * 15, rx: 5, fill: 'rgba(15,23,42,0.92)' }));
@@ -2187,10 +2527,15 @@ window.StemLab = window.StemLab || {
         if (!callGemini) { chalNext(); return; }
         upd('chalAILoading', true);
         var tierLabel = chalTier === 1 ? 'easy' : chalTier === 2 ? 'medium' : 'hard';
-        callGemini('Generate one ' + tierLabel + ' epidemiology question for a ' + gradeBand + ' student. Topic: SIR models, R0, herd immunity, or disease spread. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
+        _epiCall('Generate one ' + tierLabel + ' epidemiology question for a ' + gradeBand + ' student. Topic: SIR models, R0, herd immunity, or disease spread. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
           try {
-            var parsed = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
-            var aiQs = (d.chalAIQs || []).concat([{ tier: chalTier, q: parsed.q, a: parsed.a, h: parsed.h || 'Think carefully!' }]);
+            var rawText = _epiExtractText(res).replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+            var parsed = JSON.parse(rawText);
+            if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || typeof parsed.q !== 'string' || !parsed.q.trim() || typeof parsed.a !== 'string' || !parsed.a.trim()) {
+              throw new Error('invalid challenge question');
+            }
+            var hintText = typeof parsed.h === 'string' && parsed.h.trim() ? parsed.h.trim().slice(0, 600) : 'Think carefully!';
+            var aiQs = (d.chalAIQs || []).concat([{ tier: chalTier, q: parsed.q.trim().slice(0, 1000), a: parsed.a.trim().slice(0, 400), h: hintText }]);
             updMulti({ chalAIQs: aiQs, chalAILoading: false, chalFeedback: '', chalAnswer: '', chalUseAI: aiQs.length - 1, chalAnswered: false });
           } catch(e) {
             updMulti({ chalAILoading: false }); chalNext();
@@ -2240,10 +2585,15 @@ window.StemLab = window.StemLab || {
       function generateBattleAIQ() {
         if (!callGemini) return;
         upd('battleAILoading', true);
-        callGemini('Generate one epidemiology battle question for a ' + gradeBand + ' student about disease modeling, R0, herd immunity, or outbreak control. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
+        _epiCall('Generate one epidemiology battle question for a ' + gradeBand + ' student about disease modeling, R0, herd immunity, or outbreak control. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
           try {
-            var parsed = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
-            updMulti({ battleAIQ: { q: parsed.q, a: parsed.a, h: parsed.h || 'Think about epidemic models.' }, battleAILoading: false });
+            var rawText = _epiExtractText(res).replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+            var parsed = JSON.parse(rawText);
+            if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || typeof parsed.q !== 'string' || !parsed.q.trim() || typeof parsed.a !== 'string' || !parsed.a.trim()) {
+              throw new Error('invalid battle question');
+            }
+            var hintText = typeof parsed.h === 'string' && parsed.h.trim() ? parsed.h.trim().slice(0, 600) : 'Think about epidemic models.';
+            updMulti({ battleAIQ: { q: parsed.q.trim().slice(0, 1000), a: parsed.a.trim().slice(0, 400), h: hintText }, battleAILoading: false });
           } catch(e) {
             updMulti({ battleAILoading: false, battleAIQ: null });
           }
@@ -2578,10 +2928,38 @@ window.StemLab = window.StemLab || {
       function generateScenario() {
         if (!callGemini) return;
         updMulti({ scenarioLoading: true, scenarioError: null });
-        callGemini('Create a realistic fictional epidemic scenario for a ' + gradeBand + ' student. Include: disease name, origin, R0 (1-8), symptoms, transmission mode. Then present 3 response options (A, B, C) with different intervention strategies. For each option, describe the likely outcome. Return JSON: {"name":"disease name","origin":"where","r0":number,"symptoms":"brief","transmission":"how","description":"1-2 sentence scenario setup","options":[{"label":"A","strategy":"description","outcome":"what happens"}]}').then(function(res) {
+        _epiCall('Create a realistic fictional epidemic scenario for a ' + gradeBand + ' student. Include: disease name, origin, R0 (1-8), symptoms, transmission mode. Then present 3 response options (A, B, C) with different intervention strategies. For each option, describe the likely outcome. Return JSON: {"name":"disease name","origin":"where","r0":number,"symptoms":"brief","transmission":"how","description":"1-2 sentence scenario setup","options":[{"label":"A","strategy":"description","outcome":"what happens"}]}').then(function(res) {
           try {
-            var parsed = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
-            updMulti({ scenarioData: parsed, scenarioLoading: false, scenarioChoice: null, scenarioResult: null, scenarioDecision: null });
+            var rawText = _epiExtractText(res).replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+            var parsed = JSON.parse(rawText);
+            if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || typeof parsed.name !== 'string' || !parsed.name.trim() || !Array.isArray(parsed.options) || parsed.options.length === 0) {
+              throw new Error('invalid scenario');
+            }
+            var cleanOptions = parsed.options.slice(0, 6).map(function(opt, idx) {
+              if (!opt || typeof opt !== 'object' || Array.isArray(opt)) return null;
+              var strat = typeof opt.strategy === 'string' ? opt.strategy.trim().slice(0, 500) : '';
+              var outc = typeof opt.outcome === 'string' ? opt.outcome.trim().slice(0, 800) : '';
+              if (!strat || !outc) return null;
+              var entry = {
+                label: typeof opt.label === 'string' && opt.label.trim() ? opt.label.trim().slice(0, 20) : String.fromCharCode(65 + idx),
+                strategy: strat,
+                outcome: outc
+              };
+              if (opt.score != null && Number.isFinite(Number(opt.score))) entry.score = clamp(Math.round(Number(opt.score)), 0, 100);
+              return entry;
+            }).filter(Boolean);
+            if (!cleanOptions.length) throw new Error('no valid options');
+            var r0Num = Number(parsed.r0);
+            var safeScenario = {
+              name: parsed.name.trim().slice(0, 160),
+              origin: typeof parsed.origin === 'string' ? parsed.origin.trim().slice(0, 160) : '',
+              r0: Number.isFinite(r0Num) ? clamp(r0Num, 0.5, 20) : 2.5,
+              symptoms: typeof parsed.symptoms === 'string' ? parsed.symptoms.trim().slice(0, 300) : '',
+              transmission: typeof parsed.transmission === 'string' ? parsed.transmission.trim().slice(0, 200) : '',
+              description: typeof parsed.description === 'string' ? parsed.description.trim().slice(0, 1000) : '',
+              options: cleanOptions
+            };
+            updMulti({ scenarioData: safeScenario, scenarioLoading: false, scenarioChoice: null, scenarioResult: null, scenarioDecision: null });
           } catch(e) { updMulti({ scenarioLoading: false, scenarioError: 'The scenario response was not usable. Try again or use a guided model tab.' }); }
         }).catch(function() { updMulti({ scenarioLoading: false, scenarioError: 'The scenario service is unavailable. Try a guided model tab while it reconnects.' }); });
       }
@@ -4458,8 +4836,9 @@ window.StemLab = window.StemLab || {
                 var requestId = nextMapAnalysisToken();
                 updMulti({ mapAnalysis: null, mapAnalysisLoading: true, mapAnalysisRequestId: requestId });
                 var lastC = countGrid(mapGrid);
-                callGemini('Analyze this outbreak simulation for a ' + gradeBand + ' student. Scenario: ' + MAP_SCENARIOS[mapScenario].name + ', pathogen profile=' + pathogenProfile.name + ' (' + pathogenProfile.transmission + '), R0=' + r0 + ', vaccination=' + mapVacc + '%, seed=' + mapSeed + ', steps=' + mapStep + '. Final counts: S=' + lastC.S + ', E=' + lastC.E + ', I=' + lastC.I + ', H=' + lastC.H + ', R=' + lastC.R + '. Peak infectious=' + mapSummary.peakInfectious + ' on day ' + mapSummary.peakInfectiousDay + ', peak hospitalized=' + mapSummary.peakHospitalized + ' on day ' + mapSummary.peakHospitalizedDay + ', overload days=' + mapSummary.overloadDays + '. Matched no-additional-response baseline differences: infections avoided=' + mapComparison.casesAvoided + ', peak infectious avoided=' + mapComparison.peakInfectiousAvoided + ', overload days avoided=' + mapComparison.overloadDaysAvoided + '. Provide 2-3 key observations and one question for the student.').then(function(res) {
-                  commitMapAnalysis(requestId, { mapAnalysis: res, mapAnalysisLoading: false });
+                _epiCall('Analyze this outbreak simulation for a ' + gradeBand + ' student. Scenario: ' + MAP_SCENARIOS[mapScenario].name + ', pathogen profile=' + pathogenProfile.name + ' (' + pathogenProfile.transmission + '), R0=' + r0 + ', vaccination=' + mapVacc + '%, seed=' + mapSeed + ', steps=' + mapStep + '. Final counts: S=' + lastC.S + ', E=' + lastC.E + ', I=' + lastC.I + ', H=' + lastC.H + ', R=' + lastC.R + '. Peak infectious=' + mapSummary.peakInfectious + ' on day ' + mapSummary.peakInfectiousDay + ', peak hospitalized=' + mapSummary.peakHospitalized + ' on day ' + mapSummary.peakHospitalizedDay + ', overload days=' + mapSummary.overloadDays + '. Matched no-additional-response baseline differences: infections avoided=' + mapComparison.casesAvoided + ', peak infectious avoided=' + mapComparison.peakInfectiousAvoided + ', overload days avoided=' + mapComparison.overloadDaysAvoided + '. Provide 2-3 key observations and one question for the student.').then(function(res) {
+                  var analysisText = _epiExtractText(res).trim().slice(0, 4000);
+                  commitMapAnalysis(requestId, { mapAnalysis: analysisText || null, mapAnalysisLoading: false });
                 }).catch(function() { commitMapAnalysis(requestId, { mapAnalysisLoading: false }); });
               },
               disabled: d.mapAnalysisLoading,
@@ -4590,8 +4969,9 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: startContactTrace, className: 'px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, __alloT('stem.epidemic.new_network', '\u21BA New Network')),
               ctComplete && callGemini && h('button', { onClick: function() {
                   upd('ctAnalysisLoading', true);
-                  callGemini('A ' + gradeBand + ' student completed a contact tracing exercise. Network had ' + ctNetwork.nodes.length + ' people, ' + ctNetwork.solution.length + ' were infected. Student used ' + ctGuesses + ' traces and scored ' + ctScore + '. Give 2 sentences of encouraging feedback and one real-world contact tracing fact.').then(function(res) {
-                    updMulti({ ctAnalysis: res, ctAnalysisLoading: false });
+                  _epiCall('A ' + gradeBand + ' student completed a contact tracing exercise. Network had ' + ctNetwork.nodes.length + ' people, ' + ctNetwork.solution.length + ' were infected. Student used ' + ctGuesses + ' traces and scored ' + ctScore + '. Give 2 sentences of encouraging feedback and one real-world contact tracing fact.').then(function(res) {
+                    var ctText = _epiExtractText(res).trim().slice(0, 4000);
+                    updMulti({ ctAnalysis: ctText || null, ctAnalysisLoading: false });
                   }).catch(function() { upd('ctAnalysisLoading', false); });
                 },
                 disabled: d.ctAnalysisLoading,
@@ -4842,7 +5222,7 @@ window.StemLab = window.StemLab || {
               }),
               h('div', { className: 'flex gap-2 flex-wrap' },
                 !chalAnswered && h('button', { onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all' }, __alloT('stem.epidemic.check', 'Check')),
-                chalAnswered && h('button', { onClick: chalAdvance, className: 'px-4 py-2 text-sm font-bold bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all' }, __alloT('stem.epidemic.next_question', 'Next Question \u27A1')),
+                chalAnswered && h('button', { onClick: chalAdvance, className: 'px-4 py-2 text-sm font-bold bg-emerald-700 text-white rounded-xl hover:bg-emerald-800 transition-all' }, __alloT('stem.epidemic.next_question', 'Next Question \u27A1')),
                 !chalAnswered && h('button', { onClick: function() { updMulti({ chalFeedback: '\uD83D\uDCA1 ' + (activeChalQ.h || 'No hint') + ' Streak reset.', chalStreak: 0 }); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-800 rounded-xl border border-amber-200' }, __alloT('stem.epidemic.hint', '\uD83D\uDCA1 Hint')),
                 !chalAnswered && h('button', { onClick: chalNext, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, __alloT('stem.epidemic.skip', 'Skip \u27A1')),
                 callGemini && h('button', { 'aria-label': __alloT('stem.epidemic.ai_next', 'AI Next'), onClick: chalAINext, className: 'px-3 py-2 text-sm font-bold bg-purple-100 text-purple-600 rounded-xl' }, __alloT('stem.epidemic.ai_next_2', '\u2728 AI Next'))

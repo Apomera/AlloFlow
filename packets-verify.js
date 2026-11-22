@@ -58,7 +58,10 @@
       fileReader.readAsArrayBuffer(file);
     });
   }
-  function keep(name, report) { checked.push({ name: String(name || 'file'), when: now(), report: report }); }
+  function keep(name, report) {
+    if (checked.length >= 50) checked.shift();
+    checked.push({ name: String(name || 'file'), when: now(), report: report });
+  }
   function finish(read, leftOut) {
     busy = false;
     draw();
@@ -91,7 +94,8 @@
   }
   function takeSample(key) {
     if (busy) return;
-    var sample = typeof samples[key] === 'function' ? samples[key]() : samples[key];
+    var entry = Object.prototype.hasOwnProperty.call(samples, key) ? samples[key] : null;
+    var sample = typeof entry === 'function' ? entry() : entry;
     if (!sample || typeof sample.text !== 'string') { say('The sample file did not load. Load the page again.'); return; }
     busy = true;
     keep(sample.name, core.verifyPacket(sample.text));
@@ -243,7 +247,7 @@
     }
     add(top, el('p', 'kicker', (item.sample ? 'Sample file: ' : 'File: ') + item.name), line, sub);
     var facts = el('dl', 'facts-row');
-    if (r.headline) fact(facts, 'Kind', r.kind === 'older' ? KINDS.older : KINDS[r.identity.mode]);
+    if (r.headline) fact(facts, 'Kind', r.kind === 'older' ? KINDS.older : (Object.prototype.hasOwnProperty.call(KINDS, r.identity.mode) ? KINDS[r.identity.mode] : KINDS.practice));
     fact(facts, 'Size', r.sizeText);
     if (r.headline) { fact(facts, 'Recorded sounds', String(r.counts.sounds)); fact(facts, 'Pictures', String(r.counts.pictures)); }
     add(top, facts);

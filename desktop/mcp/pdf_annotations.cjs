@@ -7,30 +7,40 @@
 //   matchToOutline: the element of the accessible HTML that holds the marked words (or, for a note, the line next to it),
 //     by its outline id, so edit_accessible_html can act on it.
 
-const keyWords = (s) => String(s || '').normalize('NFKC').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+const keyWords = (s) => String(s || '').slice(0, 20000).normalize('NFKC').toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
 
 function fillFromScanReading(annotations, reading) {
   const pages = reading && Array.isArray(reading.pages) ? reading.pages : [];
   let filled = 0;
   for (const a of Array.isArray(annotations) ? annotations : []) {
-    if (!a) continue;
+    if (!a || typeof a !== 'object') continue;
     const pg = pages.find((p) => p && p.pageNum === a.page);
     if (!pg || !Array.isArray(pg.words) || !pg.words.length) continue;
-    const pageW = Number(pg.pageW) || Number(a.pageW) || 612, pageH = Number(pg.pageH) || Number(a.pageH) || 792;
-    const sx = (Number(a.pageW) || pageW) / pageW, sy = (Number(a.pageH) || pageH) / pageH;
-    if (!(a.markedText && a.markedText.trim()) && Array.isArray(a.quads) && a.quads.length) {
+    const rawPgW = Number(pg.pageW), rawPgH = Number(pg.pageH);
+    const rawAW = Number(a.pageW), rawAH = Number(a.pageH);
+    const pageW = Number.isFinite(rawPgW) && rawPgW > 0 ? rawPgW : (Number.isFinite(rawAW) && rawAW > 0 ? rawAW : 612);
+    const pageH = Number.isFinite(rawPgH) && rawPgH > 0 ? rawPgH : (Number.isFinite(rawAH) && rawAH > 0 ? rawAH : 792);
+    const targetW = Number.isFinite(rawAW) && rawAW > 0 ? rawAW : pageW;
+    const targetH = Number.isFinite(rawAH) && rawAH > 0 ? rawAH : pageH;
+    const sx = targetW / pageW, sy = targetH / pageH;
+    const hasMarked = typeof a.markedText === 'string' && a.markedText.trim().length > 0;
+    const hasNear = typeof a.nearText === 'string' && a.nearText.trim().length > 0;
+    if (!hasMarked && Array.isArray(a.quads) && a.quads.length) {
       const picked = [];
       pg.words.forEach((w, i) => {
-        if (!w || !Number.isFinite(w.x0) || !Number.isFinite(w.x1) || !Number.isFinite(w.y0) || !Number.isFinite(w.y1)) return;
+        if (!w || typeof w.t !== 'string' || !Number.isFinite(w.x0) || !Number.isFinite(w.x1) || !Number.isFinite(w.y0) || !Number.isFinite(w.y1)) return;
         // reading box (top-left origin) -> PDF space (bottom-left origin), centre point
         const cx = ((w.x0 + w.x1) / 2) * sx, cy = (pageH - (w.y0 + w.y1) / 2) * sy;
-        if (a.quads.some((q) => Array.isArray(q) && q.length >= 4 && cx >= q[0] - 1 && cx <= q[2] + 1 && cy >= q[1] - 1 && cy <= q[3] + 1)) picked.push({ i, t: w.t });
+        if (a.quads.some((q) => Array.isArray(q) && q.length >= 4
+          && Number.isFinite(q[0]) && Number.isFinite(q[1]) && Number.isFinite(q[2]) && Number.isFinite(q[3])
+          && cx >= Math.min(q[0], q[2]) - 1 && cx <= Math.max(q[0], q[2]) + 1
+          && cy >= Math.min(q[1], q[3]) - 1 && cy <= Math.max(q[1], q[3]) + 1)) picked.push({ i, t: w.t });
       });
       if (picked.length) { a.markedText = picked.sort((x, y) => x.i - y.i).map((x) => x.t).join(' ').slice(0, 1000); a.markedFrom = 'scan reading'; filled++; continue; }
     }
     // Non-markup scan annotations (sticky notes, text boxes, shapes) have no quads and no PDF text layer:
     // recover nearText from the nearest scan-reading line within 30pt of the annotation center.
-    if (!(a.markedText && a.markedText.trim()) && !(a.nearText && a.nearText.trim()) && Array.isArray(a.rect) && a.rect.length === 4) {
+    if (!hasMarked && !hasNear && Array.isArray(a.rect) && a.rect.length === 4 && a.rect.every(Number.isFinite)) {
       const rcy = (a.rect[1] + a.rect[3]) / 2;
       let best = null;
       const positioned = [];
@@ -85,12 +95,14 @@ function matchToOutline(text, items) {
 // A comment placed ON a picture: the image whose source crop (page fractions, origin top-left) holds the comment's centre
 // (PDF space, origin bottom-left). The smallest such crop wins. items carry { kind: 'image', crop } from the outline.
 function matchImage(a, items) {
-  if (!a || !Array.isArray(a.rect) || !(a.pageW > 0) || !(a.pageH > 0) || !Array.isArray(items)) return null;
+  if (!a || !Array.isArray(a.rect) || a.rect.length < 4 || !a.rect.slice(0, 4).every(Number.isFinite)
+    || !Number.isFinite(a.pageW) || !(a.pageW > 0) || !Number.isFinite(a.pageH) || !(a.pageH > 0) || !Array.isArray(items)) return null;
   const fx = ((a.rect[0] + a.rect[2]) / 2) / a.pageW, fy = 1 - ((a.rect[1] + a.rect[3]) / 2) / a.pageH;
   let best = null;
   for (const it of items) {
     const c = it && it.kind === 'image' && it.crop;
-    if (!c || c.page !== a.page || fx < c.x0 || fx > c.x1 || fy < c.y0 || fy > c.y1) continue;
+    if (!c || c.page !== a.page || !Number.isFinite(c.x0) || !Number.isFinite(c.x1) || !Number.isFinite(c.y0) || !Number.isFinite(c.y1)
+      || !(c.x1 > c.x0) || !(c.y1 > c.y0) || fx < c.x0 || fx > c.x1 || fy < c.y0 || fy > c.y1) continue;
     const area = (c.x1 - c.x0) * (c.y1 - c.y0);
     if (!best || area < best.area) best = { area, it };
   }

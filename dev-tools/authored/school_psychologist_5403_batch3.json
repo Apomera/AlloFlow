@@ -3473,7 +3473,7 @@
     "prompt": "A student tells the school psychologist that staff repeatedly mispronounce the student’s name and that the student has stopped participating in class to avoid attention. Which response best reflects culturally responsive practice?",
     "choices": [
       "Email the entire faculty a phonetic spelling and direct every teacher to apologize publicly at the start of the next class period.",
-      "Ask the student how the name is pronounced and how support should be offered, then collaborate on a respectful correction strategy that protects the student’s agency.",
+      "Ask the student for the accurate pronunciation and preferred support, then collaborate on a respectful correction strategy that protects the student’s agency.",
       "Suggest that the student use a shorter classroom nickname because it may be easier for staff to remember.",
       "Focus the consultation on increasing the student’s participation and leave pronunciation to each teacher’s professional judgment."
     ],
@@ -3519,7 +3519,7 @@
     "choices": [
       "Use the English verbal score as the primary result because allowing varied response modes makes comparison with the test’s standardization sample less direct.",
       "Conclude that the student has mastered the concept because success under supported conditions rules out any academic need.",
-      "Treat the alternate-response evidence as relevant to construct knowledge and continue separating language-access demands from the skill being evaluated.",
+      "Treat the alternate-response evidence as relevant to construct knowledge and continue separating linguistic demands from the skill being evaluated.",
       "Discard both results because evidence collected through different languages and response formats cannot contribute to one evaluation."
     ],
     "answerIndex": 2,
@@ -3565,7 +3565,7 @@
       "Continue using the disability-only participation rate because adding race and gender would make the analysis less comparable with the district’s original public report.",
       "Reserve a fixed number of club seats for the reported subgroup before examining recruitment, prerequisites, selection decisions, scheduling, or student preferences.",
       "Publish student-level participation records so families can verify whether individual club sponsors apply membership requirements consistently across demographic groups.",
-      "Conduct a privacy-protected intersectional analysis, gather affected students’ perspectives, identify decision-point barriers, and test access changes while monitoring outcomes."
+      "Conduct a privacy-protected intersectional analysis, gather affected learners’ views, identify decision-point barriers, and test pathway changes while monitoring outcomes."
     ],
     "answerIndex": 3,
     "rationale": "Aggregate parity can mask barriers experienced at the intersection of disability, race, and gender. Protected disaggregation, student voice, and analysis of recruitment and selection processes can locate the barrier and support a measurable remedy without exposing individuals.",
@@ -3650,7 +3650,7 @@
     "domainId": "foundations",
     "difficulty": "advanced",
     "cognitiveLevel": "evaluation",
-    "prompt": "A district wants to report intervention outcomes for a small group of Native students. Community representatives express concern that a public dashboard could identify individual students. What should the school psychologist recommend?",
+    "prompt": "A district wants to report intervention outcomes for a limited cohort of Native students. Community representatives express concern that a public dashboard could identify individual students. What should the school psychologist recommend?",
     "choices": [
       "Publish the subgroup results because transparency requires every demographic category to appear even when a reader could infer which students are represented.",
       "Use culturally responsive consultation and privacy-protective reporting, including suppression or aggregation when small cells could reveal identities.",
@@ -3699,7 +3699,7 @@
     "choices": [
       "Use the scale with standard norms and treat its score as the most objective evidence because every student receives the same questions and scoring rules.",
       "Exclude the scale entirely and rely only on interviews and classroom observations because limited population evidence prevents any defensible use of its scores.",
-      "Use the scale cautiously as one data point, examine item meaning and language access, and triangulate with interviews, observations, records, and contextual information.",
+      "Use the scale cautiously as one data point, examine item meaning and language access, and triangulate with interviews, observations, records, and contextual factors.",
       "Ask the classroom teacher to revise unfamiliar items so the resulting total better reflects local expectations."
     ],
     "answerIndex": 2,
@@ -3785,7 +3785,7 @@
     "domainId": "foundations",
     "difficulty": "advanced",
     "cognitiveLevel": "analysis",
-    "prompt": "A district introduces a new attendance intervention at one high school after collecting weekly attendance data for two years. The evaluator continues weekly measurement and compares the level and slope before and after launch. Which design description is most accurate?",
+    "prompt": "A district introduces a new attendance program at one high school after collecting weekly attendance data for two years. The evaluator continues weekly measurement and compares the level and slope before and after launch. Which methodological description is most accurate?",
     "choices": [
       "An interrupted time-series design that examines whether the intervention coincides with a change beyond the established preintervention trend.",
       "A randomized controlled trial because many weekly observations reduce the influence of chance and create equivalent treatment and comparison conditions.",
@@ -3830,7 +3830,7 @@
     "domainId": "foundations",
     "difficulty": "advanced",
     "cognitiveLevel": "analysis",
-    "prompt": "A voluntary mentoring program reports strong outcomes among students who completed all sessions, but 42% of enrolled students left the program and no follow-up data were collected for them. What is the most important interpretive concern?",
+    "prompt": "A voluntary mentoring program reports strong outcomes among students who completed all sessions, but 42% of enrolled students withdrew from the program and no follow-up data were collected for them. What is the most important interpretive concern?",
     "choices": [
       "The completion rate proves the mentoring model lacks social validity even though no participant acceptability or feasibility data were collected.",
       "Selective attrition may make completers unlike those who left, so the reported outcome can overstate the program’s effect for enrolled students.",
@@ -4013,7 +4013,7 @@
     "prompt": "A small-group intervention was effective in a tightly supported pilot led by the developer. The district asks whether similar effects are likely when school staff use it across rural and urban campuses. Which question is central?",
     "choices": [
       "Whether the pilot’s outcome measure included enough items to represent every instructional objective in the district curriculum.",
-      "Whether the effect generalizes across implementers, students, settings, and ordinary service conditions—an external-validity question.",
+      "Whether the effect generalizes to new implementers, students, settings, and ordinary service conditions—an external-validity issue.",
       "Whether random assignment in the pilot eliminated every possible rival explanation for the observed difference.",
       "Whether the developer and school staff would produce identical scores when rating the same student work."
     ],
@@ -4059,7 +4059,7 @@
     "choices": [
       "Treat the additional staff supports as parts of one fidelity index, then conclude that the combined implementation package caused the stronger outcomes.",
       "Fidelity is irrelevant because programs should be judged only by student outcomes under whatever conditions schools happen to deliver them.",
-      "Implementation strength is associated with outcomes, but coaching, turnover, and other school differences must be examined before attributing the outcome difference to fidelity alone.",
+      "Implementation strength is associated with outcomes, but extra support, staffing stability, and other school differences must be examined before attributing gains to fidelity alone.",
       "The program should be discontinued in lower-fidelity schools because implementation differences make improvement there unlikely."
     ],
     "answerIndex": 2,
@@ -4105,7 +4105,7 @@
       "Respond to each score independently so the team can make the earliest possible adjustment whenever performance drops below the expected value.",
       "Wait until the end of the grading period and compare only the first and final score to reduce the influence of weekly fluctuations.",
       "Replace the goal line with the classroom average because peer performance is less affected by measurement error.",
-      "Predefine a rule using multiple data points, trend and level, implementation evidence, and corroborating information before changing support."
+      "Predefine criteria using multiple data points, trend and level, fidelity evidence, and corroborating information before changing support."
     ],
     "answerIndex": 3,
     "rationale": "Explicit decision rules reduce reactive interpretation and improve consistency. Several observations, estimated trend, fidelity, and contextual evidence help distinguish a meaningful response pattern from brief variation while retaining timely adjustment.",
@@ -4147,7 +4147,7 @@
     "cognitiveLevel": "application",
     "prompt": "A parent has consented to an evaluation, but the elementary student appears frightened and says no one has explained what will happen. What is the school psychologist’s most appropriate response?",
     "choices": [
-      "Explain the process in developmentally accessible language, invite questions and assent, address distress, and follow applicable consent and school procedures.",
+      "Explain the process in developmentally accessible language, invite questions and assent, address distress, and follow applicable consent and district policy.",
       "Proceed without further discussion because parent consent resolves the student’s concerns and requires completion of the planned assessment session.",
       "Ask the student to sign the adult consent form before any explanation so the record shows agreement from both parties.",
       "Cancel the complete evaluation because a hesitant response means the student has formally withdrawn the parent’s consent."
@@ -4201,7 +4201,7 @@
     "prompt": "A school psychologist is scheduled to assess a student remotely. The available consumer video platform is not district approved, and the student would connect from a busy family room where conversations can be overheard. What should the psychologist do?",
     "choices": [
       "Proceed on the consumer platform after asking everyone in the room to avoid listening, then place a note in the report that privacy could not be guaranteed.",
-      "Pause the session until approved secure technology, a suitable private setting, access checks, and contingency and emergency procedures can be arranged and documented.",
+      "Pause the session until compliant secure technology, a suitable private setting, access checks, and contingency and emergency procedures are arranged and documented.",
       "Proceed with interview questions but omit performance tasks because conversational information is not sensitive and requires fewer administration controls.",
       "Cancel remote assessment as a service option for the student because in-person administration is the only format that can produce useful school data."
     ],
@@ -4304,7 +4304,7 @@
     "domainId": "foundations",
     "difficulty": "application",
     "cognitiveLevel": "application",
-    "prompt": "A teacher asks the school psychologist to upload secure test items to a shared class website so students can practice the exact format before reevaluation. Which response is most appropriate?",
+    "prompt": "A teacher asks the school psychologist to upload secure assessment items to a shared class website so students can practice the exact format before reevaluation. Which response is most appropriate?",
     "choices": [
       "Upload selected items after removing publisher logos because the educational purpose permits staff to reproduce protected assessment content for enrolled students.",
       "Show the exact items during a private tutoring session because restricted attendance preserves the validity of later administration.",

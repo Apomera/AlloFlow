@@ -646,6 +646,50 @@ const builtItems = items.map((item) => {
   };
 });
 
+const previewRemediationPath = path.join(__dirname, 'eppp_2027_preview_remediation.cjs');
+if (fs.existsSync(previewRemediationPath)) {
+  const previewRemediation = require(previewRemediationPath);
+  const norm = (value) => String(value || '')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/[\u2013\u2014\u2212]/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim();
+  for (const item of builtItems) {
+    const ov = previewRemediation[item.id];
+    if (!ov) continue;
+    if (typeof ov.prompt === 'string' && ov.prompt.trim()) item.prompt = ov.prompt.trim();
+    if (ov.distractorReplacements && typeof ov.distractorReplacements === 'object') {
+      const entries = Object.entries(ov.distractorReplacements);
+      const matched = new Set();
+      for (let idx = 0; idx < item.choices.length; idx += 1) {
+        if (idx === item.answerIndex) continue;
+        const cur = norm(item.choices[idx]);
+        for (const [orig, repl] of entries) {
+          if (cur === norm(orig)) {
+            item.choices[idx] = repl.trim();
+            matched.add(norm(orig));
+            break;
+          }
+        }
+      }
+      if (matched.size !== entries.length) {
+        const missing = entries.map(([o]) => o).filter((o) => !matched.has(norm(o)));
+        throw new Error(`${item.id}: unmatched preview distractorReplacement(s): ${missing.join(' | ')}`);
+      }
+    }
+    if (ov.choiceRationaleOverrides && typeof ov.choiceRationaleOverrides === 'object') {
+      for (const [rawIdx, note] of Object.entries(ov.choiceRationaleOverrides)) {
+        const idx = Number(rawIdx);
+        if (!Number.isInteger(idx) || idx < 0 || idx >= item.choices.length || idx === item.answerIndex) {
+          throw new Error(`${item.id}: invalid preview choiceRationaleOverrides index ${rawIdx}`);
+        }
+        item.choiceRationales[idx] = String(note || '').trim();
+      }
+    }
+  }
+}
+
 const expectedDomains = Object.fromEntries(domains.map((domain) => [domain.id, domain.itemCount]));
 for (const [domainId, expected] of Object.entries(expectedDomains)) {
   const actual = builtItems.filter((item) => item.domainId === domainId).length;

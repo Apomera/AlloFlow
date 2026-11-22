@@ -1298,7 +1298,17 @@
   ];
 
   function ogClone(value) {
-    return JSON.parse(JSON.stringify(value));
+    if (value === undefined) return undefined;
+    var serialized = JSON.stringify(value);
+    if (serialized === undefined) return undefined;
+    return JSON.parse(serialized, function (key, val) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return undefined;
+      return val;
+    });
+  }
+
+  function ogIsUnsafeKey(value) {
+    return value === '__proto__' || value === 'constructor' || value === 'prototype';
   }
 
   function ogFinite(value, fallback) {
@@ -1479,14 +1489,14 @@
   }
 
   function ogTicksPerBeat(project) {
-    return Math.max(24, ogInt(project && project.ppq, OG_DEFAULT_PPQ));
+    return Math.max(24, Math.min(96000, ogInt(project && project.ppq, OG_DEFAULT_PPQ)));
   }
 
   function ogTicksPerMeasure(project) {
     var ts = project && Array.isArray(project.timeSignature) ? project.timeSignature : [4, 4];
-    var numerator = Math.max(1, ogInt(ts[0], 4));
-    var denominator = Math.max(1, ogInt(ts[1], 4));
-    return Math.round(ogTicksPerBeat(project) * numerator * (4 / denominator));
+    var numerator = Math.max(1, Math.min(32, ogInt(ts[0], 4)));
+    var denominator = Math.max(1, Math.min(32, ogInt(ts[1], 4)));
+    return Math.max(1, Math.round(ogTicksPerBeat(project) * numerator * (4 / denominator)));
   }
 
   function ogPatternLengthTicks(project, patternOrId) {
@@ -1587,7 +1597,7 @@
     var mode = key.mode || 'minor';
     var degree = ogScaleDegreeForPitch(project, midi);
     var rootName = degree && degree.note || rootPitch.replace(/-?\d+$/, '');
-    var quality = OG_CHORD_INTERVALS[options.quality] ? options.quality : degree ? ogTriadQualityForDegree(mode, degree.degree - 1) : 'major';
+    var quality = Object.prototype.hasOwnProperty.call(OG_CHORD_INTERVALS, options.quality) ? options.quality : degree ? ogTriadQualityForDegree(mode, degree.degree - 1) : 'major';
     var chord = ogBuildChord(rootName, quality, octave);
     var notes = chord.midi.map(function (noteMidi, index) {
       while (noteMidi < midi && noteMidi + 12 <= 127) noteMidi += 12;
@@ -1739,7 +1749,7 @@
   function ogTriadMode(mode) {
     if (mode === 'pentatonicMajor') return 'major';
     if (mode === 'pentatonicMinor') return 'minor';
-    return OG_MODE_TRIADS[mode] ? mode : 'minor';
+    return Object.prototype.hasOwnProperty.call(OG_MODE_TRIADS, mode) ? mode : 'minor';
   }
 
   function ogTriadQualityForDegree(mode, degreeIndex) {
@@ -2025,21 +2035,31 @@
 
   function ogParseNotationInput(text, project, options) {
     options = options || {};
+    var MAX_NOTATION_CHARS = 200000;
+    var MAX_NOTATION_EVENTS = 4096;
+    var rawText = String(text || '');
+    if (rawText.length > MAX_NOTATION_CHARS) throw new Error('OpenGroove: notation input exceeds safety limit (' + MAX_NOTATION_CHARS + ' characters)');
     var measureTicks = ogTicksPerMeasure(project);
     var patternLength = options.pattern ? ogPatternLengthTicks(project, options.pattern) : Infinity;
     var cursor = Math.max(0, ogInt(options.startBar, 0)) * measureTicks;
     var defaultDuration = options.defaultDuration || 'q';
     var octave = ogInt(options.octave, 4);
     var velocity = ogNormalizeVelocity(options.velocity == null ? 0.76 : options.velocity);
-    var tokens = String(text || '').replace(/\|/g, ' | ').replace(/[,\n\r\t]+/g, ' ').split(/\s+/).filter(Boolean);
+    var tokens = rawText.replace(/\|/g, ' | ').replace(/[,\n\r\t]+/g, ' ').split(/\s+/).filter(Boolean);
     var events = [];
     var warnings = [];
-    tokens.forEach(function (token) {
+    var truncated = false;
+    for (var ti = 0; ti < tokens.length; ti++) {
+      if (events.length >= MAX_NOTATION_EVENTS) {
+        truncated = true;
+        break;
+      }
+      var token = tokens[ti];
       if (token === '|') {
         cursor = cursor > 0 && cursor % measureTicks === 0
           ? cursor
           : (Math.floor(cursor / measureTicks) + 1) * measureTicks;
-        return;
+        continue;
       }
       var match = /^(.+?)(?:([:=\/])([A-Za-z0-9.\/_-]+))?$/.exec(token);
       var pitchPart = match && match[1] || token;
@@ -2048,15 +2068,20 @@
       var durationTicks = ogNotationDurationTicks(project, durationToken);
       if (/^(r|rest)$/i.test(pitchPart)) {
         cursor += durationTicks;
-        return;
+        continue;
       }
       var chordPitches = pitchPart.replace(/^\[/, '').replace(/\]$/, '').split('+').filter(Boolean);
-      chordPitches.forEach(function (pitchText) {
+      for (var ci = 0; ci < chordPitches.length; ci++) {
+        if (events.length >= MAX_NOTATION_EVENTS) {
+          truncated = true;
+          break;
+        }
+        var pitchText = chordPitches[ci];
         var pitch = ogNormalizeNotationPitch(pitchText, octave);
         var midi = ogNoteNameToMidi(pitch);
         if (midi == null) {
           warnings.push('Skipped ' + pitchText);
-          return;
+          continue;
         }
         if (cursor < patternLength) {
           events.push({
@@ -2074,9 +2099,10 @@
             tuplet: ogNotationTupletFromToken(durationToken),
           });
         }
-      });
+      }
       cursor += durationTicks;
-    });
+    }
+    if (truncated) warnings.push('Notation input exceeded maximum event limit (' + MAX_NOTATION_EVENTS + '); remaining tokens were skipped.');
     return {
       events: events,
       warnings: warnings,
@@ -2133,8 +2159,10 @@
   }
 
   function ogParseMusicXmlDocument(xmlText) {
+    var MAX_MUSICXML_CHARS = 5 * 1024 * 1024;
     var text = String(xmlText || '').trim();
     if (!text) throw new Error('OpenGroove: MusicXML text is empty');
+    if (text.length > MAX_MUSICXML_CHARS) throw new Error('OpenGroove: MusicXML exceeds the 5 MB safety limit');
     if (typeof DOMParser === 'undefined') throw new Error('OpenGroove: MusicXML import requires a browser XML parser');
     var doc = new DOMParser().parseFromString(text, 'application/xml');
     if (doc.getElementsByTagName('parsererror').length) throw new Error('OpenGroove: MusicXML could not be parsed');
@@ -2178,16 +2206,19 @@
 
   function ogMusicXmlTicksPerMeasure(project, timeSignature) {
     var ts = Array.isArray(timeSignature) ? timeSignature : project && project.timeSignature;
-    var numerator = Math.max(1, ogInt(ts && ts[0], 4));
-    var denominator = Math.max(1, ogInt(ts && ts[1], 4));
-    return Math.round(ogTicksPerBeat(project) * numerator * (4 / denominator));
+    var numerator = Math.max(1, Math.min(32, ogInt(ts && ts[0], 4)));
+    var denominator = Math.max(1, Math.min(32, ogInt(ts && ts[1], 4)));
+    return Math.max(1, Math.round(ogTicksPerBeat(project) * numerator * (4 / denominator)));
   }
 
   function ogMusicXmlTimeSignatureFromAttributes(attributesEl, fallback) {
     var beatsText = ogXmlFirstText(attributesEl, 'beats', '');
     var beatTypeText = ogXmlFirstText(attributesEl, 'beat-type', '');
     if (!beatsText || !beatTypeText || beatsText.indexOf('+') >= 0 || beatTypeText.indexOf('+') >= 0) return fallback;
-    return [Math.max(1, ogInt(beatsText, fallback && fallback[0] || 4)), Math.max(1, ogInt(beatTypeText, fallback && fallback[1] || 4))];
+    return [
+      Math.max(1, Math.min(32, ogInt(beatsText, fallback && fallback[0] || 4))),
+      Math.max(1, Math.min(32, ogInt(beatTypeText, fallback && fallback[1] || 4)))
+    ];
   }
 
   function ogMusicXmlSameTimeSignature(a, b) {
@@ -2315,24 +2346,31 @@
 
   function ogParseMusicXmlInput(xmlText, project, options) {
     options = options || {};
+    var MAX_MUSICXML_MEASURES = 256;
+    var MAX_MUSICXML_EVENTS = 4096;
     var doc = ogParseMusicXmlDocument(xmlText);
     var partInfo = ogFindMusicXmlPartMeasures(doc, options.partId);
     if (!partInfo) throw new Error('OpenGroove: MusicXML part not found');
-    var measures = partInfo.measures || [];
+    var allMeasures = partInfo.measures || [];
+    var measures = allMeasures.slice(0, MAX_MUSICXML_MEASURES);
     var projectMeasureTicks = ogTicksPerMeasure(project);
     var startBar = Math.max(0, ogInt(options.startBar, 0));
     var velocity = ogNormalizeVelocity(options.velocity == null ? 0.76 : options.velocity);
     var divisions = 1;
     var events = [];
     var warnings = [];
+    if (allMeasures.length > MAX_MUSICXML_MEASURES) {
+      warnings.push('MusicXML exceeded maximum measure limit (' + MAX_MUSICXML_MEASURES + '); remaining measures were skipped.');
+    }
     var currentTimeSignature = Array.isArray(project && project.timeSignature) ? project.timeSignature.slice(0, 2) : [4, 4];
     var currentMeasureTicks = ogMusicXmlTicksPerMeasure(project, currentTimeSignature);
     var importedTimeSignature = null;
     var warnedTimeChange = false;
+    var warnedEventCap = false;
     var originTick = startBar * projectMeasureTicks;
     var cursor = originTick;
     var endTick = cursor;
-    var activeTies = {};
+    var activeTies = Object.create(null);
     var tieMergeCount = 0;
     var pendingDynamic = 'mf';
     measures.forEach(function (measure) {
@@ -2421,27 +2459,34 @@
           if (!tieState.start) delete activeTies[tieKey];
           lastNoteStart = startTick;
         } else {
-          if (tieState.stop) warnings.push('Started ' + pitch + ' because a MusicXML tie stop had no matching imported start.');
-          var noteEvent = {
-            type: 'note',
-            pitch: pitch,
-            spelling: pitchInfo.spelling || pitch,
-            midi: midi,
-            startTick: startTick,
-            durationTicks: durationTicks,
-            notationStartTick: startTick,
-            notationDurationTicks: durationTicks,
-            velocity: velocity,
-            role: 'notation',
-            source: 'musicXmlImport',
-            articulation: articulation,
-            dynamic: dynamic,
-            tuplet: tuplet,
-          };
-          if (tieState.start || tieState.stop) noteEvent.tie = { imported: true, start: tieState.start, stop: tieState.stop, segments: 1 };
-          events.push(noteEvent);
-          if (tieState.start) activeTies[tieKey] = noteEvent;
-          lastNoteStart = startTick;
+          if (events.length >= MAX_MUSICXML_EVENTS) {
+            if (!warnedEventCap) {
+              warnings.push('MusicXML exceeded maximum event limit (' + MAX_MUSICXML_EVENTS + '); remaining notes were skipped.');
+              warnedEventCap = true;
+            }
+          } else {
+            if (tieState.stop) warnings.push('Started ' + pitch + ' because a MusicXML tie stop had no matching imported start.');
+            var noteEvent = {
+              type: 'note',
+              pitch: pitch,
+              spelling: pitchInfo.spelling || pitch,
+              midi: midi,
+              startTick: startTick,
+              durationTicks: durationTicks,
+              notationStartTick: startTick,
+              notationDurationTicks: durationTicks,
+              velocity: velocity,
+              role: 'notation',
+              source: 'musicXmlImport',
+              articulation: articulation,
+              dynamic: dynamic,
+              tuplet: tuplet,
+            };
+            if (tieState.start || tieState.stop) noteEvent.tie = { imported: true, start: tieState.start, stop: tieState.stop, segments: 1 };
+            events.push(noteEvent);
+            if (tieState.start) activeTies[tieKey] = noteEvent;
+            lastNoteStart = startTick;
+          }
         }
         if (!isChord) cursor += durationTicks;
         endTick = Math.max(endTick, cursor, startTick + durationTicks);
@@ -2473,7 +2518,7 @@
       project.timeSignature = parsed.timeSignature.slice(0, 2);
     }
     if (options.resize !== false && parsed.measureCount) {
-      pattern.bars = Math.max(1, ogInt(pattern.bars, 1), Math.max(1, ogInt(options.startBar, 0) + parsed.measureCount));
+      pattern.bars = Math.min(256, Math.max(1, ogInt(pattern.bars, 1), Math.max(1, ogInt(options.startBar, 0) + parsed.measureCount)));
     }
     var patternLength = ogPatternLengthTicks(project, pattern);
     var replaceEnd = Math.min(patternLength, Math.max(parsed.endTick, parsed.startTick + ogTicksPerMeasure(project)));
@@ -2876,11 +2921,11 @@
       if (cursor < measureTicks) addDerivedRest(cursor, measureTicks - cursor);
       measure.rests = rests;
     });
-    var staffNotesById = {};
+    var staffNotesById = Object.create(null);
     measures.forEach(function (measure) {
       (measure.notes || []).forEach(function (note) {
         note.globalStartTick = (measure.bar - 1) * measureTicks + note.localStartTick;
-        staffNotesById[note.id] = note;
+        if (note && note.id && !ogIsUnsafeKey(note.id)) staffNotesById[note.id] = note;
       });
     });
     var staffTies = [];
@@ -3445,9 +3490,9 @@
     if (!preset) return null;
     var family = ogSafeString(preset.family, 'Synth');
     var role = ogNormalizeInstrumentRole(preset.role || 'instrument');
-    var guide = OG_INSTRUMENT_FAMILY_GUIDES[family] || OG_INSTRUMENT_FAMILY_GUIDES.Synth;
-    var roleGuide = OG_INSTRUMENT_ROLE_GUIDES[role] || ogInstrumentRoleFallback(role);
-    var range = OG_INSTRUMENT_RANGES[preset.id] || { low: 'C3', high: 'C5', register: 'classroom range' };
+    var guide = Object.prototype.hasOwnProperty.call(OG_INSTRUMENT_FAMILY_GUIDES, family) ? OG_INSTRUMENT_FAMILY_GUIDES[family] : OG_INSTRUMENT_FAMILY_GUIDES.Synth;
+    var roleGuide = Object.prototype.hasOwnProperty.call(OG_INSTRUMENT_ROLE_GUIDES, role) ? OG_INSTRUMENT_ROLE_GUIDES[role] : ogInstrumentRoleFallback(role);
+    var range = Object.prototype.hasOwnProperty.call(OG_INSTRUMENT_RANGES, preset.id) ? OG_INSTRUMENT_RANGES[preset.id] : { low: 'C3', high: 'C5', register: 'classroom range' };
     var rangeLabel = range.low + '-' + range.high;
     return {
       presetId: preset.id,
@@ -3491,7 +3536,7 @@
 
   function ogBuildInstrumentRoleGuide(roleLike) {
     var role = ogNormalizeInstrumentRole(roleLike);
-    var guide = OG_INSTRUMENT_ROLE_GUIDES[role] || ogInstrumentRoleFallback(role);
+    var guide = Object.prototype.hasOwnProperty.call(OG_INSTRUMENT_ROLE_GUIDES, role) ? OG_INSTRUMENT_ROLE_GUIDES[role] : ogInstrumentRoleFallback(role);
     var profiles = ogListInstrumentProfiles({ role: role });
     return {
       role: role,
@@ -5210,15 +5255,18 @@
     return [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255];
   }
 
+  var MAX_MIDI_EVENTS = 65536;
+  var MAX_MIDI_ARRANGEMENT_REPEATS = 1024;
+
   function ogVarLenBytes(value) {
-    var n = Math.max(0, ogInt(value, 0));
+    var n = Math.max(0, Math.min(0x0fffffff, ogInt(value, 0)));
     var bytes = [n & 127];
-    while ((n >>= 7)) bytes.unshift((n & 127) | 128);
+    while ((n >>>= 7)) bytes.unshift((n & 127) | 128);
     return bytes;
   }
 
   function ogPadToMidiDrum(padId) {
-    var map = {
+    var map = Object.assign(Object.create(null), {
       pad_1: 36,
       pad_2: 38,
       pad_3: 42,
@@ -5235,7 +5283,7 @@
       pad_14: 52,
       pad_15: 56,
       pad_16: 55
-    };
+    });
     return map[padId] || 36;
   }
 
@@ -5248,15 +5296,16 @@
     var bpm = Math.max(20, Math.min(400, ogFinite(project && project.bpm, OG_DEFAULT_BPM)));
     var tempo = Math.round(60000000 / bpm);
     var ts = Array.isArray(project.timeSignature) ? project.timeSignature : [4, 4];
-    var denominator = Math.max(1, ogInt(ts[1], 4));
+    var denominator = Math.max(1, Math.min(32, ogInt(ts[1], 4)));
     var denominatorPower = 0;
     while (Math.pow(2, denominatorPower) < denominator && denominatorPower < 8) denominatorPower += 1;
     var ctx = {
       ppq: ppq,
-      lengthTicks: Math.max(1, ogInt(lengthTicks, ogTicksPerMeasure(project))),
+      lengthTicks: Math.max(1, Math.min(0x0fffffff, ogInt(lengthTicks, ogTicksPerMeasure(project)))),
       events: []
     };
     ctx.add = function (tick, order, bytes) {
+      if (ctx.events.length >= MAX_MIDI_EVENTS) return;
       ctx.events.push({
         tick: Math.max(0, Math.min(ctx.lengthTicks, ogInt(tick, 0))),
         order: order,
@@ -5264,43 +5313,42 @@
       });
     };
     ctx.add(0, 0, [0xff, 0x51, 0x03, (tempo >> 16) & 255, (tempo >> 8) & 255, tempo & 255]);
-    ctx.add(0, 1, [0xff, 0x58, 0x04, Math.max(1, ogInt(ts[0], 4)), denominatorPower, 24, 8]);
+    ctx.add(0, 1, [0xff, 0x58, 0x04, Math.max(1, Math.min(32, ogInt(ts[0], 4))), denominatorPower, 24, 8]);
     return ctx;
   }
 
   function ogAddPatternMidiEvents(project, pattern, ctx, offsetTick, clipTicks) {
+    if (!pattern || !ctx || ctx.events.length >= MAX_MIDI_EVENTS) return;
     var ppq = ctx.ppq;
     var patternLength = Math.max(1, ogPatternLengthTicks(project, pattern));
     var windowTicks = Math.max(1, Math.min(patternLength, ogInt(clipTicks == null ? patternLength : clipTicks, patternLength)));
     var offset = Math.max(0, ogInt(offsetTick, 0));
-    (pattern.events || []).forEach(function (event) {
+    var events = Array.isArray(pattern.events) ? pattern.events : [];
+    for (var i = 0; i < events.length; i++) {
+      if (ctx.events.length >= MAX_MIDI_EVENTS) break;
+      var event = events[i];
+      if (!event || typeof event !== 'object') continue;
       if (event.type === 'note') {
         var midi = Math.max(0, Math.min(127, ogInt(event.midi != null ? event.midi : ogNoteNameToMidi(event.pitch), 60)));
         var start = ogInt(event.startTick, 0);
-        if (start >= windowTicks) return;
+        if (start >= windowTicks) continue;
         var end = Math.min(windowTicks, start + Math.max(1, ogInt(event.durationTicks, ppq)));
-        if (end <= 0) return;
+        if (end <= 0) continue;
         ctx.add(offset + Math.max(0, start), 4, [0x90, midi, ogMidiVelocity(event.velocity)]);
         ctx.add(offset + Math.max(1, end), 2, [0x80, midi, 0]);
       } else if (event.type === 'rest') {
-        var restDur = event.notation && event.notation.durationTicks != null ? event.notation.durationTicks : event.durationTicks;
-        entry.rest = true;
-        entry.durationBeats = Math.round((Math.max(1, ogInt(restDur, beatTicks)) / beatTicks) * 1000) / 1000;
-        entry.durationTicks = Math.max(1, ogInt(restDur, beatTicks));
-        entry.notationStartTick = nStart;
-        if (event.role) entry.role = event.role;
-        if (event.source) entry.source = event.source;
-        measures[barIndex].rests.push(entry);
+        // Rests carry no MIDI note events; delta-time advances naturally to the next sounding event.
+        continue;
       } else if (event.type === 'drumHit') {
         var drum = ogPadToMidiDrum(event.padId);
         var drumStart = ogInt(event.startTick, 0) + ogInt(event.microtimingTicks, 0);
-        if (drumStart >= windowTicks) return;
+        if (drumStart >= windowTicks) continue;
         var drumEnd = Math.min(windowTicks, drumStart + Math.max(24, Math.round(ppq / 12)));
-        if (drumEnd <= 0) return;
+        if (drumEnd <= 0) continue;
         ctx.add(offset + Math.max(0, drumStart), 5, [0x99, drum, ogMidiVelocity(event.velocity)]);
         ctx.add(offset + Math.max(1, drumEnd), 3, [0x89, drum, 0]);
       }
-    });
+    }
   }
 
   function ogFinalizeMidiExport(ctx) {
@@ -5310,16 +5358,22 @@
 
     var trackBytes = [];
     var lastTick = 0;
-    ctx.events.forEach(function (event) {
-      trackBytes = trackBytes.concat(ogVarLenBytes(event.tick - lastTick), event.bytes);
+    for (var i = 0; i < ctx.events.length; i++) {
+      var event = ctx.events[i];
+      var delta = ogVarLenBytes(Math.max(0, event.tick - lastTick));
+      for (var d = 0; d < delta.length; d++) trackBytes.push(delta[d]);
+      for (var b = 0; b < event.bytes.length; b++) trackBytes.push(event.bytes[b]);
       lastTick = event.tick;
-    });
-    trackBytes = trackBytes.concat([0x00, 0xff, 0x2f, 0x00]);
+    }
+    trackBytes.push(0x00, 0xff, 0x2f, 0x00);
 
-    var fileBytes = []
+    var header = []
       .concat(ogTextBytes('MThd'), ogUint32Bytes(6), ogUint16Bytes(0), ogUint16Bytes(1), ogUint16Bytes(ctx.ppq))
-      .concat(ogTextBytes('MTrk'), ogUint32Bytes(trackBytes.length), trackBytes);
-    return new Uint8Array(fileBytes);
+      .concat(ogTextBytes('MTrk'), ogUint32Bytes(trackBytes.length));
+    var out = new Uint8Array(header.length + trackBytes.length);
+    for (var h = 0; h < header.length; h++) out[h] = header[h];
+    for (var t = 0; t < trackBytes.length; t++) out[header.length + t] = trackBytes[t];
+    return out;
   }
 
   function ogBuildMidiFile(project, patternId) {
@@ -5338,18 +5392,20 @@
       return Math.max(max, ogInt(section.endTick, 0));
     }, 0);
     var ctx = ogCreateMidiExport(project, Math.max(ogTicksPerMeasure(project), endTick));
-    timeline.forEach(function (section) {
+    for (var sIdx = 0; sIdx < timeline.length && ctx.events.length < MAX_MIDI_EVENTS; sIdx++) {
+      var section = timeline[sIdx];
       var sectionLength = Math.max(1, ogInt(section.endTick, 0) - ogInt(section.startTick, 0));
-      (section.patternIds || []).forEach(function (patternId) {
-        var pattern = ogFindPattern(project, patternId);
-        if (!pattern) return;
+      var patIds = Array.isArray(section.patternIds) ? section.patternIds : [];
+      for (var pIdx = 0; pIdx < patIds.length && ctx.events.length < MAX_MIDI_EVENTS; pIdx++) {
+        var pattern = ogFindPattern(project, patIds[pIdx]);
+        if (!pattern) continue;
         var patternLength = Math.max(1, ogPatternLengthTicks(project, pattern));
-        for (var sectionOffset = 0; sectionOffset < sectionLength; sectionOffset += patternLength) {
+        for (var sectionOffset = 0, repeats = 0; sectionOffset < sectionLength && repeats < MAX_MIDI_ARRANGEMENT_REPEATS && ctx.events.length < MAX_MIDI_EVENTS; sectionOffset += patternLength, repeats += 1) {
           var clipTicks = Math.min(patternLength, sectionLength - sectionOffset);
           ogAddPatternMidiEvents(project, pattern, ctx, section.startTick + sectionOffset, clipTicks);
         }
-      });
-    });
+      }
+    }
     return ogFinalizeMidiExport(ctx);
   }
 
@@ -6978,8 +7034,9 @@
     var assets = project && Array.isArray(project.assets) ? project.assets : [];
     var lines = [];
     assets.forEach(function (asset) {
+      if (!asset || typeof asset !== 'object') return;
       var license = ogSafeString(asset.license, 'Unknown');
-      if (!asset.attributionRequired && !OG_REVIEW_LICENSES[license]) return;
+      if (!asset.attributionRequired && !Object.prototype.hasOwnProperty.call(OG_REVIEW_LICENSES, license)) return;
       var creator = ogSafeString(asset.creator, 'Unknown creator');
       var source = asset.originalUrl || asset.source || 'No source URL';
       lines.push(asset.name + ' by ' + creator + ' - ' + license + ' - ' + source);
@@ -7104,30 +7161,47 @@
     if (ogInt(project.schemaVersion, 0) > OG_VERSION) errors.push('Project was saved by a newer Open Groove version.');
     if (!Array.isArray(project.tracks)) errors.push('Tracks must be an array.');
     if (!Array.isArray(project.patterns)) errors.push('Patterns must be an array.');
+    if (project.assets != null && !Array.isArray(project.assets)) errors.push('Assets must be an array.');
     if (project.scenes != null && !Array.isArray(project.scenes)) errors.push('Scenes must be an array.');
     if (project.arrangement != null && !Array.isArray(project.arrangement)) errors.push('Arrangement must be an array.');
     if (!(ogFinite(project.bpm, 0) >= 20 && ogFinite(project.bpm, 0) <= 400)) errors.push('BPM is outside the supported range.');
+    if (project.ppq != null && !(ogFinite(project.ppq, 0) >= 24 && ogFinite(project.ppq, 0) <= 96000)) errors.push('PPQ is outside the supported range (24-96000).');
     if (!Array.isArray(project.timeSignature) || project.timeSignature.length < 2) errors.push('Time signature is missing.');
+    else {
+      var tsNum = ogInt(project.timeSignature[0], 0);
+      var tsDen = ogInt(project.timeSignature[1], 0);
+      if (tsNum < 1 || tsNum > 32 || tsDen < 1 || tsDen > 32) errors.push('Time signature is outside the supported range (1-32).');
+    }
 
     var MAX_OG_TRACKS = 64;
+    var MAX_OG_PADS_PER_TRACK = 64;
     var MAX_OG_PATTERNS = 128;
     var MAX_OG_ASSETS = 128;
     var MAX_OG_SCENES = 64;
+    var MAX_OG_SCENE_PATTERNS = 128;
     var MAX_OG_ARRANGEMENT = 256;
     var MAX_OG_PATTERN_BARS = 256;
     var MAX_OG_EVENTS_PER_PATTERN = 4096;
+    var MAX_OG_SECTION_BARS = 1024;
+    var MAX_OG_SECTION_START_BAR = 4096;
     if (Array.isArray(project.tracks) && project.tracks.length > MAX_OG_TRACKS) errors.push('Project exceeds maximum track limit (' + MAX_OG_TRACKS + ').');
     if (Array.isArray(project.patterns) && project.patterns.length > MAX_OG_PATTERNS) errors.push('Project exceeds maximum pattern limit (' + MAX_OG_PATTERNS + ').');
     if (Array.isArray(project.assets) && project.assets.length > MAX_OG_ASSETS) errors.push('Project exceeds maximum asset limit (' + MAX_OG_ASSETS + ').');
     if (Array.isArray(project.scenes) && project.scenes.length > MAX_OG_SCENES) errors.push('Project exceeds maximum scene limit (' + MAX_OG_SCENES + ').');
     if (Array.isArray(project.arrangement) && project.arrangement.length > MAX_OG_ARRANGEMENT) errors.push('Project exceeds maximum arrangement limit (' + MAX_OG_ARRANGEMENT + ').');
 
+    var measureTicks = ogTicksPerMeasure(project);
     var trackIds = Object.create(null);
-    (project.tracks || []).forEach(function (track) {
-      if (!track || !track.id) errors.push('Track is missing an id.');
+    (Array.isArray(project.tracks) ? project.tracks : []).forEach(function (track) {
+      if (!track || typeof track !== 'object' || !track.id) errors.push('Track is missing an id.');
+      else if (ogIsUnsafeKey(track.id)) errors.push('Track uses a reserved id: ' + track.id);
       else if (trackIds[track.id]) errors.push('Duplicate track id: ' + track.id);
       else trackIds[track.id] = true;
-      (track && track.pads || []).forEach(function (pad) {
+      if (track && track.pads != null && !Array.isArray(track.pads)) errors.push('Track ' + (track.id || '?') + ' pads must be an array.');
+      else if (track && Array.isArray(track.pads) && track.pads.length > MAX_OG_PADS_PER_TRACK) errors.push('Track ' + (track.id || '?') + ' exceeds maximum pad limit (' + MAX_OG_PADS_PER_TRACK + ').');
+      (track && Array.isArray(track.pads) ? track.pads : []).forEach(function (pad) {
+        if (!pad || typeof pad !== 'object') { errors.push('Track ' + (track && track.id || '?') + ' has an invalid pad entry.'); return; }
+        if (pad.id && ogIsUnsafeKey(pad.id)) errors.push('Pad uses a reserved id: ' + pad.id);
         if (pad.assetId && !ogFindAsset(project, pad.assetId)) errors.push('Pad ' + pad.id + ' references an unknown asset.');
         if (pad.sampleRegion) {
           if (ogFinite(pad.sampleRegion.startSec, -1) < 0) errors.push('Pad ' + pad.id + ' has an invalid sample start.');
@@ -7137,8 +7211,9 @@
     });
 
     var assetIds = Object.create(null);
-    (project.assets || []).forEach(function (asset) {
-      if (!asset || !asset.id) errors.push('Asset is missing an id.');
+    (Array.isArray(project.assets) ? project.assets : []).forEach(function (asset) {
+      if (!asset || typeof asset !== 'object' || !asset.id) errors.push('Asset is missing an id.');
+      else if (ogIsUnsafeKey(asset.id)) errors.push('Asset uses a reserved id: ' + asset.id);
       else if (assetIds[asset.id]) errors.push('Duplicate asset id: ' + asset.id);
       else assetIds[asset.id] = true;
       if (asset && asset.dataUrl && !ogIsSafeAudioDataUrl(asset.dataUrl)) errors.push('Asset ' + asset.id + ' has an unsafe embedded audio URL.');
@@ -7146,19 +7221,23 @@
     });
 
     var patternIds = Object.create(null);
-    (project.patterns || []).forEach(function (pattern) {
-      if (!pattern || !pattern.id) errors.push('Pattern is missing an id.');
+    (Array.isArray(project.patterns) ? project.patterns : []).forEach(function (pattern) {
+      if (!pattern || typeof pattern !== 'object' || !pattern.id) errors.push('Pattern is missing an id.');
+      else if (ogIsUnsafeKey(pattern.id)) errors.push('Pattern uses a reserved id: ' + pattern.id);
       else if (patternIds[pattern.id]) errors.push('Duplicate pattern id: ' + pattern.id);
       else patternIds[pattern.id] = true;
       if (pattern && ogInt(pattern.bars, 1) > MAX_OG_PATTERN_BARS) errors.push('Pattern ' + (pattern.id || '?') + ' exceeds maximum bar count (' + MAX_OG_PATTERN_BARS + ').');
-      if (!Array.isArray(pattern.events)) errors.push('Pattern ' + (pattern && pattern.id || '?') + ' events must be an array.');
+      if (!pattern || !Array.isArray(pattern.events)) errors.push('Pattern ' + (pattern && pattern.id || '?') + ' events must be an array.');
       else if (pattern.events.length > MAX_OG_EVENTS_PER_PATTERN) errors.push('Pattern ' + (pattern && pattern.id || '?') + ' exceeds maximum event limit (' + MAX_OG_EVENTS_PER_PATTERN + ').');
       var length = ogPatternLengthTicks(project, pattern || { bars: 1 });
-      (pattern.events || []).forEach(function (event) {
+      (pattern && Array.isArray(pattern.events) ? pattern.events : []).forEach(function (event) {
+        if (!event || typeof event !== 'object') { errors.push('Pattern ' + (pattern && pattern.id || '?') + ' has an invalid event entry.'); return; }
         if (!event.id) errors.push('Event is missing an id.');
+        else if (ogIsUnsafeKey(event.id)) errors.push('Event uses a reserved id: ' + event.id);
         if (!trackIds[event.trackId]) errors.push('Event ' + event.id + ' references an unknown track.');
         if (ogInt(event.startTick, -1) < 0 || ogInt(event.startTick, -1) >= length) errors.push('Event ' + event.id + ' starts outside its pattern.');
         if (event.velocity != null && (event.velocity < 0 || event.velocity > 1)) errors.push('Event ' + event.id + ' has invalid velocity.');
+        if (event.microtimingTicks != null && Math.abs(ogFinite(event.microtimingTicks, 0)) > measureTicks) errors.push('Event ' + event.id + ' has excessive microtiming offset.');
         if (event.type === 'note' && event.notation && ogInt(event.notation.durationTicks, 0) <= 0) errors.push('Event ' + event.id + ' has invalid notation duration.');
         if (event.type === 'audioRegion' && event.assetId && !assetIds[event.assetId]) errors.push('Event ' + event.id + ' references an unknown asset.');
       });
@@ -7166,19 +7245,21 @@
 
     var sceneIds = Object.create(null);
     (Array.isArray(project.scenes) ? project.scenes : []).forEach(function (scene) {
-      if (!scene || !scene.id) errors.push('Scene is missing an id.');
+      if (!scene || typeof scene !== 'object' || !scene.id) errors.push('Scene is missing an id.');
+      else if (ogIsUnsafeKey(scene.id)) errors.push('Scene uses a reserved id: ' + scene.id);
       else if (sceneIds[scene.id]) errors.push('Duplicate scene id: ' + scene.id);
       else sceneIds[scene.id] = true;
       if (!Array.isArray(scene && scene.patternIds)) errors.push('Scene ' + (scene && scene.id || '?') + ' pattern list must be an array.');
-      (scene && scene.patternIds || []).forEach(function (patternId) {
+      else if (scene.patternIds.length > MAX_OG_SCENE_PATTERNS) errors.push('Scene ' + (scene && scene.id || '?') + ' exceeds maximum pattern list limit (' + MAX_OG_SCENE_PATTERNS + ').');
+      (scene && Array.isArray(scene.patternIds) ? scene.patternIds : []).forEach(function (patternId) {
         if (!patternIds[patternId]) errors.push('Scene ' + scene.id + ' references an unknown pattern.');
       });
     });
 
     (Array.isArray(project.arrangement) ? project.arrangement : []).forEach(function (section, index) {
-      if (!section || !sceneIds[section.sceneId]) errors.push('Arrangement section ' + (index + 1) + ' references an unknown scene.');
-      if (section && ogInt(section.startBar, 0) < 1) errors.push('Arrangement section ' + (index + 1) + ' must start at bar 1 or later.');
-      if (section && ogInt(section.bars, 0) < 1) errors.push('Arrangement section ' + (index + 1) + ' must last at least 1 bar.');
+      if (!section || typeof section !== 'object' || !sceneIds[section.sceneId]) errors.push('Arrangement section ' + (index + 1) + ' references an unknown scene.');
+      if (section && (ogInt(section.startBar, 0) < 1 || ogInt(section.startBar, 0) > MAX_OG_SECTION_START_BAR)) errors.push('Arrangement section ' + (index + 1) + ' must start between bar 1 and ' + MAX_OG_SECTION_START_BAR + '.');
+      if (section && (ogInt(section.bars, 0) < 1 || ogInt(section.bars, 0) > MAX_OG_SECTION_BARS)) errors.push('Arrangement section ' + (index + 1) + ' must last between 1 and ' + MAX_OG_SECTION_BARS + ' bars.');
     });
 
     return errors;

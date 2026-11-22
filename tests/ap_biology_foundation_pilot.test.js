@@ -89,7 +89,7 @@ describe('AP Biology internal foundation pilot', () => {
     expect(library.chapters.every((chapter) => chapter.sections.length === 3)).toBe(true);
     expect(library.chapters.every((chapter) => chapter.knowledgeChecks.length === chapter.sections.length
       && chapter.sections.every((section) => chapter.knowledgeChecks.filter((check) => check.sectionId === section.id).length === 1))).toBe(true);
-    expect(library.flashcards).toHaveLength(8);
+    expect(library.flashcards).toHaveLength(24);
     expect(library.memoryAids).toHaveLength(8);
     expect(library.summary).toMatchObject({ chapters: 8, sections: 24, knowledgeChecks: 24, richLessonPrototypes: 8 });
     expect(library.chapters.every((chapter) => {

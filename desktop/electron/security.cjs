@@ -22,7 +22,7 @@ function getIpcSenderUrl(event) {
   if ('senderFrame' in event) {
     try {
       const frame = event.senderFrame;
-      if (!frame || typeof frame.url !== 'string') return '';
+      if (!frame || frame.detached === true || typeof frame.url !== 'string') return '';
       return frame.url;
     } catch (_) {
       return '';

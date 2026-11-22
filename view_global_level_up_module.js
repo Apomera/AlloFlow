@@ -129,18 +129,19 @@ function GlobalLevelUpModal({
       if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
   }, []);
-  const dragStartedInsideRef = React.useRef(false);
+  const pointerStartedInsideRef = React.useRef(false);
+  const xpRemaining = Math.max(0, xpMax - xpValue);
   return /* @__PURE__ */ React.createElement(
     "div",
     {
       role: "presentation",
       className: "fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 sm:p-4 animate-in fade-in duration-500 motion-reduce:animate-none",
       onMouseDown: (event) => {
-        dragStartedInsideRef.current = event.target !== event.currentTarget;
+        pointerStartedInsideRef.current = event.target !== event.currentTarget;
       },
       onClick: (event) => {
-        if (dragStartedInsideRef.current) {
-          dragStartedInsideRef.current = false;
+        if (pointerStartedInsideRef.current) {
+          pointerStartedInsideRef.current = false;
           return;
         }
         if (event.target === event.currentTarget) handleSetShowGlobalLevelUpToFalse();
@@ -158,12 +159,12 @@ function GlobalLevelUpModal({
         "aria-describedby": "global-level-up-description",
         className: "allo-docsuite bg-white rounded-3xl p-5 sm:p-8 md:p-12 text-center shadow-2xl border-4 border-yellow-400 relative overflow-y-auto max-h-[calc(100vh-1rem)] max-w-sm w-full transform transition-all animate-in zoom-in-50 duration-500 motion-reduce:animate-none motion-reduce:transform-none",
         onMouseDown: () => {
-          dragStartedInsideRef.current = true;
+          pointerStartedInsideRef.current = true;
         },
         onClick: (event) => event.stopPropagation()
       },
       /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "absolute inset-0 opacity-20 bg-[radial-gradient(circle,rgba(250,204,21,1)0%,rgba(255,255,255,0)70%)] animate-pulse motion-reduce:animate-none" }),
-      /* @__PURE__ */ React.createElement("div", { className: "relative z-10" }, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg border-4 border-white relative" }, /* @__PURE__ */ React.createElement(Trophy, { size: 48, className: "text-indigo-900 fill-current animate-bounce motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("div", { className: "absolute -top-2 -right-2 bg-indigo-900 text-yellow-300 text-xs font-black px-2 py-1 rounded-full border-2 border-white transform rotate-12 motion-reduce:transform-none" }, t("common.new_badge"))), /* @__PURE__ */ React.createElement("h2", { id: "global-level-up-title", className: "text-3xl sm:text-4xl font-black text-indigo-900 mb-2 uppercase tracking-tight drop-shadow-sm" }, t("feedback.level_up_title")), /* @__PURE__ */ React.createElement("p", { id: "global-level-up-description", className: "text-indigo-800 font-bold text-lg mb-6" }, t("feedback.level_reached", { level: safeLevel })), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 rounded-xl p-4 mb-8 border border-indigo-200 shadow-inner" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-indigo-800 font-bold uppercase tracking-wider mb-1 flex justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", null, t("feedback.next_milestone")), /* @__PURE__ */ React.createElement("span", null, xpPercent, "%")), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "relative z-10" }, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg border-4 border-white relative" }, /* @__PURE__ */ React.createElement(Trophy, { size: 48, className: "text-indigo-900 fill-current animate-bounce motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("div", { className: "absolute -top-2 -right-2 bg-indigo-900 text-yellow-300 text-xs font-black px-2 py-1 rounded-full border-2 border-white transform rotate-12 motion-reduce:transform-none" }, t("common.new_badge"))), /* @__PURE__ */ React.createElement("h2", { id: "global-level-up-title", className: "text-3xl sm:text-4xl font-black text-indigo-900 mb-2 uppercase tracking-tight drop-shadow-sm" }, t("feedback.level_up_title")), /* @__PURE__ */ React.createElement("p", { id: "global-level-up-description", className: "text-indigo-800 font-bold text-lg mb-6" }, t("feedback.level_reached", { level: safeLevel })), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 rounded-xl p-4 mb-8 border border-indigo-200 shadow-inner" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-indigo-800 font-bold uppercase tracking-wider mb-1 flex justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", null, t("feedback.next_milestone")), /* @__PURE__ */ React.createElement("span", null, xpPercent, "%")), /* @__PURE__ */ React.createElement(
         "div",
         {
           className: "w-full bg-indigo-200 rounded-full h-3 overflow-hidden border border-indigo-300",
@@ -182,7 +183,7 @@ function GlobalLevelUpModal({
             style: { width: `${xpPercent}%` }
           }
         )
-      ), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] font-mono font-bold text-indigo-800 mt-1.5 gap-2" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement(AnimatedNumber, { value: xpValue }), " ", t("common.xp")), /* @__PURE__ */ React.createElement("span", null, xpMax, " ", t("common.xp")))), /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-xs font-mono font-bold text-indigo-800 mt-1.5 gap-2" }, /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement(AnimatedNumber, { value: xpValue }), " ", t("common.xp")), /* @__PURE__ */ React.createElement("span", null, xpMax, " ", t("common.xp"))), /* @__PURE__ */ React.createElement("p", { "data-testid": "global-level-up-remaining", className: "mt-2 text-xs font-semibold text-indigo-900" }, xpRemaining > 0 ? `${xpRemaining} ${t("common.xp")} to next milestone` : "Next milestone reached!")), /* @__PURE__ */ React.createElement(
         "button",
         {
           ref: continueButtonRef,

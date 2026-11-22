@@ -566,12 +566,12 @@
     var word = state.word;
     var saidLine = $('offline-said'), list = $('pics-offline');
     if (!saidLine || !list) return;
-    setText(saidLine, 'Searching built-in diagrams.');
+    setText('offline-said', 'Searching built-in diagrams.');
     empty(list);
     loadOfflineMatcher().then(function (matcher) {
       if (!matcher) {
         var fail = 'Built-in diagrams could not be loaded on this page.';
-        setText(saidLine, fail); say(fail);
+        setText('offline-said', fail); say(fail);
         return;
       }
       var hits = [];
@@ -584,7 +584,7 @@
       empty(list);
       if (!hits.length) {
         var none = 'No built-in diagram matched "' + word + '". Try choosing a file from your device or searching online.';
-        setText(saidLine, none); say(none);
+        setText('offline-said', none); say(none);
         return;
       }
       hits.forEach(function (hit) {
@@ -605,13 +605,13 @@
             showSaved(targetWord, entry);
           }, function (error) {
             var errMsg = problemText(error, 'This picture could not be saved.');
-            setText(saidLine, errMsg); say(errMsg);
+            setText('offline-said', errMsg); say(errMsg);
           });
         });
         list.appendChild(add(li, img, el('p', 'pic-title', title), el('p', 'pic-by', 'Built-in curriculum diagram'), el('p', 'pic-license', 'AGPL-3.0'), useBtn));
       });
       var doneMsg = count(hits.length, 'built-in diagram', 'built-in diagrams') + ' for "' + word + '".';
-      setText(saidLine, doneMsg); say(doneMsg);
+      setText('offline-said', doneMsg); say(doneMsg);
     });
   }
 

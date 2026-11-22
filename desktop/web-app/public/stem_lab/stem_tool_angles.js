@@ -76,6 +76,31 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // Cinema-grade GPU-composited optical glass, radial sector shimmer & vertex-lock resonance animations
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-angles-motion-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-angles-motion-css';
+    st.textContent = [
+      '@keyframes allo-ang-sheen { 0%, 100% { opacity: 0.64; } 50% { opacity: 1; } }',
+      '@keyframes allo-ang-sector-shimmer { 0%, 100% { opacity: 0.72; } 50% { opacity: 1; } }',
+      '@keyframes allo-ang-ray-glow { 0%, 100% { opacity: 0.56; } 50% { opacity: 1; } }',
+      '@keyframes allo-ang-resonance-ring { 0% { opacity: 0.78; transform: scale(0.84); } 72% { opacity: 0.16; transform: scale(1.52); } 100% { opacity: 0; transform: scale(1.8); } }',
+      '@keyframes allo-ang-handle-halo { 0%, 100% { opacity: 0.52; transform: scale(0.95); } 50% { opacity: 0.96; transform: scale(1.1); } }',
+      '@keyframes allo-ang-dash-flow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -18; } }',
+      '.allo-ang-sheen { animation: allo-ang-sheen 4.4s ease-in-out infinite; pointer-events: none; }',
+      '.allo-ang-sector-shimmer { animation: allo-ang-sector-shimmer 3.8s ease-in-out infinite; pointer-events: none; }',
+      '.allo-ang-ray-glow { animation: allo-ang-ray-glow 2.8s ease-in-out infinite; pointer-events: none; }',
+      '.allo-ang-resonance-ring { transform-box: fill-box; transform-origin: center; animation: allo-ang-resonance-ring 2.1s cubic-bezier(0.22, 0.61, 0.36, 1) infinite; pointer-events: none; }',
+      '.allo-ang-handle-halo { transform-box: fill-box; transform-origin: center; animation: allo-ang-handle-halo 2.4s ease-in-out infinite; pointer-events: none; }',
+      '.allo-ang-dash-flow { animation: allo-ang-dash-flow 1.9s linear infinite; pointer-events: none; }',
+      '.theme-contrast .allo-ang-sheen, .theme-contrast .allo-ang-sector-shimmer, .theme-contrast .allo-ang-ray-glow, .theme-contrast .allo-ang-resonance-ring, .theme-contrast .allo-ang-handle-halo, .theme-contrast .allo-ang-dash-flow { animation: none !important; }',
+      '.theme-contrast .allo-ang-sheen, .theme-contrast .allo-ang-sector-shimmer, .theme-contrast .allo-ang-ray-glow, .theme-contrast .allo-ang-resonance-ring, .theme-contrast .allo-ang-handle-halo { display: none !important; }',
+      '@media (prefers-reduced-motion: reduce) { .allo-ang-sheen, .allo-ang-sector-shimmer, .allo-ang-ray-glow, .allo-ang-resonance-ring, .allo-ang-handle-halo, .allo-ang-dash-flow { animation: none !important; } .allo-ang-resonance-ring { opacity: 0.3; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-angles')) return;
@@ -1940,11 +1965,11 @@ window.StemLab = window.StemLab || {
       };
       var angGlowLine = function(key, x1, y1, x2, y2, id, bloomKind, width) {
         if (!richSvg) return null;
-        return h('line', { key: key, 'aria-hidden': 'true', x1: x1, y1: y1, x2: x2, y2: y2, stroke: 'url(#ang-bloom-' + bloomKind + '-' + id + ')', strokeWidth: width || 8, strokeLinecap: 'round', style: { pointerEvents: 'none' } });
+        return h('line', { key: key, className: 'allo-ang-ray-glow', 'aria-hidden': 'true', x1: x1, y1: y1, x2: x2, y2: y2, stroke: 'url(#ang-bloom-' + bloomKind + '-' + id + ')', strokeWidth: width || 8, strokeLinecap: 'round', style: { pointerEvents: 'none' } });
       };
       var angGlowArc = function(key, dPath, id, bloomKind, width) {
         if (!richSvg || !dPath) return null;
-        return h('path', { key: key, 'aria-hidden': 'true', d: dPath, fill: 'none', stroke: 'url(#ang-bloom-' + bloomKind + '-' + id + ')', strokeWidth: width || 6, strokeLinecap: 'round', style: { pointerEvents: 'none' } });
+        return h('path', { key: key, className: 'allo-ang-ray-glow', 'aria-hidden': 'true', d: dPath, fill: 'none', stroke: 'url(#ang-bloom-' + bloomKind + '-' + id + ')', strokeWidth: width || 6, strokeLinecap: 'round', style: { pointerEvents: 'none' } });
       };
       var angPivotJewel = function(key, x, y, r, id) {
         var rr = r || 4;
@@ -2109,8 +2134,9 @@ window.StemLab = window.StemLab || {
         kids.push(h('path', { key: 'body', d: 'M ' + (-PR) + ' 0 A ' + PR + ' ' + PR + ' 0 0 1 ' + PR + ' 0 Z', fill: P.protFill, stroke: P.protStroke, strokeWidth: 1.6, filter: richSvg ? 'url(#ang-shadow-' + did + ')' : undefined }));
         if (richSvg) {
           // Optical acrylic specular top bevel & inner frosted arch crescent (pointerEvents:none so contrast audit reads solid body fill)
-          kids.push(h('path', { key: 'sheen', d: 'M ' + (-(PR - 1)) + ' -1 A ' + (PR - 1) + ' ' + (PR - 1) + ' 0 0 1 ' + (PR - 1) + ' -1 L ' + (PR - 46) + ' -1 A ' + (PR - 46) + ' ' + (PR - 46) + ' 0 0 0 ' + (-(PR - 46)) + ' -1 Z', fill: 'url(#ang-acrylic-sheen-' + did + ')', stroke: 'none', style: { pointerEvents: 'none' } }));
-          kids.push(h('path', { key: 'bevel-outer', d: 'M ' + (-(PR - 1.5)) + ' -1.5 A ' + (PR - 1.5) + ' ' + (PR - 1.5) + ' 0 0 1 ' + (PR - 1.5) + ' -1.5', fill: 'none', stroke: 'url(#ang-acrylic-rim-' + did + ')', strokeWidth: 2.2, style: { pointerEvents: 'none' } }));
+          kids.push(h('path', { key: 'sheen', className: 'allo-ang-sheen', d: 'M ' + (-(PR - 1)) + ' -1 A ' + (PR - 1) + ' ' + (PR - 1) + ' 0 0 1 ' + (PR - 1) + ' -1 L ' + (PR - 46) + ' -1 A ' + (PR - 46) + ' ' + (PR - 46) + ' 0 0 0 ' + (-(PR - 46)) + ' -1 Z', fill: 'url(#ang-acrylic-sheen-' + did + ')', stroke: 'none', style: { pointerEvents: 'none' } }));
+          kids.push(h('path', { key: 'bevel-outer', className: 'allo-ang-sheen', style: { animationDelay: '0.6s', pointerEvents: 'none' }, d: 'M ' + (-(PR - 1.5)) + ' -1.5 A ' + (PR - 1.5) + ' ' + (PR - 1.5) + ' 0 0 1 ' + (PR - 1.5) + ' -1.5', fill: 'none', stroke: 'url(#ang-acrylic-rim-' + did + ')', strokeWidth: 2.2 }));
+          kids.push(h('path', { key: 'glint-arc', className: 'allo-ang-sheen', style: { animationDelay: '1.1s', pointerEvents: 'none' }, d: 'M ' + (-(PR - 10) * 0.72).toFixed(1) + ' ' + (-(PR - 10) * 0.69).toFixed(1) + ' A ' + (PR - 10) + ' ' + (PR - 10) + ' 0 0 1 ' + ((PR - 10) * 0.34).toFixed(1) + ' ' + (-(PR - 10) * 0.94).toFixed(1), fill: 'none', stroke: '#ffffff', strokeWidth: 2, strokeLinecap: 'round', strokeOpacity: isDark ? 0.28 : 0.56 }));
           kids.push(h('path', { key: 'window-arc', d: 'M ' + (-(PR - 52)) + ' 0 A ' + (PR - 52) + ' ' + (PR - 52) + ' 0 0 1 ' + (PR - 52) + ' 0', fill: 'none', stroke: 'url(#ang-acrylic-rim-' + did + ')', strokeWidth: 1.1, style: { pointerEvents: 'none' } }));
           // Fine vernier cardinal guide lines (45°, 90°, 135°)
           [45, 90, 135].forEach(function(vd) {
@@ -2143,7 +2169,7 @@ window.StemLab = window.StemLab || {
         var knob = interactive && !curLocked && h('g', Object.assign({ key: 'knob', 'aria-hidden': 'true', 'data-angles-knob': 'true', style: grabStyle('grab'), onClick: noTap }, dragProps(startRotateDrag)),
           richSvg && h('line', { x1: 0, y1: -PR, x2: 0, y2: -PR - 10, stroke: 'url(#ang-acrylic-rim-' + did + ')', strokeWidth: 4.5, style: { pointerEvents: 'none' } }),
           h('line', { x1: 0, y1: -PR, x2: 0, y2: -PR - 10, stroke: P.protStroke, strokeWidth: 1.6 }),
-          richSvg && h('circle', { cx: 0, cy: -PR - 22, r: 17, fill: 'none', stroke: 'url(#ang-acrylic-rim-' + did + ')', strokeWidth: 2, style: { pointerEvents: 'none' } }),
+          richSvg && h('circle', { className: 'allo-ang-handle-halo', cx: 0, cy: -PR - 22, r: 17, fill: 'none', stroke: 'url(#ang-acrylic-rim-' + did + ')', strokeWidth: 2, style: { pointerEvents: 'none' } }),
           h('circle', { cx: 0, cy: -PR - 22, r: 13, fill: P.panel, stroke: P.protStroke, strokeWidth: 2, filter: richSvg ? 'url(#ang-shadow-' + did + ')' : undefined }),
           h('text', { x: 0, y: -PR - 17, textAnchor: 'middle', fill: P.protStroke, style: { fontSize: 14, fontWeight: 700 } }, '↻'),
           // 44 px for a finger even at 320 px wide, where the drawn knob is 17 px.
@@ -2171,11 +2197,11 @@ window.StemLab = window.StemLab || {
         // Luminous angle-sector wedge under the rays
         if (!isDrawMode && richSvg) {
           var wPath = sectorPath(tk.vx, tk.vy, 72, tk.base, tk.open * tk.m);
-          if (wPath) kids.push(h('path', { key: 'wedge', 'aria-hidden': 'true', d: wPath, fill: 'url(#ang-wedge-ray-m)', stroke: 'none', style: { pointerEvents: 'none' } }));
+          if (wPath) kids.push(h('path', { key: 'wedge', className: 'allo-ang-sector-shimmer', 'aria-hidden': 'true', d: wPath, fill: 'url(#ang-wedge-ray-m)', stroke: 'none', style: { pointerEvents: 'none' } }));
         } else if (isDrawMode && richSvg) {
           var dSweep = ANG.normDeg((dDir - tk.base) * tk.open) * tk.open;
           if (Math.abs(dSweep) > 0.5 && Math.abs(dSweep) < 359.5) {
-            kids.push(h('path', { key: 'dwedge', 'aria-hidden': 'true', d: sectorPath(tk.vx, tk.vy, 64, tk.base, dSweep), fill: 'url(#ang-wedge-draw-m)', stroke: 'none', style: { pointerEvents: 'none' } }));
+            kids.push(h('path', { key: 'dwedge', className: 'allo-ang-sector-shimmer', 'aria-hidden': 'true', d: sectorPath(tk.vx, tk.vy, 64, tk.base, dSweep), fill: 'url(#ang-wedge-draw-m)', stroke: 'none', style: { pointerEvents: 'none' } }));
           }
         }
         // The base ray turns green and thicker once the baseline lies along it (with luminous dual-pass bloom).
@@ -2196,9 +2222,12 @@ window.StemLab = window.StemLab || {
           kids.push(h('line', { key: 'drawn', x1: tk.vx, y1: tk.vy, x2: drawEnd.x, y2: drawEnd.y, stroke: P.draw, strokeWidth: 3, strokeLinecap: 'round' }));
         }
         kids.push(protractorGroup(place, true, 'm'));
-        // A luminous ring round the vertex once the centre sits on it.
+        // A luminous vertex-lock resonance ring round the vertex once the centre sits on it.
         if (snapNow.onV) {
-          if (richSvg) kids.push(h('circle', { key: 'vring-g', 'aria-hidden': 'true', cx: tk.vx, cy: tk.vy, r: 14.5, fill: 'none', stroke: 'url(#ang-bloom-snap-m)', strokeWidth: 4.5, style: { pointerEvents: 'none' } }));
+          if (richSvg) {
+            kids.push(h('circle', { key: 'vring-r', className: 'allo-ang-resonance-ring', 'aria-hidden': 'true', cx: tk.vx, cy: tk.vy, r: snapNow.aligned ? 14 : 12.5, fill: 'none', stroke: 'url(#ang-bloom-snap-m)', strokeWidth: snapNow.aligned ? 3 : 2.2, style: { pointerEvents: 'none' } }));
+            kids.push(h('circle', { key: 'vring-g', className: 'allo-ang-ray-glow', 'aria-hidden': 'true', cx: tk.vx, cy: tk.vy, r: 14.5, fill: 'none', stroke: 'url(#ang-bloom-snap-m)', strokeWidth: 4.5, style: { pointerEvents: 'none' } }));
+          }
           kids.push(h('circle', { key: 'vring', 'data-angles-vertex-ring': 'true', cx: tk.vx, cy: tk.vy, r: 11, fill: 'none', stroke: P.snap, strokeWidth: 2.5 }));
         }
         kids.push(angPivotJewel('vx', tk.vx, tk.vy, 4, 'm'));
@@ -2206,7 +2235,7 @@ window.StemLab = window.StemLab || {
         kids.push(h('text', { key: 'vl', x: lab.x, y: lab.y + 4, textAnchor: 'middle', fill: P.ink, style: { fontSize: 12, fontWeight: 700 } }, 'V'));
         if (isDrawMode && !curLocked) {
           if (richSvg) {
-            kids.push(h('circle', { key: 'dh-halo', 'aria-hidden': 'true', cx: drawEnd.x, cy: drawEnd.y, r: 21, fill: 'none', stroke: 'url(#ang-bloom-draw-m)', strokeWidth: 3.5, style: { pointerEvents: 'none' } }));
+            kids.push(h('circle', { key: 'dh-halo', className: 'allo-ang-handle-halo', 'aria-hidden': 'true', cx: drawEnd.x, cy: drawEnd.y, r: 21, fill: 'none', stroke: 'url(#ang-bloom-draw-m)', strokeWidth: 3.5, style: { pointerEvents: 'none' } }));
           }
           kids.push(h('circle', { key: 'dh', cx: drawEnd.x, cy: drawEnd.y, r: 16, fill: richSvg ? 'url(#ang-jewel-draw-m)' : P.draw, fillOpacity: richSvg ? 1 : 0.18, stroke: P.draw, strokeWidth: 2.2, tabIndex: 0, role: 'slider',
             'aria-label': t('stem.angles.a11y_draw_ray', 'Ray you are drawing'), 'aria-valuemin': 1, 'aria-valuemax': 12, 'aria-valuenow': ANG.clockHour(dDir), 'aria-valuetext': clockText(dDir),
@@ -2241,7 +2270,7 @@ window.StemLab = window.StemLab || {
           var e1 = ANG.pt(vx, vy, L, an.base), e2 = ANG.pt(vx, vy, L, an.base + an.m);
           if (richSvg) {
             var wp = sectorPath(vx, vy, Math.min(46, L * 0.6), an.base, an.m);
-            if (wp) kids.push(h('path', { key: nm + 'w', 'aria-hidden': 'true', d: wp, fill: 'url(#ang-wedge-ray-cmp)', stroke: 'none', style: { pointerEvents: 'none' } }));
+            if (wp) kids.push(h('path', { key: nm + 'w', className: 'allo-ang-sector-shimmer', style: { animationDelay: nm === 'B' ? '0.7s' : '0s', pointerEvents: 'none' }, 'aria-hidden': 'true', d: wp, fill: 'url(#ang-wedge-ray-cmp)', stroke: 'none' }));
           }
           kids.push(h('line', { key: nm + '1', x1: vx, y1: vy, x2: e1.x, y2: e1.y, stroke: P.base, strokeWidth: 3, strokeLinecap: 'round' }));
           kids.push(angGlowLine(nm + '2g', vx, vy, e2.x, e2.y, 'cmp', 'ray', 8));
@@ -2971,7 +3000,7 @@ window.StemLab = window.StemLab || {
           } else { dirs = [0, p.deg]; vx = 180; vy = 130; L = 95;
             if (richSvg) {
               var rw = sectorPath(vx, vy, 58, 0, Math.min(359.8, p.deg));
-              if (rw) kids.push(h('path', { key: 'rw', 'aria-hidden': 'true', d: rw, fill: 'url(#ang-wedge-ray-pz)', stroke: 'none', style: { pointerEvents: 'none' } }));
+              if (rw) kids.push(h('path', { key: 'rw', className: 'allo-ang-sector-shimmer', 'aria-hidden': 'true', d: rw, fill: 'url(#ang-wedge-ray-pz)', stroke: 'none', style: { pointerEvents: 'none' } }));
             }
             kids.push(h('circle', { key: 'uc', cx: vx, cy: vy, r: L, fill: 'none', stroke: P.muted, strokeWidth: 1, strokeDasharray: '3,4' }));
             given = []; unknown = null;
@@ -2982,11 +3011,11 @@ window.StemLab = window.StemLab || {
           if (richSvg) {
             given.forEach(function(g, i) {
               var gw = sectorPath(vx, vy, 38 + (i % 2) * 6, g[0], g[1]);
-              if (gw) kids.push(h('path', { key: 'gw' + i, 'aria-hidden': 'true', d: gw, fill: 'url(#ang-wedge-given-pz)', stroke: 'none', style: { pointerEvents: 'none' } }));
+              if (gw) kids.push(h('path', { key: 'gw' + i, className: 'allo-ang-sector-shimmer', style: { animationDelay: (i * 0.35).toFixed(2) + 's', pointerEvents: 'none' }, 'aria-hidden': 'true', d: gw, fill: 'url(#ang-wedge-given-pz)', stroke: 'none' }));
             });
             if (unknown) {
               var uw = sectorPath(vx, vy, 34, unknown[0], unknown[1]);
-              if (uw) kids.push(h('path', { key: 'uw', 'aria-hidden': 'true', d: uw, fill: 'url(#ang-wedge-unk-pz)', stroke: 'none', style: { pointerEvents: 'none' } }));
+              if (uw) kids.push(h('path', { key: 'uw', className: 'allo-ang-sector-shimmer', style: { animationDelay: '0.55s', pointerEvents: 'none' }, 'aria-hidden': 'true', d: uw, fill: 'url(#ang-wedge-unk-pz)', stroke: 'none' }));
             }
           }
           dirs.forEach(function(dd, i) { kids.push(line('r' + i, { x: vx, y: vy }, ANG.pt(vx, vy, L, dd))); });
@@ -3016,12 +3045,15 @@ window.StemLab = window.StemLab || {
           var minX = Math.min(0, cpt.x), maxX = Math.max(1, cpt.x), minY = Math.min(0, cpt.y), maxY = 0;
           var sc = Math.min((W - 80) / (maxX - minX), (H - 70) / ((maxY - minY) || 1));
           var tp = pts.map(function(q) { return { x: 40 + (q.x - minX) * sc, y: (H - 30) + (q.y - maxY) * sc }; });
-          kids.push(h('polygon', { key: 'tri', points: tp.map(function(q) { return q.x + ',' + q.y; }).join(' '), fill: richSvg ? P.shadeA : 'none', stroke: P.line, strokeWidth: 2.5, strokeLinejoin: 'round', filter: richSvg ? 'url(#ang-shadow-pz)' : undefined }));
+          var triPtsStr = tp.map(function(q) { return q.x + ',' + q.y; }).join(' ');
+          if (richSvg) kids.push(h('polygon', { key: 'tri-g', className: 'allo-ang-ray-glow', 'aria-hidden': 'true', points: triPtsStr, fill: 'none', stroke: 'url(#ang-bloom-ray-pz)', strokeWidth: 7.5, strokeLinejoin: 'round', style: { pointerEvents: 'none' } }));
+          kids.push(h('polygon', { key: 'tri', points: triPtsStr, fill: richSvg ? P.shadeA : 'none', stroke: P.line, strokeWidth: 2.5, strokeLinejoin: 'round', filter: richSvg ? 'url(#ang-shadow-pz)' : undefined }));
           var cen = { x: (tp[0].x + tp[1].x + tp[2].x) / 3, y: (tp[0].y + tp[1].y + tp[2].y) / 3 };
           tp.forEach(function(q, i) {
             var dx = cen.x - q.x, dy = cen.y - q.y, dl = Math.sqrt(dx * dx + dy * dy) || 1;
             var lx = q.x + dx / dl * 30, ly = q.y + dy / dl * 30;
             var isX = i === p.which;
+            if (richSvg && isX) kids.push(h('circle', { key: 'tvr' + i, className: 'allo-ang-handle-halo', 'aria-hidden': 'true', cx: q.x, cy: q.y, r: 9.5, fill: 'none', stroke: 'url(#ang-bloom-unk-pz)', strokeWidth: 2.5, style: { pointerEvents: 'none' } }));
             kids.push(angPivotJewel('tv' + i, q.x, q.y, 3.2, 'pz'));
             kids.push(label('tl' + i, lx, ly, isX ? xLab : p.angles[i] + '°', isX ? P.unknown : P.given));
           });
@@ -3035,9 +3067,11 @@ window.StemLab = window.StemLab || {
           if (richSvg) {
             var tgw = sectorPath(g0.x, g0.y, 26, cornerStart(p.given.p), cornerSize(p.given.p));
             var txw = sectorPath(x0.x, x0.y, 22, cornerStart(p.ask.p), cornerSize(p.ask.p));
-            if (tgw) kids.push(h('path', { key: 'tgw', 'aria-hidden': 'true', d: tgw, fill: 'url(#ang-wedge-given-pz)', stroke: 'none', style: { pointerEvents: 'none' } }));
-            if (txw) kids.push(h('path', { key: 'txw', 'aria-hidden': 'true', d: txw, fill: 'url(#ang-wedge-unk-pz)', stroke: 'none', style: { pointerEvents: 'none' } }));
+            if (tgw) kids.push(h('path', { key: 'tgw', className: 'allo-ang-sector-shimmer', 'aria-hidden': 'true', d: tgw, fill: 'url(#ang-wedge-given-pz)', stroke: 'none', style: { pointerEvents: 'none' } }));
+            if (txw) kids.push(h('path', { key: 'txw', className: 'allo-ang-sector-shimmer', style: { animationDelay: '0.6s', pointerEvents: 'none' }, 'aria-hidden': 'true', d: txw, fill: 'url(#ang-wedge-unk-pz)', stroke: 'none' }));
           }
+          kids.push(angGlowLine('pt-g', 20, yT, W - 20, yT, 'pz', 'draw', 6.5));
+          kids.push(angGlowLine('pb-g', 20, yB, W - 20, yB, 'pz', 'draw', 6.5));
           kids.push(line('pt', { x: 20, y: yT }, { x: W - 20, y: yT }));
           kids.push(line('pb', { x: 20, y: yB }, { x: W - 20, y: yB }));
           var far1 = ANG.pt(xt, yT, 75, p.alpha), far2 = ANG.pt(xb, yB, 75, p.alpha + 180);
@@ -3057,6 +3091,10 @@ window.StemLab = window.StemLab || {
           kids.push(h('path', { key: 'txa', d: txArc, fill: 'none', stroke: P.unknown, strokeWidth: 2.6 }));
           var xlp = ANG.pt(x0.x, x0.y, 32, cornerStart(p.ask.p) + cornerSize(p.ask.p) / 2);
           kids.push(label('txl', xlp.x, xlp.y, xLab, P.unknown));
+          if (richSvg) {
+            kids.push(h('circle', { key: 'tjth', className: 'allo-ang-handle-halo', 'aria-hidden': 'true', cx: xt, cy: yT, r: 9, fill: 'none', stroke: 'url(#ang-bloom-ray-pz)', strokeWidth: 2.2, style: { pointerEvents: 'none' } }));
+            kids.push(h('circle', { key: 'tjbh', className: 'allo-ang-handle-halo', style: { animationDelay: '0.5s', pointerEvents: 'none' }, 'aria-hidden': 'true', cx: xb, cy: yB, r: 9, fill: 'none', stroke: 'url(#ang-bloom-ray-pz)', strokeWidth: 2.2 }));
+          }
           kids.push(angPivotJewel('tjt', xt, yT, 3.2, 'pz'));
           kids.push(angPivotJewel('tjb', xb, yB, 3.2, 'pz'));
         }
@@ -4888,14 +4926,15 @@ window.StemLab = window.StemLab || {
           richSvg && angStageOverlay('ex', 400, 420, 12),
           // Optical acrylic ring & recessed studio concentric vernier guides
           richSvg && h('g', { 'aria-hidden': 'true', style: { pointerEvents: 'none' } },
-            h('circle', { cx: cx, cy: cy, r: r + 3.5, fill: 'none', stroke: 'url(#ang-acrylic-rim-ex)', strokeWidth: 2.5 }),
+            h('circle', { className: 'allo-ang-sheen', cx: cx, cy: cy, r: r + 3.5, fill: 'none', stroke: 'url(#ang-acrylic-rim-ex)', strokeWidth: 2.5 }),
             h('circle', { cx: cx, cy: cy, r: r * 0.66, fill: 'none', stroke: 'url(#ang-guide-subtle-ex)', strokeWidth: 1, strokeDasharray: '3,4' }),
             h('line', { x1: cx - r + 14, y1: cy, x2: cx + r - 14, y2: cy, stroke: 'url(#ang-guide-subtle-ex)', strokeWidth: 0.9, strokeDasharray: '3,4' }),
             h('line', { x1: cx, y1: cy - r + 14, x2: cx, y2: cy + r - 14, stroke: 'url(#ang-guide-subtle-ex)', strokeWidth: 0.9, strokeDasharray: '3,4' }),
-            h('path', { d: 'M ' + (cx - r + 2) + ' ' + cy + ' A ' + (r - 2) + ' ' + (r - 2) + ' 0 0 1 ' + (cx + r - 2) + ' ' + cy + ' L ' + (cx + r - 26) + ' ' + cy + ' A ' + (r - 26) + ' ' + (r - 26) + ' 0 0 0 ' + (cx - r + 26) + ' ' + cy + ' Z', fill: 'url(#ang-acrylic-sheen-ex)', stroke: 'none' })
+            h('path', { className: 'allo-ang-sheen', style: { animationDelay: '0.5s' }, d: 'M ' + (cx - r + 2) + ' ' + cy + ' A ' + (r - 2) + ' ' + (r - 2) + ' 0 0 1 ' + (cx + r - 2) + ' ' + cy + ' L ' + (cx + r - 26) + ' ' + cy + ' A ' + (r - 26) + ' ' + (r - 26) + ' 0 0 0 ' + (cx - r + 26) + ' ' + cy + ' Z', fill: 'url(#ang-acrylic-sheen-ex)', stroke: 'none' })
           ),
           h('circle', { cx: cx, cy: cy, r: r, fill: 'none', stroke: P.arc, strokeWidth: 1.25 }),
           angleValue > 0 && angleValue < 360 && h('path', {
+            className: richSvg ? 'allo-ang-sector-shimmer' : undefined,
             'aria-hidden': 'true',
             d: 'M ' + cx + ' ' + cy + ' L ' + (cx + arcR) + ' ' + cy + ' A ' + arcR + ' ' + arcR + ' 0 ' + largeArc + ' 0 ' + arcEndX + ' ' + arcEndY + ' Z',
             fill: richSvg ? 'url(#ang-wedge-ray-ex)' : 'hsla(270,80%,60%,0.1)', stroke: 'none', style: { pointerEvents: 'none' }
@@ -4907,11 +4946,11 @@ window.StemLab = window.StemLab || {
           angGlowLine('ex-ray-g', cx, cy, rayEndX, rayEndY, 'ex', 'ray', 9),
           h('line', { x1: cx, y1: cy, x2: rayEndX, y2: rayEndY, stroke: P.ray, strokeWidth: 3.2, strokeLinecap: 'round' }),
           showBisector && angGlowLine('ex-bis-g', cx, cy, bisEndX, bisEndY, 'ex', 'given', 6),
-          showBisector && h('line', { x1: cx, y1: cy, x2: bisEndX, y2: bisEndY, stroke: P.hint, strokeWidth: 1.7, strokeDasharray: '6,3', strokeLinecap: 'round' }),
+          showBisector && h('line', { className: richSvg ? 'allo-ang-dash-flow' : undefined, x1: cx, y1: cy, x2: bisEndX, y2: bisEndY, stroke: P.hint, strokeWidth: 1.7, strokeDasharray: '6,3', strokeLinecap: 'round' }),
           showBisector && !hideRead && h('text', { x: bisEndX + 8, y: bisEndY - 4, fill: P.hint, className: 'text-[0.6875rem] font-bold select-none' }, (angleValue / 2).toFixed(1) + '°'),
           showSecondRay && angGlowLine('ex-r2-g', cx, cy, ray2EndX, ray2EndY, 'ex', 'draw', 7.5),
           showSecondRay && h('line', { x1: cx, y1: cy, x2: ray2EndX, y2: ray2EndY, stroke: P.draw, strokeWidth: 2.5, strokeLinecap: 'round', strokeDasharray: '8,3' }),
-          showSecondRay && richSvg && h('circle', { 'aria-hidden': 'true', cx: ray2EndX, cy: ray2EndY, r: rayHandleRadius + 4.5, fill: 'none', stroke: 'url(#ang-bloom-draw-ex)', strokeWidth: 3, style: { pointerEvents: 'none' } }),
+          showSecondRay && richSvg && h('circle', { className: 'allo-ang-handle-halo', style: { animationDelay: '0.5s', pointerEvents: 'none' }, 'aria-hidden': 'true', cx: ray2EndX, cy: ray2EndY, r: rayHandleRadius + 4.5, fill: 'none', stroke: 'url(#ang-bloom-draw-ex)', strokeWidth: 3 }),
           showSecondRay && h('circle', { cx: ray2EndX, cy: ray2EndY, r: rayHandleRadius, fill: richSvg ? 'url(#ang-jewel-draw-ex)' : P.draw, fillOpacity: richSvg ? 1 : 0.15, stroke: P.draw, strokeWidth: 1.8, className: 'cursor-grab', role: 'slider', tabIndex: 0, 'aria-label': t('stem.angles.a11y_second_angle_ray_handle', 'Second angle ray handle'), 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', 'aria-valuemin': 0, 'aria-valuemax': 360, 'aria-valuenow': secondAngle, 'aria-valuetext': fill(t('stem.angles.deg_value', '{n} degrees'), { n: secondAngle }), style: { touchAction: 'none' }, onPointerDown: HAS_POINTER ? handleDrag2 : undefined, onMouseDown: HAS_POINTER ? undefined : handleDrag2, onTouchStart: HAS_POINTER ? undefined : handleDrag2, onKeyDown: function(e) { handleAngleKey(e, secondAngle, function(next) { upd('secondAngle', next); }); } }),
           showSecondRay && richSvg && h('circle', { 'aria-hidden': 'true', cx: ray2EndX, cy: ray2EndY, r: 3.5, fill: P.draw, stroke: 'none', style: { pointerEvents: 'none' } }),
           // The angle between the rays would give away a hidden estimate.
@@ -4921,12 +4960,18 @@ window.StemLab = window.StemLab || {
             d: exArcD,
             fill: 'none', stroke: P.arc, strokeWidth: 1.8
           }),
+          // Non-spoiler benchmark-angle vertex-lock resonance rings (30°, 45°, 60°, 90°, 180°) when numbers are visible
+          richSvg && !hideRead && [30, 45, 60, 90, 180].indexOf(angleValue) !== -1 && h('g', { 'aria-hidden': 'true', style: { pointerEvents: 'none' } },
+            h('circle', { className: 'allo-ang-resonance-ring', cx: cx, cy: cy, r: 15, fill: 'none', stroke: 'url(#ang-bloom-snap-ex)', strokeWidth: 2.8 }),
+            h('circle', { className: 'allo-ang-resonance-ring', style: { animationDelay: '0.55s' }, cx: rayEndX, cy: rayEndY, r: rayHandleRadius + 3, fill: 'none', stroke: 'url(#ang-bloom-snap-ex)', strokeWidth: 2.2 })
+          ),
+          angleValue === 90 && richSvg && !hideRead && h('rect', { className: 'allo-ang-ray-glow', 'aria-hidden': 'true', x: cx, y: cy - 14, width: 14, height: 14, fill: 'none', stroke: 'url(#ang-bloom-snap-ex)', strokeWidth: 6, style: { pointerEvents: 'none' } }),
           angleValue === 90 && h('rect', { x: cx, y: cy - 14, width: 14, height: 14, fill: 'none', stroke: P.ok, strokeWidth: 2 }),
           h('text', { x: cx + arcR * 0.5 * Math.cos(-rad / 2), y: cy + arcR * 0.5 * Math.sin(-rad / 2) + 4, textAnchor: 'middle', fill: P.ink, className: 'text-sm font-bold select-none' },
             hideRead ? '?' : convertedAngle
           ),
           // Draggable handle. While a number is hidden, it reports no number either.
-          richSvg && h('circle', { 'aria-hidden': 'true', cx: rayEndX, cy: rayEndY, r: rayHandleRadius + 5, fill: 'none', stroke: 'url(#ang-bloom-ray-ex)', strokeWidth: 3.5, style: { pointerEvents: 'none' } }),
+          richSvg && h('circle', { className: 'allo-ang-handle-halo', 'aria-hidden': 'true', cx: rayEndX, cy: rayEndY, r: rayHandleRadius + 5, fill: 'none', stroke: 'url(#ang-bloom-ray-ex)', strokeWidth: 3.5, style: { pointerEvents: 'none' } }),
           h('circle', { cx: rayEndX, cy: rayEndY, r: rayHandleRadius, fill: richSvg ? 'url(#ang-jewel-ray-ex)' : P.ray, fillOpacity: richSvg ? 1 : 0.2, stroke: P.ray, strokeWidth: 2.2, className: 'cursor-grab', role: 'slider', tabIndex: hideNumbers ? -1 : 0, 'aria-label': t('stem.angles.a11y_angle_ray_handle', 'Angle ray handle'), 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', 'aria-valuemin': 0, 'aria-valuemax': 360, 'aria-valuenow': hideNumbers ? undefined : angleValue, 'aria-valuetext': hideNumbers ? '?' : convertedAngle, 'aria-disabled': hideNumbers ? 'true' : undefined, style: { filter: richSvg ? 'drop-shadow(0 2px 4px rgba(124,58,237,0.45))' : undefined, touchAction: 'none' }, onPointerDown: hideNumbers || !HAS_POINTER ? undefined : handleDrag, onMouseDown: hideNumbers || HAS_POINTER ? undefined : handleDrag, onTouchStart: hideNumbers || HAS_POINTER ? undefined : handleDrag, onKeyDown: hideNumbers ? undefined : function(e) { handleAngleKey(e, angleValue, function(next) { setAngleValue(next); }, function() { setAngleFeedback(null); }); } }),
           richSvg && h('circle', { 'aria-hidden': 'true', cx: rayEndX, cy: rayEndY, r: 4, fill: P.ray, stroke: 'none', style: { pointerEvents: 'none' } }),
           angPivotJewel('ex-v', cx, cy, 4.5, 'ex'),
@@ -4944,7 +4989,7 @@ window.StemLab = window.StemLab || {
         if (richSvg) {
           kids.push(angStageOverlay('est', W, H, 12));
           var estW = sectorPath(vx, vy, 58, estimateBase, estimateTarget);
-          if (estW) kids.push(h('path', { key: 'ew', 'aria-hidden': 'true', d: estW, fill: 'url(#ang-wedge-ray-est)', stroke: 'none', style: { pointerEvents: 'none' } }));
+          if (estW) kids.push(h('path', { key: 'ew', className: 'allo-ang-sector-shimmer', 'aria-hidden': 'true', d: estW, fill: 'url(#ang-wedge-ray-est)', stroke: 'none', style: { pointerEvents: 'none' } }));
         }
         if (estimateResult) {
           var pl = { x: vx, y: vy, rot: estimateTarget <= 180 ? estimateBase : ANG.normDeg(estimateBase + estimateTarget) };
@@ -5185,10 +5230,10 @@ window.StemLab = window.StemLab || {
               h('button', { type: 'button', onClick: function() { if (setStemLabTool) setStemLabTool(null); }, style: { minHeight: 44, minWidth: 44 }, className: 'shrink-0 rounded-lg border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-violet-300', 'aria-label': t('stem.angles.back_to_tools', 'Back to tools') }, h(ArrowLeft, { size: 18 })),
               h('svg', { width: 42, height: 42, viewBox: '0 0 64 64', className: 'shrink-0', 'aria-hidden': 'true', focusable: 'false' },
                 h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: isContrast ? '#000000' : 'rgba(15,23,42,0.62)', stroke: isContrast ? '#00ff00' : 'rgba(196,181,253,0.55)', strokeWidth: 1.5 }),
-                h('path', { d: 'M12 46 A20 20 0 0 1 52 46 Z', fill: isContrast ? '#000000' : 'rgba(167,139,250,0.22)', stroke: isContrast ? '#ffffff' : '#c4b5fd', strokeWidth: 2 }),
+                h('path', { className: richSvg ? 'allo-ang-sheen' : undefined, d: 'M12 46 A20 20 0 0 1 52 46 Z', fill: isContrast ? '#000000' : 'rgba(167,139,250,0.22)', stroke: isContrast ? '#ffffff' : '#c4b5fd', strokeWidth: 2 }),
                 h('line', { x1: 32, y1: 46, x2: 49, y2: 46, stroke: '#fbbf24', strokeWidth: 2.4, strokeLinecap: 'round' }),
                 h('line', { x1: 32, y1: 46, x2: 44, y2: 28, stroke: '#fbbf24', strokeWidth: 2.4, strokeLinecap: 'round' }),
-                h('path', { d: 'M42 46 A10 10 0 0 0 38.5 37.8', fill: 'none', stroke: '#34d399', strokeWidth: 2 }),
+                h('path', { className: richSvg ? 'allo-ang-ray-glow' : undefined, d: 'M42 46 A10 10 0 0 0 38.5 37.8', fill: 'none', stroke: '#34d399', strokeWidth: 2 }),
                 h('circle', { cx: 32, cy: 46, r: 2.6, fill: '#ffffff' })
               ),
               h('div', { className: 'min-w-0' },

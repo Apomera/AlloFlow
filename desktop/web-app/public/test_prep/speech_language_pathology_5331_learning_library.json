@@ -1,6 +1,6 @@
 {
+  "version": "1.0.0",
   "schemaVersion": 1,
-  "generatedAt": "2026-11-21T05:51:44.659Z",
   "libraryId": "praxis-speech-language-pathology-5331-learning-library",
   "packId": "praxis-speech-language-pathology-5331",
   "title": "Praxis Speech-Language Pathology (5331) learning library",
@@ -239,7 +239,7 @@
         },
         {
           "id": "slp5331-ch-01-check-02",
-          "prompt": "Which cranial nerve provides major motor innervation to the muscles of facial expression?",
+          "prompt": "Which cranial nerve provides major motor innervation to the muscles controlling lip closure, smiling, and brow movement?",
           "choices": [
             "The trigeminal nerve, cranial nerve V.",
             "The facial nerve, cranial nerve VII.",
@@ -432,12 +432,12 @@
           "id": "slp5331-ch-02-check-01",
           "prompt": "Before initiating a nonemergency evaluation or treatment, what should informed consent include?",
           "choices": [
-            "The nature, purpose, benefits, material risks, alternatives, and limits, plus a voluntary chance to ask and decide.",
+            "A description of the clinician’s single preferred option, so the client is not confused by alternative approaches.",
+            "The nature, purpose, benefits, material risks, alternatives, and limits, with a voluntary chance to decide.",
             "A signed consent form obtained at check-in before the clinician explains the planned evaluation or treatment.",
-            "A written guarantee that the recommended treatment will succeed if the client attends every scheduled session.",
-            "A description of the clinician’s single preferred option, so the client is not confused by alternative approaches."
+            "A written guarantee that the recommended treatment will succeed if the client attends every scheduled session."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Consent is an ongoing communication process, not merely a form, and requirements vary with setting, law, capacity, and service.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -455,12 +455,12 @@
           "id": "slp5331-ch-02-check-02",
           "prompt": "An SLP is asked to use an unfamiliar instrumental procedure without adequate training. What is the best response?",
           "choices": [
+            "Use the procedure as requested and omit its limitations from the report so the referring team receives clear answers.",
             "Proceed with the procedure because the equipment software produces an automatic score that requires little judgment.",
-            "Seek qualified training and supervision, collaborate or refer as needed, and avoid practicing beyond competence.",
-            "Ask a speech-language pathology assistant to perform the procedure independently while the SLP reviews results later.",
-            "Use the procedure as requested and omit its limitations from the report so the referring team receives clear answers."
+            "Seek qualified mentoring and supervision, collaborate or refer as needed, and avoid practicing beyond competence.",
+            "Ask a speech-language pathology assistant to perform the procedure independently while the SLP reviews results later."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Ethical practice requires competence based on education, training, experience, and appropriate consultation or referral.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -478,12 +478,12 @@
           "id": "slp5331-ch-02-check-03",
           "prompt": "Which privacy framework should an SLP apply when sharing records?",
           "choices": [
+            "Share the complete clinical record whenever another licensed professional asks so collaboration stays efficient.",
             "Assume HIPAA applies identically in every school setting and follow hospital release procedures for all records.",
             "Assume FERPA permits any school employee to access student records whenever they have a professional question.",
-            "Identify the governing law and policy, verify authority and purpose, obtain needed consent, and share securely.",
-            "Share the complete clinical record whenever another licensed professional asks so collaboration stays efficient."
+            "Identify the governing law and policy, verify authority and purpose, obtain needed consent, and share securely."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "FERPA, HIPAA, state law, consent, and organizational policy can apply differently; employment alone does not create unlimited access.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -501,12 +501,12 @@
           "id": "slp5331-ch-02-check-04",
           "prompt": "What makes clinical documentation defensible?",
           "choices": [
+            "Objective, timely notes on status, procedures, response, data, interpretation, plan, and communication.",
             "A note copied from the previous session that does not reflect what actually occurred during today’s treatment.",
             "A brief statement that the client did well today, written without data, interpretation, or a follow-up plan.",
-            "A billing code entered for the visit without any clinical information describing services or client response.",
-            "Objective, timely notes on status, procedures, response, data, interpretation, plan, and communication."
+            "A billing code entered for the visit without any clinical information describing services or client response."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Documentation should accurately represent services and decisions while protecting privacy and meeting applicable legal and organizational requirements.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -524,12 +524,12 @@
           "id": "slp5331-ch-02-check-05",
           "prompt": "An SLP has a financial relationship with a company whose device is being recommended. What should the SLP do?",
           "choices": [
+            "Let the device vendor determine the client’s candidacy because company staff know the product features best.",
             "Disclose the conflict, keep feature matching and alternatives objective, and follow ethics and organizational policy.",
             "Keep the financial relationship private because the device may genuinely help the client communicate effectively.",
-            "Recommend the highest-priced device option so the client receives the most advanced features available on the market.",
-            "Let the device vendor determine the client’s candidacy because company staff know the product features best."
+            "Recommend the highest-priced device option so the client receives the most advanced features available on the market."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Transparency and independent clinical judgment protect the individual from exploitation and support informed choice.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -652,12 +652,12 @@
           "id": "slp5331-ch-03-check-01",
           "prompt": "Which elements make up evidence-based practice in speech-language pathology?",
           "choices": [
-            "Best available research, clinical expertise, and the person’s values, preferences, culture, and goals.",
-            "Published research findings alone, applied to each client regardless of fit with their needs or circumstances.",
             "The clinician’s established habits and favorite techniques developed through years of successful clinical practice.",
-            "A family preference adopted without providing information about the likely benefits and risks of each option."
+            "A family preference adopted without providing information about the likely benefits and risks of each option.",
+            "Best available research, clinical expertise, and the person’s values, preferences, culture, and goals.",
+            "Published research findings alone, applied to each client regardless of fit with their needs or circumstances."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Evidence-based practice integrates multiple sources through shared decision making rather than treating any single source as sufficient.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -673,12 +673,12 @@
           "id": "slp5331-ch-03-check-02",
           "prompt": "What is the purpose of a PICO question?",
           "choices": [
-            "To list just the client’s diagnosis and the clinician’s preferred standardized test for the next evaluation.",
-            "To specify the population or problem, intervention, comparison when relevant, and the outcome of interest.",
             "To replace measurement of treatment outcomes with expert opinion from experienced colleagues in the field.",
-            "To guarantee that a single published study will answer every clinical question that arises for a given case."
+            "To guarantee that a single published study will answer every clinical question that arises for a given case.",
+            "To list just the client’s diagnosis and the clinician’s preferred standardized test for the next evaluation.",
+            "To specify the population or problem, intervention, comparison when relevant, and the outcome of interest."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "PICO helps focus searching and appraisal by connecting a defined population, intervention, comparison, and meaningful outcome.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -694,12 +694,12 @@
           "id": "slp5331-ch-03-check-03",
           "prompt": "Which study design best supports a causal claim about an intervention when feasible and ethical?",
           "choices": [
-            "An uncontrolled testimonial from a satisfied client describing improvement after receiving the intervention.",
-            "A cross-sectional prevalence survey describing how many clinicians currently use the intervention in practice.",
             "A well-conducted randomized controlled trial with valid outcomes, fidelity monitoring, and sound analysis.",
-            "A single case history without repeated measurement, baseline data, or comparison to other treatment conditions."
+            "A single case history without repeated measurement, baseline data, or comparison to other treatment conditions.",
+            "An uncontrolled testimonial from a satisfied client describing improvement after receiving the intervention.",
+            "A cross-sectional prevalence survey describing how many clinicians currently use the intervention in practice."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Random assignment can strengthen causal inference, but attrition, implementation, measurement, applicability, and ethics still require appraisal.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -715,12 +715,12 @@
           "id": "slp5331-ch-03-check-04",
           "prompt": "A measure produces highly consistent scores but does not assess the intended construct. How should it be described?",
           "choices": [
-            "The measure is valid because highly consistent scores show that it accurately captures the intended construct.",
-            "The measure is valid because it is standardized and administered under the same conditions for every client.",
             "Score consistency makes a clear construct definition unnecessary when selecting the measure for evaluation.",
-            "The measure may be reliable but lacks validity evidence for the intended interpretation and use."
+            "The measure may be reliable but lacks validity evidence for the intended interpretation and use.",
+            "The measure is valid because highly consistent scores show that it accurately captures the intended construct.",
+            "The measure is valid because it is standardized and administered under the same conditions for every client."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Reliability concerns precision; validity concerns evidence supporting a particular interpretation and decision in context.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -736,12 +736,12 @@
           "id": "slp5331-ch-03-check-05",
           "prompt": "Why should effect size and confidence intervals accompany a statistical-significance result?",
           "choices": [
-            "They show magnitude, precision, and practical importance, alongside study quality and relevance to the person.",
-            "They confirm that statistical significance guarantees a meaningful benefit for every client receiving treatment.",
             "They allow clinicians to set aside uncertainty once the p value falls below the conventional significance level.",
-            "They show that the average treatment effect applies identically to every participant included in the study."
+            "They show that the average treatment effect applies identically to every participant included in the study.",
+            "They show magnitude, precision, and practical importance, alongside study quality and relevance to the person.",
+            "They confirm that statistical significance guarantees a meaningful benefit for every client receiving treatment."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Statistical significance alone does not establish clinical importance, precision, causality, applicability, or individual response.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -877,12 +877,12 @@
           "id": "slp5331-ch-04-check-01",
           "prompt": "A child consistently substitutes stops for fricatives across many words. What does this pattern most directly represent?",
           "choices": [
-            "A phonological stopping pattern, interpreted with age, language, dialect, stimulability, and intelligibility.",
             "A receptive-language disorder that alone explains the substitutions without considering speech-sound patterns.",
             "A vocal-fold lesion that disrupts airflow needed to produce continuous fricative sounds during connected speech.",
-            "A pharyngeal swallowing impairment that limits the oral pressure the child needs for producing fricative sounds."
+            "A pharyngeal swallowing impairment that limits the oral pressure the child needs for producing fricative sounds.",
+            "A phonological stopping process, interpreted with age, language, dialect, stimulability, and intelligibility."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "A systematic class-based sound change is phonological; diagnosis requires broader developmental, linguistic, motor, hearing, and functional evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -901,12 +901,12 @@
           "id": "slp5331-ch-04-check-02",
           "prompt": "Which feature most distinguishes stuttering from typical disfluency?",
           "choices": [
-            "Word-finding pauses during conversation, which by themselves establish a diagnosis of developmental stuttering.",
             "Stuttering-like disfluencies with tension or impact, assessed for frequency, context, experience, and participation.",
             "The total syllable count in a speech sample, which is the only factor needed to distinguish stuttering from typical speech.",
-            "Listener discomfort during conversation, which is sufficient by itself to diagnose stuttering in the speaker."
+            "Listener discomfort during conversation, which is sufficient by itself to diagnose stuttering in the speaker.",
+            "Word-finding pauses during conversation, which by themselves establish a diagnosis of developmental stuttering."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Fluency assessment includes overt behaviors, secondary behaviors, anticipation, avoidance, emotional impact, communication participation, and the speaker’s goals.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -925,12 +925,12 @@
           "id": "slp5331-ch-04-check-03",
           "prompt": "Which contrast best differentiates dysarthria from apraxia of speech?",
           "choices": [
-            "Both dysarthria and apraxia of speech are primarily language-comprehension disorders affecting understanding of speech.",
             "Apraxia of speech is caused by muscle weakness in the lips and tongue that limits strength during speech production.",
             "Dysarthria reflects impaired neuromuscular execution, while apraxia mainly affects motor planning and programming.",
-            "Dysarthria affects the motor control of handwriting and typing but leaves speech production fully intact."
+            "Dysarthria affects the motor control of handwriting and typing but leaves speech production fully intact.",
+            "Both dysarthria and apraxia of speech are primarily language-comprehension disorders affecting understanding of speech."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Motor-speech differential diagnosis integrates strength, tone, coordination, consistency, prosody, articulation, phonation, respiration, and neurologic findings.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -949,12 +949,12 @@
           "id": "slp5331-ch-04-check-04",
           "prompt": "After a left-hemisphere stroke, a client has impaired word retrieval, sentence formulation, and comprehension. What broad disorder is most likely?",
           "choices": [
-            "Developmental phonological disorder.",
             "Isolated conductive hearing loss.",
             "Velopharyngeal insufficiency.",
-            "Aphasia."
+            "Aphasia.",
+            "Developmental phonological disorder."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Aphasia is an acquired language disorder that can affect speaking, listening, reading, and writing in varying patterns and severities.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -973,12 +973,12 @@
           "id": "slp5331-ch-04-check-05",
           "prompt": "Which feature is especially important in cognitive-communication disorders after traumatic brain injury?",
           "choices": [
-            "Breakdowns can arise from attention, memory, executive, self-monitoring, and social-cognition deficits in daily life.",
             "Normal articulation and fluency after traumatic brain injury rule out any communication disability for the person.",
             "Confrontation naming is the one skill that needs assessment when evaluating communication after brain injury.",
-            "Cognition and communication should be treated as unrelated areas that require entirely separate interventions."
+            "Cognition and communication should be treated as unrelated areas that require entirely separate interventions.",
+            "Breakdowns can arise from attention, memory, executive, self-monitoring, and social-cognition deficits in daily life."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Cognitive processes support discourse, learning, organization, inference, self-regulation, and participation even when basic speech is intact.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -1102,7 +1102,7 @@
           "id": "slp5331-ch-05-check-01",
           "prompt": "What is the primary purpose of a screening?",
           "choices": [
-            "Identifying possible risk and the need for follow-up, without by itself establishing a diagnosis or eligibility.",
+            "Identifying possible risk and follow-up need, without by itself establishing a diagnosis or eligibility.",
             "Confirming that the student has a communication disorder so that eligibility can be documented at the meeting.",
             "Producing a detailed score profile that can be converted directly into treatment goals and a service schedule.",
             "Replacing the case history and full testing so that no additional information needs to be collected later."
@@ -1124,7 +1124,7 @@
           "prompt": "Which case-history information is most useful before selecting assessment procedures?",
           "choices": [
             "Chronological age and current grade placement, since these alone determine which standardized battery should be given.",
-            "Developmental, medical, sensory, linguistic, cultural, educational, family, and client-priority history for the referral.",
+            "Developmental, medical, sensory, linguistic, cultural, educational, family, and client-priority details for referral.",
             "The referring professional’s diagnostic label, which should guide test selection before any other background is gathered.",
             "A single previous test score from the record, which is enough to choose procedures without interviewing the family."
           ],
@@ -1317,12 +1317,12 @@
           "id": "slp5331-ch-06-check-01",
           "prompt": "Which evidence best distinguishes an articulation error from a phonological-pattern difficulty?",
           "choices": [
-            "Error consistency, sound classes, word positions, contrasts, stimulability, and any motor or structural findings.",
+            "Ratings from a perceptual voice scale describing pitch, loudness, and quality during sustained vowel production.",
+            "Response consistency, sound classes, word positions, contrasts, stimulability, and motor or structural signs.",
             "The child’s chronological age compared with a single published age-of-mastery chart for each individual sound.",
-            "The number of correctly spelled words on a classroom spelling test given during the same week as the evaluation.",
-            "Ratings from a perceptual voice scale describing pitch, loudness, and quality during sustained vowel production."
+            "The number of correctly spelled words on a classroom spelling test given during the same week as the evaluation."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Speech-sound assessment integrates single-word and connected-speech data, pattern analysis, motor and structural status, hearing, language, and context.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -1339,12 +1339,12 @@
           "id": "slp5331-ch-06-check-02",
           "prompt": "Why assess stimulability during a speech-sound evaluation?",
           "choices": [
+            "It shows whether the sound is already mastered in spontaneous conversation with peers at home and at school.",
             "It shows whether the child has normal peripheral hearing across the speech frequencies needed for perception.",
             "It shows whether the sound can be elicited with models or cues, informing prognosis and target selection.",
-            "It shows whether the child understands the vocabulary used in the picture-naming probes and directions.",
-            "It shows whether the sound is already mastered in spontaneous conversation with peers at home and at school."
+            "It shows whether the child understands the vocabulary used in the picture-naming probes and directions."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Stimulability is one part of a broader profile and can show response to cueing without proving generalization or diagnosis.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -1361,12 +1361,12 @@
           "id": "slp5331-ch-06-check-03",
           "prompt": "What should a comprehensive fluency assessment include beyond disfluency frequency?",
           "choices": [
+            "A detailed family history of stuttering, which determines the treatment approach and expected rate of recovery.",
             "A count of words spoken per minute during reading aloud, used as the single indicator of overall stuttering severity.",
             "The listener’s overall severity rating, collected once in the clinic, as the main description of the stuttering.",
-            "Disfluency types and duration, tension, secondary behaviors, avoidance, emotional impact, participation, and goals.",
-            "A detailed family history of stuttering, which determines the treatment approach and expected rate of recovery."
+            "Stutter types and duration, tension, secondary behaviors, avoidance, emotional impact, participation, and goals."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "The lived impact of stuttering or cluttering can be substantial even when observable frequency is low in one context.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -1383,12 +1383,12 @@
           "id": "slp5331-ch-06-check-04",
           "prompt": "Before behavioral voice treatment, why is laryngeal visualization often important?",
           "choices": [
+            "It allows medical review of vocal-fold structure and function so therapy fits the condition and contraindications.",
             "It confirms that dysphonia is caused by poor hydration, so treatment can focus on increasing daily water intake.",
             "It is optional, because forceful vocal exercises can begin safely before any physician examination of the vocal folds.",
-            "It is unnecessary when an experienced clinician can identify the specific lesion from auditory voice quality.",
-            "It allows medical review of laryngeal structure and function so treatment fits the condition and contraindications."
+            "It is unnecessary when an experienced clinician can identify the specific lesion from auditory voice quality."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Perceptual voice quality does not uniquely identify pathology; medical and SLP evaluation support safe differential management.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -1405,12 +1405,12 @@
           "id": "slp5331-ch-06-check-05",
           "prompt": "Which task set best supports differential motor-speech assessment?",
           "choices": [
+            "A single sustained vowel recorded once, analyzed for duration as the complete measure of motor-speech control.",
             "Oral motor tasks, sustained phonation, alternating and sequential motion rates, connected speech, and prosody.",
             "Written spelling of dictated words and sentences, used to infer motor planning from errors in letter sequences.",
-            "Pure-tone hearing screening at several frequencies, interpreted as the main evidence for the motor-speech profile.",
-            "A single sustained vowel recorded once, analyzed for duration as the complete measure of motor-speech control."
+            "Pure-tone hearing screening at several frequencies, interpreted as the main evidence for the motor-speech profile."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Motor-speech assessment samples subsystem performance, consistency, rate, prosody, task effects, and functional communication.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -1537,12 +1537,12 @@
           "id": "slp5331-ch-07-check-01",
           "prompt": "Which evidence best differentiates receptive from expressive language difficulty?",
           "choices": [
-            "Comprehension across tasks and contexts compared with formulation, grammar, vocabulary, and narrative production.",
-            "Tongue and lip strength ratings from an oral-mechanism exam, used to estimate how well the person follows directions.",
             "Swallow timing on thin liquids, interpreted as an indicator of how quickly the person processes spoken sentences.",
-            "Pure-tone thresholds used as the sole language measure, because hearing level determines comprehension directly."
+            "Pure-tone thresholds used as the sole language measure, because hearing level determines comprehension directly.",
+            "Comprehension across tasks and contexts compared with formulation, grammar, vocabulary, and narrative production.",
+            "Tongue and lip strength ratings from an oral-mechanism exam, used to estimate how well the person follows directions."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Receptive and expressive processes interact but require multiple tasks and functional samples to describe the pattern accurately.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -1559,12 +1559,12 @@
           "id": "slp5331-ch-07-check-02",
           "prompt": "What makes social-communication assessment ecologically valid?",
           "choices": [
-            "A single decontextualized vocabulary item scored correct or incorrect in a quiet testing room with the examiner.",
-            "Observation across authentic partners, settings, purposes, discourse demands, and cultural expectations.",
             "The examiner’s impression after one session, recorded without input from family members, teachers, or peers.",
-            "Articulation accuracy in conversation, because intelligible speech shows that social communication is intact."
+            "Articulation accuracy in conversation, because intelligible speech shows that social communication is intact.",
+            "A single decontextualized vocabulary item scored correct or incorrect in a quiet testing room with the examiner.",
+            "Observation across authentic partners, settings, purposes, discourse demands, and cultural expectations."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Pragmatic performance varies with partner, context, power, sensory load, language background, and task expectations.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -1581,12 +1581,12 @@
           "id": "slp5331-ch-07-check-03",
           "prompt": "Which approach best evaluates cognitive-communication after brain injury?",
           "choices": [
-            "Conclude that no disorder is present when the person passes a brief orientation screen administered at bedside.",
-            "Measure tongue strength and range of motion as the primary index of cognitive recovery after the brain injury.",
             "Assess functional attention, memory, executive function, discourse, and self-monitoring in realistic demands.",
-            "Administer an infant language scale, because brain injury returns adult communication to early developmental stages."
+            "Administer an infant language scale, because brain injury returns adult communication to early developmental stages.",
+            "Conclude that no disorder is present when the person passes a brief orientation screen administered at bedside.",
+            "Measure tongue strength and range of motion as the primary index of cognitive recovery after the brain injury."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Brief tests can miss complex real-world demands; assessment should connect cognitive processes with meaningful communication and daily tasks.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -1603,12 +1603,12 @@
           "id": "slp5331-ch-07-check-04",
           "prompt": "What is feature matching in an AAC assessment?",
           "choices": [
-            "Choosing the device with the largest stored vocabulary, since more words will benefit every AAC user equally.",
-            "Requiring evidence that speech therapy has failed before considering any AAC system, including low-tech supports.",
             "Selecting a system from a catalog description without device trials or input from communication partners.",
-            "Matching the person’s needs, access methods, abilities, partners, and settings to specific system features."
+            "Aligning the person’s needs, access methods, abilities, partners, and settings to specific system traits.",
+            "Choosing the device with the largest stored vocabulary, since more words will benefit every AAC user equally.",
+            "Requiring evidence that speech therapy has failed before considering any AAC system, including low-tech supports."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "AAC selection is individualized and iterative; trials, communication opportunities, partner support, and changing needs shape recommendations.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -1625,12 +1625,12 @@
           "id": "slp5331-ch-07-check-05",
           "prompt": "Which hearing information is most relevant to communication assessment?",
           "choices": [
-            "Audiologic configuration, aided access, device use, listening environments, and language exposure and mode.",
-            "The unaided pure-tone average alone, since one number summarizes how the person hears speech in every setting.",
             "The style and color of the hearing device, which predict how consistently a child will wear it in the classroom.",
-            "The child’s articulation score, which reflects auditory access more accurately than an audiologic evaluation."
+            "The child’s articulation score, which reflects auditory access more accurately than an audiologic evaluation.",
+            "Audiologic configuration, aided access, device use, listening environments, and language exposure and mode.",
+            "The unaided pure-tone average alone, since one number summarizes how the person hears speech in every setting."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Communication access depends on hearing status, technology, environment, linguistic experience, visual supports, and individual response.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -1747,12 +1747,12 @@
           "id": "slp5331-ch-08-check-01",
           "prompt": "What is the purpose of a clinical swallowing evaluation?",
           "choices": [
-            "Integrate history, alertness, oral and cranial-nerve findings, trials when appropriate, risk, and need for referral.",
             "Directly visualize each pharyngeal event, including laryngeal penetration and residue, without instrumental tools.",
             "Rule out silent aspiration with certainty, since a strong cough during trials confirms that the airway is protected.",
-            "Replace the medical and nutritional assessment by determining calorie needs and diet orders from bedside trials."
+            "Replace the medical and nutritional assessment by determining calorie needs and diet orders from bedside trials.",
+            "Integrate history, alertness, oral and cranial-nerve findings, trials when appropriate, risk, and need for referral."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Clinical evaluation identifies patterns and risk but cannot directly visualize swallowing physiology or exclude silent aspiration.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -1765,14 +1765,14 @@
         },
         {
           "id": "slp5331-ch-08-check-02",
-          "prompt": "Which instrumental study uses dynamic radiography to examine bolus flow through oral, pharyngeal, and upper-esophageal swallowing events?",
+          "prompt": "Which instrumental procedure uses dynamic radiography to inspect bolus flow across oral, pharyngeal, and upper-esophageal swallowing events?",
           "choices": [
-            "A single static chest radiograph taken after the meal to look for signs of aspiration in the lower lungs.",
-            "A videofluoroscopic swallowing study (VFSS), performed with appropriate team and radiation-safety considerations.",
+            "A videofluoroscopic swallowing study (VFSS), done with appropriate team and radiation-safety safeguards.",
             "Fiberoptic endoscopic evaluation of swallowing, which views the pharynx through a nasally passed endoscope.",
-            "High-resolution manometry, which measures pharyngeal and esophageal pressures with a catheter rather than images."
+            "High-resolution manometry, which measures pharyngeal and esophageal pressures with a catheter rather than images.",
+            "A single static chest radiograph taken after the meal to look for signs of aspiration in the lower lungs."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "VFSS provides dynamic radiographic information about bolus flow and physiology and can test selected strategies under study conditions.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -1787,12 +1787,12 @@
           "id": "slp5331-ch-08-check-03",
           "prompt": "Which statement accurately identifies a major advantage of FEES?",
           "choices": [
-            "VFSS continuously displays pharyngeal swallowing with no white-out period and without any ionizing radiation.",
             "Pure-tone audiometry directly visualizes laryngeal anatomy and bolus flow during each swallow at the bedside.",
             "FEES is portable and can assess anatomy, secretions, fatigue, and repeated trials without ionizing radiation.",
-            "FEES directly images the oral preparatory phase and the upper esophagus throughout the entirety of every swallow."
+            "FEES directly images the oral preparatory phase and the upper esophagus throughout the entirety of every swallow.",
+            "VFSS continuously displays pharyngeal swallowing with no white-out period and without any ionizing radiation."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "FEES offers portable endoscopic assessment of relevant anatomy and swallowing before and after the brief white-out period.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -1807,12 +1807,12 @@
           "id": "slp5331-ch-08-check-04",
           "prompt": "Why can aspiration be missed during a bedside examination?",
           "choices": [
-            "An absence of coughing during trials proves that the airway was protected on each swallow that was observed.",
             "Aspiration produces a fever within minutes, so a normal temperature during the session rules it out completely.",
             "Voice quality after each swallow locates the impairment precisely, so missed aspiration reflects poor listening.",
-            "Aspiration may be silent, and bedside signs have limited sensitivity for defining pharyngeal physiology."
+            "Aspiration may be silent, and clinical signs have limited sensitivity for defining pharyngeal physiology.",
+            "An absence of coughing during trials proves that the airway was protected on each swallow that was observed."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Silent aspiration and nonspecific signs require risk-based clinical reasoning and instrumental evaluation when results would change management.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -1827,12 +1827,12 @@
           "id": "slp5331-ch-08-check-05",
           "prompt": "Prolonged mastication, poor bolus formation, and oral residue most directly implicate which swallowing phases?",
           "choices": [
-            "The oral preparatory and oral transit phases, before the pharyngeal swallow.",
             "The pharyngeal phase, when airway closure and laryngeal elevation occur.",
             "The esophageal phase, when peristalsis carries the bolus to the stomach.",
-            "The pre-oral anticipatory phase, when the person sees and smells food."
+            "The pre-oral anticipatory phase, when the person sees and smells food.",
+            "The oral preparatory and transit stages, prior to pharyngeal onset."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Oral-phase function includes containment, mastication, bolus preparation, and lingual transport, though impairments can span phases.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -2157,12 +2157,12 @@
           "id": "slp5331-ch-10-check-01",
           "prompt": "When is a minimal-pairs approach especially appropriate?",
           "choices": [
-            "When the child can benefit from contrastive phonological learning with meaningful word pairs differing by the target.",
+            "When vocabulary definitions are taught for target words without the child producing or hearing the sound contrast.",
+            "When the child benefits from contrastive phonological learning using meaningful words differing by one target sound.",
             "When swallowing maneuvers are needed to strengthen the oral muscles before any speech sounds are practiced in words.",
-            "When nonspeech oral movements are practiced in isolation to build strength before contrasts are introduced in therapy.",
-            "When vocabulary definitions are taught for target words without the child producing or hearing the sound contrast."
+            "When nonspeech oral movements are practiced in isolation to build strength before contrasts are introduced in therapy."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Minimal pairs can establish the communicative consequence of a contrast, but approach selection depends on error pattern, severity, stimulability, and system needs.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -2179,12 +2179,12 @@
           "id": "slp5331-ch-10-check-02",
           "prompt": "Which practice best promotes motor learning for an articulatory placement target?",
           "choices": [
+            "Randomly changing the target sound after each error so the client does not become frustrated with difficult practice.",
             "Withholding all feedback during acquisition so the client discovers the correct placement through trial and error alone.",
             "Accurate models and cues, many meaningful practice trials, early performance feedback, and gradual fading of support.",
-            "Passive listening to correct productions, without attempts by the client, until the sound seems familiar to them.",
-            "Randomly changing the target sound after each error so the client does not become frustrated with difficult practice."
+            "Passive listening to correct productions, without attempts by the client, until the sound seems familiar to them."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Motor learning distinguishes temporary performance from retention and transfer and uses feedback and practice schedules strategically.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -2201,12 +2201,12 @@
           "id": "slp5331-ch-10-check-03",
           "prompt": "What is a person-centered goal for stuttering treatment?",
           "choices": [
+            "Success defined by listener severity ratings, since how others perceive fluency matters most in daily interaction.",
             "Complete fluency in all situations, presented as the single acceptable outcome against which treatment is judged.",
             "Concealment of stuttering through word substitution and avoidance so that listeners do not notice the disfluency.",
-            "Goals the speaker chooses for participation, reduced avoidance, self-advocacy, and preferred speech-management options.",
-            "Success defined by listener severity ratings, since how others perceive fluency matters most in daily interaction."
+            "Goals the speaker chooses for participation, reduced avoidance, self-advocacy, and preferred speech-management options."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Fluency care should reflect the speaker’s priorities and can target impact, participation, ease, self-efficacy, and acceptance as well as speech behaviors.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -2223,12 +2223,12 @@
           "id": "slp5331-ch-10-check-04",
           "prompt": "After appropriate laryngeal evaluation, what is the purpose of physiologic voice therapy?",
           "choices": [
+            "To coordinate respiration, phonation, and resonance so the voice is efficient, less effortful, and fit for daily demands.",
             "To maximize loudness through repeated high-effort exercises, continuing even when the vocal folds show signs of strain.",
             "To use prolonged whispering as a universal treatment, since reducing voicing allows vocal fold tissue to heal fully.",
-            "To apply the same exercise sequence to every voice diagnosis, because laryngeal subsystems respond in uniform ways.",
-            "To coordinate respiration, phonation, and resonance so the voice is efficient, less effortful, and fit for daily demands."
+            "To apply the same exercise sequence to every voice diagnosis, because laryngeal subsystems respond in uniform ways."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Voice treatment is diagnosis- and person-specific and monitors symptoms, workload, technique, adherence, and transfer.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -2245,12 +2245,12 @@
           "id": "slp5331-ch-10-check-05",
           "prompt": "Which intervention is often appropriate for dysarthria with reduced intelligibility?",
           "choices": [
+            "Delaying communication supports such as AAC until the client’s speech returns to normal intelligibility levels.",
             "Targeting relevant subsystems and strategies such as rate, loudness, phrasing, partner supports, and AAC as assessed.",
             "Treating language comprehension alone, because intelligibility problems in dysarthria come from misunderstanding speech.",
-            "Using one strategy, such as louder speech, for every client regardless of the dysarthria type or subsystems involved.",
-            "Delaying communication supports such as AAC until the client’s speech returns to normal intelligibility levels."
+            "Using one strategy, such as louder speech, for every client regardless of the dysarthria type or subsystems involved."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Dysarthria management can combine restorative and compensatory approaches across subsystems and participation needs.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -2377,12 +2377,12 @@
           "id": "slp5331-ch-11-check-01",
           "prompt": "Which school-language intervention is most likely to generalize to academic participation?",
           "choices": [
-            "Curriculum-connected teaching of vocabulary, syntax, text structure, and metalinguistic strategies with educators.",
-            "Drill on unrelated word lists in a separate room, chosen for frequency rather than for links to classroom content.",
             "Removal of classroom communication demands so the student is not asked to speak or write during academic lessons.",
-            "Articulation practice on speech sounds even when the evaluation found no evidence of a speech-sound disorder."
+            "Articulation practice on speech sounds even when the evaluation found no evidence of a speech-sound disorder.",
+            "Curriculum-connected teaching of vocabulary, syntax, text structure, and metalinguistic strategies with educators.",
+            "Drill on unrelated word lists in a separate room, chosen for frequency rather than for links to classroom content."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Language intervention should connect underlying skills and strategies with meaningful curriculum and communication contexts.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -2399,12 +2399,12 @@
           "id": "slp5331-ch-11-check-02",
           "prompt": "What is a life-participation approach to aphasia?",
           "choices": [
-            "Decontextualized picture naming as the primary outcome, measured in the clinic regardless of the person’s daily life.",
-            "Meaningful activities, partner training, environmental supports, multimodal strategies, and chosen participation goals.",
             "Insistence on spoken communication alone, even when gestures, writing, or devices would work better for the person.",
-            "Goals selected by the clinician and family based on test results, without seeking input from the person with aphasia."
+            "Goals selected by the clinician and family based on test results, without seeking input from the person with aphasia.",
+            "Decontextualized picture naming as the primary outcome, measured in the clinic regardless of the person’s daily life.",
+            "Meaningful activities, partner training, environmental supports, multimodal strategies, and chosen engagement goals."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Aphasia treatment can combine restorative and compensatory methods while centering autonomy, identity, relationships, access, and participation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -2421,12 +2421,12 @@
           "id": "slp5331-ch-11-check-03",
           "prompt": "Which intervention best supports prospective memory after brain injury?",
           "choices": [
-            "Repeated verbal reminders from family members and staff, provided indefinitely so the person never misses a task.",
-            "Articulation drills on multisyllabic words, since clearer speech helps the person remember planned future actions.",
             "External aids, routines, environmental cues, and strategy training practiced in real tasks with independence measured.",
-            "Avoidance of compensatory technology, because relying on devices can prevent memory from recovering naturally."
+            "Avoidance of compensatory technology, because relying on devices can prevent memory from recovering naturally.",
+            "Repeated verbal reminders from family members and staff, provided indefinitely so the person never misses a task.",
+            "Articulation drills on multisyllabic words, since clearer speech helps the person remember planned future actions."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Cognitive-communication intervention matches strategy, task, environment, awareness, and support and measures functional performance.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -2443,12 +2443,12 @@
           "id": "slp5331-ch-11-check-04",
           "prompt": "What is a strong social-communication intervention principle?",
           "choices": [
-            "Teaching one rigid conversational script that the student is expected to use in each context and with each partner.",
-            "Requiring the student to mask harmless differences in eye contact or movement as the main goal of intervention.",
             "Setting goals from adult perspectives alone, without considering what the student wants from social interaction.",
-            "Collaborative practice of chosen strategies with natural partners, reflection, self-advocacy, and authentic measures."
+            "Collaborative practice of chosen strategies with natural partners, reflection, self-advocacy, and authentic measures.",
+            "Teaching one rigid conversational script that the student is expected to use in each context and with each partner.",
+            "Requiring the student to mask harmless differences in eye contact or movement as the main goal of intervention."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Social communication goals should be functional, culturally responsive, autonomy-supportive, and relevant to the person’s desired participation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -2465,12 +2465,12 @@
           "id": "slp5331-ch-11-check-05",
           "prompt": "Which statement about AAC candidacy is correct?",
           "choices": [
-            "There are no prerequisite cognitive or speech skills for AAC; assessment should identify a system and supports now.",
-            "AAC should be introduced only after several years of speech therapy have failed to produce intelligible speech.",
             "AAC use tends to reduce motivation to speak, so it should be limited to emergencies for children who have some words.",
-            "AAC is appropriate for individuals who can already spell, since text-based systems are the most efficient option."
+            "AAC is appropriate for individuals who can already spell, since text-based systems are the most efficient option.",
+            "There are no prerequisite cognitive or speech skills for AAC; assessment should identify a system and supports now.",
+            "AAC should be introduced only after several years of speech therapy have failed to produce intelligible speech."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "AAC can support communication, language, participation, and speech development; access should not be withheld by unsupported prerequisites.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -2592,12 +2592,12 @@
           "id": "slp5331-ch-12-check-01",
           "prompt": "What distinguishes a compensatory swallowing strategy from a rehabilitative exercise?",
           "choices": [
-            "It is compensatory: it improves safety or efficiency while used, whereas rehabilitation seeks durable change.",
             "It counts as rehabilitative because it involves muscle movement, so repeated use produces lasting physiologic change.",
             "It cures the underlying disease by changing how the bolus moves, removing the need for medical management later.",
-            "It is a language intervention, because the patient must understand and recall verbal instructions to carry it out."
+            "It is a language intervention, because the patient must understand and recall verbal instructions to carry it out.",
+            "It improves safety or efficiency directly while applied, whereas rehabilitation targets durable physiologic gain."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Compensatory and rehabilitative approaches have different mechanisms and must be selected from assessed physiology, goals, and evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -2613,12 +2613,12 @@
           "id": "slp5331-ch-12-check-02",
           "prompt": "How should a postural swallowing strategy be prescribed?",
           "choices": [
-            "Recommend the same posture for every patient with dysphagia, because its effect on bolus flow is identical for all.",
             "Use it when assessment shows benefit for that individual and bolus, teach it accurately, and monitor its effects.",
             "Have the patient use the posture without explaining its purpose or checking whether it improves swallow safety.",
-            "Avoid postures altogether, because changes in head or body position cannot meaningfully affect swallowing physiology."
+            "Avoid postures altogether, because changes in head or body position cannot meaningfully affect swallowing physiology.",
+            "Recommend the same posture for every patient with dysphagia, because its effect on bolus flow is identical for all."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Postures alter anatomy and bolus flow differently across impairments, so individual verification and monitoring are essential.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -2634,12 +2634,12 @@
           "id": "slp5331-ch-12-check-03",
           "prompt": "What is required when recommending modified food or liquid consistency?",
           "choices": [
-            "Assuming that thicker liquids are safer for each patient, so the thickest level becomes the default recommendation.",
             "Focusing on aspiration risk and setting aside dehydration, medication delivery, and burden as secondary concerns.",
             "Weighing physiology, hydration and nutrition, quality of life, and preference, with informed choice and reassessment.",
-            "Issuing the consistency change as a standing order, without shared decision making with the patient or family."
+            "Issuing the consistency change as a standing order, without shared decision making with the patient or family.",
+            "Assuming that thicker liquids are safer for each patient, so the thickest level becomes the default recommendation."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Texture modification can have benefits and harms; individualized evidence, education, monitoring, and interprofessional review are required.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -2655,12 +2655,12 @@
           "id": "slp5331-ch-12-check-04",
           "prompt": "Why is oral care relevant to dysphagia management?",
           "choices": [
-            "It justifies stopping all oral intake without further assessment, since bacteria make any swallow unsafe.",
             "It matters mainly when the patient reports mouth pain, so routine care can wait until symptoms appear.",
             "Clean teeth prevent aspiration itself, so careful oral care removes the need for swallowing assessment.",
-            "Consistent oral hygiene and dental care reduce oral bacteria as part of a broader individualized risk plan."
+            "Consistent oral hygiene and dental care reduce oral bacteria as part of a broader individualized risk plan.",
+            "It justifies stopping all oral intake without further assessment, since bacteria make any swallow unsafe."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Oral bacterial load is one contributor to aspiration-related pulmonary complications, alongside health, mobility, dependence, and swallowing factors.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",
@@ -2676,12 +2676,12 @@
           "id": "slp5331-ch-12-check-05",
           "prompt": "How should a swallowing exercise be selected?",
           "choices": [
-            "Match the exercise’s physiologic target and dosage to documented impairment, contraindications, goals, and response.",
             "Assign every available exercise to each dysphagia pattern so that all possible impairments are addressed at once.",
             "Choose the most difficult exercise available, regardless of impairment, because harder work produces faster gains.",
-            "Continue the exercise program despite pain or medical instability so that the planned dosage is not interrupted."
+            "Continue the exercise program despite pain or medical instability so that the planned dosage is not interrupted.",
+            "Match the exercise’s physiologic target and dosage to documented impairment, contraindications, goals, and response."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Exercise should have a plausible and assessed mechanism, safe dosage, appropriate load, adherence support, and outcome monitoring.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5331.pdf",

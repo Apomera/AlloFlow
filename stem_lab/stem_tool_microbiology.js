@@ -44,6 +44,52 @@
       '--allo-stem-button-border:#334155;}';
     document.head.appendChild(_mbVars);
   }
+  if (typeof document !== 'undefined' && document.head &&
+      !document.getElementById('microbiology-motion-css')) {
+    var _mbMotion = document.createElement('style');
+    _mbMotion.id = 'microbiology-motion-css';
+    _mbMotion.textContent = [
+      '@keyframes microCondenserHalo { 0%, 100% { opacity: 0.44; transform: scale(0.985); } 50% { opacity: 0.72; transform: scale(1.018); } }',
+      '@keyframes microLensSheen { 0%, 100% { opacity: 0.16; transform: rotate(-1.6deg); } 50% { opacity: 0.34; transform: rotate(1.6deg); } }',
+      '@keyframes microBokehDrift { 0%, 100% { transform: translate(0px, 0px); } 50% { transform: translate(1.6px, -1.3px); } }',
+      '@keyframes microCiliaWave { 0%, 100% { transform: rotate(-2.2deg) scale(0.992); } 50% { transform: rotate(2.2deg) scale(1.014); } }',
+      '@keyframes microFlagellaSway { 0%, 100% { transform: translateY(-0.4px) skewY(-2.4deg); } 50% { transform: translateY(0.4px) skewY(2.4deg); } }',
+      '@keyframes microOrganismDrift { 0%, 100% { transform: translate(0px, 0px) scale(1); } 50% { transform: translate(0.7px, -0.5px) scale(1.008); } }',
+      '@keyframes microVacuolePulse { 0%, 100% { opacity: 0.36; transform: scale(0.86); } 50% { opacity: 0.84; transform: scale(1.12); } }',
+      '@keyframes microZoneRipple { 0% { opacity: 0.56; transform: scale(0.32); } 75% { opacity: 0.14; } 100% { opacity: 0; transform: scale(1.02); } }',
+      '@keyframes microColonyBreath { 0%, 100% { opacity: 0.12; transform: scale(0.92); } 50% { opacity: 0.28; transform: scale(1.14); } }',
+      '@keyframes microBeaconSvg { 0% { opacity: 0.78; transform: scale(0.9); } 100% { opacity: 0.04; transform: scale(2.15); } }',
+      '@keyframes microBeaconRing { 0% { opacity: 0.74; transform: translate(-50%,-50%) scale(0.92); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(1.95); } }',
+      '@keyframes microGuideFlow { to { stroke-dashoffset: -16; } }',
+      '@keyframes microGramSheen { 0%, 100% { opacity: 0.34; } 50% { opacity: 0.72; } }',
+      '@keyframes microLpsSway { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }',
+      '@keyframes microQuorumPulse { 0%, 100% { opacity: 0.34; transform: scale(0.9); } 50% { opacity: 0.9; transform: scale(1.18); } }',
+      '.micro-condenser-halo { transform-box: fill-box; transform-origin: center; animation: microCondenserHalo 5.4s ease-in-out infinite; }',
+      '.micro-lens-sheen { transform-box: fill-box; transform-origin: center; animation: microLensSheen 7.2s ease-in-out infinite; }',
+      '.micro-bokeh-mote { animation: microBokehDrift 6.4s ease-in-out infinite; }',
+      '.micro-cilia-wave { transform-box: fill-box; transform-origin: center; animation: microCiliaWave 2.4s ease-in-out infinite; }',
+      '.micro-flagella-sway { transform-box: fill-box; transform-origin: left center; animation: microFlagellaSway 1.9s ease-in-out infinite; }',
+      '.micro-organism-drift { transform-box: fill-box; transform-origin: center; animation: microOrganismDrift 4.6s ease-in-out infinite; }',
+      '.micro-vacuole-pulse { transform-box: fill-box; transform-origin: center; animation: microVacuolePulse 2.8s ease-in-out infinite; }',
+      '.micro-zone-ripple { transform-box: fill-box; transform-origin: center; animation: microZoneRipple 3.6s cubic-bezier(0.22,0.61,0.36,1) infinite; }',
+      '.micro-colony-glow { transform-box: fill-box; transform-origin: center; animation: microColonyBreath 3.2s ease-in-out infinite; }',
+      '.micro-trend-beacon { transform-box: fill-box; transform-origin: center; animation: microBeaconSvg 2.3s ease-out infinite; }',
+      '.micro-gram-sheen { animation: microGramSheen 3.4s ease-in-out infinite; }',
+      '.micro-lps-sway { transform-box: fill-box; transform-origin: bottom center; animation: microLpsSway 2.6s ease-in-out infinite; }',
+      '.micro-gram-slide.micro-gram-stained { filter: drop-shadow(0 0 8px rgba(167,139,250,0.22)); }',
+      '.micro-gram-slide.micro-gram-stained circle, .micro-gram-slide.micro-gram-stained rect { transition: fill 0.35s ease; }',
+      '.micro-quorum-pulse { transform-box: fill-box; transform-origin: center; animation: microQuorumPulse 2.7s ease-in-out infinite; }',
+      '#gl-growth-chart [data-growth-hour-guide], .micro-sweep-observation [data-sweep-guide], .micro-resistance-history-figure [data-resistance-history-guide] { animation: microGuideFlow 2.6s linear infinite; }',
+      '.micro-growth-point-trial::after, .micro-sweep-selected::after, .micro-resistance-history-selected[data-side=a]::after { content: ""; position: absolute; left: 50%; top: 50%; width: 140%; height: 140%; border-radius: 50%; border: 2px solid #6ee7b7; pointer-events: none; animation: microBeaconRing 2.4s ease-out infinite; }',
+      '.micro-sweep-selected::after { border-color: #fbbf24; }',
+      '.theme-contrast .micro-fx-decor { animation: none !important; opacity: 0 !important; }',
+      '.theme-contrast .micro-cilia-wave, .theme-contrast .micro-flagella-sway, .theme-contrast .micro-organism-drift, .theme-contrast .micro-vacuole-pulse, .theme-contrast .micro-gram-sheen, .theme-contrast .micro-lps-sway, .theme-contrast .micro-quorum-pulse, .theme-contrast .micro-bokeh-mote, .theme-contrast #gl-growth-chart [data-growth-hour-guide], .theme-contrast .micro-sweep-observation [data-sweep-guide], .theme-contrast .micro-resistance-history-figure [data-resistance-history-guide] { animation: none !important; }',
+      '.theme-contrast .micro-gram-slide.micro-gram-stained { filter: none !important; }',
+      '.theme-contrast .micro-growth-point-trial::after, .theme-contrast .micro-sweep-selected::after, .theme-contrast .micro-resistance-history-selected[data-side=a]::after { display: none !important; }',
+      '@media (prefers-reduced-motion: reduce) { .micro-condenser-halo, .micro-lens-sheen, .micro-bokeh-mote, .micro-cilia-wave, .micro-flagella-sway, .micro-organism-drift, .micro-vacuole-pulse, .micro-zone-ripple, .micro-colony-glow, .micro-trend-beacon, .micro-gram-sheen, .micro-lps-sway, .micro-quorum-pulse, #gl-growth-chart [data-growth-hour-guide], .micro-sweep-observation [data-sweep-guide], .micro-resistance-history-figure [data-resistance-history-guide] { animation: none !important; } .micro-zone-ripple { opacity: 0.2 !important; transform: none !important; } .micro-trend-beacon { opacity: 0.25 !important; transform: none !important; } .micro-growth-point-trial::after, .micro-sweep-selected::after, .micro-resistance-history-selected[data-side=a]::after { animation: none !important; opacity: 0.35; transform: translate(-50%,-50%) scale(1.25); } }'
+    ].join('\n');
+    document.head.appendChild(_mbMotion);
+  }
   // ──────────────────────────────────────────────────────────────────
   // DATA: Bacteria
   // ──────────────────────────────────────────────────────────────────
@@ -1429,12 +1475,27 @@
             hh('circle', { cx: 100, cy: 100, r: 93, fill: 'url(#dishAgarSheen)', stroke: '#94a3b8', strokeWidth: 0.6, opacity: 0.7, 'aria-hidden': true }),
             hh('circle', { cx: 100, cy: 100, r: 90, fill: 'none', stroke: '#7dd3fc', strokeWidth: 0.8, opacity: 0.34, 'aria-hidden': true }),
             hh('circle', { cx: 100, cy: 100, r: 62, fill: 'none', stroke: '#38bdf8', strokeWidth: 0.45, strokeDasharray: '2 4', opacity: 0.18, 'aria-hidden': true }),
-            hh('path', { d: 'M 30 58 A 82 82 0 0 1 116 19', fill: 'none', stroke: '#e0f2fe', strokeWidth: 2.2, strokeLinecap: 'round', opacity: 0.34, 'aria-hidden': true }),
-            hh('path', { d: 'M 152 162 A 76 76 0 0 1 92 176', fill: 'none', stroke: '#7dd3fc', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.20, 'aria-hidden': true }),
-            day < duration && day > 0 ? hh('circle', { cx: 100, cy: 100, r: 94, fill: 'url(#dishAntibioticHalo)', opacity: Math.min(1, 0.35 + (dose / 100) * 0.65) }) : null,
+            hh('g', { className: 'micro-lens-sheen micro-fx-decor', 'aria-hidden': true },
+              hh('path', { d: 'M 30 58 A 82 82 0 0 1 116 19', fill: 'none', stroke: '#e0f2fe', strokeWidth: 2.2, strokeLinecap: 'round', opacity: 0.34 }),
+              hh('path', { d: 'M 152 162 A 76 76 0 0 1 92 176', fill: 'none', stroke: '#7dd3fc', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.20 })
+            ),
+            day < duration && day > 0 ? hh('circle', { cx: 100, cy: 100, r: 94, fill: 'url(#dishAntibioticHalo)', className: 'micro-condenser-halo micro-fx-decor', opacity: Math.min(1, 0.35 + (dose / 100) * 0.65), 'aria-hidden': true }) : null,
+            // Concentric antimicrobial diffusion zone-of-inhibition ripples scaled with exposure strength
+            day > 0 && dose > 0 ? hh('g', { 'aria-hidden': true },
+              [0, 1, 2].map(function(ri) {
+                var zoneR = Math.round(28 + (dose / 100) * 60);
+                return hh('circle', {
+                  key: 'zone-rip-' + ri,
+                  className: 'micro-zone-ripple micro-fx-decor',
+                  cx: 100, cy: 100, r: zoneR,
+                  fill: 'none', stroke: '#fbbf24', strokeWidth: 1.1, strokeDasharray: ri === 1 ? '4 3' : undefined,
+                  style: { animationDelay: (-ri * 1.2) + 's' }
+                });
+              })
+            ) : null,
             bact.map(function(b, i) {
               if (!b.alive) return null;
-              return hh('circle', { key: 'glow-' + i, cx: b.x, cy: b.y, r: (b.resistant ? 5.2 : 4.5) * b.jitter, fill: b.resistant ? '#fb7185' : '#22d3ee', opacity: 0.16, 'aria-hidden': true });
+              return hh('circle', { key: 'glow-' + i, className: 'micro-colony-glow micro-fx-decor', cx: b.x, cy: b.y, r: (b.resistant ? 5.2 : 4.5) * b.jitter, fill: b.resistant ? '#fb7185' : '#22d3ee', opacity: 0.16, style: { animationDelay: ((i % 7) * -0.45) + 's' }, 'aria-hidden': true });
             }),
             bact.map(function(b, i) {
               if (!b.alive) return hh('circle', { key: 'b-' + i, 'data-resistance-cell': 'unoccupied', cx: b.x, cy: b.y, r: 2, fill: 'none', stroke: '#94a3b8', strokeWidth: 0.7, opacity: 0.55 });
@@ -1461,6 +1522,7 @@
             history.length > 1 ? hh('polyline', { points: history.filter(function(p) { return p.sensitive + p.resistant > 0; }).map(function(p) { var pct = p.resistant / (p.sensitive + p.resistant); var x = 4 + (p.day / Math.max(1, duration)) * 92; var y = 56 - pct * 52; return x + ',' + y; }).join(' '), fill: 'none', stroke: '#fb7185', strokeWidth: 2.5, vectorEffect: 'non-scaling-stroke' }) : null,
             history.filter(function(point) { return point.sensitive + point.resistant > 0; }).map(function(point) { var pct = point.resistant / (point.sensitive + point.resistant) * 100, x = 4 + point.day / Math.max(1, duration) * 92, y = 56 - pct / 100 * 52; return hh('polygon', { key: point.day, 'data-resistance-observation': point.day, 'data-value': pct,
               points: x + ',' + (y - 1.5) + ' ' + (x + 1.2) + ',' + y + ' ' + x + ',' + (y + 1.5) + ' ' + (x - 1.2) + ',' + y, fill: '#fb7185', stroke: '#ffe4e6', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }); }),
+            pctRes !== null ? hh('circle', { className: 'micro-trend-beacon micro-fx-decor', cx: 4 + (day / Math.max(1, duration)) * 92, cy: 56 - (pctRes / 100) * 52, r: 3.4, fill: 'none', stroke: '#fb7185', strokeWidth: 0.7, vectorEffect: 'non-scaling-stroke', 'aria-hidden': true }) : null,
             pctRes !== null ? hh('circle', { cx: 4 + (day / Math.max(1, duration)) * 92, cy: 56 - (pctRes / 100) * 52, r: 1.8, fill: '#ef4444', stroke: '#fff', strokeWidth: 0.4 }) : null
             ),
             hh('div', { 'aria-hidden': true, style: { gridColumn: 2, display: 'flex', justifyContent: 'space-between', gap: 8, padding: '0 4%', fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)' } }, hh('span', null, '0'), hh('span', { style: { textAlign: 'center' } }, 'exposure rounds'), hh('span', null, duration))
@@ -2355,14 +2417,19 @@
     function renderOrganism(o, size, showLabels) {
       var c = o.color; var s = size; var cx = 100, cy = 100;
       if (o.shape === 'rod') {
-        return hh('g', null,
+        return hh('g', { className: 'micro-organism-drift' },
           hh('rect', { x: cx - s * 0.7, y: cy - s * 0.18, width: s * 1.4, height: s * 0.36, rx: s * 0.18, fill: c, stroke: '#e0f2fe', strokeWidth: Math.max(0.55, s * 0.024), opacity: 0.88 }),
           hh('ellipse', { cx: cx, cy: cy, rx: s * 0.76, ry: s * 0.24, fill: 'none', stroke: c, strokeWidth: Math.max(0.6, s * 0.03), opacity: 0.32 }),
           hh('ellipse', { cx: cx - s * 0.06, cy: cy - s * 0.06, rx: s * 0.52, ry: s * 0.06, fill: '#ffffff', opacity: 0.28 }),
+          // Zero-spoiler translucent peritrichous flagella filaments (organic wave micro-motion)
+          hh('g', { className: 'micro-flagella-sway micro-fx-decor', stroke: c, strokeWidth: Math.max(0.35, s * 0.014), fill: 'none', opacity: 0.42, 'aria-hidden': true },
+            hh('path', { d: 'M ' + (cx + s * 0.68) + ' ' + (cy - s * 0.06) + ' Q ' + (cx + s * 1.05) + ' ' + (cy - s * 0.22) + ' ' + (cx + s * 1.32) + ' ' + (cy - s * 0.08) }),
+            hh('path', { d: 'M ' + (cx + s * 0.7) + ' ' + (cy + s * 0.04) + ' Q ' + (cx + s * 1.08) + ' ' + (cy + s * 0.2) + ' ' + (cx + s * 1.36) + ' ' + (cy + s * 0.05) })
+          ),
           showLabels && electronMode ? hh('g', null,
             hh('circle', { cx: cx - s * 0.5, cy: cy, r: s * 0.06, fill: '#7c3aed' }),
             hh('text', { x: cx - s * 0.5, y: cy - s * 0.3, fontSize: 6, fill: '#a78bfa', textAnchor: 'middle' }, 'nucleoid'),
-            hh('g', { stroke: '#fbbf24', strokeWidth: 0.4, fill: 'none' },
+            hh('g', { className: 'micro-flagella-sway', stroke: '#fbbf24', strokeWidth: 0.4, fill: 'none' },
               hh('path', { d: 'M ' + (cx + s * 0.7) + ' ' + (cy - 1) + ' Q ' + (cx + s * 1.2) + ' ' + (cy - 6) + ' ' + (cx + s * 1.5) + ' ' + (cy - 2) }),
               hh('path', { d: 'M ' + (cx + s * 0.7) + ' ' + cy + ' Q ' + (cx + s * 1.3) + ' ' + (cy + 5) + ' ' + (cx + s * 1.6) + ' ' + cy }),
               hh('path', { d: 'M ' + (cx + s * 0.7) + ' ' + (cy + 1) + ' Q ' + (cx + s * 1.2) + ' ' + (cy + 8) + ' ' + (cx + s * 1.5) + ' ' + (cy + 3) })
@@ -2378,8 +2445,11 @@
           chain.push(hh('circle', { key: 'c-' + i, cx: ccx, cy: cy, r: s * 0.22, fill: c, stroke: '#f5f3ff', strokeWidth: Math.max(0.45, s * 0.022), opacity: 0.88 }));
           chain.push(hh('circle', { key: 'ch-' + i, cx: ccx, cy: cy, r: s * 0.27, fill: 'none', stroke: c, strokeWidth: Math.max(0.55, s * 0.03), opacity: 0.28 }));
           chain.push(hh('circle', { key: 'cs-' + i, cx: ccx - s * 0.06, cy: cy - s * 0.06, r: s * 0.065, fill: '#ffffff', opacity: 0.38 }));
+          if (i < 4) {
+            chain.push(hh('line', { key: 'sj-' + i, x1: ccx + s * 0.22, y1: cy - s * 0.08, x2: ccx + s * 0.28, y2: cy + s * 0.08, stroke: '#e9d5ff', strokeWidth: Math.max(0.35, s * 0.015), opacity: 0.45, 'aria-hidden': true }));
+          }
         }
-        return hh('g', null, chain, showLabels ? hh('text', { x: cx, y: cy + s * 0.6, fontSize: 6, fill: '#d8b4fe', textAnchor: 'middle' }, 'chain of cocci') : null);
+        return hh('g', { className: 'micro-organism-drift' }, chain, showLabels ? hh('text', { x: cx, y: cy + s * 0.6, fontSize: 6, fill: '#d8b4fe', textAnchor: 'middle' }, 'chain of cocci') : null);
       }
       if (o.shape === 'paramecium') {
         var cilia = [];
@@ -2390,12 +2460,13 @@
           var x2 = cx + (rx + 4) * Math.cos(ang); var y2 = cy + (ry + 4) * Math.sin(ang);
           cilia.push(hh('line', { key: 'ci-' + ii, x1: x1, y1: y1, x2: x2, y2: y2 }));
         }
-        return hh('g', null,
+        return hh('g', { className: 'micro-organism-drift' },
           hh('ellipse', { cx: cx, cy: cy, rx: s * 0.6, ry: s * 0.3, fill: c, stroke: '#bbf7d0', strokeWidth: Math.max(0.65, s * 0.015), opacity: 0.72 }),
           hh('ellipse', { cx: cx, cy: cy, rx: s * 0.65, ry: s * 0.34, fill: 'none', stroke: c, strokeWidth: Math.max(0.7, s * 0.02), opacity: 0.24 }),
           hh('ellipse', { cx: cx - s * 0.08, cy: cy - s * 0.11, rx: s * 0.36, ry: s * 0.07, fill: '#ffffff', opacity: 0.22 }),
-          hh('g', { stroke: '#4ade80', strokeWidth: 0.45, opacity: 0.85 }, cilia),
+          hh('g', { className: 'micro-cilia-wave', stroke: '#4ade80', strokeWidth: 0.45, opacity: 0.85 }, cilia),
           hh('ellipse', { cx: cx - s * 0.05, cy: cy, rx: s * 0.18, ry: s * 0.10, fill: '#16a34a', stroke: '#86efac', strokeWidth: 0.4, opacity: 0.76 }),
+          hh('circle', { className: 'micro-vacuole-pulse', cx: cx + s * 0.32, cy: cy + s * 0.06, r: Math.max(0.9, s * 0.055), fill: 'none', stroke: '#bbf7d0', strokeWidth: 0.45, strokeDasharray: '1 1.4', 'aria-hidden': true }),
           hh('circle', { cx: cx + s * 0.15, cy: cy - s * 0.05, r: s * 0.04, fill: '#86efac', opacity: 0.85 }),
           hh('path', { d: 'M ' + (cx - s * 0.3) + ' ' + cy + ' Q ' + (cx - s * 0.1) + ' ' + (cy - s * 0.18) + ' ' + (cx + s * 0.1) + ' ' + (cy - s * 0.15), fill: 'none', stroke: '#15803d', strokeWidth: 0.6 }),
           showLabels ? hh('g', null,
@@ -2406,7 +2477,7 @@
         );
       }
       if (o.shape === 'plasmodium') {
-        return hh('g', null,
+        return hh('g', { className: 'micro-organism-drift' },
           hh('circle', { cx: cx, cy: cy, r: s * 0.7, fill: '#fca5a5', stroke: '#fecaca', strokeWidth: 0.8, opacity: 0.66 }),
           hh('circle', { cx: cx, cy: cy, r: s * 0.75, fill: 'none', stroke: '#fca5a5', strokeWidth: 0.9, opacity: 0.26 }),
           hh('circle', { cx: cx, cy: cy, r: s * 0.25, fill: '#7f1d1d', opacity: 0.44 }),
@@ -2419,7 +2490,7 @@
         );
       }
       if (o.shape === 'phage') {
-        return hh('g', null,
+        return hh('g', { className: 'micro-organism-drift' },
           hh('polygon', { points: (cx - s * 0.25) + ',' + (cy - s * 0.5) + ' ' + (cx + s * 0.25) + ',' + (cy - s * 0.5) + ' ' + (cx + s * 0.4) + ',' + (cy - s * 0.25) + ' ' + (cx + s * 0.25) + ',' + cy + ' ' + (cx - s * 0.25) + ',' + cy + ' ' + (cx - s * 0.4) + ',' + (cy - s * 0.25), fill: c, stroke: '#fef3c7', strokeWidth: 0.7, opacity: 0.92 }),
           hh('polygon', { points: (cx - s * 0.18) + ',' + (cy - s * 0.44) + ' ' + (cx + s * 0.08) + ',' + (cy - s * 0.44) + ' ' + (cx - s * 0.06) + ',' + (cy - s * 0.24) + ' ' + (cx - s * 0.28) + ',' + (cy - s * 0.25), fill: '#ffffff', opacity: 0.26 }),
           hh('rect', { x: cx - s * 0.06, y: cy, width: s * 0.12, height: s * 0.4, fill: '#fbbf24', stroke: '#0f172a', strokeWidth: 0.4 }),
@@ -2427,7 +2498,7 @@
           hh('line', { x1: cx - s * 0.07, y1: cy + s * 0.2, x2: cx + s * 0.07, y2: cy + s * 0.2, stroke: '#0f172a', strokeWidth: 0.3 }),
           hh('line', { x1: cx - s * 0.07, y1: cy + s * 0.3, x2: cx + s * 0.07, y2: cy + s * 0.3, stroke: '#0f172a', strokeWidth: 0.3 }),
           hh('rect', { x: cx - s * 0.18, y: cy + s * 0.4, width: s * 0.36, height: s * 0.05, fill: '#92400e' }),
-          hh('g', { stroke: '#d97706', strokeWidth: 0.65, fill: 'none' },
+          hh('g', { className: 'micro-cilia-wave', stroke: '#d97706', strokeWidth: 0.65, fill: 'none' },
             hh('path', { d: 'M ' + (cx - s * 0.15) + ' ' + (cy + s * 0.45) + ' L ' + (cx - s * 0.3) + ' ' + (cy + s * 0.7) }),
             hh('path', { d: 'M ' + (cx + s * 0.15) + ' ' + (cy + s * 0.45) + ' L ' + (cx + s * 0.3) + ' ' + (cy + s * 0.7) }),
             hh('path', { d: 'M ' + (cx - s * 0.05) + ' ' + (cy + s * 0.45) + ' L ' + (cx - s * 0.15) + ' ' + (cy + s * 0.75) }),
@@ -2491,9 +2562,16 @@
                 hh('stop', { offset: '72%', stopColor: '#000000', stopOpacity: 0 }),
                 hh('stop', { offset: '92%', stopColor: '#020617', stopOpacity: 0.42 }),
                 hh('stop', { offset: '100%', stopColor: '#000000', stopOpacity: 0.84 })
+              ),
+              hh('radialGradient', { id: 'microCondenserGlow', cx: '50%', cy: '48%', r: '46%' },
+                hh('stop', { offset: '0%', stopColor: electronMode ? '#cbd5e1' : '#7dd3fc', stopOpacity: electronMode ? 0.14 : 0.22 }),
+                hh('stop', { offset: '55%', stopColor: electronMode ? '#64748b' : '#38bdf8', stopOpacity: 0.07 }),
+                hh('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0 })
               )
             ),
             hh('circle', { cx: 100, cy: 100, r: 98, fill: 'url(#microScopeField)', stroke: '#334155', strokeWidth: 1 }),
+            // Optical condenser illumination halo
+            hh('circle', { className: 'micro-condenser-halo micro-fx-decor', cx: 100, cy: 100, r: 78, fill: 'url(#microCondenserGlow)', 'aria-hidden': true }),
             // Subtle suspended Brownian optical bokeh depth motes responding to focus distance
             [
               [42, 54, 4.2, 0.14], [156, 62, 3.6, 0.12], [62, 146, 5.0, 0.10],
@@ -2503,11 +2581,15 @@
               var driftX = mote[0] + Math.sin(mi * 1.9 + focusVal * 0.05) * 1.4;
               var driftY = mote[1] + Math.cos(mi * 2.3 + focusVal * 0.04) * 1.4;
               var bokehR = +(mote[2] + focusOffset * 0.055).toFixed(2);
-              return hh('circle', { key: 'bk-' + mi, cx: +driftX.toFixed(1), cy: +driftY.toFixed(1), r: bokehR, fill: electronMode ? '#94a3b8' : '#7dd3fc', opacity: mote[3], 'aria-hidden': true });
+              return hh('circle', { key: 'bk-' + mi, className: 'micro-bokeh-mote micro-fx-decor', cx: +driftX.toFixed(1), cy: +driftY.toFixed(1), r: bokehR, fill: electronMode ? '#94a3b8' : '#7dd3fc', opacity: mote[3], style: { animationDelay: (-mi * 0.95) + 's' }, 'aria-hidden': true });
             }),
             hh('circle', { cx: 100, cy: 100, r: 62, fill: 'none', stroke: '#38bdf8', strokeWidth: 0.35, strokeDasharray: '1 5', opacity: 0.22, 'aria-hidden': true }),
             hh('path', { d: 'M 15 100 H 185 M 100 15 V 185', stroke: '#475569', strokeWidth: 0.45, strokeDasharray: '2 3', opacity: 0.7 }),
-            hh('path', { d: 'M 32 54 A 84 84 0 0 1 118 18', fill: 'none', stroke: '#e0f2fe', strokeWidth: 1.8, strokeLinecap: 'round', opacity: 0.18, 'aria-hidden': true }),
+            // Subtle objective-lens refraction sheen arcs
+            hh('g', { className: 'micro-lens-sheen micro-fx-decor', 'aria-hidden': true },
+              hh('path', { d: 'M 32 54 A 84 84 0 0 1 118 18', fill: 'none', stroke: '#e0f2fe', strokeWidth: 1.8, strokeLinecap: 'round', opacity: 0.24 }),
+              hh('path', { d: 'M 164 148 A 82 82 0 0 1 110 181', fill: 'none', stroke: electronMode ? '#cbd5e1' : '#38bdf8', strokeWidth: 1.0, strokeLinecap: 'round', opacity: 0.16 })
+            ),
             canSee ? hh('g', { style: { filter: 'blur(' + blurPx + 'px)' } }, renderOrganism(sel, apparentSize, false)) : hh('g', null,
               hh('text', { x: 100, y: 95, fontSize: 8, fill: '#cbd5e1', textAnchor: 'middle' }, __alloMBT('stem.microbiology.scope_detail_unavailable', 'Detail unavailable')),
               hh('text', { x: 100, y: 109, fontSize: 6, fill: '#94a3b8', textAnchor: 'middle' }, organism === 'phage' ? __alloMBT('stem.microbiology.scope_try_em', 'Try the electron view') : __alloMBT('stem.microbiology.scope_try_setup', 'Try the recommended setup'))
@@ -4741,22 +4823,23 @@
             isPos
               ? h('g', null,
                   // Big thick wall
-                  h('rect', { x: 0, y: 30, width: 240, height: 50, fill: dyeColor, opacity: 0.45 }),
+                  h('rect', { x: 0, y: 30, width: 240, height: 50, fill: dyeColor, opacity: 0.48 }),
+                  h('rect', { className: 'micro-gram-sheen micro-fx-decor', x: 0, y: 30, width: 240, height: 10, fill: '#c4b5fd', opacity: 0.22, 'aria-hidden': true }),
                   // Cross-link patterns
                   [0, 1, 2, 3, 4, 5].map(function(i) {
-                    return h('line', { key: 'cl' + i, x1: 20 + i * 40, y1: 35, x2: 20 + i * 40, y2: 76, stroke: '#fff', strokeWidth: 1, opacity: 0.4 });
+                    return h('line', { key: 'cl' + i, className: 'micro-gram-sheen', x1: 20 + i * 40, y1: 35, x2: 20 + i * 40, y2: 76, stroke: '#fff', strokeWidth: 1.1, opacity: 0.45, style: { animationDelay: (-i * 0.4) + 's' } });
                   }),
                   h('text', { x: 120, y: 60, textAnchor: 'middle', fill: '#fff', fontSize: 11, fontWeight: 800 }, __alloT('stem.microbiology.peptidoglycan_thick_20_80_nm', 'Peptidoglycan (thick: 20-80 nm)'))
                 )
               : h('g', null,
                   // Thin peptidoglycan layer in middle of two membranes
-                  h('rect', { x: 0, y: 55, width: 240, height: 8, fill: dyeColor, opacity: 0.55 }),
+                  h('rect', { x: 0, y: 55, width: 240, height: 8, fill: dyeColor, opacity: 0.58 }),
                   h('text', { x: 120, y: 50, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 9 }, __alloT('stem.microbiology.peptidoglycan_thin_5_10_nm', 'Peptidoglycan (thin: 5-10 nm)')),
                   // Outer membrane (lipid bilayer with LPS)
                   h('rect', { x: 0, y: 18, width: 240, height: 30, fill: '#fbbf24', opacity: 0.6 }),
                   // LPS spikes from outer membrane
                   [10, 30, 50, 70, 90, 110, 130, 150, 170, 190, 210, 230].map(function(x, i) {
-                    return h('g', { key: 'lps' + i },
+                    return h('g', { key: 'lps' + i, className: 'micro-lps-sway', style: { animationDelay: (-i * 0.22) + 's' } },
                       h('line', { x1: x, y1: 18, x2: x, y2: 5, stroke: '#fbbf24', strokeWidth: 1 }),
                       h('circle', { cx: x, cy: 4, r: 2, fill: dyeColor, opacity: 0.9 })
                     );
@@ -4882,7 +4965,7 @@
             var color = modelColor(model, step), result = modelText(model, step);
             return h('figure', { key: model, className: 'micro-gram-model' },
               h('figcaption', null, h('strong', null, name)),
-              h('svg', { viewBox: '0 0 240 100', role: 'img', 'aria-label': name + '. ' + labels[step] + ': ' + result + '. ' + glt('both_shapes', 'Both round and rod-shaped cells are shown.'), 'data-model': model },
+              h('svg', { className: 'micro-gram-slide' + (color !== 'none' ? ' micro-gram-stained' : ''), viewBox: '0 0 240 100', role: 'img', 'aria-label': name + '. ' + labels[step] + ': ' + result + '. ' + glt('both_shapes', 'Both round and rod-shaped cells are shown.'), 'data-model': model },
                 [45, 80, 115].map(function(x) { return h('circle', { key: x, cx: x, cy: 35, r: 10, fill: color, stroke: '#cbd5e1', strokeWidth: 1.5 }); }),
                 [40, 96, 152].map(function(x) { return h('rect', { key: x, x: x, y: 65, width: 35, height: 14, rx: 7, fill: color, stroke: '#cbd5e1', strokeWidth: 1.5 }); })
               ),
@@ -6948,10 +7031,12 @@
               var sigs = [];
               for (var k = 0; k < Math.min(40, density / 3); k++) {
                 sigs.push(h('circle', { key: 's' + k,
+                  className: 'micro-quorum-pulse micro-fx-decor',
                   cx: 20 + Math.random() * (svgW - 40),
                   cy: 100 + Math.random() * 70,
-                  r: 1.2,
-                  fill: '#fbbf24', opacity: 0.6
+                  r: 1.35,
+                  fill: '#fbbf24', opacity: 0.65,
+                  style: { animationDelay: ((k % 6) * -0.45) + 's' }
                 }));
               }
               return h('g', null, sigs);

@@ -38,8 +38,29 @@
 
   function _outlineAiDoor(t) {
   try {
-    if (typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function') {
-      return window.__alloAiSetupDoorway('text', t);
+    if (typeof window !== 'undefined') {
+      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) {
+        return {
+          disabled: true,
+          available: false
+        };
+      }
+      if (typeof window.callGemini === 'function' && window.callGemini._alloQrBlocked === true) {
+        return {
+          disabled: true,
+          available: false
+        };
+      }
+      if (typeof window.__alloAiSetupDoorway === 'function') {
+        var res = window.__alloAiSetupDoorway('text', t);
+        if (res && (res.disabled || res.available === false)) return res;
+      }
+      if (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', window.callGemini)) {
+        return {
+          disabled: true,
+          available: false
+        };
+      }
     }
   } catch (_) {}
   return {
@@ -47,8 +68,11 @@
   };
 }
 function OutlineView(props) {
+  props = props || {};
   // Pure data + state reads
-  var t = props.t;
+  var t = typeof props.t === 'function' ? props.t : function (k) {
+    return k;
+  };
   var bionicOn = typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function' ? window.__alloUseBionic() : false;
   var bt = function (s) {
     return bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function' ? window.__alloBionicReact(s) : s;
@@ -139,32 +163,62 @@ function OutlineView(props) {
   var _speakingOutlineState = React.useState(false);
   var speakingOutline = _speakingOutlineState[0],
     setSpeakingOutline = _speakingOutlineState[1];
+  var speakingOutlineRef = React.useRef(false);
+  var outlineMountedRef = React.useRef(true);
   var outlineSpeechListenerRef = React.useRef(null);
+  var isOutlineGlobalMuted = function () {
+    if (typeof window === 'undefined') return false;
+    try {
+      if (window.__alloMuted === true || window._alloGlobalMute === true || window._alloGlobalMuted === true) return true;
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+    } catch (_) {}
+    return false;
+  };
   var stopOutlineSpeechListener = function () {
     if (outlineSpeechListenerRef.current && typeof window !== 'undefined') {
       window.removeEventListener('allo-speech-state', outlineSpeechListenerRef.current);
       outlineSpeechListenerRef.current = null;
     }
   };
-  React.useEffect(function () {
+  var stopOutlineActiveSpeech = function () {
     stopOutlineSpeechListener();
+    if (speakingOutlineRef.current) {
+      speakingOutlineRef.current = false;
+      try {
+        var player = typeof window !== 'undefined' ? window.AlloSpeechPlayer : null;
+        if (player && typeof player.stop === 'function') player.stop();else if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+      } catch (_) {}
+    }
+  };
+  React.useEffect(function () {
+    outlineMountedRef.current = true;
+    return function () {
+      outlineMountedRef.current = false;
+      stopOutlineActiveSpeech();
+    };
+  }, []);
+  React.useEffect(function () {
+    stopOutlineActiveSpeech();
     setSpeakingOutline(false);
     return function () {
-      stopOutlineSpeechListener();
+      stopOutlineActiveSpeech();
     };
   }, [generatedContent && generatedContent.id]);
   var handleListenOutline = function () {
     var player = typeof window !== 'undefined' ? window.AlloSpeechPlayer : null;
     var finished = function () {
       stopOutlineSpeechListener();
-      setSpeakingOutline(false);
+      speakingOutlineRef.current = false;
+      if (outlineMountedRef.current) setSpeakingOutline(false);
     };
     stopOutlineSpeechListener();
     if (speakingOutline) {
+      speakingOutlineRef.current = false;
       if (player && typeof player.stop === 'function') player.stop();else if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
       setSpeakingOutline(false);
       return;
     }
+    if (isOutlineGlobalMuted()) return;
     var d = generatedContent && generatedContent.data;
     var parts = [];
     if (d && d.main) parts.push(String(d.main));
@@ -189,14 +243,25 @@ function OutlineView(props) {
       };
       outlineSpeechListenerRef.current = onState;
       window.addEventListener('allo-speech-state', onState);
+      speakingOutlineRef.current = true;
       setSpeakingOutline(true);
-      Promise.resolve(player.speak(spoken)).then(function (res) {
+      var langOpt = leveledTextLanguage && leveledTextLanguage !== 'English' ? {
+        language: leveledTextLanguage
+      } : undefined;
+      Promise.resolve(langOpt ? player.speak(spoken, langOpt) : player.speak(spoken)).then(function (res) {
         if (res === null && ourId === null) finished();
       }, finished);
     } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+      speakingOutlineRef.current = true;
       setSpeakingOutline(true);
       window.speechSynthesis.cancel();
       var u = new window.SpeechSynthesisUtterance(spoken);
+      if (leveledTextLanguage && typeof window.languageToTTSCode === 'function') {
+        try {
+          var code = window.languageToTTSCode(leveledTextLanguage);
+          if (code) u.lang = code;
+        } catch (_) {}
+      }
       u.onend = finished;
       u.onerror = finished;
       window.speechSynthesis.speak(u);
@@ -212,7 +277,7 @@ function OutlineView(props) {
     if (canAddConcept && typeof handleAddToMapList === 'function') handleAddToMapList(mapAddInput);
   }
   function handleConceptKeyDown(event) {
-    if (event.key !== 'Enter' || conceptCompositionRef.current === event.currentTarget || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return;
+    if (event.key !== 'Enter' || event.ctrlKey || event.metaKey || event.altKey || conceptCompositionRef.current === event.currentTarget || event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return;
     event.preventDefault();
     addConcept();
   }
@@ -227,37 +292,41 @@ function OutlineView(props) {
     className: "mt-2 flex flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "inline-block bg-white/50 border border-orange-200 px-2 py-0.5 rounded text-xs font-bold"
-  }, tl('outline.level_label', 'Level:'), " ", gradeLevel), leveledTextLanguage !== 'English' && /*#__PURE__*/React.createElement("span", {
+  }, tl('outline.level_label', 'Level:'), " ", gradeLevel), leveledTextLanguage && leveledTextLanguage !== 'English' && /*#__PURE__*/React.createElement("span", {
     className: "inline-block bg-blue-100 text-blue-800 border border-blue-200 px-2 py-0.5 rounded text-xs font-bold"
   }, leveledTextLanguage), standardsInput && /*#__PURE__*/React.createElement("span", {
-    className: "inline-block bg-green-100 text-green-800 border border-green-200 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1"
+    className: "inline-flex bg-green-100 text-green-800 border border-green-200 px-2 py-0.5 rounded text-xs font-bold items-center gap-1"
   }, /*#__PURE__*/React.createElement(CheckCircle, {
-    size: 10
+    size: 10,
+    "aria-hidden": "true"
   }), " ", standardsInput))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2"
   }, isTeacherMode && (generatedContent?.data?.structureType !== 'Venn Diagram' || isInteractiveVenn || isVennPlaying) && /*#__PURE__*/React.createElement("button", {
     type: "button",
     style: controlSize,
     "data-outline-layout-toggle": true,
+    "aria-pressed": !!(isInteractiveMap || isInteractiveVenn || isVennPlaying),
     onClick: () => {
       if (generatedContent?.data?.structureType === 'Venn Diagram') {
         if (isInteractiveVenn || isVennPlaying) {
-          setIsInteractiveVenn(false);
-          setIsVennPlaying(false);
+          if (typeof setIsInteractiveVenn === 'function') setIsInteractiveVenn(false);
+          if (typeof setIsVennPlaying === 'function') setIsVennPlaying(false);
           if (typeof broadcastInteractiveOrganizer === 'function') broadcastInteractiveOrganizer(null);
-        } else {
+        } else if (typeof handleInitializeVenn === 'function') {
           handleInitializeVenn();
         }
-      } else {
+      } else if (typeof setIsInteractiveMap === 'function') {
         setIsInteractiveMap(!isInteractiveMap);
       }
     },
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isInteractiveMap || isInteractiveVenn || isVennPlaying ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50 motion-safe:animate-[pulse_3s_ease-in-out_infinite]'}`,
+    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 ${isInteractiveMap || isInteractiveVenn || isVennPlaying ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50 motion-safe:animate-[pulse_3s_ease-in-out_infinite]'}`,
     title: isInteractiveMap || isInteractiveVenn || isVennPlaying ? tl('outline.view_diagram', 'View diagram') : tl('outline.edit_layout_hint', 'Arrange the concepts and connections in this organizer.')
   }, isInteractiveMap || isInteractiveVenn || isVennPlaying ? /*#__PURE__*/React.createElement(Layout, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Share2, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }), isInteractiveMap || isInteractiveVenn || isVennPlaying ? tl('outline.view_diagram', 'View diagram') : tl('outline.edit_diagram_layout', 'Edit diagram layout')), !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && Array.isArray(generatedContent?.data?.branches) && generatedContent.data.branches.length > 0 && /*#__PURE__*/React.createElement("button", {
     type: "button",
     style: controlSize,
@@ -272,7 +341,7 @@ function OutlineView(props) {
     type: "button",
     style: controlSize,
     onClick: () => {
-      var vr = window.AlloModules && window.AlloModules.ViewRenderers;
+      var vr = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ViewRenderers;
       if (vr && typeof vr.openConceptMap3D === 'function') {
         vr.openConceptMap3D({
           generated: generatedContent?.data,
@@ -285,13 +354,15 @@ function OutlineView(props) {
           t: t,
           addToast: addToast
         });
-      } else if (addToast) {
+      } else if (typeof addToast === 'function') {
         addToast(t('concept_map.view_3d_failed') || 'The 3D view could not load here. The outline still works.', 'error');
       }
     },
-    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50",
+    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
     title: t('concept_map.toolbar.view_3d_tooltip') || 'See this organizer as an orbitable 3D view (depth = strand)'
-  }, "🧊 ", t('concept_map.toolbar.view_3d') || 'View in 3D'), !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && generatedContent?.data?.structureType !== '3D Concept Space' && generatedContent?.data?.structureType !== 'Memory Palace' && Array.isArray(generatedContent?.data?.branches) && generatedContent.data.branches.length > 0 && /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🧊"), " ", t('concept_map.toolbar.view_3d') || 'View in 3D'), !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && generatedContent?.data?.structureType !== '3D Concept Space' && generatedContent?.data?.structureType !== 'Memory Palace' && Array.isArray(generatedContent?.data?.branches) && generatedContent.data.branches.length > 0 && /*#__PURE__*/React.createElement("button", {
     type: "button",
     style: controlSize,
     "data-outline-freeforms-copy": true,
@@ -300,39 +371,49 @@ function OutlineView(props) {
       // Free Forms composition. The host (AlloFlowANTI) listens for this event,
       // stashes the payload in labToolData._ffImport, and opens the tool.
       try {
-        window.dispatchEvent(new CustomEvent('allo-open-freeforms', {
+        if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('allo-open-freeforms', {
           detail: {
             generated: generatedContent?.data
           }
         }));
       } catch (e) {
-        if (addToast) addToast(t('concept_map.toolbar.remix_failed') || 'Free Forms could not open here.', 'error');
+        if (typeof addToast === 'function') addToast(t('concept_map.toolbar.remix_failed') || 'Free Forms could not open here.', 'error');
       }
     },
-    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm bg-white text-violet-600 border border-violet-200 hover:bg-violet-50",
+    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm bg-white text-violet-700 border border-violet-200 hover:bg-violet-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600",
     title: tl('concept_map.toolbar.remix_copy_hint', 'Open a separate Free Forms copy to change the words and arrangement.')
-  }, "🏛️ ", tl('concept_map.toolbar.remix_copy', 'Make a Free Forms copy')), isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🏛️"), " ", tl('concept_map.toolbar.remix_copy', 'Make a Free Forms copy')), isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && /*#__PURE__*/React.createElement("button", {
     type: "button",
     style: controlSize,
     "data-outline-edit-text": true,
+    "aria-pressed": !!isEditingOutline,
     title: isEditingOutline ? tl('outline.done_editing_text', 'Done editing text') : tl('outline.edit_text_hint', 'Change the wording in this organizer.'),
-    onClick: handleToggleIsEditingOutline,
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingOutline ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`
+    onClick: () => {
+      if (typeof handleToggleIsEditingOutline === 'function') handleToggleIsEditingOutline();
+    },
+    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 ${isEditingOutline ? 'bg-orange-700 text-white hover:bg-orange-700' : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'}`
   }, isEditingOutline ? /*#__PURE__*/React.createElement(CheckCircle2, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }) : /*#__PURE__*/React.createElement(Pencil, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }), isEditingOutline ? tl('outline.done_editing_text', 'Done editing text') : tl('outline.edit_text', 'Edit Text')), isTeacherMode && !isInteractiveMap && !isInteractiveVenn && !isVennPlaying && /*#__PURE__*/React.createElement("button", {
     type: "button",
     style: controlSize,
     "data-outline-regenerate": true,
-    onClick: () => handleGenerate('outline'),
+    onClick: () => {
+      if (!outlineAiOff && typeof handleGenerate === 'function') handleGenerate('outline');
+    },
     disabled: isProcessing || outlineAiOff,
     "aria-busy": isProcessing,
     title: outlineAiTitle,
-    className: "flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+    className: "flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
+    "aria-hidden": "true",
     className: isProcessing ? "animate-spin motion-reduce:animate-none" : ""
   }), " ", t('common.regenerate')))), isInteractiveMap ? !isConceptMapReady && !isChallengeActive ? /*#__PURE__*/React.createElement("div", {
     className: "max-w-3xl mx-auto bg-white p-4 sm:p-10 rounded-2xl border-2 border-indigo-100 shadow-lg text-center flex flex-col items-center justify-center min-h-[400px]"
@@ -340,7 +421,8 @@ function OutlineView(props) {
     className: "bg-indigo-50 p-4 rounded-full mb-4"
   }, /*#__PURE__*/React.createElement(Layout, {
     size: 48,
-    className: "text-indigo-600"
+    className: "text-indigo-600",
+    "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("h2", {
     className: "text-3xl font-black text-indigo-900 mb-6"
   }, bt(generatedContent?.data?.main || '')), /*#__PURE__*/React.createElement("div", {
@@ -356,11 +438,14 @@ function OutlineView(props) {
     style: controlSize,
     "data-outline-remove-concept": true,
     "aria-label": tl('outline.remove_concept_named', 'Remove concept {name}').replace('{name}', String(branch?.title || '')),
-    onClick: () => handleRemoveFromMapList(idx),
-    className: "inline-flex items-center justify-center shrink-0 text-indigo-600 hover:text-red-700 hover:bg-red-50 rounded-full p-0.5",
+    onClick: () => {
+      if (typeof handleRemoveFromMapList === 'function') handleRemoveFromMapList(idx);
+    },
+    className: "inline-flex items-center justify-center shrink-0 text-indigo-600 hover:text-red-700 hover:bg-red-50 rounded-full p-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
     title: t('common.remove_concept')
   }, /*#__PURE__*/React.createElement(X, {
-    size: 12
+    size: 12,
+    "aria-hidden": "true"
   })))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center justify-center gap-2 animate-in motion-reduce:animate-none zoom-in duration-300 delay-100"
   }, /*#__PURE__*/React.createElement("input", {
@@ -368,8 +453,10 @@ function OutlineView(props) {
     type: "text",
     style: controlSize,
     "data-outline-add-concept-input": true,
-    value: mapAddInput,
-    onChange: e => setMapAddInput(e.target.value),
+    value: mapAddInput ?? '',
+    onChange: e => {
+      if (typeof setMapAddInput === 'function') setMapAddInput(e.target.value);
+    },
     onCompositionStart: e => {
       conceptCompositionRef.current = e.currentTarget;
     },
@@ -388,9 +475,10 @@ function OutlineView(props) {
     "data-outline-add-concept": true,
     disabled: !canAddConcept,
     onClick: addConcept,
-    className: "bg-indigo-100 text-indigo-600 px-3 py-2 rounded-xl text-xs font-bold hover:bg-indigo-200 transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+    className: "bg-indigo-100 text-indigo-700 px-3 py-2 rounded-xl text-xs font-bold hover:bg-indigo-200 transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, /*#__PURE__*/React.createElement(Plus, {
-    size: 14
+    size: 14,
+    "aria-hidden": "true"
   }), " ", t('concept_map.setup.add_concept_btn')))), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 max-w-md mx-auto mb-6"
   }, tl('outline.curate_concepts_hint', 'Review and curate the concepts before generating the interactive diagram.')), /*#__PURE__*/React.createElement("button", {
@@ -399,7 +487,7 @@ function OutlineView(props) {
     onClick: handleInitializeMap,
     disabled: isProcessing,
     "aria-busy": isProcessing,
-    className: "w-full p-4 text-xl font-bold bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition-all motion-reduce:transform-none flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+    className: "w-full p-4 text-xl font-bold bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition-all motion-reduce:transform-none flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
   }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 24,
     className: "animate-spin motion-reduce:animate-none",
@@ -408,7 +496,7 @@ function OutlineView(props) {
     size: 24,
     className: "text-yellow-300 fill-current",
     "aria-hidden": "true"
-  }), isProcessing ? t('concept_map.setup.organizing') : t('concept_map.setup.create_diagram'))) : renderInteractiveMap() : renderOutlineContent());
+  }), isProcessing ? t('concept_map.setup.organizing') : t('concept_map.setup.create_diagram'))) : typeof renderInteractiveMap === 'function' ? renderInteractiveMap() : null : typeof renderOutlineContent === 'function' ? renderOutlineContent() : null);
 }
 
   window.AlloModules = window.AlloModules || {};

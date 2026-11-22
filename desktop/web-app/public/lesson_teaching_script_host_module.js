@@ -3,6 +3,8 @@
   'use strict';
   const array = value => Array.isArray(value) ? value : [];
   const idOf = value => value?.id == null ? '' : String(value.id);
+  const isBlockedKey = key => key === '__proto__' || key === 'constructor' || key === 'prototype';
+  const safeJsonParse = raw => JSON.parse(raw, (key, val) => isBlockedKey(key) ? undefined : val);
   const TYPES = new Set(['analysis', 'source', 'simplified', 'glossary', 'quiz', 'math', 'sentence-frames', 'anchor-chart', 'note-taking', 'timeline', 'concept-sort', 'image', 'outline']);
   function coreModule() {
     if (root.AlloModules?.LessonTeachingScript) return root.AlloModules.LessonTeachingScript;
@@ -29,6 +31,7 @@
     });
   }
   function canonicalPlan(state, planId) {
+    if (!state || typeof state !== 'object') return null;
     // A deleted history entry must not be resurrected from a stale active view.
     const matches = array(state.history).filter(item => idOf(item) === String(planId));
     return matches.length === 1 && matches[0].type === 'lesson-plan' ? matches[0] : null;
@@ -69,6 +72,7 @@
     });
   }
   function createController(deps) {
+    deps = deps && typeof deps === 'object' ? deps : {};
     const runs = new Map();
     // These are unfinished drafts, never history resources. Storage is optional:
     // private browsing and quota failures still allow recovery in this controller.
@@ -79,12 +83,12 @@
     const MAX_RECORD_SIZE = 300000, MAX_STORAGE_SIZE = 1500000;
     let storage;
     try { storage = Object.prototype.hasOwnProperty.call(deps, 'storage') ? deps.storage : root.sessionStorage; } catch (_) { storage = null; }
-    const copy = value => JSON.parse(JSON.stringify(value));
+    const copy = value => safeJsonParse(JSON.stringify(value));
     const keyFor = (actorKey, id) => JSON.stringify([actorKey, String(id)]);
     try {
       const raw = storage?.getItem(STORAGE_KEY);
       if (typeof raw === 'string' && raw.length <= MAX_STORAGE_SIZE) {
-        const parsed = JSON.parse(raw);
+        const parsed = safeJsonParse(raw);
         if (Array.isArray(parsed) && parsed.length <= 5) parsed.forEach(entry => {
           if (entry && entry.schema === 1 && typeof entry.actor === 'string' && typeof entry.planId === 'string' && JSON.stringify(entry).length <= MAX_RECORD_SIZE && Number.isFinite(entry.updatedAt) && Date.now() - entry.updatedAt >= 0 && Date.now() - entry.updatedAt <= MAX_AGE) {
             const key = keyFor(entry.actor, entry.planId);
@@ -102,7 +106,7 @@
         if (typeof storage?.getItem === 'function') {
           const existingRaw = storage.getItem(STORAGE_KEY);
           if (typeof existingRaw === 'string' && existingRaw.length <= MAX_STORAGE_SIZE) {
-            const existingList = JSON.parse(existingRaw);
+            const existingList = safeJsonParse(existingRaw);
             if (Array.isArray(existingList) && existingList.length <= 5) {
               existingList.forEach(entry => {
                 if (entry && entry.schema === 1 && typeof entry.actor === 'string' && typeof entry.planId === 'string'
@@ -146,7 +150,7 @@
       try {
         if (typeof storage?.getItem !== 'function') return;
         const raw = storage.getItem(STORAGE_KEY);
-        const stored = typeof raw === 'string' && raw.length <= MAX_STORAGE_SIZE ? JSON.parse(raw) : [];
+        const stored = typeof raw === 'string' && raw.length <= MAX_STORAGE_SIZE ? safeJsonParse(raw) : [];
         durableCheckpoints.clear(); unconfirmedStoredKeys.clear();
         if (Array.isArray(stored) && stored.length <= 5) stored.forEach(entry => {
           if (entry && typeof entry.actor === 'string' && typeof entry.planId === 'string' && JSON.stringify(entry).length <= MAX_RECORD_SIZE) durableCheckpoints.set(keyFor(entry.actor, entry.planId), JSON.stringify(entry));
@@ -156,12 +160,12 @@
     let disposed = false;
     const core = () => typeof deps.core === 'function' ? deps.core() : deps.core;
     const research = () => typeof deps.research === 'function' ? deps.research() : deps.research;
-    const allowed = state => state.isTeacherMode === true && !state.isParentMode && !state.isIndependentMode;
+    const allowed = state => !!state && state.isTeacherMode === true && !state.isParentMode && !state.isIndependentMode;
     const aiAllowed = state => {
       if (!state || !state.canGenerate) return false;
       if (deps.callText?._alloQrBlocked) return false;
       if (typeof root !== 'undefined' && root) {
-        if (root.__alloAiSecretsLocked === true || root.__alloStudentAiDisabled === true || root.__alloQrStudentMode === true || root._alloQrBlocked === true) return false;
+        if (root.__alloAiSecretsLocked === true || root.__alloStudentAiDisabled === true || root.__alloQrStudentMode === true || root._alloQrBlocked === true || root.__alloOfflineOnly === true) return false;
         if (root.ALLOFLOW_MANAGED_AI_POLICY && root.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) return false;
         if (typeof root.__alloAiUsable === 'function') {
           try { if (!root.__alloAiUsable('text', deps.callText)) return false; } catch (_) { return false; }
@@ -169,7 +173,7 @@
       }
       return true;
     };
-    const actor = state => String(state.actorKey ?? 'teacher');
+    const actor = state => String(state?.actorKey ?? 'teacher');
     const report = (id, patch) => deps.onStatus?.({ planId: String(id), busy: false, stage: '', error: '', ...patch });
     const errorText = error => error?.name === 'AbortError' ? 'Script generation cancelled.' : (error?.message || 'The teaching script could not be created. Please try again.');
     const outputFailure = error => {
@@ -252,7 +256,7 @@
         const raw = storage.getItem(STORAGE_KEY);
         if (raw == null) return [];
         if (typeof raw !== 'string' || raw.length > MAX_STORAGE_SIZE) throw new Error('Invalid recovery storage');
-        const entries = JSON.parse(raw);
+        const entries = safeJsonParse(raw);
         if (!Array.isArray(entries) || entries.length > 5 || entries.some(entry => JSON.stringify(entry).length > MAX_RECORD_SIZE)) throw new Error('Invalid recovery storage');
         return entries;
       };
@@ -543,9 +547,9 @@
       });
       return accepted ? { ok: true } : { ok: false, error: 'The version could not be deleted. Try again.' };
     }
-    return { generate, cancel, regenerateStep, getRecovery, discardRecovery, saveEdits, deleteVersion, dispose() { disposed = true; [...runs.keys()].forEach(cancel); } };
+    return Object.freeze({ generate, cancel, regenerateStep, getRecovery, discardRecovery, saveEdits, deleteVersion, dispose() { disposed = true; [...runs.keys()].forEach(cancel); } });
   }
-  const api = { availableMaterials, defaultSettings, createController };
+  const api = Object.freeze({ availableMaterials, defaultSettings, createController });
   root.AlloModules = root.AlloModules || {};
   root.AlloModules.LessonTeachingScriptHost = api;
   root.AlloModules.LessonTeachingScriptHostModule = true;

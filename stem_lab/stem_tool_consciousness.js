@@ -2673,6 +2673,7 @@
     }
 
     function handleViewKeyDown(event, index) {
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
       var nextIndex = index;
       if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % VIEWS.length;
       else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + VIEWS.length) % VIEWS.length;
@@ -2693,10 +2694,14 @@
     function awardOnce(key, points, reason) {
       // AWARDED_KEYS closes the window between a click and the next render, during which
       // `d.awards` is still the stale snapshot and a second click would award twice.
-      if ((d.awards && d.awards[key]) || AWARDED_KEYS[key]) return;
+      var curAwards = safeObj(d.awards);
+      if (Object.keys(curAwards).length === 0) {
+        Object.keys(AWARDED_KEYS).forEach(function (k) { delete AWARDED_KEYS[k]; });
+      }
+      if (curAwards[key] || AWARDED_KEYS[key]) return;
       AWARDED_KEYS[key] = true;
       patchState(function (current) {
-        var awards = Object.assign({}, current.awards || {});
+        var awards = Object.assign({}, safeObj(current.awards));
         awards[key] = true;
         return { awards: awards };
       });
@@ -2768,6 +2773,7 @@
       var coreFill = contrast ? '#facc15' : '#ffffff';
       return h('svg', {
         viewBox: '0 0 64 64', width: 52, height: 52, 'aria-hidden': 'true', focusable: 'false',
+        className: 'cns-emblem-svg',
         style: { display: 'block', flexShrink: 0 }
       },
         !contrast && h('defs', null,
@@ -2777,21 +2783,22 @@
             h('stop', { offset: '100%', stopColor: '#38bdf8', stopOpacity: 0 })
           )
         ),
-        !contrast && h('circle', { cx: 32, cy: 32, r: 29, fill: 'url(#cns-emb-aura)' }),
-        h('circle', { cx: 32, cy: 32, r: 27, fill: 'none', stroke: ringStroke, strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.72 }),
+        !contrast && h('circle', { className: 'cns-emblem-aura', cx: 32, cy: 32, r: 29, fill: 'url(#cns-emb-aura)' }),
+        h('circle', { className: !contrast ? 'cns-emblem-orbit' : undefined, cx: 32, cy: 32, r: 27, fill: 'none', stroke: ringStroke, strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.72 }),
         h('path', { d: 'M14 32 C14 20 22 14 32 14 C42 14 50 20 50 32 C50 44 42 50 32 50 C22 50 14 44 14 32 Z', fill: 'none', stroke: ringStroke, strokeWidth: 2, opacity: 0.9 }),
-        !contrast && h('path', { d: 'M20 35 C23 23 31 20 38 25 C43 29 44 38 37 42 C30 46 23 42 22 36', fill: 'none', stroke: arcStroke, strokeWidth: 5.2, strokeLinecap: 'round', opacity: 0.24 }),
+        !contrast && h('path', { className: 'cns-emblem-glow', d: 'M20 35 C23 23 31 20 38 25 C43 29 44 38 37 42 C30 46 23 42 22 36', fill: 'none', stroke: arcStroke, strokeWidth: 5.2, strokeLinecap: 'round', opacity: 0.24 }),
         h('path', { d: 'M20 35 C23 23 31 20 38 25 C43 29 44 38 37 42 C30 46 23 42 22 36', fill: 'none', stroke: arcStroke, strokeWidth: 2.4, strokeLinecap: 'round' }),
+        !contrast && h('path', { className: 'cns-emblem-pulse', d: 'M20 35 C23 23 31 20 38 25 C43 29 44 38 37 42 C30 46 23 42 22 36', fill: 'none', stroke: '#ffffff', strokeWidth: 2.2, strokeLinecap: 'round', strokeDasharray: '14 78' }),
         h('line', { x1: 32, y1: 32, x2: 18, y2: 22, stroke: ringStroke, strokeWidth: 1.5, opacity: 0.8 }),
         h('line', { x1: 32, y1: 32, x2: 47, y2: 21, stroke: arcStroke, strokeWidth: 1.5, opacity: 0.85 }),
         h('line', { x1: 32, y1: 32, x2: 48, y2: 42, stroke: ringStroke, strokeWidth: 1.5, opacity: 0.8 }),
         h('line', { x1: 32, y1: 32, x2: 18, y2: 43, stroke: arcStroke, strokeWidth: 1.5, opacity: 0.85 }),
-        h('circle', { cx: 18, cy: 22, r: 3.2, fill: ringStroke }),
-        h('circle', { cx: 47, cy: 21, r: 3.2, fill: arcStroke }),
-        h('circle', { cx: 48, cy: 42, r: 3.2, fill: ringStroke }),
-        h('circle', { cx: 18, cy: 43, r: 3.2, fill: arcStroke }),
-        h('circle', { cx: 32, cy: 32, r: 13, fill: 'none', stroke: arcStroke, strokeWidth: 1, opacity: 0.35 }),
-        h('circle', { cx: 32, cy: 32, r: 9.5, fill: 'none', stroke: coreFill, strokeWidth: 1.4, opacity: 0.58 }),
+        h('circle', { className: !contrast ? 'cns-emblem-node' : undefined, cx: 18, cy: 22, r: 3.2, fill: ringStroke }),
+        h('circle', { className: !contrast ? 'cns-emblem-node' : undefined, style: !contrast ? { animationDelay: '0.55s' } : undefined, cx: 47, cy: 21, r: 3.2, fill: arcStroke }),
+        h('circle', { className: !contrast ? 'cns-emblem-node' : undefined, style: !contrast ? { animationDelay: '1.1s' } : undefined, cx: 48, cy: 42, r: 3.2, fill: ringStroke }),
+        h('circle', { className: !contrast ? 'cns-emblem-node' : undefined, style: !contrast ? { animationDelay: '1.65s' } : undefined, cx: 18, cy: 43, r: 3.2, fill: arcStroke }),
+        h('circle', { className: !contrast ? 'cns-emblem-ring-outer' : undefined, cx: 32, cy: 32, r: 13, fill: 'none', stroke: arcStroke, strokeWidth: 1, opacity: 0.35 }),
+        h('circle', { className: !contrast ? 'cns-emblem-ring-inner' : undefined, cx: 32, cy: 32, r: 9.5, fill: 'none', stroke: coreFill, strokeWidth: 1.4, opacity: 0.58 }),
         h('circle', { cx: 32, cy: 32, r: 5.5, fill: coreFill })
       );
     }
@@ -3091,6 +3098,7 @@
             !contrast && h('rect', { x: 1, y: 1, width: 818, height: 156, rx: 10, fill: 'url(#cns-j-dots)' }),
             // Subtle neural-oscillation coherence ribbon along lower edge
             !contrast && h('polyline', {
+              className: 'cns-wave-glow',
               points: wavePts.join(' '),
               fill: 'none',
               stroke: svgActiveStroke,
@@ -3106,12 +3114,23 @@
               opacity: contrast ? 0.65 : (dark ? 0.48 : 0.36),
               strokeLinejoin: 'round'
             }),
+            !contrast && h('polyline', {
+              className: 'cns-wave-sweep',
+              points: wavePts.join(' '),
+              fill: 'none',
+              stroke: dark ? '#67e8f9' : svgActiveStroke,
+              strokeWidth: 2.2,
+              strokeLinecap: 'round',
+              strokeLinejoin: 'round',
+              strokeDasharray: '44 760'
+            }),
             // Ambient spotlights behind matched stages
             !contrast && matchXs.map(function (mx) {
-              return h('ellipse', { key: 'spot-' + mx, cx: mx, cy: 70, rx: 74, ry: 44, fill: 'url(#cns-j-spot)' });
+              return h('ellipse', { key: 'spot-' + mx, className: 'cns-stage-spot', cx: mx, cy: 70, rx: 74, ry: 44, fill: 'url(#cns-j-spot)' });
             }),
             // Recurrent feedback loop arc under stage 2 with dual-pass glow + return arrow
             recurMatch && !contrast && h('path', {
+              className: 'cns-recur-glow',
               d: 'M 232 95 C 232 126 184 126 184 95',
               fill: 'none',
               stroke: svgActiveStroke,
@@ -3120,6 +3139,7 @@
               strokeLinecap: 'round'
             }),
             h('path', {
+              className: !contrast ? 'cns-recur-flow' : undefined,
               d: 'M 232 95 C 232 126 184 126 184 95',
               fill: 'none',
               stroke: recurMatch ? svgActiveStroke : C.science,
@@ -3130,10 +3150,11 @@
             h('text', { x: 208, y: 136, textAnchor: 'middle', fill: C.muted, fontSize: 10.5, fontWeight: 700 }, 'local loop'),
             // Global broadcast fan rays + concentric wave arcs above stage 3
             !contrast && h('g', { opacity: globalMatch ? 0.85 : 0.35 },
-              h('path', { d: 'M 320 34 A 26 26 0 0 1 364 34', fill: 'none', stroke: globalMatch ? svgActiveStroke : C.science, strokeWidth: 1.5, strokeLinecap: 'round' }),
-              h('path', { d: 'M 307 26 A 40 40 0 0 1 377 26', fill: 'none', stroke: globalMatch ? svgActiveStroke : C.science, strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.6 })
+              h('path', { className: 'cns-bcast-arc-1', d: 'M 320 34 A 26 26 0 0 1 364 34', fill: 'none', stroke: globalMatch ? svgActiveStroke : C.science, strokeWidth: 1.5, strokeLinecap: 'round' }),
+              h('path', { className: 'cns-bcast-arc-2', d: 'M 307 26 A 40 40 0 0 1 377 26', fill: 'none', stroke: globalMatch ? svgActiveStroke : C.science, strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.6 })
             ),
             globalMatch && !contrast && h('path', {
+              className: 'cns-bcast-glow',
               d: 'M 342 40 L 296 18 M 342 40 L 342 15 M 342 40 L 388 18',
               fill: 'none',
               stroke: svgActiveStroke,
@@ -3149,6 +3170,15 @@
               strokeLinecap: 'round',
               opacity: 0.88
             }),
+            !contrast && h('path', {
+              className: 'cns-bcast-pulse',
+              d: 'M 342 40 L 296 18 M 342 40 L 342 15 M 342 40 L 388 18',
+              fill: 'none',
+              stroke: dark ? '#67e8f9' : svgActiveStroke,
+              strokeWidth: globalMatch ? 2.6 : 1.6,
+              strokeLinecap: 'round',
+              strokeDasharray: '8 32'
+            }),
             h('text', { x: 342, y: 12, textAnchor: 'middle', fill: C.muted, fontSize: 10.5, fontWeight: 700 }, 'broadcast'),
             // Connector lines between consecutive stages with dual-pass glow when adjacent to matched stage
             stageNodes.slice(0, -1).map(function (node, i) {
@@ -3156,8 +3186,9 @@
               var lit = stageMatchesTheory({ id: node.id }, selected) || stageMatchesTheory({ id: next.id }, selected);
               var col = lit ? svgActiveStroke : svgStroke;
               return h('g', { key: 'conn-' + node.id },
-                lit && !contrast && h('line', { x1: node.x + 48, y1: 70, x2: next.x - 52, y2: 70, stroke: svgActiveStroke, strokeWidth: 6, opacity: 0.2 }),
+                lit && !contrast && h('line', { className: 'cns-conn-glow', x1: node.x + 48, y1: 70, x2: next.x - 52, y2: 70, stroke: svgActiveStroke, strokeWidth: 6, opacity: 0.2 }),
                 h('line', { x1: node.x + 48, y1: 70, x2: next.x - 52, y2: 70, stroke: col, strokeWidth: lit ? 2.4 : 1.8 }),
+                !contrast && h('line', { className: 'cns-conn-pulse', style: { animationDelay: (i * 0.35) + 's' }, x1: node.x + 48, y1: 70, x2: next.x - 52, y2: 70, stroke: lit ? (dark ? '#67e8f9' : svgActiveStroke) : C.science, strokeWidth: lit ? 2.6 : 1.8, strokeLinecap: 'round', strokeDasharray: '7 25' }),
                 h('polygon', { points: (next.x - 52) + ',65 ' + (next.x - 45) + ',70 ' + (next.x - 52) + ',75', fill: col })
               );
             }),
@@ -3166,7 +3197,7 @@
               var match = stageMatchesTheory({ id: node.id }, selected);
               return h('g', { key: node.id },
                 !contrast && h('rect', { x: node.x - 46, y: 45, width: 96, height: 56, rx: 9, fill: dark ? '#020617' : '#94a3b8', opacity: dark ? 0.55 : 0.2 }),
-                match && h('rect', { x: node.x - 52, y: 38, width: 104, height: 64, rx: 12, fill: 'none', stroke: svgActiveStroke, strokeWidth: 2.2, opacity: 0.52 }),
+                match && h('rect', { className: !contrast ? 'cns-stage-halo' : undefined, x: node.x - 52, y: 38, width: 104, height: 64, rx: 12, fill: 'none', stroke: svgActiveStroke, strokeWidth: 2.2, opacity: 0.52 }),
                 h('rect', {
                   x: node.x - 48, y: 42, width: 96, height: 56, rx: 9,
                   fill: contrast ? (match ? svgActiveFill : svgNodeFill) : (match ? 'url(#cns-j-card-hi)' : 'url(#cns-j-card-lo)'),
@@ -3338,16 +3369,16 @@
               )
             ),
             h('rect', { x: 1, y: 1, width: 678, height: 76, rx: 9, fill: ladderSvgBg }),
-            !contrast && h('line', { x1: 42, y1: 31, x2: 638, y2: 31, stroke: 'url(#cns-ladder-rail)', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.2 }),
+            !contrast && h('line', { className: 'cns-rail-glow', x1: 42, y1: 31, x2: 638, y2: 31, stroke: 'url(#cns-ladder-rail)', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.2 }),
             h('line', { x1: 42, y1: 31, x2: 638, y2: 31, stroke: contrast ? C.border : 'url(#cns-ladder-rail)', strokeWidth: 3, strokeLinecap: 'round' }),
             EVIDENCE_LADDER_LABELS.map(function (lbl, idx) {
               var cx = 92 + idx * 165;
               var cnt = rungCounts[idx];
               var col = rungColors[idx];
               return h('g', { key: lbl },
-                cnt > 0 && !contrast && h('rect', { x: cx - 71, y: 7, width: 142, height: 48, rx: 10, fill: 'none', stroke: col, strokeWidth: 3.5, opacity: 0.2 }),
+                cnt > 0 && !contrast && h('rect', { className: 'cns-rung-halo', style: { animationDelay: (idx * 0.35) + 's' }, x: cx - 71, y: 7, width: 142, height: 48, rx: 10, fill: 'none', stroke: col, strokeWidth: 3.5, opacity: 0.2 }),
                 h('rect', { x: cx - 68, y: 10, width: 136, height: 42, rx: 8, fill: cnt > 0 ? (dark || contrast ? '#111827' : '#f8fafc') : ladderSvgBg, stroke: cnt > 0 ? col : C.border, strokeWidth: cnt > 0 ? 2 : 1.2 }),
-                cnt > 0 && !contrast && h('circle', { cx: cx - 50, cy: 31, r: 13, fill: col, opacity: 0.22 }),
+                cnt > 0 && !contrast && h('circle', { className: 'cns-rung-beacon', style: { animationDelay: (idx * 0.35) + 's' }, cx: cx - 50, cy: 31, r: 13, fill: col, opacity: 0.22 }),
                 h('circle', { cx: cx - 50, cy: 31, r: 9, fill: col }),
                 h('text', { x: cx - 50, y: 35, textAnchor: 'middle', fill: contrast ? '#000000' : '#ffffff', fontSize: 10.5, fontWeight: 900 }, String(idx + 1)),
                 h('text', { x: cx + 8, y: 27, textAnchor: 'middle', fill: C.text, fontSize: 11.5, fontWeight: 800 }, lbl),
@@ -3808,6 +3839,7 @@
       }
 
       function handleCaseKeyDown(event, index) {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
         var nextIndex = index;
         if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % cases.length;
         else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + cases.length) % cases.length;
@@ -4215,15 +4247,15 @@
             [0, 0.25, 0.5, 0.75, 1].map(function (v) {
               var y = yFor(v);
               return h('g', { key: 'y-' + v },
-                h('line', { x1: padL, y1: y, x2: W - padR, y2: y, stroke: v === 0.5 && !contrast ? C.warn : gridCol, strokeWidth: v === 0.5 ? 1.5 : 1, strokeDasharray: v === 0.5 ? '6 4' : undefined, opacity: v === 0.5 ? 0.75 : 1 }),
+                h('line', { className: v === 0.5 && !contrast ? 'cns-thresh-line' : undefined, x1: padL, y1: y, x2: W - padR, y2: y, stroke: v === 0.5 && !contrast ? C.warn : gridCol, strokeWidth: v === 0.5 ? 1.5 : 1, strokeDasharray: v === 0.5 ? '6 4' : undefined, opacity: v === 0.5 ? 0.75 : 1 }),
                 h('text', { x: padL - 7, y: y + 4, textAnchor: 'end', fill: C.muted, fontSize: 10.5 }, Math.round(v * 100) + '%')
               );
             }),
             h('text', { x: W - padR - 4, y: threshY - 5, textAnchor: 'end', fill: C.warn, fontSize: 10.5, fontWeight: 800 }, 'Ignition threshold (50%)'),
             // Shaded area fill beneath primary workspace trace
-            !contrast && h('polygon', { points: wsAreaPts, fill: 'url(#cns-ws-area)' }),
+            !contrast && h('polygon', { className: 'cns-ws-area', points: wsAreaPts, fill: 'url(#cns-ws-area)' }),
             // Active step vertical band + scrubber line
-            !simple && !contrast && h('rect', { x: Math.max(padL, cursorX - 9), y: padT, width: 18, height: plotH, rx: 4, fill: C.accent, opacity: dark ? 0.14 : 0.09 }),
+            !simple && !contrast && h('rect', { className: 'cns-cursor-band', x: Math.max(padL, cursorX - 9), y: padT, width: 18, height: plotH, rx: 4, fill: C.accent, opacity: dark ? 0.14 : 0.09 }),
             !simple && h('line', { x1: cursorX, y1: padT, x2: cursorX, y2: H - padB, stroke: C.accent, strokeWidth: 1.6, strokeDasharray: '3 3', opacity: 0.85 }),
             activeSeries.map(function (entry) {
               var key = entry[0];
@@ -4231,6 +4263,7 @@
               var isWorkspace = key === 'workspace';
               return h('g', { key: key },
                 isWorkspace && !contrast && h('polyline', {
+                  className: 'cns-trace-glow',
                   points: pts, fill: 'none',
                   stroke: seriesColors[key], strokeWidth: 7.5,
                   strokeLinejoin: 'round', strokeLinecap: 'round',
@@ -4242,6 +4275,13 @@
                   strokeLinejoin: 'round', strokeLinecap: 'round',
                   opacity: isWorkspace ? 1 : 0.88
                 }),
+                isWorkspace && !contrast && h('polyline', {
+                  className: 'cns-trace-sweep',
+                  points: pts, fill: 'none',
+                  stroke: dark ? '#ffffff' : seriesColors[key], strokeWidth: 2.6,
+                  strokeLinejoin: 'round', strokeLinecap: 'round',
+                  strokeDasharray: '32 680'
+                }),
                 !simple && stepTick && h('circle', {
                   cx: cursorX, cy: yFor(stepTick[key]),
                   r: isWorkspace ? 4.5 : 3.2,
@@ -4252,11 +4292,13 @@
             // Luminous ignition beacon rings
             run.markers.ignited && run.markers.ignitionTick != null && h('g', null,
               !contrast && h('circle', {
+                className: 'cns-ign-halo',
                 cx: xFor(run.markers.ignitionTick),
                 cy: yFor((ticks[run.markers.ignitionTick] || {}).workspace),
                 r: 13, fill: seriesColors.workspace, opacity: 0.2
               }),
               h('circle', {
+                className: !contrast ? 'cns-ign-ring' : undefined,
                 cx: xFor(run.markers.ignitionTick),
                 cy: yFor((ticks[run.markers.ignitionTick] || {}).workspace),
                 r: 9, fill: 'none', stroke: seriesColors.workspace, strokeWidth: 1.5, opacity: 0.65
@@ -4635,6 +4677,7 @@
                 h('text', { x: 716, y: 105, textAnchor: 'end', fill: C.muted, fontSize: 10.5, fontWeight: 700 }, 'Trial timeline \u2192'),
                 // Attention indicator band across target
                 h('rect', {
+                  className: !contrast ? (isFocused ? 'cns-attn-band' : 'cns-soa-flow') : undefined,
                   x: targetX - 8, y: 12, width: targetW + 16, height: 22, rx: 11,
                   fill: isFocused ? (contrast ? '#111111' : dark ? '#312e81' : '#ede9fe') : 'none',
                   stroke: isFocused ? C.accent : C.warn,
@@ -4647,7 +4690,7 @@
                 h('rect', { x: targetX, y: 42, width: targetW, height: 38, rx: 7, fill: C.science, opacity: contrast ? 1 : 0.9 }),
                 h('text', { x: targetX + targetW / 2, y: 65, textAnchor: 'middle', fill: contrast ? '#000000' : '#ffffff', fontSize: 11.5, fontWeight: 900 }, 'Target'),
                 // Delay bracket
-                h('line', { x1: targetX + targetW + 4, y1: 61, x2: maskX - 4, y2: 61, stroke: C.accent, strokeWidth: 2, strokeDasharray: '4 3' }),
+                h('line', { className: !contrast ? 'cns-soa-flow' : undefined, x1: targetX + targetW + 4, y1: 61, x2: maskX - 4, y2: 61, stroke: C.accent, strokeWidth: 2, strokeDasharray: '4 3' }),
                 h('text', { x: targetX + targetW + gapW / 2, y: 53, textAnchor: 'middle', fill: C.text, fontSize: 11, fontWeight: 800 }, settings.maskDelay + ' ms SOA'),
                 // Backward mask block
                 h('rect', { x: maskX, y: 42, width: maskW, height: 38, rx: 7, fill: C.philosophy, opacity: contrast ? 1 : 0.9 }),
@@ -4726,20 +4769,20 @@
       ));
     }
     function renderPortfolio() {
-      var synthesisByProfile = d.portfolioSynthesis || {};
-      var synthesis = synthesisByProfile[profile.id] || {};
+      var synthesisByProfile = safeObj(d.portfolioSynthesis);
+      var synthesis = safeObj(synthesisByProfile[profile.id]);
       var minimum = portfolioMinimumForProfile(profile);
       var fieldsReady = PORTFOLIO_FIELDS.filter(function (field) { return String(synthesis[field] || '').trim().length >= minimum; }).length;
       // One derivation, shared with the path strip under the tabs.
       var artifacts = learningArtifactsFor(d, profile);
       var artifactsDone = artifacts.filter(function (artifact) { return artifact.done; }).length;
       var summaryText = portfolioSummaryText(d, profile);
-      var canCopy = typeof navigator !== 'undefined' && !!(navigator.clipboard && navigator.clipboard.writeText);
+      var canCopy = (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.writeClipboard === 'function') || (typeof navigator !== 'undefined' && !!(navigator.clipboard && navigator.clipboard.writeText));
 
       function updateSynthesis(field, value) {
         patchState(function (current) {
-          var allSynthesis = Object.assign({}, current.portfolioSynthesis || {});
-          var nextSynthesis = Object.assign({}, allSynthesis[profile.id] || {});
+          var allSynthesis = Object.assign({}, safeObj(current.portfolioSynthesis));
+          var nextSynthesis = Object.assign({}, safeObj(allSynthesis[profile.id]));
           nextSynthesis[field] = value;
           allSynthesis[profile.id] = nextSynthesis;
           return { portfolioSynthesis: allSynthesis, summaryCopied: false };
@@ -4798,7 +4841,9 @@
             canCopy && h('button', {
               type: 'button', className: 'cns-reset',
               onClick: function () {
-                (window.StemLab && window.StemLab.writeClipboard || function (value) { return navigator.clipboard.writeText(value); })(summaryText).then(
+                Promise.resolve().then(function () {
+                  return (window.StemLab && typeof window.StemLab.writeClipboard === 'function' ? window.StemLab.writeClipboard : function (value) { return navigator.clipboard.writeText(value); })(summaryText);
+                }).then(
                   function () { patchState({ summaryCopied: true }, 'Summary copied to the clipboard'); },
                   function () { patchState({ summaryCopied: false }, 'Copy failed. Select the text and copy it by hand.'); }
                 );
@@ -4939,7 +4984,38 @@
       '.cns-boundaries{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cns-limit-list{margin:18px 0;padding:14px;border:1px solid var(--cns-border);border-radius:11px}.cns-limit-list h3{margin:0}.cns-limit-list li{margin:5px 0;font-size:12px}.cns-sources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0;padding:0;list-style:none}.cns-sources li{padding:12px;border:1px solid;border-radius:9px}.cns-sources p{margin:5px 0 0;color:var(--cns-muted);font-size:10px}.cns-frontier-note{margin-top:14px;padding:13px;border:1px solid;border-radius:10px}.cns-frontier-note h3{margin:0}.cns-frontier-note p{margin:5px 0 0;color:var(--cns-muted);font-size:12px}.cns-footer-note{margin:14px 0 0;text-align:center;color:var(--cns-muted);font-size:10px}',
       '@media(max-width:900px){.cns-journey{grid-template-columns:repeat(3,minmax(130px,1fr))}.cns-journey li:after{display:none}.cns-epistemic-grid{grid-template-columns:1fr}.cns-target-grid{grid-template-columns:1fr}.cns-sources{grid-template-columns:1fr}}',
       '@media(max-width:620px){.consciousness-lab{padding:10px}.cns-hero{align-items:flex-start;padding:16px}.cns-hero-icon{width:48px;height:48px;flex-basis:48px;font-size:27px}.cns-view{padding:14px}.cns-compare-pickers,.cns-debate-pickers,.cns-debate-grid{grid-template-columns:1fr}.cns-vs{display:none}.cns-legend,.cns-lens-pair,.cns-answer-grid,.cns-boundaries,.cns-ladder-key,.cns-ladder-actions,.cns-sim-controls,.cns-sim-toggles,.cns-sim-theory-grid{grid-template-columns:1fr}.cns-sim-substrates button{width:100%}.cns-journey{grid-template-columns:1fr}.cns-case-audit-grid,.cns-portfolio-fields,.cns-experiment-flow,.cns-experiment-controls,.cns-next-step{grid-template-columns:1fr}.cns-next-actions{justify-items:start}.cns-sort-card{padding-left:42px}.cns-tabs button{padding:7px 10px}}',
-      '@media(prefers-reduced-motion:reduce){.cns-theory-card{transition:none}.cns-theory-card:hover{transform:none}}',
+      '@keyframes cnsOrbitDrift{from{stroke-dashoffset:0}to{stroke-dashoffset:-28}}',
+      '@keyframes cnsAuraBreathe{0%,100%{opacity:.72;transform:scale(.96)}50%{opacity:1;transform:scale(1.05)}}',
+      '@keyframes cnsGlowPulse{0%,100%{opacity:.55}50%{opacity:1}}',
+      '@keyframes cnsSignalPulse{0%{stroke-dashoffset:92;opacity:.18}40%{opacity:.95}100%{stroke-dashoffset:-92;opacity:.18}}',
+      '@keyframes cnsNodeBeacon{0%,100%{opacity:.68;transform:scale(.9)}50%{opacity:1;transform:scale(1.18)}}',
+      '@keyframes cnsRingResonate{0%,100%{opacity:.34;transform:scale(.95)}50%{opacity:.78;transform:scale(1.12)}}',
+      '@keyframes cnsWaveSweep{0%{stroke-dashoffset:804;opacity:.18}20%{opacity:.92}80%{opacity:.92}100%{stroke-dashoffset:-804;opacity:.18}}',
+      '@keyframes cnsRecurFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-28}}',
+      '@keyframes cnsBcastRipple{0%,100%{opacity:.28;transform:translateY(1px)}50%{opacity:.92;transform:translateY(-2px)}}',
+      '@keyframes cnsBcastPulse{0%{stroke-dashoffset:40;opacity:.2}50%{opacity:.95}100%{stroke-dashoffset:-40;opacity:.2}}',
+      '@keyframes cnsConnFlow{0%{stroke-dashoffset:32;opacity:.2}50%{opacity:.95}100%{stroke-dashoffset:-32;opacity:.2}}',
+      '@keyframes cnsTraceSweep{0%{stroke-dashoffset:712;opacity:.2}25%{opacity:.92}75%{opacity:.92}100%{stroke-dashoffset:-712;opacity:.2}}',
+      '@keyframes cnsIgnRing{0%,100%{opacity:.32;transform:scale(.92)}50%{opacity:.82;transform:scale(1.22)}}',
+      '@keyframes cnsDashDrift{from{stroke-dashoffset:0}to{stroke-dashoffset:-20}}',
+      '.cns-emblem-aura,.cns-stage-spot,.cns-ign-halo,.cns-rung-beacon{transform-box:fill-box;transform-origin:center;animation:cnsAuraBreathe 4.6s ease-in-out infinite}',
+      '.cns-emblem-orbit{animation:cnsOrbitDrift 8.5s linear infinite}',
+      '.cns-emblem-glow,.cns-wave-glow,.cns-recur-glow,.cns-bcast-glow,.cns-conn-glow,.cns-stage-halo,.cns-rail-glow,.cns-rung-halo,.cns-trace-glow,.cns-ws-area,.cns-cursor-band,.cns-attn-band{animation:cnsGlowPulse 3.8s ease-in-out infinite}',
+      '.cns-emblem-pulse{animation:cnsSignalPulse 3.4s linear infinite}',
+      '.cns-emblem-node{transform-box:fill-box;transform-origin:center;animation:cnsNodeBeacon 3.2s ease-in-out infinite}',
+      '.cns-emblem-ring-outer,.cns-emblem-ring-inner{transform-box:fill-box;transform-origin:center;animation:cnsRingResonate 3.6s ease-in-out infinite}',
+      '.cns-emblem-ring-inner{animation-delay:.55s}',
+      '.cns-wave-sweep{animation:cnsWaveSweep 5.8s linear infinite}',
+      '.cns-recur-flow{animation:cnsRecurFlow 2.8s linear infinite}',
+      '.cns-bcast-arc-1,.cns-bcast-arc-2{animation:cnsBcastRipple 3.2s ease-in-out infinite}',
+      '.cns-bcast-arc-2{animation-delay:.45s}',
+      '.cns-bcast-pulse{animation:cnsBcastPulse 2.6s linear infinite}',
+      '.cns-conn-pulse{animation:cnsConnFlow 2.4s linear infinite}',
+      '.cns-thresh-line,.cns-soa-flow{animation:cnsDashDrift 4.2s linear infinite}',
+      '.cns-trace-sweep{animation:cnsTraceSweep 5.4s linear infinite}',
+      '.cns-ign-ring{transform-box:fill-box;transform-origin:center;animation:cnsIgnRing 2.9s ease-in-out infinite}',
+      '.theme-contrast .consciousness-lab svg *{animation:none!important;transform:none!important}',
+      '@media(prefers-reduced-motion:reduce){.cns-theory-card{transition:none}.cns-theory-card:hover{transform:none}.consciousness-lab svg *{animation:none!important;transition:none!important;transform:none!important}}',
       '@media(forced-colors:active){.consciousness-lab *{forced-color-adjust:auto}.cns-hero{background:Canvas}.cns-target-number,.cns-sort-number,.cns-compare-table thead th{background:Highlight;color:HighlightText}}',
       // ── Layout for the grafted Theory Map / Prediction Simulator / Portfolio views ──
       // Rule-level extracts: these sat in strings that also restyle existing selectors.

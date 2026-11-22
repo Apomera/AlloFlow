@@ -28,9 +28,9 @@ module.exports = {
     'Early civil rights organizations focused only on foreign policy and did not address schools, voting, employment, or public facilities.': 'Schools and buses were their targets.',
   },
   'item-406': {
-    'The United States relied only on domestic policy after 1945 and avoided alliances, aid, military action, and international institutions.': 'NATO, the Marshall Plan, and the Korean War show the United States building alliances and intervening abroad.',
+    'The United States focused mainly on domestic policy after 1945 and avoided alliances, aid, military action, and international agencies.': 'NATO, the Marshall Plan, and the Korean War show the United States building alliances and intervening abroad.',
     'American foreign policy became less important because European and Asian governments controlled every major postwar decision.': 'The United States drove postwar decisions through occupation, aid, and alliances.',
-    'Global leadership ended local political conflicts because American intervention always produced stable democracy and self determination.': 'Interventions often produced instability.',
+    'Global leadership ended local political conflicts because American intervention steadily produced stable democracy and self determination.': 'Interventions often produced instability.',
   },
   'item-407': {
     'Opposition grew because the conflict had no visible costs and every American accepted the same explanation of Vietnamese politics.': 'Casualties and doubt drove opposition.',
@@ -43,9 +43,9 @@ module.exports = {
     'The movement focused only on cultural expression and did not address housing, jobs, policing, voting, schools, or political power.': 'Housing and policing were central.',
   },
   'item-409': {
-    'Civil rights activism narrowed after 1965 because only African American organizations were permitted to address equality and citizenship.': 'The United Farm Workers, the American Indian Movement, and NOW all organized after 1965.',
+    'Civil rights activism narrowed after 1965 because African American organizations alone were permitted to address equality and citizenship.': 'The United Farm Workers, the American Indian Movement, and NOW all organized after 1965.',
     'Every movement adopted identical goals and tactics because different communities faced the same laws, histories, and forms of discrimination.': 'Land claims, bilingual education, and workplace equality reflected each movement’s distinct history.',
-    'The expanded movements focused only on private culture and avoided schools, employment, land, voting, policing, and government policy.': 'Land and schools were central demands.',
+    'The expanded movements focused largely on private culture and avoided schools, employment, land, voting, policing, and government policy.': 'Land and schools were central demands.',
   },
   'item-410': {
     'Youth culture grew because colleges, music, television, and consumer markets declined and young people became less connected nationally.': 'College enrollment doubled in the 1960s, and rock music and television bound young people together.',
@@ -54,8 +54,8 @@ module.exports = {
   },
   'item-411': {
     'All groups agreed that environmental protection required no regulation because pollution and resource scarcity were not public concerns.': 'Pollution was a major concern.',
-    'Environmental debates involved only foreign diplomacy and did not address land, water, energy, industry, public health, or federal agencies.': 'Clean air, clean water, pesticides, and energy were the environmental debates of the era.',
-    'Industry and environmental groups pursued identical goals because economic growth and conservation never created political conflict.': 'Industry fought regulations that environmental groups demanded; their goals conflicted directly.',
+    'Environmental debates centered on foreign diplomacy and did not address land, water, energy, industry, public health, or federal agencies.': 'Clean air, clean water, pesticides, and energy were the environmental debates of the era.',
+    'Industry and environmental groups pursued identical goals because economic growth and conservation rarely created political conflict.': 'Industry fought regulations that environmental groups demanded; their goals conflicted directly.',
   },
   'item-412': {
     'The decade ended social conflict because inflation, war, energy, and political distrust did not affect debates about rights or authority.': 'Stagflation, the oil embargo, and Watergate intensified conflict over rights and authority.',
@@ -124,8 +124,8 @@ module.exports = {
   },
   'item-425': {
     'All European colonies used identical labor systems and settlement goals because imperial governments faced the same environments, markets, and Indigenous alliances.': 'Labor systems and goals differed.',
-    'English colonies focused only on trade while Spanish and French colonies avoided permanent settlement, agriculture, and religious expansion.': 'This reverses the pattern: English colonies settled and farmed, while French and Spanish colonies traded and built missions.',
-    'European colonies differed only in language because their economies, political institutions, religious aims, and relationships with Indigenous peoples were otherwise the same.': 'Encomienda, fur posts, and tobacco plantations show the colonies differed in economy and institutions.',
+    'English colonies focused mainly on trade while Spanish and French colonies avoided permanent settlement, agriculture, and religious expansion.': 'This reverses the pattern: English colonies settled and farmed, while French and Spanish colonies traded and built missions.',
+    'European colonies differed primarily in language because their economies, political institutions, religious aims, and relations with Indigenous peoples were otherwise the same.': 'Encomienda, fur posts, and tobacco plantations show the colonies differed in economy and institutions.',
   },
   'item-426': {
     'French and English colonization followed the same settlement pattern because both empires avoided trade, farming, missionary work, and alliances with Indigenous peoples.': 'Both pursued these, in different mixes.',
@@ -153,9 +153,9 @@ module.exports = {
     'The conflict created tension only because colonists supported France and rejected all British military protection, taxation, and commercial connections.': 'Colonists had fought alongside Britain.',
   },
   'item-431': {
-    'Resistance grew because colonial leaders abandoned print, assembly, and commercial networks and relied only on private complaints to British officials.': 'Print and boycotts were the tools of resistance.',
+    'Resistance grew because colonial leaders abandoned print, assembly, and commercial networks and relied mainly on private complaints to British officials.': 'Print and boycotts were the tools of resistance.',
     'Colonial opposition remained isolated within each colony because committees, boycotts, and congresses did not connect local disputes across British North America.': 'Committees of correspondence linked colonies.',
-    'Colonists accepted parliamentary taxation as legitimate once Britain offered new trade privileges, so organized resistance came only after independence.': 'Resistance preceded independence.',
+    'Colonists accepted parliamentary taxation as legitimate once Britain offered new trade privileges, so organized resistance emerged after independence.': 'Resistance preceded independence.',
   },
   'item-432': {
     'Revolutionary arguments depended mainly on hereditary monarchy and rejected the ideas of consent, rights, representation, and popular sovereignty.': 'Consent and rights were the argument.',
@@ -184,23 +184,23 @@ module.exports = {
   },
   'item-437': {
     'The early republic avoided major disagreements because the Constitution settled economic policy, diplomacy, western expansion, and party conflict permanently.': 'Hamilton and Jefferson clashed on all of these.',
-    'Early national leaders focused only on local agriculture and did not confront questions about finance, foreign affairs, Native nations, or federal authority.': 'These were the leading questions.',
-    'The new government immediately adopted one national political program because regional interests, competing parties, and constitutional interpretation did not matter.': 'Hamilton’s and Jefferson’s rival programs produced the first parties within a few years.',
+    'Early national leaders focused mainly on local agriculture and did not confront questions about finance, foreign affairs, Native nations, or federal authority.': 'These were the leading questions.',
+    'The new government quickly adopted one national political program because regional interests, competing parties, and constitutional interpretation did not matter.': 'Hamilton’s and Jefferson’s rival programs produced the first parties within a few years.',
   },
   'item-438': {
-    'Both parties rejected national economic policy and foreign affairs because early Americans agreed that government should address only local agriculture.': 'The bank and France divided them.',
+    'Both parties rejected national economic policy and foreign affairs because early Americans agreed that government should handle local agriculture alone.': 'The bank and France divided them.',
     'Federalists supported state sovereignty and rural independence while Democratic-Republicans favored a national bank, centralized finance, and strong executive power.': 'This reverses the parties: Federalists wanted a national bank and strong executive, and Republicans defended agrarian localism.',
-    'The parties differed only in religious affiliation because they held the same views about constitutional interpretation, economic development, and foreign relations.': 'The parties split over the bank, the French Revolution, and how to read the Constitution.',
+    'The parties differed mainly in religious affiliation because they held the same views about constitutional interpretation, economic development, and foreign relations.': 'The parties split over the bank, the French Revolution, and how to read the Constitution.',
   },
   'item-439': {
     'The early republic remained economically isolated because roads, canals, credit, manufacturing, and commercial agriculture declined after independence.': 'Turnpikes, the Erie Canal, and new banks all expanded in the early republic.',
-    'Economic change occurred only in coastal ports and had no effect on western settlement, farming, transportation, labor, or the relationship among regions.': 'The Erie Canal and western land sales carried economic change deep into the interior.',
-    'National leaders discouraged markets and transportation because republican virtue required every household to produce goods only for local use.': 'Leaders promoted roads and markets.',
+    'Economic change occurred mainly in coastal ports and had no effect on western settlement, farming, transportation, labor, or the relationship among regions.': 'The Erie Canal and western land sales carried economic change deep into the interior.',
+    'National leaders discouraged markets and transportation because republican virtue required households to produce goods strictly for local use.': 'Leaders promoted roads and markets.',
   },
   'item-440': {
     'The early republic created equal citizenship for every resident because independence removed racial, gender, class, and status distinctions from law and society.': 'Distinctions persisted in law.',
-    'Social change affected only elite families because ordinary voters, free Black communities, enslaved people, women, and migrants had no connection to political debate.': 'Free Black petitioners, women writers, and westward migrants all shaped political debate.',
-    'The new republic rejected social hierarchy entirely and guaranteed equal property, voting, education, and legal rights across every community.': 'Property, race, and gender continued to determine rights in the new republic.',
+    'Social change affected mainly elite families because ordinary voters, free Black communities, enslaved people, women, and migrants had no connection to political debate.': 'Free Black petitioners, women writers, and westward migrants all shaped political debate.',
+    'The new republic rejected social hierarchy broadly and extended equal property, voting, education, and legal rights across every community.': 'Property, race, and gender continued to determine rights in the new republic.',
   },
   'item-441': {
     'Religious revival strengthened only established churches and discouraged voluntary associations, reform campaigns, and participation by ordinary believers.': 'Revivals empowered ordinary believers.',
@@ -234,8 +234,8 @@ module.exports = {
   },
   'item-447': {
     'Antebellum reformers shared one program because abolition, temperance, education, prisons, labor, and womens rights had identical goals and strategies.': 'Abolitionists split over women’s roles and politics, and temperance and school reformers had separate goals.',
-    'Reform movements rejected voluntary associations and public persuasion because change could occur only through private charity and local family decisions.': 'Associations and persuasion were their methods.',
-    'Reformers avoided slavery and citizenship because antebellum activism focused only on personal morality rather than law, institutions, or political power.': 'Abolitionists targeted law and power.',
+    'Reform movements rejected voluntary associations and public persuasion because change could occur through private charity and local family decisions alone.': 'Associations and persuasion were their methods.',
+    'Reformers avoided slavery and citizenship because antebellum activism focused mainly on personal morality rather than law, institutions, or political power.': 'Abolitionists targeted law and power.',
   },
   'item-448': {
     'American culture developed mainly because national communication declined and writers, teachers, reformers, and religious leaders remained isolated from one another.': 'Cheap print and the postal service connected writers, preachers, and reformers across the country.',
@@ -249,8 +249,8 @@ module.exports = {
   },
   'item-450': {
     'Northern and southern society were identical because both regions depended mainly on plantations, enslaved labor, and a small hereditary landowning class.': 'The North had few plantations.',
-    'The South had more factories and wage workers than the North, while northern communities relied almost entirely on cotton plantations and enslaved labor.': 'This reverses the regions: the North industrialized while the South relied on plantations.',
-    'Regional society differed only in climate because migration, industry, slavery, class, family life, and urban growth followed the same pattern everywhere.': 'Immigration, factories, and slavery separated the regions far more than climate.',
+    'The South had more factories and wage workers than the North, while northern communities relied predominantly on cotton plantations and enslaved labor.': 'This reverses the regions: the North industrialized while the South relied on plantations.',
+    'Regional society differed mainly in climate because migration, industry, slavery, class, family life, and urban growth followed the same pattern everywhere.': 'Immigration, factories, and slavery separated the regions far more than climate.',
   },
   'item-451': {
     'The war reduced United States territory and settled sectional conflict because Congress no longer debated slavery, citizenship, or western expansion.': 'Territory grew and debate intensified.',
@@ -273,8 +273,8 @@ module.exports = {
     'Expansion was opposed mainly by foreign governments because most Americans rejected westward settlement and preferred to preserve the original national borders.': 'Most Americans favored expansion.',
   },
   'item-455': {
-    'Western expansion removed the slavery question because Congress immediately granted every new territory the same labor system and political representation.': 'Congress could not agree on a labor system.',
-    'Territorial acquisition affected only foreign policy because the new lands had no connection to congressional power, settlement, labor, or sectional balance.': 'Sectional balance was at stake.',
+    'Western expansion removed the slavery question because Congress quickly granted every new territory the same labor system and political representation.': 'Congress could not agree on a labor system.',
+    'Territorial acquisition affected mainly foreign policy because the new lands had no connection to congressional power, settlement, labor, or sectional balance.': 'Sectional balance was at stake.',
     'The debate centered on tariffs alone because slavery, plantation agriculture, free labor, and state admission were not affected by expansion.': 'Whether new states would be free or slave was the central question of expansion.',
   },
   'item-456': {
@@ -288,8 +288,8 @@ module.exports = {
     'The act ended disputes over popular sovereignty because both sections accepted the same interpretation of congressional authority and territorial slavery.': 'Interpretations clashed violently.',
   },
   'item-458': {
-    'The war concerned only tariffs because slavery, secession, emancipation, labor, and the constitutional meaning of Union were unrelated to military policy.': 'Slavery drove secession and war aims.',
-    'The conflict became a war over slavery only after the fighting ended, when neither government nor enslaved people connected freedom to the outcome.': 'Emancipation came during the war.',
+    'The war concerned mainly tariffs because slavery, secession, emancipation, labor, and the constitutional meaning of Union were unrelated to military policy.': 'Slavery drove secession and war aims.',
+    'The conflict became a war over slavery well after the fighting ended, when neither government nor enslaved people connected freedom to the outcome.': 'Emancipation came during the war.',
     'The Union and Confederacy agreed about slavery and state power because both sides fought solely over foreign trade and western transportation.': 'Slavery and state sovereignty were exactly what divided them.',
   },
   'item-459': {
@@ -298,9 +298,9 @@ module.exports = {
     'The election ended sectional disagreement by giving every region equal influence in the electoral system and preventing debate over slavery.': 'Lincoln won without a single Southern electoral vote, which Southerners took as proof of lost influence.',
   },
   'item-460': {
-    'Union aims remained limited to restoring the prewar Union because emancipation, Black military service, and constitutional change never entered federal policy.': 'All three entered policy by 1863.',
+    'Union aims remained limited to restoring the prewar Union because emancipation, Black military service, and constitutional change did not enter federal policy.': 'All three entered policy by 1863.',
     'The Union began by demanding immediate abolition everywhere and later abandoned emancipation in order to protect slavery and reunite the states.': 'This reverses the sequence: the Union began by seeking restoration and moved toward emancipation in 1863.',
-    'War aims changed only because foreign governments required emancipation, while enslaved people and federal leaders had no influence on policy.': 'Enslaved people’s flight pushed policy.',
+    'War aims changed largely because foreign governments required emancipation, while enslaved people and federal leaders had no influence on policy.': 'Enslaved people’s flight pushed policy.',
   },
   'item-461': {
     'All Reconstruction leaders agreed that states should regain power without conditions and that federal protection for freedpeople was unnecessary.': 'Radicals demanded conditions and protection.',
@@ -309,8 +309,8 @@ module.exports = {
   },
   'item-462': {
     'The period returned to a rural economy and avoided migration, industrial growth, western settlement, labor conflict, and changes in racial policy.': 'Steel mills, immigrant cities, and Jim Crow all emerged in these decades.',
-    'The United States experienced only political continuity after Reconstruction because factories, cities, immigration, and corporate power did not expand.': 'Factories, cities, and corporate trusts expanded on an unprecedented scale.',
-    'Postwar development was driven entirely by foreign investment and had no connection to workers, farmers, Native nations, African Americans, or federal policy.': 'Workers, farmers, and federal land policy shaped development alongside investment.',
+    'The United States experienced broad political continuity after Reconstruction because factories, cities, immigration, and corporate power did not expand.': 'Factories, cities, and corporate trusts expanded on an unprecedented scale.',
+    'Postwar development was driven largely by foreign investment and had no connection to workers, farmers, Native nations, African Americans, or federal policy.': 'Workers, farmers, and federal land policy shaped development alongside investment.',
   },
   'item-463': {
     'Large corporations declined because railroads remained local, markets were disconnected, and new technologies discouraged centralized management.': 'Railroads created national markets for corporations.',
@@ -323,8 +323,8 @@ module.exports = {
     'Workers rejected unions and collective action because most believed individual contracts could solve every problem created by industrial production.': 'Workers organized in large numbers.',
   },
   'item-465': {
-    'Immigration had little effect on industrialization because factories recruited only native-born workers and immigrant communities remained outside urban life.': 'Immigrants filled steel mills, mines, and garment shops in enormous numbers.',
-    'Immigrants received equal wages, political power, and social acceptance immediately because industrial employers and governments rejected ethnic distinctions.': 'Ethnic job hierarchies, nativism, and exclusion laws show immigrants faced discrimination.',
+    'Immigration had little effect on industrialization because factories recruited native-born workers alone and immigrant communities stayed outside urban life.': 'Immigrants filled steel mills, mines, and garment shops in enormous numbers.',
+    'Immigrants received equal wages, political power, and social acceptance upon arrival because industrial employers and governments rejected ethnic distinctions.': 'Ethnic job hierarchies, nativism, and exclusion laws show immigrants faced discrimination.',
     'Immigration changed population size but did not affect labor markets, cities, culture, politics, nativism, or debates about citizenship.': 'Immigration reshaped cities, wages, and politics and sparked nativist movements.',
   },
   'item-466': {
@@ -349,8 +349,8 @@ module.exports = {
   },
   'item-470': {
     'Federal policy avoided industrial capitalism because Congress refused to regulate transportation, corporations, markets, labor, or interstate commerce.': 'The ICC and Sherman Act regulated both.',
-    'Government regulation immediately replaced private enterprise with public ownership, eliminating corporate power and competition across the national economy.': 'The ICC and Sherman Act regulated business at the margins; private enterprise remained dominant.',
-    'Federal policy dealt only with western land and had no connection to railroads, monopolies, consumer protection, labor, or interstate commerce.': 'Railroads and trusts were regulated.',
+    'Government regulation quickly replaced private enterprise with full public ownership, eliminating corporate power and competition across the national economy.': 'The ICC and Sherman Act regulated business at the margins; private enterprise remained dominant.',
+    'Federal policy dealt mainly with western land and had no connection to railroads, monopolies, consumer protection, labor, or interstate commerce.': 'Railroads and trusts were regulated.',
   },
   'item-471': {
     'Western expansion strengthened Indigenous sovereignty because federal policy protected Native land, political independence, mobility, and control of resources.': 'Policy undermined all of these.',
@@ -358,14 +358,14 @@ module.exports = {
     'Western policy affected only transportation and mining because land, schools, citizenship, religion, and Native resistance were not involved in federal expansion.': 'Allotment and boarding schools targeted all.',
   },
   'item-472': {
-    'Reconstruction amendments immediately produced equal citizenship because segregation, disfranchisement, violence, and unequal labor systems disappeared after 1877.': 'Segregation and disfranchisement spread after 1877, undermining the amendments’ promise.',
-    'Racial hierarchy weakened only because southern states expanded voting, education, employment, and legal protection for African Americans without federal pressure.': 'States restricted all of these.',
-    'Postwar racial policy focused only on immigration and had no connection to state law, courts, violence, labor, voting, or the meaning of citizenship.': 'Plessy and disfranchisement laws were central.',
+    'Reconstruction amendments rapidly established equal citizenship because segregation, disfranchisement, violence, and unequal labor systems disappeared after 1877.': 'Segregation and disfranchisement spread after 1877, undermining the amendments’ promise.',
+    'Racial hierarchy weakened mainly because southern states expanded voting, education, employment, and legal protection for African Americans without federal pressure.': 'States restricted all of these.',
+    'Postwar racial policy focused mainly on immigration and had no connection to state law, courts, violence, labor, voting, or the meaning of citizenship.': 'Plessy and disfranchisement laws were central.',
   },
   'item-473': {
     'The period was defined by isolation and economic stability because the United States avoided overseas conflict, industrial growth, cultural change, and federal reform.': 'Two world wars, mass production, and the Depression defined the period.',
-    'The nation experienced only continuity after 1890 because world wars, mass production, migration, economic crisis, and the New Deal did not alter public life.': 'The New Deal and World War II transformed government, work, and society.',
-    'The era was shaped entirely by foreign governments and had no connection to elections, business, reformers, workers, consumers, or federal institutions.': 'Progressive reformers, corporations, and the New Deal were domestic forces.',
+    'The nation experienced steady continuity after 1890 because world wars, mass production, migration, economic crisis, and the New Deal did not alter public life.': 'The New Deal and World War II transformed government, work, and society.',
+    'The era was shaped largely by foreign governments and had no connection to elections, business, reformers, workers, consumers, or federal institutions.': 'Progressive reformers, corporations, and the New Deal were domestic forces.',
   },
   'item-474': {
     'The United States expanded abroad because it abandoned trade, naval development, national markets, and competition with European powers.': 'The United States built a modern navy and sought overseas markets, the opposite of abandoning them.',
@@ -373,8 +373,8 @@ module.exports = {
     'The country became more assertive after foreign powers offered equal control of American territory and ended all competition for overseas markets.': 'Competition drove assertiveness.',
   },
   'item-475': {
-    'Progressives rejected all earlier reform ideas and relied only on private charity, avoiding regulation, expertise, elections, public health, and labor policy.': 'Progressives embraced regulation.',
-    'Progressive reform ended social activism because government agencies replaced churches, settlement houses, unions, journalists, and community organizations entirely.': 'Activism continued alongside agencies.',
+    'Progressives rejected all earlier reform ideas and relied mainly on private charity, avoiding regulation, expertise, elections, public health, and labor policy.': 'Progressives embraced regulation.',
+    'Progressive reform ended social activism because government agencies replaced churches, settlement houses, unions, journalists, and community organizations broadly.': 'Activism continued alongside agencies.',
     'Earlier reformers and Progressives pursued identical policies because industrial corporations, cities, immigration, and administrative institutions had not changed.': 'Industry and cities had changed enormously.',
   },
   'item-476': {
@@ -393,14 +393,14 @@ module.exports = {
     'The federal government had already solved unemployment and bank instability before 1929, so economic institutions did not affect the Depression.': 'Bank failures and mass unemployment were unprecedented, and no federal safeguards existed.',
   },
   'item-479': {
-    'The New Deal focused only on constitutional theory and did not provide relief, regulate finance, support employment, or reform labor relations.': 'The WPA, the SEC, and the Wagner Act provided relief, regulation, and labor rights.',
+    'The New Deal focused mainly on constitutional theory and did not provide relief, regulate finance, support employment, or reform labor relations.': 'The WPA, the SEC, and the Wagner Act provided relief, regulation, and labor rights.',
     'New Deal policies ended all private markets and replaced every business with federal ownership, leaving no role for corporations or consumers.': 'Private markets continued; the New Deal regulated them rather than replacing them.',
-    'The New Deal rejected federal responsibility because unemployment, banking, agriculture, and public works remained matters only for local charities and states.': 'Federal agencies took responsibility.',
+    'The New Deal rejected federal responsibility because unemployment, banking, agriculture, and public works remained matters strictly for local charities and states.': 'Federal agencies took responsibility.',
   },
   'item-480': {
     'World War II reduced industrial production and migration because the federal government discouraged factory work, military service, and women labor.': 'War production doubled industrial output, and millions migrated to defense plants.',
-    'The war changed foreign policy only and had no effect on employment, technology, cities, racial politics, family life, or federal economic planning.': 'Women entered factories, cities grew, and the government coordinated the economy.',
-    'Mobilization created equal opportunity immediately because discrimination in the military, defense work, housing, and citizenship ended during the war.': 'Segregated units, unequal pay, and internment show discrimination persisted.',
+    'The war changed foreign policy alone and had no effect on employment, technology, cities, racial politics, family life, or federal economic planning.': 'Women entered factories, cities grew, and the government coordinated the economy.',
+    'Mobilization established equal opportunity rapidly because discrimination in the military, defense work, housing, and citizenship ended during the war.': 'Segregated units, unequal pay, and internment show discrimination persisted.',
   },
   'item-481': {
     'Federal responsibility declined throughout the period because Congress and presidents avoided regulation, welfare, economic planning, and military mobilization.': 'Regulation, Social Security, and wartime mobilization all expanded federal responsibility.',
@@ -429,8 +429,8 @@ module.exports = {
   },
   'item-486': {
     'Federal security policy expanded because the United States abandoned military alliances and believed nuclear weapons made international conflict impossible.': 'Alliances and fear of conflict drove expansion.',
-    'The growth of containment resulted only from domestic economic policy and had no connection to Soviet power, nuclear strategy, alliances, or espionage.': 'Soviet expansion and espionage fears drove containment.',
-    'Security institutions declined after 1945 because the federal government transferred diplomacy, intelligence, defense, and foreign aid entirely to states.': 'The CIA, the National Security Council, and the Defense Department were created in 1947.',
+    'The growth of containment resulted mainly from domestic economic policy and had no connection to Soviet power, nuclear strategy, alliances, or espionage.': 'Soviet expansion and espionage fears drove containment.',
+    'Security institutions declined after 1945 because the federal government transferred diplomacy, intelligence, defense, and foreign aid over to the states.': 'The CIA, the National Security Council, and the Defense Department were created in 1947.',
   },
   'item-487': {
     'Postwar prosperity reached every household equally because discrimination, housing segregation, poverty, and regional inequality disappeared after 1945.': 'Redlining and job discrimination excluded many Black families from suburban prosperity.',
@@ -444,8 +444,8 @@ module.exports = {
   },
   'item-489': {
     'Activists used litigation and local organizing for the same narrow purpose because courts alone could enforce every right without community participation or protest.': 'Courts could not enforce rights alone.',
-    'Local organizing replaced legal action entirely because civil rights leaders rejected federal courts, legislation, voter registration, and national media.': 'The NAACP kept litigating while local campaigns organized boycotts and voter drives.',
-    'Federal litigation and local activism focused only on foreign policy and had little connection to schools, voting, jobs, transportation, or public facilities.': 'Schools, buses, and voting were the targets of both courts and activists.',
+    'Local organizing replaced legal action broadly because civil rights leaders rejected federal courts, legislation, voter registration, and national media.': 'The NAACP kept litigating while local campaigns organized boycotts and voter drives.',
+    'Federal litigation and local activism focused mainly on foreign policy and had little connection to schools, voting, jobs, transportation, or public facilities.': 'Schools, buses, and voting were the targets of both courts and activists.',
   },
   'item-490': {
     'American power faced no limits because alliances, economic aid, military intervention, and nuclear weapons produced the same political result everywhere.': 'Vietnam showed that intervention and aid could not overcome local nationalism.',
@@ -463,9 +463,9 @@ module.exports = {
     'Social activism declined after the 1960s because courts, workplaces, schools, and governments no longer generated disputes over equality or identity.': 'Feminist, environmental, and gay rights activism grew after the 1960s.',
   },
   'item-493': {
-    'Federal enforcement became unnecessary because civil rights laws automatically changed every local institution and ended discrimination in housing, work, schools, and voting.': 'Housing and employment discrimination persisted and required continued enforcement.',
-    'The need for enforcement resulted only from foreign criticism and had no connection to state policy, private discrimination, violence, or unequal access to public life.': 'Domestic resistance created the need.',
-    'Civil rights enforcement expanded because activists abandoned local campaigns and relied entirely on federal agencies to define and implement every community change.': 'Local campaigns continued and pressured agencies to act.',
+    'Federal enforcement became unnecessary because civil rights laws effortlessly changed every local institution and ended discrimination in housing, work, schools, and voting.': 'Housing and employment discrimination persisted and required continued enforcement.',
+    'The need for enforcement resulted mainly from foreign criticism and had no connection to state policy, private discrimination, violence, or unequal access to public life.': 'Domestic resistance created the need.',
+    'Civil rights enforcement expanded because activists abandoned local campaigns and relied primarily on federal agencies to define and implement every community change.': 'Local campaigns continued and pressured agencies to act.',
   },
   'item-494': {
     'Youth culture and social movements remained separate because music, universities, media, race, gender, war, and the environment did not overlap in public debate.': 'Campus protests and rock festivals fused youth culture with antiwar and civil rights politics.',

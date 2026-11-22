@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' https: data: blob:; connect-src 'self' https:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none';">
 <title>AlloFlow Zoom Gallery</title>
 <!--
   AlloFlow Zoom Gallery — OpenSeadragon deep-zoom viewer + Notice-Wonder coach
@@ -58,29 +58,60 @@
     document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
     return theme;
   }
+  var params = new URLSearchParams(window.location.search);
+  var declaredHostOrigin = (function () {
+    var raw = params.get('host');
+    if (!raw) return '';
+    try {
+      var u = new URL(raw);
+      return u.protocol === 'https:' || u.protocol === 'http:' ? u.origin : '';
+    } catch (_) { return ''; }
+  })();
+  function isTrustedThemeOrigin(origin) {
+    var o = String(origin || '');
+    if (!o || o === 'null') return false;
+    try {
+      if (window.location && window.location.origin && o === window.location.origin) return true;
+      var u = new URL(o);
+      var host = (u.hostname || '').toLowerCase();
+      if ((u.protocol === 'http:' || u.protocol === 'https:') && /^(localhost|127\.0\.0\.1|\[::1\]|::1)$/.test(host)) return true;
+      if (u.protocol !== 'https:') return false;
+      if (host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
+          host === 'alloflow.org' || /\.alloflow\.org$/.test(host)) return true;
+      if (/\.usercontent\.goog$/.test(host) && declaredHostOrigin && u.origin === declaredHostOrigin) return true;
+      return false;
+    } catch (_) { return false; }
+  }
   window.applyAlloFlowTheme = applyAlloFlowTheme;
-  applyAlloFlowTheme(new URLSearchParams(window.location.search).get('theme'));
+  applyAlloFlowTheme(params.get('theme'));
+  window.addEventListener('message', function (event) {
+    if (!event || !window.opener || event.source !== window.opener) return;
+    if (!isTrustedThemeOrigin(event.origin)) return;
+    var data = event.data;
+    if (!data || data.type !== 'alloflow-theme-change') return;
+    applyAlloFlowTheme(data.theme);
+  });
 })();
 </script>
 <style>
   :root {
-    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
+    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155; --control-line: #64748b; --focus: #facc15;
     --text: #e2e8f0; --dim: #94a3b8; --accent: #38bdf8; --accent2: #0369a1; --ok: #4ade80; --warn: #fbbf24;
-    --chip: #0f172a; --chip-fg: #f1f5f9; --chip-line: #94a3b8; --chip-link: #bae6fd;
+    --chip: #0f172a; --chip-fg: #f1f5f9; --chip-line: #94a3b8; --chip-link: #bae6fd; --chip-pin: #fbbf24;
     --heading: #bae6fd; --sel-bg: #0c4a6e; --sel-fg: #e0f2fe; --pin: #f59e0b;
   }
   :root[data-theme="light"] {
     --bg: #f8fafc; --panel: #ffffff; --panel2: #f1f5f9;
-    --line: #64748b; --text: #0f172a; --dim: #475569;
+    --line: #64748b; --control-line: #64748b; --focus: #1d4ed8; --text: #0f172a; --dim: #475569;
     --accent: #1d4ed8; --accent2: #1d4ed8; --ok: #047857; --warn: #92400e;
-    --chip: #0f172a; --chip-fg: #f1f5f9; --chip-line: #94a3b8; --chip-link: #bae6fd;
+    --chip: #0f172a; --chip-fg: #f1f5f9; --chip-line: #94a3b8; --chip-link: #bae6fd; --chip-pin: #fbbf24;
     --heading: #1e3a8a; --sel-bg: #dbeafe; --sel-fg: #1e3a8a; --pin: #b45309;
   }
   :root[data-theme="contrast"] {
     --bg: #000000; --panel: #000000; --panel2: #0a0a0a;
-    --line: #fbbf24; --text: #ffffff; --dim: #ffffff;
+    --line: #fbbf24; --control-line: #fbbf24; --focus: #facc15; --text: #ffffff; --dim: #ffffff;
     --accent: #fbbf24; --accent2: #fbbf24; --ok: #00ff66; --warn: #ffff00;
-    --chip: #000000; --chip-fg: #ffffff; --chip-line: #fbbf24; --chip-link: #ffff00;
+    --chip: #000000; --chip-fg: #ffffff; --chip-line: #fbbf24; --chip-link: #ffff00; --chip-pin: #ffff00;
     --heading: #ffffff; --sel-bg: #fbbf24; --sel-fg: #000000; --pin: #ffff00;
   }
   :root[data-theme="contrast"] * { box-shadow: none !important; text-shadow: none !important; }
@@ -88,10 +119,20 @@
   :root[data-theme="contrast"] input,
   :root[data-theme="contrast"] select,
   :root[data-theme="contrast"] textarea { border-color: var(--line) !important; }
-  :root[data-theme="contrast"] button.go { background: var(--accent2); color: #000; }
-  :focus-visible { outline: 3px solid var(--line); outline-offset: 2px; }
+  :root[data-theme="contrast"] button.go,
+  :root[data-theme="contrast"] .skip-link { background: var(--accent2); color: #000; }
+  :root[data-theme="light"] .pin { color: #fff; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   @media (forced-colors: active) {
+    :root, :root[data-theme] {
+      --bg: Canvas; --panel: Canvas; --panel2: Canvas; --line: CanvasText; --control-line: CanvasText; --focus: Highlight;
+      --text: CanvasText; --dim: CanvasText; --accent: LinkText; --accent2: ButtonFace; --ok: CanvasText; --warn: CanvasText;
+      --chip: Canvas; --chip-fg: CanvasText; --chip-line: CanvasText; --chip-link: LinkText; --chip-pin: CanvasText;
+      --heading: CanvasText; --sel-bg: Highlight; --sel-fg: HighlightText; --pin: CanvasText;
+    }
     button, input, select, textarea, a { forced-color-adjust: auto; }
+    button.go, .skip-link { background: ButtonFace; color: ButtonText; border: 1px solid ButtonText; }
+    :focus-visible { outline: 3px solid Highlight !important; }
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -99,7 +140,7 @@
   header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; flex-wrap: wrap; }
   header h1 { font-size: 0.9375rem; margin: 0; font-weight: 700; }
   header .sub { color: var(--dim); font-size: 0.71875rem; }
-  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 0.8125rem; max-width: 46vw; }
+  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 6px 8px; font-size: 0.8125rem; max-width: 46vw; }
   .wrap { flex: 1 1 auto; display: flex; min-height: 0; }
   .coach { flex: 0 0 330px; display: flex; flex-direction: column; background: var(--panel); border-right: 1px solid var(--line); min-width: 0; overflow-y: auto; }
   .coach h2 { font-size: 0.75rem; margin: 0; padding: 10px 12px 4px; color: var(--heading); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -107,16 +148,16 @@
   .ai-state .on { color: var(--ok); font-weight: 700; }
   .ai-state .off { color: var(--warn); font-weight: 700; }
   .steps { display: flex; gap: 4px; padding: 4px 12px 8px; }
-  .steps button { flex: 1; background: var(--panel2); color: var(--dim); border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; font-size: 0.71875rem; font-weight: 700; cursor: pointer; }
+  .steps button { flex: 1; background: var(--panel2); color: var(--dim); border: 1px solid var(--control-line); border-radius: 8px; padding: 6px 4px; font-size: 0.71875rem; font-weight: 700; cursor: pointer; }
   .steps button[aria-selected="true"] { background: var(--sel-bg); color: var(--sel-fg); border-color: var(--accent); }
   .steps button.done { color: var(--ok); }
   .steps button[aria-selected="true"].done { color: var(--sel-fg); }
   .body { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
   .qcard { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; font-size: 0.8125rem; line-height: 1.5; }
-  textarea { width: 100%; min-height: 84px; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 0.8125rem; font-family: inherit; resize: vertical; }
+  textarea { width: 100%; min-height: 84px; background: var(--bg); border: 1px solid var(--control-line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 0.8125rem; font-family: inherit; resize: vertical; }
   button.go { background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 0.8125rem; font-weight: 700; cursor: pointer; }
-  button.go:disabled { opacity: 0.55; cursor: not-allowed; }
-  button.sec { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+  button.go:disabled, button.go[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
+  button.sec { background: var(--panel2); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 7px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
   button.sec[aria-pressed="true"] { border-color: var(--pin); color: var(--pin); }
   .row { display: flex; gap: 6px; flex-wrap: wrap; }
   .locked { background: var(--panel2); border: 1px solid var(--accent); border-radius: 10px; padding: 8px 11px; font-size: 0.78125rem; white-space: pre-wrap; }
@@ -141,20 +182,20 @@
   .custom { margin-top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
   .custom h3 { margin: 0 0 6px; font-size: 0.8125rem; }
   .custom p { margin: 0 0 8px; font-size: 0.71875rem; color: var(--dim); line-height: 1.45; }
-  .custom input { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; font-size: 0.8125rem; margin-bottom: 8px; }
+  .custom input { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 7px 9px; font-size: 0.8125rem; margin-bottom: 8px; }
   .custom .err { color: var(--warn); font-size: 0.71875rem; margin-top: 6px; }
   .credit-line { position: absolute; bottom: 8px; left: 8px; right: 8px; z-index: 6; font-size: 0.65625rem; color: var(--chip-fg); background: var(--chip); border: 1px solid var(--chip-line); border-radius: 8px; padding: 4px 9px; line-height: 1.35; }
   .credit-line a { color: var(--chip-link); text-decoration: underline; display: inline-block; padding: 5px 2px; }
-  button.sec.speak { margin-top: 8px; padding: 4px 8px; font-size: 0.6875rem; }
+  button.sec.speak { margin-top: 8px; padding: 4px 8px; min-height: 28px; font-size: 0.6875rem; }
   .backbar { position: absolute; top: 8px; left: 8px; z-index: 6; display: flex; gap: 6px; }
   /* Chips float over the photograph, so they carry an opaque ground: over an
      arbitrary image a translucent chip has no computable contrast ratio. */
   .backbar button { background: var(--chip); color: var(--chip-fg); border: 1px solid var(--chip-line); border-radius: 8px; padding: 5px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
-  .backbar button[aria-pressed="true"] { border-color: var(--pin); color: var(--pin); }
+  .backbar button[aria-pressed="true"] { border-color: var(--chip-pin); color: var(--chip-pin); }
   .backbar .stagectl { margin-left: auto; display: flex; gap: 6px; }
   .backbar .stagectl button { min-width: 34px; font-size: 0.875rem; }
   .describe { padding: 8px 12px 0; }
-  .describe > button { width: 100%; text-align: left; background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+  .describe > button { width: 100%; text-align: left; background: var(--panel2); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 7px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
   .describe > button::before { content: "▸ "; }
   .describe > button[aria-expanded="true"]::before { content: "▾ "; }
   .describe #describeBody { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; margin-top: 6px; font-size: 0.78125rem; line-height: 1.55; }
@@ -185,11 +226,11 @@
     <h2 data-s="coach_heading">Observation coach</h2>
     <div class="ai-state" id="aiState">Connecting to AlloFlow…</div>
     <div class="steps" role="tablist" aria-label="Observation steps" data-s-aria="steps_aria">
-      <button id="tabNotice" role="tab" aria-selected="true" data-s="step_notice">1 · Notice</button>
-      <button id="tabWonder" role="tab" aria-selected="false" data-s="step_wonder">2 · Wonder</button>
-      <button id="tabCoach" role="tab" aria-selected="false" data-s="step_coach">3 · Coach</button>
+      <button id="tabNotice" type="button" role="tab" aria-selected="true" aria-controls="coachBody" tabindex="0" data-s="step_notice">1 · Notice</button>
+      <button id="tabWonder" type="button" role="tab" aria-selected="false" aria-controls="coachBody" tabindex="-1" data-s="step_wonder">2 · Wonder</button>
+      <button id="tabCoach" type="button" role="tab" aria-selected="false" aria-controls="coachBody" tabindex="-1" data-s="step_coach">3 · Coach</button>
     </div>
-    <div class="body" id="coachBody"></div>
+    <div class="body" id="coachBody" role="tabpanel" aria-labelledby="tabNotice"></div>
     <!-- Text alternative for the picture itself. A deep-zoom viewer is a canvas:
          without this there is nothing for a screen reader to read, and no way
          into Notice/Wonder for a student who cannot see the image. -->
@@ -217,7 +258,7 @@
     <div class="zoomread" id="zoomRead" style="display:none" aria-hidden="true"></div>
     <div class="scalebar" id="scaleBar" style="display:none" role="group" aria-label="Scale of this view" data-s-aria="scale_group"><div><span class="line" id="scaleLine" aria-hidden="true"></span><span class="len" id="scaleLen"></span></div><div class="view" id="scaleView"></div></div>
     <div id="osd"></div>
-    <div class="loadmsg" id="loadmsg" style="display:none"></div>
+    <div class="loadmsg" id="loadmsg" role="status" aria-live="polite" style="display:none"></div>
     <div class="credit-line" id="creditLine" style="display:none"></div>
     <div class="picker" id="picker">
       <h2 data-s="picker_heading">Pick an image — each one is a real, openly licensed photograph or artifact. Zoom in close and look for details you'd miss from far away.</h2>
@@ -542,11 +583,20 @@
       if (window.location && window.location.origin && o === window.location.origin) return true;
       var u = new URL(o);
       var host = (u.hostname || '').toLowerCase();
-      if (/^(localhost|127\.0\.0\.1)$/.test(host)) return true;
+      if (/^(localhost|127\.0\.0\.1)$/.test(host) && (u.protocol === 'http:' || u.protocol === 'https:')) return true;
       if (u.protocol !== 'https:') return false;
-      return host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
-             host === 'alloflow.org' || /\.alloflow\.org$/.test(host) ||
-             /\.usercontent\.goog$/.test(host);
+      if (host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
+          host === 'alloflow.org' || /\.alloflow\.org$/.test(host)) return true;
+      if (/\.usercontent\.goog$/.test(host)) {
+        var declaredHost = '';
+        try {
+          if (window.location && window.location.search && typeof URLSearchParams === 'function') {
+            declaredHost = new URLSearchParams(window.location.search).get('host') || '';
+          }
+        } catch (_) {}
+        return !!declaredHost && o === declaredHost;
+      }
+      return false;
     } catch (_) { return false; }
   }
   function isTrustedOpenerMessage(event) {
@@ -585,7 +635,15 @@
         Object.keys(data.notes).forEach(function (id) {
           if (id === '__proto__' || id === 'constructor' || id === 'prototype') return;
           var n = data.notes[id] || {};
-          perImg[id] = { notice: String(n.notice || ''), wonder: String(n.wonder || ''), feedback: String(n.feedback || ''), pins: Array.isArray(n.pins) ? n.pins.slice(0, 20) : [] };
+          var rawPins = Array.isArray(n.pins) ? n.pins.slice(0, 20) : [];
+          var cleanPins = rawPins.reduce(function (acc, p) {
+            if (!p || typeof p !== 'object') return acc;
+            var x = Number(p.x), y = Number(p.y), z = Number(p.z);
+            if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) return acc;
+            acc.push({ x: Math.min(1, Math.max(0, x)), y: Math.min(1, Math.max(0, y)), z: Math.max(1, Math.round(z * 10) / 10) });
+            return acc;
+          }, []);
+          perImg[id] = { notice: String(n.notice || ''), wonder: String(n.wonder || ''), feedback: String(n.feedback || ''), pins: cleanPins };
         });
         if (current) { drawPins(); }
       }
@@ -671,10 +729,21 @@
   function memFor(item) {
     return perImg[item.id] = perImg[item.id] || { notice: '', wonder: '', feedback: '', pins: [] };
   }
-  function setStep(next) {
+  function setStep(next, moveFocus) {
     step = next;
-    Object.keys(tabs).forEach(function (k) { tabs[k].setAttribute('aria-selected', String(k === next)); });
+    Object.keys(tabs).forEach(function (k) {
+      var sel = k === next;
+      tabs[k].setAttribute('aria-selected', String(sel));
+      tabs[k].setAttribute('tabindex', sel ? '0' : '-1');
+      if (sel && tabs[k].id) coachBody.setAttribute('aria-labelledby', tabs[k].id);
+    });
     renderCoach();
+    if (moveFocus) {
+      try {
+        var focusTarget = next === 'notice' ? document.getElementById('noticeText') : (next === 'wonder' ? document.getElementById('wonderText') : document.getElementById('coachBtn'));
+        if (focusTarget) focusTarget.focus();
+      } catch (_) {}
+    }
   }
   function pinsText(mem) {
     if (!mem.pins || !mem.pins.length) return '';
@@ -723,10 +792,10 @@
       coachBody.appendChild(ta);
       var pt = pinsText(mem);
       if (pt) { var pd = el('div', { class: 'pins' }); pd.appendChild(el('b', null, STR.pins_heading)); pt.split('\n').forEach(function (l) { pd.appendChild(document.createElement('br')); pd.appendChild(document.createTextNode(l)); }); coachBody.appendChild(pd); }
-      var toWonder = el('button', { class: 'go' }, STR.to_wonder);
+      var toWonder = el('button', { class: 'go', type: 'button' }, STR.to_wonder);
       toWonder.addEventListener('click', function () {
         if (mem.notice.trim()) toOpener({ type: 'alloczoom-noticed' });
-        setStep('wonder');
+        setStep('wonder', true);
       });
       coachBody.appendChild(toWonder);
     } else if (step === 'wonder') {
@@ -742,22 +811,30 @@
         remind.appendChild(el('b', null, STR.you_noticed)); remind.appendChild(document.createTextNode('\n' + mem.notice));
         coachBody.appendChild(remind);
       }
-      var toCoach = el('button', { class: 'go' }, STR.to_coach);
-      toCoach.addEventListener('click', function () { setStep('coach'); });
+      var toCoach = el('button', { class: 'go', type: 'button' }, STR.to_coach);
+      toCoach.addEventListener('click', function () { setStep('coach', true); });
       coachBody.appendChild(toCoach);
     } else {
       var live = aiAvailable && openerOk;
-      var askBtn = el('button', { class: 'go', id: 'coachBtn' }, live ? STR.ask_ai : STR.ask_prompt);
+      var askBtn = el('button', { class: 'go', id: 'coachBtn', type: 'button' }, busy ? STR.thinking : (live ? STR.ask_ai : STR.ask_prompt));
+      if (busy) {
+        askBtn.setAttribute('aria-disabled', 'true');
+        askBtn.setAttribute('aria-busy', 'true');
+      }
       askBtn.addEventListener('click', function () {
         if (busy) return;
-        if (!live) { mem.feedback = nextReflect(); toOpener({ type: 'alloczoom-coached' }); syncNotes(); renderCoach(); return; }
-        if (!mem.notice.trim()) { setStep('notice'); return; }
-        busy = true; askBtn.disabled = true; askBtn.textContent = STR.thinking;
+        if (!live) { mem.feedback = nextReflect(); toOpener({ type: 'alloczoom-coached' }); syncNotes(); renderCoach(); announce(mem.feedback); return; }
+        if (!mem.notice.trim()) { setStep('notice', true); return; }
+        busy = true;
+        askBtn.setAttribute('aria-disabled', 'true');
+        askBtn.setAttribute('aria-busy', 'true');
+        askBtn.textContent = STR.thinking;
         askAi(current, mem).then(function (res) {
           var text = res && !res.error && res.text ? String(res.text).trim() : '';
           mem.feedback = text || fmt(STR.ai_no_answer, { err: res && res.error ? ' (' + res.error + ')' : '', prompt: nextReflect() });
           busy = false; syncNotes();
           renderCoach();
+          announce(mem.feedback);
         });
       });
       coachBody.appendChild(askBtn);
@@ -780,8 +857,22 @@
       coachBody.appendChild(row);
     }
   }
-  Object.keys(tabs).forEach(function (k) {
+  var tabOrder = ['notice', 'wonder', 'coach'];
+  tabOrder.forEach(function (k, idx) {
     tabs[k].addEventListener('click', function () { if (current) setStep(k); });
+    tabs[k].addEventListener('keydown', function (e) {
+      if (!current) return;
+      var nextIdx = -1;
+      if (e.key === 'ArrowRight') nextIdx = (idx + 1) % tabOrder.length;
+      else if (e.key === 'ArrowLeft') nextIdx = (idx + tabOrder.length - 1) % tabOrder.length;
+      else if (e.key === 'Home') nextIdx = 0;
+      else if (e.key === 'End') nextIdx = tabOrder.length - 1;
+      if (nextIdx === -1) return;
+      e.preventDefault();
+      var nextKey = tabOrder[nextIdx];
+      setStep(nextKey);
+      try { tabs[nextKey].focus(); } catch (_) {}
+    });
   });
 
   // ── OpenSeadragon viewer ─────────────────────────────────────────────
@@ -1010,6 +1101,7 @@
   function loadImage(id) {
     current = (customItem && customItem.id === id) ? customItem : (IMAGES.find(function (s) { return s.id === id; }) || null);
     if (!current) return;
+    var hadFocusInPicker = !!(document.activeElement && picker.contains(document.activeElement));
     setPinMode(false);
     abandonSpeech();
     picker.style.display = 'none';
@@ -1058,6 +1150,7 @@
     catch (e) { onFail(); }
     toOpener({ type: 'alloczoom-imgopened', image: current.id });
     setStep('notice');
+    try { if (hadFocusInPicker && backBtn) backBtn.focus(); } catch (_) {}
   }
   function showPicker() {
     setPinMode(false);
@@ -1073,6 +1166,11 @@
       try { viewer.close(); } catch (_) {}
     }
     overlayEls = [];
+    try {
+      var firstCard = pickerGrid.querySelector('.simcard');
+      if (firstCard) firstCard.focus();
+      else if (imgSelect) imgSelect.focus();
+    } catch (_) {}
   }
 
   // ── Bring your own image ─────────────────────────────────────────────

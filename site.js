@@ -39,6 +39,7 @@
         menu.querySelectorAll('a[href]').forEach(function (link) { link.addEventListener('click', function () { closeMenu(false); }); });
         menu.addEventListener('click', function (event) { if (event.target === menu) closeMenu(true); });
         menu.addEventListener('keydown', function (event) {
+            if (event.isComposing || event.keyCode === 229) return;
             if (event.key === 'Escape') { event.preventDefault(); closeMenu(true); return; }
             if (event.key !== 'Tab') return;
             var focusables = items();
@@ -47,6 +48,15 @@
             var last = focusables[focusables.length - 1];
             if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
             else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        });
+        document.addEventListener('keydown', function (event) {
+            if (menu.hidden || event.isComposing || event.keyCode === 229) return;
+            if (event.key === 'Escape') { event.preventDefault(); closeMenu(true); }
+        });
+        window.addEventListener('resize', function () {
+            if (menu.hidden) return;
+            var btnStyle = window.getComputedStyle ? window.getComputedStyle(openButton) : null;
+            if (btnStyle && btnStyle.display === 'none') closeMenu(false);
         });
         closeMenu(false);
     }
@@ -74,19 +84,53 @@
             .catch(function () { /* Keep the bundled fallback version when offline. */ });
     }
 
+    function fallbackCopyText(text) {
+        var area = document.createElement('textarea');
+        area.value = text;
+        area.setAttribute('readonly', '');
+        area.style.position = 'fixed';
+        area.style.left = '-9999px';
+        area.style.top = '0';
+        document.body.appendChild(area);
+        area.select();
+        var copied = false;
+        try {
+            copied = Boolean(document.execCommand && document.execCommand('copy'));
+        } catch (_err) {
+            copied = false;
+        }
+        area.remove();
+        return copied;
+    }
+
     function initExampleCopy() {
         var button = document.getElementById('copy-example-source');
         var source = document.getElementById('classroom-example-source');
         var status = document.getElementById('copy-example-status');
-        if (!button || !source || !status || !window.isSecureContext || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') return;
+        var hasClipboard = Boolean(window.isSecureContext && navigator.clipboard && typeof navigator.clipboard.writeText === 'function');
+        var hasFallback = typeof document.execCommand === 'function';
+        if (!button || !source || !status || (!hasClipboard && !hasFallback)) return;
         button.hidden = false;
         button.addEventListener('click', async function () {
             if (button.getAttribute('aria-disabled') === 'true') return;
             button.setAttribute('aria-disabled', 'true');
             status.textContent = 'Copying sample text...';
             try {
-                await navigator.clipboard.writeText(source.textContent.trim());
-                status.textContent = 'Copied. Open AlloFlow and paste the passage into your source.';
+                var text = source.textContent.trim();
+                var copied = false;
+                if (hasClipboard) {
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        copied = true;
+                    } catch (_clipErr) {
+                        copied = fallbackCopyText(text);
+                    }
+                } else {
+                    copied = fallbackCopyText(text);
+                }
+                status.textContent = copied
+                    ? 'Copied. Open AlloFlow and paste the passage into your source.'
+                    : 'Copy is unavailable. Download the text file or select and copy the passage above.';
             } catch (error) {
                 status.textContent = 'Copy is unavailable. Download the text file or select and copy the passage above.';
             } finally {
@@ -105,6 +149,11 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         if (window.lucide) window.lucide.createIcons();
+        document.querySelectorAll('svg.lucide, i[data-lucide]').forEach(function (icon) {
+            if (!icon.hasAttribute('aria-label') && !icon.hasAttribute('aria-labelledby')) {
+                icon.setAttribute('aria-hidden', 'true');
+            }
+        });
         initMobileNavigation();
         hardenExternalLinks();
         syncReleaseVersion();

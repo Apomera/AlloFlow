@@ -7137,6 +7137,7 @@
     function renderDaConfirm() {
       if (!daConfirm) return null;
       function trapConfirmKeys(e) {
+        if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
         if (e.key === "Escape" || e.key === "Esc") { e.preventDefault(); e.stopPropagation(); daCloseConfirm(false); return; }
         if (e.key === "Tab") {
           // Two buttons only — wrap between them (and keep the shell's own
@@ -7154,22 +7155,24 @@
         style: { position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }
       },
         h("div", {
-          role: "alertdialog", "aria-modal": "true", "aria-label": daConfirm.message,
+          role: "alertdialog", "aria-modal": "true", "aria-label": daConfirm.confirmLabel || "Confirm action", "aria-describedby": "da-confirm-msg",
           className: "da-card",
           style: { maxWidth: 420, width: "100%", padding: 18, boxShadow: "0 12px 40px rgba(0,0,0,0.35)" }
         },
-          h("p", { style: { margin: "0 0 14px", fontSize: 14, color: "var(--da-ink)", lineHeight: 1.6 } }, daConfirm.message),
+          h("p", { id: "da-confirm-msg", style: { margin: "0 0 14px", fontSize: 14, color: "var(--da-ink)", lineHeight: 1.6 } }, daConfirm.message),
           h("div", { style: { display: "flex", gap: 8, justifyContent: "flex-end" } },
             h("button", {
+              type: "button",
               autoFocus: true,
               onClick: function () { daCloseConfirm(false); },
-              style: { padding: "8px 16px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
+              style: { minHeight: 44, padding: "10px 16px", borderRadius: 8, border: "1px solid var(--da-border-2)", background: "var(--da-surface)", color: "var(--da-ink)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }
             }, "Cancel"),
             h("button", {
+              type: "button",
               onClick: function () { daCloseConfirm(true); },
               style: daConfirm.danger
-                ? { padding: "8px 16px", borderRadius: 8, border: "none", background: "var(--da-red-mid)", color: "var(--da-on-accent)", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }
-                : { padding: "8px 16px", borderRadius: 8, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }
+                ? { minHeight: 44, padding: "10px 16px", borderRadius: 8, border: "none", background: "var(--da-red-mid)", color: "var(--da-on-accent)", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }
+                : { minHeight: 44, padding: "10px 16px", borderRadius: 8, border: "none", background: "var(--da-accent)", color: "var(--da-on-accent)", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }
             }, daConfirm.confirmLabel)
           )
         )
@@ -7715,6 +7718,7 @@
     useEffect(function () {
       if (typeof document === "undefined") return;
       function onKeyDown(e) {
+        if (e.isComposing || e.keyCode === 229) return;
         // The confirm dialog owns the keyboard while open (its own handler
         // cancels on Escape); don't back-navigate underneath it.
         if (daConfirm) return;
@@ -11102,7 +11106,7 @@
                 onConfirm: function () { resetCalibration(); setStartScreenView("start"); }
               });
             },
-            style: { background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12 }
+            style: { minHeight: 44, background: "transparent", border: "1px solid var(--da-border-2)", borderRadius: 8, padding: "8px 12px", cursor: "pointer", fontFamily: "inherit", fontSize: 12 }
           }, "✕ Exit"),
           h("div", { style: { flex: 1, minWidth: 220 } },
             h("div", { style: { fontSize: 11, color: phaseColor, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 800 } },
@@ -11114,7 +11118,8 @@
         h("div", {
           role: "progressbar",
           "aria-valuemin": 0, "aria-valuemax": scenarios.length, "aria-valuenow": calibState.scenarioIdx,
-          "aria-label": "Calibration progress: scenario " + (calibState.scenarioIdx + 1) + " of " + scenarios.length,
+          "aria-label": "Calibration progress",
+          "aria-valuetext": "Scenario " + (calibState.scenarioIdx + 1) + " of " + scenarios.length + " (" + Math.round((calibState.scenarioIdx / scenarios.length) * 100) + "% complete)",
           style: { height: 4, background: "var(--da-border)", borderRadius: 2, overflow: "hidden", marginBottom: 14 }
         },
           h("div", { style: { width: Math.round((calibState.scenarioIdx / scenarios.length) * 100) + "%", height: "100%", background: phaseColor, transition: "width 0.3s ease" } })
@@ -11125,7 +11130,7 @@
             sc.item.construct + " · grades " + sc.item.gradeBand),
           h("p", { style: { margin: 0, fontSize: 15.5, color: "var(--da-ink)", lineHeight: 1.65 } }, sc.item.prompt),
           h("details", { style: { marginTop: 8 } },
-            h("summary", { style: { fontSize: 11, color: "var(--da-muted)", cursor: "pointer", fontStyle: "italic" } }, "Reveal canonical answer"),
+            h("summary", { style: { minHeight: 44, display: "inline-flex", alignItems: "center", fontSize: 12, color: "var(--da-muted)", cursor: "pointer", fontStyle: "italic" } }, "Reveal canonical answer"),
             h("div", { style: { marginTop: 4, padding: 6, background: "var(--da-surface-3)", borderRadius: 4, fontSize: 12, fontFamily: "ui-monospace, monospace", color: "var(--da-ink)" } }, sc.item.correctAnswer)
           )
         ),
@@ -14215,7 +14220,8 @@
         h("div", {
           role: "progressbar",
           "aria-valuemin": 0, "aria-valuemax": totalInPhase, "aria-valuenow": idx,
-          "aria-label": phaseInfo.label + " phase progress: item " + (idx + 1) + " of " + totalInPhase,
+          "aria-label": phaseInfo.label + " phase progress",
+          "aria-valuetext": "Item " + (idx + 1) + " of " + totalInPhase + " (" + pct + "% complete)",
           style: { height: 4, background: "var(--da-border)", borderRadius: 2, overflow: "hidden", marginBottom: 14 }
         },
           h("div", { style: { width: pct + "%", height: "100%", background: phaseInfo.color, transition: "width 0.3s ease" } })
@@ -14225,8 +14231,9 @@
         // throughout the session for overarching observations separate from
         // per-item examinerObservation)
         h("details", { className: "da-card", style: { marginBottom: 14, padding: 10 } },
-          h("summary", { style: { cursor: "pointer", fontSize: 11, fontWeight: 800, color: "var(--da-ink-3)", textTransform: "uppercase", letterSpacing: "0.06em" } },
-            "📝 Session-level notes" + (s.sessionNote && s.sessionNote.length > 0 ? " · " + s.sessionNote.length + " chars" : "")
+          h("summary", { "data-da-session-note-count": "true", style: { minHeight: 44, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, cursor: "pointer", fontSize: 11, fontWeight: 800, color: "var(--da-ink-3)", textTransform: "uppercase", letterSpacing: "0.06em" } },
+            h("span", null, "📝 Session-level notes"),
+            h("span", { style: { fontVariantNumeric: "tabular-nums", fontWeight: 700 } }, (s.sessionNote ? s.sessionNote.length : 0) + " / 4,000 chars")
           ),
           h("textarea", {
             value: s.sessionNote || "",
@@ -14714,15 +14721,17 @@
         h("div", {
           role: "progressbar",
           "aria-valuemin": 0, "aria-valuemax": totalInPhase, "aria-valuenow": idx,
-          "aria-label": "AI mediation progress: item " + (idx + 1) + " of " + totalInPhase,
+          "aria-label": "AI mediation progress",
+          "aria-valuetext": "Item " + (idx + 1) + " of " + totalInPhase + " (" + pct + "% complete)",
           style: { height: 4, background: "var(--da-border)", borderRadius: 2, overflow: "hidden", marginBottom: 14 }
         },
           h("div", { style: { width: pct + "%", height: "100%", background: "var(--da-accent-2)", transition: "width 0.3s ease" } })
         ),
         // Phase U — Session-level note drawer
         h("details", { className: "da-card", style: { marginBottom: 14, padding: 10 } },
-          h("summary", { style: { cursor: "pointer", fontSize: 11, fontWeight: 800, color: "var(--da-ink-3)", textTransform: "uppercase", letterSpacing: "0.06em" } },
-            "📝 Session-level notes" + (s.sessionNote && s.sessionNote.length > 0 ? " · " + s.sessionNote.length + " chars" : "")
+          h("summary", { "data-da-session-note-count": "true", style: { minHeight: 44, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, cursor: "pointer", fontSize: 11, fontWeight: 800, color: "var(--da-ink-3)", textTransform: "uppercase", letterSpacing: "0.06em" } },
+            h("span", null, "📝 Session-level notes"),
+            h("span", { style: { fontVariantNumeric: "tabular-nums", fontWeight: 700 } }, (s.sessionNote ? s.sessionNote.length : 0) + " / 4,000 chars")
           ),
           h("textarea", {
             value: s.sessionNote || "",

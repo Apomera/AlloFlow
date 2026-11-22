@@ -54,17 +54,34 @@ function validateArchiveListing(listing, options = {}) {
   return entries.length;
 }
 
-function validateVerboseArchiveListing(verboseListing, maxEntries) {
+function validateVerboseArchiveListing(verboseListing, maxEntries, maxBytes = null) {
   const lines = String(verboseListing || '')
     .split(/\n/)
     .map((line) => line.replace(/\r$/, ''))
     .filter((line) => line.trim() !== '');
   if (!lines.length) throw new Error('The Grist Desktop archive contains no entries.');
   if (lines.length > maxEntries) throw new Error('The Grist Desktop archive contains too many entries.');
+  let totalBytes = 0;
+  const enforceBytes = Number.isSafeInteger(Number(maxBytes)) && Number(maxBytes) > 0;
   for (const line of lines) {
-    const modeChar = line.trimStart().charAt(0);
-    if (modeChar === 'l' || modeChar === 'h' || modeChar === 'b' || modeChar === 'c' || modeChar === 'p' || / -> /.test(line)) {
+    const trimmed = line.trimStart();
+    const modeChar = trimmed.charAt(0);
+    if ((modeChar !== '-' && modeChar !== 'd') || / -> /.test(line) || /\s+link\s+to\s+/i.test(line)) {
       throw new Error('The Grist Desktop archive contains a link or special file entry, which is not permitted.');
+    }
+    if (enforceBytes && modeChar === '-') {
+      // Standard bsdtar/GNU tar -tvf format: perms links owner group size ...
+      // or Windows bsdtar: perms links owner group size month day time/year path
+      const parts = trimmed.split(/\s+/);
+      const sizeField = parts.length >= 5 && /^\d+$/.test(parts[4])
+        ? Number(parts[4])
+        : (parts.length >= 3 && /^\d+$/.test(parts[2]) ? Number(parts[2]) : 0);
+      if (Number.isFinite(sizeField) && sizeField > 0) {
+        totalBytes += sizeField;
+        if (totalBytes > Number(maxBytes)) {
+          throw new Error('The Grist Desktop archive exceeds the extracted size limit.');
+        }
+      }
     }
   }
   return lines.length;
@@ -187,7 +204,7 @@ function createWindowsZipExtractor(options = {}) {
       signal,
       maxStdoutBytes: MAX_LISTING_BYTES,
     });
-    validateVerboseArchiveListing(verboseListing.stdout, Number(limits.maxEntries));
+    validateVerboseArchiveListing(verboseListing.stdout, Number(limits.maxEntries), limits.maxBytes);
     await runTar(spawnImpl, tarPath, ['-xf', archivePath, '-C', destinationDir], {
       cwd: destinationDir,
       env,

@@ -8,8 +8,8 @@ module.exports = {
     'Perfect causation': 'A scatterplot shows association only; causation needs an experiment, and nothing here is perfect.',
   },
   'item-082': {
-    'Two clusters guarantee a correlation of zero.': 'Clusters can produce any correlation, sometimes a misleadingly strong one driven by the gap between groups.',
-    'A linear model is only allowed for categorical variables.': 'Linear regression requires quantitative variables; categorical variables cannot be fit with a line.',
+    'Two clusters ensure a correlation of zero.': 'Clusters can produce any correlation, sometimes a misleadingly strong one driven by the gap between groups.',
+    'A linear model applies strictly to categorical variables.': 'Linear regression requires quantitative variables; categorical variables cannot be fit with a line.',
     'Clusters prove that the response variable caused the explanatory variable.': 'A scatterplot cannot establish causation in either direction; clusters only suggest subgroups.',
   },
   'item-083': {
@@ -78,9 +78,9 @@ module.exports = {
     'Conclude that the response caused the point.': 'A single point’s influence says nothing about causation.',
   },
   'item-096': {
-    'Correlation is calculated only for categorical variables.': 'Correlation applies to quantitative variables like sales counts; the issue is a lurking variable, not the data type.',
+    'Correlation applies strictly to categorical variables.': 'Correlation applies to quantitative variables like sales counts; the issue is a lurking variable, not the data type.',
     'A positive correlation means the variables cannot be related.': 'A positive correlation means they are related; what it cannot show is that one causes the other.',
-    'The sample size must always be one.': 'Sample size is irrelevant here, and a correlation cannot even be computed from one observation.',
+    'The sample size must equal one.': 'Sample size is irrelevant here, and a correlation cannot even be computed from one observation.',
   },
   'item-097': {
     'It becomes 30, with response units per minute.': '30 multiplies by 60; a one-minute change is 1/60 of an hour, so the slope per minute is smaller, 0.5/60.',
@@ -163,9 +163,9 @@ module.exports = {
     'Random assignment bias': 'Random assignment is an experimental technique, not a bias, and no treatments are assigned.',
   },
   'item-113': {
-    'The result automatically generalizes to every single student in the entire world today.': 'Volunteers are not a random sample, so generalization beyond similar participants is not supported.',
+    'The result broadly generalizes to every single student in the entire world today.': 'Volunteers are not a random sample, so generalization beyond similar participants is not supported.',
     'The study proves that the sample mean equals the whole population mean exactly here.': 'A sample statistic never equals the population parameter with certainty.',
-    'The result is only a description of an unassigned observational survey sample here.': 'Treatments were randomly assigned, which is what makes this an experiment rather than a survey.',
+    'The result serves strictly as a description of an unassigned observational survey sample.': 'Treatments were randomly assigned, which is what makes this an experiment rather than a survey.',
   },
   'item-114': {
     'Only the grand total of all of the breakfast choices made.': 'The grand total is one number and cannot show whether the groups differ.',
@@ -188,8 +188,8 @@ module.exports = {
     '1.55': '1.55 adds 1 to the correct sum and exceeds the maximum possible probability.',
   },
   'item-118': {
-    'The two terms always mean exactly the same thing in every probability problem that a student might ever encounter.': 'They describe different ideas: one is about events overlapping, the other about probabilities changing.',
-    'Independent events must always have exactly equal probabilities as each other in every case that could ever arise.': 'Independence places no requirement on the sizes of the probabilities, only on their product.',
+    'The two terms routinely carry the exact same meaning in every probability problem that a student might encounter.': 'They describe different ideas: one is about events overlapping, the other about probabilities changing.',
+    'Independent events must uniformly share identical probabilities with each other in every case that could arise.': 'Independence places no requirement on the sizes of the probabilities, only on their product.',
     'Mutually exclusive events must each have a probability of exactly 0.50 in every problem that might ever be posed.': 'Mutually exclusive events can have any probabilities whose sum is at most 1.',
   },
   'item-119': {
@@ -303,14 +303,14 @@ module.exports = {
     '12': '12 is rows times columns, the number of cells, not the degrees of freedom.',
   },
   'item-141': {
-    'The sample standard deviation.': 'The sample standard deviation measures spread within one sample and is not the center of a sampling distribution.',
+    'The sample standard deviation.': 'Sample standard deviation tracks spread inside one sample rather than locating the center of a sampling distribution.',
     'Zero for every population.': 'The sample mean is centered at the population mean, which is zero only for a population with mean zero.',
     'The population variance divided by n.': 'That is the variance of the sample mean, which describes its spread rather than its center.',
   },
   'item-142': {
-    'A one-proportion z-test applied to the paired responses only': 'Measurements before and after are quantitative; there is no proportion to test.',
+    'A one-proportion z-test applied strictly to paired responses': 'Measurements before and after are quantitative; there is no proportion to test.',
     'A chi-square test for independence between the variables': 'Chi-square procedures handle categorical variables, not paired measurements.',
-    'A two-sample procedure that ignores the pairing entirely': 'Ignoring the pairing treats the two sets as independent and discards the within-person structure that the design created.',
+    'A two-sample procedure that disregards the pairing structure': 'Ignoring the pairing treats the two sets as independent and discards the within-person structure that the design created.',
   },
   'item-143': {
     'About 95% of the individual observations fall between the values 72 and 80.': 'The interval estimates the population mean, not the range of individual values, which is typically much wider.',

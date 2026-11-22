@@ -1231,7 +1231,7 @@ var prefersReducedMotion = (function() { try { return window.matchMedia('(prefer
     return (v == null || v === k) ? (fb != null ? fb : k) : v;
   };
   var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
-  if (!window.StemLab || !window.StemLab.registerTool) return;
+  if (typeof window === 'undefined' || !window.StemLab || !window.StemLab.registerTool) return;
 
   // BEGIN BRAIN ATLAS STRUCTURE PROFILES
   var BRAIN_ATLAS_STRUCTURE_PROFILES = {
@@ -6530,10 +6530,35 @@ var prefersReducedMotion = (function() { try { return window.matchMedia('(prefer
 
   // ── Audio (auto-injected) ──
   var _brainAC = null;
-  function getBrainAC() { if (!_brainAC) { try { _brainAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_brainAC && _brainAC.state === "suspended") { try { _brainAC.resume(); } catch(e) {} } return _brainAC; }
-  function brainTone(f,d,tp,v) { var ac = getBrainAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
-  function sfxBrainClick() { brainTone(600, 0.03, "sine", 0.04); }
-  function sfxBrainSuccess() { brainTone(523, 0.08, "sine", 0.07); setTimeout(function() { brainTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { brainTone(784, 0.1, "sine", 0.08); }, 140); }
+  var _brainMuteBound = false;
+  function _brainIsGlobalMuted() {
+    try {
+      if (typeof window === 'undefined') return false;
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+      if (window.__alloGlobalMuted === true || window._alloGlobalMute === true) return true;
+    } catch (e) {}
+    return false;
+  }
+  function _brainBindGlobalMute() {
+    if (_brainMuteBound || typeof window === 'undefined' || typeof window.addEventListener !== 'function') return;
+    _brainMuteBound = true;
+    window.addEventListener('alloflow-mute-changed', function(ev) {
+      var muted = (ev && ev.detail && typeof ev.detail.muted === 'boolean') ? ev.detail.muted : _brainIsGlobalMuted();
+      if (!muted) return;
+      try { if (window.speechSynthesis && typeof window.speechSynthesis.cancel === 'function') window.speechSynthesis.cancel(); } catch (e) {}
+      try { if (_brainAC && _brainAC.state === 'running' && typeof _brainAC.suspend === 'function') _brainAC.suspend(); } catch (e) {}
+    });
+  }
+  function getBrainAC() {
+    if (_brainIsGlobalMuted()) return null;
+    _brainBindGlobalMute();
+    if (!_brainAC) { try { _brainAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} }
+    if (_brainAC && _brainAC.state === "suspended") { try { _brainAC.resume(); } catch(e) {} }
+    return _brainAC;
+  }
+  function brainTone(f,d,tp,v) { if (_brainIsGlobalMuted()) return; var ac = getBrainAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function sfxBrainClick() { if (_brainIsGlobalMuted()) return; brainTone(600, 0.03, "sine", 0.04); }
+  function sfxBrainSuccess() { if (_brainIsGlobalMuted()) return; brainTone(523, 0.08, "sine", 0.07); setTimeout(function() { if (!_brainIsGlobalMuted()) brainTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { if (!_brainIsGlobalMuted()) brainTone(784, 0.1, "sine", 0.08); }, 140); }
 
   window.StemLab.registerTool('brainAtlas', {
     icon: "🧠",
@@ -6585,7 +6610,9 @@ var prefersReducedMotion = (function() { try { return window.matchMedia('(prefer
       var stemBeep = ctx.beep;
       var callGemini = ctx.callGemini;
       // house default-OFF AI gate, AND the host must say text AI is usable (blocked student fns are truthy)
-      var aiHintsEnabled = !!(ctx && ctx.aiHintsEnabled && ctx.aiAvailable !== false && typeof ctx.callGemini === 'function');
+      var aiHintsEnabled = !!(ctx && ctx.aiHintsEnabled && ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked &&
+        !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.studentAiDisabled === true))) &&
+        !(typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', ctx.callGemini)));
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
@@ -6610,10 +6637,10 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
             }, { debounce: 800 });
           }
 
-          var upd = function (k, v) { setLabToolData(function (p) { return Object.assign({}, p, { brainAtlas: Object.assign({}, p.brainAtlas, (function () {
+          var upd = function (k, v) { setLabToolData(function (p) { var safeP = (p && typeof p === 'object' && !Array.isArray(p)) ? p : {}; var safeB = (safeP.brainAtlas && typeof safeP.brainAtlas === 'object' && !Array.isArray(safeP.brainAtlas)) ? safeP.brainAtlas : {}; return Object.assign({}, safeP, { brainAtlas: Object.assign({}, safeB, (function () {
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
-    if (document.getElementById('allo-live-brainatlas')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-brainatlas')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-brainatlas';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -15107,7 +15134,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
               if (typeof announceToSR === 'function') announceToSR(brainAtlasHumanize3DName(meta.structureKey) + ' selected in the 3D brain model.' + (mapped ? ' Related atlas region opened.' : ''));
             };
             state.onKeyDown = function (event) {
-              if (!state.ready) return;
+              if (!state.ready || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
               if (state.dismissHoverOnEscape(event)) return;
               var handled = true;
               var target = state.controls ? state.controls.target : new state.THREE.Vector3();
@@ -15476,7 +15503,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
             setBrainAtlas3DSlicePosition(Math.round(Math.max(0, Math.min(100, next))));
           }
           function handleBrainAtlas3DSliceNavigatorKey(event) {
-            if (!event || ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].indexOf(event.key) < 0) return;
+            if (!event || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey || ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].indexOf(event.key) < 0) return;
             event.preventDefault();
             var forward = event.key === 'ArrowRight' || event.key === 'ArrowDown';
             setBrainAtlas3DSlicePosition(brain3DSlicePosition + (forward ? 5 : -5));
@@ -16002,7 +16029,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
           }
 
           function handleBrainAtlas3DSearchKey(event) {
-            if (!event) return;
+            if (!event || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
             if (event.key === 'ArrowDown' && brain3DSearchResults.length) {
               event.preventDefault();
               upd('brain3DSearchOpen', true);
@@ -16021,6 +16048,8 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
           }
 
           function speakBrainAtlas3DSelection() {
+            if (_brainIsGlobalMuted()) return;
+            _brainBindGlobalMute();
             var spokenLabel = String(selected3DLabel || (sel && sel.name) || '').replace(/\s*\((left|right)\)\s*$/i, '');
             if (!spokenLabel) return;
             if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') {
@@ -17937,7 +17966,7 @@ var d = (_rawBa && typeof _rawBa === 'object' && !Array.isArray(_rawBa)) ? _rawB
             }).catch(function () { upd('patientText', 'The simulator is not available right now.'); upd('patientLoading', false); });
           }
           function onBrainKey(e) {
-            if (e.defaultPrevented || e.ctrlKey || e.altKey || e.metaKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing)) return;
+            if (e.defaultPrevented || e.ctrlKey || e.altKey || e.metaKey || e.isComposing || e.keyCode === 229 || (e.nativeEvent && e.nativeEvent.isComposing)) return;
             var tgt = e.target || {};
             var tn = (tgt.tagName || '').toUpperCase();
             if (tn === 'INPUT' || tn === 'TEXTAREA' || tn === 'SELECT' || tgt.isContentEditable) return;

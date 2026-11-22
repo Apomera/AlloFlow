@@ -226,7 +226,7 @@
   }
 
   /* A calm workbench: mode and destinations stay one tap away. */
-  :root { --panel: #111a2c; --line: #465a80; --control: #1a2840; --dim: #cad5eb; --muted: #b4c2db; }
+  :root { --panel: #111a2c; --line: #6c83aa; --control: #1a2840; --dim: #cad5eb; --muted: #b4c2db; }
   #hud { border-radius: 20px; border-color: #4c5f82; box-shadow: 0 20px 56px rgba(0,0,0,.35); }
   .hud-header { padding: 13px 15px; background: linear-gradient(120deg, #1c2b48, #141f35); border-bottom-color: #354866; }
   .hud-eyebrow { display: block; color: #bccaf2; font-size: 9px; font-weight: 800; letter-spacing: .16em; margin-bottom: 3px; }
@@ -302,7 +302,7 @@
   .starter-grid button > span { grid-row:1/3; align-self:center; font-size:29px; line-height:1; color:#a6d7ff; }
   .starter-grid strong { font-size:12px; }.starter-grid small { font-size:10px; color:#c5d3ec; }
   .axis-buttons,.view-presets,.scene-presets { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; margin:10px 0; }
-  #hud .axis-buttons button,#hud .view-presets button,#hud .scene-presets button { min-width:0; min-height:36px; border:1px solid #516789; border-radius:8px; background:#1b2c47; color:#e6efff; font-size:11px; padding:7px 3px; }
+  #hud .axis-buttons button,#hud .view-presets button,#hud .scene-presets button { min-width:0; min-height:36px; border:1px solid #6c83aa; border-radius:8px; background:#1b2c47; color:#e6efff; font-size:11px; padding:7px 3px; }
   .axis-buttons button span { color:#b7c5e6; font-size:10px; display:block; margin-top:2px; }
   #hud .axis-buttons button[aria-pressed="true"],#hud .view-presets button[aria-pressed="true"] { color:#fff; background:#554cad; border-color:#c1b7ff; }
   #hud .axis-buttons button:disabled { opacity:.4; }
@@ -337,7 +337,7 @@
   #sceneToolbar #uiBuildCenter { border-left:1px solid #536487; border-radius:0 8px 8px 0; }
   #sceneToolbar button:focus-visible,.settings-jumps button:focus-visible,.custom-material-row input:focus-visible,.material-slider input:focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
   .settings-jumps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin:12px 0; }
-  #hud .settings-jumps button { min-height:36px; padding:6px 4px; border:1px solid #516789; border-radius:8px; background:#1a2942; color:#dbe8ff; font-size:10px; }
+  #hud .settings-jumps button { min-height:36px; padding:6px 4px; border:1px solid #6c83aa; border-radius:8px; background:#1a2942; color:#dbe8ff; font-size:10px; }
   .custom-material-row { display:flex; align-items:center; gap:9px; margin:14px 0; color:var(--dim); font-size:11px; }
   .custom-material-row label { flex:1; }.custom-material-row input { width:40px; height:34px; padding:3px; background:#0c1728; border:1px solid #7187ac; border-radius:7px; cursor:pointer; }.custom-material-row output { font-size:10px; font-variant-numeric:tabular-nums; }
   .material-slider { display:grid; grid-template-columns:1fr auto; gap:8px; margin:14px 0; color:var(--dim); font-size:11px; }.material-slider input { grid-column:1/-1; width:100%; margin:0; accent-color:#b5a6ff; }
@@ -361,6 +361,14 @@
   @media(max-width:400px) { #sceneToolbar button { padding:7px 8px; } #hud #uiBuildStep { flex-basis:76px; width:76px; font-size:10px; } }
   .skip-link { position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; z-index:10000; }
   .skip-link:focus { position:fixed; left:8px; top:8px; width:auto; height:auto; padding:10px 18px; background:#0f172a; color:#f8fafc; font:700 14px system-ui,sans-serif; border-radius:8px; outline:3px solid #facc15; text-decoration:none; }
+  @media (forced-colors: active) {
+    :root { --bg: Canvas; --panel: Canvas; --line: CanvasText; --text: CanvasText; --dim: CanvasText; --muted: CanvasText; --accent: Highlight; --accent-hover: Highlight; --accent2: LinkText; --focus: Highlight; --control: Canvas; --p0: CanvasText; --p1: LinkText; --p2: CanvasText; --p3: CanvasText; }
+    html, body, #immersiveBootStatus, #hud, .hud-header, .hud-eyebrow, .workspace-navigation, .workspace-modes, .workspace-tabs, .workspace-section-label, .hud-primary, .hud-section, .mission, .guidebox, .showcasebox, .sliceexplainer, .sliceformula, .dimchips span, .kbd kbd, #sceneToolbar, .scene-toolbar-label, #quickFindDialog, .find-heading p, .find-result, .find-result span, .find-footer, #quickFindEmpty, .sandbox-return, .exact-dimensions summary, .exact-dimensions summary span, .exact-grid label, .exact-grid input, .lesson-picker select, .exact-edit-status, .skip-link:focus { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; box-shadow: none !important; }
+    #hud .starter-grid button, #hud .starter-grid button > span, #hud .starter-grid small, #hud .axis-buttons button, #hud .axis-buttons button span, #hud .view-presets button, #hud .scene-presets button, #hud .settings-jumps button, #sceneToolbar button, #hud #uiBuildStep, #uiFindClose, #uiFindInput, button.act, button.q, #immersiveBootReload { background: ButtonFace !important; color: ButtonText !important; border-color: ButtonText !important; box-shadow: none !important; }
+    #hud .workspace-modes button[aria-pressed="true"], #hud .workspace-tabs button[aria-pressed="true"], #hud .axis-buttons button[aria-pressed="true"], #hud .view-presets button[aria-pressed="true"], #sceneToolbar button[aria-pressed="true"], #hud [data-comfort][aria-pressed="true"] { background: Highlight !important; color: HighlightText !important; border-color: Highlight !important; }
+    button, input, select, textarea, a { forced-color-adjust: auto; }
+    :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; box-shadow: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -974,13 +982,16 @@ var LAUNCH_STATE = loadLaunchState();
 var SAVED_STATE = LAUNCH_STATE || loadSavedState();
 if (SAVED_STATE && LAUNCH_WORKSPACE) SAVED_STATE.workspaceMode = LAUNCH_WORKSPACE;
 // A lesson payload initializes this visit once; refresh resumes autosaved work.
-if (LAUNCH_STATE || LAUNCH_WORKSPACE || SANDBOX_BRIDGE) {
-  try {
-    var resumeUrl = new URL(window.location.href);
-    ['d','L','W','H','axis','mission','target','boundary','view','focus','precision','stick','quality','instructor','workspace','backdrop','grid','card','tint','surface','light','edges','angle','step','bridge','parentOrigin','bridgeUnit'].forEach(function(key) { resumeUrl.searchParams.delete(key); });
+// Also unconditionally scrub bridge/launch parameters even when invalid or rejected so tokens never linger in address bar/history.
+var LAUNCH_STRIP_KEYS = ['d','L','W','H','axis','mission','target','boundary','view','focus','precision','stick','quality','instructor','workspace','backdrop','grid','card','tint','surface','light','edges','angle','step','paneldistance','panelsize','panelheight','color','opacity','bridge','parentOrigin','bridgeUnit'];
+try {
+  var resumeUrl = new URL(window.location.href);
+  var hasStripParam = LAUNCH_STRIP_KEYS.some(function (key) { return resumeUrl.searchParams.has(key); });
+  if (LAUNCH_STATE || LAUNCH_WORKSPACE || SANDBOX_BRIDGE || hasStripParam) {
+    LAUNCH_STRIP_KEYS.forEach(function (key) { resumeUrl.searchParams.delete(key); });
     window.history.replaceState(window.history.state, '', resumeUrl.pathname + resumeUrl.search + resumeUrl.hash);
-  } catch (ignore) { /* Some embedded browsers cannot replace history. */ }
-}
+  }
+} catch (ignore) { /* Some embedded browsers cannot replace history. */ }
 var MATH_PRECISION = SAVED_STATE && SAVED_STATE.precision ? SAVED_STATE.precision : 2;
 
 function r1(n) { var factor = Math.pow(10, MATH_PRECISION); return Math.round(n * factor) / factor; /* legacy: Math.round(n * 100) / 100 */ }
@@ -3698,6 +3709,8 @@ window.addEventListener('load', function () {
   window.addEventListener('keydown', function (e) {
     var interactiveControl = e.target && (/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(e.target.tagName) || e.target.isContentEditable);
     if (interactiveControl) return;
+    if (findDialog && findDialog.open) return;
+    if (e.target && (/^(A|SUMMARY)$/.test(e.target.tagName) || (typeof e.target.closest === 'function' && e.target.closest('dialog, [role="button"], [role="link"]')))) return;
     if ((e.ctrlKey || e.metaKey) && !e.altKey) {
       var shortcut = String(e.key).toLowerCase();
       if (shortcut === 'z') { if (e.shiftKey) doRedo(); else doUndo(); e.preventDefault(); e.stopPropagation(); return; }

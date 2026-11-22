@@ -42,6 +42,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
     catch (e) { return false; }
   }
 
+  function musicHighContrast() {
+    try {
+      if (typeof document === 'undefined') return false;
+      var root = document.documentElement;
+      var body = document.body;
+      return !!(
+        (root && root.classList && root.classList.contains('theme-contrast')) ||
+        (body && body.classList && body.classList.contains('theme-contrast'))
+      );
+    } catch (e) { return false; }
+  }
+
+  function musicSafeEllipse(ctx, x, y, rx, ry, rot, sa, ea) {
+    if (!ctx) return;
+    if (typeof ctx.ellipse === 'function') {
+      ctx.ellipse(x, y, rx, ry, rot || 0, sa, ea);
+      return;
+    }
+    var r = Math.max(0.5, (rx + ry) * 0.5);
+    ctx.arc(x, y, r, sa, ea);
+  }
+
   // ── Dark theme for the synth surfaces (see MUSIC_TOOLS_REVIEW.md) ──
   (function () {
     if (typeof document === 'undefined') return;
@@ -86,7 +108,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
       '.theme-contrast [data-stem-tool-shell="musicSynth"] .mus-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
       '.theme-contrast [data-stem-tool-shell="musicSynth"] .mus-starter-chip[data-active="true"] { background: #ffff00 !important; color: #000000 !important; border-color: #ffff00 !important; }',
       '.theme-contrast [data-stem-tool-shell="musicSynth"] .mus-tab-hero { background: #000000 !important; background-image: none !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; }',
-      '.theme-contrast [data-stem-tool-shell="musicSynth"] .mus-tab-hero h3, .theme-contrast [data-stem-tool-shell="musicSynth"] .mus-tab-hero p { color: #ffff00 !important; }'
+      '.theme-contrast [data-stem-tool-shell="musicSynth"] .mus-tab-hero h3, .theme-contrast [data-stem-tool-shell="musicSynth"] .mus-tab-hero p { color: #ffff00 !important; }',
+      '@keyframes alloMusBeaconPulse { 0%, 100% { opacity: 0.35; transform: scale(1); } 50% { opacity: 0.85; transform: scale(1.45); } }',
+      '.allo-music-tool .mus-adsr-beacon { transform-box: fill-box; transform-origin: center; animation: alloMusBeaconPulse 1.8s ease-in-out infinite; }',
+      '.theme-contrast [data-stem-tool-shell="musicSynth"] .mus-adsr-beacon { animation: none !important; opacity: 0 !important; }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -1418,15 +1443,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             }
           }
 
-          // ═══ PARTICLE SYSTEM ═══
+          // ═══ PARTICLE SYSTEM (Zero-GC pooled ring + concentric note-trigger ripples) ═══
           function spawnParticles(noteId, color, x, y) {
             if (!window._alloParticles) window._alloParticles = [];
+            if (!window._alloParticlePool) {
+              var pool = new Array(96);
+              for (var pi0 = 0; pi0 < 96; pi0++) {
+                pool[pi0] = { x: 0, y: 0, vx: 0, vy: 0, size: 2, life: 0, decay: 0.02, color: '#a855f7', noteId: '' };
+              }
+              window._alloParticlePool = pool;
+              window._alloParticleCursor = 0;
+            }
+            var noteIdx = NOTE_NAMES.indexOf(String(noteId || '').replace(/[0-9]/g, ''));
+            var normX = typeof x === 'number' ? Math.max(0.08, Math.min(0.92, x / 400)) : (noteIdx >= 0 ? 0.1 + (noteIdx / 11) * 0.8 : 0.5);
+            window._alloNoteTriggerSeq = (window._alloNoteTriggerSeq || 0) + 1;
+            window._alloNoteTriggerColor = color || '#a855f7';
+            window._alloNoteTriggerNormX = normX;
+            var pxBase = typeof x === 'number' ? x : normX * 400;
+            var pyBase = typeof y === 'number' ? y : 100;
             for (var p = 0; p < 8; p++) {
-              window._alloParticles.push({
-                x: x || 200, y: y || 100, vx: (Math.random() - 0.5) * 4, vy: -Math.random() * 3 - 1,
-                size: Math.random() * 4 + 2, life: 1.0, decay: 0.015 + Math.random() * 0.01,
-                color: color || '#a855f7', noteId: noteId
-              });
+              var slot = window._alloParticlePool[window._alloParticleCursor];
+              window._alloParticleCursor = (window._alloParticleCursor + 1) % 96;
+              slot.x = pxBase; slot.y = pyBase;
+              slot.vx = (Math.random() - 0.5) * 4;
+              slot.vy = -Math.random() * 3 - 1;
+              slot.size = Math.random() * 4 + 2;
+              slot.life = 1.0;
+              slot.decay = 0.015 + Math.random() * 0.01;
+              slot.color = color || '#a855f7';
+              slot.noteId = noteId;
+              if (window._alloParticles.indexOf(slot) === -1) window._alloParticles.push(slot);
             }
           }
 
@@ -2666,7 +2712,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             });
           }
 
-          // ═══ OSCILLOSCOPE REF ═══
+          // ═══ OSCILLOSCOPE REF (Zero-GC Phosphor Bloom, Dual-Harmonic Echo, FFT Waterfall & Resonance Ripples) ═══
           var canvasRef = function (canvasEl) {
             if (!canvasEl) {
               if (canvasRef._lastCanvas && canvasRef._lastCanvas._synthVizAnim) {
@@ -2679,20 +2725,91 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             if (canvasEl._synthVizInit) return;
             canvasRef._lastCanvas = canvasEl;
             canvasEl._synthVizInit = true;
-            var W = canvasEl.width = canvasEl.offsetWidth * 2;
-            var H = canvasEl.height = canvasEl.offsetHeight * 2;
+            var W = canvasEl.width = Math.max(2, (canvasEl.offsetWidth || 300) * 2);
+            var H = canvasEl.height = Math.max(2, (canvasEl.offsetHeight || 110) * 2);
             var ctx = canvasEl.getContext('2d');
             if (!ctx) return;
+            // Pre-allocated zero-GC scratch buffers & pools
+            var timeBuf = null;
+            var freqBuf = null;
+            var SMOOTH_PTS = 96;
+            var curWaveY = new Float32Array(SMOOTH_PTS);
+            var prevWaveY = new Float32Array(SMOOTH_PTS);
+            var echoWaveY = new Float32Array(SMOOTH_PTS);
+            var wavePrimed = false;
             var peakHold = null;
+            var peakVel = null;
+            var WF_ROWS = 14;
+            var WF_BINS = 48;
+            var wfGrid = new Float32Array(WF_ROWS * WF_BINS);
+            var wfHead = 0;
+            var wfFrameTick = 0;
+            var RIPPLE_MAX = 14;
+            var ripX = new Float32Array(RIPPLE_MAX);
+            var ripY = new Float32Array(RIPPLE_MAX);
+            var ripR = new Float32Array(RIPPLE_MAX);
+            var ripMaxR = new Float32Array(RIPPLE_MAX);
+            var ripAlpha = new Float32Array(RIPPLE_MAX);
+            var ripColor = new Array(RIPPLE_MAX);
+            var ripActive = new Uint8Array(RIPPLE_MAX);
+            var ripCursor = 0;
+            var lastTriggerSeq = window._alloNoteTriggerSeq || 0;
+            var vizStartMs = typeof performance !== 'undefined' ? performance.now() : 0;
+
+            function spawnRipple(rx, ry, col, maxR) {
+              var idx = ripCursor;
+              ripCursor = (ripCursor + 1) % RIPPLE_MAX;
+              ripX[idx] = rx;
+              ripY[idx] = ry;
+              ripR[idx] = 6;
+              ripMaxR[idx] = maxR;
+              ripAlpha[idx] = 0.85;
+              ripColor[idx] = col || '#c084fc';
+              ripActive[idx] = 1;
+            }
+
+            function drawSmoothWavePath(ys, count, width) {
+              var stepX = width / (count - 1);
+              ctx.beginPath();
+              ctx.moveTo(0, ys[0]);
+              for (var k = 1; k < count - 1; k++) {
+                var x1 = k * stepX;
+                var y1 = ys[k];
+                var mx = (x1 + (k + 1) * stepX) * 0.5;
+                var my = (y1 + ys[k + 1]) * 0.5;
+                ctx.quadraticCurveTo(x1, y1, mx, my);
+              }
+              ctx.lineTo(width, ys[count - 1]);
+            }
+
             function draw() {
               if (!canvasEl.isConnected) { canvasEl._synthVizInit = false; return; }
               canvasEl._synthVizAnim = requestAnimationFrame(draw);
               var analyser = window._alloSynthAnalyser;
               var vizMode = canvasEl.dataset.vizMode || 'waveform';
               var reduced = musicReducedMotion();
-              // CRT phosphor persistence wash (or clean studio vignette under reduced motion)
-              if (!reduced && vizMode !== 'helix' && canvasEl.dataset.showFft !== 'true' && analyser) {
-                ctx.fillStyle = 'rgba(11, 7, 26, 0.36)';
+              var hc = musicHighContrast();
+              var showFFTMode = canvasEl.dataset.showFft === 'true';
+              var nowSec = ((typeof performance !== 'undefined' ? performance.now() : 0) - vizStartMs) * 0.001;
+
+              // Ingest any new note triggers into the zero-GC concentric resonance ripple pool
+              var trigSeq = window._alloNoteTriggerSeq || 0;
+              if (trigSeq !== lastTriggerSeq) {
+                lastTriggerSeq = trigSeq;
+                var tNormX = typeof window._alloNoteTriggerNormX === 'number' ? window._alloNoteTriggerNormX : 0.5;
+                var tCol = window._alloNoteTriggerColor || canvasEl.dataset.noteColor || '#c084fc';
+                spawnRipple(tNormX * W, H * 0.5, tCol, Math.min(W * 0.24, H * 0.92));
+                if (!reduced && !hc) {
+                  spawnRipple(tNormX * W, H * 0.5, '#38bdf8', Math.min(W * 0.16, H * 0.62));
+                }
+              }
+
+              // Backdrop: High-Contrast solid black, CRT phosphor persistence wash, or studio vignette
+              if (hc) {
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, W, H);
+              } else if (!reduced && vizMode !== 'helix' && !showFFTMode && analyser) {
+                ctx.fillStyle = 'rgba(10, 6, 24, 0.34)';
                 ctx.fillRect(0, 0, W, H);
               } else {
                 if (typeof ctx.createRadialGradient === 'function') {
@@ -2706,185 +2823,360 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 }
                 ctx.fillRect(0, 0, W, H);
               }
+
               // Crisp CRT oscilloscope graticule + center calibration ticks
-              ctx.strokeStyle = 'rgba(139,92,246,0.11)'; ctx.lineWidth = 1;
+              ctx.strokeStyle = hc ? 'rgba(255,255,0,0.22)' : 'rgba(139,92,246,0.11)'; ctx.lineWidth = 1;
               for (var gx = 40; gx < W; gx += 40) { ctx.beginPath(); ctx.moveTo(gx + 0.5, 0); ctx.lineTo(gx + 0.5, H); ctx.stroke(); }
               for (var gy = 20; gy < H; gy += 20) { ctx.beginPath(); ctx.moveTo(0, gy + 0.5); ctx.lineTo(W, gy + 0.5); ctx.stroke(); }
-              // Center axis with fine tick marks
-              ctx.strokeStyle = 'rgba(167,139,250,0.26)'; ctx.lineWidth = 1;
+              ctx.strokeStyle = hc ? 'rgba(255,255,0,0.5)' : 'rgba(167,139,250,0.26)'; ctx.lineWidth = 1;
               ctx.beginPath(); ctx.moveTo(0, H / 2 + 0.5); ctx.lineTo(W, H / 2 + 0.5); ctx.stroke();
               for (var tx = 20; tx < W; tx += 20) {
                 var th = tx % 80 === 0 ? 6 : 3;
                 ctx.beginPath(); ctx.moveTo(tx + 0.5, H / 2 - th); ctx.lineTo(tx + 0.5, H / 2 + th); ctx.stroke();
               }
-              // Subtle CRT glass scanlines
-              ctx.fillStyle = 'rgba(255,255,255,0.018)';
-              for (var sl = 0; sl < H; sl += 4) ctx.fillRect(0, sl, W, 1);
-              if (!analyser) return;
-              var showFFTMode = canvasEl.dataset.showFft === 'true';
+              if (!hc) {
+                ctx.fillStyle = 'rgba(255,255,255,0.018)';
+                for (var sl = 0; sl < H; sl += 4) ctx.fillRect(0, sl, W, 1);
+              }
+
+              // Serene harmonic standby standing wave when analyser has not initialized yet
+              if (!analyser) {
+                ctx.save();
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                var idlePhase = reduced ? 0 : nowSec * 2.2;
+                for (var ik = 0; ik < SMOOTH_PTS; ik++) {
+                  var iu = ik / (SMOOTH_PTS - 1);
+                  var env = Math.sin(iu * Math.PI);
+                  var idleAmp = (reduced || hc) ? 0 : (Math.sin(iu * Math.PI * 4 + idlePhase) * 0.65 + Math.sin(iu * Math.PI * 8 - idlePhase * 1.3) * 0.35) * env * H * 0.055;
+                  curWaveY[ik] = H * 0.5 + idleAmp;
+                }
+                drawSmoothWavePath(curWaveY, SMOOTH_PTS, W);
+                if (hc) {
+                  ctx.strokeStyle = '#ffff00'; ctx.lineWidth = 2; ctx.stroke();
+                } else {
+                  ctx.strokeStyle = 'rgba(168,85,247,0.38)'; ctx.lineWidth = 4; ctx.stroke();
+                  ctx.strokeStyle = 'rgba(196,181,253,0.78)'; ctx.lineWidth = 1.6; ctx.stroke();
+                }
+                ctx.restore();
+                return;
+              }
+
+              var binCount = analyser.frequencyBinCount;
+              if (!timeBuf || timeBuf.length !== binCount) timeBuf = new Uint8Array(binCount);
+              if (!freqBuf || freqBuf.length !== binCount) freqBuf = new Uint8Array(binCount);
 
               if (vizMode === 'lissajous') {
-                // Lissajous: dual-pass CRT phosphor X-Y trace
-                var buf = new Uint8Array(analyser.frequencyBinCount);
-                analyser.getByteTimeDomainData(buf);
-                var phaseShift = Math.floor(buf.length / 4);
+                // Lissajous: zero-GC dual-pass CRT phosphor X-Y trace + phase tracking comet head
+                analyser.getByteTimeDomainData(timeBuf);
+                var phaseShift = Math.floor(binCount / 4);
+                var stride = Math.max(1, Math.floor((binCount - phaseShift) / 140));
                 ctx.save();
                 ctx.lineCap = 'round'; ctx.lineJoin = 'round';
                 ctx.beginPath();
-                for (var i = 0; i < buf.length - phaseShift; i++) {
-                  var x = (buf[i] / 255) * W;
-                  var y = (buf[i + phaseShift] / 255) * H;
-                  if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                var prevX = 0, prevY = 0, firstL = true, tipX = W * 0.5, tipY = H * 0.5;
+                for (var li = 0; li < binCount - phaseShift; li += stride) {
+                  var lx = (timeBuf[li] / 255) * W;
+                  var ly = (timeBuf[li + phaseShift] / 255) * H;
+                  if (firstL) { ctx.moveTo(lx, ly); firstL = false; }
+                  else { ctx.quadraticCurveTo(prevX, prevY, (prevX + lx) * 0.5, (prevY + ly) * 0.5); }
+                  prevX = lx; prevY = ly; tipX = lx; tipY = ly;
                 }
-                ctx.shadowColor = '#c084fc'; ctx.shadowBlur = 16;
-                ctx.strokeStyle = 'rgba(168,85,247,0.45)'; ctx.lineWidth = 5;
-                ctx.stroke();
-                ctx.shadowBlur = 6;
-                ctx.strokeStyle = '#e9d5ff'; ctx.lineWidth = 2;
-                ctx.stroke();
+                if (hc) {
+                  ctx.strokeStyle = '#ffff00'; ctx.lineWidth = 2.4; ctx.stroke();
+                } else {
+                  ctx.shadowColor = '#c084fc'; ctx.shadowBlur = 16;
+                  ctx.strokeStyle = 'rgba(168,85,247,0.45)'; ctx.lineWidth = 5; ctx.stroke();
+                  ctx.shadowBlur = 6;
+                  ctx.strokeStyle = '#e9d5ff'; ctx.lineWidth = 2; ctx.stroke();
+                  // Phase-tracking comet beacon
+                  ctx.shadowColor = '#38bdf8'; ctx.shadowBlur = 12;
+                  ctx.fillStyle = '#e0f2fe';
+                  ctx.beginPath(); ctx.arc(tipX, tipY, 3.6, 0, Math.PI * 2); ctx.fill();
+                }
                 ctx.restore();
               } else if (vizMode === 'helix') {
-                // 3D helix: glowing harmonic ribbon wrapping in pseudo-3D
-                var buf = new Uint8Array(analyser.frequencyBinCount);
-                analyser.getByteTimeDomainData(buf);
+                // 3D helix: glowing harmonic ribbon + depth-sorted standing-wave beads
+                analyser.getByteTimeDomainData(timeBuf);
                 var turns = 3; var perspective = 0.32;
+                var phaseDrift = reduced ? 0 : nowSec * 1.4;
                 ctx.save();
-                for (var i = 0; i < buf.length; i += 2) {
-                  var t = i / buf.length;
-                  var angle = t * turns * Math.PI * 2;
-                  var amplitude = (buf[i] / 128 - 1) * (H * 0.35);
+                // Connecting phase spine
+                ctx.beginPath();
+                for (var hi = 0; hi < binCount; hi += 4) {
+                  var ht = hi / binCount;
+                  var hAng = ht * turns * Math.PI * 2 + phaseDrift;
+                  var hAmp = (timeBuf[hi] / 128 - 1) * (H * 0.35);
+                  var hx = ht * W;
+                  var hDepth = Math.sin(hAng) * perspective + 1;
+                  var hy = H / 2 + hAmp * Math.cos(hAng) * hDepth;
+                  if (hi === 0) ctx.moveTo(hx, hy); else ctx.lineTo(hx, hy);
+                }
+                ctx.strokeStyle = hc ? '#ffff00' : 'rgba(192,132,252,0.42)';
+                ctx.lineWidth = hc ? 2 : 2.2;
+                ctx.stroke();
+                for (var hi2 = 0; hi2 < binCount; hi2 += 4) {
+                  var t = hi2 / binCount;
+                  var angle = t * turns * Math.PI * 2 + phaseDrift;
+                  var amplitude = (timeBuf[hi2] / 128 - 1) * (H * 0.35);
                   var x = t * W;
                   var depth = Math.sin(angle) * perspective + 1;
                   var y = H / 2 + amplitude * Math.cos(angle) * depth;
                   var hue = 250 + t * 90;
                   var rDot = 1.6 + depth * 1.4;
-                  ctx.fillStyle = 'hsla(' + hue + ', 90%, 65%, ' + (0.18 + depth * 0.16) + ')';
-                  ctx.beginPath(); ctx.arc(x, y, rDot * 2.1, 0, Math.PI * 2); ctx.fill();
-                  ctx.fillStyle = 'hsla(' + hue + ', 95%, 78%, ' + (0.45 + depth * 0.4) + ')';
-                  ctx.beginPath(); ctx.arc(x, y, rDot, 0, Math.PI * 2); ctx.fill();
+                  if (hc) {
+                    ctx.fillStyle = depth > 1 ? '#ffff00' : '#00ff00';
+                    ctx.beginPath(); ctx.arc(x, y, rDot, 0, Math.PI * 2); ctx.fill();
+                  } else {
+                    ctx.fillStyle = 'hsla(' + hue + ', 90%, 65%, ' + (0.18 + depth * 0.16) + ')';
+                    ctx.beginPath(); ctx.arc(x, y, rDot * 2.2, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = 'hsla(' + hue + ', 95%, 78%, ' + (0.48 + depth * 0.38) + ')';
+                    ctx.beginPath(); ctx.arc(x, y, rDot, 0, Math.PI * 2); ctx.fill();
+                  }
                 }
                 ctx.restore();
               } else if (showFFTMode) {
-                // Glowing frequency-spectrum harmonic bars with floating LED peak-hold caps
-                var freqData = new Uint8Array(analyser.frequencyBinCount);
-                analyser.getByteFrequencyData(freqData);
-                var barCount = Math.max(1, Math.floor(freqData.length / 2.5));
+                // Shimmering FFT spectral waterfall aura + glowing harmonic bars + gravity peak-hold decay glow
+                analyser.getByteFrequencyData(freqBuf);
+                var barCount = Math.max(1, Math.min(WF_BINS, Math.floor(binCount / 3)));
                 var barW = W / barCount;
-                if (!peakHold || peakHold.length !== barCount) peakHold = new Float32Array(barCount);
+                if (!peakHold || peakHold.length !== barCount) {
+                  peakHold = new Float32Array(barCount);
+                  peakVel = new Float32Array(barCount);
+                }
+                // Record spectral waterfall row every 3 frames (zero-GC ring buffer)
+                wfFrameTick++;
+                if (!reduced && !hc && wfFrameTick % 3 === 0) {
+                  var rowOff = wfHead * WF_BINS;
+                  for (var wi = 0; wi < barCount; wi++) {
+                    wfGrid[rowOff + wi] = freqBuf[wi] / 255;
+                  }
+                  wfHead = (wfHead + 1) % WF_ROWS;
+                }
                 ctx.save();
+                // Render subtle shimmering spectral waterfall behind bars
+                if (!reduced && !hc) {
+                  var rowH = (H * 0.42) / WF_ROWS;
+                  for (var wr = 0; wr < WF_ROWS; wr++) {
+                    var ringIdx = (wfHead - 1 - wr + WF_ROWS) % WF_ROWS;
+                    var ageAlpha = (1 - wr / WF_ROWS) * 0.24;
+                    var ry = wr * rowH + 2;
+                    var baseIdx = ringIdx * WF_BINS;
+                    for (var wb = 0; wb < barCount; wb++) {
+                      var e = wfGrid[baseIdx + wb];
+                      if (e > 0.06) {
+                        var wHue = 295 - (wb / barCount) * 115;
+                        ctx.fillStyle = 'hsla(' + wHue + ', 92%, 64%, ' + (e * ageAlpha).toFixed(3) + ')';
+                        ctx.fillRect(wb * barW, ry, Math.max(2, barW - 1), Math.max(1.5, rowH - 0.5));
+                      }
+                    }
+                  }
+                }
+                // Live harmonic bars + smooth gravity-decay peak-hold caps
                 for (var fi = 0; fi < barCount; fi++) {
-                  var val = freqData[fi] / 255;
+                  var val = freqBuf[fi] / 255;
                   var barH = val * H * 0.86;
-                  if (barH >= peakHold[fi]) peakHold[fi] = barH;
-                  else peakHold[fi] = Math.max(0, peakHold[fi] - (reduced ? barH : 1.4));
+                  if (barH >= peakHold[fi]) {
+                    peakHold[fi] = barH;
+                    peakVel[fi] = 0;
+                  } else if (reduced) {
+                    peakHold[fi] = barH;
+                    peakVel[fi] = 0;
+                  } else {
+                    peakVel[fi] = Math.min(4.2, peakVel[fi] + 0.085);
+                    peakHold[fi] = Math.max(0, peakHold[fi] - peakVel[fi]);
+                  }
                   var hue = 295 - (fi / barCount) * 115;
                   var bx = fi * barW;
                   var bw = Math.max(2, barW - 2);
                   if (barH > 1) {
-                    if (typeof ctx.createLinearGradient === 'function') {
+                    if (hc) {
+                      ctx.fillStyle = '#00ff00';
+                    } else if (typeof ctx.createLinearGradient === 'function') {
                       var bGrad = ctx.createLinearGradient(0, H - barH, 0, H);
-                      bGrad.addColorStop(0, 'hsla(' + hue + ', 95%, 74%, 0.96)');
-                      bGrad.addColorStop(0.45, 'hsla(' + hue + ', 85%, 58%, 0.82)');
-                      bGrad.addColorStop(1, 'hsla(' + (hue + 24) + ', 75%, 34%, 0.42)');
+                      bGrad.addColorStop(0, 'hsla(' + hue + ', 96%, 76%, 0.96)');
+                      bGrad.addColorStop(0.45, 'hsla(' + hue + ', 86%, 58%, 0.84)');
+                      bGrad.addColorStop(1, 'hsla(' + (hue + 24) + ', 75%, 34%, 0.44)');
                       ctx.fillStyle = bGrad;
                     } else {
                       ctx.fillStyle = 'hsla(' + hue + ', 80%, 55%, 0.85)';
                     }
                     ctx.fillRect(bx, H - barH, bw, barH);
-                    // Luminous crown glow
-                    ctx.fillStyle = 'hsla(' + hue + ', 100%, 86%, 0.85)';
-                    ctx.fillRect(bx, H - barH - 2, bw, 3);
+                    if (!hc) {
+                      ctx.fillStyle = 'hsla(' + hue + ', 100%, 88%, 0.9)';
+                      ctx.fillRect(bx, H - barH - 2, bw, 3);
+                    }
                   }
                   if (peakHold[fi] > 4) {
-                    ctx.fillStyle = 'hsla(' + hue + ', 100%, 90%, 0.9)';
-                    ctx.fillRect(bx, H - peakHold[fi] - 4, bw, 2);
+                    if (hc) {
+                      ctx.fillStyle = '#ffff00';
+                      ctx.fillRect(bx, H - peakHold[fi] - 4, bw, 2.5);
+                    } else {
+                      // Luminous peak-hold decay halo + crisp LED cap
+                      ctx.fillStyle = 'hsla(' + hue + ', 100%, 78%, 0.25)';
+                      ctx.fillRect(bx - 1, H - peakHold[fi] - 6, bw + 2, 6);
+                      ctx.fillStyle = 'hsla(' + hue + ', 100%, 92%, 0.95)';
+                      ctx.fillRect(bx, H - peakHold[fi] - 4, bw, 2);
+                    }
                   }
                 }
                 ctx.restore();
               } else {
-                // CRT phosphor waveform + note-tinted outer bloom + bright core filament
-                var buf = new Uint8Array(analyser.frequencyBinCount);
-                analyser.getByteTimeDomainData(buf);
+                // Zero-GC quadratic-smoothed CRT phosphor waveform + dual-harmonic persistence echo
+                analyser.getByteTimeDomainData(timeBuf);
                 var noteColor = canvasEl.dataset.noteColor || '#a855f7';
                 var hasSignal = false;
-                for (var ci = 0; ci < buf.length; ci++) { if (Math.abs(buf[ci] - 128) > 3) { hasSignal = true; break; } }
-                if (hasSignal) {
+                var peakAbs = 0;
+                var peakIdx = Math.floor(SMOOTH_PTS * 0.5);
+                var sampleStep = binCount / SMOOTH_PTS;
+                for (var si = 0; si < SMOOTH_PTS; si++) {
+                  var rawIdx = Math.min(binCount - 1, Math.floor(si * sampleStep));
+                  var delta = Math.abs(timeBuf[rawIdx] - 128);
+                  if (delta > 3) hasSignal = true;
+                  var sy = (timeBuf[rawIdx] / 128.0) * (H * 0.5);
+                  if (delta > peakAbs) { peakAbs = delta; peakIdx = si; }
+                  if (!wavePrimed) {
+                    curWaveY[si] = sy;
+                    prevWaveY[si] = sy;
+                    echoWaveY[si] = sy;
+                  } else {
+                    echoWaveY[si] = echoWaveY[si] * 0.84 + prevWaveY[si] * 0.16;
+                    prevWaveY[si] = prevWaveY[si] * 0.64 + curWaveY[si] * 0.36;
+                    curWaveY[si] = sy;
+                  }
+                }
+                wavePrimed = true;
+
+                // Subtle idle harmonic breathing shimmer when silent and animations allowed
+                if (!hasSignal && !reduced && !hc) {
+                  for (var sk = 0; sk < SMOOTH_PTS; sk++) {
+                    var su = sk / (SMOOTH_PTS - 1);
+                    var sEnv = Math.sin(su * Math.PI);
+                    curWaveY[sk] = H * 0.5 + Math.sin(su * Math.PI * 4 + nowSec * 2.1) * sEnv * H * 0.04;
+                  }
+                }
+
+                if (hasSignal && !hc) {
                   ctx.save();
-                  ctx.shadowColor = noteColor; ctx.shadowBlur = 18;
-                  ctx.strokeStyle = noteColor; ctx.lineWidth = 2.5;
-                  ctx.globalAlpha = 0.65;
+                  ctx.shadowColor = noteColor; ctx.shadowBlur = 16;
+                  ctx.strokeStyle = noteColor; ctx.lineWidth = 2;
+                  ctx.globalAlpha = 0.55;
                   ctx.strokeRect(2, 2, W - 4, H - 4);
                   ctx.restore();
                 }
-                var sliceWidth = W / buf.length;
+
                 ctx.save();
                 ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-                // Translucent energy curtain between waveform and center axis
-                ctx.beginPath();
-                ctx.moveTo(0, H / 2);
-                for (var fi2 = 0; fi2 < buf.length; fi2++) {
-                  var fv = buf[fi2] / 128.0;
-                  ctx.lineTo(fi2 * sliceWidth, (fv * H) / 2);
+
+                // Translucent energy curtain between smoothed waveform and center axis
+                if (!hc) {
+                  drawSmoothWavePath(curWaveY, SMOOTH_PTS, W);
+                  ctx.lineTo(W, H / 2);
+                  ctx.lineTo(0, H / 2);
+                  ctx.closePath();
+                  if (typeof ctx.createLinearGradient === 'function') {
+                    var fillG = ctx.createLinearGradient(0, 0, 0, H);
+                    fillG.addColorStop(0, 'rgba(56,189,248,0.22)');
+                    fillG.addColorStop(0.5, 'rgba(168,85,247,0.03)');
+                    fillG.addColorStop(1, 'rgba(244,114,182,0.22)');
+                    ctx.fillStyle = fillG;
+                  } else {
+                    ctx.fillStyle = 'rgba(168,85,247,0.12)';
+                  }
+                  ctx.fill();
                 }
-                ctx.lineTo(W, H / 2);
-                ctx.closePath();
-                if (typeof ctx.createLinearGradient === 'function') {
-                  var fillG = ctx.createLinearGradient(0, 0, 0, H);
-                  fillG.addColorStop(0, 'rgba(56,189,248,0.22)');
-                  fillG.addColorStop(0.5, 'rgba(168,85,247,0.04)');
-                  fillG.addColorStop(1, 'rgba(244,114,182,0.22)');
-                  ctx.fillStyle = fillG;
+
+                // Dual-harmonic persistence echo trails (bypassed in reduced motion & high contrast)
+                if (!reduced && !hc) {
+                  drawSmoothWavePath(echoWaveY, SMOOTH_PTS, W);
+                  ctx.strokeStyle = 'rgba(56,189,248,0.20)';
+                  ctx.lineWidth = 2.2;
+                  ctx.stroke();
+
+                  drawSmoothWavePath(prevWaveY, SMOOTH_PTS, W);
+                  ctx.strokeStyle = 'rgba(232,121,249,0.28)';
+                  ctx.lineWidth = 2.8;
+                  ctx.stroke();
+                }
+
+                // Main smoothed CRT phosphor waveform
+                drawSmoothWavePath(curWaveY, SMOOTH_PTS, W);
+                if (hc) {
+                  ctx.strokeStyle = '#ffff00';
+                  ctx.lineWidth = 2.6;
+                  ctx.stroke();
                 } else {
-                  ctx.fillStyle = 'rgba(168,85,247,0.12)';
+                  ctx.shadowColor = hasSignal ? noteColor : '#a855f7';
+                  ctx.shadowBlur = 18;
+                  ctx.strokeStyle = 'rgba(168,85,247,0.44)';
+                  ctx.lineWidth = 6.2;
+                  ctx.stroke();
+                  ctx.shadowBlur = 8;
+                  if (typeof ctx.createLinearGradient === 'function') {
+                    var traceG = ctx.createLinearGradient(0, 0, W, 0);
+                    traceG.addColorStop(0, '#38bdf8');
+                    traceG.addColorStop(0.5, '#c084fc');
+                    traceG.addColorStop(1, '#f472b6');
+                    ctx.strokeStyle = traceG;
+                  } else {
+                    ctx.strokeStyle = '#c084fc';
+                  }
+                  ctx.lineWidth = 2.6;
+                  ctx.stroke();
+                  ctx.shadowBlur = 0;
+                  ctx.strokeStyle = 'rgba(255,255,255,0.82)';
+                  ctx.lineWidth = 1;
+                  ctx.stroke();
+                  // Active crest energy beacon
+                  if (hasSignal && peakAbs > 6) {
+                    var bX = (peakIdx / (SMOOTH_PTS - 1)) * W;
+                    var bY = curWaveY[peakIdx];
+                    ctx.shadowColor = noteColor; ctx.shadowBlur = 12;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath(); ctx.arc(bX, bY, 3.2, 0, Math.PI * 2); ctx.fill();
+                  }
                 }
-                ctx.fill();
-                // Build waveform path
-                ctx.beginPath();
-                for (var i = 0; i < buf.length; i++) {
-                  var v = buf[i] / 128.0; var y = (v * H) / 2;
-                  if (i === 0) ctx.moveTo(0, y); else ctx.lineTo(i * sliceWidth, y);
-                }
-                // Wide phosphor bloom
-                ctx.shadowColor = hasSignal ? noteColor : '#a855f7';
-                ctx.shadowBlur = 18;
-                ctx.strokeStyle = 'rgba(168,85,247,0.42)';
-                ctx.lineWidth = 6;
-                ctx.stroke();
-                // Mid neon stroke
-                ctx.shadowBlur = 8;
-                if (typeof ctx.createLinearGradient === 'function') {
-                  var traceG = ctx.createLinearGradient(0, 0, W, 0);
-                  traceG.addColorStop(0, '#38bdf8');
-                  traceG.addColorStop(0.5, '#c084fc');
-                  traceG.addColorStop(1, '#f472b6');
-                  ctx.strokeStyle = traceG;
-                } else {
-                  ctx.strokeStyle = '#c084fc';
-                }
-                ctx.lineWidth = 2.6;
-                ctx.stroke();
-                // Hot CRT phosphor core filament
-                ctx.shadowBlur = 0;
-                ctx.strokeStyle = 'rgba(255,255,255,0.75)';
-                ctx.lineWidth = 1;
-                ctx.stroke();
                 ctx.restore();
               }
 
-              // Particles (respecting reduced motion)
+              // Live note-trigger concentric resonance ripples (zero-GC fixed pool)
+              ctx.save();
+              for (var ri = 0; ri < RIPPLE_MAX; ri++) {
+                if (!ripActive[ri]) continue;
+                if (reduced) {
+                  ripR[ri] = ripMaxR[ri] * 0.45;
+                  ripAlpha[ri] -= 0.03;
+                } else {
+                  ripR[ri] += (ripMaxR[ri] - ripR[ri]) * 0.095 + 1.1;
+                  ripAlpha[ri] *= 0.92;
+                }
+                if (ripAlpha[ri] <= 0.03 || ripR[ri] >= ripMaxR[ri]) {
+                  ripActive[ri] = 0;
+                  continue;
+                }
+                ctx.strokeStyle = hc ? '#00ff00' : ripColor[ri];
+                ctx.globalAlpha = hc ? Math.min(0.85, ripAlpha[ri]) : ripAlpha[ri] * 0.72;
+                ctx.lineWidth = hc ? 1.6 : 2.2;
+                ctx.beginPath();
+                musicSafeEllipse(ctx, ripX[ri], ripY[ri], ripR[ri], ripR[ri] * 0.56, 0, 0, Math.PI * 2);
+                ctx.stroke();
+              }
+              ctx.restore();
+
+              // Pooled note-burst particles (respecting reduced motion & high contrast)
               if (window._alloParticles && window._alloParticles.length > 0) {
                 var particles = window._alloParticles;
-                ctx.globalCompositeOperation = 'lighter'; // note bursts sum additively on the dark bg
+                ctx.save();
+                if (!hc) ctx.globalCompositeOperation = 'lighter';
                 for (var pi = particles.length - 1; pi >= 0; pi--) {
                   var p = particles[pi];
                   if (!reduced) { p.x += p.vx; p.y += p.vy; p.vy += 0.05; }
                   p.life -= p.decay;
                   if (p.life <= 0) { particles.splice(pi, 1); continue; }
-                  ctx.fillStyle = p.color; ctx.globalAlpha = p.life;
+                  ctx.fillStyle = hc ? '#ffff00' : p.color;
+                  ctx.globalAlpha = p.life;
                   ctx.beginPath(); ctx.arc(p.x * 2, p.y * 2, p.size * 2, 0, Math.PI * 2); ctx.fill();
                 }
-                ctx.globalAlpha = 1;
-                ctx.globalCompositeOperation = 'source-over';
+                ctx.restore();
               }
             }
             canvasEl._synthVizAnim = requestAnimationFrame(draw);
@@ -3211,38 +3503,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
             var analyser = _bpAnalyserRef.current; var cctx = canvas.getContext('2d');
             if (!cctx) return;
             var w = canvas.width, h = canvas.height, buf = new Uint8Array(analyser.frequencyBinCount);
+            var prevBpY = new Float32Array(buf.length);
+            var bpPrimed = false;
             function draw() {
               _bpAnimRef.current = requestAnimationFrame(draw);
               analyser.getByteTimeDomainData(buf);
-              var grd = cctx.createLinearGradient(0, 0, w, 0);
-              grd.addColorStop(0, '#0f0b2e'); grd.addColorStop(0.5, '#1e1b4b'); grd.addColorStop(1, '#0f0b2e');
-              cctx.fillStyle = grd; cctx.fillRect(0, 0, w, h);
-              // Sleek 16-step beat graticule markers
-              cctx.strokeStyle = 'rgba(167,139,250,0.14)'; cctx.lineWidth = 1;
+              var hc = musicHighContrast();
+              var reduced = musicReducedMotion();
+              if (hc) {
+                cctx.fillStyle = '#000000'; cctx.fillRect(0, 0, w, h);
+              } else if (typeof cctx.createLinearGradient === 'function') {
+                var grd = cctx.createLinearGradient(0, 0, w, 0);
+                grd.addColorStop(0, '#0f0b2e'); grd.addColorStop(0.5, '#1e1b4b'); grd.addColorStop(1, '#0f0b2e');
+                cctx.fillStyle = grd; cctx.fillRect(0, 0, w, h);
+              } else {
+                cctx.fillStyle = '#130e36'; cctx.fillRect(0, 0, w, h);
+              }
+              // Sleek 16-step beat graticule markers + live playhead energy column
+              var activeStep = (_seqStep && typeof _seqStep.current === 'number') ? (_seqStep.current % 16) : 0;
+              var colW = w / 16;
+              if (!hc) {
+                cctx.fillStyle = activeStep % 4 === 0 ? 'rgba(244,114,182,0.18)' : 'rgba(56,189,248,0.13)';
+                cctx.fillRect(activeStep * colW, 0, colW, h);
+              } else {
+                cctx.strokeStyle = '#00ff00'; cctx.lineWidth = 1.5;
+                cctx.strokeRect(activeStep * colW + 0.5, 0.5, colW - 1, h - 1);
+              }
+              cctx.lineWidth = 1;
               for (var s = 1; s < 16; s++) {
                 var sx = (s / 16) * w;
-                cctx.strokeStyle = s % 4 === 0 ? 'rgba(244,114,182,0.28)' : 'rgba(167,139,250,0.10)';
+                cctx.strokeStyle = hc ? 'rgba(255,255,0,0.28)' : (s % 4 === 0 ? 'rgba(244,114,182,0.32)' : 'rgba(167,139,250,0.11)');
                 cctx.beginPath(); cctx.moveTo(sx, 0); cctx.lineTo(sx, h); cctx.stroke();
               }
-              cctx.strokeStyle = 'rgba(167,139,250,0.22)';
+              cctx.strokeStyle = hc ? 'rgba(255,255,0,0.45)' : 'rgba(167,139,250,0.22)';
               cctx.beginPath(); cctx.moveTo(0, h / 2); cctx.lineTo(w, h / 2); cctx.stroke();
-              var sw = w / buf.length;
-              // Translucent glow curtain
+              var sw = w / Math.max(1, buf.length - 1);
+              // Update persistence echo buffer (zero-GC)
+              for (var bi = 0; bi < buf.length; bi++) {
+                var by = (buf[bi] / 128.0) * h / 2;
+                prevBpY[bi] = bpPrimed ? (prevBpY[bi] * 0.72 + by * 0.28) : by;
+              }
+              bpPrimed = true;
               cctx.save();
-              cctx.beginPath(); cctx.moveTo(0, h / 2);
-              for (var fi = 0; fi < buf.length; fi++) cctx.lineTo(fi * sw, (buf[fi] / 128.0) * h / 2);
-              cctx.lineTo(w, h / 2); cctx.closePath();
-              cctx.fillStyle = 'rgba(167,139,250,0.16)'; cctx.fill();
-              var wg = cctx.createLinearGradient(0, 0, w, 0);
-              wg.addColorStop(0, '#38bdf8'); wg.addColorStop(0.5, '#f472b6'); wg.addColorStop(1, '#a78bfa');
               cctx.lineCap = 'round'; cctx.lineJoin = 'round';
+              // Persistence echo trail
+              if (!reduced && !hc) {
+                cctx.beginPath();
+                cctx.moveTo(0, prevBpY[0]);
+                for (var ei = 1; ei < buf.length - 1; ei++) {
+                  cctx.quadraticCurveTo(ei * sw, prevBpY[ei], ((ei + 0.5) * sw), (prevBpY[ei] + prevBpY[ei + 1]) * 0.5);
+                }
+                cctx.lineTo(w, prevBpY[buf.length - 1]);
+                cctx.strokeStyle = 'rgba(56,189,248,0.28)'; cctx.lineWidth = 2; cctx.stroke();
+              }
+              // Translucent glow curtain
+              if (!hc) {
+                cctx.beginPath(); cctx.moveTo(0, h / 2);
+                for (var fi = 0; fi < buf.length; fi++) cctx.lineTo(fi * sw, (buf[fi] / 128.0) * h / 2);
+                cctx.lineTo(w, h / 2); cctx.closePath();
+                cctx.fillStyle = 'rgba(167,139,250,0.16)'; cctx.fill();
+              }
+              // Quadratic-smoothed live beat waveform
               cctx.beginPath();
-              for (var i = 0; i < buf.length; i++) { var y = (buf[i] / 128.0) * h / 2; if (i === 0) cctx.moveTo(0, y); else cctx.lineTo(i * sw, y); }
-              cctx.lineTo(w, h / 2);
-              cctx.shadowBlur = 12; cctx.shadowColor = '#c084fc';
-              cctx.strokeStyle = wg; cctx.lineWidth = 3.5; cctx.globalAlpha = 0.45; cctx.stroke();
-              cctx.globalAlpha = 1; cctx.lineWidth = 2; cctx.stroke();
-              cctx.shadowBlur = 0; cctx.strokeStyle = 'rgba(255,255,255,0.65)'; cctx.lineWidth = 0.8; cctx.stroke();
+              cctx.moveTo(0, (buf[0] / 128.0) * h / 2);
+              for (var i = 1; i < buf.length - 1; i++) {
+                var y1 = (buf[i] / 128.0) * h / 2;
+                var y2 = (buf[i + 1] / 128.0) * h / 2;
+                cctx.quadraticCurveTo(i * sw, y1, (i + 0.5) * sw, (y1 + y2) * 0.5);
+              }
+              cctx.lineTo(w, (buf[buf.length - 1] / 128.0) * h / 2);
+              if (hc) {
+                cctx.strokeStyle = '#ffff00'; cctx.lineWidth = 2.4; cctx.stroke();
+              } else {
+                var wg = typeof cctx.createLinearGradient === 'function' ? cctx.createLinearGradient(0, 0, w, 0) : null;
+                if (wg && typeof wg.addColorStop === 'function') {
+                  wg.addColorStop(0, '#38bdf8'); wg.addColorStop(0.5, '#f472b6'); wg.addColorStop(1, '#a78bfa');
+                }
+                cctx.shadowBlur = 12; cctx.shadowColor = '#c084fc';
+                cctx.strokeStyle = wg || '#c084fc'; cctx.lineWidth = 3.8; cctx.globalAlpha = 0.45; cctx.stroke();
+                cctx.globalAlpha = 1; cctx.lineWidth = 2; cctx.stroke();
+                cctx.shadowBlur = 0; cctx.strokeStyle = 'rgba(255,255,255,0.72)'; cctx.lineWidth = 0.85; cctx.stroke();
+              }
               cctx.restore();
             }
             draw();
@@ -3998,6 +4339,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       var pts = "4," + baseY + " " + aX + "," + topY + " " + dX + "," + sY + " " + sX + "," + sY + " " + rX + "," + baseY;
                       var areaPts = pts + " 4," + baseY;
                       var hasActive = !!(d.lastPlayedNote || (window._alloActiveNotes && Object.keys(window._alloActiveNotes).length > 0));
+                      var lfoDepth = Math.max(Number(d.tremoloDepth) || 0, (Number(d.vibratoDepth) || 0) / 30);
+                      var lfoRate = Math.max(Number(d.tremoloRate) || 0, Number(d.vibratoRate) || 0, 3);
+                      var lfoPath = '';
+                      if (lfoDepth > 0.02 && sX > dX + 6) {
+                        var lfoAmp = Math.min(8, 2 + lfoDepth * 6);
+                        var lfoCycles = Math.max(2, Math.min(7, Math.round(lfoRate * 0.7)));
+                        for (var li = 0; li <= 24; li++) {
+                          var lu = li / 24;
+                          var lx = dX + lu * (sX - dX);
+                          var ly = Math.max(topY + 1, Math.min(baseY - 1, sY + Math.sin(lu * Math.PI * 2 * lfoCycles) * lfoAmp));
+                          lfoPath += (li === 0 ? 'M' : 'L') + lx.toFixed(1) + ',' + ly.toFixed(1) + ' ';
+                        }
+                      }
                       return React.createElement("g", null,
                         React.createElement("line", { x1: aX, y1: topY, x2: aX, y2: baseY, stroke: "rgba(56,189,248,0.28)", strokeDasharray: "2 2", strokeWidth: 0.9 }),
                         React.createElement("line", { x1: dX, y1: sY, x2: dX, y2: baseY, stroke: "rgba(192,132,252,0.28)", strokeDasharray: "2 2", strokeWidth: 0.9 }),
@@ -4005,6 +4359,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         React.createElement("polygon", { points: areaPts, fill: "url(#adsrFillGrad)" }),
                         React.createElement("polyline", { points: pts, fill: "none", stroke: "#a855f7", strokeOpacity: 0.38, strokeWidth: 5.5, strokeLinejoin: "round", strokeLinecap: "round" }),
                         React.createElement("polyline", { points: pts, fill: "none", stroke: "url(#adsrStrokeGrad)", strokeWidth: 2.4, strokeLinejoin: "round", strokeLinecap: "round" }),
+                        lfoPath && React.createElement("path", { d: lfoPath, fill: "none", stroke: "#38bdf8", strokeWidth: 1.35, strokeDasharray: "2.5 1.5", opacity: 0.85 }),
+                        React.createElement("circle", { cx: aX, cy: topY, r: hasActive ? 7.5 : 5.5, fill: "none", stroke: "#38bdf8", strokeWidth: 1.2, className: "mus-adsr-beacon" }),
+                        React.createElement("circle", { cx: (dX + sX) * 0.5, cy: sY, r: lfoDepth > 0.02 ? 6.5 : 4.5, fill: "none", stroke: "#e879f9", strokeWidth: 1.1, className: "mus-adsr-beacon" }),
                         React.createElement("circle", { cx: aX, cy: topY, r: hasActive ? 4 : 3, fill: "#38bdf8", stroke: "#ffffff", strokeWidth: 1 }),
                         React.createElement("circle", { cx: dX, cy: sY, r: 2.8, fill: "#c084fc", stroke: "#ffffff", strokeWidth: 0.9 }),
                         React.createElement("circle", { cx: sX, cy: sY, r: 2.8, fill: "#e879f9", stroke: "#ffffff", strokeWidth: 0.9 }),
@@ -4431,8 +4788,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       canvas._micVizInit = true;
                       var ctx2 = canvas.getContext('2d');
                       if (!ctx2) return;
-                      var W = canvas.width = canvas.offsetWidth * 2;
+                      var W = canvas.width = Math.max(2, (canvas.offsetWidth || 300) * 2);
                       var H = canvas.height = 200;
+                      // Pre-allocated zero-GC buffers for microphone analyser & peak-hold decay
+                      var micTimeBuf = null;
+                      var micFreqBuf = null;
+                      var micPeakHold = new Float32Array(64);
+                      var micPeakVel = new Float32Array(64);
                       function drawMicViz() {
                         // Stop (don't reschedule) when the canvas detaches — the handle was never
                         // stored, so without this the mic-viz rAF + analyser leaked on unmount.
@@ -4440,51 +4802,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         requestAnimationFrame(drawMicViz);
                         var analyser = window._alloMicAnalyser;
                         var bufLen = analyser.frequencyBinCount;
-                        var timeData = new Uint8Array(bufLen);
-                        var freqData = new Uint8Array(bufLen);
-                        analyser.getByteTimeDomainData(timeData);
-                        analyser.getByteFrequencyData(freqData);
+                        if (!micTimeBuf || micTimeBuf.length !== bufLen) micTimeBuf = new Uint8Array(bufLen);
+                        if (!micFreqBuf || micFreqBuf.length !== bufLen) micFreqBuf = new Uint8Array(bufLen);
+                        analyser.getByteTimeDomainData(micTimeBuf);
+                        analyser.getByteFrequencyData(micFreqBuf);
+                        var reduced = musicReducedMotion();
+                        var hc = musicHighContrast();
                         // CRT phosphor backdrop wash + subtle scope divider
-                        ctx2.fillStyle = musicReducedMotion() ? '#14081e' : 'rgba(20,8,30,0.38)';
+                        ctx2.fillStyle = hc ? '#000000' : (reduced ? '#14081e' : 'rgba(20,8,30,0.38)');
                         ctx2.fillRect(0, 0, W, H);
-                        ctx2.strokeStyle = 'rgba(244,63,94,0.16)'; ctx2.lineWidth = 1;
+                        ctx2.strokeStyle = hc ? 'rgba(255,255,0,0.45)' : 'rgba(244,63,94,0.16)'; ctx2.lineWidth = 1;
                         ctx2.beginPath(); ctx2.moveTo(0, H * 0.5); ctx2.lineTo(W, H * 0.5); ctx2.stroke();
-                        // Frequency spectrum (bottom half) with glowing harmonic caps
+                        // Frequency spectrum (bottom half) with gravity peak-hold decay glow
                         var barW = (W - 14) / 64;
                         for (var bi = 0; bi < 64; bi++) {
-                          var val = freqData[bi * 2] / 255;
+                          var val = (micFreqBuf[Math.min(bufLen - 1, bi * 2)] || 0) / 255;
                           var barH = val * H * 0.44;
+                          if (barH >= micPeakHold[bi]) { micPeakHold[bi] = barH; micPeakVel[bi] = 0; }
+                          else if (reduced) { micPeakHold[bi] = barH; micPeakVel[bi] = 0; }
+                          else { micPeakVel[bi] = Math.min(3, micPeakVel[bi] + 0.08); micPeakHold[bi] = Math.max(0, micPeakHold[bi] - micPeakVel[bi]); }
                           var hue = 320 - (bi / 64) * 140;
+                          var bw = Math.max(2, barW - 2);
                           if (barH > 1) {
-                            ctx2.fillStyle = 'hsla(' + hue + ',88%,58%,' + (0.48 + val * 0.45) + ')';
-                            ctx2.fillRect(bi * barW, H - barH, Math.max(2, barW - 2), barH);
-                            ctx2.fillStyle = 'hsla(' + hue + ',100%,84%,0.85)';
-                            ctx2.fillRect(bi * barW, H - barH - 2, Math.max(2, barW - 2), 2.5);
+                            ctx2.fillStyle = hc ? '#00ff00' : ('hsla(' + hue + ',88%,58%,' + (0.48 + val * 0.45) + ')');
+                            ctx2.fillRect(bi * barW, H - barH, bw, barH);
+                            if (!hc) {
+                              ctx2.fillStyle = 'hsla(' + hue + ',100%,86%,0.88)';
+                              ctx2.fillRect(bi * barW, H - barH - 2, bw, 2.5);
+                            }
+                          }
+                          if (micPeakHold[bi] > 3) {
+                            ctx2.fillStyle = hc ? '#ffff00' : ('hsla(' + hue + ',100%,90%,0.85)');
+                            ctx2.fillRect(bi * barW, H - micPeakHold[bi] - 4, bw, 2);
                           }
                         }
-                        // Dual-pass luminous CRT waveform (top half)
+                        // Quadratic-smoothed dual-pass luminous CRT waveform (top half)
                         ctx2.save();
                         ctx2.lineCap = 'round'; ctx2.lineJoin = 'round';
                         ctx2.beginPath();
-                        var sliceW = (W - 14) / bufLen;
-                        for (var wi = 0; wi < bufLen; wi++) {
-                          var v = timeData[wi] / 128.0;
-                          var y = v * H / 4 + H * 0.14;
-                          if (wi === 0) ctx2.moveTo(0, y); else ctx2.lineTo(wi * sliceW, y);
+                        var stride = Math.max(1, Math.floor(bufLen / 96));
+                        var sliceW = (W - 14) / Math.max(1, bufLen - 1);
+                        var firstW = true, pwx = 0, pwy = 0;
+                        for (var wi = 0; wi < bufLen; wi += stride) {
+                          var wx = wi * sliceW;
+                          var wy = (micTimeBuf[wi] / 128.0) * H / 4 + H * 0.14;
+                          if (firstW) { ctx2.moveTo(wx, wy); firstW = false; }
+                          else { ctx2.quadraticCurveTo(pwx, pwy, (pwx + wx) * 0.5, (pwy + wy) * 0.5); }
+                          pwx = wx; pwy = wy;
                         }
-                        ctx2.shadowColor = '#fb7185'; ctx2.shadowBlur = 10;
-                        ctx2.strokeStyle = 'rgba(244,63,94,0.45)'; ctx2.lineWidth = 4.5; ctx2.stroke();
-                        ctx2.shadowBlur = 4; ctx2.strokeStyle = '#fda4af'; ctx2.lineWidth = 2; ctx2.stroke();
+                        ctx2.lineTo(W - 14, (micTimeBuf[bufLen - 1] / 128.0) * H / 4 + H * 0.14);
+                        if (hc) {
+                          ctx2.strokeStyle = '#ffff00'; ctx2.lineWidth = 2.4; ctx2.stroke();
+                        } else {
+                          ctx2.shadowColor = '#fb7185'; ctx2.shadowBlur = 10;
+                          ctx2.strokeStyle = 'rgba(244,63,94,0.45)'; ctx2.lineWidth = 4.5; ctx2.stroke();
+                          ctx2.shadowBlur = 4; ctx2.strokeStyle = '#fda4af'; ctx2.lineWidth = 2; ctx2.stroke();
+                          ctx2.shadowBlur = 0; ctx2.strokeStyle = 'rgba(255,255,255,0.75)'; ctx2.lineWidth = 0.85; ctx2.stroke();
+                        }
                         ctx2.restore();
                         // Segmented peak meter
-                        var peak = 0; for (var pi = 0; pi < bufLen; pi++) { var pv = Math.abs(timeData[pi] - 128); if (pv > peak) peak = pv; }
+                        var peak = 0; for (var pi = 0; pi < bufLen; pi++) { var pv = Math.abs(micTimeBuf[pi] - 128); if (pv > peak) peak = pv; }
                         var peakPct = peak / 128;
-                        ctx2.fillStyle = 'rgba(255,255,255,0.08)';
+                        ctx2.fillStyle = hc ? '#111111' : 'rgba(255,255,255,0.08)';
                         ctx2.fillRect(W - 9, 4, 7, H - 8);
-                        ctx2.fillStyle = peakPct > 0.8 ? '#ef4444' : peakPct > 0.5 ? '#f59e0b' : '#4ade80';
+                        ctx2.fillStyle = hc ? '#ffff00' : (peakPct > 0.8 ? '#ef4444' : peakPct > 0.5 ? '#f59e0b' : '#4ade80');
                         ctx2.fillRect(W - 9, H - 4 - (H - 8) * peakPct, 7, (H - 8) * peakPct);
                         // Labels
-                        ctx2.fillStyle = 'rgba(226,232,240,0.62)'; ctx2.font = 'bold 10px system-ui';
+                        ctx2.fillStyle = hc ? '#ffff00' : 'rgba(226,232,240,0.62)'; ctx2.font = 'bold 10px system-ui';
                         ctx2.fillText(__alloT('stem.music.canvas_waveform', 'WAVEFORM'), 6, 13);
                         ctx2.fillText(__alloT('stem.music.canvas_spectrum', 'SPECTRUM'), 6, H - 5);
                         ctx2.fillText(Math.round(peakPct * 100) + '%', W - 36, 13);
@@ -6042,8 +6426,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                                   if (canvas.width !== W) canvas.width = W;
                                   if (canvas.height !== H) canvas.height = H;
                                   g.clearRect(0, 0, W, H);
+                                  var hc = musicHighContrast();
                                   // CRT phosphor scope backdrop + center graticule
-                                  if (typeof g.createLinearGradient === 'function') {
+                                  if (hc) {
+                                    g.fillStyle = '#000000';
+                                  } else if (typeof g.createLinearGradient === 'function') {
                                     var scopeBg = g.createLinearGradient(0, 0, 0, H);
                                     scopeBg.addColorStop(0, '#140b29');
                                     scopeBg.addColorStop(1, '#0b0618');
@@ -6052,7 +6439,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                                     g.fillStyle = '#140b29';
                                   }
                                   g.fillRect(0, 0, W, H);
-                                  g.strokeStyle = 'rgba(167,139,250,0.16)'; g.lineWidth = 1;
+                                  g.strokeStyle = hc ? 'rgba(255,255,0,0.45)' : 'rgba(167,139,250,0.16)'; g.lineWidth = 1;
                                   g.beginPath(); g.moveTo(0, H / 2); g.lineTo(W, H / 2); g.stroke();
                                   // Draw waveform based on instrument's harmonic content
                                   var wType = inst.synth.type;
@@ -6072,9 +6459,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                                     var py = H / 2 - y2 * H * 0.34;
                                     if (xi === 0) g.moveTo(xi, py); else g.lineTo(xi, py);
                                   }
-                                  g.shadowColor = '#a855f7'; g.shadowBlur = 10;
-                                  g.strokeStyle = 'rgba(168,85,247,0.45)'; g.lineWidth = 4.5; g.stroke();
-                                  g.shadowBlur = 4; g.strokeStyle = '#c4b5fd'; g.lineWidth = 2; g.stroke();
+                                  if (hc) {
+                                    g.strokeStyle = '#ffff00'; g.lineWidth = 2.4; g.stroke();
+                                  } else {
+                                    g.shadowColor = '#a855f7'; g.shadowBlur = 10;
+                                    g.strokeStyle = 'rgba(168,85,247,0.45)'; g.lineWidth = 4.5; g.stroke();
+                                    g.shadowBlur = 4; g.strokeStyle = '#c4b5fd'; g.lineWidth = 2; g.stroke();
+                                    g.shadowBlur = 0; g.strokeStyle = 'rgba(255,255,255,0.72)'; g.lineWidth = 0.85; g.stroke();
+                                  }
                                   g.restore();
                                   // Glowing harmonic bars on the right
                                   var harmonicAmps = wType === 'sine' ? [1] : wType === 'square' ? [1, 0, 0.33, 0, 0.2, 0, 0.14] : wType === 'sawtooth' ? [1, 0.5, 0.33, 0.25, 0.2, 0.17, 0.14] : wType === 'triangle' ? [1, 0, 0.11, 0, 0.04] : wType === 'plucked' ? [1, 0.3, 0.15, 0.08, 0.04] : [1];
@@ -6083,16 +6475,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                                     var bx = W - 64 + hi * 8.5; var bh = amp * H * 0.48;
                                     var hHue = 280 - hi * 28;
                                     if (bh > 0.5) {
-                                      g.fillStyle = 'hsla(' + hHue + ',85%,62%,' + (0.45 + amp * 0.5) + ')';
+                                      g.fillStyle = hc ? '#00ff00' : ('hsla(' + hHue + ',85%,62%,' + (0.45 + amp * 0.5) + ')');
                                       g.fillRect(bx, H - bh - 12, 6, bh);
-                                      g.fillStyle = 'hsla(' + hHue + ',100%,86%,0.9)';
-                                      g.fillRect(bx, H - bh - 14, 6, 2);
+                                      if (!hc) {
+                                        g.fillStyle = 'hsla(' + hHue + ',100%,86%,0.9)';
+                                        g.fillRect(bx, H - bh - 14, 6, 2);
+                                      }
                                     }
-                                    g.fillStyle = 'rgba(226,232,240,0.55)';
+                                    g.fillStyle = hc ? '#ffff00' : 'rgba(226,232,240,0.55)';
                                     g.fillText(String(hi + 1), bx + 3, H - 2);
                                   });
                                   // Labels
-                                  g.fillStyle = 'rgba(226,232,240,0.55)'; g.font = 'bold 9px system-ui'; g.textAlign = 'left';
+                                  g.fillStyle = hc ? '#ffff00' : 'rgba(226,232,240,0.55)'; g.font = 'bold 9px system-ui'; g.textAlign = 'left';
                                   g.fillText(__alloT('stem.music.canvas_waveform', 'WAVEFORM'), 6, 12);
                                   g.textAlign = 'right';
                                   g.fillText(__alloT('stem.music.canvas_harmonics', 'HARMONICS'), W - 6, 12);
@@ -6271,7 +6665,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       if (canvas.width !== W) canvas.width = W;
                       if (canvas.height !== H) canvas.height = H;
                       g.clearRect(0, 0, W, H);
-                      if (typeof g.createLinearGradient === 'function') {
+                      var hc = musicHighContrast();
+                      if (hc) {
+                        g.fillStyle = '#000000';
+                      } else if (typeof g.createLinearGradient === 'function') {
                         var hBg = g.createLinearGradient(0, 0, 0, H);
                         hBg.addColorStop(0, '#120b28'); hBg.addColorStop(1, '#090517');
                         g.fillStyle = hBg;
@@ -6279,54 +6676,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         g.fillStyle = '#0f0a1e';
                       }
                       g.fillRect(0, 0, W, H);
-                      g.strokeStyle = 'rgba(139,92,246,0.15)'; g.lineWidth = 1;
+                      g.strokeStyle = hc ? 'rgba(255,255,0,0.45)' : 'rgba(139,92,246,0.15)'; g.lineWidth = 1;
                       g.beginPath(); g.moveTo(0, H / 2); g.lineTo(W, H / 2); g.stroke();
                       var harmonics = d.activeHarmonics || [1];
                       // Draw individual harmonics (faint colored partials)
-                      harmonics.forEach(function(hn, hi) {
-                        g.strokeStyle = 'hsla(' + (hn * 40) + ',80%,65%,0.28)';
+                      for (var hi = 0; hi < harmonics.length; hi++) {
+                        var hn = harmonics[hi];
+                        g.strokeStyle = hc ? 'rgba(0,255,0,0.55)' : ('hsla(' + (hn * 40) + ',80%,65%,0.28)');
                         g.lineWidth = 1.2; g.beginPath();
-                        for (var xi = 0; xi < W; xi++) {
+                        for (var xi = 0; xi < W; xi += 2) {
                           var t3 = xi / W * Math.PI * 4;
                           var y3 = Math.sin(t3 * hn) / hn;
                           var py2 = H / 2 - y3 * H * 0.34;
                           if (xi === 0) g.moveTo(xi, py2); else g.lineTo(xi, py2);
                         }
                         g.stroke();
-                      });
+                      }
                       // Draw combined CRT phosphor waveform (translucent curtain + neon bloom + hot core)
                       g.save();
                       g.lineCap = 'round'; g.lineJoin = 'round';
-                      g.beginPath(); g.moveTo(0, H / 2);
-                      for (var xf = 0; xf < W; xf++) {
-                        var tf = xf / W * Math.PI * 4;
-                        var sumF = 0;
-                        harmonics.forEach(function(hnF) { sumF += Math.sin(tf * hnF) / hnF; });
-                        g.lineTo(xf, H / 2 - sumF * H * 0.29);
+                      if (!hc) {
+                        g.beginPath(); g.moveTo(0, H / 2);
+                        for (var xf = 0; xf < W; xf += 2) {
+                          var tf = xf / W * Math.PI * 4;
+                          var sumF = 0;
+                          for (var hf = 0; hf < harmonics.length; hf++) sumF += Math.sin(tf * harmonics[hf]) / harmonics[hf];
+                          g.lineTo(xf, H / 2 - sumF * H * 0.29);
+                        }
+                        g.lineTo(W, H / 2); g.closePath();
+                        if (typeof g.createLinearGradient === 'function') {
+                          var curG = g.createLinearGradient(0, 0, 0, H);
+                          curG.addColorStop(0, 'rgba(56,189,248,0.22)');
+                          curG.addColorStop(0.5, 'rgba(167,139,250,0.03)');
+                          curG.addColorStop(1, 'rgba(244,114,182,0.22)');
+                          g.fillStyle = curG;
+                        } else {
+                          g.fillStyle = 'rgba(167,139,250,0.14)';
+                        }
+                        g.fill();
                       }
-                      g.lineTo(W, H / 2); g.closePath();
-                      g.fillStyle = 'rgba(167,139,250,0.14)'; g.fill();
                       g.beginPath();
-                      for (var xi2 = 0; xi2 < W; xi2++) {
+                      for (var xi2 = 0; xi2 < W; xi2 += 2) {
                         var t4 = xi2 / W * Math.PI * 4;
                         var sum = 0;
-                        harmonics.forEach(function(hn2) { sum += Math.sin(t4 * hn2) / hn2; });
+                        for (var hs2 = 0; hs2 < harmonics.length; hs2++) sum += Math.sin(t4 * harmonics[hs2]) / harmonics[hs2];
                         var py3 = H / 2 - sum * H * 0.29;
                         if (xi2 === 0) g.moveTo(xi2, py3); else g.lineTo(xi2, py3);
                       }
-                      g.shadowColor = '#a855f7'; g.shadowBlur = 12;
-                      g.strokeStyle = 'rgba(168,85,247,0.45)'; g.lineWidth = 5; g.stroke();
-                      g.shadowBlur = 4; g.strokeStyle = '#c4b5fd'; g.lineWidth = 2.4; g.stroke();
-                      g.shadowBlur = 0; g.strokeStyle = 'rgba(255,255,255,0.75)'; g.lineWidth = 0.9; g.stroke();
+                      if (hc) {
+                        g.strokeStyle = '#ffff00'; g.lineWidth = 2.6; g.stroke();
+                      } else {
+                        g.shadowColor = '#a855f7'; g.shadowBlur = 12;
+                        g.strokeStyle = 'rgba(168,85,247,0.45)'; g.lineWidth = 5; g.stroke();
+                        g.shadowBlur = 4; g.strokeStyle = '#c4b5fd'; g.lineWidth = 2.4; g.stroke();
+                        g.shadowBlur = 0; g.strokeStyle = 'rgba(255,255,255,0.78)'; g.lineWidth = 0.9; g.stroke();
+                      }
                       g.restore();
                       // Labels
-                      g.fillStyle = 'rgba(226,232,240,0.6)'; g.font = 'bold 10px system-ui'; g.textAlign = 'left';
+                      g.fillStyle = hc ? '#ffff00' : 'rgba(226,232,240,0.6)'; g.font = 'bold 10px system-ui'; g.textAlign = 'left';
                       g.fillText(__alloFmt('stem.music.canvas_active_harmonics', 'Active harmonics: {list}', { list: harmonics.slice().sort(function(a,b){return a-b;}).join(', ') }), 8, 14);
                       g.textAlign = 'right';
                       var waveType2 = harmonics.length === 1 ? 'Sine (pure)' : harmonics.every(function(h2){return h2%2===1;}) ? 'Odd harmonics (square/clarinet-like)' : 'All harmonics (sawtooth/violin-like)';
                       g.fillText(waveType2, W - 8, 14);
                       // Play combined button instruction
-                      g.fillStyle = 'rgba(196,181,253,0.65)'; g.font = '9px system-ui'; g.textAlign = 'center';
+                      g.fillStyle = hc ? '#ffffff' : 'rgba(196,181,253,0.65)'; g.font = '9px system-ui'; g.textAlign = 'center';
                       g.fillText(__alloT('stem.music.canvas_harmonics_hint', 'Click harmonics above to add/remove \u2014 watch the wave change!'), W / 2, H - 6);
                     }
                   })
@@ -6842,6 +7255,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     cvEl.width = W * 2; cvEl.height = H * 2;
                     c2.scale(2, 2);
                     var start = performance.now();
+                    // Pre-allocated harmonic rows + labels (zero per-frame allocations in rAF loop)
+                    var hsRows = [
+                      { n: 1, name: __alloT('stem.music.f_fundamental', 'f (Fundamental)'), note: 'C', color: '#fb7185' },
+                      { n: 2, name: __alloT('stem.music.2f_octave', '2f (Octave)'), note: 'C2', color: '#f97316' },
+                      { n: 3, name: __alloT('stem.music.3f_fifth', '3f (Fifth)'), note: 'G2', color: '#fbbf24' },
+                      { n: 4, name: __alloT('stem.music.4f_octave', '4f (Octave)'), note: 'C3', color: '#86efac' },
+                      { n: 5, name: __alloT('stem.music.5f_third', '5f (Third)'), note: 'E3', color: '#22d3ee' },
+                      { n: 6, name: __alloT('stem.music.6f_fifth', '6f (Fifth)'), note: 'G3', color: '#a855f7' }
+                    ];
+                    var hsCaption = __alloT('stem.music.canvas_timbre_caption', 'Timbre = which harmonics dominate. Violin vs flute play same f, but harmonic mix differs.');
                     function drawHs() {
                       if (!cvEl.isConnected) {
                         cancelAnimationFrame(cvEl._hsAnim);
@@ -6851,8 +7274,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                       // Freeze the clock (not the loop) under reduced motion: the
                       // ResizeObserver below still needs repaints, and a static
                       // frame conveys the harmonic series just as well.
-                      var t = musicReducedMotion() ? 0 : (performance.now() - start) / 1000;
-                      if (typeof c2.createLinearGradient === 'function') {
+                      var reduced = musicReducedMotion();
+                      var hc = musicHighContrast();
+                      var t = reduced ? 0 : (performance.now() - start) / 1000;
+                      if (hc) {
+                        c2.fillStyle = '#000000';
+                      } else if (typeof c2.createLinearGradient === 'function') {
                         var bgHs = c2.createLinearGradient(0, 0, 0, H);
                         bgHs.addColorStop(0, '#131036'); bgHs.addColorStop(1, '#0b0820');
                         c2.fillStyle = bgHs;
@@ -6860,55 +7287,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         c2.fillStyle = '#1e1b4b';
                       }
                       c2.fillRect(0, 0, W, H);
-                      var harmonics = [
-                        { n: 1, name: __alloT('stem.music.f_fundamental', 'f (Fundamental)'), note: 'C', color: '#fb7185' },
-                        { n: 2, name: __alloT('stem.music.2f_octave', '2f (Octave)'), note: 'C2', color: '#f97316' },
-                        { n: 3, name: __alloT('stem.music.3f_fifth', '3f (Fifth)'), note: 'G2', color: '#fbbf24' },
-                        { n: 4, name: __alloT('stem.music.4f_octave', '4f (Octave)'), note: 'C3', color: '#86efac' },
-                        { n: 5, name: __alloT('stem.music.5f_third', '5f (Third)'), note: 'E3', color: '#22d3ee' },
-                        { n: 6, name: __alloT('stem.music.6f_fifth', '6f (Fifth)'), note: 'G3', color: '#a855f7' }
-                      ];
-                      var rowH = (H - 30) / harmonics.length;
+                      var rowH = (H - 30) / hsRows.length;
                       var waveSpan = W * 0.50;
-                      harmonics.forEach(function(h, i) {
+                      // Harmonic phase coupling spine on left wave boundary
+                      c2.strokeStyle = hc ? '#ffff00' : 'rgba(165,180,252,0.34)';
+                      c2.lineWidth = 1.2;
+                      c2.beginPath(); c2.moveTo(80, 6); c2.lineTo(80, 6 + hsRows.length * rowH); c2.stroke();
+                      for (var i = 0; i < hsRows.length; i++) {
+                        var h = hsRows[i];
                         var y = 6 + i * rowH;
                         var midY = y + rowH / 2;
                         // Subtle scope lane & centerline
-                        c2.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.025)' : 'rgba(255,255,255,0.008)';
-                        c2.fillRect(78, y + 1, waveSpan + 6, rowH - 2);
-                        c2.strokeStyle = 'rgba(148,163,184,0.16)';
+                        if (!hc) {
+                          c2.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.025)' : 'rgba(255,255,255,0.008)';
+                          c2.fillRect(78, y + 1, waveSpan + 6, rowH - 2);
+                        }
+                        c2.strokeStyle = hc ? 'rgba(255,255,0,0.32)' : 'rgba(148,163,184,0.16)';
                         c2.lineWidth = 0.7;
                         c2.beginPath(); c2.moveTo(80, midY); c2.lineTo(80 + waveSpan, midY); c2.stroke();
-                        // Luminous harmonic standing-wave glow + crisp core
+                        var amp = (rowH - 6) / 2 * (1 / Math.sqrt(h.n));
+                        // Conjugate standing-wave envelope ghost (reveals harmonic nodes & antinodes)
                         c2.save();
                         c2.lineCap = 'round';
+                        if (!hc) {
+                          var standBreath = reduced ? 0.85 : Math.cos(t * 3.2);
+                          c2.beginPath();
+                          for (var sx = 0; sx <= waveSpan; sx += 2) {
+                            var sy = midY + Math.sin((sx / waveSpan) * Math.PI * 2 * h.n) * amp * standBreath;
+                            if (sx === 0) c2.moveTo(sx + 80, sy); else c2.lineTo(sx + 80, sy);
+                          }
+                          c2.strokeStyle = h.color; c2.globalAlpha = 0.22; c2.lineWidth = 1.1; c2.stroke();
+                        }
+                        // Luminous traveling harmonic phase wave + crisp core
                         c2.beginPath();
-                        var amp = (rowH - 6) / 2 * (1 / Math.sqrt(h.n));
-                        for (var x = 0; x <= waveSpan; x += 1) {
+                        for (var x = 0; x <= waveSpan; x += 2) {
                           var yy = midY + Math.sin((x / waveSpan) * Math.PI * 2 * h.n + t * 4) * amp;
                           if (x === 0) c2.moveTo(x + 80, yy);
                           else c2.lineTo(x + 80, yy);
                         }
-                        c2.shadowColor = h.color; c2.shadowBlur = 7;
-                        c2.strokeStyle = h.color; c2.lineWidth = 2.6; c2.globalAlpha = 0.35; c2.stroke();
-                        c2.globalAlpha = 1; c2.lineWidth = 1.4; c2.stroke();
+                        if (hc) {
+                          c2.globalAlpha = 1;
+                          c2.strokeStyle = i % 2 === 0 ? '#ffff00' : '#00ff00';
+                          c2.lineWidth = 1.8;
+                          c2.stroke();
+                        } else {
+                          c2.shadowColor = h.color; c2.shadowBlur = 8;
+                          c2.strokeStyle = h.color; c2.lineWidth = 3.0; c2.globalAlpha = 0.36; c2.stroke();
+                          c2.globalAlpha = 1; c2.lineWidth = 1.5; c2.stroke();
+                          c2.shadowBlur = 0; c2.strokeStyle = 'rgba(255,255,255,0.72)'; c2.lineWidth = 0.6; c2.stroke();
+                          // Standing-wave anti-node resonance beads
+                          var pulseR = reduced ? 1.8 : (1.5 + 0.7 * Math.abs(Math.sin(t * 3.2 + i * 0.4)));
+                          var antiNodes = Math.min(h.n * 2, 8);
+                          c2.fillStyle = h.color;
+                          for (var an = 0; an < antiNodes; an++) {
+                            var anx = 80 + ((an + 0.5) / (h.n * 2)) * waveSpan;
+                            var any = midY + Math.sin(((anx - 80) / waveSpan) * Math.PI * 2 * h.n + t * 4) * amp;
+                            c2.globalAlpha = 0.85;
+                            c2.beginPath(); c2.arc(anx, any, pulseR, 0, Math.PI * 2); c2.fill();
+                          }
+                        }
                         c2.restore();
-                        c2.fillStyle = h.color;
+                        c2.fillStyle = hc ? '#ffff00' : h.color;
                         c2.font = 'bold 9px monospace';
                         c2.textAlign = 'right';
                         c2.fillText(h.n + 'x', 72, midY + 3);
-                        c2.fillStyle = '#e2e8f0';
+                        c2.fillStyle = hc ? '#ffffff' : '#e2e8f0';
                         c2.font = '8px sans-serif';
                         c2.textAlign = 'left';
                         c2.fillText(h.name, 80 + waveSpan + 10, midY + 2);
-                        c2.fillStyle = h.color;
+                        c2.fillStyle = hc ? '#00ff00' : h.color;
                         c2.font = 'bold 9px monospace';
                         c2.fillText(h.note, W - 26, midY + 2);
-                      });
-                      c2.fillStyle = 'rgba(7,5,20,0.88)';
+                      }
+                      c2.fillStyle = hc ? '#000000' : 'rgba(7,5,20,0.88)';
                       c2.fillRect(8, H - 15, W - 16, 13);
-                      c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#a5b4fc'; c2.textAlign = 'center';
-                      c2.fillText(__alloT('stem.music.canvas_timbre_caption', 'Timbre = which harmonics dominate. Violin vs flute play same f, but harmonic mix differs.'), W / 2, H - 6);
+                      c2.font = 'bold 8px sans-serif'; c2.fillStyle = hc ? '#ffff00' : '#a5b4fc'; c2.textAlign = 'center';
+                      c2.fillText(hsCaption, W / 2, H - 6);
                       cvEl._hsAnim = requestAnimationFrame(drawHs);
                     }
                     drawHs();

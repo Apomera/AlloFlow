@@ -8,6 +8,10 @@
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const { AP_PHYSICS_1_TOPIC_SCHEME } = require('./ap_framework_topics.cjs');
+const {
+  applyApPhysicsChoiceOverride,
+  AP_PHYSICS_1_LIBRARY_CHECKS,
+} = require('./ap_physics_1_choice_overrides/index.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_physics_1_foundation_pilot.json');
@@ -785,7 +789,10 @@ const diagramScaffoldData = [
   { unitNumber: 8, title: 'Fluid-depth-and-flow bridge', topicId: '8.2', visualType: 'pressure-column-and-pipe-map', purpose: 'Keep hydrostatic depth reasoning separate from continuity and Bernoulli reasoning in a pipe.', prompt: 'Build a two-part fluid representation: pressure at two depths in a tank and speed-pressure changes in a narrowing pipe.', requiredLabels: ['free surface', 'depth reference', 'pressure comparison points', 'pipe area', 'flow direction'], constructionSteps: ['Mark equal-depth points in the stationary tank.', 'Show deeper points with greater gauge pressure.', 'Draw wide and narrow pipe sections with flow direction.', 'Annotate the area-speed relationship and any elevation or loss assumption.'], textEquivalent: 'In the stationary tank, pressure increases with depth; in steady incompressible flow, a narrower section has greater speed, while pressure also depends on elevation and energy-loss assumptions.', visualErrorCheck: 'A narrow pipe does not by itself guarantee higher pressure; classify the model and compare all relevant terms.' },
 ];
 
-function buildItem(spec, index) {
+function buildItem(rawSpec, index) {
+  const itemNumber = String(index + 1).padStart(3, '0');
+  const itemId = `ap-physics-1-u${rawSpec.unit}-${itemNumber}`;
+  const spec = applyApPhysicsChoiceOverride(itemId, rawSpec);
   const unit = units[spec.unit - 1];
   const objective = objectiveByTopic.get(spec.topicId);
   const reviewLadder = reviewLadderForItemIndex(index);
@@ -799,9 +806,8 @@ function buildItem(spec, index) {
     const choiceIndex = mistakeIndex >= answerIndex ? mistakeIndex + 1 : mistakeIndex;
     return { choiceIndex, misconceptionFamilyId: family.id, misconceptionFamilyLabel: family.label, misconceptionText: mistake, remediationMove: family.remediationMove, remediationPlaybookId: `ap-physics-1-remediation-${family.id}` };
   });
-  const itemNumber = String(index + 1).padStart(3, '0');
   return {
-    id: `ap-physics-1-u${spec.unit}-${itemNumber}`,
+    id: itemId,
     templateVersion: 1,
     itemSchemaVersion: 2,
     type: 'single-choice',
@@ -864,18 +870,22 @@ function buildLibrary() {
       };
     });
     const knowledgeChecks = sections.map((section, sectionIndex) => {
-      const choices = sectionIndex === 0
-        ? ['Define the system and select a matching model.', 'Ignore units because diagrams are qualitative.', 'Change the reference frame after calculating.', 'Use every available equation at once.']
-        : sectionIndex === 1
-          ? ['Translate the representation, name the quantity, and verify units and signs.', 'Read only the largest number and ignore the axes.', 'Change several variables before identifying the relationship.', 'Choose an equation before defining the measured quantity.']
-          : ['State the assumption, compare prediction with evidence, and record uncertainty.', 'Treat one matching trial as proof that the model is universal.', 'Remove disagreeing data before checking the apparatus.', 'Use a conclusion without identifying what measurement supports it.'];
-      const prompt = sectionIndex === 0 ? `Which reasoning move is central to ${unit.shortLabel.toLowerCase()}?` : `Which study move best supports ${section.heading.toLowerCase()}?`;
-      const rationale = sectionIndex === 0
-        ? 'A clear system boundary and matching representation make the later physics calculation or claim interpretable.'
-        : sectionIndex === 1
-          ? 'Translation becomes useful when the learner names the represented quantity and checks signs, units, and relationships.'
-          : 'Evidence-based transfer requires an explicit assumption, a measurable prediction, and uncertainty-aware comparison.';
-      return { id: `${chapterId}-check-${String(sectionIndex + 1).padStart(2, '0')}`, chapterId, sectionId: section.id, type: 'single-choice', prompt, choices, answerIndex: 0, rationale, references: referencesForUnit(unit.number), reviewStatus: 'source-reviewed-editorial-pass', reviewNote: 'Original foundation retrieval check; subject-expert review remains pending.' };
+      const checkId = `${chapterId}-check-${String(sectionIndex + 1).padStart(2, '0')}`;
+      const checkSpec = AP_PHYSICS_1_LIBRARY_CHECKS[checkId];
+      assert(checkSpec, 'Missing AP Physics 1 library knowledge check for ' + checkId);
+      return {
+        id: checkId,
+        chapterId,
+        sectionId: section.id,
+        type: 'single-choice',
+        prompt: checkSpec.prompt,
+        choices: checkSpec.choices.slice(),
+        answerIndex: checkSpec.answerIndex,
+        rationale: checkSpec.rationale,
+        references: referencesForUnit(unit.number),
+        reviewStatus: 'source-reviewed-editorial-pass',
+        reviewNote: 'Original foundation retrieval check; subject-expert review remains pending.',
+      };
     });
     return {
       id: chapterId, title: unit.label, domainId: unit.id, domain: unit.shortLabel, skillId: 'SP1', topicCoverage: unit.topics.slice(), summary: detail.summary, objectives: [objective], chapterTakeaways: [`Unit ${unit.number} reasoning starts by defining a system and choosing a representation.`, 'Use units, signs, vectors, and assumptions consistently.', 'Match the mathematical relationship to the physical evidence.', 'Finish with an evidence check before transferring the model to a new context.'], references: referencesForUnit(unit.number), reviewStatus: 'source-reviewed-editorial-pass', reviewNote: 'Original AP Physics 1 foundation chapter set; independent subject-expert validation remains pending.', expertReviewStatus: 'pending', accessibilityReviewStatus: 'pending-independent-review', releaseEligible: false, sectionCount: sections.length, knowledgeCheckCount: knowledgeChecks.length, referenceCount: 3, sections, studyRoute: sections.map((section, routeIndex) => ({ order: routeIndex + 1, sectionId: section.id, heading: section.heading, recommendedMove: section.transferMove })), knowledgeChecks, contentComplete: true, foundationPrototype: true,

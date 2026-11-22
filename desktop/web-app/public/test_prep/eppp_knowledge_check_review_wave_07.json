@@ -37,7 +37,7 @@
       "domain": "Assessment & Diagnosis",
       "prompt": "A 68-year-old reports subtle memory change but still manages medications, finances, transportation, and other complex daily activities. Which assessment step is best supported?",
       "choices": [
-        "Administer an authorized, validated MoCA version as a brief cognitive screen, interpret the result with appropriate norms and context, and pursue fuller evaluation when indicated",
+        "Administer a validated MoCA version as a brief cognitive screen, interpret scores with appropriate norms and context, and pursue fuller workup if warranted",
         "Diagnose mild neurocognitive disorder whenever a single MoCA score falls below the original cutoff, regardless of education, language, sensory access, or baseline",
         "Rule out clinically meaningful cognitive change because the person still manages complex daily activities without another person's routine assistance",
         "Use a global intelligence score as the diagnostic criterion because screening measures cannot contribute useful information about possible cognitive change"
@@ -78,9 +78,9 @@
       "domain": "Assessment & Diagnosis",
       "prompt": "An MMPI-3 profile has elevated inconsistency and infrequent-response indicators. Before interpreting substantive scales or describing motive, what should the psychologist do?",
       "choices": [
-        "Infer intentional malingering because any combination of inconsistency and infrequency scales directly measures a deceptive motive",
-        "Evaluate protocol interpretability with MMPI-3-specific guidance, then consider possible confounds and converging contextual evidence before drawing substantive or causal conclusions",
-        "Treat every substantive elevation as genuine because severe psychopathology automatically overrides evidence of inconsistent or infrequent responding",
+        "Conclude that intentional malingering is present because concurrent inconsistency and infrequency elevations directly establish a deceptive test-taking motive",
+        "Assess protocol interpretability using MMPI-3-specific rules, then weigh potential confounds and collateral evidence prior to substantive claims",
+        "Interpret every substantive scale elevation as clinically genuine because severe psychopathology routinely overrides signs of inconsistent or infrequent responding",
         "Substitute MMPI-2-RF thresholds because validity indicators with similar names have interchangeable cutoffs and meanings across test editions"
       ],
       "answerIndex": 1,
@@ -119,9 +119,9 @@
       "domain": "Treatment, Intervention & Prevention",
       "prompt": "Parents in chronic conflict increasingly route messages through their adolescent and then focus exclusively on the adolescent's anxiety. Which response best reflects a bounded systems formulation?",
       "choices": [
-        "Treat the anxiety as unreal because locating a family triangle establishes that the adolescent has no individual clinical needs",
-        "Conclude that the parents caused the disorder and confront them before assessing risk, functioning, development, or the adolescent's perspective",
-        "Assess the adolescent's symptoms and safety directly while exploring triangulation and helping family members communicate without recruiting the adolescent",
+        "Discount the reported anxiety as clinically secondary because identifying a family triangle indicates that the adolescent has no individual treatment needs",
+        "Conclude that parental conflict caused the anxiety disorder and confront the parents directly before assessing safety risk, functioning, or the adolescent's own view",
+        "Assess the adolescent's symptoms and safety directly while exploring triangulation and coaching parents to communicate without drawing in the teen",
         "Assign treatment from sibling position alone because Bowen theory makes birth order a sufficient explanation of symptom formation"
       ],
       "answerIndex": 2,
@@ -154,9 +154,9 @@
       "prompt": "A psychologist consults to a clinician but has no supervisory authority, and the clinician may reject the recommendation. Which statement best preserves role and ethical boundaries?",
       "choices": [
         "The absence of supervisory authority eliminates responsibility for competent recommendations and foreseeable consequences of the consultation",
-        "Receiving case information makes the consultant the client's treating psychologist even without agreement, consent, or a defined professional role",
-        "Indirect service permits disclosure of any identifiable information because consultation creates a blanket exception to confidentiality requirements",
-        "The consultee retains implementation authority, while the consultant still defines the role, practices within competence, limits disclosure, and supports recommendations with adequate information"
+        "Reviewing identifiable case details converts the consultant into the client's treating psychologist even without mutual agreement, informed consent, or a defined role",
+        "Providing indirect peer consultation permits broad sharing of identifiable client records because consultation relationships carry a blanket confidentiality exception",
+        "The consultee keeps decision authority, yet the consultant still defines the role, stays within competence, limits disclosure, and grounds advice"
       ],
       "answerIndex": 3,
       "rationale": "Consultation and supervision differ in authority: a consultant ordinarily advises, while the consultee retains the decision to implement. That distinction does not erase the consultant's professional obligations or automatically create a treatment relationship with the consultee's client. APA Ethics Code Standard 4.06 requires psychologists consulting with colleagues to avoid information that could reasonably identify a confidential party unless prior consent exists or disclosure cannot be avoided, and to disclose only what is necessary for the consultation. Competence, role clarification, adequate data, documentation, conflicts, applicable law, and foreseeable implications also remain relevant. The exact allocation of duties depends on the defined relationship and jurisdiction, so lack of supervisory power is not lack of accountability.",
@@ -194,9 +194,9 @@
       "domain": "Cognitive-Affective Bases of Behavior",
       "prompt": "After two years studying Spanish, a learner begins French and now retrieves Spanish words when trying to recall newly learned French vocabulary. Which explanation best fits?",
       "choices": [
-        "Proactive interference, because previously learned Spanish is disrupting retrieval of the more recently learned French vocabulary",
+        "Proactive interference, because earlier Spanish knowledge is disrupting retrieval of more recently acquired French vocabulary",
         "Retroactive interference, because learning French has impaired access to Spanish words that were acquired earlier",
-        "A source-monitoring error, because the learner remembers each word but attributes it to the wrong speaker or learning episode",
+        "A source-monitoring error, because the learner recalls each target word accurately but misattributes the episode or speaker who taught it",
         "Motivated forgetting, because unwanted French vocabulary is being intentionally suppressed to protect the earlier language"
       ],
       "answerIndex": 0,
@@ -236,7 +236,7 @@
       "prompt": "A child who already enjoys drawing receives an expected certificate contingent on each drawing. After certificates stop, free-choice drawing falls below baseline. Which interpretation is best?",
       "choices": [
         "Negative punishment is established because withdrawing any previously delivered reward necessarily reduces the behavior below its original baseline",
-        "The pattern is consistent with an overjustification effect, while reward effects still depend on expectancy, contingency, feedback, task interest, and context",
+        "This decline fits an overjustification effect, though reward impacts still vary with expectancy, contingency, verbal feedback, and context",
         "An extinction burst is established because extinction is defined as a lasting decline below the pre-reward level after reinforcement ends",
         "Learned helplessness is established because every reduction in persistence demonstrates a history of uncontrollable aversive outcomes"
       ],
@@ -271,7 +271,7 @@
       "choices": [
         "Frustration is sufficient to cause aggression, so aggressive discharge is the only intervention consistent with the frustration-aggression hypothesis",
         "Aggression proves that frustration occurred, because the revised hypothesis treats frustration as both necessary and sufficient for aggression",
-        "Frustration can increase aggressive readiness, but appraisal and context shape behavior, and grievance-focused aggressive venting is not a reliably preventive catharsis",
+        "Frustration can heighten aggressive readiness, yet appraisal and context guide action, and grievance-focused venting is not a reliable catharsis",
         "The absence of immediate aggression rules out any effect of frustration, because aggressive readiness cannot be regulated or redirected"
       ],
       "answerIndex": 2,
@@ -306,7 +306,7 @@
         "Score the Cultural Formulation Interview as a stand-alone diagnostic test and replace the remainder of the clinical assessment when all 16 questions are answered",
         "Use the interview only when clinician and client appear to belong to different racial or ethnic groups, because culture is otherwise clinically irrelevant",
         "Assign the client an acculturation category from the interview and use that category to predict adherence without asking about language access or discrimination",
-        "Use its 16 questions to elicit the person's cultural definitions and context, then integrate that information with diagnostic, functional, safety, and access data"
+        "Use its 16 open-ended items to explore the person's cultural views and context, then combine those insights with diagnostic, functional, and safety findings"
       ],
       "answerIndex": 3,
       "rationale": "The DSM-5-TR Cultural Formulation Interview is a set of 16 questions for eliciting how culture shapes the person's definition of the problem, perceived causes and context, stressors and supports, coping and help seeking, and preferences affecting care. It supplements the broader assessment; it is not a scored stand-alone diagnostic instrument, an acculturation typology, or a replacement for diagnostic criteria, risk and functional assessment, language-access planning, or direct inquiry about discrimination and barriers. Culture is relevant within as well as across apparent identity groups, and the client remains the source of their own meanings. The resulting formulation should be integrated with other evidence rather than used to stereotype or infer adherence.",
@@ -344,7 +344,7 @@
       "domain": "Growth & Lifespan Development",
       "prompt": "A clinician observes one tense parent-child interaction and considers using Baumrind-style parenting categories. Which use of the framework is most defensible?",
       "choices": [
-        "Use warmth and demandingness as organizing dimensions, then assess repeated practices, goals, development, culture, stress, and reciprocal child-parent effects",
+        "Treat warmth and demandingness as organizing dimensions, then evaluate ongoing routines, goals, culture, stress, and bidirectional family effects",
         "Assign a fixed parenting-style diagnosis from the observed interaction because category membership is stable across tasks, children, and developmental periods",
         "Predict the child's individual outcome from the four-style label because associations between parenting and adjustment establish one-way causation",
         "Treat firm control as having the same function in every family because cultural meaning and developmental timing do not alter its interpretation"
@@ -386,7 +386,7 @@
       "prompt": "An older adult has objective cognitive decline but remains largely independent with medications, finances, transportation, and household tasks. Which conclusion is best pending full evaluation?",
       "choices": [
         "Typical aging must be assumed because preserved independence excludes any clinically meaningful cognitive syndrome or need for follow-up",
-        "A mild cognitive-impairment syndrome may fit, while etiology and diagnosis require history, function, objective testing, and exclusion of other causes",
+        "A mild cognitive-impairment syndrome may fit, while etiology and diagnosis require history, daily function, formal testing, and ruling out other causes",
         "Major neurocognitive disorder is established because any objectively measured decline necessarily interferes with independent everyday functioning",
         "Alzheimer's disease is established because a memory complaint uniquely identifies its pathology without biomarkers, medical evaluation, or longitudinal evidence"
       ],
@@ -428,7 +428,7 @@
       "choices": [
         "This is publication bias because that term refers only to a researcher's decision to conceal analyses within a study that otherwise reaches publication",
         "This is preregistration because selecting a primary outcome after seeing the data is equivalent to documenting a plan before data collection or access",
-        "This is selective analysis and reporting associated with p-hacking; undisclosed flexibility inflates false-positive risk and obscures confirmatory versus exploratory evidence",
+        "This reflects selective reporting linked to p-hacking; undisclosed analytic flexibility inflates false-positive risk and blurs exploratory work",
         "This proves the reported effect is false because one result below .05 among 20 tests cannot occur when every null hypothesis is true"
       ],
       "answerIndex": 2,
@@ -463,7 +463,7 @@
         "Stratified random sampling, because recruiting through participant networks ensures proportional representation of every subgroup in the target population",
         "Cluster probability sampling, because each participant's social contacts form randomly selected clusters with known inclusion probabilities",
         "Respondent-driven sampling with population-unbiased estimates, because any peer-referral procedure automatically meets the assumptions of its estimators",
-        "Snowball or chain-referral sampling, which may improve access but can reflect seed choice and network structure unless additional design and analytic assumptions are met"
+        "Snowball or chain-referral sampling, which aids recruitment yet reflects seed bias and social-tie structure unless extra analytic assumptions hold"
       ],
       "answerIndex": 3,
       "rationale": "Beginning with accessible seeds and asking participants to recruit peers is the defining chain-referral feature of snowball sampling. It can help investigators reach networked or hard-to-enumerate populations, but the resulting sample can depend on seed selection, who is connected to whom, network size, homophily, and willingness to recruit or participate. Respondent-driven sampling is a more structured variant that uses controlled recruitment, typically coupons, and model-based adjustments; even then, population estimates depend on design and analytic assumptions. The vignette does not include those features, so it cannot promise known inclusion probabilities or unbiased population estimates. The initial site contributes convenience, but peer recruitment is the decisive feature requested by the question.",

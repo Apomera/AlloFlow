@@ -708,7 +708,7 @@
     var select = function (name, source, value, onChange) {
       var node = document.createElement('select');
       node.id = id + '-' + name;
-      if (typeof source === 'string') { node.innerHTML = $(source).innerHTML; Array.prototype.forEach.call(node.options, function (o) { o.disabled = false; o.textContent = o.getAttribute('data-name') || o.textContent; }); }
+      if (typeof source === 'string') { var srcEl = $(source); if (srcEl) Array.prototype.forEach.call(srcEl.childNodes, function (child) { node.appendChild(child.cloneNode(true)); }); Array.prototype.forEach.call(node.options, function (o) { o.disabled = false; o.textContent = o.getAttribute('data-name') || o.textContent; }); }
       else source.forEach(function (text) { var o = el('option', '', text); o.value = text; node.appendChild(o); });
       node.value = value;
       node.addEventListener('change', function () { onChange(node.value); groupFocus = node.id; pickChanged(true); });
@@ -1709,7 +1709,9 @@
     } catch (_) { return Promise.resolve(null); }
   }
   function parseSounds(text) {
-    var data = JSON.parse(text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text);
+    var data = JSON.parse(text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text, function (k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
     if (!data || typeof data !== 'object') throw new Error('not a sound file');
     return data;
   }
@@ -1727,7 +1729,7 @@
     };
     return more();
   }
-  function withTimeout(promise, ms, label) {
+  function fetchBounded(promise, ms, label) {
     var timer = null;
     return Promise.race([
       promise,
@@ -1742,7 +1744,7 @@
   function readSoundFile(cache, file, onBytes) {
     var download = function (response) {
       var fetched = response ? Promise.resolve(response) : window.fetch(file.url);
-      return withTimeout(fetched.then(function (reply) {
+      return fetchBounded(fetched.then(function (reply) {
         if (!reply.ok) throw new Error(file.url + ' answered ' + reply.status);
         return readBody(reply, onBytes).then(function (text) {
           var data = parseSounds(text);
@@ -1764,7 +1766,7 @@
       var tag = hit.headers.get('etag'), dated = hit.headers.get('last-modified');
       if (!tag && !dated) return use();
       // Ask the site whether the file changed. No answer (no internet) means the saved copy is used.
-      return withTimeout(window.fetch(file.url, { headers: tag ? { 'If-None-Match': tag } : { 'If-Modified-Since': dated } }).then(function (reply) {
+      return fetchBounded(window.fetch(file.url, { headers: tag ? { 'If-None-Match': tag } : { 'If-Modified-Since': dated } }).then(function (reply) {
         return reply.status === 200 ? download(reply) : use();
       }), 20000, file.url).catch(use);
     });
@@ -1845,7 +1847,7 @@
           }).then(function (got) { done += file.bytes; wordFiles[file.url] = got.data; });
         }, Promise.resolve()).then(function () {
           files.forEach(function (file) {
-            file.words.forEach(function (word) { var clip = wordFiles[file.url][word]; if (typeof clip === 'string' && clip) wordClips[word] = clip; });
+            file.words.forEach(function (word) { var bag = wordFiles[file.url]; var clip = bag && Object.prototype.hasOwnProperty.call(bag, word) ? bag[word] : null; if (typeof clip === 'string' && clip) wordClips[word] = clip; });
           });
           return mine();
         });
@@ -1995,7 +1997,7 @@
     if (symbols.ready()) return mTask.then(function () { return true; });
     if (!picturesLoading) {
       picturesLoading = Promise.all(symbols.shards.map(function (shard) {
-        return withTimeout(window.fetch(shard.url).then(function (reply) {
+        return fetchBounded(window.fetch(shard.url).then(function (reply) {
           if (!reply.ok) throw new Error(shard.url + ' answered ' + reply.status);
           return reply.text();
         }).then(function (text) {
@@ -2003,7 +2005,7 @@
             return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
           }));
         }), 15000, shard.url);
-      })).then(function () { picturesLoading = null; matcherCache = {}; return mTask.then(function () { return symbols.ready(); }); }, function (error) { picturesLoading = null; throw error; });
+      })).then(function () { picturesLoading = null; matcherCache = Object.create(null); return mTask.then(function () { return symbols.ready(); }); }, function (error) { picturesLoading = null; throw error; });
     }
     return picturesLoading;
   }
@@ -2939,7 +2941,7 @@
     reopenPending = null;
     clearTimeout(buildTimer);
     resetPreview(true);
-    previewNoPicture = {};
+    previewNoPicture = Object.create(null);
     previewOwnPic = {};
     clearBuilt();
     closePanels();
@@ -3197,7 +3199,7 @@
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
       resetPreview(true);
-      previewNoPicture = {};
+      previewNoPicture = Object.create(null);
       previewOwnPic = {};
       // My words are not choices: they stay (they have their own Remove buttons in step 2). Their open panels close.
       closePick(false);

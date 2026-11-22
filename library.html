@@ -37,13 +37,14 @@
     <script src="vendor/lucide-1.31.0.umd.min.js"></script>
     <style>
         .filter-btn {
+            min-height: 44px;
             padding: 8px 18px;
             border-radius: 999px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #cbd5e1;
             background: #fff;
-            color: #475569;
+            color: #334155;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -51,6 +52,12 @@
         .filter-btn:hover {
             border-color: var(--indigo);
             color: var(--indigo);
+        }
+
+        .filter-btn:focus-visible,
+        .download-btn:focus-visible {
+            outline: 3px solid var(--indigo);
+            outline-offset: 2px;
         }
 
         .filter-btn.active {
@@ -73,6 +80,11 @@
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
             transform: translateY(-4px);
             border-color: #cbd5e1;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .filter-btn, .lesson-card, .download-btn { transition: none !important; }
+            .lesson-card:hover { transform: none !important; }
         }
 
         .lesson-badge {
@@ -118,12 +130,14 @@
         .download-btn {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
+            min-height: 44px;
             padding: 10px 20px;
             background: var(--indigo);
             color: #fff;
             border-radius: 10px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 700;
             border: none;
             cursor: pointer;
@@ -151,7 +165,7 @@
     <!-- Navbar -->
     <nav class="navbar" aria-label="Primary">
         <div class="navbar-inner">
-            <a href="./" class="nav-logo"><i data-lucide="layers" style="width:28px;height:28px"></i>
+            <a href="./" class="nav-logo"><i data-lucide="layers" aria-hidden="true" style="width:28px;height:28px"></i>
                 AlloFlow</a>
             <div class="nav-links" data-site-nav="primary">
                 <a href="tools.html">Find a Tool</a>
@@ -164,7 +178,7 @@
                 <a href="launch.html" class="cta-btn"><i data-lucide="rocket" aria-hidden="true" style="width:16px;height:16px"></i> Launch AlloFlow</a>
             </div>
             <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav"
-                aria-label="Open menu"><i data-lucide="menu" style="width:24px;height:24px"></i></button>
+                aria-label="Open menu"><i data-lucide="menu" aria-hidden="true" style="width:24px;height:24px"></i></button>
         </div>
     </nav>
     <!-- shared mobile nav:start -->
@@ -198,11 +212,11 @@
     <!-- Page Header -->
     <header class="section"
         style="background:linear-gradient(135deg,#eff6ff,#eef2ff);padding-top:100px;padding-bottom:40px;text-align:center;border-bottom:1px solid #dbeafe">
-        <h1 style="font-size:2.75rem;font-weight:900;margin-bottom:12px">📚 Lesson <span
+        <h1 style="font-size:2.75rem;font-weight:900;margin-bottom:12px"><span aria-hidden="true">📚</span> Lesson <span
                 class="gradient-text">Library</span></h1>
-        <p style="font-size:1.05rem;color:#64748b;max-width:600px;margin:0 auto 24px">Find a topic, explore its pack versions, and share a direct link. Preview the resources before adapting them to your learning goal.</p>
-        <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:#fff;border:1px solid #e0e7ff;border-radius:12px;font-size:0.8rem;color:#475569">
-            <i data-lucide="info" style="width:14px;height:14px;color:var(--indigo)"></i>
+        <p style="font-size:1.05rem;color:#475569;max-width:600px;margin:0 auto 24px">Find a topic, explore its pack versions, and share a direct link. Preview the resources before adapting them to your learning goal.</p>
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:#fff;border:1px solid #e0e7ff;border-radius:12px;font-size:0.8rem;color:#334155">
+            <i data-lucide="info" aria-hidden="true" style="width:14px;height:14px;color:var(--indigo)"></i>
             <span><strong>Open pack</strong> to preview · <strong>Copy link</strong> to share · <strong>Download JSON</strong> for Gemini Canvas</span>
         </div>
         <p style="font-size:0.9rem;color:#475569;max-width:680px;margin:20px auto 0"><a href="guide/saving-and-storage.html">How to save and load a project</a></p>
@@ -1595,29 +1609,29 @@
                 <!-- ELA Lessons -->
                 <div class="lesson-card" data-category="ela">
                     <div style="margin-bottom:12px"><span class="lesson-badge badge-ela">ELA</span> <span
-                            style="font-size:0.7rem;color:#64748b;margin-left:8px">Sample project</span></div>
-                    <h2 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🌊 The Water Cycle</h2>
-                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Explore evaporation, condensation, and precipitation through reading and classroom activities.</p>
-                    <p style="font-size:0.7rem;color:#64748b;margin-bottom:16px">10 saved resources · Includes a glossary, concept sort, quiz, and lesson plan.</p>
-                    <a href="./examples/water_cycle.json" download="" class="download-btn"><i data-lucide="download" style="width:14px;height:14px"></i> Download</a>
+                            style="font-size:0.75rem;color:#475569;margin-left:8px">Sample project</span></div>
+                    <h2 style="font-weight:700;font-size:1.1rem;margin-bottom:8px"><span aria-hidden="true">🌊</span> The Water Cycle</h2>
+                    <p style="font-size:0.85rem;color:#475569;line-height:1.6;margin-bottom:12px">Explore evaporation, condensation, and precipitation through reading and classroom activities.</p>
+                    <p style="font-size:0.75rem;color:#475569;margin-bottom:16px">10 saved resources · Includes a glossary, concept sort, quiz, and lesson plan.</p>
+                    <a href="./examples/water_cycle.json" download="" class="download-btn"><i data-lucide="download" aria-hidden="true" style="width:14px;height:14px"></i> Download</a>
                 </div>
 
                 <div class="lesson-card" data-category="social">
                     <div style="margin-bottom:12px"><span class="lesson-badge badge-social">Social Studies</span> <span
-                            style="font-size:0.7rem;color:#64748b;margin-left:8px">Sample project</span></div>
+                            style="font-size:0.75rem;color:#475569;margin-left:8px">Sample project</span></div>
                     <h2 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">The American Civil War</h2>
-                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Explore slavery, secession, the war, and Reconstruction through reading and guided responses.</p>
-                    <p style="font-size:0.7rem;color:#64748b;margin-bottom:16px">8 saved resources · Includes a glossary, visual organizer, quiz, and lesson plan.</p>
-                    <a href="./examples/civil_war.json" download="" class="download-btn"><i data-lucide="download" style="width:14px;height:14px"></i> Download</a>
+                    <p style="font-size:0.85rem;color:#475569;line-height:1.6;margin-bottom:12px">Explore slavery, secession, the war, and Reconstruction through reading and guided responses.</p>
+                    <p style="font-size:0.75rem;color:#475569;margin-bottom:16px">8 saved resources · Includes a glossary, visual organizer, quiz, and lesson plan.</p>
+                    <a href="./examples/civil_war.json" download="" class="download-btn"><i data-lucide="download" aria-hidden="true" style="width:14px;height:14px"></i> Download</a>
                 </div>
 
                 <div class="lesson-card" data-category="stem">
                     <div style="margin-bottom:12px"><span class="lesson-badge badge-stem">STEM</span> <span
-                            style="font-size:0.7rem;color:#64748b;margin-left:8px">Sample project</span></div>
-                    <h2 style="font-weight:700;font-size:1.1rem;margin-bottom:8px">🌱 Photosynthesis</h2>
-                    <p style="font-size:0.8rem;color:#64748b;line-height:1.6;margin-bottom:12px">Explore how plants use light, water, and carbon dioxide to make sugars.</p>
-                    <p style="font-size:0.7rem;color:#64748b;margin-bottom:16px">8 saved resources · Includes a glossary, concept sort, quiz, and lesson plan.</p>
-                    <a href="./examples/photosynthesis.json" download="" class="download-btn"><i data-lucide="download" style="width:14px;height:14px"></i> Download</a>
+                            style="font-size:0.75rem;color:#475569;margin-left:8px">Sample project</span></div>
+                    <h2 style="font-weight:700;font-size:1.1rem;margin-bottom:8px"><span aria-hidden="true">🌱</span> Photosynthesis</h2>
+                    <p style="font-size:0.85rem;color:#475569;line-height:1.6;margin-bottom:12px">Explore how plants use light, water, and carbon dioxide to make sugars.</p>
+                    <p style="font-size:0.75rem;color:#475569;margin-bottom:16px">8 saved resources · Includes a glossary, concept sort, quiz, and lesson plan.</p>
+                    <a href="./examples/photosynthesis.json" download="" class="download-btn"><i data-lucide="download" aria-hidden="true" style="width:14px;height:14px"></i> Download</a>
                 </div>
 
 
@@ -1628,10 +1642,10 @@
             <div
                 style="text-align:center;margin-top:48px;padding:32px;background:linear-gradient(135deg,#eff6ff,#eef2ff);border-radius:20px;border:1px solid #dbeafe">
                 <h2 style="font-weight:900;font-size:1.3rem;margin-bottom:8px">Created a great lesson?</h2>
-                <p style="font-size:0.9rem;color:#64748b;margin-bottom:16px">Submit your <strong>.json Project
+                <p style="font-size:0.9rem;color:#475569;margin-bottom:16px">Submit your <strong>.json Project
                         file</strong> to be featured in the community library.</p>
                 <a href="mailto:aaron.pomeranz@maine.edu?subject=AlloFlow Lesson Submission" class="download-btn"
-                    style="display:inline-flex"><i data-lucide="upload" style="width:14px;height:14px"></i> Submit a
+                    style="display:inline-flex"><i data-lucide="upload" aria-hidden="true" style="width:14px;height:14px"></i> Submit a
                     Lesson Pack</a>
             </div>
         </div>
@@ -1642,7 +1656,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-inner">
-            <div class="footer-logo"><i data-lucide="layers" style="width:22px;height:22px;color:var(--indigo)"></i>
+            <div class="footer-logo"><i data-lucide="layers" aria-hidden="true" style="width:22px;height:22px;color:var(--indigo)"></i>
                 AlloFlow</div>
             <p>An open-source project for educators. Not affiliated with Google.</p>
             <!-- shared footer links:start -->
@@ -1658,8 +1672,8 @@
     </footer>
 
     <!-- Back to Top Button -->
-    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
-        <i data-lucide="chevron-up" style="width:20px;height:20px"></i>
+    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})" aria-label="Back to top">
+        <i data-lucide="chevron-up" aria-hidden="true" style="width:20px;height:20px"></i>
     </button>
 
     <script>
@@ -1685,10 +1699,23 @@
                 ? 'Showing all ' + shown + ' legacy sample projects.'
                 : 'Showing ' + shown + ' of ' + lessonCards.length + ' legacy sample projects for ' + button.textContent.trim() + '.';
         });
+        const packSearch = document.getElementById('pack-search');
+        if (packSearch) {
+            packSearch.addEventListener('keydown', function (event) {
+                if (event.isComposing || event.keyCode === 229) return;
+                if (event.key === 'Escape' && packSearch.value) {
+                    event.preventDefault();
+                    packSearch.value = '';
+                    packSearch.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            });
+        }
         const backBtn = document.querySelector('.back-to-top');
-        window.addEventListener('scroll', function () {
-            backBtn.classList.toggle('visible', window.scrollY > 400);
-        }, { passive: true });
+        if (backBtn) {
+            window.addEventListener('scroll', function () {
+                backBtn.classList.toggle('visible', window.scrollY > 400);
+            }, { passive: true });
+        }
     </script>
 </body>
 

@@ -2779,6 +2779,106 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     st.textContent = ".theme-contrast [data-stem-tool-shell=\"calculus\"] .from-indigo-600.to-purple-600{background-image:none!important;background-color:#000!important}";
     document.head.appendChild(st);
   })();
+  // ── Zero-GC pre-allocated typed-array pools & safe canvas helpers for Visualize ──
+  var CALC_CURVE_CAP = 256;
+  var _calcCurveX = new Float32Array(CALC_CURVE_CAP);
+  var _calcCurveY = new Float32Array(CALC_CURVE_CAP);
+  var _calcFtcF = new Float32Array(241);
+  var _calcFtcA = new Float32Array(241);
+  var CALC_FEAT_CAP = 12;
+  var _calcCritX = new Float32Array(CALC_FEAT_CAP);
+  var _calcCritY = new Float32Array(CALC_FEAT_CAP);
+  var _calcInflX = new Float32Array(CALC_FEAT_CAP);
+  var _calcInflY = new Float32Array(CALC_FEAT_CAP);
+  var _calcFeatOut = { nCrit: 0, nInfl: 0 };
+  var CALC_SF_N = 64;
+  var _calcSfX = new Float32Array(CALC_SF_N);
+  var _calcSfY = new Float32Array(CALC_SF_N);
+  var _calcSfPx = new Float32Array(CALC_SF_N);
+  var _calcSfPy = new Float32Array(CALC_SF_N);
+  var _calcSfAge = new Float32Array(CALC_SF_N);
+  var _calcSfLife = new Float32Array(CALC_SF_N);
+  var _calcSfOdeIdx = -1;
+  var _calcSfLastTick = -1;
+
+  function calcSfResetParticle(i, seedOff) {
+    var h1 = ((i * 2654435761 + seedOff * 1597334677) >>> 0) / 4294967296;
+    var h2 = ((i * 2246822519 + seedOff * 3266489917 + 17) >>> 0) / 4294967296;
+    var h3 = ((i * 374761393 + seedOff * 668265263 + 31) >>> 0) / 4294967296;
+    var x = -2.95 + h1 * 5.6;
+    var y = -2.35 + h2 * 4.7;
+    _calcSfX[i] = x; _calcSfY[i] = y;
+    _calcSfPx[i] = x; _calcSfPy[i] = y;
+    _calcSfAge[i] = 0;
+    _calcSfLife[i] = 48 + Math.floor(h3 * 64);
+  }
+  function calcSfInitPool(odeIdx) {
+    _calcSfOdeIdx = odeIdx;
+    for (var i = 0; i < CALC_SF_N; i++) {
+      calcSfResetParticle(i, odeIdx + 1);
+      _calcSfAge[i] = Math.floor((i / CALC_SF_N) * _calcSfLife[i]);
+    }
+  }
+
+  function calcIsHighContrast() {
+    try {
+      if (typeof document === 'undefined') return false;
+      var de = document.documentElement, bd = document.body;
+      return !!((de && de.classList && de.classList.contains('theme-contrast')) || (bd && bd.classList && bd.classList.contains('theme-contrast')));
+    } catch (e) { return false; }
+  }
+
+  function calcDrawEllipse(c, x, y, rx, ry, rot, sa, ea) {
+    if (!c || !(rx > 0) || !(ry > 0)) return;
+    if (typeof c.ellipse === 'function') {
+      c.ellipse(x, y, rx, ry, rot || 0, sa || 0, ea == null ? Math.PI * 2 : ea);
+    } else {
+      c.save();
+      c.translate(x, y);
+      if (rot) c.rotate(rot);
+      c.scale(rx, ry);
+      c.arc(0, 0, 1, sa || 0, ea == null ? Math.PI * 2 : ea);
+      c.restore();
+    }
+  }
+
+  function calcFindFeatures(fn, xMin, xMax) {
+    var nCrit = 0, nInfl = 0;
+    var steps = 96;
+    var dx = (xMax - xMin) / steps;
+    if (!(dx > 1e-6) || !fn || typeof fn.df !== 'function' || typeof fn.f !== 'function') {
+      _calcFeatOut.nCrit = 0; _calcFeatOut.nInfl = 0;
+      return _calcFeatOut;
+    }
+    var h2 = Math.min(0.02, dx * 0.45);
+    var prevX = xMin, prevDf = fn.df(prevX);
+    var prevD2 = (fn.df(prevX + h2) - fn.df(prevX - h2)) / (2 * h2);
+    for (var i = 1; i <= steps; i++) {
+      var x = xMin + i * dx;
+      var curDf = fn.df(x);
+      var curD2 = (fn.df(x + h2) - fn.df(x - h2)) / (2 * h2);
+      if (isFinite(prevDf) && isFinite(curDf) && prevDf * curDf <= 0 && (Math.abs(prevDf) > 1e-7 || Math.abs(curDf) > 1e-7) && nCrit < CALC_FEAT_CAP) {
+        var frac = Math.abs(curDf - prevDf) > 1e-9 ? (-prevDf / (curDf - prevDf)) : 0.5;
+        var cx = prevX + Math.max(0, Math.min(1, frac)) * dx;
+        var cy = fn.f(cx);
+        if (isFinite(cy) && (nCrit === 0 || Math.abs(cx - _calcCritX[nCrit - 1]) > dx * 1.5)) {
+          _calcCritX[nCrit] = cx; _calcCritY[nCrit] = cy; nCrit++;
+        }
+      }
+      if (isFinite(prevD2) && isFinite(curD2) && prevD2 * curD2 < 0 && Math.abs(curD2 - prevD2) > 1e-4 && nInfl < CALC_FEAT_CAP) {
+        var frac2 = Math.abs(curD2 - prevD2) > 1e-9 ? (-prevD2 / (curD2 - prevD2)) : 0.5;
+        var ix = prevX + Math.max(0, Math.min(1, frac2)) * dx;
+        var iy = fn.f(ix);
+        if (isFinite(iy) && (nInfl === 0 || Math.abs(ix - _calcInflX[nInfl - 1]) > dx * 1.5)) {
+          _calcInflX[nInfl] = ix; _calcInflY[nInfl] = iy; nInfl++;
+        }
+      }
+      prevX = x; prevDf = curDf; prevD2 = curD2;
+    }
+    _calcFeatOut.nCrit = nCrit; _calcFeatOut.nInfl = nInfl;
+    return _calcFeatOut;
+  }
+
   window.StemLab.registerTool('calculus', {
     icon: '\u222B',
     label: 'Calculus',
@@ -3103,17 +3203,19 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               // still redraws. The tool's @media(prefers-reduced-motion) CSS block
               // cannot reach a canvas.
               var reducedNow = calcReducedMotion();
+              var hcNow = calcIsHighContrast();
               if (!reducedNow) _vizTick.current++;
               var t = _vizTick.current;
               var ls = _vizLiveState.current;
               // Checked every frame: under reduced motion every view draws its control values.
               ls.reduced = reducedNow;
+              ls.isHC = hcNow;
               if (cancelled || !cv.isConnected) { _vizLoopRunning.current = false; if (_vizAnimId.current) { cancelAnimationFrame(_vizAnimId.current); _vizAnimId.current = null; } return; }
               if (ls.tab !== 'visualize') { _vizAnimId.current = requestAnimationFrame(frame); return; }
               var r = cv.getBoundingClientRect();
               var W = r.width, H = r.height;
-              // Clear — deep mathematical-studio canvas ground
-              c.fillStyle = '#0b1326'; c.fillRect(0, 0, W, H);
+              // Clear — deep mathematical-studio canvas ground (pure black in HC)
+              c.fillStyle = hcNow ? '#000000' : '#0b1326'; c.fillRect(0, 0, W, H);
 
               var fn = ls.CALC_FUNCS[ls.vizFn] || ls.CALC_FUNCS.quadratic;
 
@@ -3195,45 +3297,52 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           c.fillText(fillT(__alloT('stem.calculus.viz_coming_soon', 'View "{view}" is not available'), { view: viewId }), W/2, H/2 - 8);
         }
 
-        // Helper: plot a luminous dual-pass function curve onto canvas rect with axis transforms
+        // Helper: plot a zero-GC luminous dual-pass function curve onto canvas rect with axis transforms
         function plotCurve(c, fn, xR, yR, Lx, Rx, Ty, By, color, width) {
+          var isHC = !!(_vizLiveState.current && _vizLiveState.current.isHC);
           c.save();
+          c.beginPath(); c.rect(Lx, Ty, Rx - Lx, By - Ty); c.clip();
           c.lineJoin = 'round'; c.lineCap = 'round';
-          c.shadowColor = color; c.shadowBlur = 11;
-          c.strokeStyle = color; c.lineWidth = width || 2;
+          if (!isHC) { c.shadowColor = color; c.shadowBlur = 11; }
+          c.strokeStyle = color; c.lineWidth = isHC ? Math.max(2.2, width || 2) : (width || 2);
           c.beginPath();
           var N = 200;
-          var pts = [];
+          var cnt = 0;
           for (var i = 0; i <= N; i++) {
             var x = xR.min + (i / N) * (xR.max - xR.min);
             var y = fn(x);
+            if (!isFinite(y)) continue;
             var sx = Lx + ((x - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
             var sy = By - ((y - yR.min) / (yR.max - yR.min)) * (By - Ty);
-            pts.push([sx, sy]);
-            if (i === 0) c.moveTo(sx, sy); else c.lineTo(sx, sy);
+            _calcCurveX[cnt] = sx; _calcCurveY[cnt] = sy;
+            if (cnt === 0) c.moveTo(sx, sy); else c.lineTo(sx, sy);
+            cnt++;
           }
           c.stroke();
-          // Crisp luminous inner specular filament (lineWidth < 2 to stay razor sharp)
-          if ((width || 2) >= 2 && pts.length > 1) {
+          // Crisp luminous inner specular filament (lineWidth < 2 to stay razor sharp; skipped in HC)
+          if (!isHC && (width || 2) >= 2 && cnt > 1) {
             c.shadowBlur = 0;
             c.strokeStyle = 'rgba(255,255,255,0.38)'; c.lineWidth = 0.85;
             c.beginPath();
-            for (var j = 0; j < pts.length; j++) { if (j === 0) c.moveTo(pts[j][0], pts[j][1]); else c.lineTo(pts[j][0], pts[j][1]); }
+            for (var j = 0; j < cnt; j++) { if (j === 0) c.moveTo(_calcCurveX[j], _calcCurveY[j]); else c.lineTo(_calcCurveX[j], _calcCurveY[j]); }
             c.stroke();
           }
           c.restore();
         }
         function drawAxes(c, Lx, Rx, Ty, By, xR, yR, color) {
-          color = color || 'rgba(148,163,184,0.48)';
+          var isHC = !!(_vizLiveState.current && _vizLiveState.current.isHC);
+          color = color || (isHC ? '#ffffff' : 'rgba(148,163,184,0.48)');
           c.save();
-          // Recessed studio plot well
-          var wellG = typeof c.createLinearGradient === 'function' ? c.createLinearGradient(0, Ty, 0, By) : null;
-          if (wellG && typeof wellG.addColorStop === 'function') {
-            wellG.addColorStop(0, 'rgba(2,6,23,0.44)'); wellG.addColorStop(1, 'rgba(15,23,42,0.18)');
-            c.fillStyle = wellG; c.fillRect(Lx, Ty, Rx - Lx, By - Ty);
+          // Recessed studio plot well (flat black in HC)
+          if (!isHC) {
+            var wellG = typeof c.createLinearGradient === 'function' ? c.createLinearGradient(0, Ty, 0, By) : null;
+            if (wellG && typeof wellG.addColorStop === 'function') {
+              wellG.addColorStop(0, 'rgba(2,6,23,0.44)'); wellG.addColorStop(1, 'rgba(15,23,42,0.18)');
+              c.fillStyle = wellG; c.fillRect(Lx, Ty, Rx - Lx, By - Ty);
+            }
           }
           // Subtle studio coordinate gridlines
-          c.strokeStyle = 'rgba(148,163,184,0.12)'; c.lineWidth = 0.8;
+          c.strokeStyle = isHC ? 'rgba(255,255,255,0.24)' : 'rgba(148,163,184,0.12)'; c.lineWidth = 0.8;
           for (var gx = 1; gx < 6; gx++) {
             var px = Lx + (gx / 6) * (Rx - Lx);
             c.beginPath(); c.moveTo(px, Ty); c.lineTo(px, By); c.stroke();
@@ -3243,7 +3352,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             c.beginPath(); c.moveTo(Lx, py); c.lineTo(Rx, py); c.stroke();
           }
           // Glowing principal coordinate axes
-          c.shadowColor = 'rgba(125,211,252,0.42)'; c.shadowBlur = 5;
+          if (!isHC) { c.shadowColor = 'rgba(125,211,252,0.42)'; c.shadowBlur = 5; }
           c.strokeStyle = color; c.lineWidth = 1.3;
           if (xR.min < 0 && xR.max > 0) {
             var zeroX = Lx + ((0 - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
@@ -3255,22 +3364,103 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           }
           c.shadowBlur = 0;
           // Frame
-          c.strokeStyle = 'rgba(148,163,184,0.32)'; c.lineWidth = 1;
+          c.strokeStyle = isHC ? '#ffffff' : 'rgba(148,163,184,0.32)'; c.lineWidth = 1;
           c.strokeRect(Lx, Ty, Rx - Lx, By - Ty);
           c.restore();
         }
-        function drawCalcBeacon(c, bx, by, r, coreColor, glowRgba) {
+        function drawCalcBeacon(c, bx, by, r, coreColor, glowRgba, tPulse) {
+          var lsNow = _vizLiveState.current || {};
+          var isHC = !!lsNow.isHC;
+          var reduced = !!lsNow.reduced;
           c.save();
-          var bh = typeof c.createRadialGradient === 'function' ? c.createRadialGradient(bx, by, 1, bx, by, r * 3.1) : null;
-          if (bh && typeof bh.addColorStop === 'function') {
-            bh.addColorStop(0, glowRgba || 'rgba(253,224,71,0.68)');
-            bh.addColorStop(0.5, glowRgba ? glowRgba.replace(/[\d.]+\)$/, '0.20)') : 'rgba(253,224,71,0.20)');
-            bh.addColorStop(1, 'rgba(253,224,71,0)');
-            c.fillStyle = bh; c.beginPath(); c.arc(bx, by, r * 3.1, 0, Math.PI * 2); c.fill();
+          if (isHC) {
+            c.strokeStyle = coreColor || '#ffff00'; c.lineWidth = 1.8;
+            c.beginPath(); c.arc(bx, by, r + 3.5, 0, Math.PI * 2); c.stroke();
+          } else {
+            var bh = typeof c.createRadialGradient === 'function' ? c.createRadialGradient(bx, by, 1, bx, by, r * 3.4) : null;
+            if (bh && typeof bh.addColorStop === 'function') {
+              bh.addColorStop(0, glowRgba || 'rgba(253,224,71,0.68)');
+              bh.addColorStop(0.5, glowRgba ? glowRgba.replace(/[\d.]+\)$/, '0.20)') : 'rgba(253,224,71,0.20)');
+              bh.addColorStop(1, 'rgba(253,224,71,0)');
+              c.fillStyle = bh; c.beginPath(); c.arc(bx, by, r * 3.4, 0, Math.PI * 2); c.fill();
+            }
+            if (tPulse !== undefined && !reduced) {
+              for (var rp = 0; rp < 2; rp++) {
+                var ph = ((tPulse * 0.016) + rp * 0.5) % 1;
+                var rr = r * 1.2 + ph * r * 3.2;
+                var ra = (1 - ph) * (1 - ph) * 0.58;
+                c.strokeStyle = glowRgba ? glowRgba.replace(/[\d.]+\)$/, ra.toFixed(3) + ')') : ('rgba(253,224,71,' + ra.toFixed(3) + ')');
+                c.lineWidth = 1.8 - ph * 1.0;
+                c.beginPath(); c.arc(bx, by, rr, 0, Math.PI * 2); c.stroke();
+              }
+            } else {
+              c.strokeStyle = glowRgba ? glowRgba.replace(/[\d.]+\)$/, '0.45)') : 'rgba(253,224,71,0.45)';
+              c.lineWidth = 1.3;
+              c.beginPath(); c.arc(bx, by, r * 1.85, 0, Math.PI * 2); c.stroke();
+            }
           }
           c.fillStyle = coreColor || '#fde047';
           c.beginPath(); c.arc(bx, by, r, 0, Math.PI * 2); c.fill();
-          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
+          c.strokeStyle = isHC ? '#000000' : '#0f172a'; c.lineWidth = 1.5; c.stroke();
+          c.restore();
+        }
+        // Helper: luminous multi-pass tangent sweep bloom (bypassed in HC)
+        function drawTangentBloom(c, x0, y0, slope, xR, yR, Lx, Rx, Ty, By, ls) {
+          var isHC = !!ls.isHC;
+          var sx0 = Lx + ((xR.min - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+          var sx1 = Rx;
+          var sy0 = By - ((slope * (xR.min - x0) + y0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          var sy1 = By - ((slope * (xR.max - x0) + y0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+          c.save();
+          c.beginPath(); c.rect(Lx, Ty, Rx - Lx, By - Ty); c.clip();
+          c.lineCap = 'round';
+          if (!isHC) {
+            c.strokeStyle = 'rgba(52,211,153,0.18)'; c.lineWidth = 9;
+            c.beginPath(); c.moveTo(sx0, sy0); c.lineTo(sx1, sy1); c.stroke();
+            c.shadowColor = '#34d399'; c.shadowBlur = 10;
+          }
+          c.strokeStyle = isHC ? '#00ff00' : 'rgba(52,211,153,0.92)'; c.lineWidth = isHC ? 2.4 : 2.1;
+          c.beginPath(); c.moveTo(sx0, sy0); c.lineTo(sx1, sy1); c.stroke();
+          if (!isHC) {
+            c.shadowBlur = 0;
+            c.strokeStyle = 'rgba(209,250,229,0.68)'; c.lineWidth = 0.85;
+            c.beginPath(); c.moveTo(sx0, sy0); c.lineTo(sx1, sy1); c.stroke();
+          }
+          c.restore();
+        }
+        // Helper: glowing critical-point (gold) & inflection-point (violet) tracking beacons (zero new fillText)
+        function drawFeatureBeacons(c, fn, xR, yR, Lx, Rx, Ty, By, t, ls) {
+          var feat = calcFindFeatures(fn, xR.min, xR.max);
+          var isHC = !!ls.isHC, reduced = !!ls.reduced;
+          var pulse = (reduced || isHC) ? 0.5 : (0.5 + 0.5 * Math.sin(t * 0.06));
+          c.save();
+          c.beginPath(); c.rect(Lx, Ty, Rx - Lx, By - Ty); c.clip();
+          for (var ci = 0; ci < feat.nCrit; ci++) {
+            var cx = Lx + ((_calcCritX[ci] - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+            var cy = By - ((_calcCritY[ci] - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            if (!isHC) {
+              var cg = typeof c.createRadialGradient === 'function' ? c.createRadialGradient(cx, cy, 1, cx, cy, 10 + 4 * pulse) : null;
+              if (cg && typeof cg.addColorStop === 'function') {
+                cg.addColorStop(0, 'rgba(251,191,36,0.55)'); cg.addColorStop(1, 'rgba(251,191,36,0)');
+                c.fillStyle = cg; c.beginPath(); c.arc(cx, cy, 10 + 4 * pulse, 0, Math.PI * 2); c.fill();
+              }
+            }
+            c.strokeStyle = isHC ? '#ffff00' : 'rgba(253,224,71,0.85)'; c.lineWidth = 1.4;
+            c.beginPath(); c.moveTo(cx - 5, cy); c.lineTo(cx, cy - 5); c.lineTo(cx + 5, cy); c.lineTo(cx, cy + 5); c.closePath(); c.stroke();
+          }
+          for (var ii = 0; ii < feat.nInfl; ii++) {
+            var ix = Lx + ((_calcInflX[ii] - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+            var iy = By - ((_calcInflY[ii] - yR.min) / (yR.max - yR.min)) * (By - Ty);
+            if (!isHC) {
+              var ig = typeof c.createRadialGradient === 'function' ? c.createRadialGradient(ix, iy, 1, ix, iy, 9 + 3 * pulse) : null;
+              if (ig && typeof ig.addColorStop === 'function') {
+                ig.addColorStop(0, 'rgba(192,132,252,0.52)'); ig.addColorStop(1, 'rgba(192,132,252,0)');
+                c.fillStyle = ig; c.beginPath(); c.arc(ix, iy, 9 + 3 * pulse, 0, Math.PI * 2); c.fill();
+              }
+            }
+            c.strokeStyle = isHC ? '#00ffff' : 'rgba(216,180,254,0.88)'; c.lineWidth = 1.4;
+            c.beginPath(); c.arc(ix, iy, 4.2, 0, Math.PI * 2); c.stroke();
+          }
           c.restore();
         }
 
@@ -3305,21 +3495,55 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           drawAxes(c, Lx, Rx, Ty, By, xR, yR);
 
-          // The curve
+          // The curve + glowing critical/inflection tracking beacons
           plotCurve(c, fn.f, xR, yR, Lx, Rx, Ty, By, '#f87171', 2.5);
+          drawFeatureBeacons(c, fn, xR, yR, Lx, Rx, Ty, By, t, ls);
 
-          // The tangent line at x0 (always drawn)
+          // Secant → Tangent convergence chord & approaching endpoint
           var slope = fn.df(x0);
           var y0 = fn.f(x0);
-          var tanFn = function(x) { return slope * (x - x0) + y0; };
-          c.shadowColor = '#34d399'; c.shadowBlur = 6;
-          plotCurve(c, tanFn, xR, yR, Lx, Rx, Ty, By, 'rgba(52,211,153,0.85)', 2);
-          c.shadowBlur = 0;
-
-          // Marker beacon at (x0, f(x0))
           var mx = Lx + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
           var my = By - ((y0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
-          drawCalcBeacon(c, mx, my, 5.2, '#fde047', 'rgba(253,224,71,0.72)');
+          if (!ls.isHC) {
+            var secPhase = ls.reduced ? 0.35 : (0.10 + 0.90 * (0.5 + 0.5 * Math.cos(t * 0.045)));
+            var hSec = (halfW_x * 0.62) * secPhase;
+            var x1s = x0 + hSec;
+            var y1s = fn.f(x1s);
+            if (isFinite(y1s) && Math.abs(hSec) > 1e-4) {
+              var secSlope = (y1s - y0) / hSec;
+              var secSx0 = Lx, secSx1 = Rx;
+              var secSy0 = By - ((secSlope * (xR.min - x0) + y0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+              var secSy1 = By - ((secSlope * (xR.max - x0) + y0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+              var s1x = Lx + ((x1s - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var s1y = By - ((y1s - yR.min) / (yR.max - yR.min)) * (By - Ty);
+              c.save();
+              c.beginPath(); c.rect(Lx, Ty, Rx - Lx, By - Ty); c.clip();
+              c.strokeStyle = 'rgba(56,189,248,' + (0.28 + 0.36 * secPhase).toFixed(3) + ')';
+              c.lineWidth = 1.6; c.setLineDash([5, 4]);
+              c.beginPath(); c.moveTo(secSx0, secSy0); c.lineTo(secSx1, secSy1); c.stroke();
+              c.setLineDash([]);
+              // Approaching secant point halo
+              c.fillStyle = '#38bdf8';
+              c.beginPath(); c.arc(s1x, s1y, 3.8, 0, Math.PI * 2); c.fill();
+              c.strokeStyle = 'rgba(186,230,253,0.85)'; c.lineWidth = 1.2;
+              c.beginPath(); c.arc(s1x, s1y, 6.8, 0, Math.PI * 2); c.stroke();
+              // Convergence flash ring as h → 0
+              if (secPhase < 0.25 && !ls.reduced) {
+                var convR = 8 + (0.25 - secPhase) * 90;
+                var convA = (secPhase / 0.25) * 0.65;
+                c.strokeStyle = 'rgba(52,211,153,' + convA.toFixed(3) + ')';
+                c.lineWidth = 2;
+                c.beginPath(); c.arc(mx, my, convR, 0, Math.PI * 2); c.stroke();
+              }
+              c.restore();
+            }
+          }
+
+          // The tangent line at x0 with luminous sweep bloom
+          drawTangentBloom(c, x0, y0, slope, xR, yR, Lx, Rx, Ty, By, ls);
+
+          // Marker beacon at (x0, f(x0)) with smooth convergence ripple halo
+          drawCalcBeacon(c, mx, my, 5.2, '#fde047', 'rgba(253,224,71,0.72)', t);
 
           // Zoom meter
           var zTxt = fillT(__alloT('stem.calculus.viz_zoom_meter', '{z}\u00D7 zoom'), { z: zoom.toFixed(0) });
@@ -3384,25 +3608,40 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           var yR = { min: yMin - 0.5, max: yMax + 0.5 };
           var dyR = { min: dyMin - 0.5, max: dyMax + 0.5 };
 
-          // Left panel: f(x)
+          // Left panel: f(x) + critical/inflection tracking beacons
           drawAxes(c, Lx1, Rx1, Ty, By, xR, yR);
           plotCurve(c, fn.f, xR, yR, Lx1, Rx1, Ty, By, '#f87171', 2);
+          drawFeatureBeacons(c, fn, xR, yR, Lx1, Rx1, Ty, By, t, ls);
 
           // Auto-sweep x0 (smooth ping-pong) if user hasn't interacted
           var x0 = vizAnimate(ls, 'x0') ? Math.sin(t / 60) * 2.5 : ls.vizX0;
           var slope = fn.df(x0);
           var y0 = fn.f(x0);
 
-          // Tangent at x0
-          var tanFn = function(x) { return slope * (x - x0) + y0; };
-          c.shadowColor = '#34d399'; c.shadowBlur = 6;
-          plotCurve(c, tanFn, xR, yR, Lx1, Rx1, Ty, By, 'rgba(52,211,153,0.85)', 2);
-          c.shadowBlur = 0;
-
-          // Marker beacon on f(x)
+          // Tangent at x0 with luminous sweep bloom + secant convergence chord
           var mx = Lx1 + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
           var my = By - ((y0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
-          drawCalcBeacon(c, mx, my, 5.2, '#fde047', 'rgba(253,224,71,0.72)');
+          if (!ls.isHC) {
+            var hT = ls.reduced ? 0.45 : (0.14 + 0.85 * (0.5 + 0.5 * Math.cos(t * 0.05)));
+            var x1t = Math.max(xR.min, Math.min(xR.max, x0 + hT));
+            var y1t = fn.f(x1t);
+            if (Math.abs(x1t - x0) > 1e-3 && isFinite(y1t)) {
+              var s1tx = Lx1 + ((x1t - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+              var s1ty = By - ((y1t - yR.min) / (yR.max - yR.min)) * (By - Ty);
+              c.save();
+              c.beginPath(); c.rect(Lx1, Ty, Rx1 - Lx1, By - Ty); c.clip();
+              c.strokeStyle = 'rgba(56,189,248,0.45)'; c.lineWidth = 1.4; c.setLineDash([4, 3]);
+              c.beginPath(); c.moveTo(mx, my); c.lineTo(s1tx, s1ty); c.stroke();
+              c.setLineDash([]);
+              c.fillStyle = '#38bdf8';
+              c.beginPath(); c.arc(s1tx, s1ty, 3.2, 0, Math.PI * 2); c.fill();
+              c.restore();
+            }
+          }
+          drawTangentBloom(c, x0, y0, slope, xR, yR, Lx1, Rx1, Ty, By, ls);
+
+          // Marker beacon on f(x) with ripple halo
+          drawCalcBeacon(c, mx, my, 5.2, '#fde047', 'rgba(253,224,71,0.72)', t);
 
           c.fillStyle = '#f87171'; c.textAlign = 'left';
           c.font = 'bold 11px "Inter", sans-serif';
@@ -3412,15 +3651,36 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           drawAxes(c, Lx2, Rx2, Ty, By, xR, dyR);
           plotCurve(c, fn.df, xR, dyR, Lx2, Rx2, Ty, By, 'rgba(52,211,153,0.78)', 1.8);
 
+          // Highlight f'(x) = 0 critical-point crossings on right panel
+          if (!ls.isHC && dyR.min < 0 && dyR.max > 0) {
+            var featR = calcFindFeatures(fn, xR.min, xR.max);
+            var zeroDyY = By - ((0 - dyR.min) / (dyR.max - dyR.min)) * (By - Ty);
+            c.save();
+            c.beginPath(); c.rect(Lx2, Ty, Rx2 - Lx2, By - Ty); c.clip();
+            for (var fci = 0; fci < featR.nCrit; fci++) {
+              var fcx = Lx2 + ((_calcCritX[fci] - xR.min) / (xR.max - xR.min)) * (Rx2 - Lx2);
+              c.strokeStyle = 'rgba(253,224,71,0.85)'; c.lineWidth = 1.4;
+              c.beginPath(); c.moveTo(fcx - 4.5, zeroDyY); c.lineTo(fcx, zeroDyY - 4.5); c.lineTo(fcx + 4.5, zeroDyY); c.lineTo(fcx, zeroDyY + 4.5); c.closePath(); c.stroke();
+            }
+            c.restore();
+          }
+
           // A glowing beacon on f'(x) at x0 — slope on the right matches tangent on the left
           var dmx = Lx2 + ((x0 - xR.min) / (xR.max - xR.min)) * (Rx2 - Lx2);
           var dmy = By - ((slope - dyR.min) / (dyR.max - dyR.min)) * (By - Ty);
-          drawCalcBeacon(c, dmx, dmy, 6, '#fde047', 'rgba(52,211,153,0.68)');
+          drawCalcBeacon(c, dmx, dmy, 6, '#fde047', 'rgba(52,211,153,0.68)', t + 30);
 
-          // Arrow from left marker up to right dot — visual "they're the same"
-          c.strokeStyle = 'rgba(253,224,71,0.35)'; c.lineWidth = 1; c.setLineDash([4, 4]);
+          // Arrow from left marker up to right dot + traveling luminous sync pip
+          c.strokeStyle = ls.isHC ? '#ffff00' : 'rgba(253,224,71,0.38)'; c.lineWidth = 1.2; c.setLineDash([4, 4]);
           c.beginPath(); c.moveTo(mx, my); c.lineTo(dmx, dmy); c.stroke();
           c.setLineDash([]);
+          if (!ls.isHC && !ls.reduced) {
+            var linkU = (t * 0.02) % 1;
+            var lpx = mx + (dmx - mx) * linkU;
+            var lpy = my + (dmy - my) * linkU;
+            c.fillStyle = 'rgba(254,240,138,' + (Math.sin(linkU * Math.PI) * 0.9).toFixed(3) + ')';
+            c.beginPath(); c.arc(lpx, lpy, 2.8, 0, Math.PI * 2); c.fill();
+          }
 
           c.fillStyle = '#34d399'; c.textAlign = 'left';
           c.font = 'bold 11px "Inter", sans-serif';
@@ -3448,19 +3708,22 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           var Ty = 56, By = H - 30;
 
           var xR = { min: -3, max: 3 };
-          // Sample f and A
+          // Sample f and A into pre-allocated zero-GC Float32Arrays
           var N = 240;
           var dxS = (xR.max - xR.min) / N;
-          var fVals = new Array(N+1), AVals = new Array(N+1);
-          var acc = 0;
+          var fVals = _calcFtcF, AVals = _calcFtcA;
+          var acc = 0, fMin = Infinity, fMax = -Infinity, aMin = Infinity, aMax = -Infinity;
           for (var i = 0; i <= N; i++) {
             var xi = xR.min + i * dxS;
-            fVals[i] = fn.f(xi);
-            if (i > 0) acc += (fVals[i-1] + fVals[i]) / 2 * dxS; // trapezoidal
+            var fv = fn.f(xi);
+            fVals[i] = fv;
+            if (fv < fMin) fMin = fv;
+            if (fv > fMax) fMax = fv;
+            if (i > 0) acc += (fVals[i-1] + fv) / 2 * dxS; // trapezoidal
             AVals[i] = acc;
+            if (acc < aMin) aMin = acc;
+            if (acc > aMax) aMax = acc;
           }
-          var fMin = Math.min.apply(null, fVals), fMax = Math.max.apply(null, fVals);
-          var aMin = Math.min.apply(null, AVals), aMax = Math.max.apply(null, AVals);
           var yR = { min: Math.min(fMin - 0.3, 0), max: fMax + 0.3 };
           var aR = { min: aMin - 0.3, max: aMax + 0.3 };
 
@@ -3474,15 +3737,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           // Gradient-shaded signed integral ribbon [xR.min .. sweepX] under f on left panel
           var zeroY_L = By - ((0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
-          var ftcG = typeof c.createLinearGradient === 'function' ? c.createLinearGradient(0, Ty, 0, By) : null;
-          if (ftcG && typeof ftcG.addColorStop === 'function') {
-            ftcG.addColorStop(0, 'rgba(56,189,248,0.44)');
-            ftcG.addColorStop(0.55, 'rgba(59,130,246,0.22)');
-            ftcG.addColorStop(1, 'rgba(99,102,241,0.34)');
-            c.fillStyle = ftcG;
-          } else {
-            c.fillStyle = 'rgba(59,130,246,0.28)';
-          }
+          var endSx = Lx1 + ((sweepX - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
+          c.save();
           c.beginPath();
           var startSx = Lx1;
           c.moveTo(startSx, zeroY_L);
@@ -3493,22 +3749,48 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             var sy = By - ((fVals[k] - yR.min) / (yR.max - yR.min)) * (By - Ty);
             c.lineTo(sx, sy);
           }
-          // Close bottom
-          var endSx = Lx1 + ((sweepX - xR.min) / (xR.max - xR.min)) * (Rx1 - Lx1);
           c.lineTo(endSx, zeroY_L);
           c.closePath();
+          var ftcG = (!ls.isHC && typeof c.createLinearGradient === 'function') ? c.createLinearGradient(0, Ty, 0, By) : null;
+          if (ftcG && typeof ftcG.addColorStop === 'function') {
+            ftcG.addColorStop(0, 'rgba(56,189,248,0.44)');
+            ftcG.addColorStop(0.55, 'rgba(59,130,246,0.22)');
+            ftcG.addColorStop(1, 'rgba(99,102,241,0.34)');
+            c.fillStyle = ftcG;
+          } else {
+            c.fillStyle = ls.isHC ? 'rgba(56,189,248,0.26)' : 'rgba(59,130,246,0.28)';
+          }
           c.fill();
+
+          // Fluid integration wave sweep shimmer clipped inside the signed integral area
+          if (!ls.isHC && !ls.reduced && endSx > startSx + 8 && typeof c.createLinearGradient === 'function') {
+            c.clip();
+            var waveFrac = (t * 0.014) % 1;
+            var waveX = startSx + waveFrac * (endSx - startSx);
+            var waveW = Math.max(18, (endSx - startSx) * 0.24);
+            var wGrad = c.createLinearGradient(waveX - waveW, 0, waveX + waveW, 0);
+            wGrad.addColorStop(0, 'rgba(186,230,253,0)');
+            wGrad.addColorStop(0.5, 'rgba(186,230,253,0.28)');
+            wGrad.addColorStop(1, 'rgba(186,230,253,0)');
+            c.fillStyle = wGrad;
+            c.fillRect(waveX - waveW, Ty, waveW * 2, By - Ty);
+          }
+          c.restore();
 
           // Curve on top of shading
           plotCurve(c, fn.f, xR, yR, Lx1, Rx1, Ty, By, '#f87171', 2.2);
 
-          // Glowing sweep laser on left
+          // Glowing sweep laser on left + curve meniscus bead at (sweepX, f(sweepX))
+          var idxS = Math.max(0, Math.min(N, Math.round((sweepX - xR.min) / dxS)));
+          var fAtS = fVals[idxS], aAtS = AVals[idxS];
+          var fAtSY = By - ((fAtS - yR.min) / (yR.max - yR.min)) * (By - Ty);
           c.save();
-          c.shadowColor = '#fde047'; c.shadowBlur = 8;
-          c.strokeStyle = '#fde047'; c.lineWidth = 1.6;
+          if (!ls.isHC) { c.shadowColor = '#fde047'; c.shadowBlur = 8; }
+          c.strokeStyle = ls.isHC ? '#ffff00' : '#fde047'; c.lineWidth = 1.6;
           c.beginPath(); c.moveTo(endSx, Ty); c.lineTo(endSx, By); c.stroke();
           c.restore();
-          drawCalcBeacon(c, endSx, zeroY_L, 4.2, '#fde047', 'rgba(253,224,71,0.72)');
+          drawCalcBeacon(c, endSx, zeroY_L, 4.0, '#fde047', 'rgba(253,224,71,0.72)');
+          drawCalcBeacon(c, endSx, fAtSY, 4.4, '#38bdf8', 'rgba(56,189,248,0.72)', t);
 
           // Right panel: A(x) curve drawn only up to sweepX
           // First draw full ghost curve
@@ -3519,7 +3801,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           }, xR, aR, Lx2, Rx2, Ty, By, 'rgba(59,130,246,0.18)', 1.5);
           // Then draw the luminous solid portion
           c.save();
-          c.shadowColor = '#60a5fa'; c.shadowBlur = 9;
+          if (!ls.isHC) { c.shadowColor = '#60a5fa'; c.shadowBlur = 9; }
           c.strokeStyle = '#60a5fa'; c.lineWidth = 2.5;
           c.beginPath();
           var drawn = 0;
@@ -3535,16 +3817,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           c.restore();
 
           // Tangent to A(x) at sweepX — slope should equal f(sweepX)
-          var idxS = Math.max(0, Math.min(N, Math.round((sweepX - xR.min) / dxS)));
-          var fAtS = fVals[idxS], aAtS = AVals[idxS];
           var Lx2Offset = Lx2;
           var sxAtS = Lx2Offset + ((sweepX - xR.min) / (xR.max - xR.min)) * (Rx2 - Lx2);
           var syAtS = By - ((aAtS - aR.min) / (aR.max - aR.min)) * (By - Ty);
-          // Draw the tangent
-          var tanA = function(x) { return fAtS * (x - sweepX) + aAtS; };
-          plotCurve(c, tanA, xR, aR, Lx2, Rx2, Ty, By, 'rgba(52,211,153,0.88)', 2);
-          // Glowing sweep beacon on right
-          drawCalcBeacon(c, sxAtS, syAtS, 5.2, '#fde047', 'rgba(52,211,153,0.68)');
+          // Draw luminous tangent bloom on A(x)
+          drawTangentBloom(c, sweepX, aAtS, fAtS, xR, aR, Lx2, Rx2, Ty, By, ls);
+          // Glowing sweep ripple beacon on right
+          drawCalcBeacon(c, sxAtS, syAtS, 5.2, '#fde047', 'rgba(52,211,153,0.68)', t + 25);
 
           // Panel labels
           c.fillStyle = '#f87171'; c.textAlign = 'left';
@@ -3619,27 +3898,34 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             c.fillStyle = p.col; c.textAlign = 'left';
             c.font = 'bold 10.5px "Inter", sans-serif';
             c.fillText(p.lbl, Lx + 6, Ty + 12);
-            // Dot at current time
+            // Glowing time beacon at current time
             var yVal = p.fn(tNow);
             var sx = Lx + ((tNow - tR.min) / (tR.max - tR.min)) * (Rx - Lx);
             var sy = By - ((yVal - yR.min) / (yR.max - yR.min)) * (By - Ty);
-            c.fillStyle = '#fde047';
-            c.beginPath(); c.arc(sx, sy, 4.5, 0, Math.PI * 2); c.fill();
-            c.strokeStyle = '#0f172a'; c.lineWidth = 1; c.stroke();
+            // Vertical time indicator line across panel
+            c.strokeStyle = ls.isHC ? '#ffff00' : 'rgba(253,224,71,0.38)'; c.lineWidth = 1.2;
+            c.beginPath(); c.moveTo(sx, Ty); c.lineTo(sx, By); c.stroke();
+            drawCalcBeacon(c, sx, sy, 4.5, '#fde047', 'rgba(253,224,71,0.68)', t + pi * 18);
             // Readout of current value, on a dark backing: the curve can run under it.
             c.font = 'bold 10px "Inter", sans-serif';
             var rdTxt = '= ' + yVal.toFixed(2), rdW = c.measureText(rdTxt).width;
             c.fillStyle = 'rgba(15,23,42,0.92)'; c.fillRect(Rx - 9 - rdW, Ty + 2, rdW + 6, 14);
             c.fillStyle = '#e2e8f0'; c.textAlign = 'right';
             c.fillText(rdTxt, Rx - 6, Ty + 12);
-            // Vertical time indicator line across panel
-            c.strokeStyle = 'rgba(253,224,71,0.35)'; c.lineWidth = 1;
-            c.beginPath(); c.moveTo(sx, Ty); c.lineTo(sx, By); c.stroke();
           });
 
-          // Animated "car" at the top between t-axis and panel 1
+          // Animated "car" at the top between t-axis and panel 1 with velocity wake trail
           var carY = 40;
           var carX = Lx + (pos(tNow) / 8) * (Rx - Lx);
+          var vNow = vel(tNow);
+          if (!ls.isHC && vNow > 0.05) {
+            var wakeLen = vNow * 16;
+            var wakeG = typeof c.createLinearGradient === 'function' ? c.createLinearGradient(carX - 10 - wakeLen, carY, carX - 10, carY) : null;
+            if (wakeG && typeof wakeG.addColorStop === 'function') {
+              wakeG.addColorStop(0, 'rgba(56,189,248,0)'); wakeG.addColorStop(1, 'rgba(56,189,248,0.55)');
+              c.fillStyle = wakeG; c.fillRect(carX - 10 - wakeLen, carY - 4, wakeLen, 6);
+            }
+          }
           c.fillStyle = '#ef4444';
           c.fillRect(carX - 10, carY - 6, 20, 10);
           c.fillStyle = '#1f2937';
@@ -3703,18 +3989,19 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             drawAxes(c, Lx, Rx, Ty, By, xR, yR);
             plotCurve(c, fn.f, xR, yR, Lx, Rx, Ty, By, m.col, 1.5);
 
-            // Draw gradient-shaded Riemann integral ribbons
+            // Draw gradient-shaded Riemann integral ribbons + animated area-fill shimmer & fluid integration wave sweep
             var dx = (xR.max - xR.min) / n;
             var approx = 0;
             var zeroY = By - ((0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
             var ribFill = m.col + '33';
-            var ribG = typeof c.createLinearGradient === 'function' ? c.createLinearGradient(0, Ty, 0, By) : null;
+            var ribG = (!ls.isHC && typeof c.createLinearGradient === 'function') ? c.createLinearGradient(0, Ty, 0, By) : null;
             if (ribG && typeof ribG.addColorStop === 'function') {
               ribG.addColorStop(0, m.col + '66');
               ribG.addColorStop(0.55, m.col + '2b');
               ribG.addColorStop(1, m.col + '52');
               ribFill = ribG;
             }
+            var wavePhase = (ls.reduced || ls.isHC) ? -1 : (((t * 0.014) + mi * 0.25) % 1.35) - 0.15;
             for (var r = 0; r < n; r++) {
               var xi = xR.min + r * dx;
               var yVal;
@@ -3726,6 +4013,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
               var rxL = Lx + ((xi - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
               var rxR = Lx + ((xi + dx - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var barNorm = (r + 0.5) / n;
+              var waveDist = wavePhase >= 0 ? Math.abs(barNorm - wavePhase) : 1;
+              var waveBoost = waveDist < 0.14 ? (1 - waveDist / 0.14) : 0;
               if (m.id === 'trapezoid') {
                 // Draw trapezoid polygon
                 var yL = fn.f(xi), yRv = fn.f(xi + dx);
@@ -3735,15 +4025,37 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 c.strokeStyle = m.col; c.lineWidth = 0.7;
                 c.beginPath();
                 c.moveTo(rxL, zeroY); c.lineTo(rxL, syL); c.lineTo(rxR, syR); c.lineTo(rxR, zeroY); c.closePath();
-                c.fill(); c.stroke();
+                c.fill();
+                if (waveBoost > 0.02 && !ls.isHC) {
+                  c.fillStyle = 'rgba(255,255,255,' + (waveBoost * 0.22).toFixed(3) + ')';
+                  c.fill();
+                }
+                c.stroke();
               } else {
                 var sy = By - ((yVal - yR.min) / (yR.max - yR.min)) * (By - Ty);
                 c.fillStyle = ribFill;
                 c.strokeStyle = m.col; c.lineWidth = 0.7;
                 var top = Math.min(sy, zeroY), hr = Math.abs(sy - zeroY);
                 c.fillRect(rxL, top, rxR - rxL, hr);
+                if (waveBoost > 0.02 && !ls.isHC) {
+                  c.fillStyle = 'rgba(255,255,255,' + (waveBoost * 0.22).toFixed(3) + ')';
+                  c.fillRect(rxL, top, rxR - rxL, hr);
+                }
+                // Subtle luminous meniscus cap along sampled top/bottom edge of each Riemann bar
+                if (!ls.isHC && (rxR - rxL) > 2.2) {
+                  c.fillStyle = 'rgba(255,255,255,' + (0.24 + waveBoost * 0.42).toFixed(3) + ')';
+                  c.fillRect(rxL + 0.5, sy - 0.8, Math.max(1, rxR - rxL - 1), 1.6);
+                }
                 c.strokeRect(rxL, top, rxR - rxL, hr);
               }
+            }
+            // Fluid integration wave crest hairline across panel
+            if (!ls.isHC && !ls.reduced && wavePhase >= 0 && wavePhase <= 1) {
+              var wxPos = Lx + wavePhase * (Rx - Lx);
+              c.save();
+              c.strokeStyle = 'rgba(255,255,255,0.28)'; c.lineWidth = 1.4;
+              c.beginPath(); c.moveTo(wxPos, Ty + 18); c.lineTo(wxPos, By); c.stroke();
+              c.restore();
             }
             // Panel label + error
             c.fillStyle = m.col; c.textAlign = 'left';
@@ -3808,6 +4120,65 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               c.lineTo(sx + dx - Math.cos(theta + 0.4) * 3, sy + dy + Math.sin(theta + 0.4) * 3);
               c.stroke();
             }
+          }
+
+          // Zero-GC pre-allocated integral-curve streamline flow tracer particles advected via RK2
+          if (!ls.isHC) {
+            if (_calcSfOdeIdx !== odeIdx) calcSfInitPool(odeIdx);
+            var shouldStep = !ls.reduced && _calcSfLastTick !== t;
+            if (shouldStep) _calcSfLastTick = t;
+            c.save();
+            c.beginPath(); c.rect(Lx, Ty, Rx - Lx, By - Ty); c.clip();
+            c.lineCap = 'round';
+            var ds = 0.042;
+            for (var pi2 = 0; pi2 < CALC_SF_N; pi2++) {
+              var px0 = _calcSfX[pi2], py0 = _calcSfY[pi2];
+              var ppx = _calcSfPx[pi2], ppy = _calcSfPy[pi2];
+              var s0;
+              try { s0 = ode.df(px0, py0); } catch (e) { s0 = NaN; }
+              if (shouldStep) {
+                _calcSfAge[pi2] += 1;
+                if (!isFinite(s0) || px0 < xR.min || px0 > xR.max || py0 < yR.min || py0 > yR.max || _calcSfAge[pi2] >= _calcSfLife[pi2]) {
+                  calcSfResetParticle(pi2, t + pi2 * 7 + odeIdx * 19);
+                  continue;
+                }
+                var norm0 = Math.sqrt(1 + s0 * s0);
+                var vx0 = 1 / norm0, vy0 = s0 / norm0;
+                var mxp = px0 + vx0 * ds * 0.5, myp = py0 + vy0 * ds * 0.5;
+                var sMid;
+                try { sMid = ode.df(mxp, myp); } catch (e) { sMid = s0; }
+                if (!isFinite(sMid)) sMid = s0;
+                var norm1 = Math.sqrt(1 + sMid * sMid);
+                var nx1 = px0 + (1 / norm1) * ds;
+                var ny1 = py0 + (sMid / norm1) * ds;
+                _calcSfPx[pi2] = px0; _calcSfPy[pi2] = py0;
+                _calcSfX[pi2] = nx1; _calcSfY[pi2] = ny1;
+                ppx = px0; ppy = py0; px0 = nx1; py0 = ny1;
+              } else if (!isFinite(s0)) {
+                continue;
+              }
+              var lifeFrac = _calcSfAge[pi2] / Math.max(1, _calcSfLife[pi2]);
+              var envA = Math.sin(Math.min(1, lifeFrac) * Math.PI);
+              if (envA <= 0.02) continue;
+              var scx0 = Lx + ((ppx - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var scy0 = By - ((ppy - yR.min) / (yR.max - yR.min)) * (By - Ty);
+              var scx1 = Lx + ((px0 - xR.min) / (xR.max - xR.min)) * (Rx - Lx);
+              var scy1 = By - ((py0 - yR.min) / (yR.max - yR.min)) * (By - Ty);
+              var magP = Math.min(1, Math.abs(s0) / 3);
+              var pr = Math.floor(80 + magP * 170);
+              var pg = Math.floor(230 - magP * 60);
+              var pb = 255 - Math.floor(magP * 90);
+              if (!ls.reduced) {
+                var tx0 = scx1 - (scx1 - scx0) * 3.2;
+                var ty0 = scy1 - (scy1 - scy0) * 3.2;
+                c.strokeStyle = 'rgba(' + pr + ',' + pg + ',' + pb + ',' + (envA * 0.58).toFixed(3) + ')';
+                c.lineWidth = 1.9;
+                c.beginPath(); c.moveTo(tx0, ty0); c.lineTo(scx1, scy1); c.stroke();
+              }
+              c.fillStyle = 'rgba(240,249,255,' + (envA * 0.82).toFixed(3) + ')';
+              c.beginPath(); c.arc(scx1, scy1, 1.8, 0, Math.PI * 2); c.fill();
+            }
+            c.restore();
           }
 
           // Euler-stepped trajectories from a few seed points
@@ -4167,24 +4538,40 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           // Dotted vertical at xCrit (the maximum), drawn only after the student commits a guess
           var cX = Lx2 + ((xCrit - xRg.min) / (xRg.max - xRg.min)) * (Rx2 - Lx2);
           if (ls.vizOptimReveal) {
-          var cY = By2 - ((Vcrit - yRg.min) / (yRg.max - yRg.min)) * (By2 - Ty2);
-          c.strokeStyle = 'rgba(253,224,71,0.55)'; c.lineWidth = 1.2; c.setLineDash([4, 4]);
-          c.beginPath(); c.moveTo(cX, Ty2); c.lineTo(cX, By2); c.stroke();
-          c.setLineDash([]);
-          c.fillStyle = '#fde047';
-          c.beginPath(); c.arc(cX, cY, 6, 0, Math.PI * 2); c.fill();
-          c.strokeStyle = '#0f172a'; c.lineWidth = 1.5; c.stroke();
-          c.fillStyle = '#fde047'; c.textAlign = 'center';
-          c.font = 'bold 10px "Inter", sans-serif';
-          c.fillText(fillT(__alloT('stem.calculus.viz_optim_max', 'maximum at x \u2248 {x}'), { x: xCrit.toFixed(2) }), cX, cY - 12);
+            var cY = By2 - ((Vcrit - yRg.min) / (yRg.max - yRg.min)) * (By2 - Ty2);
+            c.strokeStyle = ls.isHC ? '#ffff00' : 'rgba(253,224,71,0.55)'; c.lineWidth = 1.2; c.setLineDash([4, 4]);
+            c.beginPath(); c.moveTo(cX, Ty2); c.lineTo(cX, By2); c.stroke();
+            c.setLineDash([]);
+            // Horizontal zero-slope tangent bar V'(xCrit) = 0
+            c.save();
+            if (!ls.isHC) { c.shadowColor = '#fde047'; c.shadowBlur = 8; }
+            c.strokeStyle = ls.isHC ? '#ffff00' : 'rgba(253,224,71,0.88)'; c.lineWidth = 2;
+            c.beginPath(); c.moveTo(Math.max(Lx2 + 4, cX - 28), cY); c.lineTo(Math.min(Rx2 - 4, cX + 28), cY); c.stroke();
+            c.restore();
+            drawCalcBeacon(c, cX, cY, 5.8, '#fde047', 'rgba(253,224,71,0.75)', t);
+            c.fillStyle = '#fde047'; c.textAlign = 'center';
+            c.font = 'bold 10px "Inter", sans-serif';
+            c.fillText(fillT(__alloT('stem.calculus.viz_optim_max', 'maximum at x \u2248 {x}'), { x: xCrit.toFixed(2) }), cX, cY - 12);
           }
 
-          // Current x marker
+          // Current x tracking beacon + local tangent segment
           var curXp = Lx2 + ((x - xRg.min) / (xRg.max - xRg.min)) * (Rx2 - Lx2);
           var curYp = By2 - ((Vnow - yRg.min) / (yRg.max - yRg.min)) * (By2 - Ty2);
-          c.fillStyle = '#f87171';
-          c.beginPath(); c.arc(curXp, curYp, 4.5, 0, Math.PI * 2); c.fill();
-          c.strokeStyle = '#0f172a'; c.lineWidth = 1; c.stroke();
+          if (!ls.isHC) {
+            var slopeNow = dV(x);
+            var dxT = 0.45;
+            var txL = Math.max(xRg.min, x - dxT), txR = Math.min(xRg.max, x + dxT);
+            var syL = By2 - ((Vnow + slopeNow * (txL - x) - yRg.min) / (yRg.max - yRg.min)) * (By2 - Ty2);
+            var syR = By2 - ((Vnow + slopeNow * (txR - x) - yRg.min) / (yRg.max - yRg.min)) * (By2 - Ty2);
+            var sxL = Lx2 + ((txL - xRg.min) / (xRg.max - xRg.min)) * (Rx2 - Lx2);
+            var sxR = Lx2 + ((txR - xRg.min) / (xRg.max - xRg.min)) * (Rx2 - Lx2);
+            c.save();
+            c.beginPath(); c.rect(Lx2, Ty2, Rx2 - Lx2, By2 - Ty2); c.clip();
+            c.strokeStyle = 'rgba(248,113,113,0.78)'; c.lineWidth = 1.8;
+            c.beginPath(); c.moveTo(sxL, syL); c.lineTo(sxR, syR); c.stroke();
+            c.restore();
+          }
+          drawCalcBeacon(c, curXp, curYp, 4.6, '#f87171', 'rgba(248,113,113,0.68)', t + 20);
 
           // Panel label
           c.fillStyle = '#34d399'; c.textAlign = 'left';
@@ -4396,39 +4783,37 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           c.beginPath(); c.moveTo(solidLx, axisY); c.lineTo(solidRx, axisY); c.stroke();
           c.setLineDash([]);
 
-          // Stack disks from right to left (for correct z-order)
+          // Stack disks from right to left (zero-GC direct loop, safe ellipse fallback)
           var nDisks = 40;
-          var disks = [];
+          var axyTilt = -0.15;
           for (var k = nDisks - 1; k >= 0; k--) {
             var xk = xR.min + (k / (nDisks - 1)) * (xR.max - xR.min);
             var rk = f(xk);
-            disks.push({ x: xk, r: rk });
-          }
-          disks.forEach(function(d2) {
-            var cx = solidLx + d2.x * pxPerX;
-            // Axonometric offset (camera tilt) — fake depth by shifting y slightly
-            var axyTilt = -0.15;
-            var yOffset = (d2.x - xR.min) * pxPerX * axyTilt;
-            var ellipseRx = Math.max(1, d2.r * pxPerX * 0.06); // depth thickness
-            var ellipseRy = Math.max(1, d2.r * 50); // vertical radius of the disk
+            var cx = solidLx + xk * pxPerX;
+            var yOffset = (xk - xR.min) * pxPerX * axyTilt;
+            var ellipseRx = Math.max(1, rk * pxPerX * 0.06); // depth thickness
+            var ellipseRy = Math.max(1, rk * 50); // vertical radius of the disk
             // Body
             c.fillStyle = 'rgba(96,165,250,0.38)';
             c.strokeStyle = 'rgba(37,99,235,0.7)'; c.lineWidth = 1;
             c.beginPath();
-            c.ellipse(cx, axisY + yOffset, ellipseRx, ellipseRy, 0, 0, Math.PI * 2);
+            calcDrawEllipse(c, cx, axisY + yOffset, ellipseRx, ellipseRy, 0, 0, Math.PI * 2);
             c.fill(); c.stroke();
-          });
+          }
 
           // Highlight disk (same x as diskX on the left)
           var hcx = solidLx + diskX * pxPerX;
           var hOff = (diskX - xR.min) * pxPerX * (-0.15);
           var hRx = Math.max(1, diskR * pxPerX * 0.12);
           var hRy = Math.max(2, diskR * 50);
+          c.save();
+          if (!ls.isHC) { c.shadowColor = '#fbbf24'; c.shadowBlur = 10; }
           c.fillStyle = 'rgba(253,224,71,0.6)';
           c.strokeStyle = '#fbbf24'; c.lineWidth = 2;
           c.beginPath();
-          c.ellipse(hcx, axisY + hOff, hRx, hRy, 0, 0, Math.PI * 2);
+          calcDrawEllipse(c, hcx, axisY + hOff, hRx, hRy, 0, 0, Math.PI * 2);
           c.fill(); c.stroke();
+          c.restore();
 
           // Labels
           c.fillStyle = '#60a5fa'; c.textAlign = 'left';

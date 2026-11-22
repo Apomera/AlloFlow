@@ -8,6 +8,7 @@
 // progress tracking, WCAG 2.1 AA from day one.
 // ═══════════════════════════════════════════
 
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
@@ -15,14 +16,16 @@ window.StemLab = window.StemLab || {
   getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
 };
+}
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
+if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
 (function() {
   'use strict';
 
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
+    if (typeof document === 'undefined' || !document.head) return;
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
@@ -76,6 +79,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
   // and force expand TeacherNotes so the printed copy includes pedagogical
   // scaffolding alongside content.
   (function() {
+    if (typeof document === 'undefined' || !document.head) return;
     if (document.getElementById('weldlab-print-css')) return;
     var st = document.createElement('style');
     st.id = 'weldlab-print-css';
@@ -109,6 +113,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
   // All keyframe animations are bypassed by the global motion-reduce CSS, so
   // anyone with prefers-reduced-motion gets the static styling automatically.
   (function() {
+    if (typeof document === 'undefined' || !document.head) return;
     if (document.getElementById('weldlab-flair-css')) return;
     var st = document.createElement('style');
     st.id = 'weldlab-flair-css';
@@ -159,6 +164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
   // The stage stays above the setup on narrow screens. Explicit layout rules
   // also work in the static desktop build without adding Tailwind utilities.
   (function () {
+    if (typeof document === 'undefined' || !document.head) return;
     if (document.getElementById('weldlab-workbench-css')) return;
     var st = document.createElement('style');
     st.id = 'weldlab-workbench-css';
@@ -184,6 +190,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
   // Programmatically focused headings and feedback need the same visible context as controls.
   (function () {
+    if (typeof document === 'undefined' || !document.head) return;
     if (document.getElementById('weldlab-focus-css')) return;
     var style = document.createElement('style');
     style.id = 'weldlab-focus-css';
@@ -194,6 +201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
   // Keep explicit selections visible when the app contrast theme flattens button fills.
   // Underlining is a non-color cue; leave the native focus ring and hover colors intact.
   (function () {
+    if (typeof document === 'undefined' || !document.head) return;
     if (document.getElementById('weldlab-selection-css')) return;
     var style = document.createElement('style');
     style.id = 'weldlab-selection-css';
@@ -203,6 +211,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-weldlab')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-weldlab';
@@ -325,7 +334,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
   // already had. Deliberate deviation from the APG: every radio stays tabbable
   // rather than taking a roving tabindex, so Tab still reaches each option.
   function radioGroupKeys(e) {
-    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.defaultPrevented || e.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
     var k = e.key;
     if (k !== 'ArrowRight' && k !== 'ArrowLeft' && k !== 'ArrowUp' &&
         k !== 'ArrowDown' && k !== 'Home' && k !== 'End') return;
@@ -358,7 +367,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
   // Ignore nested controls and browser shortcuts so their own keys stay usable.
   function tabGroupKeys(e) {
     var k = e.key;
-    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey ||
+    if (e.defaultPrevented || e.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey ||
         (k !== 'ArrowRight' && k !== 'ArrowLeft' && k !== 'Home' && k !== 'End')) return;
     var group = e.currentTarget;
     var target = e.target;
@@ -8125,12 +8134,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             } catch (err) {
               if (!warned) { warned = true; console.error('[WeldLab] bead canvas', err); }
             }
-            var keepGoing = canvas.isConnected && (!_prefersReducedMotion || !!(live.useRun && hand && hand.active));
+            var keepGoing = canvas.isConnected && !(typeof document !== 'undefined' && document.hidden) && (!_prefersReducedMotion || !!(live.useRun && hand && hand.active));
             if (keepGoing) rafRef.current = requestAnimationFrame(draw);
+            else rafRef.current = null;
           }
           drawRef.current = draw;
+          var onVisBead = function () {
+            if (typeof document !== 'undefined' && !document.hidden && !rafRef.current && canvas.isConnected) {
+              rafRef.current = requestAnimationFrame(draw);
+            }
+          };
+          if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisBead);
           rafRef.current = requestAnimationFrame(draw);
           return function () {
+            if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVisBead);
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
             rafRef.current = null;
             drawRef.current = null;
@@ -8927,7 +8944,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 onPointerUp: function () { var hd = handRef.current; if (hd && hd.mode === 'pointer') release(); },
                 onPointerCancel: function () { release(); },
                 onKeyDown: function (e) {
-                  if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+                  if (e.defaultPrevented || e.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
                   if (!useRun) return;
                   if (e.key === 'ArrowRight') { e.preventDefault(); var hd = handRef.current; if (hd && !hd.active) strike('key'); }
                   else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
@@ -8953,7 +8970,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     onPointerLeave: function () { var hd = handRef.current; if (hd && hd.mode === 'key') release(); },
                     onPointerCancel: function () { release(); },
                     onContextMenu: function (e) { e.preventDefault(); },
-                    onKeyDown: function (e) { if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return; if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); strike('key'); } },
+                    onKeyDown: function (e) { if (e.defaultPrevented || e.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return; if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); strike('key'); } },
                     onKeyUp: function (e) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); release(); } },
                     onBlur: function () { var hd = handRef.current; if (hd && hd.mode === 'key') release(); },
                     className: btnCls + 'bg-orange-700 hover:bg-orange-800 text-white disabled:opacity-50 select-none',
@@ -9551,7 +9568,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             // A context lost AFTER init (GPU reset, low-memory eviction) used to leave
             // this canvas black for the rest of the session. Route it into the same
             // error panel and Retry the creation failure already uses.
-            canvas.addEventListener('webglcontextlost', function (ev) {
+            var ctxLostTimer = null;
+            function onContextLost(ev) {
               // A teardown that already removed the canvas can still fire this.
               if (!canvas.isConnected) return;
               ev.preventDefault();
@@ -9559,12 +9577,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               if (canvas._weldLabTearingDown) return;
               if (cancelled) return;
               teardown3D();
-              setTimeout(function () {
+              ctxLostTimer = setTimeout(function () {
+                ctxLostTimer = null;
                 if (!canvas.isConnected) return;
                 setCtxLost(true);
                 setStatus('error');
               }, 0);
-            });
+            }
+            canvas.addEventListener('webglcontextlost', onContextLost);
 
             var scene = new THREE.Scene();
             scene.background = new THREE.Color(0x0f172a);
@@ -10527,6 +10547,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             // ── RAF loop ──
             function loop(now) {
               if (cancelled) return;
+              if (typeof document !== 'undefined' && document.hidden) { rafRef.current = null; return; }
               var s = sceneRef.current;
               if (!s) return;
               // Props change without rebuilding the WebGL context.
@@ -10943,8 +10964,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               }
 
               var _ac=s.renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ s.renderer._alloComposer=null; s.renderer.render(s.scene, s.camera); } } else { s.renderer.render(s.scene, s.camera); }
+              if (typeof document !== 'undefined' && document.hidden) { rafRef.current = null; return; }
               rafRef.current = requestAnimationFrame(loop);
             }
+            function onVis3D() {
+              if (!cancelled && typeof document !== 'undefined' && !document.hidden && !rafRef.current) {
+                rafRef.current = requestAnimationFrame(loop);
+              }
+            }
+            if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVis3D);
             rafRef.current = requestAnimationFrame(loop);
 
             // ── WebXR (optional): stand AT the welding bench — vocational VR (lean in
@@ -11027,7 +11055,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
             // Keyboard alternative — arrow keys orbit, +/- zoom
             function onKey(e) {
-              if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+              if (e.defaultPrevented || e.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
               var step = 0.08;
               if (e.key === 'ArrowLeft')  { camAngle.az += step; syncCamera(); e.preventDefault(); }
               else if (e.key === 'ArrowRight') { camAngle.az -= step; syncCamera(); e.preventDefault(); }
@@ -11051,6 +11079,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
             // Stash teardown
             sceneRef.current.dispose = function () {
+              if (ctxLostTimer !== null) { clearTimeout(ctxLostTimer); ctxLostTimer = null; }
+              canvas.removeEventListener('webglcontextlost', onContextLost);
+              if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVis3D);
               canvas.removeEventListener('pointerdown', onPointerDown);
               canvas.removeEventListener('pointermove', onPointerMove);
               canvas.removeEventListener('pointerup', onPointerUp);
@@ -11556,14 +11587,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             ctxC.fillText('Process: ' + procLabel, 14, 50);
             if (frame.recorded) ctxC.fillText(__alloT('stem.weldlab.arc_helmet_saved_pass', 'Your hand-laid pass · inspection'), 14, 64);
 
-            if (!_prefersReducedMotion) {
+            if (!_prefersReducedMotion && !(typeof document !== 'undefined' && document.hidden)) {
               rafRef.current = requestAnimationFrame(draw);
+            } else {
+              rafRef.current = null;
             }
           }
 
+          var onVisHelmet = function () {
+            if (typeof document !== 'undefined' && !document.hidden && !_prefersReducedMotion && !rafRef.current) {
+              rafRef.current = requestAnimationFrame(draw);
+            }
+          };
+          if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisHelmet);
           rafRef.current = requestAnimationFrame(draw);
           return function () {
+            if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVisHelmet);
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
           };
         }, [props.P, props.M, props.beadSignature, fitTick]);
 
@@ -11935,6 +11976,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           else if (n.kind === 'reveal') announce(__alloT('stem.weldlab.sr_all_defects_revealed', 'All defects revealed'));
           else if (n.kind === 'revealed') announce(__alloT('stem.weldlab.dh2_sr_revealed', 'Everything is revealed. Reset the sample to inspect it again.'));
         }
+        var defectCelebTimerRef = useRef(null);
+        useEffect(function () {
+          return function () {
+            if (defectCelebTimerRef.current) { clearTimeout(defectCelebTimerRef.current); defectCelebTimerRef.current = null; }
+          };
+        }, []);
         function logFound(ev) {
           try {
             var out = dhCatalogLog(catRef.current, ev, new Date().toISOString());
@@ -11945,7 +11992,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               var info = DEFECT_INFO[ev.type];
               setDefectCeleb({ type: ev.type, name: info.name, icon: info.icon, sampleId: sample.id,
                 total: Object.keys(out.catalog).length, at: Date.now() });
-              setTimeout(function () { setDefectCeleb(null); }, 3500);
+              if (defectCelebTimerRef.current) clearTimeout(defectCelebTimerRef.current);
+              defectCelebTimerRef.current = setTimeout(function () { defectCelebTimerRef.current = null; setDefectCeleb(null); }, 3500);
             }
           } catch (catErr) {}
         }
@@ -12011,7 +12059,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         }
         function moveReticle(du, dv) { dispatch({ type: 'reticle', du: du, dv: dv }); }
         function onSurfaceKey(e) {
-          if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+          if (e.defaultPrevented || e.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
           var k = e.key, big = !!e.shiftKey;
           if (k === 'ArrowLeft') moveReticle(big ? -0.1 : -0.02, 0);
           else if (k === 'ArrowRight') moveReticle(big ? 0.1 : 0.02, 0);
@@ -21127,10 +21175,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               setHud(Object.assign({}, lastS, { xNow: st.x, tNow: st.t, plateNow: st.plateT, stickNow: cond.stickout, activeNow: cond.active }));
             }
             if (st.done) { finishRun(st, true); return; }
+            if (typeof document !== 'undefined' && document.hidden) { raf = null; return; }
             raf = requestAnimationFrame(frame);
           }
+          var onVisRun = function () {
+            if (typeof document !== 'undefined' && !document.hidden && !raf) {
+              raf = requestAnimationFrame(frame);
+            }
+          };
+          if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisRun);
           raf = requestAnimationFrame(frame);
-          return function () { if (raf) cancelAnimationFrame(raf); };
+          return function () {
+            if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVisRun);
+            if (raf) cancelAnimationFrame(raf);
+          };
         }, [running]);
 
         // Static frames: the joint preview before a run, the finished bead after.
@@ -21264,7 +21322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         // Weld-zone keys: ←/→ travel speed, ↑/↓ amps (Shift = bigger steps).
         // In the review, ←/→ walk through the bead slice by slice instead.
         function onZoneKey(e) {
-          if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+          if (e.defaultPrevented || e.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
           var k = e.key, big = !!e.shiftKey, dTS = 0, dA = 0;
           if (k === 'ArrowRight') dTS = 1;
           else if (k === 'ArrowLeft') dTS = -1;
@@ -28552,13 +28610,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           function step(ts) {
             // Match the static Run outcome if reduced motion is enabled mid-run.
             if (_prefersReducedMotion) { setRobRun({ phase: 'done', t: 1 }); return; }
+            if (typeof document !== 'undefined' && document.hidden) { robRafRef.current = null; return; }
             if (start === null) start = ts;
             var t = Math.min(1, (ts - start) / dur);
             setRobRun({ phase: t >= 1 ? 'done' : 'running', t: t });
             if (t < 1) robRafRef.current = requestAnimationFrame(step);
           }
+          var onVisRob = function () {
+            if (typeof document !== 'undefined' && !document.hidden && !robRafRef.current) {
+              robRafRef.current = requestAnimationFrame(step);
+            }
+          };
+          if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisRob);
           robRafRef.current = requestAnimationFrame(step);
-          return function () { if (robRafRef.current) cancelAnimationFrame(robRafRef.current); robRafRef.current = null; };
+          return function () {
+            if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVisRob);
+            if (robRafRef.current) cancelAnimationFrame(robRafRef.current);
+            robRafRef.current = null;
+          };
         }, [robRun.phase]);
         // Announce the verdict and move focus to it once, on the edge into 'done'.
         useEffect(function () {
@@ -28597,7 +28666,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           else setRobRun({ phase: 'running', t: 0 });
         }
         function robGridKeys(e) {
-          if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+          if (e.defaultPrevented || e.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
           var k = e.key;
           var handled = true;
           if (k === 'ArrowRight') robMoveCursor(1, 0);
@@ -30069,7 +30138,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             'aria-label': __alloT('stem.weldlab.insp2_slider_aria', 'Gauge position along the weld. Arrow keys move 1/4 in, Shift+arrow 1 in, Enter records the reading.'),
             'aria-valuemin': 0, 'aria-valuemax': gaugeMax, 'aria-valuenow': gx, 'aria-valuetext': valueText,
             onKeyDown: function (e) {
-              if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+              if (e.defaultPrevented || e.isComposing || e.keyCode === 229 || e.altKey || e.ctrlKey || e.metaKey) return;
               var k = e.key, step = e.shiftKey ? 1 : 0.25, nx = null;
               if (k === 'ArrowRight' || k === 'ArrowUp') nx = gx + step;
               else if (k === 'ArrowLeft' || k === 'ArrowDown') nx = gx - step;
@@ -35398,7 +35467,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 'aria-describedby': 'sym2-m-prompt-' + kind + (w.invalid ? ' sym2-m-inv-' + kind : ''),
                 'aria-invalid': w.invalid ? 'true' : undefined,
                 onChange: function (e) { setWork(kind, { input: String(e.target.value).slice(0, 24), invalid: false }); },
-                onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); mCheck(kind); } },
+                onKeyDown: function (e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') { e.preventDefault(); mCheck(kind); } },
                 className: 'w-32 px-2 py-1.5 rounded-lg border-2 border-slate-500 bg-white text-slate-900 font-mono text-sm focus:outline-none focus:ring-2 ring-fuchsia-500/40'
               }),
               prob.unit !== '$' && h('span', { className: 'text-sm font-bold text-slate-800' }, unitLbl),

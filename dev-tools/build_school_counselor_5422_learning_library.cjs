@@ -3,7 +3,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const itemBanks = require('./school_counselor_5422/item_content.cjs');
+const { applyChoiceOverrides } = require('./school_counselor_5422/choice_overrides/index.cjs');
+const itemBanks = applyChoiceOverrides(require('./school_counselor_5422/item_content.cjs'));
 const { chapters: chapterSpecs, memoryAids: memoryAidSpecs } = require('./school_counselor_5422/learning_content.cjs');
 
 const root = path.resolve(__dirname, '..');

@@ -45,20 +45,10 @@
         });
     }
 
-    var originalAddEventListener = document.addEventListener.bind(document);
-    document.addEventListener = function (type, listener, options) {
-        if (type === 'DOMContentLoaded' && document.readyState !== 'loading') {
-            window.setTimeout(function () { listener.call(document, new Event('DOMContentLoaded')); }, 0);
-            return;
-        }
-        return originalAddEventListener(type, listener, options);
-    };
-
     var script = document.createElement('script');
     script.src = 'tool-finder-core.js';
     script.async = false;
     script.addEventListener('load', function () {
-        document.addEventListener = originalAddEventListener;
         enhanceHostedAccessCard();
     }, { once: true });
     document.head.appendChild(script);

@@ -325,6 +325,8 @@ function MtssTriagePanel(props) {
   const [groupFocus, setGroupFocus] = React.useState('');
   const [progA, setProgA] = React.useState('');
   const [progB, setProgB] = React.useState('');
+  const [progFilter, setProgFilter] = React.useState('all');
+  const [boardQuery, setBoardQuery] = React.useState('');
   const [armDelete, setArmDelete] = React.useState(null);
   const dialogRef = React.useRef(null);
 
@@ -465,6 +467,24 @@ function MtssTriagePanel(props) {
 
   const toggleChecked = (code) => setChecked((c) => ({ ...c, [code]: !c[code] }));
 
+  const validBoardCodes = React.useMemo(() => {
+    if (!board) return new Set();
+    return new Set([1, 2, 3].flatMap((tier) => (board.tiers[tier] || []).map((r) => r.code)));
+  }, [board]);
+
+  const selectedCount = Object.keys(checked).filter((k) => checked[k] && validBoardCodes.has(k)).length;
+
+  const toggleTierSelection = (tier) => {
+    if (!board || !board.tiers[tier] || board.tiers[tier].length === 0) return;
+    const codes = board.tiers[tier].map((r) => r.code);
+    const allSelected = codes.every((code) => !!checked[code]);
+    setChecked((prev) => {
+      const next = { ...prev };
+      codes.forEach((code) => { next[code] = !allSelected; });
+      return next;
+    });
+  };
+
   const createGroup = () => {
     if (!active || !board) return;
     const validCodes = new Set([1, 2, 3].flatMap((tier) => (board.tiers[tier] || []).map((r) => r.code)));
@@ -496,6 +516,14 @@ function MtssTriagePanel(props) {
   const dsA = datasets.find((d) => d.id === progA) || null;
   const dsB = datasets.find((d) => d.id === progB) || null;
   const progress = (dsA && dsB && dsA.id !== dsB.id) ? mtssProgress(dsA, dsB) : null;
+  const normalizedBoardQuery = boardQuery.trim().toLowerCase();
+  const filteredProgressJoined = progress
+    ? progress.joined.filter((j) => (progFilter === 'all' ? true : j.movement === progFilter))
+    : [];
+  const tierPct = (tier) => {
+    if (!board || board.total <= 0) return 0;
+    return Math.round(((board.tiers[tier] || []).length / board.total) * 100);
+  };
   const backdropDownRef = React.useRef(false);
 
   return (
@@ -592,7 +620,7 @@ function MtssTriagePanel(props) {
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {datasets.map((d) => (
                     <button key={d.id} type="button" aria-pressed={activeId === d.id}
-                      onClick={() => { setActiveId(d.id); setChecked({}); }}
+                      onClick={() => { setActiveId(d.id); setChecked({}); setBoardQuery(''); }}
                       className={'min-h-11 px-3 py-1.5 rounded-full border text-xs font-bold ' + (activeId === d.id ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100')}>
                       {d.label} · {d.window}
                     </button>
@@ -602,44 +630,114 @@ function MtssTriagePanel(props) {
 
               {active && board && (
                 <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <p className="text-xs text-slate-600">{board.total} {tt('mtss.students', 'students')} · {board.invalid.length > 0 ? (board.invalid.length + ' ' + tt('mtss.invalid_rows', 'invalid/duplicate rows ignored')) : ''}</p>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {board.total >= 6 && (
+                        <input
+                          id="mtss-board-search"
+                          type="search"
+                          value={boardQuery}
+                          onChange={(e) => setBoardQuery(e.target.value)}
+                          onKeyDown={(e) => {
+                            if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
+                            if (e.key === 'Escape' && boardQuery) { e.preventDefault(); e.stopPropagation(); setBoardQuery(''); }
+                          }}
+                          aria-label={tt('mtss.board_search_aria', 'Filter screening board by student code')}
+                          placeholder={tt('mtss.board_search_placeholder', 'Find code…')}
+                          className="min-h-11 w-36 rounded-lg border border-slate-300 bg-white px-2.5 text-xs text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
+                        />
+                      )}
                       <button type="button" onClick={() => mtssDownload('mtss-' + (active.window || 'window').replace(/\s+/g, '-') + '.csv', 'text/csv;charset=utf-8', '\uFEFF' + mtssCsv(active), addToast, tt('mtss.export_toast', 'Export started — check your downloads.'), tt('mtss.export_failed', 'Export failed: '))}
                         className="min-h-11 px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100"><span aria-hidden="true">⬇️</span> {tt('mtss.export_csv', 'CSV')}</button>
                       <button type="button"
                         onClick={() => {
-                          if (armDelete === active.id) { setDatasets((l) => l.filter((x) => x.id !== active.id)); setActiveId(null); setChecked({}); setArmDelete(null); addToast(tt('mtss.dataset_deleted', 'Window deleted.'), 'info'); }
+                          if (armDelete === active.id) { setDatasets((l) => l.filter((x) => x.id !== active.id)); setActiveId(null); setChecked({}); setBoardQuery(''); setArmDelete(null); addToast(tt('mtss.dataset_deleted', 'Window deleted.'), 'info'); }
                           else { setArmDelete(active.id); mtssAnnounce(tt('mtss.delete_arm_announce', 'Activate delete again to permanently remove this window.')); }
                         }}
                         className={'min-h-11 px-3 py-1.5 rounded-lg border text-xs font-bold ' + (armDelete === active.id ? 'bg-rose-600 text-white border-rose-700' : 'bg-white text-rose-700 border-rose-300 hover:bg-rose-50')}
                       >{armDelete === active.id ? tt('mtss.delete_confirm', 'Tap again to delete') : tt('mtss.delete', 'Delete')}</button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {[3, 2, 1].map((tier) => (
-                      <div key={tier} className={'rounded-xl border p-2 ' + MTSS_TIER_META[tier].cls}>
-                        <h4 className="text-xs font-bold">{tt('mtss.tier_' + tier, MTSS_TIER_META[tier].label)} ({board.tiers[tier].length})</h4>
-                        <ul className="mt-1 space-y-0.5">
-                          {board.tiers[tier].map((r) => (
-                            <li key={r.code} className="flex items-center gap-1.5 text-xs">
-                              {tier !== 1 && (
-                                <label className="min-w-11 min-h-11 inline-flex items-center justify-center shrink-0 cursor-pointer -my-2 -ml-2">
-                                  <input type="checkbox" checked={!!checked[r.code]} onChange={() => toggleChecked(r.code)}
-                                    aria-label={tt('mtss.check_aria', 'Select for grouping:') + ' ' + r.code} className="w-4 h-4 shrink-0" />
-                                </label>
-                              )}
-                              <span className="font-bold">{r.code}</span>
-                              <span className="ml-auto tabular-nums">{r.score}</span>
-                            </li>
-                          ))}
-                          {board.tiers[tier].length === 0 && <li className="text-xs opacity-70">{tt('mtss.tier_empty', 'none')}</li>}
-                        </ul>
+                  {board.total > 0 && (
+                    <div data-mtss-tier-distribution="true" className="mb-2.5 rounded-xl border border-slate-200 bg-white p-2.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-slate-700 mb-1.5 tabular-nums">
+                        <span>{tt('mtss.distribution_title', 'Window distribution')}</span>
+                        <span className="flex flex-wrap items-center gap-2 font-semibold">
+                          <span className="text-emerald-800">T1: {tierPct(1)}% ({board.tiers[1].length})</span>
+                          <span className="text-amber-800">T2: {tierPct(2)}% ({board.tiers[2].length})</span>
+                          <span className="text-rose-800">T3: {tierPct(3)}% ({board.tiers[3].length})</span>
+                        </span>
                       </div>
-                    ))}
+                      <div className="h-2.5 w-full rounded-full overflow-hidden bg-slate-100 flex" aria-hidden="true">
+                        {board.tiers[1].length > 0 && <div className="bg-emerald-600 h-full transition-all motion-reduce:transition-none" style={{ width: ((board.tiers[1].length / board.total) * 100) + '%' }} />}
+                        {board.tiers[2].length > 0 && <div className="bg-amber-500 h-full transition-all motion-reduce:transition-none" style={{ width: ((board.tiers[2].length / board.total) * 100) + '%' }} />}
+                        {board.tiers[3].length > 0 && <div className="bg-rose-600 h-full transition-all motion-reduce:transition-none" style={{ width: ((board.tiers[3].length / board.total) * 100) + '%' }} />}
+                      </div>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {[3, 2, 1].map((tier) => {
+                      const tierRows = board.tiers[tier] || [];
+                      const visibleRows = normalizedBoardQuery
+                        ? tierRows.filter((r) => String(r.code || '').toLowerCase().indexOf(normalizedBoardQuery) !== -1)
+                        : tierRows;
+                      const allTierSelected = tier !== 1 && tierRows.length > 0 && tierRows.every((r) => !!checked[r.code]);
+                      return (
+                        <div key={tier} className={'rounded-xl border p-2 ' + MTSS_TIER_META[tier].cls}>
+                          <div className="flex items-start justify-between gap-1.5">
+                            <h4 className="text-xs font-bold leading-snug">{tt('mtss.tier_' + tier, MTSS_TIER_META[tier].label)} ({visibleRows.length}{normalizedBoardQuery ? ('/' + tierRows.length) : ''})</h4>
+                            {tier !== 1 && tierRows.length > 0 && (
+                              <button
+                                type="button"
+                                data-mtss-select-tier={tier}
+                                aria-pressed={allTierSelected}
+                                aria-label={(allTierSelected ? tt('mtss.unselect_tier_aria', 'Unselect all Tier') : tt('mtss.select_tier_aria', 'Select all Tier')) + ' ' + tier}
+                                onClick={() => toggleTierSelection(tier)}
+                                className={'shrink-0 min-h-11 px-2 py-1 rounded-lg border text-[11px] font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ' + (allTierSelected ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white/90 text-slate-800 border-slate-300 hover:bg-white')}
+                              >
+                                {allTierSelected ? tt('mtss.unselect_all', 'Unselect') : tt('mtss.select_all', 'Select all')}
+                              </button>
+                            )}
+                          </div>
+                          <ul className="mt-1 space-y-0.5">
+                            {visibleRows.map((r) => (
+                              <li key={r.code} className="flex items-center gap-1.5 text-xs">
+                                {tier !== 1 && (
+                                  <label className="min-w-11 min-h-11 inline-flex items-center justify-center shrink-0 cursor-pointer -my-2 -ml-2">
+                                    <input type="checkbox" checked={!!checked[r.code]} onChange={() => toggleChecked(r.code)}
+                                      aria-label={tt('mtss.check_aria', 'Select for grouping:') + ' ' + r.code} className="w-4 h-4 shrink-0" />
+                                  </label>
+                                )}
+                                <span className="font-bold">{r.code}</span>
+                                <span className="ml-auto tabular-nums">{r.score}</span>
+                              </li>
+                            ))}
+                            {visibleRows.length === 0 && <li className="text-xs opacity-70">{normalizedBoardQuery ? tt('mtss.no_code_match', 'no match') : tt('mtss.tier_empty', 'none')}</li>}
+                          </ul>
+                        </div>
+                      );
+                    })}
                   </div>
                   <div className="mt-2 bg-white border border-slate-300 rounded-xl p-3">
-                    <h4 className="text-xs font-bold text-slate-700">{tt('mtss.group_title', 'Create an intervention group from checked students')}</h4>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h4 className="text-xs font-bold text-slate-700">{tt('mtss.group_title', 'Create an intervention group from checked students')}</h4>
+                      {selectedCount > 0 && (
+                        <div data-mtss-selected-bar="true" className="flex items-center gap-1.5">
+                          <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-800 tabular-nums">
+                            {selectedCount} {tt('mtss.selected_short', 'selected')}
+                          </span>
+                          <button
+                            type="button"
+                            data-mtss-clear-selected="true"
+                            onClick={() => setChecked({})}
+                            className="min-h-11 px-2.5 py-1 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
+                          >
+                            {tt('mtss.clear_selected', 'Clear')}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                     <div className="mt-1.5 flex flex-wrap gap-2 items-end">
                       <div className="flex-1 min-w-40">
                         <label htmlFor="mtss-group-name" className="block text-xs font-bold text-slate-600 mb-0.5">{tt('mtss.group_name', 'Group name')}</label>
@@ -719,9 +817,30 @@ function MtssTriagePanel(props) {
               )}
               {progress && (
                 <div>
-                  <p className="text-xs font-bold text-slate-800 mb-1">
+                  <p className="text-xs font-bold text-slate-800 mb-1.5">
                     {progress.summary.joined} {tt('mtss.matched', 'matched')} · {progress.summary.lessIntensive} {tt('mtss.moved_down', 'to less intensive')} · {progress.summary.moreIntensive} {tt('mtss.moved_up', 'to more intensive')} · {progress.summary.improvedScore} {tt('mtss.improved', 'improved scores')}
                   </p>
+                  {progress.joined.length >= 2 && (
+                    <div data-mtss-progress-filter="true" className="flex flex-wrap items-center gap-1.5 mb-2">
+                      {[
+                        { id: 'all', label: tt('mtss.filter_all', 'All') + ' (' + progress.summary.joined + ')' },
+                        { id: 'less_intensive', label: tt('mtss.filter_less', 'Less intensive') + ' (' + progress.summary.lessIntensive + ')' },
+                        { id: 'more_intensive', label: tt('mtss.filter_more', 'More intensive') + ' (' + progress.summary.moreIntensive + ')' },
+                        { id: 'same', label: tt('mtss.filter_same', 'Same band') + ' (' + progress.summary.same + ')' },
+                      ].map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          data-mtss-prog-filter={opt.id}
+                          aria-pressed={progFilter === opt.id}
+                          onClick={() => setProgFilter(opt.id)}
+                          className={'min-h-11 px-2.5 py-1 rounded-full border text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ' + (progFilter === opt.id ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100')}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <div className="overflow-x-auto bg-white border border-slate-300 rounded-xl p-2">
                     <table className="w-full text-xs border-collapse">
                       <caption className="sr-only">{tt('mtss.progress_caption', 'Per-student progress between the two windows')}</caption>
@@ -735,7 +854,7 @@ function MtssTriagePanel(props) {
                         </tr>
                       </thead>
                       <tbody>
-                        {progress.joined.map((j) => (
+                        {filteredProgressJoined.map((j) => (
                           <tr key={j.code} className="border-t border-slate-200">
                             <th scope="row" className="text-left p-1.5 font-bold text-slate-800">{j.code}</th>
                             <td className="p-1.5 text-center text-slate-700 tabular-nums">{j.from}</td>
@@ -744,6 +863,13 @@ function MtssTriagePanel(props) {
                             <td className="p-1.5 text-center text-slate-700">T{j.fromTier}→T{j.toTier}{j.movement === 'less_intensive' ? ' ✓' : ''}</td>
                           </tr>
                         ))}
+                        {filteredProgressJoined.length === 0 && (
+                          <tr className="border-t border-slate-200">
+                            <td colSpan={5} className="p-2 text-center text-slate-600">
+                              {tt('mtss.no_progress_match', 'No students in this movement band.')}
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>

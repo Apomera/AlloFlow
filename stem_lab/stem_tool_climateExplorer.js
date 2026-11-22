@@ -45,6 +45,7 @@
   style.textContent+=' @media(forced-colors:active){#ce-advanced-toggle{forced-color-adjust:auto;background:ButtonFace!important;color:ButtonText!important;-webkit-text-fill-color:ButtonText!important;border-color:ButtonText!important}}';
   style.textContent+=' .ce-explorer-root [data-climate-mission-panel] button:focus-visible{outline:3px solid var(--ce-focus,#4338ca);outline-offset:3px} @media(forced-colors:active){.ce-explorer-root [data-climate-mission-panel],.ce-explorer-root [data-climate-mission-panel] *,#ce-context-banner,#ce-context-banner *,.ce-explorer-root [data-allo-fs-btn],.ce-explorer-root [data-allo-fs-btn] *{forced-color-adjust:auto}.ce-explorer-root [data-climate-mission-panel] button:focus-visible{outline-color:Highlight}.ce-explorer-root [data-climate-mission-panel] button,.ce-explorer-root [data-allo-fs-btn]{background:ButtonFace!important;color:ButtonText!important;-webkit-text-fill-color:ButtonText!important;border-color:ButtonText!important}.ce-explorer-root [data-allo-fs-btn] span{color:ButtonText!important;-webkit-text-fill-color:ButtonText!important}}';
   style.textContent+=' .ce-subject-badge,.ce-telemetry-pill{display:inline-flex;align-items:center;min-height:24px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;line-height:1.3;font-variant-numeric:tabular-nums}.ce-svg-stage{border-radius:10px;padding:10px 12px;margin:10px 0 12px;overflow:hidden}';
+  style.textContent+=' @keyframes ce-photon-flow{from{stroke-dashoffset:24}to{stroke-dashoffset:0}} @keyframes ce-photon-flow-rev{from{stroke-dashoffset:0}to{stroke-dashoffset:24}} .ce-flow-sw{animation:ce-photon-flow 1.4s linear infinite} .ce-flow-ir{animation:ce-photon-flow 1.8s linear infinite} .ce-flow-ret{animation:ce-photon-flow 2.1s linear infinite} @media(prefers-reduced-motion:reduce){.ce-flow-sw,.ce-flow-ir,.ce-flow-ret{animation:none!important}} .theme-contrast .ce-flow-glow{display:none!important}';
   document.head.appendChild(style);
 })();
 // Carbon calculator, renewables simulator, climate justice, solutions spotlight
@@ -1369,18 +1370,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       function attachKeelingChart(canvas){
         if(disposeKeelingChart){disposeKeelingChart();disposeKeelingChart=null;}
         if(!canvas)return;
-        var active=true,observer=null,lastWidth=0,lastDpr=0;
-        function paint(){
+        var active=true,observer=null,lastWidth=0,lastDpr=0,beaconRaf=0,beaconPhase=0;
+        function ceIsHC(){
+          try{
+            if(typeof document!=='undefined'){
+              var de=document.documentElement,bd=document.body;
+              if((de&&de.classList&&de.classList.contains('theme-contrast'))||(bd&&bd.classList&&bd.classList.contains('theme-contrast')))return true;
+            }
+            if(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(forced-colors: active)').matches)return true;
+          }catch(e){}
+          return false;
+        }
+        function ceIsRM(){
+          try{return !!(typeof window!=='undefined'&&window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);}catch(e){return false;}
+        }
+        function paint(forceBeacon){
           if(!active)return;
           var width=Math.max(160,Math.round(canvas.offsetWidth||600)),height=448;
           var dpr=Number.isFinite(window.devicePixelRatio)&&window.devicePixelRatio>0?window.devicePixelRatio:1;
-          if(width===lastWidth&&dpr===lastDpr)return;
+          if(!forceBeacon&&width===lastWidth&&dpr===lastDpr)return;
           var c=canvas.getContext('2d');if (!c) return;
+          var resized=(width!==lastWidth||dpr!==lastDpr);
           lastWidth=width;lastDpr=dpr;
-          canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);
+          if(resized){canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);}
           c.setTransform(dpr,0,0,dpr,0,0);
           c.fillStyle='#0f172a';c.fillRect(0,0,width,height);
-          var hasStudio=typeof c.createLinearGradient==='function'&&typeof c.save==='function'&&typeof c.restore==='function'&&typeof c.closePath==='function';
+          var hc=ceIsHC(),rm=ceIsRM();
+          var hasStudio=!hc&&typeof c.createLinearGradient==='function'&&typeof c.save==='function'&&typeof c.restore==='function'&&typeof c.closePath==='function';
           if(hasStudio){
             c.save();
             var keelingBg=c.createLinearGradient(0,0,0,height);
@@ -1449,8 +1465,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   c.strokeStyle='rgba(125,211,252,0.65)';c.lineWidth=1.2;c.beginPath();c.arc(x(crossP.y),y(crossP.ppm),6,0,Math.PI*2);c.stroke();
                 }
               }
-              c.fillStyle=haloColor;c.beginPath();c.arc(endX,endY,9.5,0,Math.PI*2);c.fill();
-              c.strokeStyle=isWarmEnd?'rgba(253,224,71,0.85)':'rgba(147,197,253,0.9)';c.lineWidth=1.5;c.beginPath();c.arc(endX,endY,6.5,0,Math.PI*2);c.stroke();
+              var pulseVal=rm?0.5:(0.5+0.5*Math.sin(beaconPhase));
+              var ringR=8.5+pulseVal*6.5;
+              var ringAlpha=(0.45-pulseVal*0.32);
+              if(typeof c.createRadialGradient==='function'){
+                var bkGrad=c.createRadialGradient(endX,endY,1.5,endX,endY,14+pulseVal*4);
+                bkGrad.addColorStop(0,isWarmEnd?'rgba(254,240,138,0.85)':'rgba(186,230,253,0.88)');
+                bkGrad.addColorStop(0.5,haloColor);
+                bkGrad.addColorStop(1,'rgba(15,23,42,0)');
+                c.fillStyle=bkGrad;c.beginPath();c.arc(endX,endY,14+pulseVal*4,0,Math.PI*2);c.fill();
+              } else {
+                c.fillStyle=haloColor;c.beginPath();c.arc(endX,endY,9.5,0,Math.PI*2);c.fill();
+              }
+              c.strokeStyle=isWarmEnd?('rgba(253,224,71,'+ringAlpha.toFixed(3)+')'):('rgba(147,197,253,'+ringAlpha.toFixed(3)+')');
+              c.lineWidth=1.4;c.beginPath();c.arc(endX,endY,ringR,0,Math.PI*2);c.stroke();
+              c.strokeStyle=isWarmEnd?'rgba(253,224,71,0.9)':'rgba(147,197,253,0.95)';c.lineWidth=1.6;c.beginPath();c.arc(endX,endY,6.2,0,Math.PI*2);c.stroke();
               c.restore();
             }
             c.fillStyle=options.color;
@@ -1462,11 +1491,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           }
           drawPlot({top:54,min:300,max:440,ticks:[300,350,400,440],tickLabel:function(value){return String(value);},title:t('stem.climateExplorer.keeling_chart_co2_title','Mauna Loa CO₂ (ppm)'),subtitle:t('stem.climateExplorer.keeling_chart_sample','Selected historical sample'),data:KEELING_DATA,key:'ppm',color:'#60a5fa',dash:[]});
           drawPlot({top:286,min:-0.2,max:1.4,ticks:[-0.2,0,0.5,1.0,1.4],tickLabel:function(value){return (value>0?'+':'')+value.toFixed(1);},title:t('stem.climateExplorer.keeling_chart_temperature_title','Temperature anomaly (°C)'),subtitle:t('stem.climateExplorer.keeling_chart_temperature_baseline','Baseline: 1951–1980'),data:GLOBAL_TEMP,key:'t',color:'#fbbf24',dash:[8,5],square:true});
+          if(hasStudio&&!rm&&!hc&&!beaconRaf&&canvas.isConnected&&!(typeof document!=='undefined'&&document.hidden)){
+            beaconRaf=requestAnimationFrame(function(){
+              beaconRaf=0;
+              if(!active||!canvas.isConnected)return;
+              beaconPhase+=0.055;
+              paint(true);
+            });
+          }
         }
-        paint();
-        if(typeof ResizeObserver==='function'){observer=new ResizeObserver(paint);observer.observe(canvas);}
+        paint(false);
+        if(typeof ResizeObserver==='function'){observer=new ResizeObserver(function(){paint(false);});observer.observe(canvas);}
         else window.addEventListener('resize',paint);
-        disposeKeelingChart=function(){active=false;if(observer)observer.disconnect();else window.removeEventListener('resize',paint);};
+        disposeKeelingChart=function(){active=false;if(beaconRaf){cancelAnimationFrame(beaconRaf);beaconRaf=0;}if(observer)observer.disconnect();else window.removeEventListener('resize',paint);};
       }
       var KEELING_DATA = [
         { y: 1958, ppm: 315.0 }, { y: 1960, ppm: 316.9 }, { y: 1965, ppm: 320.0 },
@@ -1844,13 +1881,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         for (var j = 1; j < tl.length; j++) c.lineTo(x(j), y(tl[j].gt));
         c.strokeStyle = '#38bdf8'; c.lineWidth = 3; c.stroke();
         if (hasGrad) {
-          c.save();
-          var bx = x(tl.length - 1), by = y(endGt);
-          c.beginPath(); c.arc(bx, by, 10, 0, Math.PI * 2);
-          c.fillStyle = endGt <= 20 ? 'rgba(52,211,153,0.28)' : 'rgba(56,189,248,0.28)'; c.fill();
-          c.beginPath(); c.arc(bx, by, 6.5, 0, Math.PI * 2);
-          c.strokeStyle = endGt <= 20 ? 'rgba(110,231,183,0.9)' : 'rgba(125,211,252,0.9)'; c.lineWidth = 1.5; c.stroke();
-          c.restore();
+          var tlHC = false;
+          try {
+            if (typeof document !== 'undefined') {
+              var deT = document.documentElement, bdT = document.body;
+              if ((deT && deT.classList && deT.classList.contains('theme-contrast')) || (bdT && bdT.classList && bdT.classList.contains('theme-contrast'))) tlHC = true;
+            }
+          } catch (eTH) {}
+          if (!tlHC) {
+            c.save();
+            var bx = x(tl.length - 1), by = y(endGt);
+            if (typeof c.createRadialGradient === 'function') {
+              var tlHalo = c.createRadialGradient(bx, by, 1.5, bx, by, 15);
+              tlHalo.addColorStop(0, endGt <= 20 ? 'rgba(167,243,208,0.85)' : 'rgba(186,230,253,0.85)');
+              tlHalo.addColorStop(0.5, endGt <= 20 ? 'rgba(52,211,153,0.34)' : 'rgba(56,189,248,0.34)');
+              tlHalo.addColorStop(1, 'rgba(15,23,42,0)');
+              c.fillStyle = tlHalo;
+              c.beginPath(); c.arc(bx, by, 15, 0, Math.PI * 2); c.fill();
+            } else {
+              c.beginPath(); c.arc(bx, by, 10, 0, Math.PI * 2);
+              c.fillStyle = endGt <= 20 ? 'rgba(52,211,153,0.28)' : 'rgba(56,189,248,0.28)'; c.fill();
+            }
+            c.beginPath(); c.arc(bx, by, 9.5, 0, Math.PI * 2);
+            c.strokeStyle = endGt <= 20 ? 'rgba(110,231,183,0.42)' : 'rgba(125,211,252,0.42)'; c.lineWidth = 1.2; c.stroke();
+            c.beginPath(); c.arc(bx, by, 6.2, 0, Math.PI * 2);
+            c.strokeStyle = endGt <= 20 ? 'rgba(110,231,183,0.92)' : 'rgba(125,211,252,0.92)'; c.lineWidth = 1.6; c.stroke();
+            c.restore();
+          }
         }
         c.beginPath(); c.arc(x(tl.length - 1), y(endGt), 4, 0, Math.PI * 2);
         c.fillStyle = '#38bdf8'; c.fill();
@@ -2101,6 +2158,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 for (var mi = 0; mi < 46; mi++) mols.push({ x: Math.random(), ph: Math.random() * 6.28, sp: 0.4 + Math.random() * 0.8, r: 0.8 + Math.random() * 1.2 });
                 var heroStars = [];
                 for (var hs = 0; hs < 60; hs++) heroStars.push({ x: Math.random(), y: Math.random() * 0.62, r: 0.3 + Math.random() * 1.1, tw: Math.random() * 6.28 });
+                // Pre-allocated zero-GC radiative photon & ocean-current buffers
+                var swPackets = [];
+                for (var swi = 0; swi < 10; swi++) swPackets.push({ lane: swi / 10, phase: (swi * 0.37) % 1, sp: 0.0085 + (swi % 3) * 0.0018 });
+                var irPackets = [];
+                for (var iri = 0; iri < 12; iri++) irPackets.push({ lane: iri / 12, phase: (iri * 0.29) % 1, sp: 0.0068 + (iri % 4) * 0.0012, wavePh: iri * 1.1 });
+                function heroHC() {
+                  try {
+                    if (typeof document !== 'undefined') {
+                      var de = document.documentElement, bd = document.body;
+                      if ((de && de.classList && de.classList.contains('theme-contrast')) || (bd && bd.classList && bd.classList.contains('theme-contrast'))) return true;
+                    }
+                    if (window.matchMedia && window.matchMedia('(forced-colors: active)').matches) return true;
+                  } catch (eHC) {}
+                  return false;
+                }
+                function heroSafeEllipse(ctx, x, y, rx, ry, rot, sa, ea) {
+                  if (typeof ctx.ellipse === 'function') ctx.ellipse(x, y, Math.max(0.5, rx), Math.max(0.5, ry), rot, sa, ea);
+                  else ctx.arc(x, y, Math.max(0.5, (rx + ry) * 0.5), sa, ea);
+                }
                 function lerpCh(a, b, f) { return Math.round(a + (b - a) * f); }
                 function heroDraw() {
                   if (!cv.isConnected || cv._cePaused) return;
@@ -2109,8 +2185,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   if (!heroReduced()) heroTick++;
                   var sig = cv._ceSignal != null ? cv._ceSignal : 0.4;
                   var dpr = 2;
+                  var hc = heroHC();
+                  var isRM = heroReduced();
+                  var hasLG = !hc && typeof g.createLinearGradient === 'function';
+                  var hasRG = !hc && typeof g.createRadialGradient === 'function';
                   // Deep-space atmospheric backdrop with subtle upper cosmos gradient
-                  var hasLG = typeof g.createLinearGradient === 'function';
                   if (hasLG) {
                     var skyG = g.createLinearGradient(0, 0, 0, H * dpr);
                     skyG.addColorStop(0, '#01040f');
@@ -2122,12 +2201,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   }
                   g.fillRect(0, 0, W * dpr, H * dpr);
                   // Soft distant solar corona glow at upper-left
-                  var sunHalo = g.createRadialGradient(W * 0.14 * dpr, H * 0.12 * dpr, 2 * dpr, W * 0.14 * dpr, H * 0.12 * dpr, W * 0.24 * dpr);
-                  sunHalo.addColorStop(0, 'rgba(254,240,138,0.28)');
-                  sunHalo.addColorStop(0.35, 'rgba(250,204,21,0.09)');
-                  sunHalo.addColorStop(1, 'rgba(250,204,21,0)');
-                  g.fillStyle = sunHalo;
-                  g.fillRect(0, 0, W * dpr, H * dpr);
+                  if (hasRG) {
+                    var sunHalo = g.createRadialGradient(W * 0.14 * dpr, H * 0.12 * dpr, 2 * dpr, W * 0.14 * dpr, H * 0.12 * dpr, W * 0.24 * dpr);
+                    sunHalo.addColorStop(0, 'rgba(254,240,138,0.28)');
+                    sunHalo.addColorStop(0.35, 'rgba(250,204,21,0.09)');
+                    sunHalo.addColorStop(1, 'rgba(250,204,21,0)');
+                    g.fillStyle = sunHalo;
+                    g.fillRect(0, 0, W * dpr, H * dpr);
+                  }
                   // Layered starfield with cool-blue and warm-gold star tints
                   for (var si = 0; si < heroStars.length; si++) {
                     var st = heroStars[si];
@@ -2140,99 +2221,172 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   g.globalAlpha = 1;
                   // Earth limb — a big circle whose centre sits below the strip
                   var R = W * 0.62, cx = W / 2, cy = H + R * 0.72;
+                  var iceExtent = Math.max(0.28, 1 - sig * 0.68);
                   // Multi-band atmospheric Rayleigh limb glow: sapphire/cyan (healthy) → amber → crimson (hot)
                   var ar = lerpCh(56, 239, sig), ag = lerpCh(189, 68, sig), ab = lerpCh(248, 68, sig);
-                  var atmoGrad = g.createRadialGradient(cx * dpr, cy * dpr, (R - 6) * dpr, cx * dpr, cy * dpr, (R + 38 + sig * 30) * dpr);
-                  atmoGrad.addColorStop(0, 'rgba(' + ar + ',' + ag + ',' + ab + ',0.62)');
-                  atmoGrad.addColorStop(0.28, 'rgba(' + ar + ',' + ag + ',' + ab + ',0.28)');
-                  atmoGrad.addColorStop(0.65, 'rgba(' + ar + ',' + ag + ',' + ab + ',0.09)');
-                  atmoGrad.addColorStop(1, 'rgba(' + ar + ',' + ag + ',' + ab + ',0)');
-                  g.fillStyle = atmoGrad;
-                  g.fillRect(0, 0, W * dpr, H * dpr);
-                  // Layered radiative energy-balance beams (incoming solar shortwave + greenhouse IR return)
-                  var phaseAnim = heroReduced() ? 0.35 : ((heroTick * 0.012) % 1);
-                  g.save();
-                  // Incoming solar shortwave beams from upper-left
-                  for (var sb = 0; sb < 2; sb++) {
-                    var sx0 = W * (0.14 + sb * 0.06) * dpr, sy0 = H * 0.08 * dpr;
-                    var sx1 = W * (0.30 + sb * 0.09) * dpr, sy1 = H * 0.68 * dpr;
-                    if (hasLG) {
-                      var swG = g.createLinearGradient(sx0, sy0, sx1, sy1);
-                      swG.addColorStop(0, 'rgba(254,240,138,0.52)');
-                      swG.addColorStop(0.6, 'rgba(250,204,21,0.24)');
-                      swG.addColorStop(1, 'rgba(250,204,21,0.03)');
-                      g.strokeStyle = swG;
-                    } else {
-                      g.strokeStyle = 'rgba(250,204,21,0.28)';
-                    }
-                    g.lineWidth = (2.2 - sb * 0.5) * dpr;
-                    g.beginPath(); g.moveTo(sx0, sy0); g.lineTo(sx1, sy1); g.stroke();
-                    // Traveling solar photon pulse
-                    var spT = (phaseAnim + sb * 0.45) % 1;
-                    g.fillStyle = 'rgba(254,249,195,' + (0.65 * Math.sin(spT * Math.PI)).toFixed(3) + ')';
-                    g.beginPath();
-                    g.arc(sx0 + (sx1 - sx0) * spT, sy0 + (sy1 - sy0) * spT, 2.4 * dpr, 0, Math.PI * 2);
-                    g.fill();
+                  if (hasRG) {
+                    var atmoGrad = g.createRadialGradient(cx * dpr, cy * dpr, (R - 6) * dpr, cx * dpr, cy * dpr, (R + 38 + sig * 30) * dpr);
+                    atmoGrad.addColorStop(0, 'rgba(' + ar + ',' + ag + ',' + ab + ',0.62)');
+                    atmoGrad.addColorStop(0.28, 'rgba(' + ar + ',' + ag + ',' + ab + ',0.28)');
+                    atmoGrad.addColorStop(0.65, 'rgba(' + ar + ',' + ag + ',' + ab + ',0.09)');
+                    atmoGrad.addColorStop(1, 'rgba(' + ar + ',' + ag + ',' + ab + ',0)');
+                    g.fillStyle = atmoGrad;
+                    g.fillRect(0, 0, W * dpr, H * dpr);
                   }
-                  // Reflected shortwave albedo ray off polar ice/cloud band (stronger when cool)
-                  var albedoVis = Math.max(0.18, 0.55 - sig * 0.32);
-                  g.strokeStyle = 'rgba(186,230,253,' + albedoVis.toFixed(3) + ')';
-                  g.lineWidth = 1.4 * dpr;
-                  g.beginPath();
-                  g.moveTo(W * 0.30 * dpr, H * 0.64 * dpr);
-                  g.lineTo(W * 0.42 * dpr, H * 0.14 * dpr);
-                  g.stroke();
-                  // Outgoing surface IR & greenhouse-trapped downward re-emission arcs (scales with sig)
-                  var irCount = 2 + Math.round(sig * 2);
-                  for (var ir = 0; ir < irCount; ir++) {
-                    var irX = W * (0.52 + ir * 0.105) * dpr;
-                    var irBaseY = H * 0.72 * dpr;
-                    var irTopY = H * (0.24 - sig * 0.05) * dpr;
-                    var irAlpha = 0.22 + sig * 0.34;
-                    if (hasLG) {
-                      var irG = g.createLinearGradient(irX, irBaseY, irX, irTopY);
-                      irG.addColorStop(0, 'rgba(251,146,60,' + irAlpha.toFixed(3) + ')');
-                      irG.addColorStop(0.55, 'rgba(249,115,22,' + (irAlpha * 0.85).toFixed(3) + ')');
-                      irG.addColorStop(1, 'rgba(239,68,68,0.04)');
-                      g.strokeStyle = irG;
-                    } else {
-                      g.strokeStyle = 'rgba(251,146,60,0.32)';
+                  // Concentration-coupled greenhouse-gas (CO2/CH4) atmospheric absorption band
+                  var ghgBandY = H * 0.34 * dpr;
+                  var ghgOpacity = 0.07 + sig * 0.22;
+                  if (hasLG) {
+                    var ghgStrip = g.createLinearGradient(0, ghgBandY - 12 * dpr, 0, ghgBandY + 14 * dpr);
+                    ghgStrip.addColorStop(0, 'rgba(56,189,248,0)');
+                    ghgStrip.addColorStop(0.5, 'rgba(' + lerpCh(56, 249, sig) + ',' + lerpCh(189, 115, sig) + ',' + lerpCh(248, 22, sig) + ',' + ghgOpacity.toFixed(3) + ')');
+                    ghgStrip.addColorStop(1, 'rgba(56,189,248,0)');
+                    g.fillStyle = ghgStrip;
+                    g.fillRect(0, ghgBandY - 12 * dpr, W * dpr, 26 * dpr);
+                  }
+                  // Zero-GC radiative forcing streams: shortwave ice-albedo reflection vs. ocean absorption & GHG-trapped IR
+                  var phaseAnim = isRM ? 0.35 : ((heroTick * 0.012) % 1);
+                  g.save();
+                  for (var swk = 0; swk < swPackets.length; swk++) {
+                    var swp = swPackets[swk];
+                    var swProg = isRM ? ((swp.phase + 0.35) % 1) : ((swp.phase + heroTick * swp.sp) % 1);
+                    var hitIce = swp.lane < iceExtent * 0.72; // scales live with ice-albedo!
+                    var sx0 = W * (0.10 + swp.lane * 0.14) * dpr, sy0 = H * 0.06 * dpr;
+                    var hitX = W * (0.20 + swp.lane * 0.24) * dpr, hitY = H * (hitIce ? 0.68 : 0.73) * dpr;
+                    if (swk % 3 === 0) {
+                      if (hasLG) {
+                        var swG = g.createLinearGradient(sx0, sy0, hitX, hitY);
+                        swG.addColorStop(0, 'rgba(254,240,138,0.42)');
+                        swG.addColorStop(0.65, 'rgba(250,204,21,0.18)');
+                        swG.addColorStop(1, 'rgba(250,204,21,0.02)');
+                        g.strokeStyle = swG;
+                      } else {
+                        g.strokeStyle = 'rgba(250,204,21,0.24)';
+                      }
+                      g.lineWidth = 1.6 * dpr;
+                      g.beginPath(); g.moveTo(sx0, sy0); g.lineTo(hitX, hitY); g.stroke();
                     }
-                    g.lineWidth = 1.6 * dpr;
-                    g.beginPath();
-                    g.moveTo(irX, irBaseY);
-                    g.quadraticCurveTo(irX + 7 * dpr, (irBaseY + irTopY) * 0.5, irX - 2 * dpr, irTopY);
-                    g.stroke();
-                    // Greenhouse re-emission return loop when forcing is present
-                    if (sig > 0.22) {
-                      g.strokeStyle = 'rgba(251,113,133,' + (0.14 + sig * 0.28).toFixed(3) + ')';
+                    if (swProg < 0.55) {
+                      var dnT = swProg / 0.55;
+                      var pxD = sx0 + (hitX - sx0) * dnT, pyD = sy0 + (hitY - sy0) * dnT;
+                      g.fillStyle = 'rgba(254,249,195,' + (0.78 * Math.sin(dnT * Math.PI)).toFixed(3) + ')';
+                      g.beginPath(); g.arc(pxD, pyD, 2.2 * dpr, 0, Math.PI * 2); g.fill();
+                    } else if (hitIce) {
+                      // Reflect smoothly off polar ice cap back to space (ice-albedo feedback!)
+                      var rfT = (swProg - 0.55) / 0.45;
+                      var refX = hitX + W * 0.13 * dpr, refY = H * 0.10 * dpr;
+                      var rx = hitX + (refX - hitX) * rfT, ry = hitY + (refY - hitY) * rfT;
+                      g.strokeStyle = 'rgba(186,230,253,' + (0.35 * (1 - rfT) * iceExtent).toFixed(3) + ')';
                       g.lineWidth = 1.2 * dpr;
+                      g.beginPath(); g.moveTo(hitX, hitY); g.lineTo(rx, ry); g.stroke();
+                      g.fillStyle = 'rgba(224,242,254,' + (0.85 * (1 - rfT)).toFixed(3) + ')';
+                      g.beginPath(); g.arc(rx, ry, 2.1 * dpr, 0, Math.PI * 2); g.fill();
+                    } else if (!hc) {
+                      // Absorb into dark open ocean — expanding thermal absorption ripple
+                      var abT = (swProg - 0.55) / 0.45;
+                      g.strokeStyle = 'rgba(251,191,36,' + (0.55 * (1 - abT)).toFixed(3) + ')';
+                      g.lineWidth = 1.1 * dpr;
                       g.beginPath();
-                      g.moveTo(irX + 3 * dpr, H * 0.36 * dpr);
-                      g.quadraticCurveTo(irX + 16 * dpr, H * 0.52 * dpr, irX + 6 * dpr, irBaseY);
+                      heroSafeEllipse(g, hitX, hitY, (3 + abT * 10) * dpr, (1.4 + abT * 3.5) * dpr, 0, 0, Math.PI * 2);
                       g.stroke();
+                    }
+                  }
+                  // Outgoing longwave IR thermal wave packets trapped & re-emitted downward by GHG layer (CO2/CH4 coupled)
+                  var trapThreshold = 0.24 + sig * 0.66;
+                  for (var irk = 0; irk < irPackets.length; irk++) {
+                    var irp = irPackets[irk];
+                    var irProg = isRM ? ((irp.phase + 0.4) % 1) : ((irp.phase + heroTick * irp.sp) % 1);
+                    var irX = W * (0.48 + irp.lane * 0.42) * dpr;
+                    var irBaseY = H * 0.74 * dpr;
+                    var irSpaceY = H * 0.08 * dpr;
+                    var isTrapped = irp.lane < trapThreshold;
+                    if (irk % 3 === 0) {
+                      if (hasLG) {
+                        var irG = g.createLinearGradient(irX, irBaseY, irX, isTrapped ? ghgBandY : irSpaceY);
+                        irG.addColorStop(0, 'rgba(251,146,60,' + (0.20 + sig * 0.28).toFixed(3) + ')');
+                        irG.addColorStop(1, 'rgba(239,68,68,0.05)');
+                        g.strokeStyle = irG;
+                      } else {
+                        g.strokeStyle = 'rgba(251,146,60,0.28)';
+                      }
+                      g.lineWidth = 1.4 * dpr;
+                      g.beginPath(); g.moveTo(irX, irBaseY); g.lineTo(irX, isTrapped ? ghgBandY : irSpaceY); g.stroke();
+                    }
+                    if (!isTrapped) {
+                      // Escaping IR thermal wave packet heading to space
+                      var escY = irBaseY + (irSpaceY - irBaseY) * irProg;
+                      var escX = irX + Math.sin(irProg * 14 + irp.wavePh) * 3.5 * dpr;
+                      g.fillStyle = 'rgba(251,146,60,' + (0.72 * Math.sin(irProg * Math.PI)).toFixed(3) + ')';
+                      g.beginPath(); g.arc(escX, escY, 2.0 * dpr, 0, Math.PI * 2); g.fill();
+                    } else if (irProg < 0.5) {
+                      // Rising from warm surface toward greenhouse-gas layer
+                      var upT = irProg / 0.5;
+                      var upY = irBaseY + (ghgBandY - irBaseY) * upT;
+                      var upX = irX + Math.sin(upT * 10 + irp.wavePh) * 3.2 * dpr;
+                      g.fillStyle = 'rgba(251,146,60,' + (0.78 * Math.sin(upT * Math.PI * 0.85 + 0.15)).toFixed(3) + ')';
+                      g.beginPath(); g.arc(upX, upY, 2.1 * dpr, 0, Math.PI * 2); g.fill();
+                    } else {
+                      // Absorbed at GHG layer (glowing node) & re-emitted downward back to surface!
+                      var retT = (irProg - 0.5) / 0.5;
+                      if (retT < 0.3 && !hc) {
+                        var absA = (1 - retT / 0.3) * (0.45 + sig * 0.4);
+                        g.fillStyle = 'rgba(251,113,133,' + absA.toFixed(3) + ')';
+                        g.beginPath(); g.arc(irX, ghgBandY, (3 + retT * 12) * dpr, 0, Math.PI * 2); g.fill();
+                      }
+                      var dnY = ghgBandY + (irBaseY - ghgBandY) * retT;
+                      var dnX = irX + Math.sin(retT * Math.PI) * 11 * dpr;
+                      g.strokeStyle = 'rgba(244,63,94,' + ((0.16 + sig * 0.28) * (1 - retT * 0.4)).toFixed(3) + ')';
+                      g.lineWidth = 1.15 * dpr;
+                      g.beginPath();
+                      g.moveTo(irX, ghgBandY);
+                      g.quadraticCurveTo(irX + 14 * dpr, (ghgBandY + irBaseY) * 0.5, irX + 5 * dpr, irBaseY);
+                      g.stroke();
+                      g.fillStyle = 'rgba(253,164,175,' + (0.85 * Math.sin(retT * Math.PI)).toFixed(3) + ')';
+                      g.beginPath(); g.arc(dnX, dnY, 2.2 * dpr, 0, Math.PI * 2); g.fill();
                     }
                   }
                   g.restore();
                   // Planet body with sunlit oceanic specular sheen
-                  var bodyGrad = g.createRadialGradient((cx - R * 0.14) * dpr, (cy - R * 0.32) * dpr, R * 0.18 * dpr, cx * dpr, cy * dpr, R * dpr);
-                  bodyGrad.addColorStop(0, '#135c96');
-                  bodyGrad.addColorStop(0.42, '#0b3d6b');
-                  bodyGrad.addColorStop(0.8, '#082747');
-                  bodyGrad.addColorStop(1, '#041226');
-                  g.fillStyle = bodyGrad;
+                  if (hasRG) {
+                    var bodyGrad = g.createRadialGradient((cx - R * 0.14) * dpr, (cy - R * 0.32) * dpr, R * 0.18 * dpr, cx * dpr, cy * dpr, R * dpr);
+                    bodyGrad.addColorStop(0, '#135c96');
+                    bodyGrad.addColorStop(0.42, '#0b3d6b');
+                    bodyGrad.addColorStop(0.8, '#082747');
+                    bodyGrad.addColorStop(1, '#041226');
+                    g.fillStyle = bodyGrad;
+                  } else {
+                    g.fillStyle = '#0b3d6b';
+                  }
                   g.beginPath();
                   g.arc(cx * dpr, cy * dpr, R * dpr, 0, Math.PI * 2);
                   g.fill();
-                  // Clipped planetary details: continents, ocean-ice albedo cap, drifting cloud veil, and horizon rim
+                  // Clipped planetary details: ocean heat-uptake currents, continents, ice-albedo cap, cloud veil
                   g.save();
                   g.beginPath(); g.arc(cx * dpr, cy * dpr, R * dpr, 0, Math.PI * 2); g.clip();
                   // Subtle sunlit ocean specular highlight
-                  var oceanSpec = g.createRadialGradient(W * 0.32 * dpr, H * 0.72 * dpr, 4 * dpr, W * 0.32 * dpr, H * 0.72 * dpr, W * 0.26 * dpr);
-                  oceanSpec.addColorStop(0, 'rgba(125,211,252,0.22)');
-                  oceanSpec.addColorStop(1, 'rgba(125,211,252,0)');
-                  g.fillStyle = oceanSpec;
-                  g.fillRect(0, 0, W * dpr, H * dpr);
+                  if (hasRG) {
+                    var oceanSpec = g.createRadialGradient(W * 0.32 * dpr, H * 0.72 * dpr, 4 * dpr, W * 0.32 * dpr, H * 0.72 * dpr, W * 0.26 * dpr);
+                    oceanSpec.addColorStop(0, 'rgba(125,211,252,0.22)');
+                    oceanSpec.addColorStop(1, 'rgba(125,211,252,0)');
+                    g.fillStyle = oceanSpec;
+                    g.fillRect(0, 0, W * dpr, H * dpr);
+                  }
+                  // Shimmering ocean heat-uptake currents drifting across the sunlit ocean basin
+                  if (!hc) {
+                    var ocR = lerpCh(56, 251, sig * 0.75), ocG = lerpCh(189, 146, sig * 0.75), ocB = lerpCh(248, 60, sig * 0.75);
+                    g.strokeStyle = 'rgba(' + ocR + ',' + ocG + ',' + ocB + ',' + (0.18 + sig * 0.22).toFixed(3) + ')';
+                    g.lineWidth = 1.6 * dpr;
+                    g.setLineDash([10 * dpr, 14 * dpr]);
+                    g.lineDashOffset = isRM ? 0 : (-heroTick * 0.65 * dpr);
+                    for (var oc = 0; oc < 3; oc++) {
+                      var ocY = H * (0.80 + oc * 0.065) * dpr;
+                      g.beginPath();
+                      g.moveTo(W * 0.22 * dpr, ocY);
+                      g.bezierCurveTo(W * 0.42 * dpr, ocY - 8 * dpr, W * 0.62 * dpr, ocY + 8 * dpr, W * 0.86 * dpr, ocY - 2 * dpr);
+                      g.stroke();
+                    }
+                    g.setLineDash([]);
+                  }
                   // Drifting continents with soft coastal shelf glow
                   for (var lb = 0; lb < 7; lb++) {
                     var lbSeed = Math.sin(lb * 73.7) * 4375.4; lbSeed -= Math.floor(lbSeed);
@@ -2241,22 +2395,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     var lrx = (14 + lb * 5) * dpr, lry = (6 + (lb % 3) * 3) * dpr;
                     g.fillStyle = 'rgba(20,184,166,0.22)';
                     g.beginPath();
-                    g.ellipse(lbx * dpr, lby * dpr, lrx * 1.18, lry * 1.24, lb * 0.6, 0, Math.PI * 2);
+                    heroSafeEllipse(g, lbx * dpr, lby * dpr, lrx * 1.18, lry * 1.24, lb * 0.6, 0, Math.PI * 2);
                     g.fill();
                     g.fillStyle = 'rgba(34,139,84,0.58)';
                     g.beginPath();
-                    g.ellipse(lbx * dpr, lby * dpr, lrx, lry, lb * 0.6, 0, Math.PI * 2);
+                    heroSafeEllipse(g, lbx * dpr, lby * dpr, lrx, lry, lb * 0.6, 0, Math.PI * 2);
                     g.fill();
                   }
                   // Ocean-ice albedo cap (expands when cool, retreats when warming rises)
-                  var iceExtent = Math.max(0.28, 1 - sig * 0.68);
-                  var iceGrad = g.createRadialGradient(W * 0.24 * dpr, H * 0.78 * dpr, 2 * dpr, W * 0.24 * dpr, H * 0.78 * dpr, (58 * iceExtent) * dpr);
-                  iceGrad.addColorStop(0, 'rgba(240,249,255,0.72)');
-                  iceGrad.addColorStop(0.55, 'rgba(186,230,253,0.34)');
-                  iceGrad.addColorStop(1, 'rgba(186,230,253,0)');
-                  g.fillStyle = iceGrad;
+                  if (hasRG) {
+                    var iceGrad = g.createRadialGradient(W * 0.24 * dpr, H * 0.78 * dpr, 2 * dpr, W * 0.24 * dpr, H * 0.78 * dpr, (58 * iceExtent) * dpr);
+                    iceGrad.addColorStop(0, 'rgba(240,249,255,0.78)');
+                    iceGrad.addColorStop(0.55, 'rgba(186,230,253,0.38)');
+                    iceGrad.addColorStop(1, 'rgba(186,230,253,0)');
+                    g.fillStyle = iceGrad;
+                  } else {
+                    g.fillStyle = 'rgba(224,242,254,0.65)';
+                  }
                   g.beginPath();
-                  g.ellipse(W * 0.24 * dpr, H * 0.78 * dpr, (56 * iceExtent) * dpr, (15 * iceExtent) * dpr, -0.18, 0, Math.PI * 2);
+                  heroSafeEllipse(g, W * 0.24 * dpr, H * 0.78 * dpr, (56 * iceExtent) * dpr, (15 * iceExtent) * dpr, -0.18, 0, Math.PI * 2);
                   g.fill();
                   // Translucent drifting cloud wisps
                   g.fillStyle = 'rgba(226,232,240,0.24)';
@@ -2265,7 +2422,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     var clx = ((clSeed + heroTick * 0.00045) % 1) * W;
                     var cly = H - (0.08 + (cl % 3) * 0.09) * H;
                     g.beginPath();
-                    g.ellipse(clx * dpr, cly * dpr, (22 + cl * 4) * dpr, (3.2 + (cl % 2) * 1.4) * dpr, -0.08, 0, Math.PI * 2);
+                    heroSafeEllipse(g, clx * dpr, cly * dpr, (22 + cl * 4) * dpr, (3.2 + (cl % 2) * 1.4) * dpr, -0.08, 0, Math.PI * 2);
                     g.fill();
                   }
                   g.restore();
@@ -2285,11 +2442,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     var mx = mo.x * W + Math.sin(heroTick * 0.02 + mo.ph) * 6;
                     var my = H - mProg * H * 0.85;
                     var mA = 0.58 * Math.sin(mProg * Math.PI);
-                    g.globalAlpha = mA * 0.35;
-                    g.fillStyle = sig > 0.55 ? '#fb923c' : '#93c5fd';
-                    g.beginPath();
-                    g.arc(mx * dpr, my * dpr, (mo.r * 2.1) * dpr, 0, Math.PI * 2);
-                    g.fill();
+                    if (!hc) {
+                      g.globalAlpha = mA * 0.35;
+                      g.fillStyle = sig > 0.55 ? '#fb923c' : '#93c5fd';
+                      g.beginPath();
+                      g.arc(mx * dpr, my * dpr, (mo.r * 2.1) * dpr, 0, Math.PI * 2);
+                      g.fill();
+                    }
                     g.globalAlpha = mA;
                     g.fillStyle = '#e2e8f0';
                     g.beginPath();
@@ -2298,7 +2457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   }
                   g.globalAlpha = 1;
                   // Heat shimmer arcs when the signal runs hot
-                  if (sig > 0.55) {
+                  if (sig > 0.55 && !hc) {
                     var heatA = (sig - 0.55) * 0.5;
                     for (var hw = 0; hw < 3; hw++) {
                       var hwProg = ((heroTick * 0.006 + hw * 0.33) % 1);
@@ -2310,7 +2469,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     }
                   }
                   // Hopeful emerald sparkles when the signal runs cool
-                  if (sig < 0.3) {
+                  if (sig < 0.3 && !hc) {
                     g.fillStyle = 'rgba(52,211,153,0.8)';
                     for (var gs = 0; gs < 6; gs++) {
                       var gsTw = 0.5 + 0.5 * Math.sin(heroTick * 0.05 + gs * 2.2);
@@ -2323,10 +2482,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     }
                     g.globalAlpha = 1;
                   }
-                  cv._ceRafId = 0;
-                  if (!heroReduced() && !cv._cePaused && cv.isConnected) cv._ceRafId = requestAnimationFrame(heroDraw);
+                  if (!heroReduced() && !cv._cePaused) requestAnimationFrame(heroDraw);
                 }
-                cv._ceResume = function() { cv._cePaused = false; if (!cv._ceRafId) heroDraw(); };
+                cv._ceResume = function() { cv._cePaused = false; heroDraw(); };
                 // Turning the preference OFF has to RESTART the loop: by then it has
                 // already stopped rescheduling itself, so a live read alone would
                 // leave the hero frozen. Turning it ON needs nothing here -- the next
@@ -5284,23 +5442,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                   [{x:82,y:14,r:1},{x:126,y:24,r:1.2},{x:164,y:12,r:0.9},{x:228,y:22,r:1.1},{x:278,y:15,r:1.3},{x:302,y:28,r:0.9}].map(function(st,idx){
                     return el('circle',{key:'st'+idx,cx:st.x,cy:st.y,r:st.r,fill:'#cbd5e1',opacity:0.55});
                   }),
-                  el('rect', { x:1,y:44,width:318,height:28,fill:'url(#fhGhgGrad)',stroke:'#67e8f9',strokeWidth:1.5,strokeDasharray:'5 4' }),
+                  el('rect', { x:1,y:44,width:318,height:28,fill:'url(#fhGhgGrad)',fillOpacity:(0.35 + (iq.ghg / 100) * 0.65).toFixed(2),stroke:'#67e8f9',strokeWidth:1.5,strokeDasharray:'5 4' }),
                   el('rect', { x:0,y:140,width:320,height:20,fill:'url(#fhSurfGrad)' }),
+                  // Polar ice-cap albedo strip scaling live with albedo slider
+                  el('rect', { x:0,y:139,width:Math.max(18, Math.round(iq.albedo * 1.15)),height:7,rx:3,fill:'#e0f2fe',fillOpacity:0.88 }),
+                  // Shimmering ocean heat-uptake current line inside dark ocean surface
+                  el('line', { x1:Math.max(24, Math.round(iq.albedo * 1.15) + 6),y1:151,x2:312,y2:151,stroke:'#38bdf8',strokeWidth:1.6,strokeDasharray:'8 6',opacity:0.55,className:'ce-flow-ir ce-flow-glow' }),
                   el('line', { x1:0,y1:140,x2:320,y2:140,stroke:'#34d399',strokeWidth:1.2,opacity:0.75 }),
                   // Glowing sun corona + core
-                  el('circle',{cx:26,cy:18,r:21,fill:'url(#fhSunCorona)'}),
+                  el('circle',{cx:26,cy:18,r:21,fill:'url(#fhSunCorona)',className:'ce-flow-glow'}),
                   el('circle',{cx:26,cy:18,r:9.5,fill:'#fde047',stroke:'#fef9c3',strokeWidth:1.2}),
-                  // Dual-pass luminous shortwave & IR beams
-                  el('line', { x1: 38, y1: 22, x2: 92, y2: 137, stroke: 'rgba(250,204,21,0.32)', strokeWidth: 6, strokeLinecap: 'round' }),
-                  el('line', { x1: 38, y1: 22, x2: 92, y2: 137, stroke: '#facc15', strokeWidth: 2, markerEnd: 'url(#fhSun)' }),
-                  el('line', { x1: 168, y1: 138, x2: 198, y2: 8, stroke: 'rgba(251,146,60,0.30)', strokeWidth: 6, strokeLinecap: 'round' }),
-                  el('line', { x1: 168, y1: 138, x2: 198, y2: 8, stroke: '#fb923c', strokeWidth: 2, markerEnd: 'url(#fhIR)' }),
-                  el('line', { x1: 244, y1: 138, x2: 258, y2: 60, stroke: 'rgba(251,146,60,0.28)', strokeWidth: 5.5, strokeLinecap: 'round' }),
-                  el('line', { x1: 244, y1: 138, x2: 258, y2: 60, stroke: '#fb923c', strokeWidth: 2 }),
-                  el('circle', { cx: 258, cy: 60, r: 7, fill: 'rgba(251,146,60,0.28)' }),
+                  // Dual-pass luminous shortwave, ice-albedo reflection & GHG-coupled IR photon streams
+                  el('line', { x1: 38, y1: 22, x2: 92, y2: 137, stroke: 'rgba(250,204,21,0.32)', strokeWidth: 6, strokeLinecap: 'round', className: 'ce-flow-glow' }),
+                  el('line', { x1: 38, y1: 22, x2: 92, y2: 137, stroke: '#facc15', strokeWidth: 2, strokeDasharray: '10 6', className: 'ce-flow-sw', markerEnd: 'url(#fhSun)' }),
+                  // Albedo-coupled reflected shortwave beam bouncing off polar ice cap
+                  iq.albedo > 8 && el('line', { x1: 68, y1: 138, x2: 118, y2: 12, stroke: '#bae6fd', strokeWidth: (1 + (iq.albedo / 100) * 1.8).toFixed(2), strokeOpacity: (0.28 + (iq.albedo / 100) * 0.65).toFixed(2), strokeDasharray: '6 5', className: 'ce-flow-sw' }),
+                  el('line', { x1: 168, y1: 138, x2: 198, y2: 8, stroke: 'rgba(251,146,60,0.30)', strokeWidth: 6, strokeLinecap: 'round', className: 'ce-flow-glow' }),
+                  el('line', { x1: 168, y1: 138, x2: 198, y2: 8, stroke: '#fb923c', strokeWidth: 2, strokeDasharray: '8 5', className: 'ce-flow-ir', markerEnd: 'url(#fhIR)' }),
+                  el('line', { x1: 244, y1: 138, x2: 258, y2: 60, stroke: 'rgba(251,146,60,0.28)', strokeWidth: 5.5, strokeLinecap: 'round', className: 'ce-flow-glow' }),
+                  el('line', { x1: 244, y1: 138, x2: 258, y2: 60, stroke: '#fb923c', strokeWidth: 2, strokeDasharray: '7 5', className: 'ce-flow-ir' }),
+                  el('circle', { cx: 258, cy: 60, r: 5 + (iq.ghg / 100) * 5, fill: 'rgba(251,146,60,' + (0.18 + (iq.ghg / 100) * 0.25).toFixed(2) + ')', className: 'ce-flow-glow' }),
                   el('circle', { cx: 258, cy: 60, r: 3, fill: '#fdba74' }),
-                  el('line', { x1: 258, y1: 60, x2: 238, y2: 136, stroke: 'rgba(251,146,60,0.24)', strokeWidth: 5, strokeLinecap: 'round' }),
-                  el('line', { x1: 258, y1: 60, x2: 238, y2: 136, stroke: '#fb923c', strokeWidth: 2, strokeDasharray: '4 3', markerEnd: 'url(#fhIR)' }),
+                  el('line', { x1: 258, y1: 60, x2: 238, y2: 136, stroke: 'rgba(251,146,60,' + (0.14 + (iq.ghg / 100) * 0.30).toFixed(2) + ')', strokeWidth: 4 + (iq.ghg / 100) * 2.5, strokeLinecap: 'round', className: 'ce-flow-glow' }),
+                  el('line', { x1: 258, y1: 60, x2: 238, y2: 136, stroke: '#fb923c', strokeWidth: (1.4 + (iq.ghg / 100) * 1.4).toFixed(2), strokeDasharray: '5 4', className: 'ce-flow-ret', markerEnd: 'url(#fhIR)' }),
                   [{x:78,y:104,n:1,c:'#facc15'},{x:180,y:108,n:2,c:'#fb923c'},{x:250,y:108,n:3,c:'#67e8f9'}].map(function(point){return el('g',{key:point.n},
                     el('circle',{cx:point.x,cy:point.y,r:19,fill:point.c,opacity:0.16}),
                     el('circle',{cx:point.x,cy:point.y,r:16.5,fill:'#0b1220',stroke:'#e2e8f0',strokeWidth:1.5}),

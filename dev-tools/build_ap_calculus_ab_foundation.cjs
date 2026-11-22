@@ -7,6 +7,7 @@
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const { distractorFeedbackFor } = require('./ap_calculus_ab_distractor_feedback/index.cjs');
+const { applyApCalcChoiceOverride } = require('./ap_calculus_ab_choice_overrides/index.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_calculus_ab_foundation_pilot.json');
@@ -391,7 +392,9 @@ function rotateChoices(answer, distractors, answerIndex) {
   return choices;
 }
 
-function makeItem(spec, index) {
+function makeItem(rawSpec, index) {
+  const itemId = PACK_ID + '-item-' + String(index + 1).padStart(3, '0');
+  const spec = applyApCalcChoiceOverride(itemId, rawSpec);
   const unit = unitByNumber.get(spec.unit);
   const topicRoute = topicByKey.get(spec.unit + '.' + spec.topicId);
   const topicSequenceIndex = itemSpecs.slice(0, index).filter((candidate) => candidate.unit === spec.unit && candidate.topicId === spec.topicId).length;
@@ -401,7 +404,6 @@ function makeItem(spec, index) {
   const localIndex = index % 10;
   const calculatorUse = [3, 7, 9].includes(localIndex) ? 'calculator-permitted-practice' : 'calculator-not-required';
   const learningSectionId = sectionId(spec.unit, sectionNumberForTopic(unit, spec.topicId));
-  const itemId = PACK_ID + '-item-' + String(index + 1).padStart(3, '0');
   return {
     id: itemId,
     templateVersion: 1,

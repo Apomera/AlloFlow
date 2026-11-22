@@ -31,6 +31,36 @@ const _PdfPreservationReview = ({ result, captureToken, commitMetadata, onWorkbe
       if (focusCleanup.current) focusCleanup.current();
     };
   }, [html]);
+  const previewCspContent = "default-src 'none'; img-src data: blob:; style-src 'unsafe-inline'; font-src data:;";
+  const previewCspMeta = '<meta http-equiv="Content-Security-Policy" content="' + previewCspContent + '">';
+  const previewHtml = React.useMemo(() => {
+    if (!expanded || !html) return '';
+    try {
+      if (typeof DOMParser === 'function') {
+        const parsed = new DOMParser().parseFromString(html, 'text/html');
+        if (parsed && parsed.documentElement) {
+          Array.from(parsed.querySelectorAll('meta[http-equiv]')).forEach(el => {
+            if (/^\s*refresh\s*$/i.test(el.getAttribute('http-equiv') || '')) el.remove();
+          });
+          let head = parsed.head;
+          if (!head) {
+            head = parsed.createElement('head');
+            parsed.documentElement.insertBefore(head, parsed.documentElement.firstChild);
+          }
+          const meta = parsed.createElement('meta');
+          meta.setAttribute('http-equiv', 'Content-Security-Policy');
+          meta.setAttribute('content', previewCspContent);
+          head.insertBefore(meta, head.firstChild);
+          return '<!DOCTYPE html>\n' + parsed.documentElement.outerHTML;
+        }
+      }
+    } catch (_) {}
+    const withoutComments = html.replace(/<!--[\s\S]*?-->/g, '');
+    const strippedHtml = withoutComments.replace(/<meta\b[^>]*http-equiv\s*=\s*(?:"\s*refresh\s*"|'\s*refresh\s*'|refresh\b)[^>]*>/gi, '');
+    return /<head\b[^>]*>/i.test(strippedHtml)
+      ? strippedHtml.replace(/<head\b[^>]*>/i, match => match + previewCspMeta)
+      : previewCspMeta + strippedHtml;
+  }, [expanded, html]);
   if (!api || !result || !html) return null;
   const evidence = api.evidence(result);
   const items = api.reviewItems(result, result.preservationAcknowledgments);
@@ -102,35 +132,6 @@ const _PdfPreservationReview = ({ result, captureToken, commitMetadata, onWorkbe
       if (current()) setMessage('The reference could not be located. Try again.');
     } finally { if (current()) setBusy(false); }
   };
-  const previewCspContent = "default-src 'none'; img-src data: blob:; style-src 'unsafe-inline'; font-src data:;";
-  const previewCspMeta = '<meta http-equiv="Content-Security-Policy" content="' + previewCspContent + '">';
-  const previewHtml = (() => {
-    try {
-      if (typeof DOMParser === 'function') {
-        const parsed = new DOMParser().parseFromString(html, 'text/html');
-        if (parsed && parsed.documentElement) {
-          Array.from(parsed.querySelectorAll('meta[http-equiv]')).forEach(el => {
-            if (/^\s*refresh\s*$/i.test(el.getAttribute('http-equiv') || '')) el.remove();
-          });
-          let head = parsed.head;
-          if (!head) {
-            head = parsed.createElement('head');
-            parsed.documentElement.insertBefore(head, parsed.documentElement.firstChild);
-          }
-          const meta = parsed.createElement('meta');
-          meta.setAttribute('http-equiv', 'Content-Security-Policy');
-          meta.setAttribute('content', previewCspContent);
-          head.insertBefore(meta, head.firstChild);
-          return '<!DOCTYPE html>\n' + parsed.documentElement.outerHTML;
-        }
-      }
-    } catch (_) {}
-    const withoutComments = html.replace(/<!--[\s\S]*?-->/g, '');
-    const strippedHtml = withoutComments.replace(/<meta\b[^>]*http-equiv\s*=\s*(?:"\s*refresh\s*"|'\s*refresh\s*'|refresh\b)[^>]*>/gi, '');
-    return /<head\b[^>]*>/i.test(strippedHtml)
-      ? strippedHtml.replace(/<head\b[^>]*>/i, match => match + previewCspMeta)
-      : previewCspMeta + strippedHtml;
-  })();
   const actionBtnClass = 'min-h-11 rounded border px-3 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1';
   return <section aria-label="Preservation review" className="mt-3 rounded-lg border p-3" style={{ background: 'var(--pw-soft, #fffbeb)', borderColor: 'var(--pw-line, #fcd34d)', color: 'var(--pw-ink, #0f172a)' }}>
     <h3 className="text-sm font-bold">Preservation review</h3>
@@ -156,7 +157,7 @@ const _PdfPreservationReview = ({ result, captureToken, commitMetadata, onWorkbe
         <option value="">Choose an element</option>{model.references.map(ref => <option key={ref.id} value={ref.id}>{ref.label}</option>)}
       </select></label>
       <button type="button" className={'ml-2 ' + actionBtnClass} disabled={!selected || model.truncated} aria-disabled={busy || !selected || model.truncated} onClick={event => { if (!busy) focusReference(event); }}>Locate in preview</button>
-      <button type="button" className={'ml-2 ' + actionBtnClass} onClick={() => { cancelNavigation(); setExpanded(false); setMessage('Reference preview closed.'); if (inspectButton.current) inspectButton.current.focus(); }}>Close reference preview</button>
+      <button type="button" className={'ml-2 ' + actionBtnClass} onClick={() => { cancelNavigation(); setFrameReady(false); setExpanded(false); setMessage('Reference preview closed.'); if (inspectButton.current) inspectButton.current.focus(); }}>Close reference preview</button>
       {model.truncated && <p className="text-xs">This reference index is incomplete. Automatic location is unavailable; inspect the preview manually.</p>}
       {!model.references.length && <p className="text-xs">No tables, cells, or images were found.</p>}
       <iframe ref={frame} title="Document preservation review preview" sandbox="allow-same-origin" srcDoc={previewHtml} onLoad={() => setFrameReady(true)} className="mt-2 w-full h-80 border bg-white" />

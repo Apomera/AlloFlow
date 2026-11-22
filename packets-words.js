@@ -112,6 +112,7 @@
   }
   // Linear: a spoken word needs nothing finer, and the kept rate is below the recorded one.
   function resample(samples, from, to) {
+    if (!samples || !samples.length) return new Float32Array(0);
     if (!(from > 0) || from === to) return samples;
     var length = Math.max(1, Math.round(samples.length * to / from)), out = new Float32Array(length), step = from / to;
     for (var i = 0; i < length; i++) {
@@ -220,7 +221,7 @@
     var core = env.core, groups = env.soundGroups || [];
     var inventory = [];
     groups.forEach(function (group) { group[1].forEach(function (row) { inventory.push(row[0]); }); });
-    var example = {};
+    var example = Object.create(null);
     groups.forEach(function (group) { group[1].forEach(function (row) { example[row[0]] = row[1]; }); });
     var soundName = typeof env.soundName === 'function' ? env.soundName : function (label) { return label; };
     var limits = store && store.LIMITS ? store.LIMITS : (root.AlloPacketMyWords && root.AlloPacketMyWords.LIMITS) || { sounds: 24, clipBytes: 409600 };
@@ -504,6 +505,7 @@
         return Promise.resolve().then(getUri).then(function (uri) {
           if (!uri) { said(clipPart, TEXT.cannotPlay); return; }
           var start = function (address) {
+            if (typeof address !== 'string' || address.slice(0, 11).toLowerCase() !== 'data:audio/') return Promise.reject(new Error('bad audio'));
             var Player = root.Audio;
             if (typeof Player !== 'function') return Promise.reject(new Error('no player'));
             var audio = new Player(address);
@@ -695,7 +697,8 @@
         body.textContent = '';
         var entry = state.entry, rawPic = entry && entry.picture;
         var pictureNone = !!(rawPic && rawPic.none === true);
-        var mine = rawPic && !pictureNone ? rawPic : null;
+        var validUri = rawPic && !pictureNone && typeof rawPic.dataUri === 'string' && /^data:image\/(?:png|jpeg|gif|webp|svg\+xml)[;,]/i.test(rawPic.dataUri);
+        var mine = validUri ? rawPic : null;
         if (mine) {
           var figure = el('div', 'wp-picture');
           var image = el('img');

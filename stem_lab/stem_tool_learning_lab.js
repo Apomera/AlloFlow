@@ -25,13 +25,15 @@
 // pathway; HOWLs / Crew (King Middle reference).
 // ═══════════════════════════════════════════
 
-window.StemLab = window.StemLab || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
-};
+if (typeof window !== 'undefined') {
+  window.StemLab = window.StemLab || {
+    _registry: {}, _order: [],
+    registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
+    isRegistered: function(id) { return !!this._registry[id]; },
+    getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
+    renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
+  };
+}
 
 // Translator reachable from module scope. learning_lab builds most of its UI in
 // helper functions defined ABOVE `render`, so the render-scoped __alloT cannot be
@@ -53,14 +55,14 @@ function __alloFill(template, values) {
   });
 }
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))) {
+if (typeof window !== 'undefined' && !(window.StemLab && window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))) {
 
 (function() {
   'use strict';
 
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
-    if (typeof document === 'undefined') return;
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-learninglab')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-learninglab';
@@ -74,7 +76,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
   // ── Focus-visible outline (WCAG 2.4.7) ──
   (function() {
-    if (typeof document === 'undefined') return;
+    if (typeof document === 'undefined' || !document.head) return;
     if (document.getElementById('allo-ll-focus-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-ll-focus-css';
@@ -100,7 +102,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       '.theme-contrast .ll-hero-badge,.theme-contrast .ll-hero-pill,.theme-contrast .ll-science-title{color:#facc15!important;background:#000000!important;border-color:#facc15!important;}' +
       '.theme-contrast .ll-preset-btn{background:#000000!important;border:2px solid #facc15!important;color:#ffffff!important;}' +
       '.theme-contrast .ll-preset-btn:hover{background:#facc15!important;color:#000000!important;}' +
-      '.theme-contrast .ll-svg-fx{display:none!important;}';
+      '.theme-contrast .ll-svg-fx{display:none!important;}' +
+      '@keyframes ll-phosphor-breathe{0%,100%{opacity:0.16;}50%{opacity:0.44;}}' +
+      '@keyframes ll-review-ripple{0%{transform:scale(0.82);opacity:0.78;}75%{transform:scale(1.68);opacity:0;}100%{transform:scale(1.68);opacity:0;}}' +
+      '@keyframes ll-synapse-flow{from{stroke-dashoffset:24;}to{stroke-dashoffset:0;}}' +
+      '@keyframes ll-orbit-drift{from{stroke-dashoffset:32;}to{stroke-dashoffset:0;}}' +
+      '@keyframes ll-halo-pulse{0%,100%{transform:scale(0.92);opacity:0.22;}50%{transform:scale(1.18);opacity:0.48;}}' +
+      '@keyframes ll-shimmer-soft{0%,100%{opacity:0.20;}50%{opacity:0.55;}}' +
+      '.ll-anim-phosphor{animation:ll-phosphor-breathe 2.8s ease-in-out infinite;}' +
+      '.ll-anim-ripple{transform-box:fill-box;transform-origin:center;animation:ll-review-ripple 2.4s ease-out infinite;}' +
+      '.ll-anim-flow{animation:ll-synapse-flow 1.9s linear infinite;}' +
+      '.ll-anim-orbit{animation:ll-orbit-drift 5.4s linear infinite;}' +
+      '.ll-anim-halo{transform-box:fill-box;transform-origin:center;animation:ll-halo-pulse 2.6s ease-in-out infinite;}' +
+      '.ll-anim-shimmer{animation:ll-shimmer-soft 3.0s ease-in-out infinite;}' +
+      '.theme-contrast .ll-anim-phosphor,.theme-contrast .ll-anim-ripple,.theme-contrast .ll-anim-flow,.theme-contrast .ll-anim-orbit,.theme-contrast .ll-anim-halo,.theme-contrast .ll-anim-shimmer{animation:none!important;}' +
+      '@media (prefers-reduced-motion: reduce){.ll-anim-phosphor,.ll-anim-ripple,.ll-anim-flow,.ll-anim-orbit,.ll-anim-halo,.ll-anim-shimmer{animation:none!important;}}';
     if (document.head) document.head.appendChild(st);
   })();
 
@@ -179,6 +195,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         resolve(accepted === true);
       }
       function onKeyDown(event) {
+        if (event.isComposing || event.keyCode === 229) return;
         event.stopImmediatePropagation();
         if (event.key === 'Escape') { event.preventDefault(); finish(false); return; }
         if (event.key !== 'Tab') return;
@@ -277,6 +294,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         resolve(values);
       }
       function onKeyDown(event) {
+        if (event.isComposing || event.keyCode === 229) return;
         event.stopImmediatePropagation();
         if (event.key === 'Escape') { event.preventDefault(); finish(null); return; }
         if (event.key !== 'Tab') return;
@@ -2758,6 +2776,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function svgClick(e) {
       var svg = e.currentTarget;
       var rect = svg.getBoundingClientRect();
+      if (!rect || !rect.width) return;
       var px = (e.clientX - rect.left) / rect.width * W;
       var fracX = (px - mx) / (W - mx * 2);
       if (fracX < 0 || fracX > 1) return;
@@ -2830,15 +2849,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             hh('line', { x1: mx, y1: H - my, x2: W - mx, y2: H - my, stroke: hc ? '#ffffff' : 'rgba(148,163,184,0.45)', strokeWidth: 0.45 }),
             hh('line', { x1: mx, y1: my, x2: mx, y2: H - my, stroke: hc ? '#ffffff' : 'rgba(148,163,184,0.45)', strokeWidth: 0.45 }),
             // 70% reference laser line
-            hh('line', { x1: mx, y1: y70, x2: W - mx, y2: y70, stroke: hc ? '#facc15' : 'rgba(52,211,153,0.55)', strokeWidth: 0.35, strokeDasharray: '1.2,1.2' }),
+            hh('line', { x1: mx, y1: y70, x2: W - mx, y2: y70, stroke: hc ? '#facc15' : 'rgba(52,211,153,0.55)', strokeWidth: 0.35, strokeDasharray: '1.2,1.2', className: !hc ? 'll-anim-shimmer' : undefined }),
             hh('text', { x: W - mx - 1, y: y70 - 0.8, fontSize: 3.1, fill: hc ? '#facc15' : '#34d399', textAnchor: 'end', fontWeight: 700 }, '70% target'),
             // Cram curve (red)
             !hc && hh('path', { className: 'll-svg-fx', d: fillFromPoints(cramPts, W, H, mx, my), fill: 'url(#ll-fc-cram-fill)', stroke: 'none' }),
             hh('path', { d: cramD, fill: 'none', stroke: hc ? '#fb7185' : '#ef4444', strokeWidth: 0.75, strokeDasharray: '1.6,1.1', strokeLinecap: 'round' }),
             // Spaced curve (dual-pass luminous purple->cyan)
             !hc && hh('path', { className: 'll-svg-fx', d: fillFromPoints(spacedPts, W, H, mx, my), fill: 'url(#ll-fc-spaced-fill)', stroke: 'none' }),
-            !hc && hh('path', { className: 'll-svg-fx', d: spacedD, fill: 'none', stroke: '#c084fc', strokeWidth: 2.2, strokeOpacity: 0.24, strokeLinejoin: 'round' }),
+            !hc && hh('path', { className: 'll-svg-fx ll-anim-phosphor', d: spacedD, fill: 'none', stroke: '#c084fc', strokeWidth: 2.2, strokeOpacity: 0.24, strokeLinejoin: 'round' }),
             hh('path', { d: spacedD, fill: 'none', stroke: hc ? '#facc15' : 'url(#ll-fc-spaced-stroke)', strokeWidth: 1.05, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+            !hc && hh('path', { className: 'll-svg-fx ll-anim-flow', d: spacedD, fill: 'none', stroke: '#f0abfc', strokeWidth: 0.55, strokeDasharray: '2.4,5.6', strokeOpacity: 0.72, strokeLinejoin: 'round', strokeLinecap: 'round' }),
             // Review markers (luminous recall boost beams + apex beacons)
             reviews.map(function(d, i) {
               var x = mx + (d / totalDays) * (W - mx * 2);
@@ -2846,11 +2866,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               var yPre = (H - my) - preR * (H - my * 2);
               var yTop = my;
               return hh('g', { key: 'rv-' + i },
-                !hc && hh('line', { className: 'll-svg-fx', x1: x, y1: yTop, x2: x, y2: H - my, stroke: '#10b981', strokeWidth: 1.1, opacity: 0.16 }),
+                !hc && hh('line', { className: 'll-svg-fx ll-anim-phosphor', x1: x, y1: yTop, x2: x, y2: H - my, stroke: '#10b981', strokeWidth: 1.1, opacity: 0.16, style: { animationDelay: (i * 0.3) + 's' } }),
                 hh('line', { x1: x, y1: yTop, x2: x, y2: H - my, stroke: hc ? '#facc15' : '#34d399', strokeWidth: 0.42, strokeDasharray: '0.8,0.6', opacity: 0.85 }),
                 // Recall boost vertical surge segment
                 hh('line', { x1: x, y1: yPre, x2: x, y2: yTop + 1.2, stroke: hc ? '#ffffff' : '#6ee7b7', strokeWidth: 0.65 }),
-                !hc && hh('ellipse', { className: 'll-svg-fx', cx: x, cy: yTop + 1.2, rx: 1.7, ry: 2.6, fill: '#34d399', opacity: 0.28 }),
+                !hc && hh('ellipse', { className: 'll-svg-fx ll-anim-ripple', cx: x, cy: yTop + 1.2, rx: 1.8, ry: 2.8, fill: 'none', stroke: '#34d399', strokeWidth: 0.45, style: { animationDelay: (i * 0.35) + 's' } }),
+                !hc && hh('ellipse', { className: 'll-svg-fx ll-anim-halo', cx: x, cy: yTop + 1.2, rx: 1.7, ry: 2.6, fill: '#34d399', opacity: 0.28, style: { animationDelay: (i * 0.35) + 's' } }),
                 hh('ellipse', { cx: x, cy: yTop + 1.2, rx: 0.95, ry: 1.45, fill: hc ? '#facc15' : '#10b981', stroke: '#0f172a', strokeWidth: 0.3 })
               );
             }),
@@ -2861,7 +2882,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               var cySpaced = (H - my) - (spacedFinal / 100) * (H - my * 2);
               return hh('g', null,
                 hh('ellipse', { cx: ex, cy: cyCram, rx: 0.85, ry: 1.3, fill: hc ? '#fb7185' : '#ef4444', stroke: '#0f172a', strokeWidth: 0.25 }),
-                !hc && hh('ellipse', { className: 'll-svg-fx', cx: ex, cy: cySpaced, rx: 1.8, ry: 2.7, fill: '#38bdf8', opacity: 0.28 }),
+                !hc && hh('ellipse', { className: 'll-svg-fx ll-anim-ripple', cx: ex, cy: cySpaced, rx: 2.0, ry: 3.0, fill: 'none', stroke: '#38bdf8', strokeWidth: 0.45 }),
+                !hc && hh('ellipse', { className: 'll-svg-fx ll-anim-halo', cx: ex, cy: cySpaced, rx: 1.8, ry: 2.7, fill: '#38bdf8', opacity: 0.28 }),
                 hh('ellipse', { cx: ex, cy: cySpaced, rx: 0.95, ry: 1.45, fill: hc ? '#facc15' : '#e879f9', stroke: '#ffffff', strokeWidth: 0.3 })
               );
             })(),
@@ -3037,7 +3059,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             ),
             // Studio floor shadow & overflow danger aura
             !hc && hh('ellipse', { className: 'll-svg-fx', cx: 100, cy: 133, rx: 78, ry: 4.5, fill: '#000000', opacity: 0.5 }),
-            !hc && isOver && hh('ellipse', { className: 'll-svg-fx', cx: 100, cy: 40, rx: 82, ry: 34, fill: 'url(#ll-wm-overglow)' }),
+            !hc && isOver && hh('ellipse', { className: 'll-svg-fx ll-anim-phosphor', cx: 100, cy: 40, rx: 82, ry: 34, fill: 'url(#ll-wm-overglow)' }),
             // Beveled glassware vessel (trapezoid)
             hh('path', {
               d: 'M 40 30 L 160 30 L 175 130 L 25 130 Z',
@@ -3047,7 +3069,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               strokeLinejoin: 'round'
             }),
             // Subtle inner glass reflection strips & base lip
-            !hc && hh('path', { className: 'll-svg-fx', d: 'M 44 36 L 31 124', stroke: 'rgba(226,232,240,0.22)', strokeWidth: 2.2, strokeLinecap: 'round' }),
+            !hc && hh('path', { className: 'll-svg-fx ll-anim-shimmer', d: 'M 44 36 L 31 124', stroke: 'rgba(226,232,240,0.22)', strokeWidth: 2.2, strokeLinecap: 'round' }),
             !hc && hh('line', { className: 'll-svg-fx', x1: 30, y1: 127, x2: 170, y2: 127, stroke: 'rgba(148,163,184,0.22)', strokeWidth: 1 }),
             // Graduated working-memory gauge ticks along left glass edge
             [1, 3, 5, 7].map(function(mark) {
@@ -3060,8 +3082,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               );
             }),
             // Capacity laser threshold line + pill tag
-            !hc && hh('line', { className: 'll-svg-fx', x1: 35, y1: 35, x2: 165, y2: 35, stroke: isOver ? '#ef4444' : '#fbbf24', strokeWidth: 2.6, opacity: 0.22 }),
-            hh('line', { x1: 35, y1: 35, x2: 165, y2: 35, stroke: isOver ? '#f87171' : '#fbbf24', strokeWidth: 1, strokeDasharray: '3,2' }),
+            !hc && hh('line', { className: 'll-svg-fx ll-anim-phosphor', x1: 35, y1: 35, x2: 165, y2: 35, stroke: isOver ? '#ef4444' : '#fbbf24', strokeWidth: 2.6, opacity: 0.22 }),
+            hh('line', { x1: 35, y1: 35, x2: 165, y2: 35, stroke: isOver ? '#f87171' : '#fbbf24', strokeWidth: 1, strokeDasharray: '3,2', className: !hc ? 'll-anim-flow' : undefined }),
             hh('rect', { x: 64, y: 17, width: 72, height: 13, rx: 6.5, fill: hc ? '#000000' : '#1e1b4b', stroke: isOver ? '#f87171' : '#fbbf24', strokeWidth: 0.9 }),
             hh('text', { x: 100, y: 26, fontSize: 7.4, fill: isOver ? '#fca5a5' : '#fde047', textAnchor: 'middle', fontWeight: 800 }, 'capacity = ' + CAPACITY),
             // Sculpted 3D-beveled chunk tokens stacked from the bottom
@@ -3079,6 +3101,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               var t = TYPES.filter(function(tt) { return tt.id === c.type; })[0];
               var overflowing = i >= CAPACITY;
               return hh('g', { key: 'ch-' + c.id },
+                !hc && overflowing && hh('circle', { className: 'll-svg-fx ll-anim-ripple', cx: xPos, cy: yPos, r: 10.5, fill: 'none', stroke: '#ef4444', strokeWidth: 1.4 }),
                 !hc && overflowing && hh('circle', { className: 'll-svg-fx', cx: xPos, cy: yPos, r: 10.5, fill: '#ef4444', opacity: 0.26 }),
                 hh('circle', { cx: xPos, cy: yPos, r: 7.8, fill: t.color, opacity: 0.94, stroke: hc ? '#ffffff' : (overflowing ? '#fecaca' : '#0f172a'), strokeWidth: overflowing ? 1.1 : 0.7 }),
                 !hc && hh('circle', { className: 'll-svg-fx', cx: xPos, cy: yPos, r: 7.8, fill: 'url(#ll-wm-spec)' }),
@@ -3916,7 +3939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           type: 'text', autoFocus: true, value: typed, inputMode: 'numeric',
           maxLength: seqLen,
           onChange: function(e) { setTyped(e.target.value.replace(/[^0-9]/g, '')); },
-          onKeyDown: function(e) { if (e.key === 'Enter' && typed.length === seqLen) submit(); },
+          onKeyDown: function(e) { if (!e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Enter' && typed.length === seqLen) submit(); },
           'aria-label': __alloLLT('stem.learning_lab.a11y_recall_sequence', 'Recall sequence'),
           style: {
             display: 'block', width: '100%', maxWidth: 260, margin: '0 auto 12px',
@@ -4116,7 +4139,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             })(),
             // Hypnogram translucent area + dual-pass luminous trace
             !hc && hypnoArea && hh('path', { className: 'll-svg-fx', d: hypnoArea, fill: 'url(#ll-slp-area)', stroke: 'none' }),
-            !hc && hh('path', { className: 'll-svg-fx', d: hypnoD, stroke: '#c084fc', strokeWidth: 3.4, strokeOpacity: 0.24, fill: 'none', strokeLinejoin: 'round' }),
+            !hc && hh('path', { className: 'll-svg-fx ll-anim-phosphor', d: hypnoD, stroke: '#c084fc', strokeWidth: 3.4, strokeOpacity: 0.24, fill: 'none', strokeLinejoin: 'round' }),
             hh('path', { d: hypnoD, stroke: hc ? '#facc15' : 'url(#ll-slp-line)', strokeWidth: 1.5, fill: 'none', strokeLinejoin: 'round', strokeLinecap: 'round' }),
             // Luminous REM stage beacons along the hypnogram
             samples.map(function(s, i) {
@@ -4125,7 +4148,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               var remStage = STAGES.filter(function(st) { return st.id === 'rem'; })[0];
               var sy = my + (remStage ? remStage.y * rowH : rowH);
               return hh('g', { key: 'rem-dot-' + i },
-                !hc && hh('circle', { className: 'll-svg-fx', cx: sx, cy: sy, r: 3.4, fill: '#e879f9', opacity: 0.24 }),
+                !hc && hh('circle', { className: 'll-svg-fx ll-anim-ripple', cx: sx, cy: sy, r: 3.6, fill: 'none', stroke: '#e879f9', strokeWidth: 0.7, style: { animationDelay: ((i % 6) * 0.32) + 's' } }),
+                !hc && hh('circle', { className: 'll-svg-fx ll-anim-halo', cx: sx, cy: sy, r: 3.4, fill: '#e879f9', opacity: 0.24, style: { animationDelay: ((i % 6) * 0.32) + 's' } }),
                 hh('circle', { cx: sx, cy: sy, r: 1.4, fill: hc ? '#facc15' : '#f0abfc', stroke: '#0f172a', strokeWidth: 0.4 })
               );
             })
@@ -4457,7 +4481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             !hc && hh('line', { className: 'll-svg-fx', x1: 36, y1: 81.5, x2: 294, y2: 81.5, stroke: 'rgba(248,250,252,0.22)', strokeWidth: 1 }),
             hh('text', { x: 235, y: 110, fontSize: 9.2, fill: hc ? '#e2e8f0' : '#94a3b8', textAnchor: 'middle', fontStyle: 'italic' }, 'study desk'),
             // Focus halo around learner when phone is in another room
-            !hc && p.id === 'room' && hh('circle', { className: 'll-svg-fx', cx: 90, cy: 50, r: 24, fill: 'none', stroke: '#34d399', strokeWidth: 1.2, strokeDasharray: '3,2', opacity: 0.55 }),
+            !hc && p.id === 'room' && hh('circle', { className: 'll-svg-fx ll-anim-orbit', cx: 90, cy: 50, r: 24, fill: 'none', stroke: '#34d399', strokeWidth: 1.2, strokeDasharray: '3,2', opacity: 0.55 }),
             // Learner silhouette (shoulders + head)
             hh('ellipse', { cx: 90, cy: 66, rx: 22, ry: 9, fill: hc ? '#000000' : 'rgba(147,51,234,0.22)', stroke: hc ? '#ffffff' : 'rgba(192,132,252,0.55)', strokeWidth: 0.9 }),
             hh('circle', { cx: 90, cy: 48, r: 14, fill: hc ? '#000000' : 'rgba(147,51,234,0.36)', stroke: hc ? '#facc15' : '#d8b4fe', strokeWidth: 1.3 }),
@@ -4484,10 +4508,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   hh('text', { x: 262, y: 26, fontSize: 9.2, fill: hc ? '#facc15' : '#6ee7b7', textAnchor: 'middle', fontWeight: 800 }, 'in OTHER ROOM →')
                 ) : null,
                 // Concentric cognitive-pull aura ripples
-                !hc && p.id !== 'room' ? hh('circle', { className: 'll-svg-fx', cx: pcx, cy: pcy, r: auraR, fill: 'url(#ll-desk-aura)' }) : null,
-                !hc && p.id !== 'room' ? hh('circle', { className: 'll-svg-fx', cx: pcx, cy: pcy, r: auraR * 0.72, fill: 'none', stroke: p.color, strokeWidth: 0.9, strokeDasharray: '2.5,2.5', opacity: 0.45 }) : null,
+                !hc && p.id !== 'room' ? hh('circle', { className: 'll-svg-fx ll-anim-halo', cx: pcx, cy: pcy, r: auraR, fill: 'url(#ll-desk-aura)' }) : null,
+                !hc && p.id !== 'room' ? hh('circle', { className: 'll-svg-fx ll-anim-orbit', cx: pcx, cy: pcy, r: auraR * 0.72, fill: 'none', stroke: p.color, strokeWidth: 0.9, strokeDasharray: '2.5,2.5', opacity: 0.45 }) : null,
                 // Attention-pull dashed sightline from learner to desk phone
-                p.id === 'facedown' ? hh('line', { x1: 104, y1: 56, x2: phoneX - 2, y2: phoneY + 8, stroke: hc ? '#facc15' : '#fbbf24', strokeWidth: 1, strokeDasharray: '3,2', opacity: 0.7 }) : null,
+                p.id === 'facedown' ? hh('line', { x1: 104, y1: 56, x2: phoneX - 2, y2: phoneY + 8, stroke: hc ? '#facc15' : '#fbbf24', strokeWidth: 1, strokeDasharray: '3,2', opacity: 0.7, className: !hc ? 'll-anim-flow' : undefined }) : null,
                 // Smartphone chassis + camera bump
                 p.id !== 'room' ? hh('rect', { x: phoneX, y: phoneY, width: phoneW, height: phoneH, fill: hc ? '#000000' : fill, stroke: hc ? '#facc15' : p.color, strokeWidth: 1.2, rx: 3 }) : null,
                 p.id !== 'room' ? hh('rect', { x: phoneX + 2.5, y: phoneY + 3, width: 5, height: 5, rx: 1.2, fill: hc ? '#facc15' : '#475569', stroke: '#94a3b8', strokeWidth: 0.4 }) : null,
@@ -5254,6 +5278,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
 
     function playCompletionTone() {
       if (!soundEnabled || typeof window === 'undefined') return;
+      if (window.__alloGlobalMuted === true || (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted())) return;
       try {
         var AudioContextClass = window.AudioContext || window.webkitAudioContext;
         if (!AudioContextClass) return;
@@ -5461,9 +5486,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                   // Recessed track channel
                   hh('circle', { cx: 100, cy: 100, r: circleRadius, fill: 'none', stroke: hc ? 'rgba(255,255,255,0.25)' : 'rgba(100,116,139,0.28)', strokeWidth: 9.5 }),
                   // Dual-pass luminous remaining-time arc
-                  !hc && hh('circle', { className: 'll-svg-fx', cx: 100, cy: 100, r: circleRadius, fill: 'none', stroke: arcCol, strokeWidth: 15, strokeOpacity: 0.18, strokeLinecap: 'round', strokeDasharray: circumference, strokeDashoffset: dashOffset, transform: 'rotate(-90 100 100)' }),
+                  !hc && hh('circle', { className: 'll-svg-fx ll-anim-phosphor', cx: 100, cy: 100, r: circleRadius, fill: 'none', stroke: arcCol, strokeWidth: 15, strokeOpacity: 0.18, strokeLinecap: 'round', strokeDasharray: circumference, strokeDashoffset: dashOffset, transform: 'rotate(-90 100 100)' }),
                   hh('circle', { cx: 100, cy: 100, r: circleRadius, fill: 'none', stroke: hc ? '#facc15' : 'url(#ll-ft-arc)', strokeWidth: 8.5, strokeLinecap: 'round', strokeDasharray: circumference, strokeDashoffset: dashOffset, transform: 'rotate(-90 100 100)', style: { transition: 'stroke-dashoffset 900ms linear' } }),
                   // Specular leading-edge beacon bead
+                  !hc && pctLeft > 0.01 && hh('circle', { className: 'll-svg-fx ll-anim-ripple', cx: tipX.toFixed(1), cy: tipY.toFixed(1), r: 8.5, fill: 'none', stroke: arcCol, strokeWidth: 1.8 }),
                   pctLeft > 0.01 && hh('circle', { cx: tipX.toFixed(1), cy: tipY.toFixed(1), r: 5.2, fill: hc ? '#ffffff' : '#fef3c7', stroke: arcCol, strokeWidth: 2 })
                 );
               })(),
@@ -8826,8 +8852,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 if (!from || !to) return null;
                 var mx = (from.x + to.x) / 2; var my = (from.y + to.y) / 2;
                 return hh('g', { key: 'edge-' + edge.id },
-                  !hc && hh('line', { className: 'll-svg-fx', x1: from.x, y1: from.y, x2: to.x, y2: to.y, stroke: '#a855f7', strokeWidth: 5, strokeOpacity: 0.16, strokeLinecap: 'round' }),
+                  !hc && hh('line', { className: 'll-svg-fx ll-anim-phosphor', x1: from.x, y1: from.y, x2: to.x, y2: to.y, stroke: '#a855f7', strokeWidth: 5, strokeOpacity: 0.16, strokeLinecap: 'round' }),
                   hh('line', { x1: from.x, y1: from.y, x2: to.x, y2: to.y, stroke: hc ? '#facc15' : '#cbd5e1', strokeWidth: 2, strokeLinecap: 'round', markerEnd: 'url(#arrowhead)' }),
+                  !hc && hh('line', { className: 'll-svg-fx ll-anim-flow', x1: from.x, y1: from.y, x2: to.x, y2: to.y, stroke: '#e9d5ff', strokeWidth: 1.2, strokeDasharray: '4 10', strokeLinecap: 'round', opacity: 0.72 }),
                   edge.label ? hh('g', null,
                     hh('rect', { x: mx - (edge.label.length * 3.4 + 8), y: my - 10, width: edge.label.length * 6.8 + 16, height: 20, fill: hc ? '#000000' : '#0f172a', stroke: hc ? '#facc15' : '#a78bfa', strokeWidth: 1.1, rx: 10 }),
                     hh('text', { x: mx, y: my + 4, fontSize: 11, fill: hc ? '#facc15' : '#f8fafc', textAnchor: 'middle', fontWeight: 700 }, edge.label)
@@ -8839,7 +8866,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 var rx = Math.max(44, node.label.length * 4 + 16);
                 var ry = 23;
                 return hh('g', { key: 'node-' + node.id, onClick: function() { activateConceptNode(node.id); }, style: { cursor: 'pointer' } },
-                  !hc && (chosen || source) && hh('ellipse', { className: 'll-svg-fx', cx: node.x, cy: node.y, rx: rx + 6, ry: ry + 6, fill: node.color, opacity: 0.22 }),
+                  !hc && (chosen || source) && hh('ellipse', { className: 'll-svg-fx ll-anim-halo', cx: node.x, cy: node.y, rx: rx + 6, ry: ry + 6, fill: node.color, opacity: 0.22 }),
                   !hc && hh('ellipse', { className: 'll-svg-fx', cx: node.x, cy: node.y + 3, rx: rx, ry: ry, fill: '#000000', opacity: 0.45 }),
                   hh('ellipse', { cx: node.x, cy: node.y, rx: rx, ry: ry, fill: hc ? '#000000' : '#0f172a', stroke: hc ? (chosen || source ? '#facc15' : '#ffffff') : node.color, strokeWidth: chosen || source ? 3.5 : 2, strokeDasharray: source ? '5,3' : 'none' }),
                   !hc && hh('path', { className: 'll-svg-fx', d: 'M ' + (node.x - rx * 0.65).toFixed(1) + ' ' + (node.y - ry * 0.55).toFixed(1) + ' Q ' + node.x + ' ' + (node.y - ry * 0.92).toFixed(1) + ' ' + (node.x + rx * 0.65).toFixed(1) + ' ' + (node.y - ry * 0.55).toFixed(1), fill: 'none', stroke: 'rgba(255,255,255,0.28)', strokeWidth: 1.4, strokeLinecap: 'round' }),
@@ -18895,11 +18922,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           return hh('line', { key: 'axis-' + index, x1: cx, y1: cy, x2: (cx + maxR * Math.cos(angle)).toFixed(1), y2: (cy + maxR * Math.sin(angle)).toFixed(1), stroke: hc ? 'rgba(255,255,255,0.34)' : 'rgba(148,163,184,0.32)', strokeWidth: 0.6 });
         }),
         // Dual-pass luminous radar polygon
-        !hc && hh('polygon', { className: 'll-svg-fx', points: polyPts, fill: 'none', stroke: '#c084fc', strokeWidth: 5, strokeOpacity: 0.20, strokeLinejoin: 'round' }),
+        !hc && hh('polygon', { className: 'll-svg-fx ll-anim-phosphor', points: polyPts, fill: 'none', stroke: '#c084fc', strokeWidth: 5, strokeOpacity: 0.20, strokeLinejoin: 'round' }),
         hh('polygon', { points: polyPts, fill: hc ? 'rgba(250,204,21,0.18)' : 'url(#' + gradId + ')', stroke: hc ? '#facc15' : '#e9d5ff', strokeWidth: 2, strokeLinejoin: 'round' }),
         points.map(function(point, index) {
           return hh('g', { key: 'point-' + index },
-            !hc && hh('circle', { className: 'll-svg-fx', cx: point.x, cy: point.y, r: 7.5, fill: point.color, opacity: 0.24 }),
+            !hc && hh('circle', { className: 'll-svg-fx ll-anim-halo', cx: point.x, cy: point.y, r: 7.5, fill: point.color, opacity: 0.24, style: { animationDelay: (index * 0.22) + 's' } }),
             hh('circle', { cx: point.x, cy: point.y, r: 4.4, fill: hc ? '#facc15' : point.color, stroke: '#0f172a', strokeWidth: 1.2 }),
             !hc && hh('circle', { className: 'll-svg-fx', cx: point.x - 1.2, cy: point.y - 1.2, r: 1.2, fill: '#ffffff', opacity: 0.85 })
           );
@@ -19576,6 +19603,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     }
     function changeTab(id) { setView(id); setNotice(''); }
     function handleTabKey(event, index) {
+      if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
       var next = index;
       if (event.key === 'ArrowRight') next = (index + 1) % TABS.length;
       else if (event.key === 'ArrowLeft') next = (index - 1 + TABS.length) % TABS.length;
@@ -20213,6 +20241,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     function categoryFor(id) { return CATS.filter(function(category) { return category.id === id; })[0] || CATS[0]; }
     function changeCategory(id) { setCat(categoryFor(id).id); setCopyStatus(null); }
     function handleTabKey(event, index) {
+      if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
       var next = index;
       if (event.key === 'ArrowRight') next = (index + 1) % CATS.length;
       else if (event.key === 'ArrowLeft') next = (index - 1 + CATS.length) % CATS.length;
@@ -21417,7 +21446,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       if (!text) return { error: 'Paste backup JSON or choose a JSON file before importing.' };
       if (text.length > 2000000) return { error: 'This backup is larger than the 2,000,000-character import limit.' };
       try {
-        var parsed = JSON.parse(text);
+        var parsed = JSON.parse(text, function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
         if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return { error: 'The backup must be a JSON object containing toolkit keys.' };
         var keys = Object.keys(parsed);
         if (!keys.length) return { error: 'The backup contains no toolkit records.' };
@@ -21803,7 +21832,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     );
   }
 
-  window.StemLab.registerTool('learningLab', {
+  if (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.registerTool === 'function') window.StemLab.registerTool('learningLab', {
     name: 'Learning Lab',
     icon: '\uD83D\uDCD3',
     category: 'life-skills',
@@ -22135,15 +22164,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                       )
                     ),
                     !hc && h('circle', { className: 'll-svg-fx', cx: 22, cy: 22, r: 19, fill: 'url(#ll-emb-core)' }),
-                    h('circle', { cx: 22, cy: 22, r: 19.5, fill: 'none', stroke: hc ? '#facc15' : 'rgba(216,180,254,0.65)', strokeWidth: 1.3, strokeDasharray: '5 3' }),
+                    h('circle', { cx: 22, cy: 22, r: 19.5, fill: 'none', stroke: hc ? '#facc15' : 'rgba(216,180,254,0.65)', strokeWidth: 1.3, strokeDasharray: '5 3', className: !hc ? 'll-anim-orbit' : undefined }),
                     h('circle', { cx: 22, cy: 22, r: 14.5, fill: 'none', stroke: hc ? '#ffffff' : 'rgba(56,189,248,0.28)', strokeWidth: 0.8 }),
-                    !hc && h('path', { className: 'll-svg-fx', d: 'M9 30 Q16 14 22 21 T35 12', fill: 'none', stroke: '#38bdf8', strokeWidth: 5, strokeOpacity: 0.24, strokeLinecap: 'round' }),
+                    !hc && h('path', { className: 'll-svg-fx ll-anim-phosphor', d: 'M9 30 Q16 14 22 21 T35 12', fill: 'none', stroke: '#38bdf8', strokeWidth: 5, strokeOpacity: 0.24, strokeLinecap: 'round' }),
                     h('path', { d: 'M9 30 Q16 14 22 21 T35 12', fill: 'none', stroke: hc ? '#facc15' : 'url(#ll-emb-curve)', strokeWidth: 2.4, strokeLinecap: 'round' }),
-                    !hc && h('circle', { className: 'll-svg-fx', cx: 11, cy: 27, r: 5.5, fill: '#c084fc', opacity: 0.25 }),
+                    !hc && h('circle', { className: 'll-svg-fx ll-anim-halo', cx: 11, cy: 27, r: 5.5, fill: '#c084fc', opacity: 0.25 }),
                     h('circle', { cx: 11, cy: 27, r: 3.1, fill: hc ? '#ffffff' : '#c084fc', stroke: '#0f172a', strokeWidth: 0.9 }),
-                    !hc && h('circle', { className: 'll-svg-fx', cx: 22, cy: 21, r: 6, fill: '#34d399', opacity: 0.25 }),
+                    !hc && h('circle', { className: 'll-svg-fx ll-anim-halo', cx: 22, cy: 21, r: 6, fill: '#34d399', opacity: 0.25, style: { animationDelay: '0.5s' } }),
                     h('circle', { cx: 22, cy: 21, r: 3.4, fill: hc ? '#facc15' : '#34d399', stroke: '#0f172a', strokeWidth: 0.9 }),
-                    !hc && h('circle', { className: 'll-svg-fx', cx: 34, cy: 13, r: 6, fill: '#fbbf24', opacity: 0.28 }),
+                    !hc && h('circle', { className: 'll-svg-fx ll-anim-halo', cx: 34, cy: 13, r: 6, fill: '#fbbf24', opacity: 0.28, style: { animationDelay: '1s' } }),
                     h('circle', { cx: 34, cy: 13, r: 3.4, fill: hc ? '#facc15' : '#fbbf24', stroke: '#0f172a', strokeWidth: 0.9 }),
                     !hc && h('circle', { className: 'll-svg-fx', cx: 33, cy: 12, r: 1, fill: '#ffffff', opacity: 0.9 })
                   );
@@ -22210,20 +22239,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                 // Recessed studio stage well
                 h('rect', { x: 0, y: 0, width: 522, height: 92, rx: 10, fill: hc ? '#000000' : 'url(#ll-arch-well)' }),
                 // Dual-pass luminous neural bus rail connecting all 4 frameworks
-                !hc && h('line', { className: 'll-svg-fx', x1: 72, y1: 46, x2: 450, y2: 46, stroke: 'url(#ll-arch-bus)', strokeWidth: 6, strokeOpacity: 0.22 }),
-                h('line', { x1: 72, y1: 46, x2: 450, y2: 46, stroke: hc ? '#facc15' : 'url(#ll-arch-bus)', strokeWidth: 2, strokeDasharray: '4 3' }),
+                !hc && h('line', { className: 'll-svg-fx ll-anim-phosphor', x1: 72, y1: 46, x2: 450, y2: 46, stroke: 'url(#ll-arch-bus)', strokeWidth: 6, strokeOpacity: 0.22 }),
+                h('line', { x1: 72, y1: 46, x2: 450, y2: 46, stroke: hc ? '#facc15' : 'url(#ll-arch-bus)', strokeWidth: 2, strokeDasharray: '4 3', className: !hc ? 'll-anim-flow' : undefined }),
                 // Inter-pillar directional flow chevrons
-                [135, 261, 387].map(function(cx) {
-                  return h('polygon', { key: 'll-arr-' + cx, points: (cx - 3) + ',42 ' + (cx + 4) + ',46 ' + (cx - 3) + ',50', fill: hc ? '#facc15' : '#e2e8f0', opacity: 0.85 });
+                [135, 261, 387].map(function(cx, ci) {
+                  return h('polygon', { key: 'll-arr-' + cx, points: (cx - 3) + ',42 ' + (cx + 4) + ',46 ' + (cx - 3) + ',50', fill: hc ? '#facc15' : '#e2e8f0', opacity: 0.85, className: !hc ? 'll-anim-shimmer' : undefined, style: !hc ? { animationDelay: (ci * 0.35) + 's' } : undefined });
                 }),
-                pillarSpecs.map(function(p) {
+                pillarSpecs.map(function(p, pi) {
                   return h('g', { key: 'll-pil-' + p.x },
                     !hc && h('rect', { className: 'll-svg-fx', x: p.x + 1, y: 16, width: p.w, height: 64, rx: 10, fill: '#000000', opacity: 0.45 }),
                     h('rect', { x: p.x, y: 14, width: p.w, height: 64, rx: 10, fill: hc ? '#000000' : 'url(#ll-arch-card)', stroke: hc ? '#ffffff' : p.color, strokeWidth: 1.6 }),
                     // Beveled top color accent rail
                     h('rect', { x: p.x + 10, y: 14, width: p.w - 20, height: 2.8, rx: 1.4, fill: hc ? '#facc15' : p.color }),
                     // Glowing node beacon
-                    !hc && h('circle', { className: 'll-svg-fx', cx: p.x + 14, cy: 31, r: 7.5, fill: p.color, opacity: 0.24 }),
+                    !hc && h('circle', { className: 'll-svg-fx ll-anim-halo', cx: p.x + 14, cy: 31, r: 7.5, fill: p.color, opacity: 0.24, style: { animationDelay: (pi * 0.4) + 's' } }),
                     h('circle', { cx: p.x + 14, cy: 31, r: 4, fill: hc ? '#facc15' : p.color, stroke: '#0f172a', strokeWidth: 0.8 }),
                     h('text', { x: p.x + 23, y: 34.5, fill: '#f8fafc', fontSize: 10, fontWeight: 800 }, p.title.slice(0, 14)),
                     h('line', { x1: p.x + 10, y1: 44, x2: p.x + p.w - 10, y2: 44, stroke: hc ? 'rgba(255,255,255,0.28)' : 'rgba(148,163,184,0.20)', strokeWidth: 0.8 }),
@@ -22962,9 +22991,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
                         return h('line', { key: 'qt-' + ti, x1: (50 + 43.5 * Math.cos(ta)).toFixed(1), y1: (50 + 43.5 * Math.sin(ta)).toFixed(1), x2: (50 + 46 * Math.cos(ta)).toFixed(1), y2: (50 + 46 * Math.sin(ta)).toFixed(1), stroke: hc ? '#facc15' : 'rgba(148,163,184,0.38)', strokeWidth: 1 });
                       }),
                       h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: hc ? 'rgba(255,255,255,0.28)' : 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
-                      !hc && h('circle', { className: 'll-svg-fx', cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 14, strokeOpacity: 0.20, strokeLinecap: 'round', strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' }),
+                      !hc && h('circle', { className: 'll-svg-fx ll-anim-phosphor', cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 14, strokeOpacity: 0.20, strokeLinecap: 'round', strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' }),
                       h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: hc ? '#facc15' : tierColor, strokeWidth: 9, strokeLinecap: 'round',
                         strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' }),
+                      !hc && pct > 2 && h('circle', { className: 'll-svg-fx ll-anim-ripple', cx: tipX.toFixed(1), cy: tipY.toFixed(1), r: 6.4, fill: 'none', stroke: tierColor, strokeWidth: 1.5 }),
                       pct > 2 && h('circle', { cx: tipX.toFixed(1), cy: tipY.toFixed(1), r: 3.4, fill: '#ffffff', stroke: hc ? '#000000' : tierColor, strokeWidth: 1.5 })
                     );
                   })(),

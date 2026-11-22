@@ -18,6 +18,17 @@
   function create(THREE, scene, options) {
     options = options || {};
     var detailed = options.quality !== 'low', disposed = false, resources = [], mode = 'guided', freeTime = 0;
+    var highContrast = !!options.highContrast;
+    if (!highContrast) {
+      try {
+        if (typeof document !== 'undefined') {
+          var docEl = document.documentElement, bodyEl = document.body;
+          if ((docEl && (docEl.classList.contains('theme-contrast') || docEl.classList.contains('high-contrast') || docEl.getAttribute('data-theme') === 'high-contrast')) ||
+              (bodyEl && (bodyEl.classList.contains('theme-contrast') || bodyEl.classList.contains('high-contrast')))) highContrast = true;
+        }
+      } catch (ignore) {}
+    }
+    var plumeRimStrength = { value: highContrast ? 0.0 : 1.0 };
     var height = typeof options.groundHeight === 'function' ? options.groundHeight : function () { return 0; };
     var blocked = typeof options.isBlocked === 'function' ? options.isBlocked : function () { return false; };
     var root = new THREE.Group(); root.name = 'birdlab-woodland-residents'; scene.add(root);
@@ -29,9 +40,10 @@
     function featherGrain(mat, individualVanes) {
       mat.extensions = Object.assign({}, mat.extensions, { derivatives: true });
       mat.onBeforeCompile = function (shader) {
+        shader.uniforms.blPlumeRim = plumeRimStrength;
         shader.vertexShader = 'varying vec2 blResidentUV;\n' + shader.vertexShader;
         shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nblResidentUV = uv;');
-        shader.fragmentShader = 'varying vec2 blResidentUV;\n' + shader.fragmentShader;
+        shader.fragmentShader = 'uniform float blPlumeRim;\nvarying vec2 blResidentUV;\n' + shader.fragmentShader;
         shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
           '#include <color_fragment>',
           individualVanes ? 'vec2 blCell = vec2(blResidentUV.x - .5, blResidentUV.y);' :
@@ -52,6 +64,16 @@
           'vec3 blR1 = cross(blSigmaY, normal), blR2 = cross(normal, blSigmaX);',
           'float blDet = dot(blSigmaX, blR1);',
           'if (abs(blDet) > 1e-12) normal = normalize(abs(blDet) * normal - sign(blDet) * (dFdx(blRelief) * blR1 + dFdy(blRelief) * blR2));'
+        ].join('\n'));
+        shader.fragmentShader = shader.fragmentShader.replace('#include <lights_fragment_end>', [
+          '#include <lights_fragment_end>',
+          'if (blPlumeRim > 0.01) {',
+          '  float blRim = pow(1.0 - max(0.0, abs(dot(normalize(normal), normalize(geometry.viewDir)))), 2.55);',
+          '  float blBarbSheen = 0.84 + 0.16 * blBarbs;',
+          '  vec3 blRimLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse * 0.42;',
+          '  vec3 blWarmPlume = mix(diffuseColor.rgb * 1.18, vec3(1.0, 0.87, 0.68), 0.32);',
+          '  reflectedLight.directDiffuse += blWarmPlume * blRimLight * blRim * blBarbSheen * ' + (individualVanes ? '0.26' : '0.32') + ' * blPlumeRim;',
+          '}'
         ].join('\n'));
       };
       mat.customProgramCacheKey = function () { return individualVanes ? 'birdlab-resident-vane-grain-v2' : 'birdlab-resident-contour-grain-v2'; };
@@ -336,12 +358,39 @@
       hermitThrush: {lift: .44, beat: 6.6, forage: [9.8, 11.6], hop: true},
       purpleFinch: {lift: .50, beat: 7.0, forage: [6.2, 7.9], hop: true}
     };
+    var sharedPlumageWrapped = new Set();
+    function applySharedPlumageRim(birdRoot) {
+      if (!detailed || highContrast || !birdRoot) return;
+      birdRoot.traverse(function (node) {
+        var mat = node.material;
+        if (!mat || !mat.vertexColors || mat.isShaderMaterial || sharedPlumageWrapped.has(mat)) return;
+        sharedPlumageWrapped.add(mat);
+        var previous = mat.onBeforeCompile;
+        var previousKey = typeof mat.customProgramCacheKey === 'function' ? mat.customProgramCacheKey.call(mat) : '';
+        mat.onBeforeCompile = function (shader, renderer) {
+          if (typeof previous === 'function') previous.call(this, shader, renderer);
+          shader.uniforms.blSharedPlumeRim = plumeRimStrength;
+          shader.fragmentShader = 'uniform float blSharedPlumeRim;\n' + shader.fragmentShader.replace('#include <lights_fragment_end>', [
+            '#include <lights_fragment_end>',
+            'if (blSharedPlumeRim > 0.01) {',
+            '  float blSRim = pow(1.0 - max(0.0, abs(dot(normalize(normal), normalize(geometry.viewDir)))), 2.6);',
+            '  vec3 blSLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse * 0.40;',
+            '  vec3 blSWarm = mix(diffuseColor.rgb * 1.16, vec3(1.0, 0.88, 0.70), 0.30);',
+            '  reflectedLight.directDiffuse += blSWarm * blSLight * blSRim * 0.28 * blSharedPlumeRim;',
+            '}'
+          ].join('\n'));
+        };
+        mat.customProgramCacheKey = function () { return previousKey + '|birdlab-shared-plumage-rim-v1'; };
+        mat.needsUpdate = true;
+      });
+    }
     function addSharedBird(id, name, scientific, x, z, yaw, course, factoryId) {
       var catalog = global.StemSimAssets, nativeId = factoryId || id;
       var model = nativeId === 'mourningDove' && catalog && catalog.version === '1.0.0' && typeof catalog.available === 'function' && typeof catalog.create === 'function' && catalog.available('animal.mourning-dove', '1.0.0')
         ? catalog.create(THREE, 'animal.mourning-dove', '1.0.0', {quality: detailed ? 'high' : 'low'})
         : global.AvianWoodlandBirds.create(THREE, nativeId, {quality: detailed ? 'high' : 'low'});
       model.root.name = 'woodland-' + id; root.add(model.root);
+      applySharedPlumageRim(model.root);
       var resident = {id:id, name:name, scientificName:scientific, root:model.root, body:model.body,
         model:model, originX:x, originZ:z, baseYaw:yaw, course:course, behavior:'Scanning', altitude:0,
         footRest:model.feet.map(function(foot){return [foot.position.x,foot.position.y,foot.position.z];}),

@@ -1,0 +1,426 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-length-balance-wave-55",
+  "reviewedAt": "2026-11-21",
+  "scope": "Second choice-length balancing pass across 63 remaining unpinned prose EPPP Part 1 items, bringing key=longest below one-third of the bank while preserving zero diagnostic warnings.",
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 63,
+    "keyIsLongestBefore": 561,
+    "keyIsLongestAfter": 498,
+    "keyIsLongestRateAfter": 0.332,
+    "extremeCandidatesAfter": 0,
+    "lexicalCandidatesAfter": 0,
+    "duplicatePairsAfter": 0,
+    "feedbackWarningsAfter": {
+      "totalItems": 1500,
+      "totalIncorrectOptions": 4500,
+      "itemsWithWarnings": 0,
+      "incorrectOptionsWithWarnings": 0,
+      "insufficientDetailOptions": 0,
+      "genericTemplateOptions": 0,
+      "choiceRestatementOptions": 0,
+      "fullKeyEchoOptions": 0,
+      "currentWaveIncorrectOptions": 24,
+      "currentWaveOptionsWithWarnings": 0,
+      "previousWaveIncorrectOptions": 24,
+      "previousWaveOptionsWithWarnings": 0,
+      "latestWaveIncorrectOptions": 48,
+      "latestWaveOptionsWithWarnings": 0,
+      "activeWaveIncorrectOptions": 48,
+      "activeWaveOptionsWithWarnings": 0,
+      "wave09IncorrectOptions": 48,
+      "wave09OptionsWithWarnings": 0,
+      "wave10IncorrectOptions": 48,
+      "wave10OptionsWithWarnings": 0,
+      "wave11IncorrectOptions": 48,
+      "wave11OptionsWithWarnings": 0,
+      "priorityDocketItems": 0
+    },
+    "nativeQaPassedItems": 1500,
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v2-biological-001",
+      "domainId": "biological",
+      "answerIndex": 0,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-assessment-031",
+      "domainId": "assessment",
+      "answerIndex": 3,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-intervention-039",
+      "domainId": "intervention",
+      "answerIndex": 0,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-assessment-034",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b015-social-2",
+      "domainId": "social-cultural",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b015-cognitive-2",
+      "domainId": "cognitive-affective",
+      "answerIndex": 3,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b013-cognitive-2",
+      "domainId": "cognitive-affective",
+      "answerIndex": 3,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-professional-048",
+      "domainId": "professional",
+      "answerIndex": 3,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-049",
+      "domainId": "cognitive-affective",
+      "answerIndex": 3,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b014-social-2",
+      "domainId": "social-cultural",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-assessment-017",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-social-cultural-020",
+      "domainId": "social-cultural",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-social-cultural-041",
+      "domainId": "social-cultural",
+      "answerIndex": 3,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-lifespan-051",
+      "domainId": "lifespan",
+      "answerIndex": 3,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-lifespan-025",
+      "domainId": "lifespan",
+      "answerIndex": 1,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-intervention-069",
+      "domainId": "intervention",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-060",
+      "domainId": "cognitive-affective",
+      "answerIndex": 1,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-intervention-007",
+      "domainId": "intervention",
+      "answerIndex": 0,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-intervention-052",
+      "domainId": "intervention",
+      "answerIndex": 1,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-assessment-076",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-professional-078",
+      "domainId": "professional",
+      "answerIndex": 1,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-migrated-lifespan-1",
+      "domainId": "lifespan",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b016-social-2",
+      "domainId": "social-cultural",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-professional-002",
+      "domainId": "professional",
+      "answerIndex": 1,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-060",
+      "domainId": "cognitive-affective",
+      "answerIndex": 1,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b017-assessment-3",
+      "domainId": "assessment",
+      "answerIndex": 0,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b008-cognitive-1",
+      "domainId": "cognitive-affective",
+      "answerIndex": 1,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-assessment-025",
+      "domainId": "assessment",
+      "answerIndex": 1,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-social-cultural-011",
+      "domainId": "social-cultural",
+      "answerIndex": 1,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-intervention-043",
+      "domainId": "intervention",
+      "answerIndex": 0,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-assessment-049",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-intervention-037",
+      "domainId": "intervention",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-biological-030",
+      "domainId": "biological",
+      "answerIndex": 1,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-intervention-074",
+      "domainId": "intervention",
+      "answerIndex": 3,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-048",
+      "domainId": "cognitive-affective",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-054",
+      "domainId": "cognitive-affective",
+      "answerIndex": 3,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-social-cultural-049",
+      "domainId": "social-cultural",
+      "answerIndex": 3,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b014-cognitive-1",
+      "domainId": "cognitive-affective",
+      "answerIndex": 1,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b013-assessment-1",
+      "domainId": "assessment",
+      "answerIndex": 0,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b025-assessment-4",
+      "domainId": "assessment",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-lifespan-020",
+      "domainId": "lifespan",
+      "answerIndex": 0,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-042",
+      "domainId": "cognitive-affective",
+      "answerIndex": 0,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-intervention-063",
+      "domainId": "intervention",
+      "answerIndex": 0,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-lifespan-037",
+      "domainId": "lifespan",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-professional-015",
+      "domainId": "professional",
+      "answerIndex": 0,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-intervention-023",
+      "domainId": "intervention",
+      "answerIndex": 0,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b028-social-1",
+      "domainId": "social-cultural",
+      "answerIndex": 0,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b015-assessment-1",
+      "domainId": "assessment",
+      "answerIndex": 0,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b013-professional-2",
+      "domainId": "professional",
+      "answerIndex": 3,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b011-cognitive-1",
+      "domainId": "cognitive-affective",
+      "answerIndex": 1,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-biological-011",
+      "domainId": "biological",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-020",
+      "domainId": "cognitive-affective",
+      "answerIndex": 1,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b012-lifespan-1",
+      "domainId": "lifespan",
+      "answerIndex": 1,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b022-cognitive-2",
+      "domainId": "cognitive-affective",
+      "answerIndex": 1,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-064",
+      "domainId": "cognitive-affective",
+      "answerIndex": 1,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-lifespan-050",
+      "domainId": "lifespan",
+      "answerIndex": 3,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-biological-035",
+      "domainId": "biological",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-social-cultural-038",
+      "domainId": "social-cultural",
+      "answerIndex": 3,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-assessment-059",
+      "domainId": "assessment",
+      "answerIndex": 0,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-assessment-003",
+      "domainId": "assessment",
+      "answerIndex": 3,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v3-biological-007",
+      "domainId": "biological",
+      "answerIndex": 2,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-b010-assessment-1",
+      "domainId": "assessment",
+      "answerIndex": 0,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    },
+    {
+      "id": "eppp-v2-lifespan-035",
+      "domainId": "lifespan",
+      "answerIndex": 3,
+      "lengthBalanceWave": "eppp-length-balance-wave-55"
+    }
+  ],
+  "limitations": [
+    "Choice-length balancing is an editorial clue-reduction pass and does not replace psychometric calibration or licensed-psychologist review."
+  ]
+}

@@ -108,7 +108,13 @@
   }
 
   function sourceList(settings) {
-    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+    if (typeof window !== 'undefined' && (
+      window._isDesktopBundledApp === true ||
+      window.__alloOfflineOnly === true ||
+      window.__ALLO_LOCAL_BOX === true ||
+      !!window.__alloQrStudentMode ||
+      window._alloQrBlocked === true
+    )) {
       return SOURCES.slice(0, 1);
     }
     return settings.allowRemoteFallback ? SOURCES.slice() : SOURCES.slice(0, 1);
@@ -119,8 +125,8 @@
     if (index >= sources.length) { reject(new Error('all MathLive sources failed')); return; }
     var candidate = sources[index];
     var script = document.createElement('script');
-    if (candidate && candidate.script && String(candidate.script).indexOf(LOCAL_ASSET_BASE) !== 0) {
-      script.integrity = MATHLIVE_SRI;
+    script.integrity = MATHLIVE_SRI;
+    if (index > 0 || (candidate && candidate.script && String(candidate.script).indexOf('https://') === 0)) {
       script.crossOrigin = 'anonymous';
       script.referrerPolicy = 'no-referrer';
     }
@@ -140,7 +146,11 @@
       configureRuntime(candidate.fonts);
       var deadline = Date.now() + 5000;
       (function poll() {
-        if (customElementReady()) { resolve({ source: candidate.script, fonts: candidate.fonts }); return; }
+        if (customElementReady()) {
+          configureRuntime(candidate.fonts);
+          resolve({ source: candidate.script, fonts: candidate.fonts });
+          return;
+        }
         if (Date.now() >= deadline) {
           try { script.remove(); } catch (_) {}
           loadAt(sources, index + 1, resolve, reject);

@@ -348,7 +348,33 @@ function SpedTimelinesPanel(props) {
   const rollup = spedRollup(cases, today);
 
   const [dueDateManual, setDueDateManual] = React.useState(false);
+  const [dashBandFilter, setDashBandFilter] = React.useState('all');
+  const [dashProviderFilter, setDashProviderFilter] = React.useState('');
+  const [casesStatusFilter, setCasesStatusFilter] = React.useState('all');
+  const [casesQuery, setCasesQuery] = React.useState('');
   const backdropDownRef = React.useRef(false);
+
+  const openCases = rollup.cases.filter((c) => c.band !== 'done');
+  const doneCount = rollup.counts.done || 0;
+  const filteredOpenCases = openCases.filter((c) => {
+    if (dashBandFilter !== 'all' && c.band !== dashBandFilter) return false;
+    if (dashProviderFilter) {
+      const prov = String(c.provider || '').trim() || '(unassigned)';
+      if (prov !== dashProviderFilter) return false;
+    }
+    return true;
+  });
+  const hasDashFilter = dashBandFilter !== 'all' || !!dashProviderFilter;
+  const normalizedCasesQuery = casesQuery.trim().toLowerCase();
+  const filteredAllCases = rollup.cases.filter((c) => {
+    if (casesStatusFilter === 'open' && c.band === 'done') return false;
+    if (casesStatusFilter === 'done' && c.band !== 'done') return false;
+    if (normalizedCasesQuery) {
+      const hay = (String(c.code || '') + ' ' + String(c.provider || '') + ' ' + String(c.type || '')).toLowerCase();
+      if (hay.indexOf(normalizedCasesQuery) === -1) return false;
+    }
+    return true;
+  });
 
   const updateForm = (patch) => {
     if (patch.dueDate !== undefined) setDueDateManual(!!patch.dueDate);
@@ -502,15 +528,54 @@ function SpedTimelinesPanel(props) {
           {tab === 'dashboard' && (
             <div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-                {['overdue', 'urgent', 'soon', 'ok'].map((band) => (
-                  <div key={band} className={'p-3 rounded-xl border text-center ' + SPED_BAND_META[band].cls}>
-                    <span className="block text-2xl font-bold">{rollup.counts[band]}</span>
-                    <span className="block text-xs font-bold">{tt('spedtl.band_' + band, SPED_BAND_META[band].label)}</span>
-                  </div>
-                ))}
+                {['overdue', 'urgent', 'soon', 'ok'].map((band) => {
+                  const activeBand = dashBandFilter === band;
+                  return (
+                    <button
+                      key={band}
+                      type="button"
+                      data-spedtl-band-filter={band}
+                      aria-pressed={activeBand}
+                      onClick={() => setDashBandFilter((cur) => (cur === band ? 'all' : band))}
+                      className={'min-h-11 p-3 rounded-xl border text-center cursor-pointer transition-all motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ' + SPED_BAND_META[band].cls + (activeBand ? ' ring-2 ring-indigo-600 shadow-sm' : ' hover:opacity-90')}
+                    >
+                      <span className="block text-2xl font-bold tabular-nums">{rollup.counts[band]}</span>
+                      <span className="block text-xs font-bold">{tt('spedtl.band_' + band, SPED_BAND_META[band].label)}</span>
+                    </button>
+                  );
+                })}
               </div>
+              {hasDashFilter && (
+                <div data-spedtl-dash-filter-bar="true" className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs">
+                  <span className="font-bold text-indigo-900">
+                    {tt('spedtl.showing_prefix', 'Showing')} {filteredOpenCases.length} {tt('spedtl.of_word', 'of')} {openCases.length} {tt('spedtl.open_short', 'open')}
+                    {dashBandFilter !== 'all' ? (' · ' + tt('spedtl.band_' + dashBandFilter, SPED_BAND_META[dashBandFilter].label)) : ''}
+                    {dashProviderFilter ? (' · ' + dashProviderFilter) : ''}
+                  </span>
+                  <button
+                    type="button"
+                    data-spedtl-dash-clear="true"
+                    onClick={() => { setDashBandFilter('all'); setDashProviderFilter(''); }}
+                    className="min-h-11 px-3 py-1 rounded-lg border border-indigo-300 bg-white text-indigo-800 font-bold hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
+                  >
+                    {tt('spedtl.clear_filters', 'Clear filters')}
+                  </button>
+                </div>
+              )}
               {cases.length === 0 && <p className="text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3">{tt('spedtl.empty', 'No timelines yet — add them on the Timelines tab.')}</p>}
-              {rollup.cases.filter((c) => c.band !== 'done').length > 0 && (
+              {openCases.length > 0 && filteredOpenCases.length === 0 && hasDashFilter && (
+                <div className="bg-white border border-slate-300 rounded-xl p-3 mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm text-slate-700">{tt('spedtl.no_matching_open', 'No open timelines match the current filter.')}</p>
+                  <button
+                    type="button"
+                    onClick={() => { setDashBandFilter('all'); setDashProviderFilter(''); }}
+                    className="min-h-11 px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
+                  >
+                    {tt('spedtl.show_all_open', 'Show all open')}
+                  </button>
+                </div>
+              )}
+              {filteredOpenCases.length > 0 && (
                 <div className="bg-white border border-slate-300 rounded-xl p-2 mb-3 overflow-x-auto">
                   <table className="w-full text-xs border-collapse">
                     <caption className="text-left text-sm font-bold text-slate-700 p-1">{tt('spedtl.open_caption', 'Open timelines, most urgent first')}</caption>
@@ -525,7 +590,7 @@ function SpedTimelinesPanel(props) {
                       </tr>
                     </thead>
                     <tbody>
-                      {rollup.cases.filter((c) => c.band !== 'done').map((c) => (
+                      {filteredOpenCases.map((c) => (
                         <tr key={c.id} className="border-t border-slate-200">
                           <th scope="row" className="text-left p-1.5 font-bold text-slate-800">{c.code}</th>
                           <td className="p-1.5 text-slate-700">{typeLabel(c.type)}</td>
@@ -550,14 +615,28 @@ function SpedTimelinesPanel(props) {
               )}
               {rollup.byProvider.length > 0 && (
                 <div className="bg-white border border-slate-300 rounded-xl p-3">
-                  <h4 className="text-sm font-bold text-slate-700">{tt('spedtl.caseload_title', 'Caseload by provider')}</h4>
-                  <ul className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1">
-                    {rollup.byProvider.map((p) => (
-                      <li key={p.provider} className={'text-xs p-2 rounded-lg border ' + (p.overdue > 0 ? 'bg-rose-50 border-rose-300' : 'bg-slate-50 border-slate-200')}>
-                        <span className="font-bold text-slate-800">{p.provider}</span>{' — '}
-                        <span className="text-slate-700">{p.open} {tt('spedtl.open_short', 'open')}{p.overdue > 0 ? (', ' + p.overdue + ' ' + tt('spedtl.overdue_short', 'overdue')) : ''}{p.urgent > 0 ? (', ' + p.urgent + ' ' + tt('spedtl.urgent_short', 'due ≤14d')) : ''}</span>
-                      </li>
-                    ))}
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h4 className="text-sm font-bold text-slate-700">{tt('spedtl.caseload_title', 'Caseload by provider')}</h4>
+                    <span className="text-xs text-slate-600">{tt('spedtl.caseload_filter_hint', 'Select a provider to filter above')}</span>
+                  </div>
+                  <ul className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                    {rollup.byProvider.map((p) => {
+                      const activeProv = dashProviderFilter === p.provider;
+                      return (
+                        <li key={p.provider}>
+                          <button
+                            type="button"
+                            data-spedtl-provider-filter={p.provider}
+                            aria-pressed={activeProv}
+                            onClick={() => setDashProviderFilter((cur) => (cur === p.provider ? '' : p.provider))}
+                            className={'w-full min-h-11 text-left text-xs p-2 rounded-lg border transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ' + (activeProv ? 'bg-indigo-50 border-indigo-500 ring-1 ring-indigo-500' : p.overdue > 0 ? 'bg-rose-50 border-rose-300 hover:bg-rose-100' : 'bg-slate-50 border-slate-200 hover:bg-slate-100')}
+                          >
+                            <span className="font-bold text-slate-800">{p.provider}</span>{' — '}
+                            <span className="text-slate-700">{p.open} {tt('spedtl.open_short', 'open')}{p.overdue > 0 ? (', ' + p.overdue + ' ' + tt('spedtl.overdue_short', 'overdue')) : ''}{p.urgent > 0 ? (', ' + p.urgent + ' ' + tt('spedtl.urgent_short', 'due ≤14d')) : ''}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}
@@ -619,10 +698,58 @@ function SpedTimelinesPanel(props) {
                 </div>
               </div>
 
-              <h3 className="text-sm font-bold text-slate-700 mb-1">{tt('spedtl.all_title', 'All timelines')}</h3>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <h3 className="text-sm font-bold text-slate-700">{tt('spedtl.all_title', 'All timelines')} ({cases.length})</h3>
+                {cases.length >= 4 && (
+                  <div data-spedtl-cases-filter="true" className="flex flex-wrap items-center gap-1.5">
+                    {[
+                      { id: 'all', label: tt('spedtl.filter_all', 'All') + ' (' + cases.length + ')' },
+                      { id: 'open', label: tt('spedtl.filter_open', 'Open') + ' (' + openCases.length + ')' },
+                      { id: 'done', label: tt('spedtl.filter_done', 'Completed') + ' (' + doneCount + ')' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        data-spedtl-status-filter={opt.id}
+                        aria-pressed={casesStatusFilter === opt.id}
+                        onClick={() => setCasesStatusFilter(opt.id)}
+                        className={'min-h-11 px-2.5 py-1 rounded-full border text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ' + (casesStatusFilter === opt.id ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100')}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                    <input
+                      id="spedtl-cases-search"
+                      type="search"
+                      value={casesQuery}
+                      onChange={(e) => setCasesQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
+                        if (e.key === 'Escape' && casesQuery) { e.preventDefault(); e.stopPropagation(); setCasesQuery(''); }
+                      }}
+                      aria-label={tt('spedtl.search_aria', 'Filter timelines by student code or provider')}
+                      placeholder={tt('spedtl.search_placeholder', 'Find code or provider…')}
+                      className="min-h-11 w-44 rounded-lg border border-slate-300 bg-white px-2.5 text-xs text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
+                    />
+                  </div>
+                )}
+              </div>
               {cases.length === 0 && <p className="text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3">{tt('spedtl.none', 'Nothing tracked yet.')}</p>}
+              {cases.length > 0 && filteredAllCases.length === 0 && (
+                <div className="bg-white border border-slate-300 rounded-xl p-3 mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm text-slate-700">{tt('spedtl.no_matching_cases', 'No timelines match your filter.')}</p>
+                  <button
+                    type="button"
+                    data-spedtl-cases-clear="true"
+                    onClick={() => { setCasesStatusFilter('all'); setCasesQuery(''); }}
+                    className="min-h-11 px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
+                  >
+                    {tt('spedtl.clear_filters', 'Clear filters')}
+                  </button>
+                </div>
+              )}
               <ul className="space-y-1">
-                {rollup.cases.map((c) => (
+                {filteredAllCases.map((c) => (
                   <li key={c.id} className={'flex items-center gap-2 p-2 rounded-xl border text-xs ' + (c.band === 'overdue' ? 'bg-rose-50 border-rose-300' : 'bg-white border-slate-300')}>
                     <label className="min-w-11 min-h-11 inline-flex items-center justify-center shrink-0 cursor-pointer">
                       <input type="checkbox" checked={!!c.completedAt} onChange={(e) => setDone(c.id, e.target.checked)}

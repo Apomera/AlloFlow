@@ -29,7 +29,7 @@ def is_allowed_host(host_header):
     if not isinstance(host_header, str):
         return False
     raw = host_header.strip().lower()
-    if not raw or any(ord(c) <= 32 or ord(c) == 127 for c in raw):
+    if not raw or len(raw) > 255 or any(ord(c) <= 32 or ord(c) == 127 for c in raw):
         return False
     if raw.startswith("["):
         end = raw.find("]")
@@ -37,12 +37,19 @@ def is_allowed_host(host_header):
             return False
         host = raw[1:end]
         rest = raw[end + 1:]
-        if rest and not re.fullmatch(r":\d{1,5}", rest):
-            return False
+        if rest:
+            if not re.fullmatch(r":\d{1,5}", rest):
+                return False
+            port_num = int(rest[1:])
+            if not (1 <= port_num <= 65535):
+                return False
     else:
         if ":" in raw:
             host, port = raw.rsplit(":", 1)
             if not re.fullmatch(r"\d{1,5}", port):
+                return False
+            port_num = int(port)
+            if not (1 <= port_num <= 65535):
                 return False
         else:
             host = raw
@@ -155,6 +162,10 @@ MAX_CONCURRENT_REQUESTS = 4
 _speech_slots = threading.BoundedSemaphore(MAX_CONCURRENT_REQUESTS)
 
 
+class AudioTooLargeError(RuntimeError):
+    """Generated audio stream exceeded MAX_AUDIO_BYTES."""
+
+
 def generate_speech_sync(text, voice, speed, language=None):
     """Generate speech using edge-tts (runs async internally)."""
     import edge_tts
@@ -171,7 +182,7 @@ def generate_speech_sync(text, voice, speed, language=None):
                 if chunk["type"] == "audio":
                     piece = chunk["data"]
                     if len(audio_data) + len(piece) > MAX_AUDIO_BYTES:
-                        raise ValueError("Generated audio exceeded maximum allowed size")
+                        raise AudioTooLargeError("Generated audio exceeded maximum allowed size")
                     audio_data.extend(piece)
         finally:
             await stream.aclose()
@@ -205,7 +216,8 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
     def _check_auth(self):
         configured_token = (os.environ.get("ALLOFLOW_TTS_API_TOKEN") or "").strip()
         non_loopback = (HOST or "").strip().lower() not in LOOPBACK_HOSTS
-        if not configured_token and not non_loopback:
+        extra_origins = [v.strip() for v in os.environ.get("ALLOFLOW_TTS_ALLOWED_ORIGINS", "").split(",") if v.strip()]
+        if not configured_token and not non_loopback and not extra_origins:
             return True
         if not configured_token and non_loopback:
             self.send_response(403)
@@ -214,9 +226,18 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'{"error":"ALLOFLOW_TTS_API_TOKEN is required when binding beyond loopback."}')
             return False
+        if len(configured_token) < 32:
+            self.send_response(503)
+            self.send_header("Content-Type", "application/json")
+            self._add_cors_headers()
+            self.end_headers()
+            self.wfile.write(b'{"error":"Server misconfigured: ALLOFLOW_TTS_API_TOKEN (>=32 chars) is required when configured, non-loopback, or with extra origins."}')
+            return False
         auth_header = self.headers.get("Authorization") or ""
         provided = auth_header[7:].strip() if auth_header.startswith("Bearer ") else ""
-        if not provided or not hmac.compare_digest(provided, configured_token):
+        if (len(auth_header) > 1024
+                or not provided
+                or not hmac.compare_digest(provided.encode("utf-8"), configured_token.encode("utf-8"))):
             self.send_response(401)
             self.send_header("Content-Type", "application/json")
             self._add_cors_headers()
@@ -355,6 +376,12 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(audio_data)
 
+        except AudioTooLargeError:
+            self.send_response(413)
+            self.send_header("Content-Type", "application/json")
+            self._add_cors_headers()
+            self.end_headers()
+            self.wfile.write(b'{"error": "Generated audio exceeded maximum allowed size"}')
         except (ValueError, TypeError, OverflowError):
             self.send_response(400)
             self.send_header("Content-Type", "application/json")
@@ -407,6 +434,9 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    if (HOST or "").strip().lower() not in LOOPBACK_HOSTS:
+        if len((os.environ.get("ALLOFLOW_TTS_API_TOKEN") or "").strip()) < 32:
+            raise SystemExit("[EdgeTTS] Refusing to bind non-loopback host without ALLOFLOW_TTS_API_TOKEN (>=32 chars).")
     print(f"[EdgeTTS] 🎤 Starting TTS server on port {PORT}...")
     print(f"[EdgeTTS] Endpoint: POST /v1/audio/speech")
     print(f"[EdgeTTS] {len(VOICE_MAP)} voices across {len(set(v.split('-')[0]+'-'+v.split('-')[1] for v in VOICE_MAP.values()))}+ languages")

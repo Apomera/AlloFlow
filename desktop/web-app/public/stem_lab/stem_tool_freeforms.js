@@ -119,8 +119,24 @@ window.StemLab = window.StemLab || {
       '.theme-contrast #allo-free-forms .ff-card-svg { background: #000000 !important; border-color: #fbbf24 !important; }',
       '#allo-free-forms .ff-card-svg { background: linear-gradient(180deg, rgba(11,17,32,0.96), rgba(30,27,75,0.52)); border: 1px solid rgba(139,92,246,0.34); border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -6px 14px rgba(2,6,23,0.48); }',
       '#allo-free-forms .ff-stage-bg { background-color: #090e1d; background-image: radial-gradient(rgba(148,163,184,0.16) 1px, transparent 1px); background-size: 22px 22px; }',
+      // ── Live-motion SVG studio craft (GPU-composited transform/opacity/stroke-dashoffset) ──
+      '@keyframes ffOrbitDrift { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -24; } }',
+      '@keyframes ffGuideFlow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -18; } }',
+      '@keyframes ffCompassDrift { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }',
+      '@keyframes ffBeaconPulse { 0%, 100% { opacity: 0.52; transform: scale(0.92); } 50% { opacity: 1; transform: scale(1.16); } }',
+      '@keyframes ffAuraBreathe { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.48; } }',
+      '@keyframes ffSheenSweep { 0%, 62% { transform: translateX(-160px) skewX(-22deg); opacity: 0; } 72% { opacity: 0.85; } 88% { opacity: 0.7; } 100% { transform: translateX(340px) skewX(-22deg); opacity: 0; } }',
+      '#allo-free-forms .ff-orbit-drift { animation: ffOrbitDrift 6.5s linear infinite; }',
+      '#allo-free-forms .ff-guide-flow { animation: ffGuideFlow 3.4s linear infinite; }',
+      '#allo-free-forms .ff-compass-drift { animation: ffCompassDrift 9.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }',
+      '#allo-free-forms .ff-beacon-pulse { animation: ffBeaconPulse 2.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }',
+      '#allo-free-forms .ff-aura-breathe { animation: ffAuraBreathe 3.4s ease-in-out infinite; }',
+      '#allo-free-forms .ff-sheen-sweep { animation: ffSheenSweep 6.8s ease-in-out infinite; pointer-events: none; }',
+      '@media (prefers-reduced-motion: reduce) { #allo-free-forms .ff-orbit-drift, #allo-free-forms .ff-guide-flow, #allo-free-forms .ff-compass-drift, #allo-free-forms .ff-beacon-pulse, #allo-free-forms .ff-aura-breathe, #allo-free-forms .ff-sheen-sweep { animation: none !important; transform: none !important; } #allo-free-forms .ff-sheen-sweep { opacity: 0 !important; } #allo-free-forms .ff-beacon-pulse { opacity: 0.85 !important; } }',
+      '.theme-contrast #allo-free-forms .ff-deco-glow, .theme-contrast #allo-free-forms .ff-sheen-sweep { display: none !important; }',
+      '.theme-contrast #allo-free-forms .ff-orbit-drift, .theme-contrast #allo-free-forms .ff-guide-flow, .theme-contrast #allo-free-forms .ff-compass-drift, .theme-contrast #allo-free-forms .ff-beacon-pulse, .theme-contrast #allo-free-forms .ff-aura-breathe { animation: none !important; transform: none !important; }',
       '@media (max-width: 900px) { #allo-free-forms .ff-split { flex-direction: column !important; } #allo-free-forms .ff-sidebar { width: 100% !important; max-height: 46vh; } #allo-free-forms .ff-stage { min-height: 380px; } }',
-      '@media (forced-colors: active) { #allo-free-forms button, #allo-free-forms input, #allo-free-forms textarea { forced-color-adjust: auto; border: 1px solid CanvasText !important; } }'
+      '@media (forced-colors: active) { #allo-free-forms button, #allo-free-forms input, #allo-free-forms textarea { forced-color-adjust: auto; border: 1px solid CanvasText !important; } #allo-free-forms .ff-deco-glow, #allo-free-forms .ff-sheen-sweep { display: none !important; } #allo-free-forms .ff-orbit-drift, #allo-free-forms .ff-guide-flow, #allo-free-forms .ff-compass-drift, #allo-free-forms .ff-beacon-pulse, #allo-free-forms .ff-aura-breathe { animation: none !important; transform: none !important; } }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -583,7 +599,9 @@ window.StemLab = window.StemLab || {
           setSelectedId(null); setSelPart(0);
           setDoc(function(d) { restored.rev = ((d && d.rev) || restored.rev || 0) + 1; return restored; });
           announceToSR(t('stem.freeforms.sr_undone', 'Undone'));
-        } catch (e) {}
+        } catch (e) {
+          if (typeof console !== 'undefined' && typeof console.warn === 'function') console.warn('[Freeforms] Undo restore failed:', e && e.message || e);
+        }
       };
       var onRootKeyDown = function(e) {
         if (!(e.ctrlKey || e.metaKey) || (e.key !== 'z' && e.key !== 'Z') || e.shiftKey) return;
@@ -1062,65 +1080,81 @@ window.StemLab = window.StemLab || {
           h('linearGradient', { id: 'ff-amb-' + uid, x1: '0', y1: '0', x2: '0', y2: '1' },
             h('stop', { offset: '0%', stopColor: '#fde68a' }),
             h('stop', { offset: '100%', stopColor: '#d97706' })
+          ),
+          h('linearGradient', { id: 'ff-sheen-' + uid, x1: '0', y1: '0', x2: '1', y2: '0' },
+            h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: '0' }),
+            h('stop', { offset: '50%', stopColor: '#e0e7ff', stopOpacity: '0.16' }),
+            h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: '0' })
+          ),
+          h('clipPath', { id: 'ff-clip-' + uid },
+            h('rect', { x: 1, y: 1, width: 118, height: 52, rx: 7 })
           )
         );
         var bgGrid = [
           h('rect', { key: 'plate', x: 1, y: 1, width: 118, height: 52, rx: 7, fill: 'url(#ff-bg-' + uid + ')', stroke: 'rgba(148,163,184,0.22)', strokeWidth: 0.9 }),
-          h('rect', { key: 'aura', x: 1, y: 1, width: 118, height: 52, rx: 7, fill: 'url(#ff-aura-' + uid + ')' }),
-          h('line', { key: 'g1', x1: 8, y1: 46, x2: 112, y2: 46, stroke: 'rgba(148,163,184,0.24)', strokeWidth: 0.9, strokeDasharray: '2 3' }),
+          h('rect', { key: 'aura', className: 'ff-deco-glow', x: 1, y: 1, width: 118, height: 52, rx: 7, fill: 'url(#ff-aura-' + uid + ')' }),
+          h('line', { key: 'g1', className: 'ff-guide-flow', x1: 8, y1: 46, x2: 112, y2: 46, stroke: 'rgba(148,163,184,0.26)', strokeWidth: 0.9, strokeDasharray: '2 4' }),
           h('line', { key: 'g2', x1: 60, y1: 6, x2: 60, y2: 48, stroke: 'rgba(148,163,184,0.14)', strokeWidth: 0.8 }),
+          h('circle', { key: 'compass', className: 'ff-orbit-drift ff-deco-glow', cx: 60, cy: 27, r: 21, fill: 'none', stroke: 'rgba(167,139,250,0.15)', strokeWidth: 0.75, strokeDasharray: '3 5' }),
           h('path', { key: 'ticks', d: 'M6 10 V6 H10 M114 10 V6 H110 M6 44 V48 H10 M114 44 V48 H110', fill: 'none', stroke: 'rgba(167,139,250,0.42)', strokeWidth: 1, strokeLinecap: 'round' })
         ];
+        var sheenOverlay = h('g', { key: 'sheen', clipPath: 'url(#ff-clip-' + uid + ')' },
+          h('rect', { className: 'ff-sheen-sweep', x: 0, y: 0, width: 32, height: 54, fill: 'url(#ff-sheen-' + uid + ')' })
+        );
         var shapes = [];
         if (type === 'Structured Outline') {
           shapes = [
-            h('path', { key: 'pg', d: 'M30 19 L30 27 L34 27 M52 32 L52 40 L56 40', stroke: 'rgba(56,189,248,0.35)', strokeWidth: 4, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
-            h('path', { key: 'p', d: 'M30 19 L30 27 L34 27 M52 32 L52 40 L56 40', stroke: '#e2e8f0', strokeWidth: 1.5, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            h('path', { key: 'pg', className: 'ff-deco-glow', d: 'M30 19 L30 27 L34 27 M52 32 L52 40 L56 40', stroke: 'rgba(56,189,248,0.35)', strokeWidth: 4, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            h('path', { key: 'p', className: 'ff-guide-flow', d: 'M30 19 L30 27 L34 27 M52 32 L52 40 L56 40', stroke: '#e2e8f0', strokeWidth: 1.5, strokeDasharray: '4 2', fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
             h('rect', { key: 's1', x: 14, y: 10, width: 32, height: 9, rx: 3, fill: 'url(#ff-vio-' + uid + ')', stroke: 'rgba(221,214,254,0.65)', strokeWidth: 0.8 }),
             h('line', { key: 'sh1', x1: 17, y1: 11.5, x2: 43, y2: 11.5, stroke: 'rgba(255,255,255,0.45)', strokeWidth: 1, strokeLinecap: 'round' }),
             h('rect', { key: 's2', x: 34, y: 23, width: 42, height: 9, rx: 3, fill: 'url(#ff-sky-' + uid + ')', stroke: 'rgba(186,230,253,0.65)', strokeWidth: 0.8 }),
             h('line', { key: 'sh2', x1: 37, y1: 24.5, x2: 73, y2: 24.5, stroke: 'rgba(255,255,255,0.45)', strokeWidth: 1, strokeLinecap: 'round' }),
             h('rect', { key: 's3', x: 56, y: 36, width: 48, height: 9, rx: 3, fill: 'url(#ff-em-' + uid + ')', stroke: 'rgba(167,243,208,0.65)', strokeWidth: 0.8 }),
-            h('line', { key: 'sh3', x1: 59, y1: 37.5, x2: 101, y2: 37.5, stroke: 'rgba(255,255,255,0.45)', strokeWidth: 1, strokeLinecap: 'round' })
+            h('line', { key: 'sh3', x1: 59, y1: 37.5, x2: 101, y2: 37.5, stroke: 'rgba(255,255,255,0.45)', strokeWidth: 1, strokeLinecap: 'round' }),
+            h('circle', { key: 'anc', className: 'ff-beacon-pulse', cx: 19, cy: 14.5, r: 2, fill: '#fef08a' })
           ];
         } else if (type === 'Venn Diagram') {
           shapes = [
-            h('circle', { key: 'c1g', cx: 46, cy: 27, r: 19, fill: 'rgba(139,92,246,0.28)', stroke: 'rgba(167,139,250,0.28)', strokeWidth: 4.5 }),
-            h('circle', { key: 'c2g', cx: 74, cy: 27, r: 19, fill: 'rgba(56,189,248,0.24)', stroke: 'rgba(56,189,248,0.28)', strokeWidth: 4.5 }),
+            h('circle', { key: 'c1g', className: 'ff-deco-glow', cx: 46, cy: 27, r: 19, fill: 'rgba(139,92,246,0.28)', stroke: 'rgba(167,139,250,0.28)', strokeWidth: 4.5 }),
+            h('circle', { key: 'c2g', className: 'ff-deco-glow', cx: 74, cy: 27, r: 19, fill: 'rgba(56,189,248,0.24)', stroke: 'rgba(56,189,248,0.28)', strokeWidth: 4.5 }),
             h('circle', { key: 'c1', cx: 46, cy: 27, r: 19, fill: 'none', stroke: '#c4b5fd', strokeWidth: 1.8 }),
             h('circle', { key: 'c2', cx: 74, cy: 27, r: 19, fill: 'none', stroke: '#7dd3fc', strokeWidth: 1.8 }),
-            h('circle', { key: 'mg', cx: 60, cy: 27, r: 7, fill: 'rgba(251,191,36,0.25)' }),
+            h('circle', { key: 'mg', className: 'ff-beacon-pulse ff-deco-glow', cx: 60, cy: 27, r: 7, fill: 'rgba(251,191,36,0.28)' }),
             h('circle', { key: 'm', cx: 60, cy: 27, r: 3.6, fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 0.9 })
           ];
         } else if (type === 'T-Chart') {
           shapes = [
             h('rect', { key: 'l', x: 18, y: 12, width: 32, height: 32, rx: 4, fill: 'rgba(139,92,246,0.24)', stroke: '#a78bfa', strokeWidth: 1.6 }),
             h('rect', { key: 'r', x: 70, y: 12, width: 32, height: 32, rx: 4, fill: 'rgba(56,189,248,0.24)', stroke: '#38bdf8', strokeWidth: 1.6 }),
-            h('line', { key: 'barg', x1: 16, y1: 12, x2: 104, y2: 12, stroke: 'rgba(248,250,252,0.28)', strokeWidth: 5, strokeLinecap: 'round' }),
+            h('line', { key: 'barg', className: 'ff-deco-glow', x1: 16, y1: 12, x2: 104, y2: 12, stroke: 'rgba(248,250,252,0.28)', strokeWidth: 5, strokeLinecap: 'round' }),
             h('line', { key: 'bar', x1: 16, y1: 12, x2: 104, y2: 12, stroke: '#f8fafc', strokeWidth: 2, strokeLinecap: 'round' }),
-            h('line', { key: 'div', x1: 60, y1: 13, x2: 60, y2: 45, stroke: '#cbd5e1', strokeWidth: 1.4, strokeDasharray: '3 2' }),
+            h('line', { key: 'div', className: 'ff-guide-flow', x1: 60, y1: 13, x2: 60, y2: 45, stroke: '#cbd5e1', strokeWidth: 1.4, strokeDasharray: '3 3' }),
+            h('circle', { key: 'hubg', className: 'ff-beacon-pulse ff-deco-glow', cx: 60, cy: 12, r: 5.5, fill: 'rgba(251,191,36,0.26)' }),
             h('circle', { key: 'hub', cx: 60, cy: 12, r: 2.6, fill: 'url(#ff-amb-' + uid + ')' })
           ];
         } else if (type === 'Fishbone') {
           shapes = [
-            h('line', { key: 'spg', x1: 16, y1: 27, x2: 96, y2: 27, stroke: 'rgba(226,232,240,0.24)', strokeWidth: 5, strokeLinecap: 'round' }),
+            h('line', { key: 'spg', className: 'ff-deco-glow', x1: 16, y1: 27, x2: 96, y2: 27, stroke: 'rgba(226,232,240,0.24)', strokeWidth: 5, strokeLinecap: 'round' }),
             h('line', { key: 'sp', x1: 16, y1: 27, x2: 96, y2: 27, stroke: '#f8fafc', strokeWidth: 2, strokeLinecap: 'round' }),
+            h('line', { key: 'spflow', className: 'ff-guide-flow ff-deco-glow', x1: 18, y1: 27, x2: 94, y2: 27, stroke: '#fde68a', strokeWidth: 1.1, strokeDasharray: '5 7', strokeLinecap: 'round' }),
             h('polygon', { key: 'hd', points: '96,19 110,27 96,35', fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 0.9, strokeLinejoin: 'round' }),
             h('line', { key: 'r1', x1: 30, y1: 11, x2: 42, y2: 27, stroke: '#a78bfa', strokeWidth: 2, strokeLinecap: 'round' }),
             h('line', { key: 'r2', x1: 54, y1: 11, x2: 66, y2: 27, stroke: '#38bdf8', strokeWidth: 2, strokeLinecap: 'round' }),
             h('line', { key: 'r3', x1: 30, y1: 43, x2: 42, y2: 27, stroke: '#34d399', strokeWidth: 2, strokeLinecap: 'round' }),
             h('line', { key: 'r4', x1: 54, y1: 43, x2: 66, y2: 27, stroke: '#f472b6', strokeWidth: 2, strokeLinecap: 'round' }),
-            h('circle', { key: 'b1', cx: 30, cy: 11, r: 2.4, fill: '#ddd6fe' }),
-            h('circle', { key: 'b2', cx: 54, cy: 11, r: 2.4, fill: '#bae6fd' }),
-            h('circle', { key: 'b3', cx: 30, cy: 43, r: 2.4, fill: '#a7f3d0' }),
-            h('circle', { key: 'b4', cx: 54, cy: 43, r: 2.4, fill: '#fbcfe8' })
+            h('circle', { key: 'b1', className: 'ff-beacon-pulse', cx: 30, cy: 11, r: 2.4, fill: '#ddd6fe' }),
+            h('circle', { key: 'b2', className: 'ff-beacon-pulse', cx: 54, cy: 11, r: 2.4, fill: '#bae6fd', style: { animationDelay: '0.6s' } }),
+            h('circle', { key: 'b3', className: 'ff-beacon-pulse', cx: 30, cy: 43, r: 2.4, fill: '#a7f3d0', style: { animationDelay: '1.2s' } }),
+            h('circle', { key: 'b4', className: 'ff-beacon-pulse', cx: 54, cy: 43, r: 2.4, fill: '#fbcfe8', style: { animationDelay: '1.8s' } })
           ];
         } else if (type === 'Cause and Effect') {
           shapes = [
-            h('path', { key: 'ag', d: 'M28 17 L47 25 M28 37 L47 29 M73 25 L92 17 M73 29 L92 37', stroke: 'rgba(148,163,184,0.28)', strokeWidth: 4, strokeLinecap: 'round' }),
-            h('path', { key: 'a', d: 'M28 17 L47 25 M28 37 L47 29 M73 25 L92 17 M73 29 L92 37', stroke: '#e2e8f0', strokeWidth: 1.5, strokeLinecap: 'round' }),
+            h('path', { key: 'ag', className: 'ff-deco-glow', d: 'M28 17 L47 25 M28 37 L47 29 M73 25 L92 17 M73 29 L92 37', stroke: 'rgba(148,163,184,0.28)', strokeWidth: 4, strokeLinecap: 'round' }),
+            h('path', { key: 'a', className: 'ff-guide-flow', d: 'M28 17 L47 25 M28 37 L47 29 M73 25 L92 17 M73 29 L92 37', stroke: '#e2e8f0', strokeWidth: 1.5, strokeDasharray: '4 2', strokeLinecap: 'round' }),
             h('circle', { key: 'c1', cx: 22, cy: 15, r: 5.5, fill: 'url(#ff-vio-' + uid + ')', stroke: '#ede9fe', strokeWidth: 0.9 }),
             h('circle', { key: 'c2', cx: 22, cy: 39, r: 5.5, fill: 'url(#ff-vio-' + uid + ')', stroke: '#ede9fe', strokeWidth: 0.9 }),
+            h('rect', { key: 'midg', className: 'ff-aura-breathe ff-deco-glow', x: 45, y: 15, width: 30, height: 24, rx: 7, fill: 'rgba(251,191,36,0.22)' }),
             h('rect', { key: 'mid', x: 48, y: 18, width: 24, height: 18, rx: 5, fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 1 }),
             h('line', { key: 'ms', x1: 52, y1: 20.5, x2: 68, y2: 20.5, stroke: 'rgba(255,255,255,0.55)', strokeWidth: 1, strokeLinecap: 'round' }),
             h('circle', { key: 'e1', cx: 98, cy: 15, r: 5.5, fill: 'url(#ff-em-' + uid + ')', stroke: '#d1fae5', strokeWidth: 0.9 }),
@@ -1132,21 +1166,24 @@ window.StemLab = window.StemLab || {
             h('rect', { key: 'q2', x: 66, y: 8, width: 38, height: 16, rx: 3.5, fill: 'rgba(56,189,248,0.26)', stroke: '#38bdf8', strokeWidth: 1.4 }),
             h('rect', { key: 'q3', x: 16, y: 30, width: 38, height: 16, rx: 3.5, fill: 'rgba(52,211,153,0.26)', stroke: '#34d399', strokeWidth: 1.4 }),
             h('rect', { key: 'q4', x: 66, y: 30, width: 38, height: 16, rx: 3.5, fill: 'rgba(244,114,182,0.26)', stroke: '#f472b6', strokeWidth: 1.4 }),
-            h('circle', { key: 'ctrg', cx: 60, cy: 27, r: 11.5, fill: 'rgba(251,191,36,0.22)' }),
+            h('circle', { key: 'ctrg', className: 'ff-beacon-pulse ff-deco-glow', cx: 60, cy: 27, r: 11.5, fill: 'rgba(251,191,36,0.24)' }),
             h('circle', { key: 'ctr', cx: 60, cy: 27, r: 8.2, fill: 'url(#ff-amb-' + uid + ')', stroke: '#0f172a', strokeWidth: 2 }),
             h('circle', { key: 'ctrh', cx: 57.5, cy: 24.5, r: 2, fill: 'rgba(255,255,255,0.55)' })
           ];
         } else if (type === 'KWL Chart') {
           shapes = [
-            h('path', { key: 'arcg', d: 'M20 38 Q60 8 100 32', stroke: 'rgba(56,189,248,0.3)', strokeWidth: 4.5, fill: 'none', strokeLinecap: 'round' }),
-            h('path', { key: 'arc', d: 'M20 38 Q60 8 100 32', stroke: '#cbd5e1', strokeWidth: 1.8, fill: 'none', strokeDasharray: '4 3', strokeLinecap: 'round' }),
+            h('path', { key: 'arcg', className: 'ff-deco-glow', d: 'M20 38 Q60 8 100 32', stroke: 'rgba(56,189,248,0.3)', strokeWidth: 4.5, fill: 'none', strokeLinecap: 'round' }),
+            h('path', { key: 'arc', className: 'ff-guide-flow', d: 'M20 38 Q60 8 100 32', stroke: '#cbd5e1', strokeWidth: 1.8, fill: 'none', strokeDasharray: '4 3', strokeLinecap: 'round' }),
             h('circle', { key: 'k', cx: 22, cy: 36, r: 7.5, fill: 'url(#ff-vio-' + uid + ')', stroke: '#ede9fe', strokeWidth: 1 }),
+            h('circle', { key: 'wg', className: 'ff-beacon-pulse ff-deco-glow', cx: 60, cy: 19, r: 12, fill: 'rgba(56,189,248,0.2)' }),
             h('circle', { key: 'w', cx: 60, cy: 19, r: 8.5, fill: 'url(#ff-sky-' + uid + ')', stroke: '#e0f2fe', strokeWidth: 1 }),
             h('circle', { key: 'l', cx: 98, cy: 32, r: 9, fill: 'url(#ff-em-' + uid + ')', stroke: '#d1fae5', strokeWidth: 1 })
           ];
         } else if (type === 'See-Think-Wonder') {
           shapes = [
             h('polygon', { key: 'tri', points: '60,11 26,41 94,41', fill: 'rgba(139,92,246,0.16)', stroke: '#cbd5e1', strokeWidth: 1.5, strokeLinejoin: 'round' }),
+            h('polygon', { key: 'trif', className: 'ff-guide-flow ff-deco-glow', points: '60,11 26,41 94,41', fill: 'none', stroke: '#a78bfa', strokeWidth: 1.2, strokeDasharray: '4 5', strokeLinejoin: 'round' }),
+            h('circle', { key: 'n1g', className: 'ff-beacon-pulse ff-deco-glow', cx: 60, cy: 11, r: 9.5, fill: 'rgba(56,189,248,0.22)' }),
             h('circle', { key: 'n1', cx: 60, cy: 11, r: 6.5, fill: 'url(#ff-sky-' + uid + ')', stroke: '#e0f2fe', strokeWidth: 1 }),
             h('circle', { key: 'n2', cx: 26, cy: 41, r: 6.5, fill: 'url(#ff-vio-' + uid + ')', stroke: '#ede9fe', strokeWidth: 1 }),
             h('circle', { key: 'n3', cx: 94, cy: 41, r: 6.5, fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 1 })
@@ -1158,29 +1195,33 @@ window.StemLab = window.StemLab || {
             h('rect', { key: 'p3', x: 82, y: 31, width: 14, height: 15, rx: 2.5, fill: 'url(#ff-em-' + uid + ')', stroke: 'rgba(167,243,208,0.6)', strokeWidth: 0.8 }),
             h('rect', { key: 'beam', x: 20, y: 22, width: 80, height: 7, rx: 2.5, fill: 'url(#ff-sky-' + uid + ')', stroke: 'rgba(186,230,253,0.65)', strokeWidth: 0.8 }),
             h('polygon', { key: 'roof', points: '60,7 18,21 102,21', fill: 'url(#ff-vio-' + uid + ')', stroke: '#ddd6fe', strokeWidth: 0.9, strokeLinejoin: 'round' }),
+            h('circle', { key: 'apexg', className: 'ff-beacon-pulse ff-deco-glow', cx: 60, cy: 14, r: 5, fill: 'rgba(254,240,138,0.28)' }),
             h('circle', { key: 'apex', cx: 60, cy: 14, r: 2.2, fill: '#fef08a' })
           ];
         } else if (type === 'Story Map') {
           shapes = [
-            h('path', { key: 'mtg', d: 'M12 44 L36 30 L64 10 L86 29 L108 44', stroke: 'rgba(167,139,250,0.34)', strokeWidth: 6, fill: 'none', strokeLinejoin: 'round', strokeLinecap: 'round' }),
+            h('path', { key: 'mtg', className: 'ff-deco-glow', d: 'M12 44 L36 30 L64 10 L86 29 L108 44', stroke: 'rgba(167,139,250,0.34)', strokeWidth: 6, fill: 'none', strokeLinejoin: 'round', strokeLinecap: 'round' }),
             h('path', { key: 'mt', d: 'M12 44 L36 30 L64 10 L86 29 L108 44', stroke: '#c4b5fd', strokeWidth: 2.2, fill: 'rgba(139,92,246,0.2)', strokeLinejoin: 'round', strokeLinecap: 'round' }),
-            h('circle', { key: 'pkg', cx: 64, cy: 10, r: 7.5, fill: 'rgba(251,191,36,0.25)' }),
+            h('path', { key: 'mtf', className: 'ff-guide-flow ff-deco-glow', d: 'M12 44 L36 30 L64 10 L86 29 L108 44', stroke: '#fef08a', strokeWidth: 1.2, strokeDasharray: '4 8', fill: 'none', strokeLinejoin: 'round', strokeLinecap: 'round' }),
+            h('circle', { key: 'pkg', className: 'ff-beacon-pulse ff-deco-glow', cx: 64, cy: 10, r: 7.5, fill: 'rgba(251,191,36,0.28)' }),
             h('circle', { key: 'pk', cx: 64, cy: 10, r: 4.5, fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 1 }),
             h('circle', { key: 'p1', cx: 36, cy: 30, r: 3.4, fill: 'url(#ff-sky-' + uid + ')', stroke: '#e0f2fe', strokeWidth: 0.8 }),
             h('circle', { key: 'p2', cx: 86, cy: 29, r: 3.4, fill: 'url(#ff-em-' + uid + ')', stroke: '#d1fae5', strokeWidth: 0.8 })
           ];
         } else if (type === 'Flow Chart') {
           shapes = [
-            h('path', { key: 'flg', d: 'M18 14 H56 C70 14 70 27 56 27 H44 C30 27 30 41 44 41 H98', stroke: 'rgba(56,189,248,0.3)', strokeWidth: 5.5, fill: 'none', strokeLinecap: 'round' }),
+            h('path', { key: 'flg', className: 'ff-deco-glow', d: 'M18 14 H56 C70 14 70 27 56 27 H44 C30 27 30 41 44 41 H98', stroke: 'rgba(56,189,248,0.3)', strokeWidth: 5.5, fill: 'none', strokeLinecap: 'round' }),
             h('path', { key: 'fl', d: 'M18 14 H56 C70 14 70 27 56 27 H44 C30 27 30 41 44 41 H98', stroke: '#7dd3fc', strokeWidth: 2, fill: 'none', strokeLinecap: 'round' }),
+            h('path', { key: 'flf', className: 'ff-guide-flow ff-deco-glow', d: 'M18 14 H56 C70 14 70 27 56 27 H44 C30 27 30 41 44 41 H98', stroke: '#fef08a', strokeWidth: 1.3, strokeDasharray: '5 7', fill: 'none', strokeLinecap: 'round' }),
             h('circle', { key: 'a', cx: 20, cy: 14, r: 4.5, fill: 'url(#ff-vio-' + uid + ')', stroke: '#ede9fe', strokeWidth: 0.9 }),
+            h('circle', { key: 'bg', className: 'ff-beacon-pulse ff-deco-glow', cx: 52, cy: 27, r: 8, fill: 'rgba(251,191,36,0.24)' }),
             h('circle', { key: 'b', cx: 52, cy: 27, r: 4.8, fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 0.9 }),
             h('circle', { key: 'c', cx: 96, cy: 41, r: 4.5, fill: 'url(#ff-em-' + uid + ')', stroke: '#d1fae5', strokeWidth: 0.9 })
           ];
         } else if (type === 'Key Concept Map') {
           shapes = [
-            h('ellipse', { key: 'o1', cx: 60, cy: 27, rx: 40, ry: 15, fill: 'none', stroke: 'rgba(148,163,184,0.48)', strokeWidth: 1.4, strokeDasharray: '3 2' }),
-            h('circle', { key: 'sung', cx: 60, cy: 27, r: 12, fill: 'rgba(251,191,36,0.22)' }),
+            h('ellipse', { key: 'o1', className: 'ff-orbit-drift', cx: 60, cy: 27, rx: 40, ry: 15, fill: 'none', stroke: 'rgba(148,163,184,0.52)', strokeWidth: 1.4, strokeDasharray: '4 4' }),
+            h('circle', { key: 'sung', className: 'ff-beacon-pulse ff-deco-glow', cx: 60, cy: 27, r: 12, fill: 'rgba(251,191,36,0.24)' }),
             h('circle', { key: 'sun', cx: 60, cy: 27, r: 8.2, fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 1 }),
             h('circle', { key: 'm1', cx: 22, cy: 24, r: 5, fill: 'url(#ff-vio-' + uid + ')', stroke: '#ede9fe', strokeWidth: 0.9 }),
             h('circle', { key: 'm2', cx: 96, cy: 22, r: 5, fill: 'url(#ff-sky-' + uid + ')', stroke: '#e0f2fe', strokeWidth: 0.9 }),
@@ -1188,10 +1229,10 @@ window.StemLab = window.StemLab || {
           ];
         } else if (type === 'Problem Solution') {
           shapes = [
-            h('line', { key: 'l1', x1: 50, y1: 27, x2: 24, y2: 18, stroke: '#cbd5e1', strokeWidth: 1.5 }),
-            h('line', { key: 'l2', x1: 70, y1: 27, x2: 96, y2: 18, stroke: '#cbd5e1', strokeWidth: 1.5 }),
-            h('line', { key: 'l3', x1: 60, y1: 37, x2: 60, y2: 46, stroke: '#cbd5e1', strokeWidth: 1.5 }),
-            h('polygon', { key: 'prg', points: '60,14 73,27 60,40 47,27', fill: 'rgba(244,63,94,0.25)' }),
+            h('line', { key: 'l1', className: 'ff-guide-flow', x1: 50, y1: 27, x2: 24, y2: 18, stroke: '#cbd5e1', strokeWidth: 1.5, strokeDasharray: '4 2' }),
+            h('line', { key: 'l2', className: 'ff-guide-flow', x1: 70, y1: 27, x2: 96, y2: 18, stroke: '#cbd5e1', strokeWidth: 1.5, strokeDasharray: '4 2' }),
+            h('line', { key: 'l3', className: 'ff-guide-flow', x1: 60, y1: 37, x2: 60, y2: 46, stroke: '#cbd5e1', strokeWidth: 1.5, strokeDasharray: '4 2' }),
+            h('polygon', { key: 'prg', className: 'ff-beacon-pulse ff-deco-glow', points: '60,14 73,27 60,40 47,27', fill: 'rgba(244,63,94,0.28)' }),
             h('polygon', { key: 'pr', points: '60,17 70,27 60,37 50,27', fill: '#fb7185', stroke: '#ffe4e6', strokeWidth: 1, strokeLinejoin: 'round' }),
             h('circle', { key: 's1', cx: 22, cy: 17, r: 6, fill: 'url(#ff-em-' + uid + ')', stroke: '#d1fae5', strokeWidth: 0.9 }),
             h('circle', { key: 's2', cx: 98, cy: 17, r: 6, fill: 'url(#ff-sky-' + uid + ')', stroke: '#e0f2fe', strokeWidth: 0.9 }),
@@ -1201,11 +1242,11 @@ window.StemLab = window.StemLab || {
           shapes = [
             h('polygon', { key: 'pl1', points: '24,18 54,10 74,20 44,28', fill: 'rgba(139,92,246,0.42)', stroke: '#c4b5fd', strokeWidth: 1.4, strokeLinejoin: 'round' }),
             h('polygon', { key: 'pl2', points: '44,32 76,24 98,34 66,42', fill: 'rgba(56,189,248,0.38)', stroke: '#7dd3fc', strokeWidth: 1.4, strokeLinejoin: 'round' }),
-            h('circle', { key: 'st1', cx: 34, cy: 14, r: 2.8, fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 0.7 }),
-            h('circle', { key: 'st2', cx: 88, cy: 16, r: 2.8, fill: 'url(#ff-em-' + uid + ')', stroke: '#d1fae5', strokeWidth: 0.7 })
+            h('circle', { key: 'st1', className: 'ff-beacon-pulse', cx: 34, cy: 14, r: 2.8, fill: 'url(#ff-amb-' + uid + ')', stroke: '#fef3c7', strokeWidth: 0.7 }),
+            h('circle', { key: 'st2', className: 'ff-beacon-pulse', cx: 88, cy: 16, r: 2.8, fill: 'url(#ff-em-' + uid + ')', stroke: '#d1fae5', strokeWidth: 0.7, style: { animationDelay: '1.1s' } })
           ];
         }
-        return h('svg', svgProps, defs, bgGrid, shapes);
+        return h('svg', svgProps, defs, bgGrid, shapes, sheenOverlay);
       };
 
       // Live 2D topology minimap of the student's current composition (always crisp even before/without WebGL).
@@ -1235,28 +1276,43 @@ window.StemLab = window.StemLab || {
               h('stop', { offset: '0%', stopColor: '#ddd6fe' }),
               h('stop', { offset: '55%', stopColor: '#7c3aed' }),
               h('stop', { offset: '100%', stopColor: '#4c1d95' })
+            ),
+            h('linearGradient', { id: 'ff-topo-sheen', x1: '0', y1: '0', x2: '1', y2: '0' },
+              h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: '0' }),
+              h('stop', { offset: '50%', stopColor: '#c4b5fd', stopOpacity: '0.14' }),
+              h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: '0' })
+            ),
+            h('clipPath', { id: 'ff-topo-clip' },
+              h('rect', { x: 1, y: 1, width: 278, height: 122, rx: 10 })
             )
           ),
           h('rect', { x: 1, y: 1, width: 278, height: 122, rx: 10, fill: 'url(#ff-topo-bg)', stroke: '#334155', strokeWidth: 1.1 }),
-          h('rect', { x: 1, y: 1, width: 278, height: 122, rx: 10, fill: 'url(#ff-topo-aura)' }),
-          h('line', { x1: 14, y1: cy, x2: 266, y2: cy, stroke: 'rgba(148,163,184,0.12)', strokeWidth: 0.8, strokeDasharray: '2 4' }),
-          h('line', { x1: cx, y1: 10, x2: cx, y2: 114, stroke: 'rgba(148,163,184,0.12)', strokeWidth: 0.8, strokeDasharray: '2 4' }),
+          h('rect', { className: 'ff-deco-glow', x: 1, y: 1, width: 278, height: 122, rx: 10, fill: 'url(#ff-topo-aura)' }),
+          h('line', { className: 'ff-guide-flow', x1: 14, y1: cy, x2: 266, y2: cy, stroke: 'rgba(148,163,184,0.14)', strokeWidth: 0.8, strokeDasharray: '2 4' }),
+          h('line', { className: 'ff-guide-flow', x1: cx, y1: 10, x2: cx, y2: 114, stroke: 'rgba(148,163,184,0.14)', strokeWidth: 0.8, strokeDasharray: '2 4' }),
           h('path', { d: 'M8 14 V8 H14 M272 14 V8 H266 M8 110 V116 H14 M272 110 V116 H266', fill: 'none', stroke: 'rgba(167,139,250,0.45)', strokeWidth: 1.1, strokeLinecap: 'round' }),
-          h('ellipse', { cx: cx, cy: cy, rx: 94, ry: 38, fill: 'none', stroke: 'rgba(148,163,184,0.22)', strokeWidth: 1, strokeDasharray: '3 3' }),
-          h('ellipse', { cx: cx, cy: cy, rx: 52, ry: 21, fill: 'none', stroke: 'rgba(167,139,250,0.16)', strokeWidth: 0.8 }),
+          h('ellipse', { className: 'ff-orbit-drift', cx: cx, cy: cy, rx: 94, ry: 38, fill: 'none', stroke: 'rgba(148,163,184,0.26)', strokeWidth: 1, strokeDasharray: '4 4' }),
+          h('g', { className: 'ff-compass-drift ff-deco-glow' },
+            h('ellipse', { cx: cx, cy: cy, rx: 52, ry: 21, fill: 'none', stroke: 'rgba(167,139,250,0.22)', strokeWidth: 0.85, strokeDasharray: '6 4' }),
+            h('line', { x1: cx - 22, y1: cy, x2: cx - 16, y2: cy, stroke: 'rgba(196,181,253,0.45)', strokeWidth: 0.9 }),
+            h('line', { x1: cx + 16, y1: cy, x2: cx + 22, y2: cy, stroke: 'rgba(196,181,253,0.45)', strokeWidth: 0.9 }),
+            h('line', { x1: cx, y1: cy - 22, x2: cx, y2: cy - 16, stroke: 'rgba(196,181,253,0.45)', strokeWidth: 0.9 }),
+            h('line', { x1: cx, y1: cy + 16, x2: cx, y2: cy + 22, stroke: 'rgba(196,181,253,0.45)', strokeWidth: 0.9 })
+          ),
           gNodes.map(function(gn) {
             return h('g', { key: 'ln-' + gn.g.id },
-              h('line', { x1: cx, y1: cy, x2: gn.x, y2: gn.y, stroke: gn.color, strokeOpacity: 0.22, strokeWidth: 4.5, strokeLinecap: 'round' }),
-              h('line', { x1: cx, y1: cy, x2: gn.x, y2: gn.y, stroke: gn.color, strokeOpacity: 0.72, strokeWidth: 1.5, strokeLinecap: 'round' })
+              h('line', { className: 'ff-deco-glow', x1: cx, y1: cy, x2: gn.x, y2: gn.y, stroke: gn.color, strokeOpacity: 0.22, strokeWidth: 4.5, strokeLinecap: 'round' }),
+              h('line', { x1: cx, y1: cy, x2: gn.x, y2: gn.y, stroke: gn.color, strokeOpacity: 0.65, strokeWidth: 1.4, strokeLinecap: 'round' }),
+              h('line', { className: 'ff-guide-flow ff-deco-glow', x1: cx, y1: cy, x2: gn.x, y2: gn.y, stroke: '#f8fafc', strokeOpacity: 0.5, strokeWidth: 1, strokeDasharray: '3 6', strokeLinecap: 'round' })
             );
           }),
-          h('circle', { cx: cx, cy: cy, r: 14, fill: 'rgba(124,58,237,0.2)' }),
+          h('circle', { className: 'ff-beacon-pulse ff-deco-glow', cx: cx, cy: cy, r: 14, fill: 'rgba(124,58,237,0.24)' }),
           h('circle', { cx: cx, cy: cy, r: 9.2, fill: 'url(#ff-topo-core)', stroke: '#ddd6fe', strokeWidth: 1.6 }),
           h('circle', { cx: cx - 2.6, cy: cy - 2.8, r: 2.2, fill: 'rgba(255,255,255,0.55)' }),
-          gNodes.map(function(gn) {
+          gNodes.map(function(gn, gi) {
             var items = gn.g.items || [];
             return h('g', { key: 'gn-' + gn.g.id },
-              h('circle', { cx: gn.x, cy: gn.y, r: 10, fill: gn.color, fillOpacity: 0.18 }),
+              h('circle', { className: 'ff-aura-breathe ff-deco-glow', cx: gn.x, cy: gn.y, r: 10.5, fill: gn.color, fillOpacity: 0.2, style: { animationDelay: (gi * 0.45) + 's' } }),
               h('circle', { cx: gn.x, cy: gn.y, r: 6.5, fill: gn.color, stroke: '#0f172a', strokeWidth: 1.5 }),
               h('circle', { cx: gn.x - 1.8, cy: gn.y - 1.8, r: 1.6, fill: 'rgba(255,255,255,0.5)' }),
               items.slice(0, 6).map(function(it, ii) {
@@ -1266,8 +1322,8 @@ window.StemLab = window.StemLab || {
                 var isSel = selectedId === it.id;
                 var hasArt = !!(d.nodeArt && d.nodeArt[it.id]);
                 return h('g', { key: it.id },
-                  isSel ? h('circle', { cx: ix, cy: iy, r: 7.5, fill: 'none', stroke: '#facc15', strokeWidth: 1.1, strokeDasharray: '2 2' }) : null,
-                  hasArt ? h('circle', { cx: ix, cy: iy, r: 5.8, fill: 'rgba(251,191,36,0.24)' }) : null,
+                  isSel ? h('circle', { className: 'ff-beacon-pulse', cx: ix, cy: iy, r: 7.5, fill: 'none', stroke: '#facc15', strokeWidth: 1.2, strokeDasharray: '2 2' }) : null,
+                  hasArt ? h('circle', { className: 'ff-beacon-pulse ff-deco-glow', cx: ix, cy: iy, r: 5.8, fill: 'rgba(251,191,36,0.28)' }) : null,
                   h('circle', {
                     cx: ix, cy: iy, r: isSel ? 4.8 : 3.4,
                     fill: hasArt ? '#fbbf24' : '#f1f5f9',
@@ -1277,7 +1333,10 @@ window.StemLab = window.StemLab || {
                 );
               })
             );
-          })
+          }),
+          h('g', { clipPath: 'url(#ff-topo-clip)' },
+            h('rect', { className: 'ff-sheen-sweep', x: 0, y: 0, width: 46, height: 124, fill: 'url(#ff-topo-sheen)' })
+          )
         );
       };
 

@@ -43,7 +43,10 @@ function validateRequest(operation, payload) {
   return body;
 }
 async function boundedJson(response) {
-  if (!/^application\/json(?:\s*;|$)/i.test(response.headers.get('content-type') || '')) fail('bad-response', 'The image service returned an invalid response.', 502);
+  if (!/^application\/json(?:\s*;|$)/i.test(response.headers.get('content-type') || '')) {
+    try { await response.body?.cancel?.(); } catch (_) {}
+    fail('bad-response', 'The image service returned an invalid response.', 502);
+  }
   const reader = response.body?.getReader();
   if (!reader) fail('bad-response', 'The image service returned no image.', 502);
   let bytes = 0; const storage = Buffer.allocUnsafe(MAX_JSON_BYTES);

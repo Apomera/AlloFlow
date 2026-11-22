@@ -13,6 +13,17 @@
   function create(THREE, scene, options) {
     options = options || {};
     var high = options.quality !== 'low', resources = [], disposed = false, mode = 'guided';
+    var highContrast = !!options.highContrast;
+    if (!highContrast) {
+      try {
+        if (typeof document !== 'undefined') {
+          var docEl = document.documentElement, bodyEl = document.body;
+          if ((docEl && (docEl.classList.contains('theme-contrast') || docEl.classList.contains('high-contrast') || docEl.getAttribute('data-theme') === 'high-contrast')) ||
+              (bodyEl && (bodyEl.classList.contains('theme-contrast') || bodyEl.classList.contains('high-contrast')))) highContrast = true;
+        }
+      } catch (ignore) {}
+    }
+    var furRimUniform = { value: highContrast ? 0.0 : 1.0 };
     var height = typeof options.groundHeight === 'function' ? options.groundHeight : function () { return 0; };
     var blocked = typeof options.isBlocked === 'function' ? options.isBlocked : function () { return false; };
     var root = new THREE.Group(); root.name = 'birdlab-woodland-mammals'; root.visible = false; scene.add(root);
@@ -25,9 +36,10 @@
     var fur = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .96, side: THREE.DoubleSide }));
     fur.extensions = { derivatives: true };
     fur.onBeforeCompile = function (shader) {
+      shader.uniforms.blFurRim = furRimUniform;
       shader.vertexShader = 'varying vec2 blSquirrelUV;\n' + shader.vertexShader;
       shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nblSquirrelUV = uv;');
-      shader.fragmentShader = 'varying vec2 blSquirrelUV;\n' + shader.fragmentShader;
+      shader.fragmentShader = 'uniform float blFurRim;\nvarying vec2 blSquirrelUV;\n' + shader.fragmentShader;
       shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', [
         '#include <color_fragment>',
         // Derivative filtering prevents guard hairs from sparkling at walking distance.
@@ -51,9 +63,33 @@
         'float blFurDet = dot(blFurX, blFurR1);',
         'if (abs(blFurDet) > 1e-12) normal = normalize(abs(blFurDet) * normal - sign(blFurDet) * (dFdx(blFurRelief) * blFurR1 + dFdy(blFurRelief) * blFurR2));'
       ].join('\n'));
+      // Warm backlit guard-hair subsurface rim scatter (Marschner-inspired velvet halo on ears, flanks & plumed tail).
+      shader.fragmentShader = shader.fragmentShader.replace('#include <lights_fragment_end>', [
+        '#include <lights_fragment_end>',
+        'if (blFurRim > 0.01) {',
+        '  float blFurRimFactor = pow(1.0 - max(0.0, abs(dot(normalize(normal), normalize(geometry.viewDir)))), 2.25);',
+        '  float blGuardHalo = 0.72 + 0.28 * blFurStroke * blStrokeDetail + 0.08 * blFurHair;',
+        '  vec3 blUnderfurTint = mix(diffuseColor.rgb * 1.22, vec3(0.96, 0.81, 0.60), 0.38);',
+        '  vec3 blFurIrrad = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse * 0.45;',
+        '  reflectedLight.directDiffuse += blUnderfurTint * blFurIrrad * blFurRimFactor * blGuardHalo * 0.42 * blFurRim;',
+        '}'
+      ].join('\n'));
     };
     fur.customProgramCacheKey = function () { return 'birdlab-squirrel-directional-fur-v2'; };
-    var eyeMaterial = keep(new THREE.MeshStandardMaterial({ color: color('#181a17'), roughness: .26 }));
+    var eyeMaterial = keep(new THREE.MeshStandardMaterial({ color: color('#181a17'), roughness: .22 }));
+    eyeMaterial.onBeforeCompile = function (shader) {
+      shader.uniforms.blEyeGlint = furRimUniform;
+      shader.fragmentShader = 'uniform float blEyeGlint;\n' + shader.fragmentShader.replace('#include <lights_fragment_end>', [
+        '#include <lights_fragment_end>',
+        'if (blEyeGlint > 0.01) {',
+        '  vec3 blEyeN = normalize(normal); vec3 blEyeV = normalize(geometry.viewDir);',
+        '  float blCorneaRim = pow(1.0 - max(0.0, dot(blEyeN, blEyeV)), 3.2);',
+        '  float blSkyGlint = pow(max(0.0, dot(reflect(-blEyeV, blEyeN), normalize(vec3(-0.35, 0.85, 0.40)))), 36.0);',
+        '  reflectedLight.directSpecular += (vec3(0.85, 0.90, 0.96) * blCorneaRim * 0.14 + vec3(1.0, 0.97, 0.90) * blSkyGlint * 0.45) * blEyeGlint;',
+        '}'
+      ].join('\n'));
+    };
+    eyeMaterial.customProgramCacheKey = function () { return 'birdlab-squirrel-eye-cornea-v1'; };
     function data() { return { positions: [], colors: [], uvs: [], indices: [] }; }
     function vertex(builder, x, y, z, tint, u, v) {
       builder.positions.push(x, y, z); builder.colors.push(tint.r, tint.g, tint.b); builder.uvs.push(u, v);

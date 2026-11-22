@@ -186,6 +186,20 @@ class AlloData {
                 meta: {},
             };
         }
+        const joined = clean.join('/');
+        for (const pattern of PATH_PATTERNS) {
+            const m = joined.match(pattern.match);
+            if (m) {
+                return {
+                    collection: pattern.collection,
+                    docId: pattern.docId ? pattern.docId(m) : null,
+                    meta: pattern.meta(m),
+                };
+            }
+        }
+        if (isCollectionQuery) {
+            return { collection: clean[clean.length - 1] || 'unknown', docId: null, meta: {} };
+        }
         return flattenPath(...clean);
     }
 
@@ -199,6 +213,7 @@ class AlloData {
      */
     async setDoc(segments, data, options) {
         const { collection, docId, meta } = this._resolveTarget(segments, false);
+        if (!docId) throw new Error('Document path required for setDoc');
         const enriched = this.backend !== 'firebase'
             ? { ...(data && typeof data === 'object' ? data : {}), ...meta }
             : data;
@@ -212,6 +227,7 @@ class AlloData {
      */
     async getDoc(segments) {
         const { collection, docId } = this._resolveTarget(segments, false);
+        if (!docId) throw new Error('Document path required for getDoc');
         return this.dp.getDoc(collection, docId);
     }
 
@@ -222,6 +238,7 @@ class AlloData {
      */
     async updateDoc(segments, data) {
         const { collection, docId, meta } = this._resolveTarget(segments, false);
+        if (!docId) throw new Error('Document path required for updateDoc');
         const enriched = this.backend !== 'firebase'
             ? { ...(data && typeof data === 'object' ? data : {}), ...meta }
             : data;
@@ -235,6 +252,7 @@ class AlloData {
      */
     async deleteDoc(segments) {
         const { collection, docId } = this._resolveTarget(segments, false);
+        if (!docId) throw new Error('Document path required for deleteDoc');
         return this.dp.deleteDoc(collection, docId);
     }
 
@@ -244,7 +262,22 @@ class AlloData {
      *   const unsub = onSnapshot(ref, callback);
      */
     onSnapshot(segments, callback) {
-        const { collection, docId } = this._resolveTarget(segments, false);
+        const { collection, docId, meta } = this._resolveTarget(segments, false);
+        const metaEntries = this.backend !== 'firebase' && !docId && meta && typeof meta === 'object'
+            ? Object.entries(meta)
+            : [];
+        if (metaEntries.length > 0 && typeof callback === 'function') {
+            const scopedCallback = (snapshot) => {
+                if (Array.isArray(snapshot)) {
+                    const filtered = snapshot.filter((doc) => doc && typeof doc === 'object' && metaEntries.every(
+                        ([k, v]) => Object.prototype.hasOwnProperty.call(doc, k) && doc[k] === v
+                    ));
+                    return callback(filtered);
+                }
+                return callback(snapshot);
+            };
+            return this.dp.onSnapshot(collection, docId, scopedCallback);
+        }
         return this.dp.onSnapshot(collection, docId, callback);
     }
 
@@ -254,8 +287,18 @@ class AlloData {
      *   const snap = await getDocs(q);
      */
     async getDocs(segments, constraints = []) {
-        const { collection } = this._resolveTarget(segments, true);
-        return this.dp.getDocs(collection, constraints);
+        const { collection, meta } = this._resolveTarget(segments, true);
+        const list = Array.isArray(constraints) ? constraints.slice() : [];
+        if (this.backend !== 'firebase' && meta && typeof meta === 'object') {
+            const metaConstraints = Object.entries(meta).map(([field, value]) => ({
+                type: 'where',
+                field,
+                op: '==',
+                value,
+            }));
+            return this.dp.getDocs(collection, [...metaConstraints, ...list]);
+        }
+        return this.dp.getDocs(collection, list);
     }
 
     /**
@@ -399,11 +442,15 @@ async function initAlloData(config = {}) {
         }
     }
 
+    if (resolvedBackend === 'pocketbase' && !safePbUrl) {
+        throw new Error('PocketBase backend requires a valid http(s) baseUrl without credentials, query, or fragment.');
+    }
+
     // Create the DataProvider
     const DataProviderCtor = _resolveDataProviderCtor();
     const dp = new DataProviderCtor({
         backend: resolvedBackend,
-        baseUrl: safePbUrl || pocketbaseUrl,
+        baseUrl: safePbUrl || undefined,
         firebaseApp,
         firestoreDb,
         firebaseAuth,

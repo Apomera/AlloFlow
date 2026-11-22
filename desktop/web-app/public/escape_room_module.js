@@ -8,8 +8,26 @@
  */
 (function() {
   'use strict';
+  if (typeof window === 'undefined') return;
   // WCAG 2.1 AA: Accessibility CSS
   if (typeof document !== 'undefined' && document.head && !document.getElementById("escape-room-module-a11y")) { var _s = document.createElement("style"); _s.id = "escape-room-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }"; document.head.appendChild(_s); }
+
+  function _erGlobalMuted() {
+    try {
+      if (typeof window === 'undefined') return true;
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+      if (window._alloGlobalMute === true || window._alloGlobalMuted === true || window.__alloFlowMuted === true || window.__alloSoundMuted === true) return true;
+      if (typeof window.isAlloMuted === 'function' && window.isAlloMuted()) return true;
+      if (window.localStorage && (window.localStorage.getItem('alloflow-global-muted') === 'true' || window.localStorage.getItem('alloflow_muted') === '1')) return true;
+    } catch (_) {}
+    return false;
+  }
+  function _erSafePlaySound(fn) {
+    return function () {
+      if (typeof fn !== 'function' || _erGlobalMuted()) return;
+      try { return fn.apply(null, arguments); } catch (_) {}
+    };
+  }
 
   // ── Duplicate-load guard ──
   if (window.__escapeRoomModuleLoaded) {
@@ -197,7 +215,7 @@
   var sameJson = function(a, b) { return JSON.stringify(a) === JSON.stringify(b); };
   var isIndexOrder = function(order, count, base) {
     if (!Array.isArray(order) || order.length !== count) return false;
-    var seen = {};
+    var seen = Object.create(null);
     return order.every(function(value) {
       var ok = Number.isInteger(value) && value >= base && value < count + base && !seen[value];
       seen[value] = true;
@@ -512,25 +530,37 @@
     var closeRef = useRef(close);
     closeRef.current = close;
     // Capture before React commits autoFocus inputs.
-    if (open && !wasOpen.current) triggerRef.current = document.activeElement;
+    if (open && !wasOpen.current) triggerRef.current = typeof document !== 'undefined' ? document.activeElement : null;
     wasOpen.current = !!open;
     useEffect(function() {
-      if (!open || !ref.current) return;
+      if (!open || !ref.current || typeof document === 'undefined') return;
       var dialog = ref.current;
       var trigger = triggerRef.current;
+      var trapStack = typeof window !== 'undefined' ? (window.__alloFocusTrapStack || (window.__alloFocusTrapStack = [])) : null;
+      var trapEntry = { id: 'escape-room-dialog', root: dialog };
+      if (trapStack) trapStack.push(trapEntry);
       var focusable = function() {
         return Array.prototype.slice.call(dialog.querySelectorAll('button, input, select, textarea, a[href], [tabindex]')).filter(function(el) {
-          return !el.disabled && el.tabIndex >= 0 && !el.closest('[hidden], [aria-hidden="true"]');
+          if (el.disabled || el.tabIndex < 0 || el.closest('[hidden], [aria-hidden="true"], [inert]')) return false;
+          try {
+            if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+              var cs = window.getComputedStyle(el);
+              if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+            }
+          } catch (_) {}
+          return true;
         });
       };
       (focusable()[0] || dialog).focus();
       var onKeyDown = function(event) {
+        if (trapStack && trapStack.length && trapStack[trapStack.length - 1] !== trapEntry) return;
         if (event.key === 'Escape') {
-          if (event.isComposing || event.keyCode === 229) return;
+          if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
           event.preventDefault();
           event.stopPropagation();
           closeRef.current();
         } else if (event.key === 'Tab') {
+          if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
           var controls = focusable();
           var first = controls[0] || dialog;
           var last = controls[controls.length - 1] || dialog;
@@ -544,6 +574,10 @@
       dialog.addEventListener('keydown', onKeyDown);
       return function() {
         dialog.removeEventListener('keydown', onKeyDown);
+        if (trapStack) {
+          var idx = trapStack.lastIndexOf(trapEntry);
+          if (idx >= 0) trapStack.splice(idx, 1);
+        }
         if (trigger && trigger.isConnected && !trigger.disabled) trigger.focus();
         else {
           var next = document.querySelector('[data-escape-room-next]:not([disabled])');
@@ -575,7 +609,7 @@
   var rememberEscapeRoomDraft = function(room) {
     var puzzle = room && room.selectedObject && (room.puzzles || []).find(function(p) { return p.linkedObjectId === room.selectedObject.id; });
     var drafts = Object.assign({}, room && room.puzzleDrafts);
-    if (puzzle && !_erSolvedHas(room, puzzle.id)) drafts[puzzle.id] = {
+    if (puzzle && !_erUnsafeKey(puzzle.id) && !_erSolvedHas(room, puzzle.id)) drafts[puzzle.id] = {
       textInput: room.textInput || '', sequenceOrder: (room.sequenceOrder || []).slice(),
       matchingPairs: (room.matchingPairs || []).slice(), matchingSelected: room.matchingSelected || null
     };
@@ -593,10 +627,21 @@
 
   // AI-off sweep: blocked fns are truthy; ask the host whether AI is usable.
   function _aiUsable(kind, fn) {
-    try {
-      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
-    } catch (_) {}
-    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true));
+    if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
+    if (typeof window !== 'undefined') {
+      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true) return false;
+      try {
+        var pol = window.ALLOFLOW_MANAGED_AI_POLICY;
+        if (pol && typeof pol === 'object' && (pol.enabled === false || pol.allowAI === false || pol.disabled === true || pol.aiEnabled === false || pol.textAllowed === false || pol.mode === 'disabled' || pol.mode === 'off')) return false;
+        var sp = window.StudentPolicy || (window.AlloModules && window.AlloModules.StudentPolicy);
+        if (sp && typeof sp.isAiDisabled === 'function' && sp.isAiDisabled()) return false;
+        if (sp && typeof sp.aiAllowed === 'function' && !sp.aiAllowed()) return false;
+      } catch (_) { return false; }
+      try {
+        if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn);
+      } catch (_) { return false; }
+    }
+    return true;
   }
   // Learners without usable AI cannot generate a room; saved/embedded rooms still play.
   function _learnerWithoutAi(isTeacherMode, fn) {
@@ -610,7 +655,7 @@
     var t = deps.t;
     var handleScoreUpdate = deps.handleScoreUpdate;
     var setGlobalPoints = deps.setGlobalPoints;
-    var playSound = deps.playSound;
+    var playSound = _erSafePlaySound(deps.playSound);
     var getState = deps.getState;
     var setState = deps.setState;
     var firebase = deps.firebase || {};
@@ -646,7 +691,7 @@
     };
 
     var _erFenceUntrusted = function(tag, val, maxLen) {
-      var clean = String(val == null ? '' : val).replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, '').slice(0, maxLen || 6000);
+      var clean = String(val == null ? '' : val).replace(/<\s*\/?\s*UNTRUSTED_[A-Z0-9_]*[^>]*>/gi, '').slice(0, maxLen || 6000);
       return '<UNTRUSTED_' + tag + '>\n' + clean + '\n</UNTRUSTED_' + tag + '>';
     };
 
@@ -878,11 +923,12 @@ ESCAPE_TYPE_CONTRACT + '\n' +
       if (meta.requested && puzzles.length < meta.requested) roomNotes.push({ code: 'count_short', count: puzzles.length, requested: meta.requested });
       if (meta.target === 'live' && !escapeMixIsBalanced(prepared.puzzles)) roomNotes.push({ code: 'mix_relaxed' });
       setState.setEscapeRoomState(function(prev) {
-        var next = Object.assign({}, prev, escapeRoomAttempt(), {
+        var safePrev = isPlainObject(prev) ? prev : {};
+        var next = Object.assign({}, safePrev, escapeRoomAttempt(), {
           isGenerating: false, isActive: false, isPreview: true, isTrial: false, isPublishing: false, confirmDiscard: false,
           previewTarget: meta.target, previewNotes: { room: roomNotes, byId: prepared.notes.byId },
           room: prepared.room, objects: prepared.objects, puzzles: puzzles, totalPuzzles: puzzles.length, finalDoorPuzzle: finalDoor,
-          difficulty: meta.difficulty || prev.difficulty || 'normal', lives: preset.lives, maxLives: preset.lives,
+          difficulty: meta.difficulty || safePrev.difficulty || 'normal', lives: preset.lives, maxLives: preset.lives,
           hintsRemaining: preset.hints, maxHints: preset.hints, xpMultiplier: preset.xpMultiplier, timeRemaining: totalTime, maxTime: totalTime
         });
         next.savedEscapeRoom = savedEscapeRoomFrom(next);
@@ -1030,9 +1076,9 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         return false;
       }
       // Firestore rejects undefined values; a JSON round trip drops them.
-      var puzzles = JSON.parse(JSON.stringify(processEscapeRoomPuzzles(prepared.puzzles, prepared.objects)));
-      var objects = JSON.parse(JSON.stringify(prepared.objects));
-      var roomInfo = JSON.parse(JSON.stringify(prepared.room));
+      var puzzles = _erSafeJsonParse(JSON.stringify(processEscapeRoomPuzzles(prepared.puzzles, prepared.objects)));
+      var objects = _erSafeJsonParse(JSON.stringify(prepared.objects));
+      var roomInfo = _erSafeJsonParse(JSON.stringify(prepared.room));
       setState.setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isPublishing: true }); });
       try {
         var sessionRef = doc(db, 'artifacts', state.activeSessionAppId, 'public', 'data', 'sessions', state.activeSessionCode);
@@ -1741,13 +1787,14 @@ ESCAPE_TYPE_CONTRACT + '\n' +
       if (escapeRoomRequests.puzzle !== requestId) return false;
       escapeRoomRequests.puzzle = null;
       setState.setEscapeRoomState(function(prev) {
-        var at = (prev.puzzles || []).findIndex(function(p) { return p.id === puzzle.id; });
-        if (!fresh || at < 0) return Object.assign({}, prev, { regeneratingPuzzleId: null });
-        var puzzles = prev.puzzles.slice();
-        puzzles[at] = processEscapeRoomPuzzles([fresh.puzzle], prev.objects)[0];
-        var byId = Object.assign(Object.create(null), prev.previewNotes && prev.previewNotes.byId);
+        var safePrev = isPlainObject(prev) ? prev : {};
+        var at = (safePrev.puzzles || []).findIndex(function(p) { return p && p.id === puzzle.id; });
+        if (!fresh || at < 0) return Object.assign({}, safePrev, { regeneratingPuzzleId: null });
+        var puzzles = safePrev.puzzles.slice();
+        puzzles[at] = processEscapeRoomPuzzles([fresh.puzzle], safePrev.objects)[0];
+        var byId = Object.assign(Object.create(null), safePrev.previewNotes && safePrev.previewNotes.byId);
         if (fresh.notes.length) byId[puzzle.id] = fresh.notes; else delete byId[puzzle.id];
-        return withEscapeRoomEdits(prev, { puzzles: puzzles, regeneratingPuzzleId: null, previewNotes: Object.assign({ room: [] }, prev.previewNotes, { byId: byId }) });
+        return withEscapeRoomEdits(safePrev, { puzzles: puzzles, regeneratingPuzzleId: null, previewNotes: Object.assign({ room: [] }, safePrev.previewNotes, { byId: byId }) });
       });
       if (fresh) playSound('correct');
       else addToast(t('escape_room.regenerate_failed'), 'error');
@@ -2000,6 +2047,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
     var deadline = Date.now() + last * 1000;
     var interval;
     var tick = function() {
+      if (typeof document !== 'undefined' && document.hidden) return;
       var next = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
       if (next === last && next > 0) return;
       if (next > 0 && last > 30 && next <= 30) deps.addToast(deps.t('escape_room.thirty_seconds_warning'), 'error');
@@ -2007,7 +2055,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
       last = next;
       deps.setEscapeTimeLeft(next);
       deps.setEscapeRoomState(function(prev) {
-        if (!prev.isActive || prev.isEscaped || prev.isGameOver) return prev;
+        if (!prev || !prev.isActive || prev.isEscaped || prev.isGameOver) return prev;
         return Object.assign({}, prev, { timeRemaining: next }, next === 0 ? {
           isGameOver: true, gameOverReason: 'time', timerPaused: true, selectedObject: null, showFinalDoor: false
         } : {});
@@ -2018,9 +2066,14 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         deps.addToast(deps.t('escape_room.game_over_time'), 'error');
       }
     };
+    var onVis = function() { if (typeof document !== 'undefined' && !document.hidden) tick(); };
+    if (typeof document !== 'undefined' && document.addEventListener) document.addEventListener('visibilitychange', onVis);
     if (last === 0) tick();
     else interval = setInterval(tick, 250);
-    return function() { clearInterval(interval); };
+    return function() {
+      clearInterval(interval);
+      if (typeof document !== 'undefined' && document.removeEventListener) document.removeEventListener('visibilitychange', onVis);
+    };
   }
   function useEscapeRoomTimer(deps) {
     var room = deps.escapeRoomState || {};
@@ -2041,7 +2094,16 @@ ESCAPE_TYPE_CONTRACT + '\n' +
     var t = props.t;
     var soundEnabled = props.soundEnabled;
     var setSoundEnabled = props.setSoundEnabled;
-    var playSound = props.playSound;
+    var playSound = _erSafePlaySound(props.playSound);
+    useEffect(function() {
+      if (typeof window === 'undefined' || !window.addEventListener) return;
+      var onMute = function(ev) {
+        var muted = (ev && ev.detail && typeof ev.detail.muted === 'boolean') ? ev.detail.muted : _erGlobalMuted();
+        if (muted && typeof setSoundEnabled === 'function') setSoundEnabled(false);
+      };
+      window.addEventListener('alloflow-mute-changed', onMute);
+      return function() { window.removeEventListener('alloflow-mute-changed', onMute); };
+    }, [setSoundEnabled]);
     var handleSetIsEscapeTimerRunningToTrue = props.handleSetIsEscapeTimerRunningToTrue;
     var toggleTimer = function() {
       setEscapeRoomState(function(prev) { return Object.assign({}, rememberEscapeRoomDraft(prev), { timerPaused: !!isEscapeTimerRunning, hasStarted: true, showFinalDoor: false }); });
@@ -2356,7 +2418,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
               moveItem(fromDisplayIdx, displayIdx, 'row');
             },
             onKeyDown: function(e) {
-              if (e.target !== e.currentTarget) return;
+              if (e.target !== e.currentTarget || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
               if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
                 e.preventDefault();
                 moveItem(displayIdx, displayIdx - 1, 'row');
@@ -2513,6 +2575,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
                   key: idx,
                   onClick: function() { handlers.handleMatchingSelect(puzzle.id, item, 'left'); },
                   onKeyDown: function(e) {
+                    if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                     if (e.key === 'ArrowRight') {
                       e.preventDefault();
                       var el = document.querySelector('[data-matching-column="right"] button');
@@ -2537,6 +2600,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
                   key: idx,
                   onClick: function() { handlers.handleMatchingSelect(puzzle.id, item, 'right'); },
                   onKeyDown: function(e) {
+                    if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                     if (e.key === 'ArrowLeft') {
                       e.preventDefault();
                       var el = document.querySelector('[data-matching-column="left"]');
@@ -2963,7 +3027,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
       type: 'text', value: draft, 'aria-label': props.label, disabled: props.disabled,
       onChange: function(e) { setDraft(e.target.value); },
       onBlur: commit,
-      onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); commit(); } },
+      onKeyDown: function(e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter') { e.preventDefault(); commit(); } },
       className: props.className
     });
   }
@@ -2975,7 +3039,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
     var t = props.t;
     var hasSourceOrAnalysis = props.hasSourceOrAnalysis;
     var difficultyPreset = getEscapeRoomPreset(escapeRoomState && escapeRoomState.difficulty);
-    var estimatedTime = (escapeRoomState.puzzleCount || 10) * difficultyPreset.timePerPuzzle;
+    var estimatedTime = ((escapeRoomState && escapeRoomState.puzzleCount) || 10) * difficultyPreset.timePerPuzzle;
 
     var settingsDialogRef = useEscapeRoomDialog(!!(escapeRoomState && escapeRoomState.showSettings), function() {
       setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showSettings: false }); });
@@ -2987,7 +3051,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
     var previewDialog = null;
 
     // ── Settings Dialog ──
-    if (escapeRoomState.showSettings) {
+    if (escapeRoomState && escapeRoomState.showSettings) {
       var hasSaved = typeof handlers.hasSavedEscapeRoom === 'function' ? handlers.hasSavedEscapeRoom() : false;
       var hasDraft = typeof handlers.hasEscapeRoomDraft === 'function' ? !!handlers.hasEscapeRoomDraft() : false;
       settingsDialog = h('div', {

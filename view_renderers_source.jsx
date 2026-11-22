@@ -7,6 +7,38 @@
 // Icons (lucide) are aliased at module level via _lazyIcon, components
 // and helpers come through the per-renderer deps interface.
 
+// Safety gate for student-typed prompts in 3D Concept Space & Memory Palace
+// (sculpture recipes, Imagen illustrations, and sculpture refinement).
+// Blocks critical self-harm/violence disclosures before calling Gemini/Imagen.
+function _vrCheckStudentPromptSafety(text, surface, addToast, onSafetyFlag) {
+  const msg = String(text || '').trim();
+  if (!msg || typeof window === 'undefined') return false;
+  const onFlag = typeof onSafetyFlag === 'function' ? onSafetyFlag : null;
+  let blocked = false;
+  if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+    try {
+      const r = window.SelHub.safeRehearseCheck(msg, { toolId: 'view_renderers_' + surface, onSafetyFlag: onFlag });
+      if (r && r.action === 'block') blocked = true;
+    } catch (_) {}
+  } else {
+    const checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+    let flags = null;
+    try { flags = (checker && typeof checker.check === 'function') ? checker.check(msg) : null; } catch (_) { flags = null; }
+    const crit = Array.isArray(flags) && flags.find(f => f && f.severity === 'critical');
+    if (crit) {
+      blocked = true;
+      if (onFlag) { try { onFlag(Object.assign({}, crit, { source: 'view_renderers_' + surface, context: msg.slice(0, 100), aiGenerated: false })); } catch (_) {} }
+    }
+  }
+  if (blocked) {
+    if (typeof addToast === 'function') addToast('We paused generating that cue for a moment. Your wellbeing matters more than any project — please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line).', 'warn');
+    if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+      try { window.SelHub.showCrisisModal({ toolName: 'Memory Palace / Concept Space', contentSnippet: msg.slice(0, 200) }); } catch (_) {}
+    }
+  }
+  return blocked;
+}
+
 // Runtime AI availability for the affordances below (Concept Map 3D layout,
 // strand hints, Memory Palace sculptures, node mnemonics). A QR student and,
 // since 2026-09-14, an in-app student with AI hidden get window.callGemini
@@ -3022,6 +3054,7 @@ const renderOutlineContentCore = (deps) => {
                             title={main}
                             t={t}
                             addToast={deps.addToast}
+                            onSafetyFlag={deps.handleAiSafetyFlag}
                             onPersist={_organizerPersist}
                             callImagen={deps.callImagen}
                             playSound={playSound}
@@ -3058,6 +3091,7 @@ const renderOutlineContentCore = (deps) => {
                             title={main}
                             t={t}
                             addToast={deps.addToast}
+                            onSafetyFlag={deps.handleAiSafetyFlag}
                             callImagen={deps.callImagen}
                             onPersist={_organizerPersist}
                             playSound={playSound}
@@ -3505,7 +3539,7 @@ function openConceptMap3D(opts) {
 // onPersist. ConceptGraph3D owns the a11y spine (sr-only reading-order outline that
 // becomes visible on any load/WebGL failure), and this component adds its own
 // static-outline fallback for the case where the modules themselves never load.
-const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, recallArmed, challengeLiveReadiness, recallLiveReadiness, onChallengeArm, onChallengeClose, onRecallArm, onRecallClose, onActivityReady, onActivityFailed }) => {
+const ConceptSpace3DView = ({ data, title, t, addToast, onSafetyFlag, callImagen, onPersist, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, recallArmed, challengeLiveReadiness, recallLiveReadiness, onChallengeArm, onChallengeClose, onRecallArm, onRecallClose, onActivityReady, onActivityFailed }) => {
     const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
     const hostRef = React.useRef(null);
     const handleRef = React.useRef(null);
@@ -3930,6 +3964,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
         if (!cur || directBusy || !_alloRuntimeAiAvailable()) return;
         const userPrompt = directPrompt.trim();
         if (!userPrompt) return;
+        if (_vrCheckStudentPromptSafety(userPrompt, 'concept_space_art', addToast, onSafetyFlag)) return;
         const MP = window.AlloModules && window.AlloModules.MemoryPalace;
         // Opportunistic prompt-eval gate (reject / enhance / approve) — reuses the
         // Palace's generic helper when it's loaded; otherwise generate directly.
@@ -3965,6 +4000,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
         const art = artRef.current && artRef.current[cur.id];
         const instr = refinePrompt.trim();
         if (!art || art.type !== 'sculpture' || !art.recipe || !instr) return;
+        if (_vrCheckStudentPromptSafety(instr, 'concept_space_refine', addToast, onSafetyFlag)) return;
         const rec = art.recipe;
         setRefineBusy(true);
         Promise.resolve(window.callGemini(P3D.buildRefinePrompt(rec, instr), true))
@@ -4952,7 +4988,7 @@ const _mpTourPaces = Object.freeze({
     brisk: { label: 'Brisk', dwell: 3200, camera: 1.38, speech: 1.12 },
 });
 
-const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, liveRecallReadiness, onRecallArm, onRecallClose, onActivityReady, onActivityFailed }) => {    const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
+const MemoryPalaceView = ({ data, title, t, addToast, onSafetyFlag, onPersist, callImagen, playSound, onScoreUpdate, onGameComplete, isTeacherMode, armed, liveRecallReadiness, onRecallArm, onRecallClose, onActivityReady, onActivityFailed }) => {    const hasContent = Array.isArray(data?.branches) && data.branches.length > 0;
     const hostRef = React.useRef(null);
     const presentationRef = React.useRef(null);
     const presentationNativeRef = React.useRef(false);
@@ -6065,6 +6101,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         if (directType === 'image' ? !canImagen : !window.AlloModules?.Prim3D) return;
         const userPrompt = (typeof promptOverride === 'string' && promptOverride.trim()) ? promptOverride.trim() : directPrompt.trim();
         if (!userPrompt) return;
+        if (_vrCheckStudentPromptSafety(userPrompt, 'memory_palace_art', addToast, onSafetyFlag)) return;
         const job = _beginArtJob('checking', cur);
         if (!job) return;
         const context = { locus: { ...cur }, type: directType, relief: reliefOn, target: _artTarget(cur) };
@@ -6266,6 +6303,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const rec = mpRef.current && mpRef.current.objects && mpRef.current.objects[cur.id];
         const instr = refinePrompt.trim();
         if (!rec || !instr || rec.glbItem) return;   // library items have no editable parts
+        if (_vrCheckStudentPromptSafety(instr, 'memory_palace_refine', addToast, onSafetyFlag)) return;
         const job = _beginArtJob('refine', cur);
         if (!job) return;
         const target = _artTarget(cur);

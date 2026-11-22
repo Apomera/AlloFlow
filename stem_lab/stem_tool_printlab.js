@@ -1,6 +1,7 @@
 // AlloFlow STEM Lab — Print Lab
 // Client-only preparation workspace for primitive recipes, GLB, and STL.
 (function () {
+  'use strict';
   // Translator reachable from module scope, IIFE-private so it is not a global.
   // Installed because this tool had no fallback-aware helper: labels built in
   // helpers defined above render() could not see a render-scoped one, and a
@@ -12,9 +13,8 @@
     return (v == null) ? (fb != null ? fb : k) : v;
   };
   var __alloAriaFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
-  'use strict';
 
-  if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
+  if (typeof window === 'undefined' || !window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
   if (window.StemLab.isRegistered && window.StemLab.isRegistered('printLab')) return;
 
   var MAX_FILE_BYTES = 5 * 1024 * 1024;
@@ -660,10 +660,11 @@
   }
 
   function downloadBlob(blob, filename) {
+    if (typeof document === 'undefined' || !document.body) return;
     var url = URL.createObjectURL(blob), link = document.createElement('a');
     link.href = url; link.download = filename; link.style.display = 'none';
     document.body.appendChild(link); link.click(); link.remove();
-    window.setTimeout(function () { URL.revokeObjectURL(url); }, 0);
+    window.setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) {} }, 1500);
   }
 
   function aiText(response) {
@@ -1835,7 +1836,7 @@
         try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
         return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
       };
-      var plAiOn = ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini));
+      var plAiOn = ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloAiSecretsLocked === true) && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini));
       var freshHandoff = pendingHandoff && !keepTypedDetails;
       var sourceReview = revisedPackage || (resumedGeometry && pendingHandoff.packageReview) || null;
       // A note written about a different My Worlds project must not ship with this one.
@@ -1899,7 +1900,9 @@
       function persist(patch) {
         if (typeof ctx.setToolData !== 'function') return;
         ctx.setToolData(function (previous) {
-          return Object.assign({}, previous, { printLab: Object.assign({}, previous.printLab || {}, patch || {}) });
+          var base = (previous && typeof previous === 'object' && !Array.isArray(previous)) ? previous : {};
+          var prevPL = (base.printLab && typeof base.printLab === 'object' && !Array.isArray(base.printLab)) ? base.printLab : {};
+          return Object.assign({}, base, { printLab: Object.assign({}, prevPL, patch || {}) });
         });
       }
 
@@ -2148,6 +2151,7 @@
       }
 
       function onTabKey(event, index) {
+        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
         if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft' && event.key !== 'Home' && event.key !== 'End') return;
         event.preventDefault();
         var next = event.key === 'Home' ? 0 : event.key === 'End' ? TABS.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + TABS.length) % TABS.length;
@@ -2593,9 +2597,17 @@
 
       function callRecipeAi(kind) {
         var P3D = window.AlloModules && window.AlloModules.Prim3D;
-        if (!P3D || (!plAiOn && !ctx.isTeacherMode) || typeof ctx.callGemini !== 'function') { announce(__alloT('stem.printlab.sr_ai_assistance_is_not_configured_manual_primitive', 'AI assistance is not configured. Manual primitive tools remain available.')); return; }
+        if (!P3D || !plAiOn || typeof ctx.callGemini !== 'function') { announce(__alloT('stem.printlab.sr_ai_assistance_is_not_configured_manual_primitive', 'AI assistance is not configured. Manual primitive tools remain available.')); return; }
+        var userInput = kind === 'refine' ? aiRefinement : aiSubject;
+        if (!userInput.trim()) { announce(__alloT('stem.printlab.sr_describe_what_you_want_the_modeling_assistant_to', 'Describe what you want the modeling assistant to do.')); return; }
+        if (typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+          var check = window.SelHub.safeRehearseCheck(userInput, { toolId: 'printLab_ai', onSafetyFlag: ctx.onSafetyFlag });
+          if (check && check.blocked) {
+            announce(check.message || 'If you are going through a hard time, please reach out to a trusted adult or call/text 988.');
+            return;
+          }
+        }
         var prompt = kind === 'refine' ? P3D.buildRefinePrompt(recipe, aiRefinement) : P3D.buildRecipePrompt(aiSubject);
-        if ((kind === 'refine' && !aiRefinement.trim()) || (kind !== 'refine' && !aiSubject.trim())) { announce(__alloT('stem.printlab.sr_describe_what_you_want_the_modeling_assistant_to', 'Describe what you want the modeling assistant to do.')); return; }
         var operation = beginDesignOperation('ai'), token = operation.token, startedRevision = operation.revision;
         setAiBusy(true); announce(kind === 'refine' ? 'Preparing an AI-assisted revision…' : 'Preparing an AI-assisted primitive recipe…');
         Promise.resolve().then(function () { return ctx.callGemini(prompt, false, false, 0.5); }).then(function (response) {
@@ -3035,8 +3047,8 @@
               h('h2', { id: 'print-lab-ai-title', className: 'text-base font-black text-white' }, 'Optional AI modeling assistant'),
               h('p', { className: 'mt-1 text-xs text-slate-300' }, 'Describe the object, its broad base, and its main parts. AI proposes editable shapes using your configured provider. Use your device keyboard dictation in either description field if you prefer speaking; review the text before creating. Leave out names and personal details.'),
               h('div', { className: 'mt-3 grid gap-3 md:grid-cols-2' },
-                h('div', null, field('Object to create', aiSubject, function (value) { setAiSubject(value.slice(0, 1000)); }, { maxLength: 1000 }), h('button', { type: 'button', disabled: aiBusy || typeof ctx.callGemini !== 'function' || !runtimeReady, onClick: function () { callRecipeAi('create'); }, className: 'mt-2 min-h-[42px] rounded-xl bg-violet-700 px-4 text-xs font-black text-white disabled:opacity-50' }, aiBusy ? 'Working…' : 'Create editable recipe')),
-                h('div', null, field('Change to the current model', aiRefinement, function (value) { setAiRefinement(value.slice(0, 1000)); }, { maxLength: 1000 }), h('button', { type: 'button', disabled: !recipe || aiBusy || typeof ctx.callGemini !== 'function' || !runtimeReady, onClick: function () { callRecipeAi('refine'); }, className: 'mt-2 min-h-[42px] rounded-xl border border-violet-500 px-4 text-xs font-black text-violet-100 disabled:opacity-50' }, 'Refine current recipe'))
+                h('div', null, field('Object to create', aiSubject, function (value) { setAiSubject(value.slice(0, 1000)); }, { maxLength: 1000 }), h('button', { type: 'button', disabled: aiBusy || !plAiOn || !runtimeReady, onClick: function () { callRecipeAi('create'); }, className: 'mt-2 min-h-[42px] rounded-xl bg-violet-700 px-4 text-xs font-black text-white disabled:opacity-50' }, aiBusy ? 'Working…' : 'Create editable recipe')),
+                h('div', null, field('Change to the current model', aiRefinement, function (value) { setAiRefinement(value.slice(0, 1000)); }, { maxLength: 1000 }), h('button', { type: 'button', disabled: !recipe || aiBusy || !plAiOn || !runtimeReady, onClick: function () { callRecipeAi('refine'); }, className: 'mt-2 min-h-[42px] rounded-xl border border-violet-500 px-4 text-xs font-black text-violet-100 disabled:opacity-50' }, 'Refine current recipe'))
               ),
               h('div', { className: 'mt-3 flex flex-wrap gap-2', 'aria-label': __alloT('stem.printlab.description_starters','Description starters') }, [
                 'A small turtle with a broad flat base and short thick legs',
@@ -3044,7 +3056,7 @@
                 'A chunky flower token with rounded petals on a flat backing'
               ].map(function (example) { return h('button', { key: example, type: 'button', onClick: function () { setAiSubject(example); }, className: 'min-h-[42px] rounded-lg border border-slate-500 px-3 text-left text-xs text-slate-200' }, example); })),
               recipe && h('button', { type: 'button', onClick: returnToArtStudio, className: 'mt-3 min-h-[44px] rounded-xl bg-pink-800 px-4 text-sm font-bold text-white' }, 'Edit this model in Sculpt 3D'),
-              typeof ctx.callGemini !== 'function' && h('p', { className: 'mt-2 text-xs text-amber-200' }, 'AI is not configured in this session. All manual design and import features remain available.')
+              !plAiOn && h('p', { className: 'mt-2 text-xs text-amber-200' }, 'AI is not configured in this session. All manual design and import features remain available.')
             ),
             h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'print-lab-import-title' },
               h('h2', { id: 'print-lab-import-title', className: 'text-base font-black text-white' }, 'Import locally'),
@@ -3182,7 +3194,7 @@
         var current=saved ? saved.current : printReference({basis:'working',dimensions:geometryPhysicalSize || report && report.dimensionsMm,
           unitMm:unitMm,materialId:materialId,printTurnDegrees:turnActive ? 90 : 0});
         var previousCount=saved ? changes.removed+changes.modified+changes.unchanged : revisedPrint.previousBlockCount;
-        var currentCount=saved ? changes.added+changes.modified+changes.unchanged : sourceContext.summary.blockCount;
+        var currentCount=saved ? changes.added+changes.modified+changes.unchanged : (sourceContext && sourceContext.summary ? sourceContext.summary.blockCount : null);
         var beforeSize=previous ? previous.dimensions : revisedPrint.previousDimensions;
         var afterSize=current && current.dimensions;
         function row(label, count, size) {
@@ -3537,9 +3549,10 @@
             : { backgroundColor: isContrast ? '#000000' : 'rgba(15,23,42,0.72)', color: isContrast ? '#ffffff' : '#cbd5e1', border: isContrast ? '1px solid #ffff00' : '1px solid rgba(148,163,184,0.4)' };
       var activeStepIdx = Math.max(0, TABS.indexOf(activeTab));
       var partCount = recipe && Array.isArray(recipe.parts) ? recipe.parts.length : 0;
-      var dimW = geometryPhysicalSize && typeof geometryPhysicalSize.width === 'number' ? geometryPhysicalSize.width : (report && report.dimensionsMm && typeof report.dimensionsMm.x === 'number' ? report.dimensionsMm.x : null);
-      var dimD = geometryPhysicalSize && typeof geometryPhysicalSize.depth === 'number' ? geometryPhysicalSize.depth : (report && report.dimensionsMm && typeof report.dimensionsMm.z === 'number' ? report.dimensionsMm.z : null);
-      var dimH = geometryPhysicalSize && typeof geometryPhysicalSize.height === 'number' ? geometryPhysicalSize.height : (report && report.dimensionsMm && typeof report.dimensionsMm.y === 'number' ? report.dimensionsMm.y : null);
+      var repDim = report && report.dimensionsMm;
+      var dimW = geometryPhysicalSize && typeof geometryPhysicalSize.width === 'number' ? geometryPhysicalSize.width : (repDim && typeof repDim.width === 'number' ? repDim.width : (repDim && typeof repDim.x === 'number' ? repDim.x : null));
+      var dimD = geometryPhysicalSize && typeof geometryPhysicalSize.depth === 'number' ? geometryPhysicalSize.depth : (repDim && typeof repDim.depth === 'number' ? repDim.depth : (repDim && typeof repDim.z === 'number' ? repDim.z : null));
+      var dimH = geometryPhysicalSize && typeof geometryPhysicalSize.height === 'number' ? geometryPhysicalSize.height : (repDim && typeof repDim.height === 'number' ? repDim.height : (repDim && typeof repDim.y === 'number' ? repDim.y : null));
       var bedW = Math.max(50, profile.bedWidthMm || 220);
       var bedD = Math.max(50, profile.bedDepthMm || 220);
       var bedH = Math.max(50, profile.bedHeightMm || 250);

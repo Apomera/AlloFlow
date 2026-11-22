@@ -1401,7 +1401,30 @@
     var activeStage = props.activeStage, onJump = props.onJump;
     var journalStageNotes = props.journalStageNotes || {};
     var sourceCount = props.sourceCount || 0;
-    return /* @__PURE__ */ React.createElement(
+    var stageFlags = STAGES.map(function(s) {
+      var sn = journalStageNotes[s.key] || {};
+      return !!(sn.contestabilityRationale || sn.text || s.key === "sift_triage" && sourceCount > 0);
+    });
+    var startedCount = stageFlags.filter(Boolean).length;
+    var activeObj = STAGE_BY_KEY[activeStage] || STAGES[0];
+    var pct = Math.round(startedCount / STAGES.length * 100);
+    function onTabKeyDown(e, idx) {
+      if (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229) return;
+      var nextIdx = null;
+      if (e.key === "ArrowRight") nextIdx = (idx + 1) % STAGES.length;
+      else if (e.key === "ArrowLeft") nextIdx = (idx - 1 + STAGES.length) % STAGES.length;
+      else if (e.key === "Home") nextIdx = 0;
+      else if (e.key === "End") nextIdx = STAGES.length - 1;
+      if (nextIdx === null) return;
+      e.preventDefault();
+      if (typeof onJump === "function") onJump(STAGES[nextIdx].key);
+      var parent = e.currentTarget && e.currentTarget.parentElement;
+      if (parent) {
+        var tabs = parent.querySelectorAll('[role="tab"]');
+        if (tabs[nextIdx]) tabs[nextIdx].focus();
+      }
+    }
+    return /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "6px" } }, /* @__PURE__ */ React.createElement(
       "div",
       {
         role: "tablist",
@@ -1417,8 +1440,7 @@
       },
       STAGES.map(function(s, idx) {
         var isActive = activeStage === s.key;
-        var sn = journalStageNotes[s.key] || {};
-        var hasWork = !!(sn.contestabilityRationale || sn.text || s.key === "sift_triage" && sourceCount > 0);
+        var hasWork = stageFlags[idx];
         return /* @__PURE__ */ React.createElement(
           "button",
           {
@@ -1426,6 +1448,10 @@
             type: "button",
             role: "tab",
             "aria-selected": isActive,
+            tabIndex: isActive ? 0 : -1,
+            onKeyDown: function(e) {
+              onTabKeyDown(e, idx);
+            },
             onClick: function() {
               if (typeof onJump === "function") onJump(s.key);
             },
@@ -1434,7 +1460,7 @@
               padding: "6px 12px",
               borderRadius: "999px",
               background: isActive ? s.color : "#ffffff",
-              color: isActive ? "#ffffff" : "#475569",
+              color: isActive ? "#ffffff" : "#334155",
               border: "1px solid " + (isActive ? s.color : "#cbd5e1"),
               fontWeight: 700,
               fontSize: "11px",
@@ -1446,10 +1472,29 @@
           },
           /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, idx + 1 + ". "),
           /* @__PURE__ */ React.createElement("span", null, s.shortLabel),
-          hasWork && /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2713")
+          hasWork && /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2713"),
+          hasWork && /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, " (has work)")
         );
       })
-    );
+    ), /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        "data-lane-stage-progress": "true",
+        role: "progressbar",
+        "aria-label": t("humanities.stage_progress_aria") || "Inquiry cycle progress",
+        "aria-valuemin": 0,
+        "aria-valuemax": STAGES.length,
+        "aria-valuenow": startedCount,
+        "aria-valuetext": startedCount + " of " + STAGES.length + " stages started, currently on " + (activeObj ? activeObj.label : activeStage),
+        style: { height: "6px", width: "100%", borderRadius: "999px", background: "#e2e8f0", overflow: "hidden" }
+      },
+      /* @__PURE__ */ React.createElement("div", { style: {
+        height: "100%",
+        width: pct + "%",
+        background: "#be185d",
+        transition: typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "none" : "width 0.2s ease"
+      } })
+    ));
   }
   function LoopBackPicker(props) {
     var t = props.t || function(k) {
@@ -1466,6 +1511,7 @@
     var setOtherText = _other[1];
     var canCommit = !!chipId && (chipId !== "other" || otherText.trim().length >= 10);
     var modalRef = useRef(null);
+    var backdropDownRef = useRef(false);
     useFocusTrap(modalRef, true, onCancel);
     return /* @__PURE__ */ React.createElement(
       "div",
@@ -1474,6 +1520,7 @@
         role: "dialog",
         "aria-modal": "true",
         "aria-label": t("humanities.loopback_modal_title") || "Why are you looping back?",
+        "aria-describedby": "hum-loopback-help",
         style: {
           position: "fixed",
           inset: 0,
@@ -1485,8 +1532,13 @@
           justifyContent: "center",
           padding: "20px"
         },
+        onMouseDown: function(e) {
+          backdropDownRef.current = e.target === e.currentTarget;
+        },
         onClick: function(e) {
-          if (e.target === e.currentTarget) onCancel();
+          var ok = backdropDownRef.current;
+          backdropDownRef.current = false;
+          if (ok && e.target === e.currentTarget) onCancel();
         }
       },
       /* @__PURE__ */ React.createElement(
@@ -1507,7 +1559,7 @@
           }
         },
         /* @__PURE__ */ React.createElement("h3", { style: { margin: 0, fontSize: "15px", fontWeight: 800, color: "#1e293b" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F501} "), t("humanities.loopback_modal_title") || "Why are you looping back?"),
-        /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 12px", fontSize: "11px", color: "#64748b", lineHeight: 1.5 } }, t("humanities.loopback_modal_help") || "Loops are how rigor accumulates in humanities work. Your downstream work is preserved; you can return."),
+        /* @__PURE__ */ React.createElement("p", { id: "hum-loopback-help", style: { margin: "4px 0 12px", fontSize: "11px", color: "#475569", lineHeight: 1.5 } }, t("humanities.loopback_modal_help") || "Loops are how rigor accumulates in humanities work. Your downstream work is preserved; you can return."),
         /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "6px", maxHeight: "50vh", overflowY: "auto" } }, LOOPBACK_CHIPS.map(function(c) {
           var selected = chipId === c.id;
           return /* @__PURE__ */ React.createElement(
@@ -1630,15 +1682,17 @@
     } }, /* @__PURE__ */ React.createElement("strong", { style: { marginRight: "4px" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F6E1}\uFE0F "), t("humanities.blocked_prefix") || "AI helper paused:"), reason);
   }
   function TextareaCard(props) {
-    return /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", fontWeight: 700, color: "#1e293b", display: "block" } }, props.label, props.help && /* @__PURE__ */ React.createElement("span", { style: { display: "block", margin: "4px 0", fontSize: "11px", fontWeight: 400, color: "#475569", lineHeight: 1.5 } }, props.help), /* @__PURE__ */ React.createElement(
+    var val = String(props.value || "");
+    var maxLen = props.max || 800;
+    return /* @__PURE__ */ React.createElement("div", { style: { padding: "12px", borderRadius: "12px", background: "#fff", border: "1px solid #e2e8f0" } }, /* @__PURE__ */ React.createElement("label", { style: { fontSize: "12px", fontWeight: 700, color: "#1e293b", display: "block" } }, /* @__PURE__ */ React.createElement("span", { style: { display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "8px" } }, /* @__PURE__ */ React.createElement("span", null, props.label), /* @__PURE__ */ React.createElement("span", { "data-textarea-char-count": "true", style: { fontSize: "11px", fontWeight: 600, color: "#475569", fontVariantNumeric: "tabular-nums" } }, val.length, " / ", maxLen)), props.help && /* @__PURE__ */ React.createElement("span", { style: { display: "block", margin: "4px 0", fontSize: "11px", fontWeight: 400, color: "#475569", lineHeight: 1.5 } }, props.help), /* @__PURE__ */ React.createElement(
       "textarea",
       {
-        value: props.value || "",
+        value: val,
         onChange: function(e) {
           props.onChange(e.target.value);
         },
         rows: props.rows || 3,
-        maxLength: props.max || 800,
+        maxLength: maxLen,
         placeholder: props.placeholder || "",
         style: {
           marginTop: "4px",
@@ -1668,6 +1722,9 @@
     var _open = useState(false);
     var open = _open[0];
     var setOpen = _open[1];
+    var _reasonHint = useState("");
+    var reasonHint = _reasonHint[0];
+    var setReasonHint = _reasonHint[1];
     if (!pair || !ExemplarPair) return null;
     function tokenBoundReasoning(reasoning) {
       if (!reasoning || reasoning.trim().length < floors.exemplarReason) return false;
@@ -1721,8 +1778,10 @@
           weakExample: pair.weakExample,
           onJudgment: function(j) {
             if (!tokenBoundReasoning(j.reasoning)) {
+              setReasonHint(t("humanities.exemplar_reasoning_feedback") || "Write at least " + floors.exemplarReason + " characters referencing both the criterion and the strong example.");
               return;
             }
+            setReasonHint("");
             setJournal(function(prev) {
               var next = Object.assign({}, prev);
               next.stageNotes = Object.assign({}, prev.stageNotes || {});
@@ -1735,7 +1794,7 @@
             });
           }
         }
-      ), /* @__PURE__ */ React.createElement("p", { style: { margin: "6px 0 0", fontSize: "10px", color: "#a16207", fontStyle: "italic" } }, "Reasoning must be \u2265", floors.exemplarReason, " chars AND mention something from the criterion AND the strong example."), /* @__PURE__ */ React.createElement(
+      ), reasonHint && /* @__PURE__ */ React.createElement("p", { "data-exemplar-feedback": "true", role: "status", "aria-live": "polite", style: { margin: "6px 0 0", fontSize: "11px", fontWeight: 700, color: "#b91c1c" } }, reasonHint), /* @__PURE__ */ React.createElement("p", { style: { margin: "6px 0 0", fontSize: "11px", color: "#78350f", fontStyle: "italic" } }, "Reasoning must be \u2265", floors.exemplarReason, " chars AND mention something from the criterion AND the strong example."), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -1982,10 +2041,11 @@
       display: "flex",
       flexDirection: "column",
       gap: "8px"
-    } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: 0, fontSize: "13px", fontWeight: 800, color: "#9d174d" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F9ED} "), t("humanities.positionality_edit_title") || "Your standpoint \u2014 material relationship to the question"), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "11px", color: "#831843", lineHeight: 1.5 } }, t("humanities.positionality_edit_help", { min: floors.positionality }) || "Name your MATERIAL relationship to this question, not a generic identity. \u2265" + floors.positionality + ' chars or 5s+ voice. Generic-identity statements ("as a student", "an observer") are refused.'), /* @__PURE__ */ React.createElement(
+    } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "8px" } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: 0, fontSize: "13px", fontWeight: 800, color: "#9d174d" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F9ED} "), t("humanities.positionality_edit_title") || "Your standpoint \u2014 material relationship to the question"), /* @__PURE__ */ React.createElement("span", { "data-positionality-char-count": "true", role: "status", "aria-live": "polite", style: { fontSize: "11px", fontWeight: 700, fontVariantNumeric: "tabular-nums", color: draftLenOk ? "#166534" : "#9d174d" } }, draft.trim().length, " / ", floors.positionality, "+")), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "11px", color: "#831843", lineHeight: 1.5 } }, t("humanities.positionality_edit_help", { min: floors.positionality }) || "Name your MATERIAL relationship to this question, not a generic identity. \u2265" + floors.positionality + ' chars or 5s+ voice. Generic-identity statements ("as a student", "an observer") are refused.'), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         "aria-label": t("humanities.positionality_edit_title") || "Your standpoint \u2014 material relationship to the question",
+        "aria-invalid": draftDenied ? "true" : void 0,
         value: draft,
         rows: 4,
         maxLength: 1500,
@@ -2005,7 +2065,7 @@
           minHeight: "70px"
         }
       }
-    ), draftDenied && /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "10px", color: "#dc2626" } }, t("humanities.positionality_denied") || "This reads as boilerplate identity. Name your material relationship to this question, not a generic category."), VoiceNoteBlock && (devLevel === "k2" || devLevel === "3_5") && /* @__PURE__ */ React.createElement(
+    ), draftDenied && /* @__PURE__ */ React.createElement("p", { role: "alert", style: { margin: 0, fontSize: "11px", color: "#b91c1c", fontWeight: 600 } }, t("humanities.positionality_denied") || "This reads as boilerplate identity. Name your material relationship to this question, not a generic category."), VoiceNoteBlock && (devLevel === "k2" || devLevel === "3_5") && /* @__PURE__ */ React.createElement(
       VoiceNoteBlock,
       {
         t,

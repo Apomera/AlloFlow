@@ -20,7 +20,7 @@
   function rowOf(word) { try { return wordlist ? wordlist.get(word) : null; } catch (_) { return null; } }
   function builtIn(word) { var row = rowOf(word); return !!(row && (row.kokoro || row.shards)); }
   function notUsed(word) { var row = rowOf(word); return !!(row && row.blocked); }
-  var state = { words: [], entries: Object.create(null), ready: false, getting: false, making: false, stop: null, makeRun: 0, storage: true, playing: null };
+  var state = { words: [], entries: Object.create(null), ready: false, getting: false, making: false, stop: null, makeRun: 0, refreshRun: 0, storage: true, playing: null };
   function makeController() {
     if (typeof win.AbortController === 'function') return new win.AbortController();
     var ctrl = { signal: { aborted: false }, abort: function () { ctrl.signal.aborted = true; } };
@@ -67,8 +67,15 @@
   }
 
   function refreshEntries() {
+    var run = ++state.refreshRun;
     if (!myWords || !state.storage || !state.words.length) { state.entries = Object.create(null); return Promise.resolve(); }
-    return myWords.getMany(state.words).then(function (found) { state.entries = Object.assign(Object.create(null), found || {}); }, function () { state.entries = Object.create(null); });
+    return myWords.getMany(state.words).then(function (found) {
+      if (run !== state.refreshRun) return;
+      state.entries = Object.assign(Object.create(null), found || {});
+    }, function () {
+      if (run !== state.refreshRun) return;
+      state.entries = Object.create(null);
+    });
   }
   function clipOf(word) { var entry = state.entries[word]; return entry && entry.clip ? entry.clip : null; }
   // The words "Make recordings for the words that have none" makes: none in My words, none made ahead of time, and a word the makers use.
@@ -133,7 +140,7 @@
 
   function playClip(word) {
     var clip = clipOf(word);
-    if (!clip) return;
+    if (!clip || typeof clip.dataUri !== 'string' || !/^data:audio\//i.test(clip.dataUri)) return;
     try { if (state.playing) state.playing.pause(); } catch (_) {}
     var audio = new win.Audio(clip.dataUri);
     state.playing = audio;

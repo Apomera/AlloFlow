@@ -353,6 +353,59 @@
 }
 
 @media (forced-colors: active) {
+    .home-entry-section,
+    .home-entry-card,
+    .home-entry-number,
+    .community-feedback-band {
+        background: Canvas !important;
+        color: CanvasText !important;
+        border-color: CanvasText !important;
+    }
+
+    .home-entry-heading .promo-kicker,
+    .home-entry-heading h2,
+    .home-entry-heading p,
+    .home-entry-card h3,
+    .home-entry-card p,
+    .community-feedback-inner h2,
+    .community-feedback-inner p,
+    .tutorial-tab-meta,
+    .slide-content,
+    .slide-content h3,
+    .slide-content p,
+    .slide-content strong,
+    .slide-tag,
+    .info-box,
+    .info-title,
+    .info-desc,
+    #slide-title,
+    .section [style*="color:#fbbf24"],
+    .section [style*="color: #fbbf24"],
+    .section [style*="color:#94a3b8"],
+    .section [style*="color: #94a3b8"] {
+        color: CanvasText !important;
+    }
+
+    .slide-content h3,
+    .stat-number {
+        background: none !important;
+        -webkit-text-fill-color: CanvasText !important;
+        color: CanvasText !important;
+    }
+
+    .stat-callout,
+    .stat-label,
+    .slide,
+    .info-box {
+        background: Canvas !important;
+        color: CanvasText !important;
+        border-color: CanvasText !important;
+    }
+
+    .home-entry-link {
+        color: LinkText !important;
+    }
+
     .home-entry-card,
     .community-feedback-inner a,
     .feedback-route-card {

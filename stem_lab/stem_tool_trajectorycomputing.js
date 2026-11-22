@@ -331,6 +331,14 @@
 
   function computeTrajectory(input) {
     var m = Object.assign({}, MISSION, input || {});
+    if (!Number.isFinite(Number(m.gravity)) || Number(m.gravity) <= 0) m.gravity = MISSION.gravity;
+    else m.gravity = Number(m.gravity);
+    if (!Number.isFinite(Number(m.height)) || Number(m.height) < 0) m.height = MISSION.height;
+    else m.height = Number(m.height);
+    if (!Number.isFinite(Number(m.speed))) m.speed = MISSION.speed;
+    else m.speed = Number(m.speed);
+    if (!Number.isFinite(Number(m.angle))) m.angle = MISSION.angle;
+    else m.angle = Number(m.angle);
     var radians = m.angle * Math.PI / 180;
     var vx = m.speed * Math.cos(radians);
     var vy = m.speed * Math.sin(radians);
@@ -1552,7 +1560,7 @@
       '[data-trajectory-lab] .tc-seq{font-size:10px;color:#675c39}',
       '[data-trajectory-lab] .tc-small{background:#173c32;color:#fff;min-width:31px;min-height:36px;padding:6px 8px}',
       '[data-trajectory-lab] .tc-machine{border:8px solid #355348;border-radius:14px;background:#14221e;padding:18px;color:#c9f6df;box-shadow:inset 0 0 0 2px #779184}',
-      '[data-trajectory-lab] .tc-lights{display:flex;gap:9px;margin-bottom:12px}.tc-light{width:14px;height:14px;border-radius:50%;background:#55655e}.tc-light.on{background:#ffbd43;box-shadow:0 0 14px #ffbd43}',
+      '[data-trajectory-lab] .tc-lights{display:flex;gap:9px;margin-bottom:12px}.tc-light{width:14px;height:14px;border-radius:50%;background:#55655e}.tc-light.on{background:#ffbd43;box-shadow:0 0 14px #ffbd43;animation:tcLightGlow 2.8s ease-in-out infinite}',
       '[data-trajectory-lab] .tc-batch-process{margin-top:15px;padding-top:14px;border-top:1px solid #779184}',
       '[data-trajectory-lab] .tc-batch-process h3{margin:0;color:#fff0b5;font:800 19px/1.2 Georgia,serif}',
       '[data-trajectory-lab] .tc-batch-process>p{margin:5px 0 11px;color:#dcebe5;font-size:12px;line-height:1.5}',
@@ -1689,11 +1697,39 @@
       '[data-trajectory-lab][data-low-distraction=true] .tc-title,[data-trajectory-lab][data-low-distraction=true] .tc-subtitle{background:#173c32;color:#fff}',
       '@media(max-width:900px){[data-trajectory-lab] .tc-grid,[data-trajectory-lab] .tc-program-workspace{grid-template-columns:minmax(0,1fr)}[data-trajectory-lab] .tc-side,[data-trajectory-lab] .tc-diagnostic-desk{position:static}[data-trajectory-lab] .tc-data,[data-trajectory-lab] .tc-batch-trace{grid-template-columns:repeat(2,1fr)}}',
       '@media(max-width:560px){[data-trajectory-lab] .tc-top{flex-direction:column}[data-trajectory-lab] .tc-fields,[data-trajectory-lab] .tc-study-grid,[data-trajectory-lab] .tc-role-grid,[data-trajectory-lab] .tc-report-grid,[data-trajectory-lab] .tc-checklist,[data-trajectory-lab] .tc-signing-list,[data-trajectory-lab] .tc-challenge-grid,[data-trajectory-lab] .tc-stamps,[data-trajectory-lab] .tc-desk-brief,[data-trajectory-lab] .tc-orientation-steps,[data-trajectory-lab] .tc-batch-trace,[data-trajectory-lab] .tc-replay-evidence-key{grid-template-columns:1fr}[data-trajectory-lab] .tc-card{grid-template-columns:32px minmax(0,1fr) 66px}[data-trajectory-lab] .tc-card-actions{grid-column:2/4}[data-trajectory-lab] .tc-data{grid-template-columns:1fr 1fr}[data-trajectory-lab] .tc-result-grid{grid-template-columns:1fr}[data-trajectory-lab] .tc-report-head{display:block}[data-trajectory-lab] .tc-tabs-mobile-hint,[data-trajectory-lab] .tc-chart-mobile-hint{display:block}[data-trajectory-lab] .tc-chart-frame .tc-chart{min-width:620px}[data-trajectory-lab] .tc-batch-step-detail{min-height:0}}',
-      '@media(prefers-reduced-motion:reduce){[data-trajectory-lab] *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}',
+      '@keyframes tcEnvBreathe{0%,100%{opacity:.78}50%{opacity:1}}',
+      '@keyframes tcGlowBreathe{0%,100%{opacity:.56}50%{opacity:1}}',
+      '@keyframes tcArcDashFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-24}}',
+      '@keyframes tcCmpDashFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-34}}',
+      '@keyframes tcVecFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-14}}',
+      '@keyframes tcTelemetrySweep{0%{stroke-dashoffset:548;opacity:.18}22%{opacity:.95}78%{opacity:.95}100%{stroke-dashoffset:-548;opacity:.18}}',
+      '@keyframes tcChartSweep{0%{stroke-dashoffset:758;opacity:.2}25%{opacity:.95}75%{opacity:.95}100%{stroke-dashoffset:-758;opacity:.2}}',
+      '@keyframes tcVecPulse{0%{stroke-dashoffset:104;opacity:.18}45%{opacity:.95}100%{stroke-dashoffset:-104;opacity:.18}}',
+      '@keyframes tcArcPulseSm{0%{stroke-dashoffset:42;opacity:.22}50%{opacity:.96}100%{stroke-dashoffset:-42;opacity:.22}}',
+      '@keyframes tcBeaconPulse{0%,100%{opacity:.42;transform:scale(.88)}50%{opacity:.95;transform:scale(1.18)}}',
+      '@keyframes tcReticleRing{0%,100%{opacity:.28;transform:scale(.92)}50%{opacity:.82;transform:scale(1.26)}}',
+      '@keyframes tcCardHole{0%,100%{opacity:.55}50%{opacity:1}}',
+      '@keyframes tcZonePulse{0%,100%{opacity:.08}50%{opacity:.24}}',
+      '@keyframes tcLightGlow{0%,100%{opacity:.82}50%{opacity:1}}',
+      '[data-trajectory-lab] .tc-env-breathe{animation:tcEnvBreathe 4.8s ease-in-out infinite}',
+      '[data-trajectory-lab] .tc-glow-breathe{animation:tcGlowBreathe 3.8s ease-in-out infinite}',
+      '[data-trajectory-lab] .tc-arc-dash-flow{animation:tcArcDashFlow 2.6s linear infinite}',
+      '[data-trajectory-lab] .tc-cmp-dash-flow{animation:tcCmpDashFlow 3.1s linear infinite}',
+      '[data-trajectory-lab] .tc-vec-flow{animation:tcVecFlow 3.4s linear infinite}',
+      '[data-trajectory-lab] .tc-telemetry-sweep{animation:tcTelemetrySweep 4.8s linear infinite}',
+      '[data-trajectory-lab] .tc-chart-sweep{animation:tcChartSweep 5.2s linear infinite}',
+      '[data-trajectory-lab] .tc-vec-pulse{animation:tcVecPulse 2.8s linear infinite}',
+      '[data-trajectory-lab] .tc-arc-pulse-sm{animation:tcArcPulseSm 2.9s linear infinite}',
+      '[data-trajectory-lab] .tc-beacon-pulse{transform-box:fill-box;transform-origin:center;animation:tcBeaconPulse 3.3s ease-in-out infinite}',
+      '[data-trajectory-lab] .tc-reticle-ring{transform-box:fill-box;transform-origin:center;animation:tcReticleRing 2.9s ease-in-out infinite}',
+      '[data-trajectory-lab] .tc-card-hole{animation:tcCardHole 3.2s ease-in-out infinite}',
+      '[data-trajectory-lab] .tc-zone-pulse{animation:tcZonePulse 3.6s ease-in-out infinite}',
+      '.theme-contrast [data-trajectory-lab] svg *,.theme-contrast [data-trajectory-lab] .tc-light.on,[data-trajectory-lab][data-low-distraction=true] svg *,[data-trajectory-lab][data-low-distraction=true] .tc-light.on{animation:none!important;transform:none!important}',
+      '@media(prefers-reduced-motion:reduce){[data-trajectory-lab] *{scroll-behavior:auto!important;animation:none!important;transition:none!important;transform:none!important}}',
       '@media(forced-colors:active){[data-trajectory-lab] .tc-paper,[data-trajectory-lab] .tc-side,[data-trajectory-lab] .tc-machine{border:2px solid CanvasText}[data-trajectory-lab] .tc-action,[data-trajectory-lab] .tc-tab{forced-color-adjust:auto}[data-trajectory-lab] .tc-replay-evidence-key li.is-current{outline:3px solid Highlight;outline-offset:2px}}',
       '@media print{[data-trajectory-lab] .tc-top,[data-trajectory-lab] .tc-tabs-region,[data-trajectory-lab] .tc-desk-brief-block,[data-trajectory-lab] .tc-revision-alert,[data-trajectory-lab] .tc-side,[data-trajectory-lab] .tc-paper>section>*:not(.tc-completion-surfaces),[data-trajectory-lab] .tc-completion-surfaces>*:not(.tc-report){display:none!important}[data-trajectory-lab] .tc-shell{background:#fff;padding:0}[data-trajectory-lab] .tc-grid{display:block}[data-trajectory-lab] .tc-paper{border:0;box-shadow:none;background:#fff;padding:0;min-height:0}[data-trajectory-lab] .tc-completion-surfaces,[data-trajectory-lab] .tc-report{display:block!important}[data-trajectory-lab] .tc-report{border:1px solid #000;margin:0}[data-trajectory-lab] .tc-report .tc-action{display:none!important}}'
     ].join('');
-    document.head.appendChild(style);
+    if (document.head) document.head.appendChild(style);
   }
 
   function safeStage(value) {
@@ -1876,28 +1912,28 @@
       var studyAngle = finiteNumber(d.studyAngle);
       if (studyAngle === null) studyAngle = 46;
       var studyPrediction = d.studyPrediction || '';
-      var studyResult = d.studyResult || null;
+      var studyResult = (_tcPlainObj(d.studyResult) && _tcPlainObj(d.studyResult.result) && Number.isFinite(d.studyResult.result.range)) ? d.studyResult : null;
       var studyExplanation = ['components', 'gravity', 'speed'].indexOf(d.studyExplanation) >= 0 ? d.studyExplanation : '';
-      var studyExplanationResult = d.studyExplanationResult || null;
+      var studyExplanationResult = _tcPlainObj(d.studyExplanationResult) ? d.studyExplanationResult : null;
       var replayVariantId = normalizeMissionVariantId(d.replayVariantId, 'meridian-5');
       var replayPrediction = d.replayPrediction || '';
-      var replayResult = d.replayResult || null;
+      var replayResult = _tcPlainObj(d.replayResult) ? d.replayResult : null;
       var replayLearning = normalizeReplayLearning(d.replayLearning);
       var safeguardCaseId = getSafeguardCase(d.safeguardCaseId).id;
       var selectedSafeguardCase = getSafeguardCase(safeguardCaseId);
       var safeguardPrediction = SAFEGUARD_OPTIONS.some(function (item) { return item.id === d.safeguardPrediction; }) ? d.safeguardPrediction : '';
-      var safeguardResult = d.safeguardResult || null;
-      var connectionNoteState = d.connectionNotes || {};
+      var safeguardResult = _tcPlainObj(d.safeguardResult) ? d.safeguardResult : null;
+      var connectionNoteState = _tcPlainObj(d.connectionNotes) ? d.connectionNotes : {};
       var connectionNotes = normalizeConnectionNotes(connectionNoteState);
-      var reflection = d.reflection || {};
+      var reflection = _tcPlainObj(d.reflection) ? d.reflection : {};
       var reflectionRecord = normalizeReflection(reflection);
       var lowDistraction = d.lowDistraction === true;
       var orientationDismissed = d.orientationDismissed === true;
       var restartConfirmOpen = d.restartConfirmOpen === true;
       var extensionView = ['menu', 'angle', 'replay', 'safeguard'].indexOf(d.extensionView) >= 0 ? d.extensionView : 'menu';
       var diagnosticCursor = Math.max(0, Math.floor(finiteNumber(d.diagnosticCursor) || 0));
-      if (replayResult && (!Array.isArray(replayResult.changedInputs) || !Number.isFinite(replayResult.rangeDifference))) {
-        var replayRecoveryMissionId = replayResult.mission && replayResult.mission.id || replayVariantId;
+      if (replayResult && (!Array.isArray(replayResult.changedInputs) || !Number.isFinite(replayResult.rangeDifference) || !_tcPlainObj(replayResult.mission) || !_tcPlainObj(replayResult.result))) {
+        var replayRecoveryMissionId = (replayResult.mission && replayResult.mission.id) || replayVariantId;
         var recoveredReplayPrediction = ['shorter', 'about', 'longer'].indexOf(replayResult.prediction) >= 0 ? replayResult.prediction : '';
         replayResult = hasMissionVariant(replayRecoveryMissionId)
           ? (recoveredReplayPrediction ? evaluateReplayPrediction(replayRecoveryMissionId, recoveredReplayPrediction) : compareMissionVariant(replayRecoveryMissionId))
@@ -1918,20 +1954,27 @@
       var snapshotFresh = evidenceProvenance.status === 'current';
 
       function update(patch) {
+        if (typeof ctx.setToolData !== 'function') return;
         ctx.setToolData(function (prev) {
-          var nextState = Object.assign({}, (prev && prev[STATE_KEY]) || {}, patch || {});
-          var result = Object.assign({}, prev || {});
+          var safePrev = _tcPlainObj(prev) ? prev : {};
+          var prevState = _tcPlainObj(safePrev[STATE_KEY]) ? safePrev[STATE_KEY] : {};
+          var nextPatch = typeof patch === 'function' ? (patch(prevState) || {}) : (patch || {});
+          var nextState = Object.assign({}, prevState, nextPatch);
+          var result = Object.assign({}, safePrev);
           result[STATE_KEY] = nextState;
           return result;
         });
       }
       function reviseFrom(stationId, patch) {
+        if (typeof ctx.setToolData !== 'function') return;
         var stationIndex = WORKFLOW_STATIONS.indexOf(stationId);
         var affected = stationIndex >= 0 ? WORKFLOW_STATIONS.slice(stationIndex).filter(function (id) { return !!completed[id]; }) : [];
         ctx.setToolData(function (prev) {
-          var current = (prev && prev[STATE_KEY]) || {};
-          var nextState = invalidateForRevision(current, stationId, patch || {}, Date.now());
-          var result = Object.assign({}, prev || {});
+          var safePrev = _tcPlainObj(prev) ? prev : {};
+          var current = _tcPlainObj(safePrev[STATE_KEY]) ? safePrev[STATE_KEY] : {};
+          var nextPatch = typeof patch === 'function' ? (patch(current) || {}) : (patch || {});
+          var nextState = invalidateForRevision(current, stationId, nextPatch, Date.now());
+          var result = Object.assign({}, safePrev);
           result[STATE_KEY] = nextState;
           return result;
         });
@@ -1940,51 +1983,75 @@
         }
       }
       function markComplete(id, nextStage, extra) {
-        var nextCompleted = Object.assign({}, completed); nextCompleted[id] = true;
-        var nextAuditTrail = recordAuditHandoff(auditTrail, id, nextStage, Date.now());
-        update(Object.assign({ completed: nextCompleted, stage: nextStage, auditTrail: nextAuditTrail, revisionNotice: null }, extra || {}));
+        update(function (curr) {
+          var currCompleted = _tcPlainObj(curr.completed) ? curr.completed : completed;
+          var nextCompleted = Object.assign({}, currCompleted); nextCompleted[id] = true;
+          var currTrail = normalizeAuditTrail(curr.auditTrail || auditTrail);
+          var nextAuditTrail = recordAuditHandoff(currTrail, id, nextStage, Date.now());
+          return Object.assign({ completed: nextCompleted, stage: nextStage, auditTrail: nextAuditTrail, revisionNotice: null }, extra || {});
+        });
         focusResult('tc-stage-heading-' + nextStage);
         if (typeof ctx.announceToSR === 'function') ctx.announceToSR(id + t('stem.trajectorycomputing.station_complete_moving_to', ' station complete. Moving to ') + nextStage + '.');
       }
       function setWorksheetField(id, value) {
-        var next = Object.assign({}, worksheet); next[id] = value;
-        reviseFrom('worksheet', { worksheet: next });
+        reviseFrom('worksheet', function (curr) {
+          var next = Object.assign({}, _tcPlainObj(curr.worksheet) ? curr.worksheet : worksheet); next[id] = value;
+          return { worksheet: next };
+        });
       }
       function setTableField(id, value) {
-        var next = Object.assign({}, tableLookup); next[id] = value;
-        reviseFrom('worksheet', { tableLookup: next });
+        reviseFrom('worksheet', function (curr) {
+          var next = Object.assign({}, _tcPlainObj(curr.tableLookup) ? curr.tableLookup : tableLookup); next[id] = value;
+          return { tableLookup: next };
+        });
       }
       function setFormatAuditField(id, value) {
-        var next = Object.assign({}, formatAudit); next[id] = value;
-        reviseFrom('program', { formatAudit: next });
+        reviseFrom('program', function (curr) {
+          var next = Object.assign({}, _tcPlainObj(curr.formatAudit) ? curr.formatAudit : formatAudit); next[id] = value;
+          return { formatAudit: next };
+        });
       }
       function setBatchReadbackField(id, value) {
-        var next = Object.assign({}, batchReadback); next[id] = value;
-        reviseFrom('batch', { batchReadback: next, runStatus: runStatus, printout: d.printout || null });
+        reviseFrom('batch', function (curr) {
+          var next = Object.assign({}, _tcPlainObj(curr.batchReadback) ? curr.batchReadback : batchReadback); next[id] = value;
+          return { batchReadback: next, runStatus: curr.runStatus || runStatus, printout: curr.printout || d.printout || null };
+        });
       }
       function setReproducibilityField(id, value) {
-        var next = Object.assign({}, reproducibility); next[id] = value;
-        reviseFrom('verify', { reproducibility: next });
+        reviseFrom('verify', function (curr) {
+          var next = Object.assign({}, _tcPlainObj(curr.reproducibility) ? curr.reproducibility : reproducibility); next[id] = value;
+          return { reproducibility: next };
+        });
       }
       function setVerificationField(id, value) {
-        var next = Object.assign({}, verification); next[id] = value;
-        reviseFrom('verify', { verification: next, reproducibilityResult: reproducibilityResult });
+        reviseFrom('verify', function (curr) {
+          var next = Object.assign({}, _tcPlainObj(curr.verification) ? curr.verification : verification); next[id] = value;
+          return { verification: next, reproducibilityResult: curr.reproducibilityResult || reproducibilityResult };
+        });
       }
       function setReflectionField(id, value) {
-        var next = Object.assign({}, reflection); next[id] = value;
-        update({ reflection: next });
+        update(function (curr) {
+          var next = Object.assign({}, _tcPlainObj(curr.reflection) ? curr.reflection : reflection); next[id] = value;
+          return { reflection: next };
+        });
       }
       function setConnectionNote(value) {
-        var next = Object.assign({}, connectionNoteState);
-        next[stage] = String(value || '').slice(0, 300);
-        update({ connectionNotes: next });
+        update(function (curr) {
+          var next = Object.assign({}, _tcPlainObj(curr.connectionNotes) ? curr.connectionNotes : connectionNoteState);
+          next[stage] = String(value || '').slice(0, 300);
+          return { connectionNotes: next };
+        });
       }
       function speak(text) {
         if (typeof ctx.callTTS === 'function') {
           // Read-aloud buttons only: force past the header narration switch (it gates automatic narration).
           try { ctx.callTTS(text, undefined, undefined, { force: true }); } catch (_) {}
         } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof SpeechSynthesisUtterance !== 'undefined') {
-          try { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(text)); } catch (_) {}
+          try {
+            if ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMute) return;
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+          } catch (_) {}
         }
       }
       function saveEvidenceSnapshot() {
@@ -1994,17 +2061,19 @@
         }
         var snapshot = createEvidenceRecord(d, Date.now());
         snapshot.fingerprint = currentEvidenceFingerprint;
-        ctx.setToolSnapshots(function (prev) { return (prev || []).concat([snapshot]); });
+        ctx.setToolSnapshots(function (prev) { return (Array.isArray(prev) ? prev : []).concat([snapshot]); });
         update({ lastSnapshotAt: snapshot.timestamp, lastSnapshotFingerprint: currentEvidenceFingerprint });
         if (typeof ctx.addToast === 'function') ctx.addToast(t('stem.trajectorycomputing.snapshot_saved', 'Trajectory evidence snapshot saved.'), 'success');
         if (typeof ctx.announceToSR === 'function') ctx.announceToSR(t('stem.trajectorycomputing.snapshot_saved_to_lesson', 'Trajectory evidence snapshot saved to the lesson.'));
       }
       function restartMission() {
-        ctx.setToolData(function (prev) {
-          var next = Object.assign({}, prev || {});
-          next[STATE_KEY] = { mode: mode, workPattern: workPattern, stage: 'briefing', lowDistraction: lowDistraction, orientationDismissed: orientationDismissed };
-          return next;
-        });
+        if (typeof ctx.setToolData === 'function') {
+          ctx.setToolData(function (prev) {
+            var next = Object.assign({}, _tcPlainObj(prev) ? prev : {});
+            next[STATE_KEY] = { mode: mode, workPattern: workPattern, stage: 'briefing', lowDistraction: lowDistraction, orientationDismissed: orientationDismissed };
+            return next;
+          });
+        }
         focusResult('tc-stage-heading-briefing');
         if (typeof ctx.announceToSR === 'function') ctx.announceToSR(t('stem.trajectorycomputing.lab_reset_to_briefing', 'Trajectory Computing Lab reset to the briefing.'));
       }
@@ -2095,6 +2164,7 @@
         );
       }
       function handleTabKey(event, index) {
+        if (event.ctrlKey || event.altKey || event.metaKey) return;
         var targetIndex = index;
         var step = 0;
         if (event.key === 'ArrowRight' || event.key === 'ArrowDown') step = 1;
@@ -2114,7 +2184,7 @@
         if (typeof document !== 'undefined') {
           setTimeout(function () {
             var nextTab = document.getElementById('tc-tab-' + nextStage);
-            if (nextTab && typeof nextTab.focus === 'function') nextTab.focus();
+            if (nextTab && nextTab.isConnected !== false && typeof nextTab.focus === 'function') nextTab.focus();
           }, 0);
         }
       }
@@ -2159,7 +2229,7 @@
         if (typeof document === 'undefined') return;
         setTimeout(function () {
           var node = document.getElementById(id);
-          if (node && typeof node.focus === 'function') node.focus();
+          if (node && node.isConnected !== false && typeof node.focus === 'function') node.focus();
         }, 0);
       }
 
@@ -2466,7 +2536,7 @@
               h('text', { x: 20, y: 24, fill: isContrast ? '#ffff00' : '#9ad7c0', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'FIG 1.0 // AURORA-3 BALLISTIC LAUNCH PROFILE'),
               h('text', { x: 620, y: 24, textAnchor: 'end', fill: isContrast ? '#ffffff' : '#fff0b5', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'g = 9.81 m/s\u00B2'),
               /* Gradient-shaded ballistic trajectory envelope */
-              !isContrast && h('path', { d: 'M 58 138 L 58 112 Q 290 12 518 136 L 518 138 Z', fill: 'url(#tc-br-env)' }),
+              !isContrast && h('path', { className: 'tc-env-breathe', d: 'M 58 138 L 58 112 Q 290 12 518 136 L 518 138 Z', fill: 'url(#tc-br-env)' }),
               /* Ground Datum Line */
               h('line', { x1: 24, y1: 138, x2: 616, y2: 138, stroke: isContrast ? '#ffff00' : '#9ad7c0', strokeWidth: 2 }),
               /* 30m Launch Tower with structural truss crossbars */
@@ -2474,27 +2544,30 @@
               !isContrast && h('path', { d: 'M 49 116 L 59 124 M 59 116 L 49 124 M 49 126 L 59 134 M 59 126 L 49 134', stroke: '#173c32', strokeWidth: 0.8, opacity: 0.55 }),
               h('text', { x: 54, y: 154, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#cce3d9', fontSize: 10, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }, 'Y0 = 30m'),
               /* Target Landing Zone Bracket (4.55 - 4.70 km) */
-              !isContrast && h('rect', { x: 468, y: 127, width: 100, height: 22, rx: 6, fill: '#ffbf47', opacity: 0.12 }),
+              !isContrast && h('rect', { className: 'tc-zone-pulse', x: 468, y: 127, width: 100, height: 22, rx: 6, fill: '#ffbf47', opacity: 0.12 }),
               h('rect', { x: 472, y: 131, width: 92, height: 14, rx: 3, fill: isContrast ? '#000000' : 'rgba(255,191,71,0.28)', stroke: isContrast ? '#00ff00' : '#ffbf47', strokeWidth: 1.8 }),
               h('text', { x: 518, y: 156, textAnchor: 'middle', fill: isContrast ? '#00ff00' : '#fff0b5', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'ZONE: 4.55-4.70 km'),
               /* Dual-pass luminous unknown ballistic arc (dashed — student computes exact landing range) */
-              !isContrast && h('path', { d: 'M 58 112 Q 290 12 518 136', fill: 'none', stroke: '#ffbf47', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.16 }),
-              h('path', { d: 'M 58 112 Q 290 12 518 136', fill: 'none', stroke: isContrast ? '#ffff00' : '#ffbf47', strokeWidth: 2.6, strokeDasharray: '7 5', strokeLinecap: 'round' }),
+              !isContrast && h('path', { className: 'tc-glow-breathe', d: 'M 58 112 Q 290 12 518 136', fill: 'none', stroke: '#ffbf47', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.16 }),
+              h('path', { className: !isContrast ? 'tc-arc-dash-flow' : undefined, d: 'M 58 112 Q 290 12 518 136', fill: 'none', stroke: isContrast ? '#ffff00' : '#ffbf47', strokeWidth: 2.6, strokeDasharray: '7 5', strokeLinecap: 'round' }),
+              !isContrast && h('path', { className: 'tc-telemetry-sweep', d: 'M 58 112 Q 290 12 518 136', fill: 'none', stroke: '#fff0b5', strokeWidth: 2.8, strokeLinecap: 'round', strokeDasharray: '28 520' }),
               /* Directional flow arrowhead along ballistic arc */
               h('polygon', { points: '404,96 392,89 396,100', fill: isContrast ? '#ffff00' : '#ffbf47' }),
               /* Release Point & Decomposed Velocity Vectors (dual-pass luminous) */
-              h('line', { x1: 58, y1: 112, x2: 148, y2: 112, stroke: isContrast ? '#00ff00' : '#9ad7c0', strokeWidth: 2, strokeDasharray: '4 3' }),
-              h('line', { x1: 148, y1: 112, x2: 148, y2: 58, stroke: isContrast ? '#00ff00' : '#9ad7c0', strokeWidth: 2, strokeDasharray: '4 3' }),
-              !isContrast && h('line', { x1: 58, y1: 112, x2: 148, y2: 58, stroke: '#ff8a5b', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.2 }),
+              h('line', { className: !isContrast ? 'tc-vec-flow' : undefined, x1: 58, y1: 112, x2: 148, y2: 112, stroke: isContrast ? '#00ff00' : '#9ad7c0', strokeWidth: 2, strokeDasharray: '4 3' }),
+              h('line', { className: !isContrast ? 'tc-vec-flow' : undefined, x1: 148, y1: 112, x2: 148, y2: 58, stroke: isContrast ? '#00ff00' : '#9ad7c0', strokeWidth: 2, strokeDasharray: '4 3' }),
+              !isContrast && h('line', { className: 'tc-glow-breathe', x1: 58, y1: 112, x2: 148, y2: 58, stroke: '#ff8a5b', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.2 }),
               h('line', { x1: 58, y1: 112, x2: 148, y2: 58, stroke: isContrast ? '#ffffff' : '#ff8a5b', strokeWidth: 3, strokeLinecap: 'round' }),
+              !isContrast && h('line', { className: 'tc-vec-pulse', x1: 58, y1: 112, x2: 148, y2: 58, stroke: '#fff0b5', strokeWidth: 2.4, strokeLinecap: 'round', strokeDasharray: '10 92' }),
               h('polygon', { points: '150,57 138,59 144,68', fill: isContrast ? '#ffffff' : '#ff8a5b' }),
-              !isContrast && h('circle', { cx: 58, cy: 112, r: 10, fill: 'url(#tc-br-beacon)' }),
+              !isContrast && h('circle', { className: 'tc-beacon-pulse', cx: 58, cy: 112, r: 10, fill: 'url(#tc-br-beacon)' }),
               h('circle', { cx: 58, cy: 112, r: 4.5, fill: isContrast ? '#ffff00' : '#ffbf47', stroke: '#000000', strokeWidth: 1.2 }),
               h('text', { x: 108, y: 74, textAnchor: 'middle', fill: isContrast ? '#ffffff' : '#ffcfb8', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'V0=215 m/s'),
               h('text', { x: 106, y: 126, textAnchor: 'middle', fill: isContrast ? '#00ff00' : '#9ad7c0', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'Vx = V cos 38\u00B0'),
               h('text', { x: 156, y: 88, fill: isContrast ? '#00ff00' : '#9ad7c0', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'Vy = V sin 38\u00B0'),
               /* Apex Milestone Beacon Callout */
-              !isContrast && h('circle', { cx: 288, cy: 62, r: 11, fill: 'url(#tc-br-beacon)' }),
+              !isContrast && h('circle', { className: 'tc-beacon-pulse', style: { animationDelay: '0.6s' }, cx: 288, cy: 62, r: 11, fill: 'url(#tc-br-beacon)' }),
+              !isContrast && h('circle', { className: 'tc-reticle-ring', cx: 288, cy: 62, r: 8, fill: 'none', stroke: '#ffbf47', strokeWidth: 1.2, opacity: 0.6 }),
               h('circle', { cx: 288, cy: 62, r: 4.5, fill: isContrast ? '#ffff00' : '#ffbf47', stroke: '#0c231d', strokeWidth: 1.2 }),
               !isContrast && h('circle', { cx: 286.8, cy: 60.8, r: 1.2, fill: '#ffffff', opacity: 0.75 }),
               h('text', { x: 288, y: 47, textAnchor: 'middle', fill: isContrast ? '#ffff00' : '#fff0b5', fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, monospace' }, 'Compute t & R = ?')
@@ -2579,18 +2652,20 @@
                   return h('line', { key: 'wgx-' + gx, x1: gx, y1: 12, x2: gx, y2: 100, stroke: '#1f4e42', strokeWidth: 0.7, opacity: 0.7 });
                 }),
                 /* Gradient-shaded vector decomposition triangle interior */
-                !isContrast && h('polygon', { points: '48,88 248,88 248,22', fill: 'url(#tc-wk-tri)' }),
+                !isContrast && h('polygon', { className: 'tc-env-breathe', points: '48,88 248,88 248,22', fill: 'url(#tc-wk-tri)' }),
                 /* Dual-pass luminous vector sides + arrowheads */
-                !isContrast && h('line', { x1: 48, y1: 88, x2: 248, y2: 88, stroke: vxOk ? '#4ade80' : '#9ad7c0', strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.18 }),
+                !isContrast && h('line', { className: 'tc-glow-breathe', x1: 48, y1: 88, x2: 248, y2: 88, stroke: vxOk ? '#4ade80' : '#9ad7c0', strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.18 }),
                 h('line', { x1: 48, y1: 88, x2: 248, y2: 88, stroke: isContrast ? '#00ff00' : (vxOk ? '#4ade80' : '#9ad7c0'), strokeWidth: 2.6, strokeLinecap: 'round' }),
                 h('polygon', { points: '246,88 237,84 237,92', fill: isContrast ? '#00ff00' : (vxOk ? '#4ade80' : '#9ad7c0') }),
-                !isContrast && h('line', { x1: 248, y1: 88, x2: 248, y2: 22, stroke: vyOk ? '#4ade80' : '#9ad7c0', strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.18 }),
+                !isContrast && h('line', { className: 'tc-glow-breathe', style: { animationDelay: '0.4s' }, x1: 248, y1: 88, x2: 248, y2: 22, stroke: vyOk ? '#4ade80' : '#9ad7c0', strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.18 }),
                 h('line', { x1: 248, y1: 88, x2: 248, y2: 22, stroke: isContrast ? '#00ff00' : (vyOk ? '#4ade80' : '#9ad7c0'), strokeWidth: 2.6, strokeLinecap: 'round' }),
                 h('polygon', { points: '248,24 244,33 252,33', fill: isContrast ? '#00ff00' : (vyOk ? '#4ade80' : '#9ad7c0') }),
-                !isContrast && h('line', { x1: 48, y1: 88, x2: 248, y2: 22, stroke: '#ffbf47', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.18 }),
+                !isContrast && h('line', { className: 'tc-glow-breathe', style: { animationDelay: '0.8s' }, x1: 48, y1: 88, x2: 248, y2: 22, stroke: '#ffbf47', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.18 }),
                 h('line', { x1: 48, y1: 88, x2: 248, y2: 22, stroke: isContrast ? '#ffff00' : '#ffbf47', strokeWidth: 3, strokeLinecap: 'round' }),
+                !isContrast && h('line', { className: 'tc-vec-pulse', x1: 48, y1: 88, x2: 248, y2: 22, stroke: '#fff0b5', strokeWidth: 2.4, strokeLinecap: 'round', strokeDasharray: '14 196' }),
                 h('polygon', { points: '248,22 237,22 241,30', fill: isContrast ? '#ffff00' : '#ffbf47' }),
                 /* Origin beacon */
+                !isContrast && h('circle', { className: 'tc-reticle-ring', cx: 48, cy: 88, r: 8, fill: 'none', stroke: '#ffbf47', strokeWidth: 1.2, opacity: 0.55 }),
                 h('circle', { cx: 48, cy: 88, r: 4, fill: isContrast ? '#ffff00' : '#ffbf47', stroke: '#0c231d', strokeWidth: 1.2 }),
                 h('rect', { x: 236, y: 76, width: 12, height: 12, fill: 'none', stroke: isContrast ? '#ffffff' : '#cce3d9', strokeWidth: 1.2 }),
                 h('path', { d: 'M 88 88 A 40 40 0 0 0 84 76', fill: 'none', stroke: isContrast ? '#ffff00' : '#ffbf47', strokeWidth: 1.8 }),
@@ -2835,18 +2910,21 @@
               return h('line', { key: 'cgx-' + gx, x1: gx, y1: 22, x2: gx, y2: 212, stroke: '#2d6653', strokeWidth: 0.8, strokeDasharray: '3 4', opacity: 0.6 });
             }),
             /* Gradient trajectory envelope */
-            !isContrast && h('path', { d: areaD, fill: 'url(#tc-ch-env)' }),
+            !isContrast && h('path', { className: 'tc-env-breathe', d: areaD, fill: 'url(#tc-ch-env)' }),
             /* Apex vertical drop guideline */
             !isContrast && h('line', { x1: apexX, y1: apexY, x2: apexX, y2: 212, stroke: '#9ad7c0', strokeWidth: 1, strokeDasharray: '3 4', opacity: 0.45 }),
             h('line', { x1: 34, y1: 212, x2: 658, y2: 212, stroke: '#9ad7c0', strokeWidth: 2 }),
             h('rect', { x: 34 + MISSION.zoneMin / 4900 * 624, y: 201, width: (MISSION.zoneMax - MISSION.zoneMin) / 4900 * 624, height: 11, rx: 2, fill: '#ff8a5b' }),
-            /* Dual-pass luminous predicted parabolic trajectory */
-            !isContrast && h('polyline', { points: pts, fill: 'none', stroke: '#ffbf47', strokeWidth: 9, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.2 }),
+            /* Dual-pass luminous predicted parabolic trajectory + guidance telemetry sweep */
+            !isContrast && h('polyline', { className: 'tc-glow-breathe', points: pts, fill: 'none', stroke: '#ffbf47', strokeWidth: 9, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.2 }),
             h('polyline', { points: pts, fill: 'none', stroke: '#fff0b5', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+            !isContrast && h('polyline', { className: 'tc-chart-sweep', points: pts, fill: 'none', stroke: '#ffffff', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round', strokeDasharray: '38 720' }),
             /* Apex & Landing milestone beacons */
-            !isContrast && h('circle', { cx: apexX, cy: apexY, r: 10, fill: 'url(#tc-ch-beacon)' }),
+            !isContrast && h('circle', { className: 'tc-beacon-pulse', cx: apexX, cy: apexY, r: 10, fill: 'url(#tc-ch-beacon)' }),
+            !isContrast && h('circle', { className: 'tc-reticle-ring', cx: apexX, cy: apexY, r: 8, fill: 'none', stroke: '#fff0b5', strokeWidth: 1.2, opacity: 0.55 }),
             h('circle', { cx: apexX, cy: apexY, r: 4.5, fill: '#fff0b5', stroke: '#102d27', strokeWidth: 1.5 }),
-            !isContrast && h('circle', { cx: landX, cy: 212, r: 15, fill: 'url(#tc-ch-beacon)' }),
+            !isContrast && h('circle', { className: 'tc-beacon-pulse', style: { animationDelay: '0.6s' }, cx: landX, cy: 212, r: 15, fill: 'url(#tc-ch-beacon)' }),
+            !isContrast && h('circle', { className: 'tc-reticle-ring', style: { animationDelay: '0.6s' }, cx: landX, cy: 212, r: 11.5, fill: 'none', stroke: '#ffbf47', strokeWidth: 1.4, opacity: 0.6 }),
             h('circle', { cx: landX, cy: 212, r: 7, fill: '#ffbf47', stroke: '#102d27', strokeWidth: 1.8 }),
             !isContrast && h('circle', { cx: landX - 2, cy: 210, r: 1.8, fill: '#ffffff', opacity: 0.7 }),
             h('text', { x: 38, y: 232, fill: '#d8eee5', fontSize: 12 }, t('stem.trajectorycomputing.0_m', '0 m')),
@@ -2912,23 +2990,24 @@
             }),
             h('rect', { x: zoneX, y: 22, width: zoneWidth, height: 190, fill: 'url(#tc-target-hatch)', opacity: 0.6 }),
             /* Gradient-shaded state envelopes under baseline & comparison trajectories */
-            !isContrast && h('path', { d: compAreaD, fill: 'url(#tc-cmp-alt-env)' }),
-            !isContrast && h('path', { d: baseAreaD, fill: 'url(#tc-cmp-base-env)' }),
+            !isContrast && h('path', { className: 'tc-env-breathe', d: compAreaD, fill: 'url(#tc-cmp-alt-env)' }),
+            !isContrast && h('path', { className: 'tc-env-breathe', style: { animationDelay: '0.8s' }, d: baseAreaD, fill: 'url(#tc-cmp-base-env)' }),
             h('line', { x1: 34, y1: 212, x2: 658, y2: 212, stroke: '#d8eee5', strokeWidth: 2 }),
             h('line', { x1: 34, y1: 22, x2: 34, y2: 212, stroke: '#d8eee5', strokeWidth: 2 }),
-            /* Dual-pass luminous trajectory curves */
-            !isContrast && h('polyline', { points: basePts, fill: 'none', stroke: '#ffcf70', strokeWidth: 9, strokeLinecap: 'round', opacity: 0.2 }),
+            /* Dual-pass luminous trajectory curves + telemetry sweep & comparison flow */
+            !isContrast && h('polyline', { className: 'tc-glow-breathe', points: basePts, fill: 'none', stroke: '#ffcf70', strokeWidth: 9, strokeLinecap: 'round', opacity: 0.2 }),
             h('polyline', { points: basePts, fill: 'none', stroke: '#ffcf70', strokeWidth: 4, strokeLinecap: 'round' }),
-            !isContrast && h('polyline', { points: compPts, fill: 'none', stroke: '#9ad7c0', strokeWidth: 8, strokeLinecap: 'round', opacity: 0.16 }),
-            h('polyline', { points: compPts, fill: 'none', stroke: '#9ad7c0', strokeWidth: 4, strokeDasharray: '10 7', strokeLinecap: 'round' }),
+            !isContrast && h('polyline', { className: 'tc-chart-sweep', points: basePts, fill: 'none', stroke: '#ffffff', strokeWidth: 2.8, strokeLinecap: 'round', strokeDasharray: '36 720' }),
+            !isContrast && h('polyline', { className: 'tc-glow-breathe', style: { animationDelay: '0.6s' }, points: compPts, fill: 'none', stroke: '#9ad7c0', strokeWidth: 8, strokeLinecap: 'round', opacity: 0.16 }),
+            h('polyline', { className: !isContrast ? 'tc-cmp-dash-flow' : undefined, points: compPts, fill: 'none', stroke: '#9ad7c0', strokeWidth: 4, strokeDasharray: '10 7', strokeLinecap: 'round' }),
             /* Glowing milestone beacons */
-            !isContrast && h('circle', { cx: baselinePeakX, cy: baselinePeakY, r: 11, fill: '#ffcf70', opacity: 0.2 }),
+            !isContrast && h('circle', { className: 'tc-beacon-pulse', cx: baselinePeakX, cy: baselinePeakY, r: 11, fill: '#ffcf70', opacity: 0.2 }),
             h('circle', { cx: baselinePeakX, cy: baselinePeakY, r: 6, fill: '#ffcf70', stroke: '#102d27', strokeWidth: 2 }),
-            !isContrast && h('rect', { x: comparisonPeakX - 9, y: comparisonPeakY - 9, width: 18, height: 18, rx: 4, fill: '#9ad7c0', opacity: 0.18 }),
+            !isContrast && h('rect', { className: 'tc-beacon-pulse', style: { animationDelay: '0.45s' }, x: comparisonPeakX - 9, y: comparisonPeakY - 9, width: 18, height: 18, rx: 4, fill: '#9ad7c0', opacity: 0.18 }),
             h('rect', { x: comparisonPeakX - 6, y: comparisonPeakY - 6, width: 12, height: 12, rx: 2, fill: '#9ad7c0', stroke: '#102d27', strokeWidth: 2 }),
-            !isContrast && h('circle', { cx: baselineLandingX, cy: 212, r: 11, fill: '#ffcf70', opacity: 0.22 }),
+            !isContrast && h('circle', { className: 'tc-beacon-pulse', style: { animationDelay: '0.9s' }, cx: baselineLandingX, cy: 212, r: 11, fill: '#ffcf70', opacity: 0.22 }),
             h('circle', { cx: baselineLandingX, cy: 212, r: 6, fill: '#ffcf70', stroke: '#102d27', strokeWidth: 2 }),
-            !isContrast && h('rect', { x: comparisonLandingX - 9, y: 203, width: 18, height: 18, rx: 4, fill: '#9ad7c0', opacity: 0.18 }),
+            !isContrast && h('rect', { className: 'tc-beacon-pulse', style: { animationDelay: '1.35s' }, x: comparisonLandingX - 9, y: 203, width: 18, height: 18, rx: 4, fill: '#9ad7c0', opacity: 0.18 }),
             h('rect', { x: comparisonLandingX - 6, y: 206, width: 12, height: 12, rx: 2, fill: '#9ad7c0', stroke: '#102d27', strokeWidth: 2 }),
             h('text', { x: baselinePeakX, y: baselinePeakY - 10, textAnchor: 'middle', fill: '#fff0b5', fontSize: 11, fontWeight: 800 }, '38\u00b0 peak ' + round(EXPECTED.peakHeight, 0) + ' m'),
             h('text', { x: comparisonPeakX, y: comparisonPeakY + 19, textAnchor: 'middle', fill: '#c9f6df', fontSize: 11, fontWeight: 800 }, comparison.angle + '\u00b0 peak ' + round(comparison.result.peakHeight, 0) + ' m'),
@@ -3123,11 +3202,13 @@
             h('div', { className: 'tc-row' }, action(complete ? t('stem.trajectorycomputing.run_as_new_job', 'Run as new job') : t('stem.trajectorycomputing.feed_deck_and_run_job', 'Feed deck and run job'), function () {
               var hadSignedEvidence = !!(completed.batch || completed.verify || verificationResult);
               var submission = prepareBatchSubmission(d, code, deck, Date.now());
-              ctx.setToolData(function (prev) {
-                var result = Object.assign({}, prev || {});
-                result[STATE_KEY] = submission;
-                return result;
-              });
+              if (typeof ctx.setToolData === 'function') {
+                ctx.setToolData(function (prev) {
+                  var result = Object.assign({}, _tcPlainObj(prev) ? prev : {});
+                  result[STATE_KEY] = submission;
+                  return result;
+                });
+              }
               if (submission.runStatus === 'error') {
                 if (typeof ctx.addToast === 'function') ctx.addToast(submission.batchFailure.message, 'error');
                 if (typeof ctx.announceToSR === 'function') ctx.announceToSR(submission.batchFailure.message);
@@ -3348,7 +3429,7 @@
               ),
               snapshotFresh && h('p', { className: 'tc-ok', role: 'status' }, t('stem.trajectorycomputing.latest_evidence_saved', 'Evidence snapshot includes the latest work.')),
               hasSavedSnapshot && !snapshotFresh && h('p', { className: 'tc-bad', role: 'status' }, t('stem.trajectorycomputing.evidence_snapshot_needs_update', 'Work changed after the last snapshot. Save a new snapshot to include it.')),
-              restartConfirmOpen && h('section', { id: 'tc-restart-confirm', className: 'tc-diag', role: 'alert', tabIndex: -1, onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); closeRestartConfirmation(); } } },
+              restartConfirmOpen && h('section', { id: 'tc-restart-confirm', className: 'tc-diag', role: 'alert', tabIndex: -1, onKeyDown: function (event) { if (event.ctrlKey || event.altKey || event.metaKey) return; if (event.key === 'Escape') { event.preventDefault(); closeRestartConfirmation(); } } },
                 h('h4', null, t('stem.trajectorycomputing.confirm_new_mission', 'Start a new mission?')),
                 h('p', null, evidenceProvenance.status === 'current'
                   ? t('stem.trajectorycomputing.restart_current_snapshot', 'Your latest work matches the saved evidence snapshot. Starting a new mission clears the on-screen work, while the saved snapshot remains available.')
@@ -3593,20 +3674,21 @@
                   }),
                   !isContrast && h('line', { x1: 10, y1: 2.5, x2: 42, y2: 2.5, stroke: '#ffffff', strokeWidth: 0.9, opacity: 0.3 }),
                   /* Punch-card top registration holes */
-                  [10, 18, 26, 34, 42].map(function (hx) {
-                    return h('rect', { key: 'h-' + hx, x: hx - 2, y: 6, width: 4, height: 3, rx: 0.7, fill: isContrast ? '#ffff00' : '#9ad7c0', opacity: isContrast ? 1 : 0.8 });
+                  [10, 18, 26, 34, 42].map(function (hx, hi) {
+                    return h('rect', { key: 'h-' + hx, className: !isContrast ? 'tc-card-hole' : undefined, style: !isContrast ? { animationDelay: (hi * 0.32) + 's' } : undefined, x: hx - 2, y: 6, width: 4, height: 3, rx: 0.7, fill: isContrast ? '#ffff00' : '#9ad7c0', opacity: isContrast ? 1 : 0.8 });
                   }),
                   /* Shaded parabolic flight envelope */
-                  !isContrast && h('path', { d: 'M 9 43 L 9 39 Q 25 10 43 38 L 43 43 Z', fill: 'url(#tc-emb-env)' }),
-                  /* Dual-pass luminous parabolic launch arc */
-                  !isContrast && h('path', { d: 'M 9 39 Q 25 10 43 38', fill: 'none', stroke: '#ffbf47', strokeWidth: 5.5, strokeLinecap: 'round', opacity: 0.22 }),
+                  !isContrast && h('path', { className: 'tc-env-breathe', d: 'M 9 43 L 9 39 Q 25 10 43 38 L 43 43 Z', fill: 'url(#tc-emb-env)' }),
+                  /* Dual-pass luminous parabolic launch arc + traveling telemetry pulse */
+                  !isContrast && h('path', { className: 'tc-glow-breathe', d: 'M 9 39 Q 25 10 43 38', fill: 'none', stroke: '#ffbf47', strokeWidth: 5.5, strokeLinecap: 'round', opacity: 0.22 }),
                   h('path', { d: 'M 9 39 Q 25 10 43 38', fill: 'none', stroke: isContrast ? '#ffff00' : '#ffbf47', strokeWidth: 2.5, strokeLinecap: 'round' }),
+                  !isContrast && h('path', { className: 'tc-arc-pulse-sm', d: 'M 9 39 Q 25 10 43 38', fill: 'none', stroke: '#ffffff', strokeWidth: 2.2, strokeLinecap: 'round', strokeDasharray: '6 36' }),
                   /* Launch tower tick & glowing landing reticle */
                   h('line', { x1: 9, y1: 35, x2: 9, y2: 43, stroke: isContrast ? '#ffffff' : '#e9f7f1', strokeWidth: 2 }),
-                  !isContrast && h('circle', { cx: 43, cy: 38, r: 6.5, fill: '#ff8a5b', opacity: 0.24 }),
+                  !isContrast && h('circle', { className: 'tc-beacon-pulse', cx: 43, cy: 38, r: 6.5, fill: '#ff8a5b', opacity: 0.24 }),
                   h('circle', { cx: 43, cy: 38, r: 3.5, fill: isContrast ? '#00ff00' : '#ff8a5b', stroke: isContrast ? '#ffff00' : '#ffffff', strokeWidth: 1.2 }),
                   /* Horizontal range baseline */
-                  h('line', { x1: 7, y1: 43, x2: 45, y2: 43, stroke: isContrast ? '#ffff00' : '#9ad7c0', strokeWidth: 1.4, strokeDasharray: '3 2' })
+                  h('line', { className: !isContrast ? 'tc-vec-flow' : undefined, x1: 7, y1: 43, x2: 45, y2: 43, stroke: isContrast ? '#ffff00' : '#9ad7c0', strokeWidth: 1.4, strokeDasharray: '3 2' })
                 ),
                 h('div', { style: { minWidth: 0 } },
                   h('p', { className: 'tc-kicker', style: { margin: 0 } }, t('stem.trajectorycomputing.original_historical_stem_simulation', 'Original historical STEM simulation')),
@@ -3672,7 +3754,7 @@
           d.revisionNotice && h('p', { className: 'tc-revision-alert', role: 'status' },
             h('strong', null, t('stem.trajectorycomputing.revision_required', 'Revision required: ')),
             t('stem.trajectorycomputing.revision_required_help', 'A checked input changed. Recheck this station and the downstream evidence before verification. '),
-            h('span', null, t('stem.trajectorycomputing.affected_stations', 'Affected stations: ') + ((d.revisionNotice.affectedStations || []).map(stageLabel).join(', ') || currentStation[1]) + '.')
+            h('span', null, t('stem.trajectorycomputing.affected_stations', 'Affected stations: ') + ((Array.isArray(d.revisionNotice.affectedStations) ? d.revisionNotice.affectedStations : []).map(stageLabel).join(', ') || currentStation[1]) + '.')
           ),
           h('div', { className: 'tc-grid' },
             h('main', { id: 'tc-main-content', className: 'tc-paper', tabIndex: -1 }, renderStage()),

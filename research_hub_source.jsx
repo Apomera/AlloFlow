@@ -2331,6 +2331,7 @@
   function makeAskResearchCoach(deps, journal, setJournal) {
     var ai = deps.ai;
     var onCallGemini = deps.onCallGemini;
+    var onSafetyFlag = typeof deps.onSafetyFlag === 'function' ? deps.onSafetyFlag : null;
     var addToast = deps.addToast;
     var nowMs = function () { return Date.now(); };
 
@@ -2462,6 +2463,29 @@
         return { ok: false, blocked: true, blockedReason: 'no_prompt', traceId: traceId, latencyMs: 0 };
       }
       if (prompt.length > INPUT_HARD_CAP * 6) prompt = prompt.slice(0, INPUT_HARD_CAP * 6);
+
+      // Crisis self-harm safety gate: scoped to self_harm only so academic
+      // research on war, history, medicine, or literature is never blocked.
+      if (typeof window !== 'undefined' && window.SafetyContentChecker && typeof window.SafetyContentChecker.check === 'function') {
+        try {
+          var _rhFlags = window.SafetyContentChecker.check(prompt);
+          var _rhSafe = Array.isArray(_rhFlags) && _rhFlags.find(function (f) { return f && f.category === 'self_harm'; });
+          if (_rhSafe) {
+            if (onSafetyFlag) {
+              try { onSafetyFlag({ tool: 'research_hub_' + (tpId || 'ai'), severity: 'critical', category: 'self_harm', timestamp: Date.now() }); } catch (_) {}
+            }
+            try { if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') window.SelHub.showCrisisModal(); } catch (_) {}
+            return {
+              ok: false,
+              blocked: true,
+              blockedReason: 'safety_self_harm',
+              detail: 'We paused AI feedback here. Your wellbeing matters more than any project — please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line).',
+              traceId: traceId,
+              latencyMs: 0,
+            };
+          }
+        } catch (_) {}
+      }
 
       // Network gate
       if (typeof navigator !== 'undefined' && navigator.onLine === false) {
@@ -2963,11 +2987,12 @@
       return makeAskResearchCoach({
         ai: props.ai,
         onCallGemini: props.onCallGemini,
+        onSafetyFlag: props.onSafetyFlag,
         addToast: addToast,
       }, journal, setJournal);
       // We intentionally rebuild whenever journal changes so the gate check
       // sees fresh state; deps capture the in-flight closure.
-    }, [journal, props.ai, props.onCallGemini]);
+    }, [journal, props.ai, props.onCallGemini, props.onSafetyFlag]);
 
     var lanes = resolveLanes();
     var activeLane = journal.activeLane ? lanes.filter(function (L) { return L.id === journal.activeLane; })[0] : null;
@@ -4037,6 +4062,7 @@
       hydrateResearchMedia: hydrateResearchMedia,
       stampNewInquiryArtifacts: stampNewInquiryArtifacts,
       applyMethodPackSelection: applyMethodPackSelection,
+      makeAskResearchCoach: makeAskResearchCoach,
     };
   }
 

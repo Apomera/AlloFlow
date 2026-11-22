@@ -141,8 +141,10 @@
     var title = String(m.title || lesson.title || '').replace(/\s+/g, ' ').trim().slice(0, 120);
     var learner = typeof m.learner === 'string' ? m.learner.replace(/\s+/g, ' ').trim().slice(0, 60) : '';
     var named = Array.isArray(m.stores) && isObject(m.stores[0]) && typeof m.stores[0].key === 'string' ? m.stores[0].key : '';
+    var fallbackBase = typeof lesson.lessonId === 'string' && lesson.lessonId && typeof lesson.revision === 'string' && lesson.revision
+      ? KEY_PREFIX + lesson.lessonId + ':' + lesson.revision : '';
     var base = named.indexOf(KEY_PREFIX) === 0 && named.length <= 300 ? named
-      : typeof lesson.lessonId === 'string' && lesson.lessonId ? KEY_PREFIX + lesson.lessonId + ':' + lesson.revision : '';
+      : (fallbackBase.length <= 300 ? fallbackBase : '');
     // A read-along has pages to listen to, not questions.
     if (kind === 'read') return { kind: kind, label: label, check: false, items: 0, pages: all.length, title: title, learner: learner, base: base };
     return { kind: kind, label: label, check: check, items: items, title: title, learner: learner, base: base };
@@ -276,10 +278,11 @@
   // The data block goes in the head, before the file's own script runs. Every < in the JSON is written as its
   // escape (backslash, u003c), so the block can never be closed early.
   function withSnapshot(html, items) {
+    var clean = String(html || '').replace(/<script\b[^>]*id="packet-store-snapshot"[^>]*>[\s\S]*?<\/script>/gi, '');
     var lt = new RegExp('<', 'g');
     var block = '<script type="application/json" id="packet-store-snapshot">' + JSON.stringify({ kind: STORE_KIND, items: items }).replace(lt, '\\' + 'u003c') + '</script>';
-    var at = html.search(/<\/head\s*>/i);
-    return at >= 0 ? html.slice(0, at) + block + html.slice(at) : block + html;
+    var at = clean.search(/<\/head\s*>/i);
+    return at >= 0 ? clean.slice(0, at) + block + clean.slice(at) : block + clean;
   }
 
   function setBackgroundInert(on) {
@@ -305,7 +308,7 @@
     frame.title = current.title;
     frame.setAttribute('sandbox', 'allow-scripts allow-downloads');
     frame.setAttribute('allow', 'autoplay; clipboard-write');
-    session = { frame: frame, keys: {}, count: 0, lastSave: 0, file: null, warned: false, of: current };
+    session = { frame: frame, keys: Object.create(null), count: 0, lastSave: 0, file: null, warned: false, of: current };
     frame.srcdoc = current.bridged ? withSnapshot(current.html, keptFor(current)) : current.html;
     setText('run-title', current.title);
     setText('run-said', '');

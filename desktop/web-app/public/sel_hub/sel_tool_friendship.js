@@ -10,7 +10,7 @@
 // Grade-adaptive: uses ctx.gradeBand for vocabulary & depth
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
+if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
   isRegistered: function(id) { return !!this._registry[id]; },
@@ -19,7 +19,9 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
+  if (typeof window === 'undefined' || !window.SelHub) return;
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-friendship')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-friendship';
@@ -33,8 +35,15 @@ window.SelHub = window.SelHub || {
 
   // ── Sound Effects ──
   var _audioCtx = null;
-  function getAudioCtx() { if (!_audioCtx) { try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } return _audioCtx; }
+  function _frIsMuted() {
+    try {
+      if (typeof window === 'undefined') return true;
+      return !!(window._alloGlobalMuted || (window.__alloAudio && window.__alloAudio.muted));
+    } catch (_) { return false; }
+  }
+  function getAudioCtx() { if (_frIsMuted()) return null; if (!_audioCtx) { try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } return _audioCtx; }
   function playTone(freq, dur, type, vol) {
+    if (_frIsMuted()) return;
     var ac = getAudioCtx(); if (!ac) return;
     try { var osc = ac.createOscillator(); var gain = ac.createGain(); osc.type = type || 'sine'; osc.frequency.value = freq; gain.gain.setValueAtTime(vol || 0.1, ac.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (dur || 0.15)); osc.connect(gain); gain.connect(ac.destination); osc.start(); osc.stop(ac.currentTime + (dur || 0.15)); } catch(e) {}
   }
@@ -987,19 +996,20 @@ window.SelHub = window.SelHub || {
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var band = ctx.gradeBand || 'elementary';
 
-      var d = (ctx.toolData && ctx.toolData.friendship) || {};
+      var _frObj = function(v) { return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; };
+      var d = _frObj(ctx.toolData && ctx.toolData.friendship);
       var upd = function(key, val) {
         if (typeof key === 'object') { if (ctx.updateMulti) ctx.updateMulti('friendship', key); }
         else { if (ctx.update) ctx.update('friendship', key, val); }
       };
 
-      var activeTab     = d.activeTab || 'compass';
+      var activeTab     = typeof d.activeTab === 'string' && d.activeTab ? d.activeTab : 'compass';
       if (!_frAiOn && activeTab === 'coach') activeTab = 'compass';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
       var myStyle       = d.myStyle || null;
       var starterIdx    = (Number.isInteger(d.starterIdx) && d.starterIdx >= 0 ? d.starterIdx : 0);
       var repairIdx     = (Number.isInteger(d.repairIdx) && d.repairIdx >= 0 ? d.repairIdx : 0);
-      var endingIdx     = d.endingIdx || 0;
+      var endingIdx     = (Number.isInteger(d.endingIdx) && d.endingIdx >= 0 ? d.endingIdx : 0);
       var coachInput    = typeof d.coachInput === 'string' ? d.coachInput : '';
       var coachHistory  = Array.isArray(d.coachHistory) ? d.coachHistory : [];
       var coachLoading  = d.coachLoading || false;
@@ -1016,17 +1026,41 @@ window.SelHub = window.SelHub || {
       var friendNotes   = (Array.isArray(d.friendNotes) ? d.friendNotes : []);
       var newNote       = (typeof d.newNote === 'string' ? d.newNote : '');
       // Digital friendship
-      var digitalIdx    = d.digitalIdx || 0;
+      var digitalIdx    = (Number.isInteger(d.digitalIdx) && d.digitalIdx >= 0 ? d.digitalIdx : 0);
       var digitalShown  = d.digitalShown || false;
       var digitalDraft  = d.digitalDraft || '';
-      var digitalDone   = d.digitalDone || {};
+      var digitalDone   = _frObj(d.digitalDone);
       // The Digital tab saves notes per dilemma in digitalCases. digitalDone is the
       // earlier activity's record and nothing writes it now, so this stat stayed 0.
-      var digitalCasesSaved = d.digitalCases && typeof d.digitalCases === 'object' && !Array.isArray(d.digitalCases) ? d.digitalCases : {};
+      var digitalCasesSaved = _frObj(d.digitalCases);
       var digitalPracticeCount = Object.keys(digitalDone).length + Object.keys(digitalCasesSaved).filter(function(k) {
         var c = digitalCasesSaved[k];
         return !!c && typeof c === 'object' && Object.keys(c).some(function(f) { return typeof c[f] === 'string' && c[f].trim() !== ''; });
       }).length;
+
+      function _frCheckSafety(text) {
+        var s = String(text || '').trim();
+        if (!s) return null;
+        var res = null;
+        if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+          res = window.SelHub.safeRehearseCheck(s, { toolId: 'friendship', onSafetyFlag: onSafetyFlag });
+        } else if (window.SelHub && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(s);
+          if (scan && scan.tier >= 2) {
+            res = { action: scan.tier >= 3 ? 'block' : 'nudge', tier: scan.tier, severity: scan.severity || 'crisis' };
+            if (onSafetyFlag) {
+              try { onSafetyFlag({ toolId: 'friendship', tier: scan.tier, severity: scan.severity, excerpt: s.slice(0, 120), timestamp: Date.now() }); } catch (_) {}
+            }
+          }
+        }
+        if (res && (res.action === 'block' || (res.tier && res.tier >= 3))) {
+          upd('_lastTier', 3);
+          if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+            try { window.SelHub.showCrisisModal(band); } catch (_) {}
+          }
+        }
+        return res;
+      }
 
       // ── Host theme remap (consumes ctx.theme) — same pattern as Growth Mindset ──
       // Friendship is light-base: _frC('#hex') returns the ORIGINAL hex on a light host
@@ -1059,11 +1093,13 @@ window.SelHub = window.SelHub || {
       // an accent for a label without also lightening the chip that accent fills.
       // Consulted only from a `color:` position, so no surface moves; falls back
       // to _frC for any hue not listed.
-      var _FR_INK = { '#a855f7': '#c084fc', '#3b82f6': '#60a5fa', '#8b5cf6': '#a78bfa', '#ec4899': '#f472b6', '#ef4444': '#f87171', '#22c55e': '#4ade80' };
-      var _FR_INK_HC = { '#a855f7': '#ffff00', '#3b82f6': '#ffff00', '#8b5cf6': '#ffff00', '#ec4899': '#ffff00', '#ef4444': '#ffff00', '#22c55e': '#ffff00' };
+      var _FR_INK_DARK = { '#a855f7': '#c084fc', '#3b82f6': '#60a5fa', '#8b5cf6': '#a78bfa', '#ec4899': '#f472b6', '#ef4444': '#f87171', '#22c55e': '#4ade80', '#d97706': '#fbbf24', '#f59e0b': '#fbbf24', '#10b981': '#34d399', '#0ea5e9': '#38bdf8', '#0891b2': '#22d3ee', '#9333ea': '#c084fc' };
+      var _FR_INK_LIGHT = { '#a855f7': '#7e22ce', '#3b82f6': '#1d4ed8', '#8b5cf6': '#6d28d9', '#ec4899': '#be185d', '#ef4444': '#b91c1c', '#22c55e': '#15803d', '#10b981': '#047857', '#0ea5e9': '#0369a1', '#d97706': '#b45309', '#f59e0b': '#b45309', '#fbbf24': '#92400e', '#0891b2': '#0e7490', '#9333ea': '#7e22ce' };
+      var _FR_INK_HC = { '#a855f7': '#ffff00', '#3b82f6': '#ffff00', '#8b5cf6': '#ffff00', '#ec4899': '#ffff00', '#ef4444': '#ffff00', '#22c55e': '#ffff00', '#d97706': '#ffff00', '#f59e0b': '#ffff00', '#fbbf24': '#ffff00', '#10b981': '#ffff00', '#0ea5e9': '#ffff00', '#0891b2': '#ffff00', '#9333ea': '#ffff00' };
       var _frInk = function(hex) {
         if (_frHC) return _FR_INK_HC[hex] || _frC(hex);
-        return _FR_INK[hex] || _frC(hex);
+        if (_frDark) return _FR_INK_DARK[hex] || _frC(hex);
+        return _FR_INK_LIGHT[hex] || _frC(hex);
       };
 
       var AMBER = '#d97706'; var AMBER_LIGHT = _frC('#fffbeb'); var AMBER_DARK = _frC('#78350f');
@@ -1079,34 +1115,57 @@ window.SelHub = window.SelHub || {
         { id: 'rehearse', icon: '\uD83C\uDFAD', label: 'Rehearse' },
       ].filter(function (t) { return _frAiOn || t.id !== 'coach'; });
 
-      var exploredTabs = d.exploredTabs || {};
-      if (!exploredTabs[activeTab]) { var ne = Object.assign({}, exploredTabs); ne[activeTab] = true; upd('exploredTabs', ne); }
-      var exploredCount = Object.keys(exploredTabs).length;
+      var exploredTabs = _frObj(d.exploredTabs);
+      if (React && typeof React.useEffect === 'function') {
+        React.useEffect(function() {
+          if (!exploredTabs[activeTab]) {
+            var ne = Object.assign({}, exploredTabs);
+            ne[activeTab] = true;
+            upd('exploredTabs', ne);
+          }
+        }, [activeTab]);
+      }
+      var exploredCount = TABS.filter(function(t) { return !!exploredTabs[t.id] || t.id === activeTab; }).length;
 
       var tabBar = h('div', {
-        style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid #fde68a', background: 'linear-gradient(180deg, ' + _frC('#fffbeb') + ', ' + _frC('#fef3c7') + ')', flexShrink: 0 }
+        style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid ' + (_frHC ? '#ffff00' : _frDark ? '#78350f' : '#fde68a'), background: 'linear-gradient(180deg, ' + _frC('#fffbeb') + ', ' + _frC('#fef3c7') + ')', flexShrink: 0 }
       },
         h('div', { style: { height: '3px', background: _frC('#e2e8f0'), position: 'relative', overflow: 'hidden' } },
-          h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: 'linear-gradient(90deg, ' + AMBER + ', #f59e0b)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0' } })
+          h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: _frHC ? '#ffff00' : 'linear-gradient(90deg, ' + AMBER + ', #f59e0b)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0' } })
         ),
         h('div', {
           style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' }
         },
           h('div', { role: 'tablist', 'aria-label': 'Friendship sections', style: { display: 'flex', gap: '3px' } },
-            TABS.map(function(t) {
+            TABS.map(function(t, tabIndex) {
             var active = activeTab === t.id;
             var explored = !!exploredTabs[t.id];
             return h('button', {
-              key: t.id, id: 'friendship-tab-' + t.id, role: 'tab', className: 'sel-tab' + (active ? ' sel-tab-active' : ''), 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'friendship-panel-' + t.id,
+              key: t.id, type: 'button', id: 'friendship-tab-' + t.id, role: 'tab', tabIndex: active ? 0 : -1, className: 'sel-tab' + (active ? ' sel-tab-active' : ''), 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'friendship-panel-' + t.id,
               onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
-              style: { padding: '6px 14px', borderRadius: '10px', border: active ? 'none' : '1px solid ' + (explored ? '#fde68a' : 'transparent'), background: active ? 'linear-gradient(135deg, #b45309, #92400e)' : explored ? 'rgba(217,119,6,0.06)' : 'transparent', color: active ? '#fff' : explored ? _frC('#78350f') : _frC('#94a3b8'), fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: active ? '0 3px 12px rgba(217,119,6,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
+              onKeyDown: function(e) {
+                if (e.altKey || e.ctrlKey || e.metaKey) return;
+                var nextIdx = -1;
+                if (e.key === 'ArrowRight') nextIdx = (tabIndex + 1) % TABS.length;
+                else if (e.key === 'ArrowLeft') nextIdx = (tabIndex - 1 + TABS.length) % TABS.length;
+                else if (e.key === 'Home') nextIdx = 0;
+                else if (e.key === 'End') nextIdx = TABS.length - 1;
+                if (nextIdx >= 0) {
+                  e.preventDefault();
+                  var nextTab = TABS[nextIdx];
+                  upd('activeTab', nextTab.id);
+                  if (soundEnabled) sfxClick();
+                  try { var el = document.getElementById('friendship-tab-' + nextTab.id); if (el) el.focus(); } catch (_) {}
+                }
+              },
+              style: { padding: '6px 14px', borderRadius: '10px', border: active ? (_frHC ? '2px solid #ffff00' : 'none') : '1px solid ' + (explored ? (_frHC ? '#ffff00' : _frDark ? '#92400e' : '#fde68a') : (_frHC ? '#ffff00' : 'transparent')), background: active ? (_frHC ? '#ffff00' : 'linear-gradient(135deg, #b45309, #92400e)') : explored ? (_frHC ? '#000000' : 'rgba(217,119,6,0.08)') : 'transparent', color: active ? (_frHC ? '#000000' : '#fff') : explored ? _frC('#78350f') : _frC('#475569'), fontWeight: active ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: active && !_frHC ? '0 3px 12px rgba(217,119,6,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
             }, h('span', { className: active ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
-              explored && !active ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#fbbf24', marginLeft: '2px' } }) : null
+              explored && !active ? h('span', { 'aria-hidden': 'true', style: { width: '5px', height: '5px', borderRadius: '50%', background: _frHC ? '#ffff00' : '#d97706', marginLeft: '2px' } }) : null
             );
             })
           ),
-          h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: AMBER_DARK, fontWeight: 700, whiteSpace: 'nowrap', background: _frC('#fef3c7'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
-          h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'sel-btn', 'aria-label': soundEnabled ? 'Mute' : 'Unmute', style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
+          h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '12px', color: AMBER_DARK, fontWeight: 700, whiteSpace: 'nowrap', background: _frC('#fef3c7'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
+          h('button', { type: 'button', onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'sel-btn', 'aria-label': soundEnabled ? 'Mute' : 'Unmute', style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0, color: _frC('#1f2937') } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         )
       );
 
@@ -1122,23 +1181,32 @@ window.SelHub = window.SelHub || {
           rehearse: { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFAD', title: 'Rehearse — choices and possible responses', hint: 'Explore a fictional response condition. Clear words do not guarantee agreement. Respect a no, adapt to access and boundaries, and pause or reflect whenever useful.' },
           coach:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83E\uDD16', title: 'Practice — explore possible next steps', hint: 'Use a fictional or everyday situation. The AI offers ideas to question and adapt; it cannot know another person’s thoughts or predict the outcome. You can pause, set a boundary or ask a trusted person for support.' }
         };
-        var _selHdrInk = function(c) { if (!/^#[0-9a-fA-F]{6}$/.test(c || '')) return c; var p = [1, 3, 5].map(function(i) { return parseInt(c.slice(i, i + 2), 16); }); var L = function(a) { return a.reduce(function(s, v, i) { v /= 255; v = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return s + [0.2126, 0.7152, 0.0722][i] * v; }, 0); }; var lb = L(p.map(function(v, i) { return v * 0.25 + [15, 23, 42][i] * 0.75; })); for (var m = 0; m <= 1; m += 0.04) { var q = p.map(function(v) { return Math.round(v + (255 - v) * m); }); if ((L(q) + 0.05) / (lb + 0.05) >= 4.6) return m ? 'rgb(' + q.join(',') + ')' : c; } return '#ffffff'; }; // section title ink on the tinted dark card (1.4.3)
+        var _selHdrInk = function(c) {
+          if (_frHC) return '#ffff00';
+          if (!_frDark) return _frInk(c);
+          if (!/^#[0-9a-fA-F]{6}$/.test(c || '')) return c;
+          var p = [1, 3, 5].map(function(i) { return parseInt(c.slice(i, i + 2), 16); });
+          var L = function(a) { return a.reduce(function(s, v, i) { v /= 255; v = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return s + [0.2126, 0.7152, 0.0722][i] * v; }, 0); };
+          var lb = L(p.map(function(v, i) { return v * 0.25 + [15, 23, 42][i] * 0.75; }));
+          for (var m = 0; m <= 1; m += 0.04) { var q = p.map(function(v) { return Math.round(v + (255 - v) * m); }); if ((L(q) + 0.05) / (lb + 0.05) >= 4.6) return m ? 'rgb(' + q.join(',') + ')' : c; }
+          return '#ffffff';
+        };
         var meta = TAB_META[activeTab] || TAB_META.compass;
         return h('div', {
           style: {
             margin: '8px 12px 12px',
             padding: '12px 14px',
             borderRadius: 12,
-            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
-            border: '1px solid ' + meta.accent + '55',
-            borderLeft: '4px solid ' + meta.accent,
+            background: _frHC ? '#000000' : 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+            border: '1px solid ' + (_frHC ? '#ffff00' : meta.accent + '55'),
+            borderLeft: '4px solid ' + (_frHC ? '#ffff00' : meta.accent),
             display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
           }
         },
           h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
-            h('h3', { style: { color: _selHdrInk(_frInk(meta.accent)), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-            h('p', { style: { margin: '3px 0 0', color: _frC('#475569'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            h('h3', { style: { color: _selHdrInk(meta.accent), fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('p', { style: { margin: '3px 0 0', color: _frC('#475569'), fontSize: 12, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
           )
         );
       })();
@@ -1147,16 +1215,16 @@ window.SelHub = window.SelHub || {
       function friendRouteCard(label, detail, target, color) {
         var isHere = activeTab === target;
         return h('button', {
-          key: target,
+          key: target, type: 'button',
           onClick: function() { upd('activeTab', target); if (soundEnabled) sfxClick(); },
           'aria-label': label + ': ' + detail,
           style: {
             minHeight: 86,
             padding: '12px 14px',
             borderRadius: 12,
-            border: '1px solid ' + (isHere ? color : _frC('#e5e7eb')),
-            borderLeft: '4px solid ' + color,
-            background: isHere ? color + '18' : _frC('#fff'),
+            border: '1px solid ' + (_frHC ? '#ffff00' : isHere ? color : _frC('#e5e7eb')),
+            borderLeft: '4px solid ' + (_frHC ? '#ffff00' : color),
+            background: isHere ? (_frHC ? '#000000' : color + '18') : _frC('#fff'),
             color: _frC('#374151'),
             cursor: 'pointer',
             textAlign: 'left',
@@ -1167,7 +1235,7 @@ window.SelHub = window.SelHub || {
           }
         },
           h('span', { style: { fontSize: 12, fontWeight: 900, color: _frInk(color) } }, label),
-          h('span', { style: { fontSize: 11, color: _frC('#64748b'), lineHeight: 1.45 } }, detail)
+          h('span', { style: { fontSize: 12, color: _frC('#475569'), lineHeight: 1.45 } }, detail)
         );
       }
 
@@ -1178,12 +1246,12 @@ window.SelHub = window.SelHub || {
             padding: '10px 12px',
             borderRadius: 12,
             background: _frC('#fff'),
-            border: '1px solid ' + color + '44',
+            border: '1px solid ' + (_frHC ? '#ffff00' : color + '44'),
             minHeight: 62
           }
         },
           h('div', { style: { fontSize: 17, fontWeight: 900, color: _frInk(color), lineHeight: 1 } }, value),
-          h('div', { style: { marginTop: 5, fontSize: 10.5, color: _frC('#64748b'), lineHeight: 1.35 } }, label)
+          h('div', { style: { marginTop: 5, fontSize: 12, color: _frC('#475569'), lineHeight: 1.35 } }, label)
         );
       }
 
@@ -1194,13 +1262,13 @@ window.SelHub = window.SelHub || {
           marginBottom: 18,
           padding: 16,
           borderRadius: 14,
-          background: 'linear-gradient(135deg, rgba(217,119,6,0.12), rgba(16,185,129,0.08)), ' + _frC('#fffbeb'),
-          border: '1px solid ' + _frC('#fde68a')
+          background: _frHC ? '#000000' : 'linear-gradient(135deg, rgba(217,119,6,0.12), rgba(16,185,129,0.08)), ' + _frC('#fffbeb'),
+          border: '1px solid ' + (_frHC ? '#ffff00' : _frDark ? '#78350f' : '#fde68a')
         }
       },
         h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 12 } },
           h('div', { style: { flex: '1 1 260px' } },
-            h('div', { style: { fontSize: 11, color: _frHC ? _frInk(AMBER) : '#fbbf24', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Friendship field guide'),
+            h('div', { style: { fontSize: 12, color: _frHC ? '#ffff00' : _frDark ? '#fbbf24' : '#92400e', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Friendship field guide'),
             h('h3', { style: { margin: 0, color: AMBER_DARK, fontSize: 20, fontWeight: 900, lineHeight: 1.2 } }, 'Choose the friendship skill you need today.'),
             h('p', { style: { margin: '6px 0 0', color: _frC('#475569'), fontSize: 12, lineHeight: 1.55 } },
               'Explore ways to care, conversation openings, sustainable contact, boundaries and changing friendships.'
@@ -1253,6 +1321,7 @@ window.SelHub = window.SelHub || {
             h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'),
             h('p', { id: id + '-hint', style: { margin: '6px 0' } }, field.hint),
             h('textarea', { id: id, rows: 3, value: careNote(field.id), 'aria-describedby': id + '-hint', style: Object.assign({}, careControl, { resize: 'vertical' }),
+              onBlur: function(ev) { _frCheckSafety(ev.target.value); },
               onChange: function(ev) { var values = {}; values[field.id] = ev.target.value; saveCare(values); } }));
         };
         var carePreview = ['Ways I could care — practice notes, not a personality assessment.', 'Context: ' + (careOwn ? 'My own example' : careExample.title)]
@@ -1332,6 +1401,7 @@ window.SelHub = window.SelHub || {
             h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'),
             h('p', { id: id + '-hint', style: { margin: '6px 0' } }, field.hint),
             h('textarea', { id: id, rows: 3, value: startNote(field.id), 'aria-describedby': id + '-hint', style: Object.assign({}, startControl, { resize: 'vertical' }),
+              onBlur: function(ev) { _frCheckSafety(ev.target.value); },
               onChange: function(ev) { var values = {}; values[field.id] = ev.target.value; saveStart(values); } }));
         };
         var startPreview = ['My conversation practice — not a prediction of friendship.', 'Context: ' + (startOwn ? 'My own example' : startExample.title), 'Fictional response explored: ' + (startResponse ? startResponse.label : 'Not chosen')]
@@ -1401,6 +1471,7 @@ window.SelHub = window.SelHub || {
             h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'),
             h('p', { id: id + '-hint', style: { margin: '6px 0' } }, field.hint),
             h('textarea', { id: id, rows: 3, value: keepNote(field.id), 'aria-describedby': id + '-hint', style: Object.assign({}, keepControl, { resize: 'vertical' }),
+              onBlur: function(ev) { _frCheckSafety(ev.target.value); },
               onChange: function(ev) { var values = {}; values[field.id] = ev.target.value; saveKeep(values); } }));
         };
         var keepPreview = ['A possible friendship-care plan — not an agreement made by the other person.', 'Context: ' + (keepOwn ? 'My own example' : keepExample.title)]
@@ -1410,7 +1481,10 @@ window.SelHub = window.SelHub || {
         var keepAddJournal = function() {
           var text = newNote.trim();
           if (!text) return;
-          upd({ friendNotes: [{ id: Date.now().toString(), text: text, date: new Date().toLocaleDateString() }].concat(friendNotes), newNote: '', keepingJournalNotice: 'Note added to your journal.' });
+          var safety = _frCheckSafety(text);
+          var patch = { friendNotes: [{ id: Date.now().toString(), text: text, date: new Date().toLocaleDateString() }].concat(friendNotes), newNote: '', keepingJournalNotice: 'Note added to your journal.' };
+          if (safety && (safety.action === 'block' || (safety.tier && safety.tier >= 3))) patch._lastTier = 3;
+          upd(patch);
           if (soundEnabled) sfxHeart();
         };
         var keepJournalEntry = function(note, index) {
@@ -1509,6 +1583,7 @@ window.SelHub = window.SelHub || {
             h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'),
             h('p', { id: id + '-hint', style: { margin: '6px 0' } }, field.hint),
             h('textarea', { id: id, rows: 3, value: repairNote(field.id), 'aria-describedby': id + '-hint', style: Object.assign({}, repairControl, { resize: 'vertical' }),
+              onBlur: function(ev) { _frCheckSafety(ev.target.value); },
               onChange: function(ev) { var values = {}; values[field.id] = ev.target.value; saveRepair(values); } })
           );
         };
@@ -1584,6 +1659,7 @@ window.SelHub = window.SelHub || {
             h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'),
             h('p', { id: id + '-hint', style: { margin: '6px 0' } }, field.hint),
             h('textarea', { id: id, rows: 3, value: endingNote(field.id), 'aria-describedby': id + '-hint', style: Object.assign({}, endingControl, { resize: 'vertical' }),
+              onBlur: function(ev) { _frCheckSafety(ev.target.value); },
               onChange: function(ev) { var values = {}; values[field.id] = ev.target.value; saveEnding(values); } }));
         };
         var endingPreview = ['My changing-friendship notes — possibilities, not a final decision.', 'Context: ' + (endingOwn ? 'My own example' : endingExample.title)]
@@ -1674,9 +1750,20 @@ window.SelHub = window.SelHub || {
                 return window.SelHub.safeCoach({ studentMessage: userMsg, coachPrompt: prompt, toolId: 'friendship', band: band, callGemini: provider, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: newHist });
               }
               var safety = window.SelHub && window.SelHub.safeRehearseCheck
-                ? window.SelHub.safeRehearseCheck(userMsg, { toolId: 'friendship', onSafetyFlag: onSafetyFlag }) : { action: 'continue' };
+                ? window.SelHub.safeRehearseCheck(userMsg, { toolId: 'friendship', onSafetyFlag: onSafetyFlag })
+                : (window.SelHub && typeof window.SelHub.scanForCrisis === 'function'
+                  ? (function() {
+                      var sc = window.SelHub.scanForCrisis(userMsg);
+                      if (sc && sc.tier >= 2) {
+                        if (onSafetyFlag) { try { onSafetyFlag({ toolId: 'friendship', tier: sc.tier, severity: sc.severity, excerpt: userMsg.slice(0, 120), timestamp: Date.now() }); } catch (_) {} }
+                        return { action: sc.tier >= 3 ? 'block' : 'nudge', severity: sc.severity };
+                      }
+                      return { action: 'continue' };
+                    })()
+                  : { action: 'continue' });
               if (safety.action === 'block') {
                 fallbackTier = 3;
+                if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') { try { window.SelHub.showCrisisModal(band); } catch (_) {} }
                 return { tier: 3, response: window.SelHub.rehearseBreakCharacterText ? window.SelHub.rehearseBreakCharacterText(safety.severity) : 'Pause this practice and contact a trusted adult for support. If you are in immediate danger, seek urgent help.' };
               }
               return provider(prompt, false).then(function(reply) {
@@ -1727,13 +1814,13 @@ window.SelHub = window.SelHub || {
               onChange: function(ev) { upd({ coachInput: ev.target.value, coachError: '' }); },
               onKeyDown: function(ev) { if (ev.key === 'Enter' && !ev.isComposing && !(ev.nativeEvent && ev.nativeEvent.isComposing) && ev.keyCode !== 229) { ev.preventDefault(); sendFriendshipCoach(); } },
               disabled: coachLoading, style: { width: '100%', minWidth: 0, minHeight: '44px', boxSizing: 'border-box', padding: '10px', border: '1px solid ' + coachEdge, borderRadius: '8px', background: coachSurface, color: coachInk, font: 'inherit', fontSize: '16px' } }),
-            h('button', { 'aria-label': coachLoading ? 'Friendship coach is responding' : 'Send message to friendship coach', onClick: sendFriendshipCoach,
+            h('button', { type: 'button', 'aria-label': coachLoading ? 'Friendship coach is responding' : 'Send message to friendship coach', onClick: sendFriendshipCoach,
               disabled: coachLoading || !coachInput.trim() || !_frAiOn, style: Object.assign({}, coachButton, { marginTop: '10px', fontWeight: 700 }) }, coachLoading ? 'Waiting for reply…' : 'Send'),
             !_frAiOn && h('p', null, 'AI replies are unavailable here. You can keep a draft or explore the other Friendship activities.'),
             h('details', { style: coachCard }, h('summary', { style: { minHeight: '44px', padding: '10px 0', cursor: 'pointer', fontWeight: 700 } }, 'Try a fictional example'),
               h('p', null, 'An example fills an empty draft; it does not send. To choose another, first clear the draft you no longer need.'),
               h('div', { style: { display: 'grid', gap: '8px' } }, coachExamples.map(function(example) {
-                return h('button', { key: example, 'aria-label': 'Use prompt: ' + example, disabled: coachLoading || !!coachInput.trim(), style: coachButton, onClick: function() { if (!coachLoading && !coachInput.trim()) upd({ coachInput: example, coachError: '' }); } }, example);
+                return h('button', { key: example, type: 'button', 'aria-label': 'Use prompt: ' + example, disabled: coachLoading || !!coachInput.trim(), style: coachButton, onClick: function() { if (!coachLoading && !coachInput.trim()) upd({ coachInput: example, coachError: '' }); } }, example);
               }))),
             h('details', { style: coachCard }, h('summary', { style: { minHeight: '44px', padding: '10px 0', cursor: 'pointer', fontWeight: 700 } }, 'Check a suggestion before using it'),
               h('p', null, 'Does it fit what happened, or assume feelings and motives you do not know? Would it respect your needs and the other person’s choices?'),
@@ -1747,7 +1834,8 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'digital') {
         var digitalBand = Object.prototype.hasOwnProperty.call(DIGITAL_DILEMMAS, band) ? band : 'middle';
         var dilemmas = DIGITAL_DILEMMAS[digitalBand];
-        var selectedDigital = d.digitalSelections && d.digitalSelections[digitalBand];
+        var digitalSelections = _frObj(d.digitalSelections);
+        var selectedDigital = digitalSelections[digitalBand];
         var legacyDigitalIndex = Number.isInteger(d.digitalIdx) && d.digitalIdx >= 0 ? d.digitalIdx % dilemmas.length : 0;
         var curD = dilemmas.find(function(item) { return item.id === selectedDigital; }) || dilemmas[legacyDigitalIndex];
         // Grade band is part of the key, so similarly named future cases stay independent.
@@ -1773,6 +1861,7 @@ window.SelHub = window.SelHub || {
             h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, label),
             h('p', { id: id + '-hint', style: { margin: '4px 0 8px' } }, hint),
             h('textarea', { id: id, rows: 3, value: digitalNote(key), 'aria-describedby': id + '-hint',
+              onBlur: function(ev) { _frCheckSafety(ev.target.value); },
               onChange: function(ev) { var values = {}; values[key] = ev.target.value; saveDigital(values); },
               style: Object.assign({}, digitalControl, { resize: 'vertical' }) })
           );
@@ -1787,7 +1876,7 @@ window.SelHub = window.SelHub || {
           h('p', null, 'Notes stay in this tool state. Use the project save controls if you want to keep a project copy. Avoid names or identifying details from real conversations.'),
           h('label', { htmlFor: 'fr-digital-case', style: { display: 'block', fontWeight: 700 } }, 'Choose a digital friendship scenario'),
           h('select', { id: 'fr-digital-case', value: curD.id, style: digitalControl,
-            onChange: function(ev) { var next = Object.assign({}, d.digitalSelections || {}); next[digitalBand] = ev.target.value; upd('digitalSelections', next); } },
+            onChange: function(ev) { var next = Object.assign({}, digitalSelections); next[digitalBand] = ev.target.value; upd('digitalSelections', next); } },
             dilemmas.map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); })
           ),
           h('div', { key: digitalKey },
@@ -1995,7 +2084,7 @@ window.SelHub = window.SelHub || {
           return _frAiOn && !rpBusy && !rpSending && !rpBlocked && (!window.SelHub.hasCoachConsent || window.SelHub.hasCoachConsent());
         }
         function fStartRp(sid) {
-          var cfg = FRIEND_SCENARIOS[sid];
+          var cfg = typeof sid === 'string' && Object.prototype.hasOwnProperty.call(FRIEND_SCENARIOS, sid) ? FRIEND_SCENARIOS[sid] : null;
           if (!cfg || rpBusy || rpSending) return;
           upd({ fRpScenarioId: sid, fRpHistory: [{ speaker: 'ai', text: cfg.opener[rpBand], scene: cfg.setup[rpBand], authored: true }], fRpInput: '', fRpEnded: false, fRpReflection: '', fRpStarting: false, fRpLoading: false, fRpError: '', fRpBlocked: false, fRpResponseMode: rpMode });
           if (announceToSR) announceToSR(cfg.label + ' selected. Fictional example ready.');
@@ -2018,9 +2107,21 @@ window.SelHub = window.SelHub || {
         function fSendTurn() {
           if (!rpCanRequest() || !fRpInput.trim() || !fCfg || fRpEnded) return;
           var st = fRpInput.trim();
-          var safety = window.SelHub.safeRehearseCheck ? window.SelHub.safeRehearseCheck(st, { toolId: 'friendship', onSafetyFlag: onSafetyFlag }) : { action: 'continue' };
+          var safety = window.SelHub && window.SelHub.safeRehearseCheck
+            ? window.SelHub.safeRehearseCheck(st, { toolId: 'friendship', onSafetyFlag: onSafetyFlag })
+            : (window.SelHub && typeof window.SelHub.scanForCrisis === 'function'
+              ? (function() {
+                  var sc = window.SelHub.scanForCrisis(st);
+                  if (sc && sc.tier >= 2) {
+                    if (onSafetyFlag) { try { onSafetyFlag({ toolId: 'friendship', tier: sc.tier, severity: sc.severity, excerpt: st.slice(0, 120), timestamp: Date.now() }); } catch (_) {} }
+                    return { action: sc.tier >= 3 ? 'block' : 'nudge', severity: sc.severity };
+                  }
+                  return { action: 'continue' };
+                })()
+              : { action: 'continue' });
           if (safety.action === 'block') {
-            upd({ fRpHistory: fRpHistory.concat([{ speaker: 'student', text: st }, { speaker: 'coach', text: window.SelHub.rehearseBreakCharacterText ? window.SelHub.rehearseBreakCharacterText(safety.severity) : 'Pause this practice and ask a trusted adult for support.' }, { speaker: '_crisis', text: '' }]), fRpInput: '', fRpLoading: false, fRpEnded: true, fRpBlocked: true, fRpError: '' });
+            if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') { try { window.SelHub.showCrisisModal(band); } catch (_) {} }
+            upd({ fRpHistory: fRpHistory.concat([{ speaker: 'student', text: st }, { speaker: 'coach', text: window.SelHub.rehearseBreakCharacterText ? window.SelHub.rehearseBreakCharacterText(safety.severity) : 'Pause this practice and ask a trusted adult for support.' }, { speaker: '_crisis', text: '' }]), fRpInput: '', fRpLoading: false, fRpEnded: true, fRpBlocked: true, fRpError: '', _lastTier: 3 });
             return;
           }
           var newHist = fRpHistory.concat([{ speaker: 'student', text: st }]);
@@ -2066,7 +2167,7 @@ window.SelHub = window.SelHub || {
             h('label', { htmlFor: 'fr-rp-mode', style: { display: 'block', fontWeight: 700 } }, 'Choose a simulated response condition'),
             h('select', { id: 'fr-rp-mode', value: rpMode, style: rpControl, onChange: function(ev) { upd('fRpResponseMode', ev.target.value); } }, Object.keys(rpModes).map(function(id) { return h('option', { key: id, value: id }, rpModes[id].label); })),
             h('p', null, 'This sets a fictional practice condition, not a difficulty score or a prediction of a real person. Opening a scenario uses a written example; only an AI request sends the conversation.'),
-            h('div', { style: { display: 'grid', gap: '10px' } }, F_ORDER.map(function(sid) { var cfg = FRIEND_SCENARIOS[sid]; return h('button', { key: sid, 'aria-label': cfg.label + ': ' + cfg.blurb, onClick: function() { fStartRp(sid); }, disabled: rpBusy, style: rpButton }, h('strong', null, cfg.icon + ' ' + cfg.label), h('span', { style: { display: 'block' } }, cfg.blurb)); }))),
+            h('div', { style: { display: 'grid', gap: '10px' } }, F_ORDER.map(function(sid) { var cfg = FRIEND_SCENARIOS[sid]; return h('button', { key: sid, type: 'button', 'aria-label': cfg.label + ': ' + cfg.blurb, onClick: function() { fStartRp(sid); }, disabled: rpBusy, style: rpButton }, h('strong', null, cfg.icon + ' ' + cfg.label), h('span', { style: { display: 'block' } }, cfg.blurb)); }))),
           fCfg && h('div', null,
             h('h4', { style: { fontSize: '18px', marginBottom: '6px' } }, fCfg.label),
             h('p', null, 'Simulated response: ' + rpModes[rpMode].label),
@@ -2084,20 +2185,20 @@ window.SelHub = window.SelHub || {
               h('p', { id: 'fr-rp-hint' }, 'You can ask, clarify, decline or end the conversation. Enter adds a new line; use Send when ready. Sending shares the conversation with the AI service.'),
               h('textarea', { id: 'f-rp-input', value: fRpInput, 'aria-label': 'Your friendship role-play response', 'aria-describedby': 'fr-rp-hint', rows: 3, disabled: rpBusy, onChange: function(ev) { upd({ fRpInput: ev.target.value, fRpError: '' }); }, style: Object.assign({}, rpControl, { resize: 'vertical' }) }),
               h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '10px' } },
-                _frAiOn && h('button', { onClick: fSendTurn, disabled: rpBusy || !fRpInput.trim(), 'aria-label': fRpLoading ? 'Friendship role-play is responding' : 'Send role-play response', 'aria-busy': rpBusy ? 'true' : 'false', style: rpButton }, rpBusy ? 'Waiting…' : 'Send'),
-                _frAiOn && h('button', { onClick: fCoachBreak, disabled: rpBusy, style: rpButton }, 'Ask for a coaching idea'),
-                h('button', { onClick: fEndRp, style: rpButton }, 'Pause and reflect'))),
+                _frAiOn && h('button', { type: 'button', onClick: fSendTurn, disabled: rpBusy || !fRpInput.trim(), 'aria-label': fRpLoading ? 'Friendship role-play is responding' : 'Send role-play response', 'aria-busy': rpBusy ? 'true' : 'false', style: rpButton }, rpBusy ? 'Waiting…' : 'Send'),
+                _frAiOn && h('button', { type: 'button', onClick: fCoachBreak, disabled: rpBusy, style: rpButton }, 'Ask for a coaching idea'),
+                h('button', { type: 'button', onClick: fEndRp, style: rpButton }, 'Pause and reflect'))),
             (fRpEnded || rpBlocked) && h('div', { role: 'region', 'aria-live': 'polite', 'aria-label': 'Role-play reflection', style: rpCard },
               h('h4', { style: { fontSize: '18px', margin: '0 0 8px' } }, 'Reflect on choices and limits'),
               h('p', null, 'The simulated response does not measure your worth or tell you what a real person will do. Reading or stopping is enough; there is no required number of turns.'),
               h('p', null, 'Optional notes stay with this scenario and grade. They are not sent with AI requests, are not monitored and do not ask for help.'),
-              rpFields.map(function(field) { var id = 'fr-rp-note-' + field.id; return h('div', { key: id, style: { margin: '14px 0' } }, h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'), h('textarea', { id: id, rows: 3, style: Object.assign({}, rpControl, { resize: 'vertical' }), value: typeof rpDraft[field.id] === 'string' ? rpDraft[field.id] : '', onChange: function(ev) { var notes = Object.assign({}, rpDrafts); var value = Object.assign({}, rpDraft); value[field.id] = ev.target.value; notes[rpKey] = value; upd('fRpReflectionDrafts', notes); } })); }),
+              rpFields.map(function(field) { var id = 'fr-rp-note-' + field.id; return h('div', { key: id, style: { margin: '14px 0' } }, h('label', { htmlFor: id, style: { display: 'block', fontWeight: 700 } }, field.label + ' (optional)'), h('textarea', { id: id, rows: 3, style: Object.assign({}, rpControl, { resize: 'vertical' }), value: typeof rpDraft[field.id] === 'string' ? rpDraft[field.id] : '', onBlur: function(ev) { _frCheckSafety(ev.target.value); }, onChange: function(ev) { var notes = Object.assign({}, rpDrafts); var value = Object.assign({}, rpDraft); value[field.id] = ev.target.value; notes[rpKey] = value; upd('fRpReflectionDrafts', notes); } })); }),
               _frAiOn && h('details', { style: rpCard }, h('summary', { style: rpSummary }, 'Optional AI reflection'), h('p', null, 'This sends the conversation, not your reflection notes. You can question or ignore the feedback.'),
-                h('button', { onClick: fRequestReflection, disabled: rpBusy || rpBlocked, style: rpButton }, 'Request an AI reflection'),
+                h('button', { type: 'button', onClick: fRequestReflection, disabled: rpBusy || rpBlocked, style: rpButton }, 'Request an AI reflection'),
                 fRpReflection && h('p', { style: { whiteSpace: 'pre-wrap' } }, fRpReflection)),
-              !rpBlocked && h('button', { onClick: function() { upd('fRpEnded', false); }, disabled: rpBusy, style: rpButton }, 'Return to this rehearsal')),
+              !rpBlocked && h('button', { type: 'button', onClick: function() { upd('fRpEnded', false); }, disabled: rpBusy, style: rpButton }, 'Return to this rehearsal')),
             h('details', { style: rpCard }, h('summary', { style: rpSummary }, 'Choose another scenario'), h('p', null, 'This clears the current conversation, unsent response and AI reflection. Your optional reflection notes remain saved by scenario and grade.'),
-              h('button', { onClick: fResetRp, disabled: rpBusy, style: rpButton }, 'Clear this rehearsal and choose another'))),
+              h('button', { type: 'button', onClick: fResetRp, disabled: rpBusy, style: rpButton }, 'Clear this rehearsal and choose another'))),
           !_frAiOn && h('p', null, 'AI replies are unavailable here. You can read a written scenario, keep a draft and reflect on your own.'),
           h('p', null, 'If this resembles repeated pressure, harm or an unsafe situation, ask a trusted adult for support. A real conversation is not required.')
         );
@@ -2111,6 +2212,7 @@ window.SelHub = window.SelHub || {
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('friendship', h, ctx) : null),
         tabBar,
         heroBand,
+        (d._lastTier >= 3 && activeTab !== 'coach' && window.SelHub && window.SelHub.renderCrisisResources) ? h('div', { style: { padding: '0 12px' } }, window.SelHub.renderCrisisResources(h, band)) : null,
         h('div', { id: 'friendship-panel-' + activeTab, role: 'tabpanel', 'aria-labelledby': 'friendship-tab-' + activeTab, tabIndex: 0, style: { flex: 1, overflow: 'auto' } }, content),
         window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );

@@ -39,7 +39,21 @@ window.StemLab = window.StemLab || {
         ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-indigo-900,.text-indigo-950){color:#e0e7ff!important}" +
         ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-fuchsia-900,.text-fuchsia-950){color:#fae8ff!important}" +
         ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-emerald-900,.text-emerald-950,.text-teal-900,.text-teal-950){color:#d1fae5!important}" +
-        ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-rose-900,.text-rose-950,.text-pink-900,.text-red-900){color:#ffe4e6!important}";
+        ".theme-dark [data-stem-tool-shell=\"wave\"] :is(.text-rose-900,.text-rose-950,.text-pink-900,.text-red-900){color:#ffe4e6!important}" +
+        ".theme-dark [data-wave-tool]{background:#0b1220;border-radius:16px;padding:12px}" +
+        ".theme-dark [data-wave-workspace-bar]{background:#0f172a!important;border-color:#334155!important;color:#e2e8f0!important}" +
+        ".theme-dark [data-wave-workspace-bar] [role=\"tab\"][aria-selected=\"false\"]{background:#1e293b!important;border-color:#334155!important;color:#e2e8f0!important}" +
+        ".theme-dark [data-wave-workspace-bar] [role=\"tab\"][aria-selected=\"false\"]:hover{background:#273549!important;border-color:#38bdf8!important}" +
+        ".theme-dark [data-wave-workspace-bar] [role=\"tab\"][aria-selected=\"true\"]{background:#0284c7!important;border-color:#38bdf8!important;color:#ffffff!important}" +
+        ".theme-dark [data-wave-band][aria-pressed=\"false\"]{background:#1e293b!important;border-color:#334155!important;color:#e2e8f0!important}" +
+        ".theme-dark [data-wave-coach-banner]{background:rgba(14,116,144,0.22)!important;border-color:rgba(56,189,248,0.4)!important;color:#e0f2fe!important}" +
+        ".theme-dark [data-wave-coach-banner] strong{color:#67e8f9!important}" +
+        ".theme-dark [data-wave-mode-picker] button[aria-pressed=\"false\"]{background:#1e293b!important;border-color:#334155!important;color:#e2e8f0!important}" +
+        ".theme-dark [data-wave-mode-picker] button[aria-pressed=\"false\"]:hover{background:#273549!important;border-color:#38bdf8!important}" +
+        ".theme-dark [data-wave-mode-picker] button[aria-pressed=\"true\"]{background:#0c4a6e!important;border-color:#38bdf8!important;color:#ffffff!important}" +
+        ".theme-dark [data-wave-mode-picker] ~ button:not(.bg-cyan-700):not(.bg-emerald-700){background:#1e293b!important;border-color:#334155!important;color:#e2e8f0!important}" +
+        ".theme-dark [data-wave-tour]{background:rgba(14,116,144,0.24)!important;border-color:rgba(56,189,248,0.5)!important;color:#e0f2fe!important}" +
+        ".theme-dark [data-wave-tour] :is(p,span,button.text-cyan-700){color:#cffafe!important}";
       document.head.appendChild(stDark);
     }
     if (!document.getElementById('allo-wave-polish-css')) {
@@ -3035,6 +3049,7 @@ window.StemLab = window.StemLab || {
               // reads cleanly.
               var mode0 = canvasEl.dataset.waveMode || 'free';
               var sceneRich = (mode0 === 'free' || mode0 === 'longitudinal' || mode0 === 'reflection');
+              var waveHighContrast = !!(canvasEl && typeof canvasEl.closest === 'function' && canvasEl.closest('.theme-contrast'));
 
               ctx.clearRect(0, 0, cW, cH);
 
@@ -3043,25 +3058,28 @@ window.StemLab = window.StemLab || {
               // ── Underwater ocean gradient ──
 
               if (mode0 !== 'ripple') {
+                if (waveHighContrast) {
+                  ctx.fillStyle = '#000000';
+                  ctx.fillRect(0, 0, cW, cH);
+                } else {
+                  var oceanGrad = ctx.createLinearGradient(0, 0, 0, cH);
 
-              var oceanGrad = ctx.createLinearGradient(0, 0, 0, cH);
+                  oceanGrad.addColorStop(0, '#064e6e');
 
-              oceanGrad.addColorStop(0, '#064e6e');
+                  oceanGrad.addColorStop(0.08, '#0a6a8a');
 
-              oceanGrad.addColorStop(0.08, '#0a6a8a');
+                  oceanGrad.addColorStop(0.3, '#0c7d9e');
 
-              oceanGrad.addColorStop(0.3, '#0c7d9e');
+                  oceanGrad.addColorStop(0.65, '#0a5f7d');
 
-              oceanGrad.addColorStop(0.65, '#0a5f7d');
+                  oceanGrad.addColorStop(0.85, '#083f58');
 
-              oceanGrad.addColorStop(0.85, '#083f58');
+                  oceanGrad.addColorStop(1, '#052e42');
 
-              oceanGrad.addColorStop(1, '#052e42');
+                  ctx.fillStyle = oceanGrad;
 
-              ctx.fillStyle = oceanGrad;
-
-              ctx.fillRect(0, 0, cW, cH);
-
+                  ctx.fillRect(0, 0, cW, cH);
+                }
               }
 
 
@@ -3271,7 +3289,7 @@ window.StemLab = window.StemLab || {
 
 
 
-              // ── Medium particles (water molecules oscillating with wave) ──
+              // ── Medium particles (water molecules oscillating with wave + phased oscillation trails) ──
               // Free mode only — they animate the FREE-wave equation, which would
               // contradict what the other modes are showing.
 
@@ -3294,31 +3312,53 @@ window.StemLab = window.StemLab || {
                 var mDisp = Math.sin(mWaveT) * mAmp * dpr * 0.3;
 
                 var mpy = mPart.baseY - mDisp;
+                var mVelCos = Math.cos(mWaveT);
 
-                // Glow
+                // Smooth phased oscillation trail (vertical harmonic phase streak; static guide in reduced-motion)
+                if (!waveHighContrast) {
+                  if (waveMotionReduced) {
+                    var guideSpan = mAmp * dpr * 0.3;
+                    ctx.strokeStyle = 'rgba(125,211,252,0.16)';
+                    ctx.lineWidth = 1 * dpr;
+                    ctx.beginPath();
+                    ctx.moveTo(mPart.x, mPart.baseY - guideSpan);
+                    ctx.lineTo(mPart.x, mPart.baseY + guideSpan);
+                    ctx.stroke();
+                  } else {
+                    ctx.lineCap = 'round';
+                    var prevTY = mpy;
+                    for (var tsStep = 1; tsStep <= 5; tsStep++) {
+                      var trailT = mWaveT + tsStep * 0.22 * mFreq * mSpeed;
+                      var trailY = mPart.baseY - Math.sin(trailT) * mAmp * dpr * 0.3;
+                      var fadeT = 1 - tsStep / 6;
+                      ctx.strokeStyle = mVelCos >= 0
+                        ? 'rgba(56,189,248,' + (0.28 * fadeT).toFixed(3) + ')'
+                        : 'rgba(167,139,250,' + (0.26 * fadeT).toFixed(3) + ')';
+                      ctx.lineWidth = (1.2 + fadeT * 1.8) * dpr;
+                      ctx.beginPath();
+                      ctx.moveTo(mPart.x, prevTY);
+                      ctx.lineTo(mPart.x, trailY);
+                      ctx.stroke();
+                      prevTY = trailY;
+                    }
+                  }
 
-                ctx.globalAlpha = 0.15;
-
-                ctx.beginPath(); ctx.arc(mPart.x, mpy, 7 * dpr, 0, Math.PI * 2);
-
-                var mpGlow = ctx.createRadialGradient(mPart.x, mpy, 0, mPart.x, mpy, 7 * dpr);
-
-                mpGlow.addColorStop(0, '#80d8ff');
-
-                mpGlow.addColorStop(1, '#80d8ff00');
-
-                ctx.fillStyle = mpGlow; ctx.fill();
+                  // Glow
+                  if (typeof ctx.createRadialGradient === 'function') {
+                    ctx.globalAlpha = 0.22;
+                    ctx.beginPath(); ctx.arc(mPart.x, mpy, 7.5 * dpr, 0, Math.PI * 2);
+                    var mpGlow = ctx.createRadialGradient(mPart.x, mpy, 0, mPart.x, mpy, 7.5 * dpr);
+                    mpGlow.addColorStop(0, mVelCos >= 0 ? '#7dd3fc' : '#c4b5fd');
+                    mpGlow.addColorStop(1, 'rgba(128,216,255,0)');
+                    ctx.fillStyle = mpGlow; ctx.fill();
+                  }
+                }
 
                 // Core
-
-                ctx.globalAlpha = 0.35;
-
+                ctx.globalAlpha = waveHighContrast ? 0.9 : 0.48;
                 ctx.beginPath(); ctx.arc(mPart.x, mpy, 2.5 * dpr, 0, Math.PI * 2);
-
-                ctx.fillStyle = '#b0e8ff'; ctx.fill();
-
-                ctx.strokeStyle = 'rgba(130,210,255,0.3)'; ctx.lineWidth = 0.5;
-
+                ctx.fillStyle = waveHighContrast ? '#ffff00' : (mVelCos >= 0 ? '#bae6fd' : '#ddd6fe'); ctx.fill();
+                ctx.strokeStyle = waveHighContrast ? '#ffffff' : 'rgba(224,242,254,0.45)'; ctx.lineWidth = 0.6 * dpr;
                 ctx.stroke();
 
               }
@@ -3472,20 +3512,23 @@ window.StemLab = window.StemLab || {
                 var lobeWidth = cW / antiCount;
 
                 // Antinode energy wells give every resonant lobe a dimensional
-                // center without obscuring the mathematical envelope.
-                ctx.save();
-                ctx.globalCompositeOperation = 'screen';
-                for (var lk = 0; lk < standGeo.antinodePositions.length; lk++) {
-                  var lcx = standGeo.antinodePositions[lk] * cW;
-                  var lobeR = Math.min(lobeWidth * 0.44, amp * dpr * 1.25 + 28 * dpr);
-                  var lobeGlow = ctx.createRadialGradient(lcx, standMid, 0, lcx, standMid, lobeR);
-                  lobeGlow.addColorStop(0, 'rgba(167,139,250,0.20)');
-                  lobeGlow.addColorStop(0.38, 'rgba(34,211,238,0.10)');
-                  lobeGlow.addColorStop(1, 'rgba(34,211,238,0)');
-                  ctx.fillStyle = lobeGlow;
-                  ctx.beginPath(); ctx.arc(lcx, standMid, lobeR, 0, Math.PI * 2); ctx.fill();
+                // center without obscuring the mathematical envelope (bypassed in High-Contrast).
+                var lobeEnergy = waveMotionReduced ? 0.65 : (0.38 + 0.62 * Math.abs(standPhase));
+                if (!waveHighContrast && typeof ctx.createRadialGradient === 'function') {
+                  ctx.save();
+                  ctx.globalCompositeOperation = 'screen';
+                  for (var lk = 0; lk < standGeo.antinodePositions.length; lk++) {
+                    var lcx = standGeo.antinodePositions[lk] * cW;
+                    var lobeR = Math.min(lobeWidth * 0.48, amp * dpr * 1.32 + 30 * dpr);
+                    var lobeGlow = ctx.createRadialGradient(lcx, standMid, 0, lcx, standMid, lobeR);
+                    lobeGlow.addColorStop(0, 'rgba(167,139,250,' + (0.28 * lobeEnergy).toFixed(3) + ')');
+                    lobeGlow.addColorStop(0.42, 'rgba(34,211,238,' + (0.16 * lobeEnergy).toFixed(3) + ')');
+                    lobeGlow.addColorStop(1, 'rgba(34,211,238,0)');
+                    ctx.fillStyle = lobeGlow;
+                    ctx.beginPath(); ctx.arc(lcx, standMid, lobeR, 0, Math.PI * 2); ctx.fill();
+                  }
+                  ctx.restore();
                 }
-                ctx.restore();
 
                 var uDen = Math.max(1, cW - 1);
                 var standAmpPx = resDriven ? Math.min(amp * standScale * dpr, cH * 0.44) : (amp * dpr);
@@ -3512,16 +3555,19 @@ window.StemLab = window.StemLab || {
                   ctx.restore();
                 }
 
-                // Filled maximum-displacement envelope with luminous harmonic aura gradient.
-                ctx.save();
-                var envAura = ctx.createLinearGradient(0, standMid - standAmpPx, 0, standMid + standAmpPx);
-                envAura.addColorStop(0, 'rgba(34,211,238,0.24)');
-                envAura.addColorStop(0.5, 'rgba(167,139,250,0.06)');
-                envAura.addColorStop(1, 'rgba(34,211,238,0.24)');
-                ctx.fillStyle = envAura;
-                traceStandingEnvelope(1);
-                for (var ex2 = cW - 1; ex2 >= 0; ex2--) ctx.lineTo(ex2, standMid + waveStandingEnvelope(ex2 / uDen, harmonic, boundary) * standAmpPx);
-                ctx.closePath(); ctx.fill(); ctx.restore();
+                // Filled maximum-displacement envelope with phase-coupled harmonic aura wash.
+                if (!waveHighContrast && typeof ctx.createLinearGradient === 'function') {
+                  ctx.save();
+                  var envAura = ctx.createLinearGradient(0, standMid - standAmpPx, 0, standMid + standAmpPx);
+                  var peShare = waveMotionReduced ? 0.55 : (standPhase * standPhase);
+                  envAura.addColorStop(0, 'rgba(34,211,238,' + (0.18 + 0.14 * peShare).toFixed(3) + ')');
+                  envAura.addColorStop(0.5, 'rgba(167,139,250,' + (0.05 + 0.11 * (1 - peShare)).toFixed(3) + ')');
+                  envAura.addColorStop(1, 'rgba(34,211,238,' + (0.18 + 0.14 * peShare).toFixed(3) + ')');
+                  ctx.fillStyle = envAura;
+                  traceStandingEnvelope(1);
+                  for (var ex2 = cW - 1; ex2 >= 0; ex2--) ctx.lineTo(ex2, standMid + waveStandingEnvelope(ex2 / uDen, harmonic, boundary) * standAmpPx);
+                  ctx.closePath(); ctx.fill(); ctx.restore();
+                }
 
                 // Fine dashed envelope boundaries keep maximum displacement visible.
                 ctx.save(); ctx.globalAlpha = 0.42; ctx.strokeStyle = accent; ctx.lineWidth = 1 * dpr; ctx.setLineDash([5*dpr,5*dpr]);
@@ -3642,23 +3688,56 @@ window.StemLab = window.StemLab || {
                 }
 
                 // Accessible HTML below carries the legend; compact N/A marks stay
-                // on-canvas as direct spatial labels.
+                // on-canvas as direct spatial labels with glowing resonance beacons.
                 ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='bold '+(11*dpr)+'px sans-serif';
                 for (var k = 0; k < standGeo.nodePositions.length; k++) {
                   var nx = standGeo.nodePositions[k] * cW;
-                  ctx.strokeStyle='rgba(248,113,113,0.55)'; ctx.lineWidth=1.2*dpr; ctx.beginPath(); ctx.arc(nx,standMid,8.5*dpr,0,Math.PI*2); ctx.stroke();
-                  ctx.shadowColor='#ef4444'; ctx.shadowBlur=10; ctx.fillStyle='#ef4444'; ctx.beginPath(); ctx.arc(nx,standMid,4.8*dpr,0,Math.PI*2); ctx.fill();
-                  ctx.shadowBlur=0; ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(nx,standMid,1.6*dpr,0,Math.PI*2); ctx.fill();
-                  var nodeLabelX=Math.max(10*dpr,Math.min(cW-10*dpr,nx)); ctx.fillText('N',nodeLabelX,standMid-14*dpr);
+                  if (!waveHighContrast && typeof ctx.createRadialGradient === 'function') {
+                    var nHalo = ctx.createRadialGradient(nx, standMid, 0, nx, standMid, 14 * dpr);
+                    nHalo.addColorStop(0, 'rgba(248,113,113,0.42)');
+                    nHalo.addColorStop(1, 'rgba(248,113,113,0)');
+                    ctx.fillStyle = nHalo;
+                    ctx.beginPath(); ctx.arc(nx, standMid, 14 * dpr, 0, Math.PI * 2); ctx.fill();
+                  }
+                  ctx.strokeStyle = waveHighContrast ? '#ff6666' : 'rgba(248,113,113,0.65)'; ctx.lineWidth = 1.2 * dpr;
+                  ctx.beginPath(); ctx.arc(nx, standMid, 8.5 * dpr, 0, Math.PI * 2); ctx.stroke();
+                  if (!waveHighContrast) { ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 10; }
+                  ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(nx, standMid, 4.8 * dpr, 0, Math.PI * 2); ctx.fill();
+                  ctx.shadowBlur = 0; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(nx, standMid, 1.6 * dpr, 0, Math.PI * 2); ctx.fill();
+                  var nodeLabelX = Math.max(10 * dpr, Math.min(cW - 10 * dpr, nx)); ctx.fillText('N', nodeLabelX, standMid - 14 * dpr);
                 }
                 for (var ak = 0; ak < standGeo.antinodePositions.length; ak++) {
                   var anx = standGeo.antinodePositions[ak] * cW;
                   var pulseAmt = waveMotionReduced ? 0.5 : Math.abs(standPhase);
-                  var pulseR=(4+1.3*pulseAmt)*dpr;
-                  ctx.strokeStyle='rgba(74,222,128,'+(0.32+0.34*pulseAmt).toFixed(3)+')'; ctx.lineWidth=1.3*dpr; ctx.beginPath(); ctx.arc(anx,standMid,(8.5+2.6*pulseAmt)*dpr,0,Math.PI*2); ctx.stroke();
-                  ctx.shadowColor='#22c55e'; ctx.shadowBlur=12; ctx.fillStyle='#22c55e'; ctx.beginPath(); ctx.arc(anx,standMid,pulseR,0,Math.PI*2); ctx.fill();
-                  ctx.shadowBlur=0; ctx.fillStyle='#ecfdf5'; ctx.beginPath(); ctx.arc(anx,standMid,1.7*dpr,0,Math.PI*2); ctx.fill();
-                  ctx.fillStyle='#fff'; var antiLabelX=Math.max(10*dpr,Math.min(cW-10*dpr,anx)); ctx.fillText('A',antiLabelX,standMid-15*dpr);
+                  var pulseR = (4 + 1.4 * pulseAmt) * dpr;
+                  var antiDispY = standMid - waveStandingEnvelope(standGeo.antinodePositions[ak], harmonic, boundary) * standPhase * standAmpPx;
+                  // Live antinode resonance tether & glowing beacon halo
+                  if (!waveHighContrast) {
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(74,222,128,' + (0.24 + 0.36 * pulseAmt).toFixed(3) + ')';
+                    ctx.lineWidth = 1.5 * dpr;
+                    ctx.setLineDash([2.5 * dpr, 2.5 * dpr]);
+                    ctx.beginPath(); ctx.moveTo(anx, standMid); ctx.lineTo(anx, antiDispY); ctx.stroke();
+                    ctx.setLineDash([]);
+                    if (typeof ctx.createRadialGradient === 'function') {
+                      var aHaloR = (13 + 7 * pulseAmt) * dpr;
+                      var aHalo = ctx.createRadialGradient(anx, antiDispY, 0, anx, antiDispY, aHaloR);
+                      aHalo.addColorStop(0, 'rgba(134,239,172,' + (0.55 * (0.4 + 0.6 * pulseAmt)).toFixed(3) + ')');
+                      aHalo.addColorStop(0.5, 'rgba(34,211,238,' + (0.22 * pulseAmt).toFixed(3) + ')');
+                      aHalo.addColorStop(1, 'rgba(34,197,94,0)');
+                      ctx.fillStyle = aHalo;
+                      ctx.beginPath(); ctx.arc(anx, antiDispY, aHaloR, 0, Math.PI * 2); ctx.fill();
+                    }
+                    ctx.fillStyle = '#bbf7d0';
+                    ctx.beginPath(); ctx.arc(anx, antiDispY, (2.4 + pulseAmt * 1.2) * dpr, 0, Math.PI * 2); ctx.fill();
+                    ctx.restore();
+                  }
+                  ctx.strokeStyle = waveHighContrast ? '#00ff00' : ('rgba(74,222,128,' + (0.36 + 0.38 * pulseAmt).toFixed(3) + ')');
+                  ctx.lineWidth = 1.3 * dpr; ctx.beginPath(); ctx.arc(anx, standMid, (8.5 + 3.2 * pulseAmt) * dpr, 0, Math.PI * 2); ctx.stroke();
+                  if (!waveHighContrast) { ctx.shadowColor = '#22c55e'; ctx.shadowBlur = 12; }
+                  ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.arc(anx, standMid, pulseR, 0, Math.PI * 2); ctx.fill();
+                  ctx.shadowBlur = 0; ctx.fillStyle = '#ecfdf5'; ctx.beginPath(); ctx.arc(anx, standMid, 1.7 * dpr, 0, Math.PI * 2); ctx.fill();
+                  ctx.fillStyle = '#fff'; var antiLabelX = Math.max(10 * dpr, Math.min(cW - 10 * dpr, anx)); ctx.fillText('A', antiLabelX, standMid - 15 * dpr);
                 }
                 if (resDriven) {
                   var resIsPeak = canvasEl.dataset.resonatorIsPeak === 'true' || resGainNorm >= 0.707;
@@ -4105,10 +4184,15 @@ window.StemLab = window.StemLab || {
                   canvasEl._rippleBuf.width = rBW; canvasEl._rippleBuf.height = rBH;
                 }
                 var rbCtx = canvasEl._rippleBuf.getContext('2d');
-                var imgData = rbCtx.createImageData(rBW, rBH);
+                if (!rbCtx) return;
+                if (!canvasEl._rippleImgData || canvasEl._rippleImgData.width !== rBW || canvasEl._rippleImgData.height !== rBH) {
+                  canvasEl._rippleImgData = rbCtx.createImageData(rBW, rBH);
+                }
+                var imgData = canvasEl._rippleImgData;
                 var data = imgData.data;
                 var rSc = cW / rBW;
                 var omegaRippleT = t * freq * 0.05;
+                var causticPhaseT = waveMotionReduced ? 0 : omegaRippleT * 2.2;
                 var huyNorm = huygensPts.length > 0 ? Math.sqrt(huygensPts.length) : 1;
                 for (var py = 0; py < rBH; py++) {
                   for (var px = 0; px < rBW; px++) {
@@ -4138,21 +4222,25 @@ window.StemLab = window.StemLab || {
                       }
                       vSum = (amp * hAcc) / huyNorm;
                     }
-                    // Diverging depth-shaded water-light palette: deep abyssal troughs,
-                    // rich marine equilibrium water, and luminous caustic-lit crests.
+                    // Diverging depth-shaded water-light palette with optical constructive-crest caustic shimmer.
                     var norm = Math.max(-1, Math.min(1, vSum / Math.max(1, amp)));
                     var idx = (py * rBW + px) * 4;
-                    if (norm >= 0) {
-                      var crest = Math.pow(norm, 0.70);
-                      var causticSpec = norm > 0.72 ? Math.pow((norm - 0.72) / 0.28, 1.8) * 34 : 0;
-                      data[idx] = Math.min(255, Math.floor(8 + crest * 226 + causticSpec));
-                      data[idx + 1] = Math.min(255, Math.floor(64 + crest * 188 + causticSpec * 0.7));
-                      data[idx + 2] = Math.min(255, Math.floor(120 + crest * 135));
+                    if (waveHighContrast) {
+                      if (norm > 0.25) { data[idx] = 255; data[idx + 1] = 255; data[idx + 2] = 0; }
+                      else if (norm < -0.25) { data[idx] = 0; data[idx + 1] = 200; data[idx + 2] = 255; }
+                      else { data[idx] = 0; data[idx + 1] = 0; data[idx + 2] = 0; }
+                    } else if (norm >= 0) {
+                      var crest = Math.pow(norm, 0.68);
+                      var causticWave = 0.5 + 0.5 * Math.sin(px * 0.27 + py * 0.19 - causticPhaseT);
+                      var causticSpec = norm > 0.60 ? Math.pow((norm - 0.60) / 0.40, 1.65) * (36 + 26 * causticWave) : 0;
+                      data[idx] = Math.min(255, Math.floor(8 + crest * 224 + causticSpec));
+                      data[idx + 1] = Math.min(255, Math.floor(66 + crest * 186 + causticSpec * 0.85));
+                      data[idx + 2] = Math.min(255, Math.floor(124 + crest * 131 + causticSpec * 0.35));
                     } else {
                       var trough = Math.pow(-norm, 0.76);
-                      data[idx] = Math.floor(4 + (1 - trough) * 14);
-                      data[idx + 1] = Math.floor(14 + (1 - trough) * 56);
-                      data[idx + 2] = Math.floor(46 + (1 - trough) * 94);
+                      data[idx] = Math.floor(3 + (1 - trough) * 14);
+                      data[idx + 1] = Math.floor(12 + (1 - trough) * 56);
+                      data[idx + 2] = Math.floor(44 + (1 - trough) * 96);
                     }
                     data[idx + 3] = 255;
                   }
@@ -4161,14 +4249,16 @@ window.StemLab = window.StemLab || {
                 ctx.imageSmoothingEnabled = true;
                 ctx.drawImage(canvasEl._rippleBuf, 0, 0, cW, cH);
 
-                // Soft tank-edge depth vignette for dimensional ripple-tank framing.
-                ctx.save();
-                var tankVig = ctx.createRadialGradient(cW * 0.5, cH * 0.5, Math.min(cW, cH) * 0.34, cW * 0.5, cH * 0.5, Math.max(cW, cH) * 0.74);
-                tankVig.addColorStop(0, 'rgba(0,0,0,0)');
-                tankVig.addColorStop(1, 'rgba(3,12,26,0.34)');
-                ctx.fillStyle = tankVig;
-                ctx.fillRect(0, 0, cW, cH);
-                ctx.restore();
+                // Soft tank-edge depth vignette for dimensional ripple-tank framing (bypassed in High-Contrast).
+                if (!waveHighContrast && typeof ctx.createRadialGradient === 'function') {
+                  ctx.save();
+                  var tankVig = ctx.createRadialGradient(cW * 0.5, cH * 0.5, Math.min(cW, cH) * 0.34, cW * 0.5, cH * 0.5, Math.max(cW, cH) * 0.74);
+                  tankVig.addColorStop(0, 'rgba(0,0,0,0)');
+                  tankVig.addColorStop(1, 'rgba(3,12,26,0.34)');
+                  ctx.fillStyle = tankVig;
+                  ctx.fillRect(0, 0, cW, cH);
+                  ctx.restore();
+                }
 
                 if (rBarrier === 'none') {
                   // Overlay physically aligned crest contours. They preserve the
@@ -4639,25 +4729,41 @@ window.StemLab = window.StemLab || {
                 // Keep stationary source visible at left-center; moving source sweeps & wraps cleanly
                 var sourceX = effSrcMach < 0.01 ? (cW * 0.35) : (((t * sourceSpeedPx) % (cW + 140 * dpr)) - 70 * dpr);
 
-                // Draw expanding wavefronts emitted from source's true past positions
-                ctx.lineWidth = 1.4 * dpr;
+                // Draw expanding wavefronts with Doppler-shifted compression halos (blue-shift approaching / red-shift receding)
                 var numFronts = 22;
+                var dopplerShiftAmt = Math.min(1, effSrcMach / 0.9);
                 for (var wf = 0; wf < numFronts; wf++) {
                   var age = wf * 7;
                   var emitX = sourceX - age * sourceSpeedPx;
                   var radius = age * waveSpeedPx;
                   if (radius > 0 && radius < cW * 1.4) {
                     var frontAlpha = Math.max(0.06, 0.95 - age / (numFronts * 7));
-                    if (isRelLight && effSrcMach > 0.02) {
-                      ctx.strokeStyle = 'rgba(56,189,248,' + frontAlpha.toFixed(2) + ')';
+                    if (effSrcMach > 0.02 && (isRelLight || effSrcMach < 1.0)) {
+                      // Blue-shifted approaching leading wavefront (+ compression halo bloom)
+                      if (!waveHighContrast) {
+                        ctx.lineWidth = (4.2 + dopplerShiftAmt * 2.4) * dpr;
+                        ctx.strokeStyle = 'rgba(56,189,248,' + (frontAlpha * (0.14 + 0.16 * dopplerShiftAmt)).toFixed(3) + ')';
+                        ctx.beginPath();
+                        ctx.arc(emitX, midY_d, radius, -Math.PI * 0.5, Math.PI * 0.5);
+                        ctx.stroke();
+                        ctx.lineWidth = 3.4 * dpr;
+                        ctx.strokeStyle = 'rgba(251,113,133,' + (frontAlpha * (0.10 + 0.10 * dopplerShiftAmt)).toFixed(3) + ')';
+                        ctx.beginPath();
+                        ctx.arc(emitX, midY_d, radius, Math.PI * 0.5, Math.PI * 1.5);
+                        ctx.stroke();
+                      }
+                      ctx.lineWidth = (1.5 + dopplerShiftAmt * 0.45) * dpr;
+                      ctx.strokeStyle = waveHighContrast ? '#00ffff' : ('rgba(56,189,248,' + frontAlpha.toFixed(2) + ')');
                       ctx.beginPath();
                       ctx.arc(emitX, midY_d, radius, -Math.PI * 0.5, Math.PI * 0.5);
                       ctx.stroke();
-                      ctx.strokeStyle = 'rgba(248,113,113,' + frontAlpha.toFixed(2) + ')';
+                      ctx.lineWidth = 1.35 * dpr;
+                      ctx.strokeStyle = waveHighContrast ? '#ff6666' : ('rgba(248,113,113,' + (frontAlpha * 0.92).toFixed(2) + ')');
                       ctx.beginPath();
                       ctx.arc(emitX, midY_d, radius, Math.PI * 0.5, Math.PI * 1.5);
                       ctx.stroke();
                     } else {
+                      ctx.lineWidth = 1.4 * dpr;
                       ctx.strokeStyle = (!isRelLight && effSrcMach >= 1.0)
                         ? 'rgba(251,191,36,' + (frontAlpha * 0.78).toFixed(2) + ')'
                         : 'rgba(96,165,250,' + frontAlpha.toFixed(2) + ')';
@@ -4666,6 +4772,23 @@ window.StemLab = window.StemLab || {
                       ctx.stroke();
                     }
                   }
+                }
+                // Leading blue-shift compression bow aura & trailing red-shift wake glow on moving source
+                if (!waveHighContrast && effSrcMach > 0.05 && typeof ctx.createRadialGradient === 'function') {
+                  ctx.save();
+                  var bowR = (22 + dopplerShiftAmt * 18) * dpr;
+                  var bowGrad = ctx.createRadialGradient(sourceX + 8 * dpr, midY_d, 1, sourceX + 8 * dpr, midY_d, bowR);
+                  bowGrad.addColorStop(0, effSrcMach >= 1.0 && !isRelLight ? 'rgba(253,224,71,0.45)' : 'rgba(56,189,248,0.42)');
+                  bowGrad.addColorStop(0.55, effSrcMach >= 1.0 && !isRelLight ? 'rgba(251,146,60,0.16)' : 'rgba(56,189,248,0.12)');
+                  bowGrad.addColorStop(1, 'rgba(56,189,248,0)');
+                  ctx.fillStyle = bowGrad;
+                  ctx.beginPath(); ctx.arc(sourceX + 8 * dpr, midY_d, bowR, 0, Math.PI * 2); ctx.fill();
+                  var wakeGrad = ctx.createRadialGradient(sourceX - 10 * dpr, midY_d, 1, sourceX - 10 * dpr, midY_d, bowR * 0.9);
+                  wakeGrad.addColorStop(0, 'rgba(248,113,113,0.28)');
+                  wakeGrad.addColorStop(1, 'rgba(248,113,113,0)');
+                  ctx.fillStyle = wakeGrad;
+                  ctx.beginPath(); ctx.arc(sourceX - 10 * dpr, midY_d, bowR * 0.9, 0, Math.PI * 2); ctx.fill();
+                  ctx.restore();
                 }
 
                 // Supersonic Mach shock cone (sin μ = 1/M) when acoustic & M >= 1.0
@@ -4720,14 +4843,26 @@ window.StemLab = window.StemLab || {
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 ctx.fillText('S', sourceX, midY_d);
 
-                // Dual Observers: O1 (left / receding) & O2 (right / approaching)
+                // Dual Observers: O1 (left / receding red-shift) & O2 (right / approaching blue-shift)
                 var obs1X = 34 * dpr;
+                var obs2X = cW - 34 * dpr;
+                if (!waveHighContrast && !waveMotionReduced && effSrcMach > 0.02) {
+                  var rBeat1 = ((t * 0.045 * Math.max(0.35, 1 - effSrcMach * 0.55)) % 1 + 1) % 1;
+                  var rBeat2 = ((t * 0.045 * (1 + Math.min(1.4, effSrcMach * 1.15))) % 1 + 1) % 1;
+                  ctx.save();
+                  ctx.strokeStyle = 'rgba(248,113,113,' + ((1 - rBeat1) * 0.55).toFixed(3) + ')';
+                  ctx.lineWidth = 1.4 * dpr;
+                  ctx.beginPath(); ctx.arc(obs1X, midY_d, (10 + rBeat1 * 14) * dpr, 0, Math.PI * 2); ctx.stroke();
+                  ctx.strokeStyle = 'rgba(56,189,248,' + ((1 - rBeat2) * 0.62).toFixed(3) + ')';
+                  ctx.lineWidth = 1.6 * dpr;
+                  ctx.beginPath(); ctx.arc(obs2X, midY_d, (10 + rBeat2 * 14) * dpr, 0, Math.PI * 2); ctx.stroke();
+                  ctx.restore();
+                }
                 ctx.fillStyle = '#38bdf8';
                 ctx.beginPath(); ctx.arc(obs1X, midY_d, 9 * dpr, 0, 2 * Math.PI); ctx.fill();
                 ctx.fillStyle = '#082f49';
                 ctx.fillText('O\u2081', obs1X, midY_d);
 
-                var obs2X = cW - 34 * dpr;
                 ctx.fillStyle = '#22c55e';
                 ctx.beginPath(); ctx.arc(obs2X, midY_d, 9 * dpr, 0, 2 * Math.PI); ctx.fill();
                 ctx.fillStyle = '#fff';
@@ -6589,7 +6724,7 @@ window.StemLab = window.StemLab || {
 
 
 
-          return React.createElement("div", { className: "max-w-6xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
+          return React.createElement("div", { 'data-wave-tool': 'true', className: "max-w-6xl mx-auto animate-in fade-in duration-200", style: { position: 'relative' } },
 
             // First-run 3-step tour (self-contained; localStorage-persisted)
             (function () {
@@ -6607,7 +6742,7 @@ window.StemLab = window.StemLab || {
               if (step == null || step < 0 || step >= TOUR.length) return null;
               var cur = TOUR[step];
               var done = function () { try { window.localStorage.setItem('allo_wave_tour_done', '1'); } catch (e) {} upd('tourStep', -1); };
-              return React.createElement("div", { role: "region", "aria-label": __alloT('stem.wave.tour_region_label', 'Getting started tips'), className: "mb-3 p-3 rounded-xl border-2 border-cyan-300 bg-cyan-50 flex items-center gap-3 flex-wrap" },
+              return React.createElement("div", { 'data-wave-tour': 'true', role: "region", "aria-label": __alloT('stem.wave.tour_region_label', 'Getting started tips'), className: "mb-3 p-3 rounded-xl border-2 border-cyan-300 bg-cyan-50 flex items-center gap-3 flex-wrap" },
                 React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, cur.icon),
                 React.createElement("p", { className: "text-xs text-cyan-700 font-semibold flex-1 min-w-[200px] m-0" }, cur.text),
                 React.createElement("span", { className: "text-[0.625rem] font-bold text-cyan-700" }, (step + 1) + '/' + TOUR.length),

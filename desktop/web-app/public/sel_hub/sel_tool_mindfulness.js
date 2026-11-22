@@ -10,17 +10,21 @@
 // Grade-adaptive: uses ctx.gradeBand for vocabulary & depth
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
-};
+if (typeof window !== 'undefined') {
+  window.SelHub = window.SelHub || {
+    _registry: {}, _order: [],
+    registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
+    isRegistered: function(id) { return !!this._registry[id]; },
+    renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
+  };
+}
 
 (function() {
   'use strict';
+  if (typeof window === 'undefined' || !window.SelHub) return;
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-mindfulness')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-mindfulness';
@@ -36,14 +40,23 @@ window.SelHub = window.SelHub || {
   // ══════════════════════════════════════════════════════════════
   // ── Sound Effects Engine (Web Audio API) ──
   // ══════════════════════════════════════════════════════════════
+  function _minIsMuted() {
+    try {
+      if (typeof window === 'undefined') return true;
+      if (typeof window.__alloIsGlobalMuted === 'function') return !!window.__alloIsGlobalMuted();
+      return window.__alloMuted === true || window.__alloGlobalMuted === true;
+    } catch (e) { return false; }
+  }
   var _audioCtx = null;
   function getAudioCtx() {
+    if (_minIsMuted()) return null;
     if (!_audioCtx) {
       try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
     }
     return _audioCtx;
   }
   function playTone(freq, dur, type, vol) {
+    if (_minIsMuted()) return;
     var ac = getAudioCtx(); if (!ac) return;
     try {
       var osc = ac.createOscillator();
@@ -65,6 +78,7 @@ window.SelHub = window.SelHub || {
 
   // Ambient tone generator for meditation
   function playAmbient(freq, dur, vol) {
+    if (_minIsMuted()) return;
     var ac = getAudioCtx(); if (!ac) return;
     try {
       var osc = ac.createOscillator();
@@ -21890,19 +21904,28 @@ var VISUAL_ANCHORS = [
       var _minBd = function(h){ return _minHC ? (_min_BDH[h]||h) : (_minL ? (_min_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
-      var Sparkles = ctx.icons.Sparkles;
-      var addToast = ctx.addToast;
-      var awardXP = ctx.awardXP;
-      var announceToSR = ctx.announceToSR;
-      var a11yClick = ctx.a11yClick;
-      var celebrate = ctx.celebrate;
+      var _minIcons = (ctx && ctx.icons) || {};
+      var Sparkles = _minIcons.Sparkles;
+      var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : function() {};
+      var awardXP = typeof ctx.awardXP === 'function' ? ctx.awardXP : function() {};
+      var announceToSR = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : function() {};
+      var a11yClick = typeof ctx.a11yClick === 'function' ? ctx.a11yClick : function(fn) {
+        return {
+          role: 'button', tabIndex: 0, onClick: fn,
+          onKeyDown: function(ev) {
+            if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+            if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); if (typeof fn === 'function') fn(ev); }
+          }
+        };
+      };
+      var celebrate = typeof ctx.celebrate === 'function' ? ctx.celebrate : function() {};
       var callGemini = ctx.callGemini;
       var _minAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true; })(callGemini);
       var callTTS = ctx.callTTS;
       var band = ctx.gradeBand || 'elementary';
 
       // ── Tool-scoped state ──
-      var d = (ctx.toolData && ctx.toolData.mindfulness) || {};
+      var d = (ctx.toolData && ctx.toolData.mindfulness && typeof ctx.toolData.mindfulness === 'object') ? ctx.toolData.mindfulness : {};
       var upd = function(key, val) {
         if (typeof key === 'object') { if (ctx.updateMulti) ctx.updateMulti('mindfulness', key); }
         else { if (ctx.update) ctx.update('mindfulness', key, val); }
@@ -21923,6 +21946,24 @@ var VISUAL_ANCHORS = [
       // branch-local closures (BODY_SCAN_REGIONS, _playToneByName, pattern,
       // phaseDur, totalSteps, pace, bt*) without any of it having to move.
       // Gate: dev-tools/scan_hook_order_branches.cjs.
+      var _minMountedRef = React.useRef(true);
+      var _medTtsTimerRef = React.useRef(null);
+      var _bellEndTimerRef = React.useRef(null);
+      var _badgeReturnTimerRef = React.useRef(null);
+      React.useEffect(function() {
+        _minMountedRef.current = true;
+        return function() {
+          _minMountedRef.current = false;
+          stopBreathTimer();
+          stopScanTimer();
+          stopBoxTimer();
+          if (_medTtsTimerRef.current) { clearTimeout(_medTtsTimerRef.current); _medTtsTimerRef.current = null; }
+          if (_bellEndTimerRef.current) { clearTimeout(_bellEndTimerRef.current); _bellEndTimerRef.current = null; }
+          if (_badgeReturnTimerRef.current) { clearTimeout(_badgeReturnTimerRef.current); _badgeReturnTimerRef.current = null; }
+        };
+      }, []);
+      var _sbLayersKey = '';
+      try { _sbLayersKey = JSON.stringify(d.sbLayers || {}); } catch (e) { _sbLayersKey = ''; }
       var _fxSlots = React.useRef({});
       _fxSlots.current = {};
       React.useEffect(function () {
@@ -21940,7 +21981,7 @@ var VISUAL_ANCHORS = [
       React.useEffect(function () {
         var fn = _fxSlots.current["soundbath"];
         return fn ? fn() : undefined;
-      }, [activeTab, d.sbPlaying, JSON.stringify(d.sbLayers || {})]);
+      }, [activeTab, d.sbPlaying, _sbLayersKey]);
       React.useEffect(function () {
         var fn = _fxSlots.current["bell_timer"];
         return fn ? fn() : undefined;
@@ -21969,7 +22010,7 @@ var VISUAL_ANCHORS = [
       var breathCycle      = d.breathCycle || 0;
       var breathActive     = d.breathActive || false;
       var breathSessions   = (Number.isFinite(d.breathSessions) ? d.breathSessions : 0);
-      var breathPatternsUsed = d.breathPatternsUsed || {};
+      var breathPatternsUsed = (d.breathPatternsUsed && typeof d.breathPatternsUsed === 'object') ? d.breathPatternsUsed : {};
 
       // Body Scan state
       var scanStep         = d.scanStep != null ? d.scanStep : -1; // -1 = not started
@@ -21979,34 +22020,34 @@ var VISUAL_ANCHORS = [
 
       // Grounding state
       var groundStep       = d.groundStep || 0; // 0-4 = senses, 5 = done
-      var groundInputs     = d.groundInputs || ['','','','',''];
+      var groundInputs     = Array.isArray(d.groundInputs) ? d.groundInputs : ['','','','',''];
       var groundCompleted  = (Number.isFinite(d.groundCompleted) ? d.groundCompleted : 0);
 
       // Gratitude state
-      var gratEntries      = d.gratEntries || [];
-      var gratDraft        = d.gratDraft || '';
+      var gratEntries      = Array.isArray(d.gratEntries) ? d.gratEntries.filter(function(e) { return e && typeof e === 'object'; }) : [];
+      var gratDraft        = typeof d.gratDraft === 'string' ? d.gratDraft : '';
       var gratPrompt       = d.gratPrompt || null;
       var gratAiResp       = d.gratAiResp || null;
       var gratAiLoading    = d.gratAiLoading || false;
 
       // Activities state
-      var activityDone     = d.activityDone || {}; // { activityId: true }
+      var activityDone     = (d.activityDone && typeof d.activityDone === 'object') ? d.activityDone : {}; // { activityId: true }
       var activeActivity   = d.activeActivity || null;
       var activityStep     = d.activityStep || 0;
 
       // Practice log
-      var practiceLog      = d.practiceLog || []; // { type, id, timestamp }
+      var practiceLog      = Array.isArray(d.practiceLog) ? d.practiceLog.filter(function(e) { return e && typeof e === 'object'; }) : []; // { type, id, timestamp }
 
       // Meditation state
       var meditationIdx      = d.meditationIdx != null ? d.meditationIdx : -1;
       var meditationsDone    = d.meditationsDone || 0;
-      var meditationFavs     = d.meditationFavs || {};
+      var meditationFavs     = (d.meditationFavs && typeof d.meditationFavs === 'object') ? d.meditationFavs : {};
       var meditationPlaying  = d.meditationPlaying || false;
 
       // Movement state
       var movementActiveId   = d.movementActiveId || null;
       var movementStep       = d.movementStep || 0;
-      var movementsDone      = d.movementsDone || {};
+      var movementsDone      = (d.movementsDone && typeof d.movementsDone === 'object') ? d.movementsDone : {};
 
       // Grounding Techniques state
       var techActiveId       = d.techActiveId || null;
@@ -22016,16 +22057,16 @@ var VISUAL_ANCHORS = [
       var techBoxTimer       = d.techBoxTimer || 0;
       var techBoxActive      = d.techBoxActive || false;
       var techRainStep       = d.techRainStep || 0;
-      var techRainInputs     = d.techRainInputs || ['','','',''];
+      var techRainInputs     = Array.isArray(d.techRainInputs) ? d.techRainInputs : ['','','',''];
       var techButterflyDone  = d.techButterflyDone || false;
-      var techsDone          = d.techsDone || {};
+      var techsDone          = (d.techsDone && typeof d.techsDone === 'object') ? d.techsDone : {};
 
       // Streak & Log enhanced state
       var weeklyGoal         = d.weeklyGoal || 3;
       var totalMinutes       = d.totalMinutes || 0;
 
       // Badge state
-      var earnedBadges     = d.earnedBadges || {};
+      var earnedBadges     = (d.earnedBadges && typeof d.earnedBadges === 'object') ? d.earnedBadges : {};
       // AI-only badges are hidden without usable AI (earned ones stay), so the set stays completable.
       var shownBadges = BADGES.filter(function(b) { return _minAiOn || !b.aiOnly || earnedBadges[b.id]; });
       var showBadgePopup   = d.showBadgePopup || null;
@@ -22039,7 +22080,7 @@ var VISUAL_ANCHORS = [
         if (!badgeDialogOpen) return undefined;
         // Captured BEFORE focus moves. autoFocus would defeat this: it runs during
         // commit, so the "opener" would come out as the dialog's own button.
-        var opener = document.activeElement;
+        var opener = typeof document !== 'undefined' ? document.activeElement : null;
         if (opener && typeof opener.focus === 'function') badgeOpenerRef.current = opener;
         var focusTimer = setTimeout(function() {
           var dlg = badgeDialogRef.current;
@@ -22053,7 +22094,9 @@ var VISUAL_ANCHORS = [
           badgeOpenerRef.current = null;
           // isConnected guards the case where the opener itself went away.
           if (previous && previous.isConnected !== false && typeof previous.focus === 'function') {
-            setTimeout(function() { previous.focus(); }, 0);
+            _badgeReturnTimerRef.current = setTimeout(function() {
+              if (previous && previous.isConnected !== false && typeof previous.focus === 'function') previous.focus();
+            }, 0);
           }
         };
       }, [badgeDialogOpen]);
@@ -22142,7 +22185,7 @@ var VISUAL_ANCHORS = [
         h('div', { role: 'tablist', 'aria-label': 'Mindfulness tabs', style: { display: 'flex', gap: 2 } },
           tabs.map(function(tab) {
           var isActive = activeTab === tab.id;
-          return h('button', { 'aria-label': tab.label,
+          return h('button', { type: 'button', 'aria-label': tab.label,
             key: tab.id,
             role: 'tab', 'aria-selected': isActive,
             onClick: function() {
@@ -22159,12 +22202,12 @@ var VISUAL_ANCHORS = [
           }, tab.label);
           })
         ),
-        h('button', { 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled,
+        h('button', { type: 'button', 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
           style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: _minFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
+        h('button', { type: 'button', 'aria-label': Object.keys(earnedBadges).length + '/' + shownBadges.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#8b5cf633' : 'transparent', color: _minFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + shownBadges.length)
@@ -22232,7 +22275,7 @@ var VISUAL_ANCHORS = [
       // ══════════════════════════════════════════════════════════
       function mindfulnessRouteCard(label, detail, target, color) {
         var isHere = activeTab === target;
-        return h('button', {
+        return h('button', { type: 'button',
           key: target,
           onClick: function() {
             stopBreathTimer(); stopScanTimer();
@@ -22441,6 +22484,7 @@ var VISUAL_ANCHORS = [
             // failure: three seconds is the whole interaction for anyone reading
             // slowly, listening to a screen reader, or working a switch.
             onKeyDown: function(e) {
+              if (e.isComposing || e.keyCode === 229) return;
               if (e.key === 'Escape') { e.preventDefault(); upd('showBadgePopup', null); return; }
               // Honour aria-modal: keep Tab inside the dialog. One control here,
               // so first === last and Tab holds focus on it.
@@ -22455,18 +22499,18 @@ var VISUAL_ANCHORS = [
             style: { position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)' },
             onClick: function() { upd('showBadgePopup', null); }
           },
-            h('div', {               style: { background: 'linear-gradient(135deg, #0c1631 0%, #1e293b 100%)', borderRadius: 20, padding: '32px 40px', textAlign: 'center', border: '2px solid #8b5cf6', maxWidth: 320 },
+            h('div', {               style: { background: _minHC ? '#000000' : (_minL ? '#ffffff' : 'linear-gradient(135deg, #0c1631 0%, #1e293b 100%)'), borderRadius: 20, padding: '32px 40px', textAlign: 'center', border: '2px solid ' + _minBd('#8b5cf6'), maxWidth: 320 },
               onClick: function(e) { e.stopPropagation(); }
             },
               h('div', { style: { fontSize: 56, marginBottom: 12 } }, popBadge.icon),
               h('p', { style: { fontSize: 11, color: _minFg('#a78bfa'), textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 } }, 'Badge Earned!'),
               h('h3', { style: { margin: '0 0 8px 0', color: _minFg('#f1f5f9'), fontSize: 20 } }, popBadge.name),
               h('p', { style: { margin: 0, color: _minFg('#94a3b8'), fontSize: 13 } }, popBadge.desc),
-              h('p', { style: { margin: '12px 0 0 0', color: _minFg('#8b5cf6'), fontSize: 12, fontWeight: 700 } }, '+25 XP'),
+              h('p', { style: { margin: '12px 0 0 0', color: _minFg('#a78bfa'), fontSize: 12, fontWeight: 700 } }, '+25 XP'),
               h('button', {
                 type: 'button',
                 onClick: function() { upd('showBadgePopup', null); },
-                style: { marginTop: 18, padding: '9px 22px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.14)', color: '#ffffff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
+                style: { marginTop: 18, padding: '9px 22px', borderRadius: 10, border: '1px solid ' + (_minHC ? '#ffff00' : (_minL ? '#6d28d9' : 'rgba(255,255,255,0.85)')), background: _minHC ? '#000000' : (_minL ? '#6d28d9' : 'rgba(255,255,255,0.14)'), color: _minHC ? '#ffff00' : '#ffffff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
               }, 'Nice')
             )
           );
@@ -22493,7 +22537,7 @@ var VISUAL_ANCHORS = [
                 );
               })
             ),
-            h('button', { 'aria-label': 'Close',
+            h('button', { type: 'button', 'aria-label': 'Close',
               onClick: function() { upd('showBadgesPanel', false); },
               style: { display: 'block', margin: '16px auto 0', padding: '8px 20px', borderRadius: 8, border: 'none', background: _minBg('#334155'), color: _minFg('#f1f5f9'), fontWeight: 600, cursor: 'pointer' }
             }, 'Close')
@@ -22524,7 +22568,7 @@ var VISUAL_ANCHORS = [
             BREATH_PATTERNS.map(function(pat, i) {
               var isSel = breathPatternIdx === i;
               var used = breathPatternsUsed[pat.id];
-              return h('button', { 
+              return h('button', { type: 'button', 
                 key: pat.id,
                 onClick: function() { upd('breathPatternIdx', i); if (soundEnabled) sfxClick(); },
                 style: {
@@ -22548,7 +22592,7 @@ var VISUAL_ANCHORS = [
           ),
 
           // Start button
-          !breathActive && h('button', { 'aria-label': 'Start breathing exercise',
+          !breathActive && h('button', { type: 'button', 'aria-label': 'Start breathing exercise',
             onClick: function() {
               stopBreathTimer();
               upd({ breathActive: true, breathPhase: 'inhale', breathTimeLeft: bp.inhale, breathCycle: 1 });
@@ -22627,7 +22671,7 @@ var VISUAL_ANCHORS = [
             ),
 
             // Stop button
-            h('button', { 'aria-label': 'Stop',
+            h('button', { type: 'button', 'aria-label': 'Stop',
               onClick: function() {
                 stopBreathTimer();
                 upd({ breathActive: false, breathPhase: null });
@@ -22672,7 +22716,7 @@ var VISUAL_ANCHORS = [
             h('p', { style: { color: _minFg('#94a3b8'), fontSize: 11, marginBottom: 20 } },
               scanSteps.length + ' body areas \u2022 ~' + Math.round(scanSteps.reduce(function(s,st) { return s + st.seconds; }, 0) / 60) + ' minutes'
             ),
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() {
                 stopScanTimer();
                 upd({ scanStep: 0, scanTimeLeft: scanSteps[0].seconds, scanActive: true });
@@ -22741,7 +22785,7 @@ var VISUAL_ANCHORS = [
 
             // Stop button
             h('div', { style: { textAlign: 'center' } },
-              h('button', { 'aria-label': 'Stop Scan',
+              h('button', { type: 'button', 'aria-label': 'Stop Scan',
                 onClick: function() {
                   stopScanTimer();
                   upd({ scanStep: -1, scanActive: false });
@@ -22830,7 +22874,7 @@ var VISUAL_ANCHORS = [
               ),
 
               // Next sense button
-              h('button', { 'aria-label': 'Next sense button',
+              h('button', { type: 'button', 'aria-label': 'Next sense button',
                 onClick: function() {
                   var nextStep = groundStep + 1;
                   upd('groundStep', nextStep);
@@ -22864,7 +22908,7 @@ var VISUAL_ANCHORS = [
               band === 'elementary' ? 'You used all 5 senses to come back to the present moment. You\'re a grounding superstar!'
               : 'You\'ve re-anchored yourself to the present moment through sensory awareness. Notice how you feel compared to before.'
             ),
-            h('button', { 'aria-label': 'Do Another Round',
+            h('button', { type: 'button', 'aria-label': 'Do Another Round',
               onClick: function() { upd({ groundStep: 0, groundInputs: ['','','','',''] }); if (soundEnabled) sfxClick(); },
               style: { padding: '12px 24px', borderRadius: 10, border: 'none', background: _minBg('#3b82f6'), color: _minFg('#fff'), fontWeight: 700, fontSize: 14, cursor: 'pointer' }
             }, '\uD83D\uDD04 Do Another Round'),
@@ -22894,7 +22938,7 @@ var VISUAL_ANCHORS = [
 
           // Prompt inspiration
           h('div', { style: { marginBottom: 16 } },
-            h('button', { 'aria-label': 'Give Me a Prompt',
+            h('button', { type: 'button', 'aria-label': 'Give Me a Prompt',
               onClick: function() {
                 var idx = Math.floor(Math.random() * prompts.length);
                 upd('gratPrompt', prompts[idx]);
@@ -22921,8 +22965,21 @@ var VISUAL_ANCHORS = [
             }),
 
             h('div', { style: { display: 'flex', gap: 8 } },
-              gratDraft.trim() && h('button', { 'aria-label': 'Save Entry',
+              gratDraft.trim() && h('button', { type: 'button', 'aria-label': 'Save Entry',
                 onClick: function() {
+                  var gSaveSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                    ? window.SelHub.safeRehearseCheck(gratDraft, { toolId: 'mindfulness', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+                    : { action: 'continue' };
+                  if (gSaveSafety.action === 'block') {
+                    upd({
+                      gratAiResp: (window.SelHub && window.SelHub.rehearseBreakCharacterText)
+                        ? window.SelHub.rehearseBreakCharacterText(gSaveSafety.severity)
+                        : 'It sounds like you might be going through something really heavy. Support resources are shown below.',
+                      gratAiLoading: false,
+                      _lastTier: 3
+                    });
+                    return;
+                  }
                   var entry = { text: gratDraft, prompt: gratPrompt, timestamp: Date.now(), aiResp: gratAiResp };
                   var newEntries = gratEntries.concat([entry]);
                   upd({ gratEntries: newEntries, gratDraft: '', gratPrompt: null, gratAiResp: null });
@@ -22937,7 +22994,7 @@ var VISUAL_ANCHORS = [
                 style: { flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: _minBg('#15803d'), color: _minFg('#fff'), fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, '\uD83D\uDCBE Save Entry'),
 
-              callGemini && gratDraft.trim().length > 10 && h('button', {
+              _minAiOn && callGemini && gratDraft.trim().length > 10 && h('button', { type: 'button',
                 onClick: function() {
                   // Safety pre-check on free-write gratitude draft. Block on
                   // critical content (gratitude entries CAN contain dark thoughts).
@@ -22957,10 +23014,12 @@ var VISUAL_ANCHORS = [
                      'Use evidence-based positive psychology language. Connect their gratitude to broader themes of well-being, meaning, or connection.') +
                     ' End with a gentle question to deepen their reflection.';
                   callGemini(prompt).then(function(resp) {
+                    if (!_minMountedRef.current) return;
                     upd({ gratAiResp: resp, gratAiLoading: false });
                     tryAwardBadge('ai_coach');
                     if (soundEnabled) sfxChime();
                   }).catch(function() {
+                    if (!_minMountedRef.current) return;
                     upd({ gratAiResp: 'What a thoughtful reflection! Gratitude grows stronger the more you practice it. Keep noticing the good.', gratAiLoading: false });
                   });
                 },
@@ -22987,16 +23046,18 @@ var VISUAL_ANCHORS = [
               '\uD83D\uDE4F Past Gratitude (' + gratEntries.length + ')'
             ),
             gratEntries.slice().reverse().slice(0, 5).map(function(entry, i) {
+              var eText = typeof entry.text === 'string' ? entry.text : String(entry.text || '');
+              var eAi = typeof entry.aiResp === 'string' ? entry.aiResp : '';
               return h('div', { key: i, style: { padding: 14, borderRadius: 12, background: _minBg('#1e293b'), border: '1px solid #334155', marginBottom: 8 } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6 } },
                   h('span', { style: { fontSize: 12, fontWeight: 600, color: _minFg('#22c55e') } }, '\uD83D\uDE4F Gratitude'),
-                  h('span', { style: { fontSize: 10, color: _minFg('#94a3b8') } }, new Date(entry.timestamp).toLocaleDateString())
+                  h('span', { style: { fontSize: 10, color: _minFg('#94a3b8') } }, new Date(entry.timestamp || 0).toLocaleDateString())
                 ),
                 h('p', { style: { fontSize: 12, color: _minFg('#cbd5e1'), lineHeight: 1.5, margin: 0 } },
-                  entry.text.length > 150 ? entry.text.substring(0, 150) + '...' : entry.text
+                  eText.length > 150 ? eText.substring(0, 150) + '...' : eText
                 ),
-                entry.aiResp && h('p', { style: { fontSize: 11, color: _minFg('#a78bfa'), marginTop: 6, fontStyle: 'italic' } },
-                  '\u2728 ' + (entry.aiResp.length > 100 ? entry.aiResp.substring(0, 100) + '...' : entry.aiResp)
+                eAi && h('p', { style: { fontSize: 11, color: _minFg('#a78bfa'), marginTop: 6, fontStyle: 'italic' } },
+                  '\u2728 ' + (eAi.length > 100 ? eAi.substring(0, 100) + '...' : eAi)
                 )
               );
             })
@@ -23025,7 +23086,7 @@ var VISUAL_ANCHORS = [
             var steps = act.steps[band] || act.steps.elementary;
 
             return h('div', null,
-              h('button', { 'aria-label': 'All Activities',
+              h('button', { type: 'button', 'aria-label': 'All Activities',
                 onClick: function() { upd({ activeActivity: null, activityStep: 0 }); if (soundEnabled) sfxClick(); },
                 style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: _minBg('#334155'), color: _minFg('#94a3b8'), cursor: 'pointer', fontSize: 12, marginBottom: 16 }
               }, '\u2190 All Activities'),
@@ -23098,7 +23159,7 @@ var VISUAL_ANCHORS = [
           !activeActivity && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 } },
             MINDFUL_ACTIVITIES.map(function(act) {
               var done = activityDone[act.id];
-              return h('button', { 
+              return h('button', { type: 'button', 
                 key: act.id,
                 onClick: function() { upd({ activeActivity: act.id, activityStep: 0 }); if (soundEnabled) sfxClick(); },
                 style: {
@@ -23227,7 +23288,7 @@ var VISUAL_ANCHORS = [
                         borderRadius: 8, transition: 'width 0.3s'
                       } })
                     ),
-                    h('span', { style: { fontSize: 12, fontWeight: 700, color: _minFg(weekDays) >= weeklyGoal ? _minFg('#22c55e') : _minFg('#94a3b8'), flexShrink: 0 } },
+                    h('span', { style: { fontSize: 12, fontWeight: 700, color: weekDays >= weeklyGoal ? _minFg('#22c55e') : _minFg('#94a3b8'), flexShrink: 0 } },
                       weekDays + '/' + weeklyGoal
                     )
                   ),
@@ -23302,7 +23363,7 @@ var VISUAL_ANCHORS = [
 
           // ── Print my practice log (take-home artifact) ──
           totalPractices > 0 ? h('div', { style: { marginTop: 16, textAlign: 'center' } },
-            h('button', {
+            h('button', { type: 'button',
               onClick: function() {
                 if (!window.SelHub || !window.SelHub.printDoc) return;
                 var typeLabels = { breathe: 'Breathing', scan: 'Body scan', grounding: 'Grounding', gratitude: 'Gratitude', activity: 'Mindful activity', meditation: 'Meditation', movement: 'Mindful movement', technique: 'Technique' };
@@ -23370,7 +23431,7 @@ var VISUAL_ANCHORS = [
                     )
                   )
                 ),
-                h('button', { 'aria-label': (isFav ? 'Remove ' : 'Add ') + script.name + (isFav ? ' from favorites' : ' to favorites'),
+                h('button', { type: 'button', 'aria-label': (isFav ? 'Remove ' : 'Add ') + script.name + (isFav ? ' from favorites' : ' to favorites'),
                   onClick: function(e) {
                     e.stopPropagation();
                     var newFavs = Object.assign({}, meditationFavs);
@@ -23404,7 +23465,7 @@ var VISUAL_ANCHORS = [
           meditationIdx >= 0 && meditationIdx < scripts.length && (function() {
             var sc = scripts[meditationIdx];
             return h('div', null,
-              h('button', { 'aria-label': 'All Scripts',
+              h('button', { type: 'button', 'aria-label': 'All Scripts',
                 onClick: function() { upd({ meditationIdx: -1, meditationPlaying: false }); if (soundEnabled) sfxClick(); },
                 style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: _minBg('#334155'), color: _minFg('#94a3b8'), cursor: 'pointer', fontSize: 12, marginBottom: 16 }
               }, '\u2190 All Scripts'),
@@ -23427,16 +23488,21 @@ var VISUAL_ANCHORS = [
 
               // Action buttons
               h('div', { style: { display: 'flex', gap: 8 } },
-                callTTS && h('button', { 'aria-label': meditationPlaying ? '\uD83D\uDD0A Reading...' : '\uD83D\uDD0A Read Aloud',
+                callTTS && h('button', { type: 'button', 'aria-label': meditationPlaying ? '\uD83D\uDD0A Reading...' : '\uD83D\uDD0A Read Aloud',
                   onClick: function() {
+                    if (_minIsMuted()) return;
                     upd('meditationPlaying', true);
                     callTTS(sc.script);
-                    setTimeout(function() { upd('meditationPlaying', false); }, 5000);
+                    if (_medTtsTimerRef.current) clearTimeout(_medTtsTimerRef.current);
+                    _medTtsTimerRef.current = setTimeout(function() {
+                      _medTtsTimerRef.current = null;
+                      if (_minMountedRef.current) upd('meditationPlaying', false);
+                    }, 5000);
                   },
                   style: { flex: 1, padding: '12px 0', borderRadius: 10, border: 'none', background: _minBg('#8b5cf6'), color: _minFg('#fff'), fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }
                 }, meditationPlaying ? '\uD83D\uDD0A Reading...' : '\uD83D\uDD0A Read Aloud'),
 
-                h('button', { 'aria-label': 'Mark Complete',
+                h('button', { type: 'button', 'aria-label': 'Mark Complete',
                   onClick: function() {
                     var newDone = meditationsDone + 1;
                     upd('meditationsDone', newDone);
@@ -23462,14 +23528,14 @@ var VISUAL_ANCHORS = [
 
               // Favorite toggle
               h('div', { style: { textAlign: 'center', marginTop: 12 } },
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() {
                     var newFavs = Object.assign({}, meditationFavs);
                     if (newFavs[sc.id]) { delete newFavs[sc.id]; } else { newFavs[sc.id] = true; }
                     upd('meditationFavs', newFavs);
                     if (soundEnabled) sfxClick();
                   },
-                  style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: _minFg(meditationFavs)[sc.id] ? _minFg('#ef4444') : _minFg('#94a3b8'), cursor: 'pointer', fontSize: 13 }
+                  style: { padding: '8px 20px', borderRadius: 8, border: '1px solid #334155', background: 'transparent', color: meditationFavs[sc.id] ? _minFg('#ef4444') : _minFg('#94a3b8'), cursor: 'pointer', fontSize: 13 }
                 }, meditationFavs[sc.id] ? '\u2764\uFE0F Favorited' : '\uD83E\uDD0D Add to Favorites')
               )
             );
@@ -23500,7 +23566,7 @@ var VISUAL_ANCHORS = [
             var isDone = !!movementsDone[ex.id];
 
             return h('div', null,
-              h('button', { 'aria-label': 'All Exercises',
+              h('button', { type: 'button', 'aria-label': 'All Exercises',
                 onClick: function() { upd({ movementActiveId: null, movementStep: 0 }); if (soundEnabled) sfxClick(); },
                 style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: _minBg('#334155'), color: _minFg('#94a3b8'), cursor: 'pointer', fontSize: 12, marginBottom: 16 }
               }, '\u2190 All Exercises'),
@@ -23579,7 +23645,7 @@ var VISUAL_ANCHORS = [
           !movementActiveId && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 } },
             MINDFUL_MOVEMENTS.map(function(ex) {
               var done = movementsDone[ex.id];
-              return h('button', { 
+              return h('button', { type: 'button', 
                 key: ex.id,
                 onClick: function() { upd({ movementActiveId: ex.id, movementStep: 0 }); if (soundEnabled) sfxClick(); },
                 style: {
@@ -23626,7 +23692,7 @@ var VISUAL_ANCHORS = [
             var tech = GROUNDING_TECHNIQUES.find(function(t) { return t.id === techActiveId; });
             if (!tech) return null;
 
-            var backBtn = h('button', { 'aria-label': 'All Techniques',
+            var backBtn = h('button', { type: 'button', 'aria-label': 'All Techniques',
               onClick: function() { upd({ techActiveId: null, techStep: 0, techBoxActive: false, techBoxPhase: 0, techBoxRound: 0, techRainStep: 0, techRainInputs: ['','','',''], techButterflyDone: false }); if (soundEnabled) sfxClick(); },
               style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: _minBg('#334155'), color: _minFg('#94a3b8'), cursor: 'pointer', fontSize: 12, marginBottom: 16 }
             }, '\u2190 All Techniques');
@@ -23682,7 +23748,7 @@ var VISUAL_ANCHORS = [
 
                 // Start / Stop button
                 h('div', { style: { textAlign: 'center' } },
-                  !techBoxActive && h('button', { 'aria-label': 'Start box breathing',
+                  !techBoxActive && h('button', { type: 'button', 'aria-label': 'Start box breathing',
                     onClick: function() {
                       stopBoxTimer();
                       upd({ techBoxActive: true, techBoxPhase: 0, techBoxRound: 0, techBoxTimer: 4 });
@@ -23721,7 +23787,7 @@ var VISUAL_ANCHORS = [
                     },
                     style: { padding: '14px 32px', borderRadius: 10, border: 'none', background: tech.color, color: _minFg('#fff'), fontWeight: 700, fontSize: 15, cursor: 'pointer' }
                   }, '\u25B6 Start Box Breathing'),
-                  techBoxActive && h('button', { 'aria-label': 'Stop',
+                  techBoxActive && h('button', { type: 'button', 'aria-label': 'Stop',
                     onClick: function() { stopBoxTimer(); upd({ techBoxActive: false }); },
                     style: { padding: '10px 24px', borderRadius: 8, border: '1px solid #334155', background: _minBg('#1e293b'), color: _minFg('#94a3b8'), fontWeight: 600, fontSize: 12, cursor: 'pointer' }
                   }, '\u25A0 Stop')
@@ -23753,7 +23819,7 @@ var VISUAL_ANCHORS = [
                         width: 48, height: 48, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
                         background: isDone ? tech.color + '33' : isCurrent ? tech.color + '22' : _minBg('#1e293b'),
                         border: '2px solid ' + (isDone ? tech.color : isCurrent ? tech.color : _minBg('#334155')),
-                        color: _minFg(isDone) || isCurrent ? _minFg('#e2e8f0') : _minFg('#94a3b8'), fontSize: 20, fontWeight: 800
+                        color: (isDone || isCurrent) ? _minFg('#e2e8f0') : _minFg('#94a3b8'), fontSize: 20, fontWeight: 800
                       }
                     }, isDone ? '\u2713' : rs.letter);
                   })
@@ -23776,7 +23842,7 @@ var VISUAL_ANCHORS = [
                     rows: 3,
                     style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: _minBg('#0f172a'), color: _minFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit', marginBottom: 12 }
                   }),
-                  h('button', {
+                  h('button', { type: 'button',
                     onClick: function() {
                       var next = techRainStep + 1;
                       upd('techRainStep', next);
@@ -23806,7 +23872,7 @@ var VISUAL_ANCHORS = [
                     band === 'elementary' ? 'Great job! You used all four steps to work through a big feeling.' :
                     'You have processed an emotional experience using the RAIN framework. This skill strengthens with practice.'
                   ),
-                  h('button', { 'aria-label': 'Back to Techniques',
+                  h('button', { type: 'button', 'aria-label': 'Back to Techniques',
                     onClick: function() { upd({ techRainStep: 0, techRainInputs: ['','','',''], techActiveId: null }); },
                     style: { padding: '10px 24px', borderRadius: 8, border: 'none', background: _minBg('#334155'), color: _minFg('#f1f5f9'), fontWeight: 600, cursor: 'pointer' }
                   }, '\u2190 Back to Techniques')
@@ -23947,7 +24013,7 @@ var VISUAL_ANCHORS = [
                       })
                     ),
 
-                    h('button', {
+                    h('button', { type: 'button',
                       onClick: function() {
                         var next = techStep + 1;
                         upd('techStep', next);
@@ -23976,7 +24042,7 @@ var VISUAL_ANCHORS = [
                   h('p', { style: { color: _minFg('#94a3b8'), fontSize: 13, lineHeight: 1.6 } },
                     'You brought yourself back to the present moment using all five senses.'
                   ),
-                  h('button', { 'aria-label': 'Back to Techniques',
+                  h('button', { type: 'button', 'aria-label': 'Back to Techniques',
                     onClick: function() { upd({ techStep: 0, techRainInputs: ['','','',''], techActiveId: null }); },
                     style: { marginTop: 12, padding: '10px 24px', borderRadius: 8, border: 'none', background: _minBg('#334155'), color: _minFg('#f1f5f9'), fontWeight: 600, cursor: 'pointer' }
                   }, '\u2190 Back to Techniques')
@@ -23991,7 +24057,7 @@ var VISUAL_ANCHORS = [
           !techActiveId && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
             GROUNDING_TECHNIQUES.map(function(tech) {
               var done = techsDone[tech.id];
-              return h('button', { 
+              return h('button', { type: 'button', 
                 key: tech.id,
                 onClick: function() {
                   upd({ techActiveId: tech.id, techStep: 0, techBoxActive: false, techBoxPhase: 0, techBoxRound: 0, techRainStep: 0, techRainInputs: ['','','',''], techButterflyDone: false });
@@ -24095,7 +24161,7 @@ if (activeTab === 'breath_studio') {
     h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
       BREATH_PATTERN_BANK.map(function(p) {
         var sel = bsPattern === p.id;
-        return h('button', { key: p.id,
+        return h('button', { type: 'button', key: p.id,
           onClick: function() { upd({ bsPattern: p.id, bsPhase: 0, bsCount: 0, bsRunning: false, bsCycles: 0 }); if (soundEnabled) sfxClick(); },
           style: { padding: '6px 10px', borderRadius: 16, border: '1px solid ' + (sel ? p.color : _minFg('#475569')), background: sel ? p.color + '33' : _minBg('#1e293b'), color: sel ? _minFg(p.color) : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
         }, p.name);
@@ -24124,10 +24190,10 @@ if (activeTab === 'breath_studio') {
       h('p', { style: { margin: '6px 0 0', color: _minFg('#94a3b8'), fontSize: 12, fontStyle: 'italic' } }, 'Best for: ' + pattern.best)
     ),
     h('div', { style: { marginTop: 14, display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' } },
-      h('button', { onClick: function() { upd({ bsRunning: !bsRunning }); if (soundEnabled) sfxClick(); },
-        style: { padding: '12px 24px', borderRadius: 8, border: 'none', background: bsRunning ? _minFg('#ef4444') : pattern.color, color: _minFg('#fff'), fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+      h('button', { type: 'button', onClick: function() { upd({ bsRunning: !bsRunning }); if (soundEnabled) sfxClick(); },
+        style: { padding: '12px 24px', borderRadius: 8, border: _minHC ? '1px solid #ffff00' : 'none', background: _minHC ? '#000000' : (bsRunning ? '#ef4444' : pattern.color), color: _minHC ? '#ffff00' : '#ffffff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, bsRunning ? '⏸  Pause' : '▶  Start'),
-      h('button', { onClick: function() { upd({ bsPhase: 0, bsCount: 0, bsRunning: false, bsCycles: 0 }); if (soundEnabled) sfxClick(); },
+      h('button', { type: 'button', onClick: function() { upd({ bsPhase: 0, bsCount: 0, bsRunning: false, bsCycles: 0 }); if (soundEnabled) sfxClick(); },
         style: { padding: '12px 18px', borderRadius: 8, border: '1px solid #475569', background: _minBg('#1e293b'), color: _minFg('#94a3b8'), fontSize: 13, cursor: 'pointer' }
       }, 'Reset'),
       h('div', { style: { padding: '8px 14px', borderRadius: 6, background: _minBg('#0f172a'), color: _minFg('#fbbf24'), fontSize: 13, fontWeight: 700 } },
@@ -24214,7 +24280,7 @@ if (activeTab === 'body_scan_studio') {
               strokeWidth: isCurrent ? 3 : 1,
               style: { cursor: 'pointer', transition: 'all 0.4s' },
               onClick: function() { upd({ bssStep: i, bssRunning: false }); if (soundEnabled) sfxClick(); },
-              onKeyDown: function(event) { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); upd({ bssStep: i, bssRunning: false }); if (soundEnabled) sfxClick(); } }
+              onKeyDown: function(event) { if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); upd({ bssStep: i, bssRunning: false }); if (soundEnabled) sfxClick(); } }
             });
           })
         )
@@ -24229,20 +24295,20 @@ if (activeTab === 'body_scan_studio') {
           'Click any body region to jump to it, or press Play below to begin the full sequence.'
         ),
         h('div', { style: { marginTop: 14, display: 'flex', gap: 10 } },
-          h('button', { onClick: function() {
+          h('button', { type: 'button', onClick: function() {
               if (bssStep < 0) upd({ bssStep: 0, bssRunning: true });
               else upd({ bssRunning: !bssRunning });
               if (soundEnabled) sfxClick();
             },
-            style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: bssRunning ? _minFg('#ef4444') : '#5eead4', color: bssRunning ? _minFg('#fff') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+            style: { padding: '10px 20px', borderRadius: 8, border: _minHC ? '1px solid #ffff00' : 'none', background: _minHC ? '#000000' : (bssRunning ? '#ef4444' : '#5eead4'), color: _minHC ? '#ffff00' : (bssRunning ? '#ffffff' : '#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
           }, bssStep < 0 ? '▶ Start full scan' : (bssRunning ? '⏸ Pause' : '▶ Resume')),
-          bssStep >= 0 ? h('button', { onClick: function() { if (bssStep > 0) upd({ bssStep: bssStep - 1 }); },
+          bssStep >= 0 ? h('button', { type: 'button', onClick: function() { if (bssStep > 0) upd({ bssStep: bssStep - 1 }); },
             style: { padding: '10px 16px', borderRadius: 8, border: '1px solid #475569', background: _minBg('#1e293b'), color: _minFg('#cbd5e1'), fontSize: 13, cursor: 'pointer' }
           }, '← Previous') : null,
-          bssStep >= 0 ? h('button', { onClick: function() { if (bssStep < totalSteps - 1) upd({ bssStep: bssStep + 1 }); else upd({ bssStep: -1, bssRunning: false }); },
+          bssStep >= 0 ? h('button', { type: 'button', onClick: function() { if (bssStep < totalSteps - 1) upd({ bssStep: bssStep + 1 }); else upd({ bssStep: -1, bssRunning: false }); },
             style: { padding: '10px 16px', borderRadius: 8, border: '1px solid #475569', background: _minBg('#1e293b'), color: _minFg('#cbd5e1'), fontSize: 13, cursor: 'pointer' }
           }, 'Next →') : null,
-          h('button', { onClick: function() { upd({ bssStep: -1, bssRunning: false }); if (soundEnabled) sfxClick(); },
+          h('button', { type: 'button', onClick: function() { upd({ bssStep: -1, bssRunning: false }); if (soundEnabled) sfxClick(); },
             style: { padding: '10px 14px', borderRadius: 8, border: '1px solid #475569', background: _minBg('#1e293b'), color: _minFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
           }, 'Reset')
         )
@@ -24276,7 +24342,8 @@ if (activeTab === 'mandala') {
   // at the top of render drains this. Body unchanged.
   _fxSlots.current["mandala"] = function() {
     if (!mdRunning) return;
-    var t = setInterval(function() { upd({ mdElapsed: (d.mdElapsed || 0) + 1 }); }, 1000);
+    var elapsed = d.mdElapsed || 0;
+    var t = setInterval(function() { elapsed += 1; upd({ mdElapsed: elapsed }); }, 1000);
     return function() { clearInterval(t); };
   };
   // Build SVG based on style
@@ -24367,7 +24434,7 @@ if (activeTab === 'mandala') {
     h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
       MANDALA_STYLES.map(function(s) {
         var sel = mdStyle === s.id;
-        return h('button', { key: s.id, onClick: function() { upd({ mdStyle: s.id }); if (soundEnabled) sfxClick(); },
+        return h('button', { type: 'button', key: s.id, onClick: function() { upd({ mdStyle: s.id }); if (soundEnabled) sfxClick(); },
           style: { padding: '6px 10px', borderRadius: 16, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
         }, s.name);
       })
@@ -24391,8 +24458,8 @@ if (activeTab === 'mandala') {
       })
     ),
     h('div', { style: { marginTop: 14, display: 'flex', gap: 10, justifyContent: 'center' } },
-      h('button', { onClick: function() { upd({ mdRunning: !mdRunning }); if (soundEnabled) sfxClick(); },
-        style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: mdRunning ? _minFg('#ef4444') : '#5eead4', color: mdRunning ? _minFg('#fff') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+      h('button', { type: 'button', onClick: function() { upd({ mdRunning: !mdRunning }); if (soundEnabled) sfxClick(); },
+        style: { padding: '10px 20px', borderRadius: 8, border: _minHC ? '1px solid #ffff00' : 'none', background: _minHC ? '#000000' : (mdRunning ? '#ef4444' : '#5eead4'), color: _minHC ? '#ffff00' : (mdRunning ? '#ffffff' : '#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, mdRunning ? '⏸ Pause' : '▶ Begin')
     ),
     h('style', null,
@@ -24418,12 +24485,13 @@ if (activeTab === 'soundbath') {
   // count on tab switch (React #310). One unconditional slot effect
   // at the top of render drains this. Body unchanged.
   _fxSlots.current["soundbath"] = function() {
-    if (!sbPlaying) return;
+    if (!sbPlaying || !soundEnabled || _minIsMuted()) return;
     var ac = getAudioCtx(); if (!ac) return;
     var activeNodes = [];
     // BOWL — slow swell pure tone
     if (sbLayers.bowl > 0) {
       var bowlInt = setInterval(function() {
+        if (_minIsMuted()) return;
         var freqs = [264, 396, 528];
         var f = freqs[Math.floor(Math.random() * freqs.length)];
         var osc = ac.createOscillator();
@@ -24457,7 +24525,9 @@ if (activeTab === 'soundbath') {
         var b0 = 0, b1 = 0, b2 = 0;
         node.onaudioprocess = function(e) {
           var out = e.outputBuffer.getChannelData(0);
+          var muted = _minIsMuted();
           for (var i = 0; i < bufSize; i++) {
+            if (muted) { out[i] = 0; continue; }
             var white = Math.random() * 2 - 1;
             b0 = 0.99765 * b0 + white * 0.0990460;
             b1 = 0.96300 * b1 + white * 0.2965164;
@@ -24477,7 +24547,9 @@ if (activeTab === 'soundbath') {
         var t = 0;
         node2.onaudioprocess = function(e) {
           var out = e.outputBuffer.getChannelData(0);
+          var muted = _minIsMuted();
           for (var i = 0; i < bufSize2; i++) {
+            if (muted) { out[i] = 0; continue; }
             var env = (Math.sin(t * 0.0001) * 0.5 + 0.5);
             out[i] = (Math.random() * 2 - 1) * sbLayers.ocean * 0.06 * env;
             t++;
@@ -24495,7 +24567,9 @@ if (activeTab === 'soundbath') {
         var t3 = 0;
         node3.onaudioprocess = function(e) {
           var out = e.outputBuffer.getChannelData(0);
+          var muted = _minIsMuted();
           for (var i = 0; i < bufSize3; i++) {
+            if (muted) { out[i] = 0; continue; }
             var env = (Math.sin(t3 * 0.00006) * 0.5 + 0.6);
             out[i] = (Math.random() * 2 - 1) * sbLayers.wind * 0.03 * env;
             t3++;
@@ -24508,6 +24582,7 @@ if (activeTab === 'soundbath') {
     // BELL — periodic tinkle
     if (sbLayers.bell > 0) {
       var bellInt = setInterval(function() {
+        if (_minIsMuted()) return;
         var osc = ac.createOscillator();
         var gain = ac.createGain();
         osc.type = 'sine'; osc.frequency.value = 1320 + Math.random() * 200;
@@ -24559,8 +24634,8 @@ if (activeTab === 'soundbath') {
       _layerSlider('bell',  '🔔 Mindfulness bell',     '#f472b6', 'Occasional bell every ~15 seconds — gentle attention cue.')
     ),
     h('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: _minBg('#0f172a'), textAlign: 'center' } },
-      h('button', { onClick: function() { upd({ sbPlaying: !sbPlaying }); if (soundEnabled) sfxClick(); },
-        style: { padding: '12px 28px', borderRadius: 8, border: 'none', background: sbPlaying ? _minFg('#ef4444') : '#5eead4', color: sbPlaying ? _minFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+      h('button', { type: 'button', onClick: function() { upd({ sbPlaying: !sbPlaying }); if (soundEnabled) sfxClick(); },
+        style: { padding: '12px 28px', borderRadius: 8, border: _minHC ? '1px solid #ffff00' : 'none', background: _minHC ? '#000000' : (sbPlaying ? '#ef4444' : '#5eead4'), color: _minHC ? '#ffff00' : (sbPlaying ? '#ffffff' : '#0f172a'), fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, sbPlaying ? '⏸  Stop soundbath' : '▶  Play soundbath')
     ),
     h('div', { style: { marginTop: 12, padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #334155' } },
@@ -24576,7 +24651,7 @@ if (activeTab === 'soundbath') {
           { name: 'Focus / study',   mix: { bowl: 0,   drone: 0,   rain: 0.5, ocean: 0,   wind: 0,   bell: 0.2 } },
           { name: 'Silence',         mix: { bowl: 0,   drone: 0,   rain: 0,   ocean: 0,   wind: 0,   bell: 0 } }
         ].map(function(preset) {
-          return h('button', { key: preset.name, onClick: function() { upd({ sbLayers: preset.mix }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: preset.name, onClick: function() { upd({ sbLayers: preset.mix }); if (soundEnabled) sfxClick(); },
             style: { padding: '6px 12px', borderRadius: 16, border: '1px solid #475569', background: _minBg('#0f172a'), color: _minFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
           }, preset.name);
         })
@@ -24603,6 +24678,7 @@ if (activeTab === 'bell_timer') {
     { id: 'bird',  name: 'Single bird',   desc: 'Brief chirp' }
   ];
   function _playToneByName(name) {
+    if (!soundEnabled || _minIsMuted()) return;
     var ac = getAudioCtx(); if (!ac) return;
     try {
       if (name === 'bowl') sfxBowl();
@@ -24633,12 +24709,18 @@ if (activeTab === 'bell_timer') {
     if (!btRunning) return;
     var totalSec = btDuration * 60;
     var intervalSec = btInterval * 60;
+    var elapsed = d.btElapsed || 0;
     var t = setInterval(function() {
-      var newElapsed = (d.btElapsed || 0) + 1;
+      elapsed += 1;
+      var newElapsed = elapsed;
       if (newElapsed >= totalSec) {
         // final bell + stop
         _playToneByName(btTone);
-        setTimeout(function() { _playToneByName(btTone); }, 1500);
+        if (_bellEndTimerRef.current) clearTimeout(_bellEndTimerRef.current);
+        _bellEndTimerRef.current = setTimeout(function() {
+          _bellEndTimerRef.current = null;
+          if (_minMountedRef.current) _playToneByName(btTone);
+        }, 1500);
         upd({ btRunning: false, btElapsed: 0 });
         addToast && addToast('Practice complete. Notice how you feel now.', 'success');
         return;
@@ -24683,7 +24765,7 @@ if (activeTab === 'bell_timer') {
         h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
           TONES.map(function(t) {
             var sel = btTone === t.id;
-            return h('button', { key: t.id, onClick: function() { upd({ btTone: t.id }); _playToneByName(t.id); },
+            return h('button', { type: 'button', key: t.id, onClick: function() { upd({ btTone: t.id }); _playToneByName(t.id); },
               style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : '#0f172a', color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
             }, t.name);
           })
@@ -24697,12 +24779,12 @@ if (activeTab === 'bell_timer') {
       h('div', { style: { marginTop: 16, height: 12, borderRadius: 6, background: _minBg('#1e293b'), overflow: 'hidden' } },
         h('div', { style: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #5eead4, #fbbf24)', transition: 'width 0.5s' } })
       ),
-      h('button', { onClick: function() {
+      h('button', { type: 'button', onClick: function() {
           if (!btRunning) { _playToneByName(btTone); upd({ btRunning: true, btElapsed: 0 }); }
           else { upd({ btRunning: false }); }
           if (soundEnabled) sfxClick();
         },
-        style: { marginTop: 16, padding: '12px 28px', borderRadius: 8, border: 'none', background: btRunning ? _minFg('#ef4444') : '#5eead4', color: btRunning ? _minFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+        style: { marginTop: 16, padding: '12px 28px', borderRadius: 8, border: _minHC ? '1px solid #ffff00' : 'none', background: _minHC ? '#000000' : (btRunning ? '#ef4444' : '#5eead4'), color: _minHC ? '#ffff00' : (btRunning ? '#ffffff' : '#0f172a'), fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, btRunning ? '⏸ Stop' : '▶ Begin')
     )
   );
@@ -24728,7 +24810,7 @@ if (activeTab === 'trataka') {
     h('div', { style: { display: 'flex', gap: 6, marginBottom: 14 } },
       ['dark','dawn','dusk'].map(function(bg) {
         var sel = trBg === bg;
-        return h('button', { key: bg, onClick: function() { upd({ trBg: bg }); if (soundEnabled) sfxClick(); },
+        return h('button', { type: 'button', key: bg, onClick: function() { upd({ trBg: bg }); if (soundEnabled) sfxClick(); },
           style: { padding: '6px 14px', borderRadius: 6, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
         }, bg);
       })
@@ -24761,8 +24843,8 @@ if (activeTab === 'trataka') {
       )
     ),
     h('div', { style: { marginTop: 14, display: 'flex', gap: 10, justifyContent: 'center' } },
-      h('button', { onClick: function() { upd({ trRunning: !trRunning }); if (soundEnabled) sfxClick(); },
-        style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: trRunning ? _minFg('#ef4444') : '#fbbf24', color: trRunning ? _minFg('#fff') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+      h('button', { type: 'button', onClick: function() { upd({ trRunning: !trRunning }); if (soundEnabled) sfxClick(); },
+        style: { padding: '10px 20px', borderRadius: 8, border: _minHC ? '1px solid #ffff00' : 'none', background: _minHC ? '#000000' : (trRunning ? '#ef4444' : '#fbbf24'), color: _minHC ? '#ffff00' : (trRunning ? '#ffffff' : '#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, trRunning ? '⏸ Steady flame' : '▶ Flicker (recommended)')
     ),
     h('style', null,
@@ -24797,10 +24879,12 @@ if (activeTab === 'walking') {
   _fxSlots.current["walking"] = function() {
     if (!wkRunning) return;
     var ms = pace.secPerStep * 1000;
+    var steps = d.wkSteps || 0;
     var t = setInterval(function() {
-      var newSteps = (d.wkSteps || 0) + 1;
+      steps += 1;
+      var newSteps = steps;
       upd({ wkSteps: newSteps });
-      if (wkBellEvery > 0 && newSteps % wkBellEvery === 0) {
+      if (wkBellEvery > 0 && newSteps % wkBellEvery === 0 && soundEnabled) {
         sfxBowl();
       }
     }, ms);
@@ -24816,7 +24900,7 @@ if (activeTab === 'walking') {
     h('div', { style: { display: 'flex', gap: 6, marginBottom: 14 } },
       PACES.map(function(p) {
         var sel = wkPace === p.id;
-        return h('button', { key: p.id, onClick: function() { upd({ wkPace: p.id }); if (soundEnabled) sfxClick(); },
+        return h('button', { type: 'button', key: p.id, onClick: function() { upd({ wkPace: p.id }); if (soundEnabled) sfxClick(); },
           style: { padding: '8px 16px', borderRadius: 8, border: '1px solid ' + (sel ? '#5eead4' : _minFg('#475569')), background: sel ? '#14b8a655' : _minBg('#1e293b'), color: sel ? _minFg('#5eead4') : _minFg('#cbd5e1'), fontSize: 13, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
         }, p.name);
       })
@@ -24835,10 +24919,10 @@ if (activeTab === 'walking') {
       h('div', { style: { color: _minFg('#5eead4'), fontSize: 72, fontWeight: 800, fontFamily: 'monospace', lineHeight: 1 } }, wkSteps),
       h('div', { style: { color: _minFg('#94a3b8'), fontSize: 13, marginTop: 4 } }, 'steps'),
       h('p', { style: { margin: '12px auto 0', maxWidth: 400, color: _minFg('#fde68a'), fontSize: 12, fontStyle: 'italic', lineHeight: 1.5 } }, pace.desc),
-      h('button', { onClick: function() { upd({ wkRunning: !wkRunning }); if (soundEnabled) sfxClick(); },
-        style: { marginTop: 16, padding: '12px 28px', borderRadius: 8, border: 'none', background: wkRunning ? _minFg('#ef4444') : '#5eead4', color: wkRunning ? _minFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+      h('button', { type: 'button', onClick: function() { upd({ wkRunning: !wkRunning }); if (soundEnabled) sfxClick(); },
+        style: { marginTop: 16, padding: '12px 28px', borderRadius: 8, border: _minHC ? '1px solid #ffff00' : 'none', background: _minHC ? '#000000' : (wkRunning ? '#ef4444' : '#5eead4'), color: _minHC ? '#ffff00' : (wkRunning ? '#ffffff' : '#0f172a'), fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, wkRunning ? '⏸ Pause' : '▶ Begin walking'),
-      h('button', { onClick: function() { upd({ wkSteps: 0, wkRunning: false }); if (soundEnabled) sfxClick(); },
+      h('button', { type: 'button', onClick: function() { upd({ wkSteps: 0, wkRunning: false }); if (soundEnabled) sfxClick(); },
         style: { marginLeft: 8, padding: '12px 18px', borderRadius: 8, border: '1px solid #475569', background: _minBg('#1e293b'), color: _minFg('#94a3b8'), fontSize: 13, cursor: 'pointer' }
       }, 'Reset')
     )
@@ -24885,15 +24969,15 @@ if (activeTab === 'eating') {
       )
     ),
     h('div', { style: { marginTop: 14, display: 'flex', justifyContent: 'space-between' } },
-      h('button', { onClick: function() { if (meStep > 0) upd({ meStep: meStep - 1 }); if (soundEnabled) sfxClick(); },
+      h('button', { type: 'button', onClick: function() { if (meStep > 0) upd({ meStep: meStep - 1 }); if (soundEnabled) sfxClick(); },
         disabled: meStep === 0,
-        style: { padding: '8px 16px', borderRadius: 6, border: '1px solid #475569', background: _minBg('#0f172a'), color: _minFg(meStep) === 0 ? _minFg('#475569') : _minFg('#94a3b8'), fontSize: 13, cursor: meStep === 0 ? 'not-allowed' : 'pointer' }
+        style: { padding: '8px 16px', borderRadius: 6, border: '1px solid #475569', background: _minBg('#0f172a'), color: meStep === 0 ? _minFg('#475569') : _minFg('#94a3b8'), fontSize: 13, cursor: meStep === 0 ? 'not-allowed' : 'pointer' }
       }, '← Back'),
       isLast ?
-        h('button', { onClick: function() { upd({ meStep: 0 }); if (soundEnabled) sfxComplete(); addToast && addToast('Mindful eating complete. Notice the difference.', 'success'); },
+        h('button', { type: 'button', onClick: function() { upd({ meStep: 0 }); if (soundEnabled) sfxComplete(); addToast && addToast('Mindful eating complete. Notice the difference.', 'success'); },
           style: { padding: '10px 22px', borderRadius: 6, border: 'none', background: _minBg('#5eead4'), color: _minFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
         }, '✓ Finish & reset') :
-        h('button', { onClick: function() { upd({ meStep: meStep + 1 }); if (soundEnabled) sfxClick(); },
+        h('button', { type: 'button', onClick: function() { upd({ meStep: meStep + 1 }); if (soundEnabled) sfxClick(); },
           style: { padding: '10px 22px', borderRadius: 6, border: 'none', background: _minBg('#fbbf24'), color: _minFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
         }, 'Next step →')
     )
@@ -24980,7 +25064,7 @@ if (activeTab === 'ground5421') {
           h('div', { style: { color: _minFg('#e2e8f0'), fontSize: 12, lineHeight: 1.55 } }, items.join(' · '))
         );
       }),
-      h('button', { onClick: function() { upd({ g54Step: 0, g54Answers: { see: [], hear: [], touch: [], smell: [], taste: [] } }); if (soundEnabled) sfxClick(); },
+      h('button', { type: 'button', onClick: function() { upd({ g54Step: 0, g54Answers: { see: [], hear: [], touch: [], smell: [], taste: [] } }); if (soundEnabled) sfxClick(); },
         style: { display: 'block', margin: '14px auto 0', padding: '10px 22px', borderRadius: 6, border: 'none', background: _minBg('#5eead4'), color: _minFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, 'Practice again')
     )
@@ -25055,10 +25139,10 @@ if (activeTab === 'lovingkindness') {
       )
     ),
     h('div', { style: { marginTop: 14, display: 'flex', gap: 10, justifyContent: 'center' } },
-      h('button', { onClick: function() { upd({ lkRunning: !lkRunning }); if (soundEnabled) sfxClick(); },
+      h('button', { type: 'button', onClick: function() { upd({ lkRunning: !lkRunning }); if (soundEnabled) sfxClick(); },
         style: { padding: '12px 24px', borderRadius: 8, border: 'none', background: lkRunning ? _minFg('#ef4444') : recipient.color, color: _minFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, lkRunning ? '⏸ Pause' : '▶ Begin'),
-      h('button', { onClick: function() { upd({ lkRunning: false, lkRecipient: 0, lkPhrase: 0 }); if (soundEnabled) sfxClick(); },
+      h('button', { type: 'button', onClick: function() { upd({ lkRunning: false, lkRecipient: 0, lkPhrase: 0 }); if (soundEnabled) sfxClick(); },
         style: { padding: '12px 16px', borderRadius: 8, border: '1px solid #475569', background: _minBg('#1e293b'), color: _minFg('#94a3b8'), fontSize: 13, cursor: 'pointer' }
       }, 'Reset')
     ),
@@ -25067,7 +25151,7 @@ if (activeTab === 'lovingkindness') {
       h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap' } },
         LK_RECIPIENTS.map(function(r, i) {
           var sel = lkRecipient === i;
-          return h('button', { key: r.id, onClick: function() { upd({ lkRecipient: i, lkPhrase: 0 }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: r.id, onClick: function() { upd({ lkRecipient: i, lkPhrase: 0 }); if (soundEnabled) sfxClick(); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? r.color : _minFg('#475569')), background: sel ? r.color + '22' : '#0f172a', color: sel ? _minFg(r.color) : _minFg('#cbd5e1'), fontSize: 11, cursor: 'pointer' }
           }, r.label.length > 20 ? r.label.substring(0, 20) + '…' : r.label);
         })
@@ -25103,8 +25187,10 @@ if (activeTab === 'clouds') {
   // at the top of render drains this. Body unchanged.
   _fxSlots.current["clouds"] = function() {
     if (!clRunning) return;
+    var pIdx = d.clPromptIdx || 0;
     var t = setInterval(function() {
-      upd({ clPromptIdx: ((d.clPromptIdx || 0) + 1) % CLOUD_PROMPTS.length });
+      pIdx = (pIdx + 1) % CLOUD_PROMPTS.length;
+      upd({ clPromptIdx: pIdx });
       if (soundEnabled) sfxChime();
     }, 15000);
     return function() { clearInterval(t); };
@@ -25137,8 +25223,8 @@ if (activeTab === 'clouds') {
       )
     ),
     h('div', { style: { marginTop: 14, display: 'flex', gap: 10, justifyContent: 'center' } },
-      h('button', { onClick: function() { upd({ clRunning: !clRunning }); if (soundEnabled) sfxClick(); },
-        style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: clRunning ? _minFg('#ef4444') : '#5eead4', color: clRunning ? _minFg('#fff') : '#0f172a', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+      h('button', { type: 'button', onClick: function() { upd({ clRunning: !clRunning }); if (soundEnabled) sfxClick(); },
+        style: { padding: '10px 20px', borderRadius: 8, border: _minHC ? '1px solid #ffff00' : 'none', background: _minHC ? '#000000' : (clRunning ? '#ef4444' : '#5eead4'), color: _minHC ? '#ffff00' : (clRunning ? '#ffffff' : '#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, clRunning ? '⏸ Pause' : '▶ Begin cloud watching')
     ),
     h('style', null,
@@ -25155,7 +25241,7 @@ if (activeTab === 'clouds') {
 var streakContent = null;
 if (activeTab === 'streak') {
   // Look at existing practiceLog if available, else use placeholder
-  var pLog = d.practiceLog || [];
+  var pLog = practiceLog;
   // Build last 56 days (8 weeks) grid
   var today = new Date();
   var todayStr = selLocalDay(today);
@@ -25282,14 +25368,14 @@ if (activeTab === 'beforeafter') {
           style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid #475569', background: _minBg('#0f172a'), color: _minFg('#e2e8f0'), fontSize: 13 }
         })
       ),
-      h('button', { onClick: function() { upd({ baStage: 'practice' }); if (soundEnabled) sfxClick(); },
+      h('button', { type: 'button', onClick: function() { upd({ baStage: 'practice' }); if (soundEnabled) sfxClick(); },
         style: { marginTop: 16, padding: '12px 24px', borderRadius: 8, border: 'none', background: _minBg('#fbbf24'), color: _minFg('#0f172a'), fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, 'Logged → go practice')
     ) : baStage === 'practice' ? h('div', { style: { padding: 24, borderRadius: 12, background: _minBg('#1e293b'), border: '2px solid #5eead4', textAlign: 'center' } },
       h('div', { style: { fontSize: 48, marginBottom: 12 } }, '🧘'),
       h('h3', { style: { color: _minFg('#5eead4'), fontSize: 20, fontWeight: 800, margin: 0 } }, 'Now do your practice.'),
       h('p', { style: { color: _minFg('#a7f3d0'), fontSize: 14, lineHeight: 1.6, margin: '12px 0' } }, 'Take 2-15 minutes — breathing, body scan, walking meditation, whatever fits. Come back here when done.'),
-      h('button', { onClick: function() { upd({ baStage: 'after', baAfterMood: baBeforeMood, baAfterStress: baBeforeStress }); if (soundEnabled) sfxClick(); },
+      h('button', { type: 'button', onClick: function() { upd({ baStage: 'after', baAfterMood: baBeforeMood, baAfterStress: baBeforeStress }); if (soundEnabled) sfxClick(); },
         style: { padding: '12px 24px', borderRadius: 8, border: 'none', background: _minBg('#5eead4'), color: _minFg('#0f172a'), fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, '✓ Done — rate after')
     ) : baStage === 'after' ? h('div', { style: { padding: 18, borderRadius: 12, background: _minBg('#1e293b'), border: '2px solid #22c55e' } },
@@ -25308,7 +25394,7 @@ if (activeTab === 'beforeafter') {
           style: { width: '100%' }
         })
       ),
-      h('button', { onClick: function() { upd({ baStage: 'review' }); if (soundEnabled) sfxComplete(); },
+      h('button', { type: 'button', onClick: function() { upd({ baStage: 'review' }); if (soundEnabled) sfxComplete(); },
         style: { marginTop: 16, padding: '12px 24px', borderRadius: 8, border: 'none', background: _minBg('#15803d'), color: _minFg('#0f172a'), fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, 'See the difference')
     ) : h('div', { style: { padding: 18, borderRadius: 12, background: _minBg('#042f2e'), border: '2px solid #5eead4' } },
@@ -25318,15 +25404,15 @@ if (activeTab === 'beforeafter') {
         h('div', { style: { padding: 14, borderRadius: 10, background: _minBg('#1e293b'), textAlign: 'center' } },
           h('div', { style: { color: _minFg('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase' } }, 'Mood'),
           h('div', { style: { fontSize: 26, fontWeight: 700, color: _minFg('#cbd5e1'), marginTop: 4 } }, baBeforeMood + ' → ' + baAfterMood),
-          h('div', { style: { color: _minFg(baAfterMood) > baBeforeMood ? '#5eead4' : (baAfterMood < baBeforeMood ? '#fb7185' : _minFg('#94a3b8')), fontSize: 14, fontWeight: 700, marginTop: 4 } }, (baAfterMood - baBeforeMood >= 0 ? '+' : '') + (baAfterMood - baBeforeMood))
+          h('div', { style: { color: baAfterMood > baBeforeMood ? _minFg('#5eead4') : (baAfterMood < baBeforeMood ? _minFg('#fb7185') : _minFg('#94a3b8')), fontSize: 14, fontWeight: 700, marginTop: 4 } }, (baAfterMood - baBeforeMood >= 0 ? '+' : '') + (baAfterMood - baBeforeMood))
         ),
         h('div', { style: { padding: 14, borderRadius: 10, background: _minBg('#1e293b'), textAlign: 'center' } },
           h('div', { style: { color: _minFg('#fbbf24'), fontSize: 10, fontWeight: 700, textTransform: 'uppercase' } }, 'Stress'),
           h('div', { style: { fontSize: 26, fontWeight: 700, color: _minFg('#cbd5e1'), marginTop: 4 } }, baBeforeStress + ' → ' + baAfterStress),
-          h('div', { style: { color: _minFg(baAfterStress) < baBeforeStress ? '#5eead4' : (baAfterStress > baBeforeStress ? '#fb7185' : _minFg('#94a3b8')), fontSize: 14, fontWeight: 700, marginTop: 4 } }, (baAfterStress - baBeforeStress >= 0 ? '+' : '') + (baAfterStress - baBeforeStress))
+          h('div', { style: { color: baAfterStress < baBeforeStress ? _minFg('#5eead4') : (baAfterStress > baBeforeStress ? _minFg('#fb7185') : _minFg('#94a3b8')), fontSize: 14, fontWeight: 700, marginTop: 4 } }, (baAfterStress - baBeforeStress >= 0 ? '+' : '') + (baAfterStress - baBeforeStress))
         )
       ),
-      h('button', { onClick: function() { upd({ baStage: 'before', baBeforeMood: 5, baBeforeStress: 5, baAfterMood: 5, baAfterStress: 5, baLabel: '' }); if (soundEnabled) sfxClick(); },
+      h('button', { type: 'button', onClick: function() { upd({ baStage: 'before', baBeforeMood: 5, baBeforeStress: 5, baAfterMood: 5, baAfterStress: 5, baLabel: '' }); if (soundEnabled) sfxClick(); },
         style: { display: 'block', margin: '18px auto 0', padding: '10px 24px', borderRadius: 8, border: 'none', background: _minBg('#5eead4'), color: _minFg('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
       }, 'Practice again')
     )
@@ -25438,7 +25524,7 @@ if (activeTab === 'mudra') {
     h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
       MUDRAS.map(function(m) {
         var sel = mrSelected === m.id;
-        return h('button', { key: m.id, onClick: function() { upd({ mrSelected: m.id }); if (soundEnabled) sfxClick(); },
+        return h('button', { type: 'button', key: m.id, onClick: function() { upd({ mrSelected: m.id }); if (soundEnabled) sfxClick(); },
           style: { padding: '6px 10px', borderRadius: 16, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
         }, m.name.split('(')[0].trim());
       })
@@ -25491,7 +25577,7 @@ if (activeTab === 'scripts_lib') {
       h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 10 } },
         slCats.map(function(c) {
           var sel = slCategory === c;
-          return h('button', { key: c, onClick: function() { upd({ slCategory: c }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: c, onClick: function() { upd({ slCategory: c }); if (soundEnabled) sfxClick(); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, c);
         })
@@ -25511,7 +25597,7 @@ if (activeTab === 'scripts_lib') {
                 h('h5', { style: { margin: 0, color: _minFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, s.name),
                 h('div', { style: { color: _minFg('#94a3b8'), fontSize: 10 } }, (s.category || '') + ' · ~' + (s.durationMin || '?') + ' min · ' + (s.forBand || 'all'))
               ),
-              h('button', { onClick: function() { upd({ slOpen: isOpen ? null : s.id }); if (soundEnabled) sfxClick(); },
+              h('button', { type: 'button', onClick: function() { upd({ slOpen: isOpen ? null : s.id }); if (soundEnabled) sfxClick(); },
                 style: { padding: '5px 10px', borderRadius: 6, border: 'none', background: isOpen ? _minBg('#334155') : '#5eead4', color: isOpen ? _minFg('#94a3b8') : '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, isOpen ? 'Close' : 'Open')
             ),
@@ -25519,7 +25605,7 @@ if (activeTab === 'scripts_lib') {
             isOpen && s.script && s.script.length ? h('div', { style: { marginTop: 10, padding: '10px 12px', borderRadius: 8, background: _minBg('#0f172a'), border: '1px solid #334155', maxHeight: 380, overflowY: 'auto' } },
               s.script.map(function(line, i) {
                 if (line.type === 'pause') return h('div', { key: i, style: { color: _minFg('#64748b'), fontSize: 11, fontStyle: 'italic', padding: '4px 0' } }, '⏸️  pause ~' + (line.durationSec || '?') + 's');
-                return h('p', { key: i, style: { margin: '6px 0', color: _minFg(line.type) === 'close' ? '#5eead4' : _minFg('#cbd5e1'), fontSize: 12, lineHeight: 1.65, fontStyle: line.type === 'invitation' ? 'italic' : 'normal' } }, line.text);
+                return h('p', { key: i, style: { margin: '6px 0', color: line.type === 'close' ? _minFg('#5eead4') : _minFg('#cbd5e1'), fontSize: 12, lineHeight: 1.65, fontStyle: line.type === 'invitation' ? 'italic' : 'normal' } }, line.text);
               })
             ) : null,
             isOpen && s.whyItWorks ? h('p', { style: { margin: '10px 0 0', color: _minFg('#94a3b8'), fontSize: 11, lineHeight: 1.5 } }, h('strong', { style: { color: _minFg('#fbbf24') } }, 'Why it works: '), s.whyItWorks) : null
@@ -25561,7 +25647,7 @@ if (activeTab === 'mantras') {
       h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 10 } },
         mtCats.map(function(c) {
           var sel = mtCategory === c;
-          return h('button', { key: c, onClick: function() { upd({ mtCategory: c }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: c, onClick: function() { upd({ mtCategory: c }); if (soundEnabled) sfxClick(); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _minFg('#a78bfa') : _minFg('#475569')), background: sel ? '#1e1b4b' : _minBg('#1e293b'), color: sel ? _minFg('#c4b5fd') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
           }, c);
         })
@@ -25575,7 +25661,7 @@ if (activeTab === 'mantras') {
         filtered.slice(0, 80).map(function(m) {
           var isOpen = mtOpen === m.id;
           return h('div', { key: m.id, style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #334155', cursor: 'pointer' },
-            role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { upd({ mtOpen: isOpen ? null : m.id }); if (soundEnabled) sfxClick(); }
+            role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { upd({ mtOpen: isOpen ? null : m.id }); if (soundEnabled) sfxClick(); }
           },
             h('p', { style: { margin: 0, color: _minFg('#fde68a'), fontSize: 14, fontWeight: 600, fontStyle: 'italic', lineHeight: 1.5 } }, '"' + m.phrase + '"'),
             m.pronunciation ? h('div', { style: { color: _minFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, '[' + m.pronunciation + ']') : null,
@@ -25622,7 +25708,7 @@ if (activeTab === 'living') {
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
         settings.map(function(s) {
           var sel = lvSetting === s;
-          return h('button', { key: s, onClick: function() { upd({ lvSetting: s }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: s, onClick: function() { upd({ lvSetting: s }); if (soundEnabled) sfxClick(); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : _minFg('#475569')), background: sel ? '#14b8a655' : _minBg('#1e293b'), color: sel ? _minFg('#5eead4') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, s);
         })
@@ -25635,7 +25721,7 @@ if (activeTab === 'living') {
         filtered.map(function(s) {
           var isOpen = lvOpen === s.id;
           return h('div', { key: s.id, style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #334155', cursor: 'pointer' },
-            role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { upd({ lvOpen: isOpen ? null : s.id }); if (soundEnabled) sfxClick(); }
+            role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { upd({ lvOpen: isOpen ? null : s.id }); if (soundEnabled) sfxClick(); }
           },
             h('h5', { style: { margin: 0, color: _minFg('#f1f5f9'), fontSize: 14, fontWeight: 700 } }, s.scenario),
             h('div', { style: { color: _minFg('#94a3b8'), fontSize: 11, marginTop: 2 } }, (s.setting || '') + ' · ' + (s.durationOptions ? s.durationOptions.join(', ') : '?')),
@@ -25692,7 +25778,7 @@ if (activeTab === 'research') {
       h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
         fields.map(function(f) {
           var sel = rsField === f;
-          return h('button', { key: f, onClick: function() { upd({ rsField: f }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: f, onClick: function() { upd({ rsField: f }); if (soundEnabled) sfxClick(); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer', textTransform: 'capitalize' }
           }, f);
         })
@@ -25708,7 +25794,7 @@ if (activeTab === 'research') {
             h('h4', { style: { margin: 0, color: _minFg('#f1f5f9'), fontSize: 13, fontWeight: 700 } }, r.title),
             h('div', { style: { color: _minFg('#94a3b8'), fontSize: 11, marginTop: 2 } }, (r.primaryAuthor || '') + (r.studyYear ? ', ' + r.studyYear : '') + ' · ' + r.field),
             r.thePicture && r.thePicture[band] ? h('p', { style: { margin: '6px 0', color: _minFg('#cbd5e1'), fontSize: 12, lineHeight: 1.55 } }, r.thePicture[band]) : null,
-            h('button', { onClick: function() { upd({ rsOpen: isOpen ? null : r.id }); if (soundEnabled) sfxClick(); },
+            h('button', { type: 'button', onClick: function() { upd({ rsOpen: isOpen ? null : r.id }); if (soundEnabled) sfxClick(); },
               style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? _minBg('#334155') : '#3b82f6', color: _minFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'Read more'),
             isOpen ? h('div', { style: { marginTop: 10 } },
@@ -25748,7 +25834,7 @@ if (activeTab === 'safety') {
           return h('div', { key: e.id, style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #475569' } },
             h('h5', { style: { margin: 0, color: _minFg('#fde68a'), fontSize: 13, fontWeight: 700 } }, e.experience),
             h('div', { style: { color: _minFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, (e.category || '') + (e.prevalence ? ' · ' + e.prevalence : '')),
-            h('button', { onClick: function() { upd({ sfOpen: isOpen ? null : e.id }); if (soundEnabled) sfxClick(); },
+            h('button', { type: 'button', onClick: function() { upd({ sfOpen: isOpen ? null : e.id }); if (soundEnabled) sfxClick(); },
               style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? _minBg('#334155') : '#fbbf24', color: _minFg('#0f172a'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'Learn'),
             isOpen ? h('div', { style: { marginTop: 10 } },
@@ -25805,13 +25891,17 @@ if (activeTab === 'color_breath') {
   // at the top of render drains this. Body unchanged.
   _fxSlots.current["color_breath"] = function() {
     if (!cbRunning) return;
+    var cnt = d.cbCount || 0;
+    var ph = cbPhase;
     var t = setInterval(function() {
-      var nc = (d.cbCount || 0) + 0.1;
+      cnt += 0.1;
       var dur = 4;  // 4-second inhale / 4-second exhale
-      if (nc >= dur) {
-        upd({ cbPhase: cbPhase === 'in' ? 'out' : 'in', cbCount: 0 });
+      if (cnt >= dur) {
+        cnt = 0;
+        ph = ph === 'in' ? 'out' : 'in';
+        upd({ cbPhase: ph, cbCount: 0 });
       } else {
-        upd({ cbCount: nc });
+        upd({ cbCount: cnt });
       }
     }, 100);
     return function() { clearInterval(t); };
@@ -25828,10 +25918,10 @@ if (activeTab === 'color_breath') {
     h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
       PAIRS.map(function(p) {
         var sel = cbPair === p.id;
-        return h('button', { key: p.id, onClick: function() { upd({ cbPair: p.id }); if (soundEnabled) sfxClick(); },
+        return h('button', { type: 'button', key: p.id, onClick: function() { upd({ cbPair: p.id }); if (soundEnabled) sfxClick(); },
           style: { padding: '8px 14px', borderRadius: 8, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' },
           title: p.meaning
-        }, p.name + ' ' + h('span', { style: { background: 'linear-gradient(90deg, ' + p.inC + ', ' + p.outC + ')', display: 'inline-block', width: 30, height: 8, borderRadius: 4, verticalAlign: 'middle', marginLeft: 4 } }));
+        }, p.name, ' ', h('span', { style: { background: 'linear-gradient(90deg, ' + p.inC + ', ' + p.outC + ')', display: 'inline-block', width: 30, height: 8, borderRadius: 4, verticalAlign: 'middle', marginLeft: 4 } }));
       })
     ),
     h('div', { style: { minHeight: 320, borderRadius: 12, background: 'radial-gradient(circle at center, ' + displayColor + ' 0%, transparent 70%), #0f172a', transition: 'background 1s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' } },
@@ -25842,8 +25932,8 @@ if (activeTab === 'color_breath') {
       h('p', { style: { margin: 0, color: _minFg('#cbd5e1'), fontSize: 12, fontStyle: 'italic', lineHeight: 1.55 } }, pair.meaning)
     ),
     h('div', { style: { marginTop: 14, textAlign: 'center' } },
-      h('button', { onClick: function() { upd({ cbRunning: !cbRunning, cbPhase: 'in', cbCount: 0 }); if (soundEnabled) sfxClick(); },
-        style: { padding: '12px 24px', borderRadius: 8, border: 'none', background: cbRunning ? _minFg('#ef4444') : '#5eead4', color: cbRunning ? _minFg('#fff') : '#0f172a', fontSize: 14, fontWeight: 700, cursor: 'pointer' }
+      h('button', { type: 'button', onClick: function() { upd({ cbRunning: !cbRunning, cbPhase: 'in', cbCount: 0 }); if (soundEnabled) sfxClick(); },
+        style: { padding: '12px 24px', borderRadius: 8, border: _minHC ? '1px solid #ffff00' : 'none', background: _minHC ? '#000000' : (cbRunning ? '#ef4444' : '#5eead4'), color: _minHC ? '#ffff00' : (cbRunning ? '#ffffff' : '#0f172a'), fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, cbRunning ? '⏸ Pause' : '▶ Begin')
     )
   );
@@ -25901,7 +25991,7 @@ if (activeTab === 'microbreak') {
     h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
       contexts.map(function(c) {
         var sel = mbContext === c;
-        return h('button', { key: c, onClick: function() { upd({ mbContext: c }); if (soundEnabled) sfxClick(); },
+        return h('button', { type: 'button', key: c, onClick: function() { upd({ mbContext: c }); if (soundEnabled) sfxClick(); },
           style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#5eead4' : _minFg('#475569')), background: sel ? '#14b8a655' : _minBg('#1e293b'), color: sel ? _minFg('#5eead4') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
         }, c);
       })
@@ -25913,7 +26003,7 @@ if (activeTab === 'microbreak') {
       ) : h('p', { style: { margin: '0 auto', color: _minFg('#94a3b8'), fontSize: 14 } }, 'Tap below to get a microbreak suited to your context.')
     ),
     h('div', { style: { marginTop: 14, textAlign: 'center' } },
-      h('button', { onClick: _pickRandom,
+      h('button', { type: 'button', onClick: _pickRandom,
         style: { padding: '12px 28px', borderRadius: 8, border: 'none', background: _minBg('#fbbf24'), color: _minFg('#0f172a'), fontSize: 14, fontWeight: 700, cursor: 'pointer' }
       }, '✨ Give me a microbreak')
     )
@@ -25949,7 +26039,7 @@ if (activeTab === 'movements_lib') {
       h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 } },
         cats.map(function(c) {
           var sel = mvCategory === c;
-          return h('button', { key: c, onClick: function() { upd({ mvCategory: c }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: c, onClick: function() { upd({ mvCategory: c }); if (soundEnabled) sfxClick(); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? '#fbbf24' : _minFg('#475569')), background: sel ? '#fbbf2433' : _minBg('#1e293b'), color: sel ? _minFg('#fde68a') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
           }, c);
         })
@@ -25965,7 +26055,7 @@ if (activeTab === 'movements_lib') {
         filtered.map(function(m) {
           var isOpen = mvOpen === m.id;
           return h('div', { key: m.id, style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #334155', cursor: 'pointer' },
-            role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { upd({ mvOpen: isOpen ? null : m.id }); if (soundEnabled) sfxClick(); }
+            role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onClick: function() { upd({ mvOpen: isOpen ? null : m.id }); if (soundEnabled) sfxClick(); }
           },
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },
               h('span', { style: { fontSize: 18 } }, m.icon || '🧘'),
@@ -26021,7 +26111,7 @@ if (activeTab === 'gratitude_lib') {
       h('div', { style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 14 } },
         cats.map(function(c) {
           var sel = grCategory === c;
-          return h('button', { key: c, onClick: function() { upd({ grCategory: c }); if (soundEnabled) sfxClick(); },
+          return h('button', { type: 'button', key: c, onClick: function() { upd({ grCategory: c }); if (soundEnabled) sfxClick(); },
             style: { padding: '5px 10px', borderRadius: 12, border: '1px solid ' + (sel ? _minFg('#ec4899') : _minFg('#475569')), background: sel ? '#ec489933' : _minBg('#1e293b'), color: sel ? _minFg('#fbcfe8') : _minFg('#cbd5e1'), fontSize: 11, fontWeight: sel ? 700 : 500, cursor: 'pointer' }
           }, c);
         })
@@ -26032,7 +26122,7 @@ if (activeTab === 'gratitude_lib') {
           return h('div', { key: p.id, style: { padding: 12, borderRadius: 10, background: _minBg('#1e293b'), border: '1px solid #334155' } },
             h('h5', { style: { margin: 0, color: _minFg('#fbcfe8'), fontSize: 13, fontWeight: 700 } }, p.name),
             h('div', { style: { color: _minFg('#94a3b8'), fontSize: 10, marginTop: 2 } }, (p.category || '') + ' · ' + (p.durationMin || '?') + ' min · ' + (p.bestFrequency || '')),
-            h('button', { onClick: function() { upd({ grOpen: isOpen ? null : p.id }); if (soundEnabled) sfxClick(); },
+            h('button', { type: 'button', onClick: function() { upd({ grOpen: isOpen ? null : p.id }); if (soundEnabled) sfxClick(); },
               style: { marginTop: 6, padding: '5px 12px', borderRadius: 6, border: 'none', background: isOpen ? _minBg('#334155') : _minFg('#ec4899'), color: _minFg('#fff'), fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, isOpen ? 'Close' : 'Open'),
             isOpen ? h('div', { style: { marginTop: 8 } },
@@ -26108,7 +26198,7 @@ if (activeTab === 'gratitude_lib') {
             senses.length ? h('div', { role: 'group', 'aria-label': 'Sense', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
               ['all'].concat(senses).map(function(sn) {
                 var on = pick === sn;
-                return h('button', { key: sn, onClick: function() { upd({ anchorSense: sn }); if (soundEnabled) sfxClick(); }, 'aria-pressed': on ? 'true' : 'false',
+                return h('button', { type: 'button', key: sn, onClick: function() { upd({ anchorSense: sn }); if (soundEnabled) sfxClick(); }, 'aria-pressed': on ? 'true' : 'false',
                   style: { minHeight: 36, padding: '6px 12px', borderRadius: 999, border: '1px solid ' + (on ? '#5eead4' : '#475569'), background: on ? 'rgba(20,184,166,0.18)' : _minBg('#0f172a'), color: on ? _minFg('#5eead4') : _minFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, sn);
               })
             ) : null,

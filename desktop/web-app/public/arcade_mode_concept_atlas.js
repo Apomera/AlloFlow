@@ -29,9 +29,23 @@
   // AI-off sweep: blocked fns are truthy; ask the host whether AI is usable.
   function _aiUsable(kind, fn) {
     try {
-      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
-    } catch (_) {}
-    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable(kind, fn));
+      if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
+      if (typeof window !== 'undefined') {
+        if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return false;
+        var qr = window.__alloQrStudentMode;
+        if (qr === true || (qr && typeof qr === 'object' && qr.active === true && qr.allowAi === false)) return false;
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+  function _isSafeClassImage(url) {
+    return typeof url === 'string' && /^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(url.trim());
+  }
+  function _safeSvgId(raw) {
+    return String(raw || '').replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 80) || 'node';
   }
 
   var __alloT = function (key, fallback) {
@@ -239,8 +253,9 @@
       }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: resonantColor }))
     ];
     nodes.forEach(function (n) {
-      if (n.cardImageBase64) {
-        defs.push(h('clipPath', { key: 'cp-' + n.cardId, id: 'ah-atlas-cp-' + n.cardId },
+      if (_isSafeClassImage(n.cardImageBase64)) {
+        var cpId = 'ah-atlas-cp-' + _safeSvgId(n.cardId);
+        defs.push(h('clipPath', { key: 'cp-' + n.cardId, id: cpId },
           h('circle', {
             cx: nodePos[n.cardId].x,
             cy: nodePos[n.cardId].y,
@@ -332,16 +347,17 @@
         strokeWidth: 1.5
       }));
       // Image (if present)
-      if (n.cardImageBase64) {
+      if (_isSafeClassImage(n.cardImageBase64)) {
+        var safeImg = n.cardImageBase64.trim();
         inner.push(h('image', {
           key: 'i-' + n.cardId,
-          href: n.cardImageBase64,
-          xlinkHref: n.cardImageBase64,
+          href: safeImg,
+          xlinkHref: safeImg,
           x: p.x - (nodeRadius - 1.5),
           y: p.y - (nodeRadius - 1.5),
           width: (nodeRadius - 1.5) * 2,
           height: (nodeRadius - 1.5) * 2,
-          clipPath: 'url(#ah-atlas-cp-' + n.cardId + ')',
+          clipPath: 'url(#ah-atlas-cp-' + _safeSvgId(n.cardId) + ')',
           preserveAspectRatio: 'xMidYMid slice'
         }));
       } else {
@@ -858,8 +874,13 @@
     var setVoiceError = voiceErrorTuple[1];
     var voiceRecorderRef = useRef(null);
     var voiceLiveRef = useRef(null);
+    var voiceMountedRef = useRef(true);
+    var voiceTokenRef = useRef(0);
     useEffect(function () {
+      voiceMountedRef.current = true;
       return function () {
+        voiceMountedRef.current = false;
+        voiceTokenRef.current++;
         if (voiceRecorderRef.current) {
           try { voiceRecorderRef.current.cancel(); } catch (e) { /* ignore */ }
           voiceRecorderRef.current = null;
@@ -1144,12 +1165,12 @@
       var contributorNickname = sub.nickname || 'Student';
       var fromCard = {
         id: sub.fromCardId, name: sub.fromCardName,
-        imageBase64: sub.fromCardImageBase64 || null,
+        imageBase64: _isSafeClassImage(sub.fromCardImageBase64) ? sub.fromCardImageBase64.trim() : null,
         source: sub.fromCardSource || null
       };
       var toCard = {
         id: sub.toCardId, name: sub.toCardName,
-        imageBase64: sub.toCardImageBase64 || null,
+        imageBase64: _isSafeClassImage(sub.toCardImageBase64) ? sub.toCardImageBase64.trim() : null,
         source: sub.toCardSource || null
       };
       var newEdge = Object.assign({
@@ -1244,6 +1265,9 @@
         ctx.addToast('Voice capture not supported in this browser.');
         return;
       }
+      if (voiceRecorderRef.current) { try { voiceRecorderRef.current.cancel(); } catch (e) {} voiceRecorderRef.current = null; }
+      if (voiceLiveRef.current) { try { voiceLiveRef.current.stop(); } catch (e) {} voiceLiveRef.current = null; }
+      voiceTokenRef.current++;
       var lastFinal = '';
       var controller = window.AlloFlowVoice.initWebSpeechCapture({
         lang: 'en-US', continuous: true, interimResults: false,
@@ -1273,19 +1297,26 @@
       if (!window.AlloFlowVoice || typeof window.AlloFlowVoice.recordAudioBlob !== 'function') {
         ctx.addToast('Audio recording not available.'); return;
       }
+      if (voiceLiveRef.current) { try { voiceLiveRef.current.stop(); } catch (e) {} voiceLiveRef.current = null; }
+      if (voiceRecorderRef.current) { try { voiceRecorderRef.current.cancel(); } catch (e) {} voiceRecorderRef.current = null; }
+      var myVoiceToken = ++voiceTokenRef.current;
       setVoiceError(null);
       setVoiceElapsed(0);
       var controller = window.AlloFlowVoice.recordAudioBlob({
         maxDurationMs: 60 * 1000,
-        onTick: function (ms) { setVoiceElapsed(ms); },
-        onError: function (err) { setVoiceError((err && err.message) || 'Recording failed'); voiceRecorderRef.current = null; setVoiceMode('idle'); }
+        onTick: function (ms) { if (voiceMountedRef.current && voiceTokenRef.current === myVoiceToken) setVoiceElapsed(ms); },
+        onError: function (err) {
+          if (!voiceMountedRef.current || voiceTokenRef.current !== myVoiceToken) return;
+          setVoiceError((err && err.message) || 'Recording failed'); voiceRecorderRef.current = null; setVoiceMode('idle');
+        }
       });
       if (!controller.supported) { ctx.addToast('Microphone not supported in this browser.'); return; }
       voiceRecorderRef.current = controller;
       setVoiceMode('recording');
       controller.result.then(function (rec) {
-        voiceRecorderRef.current = null;
-        if (!rec || !rec.base64) { setVoiceMode('idle'); return; }
+        if (voiceRecorderRef.current === controller) voiceRecorderRef.current = null;
+        if (!voiceMountedRef.current || voiceTokenRef.current !== myVoiceToken) return null;
+        if (!rec || !rec.base64) { setVoiceMode('idle'); return null; }
         setVoiceMode('transcribing');
         return window.AlloFlowVoice.transcribeAudio(rec.base64, {
           engine: engine,
@@ -1293,7 +1324,7 @@
           callGeminiAudio: ctx.callGeminiAudio
         });
       }).then(function (out) {
-        if (!out) return;
+        if (!voiceMountedRef.current || voiceTokenRef.current !== myVoiceToken || !out) return;
         var transcript = (out.transcript || '').trim();
         if (!transcript) { setVoiceError('No speech detected — try recording again.'); setVoiceMode('idle'); return; }
         setJustification(function (prev) {
@@ -1302,6 +1333,7 @@
         });
         setVoiceMode('idle');
       }).catch(function (err) {
+        if (!voiceMountedRef.current || voiceTokenRef.current !== myVoiceToken) return;
         if (err && err.message === 'cancelled') { setVoiceMode('idle'); return; }
         setVoiceError((err && err.message) || 'Transcription failed');
         setVoiceMode('idle');

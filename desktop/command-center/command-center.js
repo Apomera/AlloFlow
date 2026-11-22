@@ -200,7 +200,7 @@
       cancelNativeImageRequest();
     }, 125000);
     try {
-      const result = await api('/api/local-images/' + data.operation, { method: 'POST', signal: pending.controller.signal,
+      const result = await api('/api/local-images/' + data.operation, { method: 'POST', timeoutMs: 125000, signal: pending.controller.signal,
         body: JSON.stringify({ sessionId: pending.sessionId, requestId: pending.requestId, ...data.payload }) });
       if (nativeImageRequest !== pending) return;
       const value = result?.image;
@@ -341,7 +341,10 @@
       if (callerSignal.aborted) controller.abort();
       else callerSignal.addEventListener('abort', cancel, { once: true });
     }
-    const timeout = controller ? setTimeout(cancel, 30000) : null;
+    const timeoutMs = options && typeof options.timeoutMs === 'number' ? options.timeoutMs : 30000;
+    const timeout = controller
+      ? (timeoutMs === 30000 ? setTimeout(cancel, 30000) : (timeoutMs > 0 ? setTimeout(cancel, timeoutMs) : null))
+      : null;
     try {
       const response = await fetch(path, {
         ...options,
@@ -529,7 +532,15 @@
     } catch (_) {}
     $('#open-app-link').href = safeAppLink;
     const frame = $('#app-frame');
-    const nextFrameUrl = state.health.appReachable ? bundledAppLaunchUrl() : 'about:blank';
+    let nextFrameUrl = 'about:blank';
+    if (state.health.appReachable) {
+      try {
+        const parsedFrame = new URL(bundledAppLaunchUrl());
+        if ((parsedFrame.protocol === 'http:' || parsedFrame.protocol === 'https:') && parsedFrame.origin !== window.location.origin) {
+          nextFrameUrl = parsedFrame.href;
+        }
+      } catch (_) {}
+    }
     if (frame && frame.src !== nextFrameUrl) {
       resetAppBridge();
       frame.src = nextFrameUrl;
@@ -1868,7 +1879,11 @@
       appFrame: {
         loadedSameOrigin: Boolean(appWindow),
         loadedIsolatedOrigin: Boolean(isolatedStatus),
-        href: isolatedStatus?.href || (appWindow ? appWindow.location.href : ''),
+        href: (() => {
+          const raw = isolatedStatus?.href || (appWindow ? appWindow.location.href : '');
+          if (!raw) return '';
+          try { const u = new URL(raw); return u.origin + u.pathname; } catch (_) { return ''; }
+        })(),
         origin: isolatedStatus?.origin || window.location.origin,
       },
       localImages: {
@@ -2158,12 +2173,12 @@
         const pct = Math.round((eng.download.receivedBytes / eng.download.totalBytes) * 100);
         if (bar) bar.style.width = pct + '%';
         setText('#wiz-builtin-status', 'Downloading the AI model — ' + pct + '% (keep the app open)');
+      } else if (eng.phase === 'error' || eng.lastError) {
+        wizardStopEnginePoll();
+        wizardFail('The engine could not start: ' + (eng.lastError || 'engine error'));
+        if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Try again'; }
       } else if (eng.phase && eng.phase !== 'stopped') {
         setText('#wiz-builtin-status', eng.phase.replace(/-/g, ' ') + '…');
-      } else if (eng.lastError) {
-        wizardStopEnginePoll();
-        wizardFail('The engine could not start: ' + eng.lastError);
-        if (startBtn) { startBtn.disabled = false; startBtn.textContent = 'Try again'; }
       }
     }, 2000);
   }
@@ -2677,7 +2692,7 @@
     $('#engine-model-dir-save').addEventListener('click', saveEngineModelDir);
     refreshEngineStatus().catch(() => {});
     $('#app-frame').addEventListener('load', () => {
-      resetAppBridge();
+      if (!state.appBridgeReady) resetAppBridge();
       setTimeout(inspectKokoroVoice, 800);
     });
     window.addEventListener('pagehide', () => revokeNativeImageAccess());
@@ -2737,15 +2752,20 @@
     }
 
     $('#save-lan-pin')?.addEventListener('click', async () => {
-      const pin = ($('#lan-pin')?.value || '').trim().slice(0, 32);
-      await saveConfig({ liveSession: { lan: { pin } } });
-      const hint = $('#lan-pin-hint');
-      if (hint) {
-        hint.textContent = pin
-          ? 'PIN saved. It applies when LAN sharing (re)starts — stop and start sharing to use it now.'
-          : 'Custom PIN cleared. A fresh six-digit PIN will be generated the next time LAN sharing starts.';
+      try {
+        const pin = ($('#lan-pin')?.value || '').trim().slice(0, 32);
+        await saveConfig({ liveSession: { lan: { pin } } });
+        const hint = $('#lan-pin-hint');
+        if (hint) {
+          hint.textContent = pin
+            ? 'PIN saved. It applies when LAN sharing (re)starts — stop and start sharing to use it now.'
+            : 'Custom PIN cleared. A fresh six-digit PIN will be generated the next time LAN sharing starts.';
+        }
+        await refresh();
+      } catch (error) {
+        const hint = $('#lan-pin-hint');
+        if (hint) hint.textContent = 'Could not save PIN: ' + (error && error.message ? error.message : 'unknown error');
       }
-      await refresh();
     });
     $('#presenter-code')?.addEventListener('input', () => {
       renderLanClassroom();
@@ -2782,20 +2802,32 @@
     $('#run-classroom-check')?.addEventListener('click', runClassroomCheck);
 
     $('#save-app-url').addEventListener('click', async () => {
-      await saveConfig({ appUrl: $('#app-url').value.trim() || 'http://localhost:3000' });
-      await refresh();
+      try {
+        await saveConfig({ appUrl: $('#app-url').value.trim() || 'http://localhost:3000' });
+        await refresh();
+      } catch (error) {
+        setText('#app-status', 'Could not save app URL: ' + (error && error.message ? error.message : 'unknown error'));
+      }
     });
 
     $('#start-app').addEventListener('click', async () => {
-      setText('#app-status', 'Starting AlloFlow app');
-      await api('/api/app/start', { method: 'POST', body: '{}' });
-      await refresh();
+      try {
+        setText('#app-status', 'Starting AlloFlow app');
+        await api('/api/app/start', { method: 'POST', body: '{}' });
+        await refresh();
+      } catch (error) {
+        setText('#app-status', 'Could not start app: ' + (error && error.message ? error.message : 'unknown error'));
+      }
     });
 
     $('#stop-app').addEventListener('click', async () => {
-      setText('#app-status', 'Stopping AlloFlow app');
-      await api('/api/app/stop', { method: 'POST', body: '{}' });
-      await refresh();
+      try {
+        setText('#app-status', 'Stopping AlloFlow app');
+        await api('/api/app/stop', { method: 'POST', body: '{}' });
+        await refresh();
+      } catch (error) {
+        setText('#app-status', 'Could not stop app: ' + (error && error.message ? error.message : 'unknown error'));
+      }
     });
 
     $('#provider-select').addEventListener('change', renderProviderEditor);
@@ -2862,6 +2894,7 @@
       const key = $('#wiz-connect-key')?.value.trim() || '';
       try {
         await saveProviderSettings(app.providerId, baseUrl, key);
+        if ($('#wiz-connect-key')) $('#wiz-connect-key').value = '';
         sessionStorage.removeItem(SETUP_SNOOZE_KEY);
         await refresh();
         reloadAppFrame();
@@ -2885,23 +2918,29 @@
 
     // Admin edition: public address + user roster (per-user join PINs).
     $('#admin-public-url-save')?.addEventListener('click', async () => {
-      const value = $('#admin-public-url-input')?.value.trim() || '';
-      await saveConfig({ liveSession: { lan: { publicUrl: value } } });
-      renderAdminConnectBanner().catch(() => {});
+      try {
+        const value = $('#admin-public-url-input')?.value.trim() || '';
+        await saveConfig({ liveSession: { lan: { publicUrl: value } } });
+        renderAdminConnectBanner().catch(() => {});
+      } catch (_) {}
     });
     $('#admin-user-add')?.addEventListener('click', async () => {
-      const input = $('#admin-user-name');
-      const name = input?.value.trim() || '';
-      if (!name) { input?.focus(); return; }
-      await api('/api/users', { method: 'POST', body: JSON.stringify({ name }) });
-      if (input) input.value = '';
-      renderAdminConnectBanner().catch(() => {});
+      try {
+        const input = $('#admin-user-name');
+        const name = input?.value.trim() || '';
+        if (!name) { input?.focus(); return; }
+        await api('/api/users', { method: 'POST', body: JSON.stringify({ name }) });
+        if (input) input.value = '';
+        renderAdminConnectBanner().catch(() => {});
+      } catch (_) {}
     });
     $('#admin-users-list')?.addEventListener('click', async (event) => {
-      const btn = event.target.closest('button[data-user-id]');
-      if (!btn) return;
-      await api('/api/users/' + encodeURIComponent(btn.dataset.userId), { method: 'DELETE' });
-      renderAdminConnectBanner().catch(() => {});
+      try {
+        const btn = event.target.closest('button[data-user-id]');
+        if (!btn) return;
+        await api('/api/users/' + encodeURIComponent(btn.dataset.userId), { method: 'DELETE' });
+        renderAdminConnectBanner().catch(() => {});
+      } catch (_) {}
     });
 
     $('#save-provider').addEventListener('click', async () => {

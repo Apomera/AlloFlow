@@ -836,6 +836,10 @@
         ...data.get(target),
         phonemes
       });
+      if (Array.isArray(answerPhonemes) && answerPhonemes.length) data.set(correct, {
+        ...data.get(correct),
+        phonemes: answerPhonemes
+      });
       const labels = w => ((data.get(w) || {}).phonemes || []).map(soundKey).filter(Boolean);
       const vowels = new Set(['a', 'e', 'i', 'o', 'u', 'ay', 'ee', 'ie', 'oa', 'oo', 'oo_short', 'oy', 'ow', 'aw', 'ar', 'er', 'or', 'air', 'ear', 'ure', 'schwa']);
       const rime = w => {
@@ -1018,7 +1022,7 @@
         };
         return validSoundBoard(board, word, pool) ? board : null;
       }
-      const words = unique([...matches, ...pool.map(p => typeof p === 'string' ? p : p.word || p.targetWord || p.term)]).filter(w => w !== word);
+      const words = unique([...matches, ...pool.map(p => typeof p === 'string' ? p : p && (p.word || p.targetWord || p.term))]).filter(w => w !== word);
       const sound = w => edgeSound(w, mode, (data.get(w) || {}).phonemes);
       const yes = words.filter(w => sound(w) != null && soundKey(sound(w)) === soundKey(target));
       const no = words.filter(w => sound(w) != null && soundKey(sound(w)) !== soundKey(target));
@@ -1360,9 +1364,9 @@
         out.push(key);
         key = key.replace('_short', '');
       } else if (key.endsWith(' short')) key = key.replace(' short', '');
-      const special = PHONEME_BANK_SPECIAL[key] || key;
+      const special = Object.prototype.hasOwnProperty.call(PHONEME_BANK_SPECIAL, key) ? PHONEME_BANK_SPECIAL[key] : key;
       out.push(special, lower);
-      const match = PHONEME_BANK_MATCHES[lower] || PHONEME_BANK_MATCHES[special];
+      const match = Object.prototype.hasOwnProperty.call(PHONEME_BANK_MATCHES, lower) ? PHONEME_BANK_MATCHES[lower] : Object.prototype.hasOwnProperty.call(PHONEME_BANK_MATCHES, special) ? PHONEME_BANK_MATCHES[special] : '';
       if (match) out.push(match);
       return [...new Set(out.filter(Boolean))];
     };
@@ -3229,19 +3233,19 @@
     };
     const activityIds = () => Object.keys(ACTIVITY_SKILLS);
     const activityEnglishName = id => {
-      const row = ACTIVITY_SKILLS[id];
+      const row = Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? ACTIVITY_SKILLS[id] : null;
       if (row) return row.name;
       const plain = String(id || '').replace(/_/g, ' ').trim();
       return plain ? plain.charAt(0).toUpperCase() + plain.slice(1) : '';
     };
-    const activityLabel = (id, translate) => ACTIVITY_SKILLS[id] ? skillLookup(translate, 'word_sounds.activity_' + id, ACTIVITY_SKILLS[id].name) : activityEnglishName(id);
-    const activitySkillLabel = (id, translate) => ACTIVITY_SKILLS[id] ? skillLookup(translate, 'word_sounds.skill_' + id, ACTIVITY_SKILLS[id].skill) : '';
-    const activityStrand = id => ACTIVITY_SKILLS[id] ? ACTIVITY_SKILLS[id].strand : '';
-    const activityBig5 = id => ACTIVITY_SKILLS[id] ? ACTIVITY_SKILLS[id].big5.slice() : [];
+    const activityLabel = (id, translate) => Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? skillLookup(translate, 'word_sounds.activity_' + id, ACTIVITY_SKILLS[id].name) : activityEnglishName(id);
+    const activitySkillLabel = (id, translate) => Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? skillLookup(translate, 'word_sounds.skill_' + id, ACTIVITY_SKILLS[id].skill) : '';
+    const activityStrand = id => Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? ACTIVITY_SKILLS[id].strand : '';
+    const activityBig5 = id => Object.prototype.hasOwnProperty.call(ACTIVITY_SKILLS, id) ? ACTIVITY_SKILLS[id].big5.slice() : [];
     const strandOrder = () => SKILL_STRANDS.map(row => row.key);
     const strandRow = key => SKILL_STRANDS.find(row => row.key === key) || null;
     const strandLabel = (key, translate) => strandRow(key) ? skillLookup(translate, 'word_sounds.strand_' + key, strandRow(key).name) : '';
-    const big5Label = (key, translate) => BIG5_NAMES[key] ? skillLookup(translate, 'word_sounds.big5_' + key, BIG5_NAMES[key]) : '';
+    const big5Label = (key, translate) => Object.prototype.hasOwnProperty.call(BIG5_NAMES, key) ? skillLookup(translate, 'word_sounds.big5_' + key, BIG5_NAMES[key]) : '';
     const strandBig5 = key => strandRow(key) ? strandRow(key).big5.slice() : [];
     const strandBig5Label = (key, translate) => strandBig5(key).map(tag => big5Label(tag, translate)).join(', ');
     // Ids keep their given order inside each strand; unknown ids come last under ''.
@@ -3333,7 +3337,7 @@
     // total is exact whenever the plan can hold it.
     const scaleLessonCounts = (entries, length) => {
       const rows = planEntries(entries),
-        target = LESSON_LENGTHS[length] ? LESSON_LENGTHS[length].items : 0;
+        target = Object.prototype.hasOwnProperty.call(LESSON_LENGTHS, length) ? LESSON_LENGTHS[length].items : 0;
       if (!rows.length || !target) return rows;
       const weight = rows.reduce((sum, row) => sum + row.count, 0);
       const exact = rows.map(row => row.count / weight * target);
@@ -3365,7 +3369,7 @@
       if (!row) return null;
       const unavailable = Array.isArray(options.unavailable) ? options.unavailable : [];
       const kept = row.activities.filter(([activity]) => !unavailable.includes(activity));
-      const length = LESSON_LENGTHS[options.length] ? options.length : LESSON_LENGTH_DEFAULT;
+      const length = Object.prototype.hasOwnProperty.call(LESSON_LENGTHS, options.length) ? options.length : LESSON_LENGTH_DEFAULT;
       const activities = scaleLessonCounts(kept.map(([activity, weight]) => ({
         id: activity,
         count: weight
@@ -3687,10 +3691,10 @@
     let ogTableCache = null;
     const ogTables = () => {
       if (ogTableCache) return ogTableCache;
-      const byKey = {},
-        byLabel = {},
-        pairByKey = {},
-        pairByLabel = {};
+      const byKey = Object.create(null),
+        byLabel = Object.create(null),
+        pairByKey = Object.create(null),
+        pairByLabel = Object.create(null);
       const addLabel = (table, label, grapheme) => {
         (table[label] = table[label] || new Set()).add(grapheme);
       };
@@ -4163,7 +4167,7 @@
         zh: 'sh',
         er: 'er'
       };
-      const bySound = keys.length && keys.every(Boolean) ? keys.map((key, index) => index === keys.length - 1 && key === 'ay' ? 'ay' : index === keys.length - 1 && key === 'ie' ? 'y' : plain[key] || key).join('') : '';
+      const bySound = keys.length && keys.every(Boolean) ? keys.map((key, index) => index === keys.length - 1 && key === 'ay' ? 'ay' : index === keys.length - 1 && key === 'ie' ? 'y' : ownKey(plain, key) ? plain[key] : key).join('') : '';
       const rules = [
       // c, k and ck for /k/.
       [...swap(/ck/, 'k'), ...swap(/c(?![eiyhk])/, 'k'), ...swap(/k(?=[aoulr])/, 'c'), ...swap(/ck/, 'c')],
@@ -5321,9 +5325,10 @@ function WordSoundsPreviewView(props) {
     var target = readinessBusy ? readinessCancelButtonRef.current : readinessNotice && readinessCheckButtonRef.current;
     if (target) target.focus();
   }, [readinessBusy, readinessNotice]);
-  wordSoundsAudioCoverage = readinessApi ? readinessApi.inspect(readinessResource, {
+  var inspectedAudioCoverage = readinessApi ? readinessApi.inspect(readinessResource, {
     route: 'student-pack'
-  }) : Object.assign({
+  }) : null;
+  wordSoundsAudioCoverage = inspectedAudioCoverage || Object.assign({
     ready: 0,
     total: 0,
     missing: 0,
@@ -5331,10 +5336,13 @@ function WordSoundsPreviewView(props) {
     online: 0,
     deviceOnly: 0,
     unverified: 1,
-    complete: false,
     dependencies: [],
     missingLabels: []
-  }, wordSoundsAudioCoverage && typeof wordSoundsAudioCoverage === 'object' ? wordSoundsAudioCoverage : {});
+  }, wordSoundsAudioCoverage && typeof wordSoundsAudioCoverage === 'object' ? wordSoundsAudioCoverage : {}, {
+    complete: false,
+    teacherLedReady: false
+  });
+  var requiresTeacherSpeech = Boolean(wordSoundsAudioCoverage && wordSoundsAudioCoverage.requiresTeacher);
   missingAudioLabels = wordSoundsAudioCoverage && Array.isArray(wordSoundsAudioCoverage.missingLabels) ? wordSoundsAudioCoverage.missingLabels : wordSoundsAudioCoverage && Array.isArray(wordSoundsAudioCoverage.missingWords) ? wordSoundsAudioCoverage.missingWords : [];
   var readinessCategoryNames = {
     "speech": label('readiness_category_speech', 'Words and text'),
@@ -5488,7 +5496,7 @@ function WordSoundsPreviewView(props) {
     };
   }, [stopPreviewWordSpeech]);
   var speakPreviewWord = function (wordText, idx) {
-    if (!wordText || wordSoundsAudioCoverage.requiresTeacher) return;
+    if (!wordText || requiresTeacherSpeech) return;
     if (speakingWordIdx === idx) {
       stopPreviewWordSpeech();
       return;
@@ -5609,6 +5617,7 @@ function WordSoundsPreviewView(props) {
     count: generatedContent.data.length
   })), !isAssessmentLocked && plannedSequence.length > 0 && /*#__PURE__*/React.createElement("div", {
     "data-ws-preview-sequence": "true",
+    role: "group",
     className: "mt-3 flex flex-wrap items-center justify-center gap-1.5",
     "aria-label": label('preview_activity_plan', 'Planned activities')
   }, plannedSequence.map(function (actId, actIdx) {
@@ -5627,10 +5636,10 @@ function WordSoundsPreviewView(props) {
     count: previewWords.length
   })), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-medium text-slate-600"
-  }, !wordSoundsAudioCoverage.requiresTeacher && hasPreviewSpeech ? label('preview_words_tap_listen', 'Select a word to hear it') : label('preview_words_list_hint', 'Practice word list'))), /*#__PURE__*/React.createElement("div", {
+  }, !requiresTeacherSpeech && hasPreviewSpeech ? label('preview_words_tap_listen', 'Select a word to hear it') : label('preview_words_list_hint', 'Practice word list'))), /*#__PURE__*/React.createElement("div", {
     className: "mt-2.5 flex flex-wrap gap-1.5"
   }, previewWords.slice(0, 30).map(function (wordText, wIdx) {
-    var canListenWord = !wordSoundsAudioCoverage.requiresTeacher && hasPreviewSpeech;
+    var canListenWord = !requiresTeacherSpeech && hasPreviewSpeech;
     var isSpeakingWord = speakingWordIdx === wIdx;
     return canListenWord ? /*#__PURE__*/React.createElement("button", {
       key: wordText + '-' + wIdx,
@@ -5777,7 +5786,7 @@ function WordSoundsPreviewView(props) {
     className: "block text-xs font-medium text-violet-600"
   }, label('preview_teacher_hint', 'Check or edit the lesson before students begin')))), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    disabled: !isTeacherMode && wordSoundsAudioCoverage.requiresTeacher,
+    disabled: !isTeacherMode && requiresTeacherSpeech,
     onClick: () => {
       if (isTeacherMode && wordSoundsAudioCoverage && !wordSoundsAudioCoverage.complete && !wordSoundsAudioCoverage.teacherLedReady && typeof requestIncompleteAudioConfirmation === 'function') {
         requestIncompleteAudioConfirmation(wordSoundsAudioCoverage, launchPreparedActivity);
@@ -5796,9 +5805,9 @@ function WordSoundsPreviewView(props) {
     className: "text-start"
   }, /*#__PURE__*/React.createElement("span", {
     className: "block"
-  }, wordSoundsAudioCoverage.requiresTeacher ? isTeacherMode ? label('preview_teacher_led_start', 'Start teacher-led practice') : label('preview_teacher_required', 'Ask your teacher to begin') : isTeacherMode ? label('preview_student_practice', 'Student: Start Practice') : label('preview_start', 'Start Activity')), /*#__PURE__*/React.createElement("span", {
+  }, requiresTeacherSpeech ? isTeacherMode ? label('preview_teacher_led_start', 'Start teacher-led practice') : label('preview_teacher_required', 'Ask your teacher to begin') : isTeacherMode ? label('preview_student_practice', 'Student: Start Practice') : label('preview_start', 'Start Activity')), /*#__PURE__*/React.createElement("span", {
     className: "block text-xs font-medium text-indigo-100"
-  }, wordSoundsAudioCoverage.requiresTeacher ? label('preview_teacher_led_hint', 'The teacher says each marked word aloud') : label('preview_start_hint', 'Begin the prepared activities now')))))));
+  }, requiresTeacherSpeech ? label('preview_teacher_led_hint', 'The teacher says each marked word aloud') : label('preview_start_hint', 'Begin the prepared activities now')))))));
 }
 
   window.AlloModules = window.AlloModules || {};

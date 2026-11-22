@@ -188,14 +188,22 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 .card h2::before{display:none;}
 .card ol{padding-left:22px}.card li{margin:0 0 8px}
 .card .stop{border-left:4px solid var(--warn-bd);background:var(--warn-bg);color:var(--warn-ink);padding:10px 12px;border-radius:8px;margin-top:14px}
-@media print{.card{page-break-after:always}.card:last-of-type{page-break-after:auto}}
+.quick-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:0 0 18px;}
+.quick-actions .manual-home{margin:0;}
+.print-btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 16px;border:1px solid var(--accent-bd);border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);font:700 calc(14px * var(--fs))/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer;}
+.print-btn:hover{border-color:var(--accent);}
+.print-btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+@media print{.card{page-break-after:always}.card:last-of-type{page-break-after:auto}.no-print{display:none !important;}}
 .skip-link{position:absolute;left:-9999px;top:8px;z-index:999;background:#1e3a8a;color:#fff;padding:10px 16px;border-radius:8px;font-weight:700;text-decoration:none;}.skip-link:focus{left:12px;outline:3px solid #facc15;outline-offset:2px;}
 </style>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
 <main class="wrap" id="main" tabindex="-1">
+<div class="quick-actions">
 <p class="manual-home"><a href="school-rewards-manual.html">← School Rewards &amp; Store manual</a></p>
+<button type="button" class="print-btn no-print" onclick="window.print()">Print quick cards</button>
+</div>
 <article>
 <h1>School Rewards &amp; Store: Quick Cards</h1>
 <p class="suite">Three one-page cards to print: two for training day, one for students and families. Practise every step first at <a href="school-rewards-practice.html">the practice portal</a>; nothing there reaches a real ledger.</p>

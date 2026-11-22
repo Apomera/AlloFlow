@@ -50,10 +50,12 @@ function WordSoundsPreviewView(props) {
     var target = readinessBusy ? readinessCancelButtonRef.current : readinessNotice && readinessCheckButtonRef.current;
     if (target) target.focus();
   }, [readinessBusy, readinessNotice]);
-  wordSoundsAudioCoverage = readinessApi ? readinessApi.inspect(readinessResource, { route: 'student-pack' }) : Object.assign({
+  var inspectedAudioCoverage = readinessApi ? readinessApi.inspect(readinessResource, { route: 'student-pack' }) : null;
+  wordSoundsAudioCoverage = inspectedAudioCoverage || Object.assign({
     ready: 0, total: 0,
-    missing: 0, embedded: 0, online: 0, deviceOnly: 0, unverified: 1, complete: false, dependencies: [], missingLabels: [],
-  }, wordSoundsAudioCoverage && typeof wordSoundsAudioCoverage === 'object' ? wordSoundsAudioCoverage : {});
+    missing: 0, embedded: 0, online: 0, deviceOnly: 0, unverified: 1, dependencies: [], missingLabels: [],
+  }, wordSoundsAudioCoverage && typeof wordSoundsAudioCoverage === 'object' ? wordSoundsAudioCoverage : {}, { complete: false, teacherLedReady: false });
+  var requiresTeacherSpeech = Boolean(wordSoundsAudioCoverage && wordSoundsAudioCoverage.requiresTeacher);
   missingAudioLabels = wordSoundsAudioCoverage && Array.isArray(wordSoundsAudioCoverage.missingLabels)
     ? wordSoundsAudioCoverage.missingLabels
     : ((wordSoundsAudioCoverage && Array.isArray(wordSoundsAudioCoverage.missingWords)) ? wordSoundsAudioCoverage.missingWords : []);
@@ -188,7 +190,7 @@ function WordSoundsPreviewView(props) {
     };
   }, [stopPreviewWordSpeech]);
   var speakPreviewWord = function (wordText, idx) {
-    if (!wordText || wordSoundsAudioCoverage.requiresTeacher) return;
+    if (!wordText || requiresTeacherSpeech) return;
     if (speakingWordIdx === idx) { stopPreviewWordSpeech(); return; }
     var token = ++previewSpeechTokenRef.current;
     var lang = generatedContent?.sessionConfig?.language || props.wordSoundsLanguage || undefined;
@@ -273,7 +275,7 @@ function WordSoundsPreviewView(props) {
                       <p className="text-sm text-slate-600 mb-1">{generatedContent?.configSummary || label('preview_ready', 'Ready to practice')}</p>
                       {generatedContent?.data && <p className="text-xs text-violet-700 font-medium">{label('preview_word_count', '{count} words loaded', { count: generatedContent.data.length })}</p>}
                       {!isAssessmentLocked && plannedSequence.length > 0 && (
-                        <div data-ws-preview-sequence="true" className="mt-3 flex flex-wrap items-center justify-center gap-1.5" aria-label={label('preview_activity_plan', 'Planned activities')}>
+                        <div data-ws-preview-sequence="true" role="group" className="mt-3 flex flex-wrap items-center justify-center gap-1.5" aria-label={label('preview_activity_plan', 'Planned activities')}>
                           {plannedSequence.map(function (actId, actIdx) {
                             return (
                               <span key={String(actId) + '-' + actIdx} className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-white px-2.5 py-1 text-xs font-semibold text-violet-900">
@@ -289,14 +291,14 @@ function WordSoundsPreviewView(props) {
                           <summary className="min-h-11 flex items-center justify-between gap-2 cursor-pointer text-sm font-bold text-violet-900 focus-visible:ring-2 focus-visible:ring-violet-600 rounded-lg px-1">
                             <span>{label('preview_words_heading', 'Preview words ({count})', { count: previewWords.length })}</span>
                             <span className="text-xs font-medium text-slate-600">
-                              {(!wordSoundsAudioCoverage.requiresTeacher && hasPreviewSpeech)
+                              {(!requiresTeacherSpeech && hasPreviewSpeech)
                                 ? label('preview_words_tap_listen', 'Select a word to hear it')
                                 : label('preview_words_list_hint', 'Practice word list')}
                             </span>
                           </summary>
                           <div className="mt-2.5 flex flex-wrap gap-1.5">
                             {previewWords.slice(0, 30).map(function (wordText, wIdx) {
-                              var canListenWord = !wordSoundsAudioCoverage.requiresTeacher && hasPreviewSpeech;
+                              var canListenWord = !requiresTeacherSpeech && hasPreviewSpeech;
                               var isSpeakingWord = speakingWordIdx === wIdx;
                               return canListenWord ? (
                                 <button
@@ -395,7 +397,7 @@ function WordSoundsPreviewView(props) {
                         )}
                         <button
                           type="button"
-                          disabled={!isTeacherMode && wordSoundsAudioCoverage.requiresTeacher}
+                          disabled={!isTeacherMode && requiresTeacherSpeech}
                           onClick={() => {
                             if (isTeacherMode
                                 && wordSoundsAudioCoverage
@@ -414,8 +416,8 @@ function WordSoundsPreviewView(props) {
                         >
                           <Play size={20} aria-hidden="true" />
                           <span className="text-start">
-                            <span className="block">{wordSoundsAudioCoverage.requiresTeacher ? (isTeacherMode ? label('preview_teacher_led_start', 'Start teacher-led practice') : label('preview_teacher_required', 'Ask your teacher to begin')) : isTeacherMode ? label('preview_student_practice', 'Student: Start Practice') : label('preview_start', 'Start Activity')}</span>
-                            <span className="block text-xs font-medium text-indigo-100">{wordSoundsAudioCoverage.requiresTeacher ? label('preview_teacher_led_hint', 'The teacher says each marked word aloud') : label('preview_start_hint', 'Begin the prepared activities now')}</span>
+                            <span className="block">{requiresTeacherSpeech ? (isTeacherMode ? label('preview_teacher_led_start', 'Start teacher-led practice') : label('preview_teacher_required', 'Ask your teacher to begin')) : isTeacherMode ? label('preview_student_practice', 'Student: Start Practice') : label('preview_start', 'Start Activity')}</span>
+                            <span className="block text-xs font-medium text-indigo-100">{requiresTeacherSpeech ? label('preview_teacher_led_hint', 'The teacher says each marked word aloud') : label('preview_start_hint', 'Begin the prepared activities now')}</span>
                           </span>
                         </button>
                       </div>

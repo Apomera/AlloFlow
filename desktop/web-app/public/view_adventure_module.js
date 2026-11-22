@@ -466,9 +466,9 @@ function AdventureSetupEditor(props) {
   const resourcesLocked = resourceConfigLocked || typeof props.setAdventureState !== 'function';
   React.useEffect(() => {
     const target = pendingResourceFocus.current;
-    if (target) {
-      const control = resourceEditorRef.current?.querySelector('[id="' + target + '"]');
-      if (control) {
+    if (target && typeof document !== 'undefined') {
+      const control = document.getElementById(target);
+      if (control && resourceEditorRef.current?.contains(control)) {
         control.focus();
         pendingResourceFocus.current = null;
       }
@@ -626,6 +626,7 @@ function AdventureSetupEditor(props) {
     id: id + '-social-focus',
     className: "as-control",
     type: "text",
+    maxLength: 240,
     "aria-describedby": describedBy('allowModeSwitch', 'social-focus'),
     value: props.socialStoryFocus || '',
     disabled: locked('allowModeSwitch') || typeof props.setSocialStoryFocus !== 'function',
@@ -824,6 +825,7 @@ function AdventureSetupEditor(props) {
     "aria-label": label('input.custom_instructions', 'Custom instructions'),
     "aria-describedby": describedBy('allowCustomInstructions', 'custom-instructions'),
     className: "as-control",
+    maxLength: 2000,
     value: props.adventureCustomInstructions || '',
     disabled: locked('allowCustomInstructions'),
     onChange: e => change('setAdventureCustomInstructions', e.target.value, 'allowCustomInstructions'),
@@ -1142,7 +1144,7 @@ function AdventureEpisodeRecap({
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 17,
     "aria-hidden": "true"
-  }), /*#__PURE__*/React.createElement("span", null, t('adventure.start_sequel'))), xp >= threshold && typeof onExport === 'function' ? /*#__PURE__*/React.createElement("button", {
+  }), /*#__PURE__*/React.createElement("span", null, t('adventure.start_sequel') || 'Start next chapter')), xp >= threshold && typeof onExport === 'function' ? /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onExport,
     disabled: busy,
@@ -1155,7 +1157,7 @@ function AdventureEpisodeRecap({
   }) : /*#__PURE__*/React.createElement(BookOpen, {
     size: 17,
     "aria-hidden": "true"
-  }), /*#__PURE__*/React.createElement("span", null, isProcessing ? t('adventure.storybook_writing') : t('adventure.storybook'))) : xp < threshold ? /*#__PURE__*/React.createElement("p", {
+  }), /*#__PURE__*/React.createElement("span", null, isProcessing ? t('adventure.storybook_writing') || 'Creating storybook…' : t('adventure.storybook') || 'Export Storybook')) : xp < threshold ? /*#__PURE__*/React.createElement("p", {
     className: "text-xs leading-relaxed text-[var(--av-muted)] flex items-start gap-2 py-2"
   }, /*#__PURE__*/React.createElement(Lock, {
     size: 15,
@@ -1163,7 +1165,7 @@ function AdventureEpisodeRecap({
     "aria-hidden": "true"
   }), /*#__PURE__*/React.createElement("span", null, t('adventure.storybook_locked', {
     needed: Math.max(0, threshold - xp)
-  }))) : null), state.canStartSequel && !canContinue && /*#__PURE__*/React.createElement("p", {
+  }) || `Earn ${Math.max(0, threshold - xp)} more XP to unlock Storybook export.`)) : null), state.canStartSequel && !canContinue && /*#__PURE__*/React.createElement("p", {
     className: "text-xs leading-relaxed text-[var(--av-muted)]"
   }, label('teacher_continues', 'Your teacher can continue the story with the class.')));
 }
@@ -1230,9 +1232,9 @@ function AdventureTurnRecovery({
     className: "min-w-0"
   }, /*#__PURE__*/React.createElement("h3", {
     className: "text-sm sm:text-base font-bold"
-  }, t('adventure.interrupted_title')), /*#__PURE__*/React.createElement("p", {
+  }, t('adventure.interrupted_title') || 'Turn interrupted'), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-sm leading-relaxed text-[var(--av-muted)]"
-  }, t('adventure.interrupted_desc')))), /*#__PURE__*/React.createElement("button", {
+  }, t('adventure.interrupted_desc') || 'Your story is safe. Try again to continue.'))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onRetry,
     disabled: loading || typeof onRetry !== 'function',
@@ -1241,7 +1243,7 @@ function AdventureTurnRecovery({
     size: 16,
     "aria-hidden": "true",
     className: loading ? 'animate-spin motion-reduce:animate-none' : ''
-  }), t('adventure.retry_action')));
+  }), t('adventure.retry_action') || 'Try again'));
 }
 function AdventureLearningProfiles(props) {
   const {
@@ -1431,10 +1433,10 @@ function AdventureConsequenceCard({
     return value && value !== 'adventure.debrief.' + key ? value : fallback;
   };
   var ratings = {
-    strategic_success: ['effective', 'Effective strategy'],
-    partial_success: ['partial', 'Partly supported strategy'],
-    misconception: ['revisit', 'Reasoning to revisit'],
-    neutral: ['unrated', 'Strategy not rated']
+    strategic_success: ['effective', 'Effective strategy', '✓'],
+    partial_success: ['partial', 'Partly supported strategy', '◐'],
+    misconception: ['revisit', 'Reasoning to revisit', '!'],
+    neutral: ['unrated', 'Strategy not rated', '·']
   };
   var rating = ratings[consequence.reasoning] || ratings.neutral;
   var changes = (Array.isArray(consequence.changes) ? consequence.changes : []).filter(function (c) {
@@ -1452,8 +1454,11 @@ function AdventureConsequenceCard({
   }, /*#__PURE__*/React.createElement("span", {
     className: `text-xs uppercase tracking-wider font-bold text-[var(--av-accent)]`
   }, label('title', 'Decision debrief')), /*#__PURE__*/React.createElement("span", {
-    className: `rounded-full px-2 py-1 text-xs font-semibold bg-[var(--av-wash)] text-[var(--av-ink)] border border-[var(--av-line)]`
-  }, label(rating[0], rating[1]))), typeof consequence.explanation === 'string' && consequence.explanation && /*#__PURE__*/React.createElement("p", {
+    "data-adventure-debrief-rating": rating[0],
+    className: `inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold bg-[var(--av-wash)] text-[var(--av-ink)] border border-[var(--av-line)]`
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, rating[2]), /*#__PURE__*/React.createElement("span", null, label(rating[0], rating[1])))), typeof consequence.explanation === 'string' && consequence.explanation && /*#__PURE__*/React.createElement("p", {
     className: "text-sm leading-relaxed whitespace-pre-wrap"
   }, bt(consequence.explanation.slice(0, 1800))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold mb-3 text-[var(--av-muted)]"
@@ -2137,7 +2142,7 @@ function AdventureFluencyPractice(props) {
     "aria-labelledby": "adventure-fluency-title",
     "aria-describedby": "adventure-fluency-description",
     style: adventureVisualTokens(props.theme),
-    className: "w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border-2 border-[var(--av-line)] bg-[var(--av-surface)] text-[var(--av-ink)] p-5 shadow-2xl focus:outline-none"
+    className: "w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border-2 border-[var(--av-line)] bg-[var(--av-surface)] text-[var(--av-ink)] p-5 shadow-2xl focus-visible:ring-2 focus-visible:ring-[var(--av-focus)]"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-start justify-between gap-4"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
@@ -2153,12 +2158,15 @@ function AdventureFluencyPractice(props) {
     type: "button",
     onClick: closePractice,
     className: "min-w-11 min-h-11 rounded-full p-2 text-[var(--av-ink)] hover:bg-[var(--av-wash)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)]",
-    "aria-label": t('common.close')
+    "aria-label": t('common.close') || 'Close'
   }, /*#__PURE__*/React.createElement(X, {
     size: 20,
     "aria-hidden": "true"
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "mt-4 max-h-56 overflow-y-auto rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] p-4 text-sm font-medium leading-relaxed whitespace-pre-line text-[var(--av-ink)]"
+    tabIndex: 0,
+    role: "region",
+    "aria-label": t('adventure.fluency_passage_label') || 'Scene reading passage',
+    className: "mt-4 max-h-56 overflow-y-auto rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] p-4 text-sm font-medium leading-relaxed whitespace-pre-line text-[var(--av-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)]"
   }, sceneText), /*#__PURE__*/React.createElement("label", {
     className: "mt-4 flex min-h-11 items-start gap-3 rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] p-3 text-sm text-[var(--av-muted)]"
   }, /*#__PURE__*/React.createElement("input", {
@@ -2213,6 +2221,7 @@ function AdventureFluencyPractice(props) {
   }, /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
+    "aria-busy": "true",
     className: "min-h-11 rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] px-5 py-3 font-black text-[var(--av-ink)]"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 16,
@@ -2235,7 +2244,14 @@ function AdventureFluencyPractice(props) {
     onClick: saveResult,
     disabled: saved,
     className: "min-h-11 rounded-xl border-2 border-[var(--av-accent)] bg-[var(--av-surface)] px-5 py-3 font-black text-[var(--av-accent)] hover:bg-[var(--av-wash)] disabled:cursor-default disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2"
-  }, saved ? t('adventure.fluency_saved') || 'Saved to reading history' : t('adventure.fluency_save') || 'Save to reading history'))));
+  }, saved ? t('adventure.fluency_saved') || 'Saved to reading history' : t('adventure.fluency_save') || 'Save to reading history')), saved && /*#__PURE__*/React.createElement("p", {
+    "data-adventure-fluency-saved": "true",
+    role: "status",
+    "aria-live": "polite",
+    className: "mt-3 text-center text-xs font-bold text-[var(--av-accent)]"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "✓ "), t('adventure.fluency_saved') || 'Saved to reading history')));
 }
 function AdventureView(props) {
   const [showFullIllustration, setShowFullIllustration] = React.useState(false);
@@ -2645,11 +2661,29 @@ function AdventureView(props) {
         }
       }
     }), /*#__PURE__*/React.createElement("div", {
-      className: "mt-2 flex flex-wrap items-start justify-between gap-2"
+      className: "mt-2 flex flex-wrap items-center justify-between gap-2"
     }, /*#__PURE__*/React.createElement("p", {
       id: inputId + '-keys',
       className: "m-0 text-xs leading-relaxed text-[var(--av-muted)]"
-    }, adventureSettingsText(t, 'response_keyboard_help', 'Enter to send · Shift + Enter for a new line.')), renderTypingPace(immersive || theme !== 'light')), /*#__PURE__*/React.createElement("div", {
+    }, adventureSettingsText(t, 'response_keyboard_help', 'Enter to send · Shift + Enter for a new line.')), /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-2"
+    }, renderTypingPace(immersive || theme !== 'light'), !adventureTypingPaceEnabled && String(adventureTextInput || '').trim().length > 0 && (() => {
+      var wc = String(adventureTextInput).trim().split(/\s+/).length;
+      return /*#__PURE__*/React.createElement("span", {
+        "data-adventure-composer-count": "true",
+        className: "text-xs font-semibold tabular-nums text-[var(--av-muted)]"
+      }, wc, " ", wc === 1 ? 'word' : 'words');
+    })(), String(adventureTextInput || '').trim().length > 0 && !adventureState.isLoading && typeof setAdventureTextInput === 'function' && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-adventure-composer-clear": "true",
+      onClick: () => {
+        setAdventureTextInput('');
+        try {
+          adventureInputRef && adventureInputRef.current && adventureInputRef.current.focus();
+        } catch (_) {}
+      },
+      className: "min-h-11 px-3 py-1.5 rounded-xl border border-[var(--av-control)] bg-[var(--av-wash)] text-xs font-bold text-[var(--av-ink)] hover:bg-[var(--av-surface)] transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]"
+    }, t('common.clear') || 'Clear'))), /*#__PURE__*/React.createElement("div", {
       className: "mt-3 flex flex-col gap-2 sm:flex-row sm:justify-between"
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
@@ -2674,6 +2708,7 @@ function AdventureView(props) {
       "data-help-key": "adventure_input_send",
       onClick: () => handleAdventureTextSubmit(),
       disabled: !adventureTextInput.trim() || adventureState.isLoading,
+      "aria-busy": adventureState.isLoading ? 'true' : undefined,
       className: "min-h-11 min-w-0 rounded-xl border border-[var(--av-accent)] bg-[var(--av-accent)] px-5 py-2.5 text-sm font-black text-[var(--av-surface)] flex items-center justify-center gap-2 hover:underline disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]"
     }, /*#__PURE__*/React.createElement(Send, {
       size: 18,
@@ -2951,8 +2986,8 @@ function AdventureView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleSetShowLedgerToFalse,
-    className: "absolute top-2 right-2 sm:top-3 sm:right-3 min-w-11 min-h-11 text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2",
-    "aria-label": t('common.close')
+    className: "absolute top-2 right-2 sm:top-3 sm:right-3 min-w-11 min-h-11 text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2",
+    "aria-label": t('common.close') || 'Close'
   }, /*#__PURE__*/React.createElement(X, {
     size: 20,
     "aria-hidden": "true"
@@ -2966,22 +3001,22 @@ function AdventureView(props) {
   })), /*#__PURE__*/React.createElement("h3", {
     id: "adventure-ledger-title",
     className: "text-xl font-black text-indigo-900"
-  }, t('adventure.ledger_title')), /*#__PURE__*/React.createElement("p", {
+  }, t('adventure.ledger_title') || 'Journey Ledger'), /*#__PURE__*/React.createElement("p", {
     id: "adventure-ledger-subtitle",
     className: "text-xs text-slate-700"
-  }, t('adventure.ledger_subtitle'))), /*#__PURE__*/React.createElement("div", {
+  }, t('adventure.ledger_subtitle') || 'Your story summary so far')), /*#__PURE__*/React.createElement("div", {
     role: "region",
     "aria-label": t('adventure.ledger_title'),
     tabIndex: 0,
     className: "bg-slate-50 p-4 rounded-xl border border-slate-400 text-sm text-slate-700 leading-relaxed max-h-[50vh] overflow-y-auto custom-scrollbar whitespace-pre-line font-serif focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
-  }, adventureState.narrativeLedger || t('adventure.ledger_empty')), /*#__PURE__*/React.createElement("div", {
+  }, adventureState.narrativeLedger || t('adventure.ledger_empty') || 'Your adventure ledger will fill in as you play.'), /*#__PURE__*/React.createElement("div", {
     className: "mt-4 flex flex-col gap-2"
   }, storybookXpNeeded > 0 && /*#__PURE__*/React.createElement("p", {
     "data-ledger-storybook-locked": true,
     className: "text-xs text-slate-700"
   }, t('adventure.storybook_locked', {
     needed: storybookXpNeeded
-  })), /*#__PURE__*/React.createElement("button", {
+  }) || `Earn ${storybookXpNeeded} more XP to unlock Storybook export.`), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('adventure.storybook'),
     onClick: () => {
@@ -2990,7 +3025,7 @@ function AdventureView(props) {
     },
     disabled: isProcessing || adventureState.history.length === 0 || storybookXpNeeded > 0,
     "aria-busy": isProcessing,
-    className: "min-h-11 w-full px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+    className: "min-h-11 w-full px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
   }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 18,
     className: "animate-spin motion-reduce:animate-none",
@@ -2998,11 +3033,11 @@ function AdventureView(props) {
   }) : /*#__PURE__*/React.createElement(Download, {
     size: 18,
     "aria-hidden": "true"
-  }), t('adventure.storybook')), /*#__PURE__*/React.createElement("button", {
+  }), t('adventure.storybook') || 'Export Storybook'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleSetShowLedgerToFalse,
-    className: "min-h-11 w-full px-6 py-2 text-slate-700 font-bold hover:text-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2 rounded-xl"
-  }, t('common.close'))))), /*#__PURE__*/React.createElement("div", {
+    className: "min-h-11 w-full px-6 py-2 text-slate-700 font-bold hover:text-slate-900 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2 rounded-xl"
+  }, t('common.close') || 'Close')))), /*#__PURE__*/React.createElement("div", {
     "data-adventure-header": true,
     role: "region",
     "aria-label": adventureSettingsText(t, 'header_controls', 'Adventure controls'),
@@ -3168,12 +3203,13 @@ function AdventureView(props) {
     role: "progressbar",
     "aria-label": adventureInputMode === 'system' ? t('adventure.tooltips.stability', {
       value: energyValue
-    }) : t('adventure.tooltips.energy', {
+    }) || `Stability: ${energyValue}%` : t('adventure.tooltips.energy', {
       value: energyValue
-    }),
+    }) || `Energy: ${energyValue}%`,
     "aria-valuemin": 0,
     "aria-valuemax": 100,
-    "aria-valuenow": energyValue
+    "aria-valuenow": energyValue,
+    "aria-valuetext": `${adventureInputMode === 'system' ? 'Stability' : 'Energy'}: ${energyValue} of 100 (${energyValue < 20 ? 'Low' : energyValue < 50 ? 'Moderate' : 'Strong'})`
   }, /*#__PURE__*/React.createElement("div", {
     "aria-hidden": "true",
     className: `h-full transition-all duration-500 motion-reduce:transition-none ${adventureInputMode === 'system' ? theme === 'contrast' ? 'bg-yellow-300' : 'bg-amber-500' : adventureState.energy < 20 || adventureEffects.energy < 0 ? 'bg-red-500 animate-pulse motion-reduce:animate-none' : theme === 'contrast' ? 'bg-yellow-300' : 'bg-amber-500'}`,
@@ -3374,30 +3410,30 @@ function AdventureView(props) {
     className: "text-[var(--av-muted)] mb-6 font-medium"
   }, t('adventure.paused_desc')), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('adventure.resume'),
+    "aria-label": t('adventure.resume') || 'Resume adventure',
     "data-help-key": "adventure_resume_btn",
     onClick: handleResumeAdventure,
-    className: "min-h-11 w-full py-4 bg-[var(--av-accent)] text-[var(--av-surface)] border border-[var(--av-accent)] rounded-xl font-black text-lg shadow-lg hover:scale-105 hover:underline transition-all motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]"
+    className: "min-h-11 w-full py-4 bg-[var(--av-accent)] text-[var(--av-surface)] border border-[var(--av-accent)] rounded-xl font-black text-lg shadow-lg hover:scale-105 hover:underline transition-all motion-reduce:transition-none motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]"
   }, /*#__PURE__*/React.createElement(History, {
     size: 20,
     "aria-hidden": "true"
-  }), " ", t('adventure.resume'))), /*#__PURE__*/React.createElement("button", {
+  }), " ", t('adventure.resume') || 'Resume adventure')), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('adventure.start_overwrite'),
+    "aria-label": t('adventure.start_overwrite') || 'Start new adventure',
     onClick: handleSetShowNewGameSetupToTrue,
-    className: "min-h-11 text-[var(--av-ink)] hover:text-red-700 font-bold text-xs flex items-center justify-center gap-2 transition-colors px-3 py-2 uppercase tracking-wider rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2"
+    className: "min-h-11 text-[var(--av-ink)] hover:text-red-700 font-bold text-xs flex items-center justify-center gap-2 transition-colors motion-reduce:transition-none px-3 py-2 uppercase tracking-wider rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
     "aria-hidden": "true"
-  }), " ", t('adventure.start_overwrite'))) : /*#__PURE__*/React.createElement("div", {
+  }), " ", t('adventure.start_overwrite') || 'Start new adventure')) : /*#__PURE__*/React.createElement("div", {
     style: adventureVisualTokens(theme),
     className: "w-full max-w-5xl bg-[var(--av-surface)] text-[var(--av-ink)] rounded-2xl shadow-[var(--av-shadow)] border-2 border-[var(--av-line)] overflow-hidden relative my-auto"
   }, hasSavedAdventure && /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('adventure.back_to_resume'),
+    "aria-label": t('adventure.back_to_resume') || 'Back to saved adventure',
     onClick: handleSetShowNewGameSetupToFalse,
-    className: "absolute top-2 left-2 sm:top-4 sm:left-4 min-w-11 min-h-11 text-white hover:bg-white/20 p-2 rounded-full transition-colors z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-600",
-    title: t('adventure.back_to_resume')
+    className: "absolute top-2 left-2 sm:top-4 sm:left-4 min-w-11 min-h-11 text-white hover:bg-white/20 p-2 rounded-full transition-colors motion-reduce:transition-none z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-600",
+    title: t('adventure.back_to_resume') || 'Back to saved adventure'
   }, /*#__PURE__*/React.createElement(ArrowDown, {
     className: "rotate-90",
     size: 20,
@@ -3746,12 +3782,13 @@ function AdventureView(props) {
     role: "progressbar",
     "aria-label": adventureInputMode === 'system' ? t('adventure.tooltips.stability', {
       value: energyValue
-    }) : t('adventure.tooltips.energy', {
+    }) || `Stability: ${energyValue}%` : t('adventure.tooltips.energy', {
       value: energyValue
-    }),
+    }) || `Energy: ${energyValue}%`,
     "aria-valuemin": 0,
     "aria-valuemax": 100,
-    "aria-valuenow": energyValue
+    "aria-valuenow": energyValue,
+    "aria-valuetext": `${adventureInputMode === 'system' ? 'Stability' : 'Energy'}: ${energyValue} of 100 (${energyValue < 20 ? 'Low' : energyValue < 50 ? 'Moderate' : 'Strong'})`
   }, /*#__PURE__*/React.createElement("div", {
     "aria-hidden": "true",
     className: `h-full transition-all duration-500 motion-reduce:transition-none ${adventureInputMode === 'system' ? 'bg-gradient-to-r from-amber-400 to-amber-600' : 'bg-gradient-to-r from-yellow-400 to-orange-500'}`,
@@ -3818,7 +3855,7 @@ function AdventureView(props) {
       setAdventureAutoRead(newState);
       if (!newState) stopPlayback();
     },
-    className: `min-w-11 min-h-11 backdrop-blur-md border p-2 rounded-full transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${adventureAutoRead ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50' : 'bg-black/50 text-white/70 border-white/20 hover:bg-white/20 hover:text-white'}`,
+    className: `min-w-11 min-h-11 backdrop-blur-md border p-2 rounded-full transition-all motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${adventureAutoRead ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50' : 'bg-black/50 text-white/70 border-white/20 hover:bg-white/20 hover:text-white'}`,
     title: adventureAutoRead ? t('adventure.auto_read_off_tooltip') : t('adventure.auto_read_on_tooltip')
   }, adventureAutoRead ? /*#__PURE__*/React.createElement(Volume2, {
     size: 16,
@@ -3836,7 +3873,7 @@ function AdventureView(props) {
       stopPlayback();
       setAdventureFluencyOpen(true);
     },
-    className: "min-w-11 min-h-11 bg-rose-800/90 backdrop-blur-md text-white border border-rose-400 p-2 rounded-full hover:bg-rose-700 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+    className: "min-w-11 min-h-11 bg-rose-800/90 backdrop-blur-md text-white border border-rose-400 p-2 rounded-full hover:bg-rose-700 transition-all motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
     title: t('adventure.fluency_title') || 'Practice reading this scene'
   }, /*#__PURE__*/React.createElement(Mic, {
     size: 16,
@@ -3847,7 +3884,7 @@ function AdventureView(props) {
     "aria-pressed": immersiveHideUI,
     "data-help-key": "adventure_immersive_toggle_ui",
     onClick: handleToggleImmersiveHideUI,
-    className: `min-w-11 min-h-11 backdrop-blur-md border p-2 rounded-full transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${immersiveHideUI ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50' : 'bg-black/50 text-white/70 border-white/20 hover:bg-white/20 hover:text-white'}`,
+    className: `min-w-11 min-h-11 backdrop-blur-md border p-2 rounded-full transition-all motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${immersiveHideUI ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50' : 'bg-black/50 text-white/70 border-white/20 hover:bg-white/20 hover:text-white'}`,
     title: immersiveHideUI ? t('adventure.show_ui') : t('adventure.hide_ui')
   }, immersiveHideUI ? /*#__PURE__*/React.createElement(EyeOff, {
     size: 16,
@@ -3857,11 +3894,11 @@ function AdventureView(props) {
     "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    "aria-label": t('adventure.tooltips.exit_immersive'),
+    "aria-label": t('adventure.tooltips.exit_immersive') || 'Exit immersive mode',
     "data-help-key": "adventure_immersive_exit",
     onClick: handleExitAdventureImmersive,
-    className: "min-w-11 min-h-11 bg-black/50 backdrop-blur-md text-white border border-white/40 p-2 rounded-full hover:bg-white/20 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
-    title: t('adventure.tooltips.exit_immersive')
+    className: "min-w-11 min-h-11 bg-black/50 backdrop-blur-md text-white border border-white/40 p-2 rounded-full hover:bg-white/20 transition-all motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+    title: t('adventure.tooltips.exit_immersive') || 'Exit immersive mode'
   }, /*#__PURE__*/React.createElement(Minimize, {
     size: 16,
     "aria-hidden": "true"
@@ -3889,7 +3926,7 @@ function AdventureView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     ref: immersiveInventoryButtonRef,
-    "aria-label": t('adventure.inventory'),
+    "aria-label": t('adventure.inventory') || 'Inventory',
     "aria-expanded": showImmersiveInventory,
     "aria-controls": "adventure-immersive-inventory",
     "data-help-key": "adventure_immersive_inventory",
@@ -3897,7 +3934,7 @@ function AdventureView(props) {
       e.stopPropagation();
       setShowImmersiveInventory(!showImmersiveInventory);
     },
-    className: `min-w-11 min-h-11 backdrop-blur-md border p-2 rounded-full transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${showImmersiveInventory ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50' : 'bg-black/50 text-white border-white/20 hover:bg-white/20'}`,
+    className: `min-w-11 min-h-11 backdrop-blur-md border p-2 rounded-full transition-all motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${showImmersiveInventory ? 'bg-indigo-600 text-white border-indigo-400 ring-2 ring-indigo-400/50' : 'bg-black/50 text-white border-white/20 hover:bg-white/20'}`,
     title: t('adventure.inventory')
   }, /*#__PURE__*/React.createElement(Backpack, {
     size: 16,
@@ -3979,10 +4016,11 @@ function AdventureView(props) {
     "aria-hidden": "true"
   }), immersiveShowChoices ? t('adventure.return_to_story') : adventureState.isGameOver ? adventureSettingsText(t, 'recap_title', 'Episode recap') : t('adventure.make_a_choice'))), immersiveShowChoices ? /*#__PURE__*/React.createElement("div", {
     "data-adventure-actions": "immersive",
+    tabIndex: 0,
     role: "region",
     "aria-label": adventureSettingsText(t, 'available_actions', 'Available actions'),
     style: adventureVisualTokens(theme, true),
-    className: "min-h-0 max-h-[55vh] overflow-y-auto overscroll-contain p-1 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300"
+    className: "min-h-0 max-h-[55vh] overflow-y-auto overscroll-contain p-1 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300"
   }, adventureState.currentScene && /*#__PURE__*/React.createElement(AdventureDecisionProgress, {
     state: adventureState,
     t: t,
@@ -4067,10 +4105,11 @@ function AdventureView(props) {
     });
   })()))) : /*#__PURE__*/React.createElement("div", {
     "data-adventure-reader": true,
+    tabIndex: 0,
     role: "region",
     "aria-label": adventureSettingsText(t, 'story_and_feedback', 'Story and feedback'),
     style: adventureVisualTokens(theme, true),
-    className: "min-h-0 max-h-[55vh] overflow-y-auto overscroll-contain p-1 space-y-4 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300"
+    className: "min-h-0 max-h-[55vh] overflow-y-auto overscroll-contain p-1 space-y-4 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300"
   }, failedAdventureAction ? /*#__PURE__*/React.createElement(AdventureTurnRecovery, {
     t: t,
     theme: theme,
@@ -4320,11 +4359,11 @@ function AdventureView(props) {
     type: "button",
     "aria-label": t('adventure.start_sequel'),
     onClick: handleStartSequel,
-    className: "min-h-11 bg-gradient-to-r from-indigo-700 to-purple-700 text-white px-8 py-4 rounded-xl font-black text-lg shadow-xl hover:scale-105 hover:shadow-2xl transition-all motion-reduce:transform-none flex items-center gap-3 border-2 border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+    className: "min-h-11 bg-gradient-to-r from-indigo-700 to-purple-700 text-white px-8 py-4 rounded-xl font-black text-lg shadow-xl hover:scale-105 hover:shadow-2xl transition-all motion-reduce:transition-none motion-reduce:transform-none flex items-center gap-3 border-2 border-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 20,
     "aria-hidden": "true"
-  }), t('adventure.start_sequel')))) : /*#__PURE__*/React.createElement("div", {
+  }), t('adventure.start_sequel') || 'Start next chapter'))) : /*#__PURE__*/React.createElement("div", {
     className: "text-center text-xs text-[var(--av-muted)]"
   }, adventureState.isGameOver ? adventureSettingsText(t, 'ending_guidance', 'Review your journey above and choose what to do next.') : adventureState.isLoading ? t('adventure.status.waiting') : null)))), /*#__PURE__*/React.createElement(AdventureFluencyPractice, {
     open: adventureFluencyOpen,
@@ -4358,7 +4397,7 @@ function AdventureView(props) {
     type: "button",
     onClick: handleSetSelectedInventoryItemToNull,
     className: "absolute top-2 right-2 sm:top-3 sm:right-3 min-w-11 min-h-11 text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-full p-2 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2",
-    "aria-label": t('common.close')
+    "aria-label": t('common.close') || 'Close'
   }, /*#__PURE__*/React.createElement(X, {
     size: 20,
     "aria-hidden": "true"
@@ -4387,7 +4426,7 @@ function AdventureView(props) {
   }, t(`adventure.effects.${selectedInventoryItem.effectType}_label`) || t(`adventure.effects.${selectedInventoryItem.effectType}`) || selectedInventoryItem.effectType || "Consumable"), /*#__PURE__*/React.createElement("p", {
     id: "adventure-inventory-item-description",
     className: "text-sm text-slate-700 mb-6 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-300 w-full"
-  }, selectedInventoryItem.description || t('adventure.inventory_fallback_desc')), /*#__PURE__*/React.createElement("div", {
+  }, selectedInventoryItem.description || t('adventure.inventory_fallback_desc') || 'A useful item collected during your adventure.'), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-3 w-full"
   }, selectedInventoryItem.effectType === 'key_item' ? /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -4396,14 +4435,14 @@ function AdventureView(props) {
   }, /*#__PURE__*/React.createElement(Lock, {
     size: 16,
     "aria-hidden": "true"
-  }), " ", t('adventure.key_item_btn')) : /*#__PURE__*/React.createElement("button", {
+  }), " ", t('adventure.key_item_btn') || 'Key Item') : /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleUseItem,
     className: "min-h-11 flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-200 transition-all motion-reduce:transition-none active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 16,
     "aria-hidden": "true"
-  }), " ", t('adventure.use_item'))))))));
+  }), " ", t('adventure.use_item') || 'Use Item')))))));
 }
 
 // Offline Adventure (2026-11-04): a teacher-reviewed branching story students
@@ -4987,7 +5026,7 @@ function offlineIssueText(t, issue, sceneNumber) {
   }[issue.code] || issue.code;
   return where + offlineText(t, 'issue_' + issue.code, fallback);
 }
-var OFFLINE_BUTTON = 'min-h-11 inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] disabled:opacity-50 disabled:cursor-not-allowed';
+var OFFLINE_BUTTON = 'min-h-11 inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] disabled:opacity-50 disabled:cursor-not-allowed';
 var OFFLINE_SECONDARY = OFFLINE_BUTTON + ' border-[var(--av-control)] bg-[var(--av-surface)] text-[var(--av-ink)] hover:bg-[var(--av-wash)]';
 var OFFLINE_PRIMARY = OFFLINE_BUTTON + ' border-[var(--av-accent)] bg-[var(--av-accent)] text-[var(--av-surface)] hover:underline';
 var OFFLINE_FIELD = 'w-full min-h-11 rounded-lg border border-[var(--av-control)] bg-[var(--av-surface)] px-3 py-2 text-sm text-[var(--av-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)]';
@@ -5012,17 +5051,31 @@ function AdventureOfflineReflection(props) {
   return /*#__PURE__*/React.createElement("div", {
     "data-offline-reflection": true,
     className: "mt-5 grid gap-2 rounded-2xl border border-[var(--av-line)] bg-[var(--av-wash)] p-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-baseline justify-between gap-2"
   }, /*#__PURE__*/React.createElement("label", {
     htmlFor: fieldId,
     className: "text-sm font-bold"
-  }, offlineText(t, 'reflect_prompt', 'Think about this ending. What did you learn, and what would you choose differently?')), /*#__PURE__*/React.createElement("textarea", {
+  }, offlineText(t, 'reflect_prompt', 'Think about this ending. What did you learn, and what would you choose differently?')), /*#__PURE__*/React.createElement("span", {
+    id: fieldId + '-count',
+    "data-offline-reflection-count": "true",
+    className: "text-xs font-semibold tabular-nums text-[var(--av-muted)]"
+  }, text.length, " / ", OFFLINE_REFLECT_MAX)), /*#__PURE__*/React.createElement("textarea", {
     id: fieldId,
     rows: 3,
     maxLength: OFFLINE_REFLECT_MAX,
     value: text,
+    "aria-describedby": fieldId + '-count',
     onChange: function (e) {
       setText(e.target.value);
       setSaved(false);
+    },
+    onKeyDown: function (e) {
+      if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && text.trim() && !saved) {
+        e.preventDefault();
+        save();
+      }
     },
     className: OFFLINE_FIELD
   }), /*#__PURE__*/React.createElement("div", {
@@ -5039,6 +5092,7 @@ function AdventureOfflineReflection(props) {
   }), " ", offlineText(t, 'student_save', 'Save to my work')), /*#__PURE__*/React.createElement("p", {
     role: "status",
     "aria-live": "polite",
+    "aria-atomic": "true",
     className: "m-0 text-sm font-semibold"
   }, saved ? offlineText(t, 'reflect_saved', 'Saved to your work.') : '')));
 }
@@ -5048,6 +5102,9 @@ function AdventureOfflinePlayer(props) {
   var story = props.story;
   var t = props.t;
   var [path, setPath] = React.useState([story.start]);
+  var [exploredIds, setExploredIds] = React.useState(function () {
+    return story && story.start ? [story.start] : [];
+  });
   var headingRef = React.useRef(null);
   var firstRender = React.useRef(true);
   var mountedStoryRef = React.useRef(story);
@@ -5059,6 +5116,7 @@ function AdventureOfflinePlayer(props) {
     if (mountedStoryRef.current === story) return;
     mountedStoryRef.current = story;
     setPath([story.start]);
+    setExploredIds(story && story.start ? [story.start] : []);
   }, [story]);
   React.useEffect(function () {
     if (firstRender.current) {
@@ -5073,21 +5131,70 @@ function AdventureOfflinePlayer(props) {
   }, [path.length, scene && scene.id]);
   if (!scene) return null;
   var go = function (to) {
-    if (byId[to]) setPath(function (prev) {
+    if (!byId[to]) return;
+    setPath(function (prev) {
       return prev.concat([to]);
+    });
+    setExploredIds(function (prev) {
+      return prev.indexOf(to) === -1 ? prev.concat([to]) : prev;
     });
   };
   var stepLabel = offlineText(t, 'step_n', 'Step {n}', {
     n: path.length
   });
+  var totalScenes = Math.max(1, story.scenes && story.scenes.length || 1);
+  var visitedCount = Math.min(totalScenes, Math.max(1, exploredIds.length));
+  var visitedPct = Math.round(visitedCount / totalScenes * 100);
+  var onPlayerKeyDown = function (e) {
+    if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
+    if (e.altKey || e.ctrlKey || e.metaKey || scene.ending) return;
+    var tag = e.target && e.target.tagName ? e.target.tagName.toUpperCase() : '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target && e.target.isContentEditable) return;
+    var num = parseInt(e.key, 10);
+    if (num >= 1 && num <= scene.choices.length) {
+      e.preventDefault();
+      go(scene.choices[num - 1].to);
+    }
+  };
   return /*#__PURE__*/React.createElement("section", {
     "data-adventure-offline-player": true,
     "aria-label": story.title || offlineText(t, 'title', 'Offline adventure'),
+    onKeyDown: onPlayerKeyDown,
     style: adventureVisualTokens(props.theme),
     className: "w-full max-w-3xl mx-auto my-auto rounded-3xl border border-[var(--av-line)] bg-[var(--av-surface)] p-4 sm:p-6 text-[var(--av-ink)] shadow-[var(--av-shadow)]"
-  }, story.title && /*#__PURE__*/React.createElement("p", {
-    className: "m-0 mb-1 text-xs font-bold uppercase tracking-wide text-[var(--av-muted)]"
-  }, story.title), /*#__PURE__*/React.createElement("h3", {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-2 flex flex-wrap items-center justify-between gap-2"
+  }, story.title ? /*#__PURE__*/React.createElement("p", {
+    className: "m-0 text-xs font-bold uppercase tracking-wide text-[var(--av-muted)]"
+  }, story.title) : /*#__PURE__*/React.createElement("span", null), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-bold tabular-nums text-[var(--av-muted)]"
+  }, offlineText(t, 'explored_n_of_m', '{visited} of {total} scenes explored', {
+    visited: visitedCount,
+    total: totalScenes
+  }))), /*#__PURE__*/React.createElement("div", {
+    "data-offline-journey-progress": "true",
+    role: "progressbar",
+    "aria-label": offlineText(t, 'progress_aria', 'Story exploration progress'),
+    "aria-valuemin": 1,
+    "aria-valuemax": totalScenes,
+    "aria-valuenow": visitedCount,
+    "aria-valuetext": offlineText(t, 'progress_valuetext', '{step}: {visited} of {total} scenes explored', {
+      step: scene.ending ? offlineText(t, 'the_end', 'The end') : stepLabel,
+      visited: visitedCount,
+      total: totalScenes
+    }),
+    className: "mb-3 h-1.5 w-full overflow-hidden rounded-full bg-[var(--av-line)]"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-full rounded-full bg-[var(--av-accent)] transition-all duration-300 motion-reduce:transition-none",
+    style: {
+      width: visitedPct + '%'
+    }
+  })), /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "sr-only"
+  }, scene.ending ? offlineText(t, 'the_end', 'The end') : stepLabel), /*#__PURE__*/React.createElement("h3", {
     ref: headingRef,
     tabIndex: -1,
     "data-offline-scene": scene.id,
@@ -5112,7 +5219,10 @@ function AdventureOfflinePlayer(props) {
         go(choice.to);
       },
       className: OFFLINE_SECONDARY + ' w-full justify-start text-left text-base border-2 rounded-2xl px-4 py-3'
-    }, choice.label);
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true",
+      className: "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[var(--av-control)] text-xs font-black"
+    }, index + 1), /*#__PURE__*/React.createElement("span", null, choice.label));
   })), scene.ending && typeof props.onReflect === 'function' && /*#__PURE__*/React.createElement(AdventureOfflineReflection, {
     key: scene.id,
     sceneId: scene.id,
@@ -5255,7 +5365,9 @@ function AdventureOfflineEditor(props) {
     className: "rounded-xl border border-[var(--av-line)] px-3 py-2"
   }, /*#__PURE__*/React.createElement("summary", {
     className: "min-h-11 cursor-pointer py-2 text-sm font-bold rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)]"
-  }, offlineText(t, 'outline', 'Story map')), /*#__PURE__*/React.createElement("ol", {
+  }, offlineText(t, 'outline', 'Story map'), " ", /*#__PURE__*/React.createElement("span", {
+    className: "ml-1 text-xs font-semibold tabular-nums text-[var(--av-muted)]"
+  }, "(", story.scenes.length, " / ", OFFLINE_LIMITS.maxScenes, ")")), /*#__PURE__*/React.createElement("ol", {
     className: "m-0 grid gap-1 pl-0 list-none text-sm"
   }, outline.map(function (row) {
     return /*#__PURE__*/React.createElement("li", {
@@ -5265,7 +5377,19 @@ function AdventureOfflineEditor(props) {
       }
     }, /*#__PURE__*/React.createElement("span", {
       className: "font-bold"
-    }, numberOf(row.id)), row.id === story.start ? ' ▶' : '', row.ending ? ' ■ ' + offlineText(t, 'ending', 'Ending') : ' → ' + row.to.map(numberOf).join(', '), row.depth == null ? ' ⚠' : '');
+    }, numberOf(row.id)), row.id === story.start ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, " ▶"), /*#__PURE__*/React.createElement("span", {
+      className: "sr-only"
+    }, " (Start)")) : '', row.ending ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, " ■ "), offlineText(t, 'ending', 'Ending')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, " → "), row.to.map(numberOf).join(', ')), row.depth == null ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, " ⚠"), /*#__PURE__*/React.createElement("span", {
+      className: "sr-only"
+    }, " (Unreachable)")) : '');
   }))), /*#__PURE__*/React.createElement("ol", {
     className: "m-0 grid gap-3 pl-0 list-none"
   }, story.scenes.map(function (scene, index) {
@@ -5280,9 +5404,18 @@ function AdventureOfflineEditor(props) {
       className: "m-0 grid gap-2 border-0 p-0 min-w-0"
     }, /*#__PURE__*/React.createElement("legend", {
       className: "text-sm font-black"
-    }, label, scene.id === story.start ? ' ▶' : ''), /*#__PURE__*/React.createElement("label", {
+    }, label, scene.id === story.start ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, " ▶"), /*#__PURE__*/React.createElement("span", {
+      className: "sr-only"
+    }, " (Start)")) : ''), /*#__PURE__*/React.createElement("label", {
       className: "grid gap-1 text-xs font-bold"
-    }, offlineText(t, 'scene_text', 'Scene text'), /*#__PURE__*/React.createElement("textarea", {
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "flex items-center justify-between gap-2"
+    }, /*#__PURE__*/React.createElement("span", null, offlineText(t, 'scene_text', 'Scene text')), /*#__PURE__*/React.createElement("span", {
+      "data-offline-scene-char-count": "true",
+      className: "font-semibold tabular-nums text-[var(--av-muted)]"
+    }, (scene.text || '').length, " / ", OFFLINE_LIMITS.maxText)), /*#__PURE__*/React.createElement("textarea", {
       value: scene.text,
       rows: 3,
       maxLength: OFFLINE_LIMITS.maxText,
@@ -5815,6 +5948,16 @@ function AdventureOfflinePanel(props) {
     setNotice('');
   };
   var titleId = studentMode ? 'adventure-student-story-dialog-title' : 'adventure-offline-dialog-title';
+  var rawClose = '';
+  try {
+    rawClose = typeof t === 'function' ? t('common.close') : '';
+  } catch (_) {
+    rawClose = '';
+  }
+  var closeLabel = rawClose && rawClose !== 'common.close' ? rawClose : offlineText(t, 'close', 'Close');
+  var checkedSelfCount = STUDENT_STORY_CHECKS.filter(function (row) {
+    return selfCheck[row[0]] === true;
+  }).length;
   return /*#__PURE__*/React.createElement("div", {
     role: "presentation",
     style: {
@@ -5851,7 +5994,8 @@ function AdventureOfflinePanel(props) {
   }, studentMode ? offlineText(t, 'student_intro', 'Write a scene, then add choices. Each choice leads to a new scene. Finish with at least one ending.') : offlineText(t, 'intro', 'A fixed branching story students can play without AI. Review it before students get it.'))), /*#__PURE__*/React.createElement("button", {
     ref: closeRef,
     type: "button",
-    "aria-label": t('common.close'),
+    "aria-label": closeLabel,
+    title: closeLabel,
     onClick: close,
     className: OFFLINE_SECONDARY + ' min-w-11 shrink-0'
   }, /*#__PURE__*/React.createElement(X, {
@@ -5936,7 +6080,12 @@ function AdventureOfflinePanel(props) {
     className: "m-0 mt-4 grid gap-1 rounded-xl border border-[var(--av-line)] px-3 py-2"
   }, /*#__PURE__*/React.createElement("legend", {
     className: "px-1 text-sm font-black"
-  }, offlineText(t, 'student_check_title', 'Check your story')), STUDENT_STORY_CHECKS.map(function (row) {
+  }, offlineText(t, 'student_check_title', 'Check your story'), " ", /*#__PURE__*/React.createElement("span", {
+    "data-student-story-check-progress": "true",
+    role: "status",
+    "aria-live": "polite",
+    className: "ml-1 text-xs font-semibold tabular-nums text-[var(--av-muted)]"
+  }, "(", checkedSelfCount, " / ", STUDENT_STORY_CHECKS.length, ")")), STUDENT_STORY_CHECKS.map(function (row) {
     return /*#__PURE__*/React.createElement("label", {
       key: row[0],
       className: "flex min-h-11 items-center gap-2 text-sm font-bold"

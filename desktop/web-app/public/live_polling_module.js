@@ -472,13 +472,20 @@
     });
   };
   const _lpSanitizeUntrusted = (value, maxLen) => String(value == null ? '' : value)
-    .replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, '')
+    .replace(/<\s*\/?\s*UNTRUSTED_[A-Z0-9_]*[^>]*>/gi, '')
     .slice(0, maxLen || 2000);
   const _lpFenceUntrusted = (tag, value, maxLen) => '<UNTRUSTED_' + tag + '>\n' + _lpSanitizeUntrusted(value, maxLen) + '\n</UNTRUSTED_' + tag + '>';
   const _lpAiUsable = (kind, fn) => {
     if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
     if (typeof window !== 'undefined') {
-      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) return false;
+      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true) return false;
+      try {
+        const pol = window.ALLOFLOW_MANAGED_AI_POLICY;
+        if (pol && typeof pol === 'object' && (pol.enabled === false || pol.allowAI === false || pol.disabled === true || pol.aiEnabled === false || pol.textAllowed === false || pol.mode === 'disabled' || pol.mode === 'off')) return false;
+        const sp = window.StudentPolicy || (window.AlloModules && window.AlloModules.StudentPolicy);
+        if (sp && typeof sp.isAiDisabled === 'function' && sp.isAiDisabled()) return false;
+        if (sp && typeof sp.aiAllowed === 'function' && !sp.aiAllowed()) return false;
+      } catch (_) { return false; }
       if (typeof window.__alloAiUsable === 'function') {
         try { return !!window.__alloAiUsable(kind || 'text', fn); } catch (_) { return false; }
       }
@@ -3402,14 +3409,24 @@
       trapStack.push(trap);
       var selector = 'a[href],area[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
       var getFocusable = function () {
-        return Array.prototype.slice.call(dialog.querySelectorAll(selector));
+        return Array.prototype.slice.call(dialog.querySelectorAll(selector)).filter(function (el) {
+          if (!el || (el.closest && el.closest('[hidden], [aria-hidden="true"], [inert]'))) return false;
+          try {
+            if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+              var cs = window.getComputedStyle(el);
+              if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+            }
+          } catch (_) {}
+          return true;
+        });
       };
       var initial = initialFocusRef && initialFocusRef.current;
       var firstFocusable = initial || getFocusable()[0] || dialog;
       if (firstFocusable && typeof firstFocusable.focus === 'function') firstFocusable.focus();
       var onKeyDown = function (event) {
+        if (event.isComposing || event.keyCode === 229) return;
         if (trapStack[trapStack.length - 1] !== trap) return;
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && !event.ctrlKey && !event.metaKey && !event.altKey) {
           if (typeof escapeRef.current === 'function') {
             event.preventDefault();
             event.stopPropagation();
@@ -3834,10 +3851,18 @@
     const panelSessionRef = R.useRef(sessionCode);
     const commandCenterPersistenceSessionRef = R.useRef(sessionCode);
     const activitySnapshots = mergeLiveActivitySnapshots(recoveredActivitySnapshots, providedActivitySnapshots);
+    const lpMountedRef = R.useRef(true);
+    R.useEffect(function () {
+      lpMountedRef.current = true;
+      return function () { lpMountedRef.current = false; };
+    }, []);
     R.useEffect(function () {
       if (!isOpen || typeof setInterval !== 'function') return undefined;
       setHealthNow(Date.now());
-      const timer = setInterval(function () { setHealthNow(Date.now()); }, 15000);
+      const timer = setInterval(function () {
+        if (typeof document !== 'undefined' && document.hidden) return;
+        setHealthNow(Date.now());
+      }, 15000);
       return function () { clearInterval(timer); };
     }, [isOpen, sessionCode]);
     R.useEffect(function () {
@@ -4921,23 +4946,26 @@
       setWordCloudClusterBusy(true); setWordCloudClusterNotice(''); setWordCloudClusterSuggestions([]);
       try {
         const generated = await generator(prompt, false);
+        if (!lpMountedRef.current) return;
         const suggestions = parseWordCloudClusterSuggestions(generated, approvedItems);
         setWordCloudClusterSuggestions(suggestions);
         setWordCloudClusterNotice(suggestions.length ? tr('Review each suggested group before applying it.') : tr('No confident term groups were suggested.'));
       } catch (err) {
+        if (!lpMountedRef.current) return;
         setWordCloudClusterNotice(tr('Term grouping suggestions were unavailable. You can still rename and merge terms manually.'));
-      } finally { setWordCloudClusterBusy(false); }
+      } finally { if (lpMountedRef.current) setWordCloudClusterBusy(false); }
     };
     const applyWordCloudCluster = function (suggestion) {
-      if (!activePoll || activePoll.type !== 'wordcloud') return;
+      if (!activePoll || activePoll.type !== 'wordcloud' || isUnsafePropKey(activePoll.id)) return;
       const patch = buildWordCloudAliasPatch(wordCloudTermsForActive, suggestion);
       if (Object.keys(patch).length < 2) return;
       setWordCloudAliasesByPoll(function (prev) {
-        const next = Object.assign({}, prev);
+        const safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+        const next = Object.assign({}, safePrev);
         next[activePoll.id] = Object.assign({}, next[activePoll.id] || {}, patch);
         return next;
       });
-      setWordCloudClusterSuggestions(function (prev) { return prev.filter(function (item) { return item.id !== suggestion.id; }); });
+      setWordCloudClusterSuggestions(function (prev) { return (Array.isArray(prev) ? prev : []).filter(function (item) { return item && item.id !== suggestion.id; }); });
       setWordCloudClusterNotice(tr('Term group applied. Review the merged label before revealing.'));
       setLastSharedResultsAt(null);
     };
@@ -4950,15 +4978,18 @@
       ? (peerVotesByRound[peerShowcaseRound.roundId] || {})
       : {};
     const setFreeTextResponseStatus = function (uid, status) {
-      if (!activePoll || activePoll.type !== 'freetext' || activeFeedbackConfig.enabled || !uid) return;
+      if (!activePoll || activePoll.type !== 'freetext' || activeFeedbackConfig.enabled || !uid || isUnsafePropKey(uid) || isUnsafePropKey(activePoll.id)) return;
       const normalizedStatus = normalizePeerModerationStatus(status);
       if (normalizedStatus === 'approved') {
         const currentStatus = normalizePeerModerationStatus(activeFreeTextModeration[uid]);
         if (currentStatus !== 'approved' && approvedPeerShowcaseRows.length >= PEER_SHOWCASE_MAX_CANDIDATES) return;
       }
       setFreeTextModerationByPoll(function (prev) {
-        const next = Object.assign({}, prev);
-        next[activePoll.id] = Object.assign({}, next[activePoll.id] || {}, { [uid]: normalizedStatus });
+        const safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+        const next = Object.assign({}, safePrev);
+        const pollMap = Object.assign(Object.create(null), next[activePoll.id] || {});
+        pollMap[uid] = normalizedStatus;
+        next[activePoll.id] = pollMap;
         return next;
       });
     };
@@ -5000,10 +5031,11 @@
     };
 
     const updateFeedbackRecordForPoll = function (pollId, uid, patch) {
-      if (!pollId || !uid) return;
+      if (!pollId || !uid || isUnsafePropKey(pollId) || isUnsafePropKey(uid)) return;
       setFeedbackByPoll(function (prev) {
-        const next = Object.assign({}, prev);
-        const forPoll = Object.assign({}, next[pollId] || {});
+        const safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+        const next = Object.assign({}, safePrev);
+        const forPoll = Object.assign(Object.create(null), next[pollId] || {});
         forPoll[uid] = Object.assign({}, forPoll[uid] || {}, patch);
         next[pollId] = forPoll;
         return next;
@@ -5014,10 +5046,13 @@
       updateFeedbackRecordForPoll(activePoll.id, uid, patch);
     };
     const setFeedbackBusy = function (uid, busy) {
-      if (!activePoll || !uid) return;
+      if (!activePoll || !uid || isUnsafePropKey(uid) || isUnsafePropKey(activePoll.id)) return;
       setFeedbackBusyByPoll(function (prev) {
-        const next = Object.assign({}, prev);
-        next[activePoll.id] = Object.assign({}, next[activePoll.id] || {}, { [uid]: !!busy });
+        const safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+        const next = Object.assign({}, safePrev);
+        const pollMap = Object.assign(Object.create(null), next[activePoll.id] || {});
+        pollMap[uid] = !!busy;
+        next[activePoll.id] = pollMap;
         return next;
       });
     };
@@ -5041,16 +5076,18 @@
           attempt: entry.attempt || 1,
         });
         const generated = await generator(prompt, false);
+        if (!lpMountedRef.current) return false;
         const draft = normalizeBoundedText(generated, FEEDBACK_TEXT_MAX_LENGTH);
         if (!draft) throw new Error('Empty feedback');
         updateFeedbackRecordForPoll(feedbackPollId, uid, { draft: draft, status: 'draft', generatedAt: Date.now(), attempt: entry.attempt || 1 });
         return true;
       } catch (err) {
+        if (!lpMountedRef.current) return false;
         console.warn('[LivePolling HostPanel] feedback generation failed:', err && err.message);
         updateFeedbackRecordForPoll(feedbackPollId, uid, { draft: '', status: 'error' });
         return false;
       } finally {
-        setFeedbackBusy(uid, false);
+        if (lpMountedRef.current) setFeedbackBusy(uid, false);
       }
     };
     const generateAllFeedback = async function () {
@@ -5895,8 +5932,8 @@
                       type: 'text',
                       value: Object.prototype.hasOwnProperty.call(wordCloudRenameDrafts, item.value) ? wordCloudRenameDrafts[item.value] : item.label,
                       maxLength: WORD_CLOUD_MAX_LENGTH,
-                      onChange: function (event) { const value = event.target.value; setWordCloudRenameDrafts(function (prev) { return Object.assign({}, prev, { [item.value]: value }); }); },
-                      onKeyDown: function (event) { if (event.key === 'Enter') { event.preventDefault(); renameWordCloudTerm(item.value); } },
+                      onChange: function (event) { const value = event.target.value; if (isUnsafePropKey(item.value)) return; setWordCloudRenameDrafts(function (prev) { const next = Object.assign(Object.create(null), (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {}); next[item.value] = value; return next; }); },
+                      onKeyDown: function (event) { if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return; if (event.key === 'Enter') { event.preventDefault(); renameWordCloudTerm(item.value); } },
                       'aria-label': tr('Rename or group') + ' ' + item.label,
                       style: { width: '100%', minWidth: 0, padding: '0.3rem 0.4rem', border: '1px solid #cbd5e1', borderRadius: 5, fontSize: '0.75rem' }
                     }),

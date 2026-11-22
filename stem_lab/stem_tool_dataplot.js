@@ -34,6 +34,38 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // Scoped GPU-composited live-motion polish for Data Plotter SVG visualizers
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-dataplot-motion-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-dataplot-motion-css';
+    st.textContent = [
+      '@keyframes dp-trend-glow{0%,100%{opacity:.55}50%{opacity:1}}',
+      '@keyframes dp-trend-dash{0%{stroke-dashoffset:0}100%{stroke-dashoffset:-22}}',
+      '@keyframes dp-area-shimmer{0%,100%{opacity:.76}50%{opacity:1}}',
+      '@keyframes dp-beacon-pulse{0%,100%{transform:scale(.93);opacity:.78}50%{transform:scale(1.14);opacity:1}}',
+      '@keyframes dp-outlier-pulse{0%,100%{transform:scale(.97);opacity:.88}50%{transform:scale(1.08);opacity:1}}',
+      '@keyframes dp-mean-beacon{0%,100%{opacity:.42}50%{opacity:.95}}',
+      '@keyframes dp-bar-glint{0%,100%{opacity:.22}50%{opacity:.68}}',
+      '@keyframes dp-cross-dash{0%{stroke-dashoffset:0}100%{stroke-dashoffset:-14}}',
+      '@keyframes dp-resid-dash{0%{stroke-dashoffset:0}100%{stroke-dashoffset:-12}}',
+      '[data-stem-tool-shell="dataPlot"] .dp-trend-glow{animation:dp-trend-glow 3.4s ease-in-out infinite}',
+      '[data-stem-tool-shell="dataPlot"] .dp-trend-dash{animation:dp-trend-dash 3.8s linear infinite}',
+      '[data-stem-tool-shell="dataPlot"] .dp-area-shimmer{animation:dp-area-shimmer 4.4s ease-in-out infinite}',
+      '[data-stem-tool-shell="dataPlot"] .dp-active-beacon{transform-box:fill-box;transform-origin:center;animation:dp-beacon-pulse 2.2s ease-in-out infinite}',
+      '[data-stem-tool-shell="dataPlot"] .dp-outlier-beacon{transform-box:fill-box;transform-origin:center;animation:dp-outlier-pulse 2.6s ease-in-out infinite}',
+      '[data-stem-tool-shell="dataPlot"] .dp-mean-beacon{animation:dp-mean-beacon 3.1s ease-in-out infinite}',
+      '[data-stem-tool-shell="dataPlot"] .dp-bar-glint{animation:dp-bar-glint 3.6s ease-in-out infinite}',
+      '[data-stem-tool-shell="dataPlot"] .dp-cross-dash{animation:dp-cross-dash 1.8s linear infinite}',
+      '[data-stem-tool-shell="dataPlot"] .dp-resid-dash{animation:dp-resid-dash 2.6s linear infinite}',
+      '[data-stem-tool-shell="dataPlot"] .dp-hover-cross{transition:opacity .12s ease-out}',
+      '.theme-contrast [data-stem-tool-shell="dataPlot"] .dp-trend-glow,.theme-contrast [data-stem-tool-shell="dataPlot"] .dp-trend-dash,.theme-contrast [data-stem-tool-shell="dataPlot"] .dp-area-shimmer,.theme-contrast [data-stem-tool-shell="dataPlot"] .dp-active-beacon,.theme-contrast [data-stem-tool-shell="dataPlot"] .dp-outlier-beacon,.theme-contrast [data-stem-tool-shell="dataPlot"] .dp-mean-beacon,.theme-contrast [data-stem-tool-shell="dataPlot"] .dp-bar-glint,.theme-contrast [data-stem-tool-shell="dataPlot"] .dp-cross-dash,.theme-contrast [data-stem-tool-shell="dataPlot"] .dp-resid-dash{animation:none!important}',
+      '.theme-contrast [data-stem-tool-shell="dataPlot"] .dp-hover-cross{display:none!important}',
+      '@media (prefers-reduced-motion: reduce){[data-stem-tool-shell="dataPlot"] .dp-trend-glow,[data-stem-tool-shell="dataPlot"] .dp-trend-dash,[data-stem-tool-shell="dataPlot"] .dp-area-shimmer,[data-stem-tool-shell="dataPlot"] .dp-active-beacon,[data-stem-tool-shell="dataPlot"] .dp-outlier-beacon,[data-stem-tool-shell="dataPlot"] .dp-mean-beacon,[data-stem-tool-shell="dataPlot"] .dp-bar-glint,[data-stem-tool-shell="dataPlot"] .dp-cross-dash,[data-stem-tool-shell="dataPlot"] .dp-resid-dash{animation:none!important}[data-stem-tool-shell="dataPlot"] .dp-hover-cross{transition:none!important}}'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-dataplot')) return;
@@ -3003,7 +3035,7 @@ window.StemLab = window.StemLab || {
         if (!lineMoved || !canDrawLine) { say(fillT(t('stem.dataplot.sr_bestfit_shown', 'The best-fit line is now shown: {eq}.'), { eq: lineFits ? equationText('linear', coefs.linear) : regEq })); return; }
         say(myCompareText(evalLineFit(visiblePoints, myLineEq)));
       };
-      var lineDragRef = React.useRef(null), lineDraggedRef = React.useRef(false);
+      var lineDragRef = React.useRef(null), lineDraggedRef = React.useRef(false), hoverCrossRef = React.useRef(null);
       // A control that takes itself away (Compare, Fit axes, Undo axis fit) hands focus on.
       var focusAfterRef = React.useRef(null);
       React.useEffect(function () {
@@ -3588,8 +3620,8 @@ window.StemLab = window.StemLab || {
         var dStr = cpts.join(' ');
         if (!dpRich) return h('path', { d: dStr, fill: 'none', stroke: INK.line, strokeWidth: 2.5, strokeDasharray: '7 4', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none', 'data-dataplot-fit': regressionType });
         return h('g', { clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none' },
-          h('path', { d: dStr, fill: 'none', stroke: INK.line, strokeWidth: 7, strokeOpacity: isDarkUI ? 0.24 : 0.16, strokeLinecap: 'round' }),
-          h('path', { d: dStr, fill: 'none', stroke: INK.line, strokeWidth: 2.6, strokeDasharray: '7 4', strokeLinecap: 'round', 'data-dataplot-fit': regressionType })
+          h('path', { className: 'dp-trend-glow', d: dStr, fill: 'none', stroke: INK.line, strokeWidth: 7, strokeOpacity: isDarkUI ? 0.24 : 0.16, strokeLinecap: 'round' }),
+          h('path', { className: 'dp-trend-dash', d: dStr, fill: 'none', stroke: INK.line, strokeWidth: 2.6, strokeDasharray: '7 4', strokeLinecap: 'round', 'data-dataplot-fit': regressionType })
         );
       };
       var ciPath = function() {
@@ -3603,7 +3635,7 @@ window.StemLab = window.StemLab || {
           upper.push((ci === 0 ? 'M' : 'L') + toSX(cx).toFixed(1) + ',' + toSY(yPred + margin).toFixed(1));
           lower.unshift('L' + toSX(cx).toFixed(1) + ',' + toSY(yPred - margin).toFixed(1));
         }
-        return h('path', { d: upper.join(' ') + ' ' + lower.join(' ') + ' Z', fill: dpRich ? 'url(#dp-ci-xy)' : INK.line, fillOpacity: 0.12, stroke: INK.line, strokeOpacity: dpRich ? 0.55 : 1, strokeWidth: 0.9, strokeDasharray: '3 3', clipPath: 'url(#dp-plot-clip)' });
+        return h('path', { className: dpRich ? 'dp-area-shimmer' : undefined, d: upper.join(' ') + ' ' + lower.join(' ') + ' Z', fill: dpRich ? 'url(#dp-ci-xy)' : INK.line, fillOpacity: 0.12, stroke: INK.line, strokeOpacity: dpRich ? 0.55 : 1, strokeWidth: 0.9, strokeDasharray: '3 3', clipPath: 'url(#dp-plot-clip)' });
       };
 
       // SVG click: add a point (Add mode). Remove mode works on the points themselves.
@@ -3701,8 +3733,8 @@ window.StemLab = window.StemLab || {
         var myLineEls = canDrawLine && (!myLine.shown || lineMoved) ? [
           myEval && regressionType === 'linear' && (mySquares === 'ls' || mySquares === 'both') ? squareEls(myEval.resLs, lsCol, 'ls') : null,
           myEval && (mySquares === 'mine' || mySquares === 'both') ? squareEls(myEval.resUser, mineCol, 'mine') : null,
-          visiblePoints.map(function (p, i) { return h('line', { key: 'mr' + i, x1: toSX(p.x), y1: toSY(p.y), x2: toSX(p.x), y2: toSY(lineY(myLineEq, p.x)), stroke: mineCol, strokeWidth: 1, strokeDasharray: '2 2', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none' }); }),
-          dpRich && h('line', { key: 'myl-g', x1: toSX(xMin), y1: toSY(lineY(myLineEq, xMin)), x2: toSX(xMax), y2: toSY(lineY(myLineEq, xMax)), stroke: mineCol, strokeWidth: 8, strokeOpacity: isDarkUI ? 0.24 : 0.16, strokeLinecap: 'round', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none' }),
+          visiblePoints.map(function (p, i) { return h('line', { key: 'mr' + i, className: dpRich ? 'dp-resid-dash' : undefined, x1: toSX(p.x), y1: toSY(p.y), x2: toSX(p.x), y2: toSY(lineY(myLineEq, p.x)), stroke: mineCol, strokeWidth: 1, strokeDasharray: '2 2', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none' }); }),
+          dpRich && h('line', { key: 'myl-g', className: 'dp-trend-glow', x1: toSX(xMin), y1: toSY(lineY(myLineEq, xMin)), x2: toSX(xMax), y2: toSY(lineY(myLineEq, xMax)), stroke: mineCol, strokeWidth: 8, strokeOpacity: isDarkUI ? 0.24 : 0.16, strokeLinecap: 'round', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none' }),
           h('line', { key: 'myl', x1: toSX(xMin), y1: toSY(lineY(myLineEq, xMin)), x2: toSX(xMax), y2: toSY(lineY(myLineEq, xMax)), stroke: mineCol, strokeWidth: 3, strokeLinecap: 'round', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none', 'data-dataplot-my-line': true }),
           [['yA', myXA, myYA], ['yB', myXB, myYB]].map(function (hd) {
             // touch-action is ignored on inline SVG children: without display:block the browser pans and
@@ -3717,10 +3749,36 @@ window.StemLab = window.StemLab || {
           })
         ] : null;
         var showCursor = cursorOn && xyChart && clickMode === 'add' && !stepMode;
+        var showHoverCross = dpRich && (chartType === 'scatter' || chartType === 'line');
+        var updateHoverCross = function (e) {
+          if (myLineEls) dragTo(e);
+          var g = hoverCrossRef.current;
+          if (!showHoverCross || !g) return;
+          var svg = e.currentTarget, rect = svg.getBoundingClientRect();
+          if (!rect || !rect.width || !rect.height) return;
+          var scale = Math.min(rect.width / W, rect.height / H) || 1;
+          var offX = (rect.width - W * scale) / 2, offY = (rect.height - H * scale) / 2;
+          var sx = (e.clientX - rect.left - offX) / scale, sy = (e.clientY - rect.top - offY) / scale;
+          if (sx < PL || sx > W - PR || sy < PT || sy > H - PB) { g.style.opacity = '0'; return; }
+          var kids = g.childNodes;
+          if (kids && kids.length >= 5) {
+            var sxS = sx.toFixed(1), syS = sy.toFixed(1);
+            kids[0].setAttribute('y1', syS); kids[0].setAttribute('y2', syS);
+            kids[1].setAttribute('y1', syS); kids[1].setAttribute('y2', syS);
+            kids[2].setAttribute('x1', sxS); kids[2].setAttribute('x2', sxS);
+            kids[3].setAttribute('x1', sxS); kids[3].setAttribute('x2', sxS);
+            kids[4].setAttribute('d', 'M ' + sxS + ' ' + (sy - 5).toFixed(1) + ' L ' + (sx + 5).toFixed(1) + ' ' + syS + ' L ' + sxS + ' ' + (sy + 5).toFixed(1) + ' L ' + (sx - 5).toFixed(1) + ' ' + syS + ' Z');
+          }
+          g.style.opacity = '1';
+        };
+        var clearHoverCross = function () {
+          var g = hoverCrossRef.current;
+          if (g) g.style.opacity = '0';
+        };
         var sortedLinePts = chartType === 'line' && n >= 2 ? visiblePoints.slice().sort(function(a,b) { return a.x - b.x; }) : null;
         var linePathD = sortedLinePts ? sortedLinePts.map(function(p, i) { return (i===0?'M':'L') + toSX(p.x).toFixed(1) + ',' + toSY(p.y).toFixed(1); }).join(' ') : '';
         return h('svg', svgBase(chartType === 'bar' ? t('stem.dataplot.bar_img_label', 'Bar chart of the current data set') : t('stem.dataplot.chart_img_label', 'Chart of the current data set'),
-          { onClick: handleSvgClick, onPointerMove: myLineEls ? dragTo : undefined, onPointerUp: myLineEls ? endDrag : undefined, onPointerCancel: myLineEls ? endDrag : undefined, onLostPointerCapture: myLineEls ? endDrag : undefined,
+          { onClick: handleSvgClick, onPointerMove: (myLineEls || showHoverCross) ? updateHoverCross : undefined, onPointerLeave: showHoverCross ? clearHoverCross : undefined, onPointerUp: myLineEls ? endDrag : undefined, onPointerCancel: myLineEls ? endDrag : undefined, onLostPointerCapture: myLineEls ? endDrag : undefined,
             className: 'w-full rounded-xl border border-teal-200' + ((chartType === 'scatter' || chartType === 'line') && clickMode === 'add' && !stepMode ? ' cursor-crosshair' : '') }),
           dpDefs('xy', h('clipPath', { id: 'dp-plot-clip' }, h('rect', { x: PL, y: PT, width: W - PL - PR, height: H - PT - PB }))),
           dpWell('xy', PL, PT, W - PL - PR, H - PT - PB, 6),
@@ -3730,16 +3788,19 @@ window.StemLab = window.StemLab || {
           ciPath(),
           showResiduals && !isBar && regFit.ok && !isK5 && !modelHidden && visiblePoints.map(function(p, i) {
             var py = predictY(p.x);
-            return dpFin(py) ? h('line', { key: 'r' + i, x1: toSX(p.x), y1: toSY(p.y), x2: toSX(p.x), y2: toSY(py), stroke: isContrast ? '#ff80ff' : dc('#7e22ce'), strokeWidth: 1.5, strokeDasharray: '2 2', clipPath: 'url(#dp-plot-clip)' }) : null;
+            return dpFin(py) ? h('line', { key: 'r' + i, className: dpRich ? 'dp-resid-dash' : undefined, x1: toSX(p.x), y1: toSY(p.y), x2: toSX(p.x), y2: toSY(py), stroke: isContrast ? '#ff80ff' : dc('#7e22ce'), strokeWidth: 1.5, strokeDasharray: '2 2', clipPath: 'url(#dp-plot-clip)' }) : null;
           }),
           // Bars grow from zero: up for positive values, down for negative ones (beveled studio fills, strictly 1 rect per bar!).
           isBar && barOrder.map(function (b, k) {
-            var top = toSY(Math.max(0, b.y)), bottom = toSY(Math.min(0, b.y));
-            return h('rect', { key: 'bar' + k, x: barX(k) - bw / 2, y: top, width: bw, height: Math.max(1, bottom - top), fill: dpRich ? (b.y < 0 ? 'url(#dp-bar-bad-xy)' : 'url(#dp-bar-xy)') : (b.y < 0 ? INK.bad : INK.fill), fillOpacity: dpRich ? 1 : 0.9, rx: 3, stroke: INK.bg, strokeWidth: 0.8, filter: dpRich ? 'url(#dp-sh-xy)' : undefined });
+            var top = toSY(Math.max(0, b.y)), bottom = toSY(Math.min(0, b.y)), bh = Math.max(1, bottom - top), bx0 = barX(k) - bw / 2;
+            return h('g', { key: 'bar' + k },
+              h('rect', { x: bx0, y: top, width: bw, height: bh, fill: dpRich ? (b.y < 0 ? 'url(#dp-bar-bad-xy)' : 'url(#dp-bar-xy)') : (b.y < 0 ? INK.bad : INK.fill), fillOpacity: dpRich ? 1 : 0.9, rx: 3, stroke: INK.bg, strokeWidth: 0.8, filter: dpRich ? 'url(#dp-sh-xy)' : undefined }),
+              dpRich && bh >= 4 && bw >= 6 && h('path', { className: 'dp-bar-glint', 'aria-hidden': 'true', pointerEvents: 'none', d: 'M ' + (bx0 + 2).toFixed(1) + ' ' + (top + 2).toFixed(1) + ' H ' + (bx0 + bw - 2).toFixed(1), stroke: '#ffffff', strokeWidth: 1.8, strokeLinecap: 'round', style: { animationDelay: ((k % 6) * 0.25) + 's' } })
+            );
           }),
           isBar && yMin < 0 && h('line', { x1: PL, y1: zeroY, x2: W - PR, y2: zeroY, stroke: INK.axis, strokeWidth: 1.5, 'data-dataplot-zero': true }),
-          chartType === 'line' && n >= 2 && dpRich && h('path', { d: linePathD + ' L' + toSX(sortedLinePts[sortedLinePts.length - 1].x).toFixed(1) + ',' + (H - PB) + ' L' + toSX(sortedLinePts[0].x).toFixed(1) + ',' + (H - PB) + ' Z', fill: 'url(#dp-area-xy)', stroke: 'none', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none' }),
-          chartType === 'line' && n >= 2 && dpRich && h('path', { d: linePathD, fill: 'none', stroke: INK.fill, strokeWidth: 7, strokeOpacity: isDarkUI ? 0.22 : 0.15, strokeLinecap: 'round', strokeLinejoin: 'round', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none' }),
+          chartType === 'line' && n >= 2 && dpRich && h('path', { className: 'dp-area-shimmer', d: linePathD + ' L' + toSX(sortedLinePts[sortedLinePts.length - 1].x).toFixed(1) + ',' + (H - PB) + ' L' + toSX(sortedLinePts[0].x).toFixed(1) + ',' + (H - PB) + ' Z', fill: 'url(#dp-area-xy)', stroke: 'none', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none' }),
+          chartType === 'line' && n >= 2 && dpRich && h('path', { className: 'dp-trend-glow', d: linePathD, fill: 'none', stroke: INK.fill, strokeWidth: 7, strokeOpacity: isDarkUI ? 0.22 : 0.15, strokeLinecap: 'round', strokeLinejoin: 'round', clipPath: 'url(#dp-plot-clip)', pointerEvents: 'none' }),
           chartType === 'line' && n >= 2 && h('path', { d: linePathD, fill: 'none', stroke: INK.fill, strokeWidth: 2.6, strokeLinecap: 'round', strokeLinejoin: 'round' }),
           !isBar && visiblePoints.map(function(p, i) {
             var isOutlier = showOutliers && outlierSet[p.x + ',' + p.y], cx = toSX(p.x), cy = toSY(p.y);
@@ -3748,17 +3809,26 @@ window.StemLab = window.StemLab || {
             return h('g', { key: 'pt' + i, 'aria-hidden': 'true', 'data-dataplot-point': i, style: { cursor: clickMode === 'remove' ? 'not-allowed' : undefined },
               onClick: clickMode === 'remove' ? function (e) { e.stopPropagation(); removePoint(points.indexOf(p) >= 0 ? points.indexOf(p) : i, xyChart ? freezePatch() : null); } : undefined },
               h('circle', { cx: cx, cy: cy, r: 11, fill: 'transparent' }),
-              h('circle', { cx: cx, cy: cy, r: isOutlier ? 7 : 5, fill: dpRich ? (isOutlier ? 'url(#dp-bad-xy)' : 'url(#dp-dot-xy)') : (isOutlier ? INK.bad : INK.fill), stroke: INK.bg, strokeWidth: 1.5, filter: dpRich ? (isOutlier ? 'url(#dp-glow-bad-xy)' : 'url(#dp-sh-xy)') : undefined }),
+              h('circle', { className: dpRich && isOutlier ? 'dp-outlier-beacon' : undefined, cx: cx, cy: cy, r: isOutlier ? 7 : 5, fill: dpRich ? (isOutlier ? 'url(#dp-bad-xy)' : 'url(#dp-dot-xy)') : (isOutlier ? INK.bad : INK.fill), stroke: INK.bg, strokeWidth: 1.5, filter: dpRich ? (isOutlier ? 'url(#dp-glow-bad-xy)' : 'url(#dp-sh-xy)') : undefined }),
               showLabels && h('text', { x: cx, y: cy - 9, textAnchor: 'middle', fill: INK.text, style: { fontSize: '10px', fontWeight: 'bold' } }, '(' + fmtNum(p.x) + ', ' + fmtNum(p.y) + ')'));
           }),
-          explorePt && !isBar && h('circle', { cx: toSX(explorePt.x), cy: toSY(explorePt.y), r: 10, fill: 'none', stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 3, filter: dpRich ? 'url(#dp-glow-line-xy)' : undefined, 'data-dataplot-explore': true }),
-          explorePt && isBar && (function () { var k = barOrder.map(function (b) { return b.i; }).indexOf(explorePt.i); return k < 0 ? null : h('rect', { x: barX(k) - bw / 2 - 3, y: PT, width: bw + 6, height: H - PT - PB, fill: 'none', stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 2.5, 'data-dataplot-explore': true }); })(),
+          explorePt && !isBar && h('circle', { className: dpRich ? 'dp-active-beacon' : undefined, cx: toSX(explorePt.x), cy: toSY(explorePt.y), r: 10, fill: 'none', stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 3, filter: dpRich ? 'url(#dp-glow-line-xy)' : undefined, 'data-dataplot-explore': true }),
+          explorePt && isBar && (function () { var k = barOrder.map(function (b) { return b.i; }).indexOf(explorePt.i); return k < 0 ? null : h('rect', { className: dpRich ? 'dp-mean-beacon' : undefined, x: barX(k) - bw / 2 - 3, y: PT, width: bw + 6, height: H - PT - PB, fill: 'none', stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 2.5, 'data-dataplot-explore': true }); })(),
           !isBar && n >= 2 && regPath(),
           !isBar && myLineEls,
+          showHoverCross && h('g', { ref: hoverCrossRef, className: 'dp-hover-cross', 'aria-hidden': 'true', pointerEvents: 'none', clipPath: 'url(#dp-plot-clip)', style: { opacity: 0 } },
+            h('line', { x1: PL, y1: PT, x2: W - PR, y2: PT, stroke: dc('#0284c7'), strokeWidth: 4.5, strokeOpacity: isDarkUI ? 0.22 : 0.14 }),
+            h('line', { className: 'dp-cross-dash', x1: PL, y1: PT, x2: W - PR, y2: PT, stroke: dc('#0284c7'), strokeWidth: 1.15, strokeDasharray: '4 3', strokeOpacity: 0.72 }),
+            h('line', { x1: PL, y1: PT, x2: PL, y2: H - PB, stroke: dc('#0284c7'), strokeWidth: 4.5, strokeOpacity: isDarkUI ? 0.22 : 0.14 }),
+            h('line', { className: 'dp-cross-dash', x1: PL, y1: PT, x2: PL, y2: H - PB, stroke: dc('#0284c7'), strokeWidth: 1.15, strokeDasharray: '4 3', strokeOpacity: 0.72 }),
+            h('path', { d: 'M 0 0', fill: 'none', stroke: dc('#0284c7'), strokeWidth: 1.7, strokeOpacity: 0.88 })
+          ),
           showCursor && h('g', { 'data-dataplot-cursor-mark': true, 'aria-hidden': 'true', pointerEvents: 'none' },
-            h('line', { x1: PL, y1: toSY(curPos.y), x2: W - PR, y2: toSY(curPos.y), stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 1, strokeDasharray: '4 3' }),
-            h('line', { x1: toSX(curPos.x), y1: PT, x2: toSX(curPos.x), y2: H - PB, stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 1, strokeDasharray: '4 3' }),
-            h('circle', { cx: toSX(curPos.x), cy: toSY(curPos.y), r: 8, fill: 'none', stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 2.5 }),
+            dpRich && h('line', { x1: PL, y1: toSY(curPos.y), x2: W - PR, y2: toSY(curPos.y), stroke: dc('#1d4ed8'), strokeWidth: 4.5, strokeOpacity: isDarkUI ? 0.22 : 0.14 }),
+            h('line', { className: dpRich ? 'dp-cross-dash' : undefined, x1: PL, y1: toSY(curPos.y), x2: W - PR, y2: toSY(curPos.y), stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 1, strokeDasharray: '4 3' }),
+            dpRich && h('line', { x1: toSX(curPos.x), y1: PT, x2: toSX(curPos.x), y2: H - PB, stroke: dc('#1d4ed8'), strokeWidth: 4.5, strokeOpacity: isDarkUI ? 0.22 : 0.14 }),
+            h('line', { className: dpRich ? 'dp-cross-dash' : undefined, x1: toSX(curPos.x), y1: PT, x2: toSX(curPos.x), y2: H - PB, stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 1, strokeDasharray: '4 3' }),
+            h('circle', { className: dpRich ? 'dp-active-beacon' : undefined, cx: toSX(curPos.x), cy: toSY(curPos.y), r: 8, fill: 'none', stroke: isContrast ? '#00ffff' : dc('#1d4ed8'), strokeWidth: 2.5 }),
             h('text', { x: Math.min(W - PR - 4, toSX(curPos.x) + 12), y: Math.max(PT + 12, toSY(curPos.y) - 10), textAnchor: toSX(curPos.x) > W - 120 ? 'end' : 'start', fill: INK.text, style: { fontSize: '11px', fontWeight: 'bold' } }, '(' + fmtNum(curPos.x) + ', ' + fmtNum(curPos.y) + ')'))
         );
       };
@@ -3827,6 +3897,7 @@ window.StemLab = window.StemLab || {
             var bw = plotW / histBins.length, bx = PL + i * bw, top = hy(bin.count), bh = Math.max(0, H - PB - top);
             return h('g', { key: 'hb'+i },
               h('rect', { x: bx + 1, y: top, width: bw - 2, height: bh, fill: dpRich ? 'url(#dp-bar-hist)' : INK.fill, fillOpacity: dpRich ? 1 : 0.85, rx: 3, stroke: dpRich ? INK.bg : undefined, strokeWidth: dpRich ? 0.7 : undefined, filter: dpRich && bh > 0 ? 'url(#dp-sh-hist)' : undefined }),
+              dpRich && bh >= 4 && bw >= 8 && h('path', { className: 'dp-bar-glint', 'aria-hidden': 'true', pointerEvents: 'none', d: 'M ' + (bx + 3).toFixed(1) + ' ' + (top + 2).toFixed(1) + ' H ' + (bx + bw - 3).toFixed(1), stroke: '#ffffff', strokeWidth: 1.8, strokeLinecap: 'round', style: { animationDelay: ((i % 6) * 0.25) + 's' } }),
               h('text', { x: bx + bw / 2, y: H - PB + 14, textAnchor: 'middle', fill: INK.muted, style: { fontSize: histBins.length > 8 ? '9px' : '10px' } }, binLabel(bin)),
               bin.count > 0 && h('text', { x: bx + bw / 2, y: top - 4, textAnchor: 'middle', fill: INK.text, style: { fontSize: '11px', fontWeight: 'bold' } }, bin.count));
           }),
@@ -3839,16 +3910,16 @@ window.StemLab = window.StemLab || {
             }
             var nd = normPts.join(' ');
             return h('g', { 'aria-hidden': 'true' },
-              dpRich && h('path', { d: nd, fill: 'none', stroke: normCol, strokeWidth: 6.5, strokeOpacity: isDarkUI ? 0.25 : 0.16, strokeLinecap: 'round' }),
-              h('path', { d: nd, fill: 'none', stroke: normCol, strokeWidth: 2.2, strokeDasharray: '4 2', strokeLinecap: 'round' })
+              dpRich && h('path', { className: 'dp-trend-glow', d: nd, fill: 'none', stroke: normCol, strokeWidth: 6.5, strokeOpacity: isDarkUI ? 0.25 : 0.16, strokeLinecap: 'round' }),
+              h('path', { className: dpRich ? 'dp-trend-dash' : undefined, d: nd, fill: 'none', stroke: normCol, strokeWidth: 2.2, strokeDasharray: '4 2', strokeLinecap: 'round' })
             );
           })(),
           !isK5 && [
-            dpRich && h('line', { key: 'mean-glow', x1: hx(meanY), y1: PT, x2: hx(meanY), y2: H-PB, stroke: meanCol, strokeWidth: 5, strokeOpacity: 0.16 }),
-            h('line', { key: 'mean-line', x1: hx(meanY), y1: PT, x2: hx(meanY), y2: H-PB, stroke: meanCol, strokeWidth: 1.7, strokeDasharray: '5 3' }),
+            dpRich && h('line', { key: 'mean-glow', className: 'dp-mean-beacon', x1: hx(meanY), y1: PT, x2: hx(meanY), y2: H-PB, stroke: meanCol, strokeWidth: 5, strokeOpacity: 0.16 }),
+            h('line', { key: 'mean-line', className: dpRich ? 'dp-resid-dash' : undefined, x1: hx(meanY), y1: PT, x2: hx(meanY), y2: H-PB, stroke: meanCol, strokeWidth: 1.7, strokeDasharray: '5 3' }),
             h('text', { key: 'mean-lbl', x: hx(meanY), y: PT + 10, textAnchor: 'middle', fill: meanCol, style: { fontSize: '10px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.mean_eq', 'mean {v}'), { v: fmtNum(meanY, 2) })),
-            dpRich && h('line', { key: 'med-glow', x1: hx(yMedian), y1: PT, x2: hx(yMedian), y2: H-PB, stroke: medCol, strokeWidth: 5, strokeOpacity: 0.16 }),
-            h('line', { key: 'med-line', x1: hx(yMedian), y1: PT, x2: hx(yMedian), y2: H-PB, stroke: medCol, strokeWidth: 1.7, strokeDasharray: '5 3' }),
+            dpRich && h('line', { key: 'med-glow', className: 'dp-mean-beacon', x1: hx(yMedian), y1: PT, x2: hx(yMedian), y2: H-PB, stroke: medCol, strokeWidth: 5, strokeOpacity: 0.16 }),
+            h('line', { key: 'med-line', className: dpRich ? 'dp-resid-dash' : undefined, x1: hx(yMedian), y1: PT, x2: hx(yMedian), y2: H-PB, stroke: medCol, strokeWidth: 1.7, strokeDasharray: '5 3' }),
             h('text', { key: 'med-lbl', x: hx(yMedian), y: PT + 22, textAnchor: 'middle', fill: medCol, style: { fontSize: '10px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.median_eq', 'median {v}'), { v: fmtNum(yMedian, 2) }))
           ],
           h('text', { x: (PL + W - PR) / 2, y: H - 6, textAnchor: 'middle', fill: INK.accent, style: { fontSize: '12px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.hist_axis', '{y} (bins)'), { y: yName })),
@@ -3873,9 +3944,9 @@ window.StemLab = window.StemLab || {
           h('line', { key: 'whisker', x1: bx(wLo), y1: 80, x2: bx(wHi), y2: 80, stroke: INK.axis, strokeWidth: 1.8, strokeLinecap: 'round' }),
           h('line', { key: 'whisker-lo', x1: bx(wLo), y1: 62, x2: bx(wLo), y2: 98, stroke: INK.axis, strokeWidth: 2, strokeLinecap: 'round' }),
           h('line', { key: 'whisker-hi', x1: bx(wHi), y1: 62, x2: bx(wHi), y2: 98, stroke: INK.axis, strokeWidth: 2, strokeLinecap: 'round' }),
-          outliers.map(function(o, i) { return h('circle', { key: 'out'+i, cx: bx(o.y), cy: 80, r: 5, fill: dpRich ? 'url(#dp-bad-box)' : INK.bad, stroke: INK.bg, strokeWidth: 1.3, filter: dpRich ? 'url(#dp-glow-bad-box)' : undefined }); }),
+          outliers.map(function(o, i) { return h('circle', { key: 'out'+i, className: dpRich ? 'dp-outlier-beacon' : undefined, cx: bx(o.y), cy: 80, r: 5, fill: dpRich ? 'url(#dp-bad-box)' : INK.bad, stroke: INK.bg, strokeWidth: 1.3, filter: dpRich ? 'url(#dp-glow-bad-box)' : undefined }); }),
           h('rect', { x: bx(q1), y: 55, width: Math.max(2, bx(q3) - bx(q1)), height: 50, fill: dpRich ? 'url(#dp-box-box)' : INK.fill, fillOpacity: dpRich ? 1 : 0.25, stroke: INK.fill, strokeWidth: 2, rx: 5, filter: dpRich ? 'url(#dp-sh-box)' : undefined }),
-          dpRich && h('line', { x1: bx(yMedian), y1: 55, x2: bx(yMedian), y2: 105, stroke: INK.bad, strokeWidth: 7, strokeOpacity: isDarkUI ? 0.26 : 0.18, strokeLinecap: 'round' }),
+          dpRich && h('line', { className: 'dp-mean-beacon', x1: bx(yMedian), y1: 55, x2: bx(yMedian), y2: 105, stroke: INK.bad, strokeWidth: 7, strokeOpacity: isDarkUI ? 0.26 : 0.18, strokeLinecap: 'round' }),
           h('line', { x1: bx(yMedian), y1: 55, x2: bx(yMedian), y2: 105, stroke: INK.bad, strokeWidth: 3.2, strokeLinecap: 'round' }),
           lab,
           h('line', { x1: PL, y1: 140, x2: W - PR, y2: 140, stroke: INK.axis, strokeWidth: 1.2 }),
@@ -3900,8 +3971,8 @@ window.StemLab = window.StemLab || {
           axisTicks(oAx, true, oToX),
           h('line', { x1: PL, y1: H-PB, x2: W-PR, y2: H-PB, stroke: INK.axis, strokeWidth: 1.5 }),
           h('line', { x1: PL, y1: PT, x2: PL, y2: H-PB, stroke: INK.axis, strokeWidth: 1.5 }),
-          h('path', { d: pathD + ' L' + oToX(cumulativeFreq[cumulativeFreq.length-1].x).toFixed(1) + ',' + (H-PB) + ' L' + oToX(cumulativeFreq[0].x).toFixed(1) + ',' + (H-PB) + ' Z', fill: dpRich ? 'url(#dp-area-og)' : INK.fill, fillOpacity: dpRich ? 1 : 0.15 }),
-          dpRich && h('path', { d: pathD, fill: 'none', stroke: INK.fill, strokeWidth: 7, strokeOpacity: isDarkUI ? 0.24 : 0.16, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+          h('path', { className: dpRich ? 'dp-area-shimmer' : undefined, d: pathD + ' L' + oToX(cumulativeFreq[cumulativeFreq.length-1].x).toFixed(1) + ',' + (H-PB) + ' L' + oToX(cumulativeFreq[0].x).toFixed(1) + ',' + (H-PB) + ' Z', fill: dpRich ? 'url(#dp-area-og)' : INK.fill, fillOpacity: dpRich ? 1 : 0.15 }),
+          dpRich && h('path', { className: 'dp-trend-glow', d: pathD, fill: 'none', stroke: INK.fill, strokeWidth: 7, strokeOpacity: isDarkUI ? 0.24 : 0.16, strokeLinecap: 'round', strokeLinejoin: 'round' }),
           h('path', { d: pathD, fill: 'none', stroke: INK.fill, strokeWidth: 2.6, strokeLinecap: 'round', strokeLinejoin: 'round' }),
           cumulativeFreq.map(function(pt, i) { return h('circle', { key: 'op'+i, cx: oToX(pt.x), cy: oToY(pt.y), r: 4, fill: dpRich ? 'url(#dp-dot-og)' : INK.fill, stroke: INK.bg, strokeWidth: 1.5, filter: dpRich ? 'url(#dp-sh-og)' : undefined }); }),
           h('text', { x: (PL + W - PR) / 2, y: H - 6, textAnchor: 'middle', fill: INK.accent, style: { fontSize: '12px', fontWeight: 'bold' } }, fillT(t('stem.dataplot.ogive_axis', '{y} (running total)'), { y: yName }))
@@ -4210,7 +4281,8 @@ window.StemLab = window.StemLab || {
                 dpDefs('res1'),
                 dpWell('res1', PL, 8, W - PL - PR, rH - 18, 6),
                 rAx.ticks.map(function (v, k) { return h('text', { key: 'rt' + k, x: PL - 6, y: rToSY(v) + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '10px' } }, fmtFixed(v, rAx.decimals)); }),
-                h('line', { x1: PL, y1: rToSY(0), x2: W-PR, y2: rToSY(0), stroke: INK.axis, strokeWidth: 1.4, strokeDasharray: '4 4' }),
+                dpRich && h('line', { className: 'dp-mean-beacon', x1: PL, y1: rToSY(0), x2: W-PR, y2: rToSY(0), stroke: INK.axis, strokeWidth: 5, strokeOpacity: isDarkUI ? 0.2 : 0.14 }),
+                h('line', { className: dpRich ? 'dp-trend-dash' : undefined, x1: PL, y1: rToSY(0), x2: W-PR, y2: rToSY(0), stroke: INK.axis, strokeWidth: 1.4, strokeDasharray: '4 4' }),
                 residuals.map(function(r, i) { return h('circle', { key: 'rp'+i, cx: toSX(r.x), cy: rToSY(r.r), r: 4.2, fill: dpRich ? (r.r > 0 ? 'url(#dp-pos-res1)' : 'url(#dp-bad-res1)') : (r.r > 0 ? (isContrast ? '#80ff80' : dc('#047857')) : INK.bad), stroke: INK.bg, strokeWidth: 1.1, filter: dpRich ? 'url(#dp-sh-res1)' : undefined }); })),
               regressionType === 'linear' && n >= 6 && (function () {
                 var pat = residualPattern(visiblePoints);
@@ -5169,10 +5241,10 @@ window.StemLab = window.StemLab || {
             h('text', { x: 14, y: (PT + FH - PB) / 2, textAnchor: 'middle', fill: INK.accent, style: { fontSize: '12px', fontWeight: 'bold' }, transform: 'rotate(-90,14,' + ((PT + FH - PB) / 2) + ')' }, fitAx[1]),
             showLsSq ? fitSquareEls(fitEval.resLs, colL, 'sl') : null,
             showMineSq ? fitSquareEls(fitEval.resUser, col, 'su') : null,
-            fitSet.pts.map(function (p, i) { return h('line', { key: 'rs' + i, x1: fsx(p.x), y1: fsy(p.y), x2: fsx(p.x), y2: fsy(userLine.m * p.x + userLine.b), stroke: col, strokeWidth: 1, strokeDasharray: '2 2', clipPath: 'url(#dp-fit-clip)' }); }),
-            fitRevealed && dpRich && h('line', { x1: fsx(fAxX.min), y1: fsy(ls.m * fAxX.min + ls.b), x2: fsx(fAxX.max), y2: fsy(ls.m * fAxX.max + ls.b), stroke: colL, strokeWidth: 7, strokeOpacity: isDarkUI ? 0.24 : 0.16, strokeLinecap: 'round', clipPath: 'url(#dp-fit-clip)' }),
-            fitRevealed && h('line', { x1: fsx(fAxX.min), y1: fsy(ls.m * fAxX.min + ls.b), x2: fsx(fAxX.max), y2: fsy(ls.m * fAxX.max + ls.b), stroke: colL, strokeWidth: 2.5, strokeDasharray: '8 4', strokeLinecap: 'round', clipPath: 'url(#dp-fit-clip)', 'data-dataplot-lsrl': true }),
-            dpRich && h('line', { x1: fsx(fAxX.min), y1: fsy(userLine.m * fAxX.min + userLine.b), x2: fsx(fAxX.max), y2: fsy(userLine.m * fAxX.max + userLine.b), stroke: col, strokeWidth: 8, strokeOpacity: isDarkUI ? 0.24 : 0.16, strokeLinecap: 'round', clipPath: 'url(#dp-fit-clip)' }),
+            fitSet.pts.map(function (p, i) { return h('line', { key: 'rs' + i, className: dpRich ? 'dp-resid-dash' : undefined, x1: fsx(p.x), y1: fsy(p.y), x2: fsx(p.x), y2: fsy(userLine.m * p.x + userLine.b), stroke: col, strokeWidth: 1, strokeDasharray: '2 2', clipPath: 'url(#dp-fit-clip)' }); }),
+            fitRevealed && dpRich && h('line', { className: 'dp-trend-glow', x1: fsx(fAxX.min), y1: fsy(ls.m * fAxX.min + ls.b), x2: fsx(fAxX.max), y2: fsy(ls.m * fAxX.max + ls.b), stroke: colL, strokeWidth: 7, strokeOpacity: isDarkUI ? 0.24 : 0.16, strokeLinecap: 'round', clipPath: 'url(#dp-fit-clip)' }),
+            fitRevealed && h('line', { className: dpRich ? 'dp-trend-dash' : undefined, x1: fsx(fAxX.min), y1: fsy(ls.m * fAxX.min + ls.b), x2: fsx(fAxX.max), y2: fsy(ls.m * fAxX.max + ls.b), stroke: colL, strokeWidth: 2.5, strokeDasharray: '8 4', strokeLinecap: 'round', clipPath: 'url(#dp-fit-clip)', 'data-dataplot-lsrl': true }),
+            dpRich && h('line', { className: 'dp-trend-glow', x1: fsx(fAxX.min), y1: fsy(userLine.m * fAxX.min + userLine.b), x2: fsx(fAxX.max), y2: fsy(userLine.m * fAxX.max + userLine.b), stroke: col, strokeWidth: 8, strokeOpacity: isDarkUI ? 0.24 : 0.16, strokeLinecap: 'round', clipPath: 'url(#dp-fit-clip)' }),
             h('line', { x1: fsx(fAxX.min), y1: fsy(userLine.m * fAxX.min + userLine.b), x2: fsx(fAxX.max), y2: fsy(userLine.m * fAxX.max + userLine.b), stroke: col, strokeWidth: 3, strokeLinecap: 'round', clipPath: 'url(#dp-fit-clip)', 'data-dataplot-user-line': true }),
             fitSet.pts.map(function (p, i) { return h('circle', { key: 'p' + i, cx: fsx(p.x), cy: fsy(p.y), r: 5, fill: dpRich ? 'url(#dp-dot-fit)' : INK.fill, stroke: INK.bg, strokeWidth: 1.5, filter: dpRich ? 'url(#dp-sh-fit)' : undefined }); }),
             handle('yA', hxA, yA), handle('yB', hxB, yB)),
@@ -5232,7 +5304,8 @@ window.StemLab = window.StemLab || {
           dpWell('res2', PL, 10, W - PL - PR, RH - 40, 6),
           ar.ticks.map(function (v, k) { return h('text', { key: 'r' + k, x: PL - 6, y: sy(v) + 4, textAnchor: 'end', fill: INK.muted, style: { fontSize: '10px' } }, fmtFixed(v, ar.decimals)); }),
           ax1.ticks.map(function (v, k) { return h('text', { key: 'x' + k, x: sx(v), y: RH - 14, textAnchor: 'middle', fill: INK.muted, style: { fontSize: '10px' } }, fmtFixed(v, ax1.decimals)); }),
-          h('line', { x1: PL, y1: sy(0), x2: W - PR, y2: sy(0), stroke: INK.axis, strokeWidth: 1.5, strokeDasharray: '5 4' }),
+          dpRich && h('line', { className: 'dp-mean-beacon', x1: PL, y1: sy(0), x2: W - PR, y2: sy(0), stroke: INK.axis, strokeWidth: 5, strokeOpacity: isDarkUI ? 0.2 : 0.14 }),
+          h('line', { className: dpRich ? 'dp-trend-dash' : undefined, x1: PL, y1: sy(0), x2: W - PR, y2: sy(0), stroke: INK.axis, strokeWidth: 1.5, strokeDasharray: '5 4' }),
           h('line', { x1: PL, y1: 10, x2: PL, y2: RH - 30, stroke: INK.axis, strokeWidth: 1 }),
           h('text', { x: 12, y: (RH - 20) / 2, textAnchor: 'middle', fill: INK.accent, style: { fontSize: '11px', fontWeight: 'bold' }, transform: 'rotate(-90,12,' + ((RH - 20) / 2) + ')' }, t('stem.dataplot.residual_word', 'Residual')),
           res.map(function (r, i) { return h('circle', { key: 'c' + i, cx: sx(r.x), cy: sy(r.r), r: 4.5, fill: dpRich ? (r.r >= 0 ? 'url(#dp-pos-res2)' : 'url(#dp-bad-res2)') : (r.r >= 0 ? (isContrast ? '#80ff80' : dc('#047857')) : INK.bad), stroke: INK.bg, strokeWidth: 1, filter: dpRich ? 'url(#dp-sh-res2)' : undefined }); }));

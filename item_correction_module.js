@@ -32,6 +32,7 @@
  */
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.ItemCorrection) {
     console.log('[ItemCorrection] Already loaded, skipping');
     return;
@@ -42,16 +43,26 @@
   var SUBMIT_URL = 'https://alloflow-catalog-submit.aaron-pomeranz.workers.dev/v2/submitItemCorrection';
 
   // Managed support configuration does not authorize independent community
-  // contributions. Any configured policy (or student/QR/offline mode) blocks
+  // contributions. Any configured policy (or student/QR/offline/desktop mode) blocks
   // this POST; a custom bug-report endpoint never receives this different payload.
   function communityFeedbackBlocked() {
     try {
       if (Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SUPPORT_REPORTING_POLICY')) return true;
-      if (window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.__alloStudentView === true || window.__alloOfflineOnly === true) return true;
+      if (window._isDesktopBundledApp === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.__alloStudentView === true || window.__alloOfflineOnly === true) return true;
       return false;
     } catch (_) { return true; }
   }
   var COMMUNITY_BLOCK_MESSAGE = 'Community feedback is disabled in this managed deployment. Your draft stays in this window. Contact your school\'s support team.';
+
+  function scrubSubmissionText(s) {
+    var out = String(s || '');
+    try {
+      var redactor = window.AlloModules && window.AlloModules.IdentifierRedaction;
+      if (redactor && typeof redactor.scrubPersonalInfo === 'function') out = redactor.scrubPersonalInfo(out);
+      if (redactor && typeof redactor.scrubRosterNames === 'function') out = redactor.scrubRosterNames(out);
+    } catch (_) {}
+    return out;
+  }
 
   // What kind of problem is being reported. Kept short + stable so the ingest tool can bucket them.
   var KINDS = Object.freeze([
@@ -70,12 +81,24 @@
   var modalToken = 0;
   var previousFocus = null;
 
-  function stripCtl(s) {
-    return String(s == null ? '' : s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+  var hasOwn = Object.prototype.hasOwnProperty;
+
+  function safeStr(s, maxLen) {
+    if (s == null) return '';
+    var raw = '';
+    if (typeof s === 'string') raw = s;
+    else if (typeof s === 'number' || typeof s === 'boolean') raw = String(s);
+    else return '';
+    return maxLen && raw.length > maxLen * 4 ? raw.slice(0, maxLen * 4) : raw;
+  }
+
+  function stripCtl(s, maxLen) {
+    var out = safeStr(s, maxLen).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+    return maxLen ? out.slice(0, maxLen) : out;
   }
 
   function esc(s) {
-    return String(s == null ? '' : s)
+    return safeStr(s, 4096)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
@@ -86,17 +109,22 @@
     return 'Practice item';
   }
 
+  function ownField(obj, key) {
+    return hasOwn.call(obj, key) ? obj[key] : undefined;
+  }
+
   function normalizeContext(ctx) {
-    ctx = (ctx && typeof ctx === 'object') ? ctx : {};
-    var packId = stripCtl(ctx.packId || '').trim().slice(0, 120);
+    ctx = (ctx && typeof ctx === 'object' && !Array.isArray(ctx)) ? ctx : {};
+    var packId = stripCtl(ownField(ctx, 'packId') || '', 120).trim();
+    var tier = ownField(ctx, 'reviewTier');
     return {
       packId: packId,
-      packTitle: stripCtl(ctx.packTitle || packId || 'Practice pack').trim().slice(0, 200) || 'Practice pack',
-      itemId: stripCtl(ctx.itemId || '').trim().slice(0, 120),
-      prompt: stripCtl(ctx.prompt || '').slice(0, 3000),
-      domain: stripCtl(ctx.domain || '').trim().slice(0, 120),
-      reviewTier: ctx.reviewTier === 'guided-review' || ctx.reviewTier === 'source-reviewed' ? ctx.reviewTier : 'practice-item',
-      currentAnswer: stripCtl(ctx.currentAnswer || '').slice(0, 600)
+      packTitle: stripCtl(ownField(ctx, 'packTitle') || packId || 'Practice pack', 200).trim() || 'Practice pack',
+      itemId: stripCtl(ownField(ctx, 'itemId') || '', 120).trim(),
+      prompt: stripCtl(ownField(ctx, 'prompt') || '', 3000),
+      domain: stripCtl(ownField(ctx, 'domain') || '', 120).trim(),
+      reviewTier: tier === 'guided-review' || tier === 'source-reviewed' ? tier : 'practice-item',
+      currentAnswer: stripCtl(ownField(ctx, 'currentAnswer') || '', 600)
     };
   }
 
@@ -106,7 +134,7 @@
   }
 
   function openModal(ctx) {
-    if (!document.body) return;
+    if (typeof document === 'undefined' || !document.body) return;
     ctx = normalizeContext(ctx);
     closeModal();
     var myToken = ++modalToken;
@@ -152,11 +180,11 @@
       '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">Pack</div>' +
       '<div style="font:13px system-ui;color:#334155;background:#f8fafc;border-radius:6px;padding:8px;margin-bottom:10px">' + esc(ctx.packTitle) + '</div>' +
       tierRow + promptRow +
-      '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">What is the problem? <span style="color:#dc2626">*</span></div>' +
+      '<label for="allo-ic-kind" style="display:block;font:600 12px system-ui;color:#475569;margin-bottom:2px">What is the problem? <span style="color:#dc2626">*</span></label>' +
       '<select id="allo-ic-kind" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px">' + kindOptions + '</select>' +
-      '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">Your suggested fix <span style="color:#dc2626">*</span></div>' +
-      '<textarea id="allo-ic-suggest" rows="3" maxlength="3000" placeholder="e.g. the keyed answer should be B because…, or reword the stem to…" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px"></textarea>' +
-      '<div style="font:600 12px system-ui;color:#475569;margin-bottom:2px">Source or reasoning (optional)</div>' +
+      '<label for="allo-ic-suggest" style="display:block;font:600 12px system-ui;color:#475569;margin-bottom:2px">Your suggested fix <span style="color:#dc2626">*</span></label>' +
+      '<textarea id="allo-ic-suggest" rows="3" maxlength="3000" aria-required="true" placeholder="e.g. the keyed answer should be B because…, or reword the stem to…" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:10px"></textarea>' +
+      '<label for="allo-ic-note" style="display:block;font:600 12px system-ui;color:#475569;margin-bottom:2px">Source or reasoning (optional)</label>' +
       '<textarea id="allo-ic-note" rows="2" maxlength="2000" placeholder="e.g. per the current ETS blueprint / IDEA 2004 / a citation link" style="width:100%;box-sizing:border-box;font:13px system-ui;border:1px solid #cbd5e1;border-radius:6px;padding:8px;margin-bottom:14px"></textarea>' +
       '<div id="allo-ic-err" role="alert" style="display:' + (blocked ? 'block' : 'none') + ';color:#dc2626;font:13px system-ui;margin-bottom:10px">' + (blocked ? esc(COMMUNITY_BLOCK_MESSAGE) : '') + '</div>' +
       '<div style="display:flex;gap:10px;justify-content:flex-end">' +
@@ -169,7 +197,27 @@
     var $ = function (id) { return panel.querySelector('#' + id); };
     $('allo-ic-x').onclick = closeModal;
     $('allo-ic-cancel').onclick = closeModal;
-    overlay.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !e.isComposing) closeModal(); });
+    overlay.addEventListener('keydown', function (e) {
+      if (e.isComposing || e.keyCode === 229) return;
+      if (e.key === 'Escape' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        closeModal();
+        return;
+      }
+      if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        var nodes = Array.prototype.slice.call(panel.querySelectorAll('button:not([disabled]), select:not([disabled]), textarea:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'));
+        if (!nodes.length) return;
+        var firstNode = nodes[0];
+        var lastNode = nodes[nodes.length - 1];
+        if (e.shiftKey && (document.activeElement === firstNode || !panel.contains(document.activeElement))) {
+          e.preventDefault();
+          try { lastNode.focus(); } catch (_) {}
+        } else if (!e.shiftKey && document.activeElement === lastNode) {
+          e.preventDefault();
+          try { firstNode.focus(); } catch (_) {}
+        }
+      }
+    });
 
     function showManagedBlock() {
       if (myToken !== modalToken) return;
@@ -200,8 +248,8 @@
       if (myToken !== modalToken || inFlight) return;
       if (communityFeedbackBlocked()) { showManagedBlock(); return; }
       var errEl = $('allo-ic-err');
-      var suggested = stripCtl($('allo-ic-suggest').value || '').trim().slice(0, 3000);
-      if (!suggested) { errEl.textContent = 'Please describe your suggested fix.'; errEl.style.display = 'block'; return; }
+      var suggested = scrubSubmissionText(stripCtl($('allo-ic-suggest').value || '', 3000).trim()).slice(0, 3000);
+      if (!suggested) { errEl.textContent = 'Please describe your suggested fix.'; errEl.style.display = 'block'; try { $('allo-ic-suggest').focus(); } catch (_) {} return; }
       var rawKindId = ($('allo-ic-kind').value || 'other');
       var matchedKind = KINDS.filter(function (k) { return k.id === rawKindId; })[0] || KINDS[KINDS.length - 1];
       var payload = {
@@ -214,7 +262,7 @@
         currentAnswer: ctx.currentAnswer,
         kind: matchedKind.id + ' (' + matchedKind.label + ')',
         suggested: suggested,
-        note: stripCtl($('allo-ic-note').value || '').trim().slice(0, 2000)
+        note: scrubSubmissionText(stripCtl($('allo-ic-note').value || '', 2000).trim()).slice(0, 2000)
       };
       var sendBtn = $('allo-ic-send');
       inFlight = true;
@@ -227,24 +275,37 @@
         errEl.style.display = 'block';
         sendBtn.disabled = false; sendBtn.textContent = 'Try sending again';
       };
+      var ctrl = null;
+      var timer = null;
+      var cleanupRequest = function () {
+        if (timer) { clearTimeout(timer); timer = null; }
+        if (activeTimer && activeTimer === timer) activeTimer = null;
+        if (activeController === ctrl) activeController = null;
+      };
       try {
         if (communityFeedbackBlocked()) { showManagedBlock(); return; }
-        var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
-        var timer = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (_) {} }, 15000) : null;
+        if (typeof fetch !== 'function') { showSendFailure(); return; }
+        ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+        timer = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (_) {} }, 15000) : null;
         activeController = ctrl;
         activeTimer = timer;
         var fetchOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), redirect: 'error', credentials: 'omit', referrerPolicy: 'no-referrer', cache: 'no-store' };
         if (ctrl) fetchOpts.signal = ctrl.signal;
         fetch(SUBMIT_URL, fetchOpts)
           .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: r.ok, j: null }; }); })
-          .then(function (res) { if (myToken !== modalToken) return; if (res.ok && res.j && res.j.ok && res.j.storage === 'private') showThanks(); else showSendFailure(); })
+          .then(function (res) { if (myToken !== modalToken) return; if (res.ok && res.j && typeof res.j === 'object' && !Array.isArray(res.j) && res.j.ok === true && res.j.storage === 'private') showThanks(); else showSendFailure(); })
           .catch(function () { showSendFailure(); })
           .finally(function () {
             if (timer) clearTimeout(timer);
             if (activeTimer === timer) activeTimer = null;
             if (activeController === ctrl) activeController = null;
           });
-      } catch (_) { showSendFailure(); }
+      } catch (_) {
+        if (timer) clearTimeout(timer);
+        if (activeTimer === timer) activeTimer = null;
+        if (activeController === ctrl) activeController = null;
+        showSendFailure();
+      }
     };
     var first = $('allo-ic-suggest'); if (first) first.focus();
   }
@@ -261,11 +322,12 @@
     previousFocus = null;
   }
 
-  window.AlloModules.ItemCorrection = {
+  window.AlloModules.ItemCorrection = Object.freeze({
     openFor: openFor,       // host per-item button calls this
     openModal: openModal,   // open directly with a full context object
+    closeModal: closeModal,
     KINDS: KINDS,
     _version: '1'
-  };
+  });
   console.log('[ItemCorrection] loaded');
 })();

@@ -71,7 +71,7 @@ function summaryKind(choice, modelReady) {
   if (choice.resolved === 'gemini' && choice.supported) return 'gemini';
   return 'unavailable';
 }
-var SPEECH_SETUP_CSS = ['.allo-ss-backdrop{position:fixed;inset:0;z-index:2147483100;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.72)}', '.allo-ss{--ss-bg:#fff;--ss-text:#0f172a;--ss-soft:#475569;--ss-line:#cbd5e1;--ss-tint:#f1f5f9;--ss-accent:#3730a3;--ss-on-accent:#fff;--ss-good:#166534;--ss-warn:#92400e;box-sizing:border-box;width:100%;max-width:560px;max-height:100%;overflow-y:auto;border-radius:14px;padding:20px;background:var(--ss-bg);color:var(--ss-text);font-size:14px;line-height:1.5;box-shadow:0 20px 50px rgba(0,0,0,.4)}', '.allo-ss--dark{--ss-bg:#0f172a;--ss-text:#f1f5f9;--ss-soft:#cbd5e1;--ss-line:#475569;--ss-tint:#1e293b;--ss-accent:#a5b4fc;--ss-on-accent:#0f172a;--ss-good:#86efac;--ss-warn:#fcd34d}', '.allo-ss--contrast{--ss-bg:#000;--ss-text:#fff;--ss-soft:#fff;--ss-line:#fff;--ss-tint:#000;--ss-accent:#fde047;--ss-on-accent:#000;--ss-good:#fde047;--ss-warn:#fde047;border:2px solid #fff}', '.allo-ss *{box-sizing:border-box}', '.allo-ss:focus{outline:none}', '.allo-ss h2{margin:0;font-size:20px;font-weight:800;color:inherit}', '.allo-ss h3{margin:0 0 8px;font-size:15px;font-weight:800;color:inherit}', '.allo-ss p{margin:0;color:inherit}', '.allo-ss-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}', '.allo-ss-section{border:0;border-top:1px solid var(--ss-line);margin:16px 0 0;padding:14px 0 0;min-width:0}', '.allo-ss-section legend{float:left;width:100%;padding:0;margin:0 0 8px;font-size:15px;font-weight:800}', '.allo-ss-section legend + *{clear:both}', '.allo-ss-soft{color:var(--ss-soft);font-size:13px}', '.allo-ss-banner{border:1px solid var(--ss-line);border-left:5px solid var(--ss-accent);border-radius:8px;padding:10px 12px;background:var(--ss-tint);font-weight:650}', '.allo-ss-banner[data-kind="ready"],.allo-ss-banner[data-kind="desktop"]{border-left-color:var(--ss-good)}', '.allo-ss-banner[data-kind="browser"],.allo-ss-banner[data-kind="needs-model"],.allo-ss-banner[data-kind="unavailable"]{border-left-color:var(--ss-warn)}', '.allo-ss-note{margin-top:8px;border-radius:8px;padding:8px 10px;background:var(--ss-tint);font-size:13px}', '.allo-ss-error{margin-top:8px;font-size:13px;font-weight:650;color:var(--ss-warn)}', '.allo-ss-option{display:flex;gap:10px;align-items:flex-start;min-height:44px;padding:8px 10px;margin-top:6px;border:1px solid var(--ss-line);border-radius:8px;cursor:pointer}', '.allo-ss-option[data-selected="true"]{border-color:var(--ss-accent);box-shadow:inset 0 0 0 1px var(--ss-accent)}', '.allo-ss-option[data-disabled="true"]{cursor:not-allowed}', '.allo-ss-option input{margin:3px 0 0;flex:none;width:16px;height:16px;accent-color:var(--ss-accent)}', '.allo-ss-option strong{display:block;font-weight:750}', '.allo-ss-option span{display:block;color:var(--ss-soft);font-size:13px}', '.allo-ss-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--ss-line)}', '.allo-ss-row:last-of-type{border-bottom:0}', '.allo-ss-ok{font-weight:750;color:var(--ss-good)}', '.allo-ss-tag{display:inline-block;margin-left:6px;padding:0 6px;border:1px solid var(--ss-line);border-radius:999px;font-size:12px;font-weight:650}', '.allo-ss-button{min-height:44px;min-width:44px;padding:6px 14px;border:1px solid var(--ss-accent);border-radius:8px;background:var(--ss-accent);color:var(--ss-on-accent);font:inherit;font-weight:750;cursor:pointer}', '.allo-ss-button[data-quiet="true"]{background:transparent;color:var(--ss-text);border-color:var(--ss-line)}', '.allo-ss-button:disabled{cursor:not-allowed;opacity:.65}', '.allo-ss-close{min-width:44px;min-height:44px;border:1px solid var(--ss-line);border-radius:8px;background:transparent;color:var(--ss-text);font-size:20px;line-height:1;cursor:pointer}', '.allo-ss button:focus-visible,.allo-ss input:focus-visible{outline:3px solid var(--ss-accent);outline-offset:2px}', '.allo-ss-track{height:10px;margin-top:6px;border:1px solid var(--ss-line);border-radius:999px;background:var(--ss-tint);overflow:hidden}', '.allo-ss-fill{height:100%;background:var(--ss-accent)}', '.allo-ss-quote{margin:8px 0;padding:8px 10px;border-left:3px solid var(--ss-line);font-style:italic}', '.allo-ss-heard{margin-top:8px;padding:8px 10px;border:1px solid var(--ss-line);border-radius:8px;background:var(--ss-tint)}', '.allo-ss-foot{display:flex;justify-content:flex-end;margin-top:16px}', '@media (forced-colors: active){.allo-ss-fill{background:Highlight}.allo-ss-button{border:1px solid ButtonText}}'].join('');
+var SPEECH_SETUP_CSS = ['.allo-ss-backdrop{position:fixed;inset:0;z-index:2147483100;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.72)}', '.allo-ss{--ss-bg:#fff;--ss-text:#0f172a;--ss-soft:#475569;--ss-line:#cbd5e1;--ss-tint:#f1f5f9;--ss-accent:#3730a3;--ss-on-accent:#fff;--ss-good:#166534;--ss-warn:#92400e;box-sizing:border-box;width:100%;max-width:560px;max-height:100%;overflow-y:auto;border-radius:14px;padding:20px;background:var(--ss-bg);color:var(--ss-text);font-size:14px;line-height:1.5;box-shadow:0 20px 50px rgba(0,0,0,.4)}', '.allo-ss--dark{--ss-bg:#0f172a;--ss-text:#f1f5f9;--ss-soft:#cbd5e1;--ss-line:#475569;--ss-tint:#1e293b;--ss-accent:#a5b4fc;--ss-on-accent:#0f172a;--ss-good:#86efac;--ss-warn:#fcd34d}', '.allo-ss--contrast{--ss-bg:#000;--ss-text:#fff;--ss-soft:#fff;--ss-line:#fff;--ss-tint:#000;--ss-accent:#fde047;--ss-on-accent:#000;--ss-good:#fde047;--ss-warn:#fde047;border:2px solid #fff}', '.allo-ss *{box-sizing:border-box}', '.allo-ss:focus-visible{outline:3px solid var(--ss-accent);outline-offset:2px}', '.allo-ss-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}', '.allo-ss-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border:1px solid var(--ss-line);border-radius:999px;background:var(--ss-tint);color:var(--ss-text);font-size:12px;font-weight:700}', '.allo-ss-pill[data-tone="good"]{border-color:var(--ss-good);color:var(--ss-good)}', '.allo-ss-pill[data-tone="warn"]{border-color:var(--ss-warn);color:var(--ss-warn)}', '.allo-ss-heard-row{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:8px}', '.allo-ss h2{margin:0;font-size:20px;font-weight:800;color:inherit}', '.allo-ss h3{margin:0 0 8px;font-size:15px;font-weight:800;color:inherit}', '.allo-ss p{margin:0;color:inherit}', '.allo-ss-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}', '.allo-ss-section{border:0;border-top:1px solid var(--ss-line);margin:16px 0 0;padding:14px 0 0;min-width:0}', '.allo-ss-section legend{float:left;width:100%;padding:0;margin:0 0 8px;font-size:15px;font-weight:800}', '.allo-ss-section legend + *{clear:both}', '.allo-ss-soft{color:var(--ss-soft);font-size:13px}', '.allo-ss-banner{border:1px solid var(--ss-line);border-left:5px solid var(--ss-accent);border-radius:8px;padding:10px 12px;background:var(--ss-tint);font-weight:650}', '.allo-ss-banner[data-kind="ready"],.allo-ss-banner[data-kind="desktop"]{border-left-color:var(--ss-good)}', '.allo-ss-banner[data-kind="browser"],.allo-ss-banner[data-kind="needs-model"],.allo-ss-banner[data-kind="unavailable"]{border-left-color:var(--ss-warn)}', '.allo-ss-note{margin-top:8px;border-radius:8px;padding:8px 10px;background:var(--ss-tint);font-size:13px}', '.allo-ss-error{margin-top:8px;font-size:13px;font-weight:650;color:var(--ss-warn)}', '.allo-ss-option{display:flex;gap:10px;align-items:flex-start;min-height:44px;padding:8px 10px;margin-top:6px;border:1px solid var(--ss-line);border-radius:8px;cursor:pointer}', '.allo-ss-option[data-selected="true"]{border-color:var(--ss-accent);box-shadow:inset 0 0 0 1px var(--ss-accent)}', '.allo-ss-option[data-disabled="true"]{cursor:not-allowed}', '.allo-ss-option input{margin:3px 0 0;flex:none;width:16px;height:16px;accent-color:var(--ss-accent)}', '.allo-ss-option strong{display:block;font-weight:750}', '.allo-ss-option span{display:block;color:var(--ss-soft);font-size:13px}', '.allo-ss-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--ss-line)}', '.allo-ss-row:last-of-type{border-bottom:0}', '.allo-ss-ok{font-weight:750;color:var(--ss-good)}', '.allo-ss-tag{display:inline-block;margin-left:6px;padding:0 6px;border:1px solid var(--ss-line);border-radius:999px;font-size:12px;font-weight:650}', '.allo-ss-button{min-height:44px;min-width:44px;padding:6px 14px;border:1px solid var(--ss-accent);border-radius:8px;background:var(--ss-accent);color:var(--ss-on-accent);font:inherit;font-weight:750;cursor:pointer}', '.allo-ss-button[data-quiet="true"]{background:transparent;color:var(--ss-text);border-color:var(--ss-line)}', '.allo-ss-button:disabled{cursor:not-allowed;opacity:.65}', '.allo-ss-close{min-width:44px;min-height:44px;border:1px solid var(--ss-line);border-radius:8px;background:transparent;color:var(--ss-text);font-size:20px;line-height:1;cursor:pointer}', '.allo-ss button:focus-visible,.allo-ss input:focus-visible{outline:3px solid var(--ss-accent);outline-offset:2px}', '.allo-ss-track{height:10px;margin-top:6px;border:1px solid var(--ss-line);border-radius:999px;background:var(--ss-tint);overflow:hidden}', '.allo-ss-fill{height:100%;background:var(--ss-accent)}', '.allo-ss-quote{margin:8px 0;padding:8px 10px;border-left:3px solid var(--ss-line);font-style:italic}', '.allo-ss-heard{margin-top:8px;padding:8px 10px;border:1px solid var(--ss-line);border-radius:8px;background:var(--ss-tint)}', '.allo-ss-foot{display:flex;justify-content:flex-end;margin-top:16px}', '@media (prefers-reduced-motion: reduce){.allo-ss,.allo-ss *{transition:none!important;animation:none!important}}', '@media (forced-colors: active){.allo-ss-fill{background:Highlight}.allo-ss-button{border:1px solid ButtonText}}'].join('');
 var EMPTY_LANG_CONTEXT = typeof React !== 'undefined' && typeof React.createContext === 'function' ? React.createContext(null) : null;
 function SpeechSetupPanel(props) {
   var t = props.t || function () {
@@ -136,6 +136,10 @@ function SpeechSetupPanel(props) {
   var setCheck = _check[1];
   var _revision = React.useState(0);
   var bump = _revision[1];
+  var _copied = React.useState(false);
+  var copiedTranscript = _copied[0];
+  var setCopiedTranscript = _copied[1];
+  var copyTimerRef = React.useRef(null);
   function refreshModelStatus() {
     var voice = voiceNow();
     if (!voice || typeof voice.getWhisperModelStatus !== 'function') return Promise.resolve();
@@ -330,6 +334,10 @@ function SpeechSetupPanel(props) {
           checkRef.current.cancel();
         } catch (_) {}
         checkRef.current = null;
+      }
+      if (copyTimerRef.current) {
+        clearTimeout(copyTimerRef.current);
+        copyTimerRef.current = null;
       }
       try {
         if (wasTop && previousFocus && previousFocus.isConnected && previousFocus !== document.body && typeof previousFocus.focus === 'function') {
@@ -543,6 +551,52 @@ function SpeechSetupPanel(props) {
       } catch (_) {}
     }
   }
+  function copyTestTranscript(text) {
+    var value = String(text || '').trim();
+    if (!value) return;
+    var markCopied = function () {
+      if (!mountedRef.current) return;
+      setCopiedTranscript(true);
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(function () {
+        copyTimerRef.current = null;
+        if (mountedRef.current) setCopiedTranscript(false);
+      }, 2200);
+    };
+    if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      navigator.clipboard.writeText(value).then(markCopied, function () {
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = value;
+          ta.setAttribute('readonly', '');
+          ta.setAttribute('aria-hidden', 'true');
+          ta.setAttribute('aria-label', 'Clipboard copy helper');
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          markCopied();
+        } catch (_) {}
+      });
+      return;
+    }
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = value;
+      ta.setAttribute('readonly', '');
+      ta.setAttribute('aria-hidden', 'true');
+      ta.setAttribute('aria-label', 'Clipboard copy helper');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      markCopied();
+    } catch (_) {}
+  }
   var testBusy = check.phase === 'starting' || check.phase === 'listening' || check.phase === 'transcribing';
   var report = check.report;
   var assessment = report && report.assessment;
@@ -550,6 +604,10 @@ function SpeechSetupPanel(props) {
   var downloading = !!download;
   var tierSize = TIER_SIZES_MB[tier];
   var lowStorage = freeMb != null && freeMb < tierSize * 1.5;
+  var selectedEngineOption = engineOptions.filter(function (o) {
+    return o.id === shownEngine;
+  })[0] || engineOptions[0] || null;
+  var statusPillTone = kind === 'ready' || kind === 'desktop' ? 'good' : kind === 'needs-model' || kind === 'unavailable' ? 'warn' : 'neutral';
   function renderModelRow(key, label) {
     var ready = !!(modelStatus && modelStatus[tier] && modelStatus[tier][key]);
     var active = download && download.tier === tier && download.key === key;
@@ -609,7 +667,22 @@ function SpeechSetupPanel(props) {
     className: "allo-ss-banner",
     "data-kind": kind,
     role: "status"
-  }, summaryText), props.automatic && /*#__PURE__*/React.createElement("p", {
+  }, summaryText), /*#__PURE__*/React.createElement("div", {
+    className: "allo-ss-pills",
+    "data-testid": "speech-setup-status-strip"
+  }, selectedEngineOption && /*#__PURE__*/React.createElement("span", {
+    className: "allo-ss-pill",
+    "data-tone": statusPillTone
+  }, selectedEngineOption.label), canUseOnDevice && profile.supported && /*#__PURE__*/React.createElement("span", {
+    className: "allo-ss-pill",
+    "data-tone": testTier ? 'good' : 'warn'
+  }, testTier ? say(t('speech_setup.downloaded'), '✓ Downloaded') + ': ' + tierLabels[testTier] : say(t('speech_setup.tier_line'), '{name} ({size} MB)', {
+    name: tierLabels[tier],
+    size: tierSize
+  })), freeMb != null && /*#__PURE__*/React.createElement("span", {
+    className: "allo-ss-pill",
+    "data-tone": lowStorage ? 'warn' : 'neutral'
+  }, freeMb, " MB free")), props.automatic && /*#__PURE__*/React.createElement("p", {
     className: "allo-ss-note"
   }, say(t('speech_setup.opened_from_mic'), 'The microphone button needs this setup first. After the download, press it again.')), kind === 'needs-model' && canUseOnDevice && profile.supported && !downloading && /*#__PURE__*/React.createElement("div", {
     style: {
@@ -640,7 +713,7 @@ function SpeechSetupPanel(props) {
   }, say(t('speech_setup.download_progress'), 'Downloaded {loaded} of {total} MB. You can keep working while this finishes.', {
     loaded: download.loadedMb,
     total: TIER_SIZES_MB[download.tier] || 0
-  })), /*#__PURE__*/React.createElement("div", {
+  }), ' ', "(", download.percent, "%)"), /*#__PURE__*/React.createElement("div", {
     className: "allo-ss-track",
     role: "progressbar",
     "aria-label": say(t('speech_setup.download_label'), 'Speech model download'),
@@ -823,9 +896,19 @@ function SpeechSetupPanel(props) {
     className: "allo-ss-ok"
   }, say(t('speech_setup.result_level_ok'), 'Your microphone works.'))), report.heardSpeech && report.tier != null && /*#__PURE__*/React.createElement("div", {
     className: "allo-ss-heard"
-  }, /*#__PURE__*/React.createElement("strong", null, say(t('speech_setup.result_heard'), 'What it heard:')), ' ', /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "allo-ss-heard-row"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", null, say(t('speech_setup.result_heard'), 'What it heard:')), ' ', /*#__PURE__*/React.createElement("span", {
     "data-testid": "speech-setup-transcript"
-  }, report.transcript || say(t('speech_setup.result_no_words'), 'No words came through. Try again.'))), assessment && /*#__PURE__*/React.createElement("p", {
+  }, report.transcript || say(t('speech_setup.result_no_words'), 'No words came through. Try again.'))), report.transcript && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "allo-ss-button",
+    "data-quiet": "true",
+    "data-testid": "speech-setup-copy-transcript",
+    onClick: function () {
+      copyTestTranscript(report.transcript);
+    }
+  }, copiedTranscript ? '✓ Copied' : 'Copy'))), assessment && /*#__PURE__*/React.createElement("p", {
     className: "allo-ss-note",
     "data-testid": "speech-setup-speed",
     "data-verdict": assessment.verdict

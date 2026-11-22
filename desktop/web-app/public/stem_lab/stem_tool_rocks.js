@@ -1912,39 +1912,85 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     if (s.length === 3) s = s[0] + s[0] + s[1] + s[1] + s[2] + s[2];
     return [parseInt(s.slice(0, 2), 16) || 0, parseInt(s.slice(2, 4), 16) || 0, parseInt(s.slice(4, 6), 16) || 0];
   }
+  function rkIsHighContrast() {
+    try {
+      if (typeof document === 'undefined') return false;
+      return !!((document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) ||
+                (document.body && document.body.classList && document.body.classList.contains('theme-contrast')));
+    } catch (e) { return false; }
+  }
+  function rkSafeEllipse(ctx2d, cx, cy, rx, ry, rot, a0, a1) {
+    if (!ctx2d || rx <= 0 || ry <= 0) return;
+    if (typeof ctx2d.ellipse === 'function') {
+      ctx2d.ellipse(cx, cy, rx, ry, rot || 0, a0, a1);
+    } else {
+      ctx2d.save();
+      ctx2d.translate(cx, cy);
+      if (rot) ctx2d.rotate(rot);
+      ctx2d.scale(rx, ry);
+      ctx2d.arc(0, 0, 1, a0, a1);
+      ctx2d.restore();
+    }
+  }
+
   // Paints the solid fraction at progress p over a W x H area. The melt
   // behind it is the caller's: unsolidified cells stay transparent.
+  // Reuses pre-allocated offscreen canvas, ImageData & RGB lookup on `model` (zero-GC).
   function rkCoolingPaint(ctx, model, p, W, H) {
     if (!model || !model.owner || !ctx || typeof ctx.drawImage !== 'function') return false;
     var cols = model.cols, rows = model.rows;
     var t = Math.min(1, Math.max(0, p)) * model.tEnd * 1.0001;
-    var off = null, octx = null;
-    try {
-      off = document.createElement('canvas');
-      off.width = cols; off.height = rows;
-      octx = off.getContext('2d');
-    } catch (e) { octx = null; }
+    var off = model._offCanvas || null, octx = model._offCtx || null;
+    if (!off || !octx || off.width !== cols || off.height !== rows) {
+      try {
+        off = document.createElement('canvas');
+        off.width = cols; off.height = rows;
+        octx = off.getContext('2d');
+        model._offCanvas = off;
+        model._offCtx = octx;
+        model._offImg = null;
+      } catch (e) { octx = null; }
+    }
     if (!octx || typeof octx.createImageData !== 'function') return false;
-    var img = octx.createImageData(cols, rows), px = img.data;
-    var rgb = model.nuclei.map(function (nu) {
-      var c = rkHexRgb(nu.col);
-      return [Math.min(255, c[0] * nu.shade), Math.min(255, c[1] * nu.shade), Math.min(255, c[2] * nu.shade)];
-    });
-    var frontBand = model.tEnd * 0.035;
+    var img = model._offImg;
+    if (!img || img.width !== cols || img.height !== rows) {
+      img = octx.createImageData(cols, rows);
+      model._offImg = img;
+    }
+    var px = img.data;
+    if (!model._rgbFlat) {
+      var nNuc = model.nuclei.length;
+      var flat = new Uint8Array(nNuc * 3);
+      for (var ni = 0; ni < nNuc; ni++) {
+        var nu = model.nuclei[ni], col = rkHexRgb(nu.col);
+        flat[ni * 3] = Math.min(255, Math.round(col[0] * nu.shade));
+        flat[ni * 3 + 1] = Math.min(255, Math.round(col[1] * nu.shade));
+        flat[ni * 3 + 2] = Math.min(255, Math.round(col[2] * nu.shade));
+      }
+      model._rgbFlat = flat;
+    }
+    var rgbFlat = model._rgbFlat;
+    var frontBand = model.tEnd * 0.042;
+    var totalPx = cols * rows;
+    for (var clearI = 3; clearI < totalPx * 4; clearI += 4) px[clearI] = 0;
     for (var y = 0; y < rows; y++) {
       for (var x = 0; x < cols; x++) {
         var i = y * cols + x;
         if (model.arrive[i] > t) continue;
-        var o = model.owner[i], c = rgb[o];
+        var o = model.owner[i], o3 = o * 3;
+        var cr = rgbFlat[o3], cg = rgbFlat[o3 + 1], cb = rgbFlat[o3 + 2];
         // A grain boundary: a neighbour owned by another crystal that has
         // ALSO solidified. That is where two crystals have met.
         var edge = (x + 1 < cols && model.owner[i + 1] !== o && model.arrive[i + 1] <= t) ||
           (y + 1 < rows && model.owner[i + cols] !== o && model.arrive[i + cols] <= t);
         var front = p < 1 && model.arrive[i] > t - frontBand;
+        // Subtle facet bevel glint on upper-left edges of solidified crystals
+        var bevel = !edge && !front && x > 0 && y > 0 && (model.owner[i - 1] !== o || model.owner[i - cols] !== o);
         var q = i * 4;
         if (edge) { px[q] = 24; px[q + 1] = 24; px[q + 2] = 32; }
-        else if (front) { px[q] = Math.min(255, c[0] + 60); px[q + 1] = Math.min(255, c[1] + 50); px[q + 2] = Math.min(255, c[2] + 20); }
-        else { px[q] = c[0]; px[q + 1] = c[1]; px[q + 2] = c[2]; }
+        else if (front) { px[q] = Math.min(255, cr + 72); px[q + 1] = Math.min(255, cg + 56); px[q + 2] = Math.min(255, cb + 24); }
+        else if (bevel) { px[q] = Math.min(255, cr + 32); px[q + 1] = Math.min(255, cg + 32); px[q + 2] = Math.min(255, cb + 28); }
+        else { px[q] = cr; px[q + 1] = cg; px[q + 2] = cb; }
         px[q + 3] = 255;
       }
     }
@@ -3488,6 +3534,25 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             x2: gr.x + gr.r, y2: gr.y - gr.r * 0.7 + i * gr.r * 0.45,
             stroke: 'rgba(255,255,255,0.42)', strokeWidth: 1.1,
             transform: 'rotate(' + gr.rot.toFixed(0) + ' ' + gr.x.toFixed(1) + ' ' + gr.y.toFixed(1) + ')'
+          }));
+        }
+      }
+      // Polarized thin-section birefringence crystal interference sheen (XPL anisotropic grains only).
+      // Intensity peaks at 45 deg to the crossed polarizers and vanishes at extinction angles;
+      // rendered as delicate interference facet lines (preserving polygon optics tests).
+      if (xpl && !opt.iso && !opt.opaque) {
+        var bTheta = (stageDeg + gr.rot) * Math.PI / 180;
+        var bSheen = Math.abs(Math.sin(2 * bTheta));
+        if (bSheen >= 0.48) {
+          var sAngle = ((stageDeg + gr.rot) * 0.75) % 180;
+          var sLen = gr.r * 0.56;
+          var sOp = (0.14 + (bSheen - 0.48) * 0.42).toFixed(2);
+          g.push(h('line', {
+            key: 'bs' + idx,
+            x1: (gr.x - sLen).toFixed(1), y1: (gr.y - gr.r * 0.18).toFixed(1),
+            x2: (gr.x + sLen).toFixed(1), y2: (gr.y - gr.r * 0.18).toFixed(1),
+            stroke: '#ffffff', strokeOpacity: sOp, strokeWidth: 1.15, strokeLinecap: 'round',
+            transform: 'rotate(' + sAngle.toFixed(0) + ' ' + gr.x.toFixed(1) + ' ' + gr.y.toFixed(1) + ')'
           }));
         }
       }
@@ -8499,13 +8564,38 @@ const isRocksLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
             function rkLsPrep() {
               if (rkLsSeeded) return rkLsSeeded;
               var rnd = rkSeed('rocks-landscape');
-              var grains = [], stipple = [], pebbles = [], sediment = [], stars = [];
+              var grains = [], stipple = [], pebbles = [], sediment = [];
               var i;
               for (i = 0; i < 160; i++) grains.push([rnd(), rnd(), rnd()]);
               for (i = 0; i < 70; i++) stipple.push([rnd(), rnd()]);
               for (i = 0; i < 26; i++) pebbles.push([rnd(), rnd(), rnd(), rnd()]);
               for (i = 0; i < 12; i++) sediment.push(rnd());
-              rkLsSeeded = { grains: grains, stipple: stipple, pebbles: pebbles, sediment: sediment };
+              // Pre-allocated zero-GC pools: convective magma plumes & wind/river sediment drift motes
+              var PLUME_N = 12;
+              var plumePhase = new Float32Array(PLUME_N);
+              var plumeOff = new Float32Array(PLUME_N);
+              var plumeSpd = new Float32Array(PLUME_N);
+              for (i = 0; i < PLUME_N; i++) {
+                plumePhase[i] = rnd();
+                plumeOff[i] = (rnd() - 0.5) * 1.4;
+                plumeSpd[i] = 0.0045 + rnd() * 0.0035;
+              }
+              var WIND_N = 18;
+              var windPhase = new Float32Array(WIND_N);
+              var windY = new Float32Array(WIND_N);
+              var windSpd = new Float32Array(WIND_N);
+              var windSz = new Float32Array(WIND_N);
+              for (i = 0; i < WIND_N; i++) {
+                windPhase[i] = rnd();
+                windY[i] = rnd();
+                windSpd[i] = 0.0022 + rnd() * 0.0024;
+                windSz[i] = 0.9 + rnd() * 1.3;
+              }
+              rkLsSeeded = {
+                grains: grains, stipple: stipple, pebbles: pebbles, sediment: sediment,
+                plumeN: PLUME_N, plumePhase: plumePhase, plumeOff: plumeOff, plumeSpd: plumeSpd,
+                windN: WIND_N, windPhase: windPhase, windY: windY, windSpd: windSpd, windSz: windSz
+              };
               return rkLsSeeded;
             }
             // Rounded rectangle without ctx.roundRect (absent in older WebViews).
@@ -8734,7 +8824,7 @@ const isRocksLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                 ctx.fillStyle = 'rgba(255,255,255,0.86)';
                 for (j = 0; j < 4; j++) {
                   ctx.beginPath();
-                  ctx.ellipse(cxC + (j - 1.5) * 16 * dpr, cyC + (j % 2 ? 3 : -3) * dpr, (14 + (j % 2) * 8) * dpr, (8 + (j % 2) * 4) * dpr, 0, 0, Math.PI * 2);
+                  rkSafeEllipse(ctx, cxC + (j - 1.5) * 16 * dpr, cyC + (j % 2 ? 3 : -3) * dpr, (14 + (j % 2) * 8) * dpr, (8 + (j % 2) * 4) * dpr, 0, 0, Math.PI * 2);
                   ctx.fill();
                 }
               }
@@ -8807,7 +8897,7 @@ const isRocksLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                   for (j = 0; j < P.pebbles.length; j++) {
                     var pb = P.pebbles[j];
                     ctx.beginPath();
-                    ctx.ellipse(bx0 + pb[0] * (bx1 - bx0), y0 + 0.15 * (y1 - y0) + pb[1] * 0.7 * (y1 - y0), (2.5 + pb[2] * 4) * dpr, (2 + pb[3] * 2.5) * dpr, pb[2] * 3, 0, Math.PI * 2);
+                    rkSafeEllipse(ctx, bx0 + pb[0] * (bx1 - bx0), y0 + 0.15 * (y1 - y0) + pb[1] * 0.7 * (y1 - y0), (2.5 + pb[2] * 4) * dpr, (2 + pb[3] * 2.5) * dpr, pb[2] * 3, 0, Math.PI * 2);
                     ctx.fillStyle = pb[3] > 0.6 ? '#d6d3d1' : pb[3] > 0.3 ? '#7c6f64' : '#c2410c';
                     ctx.fill();
                     ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 0.6 * dpr; ctx.stroke();
@@ -8844,7 +8934,7 @@ const isRocksLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
               ctx.restore();
               // Lake with shimmer.
               ctx.beginPath();
-              ctx.ellipse(W * 0.54, H * 0.505, W * 0.15, H * 0.022, 0, 0, Math.PI * 2);
+              rkSafeEllipse(ctx, W * 0.54, H * 0.505, W * 0.15, H * 0.022, 0, 0, Math.PI * 2);
               ctx.fillStyle = '#38bdf8'; ctx.fill();
               ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 1 * dpr;
               for (i = 0; i < 4; i++) {
@@ -8867,15 +8957,32 @@ const isRocksLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
               ctx.quadraticCurveTo(W * 0.635, H * 0.53, r2[0] + 8 * dpr, H * 0.52);
               ctx.closePath();
               ctx.fillStyle = '#d6b370'; ctx.fill();
-              // Sediment grains travelling down the river and settling.
+              // Sediment grains travelling down the river and settling, plus suspended wind/river drift motes.
+              var isHCLs = rkIsHighContrast();
+              var redLs = rocksMotionReduced();
               for (i = 0; i < P.sediment.length; i++) {
                 var u = (tick * 0.004 + P.sediment[i]) % 1;
                 var sp2 = rkLsBezier(r0, r1, r2, u);
                 var settle = u > 0.85 ? (u - 0.85) / 0.15 : 0;
                 ctx.beginPath();
                 ctx.arc(sp2[0] - settle * 30 * dpr, sp2[1] + settle * 6 * dpr, (1.4 + P.sediment[i]) * dpr, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(214,179,112,' + (1 - settle * 0.9) + ')';
+                ctx.fillStyle = isHCLs ? '#ffff00' : ('rgba(214,179,112,' + (1 - settle * 0.9) + ')');
                 ctx.fill();
+              }
+              // Suspended wind-borne erosion dust & river-delta drift motes descending into the basin
+              if (!isHCLs) {
+                ctx.save();
+                for (i = 0; i < P.windN; i++) {
+                  var wu = redLs ? P.windPhase[i] : ((P.windPhase[i] + tick * P.windSpd[i]) % 1);
+                  var wx = W * (0.78 - wu * 0.36);
+                  var wy = H * (0.24 + P.windY[i] * 0.24 + wu * 0.05) + Math.sin(wu * 9 + i) * 3 * dpr;
+                  var wf = Math.sin(wu * Math.PI);
+                  ctx.fillStyle = 'rgba(254,243,199,' + (wf * 0.56).toFixed(3) + ')';
+                  ctx.beginPath();
+                  ctx.arc(wx, wy, P.windSz[i] * dpr, 0, Math.PI * 2);
+                  ctx.fill();
+                }
+                ctx.restore();
               }
 
               // ── Volcano (left): layered stratocone, crater, plume, lava ──
@@ -8945,7 +9052,7 @@ const isRocksLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
               ctx.fillStyle = lavaGrad; ctx.fill();
               ctx.restore();
               // Cooled basalt toe at the foot of the flow.
-              ctx.beginPath(); ctx.ellipse(W * 0.265, H * 0.455, 16 * dpr, 5 * dpr, 0, 0, Math.PI * 2); ctx.fillStyle = '#1f2937'; ctx.fill();
+              ctx.beginPath(); rkSafeEllipse(ctx, W * 0.265, H * 0.455, 16 * dpr, 5 * dpr, 0, 0, Math.PI * 2); ctx.fillStyle = '#1f2937'; ctx.fill();
 
               // ── Magma chamber + conduit + aureole ──
               const mgX = W * 0.18, mgY = H * 0.76, mgRx = W * 0.085, mgRy = H * 0.11;
@@ -8970,7 +9077,7 @@ const isRocksLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
               ctx.restore();
               ctx.save();
               ctx.setLineDash([3 * dpr, 4 * dpr]); ctx.strokeStyle = 'rgba(251,191,36,0.65)'; ctx.lineWidth = 1.6 * dpr;
-              ctx.beginPath(); ctx.ellipse(mgX, mgY, mgRx * 1.45, mgRy * 1.45, 0, 0, Math.PI * 2); ctx.stroke();
+              ctx.beginPath(); rkSafeEllipse(ctx, mgX, mgY, mgRx * 1.45, mgRy * 1.45, 0, 0, Math.PI * 2); ctx.stroke();
               ctx.restore();
               // Feeder conduit with thermal side-glow.
               ctx.save();
@@ -9000,12 +9107,23 @@ const isRocksLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
               magmaGrad.addColorStop(0, '#fef9c3'); magmaGrad.addColorStop(0.24, '#fde047'); magmaGrad.addColorStop(0.58, '#ea580c'); magmaGrad.addColorStop(1, '#7f1d1d');
               ctx.fillStyle = magmaGrad; ctx.fill();
               ctx.strokeStyle = 'rgba(69,26,3,0.78)'; ctx.lineWidth = 2 * dpr; ctx.stroke();
-              // Convection cells inside the chamber.
+              // Convection cells & glowing convective magma thermal plumes rising through chamber and conduit.
               ctx.save();
-              ctx.strokeStyle = 'rgba(254,249,195,0.58)'; ctx.lineWidth = 1.6 * dpr;
+              ctx.strokeStyle = isHCLs ? '#ffff00' : 'rgba(254,249,195,0.58)'; ctx.lineWidth = 1.6 * dpr;
               for (i = 0; i < 3; i++) {
                 var ca = tick * 0.02 + i * 2.1;
-                ctx.beginPath(); ctx.ellipse(mgX + (i - 1) * mgRx * 0.45, mgY, mgRx * 0.28, mgRy * 0.5, 0, ca, ca + 3.6); ctx.stroke();
+                ctx.beginPath(); rkSafeEllipse(ctx, mgX + (i - 1) * mgRx * 0.45, mgY, mgRx * 0.28, mgRy * 0.5, 0, ca, ca + 3.6); ctx.stroke();
+              }
+              if (!isHCLs) {
+                for (i = 0; i < P.plumeN; i++) {
+                  var pu = redLs ? P.plumePhase[i] : ((P.plumePhase[i] + tick * P.plumeSpd[i]) % 1);
+                  var pFade = Math.sin(pu * Math.PI);
+                  var pxM = mgX + P.plumeOff[i] * mgRx * 0.42 * (1 - pu * 0.85) + Math.sin(pu * 7 + i) * 2.4 * dpr;
+                  var pyM = (mgY + mgRy * 0.45) - pu * (mgY + mgRy * 0.45 - H * 0.16);
+                  var pRad = (2.6 - pu * 1.1) * dpr;
+                  ctx.fillStyle = 'rgba(254,240,138,' + (pFade * 0.78).toFixed(3) + ')';
+                  ctx.beginPath(); ctx.arc(pxM, pyM, Math.max(0.8, pRad), 0, Math.PI * 2); ctx.fill();
+                }
               }
               ctx.restore();
 
@@ -9076,12 +9194,28 @@ const isRocksLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                 ctx.beginPath(); ctx.arc(pbX - 0.8 * dpr, pbY - 0.8 * dpr, 0.85 * dpr, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(255,241,242,0.85)'; ctx.fill();
               }
-              // Subtle tectonic compression stress-field aura beneath the mountain root.
-              var pressGlow = ctx.createRadialGradient(W * 0.80, H * 0.74, W * 0.02, W * 0.80, H * 0.74, W * 0.17);
-              pressGlow.addColorStop(0, 'rgba(196,181,253,' + (0.16 + Math.sin(tick * 0.04) * 0.05).toFixed(3) + ')');
-              pressGlow.addColorStop(1, 'rgba(139,92,246,0)');
-              ctx.fillStyle = pressGlow;
-              ctx.fillRect(W * 0.62, H * 0.56, W * 0.36, H * 0.36);
+              // Subtle tectonic compression stress-field aura & inward-propagating P-T metamorphic stress waves.
+              if (!isHCLs && typeof ctx.createRadialGradient === 'function') {
+                var pressGlow = ctx.createRadialGradient(W * 0.80, H * 0.74, W * 0.02, W * 0.80, H * 0.74, W * 0.17);
+                pressGlow.addColorStop(0, 'rgba(196,181,253,' + (0.16 + Math.sin(tick * 0.04) * 0.05).toFixed(3) + ')');
+                pressGlow.addColorStop(1, 'rgba(139,92,246,0)');
+                ctx.fillStyle = pressGlow;
+                ctx.fillRect(W * 0.62, H * 0.56, W * 0.36, H * 0.36);
+              }
+              // Inward-propagating tectonic pressure-temperature stress wave arcs across metamorphic root
+              for (i = 0; i < 3; i++) {
+                var swPhase = redLs ? ((i + 0.5) / 3) : (((tick * 0.0085) + i / 3) % 1);
+                var swFade = Math.sin(swPhase * Math.PI);
+                var swOff = (1 - swPhase) * (W * 0.14);
+                ctx.strokeStyle = isHCLs ? '#ffff00' : ('rgba(233,213,255,' + (swFade * 0.46).toFixed(3) + ')');
+                ctx.lineWidth = (1.6 - swPhase * 0.5) * dpr;
+                ctx.beginPath();
+                ctx.arc(W * 0.80 - swOff, H * 0.74, H * 0.12, -0.65, 0.65);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(W * 0.80 + swOff, H * 0.74, H * 0.12, Math.PI - 0.65, Math.PI + 0.65);
+                ctx.stroke();
+              }
               ctx.restore();
 
               // Rain squall over the range and rockfall down its flank: the cause
@@ -10580,26 +10714,65 @@ const isRocksLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                   // listeners, and the progress value is what drives the frame.
                   var coolingRef = function(canvasEl) {
                     if (!canvasEl) return;
-                    var ctx = canvasEl.getContext('2d');
+                    var ctx = canvasEl._rkCoolCtx || (canvasEl._rkCoolCtx = canvasEl.getContext && canvasEl.getContext('2d'));
                     // Null on any canvas-less host; the clearRect below would throw.
                     if (!ctx) return;
+                    var isHC = rkIsHighContrast();
+                    var hasLG = typeof ctx.createLinearGradient === 'function';
+                    var hasRG = typeof ctx.createRadialGradient === 'function';
                     var dpr = window.devicePixelRatio || 1;
                     // Give the model enough room for crystal-size differences to
                     // be legible. Draw in CSS pixels and scale once for HiDPI so
                     // the science diagram stays sharp without shrinking its art.
                     var W = 360, H = 225;
-                    canvasEl.width = W * dpr;
-                    canvasEl.height = H * dpr;
+                    var tw = W * dpr, th = H * dpr;
+                    if (canvasEl.width !== tw) canvasEl.width = tw;
+                    if (canvasEl.height !== th) canvasEl.height = th;
                     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
                     ctx.clearRect(0,0,W,H);
 
                     var progress = animProgress / 100;
-                    var melt = ctx.createLinearGradient(0, 0, W, H);
-                    melt.addColorStop(0, 'rgba(251, 146, 60, ' + (1 - progress * 0.72) + ')');
-                    melt.addColorStop(0.48, 'rgba(220, 38, 38, ' + (1 - progress * 0.82) + ')');
-                    melt.addColorStop(1, 'rgba(127, 29, 29, ' + (1 - progress * 0.68) + ')');
-                    ctx.fillStyle = melt;
+                    if (!isHC && hasLG) {
+                      var melt = ctx.createLinearGradient(0, 0, W, H);
+                      melt.addColorStop(0, 'rgba(251, 146, 60, ' + (1 - progress * 0.72) + ')');
+                      melt.addColorStop(0.48, 'rgba(220, 38, 38, ' + (1 - progress * 0.82) + ')');
+                      melt.addColorStop(1, 'rgba(127, 29, 29, ' + (1 - progress * 0.68) + ')');
+                      ctx.fillStyle = melt;
+                    } else {
+                      ctx.fillStyle = isHC ? '#000000' : '#7f1d1d';
+                    }
                     ctx.fillRect(0,0,W,H);
+
+                    // Glowing convective magma thermal plumes swirling in the cooling melt (bypassed in High-Contrast)
+                    if (!isHC && progress < 0.96) {
+                      var plumeFade = (1 - progress) * 0.68;
+                      var phaseNow = isAnimActive ? (progress * 10.5) : 1.2;
+                      ctx.save();
+                      if (hasRG) {
+                        for (var plI = 0; plI < 4; plI++) {
+                          var plX = W * (0.16 + plI * 0.23) + Math.sin(phaseNow + plI * 1.6) * 14;
+                          var plY = H * (0.86 - ((phaseNow * 0.14 + plI * 0.27) % 0.72));
+                          var plR = 32 + (plI % 2) * 14;
+                          var plG = ctx.createRadialGradient(plX, plY, 2, plX, plY, plR);
+                          plG.addColorStop(0, 'rgba(254, 249, 195, ' + (plumeFade * 0.52).toFixed(3) + ')');
+                          plG.addColorStop(0.48, 'rgba(251, 146, 60, ' + (plumeFade * 0.30).toFixed(3) + ')');
+                          plG.addColorStop(1, 'rgba(220, 38, 38, 0)');
+                          ctx.fillStyle = plG;
+                          ctx.beginPath(); ctx.arc(plX, plY, plR, 0, Math.PI * 2); ctx.fill();
+                        }
+                      }
+                      // Subtle incandescent magma convection streamlines
+                      ctx.strokeStyle = 'rgba(254, 240, 138, ' + (plumeFade * 0.32).toFixed(3) + ')';
+                      ctx.lineWidth = 1.6;
+                      for (var stI = 0; stI < 3; stI++) {
+                        var sxC = W * (0.22 + stI * 0.28);
+                        ctx.beginPath();
+                        ctx.moveTo(sxC - 16, H - 8);
+                        ctx.quadraticCurveTo(sxC + Math.sin(phaseNow + stI) * 20, H * 0.56, sxC + 10, 48);
+                        ctx.stroke();
+                      }
+                      ctx.restore();
+                    }
 
                     // Atomic building blocks in the melt. Their scattered
                     // positions make the starting state visibly disordered;
@@ -10609,7 +10782,7 @@ const isRocksLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                       var atomY = 48 + ((atomI * 47) % 158);
                       ctx.beginPath();
                       ctx.arc(atomX, atomY, 1.8 + (atomI % 3) * 0.55, 0, Math.PI * 2);
-                      ctx.fillStyle = 'rgba(254, 240, 138, ' + Math.max(0.05, 0.56 * (1 - progress)) + ')';
+                      ctx.fillStyle = isHC ? '#ffff00' : ('rgba(254, 240, 138, ' + Math.max(0.05, 0.56 * (1 - progress)) + ')');
                       ctx.fill();
                     }
 
@@ -10618,7 +10791,38 @@ const isRocksLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                       // Crystals nucleate and grow until they meet; see
                       // rkCoolingModel. What is left at 100% is an interlocking
                       // mosaic, the same texture the thin section shows.
-                      rkCoolingPaint(ctx, rkCoolingModel(coolingSpeed, selRock), progress, W, H);
+                      var coolM = rkCoolingModel(coolingSpeed, selRock);
+                      rkCoolingPaint(ctx, coolM, progress, W, H);
+                      // Cooling crystal-nucleation shimmer facets across newly solidifying crystals
+                      if (!isHC && progress > 0.06 && coolM && coolM.nuclei) {
+                        var nucs = coolM.nuclei;
+                        var nLim = Math.min(nucs.length, 28);
+                        var tNow = progress * coolM.tEnd;
+                        ctx.save();
+                        ctx.globalCompositeOperation = 'lighter';
+                        for (var ni2 = 0; ni2 < nLim; ni2++) {
+                          var nu2 = nucs[ni2];
+                          if (!nu2) continue;
+                          var nx2 = (nu2.x / coolM.cols) * W;
+                          var ny2 = (nu2.y / coolM.rows) * H;
+                          if (ny2 < 46) continue;
+                          var shimmer = 0.25 + 0.55 * Math.abs(Math.sin(progress * 9.5 + ni2 * 1.7));
+                          var fLen = (coolingSpeed === 'slow' ? 7.5 : 4.2) * Math.min(1, progress * 1.4);
+                          ctx.strokeStyle = 'rgba(254, 249, 195, ' + (shimmer * (0.28 + 0.42 * (1 - progress * 0.4))).toFixed(3) + ')';
+                          ctx.lineWidth = 1.1;
+                          ctx.beginPath();
+                          ctx.moveTo(nx2 - fLen, ny2 - fLen * 0.35);
+                          ctx.lineTo(nx2 + fLen, ny2 + fLen * 0.35);
+                          ctx.moveTo(nx2 - fLen * 0.35, ny2 + fLen);
+                          ctx.lineTo(nx2 + fLen * 0.35, ny2 - fLen);
+                          ctx.stroke();
+                          if (progress < 0.95 && tNow > 0) {
+                            ctx.fillStyle = 'rgba(255, 255, 255, ' + (shimmer * 0.45).toFixed(3) + ')';
+                            ctx.beginPath(); ctx.arc(nx2, ny2, 1.5, 0, Math.PI * 2); ctx.fill();
+                          }
+                        }
+                        ctx.restore();
+                      }
                     } else {
                       // A quench produces glass, not tiny crystals. Curved
                       // conchoidal fracture lines distinguish the finished
@@ -10626,33 +10830,36 @@ const isRocksLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                       ctx.fillStyle = 'rgba(8, 10, 16, ' + progress + ')';
                       ctx.fillRect(0,0,W,H);
                       if (progress > 0.35) {
-                        ctx.strokeStyle = 'rgba(191,219,254,' + (0.22 + progress * 0.3) + ')';
+                        ctx.strokeStyle = isHC ? '#ffff00' : ('rgba(191,219,254,' + (0.22 + progress * 0.3) + ')');
                         ctx.lineWidth = 2;
                         for (var glassArc = 0; glassArc < 4; glassArc++) {
                           ctx.beginPath();
                           ctx.arc(W * 0.44, H * 0.47, 34 + glassArc * 24, -0.65, 1.75);
                           ctx.stroke();
                         }
-                        var sheen = ctx.createLinearGradient(W * 0.1, 0, W * 0.8, H);
-                        sheen.addColorStop(0, 'rgba(255,255,255,0)');
-                        sheen.addColorStop(0.5, 'rgba(148,163,184,0.20)');
-                        sheen.addColorStop(1, 'rgba(255,255,255,0)');
-                        ctx.fillStyle = sheen;
-                        ctx.fillRect(0, 0, W, H);
+                        if (!isHC && hasLG) {
+                          var sheen = ctx.createLinearGradient(W * 0.1, 0, W * 0.8, H);
+                          sheen.addColorStop(0, 'rgba(255,255,255,0)');
+                          sheen.addColorStop(0.5, 'rgba(148,163,184,0.22)');
+                          sheen.addColorStop(1, 'rgba(255,255,255,0)');
+                          ctx.fillStyle = sheen;
+                          ctx.fillRect(0, 0, W, H);
+                        }
                       }
                     }
                     ctx.restore();
 
-                    if (progress < 1) {
-                      ctx.fillStyle = 'rgba(251, 191, 36, ' + (0.3 * (1 - progress) * (1 + 0.2 * Math.sin(Date.now() * 0.005))) + ')';
+                    if (!isHC && progress < 1) {
+                      ctx.fillStyle = 'rgba(251, 191, 36, ' + (0.26 * (1 - progress) * (1 + 0.18 * Math.sin(progress * 18))) + ')';
                       ctx.fillRect(0,0,W,H);
                     }
 
                     // A visible phase label keeps the animation interpretable
                     // even when it is paused on its first or final frame.
-                    ctx.fillStyle = 'rgba(15,23,42,0.82)';
+                    ctx.fillStyle = isHC ? '#000000' : 'rgba(15,23,42,0.82)';
                     ctx.fillRect(12, 12, W - 24, 31);
-                    ctx.fillStyle = '#f8fafc';
+                    if (isHC) { ctx.strokeStyle = '#ffff00'; ctx.lineWidth = 1.5; ctx.strokeRect(12, 12, W - 24, 31); }
+                    ctx.fillStyle = isHC ? '#ffff00' : '#f8fafc';
                     ctx.font = '700 14px system-ui, sans-serif';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(canvasPhase, 23, 28);
@@ -17079,6 +17286,33 @@ const d = (_rawRcD && typeof _rawRcD === 'object' && !Array.isArray(_rawRcD)) ? 
             for (var rsd = 0; rsd < 26; rsd++) rcSettle.push({ x: 0.67 + rcRand() * 0.32, y: rcRand(), v: 0.0012 + rcRand() * 0.0015, s: 0.6 + rcRand() * 1.1 });
             var rcRiverPs = [];
             for (var rvp = 0; rvp < 14; rvp++) rcRiverPs.push({ t: rcRand(), v: 0.0015 + rcRand() * 0.002 });
+            // Pre-allocated zero-GC pools for convective magma thermal plumes & wind/river sediment drift motes
+            var RC_PLUME_N = 14;
+            var rcPlumeT = new Float32Array(RC_PLUME_N);
+            var rcPlumeOff = new Float32Array(RC_PLUME_N);
+            var rcPlumeSpd = new Float32Array(RC_PLUME_N);
+            for (var rpi0 = 0; rpi0 < RC_PLUME_N; rpi0++) {
+              rcPlumeT[rpi0] = rcRand();
+              rcPlumeOff[rpi0] = (rcRand() - 0.5) * 1.4;
+              rcPlumeSpd[rpi0] = 0.004 + rcRand() * 0.003;
+            }
+            var RC_WIND_N = 18;
+            var rcWindT = new Float32Array(RC_WIND_N);
+            var rcWindY = new Float32Array(RC_WIND_N);
+            var rcWindSpd = new Float32Array(RC_WIND_N);
+            var rcWindSz = new Float32Array(RC_WIND_N);
+            for (var rwi0 = 0; rwi0 < RC_WIND_N; rwi0++) {
+              rcWindT[rwi0] = rcRand();
+              rcWindY[rwi0] = rcRand();
+              rcWindSpd[rwi0] = 0.0018 + rcRand() * 0.0022;
+              rcWindSz[rwi0] = 0.8 + rcRand() * 1.1;
+            }
+            var RC_BEDS = ['#7c5f3c', '#4b5160', '#8b7d5e', '#5d4a33', '#6b6f7a', '#7a5c3a'];
+            var RC_FOLD = ['#3b1d6e', '#5b2a9e', '#2e1a52', '#6d3fc4', '#35205e', '#4c2a86'];
+            var RC_MTN = [[0, 0.65], [0.04, 0.47], [0.09, 0.53], [0.15, 0.36], [0.21, 0.5], [0.27, 0.43], [0.35, 0.65]];
+            var RC_FACETS = [[0.15, 0.36, 0.21, 0.50, 0.16, 0.65], [0.27, 0.43, 0.35, 0.65, 0.26, 0.65]];
+            var RC_SNOW = [[0.15, 0.36], [0.27, 0.43], [0.04, 0.47]];
+            var RC_CLOUDS = [[0.1, 0.2, 22], [0.14, 0.175, 28], [0.19, 0.2, 22], [0.145, 0.225, 30]];
             // Each process in the colour of the family it makes (as the Rocks
             // tool's network card draws them).
             var RC_PROC_COL = { sedimentary: '251,191,36', metamorphic: '167,139,250', igneous: '249,115,22' };
@@ -17209,12 +17443,12 @@ const d = (_rawRcD && typeof _rawRcD === 'object' && !Array.isArray(_rawRcD)) ? 
               ctx.fillRect(0, SURF, W, H - SURF);
 
               // Beds on the sea floor: sand, mud and shell layers, gently dipping.
-              var BEDS = ['#7c5f3c', '#4b5160', '#8b7d5e', '#5d4a33', '#6b6f7a', '#7a5c3a'];
+              var isHCRC = rkIsHighContrast();
               ctx.save();
               ctx.beginPath(); ctx.rect(W * 0.56, SURF, W * 0.44, H * 0.27); ctx.clip();
-              for (var bdi = 0; bdi < BEDS.length; bdi++) {
+              for (var bdi = 0; bdi < RC_BEDS.length; bdi++) {
                 var bTop = SURF + H * (0.03 + bdi * 0.038), bBot = bTop + H * 0.04;
-                ctx.fillStyle = BEDS[bdi];
+                ctx.fillStyle = RC_BEDS[bdi];
                 ctx.beginPath(); ctx.moveTo(W * 0.56, bTop + H * 0.02);
                 for (var bx = W * 0.56; bx <= W; bx += 8 * dpr) ctx.lineTo(bx, bTop + (1 - (bx - W * 0.56) / (W * 0.44)) * H * 0.02 + Math.sin(bx * 0.01 + bdi) * dpr);
                 ctx.lineTo(W, bBot); ctx.lineTo(W * 0.56, bBot + H * 0.02); ctx.closePath(); ctx.fill();
@@ -17224,22 +17458,38 @@ const d = (_rawRcD && typeof _rawRcD === 'object' && !Array.isArray(_rawRcD)) ? 
               ctx.fillStyle = bedFade; ctx.fillRect(W * 0.56, SURF, W * 0.11, H * 0.27);
               ctx.restore();
 
-              // Deep under the mountains: rock squeezed into folded bands.
-              var FOLD = ['#3b1d6e', '#5b2a9e', '#2e1a52', '#6d3fc4', '#35205e', '#4c2a86'];
+              // Deep under the mountains: rock squeezed into folded bands + tectonic P-T stress waves.
               ctx.save();
               ctx.beginPath(); ctx.rect(0, SURF + H * 0.02, W * 0.42, H * 0.3); ctx.clip();
               for (var fdi = 0; fdi < 9; fdi++) {
                 var fy0 = SURF + H * (0.02 + fdi * 0.034);
-                ctx.fillStyle = FOLD[fdi % FOLD.length];
+                ctx.fillStyle = RC_FOLD[fdi % RC_FOLD.length];
                 ctx.beginPath(); ctx.moveTo(0, fy0);
                 for (var fx0 = 0; fx0 <= W * 0.42; fx0 += 6 * dpr) ctx.lineTo(fx0, fy0 + Math.sin(fx0 / (W * 0.42) * Math.PI * 3) * H * (0.008 + fdi * 0.003));
                 for (var fx1 = W * 0.42; fx1 >= 0; fx1 -= 6 * dpr) ctx.lineTo(fx1, fy0 + H * 0.036 + Math.sin(fx1 / (W * 0.42) * Math.PI * 3) * H * (0.008 + (fdi + 1) * 0.003));
                 ctx.closePath(); ctx.fill();
               }
+              // Inward tectonic pressure-temperature metamorphic stress wave arcs
+              for (var msw = 0; msw < 3; msw++) {
+                var mswP = rcFreezeMotion ? ((msw + 0.5) / 3) : (((tick * 0.008) + msw / 3) % 1);
+                var mswF = Math.sin(mswP * Math.PI);
+                var mswX = W * (0.04 + mswP * 0.30);
+                ctx.strokeStyle = isHCRC ? '#ffff00' : ('rgba(233,213,255,' + (mswF * 0.42).toFixed(3) + ')');
+                ctx.lineWidth = (1.5 - mswP * 0.4) * dpr;
+                ctx.beginPath();
+                ctx.arc(mswX, SURF + H * 0.16, H * 0.11, -0.7, 0.7);
+                ctx.stroke();
+              }
               ctx.fillStyle = 'rgba(190,18,60,0.75)';
               for (var gni = 0; gni < 10; gni++) {
                 var gnx = W * (0.03 + ((gni * 37) % 36) / 100), gny = SURF + H * (0.06 + ((gni * 23) % 22) / 100);
                 ctx.beginPath(); ctx.arc(gnx, gny, 1.8 * dpr, 0, Math.PI * 2); ctx.fill();
+                if (!isHCRC) {
+                  var gSh = rcFreezeMotion ? 0.6 : (0.35 + 0.55 * Math.abs(Math.sin(tick * 0.04 + gni * 1.3)));
+                  ctx.fillStyle = 'rgba(255,241,242,' + gSh.toFixed(2) + ')';
+                  ctx.beginPath(); ctx.arc(gnx - 0.5 * dpr, gny - 0.5 * dpr, 0.7 * dpr, 0, Math.PI * 2); ctx.fill();
+                  ctx.fillStyle = 'rgba(190,18,60,0.75)';
+                }
               }
               var foldFade = ctx.createLinearGradient(W * 0.31, 0, W * 0.42, 0);
               foldFade.addColorStop(0, 'rgba(42,28,22,0)'); foldFade.addColorStop(1, 'rgba(42,28,22,1)');
@@ -17256,18 +17506,20 @@ const d = (_rawRcD && typeof _rawRcD === 'object' && !Array.isArray(_rawRcD)) ? 
               ctx.fillRect(0, magmaY, cW, cH - magmaY);
               var chX = W * 0.5, chY = H * 0.95, flick = rcFreezeMotion ? 0 : Math.sin(tick * 0.05) * 0.06;
               // Warm contact-metamorphic crust aura above the magma reservoir.
-              var crustAura = ctx.createRadialGradient(chX, chY - H * 0.05, W * 0.06, chX, chY - H * 0.05, W * 0.24);
-              crustAura.addColorStop(0, 'rgba(251,146,60,' + (0.28 + flick * 0.5).toFixed(3) + ')');
-              crustAura.addColorStop(1, 'rgba(180,40,10,0)');
-              ctx.fillStyle = crustAura;
-              ctx.fillRect(chX - W * 0.24, chY - H * 0.24, W * 0.48, H * 0.28);
+              if (!isHCRC) {
+                var crustAura = ctx.createRadialGradient(chX, chY - H * 0.05, W * 0.06, chX, chY - H * 0.05, W * 0.24);
+                crustAura.addColorStop(0, 'rgba(251,146,60,' + (0.28 + flick * 0.5).toFixed(3) + ')');
+                crustAura.addColorStop(1, 'rgba(180,40,10,0)');
+                ctx.fillStyle = crustAura;
+                ctx.fillRect(chX - W * 0.24, chY - H * 0.24, W * 0.48, H * 0.28);
+              }
               var chG = ctx.createRadialGradient(chX, chY, 4 * dpr, chX, chY, W * 0.17);
               chG.addColorStop(0, 'rgba(254,249,195,0.98)'); chG.addColorStop(0.32, 'rgba(251,146,60,0.92)');
               chG.addColorStop(0.75, 'rgba(220,38,38,' + (0.60 + flick).toFixed(3) + ')'); chG.addColorStop(1, 'rgba(127,29,29,0)');
               ctx.fillStyle = chG;
-              ctx.beginPath(); ctx.ellipse(chX, chY, W * 0.17, H * 0.09, 0, 0, Math.PI * 2); ctx.fill();
+              ctx.beginPath(); rkSafeEllipse(ctx, chX, chY, W * 0.17, H * 0.09, 0, 0, Math.PI * 2); ctx.fill();
               // Magma convection currents (animated flow lines)
-              ctx.strokeStyle = 'rgba(254,240,138,0.32)'; ctx.lineWidth = 2.1 * dpr;
+              ctx.strokeStyle = isHCRC ? '#ffff00' : 'rgba(254,240,138,0.32)'; ctx.lineWidth = 2.1 * dpr;
               for (var mci = 0; mci < 4; mci++) {
                 var mcOff = ((tick * 0.3 + mci * 60) % 240) - 40;
                 var mcXCenter = cW * (0.15 + mci * 0.22);
@@ -17291,46 +17543,71 @@ const d = (_rawRcD && typeof _rawRcD === 'object' && !Array.isArray(_rawRcD)) ? 
                 ctx.fillStyle = 'hsla(' + Math.round(lp.life * 60) + ',100%,58%,' + (lp.life * 0.84) + ')';
                 ctx.fill();
               }
-              // The dike: magma rising from the chamber to the volcano.
+              // The dike: magma rising from the chamber to the volcano + glowing convective thermal plumes.
               var volX = cW * 0.5, volBaseY = cH * 0.65, volTopY = cH * 0.28;
               ctx.save(); ctx.lineCap = 'round';
               ctx.beginPath(); ctx.moveTo(chX, chY - H * 0.07);
               ctx.bezierCurveTo(chX - 8 * dpr, H * 0.8, chX + 6 * dpr, H * 0.72, volX, volBaseY);
-              ctx.strokeStyle = 'rgba(234,88,12,0.22)'; ctx.lineWidth = 17 * dpr; ctx.stroke();
-              ctx.strokeStyle = 'rgba(251,146,60,0.44)'; ctx.lineWidth = 10 * dpr; ctx.stroke();
-              ctx.strokeStyle = 'rgba(254,240,138,' + (0.85 + flick).toFixed(3) + ')'; ctx.lineWidth = 3.2 * dpr; ctx.stroke();
+              if (!isHCRC) {
+                ctx.strokeStyle = 'rgba(234,88,12,0.22)'; ctx.lineWidth = 17 * dpr; ctx.stroke();
+                ctx.strokeStyle = 'rgba(251,146,60,0.44)'; ctx.lineWidth = 10 * dpr; ctx.stroke();
+              }
+              ctx.strokeStyle = isHCRC ? '#ffff00' : ('rgba(254,240,138,' + (0.85 + flick).toFixed(3) + ')'); ctx.lineWidth = 3.2 * dpr; ctx.stroke();
+              // Zero-GC convective magma thermal plumes ascending from reservoir up the volcanic dike
+              if (!isHCRC) {
+                for (var rpi2 = 0; rpi2 < RC_PLUME_N; rpi2++) {
+                  var rpu = rcFreezeMotion ? rcPlumeT[rpi2] : ((rcPlumeT[rpi2] + tick * rcPlumeSpd[rpi2]) % 1);
+                  var rpf = Math.sin(rpu * Math.PI);
+                  var rpx = chX + rcPlumeOff[rpi2] * W * 0.05 * (1 - rpu * 0.88) + Math.sin(rpu * 8 + rpi2) * 3 * dpr;
+                  var rpy = chY - rpu * (chY - volTopY - 8 * dpr);
+                  ctx.fillStyle = 'rgba(254,249,195,' + (rpf * 0.76).toFixed(3) + ')';
+                  ctx.beginPath(); ctx.arc(rpx, rpy, (2.4 - rpu * 1.1) * dpr, 0, Math.PI * 2); ctx.fill();
+                }
+              }
               ctx.restore();
 
               // Mountains: uplifted and snow-capped, where rain wears rock down.
-              var MTN = [[0, 0.65], [0.04, 0.47], [0.09, 0.53], [0.15, 0.36], [0.21, 0.5], [0.27, 0.43], [0.35, 0.65]];
               var mtnG = ctx.createLinearGradient(0, H * 0.36, 0, SURF);
               mtnG.addColorStop(0, '#7c8598'); mtnG.addColorStop(0.55, '#524b5d'); mtnG.addColorStop(1, '#37323f');
               ctx.fillStyle = mtnG;
               ctx.beginPath(); ctx.moveTo(0, SURF);
-              MTN.forEach(function (p) { ctx.lineTo(p[0] * W, p[1] * H); });
+              for (var mi2 = 0; mi2 < RC_MTN.length; mi2++) ctx.lineTo(RC_MTN[mi2][0] * W, RC_MTN[mi2][1] * H);
               ctx.closePath(); ctx.fill();
               // Sculpted sunlit vs shadow alpine facets on the main peaks.
               ctx.fillStyle = 'rgba(15,23,42,0.28)';
-              [[0.15, 0.36, 0.21, 0.50, 0.16, 0.65], [0.27, 0.43, 0.35, 0.65, 0.26, 0.65]].forEach(function (sf) {
+              for (var fci = 0; fci < RC_FACETS.length; fci++) {
+                var sf = RC_FACETS[fci];
                 ctx.beginPath(); ctx.moveTo(sf[0] * W, sf[1] * H); ctx.lineTo(sf[2] * W, sf[3] * H); ctx.lineTo(sf[4] * W, sf[5] * H); ctx.closePath(); ctx.fill();
-              });
+              }
               ctx.fillStyle = 'rgba(241,245,249,0.94)';
-              [[0.15, 0.36], [0.27, 0.43], [0.04, 0.47]].forEach(function (pk) {
-                var kx = pk[0] * W, ky = pk[1] * H;
+              for (var sni = 0; sni < RC_SNOW.length; sni++) {
+                var kx = RC_SNOW[sni][0] * W, ky = RC_SNOW[sni][1] * H;
                 ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(kx - 12 * dpr, ky + 13 * dpr); ctx.lineTo(kx - 4 * dpr, ky + 9 * dpr);
                 ctx.lineTo(kx + 2 * dpr, ky + 13 * dpr); ctx.lineTo(kx + 11 * dpr, ky + 11 * dpr); ctx.closePath(); ctx.fill();
-              });
+              }
               // A rain cloud over the peaks.
               ctx.fillStyle = 'rgba(148,163,184,0.88)';
-              [[0.1, 0.2, 22], [0.14, 0.175, 28], [0.19, 0.2, 22], [0.145, 0.225, 30]].forEach(function (cl) {
-                ctx.beginPath(); ctx.ellipse(cl[0] * W, cl[1] * H, cl[2] * dpr, cl[2] * 0.55 * dpr, 0, 0, Math.PI * 2); ctx.fill();
-              });
+              for (var cli = 0; cli < RC_CLOUDS.length; cli++) {
+                var cl = RC_CLOUDS[cli];
+                ctx.beginPath(); rkSafeEllipse(ctx, cl[0] * W, cl[1] * H, cl[2] * dpr, cl[2] * 0.55 * dpr, 0, 0, Math.PI * 2); ctx.fill();
+              }
               ctx.strokeStyle = 'rgba(147,197,253,0.7)'; ctx.lineWidth = 1.2 * dpr;
               for (var rni = 0; rni < rcRain.length; rni++) {
                 var rd = rcRain[rni];
                 if (!rcFreezeMotion) { rd.y += rd.v; if (rd.y > 1) rd.y -= 1; }
                 var rx = W * (0.08 + rd.x * 0.14), ry = H * (0.25 + rd.y * 0.2);
                 ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(rx - 2 * dpr, ry + 7 * dpr); ctx.stroke();
+              }
+              // Suspended wind/river sediment-transport drift motes sweeping off alpine peaks toward the sea basin
+              if (!isHCRC) {
+                for (var rwi = 0; rwi < RC_WIND_N; rwi++) {
+                  var rwu = rcFreezeMotion ? rcWindT[rwi] : ((rcWindT[rwi] + tick * rcWindSpd[rwi]) % 1);
+                  var rwx = W * (0.18 + rwu * 0.64);
+                  var rwy = H * (0.42 + rcWindY[rwi] * 0.16 + rwu * 0.08) + Math.sin(rwu * 8 + rwi) * 3 * dpr;
+                  var rwf = Math.sin(rwu * Math.PI);
+                  ctx.fillStyle = 'rgba(253,230,138,' + (rwf * 0.54).toFixed(3) + ')';
+                  ctx.beginPath(); ctx.arc(rwx, rwy, rcWindSz[rwi] * dpr, 0, Math.PI * 2); ctx.fill();
+                }
               }
 
               // The land surface, with grass, up to the shore.
@@ -17399,7 +17676,7 @@ const d = (_rawRcD && typeof _rawRcD === 'object' && !Array.isArray(_rawRcD)) ? 
               var craterGlow = ctx.createRadialGradient(volX, volTopY + 2 * dpr, 2 * dpr, volX, volTopY + 2 * dpr, 12 * dpr);
               craterGlow.addColorStop(0, 'rgba(255,190,60,' + (0.8 + (rcFreezeMotion ? 0 : Math.sin(tick * 0.04) * 0.15)).toFixed(3) + ')'); craterGlow.addColorStop(1, 'rgba(255,50,0,0)');
               ctx.fillStyle = craterGlow;
-              ctx.beginPath(); ctx.ellipse(volX, volTopY + 2 * dpr, 12 * dpr, 4 * dpr, 0, 0, Math.PI * 2); ctx.fill();
+              ctx.beginPath(); rkSafeEllipse(ctx, volX, volTopY + 2 * dpr, 12 * dpr, 4 * dpr, 0, 0, Math.PI * 2); ctx.fill();
               // Ash rising from the crater
               for (var vsi = 0; vsi < 7; vsi++) {
                 var vsAge = ((tick * 0.5 + vsi * 34) % 120) / 120;

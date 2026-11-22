@@ -45,6 +45,30 @@
       focusStyle.textContent = '.ratio-challenge-answer:focus-visible{outline:3px solid var(--ratio-focus-color,#4f46e5);outline-offset:2px;}';
       document.head.appendChild(focusStyle);
     }
+    if (!document.getElementById('allo-ratio-motion-css')) {
+      var ratioMotionStyle = document.createElement('style');
+      ratioMotionStyle.id = 'allo-ratio-motion-css';
+      ratioMotionStyle.textContent = [
+        '@keyframes allo-rl-beam-pulse { 0%, 100% { opacity: 0.42; } 50% { opacity: 0.92; } }',
+        '@keyframes allo-rl-beam-flow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -14; } }',
+        '@keyframes allo-rl-shimmer { 0%, 100% { opacity: 0.42; } 50% { opacity: 0.88; } }',
+        '@keyframes allo-rl-beacon-pulse { 0%, 100% { opacity: 0.26; transform: scale(0.92); } 50% { opacity: 0.62; transform: scale(1.22); } }',
+        '@keyframes allo-rl-scale-ripple { 0% { opacity: 0.68; transform: scale(0.86); } 72% { opacity: 0.14; transform: scale(1.52); } 100% { opacity: 0; transform: scale(1.76); } }',
+        '@keyframes allo-rl-meniscus-drift { 0%, 100% { opacity: 0.28; } 50% { opacity: 0.54; } }',
+        '@keyframes allo-rl-bubble-rise { 0% { opacity: 0; transform: translateY(4px) scale(0.85); } 25% { opacity: 0.46; } 85% { opacity: 0.26; } 100% { opacity: 0; transform: translateY(-12px) scale(1.08); } }',
+        '.allo-rl-beam-pulse { animation: allo-rl-beam-pulse 2.8s ease-in-out infinite; pointer-events: none; }',
+        '.allo-rl-beam-flow { animation: allo-rl-beam-flow 1.8s linear infinite; pointer-events: none; }',
+        '.allo-rl-shimmer { animation: allo-rl-shimmer 3.8s ease-in-out infinite; pointer-events: none; }',
+        '.allo-rl-beacon-pulse { transform-box: fill-box; transform-origin: center; animation: allo-rl-beacon-pulse 2.4s ease-in-out infinite; pointer-events: none; }',
+        '.allo-rl-scale-ripple { transform-box: fill-box; transform-origin: center; animation: allo-rl-scale-ripple 2.3s cubic-bezier(0.22, 0.61, 0.36, 1) infinite; pointer-events: none; }',
+        '.allo-rl-meniscus-drift { animation: allo-rl-meniscus-drift 3.2s ease-in-out infinite; pointer-events: none; }',
+        '.allo-rl-bubble-rise { transform-box: fill-box; transform-origin: center; animation: allo-rl-bubble-rise 2.6s ease-in-out infinite; pointer-events: none; }',
+        '.theme-contrast .allo-rl-beam-pulse, .theme-contrast .allo-rl-beam-flow, .theme-contrast .allo-rl-shimmer, .theme-contrast .allo-rl-beacon-pulse, .theme-contrast .allo-rl-scale-ripple, .theme-contrast .allo-rl-meniscus-drift, .theme-contrast .allo-rl-bubble-rise { animation: none !important; }',
+        '.theme-contrast .allo-rl-beam-pulse, .theme-contrast .allo-rl-shimmer, .theme-contrast .allo-rl-beacon-pulse, .theme-contrast .allo-rl-scale-ripple, .theme-contrast .allo-rl-meniscus-drift, .theme-contrast .allo-rl-bubble-rise { display: none !important; }',
+        '@media (prefers-reduced-motion: reduce) { .allo-rl-beam-pulse, .allo-rl-beam-flow, .allo-rl-shimmer, .allo-rl-beacon-pulse, .allo-rl-scale-ripple, .allo-rl-meniscus-drift, .allo-rl-bubble-rise { animation: none !important; } .allo-rl-scale-ripple { opacity: 0.28; } .allo-rl-beacon-pulse { opacity: 0.3; } }'
+      ].join('\n');
+      document.head.appendChild(ratioMotionStyle);
+    }
     if (!document.getElementById('allo-live-ratio-lab')) {
       var liveRegion = document.createElement('div');
       liveRegion.id = 'allo-live-ratio-lab';
@@ -2991,11 +3015,13 @@
               var sx = 2 + index * unitWidth;
               return h('g', { key: index },
                 h('rect', { x: sx, y: barY, width: unitWidth, height: 28, rx: unitWidth < 9 ? 1 : 3, fill: isContrast ? soft : 'url(#' + gradId + ')', stroke: color, strokeWidth: unitWidth < 9 ? 1 : 2 }),
-                !isContrast && unitWidth >= 8 && h('line', { x1: sx + 2.5, y1: barY + 3, x2: sx + unitWidth - 2.5, y2: barY + 3, stroke: '#ffffff', strokeWidth: 1.8, strokeLinecap: 'round', opacity: isDark ? 0.25 : 0.72 }),
+                !isContrast && unitWidth >= 8 && h('line', { className: 'allo-rl-shimmer', style: { animationDelay: ((rowIndex * 0.35 + index * 0.14) % 2.4).toFixed(2) + 's' }, x1: sx + 2.5, y1: barY + 3, x2: sx + unitWidth - 2.5, y2: barY + 3, stroke: '#ffffff', strokeWidth: 1.8, strokeLinecap: 'round', opacity: isDark ? 0.28 : 0.76 }),
+                !isContrast && unitWidth >= 8 && h('line', { x1: sx + 2.5, y1: barY + 25.2, x2: sx + unitWidth - 2.5, y2: barY + 25.2, stroke: isDark ? '#020617' : '#0f172a', strokeWidth: 1.4, strokeLinecap: 'round', opacity: isDark ? 0.34 : 0.14 }),
                 showUnit && h('text', { x: sx + unitWidth / 2, y: barY + 19, textAnchor: 'middle', fill: text, fontSize: 12, fontWeight: 700 }, spec.unitText));
             }) : h('g', null,
               h('rect', { x: 2, y: barY, width: unitWidth * units, height: 28, rx: 3, fill: isContrast ? soft : 'url(#' + gradId + ')', stroke: color, strokeWidth: 2 }),
-              !isContrast && h('line', { x1: 4.5, y1: barY + 3, x2: Math.max(4.5, 2 + unitWidth * units - 2.5), y2: barY + 3, stroke: '#ffffff', strokeWidth: 1.8, strokeLinecap: 'round', opacity: isDark ? 0.25 : 0.72 })));
+              !isContrast && h('line', { className: 'allo-rl-shimmer', style: { animationDelay: (rowIndex * 0.35).toFixed(2) + 's' }, x1: 4.5, y1: barY + 3, x2: Math.max(4.5, 2 + unitWidth * units - 2.5), y2: barY + 3, stroke: '#ffffff', strokeWidth: 1.8, strokeLinecap: 'round', opacity: isDark ? 0.28 : 0.76 }),
+              !isContrast && h('line', { x1: 4.5, y1: barY + 25.2, x2: Math.max(4.5, 2 + unitWidth * units - 2.5), y2: barY + 25.2, stroke: isDark ? '#020617' : '#0f172a', strokeWidth: 1.4, strokeLinecap: 'round', opacity: isDark ? 0.34 : 0.14 })));
         });
         var totalLines = spec.totalText ? wrapTapeLabel(spec.totalText, chars, 4).lines : [], totalY = y;
         y += totalLines.length * lineH;
@@ -3066,12 +3092,15 @@
                   var sx = barStart + index * unitWidth;
                   return h('g', { key: index },
                     h('rect', { x: sx, y: y, width: unitWidth, height: 32, rx: unitWidth < 12 ? 1.5 : 3.5, fill: isContrast ? soft : 'url(#' + gradId + ')', stroke: color, strokeWidth: 2 }),
-                    !isContrast && unitWidth >= 10 && h('line', { x1: sx + 3, y1: y + 3.2, x2: sx + unitWidth - 3, y2: y + 3.2, stroke: '#ffffff', strokeWidth: 2, strokeLinecap: 'round', opacity: isDark ? 0.25 : 0.72 }),
+                    !isContrast && unitWidth >= 10 && h('line', { className: 'allo-rl-shimmer', style: { animationDelay: ((rowIndex * 0.4 + index * 0.14) % 2.4).toFixed(2) + 's' }, x1: sx + 3, y1: y + 3.2, x2: sx + unitWidth - 3, y2: y + 3.2, stroke: '#ffffff', strokeWidth: 2, strokeLinecap: 'round', opacity: isDark ? 0.28 : 0.76 }),
+                    !isContrast && unitWidth >= 10 && h('line', { x1: sx + 3, y1: y + 29, x2: sx + unitWidth - 3, y2: y + 29, stroke: isDark ? '#020617' : '#0f172a', strokeWidth: 1.5, strokeLinecap: 'round', opacity: isDark ? 0.36 : 0.14 }),
                     unitWidth >= 22 && spec.unitText && h('text', { x: sx + unitWidth / 2, y: y + 21, textAnchor: 'middle', fill: text, fontSize: 11, fontWeight: 700 }, spec.unitText));
                 }) : h('g', null,
                   h('rect', { x: barStart, y: y, width: barTotalW, height: 32, rx: 3.5, fill: isContrast ? soft : 'url(#' + gradId + ')', stroke: color, strokeWidth: 2 }),
-                  !isContrast && h('line', { x1: barStart + 3, y1: y + 3.2, x2: Math.max(barStart + 3, barStart + barTotalW - 3), y2: y + 3.2, stroke: '#ffffff', strokeWidth: 2, strokeLinecap: 'round', opacity: isDark ? 0.25 : 0.72 })),
+                  !isContrast && h('line', { className: 'allo-rl-shimmer', style: { animationDelay: (rowIndex * 0.4).toFixed(2) + 's' }, x1: barStart + 3, y1: y + 3.2, x2: Math.max(barStart + 3, barStart + barTotalW - 3), y2: y + 3.2, stroke: '#ffffff', strokeWidth: 2, strokeLinecap: 'round', opacity: isDark ? 0.28 : 0.76 }),
+                  !isContrast && h('line', { x1: barStart + 3, y1: y + 29, x2: Math.max(barStart + 3, barStart + barTotalW - 3), y2: y + 29, stroke: isDark ? '#020617' : '#0f172a', strokeWidth: 1.5, strokeLinecap: 'round', opacity: isDark ? 0.36 : 0.14 })),
                 row.text && barTotalW > 14 && h('path', { d: 'M' + barStart + ' ' + (y + 35) + ' V' + (y + 38) + ' H' + (barStart + barTotalW) + ' V' + (y + 35), fill: 'none', stroke: color, strokeWidth: 1.2, opacity: isContrast ? 1 : 0.55 }),
+                !isContrast && barTotalW > 14 && h('circle', { className: 'allo-rl-beacon-pulse', style: { animationDelay: (rowIndex * 0.45).toFixed(2) + 's' }, cx: barStart + barTotalW, cy: y + 16, r: 4.5, fill: color, opacity: 0.24 }),
                 row.text && h('text', { x: Math.min(tapeW - 8, barStart + 6 + barTotalW), y: y + 21, fill: text, fontSize: 12, fontWeight: 700, textAnchor: barStart + barTotalW > tapeW - 40 ? 'end' : 'start' }, row.text));
             }),
             spec.totalText && h('text', { x: barStart, y: height - 8, fill: text, fontSize: 12, fontWeight: 700, 'aria-hidden': 'true' }, spec.totalText)
@@ -3119,12 +3148,13 @@
             h('path', { d: 'M42 29 L46 22 L50 29', fill: 'none', stroke: text, strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' }),
             h('text', { x: 290, y: 214, textAnchor: 'end', fill: muted, fontSize: 10, fontWeight: 700, 'aria-hidden': 'true' }, spec.xLabel),
             h('text', { x: 6, y: 16, fill: muted, fontSize: 10, fontWeight: 700, 'aria-hidden': 'true' }, spec.yLabel),
-            spec.line !== false && slope > 0 && !isContrast && h('line', { x1: sx(x0), y1: sy(y0), x2: sx(endX), y2: sy(endY), stroke: success, strokeWidth: 8, strokeLinecap: 'round', opacity: 0.2, 'aria-hidden': 'true' }),
+            spec.line !== false && slope > 0 && !isContrast && h('line', { className: 'allo-rl-beam-pulse', x1: sx(x0), y1: sy(y0), x2: sx(endX), y2: sy(endY), stroke: success, strokeWidth: 8, strokeLinecap: 'round', opacity: 0.22, 'aria-hidden': 'true' }),
             spec.line !== false && slope > 0 && h('line', { x1: sx(x0), y1: sy(y0), x2: sx(endX), y2: sy(endY), stroke: success, strokeWidth: 3, strokeLinecap: 'round', 'aria-hidden': 'true' }),
+            spec.line !== false && slope > 0 && !isContrast && h('line', { className: 'allo-rl-beam-flow', x1: sx(x0), y1: sy(y0), x2: sx(endX), y2: sy(endY), stroke: '#ffffff', strokeWidth: 1.4, strokeDasharray: '4 10', strokeLinecap: 'round', opacity: 0.55, 'aria-hidden': 'true' }),
             spec.points.map(function(pt, index) {
               var px = sx(pt[0]), py = sy(pt[1]);
               return h('g', { key: index, 'aria-hidden': 'true' },
-                !isContrast && h('circle', { cx: px, cy: py, r: 9, fill: accentStrong, opacity: 0.18 }),
+                !isContrast && h('circle', { className: 'allo-rl-beacon-pulse', style: { animationDelay: (index * 0.28).toFixed(2) + 's' }, cx: px, cy: py, r: 9.5, fill: accentStrong, opacity: 0.2 }),
                 h('circle', { cx: px, cy: py, r: 5.2, fill: accentStrong, stroke: panel, strokeWidth: 2 }),
                 !isContrast && h('circle', { cx: px - 1.4, cy: py - 1.4, r: 1.4, fill: '#ffffff', opacity: 0.8 }),
                 h('text', { x: px + 7, y: py - 7, fill: text, fontSize: 10, fontWeight: 700 }, '(' + num(pt[0]) + ', ' + num(pt[1]) + ')'));
@@ -3294,11 +3324,13 @@
                 h('text', { x: linePhone ? 4 : 12, y: linePhone ? 14 : 55, style: { fill: text, fontSize: '12px', fontWeight: 'bold' } }, t('stem.ratios.top', 'Top')),
                 h('text', { x: linePhone ? 4 : 12, y: linePhone ? bottomNameY : 135, style: { fill: text, fontSize: '12px', fontWeight: 'bold' } }, t('stem.ratios.bottom', "Bottom")),
                 // Luminous track glows & sculpted rails with directional end arrowheads
-                !isContrast && h('line', { x1: lineX0, y1: lineTopY, x2: lineX1 + 6, y2: lineTopY, stroke: accent, strokeWidth: 9, strokeLinecap: 'round', opacity: 0.16 }),
+                !isContrast && h('line', { className: 'allo-rl-beam-pulse', x1: lineX0, y1: lineTopY, x2: lineX1 + 6, y2: lineTopY, stroke: accent, strokeWidth: 9, strokeLinecap: 'round', opacity: 0.18 }),
                 h('line', { x1: lineX0, y1: lineTopY, x2: lineX1 + 6, y2: lineTopY, stroke: accent, strokeWidth: 4, strokeLinecap: 'round' }),
+                !isContrast && h('line', { x1: lineX0 + 2, y1: lineTopY - 1, x2: lineX1 + 2, y2: lineTopY - 1, stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.42 }),
                 h('path', { d: 'M' + (lineX1 + 2) + ' ' + (lineTopY - 4) + ' L' + (lineX1 + 8) + ' ' + lineTopY + ' L' + (lineX1 + 2) + ' ' + (lineTopY + 4), fill: 'none', stroke: accent, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-                !isContrast && h('line', { x1: lineX0, y1: lineBottomY, x2: lineX1 + 6, y2: lineBottomY, stroke: success, strokeWidth: 9, strokeLinecap: 'round', opacity: 0.16 }),
+                !isContrast && h('line', { className: 'allo-rl-beam-pulse', style: { animationDelay: '0.5s' }, x1: lineX0, y1: lineBottomY, x2: lineX1 + 6, y2: lineBottomY, stroke: success, strokeWidth: 9, strokeLinecap: 'round', opacity: 0.18 }),
                 h('line', { x1: lineX0, y1: lineBottomY, x2: lineX1 + 6, y2: lineBottomY, stroke: success, strokeWidth: 4, strokeLinecap: 'round' }),
+                !isContrast && h('line', { x1: lineX0 + 2, y1: lineBottomY - 1, x2: lineX1 + 2, y2: lineBottomY - 1, stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.42 }),
                 h('path', { d: 'M' + (lineX1 + 2) + ' ' + (lineBottomY - 4) + ' L' + (lineX1 + 8) + ' ' + lineBottomY + ' L' + (lineX1 + 2) + ' ' + (lineBottomY + 4), fill: 'none', stroke: success, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
                 ticks.map(function(tick) {
                   var x = lineX0 + tick * (lineSpan / steps);
@@ -3307,12 +3339,18 @@
                   var bottomY = linePhone ? lineBottomY + 24 + bottomRow * rowGap : 170;
                   var halo = linePhone ? { paintOrder: 'stroke', stroke: panel, strokeWidth: 3 } : {};
                   var isTargetTick = tick === steps;
+                  var isUnitTick = tick === 1;
                   return h('g', { key: 'tick-' + tick },
                     // Luminous alignment laser guide between equivalent values
-                    !isContrast && h('line', { x1: x, y1: lineTopY + 8, x2: x, y2: lineBottomY - 8, stroke: 'url(#ratio-dnl-laser)', strokeWidth: isTargetTick ? 6 : 3.5 }),
-                    h('line', { x1: x, y1: lineTopY + 10, x2: x, y2: lineBottomY - 10, stroke: isTargetTick ? accent : border, strokeWidth: isTargetTick ? 1.5 : 1, strokeDasharray: '3 4' }),
+                    !isContrast && h('line', { className: 'allo-rl-beam-pulse', style: { animationDelay: (tick * 0.22).toFixed(2) + 's' }, x1: x, y1: lineTopY + 8, x2: x, y2: lineBottomY - 8, stroke: 'url(#ratio-dnl-laser)', strokeWidth: isTargetTick ? 6.5 : (isUnitTick ? 5 : 3.5) }),
+                    h('line', { className: !isContrast ? 'allo-rl-beam-flow' : undefined, x1: x, y1: lineTopY + 10, x2: x, y2: lineBottomY - 10, stroke: isTargetTick ? accent : (isUnitTick ? accentStrong : border), strokeWidth: isTargetTick ? 1.6 : (isUnitTick ? 1.3 : 1), strokeDasharray: '3 4' }),
                     h('line', { x1: x, y1: lineTopY - 8, x2: x, y2: lineTopY + 8, stroke: text, strokeWidth: 2 }),
                     h('line', { x1: x, y1: lineBottomY - 8, x2: x, y2: lineBottomY + 8, stroke: text, strokeWidth: 2 }),
+                    // Pulsing unit-rate tracking beacons & tactile scaling ripple halos
+                    !isContrast && (isTargetTick || isUnitTick) && h('circle', { className: 'allo-rl-scale-ripple', style: { animationDelay: (isTargetTick ? '0.45s' : '0s') }, cx: x, cy: lineTopY, r: isTargetTick ? 7.5 : 6.2, fill: 'none', stroke: accentStrong, strokeWidth: 1.5 }),
+                    !isContrast && (isTargetTick || isUnitTick) && h('circle', { className: 'allo-rl-scale-ripple', style: { animationDelay: (isTargetTick ? '0.7s' : '0.25s') }, cx: x, cy: lineBottomY, r: isTargetTick ? 7.5 : 6.2, fill: 'none', stroke: success, strokeWidth: 1.5 }),
+                    !isContrast && h('circle', { className: 'allo-rl-beacon-pulse', style: { animationDelay: (tick * 0.18).toFixed(2) + 's' }, cx: x, cy: lineTopY, r: isTargetTick ? 8 : 6.2, fill: accentStrong, opacity: 0.24 }),
+                    !isContrast && h('circle', { className: 'allo-rl-beacon-pulse', style: { animationDelay: (tick * 0.18 + 0.3).toFixed(2) + 's' }, cx: x, cy: lineBottomY, r: isTargetTick ? 8 : 6.2, fill: success, opacity: 0.24 }),
                     // Glossy alignment beads on top & bottom tracks
                     h('circle', { cx: x, cy: lineTopY, r: isTargetTick ? 4.5 : 3.4, fill: accentStrong, stroke: panel, strokeWidth: 1.5 }),
                     h('circle', { cx: x, cy: lineBottomY, r: isTargetTick ? 4.5 : 3.4, fill: success, stroke: panel, strokeWidth: 1.5 }),
@@ -3464,8 +3502,10 @@
                 [0, 1].map(function(index) {
                   return h('div', { key: index, className: 'space-y-1' },
                     h('div', { className: 'flex flex-wrap justify-between gap-2 text-sm font-bold', style: { overflowWrap: 'anywhere' } }, h('span', null, names[index]), h('span', null, costText(index))),
-                    h('div', { 'aria-hidden': true, style: { height: 28, borderLeft: '2px solid ' + text, background: soft, position: 'relative' } },
-                      h('div', { 'data-unit-cost-bar': index, style: { height: '100%', width: model.widths[index] + '%', background: index === 0 ? accent : success } })
+                    h('div', { 'aria-hidden': true, style: { height: 28, borderLeft: '2px solid ' + text, background: soft, position: 'relative', borderRadius: '0 4px 4px 0', overflow: 'hidden' } },
+                      h('div', { 'data-unit-cost-bar': index, style: { height: '100%', width: model.widths[index] + '%', background: index === 0 ? accent : success, position: 'relative', borderRadius: '0 4px 4px 0', transition: 'width 0.35s ease' } },
+                        !isContrast && model.widths[index] > 2 && h('span', { className: 'allo-rl-shimmer', style: { position: 'absolute', left: 2, right: 2, top: 2, height: 7, borderRadius: 3, background: 'linear-gradient(180deg, rgba(255,255,255,0.44), rgba(255,255,255,0))', animationDelay: (index * 0.45) + 's' } })
+                      )
                     )
                   );
                 }),
@@ -3605,7 +3645,9 @@
                     'data-fill-fraction': formatNumber(amount, 6),
                     'aria-hidden': 'true'
                   }),
-                  !isContrast && amount > 0 && segW > 3 && h('rect', { x: x + 1, y: 9, width: Math.max(0, segW - 2), height: 11, rx: amount === 1 ? 2 : 0, fill: 'url(#' + pctSheenId + ')', 'aria-hidden': 'true' }),
+                  !isContrast && amount > 0 && segW > 3 && h('rect', { className: 'allo-rl-shimmer', style: { animationDelay: (segmentIndex * 0.14).toFixed(2) + 's' }, x: x + 1, y: 9, width: Math.max(0, segW - 2), height: 11, rx: amount === 1 ? 2 : 0, fill: 'url(#' + pctSheenId + ')', 'aria-hidden': 'true' }),
+                  !isContrast && amount > 0 && segW > 3 && h('line', { x1: x + 2, y1: 38.5, x2: x + segW - 1, y2: 38.5, stroke: '#0f172a', strokeWidth: 1.4, opacity: isDark ? 0.35 : 0.16, 'aria-hidden': 'true' }),
+                  !isContrast && amount > 0 && amount < 1 && h('line', { className: 'allo-rl-beam-pulse', x1: x + segW, y1: 9, x2: x + segW, y2: 39, stroke: '#ffffff', strokeWidth: 2, opacity: 0.72, 'aria-hidden': 'true' }),
                   h('rect', { x: x, y: 8, width: pctCell - 2, height: 32, rx: 3, fill: 'none', stroke: border, strokeWidth: 1.5, 'aria-hidden': 'true' }),
                   // Phone: a readable size only fits every second label.
                   (!pctPhone || (segmentIndex + 1) % pctEvery === 0) && h('text', { x: pctPhone && segmentIndex === 9 ? x + pctCell - 2 : x + (pctCell - 2) / 2, y: 55, textAnchor: pctPhone && segmentIndex === 9 ? 'end' : 'middle', fontSize: pctPhone ? 12 : 8, fontWeight: '700', fill: muted, 'aria-hidden': 'true' }, (segmentIndex + 1) * 10 + '%')
@@ -3789,14 +3831,18 @@
                 h('path', { d: 'M38 33 L42 26 L46 33', fill: 'none', stroke: text, strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
                 h('text', { x: 340, y: 216, textAnchor: 'end', style: { fill: muted, fontSize: '10px', fontWeight: 'bold' } }, t('stem.ratios.x_quantity', "x quantity")),
                 h('text', { x: 8, y: 24, style: { fill: muted, fontSize: '10px', fontWeight: 'bold' } }, t('stem.ratios.y_quantity', "y quantity")),
-                revealed && validForDecision && proportional && analysis.constant !== null && !isContrast && h('line', { x1: scaleX(0), y1: scaleY(0), x2: scaleX(maxX), y2: scaleY(analysis.constant * maxX), stroke: success, strokeWidth: 9, strokeLinecap: 'round', opacity: 0.2 }),
+                revealed && validForDecision && proportional && analysis.constant !== null && !isContrast && h('line', { className: 'allo-rl-beam-pulse', x1: scaleX(0), y1: scaleY(0), x2: scaleX(maxX), y2: scaleY(analysis.constant * maxX), stroke: success, strokeWidth: 9, strokeLinecap: 'round', opacity: 0.22 }),
                 revealed && validForDecision && proportional && analysis.constant !== null && h('line', { x1: scaleX(0), y1: scaleY(0), x2: scaleX(maxX), y2: scaleY(analysis.constant * maxX), stroke: success, strokeWidth: 3, strokeLinecap: 'round', 'data-proportional-ray': 'true' }),
+                revealed && validForDecision && proportional && analysis.constant !== null && !isContrast && h('line', { className: 'allo-rl-beam-flow', x1: scaleX(0), y1: scaleY(0), x2: scaleX(maxX), y2: scaleY(analysis.constant * maxX), stroke: '#ffffff', strokeWidth: 1.4, strokeDasharray: '4 10', strokeLinecap: 'round', opacity: 0.62 }),
+                revealed && validForDecision && proportional && analysis.constant !== null && !isContrast && h('circle', { className: 'allo-rl-scale-ripple', cx: scaleX(0), cy: scaleY(0), r: 7.5, fill: 'none', stroke: success, strokeWidth: 1.6 }),
                 revealed && validForDecision && proportional && analysis.constant !== null && h('circle', { cx: scaleX(0), cy: scaleY(0), r: 6.5, fill: 'none', stroke: success, strokeWidth: 1.8, strokeDasharray: '2 2' }),
                 graphPairs.map(function(pair, index) {
                   var px = scaleX(pair.x), py = scaleY(pair.y);
                   var flipLeft = px > 280;
+                  var isUnitPt = revealed && validForDecision && proportional && nearlyEqual(pair.x, 1);
                   return h('g', { key: index },
-                    !isContrast && h('circle', { cx: px, cy: py, r: 9.5, fill: accentStrong, opacity: 0.18 }),
+                    !isContrast && isUnitPt && h('circle', { className: 'allo-rl-scale-ripple', style: { animationDelay: '0.35s' }, cx: px, cy: py, r: 8.5, fill: 'none', stroke: success, strokeWidth: 1.6 }),
+                    !isContrast && h('circle', { className: 'allo-rl-beacon-pulse', style: { animationDelay: (index * 0.24).toFixed(2) + 's' }, cx: px, cy: py, r: 9.5, fill: isUnitPt ? success : accentStrong, opacity: 0.2 }),
                     h('circle', { cx: px, cy: py, r: 5.2, fill: accentStrong, stroke: panel, strokeWidth: 2 }, h('title', null, '(' + pair.x + ', ' + pair.y + ')')),
                     !isContrast && h('circle', { cx: px - 1.4, cy: py - 1.4, r: 1.4, fill: '#ffffff', opacity: 0.8 }),
                     h('text', { x: flipLeft ? px - 7 : px + 7, y: py - 7, textAnchor: flipLeft ? 'end' : 'start', style: { fill: text, fontSize: '9px', fontWeight: 'bold' } }, '(' + formatSignificantNumber(pair.x, 6) + ',' + formatSignificantNumber(pair.y, 6) + ')')
@@ -4432,21 +4478,24 @@
           marks.map(function(row, index) {
             var x = xAt(row);
             return h('g', { key: 'guide-' + index },
-              !isContrast && h('line', { x1: x, x2: x, y1: ys[0] + 6, y2: ys[1] - 6, stroke: 'url(#' + titleId + '-laser)', strokeWidth: 4 }),
-              h('line', { x1: x, x2: x, y1: 99 + extra, y2: 130 + extra + hintRoom, stroke: muted, strokeWidth: 1.3, strokeDasharray: '4 4' })
+              !isContrast && h('line', { className: 'allo-rl-beam-pulse', style: { animationDelay: (index * 0.24).toFixed(2) + 's' }, x1: x, x2: x, y1: ys[0] + 6, y2: ys[1] - 6, stroke: 'url(#' + titleId + '-laser)', strokeWidth: 4.5 }),
+              h('line', { className: !isContrast ? 'allo-rl-beam-flow' : undefined, x1: x, x2: x, y1: 99 + extra, y2: 130 + extra + hintRoom, stroke: muted, strokeWidth: 1.3, strokeDasharray: '4 4' })
             );
           }),
           [0, 1].map(function(axis) {
             var y = ys[axis], railCol = axis === 0 ? accent : success;
             return h('g', { key: axis },
               h('text', { x: phone ? 4 : 25, y: y - 25, fill: text, fontSize: nameFont, fontWeight: 700 }, labels[axis]),
-              !isContrast && h('line', { x1: 25, y1: y, x2: W - 15, y2: y, stroke: railCol, strokeWidth: 8, strokeLinecap: 'round', opacity: 0.15 }),
+              !isContrast && h('line', { className: 'allo-rl-beam-pulse', style: { animationDelay: (axis * 0.5).toFixed(2) + 's' }, x1: 25, y1: y, x2: W - 15, y2: y, stroke: railCol, strokeWidth: 8, strokeLinecap: 'round', opacity: 0.16 }),
               h('line', { x1: 25, y1: y, x2: W - 15, y2: y, stroke: railCol, strokeWidth: 3.5, strokeLinecap: 'round' }),
               h('path', { d: 'M' + (W - 20) + ' ' + (y - 4) + ' L' + (W - 13) + ' ' + y + ' L' + (W - 20) + ' ' + (y + 4), fill: 'none', stroke: railCol, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
               marks.map(function(row, index) {
                 var x = xAt(row), half = widthOf(row[axis]) / 2;
+                var isUnknown = row[axis] === '?';
                 return h('g', { key: index },
                   h('line', { x1: x, x2: x, y1: y - 8, y2: y + 8, stroke: railCol, strokeWidth: 2 }),
+                  !isContrast && isUnknown && h('circle', { className: 'allo-rl-scale-ripple', cx: x, cy: y, r: 6.5, fill: 'none', stroke: railCol, strokeWidth: 1.5 }),
+                  !isContrast && h('circle', { className: 'allo-rl-beacon-pulse', style: { animationDelay: (index * 0.22 + axis * 0.25).toFixed(2) + 's' }, cx: x, cy: y, r: 6.8, fill: railCol, opacity: 0.24 }),
                   h('circle', { cx: x, cy: y, r: 3.8, fill: railCol, stroke: panel, strokeWidth: 1.5 }),
                   h('text', { x: Math.max(half, Math.min(W - half, x)), y: y + 28 + rowOf[index] * rowH, fill: text, textAnchor: 'middle', fontSize: valueFont, fontWeight: 700 }, cell(row[axis])));
               }));
@@ -4933,7 +4982,8 @@
                 var isFirst = i < mix.a, sx = 2 + i * mixUnit;
                 return h('g', { key: i },
                   h('rect', { x: sx, y: barY, width: mixUnit, height: 28, rx: mixUnit < 9 ? 1 : 2.5, fill: isFirst ? fillStrong : soft, stroke: isFirst ? panel : muted, strokeWidth: mixUnit < 9 ? 1 : 1.5 }),
-                  !isContrast && mixUnit >= 7 && h('rect', { x: sx + 1, y: barY + 1.5, width: Math.max(0, mixUnit - 2), height: 9, rx: 1.5, fill: '#ffffff', opacity: isFirst ? 0.28 : 0.4 }));
+                  !isContrast && mixUnit >= 7 && h('rect', { className: isFirst ? 'allo-rl-shimmer' : undefined, style: isFirst ? { animationDelay: ((i * 0.14) % 2).toFixed(2) + 's' } : undefined, x: sx + 1, y: barY + 1.5, width: Math.max(0, mixUnit - 2), height: 9, rx: 1.5, fill: '#ffffff', opacity: isFirst ? 0.32 : 0.4 }),
+                  !isContrast && mixUnit >= 7 && h('line', { x1: sx + 1.5, y1: barY + 26, x2: sx + mixUnit - 1.5, y2: barY + 26, stroke: '#0f172a', strokeWidth: 1.3, opacity: isFirst ? 0.24 : 0.12 }));
               }));
           });
           var shares = showShares ? mixes.map(function(mix) {
@@ -4942,7 +4992,8 @@
             return h('g', { key: 'share-' + mix.id, 'aria-hidden': 'true' }, label.node, label.right,
               h('rect', { x: 2, y: barY, width: W - 4, height: 24, rx: 3, fill: soft, stroke: muted, strokeWidth: 1.5 }),
               h('rect', { x: 2, y: barY, width: (W - 4) * share, height: 24, rx: 3, fill: fillStrong }),
-              !isContrast && h('rect', { x: 3, y: barY + 1.5, width: Math.max(0, (W - 4) * share - 2), height: 8, rx: 2, fill: '#ffffff', opacity: 0.26 }));
+              !isContrast && h('rect', { className: 'allo-rl-shimmer', x: 3, y: barY + 1.5, width: Math.max(0, (W - 4) * share - 2), height: 8, rx: 2, fill: '#ffffff', opacity: 0.3 }),
+              !isContrast && h('circle', { className: 'allo-rl-beacon-pulse', cx: 2 + (W - 4) * share, cy: barY + 12, r: 4.5, fill: fillStrong, opacity: 0.3 }));
           }) : null;
           return h('svg', { viewBox: '0 0 ' + W + ' ' + Math.max(1, y), role: 'img', 'aria-labelledby': 'ratio-mix-title ratio-mix-desc', style: { width: '100%', maxWidth: W, display: 'block' } },
             h('title', { id: 'ratio-mix-title' }, t('stem.ratios.ms_mix_title', 'Tape diagrams of the two mixes')),
@@ -4970,7 +5021,8 @@
                   var isFirst = i < mix.a, sx = 90 + i * unit;
                   return h('g', { key: i },
                     h('rect', { x: sx, y: y, width: unit, height: 32, rx: unit < 12 ? 1.5 : 3, fill: isFirst ? fillStrong : soft, stroke: isFirst ? panel : muted, strokeWidth: 1.5 }),
-                    !isContrast && unit >= 8 && h('rect', { x: sx + 1.5, y: y + 1.5, width: Math.max(0, unit - 3), height: 11, rx: 2, fill: 'url(#ratio-mix-sheen)' }));
+                    !isContrast && unit >= 8 && h('rect', { className: isFirst ? 'allo-rl-shimmer' : undefined, style: isFirst ? { animationDelay: ((row * 0.35 + i * 0.14) % 2.2).toFixed(2) + 's' } : undefined, x: sx + 1.5, y: y + 1.5, width: Math.max(0, unit - 3), height: 11, rx: 2, fill: 'url(#ratio-mix-sheen)' }),
+                    !isContrast && unit >= 8 && h('line', { x1: sx + 2, y1: y + 29.5, x2: sx + unit - 2, y2: y + 29.5, stroke: '#0f172a', strokeWidth: 1.4, opacity: isFirst ? 0.24 : 0.12 }));
                 }));
             }),
             !mixPhone && showShares && h('text', { x: 4, y: 118, fill: muted, fontSize: 11, fontWeight: 700, 'aria-hidden': 'true' }, t('stem.ratios.ms_same_length', 'Each mix stretched to the same length: compare the shares')),
@@ -4980,7 +5032,9 @@
                 mixLabel(mix.name, 4, y + 18),
                 h('rect', { x: 90, y: y, width: mixBar, height: 26, rx: 3.5, fill: soft, stroke: muted, strokeWidth: 1.5 }),
                 h('rect', { x: 90, y: y, width: mixBar * share, height: 26, rx: 3.5, fill: fillStrong }),
-                !isContrast && h('rect', { x: 91, y: y + 1.5, width: Math.max(0, mixBar * share - 2), height: 9, rx: 2, fill: 'url(#ratio-mix-sheen)' }),
+                !isContrast && h('rect', { className: 'allo-rl-shimmer', style: { animationDelay: (row * 0.4).toFixed(2) + 's' }, x: 91, y: y + 1.5, width: Math.max(0, mixBar * share - 2), height: 9, rx: 2, fill: 'url(#ratio-mix-sheen)' }),
+                !isContrast && h('line', { x1: 92, y1: y + 24, x2: Math.max(92, 90 + mixBar * share - 2), y2: y + 24, stroke: '#0f172a', strokeWidth: 1.4, opacity: 0.24 }),
+                !isContrast && h('circle', { className: 'allo-rl-beacon-pulse', style: { animationDelay: (row * 0.45).toFixed(2) + 's' }, cx: 90 + mixBar * share, cy: y + 13, r: 5, fill: fillStrong, opacity: 0.3 }),
                 h('text', { x: 96 + mixBar, y: y + 18, fill: text, fontSize: 12, fontWeight: 700 }, fracText(mix.a, mix.a + mix.b)));
             })),
           h('p', { className: 'text-xs', style: { color: muted } }, fill(t('stem.ratios.ms_mix_key', 'Filled boxes are {first}; open boxes are {second}. Each box is 1 cup.'), { first: first, second: second })));
@@ -5013,7 +5067,8 @@
             h('rect', { x: ox, y: oy, width: mission.l * cell, height: mission.w * cell, fill: 'none', stroke: accentStrong, strokeWidth: 3, 'aria-hidden': 'true' }),
             hasRedraw && h('text', { x: nx, y: 12, fill: text, fontSize: 11, fontWeight: 700, 'aria-hidden': 'true' }, fill(t('stem.ratios.ms_plan_new', 'Your plan, 1 cm to {k} m'), { k: num(mission.k2) })),
             hasRedraw && !isContrast && h('rect', { x: nx, y: oy, width: L2 * cell, height: W2 * cell, fill: bothDone ? success : warning, fillOpacity: 0.14, 'aria-hidden': 'true' }),
-            hasRedraw && h('rect', { x: nx, y: oy, width: L2 * cell, height: W2 * cell, fill: 'none', stroke: bothDone ? success : warning, strokeWidth: 3, strokeDasharray: bothDone ? undefined : '6 4', 'data-ratio-redraw': 'true', 'aria-hidden': 'true' })),
+            hasRedraw && bothDone && !isContrast && h('rect', { className: 'allo-rl-beam-pulse', x: nx, y: oy, width: L2 * cell, height: W2 * cell, fill: 'none', stroke: success, strokeWidth: 8, opacity: 0.24, 'aria-hidden': 'true' }),
+            hasRedraw && h('rect', { className: !bothDone && !isContrast ? 'allo-rl-beam-flow' : undefined, x: nx, y: oy, width: L2 * cell, height: W2 * cell, fill: 'none', stroke: bothDone ? success : warning, strokeWidth: 3, strokeDasharray: bothDone ? undefined : '6 4', 'data-ratio-redraw': 'true', 'aria-hidden': 'true' })),
           h('table', { className: 'text-sm border-collapse', 'data-ratio-scale-table': true },
             h('caption', { className: 'text-left text-xs mb-1', style: { color: muted } }, t('stem.ratios.ms_plan_table', 'The plans as numbers')),
             h('thead', null, h('tr', null, [t('stem.ratios.model_measure', 'Measure'), t('stem.ratios.ms_old_plan_col', 'Old plan (cm)'), t('stem.ratios.ms_new_plan_col', 'Your plan (cm)')].map(function(label, i) { return h('th', { key: i, scope: 'col', className: 'border px-3 py-1 text-left', style: { borderColor: border } }, label); }))),
@@ -5133,11 +5188,14 @@
                   !isContrast && h('path', { d: 'M' + (x + 1) + ' ' + top + ' H' + (x + w - 1) + ' V' + bottom + ' H' + (x + 1) + ' Z', fill: soft, opacity: 0.45 }),
                   hA > 0 && h('rect', { x: x + 1.5, y: bottom - hA, width: w - 3, height: hA, fill: colA }),
                   hB > 0 && h('rect', { x: x + 1.5, y: surfY, width: w - 3, height: hB, fill: colB }),
-                  // Smooth vertical liquid depth + gentle swirl ribbon
+                  // Smooth vertical liquid depth + gentle swirl ribbon + subtle mixing micro-bubbles
                   !isContrast && totalLiqH > 4 && h('path', { d: 'M' + (x + 1.5) + ' ' + surfY + ' H' + (x + w - 1.5) + ' V' + bottom + ' H' + (x + 1.5) + ' Z', fill: 'url(#ratio-beaker-depth)' }),
-                  !isContrast && totalLiqH > 18 && p3 > 0.05 && h('path', { d: 'M' + (x + 14) + ' ' + (surfY + totalLiqH * 0.45) + ' Q' + (x + w * 0.42) + ' ' + (surfY + totalLiqH * 0.25) + ' ' + (x + w * 0.62) + ' ' + (surfY + totalLiqH * 0.55) + ' T' + (x + w - 14) + ' ' + (surfY + totalLiqH * 0.48), fill: 'none', stroke: '#ffffff', strokeWidth: 3.5, strokeLinecap: 'round', opacity: 0.24 * (1 - p3 * 0.45) }),
+                  !isContrast && totalLiqH > 18 && p3 > 0.05 && h('path', { className: 'allo-rl-shimmer', d: 'M' + (x + 14) + ' ' + (surfY + totalLiqH * 0.45) + ' Q' + (x + w * 0.42) + ' ' + (surfY + totalLiqH * 0.25) + ' ' + (x + w * 0.62) + ' ' + (surfY + totalLiqH * 0.55) + ' T' + (x + w - 14) + ' ' + (surfY + totalLiqH * 0.48), fill: 'none', stroke: '#ffffff', strokeWidth: 3.5, strokeLinecap: 'round', opacity: 0.28 * (1 - p3 * 0.42) }),
+                  !isContrast && totalLiqH > 22 && [0.28, 0.54, 0.74].map(function(bx, bi) {
+                    return h('circle', { key: 'mb' + bi, className: 'allo-rl-bubble-rise', style: { animationDelay: (i * 0.6 + bi * 0.75).toFixed(2) + 's' }, cx: x + w * bx, cy: bottom - totalLiqH * (0.28 + bi * 0.16), r: bi === 1 ? 2.4 : 1.7, fill: '#ffffff', opacity: 0.34 });
+                  }),
                   // Curved liquid meniscus ellipse + crisp surface line
-                  !isContrast && totalLiqH > 3 && h('ellipse', { cx: x + w / 2, cy: surfY, rx: (w - 4) / 2, ry: 4.5, fill: '#ffffff', opacity: 0.36 }),
+                  !isContrast && totalLiqH > 3 && h('ellipse', { className: 'allo-rl-meniscus-drift', style: { animationDelay: (i * 0.5).toFixed(2) + 's' }, cx: x + w / 2, cy: surfY, rx: (w - 4) / 2, ry: 4.5, fill: '#ffffff', opacity: 0.38 }),
                   totalLiqH > 0 && h('line', { x1: x, x2: x + w, y1: surfY, y2: surfY, stroke: text, strokeWidth: 2, 'data-pour-surface': mix.id }),
                   // Cylindrical glass specular shading + left reflection highlight
                   !isContrast && h('path', { d: 'M' + (x + 1) + ' ' + top + ' H' + (x + w - 1) + ' V' + bottom + ' H' + (x + 1) + ' Z', fill: 'url(#ratio-beaker-glass)' }),
@@ -5274,8 +5332,8 @@
         ),
         h('rect', { x: 2, y: 2, width: 38, height: 38, rx: 10, fill: isContrast ? '#000000' : 'url(#ratio-emblem-bg)', stroke: isContrast ? '#ffff00' : 'rgba(199,210,254,0.58)', strokeWidth: 1.5 }),
         !isContrast && h('line', { x1: 9, y1: 4.5, x2: 33, y2: 4.5, stroke: '#ffffff', strokeWidth: 1, opacity: 0.35 }),
-        !isContrast && h('line', { x1: 14, y1: 12, x2: 14, y2: 30, stroke: '#818cf8', strokeWidth: 4.5, opacity: 0.2 }),
-        !isContrast && h('line', { x1: 26, y1: 12, x2: 26, y2: 30, stroke: '#34d399', strokeWidth: 4.5, opacity: 0.2 }),
+        !isContrast && h('line', { className: 'allo-rl-beam-pulse', x1: 14, y1: 12, x2: 14, y2: 30, stroke: '#818cf8', strokeWidth: 4.5, opacity: 0.24 }),
+        !isContrast && h('line', { className: 'allo-rl-beam-pulse', style: { animationDelay: '0.6s' }, x1: 26, y1: 12, x2: 26, y2: 30, stroke: '#34d399', strokeWidth: 4.5, opacity: 0.24 }),
         h('line', { x1: 8, y1: 15, x2: 34, y2: 15, stroke: isContrast ? '#ffff00' : '#a5b4fc', strokeWidth: 2.2, strokeLinecap: 'round' }),
         h('line', { x1: 8, y1: 27, x2: 34, y2: 27, stroke: isContrast ? '#00ff66' : '#34d399', strokeWidth: 2.2, strokeLinecap: 'round' }),
         h('line', { x1: 14, y1: 12, x2: 14, y2: 30, stroke: isContrast ? '#ffffff' : 'rgba(255,255,255,0.68)', strokeWidth: 1.2, strokeDasharray: '2 2' }),

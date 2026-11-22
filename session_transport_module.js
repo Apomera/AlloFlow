@@ -30,25 +30,46 @@
     return !!(inputs && (inputs.mode === 'study' || inputs.mode === 'family'));
   }
   var GUIDE_CONTENT_FIELDS = ['essentialQuestion', 'objectives', 'materialsNeeded', 'hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'];
-  function projectStudentGuideValue(value) {
-    if (typeof value === 'string' || typeof value === 'number') return value;
-    if (Array.isArray(value)) return value.map(projectStudentGuideValue).filter(function (entry) { return entry != null; });
+  var MAX_GUIDE_DEPTH = 12;
+  function isSafeKey(key) {
+    return typeof key === 'string' && key.length > 0 && key !== '__proto__' && key !== 'constructor' && key !== 'prototype';
+  }
+  function projectStudentGuideValue(value, depth, seen) {
+    depth = depth || 0;
+    if (depth > MAX_GUIDE_DEPTH) return null;
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+    if (Array.isArray(value)) {
+      if (!seen) seen = [];
+      if (seen.indexOf(value) !== -1) return null;
+      seen.push(value);
+      var arr = value.map(function (entry) { return projectStudentGuideValue(entry, depth + 1, seen); }).filter(function (entry) { return entry != null; });
+      seen.pop();
+      return arr;
+    }
     if (!value || typeof value !== 'object') return null;
+    if (!seen) seen = [];
+    if (seen.indexOf(value) !== -1) return null;
+    seen.push(value);
     var kept = {};
     var allowed = ['en', 'text', 'description', 'title', 'label', 'name', 'item', 'statement', 'instructions', 'studentTask', 'activity', 'steps', 'questions', 'prompt'];
     allowed.forEach(function (key) {
-      if (value[key] != null) { var next = projectStudentGuideValue(value[key]); if (next != null) kept[key] = next; }
+      if (Object.prototype.hasOwnProperty.call(value, key) && value[key] != null) {
+        var next = projectStudentGuideValue(value[key], depth + 1, seen);
+        if (next != null) kept[key] = next;
+      }
     });
     // Preserve home-language translation strings (e.g. es, fr, ar, zh-CN, text_en)
     // while keeping the strict allowlist for nested objects and teacher-only keys.
     Object.keys(value).forEach(function (key) {
-      if (Object.prototype.hasOwnProperty.call(kept, key)) return;
+      if (!isSafeKey(key) || Object.prototype.hasOwnProperty.call(kept, key)) return;
       if (typeof value[key] !== 'string') return;
       if (key === 'id' || key === 'q' || key === 'a') return;
       if (/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(key) || /^(?:text|title|description|label|statement|instructions|prompt)_en$/.test(key)) {
         kept[key] = value[key];
       }
     });
+    seen.pop();
     return Object.keys(kept).length ? kept : null;
   }
   function projectStudentGuideData(data, mode) {
@@ -112,7 +133,9 @@
     var data = item && item.data;
     if (!data || typeof data !== 'object' || Array.isArray(data)) return item;
     var kept = {};
-    Object.keys(data).forEach(function (key) { if (SOURCE_CHECK_TEACHER_FIELDS.indexOf(key) === -1) kept[key] = data[key]; });
+    Object.keys(data).forEach(function (key) {
+      if (isSafeKey(key) && SOURCE_CHECK_TEACHER_FIELDS.indexOf(key) === -1) kept[key] = data[key];
+    });
     return Object.assign({}, item, { data: kept });
   }
   function studentSafeResources(history, teacherOnlyTypes, projectActivity) {
@@ -138,6 +161,9 @@
   }
 
   function requireOps(ops, names, kind) {
+    if (!ops || typeof ops !== 'object') {
+      throw new Error('[SessionTransport] ' + kind + ' adapter requires ops object');
+    }
     names.forEach(function (name) {
       if (typeof ops[name] !== 'function') {
         throw new Error('[SessionTransport] ' + kind + ' adapter requires ops.' + name);
@@ -151,7 +177,7 @@
   function createFirebaseTransport(ops) {
     requireOps(ops, ['uploadAssets', 'prepareResources', 'write'], 'firebase');
     var teacherOnlyTypes = ops.teacherOnlyTypes || [];
-    return {
+    return Object.freeze({
       kind: 'firebase',
       capabilities: function () {
         return { chunked: false, maxDocBytes: 850 * 1024, policyChannel: 'session-doc' };
@@ -159,8 +185,11 @@
       publishResources: function (history) {
         var candidates = studentSafeResources(history, teacherOnlyTypes, ops.projectStudentActivityResource);
         return Promise.resolve(ops.uploadAssets(candidates)).then(function (uploaded) {
-          var prepared = ops.prepareResources(uploaded || candidates);
-          var payload = { resources: prepared.resources };
+          var rawPrepared = ops.prepareResources(uploaded || candidates);
+          var prepared = (rawPrepared && typeof rawPrepared === 'object')
+            ? rawPrepared
+            : { resources: [], keptCount: 0, droppedCount: 0, byteLength: 0 };
+          var payload = { resources: Array.isArray(prepared.resources) ? prepared.resources : [] };
           if (typeof ops.policy === 'function') {
             var policy = ops.policy();
             if (policy) payload.aiPolicy = policy;
@@ -175,7 +204,7 @@
               kept: prepared.keptCount,
               dropped: prepared.droppedCount,
               bytes: prepared.byteLength,
-              publishedIds: (Array.isArray(prepared.resources) ? prepared.resources : [])
+              publishedIds: payload.resources
                 .map(function (item) { return String(item && item.id || ''); })
                 .filter(Boolean),
             };
@@ -189,7 +218,7 @@
           return { kind: 'firebase', published: true };
         });
       },
-    };
+    });
   }
 
   // ── Mailbox pack-cycle algorithm (stage 2) ──
@@ -201,15 +230,18 @@
   // encoding, chunked network sends, Firestore packRef writes.
   function runMailboxPackCycle(candidates, ops) {
     requireOps(ops, ['fingerprint', 'pushItem'], 'mailbox pack cycle');
+    var list = (Array.isArray(candidates) ? candidates : []).filter(function (item) {
+      return item && typeof item === 'object' && isSafeKey(String(item.id || ''));
+    });
     function assertCurrent() {
       if (typeof ops.isCurrent === 'function' && !ops.isCurrent()) {
         var error = new Error('Mailbox publication superseded'); error.name = 'AbortError'; throw error;
       }
     }
-    var seen = ops.seen || {};
+    var seen = (ops.seen && typeof ops.seen === 'object') ? ops.seen : {};
     var currentIds = Object.create(null);
-    candidates.forEach(function (item) { currentIds[item.id] = true; });
-    var removedIds = Object.keys(seen).filter(function (id) { return !currentIds[id]; });
+    list.forEach(function (item) { currentIds[item.id] = true; });
+    var removedIds = Object.keys(seen).filter(function (id) { return isSafeKey(id) && !currentIds[id]; });
 
     var removalPromise = Promise.resolve();
     if (removedIds.length) {
@@ -228,7 +260,7 @@
       var pushed = 0;
       var failed = 0;
       var chain = Promise.resolve();
-      candidates.forEach(function (item) {
+      list.forEach(function (item) {
         chain = chain.then(function () {
           return Promise.resolve().then(function () {
             assertCurrent();
@@ -249,20 +281,20 @@
       return chain.then(function () {
         assertCurrent();
         if ((pushed || failed || removedIds.length) && typeof ops.trace === 'function') {
-          ops.trace('mailbox:pack-cycle', { candidates: candidates.length, pushed: pushed, failed: failed, removed: removedIds.length });
+          ops.trace('mailbox:pack-cycle', { candidates: list.length, pushed: pushed, failed: failed, removed: removedIds.length });
         }
         if (typeof ops.hostPack !== 'function' || typeof ops.packFingerprint !== 'function') {
           return { pushed: pushed, failed: failed, removed: removedIds.length, hosted: false };
         }
-        var packFp = ops.packFingerprint(candidates);
+        var packFp = ops.packFingerprint(list);
         var hostedFp = typeof ops.getHostedFp === 'function' ? ops.getHostedFp() : null;
-        if (packFp === hostedFp || (!candidates.length && !removedIds.length && hostedFp == null)) {
+        if (packFp === hostedFp || (!list.length && !removedIds.length && hostedFp == null)) {
           return { pushed: pushed, failed: failed, removed: removedIds.length, hosted: false };
         }
-        return Promise.resolve(ops.hostPack(candidates)).then(function (packIdentity) {
+        return Promise.resolve(ops.hostPack(list)).then(function (packIdentity) {
           assertCurrent();
           if (!packIdentity) {
-            if (typeof ops.trace === 'function') ops.trace('mailbox:pack-host-empty', { candidates: candidates.length });
+            if (typeof ops.trace === 'function') ops.trace('mailbox:pack-host-empty', { candidates: list.length });
             return { pushed: pushed, failed: failed, removed: removedIds.length, hosted: false, referencePublished: false };
           }
           // Late joiners need both the pack and its published reference.
@@ -273,20 +305,20 @@
             publish = Promise.resolve().then(function () { assertCurrent(); return ops.publishPackRef({
               id: packIdentity.id,
               k: packIdentity.k,
-              n: candidates.length,
+              n: list.length,
               t: typeof ops.now === 'function' ? ops.now() : Date.now(),
             }); }).catch(function (error) {
               if (error && error.name === 'AbortError') throw error;
               assertCurrent();
               referencePublished = false;
-              if (typeof ops.trace === 'function') ops.trace('mailbox:pack-reference-failed', { candidates: candidates.length });
+              if (typeof ops.trace === 'function') ops.trace('mailbox:pack-reference-failed', { candidates: list.length });
               if (typeof ops.onPackRefError === 'function') ops.onPackRefError(error);
             });
           }
           return publish.then(function () {
             assertCurrent();
             if (referencePublished && typeof ops.setHostedFp === 'function') ops.setHostedFp(packFp);
-            if (referencePublished && !failed && typeof ops.trace === 'function') ops.trace('mailbox:pack-reference-published', { candidates: candidates.length });
+            if (referencePublished && !failed && typeof ops.trace === 'function') ops.trace('mailbox:pack-reference-published', { candidates: list.length });
             return { pushed: pushed, failed: failed, removed: removedIds.length, hosted: true, referencePublished: referencePublished };
           });
         });
@@ -300,10 +332,13 @@
   // still own their cycle. Policy travels in the join URL/packet on this
   // transport — publishPolicy is a capability no-op either way.
   function createMailboxTransport(ops) {
+    if (!ops || typeof ops !== 'object') {
+      throw new Error('[SessionTransport] mailbox adapter requires ops object');
+    }
     var teacherOnlyTypes = ops.teacherOnlyTypes || [];
     var shellMode = typeof ops.runPackCycle === 'function';
     if (!shellMode) requireOps(ops, ['fingerprint', 'pushItem'], 'mailbox');
-    return {
+    return Object.freeze({
       kind: 'mailbox',
       capabilities: function () {
         return { chunked: true, maxDocBytes: 85 * 1024, policyChannel: 'join-url' };
@@ -318,7 +353,7 @@
       publishPolicy: function () {
         return Promise.resolve({ kind: 'mailbox', published: false, reason: 'policy rides the join URL on this transport' });
       },
-    };
+    });
   }
 
   window.AlloModules = window.AlloModules || {};
@@ -337,7 +372,7 @@
     });
   }
 
-  window.AlloModules.SessionTransport = {
+  window.AlloModules.SessionTransport = Object.freeze({
     followResource: followResource,
     studentSafeResources: studentSafeResources,
     isStudentDeliverableGuide: isStudentDeliverableGuide,
@@ -347,7 +382,7 @@
     createFirebaseTransport: createFirebaseTransport,
     createMailboxTransport: createMailboxTransport,
     runMailboxPackCycle: runMailboxPackCycle,
-  };
+  });
   window.AlloModules.SessionTransportModule = true;
   console.log('[SessionTransport] registered (unified live-session content channel, stage 1)');
 })();

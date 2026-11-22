@@ -189,18 +189,29 @@ function StorybookExportModal({
 
   const progressTotal = progress && Number(progress.total) > 0 ? Number(progress.total) : 0;
   const progressCompleted = progressTotal ? Math.min(Number(progress.completed) || 0, progressTotal) : 0;
+  const progressPercent = progressTotal > 0 ? Math.round((progressCompleted / progressTotal) * 100) : 0;
   const progressMessage = progress && progress.message
     ? progress.message
     : (busy ? 'Preparing your Storybook…' : '');
+  const progressPhase = progress && progress.phase ? progress.phase : (busy ? 'story' : '');
+  const progressToneClass = !progressMessage
+    ? 'text-slate-700'
+    : progressPhase === 'error'
+      ? 'rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-red-700 font-medium'
+      : progressPhase === 'cancelled'
+        ? 'rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-amber-900 font-medium'
+        : busy
+          ? 'rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-indigo-900 font-medium'
+          : 'text-slate-700';
 
-  const dragStartedInsideRef = React.useRef(false);
+  const pointerStartedInsideRef = React.useRef(false);
   return (
     <div
       role="presentation"
       className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none"
-      onMouseDown={(event) => { dragStartedInsideRef.current = event.target !== event.currentTarget; }}
+      onMouseDown={(event) => { pointerStartedInsideRef.current = event.target !== event.currentTarget; }}
       onClick={(event) => {
-        if (dragStartedInsideRef.current) { dragStartedInsideRef.current = false; return; }
+        if (pointerStartedInsideRef.current) { pointerStartedInsideRef.current = false; return; }
         if (!busy && event.target === event.currentTarget) handleSetShowStorybookExportModalToFalse();
       }}
     >
@@ -213,7 +224,7 @@ function StorybookExportModal({
         aria-labelledby="storybook-export-title"
         aria-describedby="storybook-export-description storybook-export-progress"
         aria-busy={busy}
-        onMouseDown={() => { dragStartedInsideRef.current = true; }}
+        onMouseDown={() => { pointerStartedInsideRef.current = true; }}
         onClick={event => event.stopPropagation()}
       >
         <div className="flex items-center gap-3 mb-4">
@@ -229,7 +240,7 @@ function StorybookExportModal({
           {t('adventure.storybook_export_description')}
         </p>
 
-        <div className="mb-5 rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+        <div className={`mb-5 rounded-xl border p-4 transition-colors motion-reduce:transition-none ${includeNarration ? 'border-indigo-400 bg-indigo-50' : 'border-indigo-200 bg-indigo-50/70'}`}>
           <div className="flex items-start gap-3">
             <input
               id="storybook-include-narration"
@@ -238,14 +249,36 @@ function StorybookExportModal({
               data-autofocus="true"
               onChange={event => setIncludeNarration(event.target.checked)}
               disabled={busy}
-              className="mt-1 h-5 w-5 rounded border-slate-400 text-indigo-600 focus:ring-indigo-500"
+              className="mt-1 h-5 w-5 rounded border-slate-400 text-indigo-600 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
             />
-            <label htmlFor="storybook-include-narration" className="cursor-pointer text-sm text-slate-800">
-              <span className="block font-bold">Include narrated TTS audio</span>
+            <label htmlFor="storybook-include-narration" className="cursor-pointer text-sm text-slate-800 flex-1">
+              <span className="flex flex-wrap items-center gap-2 font-bold">
+                <span>Include narrated TTS audio</span>
+                {includeNarration && (
+                  <span data-storybook-narration-badge="true" className="inline-flex items-center rounded-full border border-indigo-300 bg-white px-2 py-0.5 text-[11px] font-bold text-indigo-800">
+                    Narration ON
+                  </span>
+                )}
+              </span>
               <span className="mt-1 block text-xs leading-relaxed text-slate-600">
                 Creates HTML and JSON downloads with embedded audio. A separate epilogue and narration recovery copy is saved on this device when space allows, so interrupted exports can resume. Unchanged journeys reuse their saved epilogue.
               </span>
             </label>
+          </div>
+          <div data-storybook-export-summary="true" className="mt-3 pt-2.5 border-t border-indigo-200/80 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold text-slate-700">
+            <span className="text-slate-600 font-bold">Included:</span>
+            {includeNarration ? (
+              <>
+                <span className="rounded-full bg-white border border-indigo-200 px-2 py-0.5 text-indigo-900">Offline HTML + JSON</span>
+                <span className="rounded-full bg-white border border-indigo-200 px-2 py-0.5 text-indigo-900">Embedded TTS audio</span>
+                <span className="rounded-full bg-white border border-indigo-200 px-2 py-0.5 text-indigo-900">Resumable backup</span>
+              </>
+            ) : (
+              <>
+                <span className="rounded-full bg-white border border-slate-200 px-2 py-0.5 text-slate-700">Print-ready Storybook</span>
+                <span className="rounded-full bg-white border border-slate-200 px-2 py-0.5 text-slate-700">Opens right away</span>
+              </>
+            )}
           </div>
         </div>
 
@@ -290,7 +323,7 @@ function StorybookExportModal({
 
         <div
           id="storybook-export-progress"
-          className={`mt-4 min-h-6 text-center text-sm ${progress && progress.phase === 'error' ? 'text-red-700' : 'text-slate-700'}`}
+          className={`mt-4 min-h-6 text-center text-sm ${progressToneClass}`}
           role="status"
           aria-live="polite"
           aria-atomic="true"
@@ -303,12 +336,18 @@ function StorybookExportModal({
           )}
           {progressMessage}
           {busy && progressTotal > 0 && (
-            <progress
-              className="mt-2 block h-2 w-full"
-              max={progressTotal}
-              value={progressCompleted}
-              aria-label="Narration export progress"
-            />
+            <div className="mt-2">
+              <div data-storybook-progress-meta="true" className="flex items-center justify-between text-xs font-semibold text-indigo-800 mb-1 tabular-nums">
+                <span>{progressCompleted} of {progressTotal} segments</span>
+                <span>{progressPercent}%</span>
+              </div>
+              <progress
+                className="block h-2.5 w-full accent-indigo-600"
+                max={progressTotal}
+                value={progressCompleted}
+                aria-label="Narration export progress"
+              />
+            </div>
           )}
         </div>
         <p className="text-xs text-slate-600 text-center mt-3">

@@ -1720,7 +1720,7 @@ const RoundCountdown = React.memo((props) => {
   const textColor = isDone ? 'text-slate-600' : isUrgent ? 'text-red-700' : 'text-slate-700';
   return (
     <div className="flex items-center gap-2 text-xs font-bold" role="timer" aria-live="off" aria-label={isPaused ? `Timer paused at ${secs} seconds` : `Time remaining: ${secs} seconds`}>
-      <span className={textColor}>{isPaused ? 'Paused · ' : ''}⏱ {isDone ? '0s' : secs + 's'}</span>
+      <span className={textColor}>{isPaused ? 'Paused · ' : ''}<span aria-hidden="true">⏱ </span>{isDone ? '0s' : secs + 's'}{isUrgent && !isPaused ? ' · low' : ''}</span>
       <div className="w-20 h-1.5 bg-slate-200 rounded-full overflow-hidden">
         <div className={`h-full transition-all duration-200 motion-reduce:transition-none ${barColor}`} style={{ width: `${pct}%` }} />
       </div>
@@ -1736,46 +1736,59 @@ const DrawerToolbox = React.memo((props) => {
   const setMode = props.setMode || (() => {});
   const onClear = props.onClear || null;
   const onUndo = props.onUndo || null;
+  const activeColorName = (PEN_COLORS.find((c) => c.hex === color) || PEN_COLORS[0]).name;
+  const toolBtnFocus = 'min-h-11 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
   return (
     <div className="flex flex-wrap items-center gap-2 mt-3 mb-2 px-2">
-      <div className="flex gap-1">
-        {PEN_COLORS.map((c) => (
-          <button type="button"
-            key={c.name}
-            onClick={() => { setColor(c.hex); setMode('pen'); }}
-            aria-pressed={mode === 'pen' && color === c.hex}
-            aria-label={`Pen color ${c.name}`}
-            title={c.name}
-            style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: c.hex,
-              border: (mode === 'pen' && color === c.hex) ? '3px solid #1a202c' : '2px solid #fff',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-              cursor: 'pointer',
-            }}
-          />
-        ))}
+      <div className="flex flex-wrap gap-1" role="group" aria-label="Pen colors">
+        {PEN_COLORS.map((c) => {
+          const isSelected = mode === 'pen' && color === c.hex;
+          return (
+            <button type="button"
+              key={c.name}
+              onClick={() => { setColor(c.hex); setMode('pen'); }}
+              aria-pressed={isSelected}
+              aria-label={`Pen color ${c.name}`}
+              title={c.name}
+              className={`min-w-11 min-h-11 inline-flex items-center justify-center rounded-full border ${toolBtnFocus} ${isSelected ? 'border-slate-900 bg-slate-100' : 'border-transparent hover:bg-slate-100'}`}
+            >
+              <span
+                aria-hidden="true"
+                style={{
+                  width: 26, height: 26, borderRadius: '50%', display: 'block',
+                  background: c.hex,
+                  border: isSelected ? '3px solid #1a202c' : '2px solid #fff',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.22)',
+                }}
+              />
+            </button>
+          );
+        })}
       </div>
       <button type="button"
         onClick={() => setMode(mode === 'eraser' ? 'pen' : 'eraser')}
         aria-pressed={mode === 'eraser'}
         aria-label="Eraser"
-        className={`px-3 py-1.5 text-xs font-bold rounded-full border ${mode === 'eraser' ? 'bg-slate-700 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
-      >🧽 Eraser</button>
+        className={`px-3 py-2 text-xs font-bold rounded-full border ${toolBtnFocus} ${mode === 'eraser' ? 'bg-slate-800 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+      ><span aria-hidden="true">🧽 </span>Eraser</button>
       {onUndo ? (
         <button type="button"
           onClick={onUndo}
-          className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+          className={`px-3 py-2 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-50 ${toolBtnFocus}`}
           aria-label="Undo last stroke"
-        >↶ Undo</button>
+          title="Undo last stroke (Ctrl+Z)"
+        ><span aria-hidden="true">↶ </span>Undo</button>
       ) : null}
       {onClear ? (
         <button type="button"
           onClick={onClear}
-          className="px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-red-700 border-red-300 hover:bg-red-50"
+          className={`px-3 py-2 text-xs font-bold rounded-full border bg-white text-red-700 border-red-300 hover:bg-red-50 ${toolBtnFocus}`}
           aria-label="Clear canvas"
-        >✕ Clear</button>
+        ><span aria-hidden="true">✕ </span>Clear</button>
       ) : null}
+      <span data-active-draw-tool={mode === 'eraser' ? 'eraser' : activeColorName} className="ml-auto rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">
+        {mode === 'eraser' ? 'Tool: Eraser' : `Tool: ${activeColorName} pen`}
+      </span>
     </div>
   );
 });
@@ -1819,9 +1832,24 @@ const SketchResponseGallery = React.memo((props) => {
     statuses,
     moderation
   );
+  const [galleryFilter, setGalleryFilter] = React.useState('all');
   const submittedCount = submissions.filter((entry) => entry.status === 'submitted').length;
   const approvedCount = submissions.filter((entry) => entry.moderation === 'approved').length;
   const eligibleCount = submissions.filter((entry) => entry.revealable).length;
+  const submittedPct = participants.length ? Math.round((submittedCount / participants.length) * 100) : 0;
+  const showGalleryFilter = participants.length >= 4;
+  const activeGalleryFilter = showGalleryFilter ? galleryFilter : 'all';
+  const visibleParticipants = activeGalleryFilter === 'all'
+    ? participants
+    : participants.filter((participant) => {
+        const st = _cpOwnGet(statuses, participant.uid) === 'submitted' ? 'submitted' : 'drawing';
+        const mod = _cpOwnGet(moderation, participant.uid);
+        if (activeGalleryFilter === 'submitted') return st === 'submitted';
+        if (activeGalleryFilter === 'approved') return mod === 'approved';
+        if (activeGalleryFilter === 'pending') return st !== 'submitted';
+        return true;
+      });
+  const galBtnFocus = 'min-h-11 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
   const votesCast = showcaseResults
     ? Number(showcaseResults.votesCast) || 0
     : Object.keys(votesByUid).length;
@@ -1837,14 +1865,48 @@ const SketchResponseGallery = React.memo((props) => {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs font-bold text-indigo-900">{submittedCount}/{participants.length} submitted</span>
+        <span className="text-xs font-bold text-indigo-900">{submittedCount}/{participants.length} submitted ({submittedPct}%)</span>
         <span className="text-xs text-slate-600">· {approvedCount} approved</span>
         <button type="button"
           onClick={onApproveSubmitted}
           disabled={submittedCount === 0}
-          className="ml-auto px-2 py-1 text-xs font-bold rounded border border-emerald-300 text-emerald-800 bg-white hover:bg-emerald-50 disabled:opacity-40"
+          className={`ml-auto px-3 py-2 text-xs font-bold rounded-lg border border-emerald-300 text-emerald-800 bg-white hover:bg-emerald-50 disabled:opacity-40 ${galBtnFocus}`}
         >Approve submitted</button>
       </div>
+      {participants.length > 0 ? (
+        <div
+          role="progressbar"
+          aria-label="Sketch submissions progress"
+          aria-valuemin={0}
+          aria-valuemax={participants.length}
+          aria-valuenow={submittedCount}
+          aria-valuetext={`${submittedCount} of ${participants.length} sketches submitted (${submittedPct}%)`}
+          className="h-2 w-full overflow-hidden rounded-full bg-slate-200"
+        >
+          <div className="h-full rounded-full bg-indigo-600 transition-all motion-reduce:transition-none" style={{ width: `${submittedPct}%` }} />
+        </div>
+      ) : null}
+      {showGalleryFilter ? (
+        <div role="group" aria-label="Filter sketch gallery" className="flex flex-wrap gap-1.5">
+          {[
+            ['all', `All (${participants.length})`],
+            ['submitted', `Submitted (${submittedCount})`],
+            ['pending', `Drawing (${participants.length - submittedCount})`],
+            ['approved', `Approved (${approvedCount})`],
+          ].map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              data-sketch-gallery-filter={key}
+              aria-pressed={activeGalleryFilter === key}
+              onClick={() => setGalleryFilter(key)}
+              className={`rounded-full border px-3 py-1.5 text-xs font-bold ${galBtnFocus} ${activeGalleryFilter === key ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100'}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      ) : null}
       <p className="m-0 text-xs text-slate-600 leading-snug">
         Boards remain private to the teacher. Feedback returns directly over WebRTC. Anonymous reveal and voting use only teacher-approved frozen sketches.
       </p>
@@ -1858,13 +1920,13 @@ const SketchResponseGallery = React.memo((props) => {
       ) : showcaseRound ? (
         <div className="flex items-center gap-2 rounded-lg border border-violet-300 bg-violet-50 p-2">
           <span role="status" className="text-xs font-bold text-violet-950">{showcaseRound.candidates.length} sketches · {votesCast} votes received</span>
-          <button type="button" onClick={onCloseShowcase} className="ml-auto px-2 py-1 text-xs font-black rounded bg-violet-700 text-white">Close and reveal totals</button>
+          <button type="button" onClick={onCloseShowcase} className={`ml-auto px-3 py-2 text-xs font-black rounded-lg bg-violet-700 text-white hover:bg-violet-800 ${galBtnFocus}`}>Close and reveal totals</button>
         </div>
       ) : (
         <button type="button"
           onClick={onStartShowcase}
           disabled={!props.canStartShowcase || eligibleCount < SKETCH_VOTE_MIN_CANDIDATES}
-          className="w-full rounded-lg border border-violet-300 bg-violet-700 px-3 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-40"
+          className={`w-full rounded-lg border border-violet-300 bg-violet-700 px-3 py-2 text-xs font-black text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-40 ${galBtnFocus}`}
         >Start anonymous sketch vote ({eligibleCount} eligible)</button>
       )}
       <p className="m-0 text-xs text-slate-600">
@@ -1881,7 +1943,7 @@ const SketchResponseGallery = React.memo((props) => {
           <select
             value={followUpResourceId}
             onChange={(event) => onSetFollowUpResourceId(event.target.value)}
-            className="block w-full mt-1 text-xs border border-slate-300 rounded p-1.5 bg-white"
+            className="block w-full min-h-11 mt-1 text-xs border border-slate-300 rounded-lg p-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-600"
             aria-label="Choose a follow-up resource for sketch responses"
           >
             <option value="">Choose a lesson resource…</option>
@@ -1893,9 +1955,14 @@ const SketchResponseGallery = React.memo((props) => {
       ) : null}
       {participants.length === 0 ? (
         <div className="p-3 text-sm text-slate-600 bg-white border border-slate-200 rounded-lg">Choose participants to begin collecting private sketches.</div>
+      ) : visibleParticipants.length === 0 ? (
+        <div role="status" className="p-4 text-center text-xs text-slate-700 bg-white border border-dashed border-slate-300 rounded-lg">
+          <p className="m-0 font-bold">No sketches match this filter.</p>
+          <button type="button" onClick={() => setGalleryFilter('all')} className={`mt-2 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-800 ${galBtnFocus}`}>Show all ({participants.length})</button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3" role="list" aria-label="Private sketch response gallery">
-          {participants.map((participant) => {
+          {visibleParticipants.map((participant) => {
             const strokes = Array.isArray(_cpOwnGet(strokesByUid, participant.uid)) ? _cpOwnGet(strokesByUid, participant.uid) : [];
             const status = _cpOwnGet(statuses, participant.uid) === 'submitted' ? 'submitted' : 'drawing';
             const modVal = _cpOwnGet(moderation, participant.uid);
@@ -1916,7 +1983,7 @@ const SketchResponseGallery = React.memo((props) => {
             const candidate = candidateByOwnerUid[participant.uid] || null;
             const result = candidate ? resultByCandidateId[candidate.candidateId] : null;
             return (
-              <article key={participant.uid} role="listitem" className="p-2 bg-white border border-slate-200 rounded-lg">
+              <div key={participant.uid} role="listitem" className="p-2 bg-white border border-slate-200 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <strong className="text-xs text-slate-800">{participant.name}</strong>
                   <span className="ml-auto text-xs font-bold text-slate-600">
@@ -1939,7 +2006,7 @@ const SketchResponseGallery = React.memo((props) => {
                     value={review}
                     onChange={(event) => onModerationChange(participant.uid, event.target.value)}
                     aria-label={'Moderation for ' + participant.name}
-                    className="text-xs border border-slate-300 rounded p-1 bg-white"
+                    className="min-h-11 text-xs border border-slate-300 rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-600"
                   >
                     <option value="hold">Hold</option>
                     <option value="approved">Approve</option>
@@ -1948,7 +2015,7 @@ const SketchResponseGallery = React.memo((props) => {
                   <button type="button"
                     onClick={() => onReveal(participant.uid)}
                     disabled={!revealable}
-                    className="px-2 py-1 text-xs font-bold rounded bg-indigo-600 text-white disabled:opacity-40"
+                    className={`px-3 py-2 text-xs font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 ${galBtnFocus}`}
                   >Reveal anonymously</button>
                 </div>
                 {status === 'submitted' ? (
@@ -1958,6 +2025,10 @@ const SketchResponseGallery = React.memo((props) => {
                         <strong>Feedback sent:</strong> {feedback.text}
                       </div>
                     ) : null}
+                    <div className="mb-1 flex items-center justify-between text-[11px] font-semibold text-amber-950">
+                      <span>Private feedback note</span>
+                      <span>{feedbackDraft.length}/{SKETCH_FEEDBACK_MAX_LENGTH}</span>
+                    </div>
                     <textarea
                       value={feedbackDraft}
                       onChange={(event) => onFeedbackDraftChange(participant.uid, event.target.value)}
@@ -1965,27 +2036,27 @@ const SketchResponseGallery = React.memo((props) => {
                       rows={3}
                       aria-label={'Feedback draft for ' + participant.name}
                       placeholder="Teacher observation or feedback…"
-                      className="w-full resize-y rounded border border-amber-300 bg-white p-1.5 text-xs text-slate-900"
+                      className="w-full resize-y rounded border border-amber-300 bg-white p-2 text-xs text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
                     />
-                    <div className="mt-1 flex flex-wrap gap-1">
+                    <div className="mt-1.5 flex flex-wrap gap-1.5">
                       {props.canPolishFeedback ? (
                         <button type="button"
                           onClick={() => onPolishFeedback(participant.uid)}
                           disabled={!feedbackDraft.trim() || feedbackBusy}
-                          className="px-2 py-1 text-xs font-bold rounded border border-fuchsia-300 bg-white text-fuchsia-800 disabled:opacity-40"
+                          className={`px-2.5 py-2 text-xs font-bold rounded-lg border border-fuchsia-300 bg-white text-fuchsia-800 hover:bg-fuchsia-50 disabled:opacity-40 ${galBtnFocus}`}
                         >{feedbackBusyKind === 'text' ? 'Polishing…' : 'AI polish · text only'}</button>
                       ) : null}
                       {props.canAnalyzeSketch ? (
                         <button type="button"
                           onClick={() => onAnalyzeSketch(participant.uid)}
                           disabled={strokes.length === 0 || feedbackBusy}
-                          className="px-2 py-1 text-xs font-bold rounded border border-rose-300 bg-white text-rose-800 disabled:opacity-40"
+                          className={`px-2.5 py-2 text-xs font-bold rounded-lg border border-rose-300 bg-white text-rose-800 hover:bg-rose-50 disabled:opacity-40 ${galBtnFocus}`}
                         >{feedbackBusyKind === 'vision' ? 'Analyzing sketch…' : 'Analyze sketch with AI'}</button>
                       ) : null}
                       <button type="button"
                         onClick={() => onSendFeedback(participant.uid)}
                         disabled={!feedbackDraft.trim() || feedbackBusy}
-                        className="ml-auto px-2 py-1 text-xs font-black rounded bg-amber-700 text-white disabled:opacity-40"
+                        className={`ml-auto px-3 py-2 text-xs font-black rounded-lg bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-40 ${galBtnFocus}`}
                       >{attempt < 2 && props.collectionActive ? 'Send + allow one revision' : 'Send final feedback'}</button>
                     </div>
                     {visionNotice ? (
@@ -1994,22 +2065,22 @@ const SketchResponseGallery = React.memo((props) => {
                   </div>
                 ) : null}
                 {followUpResourceId ? (
-                  <div className="flex flex-wrap gap-1 mt-2">
+                  <div className="flex flex-wrap gap-1.5 mt-2">
                     {onSendToStudent ? (
                       <button type="button"
                         onClick={() => onSendToStudent(participant.uid, followUpResourceId)}
-                        className="px-2 py-1 text-xs font-bold rounded border border-blue-300 text-blue-800 bg-blue-50"
+                        className={`px-3 py-2 text-xs font-bold rounded-lg border border-blue-300 text-blue-800 bg-blue-50 hover:bg-blue-100 ${galBtnFocus}`}
                       >Send resource to student</button>
                     ) : null}
                     {groupId && onSendToGroup ? (
                       <button type="button"
                         onClick={() => onSendToGroup(groupId, followUpResourceId)}
-                        className="px-2 py-1 text-xs font-bold rounded border border-violet-300 text-violet-800 bg-violet-50"
+                        className={`px-3 py-2 text-xs font-bold rounded-lg border border-violet-300 text-violet-800 bg-violet-50 hover:bg-violet-100 ${galBtnFocus}`}
                       >Send to {groupName || 'group'}</button>
                     ) : null}
                   </div>
                 ) : null}
-              </article>
+              </div>
             );
           })}
         </div>
@@ -2742,11 +2813,11 @@ const PictionaryHostView = React.memo((props) => {
           <div className="flex items-start gap-1 flex-shrink-0">
             <button type="button"
               onClick={toggleFullscreen}
-              className="min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-800 text-lg leading-none p-1.5 rounded hover:bg-slate-100"
+              className="min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-800 text-lg leading-none p-1.5 rounded hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
               aria-label={isFullscreen ? _cpTr(props.t, 'common.exit_fullscreen', 'Exit fullscreen') : _cpTr(props.t, 'common.enter_fullscreen', 'Enter fullscreen')}
               title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen the dashboard'}
-            >{isFullscreen ? '↙' : '⛶'}</button>
-            <button type="button" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100" aria-label={_cpTr(props.t, 'common.close', 'Close')}>✕</button>
+            ><span aria-hidden="true">{isFullscreen ? '↙' : '⛶'}</span></button>
+            <button type="button" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={_cpTr(props.t, 'common.close', 'Close')}><span aria-hidden="true">✕</span></button>
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-5">
@@ -2754,7 +2825,7 @@ const PictionaryHostView = React.memo((props) => {
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3">
               <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-700">{activityMode === SKETCH_RESPONSE_ACTIVITY_MODE ? 'Private response gallery' : 'Canvas'}</div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   {roundActive && activeRoundMeta ? (
                     <RoundCountdown startedAt={activeRoundMeta.startedAt} durationMs={activeRoundMeta.durationMs} isPaused={activeRoundMeta.isPaused} pausedAt={activeRoundMeta.pausedAt} pausedTotalMs={activeRoundMeta.pausedTotalMs} />
                   ) : null}
@@ -2766,10 +2837,10 @@ const PictionaryHostView = React.memo((props) => {
                     <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-300">Idle</span>
                   )}
                   {roundActive && activeRoundMeta ? (
-                    <button type="button" onClick={handleTogglePause} aria-pressed={!!activeRoundMeta.isPaused} className="px-2 py-1 text-xs font-bold rounded bg-amber-100 hover:bg-amber-200 text-amber-900">{activeRoundMeta.isPaused ? 'Resume timer' : 'Pause timer'}</button>
+                    <button type="button" onClick={handleTogglePause} aria-pressed={!!activeRoundMeta.isPaused} className="min-h-11 px-3 py-2 text-xs font-bold rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-2">{activeRoundMeta.isPaused ? 'Resume timer' : 'Pause timer'}</button>
                   ) : null}
                   {roundActive ? (
-                    <button type="button" onClick={handleEndRound} className="px-2 py-1 text-xs font-bold rounded bg-slate-200 hover:bg-slate-300 text-slate-800">End round</button>
+                    <button type="button" onClick={handleEndRound} className="min-h-11 px-3 py-2 text-xs font-bold rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">End round</button>
                   ) : null}
                 </div>
               </div>
@@ -3166,13 +3237,13 @@ const SketchVotePanel = React.memo((props) => {
           const selected = selection === candidate.candidateId;
           if (results) {
             return (
-              <article key={candidate.candidateId} role="listitem" className="rounded-lg border border-violet-200 bg-white p-2">
+              <div key={candidate.candidateId} role="listitem" className="rounded-lg border border-violet-200 bg-white p-2">
                 <div className="mb-1 flex items-center gap-2 text-xs font-bold text-violet-950">
                   <span>{candidate.label}</span>
                   <span className="ml-auto">{candidate.count} · {candidate.percent}%</span>
                 </div>
                 <PictionaryCanvas strokes={candidate.strokes || []} drawingEnabled={false} showWatchingBadge={false} ariaLabel={candidate.label + ' voting result'} />
-              </article>
+              </div>
             );
           }
           const selectableIndices = candidates
@@ -3182,6 +3253,7 @@ const SketchVotePanel = React.memo((props) => {
           const hasValidSelection = selectableIndices.some((i) => candidates[i].candidateId === selection);
           const tabIndex = candidate.own ? -1 : (selected || (!hasValidSelection && idx === firstSelectableIdx) ? 0 : -1);
           const onRadioKeyDown = (event) => {
+            if (_cpIsImeComposing(event)) return;
             if (!['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'].includes(event.key)) return;
             if (!selectableIndices.length) return;
             event.preventDefault();
@@ -3208,9 +3280,12 @@ const SketchVotePanel = React.memo((props) => {
               disabled={candidate.own}
               onClick={() => onSelect(candidate.candidateId)}
               onKeyDown={onRadioKeyDown}
-              className={'rounded-lg border-2 p-2 text-left ' + (candidate.own ? 'cursor-not-allowed border-slate-200 bg-slate-100 opacity-70' : selected ? 'border-violet-600 bg-white' : 'border-violet-200 bg-white')}
+              className={'rounded-lg border-2 p-2 text-left transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2 ' + (candidate.own ? 'cursor-not-allowed border-slate-200 bg-slate-100 opacity-70' : selected ? 'border-violet-600 bg-white ring-2 ring-violet-200' : 'border-violet-200 bg-white hover:border-violet-400')}
             >
-              <span className="mb-1 block text-xs font-black text-violet-950">{candidate.label}{candidate.own ? ' · your sketch' : ''}</span>
+              <span className="mb-1 flex items-center justify-between gap-2 text-xs font-black text-violet-950">
+                <span>{candidate.label}{candidate.own ? ' · your sketch' : ''}</span>
+                {selected ? <span className="rounded-full bg-violet-700 px-2 py-0.5 text-[11px] font-black text-white">Selected</span> : null}
+              </span>
               <PictionaryCanvas strokes={candidate.strokes || []} drawingEnabled={false} showWatchingBadge={false} ariaLabel={candidate.label + ' anonymous voting candidate'} />
             </button>
           );
@@ -3221,7 +3296,7 @@ const SketchVotePanel = React.memo((props) => {
           <button type="button"
             onClick={onSubmit}
             disabled={!selection || !connectionReady}
-            className="mt-3 w-full rounded-lg bg-violet-700 px-3 py-2 text-xs font-black text-white disabled:opacity-40"
+            className="mt-3 min-h-11 w-full rounded-lg bg-violet-700 px-3 py-2 text-xs font-black text-white hover:bg-violet-800 disabled:opacity-40 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
           >{submitted ? 'Update vote' : 'Submit vote'}</button>
           {submitted ? <p role="status" className="m-0 mt-2 text-xs font-bold text-emerald-800">Vote recorded. You may update it until the teacher closes voting.</p> : null}
         </>
@@ -3474,7 +3549,22 @@ const PictionaryGuestOverlay = React.memo((props) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[260] flex items-start justify-center p-2 sm:p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label={_cpTr(props.t, 'pictionary.guest_dialog_title', 'Concept Pictionary')}>
+    <div
+      className="fixed inset-0 z-[260] flex items-start justify-center p-2 sm:p-4 overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-label={_cpTr(props.t, 'pictionary.guest_dialog_title', 'Concept Pictionary')}
+      onKeyDown={(e) => {
+        if (_cpIsImeComposing(e)) return;
+        const tag = e.target && e.target.tagName ? e.target.tagName.toUpperCase() : '';
+        if ((e.ctrlKey || e.metaKey) && !e.shiftKey && String(e.key || '').toLowerCase() === 'z' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+          if (isDrawer && connState === 'connected' && activeRound && !activeRound.isPaused && !(isSketchResponse && sketchSubmitted) && myStrokeIds.length > 0) {
+            e.preventDefault();
+            handleUndo();
+          }
+        }
+      }}
+    >
       <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" aria-hidden="true" />
       <div
         ref={guestContainerRef}
@@ -3487,7 +3577,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
       >
         <div className="flex items-start justify-between p-3 sm:p-4 border-b border-slate-200 bg-gradient-to-r from-rose-50 to-amber-50 gap-3">
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-bold text-rose-700 uppercase tracking-wider">{isSketchResponse ? '🎨 Private sketch response' : isDrawer ? '🎨 You are a drawer' : '👀 You are a guesser'}</div>
+            <div className="text-xs font-bold text-rose-700 uppercase tracking-wider">{isSketchResponse ? <><span aria-hidden="true">🎨 </span>Private sketch response</> : isDrawer ? <><span aria-hidden="true">🎨 </span>You are a drawer</> : <><span aria-hidden="true">👀 </span>You are a guesser</>}</div>
             <h2 className="text-lg sm:text-xl font-black text-slate-800 mt-0.5">{isSketchResponse ? 'Sketch Response' : 'Concept Pictionary'}</h2>
             {connState === 'connecting' ? <div className="text-xs text-amber-700 mt-1">Connecting…</div> : null}
             {connState === 'reconnecting' ? <div className="text-xs text-amber-700 mt-1" role="status">Connection lost — reconnecting…</div> : null}
@@ -3496,7 +3586,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
                 <span>Can't reach the teacher's device.</span>
                 <button type="button"
                   onClick={handleManualRetry}
-                  className="px-2 py-0.5 text-xs font-bold rounded border border-red-300 bg-white text-red-700 hover:bg-red-50"
+                  className="min-h-11 px-3 py-1.5 text-xs font-bold rounded-lg border border-red-300 bg-white text-red-700 hover:bg-red-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
                 >Retry</button>
               </div>
             ) : null}
@@ -3507,11 +3597,11 @@ const PictionaryGuestOverlay = React.memo((props) => {
             ) : null}
             <button type="button"
               onClick={toggleGuestFullscreen}
-              className="min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-800 text-lg leading-none p-1.5 rounded hover:bg-slate-100"
+              className="min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-800 text-lg leading-none p-1.5 rounded hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2"
               aria-label={isGuestFullscreen ? _cpTr(props.t, 'common.exit_fullscreen', 'Exit fullscreen') : _cpTr(props.t, 'common.enter_fullscreen', 'Enter fullscreen')}
               title={isGuestFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen'}
-            >{isGuestFullscreen ? '↙' : '⛶'}</button>
-            <button type="button" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100" aria-label={_cpTr(props.t, 'common.close', 'Close')}>✕</button>
+            ><span aria-hidden="true">{isGuestFullscreen ? '↙' : '⛶'}</span></button>
+            <button type="button" onClick={onClose} className="min-w-11 min-h-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={_cpTr(props.t, 'common.close', 'Close')}><span aria-hidden="true">✕</span></button>
           </div>
         </div>
         <div className="p-3 sm:p-4">
@@ -3522,7 +3612,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
                   <div className="text-xs font-bold uppercase tracking-wider text-indigo-700">{sharedSketch.label || 'Anonymous sketch'}</div>
                   <div className="text-sm font-bold text-indigo-950">{sharedSketch.prompt || 'Class sketch response'}</div>
                 </div>
-                <button type="button" onClick={() => setSharedSketch(null)} className="ml-auto px-2 py-1 text-xs font-bold rounded border border-indigo-300 bg-white text-indigo-800">Dismiss</button>
+                <button type="button" onClick={() => setSharedSketch(null)} className="ml-auto min-h-11 px-3 py-2 text-xs font-bold rounded-lg border border-indigo-300 bg-white text-indigo-800 hover:bg-indigo-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">Dismiss</button>
               </div>
               <PictionaryCanvas
                 strokes={sharedSketch.strokes || []}
@@ -3574,7 +3664,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
               <div className="text-xs font-black uppercase tracking-wider text-amber-800">Teacher feedback</div>
               <p className="m-0 mt-1 whitespace-pre-wrap">{sketchFeedback.text}</p>
               {activeRound && sketchFeedback.allowRevision && sketchAttempt < 2 && sketchSubmitted ? (
-                <button type="button" onClick={handleSketchRevision} disabled={connState !== 'connected' || !!activeRound?.isPaused} className="mt-2 w-full rounded border border-amber-400 bg-white px-3 py-2 text-xs font-black text-amber-900">Revise with feedback</button>
+                <button type="button" onClick={handleSketchRevision} disabled={connState !== 'connected' || !!activeRound?.isPaused} className="mt-2 min-h-11 w-full rounded-lg border border-amber-400 bg-white px-3 py-2 text-xs font-black text-amber-900 hover:bg-amber-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-2">Revise with feedback</button>
               ) : null}
             </div>
           ) : null}
@@ -3601,10 +3691,10 @@ const PictionaryGuestOverlay = React.memo((props) => {
               {sketchSubmitted ? (
                 <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900">
                   <strong>{sketchAttempt > 1 ? 'Revision submitted.' : 'Drawing submitted.'}</strong> It remains private until the teacher approves and reveals it.
-                  {!sketchFeedback && sketchAttempt < 2 ? <button type="button" onClick={handleSketchEdit} disabled={connState !== 'connected' || !!activeRound?.isPaused} className="block w-full mt-2 px-3 py-2 text-xs font-bold rounded border border-emerald-300 bg-white text-emerald-800">Edit drawing</button> : null}
+                  {!sketchFeedback && sketchAttempt < 2 ? <button type="button" onClick={handleSketchEdit} disabled={connState !== 'connected' || !!activeRound?.isPaused} className="block min-h-11 w-full mt-2 px-3 py-2 text-xs font-bold rounded-lg border border-emerald-300 bg-white text-emerald-800 hover:bg-emerald-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">Edit drawing</button> : null}
                 </div>
               ) : (
-                <button type="button" onClick={handleSketchSubmit} disabled={strokes.length === 0 || connState !== 'connected'} className="w-full px-4 py-2 text-sm font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40">Submit drawing</button>
+                <button type="button" onClick={handleSketchSubmit} disabled={strokes.length === 0 || connState !== 'connected'} className="min-h-11 w-full px-4 py-2 text-sm font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">Submit drawing</button>
               )}
             </div>
           ) : null}
@@ -3615,15 +3705,23 @@ const PictionaryGuestOverlay = React.memo((props) => {
                 value={guessText}
                 onChange={(e) => setGuessText(e.target.value)}
                 disabled={!!activeRound.isPaused || connState !== 'connected'}
-                onKeyDown={(e) => { if (_cpIsImeComposing(e)) return; if (e.key === 'Enter') handleSubmitGuess(); }}
+                onKeyDown={(e) => {
+                  if (_cpIsImeComposing(e)) return;
+                  if (e.key === 'Enter') handleSubmitGuess();
+                  else if (e.key === 'Escape' && guessText) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setGuessText('');
+                  }
+                }}
                 placeholder={(typeof window !== 'undefined' && window.__alloT && window.__alloT("placeholders.type_guess")) || "Type your guess…"}
-                className="flex-1 min-h-11 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-amber-300"
+                className="flex-1 min-h-11 text-sm border border-slate-300 rounded-lg p-2 placeholder:text-slate-600 outline-none focus:ring-2 focus:ring-amber-500"
                 aria-label={_cpTr(props.t, 'pictionary.your_guess', 'Your guess')}
               />
               <button type="button"
                 onClick={handleSubmitGuess}
                 disabled={!guessText.trim() || !!activeRound.isPaused || connState !== 'connected'}
-                className="min-h-11 px-4 py-2 text-sm font-bold rounded-lg bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-40"
+                className="min-h-11 px-4 py-2 text-sm font-bold rounded-lg bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-40 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-2"
               >{_cpTr(props.t, 'common.send', 'Send')}</button>
             </div>
           ) : null}

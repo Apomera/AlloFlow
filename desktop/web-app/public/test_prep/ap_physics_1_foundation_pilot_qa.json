@@ -85,7 +85,7 @@
     "testWiseness": {
       "keyedItemCount": 500,
       "keyCycleSharePercent": 100,
-      "keyLongestSharePercent": 57.4,
+      "keyLongestSharePercent": 0.4,
       "keyLongerByQuarterSharePercent": 0,
       "distractorRationaleCount": 1500,
       "distinctDistractorRationaleCount": 1480,
@@ -369,8 +369,8 @@
     "nearDuplicatePairCount": 0
   },
   "inputs": {
-    "packSha256": "eec8585c7cf3e6c2e7f9baa938ce644a36cfe7af60d7275009b7450a6096a81f",
-    "learningLibrarySha256": "82e7590737db99b73ccf07138beae96d02fb0fd0651ec92c76a49e6686b68098",
+    "packSha256": "6b4aef867101ad7fd4ed129f2056a8040845c7fded09a5d526c71d235152536c",
+    "learningLibrarySha256": "bc78cdefe519bffb16b5c08739ac532faca1ea1fc1792565209a2615f01b49cb",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based",
     "factualCrossCheckUrl": "https://openstax.org/details/books/college-physics-2e"
@@ -380,15 +380,15 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "eec8585c7cf3e6c2e7f9baa938ce644a36cfe7af60d7275009b7450a6096a81f",
-      "deploySha256": "eec8585c7cf3e6c2e7f9baa938ce644a36cfe7af60d7275009b7450a6096a81f"
+      "sourceSha256": "6b4aef867101ad7fd4ed129f2056a8040845c7fded09a5d526c71d235152536c",
+      "deploySha256": "6b4aef867101ad7fd4ed129f2056a8040845c7fded09a5d526c71d235152536c"
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "82e7590737db99b73ccf07138beae96d02fb0fd0651ec92c76a49e6686b68098",
-      "deploySha256": "82e7590737db99b73ccf07138beae96d02fb0fd0651ec92c76a49e6686b68098"
+      "sourceSha256": "bc78cdefe519bffb16b5c08739ac532faca1ea1fc1792565209a2615f01b49cb",
+      "deploySha256": "bc78cdefe519bffb16b5c08739ac532faca1ea1fc1792565209a2615f01b49cb"
     }
   ],
   "releaseBlockers": [

@@ -6440,7 +6440,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
     }
   },
     /*#__PURE__*/React.createElement('div', {
-      ref: dialogRef, role: 'dialog', 'aria-modal': 'true',
+      ref: dialogRef, 'data-si-dialog': 'true', role: 'dialog', 'aria-modal': 'true',
       'aria-labelledby': 'submission-inbox-title', 'aria-describedby': 'submission-inbox-description',
       tabIndex: -1, onKeyDown: event => containDialogFocus(event, dialogRef.current),
       style: {
@@ -6449,21 +6449,25 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
         border: '2px solid #c7d2fe', overflow: 'hidden', position: 'relative'
       }
     },
+      /*#__PURE__*/React.createElement('style', null,
+        '[data-si-dialog] :is(button,input,select,textarea,summary,[tabindex="0"]):focus-visible{outline:2px solid #4338ca;outline-offset:2px}' +
+        '@media (prefers-reduced-motion:reduce){[data-si-dialog] *{transition-duration:0.01ms !important;animation-duration:0.01ms !important}}'
+      ),
       // Header
-      /*#__PURE__*/React.createElement('div', { style: { padding: '18px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+      /*#__PURE__*/React.createElement('div', { style: { padding: '18px 22px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 } },
         /*#__PURE__*/React.createElement('div', null,
           /*#__PURE__*/React.createElement('h2', { id: 'submission-inbox-title', style: { margin: 0, fontSize: '1.2rem', fontWeight: 900, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 } },
             tr('📥 Import student submissions')
           ),
-          /*#__PURE__*/React.createElement('p', { id: 'submission-inbox-description', style: { margin: '4px 0 0 0', fontSize: '0.85rem', color: '#64748b' } },
+          /*#__PURE__*/React.createElement('p', { id: 'submission-inbox-description', style: { margin: '4px 0 0 0', fontSize: '0.85rem', color: '#475569' } },
             tr('Add student submission files or collect them from Class Mailbox. Load a class key only if decrypting .alloflow.html files.')
           )
         ),
         /*#__PURE__*/React.createElement('button', {
           ref: closeButtonRef, type: 'button', onClick: onClose,
-          style: { padding: '6px 10px', border: 'none', background: 'transparent', color: '#475569', cursor: 'pointer', fontSize: '1.4rem', lineHeight: 1, borderRadius: 6 },
+          style: { minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '6px 10px', border: 'none', background: 'transparent', color: '#334155', cursor: 'pointer', fontSize: '1.4rem', lineHeight: 1, borderRadius: 8 },
           'aria-label': tr('Close')
-        }, '×')
+        }, /*#__PURE__*/React.createElement('span', { 'aria-hidden': 'true' }, '×'))
       ),
 
       // Body
@@ -6485,11 +6489,11 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
             /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 8 } },
               /*#__PURE__*/React.createElement('button', {
                 type: 'button', onClick: () => subInputRef.current?.click(), disabled: queueLocked,
-                style: { padding: '8px 16px', background: '#15803d', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: queueLocked ? 'not-allowed' : 'pointer', opacity: queueLocked ? 0.55 : 1, fontSize: '0.88rem' }
+                style: { minHeight: 44, padding: '8px 16px', background: '#15803d', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: queueLocked ? 'not-allowed' : 'pointer', opacity: queueLocked ? 0.55 : 1, fontSize: '0.88rem' }
               }, tr('＋ Add submissions')),
               queue.length > 0 && /*#__PURE__*/React.createElement('button', {
                 type: 'button', onClick: clearQueue, disabled: queueLocked,
-                style: { padding: '8px 12px', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: queueLocked ? 'not-allowed' : 'pointer', opacity: queueLocked ? 0.55 : 1, fontSize: '0.8rem' }
+                style: { minHeight: 44, padding: '8px 14px', background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: queueLocked ? 'not-allowed' : 'pointer', opacity: queueLocked ? 0.55 : 1, fontSize: '0.82rem' }
               }, tr('Clear'))
             )
           ),
@@ -6502,22 +6506,22 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
               ? /*#__PURE__*/React.createElement(React.Fragment, null,
                   /*#__PURE__*/React.createElement('button', {
                     type: 'button', onClick: pullFromMailbox, disabled: mbPull.busy, 'aria-busy': mbPull.busy ? 'true' : 'false',
-                    style: { padding: '7px 14px', background: 'white', color: '#166534', border: '1px solid #15803d', borderRadius: 8, fontWeight: 700, cursor: mbPull.busy ? 'wait' : 'pointer', fontSize: '0.85rem' }
+                    style: { minHeight: 44, padding: '8px 14px', background: 'white', color: '#166534', border: '1px solid #15803d', borderRadius: 8, fontWeight: 700, cursor: mbPull.busy ? 'wait' : 'pointer', fontSize: '0.85rem' }
                   }, mbPull.busy ? tr('Getting submissions…') : tr('📬 Get submissions from Class Mailbox')),
-                  /*#__PURE__*/React.createElement('label', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: '#475569' } },
+                  /*#__PURE__*/React.createElement('label', { style: { minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', color: '#334155', cursor: 'pointer' } },
                     /*#__PURE__*/React.createElement('input', { type: 'checkbox', checked: mbPull.all, disabled: mbPull.busy, onChange: ev => { const checked = ev.target.checked; setMbPull(s => ({ ...s, all: checked })); } }),
                     tr('Include ones already collected')
                   ),
                   mbPull.needsUpdate && /*#__PURE__*/React.createElement('button', {
                     type: 'button', onClick: () => { const api = window.__alloMailboxSubmissions; if (api && api.openSetup) api.openSetup(); },
-                    style: { padding: '6px 12px', background: '#fef3c7', color: '#92400e', border: '1px solid #f59e0b', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }
+                    style: { minHeight: 44, padding: '8px 12px', background: '#fef3c7', color: '#92400e', border: '1px solid #f59e0b', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.82rem' }
                   }, tr('Open Class Mailbox setup'))
                 )
-              : /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.8rem', color: '#475569' } },
+              : /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.8rem', color: '#334155', display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 } },
                   tr('Using a Class Mailbox? Connect it and submissions can be collected here without downloading them from Drive.'),
                   (typeof window !== 'undefined' && window.__alloMailboxSubmissions) && /*#__PURE__*/React.createElement('button', {
                     type: 'button', onClick: () => window.__alloMailboxSubmissions.openSetup(),
-                    style: { marginLeft: 8, padding: '4px 10px', background: 'white', color: '#166534', border: '1px solid #15803d', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.78rem' }
+                    style: { minHeight: 44, padding: '6px 12px', background: 'white', color: '#166534', border: '1px solid #15803d', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }
                   }, tr('Connect Class Mailbox'))
                 ),
             /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', 'data-si-mailbox-status': 'true', style: { flexBasis: '100%', fontSize: '0.8rem', color: mbPull.needsUpdate ? '#92400e' : '#334155' } }, mbPull.msg)
@@ -6530,7 +6534,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
           style: { background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 10, padding: '10px 16px', marginBottom: 14 }
         },
           /*#__PURE__*/React.createElement('summary', {
-            style: { cursor: 'pointer', fontWeight: 700, color: '#1e3a8a', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }
+            style: { minHeight: 44, cursor: 'pointer', fontWeight: 700, color: '#1e3a8a', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }
           },
             /*#__PURE__*/React.createElement('span', null,
               tr('🔑 Class key file (only for encrypted .alloflow.html files)'),
@@ -6545,13 +6549,13 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     classKeyMeta?.className ? ' for "' + classKeyMeta.className + '"' : '',
                     classKeyMeta?.createdAt ? ' (created ' + classKeyMeta.createdAt.slice(0, 10) + ')' : ''
                   )
-                : /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: '0.85rem', color: '#64748b' } },
+                : /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { fontSize: '0.85rem', color: '#334155' } },
                     tr('Pick the class-key_*.alloflow file you saved when setting up offline submissions.')
                   )
             ),
             /*#__PURE__*/React.createElement('button', {
               type: 'button', onClick: () => keyInputRef.current?.click(),
-              style: { padding: '8px 16px', background: privateJwk ? '#f1f5f9' : '#2563eb', color: privateJwk ? '#475569' : 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem' }
+              style: { minHeight: 44, padding: '8px 16px', background: privateJwk ? '#f1f5f9' : '#2563eb', color: privateJwk ? '#334155' : 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem' }
             }, privateJwk ? tr('🔁 Load different key') : tr('🔑 Load class key'))
           ),
           /*#__PURE__*/React.createElement('input', {
@@ -6569,11 +6573,11 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
               onClick: () => setGlobalRubricOpen(!globalRubricOpen),
               'aria-expanded': globalRubricOpen,
               'aria-controls': 'submission-inbox-class-rubric-panel',
-              style: { display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700, color: '#3730a3', fontSize: '0.9rem' }
+              style: { minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0', fontWeight: 700, color: '#3730a3', fontSize: '0.9rem' }
             },
               tr('🎯 Class rubric'),
               (globalRubric.rubric || '').trim() && /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '1px 8px', borderRadius: 999, background: '#c7d2fe', color: '#3730a3', fontSize: '0.7rem', fontWeight: 700 } }, tr('✓ set')),
-              /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.75rem', fontWeight: 600, color: '#6366f1' } }, globalRubricOpen ? '▾' : '▸')
+              /*#__PURE__*/React.createElement('span', { 'aria-hidden': 'true', style: { fontSize: '0.75rem', fontWeight: 600, color: '#4338ca' } }, globalRubricOpen ? '▾' : '▸')
             ),
             /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
               /*#__PURE__*/React.createElement('button', {
@@ -6589,9 +6593,10 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     ? tr('Grade every decrypted submission in the queue with this rubric')
                     : tr('Set a class rubric first')),
                 style: {
+                  minHeight: 44,
                   padding: '8px 16px',
                   background: (!bulkGrading && (!aiTextAvailable || (counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim())) ? '#cbd5e1' : '#4f46e5',
-                  color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem',
+                  color: (!bulkGrading && (!aiTextAvailable || (counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim())) ? '#334155' : 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem',
                   cursor: bulkGrading ? 'wait' : ((!aiTextAvailable || (counts.decrypted || 0) === 0 || !(globalRubric.rubric || '').trim()) ? 'not-allowed' : 'pointer')
                 }
               }, '🎯 Grade entire queue (' + (counts.decrypted || 0) + ')'),
@@ -6606,7 +6611,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   type: 'button',
                   onClick: autoScoreAllObjective,
                   title: tr('Auto-score objective quiz, Venn, concept-sort, timeline, and math items across all decrypted submissions'),
-                  style: { padding: '8px 14px', background: '#0369a1', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }
+                  style: { minHeight: 44, padding: '8px 14px', background: '#0369a1', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }
                 }, '⚡ Auto-score objective (' + unscoredAutoCount + ')');
               })(),
               !bulkGrading && (() => {
@@ -6615,7 +6620,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   type: 'button',
                   onClick: saveAllGradedToGradebook,
                   title: tr('Write every graded submission to the local gradebook'),
-                  style: { padding: '8px 16px', background: '#15803d', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }
+                  style: { minHeight: 44, padding: '8px 16px', background: '#15803d', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }
                 }, '💾 Save all graded (' + gradedCount + ')');
               })(),
               bulkGrading && /*#__PURE__*/React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: '0.85rem', color: '#3730a3', fontWeight: 700 } },
@@ -6635,7 +6640,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   type: 'button',
                   'data-si-cancel-bulk-grade': 'true',
                   onClick: () => { bulkCancelRef.current = true; },
-                  style: { padding: '4px 10px', background: 'white', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: 6, fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer' }
+                  style: { minHeight: 44, padding: '6px 12px', background: 'white', color: '#991b1b', border: '1px solid #fca5a5', borderRadius: 6, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }
                 }, tr('Cancel'))
               )
             )
@@ -6670,25 +6675,26 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   type: 'text', 'aria-label': tr('Preset name'),
                   value: presetNameInput,
                   onChange: e => setPresetNameInput(e.target.value),
-                  onKeyDown: e => { if (e.key === 'Enter') { e.preventDefault(); savePreset(); } },
+                  onKeyDown: e => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter') { e.preventDefault(); savePreset(); } },
                   placeholder: tr('Name this preset (e.g. "Reading response Ch.3")'),
-                  style: { flex: 1, minWidth: 180, padding: '5px 10px', border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.8rem' }
+                  style: { flex: 1, minWidth: 180, minHeight: 44, padding: '8px 10px', border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.82rem' }
                 }),
                 /*#__PURE__*/React.createElement('button', {
                   type: 'button', onClick: savePreset,
                   disabled: !presetNameInput.trim() || (!globalRubric.rubric.trim() && anchors.length === 0),
                   title: tr('Save the current rubric + context + anchors as a named preset.'),
                   style: {
-                    padding: '5px 12px',
+                    minHeight: 44,
+                    padding: '6px 12px',
                     background: (!presetNameInput.trim() || (!globalRubric.rubric.trim() && anchors.length === 0)) ? '#cbd5e1' : '#4f46e5',
-                    color: 'white', border: 'none', borderRadius: 6, fontWeight: 700, fontSize: '0.78rem',
+                    color: (!presetNameInput.trim() || (!globalRubric.rubric.trim() && anchors.length === 0)) ? '#334155' : 'white', border: 'none', borderRadius: 6, fontWeight: 700, fontSize: '0.8rem',
                     cursor: (!presetNameInput.trim() || (!globalRubric.rubric.trim() && anchors.length === 0)) ? 'not-allowed' : 'pointer'
                   }
                 }, tr('💾 Save')),
                 /*#__PURE__*/React.createElement('button', {
                   type: 'button', onClick: () => presetImportRef.current?.click(),
                   title: tr('Import presets from a JSON file (e.g. shared by another teacher).'),
-                  style: { padding: '5px 10px', background: 'white', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontWeight: 600, fontSize: '0.74rem', cursor: 'pointer' }
+                  style: { minHeight: 44, padding: '6px 12px', background: 'white', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontWeight: 600, fontSize: '0.78rem', cursor: 'pointer' }
                 }, tr('⬆ Import')),
                 /*#__PURE__*/React.createElement('input', {
                   ref: presetImportRef, type: 'file', accept: '.json,application/json',
@@ -6697,7 +6703,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                 Object.keys(rubricPresets).length > 0 && /*#__PURE__*/React.createElement('button', {
                   type: 'button', onClick: exportPresets,
                   title: tr('Export all your presets as a JSON file you can share or back up.'),
-                  style: { padding: '5px 10px', background: 'white', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontWeight: 600, fontSize: '0.74rem', cursor: 'pointer' }
+                  style: { minHeight: 44, padding: '6px 12px', background: 'white', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontWeight: 600, fontSize: '0.78rem', cursor: 'pointer' }
                 }, tr('⬇ Export')),
                 Object.keys(rubricPresets).length > 0 && /*#__PURE__*/React.createElement('div', { style: { position: 'relative' } },
                   /*#__PURE__*/React.createElement('button', {
@@ -6705,7 +6711,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     'aria-expanded': presetsMenuOpen,
                     'aria-controls': 'submission-inbox-presets-panel',
                     title: tr('Load a saved preset'),
-                    style: { padding: '5px 12px', background: 'white', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer' }
+                    style: { minHeight: 44, padding: '6px 12px', background: 'white', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }
                   }, '📂 Load (' + Object.keys(rubricPresets).length + ') ' + (presetsMenuOpen ? '▴' : '▾')),
                   presetsMenuOpen && /*#__PURE__*/React.createElement('div', {
                     id: 'submission-inbox-presets-panel',
@@ -6749,7 +6755,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   )
                 )
               ),
-              /*#__PURE__*/React.createElement('div', { style: { marginTop: 6, fontSize: '0.72rem', color: '#64748b' } },
+              /*#__PURE__*/React.createElement('div', { style: { marginTop: 6, fontSize: '0.74rem', color: '#334155' } },
                 tr('Presets save the rubric + context + every calibration anchor as a named set. Pick a name like "Reading response", "Math word problem", "Lab report" so you can load the right calibration when the same assignment comes back.')
               )
             ),
@@ -6762,7 +6768,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
               /*#__PURE__*/React.createElement('button', {
                 type: 'button', onClick: clearSavedSession,
                 title: tr('Clear the auto-saved rubric and anchors'),
-                style: { padding: '4px 10px', background: 'transparent', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer' }
+                style: { minHeight: 44, padding: '6px 12px', background: 'transparent', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }
               }, tr('Clear saved session'))
             )
           )
@@ -6777,42 +6783,42 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
               onClick: () => setGradebookOpen(!gradebookOpen),
               'aria-expanded': gradebookOpen,
               'aria-controls': 'submission-inbox-gradebook-panel',
-              style: { display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700, color: '#166534', fontSize: '0.9rem' }
+              style: { minHeight: 44, display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 0', fontWeight: 700, color: '#166534', fontSize: '0.9rem' }
             },
               tr('📊 Gradebook'),
               /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '1px 8px', borderRadius: 999, background: '#bbf7d0', color: '#166534', fontSize: '0.7rem', fontWeight: 700 } }, gradebookEntries.length + ' saved'),
-              /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.75rem', fontWeight: 600, color: '#16a34a' } }, gradebookOpen ? '▾' : '▸')
+              /*#__PURE__*/React.createElement('span', { 'aria-hidden': 'true', style: { fontSize: '0.75rem', fontWeight: 600, color: '#15803d' } }, gradebookOpen ? '▾' : '▸')
             ),
             gradebookEntries.length > 0 && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end', maxWidth: '100%' } },
-              /*#__PURE__*/React.createElement('div', { role: 'group', 'aria-label': tr('Group gradebook by'), style: { display: 'inline-flex', background: 'white', border: '1px solid #86efac', borderRadius: 6, padding: 2, fontSize: '0.74rem', fontWeight: 600 } },
+              /*#__PURE__*/React.createElement('div', { role: 'group', 'aria-label': tr('Group gradebook by'), style: { display: 'inline-flex', background: 'white', border: '1px solid #86efac', borderRadius: 6, padding: 2, fontSize: '0.76rem', fontWeight: 600 } },
                 /*#__PURE__*/React.createElement('button', {
                   type: 'button', onClick: () => setGradebookGroupBy('submission'),
                   'aria-pressed': gradebookGroupBy === 'submission',
-                  style: { padding: '4px 10px', background: gradebookGroupBy === 'submission' ? '#16a34a' : 'transparent', color: gradebookGroupBy === 'submission' ? 'white' : '#166534', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 700 }
+                  style: { minHeight: 44, padding: '6px 12px', background: gradebookGroupBy === 'submission' ? '#15803d' : 'transparent', color: gradebookGroupBy === 'submission' ? 'white' : '#166534', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 700 }
                 }, tr('Submissions')),
                 /*#__PURE__*/React.createElement('button', {
                   type: 'button', onClick: () => setGradebookGroupBy('student'),
                   'aria-pressed': gradebookGroupBy === 'student',
-                  style: { padding: '4px 10px', background: gradebookGroupBy === 'student' ? '#16a34a' : 'transparent', color: gradebookGroupBy === 'student' ? 'white' : '#166534', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 700 }
+                  style: { minHeight: 44, padding: '6px 12px', background: gradebookGroupBy === 'student' ? '#15803d' : 'transparent', color: gradebookGroupBy === 'student' ? 'white' : '#166534', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 700 }
                 }, tr('By student'))
               ),
               typeof onOpenAlloSheet === 'function' && /*#__PURE__*/React.createElement('button', {
                 type: 'button', onClick: openAlloSheetReview,
                 'aria-haspopup': 'dialog',
                 title: tr('Review privacy-bounded saved-grade summaries before opening AlloSheet'),
-                style: { padding: '6px 12px', background: '#4338ca', color: 'white', border: '1px solid #3730a3', borderRadius: 6, fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }
+                style: { minHeight: 44, padding: '6px 12px', background: '#4338ca', color: 'white', border: '1px solid #3730a3', borderRadius: 6, fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }
               }, tr('Open in AlloSheet')),
               /*#__PURE__*/React.createElement('button', {
                 type: 'button', onClick: exportGradebookCsv,
                 title: tr('Download all saved grades as a CSV spreadsheet'),
-                style: { padding: '6px 12px', background: 'white', color: '#166534', border: '1px solid #86efac', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }
+                style: { minHeight: 44, padding: '6px 12px', background: 'white', color: '#166534', border: '1px solid #86efac', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }
               }, tr('⬇ Export CSV')),
               gradebookClasses.length > 0 && /*#__PURE__*/React.createElement('select', {
                 'aria-label': tr('Filter gradebook by class'),
                 'data-si-gradebook-class-filter': 'true',
                 value: gradebookClassFilter,
                 onChange: (e) => setGradebookClassFilter(e.target.value),
-                style: { padding: '5px 8px', background: 'white', color: '#166534', border: '1px solid #86efac', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }
+                style: { minHeight: 44, padding: '6px 10px', background: 'white', color: '#166534', border: '1px solid #86efac', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }
               },
                 /*#__PURE__*/React.createElement('option', { value: 'all' }, tr('All classes')),
                 ...gradebookClasses.map(cls => /*#__PURE__*/React.createElement('option', { key: cls, value: cls }, cls))
@@ -6822,7 +6828,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                 'data-lms-csv-preset': lmsCsvPreset,
                 value: lmsCsvPreset,
                 onChange: (e) => setLmsCsvPreset(e.target.value),
-                style: { padding: '5px 8px', background: 'white', color: '#166534', border: '1px solid #86efac', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }
+                style: { minHeight: 44, padding: '6px 10px', background: 'white', color: '#166534', border: '1px solid #86efac', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }
               },
                 /*#__PURE__*/React.createElement('option', { value: 'alloflow' }, tr('AlloFlow')),
                 /*#__PURE__*/React.createElement('option', { value: 'canvas' }, tr('Canvas')),
@@ -6832,7 +6838,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
               /*#__PURE__*/React.createElement('button', {
                 type: 'button', onClick: exportGradebookSummaryCsv,
                 title: tr('Download a 1-row-per-student LMS summary CSV with item score columns'),
-                style: { padding: '6px 12px', background: 'white', color: '#166534', border: '1px solid #86efac', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }
+                style: { minHeight: 44, padding: '6px 12px', background: 'white', color: '#166534', border: '1px solid #86efac', borderRadius: 6, fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }
               }, tr('⬇ Summary CSV'))
             )
           ),
@@ -7204,7 +7210,16 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     ))
               );
             })()
-          : /*#__PURE__*/React.createElement('div', null,
+          : (() => {
+              const filteredQueue = queue.map((row, idx) => ({ row, idx })).filter(({ row }) => {
+                if (queueStatusFilter !== 'all' && row.status !== queueStatusFilter) return false;
+                const qText = String(queueSearch || '').trim().toLowerCase();
+                if (!qText) return true;
+                const hay = [row.nickname, row.docTitle, row.fileName].map(v => String(v || '').toLowerCase()).join(' ');
+                return hay.indexOf(qText) !== -1;
+              });
+              const queueFiltered = Boolean(String(queueSearch || '').trim()) || queueStatusFilter !== 'all';
+              return /*#__PURE__*/React.createElement('div', null,
               /*#__PURE__*/React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 10 } },
                 /*#__PURE__*/React.createElement('input', {
                   type: 'search',
@@ -7212,22 +7227,41 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   'aria-label': tr('Search submissions by student, document, or filename'),
                   value: queueSearch,
                   onChange: e => setQueueSearch(e.target.value),
+                  onKeyDown: e => {
+                    if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+                    if (e.key === 'Escape' && queueSearch) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setQueueSearch('');
+                    }
+                  },
                   placeholder: tr('Search student or document…'),
-                  style: { flex: '1 1 200px', minHeight: 36, padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: '0.84rem' }
+                  style: { flex: '1 1 200px', minHeight: 44, padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: '0.85rem' }
                 }),
                 /*#__PURE__*/React.createElement('select', {
                   'data-si-queue-status-filter': 'true',
                   'aria-label': tr('Filter submissions by status'),
                   value: queueStatusFilter,
                   onChange: e => setQueueStatusFilter(e.target.value),
-                  style: { minHeight: 36, padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: '0.84rem', background: 'white', color: '#334155', fontWeight: 600 }
+                  style: { minHeight: 44, padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: '0.85rem', background: 'white', color: '#334155', fontWeight: 600 }
                 },
                   /*#__PURE__*/React.createElement('option', { value: 'all' }, tr('All statuses')),
                   /*#__PURE__*/React.createElement('option', { value: 'decrypted' }, tr('Decrypted')),
                   /*#__PURE__*/React.createElement('option', { value: 'pending' }, tr('Pending')),
                   /*#__PURE__*/React.createElement('option', { value: 'error' }, tr('Error'))
-                )
+                ),
+                queueFiltered && /*#__PURE__*/React.createElement('button', {
+                  type: 'button',
+                  'data-si-queue-reset-filters': 'true',
+                  onClick: () => { setQueueSearch(''); setQueueStatusFilter('all'); },
+                  style: { minHeight: 44, padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 8, background: '#f8fafc', color: '#334155', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }
+                }, tr('Reset filters'))
               ),
+              queueFiltered && /*#__PURE__*/React.createElement('div', {
+                role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+                'data-si-queue-filter-count': 'true',
+                style: { marginBottom: 8, fontSize: '0.8rem', fontWeight: 600, color: '#3730a3' }
+              }, 'Showing ' + filteredQueue.length + ' of ' + queue.length + ' submissions'),
               /*#__PURE__*/React.createElement('div', {
               role: 'region',
               'aria-label': tr('Imported submission queue table'),
@@ -7240,17 +7274,22 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     /*#__PURE__*/React.createElement('th', { scope: 'col', style: { textAlign: 'left', padding: '10px 12px', fontWeight: 700, color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, tr('Nickname')),
                     /*#__PURE__*/React.createElement('th', { scope: 'col', style: { textAlign: 'left', padding: '10px 12px', fontWeight: 700, color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, tr('Document')),
                     /*#__PURE__*/React.createElement('th', { scope: 'col', style: { textAlign: 'left', padding: '10px 12px', fontWeight: 700, color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, tr('Status')),
-                    /*#__PURE__*/React.createElement('th', { scope: 'col', 'aria-label': tr('Actions'), style: { textAlign: 'right', padding: '10px 12px', fontWeight: 700, color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, '')
+                    /*#__PURE__*/React.createElement('th', { scope: 'col', style: { textAlign: 'right', padding: '10px 12px', fontWeight: 700, color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' } }, tr('Actions'))
                   )
                 ),
                 /*#__PURE__*/React.createElement('tbody', null,
-                  queue.map((row, idx) => ({ row, idx })).filter(({ row }) => {
-                    if (queueStatusFilter !== 'all' && row.status !== queueStatusFilter) return false;
-                    const qText = String(queueSearch || '').trim().toLowerCase();
-                    if (!qText) return true;
-                    const hay = [row.nickname, row.docTitle, row.fileName].map(v => String(v || '').toLowerCase()).join(' ');
-                    return hay.indexOf(qText) !== -1;
-                  }).map(({ row, idx }) => /*#__PURE__*/React.createElement(React.Fragment, { key: idx },
+                  filteredQueue.length === 0
+                    ? /*#__PURE__*/React.createElement('tr', null,
+                        /*#__PURE__*/React.createElement('td', { colSpan: 4, style: { padding: '20px 14px', textAlign: 'center', color: '#475569', fontSize: '0.86rem' } },
+                          /*#__PURE__*/React.createElement('div', { style: { marginBottom: 8 } }, tr('No submissions match the current filter.')),
+                          /*#__PURE__*/React.createElement('button', {
+                            type: 'button',
+                            onClick: () => { setQueueSearch(''); setQueueStatusFilter('all'); },
+                            style: { minHeight: 44, padding: '8px 16px', background: '#4338ca', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }
+                          }, tr('Reset filters'))
+                        )
+                      )
+                    : filteredQueue.map(({ row, idx }) => /*#__PURE__*/React.createElement(React.Fragment, { key: idx },
                     /*#__PURE__*/React.createElement('tr', { style: { borderBottom: '1px solid #f1f5f9' } },
                       /*#__PURE__*/React.createElement('td', { style: { padding: '10px 12px' } },
                         /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#1e293b' } }, row.nickname),
@@ -7312,16 +7351,16 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                           );
                         })()
                       ),
-                      /*#__PURE__*/React.createElement('td', { style: { padding: '10px 12px', textAlign: 'right' } },
+                      /*#__PURE__*/React.createElement('td', { style: { padding: '10px 12px', textAlign: 'right', whiteSpace: 'nowrap' } },
                         row.status === 'decrypted' && /*#__PURE__*/React.createElement('button', {
                           type: 'button', onClick: () => setExpandedRow(expandedRow === idx ? null : idx),
                           'aria-expanded': expandedRow === idx,
                           'aria-controls': 'submission-inbox-row-details-' + idx,
-                          style: { marginRight: 6, padding: '4px 10px', background: '#eef2ff', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }
+                          style: { minHeight: 44, marginRight: 6, padding: '6px 12px', background: '#eef2ff', color: '#3730a3', border: '1px solid #c7d2fe', borderRadius: 6, fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }
                         }, expandedRow === idx ? 'Hide' : 'View'),
                         /*#__PURE__*/React.createElement('button', {
                           type: 'button', onClick: () => removeRow(idx), disabled: queueLocked,
-                          style: { padding: '4px 10px', background: 'transparent', color: '#475569', border: '1px solid #e2e8f0', borderRadius: 6, fontSize: '0.78rem', cursor: queueLocked ? 'not-allowed' : 'pointer', opacity: queueLocked ? 0.45 : 1 }
+                          style: { minHeight: 44, padding: '6px 12px', background: 'transparent', color: '#334155', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.8rem', cursor: queueLocked ? 'not-allowed' : 'pointer', opacity: queueLocked ? 0.45 : 1 }
                         }, tr('Remove'))
                       )
                     ),
@@ -7702,7 +7741,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                                 onClick: () => gradeRow(idx),
                                 disabled: gradingRow === idx || !aiTextAvailable,
                                 title: !aiTextAvailable ? tr('AI setup required for automatic grading. Score responses manually above.') : undefined,
-                                style: { padding: '8px 16px', background: !aiTextAvailable ? '#cbd5e1' : '#7c3aed', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: gradingRow === idx ? 'wait' : (!aiTextAvailable ? 'not-allowed' : 'pointer'), opacity: gradingRow === idx ? 0.6 : 1 }
+                                style: { minHeight: 44, padding: '8px 16px', background: !aiTextAvailable ? '#cbd5e1' : '#7c3aed', color: !aiTextAvailable ? '#334155' : 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: gradingRow === idx ? 'wait' : (!aiTextAvailable ? 'not-allowed' : 'pointer'), opacity: gradingRow === idx ? 0.6 : 1 }
                               }, gradingRow === idx ? 'Grading…' : tr('🎯 Grade responses')),
                               ...renderRowGradeActions(idx)
                             )
@@ -7718,12 +7757,13 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                 )
               )
             )
-            )
+            );
+            })()
       ),
 
       // Footer
-      /*#__PURE__*/React.createElement('div', { style: { padding: '14px 22px', borderTop: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 } },
-        /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.8rem', color: '#64748b' } },
+      /*#__PURE__*/React.createElement('div', { style: { padding: '14px 22px', borderTop: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
+        /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.8rem', color: '#475569' } },
           (counts.decrypted || 0) > 0
             ? tr('Click "View" on a row to grade it with an AI rubric and save the result to your local gradebook.')
             : tr('Decrypt the queue to see student responses.')
@@ -7731,7 +7771,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
         /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 8 } },
           /*#__PURE__*/React.createElement('button', {
             type: 'button', onClick: onClose,
-            style: { padding: '8px 18px', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }
+            style: { minHeight: 44, padding: '8px 18px', background: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }
           }, tr('Close'))
         )
       ),

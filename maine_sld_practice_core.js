@@ -98,7 +98,7 @@
   function filterScores(rows, filters) {
     filters = filters || {}; var term = String(filters.search || '').trim().toLowerCase();
     return rows.filter(function (r) {
-      return (!filters.test || filters.test === 'all' || r.test === filters.test) && (!term || [r.label, r.test, r.group, r.value, r.scaleId].join(' ').toLowerCase().indexOf(term) !== -1);
+      return (!filters.test || filters.test === 'all' || r.test === filters.test) && (!term || [r.label, r.test, r.groupLabel || r.group, r.value, r.scaleId].join(' ').toLowerCase().indexOf(term) !== -1);
     });
   }
   function progress(work) {

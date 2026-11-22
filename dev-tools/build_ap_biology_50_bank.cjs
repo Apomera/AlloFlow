@@ -12,6 +12,10 @@ const { AP_FRAMEWORK_TOPIC_IDS, frameworkSourceFor } = require('./ap_framework_t
 const { AP_BIOLOGY_UNIT_SECTIONS } = require('./ap_biology_lesson_sections.cjs');
 const { AP_BIOLOGY_WORKSHOPS: SPECS, AP_BIOLOGY_WORKSHOP_REVIEW_NOTE } = require('./ap_biology_workshops.cjs');
 const { buildApBiologyDiagrams } = require('./ap_biology_diagrams.cjs');
+const {
+  applyApBioChoiceOverride,
+  applyApBioLibraryCheckOverride,
+} = require('./ap_biology_choice_overrides/index.cjs');
 
 // Which lesson section an item routes to, by its framework topic. Section 01 is
 // the original unit lesson; sections 02 and 03 are split out by topic.
@@ -943,7 +947,10 @@ function sourceDetails(unit) {
   }];
 }
 
-function buildItem(spec, index) {
+function buildItem(rawSpec, index) {
+  const itemNumber = String(index + 1).padStart(3, '0');
+  const itemId = `ap-bio-u${rawSpec.unit}-${itemNumber}`;
+  const spec = applyApBioChoiceOverride(itemId, rawSpec);
   const unit = units[spec.unit - 1];
   const objective = objectiveByTopic.get(spec.topicId);
   const correctChoice = spec.answer;
@@ -955,9 +962,8 @@ function buildItem(spec, index) {
   const choiceRationales = baseRationales.slice(1);
   choices.splice(answerIndex, 0, correctChoice);
   choiceRationales.splice(answerIndex, 0, spec.rationale);
-  const itemNumber = String(index + 1).padStart(3, '0');
   const item = {
-    id: `ap-bio-u${spec.unit}-${itemNumber}`,
+    id: itemId,
     templateVersion: 1,
     itemSchemaVersion: 2,
     type: 'single-choice',
@@ -1203,7 +1209,7 @@ function buildLibrary() {
         references: unitReferences(unit.number),
         reviewStatus: 'source-reviewed-editorial-pass',
         reviewNote: 'Original section retrieval check; AP Biology subject-expert and psychometric review remain pending.',
-      }))),
+      }))).map(applyApBioLibraryCheckOverride),
       contentComplete: true,
       foundationPrototype: Boolean(content.rich),
     };

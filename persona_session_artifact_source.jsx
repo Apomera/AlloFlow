@@ -316,15 +316,23 @@ const PersonaSessionArtifact = (() => {
         return { artifact, normalization: normalized, narration };
     }
 
+    function isStrictPrivatePrivacy(privacy) {
+        return Boolean(privacy)
+            && privacy.private === true
+            && privacy.localOnly === true
+            && privacy.shareable === false
+            && privacy.includeInResourceExports === false
+            && privacy.includeInMailbox === false
+            && privacy.ownerExportAllowed === true;
+    }
+
     function assertPrivateArtifact(artifact, contract, limits) {
         const validation = contract.validateReadAloudArtifact(artifact, limits);
         if (!validation.ok || !artifact || artifact.artifactType !== contract.TYPES.PERSONA_SESSION) {
             throw runtimeError('invalid-private-artifact', 'Only a valid private Persona session artifact may use this runtime.');
         }
         const privacy = artifact.privacy || {};
-        if (privacy.private !== true || privacy.localOnly !== true || privacy.shareable !== false
-            || privacy.includeInResourceExports !== false || privacy.includeInMailbox !== false
-            || privacy.ownerExportAllowed !== true) {
+        if (!isStrictPrivatePrivacy(privacy)) {
             throw runtimeError('privacy-policy-mismatch',
                 'Persona artifact privacy flags must remain owner-only, private, local-only, and non-shareable.');
         }
@@ -366,8 +374,7 @@ const PersonaSessionArtifact = (() => {
                     continue;
                 }
                 const privacy = validated.privacy;
-                if (!privacy || privacy.ownerOnly !== true || privacy.private !== true
-                    || privacy.localOnly !== true || privacy.shareable !== false) {
+                if (!isStrictPrivatePrivacy(privacy)) {
                     unreadable.push({ key, code: 'privacy-policy-violation' });
                     continue;
                 }
@@ -448,7 +455,7 @@ const PersonaSessionArtifact = (() => {
 
     function safeFilename(value) {
         const stem = cleanText(value, 120).replace(/[^A-Za-z0-9._-]+/g, '-')
-            .replace(/^-+|-+$/g, '').slice(0, 96);
+            .replace(/\.{2,}/g, '-').replace(/^[.-]+|[.-]+$/g, '').slice(0, 96);
         return (stem || 'private-persona-session') + FILE_EXTENSION;
     }
 
@@ -557,12 +564,16 @@ const PersonaSessionArtifact = (() => {
                 const audio = chunk && chunk.audio && typeof chunk.audio === 'object' ? chunk.audio : null;
                 let audioHtml = '';
                 if (audio && audio.base64 && audio.mime) {
-                    audioClips += 1;
-                    var cleanBase64 = escapeHtmlText(String(audio.base64 || '').replace(/\s+/g, ''));
-                    var clipLabel = escapeHtmlText((rawSpeaker || 'Message') + ' audio clip');
-                    audioHtml = '<audio class="narration" controls preload="metadata" aria-label="' + clipLabel + '"><source src="data:'
-                        + escapeHtmlText(audio.mime) + ';base64,' + cleanBase64 + '" type="'
-                        + escapeHtmlText(audio.mime) + '" /></audio>';
+                    var safeMime = String(audio.mime || '').trim().toLowerCase();
+                    var rawB64 = String(audio.base64 || '').replace(/\s+/g, '');
+                    if (/^audio\/(?:mpeg|mp3|wav|x-wav|ogg|webm|mp4|aac|flac|opus)$/.test(safeMime)
+                        && /^[A-Za-z0-9+/]+=*$/.test(rawB64)) {
+                        audioClips += 1;
+                        var clipLabel = escapeHtmlText((rawSpeaker || 'Message') + ' audio clip');
+                        audioHtml = '<audio class="narration" controls preload="metadata" aria-label="' + clipLabel + '"><source src="data:'
+                            + escapeHtmlText(safeMime) + ';base64,' + rawB64 + '" type="'
+                            + escapeHtmlText(safeMime) + '" /></audio>';
+                    }
                 }
                 return '<p class="chunk">' + text + '</p>' + audioHtml;
             }).join('');
@@ -571,6 +582,7 @@ const PersonaSessionArtifact = (() => {
 
         const html = '<!DOCTYPE html>\n<html lang="' + escapeHtmlText(locale.lang) + '"' + (locale.rtl ? ' dir="rtl"' : '') + '>\n<head>\n'
             + '<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+            + '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; media-src data:; base-uri \'none\'; form-action \'none\';">\n'
             + '<title>' + escapeHtmlText(title) + '</title>\n'
             + '<style>\n'
             + 'body{font-family:Georgia,serif;line-height:1.7;color:#1f2937;max-width:760px;margin:0 auto;padding:32px 20px;background:#fbfaf7;}\n'

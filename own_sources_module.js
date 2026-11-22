@@ -42,25 +42,33 @@
    * still loading, not a broken page.
    */
   var LUMEN_MODULES = ['stem_lab/stem_lumen_evidence.js', 'stem_lab/stem_lumen_documents.js'];
+  var _ensureLumenPromise = null;
 
-  async function ensureLumen(timeoutMs) {
-    if (evidenceApi() && documentsApi()) return true;
-    try {
-      if (typeof root.__alloEnsureStemPluginLoaded === 'function') {
-        LUMEN_MODULES.forEach(function (name) {
-          try { root.__alloEnsureStemPluginLoaded(name); } catch (_) { /* keep asking for the rest */ }
-        });
-      }
-    } catch (_) { /* fall through to the wait below */ }
-
+  function ensureLumen(timeoutMs) {
+    if (evidenceApi() && documentsApi()) return Promise.resolve(true);
+    if (_ensureLumenPromise) return _ensureLumenPromise;
     var parsedWait = Number(timeoutMs);
     var waitMs = (Number.isFinite(parsedWait) && parsedWait > 0) ? Math.min(parsedWait, 30000) : 8000;
-    var deadline = Date.now() + waitMs;
-    while (Date.now() < deadline) {
-      if (evidenceApi() && documentsApi()) return true;
-      await new Promise(function (resolve) { setTimeout(resolve, 120); });
-    }
-    return !!(evidenceApi() && documentsApi());
+    var run = (async function () {
+      try {
+        if (typeof root.__alloEnsureStemPluginLoaded === 'function') {
+          LUMEN_MODULES.forEach(function (name) {
+            try { root.__alloEnsureStemPluginLoaded(name); } catch (_) { /* keep asking for the rest */ }
+          });
+        }
+      } catch (_) { /* fall through to the wait below */ }
+
+      var deadline = Date.now() + waitMs;
+      while (Date.now() < deadline) {
+        if (evidenceApi() && documentsApi()) return true;
+        await new Promise(function (resolve) { setTimeout(resolve, 120); });
+      }
+      return !!(evidenceApi() && documentsApi());
+    })();
+    _ensureLumenPromise = run;
+    var clear = function () { if (_ensureLumenPromise === run) _ensureLumenPromise = null; };
+    run.then(clear, clear);
+    return run;
   }
 
   // Same resolution order as Lumen Study: an explicit ctx wins, then the host's
@@ -120,7 +128,8 @@
   }
 
   function getResearchProject(ctx, selectedSourceIds) {
-    return loadProject(Object.assign({}, ctx || {}, { selectedSourceIds: selectedSourceIds }));
+    var baseCtx = (ctx && typeof ctx === 'object' && !Array.isArray(ctx)) ? ctx : {};
+    return loadProject(Object.assign({}, baseCtx, { selectedSourceIds: selectedSourceIds }));
   }
 
   // Lumen also saves the current/adapted reading here. Those app-created
@@ -168,7 +177,7 @@
    */
   function sourceSummaries(project) {
     if (!project || !Array.isArray(project.sources)) return [];
-    return project.sources.map(function (source) {
+    return project.sources.filter(function (source) { return !!(source && typeof source === 'object'); }).map(function (source) {
       return {
         id: source.id,
         title: source.title || 'Untitled source',
@@ -205,9 +214,14 @@
   // that failed must not be reported as done — the teacher would believe a
   // document was removed when it is still there.
   var mutationQueues = Object.create(null);
+  function _safeScopeStr(v, fb) {
+    if (v == null || v === '') return fb;
+    try { return String(v).slice(0, 128); } catch (_) { return fb; }
+  }
   function withMutation(ctx, operation) {
-    var key = JSON.stringify([ctx && ctx.isTeacherMode === false ? 'learner' : 'teacher',
-      ctx && ctx.activeProfileId || '', ctx && ctx.studentNickname || 'default']);
+    var safeCtx = (ctx && typeof ctx === 'object' && !Array.isArray(ctx)) ? ctx : null;
+    var key = JSON.stringify([safeCtx && safeCtx.isTeacherMode === false ? 'learner' : 'teacher',
+      _safeScopeStr(safeCtx && safeCtx.activeProfileId, ''), _safeScopeStr(safeCtx && safeCtx.studentNickname, 'default')]);
     var pending = (mutationQueues[key] || Promise.resolve()).catch(function () {}).then(operation);
     mutationQueues[key] = pending;
     var cleanup = function () { if (mutationQueues[key] === pending) delete mutationQueues[key]; };
@@ -281,8 +295,13 @@
    * separately: one unreadable scan among five documents should not read as
    * "import failed".
    */
+  function _toFileArray(fileList) {
+    if (!fileList || typeof fileList !== 'object' || typeof fileList.length !== 'number' || !Number.isFinite(fileList.length) || fileList.length <= 0) return [];
+    return Array.prototype.slice.call(fileList, 0, Math.min(Math.floor(fileList.length), 500));
+  }
+
   function importFiles(fileList, ctx) {
-    var files = Array.prototype.slice.call(fileList || []);
+    var files = _toFileArray(fileList);
     return withMutation(ctx, function () { return importFilesNow(files, ctx); });
   }
 
@@ -320,12 +339,13 @@
   }
 
   function separateCopy(project, spec, incoming) {
-    var ids = new Set(project.sources.map(function (source) { return source.id; }));
+    var existingSources = (project && Array.isArray(project.sources)) ? project.sources.filter(function (s) { return !!(s && typeof s === 'object'); }) : [];
+    var ids = new Set(existingSources.map(function (source) { return source.id; }));
     var baseId = spec.id + '_' + incoming.contentHash;
     var id = baseId;
     var suffix = 2;
     while (ids.has(id)) { id = baseId + '_' + suffix; suffix++; }
-    var titles = new Set(project.sources.map(function (source) { return String(source.title || '').toLowerCase(); }));
+    var titles = new Set(existingSources.map(function (source) { return String(source.title || '').toLowerCase(); }));
     var name = String(spec.title || spec.fileName || 'Untitled source');
     var extension = name.match(/(\.[^./\\]+)$/);
     var stem = extension ? name.slice(0, -extension[1].length) : name;
@@ -345,10 +365,10 @@
     var D = documentsApi();
     if (!E || !D) return { ok: false, reason: 'unavailable', imported: 0, skipped: 0, failed: 0, results: [], count: 0 };
 
-    var files = Array.prototype.slice.call(fileList || []);
+    var files = _toFileArray(fileList);
     var rawLimit = Number(D.MAX_FILES_PER_IMPORT);
     var limit = (Number.isFinite(rawLimit) && rawLimit > 0) ? Math.min(Math.floor(rawLimit), 50) : 5;
-    var overLimit = files.slice(limit);
+    var overLimit = files.slice(limit, limit + 500);
     files = files.slice(0, limit);
     if (!files.length) return { ok: false, reason: 'empty', imported: 0, skipped: 0, failed: 0, results: [], count: await countSources(ctx) };
 
@@ -376,6 +396,9 @@
       var file = files[i];
       try {
         var spec = await D.extractLocalDocument(file, { root: root, evidence: E });
+        if (!spec || typeof spec !== 'object' || Array.isArray(spec)) {
+          throw new Error('This document could not be read.');
+        }
         spec = Object.assign({}, spec, { fileName: spec.fileName || (file && file.name) || spec.title });
         var incoming = E.normalizeSource(spec);
         spec.id = incoming.id;
@@ -541,7 +564,7 @@
   function passage(row) { return String(row && row.snippet || '').slice(0, 1200); }
   function snapshot(evidence) {
     var run = Date.now().toString(36) + '-' + (++sequence).toString(36) + '-' + Math.random().toString(36).slice(2, 10);
-    return (Array.isArray(evidence) ? evidence : []).filter(Boolean).map(function(row, index) {
+    return (Array.isArray(evidence) ? evidence : []).filter(function (row) { return !!(row && typeof row === 'object'); }).slice(0, 500).map(function(row, index) {
       var v = row && row.version;
       var safeVersion = (Number.isSafeInteger(v) && v > 0) ? v : null;
       var item = {
@@ -755,6 +778,7 @@
         if (!record.item) return null;
         citationKeep(record.item, raw, null, pfx);
         cached = citationMemory.get(memKey);
+        if (!cached) return Object.assign({}, record.item);
         // Permit a first cold read to refresh old persisted recency.
         cached.touched = record.used;
       } catch (_) { return null; }
@@ -815,27 +839,30 @@
     });
   }
   function used(text, items) {
-    return (items || []).filter(function(item) { return String(text || '').indexOf('](' + prefix + item.id + ')') !== -1; });
+    return (Array.isArray(items) ? items : []).filter(function(item) { return !!(item && typeof item === 'object' && item.id) && String(text || '').indexOf('](' + prefix + item.id + ')') !== -1; });
   }
   function finish(text, items) {
-    if (!items || !items.length) return { text: text, evidence: null };
-    var body = cite(text, items);
-    var cited = used(body, items);
+    if (!Array.isArray(items) || !items.length) return { text: text, evidence: null };
+    var safeItems = items.filter(function(item) { return !!(item && typeof item === 'object'); });
+    if (!safeItems.length) return { text: text, evidence: null };
+    var body = cite(text, safeItems);
+    var cited = used(body, safeItems);
     var persisted = remember(cited);
-    var documents = function(rows) { return new Set(rows.map(function(row) { return row.sourceId; })).size; };
-    var summary = documents(items) + ' document(s) supplied (' + items.length + ' passages); ' + documents(cited) + ' document(s) cited (' + cited.length + ' passages).';
+    var documents = function(rows) { return new Set(rows.map(function(row) { return row && row.sourceId; }).filter(Boolean)).size; };
+    var summary = documents(safeItems) + ' document(s) supplied (' + safeItems.length + ' passages); ' + documents(cited) + ' document(s) cited (' + cited.length + ' passages).';
     body += '\n\n### Your Document References\n\n' + summary;
     if (cited.length) {
       body += '\n\nOpen a Document link to inspect the passage supplied to the model. A citation does not by itself verify the generated claim. The exact supplied passages are also saved below for export and review.';
       cited.forEach(function(item) {
-        var index = items.indexOf(item) + 1;
-        var safeHeading = String(item.title + (item.locatorLabel ? ', ' + item.locatorLabel : '')).replace(/[\r\n]+/g, ' ');
+        var index = safeItems.indexOf(item) + 1;
+        var safeHeading = String((item.title || '') + (item.locatorLabel ? ', ' + item.locatorLabel : '')).replace(/[\r\n]+/g, ' ');
+        var safePassage = typeof item.passage === 'string' ? item.passage : '';
         body += '\n\n**Document ' + index + ': ' + escapeMarkdown(safeHeading) + '**\n\n'
-          + item.passage.split(/\r?\n/).map(function(line) { return '> ' + escapeMarkdown(line); }).join('\n');
+          + safePassage.split(/\r?\n/).map(function(line) { return '> ' + escapeMarkdown(line); }).join('\n');
       });
     } else body += '\n\nNo document citation was present in the generated text.';
     if (!persisted) body += '\n\nThe citation viewer could not save its local copy. The passages below remain part of this text.';
-    return { text: body, evidence: { version: 1, supplied: items, citedIds: cited.map(function(item) { return item.id; }), persisted: persisted } };
+    return { text: body, evidence: { version: 1, supplied: safeItems, citedIds: cited.map(function(item) { return item.id; }), persisted: persisted } };
   }
   // The model chooses excerpts; it does not write the output. Reject the entire
   // selection if ANY quote is altered, invented, empty, or attributed incorrectly.
@@ -925,38 +952,45 @@
       var validOpener = previous && previous !== doc.body && previous !== doc.documentElement
         && (previous.isConnected === true || (previous.isConnected === undefined && typeof doc.contains === 'function' && doc.contains(previous)))
         && typeof previous.focus === 'function';
-      if (wasTop && validOpener) previous.focus();
+      if (wasTop && validOpener) { try { previous.focus(); } catch (_) {} }
     }
     function containFocus(event) {
       if (overlay.isConnected === false) { close(); return; }
       if (!isTopTrap()) return;
       var inside = false;
       try { inside = panel.contains(event.target); } catch (_) {}
-      if (!inside) button.focus();
+      if (!inside) { try { button.focus(); } catch (_) {} }
     }
     function keydown(event) {
       if (overlay.isConnected === false) { close(); return; }
       if (event.isComposing || event.keyCode === 229) return;
       if (!isTopTrap()) return;
-      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); }
-      if (event.key === 'Tab') {
+      if (event.key === 'Escape' && !event.ctrlKey && !event.metaKey && !event.altKey) { event.preventDefault(); event.stopPropagation(); close(); }
+      if (event.key === 'Tab' && !event.ctrlKey && !event.metaKey && !event.altKey) {
         event.preventDefault(); event.stopPropagation();
         var controls = item ? [button, quote] : [button];
         var index = controls.indexOf(doc.activeElement);
-        controls[(index + (event.shiftKey ? controls.length - 1 : 1)) % controls.length].focus();
+        try { controls[(index + (event.shiftKey ? controls.length - 1 : 1)) % controls.length].focus(); } catch (_) {}
       }
     }
     closeViewer = close;
     button.addEventListener('click', close);
-    overlay.addEventListener('click', function(event) { if (event.target === overlay) close(); });
+    var backdropDown = false;
+    overlay.addEventListener('mousedown', function(event) { backdropDown = event.target === overlay; });
+    overlay.addEventListener('click', function(event) {
+      var fromBackdrop = backdropDown || event.detail === 0;
+      backdropDown = false;
+      if (event.target === overlay && fromBackdrop) close();
+    });
     panel.appendChild(header); panel.appendChild(location);
     if (item) { panel.appendChild(note); panel.appendChild(quote); }
     overlay.appendChild(panel); doc.body.appendChild(overlay);
     trapStack.push(trapEntry);
-    doc.addEventListener('keydown', keydown, true); doc.addEventListener('focusin', containFocus, true); button.focus();
+    doc.addEventListener('keydown', keydown, true); doc.addEventListener('focusin', containFocus, true); try { button.focus(); } catch (_) {}
   }
   if (root.document) root.document.addEventListener('click', function(event) {
-    var anchor = event.target && event.target.closest && event.target.closest('a');
+    var tgt = event.target && event.target.nodeType === 3 ? event.target.parentElement : event.target;
+    var anchor = tgt && tgt.closest && tgt.closest('a');
     var href = anchor && anchor.getAttribute('href');
     if (!href || !/^#allo-doc-[a-z0-9-]{1,128}$/.test(href)) return;
     event.preventDefault(); event.stopPropagation(); show(href.slice(prefix.length), anchor);

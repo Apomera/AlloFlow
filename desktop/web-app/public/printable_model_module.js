@@ -29,8 +29,8 @@
     extrude: [[0, 1], [0.28, 0.32], [0.95, 0.31], [0.45, -0.12], [0.59, -0.81], [0, -0.4], [-0.59, -0.81], [-0.45, -0.12], [-0.95, 0.31], [-0.28, 0.32]]
   };
   function usableProfile(shape, raw) {
-    var pts = Array.isArray(raw) ? raw.filter(function (pt) { return Array.isArray(pt) && typeof pt[0] === 'number' && typeof pt[1] === 'number' && !isNaN(pt[0]) && !isNaN(pt[1]); }) : [];
-    return pts.length >= 3 ? pts : DEFAULT_PROFILES[shape];
+    var pts = Array.isArray(raw) ? raw.filter(function (pt) { return Array.isArray(pt) && typeof pt[0] === 'number' && typeof pt[1] === 'number' && isFinite(pt[0]) && isFinite(pt[1]); }).slice(0, 512) : [];
+    return pts.length >= 3 ? pts : (_hasOwn(DEFAULT_PROFILES, shape) ? DEFAULT_PROFILES[shape] : []);
   }
   var REAL_PRINTER_ADAPTERS = ['OCTOPRINT', 'MOONRAKER', 'PRUSALINK', 'BAMBU_CONNECT'];
   var EXTERNAL_SLICER_ADAPTERS = ['CURAENGINE', 'PRUSASLICER', 'ORCASLICER'];
@@ -40,14 +40,27 @@
   function clamp(v, lo, hi, fallback) { var n = number(v, fallback); return Math.max(lo, Math.min(hi, n)); }
   function text(v, max, fallback) { var out = String(v == null ? '' : v).replace(/[\u0000-\u001f\u007f]/g, ' ').trim(); return (out || String(fallback || '')).slice(0, max); }
   function round(v, places) { var p = Math.pow(10, places == null ? 2 : places); return Math.round(number(v) * p) / p; }
+  var _isBlockedKey = function (key) { return key === '__proto__' || key === 'constructor' || key === 'prototype'; };
   var _hasOwn = function (obj, key) { return !!obj && typeof key === 'string' && Object.prototype.hasOwnProperty.call(obj, key); };
+  function safeJsonParse(raw, maxLen) {
+    var str = String(raw || '');
+    if (maxLen && str.length > maxLen) throw new RangeError('JSON payload exceeds size limit.');
+    return JSON.parse(str, function (key, val) { return _isBlockedKey(key) ? undefined : val; });
+  }
   function formatOf(v) { var out = String(v || '').trim().toUpperCase(); return _hasOwn(FORMATS, out) ? out : ''; }
   function safeFilename(v) { var out = text(v, 120, 'model').replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').replace(/^\.+|\.+$/g, ''); return out || 'model'; }
-  function clone(v) { return JSON.parse(JSON.stringify(v)); }
-  function stableJson(value) {
+  function clone(v) { return safeJsonParse(JSON.stringify(v)); }
+  function stableJson(value, seen) {
     if (value === null || typeof value !== 'object') return JSON.stringify(value);
-    if (Array.isArray(value)) return '[' + value.map(stableJson).join(',') + ']';
-    return '{' + Object.keys(value).sort().map(function (key) { return JSON.stringify(key) + ':' + stableJson(value[key]); }).join(',') + '}';
+    seen = seen || new Set();
+    if (seen.has(value)) return 'null';
+    seen.add(value);
+    try {
+      if (Array.isArray(value)) return '[' + value.map(function (item) { return stableJson(item, seen); }).join(',') + ']';
+      return '{' + Object.keys(value).filter(function (k) { return !_isBlockedKey(k); }).sort().map(function (key) { return JSON.stringify(key) + ':' + stableJson(value[key], seen); }).join(',') + '}';
+    } finally {
+      seen.delete(value);
+    }
   }
   function bytesOf(input) {
     if (input instanceof Uint8Array) return input;
@@ -357,15 +370,15 @@
     if (bytes.length > p.maxBytes) return finalizeMetrics(metrics,p,[]);
     var dv = new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
     if (dv.getUint32(0,true)!==0x46546c67 || dv.getUint32(4,true)!==2 || dv.getUint32(8,true)!==bytes.length) return finalizeMetrics(metrics,p,[issue('INVALID_GLB','ERROR','Only complete GLB version 2 files are supported.')]);
-    var offset=12,json=null;
-    while(offset+8<=bytes.length){var len=dv.getUint32(offset,true),type=dv.getUint32(offset+4,true),start=offset+8,end=start+len;if(end>bytes.length){errors.push(issue('INVALID_GLB','ERROR','A GLB chunk extends beyond the file.'));break}if(type===0x4e4f534a){try{json=JSON.parse(decodeUtf8(bytes.slice(start,end)).replace(/\u0000+$/,''));}catch(_){errors.push(issue('INVALID_GLB_JSON','ERROR','The GLB JSON chunk is invalid.'));}}offset=end;}
+    var offset=12,json=null,chunks=0,MAX_GLB_CHUNKS=1024;
+    while(offset+8<=bytes.length){if(++chunks>MAX_GLB_CHUNKS){errors.push(issue('INVALID_GLB','ERROR','The GLB contains too many chunks.'));break;}var len=dv.getUint32(offset,true),type=dv.getUint32(offset+4,true),start=offset+8,end=start+len;if(end>bytes.length||end<start){errors.push(issue('INVALID_GLB','ERROR','A GLB chunk extends beyond the file.'));break}if(type===0x4e4f534a&&!json){try{json=safeJsonParse(decodeUtf8(bytes.slice(start,end)).replace(/\u0000+$/,''),p.maxBytes);}catch(_){errors.push(issue('INVALID_GLB_JSON','ERROR','The GLB JSON chunk is invalid.'));}}offset=end;}
     if(!json||typeof json!=='object'||Array.isArray(json))return finalizeMetrics(metrics,p,errors.concat([issue('GLB_JSON_MISSING','ERROR','The GLB has no readable JSON scene description.')]));
     var decoderExtensions={KHR_draco_mesh_compression:1,EXT_meshopt_compression:1,KHR_texture_basisu:1};
     (Array.isArray(json.extensionsRequired)?json.extensionsRequired:[]).forEach(function(name){if(_hasOwn(decoderExtensions,name))errors.push(issue('DECODER_REQUIRED','ERROR','This GLB requires '+name+', which is outside the no-decoder school pilot. Export a standard embedded GLB.'));});
     var external=false; (Array.isArray(json.buffers)?json.buffers:[]).concat(Array.isArray(json.images)?json.images:[]).forEach(function(x){if(x&&typeof x.uri==='string'&&x.uri&&!/^data:/i.test(x.uri))external=true;});
     if(external)errors.push(issue('EXTERNAL_RESOURCE','ERROR','GLB files must embed all geometry and images; external resource URLs are not allowed.'));
-    var accessors=Array.isArray(json.accessors)?json.accessors:[],min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity],triangles=0,meshes=0;
-    (Array.isArray(json.meshes)?json.meshes:[]).forEach(function(mesh){(mesh&&Array.isArray(mesh.primitives)?mesh.primitives:[]).forEach(function(primitive){if(!primitive||typeof primitive!=='object')return;meshes++;var mode=primitive.mode==null?4:primitive.mode;if(mode!==4){errors.push(issue('UNSUPPORTED_PRIMITIVE','ERROR','Only triangle primitives are supported.'));return}var count=0;var idxAcc=Number.isInteger(primitive.indices)&&primitive.indices>=0?accessors[primitive.indices]:null;var posIdx=primitive.attributes&&Number.isInteger(primitive.attributes.POSITION)&&primitive.attributes.POSITION>=0?primitive.attributes.POSITION:-1;var posAcc=posIdx>=0?accessors[posIdx]:null;if(idxAcc)count=Math.max(0,number(idxAcc.count));else if(posAcc)count=Math.max(0,number(posAcc.count));triangles+=Math.floor(count/3);if(posAcc&&Array.isArray(posAcc.min)&&Array.isArray(posAcc.max)){for(var a=0;a<3;a++){min[a]=Math.min(min[a],number(posAcc.min[a]));max[a]=Math.max(max[a],number(posAcc.max[a]));}}});});
+    var accessors=Array.isArray(json.accessors)?json.accessors:[],min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity],triangles=0,meshes=0,MAX_GLB_PRIMITIVES=50000;
+    (Array.isArray(json.meshes)?json.meshes:[]).forEach(function(mesh){(mesh&&Array.isArray(mesh.primitives)?mesh.primitives:[]).forEach(function(primitive){if(!primitive||typeof primitive!=='object'||meshes>=MAX_GLB_PRIMITIVES)return;meshes++;var mode=primitive.mode==null?4:primitive.mode;if(mode!==4){errors.push(issue('UNSUPPORTED_PRIMITIVE','ERROR','Only triangle primitives are supported.'));return}var count=0;var idxAcc=Number.isInteger(primitive.indices)&&primitive.indices>=0?accessors[primitive.indices]:null;var posIdx=primitive.attributes&&Number.isInteger(primitive.attributes.POSITION)&&primitive.attributes.POSITION>=0?primitive.attributes.POSITION:-1;var posAcc=posIdx>=0?accessors[posIdx]:null;if(idxAcc)count=Math.max(0,number(idxAcc.count));else if(posAcc)count=Math.max(0,number(posAcc.count));triangles+=Math.floor(count/3);if(posAcc&&Array.isArray(posAcc.min)&&Array.isArray(posAcc.max)){for(var a=0;a<3;a++){min[a]=Math.min(min[a],number(posAcc.min[a]));max[a]=Math.max(max[a],number(posAcc.max[a]));}}});});
     metrics.triangleCount=triangles;metrics.meshCount=meshes;
     var scale=clamp(unitMm,.01,100000,1000);if(isFinite(min[0]))metrics.dimensionsMm={width:round((max[0]-min[0])*scale),depth:round((max[2]-min[2])*scale),height:round((max[1]-min[1])*scale)};
     errors.push(issue('GLB_TRANSFORMS_REQUIRE_REVIEW','WARNING','GLB node transforms and scene scale require visual staff review before quoting.'));
@@ -472,7 +485,7 @@
     });
   }
   function serializePrintJobTicket(input){var checked=validatePrintJobTicket(input);if(!checked.ok)throw new Error(checked.errors.join(' '));return JSON.stringify(checked.value,null,2);}
-  function parsePrintJobTicket(value){var parsed;try{parsed=JSON.parse(String(value||''));}catch(_){return {ok:false,errors:['The print job ticket is not valid JSON.'],value:null};}if(!parsed||parsed.version!==JOB_TICKET_VERSION)return {ok:false,errors:['Unsupported print job ticket version.'],value:null};return validatePrintJobTicket(parsed);}
+  function parsePrintJobTicket(value){var parsed;try{parsed=safeJsonParse(value,1024*1024);}catch(_){return {ok:false,errors:['The print job ticket is not valid JSON.'],value:null};}if(!parsed||typeof parsed!=='object'||Array.isArray(parsed)||parsed.version!==JOB_TICKET_VERSION)return {ok:false,errors:['Unsupported print job ticket version.'],value:null};return validatePrintJobTicket(parsed);}
 
   function disabledAdapter(contract,id,reason){
     return {contract:contract,id:id,enabled:false,executionEnabled:false,reason:reason,run:function(){return Promise.reject(new Error(reason));}};
@@ -563,7 +576,7 @@
     return {ok:!errors.length,errors:errors,value:value};
   }
   function serializeSubmission(input){var checked=validateSubmission(input);if(!checked.ok)throw new Error(checked.errors.join(' '));return JSON.stringify(checked.value,null,2);}
-  function parseSubmission(textValue){var parsed;try{parsed=JSON.parse(String(textValue||''));}catch(_){return {ok:false,errors:['The submission package is not valid JSON.'],value:null};}if(parsed&&parsed.version!==VERSION)return {ok:false,errors:['Unsupported Print Lab package version.'],value:null};return validateSubmission(parsed);}
+  function parseSubmission(textValue){var parsed;try{parsed=safeJsonParse(textValue,10*1024*1024);}catch(_){return {ok:false,errors:['The submission package is not valid JSON.'],value:null};}if(parsed&&parsed.version!==VERSION)return {ok:false,errors:['Unsupported Print Lab package version.'],value:null};return validateSubmission(parsed);}
 
   function exportBinaryStl(THREE, object) {
     if(!THREE||!object)return null;var triangles=[];var MAX_STL_TRIANGLES=2000000;var limitError=null;
@@ -575,14 +588,14 @@
     return buffer;
   }
 
-  window.AlloModules.PrintableModel = {
-    version:VERSION,JOB_TICKET_VERSION:JOB_TICKET_VERSION,GCODE_METADATA_VERSION:GCODE_METADATA_VERSION,PRINTER_ADAPTER_CONTRACT:PRINTER_ADAPTER_CONTRACT,LIMITS:clone(LIMITS),REPAIR_LIMITS:clone(REPAIR_LIMITS),GCODE_LIMITS:clone(GCODE_LIMITS),FORMATS:Object.keys(FORMATS),
+  window.AlloModules.PrintableModel = Object.freeze({
+    version:VERSION,JOB_TICKET_VERSION:JOB_TICKET_VERSION,GCODE_METADATA_VERSION:GCODE_METADATA_VERSION,PRINTER_ADAPTER_CONTRACT:PRINTER_ADAPTER_CONTRACT,LIMITS:Object.freeze(clone(LIMITS)),REPAIR_LIMITS:Object.freeze(clone(REPAIR_LIMITS)),GCODE_LIMITS:Object.freeze(clone(GCODE_LIMITS)),FORMATS:Object.freeze(Object.keys(FORMATS)),
     normalizeProfile:normalizeProfile,inspectRecipe:inspectRecipe,inspectStl:inspectStl,inspectGlb:inspectGlb,repairStl:repairStl,buildStlObject:buildStlObject,finalizeMetrics:finalizeMetrics,
     estimateMaterial:estimateMaterial,estimatePointQuote:estimatePointQuote,estimateQuote:estimateQuote,
     parseGcodeMetadata:parseGcodeMetadata,normalizeGcodeMetadata:normalizeGcodeMetadata,hashGcodeMetadata:hashGcodeMetadata,
     createPrintJobTicket:createPrintJobTicket,normalizePrintJobTicket:normalizePrintJobTicket,validatePrintJobTicket:validatePrintJobTicket,printJobTicketPayload:printJobTicketPayload,verifyPrintJobTicketIntegrity:verifyPrintJobTicketIntegrity,serializePrintJobTicket:serializePrintJobTicket,parsePrintJobTicket:parsePrintJobTicket,
     createSlicerAdapter:createSlicerAdapter,createGeometryAdapter:createGeometryAdapter,getEngineCapabilities:getEngineCapabilities,createPrinterAdapter:createPrinterAdapter,reducePrinterTelemetry:reducePrinterTelemetry,planPrintSchedule:planPrintSchedule,
     normalizeSubmission:normalizeSubmission,validateSubmission:validateSubmission,serializeSubmission:serializeSubmission,parseSubmission:parseSubmission,sha256Hex:sha256Hex,safeFilename:safeFilename,exportBinaryStl:exportBinaryStl
-  };
+  });
   console.log('[PrintableModel] Registered ('+VERSION+')');
 })();

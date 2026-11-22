@@ -588,7 +588,7 @@ function createPageMagnifier(options) {
   const modalOpen = () => Array.from(doc.querySelectorAll('[aria-modal=true], dialog[open], [role="alertdialog"]')).some((el) => el.isConnected && !el.closest('[hidden], [aria-hidden="true"], dialog:not([open])'));
   const onKeyDown = (event) => {
     if (event.key === "Escape") {
-      if (event.defaultPrevented || event.isComposing || editable(event.target) || modalOpen()) return;
+      if (event.defaultPrevented || event.isComposing || event.keyCode === 229 || editable(event.target) || modalOpen()) return;
       if (typeof opts.onEscape === "function") opts.onEscape();
       return;
     }
@@ -845,7 +845,34 @@ function FabStack(props) {
   React.useEffect(() => {
     if (magnifierRef.current) magnifierRef.current.setZoom(magnifierZoom);
   }, [magnifierZoom]);
+  const [aidResetNotice, setAidResetNotice] = React.useState("");
+  const activeFocusAidCount = [
+    readingRuler,
+    magnifierSupported && magnifierOn,
+    focusMode,
+    showVisualSupports,
+    activeView === "simplified" && isLineFocusMode
+  ].filter(Boolean).length;
+  const activeToolCount = activeFocusAidCount + [
+    isStudyTimerRunning,
+    !isTeacherMode && !studentAiFeaturesHidden && safeStudentSettings.allowSocraticTutor && showSocraticChat
+  ].filter(Boolean).length;
+  const resetFocusAids = () => {
+    if (readingRuler && typeof handleToggleReadingRuler === "function") handleToggleReadingRuler();
+    if (magnifierOn) setMagnifierOn(false);
+    if (focusMode && typeof handleToggleFocusMode === "function") handleToggleFocusMode();
+    if (showVisualSupports && typeof handleToggleVisualSupports === "function") handleToggleVisualSupports();
+    if (isLineFocusMode) {
+      if (typeof setIsLineFocusMode === "function") setIsLineFocusMode(false);
+      if (typeof setFocusedParagraphIndex === "function") setFocusedParagraphIndex(null);
+    }
+    setAidResetNotice(toolLabel("student_tools.aids_reset_notice", "Focus aids turned off."));
+  };
+  React.useEffect(() => {
+    if (activeFocusAidCount > 0 && aidResetNotice) setAidResetNotice("");
+  }, [activeFocusAidCount, aidResetNotice]);
   const handleMagnifierKeyDown = (event) => {
+    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
     const lens = magnifierRef.current;
     if (!magnifierOn || !lens) return;
     const step = event.shiftKey ? 96 : 24;
@@ -1146,7 +1173,19 @@ function FabStack(props) {
         },
         /* @__PURE__ */ React.createElement("span", { className: "alloflow-student-tool-icon", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 18 })),
         /* @__PURE__ */ React.createElement("span", { className: "min-w-0 text-xs font-bold leading-tight" }, t("simplified.explain_mode"))
-      ))), /* @__PURE__ */ React.createElement("section", { className: "alloflow-student-tools-section px-4 py-3", "aria-labelledby": "alloflow-student-tools-focus-heading" }, /* @__PURE__ */ React.createElement("h3", { id: "alloflow-student-tools-focus-heading", className: "mb-2 text-xs font-black uppercase tracking-[0.16em] text-slate-600" }, t("student_tools.focus") || "Focus"), /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-grid" }, /* @__PURE__ */ React.createElement(
+      ))), /* @__PURE__ */ React.createElement("section", { className: "alloflow-student-tools-section px-4 py-3", "aria-labelledby": "alloflow-student-tools-focus-heading" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("h3", { id: "alloflow-student-tools-focus-heading", className: "text-xs font-black uppercase tracking-[0.16em] text-slate-600" }, t("student_tools.focus") || "Focus"), activeFocusAidCount > 0 && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "data-fab-reset-aids": "",
+          onClick: resetFocusAids,
+          className: "min-h-11 rounded-lg px-2.5 text-xs font-bold text-indigo-700 hover:bg-indigo-50 transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
+        },
+        toolLabel("student_tools.reset_aids", "Reset aids"),
+        " (",
+        activeFocusAidCount,
+        ")"
+      )), aidResetNotice && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, aidResetNotice), /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-grid" }, /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -1159,7 +1198,8 @@ function FabStack(props) {
           "data-help-key": "fab_ruler"
         },
         /* @__PURE__ */ React.createElement("span", { className: "alloflow-student-tool-icon", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(ScanLine, { size: 18 })),
-        /* @__PURE__ */ React.createElement("span", { className: "min-w-0 text-xs font-bold leading-tight" }, t("a11y.toggle_ruler"))
+        /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 text-xs font-bold leading-tight" }, t("a11y.toggle_ruler")),
+        readingRuler && /* @__PURE__ */ React.createElement("span", { className: "shrink-0 rounded-full bg-indigo-700 px-1.5 py-0.5 text-xs font-black text-white", "aria-hidden": "true" }, "ON")
       ), magnifierSupported && /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -1175,7 +1215,8 @@ function FabStack(props) {
           "aria-describedby": magnifierOn ? "student-tools-magnifier-hint student-tools-magnifier-keys" : "student-tools-magnifier-hint"
         },
         /* @__PURE__ */ React.createElement("span", { className: "alloflow-student-tool-icon", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(ScanSearch, { size: 18 })),
-        /* @__PURE__ */ React.createElement("span", { className: "min-w-0 text-xs font-bold leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "block" }, magnifierLabel), /* @__PURE__ */ React.createElement("span", { id: "student-tools-magnifier-hint", className: "mt-1 block text-xs font-normal" }, magnifierHint))
+        /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 text-xs font-bold leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "block" }, magnifierLabel), /* @__PURE__ */ React.createElement("span", { id: "student-tools-magnifier-hint", className: "mt-1 block text-xs font-normal" }, magnifierHint)),
+        magnifierOn && /* @__PURE__ */ React.createElement("span", { className: "shrink-0 rounded-full bg-indigo-700 px-1.5 py-0.5 text-xs font-black text-white", "aria-hidden": "true" }, "ON")
       ), magnifierSupported && magnifierOn && /* @__PURE__ */ React.createElement("div", { className: "alloflow-magnifier-zoom col-span-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2", "data-magnifier-zoom-group": "" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { id: "student-tools-magnifier-zoom-label", className: "text-xs font-bold text-slate-700" }, magnifierZoomLabel), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "student-tools-magnifier-zoom-label", className: "flex gap-1.5" }, MAGNIFIER_ZOOMS.map((zoom) => /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -1200,7 +1241,8 @@ function FabStack(props) {
           "data-help-key": "fab_timer"
         },
         /* @__PURE__ */ React.createElement("span", { className: "alloflow-student-tool-icon", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Clock, { size: 18 })),
-        /* @__PURE__ */ React.createElement("span", { className: "min-w-0 text-xs font-bold leading-tight" }, t("a11y.task_timer"))
+        /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 text-xs font-bold leading-tight" }, t("a11y.task_timer")),
+        isStudyTimerRunning && /* @__PURE__ */ React.createElement("span", { className: "shrink-0 rounded-full bg-green-700 px-1.5 py-0.5 text-xs font-black text-white", "aria-hidden": "true" }, "ON")
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -1215,7 +1257,8 @@ function FabStack(props) {
           "aria-describedby": "student-tools-bionic-hint"
         },
         /* @__PURE__ */ React.createElement("span", { className: "alloflow-student-tool-icon", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Eye, { size: 18 })),
-        /* @__PURE__ */ React.createElement("span", { className: "min-w-0 text-xs font-bold leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "block" }, t("settings.text.bionic") || "Bionic Reading Style"), /* @__PURE__ */ React.createElement("span", { id: "student-tools-bionic-hint", className: "mt-1 block text-xs font-normal" }, t("settings.text.bionic_sub") || "Bolds the beginning of each word"))
+        /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 text-xs font-bold leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "block" }, t("settings.text.bionic") || "Bionic Reading Style"), /* @__PURE__ */ React.createElement("span", { id: "student-tools-bionic-hint", className: "mt-1 block text-xs font-normal" }, t("settings.text.bionic_sub") || "Bolds the beginning of each word")),
+        focusMode && /* @__PURE__ */ React.createElement("span", { className: "shrink-0 rounded-full bg-indigo-700 px-1.5 py-0.5 text-xs font-black text-white", "aria-hidden": "true" }, "ON")
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -1228,7 +1271,8 @@ function FabStack(props) {
           "aria-pressed": showVisualSupports
         },
         /* @__PURE__ */ React.createElement("span", { className: "alloflow-student-tool-icon", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 18, lineHeight: 1 } }, "\u{1F5BC}\uFE0F")),
-        /* @__PURE__ */ React.createElement("span", { className: "min-w-0 text-xs font-bold leading-tight" }, t("fab.visual_supports") || "Visual Supports")
+        /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 text-xs font-bold leading-tight" }, t("fab.visual_supports") || "Visual Supports"),
+        showVisualSupports && /* @__PURE__ */ React.createElement("span", { className: "shrink-0 rounded-full bg-purple-700 px-1.5 py-0.5 text-xs font-black text-white", "aria-hidden": "true" }, "ON")
       ), activeView === "simplified" && /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -1246,7 +1290,8 @@ function FabStack(props) {
           "aria-describedby": "student-tools-paragraph-focus-hint"
         },
         /* @__PURE__ */ React.createElement("span", { className: "alloflow-student-tool-icon", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(AlignJustify, { size: 18 })),
-        /* @__PURE__ */ React.createElement("span", { className: "min-w-0 text-xs font-bold leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "block" }, t("student_tools.paragraph_focus") || "Paragraph focus"), /* @__PURE__ */ React.createElement("span", { id: "student-tools-paragraph-focus-hint", className: "mt-1 block text-xs font-normal" }, t("student_tools.paragraph_focus_hint") || "Keeps the active paragraph clear"))
+        /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1 text-xs font-bold leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "block" }, t("student_tools.paragraph_focus") || "Paragraph focus"), /* @__PURE__ */ React.createElement("span", { id: "student-tools-paragraph-focus-hint", className: "mt-1 block text-xs font-normal" }, t("student_tools.paragraph_focus_hint") || "Keeps the active paragraph clear")),
+        isLineFocusMode && /* @__PURE__ */ React.createElement("span", { className: "shrink-0 rounded-full bg-indigo-700 px-1.5 py-0.5 text-xs font-black text-white", "aria-hidden": "true" }, "ON")
       ))), showInputAndPractice && /* @__PURE__ */ React.createElement("section", { className: "alloflow-student-tools-section px-4 py-3", "aria-labelledby": "alloflow-student-tools-input-heading" }, /* @__PURE__ */ React.createElement("h3", { id: "alloflow-student-tools-input-heading", className: "mb-2 text-xs font-black uppercase tracking-[0.16em] text-slate-600" }, t("student_tools.input_practice") || "Input & practice"), /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-grid" }, !isTeacherMode && !studentAiFeaturesHidden && safeStudentSettings.allowSocraticTutor && /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -1341,6 +1386,15 @@ function FabStack(props) {
       },
       /* @__PURE__ */ React.createElement(Wrench, { size: 20, "aria-hidden": "true" }),
       /* @__PURE__ */ React.createElement("span", { className: "text-sm font-black" }, toolsTitle),
+      !dictationIsActive && activeToolCount > 0 && /* @__PURE__ */ React.createElement(
+        "span",
+        {
+          "data-active-tools-count": activeToolCount,
+          className: "rounded-full bg-white/25 px-2 py-0.5 text-xs font-black leading-tight",
+          "aria-hidden": "true"
+        },
+        activeToolCount
+      ),
       dictationIsActive && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 rounded-full bg-white/20 px-2 py-1 text-xs font-black uppercase tracking-wide" }, /* @__PURE__ */ React.createElement("span", { className: "h-1.5 w-1.5 rounded-full bg-white animate-pulse motion-reduce:animate-none", "aria-hidden": "true" }), dictationPhase === "transcribing" ? "Working" : "Listening")
     )
   ));

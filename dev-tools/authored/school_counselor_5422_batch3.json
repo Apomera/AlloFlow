@@ -53,7 +53,7 @@
     "prompt": "Before a new school year, a principal and counselor are clarifying how the counseling program will support two identified student outcome priorities. Which product would best guide their shared work?",
     "choices": [
       "A list of every clerical task the counselor might complete whenever another staff member is unavailable.",
-      "Create an annual agreement covering outcomes, role-aligned services, time priorities, shared responsibilities, and review.",
+      "Create an annual agreement covering outcomes, role-aligned services, time allocation, joint responsibilities, and review.",
       "A confidential roster of students the counselor predicts will require the greatest amount of individual attention.",
       "The prior year schedule adopted without discussion so the counselor can avoid negotiating responsibilities with administration."
     ],
@@ -99,7 +99,7 @@
     "choices": [
       "Train peer helpers to provide confidential counseling and decide when a newly enrolled student no longer needs adult support.",
       "Select only the most popular students as helpers and allow them to develop their own procedures without adult monitoring.",
-      "Set limited welcome tasks, train and supervise peers, preserve choice, provide an adult help route, and evaluate.",
+      "Set limited orientation tasks, train and supervise peers, preserve choice, provide an adult help route, and evaluate.",
       "Require every newly enrolled student to meet daily with a peer helper even when the student prefers another form of support."
     ],
     "answerIndex": 2,
@@ -187,7 +187,7 @@
     "cognitiveLevel": "evaluate",
     "prompt": "A school board asks whether a new eighth-grade career exploration unit should continue. Which counselor report would provide the most useful evidence for that decision?",
     "choices": [
-      "Report reach, implementation, aligned learning and outcome data, disaggregated results, limitations, and next steps.",
+      "Present reach, implementation, aligned learning and outcome data, disaggregated results, limitations, and next steps.",
       "A collection of the three most enthusiastic student comments presented as proof that the unit works for every student.",
       "The total number of lessons delivered, without information about attendance, learning, student experience, or later decisions.",
       "A statement that the unit caused improved graduation outcomes because the current class has a higher average than last year."
@@ -279,7 +279,7 @@
     "choices": [
       "Accept sole responsibility for every lesson, even if individual support, family consultation, and program evaluation must stop.",
       "Send the purchased materials to teachers without review because classroom instruction is never connected to the counseling program.",
-      "Evaluate fit and access, co-plan with educators, preserve responsive services, and monitor learning and reach.",
+      "Evaluate fit and access, co-plan with educators, preserve responsive services, and monitor outcomes and reach.",
       "Replace all responsive counseling with the curriculum because universal lessons should meet every level of student need."
     ],
     "answerIndex": 2,
@@ -455,7 +455,7 @@
     "choices": [
       "Offer an increasingly large prize only after the student refuses several times and an adult completes the first step.",
       "Remove all morning work permanently so the student will not experience frustration while learning the routine.",
-      "Make a valued reinforcer contingent on observable task initiation, apply it consistently, monitor, and fade.",
+      "Make a valued reinforcer contingent on observable routine start, apply it reliably, monitor, and fade.",
       "Use the same reward chosen for another student without asking whether it is valued or monitoring its effect."
     ],
     "answerIndex": 2,
@@ -539,7 +539,7 @@
     "cognitiveLevel": "analyze",
     "prompt": "Two students experience the same unexpected schedule change. One calls it an adventure, while the other expects the day to be a disaster. What should the counselor infer first?",
     "choices": [
-      "Explore how each student interprets the change and how prior experience, support, and perceived control shape the response.",
+      "Explore how each student interprets the change and how background, support, and perceived control shape the response.",
       "The student who is distressed must have weaker character because objective events create identical reactions in well-adjusted students.",
       "The positive reaction proves the schedule change has no meaningful impact and no student perspective needs further exploration.",
       "Age alone should predict the reaction, so the counselor should use the same developmental explanation without asking either student."
@@ -761,7 +761,7 @@
     "prompt": "Two adults who disagree about a student's schooling send conflicting email demands for counseling records, and the school file does not clearly establish current access rights. What should the counselor do?",
     "choices": [
       "Send identical full records to both adults immediately because each person describes a family relationship to the student.",
-      "Preserve the records, verify access rights through authorized consultation, and disclose only what is permitted.",
+      "Preserve the records, verify legal authority through authorized consultation, and disclose only what is permitted.",
       "Choose the adult whose request seems more supportive of counseling and ignore the other request without documenting the decision.",
       "Delete the counseling records so neither adult can obtain information while the disagreement continues."
     ],
@@ -1057,7 +1057,7 @@
       "Present the case after removing the name because indirect contextual details are unlikely to identify the student.",
       "Share the case when the outcome is positive because favorable counseling information creates little privacy risk.",
       "Ask a colleague who does not know the student to present the same details so the disclosure no longer belongs to the counselor.",
-      "Avoid presenting the recognizable case; use a genuinely nonidentifiable composite or other privacy-protecting program evidence after required review."
+      "Avoid sharing this identifiable case; use a genuinely nonidentifiable composite or other privacy-protecting program evidence after required review."
     ],
     "answerIndex": 3,
     "rationale": "Professional learning and program advocacy do not override student privacy. Because authorization alone may not resolve identifiability, voluntariness, or school-policy concerns, a genuinely nonidentifiable composite or other reviewed program evidence is the safer approach.",
@@ -1103,7 +1103,7 @@
     "cognitiveLevel": "apply",
     "prompt": "A counselor finds another staff member's student counseling notes unattended in an unlocked shared workspace, and the staff member says it is not a concern. What should the counselor do?",
     "choices": [
-      "Secure the notes, address the concern, consult the designated privacy or supervisory resource, and follow policy.",
+      "Secure the notes, address the risk, consult the designated privacy or supervisory resource, and follow policy.",
       "Leave the notes where they are because only the person who created a record has responsibility for protecting it.",
       "Read every note to determine whether any student disclosures are interesting enough to justify reporting the problem.",
       "Photograph the notes and post them in a staff message to prove that the colleague handled the records improperly."
@@ -1153,7 +1153,7 @@
     "prompt": "A high school student is unsure about applying for a paid internship, saying both \"It could open doors\" and \"I might not fit in there.\" Which counselor response best supports student-directed motivation?",
     "choices": [
       "List every advantage of the internship until the student agrees that applying is the only reasonable decision.",
-      "Reflect both sides, ask permission to explore them, and elicit the student's own reasons, confidence, and next step.",
+      "Reflect the ambivalence, ask permission to explore it, and elicit the student's own reasons, confidence, and next step.",
       "Contact the internship supervisor and submit an application before the student has decided whether to participate.",
       "Interpret hesitation as lack of ambition and warn that future opportunities will disappear unless the student applies today."
     ],
@@ -1245,7 +1245,7 @@
       "\"Why did your family allow the housing problem to interfere with school in the first place?\"",
       "\"Would it be easier if we ignored housing concerns and talked only about the assignments you still owe?\"",
       "\"Do you agree that students with more stable homes are naturally more motivated than students facing relocation?\"",
-      "Ask what has helped the student keep attending and completing work during this difficult period."
+      "Ask what strategies and supports have helped sustain daily attendance and coursework through this transition."
     ],
     "answerIndex": 3,
     "rationale": "A coping question recognizes adversity without minimizing it and helps the student identify successful actions, relationships, and routines that can be strengthened in a collaborative support plan.",
@@ -1287,7 +1287,7 @@
     "cognitiveLevel": "analyze",
     "prompt": "A student says, \"My grades are fine,\" then quietly describes missing several assignments and feeling tense whenever the online grade portal opens. What is the best counselor response?",
     "choices": [
-      "Reflect the mismatch between manageable grades and tension about missing work, then invite the student's meaning.",
+      "Reflect the mismatch between manageable grades and tension about overdue work, then invite the student's meaning.",
       "\"You are contradicting yourself, so I need you to admit that the grades are actually a serious problem.\"",
       "\"If the overall grades are passing, there is no reason to discuss your physical reaction or the unfinished assignments.\"",
       "\"That reaction confirms a specific anxiety disorder, so we can skip further exploration and begin treating it today.\""
@@ -1333,7 +1333,7 @@
     "prompt": "A nonspeaking elementary student uses an augmentative communication device and needs additional response time during an individual counseling check-in. Which approach is best?",
     "choices": [
       "Direct all questions to the classroom aide because a support person can describe the student's feelings more efficiently.",
-      "Use the student's preferred mode, allow processing time, address the student directly, and check meaning and access.",
+      "Use the student's preferred mode, allow processing time, address the student directly, and verify meaning and access.",
       "Require spoken answers during counseling so the student practices communicating in the same way as most classmates.",
       "Use only rapid yes-or-no questions because open communication is impossible when a student needs extra processing time."
     ],
@@ -1379,7 +1379,7 @@
     "choices": [
       "Require the student to follow a standard grief timeline and resume full performance once a predetermined number of days has passed.",
       "Avoid mentioning the loss unless the student first shows failing grades because discussing grief may create emotions that were not present.",
-      "Explore preferences, safety, culture, supports, and school functioning; offer flexible help and monitor changing needs.",
+      "Explore preferences, safety, culture, supports, and classroom functioning; offer flexible help and monitor changing needs.",
       "Place the student in a grief group immediately without screening fit or asking whether that service is acceptable to the student."
     ],
     "answerIndex": 2,
@@ -1513,7 +1513,7 @@
     "prompt": "A high school student is choosing between an advanced art course and a technical-design course; both meet graduation requirements and could support the student's goals. What should the counselor do?",
     "choices": [
       "Choose the course with greater prestige because the counselor should prevent a student from selecting a less recognized pathway.",
-      "Structure comparison of goals, content, workload, access, supports, and tradeoffs while leaving the decision with the student.",
+      "Structure comparison of aims, content, workload, access, supports, and tradeoffs while leaving the decision with the student.",
       "Select the course for the student because professional expertise makes collaborative decision making unnecessary.",
       "Recommend whichever course the student's closest friend chooses so the transition will require the least social adjustment."
     ],
@@ -1605,7 +1605,7 @@
       "Give one aptitude test and remove every occupation that does not match the student's highest score.",
       "Provide a list of engineering job titles to memorize without examining daily tasks, pathways, work settings, or personal reactions.",
       "Assign bridge engineering as the student's career goal because early familiarity is stronger evidence than broader exploration.",
-      "Use diverse worker profiles or interviews to explore varied engineering tasks and pathways, followed by student reflection."
+      "Use diverse worker profiles or interviews to explore varied engineering tasks and pathways, followed by guided reflection."
     ],
     "answerIndex": 3,
     "rationale": "Developmental career exploration broadens exposure, counters narrow representations, and connects authentic tasks and pathways with student reflection rather than prescribing an occupation from limited experience.",
@@ -1647,7 +1647,7 @@
     "cognitiveLevel": "evaluate",
     "prompt": "A student shows the counselor a social-media advertisement claiming that a short certificate program guarantees a high-paying job. What is the best counseling response?",
     "choices": [
-      "Verify the claim with credible current data and compare outcomes, total cost, program quality, local opportunity, and student fit.",
+      "Verify the claim with credible current data and compare outcomes, total cost, program quality, local opportunity, and learner fit.",
       "Endorse the program because advertisements are legally required to describe typical earnings and outcomes for every participant.",
       "Reject all certificate programs because any pathway promoted on social media must be less valuable than a four-year degree.",
       "Select the program with the lowest advertised tuition without checking fees, completion, quality, supports, or employment relevance."
@@ -1693,7 +1693,7 @@
     "prompt": "A student receiving disability-related services is preparing for life after high school and wants to take a more active role in requesting supports. Which counseling activity is best?",
     "choices": [
       "Promise that every current school accommodation will transfer unchanged to any college, training program, or workplace.",
-      "Build self-knowledge, practice requesting supports, explain transition processes, and include the student in planning.",
+      "Build self-knowledge, practice seeking accommodations, explain transition processes, and include the student in planning.",
       "Discuss all transition choices only with adults because student participation could make the planning meeting less efficient.",
       "Discourage the student from disclosing any access need because self-advocacy should mean succeeding without support."
     ],
@@ -1827,7 +1827,7 @@
     "cognitiveLevel": "analyze",
     "prompt": "During a middle school counseling group, one member says another student has been sending intimidating messages and is waiting outside after school. What should the counselor do first?",
     "choices": [
-      "Pause the group process, arrange immediate supervision and a private safety check, and activate the school response pathway with only necessary information.",
+      "Pause the group, arrange immediate supervision and a private safety check, and activate the site response pathway with only necessary information.",
       "Ask the entire group to vote on whether the messages sound serious enough to involve another adult.",
       "Facilitate an immediate joint mediation between the two students so both can explain their contribution to the conflict.",
       "Finish the planned group activity and ask the student to make an individual appointment later in the week."
@@ -1873,7 +1873,7 @@
     "prompt": "A high school coping-skills group includes a student whose current needs require more intensive support than the brief group can provide. Which plan best protects the student and the group?",
     "choices": [
       "Keep the student in every session because changing placement would prove that the group screening process failed.",
-      "Meet privately with the student, assess current support and safety needs, arrange an appropriate referral or service transition, and explain any group change respectfully.",
+      "Meet privately with the student, assess safety and care priorities, arrange an appropriate referral or service transition, and explain any group change respectfully.",
       "Announce to the group that the student requires a higher level of care so members understand the removal.",
       "End the student's group participation by email and leave the family to locate another resource independently."
     ],
@@ -1919,7 +1919,7 @@
     "choices": [
       "Let the exchange continue because members must resolve all boundary concerns without adult direction to build independence.",
       "Require every member to answer the same personal question so the original request appears fair to the whole group.",
-      "Reinforce the right to pass, stop the pressure, restate the participation norm, and offer a structured way for members to contribute without personal disclosure.",
+      "Reinforce the right to opt out, stop the pressure, restate the group norm, and offer a structured way to contribute without personal disclosure.",
       "Remove the student who asked the follow-up question immediately without teaching or reviewing the group expectation."
     ],
     "answerIndex": 2,
@@ -1965,7 +1965,7 @@
       "Adopt the widely used curriculum for the coming year and use its published outcomes as evidence that it fits the school's students and prevention priorities.",
       "Ask individual teachers to select packaged or locally created activities without common outcomes, implementation expectations, or a coordinated review.",
       "Select the program whose training fits the current schedule and use lesson-completion counts as the primary evidence for renewing it next year.",
-      "Define the local prevention need, examine credible evidence and population fit, involve affected stakeholders, pilot with implementation measures, and review outcomes before scaling."
+      "Define the site prevention need, examine credible evidence and population fit, involve affected stakeholders, pilot with implementation measures, and review outcomes before scaling."
     ],
     "answerIndex": 3,
     "rationale": "Responsible prevention selection begins with a defined local problem and an evidence-and-fit review. A measured pilot allows the school to examine acceptability, access, fidelity, and outcomes before committing resources to broad implementation.",
@@ -2053,7 +2053,7 @@
     "prompt": "A ninth-grade transition group has strong attendance, but the counselor wants to know whether students learned the planning skill the group was designed to teach. Which evaluation is strongest?",
     "choices": [
       "Treat attendance as proof of learning because students could not benefit from sessions they did not attend.",
-      "Use an aligned planning task before and after the group, review work with a consistent rubric, and interpret change alongside attendance, implementation, and student feedback.",
+      "Use an aligned performance task before and after the group, review work with a consistent rubric, and interpret change alongside attendance, implementation, and feedback.",
       "Ask the counselor to rate personal satisfaction after the last session and use that rating as the outcome measure.",
       "Compare participants with students who declined the group and attribute every difference to the group without checking baseline differences."
     ],
@@ -2145,7 +2145,7 @@
       "Provide all teachers with the student’s counseling history so they can independently decide what accommodations seem useful.",
       "Promise that no information will be shared even if a new immediate safety concern requires action under current procedure.",
       "Let the student return without any coordinated contact because a check-in plan would necessarily reveal private health information.",
-      "Collaborate with the student, family, and authorized staff on supports and a check-in plan while sharing only information needed to implement the agreed reentry steps."
+      "Collaborate with the student, family, and authorized staff on supports and a check-in plan while sharing only information needed to implement the agreed return steps."
     ],
     "answerIndex": 3,
     "rationale": "Reentry planning should be individualized, collaborative, and privacy protective. The counselor can coordinate functional supports, student voice, and follow-up without disclosing unnecessary health or counseling details or making promises beyond confidentiality limits.",
@@ -2187,7 +2187,7 @@
     "cognitiveLevel": "evaluate",
     "prompt": "During a small group, a student describes a current intention to seriously harm themself but asks the counselor not to interrupt the session. What is the best immediate response?",
     "choices": [
-      "Stop the routine group activity, keep the student with supervised support, initiate the school’s current safety process, and protect privacy as much as the response permits.",
+      "Stop the routine group activity, keep the student with supervised support, initiate the school’s active safety process, and protect privacy as much as the action permits.",
       "Honor the request until the session ends because preserving group trust takes priority over changing the agenda.",
       "Ask group members to monitor the student for the rest of the day while the counselor completes scheduled classroom lessons.",
       "Request a detailed public account from the student so the other members understand why confidentiality has changed."
@@ -2233,7 +2233,7 @@
     "prompt": "Several students in a middle school prevention group say a social-media challenge is spreading, but their accounts conflict and no one reports an immediate threat. What should the counselor do next?",
     "choices": [
       "Repeat the most alarming account in a schoolwide announcement so families understand the maximum possible danger.",
-      "Document what is known, consult the designated school team, verify information through authorized channels, and plan proportionate prevention and monitoring without amplifying the rumor.",
+      "Document what is known, consult the designated campus team, verify information through authorized channels, and plan proportionate outreach and monitoring without amplifying the rumor.",
       "Assume the reports are harmless because students gave different versions and take no further steps unless an injury occurs.",
       "Search students’ private accounts using another student’s password to determine exactly who participated."
     ],
@@ -2279,7 +2279,7 @@
     "choices": [
       "Replace the career objective with a simpler unrelated activity only for multilingual students during the same lesson.",
       "Continue rapid questioning because equal opportunity means every student must respond through the identical format and timing.",
-      "Keep the career objective, add processing time and visual examples, allow partner rehearsal and varied response modes, and check learning across groups.",
+      "Keep the career objective, add processing time and visual models, allow partner rehearsal and varied response modes, and check learning across groups.",
       "Use partner-talk participation as sufficient evidence and stop checking whether students can apply the career concept independently."
     ],
     "answerIndex": 2,
@@ -2417,7 +2417,7 @@
     "prompt": "A universal social-emotional screener identifies many fourth graders for follow-up. How should the school counseling team use the results?",
     "choices": [
       "Assign a mental-health diagnosis to every student above the cutoff so services can begin without additional information.",
-      "Check data quality and context, conduct appropriate follow-up, combine the screener with other evidence, and match supports without treating a screening result as a diagnosis.",
+      "Check data quality and context, conduct secondary review, combine the screener with other evidence, and match supports without treating a screening result as a diagnosis.",
       "Discard the results because a universal screener cannot contribute any useful information about prevention or support needs.",
       "Place all flagged students in the identical intensive intervention before reviewing existing supports or family and teacher input."
     ],
@@ -2517,7 +2517,7 @@
       "Move the student immediately to the most intensive tier because low outcome data always show that a stronger service is required.",
       "Keep the plan unchanged for the rest of the year because implementation differences are normal and should not affect interpretation.",
       "Remove the teacher from the problem-solving team and have the counselor deliver the classroom routine without consultation.",
-      "Clarify implementation barriers, coach and support feasible consistent delivery, then collect enough fidelity and outcome data before judging or intensifying the intervention."
+      "Clarify implementation barriers, coach and assist feasible consistent delivery, then collect enough fidelity and outcome data before judging or intensifying the intervention."
     ],
     "answerIndex": 3,
     "rationale": "MTSS decisions require both outcome and implementation evidence. When dosage is well below plan, the team should understand the barrier, strengthen feasible implementation, and obtain interpretable response data before concluding that the student needs greater intensity.",
@@ -2663,7 +2663,7 @@
     "choices": [
       "Choose the teacher’s explanation because classroom staff have the most direct authority over assignment completion.",
       "Let every participant pursue a separate solution without identifying a common target or follow-up measure.",
-      "Summarize each perspective, define the observable assignment pattern, identify shared goals, select a feasible support with clear roles, and schedule a data review.",
+      "Summarize each perspective, define the observable assignment pattern, identify shared goals, select a feasible plan with clear roles, and schedule a data review.",
       "Delay action until all participants agree on a single cause with complete certainty."
     ],
     "answerIndex": 2,
@@ -2859,7 +2859,7 @@
     "choices": [
       "Retain the after-school schedule and interpret completed enrollment forms as evidence that late-bus students had access comparable to other participants.",
       "Offer late-bus students an independent online worksheet in place of the supported component without checking technology access or outcome equivalence.",
-      "Disaggregate participation and outcomes, confirm the transportation barrier with students and families, adapt access while preserving core support, and monitor the revised plan.",
+      "Disaggregate participation and outcomes, confirm the transportation barrier with students and families, adapt access while preserving core design, and monitor the revised plan.",
       "Move the component to lunch for late-bus students without consulting them or monitoring whether the replacement schedule is feasible."
     ],
     "answerIndex": 2,
@@ -3005,7 +3005,7 @@
     "prompt": "A district improvement plan prioritizes chronic absence, and an administrator asks the counseling team to replace its mission with the statement \"Reduce chronic absence by 10% this year.\" What is the strongest response?",
     "choices": [
       "Adopt the numerical target as the entire mission so the program has only one purpose this year.",
-      "Keep an enduring mission and use an aligned annual attendance goal, action plan, and outcome measures.",
+      "Keep an enduring mission with an aligned annual attendance goal, action steps, and outcome metrics.",
       "Keep the existing mission unchanged and decline to connect counseling work with district priorities.",
       "Rewrite the mission as a detailed list of every attendance activity counselors expect to deliver."
     ],
@@ -3185,7 +3185,7 @@
     "prompt": "A counseling program states that it advances equitable access, yet advanced-course advising is offered only during a fee-based after-school event. Which foundation-alignment step is most useful?",
     "choices": [
       "Keep the event unchanged because offering the same invitation to every family establishes equitable access.",
-      "Audit barriers, add school-day advising routes, and monitor access and outcomes by group.",
+      "Audit barriers, add daytime guidance routes, and monitor access and outcomes by group.",
       "Remove the equity statement so the written foundation no longer conflicts with current operations.",
       "Automatically enroll every student in every advanced course without considering readiness or informed choice."
     ],
@@ -3277,7 +3277,7 @@
       "Draft revisions from the lead counselor's interviews with several newly enrolled families, then present the language as a completed update.",
       "Wait for the next scheduled multiyear review so the foundation remains stable despite the documented population and language changes.",
       "Survey families who already attend counseling events and use their responses as representative of the changing school community.",
-      "Use disaggregated evidence and representative input, then follow authorized governance for any revision."
+      "Use disaggregated evidence and representative input, then follow authorized governance for any update."
     ],
     "answerIndex": 3,
     "rationale": "A foundation review should be evidence informed, representative, accessible, and procedurally legitimate. Revision is not automatic, but durable statements must still reflect the students served and the program's current professional and educational context.",
@@ -3365,7 +3365,7 @@
     "prompt": "A vendor recommends a universal risk-screening cut score developed with adults in outpatient care. The school wants to use it as the sole trigger for mandatory student referral. What should the counselor advise?",
     "choices": [
       "Use the published cut score unchanged because a numerical threshold is objective in every population.",
-      "Assess school-use evidence, classification errors, follow-up, and capacity before using the cut score.",
+      "Assess local-use evidence, classification errors, follow-up, and capacity before using the cut score.",
       "Lower the cut score until the available referral slots are filled, regardless of student need.",
       "Reject all screening measures because no instrument can contribute useful information about student need."
     ],
@@ -3411,7 +3411,7 @@
     "choices": [
       "Treat the raw mean difference as proof that multilingual students experience less belonging.",
       "Add the same number of points to every translated score so the group averages become equal.",
-      "Check cross-language equivalence and access, then triangulate scores before concluding that groups differ.",
+      "Check cross-language equivalence and access, then triangulate data before concluding groups differ.",
       "Discard multilingual students' responses and report only the form with the highest internal consistency."
     ],
     "answerIndex": 2,
@@ -3457,7 +3457,7 @@
       "The lesson definitively improved coping because every positive numerical change is a true gain.",
       "The student definitively declined because scores near the middle of a scale indicate inadequate coping.",
       "The measure is useless because no instrument should ever produce uncertainty around an individual score.",
-      "Treat the one-point gain as uncertain; review score precision, repeated evidence, and practical meaning."
+      "Treat the small gain as uncertain; review score precision, repeated evidence, and practical meaning."
     ],
     "answerIndex": 3,
     "rationale": "A change smaller than the measure's expected error does not provide strong stand-alone evidence of growth. Confidence intervals, reliable-change logic, repeated measurement, related indicators, and practical consequences support a more cautious interpretation.",
@@ -3499,7 +3499,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "School A reports 30 course-planning referrals and School B reports 20. School A enrolls 600 students; School B enrolls 200. What should the counselor examine before deciding which school has greater unmet need?",
     "choices": [
-      "Compare rates and disaggregated patterns, then examine how referrals are generated and who receives service.",
+      "Compare rates and disaggregated patterns, then check how referrals arise and who receives service.",
       "Rank School A as needier because its raw referral count is larger than School B's count.",
       "Rank School B as needier because any smaller school should automatically receive more service per student.",
       "Average the two counts and assign that number of referrals to both schools next semester."
@@ -3637,7 +3637,7 @@
       "Divide the funds equally because identical amounts always produce equitable opportunity.",
       "Give all funds to the school whose principal submitted the request first.",
       "Fund the campus with the strongest current outcomes so the district can report the highest success rate.",
-      "Use a transparent need-and-access rubric, then monitor who is served and with what result."
+      "Use a transparent equity-and-access rubric, then monitor who is served and with what result."
     ],
     "answerIndex": 3,
     "rationale": "Equitable resource management uses explicit, reviewable criteria rather than equal shares or influence. Monitoring reach, burden, and outcomes allows the district to test whether the allocation actually reduces identified access gaps.",
@@ -3817,7 +3817,7 @@
       "Leave access active until the end of the school year in case the former counselor remembers useful details.",
       "Delete every folder immediately so the departing counselor cannot view any information.",
       "Change the folder names while keeping the same accounts and permissions in place.",
-      "Revoke access, audit activity, and transfer records under current retention, deletion, and continuity rules."
+      "Revoke access, audit activity, and transfer files under current retention, deletion, and continuity rules."
     ],
     "answerIndex": 3,
     "rationale": "Offboarding is a privacy and continuity process. Timely access removal, auditable transfer, least-privilege permissions, and verified current retention rules protect students while ensuring authorized staff can continue necessary services.",
@@ -4131,7 +4131,7 @@
     "choices": [
       "Round the percentage to 100% because most documented referrals enrolled.",
       "Report only the number enrolled so no denominator needs to be discussed.",
-      "Define the eligible and referred populations, audit how the denominator was created, and report the participation estimate with that limitation.",
+      "Define the eligible and nominated populations, audit how the denominator was created, and report the participation estimate with that limitation.",
       "Calculate a simple mean of the separately reported grade-level enrollment percentages, describe that value as the schoolwide rate, and note that referral practices varied."
     ],
     "answerIndex": 2,
@@ -4179,7 +4179,7 @@
       "Keep the four-day mean as the sole result and compare it with next year, because one combined number is easier for stakeholders to track across request types and reporting cycles.",
       "Remove same-day urgent responses before calculating the average because rapid contacts make the program's routine access appear better than it is.",
       "Report the longest routine wait as the typical family experience because it most clearly represents the access risk the program must address.",
-      "Define the wait interval, separate urgent from routine requests, and report distributions and incomplete records alongside suitable summaries."
+      "Define the wait interval, separate urgent from routine inquiries, and report distributions and incomplete entries alongside suitable summaries."
     ],
     "answerIndex": 3,
     "rationale": "A single mean can hide a mixed and skewed access pattern. Clear interval definitions, stratification by service urgency, distributional summaries, and transparent missing-data limits let stakeholders assess both responsiveness and routine access.",
@@ -4411,7 +4411,7 @@
     "cognitiveLevel": "evaluation",
     "prompt": "Students help identify barriers in the course-selection process. How should the counseling team use their input during redesign?",
     "choices": [
-      "Clarify which decisions students can influence, compensate or support participation when feasible, report how input affected choices, and explain constraints transparently.",
+      "Clarify which decisions students can influence, compensate or support participation when feasible, report how feedback affected choices, and explain constraints transparently.",
       "Ask students for stories after leaders prepare the final redesign, add representative quotations to the public presentation, and treat favorable reactions as evidence that students meaningfully shaped the process.",
       "Let the most outspoken student make the final policy decision for every affected peer.",
       "Promise to implement every suggestion so students will feel that the process was worthwhile."

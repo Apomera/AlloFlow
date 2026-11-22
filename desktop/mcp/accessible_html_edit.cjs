@@ -107,9 +107,9 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
         const fig = el.closest('figure');
         let c = null, n;
         const a1 = fig && fig.getAttribute('data-allo-source-crop'), a2 = fig && fig.getAttribute('data-crop');
-        if (a1) { n = a1.trim().split(/ +/).map(Number); if (n.length === 5 && n.every(isFinite)) c = { page: n[0], x0: n[1], y0: n[2], x1: n[3], y1: n[4] }; }
-        else if (a2) { try { n = JSON.parse(a2); } catch (_) { n = null; } if (n && n.canvasW > 0 && n.canvasH > 0) c = { page: n.page, x0: n.x / n.canvasW, y0: n.y / n.canvasH, x1: (n.x + n.w) / n.canvasW, y1: (n.y + n.h) / n.canvasH }; }
-        if (c && c.page >= 1 && c.x1 > c.x0 && c.y1 > c.y0) item.crop = c;
+        if (a1) { n = a1.trim().split(/ +/).map(Number); if (n.length === 5 && n.every(Number.isFinite)) c = { page: n[0], x0: n[1], y0: n[2], x1: n[3], y1: n[4] }; }
+        else if (a2) { try { n = JSON.parse(a2); } catch (_) { n = null; } if (n && Number.isFinite(n.page) && Number.isFinite(n.x) && Number.isFinite(n.y) && Number.isFinite(n.w) && Number.isFinite(n.h) && Number.isFinite(n.canvasW) && Number.isFinite(n.canvasH) && n.canvasW > 0 && n.canvasH > 0) c = { page: n.page, x0: n.x / n.canvasW, y0: n.y / n.canvasH, x1: (n.x + n.w) / n.canvasW, y1: (n.y + n.h) / n.canvasH }; }
+        if (c && Number.isInteger(c.page) && c.page >= 1 && Number.isFinite(c.x0) && Number.isFinite(c.y0) && Number.isFinite(c.x1) && Number.isFinite(c.y1) && c.x1 > c.x0 && c.y1 > c.y0) item.crop = c;
       }
       counts[item.kind] = (counts[item.kind] || 0) + 1;
       if (!(wanted.has(item.kind) || (wanted.has('language') && item.lang))) continue;
@@ -129,6 +129,7 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
 
   // ── edit ────────────────────────────────────────────────────────────────────
   const ops = Array.isArray(payload && payload.operations) ? payload.operations : [];
+  if (ops.length > 500) throw new Error('at most 500 operations may be sent in one call');
   const results = [];
   const warnings = [];
   let failed = 0;
@@ -254,7 +255,7 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
         summary = 'Marked ' + said.join(' and ') + ' in the table (' + rows.length + ' rows)';
         if (el.querySelector('[colspan],[rowspan]')) warnings.push('Operation ' + (i + 1) + ': this table has merged cells, so check that each header still reads correctly for the cells under it.');
       } else if (op.op === 'set_language') {
-        if (!/^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8}){0,3}$/.test(String(op.lang || ''))) throw new Error('"lang" must be a language code such as "en", "es" or "pt-BR"');
+        if (typeof op.lang !== 'string' || !/^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8}){0,3}$/.test(op.lang)) throw new Error('"lang" must be a language code such as "en", "es" or "pt-BR"');
         if (op.id === undefined) { root.setAttribute('lang', op.lang); syncDirection(root, op.lang); summary = 'Set the language of the whole document to ' + op.lang; }
         else { const el = target(op.id); el.setAttribute('lang', op.lang); syncDirection(el, op.lang); summary = 'Set the language of the ' + label(el) + ' to ' + op.lang; }
       } else if (op.op === 'move_element') {
@@ -342,7 +343,7 @@ function accessibleHtmlTool(html, mode, payload, DOMParserCtor) {
         if (!/^(?:UL|OL)$/.test(tag(el))) throw new Error('that is a ' + kindName(el) + ', not a list');
         const lis = Array.from(el.children);
         if (!lis.length || lis.some((c) => tag(c) !== 'LI')) throw new Error('that list has something other than list items directly inside it');
-        if (lis.some((li) => li.querySelector('ul,ol,table,p,h1,h2,h3,h4,h5,h6,div,figure,blockquote,section,article,aside,pre,dl,hr,form'))) throw new Error('an item of that list holds another list, a table or a block; only a simple list can become paragraphs');
+        if (lis.some((li) => li.querySelector('ul,ol,table,p,h1,h2,h3,h4,h5,h6,div,figure,blockquote,section,article,aside,main,header,footer,nav,details,fieldset,address,pre,dl,hr,form'))) throw new Error('an item of that list holds another list, a table or a block; only a simple list can become paragraphs');
         const firstText = clip(textOf(lis[0]), 50);
         lis.forEach((li) => { el.before(retag(li, 'p')); });
         el.remove();

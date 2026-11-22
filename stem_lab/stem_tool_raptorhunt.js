@@ -1010,7 +1010,7 @@
   // subtree mutation and each tagger skips nodes it has already marked.
   var pending = false;
   function schedule() {
-    if (pending) return;
+    if (pending || typeof window === 'undefined') return;
     pending = true;
     (window.requestAnimationFrame || window.setTimeout)(function() { pending = false; scan(); }, 0);
   }
@@ -1021,13 +1021,15 @@
   // observer; only re-tagging on later re-renders is lost.
   var obs = typeof MutationObserver === 'function' ? new MutationObserver(schedule) : null;
   function start() {
-    if (!document.body) return;
+    if (typeof document === 'undefined' || !document.body) return;
     if (obs) obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-raptor-active-section'] });
     scan();
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
-  else start();
-  window.__rhStationTagger = { scan: scan };
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+    else start();
+  }
+  if (typeof window !== 'undefined') window.__rhStationTagger = { scan: scan };
 })();
 
 // Hunt simulator layout contract: keep the 3D viewport dominant while the
@@ -1189,15 +1191,17 @@
   if (document.head) document.head.appendChild(st);
 })();
 
-window.StemLab = window.StemLab || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
-};
+if (typeof window !== 'undefined') {
+  window.StemLab = window.StemLab || {
+    _registry: {}, _order: [],
+    registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
+    isRegistered: function(id) { return !!this._registry[id]; },
+    getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
+    renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
+  };
+}
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt'))) {
+if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt'))) {
 
 (function() {
   'use strict';
@@ -1206,6 +1210,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
   // ─── Live region for state announcements ───
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-rh')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-rh';
@@ -13414,6 +13419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       useEffect(function() {
         if (!rebindAction) return undefined;
         function onRebindKey(event) {
+          if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
           event.preventDefault();
           event.stopPropagation();
           var raw = String(event.key || '').toLowerCase();
@@ -13443,16 +13449,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_custom_controls_reset_to', 'Custom controls reset to {value1}'), { value1: raptorControlScheme(fromId).label }));
       }
       function setRH(patch) {
+        if (!ctx || typeof ctx.setToolData !== 'function') return;
         ctx.setToolData(function(prev) {
-          var cur = (prev && prev.raptorHunt) || {};
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var cur = (safePrev.raptorHunt && typeof safePrev.raptorHunt === 'object' && !Array.isArray(safePrev.raptorHunt)) ? safePrev.raptorHunt : {};
           var next = typeof patch === 'function' ? patch(cur) : Object.assign({}, cur, patch);
-          return Object.assign({}, prev, { raptorHunt: next });
+          return Object.assign({}, safePrev, { raptorHunt: next });
         });
       }
       // These reference panels use automatic-activation horizontal tabs.
       // Focus after the selected state and panel label have committed.
       function rhReferenceTabKeyDown(event, activate) {
-        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+        if (event.isComposing || event.keyCode === 229 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
         var list = event.currentTarget.closest('[data-raptor-reference-tabs]');
         var tabs = list && Array.prototype.slice.call(list.querySelectorAll('[role="tab"]'));
         if (!tabs || !tabs.length) return;
@@ -13505,6 +13513,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         return function() { window.clearTimeout(resultFocusTimer); };
       }, [simUI.missionState]);
       function handleFlightResultKeyDown(event) {
+        if (event.isComposing || event.keyCode === 229) return;
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          patchSimUI({ missionState: 'active' });
+          return;
+        }
         if (event.key !== 'Tab') return;
         var dialog = event.currentTarget;
         var stops = dialog.querySelectorAll('button:not([disabled]), [tabindex="0"]');
@@ -17129,14 +17144,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         //
         // The teardown below force-loses the context on every restart, so a real loss
         // has to be told apart from that: _rhTearingDown marks the deliberate one.
+        var onContextLost = function (ev) {
+          if (canvasEl._rhTearingDown) return;   // our own dispose, not a real loss
+          ev.preventDefault();
+          console.warn('[RaptorHunt] WebGL context lost — offering Retry 3D mode');
+          setWebglError(true);
+        };
         if (!canvasEl._rhLossBound) {
           canvasEl._rhLossBound = true;
-          canvasEl.addEventListener('webglcontextlost', function (ev) {
-            if (canvasEl._rhTearingDown) return;   // our own dispose, not a real loss
-            ev.preventDefault();
-            console.warn('[RaptorHunt] WebGL context lost — offering Retry 3D mode');
-            setWebglError(true);
-          });
+          canvasEl.addEventListener('webglcontextlost', onContextLost);
         }
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, qualityProfile.pixelRatio));
         // Preserve responsive CSS dimensions when the flight panel changes size.
@@ -22876,6 +22892,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
 
         // ─── NEW v0.30: Web Audio sound synthesis (no external files) ───
+        function _rhIsGlobalMuted() {
+          try {
+            if (typeof window === 'undefined') return true;
+            if (typeof window.__alloIsGlobalMuted === 'function') return !!window.__alloIsGlobalMuted();
+            return window.__alloMuted === true || window.__alloGlobalMuted === true;
+          } catch (e) { return false; }
+        }
         var audioCtx = null;
         var windNode = null, windFilter = null, windGain = null, flightMasterGain = null;
         var activeFlightOneShots = [];
@@ -22884,13 +22907,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function setFlightAudioGate(audible) {
           if (!flightMasterGain || !audioCtx) return;
           var gateNow = audioCtx.currentTime;
-          var gateValue = audible && soundEnabled && !simPaused && !document.hidden ? 1 : 0;
+          var gateValue = audible && soundEnabled && !_rhIsGlobalMuted() && !simPaused && !document.hidden ? 1 : 0;
           flightMasterGain.gain.cancelScheduledValues(gateNow);
           flightMasterGain.gain.setValueAtTime(flightMasterGain.gain.value, gateNow);
           flightMasterGain.gain.linearRampToValueAtTime(gateValue, gateNow + 0.035);
         }
+        function onGlobalMuteChanged() {
+          setFlightAudioGate(soundEnabled);
+        }
+        window.addEventListener('alloflow-mute-changed', onGlobalMuteChanged);
         function initAudio() {
-          if (audioCtx) return;
+          if (audioCtx || _rhIsGlobalMuted()) return;
           try {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             // Wind sound: filtered noise that intensifies with speed
@@ -22923,7 +22950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // Play species call (synthesized)
         var lastCallShape = '';
         function playSpeciesCall(callType) {
-          if (!soundEnabled || !audioCtx || simPaused || document.hidden || !flightMasterGain) return;
+          if (!soundEnabled || _rhIsGlobalMuted() || !audioCtx || simPaused || document.hidden || !flightMasterGain) return;
           var now2 = audioCtx.currentTime;
           var osc = audioCtx.createOscillator();
           var g = audioCtx.createGain();
@@ -24817,7 +24844,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function toggleSound() {
           soundEnabled = !soundEnabled;
-          if (soundEnabled) {
+          if (soundEnabled && !_rhIsGlobalMuted()) {
             if (!audioCtx) initAudio();
             if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
             setFlightAudioGate(true);
@@ -28800,7 +28827,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // Compass yaw increases to the bird's right: A/left must subtract,
           // while D/right must add. Combining the keys also prevents drift if
           // both are held together.
-          if (simPaused) {
+          if (simPaused || (typeof document !== 'undefined' && document.hidden)) {
             speedLineMat.opacity = 0;
             return;
           }
@@ -30072,6 +30099,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
           window.removeEventListener('resize', onResize);
           window.removeEventListener('blur', onWindowBlur);
+          window.removeEventListener('alloflow-mute-changed', onGlobalMuteChanged);
+          canvasEl.removeEventListener('webglcontextlost', onContextLost);
+          canvasEl._rhLossBound = false;
           document.removeEventListener('visibilitychange', onVisibilityChange);
           canvasEl.removeEventListener('keydown', onKeyDown);
           canvasEl.removeEventListener('keyup', onKeyUp);

@@ -1,6 +1,12 @@
 /* Shared response boundary for Memory Aid and Applied Challenge. */
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
+  const isBlockedKey = key => key === '__proto__' || key === 'constructor' || key === 'prototype';
+  const safeIdKey = (raw, fallback) => {
+    const s = String(raw);
+    return isBlockedKey(s) ? ('id-' + s) : (s || fallback);
+  };
   const memoryFields = ['studentConnections', 'studentDraft', 'studentReasoning', 'feedback', 'coachHint', 'visualPrompt', 'visualAlt', 'visualImage', 'visualSource', 'visualCheck', 'visualReview', 'visualAltSource', 'visualStatus', 'visualNeedsReview', 'visualReviewBasis'];
   const appliedFields = ['sourceRecords', 'reasoningReferences', 'workspace', 'evidenceLedger', 'criteriaCheck', 'validationCycles', 'stressTest', 'feedback', 'coachHint'];
   const noteFields = ['title', 'author', 'pageRange', 'cues', 'notes', 'summary', 'question', 'hypothesis', 'materials', 'procedure', 'data', 'analysis', 'conclusion', 'favoriteLine', 'thinkings', 'connection', 'entries', 'blanks', 'notesExtra', 'pairs', 'connections', 'feedback', 'feedbackCount', 'prevFeedbackScore'];
@@ -70,14 +76,14 @@
   }
   const memoryLearnerAlt = (card, base) => base?.mode === 'student-authored' && typeof card?.visualAlt === 'string' && !!card.visualAlt.trim() && card.visualAlt !== (base.visualAlt || '') && !['vision', 'planning'].includes(card.visualAltSource);
   const supports =type => ['memory-aid', 'applied-challenge', 'note-taking', 'anchor-chart'].includes(type);
-  const same = (a,b) => JSON.stringify(a) === JSON.stringify(b);
+  const same = (a,b) => { try { return JSON.stringify(a) === JSON.stringify(b); } catch (_) { return false; } };
   const own = (obj, prop) => !!obj && Object.prototype.hasOwnProperty.call(obj, prop);
   const hasId = value => value !== null && value !== undefined && value !== '';
-  const noteRowId = (row, key, idx) => hasId(row?.id) ? String(row.id) : (key === 'blanks' ? 'blank-' : key + '-') + idx;
+  const noteRowId = (row, key, idx) => hasId(row?.id) ? safeIdKey(row.id, (key === 'blanks' ? 'blank-' : key + '-') + idx) : (key === 'blanks' ? 'blank-' : key + '-') + idx;
   function anchorSections(data) {
     const seen = new Set();
     return (Array.isArray(data?.sections) ? data.sections : []).filter(Boolean).map((section, index) => {
-      const baseId = hasId(section.id) ? String(section.id) : 'section-' + index;
+      const baseId = hasId(section.id) ? safeIdKey(section.id, 'section-' + index) : 'section-' + index;
       let id = baseId, s = index;
       while (seen.has(id)) { id = baseId + '-' + s; s++; }
       seen.add(id);
@@ -85,7 +91,7 @@
       const bullets = Array.isArray(section.bullets) ? section.bullets : [];
       const bulletIds = bullets.map((_, i) => {
         const rawKey = section.bulletIds?.[i];
-        const baseKey = hasId(rawKey) ? String(rawKey) : id + '-bullet-' + i;
+        const baseKey = hasId(rawKey) ? safeIdKey(rawKey, id + '-bullet-' + i) : id + '-bullet-' + i;
         let key = baseKey, b = i;
         while (bulletSeen.has(key)) { key = baseKey + '-' + b; b++; }
         bulletSeen.add(key);
@@ -130,26 +136,32 @@
   function mergeNoteRows(original, rows, key = 'blanks') {
     return (rows || []).map((row, i) => ({ ...(original || []).find((old, idx) => noteRowId(old, key, idx) === noteRowId(row, key, i)), ...row }));
   }
-  function safeNoteTree(value, depth = 0) {
+  function safeNoteTree(value, depth = 0, seen = new Set()) {
     if (depth > 5) return null;
     if (typeof value === 'string') return value.slice(0,12000);
     if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
     if (typeof value === 'boolean' || value === null) return value;
-    if (Array.isArray(value)) return value.slice(0,100).map(v => safeNoteTree(v,depth+1));
     if (!value || typeof value !== 'object') return null;
-    const keys = new Set(['id','text','type','question','answer','response','quote','studentAnswer','strength','growthNudge','sourceConnection','found','detail','sourceAlignment','message','completion','quality','alignment','rubric','completeness','accuracy','depth','elaboration','draftFingerprint','createdAt','xpAwarded','hadPriorXp']);
-    const out = Object.fromEntries(Object.entries(value).filter(([key])=>keys.has(key)).map(([key,v])=>[key,safeNoteTree(v,depth+1)]));
-    const scope=value.sourceScope;
-    if (record(scope) && scope.version===1 && Number.isSafeInteger(scope.totalCharacters) && Number.isSafeInteger(scope.includedCharacters) && scope.totalCharacters>=0 && scope.includedCharacters>=0 && scope.includedCharacters<=50000 && ((scope.status==='none' && scope.totalCharacters===0 && scope.includedCharacters===0) || (scope.status==='full' && scope.totalCharacters>0 && scope.totalCharacters===scope.includedCharacters) || (scope.status==='partial' && scope.totalCharacters>50000 && scope.includedCharacters===50000)) && typeof scope.sourceFingerprint==='string' && /^[0-9]+:[0-9a-z]+$/.test(scope.sourceFingerprint) && scope.sourceFingerprint.length<=64) {
-      out.sourceScope={version:1,status:scope.status,totalCharacters:scope.totalCharacters,includedCharacters:scope.includedCharacters,sourceFingerprint:scope.sourceFingerprint};
+    if (seen.has(value)) return null;
+    seen.add(value);
+    try {
+      if (Array.isArray(value)) return value.slice(0,100).map(v => safeNoteTree(v,depth+1,seen));
+      const keys = new Set(['id','text','type','question','answer','response','quote','studentAnswer','strength','growthNudge','sourceConnection','found','detail','sourceAlignment','message','completion','quality','alignment','rubric','completeness','accuracy','depth','elaboration','draftFingerprint','createdAt','xpAwarded','hadPriorXp']);
+      const out = Object.fromEntries(Object.entries(value).filter(([key])=>keys.has(key) && !isBlockedKey(key)).map(([key,v])=>[key,safeNoteTree(v,depth+1,seen)]));
+      const scope=value.sourceScope;
+      if (record(scope) && scope.version===1 && Number.isSafeInteger(scope.totalCharacters) && Number.isSafeInteger(scope.includedCharacters) && scope.totalCharacters>=0 && scope.includedCharacters>=0 && scope.includedCharacters<=50000 && ((scope.status==='none' && scope.totalCharacters===0 && scope.includedCharacters===0) || (scope.status==='full' && scope.totalCharacters>0 && scope.totalCharacters===scope.includedCharacters) || (scope.status==='partial' && scope.totalCharacters>50000 && scope.includedCharacters===50000)) && typeof scope.sourceFingerprint==='string' && /^[0-9]+:[0-9a-z]+$/.test(scope.sourceFingerprint) && scope.sourceFingerprint.length<=64) {
+        out.sourceScope={version:1,status:scope.status,totalCharacters:scope.totalCharacters,includedCharacters:scope.includedCharacters,sourceFingerprint:scope.sourceFingerprint};
+      }
+      return out;
+    } finally {
+      seen.delete(value);
     }
-    return out;
   }
   function noteSubmission(resource, raw) {
     const original = resource.data || {}, out = { schemaVersion: 1, templateType: original.templateType || 'cornell-notes' };
     const learnerKeys = new Set(Object.keys(legacyNotes(original)));
     noteFields.forEach(key => {
-      if (!(key in raw)) return;
+      if (!own(raw, key)) return;
       const value = raw[key];
       if (Array.isArray(value)) {
         const originalRows = Array.isArray(original[key]) ? original[key] : [];
@@ -164,17 +176,24 @@
     });
     return out;
   }
-  const pick = (value, keys) => Object.fromEntries(keys.filter(key => Object.prototype.hasOwnProperty.call(value || {}, key)).map(key => [key, value[key]]));
+  const pick = (value, keys) => Object.fromEntries(keys.filter(key => !isBlockedKey(key) && Object.prototype.hasOwnProperty.call(value || {}, key)).map(key => [key, value[key]]));
   // Bound and allowlist text trees. Media, private practice, teacher source,
   // and unknown future fields must never enter a response submission.
   const allowed = new Set(('reasoningReferences part rowId location referenceFingerprint transfer coverage version workspaceFields sourceRecords evidenceRows validationChecks selfChecks shortenedFields id studentDraft studentReasoning visualAlt feedback coachHint strength accuracyCheck nextStep question questionAccepted artifactUrl artifactUrlDraft artifactDescription factId factRevision revision needsReview previousRating resourceId gradeLevel status lessonConnectionCheck evidenceOrConstraintCheck workingQuestion stakeholders assumptions tradeoffs possibilities plan response testReflection revision transferReflection claim evidence tradeoff rating note source family draftFingerprint contextFingerprint createdAt completedAt importedChallenge challenge whyItMatters disposition dispositionReason methodId testQuestion criterion expectedFinding changeThreshold evidenceMode observation decision action reasoning revisionSummary outcome').split(' '));
-  function textTree(value, depth = 0) {
+  function textTree(value, depth = 0, seen = new Set()) {
     if (depth > 8) return null;
     if (typeof value === 'string') return value.slice(0, 12000);
-    if (typeof value === 'boolean' || typeof value === 'number' || value === null) return value;
-    if (Array.isArray(value)) return value.slice(0, 24).map(item => textTree(item, depth + 1));
+    if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+    if (typeof value === 'boolean' || value === null) return value;
     if (!value || typeof value !== 'object') return null;
-    return Object.fromEntries(Object.entries(value).filter(([key]) => allowed.has(key) || /^(criterion|constraint)-[a-zA-Z0-9_-]{1,80}$/.test(key)).map(([key, item]) => [key, textTree(item, depth + 1)]));
+    if (seen.has(value)) return null;
+    seen.add(value);
+    try {
+      if (Array.isArray(value)) return value.slice(0, 24).map(item => textTree(item, depth + 1, seen));
+      return Object.fromEntries(Object.entries(value).filter(([key]) => !isBlockedKey(key) && (allowed.has(key) || /^(criterion|constraint)-[a-zA-Z0-9_-]{1,80}$/.test(key))).map(([key, item]) => [key, textTree(item, depth + 1, seen)]));
+    } finally {
+      seen.delete(value);
+    }
   }
   function memoryCards(data) {
     const normalize = window.AlloModules?.MemoryAid?._testing?.normalizeMemoryAidCards;
@@ -232,7 +251,9 @@
     const ids = new Set(), links = new Set(), out = [], text = (v,n) => typeof v === 'string' ? v.slice(0,n) : '';
     for (const item of Array.isArray(value) ? value : []) {
       if (!item || typeof item !== 'object' || out.length >= 24) continue;
-      let url; try { url = new URL(text(item.url,2000)); if (!['http:','https:'].includes(url.protocol) || url.username || url.password) continue; } catch (_) { continue; }
+      const rawUrl = text(item.url, 2000);
+      if (/[\u0000-\u001F\u007F]/.test(rawUrl)) continue;
+      let url; try { url = new URL(rawUrl); if (!['http:','https:'].includes(url.protocol) || url.username || url.password) continue; } catch (_) { continue; }
       const rowId=text(item.rowId,80), link=url.href+'\n'+rowId;
       if(links.has(link))continue; links.add(link);
       const base=text(item.id,80).replace(/[^A-Za-z0-9_-]/g,'-')||'source-'+out.length; let id=base,n=0;
@@ -242,6 +263,7 @@
     return out;
   }
   function toSubmission(resource, response) {
+    if (!resource || typeof resource !== 'object') return { id: '', type: '', title: '', data: { schemaVersion: 1 } };
     const raw = response || responseFromData(resource.type, resource.data || {});
     if (resource.type === 'note-taking') {
       const notes = noteSubmission(resource,raw), draftOf = window.AlloModules?.NoteTakingDraftFingerprint;
@@ -256,7 +278,7 @@
     const baseCards = resource.type === 'memory-aid' ? memoryCards(resource.data) : [];
     const data = resource.type === 'memory-aid'
       ? { schemaVersion: 1, cards: (Array.isArray(raw.cards) ? raw.cards : []).slice(0, 8).map(card => ({ ...textTree(pick(card, ['id', 'studentDraft', 'studentReasoning', ...(memoryLearnerAlt(card, baseCards.find(item => item.id === card?.id)) ? ['visualAlt'] : []), 'feedback', 'coachHint'])), ...(typeof card?.cueFactBasis === 'string' ? { cueFactBasis: card.cueFactBasis.slice(0, 80) } : {}), studentConnections: memoryConnections(card?.studentConnections) })) }
-      : { schemaVersion: 1, ...Object.fromEntries(appliedFields.filter(key => key in raw).map(key => [key, key === 'sourceRecords' ? safeAppliedSources(raw[key]) : textTree(key === 'workspace' ? appliedWorkspaceResponse(raw[key]) : raw[key])])) };
+      : { schemaVersion: 1, ...Object.fromEntries(appliedFields.filter(key => own(raw, key)).map(key => [key, key === 'sourceRecords' ? safeAppliedSources(raw[key]) : textTree(key === 'workspace' ? appliedWorkspaceResponse(raw[key]) : raw[key])])) };
     return { id: resource.id, type: resource.type, title: String(resource.title || resource.data?.title || '').slice(0, 300), data };
   }
   function toResponseEntries(resource, response) {
@@ -297,6 +319,10 @@
   }
   const maxBackupBytes = 2 * 1024 * 1024;
   const record = value => value && typeof value === 'object' && !Array.isArray(value);
+  function safeJsonParse(serialized) {
+    if (typeof serialized !== 'string' || serialized.length > maxBackupBytes) throw new Error('Backup too large');
+    return JSON.parse(serialized, (key, val) => isBlockedKey(key) ? undefined : val);
+  }
   function backup(resource, response) {
     const item = toSubmission(resource, response);
     if (resource.type === 'applied-challenge' && !Object.prototype.hasOwnProperty.call(item.data, 'workspace')) item.data.workspace = {};
@@ -310,7 +336,7 @@
     return serialized;
   }
   function readBackup(resource, value, previous) {
-    if (!value || value.format !== 'alloflow-studio-response' || value.version !== 1 || value.resourceId !== resource.id || value.resourceType !== resource.type || !value.studio || typeof value.studio !== 'object' || Array.isArray(value.studio)) throw new Error('This backup belongs to another resource or is not supported.');
+    if (!resource || typeof resource !== 'object' || !value || value.format !== 'alloflow-studio-response' || value.version !== 1 || value.resourceId !== resource.id || value.resourceType !== resource.type || !value.studio || typeof value.studio !== 'object' || Array.isArray(value.studio)) throw new Error('This backup belongs to another resource or is not supported.');
     const raw = value.studio;
     if (raw.schemaVersion !== 1) throw new Error('Unsupported response schema');
     if (resource.type === 'memory-aid') {
@@ -319,15 +345,15 @@
       if (!Array.isArray(raw.cards) || raw.cards.length !== validIds.size || raw.cards.some(card => {
         if (!record(card) || typeof card.id !== 'string' || !validIds.has(card.id) || seen.has(card.id)) return true;
         seen.add(card.id);
-        return ['studentDraft', 'studentReasoning', 'visualAlt', 'coachHint', 'cueFactBasis'].some(key => key in card && typeof card[key] !== 'string') || ('feedback' in card && card.feedback !== null && !record(card.feedback));
+        return ['studentDraft', 'studentReasoning', 'visualAlt', 'coachHint', 'cueFactBasis'].some(key => own(card, key) && typeof card[key] !== 'string') || (own(card, 'feedback') && card.feedback !== null && !record(card.feedback));
       })) throw new Error('Invalid memory response');
     } else if (resource.type === 'anchor-chart') {
       if (!record(raw.studentAnswers) || Object.values(raw.studentAnswers).some(row=>!record(row) || Object.values(row).some(text=>typeof text!=='string'))) throw new Error('Invalid anchor answers');
     } else if (resource.type === 'note-taking') {
       if (raw.templateType !== (resource.data?.templateType || 'cornell-notes')) throw new Error('Different notes template');
-      if (['cues','notes','entries','blanks','pairs','materials','procedure'].some(key=>key in raw && (!Array.isArray(raw[key]) || raw[key].some(row=>!record(row))))) throw new Error('Invalid note rows');
+      if (['cues','notes','entries','blanks','pairs','materials','procedure'].some(key=>own(raw, key) && (!Array.isArray(raw[key]) || raw[key].some(row=>!record(row))))) throw new Error('Invalid note rows');
       for (const key of noteFields) {
-        if (!(key in raw)) continue; const value=raw[key];
+        if (!own(raw, key)) continue; const value=raw[key];
         if (['feedbackCount','prevFeedbackScore'].includes(key)) { if (typeof value!=='number' || !Number.isFinite(value)) throw new Error('Invalid feedback score'); }
         else if (key==='feedback') { if (value!==null && !record(value)) throw new Error('Invalid feedback'); }
         else if (key==='connection') { if (!record(value) || Object.values(value).some(v=>typeof v!=='string')) throw new Error('Invalid connection'); }
@@ -336,10 +362,10 @@
       }
     } else {
       if (!record(raw.workspace) || Object.entries(raw.workspace).some(([key, value]) => key === 'questionAccepted' ? typeof value !== 'boolean' : typeof value !== 'string')) throw new Error('Invalid challenge workspace');
-      if (['sourceRecords', 'reasoningReferences', 'evidenceLedger', 'validationCycles'].some(key => key in raw && (!Array.isArray(raw[key]) || raw[key].some(value => !record(value))))) throw new Error('Invalid response rows');
-      if ('criteriaCheck' in raw && (!record(raw.criteriaCheck) || Object.values(raw.criteriaCheck).some(value => !record(value)))) throw new Error('Invalid self-checks');
-      if ('coachHint' in raw && typeof raw.coachHint !== 'string') throw new Error('Invalid coach hint');
-      if (['feedback', 'stressTest'].some(key => key in raw && raw[key] !== null && !record(raw[key]))) throw new Error('Invalid response feedback');
+      if (['sourceRecords', 'reasoningReferences', 'evidenceLedger', 'validationCycles'].some(key => own(raw, key) && (!Array.isArray(raw[key]) || raw[key].some(value => !record(value))))) throw new Error('Invalid response rows');
+      if (own(raw, 'criteriaCheck') && (!record(raw.criteriaCheck) || Object.values(raw.criteriaCheck).some(value => !record(value)))) throw new Error('Invalid self-checks');
+      if (own(raw, 'coachHint') && typeof raw.coachHint !== 'string') throw new Error('Invalid coach hint');
+      if (['feedback', 'stressTest'].some(key => own(raw, key) && raw[key] !== null && !record(raw[key]))) throw new Error('Invalid response feedback');
     }
     const restored = resource.type === 'note-taking' ? { schemaVersion:1, ...pick(noteSubmission(resource,raw),noteFields) } : toSubmission(resource, raw).data;
     if (record(restored.feedback)) delete restored.feedback.earlierDraft;
@@ -444,7 +470,7 @@
         if (file.size > maxBackupBytes) throw new Error('Backup too large');
         const serialized = await file.text();
         if (!isCurrentAttempt()) return;
-        const data = readBackup(resource, JSON.parse(serialized), startingResponse);
+        const data = readBackup(resource, safeJsonParse(serialized), startingResponse);
         if (current.current.response !== startingResponse) throw new Error('Work changed during restore');
         current.current.onResponseChange(startingResource, data);
         if (isCurrentAttempt()) setBackupMessage(tr('backup_restored', 'Backup restored to this workspace. Check the save status before leaving.'));
@@ -468,6 +494,6 @@
       React.createElement(View, { ...viewProps, key: identity, generatedContent: shown, referenceResource: resource, isTeacherMode: isTeacherMode && !preview, learnerReadOnly: isTeacherMode && !preview, previewMode: preview, activeProfileId: viewProps.activeProfileId, handleNoteUpdate }));
   }
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.StudioResponse = { supports, responseFromData, project, projectForExport, anchorSections, toSubmission, toResponseEntries, emptyResponse, maxBackupBytes, backup, serializeBackup, readBackup, WorkConflict, Boundary };
+  window.AlloModules.StudioResponse = Object.freeze({ supports, responseFromData, project, projectForExport, anchorSections, toSubmission, toResponseEntries, emptyResponse, maxBackupBytes, backup, serializeBackup, readBackup, WorkConflict, Boundary });
   window.AlloModules.StudioResponseModule = true;
 })();

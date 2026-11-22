@@ -18,12 +18,27 @@
  */
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.Prim3D) {
     console.log('[Prim3D] Already loaded, skipping');
     return;
   }
 
   var VERSION = 'p3d/1';
+  var MAX_PARSE_CHARS = 512 * 1024;
+  var MAX_DEFORM_VERTICES = 200000;
+  function _isBlockedKey(k) { return k === '__proto__' || k === 'constructor' || k === 'prototype'; }
+  function _safeJsonParse(raw) {
+    var s = _stripToJson(raw);
+    if (!s || s.length > MAX_PARSE_CHARS) return null;
+    try { return JSON.parse(s, function (k, v) { return _isBlockedKey(k) ? undefined : v; }); } catch (e) { return null; }
+  }
+  function _safePatch(obj) {
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return {};
+    var out = {};
+    Object.keys(obj).forEach(function (k) { if (!_isBlockedKey(k)) out[k] = obj[k]; });
+    return out;
+  }
   // 'lathe' and 'extrude' are the two DRAWN shapes: a student-authored 2-D
   // profile becomes a solid of revolution (vase, bottle, chess piece) or a
   // pushed-out outline (cookie-cutter star, letter). Every other tool on this
@@ -116,7 +131,7 @@
     if (!parts.length) return null;
     return {
       version: VERSION,
-      name: (input.name != null) ? String(input.name).slice(0, 80) : '',
+      name: (input.name != null) ? String(input.name).replace(/[\u0000-\u001f\u007f]/g, ' ').slice(0, 80) : '',
       parts: parts,
       // Optional whole-object transforms (manual refinement — never rewrites parts):
       scale: clamp(input.scale, 0.25, 5, 1),
@@ -174,9 +189,8 @@
 
   // ── parseRecipe — PURE: model text → normalized recipe (null on junk) ──
   function parseRecipe(text) {
-    var parsed;
-    try { parsed = JSON.parse(_stripToJson(text)); } catch (e) { return null; }
-    return normalizeRecipe(parsed);
+    var parsed = _safeJsonParse(text);
+    return parsed ? normalizeRecipe(parsed) : null;
   }
 
   // ── Voice-directed sculpting (accessible, hands-free making) ──
@@ -204,15 +218,14 @@
   }
   // parseSculptCommand — PURE: model text → { action, subject, instruction } | null.
   function parseSculptCommand(text) {
-    var parsed;
-    try { parsed = JSON.parse(_stripToJson(text)); } catch (e) { return null; }
-    if (!parsed || typeof parsed !== 'object') return null;
+    var parsed = _safeJsonParse(text);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
     var action = (typeof parsed.action === 'string') ? parsed.action.toLowerCase().trim() : '';
     if (!_has(SCULPT_ACTIONS, action)) return null;
     return {
       action: action,
-      subject: (parsed.subject != null) ? String(parsed.subject).slice(0, 120) : '',
-      instruction: (parsed.instruction != null) ? String(parsed.instruction).slice(0, 200) : ''
+      subject: (parsed.subject != null) ? String(parsed.subject).replace(/[\u0000-\u001f\u007f]/g, ' ').slice(0, 120) : '',
+      instruction: (parsed.instruction != null) ? String(parsed.instruction).replace(/[\u0000-\u001f\u007f]/g, ' ').slice(0, 200) : ''
     };
   }
 
@@ -238,9 +251,8 @@
   }
   // parseStretchCommand — PURE: model text → { action, axis } | null.
   function parseStretchCommand(text) {
-    var parsed;
-    try { parsed = JSON.parse(_stripToJson(text)); } catch (e) { return null; }
-    if (!parsed || typeof parsed !== 'object') return null;
+    var parsed = _safeJsonParse(text);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
     var action = (typeof parsed.action === 'string') ? parsed.action.toLowerCase().trim() : '';
     if (!_has(STRETCH_ACTIONS, action)) return null;
     var axis = (typeof parsed.axis === 'string') ? parsed.axis.toLowerCase().trim() : '';
@@ -470,13 +482,13 @@
     var r = normalizeRecipe(recipe);
     if (!r || !r.parts[index]) return r;
     var parts = _copyParts(r);
-    parts[index] = Object.assign(parts[index], patch || {});
+    parts[index] = Object.assign(parts[index], _safePatch(patch));
     return _rebuild(r, parts);
   }
   function updatePartDeform(recipe, index, patch) {
     var r = normalizeRecipe(recipe);
     if (!r || !r.parts[index] || r.parts[index].locked) return r;
-    return updatePart(r, index, { deform: Object.assign({}, r.parts[index].deform, patch || {}) });
+    return updatePart(r, index, { deform: Object.assign({}, r.parts[index].deform, _safePatch(patch)) });
   }
   // removePart — returns NULL when the last part goes (callers treat as "cleared").
   function removePart(recipe, index) {
@@ -533,7 +545,7 @@
     var deform = normalizeDeform(value);
     if (!geometry || (!deform.taper && !deform.twist && !deform.bulge)) return geometry;
     var attr = geometry.attributes && geometry.attributes.position;
-    if (!attr || !attr.count) return geometry;
+    if (!attr || !attr.count || attr.count > MAX_DEFORM_VERTICES) return geometry;
     var read = function(index, axis) {
       var getter = axis === 0 ? attr.getX : axis === 1 ? attr.getY : attr.getZ;
       if (typeof getter === 'function') return getter.call(attr, index);
@@ -663,12 +675,12 @@
     if (!React || !part || !_has(PROFILE_SHAPES, part.shape) || !Array.isArray(part.profile)) return null;
     var h = React.createElement;
     var isLathe = part.shape === 'lathe';
-    var profile = part.profile.map(function (pt) { return pt.slice(); });
+    var profile = normalizeProfile(part.shape, part.profile);
     var maxPts = PROFILE_MAX_POINTS;
-    var sel = Math.max(0, Math.min(profile.length - 1, Number(opts.selectedPoint || 0)));
+    var sel = Math.max(0, Math.min(profile.length - 1, Math.floor(Number(opts.selectedPoint) || 0)));
     var locked = !!opts.locked;
     var dark = opts.theme === 'dark';
-    var prefix = opts.idPrefix || 'prim3d';
+    var prefix = (typeof opts.idPrefix === 'string' && /^[a-zA-Z0-9_-]{1,48}$/.test(opts.idPrefix)) ? opts.idPrefix : 'prim3d';
     var L = Object.assign({
       title: isLathe ? 'Draw your own shape - it spins around the axis' : 'Draw your own outline - it is pushed out into depth',
       help: isLathe ? 'Click on the pad to add a point, drag a point to move it. The dashed line is the spin axis; the faint half is the mirror.' : 'Click on the pad to add a point, drag a point to move it. The outline closes itself.',
@@ -764,7 +776,7 @@
     var mini = 'min-h-[44px] min-w-[44px] rounded-lg border px-2.5 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (dark ? 'border-slate-500 bg-slate-900 text-slate-100' : 'border-slate-500 bg-white text-slate-800');
     var field = 'min-h-[44px] rounded border px-2 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (dark ? 'border-slate-500 bg-slate-950 text-slate-100' : 'border-slate-500 bg-white text-slate-900');
     var helpId = prefix + '-profile-pad-help';
-    return h('div', Object.assign({ className: 'mb-2 rounded-xl border p-2 ' + (dark ? 'border-violet-700 bg-slate-900/70' : 'border-fuchsia-200 bg-fuchsia-50'), 'data-profile-pad': part.shape }, opts.rootProps || {}),
+    return h('div', Object.assign({ className: 'mb-2 rounded-xl border p-2 ' + (dark ? 'border-violet-700 bg-slate-900/70' : 'border-fuchsia-200 bg-fuchsia-50'), 'data-profile-pad': part.shape }, _safePatch(opts.rootProps)),
       h('p', { className: 'mb-1 text-xs font-black ' + (dark ? 'text-violet-200' : 'text-fuchsia-800') }, L.title),
       h('p', { id: helpId, className: 'mb-1 text-xs ' + ink }, L.help),
       h('div', { className: 'flex flex-wrap items-start gap-2' },
@@ -806,11 +818,14 @@
   }
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.Prim3D = {
+  window.AlloModules.Prim3D = Object.freeze({
     version: VERSION,
-    SHAPES: Object.keys(SHAPES),
-    PROFILE_SHAPES: Object.keys(PROFILE_SHAPES),
-    DEFAULT_PROFILES: DEFAULT_PROFILES,
+    SHAPES: Object.freeze(Object.keys(SHAPES)),
+    PROFILE_SHAPES: Object.freeze(Object.keys(PROFILE_SHAPES)),
+    DEFAULT_PROFILES: Object.freeze({
+      lathe: Object.freeze(DEFAULT_PROFILES.lathe.map(function (p) { return Object.freeze(p.slice()); })),
+      extrude: Object.freeze(DEFAULT_PROFILES.extrude.map(function (p) { return Object.freeze(p.slice()); }))
+    }),
     PROFILE_MAX_POINTS: PROFILE_MAX_POINTS,
     normalizeProfile: normalizeProfile,
     renderProfilePad: renderProfilePad,
@@ -823,14 +838,14 @@
     parseSculptCommand: parseSculptCommand,
     buildStretchCommandPrompt: buildStretchCommandPrompt,
     parseStretchCommand: parseStretchCommand,
-    PRESETS: PRESETS,
+    PRESETS: Object.freeze(PRESETS),
     getPreset: getPreset,
-    MORPH_PROFILES: MORPH_PROFILES,
+    MORPH_PROFILES: Object.freeze(MORPH_PROFILES),
     normalizeDeform: normalizeDeform,
     normalizeMorphProfile: normalizeMorphProfile,
     getMorphProfile: getMorphProfile,
     applyMorphProfile: applyMorphProfile,
-    PART_PALETTE: PART_PALETTE,
+    PART_PALETTE: Object.freeze(PART_PALETTE),
     newPart: newPart,
     addPart: addPart,
     updatePart: updatePart,
@@ -842,6 +857,6 @@
     recolorPart: recolorPart,
     deformGeometry: deformGeometry,
     buildObject: buildObject
-  };
+  });
   console.log('[Prim3D] Registered (p3d/1 — Gemini primitive-assembly sculptures)');
 })();

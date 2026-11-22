@@ -11,7 +11,7 @@
 // Grade-adaptive: uses ctx.gradeBand for vocabulary & depth
 // ═══════════════════════════════════════════════════════════════
 
-window.SelHub = window.SelHub || {
+if (typeof window !== 'undefined') window.SelHub = window.SelHub || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
   isRegistered: function(id) { return !!this._registry[id]; },
@@ -20,8 +20,10 @@ window.SelHub = window.SelHub || {
 
 (function() {
   'use strict';
+  if (typeof window === 'undefined' || !window.SelHub) return;
   // Reduced-motion CSS (WCAG 2.3.3) — guards Pomodoro animations and transitions.
   (function() {
+    if (typeof document === 'undefined' || !document.head) return;
     if (document.getElementById('allo-execfunction-a11y-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-execfunction-a11y-css';
@@ -29,6 +31,7 @@ window.SelHub = window.SelHub || {
     document.head.appendChild(st);
   })();
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-execfunction')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-execfunction';
@@ -142,8 +145,14 @@ window.SelHub = window.SelHub || {
 
   // ── Sound ──
   var _ac = null;
-  function getAC() { if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } return _ac; }
-  function tone(f, d, t, v) { var ac = getAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t || 'sine'; o.frequency.value = f; g.gain.setValueAtTime(v || 0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (d || 0.15)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (d || 0.15)); } catch(e) {} }
+  function _efIsMuted() {
+    try {
+      if (typeof window === 'undefined') return true;
+      return !!(window._alloGlobalMuted || (window.__alloAudio && window.__alloAudio.muted));
+    } catch (_) { return false; }
+  }
+  function getAC() { if (_efIsMuted()) return null; if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } return _ac; }
+  function tone(f, d, t, v) { if (_efIsMuted()) return; var ac = getAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t || 'sine'; o.frequency.value = f; g.gain.setValueAtTime(v || 0.08, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + (d || 0.15)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + (d || 0.15)); } catch(e) {} }
   function sfxClick() { tone(880, 0.04, 'sine', 0.05); }
   function sfxStart() { tone(523, 0.08, 'sine', 0.06); setTimeout(function() { tone(784, 0.12, 'sine', 0.07); }, 80); }
   function sfxDone()  { tone(659, 0.1, 'sine', 0.08); setTimeout(function() { tone(784, 0.1, 'sine', 0.08); }, 80); setTimeout(function() { tone(988, 0.18, 'sine', 0.09); }, 160); }
@@ -327,60 +336,131 @@ window.SelHub = window.SelHub || {
       var announceToSR = ctx.announceToSR; // was used at the distraction-log site but never declared (ReferenceError)
       var band = ctx.gradeBand || 'middle';
 
-      var d = (ctx.toolData && ctx.toolData.execfunction) || {};
+      var _efObj = function(v) { return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; };
+      var d = _efObj(ctx.toolData && ctx.toolData.execfunction);
       var upd = function(key, val) {
         if (typeof key === 'object') { if (ctx.updateMulti) ctx.updateMulti('execfunction', key); }
         else { if (ctx.update) ctx.update('execfunction', key, val); }
       };
 
       // State
-      var activeTab    = d.activeTab || 'map';
+      var activeTab    = typeof d.activeTab === 'string' && d.activeTab ? d.activeTab : 'map';
       if (!_efAiOn && activeTab === 'coach') activeTab = 'map';
+      var soundOn      = d.soundOn != null ? d.soundOn : true;
+      var exploredTabs = _efObj(d.exploredTabs);
+      var fiveMinStart = typeof d.fiveMinStart === 'number' && isFinite(d.fiveMinStart) && d.fiveMinStart > 0 ? d.fiveMinStart : 0;
+      var pomoStart    = typeof d.pomoStart === 'number' && isFinite(d.pomoStart) && d.pomoStart > 0 ? d.pomoStart : 0;
+      var pomoMode     = d.pomoMode === 'break' ? 'break' : 'work';
 
       // ── Fixed hook block ──
       // render() is called inline by the host's SelPluginBridge, so every hook
-      // here lands in the HOST's hook list. This effect used to sit inside the
-      // `activeTab === 'focus'` branch, which meant switching tabs changed the
-      // host's hook count and threw "Rendered more hooks than during the
-      // previous render" (React #310). Declared unconditionally and gated on
-      // the tab inside instead. Gate: dev-tools/scan_hook_order_branches.cjs.
+      // here lands in the HOST's hook list. Declared unconditionally and gated
+      // on the active tab inside instead. Gate: dev-tools/scan_hook_order_branches.cjs.
       React.useEffect(function() {
-        if (activeTab !== 'focus') return undefined;
-        var fStart0 = d.focusStartTime || 0;
-        if (!(fStart0 > 0) || d.focusPaused) return undefined;
+        if (!exploredTabs[activeTab]) {
+          var ne = Object.assign({}, exploredTabs);
+          ne[activeTab] = true;
+          upd('exploredTabs', ne);
+        }
+      }, [activeTab]);
+
+      React.useEffect(function() {
+        var needsFocus = activeTab === 'focus' && (d.focusStartTime || 0) > 0 && !d.focusPaused;
+        var needsFive = activeTab === 'start' && fiveMinStart > 0 && (Date.now() - fiveMinStart) < 305000;
+        var pomoDurMs = (pomoMode === 'work' ? 25 * 60 : 5 * 60) * 1000;
+        var needsPomo = activeTab === 'time' && pomoStart > 0 && (Date.now() - pomoStart) < (pomoDurMs + 5000);
+        if (!needsFocus && !needsFive && !needsPomo) return undefined;
         var t = setInterval(function() {
           upd({ focusTick: (d.focusTick || 0) + 1 });
         }, 1000);
         return function() { clearInterval(t); };
-      }, [activeTab, d.focusStartTime, d.focusPaused, d.focusTick]);
+      }, [activeTab, d.focusStartTime, d.focusPaused, d.focusTick, fiveMinStart, pomoStart, pomoMode]);
 
-      var soundOn      = d.soundOn != null ? d.soundOn : true;
-      var mapAnswers   = d.mapAnswers || {}; // { domainId: [score0, score1] }
-      var mapDone      = d.mapDone || false;
+      React.useEffect(function() {
+        if (activeTab !== 'focus') return;
+        var fStart0 = d.focusStartTime || 0;
+        if (!(fStart0 > 0) || d.focusPaused) return;
+        var fm0 = d.focusMode || 'pomo';
+        var workDef = fm0 === 'deep' ? 50 : fm0 === 'sprint' ? 15 : fm0 === 'body' ? 30 : fm0 === 'custom' ? (d.focusCustomWork || 25) : 25;
+        var brkDef = fm0 === 'deep' ? 10 : fm0 === 'sprint' ? 3 : fm0 === 'body' ? 5 : fm0 === 'custom' ? (d.focusCustomBreak || 5) : 5;
+        var phase0 = d.focusPhase || 'work';
+        var fRem0 = d.focusRemaining != null ? d.focusRemaining : (workDef * 60);
+        var sec0 = Math.max(0, fRem0 - Math.floor((Date.now() - fStart0) / 1000));
+        if (sec0 === 0) {
+          var nextPhase0 = phase0 === 'work' ? 'break' : 'work';
+          var nextRem0 = nextPhase0 === 'work' ? workDef * 60 : brkDef * 60;
+          var nextSess0 = phase0 === 'work' ? ((d.focusSessions || 0) + 1) : (d.focusSessions || 0);
+          upd({ focusPhase: nextPhase0, focusStartTime: 0, focusRemaining: nextRem0, focusPaused: false, focusSessions: nextSess0 });
+          if (soundOn) sfxDone();
+        }
+      }, [activeTab, d.focusStartTime, d.focusPaused, d.focusTick, d.focusPhase, d.focusRemaining, d.focusMode, d.focusCustomWork, d.focusCustomBreak, d.focusSessions]);
+
+      var mapAnswers   = _efObj(d.mapAnswers); // { domainId: [score0, score1] }
+      var mapDone      = !!d.mapDone;
       var initIdx      = (Number.isInteger(d.initIdx) && d.initIdx >= 0 ? d.initIdx : 0);
-      var futureNote   = d.futureNote || '';
-      var savedNotes   = d.savedNotes || [];
-      var fiveMinStart = d.fiveMinStart || 0; // timestamp
+      var futureNote   = typeof d.futureNote === 'string' ? d.futureNote : '';
+      var savedNotes   = Array.isArray(d.savedNotes) ? d.savedNotes.filter(function(x) { return x && typeof x === 'object' && typeof x.text === 'string'; }) : [];
       var holdIdx      = (Number.isInteger(d.holdIdx) && d.holdIdx >= 0 ? d.holdIdx : 0);
-      var brainDump    = d.brainDump || '';
-      var brainDumps   = d.brainDumps || [];
+      var brainDump    = typeof d.brainDump === 'string' ? d.brainDump : '';
+      var brainDumps   = Array.isArray(d.brainDumps) ? d.brainDumps.filter(function(x) { return x && typeof x === 'object' && typeof x.text === 'string'; }) : [];
       var planGoal     = (typeof d.planGoal === 'string' ? d.planGoal : '');
-      var planDeadline = d.planDeadline || '';
-      var planChunks   = Array.isArray(d.planChunks) ? d.planChunks : [''];
+      var planDeadline = typeof d.planDeadline === 'string' ? d.planDeadline : '';
+      var planChunks   = Array.isArray(d.planChunks) && d.planChunks.length ? d.planChunks.map(function(c) { return typeof c === 'string' ? c : ''; }) : [''];
       var timeGameIdx  = (Number.isInteger(d.timeGameIdx) && d.timeGameIdx >= 0 ? d.timeGameIdx : 0);
-      var timeGuess    = d.timeGuess || '';
-      var timeRevealed = d.timeRevealed || false;
-      var timeScore    = d.timeScore || 0;
-      var pomoStart    = d.pomoStart || 0;
-      var pomoMode     = d.pomoMode || 'work'; // 'work' | 'break'
-      var coachInput   = d.coachInput || '';
-      var coachHistory = d.coachHistory || [];
-      var coachLoading = d.coachLoading || false;
-      var confirmAction = d.confirmAction || null;
+      var timeGuess    = typeof d.timeGuess === 'string' || typeof d.timeGuess === 'number' ? String(d.timeGuess) : '';
+      var timeRevealed = !!d.timeRevealed;
+      var timeScore    = typeof d.timeScore === 'number' && isFinite(d.timeScore) ? d.timeScore : 0;
+      var coachInput   = typeof d.coachInput === 'string' ? d.coachInput : '';
+      var coachHistory = Array.isArray(d.coachHistory) ? d.coachHistory.filter(function(m) { return m && typeof m === 'object' && typeof m.text === 'string'; }) : [];
+      var coachLoading = !!d.coachLoading;
+      var confirmAction = d.confirmAction && typeof d.confirmAction === 'object' ? d.confirmAction : null;
 
-      var CYAN = '#0891b2'; var CYAN_LIGHT = _efC('#ecfeff'); var CYAN_DARK = _efC('#155e75');
+      function _efCheckSafety(text) {
+        var s = String(text || '').trim();
+        if (!s) return null;
+        var res = null;
+        if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+          res = window.SelHub.safeRehearseCheck(s, { toolId: 'execfunction', onSafetyFlag: onSafetyFlag });
+        } else {
+          var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+          var flags = null;
+          try { flags = checker && checker.check ? checker.check(s) : null; } catch (_) { flags = null; }
+          if (Array.isArray(flags) && flags.length) {
+            var top = flags.reduce(function(a, b) { return b && b.severity === 'critical' ? b : a; }, flags[0]);
+            if (onSafetyFlag) {
+              try { onSafetyFlag(Object.assign({}, top, { source: 'sel_rehearse_execfunction', context: s.substring(0, 100), aiGenerated: false })); } catch (_) {}
+            }
+            res = { action: top && top.severity === 'critical' ? 'block' : 'nudge', severity: top ? top.severity : 'high', tier: top && top.severity === 'critical' ? 3 : 2 };
+          }
+        }
+        if ((!res || res.action !== 'block') && window.SelHub && typeof window.SelHub.scanForCrisis === 'function') {
+          var scan = window.SelHub.scanForCrisis(s);
+          if (scan && (scan.triggered || scan.tier >= 3)) {
+            res = { action: 'block', severity: scan.severity || 'crisis', tier: 3 };
+            if (onSafetyFlag) {
+              try { onSafetyFlag({ toolId: 'execfunction', tier: 3, severity: scan.severity || 'crisis', excerpt: s.slice(0, 120), timestamp: Date.now() }); } catch (_) {}
+            }
+          }
+        }
+        if (res && (res.action === 'block' || (res.tier && res.tier >= 3))) {
+          upd('_lastTier', 3);
+          if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+            try { window.SelHub.showCrisisModal({ toolName: 'Executive Function', contentSnippet: s }); } catch (_) {}
+          }
+        }
+        return res;
+      }
+
+      var CYAN = _efCHC ? '#ffff00' : '#0891b2'; var CYAN_LIGHT = _efC('#ecfeff'); var CYAN_DARK = _efC('#155e75');
       // CYAN fails 4.5:1 as a white-text fill and as small text on the dark shell (1.4.3)
-      var CYAN_FILL = _efCHC ? CYAN : '#0e7490', CYAN_INK = _efCHC ? CYAN : (_efCDark ? '#22d3ee' : '#0e7490');
+      var CYAN_FILL = _efCHC ? '#ffff00' : '#0e7490';
+      var CYAN_FILL_INK = _efCHC ? '#000000' : '#fff';
+      var CYAN_INK = _efCHC ? '#ffff00' : (_efCDark ? '#22d3ee' : '#0e7490');
+      var EF_DISABLED_BG = _efCHC ? '#000000' : (_efCDark ? '#334155' : '#e2e8f0');
+      var EF_DISABLED_FG = _efCHC ? '#ffff00' : (_efCDark ? '#cbd5e1' : '#475569');
+      var EF_GREEN = _efCHC ? '#ffff00' : (_efCDark ? '#4ade80' : '#15803d');
+      var EF_GREEN_FILL = _efCHC ? '#ffff00' : '#15803d';
+      var EF_GREEN_INK = _efCHC ? '#000000' : '#fff';
       function focusExecControl(id) {
         setTimeout(function() {
           var target = document.getElementById(id);
@@ -451,14 +531,16 @@ window.SelHub = window.SelHub || {
             h('p', { id: 'ef-confirm-description', style: { margin: '0 0 18px', fontSize: 13, lineHeight: 1.6, color: _efC('#475569') } }, description),
             h('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' } },
               h('button', {
+                type: 'button',
                 id: 'ef-confirm-cancel',
                 'data-primary-action': 'true',
                 onClick: closeDestructiveConfirm,
-                style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #cbd5e1', background: _efC('#f8fafc'), color: _efC('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+                style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid ' + _efC('#cbd5e1'), background: _efC('#f8fafc'), color: _efC('#0f172a'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
               }, 'Cancel'),
               h('button', {
+                type: 'button',
                 onClick: commitDestructiveAction,
-                style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid #dc2626', background: '#dc2626', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+                style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid ' + (_efCHC ? '#ffff00' : '#dc2626'), background: _efCHC ? '#ffff00' : '#dc2626', color: _efCHC ? '#000000' : '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
               }, clearing ? 'Clear all entries' : 'Remove habit')
             )
           )
@@ -488,37 +570,52 @@ window.SelHub = window.SelHub || {
         flex:  ['Advance warning of schedule changes whenever possible', 'A predictable transition routine (5-minute warning, end-of-class checklist)', 'Permission to take a 2-minute reset when a plan changes', 'A pass to a regulation space when overwhelmed by an unexpected change']
       };
 
-      var exploredTabs = d.exploredTabs || {};
-      if (!exploredTabs[activeTab]) { var ne = Object.assign({}, exploredTabs); ne[activeTab] = true; upd('exploredTabs', ne); }
-      var exploredCount = Object.keys(exploredTabs).length;
+      var exploredCount = TABS.filter(function(t) { return !!exploredTabs[t.id] || t.id === activeTab; }).length;
 
       var tabBar = h('div', {
-        style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid #cffafe', background: _efCHC ? '#000000' : (_efCDark ? '#0c2e2a' : 'linear-gradient(180deg, #f0fdfa, #ecfeff)'), flexShrink: 0 }
+        style: { display: 'flex', flexDirection: 'column', borderBottom: '2px solid ' + _efC('#cffafe'), background: _efCHC ? '#000000' : (_efCDark ? '#0c2e2a' : 'linear-gradient(180deg, #f0fdfa, #ecfeff)'), flexShrink: 0 }
       },
         h('div', { style: { height: '3px', background: _efC('#e2e8f0'), position: 'relative', overflow: 'hidden' } },
-          h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: 'linear-gradient(90deg, ' + CYAN + ', #06b6d4)', transition: 'width 0.5s ease' } })
+          h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: _efCHC ? '#ffff00' : 'linear-gradient(90deg, ' + CYAN + ', #06b6d4)', transition: 'width 0.5s ease' } })
         ),
         h('div', {
           style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' }
         },
           h('div', { role: 'tablist', 'aria-label': 'Executive Function sections', style: { display: 'flex', gap: '3px' } },
-            TABS.map(function(t) {
+            TABS.map(function(t, tabIdx) {
             var a = activeTab === t.id;
             var explored = !!exploredTabs[t.id];
             return h('button', {
-              key: t.id, role: 'tab',
+              key: t.id, type: 'button', id: 'ef-tab-' + t.id, role: 'tab',
+              tabIndex: a ? 0 : -1,
               'aria-selected': a ? 'true' : 'false',
+              'aria-controls': 'ef-panel-' + t.id,
               'aria-label': t.label,
               onClick: function() { upd('activeTab', t.id); if (soundOn) sfxClick(); },
+              onKeyDown: function(ev) {
+                if (ev.altKey || ev.ctrlKey || ev.metaKey) return;
+                var nextIdx = -1;
+                if (ev.key === 'ArrowRight') nextIdx = (tabIdx + 1) % TABS.length;
+                else if (ev.key === 'ArrowLeft') nextIdx = (tabIdx - 1 + TABS.length) % TABS.length;
+                else if (ev.key === 'Home') nextIdx = 0;
+                else if (ev.key === 'End') nextIdx = TABS.length - 1;
+                if (nextIdx >= 0) {
+                  ev.preventDefault();
+                  var nextTab = TABS[nextIdx];
+                  upd('activeTab', nextTab.id);
+                  if (soundOn) sfxClick();
+                  try { var el = document.getElementById('ef-tab-' + nextTab.id); if (el) el.focus(); } catch (_) {}
+                }
+              },
               onFocus: function(ev) { if (ev.currentTarget && ev.currentTarget.scrollIntoView) ev.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); },
-              style: { padding: '6px 14px', borderRadius: '10px', border: a ? 'none' : '1px solid ' + (explored ? _efC('#cffafe') : 'transparent'), background: a ? 'linear-gradient(135deg, #0e7490, #155e75)' : explored ? 'rgba(8,145,178,0.06)' : 'transparent', color: a ? '#fff' : explored ? CYAN_DARK : _efC('#1e293b'), fontWeight: a ? 700 : 600, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: a ? '0 3px 12px rgba(8,145,178,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
+              style: { padding: '6px 14px', borderRadius: '10px', border: a ? (_efCHC ? '2px solid #ffff00' : 'none') : '1px solid ' + (explored ? _efC('#cffafe') : (_efCHC ? '#ffff00' : 'transparent')), background: a ? (_efCHC ? '#ffff00' : 'linear-gradient(135deg, #0e7490, #155e75)') : explored ? (_efCHC ? '#000000' : 'rgba(8,145,178,0.06)') : 'transparent', color: a ? (_efCHC ? '#000000' : '#fff') : explored ? CYAN_DARK : _efC('#1e293b'), fontWeight: a ? 700 : 600, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: a && !_efCHC ? '0 3px 12px rgba(8,145,178,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
             }, h('span', { 'aria-hidden': 'true' }, t.icon), t.label,
-              explored && !a ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#67e8f9', marginLeft: '2px' } }) : null
+              explored && !a ? h('span', { 'aria-hidden': 'true', style: { width: '5px', height: '5px', borderRadius: '50%', background: _efCHC ? '#ffff00' : '#0891b2', marginLeft: '2px' } }) : null
             );
             })
           ),
-          h('span', { style: { marginLeft: '8px', fontSize: '10px', color: CYAN_DARK, fontWeight: 700, whiteSpace: 'nowrap', background: _efC('#cffafe'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + ' of ' + TABS.length + ' explored'),
-          h('button', { onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': soundOn ? 'Mute' : 'Unmute', style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 } }, soundOn ? '🔊' : '🔇')
+          h('span', { style: { marginLeft: '8px', fontSize: '12px', color: CYAN_DARK, fontWeight: 700, whiteSpace: 'nowrap', background: _efC('#cffafe'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + ' of ' + TABS.length + ' explored'),
+          h('button', { type: 'button', onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': soundOn ? 'Mute' : 'Unmute', style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0, color: _efC('#0f172a') } }, soundOn ? '🔊' : '🔇')
         )
       );
 
@@ -527,20 +624,20 @@ window.SelHub = window.SelHub || {
       if (activeTab === 'map') {
         var totalQs = DOMAINS.length * 2;
         var answeredQs = 0;
-        DOMAINS.forEach(function(dom) { var arr = mapAnswers[dom.id] || []; arr.forEach(function(v) { if (v != null) answeredQs++; }); });
+        DOMAINS.forEach(function(dom) { var arr = Array.isArray(mapAnswers[dom.id]) ? mapAnswers[dom.id] : []; arr.forEach(function(v) { if (v != null) answeredQs++; }); });
         var allAnswered = answeredQs >= totalQs;
 
         // Compute domain scores
         var scoreFor = function(dom) {
-          var arr = mapAnswers[dom.id] || [];
-          var s = 0; arr.forEach(function(v) { if (v != null) s += v; });
+          var arr = Array.isArray(mapAnswers[dom.id]) ? mapAnswers[dom.id] : [];
+          var s = 0; arr.forEach(function(v) { if (typeof v === 'number' && isFinite(v)) s += v; });
           return s; // 0-6
         };
         var sortedByDifficulty = DOMAINS.slice().sort(function(a, b) { return scoreFor(b) - scoreFor(a); });
 
         mapContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
-            h('div', { style: { fontSize: '52px', marginBottom: '8px' } }, '🗺️'),
+            h('div', { 'aria-hidden': 'true', style: { fontSize: '52px', marginBottom: '8px' } }, '🗺️'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 4px' } }, 'Map Your EF'),
             h('p', { style: { fontSize: '13px', color: _efC('#475569'), margin: 0 } }, 'Five domains, two questions each. Honest answers point to which strategies will help YOU most.')
           ),
@@ -548,13 +645,13 @@ window.SelHub = window.SelHub || {
           // Questions
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '16px' } },
             DOMAINS.map(function(dom) {
-              var arr = mapAnswers[dom.id] || [];
-              return h('div', { key: dom.id, style: { background: _efC('#fff'), border: '2px solid #cffafe', borderRadius: '14px', padding: '14px' } },
+              var arr = Array.isArray(mapAnswers[dom.id]) ? mapAnswers[dom.id] : [];
+              return h('div', { key: dom.id, style: { background: _efC('#fff'), border: '2px solid ' + _efC('#cffafe'), borderRadius: '14px', padding: '14px' } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' } },
-                  h('span', { style: { fontSize: '22px' } }, dom.icon),
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: '22px' } }, dom.icon),
                   h('h4', { style: { fontSize: '14px', fontWeight: 800, color: CYAN_DARK, margin: 0 } }, dom.label)
                 ),
-                h('p', { style: { fontSize: '11px', color: _efC('#475569'), margin: '0 0 10px', fontStyle: 'italic' } }, dom.desc),
+                h('p', { style: { fontSize: '12px', color: _efC('#475569'), margin: '0 0 10px', fontStyle: 'italic' } }, dom.desc),
                 dom.items.map(function(stmt, qi) {
                   return h('div', { key: qi, style: { marginBottom: '10px' } },
                     h('p', { style: { fontSize: '13px', color: _efC('#374151'), margin: '0 0 6px', lineHeight: 1.5 } }, stmt),
@@ -562,16 +659,17 @@ window.SelHub = window.SelHub || {
                       ['Rarely', 'Sometimes', 'Often', 'Always'].map(function(lbl, vi) {
                         var sel = arr[qi] === vi;
                         return h('button', {
-                          key: vi,
+                          key: vi, type: 'button',
                           'aria-label': stmt + ': ' + lbl,
+                          'aria-pressed': sel ? 'true' : 'false',
                           onClick: function() {
-                            var na = mapAnswers[dom.id] ? mapAnswers[dom.id].slice() : [];
+                            var na = Array.isArray(mapAnswers[dom.id]) ? mapAnswers[dom.id].slice() : [];
                             na[qi] = vi;
                             var nm = Object.assign({}, mapAnswers); nm[dom.id] = na;
                             upd('mapAnswers', nm);
                             if (soundOn) sfxClick();
                           },
-                          style: { flex: 1, padding: '6px 4px', fontSize: '11px', fontWeight: 700, borderRadius: '6px', cursor: 'pointer', border: sel ? '2px solid ' + CYAN : '1px solid #e5e7eb', background: sel ? CYAN_LIGHT : _efC('#fff'), color: sel ? CYAN_DARK : _efC('#475569') }
+                          style: { flex: 1, padding: '6px 4px', fontSize: '12px', fontWeight: 700, borderRadius: '6px', cursor: 'pointer', border: sel ? '2px solid ' + CYAN : '1px solid ' + _efC('#e5e7eb'), background: sel ? (_efCHC ? '#ffff00' : CYAN_LIGHT) : _efC('#fff'), color: sel ? (_efCHC ? '#000000' : CYAN_DARK) : _efC('#475569') }
                         }, lbl);
                       })
                     )
@@ -582,27 +680,27 @@ window.SelHub = window.SelHub || {
           ),
 
           // Results (when all answered)
-          allAnswered && h('div', { style: { background: 'linear-gradient(135deg, #ecfeff, #cffafe)', border: '2px solid ' + CYAN, borderRadius: '14px', padding: '16px', marginBottom: '14px' } },
+          allAnswered && h('div', { style: { background: _efCHC ? '#000000' : (_efCDark ? '#0c2e30' : 'linear-gradient(135deg, #ecfeff, #cffafe)'), border: '2px solid ' + CYAN, borderRadius: '14px', padding: '16px', marginBottom: '14px' } },
             h('h4', { style: { fontSize: '14px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 10px' } }, '🎯 Your strategy menu'),
             sortedByDifficulty.filter(function(dom) { return _efAiOn || dom.strategy !== 'coach'; }).slice(0, 3).map(function(dom, ri) {
               var s = scoreFor(dom);
               return h('button', {
-                key: dom.id,
+                key: dom.id, type: 'button',
                 onClick: function() { upd('activeTab', dom.strategy); if (soundOn) sfxStart(); if (!mapDone) { upd('mapDone', true); if (awardXP) awardXP(15, 'Mapped your EF profile!'); } },
                 'aria-label': 'Open strategies for ' + dom.label,
-                style: { display: 'flex', alignItems: 'center', gap: '10px', width: '100%', textAlign: 'left', padding: '10px 12px', background: _efC('#fff'), border: '1px solid #cffafe', borderRadius: '10px', marginBottom: '8px', cursor: 'pointer' }
+                style: { display: 'flex', alignItems: 'center', gap: '10px', width: '100%', textAlign: 'left', padding: '10px 12px', background: _efC('#fff'), border: '1px solid ' + _efC('#cffafe'), borderRadius: '10px', marginBottom: '8px', cursor: 'pointer' }
               },
-                h('span', { style: { fontSize: '20px' } }, dom.icon),
+                h('span', { 'aria-hidden': 'true', style: { fontSize: '20px' } }, dom.icon),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: '13px', fontWeight: 800, color: CYAN_DARK } }, (ri + 1) + '. ' + dom.label + ' (score: ' + s + '/6)'),
-                  h('div', { style: { fontSize: '11px', color: _efC('#475569'), marginTop: '2px' } }, dom.pitch)
+                  h('div', { style: { fontSize: '12px', color: _efC('#475569'), marginTop: '2px' } }, dom.pitch)
                 ),
-                h('span', { style: { fontSize: '14px', color: CYAN_INK } }, '→')
+                h('span', { 'aria-hidden': 'true', style: { fontSize: '14px', color: CYAN_INK } }, '→')
               );
             })
           ),
 
-          !allAnswered && h('p', { style: { fontSize: '11px', color: _efC('#475569'), textAlign: 'center', fontStyle: 'italic' } }, 'Answered: ' + answeredQs + ' / ' + totalQs)
+          !allAnswered && h('p', { style: { fontSize: '12px', color: _efC('#475569'), textAlign: 'center', fontStyle: 'italic' } }, 'Answered: ' + answeredQs + ' / ' + totalQs)
         );
       }
 
@@ -614,7 +712,7 @@ window.SelHub = window.SelHub || {
         var fiveMinDone = fiveMinStart > 0 && fiveMinSeconds === 0;
         startContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
           h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
-            h('div', { style: { fontSize: '52px', marginBottom: '4px' } }, '🚀'),
+            h('div', { 'aria-hidden': 'true', style: { fontSize: '52px', marginBottom: '4px' } }, '🚀'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 4px' } }, 'Get Started'),
             h('p', { style: { fontSize: '13px', color: _efC('#475569'), margin: 0 } }, 'Six strategies for the moment between "I should start" and "I am starting."')
           ),
@@ -623,80 +721,89 @@ window.SelHub = window.SelHub || {
             INIT_STRATEGIES.map(function(s, i) {
               var sel = i === initIdx % INIT_STRATEGIES.length;
               return h('button', {
-                key: s.id,
+                key: s.id, type: 'button',
                 'aria-label': s.title,
+                'aria-pressed': sel ? 'true' : 'false',
                 onClick: function() { upd('initIdx', i); if (soundOn) sfxClick(); },
-                style: { flexShrink: 0, padding: '8px 12px', borderRadius: '8px', border: sel ? '2px solid ' + CYAN : '1px solid #cffafe', background: sel ? CYAN_LIGHT : _efC('#fff'), color: sel ? CYAN_DARK : _efC('#475569'), fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }
+                style: { flexShrink: 0, padding: '8px 12px', borderRadius: '8px', border: sel ? '2px solid ' + CYAN : '1px solid ' + _efC('#cffafe'), background: sel ? (_efCHC ? '#ffff00' : CYAN_LIGHT) : _efC('#fff'), color: sel ? (_efCHC ? '#000000' : CYAN_DARK) : _efC('#475569'), fontSize: '12px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }
               }, s.icon + ' ' + s.title);
             })
           ),
           // Strategy detail
-          h('div', { style: { background: _efC('#fff'), border: '2px solid #cffafe', borderRadius: '14px', padding: '18px', marginBottom: '12px' } },
+          h('div', { style: { background: _efC('#fff'), border: '2px solid ' + _efC('#cffafe'), borderRadius: '14px', padding: '18px', marginBottom: '12px' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' } },
-              h('span', { style: { fontSize: '32px' } }, curS.icon),
+              h('span', { 'aria-hidden': 'true', style: { fontSize: '32px' } }, curS.icon),
               h('h4', { style: { fontSize: '16px', fontWeight: 800, color: CYAN_DARK, margin: 0 } }, curS.title)
             ),
             h('div', { style: { background: CYAN_LIGHT, borderRadius: '10px', padding: '10px 12px', marginBottom: '10px', borderLeft: '4px solid ' + CYAN } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: CYAN_INK, marginBottom: '2px', textTransform: 'uppercase' } }, 'When this fits:'),
+              h('div', { style: { fontSize: '12px', fontWeight: 700, color: CYAN_INK, marginBottom: '2px', textTransform: 'uppercase' } }, 'When this fits:'),
               h('p', { style: { fontSize: '13px', color: CYAN_DARK, margin: 0 } }, curS.when)
             ),
-            h('div', { style: { background: _efC('#f0fdf4'), borderRadius: '10px', padding: '10px 12px', marginBottom: '10px', borderLeft: '4px solid #4ade80' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: _efCDark ? '#4ade80' : '#15803d', marginBottom: '2px', textTransform: 'uppercase' } }, 'How to do it:'),
+            h('div', { style: { background: _efC('#f0fdf4'), borderRadius: '10px', padding: '10px 12px', marginBottom: '10px', borderLeft: '4px solid ' + EF_GREEN } },
+              h('div', { style: { fontSize: '12px', fontWeight: 700, color: EF_GREEN, marginBottom: '2px', textTransform: 'uppercase' } }, 'How to do it:'),
               h('p', { style: { fontSize: '13px', color: _efC('#166534'), margin: 0, lineHeight: 1.6 } }, curS.how)
             ),
-            h('div', { style: { background: _efC('#fef9c3'), borderRadius: '10px', padding: '10px 12px', borderLeft: '4px solid #facc15' } },
-              h('div', { style: { fontSize: '10px', fontWeight: 700, color: _efC('#a16207'), marginBottom: '2px', textTransform: 'uppercase' } }, 'Why it works:'),
+            h('div', { style: { background: _efC('#fef9c3'), borderRadius: '10px', padding: '10px 12px', borderLeft: '4px solid ' + (_efCHC ? '#ffff00' : '#facc15') } },
+              h('div', { style: { fontSize: '12px', fontWeight: 700, color: _efC('#a16207'), marginBottom: '2px', textTransform: 'uppercase' } }, 'Why it works:'),
               h('p', { style: { fontSize: '12px', color: _efC('#713f12'), margin: 0, lineHeight: 1.6 } }, curS.why)
             )
           ),
           // 5-Minute timer interactive
           curS.hasTimer && h('div', { style: { background: _efC('#fff'), border: '2px solid ' + CYAN, borderRadius: '14px', padding: '18px', textAlign: 'center', marginBottom: '12px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: CYAN_INK, marginBottom: '6px', textTransform: 'uppercase' } }, 'Try it now'),
+            h('div', { style: { fontSize: '12px', fontWeight: 700, color: CYAN_INK, marginBottom: '6px', textTransform: 'uppercase' } }, 'Try it now'),
             fiveMinStart === 0 ? h('button', {
+              type: 'button',
               onClick: function() { upd('fiveMinStart', Date.now()); if (soundOn) sfxStart(); if (addToast) addToast('Timer started. 5 minutes only.', 'info'); },
               'aria-label': 'Start 5-minute timer',
-              style: { padding: '12px 28px', background: CYAN_FILL, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }
+              style: { padding: '12px 28px', background: CYAN_FILL, color: CYAN_FILL_INK, border: _efCHC ? '2px solid #ffff00' : 'none', borderRadius: '10px', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }
             }, '▶ Start 5 minutes') : h('div', null,
-              h('div', { style: { fontSize: '36px', fontWeight: 800, color: fiveMinDone ? '#16a34a' : CYAN_DARK, fontVariantNumeric: 'tabular-nums', marginBottom: '6px' } },
+              h('div', { style: { fontSize: '36px', fontWeight: 800, color: fiveMinDone ? EF_GREEN : CYAN_DARK, fontVariantNumeric: 'tabular-nums', marginBottom: '6px' } },
                 Math.floor(fiveMinSeconds / 60) + ':' + String(fiveMinSeconds % 60).padStart(2, '0')
               ),
-              h('p', { style: { fontSize: '11px', color: _efC('#475569'), margin: '0 0 10px' } }, fiveMinDone ? '5 minutes done. Stop now or keep going.' : 'Just keep going. The timer is doing the deciding.'),
+              h('p', { style: { fontSize: '12px', color: _efC('#475569'), margin: '0 0 10px' } }, fiveMinDone ? '5 minutes done. Stop now or keep going.' : 'Just keep going. The timer is doing the deciding.'),
               h('button', {
+                type: 'button',
                 onClick: function() {
                   upd('fiveMinStart', 0);
                   if (fiveMinDone) { if (soundOn) sfxDone(); if (awardXP) awardXP(10, 'You started.'); }
                 },
-                style: { padding: '8px 18px', background: fiveMinDone ? '#16a34a' : _efC('#e5e7eb'), color: fiveMinDone ? '#fff' : _efC('#374151'), border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
+                style: { padding: '8px 18px', background: fiveMinDone ? EF_GREEN_FILL : _efC('#e5e7eb'), color: fiveMinDone ? EF_GREEN_INK : (_efCHC ? '#000000' : _efC('#374151')), border: _efCHC ? '2px solid #ffff00' : 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
               }, fiveMinDone ? '✓ Done' : 'Stop timer')
             )
           ),
           // Future-self note interactive
           curS.hasNote && h('div', { style: { background: _efC('#fff'), border: '2px solid ' + CYAN, borderRadius: '14px', padding: '14px', marginBottom: '12px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: CYAN_INK, marginBottom: '6px', textTransform: 'uppercase' } }, 'Write your future-self note'),
+            h('div', { style: { fontSize: '12px', fontWeight: 700, color: CYAN_INK, marginBottom: '6px', textTransform: 'uppercase' } }, 'Write your future-self note'),
             h('textarea', {
               value: futureNote,
+              onBlur: function(ev) { _efCheckSafety(ev.target.value); },
               onChange: function(ev) { upd('futureNote', ev.target.value); },
               'aria-label': 'A 2-line note for tomorrow morning',
               placeholder: 'Tomorrow morning at 8am: open the science doc. Click problem 1. Read it.',
-              style: { background: _efC('#fff'), color: _efC('#0f172a'), width: '100%', border: '1px solid #cffafe', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', minHeight: '60px', boxSizing: 'border-box', resize: 'vertical' }
+              style: { background: _efC('#fff'), color: _efC('#0f172a'), width: '100%', border: '1px solid ' + _efC('#cffafe'), borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', minHeight: '60px', boxSizing: 'border-box', resize: 'vertical' }
             }),
             h('button', {
+              type: 'button',
               onClick: function() {
                 if (!futureNote.trim()) return;
-                var n = { id: Date.now().toString(), text: futureNote.trim(), date: new Date().toLocaleDateString(), ts: Date.now() };
-                upd({ savedNotes: [n].concat(savedNotes), futureNote: '' });
+                var txt = futureNote.trim();
+                var safety = _efCheckSafety(txt);
+                var n = { id: Date.now().toString(), text: txt, date: new Date().toLocaleDateString(), ts: Date.now() };
+                var patch = { savedNotes: [n].concat(savedNotes), futureNote: '' };
+                if (safety && (safety.action === 'block' || (safety.tier && safety.tier >= 3))) patch._lastTier = 3;
+                upd(patch);
                 if (soundOn) sfxStart();
                 if (awardXP) awardXP(8, 'Saved a future-self note');
               },
               disabled: !futureNote.trim(),
-              style: { marginTop: '8px', padding: '8px 16px', background: futureNote.trim() ? CYAN_FILL : _efC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: futureNote.trim() ? 'pointer' : 'not-allowed' }
+              style: { marginTop: '8px', padding: '8px 16px', background: futureNote.trim() ? CYAN_FILL : EF_DISABLED_BG, color: futureNote.trim() ? CYAN_FILL_INK : EF_DISABLED_FG, border: _efCHC ? '2px solid #ffff00' : 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: futureNote.trim() ? 'pointer' : 'not-allowed' }
             }, '💾 Save for tomorrow'),
             savedNotes.length > 0 && h('div', { style: { marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' } },
               savedNotes.slice(0, 5).map(function(n) {
                 return h('div', { key: n.id, style: { background: CYAN_LIGHT, padding: '8px 10px', borderRadius: '8px', fontSize: '12px', color: CYAN_DARK, position: 'relative' } },
-                  h('div', { style: { fontSize: '10px', color: _efC('#475569'), marginBottom: '2px' } }, n.date),
+                  h('div', { style: { fontSize: '12px', color: _efC('#475569'), marginBottom: '2px' } }, n.date),
                   h('p', { style: { margin: 0, lineHeight: 1.5 } }, n.text),
-                  h('button', { onClick: function() { upd('savedNotes', savedNotes.filter(function(s) { return s.id !== n.id; })); }, 'aria-label': 'Delete note', style: { position: 'absolute', top: '4px', right: '4px', background: 'transparent', border: 'none', color: _efC('#475569'), cursor: 'pointer', fontSize: '12px' } }, '✕')
+                  h('button', { type: 'button', onClick: function() { upd('savedNotes', savedNotes.filter(function(s) { return s.id !== n.id; })); }, 'aria-label': 'Delete note', style: { position: 'absolute', top: '4px', right: '4px', minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _efC('#475569'), cursor: 'pointer', fontSize: '12px' } }, '✕')
                 );
               })
             )
@@ -710,7 +817,7 @@ window.SelHub = window.SelHub || {
         var curH = HOLD_STRATEGIES[holdIdx % HOLD_STRATEGIES.length];
         holdContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
           h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
-            h('div', { style: { fontSize: '52px', marginBottom: '4px' } }, '🧠'),
+            h('div', { 'aria-hidden': 'true', style: { fontSize: '52px', marginBottom: '4px' } }, '🧠'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 4px' } }, 'Hold It'),
             h('p', { style: { fontSize: '13px', color: _efC('#475569'), margin: 0 } }, 'Working-memory tools. The brain is for thinking, not storing.')
           ),
@@ -718,55 +825,63 @@ window.SelHub = window.SelHub || {
             HOLD_STRATEGIES.map(function(s, i) {
               var sel = i === holdIdx % HOLD_STRATEGIES.length;
               return h('button', {
-                key: s.id,
+                key: s.id, type: 'button',
                 'aria-label': s.title,
+                'aria-pressed': sel ? 'true' : 'false',
                 onClick: function() { upd('holdIdx', i); if (soundOn) sfxClick(); },
-                style: { flexShrink: 0, padding: '8px 12px', borderRadius: '8px', border: sel ? '2px solid ' + CYAN : '1px solid #cffafe', background: sel ? CYAN_LIGHT : _efC('#fff'), color: sel ? CYAN_DARK : _efC('#475569'), fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }
+                style: { flexShrink: 0, padding: '8px 12px', borderRadius: '8px', border: sel ? '2px solid ' + CYAN : '1px solid ' + _efC('#cffafe'), background: sel ? (_efCHC ? '#ffff00' : CYAN_LIGHT) : _efC('#fff'), color: sel ? (_efCHC ? '#000000' : CYAN_DARK) : _efC('#475569'), fontSize: '12px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }
               }, s.icon + ' ' + s.title);
             })
           ),
-          h('div', { style: { background: _efC('#fff'), border: '2px solid #cffafe', borderRadius: '14px', padding: '18px', marginBottom: '12px' } },
+          h('div', { style: { background: _efC('#fff'), border: '2px solid ' + _efC('#cffafe'), borderRadius: '14px', padding: '18px', marginBottom: '12px' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' } },
-              h('span', { style: { fontSize: '32px' } }, curH.icon),
+              h('span', { 'aria-hidden': 'true', style: { fontSize: '32px' } }, curH.icon),
               h('h4', { style: { fontSize: '16px', fontWeight: 800, color: CYAN_DARK, margin: 0 } }, curH.title)
             ),
             h('p', { style: { fontSize: '12px', color: CYAN_INK, fontWeight: 700, fontStyle: 'italic', margin: '0 0 12px' } }, curH.summary),
             h('p', { style: { fontSize: '14px', color: _efC('#374151'), margin: 0, lineHeight: 1.7 } }, curH.body)
           ),
           curH.interactive && h('div', { style: { background: _efC('#fff'), border: '2px solid ' + CYAN, borderRadius: '14px', padding: '14px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: CYAN_INK, marginBottom: '6px', textTransform: 'uppercase' } }, 'Brain dump zone'),
+            h('div', { style: { fontSize: '12px', fontWeight: 700, color: CYAN_INK, marginBottom: '6px', textTransform: 'uppercase' } }, 'Brain dump zone'),
             h('textarea', {
               value: brainDump,
+              onBlur: function(ev) { _efCheckSafety(ev.target.value); },
               onChange: function(ev) { upd('brainDump', ev.target.value); },
               'aria-label': 'Brain dump',
               placeholder: 'Every loose thought. Don\'t organize. Don\'t filter. Just dump.',
-              style: { background: _efC('#fff'), color: _efC('#0f172a'), width: '100%', border: '1px solid #cffafe', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', minHeight: '120px', boxSizing: 'border-box', resize: 'vertical' }
+              style: { background: _efC('#fff'), color: _efC('#0f172a'), width: '100%', border: '1px solid ' + _efC('#cffafe'), borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', minHeight: '120px', boxSizing: 'border-box', resize: 'vertical' }
             }),
             h('div', { style: { display: 'flex', gap: '8px', marginTop: '8px' } },
               h('button', {
+                type: 'button',
                 onClick: function() {
                   if (!brainDump.trim()) return;
-                  var entry = { id: Date.now().toString(), text: brainDump.trim(), date: new Date().toLocaleDateString(), ts: Date.now() };
-                  upd({ brainDumps: [entry].concat(brainDumps), brainDump: '' });
+                  var txt = brainDump.trim();
+                  var safety = _efCheckSafety(txt);
+                  var entry = { id: Date.now().toString(), text: txt, date: new Date().toLocaleDateString(), ts: Date.now() };
+                  var patch = { brainDumps: [entry].concat(brainDumps), brainDump: '' };
+                  if (safety && (safety.action === 'block' || (safety.tier && safety.tier >= 3))) patch._lastTier = 3;
+                  upd(patch);
                   if (soundOn) sfxDone();
                   if (awardXP) awardXP(10, 'Brain dumped! Relief.');
                   if (addToast) addToast('Out of your head. Onto the page.', 'success');
                 },
                 disabled: !brainDump.trim(),
-                style: { padding: '8px 16px', background: brainDump.trim() ? CYAN_FILL : _efC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: brainDump.trim() ? 'pointer' : 'not-allowed' }
+                style: { padding: '8px 16px', background: brainDump.trim() ? CYAN_FILL : EF_DISABLED_BG, color: brainDump.trim() ? CYAN_FILL_INK : EF_DISABLED_FG, border: _efCHC ? '2px solid #ffff00' : 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: brainDump.trim() ? 'pointer' : 'not-allowed' }
               }, '💾 Save dump'),
               h('button', {
+                type: 'button',
                 onClick: function() { upd('brainDump', ''); },
                 disabled: !brainDump,
-                style: { padding: '8px 12px', background: 'transparent', color: _efC('#475569'), border: '1px solid #e5e7eb', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: brainDump ? 'pointer' : 'not-allowed' }
+                style: { padding: '8px 12px', background: 'transparent', color: _efC('#475569'), border: '1px solid ' + _efC('#e5e7eb'), borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: brainDump ? 'pointer' : 'not-allowed' }
               }, 'Clear')
             ),
             brainDumps.length > 0 && h('div', { style: { marginTop: '12px' } },
-              h('div', { style: { fontSize: '11px', fontWeight: 700, color: CYAN_DARK, marginBottom: '6px' } }, '📥 Past dumps (' + brainDumps.length + ')'),
+              h('div', { style: { fontSize: '12px', fontWeight: 700, color: CYAN_DARK, marginBottom: '6px' } }, '📥 Past dumps (' + brainDumps.length + ')'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '200px', overflowY: 'auto' } },
                 brainDumps.slice(0, 10).map(function(b) {
                   return h('div', { key: b.id, style: { background: _efC('#f8fafc'), padding: '8px 10px', borderRadius: '8px', fontSize: '12px', color: _efC('#374151') } },
-                    h('div', { style: { fontSize: '10px', color: _efC('#475569'), marginBottom: '2px' } }, b.date),
+                    h('div', { style: { fontSize: '12px', color: _efC('#475569'), marginBottom: '2px' } }, b.date),
                     h('p', { style: { margin: 0, lineHeight: 1.5, whiteSpace: 'pre-wrap' } }, b.text.length > 200 ? b.text.slice(0, 200) + '…' : b.text)
                   );
                 })
@@ -779,8 +894,9 @@ window.SelHub = window.SelHub || {
       // ── Plan (backward planning workbench) ──
       var planContent = null;
       if (activeTab === 'plan') {
-        var validChunks = planChunks.filter(function(c) { return c.trim().length > 0; });
+        var validChunks = planChunks.filter(function(c) { return typeof c === 'string' && c.trim().length > 0; });
         var deadlineDate = planDeadline ? new Date(planDeadline + 'T17:00:00') : null;
+        if (deadlineDate && isNaN(deadlineDate.getTime())) deadlineDate = null;
         var schedule = [];
         if (deadlineDate && validChunks.length > 0) {
           var daysBack = validChunks.length;
@@ -792,7 +908,7 @@ window.SelHub = window.SelHub || {
         }
         planContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
           h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
-            h('div', { style: { fontSize: '52px', marginBottom: '4px' } }, '📐'),
+            h('div', { 'aria-hidden': 'true', style: { fontSize: '52px', marginBottom: '4px' } }, '📐'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 4px' } }, 'Backward Planning'),
             h('p', { style: { fontSize: '13px', color: _efC('#475569'), margin: 0 } }, 'Start from the deadline. Walk back. Each chunk should be one hour or less.')
           ),
@@ -801,9 +917,10 @@ window.SelHub = window.SelHub || {
           h('input', {
             id: 'ef-plan-goal',
             type: 'text', value: planGoal,
+            onBlur: function(ev) { _efCheckSafety(ev.target.value); },
             onChange: function(ev) { upd('planGoal', ev.target.value); },
             placeholder: 'Submit science fair project',
-            style: { background: _efC('#fff'), color: _efC('#0f172a'), width: '100%', border: '1px solid #cffafe', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: '10px' }
+            style: { background: _efC('#fff'), color: _efC('#0f172a'), width: '100%', border: '1px solid ' + _efC('#cffafe'), borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: '10px' }
           }),
           // Deadline
           h('label', { htmlFor: 'ef-plan-deadline', style: { fontSize: '12px', fontWeight: 700, color: CYAN_DARK, display: 'block', marginBottom: '4px' } }, 'The deadline'),
@@ -811,53 +928,57 @@ window.SelHub = window.SelHub || {
             id: 'ef-plan-deadline',
             type: 'date', value: planDeadline,
             onChange: function(ev) { upd('planDeadline', ev.target.value); },
-            style: { background: _efC('#fff'), color: _efC('#0f172a'), width: '100%', border: '1px solid #cffafe', borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: '14px' }
+            style: { background: _efC('#fff'), color: _efC('#0f172a'), width: '100%', border: '1px solid ' + _efC('#cffafe'), borderRadius: '8px', padding: '10px', fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: '14px' }
           }),
-          // Chunks (label is for the list as a whole; individual chunk inputs already have aria-label)
-          h('label', { style: { fontSize: '12px', fontWeight: 700, color: CYAN_DARK, display: 'block', marginBottom: '4px' } }, 'The chunks (in order)'),
-          h('p', { style: { fontSize: '11px', color: _efC('#475569'), fontStyle: 'italic', margin: '0 0 8px' } }, 'Last chunk = the deadline. First chunk = today. Each chunk should be one sit-down session, ≤1 hour.'),
+          // Chunks (heading for the list as a whole; individual chunk inputs already have aria-label)
+          h('div', { id: 'ef-plan-chunks-label', style: { fontSize: '12px', fontWeight: 700, color: CYAN_DARK, display: 'block', marginBottom: '4px' } }, 'The chunks (in order)'),
+          h('p', { style: { fontSize: '12px', color: _efC('#475569'), fontStyle: 'italic', margin: '0 0 8px' } }, 'Last chunk = the deadline. First chunk = today. Each chunk should be one sit-down session, ≤1 hour.'),
           planChunks.map(function(ch, ci) {
             return h('div', { key: ci, style: { display: 'flex', gap: '6px', marginBottom: '6px' } },
               h('span', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '32px', background: CYAN_LIGHT, color: CYAN_DARK, borderRadius: '6px', fontSize: '12px', fontWeight: 800, flexShrink: 0 } }, ci + 1),
               h('input', {
                 type: 'text', value: ch,
+                onBlur: function(ev) { _efCheckSafety(ev.target.value); },
                 onChange: function(ev) { var nc = planChunks.slice(); nc[ci] = ev.target.value; upd('planChunks', nc); },
                 'aria-label': 'Chunk ' + (ci + 1),
                 placeholder: 'e.g. Read 3 articles, take notes',
-                style: { background: _efC('#fff'), color: _efC('#0f172a'), flex: 1, border: '1px solid #cffafe', borderRadius: '6px', padding: '8px 10px', fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box' }
+                style: { background: _efC('#fff'), color: _efC('#0f172a'), flex: 1, border: '1px solid ' + _efC('#cffafe'), borderRadius: '6px', padding: '8px 10px', fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box' }
               }),
               planChunks.length > 1 && h('button', {
+                type: 'button',
                 onClick: function() { upd('planChunks', planChunks.filter(function(_, j) { return j !== ci; })); },
                 'aria-label': 'Remove chunk',
-                style: { padding: '0 10px', background: 'transparent', border: '1px solid #e5e7eb', color: _efC('#9ca3af'), borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }
+                style: { padding: '0 10px', background: 'transparent', border: '1px solid ' + _efC('#e5e7eb'), color: _efC('#475569'), borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }
               }, '✕')
             );
           }),
           h('button', {
+            type: 'button',
             onClick: function() { upd('planChunks', planChunks.concat([''])); },
             'aria-label': 'Add chunk',
-            style: { padding: '6px 12px', background: 'transparent', border: '1px dashed ' + CYAN, color: CYAN_DARK, borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: 700, marginBottom: '14px' }
+            style: { padding: '6px 12px', background: 'transparent', border: '1px dashed ' + CYAN, color: CYAN_DARK, borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, marginBottom: '14px' }
           }, '+ Add chunk'),
 
           // Schedule output
-          schedule.length > 0 && h('div', { style: { background: 'linear-gradient(135deg, #ecfeff, #cffafe)', border: '2px solid ' + CYAN, borderRadius: '14px', padding: '14px' } },
+          schedule.length > 0 && h('div', { style: { background: _efCHC ? '#000000' : (_efCDark ? '#0c2e30' : 'linear-gradient(135deg, #ecfeff, #cffafe)'), border: '2px solid ' + CYAN, borderRadius: '14px', padding: '14px' } },
             h('h4', { style: { fontSize: '13px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 10px' } }, '🗓️ Your schedule'),
-            h('p', { style: { fontSize: '11px', color: _efC('#475569'), fontStyle: 'italic', margin: '0 0 10px' } }, 'Goal: ' + (planGoal || '(name your goal above)')),
+            h('p', { style: { fontSize: '12px', color: _efC('#475569'), fontStyle: 'italic', margin: '0 0 10px' } }, 'Goal: ' + (planGoal || '(name your goal above)')),
             schedule.map(function(s, si) {
               var isLast = si === schedule.length - 1;
               var dt = s.due.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-              return h('div', { key: si, style: { display: 'flex', gap: '10px', alignItems: 'center', padding: '8px 10px', background: _efC('#fff'), borderRadius: '8px', marginBottom: '6px', border: isLast ? '2px solid ' + CYAN : '1px solid #e5e7eb' } },
-                h('div', { style: { fontSize: '11px', fontWeight: 800, color: isLast ? CYAN_INK : _efC('#475569'), flexShrink: 0, minWidth: '90px' } }, dt + (isLast ? ' (deadline)' : '')),
+              return h('div', { key: si, style: { display: 'flex', gap: '10px', alignItems: 'center', padding: '8px 10px', background: _efC('#fff'), borderRadius: '8px', marginBottom: '6px', border: isLast ? '2px solid ' + CYAN : '1px solid ' + _efC('#e5e7eb') } },
+                h('div', { style: { fontSize: '12px', fontWeight: 800, color: isLast ? CYAN_INK : _efC('#475569'), flexShrink: 0, minWidth: '90px' } }, dt + (isLast ? ' (deadline)' : '')),
                 h('div', { style: { fontSize: '13px', color: _efC('#374151') } }, s.chunk)
               );
             }),
             h('button', {
+              type: 'button',
               onClick: function() {
                 var txt = 'Goal: ' + planGoal + '\n' + schedule.map(function(s) { return s.due.toLocaleDateString() + '  ' + s.chunk; }).join('\n');
                 try { window.SelHub.copyText(txt).then(function(ok) { if (!ok) { if (typeof addToast === 'function') addToast(window.SelHub.COPY_UNAVAILABLE, 'info'); return; } if (addToast) addToast('Schedule copied to clipboard.', 'success'); if (awardXP) awardXP(10, 'Made a backward plan!'); }); } catch(e) {}
               },
               'aria-label': 'Copy schedule',
-              style: { marginTop: '6px', padding: '8px 14px', background: CYAN_FILL, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
+              style: { marginTop: '6px', padding: '8px 14px', background: CYAN_FILL, color: CYAN_FILL_INK, border: _efCHC ? '2px solid #ffff00' : 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
             }, '📋 Copy schedule')
           )
         );
@@ -875,15 +996,15 @@ window.SelHub = window.SelHub || {
 
         timeContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
           h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
-            h('div', { style: { fontSize: '52px', marginBottom: '4px' } }, '⏱️'),
+            h('div', { 'aria-hidden': 'true', style: { fontSize: '52px', marginBottom: '4px' } }, '⏱️'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 4px' } }, 'Time'),
             h('p', { style: { fontSize: '13px', color: _efC('#475569'), margin: 0 } }, 'Calibrate your inner clock. Then work in 25-minute chunks.')
           ),
           // Estimation game
-          h('div', { style: { background: _efC('#fff'), border: '2px solid #cffafe', borderRadius: '14px', padding: '16px', marginBottom: '14px' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: CYAN_INK, marginBottom: '8px', textTransform: 'uppercase' } }, 'Estimation game'),
+          h('div', { style: { background: _efC('#fff'), border: '2px solid ' + _efC('#cffafe'), borderRadius: '14px', padding: '16px', marginBottom: '14px' } },
+            h('div', { style: { fontSize: '12px', fontWeight: 700, color: CYAN_INK, marginBottom: '8px', textTransform: 'uppercase' } }, 'Estimation game'),
             timeScore > 0 && h('div', { style: { textAlign: 'center', marginBottom: '8px' } },
-              h('span', { style: { background: CYAN_LIGHT, color: CYAN_DARK, padding: '3px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 700 } }, '🎯 ' + timeScore + ' calibrated')
+              h('span', { style: { background: CYAN_LIGHT, color: CYAN_DARK, padding: '3px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 700 } }, '🎯 ' + timeScore + ' calibrated')
             ),
             h('p', { style: { fontSize: '15px', fontWeight: 700, color: _efC('#374151'), margin: '0 0 10px' } }, 'How long does it take to: ' + curT.task + '?'),
             !timeRevealed && h('div', null,
@@ -894,10 +1015,11 @@ window.SelHub = window.SelHub || {
                   'aria-label': 'Your time estimate in minutes',
                   placeholder: '?',
                   min: '1', max: '600',
-                  style: { background: _efC('#fff'), color: _efC('#0f172a'), width: '80px', border: '1px solid #cffafe', borderRadius: '6px', padding: '8px', fontSize: '14px', textAlign: 'center', boxSizing: 'border-box' }
+                  style: { background: _efC('#fff'), color: _efC('#0f172a'), width: '80px', border: '1px solid ' + _efC('#cffafe'), borderRadius: '6px', padding: '8px', fontSize: '14px', textAlign: 'center', boxSizing: 'border-box' }
                 }),
                 h('span', { style: { fontSize: '13px', color: _efC('#475569') } }, 'minutes'),
                 h('button', {
+                  type: 'button',
                   onClick: function() {
                     if (!timeGuess) return;
                     var g = parseInt(timeGuess, 10);
@@ -908,7 +1030,7 @@ window.SelHub = window.SelHub || {
                   },
                   disabled: !timeGuess,
                   'aria-label': 'Submit estimate',
-                  style: { padding: '8px 16px', background: timeGuess ? CYAN_FILL : _efC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: timeGuess ? 'pointer' : 'not-allowed' }
+                  style: { padding: '8px 16px', background: timeGuess ? CYAN_FILL : EF_DISABLED_BG, color: timeGuess ? CYAN_FILL_INK : EF_DISABLED_FG, border: _efCHC ? '2px solid #ffff00' : 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: timeGuess ? 'pointer' : 'not-allowed' }
                 }, 'Reveal')
               )
             ),
@@ -918,33 +1040,37 @@ window.SelHub = window.SelHub || {
                 h('p', { style: { fontSize: '12px', color: CYAN_DARK, margin: 0, fontWeight: 700 } }, 'Typical actual: ' + curT.actualMin + '–' + curT.actualMax + ' min')
               ),
               h('button', {
+                type: 'button',
                 onClick: function() { upd({ timeGameIdx: (timeGameIdx + 1) % games.length, timeGuess: '', timeRevealed: false }); if (soundOn) sfxClick(); },
                 'aria-label': 'Next estimation',
-                style: { padding: '8px 16px', background: CYAN_FILL, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
+                style: { padding: '8px 16px', background: CYAN_FILL, color: CYAN_FILL_INK, border: _efCHC ? '2px solid #ffff00' : 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
               }, 'Next →')
             )
           ),
           // Pomodoro
           h('div', { style: { background: _efC('#fff'), border: '2px solid ' + CYAN, borderRadius: '14px', padding: '18px', textAlign: 'center' } },
-            h('div', { style: { fontSize: '11px', fontWeight: 700, color: CYAN_INK, marginBottom: '6px', textTransform: 'uppercase' } }, 'Pomodoro: ' + (pomoMode === 'work' ? '25-min work' : '5-min break')),
-            h('div', { style: { fontSize: '48px', fontWeight: 800, color: pomoDone ? '#16a34a' : CYAN_DARK, fontVariantNumeric: 'tabular-nums', marginBottom: '10px', letterSpacing: '0.05em' } },
+            h('div', { style: { fontSize: '12px', fontWeight: 700, color: CYAN_INK, marginBottom: '6px', textTransform: 'uppercase' } }, 'Pomodoro: ' + (pomoMode === 'work' ? '25-min work' : '5-min break')),
+            h('div', { style: { fontSize: '48px', fontWeight: 800, color: pomoDone ? EF_GREEN : CYAN_DARK, fontVariantNumeric: 'tabular-nums', marginBottom: '10px', letterSpacing: '0.05em' } },
               Math.floor(pomoSeconds / 60) + ':' + String(pomoSeconds % 60).padStart(2, '0')
             ),
             !pomoRunning ? h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
               h('button', {
+                type: 'button',
                 onClick: function() { upd({ pomoStart: Date.now(), pomoMode: 'work' }); if (soundOn) sfxStart(); },
                 'aria-label': 'Start 25-minute work session',
-                style: { padding: '10px 18px', background: CYAN_FILL, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }
+                style: { padding: '10px 18px', background: CYAN_FILL, color: CYAN_FILL_INK, border: _efCHC ? '2px solid #ffff00' : 'none', borderRadius: '10px', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }
               }, '▶ Start work (25)'),
               h('button', {
+                type: 'button',
                 onClick: function() { upd({ pomoStart: Date.now(), pomoMode: 'break' }); if (soundOn) sfxStart(); },
                 'aria-label': 'Start 5-minute break',
-                style: { padding: '10px 18px', background: '#15803d', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }
+                style: { padding: '10px 18px', background: EF_GREEN_FILL, color: EF_GREEN_INK, border: _efCHC ? '2px solid #ffff00' : 'none', borderRadius: '10px', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }
               }, '☕ Start break (5)')
             ) : h('button', {
+              type: 'button',
               onClick: function() { upd('pomoStart', 0); if (pomoDone) { if (soundOn) sfxDone(); if (awardXP) awardXP(pomoMode === 'work' ? 15 : 5, 'Pomodoro done.'); } },
               'aria-label': 'Stop pomodoro',
-              style: { padding: '10px 18px', background: pomoDone ? '#16a34a' : _efC('#e5e7eb'), color: pomoDone ? '#fff' : _efC('#374151'), border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
+              style: { padding: '10px 18px', background: pomoDone ? EF_GREEN_FILL : _efC('#e5e7eb'), color: pomoDone ? EF_GREEN_INK : (_efCHC ? '#000000' : _efC('#374151')), border: _efCHC ? '2px solid #ffff00' : 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
             }, pomoDone ? '✓ Done' : 'Stop')
           )
         );
@@ -955,6 +1081,7 @@ window.SelHub = window.SelHub || {
       // Pomodoro (25/5), deep work (50/10), sprint (15/3), body-doubling.
       // Includes start/pause/skip, visual ring progress, audible chimes.
       // ══════════════════════════════════════════════════════════
+      var focusContent = null;
       if (activeTab === 'focus') {
         var FOCUS_MODES = [
           { id: 'pomo',   label: '🍅 Pomodoro',    work: 25, brk: 5,  desc: 'Classic — 25 work, 5 break. Best for short single tasks.' },
@@ -1005,25 +1132,16 @@ window.SelHub = window.SelHub || {
           upd({ focusPhase: 'work', focusStartTime: 0, focusRemaining: workMin * 60, focusPaused: false });
         }
 
-        // Auto-advance phase when timer hits 0
-        if (sec === 0 && fStart > 0 && !fPaused) {
-          skipPhase();
-        }
-
-        // The focus-timer tick effect lives in the fixed hook block at the top
-        // of render(). It cannot be declared here: this whole branch only runs
-        // when activeTab === 'focus', and render() executes inline inside the
-        // host's SelPluginBridge, so a hook here changes the HOST's hook count
-        // the moment the learner switches tabs (React #310).
+        // Auto-advance phase & timer tick live in the fixed hook block at the top of render().
 
         // SVG ring
         var ringSize = 200, ringStroke = 14;
         var ringR = (ringSize / 2) - ringStroke;
         var ringC = 2 * Math.PI * ringR;
         var ringOffset = ringC * (1 - pct / 100);
-        var ringColor = phase === 'work' ? CYAN : '#10b981';
+        var ringColor = phase === 'work' ? CYAN_INK : EF_GREEN;
 
-        return h('div', { className: 'selh-execfunction', style: { padding: '14px', overflowY: 'auto', flex: 1 } },
+        focusContent = h('div', { style: { padding: '14px', maxWidth: '640px', margin: '0 auto' } },
           h('h3', { style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, marginBottom: '10px' } }, '🎯 Focus Timer'),
           h('p', { style: { fontSize: '12px', color: _efC('#475569'), marginBottom: '14px', lineHeight: 1.6 } }, 'Pick a mode. Hit start. The ring fills as your block runs. After work, the timer auto-flips to a break. You can pause, skip, or reset at any time — no streak punishment.'),
 
@@ -1031,20 +1149,20 @@ window.SelHub = window.SelHub || {
           h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             FOCUS_MODES.map(function(m) {
               var picked = fm === m.id;
-              return h('button', { key: m.id, onClick: function() { upd({ focusMode: m.id, focusPhase: 'work', focusStartTime: 0, focusRemaining: (m.id === 'custom' ? custW : m.work) * 60, focusPaused: false }); },
-                style: { padding: '8px 12px', borderRadius: 8, border: '1.5px solid ' + (picked ? CYAN : _efC('#cbd5e1')), background: picked ? CYAN_LIGHT : _efC('#fff'), color: picked ? CYAN_DARK : _efC('#475569'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+              return h('button', { key: m.id, type: 'button', 'aria-pressed': picked ? 'true' : 'false', onClick: function() { upd({ focusMode: m.id, focusPhase: 'work', focusStartTime: 0, focusRemaining: (m.id === 'custom' ? custW : m.work) * 60, focusPaused: false }); },
+                style: { padding: '8px 12px', borderRadius: 8, border: '1.5px solid ' + (picked ? CYAN : _efC('#cbd5e1')), background: picked ? (_efCHC ? '#ffff00' : CYAN_LIGHT) : _efC('#fff'), color: picked ? (_efCHC ? '#000000' : CYAN_DARK) : _efC('#475569'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
                 m.label);
             })
           ),
 
-          h('p', { style: { fontSize: 11, color: _efC('#64748b'), fontStyle: 'italic', marginBottom: 14 } }, mode.desc),
+          h('p', { style: { fontSize: 12, color: _efC('#475569'), fontStyle: 'italic', marginBottom: 14 } }, mode.desc),
 
           mode.id === 'custom' && h('div', { style: { display: 'flex', gap: 10, marginBottom: 14, padding: 10, background: _efC('#f8fafc'), borderRadius: 8, flexWrap: 'wrap' } },
-            h('label', { htmlFor: 'ef-cust-work', style: { fontSize: 11, fontWeight: 700, color: _efC('#475569') } }, 'Work min: ',
-              h('input', { id: 'ef-cust-work', type: 'number', min: 1, max: 90, value: custW, onChange: function(e) { upd('focusCustomWork', parseInt(e.target.value, 10) || 25); }, style: { background: _efC('#fff'), color: _efC('#0f172a'), width: 60, marginLeft: 6, padding: 4, border: '1px solid #cbd5e1', borderRadius: 4 } })
+            h('label', { htmlFor: 'ef-cust-work', style: { fontSize: 12, fontWeight: 700, color: _efC('#475569') } }, 'Work min: ',
+              h('input', { id: 'ef-cust-work', type: 'number', min: 1, max: 90, value: custW, onChange: function(e) { upd('focusCustomWork', parseInt(e.target.value, 10) || 25); }, style: { background: _efC('#fff'), color: _efC('#0f172a'), width: 60, marginLeft: 6, padding: 4, border: '1px solid ' + _efC('#cbd5e1'), borderRadius: 4 } })
             ),
-            h('label', { htmlFor: 'ef-cust-brk', style: { fontSize: 11, fontWeight: 700, color: _efC('#475569') } }, 'Break min: ',
-              h('input', { id: 'ef-cust-brk', type: 'number', min: 1, max: 30, value: custB, onChange: function(e) { upd('focusCustomBreak', parseInt(e.target.value, 10) || 5); }, style: { background: _efC('#fff'), color: _efC('#0f172a'), width: 60, marginLeft: 6, padding: 4, border: '1px solid #cbd5e1', borderRadius: 4 } })
+            h('label', { htmlFor: 'ef-cust-brk', style: { fontSize: 12, fontWeight: 700, color: _efC('#475569') } }, 'Break min: ',
+              h('input', { id: 'ef-cust-brk', type: 'number', min: 1, max: 30, value: custB, onChange: function(e) { upd('focusCustomBreak', parseInt(e.target.value, 10) || 5); }, style: { background: _efC('#fff'), color: _efC('#0f172a'), width: 60, marginLeft: 6, padding: 4, border: '1px solid ' + _efC('#cbd5e1'), borderRadius: 4 } })
             )
           ),
 
@@ -1057,32 +1175,32 @@ window.SelHub = window.SelHub || {
                   strokeDasharray: ringC, strokeDashoffset: ringOffset, style: { transition: 'stroke-dashoffset 0.4s ease' } })
               ),
               h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
-                h('div', { style: { fontSize: 11, color: _efC('#64748b'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, phase === 'work' ? '⏱ Working' : '☕ Break'),
+                h('div', { style: { fontSize: 12, color: _efC('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, phase === 'work' ? '⏱ Working' : '☕ Break'),
                 h('div', { style: { fontSize: 42, fontWeight: 900, color: ringColor, fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } },
                   (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss),
-                h('div', { style: { fontSize: 10, color: _efC('#94a3b8'), marginTop: 4 } }, sessions + ' work sessions today')
+                h('div', { style: { fontSize: 12, color: _efC('#475569'), marginTop: 4 } }, sessions + ' work sessions today')
               )
             ),
             h('div', { style: { display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap', justifyContent: 'center' } },
               fStart > 0 && !fPaused
-                ? h('button', { onClick: pauseTimer, 'aria-label': 'Pause',
-                    style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: '#b45309', color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '⏸ Pause')
-                : h('button', { onClick: startTimer, 'aria-label': 'Start',
-                    style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: CYAN_FILL, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, fPaused ? '▶ Resume' : '▶ Start'),
-              h('button', { onClick: skipPhase, 'aria-label': 'Skip',
-                style: { padding: '10px 18px', borderRadius: 10, border: '1px solid #cbd5e1', background: _efC('#fff'), color: _efC('#475569'), fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '⏭ Skip phase'),
-              h('button', { onClick: resetTimer, 'aria-label': 'Reset',
-                style: { padding: '10px 18px', borderRadius: 10, border: '1px solid #cbd5e1', background: _efC('#fff'), color: _efC('#475569'), fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '↺ Reset')
+                ? h('button', { type: 'button', onClick: pauseTimer, 'aria-label': 'Pause',
+                    style: { padding: '10px 18px', borderRadius: 10, border: _efCHC ? '2px solid #ffff00' : 'none', background: _efCHC ? '#ffff00' : '#b45309', color: _efCHC ? '#000000' : '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, '⏸ Pause')
+                : h('button', { type: 'button', onClick: startTimer, 'aria-label': 'Start',
+                    style: { padding: '10px 18px', borderRadius: 10, border: _efCHC ? '2px solid #ffff00' : 'none', background: CYAN_FILL, color: CYAN_FILL_INK, fontWeight: 800, fontSize: 13, cursor: 'pointer' } }, fPaused ? '▶ Resume' : '▶ Start'),
+              h('button', { type: 'button', onClick: skipPhase, 'aria-label': 'Skip',
+                style: { padding: '10px 18px', borderRadius: 10, border: '1px solid ' + _efC('#cbd5e1'), background: _efC('#fff'), color: _efC('#475569'), fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '⏭ Skip phase'),
+              h('button', { type: 'button', onClick: resetTimer, 'aria-label': 'Reset',
+                style: { padding: '10px 18px', borderRadius: 10, border: '1px solid ' + _efC('#cbd5e1'), background: _efC('#fff'), color: _efC('#475569'), fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '↺ Reset')
             )
           ),
 
           // Session log
           sessions > 0 && h('div', { style: { padding: 12, background: _efC('#f0fdfa'), border: '1px solid ' + CYAN, borderRadius: 10, marginTop: 6 } },
-            h('div', { style: { fontSize: 11, fontWeight: 800, color: CYAN_DARK, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '✓ Today\'s focus time'),
+            h('div', { style: { fontSize: 12, fontWeight: 800, color: CYAN_DARK, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, '✓ Today\'s focus time'),
             h('div', { style: { fontSize: 15, fontWeight: 700, color: CYAN_DARK } }, sessions + ' completed ' + (mode.id === 'custom' ? 'custom' : mode.label.replace(/^[^A-Z]+/, '').toLowerCase()) + ' work sessions · ' + (sessions * workMin) + ' minutes')
           ),
 
-          h('p', { style: { marginTop: 14, fontSize: 11, color: _efC('#64748b'), lineHeight: 1.55, fontStyle: 'italic' } },
+          h('p', { style: { marginTop: 14, fontSize: 12, color: _efC('#475569'), lineHeight: 1.55, fontStyle: 'italic' } },
             '💡 Why this works: a fixed timer gives your brain permission to release vigilance. You stop micromanaging "should I be focused?" and just focus until the bell. Then a real break — not a phone hijack — before the next round.')
         );
       }
@@ -1094,16 +1212,18 @@ window.SelHub = window.SelHub || {
       // by trigger, and by class. Awareness alone moves behavior 30-40%
       // before any intervention.
       // ══════════════════════════════════════════════════════════
+      var distractContent = null;
       if (activeTab === 'distract') {
-        var distractions = (Array.isArray(d.distractions) ? d.distractions : []);
+        var distractions = (Array.isArray(d.distractions) ? d.distractions.filter(function(x) { return x && typeof x === 'object'; }) : []);
+        var _efTrigCol = function(lightHex, darkHex) { return _efCHC ? '#ffff00' : (_efCDark ? darkHex : lightHex); };
         var triggers = [
-          { id: 'phone',    label: '📱 Phone',         color: '#ef4444' },
-          { id: 'social',   label: '💬 Social pull',   color: '#f59e0b' },
-          { id: 'tired',    label: '😴 Tired',         color: '#a855f7' },
-          { id: 'bored',    label: '😑 Bored',         color: _efC('#64748b') },
-          { id: 'anxious',  label: '😰 Anxious',       color: '#ec4899' },
-          { id: 'noise',    label: '🔊 Noise',         color: '#0ea5e9' },
-          { id: 'hungry',   label: '🍎 Hungry/thirsty', color: '#22c55e' },
+          { id: 'phone',    label: '📱 Phone',         color: _efTrigCol('#b91c1c', '#f87171') },
+          { id: 'social',   label: '💬 Social pull',   color: _efTrigCol('#b45309', '#fbbf24') },
+          { id: 'tired',    label: '😴 Tired',         color: _efTrigCol('#7e22ce', '#c084fc') },
+          { id: 'bored',    label: '😑 Bored',         color: _efC('#475569') },
+          { id: 'anxious',  label: '😰 Anxious',       color: _efTrigCol('#be185d', '#f472b6') },
+          { id: 'noise',    label: '🔊 Noise',         color: _efTrigCol('#0369a1', '#38bdf8') },
+          { id: 'hungry',   label: '🍎 Hungry/thirsty', color: _efTrigCol('#15803d', '#4ade80') },
           { id: 'overwhelm',label: '🌪 Overwhelm',     color: _efC('#dc2626') },
           { id: 'other',    label: '❓ Other',         color: _efC('#475569') }
         ];
@@ -1126,25 +1246,25 @@ window.SelHub = window.SelHub || {
         // Patterns
         var byTrigger = {};
         var byHour = new Array(24).fill(0);
-        distractions.forEach(function(d) {
-          byTrigger[d.trigger] = (byTrigger[d.trigger] || 0) + 1;
-          if (typeof d.hour === 'number') byHour[d.hour]++;
+        distractions.forEach(function(item) {
+          byTrigger[item.trigger] = (byTrigger[item.trigger] || 0) + 1;
+          if (typeof item.hour === 'number' && item.hour >= 0 && item.hour < 24) byHour[Math.floor(item.hour)]++;
         });
         var maxHour = Math.max.apply(null, byHour);
         var topTrigger = triggers
           .map(function(t) { return { id: t.id, label: t.label, count: byTrigger[t.id] || 0, color: t.color }; })
           .sort(function(a, b) { return b.count - a.count; })[0];
 
-        return h('div', { className: 'selh-execfunction', style: { padding: '14px', overflowY: 'auto', flex: 1 } },
+        distractContent = h('div', { style: { padding: '14px', maxWidth: '640px', margin: '0 auto' } },
           h('h3', { id: 'ef-distraction-heading', tabIndex: -1, style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, marginBottom: '10px' } }, '📊 Distraction Logger'),
           h('p', { style: { fontSize: '12px', color: _efC('#475569'), marginBottom: '14px', lineHeight: 1.6 } }, 'Catch yourself pulled off-task? Tap the trigger. Two seconds max. After a week, patterns appear — most students don\'t realize their phone is hitting them 30+ times a day until they see it.'),
 
           // Quick log buttons
           h('div', { style: { padding: 12, background: _efC('#fff'), borderRadius: 12, border: '2px solid ' + CYAN, marginBottom: 14 } },
-            h('div', { style: { fontSize: 11, fontWeight: 800, color: CYAN_DARK, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '⚡ Quick log — tap to capture'),
+            h('div', { style: { fontSize: 12, fontWeight: 800, color: CYAN_DARK, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '⚡ Quick log — tap to capture'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 6 } },
               triggers.map(function(t) {
-                return h('button', { key: t.id, onClick: function() { logDistraction(t.id); }, 'aria-label': 'Log ' + t.label + ' distraction',
+                return h('button', { key: t.id, type: 'button', onClick: function() { logDistraction(t.id); }, 'aria-label': 'Log ' + t.label + ' distraction',
                   style: { padding: '10px 8px', borderRadius: 8, border: '1.5px solid ' + t.color, background: _efC('#fff'), color: t.color, cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
                   t.label);
               })
@@ -1152,24 +1272,24 @@ window.SelHub = window.SelHub || {
           ),
 
           // Stats card
-          distractions.length > 0 && h('div', { style: { padding: 12, background: 'linear-gradient(135deg, #cffafe, #ecfeff)', borderRadius: 12, marginBottom: 14 } },
+          distractions.length > 0 && h('div', { style: { padding: 12, background: _efCHC ? '#000000' : (_efCDark ? '#0c2e30' : 'linear-gradient(135deg, #cffafe, #ecfeff)'), border: _efCHC ? '2px solid #ffff00' : 'none', borderRadius: 12, marginBottom: 14 } },
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 } },
               h('div', null,
-                h('div', { style: { fontSize: 10, color: _efC('#64748b'), textTransform: 'uppercase', fontWeight: 700 } }, 'Total logged'),
+                h('div', { style: { fontSize: 12, color: _efC('#475569'), textTransform: 'uppercase', fontWeight: 700 } }, 'Total logged'),
                 h('div', { style: { fontSize: 24, fontWeight: 900, color: CYAN_DARK } }, distractions.length)
               ),
               topTrigger && topTrigger.count > 0 && h('div', null,
-                h('div', { style: { fontSize: 10, color: _efC('#64748b'), textTransform: 'uppercase', fontWeight: 700 } }, 'Top trigger'),
+                h('div', { style: { fontSize: 12, color: _efC('#475569'), textTransform: 'uppercase', fontWeight: 700 } }, 'Top trigger'),
                 h('div', { style: { fontSize: 14, fontWeight: 800, color: topTrigger.color } }, topTrigger.label),
-                h('div', { style: { fontSize: 11, color: _efC('#64748b') } }, topTrigger.count + ' times (' + Math.round((topTrigger.count / distractions.length) * 100) + '%)')
+                h('div', { style: { fontSize: 12, color: _efC('#475569') } }, topTrigger.count + ' times (' + Math.round((topTrigger.count / distractions.length) * 100) + '%)')
               )
             )
           ),
 
           // Hour distribution
-          distractions.length > 0 && h('div', { style: { padding: 12, background: _efC('#fff'), borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 14 } },
-            h('div', { style: { fontSize: 11, fontWeight: 800, color: CYAN_DARK, textTransform: 'uppercase', marginBottom: 10 } }, '⏰ When during the day'),
-            h('svg', { viewBox: '0 0 240 100', style: { width: '100%', height: 100 }, 'aria-label': 'Distractions by hour' },
+          distractions.length > 0 && h('div', { style: { padding: 12, background: _efC('#fff'), borderRadius: 12, border: '1px solid ' + _efC('#e2e8f0'), marginBottom: 14 } },
+            h('div', { style: { fontSize: 12, fontWeight: 800, color: CYAN_DARK, textTransform: 'uppercase', marginBottom: 10 } }, '⏰ When during the day'),
+            h('svg', { role: 'img', viewBox: '0 0 240 100', style: { width: '100%', height: 100 }, 'aria-label': 'Distractions by hour' },
               byHour.map(function(count, hour) {
                 if (count === 0) return null;
                 var x = (hour / 23) * 230 + 5;
@@ -1183,15 +1303,15 @@ window.SelHub = window.SelHub || {
                 var x = (h2 / 23) * 230 + 5;
                 return h('g', { key: 'l' + h2 },
                   h('line', { x1: x + 4, y1: 90, x2: x + 4, y2: 94, stroke: _efC('#cbd5e1'), strokeWidth: 1 }),
-                  h('text', { x: x + 4, y: 100, textAnchor: 'middle', fontSize: 8, fill: _efC('#64748b') }, h2 + 'h')
+                  h('text', { x: x + 4, y: 100, textAnchor: 'middle', fontSize: 8, fill: _efC('#475569') }, h2 + 'h')
                 );
               })
             )
           ),
 
           // Trigger breakdown
-          distractions.length > 0 && h('div', { style: { padding: 12, background: _efC('#fff'), borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 14 } },
-            h('div', { style: { fontSize: 11, fontWeight: 800, color: CYAN_DARK, textTransform: 'uppercase', marginBottom: 10 } }, '🎯 By trigger'),
+          distractions.length > 0 && h('div', { style: { padding: 12, background: _efC('#fff'), borderRadius: 12, border: '1px solid ' + _efC('#e2e8f0'), marginBottom: 14 } },
+            h('div', { style: { fontSize: 12, fontWeight: 800, color: CYAN_DARK, textTransform: 'uppercase', marginBottom: 10 } }, '🎯 By trigger'),
             triggers.filter(function(t) { return (byTrigger[t.id] || 0) > 0; })
               .sort(function(a, b) { return (byTrigger[b.id] || 0) - (byTrigger[a.id] || 0); })
               .map(function(t) {
@@ -1202,7 +1322,7 @@ window.SelHub = window.SelHub || {
                   h('div', { style: { flex: 1, height: 12, background: _efC('#f1f5f9'), borderRadius: 4, overflow: 'hidden' } },
                     h('div', { style: { width: pct + '%', height: '100%', background: t.color, transition: 'width 0.4s' } })
                   ),
-                  h('span', { style: { fontSize: 11, color: _efC('#475569'), fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 50 } }, n + ' · ' + pct + '%')
+                  h('span', { style: { fontSize: 12, color: _efC('#475569'), fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 50 } }, n + ' · ' + pct + '%')
                 );
               })
           ),
@@ -1214,17 +1334,18 @@ window.SelHub = window.SelHub || {
               distractions.slice().reverse().slice(0, 20).map(function(item) {
                 var trig = triggers.find(function(t) { return t.id === item.trigger; });
                 var when = new Date(item.time);
-                return h('div', { key: item.id, style: { display: 'flex', gap: 8, alignItems: 'center', padding: '4px 0', borderBottom: '1px solid #f1f5f9' } },
-                  h('span', { style: { fontSize: 11, color: trig ? trig.color : _efC('#475569'), fontWeight: 600, minWidth: 110 } }, trig ? trig.label : item.trigger),
-                  h('span', { style: { fontSize: 10, color: _efC('#94a3b8'), fontFamily: 'ui-monospace, Menlo, monospace' } }, when.toLocaleString()),
-                  h('button', { onClick: function() { removeDistraction(item.id); }, 'aria-label': 'Remove entry', style: { marginLeft: 'auto', background: 'transparent', border: 'none', color: _efC('#94a3b8'), cursor: 'pointer', fontSize: 14 } }, '×')
+                var whenText = isNaN(when.getTime()) ? '' : when.toLocaleString();
+                return h('div', { key: item.id, style: { display: 'flex', gap: 8, alignItems: 'center', padding: '4px 0', borderBottom: '1px solid ' + _efC('#f1f5f9') } },
+                  h('span', { style: { fontSize: 12, color: trig ? trig.color : _efC('#475569'), fontWeight: 600, minWidth: 110 } }, trig ? trig.label : item.trigger),
+                  h('span', { style: { fontSize: 12, color: _efC('#475569'), fontFamily: 'ui-monospace, Menlo, monospace' } }, whenText),
+                  h('button', { type: 'button', onClick: function() { removeDistraction(item.id); }, 'aria-label': 'Remove entry', style: { marginLeft: 'auto', minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _efC('#475569'), cursor: 'pointer', fontSize: 14 } }, '×')
                 );
               })
             ),
-            h('button', { id: 'ef-clear-distractions', onClick: clearAll, style: { marginTop: 10, padding: '6px 12px', borderRadius: 6, border: '1px solid #ef4444', background: _efC('#fff'), color: '#ef4444', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Clear all entries')
+            h('button', { type: 'button', id: 'ef-clear-distractions', onClick: clearAll, style: { marginTop: 10, padding: '6px 12px', borderRadius: 6, border: '1px solid ' + _efC('#dc2626'), background: _efC('#fff'), color: _efC('#dc2626'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, 'Clear all entries')
           ),
 
-          distractions.length === 0 && h('div', { style: { padding: 20, textAlign: 'center', color: _efC('#64748b'), fontSize: 13, background: _efC('#fff'), borderRadius: 10, border: '1px dashed #cbd5e1' } },
+          distractions.length === 0 && h('div', { style: { padding: 20, textAlign: 'center', color: _efC('#475569'), fontSize: 13, background: _efC('#fff'), borderRadius: 10, border: '1px dashed ' + _efC('#cbd5e1') } },
             'No distractions logged yet. Tap a trigger button above each time you catch yourself pulled.'),
           renderDestructiveConfirm()
         );
@@ -1233,8 +1354,9 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── HABIT TRACKER — daily check-grid with non-punitive design ──
       // ══════════════════════════════════════════════════════════
+      var habitContent = null;
       if (activeTab === 'habit') {
-        var habits = (Array.isArray(d.habits) ? d.habits : []);
+        var habits = (Array.isArray(d.habits) ? d.habits.filter(function(x) { return x && typeof x === 'object'; }) : []);
         var todayIso = (function() { var n = new Date(); var y = n.getFullYear(); var m = String(n.getMonth() + 1).padStart(2, '0'); var d2 = String(n.getDate()).padStart(2, '0'); return y + '-' + m + '-' + d2; })();
         async function addHabit() {
           var values = await askExecFunctionForm({
@@ -1244,12 +1366,15 @@ window.SelHub = window.SelHub || {
             fields: [{ name: 'label', label: 'Habit', placeholder: 'Write 3 things for tomorrow before leaving class', maxLength: 140 }]
           });
           if (!values) return;
-          upd({ habits: habits.concat([{ id: 'h_' + Date.now(), label: values.label, days: {} }]) });
+          var safety = _efCheckSafety(values.label);
+          var patch = { habits: habits.concat([{ id: 'h_' + Date.now(), label: values.label, days: {} }]) };
+          if (safety && (safety.action === 'block' || (safety.tier && safety.tier >= 3))) patch._lastTier = 3;
+          upd(patch);
         }
         function toggleDay(hid, dayIso) {
           var nh = habits.map(function(h2) {
             if (h2.id !== hid) return h2;
-            var days = Object.assign({}, h2.days || {});
+            var days = Object.assign({}, _efObj(h2.days));
             if (days[dayIso]) delete days[dayIso]; else days[dayIso] = true;
             return Object.assign({}, h2, { days: days });
           });
@@ -1265,36 +1390,37 @@ window.SelHub = window.SelHub || {
           days14.push({ iso: iso, dayName: ['Su','Mo','Tu','We','Th','Fr','Sa'][nd.getDay()], dom: nd.getDate(), today: iso === todayIso });
         }
 
-        return h('div', { className: 'selh-execfunction', style: { padding: '14px', overflowY: 'auto', flex: 1 } },
+        habitContent = h('div', { style: { padding: '14px', maxWidth: '640px', margin: '0 auto' } },
           h('h3', { id: 'ef-habits-heading', tabIndex: -1, style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, marginBottom: '10px' } }, '✅ Habit Tracker'),
           h('p', { style: { fontSize: '12px', color: _efC('#475569'), marginBottom: '14px', lineHeight: 1.6 } }, 'Small habits, tracked daily. Missed days are gray — they don\'t break anything; this is rhythm, not streak. Best for things tied to a clear cue (morning, after school, before bed).'),
 
-          h('button', { id: 'ef-add-habit', onClick: addHabit, style: { padding: '10px 16px', borderRadius: 10, border: 'none', background: CYAN_FILL, color: '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer', marginBottom: 14 } }, '+ Add a habit'),
+          h('button', { type: 'button', id: 'ef-add-habit', onClick: addHabit, style: { padding: '10px 16px', borderRadius: 10, border: _efCHC ? '2px solid #ffff00' : 'none', background: CYAN_FILL, color: CYAN_FILL_INK, fontWeight: 800, fontSize: 13, cursor: 'pointer', marginBottom: 14 } }, '+ Add a habit'),
 
-          habits.length === 0 && h('div', { style: { padding: 20, textAlign: 'center', color: _efC('#64748b'), fontSize: 13, background: _efC('#fff'), borderRadius: 10, border: '1px dashed #cbd5e1' } },
+          habits.length === 0 && h('div', { style: { padding: 20, textAlign: 'center', color: _efC('#475569'), fontSize: 13, background: _efC('#fff'), borderRadius: 10, border: '1px dashed ' + _efC('#cbd5e1') } },
             'No habits yet. Tap "Add a habit" to start. Good starters: "Empty my bag at the kitchen table when I get home", "Write tomorrow\'s top 3 before I leave my last class", "10-minute review before bed".'),
 
           habits.map(function(hb) {
-            var totalDays = Object.keys(hb.days || {}).length;
-            var thisWindowDays = days14.filter(function(d2) { return (hb.days || {})[d2.iso]; }).length;
-            return h('div', { key: hb.id, style: { padding: 12, background: _efC('#fff'), borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 12 } },
+            var hbDays = _efObj(hb.days);
+            var totalDays = Object.keys(hbDays).length;
+            var thisWindowDays = days14.filter(function(d2) { return hbDays[d2.iso]; }).length;
+            return h('div', { key: hb.id, style: { padding: 12, background: _efC('#fff'), borderRadius: 12, border: '1px solid ' + _efC('#e2e8f0'), marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10, gap: 8, flexWrap: 'wrap' } },
                 h('div', { style: { fontSize: 14, fontWeight: 700, color: CYAN_DARK } }, hb.label),
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8 } },
-                  h('span', { style: { fontSize: 11, color: _efC('#475569'), fontFamily: 'ui-monospace, Menlo, monospace' } }, thisWindowDays + ' of 14 days · total ' + totalDays),
-                  h('button', { id: 'ef-remove-habit-' + hb.id, onClick: function() { removeHabit(hb.id, hb.label); }, 'aria-label': 'Remove habit ' + hb.label, style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _efC('#94a3b8'), cursor: 'pointer', fontSize: 14 } }, '×')
+                  h('span', { style: { fontSize: 12, color: _efC('#475569'), fontFamily: 'ui-monospace, Menlo, monospace' } }, thisWindowDays + ' of 14 days · total ' + totalDays),
+                  h('button', { type: 'button', id: 'ef-remove-habit-' + hb.id, onClick: function() { removeHabit(hb.id, hb.label); }, 'aria-label': 'Remove habit ' + hb.label, style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _efC('#475569'), cursor: 'pointer', fontSize: 14 } }, '×')
                 )
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(28px, 1fr))', gap: 4 } },
                 days14.map(function(d2) {
-                  var done = !!(hb.days || {})[d2.iso];
-                  return h('button', { key: d2.iso, onClick: function() { toggleDay(hb.id, d2.iso); },
+                  var done = !!hbDays[d2.iso];
+                  return h('button', { key: d2.iso, type: 'button', onClick: function() { toggleDay(hb.id, d2.iso); },
                     'aria-label': d2.iso + (done ? ' done' : ' not done'),
                     'aria-pressed': done,
                     style: { padding: '4px 0', borderRadius: 4, border: '1px solid ' + (d2.today ? CYAN : _efC('#e2e8f0')),
                       background: done ? CYAN_FILL : (d2.today ? CYAN_LIGHT : _efC('#f8fafc')),
-                      color: done ? '#fff' : (d2.today ? CYAN_DARK : _efC('#94a3b8')),
-                      cursor: 'pointer', fontSize: 9, fontWeight: 700, lineHeight: 1.2 } },
+                      color: done ? CYAN_FILL_INK : (d2.today ? CYAN_DARK : _efC('#475569')),
+                      cursor: 'pointer', fontSize: 10, fontWeight: 700, lineHeight: 1.2 } },
                     h('div', null, d2.dayName),
                     h('div', null, d2.dom));
                 })
@@ -1308,8 +1434,9 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       // ── DAY PLANNER — drag-to-reorder day blocks ──
       // ══════════════════════════════════════════════════════════
+      var plannerContent = null;
       if (activeTab === 'planner') {
-        var dayBlocks = (Array.isArray(d.dayBlocks) ? d.dayBlocks : []);
+        var dayBlocks = (Array.isArray(d.dayBlocks) ? d.dayBlocks.filter(function(x) { return x && typeof x === 'object'; }) : []);
         async function addBlock() {
           var values = await askExecFunctionForm({
             title: 'Add a day-planner block',
@@ -1322,7 +1449,10 @@ window.SelHub = window.SelHub || {
           });
           if (!values) return;
           var min = parseInt(values.minutes, 10) || 25;
-          upd({ dayBlocks: dayBlocks.concat([{ id: 'b_' + Date.now(), label: values.label, min: min, done: false }]) });
+          var safety = _efCheckSafety(values.label);
+          var patch = { dayBlocks: dayBlocks.concat([{ id: 'b_' + Date.now(), label: values.label, min: min, done: false }]) };
+          if (safety && (safety.action === 'block' || (safety.tier && safety.tier >= 3))) patch._lastTier = 3;
+          upd(patch);
         }
         function toggleBlock(id) {
           var nb = dayBlocks.map(function(b) { return b.id === id ? Object.assign({}, b, { done: !b.done }) : b; });
@@ -1342,39 +1472,39 @@ window.SelHub = window.SelHub || {
         var doneMin = dayBlocks.filter(function(b) { return b.done; }).reduce(function(s, b) { return s + (b.min || 0); }, 0);
         var pctDone = totalMin > 0 ? Math.round((doneMin / totalMin) * 100) : 0;
 
-        return h('div', { className: 'selh-execfunction', style: { padding: '14px', overflowY: 'auto', flex: 1 } },
+        plannerContent = h('div', { style: { padding: '14px', maxWidth: '640px', margin: '0 auto' } },
           h('h3', { style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, marginBottom: '10px' } }, '📋 Day Planner'),
           h('p', { style: { fontSize: '12px', color: _efC('#475569'), marginBottom: '14px', lineHeight: 1.6 } }, 'Sketch today: each block is a task + estimated time. Reorder with the ↑↓ arrows. Check off as you finish. The progress bar shows minutes actually completed, not items checked.'),
 
           h('div', { style: { display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' } },
-            h('button', { onClick: addBlock, style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: CYAN_FILL, color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '+ Add block'),
-            dayBlocks.some(function(b) { return b.done; }) && h('button', { onClick: clearDone, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #cbd5e1', background: _efC('#fff'), color: _efC('#475569'), fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '🧹 Clear completed')
+            h('button', { type: 'button', onClick: addBlock, style: { padding: '8px 14px', borderRadius: 8, border: _efCHC ? '2px solid #ffff00' : 'none', background: CYAN_FILL, color: CYAN_FILL_INK, fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '+ Add block'),
+            dayBlocks.some(function(b) { return b.done; }) && h('button', { type: 'button', onClick: clearDone, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid ' + _efC('#cbd5e1'), background: _efC('#fff'), color: _efC('#475569'), fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, '🧹 Clear completed')
           ),
 
           dayBlocks.length > 0 && h('div', { style: { padding: 12, background: _efC('#f0fdfa'), borderRadius: 10, marginBottom: 14 } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6 } },
-              h('span', { style: { fontSize: 11, color: CYAN_DARK, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Day progress'),
+              h('span', { style: { fontSize: 12, color: CYAN_DARK, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Day progress'),
               h('span', { style: { fontSize: 12, color: CYAN_DARK, fontWeight: 700 } }, doneMin + ' of ' + totalMin + ' min · ' + pctDone + '%')
             ),
-            h('div', { style: { height: 8, background: _efC('#fff'), borderRadius: 4, overflow: 'hidden' } },
+            h('div', { role: 'progressbar', 'aria-label': 'Day progress', 'aria-valuenow': pctDone, 'aria-valuemin': 0, 'aria-valuemax': 100, style: { height: 8, background: _efC('#fff'), borderRadius: 4, overflow: 'hidden', border: _efCHC ? '1px solid #ffff00' : 'none' } },
               h('div', { 'aria-hidden': 'true', style: { width: pctDone + '%', height: '100%', background: CYAN_FILL, transition: 'width 0.4s' } })
             )
           ),
 
-          dayBlocks.length === 0 && h('div', { style: { padding: 20, textAlign: 'center', color: _efC('#64748b'), fontSize: 13, background: _efC('#fff'), borderRadius: 10, border: '1px dashed #cbd5e1' } },
+          dayBlocks.length === 0 && h('div', { style: { padding: 20, textAlign: 'center', color: _efC('#475569'), fontSize: 13, background: _efC('#fff'), borderRadius: 10, border: '1px dashed ' + _efC('#cbd5e1') } },
             'Empty day. Add your first block above.'),
 
           dayBlocks.map(function(b, idx) {
-            return h('div', { key: b.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: 10, background: b.done ? _efC('#f0fdf4') : _efC('#fff'), borderRadius: 10, marginBottom: 6, border: '1px solid ' + (b.done ? '#86efac' : _efC('#e2e8f0')) } },
+            return h('div', { key: b.id, style: { display: 'flex', alignItems: 'center', gap: 6, padding: 10, background: b.done ? _efC('#f0fdf4') : _efC('#fff'), borderRadius: 10, marginBottom: 6, border: '1px solid ' + (b.done ? EF_GREEN : _efC('#e2e8f0')) } },
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
-                h('button', { onClick: function() { moveBlock(idx, -1); }, disabled: idx === 0, 'aria-label': 'Move up', style: { padding: 2, border: 'none', background: 'transparent', color: idx === 0 ? _efC('#cbd5e1') : _efC('#475569'), cursor: idx === 0 ? 'default' : 'pointer', fontSize: 11 } }, '↑'),
-                h('button', { onClick: function() { moveBlock(idx, 1); }, disabled: idx === dayBlocks.length - 1, 'aria-label': 'Move down', style: { padding: 2, border: 'none', background: 'transparent', color: idx === dayBlocks.length - 1 ? _efC('#cbd5e1') : _efC('#475569'), cursor: idx === dayBlocks.length - 1 ? 'default' : 'pointer', fontSize: 11 } }, '↓')
+                h('button', { type: 'button', onClick: function() { moveBlock(idx, -1); }, disabled: idx === 0, 'aria-label': 'Move up', style: { padding: 2, border: 'none', background: 'transparent', color: idx === 0 ? _efC('#cbd5e1') : _efC('#475569'), cursor: idx === 0 ? 'default' : 'pointer', fontSize: 12 } }, '↑'),
+                h('button', { type: 'button', onClick: function() { moveBlock(idx, 1); }, disabled: idx === dayBlocks.length - 1, 'aria-label': 'Move down', style: { padding: 2, border: 'none', background: 'transparent', color: idx === dayBlocks.length - 1 ? _efC('#cbd5e1') : _efC('#475569'), cursor: idx === dayBlocks.length - 1 ? 'default' : 'pointer', fontSize: 12 } }, '↓')
               ),
-              h('button', { onClick: function() { toggleBlock(b.id); }, 'aria-label': b.done ? 'Mark not done' : 'Mark done', 'aria-pressed': b.done,
-                style: { width: 22, height: 22, borderRadius: 4, border: '1.5px solid ' + (b.done ? '#22c55e' : _efC('#475569')), background: b.done ? '#22c55e' : 'transparent', color: '#fff', cursor: 'pointer', fontSize: 12, flexShrink: 0, padding: 0 } }, b.done ? '✓' : ''),
-              h('div', { style: { flex: 1, fontSize: 13, color: b.done ? _efC('#64748b') : _efC('#0f172a'), fontWeight: 600, textDecoration: b.done ? 'line-through' : 'none' } }, b.label),
-              h('div', { style: { fontSize: 11, color: _efC('#475569'), fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 50, textAlign: 'right' } }, b.min + ' min'),
-              h('button', { onClick: function() { removeBlock(b.id); }, 'aria-label': 'Remove block', style: { background: 'transparent', border: 'none', color: _efC('#94a3b8'), cursor: 'pointer', fontSize: 14 } }, '×')
+              h('button', { type: 'button', onClick: function() { toggleBlock(b.id); }, 'aria-label': b.done ? 'Mark not done' : 'Mark done', 'aria-pressed': b.done,
+                style: { width: 24, height: 24, borderRadius: 4, border: '1.5px solid ' + (b.done ? EF_GREEN_FILL : _efC('#475569')), background: b.done ? EF_GREEN_FILL : 'transparent', color: EF_GREEN_INK, cursor: 'pointer', fontSize: 12, flexShrink: 0, padding: 0 } }, b.done ? '✓' : ''),
+              h('div', { style: { flex: 1, fontSize: 13, color: b.done ? _efC('#475569') : _efC('#0f172a'), fontWeight: 600, textDecoration: b.done ? 'line-through' : 'none' } }, b.label),
+              h('div', { style: { fontSize: 12, color: _efC('#475569'), fontFamily: 'ui-monospace, Menlo, monospace', minWidth: 50, textAlign: 'right' } }, b.min + ' min'),
+              h('button', { type: 'button', onClick: function() { removeBlock(b.id); }, 'aria-label': 'Remove block', style: { minWidth: 24, minHeight: 24, background: 'transparent', border: 'none', color: _efC('#475569'), cursor: 'pointer', fontSize: 14 } }, '×')
             );
           })
         );
@@ -1393,10 +1523,11 @@ window.SelHub = window.SelHub || {
         } else {
           coachContent = h('div', { style: { padding: '20px', maxWidth: '600px', margin: '0 auto' } },
             h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
-              h('div', { style: { fontSize: '52px', marginBottom: '4px' } }, '🤖'),
+              h('div', { 'aria-hidden': 'true', style: { fontSize: '52px', marginBottom: '4px' } }, '🤖'),
               h('h3', { style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 4px' } }, 'EF Coach'),
               h('p', { style: { fontSize: '13px', color: _efC('#475569'), margin: 0 } }, 'Tell me what is hard right now. I will name the EF domain and give you ONE thing to try.')
             ),
+            window.SelHub && window.SelHub.renderSafetyDisclosure && window.SelHub.renderSafetyDisclosure(h, band, ctx.activeSessionCode),
             coachHistory.length > 0 && h('div', {
               role: 'log', 'aria-label': 'Coach conversation', 'aria-live': 'polite',
               'aria-busy': coachLoading ? 'true' : 'false',
@@ -1406,8 +1537,8 @@ window.SelHub = window.SelHub || {
                 var isUser = msg.role === 'user';
                 return h('div', { key: i, style: { display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' } },
                   h('div', { style: { maxWidth: '80%', padding: '10px 14px', borderRadius: isUser ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isUser ? _efC('#f1f5f9') : CYAN_LIGHT, border: '1px solid ' + (isUser ? _efC('#e2e8f0') : _efC('#cffafe')), fontSize: '13px', lineHeight: 1.6, color: _efC('#1f2937') } },
-                    isUser && h('div', { style: { fontSize: '10px', fontWeight: 700, color: _efC('#475569'), marginBottom: '4px' } }, '🗣️ You'),
-                    !isUser && h('div', { style: { fontSize: '10px', fontWeight: 700, color: CYAN_INK, marginBottom: '4px' } }, '🤖 EF Coach'),
+                    isUser && h('div', { style: { fontSize: '12px', fontWeight: 700, color: _efC('#475569'), marginBottom: '4px' } }, '🗣️ You'),
+                    !isUser && h('div', { style: { fontSize: '12px', fontWeight: 700, color: CYAN_INK, marginBottom: '4px' } }, '🤖 EF Coach'),
                     msg.text
                   )
                 );
@@ -1419,26 +1550,12 @@ window.SelHub = window.SelHub || {
                   if (!coachInput.trim() || coachLoading || !_efAiOn) return;
                   var msg = coachInput.trim();
                   var hist = (coachHistory || []).concat([{ role: 'user', text: msg }]);
-                  var safety = (window.SelHub && window.SelHub.safeRehearseCheck)
-                    ? window.SelHub.safeRehearseCheck(msg, { toolId: 'execfunction', onSafetyFlag: onSafetyFlag })
-                    : (function() {
-                        var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
-                        var flags = checker && checker.check ? checker.check(msg) : [];
-                        if (!flags || !flags.length) return { action: 'continue', severity: 'none' };
-                        var top = flags.reduce(function(a, b) { return b.severity === 'critical' ? b : a; }, flags[0]);
-                        if (onSafetyFlag) {
-                          try { onSafetyFlag(Object.assign({}, top, { source: 'sel_rehearse_execfunction', context: msg.substring(0, 100), aiGenerated: false })); } catch (_) {}
-                        }
-                        return { action: top.severity === 'critical' ? 'block' : 'continue', severity: top.severity };
-                      })();
-                  if (safety && safety.action === 'block') {
+                  var safety = _efCheckSafety(msg);
+                  if (safety && (safety.action === 'block' || (safety.tier && safety.tier >= 3))) {
                     var blockMsg = (window.SelHub && window.SelHub.rehearseBreakCharacterText)
                       ? window.SelHub.rehearseBreakCharacterText(safety.severity)
                       : 'Your safety matters. Please reach out to a trusted adult or call/text 988.';
-                    upd({ coachHistory: hist.concat([{ role: 'coach', text: blockMsg }]), coachInput: '', coachLoading: false });
-                    if (window.SelHub && window.SelHub.showCrisisModal) {
-                      try { window.SelHub.showCrisisModal({ toolName: 'Executive Function Coach', contentSnippet: msg }); } catch (_) {}
-                    }
+                    upd({ coachHistory: hist.concat([{ role: 'coach', text: blockMsg }]), coachInput: '', coachLoading: false, _lastTier: 3 });
                     return;
                   }
                   upd({ coachHistory: hist, coachInput: '', coachLoading: true });
@@ -1451,14 +1568,15 @@ window.SelHub = window.SelHub || {
                     : 'Connection issue. Notice: you reached out for help. That alone is an EF win.';
                   if (window.SelHub && window.SelHub.safeCoach) {
                     window.SelHub.safeCoach({ studentMessage: msg, coachPrompt: p, toolId: 'execfunction', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: hist }).then(function(result) {
-                      upd({ coachHistory: hist.concat([{ role: 'coach', text: result.response }]), coachLoading: false });
-                      if (detailedPrompt && awardXP) awardXP(5, 'Asked for EF help');
+                      var tier = (result && result.tier) || 0;
+                      upd({ coachHistory: hist.concat([{ role: 'coach', text: (result && result.response) || fallbackMsg }]), coachLoading: false, _lastTier: tier || d._lastTier || 0 });
+                      if (detailedPrompt && awardXP && tier < 3) awardXP(5, 'Asked for EF help');
                     }).catch(function() {
                       upd({ coachHistory: hist.concat([{ role: 'coach', text: fallbackMsg }]), coachLoading: false });
                     });
                   } else {
                     callGemini(p, false).then(function(r) {
-                      upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false });
+                      upd({ coachHistory: hist.concat([{ role: 'coach', text: r || fallbackMsg }]), coachLoading: false });
                       if (detailedPrompt && awardXP) awardXP(5, 'Asked for EF help');
                     }).catch(function() {
                       upd({ coachHistory: hist.concat([{ role: 'coach', text: fallbackMsg }]), coachLoading: false });
@@ -1466,25 +1584,25 @@ window.SelHub = window.SelHub || {
                   }
                 };
                 return [
-                  h('input', { key: 'ef-coach-input', 'aria-label': 'Tell the coach what is hard',
+                  h('input', { 'aria-label': 'Tell the coach what is hard', key: 'ef-coach-input',
                     type: 'text', value: coachInput,
                     onChange: function(ev) { upd('coachInput', ev.target.value); },
-                    onKeyDown: function(ev) { if (ev.key === 'Enter') submitEfCoach(true); },
+                    onKeyDown: function(ev) { if (ev.key === 'Enter' && !ev.isComposing && !(ev.nativeEvent && ev.nativeEvent.isComposing) && ev.keyCode !== 229) { ev.preventDefault(); submitEfCoach(true); } },
                     disabled: coachLoading || !_efAiOn,
                     placeholder: coachLoading ? 'Coach is thinking...' : 'What is hard right now?',
-                    style: { flex: 1, border: '2px solid #cffafe', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
+                    style: { flex: 1, background: _efC('#fff'), color: _efC('#0f172a'), border: '2px solid ' + _efC('#cffafe'), borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
                   }),
-                  h('button', { key: 'ef-coach-send',
-                    onClick: function() { submitEfCoach(false); },
+                  h('button', { key: 'ef-coach-send', type: 'button',
+                    onClick: function() { submitEfCoach(true); },
                     disabled: coachLoading || !coachInput.trim() || !_efAiOn,
                     'aria-label': 'Send to coach',
-                    style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? CYAN_FILL : _efC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
+                    style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? CYAN_FILL : EF_DISABLED_BG, color: coachInput.trim() && !coachLoading ? CYAN_FILL_INK : EF_DISABLED_FG, border: _efCHC ? '2px solid #ffff00' : 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
                   }, coachLoading ? '⏳' : '→')
                 ];
               })()
             ),
             coachHistory.length === 0 && h('div', { style: { marginTop: '14px' } },
-              h('div', { style: { fontSize: '11px', fontWeight: 600, color: _efC('#475569'), marginBottom: '6px' } }, 'Try one of these:'),
+              h('div', { style: { fontSize: '12px', fontWeight: 600, color: _efC('#475569'), marginBottom: '6px' } }, 'Try one of these:'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
                 [
                   'I have a project due Friday and I cannot start',
@@ -1492,8 +1610,8 @@ window.SelHub = window.SelHub || {
                   'My plan changed and now I am frozen'
                 ].map(function(p) {
                   return h('button', {
-                    key: p, 'aria-label': 'Use prompt: ' + p, onClick: function() { upd('coachInput', p); },
-                    style: { padding: '5px 10px', background: CYAN_LIGHT, border: '1px solid #cffafe', borderRadius: '20px', fontSize: '11px', cursor: 'pointer', color: CYAN_DARK, fontWeight: 500 }
+                    key: p, type: 'button', 'aria-label': 'Use prompt: ' + p, onClick: function() { upd('coachInput', p); },
+                    style: { padding: '6px 12px', background: CYAN_LIGHT, border: '1px solid ' + _efC('#cffafe'), borderRadius: '20px', fontSize: '12px', cursor: 'pointer', color: CYAN_DARK, fontWeight: 500 }
                   }, p);
                 })
               )
@@ -1506,21 +1624,21 @@ window.SelHub = window.SelHub || {
       var printContent = null;
       if (activeTab === 'print') {
         var domainScores = DOMAINS.map(function(dom) {
-          var scores = mapAnswers[dom.id] || [];
+          var scores = Array.isArray(mapAnswers[dom.id]) ? mapAnswers[dom.id] : [];
           var sum = 0, n = 0;
-          scores.forEach(function(s) { if (typeof s === 'number') { sum += s; n++; } });
+          scores.forEach(function(s) { if (typeof s === 'number' && isFinite(s)) { sum += s; n++; } });
           var avg = n > 0 ? (sum / n) : null;
           return { dom: dom, avg: avg, n: n };
         });
         var topDomains = domainScores.filter(function(x) { return x.avg !== null; }).sort(function(a, b) { return b.avg - a.avg; }).slice(0, 3);
 
         printContent = h('div', { style: { padding: 16 } },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: _efC('#ecfeff'), borderTop: '1px solid #67e8f9', borderRight: '1px solid #67e8f9', borderBottom: '1px solid #67e8f9', borderLeft: '3px solid ' + CYAN, marginBottom: 12, fontSize: 12.5, color: CYAN_DARK, lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: _efC('#ecfeff'), borderTop: '1px solid ' + _efC('#cffafe'), borderRight: '1px solid ' + _efC('#cffafe'), borderBottom: '1px solid ' + _efC('#cffafe'), borderLeft: '3px solid ' + CYAN, marginBottom: 12, fontSize: 12.5, color: CYAN_DARK, lineHeight: 1.65 } },
             h('strong', null, '🖨 Executive function snapshot + accommodation list. '),
             'A one-page artifact for student-led conferences, 504/IEP meetings, or teacher conversations. Includes your self-assessment of where executive function is hardest, your active plan, and a list of accommodations to consider asking for, grouped by which executive function domain they support.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #0e7490, #155e75)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { type: 'button', onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: _efCHC ? '2px solid #ffff00' : 'none', cursor: 'pointer', background: _efCHC ? '#ffff00' : 'linear-gradient(135deg, #0e7490, #155e75)', color: _efCHC ? '#000000' : '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +
@@ -1529,31 +1647,31 @@ window.SelHub = window.SelHub || {
             '#ef-print-region * { background: transparent !important; color: #0f172a !important; border-color: #888 !important; } ' +
             '.no-print { display: none !important; } }'
           ),
-          h('div', { id: 'ef-print-region', style: { padding: 18, borderRadius: 12, background: _efC('#ffffff'), color: _efC('#0f172a'), border: '1px solid #e2e8f0' } },
-            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid #0f172a', paddingBottom: 8, marginBottom: 14 } },
+          h('div', { id: 'ef-print-region', style: { padding: 18, borderRadius: 12, background: _efC('#ffffff'), color: _efC('#0f172a'), border: '1px solid ' + _efC('#e2e8f0') } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', borderBottom: '2px solid ' + _efC('#0f172a'), paddingBottom: 8, marginBottom: 14 } },
               h('h2', { style: { margin: 0, fontSize: 22, fontWeight: 900, color: _efC('#0f172a') } }, 'Executive Function Snapshot'),
-              h('div', { style: { fontSize: 11, color: _efC('#475569') } }, 'Dawson & Guare framework')
+              h('div', { style: { fontSize: 12, color: _efC('#475569') } }, 'Dawson & Guare framework')
             ),
 
-            h('div', { style: { padding: 10, background: _efC('#f0fdfa'), border: '1px solid #99f6e4', borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: _efC('#0f766e') } },
+            h('div', { style: { padding: 10, background: _efC('#f0fdfa'), border: '1px solid ' + _efC('#cffafe'), borderRadius: 8, marginBottom: 14, fontSize: 12, lineHeight: 1.55, color: _efC('#0f766e') } },
               h('strong', null, 'How to use this artifact. '),
               'This is a starting point for conversation with a teacher, school psychologist, case manager, or 504/IEP team. Not every accommodation listed will be right for every classroom. Pick the 3 to 5 that would help most and ask for those by name. The goal is access, not advantage.'
             ),
 
             // Self-assessment
-            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12 } },
+            h('div', { style: { padding: 12, border: '2px solid ' + _efC('#0f172a'), borderRadius: 10, marginBottom: 12 } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: _efC('#0f172a'), marginBottom: 8 } }, 'My self-assessment'),
               !mapDone ? h('div', { style: { fontSize: 12.5, color: _efC('#475569'), fontStyle: 'italic' } }, '(map not completed yet — go to the Map tab to fill it out)') : null,
               domainScores.map(function(s) {
-                return h('div', { key: s.dom.id, style: { marginBottom: 6, paddingBottom: 6, borderBottom: '1px dashed #cbd5e1' } },
+                return h('div', { key: s.dom.id, style: { marginBottom: 6, paddingBottom: 6, borderBottom: '1px dashed ' + _efC('#cbd5e1') } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' } },
                     h('div', { style: { fontSize: 12.5, fontWeight: 700, color: _efC('#0f172a') } }, s.dom.icon + ' ' + s.dom.label),
-                    h('div', { style: { fontSize: 11.5, color: _efC('#475569') } }, s.avg === null ? 'not rated' : 'avg ' + s.avg.toFixed(1) + ' / 4')
+                    h('div', { style: { fontSize: 12, color: _efC('#475569') } }, s.avg === null ? 'not rated' : 'avg ' + s.avg.toFixed(1) + ' / 3')
                   ),
-                  h('div', { style: { fontSize: 11.5, color: _efC('#475569'), lineHeight: 1.5, marginTop: 2 } }, s.dom.desc)
+                  h('div', { style: { fontSize: 12, color: _efC('#475569'), lineHeight: 1.5, marginTop: 2 } }, s.dom.desc)
                 );
               }),
-              topDomains.length > 0 ? h('div', { style: { marginTop: 10, padding: 8, background: _efC('#ecfeff'), borderRadius: 6, border: '1px solid #67e8f9', fontSize: 12, color: _efC('#0c4a6e'), lineHeight: 1.55 } },
+              topDomains.length > 0 ? h('div', { style: { marginTop: 10, padding: 8, background: _efC('#ecfeff'), borderRadius: 6, border: '1px solid ' + _efC('#cffafe'), fontSize: 12, color: _efC('#0c4a6e'), lineHeight: 1.55 } },
                 h('strong', null, 'Hardest right now: '),
                 topDomains.map(function(t) { return t.dom.label; }).join(', '),
                 '. Accommodations matching these domains are highlighted below.'
@@ -1561,7 +1679,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Active plan
-            planGoal ? h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
+            planGoal ? h('div', { style: { padding: 12, border: '2px solid ' + _efC('#0f172a'), borderRadius: 10, marginBottom: 12, pageBreakInside: 'avoid' } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: _efC('#0f172a'), marginBottom: 8 } }, 'My active plan'),
               h('div', { style: { fontSize: 12, color: _efC('#475569'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, 'Goal'),
               h('div', { style: { fontSize: 13, color: _efC('#0f172a'), marginBottom: 8 } }, planGoal),
@@ -1576,18 +1694,18 @@ window.SelHub = window.SelHub || {
             ) : null,
 
             // Accommodation suggestions by domain
-            h('div', { style: { padding: 12, border: '2px solid #0f172a', borderRadius: 10, marginBottom: 12 } },
+            h('div', { style: { padding: 12, border: '2px solid ' + _efC('#0f172a'), borderRadius: 10, marginBottom: 12 } },
               h('div', { style: { fontSize: 13, fontWeight: 800, color: _efC('#0f172a'), marginBottom: 8 } }, 'Accommodations to consider'),
-              h('div', { style: { fontSize: 11.5, color: _efC('#475569'), marginBottom: 10, fontStyle: 'italic' } }, 'Grouped by the executive function domain each one supports. Bring this to a 504/IEP meeting or a teacher conversation. Pick the few that would help most in your specific classrooms.'),
+              h('div', { style: { fontSize: 12, color: _efC('#475569'), marginBottom: 10, fontStyle: 'italic' } }, 'Grouped by the executive function domain each one supports. Bring this to a 504/IEP meeting or a teacher conversation. Pick the few that would help most in your specific classrooms.'),
               DOMAINS.map(function(dom) {
                 var isTop = topDomains.some(function(t) { return t.dom.id === dom.id; });
                 var accs = ACCOMMODATIONS[dom.id] || [];
-                return h('div', { key: dom.id, style: { marginBottom: 10, paddingBottom: 8, borderBottom: '1px dashed #cbd5e1', pageBreakInside: 'avoid' } },
+                return h('div', { key: dom.id, style: { marginBottom: 10, paddingBottom: 8, borderBottom: '1px dashed ' + _efC('#cbd5e1'), pageBreakInside: 'avoid' } },
                   h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 } },
                     h('div', { style: { fontSize: 12.5, fontWeight: 700, color: _efC('#0f172a') } }, dom.icon + ' ' + dom.label),
-                    isTop ? h('div', { style: { fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 4, border: '1px solid #0891b2', color: _efC('#0e7490'), background: _efC('#ecfeff') } }, 'TOP PRIORITY') : null
+                    isTop ? h('div', { style: { fontSize: 12, fontWeight: 800, padding: '2px 8px', borderRadius: 4, border: '1px solid ' + CYAN, color: CYAN_INK, background: _efC('#ecfeff') } }, 'TOP PRIORITY') : null
                   ),
-                  h('ul', { style: { margin: 0, padding: '0 0 0 20px', fontSize: 11.5, color: _efC('#0f172a'), lineHeight: 1.55 } },
+                  h('ul', { style: { margin: 0, padding: '0 0 0 20px', fontSize: 12, color: _efC('#0f172a'), lineHeight: 1.55 } },
                     accs.map(function(a, i) { return h('li', { key: i, style: { marginBottom: 2 } }, a); })
                   )
                 );
@@ -1595,18 +1713,19 @@ window.SelHub = window.SelHub || {
             ),
 
             // Footer
-            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid #0f172a', fontSize: 10.5, color: _efC('#475569'), lineHeight: 1.5 } },
+            h('div', { style: { marginTop: 14, padding: 10, borderTop: '2px solid ' + _efC('#0f172a'), fontSize: 12, color: _efC('#475569'), lineHeight: 1.5 } },
               'Sources: Dawson, P. & Guare, R. (2018), Executive Skills in Children and Adolescents (3rd ed.). Self-assessment is not a diagnostic instrument. Accommodations require a 504 plan or IEP for legal protections. Printed from AlloFlow SEL Hub.'
             )
           )
         );
       }
 
-      var content = mapContent || startContent || holdContent || planContent || timeContent || coachContent || printContent;
+      var content = mapContent || startContent || holdContent || planContent || timeContent || focusContent || distractContent || habitContent || plannerContent || coachContent || printContent;
       return h('div', { className: 'selh-execfunction', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         (window.SelHubStandards && window.SelHubStandards.render ? window.SelHubStandards.render('execfunction', h, ctx) : null),
         tabBar,
-        h('div', { style: { flex: 1, overflow: 'auto' } }, content)
+        (d._lastTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? h('div', { style: { padding: '8px 12px 0' } }, window.SelHub.renderCrisisResources(h, band)) : null,
+        h('div', { id: 'ef-panel-' + activeTab, role: 'tabpanel', 'aria-labelledby': 'ef-tab-' + activeTab, tabIndex: 0, style: { flex: 1, overflow: 'auto' } }, content)
       );
     }
   });

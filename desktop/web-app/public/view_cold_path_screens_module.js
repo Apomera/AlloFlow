@@ -53,24 +53,50 @@ function GeminiBridgeView(props) {
     generatedContent,
     t
   } = props;
+  const [copiedKey, setCopiedKey] = React.useState('');
+  const copyTimerRef = React.useRef(null);
+  React.useEffect(() => () => {
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+  }, []);
   const rawSteps = Array.isArray(generatedContent?.data) ? generatedContent.data : generatedContent?.data != null ? [generatedContent.data] : [];
   const steps = rawSteps.map(entry => typeof entry === 'string' ? entry : entry && typeof entry === 'object' && typeof entry.text === 'string' ? entry.text : '').filter(step => step.trim().length > 0);
+  const triggerCopy = (text, key) => {
+    if (typeof copyToClipboard === 'function') copyToClipboard(text);
+    setCopiedKey(key);
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    copyTimerRef.current = setTimeout(() => setCopiedKey(''), 2000);
+  };
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pe-2 pb-10"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-900 text-slate-100 p-6 rounded-xl border border-slate-700 shadow-lg font-mono relative"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-between items-center mb-6 border-b border-slate-700 pb-4"
+  }, /*#__PURE__*/React.createElement("span", {
+    "data-bridge-step-copied": "true",
+    role: "status",
+    "aria-live": "polite",
+    className: "sr-only"
+  }, copiedKey === 'all' ? 'Copied all prompt steps.' : copiedKey ? `Copied step ${copiedKey}.` : ''), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap justify-between items-center gap-3 mb-6 border-b border-slate-700 pb-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 text-green-300 font-bold"
   }, /*#__PURE__*/React.createElement(Terminal, {
     size: 18,
     "aria-hidden": "true"
-  }), /*#__PURE__*/React.createElement("span", null, t('bridge.prompt_header'))), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("span", null, t('bridge.prompt_header') || 'Prompt Sequence')), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-300 font-sans"
   }, steps.length > 1 ? t('bridge.steps_count_label', {
     count: steps.length
-  }) : t('bridge.single_prompt_label'))), /*#__PURE__*/React.createElement("div", {
+  }) || `${steps.length} steps` : t('bridge.single_prompt_label') || 'Single prompt'), steps.length > 1 && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-bridge-copy-all": "true",
+    onClick: () => triggerCopy(steps.join('\n\n'), 'all'),
+    className: "min-h-11 inline-flex items-center gap-1.5 font-sans text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400"
+  }, /*#__PURE__*/React.createElement(Copy, {
+    size: 12,
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("span", null, copiedKey === 'all' ? t('common.copied') || 'Copied!' : t('bridge.copy_all_steps') || 'Copy all steps')))), /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, steps.length === 0 ? /*#__PURE__*/React.createElement("p", {
     role: "status",
@@ -79,28 +105,30 @@ function GeminiBridgeView(props) {
     key: idx,
     className: "relative group"
   }, /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": "true",
     className: "absolute -left-3 -top-3 w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold border-2 border-slate-900 shadow-sm z-10"
   }, idx + 1), /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-800 rounded-lg p-4 border border-slate-600 hover:border-slate-500 transition-colors motion-reduce:transition-none"
   }, /*#__PURE__*/React.createElement("pre", {
-    className: "whitespace-pre-wrap text-sm leading-relaxed text-slate-100 overflow-x-auto font-mono mb-2"
+    tabIndex: 0,
+    className: "whitespace-pre-wrap text-sm leading-relaxed text-slate-100 overflow-x-auto font-mono mb-2 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400"
   }, promptStep), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-end pt-2 border-t border-slate-700/50"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: () => copyToClipboard(promptStep),
+    onClick: () => triggerCopy(promptStep, String(idx + 1)),
     className: "min-h-11 flex items-center gap-2 text-[11px] font-bold bg-slate-700 hover:bg-green-700 text-white px-3 py-1.5 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 uppercase tracking-wider"
   }, /*#__PURE__*/React.createElement(Copy, {
     size: 12,
     "aria-hidden": "true"
-  }), " ", t('bridge.copy_step', {
+  }), " ", copiedKey === String(idx + 1) ? t('common.copied') || 'Copied!' : t('bridge.copy_step', {
     step: idx + 1
-  }))))))), /*#__PURE__*/React.createElement("div", {
+  }) || `Copy Step ${idx + 1}`)))))), /*#__PURE__*/React.createElement("div", {
     className: "mt-8 pt-4 border-t border-slate-700 text-xs text-slate-300 flex items-center gap-2 justify-center"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true",
     className: "w-2 h-2 rounded-full bg-green-500 animate-pulse motion-reduce:animate-none"
-  }), t('bridge.next_step'))));
+  }), t('bridge.next_step') || 'Copy and run each step in order.')));
 }
 
 // Extracted from AlloFlowANTI.txt (saved-math-assessment-view).
@@ -124,11 +152,13 @@ function SavedMathAssessmentView(props) {
   const text = value => typeof value === 'string' || typeof value === 'number' ? String(value) : '';
   const label = (key, fallback) => {
     const value = t(key);
-    return typeof value === 'string' && value !== key ? value : fallback;
+    return typeof value === 'string' && value.trim() && value !== key ? value : fallback;
   };
   const results = Array.isArray(data.results) ? data.results.filter(row => row && typeof row === 'object') : null;
   const blocks = Array.isArray(data.blocks) ? data.blocks.filter(block => block && typeof block === 'object') : [];
   const title = label(results ? 'math.saved_results' : 'math.saved_plan', results ? 'Submitted assessment results' : 'Assessment plan');
+  const hasScore = Number.isFinite(data.score) && Number.isFinite(data.total) && data.total > 0;
+  const scorePct = hasScore ? Number.isFinite(data.percentage) ? Math.round(data.percentage) : Math.round(data.score / data.total * 100) : null;
   return /*#__PURE__*/React.createElement("section", {
     "aria-labelledby": "saved-math-assessment-title",
     className: "max-w-4xl mx-auto space-y-5 p-4 sm:p-6"
@@ -137,22 +167,45 @@ function SavedMathAssessmentView(props) {
   }, title), /*#__PURE__*/React.createElement("h2", {
     id: "saved-math-assessment-title",
     className: "text-2xl font-bold text-slate-900 break-words"
-  }, text(saved.title) || title)), results ? /*#__PURE__*/React.createElement(React.Fragment, null, Number.isFinite(data.score) && Number.isFinite(data.total) && /*#__PURE__*/React.createElement("p", {
+  }, text(saved.title) || title)), results ? /*#__PURE__*/React.createElement(React.Fragment, null, Number.isFinite(data.score) && Number.isFinite(data.total) && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2"
+  }, /*#__PURE__*/React.createElement("p", {
     className: "text-lg font-bold text-slate-900"
-  }, label('math.saved_score', 'Score'), ": ", data.score, " / ", data.total, Number.isFinite(data.percentage) ? ` (${data.percentage}%)` : ''), /*#__PURE__*/React.createElement("p", {
+  }, label('math.saved_score', 'Score'), ": ", data.score, " / ", data.total, Number.isFinite(data.percentage) ? ` (${data.percentage}%)` : ''), hasScore && /*#__PURE__*/React.createElement("div", {
+    role: "progressbar",
+    "aria-label": label('math.saved_score', 'Score'),
+    "aria-valuemin": 0,
+    "aria-valuemax": data.total,
+    "aria-valuenow": Math.max(0, Math.min(data.total, data.score)),
+    "aria-valuetext": `${data.score} of ${data.total} (${scorePct}%)`,
+    className: "w-full max-w-md h-2.5 rounded-full bg-slate-200 overflow-hidden border border-slate-300"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-full rounded-full bg-indigo-600",
+    style: {
+      width: `${Math.max(0, Math.min(100, scorePct))}%`
+    }
+  }))), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700"
   }, label('math.saved_results_note', 'These are the answers and results recorded when you submitted. Opening this resource does not grade them again.')), /*#__PURE__*/React.createElement("ol", {
     className: "space-y-4"
-  }, results.map((row, index) => /*#__PURE__*/React.createElement("li", {
-    key: index,
-    className: "rounded-xl border border-slate-300 bg-white p-4 space-y-2"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "font-semibold text-slate-900 break-words"
-  }, index + 1, ". ", formatInlineText(text(row.question), false)), /*#__PURE__*/React.createElement("p", {
-    className: "text-slate-800 break-words"
-  }, /*#__PURE__*/React.createElement("strong", null, label('math.saved_response', 'Your submitted answer'), ": "), formatInlineText(text(row.response), false)), /*#__PURE__*/React.createElement("p", {
-    className: "font-semibold text-slate-800"
-  }, row.correct === true ? label('math.saved_correct', 'Correct') : row.correct === false ? label('math.saved_incorrect', 'Incorrect') : label('math.saved_ungraded', 'Not graded'))))), !results.length && /*#__PURE__*/React.createElement("p", null, label('math.saved_no_results', 'No submitted answers were recorded in this resource.'))) : blocks.length ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }, results.map((row, index) => {
+    const verdict = row.correct === true ? 'correct' : row.correct === false ? 'incorrect' : 'ungraded';
+    const verdictSymbol = verdict === 'correct' ? '✓' : verdict === 'incorrect' ? '×' : '·';
+    const verdictClass = verdict === 'correct' ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : verdict === 'incorrect' ? 'bg-rose-50 border-rose-300 text-rose-900' : 'bg-slate-100 border-slate-300 text-slate-800';
+    return /*#__PURE__*/React.createElement("li", {
+      key: index,
+      className: "rounded-xl border border-slate-300 bg-white p-4 space-y-2"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-semibold text-slate-900 break-words"
+    }, index + 1, ". ", formatInlineText(text(row.question), false)), /*#__PURE__*/React.createElement("p", {
+      className: "text-slate-800 break-words"
+    }, /*#__PURE__*/React.createElement("strong", null, label('math.saved_response', 'Your submitted answer'), ": "), formatInlineText(text(row.response), false)), /*#__PURE__*/React.createElement("p", {
+      "data-saved-math-verdict": verdict,
+      className: `inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-bold ${verdictClass}`
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, verdictSymbol), /*#__PURE__*/React.createElement("span", null, verdict === 'correct' ? label('math.saved_correct', 'Correct') : verdict === 'incorrect' ? label('math.saved_incorrect', 'Incorrect') : label('math.saved_ungraded', 'Not graded'))));
+  })), !results.length && /*#__PURE__*/React.createElement("p", null, label('math.saved_no_results', 'No submitted answers were recorded in this resource.'))) : blocks.length ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700"
   }, label('math.saved_plan_note', 'This plan saves the requested sections and settings. Generated questions are saved separately as a Math resource.')), /*#__PURE__*/React.createElement("ol", {
     className: "space-y-3"
@@ -453,6 +506,7 @@ function StemArtworkHandoffView(props) {
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "stem-artwork-handoff-title",
+    "aria-describedby": "stem-artwork-handoff-desc",
     className: "allo-docsuite bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-5",
     onClick: event => event.stopPropagation()
   }, /*#__PURE__*/React.createElement("div", {
@@ -461,13 +515,16 @@ function StemArtworkHandoffView(props) {
     id: "stem-artwork-handoff-title",
     className: "text-xl font-black text-slate-900"
   }, "Save as a Visual Support"), /*#__PURE__*/React.createElement("p", {
-    className: "text-sm text-slate-600 mt-1"
+    id: "stem-artwork-handoff-desc",
+    className: "text-sm text-slate-700 mt-1"
   }, "Give this Art Studio image a short label so it can be shown and spoken from a board or schedule.")), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setStemArtworkHandoff(null),
-    className: "min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:bg-slate-100",
+    className: "min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-lg text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1",
     "aria-label": t('common.close') || 'Close'
-  }, "\xD7")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "\xD7"))), /*#__PURE__*/React.createElement("div", {
     className: "mt-4 grid gap-5 sm:grid-cols-[180px_1fr] items-start"
   }, /*#__PURE__*/React.createElement("div", {
     className: "rounded-xl border border-slate-300 bg-slate-100 p-2"
@@ -476,19 +533,31 @@ function StemArtworkHandoffView(props) {
     alt: stemArtworkHandoff.altText || stemArtworkHandoff.title || 'Art Studio artwork preview',
     className: "w-full aspect-square object-contain rounded-lg bg-white"
   }), /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-slate-600 mt-2"
+    className: "text-[11px] text-slate-700 mt-2"
   }, "Created in Art Studio", stemArtworkHandoff.sourceTab ? ' · ' + stemArtworkHandoff.sourceTab : '')), /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between gap-2"
+  }, /*#__PURE__*/React.createElement("label", {
     htmlFor: "stem-artwork-label",
     className: "block text-sm font-bold text-slate-800"
-  }, "Short label"), /*#__PURE__*/React.createElement("input", {
+  }, "Short label"), /*#__PURE__*/React.createElement("span", {
+    "data-stem-artwork-label-count": "true",
+    className: "text-xs font-semibold tabular-nums text-slate-600"
+  }, safeLabel.length, " / 80")), /*#__PURE__*/React.createElement("input", {
     id: "stem-artwork-label",
     type: "text",
     value: safeLabel,
     maxLength: 80,
     onChange: event => setStemArtworkLabel(event.target.value),
-    className: "mt-1 w-full min-h-11 rounded-lg border border-slate-400 px-3 text-sm text-slate-900",
+    onKeyDown: event => {
+      if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Enter' && safeLabel.trim()) {
+        event.preventDefault();
+        saveStemArtworkAsVisualSupport();
+      }
+    },
+    className: "mt-1 w-full min-h-11 rounded-lg border border-slate-400 px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1",
     placeholder: t('visuals.artwork_label_placeholder') || 'For example, My spiral pattern',
     "data-autofocus": "true"
   }), /*#__PURE__*/React.createElement("p", {
@@ -500,7 +569,7 @@ function StemArtworkHandoffView(props) {
     id: "stem-artwork-destination",
     value: stemArtworkDestination,
     onChange: event => setStemArtworkDestination(event.target.value),
-    className: "mt-1 w-full min-h-11 rounded-lg border border-slate-400 px-3 text-sm text-slate-900"
+    className: "mt-1 w-full min-h-11 rounded-lg border border-slate-400 px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, /*#__PURE__*/React.createElement("option", {
     value: "board:new"
   }, "New visual board \u2014 Art Studio supports"), boards.map((board, index) => /*#__PURE__*/React.createElement("option", {
@@ -518,12 +587,12 @@ function StemArtworkHandoffView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setStemArtworkHandoff(null),
-    className: "min-h-11 px-4 rounded-lg border border-slate-400 text-sm font-bold text-slate-700 hover:bg-slate-50"
+    className: "min-h-11 px-4 rounded-lg border border-slate-400 text-sm font-bold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, "Cancel"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: saveStemArtworkAsVisualSupport,
     disabled: !safeLabel.trim(),
-    className: "min-h-11 px-4 rounded-lg bg-indigo-700 text-white text-sm font-bold hover:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed"
+    className: "min-h-11 px-4 rounded-lg bg-indigo-700 text-white text-sm font-bold hover:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, "Save visual support"))))));
 }
 
@@ -558,33 +627,35 @@ function SessionStartOptionsView(props) {
     role: "dialog",
     "aria-modal": "true",
     "aria-label": t('session.start_dialog_aria') || 'Teach live',
+    "aria-describedby": "session-start-options-desc",
     className: "allo-docsuite bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto relative",
     onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => setShowSessionStartOptions(false),
-    className: "absolute top-3 right-3 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100",
+    className: "absolute top-3 right-3 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1",
     "aria-label": t('common.close') || 'Close'
   }, /*#__PURE__*/React.createElement(X, {
     size: 20,
     "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("h2", {
-    className: "text-xl font-black text-slate-900 mb-1"
+    className: "text-xl font-black text-slate-900 mb-1 pr-10"
   }, t('share_collect.start_live_session') || 'Teach live'), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-600 mb-3"
+    id: "session-start-options-desc",
+    className: "text-xs text-slate-700 mb-3"
   }, t('share_collect.prepare_the_lesson_flow_if_you') || 'Prepare the lesson flow if you want, then choose how student devices will connect.'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
       setShowSessionStartOptions(false);
       setShowLiveLessonPrep(true);
     },
-    className: "w-full mb-4 text-left rounded-xl border-2 border-cyan-200 bg-cyan-50 p-3 hover:border-cyan-400 hover:bg-cyan-100 transition-colors motion-reduce:transition-none"
+    className: "w-full min-h-11 mb-4 text-left rounded-xl border-2 border-cyan-200 bg-cyan-50 p-3 hover:border-cyan-400 hover:bg-cyan-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-1"
   }, /*#__PURE__*/React.createElement("span", {
     className: "block text-sm font-black text-cyan-950"
   }, t('share_collect.prepare_live_run') || 'Prepare live lesson', " ", /*#__PURE__*/React.createElement("span", {
-    className: "text-[10px] uppercase tracking-wide text-cyan-700"
+    className: "text-[10px] uppercase tracking-wide text-cyan-800"
   }, "optional")), /*#__PURE__*/React.createElement("span", {
-    className: "block text-xs text-cyan-800 mt-1"
+    className: "block text-xs text-cyan-900 mt-1"
   }, t('share_collect.attach_private_presenter_cues_and_existing') || 'Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.')), /*#__PURE__*/React.createElement("div", {
     className: "space-y-3"
   }, /*#__PURE__*/React.createElement("button", {
@@ -593,7 +664,7 @@ function SessionStartOptionsView(props) {
       setShowSessionStartOptions(false);
       startClassSession();
     },
-    className: "w-full text-left rounded-xl border-2 border-indigo-200 bg-indigo-50 p-4 hover:border-indigo-400 hover:bg-indigo-100 transition-colors motion-reduce:transition-none"
+    className: "w-full min-h-11 text-left rounded-xl border-2 border-indigo-200 bg-indigo-50 p-4 hover:border-indigo-400 hover:bg-indigo-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, /*#__PURE__*/React.createElement("span", {
     className: "block text-sm font-black text-indigo-900"
   }, t('mailbox.standard_live_session') || 'Standard live session'), /*#__PURE__*/React.createElement("span", {
@@ -604,7 +675,7 @@ function SessionStartOptionsView(props) {
       setShowSessionStartOptions(false);
       setMbPanelOpen(true);
     },
-    className: "w-full text-left rounded-xl border-2 border-emerald-200 bg-emerald-50 p-4 hover:border-emerald-400 hover:bg-emerald-100 transition-colors motion-reduce:transition-none"
+    className: "w-full min-h-11 text-left rounded-xl border-2 border-emerald-200 bg-emerald-50 p-4 hover:border-emerald-400 hover:bg-emerald-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-1"
   }, /*#__PURE__*/React.createElement("span", {
     className: "block text-sm font-black text-emerald-900"
   }, t('mailbox.class_mailbox_qr_session') || 'Class Mailbox QR session'), /*#__PURE__*/React.createElement("span", {
@@ -653,9 +724,9 @@ function TranslateModalView(props) {
   };
   const scopeLabel = batch.kind === 'pack' ? t('translate.action_pack', {
     count: batch.items.length
-  }) : t('translate.action_workspace', {
+  }) || `Translate pack (${batch.items.length})` : t('translate.action_workspace', {
     count: batch.items.length
-  });
+  }) || `Translate workspace (${batch.items.length})`;
   return /*#__PURE__*/React.createElement("div", {
     role: "presentation",
     className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-200",
@@ -679,42 +750,49 @@ function TranslateModalView(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleSetIsTranslateModalOpenToFalse,
-    className: "absolute top-4 right-4 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none",
-    "aria-label": t('common.close')
+    className: "absolute top-4 right-4 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1",
+    "aria-label": t('common.close') || 'Close'
   }, /*#__PURE__*/React.createElement(X, {
     size: 20,
     "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("h2", {
     id: "header-translate-dialog-title",
-    className: "text-lg font-black text-slate-800 mb-4 flex items-center gap-2"
+    className: "text-lg font-black text-slate-800 mb-4 pr-10 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "inline-flex bg-indigo-100 p-2 rounded-full text-indigo-600",
+    className: "inline-flex bg-indigo-100 p-2 rounded-full text-indigo-700",
     "aria-hidden": "true"
   }, /*#__PURE__*/React.createElement(Languages, {
     size: 20,
     "aria-hidden": "true"
-  })), t('header.translate_button')), /*#__PURE__*/React.createElement("div", {
+  })), t('header.translate_button') || 'Translate'), /*#__PURE__*/React.createElement("div", {
     className: "space-y-4"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     htmlFor: "header-translate-target-language",
-    className: "block text-xs font-bold text-slate-600 mb-1"
-  }, t('translate.target_label')), /*#__PURE__*/React.createElement("input", {
+    className: "block text-xs font-bold text-slate-700 mb-1"
+  }, t('translate.target_label') || 'Target language'), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-stretch gap-2"
+  }, /*#__PURE__*/React.createElement("input", {
     id: "header-translate-target-language",
     type: "text",
     value: safeLangInput,
     onChange: e => setTargetTranslationLang(e.target.value),
-    className: "w-full min-h-11 text-sm border-2 border-indigo-600 rounded-xl p-2 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-1 transition-all motion-reduce:transition-none",
-    placeholder: t('translate.placeholder'),
+    className: "flex-1 min-w-0 min-h-11 text-sm border-2 border-indigo-600 rounded-xl p-2 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-1 transition-all motion-reduce:transition-none",
+    placeholder: t('translate.placeholder') || 'e.g. Spanish, Arabic, Vietnamese',
     "data-autofocus": "true"
-  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+  }), primaryLanguage.length > 0 && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-translate-clear-lang": "true",
+    onClick: () => setTargetTranslationLang(''),
+    className: "min-h-11 px-3 rounded-xl border border-slate-300 bg-slate-50 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, t('common.clear') || 'Clear'))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     htmlFor: "header-translate-companion",
-    className: "block text-xs font-bold text-slate-600 mb-1"
-  }, t('translate.companion_label')), /*#__PURE__*/React.createElement("select", {
+    className: "block text-xs font-bold text-slate-700 mb-1"
+  }, t('translate.companion_label') || 'Companion language'), /*#__PURE__*/React.createElement("select", {
     id: "header-translate-companion",
     value: companionPolicy.mode,
     onChange: e => setHeaderTranslationMode(e.target.value),
     "aria-describedby": "header-translate-companion-hint",
-    className: "w-full min-h-11 text-sm border-2 border-indigo-600 rounded-xl p-2 focus:ring-4 focus:ring-indigo-500/20"
+    className: "w-full min-h-11 text-sm border-2 border-indigo-600 rounded-xl p-2 focus:ring-4 focus:ring-indigo-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, /*#__PURE__*/React.createElement("option", {
     value: "auto"
   }, (t('universal.translations_auto') || 'Automatic ({language})').replace('{language}', currentUiLanguage || 'English')), /*#__PURE__*/React.createElement("option", {
@@ -724,20 +802,21 @@ function TranslateModalView(props) {
     value: language
   }, language))), /*#__PURE__*/React.createElement("p", {
     id: "header-translate-companion-hint",
-    className: "text-xs text-slate-600 mt-1",
+    className: "text-xs text-slate-700 mt-1",
     "aria-live": "polite"
-  }, companionPolicy.enabled ? (t('translate.companion_on') || 'Include a second version in {language}.').replace('{language}', companionPolicy.target) : t('translate.companion_off'))), /*#__PURE__*/React.createElement("p", {
+  }, companionPolicy.enabled ? (t('translate.companion_on') || 'Include a second version in {language}.').replace('{language}', companionPolicy.target) : t('translate.companion_off') || 'No companion version will be attached.')), /*#__PURE__*/React.createElement("p", {
     id: "header-translate-scope",
-    className: "text-xs text-slate-600"
-  }, t('translate.scope_hint')), (batch.items.some(item => item.type === 'glossary') || generatedContent?.type === 'glossary') && /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-600"
-  }, t('translate.glossary_hint')), !aiTextUsable && /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-700"
+  }, t('translate.scope_hint') || 'Choose whether to translate only this item or the whole resource pack.'), (batch.items.some(item => item.type === 'glossary') || generatedContent?.type === 'glossary') && /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-700"
+  }, t('translate.glossary_hint') || 'Glossary terms keep their aligned definitions.'), !aiTextUsable && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "text-xs font-semibold text-amber-900 bg-amber-50 border border-amber-200 rounded-lg p-2.5"
   }, t('errors.ai_unavailable') || 'AI translation is currently unavailable.'), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
+    "aria-busy": isProcessing ? 'true' : undefined,
     onClick: () => {
       setTranslateScope('single');
       handleTranslateAction('single', {
@@ -745,9 +824,10 @@ function TranslateModalView(props) {
       });
     },
     disabled: isProcessing || !aiTextUsable || !currentBatch.items.length || !primaryLanguage,
-    className: "min-h-11 flex-1 py-3 bg-white text-indigo-700 border-2 border-indigo-200 hover:border-indigo-400 font-bold rounded-xl transition-all motion-reduce:transition-none shadow-sm active:scale-95 motion-reduce:transform-none disabled:opacity-50 disabled:cursor-not-allowed"
-  }, t('translate.action_current')), /*#__PURE__*/React.createElement("button", {
+    className: "min-h-11 flex-1 py-3 bg-white text-indigo-700 border-2 border-indigo-200 hover:border-indigo-400 font-bold rounded-xl transition-all motion-reduce:transition-none shadow-sm active:scale-95 motion-reduce:transform-none disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
+  }, t('translate.action_current') || 'This item'), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    "aria-busy": isProcessing ? 'true' : undefined,
     onClick: () => {
       setTranslateScope('pack');
       handleTranslateAction('pack', {
@@ -755,7 +835,7 @@ function TranslateModalView(props) {
       });
     },
     disabled: isProcessing || !aiTextUsable || !batch.items.length || !primaryLanguage,
-    className: "min-h-11 flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all motion-reduce:transition-none shadow-md active:scale-95 motion-reduce:transform-none disabled:opacity-50 disabled:cursor-not-allowed"
+    className: "min-h-11 flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all motion-reduce:transition-none shadow-md active:scale-95 motion-reduce:transform-none disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
   }, scopeLabel)))));
 }
 window.AlloModules.GeminiBridgeView = GeminiBridgeView;

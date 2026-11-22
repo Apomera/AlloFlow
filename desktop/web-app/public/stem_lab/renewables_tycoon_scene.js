@@ -24,8 +24,8 @@
     var uidRef = React.useRef(null);
     if (!uidRef.current) uidRef.current = 'renewables-tycoon-scene-' + (++nextSceneId);
     var uid = uidRef.current, frame = props.frame || {}, sites = props.sites || [], assets = frame.assets || [];
-    var refs = React.useRef({ rotors: {}, paths: {}, particles: {}, flowGroups: {}, clouds: [], ribbons: null, windsock: null, windsockFabric: [], weatherResponse: null, serviceBeacons: {}, serviceTools: {} });
-    var motion = React.useRef({ rotors: {}, flows: {}, breeze: 0, clouds: 0, flutter: 0, weatherWind: null, work: {} });
+    var refs = React.useRef({ rotors: {}, wakes: {}, solarGlints: [], flowPulses: {}, seaRipples: [], glintRows: [], cloudShadows: [], paths: {}, particles: {}, flowGroups: {}, clouds: [], ribbons: null, windsock: null, windsockFabric: [], weatherResponse: null, serviceBeacons: {}, serviceTools: {} });
+    var motion = React.useRef({ rotors: {}, flows: {}, breeze: 0, clouds: 0, flutter: 0, ambient: 0, weatherWind: null, work: {} });
     var targets = React.useRef({});
     var cameraState = React.useState({ zoom: 1, x: 550, y: 345 }), camera = cameraState[0], setCamera = cameraState[1];
     var overlayState = React.useState('power'), overlay = overlayState[0], setOverlay = overlayState[1];
@@ -66,7 +66,22 @@
     var active = requestedMotion && !nativeReduced;
     if (motion.current.weatherWind == null || !active) motion.current.weatherWind = clamp(windSpeed, 0, 25);
     var theme = props.theme || {}, dark = !!(theme.dark || theme.isDark);
+    var highContrast = !!(theme.contrast || theme.highContrast);
+    if (!highContrast) {
+      try {
+        var docRoot = typeof document !== 'undefined' && document.documentElement;
+        if (docRoot && (docRoot.classList.contains('theme-contrast') || docRoot.getAttribute('data-theme') === 'contrast' || docRoot.getAttribute('data-theme') === 'high-contrast')) highContrast = true;
+        else if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-contrast')) highContrast = true;
+        else if (typeof window !== 'undefined' && typeof window.matchMedia === 'function' && (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches)) highContrast = true;
+      } catch (e) {}
+    }
+    var hcRef = React.useRef(highContrast);
+    hcRef.current = highContrast;
     var liveTargets = {}, assetBySite = {};
+    refs.current.solarGlints = [];
+    refs.current.seaRipples = [];
+    refs.current.glintRows = [];
+    refs.current.cloudShadows = [];
     assets.forEach(function (asset) { assetBySite[asset.siteId] = asset; });
     function sitePoint(site, index) { return { x: 130 + clamp(site.x == null ? 18 + (index % 3) * 31 : site.x, 0, 100) * 8.3, y: 220 + clamp(site.y == null ? 20 + Math.floor(index / 3) * 29 : site.y, 0, 100) * 3.6 }; }
     function fitCamera(next) {
@@ -127,6 +142,16 @@
         group.setAttribute('data-flow-cycle-rate', (appearance.speed / Math.max(1, length)).toFixed(6));
         group.setAttribute('data-path-length', length.toFixed(3));
       }
+      var pulseLine = refs.current.flowPulses[id];
+      if (pulseLine) {
+        var isHcFlow = !!hcRef.current;
+        pulseLine.setAttribute('visibility', moving && !isHcFlow ? 'visible' : 'hidden');
+        if (moving && !isHcFlow) {
+          var dirSign = power < 0 ? 1 : -1;
+          pulseLine.setAttribute('stroke-dashoffset', (dirSign * flow.phase * Math.max(24, length)).toFixed(2));
+          pulseLine.setAttribute('opacity', clamp(0.24 + appearance.opacity * 0.42, 0.16, 0.68).toFixed(3));
+        }
+      }
       particles.forEach(function (particle, index) {
         if (!particle) return;
         particle.setAttribute('visibility', moving ? 'visible' : 'hidden');
@@ -139,17 +164,42 @@
 
     function paintWeather() {
       var breeze = motion.current.weatherWind, shape = windsockShape(breeze);
+      var amb = motion.current.ambient || 0, isHc = !!hcRef.current;
       refs.current.windsockFabric.forEach(function (node, index) { if (node) node.setAttribute('points', shape[index]); });
       if (refs.current.weatherResponse) {
         refs.current.weatherResponse.setAttribute('data-visual-wind', breeze.toFixed(6));
         refs.current.weatherResponse.setAttribute('data-target-wind', clamp(weather.current.wind, 0, 25).toFixed(6));
       }
       if (refs.current.ribbons) {
-        refs.current.ribbons.setAttribute('stroke-dashoffset', -motion.current.breeze);
-        refs.current.ribbons.setAttribute('opacity', clamp(breeze / 20, 0, 0.5).toFixed(4));
+        refs.current.ribbons.setAttribute('stroke-dashoffset', (-motion.current.breeze).toFixed(2));
+        refs.current.ribbons.setAttribute('opacity', isHc ? '0' : clamp(breeze / 20, 0, 0.5).toFixed(4));
       }
-      refs.current.clouds.forEach(function (node, index) { if (node) node.setAttribute('transform', 'translate(' + (((70 + index * 275 + motion.current.clouds + 130) % 1360) - 130).toFixed(2) + ' ' + (102 + index % 2 * 26) + ')'); });
+      refs.current.clouds.forEach(function (node, index) {
+        var cx = (((70 + index * 275 + motion.current.clouds + 130) % 1360) - 130);
+        if (node) node.setAttribute('transform', 'translate(' + cx.toFixed(2) + ' ' + (102 + index % 2 * 26) + ')');
+        var shadowNode = refs.current.cloudShadows[index];
+        if (shadowNode) shadowNode.setAttribute('transform', 'translate(' + (cx + 28).toFixed(2) + ' ' + (292 + (index % 3) * 78) + ')');
+      });
       if (refs.current.windsock) refs.current.windsock.setAttribute('transform', 'rotate(' + (Math.sin(motion.current.flutter) * Math.min(breeze, 12) * 0.3).toFixed(2) + ')');
+      refs.current.seaRipples.forEach(function (node, index) {
+        if (!node) return;
+        var shift = Math.sin(amb * 1.15 + index * 1.35) * 6.5;
+        node.setAttribute('transform', 'translate(' + shift.toFixed(2) + ' 0)');
+        node.setAttribute('opacity', isHc ? '0' : (0.28 + 0.18 * Math.sin(amb * 1.4 + index * 1.9)).toFixed(3));
+      });
+      refs.current.glintRows.forEach(function (node, index) {
+        if (!node) return;
+        var shimmer = Math.sin(amb * 1.9 + index * 1.25);
+        node.setAttribute('transform', 'translate(' + (shimmer * 4.5).toFixed(2) + ' 0)');
+        node.setAttribute('opacity', isHc ? '0' : (0.55 + 0.45 * Math.sin(amb * 2.3 + index * 1.6)).toFixed(3));
+      });
+      refs.current.solarGlints.forEach(function (node, index) {
+        if (!node) return;
+        var pulse = 0.5 + 0.5 * Math.sin(amb * 2.1 + index * 0.95);
+        var tx = Math.sin(amb * 0.9 + index * 0.7) * 4.2;
+        node.setAttribute('transform', 'translate(' + tx.toFixed(2) + ' ' + (-tx * 0.42).toFixed(2) + ')');
+        node.setAttribute('opacity', isHc ? '0' : (0.14 + pulse * 0.38).toFixed(3));
+      });
     }
 
     React.useEffect(function () {
@@ -174,6 +224,12 @@
             rotorNode.setAttribute('transform', 'rotate(' + rotor.phase.toFixed(3) + ')');
             rotorNode.setAttribute('data-motion-rate', rotor.speed.toFixed(3));
             rotorNode.setAttribute('data-motion-mode', target.rotor ? rotor.speed < target.rotor * 0.9 ? 'starting' : 'generating' : rotor.speed > 0 ? target.stopMode : 'parked');
+            var wakeNode = refs.current.wakes[id];
+            if (wakeNode) {
+              var wakeStrength = hcRef.current ? 0 : clamp(rotor.speed / 80, 0, 1);
+              wakeNode.setAttribute('opacity', (wakeStrength * 0.48).toFixed(3));
+              wakeNode.setAttribute('stroke-dashoffset', (-(motion.current.breeze * 1.45 + rotor.phase * 0.25)).toFixed(2));
+            }
           }
           var beacon = refs.current.serviceBeacons[id], tool = refs.current.serviceTools[id];
           if (target.service && (beacon || tool)) {
@@ -200,6 +256,7 @@
         motion.current.breeze = (motion.current.breeze + windTravel * 1.8) % 70;
         motion.current.clouds = (motion.current.clouds + windTravel * 0.32) % 1360;
         motion.current.flutter = (motion.current.flutter + windTravel * 0.8) % (Math.PI * 2);
+        motion.current.ambient = (motion.current.ambient + dt) % (Math.PI * 200);
         paintWeather();
         request = window.requestAnimationFrame(tick);
       }
@@ -257,7 +314,9 @@
         polygon('-28,-3 7,-18 28,-3 -7,12', 'url(#' + uid + '-solar-glass)', { stroke: '#c7dfe2', strokeWidth: 1.3 }),
         h('g', { opacity: night ? 0.58 : 0.78, 'data-tycoon-cell-grid': true }, cells),
         polygon('-28,-3 7,-18 15,-12 -20,3', '#d2f0eb', { opacity: night ? 0.035 : clamp(irradiance * 0.19, 0.035, 0.24) }),
-        !night && irradiance > 0.12 ? polygon('-14,-9 2,-16 8,-12 -8,-5', '#ffffff', { opacity: clamp(irradiance * 0.32, 0.06, 0.34) }) : null,
+        !night && !highContrast && irradiance > 0.12 ? h('g', { ref: function (node) { if (node) refs.current.solarGlints.push(node); }, opacity: clamp(irradiance * 0.34, 0.12, 0.42), pointerEvents: 'none' },
+          polygon('-14,-9 2,-16 8,-12 -8,-5', '#ffffff', { opacity: clamp(irradiance * 0.42, 0.10, 0.46) }),
+          irradiance > 0.32 ? polygon('-2,-14 0.5,-11.5 -2,-9 -4.5,-11.5', '#fffef0', { opacity: clamp((irradiance - 0.2) * 0.9, 0.18, 0.85) }) : null) : null,
         !night && irradiance > 0.35 ? line(-19, 1, 11, -12, '#f0fffc', 1.1, { opacity: clamp((irradiance - 0.25) * 0.48, 0.08, 0.38) }) : null,
         line(-7, 13, 29, -2, '#dcebe5', 1.25), line(-29, -2, -7, 13, '#8eabb3', 1));
     }
@@ -285,7 +344,11 @@
         line(6, -102, 24, -108, '#e1eee0', 0.75),
         h('circle', { cx: 19, cy: -115.5, r: 2.2, fill: night ? '#ff8b7b' : '#e06c60', opacity: night ? 0.95 : 0.75 }),
         h('g', { transform: 'translate(0 -103)' },
-          spinArc > 0 ? h('circle', { r: 72, fill: 'none', stroke: night ? '#b9ece8' : '#ffffff', strokeWidth: 1.8, strokeDasharray: '28 18 12 24', opacity: (0.09 + spinArc * 0.14).toFixed(3) }) : null,
+          !highContrast ? h('g', { ref: function (node) { refs.current.wakes[site.id] = node; }, fill: 'none', stroke: night ? '#9ad7df' : '#eefcf6', strokeWidth: 1.5, strokeLinecap: 'round', strokeDasharray: '14 14 7 15', opacity: (spinArc * 0.46).toFixed(3), pointerEvents: 'none', 'data-tycoon-wind-wake': site.id },
+            h('path', { d: 'M 22 -28 Q 52 -36 88 -26 T 142 -22' }),
+            h('path', { d: 'M 26 -2 Q 58 -8 96 0 T 154 -3', strokeWidth: 1.8 }),
+            h('path', { d: 'M 22 24 Q 54 32 90 22 T 144 26' })) : null,
+          spinArc > 0 && !highContrast ? h('circle', { r: 72, fill: 'none', stroke: night ? '#b9ece8' : '#ffffff', strokeWidth: 1.8, strokeDasharray: '28 18 12 24', opacity: (0.09 + spinArc * 0.14).toFixed(3) }) : null,
           h('g', { ref: function (node) { refs.current.rotors[site.id] = node; }, transform: 'rotate(' + phase + ')', 'data-tycoon-rotor': site.id, opacity: asset.status === 'building' && buildStage === 'assembly' ? 0.12 : 1, 'data-motion-rate': cached ? cached.speed : 0, 'data-motion-mode': active ? mode : 'paused', 'data-local-wind': (windSpeed * (n(site.resource) || 1)).toFixed(2) }, [0, 120, 240].map(function (angle) { return h('g', { key: angle, transform: 'rotate(' + angle + ')' },
             spinArc > 0 ? h('path', { d: 'M 4 -69 A 69 69 0 0 1 24 -64', fill: 'none', stroke: '#eefcf9', strokeWidth: 1.5, strokeLinecap: 'round', opacity: (0.14 + spinArc * 0.2).toFixed(3) }) : null,
             h('path', { d: 'M -4 0 C -10 -22 -5 -53 2 -73 Q 5 -78 7 -73 L 6 -14 L 3 2 Z', fill: '#f3f8ee', stroke: '#9aafb0', strokeWidth: 0.9 }),
@@ -420,11 +483,12 @@
       var glowLevel = moving ? clamp(Math.sqrt(Math.abs(power) / 100), 0.2, 1) : 0;
       return h('g', { key: 'flow-' + id, ref: function (node) { refs.current.flowGroups[id] = node; }, 'data-tycoon-flow': id, 'data-power': power, 'data-direction': !power ? 'idle' : power < 0 ? 'to-storage' : id === 'town' ? 'to-community' : 'to-grid', 'data-slot-count': FLOW_SLOTS, 'data-selected': selected, 'data-flow-phase': cached ? cached.phase : 0.12, 'data-visual-magnitude': visualMagnitude, 'data-flow-speed': appearance.speed, 'aria-hidden': true },
         selected ? h('path', { d: path, fill: 'none', stroke: '#c6f7e0', strokeWidth: 12, opacity: 0.32, 'data-tycoon-selected-cable': id }) : null,
-        moving && installed ? h('path', { d: path, fill: 'none', stroke: color, strokeWidth: (6.5 + glowLevel * 5.5).toFixed(2), opacity: (0.16 + glowLevel * 0.24).toFixed(3), filter: 'url(#' + uid + '-energy-glow)', strokeLinecap: 'round' }) : null,
+        moving && installed && !highContrast ? h('path', { d: path, fill: 'none', stroke: color, strokeWidth: (6.5 + glowLevel * 5.5).toFixed(2), opacity: (0.16 + glowLevel * 0.24).toFixed(3), filter: 'url(#' + uid + '-energy-glow)', strokeLinecap: 'round' }) : null,
         h('path', { d: path, fill: 'none', stroke: installed ? '#2b5a59' : '#73948a', strokeWidth: installed ? 7 : 2, strokeDasharray: installed ? undefined : '3 7', opacity: installed ? 0.65 : 0.45 }),
         h('path', { ref: function (node) { refs.current.paths[id] = node; }, d: path, fill: 'none', stroke: moving ? power < 0 ? '#a17be6' : '#e0ba5e' : '#74948b', strokeWidth: moving ? selected ? 4.5 : 3.5 : selected ? 2.3 : 1.3, markerEnd: power > 0 ? 'url(#' + uid + '-arrow)' : undefined, markerStart: power < 0 ? 'url(#' + uid + '-charge-arrow)' : undefined, opacity: installed ? 1 : 0 }),
+        installed ? h('path', { ref: function (node) { refs.current.flowPulses[id] = node; }, d: path, fill: 'none', stroke: power < 0 ? '#efe4ff' : '#fff8dc', strokeWidth: selected ? 2.8 : 2.1, strokeDasharray: '10 24', strokeLinecap: 'round', visibility: moving && !highContrast ? 'visible' : 'hidden', opacity: moving && !highContrast ? (0.28 + glowLevel * 0.36).toFixed(3) : '0', filter: !highContrast ? 'url(#' + uid + '-energy-glow)' : undefined, style: { pointerEvents: 'none' } }) : null,
         directionCues,
-        Array.from({ length: FLOW_SLOTS }, function (_, index) { return h('circle', { key: index, ref: function (node) { if (!refs.current.particles[id]) refs.current.particles[id] = []; refs.current.particles[id][index] = node; }, cx: 0, cy: 0, r: appearance.radius, opacity: appearance.opacity, fill: color, stroke: power < 0 ? '#efe4ff' : '#fff8dc', strokeWidth: 0.7, filter: moving ? 'url(#' + uid + '-energy-glow)' : undefined, visibility: moving ? 'visible' : 'hidden', 'data-tycoon-packet': id, 'data-slot': index, style: { pointerEvents: 'none' } }); }));
+        Array.from({ length: FLOW_SLOTS }, function (_, index) { return h('circle', { key: index, ref: function (node) { if (!refs.current.particles[id]) refs.current.particles[id] = []; refs.current.particles[id][index] = node; }, cx: 0, cy: 0, r: appearance.radius, opacity: appearance.opacity, fill: color, stroke: power < 0 ? '#efe4ff' : '#fff8dc', strokeWidth: 0.7, filter: moving && !highContrast ? 'url(#' + uid + '-energy-glow)' : undefined, visibility: moving ? 'visible' : 'hidden', 'data-tycoon-packet': id, 'data-slot': index, style: { pointerEvents: 'none' } }); }));
     }
     var skyTop = night ? '#10283b' : overcast ? '#658997' : dawn ? '#b9adad' : '#8cc7d2';
     var skyBottom = night ? '#274858' : overcast ? '#afc9c7' : dawn ? '#f0d1ae' : '#deeee1';
@@ -614,10 +678,11 @@
             : (function () {
                 var sunX = 130 + hour / 24 * 800, sunY = 110 - daylight * 55;
                 return h('g', null,
-                  !overcast ? h('g', { opacity: clamp(daylight * 0.22, 0.06, 0.22) },
+                  !overcast && !highContrast ? h('g', { opacity: clamp(daylight * 0.22, 0.06, 0.22) },
                     polygon((sunX - 18) + ',' + (sunY + 18) + ' ' + (sunX + 18) + ',' + (sunY + 18) + ' ' + (sunX + 130) + ',232 ' + (sunX - 95) + ',232', '#fff7cc'),
                     polygon((sunX - 8) + ',' + (sunY + 16) + ' ' + (sunX + 10) + ',' + (sunY + 16) + ' ' + (sunX + 62) + ',228 ' + (sunX - 38) + ',228', '#ffffff')) : null,
-                  h('circle', { cx: sunX, cy: sunY, r: 124, fill: 'url(#' + uid + '-sun)' }),
+                  !highContrast ? h('circle', { cx: sunX, cy: sunY, r: 124, fill: 'url(#' + uid + '-sun)' }) : null,
+                  !overcast && !highContrast ? h('circle', { cx: sunX, cy: sunY, r: 46, fill: 'none', stroke: dawn ? '#ffd99e' : '#fff8cf', strokeWidth: 1.5, opacity: clamp(daylight * 0.28, 0.08, 0.28) }) : null,
                   h('circle', { cx: sunX, cy: sunY, r: 25, fill: overcast ? '#d9dfc9' : '#fff4bc', opacity: overcast ? 0.55 : 0.96 }),
                   !overcast ? h('circle', { cx: sunX, cy: sunY, r: 17, fill: '#fffdf0', opacity: 0.72 }) : null);
               })(),
@@ -627,19 +692,28 @@
           h('rect', { x: 0, y: 172, width: 1100, height: 68, fill: 'url(#' + uid + '-horizon-mist)' }),
           h('path', { d: 'M 0 222 Q 145 204 298 222 T 610 219 T 945 221 T 1100 211 V 690 H 0 Z', fill: 'url(#' + uid + '-sea)' }),
           (function () {
+            if (highContrast) return null;
             var glintX = night ? 900 : 130 + hour / 24 * 800;
-            return h('g', { opacity: night ? 0.22 : overcast ? 0.1 : clamp(irradiance * 0.34, 0.12, 0.36) },
-              [0, 1, 2, 3, 4].map(function (row) {
-                var ry = 232 + row * 19, half = 34 - row * 3.5;
-                return h('line', { key: row, x1: glintX - half, y1: ry, x2: glintX + half, y2: ry, stroke: night ? '#c9ebe7' : '#fff5c4', strokeWidth: 2.4 - row * 0.25, strokeLinecap: 'round' });
+            return h('g', { opacity: night ? 0.24 : overcast ? 0.12 : clamp(irradiance * 0.38, 0.14, 0.42) },
+              [0, 1, 2, 3, 4, 5].map(function (row) {
+                var ry = 230 + row * 18, half = 36 - row * 3.4;
+                return h('line', { key: row, ref: function (node) { if (node) refs.current.glintRows.push(node); }, x1: glintX - half, y1: ry, x2: glintX + half, y2: ry, stroke: night ? '#c9ebe7' : dawn ? '#ffdfa8' : '#fff5c4', strokeWidth: 2.5 - row * 0.22, strokeLinecap: 'round' });
               }));
           })(),
-          [0,1,2,3].map(function (index) { return h('g', { key: index, ref: function (node) { refs.current.clouds[index] = node; }, transform: 'translate(' + (((70 + index * 275 + motion.current.clouds + 130) % 1360) - 130).toFixed(2) + ' ' + (102 + index % 2 * 26) + ')', opacity: overcast ? 0.72 : 0.48, 'data-tycoon-cloud': index },
+          [0,1,2,3].map(function (index) { return h('g', { key: index, ref: function (node) { refs.current.clouds[index] = node; }, transform: 'translate(' + (((70 + index * 275 + motion.current.clouds + 130) % 1360) - 130).toFixed(2) + ' ' + (102 + index % 2 * 26) + ')', opacity: highContrast ? 0 : overcast ? 0.72 : 0.48, 'data-tycoon-cloud': index },
             h('ellipse', { cy: 5, rx: overcast ? 104 : 69, ry: 12, fill: night ? '#56727c' : overcast ? '#b6c7c9' : '#d3e4df' }),
             h('ellipse', { rx: overcast ? 102 : 67, ry: 13, fill: night ? '#769298' : '#f3f5ea' }),
             h('ellipse', { cx: -23, cy: -10, rx: 36, ry: 19, fill: night ? '#829ea4' : '#fafbf2' }),
             h('ellipse', { cx: 18, cy: -8, rx: 39, ry: 17, fill: night ? '#7c989e' : '#f5f7ed' })); }),
-          h('g', { stroke: night ? '#71a1ad' : '#d3f4ea', strokeWidth: 2, fill: 'none', opacity: 0.42 }, h('path', { d: 'M 21 333 q 29 -8 51 0 M 19 369 q 23 -8 48 -2 M 1005 453 q 35 -8 73 -2 M 957 626 q 47 -8 94 1 M 19 566 q 37 -7 65 -2 M 230 651 q 42 -10 77 -3 M 1000 288 q 26 -5 60 1' })),
+          !highContrast ? h('g', { stroke: night ? '#71a1ad' : '#d3f4ea', strokeWidth: 2, fill: 'none', strokeLinecap: 'round' },
+            [
+              'M 21 333 q 29 -8 51 0 M 1000 288 q 26 -5 60 1',
+              'M 19 369 q 23 -8 48 -2 M 1005 453 q 35 -8 73 -2',
+              'M 19 566 q 37 -7 65 -2 M 957 626 q 47 -8 94 1',
+              'M 230 651 q 42 -10 77 -3 M 728 656 q 34 -7 66 0'
+            ].map(function (d, idx) {
+              return h('path', { key: idx, ref: function (node) { if (node) refs.current.seaRipples.push(node); }, d: d, opacity: 0.42 });
+            })) : null,
           h('path', { d: 'M 94 398 Q 92 478 168 516 L 458 654 Q 518 682 590 666 L 845 616 Q 918 596 946 558 L 1014 422 Q 1034 345 984 316', fill: 'none', stroke: night ? '#7db3be' : '#e6fcf6', strokeWidth: 3.5, strokeDasharray: '18 12 7 14', opacity: night ? 0.24 : 0.46, strokeLinecap: 'round' }),
           h('g', { opacity: night ? 0.28 : 0.56 },
             h('path', { d: 'M 150 518 Q 178 538 205 533 Q 230 551 258 548', fill: 'none', stroke: night ? '#8bc6cf' : '#eefefb', strokeWidth: 2.2, strokeLinecap: 'round' }),
@@ -649,12 +723,17 @@
           h('path', { d: 'M 111 285 Q 163 255 258 227 L 460 172 Q 578 162 676 190 L 982 309 Q 1026 334 1006 409 L 936 543 Q 909 580 838 598 L 588 647 Q 518 663 459 636 L 165 499 Q 87 462 86 391 Z', fill: '#c6c9a4' }),
           h('path', { d: 'M 99 424 Q 107 468 166 497 L 463 637 Q 520 663 587 649 L 838 601 Q 916 579 939 542', fill: 'none', stroke: night ? '#86b4aa' : '#e7e5c0', strokeWidth: 2.2, opacity: 0.45 }),
           h('path', { d: 'M 130 286 L 273 234 L 469 181 Q 569 169 667 198 L 965 315 Q 1002 338 987 402 L 921 529 Q 891 564 829 581 L 584 629 Q 519 642 465 619 L 177 486 Q 106 453 104 391 Z', fill: 'url(#' + uid + '-grass)' }),
+          !highContrast ? h('g', { pointerEvents: 'none' },
+            [0,1,2,3].map(function (index) {
+              var cx = (((70 + index * 275 + motion.current.clouds + 130) % 1360) - 130);
+              return h('ellipse', { key: 'cshadow-' + index, ref: function (node) { refs.current.cloudShadows[index] = node; }, transform: 'translate(' + (cx + 28).toFixed(2) + ' ' + (292 + (index % 3) * 78) + ')', rx: overcast ? 88 : 58, ry: 18, fill: night ? '#0c222e' : '#1b473e', opacity: night ? 0.14 : overcast ? 0.12 : 0.065 });
+            })) : null,
           h('path', { d: 'M 145 322 Q 255 278 367 289 T 598 295 T 866 361 M 169 434 Q 282 388 420 409 M 671 473 Q 807 464 942 412', stroke: night ? '#7ea58b' : '#d0dbac', strokeWidth: 2, opacity: 0.28, fill: 'none' }),
           h('path', { d: 'M 244 363 Q 365 374 470 426 L 587 449 L 727 429 L 876 375 M 470 426 L 458 520 L 598 575 L 856 528 M 587 449 L 600 296 L 764 287', fill: 'none', stroke: '#9ea993', strokeWidth: 17, strokeLinejoin: 'round' }),
           h('path', { d: 'M 244 363 Q 365 374 470 426 L 587 449 L 727 429 L 876 375 M 470 426 L 458 520 L 598 575 L 856 528 M 587 449 L 600 296 L 764 287', fill: 'none', stroke: '#e2dbb6', strokeWidth: 12, strokeLinejoin: 'round' }),
           [[146,366,.9],[203,285,.75],[348,228,.75],[504,204,.8],[681,228,.85],[936,353,.8],[973,414,.7],[192,460,.9],[342,545,.85],[779,589,.6],[930,481,.6],[113,412,.7]].map(function (item) { return tree(item[0],item[1],item[2]); }),
           windsock(),
-          h('g', { ref: function (node) { refs.current.ribbons = node; }, stroke: night ? '#8bb9c6' : '#e7fff0', strokeWidth: 2, fill: 'none', strokeDasharray: '16 54', opacity: clamp(motion.current.weatherWind / 20, 0, 0.5) }, h('path', { d: 'M 31 241 Q 96 215 182 227 T 329 215 M 754 162 Q 822 143 900 160 T 1079 159' }))),
+          h('g', { ref: function (node) { refs.current.ribbons = node; }, stroke: night ? '#8bb9c6' : '#e7fff0', strokeWidth: 2, fill: 'none', strokeDasharray: '16 54', opacity: highContrast ? 0 : clamp(motion.current.weatherWind / 20, 0, 0.5) }, h('path', { d: 'M 31 241 Q 96 215 182 227 T 329 215 M 754 162 Q 822 143 900 160 T 1079 159' }))),
         h('g', null, sites.map(function (site, index) { var point = sitePoint(site, index), asset = assetBySite[site.id], cable = { x0: point.x, y0: point.y + 12, x1: point.x * 0.55 + 575 * 0.45, y1: point.y + 49, x2: 575, y2: 428 }; return flow(site.id, 'M ' + cable.x0 + ' ' + cable.y0 + ' Q ' + cable.x1 + ' ' + cable.y1 + ' ' + cable.x2 + ' ' + cable.y2, asset ? n(asset.power) : 0, !!asset, cable); }), flow('town', 'M 575 428 Q 569 505 606 552', Math.max(0,n(frame.served)), true)),
         h('g', null,
           h('g', { className: canInspectDispatch ? 'rn-tycoon-substation' : undefined, role: canInspectDispatch ? 'button' : undefined, tabIndex: canInspectDispatch ? 0 : undefined, 'aria-label': canInspectDispatch ? inspectDispatchLabel : undefined, 'aria-hidden': canInspectDispatch ? undefined : true, 'data-tycoon-inspect-dispatch': canInspectDispatch ? 'substation' : undefined, onClick: canInspectDispatch ? inspectDispatch : undefined, onKeyDown: canInspectDispatch ? dispatchKey : undefined, onFocus: canInspectDispatch ? function () { setFocusedSiteId(null); if (camera.zoom > 1) setCamera(function (old) { return fitCamera({ zoom: old.zoom, x: 575, y: 425 }); }); } : undefined },

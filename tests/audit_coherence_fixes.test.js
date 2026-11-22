@@ -117,7 +117,7 @@ describe('builder honesty + editor safety (review A2/A4)', () => {
   it('C12: the editor iframe sanitizes rich-HTML paste/drop and createLink enforces a scheme allowlist', () => {
     const ve = readFileSync(resolve(process.cwd(), 'view_export_preview_source.jsx'), 'utf8');
     expect(ve).toMatch(/doc\.__alloPasteGuard = true;/);
-    expect(ve).toMatch(/querySelectorAll\('script,style,iframe,object,embed,link,meta,base,form'\)/);
+    expect(ve).toMatch(/querySelectorAll\('script,style,iframe,object,embed,link,meta,base,form(?:,[^']*)?'\)/);
     expect(ve).toMatch(/n\.startsWith\('on'\)/);
     expect(ve).toMatch(/\['http', 'https', 'mailto', 'tel'\]\.includes\(_schemeMatch\[1\]\.toLowerCase\(\)\)/);
   });
@@ -225,10 +225,11 @@ describe('export-format review round 2 (ePub/txt/md/BRF)', () => {
     // EPUB, text and BRF keep direct cleanup; Markdown and NotebookLM share a cleaned clone.
     expect(strips.length).toBeGreaterThanOrEqual(4);
     const markdownCleanup = ve.slice(ve.indexOf('function _builderCleanMarkdownRoot('), ve.indexOf('function _builderMarkdownFromRoot('));
-    expect(markdownCleanup).toContain('_builderFinalizeDocumentForExport(doc.body.cloneNode(true))');
+    expect(markdownCleanup).toContain('const rawClone = doc.body.cloneNode(true);');
+    expect(markdownCleanup).toContain('_builderFinalizeDocumentForExport(rawClone)');
     expect(markdownCleanup).toContain('script,style');
     expect(markdownCleanup).toContain('_builderStripEditorBreakMetadata(root)');
-    expect(ve.match(/const root = _builderCleanMarkdownRoot\(doc\);/g)).toHaveLength(2);
+    expect(ve.match(/const root = _builderCleanMarkdownRoot\(doc(?:,\s*\{[^}]*\})?\);/g)).toHaveLength(2);
     // the raw tag-strip txt path is gone
     expect(ve).not.toMatch(/const text = html\.replace\(\/<\[\^>\]\*>\/g, '\n'\)/);
   });
@@ -289,8 +290,8 @@ describe('assessment mode + answer-key toggle + auto-recovery (Aaron decisions 2
   const epNow = readFileSync(resolve(process.cwd(), 'view_export_preview_source.jsx'), 'utf8');
   it('C26: assessment mode blanks data-correct (attribute kept for submission collectors) + hides quiz controls + forces teacher key off', () => {
     expect(dpNow).toMatch(/if \(cfg\.assessmentMode === true\) cfg\.includeTeacherKey = false;/);
-    expect(dpNow).toContain('.replace(/ data-correct="\\d+"/g, \' data-correct=""\')');
-    expect(dpNow).toMatch(/\.quiz-controls\{display:none !important\}/);
+    expect(dpNow).toContain('.replace(/ data-correct="[^"]*"/g, \' data-correct=""\')');
+    expect(dpNow).toMatch(/\.quiz-check-btn[\s\S]{0,400}\[data-allo-self-check-btn\]\{display:none !important\}/);
     // the submission collectors MUST keep selecting via [data-correct] or assessment answers stop saving
     expect((dpNow.match(/\.question\[data-correct\]/g) || []).length).toBeGreaterThanOrEqual(3);
   });
@@ -299,7 +300,8 @@ describe('assessment mode + answer-key toggle + auto-recovery (Aaron decisions 2
     expect(epNow).toMatch(/assessmentMode: e\.target\.checked/);
   });
   it('C28: NotebookLM answer key follows the visible Teacher Answer Key toggle; assessment mode wins', () => {
-    expect(epNow).toMatch(/exportConfig\.assessmentMode !== true && \(exportConfig\.includeAnswerKey === true \|\| exportConfig\.includeTeacherKey === true\)/);
+    expect(epNow).toMatch(/const _nlmForceStudent = .*exportConfig\?\.assessmentMode === true;/);
+    expect(epNow).toMatch(/const _showKey = !!\(!_nlmForceStudent && exportConfig && \(exportConfig\.includeAnswerKey === true \|\| exportConfig\.includeTeacherKey === true\)\);/);
   });
   it('C29: tagged-PDF export auto-runs deterministic restoration (capped, adopt-only-if-not-worse, revertable)', () => {
     expect(vpNow2).toMatch(/let _result = await createTaggedPdf\(bytes, _exportResult/);
@@ -382,9 +384,11 @@ describe('deep-dive queue fixes (2026-07-02)', () => {
   });
 
   it('D4: DOMPurify regex fallback is in parity with FORBID_TAGS incl. form controls + unclosed tags (B2)', () => {
-    expect(dpNow).toMatch(/script\|style\|iframe\|object\|embed\|svg\|math\|link\|meta\|base\|form\|input\|button\|textarea\|select/);
+    expect(dpNow).toMatch(/script\|style\|iframe(?:\|frame)?\|object\|embed\|svg\|math\|link\|meta\|base(?:\|template)?\|form\|input\|button\|textarea\|select/);
     // trailing '>?' makes the strip tolerate an UNCLOSED <script/<style
     expect(dpNow).toMatch(/\|select\)\\b\[\^>\]\*>\?/);
+    // fail-closed guard when DOMPurify is unavailable and active execution vectors are present
+    expect(dpNow).toContain('data-allo-rawhtml-withheld="true"');
   });
 
   it('D5: typeset export is factored into one handler; PDF inputs get the sanitized-rebuild button', () => {
@@ -396,6 +400,6 @@ describe('deep-dive queue fixes (2026-07-02)', () => {
     // rebuild still funnels through the SAME single handler with { sanitized: true }.
     expect(vpNow).toMatch(/_activeContentFidelityOverrideRef\.current = true;/);
     expect(vpNow).toMatch(/_runTypesetExport\(\{ sanitized: true \}\);/);          // PDF-only clean path
-    expect(vpNow).toMatch(/\{_inputIsPdf && \(\s*\n\s*<button\s*\n\s*id="allo-tagged-pdf-clean-btn"/);
+    expect(vpNow).toMatch(/\{_inputIsPdf && \(\s*\n\s*<button(?:\s+type="button")?\s*\n\s*id="allo-tagged-pdf-clean-btn"/);
   });
 });

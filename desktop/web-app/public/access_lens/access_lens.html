@@ -37,9 +37,9 @@
   main { flex: 1; padding: 0 18px 18px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
   video, img.preview { width: 100%; max-width: 720px; border-radius: 12px; border: 1px solid #1e293b; background: #000; display: block; }
   .row { display: flex; gap: 10px; flex-wrap: wrap; }
-  button { padding: 10px 18px; border-radius: 10px; border: 1px solid #1e293b; background: #0f172a; color: #e2e8f0; font-size: 14px; font-weight: 700; cursor: pointer; }
+  button { padding: 10px 18px; border-radius: 10px; border: 1px solid #64748b; background: #0f172a; color: #e2e8f0; font-size: 14px; font-weight: 700; cursor: pointer; }
   button.primary { background: #0369a1; border-color: #0369a1; color: #fff; }
-  button:focus-visible { outline: 3px solid #38bdf8; outline-offset: 2px; }
+  :focus-visible { outline: 3px solid #38bdf8; outline-offset: 2px; }
   .note { font-size: 12px; color: #94a3b8; line-height: 1.55; max-width: 720px; }
   .privacy { font-size: 12px; color: #e0f2fe; background: #082f49; border: 1px solid #0284c7; border-radius: 10px; padding: 8px 12px; line-height: 1.55; max-width: 720px; }
   .error { font-size: 13px; color: #fde68a; background: #422006; border: 1px solid #a16207; border-radius: 10px; padding: 10px 12px; line-height: 1.55; max-width: 720px; }
@@ -63,7 +63,7 @@
   <div id="err" class="error hidden" role="alert"></div>
   <div id="done" class="ok hidden" role="status"></div>
 
-  <video id="cam" autoplay playsinline muted tabindex="0" aria-label="Live camera preview. Press Space or Enter to snap a photo." aria-describedby="keysNote"></video>
+  <video id="cam" role="button" autoplay playsinline muted tabindex="0" aria-label="Live camera preview. Press Space or Enter to snap a photo." aria-describedby="keysNote"></video>
   <img id="shot" class="preview hidden" alt="The photo you just took">
 
   <div class="row" id="liveRow">
@@ -84,7 +84,19 @@
   'use strict';
   var opener = window.opener || null;
   var nonce = '';
-  try { nonce = new URLSearchParams(window.location.search).get('nonce') || ''; } catch (_) { nonce = ''; }
+  try {
+    var hashParams = new URLSearchParams(String(window.location.hash || '').replace(/^#/, ''));
+    var searchParams = new URLSearchParams(window.location.search);
+    nonce = hashParams.get('nonce') || searchParams.get('nonce') || '';
+    if (nonce && window.history && typeof window.history.replaceState === 'function') {
+      hashParams.delete('nonce');
+      searchParams.delete('nonce');
+      var cleanSearch = searchParams.toString();
+      var cleanHash = hashParams.toString();
+      var cleanUrl = (window.location.pathname || '') + (cleanSearch ? '?' + cleanSearch : '') + (cleanHash ? '#' + cleanHash : '');
+      window.history.replaceState(null, '', cleanUrl || window.location.pathname || '/');
+    }
+  } catch (_) { nonce = nonce || ''; }
   // Origin of the opener that answered our nonce. 'null' = a sandboxed opener
   // whose origin is opaque; such an opener can only be addressed with '*', so
   // the photo is then sent only straight after a fresh handshake.
@@ -144,6 +156,11 @@
   function clearError() { hide(err); hide(retryBtn); }
 
   var cameraRequestSeq = 0;
+  function cancelPendingSend() {
+    pendingSend = false;
+    if (helloTimer) { clearTimeout(helloTimer); helloTimer = null; }
+    if (ackTimer) { clearTimeout(ackTimer); ackTimer = null; }
+  }
   function stopStream() {
     cameraRequestSeq += 1;
     if (stream && stream.getTracks) { try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (_) {} }
@@ -152,6 +169,7 @@
   }
 
   function startCamera() {
+    cancelPendingSend();
     clearError(); hide(done);
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       showError('This browser does not support camera access. Close this window and use the photo button inside AlloFlow.');
@@ -188,6 +206,7 @@
   }
 
   function snap() {
+    cancelPendingSend();
     if (!cam.videoWidth) {
       say('The camera is not ready yet. Wait a moment, then try again.');
       return;
@@ -253,9 +272,11 @@
       return;
     }
     if (!isTrustedOpenerOrigin(ev.origin)) return;
-    if (verifiedOrigin && verifiedOrigin !== 'null' && ev.origin !== verifiedOrigin) return;
+    if (!verifiedOrigin) return;
+    if (verifiedOrigin !== 'null' && ev.origin !== verifiedOrigin) return;
     if (d.type === 'allolens-photo-ack') {
-      if (ackTimer) { clearTimeout(ackTimer); ackTimer = null; }
+      if (!ackTimer) return;
+      clearTimeout(ackTimer); ackTimer = null;
       clearError();
       done.textContent = 'Photo delivered to AlloFlow. You can take another, or close this window.';
       show(done);
@@ -269,7 +290,7 @@
   cam.addEventListener('keydown', function (e) {
     if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter') { e.preventDefault(); snap(); }
   });
-  document.getElementById('retakeBtn').addEventListener('click', function () { lastDataUrl = null; startCamera(); });
+  document.getElementById('retakeBtn').addEventListener('click', function () { cancelPendingSend(); lastDataUrl = null; startCamera(); });
   document.getElementById('flipBtn').addEventListener('click', function () {
     facing = facing === 'environment' ? 'user' : 'environment';
     startCamera();
@@ -277,6 +298,7 @@
   retryBtn.addEventListener('click', startCamera);
 
   window.addEventListener('beforeunload', function () {
+    cancelPendingSend();
     stopStream();
     askOpener('allolens-closed');
   });

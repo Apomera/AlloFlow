@@ -1,6 +1,6 @@
 # Praxis Educational Leadership (5412) QA report
 
-Generated: 2026-08-20T07:00:06.102Z
+Generated: 2026-11-21T15:38:26.004Z
 
 ## Result
 
@@ -13,6 +13,4 @@ Generated: 2026-08-20T07:00:06.102Z
 
 > This is not ETS or NPBEA approval, independent practicing-school-leader validation, field testing, psychometric calibration, a scaled-score model, legal or personnel advice, an employment or licensure decision, or an emergency directive.
 
-
-
-- Independent-batch audit: 200 original source questions plus 100 assistant-authored independent practice questions produce 200 distinct independent content kernels. 200 additional activities remain guided review only. 300 new independent questions remain to reach 500.
+- Independent-batch audit: 200 original source questions plus 100 assistant-authored independent practice questions produce 229 distinct independent content kernels. 200 additional activities remain guided review only. 271 new independent questions remain to reach 500.

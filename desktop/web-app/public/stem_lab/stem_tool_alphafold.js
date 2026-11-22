@@ -86,8 +86,19 @@
       '.af-fold-segment{fill:none;stroke-width:13;stroke-linecap:round;stroke-linejoin:round;filter:url(#af-ribbon-glow);opacity:.15;transition:opacity .2s,stroke-width .2s;cursor:pointer;}',
       '.af-protein-viz[data-confidence-band]:not([data-confidence-band="all"]) .af-fold-ribbon{opacity:.18;}',
       '.af-fold-segment[data-active="true"]{opacity:1;stroke-width:15;}',
-      '.af-fold-spine{fill:none;stroke:rgba(255,255,255,.72);stroke-width:1.4;stroke-linecap:round;stroke-dasharray:3 7;pointer-events:none;}',
-      '.af-residue-node{stroke:#e0f2fe;stroke-width:1.5;filter:url(#af-ribbon-glow);animation:afResiduePulse 2.8s ease-in-out infinite;}',
+      '.af-fold-spine{fill:none;stroke:rgba(255,255,255,.72);stroke-width:1.4;stroke-linecap:round;stroke-dasharray:3 7;pointer-events:none;animation:afSpineFlow 2.6s linear infinite;}',
+      '.af-hbond-arc{fill:none;stroke:rgba(125,211,252,.52);stroke-width:1.25;stroke-linecap:round;stroke-dasharray:2.5 5.5;pointer-events:none;animation:afSpineFlow 3.4s linear infinite;}',
+      '.af-hbond-arc:nth-of-type(2n){animation-delay:-1.4s;}',
+      '.af-ribbon-shimmer{fill:none;stroke:#ffffff;stroke-width:2.4;stroke-linecap:round;stroke-dasharray:46 164;pointer-events:none;animation:afRibbonShimmer 4.8s ease-in-out infinite;}',
+      '.af-emb-shimmer{fill:none;stroke:#e0f2fe;stroke-width:1.4;stroke-linecap:round;stroke-dasharray:14 48;pointer-events:none;animation:afEmbShimmer 4.2s linear infinite;}',
+      '.af-fold-beacon{fill:none;stroke-width:1.5;pointer-events:none;transform-box:fill-box;transform-origin:center;animation:afBeaconRing 3.2s ease-in-out infinite;}',
+      '.af-bar-glint{pointer-events:none;animation:afBarGlint 3.6s ease-in-out infinite;}',
+      '.af-spectrum-sheen{pointer-events:none;animation:afSpectrumSweep 6.4s ease-in-out infinite;}',
+      '.af-pae-diag{pointer-events:none;animation:afPaeDiagFlow 3.2s linear infinite;}',
+      '.af-pae-sheen{pointer-events:none;animation:afPaeSheen 5.6s ease-in-out infinite;}',
+      '.af-pae-cell-active{animation:afPaeCellPulse 3.1s ease-in-out infinite;}',
+      '.af-status-dot{animation:afStatusBreath 3s ease-in-out infinite;}',
+      '.af-residue-node{stroke:#e0f2fe;stroke-width:1.5;filter:url(#af-ribbon-glow);transform-box:fill-box;transform-origin:center;animation:afResiduePulse 2.8s ease-in-out infinite;}',
       '.af-residue-node:nth-of-type(2n){animation-delay:-1.2s;}',
       '.af-pae-cell{cursor:pointer;transition:opacity .15s,stroke-width .15s;}',
       '.af-pae-cell:hover{opacity:.88;}',
@@ -103,7 +114,17 @@
       '.af-confidence-pct{color:#94a3b8;font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace;}',
       '.af-confidence-reading{min-height:40px;margin-top:8px;padding:8px 9px;border-radius:9px;background:rgba(2,6,23,.55);border:1px solid rgba(56,189,248,.22);color:#bae6fd;font-size:11px;line-height:1.45;}',
       '.af-confidence-caution{margin-top:8px;padding:8px 9px;border:1px solid rgba(251,191,36,.28);border-radius:9px;background:rgba(120,53,15,.22);color:#fde68a;font-size:10px;line-height:1.45;}',
-      '@keyframes afResiduePulse{0%,100%{opacity:.62;transform:scale(.92);transform-origin:center}50%{opacity:1;transform:scale(1.12);transform-origin:center}}',
+      '@keyframes afResiduePulse{0%,100%{opacity:.68;transform:scale(.94)}50%{opacity:1;transform:scale(1.1)}}',
+      '@keyframes afSpineFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-20}}',
+      '@keyframes afRibbonShimmer{0%{stroke-dashoffset:0;opacity:.16}50%{stroke-dashoffset:-105;opacity:.48}100%{stroke-dashoffset:-210;opacity:.16}}',
+      '@keyframes afEmbShimmer{0%{stroke-dashoffset:0;opacity:.25}50%{opacity:.78}100%{stroke-dashoffset:-62;opacity:.25}}',
+      '@keyframes afBeaconRing{0%,100%{transform:scale(.88);opacity:.54}50%{transform:scale(1.42);opacity:.12}}',
+      '@keyframes afBarGlint{0%,100%{opacity:.28}50%{opacity:.82}}',
+      '@keyframes afSpectrumSweep{0%,100%{transform:translateX(-40px);opacity:0}20%{opacity:.24}50%{transform:translateX(440px);opacity:.3}80%{opacity:0}}',
+      '@keyframes afPaeDiagFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-18}}',
+      '@keyframes afPaeSheen{0%,100%{transform:translateX(0);opacity:.12}50%{transform:translateX(218px);opacity:.48}}',
+      '@keyframes afPaeCellPulse{0%,100%{opacity:.86}50%{opacity:1}}',
+      '@keyframes afStatusBreath{0%,100%{opacity:.75;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}',
       '.af-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:16px;}',
       '.af-metric{min-width:0;padding:10px 11px;border:1px solid rgba(148,163,184,.2);border-radius:12px;background:rgba(15,23,42,.74);transition:border-color .16s;}',
       '.af-metric[data-active="true"]{border-color:rgba(45,212,191,.5);background:rgba(15,118,110,.16);}',
@@ -184,10 +205,14 @@
       '.af-launcher[data-theme="light"] .af-credit{color:#475569;}',
       '@media(max-width:760px){.af-confidence-atlas{grid-template-columns:1fr;}.af-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.af-route{grid-template-columns:repeat(2,minmax(0,1fr));}.af-support-grid{grid-template-columns:1fr;}.af-evidence-ladder,.af-note-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
       '@media(max-width:520px){.af-launcher{padding:11px;}.af-evidence-ladder,.af-note-grid,.af-route{grid-template-columns:1fr;}.af-mission{padding:15px;border-radius:16px;}.af-mission-top{flex-direction:column;}.af-status{white-space:normal;}.af-metrics{grid-template-columns:1fr 1fr;}.af-primary,.af-sample-launch{width:100%;}.af-actions{align-items:stretch;}.af-action-note{width:100%;}}',
-      '@media(prefers-reduced-motion:reduce){.af-primary,.af-fold-ribbon,.af-fold-segment,.af-route-progress-fill{transition:none;}.af-primary:hover{transform:none;}.af-residue-node{animation:none;}}',
+      '@media(prefers-reduced-motion:reduce){.af-primary,.af-fold-ribbon,.af-fold-segment,.af-route-progress-fill{transition:none;}.af-primary:hover{transform:none;}.af-residue-node,.af-fold-spine,.af-hbond-arc,.af-ribbon-shimmer,.af-emb-shimmer,.af-fold-beacon,.af-bar-glint,.af-spectrum-sheen,.af-pae-diag,.af-pae-sheen,.af-pae-cell-active,.af-status-dot{animation:none!important;}}',
       '.theme-contrast .af-launcher,.af-launcher[data-theme="contrast"],.theme-contrast .af-mission,.af-launcher[data-theme="contrast"] .af-mission,.theme-contrast .af-section,.af-launcher[data-theme="contrast"] .af-section,.theme-contrast .af-route-card,.af-launcher[data-theme="contrast"] .af-route-card,.theme-contrast .af-details,.af-launcher[data-theme="contrast"] .af-details,.theme-contrast .af-guardrail,.af-launcher[data-theme="contrast"] .af-guardrail,.theme-contrast .af-protein-viz,.af-launcher[data-theme="contrast"] .af-protein-viz,.theme-contrast .af-confidence-key,.af-launcher[data-theme="contrast"] .af-confidence-key,.theme-contrast .af-metric,.af-launcher[data-theme="contrast"] .af-metric,.theme-contrast .af-stage-tabs,.af-launcher[data-theme="contrast"] .af-stage-tabs,.theme-contrast .af-preset-chip,.af-launcher[data-theme="contrast"] .af-preset-chip,.theme-contrast .af-status,.af-launcher[data-theme="contrast"] .af-status,.theme-contrast .af-alert,.af-launcher[data-theme="contrast"] .af-alert,.theme-contrast .af-note-field,.af-launcher[data-theme="contrast"] .af-note-field,.theme-contrast .af-note-card,.af-launcher[data-theme="contrast"] .af-note-card,.theme-contrast .af-evidence-step,.af-launcher[data-theme="contrast"] .af-evidence-step,.theme-contrast .af-support-card,.af-launcher[data-theme="contrast"] .af-support-card,.theme-contrast .af-confidence-row,.af-launcher[data-theme="contrast"] .af-confidence-row,.theme-contrast .af-stage-tab,.af-launcher[data-theme="contrast"] .af-stage-tab{background:#000000!important;color:#ffff00!important;border-color:#ffff00!important;box-shadow:none!important;}',
       '.theme-contrast .af-primary,.af-launcher[data-theme="contrast"] .af-primary,.theme-contrast .af-secondary,.af-launcher[data-theme="contrast"] .af-secondary,.theme-contrast .af-sample-launch,.af-launcher[data-theme="contrast"] .af-sample-launch,.theme-contrast .af-stage-tab[aria-selected="true"],.af-launcher[data-theme="contrast"] .af-stage-tab[aria-selected="true"],.theme-contrast .af-preset-chip[aria-pressed="true"],.af-launcher[data-theme="contrast"] .af-preset-chip[aria-pressed="true"]{background:#000000!important;color:#00ff00!important;border:2px solid #00ff00!important;}',
-      '.theme-contrast .af-launcher :is(p,span,h2,h3,h4,strong,li,summary,label,a),.af-launcher[data-theme="contrast"] :is(p,span,h2,h3,h4,strong,li,summary,label,a){color:#ffff00!important;}'
+      '.theme-contrast .af-launcher :is(p,span,h2,h3,h4,strong,li,summary,label,a),.af-launcher[data-theme="contrast"] :is(p,span,h2,h3,h4,strong,li,summary,label,a){color:#ffff00!important;}',
+      '.theme-contrast .af-launcher :is(.af-fold-ribbon,.af-fold-segment,.af-residue-node),.af-launcher[data-theme="contrast"] :is(.af-fold-ribbon,.af-fold-segment,.af-residue-node){filter:none!important;}',
+      '.theme-contrast .af-launcher :is(.af-fold-beacon,.af-ribbon-shimmer,.af-emb-shimmer,.af-bar-glint,.af-spectrum-sheen,.af-pae-sheen),.af-launcher[data-theme="contrast"] :is(.af-fold-beacon,.af-ribbon-shimmer,.af-emb-shimmer,.af-bar-glint,.af-spectrum-sheen,.af-pae-sheen){display:none!important;}',
+      '.theme-contrast .af-launcher :is(.af-residue-node,.af-fold-spine,.af-hbond-arc,.af-pae-diag,.af-pae-cell-active,.af-status-dot),.af-launcher[data-theme="contrast"] :is(.af-residue-node,.af-fold-spine,.af-hbond-arc,.af-pae-diag,.af-pae-cell-active,.af-status-dot){animation:none!important;}',
+      '@media(forced-colors:active){.af-fold-ribbon,.af-fold-segment,.af-residue-node{filter:none!important;}.af-fold-beacon,.af-ribbon-shimmer,.af-emb-shimmer,.af-bar-glint,.af-spectrum-sheen,.af-pae-sheen{display:none!important;}.af-residue-node,.af-fold-spine,.af-hbond-arc,.af-pae-diag,.af-pae-cell-active,.af-status-dot{animation:none!important;}}'
     ].join('\n');
     if (document.head) document.head.appendChild(alphaFoldStyle);
   }
@@ -1061,6 +1086,8 @@
                 afTheme !== 'contrast' && h('path', { d: 'M9 5.2 H35', stroke: '#ccfbf1', strokeWidth: 0.9, opacity: 0.4, strokeLinecap: 'round' }),
                 afTheme !== 'contrast' && h('path', { d: 'M9 28 C13 11, 21 11, 23 23 C25 34, 32 33, 35 16', fill: 'none', stroke: '#38bdf8', strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.22 }),
                 h('path', { d: 'M9 28 C13 11, 21 11, 23 23 C25 34, 32 33, 35 16', fill: 'none', stroke: afTheme === 'contrast' ? '#00ff00' : 'url(#af-emb-rib)', strokeWidth: 3.4, strokeLinecap: 'round' }),
+                afTheme !== 'contrast' && h('path', { className: 'af-emb-shimmer', d: 'M9 28 C13 11, 21 11, 23 23 C25 34, 32 33, 35 16' }),
+                afTheme !== 'contrast' && h('circle', { className: 'af-fold-beacon', cx: 23, cy: 23, r: 6.2, stroke: '#7dd3fc' }),
                 h('circle', { cx: 11, cy: 23, r: 2.8, fill: afTheme === 'contrast' ? '#ffff00' : '#38bdf8', stroke: '#ffffff', strokeWidth: 0.8 }),
                 h('circle', { cx: 23, cy: 23, r: 3.2, fill: afTheme === 'contrast' ? '#00ff00' : '#facc15', stroke: '#ffffff', strokeWidth: 0.8 }),
                 h('circle', { cx: 34, cy: 18, r: 2.6, fill: afTheme === 'contrast' ? '#ffff00' : '#f97316', stroke: '#ffffff', strokeWidth: 0.8 }),
@@ -1142,6 +1169,12 @@
                       h('linearGradient', { id: 'af-bar-vl', x1: '0', y1: '0', x2: '0', y2: '1' },
                         h('stop', { offset: '0%', stopColor: '#fdba74' }),
                         h('stop', { offset: '100%', stopColor: '#ea580c' })),
+                      h('linearGradient', { id: 'af-sheen-grad', x1: '0', y1: '0', x2: '1', y2: '0' },
+                        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
+                        h('stop', { offset: '50%', stopColor: '#e0f2fe', stopOpacity: 0.85 }),
+                        h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })),
+                      h('clipPath', { id: 'af-spectrum-clip' },
+                        h('rect', { x: 56, y: 158, width: 484, height: 39, rx: 5 })),
                       h('filter', { id: 'af-ribbon-glow', x: '-20%', y: '-20%', width: '140%', height: '140%' },
                         h('feGaussianBlur', { stdDeviation: '2.6', result: 'blur' }),
                         h('feMerge', null, h('feMergeNode', { in: 'blur' }), h('feMergeNode', { in: 'SourceGraphic' })))),
@@ -1160,18 +1193,22 @@
                     h('text', { x: 47, y: 28, textAnchor: 'middle', fill: afTheme === 'contrast' ? '#00ff00' : '#dbeafe', fontSize: 9, fontWeight: 'bold' }, 'N-term'),
                     h('rect', { x: 486, y: 16, width: 54, height: 18, rx: 9, fill: afTheme === 'contrast' ? '#000000' : 'rgba(249,115,22,0.38)', stroke: afTheme === 'contrast' ? '#ffff00' : 'rgba(251,146,60,0.75)', strokeWidth: 1 }),
                     h('text', { x: 513, y: 28, textAnchor: 'middle', fill: afTheme === 'contrast' ? '#ffff00' : '#ffedd5', fontSize: 9, fontWeight: 'bold' }, 'C-term'),
-                    // Fold shadow, core ribbon, interactive segments, specular highlight & spine
+                    // Fold shadow, residue-contact / H-bond arcs, core ribbon, interactive segments, specular highlight & spine
+                    ['M68 68 Q101 38 130 82', 'M140 88 Q195 52 248 82', 'M260 80 Q290 42 318 66'].map(function (hd, hi) {
+                      return h('path', { key: 'hb-' + hi, className: 'af-hbond-arc', d: hd, stroke: afTheme === 'contrast' ? '#ffff00' : undefined });
+                    }),
                     h('path', { className: 'af-fold-shadow', d: activeSample.path }),
                     h('path', { className: 'af-fold-ribbon', d: activeSample.path }),
                     h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'very-high' ? 'true' : 'false', d: activeSample.segs['very-high'], stroke: '#1d4ed8', onClick: function () { selectConfidenceBand('very-high'); } }),
                     h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'confident' ? 'true' : 'false', d: activeSample.segs.confident, stroke: '#38bdf8', onClick: function () { selectConfidenceBand('confident'); } }),
                     h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'low' ? 'true' : 'false', d: activeSample.segs.low, stroke: '#facc15', onClick: function () { selectConfidenceBand('low'); } }),
                     h('path', { className: 'af-fold-segment', 'data-active': confidenceBand === 'very-low' ? 'true' : 'false', d: activeSample.segs['very-low'], stroke: '#f97316', onClick: function () { selectConfidenceBand('very-low'); } }),
-                    afTheme !== 'contrast' && h('path', { d: activeSample.path, fill: 'none', stroke: '#ffffff', strokeWidth: 2.2, strokeLinecap: 'round', opacity: 0.22, pointerEvents: 'none' }),
+                    afTheme !== 'contrast' && h('path', { className: 'af-ribbon-shimmer', d: activeSample.path }),
                     h('path', { className: 'af-fold-spine', d: activeSample.path }),
                     [[62,68,'#1d4ed8'],[134,86,'#0ea5e9'],[196,120,'#38bdf8'],[254,84,'#7dd3fc'],[322,68,'#facc15'],[378,118,'#fde047'],[448,96,'#fb923c'],[508,68,'#f97316']].map(function (node, i) {
                       var rN = i === 3 ? 5.2 : 4.2;
                       return h('g', { key: i },
+                        afTheme !== 'contrast' && i < 4 && h('circle', { className: 'af-fold-beacon', cx: node[0], cy: node[1], r: rN + 4.4, stroke: node[2], style: { animationDelay: (i * 0.55) + 's' } }),
                         h('circle', { className: 'af-residue-node', cx: node[0], cy: node[1], r: rN, fill: afTheme === 'contrast' ? '#00ff00' : node[2] }),
                         afTheme !== 'contrast' && h('circle', { cx: node[0] - 1.3, cy: node[1] - 1.3, r: 1.2, fill: '#ffffff', opacity: 0.82 })
                       );
@@ -1195,9 +1232,11 @@
                       var gradFill = afTheme === 'contrast' ? (score >= 70 ? '#00ff00' : '#ffff00') : (score >= 90 ? 'url(#af-bar-vh)' : score >= 70 ? 'url(#af-bar-c)' : score >= 50 ? 'url(#af-bar-l)' : 'url(#af-bar-vl)');
                       return h('g', { key: 'b-' + idx },
                         h('rect', { x: bx, y: 196 - bh, width: 20, height: bh, rx: 2.5, fill: gradFill, opacity: bandMatch ? 0.95 : 0.2 }),
-                        afTheme !== 'contrast' && bandMatch && h('line', { x1: bx + 2, y1: 196 - bh + 1, x2: bx + 18, y2: 196 - bh + 1, stroke: '#ffffff', strokeWidth: 1, opacity: 0.45 })
+                        afTheme !== 'contrast' && bandMatch && h('line', { className: 'af-bar-glint', x1: bx + 2, y1: 196 - bh + 1, x2: bx + 18, y2: 196 - bh + 1, stroke: '#ffffff', strokeWidth: 1.2, strokeLinecap: 'round', style: { animationDelay: (idx * 0.14) + 's' } })
                       );
                     }),
+                    afTheme !== 'contrast' && h('g', { clipPath: 'url(#af-spectrum-clip)' },
+                      h('rect', { className: 'af-spectrum-sheen', x: 56, y: 158, width: 72, height: 39, fill: 'url(#af-sheen-grad)' })),
                     h('text', { x: 62, y: 207, fill: afTheme === 'contrast' ? '#ffff00' : '#94a3b8', fontSize: 8 }, 'Res 1'),
                     h('text', { x: 528, y: 207, textAnchor: 'end', fill: afTheme === 'contrast' ? '#ffff00' : '#94a3b8', fontSize: 8 }, activeSample.length)),
                   h('div', { className: 'af-viz-foot' },
@@ -1213,7 +1252,13 @@
                         h('stop', { offset: '0%', stopColor: '#059669' }),
                         h('stop', { offset: '38%', stopColor: '#34d399' }),
                         h('stop', { offset: '70%', stopColor: '#a7f3d0' }),
-                        h('stop', { offset: '100%', stopColor: '#1e293b' }))),
+                        h('stop', { offset: '100%', stopColor: '#1e293b' })),
+                      h('linearGradient', { id: 'af-pae-sheen-grad', x1: '0', y1: '0', x2: '1', y2: '0' },
+                        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
+                        h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.85 }),
+                        h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })),
+                      h('clipPath', { id: 'af-pae-bar-clip' },
+                        h('rect', { x: 268, y: 40, width: 266, height: 6, rx: 3 }))),
                     // Dark-field matrix viewport frame
                     h('rect', { x: 4, y: 4, width: 552, height: 202, rx: 10, fill: afTheme === 'contrast' ? '#000000' : 'rgba(2,6,23,0.72)', stroke: afTheme === 'contrast' ? '#ffff00' : 'rgba(56,189,248,0.2)', strokeWidth: 1 }),
                     h('rect', { x: 74, y: 26, width: 167, height: 167, rx: 5, fill: '#020617', stroke: afTheme === 'contrast' ? '#ffff00' : 'rgba(94,234,212,0.38)', strokeWidth: 1.2 }),
@@ -1226,7 +1271,7 @@
                         var activeCell = paeRegion === reg;
                         return h('rect', {
                           key: rIdx + '-' + cIdx,
-                          className: 'af-pae-cell',
+                          className: activeCell ? 'af-pae-cell af-pae-cell-active' : 'af-pae-cell',
                           x: 78 + cIdx * 20,
                           y: 30 + rIdx * 20,
                           width: 19,
@@ -1240,10 +1285,12 @@
                       });
                     }),
                     // Crisp diagonal intra-domain axis guide
-                    h('line', { x1: 78, y1: 30, x2: 237, y2: 189, stroke: afTheme === 'contrast' ? '#ffffff' : 'rgba(255,255,255,0.28)', strokeWidth: 1, strokeDasharray: '3 3', pointerEvents: 'none' }),
+                    h('line', { className: 'af-pae-diag', x1: 78, y1: 30, x2: 237, y2: 189, stroke: afTheme === 'contrast' ? '#ffffff' : 'rgba(255,255,255,0.38)', strokeWidth: 1.1, strokeDasharray: '3 3', pointerEvents: 'none' }),
                     // Right side: PAE scale legend & domain guide
                     h('text', { x: 268, y: 34, fill: afTheme === 'contrast' ? '#ffff00' : '#f8fafc', fontSize: 12, fontWeight: 'bold' }, 'Expected position error (\u00c5)'),
-                    ! (afTheme === 'contrast') && h('rect', { x: 268, y: 40, width: 266, height: 6, rx: 3, fill: 'url(#af-pae-scale)' }),
+                    !(afTheme === 'contrast') && h('rect', { x: 268, y: 40, width: 266, height: 6, rx: 3, fill: 'url(#af-pae-scale)' }),
+                    !(afTheme === 'contrast') && h('g', { clipPath: 'url(#af-pae-bar-clip)' },
+                      h('rect', { className: 'af-pae-sheen', x: 268, y: 40, width: 48, height: 6, fill: 'url(#af-pae-sheen-grad)' })),
                     h('rect', { x: 268, y: 54, width: 22, height: 14, rx: 3, fill: afTheme === 'contrast' ? '#00ff00' : '#059669' }),
                     h('text', { x: 298, y: 65, fill: afTheme === 'contrast' ? '#ffff00' : '#e2e8f0', fontSize: 10 }, '0\u20135 \u00c5  Tightly packed domain'),
                     h('rect', { x: 268, y: 76, width: 22, height: 14, rx: 3, fill: afTheme === 'contrast' ? '#ffff00' : '#34d399' }),

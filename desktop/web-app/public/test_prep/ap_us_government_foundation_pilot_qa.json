@@ -103,7 +103,7 @@
     "testWiseness": {
       "keyedItemCount": 260,
       "keyCycleSharePercent": 100,
-      "keyLongestSharePercent": 80,
+      "keyLongestSharePercent": 2.3,
       "keyLongerByQuarterSharePercent": 0,
       "distractorRationaleCount": 780,
       "distinctDistractorRationaleCount": 780,
@@ -312,16 +312,16 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "8fd103e2a36328aa15a7dff5873bcde3fbd84fabcf11e876d1f63c13a37ac301",
-      "deploySha256": "8fd103e2a36328aa15a7dff5873bcde3fbd84fabcf11e876d1f63c13a37ac301",
+      "sourceSha256": "7a2e0d3cfc8f98e79b5ed9129478525c1428b0513d70160ed3f1509533e1e4b4",
+      "deploySha256": "7a2e0d3cfc8f98e79b5ed9129478525c1428b0513d70160ed3f1509533e1e4b4",
       "note": "Source and deployment bytes are identical."
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "a06f24fd72c1d94af58ac7a349a8f114893482ffb5cdddfb11b2660304992834",
-      "deploySha256": "a06f24fd72c1d94af58ac7a349a8f114893482ffb5cdddfb11b2660304992834",
+      "sourceSha256": "693b1fa931d740c5bcdb099c1ab0e079cf4f1ec42dbe5d3e2f39e385693e5e74",
+      "deploySha256": "693b1fa931d740c5bcdb099c1ab0e079cf4f1ec42dbe5d3e2f39e385693e5e74",
       "note": "Source and deployment bytes are identical."
     }
   ],

@@ -37,10 +37,17 @@ function _usePdfSavedBatch({ pipeline, batchMode, documentEpoch, occupied, ready
     lookup(0);
     return () => { cancelled = true; clearTimeout(timeout); clearTimeout(retry); };
   }, [pipeline, loader, batchMode, documentEpoch, occupied, ready, version]);
+  const lastAutoRefreshRef = React.useRef(0);
   React.useEffect(() => {
     if (!batchMode || occupied) return;
-    window.addEventListener('focus', refresh); window.addEventListener('online', refresh);
-    return () => { window.removeEventListener('focus', refresh); window.removeEventListener('online', refresh); };
+    const debouncedRefresh = () => {
+      const now = Date.now();
+      if (now - lastAutoRefreshRef.current < 1500) return;
+      lastAutoRefreshRef.current = now;
+      refresh();
+    };
+    window.addEventListener('focus', debouncedRefresh); window.addEventListener('online', debouncedRefresh);
+    return () => { window.removeEventListener('focus', debouncedRefresh); window.removeEventListener('online', debouncedRefresh); };
   }, [batchMode, occupied, refresh]);
   return { saved, setSaved, status, refresh };
 }
@@ -87,11 +94,14 @@ function _pdfWorkspaceBatchFindings(item) {
   const list = (values, engine) => (Array.isArray(values) ? values : []).map(value => ({ engine, text: text(value) })).filter(value => value.text);
   const axe = result.axeAudit || {};
   const equal = result.secondEngineAudit || {};
-  const expertReason = {
+  const expertReasons = {
     accessibility: 'Accessibility barriers need expert review.',
     'content-fidelity': 'Content preservation needs expert review.',
     both: 'Accessibility and content preservation need expert review.',
-  }[result.expertReviewReason] || result.expertReviewReason || 'Expert review is required.';
+  };
+  const expertReason = (typeof result.expertReviewReason === 'string' && Object.prototype.hasOwnProperty.call(expertReasons, result.expertReviewReason)
+    ? expertReasons[result.expertReviewReason]
+    : (typeof result.expertReviewReason === 'string' && result.expertReviewReason.trim() ? result.expertReviewReason : '')) || 'Expert review is required.';
   return [
     ...list(result.verificationAudit?.issues, 'AI audit'),
     ...list([].concat(axe.critical || [], axe.serious || [], axe.moderate || [], axe.minor || []), 'axe-core'),

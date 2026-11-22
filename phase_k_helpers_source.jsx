@@ -3775,10 +3775,25 @@ const handleSaveReflection = async (deps) => {
           const studentTextAiOff = (deps.isTeacherMode === false && (studentProjectSettings?.allowStudentTextAi === false || (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', callGemini))))
               || (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true))
               || Boolean(callGemini && callGemini._alloQrBlocked);
+          let reflectionSafetyPaused = false;
+          try {
+              const _reflChecker = (SafetyContentChecker && typeof SafetyContentChecker.check === 'function')
+                  ? SafetyContentChecker
+                  : (typeof window !== 'undefined' ? ((window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker) : null);
+              const _reflFlags = (_reflChecker && typeof _reflChecker.check === 'function') ? _reflChecker.check(boundedReflectionInput) : null;
+              if (Array.isArray(_reflFlags) && _reflFlags.some(f => f && f.category === 'self_harm')) {
+                  reflectionSafetyPaused = true;
+                  if (typeof handleAiSafetyFlag === 'function') {
+                      try { handleAiSafetyFlag({ tool: 'persona_reflection', severity: 'critical', category: 'self_harm', timestamp: Date.now() }); } catch (_) {}
+                  }
+                  try { if (typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.showCrisisModal === 'function') window.SelHub.showCrisisModal(); } catch (_) {}
+              }
+          } catch (_) {}
           let gradingCallError = null;
+          const skipGradingAi = studentTextAiOff || reflectionSafetyPaused;
           const result = await Promise.race([
-              studentTextAiOff ? Promise.resolve(null) : callGemini(prompt, true, false, null, null, gradingController?.signal || null),
-              ...(studentTextAiOff ? [] : [gradingTimeoutPromise])
+              skipGradingAi ? Promise.resolve(null) : callGemini(prompt, true, false, null, null, gradingController?.signal || null),
+              ...(skipGradingAi ? [] : [gradingTimeoutPromise])
           ]).catch(error => { gradingCallError = error; return null; });
           if (!reflectionIsCurrent()) return;
           // A failed grading call (network/timeout) still saves the reflection, with no score.
@@ -3811,7 +3826,13 @@ const handleSaveReflection = async (deps) => {
               warnLog("Grading JSON parse error — presenting without a score", e);
           }
           const parsedScore = Number(grading?.score);
-          if (!grading || typeof grading !== 'object' || !Number.isFinite(parsedScore)) {
+          if (reflectionSafetyPaused) {
+              grading = {
+                  score: null,
+                  feedback: 'We paused automatic grading here. Your wellbeing matters more than any reflection — please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line).',
+                  xpBonus: 0
+              };
+          } else if (!grading || typeof grading !== 'object' || !Number.isFinite(parsedScore)) {
               grading = {
                   score: null,
                   feedback: t('persona.grading_unavailable') || 'Your reflection was saved. Automatic feedback was unavailable this time - your teacher can review it.',
@@ -4053,6 +4074,39 @@ const handleSocraticSubmit = async (inputOverride = null, deps) => {
           }
       }
       if (isSocraticThinking || _socraticInFlight) return;
+      // Synchronous safety gate before sending student message to Socratic Tutor AI.
+      if (typeof window !== 'undefined' && textToSend) {
+          let _socBlocked = false;
+          if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+              try {
+                  const _socRes = window.SelHub.safeRehearseCheck(textToSend, { toolId: 'socratic_tutor', onSafetyFlag: handleAiSafetyFlag });
+                  if (_socRes && _socRes.action === 'block') _socBlocked = true;
+              } catch (_) {}
+          } else {
+              const _socChecker = (SafetyContentChecker && typeof SafetyContentChecker.check === 'function')
+                  ? SafetyContentChecker
+                  : ((window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null);
+              try {
+                  const _socFlags = (_socChecker && typeof _socChecker.check === 'function') ? _socChecker.check(textToSend) : null;
+                  const _socCrit = Array.isArray(_socFlags) && _socFlags.find(f => f && f.severity === 'critical');
+                  if (_socCrit) {
+                      _socBlocked = true;
+                      if (typeof handleAiSafetyFlag === 'function') {
+                          try { handleAiSafetyFlag({ ..._socCrit, tool: 'socratic_tutor', source: 'socratic', context: textToSend.slice(0, 100), timestamp: Date.now() }); } catch (_) {}
+                      }
+                  }
+              } catch (_) {}
+          }
+          if (_socBlocked) {
+              const userMsg = { role: 'user', text: textToSend };
+              const pauseMsg = 'I want to pause our tutoring session for a moment. Your wellbeing matters more than any lesson — please talk to a trusted adult (a teacher, counselor, or family member), call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line).';
+              try { if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') window.SelHub.showCrisisModal(); } catch (_) {}
+              setSocraticMessages(prev => [...prev, userMsg, { role: 'model', text: pauseMsg, safetyPaused: true }]);
+              if (!inputOverride) setSocraticInput('');
+              setIsSocraticThinking(false);
+              return;
+          }
+      }
       if (!_socraticAiUsable('text', callGemini)) {
           const userMsg = { role: 'user', text: textToSend };
           const disabledMsg = _socraticT(

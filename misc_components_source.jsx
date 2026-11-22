@@ -257,7 +257,7 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
               onKeyDown={(e) => { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; if (e.key === 'Enter' && placeBankPick()) e.preventDefault(); }}
               readOnly={status === 'success'}
               className={`
-                  min-h-11 text-center border-b-2 px-1 py-0.5 text-sm font-bold transition-all motion-reduce:transition-none outline-none focus:ring-2 focus-visible:ring-2 focus:ring-indigo-400 rounded-t
+                  min-h-11 text-center border-b-2 px-1 py-0.5 text-sm font-bold transition-all motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 focus:ring-2 focus-visible:ring-2 focus:ring-indigo-400 rounded-t
                   ${status === 'success' ? 'border-green-500 bg-green-50 text-green-800' :
                     status === 'error' ? 'border-red-500 bg-red-50 animate-pulse motion-reduce:animate-none' :
                     (status === 'active' || armed) ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200' :
@@ -266,7 +266,7 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
               style={{ width }}
               placeholder="?"
               autoComplete="off"
-              aria-label={t('games.fill_blank.input_label')}
+              aria-label={t('games.fill_blank.input_label') || 'Fill in the blank'}
               aria-invalid={status === 'error'}
           />
           {status === 'success' && (
@@ -410,6 +410,7 @@ const WordSoundsReviewPanel = ({
         : null;
     const [imageLoadErrors, setImageLoadErrors] = React.useState({});
     const [expandedIndex, setExpandedIndex] = React.useState(null);
+    const [wordFilterQuery, setWordFilterQuery] = React.useState('');
     React.useEffect(() => {
         if (!syllableReviewRequest || !Number.isInteger(syllableReviewRequest.index)) return;
         setExpandedIndex(syllableReviewRequest.index);
@@ -914,6 +915,30 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                     </div>
                     <p id="word-sounds-review-description" className="text-sm text-white/95 mt-1 flex items-center gap-2 flex-wrap">
                         <span>{t('word_sounds.review_and_edit_words') || 'Review and edit words'} • {preloadedWords.length} {t('word_sounds.words_ready') || 'words ready'}</span>
+                        {!isLoading && preloadedWords.length > 0 && (() => {
+                            const readyCount = preloadedWords.filter((w) => {
+                                const st = wordAudioState(w);
+                                return st === 'ready' || st === 'teacher';
+                            }).length;
+                            const pct = Math.round((readyCount / preloadedWords.length) * 100);
+                            return (
+                                <span
+                                    data-ws-review-readiness-bar="true"
+                                    role="progressbar"
+                                    aria-label={t('word_sounds.audio_readiness_label') || 'Student audio readiness'}
+                                    aria-valuemin={0}
+                                    aria-valuemax={preloadedWords.length}
+                                    aria-valuenow={readyCount}
+                                    aria-valuetext={`${readyCount} of ${preloadedWords.length} words ready for student devices (${pct}%)`}
+                                    className="inline-flex items-center gap-2 bg-white/15 border border-white/25 rounded-full px-2.5 py-0.5 text-xs font-semibold text-white"
+                                >
+                                    <span>{readyCount}/{preloadedWords.length} {t('word_sounds.audio_ready_short') || 'audio ready'}</span>
+                                    <span className="w-12 h-1.5 rounded-full bg-white/25 overflow-hidden" aria-hidden="true">
+                                        <span className="block h-full bg-emerald-300 transition-all motion-reduce:transition-none" style={{ width: `${pct}%` }} />
+                                    </span>
+                                </span>
+                            );
+                        })()}
                         {isLoading && <span role="status" aria-live="polite" className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse motion-reduce:animate-none"><div className="w-2 h-2 bg-white rounded-full animate-bounce motion-reduce:animate-none"/> {t('word_sounds.generating_more') || 'Generating more...'}</span>}
                         {!isLoading && preloadedWords.some(w => wordAudioState(w) === 'failed') && (
                             <span className="flex items-center gap-2 bg-red-500/30 border border-red-200/60 px-3 py-1 rounded-full text-xs">
@@ -1322,7 +1347,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 >
                                                     {fixingGap === g.key
                                                         ? (t('word_sounds.fixing') || 'Fixing…')
-                                                        : `${g.needsNetwork ? '☁️ ' : ''}${g.label} (${g.indices.length})`}
+                                                        : (<>{g.needsNetwork ? <span aria-hidden="true">☁️ </span> : null}{`${g.label} (${g.indices.length})`}</>)}
                                                 </button>
                                             )}
                                         </li>
@@ -1346,11 +1371,56 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                     })()}
                     {preloadedWords.length === 0 ? (
                         <div className="text-center py-12 text-slate-600">
-                            <div className="text-4xl mb-2">⏳</div>
+                            <div className="text-4xl mb-2" aria-hidden="true">⏳</div>
                             {isLoading ? <p role="status" aria-live="polite" className="animate-pulse motion-reduce:animate-none">{t('word_sounds.generating_new_words') || 'Generating new words... this may take a moment'}</p> : <p>{t('word_sounds.no_words_preloaded') || 'No words preloaded yet. Start the activity to generate words.'}</p>}
                         </div>
-                    ) : (
-                        (preloadedWords || []).map((word, idx) => (
+                    ) : (() => {
+                        const normalizedFilter = String(wordFilterQuery || '').trim().toLowerCase();
+                        const indexedWords = (preloadedWords || []).map((word, idx) => ({ word, idx }));
+                        const visibleWords = normalizedFilter
+                            ? indexedWords.filter(({ word }) => String(word?.targetWord || word?.word || '').toLowerCase().includes(normalizedFilter))
+                            : indexedWords;
+                        return (
+                        <>
+                        {preloadedWords.length >= 6 && (
+                            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                                <input
+                                    type="search"
+                                    data-ws-review-filter="true"
+                                    value={wordFilterQuery}
+                                    onChange={(e) => setWordFilterQuery(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+                                        if (e.key === 'Escape' && wordFilterQuery) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setWordFilterQuery('');
+                                        }
+                                    }}
+                                    aria-label={t('word_sounds.filter_words_label') || 'Filter review words'}
+                                    placeholder={t('word_sounds.filter_words_placeholder') || 'Filter words…'}
+                                    className="flex-1 min-w-[10rem] min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700"
+                                />
+                                {wordFilterQuery && (
+                                    <button
+                                        type="button"
+                                        data-ws-review-filter-clear="true"
+                                        onClick={() => setWordFilterQuery('')}
+                                        className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700"
+                                    >
+                                        {t('common.clear') || 'Clear'}
+                                    </button>
+                                )}
+                                <span role="status" aria-live="polite" className="text-xs font-semibold text-slate-700">
+                                    {visibleWords.length} / {preloadedWords.length} {t('word_sounds.words_shown') || 'words'}
+                                </span>
+                            </div>
+                        )}
+                        {visibleWords.length === 0 ? (
+                            <div role="status" aria-live="polite" className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-700">
+                                {t('word_sounds.no_matching_words') || 'No words match your filter.'}
+                            </div>
+                        ) : visibleWords.map(({ word, idx }) => (
                             <div
                                 key={word.id || `word-${word.targetWord || word.word}-${idx}`}
                                 className={`border-2 rounded-2xl transition-all motion-reduce:transition-none ${expandedIndex === idx ? 'border-pink-300 bg-pink-50/50' : 'border-slate-100 hover:border-pink-200'}`}
@@ -1417,7 +1487,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                         })()}
                                         {word.phonemes && Array.isArray(word.phonemes) && word.phonemes.length > 0 && (
                                             <button type="button"
-                                                aria-label={t('common.play_phoneme_sequence')}
+                                                aria-label={t('common.play_phoneme_sequence') || 'Play phoneme sequence'}
                                                 onClick={async (e) => {
                                                     e.stopPropagation();
                                                     if (onPlayAudio) {
@@ -1435,7 +1505,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                     }
                                                 }}
                                                 className="min-w-11 min-h-11 bg-violet-100 hover:bg-violet-200 text-violet-800 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700"
-                                                data-help-key="word_sounds_review_play_phonemes" title={t('common.play_phoneme_sequence')}
+                                                data-help-key="word_sounds_review_play_phonemes" title={t('common.play_phoneme_sequence') || 'Play phoneme sequence'}
                                             >
                                                 <span className="text-sm font-bold" aria-hidden="true">🔤</span>
                                             </button>
@@ -1471,9 +1541,9 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                 }}
                                                                 disabled={isGeneratingImage(idx) || !_wsImageAiReady}
                                                                 aria-busy={isGeneratingImage(idx)}
-                                                                aria-label={isGeneratingImage(idx) ? (t('word_sounds.generating_image_aria') || 'Generating image') : t('common.regenerate_image')}
+                                                                aria-label={isGeneratingImage(idx) ? (t('word_sounds.generating_image_aria') || 'Generating image') : (t('common.regenerate_image') || 'Regenerate image')}
                                                                 className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full min-w-11 min-h-11 shadow-lg flex items-center justify-center opacity-0 group-hover/img:opacity-100 group-focus-within/img:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none border border-indigo-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                                                                data-help-key="word_sounds_review_image_gen" title={t('common.regenerate_image')}
+                                                                data-help-key="word_sounds_review_image_gen" title={t('common.regenerate_image') || 'Regenerate image'}
                                                             >
                                                                 {isGeneratingImage(idx) ? <RefreshCw size={10} className="animate-spin motion-reduce:animate-none text-indigo-700" aria-hidden="true"/> : <RefreshCw size={10} className="text-indigo-700" aria-hidden="true"/>}
                                                             </button>
@@ -1557,13 +1627,13 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 disabled={regeneratingIndex === idx || !_wsTextAiReady}
                                                 aria-busy={regeneratingIndex === idx}
                                                 aria-describedby={reviewError?.index === idx ? 'word-sounds-review-error' : undefined}
-                                                aria-label={regeneratingIndex === idx ? (t('common.regenerating_word_aria') || 'Regenerating word') : t('common.regenerate_this_word')}
+                                                aria-label={regeneratingIndex === idx ? (t('common.regenerating_word_aria') || 'Regenerating word') : (t('common.regenerate_this_word') || 'Regenerate this word')}
                                                 className={`min-w-11 min-h-11 flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none text-base font-bold border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700 disabled:opacity-50 disabled:cursor-not-allowed
                                                     ${regeneratingIndex === idx
                                                         ? 'bg-orange-200 border-orange-400 animate-spin motion-reduce:animate-none text-orange-800'
                                                         : 'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100 hover:border-orange-300 hover:scale-110 motion-reduce:hover:scale-100 shadow-sm'
                                                     }`}
-                                                data-help-key="word_sounds_review_regen_word" title={t('common.regenerate_this_word')}
+                                                data-help-key="word_sounds_review_regen_word" title={t('common.regenerate_this_word') || 'Regenerate this word'}
                                                 style={{ pointerEvents: 'auto', cursor: 'pointer' }}
                                             >
                                                 <span aria-hidden="true">{regeneratingIndex === idx ? '⏳' : '🔄'}</span>
@@ -1571,37 +1641,37 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                         </div>
                                         <div className="flex flex-col gap-0.5">
                                             <button type="button"
-                                                aria-label={t('common.move_up')}
+                                                aria-label={(t('common.move_up') || 'Move up') + ': ' + (word.targetWord || word.word || (t('common.word') || 'Word') + ' ' + (idx + 1))}
                                                 onClick={(e) => { e.stopPropagation(); moveWord(idx, 'up'); }}
                                                 disabled={idx === 0}
                                                 className={`min-w-11 min-h-11 flex items-center justify-center rounded text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 ${idx === 0 ? 'text-slate-400' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'}`}
-                                                data-help-key="word_sounds_review_move_word" title={t('common.move_up')}
-                                            >▲</button>
+                                                data-help-key="word_sounds_review_move_word" title={t('common.move_up') || 'Move up'}
+                                            ><span aria-hidden="true">▲</span></button>
                                             <button type="button"
-                                                aria-label={t('common.move_down')}
+                                                aria-label={(t('common.move_down') || 'Move down') + ': ' + (word.targetWord || word.word || (t('common.word') || 'Word') + ' ' + (idx + 1))}
                                                 onClick={(e) => { e.stopPropagation(); moveWord(idx, 'down'); }}
                                                 disabled={idx === preloadedWords.length - 1}
                                                 className={`min-w-11 min-h-11 flex items-center justify-center rounded text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 ${idx === preloadedWords.length - 1 ? 'text-slate-400' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'}`}
-                                                data-help-key="word_sounds_review_move_word" title={t('common.move_down')}
-                                            >▼</button>
+                                                data-help-key="word_sounds_review_move_word" title={t('common.move_down') || 'Move down'}
+                                            ><span aria-hidden="true">▼</span></button>
                                         </div>
                                         <div className="relative z-50" style={{ pointerEvents: 'auto' }}>
                                             <button
                                                 type="button"
                                                 onClick={(event) => deleteReviewWord(event, word, idx)}
                                                 aria-label={(t('common.delete_word') || 'Delete word') + ': ' + (word.targetWord || word.word || (t('common.word') || 'Word') + ' ' + (idx + 1))}
-                                                className="min-w-11 min-h-11 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-700 hover:text-red-800 transition-colors motion-reduce:transition-none border-2 border-red-200 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                                className="min-w-11 min-h-11 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-700 hover:text-red-800 transition-colors motion-reduce:transition-none border-2 border-red-200 hover:border-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
                                                 style={{ pointerEvents: 'auto', cursor: 'pointer', position: 'relative', zIndex: 100 }}
                                                 data-word-delete-button="true"
-                                                data-help-key="word_sounds_review_delete_word" title={t('common.delete_word')}
-                                            >🗑️</button>
+                                                data-help-key="word_sounds_review_delete_word" title={t('common.delete_word') || 'Delete word'}
+                                            ><span aria-hidden="true">🗑️</span></button>
                                         </div>
                                     <button type="button"
                                         onClick={() => setExpandedIndex(expandedIndex === idx ? null : idx)}
                                         aria-expanded={expandedIndex === idx}
                                         aria-controls={`word-sounds-details-${idx}`}
                                         aria-label={expandedIndex === idx ? (t('common.collapse') || 'Collapse word details') : (t('common.expand') || 'Expand word details')}
-                                        className="min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                        className="min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-600"
                                     >
                                         <ChevronDown size={20} aria-hidden="true" className={`transition-transform motion-reduce:transition-none ${expandedIndex === idx ? 'rotate-180' : ''}`} />
                                     </button>
@@ -1614,7 +1684,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                             <div className="flex items-center justify-between mb-2">
                                                 <div className="flex items-center gap-2">
                                                     <div className="flex items-center gap-2">
-                                                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('word_sounds.phonemes')}</label>
+                                                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('word_sounds.phonemes') || 'Phonemes'}</label>
                                                     <button type="button"
                                                         onClick={() => {
                                                             const checkFn = onCheckPhonemes || onRegenerateWord;
@@ -1635,6 +1705,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 </div>
                                                 </div>
                                                 <button type="button"
+                                                    aria-expanded={showPhonemeBank === idx}
                                                     data-help-key="word_sounds_review_phoneme_bank" onClick={() => setShowPhonemeBank(showPhonemeBank === idx ? null : idx)}
                                                     className={`min-h-11 text-xs px-3 py-1 rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 ${showPhonemeBank === idx ? 'bg-pink-700 text-white' : 'bg-pink-100 text-pink-800 hover:bg-pink-200'}`}
                                                 >
@@ -1662,10 +1733,10 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                         <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-800 font-bold rounded-lg border-2 border-violet-200" title={typeof PHONEME_GUIDE !== 'undefined' && PHONEME_GUIDE[phonemeLabel(p)] ? `${PHONEME_GUIDE[phonemeLabel(p)].label} (${PHONEME_GUIDE[phonemeLabel(p)].ipa}) — ${PHONEME_GUIDE[phonemeLabel(p)].examples}` : phonemeLabel(p)}>
                                                             <span className="text-slate-600 text-xs mr-1" aria-hidden="true">⠿</span>
                                                             {phonemeLabel(p)}
-                                                            <button type="button" onClick={() => handlePhonemeReorder(idx, i, i - 1)} disabled={i === 0} aria-label={`Move ${phonemeLabel(p) || 'phoneme'} earlier`} className="min-w-11 min-h-11 flex items-center justify-center rounded-full bg-violet-100 text-violet-800 hover:bg-violet-200 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" title="Move earlier">◀</button>
-                                                            <button type="button" onClick={() => handlePhonemeReorder(idx, i, i + 1)} disabled={i === (word.phonemes || []).length - 1} aria-label={`Move ${phonemeLabel(p) || 'phoneme'} later`} className="min-w-11 min-h-11 flex items-center justify-center rounded-full bg-violet-100 text-violet-800 hover:bg-violet-200 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" title="Move later">▶</button>
+                                                            <button type="button" onClick={() => handlePhonemeReorder(idx, i, i - 1)} disabled={i === 0} aria-label={`Move ${phonemeLabel(p) || 'phoneme'} earlier`} className="min-w-11 min-h-11 flex items-center justify-center rounded-full bg-violet-100 text-violet-800 hover:bg-violet-200 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" title="Move earlier"><span aria-hidden="true">◀</span></button>
+                                                            <button type="button" onClick={() => handlePhonemeReorder(idx, i, i + 1)} disabled={i === (word.phonemes || []).length - 1} aria-label={`Move ${phonemeLabel(p) || 'phoneme'} later`} className="min-w-11 min-h-11 flex items-center justify-center rounded-full bg-violet-100 text-violet-800 hover:bg-violet-200 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" title="Move later"><span aria-hidden="true">▶</span></button>
                                                             <button type="button"
-                                                                aria-label={t('common.remove')}
+                                                                aria-label={t('common.remove') || 'Remove sound'}
                                                                 onClick={() => removePhoneme(idx, i)}
                                                                 className="w-6 h-6 flex items-center justify-center rounded-full bg-red-100 min-w-11 min-h-11 text-red-700 hover:bg-red-200 text-xs opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700"
                                                                 title={t('common.remove')}
@@ -1752,7 +1823,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                                         aria-label={(t('word_sounds.bank_show_spellings') || 'Show spellings for') + ' ' + _ipaLabel}
                                                                                         className="min-w-11 min-h-11 px-1.5 py-1 bg-slate-50 hover:bg-pink-100 text-slate-700 hover:text-pink-800 transition-colors motion-reduce:transition-none border-l border-slate-300 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700"
                                                                                         title={t('word_sounds.bank_show_spellings') || 'Show the letters that spell this sound'}
-                                                                                    >{_isExp ? '▴' : '⋯'}</button>
+                                                                                    ><span aria-hidden="true">{_isExp ? '▴' : '⋯'}</span></button>
                                                                                 )}
                                                                             </div>
                                                                             {_isExp && (
@@ -1776,31 +1847,32 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                             )}
                                         </div>
                                         <div hidden={!reviewsActivity('rhyming')} data-ws-review-part="rhyming">
-                                            <label className="text-xs font-bold text-orange-700 uppercase tracking-wider mb-2 block">{t('word_sounds.rhyme_options')}</label>
+                                            <label className="text-xs font-bold text-orange-700 uppercase tracking-wider mb-2 block">{t('word_sounds.rhyme_options') || 'Rhyme Options'}</label>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                     <div className="flex items-center gap-1">
-                                                    <input aria-label={t('common.rhyme_time_options')}
+                                                    <input aria-label={t('common.rhyme_time_options') || 'Correct rhyming word'}
                                                         value={word.rhymeWord || ''}
                                                         onChange={(e) => onUpdateWord(idx, { ...word, rhymeWord: e.target.value }, { reviewedRhyme: true })}
-                                                        className="flex-1 min-w-0 min-h-11 px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-400 focus:ring-offset-1 outline-none"
-                                                        data-help-key="word_sounds_review_distractor_input" placeholder={t('common.placeholder_correct_rhyme')}
+                                                        className="flex-1 min-w-0 min-h-11 px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-400 focus:ring-offset-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600"
+                                                        data-help-key="word_sounds_review_distractor_input" placeholder={t('common.placeholder_correct_rhyme') || 'Correct rhyme'}
                                                     />
                                                     <span className="shrink-0 rounded-md bg-green-100 px-2 py-1 text-xs font-bold text-green-800">{t('word_sounds.review_answer_tag') || '✓ Answer'}</span>
                                                     </div>
                                                     {(word.rhymeDistractors || []).map((d, i) => (
                                                         <div key={i} className="flex items-center gap-1">
-                                                            <input aria-label={t('common.enter_d')}
+                                                            <input aria-label={t('common.enter_d') || `Rhyme distractor ${i + 1}`}
                                                                 value={d}
                                                                 onChange={(e) => {
                                                                     const newDist = [...(word.rhymeDistractors || [])];
                                                                     newDist[i] = e.target.value;
                                                                     onUpdateWord(idx, { ...word, rhymeDistractors: newDist }, { reviewedRhyme: true });
                                                                 }}
-                                                                className="flex-1 min-h-11 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-orange-400 focus:ring-2 focus:ring-orange-300 focus:ring-offset-1 outline-none"
-                                                                data-help-key="word_sounds_review_distractor_input" placeholder={t('common.placeholder_distractor')}
+                                                                className="flex-1 min-h-11 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-orange-400 focus:ring-2 focus:ring-orange-300 focus:ring-offset-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600"
+                                                                data-help-key="word_sounds_review_distractor_input" placeholder={t('common.placeholder_distractor') || 'Distractor'}
                                                             />
                                                             <button type="button"
                                                                 aria-label={(t('common.play_tts') || 'Play') + ': ' + d}
+                                                                aria-busy={playingAudioKey === `${idx}-rhyme-${i}` ? 'true' : undefined}
                                                                 onClick={async (e) => {
                                                                     e.stopPropagation();
                                                                     const key = `${idx}-rhyme-${i}`;
@@ -1809,12 +1881,13 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                     try { await onPlayAudio(d); } finally { setPlayingAudioKey(null); }
                                                                 }}
                                                                 className="p-2 rounded-lg bg-slate-100 hover:bg-orange-100 text-slate-700 hover:text-orange-800 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700"
-                                                                data-help-key="word_sounds_review_play_distractor" title={t('common.play_tts')}
+                                                                data-help-key="word_sounds_review_play_distractor" title={t('common.play_tts') || 'Play'}
                                                             >
-                                                                {playingAudioKey === `${idx}-rhyme-${i}` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
+                                                                {playingAudioKey === `${idx}-rhyme-${i}` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" aria-hidden="true" /> : <span aria-hidden="true">🔊</span>}
                                                             </button>
                                                             <button type="button"
                                                                 aria-label={t('word_sounds.refresh_audio') || 'Refresh audio'}
+                                                                aria-busy={regeneratingOptions[`${idx}-rhyme-${i}`] ? 'true' : undefined}
                                                                 onClick={async () => {
                                                                     if (!_wsAiUsable('audio', onRegenerateOption)) {
                                                                         setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
@@ -1833,7 +1906,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                 className={`${regeneratingOptions[`${idx}-rhyme-${i}`] ? 'w-auto px-2 gap-1 bg-orange-200 text-orange-800' : 'min-w-11 bg-orange-50 hover:bg-orange-100 text-orange-700 hover:text-orange-900'} min-h-11 rounded-lg transition-colors motion-reduce:transition-none flex items-center justify-center text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700 disabled:opacity-50 disabled:cursor-not-allowed`}
                                                                 title={t('word_sounds.refresh_audio_tooltip') || 'Refresh audio (re-synthesize TTS for this word)'}
                                                             >
-                                                                {regeneratingOptions[`${idx}-rhyme-${i}`] ? (<><RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /><span>{t('word_sounds.refreshing') || 'Refreshing…'}</span></>) : '🔄'}
+                                                                {regeneratingOptions[`${idx}-rhyme-${i}`] ? (<><RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /><span>{t('word_sounds.refreshing') || 'Refreshing…'}</span></>) : <span aria-hidden="true">🔄</span>}
                                                             </button>
                                                         </div>
                                                     ))}
@@ -1847,7 +1920,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 </div>
                                             </div>
                                         <div hidden={!reviewsActivity('blending')} data-ws-review-part="blending">
-                                            <label className="text-xs font-bold text-violet-700 uppercase tracking-wider mb-2 block">{t('word_sounds.blend_options')}</label>
+                                            <label className="text-xs font-bold text-violet-700 uppercase tracking-wider mb-2 block">{t('word_sounds.blend_options') || 'Blend Options'}</label>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                     <span className="flex items-center justify-between gap-2 px-3 py-1.5 font-bold bg-green-100 text-green-800 rounded-lg border-2 border-green-300">
                                                         <span className="min-w-0 break-words">{word.targetWord || word.word}</span>
@@ -1855,17 +1928,18 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                     </span>
                                                     {(word.blendingDistractors || []).map((d, i) => (
                                                         <div key={i} className="flex items-center gap-1">
-                                                            <input aria-label={t('common.enter_d')}
+                                                            <input aria-label={t('common.enter_d') || `Blend distractor ${i + 1}`}
                                                                 value={d}
                                                                 onChange={(e) => {
                                                                     const newDist = [...word.blendingDistractors];
                                                                     newDist[i] = e.target.value;
                                                                     onUpdateWord(idx, { ...word, blendingDistractors: newDist });
                                                                 }}
-                                                                className="flex-1 min-h-11 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-violet-400 focus:ring-2 focus:ring-violet-300 focus:ring-offset-1 outline-none"
+                                                                className="flex-1 min-h-11 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-violet-400 focus:ring-2 focus:ring-violet-300 focus:ring-offset-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600"
                                                             />
                                                             <button type="button"
                                                                 aria-label={(t('common.play_tts') || 'Play') + ': ' + d}
+                                                                aria-busy={playingAudioKey === `${idx}-blend-${i}` ? 'true' : undefined}
                                                                 onClick={async (e) => {
                                                                     e.stopPropagation();
                                                                     const key = `${idx}-blend-${i}`;
@@ -1874,12 +1948,13 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                     try { await onPlayAudio(d); } finally { setPlayingAudioKey(null); }
                                                                 }}
                                                                 className="p-2 rounded-lg bg-slate-100 hover:bg-violet-100 text-slate-700 hover:text-violet-800 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700"
-                                                                data-help-key="word_sounds_review_play_distractor" title={t('common.play_tts')}
+                                                                data-help-key="word_sounds_review_play_distractor" title={t('common.play_tts') || 'Play'}
                                                             >
-                                                                {playingAudioKey === `${idx}-blend-${i}` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
+                                                                {playingAudioKey === `${idx}-blend-${i}` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" aria-hidden="true" /> : <span aria-hidden="true">🔊</span>}
                                                             </button>
                                                             <button type="button"
                                                                 aria-label={t('word_sounds.refresh_audio') || 'Refresh audio'}
+                                                                aria-busy={regeneratingOptions[`${idx}-blend-${i}`] ? 'true' : undefined}
                                                                 onClick={async () => {
                                                                     if (!_wsAiUsable('audio', onRegenerateOption)) {
                                                                         setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
@@ -1898,7 +1973,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                 className={`${regeneratingOptions[`${idx}-blend-${i}`] ? 'w-auto px-2 gap-1 bg-violet-200 text-violet-800' : 'min-w-11 bg-violet-50 hover:bg-violet-100 text-violet-700 hover:text-violet-900'} min-h-11 rounded-lg transition-colors motion-reduce:transition-none flex items-center justify-center text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 disabled:opacity-50 disabled:cursor-not-allowed`}
                                                                 title={t('word_sounds.refresh_audio_tooltip') || 'Refresh audio (re-synthesize TTS for this word)'}
                                                             >
-                                                                {regeneratingOptions[`${idx}-blend-${i}`] ? (<><RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /><span>{t('word_sounds.refreshing') || 'Refreshing…'}</span></>) : '🔄'}
+                                                                {regeneratingOptions[`${idx}-blend-${i}`] ? (<><RefreshCw size={14} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /><span>{t('word_sounds.refreshing') || 'Refreshing…'}</span></>) : <span aria-hidden="true">🔄</span>}
                                                             </button>
                                                         </div>
                                                     ))}
@@ -1935,6 +2010,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                 <span className="flex-1">{wsHighlightTarget(line.text, _ctWord)}</span>
                                                                 <button type="button"
                                                                     aria-label={(t('common.play_tts') || 'Play') + ' — ' + line.label}
+                                                                    aria-busy={playingAudioKey === `${idx}-ct-${line.key}` ? 'true' : undefined}
                                                                     onClick={async (e) => {
                                                                         e.stopPropagation();
                                                                         const key = `${idx}-ct-${line.key}`;
@@ -1945,7 +2021,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                     className="p-2 rounded-lg bg-white hover:bg-sky-100 text-slate-700 hover:text-sky-800 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700"
                                                                     title={t('common.play_tts') || 'Play'}
                                                                 >
-                                                                    {playingAudioKey === `${idx}-ct-${line.key}` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
+                                                                    {playingAudioKey === `${idx}-ct-${line.key}` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" aria-hidden="true" /> : <span aria-hidden="true">🔊</span>}
                                                                 </button>
                                                             </div>
                                                         ))}
@@ -1976,6 +2052,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                             />
                                                             <button type="button"
                                                                 aria-label={t('word_sounds.preview_instruction_tts_aria') || 'Preview instruction TTS'}
+                                                                aria-busy={playingAudioKey === `${idx}-manip-instruction` ? 'true' : undefined}
                                                                 onClick={async (e) => {
                                                                     e.stopPropagation();
                                                                     const key = `${idx}-manip-instruction`;
@@ -1986,7 +2063,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                 className="p-2 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"
                                                                 title={t('word_sounds.preview_instruction_tooltip') || 'Preview instruction'}
                                                             >
-                                                                {playingAudioKey === `${idx}-manip-instruction` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
+                                                                {playingAudioKey === `${idx}-manip-instruction` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" aria-hidden="true" /> : <span aria-hidden="true">🔊</span>}
                                                             </button>
                                                         </div>
                                                     </div>
@@ -2003,6 +2080,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                 />
                                                                 <button type="button"
                                                                     aria-label={t('word_sounds.preview_answer_aria') || 'Preview answer'}
+                                                                    aria-busy={playingAudioKey === `${idx}-manip-answer` ? 'true' : undefined}
                                                                     onClick={async (e) => {
                                                                         e.stopPropagation();
                                                                         const key = `${idx}-manip-answer`;
@@ -2013,7 +2091,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                     className="p-2 rounded-lg bg-slate-100 hover:bg-green-100 text-slate-700 hover:text-green-800 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700"
                                                                     title={t('word_sounds.preview_answer_tooltip') || 'Preview answer'}
                                                                 >
-                                                                    {playingAudioKey === `${idx}-manip-answer` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
+                                                                    {playingAudioKey === `${idx}-manip-answer` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" aria-hidden="true" /> : <span aria-hidden="true">🔊</span>}
                                                                 </button>
                                                             </div>
                                                             {(word.manipulationTask.distractors || []).map((d, i) => (
@@ -2031,6 +2109,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                     />
                                                                     <button type="button"
                                                                         aria-label={t('word_sounds.preview_distractor_aria') || 'Preview distractor'}
+                                                                        aria-busy={playingAudioKey === `${idx}-manip-d-${i}` ? 'true' : undefined}
                                                                         onClick={async (e) => {
                                                                             e.stopPropagation();
                                                                             const key = `${idx}-manip-d-${i}`;
@@ -2041,7 +2120,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                         className="p-2 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700"
                                                                         title={t('word_sounds.preview_distractor_tooltip') || 'Preview distractor'}
                                                                     >
-                                                                        {playingAudioKey === `${idx}-manip-d-${i}` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" /> : '🔊'}
+                                                                        {playingAudioKey === `${idx}-manip-d-${i}` ? <div className="animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" aria-hidden="true" /> : <span aria-hidden="true">🔊</span>}
                                                                     </button>
                                                                 </div>
                                                             ))}
@@ -2049,6 +2128,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                     </div>
                                                     <button type="button"
                                                         disabled={Boolean(regeneratingOptions[`${idx}-manip-regen`]) || !_wsTextAiReady}
+                                                        aria-busy={regeneratingOptions[`${idx}-manip-regen`] ? 'true' : undefined}
                                                         onClick={async () => {
                                                             if (!_wsAiUsable('text', onRegenerateManipulationTask)) {
                                                                 setReviewError({ index: idx, message: t('toasts.ai_available') || 'AI is not available right now.' });
@@ -2178,13 +2258,13 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                         <Ban size={12} aria-hidden="true"/> {t('word_sounds.remove_text_from_image') || 'Remove Text from Image'}
                                                                     </button>
                                                                     <div className="flex gap-1">
-                                                                        <input aria-label={t('common.e_g_make_it_cuter_add_a_banana')}
+                                                                        <input aria-label={t('common.e_g_make_it_cuter_add_a_banana') || 'Describe image edit'}
                                                                             type="text"
                                                                             maxLength={500}
                                                                             value={imageRefinementInputs[idx] || ''}
                                                                             onChange={(e) => setImageRefinementInputs(prev => ({...prev, [idx]: String(e.target.value || '').slice(0, 500)}))}
                                                                             placeholder={t('word_sounds.image_refine_placeholder') || 'e.g., make it cuter, add a banana'}
-                                                                            className="flex-1 min-h-11 text-xs border border-yellow-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                                                                            className="flex-1 min-h-11 text-xs border border-yellow-300 rounded-lg px-2 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus:ring-2 focus:ring-yellow-400"
                                                                             onKeyDown={(e) => {
                                                                                 if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
                                                                                 const promptText = String(imageRefinementInputs[idx] || '').trim();
@@ -2200,7 +2280,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                             }}
                                                                         />
                                                                         <button type="button"
-                                                                            aria-label={t('common.refresh')}
+                                                                            aria-label={t('common.refresh') || 'Apply image edit'}
                                                                             onClick={() => {
                                                                                 if (isGeneratingImage(idx)) return;
                                                                                 const promptText = String(imageRefinementInputs[idx] || '').trim();
@@ -2220,7 +2300,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                                             {isGeneratingImage(idx) ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Send size={12} aria-hidden="true"/>}
                                                                         </button>
                                                                     </div>
-                                                                    <span className="text-[11px] text-slate-600 italic">{t('word_sounds.nano_mode_hint') || '✨ Nano Mode: Type custom edits like "make it blue" or "add a hat"'}</span>
+                                                                    <span className="text-[11px] text-slate-700 italic">{t('word_sounds.nano_mode_hint') || '✨ Nano Mode: Type custom edits like "make it blue" or "add a hat"'}</span>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -2231,8 +2311,10 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                     </div>
                                 )}
                             </div>
-                        ))
-                    )}
+                        ))}
+                        </>
+                        );
+                    })()}
                 </div>
                 <div className="p-3 sm:p-4 border-t bg-slate-50 flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 flex-shrink-0">
                     <button
@@ -2240,7 +2322,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         type="button"
                         aria-label={t('word_sounds.back_to_setup') || 'Back to Setup'}
                         onClick={requestBackToSetup}
-                        data-help-key="word_sounds_review_back" className="w-full sm:w-auto min-h-11 px-4 py-2 text-slate-600 hover:text-slate-800 font-medium flex items-center justify-center gap-2 hover:bg-slate-100 rounded-lg transition-colors motion-reduce:transition-none"
+                        data-help-key="word_sounds_review_back" className="w-full sm:w-auto min-h-11 px-4 py-2 text-slate-700 hover:text-slate-900 font-medium flex items-center justify-center gap-2 hover:bg-slate-100 rounded-lg transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-1"
                     >
                         <ChevronLeft size={18} aria-hidden="true" />
                         {t('word_sounds.back_to_setup') || 'Back to Setup'}
@@ -2249,7 +2331,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         <button type="button"
                             aria-label={t('word_sounds.start_activity') || 'Start Activity'}
                             onClick={onStartActivity}
-                            data-help-key="word_sounds_review_start" className="w-full sm:w-auto min-h-11 px-6 py-3 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all motion-reduce:transition-none flex items-center justify-center gap-2"
+                            data-help-key="word_sounds_review_start" className="w-full sm:w-auto min-h-11 px-6 py-3 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 motion-reduce:hover:scale-100 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 flex items-center justify-center gap-2"
                         >
                             <Play size={18} aria-hidden="true" /> {t('word_sounds.start_activity') || 'Start Activity'}
                         </button>
@@ -2407,7 +2489,7 @@ const DictationButton = ({ onTranscript, language, disabled = false, label, stop
                 <span aria-hidden="true">{listening ? '⏹️' : '🎙️'}</span>
                 <span>{listening ? stopText : startText}</span>
             </button>
-            {statusNote && <span role="status" aria-live="polite" className="text-xs text-slate-600">{statusNote}</span>}
+            {statusNote && <span role="status" aria-live="polite" className="text-xs text-slate-700">{statusNote}</span>}
         </span>
     );
 };

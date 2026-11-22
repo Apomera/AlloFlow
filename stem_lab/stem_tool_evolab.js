@@ -75,7 +75,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       '.theme-contrast [data-stem-tool-shell="evoLab"] .evo-emblem-box, .theme-contrast [data-stem-tool-shell="evoLab"] .evo-subject-badge, .theme-contrast [data-stem-tool-shell="evoLab"] .evo-telemetry-pill, .theme-contrast [data-stem-tool-shell="evoLab"] .evo-mech-strip { background: #000000 !important; border-color: #ffff00 !important; color: #ffff00 !important; }',
       '.theme-contrast [data-stem-tool-shell="evoLab"] .evo-starter-label { color: #ffff00 !important; }',
       '.theme-contrast [data-stem-tool-shell="evoLab"] .evo-starter-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
-      '.theme-contrast [data-stem-tool-shell="evoLab"] .evo-starter-chip:hover:not(:disabled) { background: #00ff00 !important; border-color: #ffff00 !important; color: #000000 !important; }'
+      '.theme-contrast [data-stem-tool-shell="evoLab"] .evo-starter-chip:hover:not(:disabled) { background: #00ff00 !important; border-color: #ffff00 !important; color: #000000 !important; }',
+      '@keyframes evo-beacon-pulse { 0%, 100% { opacity: 0.24; } 50% { opacity: 0.62; } }',
+      '.evo-curve-beacon-halo { animation: evo-beacon-pulse 2.2s ease-in-out infinite; }',
+      '.theme-contrast .evo-curve-beacon-halo { display: none !important; }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -120,6 +123,144 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
   // no unmount that should remove it. (magnetism removes its listener because
   // there the registration lives inside the component body, where a tool switch
   // would otherwise accumulate one dead handler per mount.)
+
+  function _isHighContrast() {
+    try {
+      if (typeof document !== 'undefined') {
+        var de = document.documentElement, bd = document.body;
+        if ((de && de.classList && de.classList.contains('theme-contrast')) || (bd && bd.classList && bd.classList.contains('theme-contrast'))) return true;
+      }
+      if (typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(forced-colors: active)').matches) return true;
+    } catch (e) {}
+    return false;
+  }
+
+  // Zero-GC pre-allocated radial aura ripple pool for mutation, reproduction,
+  // migration, and adaptation visual feedback on 2D canvases.
+  function _evoCreateRipplePool(capacity) {
+    var cap = capacity || 28;
+    var items = new Array(cap);
+    for (var i = 0; i < cap; i++) {
+      items[i] = { active: false, x: 0, y: 0, r: 0, maxR: 24, age: 0, dur: 0.75, rgb: '16,185,129', lw: 1.6 };
+    }
+    var cursor = 0;
+    return {
+      spawn: function(x, y, maxR, rgb, dur, lw) {
+        if (_prefersReducedMotion || _isHighContrast()) return;
+        var slot = items[cursor];
+        cursor = (cursor + 1) % cap;
+        slot.active = true;
+        slot.x = x;
+        slot.y = y;
+        slot.r = 4;
+        slot.maxR = maxR || 24;
+        slot.age = 0;
+        slot.dur = dur || 0.75;
+        slot.rgb = rgb || '16,185,129';
+        slot.lw = lw || 1.6;
+      },
+      stepAndDraw: function(ctx, dt) {
+        if (_prefersReducedMotion || _isHighContrast()) return;
+        for (var i = 0; i < cap; i++) {
+          var rp = items[i];
+          if (!rp.active) continue;
+          rp.age += dt;
+          if (rp.age >= rp.dur) { rp.active = false; continue; }
+          var t = rp.age / rp.dur;
+          var ease = 1 - (1 - t) * (1 - t);
+          rp.r = 4 + (rp.maxR - 4) * ease;
+          var alpha = (1 - t) * 0.58;
+          ctx.save();
+          ctx.strokeStyle = 'rgba(' + rp.rgb + ',' + alpha.toFixed(3) + ')';
+          ctx.lineWidth = Math.max(0.6, rp.lw * (1 - t * 0.5));
+          ctx.beginPath();
+          ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
+          ctx.stroke();
+          if (t < 0.45) {
+            ctx.fillStyle = 'rgba(' + rp.rgb + ',' + ((0.45 - t) * 0.24).toFixed(3) + ')';
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+      }
+    };
+  }
+
+  // Seasonal sunlight & drifting cloud shadow bands across 2D biome canvases.
+  function _evoDrawBiomeCloudDrift(ctx, W, H, timeSec, cloudRgba, sunRgba, xStart, xWidth) {
+    if (_isHighContrast()) return;
+    var ox = xStart || 0;
+    var ow = xWidth || W;
+    var phase = _prefersReducedMotion ? 0.35 : timeSec * 0.14;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(ox, 0, ow, H);
+    ctx.clip();
+    if (typeof ctx.createLinearGradient === 'function') {
+      var sx = ox + ((phase * 54) % (ow + 180)) - 90;
+      var sunGrad = ctx.createLinearGradient(sx - 60, 0, sx + 120, H);
+      sunGrad.addColorStop(0, 'rgba(255,255,255,0)');
+      sunGrad.addColorStop(0.5, sunRgba || 'rgba(255,251,235,0.11)');
+      sunGrad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = sunGrad;
+      ctx.fillRect(ox, 0, ow, H);
+    }
+    if (typeof ctx.createRadialGradient === 'function') {
+      for (var ci = 0; ci < 2; ci++) {
+        var cx = ox + (((phase * (28 + ci * 12) + ci * ow * 0.55) % (ow + 160)) - 80);
+        var cy = H * (0.28 + ci * 0.42) + Math.sin(phase * 0.9 + ci * 2.1) * 14;
+        var cr = Math.max(48, ow * (0.22 + ci * 0.06));
+        var cGrad = ctx.createRadialGradient(cx, cy, cr * 0.1, cx, cy, cr);
+        cGrad.addColorStop(0, cloudRgba || 'rgba(15,23,42,0.065)');
+        cGrad.addColorStop(1, 'rgba(15,23,42,0)');
+        ctx.fillStyle = cGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, cr, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  // Zero-GC organism foraging / sprint wake trail using scalar velocity.
+  function _evoDrawWakeTrail(ctx, x, y, vx, vy, rgb, scaleLen, widthPx) {
+    if (_prefersReducedMotion || _isHighContrast()) return;
+    var speed = Math.sqrt(vx * vx + vy * vy);
+    if (speed < 1.5) return;
+    var len = Math.min(scaleLen || 18, speed * 0.55);
+    var nx = vx / speed, ny = vy / speed;
+    var tx = x - nx * len, ty = y - ny * len;
+    ctx.save();
+    if (typeof ctx.createLinearGradient === 'function') {
+      var wGrad = ctx.createLinearGradient(x, y, tx, ty);
+      wGrad.addColorStop(0, 'rgba(' + rgb + ',0.42)');
+      wGrad.addColorStop(1, 'rgba(' + rgb + ',0)');
+      ctx.strokeStyle = wGrad;
+    } else {
+      ctx.strokeStyle = 'rgba(' + rgb + ',0.25)';
+    }
+    ctx.lineWidth = widthPx || 3.2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x - nx * 4, y - ny * 4);
+    ctx.lineTo(tx, ty);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Glowing generational fitness-curve SVG endpoint beacon (crisp in reduced motion / HC).
+  function _evoSvgBeacon(hFn, cx, cy, color, key) {
+    var hc = _isHighContrast();
+    var rm = _prefersReducedMotion;
+    return hFn('g', { key: key || 'beacon' },
+      !hc && hFn('circle', {
+        cx: cx, cy: cy, r: rm ? 5.5 : 7,
+        fill: color, fillOpacity: rm ? 0.24 : 0.28,
+        className: rm ? undefined : 'evo-curve-beacon-halo'
+      }),
+      hFn('circle', { cx: cx, cy: cy, r: 3.4, fill: color, stroke: '#ffffff', strokeWidth: 1.2 })
+    );
+  }
 
   // Print stylesheet — when teachers print a module, hide interactive controls
   // and force expand TeacherNotes / glossary so the printed copy includes the
@@ -1080,6 +1221,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           materials.push(weatherMat);
           var weather = new T.Points(weatherGeo, weatherMat); weather.name = 'Island seasonal atmosphere'; weather.frustumCulled = false; scene.add(weather);
           var weatherSites = [], visualTime = 0, previousVisualTime = null, visualWasMoving = false, weatherStamp = -1;
+          var sunBaseIntensity = 1.08, _tmpNormal = new T.Vector3(), _tmpAxisY = new T.Vector3(0, 1, 0), _tmpAxisZ = new T.Vector3(0, 0, 1);
           var residents = [], hitMeshes = [], currentFrame = null, currentHabitat = '', currentSeed = null, landscape;
           function noise(n) { return landscape.noise(n); }
           function linear(color) { return new T.Color(color).convertSRGBToLinear(); }
@@ -1093,7 +1235,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             var winter = key === 'snow', dry = key === 'drought', forest = key === 'forest';
             scene.background = linear(winter ? '#d8e4e9' : dry ? '#d9e2d6' : '#c8dfe1'); scene.fog = new T.Fog(scene.background, 55, 135);
             sun.color.copy(linear(winter ? '#e5efff' : dry ? '#ffe7bd' : forest ? '#e5efd7' : '#fff0d5'));
-            sun.intensity = winter ? 0.88 : dry ? 1.12 : forest ? 0.96 : 1.08;
+            sunBaseIntensity = winter ? 0.88 : dry ? 1.12 : forest ? 0.96 : 1.08;
+            sun.intensity = sunBaseIntensity;
             rim.color.copy(linear(winter ? '#d4eeff' : dry ? '#ffd599' : forest ? '#d7f0d2' : '#ffe2b8'));
             rim.intensity = winter ? 0.34 : dry ? 0.38 : 0.30;
             weatherMat.color.copy(linear(winter ? '#f7fcff' : dry ? '#ead3a0' : forest ? '#d8ead0' : '#eee8bc'));
@@ -1248,6 +1391,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             var distance = (focal ? showMeasurements ? clamp(view.distance * 0.20, 4.2, 7) : clamp(view.distance * 0.17, 3.2, 6.2) : view.distance) * Math.max(1, 1.3 / camera.aspect);
             var cameraAngle = focal ? view.angle + focal.angle : view.angle, cameraElevation = focal ? 0.40 : view.elevation;
             camera.position.set(targetX + Math.sin(cameraAngle) * Math.cos(cameraElevation) * distance, targetY + Math.sin(cameraElevation) * distance, targetZ + Math.cos(cameraAngle) * Math.cos(cameraElevation) * distance); camera.lookAt(targetX, targetY, targetZ);
+            // Seasonal sunlight/cloud drift shading across the 3D island biome
+            sun.intensity = motion ? sunBaseIntensity * (0.94 + 0.08 * Math.sin(visualTime * 0.28) * Math.cos(visualTime * 0.13)) : sunBaseIntensity;
             var rangeIndex = 0; rangeIds = [];
             residents.forEach(function(a) {
               a.root.visible = !focal || a.id === focal.id;
@@ -1256,15 +1401,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               a.root.position.z = a.z + (motion ? Math.cos(phase) * 0.12 : 0);
               a.root.position.y = landscape.sample(a.root.position.x, a.root.position.z).height + 0.025;
               a.body.position.y = motion ? Math.max(0, Math.sin(phase * 5)) * 0.045 : 0;
+              a.body.rotation.x = motion ? Math.sin(phase * 5) * 0.045 : 0;
               a.root.rotation.y = a.angle + (motion ? Math.sin(phase * 0.7) * 0.25 : 0);
               // Follow the local ground normal so selection rings remain readable on slopes.
               var slopeX = (landscape.sample(a.root.position.x - 0.1, a.root.position.z).height - landscape.sample(a.root.position.x + 0.1, a.root.position.z).height) / 0.2;
               var slopeZ = (landscape.sample(a.root.position.x, a.root.position.z - 0.1).height - landscape.sample(a.root.position.x, a.root.position.z + 0.1).height) / 0.2;
-              var normal = new T.Vector3(focal ? 0 : slopeX, 1, focal ? 0 : slopeZ).normalize().applyAxisAngle(new T.Vector3(0, 1, 0), -a.root.rotation.y);
-              a.ring.quaternion.setFromUnitVectors(new T.Vector3(0, 0, 1), normal);
+              _tmpNormal.set(focal ? 0 : slopeX, 1, focal ? 0 : slopeZ).normalize().applyAxisAngle(_tmpAxisY, -a.root.rotation.y);
+              a.ring.quaternion.setFromUnitVectors(_tmpAxisZ, _tmpNormal);
               a.ring.visible = p.selected === a.id || p.family.has(a.id);
               a.ring.material = p.selected === a.id ? selectedAuraMat : familyAuraMat;
-              var auraPulse = motion ? (1 + 0.06 * Math.sin(visualTime * 3.2 + a.id)) : 1;
+              var auraPulse = motion ? (1 + 0.08 * Math.sin(visualTime * 3.2 + a.id)) : 1;
               a.ring.scale.set(auraPulse, auraPulse, 1);
               if (!p.compact && p.spotlight && p.spotlight.has(a.id) && a.root.visible) {
                 rangeTransform.position.copy(a.root.position); rangeTransform.position.y += 0.045;
@@ -10589,6 +10735,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var selectionBaselineRef = useRef({ mean: 0.5, std: 0.29, population: POP_SIZE });
         var selectionSessionRef = useRef('');
         var canvasRef = useRef(null);
+        var ripplePoolRef = useRef(null);
+        if (!ripplePoolRef.current) ripplePoolRef.current = _evoCreateRipplePool(32);
         var rafRef = useRef(null);
         var lastGenTickRef = useRef(0);
         var generationRef = useRef(0);
@@ -10713,12 +10861,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var mutNow = mutSizeRef.current;
           var envSd = envSdRef.current;
           var census = popSizeRef.current;
+          var spawnedRipples = 0;
           while (next.length < census) {
             var parent = survivors[Math.floor(Math.random() * survivors.length)];
-            var childGene = clamp((parent.gene == null ? parent.trait : parent.gene) + randNormal(0, mutNow), 0, 1);
+            var parentGene = parent.gene == null ? parent.trait : parent.gene;
+            var childGene = clamp(parentGene + randNormal(0, mutNow), 0, 1);
+            var childX = parent.x + (Math.random() - 0.5) * 30;
+            var childY = parent.y + (Math.random() - 0.5) * 30;
             next.push({
-              x: parent.x + (Math.random() - 0.5) * 30,
-              y: parent.y + (Math.random() - 0.5) * 30,
+              x: childX,
+              y: childY,
               vx: (Math.random() - 0.5) * 30,
               vy: (Math.random() - 0.5) * 30,
               gene: childGene,
@@ -10726,6 +10878,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               alive: true,
               age: 0
             });
+            if (spawnedRipples < 10 && ripplePoolRef.current) {
+              var mutDelta = Math.abs(childGene - parentGene);
+              if (mutDelta > 0.055 || spawnedRipples < 5) {
+                ripplePoolRef.current.spawn(
+                  clamp(childX, 16, 760), clamp(childY, 16, 300),
+                  mutDelta > 0.055 ? 28 : 20,
+                  mutDelta > 0.055 ? '168,85,247' : '16,185,129',
+                  0.85, mutDelta > 0.055 ? 2.0 : 1.4
+                );
+                spawnedRipples++;
+              }
+            }
           }
           // Compute and record stats.
           var sum = 0, sumSq = 0;
@@ -10820,7 +10984,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               stepGeneration(true);
             }
             // Draw — direct ctx calls, no React re-render needed every frame.
-            drawCanvas(ctx, canvas.width, canvas.height);
+            drawCanvas(ctx, canvas.width, canvas.height, now * 0.001, dt);
             rafRef.current = requestAnimationFrame(loop);
           };
           lastGenTickRef.current = performance.now();
@@ -10828,16 +10992,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           return function() { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
         }, []); // eslint-disable-line — RAF reads from refs, so deps stay empty
 
-        var drawCanvas = function(ctx, W, H) {
+        var drawCanvas = function(ctx, W, H, timeSec, dt) {
           // Read live values from refs — drawCanvas is called from the long-
           // lived RAF closure, so closure-captured `preset` / `generation`
           // would freeze at mount-time values.
           var livePreset = presetRef.current;
           var liveGen = generationRef.current;
+          var tSec = timeSec || 0;
+          var stepDt = dt || 0.016;
+          var hc = _isHighContrast();
           // Background — environment color tints the canvas to suggest the
           // selection landscape (e.g., dark slate for polluted moth scenario).
           ctx.fillStyle = livePreset.envColor;
           ctx.fillRect(0, 0, W, H);
+          // Seasonal sunlight & drifting cloud shadow bands across the biome
+          _evoDrawBiomeCloudDrift(ctx, W, H, tSec, 'rgba(15,23,42,0.065)', 'rgba(254,249,195,0.13)');
           // Faint grid for structure
           ctx.strokeStyle = 'rgba(100, 116, 139, 0.18)';
           ctx.lineWidth = 1;
@@ -10847,10 +11016,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           for (var gy = 0; gy < H; gy += 60) {
             ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
           }
+          // Radial mutation/reproduction/adaptation aura ripples
+          if (ripplePoolRef.current) ripplePoolRef.current.stepAndDraw(ctx, stepDt);
           // Creatures: trait drives color. Map trait 0 → light cream, 1 → dark.
           var pop = creaturesRef.current;
           for (var i = 0; i < pop.length; i++) {
             var c = pop[i];
+            // Smooth foraging wake trail behind moving organisms
+            _evoDrawWakeTrail(ctx, c.x, c.y, c.vx, c.vy, c.trait > 0.5 ? '51,65,85' : '217,119,6', 18, 3.2);
             var tColor = traitToColor(c.trait);
             ctx.fillStyle = tColor;
             ctx.strokeStyle = '#1e293b';
@@ -10860,14 +11033,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ctx.fill();
             ctx.stroke();
             // Faint specular sheen for a rounded body — kept subtle so the camouflage colour still reads
-            var evShine = ctx.createRadialGradient(c.x - 2.6, c.y - 2.6, 0.5, c.x - 2.6, c.y - 2.6, 6);
-            evShine.addColorStop(0, 'rgba(255,255,255,0.18)');
-            evShine.addColorStop(1, 'rgba(255,255,255,0)');
-            ctx.fillStyle = evShine;
-            ctx.beginPath(); ctx.arc(c.x, c.y, 8, 0, 2 * Math.PI); ctx.fill();
-            // Subtle eye dot for character
+            if (!hc && typeof ctx.createRadialGradient === 'function') {
+              var evShine = ctx.createRadialGradient(c.x - 2.6, c.y - 2.6, 0.5, c.x - 2.6, c.y - 2.6, 6);
+              evShine.addColorStop(0, 'rgba(255,255,255,0.22)');
+              evShine.addColorStop(1, 'rgba(255,255,255,0)');
+              ctx.fillStyle = evShine;
+              ctx.beginPath(); ctx.arc(c.x, c.y, 8, 0, 2 * Math.PI); ctx.fill();
+            }
+            // Directional eye dot oriented toward foraging heading
+            var spd = Math.sqrt(c.vx * c.vx + c.vy * c.vy) || 1;
+            var ex = c.x + (c.vx / spd) * 2.8;
+            var ey = c.y + (c.vy / spd) * 2.8;
             ctx.fillStyle = '#1e293b';
-            ctx.beginPath(); ctx.arc(c.x + 2, c.y - 2, 1.2, 0, 2 * Math.PI); ctx.fill();
+            ctx.beginPath(); ctx.arc(ex, ey, 1.3, 0, 2 * Math.PI); ctx.fill();
           }
           // Watermark generation count
           ctx.font = 'bold 14px monospace';
@@ -10961,8 +11139,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               hist.length > 1 && h('path', { d: bandPath, fill: 'rgba(16, 185, 129, 0.18)', stroke: 'none' }),
               // Mean line
               h('path', { d: pathD, stroke: '#10b981', strokeWidth: 2, fill: 'none' }),
-              // Latest dot
-              hist.length > 0 && h('circle', { cx: toX(hist.length - 1), cy: toY(hist[hist.length - 1].mean), r: 3, fill: '#10b981' })
+              // Glowing generational fitness-curve beacon
+              hist.length > 0 && _evoSvgBeacon(h, toX(hist.length - 1), toY(hist[hist.length - 1].mean), '#10b981', 'sel-beacon')
             )
           );
         };
@@ -13531,6 +13709,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var autoRunState = useState(false), autoRun = autoRunState[0], setAutoRun = autoRunState[1];
         var bacteriaRef = useRef([]);
         var canvasRef = useRef(null);
+        var abRipplesRef = useRef(null);
+        if (!abRipplesRef.current) abRipplesRef.current = _evoCreateRipplePool(28);
         var rafRef = useRef(null);
         var lastTickRef = useRef(0);
         var antibioticRef = useRef(antibiotic);
@@ -13660,15 +13840,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             var newR = clamp(parent.r + randNormal(0, mut), 0, 1);
             if (parent.r >= 0.5 && Math.random() < PLASMID_LOSS) newR = clamp(randNormal(0.05, 0.03), 0, 1);
             var newRB = clamp((parent.rB == null ? 0.05 : parent.rB) + randNormal(0, mut), 0, 1);
+            var cx = parent.x + (Math.random() - 0.5) * 20;
+            var cy = parent.y + (Math.random() - 0.5) * 20;
             next.push({
-              x: parent.x + (Math.random() - 0.5) * 20,
-              y: parent.y + (Math.random() - 0.5) * 20,
+              x: cx,
+              y: cy,
               vx: (Math.random() - 0.5) * 12,
               vy: (Math.random() - 0.5) * 12,
               r: newR,
               rB: newRB,
               alive: true
             });
+            if (abRipplesRef.current && next.length <= 150 && (newR > 0.5 && parent.r <= 0.5 || newRB > 0.5 && (parent.rB || 0) <= 0.5 || Math.random() < 0.08)) {
+              abRipplesRef.current.spawn(
+                clamp(cx, 14, 760), clamp(cy, 14, 280),
+                newR > 0.5 || newRB > 0.5 ? 24 : 16,
+                newRB > 0.5 ? '37,99,235' : newR > 0.5 ? '220,38,38' : '34,197,94',
+                0.75, 1.5
+              );
+            }
           }
           bacteriaRef.current = next;
           // Read tick + history from the REFS (not the captured render values) so
@@ -13749,7 +13939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               }
               stepOne();
             }
-            drawCanvas(ctx, canvas.width, canvas.height);
+            drawCanvas(ctx, canvas.width, canvas.height, now * 0.001, dt);
             rafRef.current = requestAnimationFrame(loop);
           };
           lastTickRef.current = performance.now();
@@ -13757,15 +13947,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           return function() { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
         }, []); // eslint-disable-line — RAF reads from refs, deps stay empty
 
-        var drawCanvas = function(ctx, W, H) {
+        var drawCanvas = function(ctx, W, H, timeSec, dt) {
+          var tSec = timeSec || 0;
+          var stepDt = dt || 0.016;
+          var hc = _isHighContrast();
           // Petri dish background — slightly different color when antibiotic is on
           // (subtle wash of pink) so the user has a constant ambient cue.
           ctx.fillStyle = antibioticRef.current && drugBRef.current ? '#f5f3ff' : antibioticRef.current ? '#fdf2f8' : drugBRef.current ? '#eff6ff' : '#f0fdf4';
           ctx.fillRect(0, 0, W, H);
+          // Antibiotic diffusion pulse waves across petri dish when active
+          if ((antibioticRef.current || drugBRef.current) && !_prefersReducedMotion && !hc && typeof ctx.createRadialGradient === 'function') {
+            var wavePhase = (tSec * 0.45) % 1;
+            var waveR = 30 + wavePhase * Math.max(W, H) * 0.65;
+            var waveRgb = antibioticRef.current && drugBRef.current ? '147,51,234' : antibioticRef.current ? '236,72,153' : '59,130,246';
+            ctx.save();
+            ctx.strokeStyle = 'rgba(' + waveRgb + ',' + ((1 - wavePhase) * 0.24).toFixed(3) + ')';
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            ctx.arc(W * 0.5, H * 0.5, waveR, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+          }
           // Dish circle decoration
           ctx.strokeStyle = '#cbd5e1';
           ctx.lineWidth = 2;
           ctx.strokeRect(8, 8, W - 16, H - 16);
+          // Radial resistance/reproduction aura ripples
+          if (abRipplesRef.current) abRipplesRef.current.stepAndDraw(ctx, stepDt);
           // Bacteria — color encodes resistance: green (susceptible) → red (resistant).
           var pop = bacteriaRef.current;
           for (var i = 0; i < pop.length; i++) {
@@ -13774,6 +13982,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             var rr = Math.round(lerp(34, 220, b.r));
             var gg = Math.round(lerp(197, 38, b.r));
             var bb = Math.round(lerp(94, 38, b.r));
+            _evoDrawWakeTrail(ctx, b.x, b.y, b.vx, b.vy, rr + ',' + gg + ',' + bb, 10, 2.0);
             ctx.fillStyle = 'rgb(' + rr + ',' + gg + ',' + bb + ')';
             ctx.beginPath();
             ctx.arc(b.x, b.y, 5, 0, 2 * Math.PI);
@@ -14251,6 +14460,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var speciationSessionRef = useRef('');
         var speciationBaselineRef = useRef({ lMean: 0.5, rMean: 0.5, compat: 1 });
         var canvasRef = useRef(null);
+        var specRipplesRef = useRef(null);
+        if (!specRipplesRef.current) specRipplesRef.current = _evoCreateRipplePool(32);
         var rafRef = useRef(null);
         var lastTickRef = useRef(0);
         var generationRef = useRef(0);
@@ -14413,6 +14624,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             var li = Math.floor(Math.random() * nextL.length), ri = Math.floor(Math.random() * nextR.length);
             var tmp = nextL[li]; nextL[li] = nextR[ri]; nextR[ri] = tmp;
             nextL[li].x = 30 + Math.random() * 320; nextR[ri].x = 410 + Math.random() * 320;
+            if (specRipplesRef.current) {
+              specRipplesRef.current.spawn(nextL[li].x, nextL[li].y, 26, '59,130,246', 0.85, 1.8);
+              specRipplesRef.current.spawn(nextR[ri].x, nextR[ri].y, 26, '245,158,11', 0.85, 1.8);
+            }
+          }
+          if (specRipplesRef.current) {
+            if (nextL.length) specRipplesRef.current.spawn(nextL[0].x, nextL[0].y, 22, '59,130,246', 0.75, 1.4);
+            if (nextR.length) specRipplesRef.current.spawn(nextR[0].x, nextR[0].y, 22, '245,158,11', 0.75, 1.4);
           }
           leftPopRef.current = nextL;
           rightPopRef.current = nextR;
@@ -14477,7 +14696,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               lastTickRef.current = now;
               stepGeneration(true);
             }
-            drawCanvas(ctx, canvas.width, canvas.height);
+            drawCanvas(ctx, canvas.width, canvas.height, now * 0.001, dt);
             rafRef.current = requestAnimationFrame(loop);
           };
           lastTickRef.current = performance.now();
@@ -14493,13 +14712,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           return 'rgb(' + rr + ',' + gg + ',' + bb + ')';
         }
 
-        var drawCanvas = function(ctx, W, H) {
+        var drawCanvas = function(ctx, W, H, timeSec, dt) {
+          var tSec = timeSec || 0;
+          var stepDt = dt || 0.016;
+          var hc = _isHighContrast();
           // Background — left side cool blue, right side warm sand to suggest
           // two different environments selecting in different directions.
           ctx.fillStyle = '#dbeafe';
           ctx.fillRect(0, 0, 376, H);
           ctx.fillStyle = '#fef3c7';
           ctx.fillRect(376, 0, W - 376, H);
+          // Biome-specific seasonal shading: cool drifting mist left, warm sunlight shafts right
+          _evoDrawBiomeCloudDrift(ctx, W, H, tSec, 'rgba(30,64,175,0.065)', 'rgba(224,242,254,0.16)', 0, 370);
+          _evoDrawBiomeCloudDrift(ctx, W, H, tSec + 4.2, 'rgba(146,64,14,0.06)', 'rgba(254,240,138,0.18)', 382, W - 382);
+          // Speciation divergence aura pulsing gently along the barrier as lineages diverge
+          var latestHist = historyRef.current[historyRef.current.length - 1];
+          var divStrength = latestHist ? clamp(1 - latestHist.compat, 0, 1) : 0;
+          if (!hc && divStrength > 0.2 && typeof ctx.createLinearGradient === 'function') {
+            var pulseA = _prefersReducedMotion ? 0.16 : (0.10 + 0.08 * Math.sin(tSec * 2.4)) * divStrength;
+            var lGlow = ctx.createLinearGradient(340, 0, 370, 0);
+            lGlow.addColorStop(0, 'rgba(59,130,246,0)');
+            lGlow.addColorStop(1, 'rgba(59,130,246,' + pulseA.toFixed(3) + ')');
+            ctx.fillStyle = lGlow;
+            ctx.fillRect(340, 0, 30, H);
+            var rGlow = ctx.createLinearGradient(382, 0, 412, 0);
+            rGlow.addColorStop(0, 'rgba(245,158,11,' + pulseA.toFixed(3) + ')');
+            rGlow.addColorStop(1, 'rgba(245,158,11,0)');
+            ctx.fillStyle = rGlow;
+            ctx.fillRect(382, 0, 30, H);
+          }
           // Geographic barrier — visual mountains/wall in the middle.
           ctx.fillStyle = '#78350f';
           ctx.fillRect(370, 0, 12, H);
@@ -14518,10 +14759,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           ctx.fillText('🏞️  COOL · WET', 16, 22);
           ctx.fillStyle = '#92400e';
           ctx.fillText('☀️  HOT · DRY', 396, 22);
+          // Speciation & migration radial aura ripples
+          if (specRipplesRef.current) specRipplesRef.current.stepAndDraw(ctx, stepDt);
           // Bacteria/creatures on each side
-          var renderSide = function(pop) {
+          var renderSide = function(pop, wakeRgb) {
             for (var i = 0; i < pop.length; i++) {
               var c = pop[i];
+              _evoDrawWakeTrail(ctx, c.x, c.y, c.vx, c.vy, wakeRgb, 14, 2.6);
               ctx.fillStyle = traitColor(c.trait);
               ctx.strokeStyle = '#1e293b';
               ctx.lineWidth = 1;
@@ -14529,12 +14773,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               ctx.arc(c.x, c.y, 7, 0, 2 * Math.PI);
               ctx.fill();
               ctx.stroke();
+              var spd = Math.sqrt(c.vx * c.vx + c.vy * c.vy) || 1;
               ctx.fillStyle = '#1e293b';
-              ctx.beginPath(); ctx.arc(c.x + 1.6, c.y - 1.6, 1.0, 0, 2 * Math.PI); ctx.fill();
+              ctx.beginPath(); ctx.arc(c.x + (c.vx / spd) * 2.2, c.y + (c.vy / spd) * 2.2, 1.0, 0, 2 * Math.PI); ctx.fill();
             }
           };
-          renderSide(leftPopRef.current);
-          renderSide(rightPopRef.current);
+          renderSide(leftPopRef.current, '37,99,235');
+          renderSide(rightPopRef.current, '217,119,6');
           // Generation counter
           ctx.font = 'bold 12px monospace';
           ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
@@ -14591,7 +14836,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('text', { x: 4, y: toY(0) + 4, fontSize: '10', fill: '#475569' }, '0.0'),
               hist.length > 1 && h('path', { d: lPath, stroke: '#3b82f6', strokeWidth: 2, fill: 'none' }),
               hist.length > 1 && h('path', { d: rPath, stroke: '#f59e0b', strokeWidth: 2, fill: 'none' }),
-              hist.length > 1 && h('path', { d: cPath, stroke: '#10b981', strokeWidth: 2.4, fill: 'none' })
+              hist.length > 1 && h('path', { d: cPath, stroke: '#10b981', strokeWidth: 2.4, fill: 'none' }),
+              hist.length > 0 && _evoSvgBeacon(h, toX(hist.length - 1), toY(hist[hist.length - 1].lMean), '#3b82f6', 'spec-l'),
+              hist.length > 0 && _evoSvgBeacon(h, toX(hist.length - 1), toY(hist[hist.length - 1].rMean), '#f59e0b', 'spec-r'),
+              hist.length > 0 && _evoSvgBeacon(h, toX(hist.length - 1), toY(hist[hist.length - 1].compat), '#10b981', 'spec-c')
             )
           );
         };
@@ -14872,6 +15120,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var coevolutionBaselineRef = useRef({ predatorMean: 0.3, preyMean: 0.3, predatorPopulation: POP_PER_SIDE, preyPopulation: POP_PER_SIDE });
         var coevolutionSessionRef = useRef('');
         var canvasRef = useRef(null);
+        var coevoRipplesRef = useRef(null);
+        if (!coevoRipplesRef.current) coevoRipplesRef.current = _evoCreateRipplePool(28);
         var rafRef = useRef(null);
         var lastTickRef = useRef(0);
         var generationRef = useRef(0);
@@ -15025,6 +15275,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           }
           predRef.current = predNext;
           preyRef.current = preyNext;
+          if (coevoRipplesRef.current) {
+            for (var rpi = 0; rpi < Math.min(3, predNext.length); rpi++) {
+              coevoRipplesRef.current.spawn(clamp(predNext[rpi].x, 14, 760), clamp(predNext[rpi].y, 14, 280), 24, '220,38,38', 0.8, 1.7);
+            }
+            for (var ryi = 0; ryi < Math.min(3, preyNext.length); ryi++) {
+              coevoRipplesRef.current.spawn(clamp(preyNext[ryi].x, 14, 760), clamp(preyNext[ryi].y, 14, 280), 20, '59,130,246', 0.75, 1.5);
+            }
+          }
           // Compute means + gap for chart.
           var pSum = 0, ySum = 0;
           for (var a = 0; a < predNext.length; a++) pSum += predNext[a].speed;
@@ -15105,7 +15363,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               lastTickRef.current = now;
               stepGeneration(true);
             }
-            drawCanvas(ctx, canvas.width, canvas.height);
+            drawCanvas(ctx, canvas.width, canvas.height, now * 0.001, dt);
             rafRef.current = requestAnimationFrame(loop);
           };
           lastTickRef.current = performance.now();
@@ -15113,25 +15371,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           return function() { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
         }, []); // eslint-disable-line — RAF reads from refs
 
-        var drawCanvas = function(ctx, W, H) {
+        var drawCanvas = function(ctx, W, H, timeSec, dt) {
+          var tSec = timeSec || 0;
+          var stepDt = dt || 0.016;
+          var hc = _isHighContrast();
           // Tan savanna background to set scene.
           ctx.fillStyle = '#fef3c7';
           ctx.fillRect(0, 0, W, H);
-          // Sparse grass texture
-          ctx.strokeStyle = 'rgba(132, 204, 22, 0.18)';
+          // Seasonal savanna sunlight & drifting cloud shadow bands
+          _evoDrawBiomeCloudDrift(ctx, W, H, tSec, 'rgba(120,53,15,0.065)', 'rgba(254,249,195,0.20)');
+          // Sparse wind-swaying grass texture
+          ctx.strokeStyle = 'rgba(132, 204, 22, 0.22)';
           ctx.lineWidth = 1;
           for (var g = 0; g < 80; g++) {
             var gx = (g * 47) % W;
             var gy = (g * 73) % H;
+            var sway = _prefersReducedMotion ? 0 : Math.sin(tSec * 1.6 + g * 0.7) * 2.2;
             ctx.beginPath();
             ctx.moveTo(gx, gy);
-            ctx.lineTo(gx + 4, gy - 6);
+            ctx.lineTo(gx + 4 + sway, gy - 6);
             ctx.stroke();
           }
-          // Render prey first (under), then predators (over)
+          // Adaptation & reproduction aura ripples
+          if (coevoRipplesRef.current) coevoRipplesRef.current.stepAndDraw(ctx, stepDt);
+          // Render prey first (under), then predators (over) with speed-scaled sprint wakes
           var prey = preyRef.current;
           for (var i = 0; i < prey.length; i++) {
             var py = prey[i];
+            var preySpdMul = 0.6 + py.speed * 1.4;
+            _evoDrawWakeTrail(ctx, py.x, py.y, py.vx * preySpdMul, py.vy * preySpdMul, '59,130,246', 12 + py.speed * 14, 2.2 + py.speed * 1.4);
             // Color: blue, intensity by speed (faster = darker)
             var bs = Math.round(lerp(180, 30, py.speed));
             ctx.fillStyle = 'rgb(' + bs + ',' + (bs + 30) + ',220)';
@@ -15145,14 +15413,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var preds = predRef.current;
           for (var j = 0; j < preds.length; j++) {
             var pd = preds[j];
+            var predSpdMul = 0.6 + pd.speed * 1.4;
+            _evoDrawWakeTrail(ctx, pd.x, pd.y, pd.vx * predSpdMul, pd.vy * predSpdMul, '220,38,38', 14 + pd.speed * 18, 2.6 + pd.speed * 1.8);
             var ps = Math.round(lerp(220, 80, pd.speed));
+            var pr = 6 + pd.speed * 4;
             ctx.fillStyle = 'rgb(' + ps + ',60,60)';
             ctx.strokeStyle = '#7f1d1d';
             ctx.lineWidth = 1.5;
             ctx.beginPath();
-            ctx.arc(pd.x, pd.y, 6 + pd.speed * 4, 0, 2 * Math.PI);
+            ctx.arc(pd.x, pd.y, pr, 0, 2 * Math.PI);
             ctx.fill();
             ctx.stroke();
+            if (!hc && typeof ctx.createRadialGradient === 'function') {
+              var pSheen = ctx.createRadialGradient(pd.x - pr * 0.3, pd.y - pr * 0.3, 0.5, pd.x - pr * 0.3, pd.y - pr * 0.3, pr * 0.75);
+              pSheen.addColorStop(0, 'rgba(255,255,255,0.26)');
+              pSheen.addColorStop(1, 'rgba(255,255,255,0)');
+              ctx.fillStyle = pSheen;
+              ctx.beginPath(); ctx.arc(pd.x, pd.y, pr, 0, 2 * Math.PI); ctx.fill();
+            }
           }
           // Watermark
           ctx.font = 'bold 12px monospace';
@@ -15243,7 +15521,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('text', { x: 4, y: toY(0) + 4, fontSize: '10', fill: '#475569' }, '0.0'),
               hist.map(function(pt, i) { return pt.crash ? h('rect', { key: 'c' + i, x: toX(i) - (toX(1) - toX(0)) / 2, y: padT, width: Math.max(1, toX(1) - toX(0)), height: H - padT - padB, fill: 'rgba(14,165,233,0.14)' }) : null; }),
               hist.length > 1 && h('path', { d: predPath, stroke: '#dc2626', strokeWidth: 2, fill: 'none' }),
-              hist.length > 1 && h('path', { d: preyPath, stroke: '#3b82f6', strokeWidth: 2, fill: 'none' })
+              hist.length > 1 && h('path', { d: preyPath, stroke: '#3b82f6', strokeWidth: 2, fill: 'none' }),
+              hist.length > 0 && _evoSvgBeacon(h, toX(hist.length - 1), toY(hist[hist.length - 1].predMean), '#dc2626', 'coevo-pred'),
+              hist.length > 0 && _evoSvgBeacon(h, toX(hist.length - 1), toY(hist[hist.length - 1].preyMean), '#3b82f6', 'coevo-prey')
             )
           );
         };
@@ -15862,6 +16142,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var popRef = useRef([]);
         var historyRef = useRef([]);
         var canvasRef = useRef(null);
+        var climRipplesRef = useRef(null);
+        if (!climRipplesRef.current) climRipplesRef.current = _evoCreateRipplePool(24);
         var rafRef = useRef(null);
         var lastTickRef = useRef(0);
         var temperatureRef = useRef(temperature);
@@ -15941,22 +16223,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             return;
           }
           if (rescueRef.current) {
-            for (var mg = 0; mg < MIGRANTS_PER_GEN; mg++) survivors.push({ id: 'm' + (generationRef.current + 1) + '_' + mg, x: 30 + Math.random() * 720, y: 30 + Math.random() * 220, vx: (Math.random() - 0.5) * 14, vy: (Math.random() - 0.5) * 14, tolerance: clamp(temp + 0.05 + randNormal(0, 0.03), 0, 1), age: 0, migrant: true });
+            for (var mg = 0; mg < MIGRANTS_PER_GEN; mg++) {
+              var mx = 30 + Math.random() * 720, my = 30 + Math.random() * 220;
+              survivors.push({ id: 'm' + (generationRef.current + 1) + '_' + mg, x: mx, y: my, vx: (Math.random() - 0.5) * 14, vy: (Math.random() - 0.5) * 14, tolerance: clamp(temp + 0.05 + randNormal(0, 0.03), 0, 1), age: 0, migrant: true });
+              if (climRipplesRef.current) climRipplesRef.current.spawn(mx, my, 26, '52,211,153', 0.85, 1.8);
+            }
             if (trialRef.current && trialRef.current.status === 'running') detectExperiment('climatePressure', 'rescue', 'Evolutionary rescue by gene flow');
           }
           // Reproduce back to cap
           var next = survivors.slice();
+          var climSpawned = 0;
           while (next.length < POP_CAP) {
             var parent = survivors[Math.floor(Math.random() * survivors.length)];
+            var childTol = clamp(parent.tolerance + randNormal(0, mut), 0, 1);
+            var childX = parent.x + (Math.random() - 0.5) * 24;
+            var childY = parent.y + (Math.random() - 0.5) * 24;
             next.push({
               id: 'c' + next.length + '_' + (generationRef.current + 1) + '_' + Math.random(),
-              x: parent.x + (Math.random() - 0.5) * 24,
-              y: parent.y + (Math.random() - 0.5) * 24,
+              x: childX,
+              y: childY,
               vx: (Math.random() - 0.5) * 14,
               vy: (Math.random() - 0.5) * 14,
-              tolerance: clamp(parent.tolerance + randNormal(0, mut), 0, 1),
+              tolerance: childTol,
               age: 0
             });
+            if (climSpawned < 6 && climRipplesRef.current && Math.abs(childTol - temp) < Math.abs(parent.tolerance - temp)) {
+              climRipplesRef.current.spawn(clamp(childX, 14, 760), clamp(childY, 14, 280), 22, '125,211,252', 0.8, 1.5);
+              climSpawned++;
+            }
           }
           popRef.current = next;
           var sum = 0; for (var k = 0; k < next.length; k++) sum += next[k].tolerance;
@@ -16059,7 +16353,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               lastTickRef.current = now;
               stepGeneration();
             }
-            drawCanvas(ctx, canvas.width, canvas.height);
+            drawCanvas(ctx, canvas.width, canvas.height, now * 0.001, dt);
             rafRef.current = requestAnimationFrame(loop);
           };
           lastTickRef.current = performance.now();
@@ -16078,16 +16372,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           return 'rgb(' + rr + ',' + gg + ',' + bb + ')';
         }
 
-        var drawCanvas = function(ctx, W, H) {
+        var drawCanvas = function(ctx, W, H, timeSec, dt) {
+          var tSec = timeSec || 0;
+          var stepDt = dt || 0.016;
+          var hc = _isHighContrast();
           var temp = temperatureRef.current;
           // Background gradient — top is "sky" tinted by current temp, bottom is "ground"
           var bgColor = tempColor(1 - temp); // invert: hot bg = red, cold bg = blue
-          var grad = ctx.createLinearGradient(0, 0, 0, H);
-          // Lighten the bg color for the top
-          grad.addColorStop(0, bgColor);
-          grad.addColorStop(1, '#1e293b');
-          ctx.fillStyle = grad;
+          if (typeof ctx.createLinearGradient === 'function') {
+            var grad = ctx.createLinearGradient(0, 0, 0, H);
+            // Lighten the bg color for the top
+            grad.addColorStop(0, bgColor);
+            grad.addColorStop(1, '#1e293b');
+            ctx.fillStyle = grad;
+          } else {
+            ctx.fillStyle = bgColor;
+          }
           ctx.fillRect(0, 0, W, H);
+          // Seasonal cloud/thermal-shimmer drift coupled to current climate temperature
+          _evoDrawBiomeCloudDrift(
+            ctx, W, H, tSec,
+            temp > 0.55 ? 'rgba(251,146,60,0.09)' : 'rgba(147,197,253,0.08)',
+            temp > 0.55 ? 'rgba(254,240,138,0.14)' : 'rgba(224,242,254,0.14)'
+          );
           // Subtle horizon line
           ctx.strokeStyle = 'rgba(255,255,255,0.15)';
           ctx.lineWidth = 1;
@@ -16095,12 +16402,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           ctx.moveTo(0, H * 0.7);
           ctx.lineTo(W, H * 0.7);
           ctx.stroke();
+          if (climRipplesRef.current) climRipplesRef.current.stepAndDraw(ctx, stepDt);
           // Render creatures — color them by their tolerance trait
           var pop = popRef.current;
           for (var i = 0; i < pop.length; i++) {
             var c = pop[i];
             var d = Math.abs(c.tolerance - temp);
             var stressed = d > 0.2;
+            _evoDrawWakeTrail(ctx, c.x, c.y, c.vx, c.vy, stressed ? '254,240,138' : '226,232,240', 13, 2.4);
+            if (stressed && !hc && !_prefersReducedMotion) {
+              var pulseR = 10 + 3.2 * Math.sin(tSec * 4.5 + i);
+              ctx.strokeStyle = 'rgba(254, 240, 138, 0.42)';
+              ctx.lineWidth = 1.4;
+              ctx.beginPath();
+              ctx.arc(c.x, c.y, pulseR, 0, 2 * Math.PI);
+              ctx.stroke();
+            }
             ctx.fillStyle = tempColor(c.tolerance);
             ctx.strokeStyle = stressed ? '#fef08a' : '#0f172a';
             ctx.lineWidth = stressed ? 2 : 1;
@@ -16171,7 +16488,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('text', { x: 4, y: toY(0) + 4, fontSize: '10', fill: '#475569' }, '0.0'),
               hist.length > 1 && h('path', { d: tempPath, stroke: '#dc2626', strokeWidth: 2.4, fill: 'none' }),
               hist.length > 1 && h('path', { d: meanPath, stroke: '#3b82f6', strokeWidth: 2, fill: 'none' }),
-              hist.length > 1 && h('path', { d: popPath, stroke: '#10b981', strokeWidth: 1.5, strokeDasharray: '3,2', fill: 'none' })
+              hist.length > 1 && h('path', { d: popPath, stroke: '#10b981', strokeWidth: 1.5, strokeDasharray: '3,2', fill: 'none' }),
+              hist.length > 0 && _evoSvgBeacon(h, toX(hist.length - 1), toY(hist[hist.length - 1].temp), '#dc2626', 'clim-temp'),
+              hist.length > 0 && _evoSvgBeacon(h, toX(hist.length - 1), toY(hist[hist.length - 1].mean), '#3b82f6', 'clim-mean'),
+              hist.length > 0 && _evoSvgBeacon(h, toX(hist.length - 1), toY(hist[hist.length - 1].popSize / POP_CAP), '#10b981', 'clim-pop')
             ),
             h('div', { className: 'text-[0.625rem] text-slate-600 mt-1' }, t('stem.evolab.when_temperature_red_and_tolerance_mea', 'When temperature (red) and tolerance mean (blue) move together, the population is adapting. When they DIVERGE, the population is in trouble.'))
           );
@@ -17159,6 +17479,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var savedRunsState = useState({}), savedRuns = savedRunsState[0], setSavedRuns = savedRunsState[1];
         var RUN_COLORS = { A: '#0284c7', B: '#7c3aed' };
         var canvasRef = useRef(null);
+        var pvRipplesRef = useRef(null);
+        if (!pvRipplesRef.current) pvRipplesRef.current = _evoCreateRipplePool(16);
         var rafRef = useRef(null);
         var roundState = useState(0), round = roundState[0], setRound = roundState[1];
         var killsState = useState(0), kills = killsState[0], setKills = killsState[1];
@@ -17223,6 +17545,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           ids.forEach(function(pid) {
             var idx = pop.findIndex(function(p) { return p.id === pid && p.alive; });
             if (idx < 0) return;
+            if (pvRipplesRef.current && pop[idx].x >= 0 && pop[idx].y >= 0) {
+              pvRipplesRef.current.spawn(pop[idx].x, pop[idx].y, 26, '248,113,113', 0.65, 2.0);
+            }
             pop[idx].alive = false;
             // Move the dead prey off-canvas
             pop[idx].x = -100; pop[idx].y = -100;
@@ -17340,7 +17665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 if (p.y > canvas.height - 12) { p.y = canvas.height - 12; p.vy = -p.vy; }
               }
             }
-            drawCanvas(ctx, canvas.width, canvas.height);
+            drawCanvas(ctx, canvas.width, canvas.height, now * 0.001, dt);
             rafRef.current = requestAnimationFrame(loop);
           };
           rafRef.current = requestAnimationFrame(loop);
@@ -17378,13 +17703,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           return 'rgb(' + ur + ',' + ug + ',' + ub + ')';
         }
 
-        var drawCanvas = function(ctx, W, H) {
+        var drawCanvas = function(ctx, W, H, timeSec, dt) {
+          var tSec = timeSec || 0;
+          var stepDt = dt || 0.016;
           var e = envRef.current;
           // Background — base gradient + noise dots for texture
-          var grad = ctx.createLinearGradient(0, 0, W, H);
-          grad.addColorStop(0, e.bgColor1);
-          grad.addColorStop(1, e.bgColor2);
-          ctx.fillStyle = grad;
+          if (typeof ctx.createLinearGradient === 'function') {
+            var grad = ctx.createLinearGradient(0, 0, W, H);
+            grad.addColorStop(0, e.bgColor1);
+            grad.addColorStop(1, e.bgColor2);
+            ctx.fillStyle = grad;
+          } else {
+            ctx.fillStyle = e.bgColor1;
+          }
           ctx.fillRect(0, 0, W, H);
           // Noise — random small dots in the noiseColor for texture/camouflage feel
           ctx.fillStyle = e.noiseColor;
@@ -17399,7 +17730,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             var ns = ((ni * 7) % 4) + 1;
             ctx.fillRect(nx, ny, ns, ns);
           }
-          // Draw prey
+          // Draw prey (pure camouflage — no outline or spoiler halo)
           var pop = popRef.current;
           for (var i = 0; i < pop.length; i++) {
             var p = pop[i];
@@ -17408,9 +17739,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ctx.beginPath();
             ctx.arc(p.x, p.y, 8, 0, 2 * Math.PI);
             ctx.fill();
-            // Subtle outline only on prey closest to detect (high contrast against bg)
-            // Otherwise no outline = pure camouflage challenge
           }
+          // Subtle ambient seasonal canopy/cloud drift across the whole scene + capture ripples
+          _evoDrawBiomeCloudDrift(ctx, W, H, tSec * 0.7, 'rgba(15,23,42,0.045)', 'rgba(255,255,255,0.055)');
+          if (pvRipplesRef.current) pvRipplesRef.current.stepAndDraw(ctx, stepDt);
         };
 
         // Click handler — translate canvas coordinates to a prey target.

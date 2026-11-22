@@ -139,7 +139,8 @@ function validateRelativeTarget(value, label = 'target') {
     segment === '..' ||
     segment.endsWith('.') ||
     segment.endsWith(' ') ||
-    /[<>:"|?*]/.test(segment)
+    /[\u0000-\u001f\u007f<>:"|?*]/.test(segment) ||
+    /^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)/i.test(segment)
   )) {
     throw new Error(`${label} contains an unsafe path segment.`);
   }
@@ -371,7 +372,8 @@ function splitAsarEntrypoint(serverEntrypoint) {
  */
 function validateAsarEntrypoint(asarPath, relativeEntrypoint) {
   const safeEntrypoint = validateRelativeTarget(relativeEntrypoint, 'ASAR entrypoint');
-  const fd = fs.openSync(asarPath, 'r');
+  const openFlags = fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0);
+  const fd = fs.openSync(asarPath, openFlags);
   let header;
   try {
     const archiveSize = fs.fstatSync(fd).size;
@@ -481,13 +483,25 @@ function inspectExtractedTree(root, limits) {
 
 const MAX_DOWNLOAD_REDIRECTS = 5;
 
-const { isPublicIp } = require('./web-source-fetch.cjs');
+const { isPublicIp, assertPublicTarget } = require('./web-source-fetch.cjs');
 
 function isPrivateOrLoopbackHost(hostname) {
   const host = String(hostname || '').trim().toLowerCase().replace(/^\[|\]$/g, '').replace(/\.+$/, '');
   if (!host) return true;
-  if (host === 'localhost' || host.endsWith('.localhost') || host === 'metadata.google.internal') return true;
+  if (
+    host === 'localhost' ||
+    host.endsWith('.localhost') ||
+    host.endsWith('.local') ||
+    host.endsWith('.internal') ||
+    host.endsWith('.home.arpa') ||
+    host === 'metadata.google.internal' ||
+    host === 'metadata.google' ||
+    host === 'metadata'
+  ) {
+    return true;
+  }
   if (net.isIP(host)) return !isPublicIp(host);
+  if (!host.includes('.')) return true;
   return false;
 }
 
@@ -524,17 +538,34 @@ async function cancelResponseBodyQuietly(response) {
   }
 }
 
-async function defaultDownloadArchive({ url, destinationPath, signal, maxBytes, expectedBytes, onProgress, fetchImpl }) {
+async function defaultDownloadArchive({ url, destinationPath, signal, maxBytes, expectedBytes, onProgress, fetchImpl, lookup }) {
   if (typeof fetchImpl !== 'function') throw new Error('No HTTPS download implementation is available.');
+  const verifyDns = fetchImpl === globalThis.fetch || typeof lookup === 'function';
   let currentUrl = validateArchiveDownloadUrl(url, false);
   let response = null;
   for (let hop = 0; hop <= MAX_DOWNLOAD_REDIRECTS; hop += 1) {
-    response = await fetchImpl(currentUrl, {
-      method: 'GET',
-      redirect: 'manual',
-      signal,
-      headers: { Accept: 'application/zip' },
-    });
+    if (verifyDns) {
+      await assertPublicTarget(new URL(currentUrl), typeof lookup === 'function' ? lookup : undefined);
+    }
+    const hopController = new AbortController();
+    const onAbort = () => { try { hopController.abort(); } catch (_) {} };
+    if (signal) {
+      if (signal.aborted) hopController.abort();
+      else signal.addEventListener('abort', onAbort, { once: true });
+    }
+    const hopTimer = setTimeout(() => { try { hopController.abort(); } catch (_) {} }, 60000);
+    if (hopTimer.unref) hopTimer.unref();
+    try {
+      response = await fetchImpl(currentUrl, {
+        method: 'GET',
+        redirect: 'manual',
+        signal: hopController.signal,
+        headers: { Accept: 'application/zip' },
+      });
+    } finally {
+      clearTimeout(hopTimer);
+      if (signal) signal.removeEventListener('abort', onAbort);
+    }
     const status = response && Number(response.status);
     if (status === 301 || status === 302 || status === 303 || status === 307 || status === 308) {
       await cancelResponseBodyQuietly(response);
@@ -667,7 +698,10 @@ async function defaultHealthProbe({
           Cookie: probeCookieHeader(jar),
         },
       });
-      if (!response || !applyProbeCookies(jar, response.headers)) return false;
+      if (!response || !applyProbeCookies(jar, response.headers)) {
+        await discardProbeBody(response);
+        return false;
+      }
       const location = response.headers && typeof response.headers.get === 'function'
         ? response.headers.get('location')
         : '';
@@ -698,7 +732,10 @@ async function defaultHealthProbe({
         Cookie: probeCookieHeader(jar),
       },
     });
-    if (!response || response.status !== 200 || typeof response.json !== 'function') return false;
+    if (!response || response.status !== 200 || typeof response.json !== 'function') {
+      await discardProbeBody(response);
+      return false;
+    }
     const payload = await response.json();
     return Array.isArray(payload);
   } catch (error) {
@@ -1005,6 +1042,7 @@ function createAlloSheetEngineManager(options = {}) {
   }
 
   async function ensureArchive() {
+    assertNoSymlinkPath(appDataDir, paths.downloadsDir);
     fs.mkdirSync(paths.downloadsDir, { recursive: true, mode: 0o700 });
     assertNoSymlinkPath(appDataDir, paths.downloadsDir);
 
@@ -1067,6 +1105,11 @@ function createAlloSheetEngineManager(options = {}) {
       throw new Error('A safe extractArchive implementation is required to install Grist Desktop.');
     }
     state.phase = 'installing';
+    assertNoSymlinkPath(appDataDir, paths.ownerRoot);
+    for (const target of [paths.stagingDir, path.dirname(paths.installDir)]) {
+      assertManagedPath(paths.ownerRoot, target, 'managed install directory');
+      assertNoSymlinkPath(appDataDir, target);
+    }
     fs.mkdirSync(paths.ownerRoot, { recursive: true, mode: 0o700 });
     fs.mkdirSync(paths.stagingDir, { recursive: true, mode: 0o700 });
     fs.mkdirSync(path.dirname(paths.installDir), { recursive: true, mode: 0o700 });
@@ -1167,6 +1210,7 @@ function createAlloSheetEngineManager(options = {}) {
       paths.logDir,
     ]) {
       assertManagedPath(paths.ownerRoot, directory, 'Grist data directory');
+      assertNoSymlinkPath(appDataDir, directory);
       fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
       assertNoSymlinkPath(appDataDir, directory);
     }
@@ -1290,11 +1334,9 @@ function createAlloSheetEngineManager(options = {}) {
     const deadline = nowMs() + startupTimeoutMs;
     while (nowMs() < deadline) {
       if (state.stopRequested) throw abortError();
-      if (
-        child.exitCode !== null &&
-        child.exitCode !== undefined
-      ) {
-        throw new Error(`The managed Grist server exited during startup (code ${child.exitCode}).`);
+      if (childHasExited(child)) {
+        const detail = child.signalCode ? `signal ${child.signalCode}` : `code ${child.exitCode}`;
+        throw new Error(`The managed Grist server exited during startup (${detail}).`);
       }
       const parentSignal = state.abortController && state.abortController.signal;
       const controller = new AbortController();

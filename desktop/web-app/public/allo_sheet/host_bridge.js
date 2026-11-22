@@ -267,7 +267,8 @@
             : '';
         });
         var rawId = row.id == null ? rowIndex + 1 : row.id;
-        if (typeof rawId !== 'string' && typeof rawId !== 'number') {
+        if ((typeof rawId !== 'string' && typeof rawId !== 'number')
+          || (typeof rawId === 'number' && !Number.isSafeInteger(rawId))) {
           throw artifactFailure('A transferred row identifier is invalid.');
         }
         var originalId = String(rawId);
@@ -276,6 +277,9 @@
           !recordId
           || recordId !== originalId
           || recordId.trim() !== recordId
+          || recordId === '__proto__'
+          || recordId === 'constructor'
+          || recordId === 'prototype'
           || /[\u0000-\u001f\u007f]/.test(recordId)
           || seenRows[recordId]
         ) {
@@ -646,8 +650,17 @@
     return result;
   }
 
+  function neutralizePromptMarkers(text) {
+    return String(text == null ? '' : text).replace(
+      /\[\s*(?:BEGIN|END)\s+(?:UNTRUSTED|BOUNDED)[^\]]*\]/gi,
+      '(filtered marker)'
+    );
+  }
+
   function buildPrompt(instruction, snapshot) {
     var structureOnly = snapshot.scope !== 'selected-values';
+    var safeInstruction = neutralizePromptMarkers(safeText(instruction, 800));
+    var safeSnapshot = neutralizePromptMarkers(JSON.stringify(snapshot).slice(0, 60000));
     return [
       'You are AlloSheet, a careful educator-facing spreadsheet assistant.',
       'Return ONLY valid JSON with this exact shape:',
@@ -664,11 +677,11 @@
       '- If the request is ambiguous or risky, keep changes empty and explain what the educator should clarify.',
       '',
       '[BEGIN UNTRUSTED EDUCATOR REQUEST]',
-      safeText(instruction, 800),
+      safeInstruction,
       '[END UNTRUSTED EDUCATOR REQUEST]',
       '',
       '[BEGIN BOUNDED WORKBOOK SNAPSHOT]',
-      JSON.stringify(snapshot).slice(0, 60000),
+      safeSnapshot,
       '[END BOUNDED WORKBOOK SNAPSHOT]'
     ].join('\n');
   }

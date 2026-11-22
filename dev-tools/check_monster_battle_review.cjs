@@ -32,9 +32,9 @@ const fs=require('fs'),path=require('path'),{chromium}=require('playwright'),{ex
    for(const file of ['teacher_module.js','ui_modals_module.js','quiz_live_aggregators.js'])await page.addScriptTag({path:file});
    await page.evaluate(async({uid,session,questions,roster})=>{
     const LP=AlloModules.LivePolling;
-    if(uid==='teacher'){window.fixtureHost=LP.createHost({sessionCode:'LIVE',onResponse:(uid,_name,payload)=>fixtureAnswer(uid,payload)});fixtureHost.setAllowedUids(Object.keys(roster));await fixtureHost.start();}
+    if(uid==='teacher'){window.fixtureHost=LP.createHost({sessionCode:'LIVE',acceptResponse:(_uid,payload)=>{const q=window.fixtureState?.quizState;return !!q&&q.phase==='answering'&&payload?.pollId==='boss:'+q.currentQuestionIndex+':'+q.roundId;},onResponse:(uid,_name,payload)=>fixtureAnswer(uid,payload)});fixtureHost.setAllowedUids(Object.keys(roster));await fixtureHost.start();}
     else{window.fixtureGuest=LP.createGuest({sessionCode:'LIVE',userUid:uid,codename:roster[uid].name});window.__alloQuizChannelSend=(pollId,response)=>window.forceReceipt?false:fixtureGuest.sendResponse(pollId,response);fixtureGuest.join();}
-    function Root(){const[data,setData]=React.useState(session);window.setBattleFixture=setData;window.fixtureState=data;const quiz=data.quizState;React.useEffect(()=>{if(uid==='teacher'&&quiz.phase==='answering')fixtureHost.broadcastPoll({id:'boss:'+quiz.currentQuestionIndex+':'+quiz.roundId,type:'mcq',options:questions[quiz.currentQuestionIndex].options});},[quiz.phase,quiz.roundId,quiz.currentQuestionIndex]);return React.createElement(AlloModules[uid==='teacher'?'TeacherLiveQuizControls':'StudentQuizOverlay'],{sessionData:data,generatedContent:{type:'quiz',data:{questions}},user:{uid},activeSessionCode:'LIVE',appId:'app',targetAppId:'app'});}
+    function Root(){const[data,setData]=React.useState(session);window.setBattleFixture=setData;window.fixtureState=data;return React.createElement(AlloModules[uid==='teacher'?'TeacherLiveQuizControls':'StudentQuizOverlay'],{sessionData:data,generatedContent:{type:'quiz',data:{questions}},user:{uid},activeSessionCode:'LIVE',appId:'app',targetAppId:'app'});}
     ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(Root));
    },{uid,session,questions,roster});
   }

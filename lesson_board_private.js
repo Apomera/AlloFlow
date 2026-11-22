@@ -5,6 +5,8 @@ import { stepOf } from './lesson_board_engine.js';
 // the rules allow it, so older apps and unpublished rules keep using the shared action slot.
 // Mailbox and LAN sessions are filtered by their servers and keep the shared slot.
 const object = value => !!value && typeof value === 'object' && !Array.isArray(value);
+const safeUid = id => typeof id === 'string' && id.length > 0 && id !== '__proto__' && id !== 'constructor' && id !== 'prototype';
+const own = (obj, key) => !!obj && Object.prototype.hasOwnProperty.call(obj, key);
 export const privateTransport = ref => !!ref && !ref.__alloMbRef && !ref.__alloLanRef;
 const base = (appId, code) => ['artifacts', appId, 'public', 'data', 'sessions', code];
 export const answerPath = (appId, code, uid) => [...base(appId, code), 'boardAnswers', uid];
@@ -17,7 +19,7 @@ export function splitAnswers(patch) {
   const shared = {}, values = {};
   for (const [path, value] of Object.entries(patch || {})) {
     const match = ANSWER_PATH.exec(path);
-    if (match && object(value) && typeof value.value === 'string') { const key = roundKey(match[1], match[2]); (values[key] = values[key] || {})[match[3]] = { value: value.value, correct: value.correct === true }; shared[path] = { received: true }; }
+    if (match && safeUid(match[3]) && object(value) && typeof value.value === 'string') { const key = roundKey(match[1], match[2]); (values[key] = values[key] || Object.create(null))[match[3]] = { value: value.value, correct: value.correct === true }; shared[path] = { received: true }; }
     else shared[path] = value;
   }
   return { shared, values };
@@ -28,21 +30,25 @@ export function withPrivateAnswers(run, hostDoc) {
   if (!object(stored) || !object(step.answers) || !Object.values(step.answers).some(entry => entry?.received)) return run;
   const next = JSON.parse(JSON.stringify(run)), raw = next.steps['t' + run.turn], target = round > 0 ? raw?.responseRounds?.['r' + round] : raw;
   if (!object(target?.answers)) return run;
-  for (const [uid, entry] of Object.entries(target.answers)) if (entry?.received && object(stored[uid])) target.answers[uid] = { value: stored[uid].value, correct: stored[uid].correct === true };
+  for (const [uid, entry] of Object.entries(target.answers)) if (entry?.received && safeUid(uid) && own(stored, uid) && object(stored[uid])) target.answers[uid] = { value: stored[uid].value, correct: stored[uid].correct === true };
   return next;
 }
 // A learner's own copy: their receipt shows the value they sent (from their own private document).
-export function withOwnAnswer(run, uid, own) {
-  const step = stepOf(run), entry = step.answers?.[uid];
-  if (!entry?.received || !object(own) || own.requestId !== step.seen?.[uid]?.requestId || typeof own.value !== 'string') return run;
+export function withOwnAnswer(run, uid, ownDoc) {
+  if (!safeUid(uid)) return run;
+  const step = stepOf(run), entry = own(step.answers, uid) ? step.answers[uid] : null;
+  const seen = own(step.seen, uid) ? step.seen[uid] : null;
+  if (!entry?.received || !object(ownDoc) || ownDoc.requestId !== seen?.requestId || typeof ownDoc.value !== 'string') return run;
   const next = JSON.parse(JSON.stringify(run)), raw = next.steps['t' + run.turn], round = step.retryRound || 0, target = round > 0 ? raw?.responseRounds?.['r' + round] : raw;
-  if (object(target?.answers?.[uid])) target.answers[uid] = { value: own.value, correct: null };
+  if (own(target?.answers, uid) && object(target.answers[uid])) target.answers[uid] = { value: ownDoc.value, correct: null };
   return next;
 }
 // After End or Restart: remove the finished attempt's private answers and teacher-only values (best effort).
 export async function clearPrivateAnswers(fb, appId, code, attemptId) {
-  if (typeof fb?.deleteDoc !== 'function' || typeof fb.getDocs !== 'function' || typeof fb.collection !== 'function') return;
-  const db = fb.db || window.__alloShared?.db, refs = [];
+  if (typeof fb?.deleteDoc !== 'function' || typeof fb.getDocs !== 'function' || typeof fb.collection !== 'function' || typeof fb.doc !== 'function') return;
+  const db = fb.db || window.__alloShared?.db;
+  if (!db) return;
+  const refs = [];
   try { (await fb.getDocs(fb.collection(db, ...answersCollectionPath(appId, code)))).forEach(item => { if (item.data()?.attemptId === attemptId) refs.push(fb.doc(db, ...answerPath(appId, code, item.id))); }); } catch (_) {}
   await Promise.all([...refs, fb.doc(db, ...hostPath(appId, code, attemptId))].map(ref => Promise.resolve().then(() => fb.deleteDoc(ref)).catch(() => {})));
 }

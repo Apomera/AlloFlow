@@ -31,6 +31,10 @@
     {
       "issue": "The keyed option was the longest of the four choices in 28 of 34 items, against 25% by chance, leaving the bank partly answerable without reading the stem. An earlier review of this file recorded that answer-length cues had been removed; that claim did not hold when measured.",
       "change": "Rewrote 19 distractors by hand to carry the same false claim at parallel specificity and length. No keyed option, rationale, reference or answer position was changed. Key-is-longest now 9/34 (26%)."
+    },
+    {
+      "issue": "Non-EPPP editorial screening flagged residual lexical-leakage, brief distractor-rationale, or asymmetric-extreme-distractor warnings in 32 item(s).",
+      "change": "Remediated 32 item(s) by hand via dev-tools/non_eppp_authored_remediation/parapro_batch4_reading_34.cjs without changing any answerIndex, domainId, rationale, or references. All editorial warning checks now report 0 findings across the batch."
     }
   ],
   "checks": {
@@ -253,10 +257,10 @@
   },
   "reviewedFile": "dev-tools/authored/parapro_batch4_reading_34.json",
   "blockers": [],
-  "sourceSha256": "ffc77dbd80d254cfab225387c9b9917b3031e4f581fa9bbba64948502fd295bc",
+  "sourceSha256": "a09c80d03c2e382d797cd7986b003ed49b03ccde141e9f6e96470590ccbbd8a9",
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "ffc77dbd80d254cfab225387c9b9917b3031e4f581fa9bbba64948502fd295bc"
+    "sha256": "a09c80d03c2e382d797cd7986b003ed49b03ccde141e9f6e96470590ccbbd8a9"
   },
   "integration": {
     "packId": "parapro-1755-practice-1",
@@ -274,6 +278,16 @@
       "priorSha256": "e0aeaef484b8cc1de51b52f04d375147ed95d54d661ba0ce27b620d7fab0f60e",
       "sha256": "ffc77dbd80d254cfab225387c9b9917b3031e4f581fa9bbba64948502fd295bc",
       "note": "Distractor text edited after the independent cross-review. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+    },
+    {
+      "at": "2026-11-21",
+      "by": "Antigravity — AlloFlow test-prep warning remediation pass",
+      "scope": "editorial warning remediation (lexical leakage / distractor feedback depth / extreme-qualifier balance)",
+      "itemsChanged": 32,
+      "ledger": "dev-tools/non_eppp_authored_remediation/parapro_batch4_reading_34.cjs",
+      "priorSha256": "ffc77dbd80d254cfab225387c9b9917b3031e4f581fa9bbba64948502fd295bc",
+      "sha256": "a09c80d03c2e382d797cd7986b003ed49b03ccde141e9f6e96470590ccbbd8a9",
+      "note": "Edited after the independent cross-review to eliminate editorial warning findings while preserving tested constructs and answer positions. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
     }
   ]
 }

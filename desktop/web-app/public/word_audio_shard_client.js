@@ -91,7 +91,7 @@
   }
 
   function createLruCache(maxEntries, onEvict) {
-    var limit = typeof maxEntries === 'number' && maxEntries >= 0 ? Math.floor(maxEntries) : 32;
+    var limit = typeof maxEntries === 'number' && Number.isFinite(maxEntries) && maxEntries >= 0 ? Math.floor(maxEntries) : 32;
     var map = new Map();
 
     function evictOne(key, val) {
@@ -240,9 +240,20 @@
   }
 
   function decodeBase64ToUint8Array(b64) {
+    if (typeof b64 !== 'string') {
+      throw new Error('Invalid base64 audio payload.');
+    }
     var cleaned = b64.replace(/\s+/g, '');
+    if (!cleaned || cleaned.length % 4 === 1 || !/^[A-Za-z0-9+/]*={0,2}$/.test(cleaned)) {
+      throw new Error('Invalid base64 audio payload.');
+    }
     if (typeof atob === 'function') {
-      var bin = atob(cleaned);
+      var bin;
+      try {
+        bin = atob(cleaned);
+      } catch (err) {
+        throw new Error('Invalid base64 audio payload.');
+      }
       var bytes = new Uint8Array(bin.length);
       for (var i = 0; i < bin.length; i++) {
         bytes[i] = bin.charCodeAt(i) & 0xff;
@@ -353,6 +364,32 @@
     }
   }
 
+  function invokeDecodeAudioData(ctx, arrayBuf) {
+    return new Promise(function (resolve, reject) {
+      var settled = false;
+      function done(fn, val) {
+        if (settled) return;
+        settled = true;
+        fn(val);
+      }
+      try {
+        var ret = ctx.decodeAudioData(
+          arrayBuf,
+          function (decoded) { done(resolve, decoded); },
+          function (err) { done(reject, err || new Error('Audio decode failed.')); }
+        );
+        if (ret && typeof ret.then === 'function') {
+          ret.then(
+            function (decoded) { done(resolve, decoded); },
+            function (err) { done(reject, err); }
+          );
+        }
+      } catch (err) {
+        done(reject, err);
+      }
+    });
+  }
+
   function createAudioDecoder(envRoot, customDecoder) {
     if (typeof customDecoder === 'function') {
       return customDecoder;
@@ -363,14 +400,14 @@
         || (typeof webkitOfflineAudioContext === 'function' ? webkitOfflineAudioContext : null);
       if (typeof OfflineCtx === 'function') {
         var offline = new OfflineCtx(1, 1, 24000);
-        return offline.decodeAudioData(arrayBuf);
+        return invokeDecodeAudioData(offline, arrayBuf);
       }
       var AudioCtx = (envRoot && (envRoot.AudioContext || envRoot.webkitAudioContext))
         || (typeof AudioContext === 'function' ? AudioContext : null)
         || (typeof webkitAudioContext === 'function' ? webkitAudioContext : null);
       if (typeof AudioCtx === 'function') {
         var ctx = new AudioCtx();
-        return Promise.resolve(ctx.decodeAudioData(arrayBuf)).then(
+        return invokeDecodeAudioData(ctx, arrayBuf).then(
           function (decoded) {
             if (typeof ctx.close === 'function') {
               try { Promise.resolve(ctx.close()).catch(function () {}); } catch (_) {}
@@ -405,6 +442,9 @@
     var lastIndexError = null;
     var resolvedIndexBase = '';
     var lastShardError = null;
+    var cacheEpoch = 0;
+    var indexEpoch = 0;
+    var uncachedBlobUrls = new Set();
 
     var inFlightShards = new Map();
     var shardCache = createLruCache(
@@ -519,20 +559,25 @@
       }
 
       var bases = resolveBaseUrls(opts);
+      var reqIndexEpoch = indexEpoch;
       var reqPromise = (async function () {
         try {
-          var result = await fetchJsonAcrossBases('index.json', bases, opts, isValidIndex, signal);
-          indexData = result.data;
-          resolvedIndexBase = result.base;
-          lastIndexFailAt = 0;
-          lastIndexError = null;
-          return indexData;
+          var result = await fetchJsonAcrossBases('index.json', bases, opts, isValidIndex, null);
+          if (reqIndexEpoch === indexEpoch) {
+            indexData = result.data;
+            resolvedIndexBase = result.base;
+            lastIndexFailAt = 0;
+            lastIndexError = null;
+          }
+          return result.data;
         } catch (err) {
           if (err && err.name === 'AbortError') {
             throw err;
           }
-          lastIndexFailAt = Date.now();
-          lastIndexError = err ? String(err.message || err) : 'Index load failed';
+          if (reqIndexEpoch === indexEpoch) {
+            lastIndexFailAt = Date.now();
+            lastIndexError = err ? String(err.message || err) : 'Index load failed';
+          }
           return null;
         } finally {
           if (inFlightIndex === reqPromise) {
@@ -589,18 +634,23 @@
         bases = [resolvedIndexBase].concat(bases.filter(function (b) { return b !== resolvedIndexBase; }));
       }
 
+      var reqEpoch = cacheEpoch;
       var shardPromise = (async function () {
         counters.shardFetches += 1;
         try {
-          var res = await fetchJsonAcrossBases(fileName, bases, opts, isPlainObject, signal);
-          lastShardError = null;
-          shardCache.set(fileName, res.data);
+          var res = await fetchJsonAcrossBases(fileName, bases, opts, isPlainObject, null);
+          if (reqEpoch === cacheEpoch) {
+            lastShardError = null;
+            shardCache.set(fileName, res.data);
+          }
           return res.data;
         } catch (err) {
           if (err && err.name === 'AbortError') {
             throw err;
           }
-          lastShardError = err ? String(err.message || err) : 'Shard load failed';
+          if (reqEpoch === cacheEpoch) {
+            lastShardError = err ? String(err.message || err) : 'Shard load failed';
+          }
           return null;
         } finally {
           if (inFlightShards.get(fileName) === shardPromise) {
@@ -625,7 +675,12 @@
       }
 
       var decoder = createAudioDecoder(envRoot, opts.decodeAudioData);
-      var bytes = decodeBase64ToUint8Array(parsed.base64);
+      var bytes;
+      try {
+        bytes = decodeBase64ToUint8Array(parsed.base64);
+      } catch (_) {
+        return null;
+      }
       var arrayBuf = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
       var maybeDecoded = decoder(arrayBuf);
       if (!maybeDecoded) {
@@ -634,12 +689,15 @@
         }
         return rawUri;
       }
+      var reqEpoch = cacheEpoch;
       var audioBuffer = await raceWithSignal(Promise.resolve(maybeDecoded), opts.signal);
       checkNotAborted(opts.signal);
       var wavBytes = encodeMonoPcm16Wav(audioBuffer);
       var wavUri = 'data:audio/wav;base64,' + encodeUint8ArrayToBase64(wavBytes);
       counters.wavTranscodes += 1;
-      wavCache.set(normWord, wavUri);
+      if (reqEpoch === cacheEpoch) {
+        wavCache.set(normWord, wavUri);
+      }
       return wavUri;
     }
 
@@ -656,10 +714,18 @@
       if (typeof BlobCtor !== 'function' || !urlApi || typeof urlApi.createObjectURL !== 'function') {
         throw new Error('Blob URL API is unavailable.');
       }
-      var bytes = decodeBase64ToUint8Array(parsed.base64);
+      var bytes;
+      try {
+        bytes = decodeBase64ToUint8Array(parsed.base64);
+      } catch (_) {
+        return null;
+      }
       var blob = new BlobCtor([bytes], { type: parsed.mime });
       var blobUrl = urlApi.createObjectURL(blob);
       blobUrlCache.set(cacheKey, blobUrl);
+      if (!blobUrlCache.has(cacheKey)) {
+        uncachedBlobUrls.add(blobUrl);
+      }
       return blobUrl;
     }
 
@@ -779,13 +845,18 @@
     }
 
     function clearCache(options) {
+      cacheEpoch += 1;
+      inFlightShards.clear();
       shardCache.clear();
       wavCache.clear();
       blobUrlCache.clear();
+      uncachedBlobUrls.forEach(function (u) { revokeBlobUrl(null, u); });
+      uncachedBlobUrls.clear();
       lastIndexFailAt = 0;
       lastIndexError = null;
       lastShardError = null;
       if (options && options.includeIndex) {
+        indexEpoch += 1;
         indexData = null;
         inFlightIndex = null;
         resolvedIndexBase = '';

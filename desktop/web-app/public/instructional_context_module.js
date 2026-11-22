@@ -13,42 +13,80 @@
   var CONTEXT_SCHEMA_VERSION = 1;
   var SOURCE_BODY_EXTRACTION_VERSION = 'measurable-source-body/v1';
   var SOURCE_COMPLEXITY_MEASUREMENT_VERSION = 'source-body-fk/v1';
-  var ROLES = ['primary', 'supplemental', 'unspecified'];
-  var FORMS = ['original', 'same-text-supported', 'adapted'];
-  var DESIGNATION_SOURCES = ['educator', 'workflow-default', 'legacy-inferred'];
-  var PRIMARY_POLICIES = ['preserve-primary', 'educator-directed'];
-  var ADAPTED_TEXT_POLICIES = ['include', 'omit', 'prohibited'];
-  var PRIMARY_TEXT_ACCESS = ['required', 'available'];
-  var TEXT_ACCESS_DECISION_SOURCES = ['educator', 'standard', 'workflow-default'];
+  var ROLES = Object.freeze(['primary', 'supplemental', 'unspecified']);
+  var FORMS = Object.freeze(['original', 'same-text-supported', 'adapted']);
+  var DESIGNATION_SOURCES = Object.freeze(['educator', 'workflow-default', 'legacy-inferred']);
+  var PRIMARY_POLICIES = Object.freeze(['preserve-primary', 'educator-directed']);
+  var ADAPTED_TEXT_POLICIES = Object.freeze(['include', 'omit', 'prohibited']);
+  var PRIMARY_TEXT_ACCESS = Object.freeze(['required', 'available']);
+  var TEXT_ACCESS_DECISION_SOURCES = Object.freeze(['educator', 'standard', 'workflow-default']);
 
-  var GRADE_CALIBRATION = {
-    'Kindergarten': { asl: 6, asw: 1.15, min: 0, max: 1 },
-    '1st Grade': { asl: 8, asw: 1.20, min: 1, max: 2 },
-    '2nd Grade': { asl: 10, asw: 1.25, min: 2, max: 3 },
-    '3rd Grade': { asl: 12, asw: 1.30, min: 3, max: 4 },
-    '4th Grade': { asl: 14, asw: 1.35, min: 4, max: 5 },
-    '5th Grade': { asl: 15, asw: 1.40, min: 5, max: 6 },
-    '6th Grade': { asl: 16, asw: 1.45, min: 6, max: 7 },
-    '7th Grade': { asl: 17, asw: 1.50, min: 7, max: 8 },
-    '8th Grade': { asl: 18, asw: 1.55, min: 8, max: 9 },
-    '9th Grade': { asl: 19, asw: 1.60, min: 9, max: 10 },
-    '10th Grade': { asl: 20, asw: 1.62, min: 10, max: 11 },
-    '11th Grade': { asl: 21, asw: 1.65, min: 11, max: 12 },
-    '12th Grade': { asl: 22, asw: 1.68, min: 11, max: 13 }
-  };
+  var GRADE_CALIBRATION = Object.freeze(Object.assign(Object.create(null), {
+    'Kindergarten': Object.freeze({ asl: 6, asw: 1.15, min: 0, max: 1 }),
+    '1st Grade': Object.freeze({ asl: 8, asw: 1.20, min: 1, max: 2 }),
+    '2nd Grade': Object.freeze({ asl: 10, asw: 1.25, min: 2, max: 3 }),
+    '3rd Grade': Object.freeze({ asl: 12, asw: 1.30, min: 3, max: 4 }),
+    '4th Grade': Object.freeze({ asl: 14, asw: 1.35, min: 4, max: 5 }),
+    '5th Grade': Object.freeze({ asl: 15, asw: 1.40, min: 5, max: 6 }),
+    '6th Grade': Object.freeze({ asl: 16, asw: 1.45, min: 6, max: 7 }),
+    '7th Grade': Object.freeze({ asl: 17, asw: 1.50, min: 7, max: 8 }),
+    '8th Grade': Object.freeze({ asl: 18, asw: 1.55, min: 8, max: 9 }),
+    '9th Grade': Object.freeze({ asl: 19, asw: 1.60, min: 9, max: 10 }),
+    '10th Grade': Object.freeze({ asl: 20, asw: 1.62, min: 10, max: 11 }),
+    '11th Grade': Object.freeze({ asl: 21, asw: 1.65, min: 11, max: 12 }),
+    '12th Grade': Object.freeze({ asl: 22, asw: 1.68, min: 11, max: 13 })
+  }));
 
   function isObject(value) {
     return !!value && typeof value === 'object' && !Array.isArray(value);
   }
 
+  function hasOwn(obj, key) {
+    return !!obj && Object.prototype.hasOwnProperty.call(obj, key);
+  }
+
+  function isBlockedKey(key) {
+    return key === '__proto__' || key === 'prototype' || key === 'constructor';
+  }
+
+  function safeString(value) {
+    if (value === undefined || value === null) return '';
+    if (typeof value === 'string') return value;
+    try { return String(value); } catch (_) { return ''; }
+  }
+
+  function safeShallowAssign(target) {
+    var out = target && typeof target === 'object' ? target : {};
+    for (var i = 1; i < arguments.length; i++) {
+      var src = arguments[i];
+      if (!src || typeof src !== 'object') continue;
+      var keys = Object.keys(src);
+      for (var j = 0; j < keys.length; j++) {
+        var k = keys[j];
+        if (!isBlockedKey(k)) out[k] = src[k];
+      }
+    }
+    return out;
+  }
+
   function cleanText(value, limit) {
     if (value === undefined || value === null) return '';
-    return String(value).replace(/\s+/g, ' ').trim().slice(0, limit || 2400);
+    var cap = typeof limit === 'number' && Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 2400;
+    var raw = safeString(value);
+    var preCap = Math.max(cap * 16, 262144);
+    if (raw.length > preCap) raw = raw.slice(0, preCap);
+    return raw.replace(/\s+/g, ' ').trim().slice(0, cap);
   }
 
   function clonePlain(value) {
     if (!isObject(value) && !Array.isArray(value)) return value;
-    try { return JSON.parse(JSON.stringify(value)); } catch (_) { return isObject(value) ? {} : []; }
+    try {
+      return JSON.parse(JSON.stringify(value), function (key, val) {
+        return isBlockedKey(key) ? undefined : val;
+      });
+    } catch (_) {
+      return isObject(value) ? {} : [];
+    }
   }
 
   function ordinal(number) {
@@ -103,7 +141,7 @@
 
   function getComplexityTarget(value) {
     var grade = normalizeGrade(value);
-    var target = GRADE_CALIBRATION[grade.label];
+    var target = hasOwn(GRADE_CALIBRATION, grade.label) ? GRADE_CALIBRATION[grade.label] : null;
     if (!target) return null;
     return {
       gradeId: grade.id,
@@ -162,7 +200,7 @@
   }
 
   function fingerprintText(value) {
-    var input = String(value === undefined || value === null ? '' : value).replace(/\r\n?/g, '\n');
+    var input = safeString(value).replace(/\r\n?/g, '\n');
     var hash = 2166136261;
     for (var i = 0; i < input.length; i++) {
       hash ^= input.charCodeAt(i);
@@ -173,7 +211,7 @@
 
   function fingerprintValue(value) {
     var serialized = '';
-    try { serialized = JSON.stringify(value === undefined ? null : value); } catch (_) { serialized = String(value || ''); }
+    try { serialized = JSON.stringify(value === undefined ? null : value); } catch (_) { serialized = safeString(value); }
     return fingerprintText(serialized);
   }
 
@@ -276,7 +314,7 @@
     if (snapshot) values.push(snapshot.sourceArtifactId);
     values.push(profile.sourceArtifactId, profile.primaryArtifactId);
     if (profile.form !== 'adapted') values.push(item.id);
-    return values.map(function (value) { return value == null ? '' : String(value); })
+    return values.map(function (value) { return value == null ? '' : safeString(value); })
       .filter(function (value, index, all) { return value && all.indexOf(value) === index; });
   }
 
@@ -289,14 +327,14 @@
     if (!isObject(left) || !isObject(right) || readingUnit(left) !== readingUnit(right)) return false;
     var leftExplicit = left.sourceFamilyId || (left.config && left.config.sourceFamilyId);
     var rightExplicit = right.sourceFamilyId || (right.config && right.config.sourceFamilyId);
-    if (leftExplicit && rightExplicit) return String(leftExplicit) === String(rightExplicit);
+    if (leftExplicit && rightExplicit) return safeString(leftExplicit) === safeString(rightExplicit);
     var leftIds = readingFamilyIds(left), rightIds = readingFamilyIds(right);
     if (leftIds.some(function (id) { return rightIds.indexOf(id) !== -1; })) return true;
     var a = getSourceSnapshot(left), b = getSourceSnapshot(right);
     // Legacy unlinked copies can match exact text only within the same lesson,
     // and never override two competing explicit source identities.
     var aOrigin = a && a.sourceArtifactId, bOrigin = b && b.sourceArtifactId;
-    if ((leftExplicit && rightExplicit) || (aOrigin && bOrigin && aOrigin !== bOrigin)) return false;
+    if (aOrigin && bOrigin && aOrigin !== bOrigin) return false;
     return !!a && !!b && !aOrigin && !bOrigin && a.fingerprint === b.fingerprint && a.text === b.text;
   }
 
@@ -321,7 +359,7 @@
     if (config.sourceInstructionalText) config.sourceInstructionalText = clonePlain(sourceProfile);
     delete config.sourceSnapshot;
     delete config.textProfile;
-    var id = opts.id == null ? 'original-' + snapshot.fingerprint : String(opts.id);
+    var id = opts.id == null ? 'original-' + snapshot.fingerprint : safeString(opts.id);
     var familyId = cleanText(opts.sourceFamilyId || (opts.sourceItem && getReadingSourceFamilyId(opts.sourceItem)) || snapshot.sourceArtifactId || id, 200);
     var unitId = normalizeReadingUnitId(opts.unitId !== undefined ? opts.unitId : opts.sourceItem && opts.sourceItem.unitId);
     var reading = {
@@ -374,7 +412,9 @@
 
   function updateReadingFamilyRole(items, selectedItem, requestedRole, options) {
     var source = Array.isArray(items) ? items : [];
-    var selected = source.find(function (item) { return item && selectedItem && String(item.id) === String(selectedItem.id); }) || selectedItem;
+    var selected = source.find(function (item) {
+      return item === selectedItem || (item && selectedItem && item.id != null && selectedItem.id != null && safeString(item.id) === safeString(selectedItem.id));
+    }) || selectedItem;
     var updated = updateInstructionalRole(selected, requestedRole, options);
     if (updated === selected) return { items: source, item: selected, changedIds: [] };
     var adaptedEdit = getInstructionalText(selected).form === 'adapted';
@@ -382,18 +422,18 @@
     var changedIds = [];
     var output = source.map(function (item) {
       var next = item;
-      if (item === selected || (item && selected && String(item.id) === String(selected.id))) next = updated;
+      if (item === selected || (item && selected && item.id != null && selected.id != null && safeString(item.id) === safeString(selected.id))) next = updated;
       else if (!adaptedEdit && sameReadingSourceFamily(item, selected)) {
         if (getInstructionalText(item).form === 'adapted') {
           next = Object.assign({}, item, { sourceInstructionalText: clonePlain(sourceProfile) });
-          if (item.config && item.config.sourceInstructionalText) next.config = Object.assign({}, item.config, { sourceInstructionalText: clonePlain(sourceProfile) });
+          if (isObject(item.config) && item.config.sourceInstructionalText) next.config = Object.assign({}, item.config, { sourceInstructionalText: clonePlain(sourceProfile) });
         }
         else {
           next = updateInstructionalRole(item, requestedRole, options);
           if (next !== item) next.sourceInstructionalText = clonePlain(sourceProfile);
         }
       }
-      if (next !== item) changedIds.push(String(item.id));
+      if (next !== item && item && item.id != null) changedIds.push(safeString(item.id));
       return next;
     });
     return { items: output, item: updated, changedIds: changedIds };
@@ -401,8 +441,10 @@
 
   function ensureReadingSourcePairs(items, options) {
     var source = Array.isArray(items) ? items.filter(isObject) : [];
-    var history = options && Array.isArray(options.history) ? options.history : [];
-    var available = source.concat(history.filter(function (item) { return item && !source.some(function (current) { return current.id === item.id; }); }));
+    var history = options && Array.isArray(options.history) ? options.history.filter(isObject) : [];
+    var usedIds = new Set();
+    source.forEach(function (entry) { if (entry.id != null) usedIds.add(entry.id); });
+    var available = source.concat(history.filter(function (item) { return item.id == null || !usedIds.has(item.id); }));
     var originals = source.filter(isSupportedOriginal), output = [];
     source.forEach(function (item) {
       var snapshot = ['analysis', 'simplified'].indexOf(item.type) !== -1 && getInstructionalText(item).form === 'adapted' ? getSourceSnapshot(item) : null;
@@ -424,8 +466,9 @@
         });
         if (!existing) {
           var baseId = reading.id, suffix = 1;
-          while (source.concat(output).some(function (entry) { return entry.id === reading.id; })) reading.id = baseId + '-' + suffix++;
+          while (usedIds.has(reading.id)) reading.id = baseId + '-' + suffix++;
         }
+        if (reading.id != null) usedIds.add(reading.id);
         originals.push(reading);
         output.push(reading);
       }
@@ -507,8 +550,8 @@
       if (typeof opts.inputText !== 'string' || !opts.inputText.trim()) return { status: 'missing', reason: 'empty-input', candidates: candidates, text: '' };
       return resolved(null, 'explicit-input', opts.inputText, getSourceSnapshot(opts.sourceSnapshot));
     }
-    var explicit = opts.selected || (opts.sourceArtifactId != null && String(opts.sourceArtifactId)
-      ? candidates.find(function (candidate) { return String(candidate.id) === String(opts.sourceArtifactId); }) : null);
+    var explicit = opts.selected || (opts.sourceArtifactId != null && safeString(opts.sourceArtifactId)
+      ? candidates.find(function (candidate) { return candidate.id != null && safeString(candidate.id) === safeString(opts.sourceArtifactId); }) : null);
     if (explicit && explicit.artifact) explicit = explicit.artifact;
     var supplied = getSourceSnapshot(opts.sourceSnapshot);
     if (typeof opts.textOverride === 'string') {
@@ -516,7 +559,7 @@
       var matching = explicit && readableArtifactText(explicit) === opts.textOverride ? explicit : null;
       return resolved(matching, 'explicit-text', opts.textOverride, supplied);
     }
-    if (opts.selected || (opts.sourceArtifactId != null && String(opts.sourceArtifactId))) {
+    if (opts.selected || (opts.sourceArtifactId != null && safeString(opts.sourceArtifactId))) {
       if (!explicit || !readableArtifactText(explicit).trim()) return { status: 'missing', reason: 'selected-source-unavailable', candidates: candidates, text: '' };
       if (getInstructionalText(explicit).form === 'same-text-supported' && !isSupportedOriginal(explicit)) {
         return { status: 'missing', reason: 'unverified-original', candidates: candidates, text: '' };
@@ -584,19 +627,19 @@
     if (!isObject(value) || ['analysis', 'simplified'].indexOf(value.type) === -1) return null;
     var snapshot = getSourceSnapshot(value);
     return { sourceFamilyId: getReadingSourceFamilyId(value), unitId: readingUnit(value),
-      ownerArtifactId: value.id == null ? null : String(value.id),
+      ownerArtifactId: value.id == null ? null : safeString(value.id),
       sourceFingerprint: snapshot && snapshot.fingerprint, preserved: isSupportedOriginal(value) };
   }
 
   function readingSupportScopeMismatch(scope, envelope) {
     if (!scope) return false;
-    var familyMismatch = envelope.sourceFamilyId && scope.sourceFamilyId && String(envelope.sourceFamilyId) !== String(scope.sourceFamilyId);
+    var familyMismatch = envelope.sourceFamilyId && scope.sourceFamilyId && safeString(envelope.sourceFamilyId) !== safeString(scope.sourceFamilyId);
     // Moving the same saved original keeps its own curation. A different artifact
     // cannot borrow supports from another lesson merely because its prose matches.
     var samePreservedOwner = scope.preserved && scope.ownerArtifactId && envelope.ownerArtifactId
-      && String(envelope.ownerArtifactId) === scope.ownerArtifactId
+      && safeString(envelope.ownerArtifactId) === scope.ownerArtifactId
       && envelope.sourceFingerprint === scope.sourceFingerprint
-      && envelope.sourceFamilyId && String(envelope.sourceFamilyId) === String(scope.sourceFamilyId);
+      && envelope.sourceFamilyId && safeString(envelope.sourceFamilyId) === safeString(scope.sourceFamilyId);
     return !!familyMismatch || (Object.prototype.hasOwnProperty.call(envelope, 'unitId')
       && normalizeReadingUnitId(envelope.unitId) !== scope.unitId && !samePreservedOwner);
   }
@@ -624,11 +667,24 @@
   // over-budget picture is dropped, never the written support.
   var SUPPORT_PICTURE_MAX_CHARS = 32000;
   var SUPPORT_PICTURES_TOTAL_CHARS = 64000;
+  var MAX_READING_SUPPORT_ENTRIES = 2000;
   function normalizeSupportImage(value) {
     if (!isObject(value)) return null;
     var src = typeof value.src === 'string' ? value.src : '';
-    if (src.length > SUPPORT_PICTURE_MAX_CHARS || !/^data:image\/(png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]+$/i.test(src)) return null;
-    var https = function (url) { url = typeof url === 'string' ? url.trim() : ''; return /^https:\/\//i.test(url) ? url.slice(0, 2000) : ''; };
+    if (src.length > SUPPORT_PICTURE_MAX_CHARS || !/^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/]+={0,2}$/i.test(src)) return null;
+    var https = function (url) {
+      if (typeof url !== 'string') return '';
+      var trimmed = url.trim();
+      if (!trimmed || trimmed.length > 2000 || /[\u0000-\u001F\u007F\s"'<>`\\]/.test(trimmed)) return '';
+      if (!/^https:\/\//i.test(trimmed)) return '';
+      try {
+        var parsed = new URL(trimmed);
+        if (parsed.protocol !== 'https:' || parsed.username || parsed.password || !parsed.hostname) return '';
+        return trimmed;
+      } catch (_) {
+        return '';
+      }
+    };
     var credit = isObject(value.attribution) ? value.attribution : {};
     var attribution = { set: cleanText(credit.set, 120), author: cleanText(credit.author, 160), license: cleanText(credit.license, 120), via: cleanText(credit.via, 120), url: https(credit.url) };
     if (cleanText(credit.title, 160)) attribution.title = cleanText(credit.title, 160);
@@ -655,40 +711,52 @@
     var snapshot = getSourceSnapshot(snapshotValue);
     var scope = readingSupportScope(snapshotValue);
     var envelope = isObject(candidates) ? candidates : {};
-    var entries = Array.isArray(candidates) ? candidates : (Array.isArray(envelope.annotations) ? envelope.annotations : []);
+    var rawEntries = Array.isArray(candidates) ? candidates : (Array.isArray(envelope.annotations) ? envelope.annotations : []);
+    var entries = rawEntries.length > MAX_READING_SUPPORT_ENTRIES ? rawEntries.slice(0, MAX_READING_SUPPORT_ENTRIES) : rawEntries;
     var previousRejected = Number.isInteger(envelope.rejectedCount) && envelope.rejectedCount > 0 ? envelope.rejectedCount : 0;
     var annotations = [], suppressedAnnotations = [];
-    var rejectedCount = previousRejected;
+    var rejectedCount = previousRejected + Math.max(0, rawEntries.length - entries.length);
     var invalidSource = !snapshot || (envelope.schemaVersion !== undefined && envelope.schemaVersion !== 1)
       || (envelope.sourceFingerprint && envelope.sourceFingerprint !== snapshot.fingerprint)
       || readingSupportScopeMismatch(scope, envelope);
     var ids = Object.create(null);
     var pictureChars = 0;
-    (Array.isArray(envelope.suppressedAnnotations) ? envelope.suppressedAnnotations : []).forEach(function (entry) {
+    var rawSuppressed = Array.isArray(envelope.suppressedAnnotations) ? envelope.suppressedAnnotations : [];
+    var suppressedList = rawSuppressed.length > MAX_READING_SUPPORT_ENTRIES ? rawSuppressed.slice(0, MAX_READING_SUPPORT_ENTRIES) : rawSuppressed;
+    rejectedCount += Math.max(0, rawSuppressed.length - suppressedList.length);
+    suppressedList.forEach(function (entry) {
       if (invalidSource || !validSupportAnchor(snapshot, entry)) { rejectedCount++; return; }
       if (!suppressedAnnotations.some(function (current) { return sameSupportRange(current, entry); })) {
         suppressedAnnotations.push({ start: entry.start, end: entry.end, quote: entry.quote });
       }
     });
     entries.forEach(function (entry) {
+      var entryKind = isObject(entry) && hasOwn(entry, 'kind') ? entry.kind : undefined;
+      var entryText = isObject(entry) && hasOwn(entry, 'text') ? entry.text : undefined;
+      var entryId = isObject(entry) && hasOwn(entry, 'id') ? entry.id : undefined;
+      var entryLang = isObject(entry) && hasOwn(entry, 'language') ? entry.language : undefined;
+      var entryOrigin = isObject(entry) && hasOwn(entry, 'origin') ? entry.origin : undefined;
+      var entryPinned = isObject(entry) && hasOwn(entry, 'pinned') ? entry.pinned : false;
+      var entryPriority = isObject(entry) && hasOwn(entry, 'priority') ? entry.priority : undefined;
+      var entryImage = isObject(entry) && hasOwn(entry, 'image') ? entry.image : null;
       var valid = !invalidSource && validSupportAnchor(snapshot, entry)
-        && typeof entry.text === 'string' && !!entry.text.trim() && entry.text.length <= 2400
-        && ['gloss', 'definition', 'explanation'].indexOf(entry.kind || 'gloss') !== -1;
-      var id = valid ? cleanText(entry.id, 160) || 'support-' + entry.start + '-' + entry.end : '';
+        && typeof entryText === 'string' && !!entryText.trim() && entryText.length <= 2400
+        && ['gloss', 'definition', 'explanation'].indexOf(entryKind || 'gloss') !== -1;
+      var id = valid ? cleanText(entryId, 160) || 'support-' + entry.start + '-' + entry.end : '';
       if (valid && suppressedAnnotations.some(function (removed) { return overlappingSupportRanges(removed, entry); })) return;
       if (valid && (ids[id] || annotations.some(function (annotation) { return overlappingSupportRanges(entry, annotation); }))) valid = false;
       if (!valid) { rejectedCount++; return; }
       ids[id] = true;
       var accepted = {
-        id: id, kind: entry.kind || 'gloss', start: entry.start, end: entry.end,
-        quote: entry.quote, text: entry.text,
-        language: cleanText(entry.language, 80) || snapshot.language,
-        origin: entry.origin === 'educator' ? 'educator' : 'generated',
-        pinned: entry.pinned === true,
-        priority: entry.priority === 'essential' ? 'essential' : 'helpful'
+        id: id, kind: entryKind || 'gloss', start: entry.start, end: entry.end,
+        quote: entry.quote, text: entryText,
+        language: cleanText(entryLang, 80) || snapshot.language,
+        origin: entryOrigin === 'educator' ? 'educator' : 'generated',
+        pinned: entryPinned === true,
+        priority: entryPriority === 'essential' ? 'essential' : 'helpful'
       };
       // Only a teacher's own support carries a picture; a generated suggestion never does.
-      var picture = accepted.origin === 'educator' ? normalizeSupportImage(entry.image) : null;
+      var picture = accepted.origin === 'educator' ? normalizeSupportImage(entryImage) : null;
       if (picture && pictureChars + picture.src.length <= SUPPORT_PICTURES_TOTAL_CHARS) {
         pictureChars += picture.src.length;
         accepted.image = picture;
@@ -701,8 +769,10 @@
     var seenCoverage = [];
     function validatedRanges(value) {
       if (!Array.isArray(value)) return [];
+      var capped = value.length > MAX_READING_SUPPORT_ENTRIES ? value.slice(0, MAX_READING_SUPPORT_ENTRIES) : value;
+      if (capped.length < value.length) coverageInvalid = true;
       var ranges = [];
-      value.forEach(function (entry) {
+      capped.forEach(function (entry) {
         var valid = !invalidSource && isObject(entry) && Number.isInteger(entry.start) && Number.isInteger(entry.end)
           && entry.start >= 0 && entry.end > entry.start && entry.end <= snapshot.text.length
           && isSourceTextBoundary(snapshot.text, entry.start) && isSourceTextBoundary(snapshot.text, entry.end);
@@ -745,7 +815,7 @@
     var current = requireReadingSupportState(snapshotValue, supports);
     if (!isObject(annotation)) throw new Error('Choose an exact source occurrence and enter its word support.');
     var existing = current.annotations.find(function (entry) { return annotation.id ? entry.id === annotation.id : sameSupportRange(entry, annotation); });
-    var proposed = Object.assign({}, existing || {}, annotation, { origin: 'educator' });
+    var proposed = safeShallowAssign({}, existing || {}, annotation, { origin: 'educator' });
     var checked = validateReadingSupports(snapshotValue, [proposed]);
     if (checked.annotations.length !== 1 || checked.rejectedCount) throw new Error('Choose an exact source occurrence and enter a nonempty word support of at most 2,400 characters.');
     proposed = checked.annotations[0];
@@ -788,11 +858,23 @@
       return entry.origin === 'educator' || entry.pinned || incoming.status === 'unavailable'
         || incoming.skippedRanges.some(function (range) { return overlappingSupportRanges(range, entry); });
     });
+    var retainedIds = Object.create(null);
+    retained.forEach(function (entry) { if (entry && entry.id) retainedIds[entry.id] = true; });
     // Regeneration can suggest priority, never educator provenance or pins.
     var generated = incoming.annotations.filter(function (entry) {
       return !retained.some(function (saved) { return overlappingSupportRanges(saved, entry); })
         && !current.suppressedAnnotations.some(function (removed) { return overlappingSupportRanges(removed, entry); });
-    }).map(function (entry) { return Object.assign({}, entry, { origin: 'generated', pinned: false }); });
+    }).map(function (entry) {
+      var nextId = entry.id;
+      if (retainedIds[nextId]) {
+        var baseId = 'support-' + entry.start + '-' + entry.end;
+        nextId = baseId;
+        var suffix = 1;
+        while (retainedIds[nextId]) nextId = baseId + '-' + suffix++;
+      }
+      retainedIds[nextId] = true;
+      return Object.assign({}, entry, { id: nextId, origin: 'generated', pinned: false });
+    });
     return validateReadingSupports(snapshotValue, Object.assign({}, incoming, {
       annotations: retained.concat(generated), suppressedAnnotations: current.suppressedAnnotations,
       status: incoming.status === 'unavailable' && retained.length ? 'partial' : incoming.status
@@ -813,7 +895,7 @@
   }
   function adaptedPassageLength(text) {
     var end = text.length;
-    var marker = ADAPTED_TRANSLATION_MARKER.exec(text);
+    var marker = (text.indexOf('---') !== -1 && /ENGLISH TRANSLATION/i.test(text)) ? ADAPTED_TRANSLATION_MARKER.exec(text) : null;
     if (marker) end = Math.min(end, marker.index);
     var helpers = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.TextPipelineHelpers;
     if (helpers && typeof helpers.splitReferencesFromBody === 'function') {
@@ -868,7 +950,8 @@
       return { schemaVersion: 1, annotations: [], suppressedAnnotations: [], rejectedCount: 0, coveredRanges: [], skippedRanges: [],
         status: isObject(supports) ? 'stale' : 'unavailable', passageLength: 0, shown: false };
     }
-    return adaptedEnvelope(validateReadingSupports(state.snapshot, state.supports || {}), state.snapshot, isObject(supports) && supports.shown === true);
+    var validated = validateReadingSupports(state.snapshot, state.supports || {});
+    return adaptedEnvelope(validated, state.snapshot, validated.status !== 'unavailable' && isObject(supports) && supports.shown === true);
   }
   // What a student device may receive: word help the teacher has shown, still
   // anchored to this passage. Hidden or stale help and removals stay behind.
@@ -890,11 +973,11 @@
   }
   function removeAdaptedReadingSupport(item, supports, id) {
     var state = requireAdaptedState(item, supports);
-    return adaptedEnvelope(removeReadingSupport(state.snapshot, state.supports, id), state.snapshot, supports.shown === true);
+    return adaptedEnvelope(removeReadingSupport(state.snapshot, state.supports, id), state.snapshot, isObject(supports) && supports.shown === true);
   }
   function setAdaptedReadingSupportPinned(item, supports, id, pinned) {
     var state = requireAdaptedState(item, supports);
-    return adaptedEnvelope(setReadingSupportPinned(state.snapshot, state.supports, id, pinned), state.snapshot, supports.shown === true);
+    return adaptedEnvelope(setReadingSupportPinned(state.snapshot, state.supports, id, pinned), state.snapshot, isObject(supports) && supports.shown === true);
   }
   function setAdaptedReadingSupportsShown(item, supports, shown) {
     var state = requireAdaptedState(item, supports);
@@ -910,7 +993,7 @@
   // kept after an edit, or copied from the original) hides it until they show it again.
   function supportKey(entry) { return entry.start + ':' + entry.end + ':' + entry.text; }
   function addsUnreviewed(before, after) {
-    var seen = {};
+    var seen = Object.create(null);
     before.forEach(function (entry) { seen[supportKey(entry)] = true; });
     return after.some(function (entry) { return !seen[supportKey(entry)]; });
   }
@@ -951,13 +1034,16 @@
     try {
       if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') {
         edges = new Set([0, text.length]);
-        Array.from(new Intl.Segmenter(undefined, { granularity: 'word' }).segment(text)).forEach(function (part) {
+        var seg = new Intl.Segmenter(undefined, { granularity: 'word' });
+        for (var part of seg.segment(text)) {
           edges.add(part.index); edges.add(part.index + part.segment.length);
-        });
+        }
       }
     } catch (_) { edges = null; }
-    recentWordEdges.unshift({ text: text, edges: edges });
-    recentWordEdges.length = Math.min(recentWordEdges.length, 4);
+    if (text.length <= 200000) {
+      recentWordEdges.unshift({ text: text, edges: edges });
+      recentWordEdges.length = Math.min(recentWordEdges.length, 4);
+    }
     return edges;
   }
   function isWordEdge(text, index) {
@@ -975,6 +1061,7 @@
   // anyCase, capitals do not matter (compared match by match, so one unusual
   // letter elsewhere in the passage cannot switch it off).
   function nearestWholeWordMatch(text, quote, near, taken, anyCase) {
+    if (typeof quote !== 'string' || !quote || quote.length > 500 || quote.length > text.length) return null;
     var pattern, match, best = null;
     try { pattern = new RegExp(quote.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), anyCase ? 'giu' : 'gu'); } catch (_) { return null; }
     while ((match = pattern.exec(text))) {
@@ -992,16 +1079,18 @@
     var stored = isObject(supports) ? supports : {};
     // Kept entries place first, so a removed suggestion never lands on one and hides it.
     var taken = [];
-    var move = function (list) {
-      return (Array.isArray(list) ? list : []).map(function (entry) {
+    var move = function (list, requireText) {
+      var capped = Array.isArray(list) ? list.slice(0, MAX_READING_SUPPORT_ENTRIES) : [];
+      return capped.map(function (entry) {
         if (!isObject(entry) || typeof entry.quote !== 'string' || !entry.quote.trim()) return null;
+        if (requireText && (typeof entry.text !== 'string' || !entry.text.trim() || entry.text.length > 2400)) return null;
         var hit = nearestWholeWordMatch(snapshot.text, entry.quote, Number.isInteger(entry.start) ? entry.start : 0, taken);
         if (!hit) return null;
         taken.push(hit);
-        return Object.assign({}, entry, { start: hit.start, end: hit.end });
+        return safeShallowAssign({}, entry, { start: hit.start, end: hit.end });
       }).filter(Boolean);
     };
-    var moved = validateReadingSupports(snapshot, { annotations: move(stored.annotations), suppressedAnnotations: move(stored.suppressedAnnotations) });
+    var moved = validateReadingSupports(snapshot, { annotations: move(stored.annotations, true), suppressedAnnotations: move(stored.suppressedAnnotations, false) });
     return adaptedEnvelope(moved, snapshot, false);
   }
   // Reuse the original's explanations for words the adapted passage kept, at
@@ -1011,18 +1100,24 @@
     var state = requireAdaptedState(item, supports);
     var snapshot = state.snapshot;
     var current = validateReadingSupports(snapshot, state.supports || {});
-    var seen = {}, ids = {}, added = [];
-    current.annotations.concat(current.suppressedAnnotations).forEach(function (entry) { seen[entry.quote.toLowerCase()] = true; ids[entry.id] = true; });
+    var seen = Object.create(null), ids = Object.create(null), added = [];
+    current.annotations.concat(current.suppressedAnnotations).forEach(function (entry) {
+      seen[entry.quote.toLowerCase()] = true;
+      if (entry.id) ids[entry.id] = true;
+    });
     var taken = current.annotations.concat(current.suppressedAnnotations).map(function (entry) { return { start: entry.start, end: entry.end }; });
-    (Array.isArray(originalAnnotations) ? originalAnnotations : []).forEach(function (entry) {
+    var cappedOriginals = Array.isArray(originalAnnotations) ? originalAnnotations.slice(0, MAX_READING_SUPPORT_ENTRIES) : [];
+    cappedOriginals.forEach(function (entry) {
       if (!isObject(entry) || typeof entry.quote !== 'string' || !entry.quote.trim() || seen[entry.quote.toLowerCase()]) return;
+      if (typeof entry.text !== 'string' || !entry.text.trim() || entry.text.length > 2400) return;
       var hit = nearestWholeWordMatch(snapshot.text, entry.quote, 0, taken, true);
       if (!hit) return;
       var start = hit.start, end = hit.end, id = 'original-' + start + '-' + end;
       seen[entry.quote.toLowerCase()] = true;
       taken.push(hit);
       if (ids[id]) return;
-      added.push(Object.assign({}, entry, { id: id, start: start, end: end, quote: snapshot.text.slice(start, end) }));
+      ids[id] = true;
+      added.push(safeShallowAssign({}, entry, { id: id, start: start, end: end, quote: snapshot.text.slice(start, end) }));
     });
     var merged = validateReadingSupports(snapshot, Object.assign({}, current, { annotations: current.annotations.concat(added) }));
     return adaptedEnvelope(merged, snapshot, false);
@@ -1041,18 +1136,27 @@
     }
     paragraphs.push({ start: paragraphStart, end: snapshot.text.length });
     var selected = checked.annotations.filter(function (entry) { return entry.pinned; });
+    var segmenter = null;
+    if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') {
+      try { segmenter = new Intl.Segmenter(undefined, { granularity: 'word' }); } catch (_) {}
+    }
     paragraphs.forEach(function (paragraph) {
-      var words = [], segmenter;
-      if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') {
-        try { segmenter = new Intl.Segmenter(undefined, { granularity: 'word' }); } catch (_) {}
-      }
+      var words = [];
       var text = snapshot.text.slice(paragraph.start, paragraph.end);
       if (segmenter) for (var word of segmenter.segment(text)) { if (word.isWordLike) words.push(paragraph.start + word.index); }
       else {
         var pattern = /[\p{L}\p{M}\p{N}]+(?:[’'-][\p{L}\p{M}\p{N}]+)*/gu, found;
         while ((found = pattern.exec(text))) words.push(paragraph.start + found.index);
       }
-      function wordIndex(offset) { var index = 0; while (index < words.length && words[index] < offset) index++; return index; }
+      function wordIndex(offset) {
+        var lo = 0, hi = words.length;
+        while (lo < hi) {
+          var mid = (lo + hi) >>> 1;
+          if (words[mid] < offset) lo = mid + 1;
+          else hi = mid;
+        }
+        return lo;
+      }
       var maximum = Math.max(1, Math.min(3, Math.ceil(words.length / 55)));
       var inParagraph = function (entry) { return entry.start >= paragraph.start && entry.start < paragraph.end; };
       var candidates = checked.annotations.filter(function (entry) { return !entry.pinned && inParagraph(entry); });
@@ -1074,28 +1178,33 @@
   }
 
   function _sourceFooterLabel(value) {
-    return String(value || '')
-      .trim()
-      .replace(/^#{1,6}\s+/, '')
-      .replace(/\s+#+\s*$/, '')
-      .replace(/^[*_]+|[*_]+$/g, '')
-      .replace(/:\s*$/, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .toLowerCase();
+    var s = safeString(value).trim();
+    if (!s || s.length > 240) return '';
+    s = s.replace(/^#{1,6}\s+/, '');
+    var end = s.length;
+    while (end > 0 && s.charAt(end - 1) === '#') end--;
+    if (end < s.length && end > 0 && /\s/.test(s.charAt(end - 1))) s = s.slice(0, end).trim();
+    var start = 0;
+    while (start < s.length && (s.charAt(start) === '*' || s.charAt(start) === '_')) start++;
+    var tail = s.length;
+    while (tail > start && (s.charAt(tail - 1) === '*' || s.charAt(tail - 1) === '_')) tail--;
+    s = s.slice(start, tail).trim();
+    if (s.endsWith(':')) s = s.slice(0, -1).trim();
+    return s.replace(/\s+/g, ' ').trim().toLowerCase();
   }
 
   function _isSourceFooterBoundary(value) {
-    var raw = String(value || '').trim();
+    var raw = safeString(value).trim();
     if (!raw) return false;
     var label = _sourceFooterLabel(raw);
-    if (/^(?:source text references|accuracy check references|referenced sources|verified sources|sources|references|works? cited|bibliography|citations)$/.test(label)) return true;
-    if (/^(?:source[- ]support|source[- ]support check|citation support|grounding support)$/.test(label)) return true;
-    if (/^(?:about this document|ai (?:use |assistance )?disclosure|ai-generated content disclosure|artificial intelligence disclosure)$/.test(label)) return true;
-    var proseLabel = raw
+    if (label) {
+      if (/^(?:source text references|accuracy check references|referenced sources|verified sources|sources|references|works? cited|bibliography|citations)$/.test(label)) return true;
+      if (/^(?:source[- ]support|source[- ]support check|citation support|grounding support)$/.test(label)) return true;
+      if (/^(?:about this document|ai (?:use |assistance )?disclosure|ai-generated content disclosure|artificial intelligence disclosure)$/.test(label)) return true;
+    }
+    var proseLabel = raw.slice(0, 240)
       .replace(/^\s*(?:>|[-*+]\s+)?/, '')
       .replace(/^[*_]+/, '')
-      .replace(/[*_]+\s*$/, '')
       .trim();
     return /^(?:Source-support check\s*\(automated|Partial-grounding notice\s*:|Source-attribution notice\s*:|About this document\s*:\s*drafted with AI assistance|(?:AI(?: use| assistance|-generated content)?|Artificial intelligence) disclosure\s*:)/i.test(proseLabel);
   }
@@ -1110,7 +1219,7 @@
    * so the readability tokenizer can retain their visible labels.
    */
   function extractMeasurableSourceBody(value) {
-    var artifact = String(value === undefined || value === null ? '' : value)
+    var artifact = safeString(value)
       .replace(/\r\n?/g, '\n')
       .replace(/^\uFEFF/, '')
       .replace(/[ \t]+$/gm, '')
@@ -1133,7 +1242,7 @@
     while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
 
     lines = lines.filter(function (line) {
-      return !/^\s{0,3}#{1,6}[ \t]+.+?[ \t]*#*[ \t]*$/.test(String(line));
+      return !/^\s{0,3}#{1,6}[ \t]+\S/.test(safeString(line));
     });
     return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
   }
@@ -1160,7 +1269,7 @@
 
   function measureSourceComplexity(artifactText, calculateReadability) {
     if (typeof calculateReadability !== 'function') return null;
-    var artifact = String(artifactText === undefined || artifactText === null ? '' : artifactText)
+    var artifact = safeString(artifactText)
       .replace(/\r\n?/g, '\n')
       .trim();
     var body = extractMeasurableSourceBody(artifact);
@@ -1407,7 +1516,8 @@
     var context = isObject(standardsContext) ? standardsContext : {};
     var entries = Array.isArray(context.standards) ? context.standards : [];
     var values = [standardsInput, context.inputText, context.promptText];
-    for (var i = 0; i < entries.length; i++) {
+    var maxEntries = Math.min(entries.length, 250);
+    for (var i = 0; i < maxEntries; i++) {
       var entry = entries[i];
       if (isObject(entry)) {
         values.push(entry.code, entry.label, entry.text, entry.statement, entry.description);
@@ -1415,7 +1525,17 @@
         values.push(entry);
       }
     }
-    return values.map(function (value) { return cleanText(value, 3600); }).filter(Boolean).join(' ');
+    var out = '';
+    for (var j = 0; j < values.length; j++) {
+      var part = cleanText(values[j], 3600);
+      if (!part) continue;
+      if (out.length + part.length + 1 > 65536) {
+        out += (out ? ' ' : '') + part.slice(0, Math.max(0, 65536 - out.length - (out ? 1 : 0)));
+        break;
+      }
+      out += (out ? ' ' : '') + part;
+    }
+    return out;
   }
 
   /**

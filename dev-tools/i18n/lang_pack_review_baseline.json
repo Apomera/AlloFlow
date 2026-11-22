@@ -217,6 +217,226 @@
     }
   },
   "arabic": {
+    "adventure.auto_read_disable": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "a0574ce28525"
+    },
+    "adventure.auto_read_enable": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "38e7d464a91f"
+    },
+    "adventure.auto_read_off_tooltip": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "a0574ce28525"
+    },
+    "adventure.auto_read_on_tooltip": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "38e7d464a91f"
+    },
+    "adventure.auto_read_status_label": {
+      "sourceHash": "3adc44a4683b",
+      "translationHash": "a82e0716ab4c"
+    },
+    "adventure.enter_immersive": {
+      "sourceHash": "9b979756d89f",
+      "translationHash": "c0c84a8bef55"
+    },
+    "adventure.error.fallback": {
+      "sourceHash": "226cbe1aceed",
+      "translationHash": "719a82798756"
+    },
+    "adventure.escape_room_close_btn": {
+      "sourceHash": "16fe44109bf1",
+      "translationHash": "70d2f8e3b1d1"
+    },
+    "adventure.escape_room_progress": {
+      "sourceHash": "f3145c8cb36f",
+      "translationHash": "e0e89a078c6b"
+    },
+    "adventure.escape_room_timer": {
+      "sourceHash": "c29efe3eceb7",
+      "translationHash": "73b1e3162491"
+    },
+    "adventure.exit_immersive": {
+      "sourceHash": "d532565a314c",
+      "translationHash": "61c1e29b2367"
+    },
+    "adventure.explore_hint": {
+      "sourceHash": "4148dcd856e3",
+      "translationHash": "76ad1436f080"
+    },
+    "adventure.ledger_subtitle": {
+      "sourceHash": "c5c3f670c067",
+      "translationHash": "ae16ca9327aa"
+    },
+    "adventure.ledger_title": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "b4e5ad4f8325"
+    },
+    "adventure.ledger_tooltip": {
+      "sourceHash": "7db03cb3facc",
+      "translationHash": "fc9e93b3644e"
+    },
+    "adventure.log_button": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "b4e5ad4f8325"
+    },
+    "adventure.low_quality_label": {
+      "sourceHash": "48668d120579",
+      "translationHash": "6287dec64a0b"
+    },
+    "adventure.maximize_tooltip": {
+      "sourceHash": "cdde416b5c15",
+      "translationHash": "1bf719fd21c0"
+    },
+    "adventure.restart": {
+      "sourceHash": "51dd91dc98a9",
+      "translationHash": "cc880318b221"
+    },
+    "adventure.setup_subtitle": {
+      "sourceHash": "2cd9ef63bf87",
+      "translationHash": "464c1156adf1"
+    },
+    "adventure.start_sequel": {
+      "sourceHash": "20e131292c5f",
+      "translationHash": "0867fefec9d2"
+    },
+    "adventure.view_button": {
+      "sourceHash": "994e534cb6df",
+      "translationHash": "179d77923087"
+    },
+    "adventure.view_immersive": {
+      "sourceHash": "2af83afa990b",
+      "translationHash": "923718447385"
+    },
+    "analysis.title": {
+      "sourceHash": "f25d551d8ae1",
+      "translationHash": "2cf10b7ae518"
+    },
+    "behavior_lens.ph.person": {
+      "sourceHash": "fb5e286aecb7",
+      "translationHash": "807ad8e41088"
+    },
+    "behavior_lens.ph.reinforcement_how_you": {
+      "sourceHash": "df15c1d4e7e5",
+      "translationHash": "912a437505fa"
+    },
+    "behavior_lens.ph.teaching_strategy_how_you": {
+      "sourceHash": "35927ed94e16",
+      "translationHash": "97d7a3ac6e1d"
+    },
+    "behavior_lens.raw.export_this_tool": {
+      "sourceHash": "5a23706614c9",
+      "translationHash": "bde2c86c02e5"
+    },
+    "behavior_lens.ui.at_each_phase_you": {
+      "sourceHash": "66a35f6b9fba",
+      "translationHash": "fafc7eb2e1af"
+    },
+    "behavior_lens.ui.track_behaviors_at_home_using_simple_everyday_lang": {
+      "sourceHash": "fd6dd3621f78",
+      "translationHash": "f4822e175dfd"
+    },
+    "bot_events.glossary_generated": {
+      "sourceHash": "b484bb5633dc",
+      "translationHash": "24655ac64263"
+    },
+    "chat_guide.flow.initial_prompt_context": {
+      "sourceHash": "2722f061ead5",
+      "translationHash": "3f2aebffab88"
+    },
+    "class_analytics.escape_completion": {
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "756f11fa7edd"
+    },
+    "common.adjust_escape_room_state": {
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "7240113cad23"
+    },
+    "common.adventure_social_story_focus_placeholder": {
+      "sourceHash": "59c8fb3302a1",
+      "translationHash": "8601df942895"
+    },
+    "common.common_placeholder_item_trans": {
+      "sourceHash": "956d2ab4d8b2",
+      "translationHash": "091d2d74d88f"
+    },
+    "common.common_placeholder_title_trans": {
+      "sourceHash": "c5aa0c84c2c8",
+      "translationHash": "3a4ff4c07d70"
+    },
+    "common.common_placeholder_translation": {
+      "sourceHash": "aed1ac43408f",
+      "translationHash": "e642834dac40"
+    },
+    "common.common_standards_region_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "5d7c36aa2b8f"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "sourceHash": "5986ff42554c",
+      "translationHash": "570f0c6e068a"
+    },
+    "common.enter_escape_room_state": {
+      "sourceHash": "53480732dabb",
+      "translationHash": "479802e023d1"
+    },
+    "common.escape_room_enter_answer": {
+      "sourceHash": "93bcf2fdc37d",
+      "translationHash": "40f4662842f4"
+    },
+    "common.escape_room_unscramble_placeholder": {
+      "sourceHash": "89a5e8095a0e",
+      "translationHash": "2713995e5ee5"
+    },
+    "common.exit_focus": {
+      "sourceHash": "4a129a5f19ce",
+      "translationHash": "cc3245220771"
+    },
+    "common.glossary_custom_edit_placeholder": {
+      "sourceHash": "078a20ed1068",
+      "translationHash": "4eb37fcedea0"
+    },
+    "common.glossary_style_placeholder": {
+      "sourceHash": "f8908872fe1d",
+      "translationHash": "a6e5a0ac2a65"
+    },
+    "common.groups_new_group_placeholder": {
+      "sourceHash": "886c3806ab3f",
+      "translationHash": "bddaa3195db2"
+    },
+    "common.launch_escape_room": {
+      "sourceHash": "7ff3be762718",
+      "translationHash": "82512f75153c"
+    },
+    "common.load_saved_escape_room": {
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "000dc1802b48"
+    },
+    "common.modals_save_project_placeholder": {
+      "sourceHash": "ce2d4355f361",
+      "translationHash": "cc810b3a8f4a"
+    },
+    "common.reset_escape_room": {
+      "sourceHash": "b05867f935f7",
+      "translationHash": "5f64c61dd939"
+    },
+    "common.save_escape_room_configuration": {
+      "sourceHash": "365ab100916a",
+      "translationHash": "c4c9c067fca0"
+    },
+    "common.standards_region_framework_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "5d7c36aa2b8f"
+    },
+    "common.standards_region_optional": {
+      "sourceHash": "57b57e8419be",
+      "translationHash": "735705314326"
+    },
+    "common.timeline_revise_placeholder": {
+      "sourceHash": "a4f91b4641a7",
+      "translationHash": "f9bacdffec2b"
+    },
     "common.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
@@ -227,10 +447,130 @@
       "sourceHash": "6730f6f93dad",
       "translationHash": "f21485eeebb3"
     },
+    "common.visuals_refiner_placeholder": {
+      "sourceHash": "36639c184861",
+      "translationHash": "503a6609d305"
+    },
+    "escape_room.bonus_xp": {
+      "sourceHash": "dd78c242f77c",
+      "translationHash": "1d9fef266b80"
+    },
+    "escape_room.clues_collected": {
+      "sourceHash": "5f70ab1c7ea7",
+      "translationHash": "8fd339b0bdb6"
+    },
+    "escape_room.config_saved": {
+      "sourceHash": "4319d7096edf",
+      "translationHash": "98aaddd078fc"
+    },
+    "escape_room.end_game_confirm": {
+      "sourceHash": "a042149703b6",
+      "translationHash": "f7d0b115d7e4"
+    },
+    "escape_room.game_over_time": {
+      "sourceHash": "53fdc5f07893",
+      "translationHash": "4dadc4ce30f4"
+    },
+    "escape_room.generating": {
+      "sourceHash": "073b0c003085",
+      "translationHash": "b3d49a449739"
+    },
+    "escape_room.generating_hint": {
+      "sourceHash": "fae5ecec5ab2",
+      "translationHash": "d1ff03f93766"
+    },
+    "escape_room.launch_live_tooltip": {
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "a1e844dcd83f"
+    },
+    "escape_room.loaded_saved": {
+      "sourceHash": "292f49162e60",
+      "translationHash": "dff6c213c2c9"
+    },
+    "escape_room.no_saved": {
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "4d38f6d44e32"
+    },
+    "escape_room.other_team_escaped": {
+      "sourceHash": "7029f7353ad6",
+      "translationHash": "48a1971588e1"
+    },
+    "escape_room.preview_confirmed": {
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "02959881e387"
+    },
+    "escape_room.preview_desc": {
+      "sourceHash": "989d394fb536",
+      "translationHash": "fd40f6aa665d"
+    },
+    "escape_room.puzzles_remaining": {
+      "sourceHash": "2eb2ac4fbdca",
+      "translationHash": "c5a19ff9602a"
+    },
+    "escape_room.reset": {
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "e02862dff4c2"
+    },
+    "escape_room.settings_btn": {
+      "sourceHash": "561c458e6dad",
+      "translationHash": "b99c4968c348"
+    },
+    "escape_room.start": {
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "6c1cb2850117"
+    },
+    "escape_room.stats_restored": {
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "f808e234a694"
+    },
+    "escape_room.subtitle": {
+      "sourceHash": "e40af152968f",
+      "translationHash": "a3b931b72f96"
+    },
+    "escape_room.team_escaped": {
+      "sourceHash": "f3a87d3bd452",
+      "translationHash": "1bf165582bfd"
+    },
+    "escape_room.team_progress": {
+      "sourceHash": "b617dfb8c4c3",
+      "translationHash": "bf77f4c89c0d"
+    },
+    "escape_room.teams_competing": {
+      "sourceHash": "30d6f485fe04",
+      "translationHash": "189d76412550"
+    },
+    "escape_room.thirty_seconds_warning": {
+      "sourceHash": "41f087b1c9e5",
+      "translationHash": "76337fcba58a"
+    },
+    "escape_room.time_remaining": {
+      "sourceHash": "2361c1afdc54",
+      "translationHash": "d0ffd41e33c4"
+    },
+    "escape_room.time_up": {
+      "sourceHash": "e9d84399d474",
+      "translationHash": "094cb2e66306"
+    },
+    "escape_room.title": {
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "6eb54f841ee5"
+    },
+    "escape_room.you_escaped": {
+      "sourceHash": "7f288e0994eb",
+      "translationHash": "88e041caf75b"
+    },
+    "export.storybook.user_label": {
+      "sourceHash": "b7c8a6b4922c",
+      "translationHash": "692b0deda026"
+    },
     "lesson_plan.header_title": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
       "translationHash": "f21485eeebb3"
+    },
+    "math.check.error": {
+      "sourceHash": "388461d78840",
+      "translationHash": "d7948b46646d"
     },
     "meta.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
@@ -241,6 +581,58 @@
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
       "translationHash": "f21485eeebb3"
+    },
+    "pdf_audit.ada.deadline_50k": {
+      "sourceHash": "bfd15bffd157",
+      "translationHash": "75213fea8417"
+    },
+    "pdf_audit.ada.deadline_badge": {
+      "sourceHash": "682e70279f51",
+      "translationHash": "14521c6dd813"
+    },
+    "pdf_audit.knowbility.deadline_range": {
+      "sourceHash": "6da55130307b",
+      "translationHash": "3b52e2bace8a"
+    },
+    "persona.instruction_panel": {
+      "sourceHash": "71c7a7015708",
+      "translationHash": "0799ff332dc8"
+    },
+    "roster.bridge_offline_info": {
+      "sourceHash": "f3386432c66e",
+      "translationHash": "c3cb009de420"
+    },
+    "roster.bridge_terms_saved": {
+      "sourceHash": "c0a0e8b3e223",
+      "translationHash": "3a5190ad86d8"
+    },
+    "roster.deselect_all": {
+      "sourceHash": "1b656a7e2b26",
+      "translationHash": "359c5301d16d"
+    },
+    "session.error_invalid_code": {
+      "sourceHash": "e9fcde1a24f5",
+      "translationHash": "1f1898134ba8"
+    },
+    "session.join_instructions": {
+      "sourceHash": "52a123976b7e",
+      "translationHash": "66ddc1bfa53d"
+    },
+    "settings.text.bionic_sub": {
+      "sourceHash": "7fcac8cbbf63",
+      "translationHash": "55d4da67b3b9"
+    },
+    "source_view.check_again": {
+      "sourceHash": "9d7d982a1da2",
+      "translationHash": "8952df5a3d8b"
+    },
+    "source_view.check_details": {
+      "sourceHash": "f618211729a1",
+      "translationHash": "dcce4f65f0b5"
+    },
+    "source_view.check_run": {
+      "sourceHash": "3ef660e992f4",
+      "translationHash": "9a1ba174b191"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -297,18 +689,149 @@
       "sourceHash": "274e901eaded",
       "translationHash": "10a91caf18de"
     },
+    "tips.adventure_context": {
+      "sourceHash": "78eb19785c74",
+      "translationHash": "faa40df70a3d"
+    },
+    "tips.fallback_brainstorm": {
+      "sourceHash": "6ca44eab6fe7",
+      "translationHash": "a93ce212ed54"
+    },
+    "tips.fallback_export": {
+      "sourceHash": "7271891d03e4",
+      "translationHash": "dd410a4168ee"
+    },
+    "tips.simplified_glossary": {
+      "sourceHash": "263550bee638",
+      "translationHash": "d45073203e8a"
+    },
+    "toasts.1f4ca_progress_report_has_been": {
+      "sourceHash": "93dfa3e3305c",
+      "translationHash": "c3b01f360350"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "28af81c12669"
     },
+    "tour.adventure_text": {
+      "sourceHash": "12c9ebb533db",
+      "translationHash": "eeaf9a2ced0e"
+    },
+    "tour.alignment_text": {
+      "sourceHash": "4a5621675bc2",
+      "translationHash": "00f6722f9e66"
+    },
+    "tour.analysis_text": {
+      "sourceHash": "e8c7367d49f7",
+      "translationHash": "4bbdec22e0d4"
+    },
     "tour.brainstorm_text": {
-      "sourceHash": "a3da8a2713bc",
-      "translationHash": "373fca56b807"
+      "sourceHash": "9a3b7f785fea",
+      "translationHash": "9095d5e097db"
+    },
+    "tour.concept_sort_text": {
+      "sourceHash": "2df9a6d997a4",
+      "translationHash": "9dc6e75098b4"
+    },
+    "tour.dashboard_text": {
+      "sourceHash": "8363338d0565",
+      "translationHash": "18bf9a8487b4"
+    },
+    "tour.dashboard_title": {
+      "sourceHash": "0e3fd7ced759",
+      "translationHash": "be780b944d4a"
+    },
+    "tour.dbq_text": {
+      "sourceHash": "df62816b0fc7",
+      "translationHash": "a62c7491dca9"
+    },
+    "tour.faq_text": {
+      "sourceHash": "6d9b20ab4e99",
+      "translationHash": "678b65aa4f17"
+    },
+    "tour.glossary_text": {
+      "sourceHash": "ce67d3c91caf",
+      "translationHash": "2a0e150201e9"
+    },
+    "tour.input_panel_text": {
+      "sourceHash": "27f73fc20af5",
+      "translationHash": "988f9996627b"
+    },
+    "tour.lesson_plan_text": {
+      "sourceHash": "14b597a85965",
+      "translationHash": "a4235b5d1484"
+    },
+    "tour.math_text": {
+      "sourceHash": "4528369c7483",
+      "translationHash": "a0cb8c746b12"
     },
     "tour.note_taking_text": {
-      "reviewReason": "preserved-condensed-summary",
-      "sourceHash": "ef15651e945b",
-      "translationHash": "0bc6b7a53563"
+      "sourceHash": "8c58d98102de",
+      "translationHash": "b2b0f68622ce"
+    },
+    "tour.outline_text": {
+      "sourceHash": "e071674c0e0b",
+      "translationHash": "6a7921be224b"
+    },
+    "tour.persona_text": {
+      "sourceHash": "ea121cb3b14c",
+      "translationHash": "45d60576bb40"
+    },
+    "tour.quiz_mode_text": {
+      "sourceHash": "38cec658010d",
+      "translationHash": "c027693ad680"
+    },
+    "tour.quiz_text": {
+      "sourceHash": "ca76adab6d11",
+      "translationHash": "db27eb1f7d14"
+    },
+    "tour.scaffolds_text": {
+      "sourceHash": "11c15cbfe61d",
+      "translationHash": "977f085e327c"
+    },
+    "tour.simplified_text": {
+      "sourceHash": "801ac0532b38",
+      "translationHash": "e7d4a4915b65"
+    },
+    "tour.timeline_text": {
+      "sourceHash": "5bb59ea52b26",
+      "translationHash": "618f64628e0b"
+    },
+    "tour.utils_text": {
+      "sourceHash": "373b2c14d29d",
+      "translationHash": "5740e726915b"
+    },
+    "tour.utils_title": {
+      "sourceHash": "599e3214c860",
+      "translationHash": "c65935bcafe2"
+    },
+    "tour.visual_text": {
+      "sourceHash": "9c12b8a644b8",
+      "translationHash": "64a0a2ca1958"
+    },
+    "tour.wordsounds_text": {
+      "sourceHash": "61ff5f725deb",
+      "translationHash": "db3cc78c1be5"
+    },
+    "translate.target_label": {
+      "sourceHash": "9ba6d1c828f0",
+      "translationHash": "0b1844aad167"
+    },
+    "word_sounds.review_gap_rhyme": {
+      "sourceHash": "a242b009678b",
+      "translationHash": "ceb13f92f39b"
+    },
+    "word_sounds.source_ai": {
+      "sourceHash": "7b8ec7fe6a43",
+      "translationHash": "b1374d2ec791"
+    },
+    "word_sounds.source_custom": {
+      "sourceHash": "39b187b03d82",
+      "translationHash": "c506c2a75dd3"
+    },
+    "word_sounds.sources": {
+      "sourceHash": "95bde50ff4c6",
+      "translationHash": "d1da79d32f8f"
     }
   },
   "bengali": {
@@ -756,6 +1279,226 @@
     }
   },
   "chinese_simplified": {
+    "adventure.auto_read_disable": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "ebffe2894cac"
+    },
+    "adventure.auto_read_enable": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "95ff905ce4ac"
+    },
+    "adventure.auto_read_off_tooltip": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "ebffe2894cac"
+    },
+    "adventure.auto_read_on_tooltip": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "95ff905ce4ac"
+    },
+    "adventure.auto_read_status_label": {
+      "sourceHash": "3adc44a4683b",
+      "translationHash": "428f0fc3ff61"
+    },
+    "adventure.enter_immersive": {
+      "sourceHash": "9b979756d89f",
+      "translationHash": "42d158c8b891"
+    },
+    "adventure.error.fallback": {
+      "sourceHash": "226cbe1aceed",
+      "translationHash": "35057f22af11"
+    },
+    "adventure.escape_room_close_btn": {
+      "sourceHash": "16fe44109bf1",
+      "translationHash": "1051b5c67d36"
+    },
+    "adventure.escape_room_progress": {
+      "sourceHash": "f3145c8cb36f",
+      "translationHash": "9ba926c9aa9c"
+    },
+    "adventure.escape_room_timer": {
+      "sourceHash": "c29efe3eceb7",
+      "translationHash": "84d9de9f0e2b"
+    },
+    "adventure.exit_immersive": {
+      "sourceHash": "d532565a314c",
+      "translationHash": "2aa5664bf3f0"
+    },
+    "adventure.explore_hint": {
+      "sourceHash": "4148dcd856e3",
+      "translationHash": "e98ef72bce96"
+    },
+    "adventure.ledger_subtitle": {
+      "sourceHash": "c5c3f670c067",
+      "translationHash": "931d47e1cf15"
+    },
+    "adventure.ledger_title": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "8030eecf0964"
+    },
+    "adventure.ledger_tooltip": {
+      "sourceHash": "7db03cb3facc",
+      "translationHash": "aa365b3668a2"
+    },
+    "adventure.log_button": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "8030eecf0964"
+    },
+    "adventure.low_quality_label": {
+      "sourceHash": "48668d120579",
+      "translationHash": "76919d55fb43"
+    },
+    "adventure.maximize_tooltip": {
+      "sourceHash": "cdde416b5c15",
+      "translationHash": "b38354396194"
+    },
+    "adventure.restart": {
+      "sourceHash": "51dd91dc98a9",
+      "translationHash": "f17fc9b7f685"
+    },
+    "adventure.setup_subtitle": {
+      "sourceHash": "2cd9ef63bf87",
+      "translationHash": "ec589815d7fd"
+    },
+    "adventure.start_sequel": {
+      "sourceHash": "20e131292c5f",
+      "translationHash": "3b61e85898be"
+    },
+    "adventure.view_button": {
+      "sourceHash": "994e534cb6df",
+      "translationHash": "f6bcbfb82157"
+    },
+    "adventure.view_immersive": {
+      "sourceHash": "2af83afa990b",
+      "translationHash": "cc79420a627d"
+    },
+    "analysis.title": {
+      "sourceHash": "f25d551d8ae1",
+      "translationHash": "0c9d8e885ced"
+    },
+    "behavior_lens.ph.person": {
+      "sourceHash": "fb5e286aecb7",
+      "translationHash": "b7f5e4ba355c"
+    },
+    "behavior_lens.ph.reinforcement_how_you": {
+      "sourceHash": "df15c1d4e7e5",
+      "translationHash": "b44b11cdab15"
+    },
+    "behavior_lens.ph.teaching_strategy_how_you": {
+      "sourceHash": "35927ed94e16",
+      "translationHash": "33887b276bca"
+    },
+    "behavior_lens.raw.export_this_tool": {
+      "sourceHash": "5a23706614c9",
+      "translationHash": "8a35da2c4de9"
+    },
+    "behavior_lens.ui.at_each_phase_you": {
+      "sourceHash": "66a35f6b9fba",
+      "translationHash": "00f18de2596a"
+    },
+    "behavior_lens.ui.track_behaviors_at_home_using_simple_everyday_lang": {
+      "sourceHash": "fd6dd3621f78",
+      "translationHash": "e6c786e0a167"
+    },
+    "bot_events.glossary_generated": {
+      "sourceHash": "b484bb5633dc",
+      "translationHash": "c02b62b257aa"
+    },
+    "chat_guide.flow.initial_prompt_context": {
+      "sourceHash": "2722f061ead5",
+      "translationHash": "03bbd41bcd2f"
+    },
+    "class_analytics.escape_completion": {
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "4c51611b8129"
+    },
+    "common.adjust_escape_room_state": {
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "113087fa12e5"
+    },
+    "common.adventure_social_story_focus_placeholder": {
+      "sourceHash": "59c8fb3302a1",
+      "translationHash": "090f62dde9f1"
+    },
+    "common.common_placeholder_item_trans": {
+      "sourceHash": "956d2ab4d8b2",
+      "translationHash": "c9631aa0579d"
+    },
+    "common.common_placeholder_title_trans": {
+      "sourceHash": "c5aa0c84c2c8",
+      "translationHash": "ad50b7f41487"
+    },
+    "common.common_placeholder_translation": {
+      "sourceHash": "aed1ac43408f",
+      "translationHash": "68a3f4976b8c"
+    },
+    "common.common_standards_region_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "14af399c206e"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "sourceHash": "5986ff42554c",
+      "translationHash": "504d87f6f001"
+    },
+    "common.enter_escape_room_state": {
+      "sourceHash": "53480732dabb",
+      "translationHash": "fc8620bdce33"
+    },
+    "common.escape_room_enter_answer": {
+      "sourceHash": "93bcf2fdc37d",
+      "translationHash": "38664e75fad8"
+    },
+    "common.escape_room_unscramble_placeholder": {
+      "sourceHash": "89a5e8095a0e",
+      "translationHash": "734c4fefd6ca"
+    },
+    "common.exit_focus": {
+      "sourceHash": "4a129a5f19ce",
+      "translationHash": "926f1dfd6478"
+    },
+    "common.glossary_custom_edit_placeholder": {
+      "sourceHash": "078a20ed1068",
+      "translationHash": "34d5319cf73a"
+    },
+    "common.glossary_style_placeholder": {
+      "sourceHash": "f8908872fe1d",
+      "translationHash": "61ed1e866e66"
+    },
+    "common.groups_new_group_placeholder": {
+      "sourceHash": "886c3806ab3f",
+      "translationHash": "168435b6eff7"
+    },
+    "common.launch_escape_room": {
+      "sourceHash": "7ff3be762718",
+      "translationHash": "42176024b209"
+    },
+    "common.load_saved_escape_room": {
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "a752bdbedb8a"
+    },
+    "common.modals_save_project_placeholder": {
+      "sourceHash": "ce2d4355f361",
+      "translationHash": "f95b31c00171"
+    },
+    "common.reset_escape_room": {
+      "sourceHash": "b05867f935f7",
+      "translationHash": "c0574fcebe85"
+    },
+    "common.save_escape_room_configuration": {
+      "sourceHash": "365ab100916a",
+      "translationHash": "e54b98ff5645"
+    },
+    "common.standards_region_framework_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "14af399c206e"
+    },
+    "common.standards_region_optional": {
+      "sourceHash": "57b57e8419be",
+      "translationHash": "1e38a8df1ba0"
+    },
+    "common.timeline_revise_placeholder": {
+      "sourceHash": "a4f91b4641a7",
+      "translationHash": "0b390629a46f"
+    },
     "common.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
@@ -766,10 +1509,130 @@
       "sourceHash": "6730f6f93dad",
       "translationHash": "e21b4ce68242"
     },
+    "common.visuals_refiner_placeholder": {
+      "sourceHash": "36639c184861",
+      "translationHash": "a7939c2a3aed"
+    },
+    "escape_room.bonus_xp": {
+      "sourceHash": "dd78c242f77c",
+      "translationHash": "a73e9cb432be"
+    },
+    "escape_room.clues_collected": {
+      "sourceHash": "5f70ab1c7ea7",
+      "translationHash": "41cfbaa46569"
+    },
+    "escape_room.config_saved": {
+      "sourceHash": "4319d7096edf",
+      "translationHash": "d71197b7033f"
+    },
+    "escape_room.end_game_confirm": {
+      "sourceHash": "a042149703b6",
+      "translationHash": "01ff67437ef9"
+    },
+    "escape_room.game_over_time": {
+      "sourceHash": "53fdc5f07893",
+      "translationHash": "2212c762dacb"
+    },
+    "escape_room.generating": {
+      "sourceHash": "073b0c003085",
+      "translationHash": "a66773d9cd2c"
+    },
+    "escape_room.generating_hint": {
+      "sourceHash": "fae5ecec5ab2",
+      "translationHash": "0163d13fcfc2"
+    },
+    "escape_room.launch_live_tooltip": {
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "131b4e0cac6c"
+    },
+    "escape_room.loaded_saved": {
+      "sourceHash": "292f49162e60",
+      "translationHash": "38006d1e5d46"
+    },
+    "escape_room.no_saved": {
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "b8777c991a59"
+    },
+    "escape_room.other_team_escaped": {
+      "sourceHash": "7029f7353ad6",
+      "translationHash": "20b1cb1ae0b3"
+    },
+    "escape_room.preview_confirmed": {
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "90820d25b793"
+    },
+    "escape_room.preview_desc": {
+      "sourceHash": "989d394fb536",
+      "translationHash": "8f24675ce9a5"
+    },
+    "escape_room.puzzles_remaining": {
+      "sourceHash": "2eb2ac4fbdca",
+      "translationHash": "7ad43d69b9a8"
+    },
+    "escape_room.reset": {
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "addaf931f367"
+    },
+    "escape_room.settings_btn": {
+      "sourceHash": "561c458e6dad",
+      "translationHash": "cbf2662fc01b"
+    },
+    "escape_room.start": {
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "a2c45f2dc244"
+    },
+    "escape_room.stats_restored": {
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "026d8487e590"
+    },
+    "escape_room.subtitle": {
+      "sourceHash": "e40af152968f",
+      "translationHash": "afcd3d7601a8"
+    },
+    "escape_room.team_escaped": {
+      "sourceHash": "f3a87d3bd452",
+      "translationHash": "6ba0b57bf474"
+    },
+    "escape_room.team_progress": {
+      "sourceHash": "b617dfb8c4c3",
+      "translationHash": "94b664174239"
+    },
+    "escape_room.teams_competing": {
+      "sourceHash": "30d6f485fe04",
+      "translationHash": "31f5e11c5b59"
+    },
+    "escape_room.thirty_seconds_warning": {
+      "sourceHash": "41f087b1c9e5",
+      "translationHash": "109953cf3438"
+    },
+    "escape_room.time_remaining": {
+      "sourceHash": "2361c1afdc54",
+      "translationHash": "4660aa9b8285"
+    },
+    "escape_room.time_up": {
+      "sourceHash": "e9d84399d474",
+      "translationHash": "f0fdbc126222"
+    },
+    "escape_room.title": {
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "41352504c0f8"
+    },
+    "escape_room.you_escaped": {
+      "sourceHash": "7f288e0994eb",
+      "translationHash": "25c53e41e09c"
+    },
+    "export.storybook.user_label": {
+      "sourceHash": "b7c8a6b4922c",
+      "translationHash": "16c9c7ce98a6"
+    },
     "lesson_plan.header_title": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
       "translationHash": "e21b4ce68242"
+    },
+    "math.check.error": {
+      "sourceHash": "388461d78840",
+      "translationHash": "397dbdfdf383"
     },
     "meta.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
@@ -780,6 +1643,58 @@
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
       "translationHash": "e21b4ce68242"
+    },
+    "pdf_audit.ada.deadline_50k": {
+      "sourceHash": "bfd15bffd157",
+      "translationHash": "e46d0c010deb"
+    },
+    "pdf_audit.ada.deadline_badge": {
+      "sourceHash": "682e70279f51",
+      "translationHash": "62899545b1b5"
+    },
+    "pdf_audit.knowbility.deadline_range": {
+      "sourceHash": "6da55130307b",
+      "translationHash": "1c35785fec6b"
+    },
+    "persona.instruction_panel": {
+      "sourceHash": "71c7a7015708",
+      "translationHash": "6dfa7edd532a"
+    },
+    "roster.bridge_offline_info": {
+      "sourceHash": "f3386432c66e",
+      "translationHash": "6801f75215af"
+    },
+    "roster.bridge_terms_saved": {
+      "sourceHash": "c0a0e8b3e223",
+      "translationHash": "982c5ade23aa"
+    },
+    "roster.deselect_all": {
+      "sourceHash": "1b656a7e2b26",
+      "translationHash": "cbba1f6c49ac"
+    },
+    "session.error_invalid_code": {
+      "sourceHash": "e9fcde1a24f5",
+      "translationHash": "f56eb3bd75b0"
+    },
+    "session.join_instructions": {
+      "sourceHash": "52a123976b7e",
+      "translationHash": "77641d9761ab"
+    },
+    "settings.text.bionic_sub": {
+      "sourceHash": "7fcac8cbbf63",
+      "translationHash": "b69b65796efc"
+    },
+    "source_view.check_again": {
+      "sourceHash": "9d7d982a1da2",
+      "translationHash": "6e1dce9241a1"
+    },
+    "source_view.check_details": {
+      "sourceHash": "f618211729a1",
+      "translationHash": "7acde93082d4"
+    },
+    "source_view.check_run": {
+      "sourceHash": "3ef660e992f4",
+      "translationHash": "e34a29fa37be"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -836,18 +1751,149 @@
       "sourceHash": "274e901eaded",
       "translationHash": "6fb5f0e7964d"
     },
+    "tips.adventure_context": {
+      "sourceHash": "78eb19785c74",
+      "translationHash": "4fcf0c14d461"
+    },
+    "tips.fallback_brainstorm": {
+      "sourceHash": "6ca44eab6fe7",
+      "translationHash": "8b7ac345da0d"
+    },
+    "tips.fallback_export": {
+      "sourceHash": "7271891d03e4",
+      "translationHash": "86f7b965b1d3"
+    },
+    "tips.simplified_glossary": {
+      "sourceHash": "263550bee638",
+      "translationHash": "5de35a7d18b8"
+    },
+    "toasts.1f4ca_progress_report_has_been": {
+      "sourceHash": "93dfa3e3305c",
+      "translationHash": "71621e6e7bc4"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "3d19b685b8c3"
     },
+    "tour.adventure_text": {
+      "sourceHash": "12c9ebb533db",
+      "translationHash": "cce0cabbcf59"
+    },
+    "tour.alignment_text": {
+      "sourceHash": "4a5621675bc2",
+      "translationHash": "54a45a36e8e8"
+    },
+    "tour.analysis_text": {
+      "sourceHash": "e8c7367d49f7",
+      "translationHash": "34de53c5d222"
+    },
     "tour.brainstorm_text": {
-      "sourceHash": "a3da8a2713bc",
-      "translationHash": "3881ad97116c"
+      "sourceHash": "9a3b7f785fea",
+      "translationHash": "61d6b0d74029"
+    },
+    "tour.concept_sort_text": {
+      "sourceHash": "2df9a6d997a4",
+      "translationHash": "d72533369fc6"
+    },
+    "tour.dashboard_text": {
+      "sourceHash": "8363338d0565",
+      "translationHash": "96f5bcaed431"
+    },
+    "tour.dashboard_title": {
+      "sourceHash": "0e3fd7ced759",
+      "translationHash": "bbfcc9bebdec"
+    },
+    "tour.dbq_text": {
+      "sourceHash": "df62816b0fc7",
+      "translationHash": "587631a1b510"
+    },
+    "tour.faq_text": {
+      "sourceHash": "6d9b20ab4e99",
+      "translationHash": "d4a429358c19"
+    },
+    "tour.glossary_text": {
+      "sourceHash": "ce67d3c91caf",
+      "translationHash": "7ff88c4e6505"
+    },
+    "tour.input_panel_text": {
+      "sourceHash": "27f73fc20af5",
+      "translationHash": "aeda4d5ad469"
+    },
+    "tour.lesson_plan_text": {
+      "sourceHash": "14b597a85965",
+      "translationHash": "8809a136343c"
+    },
+    "tour.math_text": {
+      "sourceHash": "4528369c7483",
+      "translationHash": "4d304d158371"
     },
     "tour.note_taking_text": {
-      "reviewReason": "preserved-condensed-summary",
-      "sourceHash": "ef15651e945b",
-      "translationHash": "066642a2c989"
+      "sourceHash": "8c58d98102de",
+      "translationHash": "5ecd74cb440d"
+    },
+    "tour.outline_text": {
+      "sourceHash": "e071674c0e0b",
+      "translationHash": "5c858b17871e"
+    },
+    "tour.persona_text": {
+      "sourceHash": "ea121cb3b14c",
+      "translationHash": "b3cf3dd154aa"
+    },
+    "tour.quiz_mode_text": {
+      "sourceHash": "38cec658010d",
+      "translationHash": "03830e543325"
+    },
+    "tour.quiz_text": {
+      "sourceHash": "ca76adab6d11",
+      "translationHash": "81894e19fa8e"
+    },
+    "tour.scaffolds_text": {
+      "sourceHash": "11c15cbfe61d",
+      "translationHash": "ee033981b013"
+    },
+    "tour.simplified_text": {
+      "sourceHash": "801ac0532b38",
+      "translationHash": "cc43726e6dac"
+    },
+    "tour.timeline_text": {
+      "sourceHash": "5bb59ea52b26",
+      "translationHash": "724d6e3ed538"
+    },
+    "tour.utils_text": {
+      "sourceHash": "373b2c14d29d",
+      "translationHash": "961b1097ce39"
+    },
+    "tour.utils_title": {
+      "sourceHash": "599e3214c860",
+      "translationHash": "cf28d67ea974"
+    },
+    "tour.visual_text": {
+      "sourceHash": "9c12b8a644b8",
+      "translationHash": "e1297f0e3b00"
+    },
+    "tour.wordsounds_text": {
+      "sourceHash": "61ff5f725deb",
+      "translationHash": "f9ee8a332eb3"
+    },
+    "translate.target_label": {
+      "sourceHash": "9ba6d1c828f0",
+      "translationHash": "2b3d71ac8fc7"
+    },
+    "word_sounds.review_gap_rhyme": {
+      "sourceHash": "a242b009678b",
+      "translationHash": "1eff2a292df8"
+    },
+    "word_sounds.source_ai": {
+      "sourceHash": "7b8ec7fe6a43",
+      "translationHash": "bbde0cf6e76f"
+    },
+    "word_sounds.source_custom": {
+      "sourceHash": "39b187b03d82",
+      "translationHash": "6683680b8d92"
+    },
+    "word_sounds.sources": {
+      "sourceHash": "95bde50ff4c6",
+      "translationHash": "c40d8513712d"
     }
   },
   "chinese_traditional": {
@@ -1479,6 +2525,226 @@
     }
   },
   "french": {
+    "adventure.auto_read_disable": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "5b47ebb8e5dd"
+    },
+    "adventure.auto_read_enable": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "f53b16f264f4"
+    },
+    "adventure.auto_read_off_tooltip": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "5b47ebb8e5dd"
+    },
+    "adventure.auto_read_on_tooltip": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "f53b16f264f4"
+    },
+    "adventure.auto_read_status_label": {
+      "sourceHash": "3adc44a4683b",
+      "translationHash": "1189cf7d5ea5"
+    },
+    "adventure.enter_immersive": {
+      "sourceHash": "9b979756d89f",
+      "translationHash": "b6b0c68ca03e"
+    },
+    "adventure.error.fallback": {
+      "sourceHash": "226cbe1aceed",
+      "translationHash": "4db946120e27"
+    },
+    "adventure.escape_room_close_btn": {
+      "sourceHash": "16fe44109bf1",
+      "translationHash": "8413a6bda0b9"
+    },
+    "adventure.escape_room_progress": {
+      "sourceHash": "f3145c8cb36f",
+      "translationHash": "cd9b423a8538"
+    },
+    "adventure.escape_room_timer": {
+      "sourceHash": "c29efe3eceb7",
+      "translationHash": "bc8dca6650a3"
+    },
+    "adventure.exit_immersive": {
+      "sourceHash": "d532565a314c",
+      "translationHash": "2c900df6648d"
+    },
+    "adventure.explore_hint": {
+      "sourceHash": "4148dcd856e3",
+      "translationHash": "27e1fd8bf5b7"
+    },
+    "adventure.ledger_subtitle": {
+      "sourceHash": "c5c3f670c067",
+      "translationHash": "6964b2fdb298"
+    },
+    "adventure.ledger_title": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "38130d764b58"
+    },
+    "adventure.ledger_tooltip": {
+      "sourceHash": "7db03cb3facc",
+      "translationHash": "ff913ee81865"
+    },
+    "adventure.log_button": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "38130d764b58"
+    },
+    "adventure.low_quality_label": {
+      "sourceHash": "48668d120579",
+      "translationHash": "7aa6b1d1daad"
+    },
+    "adventure.maximize_tooltip": {
+      "sourceHash": "cdde416b5c15",
+      "translationHash": "0bf9ed1ca5de"
+    },
+    "adventure.restart": {
+      "sourceHash": "51dd91dc98a9",
+      "translationHash": "a15c72adab8d"
+    },
+    "adventure.setup_subtitle": {
+      "sourceHash": "2cd9ef63bf87",
+      "translationHash": "83de347b66b4"
+    },
+    "adventure.start_sequel": {
+      "sourceHash": "20e131292c5f",
+      "translationHash": "c41a5facd24a"
+    },
+    "adventure.view_button": {
+      "sourceHash": "994e534cb6df",
+      "translationHash": "778961073a46"
+    },
+    "adventure.view_immersive": {
+      "sourceHash": "2af83afa990b",
+      "translationHash": "632a0974eda5"
+    },
+    "analysis.title": {
+      "sourceHash": "f25d551d8ae1",
+      "translationHash": "1850e64c443c"
+    },
+    "behavior_lens.ph.person": {
+      "sourceHash": "fb5e286aecb7",
+      "translationHash": "217a5c0679fc"
+    },
+    "behavior_lens.ph.reinforcement_how_you": {
+      "sourceHash": "df15c1d4e7e5",
+      "translationHash": "82d856d7d13b"
+    },
+    "behavior_lens.ph.teaching_strategy_how_you": {
+      "sourceHash": "35927ed94e16",
+      "translationHash": "35f7c69d7e55"
+    },
+    "behavior_lens.raw.export_this_tool": {
+      "sourceHash": "5a23706614c9",
+      "translationHash": "1485fe9dbff4"
+    },
+    "behavior_lens.ui.at_each_phase_you": {
+      "sourceHash": "66a35f6b9fba",
+      "translationHash": "05166507b828"
+    },
+    "behavior_lens.ui.track_behaviors_at_home_using_simple_everyday_lang": {
+      "sourceHash": "fd6dd3621f78",
+      "translationHash": "c1e374577c18"
+    },
+    "bot_events.glossary_generated": {
+      "sourceHash": "b484bb5633dc",
+      "translationHash": "e01f0f35ea25"
+    },
+    "chat_guide.flow.initial_prompt_context": {
+      "sourceHash": "2722f061ead5",
+      "translationHash": "7c2d3d63e658"
+    },
+    "class_analytics.escape_completion": {
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "368872d0d4d2"
+    },
+    "common.adjust_escape_room_state": {
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "0b7e8f9b4960"
+    },
+    "common.adventure_social_story_focus_placeholder": {
+      "sourceHash": "59c8fb3302a1",
+      "translationHash": "2b5eef564953"
+    },
+    "common.common_placeholder_item_trans": {
+      "sourceHash": "956d2ab4d8b2",
+      "translationHash": "40b10766baa8"
+    },
+    "common.common_placeholder_title_trans": {
+      "sourceHash": "c5aa0c84c2c8",
+      "translationHash": "d4c64c167f96"
+    },
+    "common.common_placeholder_translation": {
+      "sourceHash": "aed1ac43408f",
+      "translationHash": "592e78854570"
+    },
+    "common.common_standards_region_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "85ab572651b2"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "sourceHash": "5986ff42554c",
+      "translationHash": "821169fd1fb5"
+    },
+    "common.enter_escape_room_state": {
+      "sourceHash": "53480732dabb",
+      "translationHash": "5463ec6fa9e3"
+    },
+    "common.escape_room_enter_answer": {
+      "sourceHash": "93bcf2fdc37d",
+      "translationHash": "ea9b2c6a17c3"
+    },
+    "common.escape_room_unscramble_placeholder": {
+      "sourceHash": "89a5e8095a0e",
+      "translationHash": "2d5ff37e9142"
+    },
+    "common.exit_focus": {
+      "sourceHash": "4a129a5f19ce",
+      "translationHash": "20a762ff87a1"
+    },
+    "common.glossary_custom_edit_placeholder": {
+      "sourceHash": "078a20ed1068",
+      "translationHash": "14d9c2b7ae19"
+    },
+    "common.glossary_style_placeholder": {
+      "sourceHash": "f8908872fe1d",
+      "translationHash": "3556dab90671"
+    },
+    "common.groups_new_group_placeholder": {
+      "sourceHash": "886c3806ab3f",
+      "translationHash": "679316e0be93"
+    },
+    "common.launch_escape_room": {
+      "sourceHash": "7ff3be762718",
+      "translationHash": "d8d1c3c0edfb"
+    },
+    "common.load_saved_escape_room": {
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "e18f5d46c1ac"
+    },
+    "common.modals_save_project_placeholder": {
+      "sourceHash": "ce2d4355f361",
+      "translationHash": "4b8b41b4d42d"
+    },
+    "common.reset_escape_room": {
+      "sourceHash": "b05867f935f7",
+      "translationHash": "94d68ad6556d"
+    },
+    "common.save_escape_room_configuration": {
+      "sourceHash": "365ab100916a",
+      "translationHash": "14c5270c11f4"
+    },
+    "common.standards_region_framework_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "85ab572651b2"
+    },
+    "common.standards_region_optional": {
+      "sourceHash": "57b57e8419be",
+      "translationHash": "321c5b0364ca"
+    },
+    "common.timeline_revise_placeholder": {
+      "sourceHash": "a4f91b4641a7",
+      "translationHash": "1654d34b50d2"
+    },
     "common.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
@@ -1489,10 +2755,130 @@
       "sourceHash": "6730f6f93dad",
       "translationHash": "24673d3601da"
     },
+    "common.visuals_refiner_placeholder": {
+      "sourceHash": "36639c184861",
+      "translationHash": "7e4978018478"
+    },
+    "escape_room.bonus_xp": {
+      "sourceHash": "dd78c242f77c",
+      "translationHash": "b71e4d4b3723"
+    },
+    "escape_room.clues_collected": {
+      "sourceHash": "5f70ab1c7ea7",
+      "translationHash": "aacf4a212115"
+    },
+    "escape_room.config_saved": {
+      "sourceHash": "4319d7096edf",
+      "translationHash": "b91e23650e74"
+    },
+    "escape_room.end_game_confirm": {
+      "sourceHash": "a042149703b6",
+      "translationHash": "6058068a4db8"
+    },
+    "escape_room.game_over_time": {
+      "sourceHash": "53fdc5f07893",
+      "translationHash": "5de7e0183421"
+    },
+    "escape_room.generating": {
+      "sourceHash": "073b0c003085",
+      "translationHash": "88fc1d7ce984"
+    },
+    "escape_room.generating_hint": {
+      "sourceHash": "fae5ecec5ab2",
+      "translationHash": "11dc8d48d349"
+    },
+    "escape_room.launch_live_tooltip": {
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "291a1a63051d"
+    },
+    "escape_room.loaded_saved": {
+      "sourceHash": "292f49162e60",
+      "translationHash": "c5d04587dcd9"
+    },
+    "escape_room.no_saved": {
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "0d31a3ad99ca"
+    },
+    "escape_room.other_team_escaped": {
+      "sourceHash": "7029f7353ad6",
+      "translationHash": "c99312cc6507"
+    },
+    "escape_room.preview_confirmed": {
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "348384f13fc6"
+    },
+    "escape_room.preview_desc": {
+      "sourceHash": "989d394fb536",
+      "translationHash": "64b029193a1f"
+    },
+    "escape_room.puzzles_remaining": {
+      "sourceHash": "2eb2ac4fbdca",
+      "translationHash": "80847b3f41e0"
+    },
+    "escape_room.reset": {
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "5a781520306e"
+    },
+    "escape_room.settings_btn": {
+      "sourceHash": "561c458e6dad",
+      "translationHash": "6f212a7079e2"
+    },
+    "escape_room.start": {
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "649e4dc990b7"
+    },
+    "escape_room.stats_restored": {
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "ada18d5d6fae"
+    },
+    "escape_room.subtitle": {
+      "sourceHash": "e40af152968f",
+      "translationHash": "9ff95497e6e5"
+    },
+    "escape_room.team_escaped": {
+      "sourceHash": "f3a87d3bd452",
+      "translationHash": "2c2add08df16"
+    },
+    "escape_room.team_progress": {
+      "sourceHash": "b617dfb8c4c3",
+      "translationHash": "1e79ed891d4d"
+    },
+    "escape_room.teams_competing": {
+      "sourceHash": "30d6f485fe04",
+      "translationHash": "fdf37ed4f259"
+    },
+    "escape_room.thirty_seconds_warning": {
+      "sourceHash": "41f087b1c9e5",
+      "translationHash": "a97a1cdd6f45"
+    },
+    "escape_room.time_remaining": {
+      "sourceHash": "2361c1afdc54",
+      "translationHash": "e49a0fbe83bc"
+    },
+    "escape_room.time_up": {
+      "sourceHash": "e9d84399d474",
+      "translationHash": "3260f02267df"
+    },
+    "escape_room.title": {
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "0d4388219386"
+    },
+    "escape_room.you_escaped": {
+      "sourceHash": "7f288e0994eb",
+      "translationHash": "87f5161ff2d8"
+    },
+    "export.storybook.user_label": {
+      "sourceHash": "b7c8a6b4922c",
+      "translationHash": "25508a3335d7"
+    },
     "lesson_plan.header_title": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
       "translationHash": "24673d3601da"
+    },
+    "math.check.error": {
+      "sourceHash": "388461d78840",
+      "translationHash": "78a28f783b7f"
     },
     "meta.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
@@ -1503,6 +2889,58 @@
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
       "translationHash": "24673d3601da"
+    },
+    "pdf_audit.ada.deadline_50k": {
+      "sourceHash": "bfd15bffd157",
+      "translationHash": "f77b5992f4f9"
+    },
+    "pdf_audit.ada.deadline_badge": {
+      "sourceHash": "682e70279f51",
+      "translationHash": "180d868165db"
+    },
+    "pdf_audit.knowbility.deadline_range": {
+      "sourceHash": "6da55130307b",
+      "translationHash": "1dda4c2b388c"
+    },
+    "persona.instruction_panel": {
+      "sourceHash": "71c7a7015708",
+      "translationHash": "bac1ddc51076"
+    },
+    "roster.bridge_offline_info": {
+      "sourceHash": "f3386432c66e",
+      "translationHash": "8409586588c1"
+    },
+    "roster.bridge_terms_saved": {
+      "sourceHash": "c0a0e8b3e223",
+      "translationHash": "d3637e0a26b1"
+    },
+    "roster.deselect_all": {
+      "sourceHash": "1b656a7e2b26",
+      "translationHash": "af388e634f8f"
+    },
+    "session.error_invalid_code": {
+      "sourceHash": "e9fcde1a24f5",
+      "translationHash": "d7bf3c7fab51"
+    },
+    "session.join_instructions": {
+      "sourceHash": "52a123976b7e",
+      "translationHash": "373ba2564ae4"
+    },
+    "settings.text.bionic_sub": {
+      "sourceHash": "7fcac8cbbf63",
+      "translationHash": "df7b0d0e96c0"
+    },
+    "source_view.check_again": {
+      "sourceHash": "9d7d982a1da2",
+      "translationHash": "6035e8048f5d"
+    },
+    "source_view.check_details": {
+      "sourceHash": "f618211729a1",
+      "translationHash": "d9d038160724"
+    },
+    "source_view.check_run": {
+      "sourceHash": "3ef660e992f4",
+      "translationHash": "9dfcf52ce8b2"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -1559,18 +2997,149 @@
       "sourceHash": "274e901eaded",
       "translationHash": "696d7bbf673d"
     },
+    "tips.adventure_context": {
+      "sourceHash": "78eb19785c74",
+      "translationHash": "7052932aa7cb"
+    },
+    "tips.fallback_brainstorm": {
+      "sourceHash": "6ca44eab6fe7",
+      "translationHash": "0a3041cae130"
+    },
+    "tips.fallback_export": {
+      "sourceHash": "7271891d03e4",
+      "translationHash": "bf16e43d6595"
+    },
+    "tips.simplified_glossary": {
+      "sourceHash": "263550bee638",
+      "translationHash": "fef71ce977bb"
+    },
+    "toasts.1f4ca_progress_report_has_been": {
+      "sourceHash": "93dfa3e3305c",
+      "translationHash": "69a4d788a4a5"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "26416137e628"
     },
+    "tour.adventure_text": {
+      "sourceHash": "12c9ebb533db",
+      "translationHash": "046f1590eb98"
+    },
+    "tour.alignment_text": {
+      "sourceHash": "4a5621675bc2",
+      "translationHash": "5a0bd84ede72"
+    },
+    "tour.analysis_text": {
+      "sourceHash": "e8c7367d49f7",
+      "translationHash": "811fe89683d1"
+    },
     "tour.brainstorm_text": {
-      "sourceHash": "a3da8a2713bc",
-      "translationHash": "a06f74e86ee6"
+      "sourceHash": "9a3b7f785fea",
+      "translationHash": "316ab9416acd"
+    },
+    "tour.concept_sort_text": {
+      "sourceHash": "2df9a6d997a4",
+      "translationHash": "3a9e0b95cf20"
+    },
+    "tour.dashboard_text": {
+      "sourceHash": "8363338d0565",
+      "translationHash": "e55fd7b760d2"
+    },
+    "tour.dashboard_title": {
+      "sourceHash": "0e3fd7ced759",
+      "translationHash": "8e3d3c779dd7"
+    },
+    "tour.dbq_text": {
+      "sourceHash": "df62816b0fc7",
+      "translationHash": "d941d355bd9b"
+    },
+    "tour.faq_text": {
+      "sourceHash": "6d9b20ab4e99",
+      "translationHash": "97535da1df28"
+    },
+    "tour.glossary_text": {
+      "sourceHash": "ce67d3c91caf",
+      "translationHash": "3210958579ca"
+    },
+    "tour.input_panel_text": {
+      "sourceHash": "27f73fc20af5",
+      "translationHash": "9bb043f68b84"
+    },
+    "tour.lesson_plan_text": {
+      "sourceHash": "14b597a85965",
+      "translationHash": "c5a90a323ff9"
+    },
+    "tour.math_text": {
+      "sourceHash": "4528369c7483",
+      "translationHash": "3200c545fe05"
     },
     "tour.note_taking_text": {
-      "reviewReason": "preserved-condensed-summary",
-      "sourceHash": "ef15651e945b",
-      "translationHash": "d4bf6761ba50"
+      "sourceHash": "8c58d98102de",
+      "translationHash": "863e1103238e"
+    },
+    "tour.outline_text": {
+      "sourceHash": "e071674c0e0b",
+      "translationHash": "503e42754215"
+    },
+    "tour.persona_text": {
+      "sourceHash": "ea121cb3b14c",
+      "translationHash": "da8bb82e0143"
+    },
+    "tour.quiz_mode_text": {
+      "sourceHash": "38cec658010d",
+      "translationHash": "766b33739baa"
+    },
+    "tour.quiz_text": {
+      "sourceHash": "ca76adab6d11",
+      "translationHash": "2b827ad8567c"
+    },
+    "tour.scaffolds_text": {
+      "sourceHash": "11c15cbfe61d",
+      "translationHash": "bbf08650ae48"
+    },
+    "tour.simplified_text": {
+      "sourceHash": "801ac0532b38",
+      "translationHash": "4316243f088b"
+    },
+    "tour.timeline_text": {
+      "sourceHash": "5bb59ea52b26",
+      "translationHash": "439aa730a129"
+    },
+    "tour.utils_text": {
+      "sourceHash": "373b2c14d29d",
+      "translationHash": "730b08c5b4a9"
+    },
+    "tour.utils_title": {
+      "sourceHash": "599e3214c860",
+      "translationHash": "54b125941319"
+    },
+    "tour.visual_text": {
+      "sourceHash": "9c12b8a644b8",
+      "translationHash": "de5ca0373399"
+    },
+    "tour.wordsounds_text": {
+      "sourceHash": "61ff5f725deb",
+      "translationHash": "e1ff833509c4"
+    },
+    "translate.target_label": {
+      "sourceHash": "9ba6d1c828f0",
+      "translationHash": "826ff0ec0e16"
+    },
+    "word_sounds.review_gap_rhyme": {
+      "sourceHash": "a242b009678b",
+      "translationHash": "68d1c8ddda7d"
+    },
+    "word_sounds.source_ai": {
+      "sourceHash": "7b8ec7fe6a43",
+      "translationHash": "cd94cbbd4d01"
+    },
+    "word_sounds.source_custom": {
+      "sourceHash": "39b187b03d82",
+      "translationHash": "cebb94e3df69"
+    },
+    "word_sounds.sources": {
+      "sourceHash": "95bde50ff4c6",
+      "translationHash": "f4ced52337e9"
     }
   },
   "french_canadian": {
@@ -2083,6 +3652,226 @@
     }
   },
   "haitian_creole": {
+    "adventure.auto_read_disable": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "a5602858205c"
+    },
+    "adventure.auto_read_enable": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "a1bb09e93bab"
+    },
+    "adventure.auto_read_off_tooltip": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "a5602858205c"
+    },
+    "adventure.auto_read_on_tooltip": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "a1bb09e93bab"
+    },
+    "adventure.auto_read_status_label": {
+      "sourceHash": "3adc44a4683b",
+      "translationHash": "36999a41a678"
+    },
+    "adventure.enter_immersive": {
+      "sourceHash": "9b979756d89f",
+      "translationHash": "432e9b238fb4"
+    },
+    "adventure.error.fallback": {
+      "sourceHash": "226cbe1aceed",
+      "translationHash": "be8dc1a10001"
+    },
+    "adventure.escape_room_close_btn": {
+      "sourceHash": "16fe44109bf1",
+      "translationHash": "bb121ac7e9f1"
+    },
+    "adventure.escape_room_progress": {
+      "sourceHash": "f3145c8cb36f",
+      "translationHash": "b0ac0521b518"
+    },
+    "adventure.escape_room_timer": {
+      "sourceHash": "c29efe3eceb7",
+      "translationHash": "83f33a393939"
+    },
+    "adventure.exit_immersive": {
+      "sourceHash": "d532565a314c",
+      "translationHash": "36a12e7ba1be"
+    },
+    "adventure.explore_hint": {
+      "sourceHash": "4148dcd856e3",
+      "translationHash": "1c0994cf9d3b"
+    },
+    "adventure.ledger_subtitle": {
+      "sourceHash": "c5c3f670c067",
+      "translationHash": "06de18e45ca9"
+    },
+    "adventure.ledger_title": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "0223816f1bfb"
+    },
+    "adventure.ledger_tooltip": {
+      "sourceHash": "7db03cb3facc",
+      "translationHash": "a7483914882a"
+    },
+    "adventure.log_button": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "0223816f1bfb"
+    },
+    "adventure.low_quality_label": {
+      "sourceHash": "48668d120579",
+      "translationHash": "d48a36adaf3d"
+    },
+    "adventure.maximize_tooltip": {
+      "sourceHash": "cdde416b5c15",
+      "translationHash": "406b618d334b"
+    },
+    "adventure.restart": {
+      "sourceHash": "51dd91dc98a9",
+      "translationHash": "0e9a1b82c04a"
+    },
+    "adventure.setup_subtitle": {
+      "sourceHash": "2cd9ef63bf87",
+      "translationHash": "b97b7ead7036"
+    },
+    "adventure.start_sequel": {
+      "sourceHash": "20e131292c5f",
+      "translationHash": "2b9b089e078b"
+    },
+    "adventure.view_button": {
+      "sourceHash": "994e534cb6df",
+      "translationHash": "229a38023d44"
+    },
+    "adventure.view_immersive": {
+      "sourceHash": "2af83afa990b",
+      "translationHash": "dfa183379301"
+    },
+    "analysis.title": {
+      "sourceHash": "f25d551d8ae1",
+      "translationHash": "2a6e94983842"
+    },
+    "behavior_lens.ph.person": {
+      "sourceHash": "fb5e286aecb7",
+      "translationHash": "56ca99655052"
+    },
+    "behavior_lens.ph.reinforcement_how_you": {
+      "sourceHash": "df15c1d4e7e5",
+      "translationHash": "63ccd15c8397"
+    },
+    "behavior_lens.ph.teaching_strategy_how_you": {
+      "sourceHash": "35927ed94e16",
+      "translationHash": "157bfe10606b"
+    },
+    "behavior_lens.raw.export_this_tool": {
+      "sourceHash": "5a23706614c9",
+      "translationHash": "30385b17e489"
+    },
+    "behavior_lens.ui.at_each_phase_you": {
+      "sourceHash": "66a35f6b9fba",
+      "translationHash": "1434c78e8b3d"
+    },
+    "behavior_lens.ui.track_behaviors_at_home_using_simple_everyday_lang": {
+      "sourceHash": "fd6dd3621f78",
+      "translationHash": "a030837dc8bc"
+    },
+    "bot_events.glossary_generated": {
+      "sourceHash": "b484bb5633dc",
+      "translationHash": "646d898d432d"
+    },
+    "chat_guide.flow.initial_prompt_context": {
+      "sourceHash": "2722f061ead5",
+      "translationHash": "0863699afae2"
+    },
+    "class_analytics.escape_completion": {
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "2aa2eaf7e6eb"
+    },
+    "common.adjust_escape_room_state": {
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "ae15efb81922"
+    },
+    "common.adventure_social_story_focus_placeholder": {
+      "sourceHash": "59c8fb3302a1",
+      "translationHash": "547a6fb28539"
+    },
+    "common.common_placeholder_item_trans": {
+      "sourceHash": "956d2ab4d8b2",
+      "translationHash": "7020f066f710"
+    },
+    "common.common_placeholder_title_trans": {
+      "sourceHash": "c5aa0c84c2c8",
+      "translationHash": "f4598fb5ac04"
+    },
+    "common.common_placeholder_translation": {
+      "sourceHash": "aed1ac43408f",
+      "translationHash": "0fe0a87d2db0"
+    },
+    "common.common_standards_region_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "29f20eebe982"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "sourceHash": "5986ff42554c",
+      "translationHash": "e99d4c4f4820"
+    },
+    "common.enter_escape_room_state": {
+      "sourceHash": "53480732dabb",
+      "translationHash": "af56d82758da"
+    },
+    "common.escape_room_enter_answer": {
+      "sourceHash": "93bcf2fdc37d",
+      "translationHash": "2885d49caf5e"
+    },
+    "common.escape_room_unscramble_placeholder": {
+      "sourceHash": "89a5e8095a0e",
+      "translationHash": "0aade0535d36"
+    },
+    "common.exit_focus": {
+      "sourceHash": "4a129a5f19ce",
+      "translationHash": "eb398786b7ee"
+    },
+    "common.glossary_custom_edit_placeholder": {
+      "sourceHash": "078a20ed1068",
+      "translationHash": "6aa21ea70188"
+    },
+    "common.glossary_style_placeholder": {
+      "sourceHash": "f8908872fe1d",
+      "translationHash": "afa113efadd4"
+    },
+    "common.groups_new_group_placeholder": {
+      "sourceHash": "886c3806ab3f",
+      "translationHash": "a07c31b34a50"
+    },
+    "common.launch_escape_room": {
+      "sourceHash": "7ff3be762718",
+      "translationHash": "e98954aee4dd"
+    },
+    "common.load_saved_escape_room": {
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "d56814b58546"
+    },
+    "common.modals_save_project_placeholder": {
+      "sourceHash": "ce2d4355f361",
+      "translationHash": "ff0cdc8df530"
+    },
+    "common.reset_escape_room": {
+      "sourceHash": "b05867f935f7",
+      "translationHash": "90a60d8a6aee"
+    },
+    "common.save_escape_room_configuration": {
+      "sourceHash": "365ab100916a",
+      "translationHash": "4d6e7892e7f8"
+    },
+    "common.standards_region_framework_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "29f20eebe982"
+    },
+    "common.standards_region_optional": {
+      "sourceHash": "57b57e8419be",
+      "translationHash": "689f6133b283"
+    },
+    "common.timeline_revise_placeholder": {
+      "sourceHash": "a4f91b4641a7",
+      "translationHash": "8168817fc2cd"
+    },
     "common.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
@@ -2093,10 +3882,130 @@
       "sourceHash": "6730f6f93dad",
       "translationHash": "f03c622ef542"
     },
+    "common.visuals_refiner_placeholder": {
+      "sourceHash": "36639c184861",
+      "translationHash": "8683d3dbf5d6"
+    },
+    "escape_room.bonus_xp": {
+      "sourceHash": "dd78c242f77c",
+      "translationHash": "0a48de634b47"
+    },
+    "escape_room.clues_collected": {
+      "sourceHash": "5f70ab1c7ea7",
+      "translationHash": "1313864a6bad"
+    },
+    "escape_room.config_saved": {
+      "sourceHash": "4319d7096edf",
+      "translationHash": "8d203a272810"
+    },
+    "escape_room.end_game_confirm": {
+      "sourceHash": "a042149703b6",
+      "translationHash": "415dd63ed833"
+    },
+    "escape_room.game_over_time": {
+      "sourceHash": "53fdc5f07893",
+      "translationHash": "796f1ad4e4e6"
+    },
+    "escape_room.generating": {
+      "sourceHash": "073b0c003085",
+      "translationHash": "fbaa2ea87ad3"
+    },
+    "escape_room.generating_hint": {
+      "sourceHash": "fae5ecec5ab2",
+      "translationHash": "9328c211ab79"
+    },
+    "escape_room.launch_live_tooltip": {
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "8d649ebcd64b"
+    },
+    "escape_room.loaded_saved": {
+      "sourceHash": "292f49162e60",
+      "translationHash": "1b94c9af7953"
+    },
+    "escape_room.no_saved": {
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "0ec899a851bc"
+    },
+    "escape_room.other_team_escaped": {
+      "sourceHash": "7029f7353ad6",
+      "translationHash": "5fa466de9526"
+    },
+    "escape_room.preview_confirmed": {
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "9d874a2450b0"
+    },
+    "escape_room.preview_desc": {
+      "sourceHash": "989d394fb536",
+      "translationHash": "1a8b54c86996"
+    },
+    "escape_room.puzzles_remaining": {
+      "sourceHash": "2eb2ac4fbdca",
+      "translationHash": "794ab536c05a"
+    },
+    "escape_room.reset": {
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "1fe05ee147b1"
+    },
+    "escape_room.settings_btn": {
+      "sourceHash": "561c458e6dad",
+      "translationHash": "c63ac985f75e"
+    },
+    "escape_room.start": {
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "0e7773089303"
+    },
+    "escape_room.stats_restored": {
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "cb6cb4176bd3"
+    },
+    "escape_room.subtitle": {
+      "sourceHash": "e40af152968f",
+      "translationHash": "4d7a5976ed58"
+    },
+    "escape_room.team_escaped": {
+      "sourceHash": "f3a87d3bd452",
+      "translationHash": "7f76b87a6f85"
+    },
+    "escape_room.team_progress": {
+      "sourceHash": "b617dfb8c4c3",
+      "translationHash": "d53ef7186fe6"
+    },
+    "escape_room.teams_competing": {
+      "sourceHash": "30d6f485fe04",
+      "translationHash": "ca3b8336ead9"
+    },
+    "escape_room.thirty_seconds_warning": {
+      "sourceHash": "41f087b1c9e5",
+      "translationHash": "3af0ca53a18f"
+    },
+    "escape_room.time_remaining": {
+      "sourceHash": "2361c1afdc54",
+      "translationHash": "75dc7b723118"
+    },
+    "escape_room.time_up": {
+      "sourceHash": "e9d84399d474",
+      "translationHash": "c354ff77886a"
+    },
+    "escape_room.title": {
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "91ce873ea50b"
+    },
+    "escape_room.you_escaped": {
+      "sourceHash": "7f288e0994eb",
+      "translationHash": "e473d740ffd2"
+    },
+    "export.storybook.user_label": {
+      "sourceHash": "b7c8a6b4922c",
+      "translationHash": "00f19f6280a1"
+    },
     "lesson_plan.header_title": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
       "translationHash": "f03c622ef542"
+    },
+    "math.check.error": {
+      "sourceHash": "388461d78840",
+      "translationHash": "1db24660081d"
     },
     "meta.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
@@ -2108,18 +4017,201 @@
       "sourceHash": "6730f6f93dad",
       "translationHash": "f03c622ef542"
     },
+    "pdf_audit.ada.deadline_50k": {
+      "sourceHash": "bfd15bffd157",
+      "translationHash": "f77b5992f4f9"
+    },
+    "pdf_audit.ada.deadline_badge": {
+      "sourceHash": "682e70279f51",
+      "translationHash": "b97a697cb8de"
+    },
+    "pdf_audit.knowbility.deadline_range": {
+      "sourceHash": "6da55130307b",
+      "translationHash": "1ab9ef6b754f"
+    },
+    "persona.instruction_panel": {
+      "sourceHash": "71c7a7015708",
+      "translationHash": "629fe4206c5b"
+    },
+    "roster.bridge_offline_info": {
+      "sourceHash": "f3386432c66e",
+      "translationHash": "adff67987939"
+    },
+    "roster.bridge_terms_saved": {
+      "sourceHash": "c0a0e8b3e223",
+      "translationHash": "e619b3a34dff"
+    },
+    "roster.deselect_all": {
+      "sourceHash": "1b656a7e2b26",
+      "translationHash": "fa3c123cc8fa"
+    },
+    "session.error_invalid_code": {
+      "sourceHash": "e9fcde1a24f5",
+      "translationHash": "9b48bd73befd"
+    },
+    "session.join_instructions": {
+      "sourceHash": "52a123976b7e",
+      "translationHash": "a7b6c29bb6d3"
+    },
+    "settings.text.bionic_sub": {
+      "sourceHash": "7fcac8cbbf63",
+      "translationHash": "897d2a85b575"
+    },
+    "source_view.check_again": {
+      "sourceHash": "9d7d982a1da2",
+      "translationHash": "da25ca3b5157"
+    },
+    "source_view.check_details": {
+      "sourceHash": "f618211729a1",
+      "translationHash": "79eda5a70c72"
+    },
+    "source_view.check_run": {
+      "sourceHash": "3ef660e992f4",
+      "translationHash": "675cd627fe70"
+    },
+    "tips.adventure_context": {
+      "sourceHash": "78eb19785c74",
+      "translationHash": "5825e5cec01f"
+    },
+    "tips.fallback_brainstorm": {
+      "sourceHash": "6ca44eab6fe7",
+      "translationHash": "0efd001a314c"
+    },
+    "tips.fallback_export": {
+      "sourceHash": "7271891d03e4",
+      "translationHash": "4469dca659ce"
+    },
+    "tips.simplified_glossary": {
+      "sourceHash": "263550bee638",
+      "translationHash": "54019e354ad7"
+    },
+    "toasts.1f4ca_progress_report_has_been": {
+      "sourceHash": "93dfa3e3305c",
+      "translationHash": "739029e7e4bd"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "abfdcf179b7c"
     },
+    "tour.adventure_text": {
+      "sourceHash": "12c9ebb533db",
+      "translationHash": "42cd0db5ea4e"
+    },
+    "tour.alignment_text": {
+      "sourceHash": "4a5621675bc2",
+      "translationHash": "2ff3836b31f4"
+    },
+    "tour.analysis_text": {
+      "sourceHash": "e8c7367d49f7",
+      "translationHash": "b23d13333627"
+    },
     "tour.brainstorm_text": {
-      "sourceHash": "a3da8a2713bc",
-      "translationHash": "09831706ca42"
+      "sourceHash": "9a3b7f785fea",
+      "translationHash": "838dfd3a8d6e"
+    },
+    "tour.concept_sort_text": {
+      "sourceHash": "2df9a6d997a4",
+      "translationHash": "5281f1c2a303"
+    },
+    "tour.dashboard_text": {
+      "sourceHash": "8363338d0565",
+      "translationHash": "bc7a167e875f"
+    },
+    "tour.dashboard_title": {
+      "sourceHash": "0e3fd7ced759",
+      "translationHash": "9ed1b84fb9b8"
+    },
+    "tour.dbq_text": {
+      "sourceHash": "df62816b0fc7",
+      "translationHash": "f615605f6a70"
+    },
+    "tour.faq_text": {
+      "sourceHash": "6d9b20ab4e99",
+      "translationHash": "a5ec56ecfa27"
+    },
+    "tour.glossary_text": {
+      "sourceHash": "ce67d3c91caf",
+      "translationHash": "2d8279c10f44"
+    },
+    "tour.input_panel_text": {
+      "sourceHash": "27f73fc20af5",
+      "translationHash": "aa2079630043"
+    },
+    "tour.lesson_plan_text": {
+      "sourceHash": "14b597a85965",
+      "translationHash": "db5a02d0c1f7"
+    },
+    "tour.math_text": {
+      "sourceHash": "4528369c7483",
+      "translationHash": "c2feac6248f1"
     },
     "tour.note_taking_text": {
-      "reviewReason": "preserved-condensed-summary",
-      "sourceHash": "ef15651e945b",
-      "translationHash": "9ca435d54b7a"
+      "sourceHash": "8c58d98102de",
+      "translationHash": "1b0de1d96ed3"
+    },
+    "tour.outline_text": {
+      "sourceHash": "e071674c0e0b",
+      "translationHash": "da8bda0abf67"
+    },
+    "tour.persona_text": {
+      "sourceHash": "ea121cb3b14c",
+      "translationHash": "b4c5b6b5b5f0"
+    },
+    "tour.quiz_mode_text": {
+      "sourceHash": "38cec658010d",
+      "translationHash": "5bd1813aad3e"
+    },
+    "tour.quiz_text": {
+      "sourceHash": "ca76adab6d11",
+      "translationHash": "fdb40404e3bc"
+    },
+    "tour.scaffolds_text": {
+      "sourceHash": "11c15cbfe61d",
+      "translationHash": "7f20fb6548f2"
+    },
+    "tour.simplified_text": {
+      "sourceHash": "801ac0532b38",
+      "translationHash": "7675d31bd0ca"
+    },
+    "tour.timeline_text": {
+      "sourceHash": "5bb59ea52b26",
+      "translationHash": "19886b7a9da8"
+    },
+    "tour.utils_text": {
+      "sourceHash": "373b2c14d29d",
+      "translationHash": "c46a87157114"
+    },
+    "tour.utils_title": {
+      "sourceHash": "599e3214c860",
+      "translationHash": "c3ab275a357a"
+    },
+    "tour.visual_text": {
+      "sourceHash": "9c12b8a644b8",
+      "translationHash": "9d3521e7a186"
+    },
+    "tour.wordsounds_text": {
+      "sourceHash": "61ff5f725deb",
+      "translationHash": "5324f5f01230"
+    },
+    "translate.target_label": {
+      "sourceHash": "9ba6d1c828f0",
+      "translationHash": "c2734c7aec93"
+    },
+    "word_sounds.review_gap_rhyme": {
+      "sourceHash": "a242b009678b",
+      "translationHash": "46ad2561e0d4"
+    },
+    "word_sounds.source_ai": {
+      "sourceHash": "7b8ec7fe6a43",
+      "translationHash": "df5e24bf49cc"
+    },
+    "word_sounds.source_custom": {
+      "sourceHash": "39b187b03d82",
+      "translationHash": "ea0b0b71d1ad"
+    },
+    "word_sounds.sources": {
+      "sourceHash": "95bde50ff4c6",
+      "translationHash": "601719d8e8c5"
     }
   },
   "hausa": {
@@ -5016,6 +7108,226 @@
     }
   },
   "portuguese_brazil": {
+    "adventure.auto_read_disable": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "c55dd74bde13"
+    },
+    "adventure.auto_read_enable": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "7df5a770a4f6"
+    },
+    "adventure.auto_read_off_tooltip": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "c55dd74bde13"
+    },
+    "adventure.auto_read_on_tooltip": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "7df5a770a4f6"
+    },
+    "adventure.auto_read_status_label": {
+      "sourceHash": "3adc44a4683b",
+      "translationHash": "8ba6edb1a32a"
+    },
+    "adventure.enter_immersive": {
+      "sourceHash": "9b979756d89f",
+      "translationHash": "f50d37ed566f"
+    },
+    "adventure.error.fallback": {
+      "sourceHash": "226cbe1aceed",
+      "translationHash": "bda1b44cfd86"
+    },
+    "adventure.escape_room_close_btn": {
+      "sourceHash": "16fe44109bf1",
+      "translationHash": "e93cf582666b"
+    },
+    "adventure.escape_room_progress": {
+      "sourceHash": "f3145c8cb36f",
+      "translationHash": "874eb4af73f2"
+    },
+    "adventure.escape_room_timer": {
+      "sourceHash": "c29efe3eceb7",
+      "translationHash": "b9bb9639b7d8"
+    },
+    "adventure.exit_immersive": {
+      "sourceHash": "d532565a314c",
+      "translationHash": "c8456a4af727"
+    },
+    "adventure.explore_hint": {
+      "sourceHash": "4148dcd856e3",
+      "translationHash": "22be42f7797e"
+    },
+    "adventure.ledger_subtitle": {
+      "sourceHash": "c5c3f670c067",
+      "translationHash": "589444028f90"
+    },
+    "adventure.ledger_title": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "33c5569e2d4c"
+    },
+    "adventure.ledger_tooltip": {
+      "sourceHash": "7db03cb3facc",
+      "translationHash": "5ec907b4c6e7"
+    },
+    "adventure.log_button": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "33c5569e2d4c"
+    },
+    "adventure.low_quality_label": {
+      "sourceHash": "48668d120579",
+      "translationHash": "5410420a06d0"
+    },
+    "adventure.maximize_tooltip": {
+      "sourceHash": "cdde416b5c15",
+      "translationHash": "b402cdff5546"
+    },
+    "adventure.restart": {
+      "sourceHash": "51dd91dc98a9",
+      "translationHash": "d693136d7247"
+    },
+    "adventure.setup_subtitle": {
+      "sourceHash": "2cd9ef63bf87",
+      "translationHash": "659a6c922036"
+    },
+    "adventure.start_sequel": {
+      "sourceHash": "20e131292c5f",
+      "translationHash": "695d55e6aa88"
+    },
+    "adventure.view_button": {
+      "sourceHash": "994e534cb6df",
+      "translationHash": "eb184d9ee971"
+    },
+    "adventure.view_immersive": {
+      "sourceHash": "2af83afa990b",
+      "translationHash": "19816a7136b2"
+    },
+    "analysis.title": {
+      "sourceHash": "f25d551d8ae1",
+      "translationHash": "a4d7ad5c24cf"
+    },
+    "behavior_lens.ph.person": {
+      "sourceHash": "fb5e286aecb7",
+      "translationHash": "f5776ea44925"
+    },
+    "behavior_lens.ph.reinforcement_how_you": {
+      "sourceHash": "df15c1d4e7e5",
+      "translationHash": "c64e77bcffb2"
+    },
+    "behavior_lens.ph.teaching_strategy_how_you": {
+      "sourceHash": "35927ed94e16",
+      "translationHash": "8f2d94501e28"
+    },
+    "behavior_lens.raw.export_this_tool": {
+      "sourceHash": "5a23706614c9",
+      "translationHash": "b9503f9fa2a6"
+    },
+    "behavior_lens.ui.at_each_phase_you": {
+      "sourceHash": "66a35f6b9fba",
+      "translationHash": "d38064718298"
+    },
+    "behavior_lens.ui.track_behaviors_at_home_using_simple_everyday_lang": {
+      "sourceHash": "fd6dd3621f78",
+      "translationHash": "831715cb7da6"
+    },
+    "bot_events.glossary_generated": {
+      "sourceHash": "b484bb5633dc",
+      "translationHash": "0918b19d4374"
+    },
+    "chat_guide.flow.initial_prompt_context": {
+      "sourceHash": "2722f061ead5",
+      "translationHash": "383ad828fcd7"
+    },
+    "class_analytics.escape_completion": {
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "a52cb829f216"
+    },
+    "common.adjust_escape_room_state": {
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "7fdfb02c6b6e"
+    },
+    "common.adventure_social_story_focus_placeholder": {
+      "sourceHash": "59c8fb3302a1",
+      "translationHash": "981239f9b2d0"
+    },
+    "common.common_placeholder_item_trans": {
+      "sourceHash": "956d2ab4d8b2",
+      "translationHash": "26399f338179"
+    },
+    "common.common_placeholder_title_trans": {
+      "sourceHash": "c5aa0c84c2c8",
+      "translationHash": "eb38cdf41097"
+    },
+    "common.common_placeholder_translation": {
+      "sourceHash": "aed1ac43408f",
+      "translationHash": "7b7f57bdf555"
+    },
+    "common.common_standards_region_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "f9c86e933f9a"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "sourceHash": "5986ff42554c",
+      "translationHash": "2b59250dfd5c"
+    },
+    "common.enter_escape_room_state": {
+      "sourceHash": "53480732dabb",
+      "translationHash": "c90e48f06eb8"
+    },
+    "common.escape_room_enter_answer": {
+      "sourceHash": "93bcf2fdc37d",
+      "translationHash": "f330f4344d24"
+    },
+    "common.escape_room_unscramble_placeholder": {
+      "sourceHash": "89a5e8095a0e",
+      "translationHash": "627953d1043c"
+    },
+    "common.exit_focus": {
+      "sourceHash": "4a129a5f19ce",
+      "translationHash": "902de228a47d"
+    },
+    "common.glossary_custom_edit_placeholder": {
+      "sourceHash": "078a20ed1068",
+      "translationHash": "cfa1a0fef5d0"
+    },
+    "common.glossary_style_placeholder": {
+      "sourceHash": "f8908872fe1d",
+      "translationHash": "faa9e2adcafd"
+    },
+    "common.groups_new_group_placeholder": {
+      "sourceHash": "886c3806ab3f",
+      "translationHash": "46e1d72c81d8"
+    },
+    "common.launch_escape_room": {
+      "sourceHash": "7ff3be762718",
+      "translationHash": "88b0fd6a97d9"
+    },
+    "common.load_saved_escape_room": {
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "82a58e387786"
+    },
+    "common.modals_save_project_placeholder": {
+      "sourceHash": "ce2d4355f361",
+      "translationHash": "c1ccda79c4d5"
+    },
+    "common.reset_escape_room": {
+      "sourceHash": "b05867f935f7",
+      "translationHash": "37ec229a8509"
+    },
+    "common.save_escape_room_configuration": {
+      "sourceHash": "365ab100916a",
+      "translationHash": "7a011f804a69"
+    },
+    "common.standards_region_framework_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "f9c86e933f9a"
+    },
+    "common.standards_region_optional": {
+      "sourceHash": "57b57e8419be",
+      "translationHash": "7a18a24c3177"
+    },
+    "common.timeline_revise_placeholder": {
+      "sourceHash": "a4f91b4641a7",
+      "translationHash": "8d0b918b07cd"
+    },
     "common.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
@@ -5026,10 +7338,130 @@
       "sourceHash": "6730f6f93dad",
       "translationHash": "608e9f0873f6"
     },
+    "common.visuals_refiner_placeholder": {
+      "sourceHash": "36639c184861",
+      "translationHash": "7c0b086f8d92"
+    },
+    "escape_room.bonus_xp": {
+      "sourceHash": "dd78c242f77c",
+      "translationHash": "417f94c637c7"
+    },
+    "escape_room.clues_collected": {
+      "sourceHash": "5f70ab1c7ea7",
+      "translationHash": "e5fdaf517be5"
+    },
+    "escape_room.config_saved": {
+      "sourceHash": "4319d7096edf",
+      "translationHash": "137d73dd3fe8"
+    },
+    "escape_room.end_game_confirm": {
+      "sourceHash": "a042149703b6",
+      "translationHash": "a9d1f1e7de75"
+    },
+    "escape_room.game_over_time": {
+      "sourceHash": "53fdc5f07893",
+      "translationHash": "07e0ee87e398"
+    },
+    "escape_room.generating": {
+      "sourceHash": "073b0c003085",
+      "translationHash": "7f6f42951286"
+    },
+    "escape_room.generating_hint": {
+      "sourceHash": "fae5ecec5ab2",
+      "translationHash": "a4fed5c2e30f"
+    },
+    "escape_room.launch_live_tooltip": {
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "58861ff7f2f1"
+    },
+    "escape_room.loaded_saved": {
+      "sourceHash": "292f49162e60",
+      "translationHash": "f953c8440ca2"
+    },
+    "escape_room.no_saved": {
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "c7ded5176129"
+    },
+    "escape_room.other_team_escaped": {
+      "sourceHash": "7029f7353ad6",
+      "translationHash": "ba22bb3c4280"
+    },
+    "escape_room.preview_confirmed": {
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "80985498ec5d"
+    },
+    "escape_room.preview_desc": {
+      "sourceHash": "989d394fb536",
+      "translationHash": "51c694281669"
+    },
+    "escape_room.puzzles_remaining": {
+      "sourceHash": "2eb2ac4fbdca",
+      "translationHash": "5277f255fa20"
+    },
+    "escape_room.reset": {
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "b741487bb7b2"
+    },
+    "escape_room.settings_btn": {
+      "sourceHash": "561c458e6dad",
+      "translationHash": "0b75988241e8"
+    },
+    "escape_room.start": {
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "88b0fd6a97d9"
+    },
+    "escape_room.stats_restored": {
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "58191378ebe5"
+    },
+    "escape_room.subtitle": {
+      "sourceHash": "e40af152968f",
+      "translationHash": "701bfbf5d92f"
+    },
+    "escape_room.team_escaped": {
+      "sourceHash": "f3a87d3bd452",
+      "translationHash": "c1887173e9a5"
+    },
+    "escape_room.team_progress": {
+      "sourceHash": "b617dfb8c4c3",
+      "translationHash": "ee5740d1d28f"
+    },
+    "escape_room.teams_competing": {
+      "sourceHash": "30d6f485fe04",
+      "translationHash": "c85b49376f8e"
+    },
+    "escape_room.thirty_seconds_warning": {
+      "sourceHash": "41f087b1c9e5",
+      "translationHash": "24a30f90e02a"
+    },
+    "escape_room.time_remaining": {
+      "sourceHash": "2361c1afdc54",
+      "translationHash": "584e296a08df"
+    },
+    "escape_room.time_up": {
+      "sourceHash": "e9d84399d474",
+      "translationHash": "ac70f187c203"
+    },
+    "escape_room.title": {
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "2d10434e6812"
+    },
+    "escape_room.you_escaped": {
+      "sourceHash": "7f288e0994eb",
+      "translationHash": "4d26cd1861c2"
+    },
+    "export.storybook.user_label": {
+      "sourceHash": "b7c8a6b4922c",
+      "translationHash": "19229eac0cb6"
+    },
     "lesson_plan.header_title": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
       "translationHash": "608e9f0873f6"
+    },
+    "math.check.error": {
+      "sourceHash": "388461d78840",
+      "translationHash": "b1b7a6563251"
     },
     "meta.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
@@ -5040,6 +7472,58 @@
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
       "translationHash": "608e9f0873f6"
+    },
+    "pdf_audit.ada.deadline_50k": {
+      "sourceHash": "bfd15bffd157",
+      "translationHash": "cf3bc1ef9be4"
+    },
+    "pdf_audit.ada.deadline_badge": {
+      "sourceHash": "682e70279f51",
+      "translationHash": "0adcca7ce766"
+    },
+    "pdf_audit.knowbility.deadline_range": {
+      "sourceHash": "6da55130307b",
+      "translationHash": "fb1b9cb0f17f"
+    },
+    "persona.instruction_panel": {
+      "sourceHash": "71c7a7015708",
+      "translationHash": "dc07c8b0ea33"
+    },
+    "roster.bridge_offline_info": {
+      "sourceHash": "f3386432c66e",
+      "translationHash": "91afccb5e5d7"
+    },
+    "roster.bridge_terms_saved": {
+      "sourceHash": "c0a0e8b3e223",
+      "translationHash": "b42753a3f66a"
+    },
+    "roster.deselect_all": {
+      "sourceHash": "1b656a7e2b26",
+      "translationHash": "ff0168fbb48f"
+    },
+    "session.error_invalid_code": {
+      "sourceHash": "e9fcde1a24f5",
+      "translationHash": "0995de939153"
+    },
+    "session.join_instructions": {
+      "sourceHash": "52a123976b7e",
+      "translationHash": "0e178206e63d"
+    },
+    "settings.text.bionic_sub": {
+      "sourceHash": "7fcac8cbbf63",
+      "translationHash": "01d705610e34"
+    },
+    "source_view.check_again": {
+      "sourceHash": "9d7d982a1da2",
+      "translationHash": "63b0102984c9"
+    },
+    "source_view.check_details": {
+      "sourceHash": "f618211729a1",
+      "translationHash": "8d9c0455f2f2"
+    },
+    "source_view.check_run": {
+      "sourceHash": "3ef660e992f4",
+      "translationHash": "2a1f3cf5bd28"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -5096,18 +7580,149 @@
       "sourceHash": "274e901eaded",
       "translationHash": "9d3ece90d3b7"
     },
+    "tips.adventure_context": {
+      "sourceHash": "78eb19785c74",
+      "translationHash": "8db3e19b991a"
+    },
+    "tips.fallback_brainstorm": {
+      "sourceHash": "6ca44eab6fe7",
+      "translationHash": "f55b94a10331"
+    },
+    "tips.fallback_export": {
+      "sourceHash": "7271891d03e4",
+      "translationHash": "f95fb8912ac2"
+    },
+    "tips.simplified_glossary": {
+      "sourceHash": "263550bee638",
+      "translationHash": "206ffa5f7805"
+    },
+    "toasts.1f4ca_progress_report_has_been": {
+      "sourceHash": "93dfa3e3305c",
+      "translationHash": "273f16b3d51d"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "6d5ce993da62"
     },
+    "tour.adventure_text": {
+      "sourceHash": "12c9ebb533db",
+      "translationHash": "2f57a42c6636"
+    },
+    "tour.alignment_text": {
+      "sourceHash": "4a5621675bc2",
+      "translationHash": "cc0f4bf58702"
+    },
+    "tour.analysis_text": {
+      "sourceHash": "e8c7367d49f7",
+      "translationHash": "2a16b90e9eef"
+    },
     "tour.brainstorm_text": {
-      "sourceHash": "a3da8a2713bc",
-      "translationHash": "449b82e0e7b1"
+      "sourceHash": "9a3b7f785fea",
+      "translationHash": "6a96166c319e"
+    },
+    "tour.concept_sort_text": {
+      "sourceHash": "2df9a6d997a4",
+      "translationHash": "fff5833e1be5"
+    },
+    "tour.dashboard_text": {
+      "sourceHash": "8363338d0565",
+      "translationHash": "19b6c49067c7"
+    },
+    "tour.dashboard_title": {
+      "sourceHash": "0e3fd7ced759",
+      "translationHash": "e5e0e0ee6edf"
+    },
+    "tour.dbq_text": {
+      "sourceHash": "df62816b0fc7",
+      "translationHash": "2e559215cb08"
+    },
+    "tour.faq_text": {
+      "sourceHash": "6d9b20ab4e99",
+      "translationHash": "f4eccb983ce8"
+    },
+    "tour.glossary_text": {
+      "sourceHash": "ce67d3c91caf",
+      "translationHash": "2bed275e49c4"
+    },
+    "tour.input_panel_text": {
+      "sourceHash": "27f73fc20af5",
+      "translationHash": "7afeaa0c42f9"
+    },
+    "tour.lesson_plan_text": {
+      "sourceHash": "14b597a85965",
+      "translationHash": "b675681416e9"
+    },
+    "tour.math_text": {
+      "sourceHash": "4528369c7483",
+      "translationHash": "7906464e7404"
     },
     "tour.note_taking_text": {
-      "reviewReason": "preserved-condensed-summary",
-      "sourceHash": "ef15651e945b",
-      "translationHash": "f99fa9b91c0e"
+      "sourceHash": "8c58d98102de",
+      "translationHash": "4fe4c1b562a2"
+    },
+    "tour.outline_text": {
+      "sourceHash": "e071674c0e0b",
+      "translationHash": "32f608909a99"
+    },
+    "tour.persona_text": {
+      "sourceHash": "ea121cb3b14c",
+      "translationHash": "04d7f7a2dc26"
+    },
+    "tour.quiz_mode_text": {
+      "sourceHash": "38cec658010d",
+      "translationHash": "b142bb135d80"
+    },
+    "tour.quiz_text": {
+      "sourceHash": "ca76adab6d11",
+      "translationHash": "5f257b05442c"
+    },
+    "tour.scaffolds_text": {
+      "sourceHash": "11c15cbfe61d",
+      "translationHash": "970b189f91a1"
+    },
+    "tour.simplified_text": {
+      "sourceHash": "801ac0532b38",
+      "translationHash": "4c8fb2c3c9d9"
+    },
+    "tour.timeline_text": {
+      "sourceHash": "5bb59ea52b26",
+      "translationHash": "ce4a9390ca93"
+    },
+    "tour.utils_text": {
+      "sourceHash": "373b2c14d29d",
+      "translationHash": "5e3c4eb7a0ad"
+    },
+    "tour.utils_title": {
+      "sourceHash": "599e3214c860",
+      "translationHash": "2f1c255af12e"
+    },
+    "tour.visual_text": {
+      "sourceHash": "9c12b8a644b8",
+      "translationHash": "9d5fc09c0084"
+    },
+    "tour.wordsounds_text": {
+      "sourceHash": "61ff5f725deb",
+      "translationHash": "6101eb53d3a2"
+    },
+    "translate.target_label": {
+      "sourceHash": "9ba6d1c828f0",
+      "translationHash": "e68da7f6e84c"
+    },
+    "word_sounds.review_gap_rhyme": {
+      "sourceHash": "a242b009678b",
+      "translationHash": "0ee131da1e79"
+    },
+    "word_sounds.source_ai": {
+      "sourceHash": "7b8ec7fe6a43",
+      "translationHash": "7d37afcd5b3b"
+    },
+    "word_sounds.source_custom": {
+      "sourceHash": "39b187b03d82",
+      "translationHash": "17599a4b6706"
+    },
+    "word_sounds.sources": {
+      "sourceHash": "95bde50ff4c6",
+      "translationHash": "7bd192f0e64b"
     }
   },
   "portuguese_portugal": {
@@ -5511,45 +8126,225 @@
     }
   },
   "russian": {
+    "adventure.auto_read_disable": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "f04200f38018"
+    },
+    "adventure.auto_read_enable": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "ee3f81791d49"
+    },
+    "adventure.auto_read_off_tooltip": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "f04200f38018"
+    },
+    "adventure.auto_read_on_tooltip": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "ee3f81791d49"
+    },
+    "adventure.auto_read_status_label": {
+      "sourceHash": "3adc44a4683b",
+      "translationHash": "38e802095243"
+    },
+    "adventure.enter_immersive": {
+      "sourceHash": "9b979756d89f",
+      "translationHash": "e7896f0f17f1"
+    },
+    "adventure.error.fallback": {
+      "sourceHash": "226cbe1aceed",
+      "translationHash": "fb78c2eb8048"
+    },
+    "adventure.escape_room_close_btn": {
+      "sourceHash": "16fe44109bf1",
+      "translationHash": "c36e9a2cdf78"
+    },
+    "adventure.escape_room_progress": {
+      "sourceHash": "f3145c8cb36f",
+      "translationHash": "5d25b92dc085"
+    },
+    "adventure.escape_room_timer": {
+      "sourceHash": "c29efe3eceb7",
+      "translationHash": "4ebcdb6b8ab3"
+    },
+    "adventure.exit_immersive": {
+      "sourceHash": "d532565a314c",
+      "translationHash": "f0fe7355d6b6"
+    },
+    "adventure.explore_hint": {
+      "sourceHash": "4148dcd856e3",
+      "translationHash": "7dd75338055e"
+    },
+    "adventure.ledger_subtitle": {
+      "sourceHash": "c5c3f670c067",
+      "translationHash": "af5ac4dc2d93"
+    },
+    "adventure.ledger_title": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "ad8ea379b192"
+    },
+    "adventure.ledger_tooltip": {
+      "sourceHash": "7db03cb3facc",
+      "translationHash": "21225772a586"
+    },
+    "adventure.log_button": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "890b7e759259"
+    },
+    "adventure.low_quality_label": {
+      "sourceHash": "48668d120579",
+      "translationHash": "87d47b623af6"
+    },
+    "adventure.maximize_tooltip": {
+      "sourceHash": "cdde416b5c15",
+      "translationHash": "4879bed4eb6e"
+    },
+    "adventure.restart": {
+      "sourceHash": "51dd91dc98a9",
+      "translationHash": "4a3c3ad6bac1"
+    },
+    "adventure.setup_subtitle": {
+      "sourceHash": "2cd9ef63bf87",
+      "translationHash": "2a61159daea6"
+    },
+    "adventure.start_sequel": {
+      "sourceHash": "20e131292c5f",
+      "translationHash": "7d692b14d0c1"
+    },
+    "adventure.view_button": {
+      "sourceHash": "994e534cb6df",
+      "translationHash": "f79e98c2b96c"
+    },
+    "adventure.view_immersive": {
+      "sourceHash": "2af83afa990b",
+      "translationHash": "66cacdf50db9"
+    },
+    "analysis.title": {
+      "sourceHash": "f25d551d8ae1",
+      "translationHash": "efc45ef47eac"
+    },
+    "behavior_lens.ph.person": {
+      "sourceHash": "fb5e286aecb7",
+      "translationHash": "54384ddfed02"
+    },
+    "behavior_lens.ph.reinforcement_how_you": {
+      "sourceHash": "df15c1d4e7e5",
+      "translationHash": "151d472a3284"
+    },
+    "behavior_lens.ph.teaching_strategy_how_you": {
+      "sourceHash": "35927ed94e16",
+      "translationHash": "fb78bec0cbd7"
+    },
+    "behavior_lens.raw.export_this_tool": {
+      "sourceHash": "5a23706614c9",
+      "translationHash": "f418d348b28d"
+    },
+    "behavior_lens.ui.at_each_phase_you": {
+      "sourceHash": "66a35f6b9fba",
+      "translationHash": "75bf1ada92d3"
+    },
+    "behavior_lens.ui.track_behaviors_at_home_using_simple_everyday_lang": {
+      "sourceHash": "fd6dd3621f78",
+      "translationHash": "8f2e851137d3"
+    },
+    "bot_events.glossary_generated": {
+      "sourceHash": "b484bb5633dc",
+      "translationHash": "7bab5b765bb6"
+    },
+    "chat_guide.flow.initial_prompt_context": {
+      "sourceHash": "2722f061ead5",
+      "translationHash": "8afe9df6a840"
+    },
     "class_analytics.escape_completion": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "0303ab58bf51",
-      "translationHash": "674e9003d5fa"
+      "translationHash": "13fff6fee043"
     },
     "common.adjust_escape_room_state": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "2b337b830d3c",
-      "translationHash": "287e9c37510c"
+      "translationHash": "28c773b9fdc4"
+    },
+    "common.adventure_social_story_focus_placeholder": {
+      "sourceHash": "59c8fb3302a1",
+      "translationHash": "f8f1338e653e"
+    },
+    "common.common_placeholder_item_trans": {
+      "sourceHash": "956d2ab4d8b2",
+      "translationHash": "fd98c0c862cb"
+    },
+    "common.common_placeholder_title_trans": {
+      "sourceHash": "c5aa0c84c2c8",
+      "translationHash": "5285410e2c4b"
+    },
+    "common.common_placeholder_translation": {
+      "sourceHash": "aed1ac43408f",
+      "translationHash": "3e2c3c3efdc2"
+    },
+    "common.common_standards_region_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "ebf43d409a2e"
     },
     "common.confirm_and_launch_escape_room": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "5986ff42554c",
-      "translationHash": "866ee58552a7"
+      "translationHash": "1663c24970dd"
     },
     "common.enter_escape_room_state": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "53480732dabb",
-      "translationHash": "019b2cf3551a"
+      "translationHash": "448f01658816"
+    },
+    "common.escape_room_enter_answer": {
+      "sourceHash": "93bcf2fdc37d",
+      "translationHash": "78e9c1ddc0d9"
+    },
+    "common.escape_room_unscramble_placeholder": {
+      "sourceHash": "89a5e8095a0e",
+      "translationHash": "570c06857231"
+    },
+    "common.exit_focus": {
+      "sourceHash": "4a129a5f19ce",
+      "translationHash": "89d77f376b72"
+    },
+    "common.glossary_custom_edit_placeholder": {
+      "sourceHash": "078a20ed1068",
+      "translationHash": "2e2beda6a7b5"
+    },
+    "common.glossary_style_placeholder": {
+      "sourceHash": "f8908872fe1d",
+      "translationHash": "0a70d0aca727"
+    },
+    "common.groups_new_group_placeholder": {
+      "sourceHash": "886c3806ab3f",
+      "translationHash": "9dac5b18f0cc"
     },
     "common.launch_escape_room": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "7ff3be762718",
-      "translationHash": "784e347a2188"
+      "translationHash": "003dec36251a"
     },
     "common.load_saved_escape_room": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "bcf78f81e6db",
-      "translationHash": "79596f82b4db"
+      "translationHash": "874e74158250"
+    },
+    "common.modals_save_project_placeholder": {
+      "sourceHash": "ce2d4355f361",
+      "translationHash": "45015b597ce0"
     },
     "common.reset_escape_room": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "b05867f935f7",
-      "translationHash": "ed90b93f38a0"
+      "translationHash": "704f95d1fbd8"
     },
     "common.save_escape_room_configuration": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "365ab100916a",
-      "translationHash": "8f750562ecac"
+      "translationHash": "701c8e778878"
+    },
+    "common.standards_region_framework_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "ebf43d409a2e"
+    },
+    "common.standards_region_optional": {
+      "sourceHash": "57b57e8419be",
+      "translationHash": "11655335a035"
+    },
+    "common.timeline_revise_placeholder": {
+      "sourceHash": "a4f91b4641a7",
+      "translationHash": "0aa6584b7669"
     },
     "common.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
@@ -5561,70 +8356,130 @@
       "sourceHash": "6730f6f93dad",
       "translationHash": "64040bda220d"
     },
+    "common.visuals_refiner_placeholder": {
+      "sourceHash": "36639c184861",
+      "translationHash": "58b0e25c34e7"
+    },
+    "escape_room.bonus_xp": {
+      "sourceHash": "dd78c242f77c",
+      "translationHash": "1dadc5e61c02"
+    },
+    "escape_room.clues_collected": {
+      "sourceHash": "5f70ab1c7ea7",
+      "translationHash": "453c36a7a75d"
+    },
     "escape_room.config_saved": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "4319d7096edf",
-      "translationHash": "972635bf30c9"
+      "translationHash": "7a4386d12100"
     },
     "escape_room.end_game_confirm": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "a042149703b6",
-      "translationHash": "9aae0d058bb9"
+      "translationHash": "d33b3376d746"
+    },
+    "escape_room.game_over_time": {
+      "sourceHash": "53fdc5f07893",
+      "translationHash": "2ae7d96eb908"
     },
     "escape_room.generating": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "073b0c003085",
-      "translationHash": "c22e234efc9b"
+      "translationHash": "4f652b3ffe0d"
+    },
+    "escape_room.generating_hint": {
+      "sourceHash": "fae5ecec5ab2",
+      "translationHash": "fce7a85de276"
     },
     "escape_room.launch_live_tooltip": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "87178c0f0a3a",
-      "translationHash": "6ee41bcbace0"
+      "translationHash": "47035008e9e0"
     },
     "escape_room.loaded_saved": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "292f49162e60",
-      "translationHash": "d7633b16b1c0"
+      "translationHash": "dd65815f29a4"
     },
     "escape_room.no_saved": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "9c334dfa9ffd",
-      "translationHash": "ee486c422398"
+      "translationHash": "bec5a9a0eab5"
+    },
+    "escape_room.other_team_escaped": {
+      "sourceHash": "7029f7353ad6",
+      "translationHash": "af553a552311"
     },
     "escape_room.preview_confirmed": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "da8b9dc5783a",
-      "translationHash": "069f9907305c"
+      "translationHash": "b91b02f930ef"
     },
     "escape_room.preview_desc": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "989d394fb536",
-      "translationHash": "d75bc7cdaab6"
+      "translationHash": "0cf372a7e605"
+    },
+    "escape_room.puzzles_remaining": {
+      "sourceHash": "2eb2ac4fbdca",
+      "translationHash": "d7aeb83c00b5"
     },
     "escape_room.reset": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "5b77b06332bd",
-      "translationHash": "b5bf533a3a23"
+      "translationHash": "f6c3d0f66a64"
+    },
+    "escape_room.settings_btn": {
+      "sourceHash": "561c458e6dad",
+      "translationHash": "6834db059842"
     },
     "escape_room.start": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "a04eff25c5f1",
-      "translationHash": "a8924e44bd03"
+      "translationHash": "b79b3170122f"
     },
     "escape_room.stats_restored": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "0a6d8041d473",
-      "translationHash": "87995a98d1f5"
+      "translationHash": "aff7e3cffd31"
+    },
+    "escape_room.subtitle": {
+      "sourceHash": "e40af152968f",
+      "translationHash": "94feb4956244"
+    },
+    "escape_room.team_escaped": {
+      "sourceHash": "f3a87d3bd452",
+      "translationHash": "af553a552311"
+    },
+    "escape_room.team_progress": {
+      "sourceHash": "b617dfb8c4c3",
+      "translationHash": "63b758ff02ba"
+    },
+    "escape_room.teams_competing": {
+      "sourceHash": "30d6f485fe04",
+      "translationHash": "33b1457105e5"
+    },
+    "escape_room.thirty_seconds_warning": {
+      "sourceHash": "41f087b1c9e5",
+      "translationHash": "69d3694d22e9"
+    },
+    "escape_room.time_remaining": {
+      "sourceHash": "2361c1afdc54",
+      "translationHash": "0279509fb430"
+    },
+    "escape_room.time_up": {
+      "sourceHash": "e9d84399d474",
+      "translationHash": "191fd50c32d3"
     },
     "escape_room.title": {
-      "reviewReason": "hand-translated-puzzle-challenge-rename",
       "sourceHash": "55fcdfc0f0b7",
-      "translationHash": "42713d7652d5"
+      "translationHash": "a7a27f0e6296"
+    },
+    "escape_room.you_escaped": {
+      "sourceHash": "7f288e0994eb",
+      "translationHash": "217d37b8041d"
+    },
+    "export.storybook.user_label": {
+      "sourceHash": "b7c8a6b4922c",
+      "translationHash": "f447ec8cd364"
     },
     "lesson_plan.header_title": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
       "translationHash": "64040bda220d"
+    },
+    "math.check.error": {
+      "sourceHash": "388461d78840",
+      "translationHash": "e28b6dc8c135"
     },
     "meta.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
@@ -5635,6 +8490,58 @@
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
       "translationHash": "64040bda220d"
+    },
+    "pdf_audit.ada.deadline_50k": {
+      "sourceHash": "bfd15bffd157",
+      "translationHash": "b0f056b4963d"
+    },
+    "pdf_audit.ada.deadline_badge": {
+      "sourceHash": "682e70279f51",
+      "translationHash": "8452c8ad347b"
+    },
+    "pdf_audit.knowbility.deadline_range": {
+      "sourceHash": "6da55130307b",
+      "translationHash": "24d17eb61bc1"
+    },
+    "persona.instruction_panel": {
+      "sourceHash": "71c7a7015708",
+      "translationHash": "76469c7da786"
+    },
+    "roster.bridge_offline_info": {
+      "sourceHash": "f3386432c66e",
+      "translationHash": "0e040f3fa25d"
+    },
+    "roster.bridge_terms_saved": {
+      "sourceHash": "c0a0e8b3e223",
+      "translationHash": "d9df0dd81db5"
+    },
+    "roster.deselect_all": {
+      "sourceHash": "1b656a7e2b26",
+      "translationHash": "d1be94c0ce8a"
+    },
+    "session.error_invalid_code": {
+      "sourceHash": "e9fcde1a24f5",
+      "translationHash": "4f10e05d4460"
+    },
+    "session.join_instructions": {
+      "sourceHash": "52a123976b7e",
+      "translationHash": "27ef68010212"
+    },
+    "settings.text.bionic_sub": {
+      "sourceHash": "7fcac8cbbf63",
+      "translationHash": "cab9a7613006"
+    },
+    "source_view.check_again": {
+      "sourceHash": "9d7d982a1da2",
+      "translationHash": "d418de5818d9"
+    },
+    "source_view.check_details": {
+      "sourceHash": "f618211729a1",
+      "translationHash": "c127b39475e5"
+    },
+    "source_view.check_run": {
+      "sourceHash": "3ef660e992f4",
+      "translationHash": "2dc15dfdd010"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -5691,21 +8598,372 @@
       "sourceHash": "274e901eaded",
       "translationHash": "b9dabbd7c25e"
     },
+    "tips.adventure_context": {
+      "sourceHash": "78eb19785c74",
+      "translationHash": "25359d4abd91"
+    },
+    "tips.fallback_brainstorm": {
+      "sourceHash": "6ca44eab6fe7",
+      "translationHash": "cf445b7bf2c9"
+    },
+    "tips.fallback_export": {
+      "sourceHash": "7271891d03e4",
+      "translationHash": "71804ca80f5e"
+    },
+    "tips.simplified_glossary": {
+      "sourceHash": "263550bee638",
+      "translationHash": "fcdbc33eee15"
+    },
+    "toasts.1f4ca_progress_report_has_been": {
+      "sourceHash": "93dfa3e3305c",
+      "translationHash": "26d4417627d9"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "75667f64ed21"
     },
+    "tour.adventure_text": {
+      "sourceHash": "12c9ebb533db",
+      "translationHash": "94088f8ed596"
+    },
+    "tour.alignment_text": {
+      "sourceHash": "4a5621675bc2",
+      "translationHash": "e97ff18e0906"
+    },
+    "tour.analysis_text": {
+      "sourceHash": "e8c7367d49f7",
+      "translationHash": "b5ff6f7686f2"
+    },
     "tour.brainstorm_text": {
-      "sourceHash": "a3da8a2713bc",
-      "translationHash": "9cf1af1f3b28"
+      "sourceHash": "9a3b7f785fea",
+      "translationHash": "bc699c8a0a25"
+    },
+    "tour.concept_sort_text": {
+      "sourceHash": "2df9a6d997a4",
+      "translationHash": "30be9c333155"
+    },
+    "tour.dashboard_text": {
+      "sourceHash": "8363338d0565",
+      "translationHash": "562f1a6d71c4"
+    },
+    "tour.dashboard_title": {
+      "sourceHash": "0e3fd7ced759",
+      "translationHash": "29527b524a65"
+    },
+    "tour.dbq_text": {
+      "sourceHash": "df62816b0fc7",
+      "translationHash": "2ab3c91e895c"
+    },
+    "tour.faq_text": {
+      "sourceHash": "6d9b20ab4e99",
+      "translationHash": "01120540555c"
+    },
+    "tour.glossary_text": {
+      "sourceHash": "ce67d3c91caf",
+      "translationHash": "f74f60946b0d"
+    },
+    "tour.input_panel_text": {
+      "sourceHash": "27f73fc20af5",
+      "translationHash": "fe1ee8f5cd54"
+    },
+    "tour.lesson_plan_text": {
+      "sourceHash": "14b597a85965",
+      "translationHash": "cda21953454e"
+    },
+    "tour.math_text": {
+      "sourceHash": "4528369c7483",
+      "translationHash": "3540d48271ab"
     },
     "tour.note_taking_text": {
-      "reviewReason": "preserved-condensed-summary",
-      "sourceHash": "ef15651e945b",
-      "translationHash": "7417e61b8c3e"
+      "sourceHash": "8c58d98102de",
+      "translationHash": "d1001c28f34b"
+    },
+    "tour.outline_text": {
+      "sourceHash": "e071674c0e0b",
+      "translationHash": "7ce6f95d01f9"
+    },
+    "tour.persona_text": {
+      "sourceHash": "ea121cb3b14c",
+      "translationHash": "30ef7782f663"
+    },
+    "tour.quiz_mode_text": {
+      "sourceHash": "38cec658010d",
+      "translationHash": "b05ed9c033b4"
+    },
+    "tour.quiz_text": {
+      "sourceHash": "ca76adab6d11",
+      "translationHash": "59acba096b67"
+    },
+    "tour.scaffolds_text": {
+      "sourceHash": "11c15cbfe61d",
+      "translationHash": "1bac122c7f0e"
+    },
+    "tour.simplified_text": {
+      "sourceHash": "801ac0532b38",
+      "translationHash": "0775cbdbec1d"
+    },
+    "tour.timeline_text": {
+      "sourceHash": "5bb59ea52b26",
+      "translationHash": "9de552eaca7e"
+    },
+    "tour.utils_text": {
+      "sourceHash": "373b2c14d29d",
+      "translationHash": "b9292e54c421"
+    },
+    "tour.utils_title": {
+      "sourceHash": "599e3214c860",
+      "translationHash": "5720c51303c9"
+    },
+    "tour.visual_text": {
+      "sourceHash": "9c12b8a644b8",
+      "translationHash": "c3c74ad02a85"
+    },
+    "tour.wordsounds_text": {
+      "sourceHash": "61ff5f725deb",
+      "translationHash": "fb590ad0b521"
+    },
+    "translate.target_label": {
+      "sourceHash": "9ba6d1c828f0",
+      "translationHash": "bed18dea6106"
+    },
+    "word_sounds.review_gap_rhyme": {
+      "sourceHash": "a242b009678b",
+      "translationHash": "d57f94761823"
+    },
+    "word_sounds.source_ai": {
+      "sourceHash": "7b8ec7fe6a43",
+      "translationHash": "9d90bfa31eb3"
+    },
+    "word_sounds.source_custom": {
+      "sourceHash": "39b187b03d82",
+      "translationHash": "dc5488ec386c"
+    },
+    "word_sounds.sources": {
+      "sourceHash": "95bde50ff4c6",
+      "translationHash": "3367cea4500f"
     }
   },
   "somali": {
+    "adventure.auto_read_disable": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "1ae4a0ff74ad"
+    },
+    "adventure.auto_read_enable": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "6feeb2ca6dd0"
+    },
+    "adventure.auto_read_off_tooltip": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "1ae4a0ff74ad"
+    },
+    "adventure.auto_read_on_tooltip": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "6feeb2ca6dd0"
+    },
+    "adventure.auto_read_status_label": {
+      "sourceHash": "3adc44a4683b",
+      "translationHash": "b21af2c19c53"
+    },
+    "adventure.enter_immersive": {
+      "sourceHash": "9b979756d89f",
+      "translationHash": "8c32b132b108"
+    },
+    "adventure.error.fallback": {
+      "sourceHash": "226cbe1aceed",
+      "translationHash": "9e4f7551e0a6"
+    },
+    "adventure.escape_room_close_btn": {
+      "sourceHash": "16fe44109bf1",
+      "translationHash": "d09a86ff7d82"
+    },
+    "adventure.escape_room_progress": {
+      "sourceHash": "f3145c8cb36f",
+      "translationHash": "97f9ce63a9fb"
+    },
+    "adventure.escape_room_timer": {
+      "sourceHash": "c29efe3eceb7",
+      "translationHash": "a2b67a9a6ba6"
+    },
+    "adventure.exit_immersive": {
+      "sourceHash": "d532565a314c",
+      "translationHash": "6ffd63b6998a"
+    },
+    "adventure.explore_hint": {
+      "sourceHash": "4148dcd856e3",
+      "translationHash": "36dbb31a8a33"
+    },
+    "adventure.ledger_subtitle": {
+      "sourceHash": "c5c3f670c067",
+      "translationHash": "05e4e88b438e"
+    },
+    "adventure.ledger_title": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "e660643b84ce"
+    },
+    "adventure.ledger_tooltip": {
+      "sourceHash": "7db03cb3facc",
+      "translationHash": "693d934d8a0e"
+    },
+    "adventure.log_button": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "e660643b84ce"
+    },
+    "adventure.low_quality_label": {
+      "sourceHash": "48668d120579",
+      "translationHash": "90d4dd1a8930"
+    },
+    "adventure.maximize_tooltip": {
+      "sourceHash": "cdde416b5c15",
+      "translationHash": "df0adaefd8e2"
+    },
+    "adventure.restart": {
+      "sourceHash": "51dd91dc98a9",
+      "translationHash": "82ede163be60"
+    },
+    "adventure.setup_subtitle": {
+      "sourceHash": "2cd9ef63bf87",
+      "translationHash": "782c49fd53e5"
+    },
+    "adventure.start_sequel": {
+      "sourceHash": "20e131292c5f",
+      "translationHash": "ca7583c40eac"
+    },
+    "adventure.view_button": {
+      "sourceHash": "994e534cb6df",
+      "translationHash": "8bde85c47dcb"
+    },
+    "adventure.view_immersive": {
+      "sourceHash": "2af83afa990b",
+      "translationHash": "d810ed25e23f"
+    },
+    "analysis.title": {
+      "sourceHash": "f25d551d8ae1",
+      "translationHash": "287a2ff53a1f"
+    },
+    "behavior_lens.ph.person": {
+      "sourceHash": "fb5e286aecb7",
+      "translationHash": "26a3924cad8b"
+    },
+    "behavior_lens.ph.reinforcement_how_you": {
+      "sourceHash": "df15c1d4e7e5",
+      "translationHash": "ef2790f04306"
+    },
+    "behavior_lens.ph.teaching_strategy_how_you": {
+      "sourceHash": "35927ed94e16",
+      "translationHash": "9a989612ef8e"
+    },
+    "behavior_lens.raw.export_this_tool": {
+      "sourceHash": "5a23706614c9",
+      "translationHash": "06c5125a4c5f"
+    },
+    "behavior_lens.ui.at_each_phase_you": {
+      "sourceHash": "66a35f6b9fba",
+      "translationHash": "b1a0966e9aa6"
+    },
+    "behavior_lens.ui.track_behaviors_at_home_using_simple_everyday_lang": {
+      "sourceHash": "fd6dd3621f78",
+      "translationHash": "5bc63166cd00"
+    },
+    "bot_events.glossary_generated": {
+      "sourceHash": "b484bb5633dc",
+      "translationHash": "2cb0aab87017"
+    },
+    "chat_guide.flow.initial_prompt_context": {
+      "sourceHash": "2722f061ead5",
+      "translationHash": "2f40a5fe2bc7"
+    },
+    "class_analytics.escape_completion": {
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "c8b4520bd838"
+    },
+    "common.adjust_escape_room_state": {
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "7989c3b27520"
+    },
+    "common.adventure_social_story_focus_placeholder": {
+      "sourceHash": "59c8fb3302a1",
+      "translationHash": "05a4fdb705f3"
+    },
+    "common.common_placeholder_item_trans": {
+      "sourceHash": "956d2ab4d8b2",
+      "translationHash": "d02c2e20f647"
+    },
+    "common.common_placeholder_title_trans": {
+      "sourceHash": "c5aa0c84c2c8",
+      "translationHash": "d3f0cd390c2d"
+    },
+    "common.common_placeholder_translation": {
+      "sourceHash": "aed1ac43408f",
+      "translationHash": "6f5c29a6eda5"
+    },
+    "common.common_standards_region_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "8207a38ff287"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "sourceHash": "5986ff42554c",
+      "translationHash": "9f5b36e6fa54"
+    },
+    "common.enter_escape_room_state": {
+      "sourceHash": "53480732dabb",
+      "translationHash": "05e786488360"
+    },
+    "common.escape_room_enter_answer": {
+      "sourceHash": "93bcf2fdc37d",
+      "translationHash": "fe59be67c9e4"
+    },
+    "common.escape_room_unscramble_placeholder": {
+      "sourceHash": "89a5e8095a0e",
+      "translationHash": "b61836c28446"
+    },
+    "common.exit_focus": {
+      "sourceHash": "4a129a5f19ce",
+      "translationHash": "653e055d2e3e"
+    },
+    "common.glossary_custom_edit_placeholder": {
+      "sourceHash": "078a20ed1068",
+      "translationHash": "219366ae2803"
+    },
+    "common.glossary_style_placeholder": {
+      "sourceHash": "f8908872fe1d",
+      "translationHash": "46830745cc04"
+    },
+    "common.groups_new_group_placeholder": {
+      "sourceHash": "886c3806ab3f",
+      "translationHash": "73aa8626de67"
+    },
+    "common.launch_escape_room": {
+      "sourceHash": "7ff3be762718",
+      "translationHash": "0e7768e5bc9a"
+    },
+    "common.load_saved_escape_room": {
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "acb9dce42fbc"
+    },
+    "common.modals_save_project_placeholder": {
+      "sourceHash": "ce2d4355f361",
+      "translationHash": "e31becaa6e6a"
+    },
+    "common.reset_escape_room": {
+      "sourceHash": "b05867f935f7",
+      "translationHash": "4d57335ab40c"
+    },
+    "common.save_escape_room_configuration": {
+      "sourceHash": "365ab100916a",
+      "translationHash": "dc9fa77e920d"
+    },
+    "common.standards_region_framework_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "8207a38ff287"
+    },
+    "common.standards_region_optional": {
+      "sourceHash": "57b57e8419be",
+      "translationHash": "385607324292"
+    },
+    "common.timeline_revise_placeholder": {
+      "sourceHash": "a4f91b4641a7",
+      "translationHash": "a93c13ea1b5f"
+    },
     "common.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
@@ -5716,10 +8974,130 @@
       "sourceHash": "6730f6f93dad",
       "translationHash": "b3b8b6498f31"
     },
+    "common.visuals_refiner_placeholder": {
+      "sourceHash": "36639c184861",
+      "translationHash": "19c71c7ed593"
+    },
+    "escape_room.bonus_xp": {
+      "sourceHash": "dd78c242f77c",
+      "translationHash": "0d31dd5df568"
+    },
+    "escape_room.clues_collected": {
+      "sourceHash": "5f70ab1c7ea7",
+      "translationHash": "30ce34676439"
+    },
+    "escape_room.config_saved": {
+      "sourceHash": "4319d7096edf",
+      "translationHash": "56d5f67c16ef"
+    },
+    "escape_room.end_game_confirm": {
+      "sourceHash": "a042149703b6",
+      "translationHash": "4b728ec7ad31"
+    },
+    "escape_room.game_over_time": {
+      "sourceHash": "53fdc5f07893",
+      "translationHash": "c03950db09de"
+    },
+    "escape_room.generating": {
+      "sourceHash": "073b0c003085",
+      "translationHash": "39d383bdda69"
+    },
+    "escape_room.generating_hint": {
+      "sourceHash": "fae5ecec5ab2",
+      "translationHash": "acbf99d8979b"
+    },
+    "escape_room.launch_live_tooltip": {
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "26aa49c38102"
+    },
+    "escape_room.loaded_saved": {
+      "sourceHash": "292f49162e60",
+      "translationHash": "5f2ab95cff22"
+    },
+    "escape_room.no_saved": {
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "5d45ee1a5caa"
+    },
+    "escape_room.other_team_escaped": {
+      "sourceHash": "7029f7353ad6",
+      "translationHash": "cbb3d1b2a8f5"
+    },
+    "escape_room.preview_confirmed": {
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "1914f7182218"
+    },
+    "escape_room.preview_desc": {
+      "sourceHash": "989d394fb536",
+      "translationHash": "1902173c8f41"
+    },
+    "escape_room.puzzles_remaining": {
+      "sourceHash": "2eb2ac4fbdca",
+      "translationHash": "d6f72d23fe88"
+    },
+    "escape_room.reset": {
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "8d461d30f52f"
+    },
+    "escape_room.settings_btn": {
+      "sourceHash": "561c458e6dad",
+      "translationHash": "d5a7c605e2b0"
+    },
+    "escape_room.start": {
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "0e7768e5bc9a"
+    },
+    "escape_room.stats_restored": {
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "9d13839cd20e"
+    },
+    "escape_room.subtitle": {
+      "sourceHash": "e40af152968f",
+      "translationHash": "02822c58999d"
+    },
+    "escape_room.team_escaped": {
+      "sourceHash": "f3a87d3bd452",
+      "translationHash": "0d01cd38c7f5"
+    },
+    "escape_room.team_progress": {
+      "sourceHash": "b617dfb8c4c3",
+      "translationHash": "c242a9cc758a"
+    },
+    "escape_room.teams_competing": {
+      "sourceHash": "30d6f485fe04",
+      "translationHash": "e969093f30a0"
+    },
+    "escape_room.thirty_seconds_warning": {
+      "sourceHash": "41f087b1c9e5",
+      "translationHash": "7c689e5519d9"
+    },
+    "escape_room.time_remaining": {
+      "sourceHash": "2361c1afdc54",
+      "translationHash": "2f6355187d77"
+    },
+    "escape_room.time_up": {
+      "sourceHash": "e9d84399d474",
+      "translationHash": "44f3acfeee91"
+    },
+    "escape_room.title": {
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "9783d2bfa7f6"
+    },
+    "escape_room.you_escaped": {
+      "sourceHash": "7f288e0994eb",
+      "translationHash": "02b6996af51f"
+    },
+    "export.storybook.user_label": {
+      "sourceHash": "b7c8a6b4922c",
+      "translationHash": "656903d7bfd3"
+    },
     "lesson_plan.header_title": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
       "translationHash": "b3b8b6498f31"
+    },
+    "math.check.error": {
+      "sourceHash": "388461d78840",
+      "translationHash": "d36654b986e7"
     },
     "meta.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
@@ -5731,18 +9109,201 @@
       "sourceHash": "6730f6f93dad",
       "translationHash": "b3b8b6498f31"
     },
+    "pdf_audit.ada.deadline_50k": {
+      "sourceHash": "bfd15bffd157",
+      "translationHash": "7abee9715247"
+    },
+    "pdf_audit.ada.deadline_badge": {
+      "sourceHash": "682e70279f51",
+      "translationHash": "13b77bc9fc0d"
+    },
+    "pdf_audit.knowbility.deadline_range": {
+      "sourceHash": "6da55130307b",
+      "translationHash": "bd236816159b"
+    },
+    "persona.instruction_panel": {
+      "sourceHash": "71c7a7015708",
+      "translationHash": "7de835d86486"
+    },
+    "roster.bridge_offline_info": {
+      "sourceHash": "f3386432c66e",
+      "translationHash": "df1083dbe3e6"
+    },
+    "roster.bridge_terms_saved": {
+      "sourceHash": "c0a0e8b3e223",
+      "translationHash": "94013ab96296"
+    },
+    "roster.deselect_all": {
+      "sourceHash": "1b656a7e2b26",
+      "translationHash": "309c6fe881b3"
+    },
+    "session.error_invalid_code": {
+      "sourceHash": "e9fcde1a24f5",
+      "translationHash": "0b08f417de26"
+    },
+    "session.join_instructions": {
+      "sourceHash": "52a123976b7e",
+      "translationHash": "3b9ef9806724"
+    },
+    "settings.text.bionic_sub": {
+      "sourceHash": "7fcac8cbbf63",
+      "translationHash": "cf88fe953c43"
+    },
+    "source_view.check_again": {
+      "sourceHash": "9d7d982a1da2",
+      "translationHash": "efaa0971bc1d"
+    },
+    "source_view.check_details": {
+      "sourceHash": "f618211729a1",
+      "translationHash": "1ae6d6b976b5"
+    },
+    "source_view.check_run": {
+      "sourceHash": "3ef660e992f4",
+      "translationHash": "53af45ac7f95"
+    },
+    "tips.adventure_context": {
+      "sourceHash": "78eb19785c74",
+      "translationHash": "dafb78438bd9"
+    },
+    "tips.fallback_brainstorm": {
+      "sourceHash": "6ca44eab6fe7",
+      "translationHash": "d56e87e0154a"
+    },
+    "tips.fallback_export": {
+      "sourceHash": "7271891d03e4",
+      "translationHash": "864f9f3110fc"
+    },
+    "tips.simplified_glossary": {
+      "sourceHash": "263550bee638",
+      "translationHash": "be7fe4ded59a"
+    },
+    "toasts.1f4ca_progress_report_has_been": {
+      "sourceHash": "93dfa3e3305c",
+      "translationHash": "099371a322be"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "1ba18dbf8b84"
     },
+    "tour.adventure_text": {
+      "sourceHash": "12c9ebb533db",
+      "translationHash": "a71cd4d62d63"
+    },
+    "tour.alignment_text": {
+      "sourceHash": "4a5621675bc2",
+      "translationHash": "67b069019dca"
+    },
+    "tour.analysis_text": {
+      "sourceHash": "e8c7367d49f7",
+      "translationHash": "afddd8d3b131"
+    },
     "tour.brainstorm_text": {
-      "sourceHash": "a3da8a2713bc",
-      "translationHash": "b6996a14492a"
+      "sourceHash": "9a3b7f785fea",
+      "translationHash": "376a9e8697f1"
+    },
+    "tour.concept_sort_text": {
+      "sourceHash": "2df9a6d997a4",
+      "translationHash": "3f523e48a5c9"
+    },
+    "tour.dashboard_text": {
+      "sourceHash": "8363338d0565",
+      "translationHash": "db085e6f2064"
+    },
+    "tour.dashboard_title": {
+      "sourceHash": "0e3fd7ced759",
+      "translationHash": "878a6616ffa9"
+    },
+    "tour.dbq_text": {
+      "sourceHash": "df62816b0fc7",
+      "translationHash": "0099265a5956"
+    },
+    "tour.faq_text": {
+      "sourceHash": "6d9b20ab4e99",
+      "translationHash": "155028a4b0ca"
+    },
+    "tour.glossary_text": {
+      "sourceHash": "ce67d3c91caf",
+      "translationHash": "9ed6503e4397"
+    },
+    "tour.input_panel_text": {
+      "sourceHash": "27f73fc20af5",
+      "translationHash": "2524bf1a2dfc"
+    },
+    "tour.lesson_plan_text": {
+      "sourceHash": "14b597a85965",
+      "translationHash": "e697c74e5ac5"
+    },
+    "tour.math_text": {
+      "sourceHash": "4528369c7483",
+      "translationHash": "e0ca8cb4dfa6"
     },
     "tour.note_taking_text": {
-      "reviewReason": "preserved-condensed-summary",
-      "sourceHash": "ef15651e945b",
-      "translationHash": "e32a9abf44a0"
+      "sourceHash": "8c58d98102de",
+      "translationHash": "3e3ee893af69"
+    },
+    "tour.outline_text": {
+      "sourceHash": "e071674c0e0b",
+      "translationHash": "83c622eb56c9"
+    },
+    "tour.persona_text": {
+      "sourceHash": "ea121cb3b14c",
+      "translationHash": "8cf547ba54a5"
+    },
+    "tour.quiz_mode_text": {
+      "sourceHash": "38cec658010d",
+      "translationHash": "8d60e06e9f2a"
+    },
+    "tour.quiz_text": {
+      "sourceHash": "ca76adab6d11",
+      "translationHash": "ad2fc0df1d88"
+    },
+    "tour.scaffolds_text": {
+      "sourceHash": "11c15cbfe61d",
+      "translationHash": "1abc7e87a238"
+    },
+    "tour.simplified_text": {
+      "sourceHash": "801ac0532b38",
+      "translationHash": "fe70c9072b6f"
+    },
+    "tour.timeline_text": {
+      "sourceHash": "5bb59ea52b26",
+      "translationHash": "488d991ca655"
+    },
+    "tour.utils_text": {
+      "sourceHash": "373b2c14d29d",
+      "translationHash": "0bb777f7e934"
+    },
+    "tour.utils_title": {
+      "sourceHash": "599e3214c860",
+      "translationHash": "f14d518a67d1"
+    },
+    "tour.visual_text": {
+      "sourceHash": "9c12b8a644b8",
+      "translationHash": "9cac36e00c88"
+    },
+    "tour.wordsounds_text": {
+      "sourceHash": "61ff5f725deb",
+      "translationHash": "7f1825544b27"
+    },
+    "translate.target_label": {
+      "sourceHash": "9ba6d1c828f0",
+      "translationHash": "725bec2438f4"
+    },
+    "word_sounds.review_gap_rhyme": {
+      "sourceHash": "a242b009678b",
+      "translationHash": "01d994d316ef"
+    },
+    "word_sounds.source_ai": {
+      "sourceHash": "7b8ec7fe6a43",
+      "translationHash": "a3aa2a426445"
+    },
+    "word_sounds.source_custom": {
+      "sourceHash": "39b187b03d82",
+      "translationHash": "950637b7e1cd"
+    },
+    "word_sounds.sources": {
+      "sourceHash": "95bde50ff4c6",
+      "translationHash": "68bddfba69e3"
     }
   },
   "spanish_castilian": {
@@ -5841,6 +9402,226 @@
     }
   },
   "spanish_latin_america": {
+    "adventure.auto_read_disable": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "1f05ed9f84f5"
+    },
+    "adventure.auto_read_enable": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "9506169117ff"
+    },
+    "adventure.auto_read_off_tooltip": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "1f05ed9f84f5"
+    },
+    "adventure.auto_read_on_tooltip": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "9506169117ff"
+    },
+    "adventure.auto_read_status_label": {
+      "sourceHash": "3adc44a4683b",
+      "translationHash": "ebaec260edbc"
+    },
+    "adventure.enter_immersive": {
+      "sourceHash": "9b979756d89f",
+      "translationHash": "5d79a015e416"
+    },
+    "adventure.error.fallback": {
+      "sourceHash": "226cbe1aceed",
+      "translationHash": "a363616eede6"
+    },
+    "adventure.escape_room_close_btn": {
+      "sourceHash": "16fe44109bf1",
+      "translationHash": "0dd3af4e14a5"
+    },
+    "adventure.escape_room_progress": {
+      "sourceHash": "f3145c8cb36f",
+      "translationHash": "af466f5486bf"
+    },
+    "adventure.escape_room_timer": {
+      "sourceHash": "c29efe3eceb7",
+      "translationHash": "6bbbed266166"
+    },
+    "adventure.exit_immersive": {
+      "sourceHash": "d532565a314c",
+      "translationHash": "4d520ed496f4"
+    },
+    "adventure.explore_hint": {
+      "sourceHash": "4148dcd856e3",
+      "translationHash": "ca94c87517f7"
+    },
+    "adventure.ledger_subtitle": {
+      "sourceHash": "c5c3f670c067",
+      "translationHash": "13402659f06f"
+    },
+    "adventure.ledger_title": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "0e68ae596a4f"
+    },
+    "adventure.ledger_tooltip": {
+      "sourceHash": "7db03cb3facc",
+      "translationHash": "e481d8aea17a"
+    },
+    "adventure.log_button": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "0e68ae596a4f"
+    },
+    "adventure.low_quality_label": {
+      "sourceHash": "48668d120579",
+      "translationHash": "55ee496c427d"
+    },
+    "adventure.maximize_tooltip": {
+      "sourceHash": "cdde416b5c15",
+      "translationHash": "8cb97d7c7488"
+    },
+    "adventure.restart": {
+      "sourceHash": "51dd91dc98a9",
+      "translationHash": "3f57f8016bf0"
+    },
+    "adventure.setup_subtitle": {
+      "sourceHash": "2cd9ef63bf87",
+      "translationHash": "caf0c2be6dfd"
+    },
+    "adventure.start_sequel": {
+      "sourceHash": "20e131292c5f",
+      "translationHash": "1c0856d48de5"
+    },
+    "adventure.view_button": {
+      "sourceHash": "994e534cb6df",
+      "translationHash": "19b64f545517"
+    },
+    "adventure.view_immersive": {
+      "sourceHash": "2af83afa990b",
+      "translationHash": "a036ffd136ec"
+    },
+    "analysis.title": {
+      "sourceHash": "f25d551d8ae1",
+      "translationHash": "8e47ac7dc5f2"
+    },
+    "behavior_lens.ph.person": {
+      "sourceHash": "fb5e286aecb7",
+      "translationHash": "aee3104d5475"
+    },
+    "behavior_lens.ph.reinforcement_how_you": {
+      "sourceHash": "df15c1d4e7e5",
+      "translationHash": "eec9bfdd3063"
+    },
+    "behavior_lens.ph.teaching_strategy_how_you": {
+      "sourceHash": "35927ed94e16",
+      "translationHash": "6394ef781fe2"
+    },
+    "behavior_lens.raw.export_this_tool": {
+      "sourceHash": "5a23706614c9",
+      "translationHash": "798a8485ee2a"
+    },
+    "behavior_lens.ui.at_each_phase_you": {
+      "sourceHash": "66a35f6b9fba",
+      "translationHash": "08b973555671"
+    },
+    "behavior_lens.ui.track_behaviors_at_home_using_simple_everyday_lang": {
+      "sourceHash": "fd6dd3621f78",
+      "translationHash": "720678139ce2"
+    },
+    "bot_events.glossary_generated": {
+      "sourceHash": "b484bb5633dc",
+      "translationHash": "5334d6d037be"
+    },
+    "chat_guide.flow.initial_prompt_context": {
+      "sourceHash": "2722f061ead5",
+      "translationHash": "4295bacc1f59"
+    },
+    "class_analytics.escape_completion": {
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "1cbedce3e515"
+    },
+    "common.adjust_escape_room_state": {
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "6baa4cd7be80"
+    },
+    "common.adventure_social_story_focus_placeholder": {
+      "sourceHash": "59c8fb3302a1",
+      "translationHash": "be05a4a81e3f"
+    },
+    "common.common_placeholder_item_trans": {
+      "sourceHash": "956d2ab4d8b2",
+      "translationHash": "55afc0ebfd49"
+    },
+    "common.common_placeholder_title_trans": {
+      "sourceHash": "c5aa0c84c2c8",
+      "translationHash": "8913f60983d9"
+    },
+    "common.common_placeholder_translation": {
+      "sourceHash": "aed1ac43408f",
+      "translationHash": "90306fb29f50"
+    },
+    "common.common_standards_region_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "32c7b8034c10"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "sourceHash": "5986ff42554c",
+      "translationHash": "482ea2b3fd78"
+    },
+    "common.enter_escape_room_state": {
+      "sourceHash": "53480732dabb",
+      "translationHash": "c71de24666ba"
+    },
+    "common.escape_room_enter_answer": {
+      "sourceHash": "93bcf2fdc37d",
+      "translationHash": "9c4b9eaea3f7"
+    },
+    "common.escape_room_unscramble_placeholder": {
+      "sourceHash": "89a5e8095a0e",
+      "translationHash": "d8c35ea13cb9"
+    },
+    "common.exit_focus": {
+      "sourceHash": "4a129a5f19ce",
+      "translationHash": "bd8428f5bc6f"
+    },
+    "common.glossary_custom_edit_placeholder": {
+      "sourceHash": "078a20ed1068",
+      "translationHash": "98ab034d406b"
+    },
+    "common.glossary_style_placeholder": {
+      "sourceHash": "f8908872fe1d",
+      "translationHash": "f0ae81c2a3c2"
+    },
+    "common.groups_new_group_placeholder": {
+      "sourceHash": "886c3806ab3f",
+      "translationHash": "e6deb3a79dc8"
+    },
+    "common.launch_escape_room": {
+      "sourceHash": "7ff3be762718",
+      "translationHash": "2afddafac200"
+    },
+    "common.load_saved_escape_room": {
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "15db86d66bc8"
+    },
+    "common.modals_save_project_placeholder": {
+      "sourceHash": "ce2d4355f361",
+      "translationHash": "f7a1124801dd"
+    },
+    "common.reset_escape_room": {
+      "sourceHash": "b05867f935f7",
+      "translationHash": "be3b062f7057"
+    },
+    "common.save_escape_room_configuration": {
+      "sourceHash": "365ab100916a",
+      "translationHash": "4b1dfef68d7d"
+    },
+    "common.standards_region_framework_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "32c7b8034c10"
+    },
+    "common.standards_region_optional": {
+      "sourceHash": "57b57e8419be",
+      "translationHash": "719d92e29f0a"
+    },
+    "common.timeline_revise_placeholder": {
+      "sourceHash": "a4f91b4641a7",
+      "translationHash": "e2c8c082aef3"
+    },
     "common.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
@@ -5851,10 +9632,130 @@
       "sourceHash": "6730f6f93dad",
       "translationHash": "f292e83d268b"
     },
+    "common.visuals_refiner_placeholder": {
+      "sourceHash": "36639c184861",
+      "translationHash": "0a3e3e3901a6"
+    },
+    "escape_room.bonus_xp": {
+      "sourceHash": "dd78c242f77c",
+      "translationHash": "ceed00987b9f"
+    },
+    "escape_room.clues_collected": {
+      "sourceHash": "5f70ab1c7ea7",
+      "translationHash": "e5fdaf517be5"
+    },
+    "escape_room.config_saved": {
+      "sourceHash": "4319d7096edf",
+      "translationHash": "214f413edf43"
+    },
+    "escape_room.end_game_confirm": {
+      "sourceHash": "a042149703b6",
+      "translationHash": "535b65e9dd13"
+    },
+    "escape_room.game_over_time": {
+      "sourceHash": "53fdc5f07893",
+      "translationHash": "06999f7169f4"
+    },
+    "escape_room.generating": {
+      "sourceHash": "073b0c003085",
+      "translationHash": "c3995a24b7aa"
+    },
+    "escape_room.generating_hint": {
+      "sourceHash": "fae5ecec5ab2",
+      "translationHash": "60731d19646f"
+    },
+    "escape_room.launch_live_tooltip": {
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "db87498cd450"
+    },
+    "escape_room.loaded_saved": {
+      "sourceHash": "292f49162e60",
+      "translationHash": "feddb5916d65"
+    },
+    "escape_room.no_saved": {
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "dbcb76be4458"
+    },
+    "escape_room.other_team_escaped": {
+      "sourceHash": "7029f7353ad6",
+      "translationHash": "b6ccacf1d134"
+    },
+    "escape_room.preview_confirmed": {
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "f97f428f2e75"
+    },
+    "escape_room.preview_desc": {
+      "sourceHash": "989d394fb536",
+      "translationHash": "69acf7877eb7"
+    },
+    "escape_room.puzzles_remaining": {
+      "sourceHash": "2eb2ac4fbdca",
+      "translationHash": "ab84f192685e"
+    },
+    "escape_room.reset": {
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "c3c6d80bcbee"
+    },
+    "escape_room.settings_btn": {
+      "sourceHash": "561c458e6dad",
+      "translationHash": "e51b97b63269"
+    },
+    "escape_room.start": {
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "2afddafac200"
+    },
+    "escape_room.stats_restored": {
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "0614f0b14446"
+    },
+    "escape_room.subtitle": {
+      "sourceHash": "e40af152968f",
+      "translationHash": "83d923a182a7"
+    },
+    "escape_room.team_escaped": {
+      "sourceHash": "f3a87d3bd452",
+      "translationHash": "c66ede87d111"
+    },
+    "escape_room.team_progress": {
+      "sourceHash": "b617dfb8c4c3",
+      "translationHash": "c5a8118a4d9e"
+    },
+    "escape_room.teams_competing": {
+      "sourceHash": "30d6f485fe04",
+      "translationHash": "b66087f7a908"
+    },
+    "escape_room.thirty_seconds_warning": {
+      "sourceHash": "41f087b1c9e5",
+      "translationHash": "738961e3796a"
+    },
+    "escape_room.time_remaining": {
+      "sourceHash": "2361c1afdc54",
+      "translationHash": "6a6ed218202d"
+    },
+    "escape_room.time_up": {
+      "sourceHash": "e9d84399d474",
+      "translationHash": "5f58c7625057"
+    },
+    "escape_room.title": {
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "30a816bf95bd"
+    },
+    "escape_room.you_escaped": {
+      "sourceHash": "7f288e0994eb",
+      "translationHash": "055d7694400f"
+    },
+    "export.storybook.user_label": {
+      "sourceHash": "b7c8a6b4922c",
+      "translationHash": "3864b86f6b22"
+    },
     "lesson_plan.header_title": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
       "translationHash": "f292e83d268b"
+    },
+    "math.check.error": {
+      "sourceHash": "388461d78840",
+      "translationHash": "bec2fcd18bc7"
     },
     "meta.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
@@ -5865,6 +9766,58 @@
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
       "translationHash": "f292e83d268b"
+    },
+    "pdf_audit.ada.deadline_50k": {
+      "sourceHash": "bfd15bffd157",
+      "translationHash": "cf3bc1ef9be4"
+    },
+    "pdf_audit.ada.deadline_badge": {
+      "sourceHash": "682e70279f51",
+      "translationHash": "9c2a478b3daa"
+    },
+    "pdf_audit.knowbility.deadline_range": {
+      "sourceHash": "6da55130307b",
+      "translationHash": "fb1b9cb0f17f"
+    },
+    "persona.instruction_panel": {
+      "sourceHash": "71c7a7015708",
+      "translationHash": "61117b6df2ed"
+    },
+    "roster.bridge_offline_info": {
+      "sourceHash": "f3386432c66e",
+      "translationHash": "22b3eeda9797"
+    },
+    "roster.bridge_terms_saved": {
+      "sourceHash": "c0a0e8b3e223",
+      "translationHash": "e255501abe2c"
+    },
+    "roster.deselect_all": {
+      "sourceHash": "1b656a7e2b26",
+      "translationHash": "f9699706669e"
+    },
+    "session.error_invalid_code": {
+      "sourceHash": "e9fcde1a24f5",
+      "translationHash": "827782249b10"
+    },
+    "session.join_instructions": {
+      "sourceHash": "52a123976b7e",
+      "translationHash": "ae07f6e6b744"
+    },
+    "settings.text.bionic_sub": {
+      "sourceHash": "7fcac8cbbf63",
+      "translationHash": "75ffae6394c0"
+    },
+    "source_view.check_again": {
+      "sourceHash": "9d7d982a1da2",
+      "translationHash": "f97a5214c686"
+    },
+    "source_view.check_details": {
+      "sourceHash": "f618211729a1",
+      "translationHash": "b6a4e86fb75a"
+    },
+    "source_view.check_run": {
+      "sourceHash": "3ef660e992f4",
+      "translationHash": "74ec1b7fc8cc"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -5921,17 +9874,149 @@
       "sourceHash": "274e901eaded",
       "translationHash": "9918bd2992b3"
     },
+    "tips.adventure_context": {
+      "sourceHash": "78eb19785c74",
+      "translationHash": "a2344df54106"
+    },
+    "tips.fallback_brainstorm": {
+      "sourceHash": "6ca44eab6fe7",
+      "translationHash": "3fc7180b8057"
+    },
+    "tips.fallback_export": {
+      "sourceHash": "7271891d03e4",
+      "translationHash": "ef93c2717465"
+    },
+    "tips.simplified_glossary": {
+      "sourceHash": "263550bee638",
+      "translationHash": "fc9b219d27a3"
+    },
+    "toasts.1f4ca_progress_report_has_been": {
+      "sourceHash": "93dfa3e3305c",
+      "translationHash": "5585bde5d705"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "867470ad8f4b"
     },
+    "tour.adventure_text": {
+      "sourceHash": "12c9ebb533db",
+      "translationHash": "fa666d5f45b0"
+    },
+    "tour.alignment_text": {
+      "sourceHash": "4a5621675bc2",
+      "translationHash": "226ec0d9ceb1"
+    },
+    "tour.analysis_text": {
+      "sourceHash": "e8c7367d49f7",
+      "translationHash": "bd8f50d359c2"
+    },
     "tour.brainstorm_text": {
-      "sourceHash": "a3da8a2713bc",
-      "translationHash": "1692fbf28084"
+      "sourceHash": "9a3b7f785fea",
+      "translationHash": "4ea4cd588a0a"
+    },
+    "tour.concept_sort_text": {
+      "sourceHash": "2df9a6d997a4",
+      "translationHash": "641d46d160fa"
+    },
+    "tour.dashboard_text": {
+      "sourceHash": "8363338d0565",
+      "translationHash": "589a3eaba47d"
+    },
+    "tour.dashboard_title": {
+      "sourceHash": "0e3fd7ced759",
+      "translationHash": "99a58bf1ac62"
+    },
+    "tour.dbq_text": {
+      "sourceHash": "df62816b0fc7",
+      "translationHash": "dc6e80682266"
+    },
+    "tour.faq_text": {
+      "sourceHash": "6d9b20ab4e99",
+      "translationHash": "12d47794fc17"
+    },
+    "tour.glossary_text": {
+      "sourceHash": "ce67d3c91caf",
+      "translationHash": "9a2e04231c95"
+    },
+    "tour.input_panel_text": {
+      "sourceHash": "27f73fc20af5",
+      "translationHash": "9af988ef723e"
+    },
+    "tour.lesson_plan_text": {
+      "sourceHash": "14b597a85965",
+      "translationHash": "54d9d6551607"
+    },
+    "tour.math_text": {
+      "sourceHash": "4528369c7483",
+      "translationHash": "ac87290cbb62"
     },
     "tour.note_taking_text": {
-      "sourceHash": "ef15651e945b",
-      "translationHash": "2035f78e199f"
+      "sourceHash": "8c58d98102de",
+      "translationHash": "83bdfc957183"
+    },
+    "tour.outline_text": {
+      "sourceHash": "e071674c0e0b",
+      "translationHash": "5ce4ee1daa78"
+    },
+    "tour.persona_text": {
+      "sourceHash": "ea121cb3b14c",
+      "translationHash": "764fa2ea9d3b"
+    },
+    "tour.quiz_mode_text": {
+      "sourceHash": "38cec658010d",
+      "translationHash": "2f84b57de933"
+    },
+    "tour.quiz_text": {
+      "sourceHash": "ca76adab6d11",
+      "translationHash": "732353d7dc80"
+    },
+    "tour.scaffolds_text": {
+      "sourceHash": "11c15cbfe61d",
+      "translationHash": "5c4b3d2673d9"
+    },
+    "tour.simplified_text": {
+      "sourceHash": "801ac0532b38",
+      "translationHash": "821cf58ebabb"
+    },
+    "tour.timeline_text": {
+      "sourceHash": "5bb59ea52b26",
+      "translationHash": "61f5f20eebda"
+    },
+    "tour.utils_text": {
+      "sourceHash": "373b2c14d29d",
+      "translationHash": "311e4577deed"
+    },
+    "tour.utils_title": {
+      "sourceHash": "599e3214c860",
+      "translationHash": "f03f7b81351e"
+    },
+    "tour.visual_text": {
+      "sourceHash": "9c12b8a644b8",
+      "translationHash": "0727fa9bfcfe"
+    },
+    "tour.wordsounds_text": {
+      "sourceHash": "61ff5f725deb",
+      "translationHash": "d4cd4ec193bb"
+    },
+    "translate.target_label": {
+      "sourceHash": "9ba6d1c828f0",
+      "translationHash": "00636b6aa445"
+    },
+    "word_sounds.review_gap_rhyme": {
+      "sourceHash": "a242b009678b",
+      "translationHash": "aa6e931fd219"
+    },
+    "word_sounds.source_ai": {
+      "sourceHash": "7b8ec7fe6a43",
+      "translationHash": "2dbfb12d2c60"
+    },
+    "word_sounds.source_custom": {
+      "sourceHash": "39b187b03d82",
+      "translationHash": "248a967f10c0"
+    },
+    "word_sounds.sources": {
+      "sourceHash": "95bde50ff4c6",
+      "translationHash": "f063b6cfa015"
     }
   },
   "swahili": {
@@ -7134,6 +11219,226 @@
     }
   },
   "vietnamese": {
+    "adventure.auto_read_disable": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "a4947ad191ab"
+    },
+    "adventure.auto_read_enable": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "d8bec21dc21e"
+    },
+    "adventure.auto_read_off_tooltip": {
+      "sourceHash": "1a2bbc89917d",
+      "translationHash": "a4947ad191ab"
+    },
+    "adventure.auto_read_on_tooltip": {
+      "sourceHash": "3d2f1c5a2ed3",
+      "translationHash": "d8bec21dc21e"
+    },
+    "adventure.auto_read_status_label": {
+      "sourceHash": "3adc44a4683b",
+      "translationHash": "d05191fa8755"
+    },
+    "adventure.enter_immersive": {
+      "sourceHash": "9b979756d89f",
+      "translationHash": "13abdc7fee76"
+    },
+    "adventure.error.fallback": {
+      "sourceHash": "226cbe1aceed",
+      "translationHash": "de79bf18c766"
+    },
+    "adventure.escape_room_close_btn": {
+      "sourceHash": "16fe44109bf1",
+      "translationHash": "f1cfa52c64ff"
+    },
+    "adventure.escape_room_progress": {
+      "sourceHash": "f3145c8cb36f",
+      "translationHash": "bd31be50fdf2"
+    },
+    "adventure.escape_room_timer": {
+      "sourceHash": "c29efe3eceb7",
+      "translationHash": "27ee3da926b7"
+    },
+    "adventure.exit_immersive": {
+      "sourceHash": "d532565a314c",
+      "translationHash": "bd589235c469"
+    },
+    "adventure.explore_hint": {
+      "sourceHash": "4148dcd856e3",
+      "translationHash": "3c6984fa1f80"
+    },
+    "adventure.ledger_subtitle": {
+      "sourceHash": "c5c3f670c067",
+      "translationHash": "8011ebca13f6"
+    },
+    "adventure.ledger_title": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "7c50e249b9e4"
+    },
+    "adventure.ledger_tooltip": {
+      "sourceHash": "7db03cb3facc",
+      "translationHash": "5af1c21c2aec"
+    },
+    "adventure.log_button": {
+      "sourceHash": "7de22c2286cb",
+      "translationHash": "7c50e249b9e4"
+    },
+    "adventure.low_quality_label": {
+      "sourceHash": "48668d120579",
+      "translationHash": "8d169813fbf8"
+    },
+    "adventure.maximize_tooltip": {
+      "sourceHash": "cdde416b5c15",
+      "translationHash": "1082b8720685"
+    },
+    "adventure.restart": {
+      "sourceHash": "51dd91dc98a9",
+      "translationHash": "824e7b5fece9"
+    },
+    "adventure.setup_subtitle": {
+      "sourceHash": "2cd9ef63bf87",
+      "translationHash": "804956a13d3b"
+    },
+    "adventure.start_sequel": {
+      "sourceHash": "20e131292c5f",
+      "translationHash": "cbe001f50257"
+    },
+    "adventure.view_button": {
+      "sourceHash": "994e534cb6df",
+      "translationHash": "c7c18a8834d7"
+    },
+    "adventure.view_immersive": {
+      "sourceHash": "2af83afa990b",
+      "translationHash": "c787e8516fed"
+    },
+    "analysis.title": {
+      "sourceHash": "f25d551d8ae1",
+      "translationHash": "1983f4065ac8"
+    },
+    "behavior_lens.ph.person": {
+      "sourceHash": "fb5e286aecb7",
+      "translationHash": "2e5901dee49d"
+    },
+    "behavior_lens.ph.reinforcement_how_you": {
+      "sourceHash": "df15c1d4e7e5",
+      "translationHash": "f2f0fc7a79b6"
+    },
+    "behavior_lens.ph.teaching_strategy_how_you": {
+      "sourceHash": "35927ed94e16",
+      "translationHash": "cae29375a5cb"
+    },
+    "behavior_lens.raw.export_this_tool": {
+      "sourceHash": "5a23706614c9",
+      "translationHash": "388784979010"
+    },
+    "behavior_lens.ui.at_each_phase_you": {
+      "sourceHash": "66a35f6b9fba",
+      "translationHash": "54c60a9b4c5e"
+    },
+    "behavior_lens.ui.track_behaviors_at_home_using_simple_everyday_lang": {
+      "sourceHash": "fd6dd3621f78",
+      "translationHash": "46df20b87a9b"
+    },
+    "bot_events.glossary_generated": {
+      "sourceHash": "b484bb5633dc",
+      "translationHash": "1119d6741c29"
+    },
+    "chat_guide.flow.initial_prompt_context": {
+      "sourceHash": "2722f061ead5",
+      "translationHash": "d32b0fc55fbf"
+    },
+    "class_analytics.escape_completion": {
+      "sourceHash": "0303ab58bf51",
+      "translationHash": "98e45370fa93"
+    },
+    "common.adjust_escape_room_state": {
+      "sourceHash": "2b337b830d3c",
+      "translationHash": "6ad53d45cce3"
+    },
+    "common.adventure_social_story_focus_placeholder": {
+      "sourceHash": "59c8fb3302a1",
+      "translationHash": "5eca7f5b2996"
+    },
+    "common.common_placeholder_item_trans": {
+      "sourceHash": "956d2ab4d8b2",
+      "translationHash": "850b210db63e"
+    },
+    "common.common_placeholder_title_trans": {
+      "sourceHash": "c5aa0c84c2c8",
+      "translationHash": "6c304bcc1dd4"
+    },
+    "common.common_placeholder_translation": {
+      "sourceHash": "aed1ac43408f",
+      "translationHash": "59926e7f6865"
+    },
+    "common.common_standards_region_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "9dda5148c08b"
+    },
+    "common.confirm_and_launch_escape_room": {
+      "sourceHash": "5986ff42554c",
+      "translationHash": "7a8fef932849"
+    },
+    "common.enter_escape_room_state": {
+      "sourceHash": "53480732dabb",
+      "translationHash": "d1958ad3c8bf"
+    },
+    "common.escape_room_enter_answer": {
+      "sourceHash": "93bcf2fdc37d",
+      "translationHash": "db707233c60b"
+    },
+    "common.escape_room_unscramble_placeholder": {
+      "sourceHash": "89a5e8095a0e",
+      "translationHash": "d961aaa525ce"
+    },
+    "common.exit_focus": {
+      "sourceHash": "4a129a5f19ce",
+      "translationHash": "42b4cd7eeb9b"
+    },
+    "common.glossary_custom_edit_placeholder": {
+      "sourceHash": "078a20ed1068",
+      "translationHash": "d38b1ccadea2"
+    },
+    "common.glossary_style_placeholder": {
+      "sourceHash": "f8908872fe1d",
+      "translationHash": "225fd0802aa6"
+    },
+    "common.groups_new_group_placeholder": {
+      "sourceHash": "886c3806ab3f",
+      "translationHash": "4e68a8381fee"
+    },
+    "common.launch_escape_room": {
+      "sourceHash": "7ff3be762718",
+      "translationHash": "3a188fbdc0bf"
+    },
+    "common.load_saved_escape_room": {
+      "sourceHash": "bcf78f81e6db",
+      "translationHash": "f7e008d69cd5"
+    },
+    "common.modals_save_project_placeholder": {
+      "sourceHash": "ce2d4355f361",
+      "translationHash": "628f2819e85f"
+    },
+    "common.reset_escape_room": {
+      "sourceHash": "b05867f935f7",
+      "translationHash": "f43af53eb80c"
+    },
+    "common.save_escape_room_configuration": {
+      "sourceHash": "365ab100916a",
+      "translationHash": "31c1130f8ea2"
+    },
+    "common.standards_region_framework_placeholder": {
+      "sourceHash": "13416340ad15",
+      "translationHash": "9dda5148c08b"
+    },
+    "common.standards_region_optional": {
+      "sourceHash": "57b57e8419be",
+      "translationHash": "a8234985d378"
+    },
+    "common.timeline_revise_placeholder": {
+      "sourceHash": "a4f91b4641a7",
+      "translationHash": "84b59d814038"
+    },
     "common.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
@@ -7144,10 +11449,130 @@
       "sourceHash": "6730f6f93dad",
       "translationHash": "4dcadc0d8e5f"
     },
+    "common.visuals_refiner_placeholder": {
+      "sourceHash": "36639c184861",
+      "translationHash": "ebf91c869d5c"
+    },
+    "escape_room.bonus_xp": {
+      "sourceHash": "dd78c242f77c",
+      "translationHash": "fad300c05d26"
+    },
+    "escape_room.clues_collected": {
+      "sourceHash": "5f70ab1c7ea7",
+      "translationHash": "d30ceaeafcc2"
+    },
+    "escape_room.config_saved": {
+      "sourceHash": "4319d7096edf",
+      "translationHash": "cc0ab32abcb1"
+    },
+    "escape_room.end_game_confirm": {
+      "sourceHash": "a042149703b6",
+      "translationHash": "cb1735ac8961"
+    },
+    "escape_room.game_over_time": {
+      "sourceHash": "53fdc5f07893",
+      "translationHash": "af3475751870"
+    },
+    "escape_room.generating": {
+      "sourceHash": "073b0c003085",
+      "translationHash": "4fffef83a8e2"
+    },
+    "escape_room.generating_hint": {
+      "sourceHash": "fae5ecec5ab2",
+      "translationHash": "515ead7ddd9f"
+    },
+    "escape_room.launch_live_tooltip": {
+      "sourceHash": "87178c0f0a3a",
+      "translationHash": "c41936c76e73"
+    },
+    "escape_room.loaded_saved": {
+      "sourceHash": "292f49162e60",
+      "translationHash": "918d0d8de08d"
+    },
+    "escape_room.no_saved": {
+      "sourceHash": "9c334dfa9ffd",
+      "translationHash": "685969ce2932"
+    },
+    "escape_room.other_team_escaped": {
+      "sourceHash": "7029f7353ad6",
+      "translationHash": "888f5ff459bb"
+    },
+    "escape_room.preview_confirmed": {
+      "sourceHash": "da8b9dc5783a",
+      "translationHash": "9b084688b005"
+    },
+    "escape_room.preview_desc": {
+      "sourceHash": "989d394fb536",
+      "translationHash": "a2f5dd37ba3a"
+    },
+    "escape_room.puzzles_remaining": {
+      "sourceHash": "2eb2ac4fbdca",
+      "translationHash": "0b714a5a2336"
+    },
+    "escape_room.reset": {
+      "sourceHash": "5b77b06332bd",
+      "translationHash": "8d09e45ec758"
+    },
+    "escape_room.settings_btn": {
+      "sourceHash": "561c458e6dad",
+      "translationHash": "e00e279bce91"
+    },
+    "escape_room.start": {
+      "sourceHash": "a04eff25c5f1",
+      "translationHash": "3a188fbdc0bf"
+    },
+    "escape_room.stats_restored": {
+      "sourceHash": "0a6d8041d473",
+      "translationHash": "591ac6058ad9"
+    },
+    "escape_room.subtitle": {
+      "sourceHash": "e40af152968f",
+      "translationHash": "ec8ce62a2258"
+    },
+    "escape_room.team_escaped": {
+      "sourceHash": "f3a87d3bd452",
+      "translationHash": "33de1757b7a1"
+    },
+    "escape_room.team_progress": {
+      "sourceHash": "b617dfb8c4c3",
+      "translationHash": "09a16040e121"
+    },
+    "escape_room.teams_competing": {
+      "sourceHash": "30d6f485fe04",
+      "translationHash": "c9beae90e64f"
+    },
+    "escape_room.thirty_seconds_warning": {
+      "sourceHash": "41f087b1c9e5",
+      "translationHash": "df59976c2ad7"
+    },
+    "escape_room.time_remaining": {
+      "sourceHash": "2361c1afdc54",
+      "translationHash": "ffa262516f11"
+    },
+    "escape_room.time_up": {
+      "sourceHash": "e9d84399d474",
+      "translationHash": "60a0867450aa"
+    },
+    "escape_room.title": {
+      "sourceHash": "55fcdfc0f0b7",
+      "translationHash": "aef689840e1b"
+    },
+    "escape_room.you_escaped": {
+      "sourceHash": "7f288e0994eb",
+      "translationHash": "3f18b003b883"
+    },
+    "export.storybook.user_label": {
+      "sourceHash": "b7c8a6b4922c",
+      "translationHash": "658d3b0fc0a4"
+    },
     "lesson_plan.header_title": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
       "translationHash": "4dcadc0d8e5f"
+    },
+    "math.check.error": {
+      "sourceHash": "388461d78840",
+      "translationHash": "5028276400f8"
     },
     "meta.udl_aligned": {
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
@@ -7158,6 +11583,58 @@
       "reviewReason": "exact-existing-label-reuse:lesson_plan.title-and-sidebar.tool_lesson;not-a-new-native-language-review",
       "sourceHash": "6730f6f93dad",
       "translationHash": "4dcadc0d8e5f"
+    },
+    "pdf_audit.ada.deadline_50k": {
+      "sourceHash": "bfd15bffd157",
+      "translationHash": "d1a13009481c"
+    },
+    "pdf_audit.ada.deadline_badge": {
+      "sourceHash": "682e70279f51",
+      "translationHash": "08bc2618dc07"
+    },
+    "pdf_audit.knowbility.deadline_range": {
+      "sourceHash": "6da55130307b",
+      "translationHash": "6692b8c26214"
+    },
+    "persona.instruction_panel": {
+      "sourceHash": "71c7a7015708",
+      "translationHash": "f211f33640aa"
+    },
+    "roster.bridge_offline_info": {
+      "sourceHash": "f3386432c66e",
+      "translationHash": "39f97edee666"
+    },
+    "roster.bridge_terms_saved": {
+      "sourceHash": "c0a0e8b3e223",
+      "translationHash": "909d7d84e1dd"
+    },
+    "roster.deselect_all": {
+      "sourceHash": "1b656a7e2b26",
+      "translationHash": "c6da2b39706d"
+    },
+    "session.error_invalid_code": {
+      "sourceHash": "e9fcde1a24f5",
+      "translationHash": "06254e9e8b91"
+    },
+    "session.join_instructions": {
+      "sourceHash": "52a123976b7e",
+      "translationHash": "93b3560ce81d"
+    },
+    "settings.text.bionic_sub": {
+      "sourceHash": "7fcac8cbbf63",
+      "translationHash": "a155584ec3bd"
+    },
+    "source_view.check_again": {
+      "sourceHash": "9d7d982a1da2",
+      "translationHash": "e8847b0f383e"
+    },
+    "source_view.check_details": {
+      "sourceHash": "f618211729a1",
+      "translationHash": "0cec42126afb"
+    },
+    "source_view.check_run": {
+      "sourceHash": "3ef660e992f4",
+      "translationHash": "292c29cd92ca"
     },
     "stem.migration.distances_are_approximate_annual_migra": {
       "reviewReason": "hand-translated-2026-09-20-fact-correction",
@@ -7214,18 +11691,149 @@
       "sourceHash": "274e901eaded",
       "translationHash": "dc29c5a969a5"
     },
+    "tips.adventure_context": {
+      "sourceHash": "78eb19785c74",
+      "translationHash": "00780156a30c"
+    },
+    "tips.fallback_brainstorm": {
+      "sourceHash": "6ca44eab6fe7",
+      "translationHash": "e6064c583b7a"
+    },
+    "tips.fallback_export": {
+      "sourceHash": "7271891d03e4",
+      "translationHash": "e10ca0bce7aa"
+    },
+    "tips.simplified_glossary": {
+      "sourceHash": "263550bee638",
+      "translationHash": "72673980da74"
+    },
+    "toasts.1f4ca_progress_report_has_been": {
+      "sourceHash": "93dfa3e3305c",
+      "translationHash": "ca5ddf7e0893"
+    },
     "tour.actions_text": {
       "sourceHash": "9a9bf6c6f090",
       "translationHash": "586f599a4e26"
     },
+    "tour.adventure_text": {
+      "sourceHash": "12c9ebb533db",
+      "translationHash": "d77dbc917bfa"
+    },
+    "tour.alignment_text": {
+      "sourceHash": "4a5621675bc2",
+      "translationHash": "61a5e11b0a72"
+    },
+    "tour.analysis_text": {
+      "sourceHash": "e8c7367d49f7",
+      "translationHash": "0b6911b69355"
+    },
     "tour.brainstorm_text": {
-      "sourceHash": "a3da8a2713bc",
-      "translationHash": "b441c233d8b3"
+      "sourceHash": "9a3b7f785fea",
+      "translationHash": "f30c4309e200"
+    },
+    "tour.concept_sort_text": {
+      "sourceHash": "2df9a6d997a4",
+      "translationHash": "9bf4e328ea09"
+    },
+    "tour.dashboard_text": {
+      "sourceHash": "8363338d0565",
+      "translationHash": "177a8edb26d3"
+    },
+    "tour.dashboard_title": {
+      "sourceHash": "0e3fd7ced759",
+      "translationHash": "eae69c336303"
+    },
+    "tour.dbq_text": {
+      "sourceHash": "df62816b0fc7",
+      "translationHash": "a86fc8eae7c9"
+    },
+    "tour.faq_text": {
+      "sourceHash": "6d9b20ab4e99",
+      "translationHash": "9d95d9ff0798"
+    },
+    "tour.glossary_text": {
+      "sourceHash": "ce67d3c91caf",
+      "translationHash": "efbb7557ccd6"
+    },
+    "tour.input_panel_text": {
+      "sourceHash": "27f73fc20af5",
+      "translationHash": "cebe00f1bb12"
+    },
+    "tour.lesson_plan_text": {
+      "sourceHash": "14b597a85965",
+      "translationHash": "136d70230f95"
+    },
+    "tour.math_text": {
+      "sourceHash": "4528369c7483",
+      "translationHash": "55f806ef06e0"
     },
     "tour.note_taking_text": {
-      "reviewReason": "preserved-condensed-summary",
-      "sourceHash": "ef15651e945b",
-      "translationHash": "9b26877279b2"
+      "sourceHash": "8c58d98102de",
+      "translationHash": "b446b81c55ba"
+    },
+    "tour.outline_text": {
+      "sourceHash": "e071674c0e0b",
+      "translationHash": "77f6b14de61e"
+    },
+    "tour.persona_text": {
+      "sourceHash": "ea121cb3b14c",
+      "translationHash": "0a2e04174a45"
+    },
+    "tour.quiz_mode_text": {
+      "sourceHash": "38cec658010d",
+      "translationHash": "2d4948a679cc"
+    },
+    "tour.quiz_text": {
+      "sourceHash": "ca76adab6d11",
+      "translationHash": "2b5a982cccb4"
+    },
+    "tour.scaffolds_text": {
+      "sourceHash": "11c15cbfe61d",
+      "translationHash": "1ad5763585e5"
+    },
+    "tour.simplified_text": {
+      "sourceHash": "801ac0532b38",
+      "translationHash": "4892553cfc57"
+    },
+    "tour.timeline_text": {
+      "sourceHash": "5bb59ea52b26",
+      "translationHash": "5c05c732cb22"
+    },
+    "tour.utils_text": {
+      "sourceHash": "373b2c14d29d",
+      "translationHash": "80388031370c"
+    },
+    "tour.utils_title": {
+      "sourceHash": "599e3214c860",
+      "translationHash": "9bcd8f7cca54"
+    },
+    "tour.visual_text": {
+      "sourceHash": "9c12b8a644b8",
+      "translationHash": "918d946358d5"
+    },
+    "tour.wordsounds_text": {
+      "sourceHash": "61ff5f725deb",
+      "translationHash": "f1bfe1c4e32f"
+    },
+    "translate.target_label": {
+      "sourceHash": "9ba6d1c828f0",
+      "translationHash": "1b06911357ee"
+    },
+    "word_sounds.review_gap_rhyme": {
+      "sourceHash": "a242b009678b",
+      "translationHash": "dbbb107d3866"
+    },
+    "word_sounds.source_ai": {
+      "sourceHash": "7b8ec7fe6a43",
+      "translationHash": "a97939228ca9"
+    },
+    "word_sounds.source_custom": {
+      "sourceHash": "39b187b03d82",
+      "translationHash": "4cb37ea690bb"
+    },
+    "word_sounds.sources": {
+      "sourceHash": "95bde50ff4c6",
+      "translationHash": "db4d1984a65a"
     }
   },
   "yoruba": {

@@ -25,20 +25,38 @@
       Promise.resolve(promise).then(value => finish(resolve, value), error => finish(reject, error));
     });
   }
+  function isAllowedPortableAudioUrl(source) {
+    if (typeof source !== 'string') return false;
+    const trimmed = source.trim();
+    if (!trimmed) return false;
+    if (/^blob:/i.test(trimmed)) return true;
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.protocol === 'https:') return true;
+      if (parsed.protocol === 'http:') {
+        const host = parsed.hostname.toLowerCase();
+        return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '[::1]';
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
   async function portableAudio(source, context) {
     const core = getCore(), direct = core.safeAudio(source);
     if (direct) return direct;
-    if (typeof source !== 'string' || !/^(blob:|https?:\/\/)/i.test(source)) return '';
+    if (!isAllowedPortableAudioUrl(source)) return '';
     checkAbort(context);
     const controller = new AbortController();
     const cancel = () => controller.abort();
     if (context.signal) context.signal.addEventListener('abort', cancel, { once: true });
     const timer = setTimeout(cancel, 15000);
     try {
-      const response = await (context.fetch || root.fetch)(source, { signal: controller.signal });
-      if (!response.ok) throw new Error('The audio clip could not be downloaded.');
+      const response = await (context.fetch || root.fetch)(source, { signal: controller.signal, credentials: 'omit', referrerPolicy: 'no-referrer', redirect: 'error' });
+      if (!response || !response.ok) throw new Error('The audio clip could not be downloaded.');
       const maxBytes = Math.floor(core.LIMITS.audioChars * 0.74);
-      if (Number(response.headers.get('content-length')) > maxBytes) throw new Error('The audio clip is too large.');
+      const lenHeader = response.headers && typeof response.headers.get === 'function' ? response.headers.get('content-length') : null;
+      if (lenHeader != null && Number(lenHeader) > maxBytes) throw new Error('The audio clip is too large.');
       const blob = await response.blob();
       if (blob.size > maxBytes) throw new Error('The audio clip is too large.');
       const bytes = new Uint8Array(await blob.arrayBuffer());
@@ -51,7 +69,7 @@
   }
   // Retain the portable exporter's older breve spellings as a fallback. All
   // shared phonics/IPA aliases are resolved once by the core, before lookup.
-  const legacySoundAliases = { '\u0103': 'a', '\u0115': 'e', '\u012d': 'i', '\u014f': 'o', '\u016d': 'u' };
+  const legacySoundAliases = Object.assign(Object.create(null), { '\u0103': 'a', '\u0115': 'e', '\u012d': 'i', '\u014f': 'o', '\u016d': 'u' });
   function wordBankSources(bank, wordKey) {
     if (!bank || typeof bank !== 'object' || Array.isArray(bank)) return [];
     const core = getCore(), own = name => Object.prototype.hasOwnProperty.call(bank, name);
@@ -102,7 +120,7 @@
         if (context.signal) context.signal.removeEventListener('abort', cancelled);
         error ? reject(error) : resolve();
       };
-      const loaded = () => { if (root.getAudio('phonemes', 'a')) finish(); };
+      const loaded = () => { try { if (root.getAudio('phonemes', 'a')) finish(); } catch (error) { finish(error); } };
       const cancelled = () => { const error = new Error('Preparation cancelled.'); error.name = 'AbortError'; finish(error); };
       root.addEventListener('audio_bank_loaded', loaded);
       if (context.signal) context.signal.addEventListener('abort', cancelled, { once: true });
@@ -285,10 +303,16 @@
     }
   }
   function pcmWav(buffers, gapSeconds = 0) {
-    if (!buffers.length) return '';
-    const sampleRate = buffers[0].sampleRate;
-    if (buffers.some(buffer => buffer.sampleRate !== sampleRate)) throw new Error('Sound clips use incompatible sample rates.');
-    const gap = Math.round(sampleRate * gapSeconds);
+    if (!Array.isArray(buffers) || !buffers.length) return '';
+    const first = buffers[0];
+    const sampleRate = first && Number(first.sampleRate);
+    if (!Number.isFinite(sampleRate) || sampleRate <= 0) throw new Error('Sound clips have an invalid sample rate.');
+    if (buffers.some(buffer => !buffer || Number(buffer.sampleRate) !== sampleRate)) throw new Error('Sound clips use incompatible sample rates.');
+    if (buffers.some(buffer => !Number.isFinite(Number(buffer.numberOfChannels)) || buffer.numberOfChannels < 1 || !Number.isFinite(Number(buffer.length)) || buffer.length < 0 || typeof buffer.getChannelData !== 'function')) {
+      throw new Error('Sound clips contain invalid audio channel data.');
+    }
+    const safeGap = Number.isFinite(Number(gapSeconds)) && Number(gapSeconds) > 0 ? Number(gapSeconds) : 0;
+    const gap = Math.round(sampleRate * safeGap);
     const length = buffers.reduce((sum, buffer) => sum + buffer.length, 0) + gap * (buffers.length - 1);
     if (length / sampleRate > 60) throw new Error('The sound sequence is longer than one minute.');
     const bytes = new Uint8Array(44 + length * 2), view = new DataView(bytes.buffer);
@@ -533,8 +557,8 @@
       const sx = 11.3 / viewport.width, sy = 4.7 / viewport.height;
       const x = n => Math.max(1, Math.min(12, 1 + (Number(n) || 0) * sx));
       const y = n => Math.max(1.8, Math.min(6.1, 1.8 + (Number(n) || 0) * sy));
-      const colors = { yellow: 'FEF08A', blue: '93C5FD', green: '86EFAC', pink: 'F9A8D4', purple: 'D8B4FE', red: 'DC2626', black: '111827' };
-      const stickers = { star: '⭐', check: '✅', idea: '💡', love: '❤️', question: '❓', important: '❗', fire: '🔥', target: '🎯', thumbsup: '👍', party: '🎉', rocket: '🚀', flag: '🚩' };
+      const colors = Object.assign(Object.create(null), { yellow: 'FEF08A', blue: '93C5FD', green: '86EFAC', pink: 'F9A8D4', purple: 'D8B4FE', red: 'DC2626', black: '111827' });
+      const stickers = Object.assign(Object.create(null), { star: '⭐', check: '✅', idea: '💡', love: '❤️', question: '❓', important: '❗', fire: '🔥', target: '🎯', thumbsup: '👍', party: '🎉', rocket: '🚀', flag: '🚩' });
       const notes = [];
       for (const a of item.annotations) {
         checkAbort(context);
@@ -1073,34 +1097,75 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
   }
+  function isSafeStaticSvg(svg) {
+    const s = typeof svg === 'string' ? svg : '';
+    const stripped = s.replace(/^\s*<\?xml\s[^>]*\?>/i, '').replace(/^(?:\s*<!--[\s\S]*?-->)+/, '').trim();
+    if (!/^\s*<svg[\s>]/i.test(stripped) || !/<\/svg>\s*$/i.test(stripped)) return false;
+    if (s.length > 300000 || s.indexOf('\\') >= 0 || /<!(?:doctype|entity)/i.test(s) || /<\?(?!xml\s)/i.test(s)) return false;
+    const plain = s
+      .replace(/&#x([0-9a-f]+);?/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16) & 0xFFFF))
+      .replace(/&#(\d+);?/g, (_, dec) => String.fromCharCode(Number(dec) & 0xFFFF))
+      .replace(/&(colon|newline|tab);/gi, (_, name) => name.toLowerCase() === 'colon' ? ':' : '');
+    const packed = plain.replace(/[\x00-\x20]+/g, '');
+    const bare = value => String(value || '').replace(/[\x00-\x20]+/g, '');
+    if (/<\s*(?:[^\s<>"'=/:]+:)?(?:script|foreignObject|iframe|embed|object|audio|video|animate\w*|set|handler|listener)\b/i.test(plain)) return false;
+    if (/[\s"'\/]on[a-z]+\s*=/i.test(plain) || /(?:java|vb|live)script:/i.test(packed) || /xml:base\s*=/i.test(plain)) return false;
+    if (/[\s"'\/]src(?:doc)?\s*=/i.test(plain) || /(?:-(?:webkit|moz)-)?image-set\s*\(/i.test(plain)) return false;
+    let m;
+    const hrefRe = /(?:[\s"'\/])(?:[^\s<>"'=/:]+:)?href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*))/gi;
+    while ((m = hrefRe.exec(plain))) {
+      if (bare(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).charAt(0) !== '#') return false;
+    }
+    const styleRe = /<\s*(?:[^\s<>"'=/:]+:)?style\b(?:"[^"]*"|'[^']*'|[^>"'])*>/gi;
+    while ((m = styleRe.exec(plain))) {
+      if (/\/\s*>$/.test(m[0])) continue;
+      const end = plain.slice(styleRe.lastIndex).search(/<\s*\/\s*(?:[^\s<>"'=/:]+:)?style\s*>/i);
+      const css = end < 0 ? plain.slice(styleRe.lastIndex) : plain.slice(styleRe.lastIndex, styleRe.lastIndex + end);
+      if (end < 0 || /@import|@font-face|@namespace|url\s*\(|(?:-(?:webkit|moz)-)?image-set\s*\(|expression\s*\(/i.test(css)) return false;
+    }
+    const urlRe = /url\s*\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))/gi;
+    while ((m = urlRe.exec(plain))) {
+      if (bare(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).charAt(0) !== '#') return false;
+    }
+    return true;
+  }
   function safeHtmlImg(source) {
     const raw = source && typeof source === 'object' ? (source.src || source.dataUri || '') : source;
     const s = String(raw || '').trim();
-    if (/^https:\/\/[^\s"'<>\\]+$/i.test(s) && s.length <= 2048) return s;
-    if (!/^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml)[;,]/i.test(s)) return '';
-    if (/svg\+xml/i.test(s)) {
-      let decoded = s;
-      const comma = s.indexOf(',');
-      if (comma > -1) {
-        const body = s.slice(comma + 1);
-        if (/;base64/i.test(s.slice(0, comma))) {
-          try { decoded = atob(body); } catch (_) { return ''; }
-        } else {
-          try { decoded = decodeURIComponent(body); } catch (_) { decoded = body; }
-        }
-      }
-      if (/<(script|foreignObject|iframe|object|embed)\b|<!(DOCTYPE|ENTITY)|<\?xml-stylesheet|\bon[a-z]+\s*=|javascript:|(?:xlink:)?href\s*=\s*["']\s*(?:https?:|\/\/|data:|javascript:)/i.test(decoded)) return '';
+    if (!s || !/^data:image\//i.test(s)) return '';
+    const core = getCore();
+    if (s.length > ((core.LIMITS && core.LIMITS.pictureChars) || (6 * 1024 * 1024))) return '';
+    if (!/^data:image\/svg\+xml[;,]/i.test(s)) {
+      return core.safePicture(s);
     }
-    return s;
+    const comma = s.indexOf(',');
+    if (comma < 0) return '';
+    const header = s.slice(0, comma);
+    const body = s.slice(comma + 1);
+    let decoded = '';
+    if (/;base64$/i.test(header) || /;base64;/i.test(header)) {
+      const cleaned = body.replace(/\s+/g, '');
+      if (!cleaned || cleaned.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(cleaned)) return '';
+      try { decoded = atob(cleaned); } catch (_) { return ''; }
+    } else {
+      try { decoded = decodeURIComponent(body); } catch (_) { decoded = body; }
+    }
+    return isSafeStaticSvg(decoded) ? s : '';
   }
   function rawPictureLookup(input) {
     const core = getCore();
     const list = Array.isArray(input && input.items) ? input.items : (Array.isArray(input && input.words) ? input.words : []);
     const byId = new Map(), byWord = new Map();
+    let totalPictureChars = 0;
+    const maxTotalPictureChars = (core.LIMITS && core.LIMITS.totalPictureChars) || (20 * 1024 * 1024);
     list.forEach(entry => {
       if (!entry || typeof entry !== 'object') return;
       const src = safeHtmlImg(entry.image) || safeHtmlImg(entry.picture);
       if (!src) return;
+      if (src.startsWith('data:')) {
+        if (totalPictureChars + src.length > maxTotalPictureChars) return;
+        totalPictureChars += src.length;
+      }
       const alt = (entry.picture && entry.picture.alt) || entry.imageAlt || entry.word || '';
       const credit = (entry.picture && (entry.picture.credit || entry.picture.attribution)) || entry.imageCredit || entry.credit || entry.attribution || '';
       const info = { src, alt: String(alt || '').trim(), credit: String(credit || '').trim() };
@@ -1745,8 +1810,8 @@
     }
     if (_wpSylPromise) return _wpSylPromise;
     const d = docArg || (typeof document !== 'undefined' ? document : null);
+    if (!d || !d.createElement) return Promise.resolve(null);
     _wpSylPromise = new Promise(resolve => {
-      if (!d || !d.createElement) { resolve(null); return; }
       if (d.querySelector && d.querySelector('script[data-allo-syllable-table="1"]')) {
         resolve((root.AlloModules && root.AlloModules.SyllableTableEn) || null);
         return;
@@ -1756,7 +1821,11 @@
       sc.async = true;
       sc.setAttribute('data-allo-syllable-table', '1');
       sc.onload = () => resolve((root.AlloModules && root.AlloModules.SyllableTableEn) || null);
-      sc.onerror = () => { _wpSylPromise = null; resolve(null); };
+      sc.onerror = () => {
+        _wpSylPromise = null;
+        try { if (sc.parentNode) sc.parentNode.removeChild(sc); } catch (_) {}
+        resolve(null);
+      };
       (d.head || d.documentElement).appendChild(sc);
     });
     return _wpSylPromise;

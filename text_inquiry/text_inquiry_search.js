@@ -177,8 +177,11 @@
   function metadataProxyUrl() {
     var configured = readConfig('ALLOFLOW_TEXT_INQUIRY_METADATA_PROXY');
     if (configured) return configured;
-    var searchEndpoint = proxyUrl();
-    if (/\/search\/?$/i.test(searchEndpoint)) return searchEndpoint.replace(/\/search\/?$/i, '/source-metadata');
+    var parsed = parseHttpsEndpoint(proxyUrl());
+    if (parsed && /\/search\/?$/i.test(parsed.pathname)) {
+      parsed.pathname = parsed.pathname.replace(/\/search\/?$/i, '/source-metadata');
+      return parsed.toString();
+    }
     return DEFAULT_METADATA_PROXY_URL;
   }
 
@@ -238,7 +241,17 @@
         referrerPolicy: 'no-referrer',
       };
       if (controller) opts.signal = controller.signal;
-      return await root.fetch(requestUrl, opts);
+      var response = await root.fetch(requestUrl, opts);
+      if (!response || !response.ok) {
+        return { ok: false, status: response && response.status || 0, data: null, jsonError: false };
+      }
+      try {
+        var data = await response.json();
+        return { ok: true, status: response.status || 200, data: data, jsonError: false };
+      } catch (err) {
+        if (controller && controller.signal && controller.signal.aborted) throw err;
+        return { ok: true, status: response.status || 200, data: null, jsonError: true };
+      }
     } finally {
       if (timer != null) root.clearTimeout(timer);
     }
@@ -280,15 +293,15 @@
     var baseEndpoint = endpoint.toString();
     var requestUrl = baseEndpoint + (endpoint.search ? '&' : '?')
       + 'q=' + encodeURIComponent(searchQuery) + '&num=' + String(maxResults);
-    var response;
+    var fetched;
     try {
-      response = await fetchJsonWithTimeout(requestUrl, 12000);
+      fetched = await fetchJsonWithTimeout(requestUrl, 12000);
     } catch (error) {
       throw new Error('The web-search service could not be reached. Check your connection or search proxy.');
     }
-    if (!response || !response.ok) throw new Error(errorMessage(response && response.status || 0));
-    var data;
-    try { data = await response.json(); } catch (_) { throw new Error('The web-search service returned invalid data.'); }
+    if (!fetched || !fetched.ok) throw new Error(errorMessage(fetched && fetched.status || 0));
+    if (fetched.jsonError) throw new Error('The web-search service returned invalid data.');
+    var data = fetched.data;
     var rows = normalizeResults(data && (data.results || data.organic), 'Serper');
     return {
       ok: true,
@@ -314,15 +327,15 @@
     var baseEndpoint = endpoint.toString();
     var requestUrl = baseEndpoint + (endpoint.search ? '&' : '?') + 'url=' + encodeURIComponent(safe);
     var started = Date.now();
-    var response;
+    var fetched;
     try {
-      response = await fetchJsonWithTimeout(requestUrl, 10000);
+      fetched = await fetchJsonWithTimeout(requestUrl, 10000);
     } catch (_) {
       throw new Error('The metadata service could not be reached.');
     }
-    if (!response || !response.ok) throw new Error(metadataErrorMessage(response && response.status || 0));
-    var data;
-    try { data = await response.json(); } catch (_) { throw new Error('The metadata service returned invalid data.'); }
+    if (!fetched || !fetched.ok) throw new Error(metadataErrorMessage(fetched && fetched.status || 0));
+    if (fetched.jsonError) throw new Error('The metadata service returned invalid data.');
+    var data = fetched.data;
     var rawSignals = data && data.metadata && data.metadata.signals && typeof data.metadata.signals === 'object' && !Array.isArray(data.metadata.signals)
       ? data.metadata.signals
       : null;

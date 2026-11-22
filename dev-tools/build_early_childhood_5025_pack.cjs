@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-const fs=require('fs'); const path=require('path'); const { writeGeneratedFile } = require('./write_generated_file.cjs'); const banks=require('./early_childhood_5025/expanded_content.cjs'); const {applySourceReviewCorrections}=require('./early_childhood_5025/source_review_corrections.cjs'); const root=path.resolve(__dirname,'..');
+const fs=require('fs'); const path=require('path'); const { writeGeneratedFile } = require('./write_generated_file.cjs'); const { applyChoiceOverrides } = require('./early_childhood_5025/choice_overrides/index.cjs'); const banks=applyChoiceOverrides(require('./early_childhood_5025/expanded_content.cjs')); const {applySourceReviewCorrections}=require('./early_childhood_5025/source_review_corrections.cjs'); const root=path.resolve(__dirname,'..');
 const counts={'language-literacy':30,mathematics:25,'social-studies':14,science:14,'health-physical-arts':17}; const official={'language-literacy':36,mathematics:30,'social-studies':17,science:17,'health-physical-arts':20};
 const ensure=(v,n,s)=>String(v||'').trim().length>=n?String(v).trim():(String(v||'').trim()+' '+s).trim();
 const chapterBySkill={
@@ -30,9 +30,10 @@ function make(bank,q,batch,pos){
   const answerIndex=(pos-1)%4;
   const rationale=ensure(q.rationale,120,'The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.');
   const choices=[];const choiceRationales=[];const skillId=skillByPosition.get(pos);let d=0;
+  if(!Array.isArray(q.distractorNotes)||q.distractorNotes.length!==3)throw new Error('Missing authored distractorNotes for '+bank.id+' pos '+pos);
   for(let i=0;i<4;i++){
     if(i===answerIndex){choices.push(q.correct);choiceRationales.push('Correct. '+rationale);}
-    else{const value=q.distractors[d++];choices.push(value);choiceRationales.push('This option applies the claim "'+value+'"; it conflicts with the item-specific principle that '+firstSentence(rationale).replace(/^[A-Z]/,letter=>letter.toLowerCase()));}
+    else{const idx=d++;choices.push(q.distractors[idx]);choiceRationales.push(q.distractorNotes[idx]);}
   }
   return{id:'ec5025-b'+batch+'-'+String(pos).padStart(3,'0'),type:'single-choice',domainId:bank.domainId,difficulty:q.difficulty||'application',prompt:batch===1?q.promptA:q.promptB,choices,answerIndex,rationale,references:bank.references.slice(),reviewStatus:'source-reviewed',qaStatus:'qa-passed',qaReviewedAt:'2026-07-18',choiceRationales,skillIds:[skillId],chapterIds:[chapterBySkill[skillId]]};
 }

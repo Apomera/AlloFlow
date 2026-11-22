@@ -1114,7 +1114,7 @@ function verifyShareHelper() {
   var driveAdvanced = eeDriveApiReady_();
   var root = null, storageError = '';
   if (managedIdentityReady && driveAdvanced) {
-    try { root = eeRootFolder_(); }
+    try { root = eeWithLock_(function () { return eeRootFolder_(); }); }
     catch (error) { storageError = String(error && error.message || error); }
   }
   var ready = managedIdentityReady && driveAdvanced && !!root;

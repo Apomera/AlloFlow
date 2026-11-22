@@ -129,7 +129,9 @@
 
     function resolveVoice(voiceName) {
         if (!voiceName || typeof voiceName !== 'string') return 'af_heart';
-        if (voiceName.includes('_')) return voiceName;
+        if (voiceName.includes('_')) {
+            return /^(?:af|am|bf|bm)_[a-z0-9]{1,24}$/.test(voiceName) ? voiceName : 'af_heart';
+        }
         const key = voiceName.toLowerCase();
         const mapped = Object.prototype.hasOwnProperty.call(GEMINI_TO_KOKORO, key) ? GEMINI_TO_KOKORO[key] : null;
         if (mapped) return mapped;
@@ -508,7 +510,8 @@
         self.fetch = async function (input, init) {
             let url = '';
             try { url = typeof input === 'string' ? input : (input && input.url) || ''; } catch (_) {}
-            const proxied = url && _MODEL_URL_RE.test(url) && _MODEL_FILE_RE.test(url);
+            const method = String((init && init.method) || (input && typeof input === 'object' && input.method) || 'GET').toUpperCase();
+            const proxied = method === 'GET' && url && _MODEL_URL_RE.test(url) && _MODEL_FILE_RE.test(url);
             if (!proxied) return _nativeFetch(input, init);
             try {
                 const hit = await _askMain({ op: 'get', url });
@@ -1173,6 +1176,7 @@
         const w = await window.__alloCreateVerifiedWorker('kokoro', WORKER_SOURCE, { type: 'module' });
 
         w.onmessage = ({ data }) => {
+            if (!data || typeof data !== 'object') return;
             // Durable model cache relay (see the worker-side comment). Kept
             // ahead of the switch because it is not part of the TTS protocol,
             // and it must never throw into the worker's message handling.
@@ -1638,6 +1642,7 @@
         if (text.length <= CHUNK_THRESHOLD) {
             return speak(text, voice, speed, options);
         }
+        if (!_worker) return null;
 
         const stream = _newStream('stream_' + (++_msgId));
         _activeStream = stream;
@@ -1859,6 +1864,7 @@
         };
 
         audio.onended = playNext;
+        audio.onerror = () => failChain(new Error('Kokoro stream audio failed to play'));
         return {
             stop: (notifyDone = true) => _cancelStream(
                 stream,

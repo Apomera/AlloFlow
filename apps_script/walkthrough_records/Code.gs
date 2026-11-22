@@ -134,10 +134,14 @@ function wrTimingSafeEq_(a, b) {
   return out === 0;
 }
 
+function wrAuthFailBucketKey_() {
+  return 'wr:auth_fail:' + Math.floor(Date.now() / 900000);
+}
+
 function wrRateLimited_() {
   try {
     var cache = CacheService.getScriptCache();
-    var count = parseInt(cache.get('wr:auth_fail') || '0', 10) || 0;
+    var count = parseInt(cache.get(wrAuthFailBucketKey_()) || '0', 10) || 0;
     return count >= 20;
   } catch (e) {
     return false;
@@ -147,8 +151,9 @@ function wrRateLimited_() {
 function wrRecordAuthFail_() {
   try {
     var cache = CacheService.getScriptCache();
-    var count = (parseInt(cache.get('wr:auth_fail') || '0', 10) || 0) + 1;
-    cache.put('wr:auth_fail', String(count), 900);
+    var key = wrAuthFailBucketKey_();
+    var count = parseInt(cache.get(key) || '0', 10) || 0;
+    if (count < 20) cache.put(key, String(count + 1), 900);
   } catch (e) {}
 }
 
@@ -418,12 +423,24 @@ function wrRevoke_(request) {
     return wrError_('denied', 'That file is outside the walkthrough records folder.');
   }
   file.removeViewer(teacherEmail);
+  if (typeof file.removeEditor === 'function') {
+    try { file.removeEditor(teacherEmail); } catch (edErr) {}
+  }
   if (typeof file.getViewers === 'function') {
     var remaining = file.getViewers();
     for (var vi = 0; vi < remaining.length; vi++) {
       var vEmail = String((remaining[vi] && remaining[vi].getEmail && remaining[vi].getEmail()) || '').trim().toLowerCase();
       if (vEmail === teacherEmail) {
         return wrError_('revoke_unverified', 'Drive did not confirm viewer removal; remove access directly in Drive.');
+      }
+    }
+  }
+  if (typeof file.getEditors === 'function') {
+    var remainingEditors = file.getEditors();
+    for (var ei = 0; ei < remainingEditors.length; ei++) {
+      var eEmail = String((remainingEditors[ei] && remainingEditors[ei].getEmail && remainingEditors[ei].getEmail()) || '').trim().toLowerCase();
+      if (eEmail === teacherEmail) {
+        return wrError_('revoke_unverified', 'Drive did not confirm editor removal; remove access directly in Drive.');
       }
     }
   }

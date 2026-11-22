@@ -419,6 +419,43 @@ function _useNotesFeedback(props, templateType) {
       return;
     }
     if (isLoading) return;
+    const _collectNoteText = (val, depth = 0) => {
+      if (depth > 4 || val == null) return "";
+      if (typeof val === "string") return val;
+      if (Array.isArray(val)) return val.map((v) => _collectNoteText(v, depth + 1)).join(" ");
+      if (typeof val === "object") {
+        return Object.keys(val).filter((k) => k !== "feedback" && k !== "sourceScope" && k !== "draftFingerprint").map((k) => _collectNoteText(val[k], depth + 1)).join(" ");
+      }
+      return "";
+    };
+    const _studentNoteText = _collectNoteText(data).trim();
+    if (_studentNoteText && typeof window !== "undefined") {
+      const _ntChecker = window.__alloShared && window.__alloShared.SafetyContentChecker || window.SafetyContentChecker || null;
+      let _ntFlags = null;
+      try {
+        _ntFlags = _ntChecker && typeof _ntChecker.check === "function" ? _ntChecker.check(_studentNoteText) : null;
+      } catch (_) {
+        _ntFlags = null;
+      }
+      const _ntSelfHarm = Array.isArray(_ntFlags) && _ntFlags.find((f) => f && f.category === "self_harm" && f.severity === "critical");
+      if (_ntSelfHarm) {
+        const _ntFlag = typeof props.onSafetyFlag === "function" ? props.onSafetyFlag : null;
+        if (_ntFlag) {
+          try {
+            _ntFlag(Object.assign({}, _ntSelfHarm, { source: "note_taking_" + templateType, context: _studentNoteText.slice(0, 100), aiGenerated: false }));
+          } catch (_) {
+          }
+        }
+        addToast("We paused feedback for a moment because what you wrote sounds heavy. Please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). You are not alone.", "warn");
+        if (window.SelHub && typeof window.SelHub.showCrisisModal === "function") {
+          try {
+            window.SelHub.showCrisisModal({ toolName: "Note-Taking Feedback", contentSnippet: _studentNoteText.slice(0, 200) });
+          } catch (_) {
+          }
+        }
+        return;
+      }
+    }
     const request = { ...current.current, serial: ++feedbackRequest.current };
     const sameDraft = !!data.feedback && data.feedback.draftFingerprint === request.draft;
     const requestIsCurrent = () => mounted.current && feedbackRequest.current === request.serial && current.current.id === request.id && current.current.draft === request.draft && current.current.sourceScope.sourceFingerprint === request.sourceScope.sourceFingerprint && current.current.allowed;
@@ -466,7 +503,7 @@ function _useNotesFeedback(props, templateType) {
     props.handleNoteUpdate?.("feedback", null);
     setXpEarned(0);
   }, [props.handleNoteUpdate]);
-  return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: typeof callGemini === "function", hideRequest: !props.isTeacherMode && typeof callGemini !== "function", teacherOnlyDisabled: !!props.isTeacherMode && typeof callGemini !== "function", isEarlierDraft: _notesFeedbackIsEarlier(feedback, current.current.draft), isEarlierSource: !!feedback?.sourceScope && feedback.sourceScope.sourceFingerprint !== current.current.sourceScope.sourceFingerprint };
+  return { feedback, isLoading, xpEarned, requestFeedback, dismiss, canRequest: !!callGemini, hideRequest: !props.isTeacherMode && !callGemini, teacherOnlyDisabled: !!props.isTeacherMode && !callGemini, isEarlierDraft: _notesFeedbackIsEarlier(feedback, current.current.draft), isEarlierSource: !!feedback?.sourceScope && feedback.sourceScope.sourceFingerprint !== current.current.sourceScope.sourceFingerprint };
 }
 const _ConnectionsSection = ({ value, onChange, hint, t }) => {
   const tt = t || ((k, d) => d || k);

@@ -1353,14 +1353,15 @@ function LiveLessonRunPanel(props) {
     review: { border: '#fcd34d', background: '#fffbeb', text: '#854d0e' },
     needs_attention: { border: '#fca5a5', background: '#fef2f2', text: '#991b1b' },
   })[liveRunReadiness.status];
-  const [readinessOpen, setReadinessOpen] = React.useState(() => liveRunReadiness.status !== 'ready');
-  const prevReadinessStatusRef = React.useRef(liveRunReadiness.status);
-  React.useEffect(() => {
-    if (prevReadinessStatusRef.current !== liveRunReadiness.status) {
-      prevReadinessStatusRef.current = liveRunReadiness.status;
-      setReadinessOpen(liveRunReadiness.status !== 'ready');
-    }
-  }, [liveRunReadiness.status]);
+  const [readinessState, setReadinessState] = React.useState(() => ({
+    status: liveRunReadiness.status,
+    open: liveRunReadiness.status !== 'ready',
+  }));
+  const readinessOpen = readinessState.status === liveRunReadiness.status
+    ? readinessState.open
+    : (liveRunReadiness.status !== 'ready');
+  const setReadinessOpen = nextOpen => setReadinessState({ status: liveRunReadiness.status, open: !!nextOpen });
+  const [stepFilter, setStepFilter] = React.useState('');
   const audiences = React.useMemo(
     () => buildLiveLessonAudiences(groups, roster, {
       classLabel: t('live_lesson.whole_class') || 'Whole class',
@@ -1398,6 +1399,34 @@ function LiveLessonRunPanel(props) {
   const hasPreparedCheckpoint = !!preparedCheckpoint.kind;
   const preparedCheckpointLaunchBlocked = preparedCheckpoint.kind === 'live_quiz'
     && (!focusItem || focusItem.type !== 'quiz');
+  const currentCheckpointLabel = ({
+    quick_check: 'Quick check',
+    word_cloud: 'Word cloud',
+    open_response: 'Open response',
+    feedback_response: 'Feedback response',
+    sketch_response: 'Sketch Response',
+    live_quiz: 'Live quiz',
+  })[preparedCheckpoint.kind] || '';
+  const stepProgressPercent = steps.length > 0
+    ? Math.min(100, Math.max(0, Math.round(((focusIndex + 1) / steps.length) * 100)))
+    : 0;
+  const deliveryPercent = delivery.total > 0
+    ? Math.min(100, Math.max(0, Math.round((delivery.viewing / delivery.total) * 100)))
+    : 0;
+  const normalizedStepFilter = steps.length >= 6 ? String(stepFilter || '').trim().toLowerCase() : '';
+  const filteredStepOptions = React.useMemo(() => {
+    const indexed = steps.map((item, index) => ({ item, index }));
+    if (!normalizedStepFilter) return indexed;
+    const matches = indexed.filter(({ item, index }) => {
+      const label = `${index + 1}. ${String(getTitle(item) || item.type || '')}`.toLowerCase();
+      return label.includes(normalizedStepFilter);
+    });
+    if (focusItem && !matches.some(entry => entry.item.id === focusItem.id)) {
+      const currentEntry = indexed.find(entry => entry.item.id === focusItem.id);
+      if (currentEntry) return [currentEntry, ...matches];
+    }
+    return matches;
+  }, [steps, normalizedStepFilter, getTitle, focusItem]);
   const nextItem = nextIndex >= 0 ? steps[nextIndex] : null;
   const nextPresenterCue = normalizeLivePresenterCue(
     nextItem && presenterCuesByResourceId && Object.prototype.hasOwnProperty.call(presenterCuesByResourceId, nextItem.id)
@@ -1740,7 +1769,7 @@ function LiveLessonRunPanel(props) {
   };
   const disabledButton = {
     ...buttonBase,
-    color: '#94a3b8',
+    color: '#64748b',
     background: '#f8fafc',
     cursor: 'not-allowed',
   };
@@ -1827,6 +1856,46 @@ function LiveLessonRunPanel(props) {
           }}
         >
           {t('live_lesson.order_source') || 'History order'}: {activeUnitLabel}
+        </div>
+      )}
+
+      {!companionActive && steps.length > 0 && (
+        <div data-live-lesson-progress="" style={{ marginTop: 6 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 4, fontSize: '0.6rem', color: '#1e3a8a', fontWeight: 800 }}>
+            <span>
+              {t('live_lesson.step_progress') || 'Step'} {focusIndex + 1} {t('common.of') || 'of'} {steps.length} · {stepProgressPercent}%
+            </span>
+            {(liveRunReadiness.presenterCueCount > 0 || liveRunReadiness.preparedCount > 0) && (
+              <span style={{ color: '#475569', fontWeight: 700 }}>
+                {liveRunReadiness.presenterCueCount > 0 ? `${liveRunReadiness.presenterCueCount} cue${liveRunReadiness.presenterCueCount === 1 ? '' : 's'}` : ''}
+                {liveRunReadiness.presenterCueCount > 0 && liveRunReadiness.preparedCount > 0 ? ' · ' : ''}
+                {liveRunReadiness.preparedCount > 0 ? `${liveRunReadiness.preparedCount} checkpoint${liveRunReadiness.preparedCount === 1 ? '' : 's'}` : ''}
+              </span>
+            )}
+          </div>
+          <div
+            role="progressbar"
+            aria-label={t('live_lesson.progress_aria') || 'Lesson path progress'}
+            aria-valuemin={1}
+            aria-valuemax={steps.length}
+            aria-valuenow={focusIndex + 1}
+            style={{
+              height: 6,
+              marginTop: 3,
+              overflow: 'hidden',
+              borderRadius: 999,
+              background: '#dbeafe',
+            }}
+          >
+            <span
+              style={{
+                display: 'block',
+                height: '100%',
+                width: `${stepProgressPercent}%`,
+                background: '#2563eb',
+              }}
+            />
+          </div>
         </div>
       )}
 
@@ -2539,6 +2608,22 @@ function LiveLessonRunPanel(props) {
                   ? `${t('live_lesson.current_step') || 'Current step'} ${currentIndex + 1}`
                   : `${t('live_lesson.selected_step') || 'Selected step'} ${focusIndex + 1}`}
               </div>
+              {(hasPresenterCue || hasPreparedCheckpoint) && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 3 }}>
+                  {hasPresenterCue && (
+                    <span style={{ borderRadius: 999, padding: '0.08rem 0.36rem', background: '#f5f3ff', border: '1px solid #c4b5fd', color: '#5b21b6', fontSize: '0.56rem', fontWeight: 800 }}>
+                      {t('live_lesson.cue_ready_badge') || 'Cue ready'}
+                    </span>
+                  )}
+                  {hasPreparedCheckpoint && (
+                    <span style={{ borderRadius: 999, padding: '0.08rem 0.36rem', background: preparedCheckpointLaunchBlocked ? '#fef2f2' : '#ecfeff', border: '1px solid ' + (preparedCheckpointLaunchBlocked ? '#fca5a5' : '#67e8f9'), color: preparedCheckpointLaunchBlocked ? '#991b1b' : '#155e75', fontSize: '0.56rem', fontWeight: 800 }}>
+                      {preparedCheckpointLaunchBlocked
+                        ? (t('common.needs_attention') || 'Needs attention')
+                        : `${currentCheckpointLabel || 'Checkpoint'} ${t('common.ready') || 'ready'}`}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -2817,6 +2902,47 @@ function LiveLessonRunPanel(props) {
             </button>
           </div>
 
+          {steps.length >= 6 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 6 }}>
+              <input
+                type="search"
+                value={stepFilter}
+                aria-label={t('live_lesson.filter_steps_aria') || 'Filter lesson steps'}
+                placeholder={t('live_lesson.filter_steps_ph') || 'Filter steps…'}
+                onChange={event => setStepFilter(event.target.value)}
+                onKeyDown={event => {
+                  if (event.isComposing || event.keyCode === 229) return;
+                  if (event.key === 'Escape' && stepFilter) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setStepFilter('');
+                  }
+                }}
+                style={{
+                  minWidth: 0,
+                  flex: 1,
+                  minHeight: 44,
+                  border: '1px solid #bfdbfe',
+                  borderRadius: 7,
+                  background: 'white',
+                  color: '#0f172a',
+                  padding: '0.3rem 0.45rem',
+                  fontFamily: 'inherit',
+                  fontSize: '0.66rem',
+                }}
+              />
+              {normalizedStepFilter && (
+                <button
+                  type="button"
+                  onClick={() => setStepFilter('')}
+                  style={{ ...buttonBase, padding: '0.25rem 0.45rem', fontSize: '0.62rem' }}
+                >
+                  {t('common.clear') || 'Clear'}
+                </button>
+              )}
+            </div>
+          )}
+
           <label
             style={{
               display: 'flex',
@@ -2846,7 +2972,7 @@ function LiveLessonRunPanel(props) {
                 fontSize: '0.68rem',
               }}
             >
-              {steps.map((item, index) => (
+              {filteredStepOptions.map(({ item, index }) => (
                 <option key={item.id} value={item.id}>
                   {index + 1}. {getTitle(item)}
                 </option>
@@ -2919,7 +3045,7 @@ function LiveLessonRunPanel(props) {
                 marginTop: 5,
                 borderColor: actionAvailable ? '#1d4ed8' : '#cbd5e1',
                 background: actionAvailable ? '#1d4ed8' : '#f8fafc',
-                color: actionAvailable ? 'white' : '#94a3b8',
+                color: actionAvailable ? 'white' : '#64748b',
               }}
             >
               {actionLabel}
@@ -2927,12 +3053,34 @@ function LiveLessonRunPanel(props) {
             <div
               role="status"
               aria-live="polite"
-              style={{ marginTop: 4, color: '#475569', fontSize: '0.62rem', lineHeight: 1.35 }}
+              style={{ marginTop: 4, color: '#334155', fontSize: '0.62rem', lineHeight: 1.35 }}
             >
               {delivery.total > 0
-                ? `${delivery.viewing} ${t('common.of') || 'of'} ${delivery.total} ${t('live_lesson.viewing_step') || 'last reported on this step'}`
+                ? `${delivery.viewing} ${t('common.of') || 'of'} ${delivery.total} ${t('live_lesson.viewing_step') || 'last reported on this step'} (${deliveryPercent}%)`
                 : (t('live_lesson.no_connected_audience') || 'No connected students in this audience yet.')}
             </div>
+            {delivery.total > 0 && (
+              <div
+                data-live-delivery-progress=""
+                aria-hidden="true"
+                style={{
+                  height: 5,
+                  marginTop: 3,
+                  overflow: 'hidden',
+                  borderRadius: 999,
+                  background: '#bfdbfe',
+                }}
+              >
+                <span
+                  style={{
+                    display: 'block',
+                    height: '100%',
+                    width: `${deliveryPercent}%`,
+                    background: '#1d4ed8',
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           <p style={{ margin: '0.45rem 0 0', color: '#475569', fontSize: '0.62rem', lineHeight: 1.35 }}>

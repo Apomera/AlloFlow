@@ -162,9 +162,11 @@ const HISTORY_PANEL_THEME_CSS = `
   #tour-history-panel .bg-slate-200 { background-color: var(--rp-border) !important; }
   #tour-history-panel .bg-indigo-50,
   #tour-history-panel [class~="bg-indigo-50/70"],
-  #tour-history-panel [class~="bg-indigo-50/80"] { background-color: var(--rp-accent-soft) !important; }
+  #tour-history-panel [class~="bg-indigo-50/80"],
+  #tour-history-panel .bg-blue-50 { background-color: var(--rp-accent-soft) !important; }
   #tour-history-panel .bg-indigo-100 { background-color: var(--rp-accent-hover) !important; }
   #tour-history-panel .bg-indigo-700 { background-color: var(--rp-primary) !important; }
+  #tour-history-panel .bg-amber-50 { background-color: var(--rp-warning-soft) !important; }
   #tour-history-panel .bg-emerald-50,
   #tour-history-panel .bg-emerald-100 { background-color: var(--rp-success-soft) !important; }
   #tour-history-panel .bg-violet-50,
@@ -179,20 +181,29 @@ const HISTORY_PANEL_THEME_CSS = `
   #tour-history-panel .text-slate-500 { color: var(--rp-muted) !important; }
   #tour-history-panel .text-slate-400 { color: var(--rp-faint) !important; }
   #tour-history-panel .text-indigo-600,
-  #tour-history-panel .text-indigo-700 { color: var(--rp-accent) !important; }
+  #tour-history-panel .text-indigo-700,
+  #tour-history-panel .text-blue-800 { color: var(--rp-accent) !important; }
   #tour-history-panel .text-emerald-700,
   #tour-history-panel .text-emerald-800 { color: var(--rp-success) !important; }
-  #tour-history-panel .text-amber-700 { color: var(--rp-warning) !important; }
+  #tour-history-panel .text-amber-700,
+  #tour-history-panel .text-amber-900 { color: var(--rp-warning) !important; }
   #tour-history-panel .text-red-700 { color: var(--rp-danger) !important; }
-  #tour-history-panel .text-violet-700 { color: var(--rp-violet) !important; }
+  #tour-history-panel .text-violet-700,
+  #tour-history-panel .text-violet-800 { color: var(--rp-violet) !important; }
   #tour-history-panel .text-pink-700 { color: var(--rp-sel) !important; }
   #tour-history-panel .text-white { color: var(--rp-on-primary) !important; }
+  #tour-history-panel .bg-red-600 { background-color: #b91c1c !important; color: #ffffff !important; }
+  #tour-history-panel [class~="hover:bg-red-700"]:hover { background-color: #991b1b !important; color: #ffffff !important; }
+  #tour-history-panel[data-history-theme="contrast"] .bg-red-600 { background-color: #ff6666 !important; color: #000000 !important; border: 2px solid #ffffff !important; }
+  #tour-history-panel[data-history-theme="contrast"] [class~="hover:bg-red-700"]:hover { background-color: #ffffff !important; color: #000000 !important; }
   #tour-history-panel input::placeholder { color: var(--rp-faint) !important; opacity: 1; }
 
   #tour-history-panel .border-slate-200 { border-color: var(--rp-border) !important; }
   #tour-history-panel .border-slate-300 { border-color: var(--rp-border-strong) !important; }
   #tour-history-panel .border-indigo-200,
-  #tour-history-panel .border-indigo-300 { border-color: var(--rp-accent-border) !important; }
+  #tour-history-panel .border-indigo-300,
+  #tour-history-panel .border-blue-200 { border-color: var(--rp-accent-border) !important; }
+  #tour-history-panel .border-amber-300 { border-color: var(--rp-warning) !important; }
   #tour-history-panel .border-indigo-700 { border-color: var(--rp-primary) !important; }
   #tour-history-panel .border-violet-200,
   #tour-history-panel .border-violet-300 { border-color: var(--rp-violet-border) !important; }
@@ -441,7 +452,8 @@ function HistoryPanel(props) {
     setActiveSelStation = (() => {
     })
   } = props;
-  const units = Array.isArray(rawUnits) ? rawUnits : [];
+  const units = Array.isArray(rawUnits) ? rawUnits.filter((u) => u && typeof u === "object") : [];
+  const safeSanitize = typeof sanitizeString === "function" ? sanitizeString : ((v) => v == null ? "" : String(v));
   const historyThemeContext = React.useContext(window.AlloThemeContext || HistoryThemeFallbackContext);
   const historyTheme = historyThemeContext && (historyThemeContext.theme === "dark" || historyThemeContext.theme === "contrast") ? historyThemeContext.theme : "light";
   const getInstructionalTextProfile = (item) => {
@@ -645,7 +657,7 @@ function HistoryPanel(props) {
           items: cleanedItems
         }
       }));
-      setIsCommunityCatalogOpen(true);
+      if (typeof setIsCommunityCatalogOpen === "function") setIsCommunityCatalogOpen(true);
     } catch (err) {
       addToast && addToast(_hpCopy(t, "history.submit_form_open_failed", "Could not open submission form: {error}").replace("{error}", String(err && err.message || "")), "error");
     }
@@ -675,13 +687,17 @@ function HistoryPanel(props) {
     } catch (_) {
     }
   };
-  const lessonPartLabel = (phase) => resourceUiText("lesson_headers.teacher." + phase, {
+  const _lessonPartNames = {
     hook: "Hook / Engagement",
     directInstruction: "Direct Instruction",
     guidedPractice: "Guided Practice",
     independentPractice: "Independent Practice",
     closure: "Closure & Assessment"
-  }[phase] || phase);
+  };
+  const lessonPartLabel = (phase) => resourceUiText(
+    "lesson_headers.teacher." + phase,
+    phase && Object.prototype.hasOwnProperty.call(_lessonPartNames, phase) ? _lessonPartNames[phase] : phase
+  );
   const lessonPartOf = (item) => {
     try {
       const api = window.AlloModules && window.AlloModules.UtilsPure;
@@ -817,10 +833,15 @@ function HistoryPanel(props) {
     const itemType = getSafeRowText(getSafeArtifactField(item, "type"), "", 100);
     if (resourceTypeFilter !== "all" && itemType !== resourceTypeFilter) return false;
     if (!normalizedResourceSearch) return true;
+    let fallbackDefaultTitle = "Resource";
+    try {
+      fallbackDefaultTitle = getDefaultTitle(itemType);
+    } catch (_) {
+    }
     const itemTitle = getHistoryDisplayTitle(
       itemType,
       getSafeArtifactField(item, "title"),
-      getSafeRowText(getDefaultTitle(itemType), "Resource", 240)
+      getSafeRowText(fallbackDefaultTitle, "Resource", 240)
     );
     const rawMeta = getSafeArtifactField(item, "meta");
     const itemMeta = getHistoryDisplayMeta(itemType, rawMeta);
@@ -877,7 +898,7 @@ function HistoryPanel(props) {
     const ids = filteredHistory.map((item) => getPersistedArtifactInstanceId(item) || getSafePublicArtifactId(item));
     if (!handleMoveAllToUnit(ids, moveAllTargetId)) return;
     setMoveAllTarget("");
-    window.requestAnimationFrame(() => panel?.querySelector('[data-help-key="history_filter_unit_select"]')?.focus());
+    scheduleFrame(() => panel?.querySelector('[data-help-key="history_filter_unit_select"]')?.focus());
   };
   const createUnit = () => handleCreateUnit(canMoveInBulk && moveUnfiledOnCreate && unfiledCount > 0 ? { moveUncategorized: true } : void 0);
   const moveMenuRef = React.useRef(null);
@@ -885,6 +906,15 @@ function HistoryPanel(props) {
   const movePanelRef = React.useRef(null);
   const moveMenuEdgeRef = React.useRef("first");
   const moveFocusFrameRef = React.useRef(null);
+  const pendingFramesRef = React.useRef(/* @__PURE__ */ new Set());
+  const scheduleFrame = (cb) => {
+    if (typeof window === "undefined" || typeof window.requestAnimationFrame !== "function") return;
+    const id = window.requestAnimationFrame(() => {
+      pendingFramesRef.current.delete(id);
+      cb();
+    });
+    pendingFramesRef.current.add(id);
+  };
   const focusMoveItem = (edge = "first") => {
     const items = moveMenuRef.current?.querySelectorAll('[role="menuitem"]:not(:disabled)');
     (edge === "last" ? items?.[items.length - 1] : items?.[0])?.focus();
@@ -929,6 +959,7 @@ function HistoryPanel(props) {
       return;
     }
     if (!items.length) return;
+    if (event.ctrlKey || event.altKey || event.metaKey) return;
     if (event.key === "ArrowDown") next = (current + 1) % items.length;
     else if (event.key === "ArrowUp") next = (current - 1 + items.length) % items.length;
     else if (event.key === "Home") next = 0;
@@ -968,9 +999,11 @@ function HistoryPanel(props) {
   }, [movingItemId]);
   React.useEffect(() => () => {
     if (moveFocusFrameRef.current !== null) window.cancelAnimationFrame(moveFocusFrameRef.current);
+    pendingFramesRef.current.forEach((id) => window.cancelAnimationFrame(id));
+    pendingFramesRef.current.clear();
   }, []);
   const focusMoreAction = (edge = "first") => {
-    window.requestAnimationFrame(() => {
+    scheduleFrame(() => {
       const menuItems = moreActionsMenuRef.current ? Array.from(moreActionsMenuRef.current.querySelectorAll('[role="menuitem"]:not(:disabled)')) : [];
       const target = edge === "last" ? menuItems[menuItems.length - 1] : menuItems[0];
       if (target) target.focus();
@@ -983,7 +1016,7 @@ function HistoryPanel(props) {
   const closeMoreActions = (restoreFocus = false) => {
     setIsMoreActionsOpen(false);
     if (restoreFocus) {
-      window.requestAnimationFrame(() => {
+      scheduleFrame(() => {
         if (moreActionsButtonRef.current) moreActionsButtonRef.current.focus();
       });
     }
@@ -992,6 +1025,7 @@ function HistoryPanel(props) {
     const menuItems = Array.from(e.currentTarget.querySelectorAll('[role="menuitem"]:not(:disabled)'));
     const currentIndex = menuItems.indexOf(document.activeElement);
     let nextIndex = currentIndex;
+    if (e.ctrlKey || e.altKey || e.metaKey) return;
     if (e.key === "ArrowDown") nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % menuItems.length;
     else if (e.key === "ArrowUp") nextIndex = currentIndex < 0 ? menuItems.length - 1 : (currentIndex - 1 + menuItems.length) % menuItems.length;
     else if (e.key === "Home") nextIndex = 0;
@@ -999,6 +1033,7 @@ function HistoryPanel(props) {
     else if (e.key === "Escape") {
       if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
       e.preventDefault();
+      e.stopPropagation();
       closeMoreActions(true);
       return;
     } else if (e.key === "Tab") {
@@ -1022,8 +1057,9 @@ function HistoryPanel(props) {
   const finishResourceRename = (event, itemInstanceId, cancel = false) => {
     if (cancel) handleCancelEdit(event);
     else handleSaveEdit(event);
-    window.requestAnimationFrame(() => document.getElementById("history-actions-trigger-" + itemInstanceId)?.focus());
+    scheduleFrame(() => document.getElementById("history-actions-trigger-" + itemInstanceId)?.focus());
   };
+  const safeLastSaved = getSafeRowDate(lastSaved);
   React.useEffect(() => {
     if (typeof window === "undefined" || typeof setShowSelHub !== "function") return void 0;
     const opener = () => {
@@ -1035,809 +1071,882 @@ function HistoryPanel(props) {
       if (window.__alloSelHubOpener === opener) window.__alloSelHubOpener = null;
     };
   }, [setShowSelHub, setSelHubTab]);
-  return /* @__PURE__ */ React.createElement("div", { id: "tour-history-panel", "data-help-key": "history_panel", "data-history-theme": historyTheme, className: `allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 ${isHistoryMaximized ? "fixed inset-4 z-[190] h-auto" : !isTeacherMode ? "h-full" : "flex-grow min-h-[500px]"}` }, /* @__PURE__ */ React.createElement("style", null, HISTORY_PANEL_THEME_CSS), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 mb-3 shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-col" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-base text-slate-950 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-700" }, /* @__PURE__ */ React.createElement(History, { size: 16 })), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 truncate" }, isTeacherMode ? t("sidebar.resource_pack_history") : t("sidebar.my_resources")), /* @__PURE__ */ React.createElement(
-    "span",
-    {
-      className: "rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700",
-      role: "status",
-      "aria-atomic": "true",
-      "aria-live": "polite",
-      "aria-label": isResourceFilterActive ? t("history.resource_count_filtered", { visible: filteredHistory.length, total: unitFilteredHistory.length }) : t("history.resource_count", { count: unitFilteredHistory.length })
-    },
-    isResourceFilterActive ? filteredHistory.length + " of " + unitFilteredHistory.length : unitFilteredHistory.length
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 mt-1 pl-10 text-xs font-medium text-slate-500" }, isCanvas && canvasRecoverySaveStatus === "inactive" ? /* @__PURE__ */ React.createElement("span", { className: "flex min-h-11 items-center gap-1 text-slate-500" }, "Live-session device recovery is off") : isCanvas ? /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: onOpenDeviceRecovery,
-      className: "flex min-h-11 items-center gap-1 rounded-lg px-2 text-left transition-colors hover:bg-slate-100 " + (canvasRecoverySaveStatus === "error" ? "text-red-700" : canvasRecoverySaveStatus === "locked" ? "text-amber-700" : canvasRecoverySaveStatus === "saved" ? "text-emerald-700" : "text-slate-500"),
-      title: canvasRecoverySaveStatus === "locked" ? "Protected recovery workspaces are locked in this tab. Open the manager to unlock." : String(canvasRecoverySnapshotCount) + " saved " + (canvasRecoverySnapshotCount === 1 ? "workspace" : "workspaces") + " on this device. Open saved work manager.",
-      "aria-label": (canvasRecoverySaveStatus === "error" ? "Device save needs attention" : canvasRecoverySaveStatus === "locked" ? "Protected recovery workspaces locked, " + canvasRecoverySnapshotCount + " workspaces" : canvasRecoverySaveStatus === "idle" ? "Current workspace is not saved yet" : lastSaved ? "Saved on this device at " + lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "On-device saved work") + ". Open saved work manager.",
-      "data-help-key": "history_device_storage"
-    },
-    canvasRecoverySaveStatus === "checking" || canvasRecoverySaveStatus === "saving" || canvasRecoverySaveStatus === "restoring" ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : canvasRecoverySaveStatus === "error" ? /* @__PURE__ */ React.createElement(AlertCircle, { size: 10, "aria-hidden": "true" }) : canvasRecoverySaveStatus === "locked" ? /* @__PURE__ */ React.createElement(Lock, { size: 10, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Save, { size: 10, "aria-hidden": "true" }),
-    /* @__PURE__ */ React.createElement("span", null, canvasRecoverySaveStatus === "checking" ? "Checking saved work\u2026" : canvasRecoverySaveStatus === "saving" ? "Saving on this device\u2026" : canvasRecoverySaveStatus === "restoring" ? "Restoring saved work\u2026" : canvasRecoverySaveStatus === "error" ? "Device save needs attention" : canvasRecoverySaveStatus === "locked" ? "Protected recovery workspaces locked \xB7 " + canvasRecoverySnapshotCount + (canvasRecoverySnapshotCount === 1 ? " workspace" : " workspaces") : canvasRecoverySaveStatus === "idle" ? canvasRecoverySnapshotCount > 0 ? "Current workspace not saved yet" : "Not saved on this device yet" : lastSaved ? "Saved on this device \xB7 " + lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Saved on this device")
-  ) : isStorageDisabled ? /* @__PURE__ */ React.createElement("span", { className: "text-red-700 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10 }), " ", t("status.storage_disabled")) : isCloudSyncEnabled ? /* @__PURE__ */ React.createElement(React.Fragment, null, cloudSyncStatus === "syncing" && /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin motion-reduce:animate-none" }), " ", t("status.syncing")), cloudSyncStatus === "error" && /* @__PURE__ */ React.createElement("span", { className: "text-red-700 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10 }), " ", t("status.sync_error")), (cloudSyncStatus === "saved" || cloudSyncStatus === "idle") && /* @__PURE__ */ React.createElement("span", { className: "text-emerald-700 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Cloud, { size: 10 }), " ", t("status.cloud_saved"))) : pendingSync ? /* @__PURE__ */ React.createElement("span", { className: "text-amber-700 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CloudOff, { size: 10 }), " ", t("status.unsaved")) : lastSaved ? /* @__PURE__ */ React.createElement("span", { className: "text-emerald-700 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Cloud, { size: 10 }), " ", t("status.autosaved", { time: lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })) : /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin motion-reduce:animate-none" }), " ", t("status.syncing")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.upload_file"), type: "file", ref: projectFileInputRef, onChange: handleLoadProject, className: "hidden", accept: ".json" }), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      ref: moreActionsButtonRef,
-      type: "button",
-      onClick: () => isMoreActionsOpen ? closeMoreActions(false) : openMoreActions("first"),
-      onKeyDown: (e) => {
-        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-          e.preventDefault();
-          openMoreActions(e.key === "ArrowUp" ? "last" : "first");
-        } else if (e.key === "Escape" && isMoreActionsOpen && !(e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229)) {
-          e.preventDefault();
-          closeMoreActions(true);
-        }
-      },
-      className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50",
-      "aria-label": t("history.more_actions_aria"),
-      "aria-haspopup": "menu",
-      "aria-expanded": isMoreActionsOpen,
-      "aria-controls": isMoreActionsOpen ? "history-more-actions-menu" : void 0
-    },
-    /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5" }, t("history.more_actions"), " ", /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, "aria-hidden": "true" }))
-  ), isMoreActionsOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      tabIndex: -1,
-      "aria-label": t("history.close_more_actions_aria"),
-      className: "rp-dismiss-layer fixed inset-0 z-[80] cursor-default bg-transparent",
-      onClick: () => closeMoreActions(true)
-    }
-  ), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement(
     "div",
     {
-      ref: moreActionsMenuRef,
-      id: "history-more-actions-menu",
-      role: "menu",
-      "aria-label": t("history.more_actions_aria"),
-      onKeyDown: handleMoreActionsMenuKeyDown,
-      className: "rp-menu-surface absolute right-0 top-full z-[90] mt-1 w-64 max-w-[calc(100vw-1.5rem)] rounded-xl border border-slate-200 bg-white p-1.5 text-slate-700 shadow-2xl shadow-slate-900/15"
-    },
-    !isCanvas && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        role: "menuitem",
-        onClick: () => {
-          closeMoreActions(false);
-          onOpenDeviceRecovery();
-        },
-        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100",
-        "data-help-key": "history_device_storage"
-      },
-      /* @__PURE__ */ React.createElement(Settings, { size: 15, "aria-hidden": "true" }),
-      /* @__PURE__ */ React.createElement("span", null, "Manage local storage and recovery")
-    ),
-    isTeacherMode && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        role: "menuitem",
-        onClick: () => {
-          closeMoreActions(false);
-          projectFileInputRef?.current?.click();
-        },
-        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100",
-        "data-help-key": "history_load_project"
-      },
-      /* @__PURE__ */ React.createElement(Upload, { size: 15, "aria-hidden": "true" }),
-      /* @__PURE__ */ React.createElement("span", null, t("history.load_project"))
-    ),
-    /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        role: "menuitem",
-        onClick: () => {
-          closeMoreActions(false);
-          handleToggleIsHistoryMaximized();
-        },
-        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100",
-        "data-help-key": "history_max_toggle"
-      },
-      isHistoryMaximized ? /* @__PURE__ */ React.createElement(Minimize, { size: 15, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Maximize, { size: 15, "aria-hidden": "true" }),
-      /* @__PURE__ */ React.createElement("span", null, isHistoryMaximized ? t("history.minimize") : t("history.maximize"))
-    ),
-    isTeacherMode && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        role: "menuitem",
-        onClick: () => {
-          closeMoreActions(false);
-          initiateSaveTeacherProject();
-        },
-        disabled: safeHistory.length === 0,
-        className: `flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 ${isSaveActionPulsing ? "ring-2 ring-indigo-200" : ""}`,
-        "data-help-key": "history_save_teacher"
-      },
-      /* @__PURE__ */ React.createElement(Save, { size: 15, "aria-hidden": "true" }),
-      /* @__PURE__ */ React.createElement("span", null, t("history.save_teacher"))
-    ),
-    isTeacherMode && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        role: "menuitem",
-        onClick: () => {
-          closeMoreActions(false);
-          initiateSaveStudentProject();
-        },
-        disabled: safeHistory.length === 0,
-        className: `flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 ${isSaveActionPulsing ? "ring-2 ring-indigo-200" : ""}`,
-        "data-help-key": "history_save_student"
-      },
-      /* @__PURE__ */ React.createElement(Lock, { size: 15, "aria-hidden": "true" }),
-      /* @__PURE__ */ React.createElement("span", null, t("history.save_student"))
-    ),
-    isTeacherMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { role: "separator", className: "my-1 h-px bg-slate-200" }), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        role: "menuitem",
-        onClick: () => {
-          closeMoreActions(false);
-          shareResourcePackToCommunity();
-        },
-        disabled: safeHistory.length === 0,
-        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50",
-        "data-help-key": "history_share_pack"
-      },
-      /* @__PURE__ */ React.createElement(Share2, { size: 15, "aria-hidden": "true" }),
-      /* @__PURE__ */ React.createElement("span", null, t("history.share_resource_pack"))
-    )),
-    isTeacherMode && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        role: "menuitem",
-        onClick: () => {
-          closeMoreActions(false);
-          handleSetIsProjectSettingsOpenToTrue();
-        },
-        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100",
-        "data-help-key": "history_settings"
-      },
-      /* @__PURE__ */ React.createElement(Settings, { size: 15, "aria-hidden": "true" }),
-      /* @__PURE__ */ React.createElement("span", null, t("history.settings"))
-    ),
-    (isTeacherMode || safeHistory.length > 0) && /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        role: "menuitem",
-        onClick: () => {
-          closeMoreActions(false);
-          handleClearHistory();
-        },
-        className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-red-700 hover:bg-red-50",
-        "data-help-key": "history_clear_button"
-      },
-      /* @__PURE__ */ React.createElement(Trash2, { size: 15, "aria-hidden": "true" }),
-      /* @__PURE__ */ React.createElement("span", null, t("history.clear"))
-    )
-  ))))), isTeacherMode && !isIndependentMode && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-slate-50/90 p-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(FolderOpen, { size: 16, className: "text-slate-500 shrink-0" }), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      value: activeUnitId,
-      "data-help-key": "history_filter_unit_select",
-      onChange: (e) => setActiveUnitId(e.target.value),
-      className: "min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
-      "aria-label": t("common.filter_by_unit_aria")
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "all" }, t("history.filter_all")),
-    /* @__PURE__ */ React.createElement("option", { value: "uncategorized" }, t("history.uncategorized")),
-    units.map((u) => /* @__PURE__ */ React.createElement("option", { key: u.id, value: u.id }, u.name))
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-help-key": "history_create_unit_btn",
-      onClick: handleSetIsUnitModalOpenToTrue,
-      className: "min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-indigo-700 transition-colors hover:bg-indigo-50",
-      title: t("history.create_unit_tooltip"),
-      "aria-label": t("history.create_unit_tooltip")
-    },
-    /* @__PURE__ */ React.createElement(FolderPlus, { size: 14 })
-  ), activeUnitId !== "all" && activeUnitId !== "uncategorized" && typeof onVisualizeUnit === "function" && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => onVisualizeUnit(activeUnitId),
-      className: "min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-amber-700 transition-colors hover:bg-amber-50",
-      title: t("history.visualize_unit_tooltip") || "Open this unit in Learning Web: Unit Path",
-      "aria-label": t("history.visualize_unit_tooltip") || "Open this unit in Learning Web: Unit Path"
-    },
-    /* @__PURE__ */ React.createElement("span", { style: { fontSize: "13px", lineHeight: 1 } }, "\u{1F9ED}")
-  ), activeUnitId !== "all" && activeUnitId !== "uncategorized" && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-help-key": "history_delete_unit_btn",
-      onClick: handleDeleteUnit,
-      className: "min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-red-700 transition-colors hover:bg-red-50",
-      title: t("history.delete_unit_tooltip"),
-      "aria-label": t("history.delete_unit_tooltip")
-    },
-    /* @__PURE__ */ React.createElement(Trash2, { size: 14 })
-  )), (unitFilteredHistory.length > 0 || isResourceFilterActive) && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm shadow-slate-900/5", role: "search", "aria-label": t("history.find_resources_aria") }, /* @__PURE__ */ React.createElement("div", { className: "relative min-w-[150px] flex-1" }, /* @__PURE__ */ React.createElement(Search, { size: 14, "aria-hidden": "true", className: "pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600" }), /* @__PURE__ */ React.createElement("input", { type: "search", value: resourceSearch, onChange: (e) => setResourceSearch(e.target.value), placeholder: t("history.search_resources_placeholder"), "aria-label": t("history.search_resources_aria"), className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-8 pr-9 text-xs text-slate-800 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" }), resourceSearch && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setResourceSearch(""), "aria-label": t("history.clear_resource_search_aria"), className: "absolute right-0 top-0 min-h-11 min-w-11 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900" }, /* @__PURE__ */ React.createElement(X, { size: 14, className: "mx-auto", "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("select", { value: resourceTypeFilter, onChange: (e) => setResourceTypeFilter(e.target.value), "aria-label": t("history.filter_by_type_aria"), className: "min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, t("history.all_types")), displayedResourceTypes.map((type) => /* @__PURE__ */ React.createElement("option", { key: type, value: type }, getResourceTypeLabel(type)))), canShowLessonParts && /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 items-center gap-2 px-1 text-xs font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", "data-history-lesson-part-colors": true, checked: lessonPartColors, onChange: (e) => changeLessonPartColors(e.target.checked), className: "h-4 w-4" }), resourceUiText("history.lesson_part_colors", "Lesson part colors")), isResourceFilterActive && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-indigo-700 hover:bg-indigo-50" }, t("history.clear_filters")), isResourceFilterActive && /* @__PURE__ */ React.createElement("p", { className: "w-full text-xs text-slate-500", role: "status" }, t("history.filtered_status", { visible: filteredHistory.length, total: unitFilteredHistory.length }))), showMoveAll && /* @__PURE__ */ React.createElement("div", { ref: moveAllBarRef, "data-history-move-all": true, className: "flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm shadow-slate-900/5" }, units.length > 0 ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { htmlFor: "history-move-all-target", className: "text-xs font-semibold text-slate-700" }, isResourceFilterActive ? moveUiText("history.move_shown_label", "Move the {count} shown to", { count: filteredHistory.length }) : moveUiText("history.move_all_label", "Move all {count} to", { count: filteredHistory.length })), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      id: "history-move-all-target",
-      value: moveAllTargetId,
-      onChange: (e) => setMoveAllTarget(e.target.value),
-      className: "min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "" }, resourceUiText("history.move_all_choose", "Choose a unit")),
-    units.map((u) => /* @__PURE__ */ React.createElement("option", { key: u.id, value: u.id }, u.name))
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-history-move-all-submit": true,
-      disabled: !moveAllTargetId,
-      onClick: moveAllShown,
-      className: "min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-600"
-    },
-    resourceUiText("history.move_all_button", "Move")
-  )) : /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, resourceUiText("history.move_all_no_units", "Create a unit folder first, then you can move these resources into it at once."))), (unitFilteredHistory.length > 1 || isOrganizing) && !isSyncMode && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-history-organize": true,
-      "aria-pressed": isOrganizing,
-      onClick: () => {
-        setIsOrganizing((value) => !value);
-        setResourceActionsId(null);
-        closeMoveMenu(false);
-      },
-      className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-    },
-    isOrganizing ? resourceUiText("history.done_organizing", "Done organizing") : resourceUiText("history.organize", "Organize")
-  ), isOrganizing && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs text-slate-600" }, isResourceFilterActive ? t("history.clear_filters_to_reorder") : resourceUiText("history.organize_hint", "Drag a handle or use the move buttons. Keyboard: Alt + Up or Down."))), isUnitModalOpen && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-indigo-200 bg-indigo-50 p-3 animate-in motion-reduce:animate-none slide-in-from-top-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-700 mb-1" }, t("history.new_unit_label")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.enter_new_unit_name"),
-      type: "text",
-      value: newUnitName,
-      "data-help-key": "history_unit_name_input",
-      style: { flexBasis: "12rem", minWidth: 0 },
-      onChange: (e) => setNewUnitName(e.target.value),
-      placeholder: t("history.new_unit_placeholder"),
-      className: "min-h-11 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
-      autoFocus: true,
+      id: "tour-history-panel",
+      "data-help-key": "history_panel",
+      "data-history-theme": historyTheme,
       onKeyDown: (e) => {
-        if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
-        if (e.key === "Enter") {
-          e.preventDefault();
-          createUnit();
-        } else if (e.key === "Escape") {
+        if (e.defaultPrevented || e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+        if (e.key === "Escape" && isHistoryMaximized && !isMoreActionsOpen && !isUnitModalOpen && !movingItemId && editingId === null && !resourceSearch && typeof handleToggleIsHistoryMaximized === "function") {
           e.preventDefault();
           e.stopPropagation();
-          handleSetIsUnitModalOpenToFalse();
+          handleToggleIsHistoryMaximized();
+        }
+      },
+      className: `allo-premium-history bg-white text-slate-900 rounded-2xl p-4 border border-slate-200 shadow-xl shadow-slate-900/5 flex flex-col shrink-0 transition-all duration-300 motion-reduce:transition-none ${isHistoryMaximized ? "fixed inset-4 z-[190] h-auto" : !isTeacherMode ? "h-full" : "flex-grow min-h-[500px]"}`
+    },
+    /* @__PURE__ */ React.createElement("style", null, HISTORY_PANEL_THEME_CSS),
+    /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 mb-3 shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-col" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-base text-slate-950 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-700", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(History, { size: 16, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 truncate" }, isTeacherMode ? t("sidebar.resource_pack_history") : t("sidebar.my_resources")), /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: "rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700",
+        role: "status",
+        "aria-atomic": "true",
+        "aria-live": "polite",
+        "aria-label": isResourceFilterActive ? t("history.resource_count_filtered", { visible: filteredHistory.length, total: unitFilteredHistory.length }) : t("history.resource_count", { count: unitFilteredHistory.length })
+      },
+      isResourceFilterActive ? filteredHistory.length + " of " + unitFilteredHistory.length : unitFilteredHistory.length
+    )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 mt-1 pl-10 text-xs font-medium text-slate-500" }, isCanvas && canvasRecoverySaveStatus === "inactive" ? /* @__PURE__ */ React.createElement("span", { className: "flex min-h-11 items-center gap-1 text-slate-500" }, "Live-session device recovery is off") : isCanvas ? /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: onOpenDeviceRecovery,
+        className: "flex min-h-11 items-center gap-1 rounded-lg px-2 text-left transition-colors hover:bg-slate-100 " + (canvasRecoverySaveStatus === "error" ? "text-red-700" : canvasRecoverySaveStatus === "locked" ? "text-amber-700" : canvasRecoverySaveStatus === "saved" ? "text-emerald-700" : "text-slate-500"),
+        title: canvasRecoverySaveStatus === "locked" ? "Protected recovery workspaces are locked in this tab. Open the manager to unlock." : String(canvasRecoverySnapshotCount) + " saved " + (canvasRecoverySnapshotCount === 1 ? "workspace" : "workspaces") + " on this device. Open saved work manager.",
+        "aria-label": (canvasRecoverySaveStatus === "error" ? "Device save needs attention" : canvasRecoverySaveStatus === "locked" ? "Protected recovery workspaces locked, " + canvasRecoverySnapshotCount + " workspaces" : canvasRecoverySaveStatus === "idle" ? "Current workspace is not saved yet" : safeLastSaved ? "Saved on this device at " + safeLastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "On-device saved work") + ". Open saved work manager.",
+        "data-help-key": "history_device_storage"
+      },
+      canvasRecoverySaveStatus === "checking" || canvasRecoverySaveStatus === "saving" || canvasRecoverySaveStatus === "restoring" ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : canvasRecoverySaveStatus === "error" ? /* @__PURE__ */ React.createElement(AlertCircle, { size: 10, "aria-hidden": "true" }) : canvasRecoverySaveStatus === "locked" ? /* @__PURE__ */ React.createElement(Lock, { size: 10, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Save, { size: 10, "aria-hidden": "true" }),
+      /* @__PURE__ */ React.createElement("span", null, canvasRecoverySaveStatus === "checking" ? "Checking saved work\u2026" : canvasRecoverySaveStatus === "saving" ? "Saving on this device\u2026" : canvasRecoverySaveStatus === "restoring" ? "Restoring saved work\u2026" : canvasRecoverySaveStatus === "error" ? "Device save needs attention" : canvasRecoverySaveStatus === "locked" ? "Protected recovery workspaces locked \xB7 " + canvasRecoverySnapshotCount + (canvasRecoverySnapshotCount === 1 ? " workspace" : " workspaces") : canvasRecoverySaveStatus === "idle" ? canvasRecoverySnapshotCount > 0 ? "Current workspace not saved yet" : "Not saved on this device yet" : safeLastSaved ? "Saved on this device \xB7 " + safeLastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Saved on this device")
+    ) : isStorageDisabled ? /* @__PURE__ */ React.createElement("span", { className: "text-red-700 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10, "aria-hidden": "true" }), " ", t("status.storage_disabled")) : isCloudSyncEnabled ? /* @__PURE__ */ React.createElement(React.Fragment, null, cloudSyncStatus === "syncing" && /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("status.syncing")), cloudSyncStatus === "error" && /* @__PURE__ */ React.createElement("span", { className: "text-red-700 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 10, "aria-hidden": "true" }), " ", t("status.sync_error")), (cloudSyncStatus === "saved" || cloudSyncStatus === "idle") && /* @__PURE__ */ React.createElement("span", { className: "text-emerald-700 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Cloud, { size: 10, "aria-hidden": "true" }), " ", t("status.cloud_saved"))) : pendingSync ? /* @__PURE__ */ React.createElement("span", { className: "text-amber-700 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CloudOff, { size: 10, "aria-hidden": "true" }), " ", t("status.unsaved")) : safeLastSaved ? /* @__PURE__ */ React.createElement("span", { className: "text-emerald-700 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Cloud, { size: 10, "aria-hidden": "true" }), " ", t("status.autosaved", { time: safeLastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })) : /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("status.syncing")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.upload_file"), type: "file", ref: projectFileInputRef, onChange: handleLoadProject, className: "hidden", accept: ".json" }), isHistoryMaximized && typeof handleToggleIsHistoryMaximized === "function" && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-history-exit-maximize": "",
+        onClick: handleToggleIsHistoryMaximized,
+        className: "min-h-11 rounded-lg border border-indigo-200 bg-indigo-50 px-3 text-xs font-bold text-indigo-700 shadow-sm transition-colors motion-reduce:transition-none hover:bg-indigo-100 flex items-center gap-1.5",
+        "aria-label": resourceUiText("history.minimize", "Minimize"),
+        title: resourceUiText("history.minimize", "Minimize")
+      },
+      /* @__PURE__ */ React.createElement(Minimize, { size: 14, "aria-hidden": "true" }),
+      /* @__PURE__ */ React.createElement("span", null, resourceUiText("history.minimize", "Minimize"))
+    ), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        ref: moreActionsButtonRef,
+        type: "button",
+        onClick: () => isMoreActionsOpen ? closeMoreActions(false) : openMoreActions("first"),
+        onKeyDown: (e) => {
+          if (e.ctrlKey || e.altKey || e.metaKey) return;
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
+            openMoreActions(e.key === "ArrowUp" ? "last" : "first");
+          } else if (e.key === "Escape" && isMoreActionsOpen && !(e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229)) {
+            e.preventDefault();
+            closeMoreActions(true);
+          }
+        },
+        className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition-colors hover:border-slate-400 hover:bg-slate-50",
+        "aria-label": t("history.more_actions_aria"),
+        "aria-haspopup": "menu",
+        "aria-expanded": isMoreActionsOpen,
+        "aria-controls": isMoreActionsOpen ? "history-more-actions-menu" : void 0
+      },
+      /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5" }, t("history.more_actions"), " ", /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, "aria-hidden": "true" }))
+    ), isMoreActionsOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        tabIndex: -1,
+        "aria-label": t("history.close_more_actions_aria"),
+        className: "rp-dismiss-layer fixed inset-0 z-[80] cursor-default bg-transparent",
+        onClick: () => closeMoreActions(true)
+      }
+    ), /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        ref: moreActionsMenuRef,
+        id: "history-more-actions-menu",
+        role: "menu",
+        "aria-label": t("history.more_actions_aria"),
+        onKeyDown: handleMoreActionsMenuKeyDown,
+        className: "rp-menu-surface absolute right-0 top-full z-[90] mt-1 w-64 max-w-[calc(100vw-1.5rem)] rounded-xl border border-slate-200 bg-white p-1.5 text-slate-700 shadow-2xl shadow-slate-900/15"
+      },
+      !isCanvas && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          role: "menuitem",
+          onClick: () => {
+            closeMoreActions(false);
+            onOpenDeviceRecovery();
+          },
+          className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100",
+          "data-help-key": "history_device_storage"
+        },
+        /* @__PURE__ */ React.createElement(Settings, { size: 15, "aria-hidden": "true" }),
+        /* @__PURE__ */ React.createElement("span", null, "Manage local storage and recovery")
+      ),
+      isTeacherMode && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          role: "menuitem",
+          onClick: () => {
+            closeMoreActions(false);
+            projectFileInputRef?.current?.click();
+          },
+          className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100",
+          "data-help-key": "history_load_project"
+        },
+        /* @__PURE__ */ React.createElement(Upload, { size: 15, "aria-hidden": "true" }),
+        /* @__PURE__ */ React.createElement("span", null, t("history.load_project"))
+      ),
+      /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          role: "menuitem",
+          onClick: () => {
+            closeMoreActions(false);
+            handleToggleIsHistoryMaximized();
+          },
+          className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100",
+          "data-help-key": "history_max_toggle"
+        },
+        isHistoryMaximized ? /* @__PURE__ */ React.createElement(Minimize, { size: 15, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Maximize, { size: 15, "aria-hidden": "true" }),
+        /* @__PURE__ */ React.createElement("span", null, isHistoryMaximized ? t("history.minimize") : t("history.maximize"))
+      ),
+      isTeacherMode && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          role: "menuitem",
+          onClick: () => {
+            closeMoreActions(false);
+            initiateSaveTeacherProject();
+          },
+          disabled: safeHistory.length === 0,
+          className: `flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 ${isSaveActionPulsing ? "ring-2 ring-indigo-200" : ""}`,
+          "data-help-key": "history_save_teacher"
+        },
+        /* @__PURE__ */ React.createElement(Save, { size: 15, "aria-hidden": "true" }),
+        /* @__PURE__ */ React.createElement("span", null, t("history.save_teacher"))
+      ),
+      isTeacherMode && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          role: "menuitem",
+          onClick: () => {
+            closeMoreActions(false);
+            initiateSaveStudentProject();
+          },
+          disabled: safeHistory.length === 0,
+          className: `flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 ${isSaveActionPulsing ? "ring-2 ring-indigo-200" : ""}`,
+          "data-help-key": "history_save_student"
+        },
+        /* @__PURE__ */ React.createElement(Lock, { size: 15, "aria-hidden": "true" }),
+        /* @__PURE__ */ React.createElement("span", null, t("history.save_student"))
+      ),
+      isTeacherMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { role: "separator", className: "my-1 h-px bg-slate-200" }), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          role: "menuitem",
+          onClick: () => {
+            closeMoreActions(false);
+            shareResourcePackToCommunity();
+          },
+          disabled: safeHistory.length === 0,
+          className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50",
+          "data-help-key": "history_share_pack"
+        },
+        /* @__PURE__ */ React.createElement(Share2, { size: 15, "aria-hidden": "true" }),
+        /* @__PURE__ */ React.createElement("span", null, t("history.share_resource_pack"))
+      )),
+      isTeacherMode && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          role: "menuitem",
+          onClick: () => {
+            closeMoreActions(false);
+            handleSetIsProjectSettingsOpenToTrue();
+          },
+          className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100",
+          "data-help-key": "history_settings"
+        },
+        /* @__PURE__ */ React.createElement(Settings, { size: 15, "aria-hidden": "true" }),
+        /* @__PURE__ */ React.createElement("span", null, t("history.settings"))
+      ),
+      (isTeacherMode || safeHistory.length > 0) && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          role: "menuitem",
+          onClick: () => {
+            closeMoreActions(false);
+            handleClearHistory();
+          },
+          className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-red-700 hover:bg-red-50",
+          "data-help-key": "history_clear_button"
+        },
+        /* @__PURE__ */ React.createElement(Trash2, { size: 15, "aria-hidden": "true" }),
+        /* @__PURE__ */ React.createElement("span", null, t("history.clear"))
+      )
+    ))))), isTeacherMode && !isIndependentMode && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-slate-50/90 p-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(FolderOpen, { size: 16, className: "text-slate-500 shrink-0", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        value: activeUnitId,
+        "data-help-key": "history_filter_unit_select",
+        onChange: (e) => setActiveUnitId(e.target.value),
+        className: "min-h-11 min-w-0 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
+        "aria-label": t("common.filter_by_unit_aria")
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "all" }, t("history.filter_all")),
+      /* @__PURE__ */ React.createElement("option", { value: "uncategorized" }, t("history.uncategorized")),
+      units.map((u) => /* @__PURE__ */ React.createElement("option", { key: u.id, value: u.id }, u.name))
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-help-key": "history_create_unit_btn",
+        onClick: handleSetIsUnitModalOpenToTrue,
+        className: "min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-indigo-700 transition-colors motion-reduce:transition-none hover:bg-indigo-50",
+        title: t("history.create_unit_tooltip"),
+        "aria-label": t("history.create_unit_tooltip")
+      },
+      /* @__PURE__ */ React.createElement(FolderPlus, { size: 14, "aria-hidden": "true" })
+    ), activeUnitId !== "all" && activeUnitId !== "uncategorized" && typeof onVisualizeUnit === "function" && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => onVisualizeUnit(activeUnitId),
+        className: "min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-amber-700 transition-colors motion-reduce:transition-none hover:bg-amber-50",
+        title: t("history.visualize_unit_tooltip") || "Open this unit in Learning Web: Unit Path",
+        "aria-label": t("history.visualize_unit_tooltip") || "Open this unit in Learning Web: Unit Path"
+      },
+      /* @__PURE__ */ React.createElement("span", { style: { fontSize: "13px", lineHeight: 1 }, "aria-hidden": "true" }, "\u{1F9ED}")
+    ), activeUnitId !== "all" && activeUnitId !== "uncategorized" && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-help-key": "history_delete_unit_btn",
+        onClick: handleDeleteUnit,
+        className: "min-h-11 min-w-11 grid place-items-center rounded-lg border border-slate-300 bg-white text-red-700 transition-colors motion-reduce:transition-none hover:bg-red-50",
+        title: t("history.delete_unit_tooltip"),
+        "aria-label": t("history.delete_unit_tooltip")
+      },
+      /* @__PURE__ */ React.createElement(Trash2, { size: 14, "aria-hidden": "true" })
+    )), (unitFilteredHistory.length > 0 || isResourceFilterActive) && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm shadow-slate-900/5", role: "search", "aria-label": t("history.find_resources_aria") }, /* @__PURE__ */ React.createElement("div", { className: "relative min-w-[150px] flex-1" }, /* @__PURE__ */ React.createElement(Search, { size: 14, "aria-hidden": "true", className: "pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-600" }), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "search",
+        value: resourceSearch,
+        onChange: (e) => setResourceSearch(e.target.value),
+        onKeyDown: (e) => {
+          if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+          if (e.key === "Escape" && resourceSearch) {
+            e.preventDefault();
+            e.stopPropagation();
+            setResourceSearch("");
+          }
+        },
+        placeholder: t("history.search_resources_placeholder"),
+        "aria-label": t("history.search_resources_aria"),
+        className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white py-2 pl-8 pr-9 text-xs text-slate-800 placeholder:text-slate-600 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+      }
+    ), resourceSearch && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setResourceSearch(""), "aria-label": t("history.clear_resource_search_aria"), className: "absolute right-0 top-0 min-h-11 min-w-11 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900" }, /* @__PURE__ */ React.createElement(X, { size: 14, className: "mx-auto", "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("select", { value: resourceTypeFilter, onChange: (e) => setResourceTypeFilter(e.target.value), "aria-label": t("history.filter_by_type_aria"), className: "min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, t("history.all_types")), displayedResourceTypes.map((type) => /* @__PURE__ */ React.createElement("option", { key: type, value: type }, getResourceTypeLabel(type)))), canShowLessonParts && /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 items-center gap-2 px-1 text-xs font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", "data-history-lesson-part-colors": true, checked: lessonPartColors, onChange: (e) => changeLessonPartColors(e.target.checked), className: "h-4 w-4" }), resourceUiText("history.lesson_part_colors", "Lesson part colors")), isResourceFilterActive && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-indigo-700 hover:bg-indigo-50" }, t("history.clear_filters")), isResourceFilterActive && /* @__PURE__ */ React.createElement("p", { className: "w-full text-xs text-slate-500", role: "status" }, t("history.filtered_status", { visible: filteredHistory.length, total: unitFilteredHistory.length }))), showMoveAll && /* @__PURE__ */ React.createElement("div", { ref: moveAllBarRef, "data-history-move-all": true, className: "flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm shadow-slate-900/5" }, units.length > 0 ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { htmlFor: "history-move-all-target", className: "text-xs font-semibold text-slate-700" }, isResourceFilterActive ? moveUiText("history.move_shown_label", "Move the {count} shown to", { count: filteredHistory.length }) : moveUiText("history.move_all_label", "Move all {count} to", { count: filteredHistory.length })), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        id: "history-move-all-target",
+        value: moveAllTargetId,
+        onChange: (e) => setMoveAllTarget(e.target.value),
+        className: "min-h-11 min-w-[120px] flex-1 rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "" }, resourceUiText("history.move_all_choose", "Choose a unit")),
+      units.map((u) => /* @__PURE__ */ React.createElement("option", { key: u.id, value: u.id }, u.name))
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-history-move-all-submit": true,
+        disabled: !moveAllTargetId,
+        onClick: moveAllShown,
+        className: "min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-600"
+      },
+      resourceUiText("history.move_all_button", "Move")
+    )) : /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, resourceUiText("history.move_all_no_units", "Create a unit folder first, then you can move these resources into it at once."))), (unitFilteredHistory.length > 1 || isOrganizing) && !isSyncMode && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-history-organize": true,
+        "aria-pressed": isOrganizing,
+        onClick: () => {
+          setIsOrganizing((value) => !value);
+          setResourceActionsId(null);
+          closeMoveMenu(false);
+        },
+        className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+      },
+      isOrganizing ? resourceUiText("history.done_organizing", "Done organizing") : resourceUiText("history.organize", "Organize")
+    ), isOrganizing && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs text-slate-600" }, isResourceFilterActive ? t("history.clear_filters_to_reorder") : resourceUiText("history.organize_hint", "Drag a handle or use the move buttons. Keyboard: Alt + Up or Down."))), isUnitModalOpen && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-indigo-200 bg-indigo-50 p-3 animate-in motion-reduce:animate-none slide-in-from-top-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "history-new-unit-input", className: "block text-xs font-bold text-slate-700 mb-1" }, t("history.new_unit_label")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        id: "history-new-unit-input",
+        "aria-label": t("common.enter_new_unit_name"),
+        type: "text",
+        value: newUnitName,
+        "data-help-key": "history_unit_name_input",
+        style: { flexBasis: "12rem", minWidth: 0 },
+        onChange: (e) => setNewUnitName(e.target.value),
+        placeholder: t("history.new_unit_placeholder"),
+        className: "min-h-11 flex-grow rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
+        autoFocus: true,
+        onKeyDown: (e) => {
+          if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+          if (e.key === "Enter") {
+            e.preventDefault();
+            createUnit();
+          } else if (e.key === "Escape") {
+            e.preventDefault();
+            e.stopPropagation();
+            handleSetIsUnitModalOpenToFalse();
+          }
         }
       }
-    }
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "history_save_unit_btn", onClick: createUnit, className: "min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800" }, t("common.save")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "history_cancel_unit_btn", onClick: handleSetIsUnitModalOpenToFalse, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-white" }, t("common.cancel"))), canMoveInBulk && unfiledCount > 0 && /* @__PURE__ */ React.createElement("label", { className: "mt-2 flex min-h-11 cursor-pointer items-center gap-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      type: "checkbox",
-      "data-history-move-unfiled": true,
-      checked: moveUnfiledOnCreate,
-      onChange: (e) => setMoveUnfiledOnCreate(e.target.checked),
-      className: "h-4 w-4 shrink-0 rounded border-slate-400 text-indigo-700 focus:ring-2 focus:ring-indigo-300"
-    }
-  ), /* @__PURE__ */ React.createElement("span", null, unfiledCount === 1 ? resourceUiText("history.move_uncategorized_on_create_one", "Also move the 1 uncategorized resource into this unit") : moveUiText("history.move_uncategorized_on_create", "Also move the {count} uncategorized resources into this unit", { count: unfiledCount }))))), (() => {
-    let stations = [];
-    try {
-      stations = JSON.parse(localStorage.getItem("alloflow_stem_stations") || "[]");
-    } catch (_) {
-    }
-    if (!Array.isArray(stations) || stations.length === 0) return null;
-    return /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5" }, "\u{1F4CC} STEM Stations", /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-emerald-50 px-1.5 py-0.5 text-xs text-emerald-700" }, stations.length))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, stations.map((st) => {
-      const delKey = "stem:" + st.id;
-      const confirming = confirmDeleteStationKey === delKey;
-      return /* @__PURE__ */ React.createElement(
-        "div",
-        {
-          key: st.id,
-          className: "group flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 transition-colors hover:border-emerald-300 hover:bg-emerald-50/60"
-        },
-        /* @__PURE__ */ React.createElement("div", { className: "p-1.5 rounded-md bg-emerald-50 text-emerald-700 shrink-0", "aria-hidden": "true" }, "\u{1F52C}"),
-        /* @__PURE__ */ React.createElement(
-          "button",
-          {
-            type: "button",
-            onClick: () => {
-              setActiveStation(st);
-              setShowStemLab(true);
-              setStemLabTab && setStemLabTab("explore");
-            },
-            className: "min-h-11 min-w-0 flex-grow rounded-lg text-left"
-          },
-          /* @__PURE__ */ React.createElement("span", { className: "block text-sm font-bold text-slate-800 truncate" }, st.name),
-          /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, (st.tools || []).length, " tool", (st.tools || []).length !== 1 ? "s" : "")
-        ),
-        isTeacherMode && /* @__PURE__ */ React.createElement(
-          "button",
-          {
-            type: "button",
-            onClick: () => {
-              if (!confirming) {
-                setConfirmDeleteStationKey(delKey);
-                return;
-              }
-              setConfirmDeleteStationKey("");
-              const updated = stations.filter((s) => s.id !== st.id);
-              try {
-                localStorage.setItem("alloflow_stem_stations", JSON.stringify(updated));
-              } catch (_) {
-              }
-              if (activeStation && activeStation.id === st.id) setActiveStation(null);
-              setStationListTick((n) => n + 1);
-              addToast && addToast(_hpCopy(t, "history.station_removed", "Station removed"));
-            },
-            onBlur: () => {
-              if (confirming) setConfirmDeleteStationKey("");
-            },
-            className: `min-h-11 min-w-11 px-2 inline-flex items-center justify-center rounded-lg text-xs font-bold transition-colors ${confirming ? "bg-red-600 text-white hover:bg-red-700" : "text-red-700 hover:bg-red-50"}`,
-            "aria-label": confirming ? `Confirm delete station ${st.name}` : t("history.delete_station_aria") || "Delete station"
-          },
-          confirming ? "Delete?" : /* @__PURE__ */ React.createElement(X, { size: 12, "aria-hidden": "true" })
-        )
-      );
-    })));
-  })(), (() => {
-    let stations = [];
-    try {
-      stations = JSON.parse(localStorage.getItem("alloflow_sel_stations") || "[]");
-    } catch (_) {
-    }
-    if ((!Array.isArray(stations) || !stations.length) && Array.isArray(window.__alloflowSelStations)) stations = window.__alloflowSelStations;
-    if (!Array.isArray(stations) || stations.length === 0) return null;
-    return /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5" }, "\u{1F4CC} SEL Stations", /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-pink-50 px-1.5 py-0.5 text-xs text-pink-700" }, stations.length))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, stations.map((st) => {
-      const delKey = "sel:" + st.id;
-      const confirming = confirmDeleteStationKey === delKey;
-      return /* @__PURE__ */ React.createElement(
-        "div",
-        {
-          key: st.id,
-          className: "group flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 transition-colors hover:border-pink-300 hover:bg-pink-50/60"
-        },
-        /* @__PURE__ */ React.createElement("div", { className: "p-1.5 rounded-md bg-pink-50 text-pink-700 shrink-0", "aria-hidden": "true" }, "\u{1F496}"),
-        /* @__PURE__ */ React.createElement(
-          "button",
-          {
-            type: "button",
-            onClick: () => {
-              setActiveSelStation(st);
-              setShowSelHub(true);
-              setSelHubTab && setSelHubTab("explore");
-            },
-            className: "min-h-11 min-w-0 flex-grow rounded-lg text-left"
-          },
-          /* @__PURE__ */ React.createElement("span", { className: "block text-sm font-bold text-slate-800 truncate" }, st.name),
-          /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, (st.tools || []).length, " tool", (st.tools || []).length !== 1 ? "s" : "", (st.quests || []).length > 0 ? ` \xB7 ${st.quests.length} quest${st.quests.length !== 1 ? "s" : ""}` : "")
-        ),
-        isTeacherMode && /* @__PURE__ */ React.createElement(
-          "button",
-          {
-            type: "button",
-            onClick: () => {
-              if (!confirming) {
-                setConfirmDeleteStationKey(delKey);
-                return;
-              }
-              setConfirmDeleteStationKey("");
-              const updated = stations.filter((s) => s.id !== st.id);
-              try {
-                localStorage.setItem("alloflow_sel_stations", JSON.stringify(updated));
-              } catch (_) {
-              }
-              if (typeof window !== "undefined" && Array.isArray(window.__alloflowSelStations)) {
-                window.__alloflowSelStations = updated;
-              }
-              if (activeSelStation && activeSelStation.id === st.id) setActiveSelStation(null);
-              setStationListTick((n) => n + 1);
-              addToast && addToast(_hpCopy(t, "history.sel_station_removed", "SEL Station removed"));
-            },
-            onBlur: () => {
-              if (confirming) setConfirmDeleteStationKey("");
-            },
-            className: `min-h-11 min-w-11 px-2 inline-flex items-center justify-center rounded-lg text-xs font-bold transition-colors ${confirming ? "bg-red-600 text-white hover:bg-red-700" : "text-red-700 hover:bg-red-50"}`,
-            "aria-label": confirming ? `Confirm delete SEL Station ${st.name}` : `Delete SEL Station ${st.name}`
-          },
-          confirming ? "Delete?" : /* @__PURE__ */ React.createElement(X, { size: 12, "aria-hidden": "true" })
-        )
-      );
-    })));
-  })(), /* @__PURE__ */ React.createElement(
-    "div",
-    {
-      className: "space-y-3 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10",
-      role: filteredHistory.length > 0 ? "list" : void 0,
-      "aria-label": filteredHistory.length > 0 ? t("sidebar.resource_pack_history") || "Saved resources" : void 0
-    },
-    filteredHistory.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-center text-sm text-slate-500" }, safeHistory.length === 0 ? t("history.empty_general") : unitFilteredHistory.length === 0 ? t("history.empty_unit") : t("history.no_filter_matches"), isResourceFilterActive && unitFilteredHistory.length > 0 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "mx-auto mt-3 block min-h-11 rounded-lg px-3 font-bold text-indigo-700 hover:bg-indigo-50" }, t("history.clear_filters"))),
-    filteredHistory.map((item, idx) => {
-      const itemInstanceId = getHistoryRowInstanceId(item);
-      const persistedItemInstanceId = getPersistedArtifactInstanceId(item);
-      const itemPublicId = getSafePublicArtifactId(item);
-      const itemType = getSafeRowText(getSafeArtifactField(item, "type"), "resource", 100);
-      let rawDefaultItemTitle = "Resource";
+    ), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "history_save_unit_btn", onClick: createUnit, className: "min-h-11 rounded-lg border border-indigo-700 bg-indigo-700 px-3 text-xs font-bold text-white hover:bg-indigo-800" }, t("common.save")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "history_cancel_unit_btn", onClick: handleSetIsUnitModalOpenToFalse, className: "min-h-11 rounded-lg px-3 text-xs font-bold text-slate-600 hover:bg-white" }, t("common.cancel"))), canMoveInBulk && unfiledCount > 0 && /* @__PURE__ */ React.createElement("label", { className: "mt-2 flex min-h-11 cursor-pointer items-center gap-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "checkbox",
+        "data-history-move-unfiled": true,
+        checked: moveUnfiledOnCreate,
+        onChange: (e) => setMoveUnfiledOnCreate(e.target.checked),
+        className: "h-4 w-4 shrink-0 rounded border-slate-400 text-indigo-700 focus:ring-2 focus:ring-indigo-300"
+      }
+    ), /* @__PURE__ */ React.createElement("span", null, unfiledCount === 1 ? resourceUiText("history.move_uncategorized_on_create_one", "Also move the 1 uncategorized resource into this unit") : moveUiText("history.move_uncategorized_on_create", "Also move the {count} uncategorized resources into this unit", { count: unfiledCount }))))),
+    (() => {
+      let stations = [];
       try {
-        rawDefaultItemTitle = getDefaultTitle(itemType, item);
+        stations = JSON.parse(localStorage.getItem("alloflow_stem_stations") || "[]");
       } catch (_) {
       }
-      const defaultItemTitle = getSafeRowText(rawDefaultItemTitle, "Resource", 240);
-      const safeItemTitle = getHistoryDisplayTitle(itemType, getSafeArtifactField(item, "title"), defaultItemTitle);
-      const itemTitle = isTeacherMode && !isIndependentMode ? safeItemTitle : sanitizeString(safeItemTitle);
-      const rawItemMeta = getSafeArtifactField(item, "meta");
-      const itemMeta = getHistoryDisplayMeta(itemType, rawItemMeta);
-      const itemTypeLabel = getResourceTypeLabel(itemType);
-      const itemTextBadge = getInstructionalTextBadge(item);
-      const itemTextBadgeClass = itemTextBadge && itemTextBadge.tone === "blue" ? "border-blue-200 bg-blue-50 text-blue-800" : itemTextBadge && itemTextBadge.tone === "violet" ? "border-violet-200 bg-violet-50 text-violet-800" : itemTextBadge && itemTextBadge.tone === "amber" ? "border-amber-300 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600";
-      const itemSourceVersion = getSafeArtifactField(item, "sourceVersion");
-      const sourceInUse = getSafeArtifactField(sourceRecord, "inUse");
-      const sourceVersionNow = getSafeArtifactField(sourceInUse, "version");
-      const itemCheckedCurrentText = getSafeArtifactField(item, "type") === "analysis" && getSafeArtifactField(getSafeArtifactField(item, "data"), "originalText") === getSafeArtifactField(sourceInUse, "text");
-      const itemOlderSourceLabel = !itemCheckedCurrentText && Number.isSafeInteger(itemSourceVersion) && Number.isSafeInteger(sourceVersionNow) && itemSourceVersion < sourceVersionNow ? (t("history.from_source_version") || "From source version {version}").replace("{version}", String(itemSourceVersion)) : "";
-      const itemDate = getSafeRowDate(getSafeArtifactField(item, "timestamp"));
-      const itemDateLabel = itemDate ? formatHistoryDate(itemDate) : "";
-      const itemDateTime = itemDateLabel ? itemDate.toISOString() : void 0;
-      const storedUnitId = getSafeRowText(getSafeArtifactField(item, "unitId"), "", 160);
-      const itemUnit = getHistoryRowUnit(storedUnitId);
-      const itemUnitId = itemUnit ? storedUnitId : "";
-      const itemUnitName = getSafeRowText(getSafeArtifactField(itemUnit, "name"), "Unit", 160);
-      const itemData = getSafeArtifactField(item, "data");
-      const generatedArtifactData = getSafeArtifactField(generatedContent, "data");
-      const itemFromDA = getSafeArtifactField(item, "fromDA") === true;
-      const rawDaItemIndex = getSafeArtifactField(item, "daItemIndex");
-      const itemDaItemIndex = Number.isSafeInteger(rawDaItemIndex) && rawDaItemIndex >= 0 ? rawDaItemIndex : null;
-      const itemConfigSummary = getSafeRowText(
-        getSafeArtifactField(item, "configSummary"),
-        "",
-        500
-      );
-      const isCurrent = !!generatedContent && (generatedContent === item || generatedArtifactInstanceId && persistedItemInstanceId && generatedArtifactInstanceId === persistedItemInstanceId || !generatedArtifactInstanceId && !persistedItemInstanceId && generatedArtifactData && generatedArtifactData === itemData || !generatedArtifactInstanceId && !persistedItemInstanceId && itemPublicId && publicHistoryIdCounts.get(itemPublicId) === 1 && getSafePublicArtifactId(generatedContent) === itemPublicId);
-      const itemLessonPart = canShowLessonParts ? lessonPartOf(item) : { phase: null, automatic: null, chosen: null };
-      const itemPhase = lessonPartColors ? itemLessonPart.phase : null;
-      const itemPhaseLabel = itemPhase ? lessonPartLabel(itemPhase) : "";
-      const isOpening = item === pendingHistoryResource;
-      const openLabel = t("common.open") || "Open";
-      const currentLabel = t("launch_pad.current_language") || "Current";
-      return /* @__PURE__ */ React.createElement(
-        "div",
-        {
-          key: itemInstanceId,
-          role: "listitem",
-          "data-lesson-phase": itemPhase || void 0,
-          onDragEnter: (e) => canReorderResources && handleDragEnter(e, itemInstanceId),
-          onDragOver: (e) => canReorderResources && e.preventDefault(),
-          onDragEnd: handleDragEnd,
-          className: `group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] ${isCurrent ? "border-indigo-300 border-l-indigo-600 bg-indigo-50/70 text-slate-900 shadow-sm shadow-indigo-900/5" : `border-slate-200 ${itemPhase ? "rp-phase-row" : "border-l-transparent"} bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50/70`} ${isSyncMode ? "cursor-not-allowed opacity-60" : "cursor-default"}`
-        },
-        /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-stretch gap-2 w-full" }, isOrganizing && /* @__PURE__ */ React.createElement(
-          "button",
-          {
-            type: "button",
-            draggable: editingId === null && canReorderResources,
-            onDragStart: (e) => {
-              if (!canReorderResources) {
-                e.preventDefault();
-                return;
-              }
-              handleDragStart(e, itemInstanceId);
-            },
-            onKeyDown: (e) => {
-              if (!e.altKey || !canReorderResources) return;
-              if (e.key === "ArrowUp" && idx > 0) {
-                e.preventDefault();
-                moveItem(e, itemInstanceId, "up", getHistoryRowInstanceId(filteredHistory[idx - 1]));
-              } else if (e.key === "ArrowDown" && idx < filteredHistory.length - 1) {
-                e.preventDefault();
-                moveItem(e, itemInstanceId, "down", getHistoryRowInstanceId(filteredHistory[idx + 1]));
-              }
-            },
-            "aria-keyshortcuts": canReorderResources ? "Alt+ArrowUp Alt+ArrowDown" : void 0,
-            "aria-disabled": !canReorderResources || editingId === itemInstanceId,
-            "aria-label": canReorderResources ? (t("common.reorder_list") || "Reorder") + ": " + itemTitle + ". " + (t("history.position") || "Position") + " " + (idx + 1) + " " + (t("common.of") || "of") + " " + filteredHistory.length + ". " + (t("history.keyboard_reorder") || "Use Alt plus Up or Down Arrow to reorder.") : itemTitle + ". " + t("history.clear_filters_to_reorder"),
-            className: `min-h-11 min-w-11 rounded-lg flex items-center justify-center gap-0.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? "text-indigo-600 hover:bg-indigo-100" : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"} ${editingId === itemInstanceId || !canReorderResources ? "cursor-not-allowed opacity-40" : "cursor-grab active:cursor-grabbing"}`,
-            "data-help-key": "history_item_drag",
-            title: isResourceFilterActive ? t("history.clear_filters_to_reorder") : t("common.drag_to_reorder")
-          },
-          /* @__PURE__ */ React.createElement(GripVertical, { size: 14, "aria-hidden": "true" }),
-          /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold", "aria-hidden": "true" }, idx + 1)
-        ), /* @__PURE__ */ React.createElement("div", { className: `self-center p-2 rounded-lg shrink-0 ${isCurrent ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"}` }, getIconForType(itemType)), editingId === itemInstanceId ? /* @__PURE__ */ React.createElement("div", { className: "flex min-h-11 min-w-0 flex-grow items-center gap-1", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement(
-          "input",
-          {
-            "aria-label": t("common.enter_edit_title"),
-            type: "text",
-            value: editTitle,
-            onChange: (e) => setEditTitle(e.target.value),
-            onKeyDown: (e) => {
-              if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
-              if (e.key === "Enter") {
-                e.preventDefault();
-                finishResourceRename(e, itemInstanceId);
-              } else if (e.key === "Escape") {
-                e.preventDefault();
-                e.stopPropagation();
-                finishResourceRename(e, itemInstanceId, true);
-              }
-            },
-            className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
-            autoFocus: true
-          }
-        ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: (e) => finishResourceRename(e, itemInstanceId), className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-emerald-700 hover:bg-emerald-50", "aria-label": t("common.save") }, /* @__PURE__ */ React.createElement(Save, { size: 14 })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: (e) => finishResourceRename(e, itemInstanceId, true), className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 hover:bg-red-50", "aria-label": t("common.cancel") }, /* @__PURE__ */ React.createElement(X, { size: 14 }))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
-          "button",
-          {
-            type: "button",
-            onClick: (e) => {
-              e.stopPropagation();
-              if (isCurrent || isOpening) return;
-              if (isSyncMode) {
-                addToast(t("session.teacher_control_warning"), "info");
-                return;
-              }
-              handleRestoreView(item);
-            },
-            style: { flexBasis: "10rem" },
-            className: `min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex flex-col items-start gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? "cursor-default bg-indigo-50/80 text-slate-900" : "hover:bg-slate-100 text-slate-800"} aria-disabled:opacity-60`,
-            "aria-label": [
-              isOpening ? t("common.loading") : "",
-              itemTitle,
-              itemTypeLabel,
-              itemPhase ? itemPhaseLabel : "",
-              itemTextBadge ? itemTextBadge.label : "",
-              itemOlderSourceLabel,
-              itemDateLabel,
-              itemUnit ? itemUnitName : "",
-              itemFromDA ? "DA" + (itemDaItemIndex !== null ? ` \xB7 #${itemDaItemIndex + 1}` : "") : "",
-              itemMeta ? isTeacherMode && !isIndependentMode ? itemMeta : sanitizeString(itemMeta) : "",
-              itemType === "word-sounds" && itemConfigSummary ? itemConfigSummary : ""
-            ].filter(Boolean).join(" ") + `. ${isCurrent ? currentLabel : openLabel}` + (itemPhaseLabel ? `. ${resourceUiText("history.lesson_part", "Lesson part")}: ${itemPhaseLabel}` : ""),
-            "aria-current": isCurrent ? "page" : void 0,
-            "aria-busy": isOpening || void 0,
-            "aria-disabled": isSyncMode || isCurrent
-          },
-          /* @__PURE__ */ React.createElement("div", { className: "min-w-0 w-full" }, isOpening && /* @__PURE__ */ React.createElement("span", { role: "status", className: "inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-700" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), t("common.loading")), /* @__PURE__ */ React.createElement("div", { "data-history-resource-title": true, className: "text-sm font-bold leading-snug", style: { overflowWrap: "anywhere" }, title: itemTitle }, itemTitle), " ", /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${isCurrent ? "border-indigo-200 bg-white text-indigo-700" : "border-slate-200 bg-slate-100 text-slate-600"}` }, itemTypeLabel), " ", itemPhase && /* @__PURE__ */ React.createElement("span", { "data-history-lesson-part": true, "data-lesson-phase": itemPhase, className: "rp-phase-chip rounded-full border px-2 py-0.5 font-semibold" }, itemPhaseLabel), itemPhase && " ", itemTextBadge && /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${itemTextBadgeClass}` }, itemTextBadge.label), itemTextBadge && " ", itemOlderSourceLabel && /* @__PURE__ */ React.createElement("span", { "data-history-source-version": true, className: "rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 font-semibold text-amber-900", title: t("history.from_source_version_hint") || "Your source has changed since this was made. Open it to remake it from the current version." }, itemOlderSourceLabel), itemOlderSourceLabel && " ", itemDateLabel && /* @__PURE__ */ React.createElement("time", { dateTime: itemDateTime }, itemDateLabel)), " ", (itemUnit || itemFromDA || itemMeta) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 items-center gap-1 truncate text-xs text-slate-500" }, itemUnit && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-0.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-slate-600" }, /* @__PURE__ */ React.createElement(Folder, { size: 8 }), " ", itemUnitName), itemUnit && " ", itemFromDA && /* @__PURE__ */ React.createElement(
-            "span",
-            {
-              className: "bg-violet-100 text-violet-700 border border-violet-300 px-1 rounded font-bold",
-              title: itemDaItemIndex !== null ? `Auto-generated by Dynamic Assessment for item ${itemDaItemIndex + 1}` : "Auto-generated by Dynamic Assessment"
-            },
-            /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F52C}"),
-            " DA",
-            itemDaItemIndex !== null ? ` \xB7 #${itemDaItemIndex + 1}` : ""
-          ), itemFromDA && itemMeta && " ", itemMeta && /* @__PURE__ */ React.createElement("span", null, isTeacherMode && !isIndependentMode ? itemMeta : sanitizeString(itemMeta))), " ", itemType === "word-sounds" && itemConfigSummary && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex items-center gap-1 truncate text-xs text-slate-500", title: itemConfigSummary }, /* @__PURE__ */ React.createElement("span", { className: "rounded border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-violet-700" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4CB}"), " ", itemConfigSummary))),
-          " ",
-          /* @__PURE__ */ React.createElement(
-            "span",
-            {
-              "aria-hidden": "true",
-              className: `shrink-0 rounded-md px-2 py-1 text-xs font-bold ${isCurrent ? "bg-emerald-100 text-emerald-800" : "border border-slate-200 bg-white text-indigo-700"}`
-            },
-            isCurrent ? currentLabel : openLabel
-          )
-        ), isTeacherMode && /* @__PURE__ */ React.createElement(
-          "button",
-          {
-            type: "button",
-            id: "history-actions-trigger-" + itemInstanceId,
-            "aria-label": resourceUiText("history.resource_actions", "Actions") + ": " + itemTitle,
-            "aria-expanded": resourceActionsId === itemInstanceId || isOrganizing,
-            "aria-controls": "history-actions-" + itemInstanceId,
-            onClick: () => {
-              if (isOrganizing) {
-                setIsOrganizing(false);
-                setResourceActionsId(null);
-              } else setResourceActionsId(resourceActionsId === itemInstanceId ? null : itemInstanceId);
-              closeMoveMenu(false);
-            },
-            className: "min-h-11 self-start rounded-lg px-2 text-xs font-bold text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-          },
-          resourceUiText("history.resource_actions", "Actions"),
-          " ",
-          /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, resourceActionsId === itemInstanceId || isOrganizing ? "\u25B4" : "\u25BE")
-        ))),
-        isTeacherMode && (isOrganizing || resourceActionsId === itemInstanceId) && /* @__PURE__ */ React.createElement(
+      stations = Array.isArray(stations) ? stations.filter((st) => st && typeof st === "object") : [];
+      if (stations.length === 0) return null;
+      return /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5" }, "\u{1F4CC} STEM Stations", /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-emerald-50 px-1.5 py-0.5 text-xs text-emerald-700" }, stations.length))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, stations.map((st) => {
+        const delKey = "stem:" + st.id;
+        const confirming = confirmDeleteStationKey === delKey;
+        const toolList = Array.isArray(st.tools) ? st.tools : [];
+        return /* @__PURE__ */ React.createElement(
           "div",
           {
-            id: "history-actions-" + itemInstanceId,
-            className: "mt-2 flex flex-wrap items-center gap-1 border-t border-slate-200 pt-2",
-            onClick: (e) => e.stopPropagation(),
-            onKeyDown: (event) => {
-              if (event.key === "Escape" && !movingItemId && !(event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229)) {
-                event.preventDefault();
-                event.stopPropagation();
-                setResourceActionsId(null);
-                setIsOrganizing(false);
-                document.getElementById("history-actions-trigger-" + itemInstanceId)?.focus();
-              }
-            }
+            key: st.id,
+            className: "group flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 transition-colors hover:border-emerald-300 hover:bg-emerald-50/60"
           },
+          /* @__PURE__ */ React.createElement("div", { className: "p-1.5 rounded-md bg-emerald-50 text-emerald-700 shrink-0", "aria-hidden": "true" }, "\u{1F52C}"),
           /* @__PURE__ */ React.createElement(
             "button",
             {
               type: "button",
-              "data-help-key": "history_rename_btn",
-              onClick: (event) => handleStartEdit(event, item),
-              className: "min-h-11 rounded-lg px-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50"
+              onClick: () => {
+                setActiveStation && setActiveStation(st);
+                setShowStemLab && setShowStemLab(true);
+                setStemLabTab && setStemLabTab("explore");
+              },
+              className: "min-h-11 min-w-0 flex-grow rounded-lg text-left"
             },
-            t("actions.rename") || "Rename"
+            /* @__PURE__ */ React.createElement("span", { className: "block text-sm font-bold text-slate-800 truncate" }, st.name),
+            /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, toolList.length, " tool", toolList.length !== 1 ? "s" : "")
           ),
-          canChooseLessonPart && /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 items-center gap-1 px-1 text-xs font-semibold text-slate-700" }, resourceUiText("history.lesson_part", "Lesson part"), /* @__PURE__ */ React.createElement(
-            "select",
-            {
-              "data-history-lesson-part-select": true,
-              value: itemLessonPart.chosen || "auto",
-              onChange: (e) => props.onSetLessonPhase(item, e.target.value === "auto" ? null : e.target.value),
-              className: "min-h-11 max-w-full rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-            },
-            /* @__PURE__ */ React.createElement("option", { value: "auto" }, itemLessonPart.automatic ? resourceUiText("history.lesson_part_auto", "Automatic: {part}").replace("{part}", lessonPartLabel(itemLessonPart.automatic)) : resourceUiText("history.lesson_part_auto_none", "Automatic: none")),
-            lessonPartPhases.map((phase) => /* @__PURE__ */ React.createElement("option", { key: phase, value: phase }, lessonPartLabel(phase))),
-            /* @__PURE__ */ React.createElement("option", { value: "none" }, resourceUiText("history.lesson_part_none", "No lesson part"))
-          )),
-          /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1 relative" }, isOrganizing && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+          isTeacherMode && /* @__PURE__ */ React.createElement(
             "button",
             {
               type: "button",
-              "aria-label": `${t("actions.move_up") || "Move up"}: ${itemTitle}`,
-              "data-help-key": "history_move_up_btn",
-              onClick: (e) => moveItem(e, itemInstanceId, "up", getHistoryRowInstanceId(filteredHistory[idx - 1])),
-              disabled: !canReorderResources || idx === 0,
-              className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30",
-              title: t("actions.move_up")
-            },
-            /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 })
-          ), /* @__PURE__ */ React.createElement(
-            "button",
-            {
-              type: "button",
-              "aria-label": `${t("actions.move_down") || "Move down"}: ${itemTitle}`,
-              "data-help-key": "history_move_down_btn",
-              onClick: (e) => moveItem(e, itemInstanceId, "down", getHistoryRowInstanceId(filteredHistory[idx + 1])),
-              disabled: !canReorderResources || idx === filteredHistory.length - 1,
-              className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30",
-              title: t("actions.move_down")
-            },
-            /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
-          )), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
-            "button",
-            {
-              type: "button",
-              "data-help-key": "history_move_to_unit_btn",
-              "aria-label": `${t("history.tooltips.move_to_unit") || "Move to unit"}: ${itemTitle}`,
-              "aria-expanded": movingItemId === itemInstanceId,
-              "aria-haspopup": "menu",
-              id: `history-move-trigger-${itemInstanceId}`,
-              "aria-controls": movingItemId === itemInstanceId ? `history-move-menu-${itemInstanceId}` : void 0,
-              onClick: (event) => movingItemId === itemInstanceId ? closeMoveMenu(true) : openMoveMenu(event, itemInstanceId),
-              onKeyDown: (event) => {
-                if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-                  event.preventDefault();
-                  openMoveMenu(event, itemInstanceId, event.key === "ArrowUp" ? "last" : "first");
+              onClick: () => {
+                if (!confirming) {
+                  setConfirmDeleteStationKey(delKey);
+                  return;
+                }
+                setConfirmDeleteStationKey("");
+                const updated = stations.filter((s) => s.id !== st.id);
+                try {
+                  localStorage.setItem("alloflow_stem_stations", JSON.stringify(updated));
+                } catch (_) {
+                }
+                if (activeStation && activeStation.id === st.id && typeof setActiveStation === "function") setActiveStation(null);
+                setStationListTick((n) => n + 1);
+                addToast && addToast(_hpCopy(t, "history.station_removed", "Station removed"));
+              },
+              onBlur: () => {
+                if (confirming) setConfirmDeleteStationKey("");
+              },
+              onKeyDown: (e) => {
+                if (confirming && e.key === "Escape" && !(e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229)) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setConfirmDeleteStationKey("");
                 }
               },
-              className: `min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 ${itemUnitId ? "text-amber-700" : ""}`,
-              title: t("history.tooltips.move_to_unit")
+              className: `min-h-11 min-w-11 px-2 inline-flex items-center justify-center rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none ${confirming ? "bg-red-600 text-white hover:bg-red-700" : "text-red-700 hover:bg-red-50"}`,
+              "aria-label": confirming ? `Confirm delete station ${st.name}` : t("history.delete_station_aria") || "Delete station"
             },
-            /* @__PURE__ */ React.createElement("span", { className: "px-2 text-xs font-semibold" }, t("history.tooltips.move_to_unit") || "Move to unit")
-          ), movingItemId === itemInstanceId && /* @__PURE__ */ React.createElement(
-            "div",
+            confirming ? "Delete?" : /* @__PURE__ */ React.createElement(X, { size: 12, "aria-hidden": "true" })
+          )
+        );
+      })));
+    })(),
+    (() => {
+      let stations = [];
+      try {
+        stations = JSON.parse(localStorage.getItem("alloflow_sel_stations") || "[]");
+      } catch (_) {
+      }
+      if ((!Array.isArray(stations) || !stations.length) && Array.isArray(window.__alloflowSelStations)) stations = window.__alloflowSelStations;
+      stations = Array.isArray(stations) ? stations.filter((st) => st && typeof st === "object") : [];
+      if (stations.length === 0) return null;
+      return /* @__PURE__ */ React.createElement("div", { className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5" }, "\u{1F4CC} SEL Stations", /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-pink-50 px-1.5 py-0.5 text-xs text-pink-700" }, stations.length))), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5" }, stations.map((st) => {
+        const delKey = "sel:" + st.id;
+        const confirming = confirmDeleteStationKey === delKey;
+        const toolList = Array.isArray(st.tools) ? st.tools : [];
+        const questList = Array.isArray(st.quests) ? st.quests : [];
+        return /* @__PURE__ */ React.createElement(
+          "div",
+          {
+            key: st.id,
+            className: "group flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 transition-colors hover:border-pink-300 hover:bg-pink-50/60"
+          },
+          /* @__PURE__ */ React.createElement("div", { className: "p-1.5 rounded-md bg-pink-50 text-pink-700 shrink-0", "aria-hidden": "true" }, "\u{1F496}"),
+          /* @__PURE__ */ React.createElement(
+            "button",
             {
-              ref: moveMenuRef,
-              id: "history-move-menu-" + itemInstanceId,
-              role: "menu",
-              "aria-labelledby": "history-move-trigger-" + itemInstanceId,
-              onKeyDown: handleMoveMenuKeyDown,
-              style: { position: "fixed", maxWidth: "calc(100vw - 16px)", maxHeight: "calc(100vh - 16px)", overflowY: "auto" },
-              className: "rp-menu-surface z-[200] w-48 rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15"
+              type: "button",
+              onClick: () => {
+                setActiveSelStation && setActiveSelStation(st);
+                setShowSelHub && setShowSelHub(true);
+                setSelHubTab && setSelHubTab("explore");
+              },
+              className: "min-h-11 min-w-0 flex-grow rounded-lg text-left"
             },
-            /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "px-2 py-2 text-xs font-bold uppercase tracking-wider text-slate-500" }, t("history.move_to_label")),
-            /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "flex flex-col gap-0.5 max-h-32 overflow-y-auto custom-scrollbar" }, /* @__PURE__ */ React.createElement(
-              "button",
-              {
-                type: "button",
-                role: "menuitem",
-                tabIndex: -1,
-                onClick: () => selectMoveUnit(itemInstanceId, "uncategorized"),
-                className: `min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 ${!itemUnitId ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
+            /* @__PURE__ */ React.createElement("span", { className: "block text-sm font-bold text-slate-800 truncate" }, st.name),
+            /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, toolList.length, " tool", toolList.length !== 1 ? "s" : "", questList.length > 0 ? ` \xB7 ${questList.length} quest${questList.length !== 1 ? "s" : ""}` : "")
+          ),
+          isTeacherMode && /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              type: "button",
+              onClick: () => {
+                if (!confirming) {
+                  setConfirmDeleteStationKey(delKey);
+                  return;
+                }
+                setConfirmDeleteStationKey("");
+                const updated = stations.filter((s) => s.id !== st.id);
+                try {
+                  localStorage.setItem("alloflow_sel_stations", JSON.stringify(updated));
+                } catch (_) {
+                }
+                if (typeof window !== "undefined" && Array.isArray(window.__alloflowSelStations)) {
+                  window.__alloflowSelStations = updated;
+                }
+                if (activeSelStation && activeSelStation.id === st.id && typeof setActiveSelStation === "function") setActiveSelStation(null);
+                setStationListTick((n) => n + 1);
+                addToast && addToast(_hpCopy(t, "history.sel_station_removed", "SEL Station removed"));
               },
-              t("history.uncategorized")
-            ), units.map((u) => /* @__PURE__ */ React.createElement(
-              "button",
-              {
-                type: "button",
-                role: "menuitem",
-                key: u.id,
-                tabIndex: -1,
-                onClick: () => selectMoveUnit(itemInstanceId, u.id),
-                className: `min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 ${itemUnitId === getSafeRowText(getSafeArtifactField(u, "id"), "", 160) ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
+              onBlur: () => {
+                if (confirming) setConfirmDeleteStationKey("");
               },
-              u.name
-            )), units.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "px-2 py-2 text-xs italic text-slate-500" }, t("history.no_units")))
-          ))),
-          itemType === "word-sounds" && /* @__PURE__ */ React.createElement(
+              onKeyDown: (e) => {
+                if (confirming && e.key === "Escape" && !(e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229)) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setConfirmDeleteStationKey("");
+                }
+              },
+              className: `min-h-11 min-w-11 px-2 inline-flex items-center justify-center rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none ${confirming ? "bg-red-600 text-white hover:bg-red-700" : "text-red-700 hover:bg-red-50"}`,
+              "aria-label": confirming ? `Confirm delete SEL Station ${st.name}` : `Delete SEL Station ${st.name}`
+            },
+            confirming ? "Delete?" : /* @__PURE__ */ React.createElement(X, { size: 12, "aria-hidden": "true" })
+          )
+        );
+      })));
+    })(),
+    /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        className: "space-y-3 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10",
+        role: filteredHistory.length > 0 ? "list" : void 0,
+        "aria-label": filteredHistory.length > 0 ? t("sidebar.resource_pack_history") || "Saved resources" : void 0
+      },
+      filteredHistory.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-center text-sm text-slate-500" }, safeHistory.length === 0 ? t("history.empty_general") : unitFilteredHistory.length === 0 ? t("history.empty_unit") : t("history.no_filter_matches"), isResourceFilterActive && unitFilteredHistory.length > 0 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "mx-auto mt-3 block min-h-11 rounded-lg px-3 font-bold text-indigo-700 hover:bg-indigo-50" }, t("history.clear_filters"))),
+      filteredHistory.map((item, idx) => {
+        const itemInstanceId = getHistoryRowInstanceId(item);
+        const persistedItemInstanceId = getPersistedArtifactInstanceId(item);
+        const itemPublicId = getSafePublicArtifactId(item);
+        const itemType = getSafeRowText(getSafeArtifactField(item, "type"), "resource", 100);
+        let rawDefaultItemTitle = "Resource";
+        try {
+          rawDefaultItemTitle = getDefaultTitle(itemType, item);
+        } catch (_) {
+        }
+        const defaultItemTitle = getSafeRowText(rawDefaultItemTitle, "Resource", 240);
+        const safeItemTitle = getHistoryDisplayTitle(itemType, getSafeArtifactField(item, "title"), defaultItemTitle);
+        const itemTitle = isTeacherMode && !isIndependentMode ? safeItemTitle : safeSanitize(safeItemTitle);
+        const rawItemMeta = getSafeArtifactField(item, "meta");
+        const itemMeta = getHistoryDisplayMeta(itemType, rawItemMeta);
+        const itemTypeLabel = getResourceTypeLabel(itemType);
+        const itemTextBadge = getInstructionalTextBadge(item);
+        const itemTextBadgeClass = itemTextBadge && itemTextBadge.tone === "blue" ? "border-blue-200 bg-blue-50 text-blue-800" : itemTextBadge && itemTextBadge.tone === "violet" ? "border-violet-200 bg-violet-50 text-violet-800" : itemTextBadge && itemTextBadge.tone === "amber" ? "border-amber-300 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600";
+        const itemSourceVersion = getSafeArtifactField(item, "sourceVersion");
+        const sourceInUse = getSafeArtifactField(sourceRecord, "inUse");
+        const sourceVersionNow = getSafeArtifactField(sourceInUse, "version");
+        const itemCheckedCurrentText = getSafeArtifactField(item, "type") === "analysis" && getSafeArtifactField(getSafeArtifactField(item, "data"), "originalText") === getSafeArtifactField(sourceInUse, "text");
+        const itemOlderSourceLabel = !itemCheckedCurrentText && Number.isSafeInteger(itemSourceVersion) && Number.isSafeInteger(sourceVersionNow) && itemSourceVersion < sourceVersionNow ? (t("history.from_source_version") || "From source version {version}").replace("{version}", String(itemSourceVersion)) : "";
+        const itemDate = getSafeRowDate(getSafeArtifactField(item, "timestamp"));
+        const itemDateLabel = itemDate ? formatHistoryDate(itemDate) : "";
+        const itemDateTime = itemDateLabel ? itemDate.toISOString() : void 0;
+        const storedUnitId = getSafeRowText(getSafeArtifactField(item, "unitId"), "", 160);
+        const itemUnit = getHistoryRowUnit(storedUnitId);
+        const itemUnitId = itemUnit ? storedUnitId : "";
+        const itemUnitName = getSafeRowText(getSafeArtifactField(itemUnit, "name"), "Unit", 160);
+        const itemData = getSafeArtifactField(item, "data");
+        const generatedArtifactData = getSafeArtifactField(generatedContent, "data");
+        const itemFromDA = getSafeArtifactField(item, "fromDA") === true;
+        const rawDaItemIndex = getSafeArtifactField(item, "daItemIndex");
+        const itemDaItemIndex = Number.isSafeInteger(rawDaItemIndex) && rawDaItemIndex >= 0 ? rawDaItemIndex : null;
+        const itemConfigSummary = getSafeRowText(
+          getSafeArtifactField(item, "configSummary"),
+          "",
+          500
+        );
+        const isCurrent = !!generatedContent && (generatedContent === item || generatedArtifactInstanceId && persistedItemInstanceId && generatedArtifactInstanceId === persistedItemInstanceId || !generatedArtifactInstanceId && !persistedItemInstanceId && generatedArtifactData && generatedArtifactData === itemData || !generatedArtifactInstanceId && !persistedItemInstanceId && itemPublicId && publicHistoryIdCounts.get(itemPublicId) === 1 && getSafePublicArtifactId(generatedContent) === itemPublicId);
+        const itemLessonPart = canShowLessonParts ? lessonPartOf(item) : { phase: null, automatic: null, chosen: null };
+        const itemPhase = lessonPartColors ? itemLessonPart.phase : null;
+        const itemPhaseLabel = itemPhase ? lessonPartLabel(itemPhase) : "";
+        const isOpening = item === pendingHistoryResource;
+        const openLabel = t("common.open") || "Open";
+        const currentLabel = t("launch_pad.current_language") || "Current";
+        return /* @__PURE__ */ React.createElement(
+          "div",
+          {
+            key: itemInstanceId,
+            role: "listitem",
+            "data-lesson-phase": itemPhase || void 0,
+            onDragEnter: (e) => canReorderResources && handleDragEnter(e, itemInstanceId),
+            onDragOver: (e) => canReorderResources && e.preventDefault(),
+            onDragEnd: handleDragEnd,
+            className: `group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] ${isCurrent ? "border-indigo-300 border-l-indigo-600 bg-indigo-50/70 text-slate-900 shadow-sm shadow-indigo-900/5" : `border-slate-200 ${itemPhase ? "rp-phase-row" : "border-l-transparent"} bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50/70`} ${isSyncMode ? "cursor-not-allowed opacity-60" : "cursor-default"}`
+          },
+          /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-stretch gap-2 w-full" }, isOrganizing && /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              type: "button",
+              draggable: editingId === null && canReorderResources,
+              onDragStart: (e) => {
+                if (!canReorderResources) {
+                  e.preventDefault();
+                  return;
+                }
+                handleDragStart(e, itemInstanceId);
+              },
+              onKeyDown: (e) => {
+                if (!e.altKey || !canReorderResources) return;
+                if (e.key === "ArrowUp" && idx > 0) {
+                  e.preventDefault();
+                  moveItem(e, itemInstanceId, "up", getHistoryRowInstanceId(filteredHistory[idx - 1]));
+                } else if (e.key === "ArrowDown" && idx < filteredHistory.length - 1) {
+                  e.preventDefault();
+                  moveItem(e, itemInstanceId, "down", getHistoryRowInstanceId(filteredHistory[idx + 1]));
+                }
+              },
+              "aria-keyshortcuts": canReorderResources ? "Alt+ArrowUp Alt+ArrowDown" : void 0,
+              "aria-disabled": !canReorderResources || editingId === itemInstanceId,
+              "aria-label": canReorderResources ? (t("common.reorder_list") || "Reorder") + ": " + itemTitle + ". " + (t("history.position") || "Position") + " " + (idx + 1) + " " + (t("common.of") || "of") + " " + filteredHistory.length + ". " + (t("history.keyboard_reorder") || "Use Alt plus Up or Down Arrow to reorder.") : itemTitle + ". " + t("history.clear_filters_to_reorder"),
+              className: `min-h-11 min-w-11 rounded-lg flex items-center justify-center gap-0.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? "text-indigo-600 hover:bg-indigo-100" : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"} ${editingId === itemInstanceId || !canReorderResources ? "cursor-not-allowed opacity-40" : "cursor-grab active:cursor-grabbing"}`,
+              "data-help-key": "history_item_drag",
+              title: isResourceFilterActive ? t("history.clear_filters_to_reorder") : t("common.drag_to_reorder")
+            },
+            /* @__PURE__ */ React.createElement(GripVertical, { size: 14, "aria-hidden": "true" }),
+            /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold", "aria-hidden": "true" }, idx + 1)
+          ), /* @__PURE__ */ React.createElement("div", { className: `self-center p-2 rounded-lg shrink-0 ${isCurrent ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"}` }, getIconForType(itemType)), editingId === itemInstanceId ? /* @__PURE__ */ React.createElement("div", { className: "flex min-h-11 min-w-0 flex-grow items-center gap-1", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement(
+            "input",
+            {
+              "aria-label": t("common.enter_edit_title"),
+              type: "text",
+              value: editTitle,
+              onChange: (e) => setEditTitle(e.target.value),
+              onKeyDown: (e) => {
+                if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  finishResourceRename(e, itemInstanceId);
+                } else if (e.key === "Escape") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  finishResourceRename(e, itemInstanceId, true);
+                }
+              },
+              className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
+              autoFocus: true
+            }
+          ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: (e) => finishResourceRename(e, itemInstanceId), className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-emerald-700 hover:bg-emerald-50", "aria-label": t("common.save") }, /* @__PURE__ */ React.createElement(Save, { size: 14 })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: (e) => finishResourceRename(e, itemInstanceId, true), className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 hover:bg-red-50", "aria-label": t("common.cancel") }, /* @__PURE__ */ React.createElement(X, { size: 14 }))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
             "button",
             {
               type: "button",
               onClick: (e) => {
                 e.stopPropagation();
-                const rtiCsvCell = (val) => {
-                  if (val == null) return "";
-                  let s = String(val);
-                  const guarded = typeof val === "string" && (/^\s*[=+\-@|]/.test(s) || /^[\t\r\n]/.test(s));
-                  if (guarded) s = "'" + s;
-                  return guarded || /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-                };
-                const rawDate = itemDate instanceof Date ? itemDate : new Date(itemDate || Date.now());
-                const validDate = Number.isNaN(rawDate.getTime()) ? /* @__PURE__ */ new Date() : rawDate;
-                const words = getSafeArraySnapshot(itemData, 1e4);
-                const lines = [
-                  "Date,Resource,Word,Activity,TotalWords",
-                  ...words.map((w) => {
-                    const word = getSafeRowText(
-                      getSafeArtifactField(w, "targetWord") || getSafeArtifactField(w, "word") || getSafeArtifactField(w, "displayWord"),
-                      "",
-                      240
-                    );
-                    return `${rtiCsvCell(validDate.toLocaleDateString())},${rtiCsvCell(itemTitle || "Word Sounds")},${rtiCsvCell(word)},,${words.length}`;
-                  })
-                ];
-                if (itemConfigSummary) {
-                  const cleanCfg = String(itemConfigSummary).replace(/[\r\n]+/g, " ").trim();
-                  if (cleanCfg) lines.unshift(rtiCsvCell("# Config: " + cleanCfg));
+                if (isCurrent || isOpening) return;
+                if (isSyncMode) {
+                  addToast && addToast(t("session.teacher_control_warning"), "info");
+                  return;
                 }
-                const csv = lines.join("\r\n");
-                const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `word-sounds-${validDate.toISOString().split("T")[0]}.csv`;
-                document.body.appendChild(a);
-                try {
-                  a.click();
-                } finally {
-                  document.body.removeChild(a);
-                  setTimeout(() => {
-                    try {
-                      URL.revokeObjectURL(url);
-                    } catch (_) {
-                    }
-                  }, 1e3);
-                }
-                addToast && addToast(_hpCopy(t, "history.rti_csv_downloaded", "CSV downloaded for RTI progress monitoring"), "success");
+                handleRestoreView(item);
               },
-              className: `min-h-11 rounded-lg px-2 text-xs font-semibold transition-colors flex items-center gap-1 ${isCurrent ? "text-emerald-800" : "text-emerald-700"} hover:bg-emerald-50`,
-              title: t("common.export_csv_for_rti")
+              style: { flexBasis: "10rem" },
+              className: `min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex flex-col items-start gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? "cursor-default bg-indigo-50/80 text-slate-900" : "hover:bg-slate-100 text-slate-800"} aria-disabled:opacity-60`,
+              "aria-label": [
+                isOpening ? t("common.loading") : "",
+                itemTitle,
+                itemTypeLabel,
+                itemPhase ? itemPhaseLabel : "",
+                itemTextBadge ? itemTextBadge.label : "",
+                itemOlderSourceLabel,
+                itemDateLabel,
+                itemUnit ? itemUnitName : "",
+                itemFromDA ? "DA" + (itemDaItemIndex !== null ? ` \xB7 #${itemDaItemIndex + 1}` : "") : "",
+                itemMeta ? isTeacherMode && !isIndependentMode ? itemMeta : safeSanitize(itemMeta) : "",
+                itemType === "word-sounds" && itemConfigSummary ? itemConfigSummary : ""
+              ].filter(Boolean).join(" ") + `. ${isCurrent ? currentLabel : openLabel}` + (itemPhaseLabel ? `. ${resourceUiText("history.lesson_part", "Lesson part")}: ${itemPhaseLabel}` : ""),
+              "aria-current": isCurrent ? "page" : void 0,
+              "aria-busy": isOpening || void 0,
+              "aria-disabled": isSyncMode || isCurrent
             },
-            /* @__PURE__ */ React.createElement(Download, { size: 12 }),
-            " CSV"
-          ),
-          /* @__PURE__ */ React.createElement(
+            /* @__PURE__ */ React.createElement("div", { className: "min-w-0 w-full" }, isOpening && /* @__PURE__ */ React.createElement("span", { role: "status", className: "inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-700" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), t("common.loading")), /* @__PURE__ */ React.createElement("div", { "data-history-resource-title": true, className: "text-sm font-bold leading-snug", style: { overflowWrap: "anywhere" }, title: itemTitle }, itemTitle), " ", /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${isCurrent ? "border-indigo-200 bg-white text-indigo-700" : "border-slate-200 bg-slate-100 text-slate-600"}` }, itemTypeLabel), " ", itemPhase && /* @__PURE__ */ React.createElement("span", { "data-history-lesson-part": true, "data-lesson-phase": itemPhase, className: "rp-phase-chip rounded-full border px-2 py-0.5 font-semibold" }, itemPhaseLabel), itemPhase && " ", itemTextBadge && /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${itemTextBadgeClass}` }, itemTextBadge.label), itemTextBadge && " ", itemOlderSourceLabel && /* @__PURE__ */ React.createElement("span", { "data-history-source-version": true, className: "rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 font-semibold text-amber-900", title: t("history.from_source_version_hint") || "Your source has changed since this was made. Open it to remake it from the current version." }, itemOlderSourceLabel), itemOlderSourceLabel && " ", itemDateLabel && /* @__PURE__ */ React.createElement("time", { dateTime: itemDateTime }, itemDateLabel)), " ", (itemUnit || itemFromDA || itemMeta) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 items-center gap-1 truncate text-xs text-slate-500" }, itemUnit && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-0.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-slate-600" }, /* @__PURE__ */ React.createElement(Folder, { size: 8 }), " ", itemUnitName), itemUnit && " ", itemFromDA && /* @__PURE__ */ React.createElement(
+              "span",
+              {
+                className: "bg-violet-100 text-violet-700 border border-violet-300 px-1 rounded font-bold",
+                title: itemDaItemIndex !== null ? `Auto-generated by Dynamic Assessment for item ${itemDaItemIndex + 1}` : "Auto-generated by Dynamic Assessment"
+              },
+              /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F52C}"),
+              " DA",
+              itemDaItemIndex !== null ? ` \xB7 #${itemDaItemIndex + 1}` : ""
+            ), itemFromDA && itemMeta && " ", itemMeta && /* @__PURE__ */ React.createElement("span", null, isTeacherMode && !isIndependentMode ? itemMeta : safeSanitize(itemMeta))), " ", itemType === "word-sounds" && itemConfigSummary && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex items-center gap-1 truncate text-xs text-slate-500", title: itemConfigSummary }, /* @__PURE__ */ React.createElement("span", { className: "rounded border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-violet-700" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4CB}"), " ", itemConfigSummary))),
+            " ",
+            /* @__PURE__ */ React.createElement(
+              "span",
+              {
+                "aria-hidden": "true",
+                className: `shrink-0 rounded-md px-2 py-1 text-xs font-bold ${isCurrent ? "bg-emerald-100 text-emerald-800" : "border border-slate-200 bg-white text-indigo-700"}`
+              },
+              isCurrent ? currentLabel : openLabel
+            )
+          ), isTeacherMode && /* @__PURE__ */ React.createElement(
             "button",
             {
               type: "button",
-              onClick: (e) => handleDeleteHistoryItem(e, itemPublicId, item),
-              className: "min-h-11 rounded-lg px-2 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 flex items-center gap-1",
-              title: t("history.tooltips.remove_item"),
-              "data-help-key": "resource_delete_button"
+              id: "history-actions-trigger-" + itemInstanceId,
+              "aria-label": resourceUiText("history.resource_actions", "Actions") + ": " + itemTitle,
+              "aria-expanded": resourceActionsId === itemInstanceId || isOrganizing,
+              "aria-controls": "history-actions-" + itemInstanceId,
+              onClick: () => {
+                if (isOrganizing) {
+                  setIsOrganizing(false);
+                  setResourceActionsId(null);
+                } else setResourceActionsId(resourceActionsId === itemInstanceId ? null : itemInstanceId);
+                closeMoveMenu(false);
+              },
+              className: "min-h-11 self-start rounded-lg px-2 text-xs font-bold text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             },
-            /* @__PURE__ */ React.createElement(Trash2, { size: 12 }),
+            resourceUiText("history.resource_actions", "Actions"),
             " ",
-            t("actions.remove")
+            /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, resourceActionsId === itemInstanceId || isOrganizing ? "\u25B4" : "\u25BE")
+          ))),
+          isTeacherMode && (isOrganizing || resourceActionsId === itemInstanceId) && /* @__PURE__ */ React.createElement(
+            "div",
+            {
+              id: "history-actions-" + itemInstanceId,
+              className: "mt-2 flex flex-wrap items-center gap-1 border-t border-slate-200 pt-2",
+              onClick: (e) => e.stopPropagation(),
+              onKeyDown: (event) => {
+                if (event.key === "Escape" && !movingItemId && !(event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229)) {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setResourceActionsId(null);
+                  setIsOrganizing(false);
+                  document.getElementById("history-actions-trigger-" + itemInstanceId)?.focus();
+                }
+              }
+            },
+            /* @__PURE__ */ React.createElement(
+              "button",
+              {
+                type: "button",
+                "data-help-key": "history_rename_btn",
+                onClick: (event) => handleStartEdit(event, item),
+                className: "min-h-11 rounded-lg px-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50"
+              },
+              t("actions.rename") || "Rename"
+            ),
+            canChooseLessonPart && /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 items-center gap-1 px-1 text-xs font-semibold text-slate-700" }, resourceUiText("history.lesson_part", "Lesson part"), /* @__PURE__ */ React.createElement(
+              "select",
+              {
+                "data-history-lesson-part-select": true,
+                value: itemLessonPart.chosen || "auto",
+                onChange: (e) => props.onSetLessonPhase(item, e.target.value === "auto" ? null : e.target.value),
+                className: "min-h-11 max-w-full rounded-lg border border-slate-300 bg-white px-2 text-xs text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              },
+              /* @__PURE__ */ React.createElement("option", { value: "auto" }, itemLessonPart.automatic ? resourceUiText("history.lesson_part_auto", "Automatic: {part}").replace("{part}", lessonPartLabel(itemLessonPart.automatic)) : resourceUiText("history.lesson_part_auto_none", "Automatic: none")),
+              lessonPartPhases.map((phase) => /* @__PURE__ */ React.createElement("option", { key: phase, value: phase }, lessonPartLabel(phase))),
+              /* @__PURE__ */ React.createElement("option", { value: "none" }, resourceUiText("history.lesson_part_none", "No lesson part"))
+            )),
+            /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1 relative" }, isOrganizing && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+              "button",
+              {
+                type: "button",
+                "aria-label": `${t("actions.move_up") || "Move up"}: ${itemTitle}`,
+                "data-help-key": "history_move_up_btn",
+                onClick: (e) => moveItem(e, itemInstanceId, "up", getHistoryRowInstanceId(filteredHistory[idx - 1])),
+                disabled: !canReorderResources || idx === 0,
+                className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30",
+                title: t("actions.move_up")
+              },
+              /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 })
+            ), /* @__PURE__ */ React.createElement(
+              "button",
+              {
+                type: "button",
+                "aria-label": `${t("actions.move_down") || "Move down"}: ${itemTitle}`,
+                "data-help-key": "history_move_down_btn",
+                onClick: (e) => moveItem(e, itemInstanceId, "down", getHistoryRowInstanceId(filteredHistory[idx + 1])),
+                disabled: !canReorderResources || idx === filteredHistory.length - 1,
+                className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30",
+                title: t("actions.move_down")
+              },
+              /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
+            )), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
+              "button",
+              {
+                type: "button",
+                "data-help-key": "history_move_to_unit_btn",
+                "aria-label": `${t("history.tooltips.move_to_unit") || "Move to unit"}: ${itemTitle}`,
+                "aria-expanded": movingItemId === itemInstanceId,
+                "aria-haspopup": "menu",
+                id: `history-move-trigger-${itemInstanceId}`,
+                "aria-controls": movingItemId === itemInstanceId ? `history-move-menu-${itemInstanceId}` : void 0,
+                onClick: (event) => movingItemId === itemInstanceId ? closeMoveMenu(true) : openMoveMenu(event, itemInstanceId),
+                onKeyDown: (event) => {
+                  if (event.ctrlKey || event.altKey || event.metaKey) return;
+                  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                    event.preventDefault();
+                    openMoveMenu(event, itemInstanceId, event.key === "ArrowUp" ? "last" : "first");
+                  }
+                },
+                className: `min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 ${itemUnitId ? "text-amber-700" : ""}`,
+                title: t("history.tooltips.move_to_unit")
+              },
+              /* @__PURE__ */ React.createElement("span", { className: "px-2 text-xs font-semibold" }, t("history.tooltips.move_to_unit") || "Move to unit")
+            ), movingItemId === itemInstanceId && /* @__PURE__ */ React.createElement(
+              "div",
+              {
+                ref: moveMenuRef,
+                id: "history-move-menu-" + itemInstanceId,
+                role: "menu",
+                "aria-labelledby": "history-move-trigger-" + itemInstanceId,
+                onKeyDown: handleMoveMenuKeyDown,
+                style: { position: "fixed", maxWidth: "calc(100vw - 16px)", maxHeight: "calc(100vh - 16px)", overflowY: "auto" },
+                className: "rp-menu-surface z-[200] w-48 rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15"
+              },
+              /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "px-2 py-2 text-xs font-bold uppercase tracking-wider text-slate-500" }, t("history.move_to_label")),
+              /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "flex flex-col gap-0.5 max-h-32 overflow-y-auto custom-scrollbar" }, /* @__PURE__ */ React.createElement(
+                "button",
+                {
+                  type: "button",
+                  role: "menuitem",
+                  tabIndex: -1,
+                  onClick: () => selectMoveUnit(itemInstanceId, "uncategorized"),
+                  className: `min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 ${!itemUnitId ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
+                },
+                t("history.uncategorized")
+              ), units.map((u) => /* @__PURE__ */ React.createElement(
+                "button",
+                {
+                  type: "button",
+                  role: "menuitem",
+                  key: u.id,
+                  tabIndex: -1,
+                  onClick: () => selectMoveUnit(itemInstanceId, u.id),
+                  className: `min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 ${itemUnitId === getSafeRowText(getSafeArtifactField(u, "id"), "", 160) ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
+                },
+                u.name
+              )), units.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "px-2 py-2 text-xs italic text-slate-500" }, t("history.no_units")))
+            ))),
+            itemType === "word-sounds" && /* @__PURE__ */ React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: (e) => {
+                  e.stopPropagation();
+                  const rtiCsvCell = (val) => {
+                    if (val == null) return "";
+                    let s = String(val);
+                    const guarded = typeof val === "string" && (/^\s*[=+\-@|]/.test(s) || /^[\t\r\n]/.test(s));
+                    if (guarded) s = "'" + s;
+                    return guarded || /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+                  };
+                  const rawDate = itemDate instanceof Date ? itemDate : new Date(itemDate || Date.now());
+                  const validDate = Number.isNaN(rawDate.getTime()) ? /* @__PURE__ */ new Date() : rawDate;
+                  const words = getSafeArraySnapshot(itemData, 1e4);
+                  const lines = [
+                    "Date,Resource,Word,Activity,TotalWords",
+                    ...words.map((w) => {
+                      const word = getSafeRowText(
+                        getSafeArtifactField(w, "targetWord") || getSafeArtifactField(w, "word") || getSafeArtifactField(w, "displayWord"),
+                        "",
+                        240
+                      );
+                      return `${rtiCsvCell(validDate.toLocaleDateString())},${rtiCsvCell(itemTitle || "Word Sounds")},${rtiCsvCell(word)},,${words.length}`;
+                    })
+                  ];
+                  if (itemConfigSummary) {
+                    const cleanCfg = String(itemConfigSummary).replace(/[\r\n]+/g, " ").trim();
+                    if (cleanCfg) lines.unshift(rtiCsvCell("# Config: " + cleanCfg));
+                  }
+                  const csv = lines.join("\r\n");
+                  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `word-sounds-${validDate.toISOString().split("T")[0]}.csv`;
+                  document.body.appendChild(a);
+                  try {
+                    a.click();
+                  } finally {
+                    document.body.removeChild(a);
+                    setTimeout(() => {
+                      try {
+                        URL.revokeObjectURL(url);
+                      } catch (_) {
+                      }
+                    }, 1e3);
+                  }
+                  addToast && addToast(_hpCopy(t, "history.rti_csv_downloaded", "CSV downloaded for RTI progress monitoring"), "success");
+                },
+                className: `min-h-11 rounded-lg px-2 text-xs font-semibold transition-colors flex items-center gap-1 ${isCurrent ? "text-emerald-800" : "text-emerald-700"} hover:bg-emerald-50`,
+                title: t("common.export_csv_for_rti")
+              },
+              /* @__PURE__ */ React.createElement(Download, { size: 12 }),
+              " CSV"
+            ),
+            /* @__PURE__ */ React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: (e) => handleDeleteHistoryItem(e, itemPublicId, item),
+                className: "min-h-11 rounded-lg px-2 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 flex items-center gap-1",
+                title: t("history.tooltips.remove_item"),
+                "data-help-key": "resource_delete_button"
+              },
+              /* @__PURE__ */ React.createElement(Trash2, { size: 12 }),
+              " ",
+              t("actions.remove")
+            )
           )
-        )
-      );
-    })
-  ));
+        );
+      })
+    )
+  );
 }
 
   window.AlloModules = window.AlloModules || {};

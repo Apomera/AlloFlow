@@ -215,7 +215,11 @@ const _cerOwn = (obj, key) => !!obj && Object.prototype.hasOwnProperty.call(obj,
 const _cerAiUnavailable = (fn) => {
   if (typeof fn !== 'function' || fn._alloQrBlocked) return true;
   const win = typeof globalThis !== 'undefined' ? globalThis.window : undefined;
-  if (win && (win.__alloAiSecretsLocked === true || win.__alloStudentAiDisabled === true)) return true;
+  if (win) {
+    if (win.__alloAiSecretsLocked === true || win.__alloStudentAiDisabled === true || win._alloQrBlocked === true) return true;
+    const qr = win.__alloQrStudentMode;
+    if (qr === true || (qr && typeof qr === 'object' && qr.active === true && qr.allowAi === false)) return true;
+  }
   try { if (win && typeof win.__alloAiUsable === 'function' && !win.__alloAiUsable('text', fn)) return true; } catch (_) { return true; }
   return false;
 };

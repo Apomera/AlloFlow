@@ -414,7 +414,7 @@
     // learner (2026-11-13): a student's code name, put in last, exactly as withCodeName adds it to a finished file.
     if (o.learner) html = withCodeName(html, o.learner);
     var block = /<script type="application\/json" id="packet-manifest">([\s\S]*?)<\/script>/.exec(html);
-    return { html: html, manifest: block ? JSON.parse(block[1]) : null, sha256: loader.sha256(html).hex, lesson: lesson };
+    return { html: html, manifest: block ? JSON.parse(block[1], function (k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }) : null, sha256: loader.sha256(html).hex, lesson: lesson };
   }
 
   // A student's code name, as a file may carry it: the rule of word_sounds_packet_builder.js codeName (letters of any

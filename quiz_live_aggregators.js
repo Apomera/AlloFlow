@@ -21,9 +21,32 @@
  */
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.QuizLiveAggregators) {
     console.log('[CDN] QuizLiveAggregators already loaded, skipping');
     return;
+  }
+
+  function _hasOwn(obj, key) {
+    return !!obj && Object.prototype.hasOwnProperty.call(obj, key);
+  }
+
+  function _isPlainMap(obj) {
+    return !!obj && typeof obj === 'object' && !Array.isArray(obj);
+  }
+
+  function _safeRosterDisplayName(rosterObj, uid) {
+    var rEntry = (_isPlainMap(rosterObj) && _hasOwn(rosterObj, uid) && rosterObj[uid] && typeof rosterObj[uid] === 'object') ? rosterObj[uid] : null;
+    if (rEntry) {
+      if (typeof rEntry.displayName === 'string' && rEntry.displayName) return rEntry.displayName;
+      if (typeof rEntry.name === 'string' && rEntry.name) return rEntry.name;
+      if (typeof rEntry.nickname === 'string' && rEntry.nickname) return rEntry.nickname;
+    }
+    return 'Student ' + String(uid == null ? '' : uid).slice(0, 4);
+  }
+
+  function _optionLabel(idx) {
+    return Number.isInteger(idx) && idx >= 0 && idx < 26 ? String.fromCharCode(65 + idx) : String((Number(idx) || 0) + 1);
   }
 
   // ─── Helper: normalize a concept label into a stable identifier ───────
@@ -47,9 +70,7 @@
     var s = String(label).trim().toLowerCase();
     if (!s) return '';
     s = s.replace(/^["'`(\[]+|["'`)\]]+$/g, '');
-    while (/^(the |a |an )/.test(s)) {
-      s = s.replace(/^(the |a |an )/, '');
-    }
+    s = s.replace(/^(?:(?:the|a|an) )+/, '');
     s = s.replace(/\s+/g, ' ');
     s = s.replace(/[.,;:!?]+$/, '');
     return s.trim();
@@ -71,7 +92,7 @@
   function isAnswerKeyDisputed(question) {
     if (!question || !['mcq', 'multiple-choice', 'multiple-choice-question', 'single-select', 'true-false', 'tf'].includes(String(question.itemType || question.type || 'mcq').toLowerCase().replace(/_/g, '-'))) return false;
     var review = question.keyCheck;
-    var key = question.correctAnswer != null ? String(question.correctAnswer) : Number.isInteger(question.correctIndex) && Array.isArray(question.options) ? String(question.options[question.correctIndex]) : '';
+    var key = question.correctAnswer != null ? String(question.correctAnswer) : Number.isInteger(question.correctIndex) && Array.isArray(question.options) && question.correctIndex >= 0 && question.correctIndex < question.options.length ? String(question.options[question.correctIndex]) : '';
     if (review && typeof review === 'object') {
       if (review.checkedKey != null && String(review.checkedKey) !== key) return false;
       if (review.checkedShape != null && String(review.checkedShape) !== keyCheckShape(question)) return false;
@@ -174,8 +195,11 @@
   function canonicalOrderAnswer(question, answer) {
     var order = answer && Array.isArray(answer.orderAnswer) ? answer.orderAnswer : null;
     var presented = sequencePresentedPermutation(question);
-    if (!order || answer.orderBasis !== 'displayed' || !presented) return order;
-    return order.map(function (value) { return Number.isInteger(value) && value >= 0 && value < presented.length ? presented[value] : value; });
+    if (!order) return order;
+    var maxLen = Math.max(100, presented ? presented.length + 1 : 100);
+    var bounded = order.length > maxLen ? order.slice(0, maxLen) : order;
+    if (answer.orderBasis !== 'displayed' || !presented) return bounded;
+    return bounded.map(function (value) { return Number.isInteger(value) && value >= 0 && value < presented.length ? presented[value] : value; });
   }
 
   function legacyAssessmentItemSignature(question) {
@@ -195,23 +219,26 @@
     var context = { type: String(q.type || q.itemType || 'mcq') };
     var textFields = ['question', 'contextSentence', 'prompt', 'instructions', 'evidencePrompt', 'unit', 'imageUrl'];
     var arrayFields = ['options', 'answerOptions', 'evidenceOptions', 'items', 'presentedOrder', 'pairs', 'candidatePartners', 'principleOptions', 'optionImageUrls', 'answerOptionImageUrls', 'answerImageUrls', 'evidenceOptionImageUrls', 'evidenceImageUrls', 'itemImageUrls', 'candidatePartnerImageUrls', 'principleOptionImageUrls', 'principleOptionsImageUrls'];
-    function publicValue(value) {
-      if (Array.isArray(value)) return value.map(publicValue);
+    function publicValue(value, depth) {
+      var d = depth || 0;
+      if (d > 8) return null;
+      if (Array.isArray(value)) return value.slice(0, 500).map(function (item) { return publicValue(item, d + 1); });
       if (value && typeof value === 'object') {
         var result = {};
         ['id', 'text', 'label', 'left', 'right', 'imageUrl', 'leftImageUrl', 'rightImageUrl'].forEach(function (key) {
-          if (value[key] != null) result[key] = publicValue(value[key]);
+          if (value[key] != null) result[key] = publicValue(value[key], d + 1);
         });
         return result;
       }
+      if (typeof value === 'bigint') return String(value);
       return value == null ? null : value;
     }
     textFields.forEach(function (field) { context[field] = String(q[field] == null ? '' : q[field]); });
-    arrayFields.forEach(function (field) { context[field] = Array.isArray(q[field]) ? q[field].map(publicValue) : []; });
+    arrayFields.forEach(function (field) { context[field] = Array.isArray(q[field]) ? q[field].slice(0, 500).map(function (item) { return publicValue(item, 0); }) : []; });
     // Add authored task/scoring conditions only when present, so legacy items
     // retain their signatures while edits to new conditions invalidate drafts.
     ['fillBlankPolicy', 'sequenceMode', 'requireReasoning', 'explanationPrompt', 'studentCriteria'].forEach(function (field) {
-      if (q[field] != null) context[field] = publicValue(q[field]);
+      if (q[field] != null) context[field] = publicValue(q[field], 0);
     });
     if (q.numericSettings && typeof q.numericSettings === 'object') context.numericSettings = {
       allowEquivalentUnits: q.numericSettings.allowEquivalentUnits === true,
@@ -273,13 +300,18 @@
     ['correctAnswer', 'correctIndex', 'correctAnswers', 'correctEvidence', 'correctValue', 'tolerance', 'acceptableUnits', 'expectedFill', 'acceptableAlternatives', 'intentionallyWrongIndex', 'orderingPrinciple', 'wrongPairIndex', 'correctPartnerForWrong', 'correctOrder', 'correctSequence', 'expectedAnswer', 'referenceAnswer', 'modelAnswer', 'sampleAnswer', 'rubric', 'fillBlankPolicy', 'numericSettings', 'sequenceMode', 'requireReasoning', 'explanationPrompt', 'studentCriteria'].forEach(function (key) {
       if (question[key] != null) keys[key] = question[key];
     });
-    function stable(value) {
-      if (Array.isArray(value)) return value.map(stable);
+    function stable(value, depth) {
+      var d = depth || 0;
+      if (d > 16) return null;
+      if (Array.isArray(value)) return value.slice(0, 500).map(function (item) { return stable(item, d + 1); });
       if (value && typeof value === 'object') {
-        var result = {};
-        Object.keys(value).sort().forEach(function (key) { if (value[key] !== undefined) result[key] = stable(value[key]); });
+        var result = Object.create(null);
+        Object.keys(value).sort().forEach(function (key) {
+          if (value[key] !== undefined) result[key] = stable(value[key], d + 1);
+        });
         return result;
       }
+      if (typeof value === 'bigint') return String(value);
       return value == null ? null : value;
     }
     try {
@@ -287,7 +319,7 @@
         question: legacyAssessmentItemSignature(question), responseQuestion: envelope.questionSignature || legacyAssessmentItemSignature(question),
         activity: envelope.assessmentActivityId || '', attempt: envelope.assessmentAttemptId || '', attemptStartedAt: envelope.assessmentAttemptStartedAt || 0,
         answer: reviewed, keys: keys, keyUnderReview: isAnswerKeyDisputed(question)
-      }));
+      }, 0));
       var first = 2166136261, second = 5381;
       for (var i = 0; i < serialized.length; i++) { first = Math.imul(first ^ serialized.charCodeAt(i), 16777619); second = Math.imul(second, 33) ^ serialized.charCodeAt(i); }
       return 'assess-response-v1:' + (first >>> 0).toString(36) + ':' + (second >>> 0).toString(36);
@@ -374,8 +406,11 @@
     }
     if (!Array.isArray(source)) return [];
     var options = question && Array.isArray(question.options) ? question.options : [];
+    var boundedSource = source.length > Math.max(200, Math.min(1000, options.length * 2))
+      ? source.slice(0, Math.max(200, Math.min(1000, options.length * 2)))
+      : source;
     var out = [];
-    source.forEach(function (value) {
+    boundedSource.forEach(function (value) {
       var idx = Number.isInteger(value) ? value : options.findIndex(function (option) {
         return String(option == null ? '' : option).trim().toLowerCase() === String(value == null ? '' : value).trim().toLowerCase();
       });
@@ -397,9 +432,9 @@
 
   function parseFlexibleNumericInput(raw) {
     if (typeof raw === 'number') {
-      return Number.isFinite(raw) ? { value: raw, unit: '' } : { value: null, unit: '' };
+      return Number.isFinite(raw) ? { value: raw === 0 ? 0 : raw, unit: '' } : { value: null, unit: '' };
     }
-    if (typeof raw !== 'string') return { value: null, unit: '' };
+    if (typeof raw !== 'string' || raw.length > 4096) return { value: null, unit: '' };
     var normalized = raw.replace(/[\u2212\u2013\u2014]/g, '-').replace(/\u2044/g, '/').trim();
     if (!normalized) return { value: null, unit: '' };
     function stripThousands(s) {
@@ -432,7 +467,7 @@
       }
       var sign = mixed[1].trim().charAt(0) === '-' ? -1 : 1;
       var combined = sign * (Math.abs(wholeNum) + (fracNum / fracDen));
-      return Number.isFinite(combined) ? { value: combined, unit: uMixed } : { value: null, unit: '' };
+      return Number.isFinite(combined) ? { value: combined === 0 ? 0 : combined, unit: uMixed } : { value: null, unit: '' };
     }
     // Simple fraction e.g. "-3/4" or "1/2 cup"
     var frac = normalized.match(/^([+-]?(?:\d{1,3}(?:,\d{3})+|\d+))\s*\/\s*([+-]?\d+)(.*)$/);
@@ -443,7 +478,7 @@
       var d = Number(frac[2]);
       if (!Number.isFinite(n) || !Number.isFinite(d) || d === 0) return { value: null, unit: '' };
       var q = n / d;
-      return Number.isFinite(q) ? { value: q, unit: uFrac } : { value: null, unit: '' };
+      return Number.isFinite(q) ? { value: q === 0 ? 0 : q, unit: uFrac } : { value: null, unit: '' };
     }
     // Plain number with optional commas, decimals, scientific notation, and optional unit
     var plain = normalized.match(/^([+-]?(?:\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:[.,]\d+)?|\.\d+)(?:[eE][+-]?\d+)?)(.*)$/);
@@ -451,7 +486,7 @@
       var uPlain = validTrailingUnit(plain[2]);
       if (uPlain === null) return { value: null, unit: '' };
       var num = Number(stripThousands(plain[1]));
-      return Number.isFinite(num) ? { value: num, unit: uPlain } : { value: null, unit: '' };
+      return Number.isFinite(num) ? { value: num === 0 ? 0 : num, unit: uPlain } : { value: null, unit: '' };
     }
     return { value: null, unit: '' };
   }
@@ -499,11 +534,7 @@
     var s = String(value == null ? '' : value);
     if (typeof s.normalize === 'function') s = s.normalize('NFKC');
     s = s.toLowerCase().replace(/\s+/g, ' ').trim();
-    var previous;
-    do {
-      previous = s;
-      s = s.replace(/^["'`‘’“”«»¿¡([{]+/, '').replace(/["'`‘’“”«»)\]}.,;:!?…]+$/, '').trim();
-    } while (s !== previous);
+    s = s.replace(/^[\s"'`‘’“”«»¿¡([{]+/, '').replace(/[\s"'`‘’“”«»)\]}.,;:!?…]+$/, '').trim();
     return s;
   }
 
@@ -564,24 +595,34 @@
     if (!parsed || typeof parsed.value !== 'number' || !Number.isFinite(parsed.value)) return { status: 'invalid', evaluable: false, score: 0 };
     if (!hasNumericAnswerKey(q)) return { status: 'invalid', evaluable: false, invalidKey: true, score: 0 };
     var settings = q.numericSettings && typeof q.numericSettings === 'object' ? q.numericSettings : {};
-    var expected = parseFlexibleNumericInput(q.correctValue).value, tolerance = Math.max(0, Number(q.tolerance) || 0);
+    var expected = parseFlexibleNumericInput(q.correctValue).value;
+    var rawTolerance = q.tolerance;
+    var parsedTolerance = (rawTolerance !== null && rawTolerance !== undefined && rawTolerance !== '' && typeof rawTolerance !== 'boolean') ? Number(rawTolerance) : 0;
+    var tolerance = Number.isFinite(parsedTolerance) && parsedTolerance > 0 ? parsedTolerance : 0;
     if (expected == null) return { status: 'invalid', evaluable: false, invalidKey: true, score: 0 };
     var expectedUnits = [q.unit || ''].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : []).map(normalizePresentationUnit).filter(Boolean);
     var submittedUnit = normalizePresentationUnit(parsed.unit);
     var comparableValue = parsed.value;
     var unitCorrect = expectedUnits.length === 0 || expectedUnits.indexOf(submittedUnit) >= 0;
     var converted = false;
+    var conversionOverflow = false;
     if (settings.allowEquivalentUnits === true && expectedUnits.length && submittedUnit) {
       var source = numericUnitDefinition(submittedUnit), target = numericUnitDefinition(q.unit);
       // Convert even when the alternate unit is also an accepted spelling;
       // numeric equivalence is always measured in the authored key's unit.
       if (source && target && source.dimension === target.dimension) {
-        comparableValue = parsed.value * source.factor / target.factor;
+        var convertedVal = parsed.value * source.factor / target.factor;
         unitCorrect = true;
         converted = source.factor !== target.factor;
+        if (Number.isFinite(convertedVal)) {
+          comparableValue = convertedVal;
+        } else {
+          conversionOverflow = true;
+          comparableValue = null;
+        }
       }
     }
-    var valueCorrect = Math.abs(comparableValue - expected) <= tolerance + 1e-9;
+    var valueCorrect = !conversionOverflow && typeof comparableValue === 'number' && Number.isFinite(comparableValue) && Math.abs(comparableValue - expected) <= tolerance + 1e-9;
     var configuredWeight = settings.valueWeight == null ? q.valueWeight : settings.valueWeight;
     var valueWeight = typeof configuredWeight === 'number' && Number.isFinite(configuredWeight) ? Math.max(0, Math.min(1, configuredWeight)) : 0.5;
     if (!expectedUnits.length) valueWeight = 1;
@@ -640,7 +681,7 @@
     var expected = explicit ? explicit.slice(0, 100) : items.map(function (_, idx) { return idx; });
     if (expected.length < 2 || (items.length > 0 && expected.length !== items.length)) return [];
     if (expected.some(function (value) {
-      return value == null || (typeof value !== 'string' && typeof value !== 'number');
+      return value == null || (typeof value !== 'string' && typeof value !== 'number') || (typeof value === 'number' && !Number.isFinite(value));
     })) return [];
     var unique = new Set(expected.map(function (value) { return typeof value + ':' + String(value); }));
     return unique.size === expected.length ? expected : [];
@@ -660,15 +701,28 @@
       && new Set(presentedOrder).size === n;
     if (!valid || presentedOrder.every(function (value, index) { return value === index; })) return { orderIsCorrect: true, misplaced: [] };
     var misplaced = [];
-    for (var skip = 0; skip < n; skip++) {
-      var previous = -1;
-      var sorted = true;
-      for (var j = 0; j < n && sorted; j++) {
-        if (j === skip) continue;
-        if (presentedOrder[j] < previous) sorted = false;
-        previous = presentedOrder[j];
+    // Removing a single element can sort a permutation only if there is exactly
+    // one adjacent descent (d, d+1), and the candidate skip index must be d or d+1.
+    var descents = [];
+    for (var di = 0; di < n - 1; di++) {
+      if (presentedOrder[di] > presentedOrder[di + 1]) {
+        descents.push(di);
+        if (descents.length > 1) break;
       }
-      if (sorted) misplaced.push(skip);
+    }
+    if (descents.length === 1) {
+      var candidates = [descents[0], descents[0] + 1];
+      for (var ci = 0; ci < candidates.length; ci++) {
+        var skip = candidates[ci];
+        var previous = -1;
+        var sorted = true;
+        for (var j = 0; j < n && sorted; j++) {
+          if (j === skip) continue;
+          if (presentedOrder[j] < previous) sorted = false;
+          previous = presentedOrder[j];
+        }
+        if (sorted) misplaced.push(skip);
+      }
     }
     if (!misplaced.length) {
       misplaced = Number.isInteger(intentionallyWrongIndex) && intentionallyWrongIndex >= 0 && intentionallyWrongIndex < n
@@ -888,7 +942,7 @@
     if (type === 'relation-mismatch') {
       if (!presentationQuestionIsGameScorable(question)) return result('submitted', false, null);
       if (reasoningMissing) return result('submitted', false, null, { needsReasoning: true });
-      if (!Number.isInteger(answerObject.clickedPairIdx) || !normalizeComparable(answerObject.partnerAnswer)) {
+      if (!Number.isInteger(answerObject.clickedPairIdx) || answerObject.clickedPairIdx < 0 || answerObject.clickedPairIdx >= question.pairs.length || !normalizeComparable(answerObject.partnerAnswer)) {
         return result('submitted', false, null);
       }
       var pairCorrect = answerObject.clickedPairIdx === question.wrongPairIndex;
@@ -980,14 +1034,14 @@
     if (type === 'mcq') {
       var correctIdx = resolveCorrectIdx(question);
       return correctIdx >= 0
-        ? String.fromCharCode(65 + correctIdx) + '. ' + String(options[correctIdx])
+        ? _optionLabel(correctIdx) + '. ' + String(options[correctIdx])
         : '';
     }
     if (type === 'multi-select') {
       var correctIndices = resolvePresentationCorrectIndices(question);
       return correctIndices.length
         ? correctIndices.map(function (idx) {
-            return String.fromCharCode(65 + idx) + '. ' + String(options[idx]);
+            return _optionLabel(idx) + '. ' + String(options[idx]);
           }).join(' · ')
         : '';
     }
@@ -1033,7 +1087,19 @@
       return String(pair.left || 'Mismatched item') + ' → ' + String(question.correctPartnerForWrong);
     }
     if (type === 'answer-evidence' && presentationQuestionIsGameScorable(question)) {
-      return 'Answer: ' + String(question.correctAnswer) + ' · Evidence: ' + String(question.correctEvidence);
+      var aeAnswers = Array.isArray(question.answerOptions) ? question.answerOptions : [];
+      var aeEvidence = Array.isArray(question.evidenceOptions) ? question.evidenceOptions : [];
+      var rawAeAnswer = question.correctAnswer != null && String(question.correctAnswer).trim() !== ''
+        ? question.correctAnswer : question.expectedAnswer;
+      var rawAeEvidence = question.correctEvidence != null && String(question.correctEvidence).trim() !== ''
+        ? question.correctEvidence : question.expectedEvidence;
+      if (typeof rawAeAnswer === 'number' && Number.isInteger(rawAeAnswer) && rawAeAnswer >= 0 && rawAeAnswer < aeAnswers.length) {
+        rawAeAnswer = aeAnswers[rawAeAnswer];
+      }
+      if (typeof rawAeEvidence === 'number' && Number.isInteger(rawAeEvidence) && rawAeEvidence >= 0 && rawAeEvidence < aeEvidence.length) {
+        rawAeEvidence = aeEvidence[rawAeEvidence];
+      }
+      return 'Answer: ' + String(rawAeAnswer) + ' · Evidence: ' + String(rawAeEvidence);
     }
     var reference = question.referenceAnswer || question.modelAnswer || question.expectedAnswer;
     if ((type === 'short-answer' || type === 'self-explanation') && String(reference || '').trim()) {
@@ -1095,7 +1161,7 @@
       rows = options.map(function (option, idx) {
         var count = distributionEntries.filter(function (entry) { return extractOptionIndex(question, entry.response) === idx; }).length;
         return {
-          label: String.fromCharCode(65 + idx),
+          label: _optionLabel(idx),
           text: String(option == null ? '' : option),
           value: count,
           percent: distributionEntries.length > 0 ? Math.round(count / distributionEntries.length * 100) : 0,
@@ -1110,7 +1176,7 @@
         var count = distributionEntries.filter(function (entry) { return extractSelectedIndices(question, entry.response).indexOf(idx) !== -1; }).length;
         var correct = multiCorrectIndices.indexOf(idx) >= 0;
         return {
-          label: String.fromCharCode(65 + idx),
+          label: _optionLabel(idx),
           text: String(option == null ? '' : option),
           value: count,
           percent: distributionEntries.length > 0 ? Math.round(count / distributionEntries.length * 100) : 0,
@@ -1126,21 +1192,21 @@
         if (!text) return;
         var display = text.slice(0, 160);
         var key = display.toLowerCase();
-        if (!textBuckets[key]) textBuckets[key] = { text: display, count: 0 };
+        if (!textBuckets[key]) textBuckets[key] = { text: display, count: 0, isCorrect: false };
         textBuckets[key].count++;
+        if (entry.grade && entry.grade.isCorrect === true) textBuckets[key].isCorrect = true;
       });
       rows = Object.keys(textBuckets).map(function (key) { return textBuckets[key]; })
         .sort(function (a, b) { return b.count - a.count || a.text.localeCompare(b.text); })
         .slice(0, 12)
         .map(function (bucket, idx) {
-          var matchingEntry = distributionEntries.find(function (entry) { return extractTextAnswer(entry.response).slice(0, 160).toLowerCase() === bucket.text.toLowerCase(); });
           return {
             label: String(idx + 1),
             text: bucket.text,
             value: bucket.count,
             percent: distributionEntries.length > 0 ? Math.round(bucket.count / distributionEntries.length * 100) : 0,
             imageUrl: null,
-            isCorrect: !!(matchingEntry && matchingEntry.grade.isCorrect === true)
+            isCorrect: bucket.isCorrect === true
           };
         });
     } else if (type === 'numeric-response') {
@@ -1156,9 +1222,10 @@
           ? 'Unparseable response'
           : String(value) + (submittedUnit ? ' ' + submittedUnit : unitRequired ? ' (no unit)' : '');
         if (!numericBuckets[key]) {
-          numericBuckets[key] = { text: label, count: 0, value: value, normalizedUnit: normalizedUnit };
+          numericBuckets[key] = { text: label, count: 0, value: value, normalizedUnit: normalizedUnit, isCorrect: false };
         }
         numericBuckets[key].count++;
+        if (entry.grade && entry.grade.isCorrect === true) numericBuckets[key].isCorrect = true;
       });
       rows = Object.keys(numericBuckets).map(function (key) { return numericBuckets[key]; })
         .sort(function (a, b) {
@@ -1168,17 +1235,13 @@
         })
         .slice(0, 12)
         .map(function (bucket, idx) {
-          var sample = distributionEntries.find(function (entry) {
-            return extractNumericAnswer(entry.response) === bucket.value
-              && normalizePresentationUnit(extractNumericUnit(entry.response)) === bucket.normalizedUnit;
-          });
           return {
             label: String(idx + 1),
             text: bucket.text,
             value: bucket.count,
             percent: distributionEntries.length > 0 ? Math.round(bucket.count / distributionEntries.length * 100) : 0,
             imageUrl: null,
-            isCorrect: !!(sample && sample.grade.isCorrect === true)
+            isCorrect: bucket.isCorrect === true
           };
         });
     } else {
@@ -1253,12 +1316,16 @@
     }
 
     if (itemType === 'fill-blank' && question) {
-      return Object.assign({}, gradePresentationResponse(response, question, scoringPolicy), { rawText: response.answer.text || '' });
+      var fillRaw = response.answer && typeof response.answer === 'object' && typeof response.answer.text === 'string'
+        ? response.answer.text : extractTextAnswer(response);
+      return Object.assign({}, gradePresentationResponse(response, question, scoringPolicy), { rawText: fillRaw });
     }
 
     if (itemType === 'short-answer' || itemType === 'self-explanation') {
       // Teacher uses judgment — we just surface the raw text
-      return { status: 'submitted', rawText: response.answer.text || '' };
+      var saRaw = response.answer && typeof response.answer === 'object' && typeof response.answer.text === 'string'
+        ? response.answer.text : extractTextAnswer(response);
+      return { status: 'submitted', rawText: saRaw };
     }
 
     if (itemType === 'sequence-sense' || itemType === 'relation-mismatch' || itemType === 'multi-select'
@@ -1306,7 +1373,8 @@
       hasResponse = hasAnswer || hasEvidence; answered = hasAnswer && hasEvidence;
     } else if (type === 'sequence-sense') {
       var verify = a.verifyAnswer === 'yes' || a.verifyAnswer === 'no';
-      var changedOrder = Array.isArray(a.orderAnswer) && JSON.stringify(canonicalOrderAnswer(question, a)) !== JSON.stringify(question && question.presentedOrder || []);
+      var canonOrd = canonicalOrderAnswer(question, a);
+      var changedOrder = Array.isArray(canonOrd) && !samePrimitiveArray(canonOrd, Array.isArray(question && question.presentedOrder) ? question.presentedOrder : []);
       hasResponse = verify || index(a.clickedIdx) || text(a.principleAnswer) || changedOrder;
       answered = verify && text(a.principleAnswer) && (a.verifyAnswer === 'yes' || index(a.clickedIdx));
       if (question && question.sequenceMode === 'arrange-explain') {
@@ -1355,19 +1423,19 @@
 
   function collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides, scoringPolicy) {
     var out = [];
-    if (!allResponses || typeof allResponses !== 'object') return out;
+    if (!_isPlainMap(allResponses)) return out;
     if (!Array.isArray(questions)) return out;
+    var hasAiCache = _isPlainMap(aiGradedCache);
+    var hasOverrides = _isPlainMap(teacherOverrides);
     Object.keys(allResponses).forEach(function (uid) {
       var perStudent = allResponses[uid];
       if (!perStudent || typeof perStudent !== 'object') return;
       var completion = perStudent[questions.length];
       var submitted = assessmentCompletionIsCurrent(perStudent, completion);
-      var indices = submitted ? questions.map(function (_, index) { return String(index); }) : Object.keys(perStudent);
-      indices.forEach(function (qIdxKey) {
-        if (!/^(?:0|[1-9]\d*)$/.test(String(qIdxKey))) return;
-        var qIdx = parseInt(qIdxKey, 10);
-        if (isNaN(qIdx) || qIdx < 0 || qIdx >= questions.length) return;
-        var response = perStudent[qIdxKey];
+      for (var qIdx = 0; qIdx < questions.length; qIdx++) {
+        var qIdxKey = String(qIdx);
+        if (!submitted && !_hasOwn(perStudent, qIdxKey)) continue;
+        var response = _hasOwn(perStudent, qIdxKey) ? perStudent[qIdxKey] : undefined;
         var question = questions[qIdx];
         var grade = gradeResponseForItem(response, question, scoringPolicy);
         var responseState = assessmentResponseState(response, question);
@@ -1376,10 +1444,11 @@
         // AI grading override: only swap when the AI returned a graded status
         // and the deterministic status is 'submitted' (i.e., we asked for help
         // because we couldn't grade locally). Don't overwrite IDK or no-response.
-        if (aiGradedCache && responseState.answered && grade.status === 'submitted' && !grade.unscored && !grade.keyUnderReview && !grade.versionMismatch && !grade.versionUnverified
+        if (hasAiCache && responseState.answered && grade.status === 'submitted' && !grade.unscored && !grade.keyUnderReview && !grade.versionMismatch && !grade.versionUnverified
             && (!scoringPolicy || scoringPolicy.writtenResponseMode !== 'teacher-review')) {
-          var cached = aiGradedCache[uid + ':' + qIdx];
-          if (cached && cached.status && cached.status !== 'error' && cached.status !== 'unclear') {
+          var aiKey = uid + ':' + qIdx;
+          var cached = _hasOwn(aiGradedCache, aiKey) ? aiGradedCache[aiKey] : null;
+          if (cached && typeof cached === 'object' && (cached.status === 'correct' || cached.status === 'incorrect' || cached.status === 'partially-correct')) {
             grade = {
               status: cached.status,
               scoreFraction: cached.status === 'partially-correct'
@@ -1401,8 +1470,9 @@
         // when the override status is one of the recognized values; an empty
         // or 'undo' status clears any override (handled at write time, not
         // here — a missing entry means no override).
-        if (!grade.unscored && !grade.versionMismatch && !grade.versionUnverified && teacherOverrides && teacherOverrides[uid] && teacherOverrides[uid][qIdxKey]) {
-          var ov = teacherOverrides[uid][qIdxKey];
+        var studentOverrides = (hasOverrides && _hasOwn(teacherOverrides, uid) && _isPlainMap(teacherOverrides[uid])) ? teacherOverrides[uid] : null;
+        if (!grade.unscored && !grade.versionMismatch && !grade.versionUnverified && studentOverrides && _hasOwn(studentOverrides, qIdxKey) && studentOverrides[qIdxKey] && typeof studentOverrides[qIdxKey] === 'object') {
+          var ov = studentOverrides[qIdxKey];
           var overrideMatches = ov && ov.responseFingerprint && ov.responseFingerprint === assessmentResponseFingerprint(question, response);
           if (ov && ov.status && !overrideMatches) grade.teacherOverrideExpired = true;
           if (overrideMatches && (ov.status === 'correct' || ov.status === 'incorrect' || ov.status === 'partially-correct' || ov.status === 'idk')) {
@@ -1425,7 +1495,7 @@
           grade = Object.assign({}, grade, { omitted: true, scoreFraction: 0, earnedPoints: 0, maxPoints: 1 });
         }
         out.push({ uid: uid, questionIdx: qIdx, response: response, question: question, grade: grade, responseState: responseState });
-      });
+      }
     });
     return out;
   }
@@ -1441,7 +1511,7 @@
       if (saved) return saved;
       if (!Number.isInteger(index) || index < 0) return '';
       if (compatible && Array.isArray(options)) return label(options[index]);
-      return 'Choice ' + String.fromCharCode(65 + index) + ' (original text unavailable)';
+      return 'Choice ' + _optionLabel(index) + ' (original text unavailable)';
     }
     if (a.idk === true) return '🤔 I don\'t know';
     var reasonText = String(a.explanation || a.reasoning || '').trim();
@@ -1452,7 +1522,7 @@
     if (type === 'mcq' || type === 'opinion-mcq' || type === 'likert') {
       var index = extractOptionIndex(question, response);
       var choiceText = originalChoice(index, a.optionText, question && question.options);
-      var mcqBase = choiceText ? (index >= 0 && (compatible || a.optionText) ? String.fromCharCode(65 + index) + '. ' : '') + choiceText : '';
+      var mcqBase = choiceText ? (index >= 0 && (compatible || a.optionText) ? _optionLabel(index) + '. ' : '') + choiceText : '';
       return withReasoning(mcqBase);
     }
     if (type === 'multi-select') {
@@ -1491,18 +1561,17 @@
   // ─── Aggregator: gradebook (exit-ticket) ──────────────────────────────
   // Per-student row: { uid, displayName, totalAnswered, totalCorrect, byQuestion }
   function aggregateGradebook(quizState, generatedContent, roster, aiGradedCache, teacherOverrides) {
-    var allResponses = (quizState && quizState.allResponses) || {};
-    var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
+    var allResponses = (quizState && _isPlainMap(quizState.allResponses)) ? quizState.allResponses : {};
+    var questions = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions)) ? generatedContent.data.questions : [];
     var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides, generatedContent && generatedContent.data && generatedContent.data.scoringPolicy);
-    var rosterObj = roster && typeof roster === 'object' ? roster : {};
+    var rosterObj = _isPlainMap(roster) ? roster : {};
     // Build per-student aggregation
     var studentMap = Object.create(null);
     graded.forEach(function (g) {
       if (!studentMap[g.uid]) {
-        var rEntry = (Object.prototype.hasOwnProperty.call(rosterObj, g.uid) && rosterObj[g.uid]) || {};
         studentMap[g.uid] = {
           uid: g.uid,
-          displayName: rEntry.displayName || rEntry.name || rEntry.nickname || ('Student ' + g.uid.slice(0, 4)),
+          displayName: _safeRosterDisplayName(rosterObj, g.uid),
           totalAnswered: 0,
           totalCorrect: 0,
           totalEvaluated: 0,
@@ -1538,10 +1607,9 @@
     // Include roster students who haven't responded yet
     Array.from(new Set(Object.keys(rosterObj).concat(Object.keys(allResponses).filter(function (uid) { return allResponses[uid] && allResponses[uid].__assessmentAttempt; })))).forEach(function (uid) {
       if (!studentMap[uid]) {
-        var rEntry = rosterObj[uid] || {};
         studentMap[uid] = {
           uid: uid,
-          displayName: rEntry.displayName || rEntry.name || rEntry.nickname || ('Student ' + uid.slice(0, 4)),
+          displayName: _safeRosterDisplayName(rosterObj, uid),
           totalAnswered: 0,
           totalCorrect: 0,
           totalEvaluated: 0,
@@ -1558,7 +1626,7 @@
     var studentRows = Object.values(studentMap).sort(function (a, b) { return a.displayName.localeCompare(b.displayName); });
     studentRows.forEach(function (row) {
       row.scorePercent = row.totalPossible > 0 ? Math.round(row.totalEarned / row.totalPossible * 100) : null;
-      var responseMap = allResponses[row.uid] || {};
+      var responseMap = (_hasOwn(allResponses, row.uid) && _isPlainMap(allResponses[row.uid])) ? allResponses[row.uid] : {};
       var completion = responseMap[questions.length];
       var attempt = responseMap.__assessmentAttempt;
       row.attemptStatus = assessmentCompletionIsCurrent(responseMap, completion) ? 'submitted' : attempt && attempt.attemptId || row.totalAnswered > 0 ? 'in-progress' : 'not-started';
@@ -1575,16 +1643,18 @@
   // Per-question card: { questionIdx, questionText, totalAnswered, correctCount,
   //   percentCorrect, idkCount, conceptText (best-effort label) }
   function aggregatePreLessonGap(quizState, generatedContent, roster, aiGradedCache, teacherOverrides) {
-    var allResponses = (quizState && quizState.allResponses) || {};
-    var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
+    var allResponses = (quizState && _isPlainMap(quizState.allResponses)) ? quizState.allResponses : {};
+    var questions = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions)) ? generatedContent.data.questions : [];
     var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides, generatedContent && generatedContent.data && generatedContent.data.scoringPolicy);
-    var rosterCount = roster ? Object.keys(roster).length : 0;
+    var rosterObj = _isPlainMap(roster) ? roster : null;
+    var rosterCount = rosterObj ? Object.keys(rosterObj).length : 0;
     var participantIds = new Set(graded.filter(function (g) { return g.responseState.hasResponse; }).map(function (g) { return g.uid; }));
-    var expectedIds = new Set((roster ? Object.keys(roster) : []).concat(Array.from(participantIds)));
+    var expectedIds = new Set((rosterObj ? Object.keys(rosterObj) : []).concat(Array.from(participantIds)));
     var expectedCount = expectedIds.size;
-    var perQuestion = questions.map(function (q, idx) {
+    var perQuestion = questions.map(function (rawQ, idx) {
+      var q = rawQ && typeof rawQ === 'object' ? rawQ : {};
       // Best-effort concept label: first 80 chars of question text or expectedFill
-      var conceptText = q.question || q.expectedFill || ('Question ' + (idx + 1));
+      var conceptText = String(q.question || q.expectedFill || ('Question ' + (idx + 1)));
       if (conceptText.length > 80) conceptText = conceptText.slice(0, 77) + '...';
       return {
         questionIdx: idx,
@@ -1669,8 +1739,8 @@
   function aggregateReflections(quizState, generatedContent, roster) {
     var reflections = (generatedContent && generatedContent.data && generatedContent.data.reflections);
     if (!Array.isArray(reflections) || reflections.length === 0) return null;
-    var allResponses = (quizState && quizState.allResponses) || {};
-    var rosterObj = roster && typeof roster === 'object' ? roster : {};
+    var allResponses = (quizState && _isPlainMap(quizState.allResponses)) ? quizState.allResponses : {};
+    var rosterObj = _isPlainMap(roster) ? roster : {};
     // Build per-reflection-index buckets
     var buckets = reflections.map(function (ref, idx) {
       var promptText = (typeof ref === 'string') ? ref : (ref && ref.text) || ('Reflection ' + (idx + 1));
@@ -1682,22 +1752,23 @@
       if (!perStudent || typeof perStudent !== 'object') return;
       var completion = null;
       var completionTime = -Infinity;
-      Object.keys(perStudent).forEach(function (key) {
+      Object.keys(perStudent).slice(0, 500).forEach(function (key) {
         var candidate = perStudent[key];
         if (!assessmentCompletionIsCurrent(perStudent, candidate)) return;
-        var timestamp = Number(candidate.timestamp || candidate.answer && candidate.answer.submittedAt) || 0;
+        var rawTs = Number(candidate.timestamp || candidate.answer && candidate.answer.submittedAt);
+        var timestamp = Number.isFinite(rawTs) ? rawTs : 0;
         if (timestamp >= completionTime) { completion = candidate; completionTime = timestamp; }
       });
       var finalMap = completion && completion.answer && completion.answer.reflections;
       var hasFinalMap = finalMap && typeof finalMap === 'object' && !Array.isArray(finalMap);
       buckets.forEach(function (bucket, rIdx) {
-        var resp = hasFinalMap ? completion : perStudent['r' + rIdx];
+        var resp = hasFinalMap ? completion : (_hasOwn(perStudent, 'r' + rIdx) ? perStudent['r' + rIdx] : null);
         var attempt = perStudent.__assessmentAttempt;
         if (!hasFinalMap && attempt && attempt.attemptId && resp && resp.assessmentAttemptId
             && (resp.assessmentAttemptId !== attempt.attemptId || Number(resp.assessmentAttemptStartedAt || 0) !== Number(attempt.startedAt || 0))) return;
         var text = '';
         if (hasFinalMap) {
-          var entry = finalMap[rIdx];
+          var entry = _hasOwn(finalMap, rIdx) ? finalMap[rIdx] : null;
           entry = entry && typeof entry === 'object' ? entry : {};
           if (entry.submitted === true && typeof entry.submittedText === 'string' && entry.submittedText.trim()) text = entry.submittedText;
           else if (typeof entry.draft === 'string') text = entry.draft;
@@ -1706,12 +1777,12 @@
           text = (resp && resp.answer && typeof resp.answer.text === 'string') ? resp.answer.text : '';
         }
         if (!text) return;
-        var rEntry = rosterObj[uid] || {};
+        var respTs = resp && Number.isFinite(Number(resp.timestamp)) ? Number(resp.timestamp) : 0;
         buckets[rIdx].responses.push({
           uid: uid,
-          displayName: rEntry.displayName || rEntry.name || rEntry.nickname || ('Student ' + uid.slice(0, 4)),
+          displayName: _safeRosterDisplayName(rosterObj, uid),
           text: text,
-          timestamp: hasFinalMap ? completionTime : (resp && resp.timestamp) || 0,
+          timestamp: hasFinalMap ? (Number.isFinite(completionTime) ? completionTime : 0) : respTs,
         });
         anyResponses = true;
       });
@@ -1731,12 +1802,13 @@
   // ─── Aggregator: live heatmap (formative; review fallback) ────────────
   // Per-question bar: { questionIdx, questionText, correct, incorrect, idk, total, percentCorrect }
   function aggregateLiveHeatmap(quizState, generatedContent, roster, aiGradedCache, teacherOverrides) {
-    var allResponses = (quizState && quizState.allResponses) || {};
-    var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
+    var allResponses = (quizState && _isPlainMap(quizState.allResponses)) ? quizState.allResponses : {};
+    var questions = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions)) ? generatedContent.data.questions : [];
     var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides, generatedContent && generatedContent.data && generatedContent.data.scoringPolicy);
-    var rosterCount = roster ? Object.keys(roster).length : 0;
-    var rosterObj = roster && typeof roster === 'object' ? roster : {};
-    var bars = questions.map(function (q, idx) {
+    var rosterObj = _isPlainMap(roster) ? roster : {};
+    var rosterCount = Object.keys(rosterObj).length;
+    var bars = questions.map(function (rawQ, idx) {
+      var q = rawQ && typeof rawQ === 'object' ? rawQ : {};
       return {
         questionIdx: idx,
         questionText: q.question || '',
@@ -1767,8 +1839,7 @@
       bar.totalEarned += g.grade.earnedPoints;
       bar.totalPossible += g.grade.maxPoints;
       // Per-student entry for drill-down
-      var rEntry = rosterObj[g.uid] || {};
-      var displayName = rEntry.displayName || rEntry.name || rEntry.nickname || ('Student ' + g.uid.slice(0, 4));
+      var displayName = _safeRosterDisplayName(rosterObj, g.uid);
       var qText = (g.question && (g.question.question || g.question.contextSentence || g.question.expectedFill)) || '';
       var qType = (g.response && g.response.itemType) || (g.question && (g.question.itemType || g.question.type)) || 'mcq';
       var answerSummary = g.responseState.hasResponse ? assessmentAnswerSummary(g.question, g.response) : '';
@@ -1816,14 +1887,14 @@
   // empty (e.g., dashboard hasn't fetched yet, or this is the very first
   // session capturing concept data).
   function aggregateRetentionCurve(quizState, generatedContent, roster, conceptMasteryByUid, aiGradedCache, teacherOverrides) {
-    if (!conceptMasteryByUid || typeof conceptMasteryByUid !== 'object' || Object.keys(conceptMasteryByUid).length === 0) {
+    if (!_isPlainMap(conceptMasteryByUid) || Object.keys(conceptMasteryByUid).length === 0) {
       // No mastery data yet — return live-heatmap shape so dashboard renders
       // something useful instead of empty state. Dashboard recognizes this
       // via aggResult.variant.
       return aggregateLiveHeatmap(quizState, generatedContent, roster, aiGradedCache, teacherOverrides);
     }
-    var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
-    var rosterObj = roster && typeof roster === 'object' ? roster : {};
+    var questions = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions)) ? generatedContent.data.questions : [];
+    var rosterObj = _isPlainMap(roster) ? roster : {};
     var nowMs = Date.now();
     var DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -1840,12 +1911,11 @@
       // Per-student mastery lookup
       var students = [];
       Object.keys(rosterObj).forEach(function (uid) {
-        var rEntry = (Object.prototype.hasOwnProperty.call(rosterObj, uid) && rosterObj[uid]) || {};
-        var displayName = rEntry.displayName || rEntry.name || rEntry.nickname || ('Student ' + uid.slice(0, 4));
-        var masteryEntry = Object.prototype.hasOwnProperty.call(conceptMasteryByUid, uid) ? conceptMasteryByUid[uid] : null;
-        var attemptsObj = masteryEntry && masteryEntry.attempts && typeof masteryEntry.attempts === 'object' ? masteryEntry.attempts : null;
-        var mastery = attemptsObj && Object.prototype.hasOwnProperty.call(attemptsObj, conceptId) ? attemptsObj[conceptId] : null;
-        if (!mastery) {
+        var displayName = _safeRosterDisplayName(rosterObj, uid);
+        var masteryEntry = _hasOwn(conceptMasteryByUid, uid) ? conceptMasteryByUid[uid] : null;
+        var attemptsObj = masteryEntry && _isPlainMap(masteryEntry.attempts) ? masteryEntry.attempts : null;
+        var mastery = attemptsObj && _hasOwn(attemptsObj, conceptId) ? attemptsObj[conceptId] : null;
+        if (!mastery || typeof mastery !== 'object') {
           students.push({
             uid: uid,
             displayName: displayName,
@@ -1858,11 +1928,14 @@
           });
           return;
         }
-        var lastTs = mastery.lastAttemptTs || 0;
-        var days = lastTs > 0 ? Math.round((nowMs - lastTs) / DAY_MS) : null;
-        var total = mastery.totalAttempts || 0;
-        var correct = mastery.correctAttempts || 0;
-        var rate = total > 0 ? Math.round((correct / total) * 100) : null;
+        var rawLastTs = Number(mastery.lastAttemptTs);
+        var lastTs = Number.isFinite(rawLastTs) && rawLastTs > 0 ? rawLastTs : 0;
+        var days = lastTs > 0 ? Math.max(0, Math.round((nowMs - lastTs) / DAY_MS)) : null;
+        var rawTotal = Number(mastery.totalAttempts);
+        var total = Number.isFinite(rawTotal) && rawTotal > 0 ? Math.floor(rawTotal) : 0;
+        var rawCorrect = Number(mastery.correctAttempts);
+        var correct = Number.isFinite(rawCorrect) && rawCorrect > 0 ? Math.min(total, Math.floor(rawCorrect)) : 0;
+        var rate = total > 0 ? Math.max(0, Math.min(100, Math.round((correct / total) * 100))) : null;
         students.push({
           uid: uid,
           displayName: displayName,
@@ -1882,14 +1955,14 @@
       var unseenCount = 0;
       students.forEach(function (s) {
         if (!s.seen) unseenCount++;
-        else if (typeof s.daysSinceLast === 'number' && s.daysSinceLast > maxDays) maxDays = s.daysSinceLast;
+        else if (typeof s.daysSinceLast === 'number' && Number.isFinite(s.daysSinceLast) && s.daysSinceLast > maxDays) maxDays = s.daysSinceLast;
       });
 
       conceptRows.push({
         conceptId: conceptId,
         label: label,
         questionIdx: idx,
-        questionText: q.question || '',
+        questionText: (q && q.question) || '',
         students: students,
         maxDaysSinceLast: maxDays,
         unseenCount: unseenCount,
@@ -1912,19 +1985,25 @@
   // Descriptive counts appear immediately. Interpretive flags require at
   // least five respondents so a single learner never becomes the "signal."
   function aggregateItemAnalysis(quizState, generatedContent, roster, aiGradedCache, teacherOverrides) {
-    var allResponses = (quizState && quizState.allResponses) || {};
-    var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
-    var rosterObj = roster && typeof roster === 'object' ? roster : {};
+    var allResponses = (quizState && _isPlainMap(quizState.allResponses)) ? quizState.allResponses : {};
+    var questions = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions)) ? generatedContent.data.questions : [];
+    var rosterObj = _isPlainMap(roster) ? roster : {};
     var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides, generatedContent && generatedContent.data && generatedContent.data.scoringPolicy);
-    var responseUids = {};
-    graded.forEach(function (entry) { responseUids[entry.uid] = true; });
+    var responseUids = Object.create(null);
+    var gradedByQuestion = Object.create(null);
+    graded.forEach(function (entry) {
+      responseUids[entry.uid] = true;
+      var qk = String(entry.questionIdx);
+      if (!gradedByQuestion[qk]) gradedByQuestion[qk] = [];
+      gradedByQuestion[qk].push(entry);
+    });
     var rosterCount = Object.keys(rosterObj).length;
     var totalStudents = rosterCount > 0 ? rosterCount : Object.keys(responseUids).length;
     var items = questions.map(function (question, questionIdx) {
-      var itemRows = graded.filter(function (entry) { return entry.questionIdx === questionIdx; });
+      var itemRows = gradedByQuestion[String(questionIdx)] || [];
       var distributionRows = itemRows.filter(function (entry) { return !assessmentResponseVersionIssue(question, entry.response); });
       var versionReviewCount = itemRows.length - distributionRows.length;
-      var respondentMap = {};
+      var respondentMap = Object.create(null);
       itemRows.forEach(function (entry) { if (entry.responseState.hasResponse) respondentMap[entry.uid] = true; });
       var respondents = Object.keys(respondentMap).length;
       var distributionRespondents = distributionRows.filter(function (entry) { return entry.responseState.hasResponse; }).length;
@@ -2061,32 +2140,38 @@
 
     var participantUids = [];
     var seenUids = Object.create(null);
-    function addUid(value) {
-      if (participantUids.length >= MAX_PARTICIPANTS) return;
-      var uid = safeUid(value);
-      if (!uid || seenUids[uid]) return;
-      seenUids[uid] = true;
-      participantUids.push(uid);
+    var allValidUids = Object.create(null);
+    var rawResponseKeyByUid = Object.create(null);
+    var rawParticipantCount = 0;
+    function registerValidUid(rawKey, isResponseSource) {
+      var uid = safeUid(rawKey);
+      if (!uid) return;
+      if (isResponseSource && !rawResponseKeyByUid[uid]) rawResponseKeyByUid[uid] = rawKey;
+      if (!allValidUids[uid]) {
+        allValidUids[uid] = true;
+        rawParticipantCount++;
+      }
+      if (participantUids.length < MAX_PARTICIPANTS && !seenUids[uid]) {
+        seenUids[uid] = true;
+        participantUids.push(uid);
+      }
     }
-    Object.keys(rawRoster).sort().forEach(addUid);
-    Object.keys(rawResponses).sort().forEach(addUid);
+    Object.keys(rawRoster).sort().forEach(function (k) { registerValidUid(k, false); });
+    Object.keys(rawResponses).sort().forEach(function (k) { registerValidUid(k, true); });
 
-    var rawParticipantCount = Object.keys(rawRoster).length;
-    Object.keys(rawResponses).forEach(function (uid) {
-      if (!Object.prototype.hasOwnProperty.call(rawRoster, uid)) rawParticipantCount++;
-    });
     var participantsTruncated = Math.max(0, rawParticipantCount - participantUids.length);
     var safeRoster = Object.create(null);
     var safeAllResponses = Object.create(null);
     participantUids.forEach(function (uid) {
       safeRoster[uid] = {};
-      if (rawResponses[uid] && typeof rawResponses[uid] === 'object' && !Array.isArray(rawResponses[uid])) {
-        safeAllResponses[uid] = rawResponses[uid];
+      var respKey = rawResponseKeyByUid[uid];
+      if (respKey && _hasOwn(rawResponses, respKey) && _isPlainMap(rawResponses[respKey])) {
+        safeAllResponses[uid] = rawResponses[respKey];
       }
     });
 
     var safeContent = { data: { questions: questions, scoringPolicy: data.scoringPolicy } };
-    var safeState = Object.assign({}, state, { allResponses: safeAllResponses });
+    var safeState = { allResponses: safeAllResponses };
     var graded = collectAllGradedResponses(
       safeAllResponses,
       questions,
@@ -2262,7 +2347,7 @@
   // The five-respondent floor matches aggregateItemAnalysis: descriptive
   // counts remain available below five, but interpretive signal codes do not.
   var QUIZ_ALLOSHEET_MIN_SIGNAL_SAMPLE = 5;
-  var QUIZ_ALLOSHEET_ITEM_TYPES = {
+  var QUIZ_ALLOSHEET_ITEM_TYPES = Object.freeze({
     mcq: true,
     'multi-select': true,
     'fill-blank': true,
@@ -2276,31 +2361,31 @@
     order: true,
     likert: true,
     'opinion-mcq': true
-  };
-  var QUIZ_ALLOSHEET_SIGNAL_CODES = {
+  });
+  var QUIZ_ALLOSHEET_SIGNAL_CODES = Object.freeze({
     challenging: true,
     'very-easy': true,
     'high-omission': true,
     'confidence-mismatch': true,
     'weak-distractor': true
-  };
-  var QUIZ_ALLOSHEET_COLUMNS = [
-    { key: 'question_number', label: 'Question number', type: 'number' },
-    { key: 'item_type', label: 'Item type', type: 'category' },
-    { key: 'unscored', label: 'Unscored item', type: 'boolean' },
-    { key: 'respondents', label: 'Respondents', type: 'number' },
-    { key: 'omitted_count', label: 'Omitted', type: 'number' },
-    { key: 'gradable_count', label: 'Gradable responses', type: 'number' },
-    { key: 'correct_count', label: 'Correct', type: 'number' },
-    { key: 'partial_count', label: 'Partially correct', type: 'number' },
-    { key: 'incorrect_count', label: 'Incorrect', type: 'number' },
-    { key: 'idk_count', label: 'I do not know', type: 'number' },
-    { key: 'awaiting_review_count', label: 'Awaiting review', type: 'number' },
-    { key: 'high_confidence_incorrect', label: 'High-confidence incorrect', type: 'number' },
-    { key: 'correct_rate_percent', label: 'Correct rate (percent)', type: 'number' },
-    { key: 'sample_status', label: 'Sample status', type: 'category' },
-    { key: 'signal_codes', label: 'Signal codes', type: 'text' }
-  ];
+  });
+  var QUIZ_ALLOSHEET_COLUMNS = Object.freeze([
+    Object.freeze({ key: 'question_number', label: 'Question number', type: 'number' }),
+    Object.freeze({ key: 'item_type', label: 'Item type', type: 'category' }),
+    Object.freeze({ key: 'unscored', label: 'Unscored item', type: 'boolean' }),
+    Object.freeze({ key: 'respondents', label: 'Respondents', type: 'number' }),
+    Object.freeze({ key: 'omitted_count', label: 'Omitted', type: 'number' }),
+    Object.freeze({ key: 'gradable_count', label: 'Gradable responses', type: 'number' }),
+    Object.freeze({ key: 'correct_count', label: 'Correct', type: 'number' }),
+    Object.freeze({ key: 'partial_count', label: 'Partially correct', type: 'number' }),
+    Object.freeze({ key: 'incorrect_count', label: 'Incorrect', type: 'number' }),
+    Object.freeze({ key: 'idk_count', label: 'I do not know', type: 'number' }),
+    Object.freeze({ key: 'awaiting_review_count', label: 'Awaiting review', type: 'number' }),
+    Object.freeze({ key: 'high_confidence_incorrect', label: 'High-confidence incorrect', type: 'number' }),
+    Object.freeze({ key: 'correct_rate_percent', label: 'Correct rate (percent)', type: 'number' }),
+    Object.freeze({ key: 'sample_status', label: 'Sample status', type: 'category' }),
+    Object.freeze({ key: 'signal_codes', label: 'Signal codes', type: 'text' })
+  ]);
 
   function quizAlloSheetAdapter() {
     var candidate = window.AlloSheetTransferAdapter
@@ -2519,56 +2604,68 @@
   // comes from the response (stamped at submit time) or the question. Returns
   // counts only: no names, no uids, nothing a plan strip should not show.
   function aggregateSuccessCriteria(quizState, generatedContent, roster, aiGradedCache, teacherOverrides, scoringPolicy) {
-    var allResponses = (quizState && quizState.allResponses) || {};
-    var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
-    var rosterObj = roster && typeof roster === 'object' ? roster : null;
-    var aiCache = aiGradedCache && typeof aiGradedCache === 'object' ? aiGradedCache : null;
-    var overrides = teacherOverrides && typeof teacherOverrides === 'object' ? teacherOverrides : null;
+    var allResponses = (quizState && _isPlainMap(quizState.allResponses)) ? quizState.allResponses : {};
+    var questions = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions)) ? generatedContent.data.questions : [];
+    var effectivePolicy = scoringPolicy !== undefined ? scoringPolicy : (generatedContent && generatedContent.data && generatedContent.data.scoringPolicy);
+    var rosterObj = _isPlainMap(roster) ? roster : null;
+    var aiCache = _isPlainMap(aiGradedCache) ? aiGradedCache : null;
+    var overrides = _isPlainMap(teacherOverrides) ? teacherOverrides : null;
     var byConcept = Object.create(null);
+    var conceptCount = 0;
     var respondents = Object.create(null);
     Object.keys(allResponses).forEach(function (uid) {
-      if (rosterObj && !Object.prototype.hasOwnProperty.call(rosterObj, uid)) return;
+      if (rosterObj && !_hasOwn(rosterObj, uid)) return;
       var perQuestion = allResponses[uid];
       if (!perQuestion || typeof perQuestion !== 'object') return;
-      Object.keys(perQuestion).forEach(function (key) {
-        if (!/^(?:0|[1-9]\d*)$/.test(String(key))) return;
-        var idx = Number(key);
-        if (!Number.isInteger(idx) || idx < 0) return;
+      for (var idx = 0; idx < questions.length; idx++) {
+        var key = String(idx);
+        if (!_hasOwn(perQuestion, key)) continue;
         var question = questions[idx];
         var response = perQuestion[key];
-        if (!question || !response || typeof response !== 'object') return;
+        if (!question || !response || typeof response !== 'object') continue;
         var stamped = response.conceptLabel != null ? String(response.conceptLabel) : '';
-        var label = (stamped.trim() || String(question.conceptLabel || '')).replace(/\s+/g, ' ').trim();
-        if (!label) return;
-        var grade = gradeResponseForItem(response, question, scoringPolicy);
+        var label = (stamped.trim() || String(question.conceptLabel || ''))
+          .replace(/[\u0000-\u001f\u007f]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 160);
+        if (!label) continue;
+        var grade = gradeResponseForItem(response, question, effectivePolicy);
         var responseState = assessmentResponseState(response, question);
         if (!responseState.hasResponse) grade = Object.assign({}, grade, { status: 'no-response' });
         else if (!responseState.answered && !grade.unscored && !grade.keyUnderReview) {
           grade = Object.assign({}, grade, { status: 'submitted', evaluable: false, incomplete: true });
         }
         if (aiCache && responseState.answered && grade.status === 'submitted' && !grade.unscored && !grade.keyUnderReview && !grade.versionMismatch && !grade.versionUnverified
-            && (!scoringPolicy || scoringPolicy.writtenResponseMode !== 'teacher-review')) {
-          var cached = aiCache[uid + ':' + idx];
-          if (cached && cached.status && cached.status !== 'error' && cached.status !== 'unclear') {
+            && (!effectivePolicy || effectivePolicy.writtenResponseMode !== 'teacher-review')) {
+          var aiKey = uid + ':' + idx;
+          var cached = _hasOwn(aiCache, aiKey) ? aiCache[aiKey] : null;
+          if (cached && typeof cached === 'object' && (cached.status === 'correct' || cached.status === 'incorrect' || cached.status === 'partially-correct')) {
             grade = Object.assign({}, grade, { status: cached.status, aiGraded: true });
           }
         }
-        if (!grade.unscored && !grade.versionMismatch && !grade.versionUnverified && overrides && overrides[uid]) {
-          var ov = overrides[uid][key] !== undefined ? overrides[uid][key] : overrides[uid][String(idx)];
-          var fpOk = ov && (!ov.responseFingerprint || ov.responseFingerprint === assessmentResponseFingerprint(question, response));
+        var studentOverrides = (overrides && _hasOwn(overrides, uid) && _isPlainMap(overrides[uid])) ? overrides[uid] : null;
+        if (!grade.unscored && !grade.versionMismatch && !grade.versionUnverified && studentOverrides) {
+          var ov = _hasOwn(studentOverrides, key) ? studentOverrides[key] : null;
+          var fpOk = !!(ov && typeof ov === 'object' && ov.responseFingerprint && ov.responseFingerprint === assessmentResponseFingerprint(question, response));
           if (fpOk && (ov.status === 'correct' || ov.status === 'incorrect' || ov.status === 'partially-correct' || ov.status === 'idk')) {
             grade = Object.assign({}, grade, { status: ov.status, teacherOverridden: true });
           }
         }
         var status = grade && grade.status;
-        if (status !== 'correct' && status !== 'incorrect' && status !== 'partially-correct') return;
-        var bucket = byConcept[label] || (byConcept[label] = { met: 0, partial: 0, total: 0, questionIdxs: [] });
+        if (status !== 'correct' && status !== 'incorrect' && status !== 'partially-correct') continue;
+        var bucket = byConcept[label];
+        if (!bucket) {
+          if (conceptCount >= 200) continue;
+          bucket = byConcept[label] = { met: 0, partial: 0, total: 0, questionIdxs: [] };
+          conceptCount++;
+        }
         bucket.total += 1;
         if (status === 'correct') bucket.met += 1;
         else if (status === 'partially-correct') bucket.partial += 1;
         if (bucket.questionIdxs.indexOf(idx) === -1) bucket.questionIdxs.push(idx);
         respondents[uid] = true;
-      });
+      }
     });
     return { byConcept: byConcept, respondents: Object.keys(respondents).length, questionCount: questions.length };
   }
@@ -2610,11 +2707,11 @@
     sequenceSenseTruth: sequenceSenseTruth,
     describeSequenceMisplaced: describeSequenceMisplaced,
     normalizeConceptId: normalizeConceptId,
-    _meta: {
+    _meta: Object.freeze({
       version: '1',
       allosheetMinimumSignalSample: QUIZ_ALLOSHEET_MIN_SIGNAL_SAMPLE,
       buildQuizAlloSheetEnvelope: buildQuizAlloSheetEnvelope
-    },
+    }),
   };
   console.log('[CDN] QuizLiveAggregators loaded');
 })();

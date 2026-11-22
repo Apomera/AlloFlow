@@ -64,7 +64,8 @@ def provision(model_id, revision=None, *, download=False, snapshot_download=None
     if not download:
         raise ValueError('The verified model is not installed. Use Install before starting offline.')
     ancestor = cache
-    while not ancestor.exists(): ancestor = ancestor.parent
+    while not ancestor.exists() and ancestor != ancestor.parent:
+        ancestor = ancestor.parent
     required = sum(item['bytes'] for item in pending) + 2 * 1024**3
     if shutil.disk_usage(ancestor).free < required:
         raise ValueError('Not enough model-cache space: allow model bytes plus 2 GiB working space')
@@ -90,7 +91,7 @@ def provision(model_id, revision=None, *, download=False, snapshot_download=None
                 resolved_target = target.resolve()
                 if any(resolved_target.is_relative_to(base) for base in allowed_roots) and resolved_target.is_file():
                     resolved_target.unlink(missing_ok=True)
-                if target.is_symlink() or target.exists():
+                if target.parent.resolve().is_relative_to(resolved_root) and (target.is_symlink() or target.is_file()):
                     target.unlink(missing_ok=True)
             except OSError:
                 pass

@@ -114,7 +114,7 @@ describe('AP Chemistry internal foundation pilot', () => {
       expect(chapter.knowledgeCheckCount).toBe(3);
       expect(chapter.knowledgeChecks.map((check) => check.sectionId)).toEqual(chapter.sections.map((section) => section.id));
     }
-    expect(library.flashcards).toHaveLength(9);
+    expect(library.flashcards).toHaveLength(27);
     expect(library.memoryAids).toHaveLength(9);
     expect(library.sourceCatalog).toHaveLength(3);
     expect(library.summary).toMatchObject({ chapters: 9, sections: 27, knowledgeChecks: 27, richLessonPrototypes: 9 });

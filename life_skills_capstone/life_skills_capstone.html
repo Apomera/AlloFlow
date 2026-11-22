@@ -33,6 +33,17 @@
 </script>
 <style>
   :root { --bg:#081321; --panel:#102238; --panel2:#172d47; --line:#4b7197; --text:#f8fbff; --muted:#c8d8e9; --accent:#67e8f9; --good:#4ade80; --warn:#facc15; --danger:#fb7185; }
+  :root[data-theme="light"] { --bg:#eef4f8; --panel:#ffffff; --panel2:#e5eef5; --line:#6c88a5; --text:#102236; --muted:#334b63; --accent:#075985; --good:#166534; --warn:#854d0e; --danger:#9f1239; }
+  :root[data-theme="contrast"] { --bg:#000000; --panel:#000000; --panel2:#0d0d0d; --line:#ffffff; --text:#ffffff; --muted:#f8fafc; --accent:#00ffff; --good:#00ff66; --warn:#ffff00; --danger:#ff6b81; }
+  :root[data-theme="light"] body, :root[data-theme="light"] html { background: var(--bg); color: var(--text); }
+  :root[data-theme="light"] header, :root[data-theme="light"] .panel, :root[data-theme="light"] .scene-panel { background: var(--panel); color: var(--text); border-color: var(--line); }
+  :root[data-theme="light"] .mission-banner, :root[data-theme="light"] .transfer-summary, :root[data-theme="light"] .debrief, :root[data-theme="light"] .progress-line, :root[data-theme="light"] .feedback, :root[data-theme="light"] .teachback, :root[data-theme="light"] .choice, :root[data-theme="light"] .tool, :root[data-theme="light"] .view, :root[data-theme="light"] .badge, :root[data-theme="light"] .support-badge, :root[data-theme="light"] .context-badge, :root[data-theme="light"] .evidence-count, :root[data-theme="light"] .procedure-stage { background: var(--panel2); color: var(--text); border-color: var(--line); }
+  :root[data-theme="light"] .tool.primary { background: #075985; color: #ffffff; border-color: #075985; }
+  :root[data-theme="light"] .stem-lens-button, :root[data-theme="light"] .stem-lens-text { background: #e0f2fe; color: #0c4a6e; border-color: #0284c7; }
+  :root[data-theme="light"] .context-badge[data-shifted="true"] { color: #713f12; background: #fef9c3; border-color: #ca8a04; }
+  :root[data-theme="contrast"] body, :root[data-theme="contrast"] html { background: #000000; color: #ffffff; }
+  :root[data-theme="contrast"] header, :root[data-theme="contrast"] .panel, :root[data-theme="contrast"] .scene-panel, :root[data-theme="contrast"] .mission-banner, :root[data-theme="contrast"] .transfer-summary, :root[data-theme="contrast"] .debrief, :root[data-theme="contrast"] .progress-line, :root[data-theme="contrast"] .feedback, :root[data-theme="contrast"] .teachback, :root[data-theme="contrast"] .choice, :root[data-theme="contrast"] .tool, :root[data-theme="contrast"] .view, :root[data-theme="contrast"] .badge, :root[data-theme="contrast"] .support-badge, :root[data-theme="contrast"] .context-badge, :root[data-theme="contrast"] .evidence-count, :root[data-theme="contrast"] .procedure-stage { background: #000000; color: #ffffff; border-color: #ffffff; box-shadow: none; }
+  :root[data-theme="contrast"] .tool.primary { background: #ffff00; color: #000000; border-color: #ffffff; }
   * { box-sizing: border-box; }
   html, body { margin: 0; min-height: 100%; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: radial-gradient(circle at top, #163455 0, var(--bg) 55%); color: var(--text); }
   body { padding: 18px; }
@@ -130,7 +141,7 @@
   .scene-fallback { display:none; padding:20px; color:var(--muted); }
   .scene-panel.no-aframe a-scene { display:none; }
   .scene-panel.no-aframe .scene-fallback { display:block; }
-  button:focus-visible { outline:3px solid var(--warn); outline-offset:2px; box-shadow:0 0 0 5px rgba(250,204,21,.2); }
+  button:focus-visible, textarea:focus-visible { outline:3px solid var(--warn); outline-offset:2px; box-shadow:0 0 0 5px rgba(250,204,21,.2); }
   @media (max-width: 850px) { body { padding:10px; } .layout { grid-template-columns:1fr; } .scene-panel, a-scene { min-height:480px; } }
   @media (max-width: 480px) { .panel { padding:12px; } .scene-panel, a-scene { min-height:390px; } }
 
@@ -162,6 +173,13 @@
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
   .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 10000; }
   .skip-link:focus { position: fixed; left: 8px; top: 8px; width: auto; height: auto; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
+  @media (forced-colors: active) {
+    :root, :root[data-theme] { --bg: Canvas; --panel: Canvas; --panel2: Canvas; --line: CanvasText; --text: CanvasText; --muted: CanvasText; --accent: LinkText; --good: CanvasText; --warn: CanvasText; --danger: CanvasText; }
+    html, body, header, .panel, .scene-panel, .mission-banner, .transfer-summary, .debrief, .progress-line, .feedback, .teachback, .choice, .tool, .view, .badge, .support-badge, .context-badge, .evidence-count, .procedure-stage, .step, .hint, .stem-lens-button, .stem-lens-text, .skip-link:focus { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; box-shadow: none !important; }
+    .tool.primary, .debrief button[aria-pressed="true"], .stem-lens-button[aria-pressed="true"] { background: Highlight !important; color: HighlightText !important; border-color: Highlight !important; }
+    button, textarea, a { forced-color-adjust: auto; }
+    :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; box-shadow: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -189,7 +207,7 @@
         <p class="instruction" id="instruction"></p>
         <div id="procedureProgress" class="procedure-progress" role="status" aria-live="polite" hidden></div>
         <div class="choices" id="choices" role="group" aria-label="Capstone choices"></div>
-        <button class="hint" id="hintButton" type="button">Show a hint</button>
+        <button class="hint" id="hintButton" type="button" aria-controls="hintText" aria-expanded="false">Show a hint</button>
         <p class="hint-text" id="hintText" role="status" aria-live="polite" hidden></p>
         <button class="tool procedure-toggle" id="procedureButton" type="button" hidden>Practice 3D actions</button>
         <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
@@ -264,7 +282,7 @@
         <a-box position="0 3 -5" width="16" height="6" depth=".2" material="color: #122943; roughness: 1"></a-box>
         <a-box position="-5.2 1.1 -2.5" width="2.8" height="1.8" depth="1.1" color="#b45309" capstone-interactive="station: stove"></a-box>
         <a-cylinder position="-5.2 2.15 -2.5" radius=".22" height=".12" rotation="90 0 0" color="#facc15" capstone-interactive="station: stove"></a-cylinder>
-        <a-entity id="label-stove" position="-5.2 2.7 -2.5" text="value: KITCHEN\nStove; align: center; color: #fff7ed; width: 4"></a-entity>
+        <a-text id="label-stove" position="-5.2 2.7 -2.5" value="KITCHEN\nStove" align="center" color="#fff7ed" width="4"></a-text>
         <a-entity id="state-stove" position="-5.2 3.2 -2.5" visible="false"><a-sphere id="state-orb-stove" radius=".13" color="#4ade80" material="emissive: #4ade80; emissiveIntensity: .8"></a-sphere><a-entity id="state-label-stove" position="0 .3 0" text="value: SAFE; align: center; color: #4ade80; width: 2.2"></a-entity></a-entity>
         <a-entity id="procedure-effects-stove" position="-5.2 .14 -2.5" visible="false">
           <a-cone id="procedure-risk-stove" position="0 1.88 .66" radius-bottom=".2" radius-top=".035" height=".48" color="#fb7185" material="color: #fb7185; emissive: #fb7185; emissiveIntensity: .9" visible="false"></a-cone>
@@ -274,7 +292,7 @@
         </a-entity>
         <a-box position="-1.8 1.15 -2.5" width="2.6" height="2" depth="1.2" color="#0f766e" capstone-interactive="station: lint"></a-box>
         <a-box position="-1.8 1.1 -1.82" width="1.7" height=".75" depth=".08" color="#082f49" capstone-interactive="station: lint"></a-box>
-        <a-entity id="label-lint" position="-1.8 2.7 -2.5" text="value: LAUNDRY\nAirflow; align: center; color: #cffafe; width: 4"></a-entity>
+        <a-text id="label-lint" position="-1.8 2.7 -2.5" value="LAUNDRY\nAirflow" align="center" color="#cffafe" width="4"></a-text>
         <a-entity id="state-lint" position="-1.8 3.2 -2.5" visible="false"><a-sphere id="state-orb-lint" radius=".13" color="#4ade80" material="emissive: #4ade80; emissiveIntensity: .8"></a-sphere><a-entity id="state-label-lint" position="0 .3 0" text="value: SAFE; align: center; color: #4ade80; width: 2.2"></a-entity></a-entity>
         <a-entity id="procedure-effects-lint" position="-1.8 .14 -2.5" visible="false">
           <a-sphere id="procedure-risk-lint" position="0 1.15 .72" radius=".42" color="#fb7185" material="color: #fb7185; opacity: .48; transparent: true; emissive: #fb7185; emissiveIntensity: .75" visible="false"></a-sphere>
@@ -284,7 +302,7 @@
         </a-entity>
         <a-box position="1.8 1.1 -2.5" width="2.6" height="1.8" depth="1.1" color="#2563eb" capstone-interactive="station: shutoff"></a-box>
         <a-cylinder position="1.8 1.85 -1.9" radius=".3" height=".12" rotation="90 0 0" color="#93c5fd" capstone-interactive="station: shutoff"></a-cylinder>
-        <a-entity id="label-shutoff" position="1.8 2.7 -2.5" text="value: BATH\nWater shutoff; align: center; color: #dbeafe; width: 4"></a-entity>
+        <a-text id="label-shutoff" position="1.8 2.7 -2.5" value="BATH\nWater shutoff" align="center" color="#dbeafe" width="4"></a-text>
         <a-entity id="state-shutoff" position="1.8 3.2 -2.5" visible="false"><a-sphere id="state-orb-shutoff" radius=".13" color="#4ade80" material="emissive: #4ade80; emissiveIntensity: .8"></a-sphere><a-entity id="state-label-shutoff" position="0 .3 0" text="value: SAFE; align: center; color: #4ade80; width: 2.2"></a-entity></a-entity>
         <a-entity id="procedure-effects-shutoff" position="1.8 .14 -2.5" visible="false">
           <a-circle id="procedure-risk-shutoff" position="0 -.08 .55" rotation="-90 0 0" radius=".82" color="#60a5fa" material="color: #60a5fa; opacity: .5; transparent: true; side: double" visible="false"></a-circle>
@@ -294,7 +312,7 @@
         </a-entity>
         <a-cylinder position="5.1 2.1 -2.5" radius=".82" height=".14" rotation="90 0 0" color="#f97316" capstone-interactive="station: alarm"></a-cylinder>
         <a-cylinder position="5.1 2.1 -2.4" radius=".52" height=".16" rotation="90 0 0" color="#431407"></a-cylinder>
-        <a-entity id="label-alarm" position="5.1 3.25 -2.5" text="value: ENTRY\nAlarm + exit; align: center; color: #ffedd5; width: 4"></a-entity>
+        <a-text id="label-alarm" position="5.1 3.25 -2.5" value="ENTRY\nAlarm + exit" align="center" color="#ffedd5" width="4"></a-text>
         <a-entity id="state-alarm" position="5.1 3.75 -2.5" visible="false"><a-sphere id="state-orb-alarm" radius=".13" color="#4ade80" material="emissive: #4ade80; emissiveIntensity: .8"></a-sphere><a-entity id="state-label-alarm" position="0 .3 0" text="value: SAFE; align: center; color: #4ade80; width: 2.2"></a-entity></a-entity>
         <a-entity id="procedure-effects-alarm" position="5.1 .14 -2.5" visible="false">
           <a-torus id="procedure-risk-alarm" position="0 1.96 .18" radius=".88" radius-tubular=".065" rotation="90 0 0" color="#fb7185" material="color: #fb7185; emissive: #fb7185; emissiveIntensity: .95" visible="false"></a-torus>
@@ -304,7 +322,7 @@
         </a-entity>
         <a-box position="0 1.25 2.5" width="4.4" height="2.1" depth="1.4" color="#075985" capstone-interactive="station: visibility"></a-box>
         <a-box position="0 2.05 1.75" width="2.5" height=".7" depth=".08" color="#7dd3fc" capstone-interactive="station: visibility"></a-box>
-        <a-entity id="label-visibility" position="0 3.1 2.5" text="value: TRANSIT\nVisible stop; align: center; color: #e0f2fe; width: 5"></a-entity>
+        <a-text id="label-visibility" position="0 3.1 2.5" value="TRANSIT\nVisible stop" align="center" color="#e0f2fe" width="5"></a-text>
         <a-entity id="state-visibility" position="0 3.6 2.5" visible="false"><a-sphere id="state-orb-visibility" radius=".13" color="#4ade80" material="emissive: #4ade80; emissiveIntensity: .8"></a-sphere><a-entity id="state-label-visibility" position="0 .3 0" text="value: SAFE; align: center; color: #4ade80; width: 2.2"></a-entity></a-entity>
         <a-entity id="procedure-effects-visibility" position="0 .14 2.5" visible="false">
           <a-torus id="procedure-risk-visibility" position="0 1.18 .78" radius=".92" radius-tubular=".06" rotation="90 0 0" color="#fb7185" material="color: #fb7185; emissive: #fb7185; emissiveIntensity: .85" visible="false"></a-torus>
@@ -335,7 +353,7 @@
           <a-entity id="actionControlLabel2" position="0 1.45 1.14" text="value: B ACTION; align: center; color: #e0f2fe; width: 2.2"></a-entity>
           <a-entity id="actionControlLabel3" position="1.22 1.45 1.14" text="value: C ACTION; align: center; color: #e0f2fe; width: 2.2"></a-entity>
         </a-entity>
-        <a-entity id="sceneNote" position="0 4.25 -2.7" text="value: FOCUS A STATION; align: center; color: #facc15; width: 7"></a-entity>
+        <a-text id="sceneNote" position="0 4.25 -2.7" value="FOCUS A STATION" align="center" color="#facc15" width="7"></a-text>
         <a-entity id="mouseActionRay" cursor="rayOrigin: mouse; fuse: false" raycaster="objects: .clickable"></a-entity>
         <a-entity id="leftActionRay" laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
         <a-entity id="rightActionRay" laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
@@ -462,11 +480,14 @@
       { id: 'official-help', scene: 'ASK STAFF', phase: 'Connect', label: 'Ask the driver, transit staff, or another official source for help.' }
     ]
   };
-  var EVIDENCE_META = {
+  var EVIDENCE_META = Object.assign(Object.create(null), {
     'first-try': { label: 'First try', scene: 'FIRST TRY', color: '#4ade80' },
     'self-corrected': { label: 'Self-corrected', scene: 'CORRECTED', color: '#67e8f9' },
     coached: { label: 'Coached', scene: 'COACHED', color: '#facc15' }
-  };
+  });
+  function evidenceMetaFor(key) {
+    return typeof key === 'string' && Object.prototype.hasOwnProperty.call(EVIDENCE_META, key) ? EVIDENCE_META[key] : null;
+  }
   function validMissionFocus(value) { return Object.prototype.hasOwnProperty.call(MISSION_BY_FOCUS, value); }
   function validOrder(value) { return Array.isArray(value) && value.length === TASKS.length && TASKS.every(function (task) { return value.indexOf(task.id) >= 0; }); }
   function missionFor(focus) { return MISSION_BY_FOCUS[validMissionFocus(focus) ? focus : 'kitchen']; }
@@ -495,7 +516,7 @@
   var missionFocus = hasSavedProgress && validMissionFocus(saved.missionFocus) ? saved.missionFocus : requestedFocus;
   var mission = missionFor(missionFocus);
   var savedSupport = Object.prototype.hasOwnProperty.call(SUPPORT_LABELS, saved.support) ? saved.support : requestedSupport;
-  var state = { missionFocus: missionFocus, support: hasSavedProgress ? savedSupport : requestedSupport, mode: saved.mode === 'challenge' ? 'challenge' : 'guided', order: hasSavedProgress && validOrder(saved.order) ? saved.order : mission.order.slice(), challengeChoices: saved.challengeChoices && typeof saved.challengeChoices === 'object' ? saved.challengeChoices : {}, contexts: saved.contexts && typeof saved.contexts === 'object' ? saved.contexts : {}, contextTransfers: saved.contextTransfers && typeof saved.contextTransfers === 'object' ? saved.contextTransfers : {}, procedures: saved.procedures && typeof saved.procedures === 'object' ? saved.procedures : {}, procedureChoices: saved.procedureChoices && typeof saved.procedureChoices === 'object' ? saved.procedureChoices : {}, procedureMistakes: saved.procedureMistakes && typeof saved.procedureMistakes === 'object' ? saved.procedureMistakes : {}, procedureTarget: BY_ID[saved.procedureTarget] && (saved.done || {})[saved.procedureTarget] ? saved.procedureTarget : '', procedureStep: Math.max(0, Math.min(2, Number(saved.procedureStep) || 0)), procedureError: !!saved.procedureError, procedureWrongSlot: [0, 1, 2].indexOf(Number(saved.procedureWrongSlot)) >= 0 ? Number(saved.procedureWrongSlot) : -1, procedureUsed3d: !!saved.procedureUsed3d, risk: saved.risk && typeof saved.risk === 'object' ? saved.risk : {}, attempts: saved.attempts && typeof saved.attempts === 'object' ? saved.attempts : {}, hinted: saved.hinted && typeof saved.hinted === 'object' ? saved.hinted : {}, outcomes: saved.outcomes && typeof saved.outcomes === 'object' ? saved.outcomes : {}, replayTarget: BY_ID[saved.replayTarget] ? saved.replayTarget : '', replayFrom: EVIDENCE_META[saved.replayFrom] ? saved.replayFrom : '', replayContextFrom: typeof saved.replayContextFrom === 'string' ? saved.replayContextFrom : '', debrief: (function () { var loaded = saved.debrief && typeof saved.debrief === 'object' ? saved.debrief : {}; return { confidence: typeof loaded.confidence === 'string' ? loaded.confidence : '', nextStep: typeof loaded.nextStep === 'string' ? loaded.nextStep : '', teachBack: typeof loaded.teachBack === 'string' ? loaded.teachBack : '' }; }()), debriefDraft: saved.debrief && typeof saved.debrief.teachBack === 'string' ? saved.debrief.teachBack : '', teachBackMessage: '', done: saved.done || {}, missteps: Number(saved.missteps) || 0, hints: Number(saved.hints) || 0, focused: null, activeIndex: 0, hintShown: false, feedback: 'Choose the safer response for the highlighted station.', tone: '' };
+  var state = { missionFocus: missionFocus, support: hasSavedProgress ? savedSupport : requestedSupport, mode: saved.mode === 'challenge' ? 'challenge' : 'guided', order: hasSavedProgress && validOrder(saved.order) ? saved.order : mission.order.slice(), challengeChoices: saved.challengeChoices && typeof saved.challengeChoices === 'object' ? saved.challengeChoices : {}, contexts: saved.contexts && typeof saved.contexts === 'object' ? saved.contexts : {}, contextTransfers: saved.contextTransfers && typeof saved.contextTransfers === 'object' ? saved.contextTransfers : {}, procedures: saved.procedures && typeof saved.procedures === 'object' ? saved.procedures : {}, procedureChoices: saved.procedureChoices && typeof saved.procedureChoices === 'object' ? saved.procedureChoices : {}, procedureMistakes: saved.procedureMistakes && typeof saved.procedureMistakes === 'object' ? saved.procedureMistakes : {}, procedureTarget: BY_ID[saved.procedureTarget] && (saved.done || {})[saved.procedureTarget] ? saved.procedureTarget : '', procedureStep: Math.max(0, Math.min(2, Number(saved.procedureStep) || 0)), procedureError: !!saved.procedureError, procedureWrongSlot: [0, 1, 2].indexOf(Number(saved.procedureWrongSlot)) >= 0 ? Number(saved.procedureWrongSlot) : -1, procedureUsed3d: !!saved.procedureUsed3d, risk: saved.risk && typeof saved.risk === 'object' ? saved.risk : {}, attempts: saved.attempts && typeof saved.attempts === 'object' ? saved.attempts : {}, hinted: saved.hinted && typeof saved.hinted === 'object' ? saved.hinted : {}, outcomes: saved.outcomes && typeof saved.outcomes === 'object' ? saved.outcomes : {}, replayTarget: BY_ID[saved.replayTarget] ? saved.replayTarget : '', replayFrom: evidenceMetaFor(saved.replayFrom) ? saved.replayFrom : '', replayContextFrom: typeof saved.replayContextFrom === 'string' ? saved.replayContextFrom : '', debrief: (function () { var loaded = saved.debrief && typeof saved.debrief === 'object' ? saved.debrief : {}; return { confidence: typeof loaded.confidence === 'string' ? loaded.confidence : '', nextStep: typeof loaded.nextStep === 'string' ? loaded.nextStep : '', teachBack: typeof loaded.teachBack === 'string' ? loaded.teachBack : '' }; }()), debriefDraft: saved.debrief && typeof saved.debrief.teachBack === 'string' ? saved.debrief.teachBack : '', teachBackMessage: '', done: saved.done || {}, missteps: Number(saved.missteps) || 0, hints: Number(saved.hints) || 0, focused: null, activeIndex: 0, hintShown: false, feedback: 'Choose the safer response for the highlighted station.', tone: '' };
   function shuffle(values) { var result = values.slice(); for (var i = result.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var swap = result[i]; result[i] = result[j]; result[j] = swap; } return result; }
   function runTasks() { return state.order.map(function (id) { return BY_ID[id]; }).filter(Boolean); }
   function contextOptions(task) { return [{ id: 'routine', label: 'Routine context', scene: 'ROUTINE', sky: '#081321', fog: '#081321', situation: task.situation, instruction: task.instruction }].concat(CONTEXTS[task.id] || []); }
@@ -541,6 +562,10 @@
     return { firstTry: counts.firstTry, selfCorrected: counts.selfCorrected, coached: counts.coached, contextTransfer: contextTransferCount(), procedurePractice: procedurePracticeCount(), recommendedTask: target ? target.id : '' };
   }
   function nextIndex() { var tasks = runTasks(); for (var i = 0; i < tasks.length; i++) if (!state.done[tasks[i].id]) return i; return tasks.length - 1; }
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme === 'light' || theme === 'contrast' ? theme : 'dark');
+  }
+  setTheme(params.get('theme'));
   var verifiedOpenerOrigin = '';
   function isTrustedOpenerOrigin(origin) {
     if (!origin || origin === 'null') return false;
@@ -555,7 +580,7 @@
         || host === 'alloflow.org' || host.endsWith('.alloflow.org')
         || host === 'alloflow.app' || host.endsWith('.alloflow.app')
         || host === 'alloflow.com' || host.endsWith('.alloflow.com')
-        || host.endsWith('.usercontent.goog')
+        || host === 'scf.usercontent.goog' || host.endsWith('.scf.usercontent.goog')
         || host.endsWith('.googleusercontent.com')
         || host.endsWith('.idx.google.com')
         || host.endsWith('.idx.google');
@@ -565,6 +590,15 @@
   }
   function resolveOpenerTargetOrigin() {
     if (verifiedOpenerOrigin) return verifiedOpenerOrigin;
+    var declared = params.get('parentOrigin') || params.get('host') || '';
+    if (declared) {
+      try {
+        var declaredOrigin = new URL(declared).origin;
+        if (declaredOrigin && declaredOrigin !== 'null' && isTrustedOpenerOrigin(declaredOrigin)) {
+          return declaredOrigin;
+        }
+      } catch (_) {}
+    }
     if (typeof document !== 'undefined' && document.referrer) {
       try {
         var refOrigin = new URL(document.referrer).origin;
@@ -573,6 +607,12 @@
         }
       } catch (_) { return ''; }
     }
+    try {
+      var selfOrigin = window.location && window.location.origin;
+      if (selfOrigin && selfOrigin !== 'null' && /^https?:\/\//i.test(selfOrigin)) {
+        return selfOrigin;
+      }
+    } catch (_) {}
     return '';
   }
   function postToOpener(payload) {
@@ -758,13 +798,16 @@
     runTasks().forEach(function (task, index) {
       var item = document.createElement('li');
       var replaying = state.replayTarget === task.id; var practicing = state.procedureTarget === task.id;
-      var evidence = replaying ? '' : state.outcomes[task.id] || ''; var evidenceMeta = EVIDENCE_META[evidence];
-      var button = document.createElement('button'); button.type = 'button'; button.className = 'step' + (state.done[task.id] && !replaying ? ' done' : '') + (index === state.activeIndex && (practicing || replaying || !state.done[task.id]) ? ' current' : '') + (evidence ? ' evidence-' + evidence : '');
+      var evidence = replaying ? '' : state.outcomes[task.id] || ''; var evidenceMeta = evidenceMetaFor(evidence);
+      var button = document.createElement('button'); button.type = 'button'; button.className = 'step' + (state.done[task.id] && !replaying ? ' done' : '') + (index === state.activeIndex && (practicing || replaying || !state.done[task.id]) ? ' current' : '') + (evidenceMeta ? ' evidence-' + evidence : '');
       var stepLabel = (practicing ? 'Actions: ' : replaying ? 'Replay: ' : state.done[task.id] ? 'Done: ' : index === state.activeIndex ? 'Next: ' : '') + task.room + ' - ' + task.title;
       var lockedTarget = state.procedureTarget || state.replayTarget; button.disabled = !!lockedTarget && task.id !== lockedTarget;
       button.setAttribute('aria-label', stepLabel + (evidenceMeta ? ', ' + evidenceMeta.label : '') + (state.procedures[task.id] ? ', action sequence practiced' : '') + (button.disabled ? ', unavailable until current practice is complete' : ''));
       if (index === state.activeIndex) button.setAttribute('aria-current', 'step');
-      button.innerHTML = '<span class="step-dot" aria-hidden="true"></span><span class="step-copy">' + stepLabel + '</span>' + (evidenceMeta ? '<span class="step-evidence" data-evidence="' + evidence + '">' + evidenceMeta.label + '</span>' : '');
+      var dot = document.createElement('span'); dot.className = 'step-dot'; dot.setAttribute('aria-hidden', 'true');
+      var copySpan = document.createElement('span'); copySpan.className = 'step-copy'; copySpan.textContent = stepLabel;
+      button.appendChild(dot); button.appendChild(copySpan);
+      if (evidenceMeta) { var evSpan = document.createElement('span'); evSpan.className = 'step-evidence'; evSpan.setAttribute('data-evidence', evidence); evSpan.textContent = evidenceMeta.label; button.appendChild(evSpan); }
       button.addEventListener('click', function () { focus(task.id, true); });
       item.appendChild(button); list.appendChild(item);
     });
@@ -838,7 +881,7 @@
     var procedurePhase = practicing ? PROCEDURE_PHASES[state.procedureStep] : null;
     document.getElementById('instruction').textContent = practicing ? 'Step ' + (state.procedureStep + 1) + ' of 3 - ' + procedurePhase.label + ': choose the action that will ' + procedurePhase.cue + '.' : state.risk[task.id] ? 'Risk is still flagged. Choose the safer response to resolve the station.' : state.replayTarget === task.id ? 'Targeted replay: transfer the safer first move to this changed context with ' + SUPPORT_LABELS[state.support].toLowerCase() + '.' : state.done[task.id] ? 'This station is marked safe. Rehearse the safe response or practice its three actions.' : adaptRoleCopy(context.instruction);
     renderChoices(task); renderProcedureProgress(task); renderSteps();
-    var hintButton = document.getElementById('hintButton'); hintButton.hidden = practicing; hintButton.disabled = practicing; hintButton.textContent = state.hintShown ? (state.support === 'supported' ? 'First-step cue shown' : 'Hint shown') : (state.support === 'supported' ? 'Show first-step cue' : 'Show a hint');
+    var hintButton = document.getElementById('hintButton'); hintButton.hidden = practicing; hintButton.disabled = practicing; hintButton.setAttribute('aria-expanded', String(!practicing && !!state.hintShown)); hintButton.textContent = state.hintShown ? (state.support === 'supported' ? 'First-step cue shown' : 'Hint shown') : (state.support === 'supported' ? 'Show first-step cue' : 'Show a hint');
     var hintText = document.getElementById('hintText'); hintText.hidden = practicing || !state.hintShown; hintText.textContent = state.hintShown && !practicing ? adaptRoleCopy(task.hint) : '';
     var procedureButton = document.getElementById('procedureButton'); procedureButton.hidden = !(practicing || (state.done[task.id] && !replaying)); procedureButton.textContent = practicing ? 'Exit action practice' : state.procedures[task.id] ? 'Repractice 3D actions - practiced' : 'Practice 3D actions';
     var feedback = document.getElementById('feedback'); feedback.textContent = state.feedback; feedback.className = 'feedback' + (state.tone ? ' ' + state.tone : '');
@@ -884,7 +927,7 @@
     var task = runTasks()[state.activeIndex] || TASKS[0]; var context = contextFor(task); var shifted = context.id !== 'routine';
     var scene = document.getElementById('capstoneScene'); scene.setAttribute('background', 'color: ' + context.sky); scene.setAttribute('fog', 'type: linear; color: ' + context.fog + '; near: 12; far: 38');
     TASKS.forEach(function (item) {
-      var evidenceMeta = EVIDENCE_META[state.outcomes[item.id]]; var replaying = state.replayTarget === item.id; var practicing = state.procedureTarget === item.id;
+      var evidenceMeta = evidenceMetaFor(state.outcomes[item.id]); var replaying = state.replayTarget === item.id; var practicing = state.procedureTarget === item.id;
       var label = document.getElementById('label-' + item.id); if (label) label.setAttribute('color', state.risk[item.id] ? '#fb7185' : practicing ? '#67e8f9' : replaying ? '#facc15' : state.done[item.id] ? (evidenceMeta ? evidenceMeta.color : '#4ade80') : item.id === task.id ? '#facc15' : '#c8d8e9');
       var status = document.getElementById('state-' + item.id);
       var orb = document.getElementById('state-orb-' + item.id);
@@ -933,15 +976,23 @@
     var fromOpener = window.opener && event.source === window.opener;
     var fromParent = window.parent && window.parent !== window && event.source === window.parent;
     if (!fromOpener && !fromParent) return;
-    if (event.origin && event.origin !== 'null') {
-      if (!isTrustedOpenerOrigin(event.origin)) return;
-      verifiedOpenerOrigin = event.origin;
-    }
+    if (!event.origin || event.origin === 'null' || !isTrustedOpenerOrigin(event.origin)) return;
+    if (verifiedOpenerOrigin && event.origin !== verifiedOpenerOrigin) return;
+    if (!verifiedOpenerOrigin) verifiedOpenerOrigin = event.origin;
+    var data = event && event.data;
+    if (!data || typeof data !== 'object') return;
+    if (data.type === 'alloflow-theme-change') setTheme(data.theme);
   });
 
   var activeTarget = state.procedureTarget || state.replayTarget; var first = activeTarget ? runTasks().findIndex(function (task) { return task.id === activeTarget; }) : nextIndex(); if (first < 0) first = nextIndex(); state.activeIndex = first; state.focused = runTasks()[first].id; state.hintShown = !!state.hinted[state.focused]; render(); renderScene(); postToOpener({ type: 'alloflow-life-capstone-3d-hello', mode: state.mode, missionFocus: state.missionFocus, support: state.support });
   postProgressSnapshot();
+  var capstoneSceneEl = document.getElementById('capstoneScene');
+  function untabSceneCanvas() { try { if (capstoneSceneEl && capstoneSceneEl.canvas) capstoneSceneEl.canvas.setAttribute('tabindex', '-1'); } catch (_) {} }
   if (!window.AFRAME) document.getElementById('scenePanel').classList.add('no-aframe');
+  else if (capstoneSceneEl) {
+    if (capstoneSceneEl.hasLoaded) untabSceneCanvas();
+    else capstoneSceneEl.addEventListener('loaded', untabSceneCanvas, { once: true });
+  }
 })();
 </script>
 </body>

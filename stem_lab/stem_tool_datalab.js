@@ -49,7 +49,21 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       "[data-datalab-launcher] button{transition:transform 120ms ease,background-color 140ms ease,border-color 140ms ease,box-shadow 140ms ease}",
       "[data-datalab-launcher] button:not([disabled]):hover{transform:translateY(-1px)}",
       "[data-datalab-launcher] :focus-visible{outline:3px solid #6366f1;outline-offset:2px}",
-      "@media (prefers-reduced-motion:reduce){[data-datalab-launcher] button{transition:none!important;transform:none!important}}",
+      // ── Data Lab live-motion studio craft (GPU-composited transform/opacity/background-position; zero SVG/Canvas per dataLab_engage invariant) ──
+      "@keyframes dlBarSheen{0%,58%{transform:translateX(-150%) skewX(-22deg);opacity:0}70%{opacity:0.9}88%{opacity:0.65}100%{transform:translateX(320%) skewX(-22deg);opacity:0}}",
+      "@keyframes dlBarBreath{0%,100%{transform:scaleY(1);opacity:0.94}50%{transform:scaleY(1.06);opacity:1}}",
+      "@keyframes dlBeaconPulse{0%,100%{transform:scale(1);opacity:0.65}50%{transform:scale(1.16);opacity:1}}",
+      "@keyframes dlRefFlow{from{background-position:0 0}to{background-position:24px 0}}",
+      "@keyframes dlCurveGlow{0%,100%{opacity:0.78}50%{opacity:1}}",
+      "[data-datalab-launcher] .dl-bar-sheen{position:absolute;inset:0;width:45%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.28),transparent);pointer-events:none;animation:dlBarSheen 5.6s ease-in-out infinite}",
+      "[data-datalab-launcher] .dl-emblem-bar{transform-origin:bottom center;animation:dlBarBreath 3.6s ease-in-out infinite}",
+      "[data-datalab-launcher] .dl-beacon-pulse{animation:dlBeaconPulse 2.6s ease-in-out infinite}",
+      "[data-datalab-launcher] .dl-ref-flow{background-image:repeating-linear-gradient(90deg,rgba(125,211,252,0.5) 0 6px,transparent 6px 12px);background-size:24px 100%;animation:dlRefFlow 2.6s linear infinite;pointer-events:none}",
+      "[data-datalab-launcher] .dl-curve-glow{animation:dlCurveGlow 3.2s ease-in-out infinite}",
+      "@media (prefers-reduced-motion:reduce){[data-datalab-launcher] button{transition:none!important;transform:none!important}[data-datalab-launcher] .dl-bar-sheen,[data-datalab-launcher] .dl-emblem-bar,[data-datalab-launcher] .dl-beacon-pulse,[data-datalab-launcher] .dl-ref-flow,[data-datalab-launcher] .dl-curve-glow{animation:none!important;transform:none!important}[data-datalab-launcher] .dl-bar-sheen{opacity:0!important}}",
+      "[data-datalab-theme=\"contrast\"] .dl-deco-sheen,[data-datalab-theme=\"contrast\"] .dl-deco-glow,.theme-contrast [data-datalab-launcher] .dl-deco-sheen,.theme-contrast [data-datalab-launcher] .dl-deco-glow{display:none!important}",
+      "[data-datalab-theme=\"contrast\"] .dl-emblem-bar,[data-datalab-theme=\"contrast\"] .dl-beacon-pulse,[data-datalab-theme=\"contrast\"] .dl-ref-flow,[data-datalab-theme=\"contrast\"] .dl-curve-glow,.theme-contrast [data-datalab-launcher] .dl-emblem-bar,.theme-contrast [data-datalab-launcher] .dl-beacon-pulse,.theme-contrast [data-datalab-launcher] .dl-ref-flow,.theme-contrast [data-datalab-launcher] .dl-curve-glow{animation:none!important;transform:none!important}",
+      "@media (forced-colors:active){[data-datalab-launcher] .dl-deco-sheen,[data-datalab-launcher] .dl-deco-glow{display:none!important}[data-datalab-launcher] .dl-emblem-bar,[data-datalab-launcher] .dl-beacon-pulse,[data-datalab-launcher] .dl-ref-flow,[data-datalab-launcher] .dl-curve-glow{animation:none!important;transform:none!important}}",
       "[data-datalab-theme=\"dark\"] .bg-white,[data-datalab-theme=\"dark\"] .bg-slate-50{background-color:#0f172a!important;color:#e2e8f0!important;border-color:#334155!important}",
       "[data-datalab-theme=\"dark\"] .text-slate-900,[data-datalab-theme=\"dark\"] .text-slate-800,[data-datalab-theme=\"dark\"] .text-slate-700{color:#f1f5f9!important}",
       "[data-datalab-theme=\"dark\"] .text-slate-600{color:#cbd5e1!important}",
@@ -552,9 +566,16 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             boxShadow: isContrast ? 'none' : 'inset 0 2px 10px rgba(2,6,23,0.72), 0 8px 20px -14px rgba(15,23,42,0.5)',
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
-            gap: '9px'
+            gap: '9px',
+            position: 'relative',
+            overflow: 'hidden'
           }
         },
+          !isContrast ? h('span', {
+            'aria-hidden': 'true',
+            className: 'dl-ref-flow dl-deco-glow',
+            style: { position: 'absolute', left: '16px', right: '16px', top: '6px', height: '1.5px', opacity: 0.55 }
+          }) : null,
           phases.map(function (ph) {
             var stCol = ph.done ? colDone : (ph.active ? colActive : colIdle);
             return h('div', {
@@ -570,11 +591,15 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 alignItems: 'center',
                 textAlign: 'center',
                 gap: '5px',
-                minWidth: 0
+                minWidth: 0,
+                position: 'relative',
+                overflow: 'hidden'
               }
             },
+              (!isContrast && ph.active) ? h('span', { 'aria-hidden': 'true', className: 'dl-bar-sheen dl-deco-sheen' }) : null,
               h('span', {
                 'aria-hidden': 'true',
+                className: (!isContrast && ph.active) ? 'dl-beacon-pulse' : undefined,
                 style: {
                   width: '28px', height: '28px', borderRadius: '999px',
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -614,11 +639,14 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', flex: '1 1 260px', minWidth: 0 } },
               // Bespoke Data Lab Recessed Geometric Emblem (pure HTML/CSS beveled gradient bars & active peak beacon — zero SVG/Canvas)
-              h('div', { 'aria-hidden': 'true', style: { width: '48px', height: '48px', borderRadius: '13px', flexShrink: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '4px', padding: '9px 8px 7px', background: isContrast ? '#000000' : 'linear-gradient(180deg, rgba(2,6,23,0.72) 0%, rgba(15,23,42,0.58) 100%)', border: isContrast ? '2px solid #ffff00' : '1px solid rgba(165,180,252,0.48)', boxShadow: isContrast ? 'none' : 'inset 0 2px 6px rgba(2,6,23,0.65), 0 0 12px rgba(99,102,241,0.28)', boxSizing: 'border-box', position: 'relative' } },
-                h('span', { style: { width: '6px', height: '12px', borderRadius: '3px 3px 1.5px 1.5px', background: isContrast ? '#ffff00' : 'linear-gradient(180deg,#a5b4fc,#6366f1)', boxShadow: isContrast ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.4)' } }),
-                h('span', { style: { width: '6px', height: '20px', borderRadius: '3px 3px 1.5px 1.5px', background: isContrast ? '#00ff00' : 'linear-gradient(180deg,#6ee7b7,#059669)', boxShadow: isContrast ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.4)' } }),
-                h('span', { style: { width: '6px', height: '15px', borderRadius: '3px 3px 1.5px 1.5px', background: isContrast ? '#ffff00' : 'linear-gradient(180deg,#7dd3fc,#0284c7)', boxShadow: isContrast ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.4)' } }),
-                h('span', { style: { width: '6px', height: '26px', borderRadius: '3px 3px 1.5px 1.5px', background: isContrast ? '#00ff00' : 'linear-gradient(180deg,#fde68a,#d97706)', boxShadow: isContrast ? 'none' : '0 0 8px rgba(251,191,36,0.55), inset 0 1px 0 rgba(255,255,255,0.5)' } })),
+              h('div', { 'aria-hidden': 'true', style: { width: '48px', height: '48px', borderRadius: '13px', flexShrink: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '4px', padding: '9px 8px 7px', background: isContrast ? '#000000' : 'linear-gradient(180deg, rgba(2,6,23,0.72) 0%, rgba(15,23,42,0.58) 100%)', border: isContrast ? '2px solid #ffff00' : '1px solid rgba(165,180,252,0.48)', boxShadow: isContrast ? 'none' : 'inset 0 2px 6px rgba(2,6,23,0.65), 0 0 12px rgba(99,102,241,0.28)', boxSizing: 'border-box', position: 'relative', overflow: 'hidden' } },
+                !isContrast ? h('span', { className: 'dl-ref-flow dl-deco-glow', style: { position: 'absolute', left: '4px', right: '4px', top: '21px', height: '1.5px', opacity: 0.65 } }) : null,
+                !isContrast ? h('span', { className: 'dl-beacon-pulse dl-deco-glow', style: { position: 'absolute', top: '5px', right: '8px', width: '5px', height: '5px', borderRadius: '999px', background: '#fef08a', boxShadow: '0 0 6px rgba(254,240,138,0.85)' } }) : null,
+                h('span', { className: !isContrast ? 'dl-emblem-bar' : undefined, style: { width: '6px', height: '12px', borderRadius: '3px 3px 1.5px 1.5px', background: isContrast ? '#ffff00' : 'linear-gradient(180deg,#a5b4fc,#6366f1)', boxShadow: isContrast ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.4)', animationDelay: '0s' } }),
+                h('span', { className: !isContrast ? 'dl-emblem-bar' : undefined, style: { width: '6px', height: '20px', borderRadius: '3px 3px 1.5px 1.5px', background: isContrast ? '#00ff00' : 'linear-gradient(180deg,#6ee7b7,#059669)', boxShadow: isContrast ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.4)', animationDelay: '0.45s' } }),
+                h('span', { className: !isContrast ? 'dl-emblem-bar' : undefined, style: { width: '6px', height: '15px', borderRadius: '3px 3px 1.5px 1.5px', background: isContrast ? '#ffff00' : 'linear-gradient(180deg,#7dd3fc,#0284c7)', boxShadow: isContrast ? 'none' : 'inset 0 1px 0 rgba(255,255,255,0.4)', animationDelay: '0.9s' } }),
+                h('span', { className: !isContrast ? 'dl-emblem-bar' : undefined, style: { width: '6px', height: '26px', borderRadius: '3px 3px 1.5px 1.5px', background: isContrast ? '#00ff00' : 'linear-gradient(180deg,#fde68a,#d97706)', boxShadow: isContrast ? 'none' : '0 0 8px rgba(251,191,36,0.55), inset 0 1px 0 rgba(255,255,255,0.5)', animationDelay: '1.35s' } }),
+                !isContrast ? h('span', { className: 'dl-bar-sheen dl-deco-sheen' }) : null),
               h('div', { style: { minWidth: 0 } },
                 h('div', { style: { fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: isContrast ? '#00ff00' : '#c7d2fe', marginBottom: '2px' } },
                   t('stem.dataLab.badge_subject', 'Technology · Math · CODAP Data Science Studio')),
@@ -757,13 +785,16 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             h('span', { className: 'text-xs font-bold ' + ink.info }, t('stem.dataLab.path_step_label', 'Step {n} of {total}').replace('{n}', function () { return String(nextIdx + 1); }).replace('{total}', function () { return String(steps.length); }))),
           // Visual Learning Path Stepper Track (calibrated recessed bar + glowing milestone beacons)
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', marginBottom: '10px', flexWrap: 'wrap' } },
-            h('div', { style: { flex: '1 1 160px', height: '10px', borderRadius: '999px', background: isContrast ? '#000000' : (isDark ? 'linear-gradient(180deg,#0b1220,#1e293b)' : 'linear-gradient(180deg,#cbd5e1,#e2e8f0)'), border: isContrast ? '1px solid #ffff00' : '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), boxShadow: isContrast ? 'none' : 'inset 0 1px 3px rgba(15,23,42,0.2)', overflow: 'hidden' } },
-              h('div', { style: { width: pctDone + '%', height: '100%', borderRadius: '999px', background: isContrast ? '#00ff00' : 'linear-gradient(90deg,#4338ca 0%,#0284c7 60%,#10b981 100%)', boxShadow: isContrast ? 'none' : 'inset 0 1.5px 0 rgba(255,255,255,0.35)' } })),
+            h('div', { style: { flex: '1 1 160px', height: '10px', borderRadius: '999px', background: isContrast ? '#000000' : (isDark ? 'linear-gradient(180deg,#0b1220,#1e293b)' : 'linear-gradient(180deg,#cbd5e1,#e2e8f0)'), border: isContrast ? '1px solid #ffff00' : '1px solid ' + (isDark ? '#334155' : '#cbd5e1'), boxShadow: isContrast ? 'none' : 'inset 0 1px 3px rgba(15,23,42,0.2)', overflow: 'hidden', position: 'relative' } },
+              !isContrast ? h('span', { 'aria-hidden': 'true', className: 'dl-ref-flow dl-deco-glow', style: { position: 'absolute', left: 0, right: 0, top: '4px', height: '1.5px', opacity: 0.4 } }) : null,
+              h('div', { className: !isContrast ? 'dl-curve-glow' : undefined, style: { width: pctDone + '%', height: '100%', borderRadius: '999px', background: isContrast ? '#00ff00' : 'linear-gradient(90deg,#4338ca 0%,#0284c7 60%,#10b981 100%)', boxShadow: isContrast ? 'none' : 'inset 0 1.5px 0 rgba(255,255,255,0.35)', position: 'relative', overflow: 'hidden' } },
+                !isContrast ? h('span', { 'aria-hidden': 'true', className: 'dl-bar-sheen dl-deco-sheen' }) : null)),
             h('div', { style: { display: 'flex', gap: '5px', alignItems: 'center' }, 'aria-hidden': 'true' },
               steps.map(function (stItem, idx) {
                 var isCur = idx === nextIdx;
                 return h('span', {
                   key: stItem.inv.id,
+                  className: (!isContrast && isCur) ? 'dl-beacon-pulse' : undefined,
                   style: {
                     width: '22px', height: '22px', borderRadius: '999px', fontSize: '10.5px', fontWeight: 800,
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -1780,13 +1811,37 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     };
     var question = typeof data.question === 'string' ? data.question.trim().slice(0, 400) : '';
     if (!question) { respond({ error: 'invalid-question' }); return; }
+    // Safety gate: the Socratic tutor accepts open-ended student questions;
+    // check before sending to the AI (uses shared SEL gate when loaded, else
+    // SafetyContentChecker directly).
+    var c = _bridge.ctx || {};
+    var onFlag = typeof c.onSafetyFlag === 'function' ? c.onSafetyFlag : null;
+    var gateAction = (function (msg) {
+      if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+        try {
+          var r = window.SelHub.safeRehearseCheck(msg, { toolId: 'dataLab_socratic_tutor', onSafetyFlag: onFlag });
+          if (r && r.action) return r.action;
+        } catch (_) {}
+      }
+      var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+      var flags = null;
+      try { flags = (checker && checker.check) ? checker.check(msg) : null; } catch (_) { flags = null; }
+      if (!Array.isArray(flags) || !flags.length) return 'continue';
+      var rank = { low: 1, medium: 2, high: 3, critical: 4 };
+      var top = flags.reduce(function (a, f) { return (f && (rank[f.severity] || 0) > (rank[a.severity] || 0)) ? f : a; }, flags[0] || {});
+      if (onFlag) { try { onFlag(Object.assign({}, top, { source: 'stem_dataLab_socratic_tutor', context: msg.slice(0, 100), aiGenerated: false })); } catch (_) {} }
+      return top.severity === 'critical' ? 'block' : (top.severity === 'high' ? 'nudge' : 'continue');
+    })(question);
+    if (gateAction === 'block') {
+      respond({ text: 'I want to pause our data investigation for a second. What you typed sounds heavy, and your wellbeing matters more than the assignment. If any of this is real for you right now, please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). You are not alone.' });
+      return;
+    }
     // A real question counts toward the Ask quests whether or not AI answers it.
     if (!bridgeAiOn()) { countAsk(); respond({ error: 'ai-disabled' }); return; }
     if (_aiBusy.current) { respond({ error: 'busy' }); return; }
     _aiBusy.current = true;
     // Functional update — the closure's slice can be stale mid-conversation.
     countAsk();
-    var c = _bridge.ctx || {};
     var prompt = buildTutorPrompt(question, data.snapshot, data.history, {
       languageName: hostLanguage().name,
       gradeBand: c.gradeBand,
@@ -1796,7 +1851,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       return c.callGemini(prompt, false, false, 0.7);
     }).then(function (resp) {
       var text = (typeof resp === 'string') ? resp : ((resp && (resp.text || resp.output || resp.response)) || '');
-      respond({ text: localizeFallbackQuestion(normalizeTutorReply(text)) });
+      var reply = localizeFallbackQuestion(normalizeTutorReply(text));
+      if (gateAction === 'nudge') reply += '\n\n(If anything you typed is close to something real for you, talking to a trusted adult is always an option.)';
+      respond({ text: reply });
     }).catch(function () {
       respond({ error: 'tutor-unavailable' });
     }).finally(function () { _aiBusy.current = false; });

@@ -105,7 +105,7 @@ module.exports = [
   },
   {
     id: 'L1.0',
-    correct: 'The nature, purpose, benefits, material risks, alternatives, and limits, plus a voluntary chance to ask and decide.',
+    correct: 'The nature, purpose, benefits, material risks, alternatives, and limits, with a voluntary chance to decide.',
     distractors: [
       'A signed consent form obtained at check-in before the clinician explains the planned evaluation or treatment.',
       'A written guarantee that the recommended treatment will succeed if the client attends every scheduled session.',

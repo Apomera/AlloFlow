@@ -147,12 +147,44 @@
     return Object.freeze(out);
   })();
 
+  var SECRET_KEY_RE = /api.?key|token|secret|password|passphrase|authorization|bearer|credential|cookie|private.?key|access.?key|refresh.?key|session.?key|auth.?key|client.?key|signing.?key|encryption.?key|base.?url/i;
+  var MAX_STABLE_DEPTH = 20;
+  var MAX_STABLE_NODES = 10000;
+  var MAX_PLAN_ROWS = 500;
+  var MAX_LANGUAGES = 64;
+  var ACTION_RANK = Object.freeze({ reuse: 0, variant: 1, generate: 2, refresh: 3 });
+
+  function isDangerousKey(key) {
+    return key === '__proto__' || key === 'constructor' || key === 'prototype';
+  }
+
   function isObject(value) {
     return !!value && typeof value === 'object' && !Array.isArray(value);
   }
 
+  function safeAssign(target) {
+    var out = isObject(target) ? target : {};
+    for (var i = 1; i < arguments.length; i++) {
+      var src = arguments[i];
+      if (!isObject(src)) continue;
+      var keys = Object.keys(src);
+      for (var k = 0; k < keys.length; k++) {
+        var key = keys[k];
+        if (!isDangerousKey(key)) out[key] = src[key];
+      }
+    }
+    return out;
+  }
+
+  function safeNumber(value) {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string' && value.trim() !== '') return Number(value);
+    return NaN;
+  }
+
   function clean(value) {
-    return String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
+    if (value == null || typeof value === 'object' || typeof value === 'function' || typeof value === 'symbol') return '';
+    return String(value).replace(/\s+/g, ' ').trim();
   }
 
   function fold(value) {
@@ -173,29 +205,55 @@
     return result;
   }
 
-  function stableValue(value) {
-    if (Array.isArray(value)) return value.map(stableValue);
+  function stableValue(value, opts, depth, seen, budget) {
+    var d = depth || 0;
+    var scrub = !!(opts && opts.scrubSecrets);
+    var counter = budget || { n: 0 };
+    if (typeof value === 'bigint') return String(value);
+    if (d > MAX_STABLE_DEPTH || ++counter.n > MAX_STABLE_NODES) return null;
+    if (Array.isArray(value)) {
+      var arrSeen = seen || new Set();
+      if (arrSeen.has(value)) return null;
+      arrSeen.add(value);
+      try {
+        return value.map(function (item) { return stableValue(item, opts, d + 1, arrSeen, counter); });
+      } finally {
+        arrSeen.delete(value);
+      }
+    }
     if (!isObject(value)) return value;
-    var out = {};
-    Object.keys(value).sort().forEach(function (key) {
-      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
-      if (value[key] !== undefined && typeof value[key] !== 'function') out[key] = stableValue(value[key]);
-    });
-    return out;
+    var objSeen = seen || new Set();
+    if (objSeen.has(value)) return null;
+    objSeen.add(value);
+    try {
+      var out = {};
+      Object.keys(value).sort().forEach(function (key) {
+        if (isDangerousKey(key)) return;
+        if (scrub && SECRET_KEY_RE.test(key)) return;
+        var v = value[key];
+        if (v !== undefined && typeof v !== 'function' && typeof v !== 'symbol') {
+          out[key] = stableValue(v, opts, d + 1, objSeen, counter);
+        }
+      });
+      return out;
+    } finally {
+      objSeen.delete(value);
+    }
   }
 
   function stableStringify(value) {
-    return JSON.stringify(stableValue(value));
+    try { return JSON.stringify(stableValue(value)); } catch (_) { return ''; }
   }
 
-  function hashText(value, radix = 36) {
-    var text = String(value == null ? '' : value);
+  function hashText(value, radix) {
+    var r = (typeof radix === 'number' && Number.isInteger(radix) && radix >= 2 && radix <= 36) ? radix : 36;
+    var text = (value == null || typeof value === 'object' || typeof value === 'function' || typeof value === 'symbol') ? '' : String(value);
     var hash = 2166136261;
     for (var i = 0; i < text.length; i++) {
       hash ^= text.charCodeAt(i);
       hash = Math.imul(hash, 16777619);
     }
-    return (hash >>> 0).toString(radix);
+    return (hash >>> 0).toString(r);
   }
 
   function fingerprintSourceText(value) {
@@ -208,10 +266,16 @@
     if (fromText) return fromText;
     var direct = clean(value);
     if (!direct) return '';
-    if (/^src-/i.test(direct)) return 'src-' + direct.slice(4);
+    if (/^src-/i.test(direct)) {
+      var srcSuffix = clean(direct.slice(4));
+      return srcSuffix ? 'src-' + srcSuffix : '';
+    }
     // Full Pack's pre-matrix fingerprint used the same compact envelope with an
     // fp- prefix. Accept it at the boundary, but never emit a second namespace.
-    if (/^fp-/i.test(direct)) return 'src-' + direct.slice(3);
+    if (/^fp-/i.test(direct)) {
+      var fpSuffix = clean(direct.slice(3));
+      return fpSuffix ? 'src-' + fpSuffix : '';
+    }
     // Preserve opaque external identifiers without allowing them to become a
     // second output format.
     return 'src-ref-' + hashText(direct) + '-' + direct.length;
@@ -226,31 +290,41 @@
   }
 
   function normalizeLanguageValues(values, fallback) {
-    return uniqueStrings((Array.isArray(values) ? values : []).map(function (value) {
+    return uniqueStrings((Array.isArray(values) ? values.slice(0, MAX_LANGUAGES) : []).map(function (value) {
       return normalizeLanguageValue(value);
     }), fallback == null ? fallback : normalizeLanguageValue(fallback));
   }
 
   function nativeLanguageList(settings) {
-    var source = settings || {};
+    var source = isObject(settings) ? settings : {};
     var helpers = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.TextPipelineHelpers;
+    var selected = Array.isArray(source.selectedLanguages) ? source.selectedLanguages.slice(0, MAX_LANGUAGES) : [];
     // Reviewed jobs retain their concrete list even if the app locale changes.
     if (Array.isArray(source.effectiveLanguageList) && source.effectiveLanguageList.length) {
-      return Number(source.nativeLanguageDefaultsVersion) >= 1 && helpers && typeof helpers.allGenerationLanguages === 'function'
-        ? helpers.allGenerationLanguages(source.effectiveLanguageList[0], source.effectiveLanguageList.slice(1))
-        : normalizeLanguageValues(source.effectiveLanguageList);
+      var effList = source.effectiveLanguageList.slice(0, MAX_LANGUAGES);
+      if (safeNumber(source.nativeLanguageDefaultsVersion) >= 1 && helpers && typeof helpers.allGenerationLanguages === 'function') {
+        try {
+          var effOut = helpers.allGenerationLanguages(effList[0], effList.slice(1));
+          if (Array.isArray(effOut) && effOut.length) return effOut.slice(0, MAX_LANGUAGES);
+        } catch (_) {}
+      }
+      return normalizeLanguageValues(effList);
     }
     var appLanguage = normalizeLanguageValue(source.appLanguage || source.currentUiLanguage || source.uiLanguage, 'English');
-    if (Number(source.nativeLanguageDefaultsVersion) >= 1) {
-      return helpers && typeof helpers.allGenerationLanguages === 'function'
-        ? helpers.allGenerationLanguages(appLanguage, source.selectedLanguages)
-        : normalizeLanguageValues([appLanguage].concat(source.selectedLanguages || []));
+    if (safeNumber(source.nativeLanguageDefaultsVersion) >= 1) {
+      if (helpers && typeof helpers.allGenerationLanguages === 'function') {
+        try {
+          var natOut = helpers.allGenerationLanguages(appLanguage, selected);
+          if (Array.isArray(natOut) && natOut.length) return natOut.slice(0, MAX_LANGUAGES);
+        } catch (_) {}
+      }
+      return normalizeLanguageValues([appLanguage].concat(selected));
     }
-    return normalizeLanguageValues(['English'].concat(source.selectedLanguages || []), 'English');
+    return normalizeLanguageValues(['English'].concat(selected), 'English');
   }
 
   function resolvedCompanionLanguage(settings) {
-    var source = settings || {};
+    var source = isObject(settings) ? settings : {};
     var mode = clean(source.translationMode || (source.translationPolicy && source.translationPolicy.mode)) || 'auto';
     if (fold(mode) === 'off' || source.translationPolicy && source.translationPolicy.enabled === false) return '';
     var target = fold(mode) === 'auto'
@@ -261,16 +335,22 @@
   function nativeLanguageName(value, fallback) {
     var normalized = normalizeLanguageValue(value, fallback);
     var helpers = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.TextPipelineHelpers;
-    return helpers && typeof helpers.normalizeLanguageName === 'function' ? helpers.normalizeLanguageName(normalized) : normalized;
+    if (helpers && typeof helpers.normalizeLanguageName === 'function') {
+      try {
+        var resolved = helpers.normalizeLanguageName(normalized);
+        if (typeof resolved === 'string' && clean(resolved)) return resolved;
+      } catch (_) {}
+    }
+    return normalized;
   }
 
   function glossaryLanguagePlan(settings, language) {
-    var source = settings || {};
-    var native = Number(source.nativeLanguageDefaultsVersion) >= 1;
+    var source = isObject(settings) ? settings : {};
+    var native = safeNumber(source.nativeLanguageDefaultsVersion) >= 1;
     var output = normalizeLanguageValue(source.language || source.leveledTextLanguage, 'English');
     var all = fold(output) === 'all selected languages';
     var base = native ? nativeLanguageName(all ? source.appLanguage || source.currentUiLanguage : language || output, 'English') : 'English';
-    var attached = all ? (native ? nativeLanguageList(source) : source.selectedLanguages || [])
+    var attached = all ? (native ? nativeLanguageList(source) : (Array.isArray(source.selectedLanguages) ? source.selectedLanguages : []))
       : (native ? [] : [output]);
     var companion = native ? resolvedCompanionLanguage(source) : normalizeLanguageValue(source.translationTarget);
     if (companion) attached = attached.concat([companion]);
@@ -278,12 +358,14 @@
       .filter(function (value) { return fold(value) !== fold(base) && fold(value) !== 'all selected languages'; }) };
   }
 
-  function deepFreeze(value, seen) {
+  function deepFreeze(value, seen, depth) {
     if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
-    var visited = seen || [];
-    if (visited.indexOf(value) !== -1) return value;
-    visited.push(value);
-    Object.keys(value).forEach(function (key) { deepFreeze(value[key], visited); });
+    var d = depth || 0;
+    if (d > 32) return Object.freeze(value);
+    var visited = seen || new Set();
+    if (visited.has(value)) return value;
+    visited.add(value);
+    Object.keys(value).forEach(function (key) { deepFreeze(value[key], visited, d + 1); });
     return Object.freeze(value);
   }
 
@@ -313,52 +395,82 @@
   }
 
   function own(object, key) {
-    return !!object && Object.prototype.hasOwnProperty.call(object, key);
+    return !!object && (typeof key === 'string' || typeof key === 'number') && Object.prototype.hasOwnProperty.call(object, key);
   }
 
   function typedOverrideFrom(settings, type) {
+    if (!type || isDangerousKey(type)) return {};
     var overrides = isObject(settings && settings.toolOverrides) ? settings.toolOverrides : {};
-    if (isObject(overrides[type])) return overrides[type];
-    if (clean(overrides[type])) return { customInstructions: clean(overrides[type]) };
+    if (own(overrides, type)) {
+      if (isObject(overrides[type])) return overrides[type];
+      if (typeof overrides[type] === 'string' && clean(overrides[type])) return { customInstructions: clean(overrides[type]) };
+    }
     var keys = Object.keys(overrides);
     for (var i = 0; i < keys.length; i++) {
-      if (fold(keys[i]) !== type) continue;
+      if (isDangerousKey(keys[i]) || fold(keys[i]) !== type) continue;
       if (isObject(overrides[keys[i]])) return overrides[keys[i]];
-      if (clean(overrides[keys[i]])) return { customInstructions: clean(overrides[keys[i]]) };
+      if (typeof overrides[keys[i]] === 'string' && clean(overrides[keys[i]])) return { customInstructions: clean(overrides[keys[i]]) };
     }
     return {};
   }
 
   function effectiveConfigValue(resource, settings, type, key) {
+    if (isDangerousKey(key)) return undefined;
     var row = isObject(resource) ? resource : {};
     var rowConfig = isObject(row.config) ? row.config : {};
     var typedOverride = typedOverrideFrom(settings, type);
     var frozenOptions = isObject(settings && settings.generationOptions)
       ? settings.generationOptions : {};
-    var containers = [row, rowConfig, typedOverride, frozenOptions, settings || {}];
+    var containers = [row, rowConfig, typedOverride, frozenOptions, isObject(settings) ? settings : {}];
     for (var i = 0; i < containers.length; i++) {
       if (own(containers[i], key) && containers[i][key] !== undefined) return containers[i][key];
     }
     return undefined;
   }
 
-  function compactStableObject(value) {
-    if (!isObject(value)) return {};
-    var out = {};
-    Object.keys(value).sort().forEach(function (key) {
-      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
-      if (/api.?key|token|secret|password|authorization|base.?url/i.test(key)) return;
-      var candidate = value[key];
-      if (candidate === undefined || typeof candidate === 'function') return;
-      if (typeof candidate === 'string') candidate = clean(candidate);
-      if (candidate === '' || candidate == null) return;
-      if (isObject(candidate)) candidate = compactStableObject(candidate);
-      else if (Array.isArray(candidate)) candidate = candidate.map(function (item) {
-        return isObject(item) ? compactStableObject(item) : stableValue(item);
+  function compactStableArray(arr, depth, seen, budget) {
+    var d = depth || 0;
+    var counter = budget || { n: 0 };
+    if (d > MAX_STABLE_DEPTH || ++counter.n > MAX_STABLE_NODES) return [];
+    var arrSeen = seen || new Set();
+    if (arrSeen.has(arr)) return [];
+    arrSeen.add(arr);
+    try {
+      return arr.map(function (item) {
+        if (isObject(item)) return compactStableObject(item, d + 1, arrSeen, counter);
+        if (Array.isArray(item)) return compactStableArray(item, d + 1, arrSeen, counter);
+        return stableValue(item, { scrubSecrets: true }, d + 1, arrSeen, counter);
       });
-      out[key] = stableValue(candidate);
-    });
-    return out;
+    } finally {
+      arrSeen.delete(arr);
+    }
+  }
+
+  function compactStableObject(value, depth, seen, budget) {
+    if (!isObject(value)) return {};
+    var d = depth || 0;
+    var counter = budget || { n: 0 };
+    if (d > MAX_STABLE_DEPTH || ++counter.n > MAX_STABLE_NODES) return {};
+    var objSeen = seen || new Set();
+    if (objSeen.has(value)) return {};
+    objSeen.add(value);
+    try {
+      var out = {};
+      Object.keys(value).sort().forEach(function (key) {
+        if (isDangerousKey(key)) return;
+        if (SECRET_KEY_RE.test(key)) return;
+        var candidate = value[key];
+        if (candidate === undefined || typeof candidate === 'function' || typeof candidate === 'symbol') return;
+        if (typeof candidate === 'string') candidate = clean(candidate);
+        if (candidate === '' || candidate == null) return;
+        if (isObject(candidate)) out[key] = compactStableObject(candidate, d + 1, objSeen, counter);
+        else if (Array.isArray(candidate)) out[key] = compactStableArray(candidate, d + 1, objSeen, counter);
+        else out[key] = typeof candidate === 'bigint' ? String(candidate) : candidate;
+      });
+      return out;
+    } finally {
+      objSeen.delete(value);
+    }
   }
 
   function scopedGenerationContext(type, settings, typedOverride) {
@@ -366,25 +478,27 @@
     var overrideContext = isObject(typedOverride && typedOverride.generationContext)
       ? typedOverride.generationContext : {};
     if (type === 'full-pack') {
-      return compactStableObject(Object.assign({}, raw,
+      return compactStableObject(safeAssign({}, raw,
         Object.keys(overrideContext).length ? { resourceOverride: overrideContext } : {}));
     }
+    var safeType = (typeof type === 'string' && !isDangerousKey(type)) ? type : '';
     var structured = own(raw, 'common') || own(raw, 'resources') || own(raw, 'tools')
-      || own(raw, 'types') || own(raw, type);
+      || own(raw, 'types') || (safeType && own(raw, safeType));
     if (!structured) {
-      return compactStableObject(Object.assign({}, raw,
+      return compactStableObject(safeAssign({}, raw,
         Object.keys(overrideContext).length ? { resource: overrideContext } : {}));
     }
     var resourceContext = {};
-    [raw.resources, raw.tools, raw.types].forEach(function (collection) {
-      if (isObject(collection) && isObject(collection[type])) {
-        resourceContext = Object.assign(resourceContext, collection[type]);
+    ['resources', 'tools', 'types'].forEach(function (colKey) {
+      var collection = own(raw, colKey) ? raw[colKey] : null;
+      if (safeType && isObject(collection) && own(collection, safeType) && isObject(collection[safeType])) {
+        resourceContext = safeAssign(resourceContext, collection[safeType]);
       }
     });
-    if (isObject(raw[type])) resourceContext = Object.assign(resourceContext, raw[type]);
-    resourceContext = Object.assign(resourceContext, overrideContext);
+    if (safeType && own(raw, safeType) && isObject(raw[safeType])) resourceContext = safeAssign(resourceContext, raw[safeType]);
+    resourceContext = safeAssign(resourceContext, overrideContext);
     var scoped = {};
-    if (isObject(raw.common) && Object.keys(raw.common).length) scoped.common = raw.common;
+    if (own(raw, 'common') && isObject(raw.common) && Object.keys(raw.common).length) scoped.common = raw.common;
     if (Object.keys(resourceContext).length) scoped.resource = resourceContext;
     return compactStableObject(scoped);
   }
@@ -717,9 +831,9 @@
         || source.imageStyle || source.universalImageStyle),
       imageAspectRatio: clean(source.imageAspectRatio),
       generationContext: isObject(source.generationContext)
-        ? stableValue(source.generationContext) : {},
-      generationOptions: stableValue(Object.assign({}, source.generationOptions || {}, generationOptions)),
-      toolOverrides: isObject(source.toolOverrides) ? stableValue(source.toolOverrides) : {},
+        ? stableValue(source.generationContext, { scrubSecrets: true }) : {},
+      generationOptions: stableValue(safeAssign({}, source.generationOptions, generationOptions), { scrubSecrets: true }),
+      toolOverrides: isObject(source.toolOverrides) ? stableValue(source.toolOverrides, { scrubSecrets: true }) : {},
       backend: clean(source.backend || source.aiBackend),
       provider: clean(source.provider || source.aiProvider || source.providerId),
       model: clean(source.model || source.modelId || (source.models && source.models.default)),
@@ -753,7 +867,8 @@
   }
 
   function buildVariantKey(resource, policy, settings) {
-    if (!policy.allowVariants) return 'singleton';
+    var resolvedPolicy = isObject(policy) ? policy : getResourcePolicy(resource);
+    if (!resolvedPolicy.allowVariants) return 'singleton';
     var explicit = clean(resource && (resource.explicitVariantKey || resource.variantKeyInput));
     // Plan rows carry the resolved key for display together with a marker that
     // says it was derived. Ignore that displayed value on re-resolution so an
@@ -1174,34 +1289,37 @@
     if (resource && (resource.forceRefresh === true || resource.action === ACTIONS.REFRESH || resource.generationAction === ACTIONS.REFRESH)) return true;
     var force = options && options.forceRefresh;
     if (force === true) return true;
-    if (typeof force === 'function') return force(resource, cell) === true;
+    if (typeof force === 'function') {
+      try { return force(resource, cell) === true; } catch (_) { return false; }
+    }
+    var rowKey = resource && (resource.uiId || resource.key || resource.id);
     if (Array.isArray(force)) {
       return force.indexOf(cell.generationIdentity) !== -1 || force.indexOf(cell.type) !== -1
-        || force.indexOf(resource && (resource.uiId || resource.key || resource.id)) !== -1;
+        || (rowKey != null && rowKey !== '' && force.indexOf(rowKey) !== -1);
     }
     if (isObject(force)) {
-      var rowKey = resource && (resource.uiId || resource.key || resource.id);
       return (own(force, cell.generationIdentity) && force[cell.generationIdentity] === true)
         || (own(force, cell.type) && force[cell.type] === true)
-        || (rowKey != null && own(force, rowKey) && force[rowKey] === true);
+        || (rowKey != null && rowKey !== '' && own(force, rowKey) && force[rowKey] === true);
     }
     return false;
   }
 
   function aggregateAction(variants) {
-    var rank = { reuse: 0, variant: 1, generate: 2, refresh: 3 };
     var action = ACTIONS.REUSE;
-    (variants || []).forEach(function (item) {
-      if ((rank[item.action] || 0) > (rank[action] || 0)) action = item.action;
+    (Array.isArray(variants) ? variants : []).forEach(function (item) {
+      if (!item || !own(ACTION_RANK, item.action)) return;
+      if (ACTION_RANK[item.action] > (ACTION_RANK[action] || 0)) action = item.action;
     });
     return action;
   }
 
   function resolveGenerationMatrix(resource, options) {
-    var row = typeof resource === 'string' ? { type: resource } : (resource || {});
+    var row = typeof resource === 'string' ? { type: resource } : (isObject(resource) ? resource : {});
     var type = getResourceType(row);
     var policy = getResourcePolicy(type);
-    var settingsInput = Object.assign({}, (options && options.settings) || {}, options || {});
+    var opts = isObject(options) ? options : {};
+    var settingsInput = safeAssign({}, opts.settings, opts);
     // A current source text supplied by the caller outranks source metadata on
     // a reopened plan row. This lets a plan be safely re-resolved after the
     // educator changes the source instead of pinning the row's old fingerprint.
@@ -1336,18 +1454,19 @@
   }
 
   function resolvePlanRows(rows, options) {
-    var list = Array.isArray(rows) ? rows : [];
-    var baseOptions = Object.assign({}, (options && options.settings) || {}, options || {});
+    var list = Array.isArray(rows) ? rows.slice(0, MAX_PLAN_ROWS) : [];
+    var opts = isObject(options) ? options : {};
+    var baseOptions = safeAssign({}, opts.settings, opts);
     var existingArtifacts = normalizeArtifacts(baseOptions);
     var virtualArtifacts = existingArtifacts.slice();
-    var seenIdentities = {};
-    var seenSingletonSlots = {};
+    var seenIdentities = Object.create(null);
+    var seenSingletonSlots = Object.create(null);
     var resolved = [];
     var skipped = [];
 
     list.forEach(function (raw, index) {
-      var input = typeof raw === 'string' ? { tool: raw } : Object.assign({}, raw || {});
-      var matrix = resolveGenerationMatrix(input, Object.assign({}, baseOptions, { existingArtifacts: virtualArtifacts }));
+      var input = typeof raw === 'string' ? { tool: raw } : safeAssign({}, raw);
+      var matrix = resolveGenerationMatrix(input, safeAssign({}, baseOptions, { existingArtifacts: virtualArtifacts }));
       var keptVariants = [];
       var suppressedVariants = [];
       matrix.variants.forEach(function (cell) {
@@ -1448,7 +1567,7 @@
     var variantCount = 0;
     resolved.forEach(function (row) {
       row.generationVariants.forEach(function (cell) {
-        actions[cell.action] = (actions[cell.action] || 0) + 1;
+        if (own(actions, cell.action)) actions[cell.action] += 1;
         variantCount++;
         if (cell.action !== ACTIONS.REUSE) {
           expectedCalls++;

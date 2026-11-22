@@ -103,6 +103,7 @@
         ? value : null;
     } catch (_) { return null; }
   }
+  var _memBackoff = null;
   function readBackoff() {
     var primary = localStore();
     var fallback = sessionStore();
@@ -111,26 +112,36 @@
     if (!parsed) {
       try { parsed = fallback && parseBackoffRecord(fallback.getItem(BACKOFF_KEY)); } catch (_) {}
     }
-    return parsed || { failures: 0, blockedUntil: 0 };
+    if (parsed) return parsed;
+    if (_memBackoff) return _memBackoff;
+    return { failures: 0, blockedUntil: 0 };
   }
   function writeBackoff(value) {
     var primary = localStore();
     var fallback = sessionStore();
     if (!value || !value.failures) {
+      _memBackoff = null;
       try { if (primary) primary.removeItem(BACKOFF_KEY); } catch (_) {}
       try { if (fallback) fallback.removeItem(BACKOFF_KEY); } catch (_) {}
       return;
     }
     var serialized = JSON.stringify(value);
+    var wrote = false;
     try {
       if (primary) {
         primary.setItem(BACKOFF_KEY, serialized);
-        return;
+        wrote = true;
       }
     } catch (_) {}
-    try {
-      if (fallback) fallback.setItem(BACKOFF_KEY, serialized);
-    } catch (_) {}
+    if (!wrote) {
+      try {
+        if (fallback) {
+          fallback.setItem(BACKOFF_KEY, serialized);
+          wrote = true;
+        }
+      } catch (_) {}
+    }
+    _memBackoff = wrote ? null : value;
   }
   function retryAfter(now) {
     var remaining = readBackoff().blockedUntil - now;
@@ -139,7 +150,7 @@
   }
   function recordFailure(now) {
     var state = readBackoff();
-    var failures = state.failures + 1;
+    var failures = Math.min(1000000, state.failures + 1);
     var exponent = Math.max(0, failures - BACKOFF_AFTER_FAILURES);
     var delay = failures >= BACKOFF_AFTER_FAILURES
       ? Math.min(MAX_BACKOFF_MS, Math.pow(2, exponent) * 1000)
@@ -285,10 +296,10 @@
     if (cfgMismatch) delete pt.apiKey;
     var sess = aiSessionSecrets();
     var sessDest = sessionAiDestination();
-    if (sess.apiKey && sessDest && cfgDest && sessDest !== cfgDest) delete sess.apiKey;
+    if (sess.apiKey && sessDest && cfgDest && sessDest !== cfgDest) { delete sess.apiKey; sessDest = ''; }
     var secrets = Object.assign({}, pt, sess);
     if (!hasAiSecrets(secrets)) return false;
-    var dest = sessDest || (!cfgMismatch && cfg && typeof cfg.apiKeyDestination === 'string' ? cfg.apiKeyDestination : '') || cfgDest;
+    var dest = (sess.apiKey ? sessDest : '') || (!cfgMismatch && cfg && typeof cfg.apiKeyDestination === 'string' ? cfg.apiKeyDestination : '') || cfgDest;
     var payload = Object.assign({}, secrets);
     if (payload.apiKey && dest) payload.apiKeyDestination = dest;
     var crypto = cryptoApi();
@@ -360,6 +371,8 @@
     if (secrets.apiKey && dest && !destMismatch) {
       next.apiKeyDestination = dest;
       secrets.apiKeyDestination = dest;
+    } else if (destMismatch || (!secrets.apiKey && !next.apiKey)) {
+      delete next.apiKeyDestination;
     }
     var changed = JSON.stringify(pickAiSecrets(secrets)) !== JSON.stringify(prior)
       || (!!secrets.apiKey && secrets.apiKeyDestination !== priorDest);
@@ -395,28 +408,38 @@
     var wait = retryAfter(now);
     if (wait > 0) return { ok: false, reason: 'backoff', retryAfterMs: wait };
     if (!lockedAiRecord()) return { ok: false, reason: 'not-configured', retryAfterMs: 0 };
+    if (normalizeCode(code).length > MAX_CODE_LENGTH) {
+      var longFailNow = options && Number.isFinite(options.now) ? options.now : Date.now();
+      return { ok: false, reason: 'incorrect', retryAfterMs: recordFailure(longFailNow) };
+    }
     try {
       await unlockAiKey(code);
       writeBackoff(null);
       return { ok: true, reason: 'unlocked', retryAfterMs: 0 };
     } catch (_) {
-      return { ok: false, reason: 'incorrect', retryAfterMs: recordFailure(now) };
+      var failNow = options && Number.isFinite(options.now) ? options.now : Date.now();
+      return { ok: false, reason: 'incorrect', retryAfterMs: recordFailure(failNow) };
     }
   }
-  async function unlockAiKeyWithCode(code, options) {
+  async function _unlockAiKeyWithCodeSerialized(code, options) {
     if (status().configured) {
-      var result = await verify(code, options);
+      var hadLocked = !!lockedAiRecord();
+      var result = await _verifySerialized(code, options);
       if (!result.ok) return result;
+      if (!hadLocked && !lockedAiRecord()) {
+        return { ok: false, reason: 'not-configured', retryAfterMs: 0 };
+      }
       return aiKeyStatus().locked
         ? { ok: false, reason: 'undecryptable', retryAfterMs: 0 }
         : { ok: true, reason: 'unlocked', retryAfterMs: 0 };
     }
-    var run = _verifyQueue.then(function () { return _unlockAiKeyUnconfiguredSerialized(code, options); });
-    _verifyQueue = run.catch(function () {});
-    return run;
+    return _unlockAiKeyUnconfiguredSerialized(code, options);
+  }
+  function unlockAiKeyWithCode(code, options) {
+    return _enqueueSerialized(function () { return _unlockAiKeyWithCodeSerialized(code, options); });
   }
 
-  async function initialize(options) {
+  async function _initializeCore(options) {
     var value = configuredValue();
     if (parseVerifier(value)) {
       publishVerifier(parseVerifier(value));
@@ -439,6 +462,9 @@
     publishVerifier(null);
     return { configured: false, migratedLegacy: false };
   }
+  function initialize(options) {
+    return _enqueueSerialized(function () { return _initializeCore(options); });
+  }
 
   function status(now) {
     var value = configuredValue();
@@ -454,18 +480,26 @@
     var now = options && Number.isFinite(options.now) ? options.now : Date.now();
     var wait = retryAfter(now);
     if (wait > 0) return { ok: false, reason: 'backoff', retryAfterMs: wait };
-    await initialize(options);
+    await _initializeCore(options);
     var verifier = parseVerifier(configuredValue());
     var crypto = cryptoApi();
     if (!verifier || !crypto || typeof crypto.verifyPassword !== 'function') {
       return { ok: false, reason: verifier ? 'crypto-unavailable' : 'not-configured', retryAfterMs: 0 };
     }
+    var normalized = normalizeCode(code);
+    if (normalized.length > MAX_CODE_LENGTH) {
+      var longNow = options && Number.isFinite(options.now) ? options.now : Date.now();
+      return { ok: false, reason: 'incorrect', retryAfterMs: recordFailure(longNow) };
+    }
     var ok = false;
-    try { ok = await crypto.verifyPassword(normalizeCode(code), verifier); } catch (_) { ok = false; }
-    if (!ok) return { ok: false, reason: 'incorrect', retryAfterMs: recordFailure(now) };
+    try { ok = await crypto.verifyPassword(normalized, verifier); } catch (_) { ok = false; }
+    if (!ok) {
+      var failNow = options && Number.isFinite(options.now) ? options.now : Date.now();
+      return { ok: false, reason: 'incorrect', retryAfterMs: recordFailure(failNow) };
+    }
     writeBackoff(null);
     if (typeof crypto.needsPasswordUpgrade === 'function' && crypto.needsPasswordUpgrade(verifier)) {
-      try { writeVerifier(await crypto.hashPassword(normalizeCode(code))); } catch (_) {}
+      try { writeVerifier(await crypto.hashPassword(normalized)); } catch (_) {}
     }
     await syncAiKeyAfterVerifiedCode(code, options);
     return { ok: true, reason: 'verified', retryAfterMs: 0 };
@@ -501,7 +535,7 @@
       var liveSession = aiSessionSecrets();
       var mergedSecrets = Object.assign({}, preserved, liveSession);
       if (mergedSecrets.apiKey) {
-        var liveDest = sessionAiDestination() || preserved.apiKeyDestination || '';
+        var liveDest = (liveSession.apiKey ? sessionAiDestination() : '') || preserved.apiKeyDestination || '';
         if (liveDest) mergedSecrets.apiKeyDestination = liveDest;
       }
       if (hasAiSecrets(mergedSecrets)) {
@@ -512,10 +546,20 @@
     if (reencryptedRecord) {
       var store = localStore();
       if (!store) throw new Error('Device storage is unavailable.');
+      var prevLockedRaw = null;
+      try { prevLockedRaw = store.getItem(AI_LOCKED_KEY); } catch (_) {}
       store.setItem(AI_LOCKED_KEY, JSON.stringify(reencryptedRecord));
+      try {
+        writeVerifier(verifier);
+      } catch (err) {
+        try {
+          if (prevLockedRaw !== null) store.setItem(AI_LOCKED_KEY, prevLockedRaw);
+          else store.removeItem(AI_LOCKED_KEY);
+        } catch (_) {}
+        throw err;
+      }
       writeAiSession(reencryptedPayload, false);
       removePlaintextAiSecrets();
-      writeVerifier(verifier);
       writeBackoff(null);
       notifyAiKeyLockListeners();
       return { configured: true };

@@ -19,9 +19,10 @@ export function readBoardCheckpoint(storage, key) {
   } catch (_) { return null; }
 }
 
+const own = (obj, key) => !!obj && typeof key === 'string' && key !== '__proto__' && key !== 'constructor' && key !== 'prototype' && Object.prototype.hasOwnProperty.call(obj, key);
 export function boardOrientation(state, roster, uid, pending) {
   const board = state.board, run = runOf(state), step = stepOf(run), progress = derive(board, run);
-  const joined = state.teams?.[uid] === 'All', answered = !!step.answers?.[uid], proposed = !!step.votes?.[uid];
+  const joined = own(state.teams, uid) && state.teams[uid] === 'All', answered = own(step.answers, uid) && !!step.answers[uid], proposed = own(step.votes, uid) && !!step.votes[uid];
   const phase = progress.complete ? 'complete' : step.phase;
   const next = !joined ? 'join' : state.isPaused ? 'paused' : pending ? 'delivery' : progress.complete ? 'complete' :
     phase === 'answer' ? answered ? 'answered' : step.retryRound ? 'retry' : 'answer' :

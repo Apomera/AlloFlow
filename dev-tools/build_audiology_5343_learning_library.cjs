@@ -3,7 +3,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const itemBanks = require('./audiology_5343/item_content.cjs');
+const { applyChoiceOverrides } = require('./audiology_5343/choice_overrides/index.cjs');
+const itemBanks = applyChoiceOverrides(require('./audiology_5343/item_content.cjs'));
 const { chapters: chapterSpecs, memoryAids: memoryAidSpecs } = require('./audiology_5343/learning_content.cjs');
 const root = path.resolve(__dirname, '..');
 const itemBankBySkill = new Map(itemBanks.map((bank) => [bank.id, bank]));

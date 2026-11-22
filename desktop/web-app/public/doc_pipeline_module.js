@@ -420,7 +420,26 @@ function _alloStructureOnlyEdit(original, replacement) {
   if (!r.trim()) return { ok: false, reason: 'empty-replacement' };
   if (r === o) return { ok: false, reason: 'unchanged' };
   if (r.length > o.length * 3 + 400) return { ok: false, reason: 'grew-too-much' };
-  if (/<(?:script|iframe|object|embed|style|link|meta)\b/i.test(r) || /\son[a-z]+\s*=/i.test(r) || /javascript:/i.test(r)) return { ok: false, reason: 'executable-markup' };
+  if (/<(?:script|iframe|frame|object|embed|style|link|meta|base|svg|math|template|form)\b/i.test(r) || /[\s/"']on[a-z]+\s*=/i.test(r) || /\bsrcdoc\s*=/i.test(r) || /(?:javascript|vbscript|data\s*:\s*text\/html)\s*:/i.test(r)) return { ok: false, reason: 'executable-markup' };
+  if (typeof DOMParser !== 'undefined') {
+    try {
+      var _doc = new DOMParser().parseFromString('<div>' + r + '</div>', 'text/html');
+      if (_doc.querySelector('script,iframe,frame,object,embed,style,link,meta,base,svg,math,template,form')) return { ok: false, reason: 'executable-markup' };
+      var _els = _doc.body ? _doc.body.querySelectorAll('*') : [];
+      for (var _i = 0; _i < _els.length; _i++) {
+        var _attrs = _els[_i].attributes || [];
+        for (var _j = 0; _j < _attrs.length; _j++) {
+          var _an = String(_attrs[_j].name || '').toLowerCase();
+          var _av = String(_attrs[_j].value || '').replace(/[\u0000-\u0020]+/g, '');
+          if (/^on/.test(_an) || _an === 'srcdoc' || _an === 'formaction' || (/^(?:href|src|action|data|xlink:href)$/.test(_an) && /^(?:javascript:|vbscript:|data:text\/html)/i.test(_av))) {
+            return { ok: false, reason: 'executable-markup' };
+          }
+        }
+      }
+    } catch (_) {
+      return { ok: false, reason: 'executable-markup' };
+    }
+  }
   if (_alloTriageVisibleText(o) !== _alloTriageVisibleText(r)) return { ok: false, reason: 'visible-text-changed' };
   var attrs = function (m, name) { var re = new RegExp('\\b' + name + '\\s*=\\s*("[^"]*"|\'[^\']*\'|[^\\s>]+)', 'gi'); var out = []; var x; while ((x = re.exec(m))) out.push(x[1].replace(/^["']|["']$/g, '')); return out.sort(); };
   if (attrs(o, 'src').join('\n') !== attrs(r, 'src').join('\n')) return { ok: false, reason: 'images-changed' };
@@ -17668,8 +17687,12 @@ var createDocPipeline = function(deps) {
 
   // Ask Gemini to fix a small subtree given a tight, single-cluster prompt.
   // Returns the rewritten subtree (or the original if AI declined / failed).
-  const surgicalFixCluster = async (cluster) => {
+  const surgicalFixCluster = async (cluster, opts) => {
     if (!callGemini) return cluster.anchorHtml;
+    const _sOpts = opts || {};
+    if ((_sOpts.signal && _sOpts.signal.aborted) || (typeof _sOpts.shouldAbort === 'function' && _sOpts.shouldAbort())) {
+      return cluster.anchorHtml;
+    }
     const ruleList = cluster.ruleIds.map(id => '- ' + id).join('\n');
     const _clusterRuleData = _neutralizePromptFence(ruleList);
     const _clusterHtmlData = _neutralizePromptFence(cluster.anchorHtml);
@@ -17683,7 +17706,9 @@ var createDocPipeline = function(deps) {
       'Return ONLY the rewritten element. No explanation. No markdown fences. No JSON wrapping. ' +
       'The opening and closing tags must match the input.';
     try {
-      let raw = _restoreNeutralizedPromptFences(await callGemini(prompt, false));
+      let raw = _restoreNeutralizedPromptFences(
+        await callGemini(prompt, false, false, null, null, _sOpts.signal || null, _sOpts.owner || null)
+      );
       if (!raw) return cluster.anchorHtml;
       // Strip code fences if the model added them anyway
       raw = raw.trim().replace(/^```[a-z]*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
@@ -17741,46 +17766,76 @@ var createDocPipeline = function(deps) {
   // (returns the input unchanged).
   const runTier2SurgicalFixes = async (htmlContent, axeResult, opts) => {
     const _opts = opts || {};
-    const stats = { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0, rejections: [] };
+    const stats = { clustersConsidered: 0, accepted: 0, rejected: 0, violationsFixed: 0, rejections: [], resolvedRuleIds: [] };
     if (!htmlContent || !axeResult) return { html: htmlContent, stats };
-    const clusters = clusterAxeViolationsByAncestor(htmlContent, axeResult);
-    if (clusters.length === 0) return { html: htmlContent, stats };
+    const _aborted = () => !!((_opts.signal && _opts.signal.aborted) || (typeof _opts.shouldAbort === 'function' && _opts.shouldAbort()));
+    if (_aborted()) return { html: htmlContent, stats };
+    const allClusters = clusterAxeViolationsByAncestor(htmlContent, axeResult);
+    if (allClusters.length === 0) return { html: htmlContent, stats };
+    const maxClusters = Number.isFinite(_opts.maxClusters) && _opts.maxClusters > 0 ? Math.floor(_opts.maxClusters) : 12;
+    const clusters = allClusters.slice(0, maxClusters);
+    const truncatedRuleIds = new Set();
+    for (let ti = maxClusters; ti < allClusters.length; ti++) {
+      (allClusters[ti].ruleIds || []).forEach((id) => truncatedRuleIds.add(id));
+    }
     stats.clustersConsidered = clusters.length;
-    warnLog('[Tier2] considering ' + clusters.length + ' surgical cluster(s)');
-    // Process clusters in parallel — they're disjoint by construction (each
-    // anchor is a different DOM element).
-    const proposals = await Promise.all(clusters.map(async (cluster) => {
-      const rewritten = await surgicalFixCluster(cluster);
-      const verdict = await acceptOrRevertSubtreeFix(cluster.anchorHtml, rewritten, cluster.targetedRules);
-      return { cluster, rewritten, verdict };
-    }));
-    // Apply accepted rewrites by string replace. Replacements are anchor-disjoint
-    // so order shouldn't matter, but we still apply largest-first to avoid any
-    // edge case where one anchor's html is a substring of another.
+    warnLog('[Tier2] considering ' + clusters.length + ' surgical cluster(s)' + (allClusters.length > clusters.length ? ' (capped from ' + allClusters.length + ')' : ''));
+    // Process disjoint clusters in bounded batches of 3 (matching _GEMINI_MAX_CONCURRENT).
+    const proposals = [];
+    for (let bi = 0; bi < clusters.length; bi += 3) {
+      if (_aborted()) break;
+      const slice = clusters.slice(bi, bi + 3);
+      const batch = await Promise.all(slice.map(async (cluster) => {
+        if (_aborted()) return { cluster, rewritten: cluster.anchorHtml, verdict: { accepted: false, reason: 'aborted' } };
+        const rewritten = await surgicalFixCluster(cluster, _opts);
+        if (_aborted()) return { cluster, rewritten: cluster.anchorHtml, verdict: { accepted: false, reason: 'aborted' } };
+        const verdict = await acceptOrRevertSubtreeFix(cluster.anchorHtml, rewritten, cluster.targetedRules);
+        return { cluster, rewritten, verdict };
+      }));
+      proposals.push(...batch);
+    }
+    // Apply accepted rewrites largest-first and verify strict content preservation on each edit.
     let working = htmlContent;
+    const unresolvedRules = new Set(truncatedRuleIds);
+    const touchedRules = new Set();
     proposals
       .filter(p => p.verdict.accepted)
       .sort((a, b) => b.cluster.anchorHtml.length - a.cluster.anchorHtml.length)
       .forEach(p => {
+        (p.cluster.ruleIds || []).forEach((id) => touchedRules.add(id));
         const idx = working.indexOf(p.cluster.anchorHtml);
         if (idx === -1) {
-          // The exact anchor HTML wasn't found — likely earlier replacements
-          // shifted byte ranges. Skip rather than risk a wrong-place insert.
           stats.rejected++;
           stats.rejections.push({ rules: p.cluster.ruleIds.join(','), reason: 'anchor-not-found-after-prior-replacement' });
+          (p.cluster.ruleIds || []).forEach((id) => unresolvedRules.add(id));
           warnLog('[Tier2] anchor lost after sibling replacement — skipping ' + p.cluster.ruleIds.join(','));
           return;
         }
-        working = working.substring(0, idx) + p.rewritten + working.substring(idx + p.cluster.anchorHtml.length);
+        const candidate = working.substring(0, idx) + p.rewritten + working.substring(idx + p.cluster.anchorHtml.length);
+        const contentGate = acceptFixedHtmlDetailed(candidate, working, { strictContent: true });
+        if (!contentGate || !contentGate.accepted) {
+          stats.rejected++;
+          const gateReason = (contentGate && contentGate.reason) || 'content-not-preserved';
+          stats.rejections.push({ rules: p.cluster.ruleIds.join(','), reason: 'content-gate:' + gateReason });
+          (p.cluster.ruleIds || []).forEach((id) => unresolvedRules.add(id));
+          warnLog('[Tier2] content gate rejected cluster (' + p.cluster.ruleIds.join(',') + '): ' + gateReason);
+          return;
+        }
+        working = candidate;
         stats.accepted++;
         stats.violationsFixed += (p.verdict.targetedBefore - p.verdict.targetedAfter);
+        if (p.verdict.targetedAfter > 0) {
+          (p.cluster.ruleIds || []).forEach((id) => unresolvedRules.add(id));
+        }
         warnLog('[Tier2] accepted cluster (' + p.cluster.ruleIds.join(',') + '): ' + p.verdict.reason);
       });
     proposals.filter(p => !p.verdict.accepted).forEach(p => {
       stats.rejected++;
       stats.rejections.push({ rules: p.cluster.ruleIds.join(','), reason: p.verdict.reason });
+      (p.cluster.ruleIds || []).forEach((id) => unresolvedRules.add(id));
       warnLog('[Tier2] rejected cluster (' + p.cluster.ruleIds.join(',') + '): ' + p.verdict.reason);
     });
+    stats.resolvedRuleIds = Array.from(touchedRules).filter((id) => !unresolvedRules.has(id));
     warnLog('[Tier2] done: ' + stats.accepted + ' accepted, ' + stats.rejected + ' rejected, ' + stats.violationsFixed + ' violation(s) fixed');
     return { html: working, stats };
   };
@@ -18582,12 +18637,39 @@ var createDocPipeline = function(deps) {
       });
     };
     throwIfAborted();
+    // Wave 6 W6-5: enforce the same OOXML zip-bomb guard on .xlsx/.xlsm archives BEFORE SheetJS inflates them.
+    try {
+      const _xBytes = _base64ToBytes(base64);
+      if (_xBytes.length >= 2 && _xBytes[0] === 0x50 && _xBytes[1] === 0x4b) {
+        await awaitAbortable(ensureJsZipLoaded());
+        if (window.JSZip) {
+          const _xZip = await awaitAbortable(window.JSZip.loadAsync(_xBytes));
+          _ooxmlGuardArchive(_xZip, _xBytes.length, 'Excel');
+          let _xActualTotal = 0;
+          const _xEntries = [];
+          _xZip.forEach((rel, entry) => { if (entry && !entry.dir) _xEntries.push([rel, entry]); });
+          for (const [_rel, _entry] of _xEntries) {
+            throwIfAborted();
+            const _rem = Math.max(1, _OOXML_MAX_TOTAL_BYTES - _xActualTotal);
+            const _cap = Math.min(_OOXML_MAX_ENTRY_BYTES, _rem);
+            const _inf = await awaitAbortable(_ooxmlInflateBytes(_entry, _cap, _rel));
+            _xActualTotal += _inf.byteLength;
+            if (_xActualTotal > _OOXML_MAX_TOTAL_BYTES) throw _ooxmlLimitError('actual inflated size exceeded the total safety budget', 'Excel');
+            if (_xBytes.length > 0 && (_xActualTotal / _xBytes.length) > _OOXML_MAX_COMPRESSION_RATIO) throw _ooxmlLimitError('actual inflated ratio is zip-bomb shaped', 'Excel');
+          }
+        }
+      }
+    } catch (_xGuardErr) {
+      if (_xGuardErr && (_xGuardErr.name === 'AbortError' || _xGuardErr.isArchiveLimit)) throw _xGuardErr;
+    }
+    throwIfAborted();
     const workbookReader = await awaitAbortable(_lazyLoadSheetJS());
     throwIfAborted();
     const wb = workbookReader.read(base64, { type: 'base64' });
     throwIfAborted();
     const maxRows = opts.maxRowsPerSheet || 200;
     const parts = [];
+    const tableGrids = [];
     let truncated = 0;
     for (const name of wb.SheetNames) {
       // Yield between sheets so an input/document cancellation can run instead
@@ -18598,13 +18680,55 @@ var createDocPipeline = function(deps) {
       if (!sheet) continue;
       const rows = workbookReader.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
       throwIfAborted();
-      const nonEmpty = rows.filter((r) => Array.isArray(r) && r.some((c) => String(c).trim()));
+      const indexedNonEmpty = [];
+      for (let ri = 0; ri < rows.length; ri++) {
+        const r = rows[ri];
+        if (Array.isArray(r) && r.some((c) => String(c).trim())) indexedNonEmpty.push({ origRow: ri, row: r });
+      }
       throwIfAborted();
-      if (!nonEmpty.length) continue;
-      if (nonEmpty.length > maxRows) truncated += nonEmpty.length - maxRows;
-      const use = nonEmpty.slice(0, maxRows);
+      if (!indexedNonEmpty.length) continue;
+      if (indexedNonEmpty.length > maxRows) truncated += indexedNonEmpty.length - maxRows;
+      const useIndexed = indexedNonEmpty.slice(0, maxRows);
+      const use = useIndexed.map((x) => x.row);
       const width = Math.max.apply(null, use.map((r) => r.length));
-      const cell = (c) => String(c == null ? '' : c).replace(/\|/g, '/').replace(/\r?\n/g, ' ').trim();
+      // Build merge lookup from sheet['!merges'] to preserve colspan/rowspan semantics in structured grids.
+      const mergeOrigin = new Map();
+      const mergeCovered = new Set();
+      const merges = Array.isArray(sheet['!merges']) ? sheet['!merges'] : [];
+      const rowPosByOrig = new Map();
+      useIndexed.forEach((x, idx) => rowPosByOrig.set(x.origRow, idx));
+      for (const m of merges) {
+        if (!m || !m.s || !m.e) continue;
+        const r0 = rowPosByOrig.get(m.s.r);
+        if (r0 === undefined) continue;
+        const rSpan = Math.max(1, (m.e.r - m.s.r) + 1);
+        const cSpan = Math.max(1, (m.e.c - m.s.c) + 1);
+        if (rSpan === 1 && cSpan === 1) continue;
+        mergeOrigin.set(r0 + ':' + m.s.c, { colspan: cSpan, rowspan: Math.min(rSpan, use.length - r0) });
+        for (let rr = r0; rr < Math.min(use.length, r0 + rSpan); rr++) {
+          for (let cc = m.s.c; cc <= Math.min(width - 1, m.e.c); cc++) {
+            if (rr !== r0 || cc !== m.s.c) mergeCovered.add(rr + ':' + cc);
+          }
+        }
+      }
+      const gridRows = use.map((r, ri) => {
+        const cells = [];
+        for (let ci = 0; ci < width; ci++) {
+          const key = ri + ':' + ci;
+          if (mergeCovered.has(key)) continue;
+          const span = mergeOrigin.get(key);
+          const text = String(r[ci] == null ? '' : r[ci]).replace(/\r?\n/g, ' ').trim();
+          cells.push({
+            text,
+            isHeader: ri === 0,
+            ...(span && span.colspan > 1 ? { colspan: span.colspan } : {}),
+            ...(span && span.rowspan > 1 ? { rowspan: span.rowspan } : {}),
+          });
+        }
+        return { cells };
+      });
+      tableGrids.push({ caption: name, rows: gridRows });
+      const cell = (c) => String(c == null ? '' : c).replace(/\|/g, '\\|').replace(/\r?\n/g, ' ').trim();
       const md = use.map((r, i) => {
         const padded = Array.from({ length: width }, (_, ci) => cell(r[ci]));
         return '| ' + padded.join(' | ') + ' |' + (i === 0 ? ('\n|' + padded.map(() => ' --- ').join('|') + '|') : '');
@@ -18623,6 +18747,7 @@ var createDocPipeline = function(deps) {
       text: _xlsxText,
       sheets: parts.length,
       truncatedRows: truncated,
+      tableGrids,
     };
   };
 
@@ -18665,12 +18790,35 @@ var createDocPipeline = function(deps) {
       await ensurePdfJsLoaded();
       if (!window.pdfjsLib) throw new Error('pdf.js unavailable');
       const bytes = _isBytes ? new Uint8Array(base64) : _b64ToBytes(base64); // clone: pdf.js detaches the buffer it is given
-      // Mechanism 2 repair (2026-08-04): our own copy BEFORE getDocument —
-      // pdf.js detaches `bytes`. The content-stream texts are consulted per
-      // page under a strict gate below; every failure here degrades to null
-      // and the pdf.js text ships unchanged.
-      const _csCopy = bytes.slice();
-      const _csPagesPromise = _alloContentStreamPageTexts(_csCopy).catch(function () { return null; });
+      // Mechanism 2 repair (2026-08-04, Wave 6 W6-3 lazy): defer full content-stream
+      // inflation until a page actually exhibits fragmented intra-word spacing, avoiding
+      // a 50 MB clone + whole-doc Flate inflate on clean born-digital PDFs.
+      const _csBackupBytes = _isBytes ? bytes.slice() : null;
+      let _csPagesLoaded = false;
+      let _csPages = null;
+      const _COMMON_SHORT_TOKENS = new Set(['a', 'i', 'am', 'an', 'as', 'at', 'be', 'by', 'do', 'go', 'he', 'if', 'in', 'is', 'it', 'me', 'my', 'no', 'of', 'oh', 'ok', 'on', 'or', 'so', 'to', 'up', 'us', 'we']);
+      const _pageSuspectSpaceSplit = (txt) => {
+        if (!txt || txt.length < 12) return false;
+        if (/(?:^|\s)(?:[A-Za-z]\s){2,}[A-Za-z](?=\s|$)/.test(txt)) return true;
+        const mRe = /(?:^|\s)([A-Za-z]{1,2})\s+([a-z]{2,})\b|\b([a-z]{2,})\s+([a-z]{1,2})(?=\s|[.,;:!?]|$)/g;
+        let mm;
+        while ((mm = mRe.exec(txt)) !== null) {
+          const frag = (mm[1] || mm[4] || '').toLowerCase();
+          if (frag && !_COMMON_SHORT_TOKENS.has(frag)) return true;
+        }
+        return false;
+      };
+      const _getCsPages = async () => {
+        if (_csPagesLoaded) return _csPages;
+        _csPagesLoaded = true;
+        try {
+          const srcU8 = _csBackupBytes || _b64ToBytes(base64);
+          _csPages = await _alloContentStreamPageTexts(srcU8);
+        } catch (_) {
+          _csPages = null;
+        }
+        return _csPages;
+      };
       pdf = await _patient(window.pdfjsLib.getDocument({ data: bytes, isEvalSupported: false }).promise, 60000, 'pdf.js getDocument (text layer)');
       const pages = [];
       // 2026-06-08: per-page try/catch — a single-page parse error previously
@@ -18682,7 +18830,6 @@ var createDocPipeline = function(deps) {
       const pageErrors = [];
       const unreadablePages = []; // pages whose text layer is unmapped glyph codes (see _alloPageTextUnreadable)
       let _rtlOrderLogged = false; // H12: announce the direction repair ONCE, not per page
-      const _csPages = await _csPagesPromise;
       let _csRepairedPages = 0;
       let _csRepairedSpaces = 0;
       let _ligFixed = 0; // lam-alef ligatures put back in logical order (_alloRepairRtlLigatures)
@@ -18914,13 +19061,16 @@ var createDocPipeline = function(deps) {
           // the content-stream oracle — dropped only when the junction's
           // characters appear contiguous and unspaced there, and never appear
           // spaced. See _alloRepairSpacesWithCs; characters are never touched.
-          if (_csPages && _csPages[p - 1]) {
-            const _csCollapsed = _csPages[p - 1].replace(/\s+/g, ' ').trim();
-            const _repair = _alloRepairSpacesWithCs(pageText, _csCollapsed);
-            if (_repair.repaired > 0) {
-              pageText = _repair.text;
-              _csRepairedPages++;
-              _csRepairedSpaces += _repair.repaired;
+          if (_pageSuspectSpaceSplit(pageText)) {
+            const _lazyCs = await _getCsPages();
+            if (_lazyCs && _lazyCs[p - 1]) {
+              const _csCollapsed = _lazyCs[p - 1].replace(/\s+/g, ' ').trim();
+              const _repair = _alloRepairSpacesWithCs(pageText, _csCollapsed);
+              if (_repair.repaired > 0) {
+                pageText = _repair.text;
+                _csRepairedPages++;
+                _csRepairedSpaces += _repair.repaired;
+              }
             }
           }
           // Flag, do not blank: the editor path shows this text so a person can see it is garbled and
@@ -20118,6 +20268,82 @@ var createDocPipeline = function(deps) {
   // _stage4_getStreamBytesAndFilter — pull a page's content-stream bytes out
   // of the Contents entry (handling single-stream or array-of-streams shapes)
   // and indicate whether it's FlateDecode-compressed.
+  // Wave 6 W6-6: decode single or chained PDF stream filters (ASCIIHexDecode, ASCII85Decode, FlateDecode).
+  const _stage4_decodeAsciiHex = (u8) => {
+    const out = [];
+    let hi = -1;
+    for (let i = 0; i < u8.length; i++) {
+      const c = u8[i];
+      if (c === 0x3e) break; // '>' EOD
+      if (c <= 0x20) continue;
+      const v = (c >= 0x30 && c <= 0x39) ? (c - 0x30) : (c >= 0x41 && c <= 0x46) ? (c - 55) : (c >= 0x61 && c <= 0x66) ? (c - 87) : -1;
+      if (v < 0) return null;
+      if (hi < 0) hi = v;
+      else { out.push((hi << 4) | v); hi = -1; }
+    }
+    if (hi >= 0) out.push(hi << 4);
+    return new Uint8Array(out);
+  };
+  const _stage4_decodeAscii85 = (u8) => {
+    const out = [];
+    const group = [];
+    for (let i = 0; i < u8.length; i++) {
+      const c = u8[i];
+      if (c <= 0x20) continue;
+      if (c === 0x7e && i + 1 < u8.length && u8[i + 1] === 0x3e) break; // '~>' EOD
+      if (c === 0x7a) { // 'z' shorthand for 4 zero bytes
+        if (group.length !== 0) return null;
+        out.push(0, 0, 0, 0);
+        continue;
+      }
+      if (c < 33 || c > 117) return null;
+      group.push(c - 33);
+      if (group.length === 5) {
+        let val = 0;
+        for (let k = 0; k < 5; k++) val = val * 85 + group[k];
+        if (val > 0xFFFFFFFF) return null;
+        out.push((val >>> 24) & 0xff, (val >>> 16) & 0xff, (val >>> 8) & 0xff, val & 0xff);
+        group.length = 0;
+      }
+    }
+    if (group.length === 1) return null;
+    if (group.length > 1) {
+      const n = group.length;
+      while (group.length < 5) group.push(84);
+      let val = 0;
+      for (let k = 0; k < 5; k++) val = val * 85 + group[k];
+      const tmp = [(val >>> 24) & 0xff, (val >>> 16) & 0xff, (val >>> 8) & 0xff, val & 0xff];
+      for (let k = 0; k < n - 1; k++) out.push(tmp[k]);
+    }
+    return new Uint8Array(out);
+  };
+  const _stage4_extractFilterNames = (filterObj, context) => {
+    if (!filterObj) return [];
+    const resolved = context && typeof context.lookup === 'function' ? (context.lookup(filterObj) || filterObj) : filterObj;
+    if (!resolved) return [];
+    if (typeof resolved.size === 'function' && typeof resolved.get === 'function') {
+      const names = [];
+      for (let i = 0; i < resolved.size(); i++) {
+        const entry = context && typeof context.lookup === 'function' ? (context.lookup(resolved.get(i)) || resolved.get(i)) : resolved.get(i);
+        const s = String(entry || '').replace(/^\//, '').trim();
+        if (s) names.push(s);
+      }
+      return names;
+    }
+    const s = String(resolved || '').replace(/^\//, '').trim();
+    return s ? [s] : [];
+  };
+  const _stage4_decodeStreamWithFilters = (raw, filterNames) => {
+    let cur = raw instanceof Uint8Array ? raw : new Uint8Array(raw);
+    for (const name of filterNames) {
+      if (name === 'FlateDecode' || name === 'Fl') cur = _stage4_inflate(cur);
+      else if (name === 'ASCII85Decode' || name === 'A85') { cur = _stage4_decodeAscii85(cur); if (!cur) throw new Error('invalid ASCII85Decode stream'); }
+      else if (name === 'ASCIIHexDecode' || name === 'AHx') { cur = _stage4_decodeAsciiHex(cur); if (!cur) throw new Error('invalid ASCIIHexDecode stream'); }
+      else throw new Error('unsupported PDF stream filter: ' + name);
+    }
+    return cur;
+  };
+
   const _stage4_getStreamBytesAndFilter = (page, PDFName, context) => {
     const node = page.node;
     // /Contents can be a reference to an array (IRS 1913 form, 2026-11-05): resolve it, or the page reads as empty.
@@ -20131,7 +20357,8 @@ var createDocPipeline = function(deps) {
       if (!raw) return;
       const dict = stream.dict || null;
       const f = dict && dict.get ? dict.get(PDFName.of('Filter')) : null;
-      parts.push({ raw: raw instanceof Uint8Array ? raw : new Uint8Array(raw), flate: !!(f && String(f).includes('FlateDecode')) });
+      const filters = _stage4_extractFilterNames(f, context);
+      parts.push({ raw: raw instanceof Uint8Array ? raw : new Uint8Array(raw), filters });
     };
     if (typeof contents.size === 'function') {
       for (let k = 0; k < contents.size(); k++) consume(contents.get(k));
@@ -20139,16 +20366,111 @@ var createDocPipeline = function(deps) {
       consume(contents);
     }
     if (parts.length === 0) return null;
-    if (parts.length === 1) return { bytes: parts[0].raw, filter: parts[0].flate ? 'FlateDecode' : null };
+    if (parts.length === 1) {
+      const f0 = parts[0].filters;
+      if (f0.length === 0) return { bytes: parts[0].raw, filter: null };
+      if (f0.length === 1 && (f0[0] === 'FlateDecode' || f0[0] === 'Fl')) return { bytes: parts[0].raw, filter: 'FlateDecode' };
+      return { bytes: _stage4_decodeStreamWithFilters(parts[0].raw, f0), filter: null, recompress: true };
+    }
     // Each stream is compressed on its own, so joined raw bytes would inflate to the FIRST stream only and the rest of
     // the page would be lost. A page's streams are one sequence with white space between them (ISO 32000 7.8.2).
-    const decoded = parts.map((p) => (p.flate ? _stage4_inflate(p.raw) : p.raw));
+    const decoded = parts.map((p) => (p.filters.length ? _stage4_decodeStreamWithFilters(p.raw, p.filters) : p.raw));
     let total = decoded.length - 1;
     for (const d of decoded) total += d.length;
     const combined = new Uint8Array(total);
     let off = 0;
     decoded.forEach((d, i) => { if (i) combined[off++] = 0x0a; combined.set(d, off); off += d.length; });
-    return { bytes: combined, filter: null, recompress: parts.some((p) => p.flate) };
+    return { bytes: combined, filter: null, recompress: parts.some((p) => p.filters.length > 0) };
+  };
+
+  // Wave 6 W6-6: Safe single-level Form XObject (/Subtype /Form invoked via `/Name Do`) inliner
+  // used ONLY when a page's direct /Contents has 0 BT..ET text segments (common in LaTeX/Canva/InDesign PDFs).
+  // Merges non-colliding /Resources sub-dicts onto the page so fonts/states stay valid; bails safely on any collision.
+  const _stage4_tryInlineFormXObjects = (page, bytes, PDFName, context) => {
+    try {
+      const resources = context.lookup(page.node.get(PDFName.of('Resources')));
+      if (!resources || typeof resources.get !== 'function') return null;
+      const xobjs = context.lookup(resources.get(PDFName.of('XObject')));
+      if (!xobjs || typeof xobjs.get !== 'function') return null;
+      let s = '';
+      for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+      const doRe = /\/([A-Za-z0-9_.+-]+)\s+Do\b/g;
+      const matches = [];
+      let m;
+      while ((m = doRe.exec(s)) !== null) matches.push({ index: m.index, length: m[0].length, name: m[1] });
+      if (!matches.length || matches.length > 16) return null;
+      const expansions = [];
+      const pendingMerges = [];
+      let totalAdded = 0;
+      const SUBDICTS = ['Font', 'ExtGState', 'ColorSpace', 'Pattern', 'Shading', 'Properties'];
+      for (const hit of matches) {
+        const ref = xobjs.get(PDFName.of(hit.name));
+        const xStream = ref ? context.lookup(ref) : null;
+        if (!xStream || !xStream.dict || typeof xStream.getContents !== 'function') continue;
+        const subtype = context.lookup(xStream.dict.get(PDFName.of('Subtype')));
+        if (!subtype || String(subtype) !== '/Form') continue;
+        const raw = xStream.getContents();
+        if (!raw || !raw.length) continue;
+        const filters = _stage4_extractFilterNames(xStream.dict.get(PDFName.of('Filter')), context);
+        const decoded = filters.length ? _stage4_decodeStreamWithFilters(raw, filters) : (raw instanceof Uint8Array ? raw : new Uint8Array(raw));
+        let formStr = '';
+        for (let i = 0; i < decoded.length; i++) formStr += String.fromCharCode(decoded[i]);
+        // Only inline Form XObjects that actually carry BT text and do not recursively invoke nested /Do XObjects.
+        if (!/\bBT\b/.test(formStr) || /\bDo\b/.test(formStr)) continue;
+        totalAdded += formStr.length;
+        if (totalAdded > 2 * 1024 * 1024) return null;
+        const formRes = context.lookup(xStream.dict.get(PDFName.of('Resources')));
+        if (formRes && typeof formRes.get === 'function') {
+          for (const sd of SUBDICTS) {
+            const srcSub = context.lookup(formRes.get(PDFName.of(sd)));
+            if (!srcSub || typeof srcSub.entries !== 'function') continue;
+            const dstSub = context.lookup(resources.get(PDFName.of(sd)));
+            for (const [k, v] of srcSub.entries()) {
+              if (dstSub && typeof dstSub.get === 'function') {
+                const existing = dstSub.get(k);
+                if (existing && String(existing) !== String(v)) return null; // resource name collision — bail safely
+              }
+              pendingMerges.push({ sd, k, v });
+            }
+          }
+        }
+        let matrixPrefix = '';
+        const mat = context.lookup(xStream.dict.get(PDFName.of('Matrix')));
+        if (mat && typeof mat.size === 'function' && mat.size() === 6) {
+          const nums = [];
+          for (let mi = 0; mi < 6; mi++) {
+            const mv = context.lookup(mat.get(mi));
+            const n = mv && typeof mv.numberValue === 'number' ? mv.numberValue : Number(String(mv));
+            if (!Number.isFinite(n)) { nums.length = 0; break; }
+            nums.push(n);
+          }
+          if (nums.length === 6) matrixPrefix = nums.join(' ') + ' cm\n';
+        }
+        expansions.push({ index: hit.index, length: hit.length, replacement: '\nq\n' + matrixPrefix + formStr + '\nQ\n' });
+      }
+      if (!expansions.length) return null;
+      // Apply resource merges now that all collision checks succeeded.
+      for (const { sd, k, v } of pendingMerges) {
+        let dstSub = context.lookup(resources.get(PDFName.of(sd)));
+        if (!dstSub || typeof dstSub.set !== 'function') {
+          dstSub = context.obj({});
+          resources.set(PDFName.of(sd), dstSub);
+        }
+        if (!dstSub.get(k)) dstSub.set(k, v);
+      }
+      let outStr = '';
+      let cursor = 0;
+      for (const exp of expansions) {
+        outStr += s.slice(cursor, exp.index) + exp.replacement;
+        cursor = exp.index + exp.length;
+      }
+      outStr += s.slice(cursor);
+      const outBytes = new Uint8Array(outStr.length);
+      for (let i = 0; i < outStr.length; i++) outBytes[i] = outStr.charCodeAt(i) & 0xff;
+      return outBytes;
+    } catch (_) {
+      return null;
+    }
   };
   // Every other reader of /Contents takes a direct array or one stream. A reference to an array became a nested array in
   // the fallback wrap, which no viewer reads (pdf.js: "t.getBytes is not a function"), so settle the shape once.
@@ -20524,6 +20846,13 @@ var createDocPipeline = function(deps) {
     let segments = _stage4_parseBTSegments(bytes, { fine: !!probeGroups, splitFont: !!(s4opts && s4opts.splitFont) });
     const useProbe = !!(probeGroups && probeGroups.length === segments.length);
     if (probeGroups && !useProbe) segments = _stage4_parseBTSegments(bytes); // counts disagree: old behaviour, whole BT objects
+    if (segments.length === 0) {
+      const expanded = _stage4_tryInlineFormXObjects(page, bytes, PDFName, context);
+      if (expanded) {
+        bytes = expanded;
+        segments = _stage4_parseBTSegments(bytes);
+      }
+    }
     if (segments.length === 0) throw new Error('no BT segments');
     const items = await _stage4_extractPdfjsItems(pdfjsDoc, pi);
     if (items.length === 0) throw new Error('no pdf.js items');
@@ -22194,15 +22523,128 @@ var createDocPipeline = function(deps) {
     } catch (_) { return ''; }
   };
 
-  const extractDocxTextDeterministic = async (base64) => {
-    // #17: decompression budgets BEFORE any inflating parser touches the bytes — mammoth unzips
-    // internally, so the guard must run first. loadAsync only reads the central directory here;
-    // nothing is inflated until a part is actually requested.
+  // Wave 6 W6-4: Linearize Word Office Math (<m:oMath>) XML nodes into readable expressions so
+  // Mammoth's omission of native Word equations does not silently drop STEM content.
+  const _docxOmmlNodeToText = (node) => {
+    if (!node) return '';
+    const local = String(node.localName || node.nodeName || '').replace(/^[^:]+:/, '');
+    if (local === 't') return node.textContent || '';
+    const childBy = (name) => Array.from(node.children || []).find((c) => String(c.localName || c.nodeName || '').replace(/^[^:]+:/, '') === name);
+    const childrenText = (el) => Array.from((el && el.children) || []).map(_docxOmmlNodeToText).join('');
+    if (local === 'f') {
+      const num = childrenText(childBy('num')).trim();
+      const den = childrenText(childBy('den')).trim();
+      return (num || den) ? `(${num})/(${den})` : '';
+    }
+    if (local === 'sSup') {
+      const e = childrenText(childBy('e')).trim();
+      const sup = childrenText(childBy('sup')).trim();
+      return `${e}^(${sup})`;
+    }
+    if (local === 'sSub') {
+      const e = childrenText(childBy('e')).trim();
+      const sub = childrenText(childBy('sub')).trim();
+      return `${e}_(${sub})`;
+    }
+    if (local === 'sSubSup') {
+      const e = childrenText(childBy('e')).trim();
+      const sub = childrenText(childBy('sub')).trim();
+      const sup = childrenText(childBy('sup')).trim();
+      return `${e}_(${sub})^(${sup})`;
+    }
+    if (local === 'rad') {
+      const deg = childrenText(childBy('deg')).trim();
+      const e = childrenText(childBy('e')).trim();
+      return deg ? `root(${deg}, ${e})` : `sqrt(${e})`;
+    }
+    if (local === 'nary') {
+      const pr = childBy('naryPr');
+      let sym = '';
+      if (pr) {
+        const cNode = Array.from(pr.children || []).find((c) => String(c.localName || c.nodeName || '').replace(/^[^:]+:/, '') === 'chr');
+        if (cNode) sym = cNode.getAttribute('m:val') || cNode.getAttribute('val') || '';
+      }
+      const sub = childrenText(childBy('sub')).trim();
+      const sup = childrenText(childBy('sup')).trim();
+      const e = childrenText(childBy('e')).trim();
+      return `${sym || '∫'}${sub ? `_(${sub})` : ''}${sup ? `^(${sup})` : ''} ${e}`.trim();
+    }
+    if (local === 'd') {
+      const dPr = childBy('dPr');
+      let beg = '(', end = ')';
+      if (dPr) {
+        for (const c of Array.from(dPr.children || [])) {
+          const ln = String(c.localName || c.nodeName || '').replace(/^[^:]+:/, '');
+          if (ln === 'begChr') beg = c.getAttribute('m:val') || c.getAttribute('val') || beg;
+          if (ln === 'endChr') end = c.getAttribute('m:val') || c.getAttribute('val') || end;
+        }
+      }
+      const elems = Array.from(node.children || []).filter((c) => String(c.localName || c.nodeName || '').replace(/^[^:]+:/, '') === 'e').map(childrenText);
+      return beg + elems.join(', ') + end;
+    }
+    if (node.children && node.children.length) {
+      return Array.from(node.children).map(_docxOmmlNodeToText).join('');
+    }
+    return node.textContent || '';
+  };
+
+  const _docxExtractOmmlAndTextboxes = (rawDocXml, existingBodyText) => {
+    const equations = [];
+    const textboxes = [];
+    if (!rawDocXml || typeof DOMParser === 'undefined') return { equations, textboxes };
+    try {
+      const parsed = new DOMParser().parseFromString(rawDocXml, 'application/xml');
+      if (!parsed || parsed.querySelector('parsererror')) return { equations, textboxes };
+      const bodyNorm = String(existingBodyText || '').replace(/\s+/g, ' ').trim();
+      const allNodes = parsed.getElementsByTagName('*');
+      for (let i = 0; i < allNodes.length; i++) {
+        const el = allNodes[i];
+        const ln = String(el.localName || el.nodeName || '').replace(/^[^:]+:/, '');
+        if (ln === 'oMath') {
+          // Skip nested oMath inside another oMath
+          let p = el.parentNode;
+          let nested = false;
+          while (p) {
+            if (String(p.localName || p.nodeName || '').replace(/^[^:]+:/, '') === 'oMath') { nested = true; break; }
+            p = p.parentNode;
+          }
+          if (nested) continue;
+          const expr = _docxOmmlNodeToText(el).replace(/\s+/g, ' ').trim();
+          if (expr && !bodyNorm.includes(expr)) equations.push(expr);
+        } else if (ln === 'txbxContent') {
+          const paras = [];
+          const pNodes = el.getElementsByTagName('*');
+          for (let pi = 0; pi < pNodes.length; pi++) {
+            const pn = pNodes[pi];
+            if (String(pn.localName || pn.nodeName || '').replace(/^[^:]+:/, '') !== 'p') continue;
+            let pTxt = '';
+            const tNodes = pn.getElementsByTagName('*');
+            for (let ti = 0; ti < tNodes.length; ti++) {
+              const tn = tNodes[ti];
+              if (String(tn.localName || tn.nodeName || '').replace(/^[^:]+:/, '') === 't') pTxt += tn.textContent || '';
+            }
+            pTxt = pTxt.replace(/\s+/g, ' ').trim();
+            if (pTxt) paras.push(pTxt);
+          }
+          const tbText = paras.join('\n').trim();
+          if (tbText && !bodyNorm.includes(tbText.replace(/\s+/g, ' '))) textboxes.push(tbText);
+        }
+      }
+    } catch (_) {}
+    return { equations, textboxes };
+  };
+
+  const extractDocxTextDeterministic = async (base64, opts = {}) => {
+    const includeComments = !!(opts && opts.includeComments === true);
+    // #17 + Wave 6 W6-4: decode base64 & parse JSZip ONCE (instead of 4x), enforcing decompression
+    // budgets BEFORE mammoth or XML augmentation touches the archive.
+    let _gBytes = null;
+    let _gZip = null;
     try {
       await ensureJsZipLoaded();
       if (!window.JSZip) throw _ooxmlLimitError('the archive inspector is unavailable', 'Word');
-      const _gBytes = _base64ToBytes(base64);
-      const _gZip = await window.JSZip.loadAsync(_gBytes);
+      _gBytes = _base64ToBytes(base64);
+      _gZip = await window.JSZip.loadAsync(_gBytes);
       _ooxmlGuardArchive(_gZip, _gBytes.length, 'Word');
       let _actualTotal = 0;
       const _gEntries = [];
@@ -22219,30 +22661,25 @@ var createDocPipeline = function(deps) {
       const _safeError = _ge && _ge.isArchiveLimit ? _ge : _ooxmlLimitError('the archive or its declared sizes could not be inspected before extraction', 'Word');
       return { fullText: '', sourceCharCount: 0, method: 'failed', error: _safeError.message, mediaImages: [] };
     }
-    // Body text via mammoth (primary path — best handling of styles/structure)
+    // Body text via mammoth (primary path — best handling of styles/structure), reusing _gBytes.
     let bodyText = '';
     let usedMammoth = false;
     let usedMammothHtml = false;
     try {
       await ensureMammothLoaded();
       if (window.mammoth) {
-        const bytes = _base64ToBytes(base64);
-        // H7 (deep dive 2026-07-02): prefer convertToHtml → markdown. extractRawText FLATTENED
-        // author-declared structure — Heading styles, list numbering, table geometry, hyperlink
-        // URLs — to plain text, and the AI transform then RE-GUESSED all of it: a born-accessible
-        // DOCX could come out worse-structured than it went in. Markdown is exactly what the
-        // Vision extraction path already feeds the transform, so every downstream consumer
-        // (prompts, fidelity/coverage nets, diff) treats it identically. Raw text remains the
-        // fallback for old mammoth builds or converter failures.
+        const mammothBuf = _gBytes.byteOffset === 0 && _gBytes.byteLength === _gBytes.buffer.byteLength
+          ? _gBytes.buffer
+          : _gBytes.slice().buffer;
         if (typeof window.mammoth.convertToHtml === 'function') {
           try {
-            const _hr = await window.mammoth.convertToHtml({ arrayBuffer: bytes.buffer });
+            const _hr = await window.mammoth.convertToHtml({ arrayBuffer: mammothBuf });
             const _mdown = _docxHtmlToMarkdown((_hr && _hr.value) || '');
             if (_mdown && _mdown.trim().length > 0) { bodyText = _mdown; usedMammoth = true; usedMammothHtml = true; }
           } catch (eH) { warnLog('[DOCX Det] convertToHtml failed — falling back to raw text:', eH?.message); }
         }
         if (!bodyText && typeof window.mammoth.extractRawText === 'function') {
-          const result = await window.mammoth.extractRawText({ arrayBuffer: bytes.buffer });
+          const result = await window.mammoth.extractRawText({ arrayBuffer: mammothBuf });
           bodyText = (result && result.value) || '';
           if (bodyText && bodyText.length > 0) usedMammoth = true;
         }
@@ -22250,17 +22687,16 @@ var createDocPipeline = function(deps) {
     } catch (e) {
       warnLog('[DOCX Det] mammoth failed, falling back to jszip+DOM:', e?.message);
     }
-    // Augmentation: read aux parts (headers, footers, footnotes, endnotes, comments).
-    // Mammoth misses ALL of these. The jszip+DOM path also recovers body if mammoth
-    // failed entirely. Loosened regex (\d*) catches Google-Docs no-digit variants
-    // like word/header.xml in addition to numbered Office365/LibreOffice variants.
+    // Augmentation: reuse _gZip (single ZIP parse) to read word/document.xml once + aux parts.
     let augmentedParts = [];
     let method = usedMammoth ? (usedMammothHtml ? 'mammoth-html' : 'mammoth') : '';
+    let _docXmlRaw = '';
+    let hasReviewerComments = false;
+    let omittedCommentsCount = 0;
+    let extractedEquations = 0;
+    let extractedTextboxes = 0;
     try {
-      await ensureJsZipLoaded();
-      if (!window.JSZip) throw new Error('jszip unavailable');
-      const bytes = _base64ToBytes(base64);
-      const zip = await window.JSZip.loadAsync(bytes);
+      const zip = _gZip;
       // If mammoth didn't produce body text, derive it via DOM from word/document.xml
       if (!bodyText) {
         const docFile = zip.file('word/document.xml');
@@ -22269,16 +22705,23 @@ var createDocPipeline = function(deps) {
           if (bodyText) method = 'jszip-dom';
         }
       }
-      // Tracked-changes detection: a DOCX with UNRESOLVED tracked changes is silently
-      // flattened (insertions baked in as final, deletions dropped), so the remediated
-      // output may not match the author's intent. Warn the user to accept/reject in Word
-      // first. Detection only — no change-resolution logic. (Cheap extra raw read.)
+      // Read word/document.xml ONCE for tracked-changes detection, OMML math, DrawingML textboxes, and media extraction.
       try {
         const _docXml = zip.file('word/document.xml');
         if (_docXml) {
-          const _rawXml = await _ooxmlInflatePart(_docXml, 'string', _OOXML_XML_PART_MAX_BYTES, 'word/document.xml');
-          if (/<w:(ins|del)\b/.test(_rawXml) && typeof addToast === 'function') {
+          _docXmlRaw = await _ooxmlInflatePart(_docXml, 'string', _OOXML_XML_PART_MAX_BYTES, 'word/document.xml');
+          if (/<w:(ins|del)\b/.test(_docXmlRaw) && typeof addToast === 'function') {
             addToast(t('toasts.docx_tracked_changes') || 'This Word file has unresolved tracked changes. AlloFlow flattens them (insertions kept, deletions dropped), which may not match your intent — accept or reject the changes in Word first for an accurate result.', 'info');
+          }
+          // Recover Word OMML equations (<m:oMath>) and DrawingML textboxes (<w:txbxContent>) that Mammoth omits.
+          const _recovered = _docxExtractOmmlAndTextboxes(_docXmlRaw, bodyText);
+          if (_recovered.equations.length) {
+            extractedEquations = _recovered.equations.length;
+            augmentedParts.push(_ALLO_SECTION_OPEN('EQUATIONS', null) + '\n[Mathematical equations from document]\n' + _recovered.equations.map((eq) => 'Equation: ' + eq).join('\n') + '\n' + _ALLO_SECTION_CLOSE);
+          }
+          if (_recovered.textboxes.length) {
+            extractedTextboxes = _recovered.textboxes.length;
+            augmentedParts.push(_ALLO_SECTION_OPEN('TEXTBOXES', null) + '\n' + _recovered.textboxes.join('\n\n') + '\n' + _ALLO_SECTION_CLOSE);
           }
         }
       } catch (_) {}
@@ -22289,11 +22732,18 @@ var createDocPipeline = function(deps) {
         if (!f) return;
         const txt = await _ooxmlExtractPart(f, 'p', 't', _W_NS);
         if (!txt || !txt.trim()) return;
-        // H8 (deep dive 2026-07-02): the ALLO_SECTION sentinel is opaque to the transform model
-        // (no prompt defines KIND semantics), so a draft's margin comments could be woven into
-        // student-facing body text ("check with mom about meds" class of leak). Mirror the PPTX
-        // speaker-notes pattern: a human-readable label the model can actually act on. Label
-        // only — no omission instruction — so the fidelity/coverage nets keep counting the text.
+        if (kind === 'COMMENTS') {
+          hasReviewerComments = true;
+          const commentLines = txt.split(/\r?\n+/).map((l) => l.trim()).filter(Boolean);
+          if (!includeComments) {
+            omittedCommentsCount = Math.max(1, commentLines.length);
+            warnLog(`[DOCX Det] Excluded ${omittedCommentsCount} reviewer margin comment line(s) by default to protect internal review notes from entering student-facing output.`);
+            if (typeof addToast === 'function') {
+              addToast(t('toasts.docx_comments_excluded') || 'This Word file contains reviewer margin comments, which were excluded by default so internal notes do not appear in the student-facing document.', 'info');
+            }
+            return;
+          }
+        }
         const labeled = kind === 'COMMENTS'
           ? '[Reviewer margin comments — document review notes, not part of the document body]\n' + txt
           : txt;
@@ -22304,10 +22754,6 @@ var createDocPipeline = function(deps) {
         if (hdrM) { await _readPart(name, 'HEADER', hdrM[1] || '1'); continue; }
         const ftrM = name.match(/^word\/footer(\d*)\.xml$/);
         if (ftrM) { await _readPart(name, 'FOOTER', ftrM[1] || '1'); continue; }
-        // #6 (2026-07-03): mammoth.convertToHtml already renders footnotes/endnotes (as a trailing list)
-        // into bodyText, so appending them again here DUPLICATES the text (and inflates the integrity
-        // denominator). Only augment them when the HTML path was NOT used (the raw-text/jszip fallback
-        // drops notes, so it still needs them). Headers/footers/comments below are never in bodyText.
         if (name === 'word/footnotes.xml') { if (!usedMammothHtml) await _readPart(name, 'FOOTNOTES', null); continue; }
         if (name === 'word/endnotes.xml') { if (!usedMammothHtml) await _readPart(name, 'ENDNOTES', null); continue; }
         if (name === 'word/comments.xml') { await _readPart(name, 'COMMENTS', null); continue; }
@@ -22317,34 +22763,27 @@ var createDocPipeline = function(deps) {
       if (e && e.isArchiveLimit) return { fullText: '', sourceCharCount: 0, method: 'failed', error: msg, mediaImages: [] };
       warnLog('[DOCX Det] augmentation pass failed:', msg);
       if (/password|encrypted/i.test(msg) && typeof addToast === 'function') addToast(t('toasts.docx_appears_password_protected_using'), 'info');
-      // Honest wording (deep dive 2026-07-02 H11): the old key promised "attempting Vision" —
-      // but the Vision fallback is gated to application/pdf and never runs for Office files.
       else if (/invalid|corrupt/i.test(msg) && typeof addToast === 'function') addToast(t('toasts.docx_partly_unreadable') || 'Parts of this Word file could not be read (it may be corrupted) — headers, footnotes, or comments may be missing from the result.', 'info');
     }
-    // Embedded images (word/media/* via document.xml.rels) — bytes + alt.
+    // Embedded images (word/media/* via document.xml.rels) — reuse _gZip and _docXmlRaw.
     let mediaImages = [];
     try {
-      if (window.JSZip) {
-        const _mzip = await window.JSZip.loadAsync(_base64ToBytes(base64));
-        const _docXmlF = _mzip.file('word/document.xml');
-        if (_docXmlF) {
-          const _docXmlRaw = await _ooxmlInflatePart(_docXmlF, 'string', _OOXML_XML_PART_MAX_BYTES, 'word/document.xml');
-          mediaImages = await _officeMediaFromPart(
-            _mzip, 'word/_rels/document.xml.rels', _docXmlRaw,
-            (tgt) => {
-              let p = String(tgt || '').replace(/\\/g, '/').replace(/^(\.\/)+/, '').replace(/\/(?:\.\/)+/g, '/');
-              if (p.charAt(0) === '/') return p.slice(1).replace(/^(\.\/)+/, '');
-              const parts = ('word/' + p.replace(/^word\//i, '')).split('/');
-              const norm = [];
-              for (const seg of parts) {
-                if (!seg || seg === '.') continue;
-                if (seg === '..') { if (norm.length) norm.pop(); } else norm.push(seg);
-              }
-              return norm.join('/');
-            },
-            null, { used: 0 }
-          );
-        }
+      if (_gZip && _docXmlRaw) {
+        mediaImages = await _officeMediaFromPart(
+          _gZip, 'word/_rels/document.xml.rels', _docXmlRaw,
+          (tgt) => {
+            let p = String(tgt || '').replace(/\\/g, '/').replace(/^(\.\/)+/, '').replace(/\/(?:\.\/)+/g, '/');
+            if (p.charAt(0) === '/') return p.slice(1).replace(/^(\.\/)+/, '');
+            const parts = ('word/' + p.replace(/^word\//i, '')).split('/');
+            const norm = [];
+            for (const seg of parts) {
+              if (!seg || seg === '.') continue;
+              if (seg === '..') { if (norm.length) norm.pop(); } else norm.push(seg);
+            }
+            return norm.join('/');
+          },
+          null, { used: 0 }
+        );
       }
     } catch (_) {}
     if (!bodyText && augmentedParts.length === 0) {
@@ -22358,6 +22797,10 @@ var createDocPipeline = function(deps) {
       method: method || 'jszip-dom',
       augmentedParts: augmentedParts.length,
       mediaImages,
+      hasReviewerComments,
+      omittedCommentsCount,
+      extractedEquations,
+      extractedTextboxes,
     };
   };
 
@@ -26867,17 +27310,18 @@ HTML section ${chunkNum}/${chunks.length}:
   const _neutralizeForAuditFrame = (html) => {
     try {
       const inert = new DOMParser().parseFromString(String(html || ''), 'text/html');
-      inert.querySelectorAll('script').forEach((s) => s.remove());
+      inert.querySelectorAll('script, base').forEach((s) => s.remove());
       inert.querySelectorAll('meta[http-equiv]').forEach((m) => { if (/refresh/i.test(m.getAttribute('http-equiv') || '')) m.remove(); });
       inert.querySelectorAll('*').forEach((el) => {
         Array.from(el.attributes || []).forEach((attr) => {
           const n = attr.name;
+          const compactVal = String(attr.value || '').replace(/[\u0000-\u0020]+/g, '');
           if (/^on/i.test(n)) { try { el.setAttribute('data-allo-neutralized-' + n, attr.value); } catch (_) {} el.removeAttribute(n); }
-          else if (/^(href|src|action|formaction|data|xlink:href)$/i.test(n) && /^\s*(javascript|vbscript)\s*:/i.test(attr.value || '')) el.setAttribute(n, 'about:blank#neutralized');
+          else if (/^(href|src|action|formaction|data|xlink:href)$/i.test(n) && /^(?:javascript:|vbscript:|data:text\/html)/i.test(compactVal)) el.setAttribute(n, 'about:blank#neutralized');
         });
         const tag = el.tagName ? el.tagName.toLowerCase() : '';
         if (tag === 'iframe' || tag === 'frame' || tag === 'embed' || tag === 'object') {
-          ['src', 'data'].forEach((a) => { if (el.hasAttribute(a)) { el.setAttribute('data-allo-neutralized-' + a, el.getAttribute(a) || ''); el.removeAttribute(a); } });
+          ['src', 'srcdoc', 'data'].forEach((a) => { if (el.hasAttribute(a)) { el.setAttribute('data-allo-neutralized-' + a, el.getAttribute(a) || ''); el.removeAttribute(a); } });
         }
       });
       try {
@@ -26909,6 +27353,109 @@ HTML section ${chunkNum}/${chunks.length}:
     'https://unpkg.com/axe-core@4.12.1/axe.min.js',
   ];
   const _AXE_CDN_URL = _AXE_CDN_URLS[0];
+  // Bounded frame-ready wait (Wave 6 W6-2): avoids fixed 800ms raw setTimeout sleeps
+  // (which also throttle to 1s+ in backgrounded tabs) while waiting for layout + loaded fonts.
+  const _waitAuditFrameReady = (iframe, maxMs = 120) => new Promise((resolve) => {
+    let settled = false;
+    const done = () => { if (!settled) { settled = true; resolve(); } };
+    const timer = (typeof _alloHiddenSafeTimeout === 'function')
+      ? _alloHiddenSafeTimeout(done, maxMs)
+      : setTimeout(done, maxMs);
+    const finish = () => {
+      try { if (typeof _alloHiddenSafeClear === 'function') _alloHiddenSafeClear(timer); else clearTimeout(timer); } catch (_) {}
+      done();
+    };
+    try {
+      const win = iframe && iframe.contentWindow;
+      const fontsReady = win && win.document && win.document.fonts && win.document.fonts.ready;
+      const raf = win && typeof win.requestAnimationFrame === 'function' ? win.requestAnimationFrame.bind(win) : null;
+      const afterFonts = () => {
+        if (raf) raf(() => finish());
+        else finish();
+      };
+      if (fontsReady && typeof fontsReady.then === 'function') fontsReady.then(afterFonts, afterFonts);
+      else afterFonts();
+    } catch (_) {
+      finish();
+    }
+  });
+
+  // Deterministic WCAG 2.2 AA layout probes on an already-rendered audit iframe:
+  // 1.4.10 Reflow (320px), 1.4.12 Text Spacing clipping, and 2.5.8 Target Size (24x24px).
+  const _runWcag22LayoutChecks = (iframe, iframeDoc) => {
+    try {
+      const win = iframe && iframe.contentWindow;
+      const docEl = iframeDoc && iframeDoc.documentElement;
+      const body = iframeDoc && iframeDoc.body;
+      if (!win || !docEl || !body || typeof win.getComputedStyle !== 'function') {
+        return { skipped: true, reason: 'no-layout-engine' };
+      }
+      if (!docEl.clientWidth && !body.clientWidth) {
+        return { skipped: true, reason: 'zero-viewport-layout' };
+      }
+      const origWidth = iframe.style.width;
+      let reflowOverflowPx = 0;
+      try {
+        iframe.style.width = '320px';
+        const sw = Math.max(docEl.scrollWidth || 0, body.scrollWidth || 0);
+        const cw = docEl.clientWidth || 320;
+        reflowOverflowPx = Math.max(0, Math.round(sw - cw));
+      } catch (_) {}
+      iframe.style.width = origWidth || '1024px';
+
+      let clippedCount = 0;
+      const spacingStyle = iframeDoc.createElement('style');
+      spacingStyle.setAttribute('data-allo-wcag22-spacing', 'true');
+      spacingStyle.textContent = '* { line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; } p { margin-bottom: 2em !important; }';
+      try {
+        (iframeDoc.head || docEl).appendChild(spacingStyle);
+        const candidates = body.querySelectorAll('p, div, li, td, th, h1, h2, h3, h4, h5, h6, figcaption, blockquote, button, a');
+        for (let i = 0; i < candidates.length && i < 400; i++) {
+          const el = candidates[i];
+          if (!el || !el.textContent || !el.textContent.trim()) continue;
+          const cs = win.getComputedStyle(el);
+          if (!cs || cs.display === 'none' || cs.visibility === 'hidden') continue;
+          if ((cs.overflowY === 'hidden' || cs.overflowY === 'clip') && el.clientHeight > 0 && el.scrollHeight > el.clientHeight + 4) {
+            clippedCount++;
+          } else if ((cs.overflowX === 'hidden' || cs.overflowX === 'clip') && el.clientWidth > 0 && el.scrollWidth > el.clientWidth + 4) {
+            clippedCount++;
+          }
+        }
+      } catch (_) {} finally {
+        try { spacingStyle.remove(); } catch (_) {}
+      }
+
+      const undersized = [];
+      try {
+        const controls = body.querySelectorAll('button, input:not([type="hidden"]), select, textarea, [role="button"], [role="checkbox"], [role="radio"], [role="switch"]');
+        for (let i = 0; i < controls.length && i < 200; i++) {
+          const el = controls[i];
+          const cs = win.getComputedStyle(el);
+          if (!cs || cs.display === 'none' || cs.visibility === 'hidden') continue;
+          const rect = typeof el.getBoundingClientRect === 'function' ? el.getBoundingClientRect() : null;
+          if (!rect || (rect.width === 0 && rect.height === 0)) continue;
+          if (rect.width < 23.5 || rect.height < 23.5) {
+            undersized.push({
+              tag: (el.tagName || '').toLowerCase(),
+              width: Math.round(rect.width),
+              height: Math.round(rect.height),
+              label: String(el.getAttribute('aria-label') || el.textContent || el.getAttribute('name') || '').replace(/\s+/g, ' ').trim().slice(0, 60),
+            });
+          }
+        }
+      } catch (_) {}
+
+      return {
+        skipped: false,
+        reflow320: { criterion: '1.4.10', passed: reflowOverflowPx <= 4, overflowPx: reflowOverflowPx },
+        textSpacing: { criterion: '1.4.12', passed: clippedCount === 0, clippedCount },
+        targetSize: { criterion: '2.5.8', passed: undersized.length === 0, undersizedCount: undersized.length, samples: undersized.slice(0, 10) },
+      };
+    } catch (_) {
+      return { skipped: true, reason: 'probe-error' };
+    }
+  };
+
   const runAxeAudit = async (htmlContent) => {
     try {
       // Lazy-load axe-core from CDN if not already loaded. Error messages include
@@ -26979,12 +27526,13 @@ HTML section ${chunkNum}/${chunks.length}:
 
       // Create hidden iframe with the HTML content
       const iframe = document.createElement('iframe');
-      iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:800px;height:600px;opacity:0;pointer-events:none';
+      iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1024px;height:768px;opacity:0;pointer-events:none';
       iframe.setAttribute('aria-hidden', 'true');
       iframe.title = 'Accessibility audit frame';
       document.body.appendChild(iframe);
 
       let results;
+      let wcag22LayoutChecks = null;
       try {
       const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
       // #16 (ChatGPT review 2026-07-10): full neutralization before writing — the old strip only
@@ -26995,8 +27543,8 @@ HTML section ${chunkNum}/${chunks.length}:
       iframeDoc.write(_safeHtml);
       iframeDoc.close();
 
-      // Wait for iframe content to render
-      await new Promise(r => setTimeout(r, 800));
+      // Wait for iframe content to render (bounded RAF + fonts.ready instead of 800ms raw sleep)
+      await _waitAuditFrameReady(iframe, 120);
 
       // Inject axe-core into the iframe — prefer the cached source text (no network),
       // fall back to CDN script tag if the cache wasn't populated (e.g., fetch blocked).
@@ -27036,6 +27584,7 @@ HTML section ${chunkNum}/${chunks.length}:
         }),
         30000, 'axe-core audit'
       );
+      wcag22LayoutChecks = _runWcag22LayoutChecks(iframe, iframeDoc);
       } finally {
         // Always clean up iframe — prevents memory leak on error
         try { document.body.removeChild(iframe); } catch(e) { /* iframe may not be attached */ }
@@ -27078,6 +27627,7 @@ HTML section ${chunkNum}/${chunks.length}:
         minor: minor.map(v => ({ id: v.id, impact: v.impact, description: v.help, nodes: v.nodes.length, wcag: v.tags.filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(v.tags), helpUrl: v.helpUrl, nodeDetails: v.nodes.slice(0, (v.id === 'color-contrast' || v.id === 'color-contrast-enhanced') ? 40 : 3).map(_mapNode) })),
         passes: results.passes.map(p => ({ id: p.id, description: p.help, wcag: (p.tags || []).filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(p.tags), nodes: p.nodes.length })),
         incomplete: (results.incomplete || []).map(i => ({ id: i.id, description: i.help, nodes: i.nodes.length, wcag: (i.tags || []).filter(t => t.startsWith('wcag')).join(', '), wcagCriteria: _alloWcagScFromTags(i.tags), helpUrl: i.helpUrl })), // finding 14: incomplete findings used to omit WCAG identity entirely
+        wcag22LayoutChecks: wcag22LayoutChecks,
         score: Math.max(0, Math.round(100 - (critical.length * SEVERITY_WEIGHTS.critical) - (serious.length * SEVERITY_WEIGHTS.serious) - (moderate.length * SEVERITY_WEIGHTS.moderate) - (minor.length * SEVERITY_WEIGHTS.minor))), // S6: shared weights (per failed RULE — axe nodes are counted separately)
       };
     } catch (err) {
@@ -27184,7 +27734,30 @@ HTML section ${chunkNum}/${chunks.length}:
     // a visible notice instead of riding the weaker sanitizer into a distributed file. Benign
     // blocks (no execution vectors — even ones with forbidden-but-inert tags like <style> or form
     // controls) still sanitize exactly as before, so offline export of normal content is unchanged.
-    const _execShaped = /<script\b|<iframe\b|<object\b|<embed\b|<svg\b|<math\b|[\s/]on[a-z]+\s*=|(?:javascript|vbscript)\s*:|data\s*:\s*text\/html/i.test(html);
+    let _execShaped = /<script\b|<iframe\b|<frame\b|<object\b|<embed\b|<svg\b|<math\b|[\s/"']on[a-z]+\s*=|\bsrcdoc\s*=|(?:javascript|vbscript)\s*:|data\s*:\s*text\/html/i.test(html);
+    if (!_execShaped && typeof DOMParser !== 'undefined') {
+      try {
+        const _parsed = new DOMParser().parseFromString('<div>' + html + '</div>', 'text/html');
+        if (_parsed.querySelector('script,iframe,frame,object,embed,svg,math,base,template')) {
+          _execShaped = true;
+        } else {
+          const _all = _parsed.body ? _parsed.body.querySelectorAll('*') : [];
+          for (let _k = 0; _k < _all.length && !_execShaped; _k++) {
+            const _attrs = _all[_k].attributes || [];
+            for (let _a = 0; _a < _attrs.length; _a++) {
+              const _n = String(_attrs[_a].name || '').toLowerCase();
+              const _v = String(_attrs[_a].value || '').replace(/[\u0000-\u0020]+/g, '');
+              if (/^on/.test(_n) || _n === 'srcdoc' || (/^(?:href|src|action|formaction|data|xlink:href)$/.test(_n) && /^(?:javascript:|vbscript:|data:text\/html)/i.test(_v))) {
+                _execShaped = true;
+                break;
+              }
+            }
+          }
+        }
+      } catch (_) {
+        _execShaped = true;
+      }
+    }
     if (_execShaped) {
       return '<div role="note" data-allo-rawhtml-withheld="true" style="border:1px dashed #b45309;border-radius:6px;padding:8px 12px;background:#fffbeb;color:#92400e;font-size:0.9em;">An embedded HTML block was withheld from this export: it contained active content and the full HTML sanitizer could not be loaded (offline or blocked network). Re-export with network access to include the sanitized block.</div>';
     }
@@ -27196,8 +27769,9 @@ HTML section ${chunkNum}/${chunks.length}:
     return html
       .replace(/<script[\s\S]*?<\/script>/gi, '')
       .replace(/<style[\s\S]*?<\/style>/gi, '')
-      .replace(/<\/?(?:script|style|iframe|object|embed|svg|math|link|meta|base|form|input|button|textarea|select)\b[^>]*>?/gi, '')
-      .replace(/[\s/]on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+      .replace(/<\/?(?:script|style|iframe|frame|object|embed|svg|math|link|meta|base|template|form|input|button|textarea|select)\b[^>]*>?/gi, '')
+      .replace(/[\s/"']on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+      .replace(/\bsrcdoc\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
       .replace(/(?:javascript|vbscript|data\s*:\s*text\/html)\s*:/gi, '');
   };
   // Best-effort warm-up at module init (browser only; no-op in node) so the first export
@@ -27968,11 +28542,13 @@ HTML section ${chunkNum}/${chunks.length}:
     try {
       await _withTimeout(_ensureAce(), 15000, 'IBM Equal Access load');
       iframe = document.createElement('iframe');
-      iframe.style.cssText = 'position:absolute;left:-9999px;width:1024px;height:768px;';
+      iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1024px;height:768px;opacity:0;pointer-events:none;';
+      iframe.setAttribute('aria-hidden', 'true');
+      iframe.title = 'Accessibility audit frame';
       document.body.appendChild(iframe);
       const doc = iframe.contentDocument || iframe.contentWindow.document;
       doc.open(); doc.write(_neutralizeForAuditFrame(htmlContent)); doc.close(); // #16: same neutralization as the axe frame
-      await new Promise((r) => setTimeout(r, 150));
+      await _waitAuditFrameReady(iframe, 100);
       const checker = new window.ace.Checker();
       // ── WCAG identity for Equal Access findings (2026-08-23) ──────────────────────────────
       // EA results carry a ruleId and nothing else about WCAG, so the Success Criteria report was
@@ -32109,6 +32685,28 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             } catch (_) {}
           }
 
+          // Layer 2 surgical pre-pass (Wave 6 W6-1): resolve localized axe-core clusters
+          // via bounded subtree edits + isolated axe re-audit before falling back to 16 KB full-chunk rewrites.
+          const _tier2ResolvedRuleIds = new Set();
+          if (axeResults && (_passAxeCount || 0) > 0 && typeof callGemini === 'function' && typeof document !== 'undefined' && !_shouldAbort() && !_usesLocalTextBackend() && !(typeof window !== 'undefined' && window.__alloHostTransportProfile && window.__alloHostTransportProfile.agentBridge)) {
+            try {
+              const _t2Res = await runTier2SurgicalFixes(accessibleHtml, axeResults, {
+                signal: _controlSignal,
+                shouldAbort: _shouldAbort,
+                owner: _controlOwner,
+                maxClusters: 8,
+              });
+              if (_t2Res && _t2Res.stats && _t2Res.stats.accepted > 0 && _t2Res.html && _t2Res.html !== accessibleHtml) {
+                accessibleHtml = _t2Res.html;
+                (_t2Res.stats.resolvedRuleIds || []).forEach((id) => _tier2ResolvedRuleIds.add(id));
+                warnLog(`[Auto-fix] Pass ${fixPass + 1}: Tier 2 surgical pre-pass accepted ${_t2Res.stats.accepted} cluster(s), resolved ${_tier2ResolvedRuleIds.size} rule(s) before AI chunking`);
+              }
+            } catch (_t2Err) {
+              if ((_t2Err && (_t2Err.name === 'AbortError' || _t2Err.isAbort)) || _shouldAbort()) throw _t2Err;
+              warnLog('[Auto-fix] Tier 2 surgical pre-pass skipped:', _t2Err && _t2Err.message);
+            }
+          }
+
           // AI attempts targeted fixes for remaining findings from all three engines.
           // $4 (2026-07-02): built as structured ENTRIES so aiFixChunked can route
           // element-scoped violations to the chunk containing the element (and skip the
@@ -32117,7 +32715,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // non-skipped chunks (aiFixChunked re-appends it identically when routing is
           // inactive, so legacy prompts don't change by a byte).
           const _axeEntry = (v, line) => ({ text: line, axeId: v.id, nodes: v.nodes || 0, nodeHtmls: Array.isArray(v.nodeDetails) ? v.nodeDetails.map((n) => n && n.html).filter(Boolean) : [], snippet: null });
-          const _keepAxeForAi = (v) => !(typeof _detContrastResolved !== 'undefined' && _detContrastResolved && v && (v.id === 'color-contrast' || v.id === 'color-contrast-enhanced'));
+          const _keepAxeForAi = (v) => !(typeof _detContrastResolved !== 'undefined' && _detContrastResolved && v && (v.id === 'color-contrast' || v.id === 'color-contrast-enhanced')) && !(typeof _tier2ResolvedRuleIds !== 'undefined' && v && _tier2ResolvedRuleIds.has(v.id));
           const _eaEntries = (v, prefix) => {
             const line = `${prefix} (IBM Equal Access): ${v.description || v.id} (${v.id || 'unknown-rule'}, ${v.nodes || 0} elements)`;
             const details = v && Array.isArray(v.details) ? v.details : [];
@@ -32233,14 +32831,14 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           if (_postContrastFix.fixCount > 0) { accessibleHtml = _postContrastFix.html; warnLog(`  Deterministic: fixed ${_postContrastFix.fixCount} contrast issues`); }
           // Deterministic WCAG gap closures
           accessibleHtml = runDeterministicWcagFixes(accessibleHtml);
-          // Fix invalid ARIA roles
-          const __validRoles = ['alert','alertdialog','application','article','banner','button','cell','checkbox','columnheader','combobox','complementary','contentinfo','definition','dialog','directory','document','feed','figure','form','grid','gridcell','group','heading','img','link','list','listbox','listitem','log','main','marquee','math','menu','menubar','menuitem','menuitemcheckbox','menuitemradio','navigation','none','note','option','presentation','progressbar','radio','radiogroup','region','row','rowgroup','rowheader','scrollbar','search','searchbox','separator','slider','spinbutton','status','switch','tab','table','tablist','tabpanel','term','textbox','timer','toolbar','tooltip','tree','treegrid','treeitem'];
+          // Fix invalid ARIA roles (preserves ARIA 1.2, Graphics-ARIA, and DPUB-ARIA roles such as doc-footnote/doc-endnote; requires attribute whitespace boundary so data-role is untouched)
+          const __validRoles = new Set(['alert','alertdialog','application','article','banner','blockquote','button','caption','cell','checkbox','code','columnheader','combobox','comment','complementary','contentinfo','definition','deletion','dialog','directory','document','emphasis','feed','figure','form','generic','graphics-document','graphics-object','graphics-symbol','grid','gridcell','group','heading','img','insertion','link','list','listbox','listitem','log','main','mark','marquee','math','menu','menubar','menuitem','menuitemcheckbox','menuitemradio','meter','navigation','none','note','option','paragraph','presentation','progressbar','radio','radiogroup','region','row','rowgroup','rowheader','scrollbar','search','searchbox','separator','slider','spinbutton','status','strong','subscript','suggestion','superscript','switch','tab','table','tablist','tabpanel','term','textbox','time','timer','toolbar','tooltip','tree','treegrid','treeitem','doc-abstract','doc-acknowledgments','doc-afterword','doc-appendix','doc-backlink','doc-biblioentry','doc-bibliography','doc-biblioref','doc-chapter','doc-colophon','doc-conclusion','doc-cover','doc-credit','doc-credits','doc-dedication','doc-endnote','doc-endnotes','doc-epigraph','doc-epilogue','doc-errata','doc-example','doc-footnote','doc-foreword','doc-glossary','doc-glossref','doc-index','doc-introduction','doc-noteref','doc-notice','doc-pagebreak','doc-pagefooter','doc-pageheader','doc-pagelist','doc-part','doc-preface','doc-prologue','doc-pullquote','doc-qna','doc-subtitle','doc-tip','doc-toc']);
           const __roleCorrections = { 'content-info': 'contentinfo', 'nav': 'navigation', 'header': 'banner', 'footer': 'contentinfo', 'aside': 'complementary', 'section': 'region' };
           let __roleFixCount = 0;
-          accessibleHtml = accessibleHtml.replace(/role="([^"]*)"/gi, (m, role) => {
-            const lower = role.toLowerCase().trim();
-            if (__validRoles.includes(lower)) return `role="${lower}"`;
-            if (__roleCorrections[lower]) { __roleFixCount++; return `role="${__roleCorrections[lower]}"`; }
+          accessibleHtml = accessibleHtml.replace(/(^|\s)role=(?:"([^"]*)"|'([^']*)')/gi, (m, pre, dq, sq) => {
+            const lower = String(dq != null ? dq : (sq != null ? sq : '')).toLowerCase().trim();
+            if (__validRoles.has(lower)) return `${pre}role="${lower}"`;
+            if (__roleCorrections[lower]) { __roleFixCount++; return `${pre}role="${__roleCorrections[lower]}"`; }
             __roleFixCount++; return '';
           });
           if (__roleFixCount > 0) warnLog(`  Deterministic: fixed ${__roleFixCount} invalid ARIA roles`);
@@ -36754,18 +37352,36 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           accessibleHtml = accessibleHtml.replace('</body>', '</main>\n</body>');
         }
 
-        // 8b. Ensure nav landmark (wrap TOC-like structures)
+        // 8b. Ensure nav landmark (wrap TOC-like structures, depth-tracking nested lists)
         if (!accessibleHtml.includes('<nav') && !accessibleHtml.includes('role="navigation"')) {
-          var tocMatch2 = accessibleHtml.match(/<(h[1-3])[^>]*>.*?(table of contents|contents|navigation|toc).*?<\/\1>\s*<(ul|ol)/i);
+          var tocMatch2 = accessibleHtml.match(/<(h[1-3])[^>]*>.*?(table of contents|contents|navigation|toc).*?<\/\1>\s*<(ul|ol)(?=[\s>])/i);
           if (tocMatch2) {
             var tocIdx2 = accessibleHtml.indexOf(tocMatch2[0]);
             if (tocIdx2 >= 0) {
-              accessibleHtml = accessibleHtml.substring(0, tocIdx2) + '<nav role="navigation" aria-label="Table of Contents">' + accessibleHtml.substring(tocIdx2);
-              var listTag2 = tocMatch2[3];
-              var closeTag2 = '</' + listTag2 + '>';
-              var closeIdx2 = accessibleHtml.indexOf(closeTag2, tocIdx2 + tocMatch2[0].length);
-              if (closeIdx2 >= 0) {
-                accessibleHtml = accessibleHtml.substring(0, closeIdx2 + closeTag2.length) + '</nav>' + accessibleHtml.substring(closeIdx2 + closeTag2.length);
+              var listTag2 = tocMatch2[3].toLowerCase();
+              var listRe2 = new RegExp('<(\\/?)' + listTag2 + '(?=[\\s>])', 'gi');
+              listRe2.lastIndex = tocIdx2 + tocMatch2[0].length;
+              var listDepth2 = 1;
+              var closeEnd2 = -1;
+              var lm2;
+              while ((lm2 = listRe2.exec(accessibleHtml)) !== null) {
+                if (lm2[1]) {
+                  listDepth2--;
+                  if (listDepth2 === 0) {
+                    var gt2 = accessibleHtml.indexOf('>', lm2.index);
+                    if (gt2 >= 0) closeEnd2 = gt2 + 1;
+                    break;
+                  }
+                } else {
+                  listDepth2++;
+                }
+              }
+              if (closeEnd2 > tocIdx2) {
+                accessibleHtml = accessibleHtml.substring(0, tocIdx2)
+                  + '<nav role="navigation" aria-label="Table of Contents">'
+                  + accessibleHtml.substring(tocIdx2, closeEnd2)
+                  + '</nav>'
+                  + accessibleHtml.substring(closeEnd2);
                 aiFixCount++;
               }
             }
@@ -36793,11 +37409,21 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // 10. Remove empty headings
         accessibleHtml = accessibleHtml.replace(/<h([1-6])[^>]*>\s*<\/h\1>/gi, () => { aiFixCount++; return ''; });
 
-        // 11. Fix "click here" / "read more" link text
+        // 11. Fix "click here" / "read more" link text (preserve #anchor / mailto / tel safely)
         accessibleHtml = accessibleHtml.replace(/<a([^>]*href="([^"]*)"[^>]*)>(click here|read more|here|learn more|more)<\/a>/gi, (match, attrs, href, text) => {
+          const cleanHref = String(href || '').trim();
+          let label = '';
+          if (/^https?:\/\//i.test(cleanHref)) {
+            label = cleanHref.replace(/^https?:\/\//i, '').split('/')[0].substring(0, 30);
+          } else if (/^mailto:/i.test(cleanHref)) {
+            label = cleanHref.replace(/^mailto:/i, '').split('?')[0].substring(0, 40);
+          } else if (cleanHref.startsWith('#') && cleanHref.length > 1) {
+            const slug = cleanHref.slice(1).replace(/[-_]+/g, ' ').trim();
+            if (slug) label = slug.charAt(0).toUpperCase() + slug.slice(1, 40);
+          }
+          if (!label) return match;
           aiFixCount++;
-          const domain = href.replace(/https?:\/\//, '').split('/')[0].substring(0, 30);
-          return `<a${attrs}>${domain || 'Link'}</a>`;
+          return `<a${attrs}>${label}</a>`;
         });
 
         // 12. Ensure viewport meta tag
@@ -36806,19 +37432,14 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           aiFixCount++;
         }
 
-        // 13. Fix duplicate IDs
-        const idMatches = [...accessibleHtml.matchAll(/id="([^"]+)"/g)];
-        const idCounts = {};
-        idMatches.forEach(m => { idCounts[m[1]] = (idCounts[m[1]] || 0) + 1; });
-        Object.entries(idCounts).filter(([, c]) => c > 1).forEach(([id]) => {
-          let counter = 0;
-          accessibleHtml = accessibleHtml.replace(new RegExp(`id="${id}"`, 'g'), () => {
-            counter++;
-            if (counter === 1) return `id="${id}"`;
-            aiFixCount++;
-            return `id="${id}-${counter}"`;
-          });
-        });
+        // 13. Fix duplicate IDs via DOM-aware collision-safe & reference-rebinding helper (W4-C5)
+        try {
+          const _dupIdRes = fixDuplicateIds(accessibleHtml);
+          if (_dupIdRes && _dupIdRes.fixCount > 0) {
+            accessibleHtml = _dupIdRes.html;
+            aiFixCount += _dupIdRes.fixCount;
+          }
+        } catch (dupErr) { warnLog('[PDF Fix] Duplicate ID repair failed:', dupErr); }
 
         if (aiFixCount > 0) {
           warnLog(`[PDF Fix] Applied ${aiFixCount} deterministic accessibility fixes`);
@@ -62189,28 +62810,48 @@ console.log('[DocPipelineModule] Pipeline factory registered');
   // No IDs/attributes are injected into the document being verified.
   async function inventory(doc, options) {
     var refs = [], tables = Array.from(doc.querySelectorAll('table')).slice(0, 100), images = Array.from(doc.querySelectorAll('img')).slice(0, 200);
-    for (var ti = 0; ti < tables.length && refs.length < MAX_REFERENCES; ti++) {
+    // Deduplicate identical payloads (e.g. repeated empty/numeric cells) and run
+    // WebCrypto SHA-256 digests concurrently instead of 700+ serial round-trips.
+    var hashCache = new Map();
+    var hashCached = function (payload) {
+      var key = String(payload);
+      if (hashCache.has(key)) return hashCache.get(key);
+      var p = hash(key, options);
+      hashCache.set(key, p);
+      return p;
+    };
+    var pending = [];
+    for (var ti = 0; ti < tables.length && pending.length < MAX_REFERENCES; ti++) {
       var table = tables[ti], rows = ownedRows(table), cellData = [];
       rows.forEach(function (row, ri) {
         Array.from(row.children).filter(function (cell) { return /^(TD|TH)$/.test(cell.tagName); }).forEach(function (cell, ci) {
           cellData.push({ node: cell, row: ri, column: ci, value: text(cell.textContent), rowSpan: cell.rowSpan || 1, colSpan: cell.colSpan || 1 });
         });
       });
-      var fingerprint = await hash(JSON.stringify(cellData.map(function (cell) { return [cell.row, cell.column, cell.value, cell.rowSpan, cell.colSpan]; })), options);
+      var tableFpPromise = hashCached(JSON.stringify(cellData.map(function (cell) { return [cell.row, cell.column, cell.value, cell.rowSpan, cell.colSpan]; })));
       var caption = Array.from(table.children).find(function (child) { return child.tagName === 'CAPTION'; });
-      refs.push({ kind: 'table', table: ti, fingerprint: fingerprint, label: 'Table ' + (ti + 1) + (caption ? ': ' + text(caption.textContent).slice(0, 120) : ''), node: table });
-      for (var ci = 0; ci < cellData.length && refs.length < MAX_REFERENCES; ci++) {
+      pending.push({ kind: 'table', table: ti, fpPromise: tableFpPromise, label: 'Table ' + (ti + 1) + (caption ? ': ' + text(caption.textContent).slice(0, 120) : ''), node: table });
+      for (var ci = 0; ci < cellData.length && pending.length < MAX_REFERENCES; ci++) {
         var cell = cellData[ci];
-        refs.push({ kind: 'cell', table: ti, row: cell.row, column: cell.column, tableFingerprint: fingerprint,
-          fingerprint: await hash(JSON.stringify([cell.value, cell.rowSpan, cell.colSpan]), options),
+        pending.push({ kind: 'cell', table: ti, row: cell.row, column: cell.column, tableFpPromise: tableFpPromise,
+          fpPromise: hashCached(JSON.stringify([cell.value, cell.rowSpan, cell.colSpan])),
           label: 'Table ' + (ti + 1) + ', row ' + (cell.row + 1) + ', cell ' + (cell.column + 1), node: cell.node });
       }
     }
-    for (var ii = 0; ii < images.length && refs.length < MAX_REFERENCES; ii++) {
+    for (var ii = 0; ii < images.length && pending.length < MAX_REFERENCES; ii++) {
       var img = images[ii];
-      refs.push({ kind: 'figure', index: ii, fingerprint: await hash(JSON.stringify([img.getAttribute('src') || '', img.getAttribute('srcset') || '']), options),
+      pending.push({ kind: 'figure', index: ii, fpPromise: hashCached(JSON.stringify([img.getAttribute('src') || '', img.getAttribute('srcset') || ''])),
         label: 'Image ' + (ii + 1) + (img.getAttribute('alt') ? ': ' + text(img.getAttribute('alt')).slice(0, 120) : ''), node: img });
     }
+    refs = await Promise.all(pending.map(async function (entry) {
+      if (entry.kind === 'cell') {
+        var pair = await Promise.all([entry.tableFpPromise, entry.fpPromise]);
+        return { kind: 'cell', table: entry.table, row: entry.row, column: entry.column, tableFingerprint: pair[0], fingerprint: pair[1], label: entry.label, node: entry.node };
+      }
+      var fp = await entry.fpPromise;
+      if (entry.kind === 'table') return { kind: 'table', table: entry.table, fingerprint: fp, label: entry.label, node: entry.node };
+      return { kind: 'figure', index: entry.index, fingerprint: fp, label: entry.label, node: entry.node };
+    }));
     var signature = await hash(JSON.stringify([text(doc.body && doc.body.textContent), refs.map(function (ref) { return [ref.kind, ref.fingerprint]; })]), options);
     return { refs: refs, signature: signature, truncated: refs.length >= MAX_REFERENCES || doc.querySelectorAll('table').length > tables.length || doc.querySelectorAll('img').length > images.length };
   }

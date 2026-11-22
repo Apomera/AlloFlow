@@ -25,9 +25,33 @@
   // AI-off sweep: blocked fns are truthy; ask the host whether AI is usable.
   function _aiUsable(kind, fn) {
     try {
-      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
-    } catch (_) {}
-    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable(kind, fn));
+      if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
+      if (typeof window !== 'undefined') {
+        if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return false;
+        var qr = window.__alloQrStudentMode;
+        if (qr === true || (qr && typeof qr === 'object' && qr.active === true && qr.allowAi === false)) return false;
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+  function _isSafeClassImage(url) {
+    return typeof url === 'string' && /^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(url.trim());
+  }
+  function _isSafeGlossaryImage(url) {
+    if (typeof url !== 'string') return false;
+    var trimmed = url.trim();
+    if (!trimmed) return false;
+    if (_isSafeClassImage(trimmed)) return true;
+    if (/^https:\/\//i.test(trimmed)) {
+      try {
+        var parsed = new URL(trimmed);
+        return parsed.protocol === 'https:' && !parsed.username && !parsed.password;
+      } catch (_) { return false; }
+    }
+    return false;
   }
 
   var __alloT = function (key, fallback) {
@@ -125,22 +149,24 @@
   // module scope in Phase A so sibling arcade modes can reuse them via
   // window.AlloHavenArcade.cardHelpers.
   function decorationToCard(d) {
+    var safeImg = _isSafeClassImage(d && d.imageBase64) ? d.imageBase64.trim() : null;
     return {
       id: 'card-deco-' + d.id,
       source: 'decoration',
       name: d.templateLabel || d.template || 'card',
-      imageBase64: d.imageBase64 || null,
+      imageBase64: safeImg,
       conceptDef: (d.studentReflection || '').trim() || null,
       tier: null,
       raw: d
     };
   }
   function glossaryEntryToCard(g, idx) {
-    var img = g.image || null;
-    if (img && img.indexOf('data:') !== 0 && img.length > 200) {
+    var img = (g && typeof g.image === 'string') ? g.image.trim() : null;
+    if (img && img.indexOf('data:') !== 0 && !/^https:\/\//i.test(img) && img.length > 200 && /^[A-Za-z0-9+/=\s]+$/.test(img)) {
       // bare base64 — add the prefix so the <img> renders
       img = 'data:image/png;base64,' + img;
     }
+    if (!_isSafeGlossaryImage(img)) img = null;
     return {
       id: 'card-gloss-' + (g.term || ('idx-' + idx)).replace(/\s+/g, '-').toLowerCase() + '-' + idx,
       source: 'glossary',
@@ -868,7 +894,7 @@
         hostNickname: classEncounter.hostNickname || 'Teacher',
         joinFromSession: true,
         encounterTopic: classEncounter.topic,
-        encounterBossImage: classEncounter.bossImageBase64 || null,
+        encounterBossImage: _isSafeClassImage(classEncounter.bossImageBase64) ? classEncounter.bossImageBase64.trim() : null,
         startedAt: new Date().toISOString()
       };
       (ctx.onLaunchHosted || ctx.onLaunch)(minutesAsked);
@@ -1203,7 +1229,7 @@
       // eslint-disable-next-line
     }, [isClassMode, ctx.sessionCode]);
     var bossEncounterKey = (classSessionState && classSessionState.bossEncounter && classSessionState.bossEncounter.startedAt) || '';
-    var relayedBossRef = useRef({});
+    var relayedBossRef = useRef(Object.create(null));
     useEffect(function () {
       if (!isClassHost || typeof ctx.sessionUpdate !== 'function' || !bossEncounterKey) return;
       var be = classSessionState.bossEncounter || {};
@@ -1250,7 +1276,7 @@
         return (a.submittedAt || '').localeCompare(b.submittedAt || '');
       });
       var sumDamage = subList.reduce(function (s, sub) { return s + (sub.damage || 0); }, 0);
-      var nickSet = {};
+      var nickSet = Object.create(null);
       subList.forEach(function (sub) { if (sub.nickname) nickSet[sub.nickname] = true; });
       var participants = Object.keys(nickSet).length;
       var sharedHp = Math.max(0, BOSS_HP_START - sumDamage);
@@ -1313,9 +1339,14 @@
     // Refs to the active capture controller — stop() is callable any time.
     var voiceRecorderRef = useRef(null);
     var voiceLiveRef = useRef(null);
+    var voiceMountedRef = useRef(true);
+    var voiceTokenRef = useRef(0);
     // Cleanup on unmount: stop any active capture.
     useEffect(function () {
+      voiceMountedRef.current = true;
       return function () {
+        voiceMountedRef.current = false;
+        voiceTokenRef.current++;
         if (voiceRecorderRef.current) {
           try { voiceRecorderRef.current.cancel(); } catch (e) { /* ignore */ }
           voiceRecorderRef.current = null;
@@ -1345,7 +1376,8 @@
       setBossErr(null);
       var prompt = 'Concept guardian for the topic "' + t + '". Friendly mythic creature, illustration style, soft watercolor, single subject centered, clean background. No text.';
       ctx.callImagen(prompt).then(function (result) {
-        var img = (typeof result === 'string') ? result : (result && result.imageBase64);
+        var rawImg = (typeof result === 'string') ? result : (result && result.imageBase64);
+        var img = _isSafeClassImage(rawImg) ? rawImg.trim() : null;
         if (img) setBossImage(img);
         publishClassEncounterStart(t, img || null);
         setPhase('play');
@@ -1583,6 +1615,9 @@
         return;
       }
       // Live mode appends transcripts to the textarea as the student speaks.
+      if (voiceRecorderRef.current) { try { voiceRecorderRef.current.cancel(); } catch (e) {} voiceRecorderRef.current = null; }
+      if (voiceLiveRef.current) { try { voiceLiveRef.current.stop(); } catch (e) {} voiceLiveRef.current = null; }
+      voiceTokenRef.current++;
       var startingText = (justification || '').trim();
       var lastFinal = '';
       var controller = window.AlloFlowVoice.initWebSpeechCapture({
@@ -1640,12 +1675,16 @@
         ctx.addToast('Audio recording not available.');
         return;
       }
+      if (voiceLiveRef.current) { try { voiceLiveRef.current.stop(); } catch (e) {} voiceLiveRef.current = null; }
+      if (voiceRecorderRef.current) { try { voiceRecorderRef.current.cancel(); } catch (e) {} voiceRecorderRef.current = null; }
+      var myVoiceToken = ++voiceTokenRef.current;
       setVoiceError(null);
       setVoiceElapsed(0);
       var controller = window.AlloFlowVoice.recordAudioBlob({
         maxDurationMs: 60 * 1000,
-        onTick: function (ms) { setVoiceElapsed(ms); },
+        onTick: function (ms) { if (voiceMountedRef.current && voiceTokenRef.current === myVoiceToken) setVoiceElapsed(ms); },
         onError: function (err) {
+          if (!voiceMountedRef.current || voiceTokenRef.current !== myVoiceToken) return;
           setVoiceError((err && err.message) || 'Recording failed');
           voiceRecorderRef.current = null;
           setVoiceMode('idle');
@@ -1660,8 +1699,9 @@
       // When the controller's result resolves (user clicked stop, OR maxDurationMs
       // auto-stop fired), kick off transcription.
       controller.result.then(function (rec) {
-        voiceRecorderRef.current = null;
-        if (!rec || !rec.base64) { setVoiceMode('idle'); return; }
+        if (voiceRecorderRef.current === controller) voiceRecorderRef.current = null;
+        if (!voiceMountedRef.current || voiceTokenRef.current !== myVoiceToken) return null;
+        if (!rec || !rec.base64) { setVoiceMode('idle'); return null; }
         setVoiceMode('transcribing');
         var transOpts = {
           engine: engine,
@@ -1670,7 +1710,7 @@
         };
         return window.AlloFlowVoice.transcribeAudio(rec.base64, transOpts);
       }).then(function (out) {
-        if (!out) return;
+        if (!voiceMountedRef.current || voiceTokenRef.current !== myVoiceToken || !out) return;
         var transcript = (out.transcript || '').trim();
         if (!transcript) {
           setVoiceError('No speech detected — try recording again.');
@@ -1683,6 +1723,7 @@
         });
         setVoiceMode('idle');
       }).catch(function (err) {
+        if (!voiceMountedRef.current || voiceTokenRef.current !== myVoiceToken) return;
         if (err && err.message === 'cancelled') {
           setVoiceMode('idle');
           return;
@@ -1794,11 +1835,12 @@
             : (result && result.imageBase64) ? result.imageBase64
             : null;
           if (newImg) {
+            newImg = newImg.trim();
             // Ensure data URI prefix for <img> rendering
-            if (newImg.indexOf('data:') !== 0) {
+            if (newImg.indexOf('data:') !== 0 && /^[A-Za-z0-9+/=\s]+$/.test(newImg)) {
               newImg = 'data:image/png;base64,' + newImg;
             }
-            setBossImage(newImg);
+            if (_isSafeClassImage(newImg)) setBossImage(newImg);
           }
           setTransforming(false);
         })
@@ -2500,8 +2542,8 @@
             boxShadow: '0 4px 14px rgba(0,0,0,0.32)'
           }
         },
-          bossImage ? h('img', {
-            src: bossImage,
+          _isSafeClassImage(bossImage) ? h('img', {
+            src: bossImage.trim(),
             alt: 'Concept Guardian for ' + topic,
             style: { width: '72px', height: '72px', objectFit: 'cover', border: '1px solid ' + palette.border, display: 'block', borderRadius: '8px' }
           }) : h('div', {

@@ -372,6 +372,22 @@
                 gap: 16px;
             }
         }
+
+        @media (forced-colors: active) {
+            .savings-bar,
+            .selected-count {
+                background: Canvas !important;
+                color: CanvasText !important;
+                border-color: CanvasText !important;
+            }
+
+            .savings-label,
+            .savings-amount,
+            .savings-amount.zero,
+            .savings-subtitle {
+                color: CanvasText !important;
+            }
+        }
     </style>
 </head>
 

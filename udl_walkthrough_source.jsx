@@ -1214,7 +1214,35 @@ function UdlWalkthroughPanel(props) {
   const teacherById = (id) => roster.find((r) => r.id === id) || null;
   const viewSession = viewSessionId ? sessions.find((s) => s.id === viewSessionId) : null;
 
+  const [rosterQuery, setRosterQuery] = React.useState('');
+  const [visitFilter, setVisitFilter] = React.useState('all');
+  const [visitQuery, setVisitQuery] = React.useState('');
+
   const ratedCount = draft ? Object.values(draft.evidence).filter((e) => e && e.rating).length : 0;
+  const ratedPct = Math.min(100, Math.round((ratedCount / Math.max(1, UDLWALK_LOOK_FORS.length)) * 100));
+  const visitCountByTeacher = React.useMemo(() => {
+    const counts = Object.create(null);
+    sessions.forEach((s) => { if (s && s.teacherId) counts[s.teacherId] = (counts[s.teacherId] || 0) + 1; });
+    return counts;
+  }, [sessions]);
+  const activeRoster = roster.filter((r) => !r.archived);
+  const normalizedRosterQuery = rosterQuery.trim().toLowerCase();
+  const filteredRoster = normalizedRosterQuery
+    ? activeRoster.filter((r) => (udlwalkTeacherDisplay(r, config.anonymizeTeachers) + ' ' + String(r.grade || '') + ' ' + String(r.subject || '') + ' ' + String(r.code || '')).toLowerCase().indexOf(normalizedRosterQuery) !== -1)
+    : activeRoster;
+  const sharedVisitCount = sessions.filter((s) => s && s.sharedWithTeacher).length;
+  const unsharedVisitCount = sessions.length - sharedVisitCount;
+  const normalizedVisitQuery = visitQuery.trim().toLowerCase();
+  const filteredSessions = sessions.filter((s) => {
+    if (visitFilter === 'unshared' && s.sharedWithTeacher) return false;
+    if (visitFilter === 'shared' && !s.sharedWithTeacher) return false;
+    if (normalizedVisitQuery) {
+      const teacher = teacherById(s.teacherId);
+      const hay = (udlwalkTeacherDisplay(teacher, config.anonymizeTeachers) + ' ' + String(s.date || '') + ' ' + String((s.observer && s.observer.initials) || '')).toLowerCase();
+      if (hay.indexOf(normalizedVisitQuery) === -1) return false;
+    }
+    return true;
+  });
 
   const tabs = [
     { id: 'observe', label: tt('udlwalk.tab_observe', 'Observe'), icon: '🚪' },
@@ -1272,21 +1300,54 @@ function UdlWalkthroughPanel(props) {
         <div className="p-4" role="tabpanel" id="udlwalk-tabpanel" aria-labelledby={'udlwalk-tab-' + tab} tabIndex={-1}>
           {tab === 'observe' && !draft && (
             <div>
-              <h3 className="text-sm font-bold text-slate-700 mb-2">{tt('udlwalk.pick_teacher', 'Who are you visiting?')}</h3>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <h3 className="text-sm font-bold text-slate-700">{tt('udlwalk.pick_teacher', 'Who are you visiting?')}</h3>
+                {activeRoster.length >= 6 && (
+                  <input
+                    id="udlwalk-roster-search"
+                    type="search"
+                    value={rosterQuery}
+                    onChange={(e) => setRosterQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
+                      if (e.key === 'Escape' && rosterQuery) { e.preventDefault(); e.stopPropagation(); setRosterQuery(''); }
+                    }}
+                    aria-label={tt('udlwalk.roster_search_aria', 'Filter classrooms by teacher, grade, or code')}
+                    placeholder={tt('udlwalk.roster_search_placeholder', 'Find teacher or grade…')}
+                    className="min-h-11 w-48 rounded-lg border border-slate-300 bg-white px-2.5 text-xs text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
+                  />
+                )}
+              </div>
               {roster.length === 0 && (
                 <p className="text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3 mb-3">
                   {tt('udlwalk.empty_roster', 'No classrooms yet — add them under "Roster & setup", or quick-add one below.')}
                 </p>
               )}
+              {activeRoster.length > 0 && filteredRoster.length === 0 && (
+                <div className="bg-white border border-slate-300 rounded-xl p-3 mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm text-slate-700">{tt('udlwalk.no_matching_roster', 'No classrooms match your search.')}</p>
+                  <button type="button" onClick={() => setRosterQuery('')} className="min-h-11 px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none">{tt('udlwalk.clear_search', 'Clear')}</button>
+                </div>
+              )}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-                {roster.filter((r) => !r.archived).map((r) => (
-                  <button key={r.id} type="button" onClick={() => startDraft(r.id)}
-                    className="min-h-11 p-3 rounded-xl border border-indigo-300 bg-white hover:bg-indigo-50 text-left"
-                  >
-                    <span className="block font-bold text-sm text-indigo-800">{udlwalkTeacherDisplay(r, config.anonymizeTeachers)}</span>
-                    <span className="block text-xs text-slate-600">{[r.grade, r.subject].filter(Boolean).join(' · ') || r.code}</span>
-                  </button>
-                ))}
+                {filteredRoster.map((r) => {
+                  const vCount = visitCountByTeacher[r.id] || 0;
+                  return (
+                    <button key={r.id} type="button" onClick={() => startDraft(r.id)}
+                      className="min-h-11 p-3 rounded-xl border border-indigo-300 bg-white hover:bg-indigo-50 text-left focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
+                    >
+                      <span className="block font-bold text-sm text-indigo-800">{udlwalkTeacherDisplay(r, config.anonymizeTeachers)}</span>
+                      <span className="mt-0.5 flex flex-wrap items-center justify-between gap-1 text-xs text-slate-600">
+                        <span>{[r.grade, r.subject].filter(Boolean).join(' · ') || r.code}</span>
+                        {sessions.length > 0 && (
+                          <span data-udlwalk-visit-badge={r.id} className={'rounded-full px-1.5 py-0.5 text-[11px] font-bold ' + (vCount === 0 ? 'bg-amber-100 text-amber-900' : 'bg-slate-100 text-slate-700')}>
+                            {vCount === 0 ? tt('udlwalk.needs_visit_short', '0 visits') : (vCount + ' ' + (vCount === 1 ? tt('udlwalk.visit_singular', 'visit') : tt('udlwalk.visit_plural', 'visits')))}
+                          </span>
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
               <div className="flex gap-2 items-end bg-white border border-slate-300 rounded-xl p-3">
                 <div className="flex-1 min-w-0">
@@ -1318,6 +1379,9 @@ function UdlWalkthroughPanel(props) {
                   <button type="button" onClick={discardDraft} className={'min-h-11 px-3 py-2 rounded-lg border text-sm font-bold ' + (armDiscard ? 'bg-rose-600 text-white border-rose-700' : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-100')}>{armDiscard ? tt('udlwalk.discard_confirm', 'Tap again to discard') : (draft.editingId ? tt('udlwalk.discard_edits', 'Discard edits') : tt('udlwalk.discard', 'Discard'))}</button>
                   <button type="button" onClick={saveDraft} className="min-h-11 px-3 py-2 rounded-lg bg-green-700 text-white text-sm font-bold hover:bg-green-800">{draft.editingId ? tt('udlwalk.save_edits', 'Save changes') : tt('udlwalk.save', 'Save visit')}</button>
                 </div>
+              </div>
+              <div data-udlwalk-rate-progress="true" className="mb-3 h-2 w-full rounded-full bg-slate-200 overflow-hidden" aria-hidden="true">
+                <div className="h-full rounded-full bg-indigo-600 transition-all motion-reduce:transition-none" style={{ width: ratedPct + '%' }} />
               </div>
 
               <fieldset className="flex flex-wrap gap-1.5 mb-1.5">
@@ -1413,10 +1477,58 @@ function UdlWalkthroughPanel(props) {
 
           {tab === 'sessions' && !viewSession && (
             <div>
-              <h3 className="text-sm font-bold text-slate-700 mb-2">{tt('udlwalk.sessions_title', 'Saved visits')}</h3>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <h3 className="text-sm font-bold text-slate-700">{tt('udlwalk.sessions_title', 'Saved visits')} ({sessions.length})</h3>
+                {sessions.length >= 4 && (
+                  <div data-udlwalk-visits-filter="true" className="flex flex-wrap items-center gap-1.5">
+                    {[
+                      { id: 'all', label: tt('udlwalk.filter_all', 'All') + ' (' + sessions.length + ')' },
+                      { id: 'unshared', label: tt('udlwalk.filter_unshared', 'Not shared') + ' (' + unsharedVisitCount + ')' },
+                      { id: 'shared', label: tt('udlwalk.filter_shared', 'Shared') + ' (' + sharedVisitCount + ')' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        data-udlwalk-visit-filter={opt.id}
+                        aria-pressed={visitFilter === opt.id}
+                        onClick={() => setVisitFilter(opt.id)}
+                        className={'min-h-11 px-2.5 py-1 rounded-full border text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ' + (visitFilter === opt.id ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100')}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                    <input
+                      id="udlwalk-visits-search"
+                      type="search"
+                      value={visitQuery}
+                      onChange={(e) => setVisitQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
+                        if (e.key === 'Escape' && visitQuery) { e.preventDefault(); e.stopPropagation(); setVisitQuery(''); }
+                      }}
+                      aria-label={tt('udlwalk.visits_search_aria', 'Filter saved visits by teacher, date, or observer')}
+                      placeholder={tt('udlwalk.visits_search_placeholder', 'Find visit…')}
+                      className="min-h-11 w-40 rounded-lg border border-slate-300 bg-white px-2.5 text-xs text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
+                    />
+                  </div>
+                )}
+              </div>
               {sessions.length === 0 && <p className="text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3">{tt('udlwalk.no_sessions', 'No visits saved yet. Start one from the Observe tab.')}</p>}
+              {sessions.length > 0 && filteredSessions.length === 0 && (
+                <div className="bg-white border border-slate-300 rounded-xl p-3 mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm text-slate-700">{tt('udlwalk.no_matching_visits', 'No visits match your filter.')}</p>
+                  <button
+                    type="button"
+                    data-udlwalk-visits-clear="true"
+                    onClick={() => { setVisitFilter('all'); setVisitQuery(''); }}
+                    className="min-h-11 px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
+                  >
+                    {tt('udlwalk.clear_filters', 'Clear filters')}
+                  </button>
+                </div>
+              )}
               <ul className="space-y-1.5">
-                {sessions.map((s) => {
+                {filteredSessions.map((s) => {
                   const teacher = teacherById(s.teacherId);
                   const rated = Object.values(s.evidence || {}).filter((e) => e && e.rating && e.rating !== 'no_opp');
                   const obs = rated.filter((e) => e.rating === 'observed').length;

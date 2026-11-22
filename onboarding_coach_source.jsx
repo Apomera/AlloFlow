@@ -610,6 +610,24 @@ function OnboardingCoach(props) {
     },
   ];
 
+  var starterPrompts = roleDoors ? [
+    copy('onboarding.starter_role_teacher', 'Which workspace fits a first-time teacher?'),
+    copy('onboarding.starter_role_student', 'How do students join a class?'),
+    copy('onboarding.starter_role_offline', 'What works offline without AI?'),
+  ] : [
+    copy('onboarding.starter_mode_guided', 'What is the difference between Guided and Full mode?'),
+    copy('onboarding.starter_mode_learning', 'Which tools are best for independent students?'),
+    copy('onboarding.starter_mode_offline', 'What works offline without AI?'),
+  ];
+
+  var applyStarterPrompt = function (promptText) {
+    setInputText(promptText);
+    setCoachError(null);
+    if (inputRef.current && typeof inputRef.current.focus === 'function') {
+      try { inputRef.current.focus(); } catch (_) {}
+    }
+  };
+
   // Toggle handler — flips per-feature opt-in and (when turning ON) speaks
   // a tiny confirmation cue. The cue serves two purposes:
   //   1. UX: the user gets immediate confirmation TTS works on this device.
@@ -650,6 +668,7 @@ function OnboardingCoach(props) {
           onClick={function () { setIsOpen(true); }}
           aria-label={t('onboarding.ask_allobot_aria') || 'Open AlloBot onboarding help'}
           data-help-key="onboarding_ask_allobot_button"
+          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2"
           style={{
             position: props.embedded ? 'relative' : 'fixed', bottom: props.embedded ? undefined : '24px', right: props.embedded ? undefined : '24px', zIndex: 9000,
             minHeight: '44px', padding: '10px 20px', borderRadius: '999px',
@@ -726,6 +745,7 @@ function OnboardingCoach(props) {
                 type="button"
                 onClick={closePanel}
                 aria-label={t('common.close') || 'Close'}
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-700"
                 style={{
                   background: 'rgba(255,255,255,0.18)', color: '#fff',
                   border: '1px solid rgba(255,255,255,0.3)',
@@ -761,7 +781,7 @@ function OnboardingCoach(props) {
                     <span aria-hidden="true">{'\u{1F50A} '}</span>
                     {t('onboarding.tts_toggle_label') || 'Read help aloud'}
                   </label>
-                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#475569', lineHeight: 1.4 }}>
+                  <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#475569', lineHeight: 1.45 }}>
                     {globalMuted
                       ? (t('onboarding.tts_unavailable_globally_muted') ||
                          'Sound is muted globally. Un-mute in the main toolbar to hear AlloBot.')
@@ -776,6 +796,7 @@ function OnboardingCoach(props) {
                   aria-checked={ttsEnabled}
                   aria-label={t('onboarding.tts_toggle_label') || 'Read help aloud'}
                   onClick={toggleTTS}
+                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2 rounded-full"
                   style={{
                     flexShrink: 0,
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -808,18 +829,19 @@ function OnboardingCoach(props) {
 
               {/* Mode cards */}
               {modes.map(function (m) {
+                var isProtectedMode = (m.key === 'educator' || m.key === 'specialist');
                 return (
                   <div key={m.key}
                     data-help-key={'onboarding_mode_' + m.key}
                     style={{
                       border: '1px solid #e2e8f0', borderRadius: '14px', padding: '14px',
                       background: '#fafafa',
-                      display: 'flex', alignItems: 'flex-start', gap: '14px',
+                      display: 'flex', alignItems: 'flex-start', gap: '14px', flexWrap: 'wrap',
                     }}>
                     <span style={{ fontSize: '34px', flexShrink: 0, lineHeight: 1 }} aria-hidden="true">
                       {m.icon}
                     </span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ flex: '1 1 240px', minWidth: 0 }}>
                       <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#1e293b' }}>
                         {m.title}
                       </h3>
@@ -829,19 +851,44 @@ function OnboardingCoach(props) {
                         </p>
                       ) : null}
                       <p style={{
-                        margin: m.desc ? 0 : '4px 0 0', fontSize: '11px', color: '#7c3aed',
-                        fontWeight: 700, lineHeight: 1.4,
+                        margin: m.desc ? 0 : '4px 0 0', fontSize: '12px', color: '#6d28d9',
+                        fontWeight: 700, lineHeight: 1.45,
                       }}>
                         <span aria-hidden="true">{'\u{1F4A1} '}</span>
                         {m.bestIf}
                       </p>
                       {m.alt ? (
-                        <p data-coach-alt="" style={{ margin: '6px 0 0', fontSize: '11px', color: '#475569', lineHeight: 1.4 }}>
+                        <p data-coach-alt="" style={{ margin: '6px 0 0', fontSize: '12px', color: '#475569', lineHeight: 1.45 }}>
                           <span aria-hidden="true">{'↪ '}</span>
                           {m.alt}
                         </p>
                       ) : null}
                     </div>
+                    {pickMode && (
+                      <button
+                        type="button"
+                        data-coach-pick-mode={m.key}
+                        aria-label={copy('onboarding.choose_mode_prefix', 'Choose') + ' ' + m.title + (isProtectedMode ? ' (' + copy('onboarding.password_protected', 'password-protected') + ')' : '')}
+                        onClick={function () {
+                          closePanel();
+                          try { pickMode(m.key); } catch (_) {}
+                        }}
+                        className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2"
+                        style={{
+                          minHeight: '44px', padding: '8px 14px', borderRadius: '999px',
+                          background: '#fff', border: '1px solid #c4b5fd',
+                          color: '#5b21b6', fontWeight: 700, fontSize: '12px',
+                          cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+                          alignSelf: 'center',
+                          display: 'inline-flex', alignItems: 'center', gap: '6px',
+                        }}
+                      >
+                        <span>{copy('onboarding.choose_mode_cta', 'Choose')}</span>
+                        {isProtectedMode && (
+                          <span aria-hidden="true" style={{ fontSize: '12px' }}>{'\u{1F510}'}</span>
+                        )}
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -862,7 +909,7 @@ function OnboardingCoach(props) {
                     <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#78350f' }}>
                       {t('onboarding.tour_offer_title') || 'Want me to show you around first?'}
                     </p>
-                    <p style={{ margin: '3px 0 0', fontSize: '11px', color: '#92400e' }}>
+                    <p style={{ margin: '3px 0 0', fontSize: '12px', color: '#78350f' }}>
                       {t('onboarding.tour_offer_desc') ||
                         'I’ll walk you through the workspace before you choose.'}
                     </p>
@@ -870,6 +917,7 @@ function OnboardingCoach(props) {
                   <button
                     type="button"
                     onClick={openTour}
+                    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-900 focus-visible:ring-offset-2"
                     style={{
                       minHeight: '44px', padding: '10px 18px', borderRadius: '999px',
                       background: '#b45309', color: '#fff', border: 'none',
@@ -903,6 +951,7 @@ function OnboardingCoach(props) {
                   onClick={function () { setChatExpanded(!chatExpanded); }}
                   aria-expanded={chatExpanded}
                   aria-controls="onboarding-coach-qa-body"
+                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-violet-700"
                   style={{
                     width: '100%', minHeight: '44px', padding: '12px 14px', textAlign: 'left',
                     border: 'none', background: 'transparent', cursor: 'pointer',
@@ -910,14 +959,28 @@ function OnboardingCoach(props) {
                     gap: '8px',
                   }}
                 >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                     <span aria-hidden="true" style={{ fontSize: '20px' }}>{'\u{1F4AC}'}</span>
                     <span style={{ fontSize: '13px', fontWeight: 800, color: '#1e293b' }}>
                       {t('onboarding.coach_ask_disclosure') || 'Have a question? Ask AlloBot'}
                     </span>
+                    {conversation.length > 0 && (
+                      <span
+                        data-coach-message-count={conversation.length}
+                        style={{
+                          fontSize: '12px', fontWeight: 700, color: '#5b21b6',
+                          background: '#f5f3ff', border: '1px solid #ddd6fe',
+                          borderRadius: '999px', padding: '1px 8px',
+                        }}
+                      >
+                        {conversation.length + ' ' + (conversation.length === 1
+                          ? copy('onboarding.message_singular', 'message')
+                          : copy('onboarding.message_plural', 'messages'))}
+                      </span>
+                    )}
                   </span>
                   <span aria-hidden="true" style={{
-                    fontSize: '12px', color: '#7c3aed', fontWeight: 700,
+                    fontSize: '12px', color: '#6d28d9', fontWeight: 700,
                     transform: chatExpanded ? 'rotate(180deg)' : 'rotate(0)',
                     transition: (typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'none' : 'transform 0.15s',
                   }}>{'▾'}</span>
@@ -1139,6 +1202,39 @@ function OnboardingCoach(props) {
                       </div>
                     )}
 
+                    {/* Starter prompt chips — shown before the first message so new users have safe, privacy-clean examples */}
+                    {coachAvailable && conversation.length === 0 && !inFlight && (
+                      <div
+                        data-coach-starter-chips=""
+                        style={{ marginBottom: '10px' }}
+                      >
+                        <p style={{ margin: '0 0 6px', fontSize: '12px', fontWeight: 700, color: '#475569' }}>
+                          {copy('onboarding.starter_prompts_heading', 'Try asking:')}
+                        </p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                          {starterPrompts.map(function (promptText, pIdx) {
+                            return (
+                              <button
+                                key={pIdx}
+                                type="button"
+                                data-coach-starter-prompt={pIdx}
+                                onClick={function () { applyStarterPrompt(promptText); }}
+                                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2"
+                                style={{
+                                  minHeight: '44px', padding: '8px 12px', borderRadius: '999px',
+                                  background: '#f5f3ff', border: '1px solid #ddd6fe',
+                                  color: '#4c1d95', fontSize: '12px', fontWeight: 600,
+                                  cursor: 'pointer', textAlign: 'left',
+                                }}
+                              >
+                                {promptText}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Input row */}
                     {coachAvailable && (
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
@@ -1149,7 +1245,16 @@ function OnboardingCoach(props) {
                             value={inputText}
                             onChange={function (e) { setInputText(e.target.value); }}
                             onKeyDown={function (e) {
-                              if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !(e.nativeEvent && e.nativeEvent.isComposing) && e.keyCode !== 229) {
+                              var composing = !!(e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229);
+                              if (composing) return;
+                              if (e.key === 'Escape' && inputText) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (e.nativeEvent && typeof e.nativeEvent.preventDefault === 'function') e.nativeEvent.preventDefault();
+                                setInputText('');
+                                return;
+                              }
+                              if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();
                                 handleSendClick();
                               }
@@ -1160,6 +1265,7 @@ function OnboardingCoach(props) {
                             placeholder={t('onboarding.coach_input_placeholder') ||
                               'Ask AlloBot anything about getting started…'}
                             aria-label={t('onboarding.coach_input_aria') || 'Ask AlloBot a question'}
+                            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-1"
                             style={{
                               width: '100%', boxSizing: 'border-box',
                               padding: '8px 10px', borderRadius: '10px',
@@ -1170,34 +1276,42 @@ function OnboardingCoach(props) {
                               color: '#0f172a',
                             }}
                           />
-                          {(inputText.length > 450 || usage.remaining <= 5) && (
-                            <div style={{
-                              marginTop: '3px',
-                              display: 'flex', justifyContent: 'space-between',
-                              fontSize: '10px',
-                              color: '#475569',
-                            }}>
-                              <span>
-                                {usage.remaining <= 5
-                                  ? (usage.remaining === 0
-                                      ? (t('onboarding.coach_limit_reached') ||
-                                         "You've used today's coach quota. Reload to reset.")
-                                      : ((usage.remaining + '') + ' ' +
-                                         (t('onboarding.coach_questions_remaining') ||
-                                           'questions left this session')))
-                                  : ''}
+                          <div style={{
+                            marginTop: '4px',
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap',
+                            fontSize: '12px',
+                            color: '#475569',
+                          }}>
+                            <span>
+                              {usage.remaining <= 5
+                                ? (usage.remaining === 0
+                                    ? (t('onboarding.coach_limit_reached') ||
+                                       "You've used today's coach quota. Reload to reset.")
+                                    : ((usage.remaining + '') + ' ' +
+                                       (t('onboarding.coach_questions_remaining') ||
+                                         'questions left this session')))
+                                : copy('onboarding.coach_input_hint', 'Enter to send · Shift+Enter for new line · Esc clears draft')}
+                            </span>
+                            {(inputText.length > 0 || usage.remaining <= 5) && (
+                              <span
+                                data-coach-char-count=""
+                                style={{
+                                  color: inputText.length > 480 ? '#92400e' : '#475569',
+                                  fontWeight: inputText.length > 450 ? 700 : 500,
+                                  fontVariantNumeric: 'tabular-nums',
+                                }}
+                              >
+                                {inputText.length}/500
                               </span>
-                              <span style={{
-                                color: inputText.length > 480 ? '#92400e' : '#475569',
-                              }}>{inputText.length}/500</span>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
                         <button
                           type="button"
                           onClick={handleSendClick}
                           disabled={!canSend}
                           aria-label={t('onboarding.coach_send') || 'Send question to AlloBot'}
+                          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2"
                           style={{
                             padding: '10px 16px', minHeight: '44px', minWidth: '44px', borderRadius: '999px',
                             background: canSend ? '#7c3aed' : '#64748b',
@@ -1220,11 +1334,12 @@ function OnboardingCoach(props) {
                         <button
                           type="button"
                           onClick={handleResetConversation}
+                          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2 rounded"
                           style={{
                             background: 'transparent', border: 'none', padding: '2px 0', minHeight: '44px',
                             display: 'inline-flex', alignItems: 'center',
-                            color: confirmReset ? '#991b1b' : '#475569', fontSize: '11px',
-                            fontWeight: confirmReset ? 700 : 400,
+                            color: confirmReset ? '#991b1b' : '#475569', fontSize: '12px',
+                            fontWeight: confirmReset ? 700 : 500,
                             cursor: 'pointer', textDecoration: 'underline',
                           }}
                         >
@@ -1236,10 +1351,11 @@ function OnboardingCoach(props) {
                           <button
                             type="button"
                             onClick={function () { setConfirmReset(false); }}
+                            className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2 rounded"
                             style={{
                               background: 'transparent', border: 'none', padding: '2px 0', minHeight: '44px',
                               display: 'inline-flex', alignItems: 'center',
-                              color: '#475569', fontSize: '11px',
+                              color: '#475569', fontSize: '12px',
                               cursor: 'pointer', textDecoration: 'underline',
                             }}
                           >
@@ -1253,7 +1369,7 @@ function OnboardingCoach(props) {
               </div>
 
               <p style={{
-                margin: '10px 0 0', fontSize: '10px', color: '#475569',
+                margin: '10px 0 0', fontSize: '12px', color: '#475569',
                 textAlign: 'center', fontStyle: 'italic',
               }}>
                 {t('onboarding.panel_footer') ||
@@ -1313,9 +1429,10 @@ function OnboardingCoach(props) {
                 ref={consentDeclineRef}
                 type="button"
                 onClick={handleConsentDecline}
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 focus-visible:ring-offset-2"
                 style={{
                   padding: '10px 16px', minHeight: '44px', borderRadius: '999px',
-                  background: '#f1f5f9', color: '#475569', border: 'none',
+                  background: '#f1f5f9', color: '#334155', border: 'none',
                   fontWeight: 700, fontSize: '13px', cursor: 'pointer',
                 }}
               >
@@ -1324,6 +1441,7 @@ function OnboardingCoach(props) {
               <button
                 type="button"
                 onClick={handleConsentAccept}
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2"
                 style={{
                   padding: '10px 18px', minHeight: '44px', borderRadius: '999px',
                   background: '#7c3aed', color: '#fff', border: 'none',

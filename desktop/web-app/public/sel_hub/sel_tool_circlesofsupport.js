@@ -73,18 +73,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
       var _cirT = (ctx && ctx.theme) || {};
       var _cirHC = !!_cirT.isContrast, _cirL = !_cirHC && !_cirT.isDark;
       var _cir_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff','#0b1220':'#f1f5f9'}, _cir_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#0b1220':'#000000','#fff':'#000000'};
-      var _cir_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#7dd3fc':'#075985','#fcd34d':'#78350f','#fde68a':'#92400e'}, _cir_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecdd3':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#7dd3fc':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
-      var _cir_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _cir_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#fb7185':'#ffff00','#0ea5e9':'#ffff00','#cbd5e1':'#ffff00','#be123c':'#ffff00','#f59e0b':'#ffff00'};
+      var _cir_FGL = {'#cbd5e1':'#334155','#fda4af':'#9f1239','#fecdd3':'#9f1239','#94a3b8':'#475569','#e2e8f0':'#1e293b','#7dd3fc':'#075985','#fcd34d':'#78350f','#fde68a':'#92400e','#fecaca':'#991b1b','#bbf7d0':'#166534','#bae6fd':'#075985'}, _cir_FGH = {'#cbd5e1':'#ffff00','#fda4af':'#ffff00','#94a3b8':'#ffff00','#fecdd3':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#7dd3fc':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00','#fecaca':'#ffff00','#bbf7d0':'#ffff00','#bae6fd':'#ffff00'};
+      var _cir_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#94a3b8'}, _cir_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#fb7185':'#ffff00','#0ea5e9':'#ffff00','#cbd5e1':'#ffff00','#be123c':'#ffff00','#f59e0b':'#ffff00','#dc2626':'#ffff00','#16a34a':'#ffff00'};
       var _cirBg = function(h){ return _cirHC ? (_cir_BGH[h]||h) : (_cirL ? (_cir_BGL[h]||h) : h); };
       var _cirFg = function(h){ return _cirHC ? (_cir_FGH[h]||h) : (_cirL ? (_cir_FGL[h]||h) : h); };
       var _cirBd = function(h){ return _cirHC ? (_cir_BDH[h]||h) : (_cirL ? (_cir_BDL[h]||h) : h); };
-      // accent text on the dark shell needs the 300/400 weight (1.4.3)
-      var _cirInk = function(c){ return _cirHC || _cirL ? c : ({'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[String(c).toLowerCase()] || c); };
+      // accent text on dark/light/high-contrast shells (1.4.3)
+      var _cirInk = function(c){
+        if (_cirHC) return '#ffff00';
+        var key = String(c).toLowerCase();
+        if (_cirL) return {'#dc2626':'#b91c1c','#f59e0b':'#92400e','#16a34a':'#15803d','#0ea5e9':'#0369a1','#fb7185':'#9f1239'}[key] || c;
+        return {'#6366f1':'#818cf8','#4f46e5':'#818cf8','#a855f7':'#c084fc','#9333ea':'#c084fc','#7c3aed':'#a78bfa','#8b5cf6':'#a78bfa','#3b82f6':'#60a5fa','#2563eb':'#60a5fa','#ef4444':'#f87171','#dc2626':'#f87171','#059669':'#34d399','#10b981':'#34d399','#16a34a':'#4ade80','#0891b2':'#22d3ee','#0284c7':'#38bdf8','#0d9488':'#2dd4bf','#ec4899':'#f472b6','#db2777':'#f472b6','#64748b':'#94a3b8','#475569':'#94a3b8','#a16207':'#fbbf24','#b45309':'#fbbf24'}[key] || c;
+      };
       // white text needs a 700-weight fill (1.4.3)
       var _cirSolid = function(c){ return _cirHC ? '#000000' : ({'#0ea5e9':'#0369a1','#38bdf8':'#0369a1','#0284c7':'#0369a1','#f59e0b':'#b45309','#fbbf24':'#b45309','#d97706':'#b45309','#22c55e':'#15803d','#16a34a':'#15803d','#4ade80':'#15803d','#10b981':'#047857','#059669':'#047857','#ef4444':'#b91c1c','#f87171':'#b91c1c','#dc2626':'#b91c1c','#fb7185':'#be123c','#3b82f6':'#1d4ed8','#60a5fa':'#1d4ed8','#6366f1':'#4338ca','#818cf8':'#4338ca','#a855f7':'#7e22ce','#a78bfa':'#6d28d9','#8b5cf6':'#6d28d9','#ec4899':'#be185d','#f472b6':'#be185d','#14b8a6':'#0f766e','#0d9488':'#0f766e','#06b6d4':'#0e7490','#0891b2':'#0e7490','#f97316':'#c2410c'}[String(c).toLowerCase()] || c); };
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
+      var labToolData = (ctx && ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
       var setLabToolData = ctx.setToolData;
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
@@ -92,13 +97,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var _cirBand = (ctx && ctx.gradeBand) || 'high';
 
-      var d = labToolData.circlesOfSupport || defaultState();
-      function setCOS(patch) {
+      var COS_VIEWS = ['circles', 'edit', 'reflect', 'print', 'about'];
+      function normalizeRings(rawRings) {
+        var raw = (rawRings && typeof rawRings === 'object' && !Array.isArray(rawRings)) ? rawRings : {};
+        function cleanArr(a) {
+          return Array.isArray(a) ? a.filter(function(item) { return typeof item === 'string' && item.trim().length > 0; }).map(function(item) { return item.trim(); }) : [];
+        }
+        return {
+          intimate: cleanArr(raw.intimate),
+          friends:  cleanArr(raw.friends),
+          allies:   cleanArr(raw.allies),
+          paid:     cleanArr(raw.paid)
+        };
+      }
+      var rawCOS = (labToolData.circlesOfSupport && typeof labToolData.circlesOfSupport === 'object' && !Array.isArray(labToolData.circlesOfSupport)) ? labToolData.circlesOfSupport : {};
+      var d = Object.assign(defaultState(), rawCOS);
+      function setCOS(patchOrFn) {
+        if (typeof setLabToolData !== 'function') return;
         setLabToolData(function(prev) {
-          var prior = (prev && prev.circlesOfSupport) || defaultState();
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var rawPrior = (safePrev.circlesOfSupport && typeof safePrev.circlesOfSupport === 'object' && !Array.isArray(safePrev.circlesOfSupport)) ? safePrev.circlesOfSupport : {};
+          var prior = Object.assign(defaultState(), rawPrior);
+          var patch = typeof patchOrFn === 'function' ? patchOrFn(prior) : patchOrFn;
           var next = Object.assign({}, prior, patch);
-          if (patch.rings || patch.personLabel !== undefined) next.lastUpdated = todayISO();
-          return Object.assign({}, prev, { circlesOfSupport: next });
+          if (patch && (patch.rings || patch.personLabel !== undefined)) next.lastUpdated = todayISO();
+          return Object.assign({}, safePrev, { circlesOfSupport: next });
         });
       }
       function scanCirclesText(text) {
@@ -126,27 +149,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
         }
         return blocked;
       }
-      var view = d.view || 'circles';
-      function goto(v) { setCOS({ view: v }); }
+      var view = COS_VIEWS.indexOf(d.view) !== -1 ? d.view : 'circles';
+      function goto(v) { setCOS({ view: COS_VIEWS.indexOf(v) !== -1 ? v : 'circles' }); }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function rings() {
-        // A saved file can hold `{}` or a partial object, so normalise EVERY
-        // ring: consumers do `r.intimate.length` with no further guard.
-        var raw = (d.rings && typeof d.rings === 'object' && !Array.isArray(d.rings)) ? d.rings : {};
-        return {
-          intimate: Array.isArray(raw.intimate) ? raw.intimate : [],
-          friends:  Array.isArray(raw.friends)  ? raw.friends  : [],
-          allies:   Array.isArray(raw.allies)   ? raw.allies   : [],
-          paid:     Array.isArray(raw.paid)     ? raw.paid     : []
-        };
+        return normalizeRings(d.rings);
       }
       function totalCount() { var r = rings(); return r.intimate.length + r.friends.length + r.allies.length + r.paid.length; }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _cirFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid ' + _cirBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _cirFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _cirFg('#fda4af'), fontSize: 22, fontWeight: 900 } }, '🎯 Circles of Support'),
             h('div', { style: { fontSize: 12, color: _cirFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'Four concentric rings of relationship around the center of your life.')
@@ -164,12 +179,26 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
         ];
         return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Circles of Support sections',
           style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, idx) {
             var active = view === t.id;
-            return h('button', { key: t.id, onClick: function() { goto(t.id); },
+            return h('button', { key: t.id, id: 'cos-tab-' + t.id, 'aria-controls': 'cos-panel-' + t.id,
+              tabIndex: active ? 0 : -1,
+              onClick: function() { goto(t.id); },
+              onKeyDown: function(e) {
+                var nextIdx = idx;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (idx + 1) % tabs.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+                else if (e.key === 'Home') nextIdx = 0;
+                else if (e.key === 'End') nextIdx = tabs.length - 1;
+                else return;
+                e.preventDefault();
+                goto(tabs[nextIdx].id);
+                var target = document.getElementById('cos-tab-' + tabs[nextIdx].id);
+                if (target && typeof target.focus === 'function') target.focus();
+              },
               role: 'tab', 'aria-selected': active,
-              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#fb7185' : '#334155'),
-                background: active ? 'rgba(251,113,133,0.18)' : _cirBg('#1e293b'),
+              style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _cirBd('#fb7185') : _cirBd('#334155')),
+                background: active ? (_cirHC ? '#000000' : 'rgba(251,113,133,0.18)') : _cirBg('#1e293b'),
                 color: active ? _cirFg('#fecdd3') : _cirFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
               t.icon + ' ' + t.label);
           })
@@ -178,7 +207,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _cirFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _cirBg('#0f172a'), border: '1px solid ' + _cirBd('#334155'), fontSize: 11, color: _cirFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'This is yours. If the picture is thinner than you wished it would be, that is real information; bring it to a counselor or trusted adult if you want to talk about it. Crisis Text Line: text HOME to 741741.'
         );
@@ -189,14 +218,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
       // ═══════════════════════════════════════════════════════════
       function renderCircles() {
         var r = rings();
+        var centerInputVal = typeof d.personLabel === 'string' ? d.personLabel : 'Me';
+        var displayPerson = centerInputVal.trim() || 'Me';
         if (totalCount() === 0) {
           return h('div', null,
-            h('div', { style: { padding: 28, borderRadius: 14, background: 'linear-gradient(135deg, rgba(251,113,133,0.18) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(251,113,133,0.4)', textAlign: 'center', marginBottom: 14 } },
+            h('div', { style: { padding: 28, borderRadius: 14, background: _cirHC ? '#000000' : (_cirL ? '#fff1f2' : 'linear-gradient(135deg, rgba(251,113,133,0.18) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_cirHC ? '#ffff00' : 'rgba(251,113,133,0.4)'), textAlign: 'center', marginBottom: 14 } },
               h('div', { style: { fontSize: 56, marginBottom: 8 } }, '🎯'),
               h('h3', { style: { margin: '0 0 8px', color: _cirFg('#fecdd3'), fontSize: 18 } }, 'Your circles are empty'),
               h('p', { style: { margin: '0 0 14px', color: _cirFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'Four rings around you. Closest ring is the people you would tell anything to. The next ring is friends. The next is people you do things with. The outer ring is people who are part of your life because it is their job. Add a few names and see what your picture looks like.'),
-              h('button', { onClick: function() { goto('edit'); }, style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cirFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              h('button', { onClick: function() { goto('edit'); }, style: { padding: '10px 22px', borderRadius: 10, border: _cirHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cirHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cirFg('#fff'), fontWeight: 800, fontSize: 14 } },
                 '+ Start my circles')
             ),
             softPointer()
@@ -217,74 +248,75 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
         }
 
         // Accessibility description
-        var svgDesc = 'Circles of Support centered on ' + (d.personLabel || 'Me') + ': ' +
+        var svgDesc = 'Circles of Support centered on ' + displayPerson + ': ' +
           r.intimate.length + ' in Intimacy ring, ' + r.friends.length + ' in Friendship ring, ' +
           r.allies.length + ' in Participation ring, ' + r.paid.length + ' in Exchange (paid) ring.';
 
         return h('div', null,
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderRadius: 8, background: _cirBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12, flexWrap: 'wrap' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderRadius: 8, background: _cirBg('#0f172a'), border: '1px solid ' + _cirBd('#1e293b'), marginBottom: 12, flexWrap: 'wrap' } },
             h('label', { htmlFor: 'cos-person', style: { fontSize: 11, color: _cirFg('#94a3b8'), fontWeight: 700 } }, 'Center label:'),
-            h('input', { id: 'cos-person', type: 'text', value: d.personLabel || 'Me',
+            h('input', { id: 'cos-person', type: 'text', value: centerInputVal,
               onChange: function(e) { setCOS({ personLabel: e.target.value }); },
-              style: { padding: 6, borderRadius: 6, border: '1px solid #334155', background: _cirBg('#1e293b'), color: _cirFg('#e2e8f0'), fontSize: 13, width: 160 } }),
+              onBlur: function(e) { scanCirclesText(e.target.value); },
+              style: { padding: 6, borderRadius: 6, border: '1px solid ' + _cirBd('#334155'), background: _cirBg('#1e293b'), color: _cirFg('#e2e8f0'), fontSize: 13, width: 160 } }),
             h('div', { style: { marginLeft: 'auto', fontSize: 11, color: _cirFg('#94a3b8') } }, totalCount() + ' total')
           ),
 
-          h('div', { style: { padding: 10, borderRadius: 12, background: _cirBg('#0b1220'), border: '1px solid #1e293b', marginBottom: 12, overflowX: 'auto' } },
+          h('div', { style: { padding: 10, borderRadius: 12, background: _cirBg('#0b1220'), border: '1px solid ' + _cirBd('#1e293b'), marginBottom: 12, overflowX: 'auto' } },
             h('svg', { width: '100%', viewBox: '0 0 560 560', style: { maxWidth: 560 }, 'aria-labelledby': 'cos-svg-title cos-svg-desc', role: 'img' },
               h('title', { id: 'cos-svg-title' }, 'Circles of Support visualization'),
               h('desc', { id: 'cos-svg-desc' }, svgDesc),
               // Outer to inner: paid, allies, friends, intimate
-              h('circle', { cx: cx, cy: cy, r: radii[3], fill: '#0ea5e911', stroke: '#0ea5e966', strokeWidth: 1.5 }),
-              h('circle', { cx: cx, cy: cy, r: radii[2], fill: '#16a34a14', stroke: '#16a34a66', strokeWidth: 1.5 }),
-              h('circle', { cx: cx, cy: cy, r: radii[1], fill: '#f59e0b18', stroke: '#f59e0b66', strokeWidth: 1.5 }),
-              h('circle', { cx: cx, cy: cy, r: radii[0], fill: '#dc262624', stroke: '#dc262688', strokeWidth: 2 }),
+              h('circle', { cx: cx, cy: cy, r: radii[3], fill: _cirHC ? '#000000' : '#0ea5e911', stroke: _cirHC ? '#ffff00' : '#0ea5e966', strokeWidth: 1.5 }),
+              h('circle', { cx: cx, cy: cy, r: radii[2], fill: _cirHC ? '#000000' : '#16a34a14', stroke: _cirHC ? '#ffff00' : '#16a34a66', strokeWidth: 1.5 }),
+              h('circle', { cx: cx, cy: cy, r: radii[1], fill: _cirHC ? '#000000' : '#f59e0b18', stroke: _cirHC ? '#ffff00' : '#f59e0b66', strokeWidth: 1.5 }),
+              h('circle', { cx: cx, cy: cy, r: radii[0], fill: _cirHC ? '#000000' : '#dc262624', stroke: _cirHC ? '#ffff00' : '#dc262688', strokeWidth: 2 }),
               // Ring labels (placed at top of each ring)
-              h('text', { x: cx, y: cy - radii[3] + 14, textAnchor: 'middle', fontSize: 11, fill: '#0ea5e9', style: { fontWeight: 800 } }, 'Exchange (paid)'),
-              h('text', { x: cx, y: cy - radii[2] + 14, textAnchor: 'middle', fontSize: 11, fill: '#16a34a', style: { fontWeight: 800 } }, 'Participation'),
-              h('text', { x: cx, y: cy - radii[1] + 14, textAnchor: 'middle', fontSize: 11, fill: '#f59e0b', style: { fontWeight: 800 } }, 'Friendship'),
-              h('text', { x: cx, y: cy - radii[0] + 14, textAnchor: 'middle', fontSize: 11, fill: '#dc2626', style: { fontWeight: 800 } }, 'Intimacy'),
+              h('text', { x: cx, y: cy - radii[3] + 14, textAnchor: 'middle', fontSize: 11, fill: _cirInk('#0ea5e9'), style: { fontWeight: 800 } }, 'Exchange (paid)'),
+              h('text', { x: cx, y: cy - radii[2] + 14, textAnchor: 'middle', fontSize: 11, fill: _cirInk('#16a34a'), style: { fontWeight: 800 } }, 'Participation'),
+              h('text', { x: cx, y: cy - radii[1] + 14, textAnchor: 'middle', fontSize: 11, fill: _cirInk('#f59e0b'), style: { fontWeight: 800 } }, 'Friendship'),
+              h('text', { x: cx, y: cy - radii[0] + 14, textAnchor: 'middle', fontSize: 11, fill: _cirInk('#dc2626'), style: { fontWeight: 800 } }, 'Intimacy'),
               // Names placed around each ring
               placeOn(0, r.intimate).map(function(p, i) {
                 return h('g', { key: 'i_' + i },
-                  h('circle', { cx: p.x, cy: p.y, r: 5, fill: '#dc2626' }),
-                  h('text', { x: p.x, y: p.y + 16, textAnchor: 'middle', fontSize: 10, fill: '#fecaca', style: { fontWeight: 700 } }, p.name.slice(0, 16))
+                  h('circle', { cx: p.x, cy: p.y, r: 5, fill: _cirInk('#dc2626') }),
+                  h('text', { x: p.x, y: p.y + 16, textAnchor: 'middle', fontSize: 10, fill: _cirFg('#fecaca'), style: { fontWeight: 700 } }, p.name.slice(0, 16))
                 );
               }),
               placeOn(1, r.friends).map(function(p, i) {
                 return h('g', { key: 'f_' + i },
-                  h('circle', { cx: p.x, cy: p.y, r: 5, fill: '#f59e0b' }),
+                  h('circle', { cx: p.x, cy: p.y, r: 5, fill: _cirInk('#f59e0b') }),
                   h('text', { x: p.x, y: p.y + 16, textAnchor: 'middle', fontSize: 10, fill: _cirFg('#fde68a'), style: { fontWeight: 700 } }, p.name.slice(0, 16))
                 );
               }),
               placeOn(2, r.allies).map(function(p, i) {
                 return h('g', { key: 'a_' + i },
-                  h('circle', { cx: p.x, cy: p.y, r: 5, fill: '#16a34a' }),
-                  h('text', { x: p.x, y: p.y + 16, textAnchor: 'middle', fontSize: 10, fill: '#bbf7d0', style: { fontWeight: 700 } }, p.name.slice(0, 16))
+                  h('circle', { cx: p.x, cy: p.y, r: 5, fill: _cirInk('#16a34a') }),
+                  h('text', { x: p.x, y: p.y + 16, textAnchor: 'middle', fontSize: 10, fill: _cirFg('#bbf7d0'), style: { fontWeight: 700 } }, p.name.slice(0, 16))
                 );
               }),
               placeOn(3, r.paid).map(function(p, i) {
                 return h('g', { key: 'p_' + i },
-                  h('circle', { cx: p.x, cy: p.y, r: 5, fill: '#0ea5e9' }),
-                  h('text', { x: p.x, y: p.y + 16, textAnchor: 'middle', fontSize: 10, fill: '#bae6fd', style: { fontWeight: 700 } }, p.name.slice(0, 16))
+                  h('circle', { cx: p.x, cy: p.y, r: 5, fill: _cirInk('#0ea5e9') }),
+                  h('text', { x: p.x, y: p.y + 16, textAnchor: 'middle', fontSize: 10, fill: _cirFg('#bae6fd'), style: { fontWeight: 700 } }, p.name.slice(0, 16))
                 );
               }),
               // Center person
-              h('circle', { cx: cx, cy: cy, r: 28, fill: '#fb7185', stroke: _cirFg('#fda4af'), strokeWidth: 3 }),
-              h('text', { x: cx, y: cy + 5, textAnchor: 'middle', fontSize: 13, fill: '#fff', style: { fontWeight: 800 } }, (d.personLabel || 'Me').slice(0, 8))
+              h('circle', { cx: cx, cy: cy, r: 28, fill: _cirSolid('#fb7185'), stroke: _cirBd('#fb7185'), strokeWidth: 3 }),
+              h('text', { x: cx, y: cy + 5, textAnchor: 'middle', fontSize: 13, fill: _cirFg('#fff'), style: { fontWeight: 800 } }, displayPerson.slice(0, 8))
             )
           ),
 
           // Text-equivalent (accessible to all users; WCAG 1.1.1)
           h('details', { style: { marginBottom: 12 } },
-            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _cirFg('#fda4af'), fontWeight: 700, padding: '6px 10px', borderRadius: 6, background: _cirBg('#0f172a'), border: '1px solid #1e293b' } }, '🔤 Read these circles as text'),
-            h('div', { style: { marginTop: 6, padding: 12, borderRadius: 8, background: _cirBg('#0f172a'), border: '1px solid #1e293b' } },
+            h('summary', { style: { cursor: 'pointer', fontSize: 12, color: _cirFg('#fda4af'), fontWeight: 700, padding: '6px 10px', borderRadius: 6, background: _cirBg('#0f172a'), border: '1px solid ' + _cirBd('#1e293b') } }, '🔤 Read these circles as text'),
+            h('div', { style: { marginTop: 6, padding: 12, borderRadius: 8, background: _cirBg('#0f172a'), border: '1px solid ' + _cirBd('#1e293b') } },
               h('p', { style: { margin: '0 0 8px', color: _cirFg('#cbd5e1'), fontSize: 13, lineHeight: 1.65 } }, svgDesc),
               RINGS.map(function(ring) {
                 var items = r[ring.id];
                 if (items.length === 0) return null;
                 return h('div', { key: ring.id, style: { marginBottom: 8 } },
-                  h('div', { style: { fontSize: 12, color: ring.color, fontWeight: 700, marginBottom: 4 } }, ring.label + ' (' + items.length + ')'),
+                  h('div', { style: { fontSize: 12, color: _cirInk(ring.color), fontWeight: 700, marginBottom: 4 } }, ring.label + ' (' + items.length + ')'),
                   h('div', { style: { fontSize: 12, color: _cirFg('#e2e8f0'), lineHeight: 1.6, paddingLeft: 12 } }, items.join(', '))
                 );
               })
@@ -295,9 +327,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8, marginBottom: 12 } },
             RINGS.map(function(ring) {
               var ct = r[ring.id].length;
-              return h('div', { key: ring.id, style: { padding: 10, borderRadius: 8, background: _cirBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + ring.color } },
+              return h('div', { key: ring.id, style: { padding: 10, borderRadius: 8, background: _cirBg('#0f172a'), borderTop: '1px solid ' + _cirBd('#1e293b'), borderRight: '1px solid ' + _cirBd('#1e293b'), borderBottom: '1px solid ' + _cirBd('#1e293b'), borderLeft: '3px solid ' + _cirBd(ring.color) } },
                 h('div', { style: { fontSize: 10, color: _cirFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, ring.label),
-                h('div', { style: { fontSize: 22, color: ring.color, fontWeight: 900 } }, ct),
+                h('div', { style: { fontSize: 22, color: _cirInk(ring.color), fontWeight: 900 } }, ct),
                 h('div', { style: { fontSize: 11, color: _cirFg('#cbd5e1') } }, ct === 1 ? '1 person' : ct + ' people')
               );
             })
@@ -305,12 +337,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
 
           h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Add or remove people',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cirFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              style: { padding: '10px 20px', borderRadius: 10, border: _cirHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cirHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cirFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '✏️ Add or remove people'),
             h('button', { onClick: function() { goto('reflect'); }, 'aria-label': 'Reflect',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _cirBg('#1e293b'), color: _cirFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _cirBd('#475569'), background: _cirBg('#1e293b'), color: _cirFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '💭 Reflect'),
             h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Print',
-              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _cirBg('#1e293b'), color: _cirFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
+              style: { padding: '10px 20px', borderRadius: 10, border: '1px solid ' + _cirBd('#475569'), background: _cirBg('#1e293b'), color: _cirFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '🖨 Print')
           ),
 
           softPointer()
@@ -324,25 +356,36 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
         var r = rings();
         function addTo(ringId, name) {
           if (!name || !name.trim()) { if (typeof addToast === 'function') addToast('Add a name first, then press the button again.', 'info'); return; }
-          var nx = Object.assign({}, r);
-          nx[ringId] = nx[ringId].concat([name.trim()]);
-          setCOS({ rings: nx });
+          var trimmedName = name.trim();
+          setCOS(function(prior) {
+            var nx = normalizeRings(prior.rings);
+            if (!nx[ringId]) return {};
+            nx[ringId] = nx[ringId].concat([trimmedName]);
+            return { rings: nx };
+          });
           if (announceToSR) announceToSR('Added.');
         }
         function removeFrom(ringId, idx) {
-          var nx = Object.assign({}, r);
-          nx[ringId] = nx[ringId].slice();
-          nx[ringId].splice(idx, 1);
-          setCOS({ rings: nx });
+          setCOS(function(prior) {
+            var nx = normalizeRings(prior.rings);
+            if (!nx[ringId] || idx < 0 || idx >= nx[ringId].length) return {};
+            nx[ringId] = nx[ringId].slice();
+            nx[ringId].splice(idx, 1);
+            return { rings: nx };
+          });
         }
         function moveTo(fromRingId, idx, toRingId) {
-          var nx = Object.assign({}, r);
-          nx[fromRingId] = nx[fromRingId].slice();
-          nx[toRingId] = nx[toRingId].slice();
-          var name = nx[fromRingId][idx];
-          nx[fromRingId].splice(idx, 1);
-          nx[toRingId].push(name);
-          setCOS({ rings: nx });
+          if (fromRingId === toRingId) return;
+          setCOS(function(prior) {
+            var nx = normalizeRings(prior.rings);
+            if (!nx[fromRingId] || !nx[toRingId] || idx < 0 || idx >= nx[fromRingId].length) return {};
+            nx[fromRingId] = nx[fromRingId].slice();
+            nx[toRingId] = nx[toRingId].slice();
+            var name = nx[fromRingId][idx];
+            nx[fromRingId].splice(idx, 1);
+            nx[toRingId].push(name);
+            return { rings: nx };
+          });
         }
 
         return h('div', null,
@@ -352,10 +395,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
             function submit() {
               var el = document.getElementById(inputId);
               if (!el || !el.value.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
+              scanCirclesText(el.value);
               addTo(ring.id, el.value);
               el.value = '';
             }
-            return h('div', { key: ring.id, style: { padding: 14, borderRadius: 10, background: _cirBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + ring.color, marginBottom: 12 } },
+            return h('div', { key: ring.id, style: { padding: 14, borderRadius: 10, background: _cirBg('#0f172a'), borderTop: '1px solid ' + _cirBd('#1e293b'), borderRight: '1px solid ' + _cirBd('#1e293b'), borderBottom: '1px solid ' + _cirBd('#1e293b'), borderLeft: '3px solid ' + _cirBd(ring.color), marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                 h('div', { style: { fontSize: 14, fontWeight: 800, color: _cirInk(ring.color), flex: 1 } }, ring.label + '  (' + items.length + ')')
               ),
@@ -366,20 +410,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
                 items.map(function(name, i) {
                   return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: _cirBg('#1e293b'), display: 'flex', alignItems: 'center', gap: 6 } },
                     h('span', { style: { flex: 1, fontSize: 12.5, color: _cirFg('#e2e8f0') } }, name),
-                    h('select', { 'aria-label': 'Move ' + name + ' to a different ring',
+                    h('select', { value: ring.id, 'aria-label': 'Move ' + name + ' to a different ring',
                       onChange: function(e) {
                         if (e.target.value && e.target.value !== ring.id) {
                           moveTo(ring.id, i, e.target.value);
                         }
                       },
-                      style: { padding: 2, borderRadius: 4, border: '1px solid #475569', background: _cirBg('#0f172a'), color: _cirFg('#cbd5e1'), fontSize: 10 } },
+                      style: { padding: 2, borderRadius: 4, border: '1px solid ' + _cirBd('#475569'), background: _cirBg('#0f172a'), color: _cirFg('#cbd5e1'), fontSize: 10 } },
                       h('option', { value: ring.id }, 'Move to...'),
                       RINGS.filter(function(rr) { return rr.id !== ring.id; }).map(function(rr) {
                         return h('option', { key: rr.id, value: rr.id }, rr.label);
                       })
                     ),
                     h('button', { onClick: function() { removeFrom(ring.id, i); }, 'aria-label': 'Remove ' + name,
-                      style: { background: 'transparent', border: '1px solid #475569', color: _cirFg('#94a3b8'), borderRadius: 4, padding: '2px 6px', cursor: 'pointer', fontSize: 10 } }, '✕')
+                      style: { background: 'transparent', border: '1px solid ' + _cirBd('#475569'), color: _cirFg('#94a3b8'), borderRadius: 4, padding: '2px 6px', cursor: 'pointer', fontSize: 10 } }, '✕')
                   );
                 })
               ) : null,
@@ -390,10 +434,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
                 h('input', { id: inputId, type: 'text',
                   placeholder: 'Add a name to ' + ring.label + '...',
                   onBlur: function(e) { scanCirclesText(e.target.value); },
-                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); scanCirclesText(e.target.value); submit(); } },
-                  style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid #334155', background: _cirBg('#1e293b'), color: _cirFg('#e2e8f0'), fontSize: 13 } }),
+                  onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); submit(); } },
+                  style: { flex: 1, minWidth: 200, padding: 8, borderRadius: 6, border: '1px solid ' + _cirBd('#334155'), background: _cirBg('#1e293b'), color: _cirFg('#e2e8f0'), fontSize: 13 } }),
                 h('button', { onClick: submit, 'aria-label': 'Add to ' + ring.label,
-                  style: { padding: '8px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: _cirSolid(ring.color), color: _cirFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
+                  style: { padding: '8px 14px', borderRadius: 6, border: _cirHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cirSolid(ring.color), color: _cirFg('#fff'), fontWeight: 700, fontSize: 12 } }, '+ Add')
               )
             );
           }),
@@ -457,32 +501,35 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
         var r = rings();
+        var rawLabel = typeof d.personLabel === 'string' ? d.personLabel.trim() : '';
+        var printTitle = (!rawLabel || rawLabel.toLowerCase() === 'me' || rawLabel.toLowerCase() === 'my') ? 'My Circles' : (rawLabel + '’s Circles');
         return h('div', null,
-          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(251,113,133,0.10)', borderRadius: 8, border: '1px solid rgba(251,113,133,0.3)' } },
+          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _cirHC ? '#000000' : 'rgba(251,113,133,0.10)', borderRadius: 8, border: '1px solid ' + (_cirHC ? '#ffff00' : 'rgba(251,113,133,0.3)') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _cirFg('#fecdd3'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'
             ),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cirFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _cirHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _cirHC ? '#000000' : 'linear-gradient(135deg, #be123c 0%, #e11d48 100%)', color: _cirFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('circles'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _cirBg('#1e293b'), color: _cirFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _cirBd('#475569'), background: _cirBg('#1e293b'), color: _cirFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'circles-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _cirBg('#fff'), color: _cirFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _cirBg('#fff'), color: _cirFg('#0f172a'), borderRadius: 8, border: '1px solid ' + _cirBd('#cbd5e1'), fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
               '#circles-print-region, #circles-print-region * { visibility: visible !important; } ' +
-              '#circles-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
+              '#circles-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #ffffff !important; color: #0f172a !important; } ' +
+              '#circles-print-region * { color: inherit !important; border-color: #cbd5e1 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
 
-            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #be123c' } },
+            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid ' + _cirBd('#be123c') } },
               h('div', { style: { fontSize: 10, color: _cirFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'Circles of Support'),
-              h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, (d.personLabel || 'My') + '’s Circles'),
+              h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, printTitle),
               d.lastUpdated ? h('div', { style: { fontSize: 12, color: _cirFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
             ),
 
@@ -584,7 +631,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
         navTabs(),
         (d._crisisTier >= 3 && window.SelHub && typeof window.SelHub.renderCrisisResources === 'function')
           ? window.SelHub.renderCrisisResources(h, _cirBand) : null,
-        body
+        h('div', { role: 'tabpanel', id: 'cos-panel-' + view, 'aria-labelledby': 'cos-tab-' + view }, body)
       );
     }
   });

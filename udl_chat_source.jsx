@@ -526,10 +526,50 @@ const _blueprintChatMessage = (config, text) => ({
 const _generateStandardChatResponse = async (userText, deps = {}) => {
   if (_handleStoreRecognitionBoundary(userText, deps)) return { ok: false, localOnly: true };
   const {
-    udlMessages, history, inputText, isParentMode, isIndependentMode,
+    udlMessages, history, inputText, isTeacherMode, isParentMode, isIndependentMode,
     currentUiLanguage, gradeLevel, getGroupDifferentiationContext,
-    callGemini, setUdlMessages, warnLog, t,
+    callGemini, setUdlMessages, warnLog, onSafetyFlag, t,
   } = deps;
+  // Learner-facing safety gate: when a student or independent learner chats
+  // directly with AlloBot, check for crisis disclosures before calling AI.
+  // Teachers and parents are not blocked so lesson-planning questions on
+  // sensitive topics (e.g. health or history) work normally.
+  let learnerSafetyAction = 'continue';
+  const isLearnerChat = !isParentMode && (isIndependentMode || isTeacherMode === false);
+  if (isLearnerChat && typeof userText === 'string' && userText.trim()) {
+    const msg = userText.trim();
+    const onFlag = typeof onSafetyFlag === 'function' ? onSafetyFlag : null;
+    if (typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+      try {
+        const res = window.SelHub.safeRehearseCheck(msg, { toolId: 'udl_chat', onSafetyFlag: onFlag });
+        if (res && res.action) learnerSafetyAction = res.action;
+      } catch (_) { /* fall through to direct checker */ }
+    } else if (typeof window !== 'undefined') {
+      const checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+      let flags = null;
+      try { flags = (checker && typeof checker.check === 'function') ? checker.check(msg) : null; } catch (_) { flags = null; }
+      if (Array.isArray(flags) && flags.length) {
+        const rank = { low: 1, medium: 2, high: 3, critical: 4 };
+        const top = flags.reduce((a, f) => (f && (rank[f.severity] || 0) > (rank[a.severity] || 0)) ? f : a, flags[0] || {});
+        if (onFlag) {
+          try { onFlag(Object.assign({}, top, { source: 'udl_chat_learner', context: msg.slice(0, 100), aiGenerated: false })); } catch (_) {}
+        }
+        if (top.severity === 'critical') learnerSafetyAction = 'block';
+        else if (top.severity === 'high') learnerSafetyAction = 'nudge';
+      }
+    }
+    if (learnerSafetyAction === 'block') {
+      setUdlMessages(prev => [...prev, {
+        role: 'model',
+        type: 'safety-pause',
+        text: 'I want to pause our chat for a second. What you just typed sounds heavy, and your wellbeing matters more than any schoolwork.\n\nIf any of this is real for you right now, please reach out to a trusted adult (a parent, teacher, or school counselor), or contact:\n\n- **988 Suicide & Crisis Lifeline** — call or text 988\n- **Crisis Text Line** — text HOME to 741741\n\nYou are not alone.',
+      }]);
+      if (typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+        try { window.SelHub.showCrisisModal({ toolName: 'AlloBot Chat', contentSnippet: msg }); } catch (_) {}
+      }
+      return { ok: false, safetyBlocked: true };
+    }
+  }
   if (!_udlChatAiUsable('text', callGemini)) {
     setUdlMessages(prev => [...prev, { role: 'model', type: 'chat-error', retryText: userText,
       text: _chatText(t, 'chat_guide.reply_failed', 'I could not get a response. Your question is kept; retry when you are ready.') }]);
@@ -567,9 +607,12 @@ Current question:
     const hasStrategyHeader = /[*]{2}Strategy:.*[*]{2}/i.test(responseText);
     const hasActionableBullets = /-\s+[*]{2}.*[*]{2}:/i.test(responseText);
     const isActionable = hasStrategyHeader || hasActionableBullets;
+    const finalText = learnerSafetyAction === 'nudge'
+      ? responseText + '\n\n(If anything you typed is close to something real for you, talking to a trusted adult is always an option.)'
+      : responseText;
     setUdlMessages(prev => [...prev, {
       role: 'model',
-      text: responseText,
+      text: finalText,
       ...(evidence ? { evidence } : {}),
       isActionable,
     }]);
@@ -708,7 +751,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
   const {
     // State VALUES
     activeBlueprint, activeView, alloBotRef, currentUiLanguage, guidedFlowState,
-    isAutoFillMode, isShowMeMode, isBotVisible, isParentMode, isIndependentMode,
+    isAutoFillMode, isShowMeMode, isBotVisible, isTeacherMode, isParentMode, isIndependentMode,
     skipCommandRouter,
     sourceTopic, udlMessages, udlInput,
     leveledTextLanguage, persistedLessonDNA, history, inputText, standardsInput,
@@ -776,6 +819,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
       udlMessages,
       history,
       inputText,
+      isTeacherMode,
       isParentMode,
       isIndependentMode,
       currentUiLanguage,
@@ -784,6 +828,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
       callGemini,
       setUdlMessages,
       warnLog,
+      onSafetyFlag: deps.onSafetyFlag || deps.handleAiSafetyFlag,
       t,
     });
   const modifyBlueprintWithAI = typeof modifyBlueprintWithAIOverride === 'function'

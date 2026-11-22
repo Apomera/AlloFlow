@@ -43,6 +43,7 @@ hr{border:0;border-top:1px solid var(--line);margin:30px 0;}
 blockquote{margin:18px 0;padding:12px 16px;background:var(--warn-bg);border:1px solid var(--warn-bd);border-left:4px solid #f59e0b;border-radius:10px;}
 blockquote p{margin:0;color:var(--warn-ink);font-size:14.5px;}
 .manual-home{margin:0 0 18px;font-weight:800;}
+.manual-home a{display:inline-flex;align-items:center;min-height:28px;padding:4px 0;}
 .guide-meta{color:var(--soft);font-size:13.5px;}
 .toc{margin:22px 0 30px;padding:16px 18px;background:#fff;border:1px solid var(--line);border-radius:12px;}
 .toc strong{display:block;margin-bottom:6px;}
@@ -50,7 +51,7 @@ blockquote p{margin:0;color:var(--warn-ink);font-size:14.5px;}
 .toc li{break-inside:avoid;margin-bottom:4px;}
 footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:var(--soft);font-size:12.5px;}
 .skip-link{position:absolute;left:-9999px;top:8px;z-index:9999;background:var(--accent);color:#fff;padding:10px 16px;border-radius:8px;font-weight:700;text-decoration:none;}
-.skip-link:focus{left:12px;}
+.skip-link:focus{position:static;display:inline-block;margin:12px 0 0 16px;}
 main:focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important;}}
 @media (forced-colors:active){.banner,.toc,blockquote{border:1px solid CanvasText;}a:focus-visible,main:focus-visible{outline:3px solid Highlight;outline-offset:3px;}}

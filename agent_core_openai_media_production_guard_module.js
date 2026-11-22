@@ -9,7 +9,9 @@
   'use strict';
 
   var DEFAULT_MAX_DECODED_BYTES = 25 * 1024 * 1024;
-  var RETRYABLE_STATUS = { 429: true, 500: true, 502: true, 503: true, 504: true };
+  var MAX_REQUEST_SNAPSHOT_BYTES = 512 * 1024;
+  var MAX_RETRY_DELAY_MS = 30000;
+  var RETRYABLE_STATUS = Object.freeze({ 429: true, 500: true, 502: true, 503: true, 504: true });
 
   function guardError(code, message, details) {
     var error = new Error(message);
@@ -29,8 +31,23 @@
   }
 
   function dateValue(value) {
+    if (typeof value !== 'string' && typeof value !== 'number') return NaN;
     var parsed = Date.parse(value);
     return Number.isFinite(parsed) ? parsed : NaN;
+  }
+
+  function safeCloneSnapshot(value) {
+    if (!value || typeof value !== 'object') return value;
+    var serialized;
+    try { serialized = JSON.stringify(value); }
+    catch (_) { throw guardError('invalid-media-request', 'Media request must be acyclic JSON-serializable data.'); }
+    if (typeof serialized !== 'string' || serialized.length > MAX_REQUEST_SNAPSHOT_BYTES) {
+      throw guardError('invalid-media-request', 'Media request exceeds the maximum snapshot size limit.');
+    }
+    return JSON.parse(serialized, function (key, val) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return undefined;
+      return val;
+    });
   }
 
   function validateDatedPolicy(policy, expectedProvider, expectedModel, nowMs) {
@@ -76,7 +93,12 @@
     var sleep = typeof opts.sleep === 'function' ? opts.sleep : function (ms) {
       return new Promise(function (resolve) { setTimeout(resolve, ms); });
     };
-    var retryDelaysMs = Array.isArray(opts.retryDelaysMs) ? opts.retryDelaysMs.slice(0, 2) : [250];
+    var retryDelaysMs = Array.isArray(opts.retryDelaysMs)
+      ? opts.retryDelaysMs.slice(0, 2).map(function (ms) {
+          var n = Number(ms);
+          return Number.isFinite(n) ? Math.min(MAX_RETRY_DELAY_MS, Math.max(0, Math.floor(n))) : 0;
+        })
+      : [250];
     var maxImageAttempts = Number.isInteger(opts.maxImageAttempts) ? opts.maxImageAttempts : 1;
     var maxDecodedBytes = Number.isInteger(opts.maxDecodedBytes) ? opts.maxDecodedBytes : DEFAULT_MAX_DECODED_BYTES;
     if (maxImageAttempts < 1 || maxImageAttempts > 3) throw new Error('maxImageAttempts must be between 1 and 3');
@@ -88,7 +110,7 @@
     function policyStatus() {
       if (typeof window !== 'undefined') {
         if (window._isDesktopBundledApp === true) return 'desktop-bundled-cloud-disabled';
-        if (window.__alloStudentAiDisabled === true || window.__alloStudentView === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true) {
+        if (window.__alloOfflineOnly === true || window.__alloStudentAiDisabled === true || window.__alloStudentView === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true) {
           return 'student-or-locked-ai-disabled';
         }
         if (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) {
@@ -159,7 +181,7 @@
           continue;
         }
         if (response && response.ok === true) return boundedSuccessfulResponse(response);
-        if (!response || !RETRYABLE_STATUS[response.status] || attempt >= maxImageAttempts) return response;
+        if (!response || !Object.prototype.hasOwnProperty.call(RETRYABLE_STATUS, response.status) || attempt >= maxImageAttempts) return response;
         await sleep(retryDelaysMs[Math.min(attempt - 1, retryDelaysMs.length - 1)] || 0);
       }
       throw lastNetworkError || guardError('openai-network-error', 'OpenAI image request failed.');
@@ -233,15 +255,21 @@
 
     async function execute(requestInput) {
       if (inFlight) throw guardError('production-adapter-busy', 'This production media adapter permits only one execution at a time.');
-      var snapshotInput = requestInput && typeof requestInput === 'object' ? JSON.parse(JSON.stringify(requestInput)) : requestInput;
+      var snapshotInput = safeCloneSnapshot(requestInput);
       var plan = prepare(snapshotInput);
       if (!plan.ready) throw guardError(plan.code, 'Production OpenAI media preflight did not authorize execution.');
-      if (opts.authorizeProductionExecution({
-        request: plan.request, provider: plan.provider, estimate: plan.estimate,
-        operationUpperBound: plan.operationUpperBound, pricingPolicy: {
-          effectiveAt: pricingPolicy.effectiveAt, expiresAt: pricingPolicy.expiresAt, sourceUrl: pricingPolicy.sourceUrl
-        }
-      }) !== true) {
+      var prodAuthorized = false;
+      try {
+        prodAuthorized = opts.authorizeProductionExecution({
+          request: plan.request, provider: plan.provider, estimate: plan.estimate,
+          operationUpperBound: plan.operationUpperBound, pricingPolicy: {
+            effectiveAt: pricingPolicy.effectiveAt, expiresAt: pricingPolicy.expiresAt, sourceUrl: pricingPolicy.sourceUrl
+          }
+        }) === true;
+      } catch (_) {
+        prodAuthorized = false;
+      }
+      if (!prodAuthorized) {
         throw guardError('production-execution-not-authorized', 'The runtime did not authorize the aggregate production media budget.');
       }
       inFlight = true;
@@ -267,15 +295,15 @@
       }
     }
 
-    return { prepare: prepare, execute: execute, providerId: inner.providerId, model: inner.model };
+    return Object.freeze({ prepare: prepare, execute: execute, providerId: inner.providerId, model: inner.model });
   }
 
-  var API = {
+  var API = Object.freeze({
     DEFAULT_MAX_DECODED_BYTES: DEFAULT_MAX_DECODED_BYTES,
     createProductionOpenAIMediaAdapter: createProductionOpenAIMediaAdapter,
     decodedBase64Length: decodedBase64Length,
     validateDatedPolicy: validateDatedPolicy
-  };
+  });
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   if (typeof window !== 'undefined') {
     window.AlloModules = window.AlloModules || {};

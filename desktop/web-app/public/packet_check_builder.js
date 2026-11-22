@@ -274,15 +274,24 @@
     }
     return { lines: lines, clips: clips, voice: text(bank.voice).slice(0, 120) || 'a machine voice' };
   }
+  function safeParseManifest(raw) {
+    return JSON.parse(raw, function (key, value) {
+      return (key === '__proto__' || key === 'constructor' || key === 'prototype') ? undefined : value;
+    });
+  }
   // The manifest (the data block of the file) with more keys. Only the data block changes: the script and its hash do not.
   function withManifest(html, more) {
     var open = '<script type="application/json" id="packet-manifest">';
     var at = html.indexOf(open);
     if (at < 0) return html;
     var from = at + open.length, to = html.indexOf('</script>', from), manifest;
-    try { manifest = JSON.parse(html.slice(from, to)); } catch (_) { return html; }
-    if (!manifest || typeof manifest !== 'object') return html;
-    Object.keys(more).forEach(function (key) { manifest[key] = more[key]; });
+    if (to < 0) return html;
+    try { manifest = safeParseManifest(html.slice(from, to)); } catch (_) { return html; }
+    if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return html;
+    Object.keys(more).forEach(function (key) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return;
+      manifest[key] = more[key];
+    });
     var json = JSON.stringify(manifest).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
     return html.slice(0, from) + json + html.slice(to);
   }
@@ -337,8 +346,9 @@
     var at = clean ? html.indexOf(open) : -1;
     if (at < 0) return html;
     var from = at + open.length, to = html.indexOf('</script>', from), manifest;
-    try { manifest = JSON.parse(html.slice(from, to)); } catch (_) { return html; }
-    if (!manifest || typeof manifest !== 'object') return html;
+    if (to < 0) return html;
+    try { manifest = safeParseManifest(html.slice(from, to)); } catch (_) { return html; }
+    if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return html;
     manifest.learner = clean;
     var json = JSON.stringify(manifest).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
     return html.slice(0, from) + json + html.slice(to);

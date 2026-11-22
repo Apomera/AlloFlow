@@ -590,56 +590,56 @@
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "e4096941430fb9e1f99420e608434f33f8d8fa1d98a8526d96af5d600c53e1a8",
-      "learningLibrarySha256": "af0034d320e1030821b073d10ca09edc82e150a1acd38fde2e01b46e89491e02"
+      "sourceItemsSha256": "eb3176519394be77831203bf8d7ced8f5c4ee7822ccc59ba2e88f0e395ae9da3",
+      "learningLibrarySha256": "00346c2ca6779086cfc6ab02d00c08608046585dfba3b93dd0fb653552962bd3"
     },
     {
       "stem": "plt_k6_5622",
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "cf1ee63735aa49108bb6b703fbb4121fb55a7923bb7ac3a414a7a1185aef07f6",
-      "learningLibrarySha256": "3f14ea8225ff759f0838e2085abd5defa477fa283a0e2a8f3b90ae2e287fd00c"
+      "sourceItemsSha256": "8623a255abafa22d6fe8fa066cc1a1335b528cd7ed7f63f189721596dce8255f",
+      "learningLibrarySha256": "1992df59d367ac76ac7f11e2a5474f8dfa363d166b1fe37967da5bfebc9dee2b"
     },
     {
       "stem": "praxis_core_5752",
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "5eaeb4561c729d802d03bd5b784b72f645264cef41176f7ffc977e540d94c9ec",
-      "learningLibrarySha256": "e1577181905ab167b83767e8205e46c25e06026330dc8eeee1377f4b5d2123d1"
+      "sourceItemsSha256": "ad304fdb7503d1fcb7edf2d7c4339d1a41fcc3b43107036338d714ccaadf3220",
+      "learningLibrarySha256": "dd3e867055e6c94939e413b70f7aeb43ad9339777cf3f628558c5273da69e1b7"
     },
     {
       "stem": "reading_specialist_5302",
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "9472f1b0a80b5489a684c645d2869e0ed75b66441e3e7fdb24dacc7f3c39cc1d",
-      "learningLibrarySha256": "d4f97f1df4a61ab1c54587c2a2de7f1941ca32ab0e7b6d04634ac355f19a899e"
+      "sourceItemsSha256": "20249eba4badafdb64f12e302916f01617a43bdeaa8d83cc9e17581c274e7bce",
+      "learningLibrarySha256": "d6b0d9936509dba72630f80d469185fe1afebe9fbd18174145c6710b5c2b1d8a"
     },
     {
       "stem": "school_counselor_5422",
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "fefb7925bb3239e3094a2be919f0ba1c62eb51f06baa0381babd1742f534dba0",
-      "learningLibrarySha256": "a3e6a23efb20bba4eadf68cba1b7326f8672ea4a913fc6fc52fdbf10a165d770"
+      "sourceItemsSha256": "d74e0ac0a55192d437f6f11d3084229c4b5e88d55957832156de2590fe9586d5",
+      "learningLibrarySha256": "20b0b26c900746588c7cf6ce8b9674dc83fff5fd7e6966e6bdec31b5779b4faf"
     },
     {
       "stem": "school_librarian_5312",
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "960de2211453482a1d02487bfbf8d6ace39062d81c66894cc0540a48a63031e7",
-      "learningLibrarySha256": "9eeee966857c9d1af35550e9557251473d07ea9af45428a249063ec2e7b56d0f"
+      "sourceItemsSha256": "fd6280b834ffc690d8d767ddf2b9353b447bfb4fcfb50cf9885aac4c973dd24b",
+      "learningLibrarySha256": "c3550822439103e3bd977b562f2fed91bbc42d6fa38687d37b9761a6edc26daf"
     },
     {
       "stem": "school_psychologist_5403",
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "14bbc0fd643fc81b7def3ebe9351ce432c1da66ec7131db85e68ed8c9ae497a4",
-      "learningLibrarySha256": "4c045733e64a1e9184c2290a0aae7a1021c35405777b9d3c9dd8180c90177316"
+      "sourceItemsSha256": "8c3eba33d7bd8f8ae56bb6ffcdeb5fc3f441b4e10f12b1c2b5232d4eb17c9750",
+      "learningLibrarySha256": "0352bbe30d88ca45e714dab1dab60c19b6e1fc2dd7d2987f4fc738dc35f0ffe6"
     }
   ]
 }

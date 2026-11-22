@@ -633,6 +633,13 @@ var _lazyIcon = function (name) {
         if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
           window.speechSynthesis.cancel();
           const u = new window.SpeechSynthesisUtterance(activePassageText);
+          try {
+            const codeFn = (window.AlloModules && window.AlloModules.ModuleScopeExtras && typeof window.AlloModules.ModuleScopeExtras.getSpeechLangCode === 'function')
+              ? window.AlloModules.ModuleScopeExtras.getSpeechLangCode
+              : (typeof window.languageToTTSCode === 'function' ? window.languageToTTSCode : null);
+            const langTag = codeFn ? codeFn(lang) : '';
+            if (typeof langTag === 'string' && langTag.trim()) u.lang = langTag.trim();
+          } catch (_) {}
           u.onend = () => { if (passageMountedRef.current) setSpeakingPassage(false); };
           u.onerror = () => { if (passageMountedRef.current) setSpeakingPassage(false); };
           setSpeakingPassage(true);

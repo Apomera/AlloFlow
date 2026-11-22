@@ -2,7 +2,29 @@
 const fs=require('fs'),path=require('path'),os=require('os'),crypto=require('crypto'),{spawn}=require('child_process');
 const archive=require('./remediation_epub_archive.cjs');
 const digest=b=>crypto.createHash('sha256').update(b).digest('hex');
-const fileDigest=p=>new Promise((resolve,reject)=>{const hash=crypto.createHash('sha256'),stream=fs.createReadStream(p);stream.on('data',b=>hash.update(b));stream.on('error',reject);stream.on('end',()=>resolve(hash.digest('hex')));});
+const fileDigest=p=>new Promise((resolve,reject)=>{
+  try{
+    const ls=fs.lstatSync(p);
+    if(ls.isSymbolicLink()||!ls.isFile()||ls.size>archive.LIMITS.archiveBytes){
+      return reject(Object.assign(Error('EPUB archive rejected: input must be a bounded regular file.'),{code:'ALLOFLOW_EPUB_ARCHIVE_UNSAFE'}));
+    }
+    const fd=fs.openSync(p,fs.constants.O_RDONLY|(fs.constants.O_NOFOLLOW||0));
+    try{
+      const st=fs.fstatSync(fd);
+      if(!st.isFile()||st.size>archive.LIMITS.archiveBytes){
+        return reject(Object.assign(Error('EPUB archive rejected: input must be a bounded regular file.'),{code:'ALLOFLOW_EPUB_ARCHIVE_UNSAFE'}));
+      }
+      const hash=crypto.createHash('sha256'),buf=Buffer.alloc(1024*1024);
+      let total=0,n=0;
+      while((n=fs.readSync(fd,buf,0,buf.length,null))>0){
+        total+=n;
+        if(total>archive.LIMITS.archiveBytes)return reject(Object.assign(Error('EPUB archive rejected: input exceeds size limit.'),{code:'ALLOFLOW_EPUB_ARCHIVE_UNSAFE'}));
+        hash.update(buf.subarray(0,n));
+      }
+      resolve(hash.digest('hex'));
+    }finally{fs.closeSync(fd);}
+  }catch(err){reject(err);}
+});
 const {spawnSync}=require('child_process');
 let javaProbe=null;
 // Java presence is decided by a successful `java -version`, never by a file existing on PATH: macOS
@@ -32,6 +54,30 @@ function javaRuntime(bin,options){
   if(!o.spawnSync)javaProbe=probe;
   return probe;
 }
+// Non-blocking Java runtime probe for async validation flows so a slow JVM check
+// never blocks the Node.js MCP event loop or delays cancellation signals.
+async function javaRuntimeAsync(bin,options){
+  const o=options||{};
+  if(typeof o.spawnSync==='function')return javaRuntime(bin,o);
+  const java=bin||(process.env.JAVA_HOME?path.join(process.env.JAVA_HOME,'bin',process.platform==='win32'?'java.exe':'java'):'java');
+  const now=Date.now(),timeoutMs=Number.isSafeInteger(o.timeoutMs)&&o.timeoutMs>0?o.timeoutMs:javaProbeTimeoutMs();
+  if(javaProbe&&javaProbe.java===java&&!javaProbe.timedOut&&(javaProbe.present||now-javaProbe.at<60000))return javaProbe;
+  let present=false,version=null,error=null,timedOut=false,notFound=false;
+  try{
+    const r=await run(java,['-version'],{signal:o.signal,timeoutMs});
+    const out=String(r.output||'').trim();
+    if(r.code!==0)error=out.split(/\r?\n/)[0]||('java -version exited with status '+r.code);
+    else{present=true;const m=out.match(/version "([^"]+)"/);version=m?m[1]:null;}
+  }catch(e){
+    if(o.signal?.aborted||e.code==='ALLOFLOW_VALIDATION_CANCELLED')throw e;
+    error=String(e.message||e);
+    timedOut=/timed out|ETIMEDOUT/i.test(error)||e.code==='ETIMEDOUT';
+    notFound=e.code==='ENOENT'||/ENOENT/.test(error);
+  }
+  const probe={java,present,version,error,timedOut,notFound,timeoutMs,at:now};
+  javaProbe=probe;
+  return probe;
+}
 // One wording for both validators, so a timeout never reads as "install Java".
 function javaUnavailableMessage(probe,tool){
   const p=probe||{},what=tool||'This check';
@@ -42,11 +88,16 @@ function supportsAceNode(version=process.versions.node) {
   const [major,minor]=String(version).split('.').map(Number);
   return Number.isInteger(major)&&Number.isInteger(minor)&&(major>22||(major===22&&minor>=12));
 }
-function runtime() {
+function runtimeWithProbe(probe) {
   const jar=process.env.ALLOFLOW_MCP_EPUBCHECK_JAR||path.join(__dirname,'vendor','epubcheck','epubcheck.jar');
   let ace=null;try{ace=require.resolve('@daisy/ace-cli/bin/ace.js',{paths:[__dirname,path.join(__dirname,'runtime')]});}catch(_){}
-  const probe=javaRuntime(process.env.ALLOFLOW_MCP_JAVA_BIN||null);
   return {jar,ace,java:probe.java,javaPresent:probe.present,javaVersion:probe.version,javaError:probe.error,javaProbe:probe,nodeSupported:supportsAceNode()};
+}
+function runtime() {
+  return runtimeWithProbe(javaRuntime(process.env.ALLOFLOW_MCP_JAVA_BIN||null));
+}
+async function runtimeAsync(options) {
+  return runtimeWithProbe(await javaRuntimeAsync(process.env.ALLOFLOW_MCP_JAVA_BIN||null,options));
 }
 function capabilities() {
   const r=runtime();return {epubcheck:{installed:fs.existsSync(r.jar),version:'5.3.0',javaAvailable:r.javaPresent,javaVersion:r.javaVersion},ace:{installed:!!r.ace,version:'1.4.6',nodeSupported:r.nodeSupported},scope:'Automated EPUB format and accessibility checks; human review remains necessary.'};
@@ -91,7 +142,7 @@ function parseAce(report) {
   if(!['pass','fail','cantTell'].includes(outcome))throw Error('Ace did not report a recognized overall outcome.');
   return {status:outcome==='fail'||failures>0?'failed':outcome==='cantTell'||reviewFindings>0?'review-required':'passed',failures,reviewFindings,assertions,version:'1.4.6'};
 }
-function killProcessTree(child) {
+function killProcessTree(child, force = false) {
   if (!child) return;
   if (process.platform === 'win32' && Number.isSafeInteger(child.pid) && child.pid > 0) {
     try {
@@ -99,21 +150,23 @@ function killProcessTree(child) {
       killer.on('error', () => {});
       if (typeof killer.unref === 'function') killer.unref();
     } catch (_) {}
+  } else if (process.platform !== 'win32' && Number.isSafeInteger(child.pid) && child.pid > 0) {
+    try { process.kill(-child.pid, force ? 'SIGKILL' : 'SIGTERM'); } catch (_) {}
   }
-  try { child.kill(); } catch (_) {}
+  try { child.kill(force ? 'SIGKILL' : 'SIGTERM'); } catch (_) {}
 }
 function run(command,args,{signal,timeoutMs=180000,env,cwd,ipc=false}={}) {
   return new Promise((resolve,reject)=>{
     let child,output='',timer,killTimer,stopped=null,done=false;
     const finish=(err,result)=>{if(done)return;done=true;clearTimeout(timer);clearTimeout(killTimer);signal?.removeEventListener('abort',abort);err?reject(err):resolve(result);};
-    const stop=err=>{if(done||stopped)return;stopped=err;if(ipc&&child?.connected){try{child.send({type:'cancel'});}catch(_){killProcessTree(child);}}else killProcessTree(child);killTimer=setTimeout(()=>{killProcessTree(child);finish(err);},5000);};
+    const stop=err=>{if(done||stopped)return;stopped=err;if(ipc&&child?.connected){try{child.send({type:'cancel'});}catch(_){killProcessTree(child,false);}}else killProcessTree(child,false);killTimer=setTimeout(()=>{killProcessTree(child,true);finish(err);},5000);killTimer.unref?.();};
     const abort=()=>{const e=Error('EPUB validation cancelled');e.code='ALLOFLOW_VALIDATION_CANCELLED';stop(e);};
     if(signal?.aborted)return reject(Object.assign(Error('EPUB validation cancelled'),{code:'ALLOFLOW_VALIDATION_CANCELLED'}));
-    try{child=spawn(command,args,{cwd,env,windowsHide:true,stdio:ipc?['ignore','pipe','pipe','ipc']:['ignore','pipe','pipe']});}catch(e){return finish(e);}
+    try{child=spawn(command,args,{cwd,env,detached:process.platform!=='win32',windowsHide:true,stdio:ipc?['ignore','pipe','pipe','ipc']:['ignore','pipe','pipe']});}catch(e){return finish(e);}
     const collect=d=>{output+=String(d);if(output.length>2*1024*1024)stop(Error('Validator output exceeded the limit.'));};
     child.stdout.on('data',collect);child.stderr.on('data',collect);
     child.on('error',e=>finish(e));child.on('close',code=>finish(stopped,{code,output}));
-    signal?.addEventListener('abort',abort,{once:true});timer=setTimeout(()=>stop(Error('EPUB validation timed out.')),timeoutMs);
+    signal?.addEventListener('abort',abort,{once:true});timer=setTimeout(()=>stop(Error('EPUB validation timed out.')),timeoutMs);timer.unref?.();
   });
 }
 async function validate(filePath,options={}) {
@@ -127,7 +180,7 @@ async function validate(filePath,options={}) {
   const timeoutMs=Number.isSafeInteger(o.timeoutMs)&&o.timeoutMs>0?o.timeoutMs:Number.isSafeInteger(envTimeout)&&envTimeout>0?envTimeout:600000;
   const snapshot=path.join(scratch,'document.epub'),checks={},files={};
   const env={...process.env};
-  for(const key of Object.keys(env)){if(/(?:API_KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE_KEY)/i.test(key)||['NODE_OPTIONS','JAVA_TOOL_OPTIONS','_JAVA_OPTIONS','JDK_JAVA_OPTIONS'].includes(key))delete env[key];}
+  for(const key of Object.keys(env)){if(/(?:API_KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE_KEY)/i.test(key)||['NODE_OPTIONS','JAVA_TOOL_OPTIONS','_JAVA_OPTIONS','JDK_JAVA_OPTIONS'].includes(key.toUpperCase()))delete env[key];}
   const signal=o.signal,log=o.onLog||(()=>{});
   const readJson=p=>{if(fs.statSync(p).size>64*1024*1024)throw Error('Validator report exceeded 64 MB.');return JSON.parse(fs.readFileSync(p,'utf8'));};
   const save=(role,name,source)=>{if(o.claimPath&&fs.existsSync(source)){const dest=o.claimPath(name);fs.copyFileSync(source,dest);files[role]=dest;}};
@@ -139,7 +192,7 @@ async function validate(filePath,options={}) {
     if(before.size!==after.size||before.mtimeMs!==after.mtimeMs)throw Error('EPUB changed during validation snapshot.');
     // Fail closed before Java, Chromium, or any third-party archive reader runs.
     checks.archive=await archive.inspect(snapshot,{signal});log('archive: '+checks.archive.status);
-    const r=runtime();
+    const r=await runtimeAsync({signal});
     const inputSha256=await fileDigest(snapshot),inputBytes=fs.statSync(snapshot).size;
     const stem=path.basename(filePath,'.epub');
     await stage('epubcheck',async()=>{
@@ -176,4 +229,4 @@ async function validate(filePath,options={}) {
     }
   }
 }
-module.exports={validate,capabilities,fingerprint,parseEpubcheck,parseAce,run,javaRuntime,javaUnavailableMessage,supportsAceNode};
+module.exports={validate,capabilities,fingerprint,parseEpubcheck,parseAce,run,javaRuntime,javaRuntimeAsync,javaUnavailableMessage,supportsAceNode};

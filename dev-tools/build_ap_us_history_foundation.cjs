@@ -9,6 +9,7 @@
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const { distractorFeedbackFor } = require('./ap_us_history_distractor_feedback/index.cjs');
+const { applyApUsHistoryChoiceOverride } = require('./ap_us_history_choice_overrides/index.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_us_history_foundation_pilot.json');
@@ -361,14 +362,15 @@ function sourceDetailsFor(spec) {
   ];
 }
 
-function makeItem(spec, index) {
+function makeItem(rawSpec, index) {
+  const itemId = `apush-foundation-${String(index + 1).padStart(3, '0')}`;
+  const spec = applyApUsHistoryChoiceOverride(itemId, rawSpec);
   const unit = unitByNumber.get(spec.unit);
   const objective = objectiveByKey.get(`${spec.unit}:${spec.section}`);
   assert(unit && objective, `Missing route for item ${index + 1}.`);
   const choices = rotateChoices(spec.answer, spec.distractors, index % 4);
   const answerIndex = choices.indexOf(spec.answer);
   const references = [...new Set([CED_URL, CLARIFICATIONS_URL, spec.sourceUrl || unit.sourceUrl])];
-  const itemId = `apush-foundation-${String(index + 1).padStart(3, '0')}`;
   // Every distractor carries its own explanation, authored per item in
   // ap_us_history_distractor_feedback/. A missing entry fails the build rather
   // than falling back to a generic sentence.

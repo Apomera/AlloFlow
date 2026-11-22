@@ -21,11 +21,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
   // ── Reduced motion CSS ──
   (function() {
-    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
-    if (document.head) document.head.appendChild(st);
+    document.head.appendChild(st);
   })();
 
   // ── The five campaigns and their navigation targets ──
@@ -994,7 +994,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       if (scenario.entityInverted && scenario.entityInverted[ent.id]) v = 100 - v;
       return v;
     });
-    var avg = values.reduce(function(a, b) { return a + b; }, 0) / values.length;
+    var avg = values.length ? (values.reduce(function(a, b) { return a + b; }, 0) / values.length) : 0;
     return scenarioTierFromAvg(avg);
   }
 
@@ -1041,7 +1041,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       '.stewardship-preset-chip:hover{border-color:#86efac;color:#ffffff;}',
       '@media(max-width:760px){.stewardship-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.stewardship-command-top{flex-direction:column;}.stewardship-tour{white-space:normal;}}',
       '@media(max-width:520px){.stewardship-menu-shell{padding:8px 0;border-radius:14px;}.stewardship-command{padding:14px;border-radius:16px;}.stewardship-command-title{flex-direction:column;}.stewardship-primary{width:100%;}.stewardship-actions{align-items:stretch;}.stewardship-action-note{width:100%;}}',
-      '@media(prefers-reduced-motion:reduce){.stewardship-primary,.stewardship-card-elevated{transition:none;}.stewardship-primary:hover,.stewardship-card-elevated:hover{transform:none;}}',
+      '@keyframes stewOrbitDrift{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}',
+      '@keyframes stewOrbitDriftRev{from{transform:rotate(360deg)}to{transform:rotate(0deg)}}',
+      '@keyframes stewConduitFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-24}}',
+      '@keyframes stewBeaconPulse{0%,100%{opacity:0.15;transform:scale(0.90)}50%{opacity:0.42;transform:scale(1.18)}}',
+      '@keyframes stewAuraBreathe{0%,100%{opacity:0.14}50%{opacity:0.34}}',
+      '@keyframes stewSheenDrift{0%{transform:translateX(-90px);opacity:0}18%{opacity:0.42}82%{opacity:0.42}100%{transform:translateX(350px);opacity:0}}',
+      '[data-stewardship-view] .stew-orbit-cw{transform-box:fill-box;transform-origin:center;animation:stewOrbitDrift 34s linear infinite;will-change:transform;}',
+      '[data-stewardship-view] .stew-orbit-ccw{transform-box:fill-box;transform-origin:center;animation:stewOrbitDriftRev 46s linear infinite;will-change:transform;}',
+      '[data-stewardship-view] .stew-flow-dash{animation:stewConduitFlow 2.6s linear infinite;will-change:stroke-dashoffset;}',
+      '[data-stewardship-view] .stew-beacon-pulse{transform-box:fill-box;transform-origin:center;animation:stewBeaconPulse 3.2s ease-in-out infinite;will-change:transform,opacity;}',
+      '[data-stewardship-view] .stew-aura-breathe{animation:stewAuraBreathe 3.8s ease-in-out infinite;will-change:opacity;}',
+      '[data-stewardship-view] .stew-bar-sheen{animation:stewSheenDrift 5.4s cubic-bezier(0.4,0,0.2,1) infinite;will-change:transform,opacity;}',
+      '@media(prefers-reduced-motion:reduce){.stewardship-primary,.stewardship-card-elevated{transition:none;}.stewardship-primary:hover,.stewardship-card-elevated:hover{transform:none;}[data-stewardship-view] .stew-orbit-cw,[data-stewardship-view] .stew-orbit-ccw,[data-stewardship-view] .stew-flow-dash,[data-stewardship-view] .stew-beacon-pulse,[data-stewardship-view] .stew-aura-breathe{animation:none!important;transform:none!important;}[data-stewardship-view] .stew-bar-sheen{display:none!important;animation:none!important;}}',
       "\n[data-stewardship-view]{min-width:0;overflow-wrap:anywhere;line-height:1.6;--allo-stem-canvas:#0f172a;--allo-stem-panel:#1e293b;--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#a8b8cc;--allo-stem-border:#64748b}\n[data-stewardship-view] *,[data-stewardship-view] *:before,[data-stewardship-view] *:after{box-sizing:border-box}\n[data-stewardship-view] :is(button,summary){min-height:44px;min-width:44px}\n[data-stewardship-view] button{white-space:normal;line-height:1.5}\n[data-stewardship-view] :is(button,summary,input,textarea,[tabindex]):focus-visible,[data-stewardship-heading]:focus{outline:3px solid #fde68a;outline-offset:3px}\n[data-stewardship-heading]{scroll-margin-block:18px}\n[data-stewardship-view] [aria-pressed=true]{border-width:3px!important}\n[data-stewardship-inquiry] input[type=range]{min-height:32px;accent-color:#facc15}\n[data-stewardship-inquiry] textarea{font-size:16px!important;line-height:1.6;min-height:100px}\n[data-stewardship-inquiry] label{font-size:13px!important;line-height:1.6}\n[data-stewardship-inquiry] [data-stewardship-inquiry-log]{font-size:12px!important;line-height:1.6!important;max-height:200px!important}\n[data-stewardship-inquiry-log] ol{margin:0;padding:0 0 0 22px}[data-stewardship-inquiry-log] li{padding:6px 2px}\n[data-stewardship-inquiry] p{opacity:1!important;font-size:13px!important;line-height:1.6!important}\n[data-stewardship-inquiry-questions]{font-size:13px!important;line-height:1.6!important}\n[data-stewardship-view^=report]{--allo-stem-text:#0f172a;--allo-stem-text-soft:#475569;--allo-stem-border:#94a3b8;color:#0f172a}\n[data-stewardship-view^=report] :is(button,summary,input,textarea,[tabindex]):focus-visible,[data-stewardship-view^=report] [data-stewardship-heading]:focus{outline-color:#9a5800}\n[data-stewardship-view] [data-stewardship-primary-action]{background:#166534!important;color:#fff!important;border:1px solid #86efac!important}\n@media(max-width:600px){.stewardship-inquiry-parameters{grid-template-columns:minmax(0,1fr)!important}.stewardship-comparison-grid{grid-template-columns:minmax(0,1fr)!important}[data-stewardship-view] div[style*=\"display: flex\"]{flex-wrap:wrap}[data-stewardship-view] div[style*=\"min-width\"]{min-width:0!important}[data-stewardship-view] div[style*=\"display: grid\"]>*{min-width:0}[data-stewardship-view^=report]>div{padding:14px!important}.stewardship-metric-value{white-space:normal;overflow:visible}.stewardship-metric-label{font-size:11px}}\n@media(forced-colors:active){[data-stewardship-view] :is(button,summary,input,textarea,[tabindex]):focus-visible,[data-stewardship-heading]:focus{outline-color:Highlight}[data-stewardship-view] [aria-pressed=true]{border-color:Highlight!important}[data-stewardship-view] svg text{fill:CanvasText}[data-stewardship-view] [data-stewardship-primary-action]{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}}\n",
       "\n[data-stewardship-view] .stewardship-inquiry>summary:focus-visible,[data-stewardship-view] .stewardship-scenario-data>summary:focus-visible{outline-offset:-5px!important}\n.stewardship-scenario-data{margin:14px 0;border:1px solid var(--allo-stem-border,#64748b);border-radius:12px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data>summary{padding:12px 14px;cursor:pointer;font-size:14px;font-weight:700;color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data p{margin:4px 14px 12px;font-size:13px;line-height:1.6;color:var(--allo-stem-text-soft,#a8b8cc)}\n.stewardship-scenario-data-scroll{margin:0 12px 12px;max-height:none;overflow:auto;scroll-margin-block:16px;border:1px solid var(--allo-stem-border,#64748b);border-radius:8px}\n[data-stewardship-view] .stewardship-scenario-data-scroll:focus-visible{outline-offset:-4px!important}\n.stewardship-scenario-data-table{width:100%;min-width:620px;border-collapse:collapse;table-layout:auto;font-size:13px;line-height:1.6;color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data-table caption{text-align:left;padding:12px;font-size:14px;font-weight:700;background:var(--allo-stem-panel,#1e293b);color:var(--allo-stem-text,#e2e8f0)}\n.stewardship-scenario-data-table :is(th,td){padding:10px 12px;vertical-align:top;text-align:left;border-bottom:1px solid var(--allo-stem-border,#64748b);overflow-wrap:normal}\n.stewardship-scenario-data-table td{white-space:nowrap}.stewardship-scenario-data-table th{font-weight:700}.stewardship-scenario-data-detail{display:block;font-size:12px;font-weight:400;line-height:1.5;color:var(--allo-stem-text-soft,#a8b8cc);margin-top:3px}.stewardship-scenario-data-table thead{background:var(--allo-stem-panel,#1e293b)}\n.stewardship-scenario-data-table tbody tr:nth-child(even){background:rgba(148,163,184,.06)}\n@media(max-width:600px){[data-stewardship-view] [data-stewardship-report-header]{display:grid!important;grid-template-columns:auto minmax(0,1fr);align-items:start!important}[data-stewardship-report-header]>.no-print{grid-column:1/-1}}.theme-contrast [data-stewardship-report-header] [data-stewardship-heading=report]{margin-bottom:14px!important}.theme-contrast [data-stewardship-view]{--allo-stem-canvas:#000;--allo-stem-panel:#000;--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00}\n.theme-contrast [data-stewardship-inquiry-outcome],.theme-contrast [data-stewardship-report-metadata]{background:#000!important;color:#ffff00!important;border:1px solid #ffff00!important}\n.theme-contrast [data-stewardship-view] [data-stewardship-primary-action]{background:#000!important;color:#ffff00!important;border-color:#ffff00!important}\n.theme-contrast .stewardship-scenario-data :is(table,caption,th,td){background:#000!important;color:#ffff00!important;border-color:#ffff00!important}\n.theme-contrast [data-stewardship-view] :is([data-stewardship-system-map],[data-stewardship-inquiry-chart]) text{fill:#ffff00}\n@media(forced-colors:active){.stewardship-scenario-data,.stewardship-scenario-data-scroll,.stewardship-scenario-data-table :is(th,td){border-color:CanvasText}.stewardship-scenario-data-table,.stewardship-scenario-data-table caption,.stewardship-scenario-data-table thead{background:Canvas;color:CanvasText}[data-stewardship-system-map] circle{fill:Canvas;stroke:CanvasText}[data-stewardship-system-map] line{stroke:CanvasText;opacity:1}[data-stewardship-inquiry-chart] rect{fill:Canvas;stroke:CanvasText}[data-stewardship-inquiry-chart] rect:nth-of-type(2){fill:Highlight;opacity:1}[data-stewardship-inquiry-chart] rect:nth-of-type(3){fill:Canvas}[data-stewardship-view] :is([data-stewardship-system-map],[data-stewardship-inquiry-chart]) text{fill:CanvasText!important}}\n",
       "@media(max-width:600px){[data-stewardship-view] [data-stewardship-scenario-header]{display:grid!important;grid-template-columns:auto minmax(0,1fr);align-items:start!important}[data-stewardship-scenario-header]>span{justify-self:end}[data-stewardship-scenario-header]>div{grid-column:1/-1}}@media(forced-colors:active){[data-stewardship-view] [data-stewardship-inquiry-chart]{background:Canvas!important}[data-stewardship-view] .stewardship-scenario-data :is(table,caption,th,td){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}",
@@ -1050,7 +1062,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       '.theme-contrast .stewardship-family-tab,.theme-contrast .stewardship-preset-chip,.theme-contrast .stewardship-hero-badge{background:#000000!important;color:#ffff00!important;border-color:#ffff00!important;}',
       '.theme-contrast .stewardship-family-tab[aria-selected="true"]{background:#ffff00!important;color:#000000!important;border-color:#ffff00!important;}',
       '.theme-contrast [data-stewardship-constellation-svg] text{fill:#ffff00!important;}',
-      '.theme-contrast .stew-svg-fx{display:none!important;}'
+      '.theme-contrast .stew-svg-fx{display:none!important;}',
+      '.theme-contrast [data-stewardship-view] .stew-orbit-cw,.theme-contrast [data-stewardship-view] .stew-orbit-ccw,.theme-contrast [data-stewardship-view] .stew-flow-dash,.theme-contrast [data-stewardship-view] .stew-beacon-pulse,.theme-contrast [data-stewardship-view] .stew-aura-breathe{animation:none!important;}',
+      '.theme-contrast [data-stewardship-view] .stew-bar-sheen{display:none!important;animation:none!important;}'
     ].join('\n');
     if (document.head) document.head.appendChild(stewardshipStyle);
   }
@@ -1085,9 +1099,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
-      var setLabToolData = ctx.setToolData;
-      var setStemLabTool = ctx.setStemLabTool;
+      var labToolData = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
+      var setLabToolData = typeof ctx.setToolData === 'function' ? ctx.setToolData : function() {};
+      var setStemLabTool = typeof ctx.setStemLabTool === 'function' ? ctx.setStemLabTool : function() {};
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
@@ -1138,6 +1152,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       });
       var inquiryId = 'stewardship-inquiry-' + React.useId().replace(/:/g, '');
       var reportPrintSession = React.useRef(null);
+      var launchTimerRef = React.useRef(null);
+      React.useEffect(function() {
+        return function() {
+          if (launchTimerRef.current) { clearTimeout(launchTimerRef.current); launchTimerRef.current = null; }
+        };
+      }, []);
       var reportPrintState = React.useState(''), reportPrintError = reportPrintState[0], setReportPrintError = reportPrintState[1];
       var reportPrintAttemptState = React.useState(0), reportPrintAttempt = reportPrintAttemptState[0], setReportPrintAttempt = reportPrintAttemptState[1];
       React.useEffect(function() {
@@ -1234,7 +1254,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' }
           }, h('div', { style: { maxWidth: 800, margin: '0 auto' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
-              h('button', { 'data-stewardship-action': 'return', onClick: closeComparison, 'aria-label': __alloT('stem.stewardship.back_to_hub', '← Back to hub'),
+              h('button', { type: 'button', 'data-stewardship-action': 'return', onClick: closeComparison, 'aria-label': __alloT('stem.stewardship.back_to_hub', '← Back to hub'),
                 style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.back_to_hub', '← Back to hub')),
               h('h2', { tabIndex: -1, 'data-stewardship-heading': 'comparison', style: { margin: 0, color: '#a855f7', fontSize: 20 } }, __alloT('stem.stewardship.compare_two_campaigns', '🔀 Compare two campaigns'))
             ),
@@ -1247,7 +1267,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               completedSnaps.map(function(snap) {
                 var c = snap.campaign;
                 var picked = cmp.a === c.id;
-                return h('button', { key: c.id, 'data-stewardship-action': 'pick:' + c.id, 'aria-pressed': picked, 'aria-describedby': inquiryId + '-comparison-selection', onClick: function() { pickComparisonCampaign(c.id); },
+                return h('button', { type: 'button', key: c.id, 'data-stewardship-action': 'pick:' + c.id, 'aria-pressed': picked, 'aria-describedby': inquiryId + '-comparison-selection', onClick: function() { pickComparisonCampaign(c.id); },
                   style: { padding: 12, borderRadius: 10, border: '2px solid ' + (picked ? c.color : '#94a3b8'), background: picked ? c.color + '22' : '#0f172a', cursor: 'pointer', textAlign: 'left' } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                     h('span', { style: { fontSize: 22 } }, c.icon),
@@ -1266,11 +1286,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           )); // close inner maxWidth + outer dark shell
         }
 
+        function renderComparisonFallback() {
+          return h('div', {
+            style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' }
+          }, h('div', { style: { maxWidth: 680, margin: '0 auto' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 } },
+              h('button', { type: 'button', 'data-stewardship-action': 'return', onClick: closeComparison, 'aria-label': __alloT('stem.stewardship.back', '← Back'),
+                style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.back', '← Back')),
+              h('h2', { tabIndex: -1, 'data-stewardship-heading': 'comparison', style: { margin: 0, color: '#a855f7', fontSize: 20 } }, __alloT('stem.stewardship.campaign_comparison', '🔀 Campaign Comparison'))
+            ),
+            h('p', { style: { margin: 0, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13 } }, 'The selected campaigns could not be loaded for comparison. Return to the hub to choose another pair.')
+          ));
+        }
+
         // ── Viewing phase ──
         if (cmp.mode === 'viewing' && cmp.a && cmp.b) {
           var snapA = snapshots.find(function(s) { return s.campaign.id === cmp.a; });
           var snapB = snapshots.find(function(s) { return s.campaign.id === cmp.b; });
-          if (!snapA || !snapB) { closeComparison(); return null; }
+          if (!snapA || !snapB) return renderComparisonFallback();
           var cA = snapA.campaign, cB = snapB.campaign;
           var sA = snapA.state, sB = snapB.state;
           var key = pairKey(cA.id, cB.id);
@@ -1333,10 +1366,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' }
           }, h('div', { style: { maxWidth: 900, margin: '0 auto' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
-              h('button', { 'data-stewardship-action': 'return', onClick: closeComparison, 'aria-label': __alloT('stem.stewardship.back', '← Back'),
+              h('button', { type: 'button', 'data-stewardship-action': 'return', onClick: closeComparison, 'aria-label': __alloT('stem.stewardship.back', '← Back'),
                 style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.back', '← Back')),
               h('h2', { tabIndex: -1, 'data-stewardship-heading': 'comparison', style: { margin: 0, color: '#a855f7', fontSize: 20 } }, __alloT('stem.stewardship.campaign_comparison', '🔀 Campaign Comparison')),
-              h('button', { 'data-stewardship-action': 'pick-again', onClick: function() { transitionHub({ comparing: { mode: 'selecting', a: null, b: null } }); },
+              h('button', { type: 'button', 'data-stewardship-action': 'pick-again', onClick: function() { transitionHub({ comparing: { mode: 'selecting', a: null, b: null } }); },
                 style: { marginLeft: 'auto', background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 12 } }, __alloT('stem.stewardship.pick_different_pair', 'Pick different pair'))
             ),
 
@@ -1382,8 +1415,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           )); // close inner maxWidth + outer dark shell
         }
 
-        closeComparison();
-        return null;
+        return renderComparisonFallback();
       }
 
       // ── First-time onboarding tutorial ──
@@ -1450,7 +1482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               h('h2', { style: { margin: 0, color: 'var(--allo-stem-text, #f0fdf4)', fontSize: 22, fontWeight: 900 } }, __alloT('stem.stewardship.welcome_to_environmental_stewardship_c', '🌍 Welcome to Environmental Stewardship Campaigns')),
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, __alloT('stem.stewardship.a_5_step_tour_before_your_first_campai', 'A 5-step tour before your first campaign or scenario.'))
             ),
-            h('button', { 'data-stewardship-action': 'tutorial-skip', onClick: dismissTutorial, 'aria-label': __alloT('stem.stewardship.skip_tour', 'Skip tour'),
+            h('button', { type: 'button', 'data-stewardship-action': 'tutorial-skip', onClick: dismissTutorial, 'aria-label': __alloT('stem.stewardship.skip_tour', 'Skip tour'),
               style: { marginLeft: 'auto', background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 12, cursor: 'pointer' } }, __alloT('stem.stewardship.skip_tour', 'Skip tour'))
           ),
 
@@ -1484,10 +1516,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
           // Navigation
           h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
-            step > 0 ? h('button', { 'data-stewardship-action': 'tutorial-back', onClick: backTutorial, 'aria-label': __alloT('stem.stewardship.back_2', '← Back'),
+            step > 0 ? h('button', { type: 'button', 'data-stewardship-action': 'tutorial-back', onClick: backTutorial, 'aria-label': __alloT('stem.stewardship.back_2', '← Back'),
               style: { padding: '8px 16px', borderRadius: 10, border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, __alloT('stem.stewardship.back_2', '← Back')) : null,
             h('div', { style: { flex: 1 } }),
-            h('button', { 'data-stewardship-action': 'tutorial-next', onClick: advanceTutorial, 'aria-label': tutorialNextLabel,
+            h('button', { type: 'button', 'data-stewardship-action': 'tutorial-next', onClick: advanceTutorial, 'aria-label': tutorialNextLabel,
               style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } },
               tutorialNextLabel)
           )
@@ -1591,8 +1623,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         var slot = (labToolData[c.toolDataKey]) || {};
         var state = slot[c.stateField] || {};
         var outcome = state.finalOutcome || null;
-        var yearLog = state.yearLog || state.weekLog || [];
-        var entities = state.zones || state.species || state.groups || state.components || state.sectors || [];
+        var rawYearLog = state.yearLog || state.weekLog;
+        var yearLog = Array.isArray(rawYearLog) ? rawYearLog : [];
+        var rawEntities = state.zones || state.species || state.groups || state.components || state.sectors;
+        var entities = Array.isArray(rawEntities) ? rawEntities : [];
 
         // Pull the entity definitions from the campaign-specific arrays
         // (these were duplicated in each tool file, so the hub does not
@@ -1651,9 +1685,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #475569)', marginTop: 4 } }, c.scale + ' · ' + c.mechanic)
             ),
             h('div', { className: 'no-print', style: { display: 'flex', gap: 6 } },
-              h('button', { 'data-stewardship-action': 'print', onClick: printReport, 'aria-label': __alloT('stem.stewardship.print', '🖨 Print') + ': ' + c.label,
+              h('button', { type: 'button', 'data-stewardship-action': 'print', onClick: printReport, 'aria-label': __alloT('stem.stewardship.print', '🖨 Print') + ': ' + c.label,
                 style: { padding: '6px 14px', borderRadius: 8, border: '1px solid #15803d', background: '#15803d', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 12 } }, __alloT('stem.stewardship.print', '🖨 Print')),
-              h('button', { 'data-stewardship-action': 'return', onClick: closeReport, 'aria-label': __alloT('stem.stewardship.back_3', '← Back'),
+              h('button', { type: 'button', 'data-stewardship-action': 'return', onClick: closeReport, 'aria-label': __alloT('stem.stewardship.back_3', '← Back'),
                 style: { padding: '6px 14px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', background: '#fff', color: 'var(--allo-stem-text-soft, #475569)', cursor: 'pointer', fontWeight: 700, fontSize: 12 } }, __alloT('stem.stewardship.back_3', '← Back'))
             )
           ),
@@ -1904,7 +1938,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             role: 'region', 'aria-label': scenario.label + ' briefing'
           }, h('div', { style: { maxWidth: 800, margin: '0 auto' } },
             h('div', { 'data-stewardship-scenario-header': 'true', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
-              h('button', { 'data-stewardship-action': 'return', onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.back_to_hub_4', '← Back to hub'),
+              h('button', { type: 'button', 'data-stewardship-action': 'return', onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.back_to_hub_4', '← Back to hub'),
                 style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.back_to_hub_4', '← Back to hub')),
               h('span', { style: { fontSize: 36 } }, scenario.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
@@ -1942,9 +1976,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               scenario.aiDisclaimer
             ),
             h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-              h('button', { 'data-stewardship-action': 'scenario-begin', onClick: function() { beginScenarioPlay(scenario); }, 'data-stewardship-primary-action': 'true', 'aria-label': __alloT('stem.stewardship.begin_scenario_2', 'Begin scenario →') + ': ' + scenario.label,
+              h('button', { type: 'button', 'data-stewardship-action': 'scenario-begin', onClick: function() { beginScenarioPlay(scenario); }, 'data-stewardship-primary-action': 'true', 'aria-label': __alloT('stem.stewardship.begin_scenario_2', 'Begin scenario →') + ': ' + scenario.label,
                 style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + scenario.color + ' 0%, ' + scenario.color + 'cc 100%)', color: '#fff', fontWeight: 800, fontSize: 14 } }, __alloT('stem.stewardship.begin_scenario_2', 'Begin scenario →')),
-              h('button', { 'data-stewardship-action': 'return', onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.cancel_2', 'Cancel'),
+              h('button', { type: 'button', 'data-stewardship-action': 'return', onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.cancel_2', 'Cancel'),
                 style: { padding: '10px 16px', borderRadius: 10, border: '1px solid var(--allo-stem-border, #334155)', cursor: 'pointer', background: 'transparent', color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 700, fontSize: 13 } }, __alloT('stem.stewardship.cancel_2', 'Cancel'))
             )
           )); // close inner maxWidth + outer dark shell
@@ -1962,7 +1996,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           }, h('div', { style: { maxWidth: 820, margin: '0 auto' } },
             // Header bar
             h('div', { 'data-stewardship-scenario-header': 'true', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
-              h('button', { 'data-stewardship-action': 'return', onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.pause', '← Pause') + ': ' + scenario.label,
+              h('button', { type: 'button', 'data-stewardship-action': 'return', onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.pause', '← Pause') + ': ' + scenario.label,
                 style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.pause', '← Pause')),
               h('span', { style: { fontSize: 28 } }, scenario.icon),
               h('div', { style: { flex: 1, minWidth: 220 } },
@@ -2010,23 +2044,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                       h('stop', { offset: '100%', stopColor: '#020617' })
                     )
                   ),
-                  // Recessed sunlit-biosphere telemetry well + concentric rings (no extra <line> or <g> so spoke/node indices remain strictly 1:1)
+                  // Recessed sunlit-biosphere telemetry well + gently drifting orbital sustainability rings (no extra <line> or <g> so spoke/node indices remain strictly 1:1)
                   h('rect', { x: 1, y: 1, width: W - 2, height: Hh - 2, rx: 10, fill: hcS ? '#000000' : 'url(#stew-map-well)', stroke: hcS ? '#ffff00' : 'rgba(134,239,172,0.20)', strokeWidth: 1 }),
-                  h('circle', { cx: cx, cy: cy, r: 48, fill: 'none', stroke: hcS ? 'rgba(255,255,0,0.35)' : '#334155', strokeWidth: 1, strokeDasharray: '2 4', opacity: 0.65 }),
-                  h('circle', { cx: cx, cy: cy, r: 92, fill: 'none', stroke: hcS ? 'rgba(255,255,0,0.45)' : 'rgba(134,239,172,0.22)', strokeWidth: 1.1, strokeDasharray: '3 5', opacity: 0.65 }),
-                  // Soft glow aura paths behind shifted spokes (uses <path>, NOT <line>)
+                  h('circle', { cx: cx, cy: cy, r: 48, fill: 'none', stroke: hcS ? 'rgba(255,255,0,0.35)' : '#334155', strokeWidth: 1, strokeDasharray: '2 4', opacity: 0.65, className: hcS ? undefined : 'stew-orbit-ccw' }),
+                  h('circle', { cx: cx, cy: cy, r: 92, fill: 'none', stroke: hcS ? 'rgba(255,255,0,0.45)' : 'rgba(134,239,172,0.24)', strokeWidth: 1.1, strokeDasharray: '3 5', opacity: 0.65, className: hcS ? undefined : 'stew-orbit-cw' }),
+                  // Soft glow aura + flowing connector dash paths behind shifted spokes (uses <path>, NOT <line>)
                   !hcS && nodes.map(function(nd, i) {
                     if (nd.d === 0) return null;
-                    return h('path', { key: 'eg-' + i, className: 'stew-svg-fx', d: 'M ' + cx + ' ' + cy + ' L ' + nd.x.toFixed(1) + ' ' + nd.y.toFixed(1), fill: 'none', stroke: nd.change.color, strokeWidth: 7.5, strokeOpacity: 0.18, strokeLinecap: 'round' });
+                    return h('path', { key: 'eg-' + i, className: 'stew-svg-fx stew-aura-breathe', d: 'M ' + cx + ' ' + cy + ' L ' + nd.x.toFixed(1) + ' ' + nd.y.toFixed(1), fill: 'none', stroke: nd.change.color, strokeWidth: 7.5, strokeOpacity: 0.18, strokeLinecap: 'round' });
                   }),
                   nodes.map(function(nd, i) {
                     var ec = nd.d === 0 ? '#64748b' : nd.change.color;
                     var ew = nd.d !== 0 ? Math.min(5, 1.5 + Math.abs(nd.d) / 5.5) : 1.25;
                     return h('line', { key: 'e' + i, 'data-stewardship-map-change': nd.ent.id, 'data-change-direction': nd.change.state, x1: cx, y1: cy, x2: nd.x, y2: nd.y, stroke: ec, strokeWidth: ew, strokeDasharray: nd.change.state === 'worsening' ? '4 3' : undefined, opacity: nd.d !== 0 ? 0.94 : 0.55 });
                   }),
+                  !hcS && nodes.map(function(nd, i) {
+                    if (nd.d === 0) return null;
+                    return h('path', { key: 'ef-' + i, className: 'stew-svg-fx stew-flow-dash', d: 'M ' + cx + ' ' + cy + ' L ' + nd.x.toFixed(1) + ' ' + nd.y.toFixed(1), fill: 'none', stroke: '#ffffff', strokeWidth: 1.3, strokeDasharray: '4 8', strokeOpacity: 0.62, strokeLinecap: 'round' });
+                  }),
                   // Sculpted central stewardship hub
-                  !hcS && h('circle', { className: 'stew-svg-fx', cx: cx, cy: cy, r: 32, fill: stewardshipAccent(scenario.color), opacity: 0.16 }),
-                  h('circle', { cx: cx, cy: cy, r: 28, fill: 'none', stroke: hcS ? '#ffff00' : stewardshipAccent(scenario.color), strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.6 }),
+                  !hcS && h('circle', { className: 'stew-svg-fx stew-beacon-pulse', cx: cx, cy: cy, r: 32, fill: stewardshipAccent(scenario.color), opacity: 0.16 }),
+                  h('circle', { cx: cx, cy: cy, r: 28, fill: 'none', stroke: hcS ? '#ffff00' : stewardshipAccent(scenario.color), strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.6, className: hcS ? undefined : 'stew-orbit-cw' }),
                   h('circle', { cx: cx, cy: cy, r: 23, fill: hcS ? '#000000' : 'url(#stew-map-hub)', stroke: hcS ? '#ffff00' : scenario.color, strokeWidth: 2.5 }),
                   h('text', { x: cx, y: cy + 6, textAnchor: 'middle', fontSize: 18 }, scenario.icon),
                   nodes.map(function(nd, i) {
@@ -2035,7 +2073,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                     var deltaX = nd.x > cx + 24 ? nd.x - 24 : nd.x + 24;
                     var deltaAnchor = nd.x > cx + 24 ? 'end' : 'start';
                     return h('g', { key: 'n' + i },
-                      !hcS && h('circle', { className: 'stew-svg-fx', cx: nd.x, cy: nd.y, r: 24.5, fill: nd.col, opacity: nd.d !== 0 ? 0.22 : 0.10 }),
+                      !hcS && h('circle', { className: 'stew-svg-fx stew-beacon-pulse', cx: nd.x, cy: nd.y, r: 24.5, fill: nd.col, opacity: nd.d !== 0 ? 0.24 : 0.11, style: { animationDelay: (i * 0.42).toFixed(2) + 's' } }),
                       h('circle', { cx: nd.x, cy: nd.y, r: 20, fill: hcS ? '#000000' : '#0b1220', stroke: hcS ? '#ffff00' : '#1e293b', strokeWidth: 3.5 }),
                       h('circle', { cx: nd.x, cy: nd.y, r: 20, fill: 'none', stroke: hcS ? '#ffff00' : nd.col, strokeWidth: 3.5, strokeLinecap: 'round', strokeDasharray: arcLen.toFixed(1) + ' ' + ringC.toFixed(1), transform: 'rotate(-90 ' + nd.x.toFixed(1) + ' ' + nd.y.toFixed(1) + ')' }),
                       h('text', { x: nd.x, y: nd.y + 5, textAnchor: 'middle', fontSize: 15 }, nd.ent.icon),
@@ -2059,14 +2097,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             // Options
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               decision.options.map(function(opt) {
-                return h('button', { key: opt.id, 'data-stewardship-action': 'option:' + opt.id, onClick: function() { chooseScenarioOption(scenario, step, opt); }, 'aria-label': 'Choose: ' + opt.label,
+                return h('button', { type: 'button', key: opt.id, 'data-stewardship-action': 'option:' + opt.id, onClick: function() { chooseScenarioOption(scenario, step, opt); }, 'aria-label': 'Choose: ' + opt.label,
                   style: {
                     padding: 14, borderRadius: 10, border: '1px solid var(--allo-stem-border, #334155)', cursor: 'pointer',
                     background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', textAlign: 'left',
                     fontSize: 13.5, lineHeight: 1.55, fontWeight: 600, transition: 'all 0.2s'
                   },
-                  onMouseEnter: function(e) { e.target.style.borderColor = scenario.color; e.target.style.background = 'rgba(15,23,42,0.9)'; },
-                  onMouseLeave: function(e) { e.target.style.borderColor = '#334155'; e.target.style.background = '#0f172a'; }
+                  onMouseEnter: function(e) { if (!_stewIsHC()) { e.currentTarget.style.borderColor = scenario.color; e.currentTarget.style.background = 'rgba(15,23,42,0.9)'; } },
+                  onMouseLeave: function(e) { if (!_stewIsHC()) { e.currentTarget.style.borderColor = '#334155'; e.currentTarget.style.background = '#0f172a'; } }
                 }, opt.label);
               })
             ),
@@ -2088,14 +2126,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
 
         // ── Debrief phase ──
         if (phase === 'debrief') {
-          var outcome = st.outcome;
+          var outcome = st.outcome || computeScenarioOutcome(scenario, st.entities);
           return h('div', {
             // Dark shell — same WCAG rationale
             style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 16, padding: '20px 16px', minHeight: 'calc(100vh - 32px)' },
             role: 'region', 'aria-label': scenario.label + ' debrief'
           }, h('div', { style: { maxWidth: 820, margin: '0 auto' } },
             h('div', { 'data-stewardship-scenario-header': 'true', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
-              h('button', { 'data-stewardship-action': 'return', onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.back_to_hub_6', '← Back to hub'),
+              h('button', { type: 'button', 'data-stewardship-action': 'return', onClick: closeScenario, 'aria-label': __alloT('stem.stewardship.back_to_hub_6', '← Back to hub'),
                 style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13 } }, __alloT('stem.stewardship.back_to_hub_6', '← Back to hub')),
               h('span', { style: { fontSize: 36 } }, scenario.icon),
               h('div', { style: { flex: 1, minWidth: 200 } },
@@ -2160,9 +2198,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                             )
                           ),
                           h('rect', { x: 0, y: 0, width: SW, height: SH, fill: hcSp ? '#000000' : 'rgba(2,6,23,0.55)' }),
-                          !hcSp && h('polygon', { className: 'stew-svg-fx', points: areaStr, fill: 'url(#' + spId + ')', stroke: 'none' }),
+                          !hcSp && h('polygon', { className: 'stew-svg-fx stew-aura-breathe', points: areaStr, fill: 'url(#' + spId + ')', stroke: 'none' }),
                           h('line', { x1: 0, y1: pyv(initialValue), x2: SW, y2: pyv(initialValue), stroke: hcSp ? '#ffff00' : '#64748b', strokeWidth: 0.75, strokeDasharray: '2 2', opacity: 0.65 }),
                           h('polyline', { points: polyStr, fill: 'none', stroke: hcSp ? '#ffff00' : barColor, strokeWidth: 1.8, vectorEffect: 'non-scaling-stroke' }),
+                          !hcSp && h('ellipse', { className: 'stew-svg-fx stew-beacon-pulse', cx: px(n - 1), cy: pyv(pts[n - 1]), rx: 3.1, ry: 4.4, fill: barColor, opacity: 0.3 }),
                           h('ellipse', { cx: px(n - 1), cy: pyv(pts[n - 1]), rx: 1.6, ry: 2.3, fill: hcSp ? '#ffff00' : barColor, stroke: '#0f172a', strokeWidth: 0.5 })
                         );
                       })() : h('div', { style: { height: 4, background: 'var(--allo-stem-panel, #1e293b)', borderRadius: 2, overflow: 'hidden' } },
@@ -2205,9 +2244,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             ),
             // Actions
             h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-              h('button', { 'data-stewardship-action': 'scenario-replay', onClick: function() { resetScenario(scenario.id); beginScenarioPlay(scenario); }, 'aria-label': __alloT('stem.stewardship.replay', '↻ Replay') + ': ' + scenario.label,
+              h('button', { type: 'button', 'data-stewardship-action': 'scenario-replay', onClick: function() { resetScenario(scenario.id); beginScenarioPlay(scenario); }, 'aria-label': __alloT('stem.stewardship.replay', '↻ Replay') + ': ' + scenario.label,
                 style: { padding: '10px 18px', borderRadius: 10, border: '1px solid ' + scenario.color, cursor: 'pointer', background: 'transparent', color: stewardshipAccent(scenario.color), fontWeight: 700, fontSize: 13 } }, __alloT('stem.stewardship.replay', '↻ Replay')),
-              h('button', { 'data-stewardship-action': 'return', onClick: closeScenario, 'data-stewardship-primary-action': 'true', 'aria-label': __alloT('stem.stewardship.back_to_hub_8', '← Back to hub'),
+              h('button', { type: 'button', 'data-stewardship-action': 'return', onClick: closeScenario, 'data-stewardship-primary-action': 'true', 'aria-label': __alloT('stem.stewardship.back_to_hub_8', '← Back to hub'),
                 style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + scenario.color + ' 0%, ' + scenario.color + 'cc 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, __alloT('stem.stewardship.back_to_hub_8', '← Back to hub'))
             )
           )); // close inner maxWidth + outer dark shell
@@ -2249,7 +2288,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         if (addToast) addToast('Launching ' + c.label + '...', 'info');
         if (announceToSR) announceToSR('Opening ' + c.label);
         // Navigate into the host tool
-        setTimeout(function() { setStemLabTool(c.hostTool); }, 50);
+        if (launchTimerRef.current) clearTimeout(launchTimerRef.current);
+        launchTimerRef.current = setTimeout(function() {
+          launchTimerRef.current = null;
+          setStemLabTool(c.hostTool);
+        }, 50);
       }
 
       // If the user is comparing two campaigns, render that
@@ -2329,20 +2372,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             )
           ),
           h('rect', { x: 2, y: 2, width: 44, height: 44, rx: 12, fill: hcE ? '#000000' : 'url(#stew-emb-sky)', stroke: hcE ? '#ffff00' : '#86efac', strokeWidth: 1.6 }),
-          h('circle', { cx: 24, cy: 24, r: 17.5, fill: 'none', stroke: hcE ? '#ffff00' : '#86efac', strokeWidth: 1.1, strokeDasharray: '3 3', opacity: 0.72 }),
+          h('circle', { cx: 24, cy: 24, r: 17.5, fill: 'none', stroke: hcE ? '#ffff00' : '#86efac', strokeWidth: 1.1, strokeDasharray: '3 3', opacity: 0.72, className: hcE ? undefined : 'stew-orbit-cw' }),
           // Cardinal compass ticks
           [[24,5,24,8],[24,40,24,43],[5,24,8,24],[40,24,43,24]].map(function(tk, ti) {
             return h('line', { key: 'ct-' + ti, x1: tk[0], y1: tk[1], x2: tk[2], y2: tk[3], stroke: hcE ? '#ffff00' : '#bbf7d0', strokeWidth: 1.3, strokeLinecap: 'round' });
           }),
           // Sunlit dawn orb + atmospheric halo
-          !hcE && h('circle', { className: 'stew-svg-fx', cx: 24, cy: 13.5, r: 8, fill: 'url(#stew-emb-sun)' }),
+          !hcE && h('circle', { className: 'stew-svg-fx stew-beacon-pulse', cx: 24, cy: 13.5, r: 8, fill: 'url(#stew-emb-sun)' }),
           h('circle', { cx: 24, cy: 13.5, r: 3.2, fill: '#fbbf24', stroke: '#fef9c3', strokeWidth: 0.7 }),
           // Layered sunlit watershed ridge + specular peak crest
           h('path', { d: 'M10 31 L18 19 L25 26 L31 17 L38 31 Z', fill: hcE ? '#000000' : 'url(#stew-emb-mtn)', stroke: hcE ? '#ffff00' : '#86efac', strokeWidth: 1.2, strokeLinejoin: 'round' }),
           !hcE && h('path', { className: 'stew-svg-fx', d: 'M18 19 L21.5 22.5 M31 17 L34 22.5', fill: 'none', stroke: '#dcfce7', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.65 }),
-          // Dual-pass shimmering watershed river wave
-          !hcE && h('path', { className: 'stew-svg-fx', d: 'M11 35 Q17.5 31 24 35 T37 35', fill: 'none', stroke: '#38bdf8', strokeWidth: 5, strokeOpacity: 0.25, strokeLinecap: 'round' }),
-          h('path', { d: 'M11 35 Q17.5 31 24 35 T37 35', fill: 'none', stroke: hcE ? '#ffff00' : '#38bdf8', strokeWidth: 2.2, strokeLinecap: 'round' })
+          // Dual-pass shimmering watershed river wave + flowing current glint
+          !hcE && h('path', { className: 'stew-svg-fx stew-aura-breathe', d: 'M11 35 Q17.5 31 24 35 T37 35', fill: 'none', stroke: '#38bdf8', strokeWidth: 5, strokeOpacity: 0.25, strokeLinecap: 'round' }),
+          h('path', { d: 'M11 35 Q17.5 31 24 35 T37 35', fill: 'none', stroke: hcE ? '#ffff00' : '#38bdf8', strokeWidth: 2.2, strokeLinecap: 'round' }),
+          !hcE && h('path', { className: 'stew-svg-fx stew-flow-dash', d: 'M11 35 Q17.5 31 24 35 T37 35', fill: 'none', stroke: '#e0f2fe', strokeWidth: 1.1, strokeDasharray: '4 6', strokeOpacity: 0.78, strokeLinecap: 'round' })
         );
       }
 
@@ -2374,7 +2418,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
           ),
           h('rect', { x: 1, y: 1, width: W - 2, height: H - 2, rx: 12, fill: hcC ? '#000000' : 'url(#stew-con-well)', stroke: hcC ? '#ffff00' : '#1e3a2f', strokeWidth: 1.3 }),
           // Horizontal biosphere horizon guide linking all 5 Maine anchor nodes
-          h('line', { x1: 42, y1: 56, x2: W - 42, y2: 56, stroke: hcC ? 'rgba(255,255,0,0.35)' : 'rgba(134,239,172,0.16)', strokeWidth: 1, strokeDasharray: '4 4' }),
+          h('line', { x1: 42, y1: 56, x2: W - 42, y2: 56, stroke: hcC ? 'rgba(255,255,0,0.35)' : 'rgba(134,239,172,0.22)', strokeWidth: 1.1, strokeDasharray: '5 4', className: hcC ? undefined : 'stew-flow-dash' }),
           FAMILY_ORDER.map(function(famId, i) {
             var meta = FAMILY_COLORS[famId] || { primary: '#15803d', accent: '#86efac', label: famId };
             var cx = colW * i + colW / 2;
@@ -2385,6 +2429,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             var isPaired = pairedFamilies.indexOf(famId) >= 0;
             var isFocused = validFamilyFilter === famId;
             var shortFam = famId === 'conservation' ? 'Wildlife' : famId === 'watershed' ? 'Watershed' : famId === 'outbreak' ? 'Public Health' : famId === 'climate' ? 'Climate' : 'Fire';
+            var famDelay = (i * 0.45).toFixed(2) + 's';
             return h('g', { key: famId },
               // Subtle vertical family lane separator
               i > 0 && h('line', { x1: colW * i, y1: 12, x2: colW * i, y2: H - 12, stroke: hcC ? 'rgba(255,255,0,0.22)' : 'rgba(148,163,184,0.12)', strokeWidth: 0.8 }),
@@ -2400,18 +2445,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 var dPath = 'M ' + cx + ' 68 Q ' + ctrlX + ' 88 ' + tx + ' 103';
                 var arcStroke = hcC ? '#ffff00' : (bothDone ? '#c084fc' : (scDone || anchorDone ? meta.accent : '#334155'));
                 return h('g', { key: 'l' + si },
-                  !hcC && (bothDone || scDone || anchorDone) && h('path', { className: 'stew-svg-fx', d: dPath, fill: 'none', stroke: arcStroke, strokeWidth: 6, strokeOpacity: 0.18, strokeLinecap: 'round' }),
+                  !hcC && (bothDone || scDone || anchorDone) && h('path', { className: 'stew-svg-fx stew-aura-breathe', d: dPath, fill: 'none', stroke: arcStroke, strokeWidth: 6, strokeOpacity: 0.18, strokeLinecap: 'round', style: { animationDelay: famDelay } }),
                   h('path', {
                     d: dPath, fill: 'none',
                     stroke: arcStroke,
                     strokeWidth: bothDone ? 2.4 : 1.5,
-                    strokeDasharray: bothDone ? undefined : '3 3',
-                    strokeLinecap: 'round'
-                  })
+                    strokeDasharray: bothDone ? undefined : '4 3',
+                    strokeLinecap: 'round',
+                    className: (!hcC && !bothDone) ? 'stew-flow-dash' : undefined
+                  }),
+                  !hcC && bothDone && h('path', { className: 'stew-svg-fx stew-flow-dash', d: dPath, fill: 'none', stroke: '#f5d0fe', strokeWidth: 1.3, strokeDasharray: '4 8', strokeOpacity: 0.8, strokeLinecap: 'round' })
                 );
               }),
-              // Sculpted Maine Anchor node with completion halo
-              !hcC && (anchorDone || anchorActive) && h('circle', { className: 'stew-svg-fx', cx: cx, cy: 56, r: 20, fill: anchorDone ? '#4ade80' : '#fbbf24', opacity: 0.22 }),
+              // Sculpted Maine Anchor node with pulsing completion beacon halo
+              !hcC && (anchorDone || anchorActive) && h('circle', { className: 'stew-svg-fx stew-beacon-pulse', cx: cx, cy: 56, r: 20, fill: anchorDone ? '#4ade80' : '#fbbf24', opacity: 0.22, style: { animationDelay: famDelay } }),
               h('circle', {
                 cx: cx, cy: 56, r: 14.5,
                 fill: hcC ? '#000000' : (anchorDone ? '#14532d' : '#0f172a'),
@@ -2426,7 +2473,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 var scDone = scSnap.state.status === 'complete';
                 var scActive = scSnap.state.status === 'inProgress';
                 return h('g', { key: 's' + si },
-                  !hcC && (scDone || scActive) && h('circle', { className: 'stew-svg-fx', cx: tx, cy: 114, r: 16.5, fill: scDone ? '#c084fc' : '#fbbf24', opacity: 0.22 }),
+                  !hcC && (scDone || scActive) && h('circle', { className: 'stew-svg-fx stew-beacon-pulse', cx: tx, cy: 114, r: 16.5, fill: scDone ? '#c084fc' : '#fbbf24', opacity: 0.22, style: { animationDelay: ((i + si + 1) * 0.35).toFixed(2) + 's' } }),
                   h('circle', {
                     cx: tx, cy: 114, r: 12.2,
                     fill: hcC ? '#000000' : (scDone ? '#3b0764' : '#0f172a'),
@@ -2533,6 +2580,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                   h('linearGradient', { id: 'stew-iq-bar', x1: '0', y1: '0', x2: '1', y2: '0' },
                     h('stop', { offset: '0%', stopColor: sm.color, stopOpacity: 0.65 }),
                     h('stop', { offset: '100%', stopColor: sm.color, stopOpacity: 0.96 })
+                  ),
+                  h('linearGradient', { id: 'stew-iq-sheen', x1: '0', y1: '0', x2: '1', y2: '0' },
+                    h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
+                    h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.42 }),
+                    h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+                  ),
+                  fillW > 14 && h('clipPath', { id: 'stew-iq-fill-clip' },
+                    h('path', { d: 'M 30 30 H ' + tipX.toFixed(1) + ' V 90 H 30 Z' })
                   )
                 ),
                 // Recessed studio well backdrop (uses <path>, preserving rect:nth-of-type(1..3))
@@ -2541,6 +2596,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 h('rect', { x: 30, y: 30, width: 320, height: 60, rx: 8, fill: hcG ? '#000000' : '#0f172a', stroke: hcG ? '#ffff00' : '#334155', strokeWidth: 1.4 }),
                 // rect #2: luminous progress bar fill
                 h('rect', { x: 30, y: 30, width: fillW.toFixed(1), height: 60, rx: 8, fill: hcG ? '#ffff00' : 'url(#stew-iq-bar)', opacity: hcG ? 0.85 : 0.88 }),
+                // Clipped bar specular glint sweep (uses <path>, preserving rect:nth-of-type(1..3))
+                !hcG && fillW > 14 && h('g', { clipPath: 'url(#stew-iq-fill-clip)' },
+                  h('path', { className: 'stew-svg-fx stew-bar-sheen', d: 'M 30 30 H 92 L 74 90 H 12 Z', fill: 'url(#stew-iq-sheen)' })
+                ),
                 // Top specular glass highlight along active gauge fill
                 !hcG && fillW > 14 && h('path', { className: 'stew-svg-fx', d: 'M 36 33 H ' + (30 + fillW - 6).toFixed(1), fill: 'none', stroke: '#ffffff', strokeOpacity: 0.34, strokeWidth: 3, strokeLinecap: 'round' }),
                 // Precision threshold dividers + diamond markers (15%, 35%, 55%, 75%)
@@ -2551,8 +2610,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                     h('polygon', { points: tx.toFixed(1) + ',90 ' + (tx - 3).toFixed(1) + ',96 ' + (tx + 3).toFixed(1) + ',96', fill: hcG ? '#ffff00' : '#64748b' })
                   );
                 }),
-                // Luminous leading-edge indicator line + jewel beacon
-                !hcG && fillW > 2 && h('line', { className: 'stew-svg-fx', x1: tipX.toFixed(1), y1: 28, x2: tipX.toFixed(1), y2: 92, stroke: '#ffffff', strokeWidth: 2, strokeOpacity: 0.85, strokeLinecap: 'round' }),
+                // Luminous leading-edge indicator line + pulsing jewel impact-milestone beacon
+                !hcG && fillW > 2 && h('line', { className: 'stew-svg-fx stew-aura-breathe', x1: tipX.toFixed(1), y1: 28, x2: tipX.toFixed(1), y2: 92, stroke: '#ffffff', strokeWidth: 2, strokeOpacity: 0.85, strokeLinecap: 'round' }),
+                !hcG && fillW > 2 && h('circle', { className: 'stew-svg-fx stew-beacon-pulse', cx: tipX.toFixed(1), cy: 30, r: 7.5, fill: sm.color, opacity: 0.32 }),
                 !hcG && fillW > 2 && h('circle', { className: 'stew-svg-fx', cx: tipX.toFixed(1), cy: 30, r: 4, fill: '#ffffff', stroke: sm.color, strokeWidth: 1.5 }),
                 // rect #3: frosted center readout plaque
                 h('rect', { x: 118, y: 44, width: 144, height: 32, rx: 8, fill: hcG ? '#000000' : 'rgba(6,12,24,0.92)', stroke: hcG ? '#ffff00' : sm.color, strokeWidth: 1.3 }),
@@ -2736,7 +2796,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                 h('h3', { style: { margin: 0, color: '#c4b5fd', fontSize: 16, fontWeight: 800 } }, __alloT('stem.stewardship.cross_campaign_synthesis', 'Cross-Campaign Synthesis')),
                 h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, 'Patterns that show up across the campaigns you have completed (' + completedCount + ' / 5). These are the structural insights the five campaigns are designed to teach together.')
               ),
-              h('button', { 'data-stewardship-action': 'compare', onClick: startComparison, 'aria-label': __alloT('stem.stewardship.compare_two_campaigns_2', '🔀 Compare two campaigns'),
+              h('button', { type: 'button', 'data-stewardship-action': 'compare', onClick: startComparison, 'aria-label': __alloT('stem.stewardship.compare_two_campaigns_2', '🔀 Compare two campaigns'),
                 style: { background: 'rgba(168,85,247,0.18)', border: '1px solid #a855f7', borderRadius: 8, padding: '8px 14px', cursor: 'pointer', color: '#e9d5ff', fontSize: 12, fontWeight: 700 } }, __alloT('stem.stewardship.compare_two_campaigns_2', '🔀 Compare two campaigns'))
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr', gap: 10 } },
@@ -2842,7 +2902,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               ) : null,
 
               h('div', { style: { marginTop: 'auto', display: 'flex', gap: 6, flexWrap: 'wrap' } },
-                h('button', {
+                h('button', { type: 'button',
                   onClick: function() { launchCampaign(c); }, 'data-stewardship-primary-action': 'true',
                   'aria-label': campaignAction + ': ' + c.label, 'data-stewardship-action': 'campaign:' + c.id,
                   style: {
@@ -2852,7 +2912,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                     color: '#fff', fontWeight: 800, fontSize: 13
                   }
                 }, campaignAction),
-                s.status === 'complete' ? h('button', {
+                s.status === 'complete' ? h('button', { type: 'button',
                   'data-stewardship-action': 'report:' + c.id, onClick: function() { viewReport(c.id); },
                   'aria-label': __alloT('stem.stewardship.report', '🖨 Report') + ': ' + c.label,
                   title: __alloT('stem.stewardship.view_printable_campaign_report', 'View printable campaign report'),
@@ -2873,28 +2933,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         ),
 
         // WAI-ARIA tablist filter by mechanic family
-        h('div', {
-          className: 'stewardship-family-tabs',
-          role: 'tablist',
-          'aria-label': __alloT('stem.stewardship.filter_by_family', 'Filter cross-region scenarios by mechanic family')
-        },
-          [{ id: 'all', label: __alloT('stem.stewardship.family_all', 'All families') + ' (' + scenarioSnaps.length + ')' }].concat(
+        (function() {
+          var familyTabs = [{ id: 'all', label: __alloT('stem.stewardship.family_all', 'All families') + ' (' + scenarioSnaps.length + ')' }].concat(
             FAMILY_ORDER.map(function(famId) {
               var cnt = scenarioSnaps.filter(function(s) { return s.scenario.family === famId; }).length;
               return { id: famId, label: (FAMILY_COLORS[famId] ? FAMILY_COLORS[famId].label : famId) + ' (' + cnt + ')' };
             })
-          ).map(function(tab) {
-            var active = validFamilyFilter === tab.id;
-            return h('button', {
-              key: tab.id, type: 'button', role: 'tab', 'aria-selected': active,
-              className: 'stewardship-family-tab',
-              onClick: function() { setHub({ familyFilter: tab.id }); }
-            }, tab.label);
-          })
-        ),
+          );
+          return h('div', {
+            className: 'stewardship-family-tabs',
+            role: 'tablist',
+            'aria-label': __alloT('stem.stewardship.filter_by_family', 'Filter cross-region scenarios by mechanic family')
+          },
+            familyTabs.map(function(tab, tabIdx) {
+              var active = validFamilyFilter === tab.id;
+              return h('button', {
+                key: tab.id, type: 'button', role: 'tab',
+                id: 'stewardship-family-tab-' + tab.id,
+                'aria-controls': 'stewardship-family-panel',
+                'aria-selected': active ? 'true' : 'false',
+                tabIndex: active ? 0 : -1,
+                className: 'stewardship-family-tab',
+                onKeyDown: function(e) {
+                  if (e.ctrlKey || e.altKey || e.metaKey) return;
+                  var nextIdx = -1;
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (tabIdx + 1) % familyTabs.length;
+                  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (tabIdx + familyTabs.length - 1) % familyTabs.length;
+                  else if (e.key === 'Home') nextIdx = 0;
+                  else if (e.key === 'End') nextIdx = familyTabs.length - 1;
+                  if (nextIdx < 0) return;
+                  e.preventDefault();
+                  var nextTab = familyTabs[nextIdx];
+                  if (nextTab) setHub({ familyFilter: nextTab.id });
+                  var tabEls = e.currentTarget.parentNode && e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+                  if (tabEls && tabEls[nextIdx]) tabEls[nextIdx].focus();
+                },
+                onClick: function() { setHub({ familyFilter: tab.id }); }
+              }, tab.label);
+            })
+          );
+        })(),
 
         // Scenarios catalog grid
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 310px), 1fr))', gap: 12, marginBottom: 16 } },
+        h('div', { role: 'tabpanel', id: 'stewardship-family-panel', 'aria-labelledby': 'stewardship-family-tab-' + validFamilyFilter, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 310px), 1fr))', gap: 12, marginBottom: 16 } },
           scenarioSnaps.filter(function(snap) { return validFamilyFilter === 'all' || snap.scenario.family === validFamilyFilter; }).map(function(snap) {
             var sc = snap.scenario;
             var state = snap.state;
@@ -2930,7 +3011,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
               ) : null,
 
               h('div', { style: { marginTop: 'auto', display: 'flex', gap: 6, flexWrap: 'wrap' } },
-                h('button', {
+                h('button', { type: 'button',
                   'data-stewardship-action': 'scenario:' + sc.id, onClick: function() { openScenario(sc.id); }, 'data-stewardship-primary-action': 'true',
                   'aria-label': scenarioAction + ': ' + sc.label,
                   style: {
@@ -2940,7 +3021,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
                     color: '#fff', fontWeight: 800, fontSize: 13
                   }
                 }, scenarioAction),
-                state.status === 'complete' ? h('button', {
+                state.status === 'complete' ? h('button', { type: 'button',
                   'data-stewardship-action': 'replay:' + sc.id, onClick: function() { resetScenario(sc.id); openScenario(sc.id, true); },
                   'aria-label': __alloT('stem.stewardship.replay_scenario', 'Replay scenario') + ': ' + sc.label,
                   title: __alloT('stem.stewardship.reset_and_replay_this_scenario', 'Reset and replay this scenario'),

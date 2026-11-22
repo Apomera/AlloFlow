@@ -90,6 +90,7 @@ const amounts = (board, values) => values.map((value, index) => value + ' ' + bo
       expect(initial.offer.canLead).toBe(true); expect(initial.offer.leads.length).toBeGreaterThan(0);
       const lead = initial.offer.leads.find(candidate => ['river', 'rain'].includes(candidate.targetId)) || initial.offer.leads.find(candidate => base.locations.find(n => n.id === candidate.targetId).kind === 'choice') || initial.offer.leads[0];
       const target = base.locations.find(node => node.id === lead.targetId), otherLead = initial.offer.leads.find(candidate => candidate.targetId !== lead.targetId);
+      await page.locator('[data-field-approach="lead"]').click();
       await expect(page.locator('[data-field-lead-option]')).toHaveCount(initial.offer.leads.length);
       // The highlighted default is only a draft: even inspection never commits it.
       if (otherLead) {await page.locator('[data-field-lead-option="' + otherLead.targetId + '"]').check(); expect(await page.evaluate(() => snapshot())).toEqual(initial);}
@@ -104,7 +105,7 @@ const amounts = (board, values) => values.map((value, index) => value + ' ' + bo
       await page.locator('[data-field-panel]').screenshot({path: path.join(out, name + '-destination-choices.png')});
       await page.setViewportSize({width, height: 1000});
       if (focusOnly) {results.push({...scenario, focusInspectionShows3D: true, draftAndInspectionLeaveRunUnchanged: true, scans}); await context.close(); continue;}
-      await resume(); await page.locator('[data-field-lead-option="' + lead.targetId + '"]').check();
+      await resume(); await page.locator('[data-field-approach="lead"]').click(); await page.locator('[data-field-lead-option="' + lead.targetId + '"]').check();
       await page.locator('[data-field-lead-commit]').focus(); await page.keyboard.press('Enter');
       const chosen = await page.evaluate(() => snapshot());
       expect(chosen.run.steps.t1.result.fieldChoice).toBe('lead:' + lead.targetId); expect(chosen.progress.balance).toEqual(initial.progress.balance);
@@ -162,7 +163,7 @@ const amounts = (board, values) => values.map((value, index) => value + ' ' + bo
       }
       const ready = await page.evaluate(() => snapshot()), expected = ready.progress.balance.map((n, i) => n + target.reward[i] + ready.progress.bonus[i] + lead.reward[i]);
       await page.locator('[data-ready-move="' + lead.targetId + '"]').click(); await expect(page.locator('[data-forecast-lead]')).toBeVisible();
-      await expect(page.locator('[data-tabletop-forecast]')).toContainText(amounts(base, expected)); expect(await page.evaluate(() => snapshot())).toEqual(ready);
+      for (const [i, value] of expected.entries()) await expect(page.locator('[data-tabletop-forecast] [data-resource-after="' + i + '"]')).toHaveText(String(value)); expect(await page.evaluate(() => snapshot())).toEqual(ready);
       await page.locator('[data-planning-sandbox]>summary').click(); await page.locator('[data-sandbox-start]').click(); await page.locator('[data-sandbox-add="' + lead.targetId + '"]').click();
       await expect(page.locator('[data-sandbox-step="' + lead.targetId + '"]')).toContainText('Supplies after this move: ' + amounts(base, expected)); expect(await page.evaluate(() => snapshot())).toEqual(ready);
       await scan('destination forecast and sandbox agree without awarding future chance'); await page.locator('[data-sandbox-inspect]').click();

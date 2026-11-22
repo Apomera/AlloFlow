@@ -15,7 +15,7 @@ WORKDIR /app
 
 COPY runner/package.json runner/package-lock.json ./
 RUN apt-get update \
-    && apt-get install --no-install-recommends -y openjdk-17-jre-headless \
+    && apt-get install --no-install-recommends -y openjdk-17-jre-headless fonts-liberation fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/* \
     && npm ci --ignore-scripts --omit=dev --no-audit --no-fund \
     && npx playwright install --with-deps chromium \

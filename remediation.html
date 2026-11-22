@@ -297,18 +297,24 @@
                         <h3>Portable Agent Skill</h3>
                         <p>The ordinary direct-use package for compatible agent workspaces that accept a Skill folder or ZIP.</p>
                         <code class="checksum">SHA-256 a3af2c179c32f2b018f6c4003cf8ca93d4917671360922d6dc1f517e9e84d399</code>
-                        <a class="promo-button"
-                            href="https://github.com/Apomera/AlloFlow/releases/download/portable-v0.2.9/alloflow-portable-remediation-agent-skill-v0.2.9.zip">Download
-                            Skill ZIP</a>
+                        <div class="promo-actions" style="margin-top:8px">
+                            <a class="promo-button"
+                                href="https://github.com/Apomera/AlloFlow/releases/download/portable-v0.2.9/alloflow-portable-remediation-agent-skill-v0.2.9.zip">Download
+                                Skill ZIP</a>
+                            <button type="button" class="promo-button-secondary" data-copy-sha="a3af2c179c32f2b018f6c4003cf8ca93d4917671360922d6dc1f517e9e84d399" data-copy-label="Portable Agent Skill" aria-label="Copy SHA-256 checksum for Portable Agent Skill">Copy SHA-256</button>
+                        </div>
                     </article>
                     <article class="download-card">
                         <span class="status-chip status-ready">Publisher package</span>
                         <h3>OpenAI publisher package</h3>
                         <p>Use for the OpenAI publisher and submission workflow. For ordinary direct use in a compatible agent workspace, choose the neutral Skill ZIP.</p>
                         <code class="checksum">SHA-256 05c5c9fa7b7b5ef47ca52e1bc513e5f9eb3ba9b7205e47c408b6140a63b36fa4</code>
-                        <a class="promo-button"
-                            href="https://github.com/Apomera/AlloFlow/releases/download/portable-v0.2.9/alloflow-pdf-remediation-openai-plugin-v0.2.9.zip">Download
-                            OpenAI ZIP</a>
+                        <div class="promo-actions" style="margin-top:8px">
+                            <a class="promo-button"
+                                href="https://github.com/Apomera/AlloFlow/releases/download/portable-v0.2.9/alloflow-pdf-remediation-openai-plugin-v0.2.9.zip">Download
+                                OpenAI ZIP</a>
+                            <button type="button" class="promo-button-secondary" data-copy-sha="05c5c9fa7b7b5ef47ca52e1bc513e5f9eb3ba9b7205e47c408b6140a63b36fa4" data-copy-label="OpenAI publisher package" aria-label="Copy SHA-256 checksum for OpenAI publisher package">Copy SHA-256</button>
+                        </div>
                     </article>
                     <article class="download-card">
                         <span class="status-chip status-ready">Claude Code wrapper</span>
@@ -316,9 +322,12 @@
                         <p>Use the packaged wrapper intended for Claude Code. This is not the Claude Desktop MCPB
                             connector.</p>
                         <code class="checksum">SHA-256 c12cd24bf2a0b543836c6c82b93a5c2d67e3156f3282ebc693d2759388767ea8</code>
-                        <a class="promo-button"
-                            href="https://github.com/Apomera/AlloFlow/releases/download/portable-v0.2.9/alloflow-pdf-remediation-claude-code-plugin-v0.2.9.zip">Download
-                            Claude Code ZIP</a>
+                        <div class="promo-actions" style="margin-top:8px">
+                            <a class="promo-button"
+                                href="https://github.com/Apomera/AlloFlow/releases/download/portable-v0.2.9/alloflow-pdf-remediation-claude-code-plugin-v0.2.9.zip">Download
+                                Claude Code ZIP</a>
+                            <button type="button" class="promo-button-secondary" data-copy-sha="c12cd24bf2a0b543836c6c82b93a5c2d67e3156f3282ebc693d2759388767ea8" data-copy-label="Claude Code plugin package" aria-label="Copy SHA-256 checksum for Claude Code plugin package">Copy SHA-256</button>
+                        </div>
                     </article>
                     <article class="download-card">
                         <span class="status-chip status-ready">Claude Desktop connector</span>
@@ -333,6 +342,7 @@
                             MCPB v0.11.3</a>
                     </article>
                 </div>
+                <p id="checksumCopyStatus" role="status" aria-live="polite" style="margin-top:12px;font-size:0.9rem;font-weight:700;color:#0f766e;min-height:1.25em"></p>
                 <p style="margin-top:18px"><a href="https://github.com/Apomera/AlloFlow/releases/tag/portable-v0.2.9"
                         target="_blank" rel="noopener noreferrer">View release notes and manifest on GitHub</a></p>
 
@@ -406,9 +416,35 @@
     <script>
         if (window.lucide) lucide.createIcons();
         const backBtn = document.querySelector('.back-to-top');
-        window.addEventListener('scroll', function () {
-            backBtn.classList.toggle('visible', window.scrollY > 500);
-        }, { passive: true });
+        if (backBtn) {
+            window.addEventListener('scroll', function () {
+                backBtn.classList.toggle('visible', window.scrollY > 500);
+            }, { passive: true });
+        }
+        const shaStatus = document.getElementById('checksumCopyStatus');
+        document.querySelectorAll('[data-copy-sha]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var sha = btn.getAttribute('data-copy-sha') || '';
+                var label = btn.getAttribute('data-copy-label') || 'package';
+                var done = function (ok) {
+                    if (shaStatus) {
+                        shaStatus.textContent = ok
+                            ? ('Copied SHA-256 checksum for ' + label + '.')
+                            : ('SHA-256 for ' + label + ': ' + sha);
+                    }
+                    if (ok) {
+                        var orig = btn.textContent;
+                        btn.textContent = 'Copied SHA-256';
+                        setTimeout(function () { btn.textContent = orig; }, 2200);
+                    }
+                };
+                if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                    navigator.clipboard.writeText(sha).then(function () { done(true); }).catch(function () { done(false); });
+                } else {
+                    done(false);
+                }
+            });
+        });
     </script>
 </body>
 

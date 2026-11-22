@@ -13,9 +13,14 @@
   var OPENAI_MEDIA_EXECUTION_DEFAULT_ENABLED = false;
   var OPENAI_BASE_URL = 'https://api.openai.com/v1';
   var MODEL_RE = /^gpt-image-2(?:-\d{4}-\d{2}-\d{2})?$/;
-  var MIME_TO_FORMAT = { 'image/png': 'png', 'image/jpeg': 'jpeg', 'image/webp': 'webp' };
-  var FORMAT_TO_MIME = { png: 'image/png', jpeg: 'image/jpeg', webp: 'image/webp' };
-  var QUALITY_MAP = { draft: 'low', standard: 'medium', high: 'high' };
+  var MIME_TO_FORMAT = Object.freeze({ 'image/png': 'png', 'image/jpeg': 'jpeg', 'image/webp': 'webp' });
+  var FORMAT_TO_MIME = Object.freeze({ png: 'image/png', jpeg: 'image/jpeg', webp: 'image/webp' });
+  var QUALITY_MAP = Object.freeze({ draft: 'low', standard: 'medium', high: 'high' });
+  var MAX_BASE64_CHARS = 40 * 1024 * 1024;
+
+  function own(obj, key) {
+    return !!(obj && typeof key === 'string' && Object.prototype.hasOwnProperty.call(obj, key));
+  }
 
   function adapterError(code, message) {
     var err = new Error(message);
@@ -38,15 +43,22 @@
   }
 
   function defaultBase64ToBytes(base64) {
+    if (typeof base64 !== 'string') {
+      throw adapterError('openai-invalid-image', 'OpenAI returned malformed base64 image data.');
+    }
+    var cleaned = base64.replace(/\s+/g, '');
+    if (!cleaned || cleaned.length > MAX_BASE64_CHARS || cleaned.length % 4 !== 0 || !/^[A-Za-z0-9+/]+={0,2}$/.test(cleaned)) {
+      throw adapterError('openai-invalid-image', 'OpenAI returned malformed base64 image data.');
+    }
     if (typeof atob === 'function') {
       var binary;
-      try { binary = atob(base64); }
+      try { binary = atob(cleaned); }
       catch (_) { throw adapterError('openai-invalid-image', 'OpenAI returned malformed base64 image data.'); }
       var bytes = new Uint8Array(binary.length);
       for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
       return bytes;
     }
-    if (typeof Buffer !== 'undefined') return new Uint8Array(Buffer.from(base64, 'base64'));
+    if (typeof Buffer !== 'undefined') return new Uint8Array(Buffer.from(cleaned, 'base64'));
     throw adapterError('base64-decoder-unavailable', 'No base64 decoder is available in this runtime.');
   }
 
@@ -55,11 +67,11 @@
     var details = input.input_tokens_details && typeof input.input_tokens_details === 'object'
       ? input.input_tokens_details : {};
     return {
-      inputTokens: Number.isFinite(input.input_tokens) ? input.input_tokens : 0,
-      inputTextTokens: Number.isFinite(details.text_tokens) ? details.text_tokens : 0,
-      inputImageTokens: Number.isFinite(details.image_tokens) ? details.image_tokens : 0,
-      outputTokens: Number.isFinite(input.output_tokens) ? input.output_tokens : 0,
-      totalTokens: Number.isFinite(input.total_tokens) ? input.total_tokens : 0
+      inputTokens: Number.isFinite(input.input_tokens) && input.input_tokens >= 0 ? input.input_tokens : 0,
+      inputTextTokens: Number.isFinite(details.text_tokens) && details.text_tokens >= 0 ? details.text_tokens : 0,
+      inputImageTokens: Number.isFinite(details.image_tokens) && details.image_tokens >= 0 ? details.image_tokens : 0,
+      outputTokens: Number.isFinite(input.output_tokens) && input.output_tokens >= 0 ? input.output_tokens : 0,
+      totalTokens: Number.isFinite(input.total_tokens) && input.total_tokens >= 0 ? input.total_tokens : 0
     };
   }
 
@@ -112,9 +124,9 @@
         return { ready: false, code: 'reference-assets-require-edit', request: request, estimate: null, provider: null };
       }
       var size = selectOpenAIImageSize(request.output.width, request.output.height);
-      var quality = QUALITY_MAP[request.output.quality];
-      var outputFormat = MIME_TO_FORMAT[request.output.mimeType];
-      var inputImageCount = request.operation === 'edit' ? 1 + request.referenceAssets.length : 0;
+      var quality = own(QUALITY_MAP, request.output.quality) ? QUALITY_MAP[request.output.quality] : 'medium';
+      var outputFormat = own(MIME_TO_FORMAT, request.output.mimeType) ? MIME_TO_FORMAT[request.output.mimeType] : 'png';
+      var inputImageCount = request.operation === 'edit' ? 1 + (Array.isArray(request.referenceAssets) ? request.referenceAssets.length : 0) : 0;
       var estimate = estimateCost({
         provider: 'openai-api', model: model, operation: request.operation,
         size: size, quality: quality, outputFormat: outputFormat,
@@ -204,9 +216,24 @@
     }
 
     async function execute(requestInput) {
+      if (typeof window !== 'undefined' && (
+        window.__alloOfflineOnly === true ||
+        window.__alloQrStudentMode === true ||
+        window._alloQrBlocked === true ||
+        window.__alloStudentAiDisabled === true ||
+        window.__alloAiSecretsLocked === true
+      )) {
+        throw adapterError('execution-not-authorized', 'The runtime did not authorize this metered media operation.');
+      }
       var plan = buildPlan(requestInput);
       if (!plan.ready) throw adapterError(plan.code, 'OpenAI media preflight did not authorize execution.');
-      if (authorizeExecution({ request: plan.request, estimate: plan.estimate, provider: plan.provider }) !== true) {
+      var authorized = false;
+      try {
+        authorized = authorizeExecution({ request: plan.request, estimate: plan.estimate, provider: plan.provider }) === true;
+      } catch (_) {
+        authorized = false;
+      }
+      if (!authorized) {
         throw adapterError('execution-not-authorized', 'The runtime did not authorize this metered media operation.');
       }
       var response = plan.request.operation === 'edit' ? await callEdit(plan) : await callGeneration(plan);
@@ -224,7 +251,7 @@
         costErr.actualCostUsd = actualCostUsd;
         throw costErr;
       }
-      var mimeType = FORMAT_TO_MIME[plan.api.outputFormat];
+      var mimeType = own(FORMAT_TO_MIME, plan.api.outputFormat) ? FORMAT_TO_MIME[plan.api.outputFormat] : 'image/png';
       var altText = '';
       if (plan.request.accessibility.altTextRequired) {
         if (typeof createAltText !== 'function') throw adapterError('alt-text-provider-required', 'An approved alt-text provider is required.');
@@ -255,15 +282,15 @@
       };
     }
 
-    return { prepare: buildPlan, execute: execute, providerId: 'openai-api', model: model };
+    return Object.freeze({ prepare: buildPlan, execute: execute, providerId: 'openai-api', model: model });
   }
 
-  var API = {
+  var API = Object.freeze({
     OPENAI_MEDIA_EXECUTION_DEFAULT_ENABLED: OPENAI_MEDIA_EXECUTION_DEFAULT_ENABLED,
     OPENAI_BASE_URL: OPENAI_BASE_URL,
     createOpenAIMediaAdapter: createOpenAIMediaAdapter,
     selectOpenAIImageSize: selectOpenAIImageSize
-  };
+  });
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   if (typeof window !== 'undefined') {

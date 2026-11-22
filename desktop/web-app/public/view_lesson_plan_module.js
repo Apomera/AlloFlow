@@ -140,11 +140,11 @@ function _lessonPlanRollup(planData, rollup) {
     byKey: {},
     ...info
   };
-  const byKey = {};
+  const byKey = Object.create(null);
   Object.keys(r.byConcept).forEach(label => {
     const key = _lessonPlanCriterionKey(label),
       s = r.byConcept[label];
-    if (!key || !s || typeof s !== 'object') return;
+    if (!key || key === '__proto__' || key === 'constructor' || key === 'prototype' || !s || typeof s !== 'object') return;
     const bucket = byKey[key] || (byKey[key] = {
       met: 0,
       partial: 0,
@@ -185,13 +185,14 @@ function PlanningInputsSummary(props) {
   }, label('not_recorded', 'Input versions were not recorded for this saved guide.'));
   const history = Array.isArray(props.history) ? props.history : [];
   const comparison = isExpanded ? window.AlloModules?.UtilsPure?.getPlanningInputStatus?.(record, props.history) : null;
-  const statusLabel = status => label('comparison_' + status + '_item', {
+  const _statusLabels = {
     same: 'Recorded contribution matches',
     changed: 'Recorded contribution differs',
     missing: 'Resource missing',
     ambiguous: 'Resource ID is ambiguous',
     unavailable: 'Comparison unavailable'
-  }[status] || 'Comparison unavailable');
+  };
+  const statusLabel = status => label('comparison_' + status + '_item', status && Object.prototype.hasOwnProperty.call(_statusLabels, status) ? _statusLabels[status] : 'Comparison unavailable');
   const renderInput = (item, index, inventory = false) => {
     if (!item || typeof item !== 'object' || typeof item.title !== 'string') return null;
     const directInput = item.id === '__input__' || item.id == null && item.type === 'source-input' && item.kind === 'Source text excerpt';
@@ -290,7 +291,7 @@ function _lessonPlanAddedResources(plan, history) {
   const known = new Set(record.inventory.concat(record.summaries).map(item => item && item.id != null ? String(item.id) : '').filter(Boolean));
   const unit = _lessonPlanUnit(plan.unitId != null ? plan.unitId : plan.config.unitId);
   const items = Array.isArray(history) ? history.filter(Boolean) : [];
-  const counts = {};
+  const counts = Object.create(null);
   items.forEach(item => {
     if (item.id != null) counts[String(item.id)] = (counts[String(item.id)] || 0) + 1;
   });
@@ -353,6 +354,22 @@ function _lessonPlanAiDoor(t) {
   try {
     if (typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function') {
       return window.__alloAiSetupDoorway('text', t);
+    }
+    if (typeof window !== 'undefined') {
+      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) {
+        return {
+          disabled: true,
+          available: false,
+          title: typeof t === 'function' && t('ai.setup_required') || 'AI is currently unavailable'
+        };
+      }
+      if (typeof window.__alloAiUsable === 'function' && window.__alloAiUsable('text') === false) {
+        return {
+          disabled: true,
+          available: false,
+          title: typeof t === 'function' && t('ai.setup_required') || 'Set up AI to use this feature'
+        };
+      }
     }
   } catch (_) {}
   return {
@@ -417,7 +434,14 @@ function LessonPlanListEditor({
     add = React.useRef(null),
     focus = React.useRef(null);
   const [removed, setRemoved] = React.useState(null);
-  const signature = JSON.stringify(list);
+  const safeStringify = v => {
+    try {
+      return JSON.stringify(v);
+    } catch (_) {
+      return String(v);
+    }
+  };
+  const signature = safeStringify(list);
   React.useEffect(() => {
     if (removed && removed.after !== signature) setRemoved(null);
   }, [signature, removed]);
@@ -426,7 +450,7 @@ function LessonPlanListEditor({
     focus.current = removed.index;
     onChange(field, previous => {
       const next = Array.isArray(previous) ? previous.slice() : previous == null ? [] : [previous];
-      if (JSON.stringify(next) !== removed.after) return previous;
+      if (safeStringify(next) !== removed.after) return previous;
       next.splice(removed.index, 0, removed.item);
       return next;
     });
@@ -439,17 +463,17 @@ function LessonPlanListEditor({
     }
   }, [value]);
   const action = (index, kind) => {
-    const expected = JSON.stringify(list[index]);
+    const expected = safeStringify(list[index]);
     focus.current = kind === 'add' ? list.length : kind === 'up' ? index - 1 : kind === 'down' ? index + 1 : Math.min(index, list.length - 2);
     if (kind === 'remove') setRemoved({
       item: list[index],
       index,
-      after: JSON.stringify(list.filter((_, itemIndex) => itemIndex !== index))
+      after: safeStringify(list.filter((_, itemIndex) => itemIndex !== index))
     });else setRemoved(null);
     onChange(field, previous => {
       const next = Array.isArray(previous) ? previous.slice() : previous == null ? [] : [previous];
       if (kind === 'add') return next.concat('');
-      if (JSON.stringify(next[index]) !== expected) return previous;
+      if (safeStringify(next[index]) !== expected) return previous;
       if (kind === 'remove') next.splice(index, 1);else {
         const target = index + (kind === 'up' ? -1 : 1);
         if (target < 0 || target >= next.length) return previous;
@@ -545,7 +569,7 @@ function _lessonPlanSummaryHtml(plan, {
     '"': '&quot;',
     "'": '&#39;'
   })[c]);
-  const data = plan.data || {};
+  const data = plan && plan.data && typeof plan.data === 'object' ? plan.data : {};
   const list = value => Array.isArray(value) ? value : value == null ? [] : [value];
   const items = (values, map) => values.map(map || _lessonPlanPlain).map(text => String(text || '').trim()).filter(Boolean);
   const {
@@ -687,7 +711,8 @@ function LessonPlanOverview({
 }) {
   const tr = (key, fallback) => t('lesson_plan.' + key) || fallback;
   const list = value => (Array.isArray(value) ? value : value == null ? [] : [value]).map(_lessonPlanText).filter(text => text.trim());
-  const data = plan.data || {};
+  const data = plan && plan.data && typeof plan.data === 'object' ? plan.data : {};
+  const safeNormMat = typeof normalizeMaterialItem === 'function' ? normalizeMaterialItem : v => v;
   const {
     latestWhole,
     timed
@@ -695,7 +720,7 @@ function LessonPlanOverview({
   const planned = timed ? [] : _lessonPlanPlannedTiming(data);
   const criteria = Array.isArray(data.successCriteria) ? data.successCriteria : data.successCriteria == null ? [] : [data.successCriteria];
   const assessment = list(data.assessmentIdeas).concat(criteria.map(_lessonPlanCriterionText).filter(text => text.trim()));
-  const sections = [[tr('overview_objectives', 'Objectives'), list(data.objectives)], [tr('overview_materials', 'Materials'), list(data.materialsNeeded).map(normalizeMaterialItem)], [tr('overview_assessment', 'Assessment and success criteria'), assessment]];
+  const sections = [[tr('overview_objectives', 'Objectives'), list(data.objectives)], [tr('overview_materials', 'Materials'), list(data.materialsNeeded).map(safeNormMat)], [tr('overview_assessment', 'Assessment and success criteria'), assessment]];
   return /*#__PURE__*/React.createElement("details", {
     className: "mb-4 rounded-xl border border-indigo-200 bg-white text-slate-900",
     "data-lesson-overview": true
@@ -742,7 +767,10 @@ function LessonPlanOverview({
   }, latestWhole ? tr('overview_invalid_timing', 'The latest whole-lesson script has incomplete or inconsistent timing. Review its step times before teaching.') : tr('overview_no_timing', 'No whole-lesson script timing is recorded. Segment scripts cover only part of the lesson.')))));
 }
 function LessonPlanView(props) {
-  if (typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function') window.__alloUseBionic();
+  var _bionicHookRef = React.useRef(typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function' ? window.__alloUseBionic : function () {
+    return false;
+  });
+  _bionicHookRef.current();
   var t = key => {
     const value = typeof props.t === 'function' ? props.t(key) : '';
     return typeof value === 'string' && value !== key ? value : '';
@@ -798,9 +826,9 @@ function LessonPlanView(props) {
         } catch (_) {
           finished = false;
         }
-        if (!finished) return;
+        if (!finished || !lessonPlanMountedRef.current) return;
       }
-      handleToggleIsEditingLessonPlan();
+      if (typeof handleToggleIsEditingLessonPlan === 'function') handleToggleIsEditingLessonPlan();
     } finally {
       editingToggleLockRef.current = false;
     }
@@ -810,6 +838,7 @@ function LessonPlanView(props) {
     props.handleLessonPlanChange(field, typeof value === 'string' ? previous => _lessonPlanEditedText(previous, value) : value, index);
   };
   var handleGenerateExtensionGuide = props.handleGenerateExtensionGuide;
+  var printFramesRef = React.useRef([]);
   // Print window first (Canvas ignores window.print on the app frame); hidden iframe if pop-ups are blocked.
   var printLessonSummary = () => {
     const rawHtml = _lessonPlanSummaryHtml(generatedContent, {
@@ -819,33 +848,54 @@ function LessonPlanView(props) {
       gradeLevel
     });
     const html = typeof window !== 'undefined' && typeof window.__alloIsBionicOn === 'function' && window.__alloIsBionicOn() && typeof window.__alloBionicHtml === 'function' ? window.__alloBionicHtml(rawHtml) : rawHtml;
-    const popup = window.open('', '_blank');
+    let popup = null;
+    try {
+      popup = window.open('', '_blank');
+    } catch (_) {
+      popup = null;
+    }
     if (popup) {
       try {
-        popup.opener = null;
+        try {
+          popup.opener = null;
+        } catch (_) {}
+        popup.document.write(html);
+        popup.document.close();
+        try {
+          popup.focus();
+        } catch (_) {}
+        try {
+          popup.print();
+        } catch (_) {}
+        return;
       } catch (_) {}
-      popup.document.write(html);
-      popup.document.close();
-      try {
-        popup.focus();
-      } catch (_) {}
-      try {
-        popup.print();
-      } catch (_) {}
-      return;
     }
     const frame = document.createElement('iframe');
     frame.setAttribute('aria-hidden', 'true');
     frame.style.cssText = 'position:fixed;width:0;height:0;border:0;';
     document.body.appendChild(frame);
-    frame.contentDocument.open();
-    frame.contentDocument.write(html);
-    frame.contentDocument.close();
     try {
-      frame.contentWindow.focus();
-      frame.contentWindow.print();
+      if (frame.contentDocument) {
+        frame.contentDocument.open();
+        frame.contentDocument.write(html);
+        frame.contentDocument.close();
+      }
+      if (frame.contentWindow) {
+        frame.contentWindow.focus();
+        frame.contentWindow.print();
+      }
     } catch (_) {}
-    setTimeout(() => frame.remove(), 60000);
+    const entry = {
+      frame,
+      timer: null
+    };
+    entry.timer = setTimeout(() => {
+      try {
+        frame.remove();
+      } catch (_) {}
+      printFramesRef.current = printFramesRef.current.filter(e => e !== entry);
+    }, 60000);
+    printFramesRef.current.push(entry);
   };
   var handleExport = props.handleExport;
   var handleGenerateProgression = props.handleGenerateProgression;
@@ -963,6 +1013,13 @@ function LessonPlanView(props) {
     return () => {
       lessonPlanMountedRef.current = false;
       stopLessonPlanSpeech();
+      printFramesRef.current.forEach(entry => {
+        if (entry.timer) clearTimeout(entry.timer);
+        try {
+          entry.frame.remove();
+        } catch (_) {}
+      });
+      printFramesRef.current = [];
     };
   }, [generatedContent?.id, stopLessonPlanSpeech]);
   var handleListenLessonPlan = () => {
@@ -994,16 +1051,20 @@ function LessonPlanView(props) {
         if (lessonPlanMountedRef.current && lessonPlanSpeechTokenRef.current === token) setIsSpeakingGuide(false);
       });
     } else if (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
-      window.speechSynthesis.cancel();
-      const u = new window.SpeechSynthesisUtterance(speechText);
-      u.onend = () => {
-        if (lessonPlanMountedRef.current && lessonPlanSpeechTokenRef.current === token) setIsSpeakingGuide(false);
-      };
-      u.onerror = () => {
-        if (lessonPlanMountedRef.current && lessonPlanSpeechTokenRef.current === token) setIsSpeakingGuide(false);
-      };
-      setIsSpeakingGuide(true);
-      window.speechSynthesis.speak(u);
+      try {
+        window.speechSynthesis.cancel();
+        const u = new window.SpeechSynthesisUtterance(speechText);
+        u.onend = () => {
+          if (lessonPlanMountedRef.current && lessonPlanSpeechTokenRef.current === token) setIsSpeakingGuide(false);
+        };
+        u.onerror = () => {
+          if (lessonPlanMountedRef.current && lessonPlanSpeechTokenRef.current === token) setIsSpeakingGuide(false);
+        };
+        setIsSpeakingGuide(true);
+        window.speechSynthesis.speak(u);
+      } catch (_) {
+        if (lessonPlanMountedRef.current) setIsSpeakingGuide(false);
+      }
     }
   };
   return /*#__PURE__*/React.createElement("div", {
@@ -1028,7 +1089,9 @@ function LessonPlanView(props) {
   }, headerTitle), generatedContent?.data?.unitPath && generatedContent.data.unitPath.nodeId && /*#__PURE__*/React.createElement("div", {
     className: "mb-1 inline-flex flex-wrap items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-800",
     "data-unit-path-node": generatedContent.data.unitPath.nodeId
-  }, /*#__PURE__*/React.createElement("span", null, "🗺️ ", t('lesson_plan.unit_path_label') || 'Unit Path'), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🗺️"), " ", t('lesson_plan.unit_path_label') || 'Unit Path'), /*#__PURE__*/React.createElement("span", {
     className: "font-normal"
   }, [generatedContent.data.unitPath.title, generatedContent.data.unitPath.index && generatedContent.data.unitPath.count ? `node ${generatedContent.data.unitPath.index} of ${generatedContent.data.unitPath.count}` : '', generatedContent.data.unitPath.label].filter(Boolean).join(' · '))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-x-3 gap-y-1 break-words text-sm font-bold text-indigo-700"
@@ -1256,7 +1319,10 @@ function LessonPlanView(props) {
       status: 'none',
       byKey: {}
     } : _lessonPlanRollup(generatedContent.data, typeof window !== 'undefined' ? window.__alloCriterionRollup : null);
-    const stat = id => rollup.byKey[_lessonPlanCriterionKey(id)] || null;
+    const stat = id => {
+      const k = _lessonPlanCriterionKey(id);
+      return k && rollup.byKey && Object.prototype.hasOwnProperty.call(rollup.byKey, k) ? rollup.byKey[k] : null;
+    };
     const sourceName = rollup.quizTitle || (rollup.quizMode === 'exit-ticket' ? tl('lesson_plan.criteria_source_exit_ticket', 'the exit ticket') : tl('lesson_plan.criteria_source_live_quiz', 'the live quiz'));
     const promptSource = rollup.quizTitle ? '"' + rollup.quizTitle + '"' : rollup.quizMode === 'exit-ticket' ? 'the exit ticket' : 'the live quiz';
     const footer = !criteria.some(item => typeof item?.id === 'string' && item.id || typeof item?.id === 'number') ? tl('lesson_plan.criteria_no_links', 'These saved criteria have no quiz links. Review them alongside student work.') : rollup.status === 'match' ? tl('lesson_plan.criteria_results_from', 'Class results from {quiz}, {session}.').replace('{quiz}', sourceName).replace('{session}', rollup.sessionCode ? tl('lesson_plan.criteria_session_code', 'live session {code}').replace('{code}', rollup.sessionCode) : rollup.sessionLabel || tl('lesson_plan.criteria_live_session', 'the live session')) : rollup.status === 'pre-check' ? tl('lesson_plan.criteria_precheck_ignored', 'The latest live results come from a pre-check, which runs before teaching, so they are not shown as criteria met.') : rollup.status === 'other-quiz' ? tl('lesson_plan.criteria_other_quiz', 'The latest live results come from {quiz}, not the quiz these criteria were built from, so they are not shown here.').replace('{quiz}', sourceName) : tl('lesson_plan.criteria_hint', 'Run the exit ticket in a live session and the share of students meeting each criterion appears here.');
@@ -1299,6 +1365,8 @@ function LessonPlanView(props) {
         "data-criterion-mastery": c.id
       }, tl('lesson_plan.criteria_met', '{pct}% met ({met}/{total})').replace('{pct}', pct).replace('{met}', s.met).replace('{total}', s.total)), pct !== null && pct < 80 && !audienceView && typeof handleActivateNextLesson === 'function' && /*#__PURE__*/React.createElement("button", {
         type: "button",
+        disabled: lessonPlanAiOff,
+        title: lessonPlanAiTitle,
         onClick: () => handleActivateNextLesson({
           nextTopic: statement,
           focus: `Reteach so students can meet this success criterion: ${statement}. Only ${pct}% of the class met it on ${promptSource} (concept label: ${c.id}).`,
@@ -1307,7 +1375,7 @@ function LessonPlanView(props) {
         }, {
           synthetic: true
         }),
-        className: "text-xs font-bold px-2 py-0.5 rounded-full bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+        className: "min-h-11 text-xs font-bold px-3 py-1 rounded-full bg-white border border-indigo-300 text-indigo-700 hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
       }, t('lesson_plan.reteach') || 'Reteach'));
     })), !audienceView && /*#__PURE__*/React.createElement("p", {
       className: "mt-2 text-xs text-slate-600",
@@ -1475,7 +1543,7 @@ function LessonPlanView(props) {
     onClick: () => handleGenerateExtensionGuide(idx),
     disabled: isGeneratingExtensionGuide[idx] || lessonPlanAiOff,
     title: lessonPlanAiTitle,
-    className: "flex items-center gap-2 text-xs font-bold text-indigo-600 hover:bg-indigo-100 px-3 py-2 rounded-lg transition-colors border border-indigo-200 bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+    className: "min-h-11 flex items-center gap-2 text-xs font-bold text-indigo-600 hover:bg-indigo-100 px-3 py-2 rounded-lg transition-colors border border-indigo-200 bg-white disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
   }, isGeneratingExtensionGuide[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
     className: "animate-spin motion-reduce:animate-none"
@@ -1568,7 +1636,7 @@ function LessonPlanView(props) {
       setActiveStation && setActiveStation(station);
       addToast && addToast(t('lesson_plan.stem_station_created'));
     },
-    className: "flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all"
+    className: "min-h-11 flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "📌"), " ", tl('lesson_plan.stem_create_station', 'Create Station'))), /*#__PURE__*/React.createElement("div", {
@@ -1581,7 +1649,8 @@ function LessonPlanView(props) {
       key: tool.id || idx,
       className: "flex flex-wrap items-start gap-3 bg-white/80 rounded-xl p-3 border border-emerald-100"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-2xl mt-0.5"
+      className: "text-2xl mt-0.5",
+      "aria-hidden": "true"
     }, meta ? '🧪' : '🔧'), /*#__PURE__*/React.createElement("div", {
       className: "flex-1 min-w-0"
     }, /*#__PURE__*/React.createElement("p", {
@@ -1589,8 +1658,10 @@ function LessonPlanView(props) {
     }, meta ? meta.name : tool.id), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-emerald-700 mt-0.5"
     }, tool.rationale), tool.suggestedActivity && /*#__PURE__*/React.createElement("p", {
-      className: "text-xs text-teal-600 mt-1 italic"
-    }, "💡 ", tool.suggestedActivity)), /*#__PURE__*/React.createElement("button", {
+      className: "text-xs text-teal-800 mt-1 italic"
+    }, /*#__PURE__*/React.createElement("span", {
+      "aria-hidden": "true"
+    }, "💡"), " ", tool.suggestedActivity)), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": openLabel + ': ' + (meta ? meta.name : tool.id),
       onClick: () => {
@@ -1603,7 +1674,7 @@ function LessonPlanView(props) {
         setShowStemLab && setShowStemLab(true);
         setStemLabTab && setStemLabTab('explore');
       },
-      className: "text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-all whitespace-nowrap"
+      className: "min-h-11 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
     }, openLabel, " ", /*#__PURE__*/React.createElement("span", {
       "aria-hidden": "true"
     }, "→")));
@@ -1647,13 +1718,13 @@ function LessonPlanView(props) {
     type: "button",
     "aria-label": t('common.close'),
     onClick: handleSetProgressionDataToNull,
-    className: "text-slate-600 hover:text-indigo-600 p-1 rounded-full transition-colors",
+    className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-indigo-600 p-1 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
     title: t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 20
   }))), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 md:grid-cols-3 gap-4"
-  }, (Array.isArray(progressionData) ? progressionData : [progressionData]).map((option, idx) => /*#__PURE__*/React.createElement("div", {
+  }, (Array.isArray(progressionData) ? progressionData : [progressionData]).filter(option => option && typeof option === 'object').map((option, idx) => /*#__PURE__*/React.createElement("div", {
     key: idx,
     className: "bg-white border-2 border-indigo-100 rounded-xl p-4 shadow-sm hover:border-indigo-400 hover:shadow-md transition-all flex flex-col h-full"
   }, /*#__PURE__*/React.createElement("div", {

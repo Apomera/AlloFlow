@@ -292,10 +292,11 @@ function StorybookPicker(props) {
     // Predictable browse order: easiest reading level first, then A-Z.
     return Number(a.level || 99) - Number(b.level || 99) || String(a.title).localeCompare(String(b.title));
   });
+  var hasCatalogFilter = Boolean(lang || level || q);
   return e('div', null, e('div', {
     className: 'flex flex-wrap gap-2 mb-2'
   }, e('select', {
-    className: 'p-2 border-2 border-slate-200 rounded-xl text-sm text-slate-700 bg-white',
+    className: 'min-h-11 p-2 border-2 border-slate-200 rounded-xl text-sm text-slate-700 bg-white',
     value: level,
     onChange: function (ev) {
       setLevel(ev.target.value);
@@ -309,7 +310,7 @@ function StorybookPicker(props) {
       value: lv
     }, STORYBOOK_LEVELS[lv] || 'Level ' + lv);
   })), e('select', {
-    className: 'p-2 border-2 border-slate-200 rounded-xl text-sm text-slate-700 bg-white',
+    className: 'min-h-11 p-2 border-2 border-slate-200 rounded-xl text-sm text-slate-700 bg-white',
     value: lang,
     onChange: function (ev) {
       setLang(ev.target.value);
@@ -324,18 +325,39 @@ function StorybookPicker(props) {
     }, l.name + ' (' + l.count + ')');
   })), e('input', {
     dir: 'auto',
-    className: 'flex-grow min-w-0 p-2 border-2 border-slate-200 rounded-xl text-sm',
+    className: 'min-h-11 flex-grow min-w-0 p-2 border-2 border-slate-200 rounded-xl text-sm',
     placeholder: wt('wizard.storybook_search', 'Search titles, sources, subjects...'),
     value: q,
     onChange: function (ev) {
       setQ(ev.target.value);
     },
+    onKeyDown: function (ev) {
+      if (_qsIsImeComposing(ev)) return;
+      if (ev.key === 'Escape' && q) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (ev.nativeEvent && typeof ev.nativeEvent.preventDefault === 'function') ev.nativeEvent.preventDefault();
+        setQ('');
+      }
+    },
     'aria-label': wt('wizard.storybook_search', 'Search titles, sources, subjects...')
   })), level && level === storybookGradeToLevel(props.grade) ? e('p', {
     className: 'text-xs text-amber-700 mb-2'
-  }, wt('wizard.storybook_grade_note', 'Showing resources matched to your grade - choose All levels to see everything.')) : null, e('p', {
-    className: 'text-xs font-semibold text-slate-600 mb-1'
-  }, matches.length + ' ' + (matches.length === 1 ? wt('wizard.storybook_one', 'resource') : wt('wizard.storybook_many', 'resources'))), matches.length === 0 ? e('p', {
+  }, wt('wizard.storybook_grade_note', 'Showing resources matched to your grade - choose All levels to see everything.')) : null, e('div', {
+    className: 'flex flex-wrap items-center justify-between gap-2 mb-1'
+  }, e('p', {
+    className: 'text-xs font-semibold text-slate-600',
+    role: 'status'
+  }, matches.length + ' ' + (matches.length === 1 ? wt('wizard.storybook_one', 'resource') : wt('wizard.storybook_many', 'resources'))), hasCatalogFilter ? e('button', {
+    type: 'button',
+    'data-storybook-reset-filters': '',
+    onClick: function () {
+      setLevel('');
+      setLang('');
+      setQ('');
+    },
+    className: 'min-h-11 px-3 rounded-lg text-xs font-bold text-amber-800 hover:bg-amber-50 border border-amber-300 bg-white'
+  }, wt('wizard.storybook_reset_filters', 'Reset filters')) : null), matches.length === 0 ? e('p', {
     className: 'text-sm text-slate-600 italic'
   }, wt('wizard.storybook_none', 'No resources match - try different filters.')) : null, e('div', {
     className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[46vh] overflow-y-auto pr-1'
@@ -2390,6 +2412,7 @@ const QuickStartWizard = React.memo(({
     size: 18
   })))), localData.sourceMode === 'paste' && (() => {
     const words = (localData.pastedText.trim().match(/\S+/g) || []).length;
+    const readMins = words > 0 ? Math.max(1, Math.round(words / 180)) : 0;
     return /*#__PURE__*/React.createElement("div", {
       "data-wizard-paste": true,
       className: "space-y-3"
@@ -2412,11 +2435,26 @@ const QuickStartWizard = React.memo(({
       })),
       placeholder: pick(t('wizard.paste_placeholder'), 'Paste or type your text here…'),
       className: "w-full p-3 border-2 border-slate-200 rounded-xl focus:border-sky-600 focus:ring-4 focus:ring-sky-600/30 transition-all motion-reduce:transition-none bg-white text-slate-900 resize-y"
-    }), /*#__PURE__*/React.createElement("p", {
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap items-center justify-between gap-2"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap items-center gap-2"
+    }, /*#__PURE__*/React.createElement("p", {
       id: "wizard-paste-count",
       className: "text-xs text-slate-600",
       "aria-live": "polite"
-    }, pick(t('wizard.paste_word_count'), '{count} words').replace('{count}', String(words))), /*#__PURE__*/React.createElement("button", {
+    }, pick(t('wizard.paste_word_count'), '{count} words').replace('{count}', String(words))), readMins > 0 && /*#__PURE__*/React.createElement("span", {
+      "data-wizard-paste-readtime": "",
+      className: "rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-semibold text-sky-800"
+    }, "~", readMins, " min read")), localData.pastedText && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-wizard-paste-clear": "",
+      onClick: () => setLocalData(prev => ({
+        ...prev,
+        pastedText: ''
+      })),
+      className: "min-h-11 rounded-lg px-3 text-xs font-bold text-slate-700 hover:bg-slate-100 border border-slate-300 bg-white transition-colors motion-reduce:transition-none"
+    }, wt('wizard.clear_text', 'Clear text'))), /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": t('common.next'),
       "data-help-key": "wizard_paste_next",
@@ -2449,205 +2487,229 @@ const QuickStartWizard = React.memo(({
     size: 20
   }), " ", t('wizard.select_file')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-4"
-  }, t('wizard.file_process_msg')))), step === 4 && /*#__PURE__*/React.createElement("div", {
-    className: "space-y-6 animate-in motion-reduce:animate-none slide-in-from-right-4 duration-300"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
-    className: "block text-lg font-bold text-slate-700 mb-2"
-  }, t('wizard.adaptation')), /*#__PURE__*/React.createElement("p", {
-    className: "text-slate-600 mb-6"
-  }, t('wizard.adaptation_desc')), /*#__PURE__*/React.createElement("div", {
-    className: "space-y-4"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
-    htmlFor: "quickstart-output-format",
-    className: "block text-sm font-bold text-slate-600 mb-2"
-  }, t('wizard.output_format')), /*#__PURE__*/React.createElement("select", {
-    id: "quickstart-output-format",
-    dir: "auto",
-    value: localData.format,
-    "data-help-key": "wizard_format_select",
-    onChange: e => setLocalData({
-      ...localData,
-      format: e.target.value
-    }),
-    className: "w-full p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white"
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "Standard Text"
-  }, t('simplified.formats.standard')), /*#__PURE__*/React.createElement("option", {
-    value: "Dialogue Script"
-  }, t('simplified.formats.dialogue')), /*#__PURE__*/React.createElement("option", {
-    value: "Mock Advertisement"
-  }, t('simplified.formats.advertisement')), /*#__PURE__*/React.createElement("option", {
-    value: "News Report"
-  }, t('simplified.formats.news')), /*#__PURE__*/React.createElement("option", {
-    value: "Podcast Script"
-  }, t('simplified.formats.podcast')), /*#__PURE__*/React.createElement("option", {
-    value: "Social Media Thread"
-  }, t('simplified.formats.social')), /*#__PURE__*/React.createElement("option", {
-    value: "Poetry"
-  }, t('simplified.formats.poetry')), /*#__PURE__*/React.createElement("option", {
-    value: "Narrative Story"
-  }, t('simplified.formats.narrative_story')))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
-    className: "block text-sm font-bold text-slate-600 mb-1"
-  }, t('wizard.output_languages_label')), /*#__PURE__*/React.createElement("div", {
-    className: "mb-2 flex flex-col gap-2 sm:flex-row"
-  }, /*#__PURE__*/React.createElement("input", {
-    dir: "auto",
-    "aria-label": t('common.enter_wiz_lang_input'),
-    type: "text",
-    value: wizLangInput,
-    onChange: e => setWizLangInput(e.target.value),
-    onKeyDown: e => {
-      if (e.key === 'Enter' && !_qsIsImeComposing(e)) addWizLanguage();
-    },
-    "data-help-key": "wizard_lang_input",
-    placeholder: t('wizard.language_placeholder'),
-    className: "min-w-0 w-full flex-grow p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white",
-    disabled: localData.languages.length >= 4
-  }), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('common.add'),
-    "data-help-key": "wizard_lang_add_btn",
-    onClick: addWizLanguage,
-    disabled: !wizLangInput.trim() || localData.languages.length >= 4,
-    className: "min-h-11 min-w-11 self-end bg-indigo-100 text-indigo-700 p-3 rounded-xl hover:bg-indigo-200 disabled:opacity-50 transition-colors motion-reduce:transition-none sm:self-auto"
-  }, /*#__PURE__*/React.createElement(Plus, {
-    size: 20
-  }))), /*#__PURE__*/React.createElement("select", {
-    dir: "auto",
-    "aria-label": wt('wizard.common_language_select', 'Add a common language'),
-    "data-help-key": "wizard_lang_common_select",
-    onChange: e => {
-      addCommonLanguage(e.target.value);
-      e.target.value = "";
-    },
-    className: "w-full text-xs border border-slate-400 rounded-lg p-2 bg-slate-50 text-slate-600 mb-3 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 cursor-pointer",
-    disabled: localData.languages.length >= 4
-  }, /*#__PURE__*/React.createElement("option", {
-    "data-help-key": "wizard_lang_common_select",
-    value: ""
-  }, t('wizard.quick_add_language')), /*#__PURE__*/React.createElement("option", {
-    value: "Spanish"
-  }, t('languages_list.Spanish')), /*#__PURE__*/React.createElement("option", {
-    value: "French"
-  }, t('languages_list.French')), /*#__PURE__*/React.createElement("option", {
-    value: "German"
-  }, t('languages_list.German')), /*#__PURE__*/React.createElement("option", {
-    value: "Portuguese"
-  }, t('languages_list.Portuguese')), /*#__PURE__*/React.createElement("option", {
-    value: "Mandarin"
-  }, t('languages_list.Mandarin')), /*#__PURE__*/React.createElement("option", {
-    value: "Arabic"
-  }, t('languages_list.Arabic')), /*#__PURE__*/React.createElement("option", {
-    value: "Vietnamese"
-  }, t('languages_list.Vietnamese')), /*#__PURE__*/React.createElement("option", {
-    value: "Russian"
-  }, t('languages_list.Russian')), /*#__PURE__*/React.createElement("option", {
-    value: "Japanese"
-  }, t('languages_list.Japanese'))), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap gap-2 min-h-[40px] bg-slate-50 p-2 rounded-xl border border-slate-100"
-  }, localData.languages.map(lang => /*#__PURE__*/React.createElement("span", {
-    key: lang,
-    className: "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none zoom-in"
-  }, lang, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": `${t('common.remove')} ${lang}`,
-    "data-help-key": "wizard_lang_remove_btn",
-    onClick: () => removeWizLanguage(lang),
-    className: "hover:text-indigo-900 ms-1 min-w-6 min-h-6 inline-flex items-center justify-center"
-  }, /*#__PURE__*/React.createElement(X, {
-    size: 12
-  })))), localData.languages.length === 0 && /*#__PURE__*/React.createElement("span", {
-    className: "text-xs text-slate-600 italic self-center w-full text-center"
-  }, t('wizard.no_langs_selected')))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
-    className: "block text-sm font-bold text-slate-600 mb-1"
-  }, t('wizard.interests_label_optional').replace(' (Optional)', ''), /*#__PURE__*/React.createElement("span", {
-    className: "text-slate-600 font-normal"
-  }, " (Optional)")), /*#__PURE__*/React.createElement("div", {
-    className: "mb-2 flex flex-col gap-2 sm:flex-row"
-  }, /*#__PURE__*/React.createElement("input", {
-    dir: "auto",
-    "aria-label": t('common.enter_wiz_interest_input'),
-    type: "text",
-    value: wizInterestInput,
-    onChange: e => setWizInterestInput(e.target.value),
-    onKeyDown: e => {
-      if (e.key === 'Enter' && !_qsIsImeComposing(e)) addWizInterest();
-    },
-    "data-help-key": "wizard_interest_input",
-    placeholder: t('wizard.interest_placeholder'),
-    className: "min-w-0 w-full flex-grow p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500",
-    disabled: localData.interests.length >= 5
-  }), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('common.add'),
-    "data-help-key": "wizard_interest_add_btn",
-    onClick: addWizInterest,
-    disabled: !wizInterestInput.trim() || localData.interests.length >= 5,
-    className: "min-h-11 min-w-11 self-end bg-indigo-100 text-indigo-700 p-3 rounded-xl hover:bg-indigo-200 disabled:opacity-50 transition-colors motion-reduce:transition-none sm:self-auto"
-  }, /*#__PURE__*/React.createElement(Plus, {
-    size: 20
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap gap-2 min-h-[40px] bg-slate-50 p-2 rounded-xl border border-slate-100"
-  }, localData.interests.map(interest => /*#__PURE__*/React.createElement("span", {
-    key: interest,
-    className: "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none zoom-in"
-  }, interest, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": `${t('common.remove')} ${interest}`,
-    "data-help-key": "wizard_interest_remove_btn",
-    onClick: () => removeWizInterest(interest),
-    className: "hover:text-pink-900 ms-1 min-w-6 min-h-6 inline-flex items-center justify-center"
-  }, /*#__PURE__*/React.createElement(X, {
-    size: 12
-  })))), localData.interests.length === 0 && /*#__PURE__*/React.createElement("span", {
-    className: "text-xs text-slate-600 italic self-center w-full text-center"
-  }, t('wizard.no_interests'))), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-600 mt-1"
-  }, t('wizard.interests_helper')))), /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-between pt-4 mt-4 border-t border-slate-100"
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('common.back'),
-    "data-help-key": "wizard_prev_btn",
-    onClick: () => setStep(s => s - 1),
-    disabled: wizImporting,
-    className: "min-h-11 text-slate-600 hover:text-slate-900 font-bold text-sm px-4 py-2 flex items-center gap-2"
-  }, /*#__PURE__*/React.createElement(ArrowDown, {
-    className: "rotate-90",
-    size: 16
-  }), " ", t('common.back')), canContinueGuided ? /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-wrap items-center justify-end gap-3"
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "data-help-key": "wizard_complete_workspace_btn",
-    onClick: () => onComplete({
-      ...localData,
-      continueIn: 'workspace'
-    }),
-    disabled: wizImporting || localData.sourceMode === 'generate' && (aiOff || localData.documentsOnly && (!wizOwnSourceCount || wizSourceLoading || !!wizSourceReadError)),
-    className: "min-h-11 px-2 text-sm font-bold text-indigo-700 underline hover:text-indigo-900 disabled:opacity-50"
-  }, t('launch_pad.teacher_full_link') || 'Open the full workspace instead'), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "data-help-key": "wizard_complete_btn",
-    onClick: () => onComplete({
-      ...localData,
-      continueIn: 'guided'
-    }),
-    disabled: wizImporting || localData.sourceMode === 'generate' && (aiOff || localData.documentsOnly && (!wizOwnSourceCount || wizSourceLoading || !!wizSourceReadError)),
-    className: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all motion-reduce:transition-none active:scale-95 motion-reduce:active:scale-100 flex items-center gap-2 disabled:opacity-50"
-  }, t('launch_pad.guided_title') || 'Guided Mode', " ", /*#__PURE__*/React.createElement(ArrowRight, {
-    size: 18,
-    "aria-hidden": "true"
-  }))) : /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    "aria-label": t('common.finish'),
-    "data-help-key": "wizard_complete_btn",
-    onClick: () => onComplete(localData),
-    disabled: wizImporting || localData.sourceMode === 'generate' && (aiOff || localData.documentsOnly && (!wizOwnSourceCount || wizSourceLoading || !!wizSourceReadError)),
-    className: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all motion-reduce:transition-none active:scale-95 motion-reduce:active:scale-100 flex items-center gap-2 disabled:opacity-50"
-  }, t('common.finish'), " ", /*#__PURE__*/React.createElement(CheckCircle2, {
-    size: 18
-  })))))), step < 4 && /*#__PURE__*/React.createElement("div", {
+  }, t('wizard.file_process_msg')))), step === 4 && (() => {
+    const sourceSummaryLabel = localData.resourceMeta && localData.resourceMeta.title ? localData.resourceMeta.title : localData.sourceMode === 'paste' ? `${(localData.pastedText.trim().match(/\S+/g) || []).length} ${wt('wizard.words_unit', 'words pasted')}` : localData.sourceMode === 'generate' ? localData.topic ? `${wt('input.actions.write_with_ai', 'Write with AI')}: ${localData.topic}` : wt('input.actions.write_with_ai', 'Write with AI') : localData.sourceMode === 'storybook' ? wt('input.reading_catalog', 'Reading catalog') : localData.sourceMode === 'file' ? wt('wizard.upload_file', 'Upload file') : wt('input.find_online', 'Find online');
+    return /*#__PURE__*/React.createElement("div", {
+      className: "space-y-6 animate-in motion-reduce:animate-none slide-in-from-right-4 duration-300"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+      className: "block text-lg font-bold text-slate-700 mb-2"
+    }, t('wizard.adaptation')), /*#__PURE__*/React.createElement("p", {
+      className: "text-slate-600 mb-4"
+    }, t('wizard.adaptation_desc')), /*#__PURE__*/React.createElement("div", {
+      "data-wizard-summary": "",
+      className: "mb-5 flex flex-wrap items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50/70 px-3 py-2.5 text-xs"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold text-indigo-900"
+    }, wt('wizard.summary_label', 'Setup summary:')), localData.grade && /*#__PURE__*/React.createElement("span", {
+      className: "rounded-full border border-indigo-200 bg-white px-2.5 py-0.5 font-semibold text-indigo-800"
+    }, localData.grade), /*#__PURE__*/React.createElement("span", {
+      className: "max-w-full truncate rounded-full border border-slate-200 bg-white px-2.5 py-0.5 font-semibold text-slate-700"
+    }, sourceSummaryLabel), localData.standards.length > 0 && /*#__PURE__*/React.createElement("span", {
+      className: "rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 font-semibold text-emerald-800"
+    }, localData.standards.length, " ", localData.standards.length === 1 ? wt('wizard.standard_one', 'standard') : wt('wizard.standard_many', 'standards'))), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-4"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+      htmlFor: "quickstart-output-format",
+      className: "block text-sm font-bold text-slate-600 mb-2"
+    }, t('wizard.output_format')), /*#__PURE__*/React.createElement("select", {
+      id: "quickstart-output-format",
+      dir: "auto",
+      value: localData.format,
+      "data-help-key": "wizard_format_select",
+      onChange: e => setLocalData({
+        ...localData,
+        format: e.target.value
+      }),
+      className: "w-full p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white"
+    }, /*#__PURE__*/React.createElement("option", {
+      value: "Standard Text"
+    }, t('simplified.formats.standard')), /*#__PURE__*/React.createElement("option", {
+      value: "Dialogue Script"
+    }, t('simplified.formats.dialogue')), /*#__PURE__*/React.createElement("option", {
+      value: "Mock Advertisement"
+    }, t('simplified.formats.advertisement')), /*#__PURE__*/React.createElement("option", {
+      value: "News Report"
+    }, t('simplified.formats.news')), /*#__PURE__*/React.createElement("option", {
+      value: "Podcast Script"
+    }, t('simplified.formats.podcast')), /*#__PURE__*/React.createElement("option", {
+      value: "Social Media Thread"
+    }, t('simplified.formats.social')), /*#__PURE__*/React.createElement("option", {
+      value: "Poetry"
+    }, t('simplified.formats.poetry')), /*#__PURE__*/React.createElement("option", {
+      value: "Narrative Story"
+    }, t('simplified.formats.narrative_story')))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "mb-1 flex items-center justify-between gap-2"
+    }, /*#__PURE__*/React.createElement("label", {
+      className: "block text-sm font-bold text-slate-600"
+    }, t('wizard.output_languages_label')), /*#__PURE__*/React.createElement("span", {
+      "data-wizard-lang-count": "",
+      className: "text-xs font-semibold text-slate-600 tabular-nums"
+    }, localData.languages.length, "/4")), /*#__PURE__*/React.createElement("div", {
+      className: "mb-2 flex flex-col gap-2 sm:flex-row"
+    }, /*#__PURE__*/React.createElement("input", {
+      dir: "auto",
+      "aria-label": t('common.enter_wiz_lang_input'),
+      type: "text",
+      value: wizLangInput,
+      onChange: e => setWizLangInput(e.target.value),
+      onKeyDown: e => {
+        if (e.key === 'Enter' && !_qsIsImeComposing(e)) addWizLanguage();
+      },
+      "data-help-key": "wizard_lang_input",
+      placeholder: t('wizard.language_placeholder'),
+      className: "min-w-0 w-full flex-grow p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white",
+      disabled: localData.languages.length >= 4
+    }), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "aria-label": t('common.add'),
+      "data-help-key": "wizard_lang_add_btn",
+      onClick: addWizLanguage,
+      disabled: !wizLangInput.trim() || localData.languages.length >= 4,
+      className: "min-h-11 min-w-11 self-end bg-indigo-100 text-indigo-700 p-3 rounded-xl hover:bg-indigo-200 disabled:opacity-50 transition-colors motion-reduce:transition-none sm:self-auto"
+    }, /*#__PURE__*/React.createElement(Plus, {
+      size: 20
+    }))), /*#__PURE__*/React.createElement("select", {
+      dir: "auto",
+      "aria-label": wt('wizard.common_language_select', 'Add a common language'),
+      "data-help-key": "wizard_lang_common_select",
+      onChange: e => {
+        addCommonLanguage(e.target.value);
+        e.target.value = "";
+      },
+      className: "w-full text-xs border border-slate-400 rounded-lg p-2 bg-slate-50 text-slate-600 mb-3 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 cursor-pointer",
+      disabled: localData.languages.length >= 4
+    }, /*#__PURE__*/React.createElement("option", {
+      "data-help-key": "wizard_lang_common_select",
+      value: ""
+    }, t('wizard.quick_add_language')), /*#__PURE__*/React.createElement("option", {
+      value: "Spanish"
+    }, t('languages_list.Spanish')), /*#__PURE__*/React.createElement("option", {
+      value: "French"
+    }, t('languages_list.French')), /*#__PURE__*/React.createElement("option", {
+      value: "German"
+    }, t('languages_list.German')), /*#__PURE__*/React.createElement("option", {
+      value: "Portuguese"
+    }, t('languages_list.Portuguese')), /*#__PURE__*/React.createElement("option", {
+      value: "Mandarin"
+    }, t('languages_list.Mandarin')), /*#__PURE__*/React.createElement("option", {
+      value: "Arabic"
+    }, t('languages_list.Arabic')), /*#__PURE__*/React.createElement("option", {
+      value: "Vietnamese"
+    }, t('languages_list.Vietnamese')), /*#__PURE__*/React.createElement("option", {
+      value: "Russian"
+    }, t('languages_list.Russian')), /*#__PURE__*/React.createElement("option", {
+      value: "Japanese"
+    }, t('languages_list.Japanese'))), /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap gap-2 min-h-[40px] bg-slate-50 p-2 rounded-xl border border-slate-100"
+    }, localData.languages.map(lang => /*#__PURE__*/React.createElement("span", {
+      key: lang,
+      className: "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none zoom-in"
+    }, lang, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "aria-label": `${t('common.remove')} ${lang}`,
+      "data-help-key": "wizard_lang_remove_btn",
+      onClick: () => removeWizLanguage(lang),
+      className: "hover:text-indigo-900 ms-1 min-w-6 min-h-6 inline-flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement(X, {
+      size: 12
+    })))), localData.languages.length === 0 && /*#__PURE__*/React.createElement("span", {
+      className: "text-xs text-slate-600 italic self-center w-full text-center"
+    }, t('wizard.no_langs_selected')))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+      className: "mb-1 flex items-center justify-between gap-2"
+    }, /*#__PURE__*/React.createElement("label", {
+      className: "block text-sm font-bold text-slate-600"
+    }, t('wizard.interests_label_optional').replace(' (Optional)', ''), /*#__PURE__*/React.createElement("span", {
+      className: "text-slate-600 font-normal"
+    }, " (Optional)")), /*#__PURE__*/React.createElement("span", {
+      "data-wizard-interest-count": "",
+      className: "text-xs font-semibold text-slate-600 tabular-nums"
+    }, localData.interests.length, "/5")), /*#__PURE__*/React.createElement("div", {
+      className: "mb-2 flex flex-col gap-2 sm:flex-row"
+    }, /*#__PURE__*/React.createElement("input", {
+      dir: "auto",
+      "aria-label": t('common.enter_wiz_interest_input'),
+      type: "text",
+      value: wizInterestInput,
+      onChange: e => setWizInterestInput(e.target.value),
+      onKeyDown: e => {
+        if (e.key === 'Enter' && !_qsIsImeComposing(e)) addWizInterest();
+      },
+      "data-help-key": "wizard_interest_input",
+      placeholder: t('wizard.interest_placeholder'),
+      className: "min-w-0 w-full flex-grow p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500",
+      disabled: localData.interests.length >= 5
+    }), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "aria-label": t('common.add'),
+      "data-help-key": "wizard_interest_add_btn",
+      onClick: addWizInterest,
+      disabled: !wizInterestInput.trim() || localData.interests.length >= 5,
+      className: "min-h-11 min-w-11 self-end bg-indigo-100 text-indigo-700 p-3 rounded-xl hover:bg-indigo-200 disabled:opacity-50 transition-colors motion-reduce:transition-none sm:self-auto"
+    }, /*#__PURE__*/React.createElement(Plus, {
+      size: 20
+    }))), /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap gap-2 min-h-[40px] bg-slate-50 p-2 rounded-xl border border-slate-100"
+    }, localData.interests.map(interest => /*#__PURE__*/React.createElement("span", {
+      key: interest,
+      className: "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none zoom-in"
+    }, interest, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "aria-label": `${t('common.remove')} ${interest}`,
+      "data-help-key": "wizard_interest_remove_btn",
+      onClick: () => removeWizInterest(interest),
+      className: "hover:text-pink-900 ms-1 min-w-6 min-h-6 inline-flex items-center justify-center"
+    }, /*#__PURE__*/React.createElement(X, {
+      size: 12
+    })))), localData.interests.length === 0 && /*#__PURE__*/React.createElement("span", {
+      className: "text-xs text-slate-600 italic self-center w-full text-center"
+    }, t('wizard.no_interests'))), /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-slate-600 mt-1"
+    }, t('wizard.interests_helper')))), /*#__PURE__*/React.createElement("div", {
+      className: "flex justify-between pt-4 mt-4 border-t border-slate-100"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "aria-label": t('common.back'),
+      "data-help-key": "wizard_prev_btn",
+      onClick: () => setStep(s => s - 1),
+      disabled: wizImporting,
+      className: "min-h-11 text-slate-600 hover:text-slate-900 font-bold text-sm px-4 py-2 flex items-center gap-2"
+    }, /*#__PURE__*/React.createElement(ArrowDown, {
+      className: "rotate-90",
+      size: 16
+    }), " ", t('common.back')), canContinueGuided ? /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap items-center justify-end gap-3"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-help-key": "wizard_complete_workspace_btn",
+      onClick: () => onComplete({
+        ...localData,
+        continueIn: 'workspace'
+      }),
+      disabled: wizImporting || localData.sourceMode === 'generate' && (aiOff || localData.documentsOnly && (!wizOwnSourceCount || wizSourceLoading || !!wizSourceReadError)),
+      className: "min-h-11 px-2 text-sm font-bold text-indigo-700 underline hover:text-indigo-900 disabled:opacity-50"
+    }, t('launch_pad.teacher_full_link') || 'Open the full workspace instead'), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-help-key": "wizard_complete_btn",
+      onClick: () => onComplete({
+        ...localData,
+        continueIn: 'guided'
+      }),
+      disabled: wizImporting || localData.sourceMode === 'generate' && (aiOff || localData.documentsOnly && (!wizOwnSourceCount || wizSourceLoading || !!wizSourceReadError)),
+      className: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all motion-reduce:transition-none active:scale-95 motion-reduce:active:scale-100 flex items-center gap-2 disabled:opacity-50"
+    }, t('launch_pad.guided_title') || 'Guided Mode', " ", /*#__PURE__*/React.createElement(ArrowRight, {
+      size: 18,
+      "aria-hidden": "true"
+    }))) : /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "aria-label": t('common.finish'),
+      "data-help-key": "wizard_complete_btn",
+      onClick: () => onComplete(localData),
+      disabled: wizImporting || localData.sourceMode === 'generate' && (aiOff || localData.documentsOnly && (!wizOwnSourceCount || wizSourceLoading || !!wizSourceReadError)),
+      className: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all motion-reduce:transition-none active:scale-95 motion-reduce:active:scale-100 flex items-center gap-2 disabled:opacity-50"
+    }, t('common.finish'), " ", /*#__PURE__*/React.createElement(CheckCircle2, {
+      size: 18
+    })))));
+  })()), step < 4 && /*#__PURE__*/React.createElement("div", {
     className: "p-6 border-t border-slate-100 bg-slate-50 flex justify-between items-center shrink-0"
   }, step > 1 ? /*#__PURE__*/React.createElement("button", {
     type: "button",

@@ -52,16 +52,20 @@
   // module-authored decision tree (digest-bound, offline, no AI) the learner
   // walks to an ending. The adventure-style PD format without the game
   // engine; full Adventure-mode embedding remains a separate integration.
-  var ACTIVITY_TYPES = ['read', 'quiz', 'reflect', 'video', 'checklist', 'sim', 'resource', 'persona', 'branching'];
+  var ACTIVITY_TYPES = Object.freeze(['read', 'quiz', 'reflect', 'video', 'checklist', 'sim', 'resource', 'persona', 'branching']);
   var PERSONA_DEFAULT_MIN_TURNS = 3;
-  var RESOURCE_TYPES = ['concept-sort', 'timeline', 'glossary'];
+  var RESOURCE_TYPES = Object.freeze(['concept-sort', 'timeline', 'glossary']);
   // Types whose objective score may GATE advancement. 'sim' is deliberately
   // excluded: its masteryScore is an AI-self-reported, fuzzy FORMATIVE estimate,
   // so it must never block a learner (and could strand them) — sim is always
   // none-gated and completes on a written response.
-  var SCORABLE_TYPES = ['quiz'];
+  var SCORABLE_TYPES = Object.freeze(['quiz']);
+  var MAX_MODULE_JSON_CHARS = 2 * 1024 * 1024;
+  var MAX_CANONICALIZE_DEPTH = 64;
 
-  function isNum(n) { return typeof n === 'number' && !isNaN(n); }
+  function hasOwn(obj, key) { return !!obj && typeof key === 'string' && Object.prototype.hasOwnProperty.call(obj, key); }
+  function isBlockedKey(key) { return key === '__proto__' || key === 'constructor' || key === 'prototype'; }
+  function isNum(n) { return typeof n === 'number' && isFinite(n); }
   function isNonEmptyString(v) { return typeof v === 'string' && v.trim().length > 0; }
 
   // Stable identifiers are deliberately URL-/filename-friendly so they can be
@@ -74,8 +78,9 @@
   // Allow ordinary HTTP(S) resources and safe relative references, while
   // rejecting executable/opaque schemes such as javascript:, data:, and file:.
   function isSafeUrl(v) {
-    if (!isNonEmptyString(v) || v !== v.trim() || /[\u0000-\u001F\u007F\\\s]/.test(v)) return false;
-    if (/^https?:\/\/[^\/?#]+(?:[\/?#].*)?$/i.test(v)) return true;
+    if (!isNonEmptyString(v) || v.length > 2048 || v !== v.trim()) return false;
+    if (/[\u0000-\u001F\u007F-\u009F\u202A-\u202E\u2066-\u2069\\\s"'<>`]/.test(v)) return false;
+    if (/^https?:\/\/[^\/?#@]+(?:[\/?#].*)?$/i.test(v)) return true;
     if (/^(?:\/(?!\/)|\.\.?\/|[?#])/.test(v)) return true;
     return /^[A-Za-z0-9][A-Za-z0-9._~!$&'()*+,;=@%\/?#-]*$/.test(v);
   }
@@ -108,9 +113,10 @@
     var obj = input;
     if (typeof input === 'string') {
       if (!input.trim()) return { ok: false, error: 'Empty input.' };
-      try { obj = JSON.parse(input); } catch (e) { return { ok: false, error: 'Could not parse JSON: ' + e.message }; }
+      if (input.length > MAX_MODULE_JSON_CHARS) return { ok: false, error: 'Module JSON exceeds size limit.' };
+      try { obj = JSON.parse(input, function (k, v) { return isBlockedKey(k) ? undefined : v; }); } catch (e) { return { ok: false, error: 'Could not parse JSON: ' + e.message }; }
     }
-    if (!obj || typeof obj !== 'object') return { ok: false, error: 'Top-level value must be an object.' };
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return { ok: false, error: 'Top-level value must be an object.' };
     if (obj.kind !== 'pd_module') return { ok: false, error: 'Not a PD module (expected kind:"pd_module").' };
     if (obj.schema_version !== SCHEMA_VERSION) {
       return { ok: false, error: 'Unsupported schema_version; expected ' + SCHEMA_VERSION + '.' };
@@ -223,10 +229,11 @@
             var itemIds = Object.create(null);
             for (var ri = 0; ri < rItems.length; ri++) {
               var rit = rItems[ri];
-              if (!rit || !isNonEmptyString(rit.id) || !isNonEmptyString(rit.content)) return { ok: false, error: 'Resource ' + act.id + ' item ' + (ri + 1) + ' needs id and content.' };
+              if (!rit || !isNonEmptyString(rit.id) || isBlockedKey(rit.id) || !isNonEmptyString(rit.content)) return { ok: false, error: 'Resource ' + act.id + ' item ' + (ri + 1) + ' needs id and content.' };
               if (itemIds[rit.id]) return { ok: false, error: 'Resource ' + act.id + ' has a duplicate item id: ' + rit.id };
               itemIds[rit.id] = true;
               if (!catIds[rit.categoryId]) return { ok: false, error: 'Resource ' + act.id + ' item ' + (ri + 1) + ' categoryId does not match a category.' };
+              if (rit.image !== undefined && !isSafeUrl(rit.image)) return { ok: false, error: 'Resource ' + act.id + ' item ' + (ri + 1) + ' image must be a safe URL.' };
             }
           } else {
             // timeline + glossary share the { items: [...] } container.
@@ -239,6 +246,9 @@
               }
               if (rType === 'glossary' && !(row && isNonEmptyString(row.term) && isNonEmptyString(row.def))) {
                 return { ok: false, error: 'Resource ' + act.id + ' glossary item ' + (rj + 1) + ' needs term and def.' };
+              }
+              if (row && row.image !== undefined && !isSafeUrl(row.image)) {
+                return { ok: false, error: 'Resource ' + act.id + ' item ' + (rj + 1) + ' image must be a safe URL.' };
               }
             }
           }
@@ -344,9 +354,9 @@
           }
         }
 
-        var gate = act.gate || { kind: 'none' };
-        if (gate.kind && gate.kind !== 'none' && gate.kind !== 'score') {
-          return { ok: false, error: 'Activity ' + act.id + ' has unknown gate.kind "' + gate.kind + '".' };
+        var gate = act.gate === undefined ? { kind: 'none' } : act.gate;
+        if (!gate || typeof gate !== 'object' || Array.isArray(gate) || (gate.kind !== 'none' && gate.kind !== 'score')) {
+          return { ok: false, error: 'Activity ' + act.id + ' has unknown gate.kind "' + (gate && gate.kind) + '".' };
         }
         if (gate.kind === 'score') {
           counts.gated++;
@@ -402,6 +412,9 @@
         if (act && act.type === 'resource') {
           var resourceItems = (content.data && Array.isArray(content.data.items)) ? content.data.items : [];
           resourceItems.forEach(function (resourceItem, rii) {
+            if (resourceItem && resourceItem.image && !isSafeUrl(resourceItem.image)) {
+              issue('resource-image-url-unsafe', path + '.content.data.items[' + rii + '].image', 'Use a safe HTTP(S) or relative image URL.');
+            }
             if (resourceItem && resourceItem.image && !isNonEmptyString(resourceItem.imageAlt)) {
               issue('resource-image-alt-missing', path + '.content.data.items[' + rii + ']', 'Give the embedded image alt text (imageAlt) or remove it.');
             }
@@ -423,7 +436,7 @@
   // AlloFlow. So the runner converts each activity's raw interaction into ONE
   // shape the gate can read: { activityId, type, completed:bool, score:0..1|null, raw }.
   function normalizeResult(activity, raw) {
-    raw = raw || {};
+    raw = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {};
     var type = activity && activity.type;
     var out = { activityId: activity && activity.id, type: type, completed: false, score: null, raw: raw };
 
@@ -432,13 +445,16 @@
     } else if (type === 'reflect') {
       out.completed = typeof raw.text === 'string' && raw.text.trim().length > 0;
     } else if (type === 'quiz') {
-      var qs = (activity.content && activity.content.questions) || [];
+      var qs = (activity.content && Array.isArray(activity.content.questions)) ? activity.content.questions : [];
       var answers = Array.isArray(raw.answers) ? raw.answers : [];
       var answered = 0, correct = 0;
       for (var i = 0; i < qs.length; i++) {
-        if (typeof answers[i] === 'number') {
+        var q = qs[i];
+        var ans = answers[i];
+        var optLimit = q && Array.isArray(q.options) ? q.options.length : Infinity;
+        if (isNum(ans) && Math.floor(ans) === ans && ans >= 0 && ans < optLimit) {
           answered++;
-          if (answers[i] === qs[i].correctIndex) correct++;
+          if (q && ans === q.correctIndex) correct++;
         }
       }
       // Selecting every answer is not completion: the learner must explicitly
@@ -461,14 +477,17 @@
       var walkContent = (activity && activity.content) || {};
       var walkNodes = (walkContent.nodes && typeof walkContent.nodes === 'object') ? walkContent.nodes : {};
       var walkPath = Array.isArray(raw.path) ? raw.path : [];
-      var walkOk = walkPath.length > 0 && walkPath[0] === walkContent.start;
+      var walkOk = walkPath.length > 0 && walkPath.length <= 2000 && typeof walkPath[0] === 'string' && walkPath[0] === walkContent.start;
       for (var wi = 0; walkOk && wi < walkPath.length - 1; wi++) {
-        var wNode = Object.prototype.hasOwnProperty.call(walkNodes, walkPath[wi]) ? walkNodes[walkPath[wi]] : null;
+        var curKey = walkPath[wi];
+        var nextKey = walkPath[wi + 1];
+        if (typeof curKey !== 'string' || typeof nextKey !== 'string') { walkOk = false; break; }
+        var wNode = hasOwn(walkNodes, curKey) ? walkNodes[curKey] : null;
         var wChoices = (wNode && Array.isArray(wNode.choices)) ? wNode.choices : [];
-        walkOk = wChoices.some(function (choice) { return choice && choice.to === walkPath[wi + 1]; });
+        walkOk = wChoices.some(function (choice) { return choice && choice.to === nextKey; });
       }
       var wLastKey = walkPath[walkPath.length - 1];
-      var wLast = (walkOk && Object.prototype.hasOwnProperty.call(walkNodes, wLastKey)) ? walkNodes[wLastKey] : null;
+      var wLast = (walkOk && typeof wLastKey === 'string' && hasOwn(walkNodes, wLastKey)) ? walkNodes[wLastKey] : null;
       out.completed = !!(wLast && wLast.ending === true);
     } else if (type === 'persona') {
       // Participation-based: the educator has taken minTurns conversational
@@ -476,10 +495,11 @@
       // completes instead — a persona activity is never uncompletable offline.
       // No score is ever produced, so it can never satisfy a score gate.
       var personaContent = (activity && activity.content) || {};
-      var minTurns = (isNum(personaContent.minTurns) && personaContent.minTurns >= 1) ? Math.floor(personaContent.minTurns) : PERSONA_DEFAULT_MIN_TURNS;
+      var minTurns = (isNum(personaContent.minTurns) && personaContent.minTurns >= 1 && personaContent.minTurns <= 50) ? Math.floor(personaContent.minTurns) : PERSONA_DEFAULT_MIN_TURNS;
       var personaMsgs = Array.isArray(raw.messages) ? raw.messages : [];
       var educatorTurns = 0;
-      for (var pmi = 0; pmi < personaMsgs.length; pmi++) {
+      var maxScan = Math.min(personaMsgs.length, 2000);
+      for (var pmi = 0; pmi < maxScan && educatorTurns < minTurns; pmi++) {
         var pMsg = personaMsgs[pmi];
         if (pMsg && pMsg.role === 'educator' && typeof pMsg.text === 'string' && pMsg.text.trim()) educatorTurns++;
       }
@@ -494,30 +514,38 @@
         var rcItems = (rContent.data && Array.isArray(rContent.data.items)) ? rContent.data.items : [];
         var placements = (raw.placements && typeof raw.placements === 'object' && !Array.isArray(raw.placements)) ? raw.placements : {};
         var placed = 0;
-        for (var pi = 0; pi < rcItems.length; pi++) { if (rcItems[pi] && typeof placements[rcItems[pi].id] === 'string' && placements[rcItems[pi].id]) placed++; }
+        for (var pi = 0; pi < rcItems.length; pi++) {
+          if (rcItems[pi] && hasOwn(placements, rcItems[pi].id) && typeof placements[rcItems[pi].id] === 'string' && placements[rcItems[pi].id].trim()) placed++;
+        }
         out.completed = rcItems.length > 0 && placed === rcItems.length;
       } else {
         out.completed = !!raw.acknowledged;
       }
     } else {
-      out.completed = !!raw.completed;
-      if (isNum(raw.score)) out.score = raw.score;
+      out.completed = false;
+      out.score = null;
     }
     return out;
   }
 
   // ── Gate evaluator ────────────────────────────────────────────────────────
   function evaluateGate(activity, result) {
-    var gate = (activity && activity.gate) || { kind: 'none' };
-    if (!result || !result.completed) return { passed: false, reason: 'incomplete' };
+    if (!activity || typeof activity !== 'object' || Array.isArray(activity)) return { passed: false, reason: 'invalid-activity' };
+    if (activity.gate !== undefined && (!activity.gate || typeof activity.gate !== 'object' || Array.isArray(activity.gate) || !activity.gate.kind)) {
+      return { passed: false, reason: 'unknown-gate' };
+    }
+    var gate = activity.gate || { kind: 'none' };
+    if (!result || result.completed !== true) return { passed: false, reason: 'incomplete' };
     // Defense in depth for callers that hand-construct a normalized result.
-    if (activity && activity.type === 'quiz' && (!result.raw || result.raw.submitted !== true)) {
+    if (activity.type === 'quiz' && (!result.raw || result.raw.submitted !== true)) {
       return { passed: false, reason: 'unsubmitted' };
     }
-    if (!gate.kind || gate.kind === 'none') return { passed: true };
+    if (gate.kind === 'none') return { passed: true };
     if (gate.kind === 'score') {
-      var threshold = isNum(gate.threshold) ? gate.threshold : DEFAULT_THRESHOLD;
-      if (!isNum(result.score)) return { passed: false, reason: 'no-score', threshold: threshold };
+      if (SCORABLE_TYPES.indexOf(activity.type) === -1) return { passed: false, reason: 'non-scorable-activity' };
+      var threshold = gate.threshold === undefined ? DEFAULT_THRESHOLD : gate.threshold;
+      if (!(isNum(threshold) && threshold > 0 && threshold <= 1)) return { passed: false, reason: 'invalid-threshold' };
+      if (!(isNum(result.score) && result.score >= 0 && result.score <= 1)) return { passed: false, reason: 'no-score', threshold: threshold };
       return { passed: result.score >= threshold - 1e-9, score: result.score, threshold: threshold };
     }
     return { passed: false, reason: 'unknown-gate' };
@@ -526,11 +554,14 @@
   // resultsById: { [activityId]: <normalized result> }. Module is complete when
   // EVERY activity is completed and every gate passes.
   function evaluateModule(mod, resultsById) {
-    resultsById = resultsById || {};
+    var safeResults = (resultsById && typeof resultsById === 'object' && !Array.isArray(resultsById)) ? resultsById : {};
+    var sections = (mod && Array.isArray(mod.sections)) ? mod.sections : [];
     var per = [], passedCount = 0, gatedTotal = 0, complete = true;
-    (mod.sections || []).forEach(function (sec) {
-      (sec.activities || []).forEach(function (act) {
-        var res = resultsById[act.id] || { completed: false, score: null };
+    sections.forEach(function (sec) {
+      var acts = (sec && Array.isArray(sec.activities)) ? sec.activities : [];
+      acts.forEach(function (act) {
+        if (!act || typeof act !== 'object') { complete = false; return; }
+        var res = hasOwn(safeResults, act.id) && safeResults[act.id] ? safeResults[act.id] : { completed: false, score: null };
         var ev = evaluateGate(act, res);
         var gated = act.gate && act.gate.kind === 'score';
         if (gated) gatedTotal++;
@@ -538,7 +569,7 @@
         per.push({ activityId: act.id, type: act.type, gated: !!gated, passed: !!ev.passed, score: isNum(res.score) ? res.score : null, threshold: ev.threshold, reason: ev.reason });
       });
     });
-    return { complete: complete, perActivity: per, passed: passedCount, total: per.length, gatedTotal: gatedTotal };
+    return { complete: per.length > 0 && complete, perActivity: per, passed: passedCount, total: per.length, gatedTotal: gatedTotal };
   }
 
   // ── Completion record (Tier-1, honestly labelled, upgrade-ready) ───────────
@@ -584,17 +615,24 @@
 
   function collectResponses(mod, resultsById) {
     var out = [];
-    (mod.sections || []).forEach(function (sec) {
-      (sec.activities || []).forEach(function (act) {
-        var raw = (resultsById[act.id] && resultsById[act.id].raw) || {};
+    var safeResults = (resultsById && typeof resultsById === 'object' && !Array.isArray(resultsById)) ? resultsById : {};
+    var sections = (mod && Array.isArray(mod.sections)) ? mod.sections : [];
+    sections.forEach(function (sec) {
+      var acts = (sec && Array.isArray(sec.activities)) ? sec.activities : [];
+      acts.forEach(function (act) {
+        if (!act || typeof act !== 'object') return;
+        var entry = hasOwn(safeResults, act.id) ? safeResults[act.id] : null;
+        var raw = (entry && entry.raw && typeof entry.raw === 'object' && !Array.isArray(entry.raw)) ? entry.raw : {};
         if (act.type === 'reflect' && typeof raw.text === 'string' && raw.text.trim()) {
           out.push({ activityId: act.id, type: 'reflect', title: act.title, response: raw.text.trim() });
         } else if (act.type === 'checklist' && Array.isArray(raw.checked)) {
-          var items = (act.content && act.content.items) || [];
+          var items = (act.content && Array.isArray(act.content.items)) ? act.content.items : [];
           var chosen = items.filter(function (_it, i) { return !!raw.checked[i]; });
           if (chosen.length) out.push({ activityId: act.id, type: 'checklist', title: act.title, response: chosen });
         } else if (act.type === 'sim' && (typeof raw.response === 'string' && raw.response.trim() || isNum(raw.masteryScore))) {
-          var simResponse = { activityId: act.id, type: 'sim', title: act.title, response: (raw.response || '').trim(), masteryScore: isNum(raw.masteryScore) ? raw.masteryScore : null, feedback: raw.feedback || '' };
+          var simText = typeof raw.response === 'string' ? raw.response.trim() : '';
+          var simFeedback = typeof raw.feedback === 'string' ? raw.feedback : '';
+          var simResponse = { activityId: act.id, type: 'sim', title: act.title, response: simText, masteryScore: isNum(raw.masteryScore) ? raw.masteryScore : null, feedback: simFeedback };
           var qualitative = sanitizeQualitativeAnalysis(raw.qualitativeAnalysis);
           if (qualitative) simResponse.qualitativeAnalysis = qualitative;
           out.push(simResponse);
@@ -607,22 +645,27 @@
   // Preserve privacy-safe integrity metadata only. Clipboard/response contents
   // and arbitrary event properties are intentionally never copied.
   function collectIntegrityEvents(mod, resultsById) {
-    var out = [], modulePaste = mod.assessmentPolicy && mod.assessmentPolicy.paste;
+    var out = [], modulePaste = mod && mod.assessmentPolicy && mod.assessmentPolicy.paste;
+    var safeResults = (resultsById && typeof resultsById === 'object' && !Array.isArray(resultsById)) ? resultsById : {};
+    var sections = (mod && Array.isArray(mod.sections)) ? mod.sections : [];
     var allowedTypes = ['paste', 'drop', 'beforeinput', 'insertFromPaste'];
-    (mod.sections || []).forEach(function (sec) {
-      (sec.activities || []).forEach(function (act) {
-        var raw = (resultsById[act.id] && resultsById[act.id].raw) || {};
+    sections.forEach(function (sec) {
+      var acts = (sec && Array.isArray(sec.activities)) ? sec.activities : [];
+      acts.forEach(function (act) {
+        if (!act || typeof act !== 'object') return;
+        var entry = hasOwn(safeResults, act.id) ? safeResults[act.id] : null;
+        var raw = (entry && entry.raw && typeof entry.raw === 'object' && !Array.isArray(entry.raw)) ? entry.raw : {};
         var events = Array.isArray(raw.integrityEvents) ? raw.integrityEvents : [];
         var activityPaste = act.assessmentPolicy && act.assessmentPolicy.paste;
         var policyMode = (activityPaste && activityPaste.mode) || (modulePaste && modulePaste.mode) || 'allowed';
         var remaining = Math.max(0, MAX_COMPLETION_INTEGRITY_EVENTS - out.length);
         events.slice(0, remaining).forEach(function (event) {
-          if (!event || typeof event !== 'object') return;
+          if (!event || typeof event !== 'object' || Array.isArray(event)) return;
           var eventType = event.eventType || event.type;
           if (allowedTypes.indexOf(eventType) === -1) return;
           var clean = { activityId: act.id, eventType: eventType, policyMode: policyMode };
           var occurredAt = event.occurredAt || event.timestamp;
-          if (isNonEmptyString(occurredAt) && occurredAt.length <= 64 && /^[0-9TZ:+.\-]+$/.test(occurredAt)) clean.occurredAt = occurredAt;
+          if (isNonEmptyString(occurredAt) && occurredAt.length <= 64 && /^[0-9TZ:+.\-]+$/.test(occurredAt) && !isNaN(Date.parse(occurredAt))) clean.occurredAt = occurredAt;
           var chars = isNum(event.characterCount) ? event.characterCount : event.charCount;
           if (isNum(chars) && chars >= 0) clean.characterCount = Math.min(REVIEW_MAX_INTEGRITY_CHARS_PER_EVENT, Math.floor(chars));
           if (isNum(event.wordCount) && event.wordCount >= 0) clean.wordCount = Math.min(REVIEW_MAX_INTEGRITY_WORDS_PER_EVENT, Math.floor(event.wordCount));
@@ -636,7 +679,7 @@
   }
 
   function sanitizeCompletionLearner(learner) {
-    var name = learner && typeof learner.name === 'string' ? learner.name.trim() : '';
+    var name = learner && typeof learner.name === 'string' ? learner.name.replace(/[\u0000-\u001F\u007F]/g, '').trim() : '';
     if (name.length > 200) name = name.slice(0, 200);
     return { name: name || null };
   }
@@ -776,8 +819,9 @@
   }
 
   function reviewArtifactDigest(artifact) {
-    var unsigned = {};
-    Object.keys(artifact || {}).forEach(function (key) {
+    if (!reviewIsObject(artifact)) throw new Error('A review artifact object is required.');
+    var unsigned = Object.create(null);
+    Object.keys(artifact).forEach(function (key) {
       if (key !== 'digest') unsigned[key] = artifact[key];
     });
     return 'sha256:' + sha256Hex(canonicalize(unsigned));
@@ -785,7 +829,7 @@
 
   function reviewCandidateDigest(candidate) {
     if (!reviewIsObject(candidate)) throw new Error('A review-candidate package object is required.');
-    var unsigned = {};
+    var unsigned = Object.create(null);
     Object.keys(candidate).forEach(function (key) {
       if (key !== 'package_digest') unsigned[key] = candidate[key];
     });
@@ -818,7 +862,7 @@
     (mod.sections || []).forEach(function (sec) {
       (sec.activities || []).forEach(function (act) {
         if (problem) return;
-        var raw = (resultsById[act.id] && resultsById[act.id].raw) || {};
+        var raw = (hasOwn(resultsById, act.id) && resultsById[act.id] && resultsById[act.id].raw) || {};
         var events = Array.isArray(raw.integrityEvents) ? raw.integrityEvents : [];
         if (eventCount + events.length > MAX_COMPLETION_INTEGRITY_EVENTS) {
           problem = reviewCandidateProblem('integrity_event_limit', 'integrity_summary', 'Too many integrity events for a formal review-candidate package.');
@@ -943,7 +987,7 @@
 
     flatActivities.forEach(function (act) {
       if (buildProblem) return;
-      var result = resultsById[act.id] || { completed: false, score: null, raw: {} };
+      var result = (hasOwn(resultsById, act.id) && resultsById[act.id]) ? resultsById[act.id] : { completed: false, score: null, raw: {} };
       var raw = result.raw || {};
       var gate = evaluateGate(act, result);
       var refs = [];
@@ -1131,7 +1175,11 @@
       return bad('unsupported_package', 'package', 'Unsupported review-candidate package profile.');
     }
     if (!reviewIsIsoTimestamp(candidate.created_at)) return bad('invalid_created_at', 'created_at', 'created_at must be RFC 3339.');
-    if (utf8Bytes(canonicalize(candidate)).length > REVIEW_MAX_PACKAGE_BYTES) {
+    var serializedCandidate;
+    try { serializedCandidate = canonicalize(candidate); } catch (_) {
+      return bad('invalid_package_shape', 'package', 'Review-candidate package cannot be canonicalized.');
+    }
+    if (utf8Bytes(serializedCandidate).length > REVIEW_MAX_PACKAGE_BYTES) {
       return bad('package_too_large', 'package', 'Review-candidate package exceeds the formal package byte limit.');
     }
 
@@ -1238,7 +1286,7 @@
             artifact.media_type !== 'application/json' || artifact.source !== 'learner-provided-unverified' ||
             !reviewOnlyKeys(artifact.provenance, ['capture', 'verified']) ||
             artifact.provenance.capture !== 'learner-device' || artifact.provenance.verified !== false ||
-            !Array.isArray(artifact.value) || artifact.value.length > 100 || artifact.value.some(function (item) { return !isNonEmptyString(item) || item.length > 2000; })) {
+            !Array.isArray(artifact.value) || !artifact.value.length || artifact.value.length > 100 || artifact.value.some(function (item) { return !isNonEmptyString(item) || item.length > 2000; })) {
           return bad('invalid_artifact', 'artifacts[' + ar + ']', 'Selected commitments artifact is invalid or too large.');
         }
       } else if (artifact.kind === 'ai-advisory-analysis') {
@@ -1250,7 +1298,8 @@
             artifact.provenance.provider !== 'not-recorded' || artifact.provenance.model !== 'not-recorded' ||
             artifact.provenance.human_review_required !== true ||
             !reviewOnlyKeys(artifact.value, ['feedback', 'qualitativeAnalysis']) ||
-            typeof artifact.value.feedback !== 'string' || artifact.value.feedback.length > REVIEW_MAX_AI_FEEDBACK_CHARS) {
+            typeof artifact.value.feedback !== 'string' || artifact.value.feedback.length > REVIEW_MAX_AI_FEEDBACK_CHARS ||
+            (!artifact.value.feedback.trim() && artifact.value.qualitativeAnalysis === null)) {
           return bad('invalid_ai_artifact', 'artifacts[' + ar + ']', 'AI advisory artifact is invalid or too large.');
         }
         var qualitativeProblem = reviewQualitativeLimitProblem(artifact.value.qualitativeAnalysis, 'artifacts[' + ar + '].value.qualitativeAnalysis');
@@ -1269,7 +1318,9 @@
         return bad('unsupported_artifact_kind', 'artifacts[' + ar + '].kind', 'Unsupported review artifact kind.');
       }
       artifactMap[artifact.artifact_id] = artifact;
-      if (reviewArtifactDigest(artifact) !== artifact.digest) {
+      var computedArtifactDigest = '';
+      try { computedArtifactDigest = reviewArtifactDigest(artifact); } catch (_) { computedArtifactDigest = ''; }
+      if (computedArtifactDigest !== artifact.digest) {
         return bad('invalid_artifact', 'artifacts[' + ar + '].digest', 'Artifact digest does not match its validated content.');
       }
       artifactKindsByActivity[artifact.activity_id] = artifactKindsByActivity[artifact.activity_id] || [];
@@ -1280,12 +1331,18 @@
     }
     var requiredArtifactProblem = null;
     var learnerResponseFound = false;
+    var personaFallbackFound = false;
     Object.keys(activityMap).forEach(function (activityId) {
       if (requiredArtifactProblem) return;
       var kinds = artifactKindsByActivity[activityId] || [];
       var activityType = activityMap[activityId].type;
       var responseCount = kinds.filter(function (kind) { return kind === 'learner-response'; }).length;
       var selectionCount = kinds.filter(function (kind) { return kind === 'learner-selection-of-module-authored-options'; }).length;
+      var aiCount = kinds.filter(function (kind) { return kind === 'ai-advisory-analysis'; }).length;
+      if (aiCount > 1) {
+        requiredArtifactProblem = bad('invalid_ai_artifact', 'activities.' + activityId, 'At most one AI advisory artifact is allowed per activity.');
+        return;
+      }
       if (responseCount) learnerResponseFound = true;
       if ((activityType === 'reflect' || activityType === 'sim') && responseCount !== 1) {
         requiredArtifactProblem = bad('required_evidence_missing', 'activities.' + activityId, 'Reflect and scenario activities require exactly one learner-provided response artifact.');
@@ -1295,6 +1352,7 @@
         // Persona evidence is OPTIONAL (its own consent scope) — but never
         // more than one transcript and one fallback response per activity.
         var transcriptCount = kinds.filter(function (kind) { return kind === 'live-practice-transcript'; }).length;
+        if (responseCount) personaFallbackFound = true;
         if (responseCount > 1 || transcriptCount > 1) {
           requiredArtifactProblem = bad('invalid_artifact', 'activities.' + activityId, 'A persona activity carries at most one transcript and one fallback response.');
         }
@@ -1310,7 +1368,7 @@
       return bad('ai_scope_mismatch', 'consent.scopes', 'AI advisory inclusion must match the consent and privacy manifest.');
     }
     if (transcriptArtifactFound !== privacy.live_practice_transcript_included ||
-        (transcriptArtifactFound && consent.scopes.indexOf('live-practice-transcript') === -1)) {
+        ((transcriptArtifactFound || personaFallbackFound) && consent.scopes.indexOf('live-practice-transcript') === -1)) {
       return bad('transcript_scope_mismatch', 'consent.scopes', 'Practice-transcript inclusion must match the consent and privacy manifest.');
     }
 
@@ -1367,23 +1425,34 @@
   // space: strings, FINITE numbers, booleans, null, arrays, plain objects).
   // Sorted keys (UTF-16 code units, as JS sort does) + ECMAScript number
   // formatting (as JSON.stringify does). Rejects non-finite numbers.
-  function canonicalize(v) {
+  function canonicalize(v, depth, seen) {
+    var d = depth || 0;
+    if (d > MAX_CANONICALIZE_DEPTH) throw new Error('Maximum canonicalization depth exceeded.');
     if (v === null) return 'null';
     var t = typeof v;
     if (t === 'number') { if (!isFinite(v)) throw new Error('Cannot canonicalize a non-finite number.'); return JSON.stringify(v); }
     if (t === 'boolean') return v ? 'true' : 'false';
     if (t === 'string') return JSON.stringify(v);
-    if (Array.isArray(v)) { return '[' + v.map(function (x) { return canonicalize(x === undefined ? null : x); }).join(',') + ']'; }
     if (t === 'object') {
-      var keys = Object.keys(v).filter(function (k) { return v[k] !== undefined && typeof v[k] !== 'function'; }).sort();
-      return '{' + keys.map(function (k) { return JSON.stringify(k) + ':' + canonicalize(v[k]); }).join(',') + '}';
+      var active = seen || new Set();
+      if (active.has(v)) throw new Error('Cannot canonicalize cyclic structure.');
+      active.add(v);
+      try {
+        if (Array.isArray(v)) {
+          return '[' + v.map(function (x) { return canonicalize(x === undefined ? null : x, d + 1, active); }).join(',') + ']';
+        }
+        var keys = Object.keys(v).filter(function (k) { return v[k] !== undefined && typeof v[k] !== 'function'; }).sort();
+        return '{' + keys.map(function (k) { return JSON.stringify(k) + ':' + canonicalize(v[k], d + 1, active); }).join(',') + '}';
+      } finally {
+        active.delete(v);
+      }
     }
     throw new Error('Cannot canonicalize value of type ' + t);
   }
 
   // Dependency-free synchronous SHA-256 keeps browser, worker, and Node
   // bindings identical without WebCrypto or an async boundary.
-  var SHA256_K = [
+  var SHA256_K = Object.freeze([
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
     0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
     0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
@@ -1392,15 +1461,22 @@
     0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
     0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
-  ];
+  ]);
 
   function utf8Bytes(str) {
     var out = [];
     for (var i = 0; i < str.length; i++) {
       var cp = str.charCodeAt(i);
-      if (cp >= 0xd800 && cp <= 0xdbff && i + 1 < str.length) {
-        var low = str.charCodeAt(i + 1);
-        if (low >= 0xdc00 && low <= 0xdfff) { cp = 0x10000 + ((cp - 0xd800) << 10) + (low - 0xdc00); i++; }
+      if (cp >= 0xd800 && cp <= 0xdbff) {
+        if (i + 1 < str.length) {
+          var low = str.charCodeAt(i + 1);
+          if (low >= 0xdc00 && low <= 0xdfff) { cp = 0x10000 + ((cp - 0xd800) << 10) + (low - 0xdc00); i++; }
+          else { cp = 0xfffd; }
+        } else {
+          cp = 0xfffd;
+        }
+      } else if (cp >= 0xdc00 && cp <= 0xdfff) {
+        cp = 0xfffd;
       }
       if (cp <= 0x7f) out.push(cp);
       else if (cp <= 0x7ff) out.push(0xc0 | (cp >>> 6), 0x80 | (cp & 0x3f));
@@ -1464,27 +1540,30 @@
   // W3C-VC field NAMES (issuer / issuanceDate / credentialSubject / achievement)
   // without the JSON-LD stack. Deterministic: pass issuanceDate (nowISO) in.
   function buildCredentialPayload(record, issuerName, nowISO) {
-    record = record || {};
+    record = (record && typeof record === 'object' && !Array.isArray(record)) ? record : {};
+    var strOrNull = function (v) { return (typeof v === 'string' && v.trim()) ? v : null; };
     var per = Array.isArray(record.perActivity) ? record.perActivity : [];
+    var modTitle = strOrNull(record.moduleTitle);
+    var modId = strOrNull(record.moduleId);
     return {
       schema_version: CREDENTIAL_SCHEMA_VERSION,
       type: 'PdCompletionAttestation',
-      issuer: { name: issuerName || 'AlloFlow PD' },
-      issuanceDate: nowISO || null,
+      issuer: { name: strOrNull(issuerName) || 'AlloFlow PD' },
+      issuanceDate: strOrNull(nowISO),
       credentialSubject: {
-        name: (record.learner && record.learner.name) || null,
-        moduleId: record.moduleId || null,
-        moduleVersion: record.moduleVersion || null,
-        contentDigest: record.contentDigest || null,
-        moduleTitle: record.moduleTitle || null,
-        topic: record.topic || null,
+        name: strOrNull(record.learner && record.learner.name),
+        moduleId: modId,
+        moduleVersion: strOrNull(record.moduleVersion),
+        contentDigest: strOrNull(record.contentDigest),
+        moduleTitle: modTitle,
+        topic: strOrNull(record.topic),
         complete: !!record.complete,
-        completedAt: record.completedAt || null,
+        completedAt: strOrNull(record.completedAt),
         achievement: {
-          name: record.moduleTitle || record.moduleId || 'PD module',
-          moduleVersion: record.moduleVersion || null,
-          contentDigest: record.contentDigest || null,
-          activitiesPassed: per.filter(function (p) { return p && p.passed; }).length,
+          name: modTitle || modId || 'PD module',
+          moduleVersion: strOrNull(record.moduleVersion),
+          contentDigest: strOrNull(record.contentDigest),
+          activitiesPassed: per.filter(function (p) { return p && p.passed === true; }).length,
           activitiesTotal: per.length
         }
       },
@@ -1492,7 +1571,7 @@
     };
   }
 
-  var API = {
+  var API = Object.freeze({
     SCHEMA_VERSION: SCHEMA_VERSION,
     COMPLETION_SCHEMA_VERSION: COMPLETION_SCHEMA_VERSION,
     REVIEW_CANDIDATE_SCHEMA_VERSION: REVIEW_CANDIDATE_SCHEMA_VERSION,
@@ -1521,7 +1600,7 @@
     moduleContentDigest: moduleContentDigest,
     sanitizeQualitativeAnalysis: sanitizeQualitativeAnalysis,
     buildCredentialPayload: buildCredentialPayload
-  };
+  });
 
   if (typeof window !== 'undefined') {
     window.AlloModules = window.AlloModules || {};

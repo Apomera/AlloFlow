@@ -722,7 +722,8 @@ async function installVendorRuntime(page, options) {
   const strict = process.env.ALLOFLOW_MCP_OFFLINE_ASSETS !== '0';
   const documentRuntime = loadDocumentRuntime();
   if (!documentRuntime.ok) throw new Error('Verified document runtime unavailable: ' + documentRuntime.error);
-  await page.route('**/*', async (route) => {
+  const routeTarget = typeof page.context === 'function' && page.context() ? page.context() : page;
+  await routeTarget.route('**/*', async (route) => {
     let parsed;
     try { parsed = new URL(route.request().url()); } catch (_) { return route.abort(); }
     if (parsed.href === VENDOR_BOOT_URL) {
@@ -746,7 +747,22 @@ async function installVendorRuntime(page, options) {
     if (parsed.protocol === 'about:' || parsed.protocol === 'blob:' || parsed.protocol === 'data:') {
       return route.continue();
     }
-    if (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost' || parsed.hostname === '[::1]') {
+    const hostNorm = String(parsed.hostname || '').toLowerCase().replace(/^\[|\]$/g, '').replace(/\.+$/, '');
+    if (
+      !hostNorm
+      || hostNorm === 'localhost'
+      || hostNorm.endsWith('.localhost')
+      || hostNorm.endsWith('.local')
+      || hostNorm.endsWith('.internal')
+      || /^127\./.test(hostNorm)
+      || /^0\./.test(hostNorm)
+      || /^10\./.test(hostNorm)
+      || /^169\.254\./.test(hostNorm)
+      || /^192\.168\./.test(hostNorm)
+      || /^172\.(?:1[6-9]|2\d|3[01])\./.test(hostNorm)
+      || /^100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./.test(hostNorm)
+      || hostNorm === '::' || hostNorm === '::1' || hostNorm.includes(':')
+    ) {
       return route.abort();
     }
     if (route.request().method() === 'GET' && !parsed.search && !parsed.hash) {
@@ -886,16 +902,30 @@ function installChromium(onLog) {
   return new Promise((resolve) => {
     const { spawn } = require('child_process');
     rlog('Downloading Chromium via Playwright (' + res.pkg + ') — this is a one-time ~150-250MB download...');
-    const child = spawn(process.execPath, [res.cliPath, 'install', 'chromium'], { stdio: ['ignore', 'pipe', 'pipe'] });
+    const installEnv = { ...process.env };
+    for (const k of Object.keys(installEnv)) {
+      if (/(?:API_KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE_KEY)/i.test(k)
+        || ['NODE_OPTIONS', 'JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS'].includes(k.toUpperCase())) {
+        delete installEnv[k];
+      }
+    }
+    const child = spawn(process.execPath, [res.cliPath, 'install', 'chromium'], { env: installEnv, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true });
     let tail = '';
+    let settled = false;
+    const done = (val) => { if (settled) return; settled = true; clearTimeout(timer); resolve(val); };
+    const timer = setTimeout(() => {
+      try { child.kill(); } catch (_) {}
+      done({ installed: false, error: 'Chromium installer timed out after 10 minutes.' });
+    }, 10 * 60 * 1000);
+    if (typeof timer.unref === 'function') timer.unref();
     const sink = (chunk) => { const t = String(chunk); tail = (tail + t).slice(-2000); const line = t.trim().split('\n').pop(); if (line) rlog('installer: ' + line.slice(0, 200)); };
     child.stdout.on('data', sink);
     child.stderr.on('data', sink);
-    child.on('error', (e) => resolve({ installed: false, error: 'Installer failed to start: ' + e.message }));
+    child.on('error', (e) => done({ installed: false, error: 'Installer failed to start: ' + e.message }));
     child.on('exit', (code) => {
       const after = resolveChromium();
-      if (after.installed) resolve({ installed: true });
-      else resolve({ installed: false, error: 'Installer exited with code ' + code + ' but the browser binary is still missing. Last output: ' + tail.slice(-400) });
+      if (after.installed) done({ installed: true });
+      else done({ installed: false, error: 'Installer exited with code ' + code + ' but the browser binary is still missing. Last output: ' + tail.slice(-400) });
     });
   });
 }
@@ -1600,7 +1630,7 @@ function createDriver(options) {
     const context = trackRunContext(
       runState,
       await abortablePromise(
-        b.newContext(),
+        b.newContext({ serviceWorkers: 'block' }),
         signal,
         (lateContext) => lateContext && lateContext.close && lateContext.close(),
       ),
@@ -1700,7 +1730,7 @@ function createDriver(options) {
     const context = trackRunContext(
       runState,
       await abortablePromise(
-        b.newContext(),
+        b.newContext({ serviceWorkers: 'block' }),
         signal,
         (lateContext) => lateContext && lateContext.close && lateContext.close(),
       ),
@@ -2855,10 +2885,10 @@ function createDriver(options) {
             const end = (m[1] && m[2]) ? Math.min(parseInt(m[2], 10), size - 1) : size - 1;
             if (!(start >= 0 && start <= end && end < size)) { res.writeHead(416, { 'Content-Range': 'bytes */' + size }); res.end(); return; }
             res.writeHead(206, { 'Content-Range': 'bytes ' + start + '-' + end + '/' + size, 'Content-Length': end - start + 1 });
-            fs.createReadStream(f, { start, end }).pipe(res);
+            fs.createReadStream(f, { start, end }).on('error', () => { try { res.destroy(); } catch (_) {} }).pipe(res);
           } else {
             res.writeHead(200, { 'Content-Length': size });
-            fs.createReadStream(f).pipe(res);
+            fs.createReadStream(f).on('error', () => { try { res.destroy(); } catch (_) {} }).pipe(res);
           }
         } catch (_) { try { res.writeHead(500); res.end(); } catch (_2) {} }
       });
@@ -2996,7 +3026,7 @@ function createDriver(options) {
       const javaEnv = { ...process.env };
       for (const k of Object.keys(javaEnv)) {
         if (/(?:API_KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE_KEY)/i.test(k)
-          || ['NODE_OPTIONS', 'JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS'].includes(k)) {
+          || ['NODE_OPTIONS', 'JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS'].includes(k.toUpperCase())) {
           delete javaEnv[k];
         }
       }
@@ -3161,7 +3191,7 @@ function createDriver(options) {
     let context = null;
     let closeOnAbort = null;
     try {
-      context = await abortablePromise(b.newContext(), signal, (lateContext) => lateContext?.close?.());
+      context = await abortablePromise(b.newContext({ serviceWorkers: 'block' }), signal, (lateContext) => lateContext?.close?.());
       const page = await abortablePromise(context.newPage(), signal);
       if (process.env.ALLOFLOW_MCP_VERBOSE === '1') page.on('console', (m) => rlog('verapdf console: ' + m.text().slice(0, 300)));
       closeOnAbort = () => { try { context.close().catch(() => {}); } catch (_) {} };
@@ -3599,7 +3629,7 @@ function createDriver(options) {
       var mediaEntries = [];
       var mediaExts = {};
       var nextImgId = 1;
-      var numRefToId = {};
+      var numRefToId = Object.create(null);
       var numConfigs = (opts.numbering && Array.isArray(opts.numbering.config)) ? opts.numbering.config : [];
       for (var ni = 0; ni < numConfigs.length; ni++) {
         if (numConfigs[ni] && numConfigs[ni].reference) numRefToId[numConfigs[ni].reference] = ni + 2;
@@ -3715,8 +3745,8 @@ function createDriver(options) {
           for (var ci = 0; ci < cells.length; ci++) {
             emitCovered();
             var co = (cells[ci] && cells[ci].opts) || {};
-            var cSpan = Math.max(1, Number(co.columnSpan || 1));
-            var rSpan = Math.max(1, Number(co.rowSpan || 1));
+            var cSpan = Math.min(256, Math.max(1, Math.trunc(Number(co.columnSpan) || 1)));
+            var rSpan = Math.min(1000, Math.max(1, Math.trunc(Number(co.rowSpan) || 1)));
             var tcPr = [];
             if (cSpan > 1) tcPr.push('<w:gridSpan w:val="' + cSpan + '"/>');
             if (rSpan > 1) {
@@ -3733,8 +3763,9 @@ function createDriver(options) {
           if (col > maxCols) maxCols = col;
           return '<w:tr>' + (trPr.length ? '<w:trPr>' + trPr.join('') + '</w:trPr>' : '') + cellsXml.join('') + '</w:tr>';
         }).join('');
-        var gridColW = Math.max(720, Math.floor(9360 / Math.max(1, maxCols)));
-        var tblGridXml = '<w:tblGrid>' + Array.from({ length: Math.max(1, maxCols) }, function () {
+        var safeMaxCols = Math.min(256, Math.max(1, maxCols));
+        var gridColW = Math.max(720, Math.floor(9360 / safeMaxCols));
+        var tblGridXml = '<w:tblGrid>' + Array.from({ length: safeMaxCols }, function () {
           return '<w:gridCol w:w="' + gridColW + '"/>';
         }).join('') + '</w:tblGrid>';
         return '<w:tbl><w:tblPr><w:tblStyle w:val="' + xmlEsc(o.style || 'TableGrid') + '"/>'
@@ -3947,7 +3978,7 @@ function createDriver(options) {
       throw new Error(EXPORT_MODULE + ' is missing from ' + ASSETS_ROOT + ' — this connector build cannot export Office formats.');
     }
     const b = await getBrowser();
-    const context = await b.newContext();
+    const context = await b.newContext({ serviceWorkers: 'block' });
     try {
       const page = await context.newPage();
       const pageErrors = [];
@@ -4026,7 +4057,7 @@ function createDriver(options) {
     const fileStem = title.replace(/[\\/:*?"<>|\x00-\x1f]/g, '_').replace(/^\.+|\.+$/g, '').slice(0, 120) || 'document';
 
     const b = await getBrowser();
-    const context = await b.newContext();
+    const context = await b.newContext({ serviceWorkers: 'block' });
     try {
       const { page, pageErrors } = await loadViewModulePage(context, rlog, format);
       const built = await page.evaluate(({ html, title: ttl, format: fmt }) => {
@@ -4137,7 +4168,7 @@ function createDriver(options) {
     }
     requireModuleFiles();
     const b = await getBrowser();
-    const context = await b.newContext();
+    const context = await b.newContext({ serviceWorkers: 'block' });
     try {
       const page = await context.newPage();
       await installVendorRuntime(page, { loadAxe: true, loadPdfLib: o.loadPdfLib === true, loadCore: o.loadCore === true });
@@ -4432,7 +4463,7 @@ function createDriver(options) {
     const o = opts || {};
     if (o.mode !== 'outline' && o.mode !== 'edit') throw new Error('accessible_html_mode_unknown');
     const b = await getBrowser();
-    const context = await b.newContext();
+    const context = await b.newContext({ serviceWorkers: 'block' });
     try {
       const page = await context.newPage();
       await page.route('**/*', (route) => (/^(?:about|blob|data):/i.test(route.request().url()) ? route.continue() : route.abort()));

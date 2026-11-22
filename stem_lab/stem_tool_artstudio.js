@@ -8,6 +8,7 @@
 // Ensure window.StemLab is available before registering tools.
 // If stem_lab_module.js hasn't loaded yet, create the registry stub.
 function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr = { inches: 'inch', boxes: 'box', copies: 'copy', batches: 'batch', categories: 'category', entries: 'entry', halves: 'half', shelves: 'shelf', tries: 'try', classes: 'class', guesses: 'guess', quizzes: 'quiz', feet: 'foot', people: 'person', children: 'child', volcanoes: 'volcano' }; return String(s).replace(/(^|[^\d.,\-−\/:])([Tt]here are )?1 ((?:square|cubic|unit|equal|full|whole|live|alive|dying|new|more|fewer|extra|small|real|complete|separate|shaded|missed|remaining|plotted|turning|significant|decimal|wrong|required|sample|spaceship|part|path|trail|walking|cool|factor|zero|loose|trading|question|bottom|planned|residual|imperial|different|two-way|best-fit) )?((?:dot|row|column|square|tile|unit|piece|part|group|hop|jump|step|cup|stack|point|value|cell|face|block|marker|answer|question|problem|cube|counter|item|round|badge|generation|meter|metre|kilometer|kilometre|centimeter|centimetre|millimeter|millimetre|liter|litre|gram|kilogram|gallon|yard|mile|hectare|acre|teaspoon|tablespoon|ounce|pound|cent|dollar|coin|degree|space|place|side|second|minute|hour|day|week|month|year|apple|sticker|pencil|chair|student|bag|muffin|trial|rule|sector|shot|hundredth|tenth|thousandth|third|fourth|fifth|sixth|eighth|twelfth|quarter|whole|table|plant|marble|card|seat|ball|book|sample|ticket|tick|check|number|crayon|pack|grape|attempt|page|seed|bead|cookie|ribbon|caterpillar|feather|tray|egg|edge|mission|serving|member|dig|field|angle|birth|death|tone|parcel|prime|player|bucket|beat|pet|line|bar|slice|bin|record|response|pair|outlier|orange|crate|disk|mark|length|car|desk|tree|chocolate|challenge|section|hit|spot|landmark|pool|bee|carrot|textbook|elephant|bottle|tub|sneeze|screen|room|pin|ray|diagonal|corner|polygon|survivor|neighbour|neighbor|neighbourhood|observation|pattern|period|change|edit|stop|plan|home|wedge|figure|estimate|layer|wave|word|image|note|lesson|star|color|colour|photo|airport|event|earthquake|quake|eruption|droplet|stage|input|design|topic|case|cycle|pole|location|objective|character|credit|plate|pick|result|sound)s|inches|boxes|copies|batches|categories|entries|halves|shelves|tries|classes|guesses|quizzes|feet|people|children|volcanoes)\b( are| were| have| make| fit| remain| get| meet| need)?/g, function (m, pre, there, mod, noun, verb, at, all) { if (/(?:\b(?:Grade|Row|Column|Group|Team|Player|Level|Round|Step|Set|Part|Page|Table|Type|Day|Week|Stage|Trial|Test|Sample|Question|Problem|Card|Box|Line|Side|Figure|Item|Number|Chapter|Section|Area|Zone|Class|Tier|Unit|Lesson|Module|Generation)|[×÷+*]) $/i.test(all.slice(0, at + pre.length))) return m; if (/^(?:square|cube|round|point|change|group)s$/.test(noun) && /^ (?:to|up|down|into)\b/.test(all.slice(at + m.length))) return m; return pre + (there ? there.replace('are', 'is') : '') + '1 ' + (mod || '') + (irr[noun] || noun.slice(0, -1)) + (verb === ' are' ? ' is' : verb === ' were' ? ' was' : verb === ' have' ? ' has' : verb ? verb + 's' : ''); }).replace(/\b1 (row|group) of (\d+) make\b/g, '1 $1 of $2 makes'); }
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -29,6 +30,7 @@ window.StemLab = window.StemLab || {
     try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
   }
 };
+}
 // ═══ End Guard ═══
 
 (function() {
@@ -1402,7 +1404,7 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
   (function() {
-    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
@@ -1410,12 +1412,47 @@ window.StemLab = window.StemLab || {
   })();
 
 
-  // ── Audio (auto-injected) ──
+  // ── Audio (auto-injected) & safety helpers ──
   var _artAC = null;
-  function getArtAC() { if (!_artAC) { try { _artAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_artAC && _artAC.state === "suspended") { try { _artAC.resume(); } catch(e) {} } return _artAC; }
-  function artTone(f,d,tp,v) { var ac = getArtAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function _artIsGlobalMuted() {
+    return typeof window !== 'undefined' && !!(window.__alloGlobalMuted || window._alloGlobalMute);
+  }
+  function _artSafeJsonParse(raw) {
+    return JSON.parse(raw, function(k, v) {
+      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+    });
+  }
+  function _artCrisisCheck(text) {
+    try {
+      if (typeof window === 'undefined' || !text) return null;
+      var s = String(text);
+      if (typeof window.safeRehearseCheck === 'function') {
+        var r = window.safeRehearseCheck(s);
+        if (r && (r.blocked || r.crisis || r.isCrisis || r.flagged)) return r;
+      }
+      if (window.SafetyContentChecker && typeof window.SafetyContentChecker.check === 'function') {
+        var r2 = window.SafetyContentChecker.check(s);
+        if (r2 && (r2.blocked || r2.crisis || r2.isCrisis || r2.flagged)) return r2;
+      }
+      if (typeof window.checkStudentSafety === 'function') {
+        var r3 = window.checkStudentSafety(s);
+        if (r3 && (r3.blocked || r3.crisis || r3.isCrisis || r3.flagged)) return r3;
+      }
+    } catch (_) {}
+    return null;
+  }
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function' && !window.__alloArtMuteListenerAdded) {
+    window.__alloArtMuteListenerAdded = true;
+    window.addEventListener('alloflow-mute-changed', function() {
+      if (_artIsGlobalMuted() && typeof window.speechSynthesis !== 'undefined') {
+        try { window.speechSynthesis.cancel(); } catch (_) {}
+      }
+    });
+  }
+  function getArtAC() { if (_artIsGlobalMuted()) return null; if (!_artAC) { try { _artAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_artAC && _artAC.state === "suspended") { try { _artAC.resume(); } catch(e) {} } return _artAC; }
+  function artTone(f,d,tp,v) { if (_artIsGlobalMuted()) return; var ac = getArtAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxArtClick() { artTone(600, 0.03, "sine", 0.04); }
-  function sfxArtSuccess() { artTone(523, 0.08, "sine", 0.07); setTimeout(function() { artTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { artTone(784, 0.1, "sine", 0.08); }, 140); }
+  function sfxArtSuccess() { if (_artIsGlobalMuted()) return; artTone(523, 0.08, "sine", 0.07); setTimeout(function() { if (!_artIsGlobalMuted()) artTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { if (!_artIsGlobalMuted()) artTone(784, 0.1, "sine", 0.08); }, 140); }
 
   // One bounded geometric model drives progressive drawing and full PNG/SVG
   // exports. Integer radii guarantee a finite closure period.
@@ -1826,6 +1863,7 @@ window.StemLab = window.StemLab || {
     canvas.onpointerup=canvas.onpointercancel=canvas.onlostpointercapture=finishPointer;
     canvas.onfocus=function(){updateCursor(true);};canvas.onblur=function(){updateCursor(false);};
     canvas.onkeydown=function(event){
+      if(event.isComposing||event.keyCode===229)return;
       if((event.ctrlKey||event.metaKey)&&['z','y'].indexOf(event.key.toLowerCase())>=0){event.preventDefault();historyAction(event.key.toLowerCase()==='z'&&!event.shiftKey);return;}
       if(event.ctrlKey||event.metaKey||restoring||canvas._spinPointerDown)return;
       var step=event.altKey?1:10,moved=true;
@@ -2213,7 +2251,7 @@ window.StemLab = window.StemLab || {
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
-    if (document.getElementById('allo-live-artstudio')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-artstudio')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-artstudio';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -2391,6 +2429,8 @@ window.StemLab = window.StemLab || {
     });
   }
 
+  if (typeof window === 'undefined' || !window.StemLab || typeof window.StemLab.registerTool !== 'function') { return; }
+
   window.ArtStudioArtistExplorer = {
     version: 2,
     profiles: ARTIST_EXPLORER_PROFILES.slice(),
@@ -2435,13 +2475,33 @@ window.StemLab.registerTool('artStudio', {
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData;
-      var setLabToolData = ctx.setToolData;
+      var _rawSetLabToolData = ctx.setToolData;
+      var setLabToolData = typeof _rawSetLabToolData === 'function' ? function(updater) {
+        if (typeof updater === 'function') {
+          return _rawSetLabToolData(function(prev) {
+            var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+            if (!base.artStudio || typeof base.artStudio !== 'object' || Array.isArray(base.artStudio)) {
+              base = Object.assign({}, base, { artStudio: {} });
+            }
+            return updater(base);
+          });
+        }
+        return _rawSetLabToolData(updater);
+      } : function() {};
       var setStemLabTool = ctx.setStemLabTool;
       var setStemLabTab = ctx.setStemLabTab;
       var stemLabTab = ctx.stemLabTab || 'explore';
       var stemLabTool = ctx.stemLabTool;
       var toolSnapshots = ctx.toolSnapshots;
-      var setToolSnapshots = ctx.setToolSnapshots;
+      var _rawSetToolSnapshots = ctx.setToolSnapshots;
+      var setToolSnapshots = typeof _rawSetToolSnapshots === 'function' ? function(updater) {
+        if (typeof updater === 'function') {
+          return _rawSetToolSnapshots(function(prev) {
+            return updater(Array.isArray(prev) ? prev : []);
+          });
+        }
+        return _rawSetToolSnapshots(updater);
+      } : function() {};
       var addToast = ctx.addToast;
       // `var t = ctx.t` removed 2026-09-21: declared, never called. This tool already uses the __alloT wrapper; the bare alias drops the English fallback, so leaving it invites a future edit to ship raw keys.
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
@@ -2468,10 +2528,14 @@ window.StemLab.registerTool('artStudio', {
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
       // Null unless the host says the kind is usable: every AI sculpt / depth / motion control below already gates on these.
-      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function') ? ctx.callGemini : null;
-      var callTTS = ctx.callTTS;
-      var callImagen = (ctx.aiImagesAvailable !== false && typeof ctx.callImagen === 'function') ? ctx.callImagen : null;
-      var callGeminiVision = ctx.callGeminiVision;
+      var _artWin = (typeof window !== 'undefined') ? window : {};
+      var _artPolicy = (_artWin.ALLOFLOW_MANAGED_AI_POLICY && typeof _artWin.ALLOFLOW_MANAGED_AI_POLICY === 'object') ? _artWin.ALLOFLOW_MANAGED_AI_POLICY : null;
+      var _artPolicyDeny = !!(_artPolicy && (_artPolicy.studentAiDisabled === true || _artPolicy.aiDisabled === true || _artPolicy.allowAi === false || _artPolicy.disabled === true || _artPolicy.locked === true));
+      var _artAiHardDeny = !!(ctx.aiAvailable === false || _artWin._alloQrBlocked === true || _artWin.__alloStudentAiDisabled === true || _artWin.__alloAiSecretsLocked === true || _artWin.__alloQrStudentMode === true || _artWin.__alloAiUsable === false || _artPolicyDeny);
+      var callGemini = (!_artAiHardDeny && typeof ctx.callGemini === 'function') ? ctx.callGemini : null;
+      var callTTS = (_artWin._alloQrBlocked !== true && typeof ctx.callTTS === 'function') ? function() { if (_artIsGlobalMuted()) return Promise.resolve(null); return ctx.callTTS.apply(ctx, arguments); } : null;
+      var callImagen = (!_artAiHardDeny && ctx.aiImagesAvailable !== false && typeof ctx.callImagen === 'function') ? ctx.callImagen : null;
+      var callGeminiVision = (!_artAiHardDeny && typeof ctx.callGeminiVision === 'function') ? ctx.callGeminiVision : null;
       var gradeLevel = ctx.gradeLevel;
       var studioGradeBand = (function () {
         if (typeof ctx.gradeBand === 'string' && ctx.gradeBand) return ctx.gradeBand.toLowerCase();
@@ -4561,6 +4625,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
             return artwork && typeof artwork.then === 'function' ? artwork.then(deliverArtwork) : deliverArtwork(artwork);
           };
           const artStudioTabKeyDown = function (e, index, tabOrder) {
+            if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
             var order = Array.isArray(tabOrder) && tabOrder.length ? tabOrder : ART_STUDIO_TAB_ORDER;
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
@@ -5298,7 +5363,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
             }
             canvas.onpointerup=canvas.onpointercancel=canvas.onlostpointercapture=finishPointer;
             canvas.onkeydown=function(event){
-              if(event.ctrlKey||event.metaKey||event.altKey)return;
+              if(event.isComposing||event.keyCode===229||event.ctrlKey||event.metaKey||event.altKey)return;
               var hue=wheelHistoryRef.current.current.hue,step=event.shiftKey?10:1,handled=true;
               if(event.key==='ArrowRight'||event.key==='ArrowUp')hue+=step;
               else if(event.key==='ArrowLeft'||event.key==='ArrowDown')hue-=step;
@@ -6284,6 +6349,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
             function tick(now) {
               if (!canvas.isConnected) { running = false; return; }
               if (paused) { running = false; render(); return; }
+              if (typeof document !== 'undefined' && document.hidden) { lastTime = now; frameId = requestAnimationFrame(tick); return; }
               var delta = Math.min(0.12, Math.max(0, (now - lastTime) / 1000));
               lastTime = now;
               accumulator += delta;
@@ -6928,6 +6994,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
             canvas.onfocus = function () {if(params.panMode || drawing || panning)hideBrushCursor();else showKeyboardBrush(true);};
             canvas.onblur = function(){keyboardCursorActive=false;finishWatercolorPointer(null,true);hideBrushCursor();};
             canvas.onkeydown = function (event) {
+              if (event.isComposing || event.keyCode === 229) return;
               var historyKey = String(event.key || '').toLowerCase();
               if (!event.ctrlKey && !event.metaKey && !event.altKey && historyKey === 'p') {
                 event.preventDefault();
@@ -7469,6 +7536,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
               drawPixelGrid();
             };
             canvas.onkeydown = function (event) {
+              if (event.isComposing || event.keyCode === 229) return;
               canvas._pixelHoverCell = null;
               if (event.key === 'Escape') { canvas._pixelCancelGesture(); return; }
               if ((event.ctrlKey || event.metaKey) && ['z', 'y'].indexOf(event.key.toLowerCase()) >= 0) {
@@ -8094,6 +8162,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
             canvas.onfocus = function () {canvas._symKeyboardFocused=true;updateKeyboardCursor(true);};
             canvas.onblur = function () {canvas._symKeyboardFocused=false;updateKeyboardCursor(false);};
             canvas.onkeydown = function (event) {
+              if (event.isComposing || event.keyCode === 229) return;
               if(event.key==='Escape' && (canvas._symDrawing || canvas._symPan)){event.preventDefault();finishPointer(null,true);return;}
               var historyKey = String(event.key || '').toLowerCase();
               if ((event.ctrlKey || event.metaKey) && historyKey === 'z') {
@@ -8399,6 +8468,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
             function updateCursor(show){var overlay=canvas.parentElement&&canvas.parentElement.querySelector('[data-anim-depth-keyboard-cursor="true"]');if(overlay){overlay.style.left=((canvas.offsetLeft||0)+cursor.x/W*(canvas.clientWidth||W)-10)+'px';overlay.style.top=((canvas.offsetTop||0)+cursor.y/H*(canvas.clientHeight||H)-10)+'px';overlay.style.display=show?'block':'none';}canvas.setAttribute('aria-label',formatArtStudioLearningText(__alloT('stem.artstudio.anim_depth_cursor_label','Animation depth-map drawing canvas. Current brush is {brush}. Keyboard cursor at x {x}, y {y}.'),{brush:__alloT('stem.artstudio.a11y_depth_'+canvas._adBrush.level,canvas._adBrush.level),x:Math.round(cursor.x),y:Math.round(cursor.y)}));}
             canvas._adCursorUpdate=updateCursor;canvas.onfocus=function(){canvas._adKeyboardFocused=true;updateCursor(true);};canvas.onblur=function(){finish();canvas._adKeyboardFocused=false;updateCursor(false);};
             canvas.onkeydown=function(event){
+              if(event.isComposing||event.keyCode===229)return;
               if(!active())return;
               var key=String(event.key||'').toLowerCase();if((event.ctrlKey||event.metaKey)&&['z','y'].indexOf(key)>=0){event.preventDefault();animationDepthHistory(key==='y'||event.shiftKey);return;}if(event.key==='Escape'&&canvas._adStroke){event.preventDefault();finish();return;}if(canvas._artStudioRestoring||canvas._adStroke)return;
               var previous={x:cursor.x,y:cursor.y},step=event.altKey?1:10,moved=true;if(event.key==='ArrowLeft')cursor.x=Math.max(0,cursor.x-step);else if(event.key==='ArrowRight')cursor.x=Math.min(W,cursor.x+step);else if(event.key==='ArrowUp')cursor.y=Math.max(0,cursor.y-step);else if(event.key==='ArrowDown')cursor.y=Math.min(H,cursor.y+step);else if(event.key==='Home')cursor.x=W/2,cursor.y=H/2;else moved=false;
@@ -8486,6 +8556,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
             }
             canvas.onfocus=function(){updateCursor(true);};canvas.onblur=function(){finish();updateCursor(false);};
             canvas.onkeydown=function(event){
+              if(event.isComposing||event.keyCode===229)return;
               if((event.ctrlKey||event.metaKey)&&['z','y'].indexOf(event.key.toLowerCase())>=0){event.preventDefault();canvas._dmHistoryAction(event.key.toLowerCase()==='y'||event.shiftKey);return;}
               var before={x:cursor.x,y:cursor.y},step=event.altKey?1:10,moved=true;
               if(event.key==='ArrowLeft')cursor.x=Math.max(0,cursor.x-step);else if(event.key==='ArrowRight')cursor.x=Math.min(W,cursor.x+step);else if(event.key==='ArrowUp')cursor.y=Math.max(0,cursor.y-step);else if(event.key==='ArrowDown')cursor.y=Math.min(H,cursor.y+step);else if(event.key==='Home')cursor.x=W/2,cursor.y=H/2;else moved=false;
@@ -8527,7 +8598,9 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
               var job=null,raf=null,signature='',patternRef=null;
               canvas._stereoCancel=function(){if(raf!==null)cancelAnimationFrame(raf);raf=null;job=null;};
               function draw(all){
-                if(!job||!canvas.isConnected)return;var end=all?canvas.height:Math.min(canvas.height,job.rows+32);
+                if(!job||!canvas.isConnected)return;
+                if(!all && typeof document !== 'undefined' && document.hidden){raf=requestAnimationFrame(function(){raf=null;draw(false);});return;}
+                var end=all?canvas.height:Math.min(canvas.height,job.rows+32);
                 artStudioStereoRows(job.image,job.depth,job.settings.model,job.settings.pattern,job.rows,end);ctx.putImageData(job.image,0,0,0,job.rows,canvas.width,end-job.rows);job.rows=end;
                 canvas.dataset.stereoRows=String(end);canvas.setAttribute('aria-busy',String(end<canvas.height));
                 if(end<canvas.height)raf=requestAnimationFrame(function(){raf=null;draw(false);});
@@ -8609,7 +8682,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
             var buttonClass='rounded-lg border border-violet-300 bg-white px-3 py-2 text-xs font-bold text-violet-900 disabled:opacity-40';
             return React.createElement('div',{'data-artstudio-harmony':'true',className:'space-y-4',
               onPointerDown:harmonyBeginGesture,onPointerUp:harmonyEndGesture,onPointerCancel:harmonyEndGesture,onLostPointerCapture:harmonyEndGesture,onBlur:harmonyEndGesture,
-              onKeyDown:function(event){if(event.defaultPrevented||(event.target&&['text','textarea'].indexOf(event.target.type)>=0))return;if((event.ctrlKey||event.metaKey)&&!event.altKey&&['z','y'].indexOf(event.key.toLowerCase())>=0){event.preventDefault();event.stopPropagation();changeHarmonyHistory(event.key.toLowerCase()==='y'||event.shiftKey);}}},
+              onKeyDown:function(event){if(event.isComposing||event.keyCode===229||event.defaultPrevented||(event.target&&['text','textarea'].indexOf(event.target.type)>=0))return;if((event.ctrlKey||event.metaKey)&&!event.altKey&&['z','y'].indexOf(event.key.toLowerCase())>=0){event.preventDefault();event.stopPropagation();changeHarmonyHistory(event.key.toLowerCase()==='y'||event.shiftKey);}}},
               React.createElement('style',null,'[data-artstudio-harmony] button,[data-artstudio-harmony] input,[data-artstudio-harmony] select{min-height:44px}[data-artstudio-harmony] button{min-width:44px;white-space:normal}[data-artstudio-harmony] input,[data-artstudio-harmony] select,[data-artstudio-harmony] textarea{max-width:100%}[data-harmony-wheel]{width:100%;max-width:560px;height:auto;margin:auto;display:block}[data-harmony-swatches]{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}[data-artstudio-focus="true"] [data-harmony-wheel]{max-width:760px}@media(min-width:1100px){[data-harmony-layout]{grid-template-columns:minmax(0,1fr) 320px}[data-artstudio-focus="true"] [data-harmony-controls]{max-height:78dvh;overflow:auto}}'),
               React.createElement('div',{'data-harmony-layout':'true',className:'grid gap-4 items-start'},
                 React.createElement('section',{'data-harmony-preview':'true',className:'min-w-0 rounded-2xl border border-violet-200 bg-slate-50 p-3'},
@@ -9008,6 +9081,8 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                   return;
 
                 }
+
+                if (typeof document !== 'undefined' && document.hidden) return;
 
                 ctx.drawImage(frames[idx], 0, 0);
 
@@ -9767,7 +9842,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
               'aria-labelledby': "artstudio-thread-kit-title",
               'data-artstudio-thread-kit': "true",
               onKeyDown: function (event) {
-                if (event.defaultPrevented || (event.target && event.target.type === 'text')) return;
+                if (event.isComposing || event.keyCode === 229 || event.defaultPrevented || (event.target && event.target.type === 'text')) return;
                 if ((event.ctrlKey || event.metaKey) && !event.altKey && ['z','y'].indexOf(event.key.toLowerCase()) >= 0) { event.preventDefault(); event.stopPropagation(); changeThreadPaletteHistory(event.key.toLowerCase() === 'y' || event.shiftKey); }
               },
               className: "rounded-2xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 via-white to-sky-50 p-3 shadow-sm"
@@ -9805,7 +9880,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                 React.createElement('legend',{className:'px-1 text-xs font-bold text-violet-900'},formatArtStudioLearningText(__alloT('stem.artstudio.kit_edit_color','Edit color {index}'),{index:threadPaletteIndex+1})),
                 React.createElement('div',{className:'flex items-center gap-2'},
                   React.createElement('input',{type:'color','aria-label':__alloT('stem.artstudio.kit_picker','Selected palette color picker'),value:threadPaletteHex,onChange:function(event){editThreadPaletteHex(event.target.value);},className:'w-14 shrink-0 rounded-lg border border-violet-500 bg-white p-1'}),
-                  React.createElement('label',{className:'min-w-0 flex-1 text-[0.6875rem] font-bold text-slate-700'},__alloT('stem.artstudio.mix_hex','Hex color'),React.createElement('input',{id:'artstudio-kit-hex',type:'text',spellCheck:false,maxLength:7,'aria-label':__alloT('stem.artstudio.kit_hex','Selected palette hex color'),'aria-describedby':'artstudio-kit-hex-help','aria-invalid':draftInvalid,value:threadPaletteHexDraft===null?threadPaletteHex:threadPaletteHexDraft,onChange:function(event){setThreadPaletteHexDraft(event.target.value);},onBlur:function(event){editThreadPaletteHex(event.target.value);},onKeyDown:function(event){if(event.key==='Enter'){event.preventDefault();editThreadPaletteHex(event.target.value);}if(event.key==='Escape'){event.preventDefault();event.stopPropagation();setThreadPaletteHexDraft(null);}},className:'mt-1 block w-full rounded-lg border border-violet-300 px-2 font-mono text-sm text-slate-900'}))),
+                  React.createElement('label',{className:'min-w-0 flex-1 text-[0.6875rem] font-bold text-slate-700'},__alloT('stem.artstudio.mix_hex','Hex color'),React.createElement('input',{id:'artstudio-kit-hex',type:'text',spellCheck:false,maxLength:7,'aria-label':__alloT('stem.artstudio.kit_hex','Selected palette hex color'),'aria-describedby':'artstudio-kit-hex-help','aria-invalid':draftInvalid,value:threadPaletteHexDraft===null?threadPaletteHex:threadPaletteHexDraft,onChange:function(event){setThreadPaletteHexDraft(event.target.value);},onBlur:function(event){editThreadPaletteHex(event.target.value);},onKeyDown:function(event){if(event.isComposing||event.keyCode===229||event.ctrlKey||event.metaKey||event.altKey)return;if(event.key==='Enter'){event.preventDefault();editThreadPaletteHex(event.target.value);}if(event.key==='Escape'){event.preventDefault();event.stopPropagation();setThreadPaletteHexDraft(null);}},className:'mt-1 block w-full rounded-lg border border-violet-300 px-2 font-mono text-sm text-slate-900'}))),
                 React.createElement('p',{id:'artstudio-kit-hex-help',className:'text-[0.6875rem] '+(draftInvalid?'text-red-700':'text-slate-600')},draftInvalid?__alloT('stem.artstudio.mix_invalid_hex','Use #RGB or #RRGGBB. The current color is unchanged.'):__alloT('stem.artstudio.kit_edit_hint','Palette edits stay in this project. Apply a color when you want to use it in your artwork.')),
                 React.createElement('div',{className:'grid grid-cols-3 gap-1'},
                   React.createElement('button',{type:'button',disabled:threadPaletteIndex===0,onClick:function(){moveThreadPaletteColor(-1);},className:'rounded-lg border border-violet-300 bg-white px-1 text-[0.6875rem] font-bold text-violet-900 disabled:opacity-40'},__alloT('stem.artstudio.kit_move_left','Move left')),
@@ -10229,7 +10304,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                 }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_kit_value1_5cdbaab", "Kit{value1}"), { value1: (studioThreadPalette.length ? " (" + studioThreadPalette.length + ")" : "") })),
                 React.createElement("button", { id: "artstudio-learn-button", type: "button", onClick: function () { toggleStudioCoach(); }, className: "px-3 py-2 rounded-xl text-xs font-black " + (studioGuideVisible ? "bg-pink-700 text-white" : "text-pink-800 bg-pink-50 hover:bg-pink-100"), "aria-label": studioGuideVisible ? __alloT("stem.artstudio.learning_close_studio_learning_guide_f7c01d1", "Close Studio learning guide") : __alloT("stem.artstudio.learning_open_studio_learning_guide_66daefb", "Open Studio learning guide"), 'aria-expanded': studioGuideVisible, 'aria-controls': 'artstudio-tour' }, studioGuideVisible ? __alloT("stem.artstudio.learning_close_guide_7674c25", "Close guide") : __alloT("stem.artstudio.learning_learn_ce78afd", "Learn")),
                 React.createElement("button", { id: "artstudio-process-button", type: "button", onClick: function () { if (studioProcessVisible) closeStudioProcess(); else openStudioProcess(); }, className: "px-3 py-2 rounded-xl text-xs font-black " + (studioProcessVisible ? "bg-amber-700 text-white" : "bg-amber-50 text-amber-900 hover:bg-amber-100"), 'aria-label': studioProcessVisible ? __alloT("stem.artstudio.learning_close_process_shelf_e381bb1", "Close Process shelf") : __alloT("stem.artstudio.learning_open_process_shelf_b812ad3", "Open Process shelf"), 'aria-expanded': studioProcessVisible, 'aria-controls': "artstudio-process-shelf" }, formatArtStudioLearningText(__alloT("stem.artstudio.learning_process_value1_34d4fa4", "Process ({value1})"), { value1: (artStudioStudies.length) })),
-                React.createElement("details", { className: "relative", onKeyDown: function (event) { if (event.key === 'Escape' && event.currentTarget.open) { event.preventDefault(); event.currentTarget.open = false; var summary = event.currentTarget.querySelector('summary'); if (summary && typeof summary.focus === 'function') summary.focus(); } } },
+                React.createElement("details", { className: "relative", onKeyDown: function (event) { if (event.isComposing || event.keyCode === 229) return; if (event.key === 'Escape' && event.currentTarget.open) { event.preventDefault(); event.currentTarget.open = false; var summary = event.currentTarget.querySelector('summary'); if (summary && typeof summary.focus === 'function') summary.focus(); } } },
                   React.createElement("summary", { className: "cursor-pointer list-none rounded-xl bg-slate-900 px-3 py-2 text-xs font-black text-white hover:bg-slate-800", 'aria-label': __alloT("stem.artstudio.learning_studio_actions_a34974e", "Studio actions") }, __alloT("stem.artstudio.learning_actions_ff8059d", "Actions")),
                   React.createElement("div", { className: "absolute right-0 mt-2 w-56 space-y-1 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl" },
                     React.createElement("p", { className: "px-2 py-1 text-[0.625rem] font-black uppercase tracking-wider text-slate-500" }, __alloT("stem.artstudio.learning_save_or_continue_in_9842b9c", "Save or continue in")),
@@ -10663,7 +10738,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
             tab === 'colorWheel' && React.createElement('div',{'data-artstudio-wheel-layout':'true',
               onPointerDown:wheelBeginGesture,onPointerUp:wheelEndGesture,onPointerCancel:wheelEndGesture,onBlur:wheelEndGesture,
               onKeyDown:function(event){
-                if(event.target&&event.target.type==='text')return;
+                if(event.isComposing||event.keyCode===229||(event.target&&event.target.type==='text'))return;
                 if((event.ctrlKey||event.metaKey)&&!event.altKey&&['z','y'].indexOf(event.key.toLowerCase())>=0){event.preventDefault();changeWheelHistory(event.key.toLowerCase()==='y'||event.shiftKey);return;}
                 if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].indexOf(event.key)>=0)wheelBeginGesture(event);
               },onKeyUp:wheelEndGesture},
@@ -10678,7 +10753,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                     React.createElement('input',{type:'color',value:wheelHex,'aria-label':__alloT('stem.artstudio.wheel_picker','Wheel color picker'),onChange:function(event){commitWheelHex(event.target.value);},className:'w-16 shrink-0 rounded-lg border border-pink-500 bg-white p-1'}),
                     React.createElement('label',{className:'min-w-0 flex-1 text-xs font-bold text-slate-700'},__alloT('stem.artstudio.mix_hex','Hex color'),
                       React.createElement('input',{type:'text',value:wheelHexDraft===null?wheelHex:wheelHexDraft,maxLength:7,spellCheck:false,'aria-label':__alloT('stem.artstudio.wheel_hex','Wheel hex color'),'aria-invalid':wheelHexDraft!==null&&!artStudioMixerHex(wheelHexDraft),'aria-describedby':'artstudio-wheel-hex-help',
-                        onChange:function(event){setWheelHexDraft(event.target.value);},onBlur:function(event){commitWheelHex(event.target.value);},onKeyDown:function(event){if(event.key==='Enter'){event.preventDefault();commitWheelHex(event.target.value);}if(event.key==='Escape'){event.preventDefault();event.stopPropagation();setWheelHexDraft(null);}},className:'mt-1 block w-full rounded-lg border border-pink-300 px-2 font-mono text-sm text-slate-950'}))),
+                        onChange:function(event){setWheelHexDraft(event.target.value);},onBlur:function(event){commitWheelHex(event.target.value);},onKeyDown:function(event){if(event.isComposing||event.keyCode===229||event.ctrlKey||event.metaKey||event.altKey)return;if(event.key==='Enter'){event.preventDefault();commitWheelHex(event.target.value);}if(event.key==='Escape'){event.preventDefault();event.stopPropagation();setWheelHexDraft(null);}},className:'mt-1 block w-full rounded-lg border border-pink-300 px-2 font-mono text-sm text-slate-950'}))),
                   React.createElement('p',{id:'artstudio-wheel-hex-help',className:'text-xs '+(wheelHexDraft!==null&&!artStudioMixerHex(wheelHexDraft)?'text-red-700':'text-slate-600')},wheelHexDraft!==null&&!artStudioMixerHex(wheelHexDraft)?__alloT('stem.artstudio.mix_invalid_hex','Use #RGB or #RRGGBB. The current color is unchanged.'):__alloT('stem.artstudio.mix_hex_help','Enter a hex color, then press Enter or leave the field.')),
                   [{key:'hue',label:__alloT('stem.artstudio.mix_hue','Hue'),max:359},{key:'sat',label:__alloT('stem.artstudio.saturation','Saturation %'),max:100},{key:'lit',label:__alloT('stem.artstudio.lightness','Lightness %'),max:100}].map(function(channel){return React.createElement('label',{key:channel.key,htmlFor:'artstudio-color-'+channel.key,className:'block text-xs font-bold text-pink-700'},channel.label+': '+wheelDisplay(wheelModel[channel.key]),React.createElement('input',{id:'artstudio-color-'+channel.key,type:'range',min:0,max:channel.max,step:1,value:wheelModel[channel.key],onChange:function(event){var patch={};patch[channel.key]=Number(event.target.value);changeWheel(patch);},className:'block w-full accent-pink-700'}));})
                 ),
@@ -10711,7 +10786,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
             tab === 'mixer' && React.createElement('div',{'data-artstudio-mixer-layout':'true',
               onPointerDown:mixerBeginGesture,onPointerUp:mixerEndGesture,onPointerCancel:mixerEndGesture,onBlur:mixerEndGesture,
               onKeyDown:function(event){
-                if(event.target&&event.target.type==='text')return;
+                if(event.isComposing||event.keyCode===229||(event.target&&event.target.type==='text'))return;
                 if((event.ctrlKey||event.metaKey)&&!event.altKey&&['z','y'].indexOf(event.key.toLowerCase())>=0){event.preventDefault();changeMixerHistory(event.key.toLowerCase()==='y'||event.shiftKey);return;}
                 if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown'].indexOf(event.key)>=0)mixerBeginGesture(event);
               },onKeyUp:mixerEndGesture},
@@ -10736,7 +10811,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                       React.createElement('input',{type:'color',value:color,'aria-label':name+' '+__alloT('stem.artstudio.mix_color_picker','color picker'),onChange:function(event){commitMixerHex(index,event.target.value);},className:'w-16 shrink-0 rounded-lg border border-slate-500 bg-white p-1'}),
                       React.createElement('label',{className:'min-w-0 flex-1 text-xs font-bold text-slate-700'},__alloT('stem.artstudio.mix_hex','Hex color'),React.createElement('input',{type:'text',value:draft===undefined?color:draft,maxLength:7,spellCheck:false,'aria-label':name+' '+__alloT('stem.artstudio.mix_hex','Hex color'),'aria-invalid':invalid,'aria-describedby':'artstudio-mix-hex-help-'+index,
                         onChange:function(event){var value=event.target.value;setMixerHexDrafts(function(previous){var next=Object.assign({},previous);next[index]=value;return next;});},onBlur:function(event){commitMixerHex(index,event.target.value);},
-                        onKeyDown:function(event){if(event.key==='Enter'){event.preventDefault();commitMixerHex(index,event.target.value);}if(event.key==='Escape'){event.preventDefault();event.stopPropagation();setMixerHexDrafts(function(previous){var next=Object.assign({},previous);delete next[index];return next;});}},className:'mt-1 block w-full rounded-lg border border-slate-400 px-2 font-mono text-sm text-slate-950'}))
+                        onKeyDown:function(event){if(event.isComposing||event.keyCode===229||event.ctrlKey||event.metaKey||event.altKey)return;if(event.key==='Enter'){event.preventDefault();commitMixerHex(index,event.target.value);}if(event.key==='Escape'){event.preventDefault();event.stopPropagation();setMixerHexDrafts(function(previous){var next=Object.assign({},previous);delete next[index];return next;});}},className:'mt-1 block w-full rounded-lg border border-slate-400 px-2 font-mono text-sm text-slate-950'}))
                     ),
                     React.createElement('p',{id:'artstudio-mix-hex-help-'+index,className:'text-xs '+(invalid?'text-red-700':'text-slate-600')},invalid?__alloT('stem.artstudio.mix_invalid_hex','Use #RGB or #RRGGBB. The current color is unchanged.'):__alloT('stem.artstudio.mix_hex_help','Enter a hex color, then press Enter or leave the field.')),
                     React.createElement('details',null,
@@ -11676,7 +11751,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
 
             tab === 'contrast' && React.createElement("div", { 'data-artstudio-contrast-layout':'true',
               onPointerDown:contrastBeginGesture,onPointerUp:contrastEndGesture,onPointerCancel:contrastEndGesture,onLostPointerCapture:contrastEndGesture,onBlur:contrastEndGesture,
-              onKeyDown:function(event){if(event.defaultPrevented||(event.target&&['text','textarea'].indexOf(event.target.type)>=0))return;if((event.ctrlKey||event.metaKey)&&!event.altKey&&['z','y'].indexOf(event.key.toLowerCase())>=0){event.preventDefault();event.stopPropagation();changeContrastHistory(event.key.toLowerCase()==='y'||event.shiftKey);}},
+              onKeyDown:function(event){if(event.isComposing||event.keyCode===229||event.defaultPrevented||(event.target&&['text','textarea'].indexOf(event.target.type)>=0))return;if((event.ctrlKey||event.metaKey)&&!event.altKey&&['z','y'].indexOf(event.key.toLowerCase())>=0){event.preventDefault();event.stopPropagation();changeContrastHistory(event.key.toLowerCase()==='y'||event.shiftKey);}},
               className: "grid gap-4 items-start" },
               React.createElement('style',null,'[data-artstudio-contrast-layout]>style{display:none}[data-artstudio-contrast-controls]{order:2;min-width:0}[data-artstudio-contrast-preview]{order:1;min-width:0}[data-artstudio-contrast-layout] button,[data-artstudio-contrast-layout] input{min-height:44px}[data-artstudio-contrast-layout] button{min-width:44px;white-space:normal}[data-artstudio-contrast-layout] input{max-width:100%}@media(min-width:1100px){[data-artstudio-contrast-layout]{grid-template-columns:minmax(0,1fr) 320px}[data-artstudio-contrast-controls]{grid-template-columns:minmax(0,1fr)!important}[data-artstudio-contrast-preview]{position:sticky;top:84px}}'),
               React.createElement("div", { 'data-artstudio-contrast-controls':'true',className: "grid grid-cols-1 md:grid-cols-2 gap-4" },
@@ -12378,9 +12453,12 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                     if (!st.obj || !THREE.Raycaster || !THREE.Vector2) return st.selectedIndex;
                     try {
                       var rect = cnv.getBoundingClientRect();
+                      var pw = rect.width || cnv.clientWidth || cnv.width;
+                      var ph = rect.height || cnv.clientHeight || cnv.height;
+                      if (!pw || !ph) return st.selectedIndex;
                       var pointer = new THREE.Vector2(
-                        ((ev.clientX - rect.left) / (rect.width || cnv.clientWidth || cnv.width)) * 2 - 1,
-                        -((ev.clientY - rect.top) / (rect.height || cnv.clientHeight || cnv.height)) * 2 + 1
+                        ((ev.clientX - rect.left) / pw) * 2 - 1,
+                        -((ev.clientY - rect.top) / ph) * 2 + 1
                       );
                       var raycaster = new THREE.Raycaster();
                       raycaster.setFromCamera(pointer, st.cam);
@@ -12509,6 +12587,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                   cnv.addEventListener('pointercancel', function() { endSculptDrag(true); });
                   cnv.addEventListener('lostpointercapture', function() { endSculptDrag(false); });
                   cnv.onkeydown = function(event) {
+                    if (event.isComposing || event.keyCode === 229) return;
                     var st = cnv._p3d;
                     if (!st) return;
                     var isTransformKey = event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'PageUp' || event.key === 'PageDown';
@@ -12726,10 +12805,15 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                 var runtime = sculptAiRef.current;
                 if (typeof callGemini !== 'function' || runtime.busy) return;
                 var subj = String(d.sculptText || '').trim().slice(0, 1000); if (!subj) return;
+                if (_artCrisisCheck(subj)) {
+                  if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_safety_blocked', 'Please reach out to a trusted adult or counselor for support. AI sculpting paused for safety.'), 'warning');
+                  return;
+                }
                 runtime.busy = true;
                 var version = runtime.version;
                 upd('_sculptPing', Date.now());
-                var prompt = recipe ? P3D.buildRefinePrompt(recipe, subj, { drawnShapes: true }) : P3D.buildRecipePrompt(subj, { drawnShapes: true });
+                var fencedSubj = '<UNTRUSTED_STUDENT_INPUT>' + subj + '</UNTRUSTED_STUDENT_INPUT>';
+                var prompt = recipe ? P3D.buildRefinePrompt(recipe, fencedSubj, { drawnShapes: true }) : P3D.buildRecipePrompt(fencedSubj, { drawnShapes: true });
                 Promise.resolve().then(function () { return callGemini(prompt, false, false, 0.5); }).then(function(resp) {
                   if (!runtime.mounted) return;
                   if (runtime.version !== version) {
@@ -13270,7 +13354,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                     if(index>=total&&!canvas._spiroDone){canvas._spiroDone=true;if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.sr_spirograph_drawing_complete','Spirograph drawing complete.'));}
                   }
                   function draw(to){artStudioSpiroDraw(context,model,points,index,to);index=to;progress();}
-                  function frame(){canvas._spiroAnim=0;if(disposed||!canvas.isConnected||paused)return;draw(Math.min(total,index+speed));schedule();}
+                  function frame(){canvas._spiroAnim=0;if(disposed||!canvas.isConnected||paused)return;if(typeof document!=='undefined'&&document.hidden){schedule();return;}draw(Math.min(total,index+speed));schedule();}
                   function schedule(){if(!disposed&&!paused&&index<total&&!canvas._spiroAnim)canvas._spiroAnim=requestAnimationFrame(frame);}
                   canvas._spiroFinish=function(){stop();draw(total);};
                   canvas._spiroSVG=function(){return artStudioSpiroSVG(model,points);};
@@ -13722,6 +13806,8 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                   canvas.onblur = function() { updateGenCursor(false); };
 
                   canvas.onkeydown = function(event) {
+
+                    if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey) return;
 
                     var step = event.altKey ? 1 : 10;
 
@@ -14209,7 +14295,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                     artStudioStringDraw(target,model,geometry,0,amount);artStudioStringDecorate(target,model,geometry);
                   }
                   function draw(to){index=to;paint(context,index);progress();}
-                  function frame(){canvas._strAnim=0;if(disposed||!canvas.isConnected||paused)return;draw(Math.min(total,index+speed));schedule();}
+                  function frame(){canvas._strAnim=0;if(disposed||!canvas.isConnected||paused)return;if(typeof document!=='undefined'&&document.hidden){schedule();return;}draw(Math.min(total,index+speed));schedule();}
                   function schedule(){if(!disposed&&!paused&&index<total&&!canvas._strAnim)canvas._strAnim=requestAnimationFrame(frame);}
                   canvas._strFinish=function(){stop();draw(total);};
                   canvas._captureArtStudioState=function(){return {strProgress:total?index/total:1,strProgressModel:checkpointKey,strPaused:paused};};
@@ -14513,6 +14599,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                     }
                     canvas.onfocus=function(){updateSelection(true);};canvas.onblur=function(){updateSelection(false);};
                     canvas.onkeydown=function(event){
+                      if(event.isComposing||event.keyCode===229)return;
                       var key=event.key.toLowerCase();
                       if((event.ctrlKey||event.metaKey)&&(key==='z'||key==='y')){event.preventDefault();canvas._tessHistory(key==='y'||event.shiftKey);return;}
                       if(event.key==='Home'){event.preventDefault();selectCenter();updateSelection(true);}
@@ -14723,6 +14810,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                       }
                       function frame(){
                         canvas._fracAnim=0;if(disposed||!canvas.isConnected)return;
+                        if(typeof document!=='undefined'&&document.hidden){canvas._fracAnim=requestAnimationFrame(frame);return;}
                         var from=job.rows;job.renderTo(from+8);
                         if(!reducedMotion||job.rows===512)ctx.putImageData(job.image,0,0,0,reducedMotion?0:from,512,reducedMotion?512:job.rows-from);
                         progress();if(job.rows<512)canvas._fracAnim=requestAnimationFrame(frame);
@@ -14738,7 +14826,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
                       canvas.ondblclick=function(event){var rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;event.preventDefault();canvas.focus({preventScroll:true});zoom(2,(event.clientX-rect.left)/rect.width,(event.clientY-rect.top)/rect.height,true);};
                       function wheel(event){if(!event.deltaY)return;var rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;event.preventDefault();zoom(event.deltaY<0?1.3:1/1.3,(event.clientX-rect.left)/rect.width,(event.clientY-rect.top)/rect.height,false);}
                       canvas.addEventListener('wheel',wheel,{passive:false});
-                      canvas.onkeydown=function(event){var key=event.key.toLowerCase(),m=canvas._fractalModel;
+                      canvas.onkeydown=function(event){if(event.isComposing||event.keyCode===229)return;var key=event.key.toLowerCase(),m=canvas._fractalModel;
                         if((event.ctrlKey||event.metaKey)&&(key==='z'||key==='y')){event.preventDefault();canvas._fractalHistory(key==='y'||event.shiftKey);}
                         else if(key==='+'||key==='='||key==='-'){event.preventDefault();zoom(key==='-'?0.5:2,0.5,0.5,false);}
                         else if(key==='home'){event.preventDefault();canvas._fractalChange({fractalZoom:1,fractalPanX:0,fractalPanY:0});}
@@ -15140,12 +15228,17 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
 
                           onClick: function() {
 
-                            if (!d.stereoAiStr) return;
+                            if (!d.stereoAiStr || typeof callImagen !== 'function') return;
+
+                            if (_artCrisisCheck(d.stereoAiStr)) {
+                              if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_safety_blocked', 'Please reach out to a trusted adult or counselor for support. AI generation paused for safety.'), 'warning');
+                              return;
+                            }
 
                             var requestedDepth=document.getElementById('depthMapCanvas'),requestedOwner=studioCaptureOwnerRef.current;
                             upd('stereoAiGen', 'Depth Map');
 
-                            callImagen('A smooth, high-quality, continuous 3D grayscale depth map of: ' + d.stereoAiStr + '. The closest parts must be pure white, and the furthest background pure black. No text, no floating artifacts. Fill the entire square frame.', 400)
+                            callImagen('A smooth, high-quality, continuous 3D grayscale depth map of: <UNTRUSTED_STUDENT_INPUT>' + String(d.stereoAiStr).slice(0, 500) + '</UNTRUSTED_STUDENT_INPUT>. The closest parts must be pure white, and the furthest background pure black. No text, no floating artifacts. Fill the entire square frame.', 400)
 
                               .then(function(base64) {
 
@@ -15193,11 +15286,16 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
 
                           onClick: function() {
 
-                            if (!d.stereoAiStr) return;
+                            if (!d.stereoAiStr || typeof callImagen !== 'function') return;
+
+                            if (_artCrisisCheck(d.stereoAiStr)) {
+                              if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_safety_blocked', 'Please reach out to a trusted adult or counselor for support. AI generation paused for safety.'), 'warning');
+                              return;
+                            }
 
                             upd('stereoAiGen', 'Pattern');
 
-                            callImagen('A beautiful, abstract, seamless repeating pattern tile texture of: ' + d.stereoAiStr + '. No text, no borders.', 100)
+                            callImagen('A beautiful, abstract, seamless repeating pattern tile texture of: <UNTRUSTED_STUDENT_INPUT>' + String(d.stereoAiStr).slice(0, 500) + '</UNTRUSTED_STUDENT_INPUT>. No text, no borders.', 100)
 
                               .then(function(base64) {
 
@@ -15823,11 +15921,16 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
 
                         onClick: function() {
 
-                          if (!d.stereoAnimAiPrompt) return;
+                          if (!d.stereoAnimAiPrompt || typeof callImagen !== 'function') return;
+
+                          if (_artCrisisCheck(d.stereoAnimAiPrompt)) {
+                            if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_safety_blocked', 'Please reach out to a trusted adult or counselor for support. AI generation paused for safety.'), 'warning');
+                            return;
+                          }
 
                           upd('stereoAnimAiGenerating', true);
 
-                          callImagen('A smooth, high-quality, continuous 3D grayscale depth map of: ' + d.stereoAnimAiPrompt + '. The closest parts must be pure white, and the furthest background pure black. No text, no floating artifacts. Fill the entire square frame.', 400)
+                          callImagen('A smooth, high-quality, continuous 3D grayscale depth map of: <UNTRUSTED_STUDENT_INPUT>' + String(d.stereoAnimAiPrompt).slice(0, 500) + '</UNTRUSTED_STUDENT_INPUT>. The closest parts must be pure white, and the furthest background pure black. No text, no floating artifacts. Fill the entire square frame.', 400)
 
                             .then(function(base64) {
 
@@ -16094,13 +16197,21 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
 
                           }
 
+                          if (_artCrisisCheck(motionPrompt)) {
+                            upd('stereoAnimRendering', false);
+                            if (typeof addToast === 'function') addToast(__alloT('stem.artstudio.toast_safety_blocked', 'Please reach out to a trusted adult or counselor for support. AI motion paused for safety.'), 'warning');
+                            return;
+                          }
+
                           upd('stereoAnimAiMotionStatus', 'Planning pose sequence with Gemini…');
 
                           upd('stereoAnimProgress', 1);
 
+                          var safeMotionPrompt = motionPrompt.slice(0, 500);
+
                           var storyboardPrompt =
                             'You are a storyboard artist planning a looping ' + nF + '-frame stereogram animation.\n\n' +
-                            'Subject: "' + motionPrompt + '"\n\n' +
+                            'Subject: <UNTRUSTED_STUDENT_INPUT>' + safeMotionPrompt + '</UNTRUSTED_STUDENT_INPUT>\n\n' +
                             'Plan exactly ' + nF + ' frames showing this subject in continuous motion.\n' +
                             'Rules (CRITICAL):\n' +
                             '1. The subject must look IDENTICAL across all frames — same anatomy, proportions, breed/species/style. Repeat the subject phrase verbatim at the start of every pose.\n' +
@@ -16120,7 +16231,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
 
                               var dpPrompt = 'A smooth high-quality grayscale depth map: ' + pose + ' ' +
                                 'Closest parts pure white, furthest pure black. No text or artifacts. ' +
-                                'Fill the entire square frame. Subject style: ' + motionPrompt + '.';
+                                'Fill the entire square frame. Subject style: <UNTRUSTED_STUDENT_INPUT>' + safeMotionPrompt + '</UNTRUSTED_STUDENT_INPUT>.';
 
                               callImagen(dpPrompt, 400).then(function(base64) {
 
@@ -16189,7 +16300,7 @@ const isArtLocked = !!(ctx.locked || ctx.teacherLocked || ctx.isLocked);
 
                                   .trim();
 
-                                poses = JSON.parse(cleaned);
+                                poses = _artSafeJsonParse(cleaned);
 
                                 // Some responses come back as { "frames": [...] } or { "poses": [...] }
                                 if (!Array.isArray(poses) && poses && typeof poses === 'object') {

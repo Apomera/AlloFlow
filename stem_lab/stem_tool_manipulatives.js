@@ -717,9 +717,9 @@ window.StemLab = window.StemLab || {
       // Student AI-off: no window.callGemini alias; null unless text AI is usable, so the Tutor button hides.
       var _aiUsable = function (kind, fn) {
         try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
-        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+        return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window.__alloOfflineOnly === true));
       };
-      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && _aiUsable('text', ctx.callGemini)) ? ctx.callGemini : null;
 
       // ── State ──
       var ld = (ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
@@ -1218,10 +1218,10 @@ window.StemLab = window.StemLab || {
         var prompt = 'You are a fun math tutor for kids ages 8-14 in a math manipulatives tool. Mode: ' + manipMode + '. ' + context + ' Score: ' + score.correct + '/' + score.total + '. Streak: ' + streak + '. Give 2-3 SHORT tips or fun facts directly tied to what they are doing right now. Use emoji. Return JSON: {"tips":["...","..."],"funFact":"..."}';
         callGemini(prompt, true, false, 0.8).then(function(resp) {
           try {
-            var parsed = typeof resp === 'string' ? JSON.parse(resp.replace(/```json\s*/g,'').replace(/```/g,'').trim()) : resp;
+            var parsed = typeof resp === 'string' ? JSON.parse(resp.replace(/```json\s*/g,'').replace(/```/g,'').trim(), function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; }) : resp;
             var text = '';
-            if (parsed.tips) parsed.tips.forEach(function(t, i) { text += (i > 0 ? '\n' : '') + t; });
-            if (parsed.funFact) text += '\n\n\uD83D\uDCA1 ' + parsed.funFact;
+            if (parsed && Array.isArray(parsed.tips)) parsed.tips.slice(0, 10).forEach(function(t, i) { text += (i > 0 ? '\n' : '') + String(t == null ? '' : t); });
+            if (parsed && typeof parsed.funFact === 'string' && parsed.funFact) text += '\n\n\uD83D\uDCA1 ' + parsed.funFact;
             upd({ aiInsight: text, aiLoading: false });
           } catch(e) { upd({ aiInsight: typeof resp === 'string' ? resp : 'Keep practicing!', aiLoading: false }); }
         }).catch(function() { upd({ aiInsight: '\u26A0\uFE0F Could not reach AI.', aiLoading: false }); });
@@ -4120,6 +4120,7 @@ window.StemLab = window.StemLab || {
           var a = document.createElement('a');
           a.href = url; a.download = 'manipulatives-library.json';
           document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          setTimeout(function() { try { URL.revokeObjectURL(url); } catch (_) {} }, 15000);
         };
         var importConstr = function(file) {
           if (!file) return;
@@ -4133,14 +4134,21 @@ window.StemLab = window.StemLab || {
               var parsed = JSON.parse(rdr.result, function(k, v) { return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v; });
               if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Invalid library');
               var merged = Object.assign({}, savedConstructions);
-              Object.keys(parsed).forEach(function(k) {
-                if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') merged[k] = parsed[k];
+              var importedKeys = Object.keys(parsed).slice(0, 200);
+              importedKeys.forEach(function(k) {
+                if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
+                if (Object.keys(merged).length >= 200 && !Object.prototype.hasOwnProperty.call(merged, k)) return;
+                var entry = parsed[k];
+                if (entry && typeof entry === 'object' && !Array.isArray(entry)) merged[String(k).slice(0, 120)] = entry;
               });
               upd({ savedConstructions: merged });
               if (addToast) addToast('📥 Imported library.', 'success');
             } catch (e) {
               if (addToast) addToast('Could not parse library file.', 'error');
             }
+          };
+          rdr.onerror = function() {
+            if (addToast) addToast('Could not read library file.', 'error');
           };
           rdr.readAsText(file);
         };

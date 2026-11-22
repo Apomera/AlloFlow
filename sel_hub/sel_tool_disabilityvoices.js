@@ -250,28 +250,35 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _disT = (ctx && ctx.theme) || {};
       var _disHC = !!_disT.isContrast, _disL = !_disHC && !_disT.isDark;
-      var _dis_BGL = {}, _dis_BGH = {'#f472b6':'#000000'};
-      var _dis_FGL = {'#cbd5e1':'#334155','#f9a8d4':'#be185d','#94a3b8':'#64748b','#e2e8f0':'#1e293b'}, _dis_FGH = {'#cbd5e1':'#ffff00','#f9a8d4':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00'};
-      var _dis_BDL = {'#334155':'#e2e8f0'}, _dis_BDH = {'#f472b6':'#ffff00','#334155':'#ffff00'};
+      var _dis_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _dis_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#f472b6':'#000000'};
+      var _dis_FGL = {'#cbd5e1':'#334155','#f9a8d4':'#9d174d','#94a3b8':'#475569','#e2e8f0':'#1e293b','#60a5fa':'#1d4ed8','#fbbf24':'#92400e','#22d3ee':'#0e7490','#a78bfa':'#5b21b6','#f472b6':'#9d174d','#22c55e':'#15803d','#ec4899':'#9d174d','#0ea5e9':'#0369a1','#86efac':'#166534','#7dd3fc':'#075985'}, _dis_FGH = {'#cbd5e1':'#ffff00','#f9a8d4':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#60a5fa':'#ffff00','#fbbf24':'#ffff00','#22d3ee':'#ffff00','#a78bfa':'#ffff00','#f472b6':'#ffff00','#22c55e':'#ffff00','#ec4899':'#ffff00','#0ea5e9':'#ffff00','#86efac':'#ffff00','#7dd3fc':'#ffff00'};
+      var _dis_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#f472b6':'#be185d','#22c55e':'#15803d'}, _dis_BDH = {'#f472b6':'#ffff00','#334155':'#ffff00','#1e293b':'#ffff00','#22c55e':'#ffff00','#60a5fa':'#ffff00','#fbbf24':'#ffff00','#22d3ee':'#ffff00','#a78bfa':'#ffff00','#94a3b8':'#ffff00','#ec4899':'#ffff00','#0ea5e9':'#ffff00'};
       var _disBg = function(h){ return _disHC ? (_dis_BGH[h]||h) : (_disL ? (_dis_BGL[h]||h) : h); };
       var _disFg = function(h){ return _disHC ? (_dis_FGH[h]||h) : (_disL ? (_dis_FGL[h]||h) : h); };
       var _disBd = function(h){ return _disHC ? (_dis_BDH[h]||h) : (_disL ? (_dis_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
+      var labToolData = (ctx && ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
       var setLabToolData = ctx.setToolData;
       var setSelHubTool = ctx.setSelHubTool;
 
-      var d = labToolData.disabilityVoices || defaultState();
-      function setDV(patch) {
+      var DV_TAB_IDS = ['home', 'reading', 'orgs', 'about'];
+      var rawDV = (labToolData.disabilityVoices && typeof labToolData.disabilityVoices === 'object' && !Array.isArray(labToolData.disabilityVoices)) ? labToolData.disabilityVoices : {};
+      var d = Object.assign(defaultState(), rawDV);
+      d.readingMarkedList = (rawDV.readingMarkedList && typeof rawDV.readingMarkedList === 'object' && !Array.isArray(rawDV.readingMarkedList)) ? rawDV.readingMarkedList : {};
+      function setDV(patchOrFn) {
+        if (typeof setLabToolData !== 'function') return;
         setLabToolData(function(prev) {
-          var prior = (prev && prev.disabilityVoices) || defaultState();
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var rawPrior = (safePrev.disabilityVoices && typeof safePrev.disabilityVoices === 'object' && !Array.isArray(safePrev.disabilityVoices)) ? safePrev.disabilityVoices : {};
+          var prior = Object.assign(defaultState(), rawPrior);
+          var patch = typeof patchOrFn === 'function' ? patchOrFn(prior) : patchOrFn;
           var next = Object.assign({}, prior, patch);
-          next.lastUpdated = todayISO();
-          return Object.assign({}, prev, { disabilityVoices: next });
+          if (patch && patch.readingMarkedList !== undefined) next.lastUpdated = todayISO();
+          return Object.assign({}, safePrev, { disabilityVoices: next });
         });
       }
-      var view = d.view || 'home';
+      var view = DV_TAB_IDS.indexOf(d.view) !== -1 ? d.view : 'home';
 
       // The polite live region is created at load; without this it was never
       // written to, so switching sections was silent to screen readers.
@@ -284,10 +291,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
         setTimeout(function() { region.textContent = msg; }, 30);
       }
 
-      var DV_TAB_IDS = ['home', 'reading', 'orgs', 'about'];
-
       function goto(v, label) {
-        setDV({ view: v });
+        setDV({ view: DV_TAB_IDS.indexOf(v) !== -1 ? v : 'home' });
         if (label) _disAnnounce(label + ' section shown');
       }
 
@@ -309,6 +314,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
 
       function header() {
         return h('div', {
+          className: 'no-print',
           style: {
             display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18, flexWrap: 'wrap',
             // Pink/lavender atmospheric strip — soft glow at left, fades
@@ -316,13 +322,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
             // palette. Confined to the header rather than the whole tool.
             padding: '14px 16px',
             borderRadius: 14,
-            background: 'radial-gradient(ellipse 60% 100% at 0% 50%, rgba(249,168,212,0.10), transparent 70%), rgba(15,23,42,0.45)',
-            border: '1px solid rgba(244,114,182,0.20)',
-            borderLeft: '4px solid #f472b6'
+            background: _disHC ? '#000000' : (_disL ? '#fdf2f8' : 'radial-gradient(ellipse 60% 100% at 0% 50%, rgba(249,168,212,0.10), transparent 70%), #0f172a'),
+            border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#fbcfe8' : 'rgba(244,114,182,0.20)')),
+            borderLeft: '4px solid ' + _disBd('#f472b6')
           }
         },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.06)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _disFg('#cbd5e1'), fontSize: 14, flexShrink: 0 } }, '← Back'),
+            style: { background: _disHC ? '#000000' : (_disL ? '#ffffff' : 'rgba(255,255,255,0.06)'), border: '1px solid ' + _disBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _disFg('#cbd5e1'), fontSize: 14, flexShrink: 0 } }, '← Back'),
           // Circular accent hero badge — same vocabulary as the rest
           // of the design system. 56px hero size matches School
           // Behavior Toolkit + TypingPractice drill-intro.
@@ -361,10 +367,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
           { id: 'orgs', label: 'Organizations', icon: '🏛️' },
           { id: 'about', label: 'About this tool', icon: 'ℹ️' }
         ];
-        return h('div', { role: 'tablist', 'aria-label': 'Disability Voices sections',
+        return h('div', { className: 'no-print', role: 'tablist', 'aria-label': 'Disability Voices sections',
           style: {
             display: 'flex', gap: 4, marginBottom: 16,
-            borderBottom: '1px solid rgba(244,114,182,0.15)',
+            borderBottom: '1px solid ' + (_disHC ? '#ffff00' : 'rgba(244,114,182,0.15)'),
             alignItems: 'flex-end',
             overflowX: 'auto'
           }
@@ -384,7 +390,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                 position: 'relative',
                 padding: '10px 14px 12px',
                 border: 'none',
-                background: active ? 'rgba(244,114,182,0.10)' : 'transparent',
+                background: active ? (_disHC ? '#000000' : 'rgba(244,114,182,0.10)') : 'transparent',
                 color: active ? _disFg('#f9a8d4') : _disFg('#94a3b8'),
                 fontSize: 14,
                 fontWeight: active ? 800 : 600,
@@ -392,9 +398,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                 whiteSpace: 'nowrap',
                 flexShrink: 0,
                 borderRadius: '8px 8px 0 0',
-                borderTop: '1px solid ' + (active ? 'rgba(244,114,182,0.30)' : 'transparent'),
-                borderLeft: '1px solid ' + (active ? 'rgba(244,114,182,0.30)' : 'transparent'),
-                borderRight: '1px solid ' + (active ? 'rgba(244,114,182,0.30)' : 'transparent'),
+                borderTop: '1px solid ' + (active ? (_disHC ? '#ffff00' : 'rgba(244,114,182,0.30)') : 'transparent'),
+                borderLeft: '1px solid ' + (active ? (_disHC ? '#ffff00' : 'rgba(244,114,182,0.30)') : 'transparent'),
+                borderRight: '1px solid ' + (active ? (_disHC ? '#ffff00' : 'rgba(244,114,182,0.30)') : 'transparent'),
                 marginBottom: -1,
                 transition: 'color 140ms ease, background 140ms ease'
               }
@@ -404,7 +410,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
               active ? h('span', { 'aria-hidden': 'true',
                 style: {
                   position: 'absolute', left: 6, right: 6, bottom: 0,
-                  height: 2, background: _disBg('#f472b6'), borderRadius: '2px 2px 0 0'
+                  height: 2, background: _disBd('#f472b6'), borderRadius: '2px 2px 0 0'
                 }
               }) : null
             );
@@ -428,11 +434,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
               return h('div', {
                 key: 'voice-' + vi,
                 style: {
-                  background: 'rgba(15,23,42,0.6)',
+                  background: _disBg('#0f172a'),
                   borderRadius: 12,
                   padding: '14px 16px',
-                  border: '1px solid rgba(100,116,139,0.25)',
-                  borderLeft: '4px solid ' + v.color
+                  border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#e2e8f0' : 'rgba(100,116,139,0.25)')),
+                  borderLeft: '4px solid ' + _disBd(v.color)
                 }
               },
                 // Header row: badge + name + role
@@ -441,14 +447,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                     'aria-hidden': 'true',
                     style: {
                       width: 44, height: 44, borderRadius: '50%',
-                      background: v.color + '22',
-                      border: '1.5px solid ' + v.color,
+                      background: _disHC ? '#000000' : v.color + '22',
+                      border: '1.5px solid ' + _disBd(v.color),
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 20, lineHeight: 1, flexShrink: 0
                     }
                   }, v.icon),
                   h('div', { style: { flex: 1, minWidth: 0 } },
-                    h('div', { style: { fontSize: 15, fontWeight: 800, color: v.color, lineHeight: 1.2, marginBottom: 4 } }, v.name),
+                    h('div', { style: { fontSize: 15, fontWeight: 800, color: _disFg(v.color), lineHeight: 1.2, marginBottom: 4 } }, v.name),
                     h('div', { style: { fontSize: 12, color: _disFg('#94a3b8'), lineHeight: 1.55 } }, v.role)
                   )
                 ),
@@ -456,8 +462,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                 h('div', {
                   style: {
                     padding: '12px 14px', borderRadius: 8,
-                    background: v.color + '12',
-                    borderLeft: '3px solid ' + v.color,
+                    background: _disHC ? '#000000' : (_disL ? '#ffffff' : v.color + '12'),
+                    border: _disHC ? '1px solid #ffff00' : (_disL ? '1px solid #e2e8f0' : 'none'),
+                    borderLeft: '3px solid ' + _disBd(v.color),
                     marginBottom: 10
                   }
                 },
@@ -466,11 +473,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                   // around words the person actually said or wrote; a `work`
                   // renders as a cited title with a plain-language gloss, so a
                   // student is never shown invented words in someone's mouth.
-                  v.quote ? h('span', { key: 'oq', style: { color: v.color, fontWeight: 800, marginRight: 4, fontSize: 16 } }, '"') : null,
+                  v.quote ? h('span', { key: 'oq', style: { color: _disFg(v.color), fontWeight: 800, marginRight: 4, fontSize: 16 } }, '"') : null,
                   v.quote
                     ? h('span', { key: 'qt', style: { fontSize: 15, color: _disFg('#e2e8f0'), fontStyle: 'italic', lineHeight: 1.6 } }, v.quote)
                     : h('span', { key: 'wk', style: { fontSize: 15, color: _disFg('#e2e8f0'), fontWeight: 700, lineHeight: 1.6 } }, v.work),
-                  v.quote ? h('span', { key: 'cq', style: { color: v.color, fontWeight: 800, marginLeft: 2, fontSize: 16 } }, '"') : null,
+                  v.quote ? h('span', { key: 'cq', style: { color: _disFg(v.color), fontWeight: 800, marginLeft: 2, fontSize: 16 } }, '"') : null,
                   (!v.quote && v.workNote)
                     ? h('div', { key: 'wn', style: { fontSize: 13, color: _disFg('#cbd5e1'), lineHeight: 1.55, marginTop: 6, fontStyle: 'italic' } }, v.workNote)
                     : null
@@ -478,7 +485,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                 // Context
                 h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.6, marginBottom: 8 } }, v.context),
                 // Source
-                h('div', { style: { fontSize: 12, color: _disFg('#94a3b8'), fontStyle: 'italic', lineHeight: 1.5, paddingTop: 8, borderTop: '1px dashed rgba(100,116,139,0.25)' } },
+                h('div', { style: { fontSize: 12, color: _disFg('#94a3b8'), fontStyle: 'italic', lineHeight: 1.5, paddingTop: 8, borderTop: '1px dashed ' + (_disHC ? '#ffff00' : 'rgba(100,116,139,0.25)') } },
                   '📚 ', v.source)
               );
             })
@@ -497,17 +504,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       }
 
       function renderReading() {
-        var marked = d.readingMarkedList || {};
+        var marked = d.readingMarkedList;
         function toggleMarked(key) {
-          var next = Object.assign({}, marked);
-          if (next[key]) delete next[key]; else next[key] = todayISO();
-          setDV({ readingMarkedList: next });
+          setDV(function(prior) {
+            var priorMarked = (prior.readingMarkedList && typeof prior.readingMarkedList === 'object' && !Array.isArray(prior.readingMarkedList)) ? prior.readingMarkedList : {};
+            var next = Object.assign({}, priorMarked);
+            if (next[key]) delete next[key]; else next[key] = todayISO();
+            return { readingMarkedList: next };
+          });
         }
         return h('div', null,
           h('div', { style: {
             padding: '12px 14px', borderRadius: 10,
-            background: 'rgba(34,197,94,0.06)',
-            border: '1px solid rgba(34,197,94,0.20)',
+            background: _disHC ? '#000000' : 'rgba(34,197,94,0.06)',
+            border: '1px solid ' + (_disHC ? '#ffff00' : 'rgba(34,197,94,0.20)'),
             marginBottom: 14
           } },
             h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.6 } },
@@ -520,11 +530,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
               return h('div', {
                 key: 'r-' + ri,
                 style: {
-                  background: 'rgba(15,23,42,0.6)',
+                  background: _disBg('#0f172a'),
                   borderRadius: 10,
                   padding: '12px 14px',
-                  border: '1px solid rgba(100,116,139,0.25)',
-                  borderLeft: isMarked ? '4px solid #22c55e' : '4px solid rgba(100,116,139,0.4)',
+                  border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#e2e8f0' : 'rgba(100,116,139,0.25)')),
+                  borderLeft: isMarked ? '4px solid ' + _disBd('#22c55e') : '4px solid ' + (_disHC ? '#ffff00' : 'rgba(100,116,139,0.4)'),
                   display: 'flex', gap: 12, alignItems: 'flex-start'
                 }
               },
@@ -536,13 +546,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                 ),
                 h('button', {
                   onClick: function() { toggleMarked(key); },
-                  'aria-label': isMarked ? 'Unmark this reading' : 'Mark this reading for yourself',
+                  'aria-label': (isMarked ? 'Unmark ' : 'Mark ') + r.title,
                   'aria-pressed': isMarked ? 'true' : 'false',
                   style: {
                     flexShrink: 0,
-                    background: isMarked ? 'rgba(34,197,94,0.16)' : 'rgba(255,255,255,0.04)',
-                    border: '1px solid ' + (isMarked ? '#22c55e' : '#334155'),
-                    color: isMarked ? '#86efac' : _disFg('#94a3b8'),
+                    background: isMarked ? (_disHC ? '#000000' : 'rgba(34,197,94,0.16)') : (_disHC ? '#000000' : (_disL ? '#ffffff' : 'rgba(255,255,255,0.04)')),
+                    border: '1px solid ' + (isMarked ? _disBd('#22c55e') : _disBd('#334155')),
+                    color: isMarked ? _disFg('#86efac') : _disFg('#94a3b8'),
                     padding: '6px 10px',
                     borderRadius: 8,
                     fontSize: 12,
@@ -560,8 +570,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
         return h('div', null,
           h('div', { style: {
             padding: '12px 14px', borderRadius: 10,
-            background: 'rgba(34,211,238,0.06)',
-            border: '1px solid rgba(34,211,238,0.20)',
+            background: _disHC ? '#000000' : 'rgba(34,211,238,0.06)',
+            border: '1px solid ' + (_disHC ? '#ffff00' : 'rgba(34,211,238,0.20)'),
             marginBottom: 14
           } },
             h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.6 } },
@@ -571,30 +581,30 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
             ORGANIZATIONS.map(function(o, oi) {
               return h('div', { key: 'org-' + oi,
                 style: {
-                  background: 'rgba(15,23,42,0.6)',
+                  background: _disBg('#0f172a'),
                   borderRadius: 12,
                   padding: '14px 16px',
-                  border: '1px solid rgba(100,116,139,0.25)',
-                  borderLeft: '4px solid ' + o.color
+                  border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#e2e8f0' : 'rgba(100,116,139,0.25)')),
+                  borderLeft: '4px solid ' + _disBd(o.color)
                 } },
                 h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 8 } },
                   h('div', { 'aria-hidden': 'true',
                     style: {
                       width: 40, height: 40, borderRadius: '50%',
-                      background: o.color + '22',
-                      border: '1.5px solid ' + o.color,
+                      background: _disHC ? '#000000' : o.color + '22',
+                      border: '1.5px solid ' + _disBd(o.color),
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 20, lineHeight: 1, flexShrink: 0
                     }
                   }, o.icon),
                   h('div', { style: { flex: 1, minWidth: 0 } },
                     h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 4 } },
-                      h('div', { style: { fontSize: 14, fontWeight: 800, color: o.color, lineHeight: 1.2 } }, o.name),
+                      h('div', { style: { fontSize: 14, fontWeight: 800, color: _disFg(o.color), lineHeight: 1.2 } }, o.name),
                       h('span', { style: {
                         padding: '1px 7px', borderRadius: 999,
-                        background: o.maine ? 'rgba(14,165,233,0.18)' : 'rgba(148,163,184,0.10)',
-                        border: '1px solid ' + (o.maine ? 'rgba(14,165,233,0.40)' : 'rgba(148,163,184,0.25)'),
-                        color: o.maine ? '#7dd3fc' : _disFg('#94a3b8'),
+                        background: _disHC ? '#000000' : (o.maine ? 'rgba(14,165,233,0.18)' : 'rgba(148,163,184,0.10)'),
+                        border: '1px solid ' + (_disHC ? '#ffff00' : (o.maine ? 'rgba(14,165,233,0.40)' : 'rgba(148,163,184,0.25)')),
+                        color: o.maine ? _disFg('#7dd3fc') : _disFg('#94a3b8'),
                         fontSize: 12, fontWeight: 700,
                         fontFamily: 'ui-monospace, Menlo, monospace',
                         textTransform: 'uppercase', letterSpacing: '0.04em'
@@ -603,7 +613,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
                     h('div', { style: { fontSize: 14, color: _disFg('#cbd5e1'), lineHeight: 1.55, marginBottom: 6 } }, o.what),
                     h('div', { style: {
                       fontSize: 12, color: _disFg('#94a3b8'), fontStyle: 'italic',
-                      paddingTop: 6, borderTop: '1px dashed rgba(100,116,139,0.25)',
+                      paddingTop: 6, borderTop: '1px dashed ' + (_disHC ? '#ffff00' : 'rgba(100,116,139,0.25)'),
                       fontFamily: 'ui-monospace, Menlo, monospace'
                     } },
                       '🔗 ', o.web)
@@ -614,8 +624,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
           ),
           h('div', { style: {
             marginTop: 14, padding: '12px 14px', borderRadius: 10,
-            background: 'rgba(167,139,250,0.06)',
-            border: '1px solid rgba(167,139,250,0.20)',
+            background: _disHC ? '#000000' : 'rgba(167,139,250,0.06)',
+            border: '1px solid ' + (_disHC ? '#ffff00' : 'rgba(167,139,250,0.20)'),
             color: _disFg('#cbd5e1'), fontSize: 14, lineHeight: 1.65, fontStyle: 'italic'
           } },
             '💡 Following a few of these on social media is one of the easier continuing-education paths. National orgs (ASAN, Sins Invalid, AWN, CommunicationFIRST) are active on Bluesky and Mastodon. Disability Rights Maine and the Maine DD Council post events relevant to families and staff serving Mainers with disabilities. Show up to one virtual event per month and the field changes for you fast.')
@@ -627,8 +637,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
           h('div', {
             style: {
               padding: '14px 16px', borderRadius: 10,
-              background: 'rgba(15,23,42,0.6)',
-              border: '1px solid rgba(100,116,139,0.25)'
+              background: _disBg('#0f172a'),
+              border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#e2e8f0' : 'rgba(100,116,139,0.25)'))
             }
           },
             h('div', { style: { fontSize: 14, fontWeight: 800, color: _disFg('#f9a8d4'), marginBottom: 6 } }, 'Why this tool exists in SEL Hub, not in BehaviorLab'),
@@ -638,8 +648,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
           h('div', {
             style: {
               padding: '14px 16px', borderRadius: 10,
-              background: 'rgba(15,23,42,0.6)',
-              border: '1px solid rgba(100,116,139,0.25)'
+              background: _disBg('#0f172a'),
+              border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#e2e8f0' : 'rgba(100,116,139,0.25)'))
             }
           },
             h('div', { style: { fontSize: 14, fontWeight: 800, color: _disFg('#f9a8d4'), marginBottom: 6 } }, 'On identity-first language'),
@@ -649,8 +659,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
           h('div', {
             style: {
               padding: '14px 16px', borderRadius: 10,
-              background: 'rgba(15,23,42,0.6)',
-              border: '1px solid rgba(100,116,139,0.25)'
+              background: _disBg('#0f172a'),
+              border: '1px solid ' + (_disHC ? '#ffff00' : (_disL ? '#e2e8f0' : 'rgba(100,116,139,0.25)'))
             }
           },
             h('div', { style: { fontSize: 14, fontWeight: 800, color: _disFg('#f9a8d4'), marginBottom: 6 } }, 'Sourcing standard'),
@@ -666,7 +676,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('disabilityVoices
       else if (view === 'about') content = renderAbout();
       else content = renderHome();
 
-      return h('div', { style: { padding: '20px', maxWidth: '820px', margin: '0 auto', color: _disFg('#e2e8f0'), fontFamily: 'inherit' } },
+      return h('div', { role: 'region', 'aria-label': 'Disability Voices', style: { padding: '20px', maxWidth: '820px', margin: '0 auto', color: _disFg('#e2e8f0'), fontFamily: 'inherit' } },
         header(),
         navTabs(),
         // role="tablist" without a matching panel left screen readers on an

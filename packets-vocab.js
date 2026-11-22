@@ -82,7 +82,7 @@
   var previewOmit = Object.create(null), previewSlot = Object.create(null), previewSession = null, inPreviewAction = false;
   function readJsonSafe(raw) {
     return JSON.parse(raw, function (k, v) {
-      return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+      return k === '__proto__' ? undefined : v;
     });
   }
   function stopPreviewSession() {
@@ -132,12 +132,15 @@
     if (saved.repeatMissed === true) fresh.repeatMissed = true;
     return fresh;
   }
-  function freshEdits() { return { v: 1, words: {}, senses: {} }; }
+  function freshEdits() { return { v: 1, words: Object.create(null), senses: Object.create(null) }; }
   function recallEdits() {
     var saved = null;
     try { saved = readJsonSafe(window.localStorage.getItem(EDITS_KEY) || 'null'); } catch (_) { saved = null; }
     if (!isObject(saved) || saved.v !== 1) return freshEdits();
-    var out = { v: 1, words: isObject(saved.words) ? saved.words : {}, senses: isObject(saved.senses) ? saved.senses : {} };
+    var wordsMap = Object.create(null), sensesMap = Object.create(null);
+    if (isObject(saved.words)) Object.keys(saved.words).forEach(function (k) { wordsMap[k] = saved.words[k]; });
+    if (isObject(saved.senses)) Object.keys(saved.senses).forEach(function (k) { sensesMap[k] = saved.senses[k]; });
+    var out = { v: 1, words: wordsMap, senses: sensesMap };
     Object.keys(out.words).forEach(function (k) {
       var w = out.words[k];
       if (isObject(w) && w.customPicture) {
@@ -1097,7 +1100,7 @@
     return col.trim().replace(/^["']+|["']+$/g, '').trim();
   }
   function batchList() {
-    var seen = {}, out = { names: [], twice: [], unusable: [], over: 0 };
+    var seen = Object.create(null), out = { names: [], twice: [], unusable: [], over: 0 };
     String(($('f-batch-names') && $('f-batch-names').value) || '').replace(/^\uFEFF/, '').split(/\r?\n/).forEach(function (line) {
       if (!line.trim()) return;
       var cleaned = cleanRosterLine(line);

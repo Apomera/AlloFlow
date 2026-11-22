@@ -1859,15 +1859,21 @@ const ALLOBOT_HELD_ITEM_SUPPORT_GRIP = Object.freeze({
 const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, onHide, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = "light", colorOverlay = "none", onSpeechEnd, onSpeechStart, activeView, generationType = null, generationProgress = null, generationError = null, generationStep = "", generationStage: generationStageSignal = null, generationBatchType = null, isFlying = false, isSystemAudioActive = false, history = ALLOBOT_EMPTY_HISTORY, isParentMode = false, isStudentMode = false, isEducatorMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null, idleSleepMs = 18e4 }, ref) => {
   const motionDisabled = useAlloMotionDisabled(disableAnimations);
   const coarsePointer = useAlloCoarsePointer();
-  const satelliteBase = coarsePointer ? "inline-flex min-h-9 min-w-9 items-center justify-center rounded-full shadow-md z-50 border-2 duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 allobot-satellite-control" : "inline-flex min-h-8 min-w-8 items-center justify-center rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity motion-reduce:transition-none z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 allobot-satellite-control";
+  const [touchControlsOpen, setTouchControlsOpen] = useState(false);
+  const touchControlsOpenRef = useRef(false);
+  touchControlsOpenRef.current = touchControlsOpen;
+  const isTouchDragRef = useRef(false);
+  const isDraggingRef = useRef(false);
+  const handleDragEndRef = useRef(null);
+  const satelliteBase = coarsePointer ? `inline-flex min-h-11 min-w-11 items-center justify-center rounded-full shadow-md z-50 border-2 duration-200 transition-opacity motion-reduce:transition-none touch-manipulation focus:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 allobot-satellite-control ${touchControlsOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}` : "inline-flex min-h-8 min-w-8 items-center justify-center rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity motion-reduce:transition-none z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 allobot-satellite-control";
   const satellitePos = {
-    tl: coarsePointer ? "absolute -top-2.5 -left-2.5 allobot-satellite--tl" : "absolute -top-2 -left-2 allobot-satellite--tl",
-    tr: coarsePointer ? "absolute -top-2.5 -right-2.5 allobot-satellite--tr" : "absolute -top-2 -right-2 allobot-satellite--tr",
-    bl: coarsePointer ? "absolute -bottom-2.5 -left-2.5 allobot-satellite--bl" : "absolute -bottom-1 -left-2 allobot-satellite--bl",
-    br: coarsePointer ? "absolute -bottom-2.5 -right-2.5 allobot-satellite--br" : "absolute -bottom-1 -right-2 allobot-satellite--br"
+    tl: coarsePointer ? "absolute -top-5 -left-5 allobot-satellite--tl" : "absolute -top-2 -left-2 allobot-satellite--tl",
+    tr: coarsePointer ? "absolute -top-5 -right-5 allobot-satellite--tr" : "absolute -top-2 -right-2 allobot-satellite--tr",
+    bl: coarsePointer ? "absolute -bottom-5 -left-5 allobot-satellite--bl" : "absolute -bottom-1 -left-2 allobot-satellite--bl",
+    br: coarsePointer ? "absolute -bottom-5 -right-5 allobot-satellite--br" : "absolute -bottom-1 -right-2 allobot-satellite--br"
   };
   const stopTouch = (e) => e.stopPropagation();
-  const satelliteIconSize = coarsePointer ? 16 : 12;
+  const satelliteIconSize = coarsePointer ? 18 : 12;
   const { t } = useContext(LanguageContext);
   const moveInstructionsId = React.useId();
   const [position, setPosition] = useState(() => {
@@ -3724,6 +3730,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     };
   }, []);
   const resetDragInteraction = useCallback(() => {
+    isDraggingRef.current = false;
     setIsDragging(false);
     setIsSquashed(false);
     setDragRotation(0);
@@ -3733,6 +3740,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     if (!isTouchEvent && (typeof e?.button === "number" && e.button !== 0 || e?.isPrimary === false)) return;
     const point = getAlloBotEventPoint(e);
     if (!point) return;
+    isTouchDragRef.current = isTouchEvent;
+    isDraggingRef.current = true;
     e.preventDefault();
     let visualPosition = position;
     try {
@@ -3759,6 +3768,30 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     prevDragPos.current = point;
   };
   useEffect(() => {
+    if (!coarsePointer || isSleeping || isPoofing) {
+      if (touchControlsOpenRef.current) setTouchControlsOpen(false);
+      return void 0;
+    }
+    if (!touchControlsOpen) return void 0;
+    const dismissOutside = (e) => {
+      const rootEl = containerRef.current;
+      if (rootEl && e?.target instanceof Node && rootEl.contains(e.target)) return;
+      setTouchControlsOpen(false);
+    };
+    const dismissOnEscape = (e) => {
+      if (e && e.key === "Escape") setTouchControlsOpen(false);
+    };
+    const opts = { capture: true, passive: true };
+    window.addEventListener("pointerdown", dismissOutside, opts);
+    window.addEventListener("touchstart", dismissOutside, opts);
+    window.addEventListener("keydown", dismissOnEscape);
+    return () => {
+      window.removeEventListener("pointerdown", dismissOutside, opts);
+      window.removeEventListener("touchstart", dismissOutside, opts);
+      window.removeEventListener("keydown", dismissOnEscape);
+    };
+  }, [coarsePointer, touchControlsOpen, isSleeping, isPoofing]);
+  useEffect(() => {
     const handleMouseMove = (e) => {
       if (!isDragging) return;
       const point = getAlloBotEventPoint(e);
@@ -3766,6 +3799,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       if (e.touches && e.cancelable) e.preventDefault();
       const deltaX = dragStartRef.current.x - point.x;
       const deltaY = point.y - dragStartRef.current.y;
+      if (touchControlsOpenRef.current && Math.hypot(deltaX, deltaY) >= 6) {
+        setTouchControlsOpen(false);
+      }
       const velocityX = point.x - prevDragPos.current.x;
       const rotation = Math.max(-20, Math.min(20, velocityX * -0.5));
       setDragRotation(rotation);
@@ -3776,13 +3812,28 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       }, window.innerWidth, window.innerHeight, startPosRef.current));
     };
     const handleMouseUp = (e) => {
+      if (!isDraggingRef.current) return;
+      const isTouchEnd = isTouchDragRef.current || e?.changedTouches != null;
+      isTouchDragRef.current = false;
       const point = getAlloBotEventPoint(e, true);
       resetDragInteraction();
       if (!point) return;
       const dist = Math.hypot(point.x - dragStartRef.current.x, point.y - dragStartRef.current.y);
-      if (dist < 5 && onClick) onClick();
+      const tapThreshold = isTouchEnd || coarsePointer ? 10 : 5;
+      if (dist < tapThreshold) {
+        if (coarsePointer && !touchControlsOpenRef.current) {
+          setTouchControlsOpen(true);
+          return;
+        }
+        if (touchControlsOpenRef.current) setTouchControlsOpen(false);
+        if (onClick) onClick();
+      }
     };
-    const handleDragCancel = () => resetDragInteraction();
+    handleDragEndRef.current = handleMouseUp;
+    const handleDragCancel = () => {
+      isTouchDragRef.current = false;
+      resetDragInteraction();
+    };
     if (isDragging) {
       window.addEventListener("mousemove", handleMouseMove);
       window.addEventListener("mouseup", handleMouseUp);
@@ -3799,7 +3850,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       window.removeEventListener("touchcancel", handleDragCancel);
       window.removeEventListener("blur", handleDragCancel);
     };
-  }, [isDragging, onClick, resetDragInteraction]);
+  }, [isDragging, onClick, resetDragInteraction, coarsePointer]);
   const moodConfig = {
     idle: { gradFrom: "#818CF8", gradTo: "#4338CA", eye: "#22D3EE", mouth: "#22D3EE", glow: "#6366F1", msg: t("bot.mood_idle") },
     happy: { gradFrom: "#34D399", gradTo: "#059669", eye: "#FFFFFF", mouth: "#FFFFFF", glow: "#10B981", msg: t("bot.mood_happy") },
@@ -4193,6 +4244,14 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("circle", { r: "12", stroke: "#67E8F9", strokeWidth: "0.9", fill: "rgba(34, 211, 238, 0.08)" }), completionCheck);
     }
   };
+  const touchControlsVisible = coarsePointer && touchControlsOpen && !isDragging && !isPoofing && !isSleeping;
+  const controlVisibilityMode = coarsePointer ? touchControlsVisible ? "touch-open" : "touch-hidden" : "reveal";
+  const baseTop = position.y + hudHeadroomLift;
+  const baseRight = position.x;
+  const safeViewportH = typeof window !== "undefined" && Number.isFinite(window.innerHeight) && window.innerHeight > 120 ? window.innerHeight : 768;
+  const safeViewportW = Number.isFinite(viewportWidth) && viewportWidth > 120 ? viewportWidth : 1024;
+  const renderedTop = touchControlsVisible ? Math.min(Math.max(26, baseTop), Math.max(26, safeViewportH - 94)) : baseTop;
+  const renderedRight = touchControlsVisible ? Math.min(Math.max(26, baseRight), Math.max(26, safeViewportW - 94)) : baseRight;
   return /* @__PURE__ */ React.createElement("aside", { "aria-label": t("bot.assistant_landmark") || "AlloBot assistant" }, /* @__PURE__ */ React.createElement("p", { id: moveInstructionsId, className: "sr-only" }, t("bot.move_instructions") || "Use the arrow keys to move AlloBot. Hold Shift with an arrow key for a larger step."), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, keyboardMoveStatus), /* @__PURE__ */ React.createElement("style", null, `
         /* Orbit controls own their essential geometry and state colors so the
            external Allobot module remains polished in desktop/embedded hosts
@@ -4286,6 +4345,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             transition: opacity 180ms ease, transform 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
             appearance: none;
             cursor: pointer;
+            touch-action: manipulation;
             z-index: 50;
         }
         .allobot-avatar-action {
@@ -4408,6 +4468,41 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         [data-allobot-control-visibility="persistent"] .allobot-satellite--tr { top: -10px; right: -10px; }
         [data-allobot-control-visibility="persistent"] .allobot-satellite--bl { bottom: -10px; left: -10px; }
         [data-allobot-control-visibility="persistent"] .allobot-satellite--br { bottom: -10px; right: -10px; }
+        /* Touch-to-reveal controls: high specificity beats any legacy stylesheet
+           rule that pinned coarse-pointer controls visible over AlloBot's face. */
+        [data-allobot-control-surface="true"][data-allobot-control-visibility="touch-hidden"] .allobot-control-orbit {
+            opacity: 0;
+            transform: scale(0.88);
+        }
+        [data-allobot-control-surface="true"][data-allobot-control-visibility="touch-hidden"] .allobot-satellite-control[data-help-key] {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transform: scale(0.75) !important;
+        }
+        [data-allobot-control-surface="true"][data-allobot-control-visibility="touch-hidden"] .allobot-satellite-control[data-help-key]:focus-visible {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            transform: scale(1) !important;
+        }
+        [data-allobot-control-surface="true"][data-allobot-control-visibility="touch-open"] .allobot-control-orbit {
+            opacity: 0.68;
+            transform: scale(1);
+        }
+        [data-allobot-control-surface="true"][data-allobot-control-visibility="touch-open"] .allobot-satellite-control[data-help-key] {
+            width: 44px !important;
+            height: 44px !important;
+            min-width: 44px !important;
+            min-height: 44px !important;
+            padding: 10px !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            transform: scale(1) !important;
+            touch-action: manipulation;
+        }
+        [data-allobot-control-surface="true"][data-allobot-control-visibility="touch-open"] .allobot-satellite--tl[data-help-key] { top: -22px !important; left: -22px !important; }
+        [data-allobot-control-surface="true"][data-allobot-control-visibility="touch-open"] .allobot-satellite--tr[data-help-key] { top: -22px !important; right: -22px !important; }
+        [data-allobot-control-surface="true"][data-allobot-control-visibility="touch-open"] .allobot-satellite--bl[data-help-key] { bottom: -22px !important; left: -22px !important; }
+        [data-allobot-control-surface="true"][data-allobot-control-visibility="touch-open"] .allobot-satellite--br[data-help-key] { bottom: -22px !important; right: -22px !important; }
         @keyframes allo-float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-2px); } }
         /* allo-talk keyframe removed \u2014 defined but never applied to any element. Audit confirmed dead code. */
         @keyframes allo-backflip { 0% { transform: translateY(0) rotate(0deg); } 40% { transform: translateY(-50px) rotate(-180deg); } 100% { transform: translateY(0) rotate(-360deg); } }
@@ -4754,7 +4849,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       role: "group",
       "data-allobot-control-surface": "true",
       "data-allobot-control-theme": theme,
-      "data-allobot-control-visibility": coarsePointer ? "persistent" : "reveal",
+      "data-allobot-control-visibility": controlVisibilityMode,
+      "data-allobot-touch-controls": coarsePointer ? touchControlsVisible ? "open" : "hidden" : "none",
       "data-allobot-control-live": isListening ? "true" : "false",
       "data-allobot-body-state": bodyVisualState,
       "data-allobot-presence": quietPresence ? "quiet" : isEngaged ? "engaged" : "resting",
@@ -4777,8 +4873,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         // bubble/chat were invisible during STEM tools. While the lab is open, lift
         // the bot to 10500: above the lab, below the voice overlays (10999/11500).
         zIndex: showStemLab ? 10500 : void 0,
-        top: `${position.y + hudHeadroomLift}px`,
-        right: `${position.x}px`,
+        top: `${renderedTop}px`,
+        right: `${renderedRight}px`,
         transform: motionDisabled ? "translateY(0px) scale(1)" : `translateY(${isHovered && !isDragging && !isSleeping ? "-2px" : "0px"}) scale(${isSquashed ? "1.1, 0.9" : "1"})`,
         touchAction: "none",
         transition: motionDisabled ? "none" : isDragging || isSquashed ? "transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1)" : `top ${moveDuration}ms, right ${moveDuration}ms, transform ${moveDuration}ms cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s, filter 0.3s`
@@ -4796,12 +4892,15 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       },
       onTouchStart: (e) => {
         if (!isSleeping) handleMouseDown(e);
+      },
+      onTouchEnd: (e) => {
+        if (isDraggingRef.current && handleDragEndRef.current) handleDragEndRef.current(e);
       }
     },
     /* @__PURE__ */ React.createElement(
       "div",
       {
-        className: motionDisabled ? "" : `${isDragging ? "" : isFlightActive ? "animate-bot-fly-tilt" : isLanding ? "animate-bot-land" : idleAnimation ? ALLOBOT_ANIMATION_CLASS_BY_NAME[idleAnimation] || "" : isSleeping ? "" : "animate-allo-float"} ${isPoofing ? "animate-allo-puff" : ""}`,
+        className: motionDisabled || touchControlsVisible ? "" : `${isDragging ? "" : isFlightActive ? "animate-bot-fly-tilt" : isLanding ? "animate-bot-land" : idleAnimation ? ALLOBOT_ANIMATION_CLASS_BY_NAME[idleAnimation] || "" : isSleeping ? "" : "animate-allo-float"} ${isPoofing ? "animate-allo-puff" : ""}`,
         style: motionDisabled ? isSleeping ? { transform: "translateY(10px)" } : void 0 : isDragging ? { transform: `rotate(${dragRotation}deg)`, transition: "transform 0.2s ease-out" } : isSleeping ? { transform: "translateY(10px)" } : void 0
       },
       /* @__PURE__ */ React.createElement(
@@ -4841,8 +4940,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         {
           "data-allobot-depth": theme,
           "data-allobot-body-pose": bodyVisualState,
-          "data-allobot-body-breathe": canBodyBreathe ? "active" : "paused",
-          className: `relative ${canBodyBreathe ? "animate-bot-breathe" : ""} ${!motionDisabled && isCelebrating ? "animate-allo-backflip" : ""}`,
+          "data-allobot-body-breathe": canBodyBreathe && !touchControlsVisible ? "active" : "paused",
+          className: `relative ${canBodyBreathe && !touchControlsVisible ? "animate-bot-breathe" : ""} ${!motionDisabled && isCelebrating ? "animate-allo-backflip" : ""}`,
           style: {
             filter: trailFilter,
             transition: motionDisabled ? "none" : "filter 0.3s ease"
@@ -4855,7 +4954,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
           "div",
           {
             className: "allobot-control-orbit",
-            "data-allobot-control-orbit": coarsePointer ? "persistent" : "reveal",
+            "data-allobot-control-orbit": controlVisibilityMode,
             "data-allobot-control-orbit-state": isListening ? "listening" : "idle",
             "aria-hidden": "true"
           }
@@ -4867,6 +4966,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             type: "button",
             onClick: (e) => {
               e.preventDefault();
+              e.stopPropagation();
+              setTouchControlsOpen(false);
               handleSleep(e);
             },
             onTouchStart: stopTouch,
@@ -4886,6 +4987,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             onClick: (e) => {
               e.preventDefault();
               e.stopPropagation();
+              setTouchControlsOpen(false);
               onVoiceSettingsClick();
             },
             onTouchStart: stopTouch,

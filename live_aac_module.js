@@ -1060,7 +1060,11 @@ const ALLO_PACK_IMAGE_ALT_FIELDS = {
 // and animated GIFs retain their animation. Teacher originals are not modified.
 const _alloResizeMailboxImage = (source, maxChars, options = {}) => new Promise(resolve => {
   const ImageClass = options.Image || (typeof Image === 'function' ? Image : null);
-  const createCanvas = options.createCanvas || (() => document.createElement('canvas'));
+  const createCanvas = options.createCanvas || (() => {
+    const c = document.createElement('canvas');
+    c.setAttribute('aria-hidden', 'true');
+    return c;
+  });
   if (!ImageClass || !/^data:image\/(?:png|jpe?g|webp|avif);base64,/i.test(source) || source.length > 20 * 1024 * 1024) return resolve(null);
   const image = new ImageClass();
   let done = false;
@@ -1337,6 +1341,7 @@ const LiveAacBoardDialog = ({
   const [sentence, setSentence] = useState([]);
   const [scanning, setScanning] = useState(false);
   const [scanIndex, setScanIndex] = useState(0);
+  const [scanIntervalMs, setScanIntervalMs] = useState(1400);
   const dialogRef = useRef(null);
   const backdropDownRef = useRef(null);
   const openerRef = useRef(null);
@@ -1428,9 +1433,9 @@ const LiveAacBoardDialog = ({
       return undefined;
     }
     if (!scanning || interactiveCells.length < 1) return undefined;
-    const timer = setInterval(() => setScanIndex(current => (current + 1) % interactiveCells.length), 1400);
+    const timer = setInterval(() => setScanIndex(current => (current + 1) % interactiveCells.length), scanIntervalMs);
     return () => clearInterval(timer);
-  }, [scanning, interactiveCells.length, safePageIndex]);
+  }, [scanning, interactiveCells.length, safePageIndex, scanIntervalMs]);
   useEffect(() => {
     setScanIndex(0);
   }, [safePageIndex]);
@@ -1698,7 +1703,7 @@ const LiveAacBoardDialog = ({
     type: "button",
     onClick: () => setPageIndex(current => Math.max(0, current - 1)),
     disabled: safePageIndex === 0,
-    className: "rounded-lg border border-slate-300 bg-white text-slate-900 font-bold disabled:opacity-50",
+    className: "rounded-lg border border-slate-300 bg-white text-slate-900 font-bold hover:bg-slate-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50",
     style: {
       minHeight: 44,
       minWidth: 44,
@@ -1708,13 +1713,26 @@ const LiveAacBoardDialog = ({
     type: "button",
     onClick: () => setPageIndex(current => Math.min(pages.length - 1, current + 1)),
     disabled: safePageIndex === pages.length - 1,
-    className: "rounded-lg border border-slate-300 bg-white text-slate-900 font-bold disabled:opacity-50",
+    className: "rounded-lg border border-slate-300 bg-white text-slate-900 font-bold hover:bg-slate-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50",
     style: {
       minHeight: 44,
       minWidth: 44,
       padding: '8px 12px'
     }
   }, tr('live_aac.next_page', 'Next page'))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 8,
+      marginBottom: 4
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-xs font-bold uppercase tracking-wide text-slate-600"
+  }, tr('live_aac.sentence_strip', 'Sentence strip')), sentence.length > 0 && /*#__PURE__*/React.createElement("span", {
+    "data-testid": "live-aac-word-count",
+    className: "rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-bold text-indigo-900"
+  }, sentence.length, " / 24")), /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     "aria-label": "Sentence strip",
@@ -1722,12 +1740,21 @@ const LiveAacBoardDialog = ({
     style: {
       minHeight: 48,
       padding: 10,
-      marginBottom: 10
+      marginBottom: 10,
+      display: 'flex',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      gap: 6
     }
-  }, sentenceText || tr('live_aac.select_symbols_prompt', 'Select symbols to build a sentence.')), /*#__PURE__*/React.createElement("div", {
+  }, sentence.length > 0 ? sentence.map((word, wordIdx) => /*#__PURE__*/React.createElement(React.Fragment, {
+    key: wordIdx
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "inline-flex items-center rounded-lg border border-indigo-300 bg-white px-2.5 py-1 text-sm font-extrabold text-slate-900 shadow-sm"
+  }, word), wordIdx < sentence.length - 1 ? ' ' : '')) : tr('live_aac.select_symbols_prompt', 'Select symbols to build a sentence.')), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       flexWrap: 'wrap',
+      alignItems: 'center',
       gap: 8,
       marginBottom: 14
     }
@@ -1735,7 +1762,7 @@ const LiveAacBoardDialog = ({
     type: "button",
     onClick: () => speak(sentenceText),
     disabled: !sentenceText,
-    className: "rounded-lg border border-slate-300 bg-white text-slate-900 font-bold disabled:opacity-50",
+    className: "rounded-lg border border-indigo-600 bg-indigo-700 text-white font-bold hover:bg-indigo-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:border-slate-300 disabled:bg-white disabled:text-slate-900 disabled:opacity-50",
     style: {
       minHeight: 44,
       minWidth: 44,
@@ -1746,7 +1773,7 @@ const LiveAacBoardDialog = ({
     onClick: () => setSentence(previous => previous.slice(0, -1)),
     disabled: !sentence.length,
     "aria-keyshortcuts": "Backspace",
-    className: "rounded-lg border border-slate-300 bg-white text-slate-900 font-bold disabled:opacity-50",
+    className: "rounded-lg border border-slate-300 bg-white text-slate-900 font-bold hover:bg-slate-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50",
     style: {
       minHeight: 44,
       minWidth: 44,
@@ -1756,7 +1783,7 @@ const LiveAacBoardDialog = ({
     type: "button",
     onClick: () => setSentence([]),
     disabled: !sentence.length,
-    className: "rounded-lg border border-slate-300 bg-white text-slate-900 font-bold disabled:opacity-50",
+    className: "rounded-lg border border-slate-300 bg-white text-slate-900 font-bold hover:bg-slate-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50",
     style: {
       minHeight: 44,
       minWidth: 44,
@@ -1767,13 +1794,34 @@ const LiveAacBoardDialog = ({
     "aria-pressed": scanning,
     disabled: interactiveCells.length === 0,
     onClick: () => setScanning(current => !current),
-    className: "rounded-lg border border-slate-300 bg-white text-slate-900 font-bold disabled:opacity-50",
+    className: 'rounded-lg border font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50 ' + (scanning ? 'border-violet-700 bg-violet-700 text-white hover:bg-violet-800' : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-50'),
     style: {
       minHeight: 44,
       minWidth: 44,
       padding: '8px 12px'
     }
-  }, scanning ? tr('live_aac.stop_scanning', 'Stop scanning') : tr('live_aac.start_scanning', 'Start scanning'))), /*#__PURE__*/React.createElement("div", {
+  }, scanning ? tr('live_aac.stop_scanning', 'Stop scanning') : tr('live_aac.start_scanning', 'Start scanning')), /*#__PURE__*/React.createElement("label", {
+    className: "inline-flex items-center gap-1.5 text-xs font-bold text-slate-700"
+  }, /*#__PURE__*/React.createElement("span", null, tr('live_aac.scan_speed', 'Scan speed')), /*#__PURE__*/React.createElement("select", {
+    "data-testid": "live-aac-scan-speed",
+    "aria-label": tr('live_aac.scan_speed', 'Scan speed'),
+    value: String(scanIntervalMs),
+    disabled: interactiveCells.length === 0,
+    onChange: event => {
+      const next = Number(event.target.value);
+      if (Number.isFinite(next) && next >= 600 && next <= 4000) setScanIntervalMs(next);
+    },
+    className: "rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs font-bold text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50",
+    style: {
+      minHeight: 44
+    }
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "2200"
+  }, tr('live_aac.scan_slow', 'Slow (2.2s)')), /*#__PURE__*/React.createElement("option", {
+    value: "1400"
+  }, tr('live_aac.scan_medium', 'Medium (1.4s)')), /*#__PURE__*/React.createElement("option", {
+    value: "900"
+  }, tr('live_aac.scan_fast', 'Fast (0.9s)'))))), /*#__PURE__*/React.createElement("div", {
     style: {
       overflowX: 'auto',
       WebkitOverflowScrolling: 'touch',
@@ -1816,7 +1864,7 @@ const LiveAacBoardDialog = ({
         disabled: isBlank,
         "aria-label": isBlank ? tr('live_aac.empty_slot', 'Empty AAC slot') : (cell.displayLabel || cell.vocalLabel || tr('live_aac.symbol', 'Symbol')) + (shortcutIndex >= 0 && shortcutIndex < 9 ? ', ' + tr('live_aac.shortcut', 'shortcut') + ' ' + (shortcutIndex + 1) : String()),
         "aria-current": isScanning ? 'true' : undefined,
-        className: 'rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + cellClasses[category],
+        className: 'relative rounded-xl transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + cellClasses[category],
         style: {
           flex: 1,
           width: '100%',
@@ -1831,7 +1879,16 @@ const LiveAacBoardDialog = ({
           gap: 6,
           boxShadow: isScanning ? '0 0 0 3px #ddd6fe' : 'none'
         }
-      }, cell.image ? /*#__PURE__*/React.createElement("img", {
+      }, shortcutIndex >= 0 && shortcutIndex < 9 && /*#__PURE__*/React.createElement("span", {
+        "aria-hidden": "true",
+        className: "rounded bg-white/90 border border-slate-300 px-1.5 py-0.5 text-xs font-extrabold text-slate-700",
+        style: {
+          position: 'absolute',
+          top: 6,
+          insetInlineStart: 6,
+          lineHeight: 1
+        }
+      }, shortcutIndex + 1), cell.image ? /*#__PURE__*/React.createElement("img", {
         src: cell.image,
         alt: String(),
         style: {

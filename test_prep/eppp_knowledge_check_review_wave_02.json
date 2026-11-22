@@ -37,10 +37,10 @@
       "domain": "Assessment & Diagnosis",
       "prompt": "A 45-year-old patient presents with sudden onset of visual hallucinations, confusion, and disorientation. What should the psychologist do FIRST in the differential diagnosis process?",
       "choices": [
-        "Diagnose Schizophrenia, late onset",
-        "Administer the MMPI-2 to assess for psychotic symptoms",
+        "Assign a provisional diagnosis of late-onset schizophrenia from visual cues",
+        "Administer the MMPI-2 to evaluate reality testing and quantify psychotic symptom severity",
         "Refer for medical evaluation to rule out delirium or other medical causes",
-        "Begin cognitive-behavioral therapy for psychotic symptoms"
+        "Initiate cognitive-behavioral therapy for psychosis to reduce distress from hallucinations"
       ],
       "answerIndex": 2,
       "rationale": "The best first step is prompt medical evaluation for delirium and other acute causes. A change developing over hours or days with confusion, disorientation, altered attention, or visual hallucinations is a delirium warning pattern, particularly when it differs sharply from baseline. A psychologist should assess immediate safety and facilitate timely medical care rather than diagnose late-onset schizophrenia, begin psychotherapy, or rely on a personality inventory. Delirium is a clinical syndrome with many possible causes; the vignette raises concern but does not establish its etiology by itself.",
@@ -71,10 +71,10 @@
       "domain": "Assessment & Diagnosis",
       "prompt": "A company asks a psychologist to exclude leadership applicants with any elevated MCMI-IV personality-pattern score. What is the best response?",
       "choices": [
-        "Proceed because BR scores are universal diagnostic probabilities",
-        "Proceed because the inventory is brief",
+        "Implement the screen because MCMI-IV Base Rate scores reflect general population probabilities of maladaptive workplace behavior",
+        "Implement the screen because the inventory's brevity minimizes applicant fatigue during high-volume triage",
         "Decline that automatic use and select methods supported for the employment population, construct, fairness, and decision",
-        "Convert BR scores to T scores and retain the rule"
+        "Transform Base Rate scores into linear T scores to normalize distributions and retain the exclusion rule"
       ],
       "answerIndex": 2,
       "rationale": "The psychologist should decline the automatic exclusion rule. Pearson describes the MCMI-IV as a clinical instrument scored against an adult inpatient and outpatient clinical sample; an elevated personality-pattern score is not a universal probability that an applicant will fail as a leader. High-stakes employment use requires evidence for the intended population, job-relevant construct, decision rule, incremental value, fairness, accessibility, and consequences. Converting score metrics or pointing to brevity does not create that evidence, and assessment findings should not substitute for a defensible job analysis.",
@@ -112,10 +112,10 @@
       "domain": "Ethical, Legal & Professional Issues",
       "prompt": "Dr. Smith, a clinical psychologist in a small rural town, discovers that the only mechanic in town who can fix her car is also the father of her current 12-year-old therapy client. According to the APA Ethics Code, what is the most appropriate course of action?",
       "choices": [
-        "Terminate therapy with the child immediately before having the car repaired.",
-        "Have the car repaired because agreeing not to discuss the child eliminates every possible boundary risk.",
-        "Consider using the mechanic only after assessing whether the limited business contact is reasonably expected to impair objectivity, competence, or effectiveness or risk exploitation or harm, and manage foreseeable boundaries.",
-        "Refuse to have the car repaired by him in every circumstance because any business contact is automatically unethical."
+        "End psychotherapy with the adolescent client and provide referrals before scheduling repairs so no dual role exists during active care.",
+        "Proceed with the vehicle repair after both adults sign a brief agreement promising not to discuss clinical matters, which resolves all foreseeable boundary concerns.",
+        "Assess whether this limited commercial transaction could impair objectivity, competence, or effectiveness or risk harm, and set clear boundaries if proceeding.",
+        "Decline to use the father's repair shop under rural practice standards because any financial transaction with a client's parent constitutes an unethical dual relationship."
       ],
       "answerIndex": 2,
       "rationale": "Standard 3.05 does not make every overlapping role unethical and does not use ?unavoidable? as a complete safe harbor. The psychologist should assess prospectively whether this limited business contact could reasonably impair objectivity, competence, or effectiveness or create exploitation or harm, while considering the child, caregiver, local alternatives, confidentiality, power, and foreseeable future contact. If the risks are acceptably low, the transaction may be permissible with thoughtful boundary management; if material risks emerge, the psychologist should seek another arrangement. A promise not to discuss therapy does not eliminate every risk.",
@@ -146,10 +146,10 @@
       "domain": "Ethical, Legal & Professional Issues",
       "prompt": "A client signs a release directing the psychologist to send the client’s raw scores and response data to a named qualified psychologist, and separately asks for a blank test manual and item booklet. What is the best response under Standards 9.04 and 9.11?",
       "choices": [
-        "Send everything because a signed release overrides test-security duties.",
-        "Refuse both requests because all assessment information is protected test material.",
-        "Apply the 9.04 release pathway to the requested test data and recipient, while protecting the blank manual and item booklet under 9.11 consistent with law and contractual obligations.",
-        "Send only a narrative interpretation because raw scores can never be test data."
+        "Transmit the scoring records, blank manual, and item booklet together because a signed release supersedes publisher duties.",
+        "Decline both requests in full because raw test data, response sheets, manuals, and scoring guides are uniformly classified as protected test materials under 9.11.",
+        "Handle the requested assessment data transfer under Standard 9.04 while preserving the security of proprietary manuals and protocols under Standard 9.11.",
+        "Provide a narrative summary to the receiving clinician instead of raw test data because unformatted scores fall outside Standard 9.04."
       ],
       "answerIndex": 2,
       "rationale": "The keyed response keeps Standards 9.04 and 9.11 distinct. Test data can include raw and scaled scores and the client?s responses, and a valid release to a named qualified psychologist ordinarily triggers the 9.04 pathway subject to its exceptions and applicable law. A blank manual and unused item booklet are test materials whose security remains protected consistent with law, publisher contracts, and professional obligations. A release is not a waiver of every security duty, but neither is test security a categorical reason to withhold all client test data or provide only a narrative summary.",
@@ -187,10 +187,10 @@
       "domain": "Treatment, Intervention & Prevention",
       "prompt": "During a planned ERP exercise, a client’s anxiety remains elevated, but the feared catastrophe does not occur and the client refrains from the ritual. What is the best interpretation?",
       "choices": [
-        "The exercise failed because anxiety must decline before it ends.",
-        "The exercise may still support corrective or inhibitory learning; review the prediction, observed outcome, ritual prevention, and what to practice next.",
-        "The therapist should add reassurance until anxiety reaches zero.",
-        "ERP should be replaced automatically with flooding."
+        "The exposure exercise failed because sustained distress indicates that therapeutic habituation did not occur.",
+        "The trial can still foster inhibitory learning; examine the expectancy violation, response prevention, and next generalization step.",
+        "The clinician should offer calm verbal reassurance and reality-testing statements during the trial until subjective anxiety drops near zero.",
+        "Because distress did not habituate within the session, standard ERP should be discontinued in favor of prolonged high-intensity flooding."
       ],
       "answerIndex": 1,
       "rationale": "The exercise may still produce useful corrective or inhibitory learning even though anxiety did not fall during that session. The client encountered the feared cue, prevented the ritual, and observed that the predicted catastrophe did not occur; those facts support reviewing the original prediction, what was learned, what safety behaviors remained, and how to retrieve and generalize the learning in future contexts. Within-session habituation can occur, but it is not the only outcome or a mandatory stopping rule. Reassurance can become a safety behavior, and persistent anxiety alone does not justify automatically abandoning ERP or switching to flooding.",
@@ -228,10 +228,10 @@
       "domain": "Treatment, Intervention & Prevention",
       "prompt": "An older adult reports new memory problems and depressed mood. Which response is most accurate?",
       "choices": [
-        "Diagnose depression-related pseudodementia and promise cognition will normalize with mood treatment.",
-        "Assume dementia because cognitive decline is a normal part of aging.",
-        "Assess onset, function, mood, delirium, medications, sensory and medical factors, and possible neurocognitive disorder; depression and neurocognitive illness can coexist.",
-        "Use age alone to choose reminiscence therapy before assessment."
+        "Diagnose depressive pseudodementia on presentation and reassure the family that cognitive deficits will fully remit once antidepressant therapy begins.",
+        "Attribute memory complaints to progressive dementia because measurable forgetfulness is an expected feature of aging.",
+        "Evaluate onset, daily function, delirium, medications, sensory and medical causes, and possible neurocognitive illness alongside depression.",
+        "Initiate structured reminiscence therapy based on chronological age prior to conducting formal cognitive or medical assessment."
       ],
       "answerIndex": 2,
       "rationale": "New memory complaints and depressed mood call for a broad evaluation, not a shortcut label. History should clarify onset, course, daily functioning, mood and suicide risk, delirium features, sleep, substance use, medications, sensory access, neurologic and medical conditions, and available informant observations, with cognitive assessment and medical referral as indicated. Depression can impair concentration and memory and may improve with treatment, but it can coexist with mild or major neurocognitive disorder. Aging alone neither explains significant decline nor establishes dementia, and treatment selection should follow assessment rather than age.",
@@ -269,10 +269,10 @@
       "domain": "Biological Bases of Behavior",
       "prompt": "A study estimates a trait’s heritability at .70 in one sampled population. Which conclusion is justified?",
       "choices": [
-        "Seventy percent of each person’s trait is caused by genes.",
-        "The trait cannot be changed environmentally.",
-        "Under that study’s model and population conditions, genetic differences statistically account for about 70% of observed variance; the estimate need not generalize to other populations or environments.",
-        "The difference between two demographic groups is 70% genetic."
+        "Approximately 70% of the expression of that trait within any individual member of the sample is directly determined by inherited genetic factors.",
+        "Because genetic variance predominates, behavioral or environmental interventions cannot meaningfully shift the trait mean.",
+        "Within that cohort and environment, genetic variation statistically accounts for roughly 70% of observed variance without fixing other groups.",
+        "Average phenotypic differences observed between two distinct demographic populations on this trait can be attributed 70% to inherited differences."
       ],
       "answerIndex": 2,
       "rationale": "A heritability estimate of .70 means that, under the sampled population, environment, measurements, and statistical model, genetic differences account for about 70% of the observed variation among people in that trait. It does not mean that 70% of any one person?s trait was caused by genes, identify which genes or environments matter, prove that the trait cannot change, or explain a difference between demographic groups. Heritability can change when environmental variation, population composition, measurement, or other conditions change, so the estimate should not be exported automatically to another population.",
@@ -337,10 +337,10 @@
       "domain": "Cognitive-Affective Bases of Behavior",
       "prompt": "A client makes many perseverative errors on the WCST. Which conclusion is best supported by that result alone?",
       "choices": [
-        "The client has a confirmed focal prefrontal lesion",
+        "The client has a localized dorsolateral prefrontal lesion confirmed by elevated error rates",
         "The client showed difficulty adapting sorting behavior to feedback under this task’s combined demands",
-        "The client has a pure shifting deficit with memory, language, and motivation ruled out",
-        "The client meets diagnostic criteria for dysexecutive syndrome"
+        "The client exhibits an isolated cognitive set-shifting deficit after ruling out memory, language, and effort",
+        "The client satisfies clinical diagnostic criteria for dysexecutive syndrome from poor shifting"
       ],
       "answerIndex": 1,
       "rationale": "Perseverative errors most directly show difficulty changing a sorting response when feedback indicates that the rule has changed. The WCST draws on abstract reasoning, feedback use, working memory, attention, comprehension, motivation, sensory access, and set shifting, so one score does not isolate a pure mechanism. Although performance can be sensitive to frontal-system dysfunction, it is not specific enough by itself to confirm a focal prefrontal lesion or a dysexecutive diagnosis. Interpretation requires appropriate norms, performance-validity context, history, behavior, and converging neuropsychological and medical evidence.",
@@ -378,10 +378,10 @@
       "domain": "Cognitive-Affective Bases of Behavior",
       "prompt": "What is the best conclusion from the larger marshmallow-test conceptual replication?",
       "choices": [
-        "Preschool delay behavior has no relation to any later outcome",
-        "Family background alone was proven to cause both waiting and achievement",
-        "The predictive association was smaller and substantially attenuated after relevant controls, so the task should not be treated as a pure causal measure of willpower",
-        "The original investigators fabricated their findings"
+        "Preschool delay-of-gratification performance showed zero bivariate correlation with subsequent adolescent academic or behavioral outcomes",
+        "Covariate adjustment proved that socioeconomic status and family background alone caused both early waiting times and later achievement",
+        "Associations with later achievement were smaller and shrank sharply after controls, arguing against treating waiting as pure willpower",
+        "The smaller effect estimates showed that the original longitudinal researchers systematically fabricated their datasets"
       ],
       "answerIndex": 2,
       "rationale": "The larger conceptual replication found a smaller bivariate association between preschool waiting and later achievement than the famous early reports, and the association was reduced substantially after controls for family background, early cognitive ability, and the home environment. Behavioral-outcome associations were smaller and often not statistically significant. This supports treating the task as contextual and multicausal rather than as a pure causal measure of willpower or a destiny test. Covariate adjustment does not prove that family background alone caused both variables, and attenuation does not show that all self-regulation evidence is meaningless.",
@@ -410,12 +410,12 @@
       "sectionId": "ch-32-section-4",
       "domainId": 6,
       "domain": "Social & Cultural Bases of Behavior",
-      "prompt": "Which statement about an individual IAT score is most defensible?",
+      "prompt": "Which interpretive statement about a single Implicit Association Test (IAT) score is most defensible?",
       "choices": [
-        "It diagnoses prejudice and predicts how the person will behave in every setting",
-        "It directly reveals a stable unconscious belief",
+        "It diagnoses personal prejudice and reliably forecasts how an individual acts across everyday settings",
+        "It provides a direct, trait-like readout of unconscious attitudes independent of order or practice effects",
         "It reflects relative task performance that may inform research but needs reliability, context, and criterion limits",
-        "It is interchangeable with an explicit self-report attitude scale"
+        "It functions as a psychometric equivalent to explicit self-report attitude measures when respondents minimize social desirability"
       ],
       "answerIndex": 2,
       "rationale": "An IAT score reflects relative response-time performance for the paired categories under a particular administration. Project Implicit cautions against treating one score as a permanent property of an individual or a confident forecast of that person?s behavior on a specific occasion; practice, order, context, reliability, scoring, and the selected categories can matter. Research can find aggregate relationships between IAT scores and outcomes, but an aggregate association does not make a single score diagnostic of prejudice. The measure is also not interchangeable with explicit self-report, which captures different information.",
@@ -453,10 +453,10 @@
       "domain": "Social & Cultural Bases of Behavior",
       "prompt": "A national survey reports a higher average collectivism score in one country than another. What can a psychologist conclude about a client from that country?",
       "choices": [
-        "The client necessarily prefers family-led treatment",
-        "The client is unlikely to value autonomy",
+        "The client prefers family-directed decision-making and expects extended relatives to participate in setting therapy goals",
+        "The client places low personal priority on individual autonomy when evaluating therapeutic interventions and boundaries",
         "The group result can guide a respectful question, but it cannot determine the client’s values or preferred care",
-        "The client should be assigned a high-context communication style"
+        "The client should be matched to an indirect, high-context communication approach rather than direct verbal goal setting"
       ],
       "answerIndex": 2,
       "rationale": "A country-level average describes a sampled group and cannot determine an individual client?s values, communication style, decision preferences, or treatment goals. Treating the mean as the person commits an ecological inference error and obscures within-country diversity, migration history, region, language, generation, class, disability, religion, gender, and other intersecting contexts. The finding can support a respectful question about family involvement, autonomy, authority, communication, and goals, but the clinician should listen to the client?s own account and revisit assumptions as the relationship and context develop.",
@@ -487,10 +487,10 @@
       "domain": "Growth & Lifespan Development",
       "prompt": "An infant receives a disorganized classification in a properly coded Strange Situation. Which conclusion is justified?",
       "choices": [
-        "The caregiver has maltreated the infant",
-        "The infant has reactive attachment disorder",
-        "The observed strategy showed disruption in that procedure and relationship; broader assessment is required before clinical or protective conclusions",
-        "The infant will develop adult psychopathology"
+        "The coded behavior provides sufficient observational evidence that the primary caregiver has engaged in child maltreatment",
+        "The infant meets DSM-5-TR diagnostic criteria for reactive attachment disorder because disorganized reunion behaviors reflect inhibited emotional withdrawal",
+        "Behavior showed a disrupted strategy within that procedure and relationship; broader assessment is needed for clinical or protective decisions",
+        "Disorganized infant attachment represents a fixed developmental trait that reliably forecasts severe dissociative or personality psychopathology in adulthood"
       ],
       "answerIndex": 2,
       "rationale": "The justified conclusion stays at the level of the observed procedure and relationship: the infant showed a disruption in attachment strategy during a properly coded Strange Situation. Expert consensus warns that disorganized classification is not proof of maltreatment, not a DSM attachment disorder, not a fixed trait, and not a deterministic predictor of later pathology. Maltreatment can increase group-level rates, but multiple pathways can produce disorganized behavior and many maltreated infants are not classified this way. Clinical or protective decisions require broad, case-specific evidence from qualified assessment.",
@@ -521,10 +521,10 @@
       "domain": "Growth & Lifespan Development",
       "prompt": "When are adolescent-adult decision differences most likely according to a qualified dual-systems account?",
       "choices": [
-        "In every decision because adolescents lack reasoning capacity",
-        "Only after age 25, when the brain suddenly becomes adult",
-        "More often in emotionally arousing, immediately rewarding, stressful, fatigued, or peer-salient contexts than in calm deliberative contexts",
-        "Whenever an adolescent makes a choice an adult dislikes"
+        "Across routine and high-stakes choices alike because adolescents lack the logical reasoning capacity to weigh long-term consequences",
+        "Primarily up to a fixed chronological boundary around age 25, when prefrontal maturation abruptly shifts choices into an adult pattern",
+        "More often under emotional arousal, immediate reward, stress, fatigue, or salient peer presence than during calm deliberation",
+        "Whenever an adolescent selects an exploratory or socially unconventional option that caregivers or adult authorities judge imprudent"
       ],
       "answerIndex": 2,
       "rationale": "A qualified dual-systems account predicts larger adolescent-adult differences most often in ?hot? contexts involving immediate rewards, emotional arousal, stress, fatigue, or salient peers, rather than in calm settings that allow deliberation. The model describes average developmental tendencies and interacting systems; it does not say every adolescent lacks reasoning capacity, that the brain becomes adult on a particular birthday, or that any choice an adult dislikes is immature. Individual development, experience, culture, opportunity, supportive relationships, and the direction of peer influence all matter, and adolescent exploration can be adaptive.",
@@ -562,10 +562,10 @@
       "domain": "Research Methods & Statistics",
       "prompt": "A school selects the 20 lowest-scoring students on a reading test for a new tutoring program. After 8 weeks, the students are retested and their scores have improved. The principal concludes the tutoring was effective. The MOST likely threat to this conclusion is:",
       "choices": [
-        "History — outside events caused the improvement",
-        "Maturation — the students simply grew older",
-        "Statistical regression to the mean — extreme scores naturally move toward average on retesting",
-        "Mortality — the lowest students dropped out"
+        "History — concurrent outside school events produced the reading gains over 8 weeks",
+        "Maturation — routine developmental growth over 8 weeks accounted for higher follow-up scores",
+        "Statistical regression to the mean — extreme initial values shift toward average upon retesting",
+        "Experimental mortality — selective attrition among the lowest-scoring students artificially raised the mean"
       ],
       "answerIndex": 2,
       "rationale": "Regression toward the mean is the leading alternative explanation because the school selected students for unusually low observed scores and then measured the same construct again. Each score contains stable performance plus occasion-specific influences and measurement error; unusually unfavorable influences are unlikely to recur in exactly the same combination, so the selected group tends to be less extreme on retest even without effective tutoring. Improvement therefore does not establish a treatment effect. A concurrent comparison group selected by the same rule, repeated baseline measurement, random assignment when feasible, and analysis of measurement reliability would strengthen the inference.",
@@ -596,10 +596,10 @@
       "domain": "Research Methods & Statistics",
       "prompt": "In a psychotherapy study, the researcher who conducts the therapy sessions also rates patient improvement. The researcher strongly believes in the treatment's efficacy. This design is MOST vulnerable to:",
       "choices": [
-        "Demand characteristics — patients guess the hypothesis",
+        "Demand characteristics — clients infer the study hypothesis and alter self-reports to please the clinician",
         "Experimenter expectancy (Rosenthal effect) — the researcher's beliefs influence ratings",
-        "Statistical regression — patients were selected for extreme scores",
-        "History — outside events affected outcomes"
+        "Statistical regression — participants selected for extreme baseline distress drift toward average at follow-up",
+        "History — unrelated life events occurring between therapy sessions distort posttreatment improvement ratings"
       ],
       "answerIndex": 1,
       "rationale": "The design is especially vulnerable to experimenter expectancy and biased outcome measurement because the same person strongly favors the treatment, delivers it, knows the condition, and makes a judgment-based improvement rating. Beliefs can influence treatment delivery, interactions, thresholds, and interpretation even without deliberate distortion. Psychotherapy trials often cannot blind therapists or participants, so ?double-blind? is not a universal solution. Important safeguards include independent assessors masked to condition where feasible, standardized outcomes, preregistered scoring and time points, fidelity monitoring, balanced expertise, transparent allegiance disclosure, and sensitivity analyses.",

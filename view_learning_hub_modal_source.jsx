@@ -10,9 +10,9 @@
  */
 function LearningHubModal(props) {
   const {
-    setIsAlloHavenOpen, setIsLinguaPracticeOpen, setIsOpenGrooveOpen, setIsTestPrepHubOpen, setIsTimelineStudioOpen, setSelHubTab, setShowLearningHub, setShowLitLab,
+    setIsAlloHavenOpen, setIsLinguaPracticeOpen, setIsOpenGrooveOpen, setIsTestPrepHubOpen, setIsTimelineStudioOpen, setSelHubTab, setShowLearningHub = (() => {}), setShowLitLab,
     setShowLearningWebExplorer, setShowPoetTree, setShowResearchHub, setShowSelHub, setShowStemLab, setShowStoryForge,
-    setStemLabTab, setStemLabTool, setLabToolData, showLearningHub,
+    setStemLabTab, setStemLabTool, setLabToolData, showLearningHub = true,
     // Family Bridge launcher (2026-06-28): opens live two-way translation. Optional
     // default so a host that hasn't wired the setter still renders the hub.
     // BridgeSendModal is teacher-gated, so the card is only shown in teacher mode
@@ -22,13 +22,16 @@ function LearningHubModal(props) {
     // Reading Library (2026-07-05): StoryWeaver open picture books. Optional —
     // card only renders when the host wires the setter.
     setIsReadingLibraryOpen,
-    t,
+    t = (() => ''),
     userRole = '',
   } = props;
+  const isOpen = showLearningHub !== false;
   const dialogRef = React.useRef(null);
+  const backdropMouseDownRef = React.useRef(false);
   const closeHandlerRef = React.useRef(setShowLearningHub);
   closeHandlerRef.current = setShowLearningHub;
   React.useEffect(function () {
+    if (!isOpen) return undefined;
     const dialog = dialogRef.current;
     if (!dialog) return undefined;
     const previousFocus = document.activeElement;
@@ -57,11 +60,18 @@ function LearningHubModal(props) {
     // Ref-counted shared body scroll lock — see window.__alloScrollLockState.
     // Without it the page behind the hub scrolls under a touch drag, which on
     // a phone reads as the tiles sliding away and not coming back.
-    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' });
+    const scrollLock = window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '', overflow: '' });
     let scrollLocked = false;
     try {
-      scrollLocked = true;
-      if (++scrollLock.count === 1) { scrollLock.prev = document.body.style.overflow; document.body.style.overflow = 'hidden'; }
+      if (document.body) {
+        if (++scrollLock.count === 1) {
+          const savedOverflow = document.body.style.overflow;
+          scrollLock.prev = savedOverflow;
+          scrollLock.overflow = savedOverflow;
+          document.body.style.overflow = 'hidden';
+        }
+        scrollLocked = true;
+      }
     } catch (_) {}
     const isTopTrap = function () { return trapStack[trapStack.length - 1] === trap; };
     const getFocusable = function () {
@@ -103,9 +113,9 @@ function LearningHubModal(props) {
     return function () {
       document.removeEventListener('keydown', onKeyDown);
       try {
-        if (scrollLocked) {
+        if (scrollLocked && document.body) {
           scrollLock.count = Math.max(0, scrollLock.count - 1);
-          if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
+          if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev ?? scrollLock.overflow ?? '';
         }
       } catch (_) {}
       isolated.forEach(function ({ sibling, hadInert, prevInert, ariaHidden }) {
@@ -124,7 +134,7 @@ function LearningHubModal(props) {
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
       if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === 'function') previousFocus.focus();
     };
-  }, []);
+  }, [isOpen]);
   const tr = (key, fallback) => {
     try { const value = typeof t === 'function' ? t(key) : ''; return value && value !== key ? value : fallback; }
     catch (_) { return fallback; }
@@ -181,11 +191,11 @@ function LearningHubModal(props) {
   const [hubQuery, setHubQuery] = React.useState('');
   const [hubCards, setHubCards] = React.useState([]);
   const [hubFavoriteIds, setHubFavoriteIds] = React.useState(() => {
-    try { const parsed = JSON.parse(localStorage.getItem('alloflow_hub_learning_favorites') || '[]'); return Array.isArray(parsed) ? parsed : []; }
+    try { const parsed = JSON.parse(localStorage.getItem('alloflow_hub_learning_favorites') || '[]'); return Array.isArray(parsed) ? parsed.filter((v) => typeof v === 'string') : []; }
     catch (_) { return []; }
   });
   const [hubRecentIds, setHubRecentIds] = React.useState(() => {
-    try { const parsed = JSON.parse(localStorage.getItem('alloflow_hub_learning_recent') || '[]'); return Array.isArray(parsed) ? parsed : []; }
+    try { const parsed = JSON.parse(localStorage.getItem('alloflow_hub_learning_recent') || '[]'); return Array.isArray(parsed) ? parsed.filter((v) => typeof v === 'string') : []; }
     catch (_) { return []; }
   });
   const [hubFavoritesOnly, setHubFavoritesOnly] = React.useState(false);
@@ -193,11 +203,14 @@ function LearningHubModal(props) {
   const [hubManageFavorites, setHubManageFavorites] = React.useState(false);
   const [hubVisibleCount, setHubVisibleCount] = React.useState(0);
   const [hubUsageCounts, setHubUsageCounts] = React.useState(() => {
-    try { const parsed = JSON.parse(localStorage.getItem('alloflow_hub_learning_usage') || '{}'); return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}; }
+    try {
+      const parsed = JSON.parse(localStorage.getItem('alloflow_hub_learning_usage') || '{}', (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    }
     catch (_) { return {}; }
   });
   const [hubCollapsedSections, setHubCollapsedSections] = React.useState(() => {
-    try { const parsed = JSON.parse(localStorage.getItem('alloflow_hub_learning_collapsed') || '[]'); return Array.isArray(parsed) ? parsed : []; }
+    try { const parsed = JSON.parse(localStorage.getItem('alloflow_hub_learning_collapsed') || '[]'); return Array.isArray(parsed) ? parsed.filter((v) => typeof v === 'string') : []; }
     catch (_) { return []; }
   });
   const [hubRoleOverride, setHubRoleOverride] = React.useState(() => {
@@ -238,6 +251,19 @@ function LearningHubModal(props) {
       const shell = launch && launch.closest('[data-hub-id]');
       if (!shell || event.target.closest('[data-hub-favorite]')) return;
       const id = shell.dataset.hubId;
+      if (!id || id === '__proto__' || id === 'constructor' || id === 'prototype') return;
+      try {
+        const curRecentRaw = JSON.parse(localStorage.getItem('alloflow_hub_learning_recent') || '[]');
+        const curRecent = Array.isArray(curRecentRaw) ? curRecentRaw.filter((v) => typeof v === 'string') : [];
+        const nextRecent = [id, ...curRecent.filter((value) => value !== id)].slice(0, 5);
+        localStorage.setItem('alloflow_hub_learning_recent', JSON.stringify(nextRecent));
+      } catch (_) {}
+      try {
+        const curUsageRaw = JSON.parse(localStorage.getItem('alloflow_hub_learning_usage') || '{}', (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v);
+        const curUsage = curUsageRaw && typeof curUsageRaw === 'object' && !Array.isArray(curUsageRaw) ? curUsageRaw : {};
+        const nextUsage = { ...curUsage, [id]: (Number(curUsage[id]) || 0) + 1 };
+        localStorage.setItem('alloflow_hub_learning_usage', JSON.stringify(nextUsage));
+      } catch (_) {}
       setHubRecentIds((current) => [id, ...current.filter((value) => value !== id)].slice(0, 5));
       setHubUsageCounts((current) => ({ ...current, [id]: (Number(current[id]) || 0) + 1 }));
     };
@@ -300,8 +326,19 @@ function LearningHubModal(props) {
   const hubRecommendedIds = Array.from(new Set([...(hubRoleRecommendations[hubRoleKey] || hubRoleRecommendations.student), ...hubUsageRankedIds])).slice(0, 5);
   const recommendedCards = hubRecommendedIds.map((id) => hubCards.find((card) => card.id === id)).filter(Boolean);
   const quickCards = Array.from(new Set([...hubFavoriteIds, ...hubRecentIds])).map((id) => hubCards.find((card) => card.id === id)).filter(Boolean);
+  if (!isOpen) return null;
   return (
-        <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) setShowLearningHub(false); }}>
+        <div
+          className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4"
+          style={{ zIndex: 260 }}
+          role="presentation"
+          onMouseDown={(e) => { backdropMouseDownRef.current = e.button === 0 && e.target === e.currentTarget; }}
+          onClick={(e) => {
+            const shouldClose = backdropMouseDownRef.current && e.target === e.currentTarget;
+            backdropMouseDownRef.current = false;
+            if (shouldClose) setShowLearningHub(false);
+          }}
+        >
           {/* allo-docsuite: this modal is a portal rendered OUTSIDE the main .allo-docsuite
               content wrapper, so the theme-dark gradient/text remaps (which are scoped to
               .allo-docsuite) never reached the pastel tool cards — they stayed light-pastel in

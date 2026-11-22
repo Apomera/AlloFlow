@@ -430,12 +430,12 @@
           "id": "read5302-ch-02-check-01",
           "prompt": "How do phonological awareness and phonemic awareness differ?",
           "choices": [
+            "Phonemic awareness concerns the meanings of words, while phonological awareness concerns how sentences are built.",
             "Phonological awareness spans spoken units such as syllables and rimes; phonemic awareness targets individual phonemes.",
             "Both phonological and phonemic awareness require printed letters, so neither can be practiced through oral activities.",
-            "Phonics is the broader oral category, and phonological awareness is one narrower part of letter-sound instruction.",
-            "Phonemic awareness concerns the meanings of words, while phonological awareness concerns how sentences are built."
+            "Phonics is the broader oral category, and phonological awareness is one narrower part of letter-sound instruction."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Phonological awareness includes words, syllables, onset-rime, and phonemes; phonemic awareness is the most specific level and can be practiced orally before or alongside graphemes.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -450,12 +450,12 @@
           "id": "read5302-ch-02-check-02",
           "prompt": "Which task measures phoneme segmentation?",
           "choices": [
+            "Identifying the meaning of a morpheme within a word, such as explaining that un- in unhappy means not.",
             "Combining a sequence of spoken phonemes into a whole word, such as hearing /s/ /u/ /n/ and saying sun.",
             "Separating a spoken word into each of its individual phonemes, such as saying /m/ /a/ /p/ for map.",
-            "Naming each printed letter in a written word in order, such as reading the letters m, a, p aloud from a card.",
-            "Identifying the meaning of a morpheme within a word, such as explaining that un- in unhappy means not."
+            "Naming each printed letter in a written word in order, such as reading the letters m, a, p aloud from a card."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Segmentation requires identifying the sequence of phonemes in a spoken word; the number of sounds need not equal the number of printed letters.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -470,12 +470,12 @@
           "id": "read5302-ch-02-check-03",
           "prompt": "Which task measures phoneme manipulation?",
           "choices": [
+            "Sorting picture cards into vocabulary categories such as animals, foods, and tools based on their meanings.",
             "Print-directionality knowledge, such as tracking text from left to right and returning to the next line correctly.",
             "Counting the syllables in multisyllable spoken words by clapping each beat without isolating individual sounds.",
-            "Phoneme substitution, such as changing the /k/ in cat to /h/ to say hat, which is a form of phoneme manipulation.",
-            "Sorting picture cards into vocabulary categories such as animals, foods, and tools based on their meanings."
+            "Sound substitution, such as changing /k/ in cat to /h/ to say hat, requiring a learner to alter an oral word."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Deleting, adding, or substituting phonemes requires deliberate manipulation of the sound sequence and is more complex than recognition alone.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -490,12 +490,12 @@
           "id": "read5302-ch-02-check-04",
           "prompt": "Which statement best describes the alphabetic principle that beginning readers must learn?",
           "choices": [
+            "Letters and letter patterns represent the phonemes of spoken language in systematic, learnable ways.",
             "Every letter in English represents exactly one sound, so each word can be decoded letter by letter in sequence.",
             "Word meaning can be derived from the visual shape of the letters, so readers rely mainly on word outlines.",
-            "Print is learned as whole visual pictures, so each new word is memorized separately from letter-sound knowledge.",
-            "Letters and letter patterns represent the phonemes of spoken language in systematic, learnable ways."
+            "Print is learned as whole visual pictures, so each new word is memorized separately from letter-sound knowledge."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "The alphabetic principle links phonology and orthography; English correspondences vary, so teaching progresses from common transparent patterns to more complex ones.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -510,12 +510,12 @@
           "id": "read5302-ch-02-check-05",
           "prompt": "Which activity addresses concepts of print?",
           "choices": [
-            "Understanding how print works in books, such as directionality, word boundaries, and the parts of a book.",
+            "Interpreting norm-referenced scores to compare a learner’s reading performance with a national reference group.",
+            "Understanding how written text works in books, including directionality, word boundaries, and book parts.",
             "Analyzing advanced morphological structure, such as identifying Greek and Latin roots in academic vocabulary.",
-            "Measuring silent-reading rate on grade-level passages to estimate how quickly students process connected text.",
-            "Interpreting norm-referenced scores to compare a learner’s reading performance with a national reference group."
+            "Measuring silent-reading rate on grade-level passages to estimate how quickly students process connected text."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Concepts of print include directionality, word boundaries, book handling, and distinctions among letters, words, and sentences that support access to alphabetic instruction.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -630,12 +630,12 @@
           "id": "read5302-ch-03-check-01",
           "prompt": "What is the best initial approach to teaching a new phonics pattern?",
           "choices": [
-            "Teach the sound–spelling link explicitly, guide blending and spelling, then apply it in words and connected text.",
-            "Ask students to infer the new pattern from an unrelated story during independent reading without teacher guidance.",
             "Have students memorize written definitions of the phonics rule and recite them before any word-reading practice.",
-            "Introduce several conflicting spelling exceptions first so students see the full complexity before the main pattern."
+            "Introduce several conflicting spelling exceptions first so students see the full complexity before the main pattern.",
+            "Teach the sound–spelling link explicitly, guide blending and spelling, then apply it in words and connected text.",
+            "Ask students to infer the new pattern from an unrelated story during independent reading without teacher guidance."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Explicit explanation, cumulative practice, corrective feedback, spelling, and connected-text application help students establish and generalize a new correspondence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -650,12 +650,12 @@
           "id": "read5302-ch-03-check-02",
           "prompt": "Why use decodable text during early phonics application?",
           "choices": [
-            "It keeps beginning readers in one controlled text type for the rest of the elementary grades to build confidence.",
-            "It offers many chances to apply recently taught decoding patterns accurately while reading connected text.",
             "It measures listening comprehension without print so teachers can separate language skills from decoding.",
-            "It replaces read-alouds and knowledge-building discussions because controlled text covers those goals as well."
+            "It replaces read-alouds and knowledge-building discussions because controlled text covers those goals as well.",
+            "It keeps beginning readers in one controlled text type for the rest of the elementary grades to build confidence.",
+            "It offers many chances to apply recently taught decoding patterns accurately while reading connected text."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Aligned decodable text supports transfer and accuracy while a complete literacy program also includes rich oral language, diverse texts, vocabulary, knowledge, and writing.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -670,12 +670,12 @@
           "id": "read5302-ch-03-check-03",
           "prompt": "How should irregular high-frequency words be taught?",
           "choices": [
-            "Treat every letter in an irregular word as arbitrary so students learn the full word as one unanalyzed unit.",
-            "Require visual memorization from flash cards without any analysis of the sounds represented by the letters.",
             "Map the regular sound-letter parts, flag the unexpected part, and connect pronunciation with meaning.",
-            "Avoid teaching the word until students have learned every exception pattern that could appear in later texts."
+            "Avoid teaching the word until students have learned every exception pattern that could appear in later texts.",
+            "Treat every letter in an irregular word as arbitrary so students learn the full word as one unanalyzed unit.",
+            "Require visual memorization from flash cards without any analysis of the sounds represented by the letters."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Analyzing what is regular and what is unusual supports orthographic learning more precisely than presenting the entire word as a visual shape.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -690,12 +690,12 @@
           "id": "read5302-ch-03-check-04",
           "prompt": "What supports accurate multisyllabic word reading?",
           "choices": [
-            "Counting the letters in each long word and choosing the shortest familiar pronunciation that seems to fit.",
-            "Using sentence context to replace word analysis so students can skip long words and keep reading smoothly.",
             "Memorizing one fixed pronunciation for every prefix and suffix and applying it the same way in each word.",
-            "Cumulative work on syllable patterns, vowel teams, morphology, flexible division, and meaning checks."
+            "Cumulative work on syllable patterns, vowel teams, morphology, flexible division, and meaning checks.",
+            "Counting the letters in each long word and choosing the shortest familiar pronunciation that seems to fit.",
+            "Using sentence context to replace word analysis so students can skip long words and keep reading smoothly."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Multisyllabic decoding integrates orthographic chunks, syllable and morpheme knowledge, pronunciation flexibility, vocabulary, and confirmation in context.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -710,12 +710,12 @@
           "id": "read5302-ch-03-check-05",
           "prompt": "Why should literacy instruction include explicit teaching of morphology?",
           "choices": [
-            "Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related word families.",
-            "Morphology is useful mainly for labeling grammar terms during isolated parts-of-speech worksheets.",
             "Morphology instruction removes the need for phonics because word parts cover all decoding demands.",
-            "Morphology applies only to short Anglo-Saxon base words rather than to academic Latin and Greek roots."
+            "Morphology applies only to short Anglo-Saxon base words rather than to academic Latin and Greek roots.",
+            "Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related word families.",
+            "Morphology is useful mainly for labeling grammar terms during isolated parts-of-speech worksheets."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Morphology links word form and meaning and becomes increasingly valuable in academic language while working alongside phonological, orthographic, and contextual knowledge.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -830,12 +830,12 @@
           "id": "read5302-ch-04-check-01",
           "prompt": "What are the central dimensions of oral-reading fluency?",
           "choices": [
-            "Accuracy, appropriate rate or automaticity, and prosody, interpreted with text difficulty and comprehension.",
             "Vocabulary breadth measured on a standardized test, since knowing word meanings determines reading fluency.",
             "A preference for silent rather than oral reading, recorded through interest surveys completed by students.",
-            "Handwriting speed and spelling accuracy on timed dictation tasks, which reflect overall literacy automaticity."
+            "Handwriting speed and spelling accuracy on timed dictation tasks, which reflect overall literacy automaticity.",
+            "Accuracy, appropriate rate or automaticity, and prosody, interpreted with text difficulty and comprehension."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Fluency coordinates accurate, increasingly automatic word reading with phrasing and expression; rate without accuracy, meaning, text context, or prosody is incomplete.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -850,12 +850,12 @@
           "id": "read5302-ch-04-check-02",
           "prompt": "Which practice is most likely to improve fluency?",
           "choices": [
-            "Timed independent reading in which students try to read faster each day without receiving feedback on errors.",
             "Modeled, repeated oral reading of suitable text with feedback, phrasing support, and meaning checks.",
             "Moving students promptly to much harder text so the challenge pushes them to build speed and stamina.",
-            "Replacing connected reading time with practice defining vocabulary words drawn from upcoming passages."
+            "Replacing connected reading time with practice defining vocabulary words drawn from upcoming passages.",
+            "Timed independent reading in which students try to read faster each day without receiving feedback on errors."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Purposeful repeated reading and guided oral practice can build automaticity and prosody when the text is accessible and feedback preserves accuracy and meaning.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -870,12 +870,12 @@
           "id": "read5302-ch-04-check-03",
           "prompt": "What makes vocabulary instruction robust?",
           "choices": [
-            "A single dictionary-copying exercise in which students write definitions for each word on the weekly list.",
             "A vocabulary pretest at the start of the unit followed by independent reading with no further word teaching.",
             "Student-friendly explanations, word relationships, varied contexts, active use, and cumulative review.",
-            "Equal teaching time for every unfamiliar word in a text, regardless of how useful the word is across subjects."
+            "Equal teaching time for every unfamiliar word in a text, regardless of how useful the word is across subjects.",
+            "A single dictionary-copying exercise in which students write definitions for each word on the weekly list."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Vocabulary grows through explicit instruction, word analysis, rich language and reading, multiple exposures, retrieval, and application across speaking, reading, and writing.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -890,12 +890,12 @@
           "id": "read5302-ch-04-check-04",
           "prompt": "How should context be used to infer word meaning?",
           "choices": [
-            "Assume the nearest familiar word in the sentence is a synonym and substitute it for the unknown word.",
             "Set morphology and sentence structure aside and rely on the general topic of the passage to choose a meaning.",
             "Treat the first meaning that comes to mind as final so reading can continue without further interruption.",
-            "Form a tentative meaning, analyze word parts when useful, and verify it against the text or a reliable source."
+            "Form a tentative meaning, analyze word parts when useful, and verify it against the text or a reliable source.",
+            "Assume the nearest familiar word in the sentence is a synonym and substitute it for the unknown word."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Context clues vary in quality; strategic readers combine syntax, discourse, morphology, knowledge, and verification rather than relying on an isolated cue.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -910,12 +910,12 @@
           "id": "read5302-ch-04-check-05",
           "prompt": "What is effective comprehension-strategy instruction?",
           "choices": [
-            "Model the strategy, guide practice in real texts, prompt self-monitoring, and gradually release control.",
             "Assign more written summaries each week so students improve through repeated independent practice alone.",
             "Teach a catchy strategy mnemonic and treat students’ ability to recite it as the final learning outcome.",
-            "Use passages that students have already memorized so they can focus attention on the strategy steps."
+            "Use passages that students have already memorized so they can focus attention on the strategy steps.",
+            "Model the strategy, guide practice in real texts, prompt self-monitoring, and gradually release control."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Strategies are purposeful routines for constructing and monitoring meaning; instruction should make decisions visible and then support flexible independent use.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -1235,12 +1235,12 @@
           "id": "read5302-ch-06-check-01",
           "prompt": "What characterizes explicit literacy instruction?",
           "choices": [
+            "Drop cumulative review once a skill has been introduced so lessons can cover more new content each week.",
             "State the goal, model the thinking, guide practice with feedback, and move toward independent use.",
             "Provide the answer before each student attempt throughout the year so learners never practice an error.",
-            "Rely on open discovery alone for students with persistent difficulty so they construct strategies themselves.",
-            "Drop cumulative review once a skill has been introduced so lessons can cover more new content each week."
+            "Rely on open discovery alone for students with persistent difficulty so they construct strategies themselves."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Explicit instruction makes the target and decision process visible, provides many successful responses and feedback, and fades support according to performance.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -1256,12 +1256,12 @@
           "id": "read5302-ch-06-check-02",
           "prompt": "Which practice makes small-group reading instruction genuinely flexible?",
           "choices": [
+            "Reassign groups randomly each day without reference to data so students work with many different peers.",
             "Group students permanently using a single composite reading score gathered at the start of the school year.",
             "Group for a specific, assessed purpose and change membership as skills, texts, and instructional needs shift.",
-            "Use whole-class instruction for every lesson regardless of assessment evidence about differing student needs.",
-            "Reassign groups randomly each day without reference to data so students work with many different peers."
+            "Use whole-class instruction for every lesson regardless of assessment evidence about differing student needs."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Flexible grouping is temporary and purpose driven; it preserves access to rich instruction while allowing targeted teaching and response-based regrouping.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -1277,12 +1277,12 @@
           "id": "read5302-ch-06-check-03",
           "prompt": "How should differentiation preserve rigor?",
           "choices": [
+            "Grade students who receive supports on a different goal that is not shared with them in advance.",
             "Replace the grade-level task with unrelated easier worksheets that students can complete independently.",
             "Remove complex ideas from the unit so students who need support can finish assignments more quickly.",
-            "Keep the core thinking goal while adding vocabulary support, chunking, accessible formats, and guidance.",
-            "Grade students who receive supports on a different goal that is not shared with them in advance."
+            "Keep the core thinking goal while adding vocabulary support, chunking, accessible formats, and guidance."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Differentiation changes access, scaffolding, intensity, materials, grouping, or response options while keeping the intended construct and meaningful learning visible.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -1298,12 +1298,12 @@
           "id": "read5302-ch-06-check-04",
           "prompt": "Which support is appropriate for multilingual learners?",
           "choices": [
+            "Build on home-language knowledge, teach English forms explicitly, and pair content with language goals.",
             "Prohibit use of the home language during literacy lessons so students practice English more consistently.",
             "Wait for conversational English fluency before beginning grade-level literacy and content instruction.",
-            "Treat each English language error in reading or writing as a likely sign of an underlying disability.",
-            "Build on home-language knowledge, teach English forms explicitly, and pair content with language goals."
+            "Treat each English language error in reading or writing as a likely sign of an underlying disability."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Responsive instruction treats multilingualism as an asset and provides explicit access to the language of disciplinary texts without lowering intellectual demand.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -1319,12 +1319,12 @@
           "id": "read5302-ch-06-check-05",
           "prompt": "How can an intervention be intensified responsibly?",
           "choices": [
+            "Attribute limited progress to low motivation and keep the plan unchanged without gathering evidence.",
             "Use diagnostic data to adjust explicitness, dosage, group size, or focus, then monitor the change.",
             "Change several program elements at once without documenting which adjustments were made or when.",
-            "Repeat the same intervention plan indefinitely because consistency matters more than student response.",
-            "Attribute limited progress to low motivation and keep the plan unchanged without gathering evidence."
+            "Repeat the same intervention plan indefinitely because consistency matters more than student response."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Data-based intensification begins with fidelity and diagnostic review, makes a reasoned adaptation, documents it, and evaluates whether the change improves growth.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -1445,12 +1445,12 @@
           "id": "read5302-ch-07-check-01",
           "prompt": "How do screening and diagnostic assessment differ?",
           "choices": [
-            "It flags risk and the need for timely follow-up; diagnostic evidence then specifies skills to teach.",
-            "It establishes a reading disability by itself, so a positive screen leads directly to formal eligibility.",
             "It dictates which commercial intervention program the student should receive for the rest of the year.",
-            "It proves that the student received inadequate classroom instruction during the previous school year."
+            "It proves that the student received inadequate classroom instruction during the previous school year.",
+            "It flags risk and the need for timely follow-up; targeted skill evidence then specifies what to teach.",
+            "It establishes a reading disability by itself, so a positive screen leads directly to formal eligibility."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Screening prioritizes efficient risk identification, whereas diagnostic assessment samples components and error patterns to guide hypotheses and teaching.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -1466,12 +1466,12 @@
           "id": "read5302-ch-07-check-02",
           "prompt": "What is the purpose of progress monitoring?",
           "choices": [
-            "To rediagnose the student every week so the team can update eligibility categories as scores change.",
-            "To estimate growth toward a defined goal and guide decisions to continue, adjust, or intensify teaching.",
             "To replace a portion of daily instruction with testing time so the team collects as much data as possible.",
-            "To compare performance on a different, unrelated skill at each administration across the school year."
+            "To compare performance on a different, unrelated skill at each administration across the school year.",
+            "To rediagnose the student every week so the team can update eligibility categories as scores change.",
+            "To estimate growth toward a defined goal and guide decisions to continue, adjust, or intensify teaching."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Progress monitoring uses repeated technically adequate measures of the same broad outcome or defined skill to evaluate responsiveness over time.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -1487,12 +1487,12 @@
           "id": "read5302-ch-07-check-03",
           "prompt": "What does reliability mean in assessment?",
           "choices": [
-            "The cultural relevance of the passages selected for the assessment and the classroom book collection.",
-            "The instructional intensity of the intervention that students receive after the assessment is scored.",
             "The consistency or precision of scores for the intended use across occasions, forms, or raters.",
-            "The visual attractiveness and readability of the score report that is shared with families and staff."
+            "The visual attractiveness and readability of the score report that is shared with families and staff.",
+            "The cultural relevance of the passages selected for the assessment and the classroom book collection.",
+            "The instructional intensity of the intervention that students receive after the assessment is scored."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Reliability concerns score consistency and measurement error; it is necessary but does not by itself establish that an interpretation is valid or fair.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -1508,12 +1508,12 @@
           "id": "read5302-ch-07-check-04",
           "prompt": "A screener yields consistent scores but samples skills unrelated to the decision being made. What validity problem exists?",
           "choices": [
-            "The test must be invalid simply because it produces consistent, reliable scores across administrations.",
-            "The student should retake the same test repeatedly until the score rises to the expected benchmark level.",
             "Validity is a permanent property of the test itself and stays the same regardless of the purpose of use.",
-            "The evidence does not support the intended interpretation and use of the scores for this purpose."
+            "The evidence does not support the intended interpretation and use of the scores for this purpose.",
+            "The test must be invalid simply because it produces consistent, reliable scores across administrations.",
+            "The student should retake the same test repeatedly until the score rises to the expected benchmark level."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Validity concerns evidence for a particular interpretation and use in a defined population and context, not a universal label attached to an instrument.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -1529,12 +1529,12 @@
           "id": "read5302-ch-07-check-05",
           "prompt": "Why do sensitivity and specificity matter in screening?",
           "choices": [
-            "Correctly identifying students who have the risk and correctly excluding students who do not.",
-            "Interrater reliability among scorers and the handwriting speed of students on written responses.",
             "The percentile rank and grade-equivalent score that the screener reports for each individual student.",
-            "Treatment fidelity during intervention and the social validity ratings collected from teachers afterward."
+            "Treatment fidelity during intervention and the social validity ratings collected from teachers afterward.",
+            "Correctly identifying students who have the risk and correctly excluding students who do not.",
+            "Interrater reliability among scorers and the handwriting speed of students on written responses."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Sensitivity and specificity describe classification accuracy; thresholds should reflect prevalence, consequences, resources, equity, and the follow-up pathway.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -1660,12 +1660,12 @@
           "id": "read5302-ch-08-check-01",
           "prompt": "What does a phoneme-analysis error reveal?",
           "choices": [
-            "Explicit, supported phoneme segmentation linked to letters once the oral task is understood.",
             "Instruction in advanced figurative language such as metaphor and idiom within grade-level poetry.",
             "Longer silent-reading sessions designed to build stamina with self-selected chapter books each day.",
-            "Practice locating entries with dictionary guide words to strengthen alphabetical order and reference skills."
+            "Practice locating entries with dictionary guide words to strengthen alphabetical order and reference skills.",
+            "Explicit, supported speech-sound segmentation linked to letters once the oral task is understood."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "The contrast between blending and segmentation identifies a specific sound-analysis need that can be taught directly and connected to encoding and decoding.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -1682,12 +1682,12 @@
           "id": "read5302-ch-08-check-02",
           "prompt": "Why use unfamiliar or pseudoword decoding tasks?",
           "choices": [
-            "Background knowledge of the story topic and the student’s ability to predict events from earlier pages.",
             "Applying sound-letter and word-analysis knowledge without relying on stored familiarity with real words.",
             "Writing organization, including paragraph structure, transitions, and the sequencing of ideas in essays.",
-            "Listening comprehension of short passages read aloud by the examiner without any printed text present."
+            "Listening comprehension of short passages read aloud by the examiner without any printed text present.",
+            "Background knowledge of the story topic and the student’s ability to predict events from earlier pages."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Novel-word tasks can sample generative decoding, but interpretation still requires appropriate language, pattern legality, instruction, and comparison with real-word and spelling evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -1704,12 +1704,12 @@
           "id": "read5302-ch-08-check-03",
           "prompt": "What can an informal reading inventory contribute?",
           "choices": [
-            "A single standardized diagnosis that determines the student’s reading disability status without other data.",
             "Proof of an exact independent reading level that remains accurate across texts, genres, and topics.",
             "Descriptive task evidence about accuracy, fluency, and comprehension, combined with more reliable measures.",
-            "A replacement for word-level analysis, since passage reading already shows each decoding skill needed."
+            "A replacement for word-level analysis, since passage reading already shows each decoding skill needed.",
+            "A single standardized diagnosis that determines the student’s reading disability status without other data."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Passage inventories reveal strategies and errors in context but their level labels and comprehension scores can be unstable; decisions need converging evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -1726,12 +1726,12 @@
           "id": "read5302-ch-08-check-04",
           "prompt": "How should spelling errors be analyzed?",
           "choices": [
-            "Treat the misspelled words as random visual memory failures that do not reveal any spelling pattern.",
             "Assess reading comprehension instead of spelling, since comprehension better explains writing difficulties.",
             "Correct each misspelled word on the paper without identifying which spelling patterns caused the errors.",
-            "Examine sound representation, conventions, inflected endings, and doubling patterns, not just error counts."
+            "Examine sound representation, conventions, inflected endings, and doubling patterns, not just error counts.",
+            "Treat the misspelled words as random visual memory failures that do not reveal any spelling pattern."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Feature analysis shows what the learner represents and which phonological, orthographic, syllabic, or morphological patterns need explicit instruction.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -1748,12 +1748,12 @@
           "id": "read5302-ch-08-check-05",
           "prompt": "How should an oral-reading-fluency score be interpreted?",
           "choices": [
-            "Rate is one indicator; accuracy, prosody, and comprehension show fluent reading is not yet secure.",
             "The student is fully fluent because the words-correct-per-minute score meets the grade-level benchmark.",
             "The passage was understood because the student missed very few words during the timed oral reading.",
-            "Prosody is unrelated to syntax or meaning, so phrasing problems can be set aside when interpreting scores."
+            "Prosody is unrelated to syntax or meaning, so phrasing problems can be set aside when interpreting scores.",
+            "Rate is one indicator; accuracy, prosody, and comprehension show fluent reading is not yet secure."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "A fluency decision integrates rate with accuracy, phrasing, expression, difficulty, and understanding rather than using a speed cutoff in isolation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -1941,7 +1941,7 @@
             "Disregard the trend line because the most recent score falls below the goal established for the student.",
             "Declare that the intervention has succeeded after a single score increase between consecutive probes.",
             "Change the outcome measure immediately whenever the level and slope appear to tell different stories.",
-            "Current level, rate and stability of growth, remaining time, goal relevance, fidelity, and diagnostic data together."
+            "Weigh current level, growth rate, stability, time left, goal fit, fidelity, and diagnostic data."
           ],
           "answerIndex": 3,
           "rationale": "Level describes current performance and slope describes change; a sound decision uses the full series and preestablished rules rather than one point.",
@@ -2090,12 +2090,12 @@
           "id": "read5302-ch-10-check-01",
           "prompt": "What is an asset-based approach to multilingual literacy?",
           "choices": [
+            "Assume that literacy skills transfer identically across all languages without examining specific differences.",
             "Identify linguistic, cultural, and knowledge resources that support English growth while teaching new forms.",
             "Set aside English instructional needs so learners can focus mainly on developing their home language first.",
-            "Require students to think and plan in English during literacy tasks so translation habits fade quickly.",
-            "Assume that literacy skills transfer identically across all languages without examining specific differences."
+            "Require students to think and plan in English during literacy tasks so translation habits fade quickly."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Asset-based practice recognizes transferable knowledge and identity while examining language-specific differences, opportunity, explicit instruction, and individual performance.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -2112,12 +2112,12 @@
           "id": "read5302-ch-10-check-02",
           "prompt": "How can cross-linguistic analysis support instruction?",
           "choices": [
+            "Discourage the student from using both languages so the cross-language influence stops appearing in writing.",
             "Count the cross-language spelling pattern as evidence of a disability that should be referred for evaluation.",
             "Determine whether the pattern reflects predictable transfer, teach the English contrast, and monitor growth.",
-            "Disregard the pattern because cross-language influences fade over time without any targeted instruction.",
-            "Discourage the student from using both languages so the cross-language influence stops appearing in writing."
+            "Disregard the pattern because cross-language influences fade over time without any targeted instruction."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Cross-linguistic analysis helps distinguish developing language from persistent difficulty and turns contrastive patterns into explicit instructional opportunities.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -2134,12 +2134,12 @@
           "id": "read5302-ch-10-check-03",
           "prompt": "How should teams distinguish language difference from disability?",
           "choices": [
+            "A translated version of a standardized test that keeps the original English norms for score interpretation.",
             "A single English-only cutoff score applied to every student regardless of language background or schooling history.",
             "The family’s accent, country of origin, or immigration history as described in enrollment records and interviews.",
-            "Instruction quality, language development, performance across languages and contexts, and response to teaching.",
-            "A translated version of a standardized test that keeps the original English norms for score interpretation."
+            "Instruction quality, language development, performance across languages and contexts, and response to teaching."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Differential decisions require converging evidence that difficulty is not explained primarily by language development, culture, instruction, mobility, or access.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -2156,12 +2156,12 @@
           "id": "read5302-ch-10-check-04",
           "prompt": "What makes family literacy engagement reciprocal?",
           "choices": [
+            "Learn family goals, languages, and routines; co-design feasible supports and communicate in preferred ways.",
             "Assign one standardized home reading activity to every family so expectations remain consistent across homes.",
             "Judge family engagement mainly by attendance at school events such as open houses and literacy nights.",
-            "Ask students to interpret confidential meetings for family members who prefer a language other than English.",
-            "Learn family goals, languages, and routines; co-design feasible supports and communicate in preferred ways."
+            "Ask students to interpret confidential meetings for family members who prefer a language other than English."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Reciprocal partnership values family expertise and shared decisions rather than treating families as passive implementers of school-selected practices.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -2178,12 +2178,12 @@
           "id": "read5302-ch-10-check-05",
           "prompt": "How should text selection support equity?",
           "choices": [
+            "Avoid texts that present contested perspectives so classroom discussions stay calm and focused on content.",
             "Build access to accurate, varied authors, identities, genres, and perspectives while examining stereotypes.",
             "Lower text complexity whenever a selection features cultures that are unfamiliar to most students in the class.",
-            "Select classroom texts mainly by their cover images so the library looks diverse to visitors and families.",
-            "Avoid texts that present contested perspectives so classroom discussions stay calm and focused on content."
+            "Select classroom texts mainly by their cover images so the library looks diverse to visitors and families."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Equitable text systems combine representation, authenticity, quality, access, challenge, and critical examination throughout the curriculum.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -2305,12 +2305,12 @@
           "id": "read5302-ch-11-check-01",
           "prompt": "What should be clarified before a coaching cycle begins?",
           "choices": [
-            "Clarify role, purpose, confidentiality limits, goals, data use, authority, and how feedback is shared.",
-            "Begin recording the teacher’s lessons without discussing the purpose so instruction appears natural on video.",
             "Promise the teacher complete confidentiality for every observation regardless of district policy or duties.",
-            "Let administrators and the teacher hold different assumptions about whether coaching is evaluative."
+            "Let administrators and the teacher hold different assumptions about whether coaching is evaluative.",
+            "Clarify role, purpose, confidentiality limits, goals, data use, authority, and how feedback is shared.",
+            "Begin recording the teacher’s lessons without discussing the purpose so instruction appears natural on video."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Role clarity and informed agreements build trust and prevent coaching evidence from being used in ways participants did not understand.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -2326,12 +2326,12 @@
           "id": "read5302-ch-11-check-02",
           "prompt": "Which set of practices makes literacy coaching genuinely job embedded?",
           "choices": [
-            "Send teachers a generic research article and assume they will translate it into classroom practice.",
-            "Use collaborative goals, co-planning, modeling or co-teaching, observation, feedback, rehearsal, and student evidence.",
             "Wait until the annual evaluation cycle to discuss literacy practice so feedback is formally documented.",
-            "Require teachers to implement a new practice without materials, modeling, or opportunities to rehearse."
+            "Require teachers to implement a new practice without materials, modeling, or opportunities to rehearse.",
+            "Send teachers a generic research article and assume they will translate it into classroom practice.",
+            "Use collaborative goals, co-planning, modeling or co-teaching, observation, feedback, rehearsal, and student evidence."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Job-embedded professional learning connects evidence and explanation with supported enactment, reflection, feedback, and iterative refinement.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -2347,12 +2347,12 @@
           "id": "read5302-ch-11-check-03",
           "prompt": "When is modeling most effective in coaching?",
           "choices": [
-            "An unannounced demonstration lesson taught by the coach with no planning conversation or debrief afterward.",
-            "A detailed script that the teacher must copy word for word regardless of the needs of the students present.",
             "A shared focus, explanation of key decisions, observable look-fors, debriefing, teacher rehearsal, and follow-up evidence.",
-            "Feedback limited to whether the demonstration lesson felt entertaining and engaging for the students."
+            "Feedback limited to whether the demonstration lesson felt entertaining and engaging for the students.",
+            "An unannounced demonstration lesson taught by the coach with no planning conversation or debrief afterward.",
+            "A detailed script that the teacher must copy word for word regardless of the needs of the students present."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Modeling supports transfer when the instructional reasoning is visible and the teacher can analyze, practice, adapt, and receive feedback.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -2368,12 +2368,12 @@
           "id": "read5302-ch-11-check-04",
           "prompt": "How should professional learning be evaluated?",
           "choices": [
-            "End-of-session satisfaction ratings, which indicate whether teachers enjoyed and valued the training.",
-            "A single student’s improved score after training, which demonstrates that the training caused learning.",
             "Attendance records for each session, since participation shows that teachers implemented the practice.",
-            "Changes in educator knowledge and practice, implementation conditions, student opportunity and outcomes, and side effects."
+            "Changes in educator knowledge and practice, implementation conditions, student opportunity and outcomes, and side effects.",
+            "End-of-session satisfaction ratings, which indicate whether teachers enjoyed and valued the training.",
+            "A single student’s improved score after training, which demonstrates that the training caused learning."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Professional learning evaluation moves beyond reaction to learning, enactment, system support, and relevant student evidence without overclaiming causality.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -2389,12 +2389,12 @@
           "id": "read5302-ch-11-check-05",
           "prompt": "What is a constructive response to instructional disagreement?",
           "choices": [
-            "Define the shared student goal, surface assumptions and evidence, examine data, agree on a testable plan, and review it.",
-            "Adopt the position argued most forcefully during the meeting so the team can reach a decision quickly.",
             "Avoid raising the disagreement until the conflict fades on its own and the team returns to routine work.",
-            "Frame the colleague’s disagreement as personal resistance to change rather than examining their evidence."
+            "Frame the colleague’s disagreement as personal resistance to change rather than examining their evidence.",
+            "Define the shared student goal, surface assumptions and evidence, examine data, agree on a testable plan, and review it.",
+            "Adopt the position argued most forcefully during the meeting so the team can reach a decision quickly."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Collaborative conflict resolution preserves relationships while making the instructional question, evidence, decision process, and follow-up explicit.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -2523,14 +2523,14 @@
       "knowledgeChecks": [
         {
           "id": "read5302-ch-12-check-01",
-          "prompt": "What is the reading specialist?s role in MTSS leadership?",
+          "prompt": "What is the reading specialist's role in MTSS leadership?",
           "choices": [
-            "Coordinate core instruction, screening, support, monitoring, and team decisions; MTSS must not delay or deny an evaluation.",
             "Assign students permanently to intervention tiers based on fall screening results so building schedules and staffing remain stable.",
             "Use tiered intervention as a substitute for special-education evaluation whenever families submit a written request for an evaluation.",
-            "Make the reading specialist solely responsible for every struggling reader in the school, including planning core classroom instruction."
+            "Make the reading specialist solely responsible for every struggling reader in the school, including planning core classroom instruction.",
+            "Coordinate core instruction, screening, support, monitoring, and team decisions; tiered support must not delay or deny evaluation."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "MTSS is a prevention and support framework involving system quality and increasingly intensive response, not a static placement or reason to delay required evaluation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -2548,12 +2548,12 @@
           "id": "read5302-ch-12-check-02",
           "prompt": "How should a literacy program be evaluated?",
           "choices": [
-            "Vendor testimonials and marketing materials describing results achieved in other districts and schools.",
             "Implementation, component outcomes, growth, subgroup access, educator learning, coherence, and unintended effects.",
             "The highest average score earned by a single grade level during the most recent assessment window.",
-            "Teacher compliance with the program schedule, measured without reference to student learning evidence."
+            "Teacher compliance with the program schedule, measured without reference to student learning evidence.",
+            "Vendor testimonials and marketing materials describing results achieved in other districts and schools."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Program evaluation examines whether the design was enacted, for whom it worked, under what conditions, and what should be sustained, adapted, or discontinued.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -2571,12 +2571,12 @@
           "id": "read5302-ch-12-check-03",
           "prompt": "How should leaders select literacy materials or programs?",
           "choices": [
-            "Choose the most colorful and visually appealing materials so students feel motivated to use them daily.",
             "Treat a long list of research citations in the vendor brochure as proof that the program is effective.",
             "Independent evidence and fit, instructional design, alignment, population, implementation demands, access, and cost.",
-            "Disregard local staffing capacity and learner profiles because strong programs work in every setting."
+            "Disregard local staffing capacity and learner profiles because strong programs work in every setting.",
+            "Choose the most colorful and visually appealing materials so students feel motivated to use them daily."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Responsible adoption combines evidence appraisal with curricular quality, contextual fit, equity, feasibility, professional learning, and an explicit evaluation plan.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -2594,12 +2594,12 @@
           "id": "read5302-ch-12-check-04",
           "prompt": "How should identifiable literacy data be shared?",
           "choices": [
-            "Share the data freely by email because every district employee works on behalf of students and needs full access to records.",
             "Remove the student’s name but keep other uniquely identifying details so colleagues can still understand the full context.",
             "Post the literacy profile on the staff room bulletin board so all teachers can review it while planning their instruction.",
-            "Verify legitimate educational interest, FERPA and policy, consent, a secure method, and minimum information needed."
+            "Verify legitimate educational interest, FERPA and policy, consent, a secure method, and minimum information needed.",
+            "Share the data freely by email because every district employee works on behalf of students and needs full access to records."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Education records require role-based, purpose-limited, secure handling under current law and policy; professional curiosity is not the same as legitimate educational interest.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",
@@ -2617,12 +2617,12 @@
           "id": "read5302-ch-12-check-05",
           "prompt": "How should a specialist handle a financial conflict?",
           "choices": [
-            "Disclose the conflict, follow ethics and procurement rules, present objective evidence, and recuse when needed.",
             "Keep the financial relationship private because the program is popular with teachers and families.",
             "Use student data in vendor marketing materials without authorization to help demonstrate results.",
-            "Guarantee specific student outcomes to administrators so the purchase decision can move forward."
+            "Guarantee specific student outcomes to administrators so the purchase decision can move forward.",
+            "Disclose the tie, follow ethics and purchasing rules, share objective data, and recuse if needed."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Transparency and independent evidence protect students, schools, and professional trust when personal interests could influence recommendations.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5302.pdf",

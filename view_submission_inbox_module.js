@@ -6487,6 +6487,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
         "div",
         {
           ref: dialogRef,
+          "data-si-dialog": "true",
           role: "dialog",
           "aria-modal": "true",
           "aria-labelledby": "submission-inbox-title",
@@ -6507,10 +6508,15 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
             position: "relative"
           }
         },
+        /* @__PURE__ */ React.createElement(
+          "style",
+          null,
+          '[data-si-dialog] :is(button,input,select,textarea,summary,[tabindex="0"]):focus-visible{outline:2px solid #4338ca;outline-offset:2px}@media (prefers-reduced-motion:reduce){[data-si-dialog] *{transition-duration:0.01ms !important;animation-duration:0.01ms !important}}'
+        ),
         // Header
         /* @__PURE__ */ React.createElement(
           "div",
-          { style: { padding: "18px 22px", borderBottom: "1px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "space-between" } },
+          { style: { padding: "18px 22px", borderBottom: "1px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 } },
           /* @__PURE__ */ React.createElement(
             "div",
             null,
@@ -6521,7 +6527,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
             ),
             /* @__PURE__ */ React.createElement(
               "p",
-              { id: "submission-inbox-description", style: { margin: "4px 0 0 0", fontSize: "0.85rem", color: "#64748b" } },
+              { id: "submission-inbox-description", style: { margin: "4px 0 0 0", fontSize: "0.85rem", color: "#475569" } },
               tr("Add student submission files or collect them from Class Mailbox. Load a class key only if decrypting .alloflow.html files.")
             )
           ),
@@ -6529,9 +6535,9 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
             ref: closeButtonRef,
             type: "button",
             onClick: onClose,
-            style: { padding: "6px 10px", border: "none", background: "transparent", color: "#475569", cursor: "pointer", fontSize: "1.4rem", lineHeight: 1, borderRadius: 6 },
+            style: { minWidth: 44, minHeight: 44, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", border: "none", background: "transparent", color: "#334155", cursor: "pointer", fontSize: "1.4rem", lineHeight: 1, borderRadius: 8 },
             "aria-label": tr("Close")
-          }, "\xD7")
+          }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xD7"))
         ),
         // Body
         /* @__PURE__ */ React.createElement(
@@ -6561,13 +6567,13 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   type: "button",
                   onClick: () => subInputRef.current?.click(),
                   disabled: queueLocked,
-                  style: { padding: "8px 16px", background: "#15803d", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: queueLocked ? "not-allowed" : "pointer", opacity: queueLocked ? 0.55 : 1, fontSize: "0.88rem" }
+                  style: { minHeight: 44, padding: "8px 16px", background: "#15803d", color: "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: queueLocked ? "not-allowed" : "pointer", opacity: queueLocked ? 0.55 : 1, fontSize: "0.88rem" }
                 }, tr("\uFF0B Add submissions")),
                 queue.length > 0 && /* @__PURE__ */ React.createElement("button", {
                   type: "button",
                   onClick: clearQueue,
                   disabled: queueLocked,
-                  style: { padding: "8px 12px", background: "#f1f5f9", color: "#475569", border: "1px solid #cbd5e1", borderRadius: 8, fontWeight: 600, cursor: queueLocked ? "not-allowed" : "pointer", opacity: queueLocked ? 0.55 : 1, fontSize: "0.8rem" }
+                  style: { minHeight: 44, padding: "8px 14px", background: "#f1f5f9", color: "#334155", border: "1px solid #cbd5e1", borderRadius: 8, fontWeight: 600, cursor: queueLocked ? "not-allowed" : "pointer", opacity: queueLocked ? 0.55 : 1, fontSize: "0.82rem" }
                 }, tr("Clear"))
               )
             ),
@@ -6591,11 +6597,11 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   onClick: pullFromMailbox,
                   disabled: mbPull.busy,
                   "aria-busy": mbPull.busy ? "true" : "false",
-                  style: { padding: "7px 14px", background: "white", color: "#166534", border: "1px solid #15803d", borderRadius: 8, fontWeight: 700, cursor: mbPull.busy ? "wait" : "pointer", fontSize: "0.85rem" }
+                  style: { minHeight: 44, padding: "8px 14px", background: "white", color: "#166534", border: "1px solid #15803d", borderRadius: 8, fontWeight: 700, cursor: mbPull.busy ? "wait" : "pointer", fontSize: "0.85rem" }
                 }, mbPull.busy ? tr("Getting submissions\u2026") : tr("\u{1F4EC} Get submissions from Class Mailbox")),
                 /* @__PURE__ */ React.createElement(
                   "label",
-                  { style: { display: "inline-flex", alignItems: "center", gap: 6, fontSize: "0.8rem", color: "#475569" } },
+                  { style: { minHeight: 44, display: "inline-flex", alignItems: "center", gap: 6, fontSize: "0.82rem", color: "#334155", cursor: "pointer" } },
                   /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: mbPull.all, disabled: mbPull.busy, onChange: (ev) => {
                     const checked = ev.target.checked;
                     setMbPull((s) => ({ ...s, all: checked }));
@@ -6608,16 +6614,16 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     const api = window.__alloMailboxSubmissions;
                     if (api && api.openSetup) api.openSetup();
                   },
-                  style: { padding: "6px 12px", background: "#fef3c7", color: "#92400e", border: "1px solid #f59e0b", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "0.8rem" }
+                  style: { minHeight: 44, padding: "8px 12px", background: "#fef3c7", color: "#92400e", border: "1px solid #f59e0b", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "0.82rem" }
                 }, tr("Open Class Mailbox setup"))
               ) : /* @__PURE__ */ React.createElement(
                 "span",
-                { style: { fontSize: "0.8rem", color: "#475569" } },
+                { style: { fontSize: "0.8rem", color: "#334155", display: "inline-flex", alignItems: "center", flexWrap: "wrap", gap: 8 } },
                 tr("Using a Class Mailbox? Connect it and submissions can be collected here without downloading them from Drive."),
                 typeof window !== "undefined" && window.__alloMailboxSubmissions && /* @__PURE__ */ React.createElement("button", {
                   type: "button",
                   onClick: () => window.__alloMailboxSubmissions.openSetup(),
-                  style: { marginLeft: 8, padding: "4px 10px", background: "white", color: "#166534", border: "1px solid #15803d", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "0.78rem" }
+                  style: { minHeight: 44, padding: "6px 12px", background: "white", color: "#166534", border: "1px solid #15803d", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "0.8rem" }
                 }, tr("Connect Class Mailbox"))
               ),
               /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "data-si-mailbox-status": "true", style: { flexBasis: "100%", fontSize: "0.8rem", color: mbPull.needsUpdate ? "#92400e" : "#334155" } }, mbPull.msg)
@@ -6633,7 +6639,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
             /* @__PURE__ */ React.createElement(
               "summary",
               {
-                style: { cursor: "pointer", fontWeight: 700, color: "#1e3a8a", fontSize: "0.9rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }
+                style: { minHeight: 44, cursor: "pointer", fontWeight: 700, color: "#1e3a8a", fontSize: "0.9rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }
               },
               /* @__PURE__ */ React.createElement(
                 "span",
@@ -6656,14 +6662,14 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   classKeyMeta?.createdAt ? " (created " + classKeyMeta.createdAt.slice(0, 10) + ")" : ""
                 ) : /* @__PURE__ */ React.createElement(
                   "div",
-                  { role: "status", "aria-live": "polite", "aria-atomic": "true", style: { fontSize: "0.85rem", color: "#64748b" } },
+                  { role: "status", "aria-live": "polite", "aria-atomic": "true", style: { fontSize: "0.85rem", color: "#334155" } },
                   tr("Pick the class-key_*.alloflow file you saved when setting up offline submissions.")
                 )
               ),
               /* @__PURE__ */ React.createElement("button", {
                 type: "button",
                 onClick: () => keyInputRef.current?.click(),
-                style: { padding: "8px 16px", background: privateJwk ? "#f1f5f9" : "#2563eb", color: privateJwk ? "#475569" : "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "0.88rem" }
+                style: { minHeight: 44, padding: "8px 16px", background: privateJwk ? "#f1f5f9" : "#2563eb", color: privateJwk ? "#334155" : "white", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer", fontSize: "0.88rem" }
               }, privateJwk ? tr("\u{1F501} Load different key") : tr("\u{1F511} Load class key"))
             ),
             /* @__PURE__ */ React.createElement("input", {
@@ -6690,11 +6696,11 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   onClick: () => setGlobalRubricOpen(!globalRubricOpen),
                   "aria-expanded": globalRubricOpen,
                   "aria-controls": "submission-inbox-class-rubric-panel",
-                  style: { display: "inline-flex", alignItems: "center", gap: 8, background: "transparent", border: "none", cursor: "pointer", padding: 0, fontWeight: 700, color: "#3730a3", fontSize: "0.9rem" }
+                  style: { minHeight: 44, display: "inline-flex", alignItems: "center", gap: 8, background: "transparent", border: "none", cursor: "pointer", padding: "4px 0", fontWeight: 700, color: "#3730a3", fontSize: "0.9rem" }
                 },
                 tr("\u{1F3AF} Class rubric"),
                 (globalRubric.rubric || "").trim() && /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "1px 8px", borderRadius: 999, background: "#c7d2fe", color: "#3730a3", fontSize: "0.7rem", fontWeight: 700 } }, tr("\u2713 set")),
-                /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.75rem", fontWeight: 600, color: "#6366f1" } }, globalRubricOpen ? "\u25BE" : "\u25B8")
+                /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "0.75rem", fontWeight: 600, color: "#4338ca" } }, globalRubricOpen ? "\u25BE" : "\u25B8")
               ),
               /* @__PURE__ */ React.createElement(
                 "div",
@@ -6710,9 +6716,10 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   "aria-describedby": bulkGrading ? "submission-inbox-bulk-progress-label" : void 0,
                   title: !aiTextAvailable ? tr("AI setup required for automatic grading. Score responses manually below.") : (globalRubric.rubric || "").trim() ? tr("Grade every decrypted submission in the queue with this rubric") : tr("Set a class rubric first"),
                   style: {
+                    minHeight: 44,
                     padding: "8px 16px",
                     background: !bulkGrading && (!aiTextAvailable || (counts.decrypted || 0) === 0 || !(globalRubric.rubric || "").trim()) ? "#cbd5e1" : "#4f46e5",
-                    color: "white",
+                    color: !bulkGrading && (!aiTextAvailable || (counts.decrypted || 0) === 0 || !(globalRubric.rubric || "").trim()) ? "#334155" : "white",
                     border: "none",
                     borderRadius: 8,
                     fontWeight: 700,
@@ -6731,7 +6738,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     type: "button",
                     onClick: autoScoreAllObjective,
                     title: tr("Auto-score objective quiz, Venn, concept-sort, timeline, and math items across all decrypted submissions"),
-                    style: { padding: "8px 14px", background: "#0369a1", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
+                    style: { minHeight: 44, padding: "8px 14px", background: "#0369a1", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
                   }, "\u26A1 Auto-score objective (" + unscoredAutoCount + ")");
                 })(),
                 !bulkGrading && (() => {
@@ -6740,7 +6747,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     type: "button",
                     onClick: saveAllGradedToGradebook,
                     title: tr("Write every graded submission to the local gradebook"),
-                    style: { padding: "8px 16px", background: "#15803d", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
+                    style: { minHeight: 44, padding: "8px 16px", background: "#15803d", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
                   }, "\u{1F4BE} Save all graded (" + gradedCount + ")");
                 })(),
                 bulkGrading && /* @__PURE__ */ React.createElement(
@@ -6766,7 +6773,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     onClick: () => {
                       bulkCancelRef.current = true;
                     },
-                    style: { padding: "4px 10px", background: "white", color: "#991b1b", border: "1px solid #fca5a5", borderRadius: 6, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }
+                    style: { minHeight: 44, padding: "6px 12px", background: "white", color: "#991b1b", border: "1px solid #fca5a5", borderRadius: 6, fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }
                   }, tr("Cancel"))
                 )
               )
@@ -6811,13 +6818,14 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     value: presetNameInput,
                     onChange: (e) => setPresetNameInput(e.target.value),
                     onKeyDown: (e) => {
+                      if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
                       if (e.key === "Enter") {
                         e.preventDefault();
                         savePreset();
                       }
                     },
                     placeholder: tr('Name this preset (e.g. "Reading response Ch.3")'),
-                    style: { flex: 1, minWidth: 180, padding: "5px 10px", border: "1px solid #c7d2fe", borderRadius: 6, fontSize: "0.8rem" }
+                    style: { flex: 1, minWidth: 180, minHeight: 44, padding: "8px 10px", border: "1px solid #c7d2fe", borderRadius: 6, fontSize: "0.82rem" }
                   }),
                   /* @__PURE__ */ React.createElement("button", {
                     type: "button",
@@ -6825,13 +6833,14 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     disabled: !presetNameInput.trim() || !globalRubric.rubric.trim() && anchors.length === 0,
                     title: tr("Save the current rubric + context + anchors as a named preset."),
                     style: {
-                      padding: "5px 12px",
+                      minHeight: 44,
+                      padding: "6px 12px",
                       background: !presetNameInput.trim() || !globalRubric.rubric.trim() && anchors.length === 0 ? "#cbd5e1" : "#4f46e5",
-                      color: "white",
+                      color: !presetNameInput.trim() || !globalRubric.rubric.trim() && anchors.length === 0 ? "#334155" : "white",
                       border: "none",
                       borderRadius: 6,
                       fontWeight: 700,
-                      fontSize: "0.78rem",
+                      fontSize: "0.8rem",
                       cursor: !presetNameInput.trim() || !globalRubric.rubric.trim() && anchors.length === 0 ? "not-allowed" : "pointer"
                     }
                   }, tr("\u{1F4BE} Save")),
@@ -6839,7 +6848,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     type: "button",
                     onClick: () => presetImportRef.current?.click(),
                     title: tr("Import presets from a JSON file (e.g. shared by another teacher)."),
-                    style: { padding: "5px 10px", background: "white", color: "#3730a3", border: "1px solid #c7d2fe", borderRadius: 6, fontWeight: 600, fontSize: "0.74rem", cursor: "pointer" }
+                    style: { minHeight: 44, padding: "6px 12px", background: "white", color: "#3730a3", border: "1px solid #c7d2fe", borderRadius: 6, fontWeight: 600, fontSize: "0.78rem", cursor: "pointer" }
                   }, tr("\u2B06 Import")),
                   /* @__PURE__ */ React.createElement("input", {
                     ref: presetImportRef,
@@ -6853,7 +6862,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     type: "button",
                     onClick: exportPresets,
                     title: tr("Export all your presets as a JSON file you can share or back up."),
-                    style: { padding: "5px 10px", background: "white", color: "#3730a3", border: "1px solid #c7d2fe", borderRadius: 6, fontWeight: 600, fontSize: "0.74rem", cursor: "pointer" }
+                    style: { minHeight: 44, padding: "6px 12px", background: "white", color: "#3730a3", border: "1px solid #c7d2fe", borderRadius: 6, fontWeight: 600, fontSize: "0.78rem", cursor: "pointer" }
                   }, tr("\u2B07 Export")),
                   Object.keys(rubricPresets).length > 0 && /* @__PURE__ */ React.createElement(
                     "div",
@@ -6864,7 +6873,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                       "aria-expanded": presetsMenuOpen,
                       "aria-controls": "submission-inbox-presets-panel",
                       title: tr("Load a saved preset"),
-                      style: { padding: "5px 12px", background: "white", color: "#3730a3", border: "1px solid #c7d2fe", borderRadius: 6, fontWeight: 700, fontSize: "0.78rem", cursor: "pointer" }
+                      style: { minHeight: 44, padding: "6px 12px", background: "white", color: "#3730a3", border: "1px solid #c7d2fe", borderRadius: 6, fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }
                     }, "\u{1F4C2} Load (" + Object.keys(rubricPresets).length + ") " + (presetsMenuOpen ? "\u25B4" : "\u25BE")),
                     presetsMenuOpen && /* @__PURE__ */ React.createElement(
                       "div",
@@ -6918,7 +6927,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                 ),
                 /* @__PURE__ */ React.createElement(
                   "div",
-                  { style: { marginTop: 6, fontSize: "0.72rem", color: "#64748b" } },
+                  { style: { marginTop: 6, fontSize: "0.74rem", color: "#334155" } },
                   tr('Presets save the rubric + context + every calibration anchor as a named set. Pick a name like "Reading response", "Math word problem", "Lab report" so you can load the right calibration when the same assignment comes back.')
                 )
               ),
@@ -6934,7 +6943,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   type: "button",
                   onClick: clearSavedSession,
                   title: tr("Clear the auto-saved rubric and anchors"),
-                  style: { padding: "4px 10px", background: "transparent", color: "#3730a3", border: "1px solid #c7d2fe", borderRadius: 6, fontSize: "0.74rem", fontWeight: 600, cursor: "pointer" }
+                  style: { minHeight: 44, padding: "6px 12px", background: "transparent", color: "#3730a3", border: "1px solid #c7d2fe", borderRadius: 6, fontSize: "0.78rem", fontWeight: 600, cursor: "pointer" }
                 }, tr("Clear saved session"))
               )
             )
@@ -6954,29 +6963,29 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   onClick: () => setGradebookOpen(!gradebookOpen),
                   "aria-expanded": gradebookOpen,
                   "aria-controls": "submission-inbox-gradebook-panel",
-                  style: { display: "inline-flex", alignItems: "center", gap: 8, background: "transparent", border: "none", cursor: "pointer", padding: 0, fontWeight: 700, color: "#166534", fontSize: "0.9rem" }
+                  style: { minHeight: 44, display: "inline-flex", alignItems: "center", gap: 8, background: "transparent", border: "none", cursor: "pointer", padding: "4px 0", fontWeight: 700, color: "#166534", fontSize: "0.9rem" }
                 },
                 tr("\u{1F4CA} Gradebook"),
                 /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "1px 8px", borderRadius: 999, background: "#bbf7d0", color: "#166534", fontSize: "0.7rem", fontWeight: 700 } }, gradebookEntries.length + " saved"),
-                /* @__PURE__ */ React.createElement("span", { style: { fontSize: "0.75rem", fontWeight: 600, color: "#16a34a" } }, gradebookOpen ? "\u25BE" : "\u25B8")
+                /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", style: { fontSize: "0.75rem", fontWeight: 600, color: "#15803d" } }, gradebookOpen ? "\u25BE" : "\u25B8")
               ),
               gradebookEntries.length > 0 && /* @__PURE__ */ React.createElement(
                 "div",
                 { style: { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end", maxWidth: "100%" } },
                 /* @__PURE__ */ React.createElement(
                   "div",
-                  { role: "group", "aria-label": tr("Group gradebook by"), style: { display: "inline-flex", background: "white", border: "1px solid #86efac", borderRadius: 6, padding: 2, fontSize: "0.74rem", fontWeight: 600 } },
+                  { role: "group", "aria-label": tr("Group gradebook by"), style: { display: "inline-flex", background: "white", border: "1px solid #86efac", borderRadius: 6, padding: 2, fontSize: "0.76rem", fontWeight: 600 } },
                   /* @__PURE__ */ React.createElement("button", {
                     type: "button",
                     onClick: () => setGradebookGroupBy("submission"),
                     "aria-pressed": gradebookGroupBy === "submission",
-                    style: { padding: "4px 10px", background: gradebookGroupBy === "submission" ? "#16a34a" : "transparent", color: gradebookGroupBy === "submission" ? "white" : "#166534", border: "none", borderRadius: 4, cursor: "pointer", fontWeight: 700 }
+                    style: { minHeight: 44, padding: "6px 12px", background: gradebookGroupBy === "submission" ? "#15803d" : "transparent", color: gradebookGroupBy === "submission" ? "white" : "#166534", border: "none", borderRadius: 4, cursor: "pointer", fontWeight: 700 }
                   }, tr("Submissions")),
                   /* @__PURE__ */ React.createElement("button", {
                     type: "button",
                     onClick: () => setGradebookGroupBy("student"),
                     "aria-pressed": gradebookGroupBy === "student",
-                    style: { padding: "4px 10px", background: gradebookGroupBy === "student" ? "#16a34a" : "transparent", color: gradebookGroupBy === "student" ? "white" : "#166534", border: "none", borderRadius: 4, cursor: "pointer", fontWeight: 700 }
+                    style: { minHeight: 44, padding: "6px 12px", background: gradebookGroupBy === "student" ? "#15803d" : "transparent", color: gradebookGroupBy === "student" ? "white" : "#166534", border: "none", borderRadius: 4, cursor: "pointer", fontWeight: 700 }
                   }, tr("By student"))
                 ),
                 typeof onOpenAlloSheet === "function" && /* @__PURE__ */ React.createElement("button", {
@@ -6984,13 +6993,13 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   onClick: openAlloSheetReview,
                   "aria-haspopup": "dialog",
                   title: tr("Review privacy-bounded saved-grade summaries before opening AlloSheet"),
-                  style: { padding: "6px 12px", background: "#4338ca", color: "white", border: "1px solid #3730a3", borderRadius: 6, fontWeight: 700, cursor: "pointer", fontSize: "0.8rem" }
+                  style: { minHeight: 44, padding: "6px 12px", background: "#4338ca", color: "white", border: "1px solid #3730a3", borderRadius: 6, fontWeight: 700, cursor: "pointer", fontSize: "0.8rem" }
                 }, tr("Open in AlloSheet")),
                 /* @__PURE__ */ React.createElement("button", {
                   type: "button",
                   onClick: exportGradebookCsv,
                   title: tr("Download all saved grades as a CSV spreadsheet"),
-                  style: { padding: "6px 12px", background: "white", color: "#166534", border: "1px solid #86efac", borderRadius: 6, fontWeight: 600, cursor: "pointer", fontSize: "0.8rem" }
+                  style: { minHeight: 44, padding: "6px 12px", background: "white", color: "#166534", border: "1px solid #86efac", borderRadius: 6, fontWeight: 600, cursor: "pointer", fontSize: "0.8rem" }
                 }, tr("\u2B07 Export CSV")),
                 gradebookClasses.length > 0 && /* @__PURE__ */ React.createElement(
                   "select",
@@ -6999,7 +7008,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     "data-si-gradebook-class-filter": "true",
                     value: gradebookClassFilter,
                     onChange: (e) => setGradebookClassFilter(e.target.value),
-                    style: { padding: "5px 8px", background: "white", color: "#166534", border: "1px solid #86efac", borderRadius: 6, fontWeight: 600, cursor: "pointer", fontSize: "0.8rem" }
+                    style: { minHeight: 44, padding: "6px 10px", background: "white", color: "#166534", border: "1px solid #86efac", borderRadius: 6, fontWeight: 600, cursor: "pointer", fontSize: "0.8rem" }
                   },
                   /* @__PURE__ */ React.createElement("option", { value: "all" }, tr("All classes")),
                   ...gradebookClasses.map((cls) => /* @__PURE__ */ React.createElement("option", { key: cls, value: cls }, cls))
@@ -7011,7 +7020,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                     "data-lms-csv-preset": lmsCsvPreset,
                     value: lmsCsvPreset,
                     onChange: (e) => setLmsCsvPreset(e.target.value),
-                    style: { padding: "5px 8px", background: "white", color: "#166534", border: "1px solid #86efac", borderRadius: 6, fontWeight: 600, cursor: "pointer", fontSize: "0.8rem" }
+                    style: { minHeight: 44, padding: "6px 10px", background: "white", color: "#166534", border: "1px solid #86efac", borderRadius: 6, fontWeight: 600, cursor: "pointer", fontSize: "0.8rem" }
                   },
                   /* @__PURE__ */ React.createElement("option", { value: "alloflow" }, tr("AlloFlow")),
                   /* @__PURE__ */ React.createElement("option", { value: "canvas" }, tr("Canvas")),
@@ -7022,7 +7031,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   type: "button",
                   onClick: exportGradebookSummaryCsv,
                   title: tr("Download a 1-row-per-student LMS summary CSV with item score columns"),
-                  style: { padding: "6px 12px", background: "white", color: "#166534", border: "1px solid #86efac", borderRadius: 6, fontWeight: 600, cursor: "pointer", fontSize: "0.8rem" }
+                  style: { minHeight: 44, padding: "6px 12px", background: "white", color: "#166534", border: "1px solid #86efac", borderRadius: 6, fontWeight: 600, cursor: "pointer", fontSize: "0.8rem" }
                 }, tr("\u2B07 Summary CSV"))
               )
             ),
@@ -7493,678 +7502,722 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                 )
               ))
             );
-          })() : /* @__PURE__ */ React.createElement(
-            "div",
-            null,
-            /* @__PURE__ */ React.createElement(
+          })() : (() => {
+            const filteredQueue = queue.map((row, idx) => ({ row, idx })).filter(({ row }) => {
+              if (queueStatusFilter !== "all" && row.status !== queueStatusFilter) return false;
+              const qText = String(queueSearch || "").trim().toLowerCase();
+              if (!qText) return true;
+              const hay = [row.nickname, row.docTitle, row.fileName].map((v) => String(v || "").toLowerCase()).join(" ");
+              return hay.indexOf(qText) !== -1;
+            });
+            const queueFiltered = Boolean(String(queueSearch || "").trim()) || queueStatusFilter !== "all";
+            return /* @__PURE__ */ React.createElement(
               "div",
-              { style: { display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginBottom: 10 } },
-              /* @__PURE__ */ React.createElement("input", {
-                type: "search",
-                "data-si-queue-search": "true",
-                "aria-label": tr("Search submissions by student, document, or filename"),
-                value: queueSearch,
-                onChange: (e) => setQueueSearch(e.target.value),
-                placeholder: tr("Search student or document\u2026"),
-                style: { flex: "1 1 200px", minHeight: 36, padding: "6px 10px", border: "1px solid #cbd5e1", borderRadius: 8, fontSize: "0.84rem" }
-              }),
+              null,
               /* @__PURE__ */ React.createElement(
-                "select",
-                {
-                  "data-si-queue-status-filter": "true",
-                  "aria-label": tr("Filter submissions by status"),
-                  value: queueStatusFilter,
-                  onChange: (e) => setQueueStatusFilter(e.target.value),
-                  style: { minHeight: 36, padding: "6px 10px", border: "1px solid #cbd5e1", borderRadius: 8, fontSize: "0.84rem", background: "white", color: "#334155", fontWeight: 600 }
-                },
-                /* @__PURE__ */ React.createElement("option", { value: "all" }, tr("All statuses")),
-                /* @__PURE__ */ React.createElement("option", { value: "decrypted" }, tr("Decrypted")),
-                /* @__PURE__ */ React.createElement("option", { value: "pending" }, tr("Pending")),
-                /* @__PURE__ */ React.createElement("option", { value: "error" }, tr("Error"))
-              )
-            ),
-            /* @__PURE__ */ React.createElement(
-              "div",
-              {
-                role: "region",
-                "aria-label": tr("Imported submission queue table"),
-                tabIndex: 0,
-                style: { border: "1px solid #e2e8f0", borderRadius: 10, overflowX: "auto", overflowY: "hidden", maxWidth: "100%" }
-              },
-              /* @__PURE__ */ React.createElement(
-                "table",
-                { style: { width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" } },
+                "div",
+                { style: { display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginBottom: 10 } },
+                /* @__PURE__ */ React.createElement("input", {
+                  type: "search",
+                  "data-si-queue-search": "true",
+                  "aria-label": tr("Search submissions by student, document, or filename"),
+                  value: queueSearch,
+                  onChange: (e) => setQueueSearch(e.target.value),
+                  onKeyDown: (e) => {
+                    if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+                    if (e.key === "Escape" && queueSearch) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setQueueSearch("");
+                    }
+                  },
+                  placeholder: tr("Search student or document\u2026"),
+                  style: { flex: "1 1 200px", minHeight: 44, padding: "8px 12px", border: "1px solid #cbd5e1", borderRadius: 8, fontSize: "0.85rem" }
+                }),
                 /* @__PURE__ */ React.createElement(
-                  "thead",
-                  null,
-                  /* @__PURE__ */ React.createElement(
-                    "tr",
-                    { style: { background: "#f8fafc", borderBottom: "1px solid #e2e8f0" } },
-                    /* @__PURE__ */ React.createElement("th", { scope: "col", style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, tr("Nickname")),
-                    /* @__PURE__ */ React.createElement("th", { scope: "col", style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, tr("Document")),
-                    /* @__PURE__ */ React.createElement("th", { scope: "col", style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, tr("Status")),
-                    /* @__PURE__ */ React.createElement("th", { scope: "col", "aria-label": tr("Actions"), style: { textAlign: "right", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, "")
-                  )
+                  "select",
+                  {
+                    "data-si-queue-status-filter": "true",
+                    "aria-label": tr("Filter submissions by status"),
+                    value: queueStatusFilter,
+                    onChange: (e) => setQueueStatusFilter(e.target.value),
+                    style: { minHeight: 44, padding: "8px 12px", border: "1px solid #cbd5e1", borderRadius: 8, fontSize: "0.85rem", background: "white", color: "#334155", fontWeight: 600 }
+                  },
+                  /* @__PURE__ */ React.createElement("option", { value: "all" }, tr("All statuses")),
+                  /* @__PURE__ */ React.createElement("option", { value: "decrypted" }, tr("Decrypted")),
+                  /* @__PURE__ */ React.createElement("option", { value: "pending" }, tr("Pending")),
+                  /* @__PURE__ */ React.createElement("option", { value: "error" }, tr("Error"))
                 ),
+                queueFiltered && /* @__PURE__ */ React.createElement("button", {
+                  type: "button",
+                  "data-si-queue-reset-filters": "true",
+                  onClick: () => {
+                    setQueueSearch("");
+                    setQueueStatusFilter("all");
+                  },
+                  style: { minHeight: 44, padding: "8px 12px", border: "1px solid #cbd5e1", borderRadius: 8, background: "#f8fafc", color: "#334155", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer" }
+                }, tr("Reset filters"))
+              ),
+              queueFiltered && /* @__PURE__ */ React.createElement("div", {
+                role: "status",
+                "aria-live": "polite",
+                "aria-atomic": "true",
+                "data-si-queue-filter-count": "true",
+                style: { marginBottom: 8, fontSize: "0.8rem", fontWeight: 600, color: "#3730a3" }
+              }, "Showing " + filteredQueue.length + " of " + queue.length + " submissions"),
+              /* @__PURE__ */ React.createElement(
+                "div",
+                {
+                  role: "region",
+                  "aria-label": tr("Imported submission queue table"),
+                  tabIndex: 0,
+                  style: { border: "1px solid #e2e8f0", borderRadius: 10, overflowX: "auto", overflowY: "hidden", maxWidth: "100%" }
+                },
                 /* @__PURE__ */ React.createElement(
-                  "tbody",
-                  null,
-                  queue.map((row, idx) => ({ row, idx })).filter(({ row }) => {
-                    if (queueStatusFilter !== "all" && row.status !== queueStatusFilter) return false;
-                    const qText = String(queueSearch || "").trim().toLowerCase();
-                    if (!qText) return true;
-                    const hay = [row.nickname, row.docTitle, row.fileName].map((v) => String(v || "").toLowerCase()).join(" ");
-                    return hay.indexOf(qText) !== -1;
-                  }).map(({ row, idx }) => /* @__PURE__ */ React.createElement(
-                    React.Fragment,
-                    { key: idx },
+                  "table",
+                  { style: { width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" } },
+                  /* @__PURE__ */ React.createElement(
+                    "thead",
+                    null,
                     /* @__PURE__ */ React.createElement(
                       "tr",
-                      { style: { borderBottom: "1px solid #f1f5f9" } },
+                      { style: { background: "#f8fafc", borderBottom: "1px solid #e2e8f0" } },
+                      /* @__PURE__ */ React.createElement("th", { scope: "col", style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, tr("Nickname")),
+                      /* @__PURE__ */ React.createElement("th", { scope: "col", style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, tr("Document")),
+                      /* @__PURE__ */ React.createElement("th", { scope: "col", style: { textAlign: "left", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, tr("Status")),
+                      /* @__PURE__ */ React.createElement("th", { scope: "col", style: { textAlign: "right", padding: "10px 12px", fontWeight: 700, color: "#475569", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em" } }, tr("Actions"))
+                    )
+                  ),
+                  /* @__PURE__ */ React.createElement(
+                    "tbody",
+                    null,
+                    filteredQueue.length === 0 ? /* @__PURE__ */ React.createElement(
+                      "tr",
+                      null,
                       /* @__PURE__ */ React.createElement(
                         "td",
-                        { style: { padding: "10px 12px" } },
-                        /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 700, color: "#1e293b" } }, row.nickname),
-                        row.outerNicknameMismatch && /* @__PURE__ */ React.createElement("span", {
-                          role: "status",
-                          "data-si-name-mismatch": "true",
-                          title: tr("The name on the outer file envelope did not match the encrypted student name inside."),
-                          style: { display: "inline-block", marginTop: 3, padding: "2px 7px", borderRadius: 999, background: "#fee2e2", color: "#991b1b", fontSize: "0.7rem", fontWeight: 700 }
-                        }, "\u26A0 " + tr("Name mismatch")),
-                        row.nickname !== "?" && rosterBadge(rosterMatch(row.nickname)),
-                        row.nickname !== "?" && (() => {
-                          const match = rosterMatch(row.nickname);
-                          if (match.kind !== "fuzzy") return null;
-                          const confirmed = confirmedLearnerMatches[idx] === match.name;
-                          return /* @__PURE__ */ React.createElement("button", {
-                            type: "button",
-                            "aria-pressed": confirmed,
-                            onClick: () => setConfirmedLearnerMatches((previous) => ({ ...previous, [idx]: confirmed ? "" : match.name })),
-                            style: { display: "block", marginTop: 4, padding: "4px 8px", minHeight: 32, borderRadius: 6, border: "1px solid #d97706", background: confirmed ? "#dcfce7" : "#fffbeb", color: confirmed ? "#166534" : "#92400e", fontSize: "0.7rem", fontWeight: 700, cursor: "pointer" }
-                          }, confirmed ? tr("Identity confirmed") : tr("Confirm normalized roster match"));
-                        })()
-                      ),
-                      /* @__PURE__ */ React.createElement(
-                        "td",
-                        { style: { padding: "10px 12px", color: "#475569" } },
-                        /* @__PURE__ */ React.createElement("div", null, row.docTitle || row.fileName),
-                        row.timestamp && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.75rem", color: "#475569" } }, new Date(row.timestamp).toLocaleString())
-                      ),
-                      /* @__PURE__ */ React.createElement(
-                        "td",
-                        { style: { padding: "10px 12px" } },
-                        statusBadge(row.status),
-                        row.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", style: { marginTop: 4, fontSize: "0.75rem", color: "#991b1b" } }, row.error),
-                        row.status === "decrypted" && row.payload && (() => {
-                          const prior = previousGradesFor(row.payload.nickname, row.payload.docTitle);
-                          const others = prior.filter((p) => p.submittedAt !== row.payload.timestamp);
-                          if (others.length === 0) return null;
-                          const sortedPrior = others.slice().sort((a, b) => String(a.gradedAt || a.submittedAt || "").localeCompare(String(b.gradedAt || b.submittedAt || "")));
-                          const latestPrior = sortedPrior[sortedPrior.length - 1];
-                          const lastDate = latestPrior && latestPrior.gradedAt ? latestPrior.gradedAt : "";
-                          const priorScores = latestPrior && latestPrior.grades ? Object.values(latestPrior.grades).map((g) => g && g.score).filter((s) => typeof s === "number" && Number.isFinite(s)) : [];
-                          const priorAvg = priorScores.length ? Math.round(priorScores.reduce((a, b) => a + b, 0) / priorScores.length) : null;
-                          const currAvg = rowGradeSummary(idx).average;
-                          const delta = currAvg !== null && priorAvg !== null ? currAvg - priorAvg : null;
-                          const currResps = row.payload.responses && typeof row.payload.responses === "object" ? row.payload.responses : {};
-                          const priorResps = latestPrior && latestPrior.responses && typeof latestPrior.responses === "object" ? latestPrior.responses : {};
-                          const changedCount = Object.keys(currResps).filter((k) => siResponseText(currResps[k], 12e3) !== siResponseText(priorResps[k], 12e3)).length;
-                          return /* @__PURE__ */ React.createElement(
-                            "div",
-                            { style: { marginTop: 4, display: "flex", flexWrap: "wrap", gap: 4, alignItems: "center" } },
-                            /* @__PURE__ */ React.createElement("span", {
-                              style: { display: "inline-block", padding: "2px 8px", borderRadius: 999, background: "#fef3c7", color: "#92400e", fontSize: "0.7rem", fontWeight: 600 },
-                              title: tr("This student already has ") + others.length + " graded submission" + (others.length === 1 ? "" : "s") + " for this document in the gradebook. Most recent: " + (lastDate ? new Date(lastDate).toLocaleString() : "unknown")
-                            }, "\u{1F501} Previously graded" + (others.length > 1 ? " (" + others.length + "x)" : "") + (lastDate ? " " + new Date(lastDate).toLocaleDateString() : "")),
-                            delta !== null && /* @__PURE__ */ React.createElement("span", {
-                              "data-si-growth-delta": String(delta),
-                              style: { display: "inline-block", padding: "2px 7px", borderRadius: 999, background: delta > 0 ? "#dcfce7" : delta < 0 ? "#fee2e2" : "#f1f5f9", color: delta > 0 ? "#166534" : delta < 0 ? "#991b1b" : "#475569", fontSize: "0.68rem", fontWeight: 700 }
-                            }, (delta > 0 ? "+" : "") + delta + " pts vs prior"),
-                            changedCount > 0 && /* @__PURE__ */ React.createElement("span", {
-                              "data-si-changed-responses": String(changedCount),
-                              style: { display: "inline-block", padding: "2px 7px", borderRadius: 999, background: "#e0f2fe", color: "#075985", fontSize: "0.68rem", fontWeight: 600 }
-                            }, changedCount + " updated")
-                          );
-                        })()
-                      ),
-                      /* @__PURE__ */ React.createElement(
-                        "td",
-                        { style: { padding: "10px 12px", textAlign: "right" } },
-                        row.status === "decrypted" && /* @__PURE__ */ React.createElement("button", {
-                          type: "button",
-                          onClick: () => setExpandedRow(expandedRow === idx ? null : idx),
-                          "aria-expanded": expandedRow === idx,
-                          "aria-controls": "submission-inbox-row-details-" + idx,
-                          style: { marginRight: 6, padding: "4px 10px", background: "#eef2ff", color: "#3730a3", border: "1px solid #c7d2fe", borderRadius: 6, fontSize: "0.78rem", fontWeight: 600, cursor: "pointer" }
-                        }, expandedRow === idx ? "Hide" : "View"),
+                        { colSpan: 4, style: { padding: "20px 14px", textAlign: "center", color: "#475569", fontSize: "0.86rem" } },
+                        /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 8 } }, tr("No submissions match the current filter.")),
                         /* @__PURE__ */ React.createElement("button", {
                           type: "button",
-                          onClick: () => removeRow(idx),
-                          disabled: queueLocked,
-                          style: { padding: "4px 10px", background: "transparent", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: "0.78rem", cursor: queueLocked ? "not-allowed" : "pointer", opacity: queueLocked ? 0.45 : 1 }
-                        }, tr("Remove"))
+                          onClick: () => {
+                            setQueueSearch("");
+                            setQueueStatusFilter("all");
+                          },
+                          style: { minHeight: 44, padding: "8px 16px", background: "#4338ca", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.82rem", cursor: "pointer" }
+                        }, tr("Reset filters"))
                       )
-                    ),
-                    expandedRow === idx && row.payload && /* @__PURE__ */ React.createElement(
-                      "tr",
-                      { id: "submission-inbox-row-details-" + idx },
+                    ) : filteredQueue.map(({ row, idx }) => /* @__PURE__ */ React.createElement(
+                      React.Fragment,
+                      { key: idx },
                       /* @__PURE__ */ React.createElement(
-                        "td",
-                        { colSpan: 4, style: { padding: 0 } },
+                        "tr",
+                        { style: { borderBottom: "1px solid #f1f5f9" } },
                         /* @__PURE__ */ React.createElement(
-                          "div",
-                          { style: { background: "#fafafa", padding: "12px 16px", borderTop: "1px solid #e2e8f0", borderBottom: "1px solid #e2e8f0" } },
+                          "td",
+                          { style: { padding: "10px 12px" } },
+                          /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 700, color: "#1e293b" } }, row.nickname),
+                          row.outerNicknameMismatch && /* @__PURE__ */ React.createElement("span", {
+                            role: "status",
+                            "data-si-name-mismatch": "true",
+                            title: tr("The name on the outer file envelope did not match the encrypted student name inside."),
+                            style: { display: "inline-block", marginTop: 3, padding: "2px 7px", borderRadius: 999, background: "#fee2e2", color: "#991b1b", fontSize: "0.7rem", fontWeight: 700 }
+                          }, "\u26A0 " + tr("Name mismatch")),
+                          row.nickname !== "?" && rosterBadge(rosterMatch(row.nickname)),
+                          row.nickname !== "?" && (() => {
+                            const match = rosterMatch(row.nickname);
+                            if (match.kind !== "fuzzy") return null;
+                            const confirmed = confirmedLearnerMatches[idx] === match.name;
+                            return /* @__PURE__ */ React.createElement("button", {
+                              type: "button",
+                              "aria-pressed": confirmed,
+                              onClick: () => setConfirmedLearnerMatches((previous) => ({ ...previous, [idx]: confirmed ? "" : match.name })),
+                              style: { display: "block", marginTop: 4, padding: "4px 8px", minHeight: 32, borderRadius: 6, border: "1px solid #d97706", background: confirmed ? "#dcfce7" : "#fffbeb", color: confirmed ? "#166534" : "#92400e", fontSize: "0.7rem", fontWeight: 700, cursor: "pointer" }
+                            }, confirmed ? tr("Identity confirmed") : tr("Confirm normalized roster match"));
+                          })()
+                        ),
+                        /* @__PURE__ */ React.createElement(
+                          "td",
+                          { style: { padding: "10px 12px", color: "#475569" } },
+                          /* @__PURE__ */ React.createElement("div", null, row.docTitle || row.fileName),
+                          row.timestamp && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.75rem", color: "#475569" } }, new Date(row.timestamp).toLocaleString())
+                        ),
+                        /* @__PURE__ */ React.createElement(
+                          "td",
+                          { style: { padding: "10px 12px" } },
+                          statusBadge(row.status),
+                          row.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", style: { marginTop: 4, fontSize: "0.75rem", color: "#991b1b" } }, row.error),
+                          row.status === "decrypted" && row.payload && (() => {
+                            const prior = previousGradesFor(row.payload.nickname, row.payload.docTitle);
+                            const others = prior.filter((p) => p.submittedAt !== row.payload.timestamp);
+                            if (others.length === 0) return null;
+                            const sortedPrior = others.slice().sort((a, b) => String(a.gradedAt || a.submittedAt || "").localeCompare(String(b.gradedAt || b.submittedAt || "")));
+                            const latestPrior = sortedPrior[sortedPrior.length - 1];
+                            const lastDate = latestPrior && latestPrior.gradedAt ? latestPrior.gradedAt : "";
+                            const priorScores = latestPrior && latestPrior.grades ? Object.values(latestPrior.grades).map((g) => g && g.score).filter((s) => typeof s === "number" && Number.isFinite(s)) : [];
+                            const priorAvg = priorScores.length ? Math.round(priorScores.reduce((a, b) => a + b, 0) / priorScores.length) : null;
+                            const currAvg = rowGradeSummary(idx).average;
+                            const delta = currAvg !== null && priorAvg !== null ? currAvg - priorAvg : null;
+                            const currResps = row.payload.responses && typeof row.payload.responses === "object" ? row.payload.responses : {};
+                            const priorResps = latestPrior && latestPrior.responses && typeof latestPrior.responses === "object" ? latestPrior.responses : {};
+                            const changedCount = Object.keys(currResps).filter((k) => siResponseText(currResps[k], 12e3) !== siResponseText(priorResps[k], 12e3)).length;
+                            return /* @__PURE__ */ React.createElement(
+                              "div",
+                              { style: { marginTop: 4, display: "flex", flexWrap: "wrap", gap: 4, alignItems: "center" } },
+                              /* @__PURE__ */ React.createElement("span", {
+                                style: { display: "inline-block", padding: "2px 8px", borderRadius: 999, background: "#fef3c7", color: "#92400e", fontSize: "0.7rem", fontWeight: 600 },
+                                title: tr("This student already has ") + others.length + " graded submission" + (others.length === 1 ? "" : "s") + " for this document in the gradebook. Most recent: " + (lastDate ? new Date(lastDate).toLocaleString() : "unknown")
+                              }, "\u{1F501} Previously graded" + (others.length > 1 ? " (" + others.length + "x)" : "") + (lastDate ? " " + new Date(lastDate).toLocaleDateString() : "")),
+                              delta !== null && /* @__PURE__ */ React.createElement("span", {
+                                "data-si-growth-delta": String(delta),
+                                style: { display: "inline-block", padding: "2px 7px", borderRadius: 999, background: delta > 0 ? "#dcfce7" : delta < 0 ? "#fee2e2" : "#f1f5f9", color: delta > 0 ? "#166534" : delta < 0 ? "#991b1b" : "#475569", fontSize: "0.68rem", fontWeight: 700 }
+                              }, (delta > 0 ? "+" : "") + delta + " pts vs prior"),
+                              changedCount > 0 && /* @__PURE__ */ React.createElement("span", {
+                                "data-si-changed-responses": String(changedCount),
+                                style: { display: "inline-block", padding: "2px 7px", borderRadius: 999, background: "#e0f2fe", color: "#075985", fontSize: "0.68rem", fontWeight: 600 }
+                              }, changedCount + " updated")
+                            );
+                          })()
+                        ),
+                        /* @__PURE__ */ React.createElement(
+                          "td",
+                          { style: { padding: "10px 12px", textAlign: "right", whiteSpace: "nowrap" } },
+                          row.status === "decrypted" && /* @__PURE__ */ React.createElement("button", {
+                            type: "button",
+                            onClick: () => setExpandedRow(expandedRow === idx ? null : idx),
+                            "aria-expanded": expandedRow === idx,
+                            "aria-controls": "submission-inbox-row-details-" + idx,
+                            style: { minHeight: 44, marginRight: 6, padding: "6px 12px", background: "#eef2ff", color: "#3730a3", border: "1px solid #c7d2fe", borderRadius: 6, fontSize: "0.8rem", fontWeight: 600, cursor: "pointer" }
+                          }, expandedRow === idx ? "Hide" : "View"),
+                          /* @__PURE__ */ React.createElement("button", {
+                            type: "button",
+                            onClick: () => removeRow(idx),
+                            disabled: queueLocked,
+                            style: { minHeight: 44, padding: "6px 12px", background: "transparent", color: "#334155", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: "0.8rem", cursor: queueLocked ? "not-allowed" : "pointer", opacity: queueLocked ? 0.45 : 1 }
+                          }, tr("Remove"))
+                        )
+                      ),
+                      expandedRow === idx && row.payload && /* @__PURE__ */ React.createElement(
+                        "tr",
+                        { id: "submission-inbox-row-details-" + idx },
+                        /* @__PURE__ */ React.createElement(
+                          "td",
+                          { colSpan: 4, style: { padding: 0 } },
                           /* @__PURE__ */ React.createElement(
                             "div",
-                            { style: { display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 } },
+                            { style: { background: "#fafafa", padding: "12px 16px", borderTop: "1px solid #e2e8f0", borderBottom: "1px solid #e2e8f0" } },
                             /* @__PURE__ */ React.createElement(
                               "div",
-                              { style: { fontWeight: 700, color: "#475569", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.05em" } },
-                              "Decrypted responses (" + siResponseEntryModels(row.payload).length + ")"
-                            ),
-                            Object.keys(siExportedQuizAutoGrades(row.payload, history)).length > 0 && /* @__PURE__ */ React.createElement("button", {
-                              type: "button",
-                              title: tr("Score objective quiz answers in this worksheet against your project quiz answer keys"),
-                              onClick: () => autoScoreRowObjectiveItems(idx),
-                              style: { padding: "4px 10px", background: "#eef2ff", color: "#3730a3", border: "1px solid #a5b4fc", borderRadius: 6, fontWeight: 700, fontSize: "0.74rem", cursor: "pointer" }
-                            }, tr("\u26A1 Auto-score objective items"))
-                          ),
-                          (() => {
-                            const rowGradesNow = grades[idx] || {};
-                            const notChecked = Object.keys(siStudentCopyOnlyGrades(row.payload, history)).filter((k) => !rowGradesNow[k]).length;
-                            if (!notChecked) return null;
-                            return /* @__PURE__ */ React.createElement(
-                              "div",
-                              { "data-si-student-copy-offer": notChecked, role: "note", style: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 8, padding: "8px 10px", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 8, color: "#7c2d12", fontSize: "0.8rem" } },
-                              /* @__PURE__ */ React.createElement("span", { style: { flex: "1 1 260px" } }, tr("{n} answer(s) here could not be checked, because this project has no copy of that activity. Open the project it came from to check them against your own answer key, or score them by hand.", { n: notChecked })),
-                              /* @__PURE__ */ React.createElement("button", {
-                                type: "button",
-                                title: tr("Uses the answer key stored inside this student's file. That copy can be out of date or changed. Each score is marked so you can tell."),
-                                onClick: () => scoreRowWithStudentCopy(idx),
-                                style: { padding: "4px 10px", background: "white", color: "#7c2d12", border: "1px solid #f59e0b", borderRadius: 6, fontWeight: 700, fontSize: "0.74rem", cursor: "pointer" }
-                              }, tr("Score with the copy in the student's file"))
-                            );
-                          })(),
-                          row.payload.takeHome && siTakeHomeResult(row.payload.takeHome),
-                          /* Applied Challenge Studio export: the response keys carry
-                             "<resourceId>:applied:<field>", so the host can rebuild a
-                             real studio workspace from this student's typing. */
-                          (function() {
-                            var studio = window.AlloModules && window.AlloModules.AppliedChallenge;
-                            var resp = row.payload && row.payload.responses && typeof row.payload.responses === "object" && !Array.isArray(row.payload.responses) ? row.payload.responses : {};
-                            var content = row.payload && Array.isArray(row.payload.content) ? row.payload.content : [];
-                            var resourceIds = !studio ? [] : typeof studio.submissionResourceIds === "function" ? studio.submissionResourceIds(resp, content) : typeof studio.submissionResourceId === "function" && studio.submissionResourceId(resp) ? [studio.submissionResourceId(resp)] : [];
-                            if (!resourceIds.length || typeof onOpenInStudio !== "function") return null;
-                            return resourceIds.map(function(resourceId, index) {
-                              var entry = content.find(function(item) {
-                                return item && item.id === resourceId && item.type === "applied-challenge";
-                              });
-                              var title = entry && typeof entry.title === "string" ? entry.title.trim().slice(0, 120) : "";
-                              var label = tr("Open in Applied Challenge Studio");
-                              return /* @__PURE__ */ React.createElement("button", {
-                                key: "open-studio-" + resourceId,
-                                type: "button",
-                                onClick: function() {
-                                  onOpenInStudio({ resourceId, responses: resp, content, nickname: row.payload.nickname || row.payload.studentName || "" });
-                                },
-                                title: tr("Rebuild this student's typed workspace inside Applied Challenge Studio so you can coach, comment, and export it"),
-                                style: { marginBottom: 10, marginRight: 6, padding: "6px 12px", background: "#c2410c", color: "white", border: "1px solid #9a3412", borderRadius: 6, fontWeight: 700, cursor: "pointer", fontSize: "0.8rem" }
-                              }, resourceIds.length > 1 ? label + ": " + (title || String(index + 1)) : label);
-                            });
-                          })(),
-                          /* Work Story (process provenance). Renders only when the
-                             student chose to include it; absence is never surfaced
-                             as a fact — no "declined" state exists here. */
-                          workStoryModels[idx] && window.AlloModules && window.AlloModules.ProcessPanel ? /* @__PURE__ */ React.createElement(window.AlloModules.ProcessPanel, { model: workStoryModels[idx] }) : null,
-                          siResponseEntryModels(row.payload).length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { fontStyle: "italic", color: "#475569", fontSize: "0.85rem" } }, tr("No responses captured.")) : siResponseEntryModels(row.payload).map((entry, i) => {
-                            const k = entry.key;
-                            const v = entry.rawText;
-                            const assessmentReport = siAssessmentReport(row.payload.responses && typeof row.payload.responses === "object" ? row.payload.responses[k] : null, k, history, row.payload.content);
-                            const g = (grades[idx] || {})[k];
-                            const sc = g ? scoreColor(g.score) : null;
-                            const isAnchored = isResponseAnchored(idx, k, v);
-                            const anchorScore = getAnchorScore(idx, k, v);
-                            return /* @__PURE__ */ React.createElement(
-                              "div",
-                              { key: i, style: { marginBottom: 8, padding: "6px 8px", borderRadius: 6, background: isAnchored ? "#fef3c7" : g ? "white" : "transparent", border: isAnchored ? "1.5px solid #f59e0b" : g ? "1px solid #e2e8f0" : "none" } },
+                              { style: { display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 } },
                               /* @__PURE__ */ React.createElement(
                                 "div",
-                                { style: { display: "flex", alignItems: "flex-start", gap: 8, fontSize: "0.85rem", marginBottom: g || isAnchored ? 4 : 0 } },
+                                { style: { fontWeight: 700, color: "#475569", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.05em" } },
+                                "Decrypted responses (" + siResponseEntryModels(row.payload).length + ")"
+                              ),
+                              Object.keys(siExportedQuizAutoGrades(row.payload, history)).length > 0 && /* @__PURE__ */ React.createElement("button", {
+                                type: "button",
+                                title: tr("Score objective quiz answers in this worksheet against your project quiz answer keys"),
+                                onClick: () => autoScoreRowObjectiveItems(idx),
+                                style: { padding: "4px 10px", background: "#eef2ff", color: "#3730a3", border: "1px solid #a5b4fc", borderRadius: 6, fontWeight: 700, fontSize: "0.74rem", cursor: "pointer" }
+                              }, tr("\u26A1 Auto-score objective items"))
+                            ),
+                            (() => {
+                              const rowGradesNow = grades[idx] || {};
+                              const notChecked = Object.keys(siStudentCopyOnlyGrades(row.payload, history)).filter((k) => !rowGradesNow[k]).length;
+                              if (!notChecked) return null;
+                              return /* @__PURE__ */ React.createElement(
+                                "div",
+                                { "data-si-student-copy-offer": notChecked, role: "note", style: { display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 8, padding: "8px 10px", background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 8, color: "#7c2d12", fontSize: "0.8rem" } },
+                                /* @__PURE__ */ React.createElement("span", { style: { flex: "1 1 260px" } }, tr("{n} answer(s) here could not be checked, because this project has no copy of that activity. Open the project it came from to check them against your own answer key, or score them by hand.", { n: notChecked })),
+                                /* @__PURE__ */ React.createElement("button", {
+                                  type: "button",
+                                  title: tr("Uses the answer key stored inside this student's file. That copy can be out of date or changed. Each score is marked so you can tell."),
+                                  onClick: () => scoreRowWithStudentCopy(idx),
+                                  style: { padding: "4px 10px", background: "white", color: "#7c2d12", border: "1px solid #f59e0b", borderRadius: 6, fontWeight: 700, fontSize: "0.74rem", cursor: "pointer" }
+                                }, tr("Score with the copy in the student's file"))
+                              );
+                            })(),
+                            row.payload.takeHome && siTakeHomeResult(row.payload.takeHome),
+                            /* Applied Challenge Studio export: the response keys carry
+                               "<resourceId>:applied:<field>", so the host can rebuild a
+                               real studio workspace from this student's typing. */
+                            (function() {
+                              var studio = window.AlloModules && window.AlloModules.AppliedChallenge;
+                              var resp = row.payload && row.payload.responses && typeof row.payload.responses === "object" && !Array.isArray(row.payload.responses) ? row.payload.responses : {};
+                              var content = row.payload && Array.isArray(row.payload.content) ? row.payload.content : [];
+                              var resourceIds = !studio ? [] : typeof studio.submissionResourceIds === "function" ? studio.submissionResourceIds(resp, content) : typeof studio.submissionResourceId === "function" && studio.submissionResourceId(resp) ? [studio.submissionResourceId(resp)] : [];
+                              if (!resourceIds.length || typeof onOpenInStudio !== "function") return null;
+                              return resourceIds.map(function(resourceId, index) {
+                                var entry = content.find(function(item) {
+                                  return item && item.id === resourceId && item.type === "applied-challenge";
+                                });
+                                var title = entry && typeof entry.title === "string" ? entry.title.trim().slice(0, 120) : "";
+                                var label = tr("Open in Applied Challenge Studio");
+                                return /* @__PURE__ */ React.createElement("button", {
+                                  key: "open-studio-" + resourceId,
+                                  type: "button",
+                                  onClick: function() {
+                                    onOpenInStudio({ resourceId, responses: resp, content, nickname: row.payload.nickname || row.payload.studentName || "" });
+                                  },
+                                  title: tr("Rebuild this student's typed workspace inside Applied Challenge Studio so you can coach, comment, and export it"),
+                                  style: { marginBottom: 10, marginRight: 6, padding: "6px 12px", background: "#c2410c", color: "white", border: "1px solid #9a3412", borderRadius: 6, fontWeight: 700, cursor: "pointer", fontSize: "0.8rem" }
+                                }, resourceIds.length > 1 ? label + ": " + (title || String(index + 1)) : label);
+                              });
+                            })(),
+                            /* Work Story (process provenance). Renders only when the
+                               student chose to include it; absence is never surfaced
+                               as a fact — no "declined" state exists here. */
+                            workStoryModels[idx] && window.AlloModules && window.AlloModules.ProcessPanel ? /* @__PURE__ */ React.createElement(window.AlloModules.ProcessPanel, { model: workStoryModels[idx] }) : null,
+                            siResponseEntryModels(row.payload).length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { fontStyle: "italic", color: "#475569", fontSize: "0.85rem" } }, tr("No responses captured.")) : siResponseEntryModels(row.payload).map((entry, i) => {
+                              const k = entry.key;
+                              const v = entry.rawText;
+                              const assessmentReport = siAssessmentReport(row.payload.responses && typeof row.payload.responses === "object" ? row.payload.responses[k] : null, k, history, row.payload.content);
+                              const g = (grades[idx] || {})[k];
+                              const sc = g ? scoreColor(g.score) : null;
+                              const isAnchored = isResponseAnchored(idx, k, v);
+                              const anchorScore = getAnchorScore(idx, k, v);
+                              return /* @__PURE__ */ React.createElement(
+                                "div",
+                                { key: i, style: { marginBottom: 8, padding: "6px 8px", borderRadius: 6, background: isAnchored ? "#fef3c7" : g ? "white" : "transparent", border: isAnchored ? "1.5px solid #f59e0b" : g ? "1px solid #e2e8f0" : "none" } },
                                 /* @__PURE__ */ React.createElement(
                                   "div",
-                                  { style: { flex: 1, minWidth: 0 } },
-                                  /* @__PURE__ */ React.createElement("div", { style: { color: "#0f172a", fontWeight: 700, lineHeight: 1.35 } }, assessmentReport ? tr("Quiz responses") : window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown ? window.AlloModules.QuizView.markdown.inline(entry.question) : entry.question),
-                                  entry.partLabel && /* @__PURE__ */ React.createElement(
-                                    "div",
-                                    { style: { color: "#475569", fontSize: "0.74rem", fontWeight: 600, marginTop: 2 } },
-                                    entry.partLabel + (entry.responseType ? " \xB7 " + entry.responseType.replace(/-/g, " ") : "")
-                                  ),
-                                  entry.metadataUnverified && /* @__PURE__ */ React.createElement("span", { title: tr("This descriptive label came from the student file. Verify it against the original resource when needed."), style: { display: "inline-block", marginTop: 3, padding: "1px 5px", borderRadius: 999, background: "#f1f5f9", border: "1px solid #cbd5e1", color: "#475569", fontSize: "0.64rem", fontWeight: 600 } }, tr("student-file label")),
+                                  { style: { display: "flex", alignItems: "flex-start", gap: 8, fontSize: "0.85rem", marginBottom: g || isAnchored ? 4 : 0 } },
                                   /* @__PURE__ */ React.createElement(
                                     "div",
-                                    { style: { color: "#1e293b", marginTop: 4, whiteSpace: assessmentReport ? "normal" : "pre-wrap", overflowWrap: "anywhere" } },
-                                    assessmentReport ? /* @__PURE__ */ React.createElement(SiAssessmentReport, { report: assessmentReport }) : entry.answered ? String(entry.displayValue).slice(0, 12e3) : /* @__PURE__ */ React.createElement("em", { style: { color: "#9a3412", fontWeight: 700 } }, tr("No answer submitted"))
-                                  ),
-                                  !assessmentReport && entry.answered && String(entry.displayValue) !== String(entry.rawText) && /* @__PURE__ */ React.createElement(
-                                    "div",
-                                    { style: { color: "#64748b", marginTop: 3, fontSize: "0.7rem", overflowWrap: "anywhere" } },
-                                    tr("Stored value:") + " ",
-                                    /* @__PURE__ */ React.createElement("code", null, String(entry.rawText).slice(0, 12e3))
-                                  ),
-                                  /* @__PURE__ */ React.createElement(
-                                    "details",
-                                    { style: { marginTop: 4, color: "#64748b", fontSize: "0.7rem" } },
-                                    /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", width: "fit-content" } }, tr("Technical details")),
-                                    /* @__PURE__ */ React.createElement("div", { style: { marginTop: 3 } }, tr("Response key:")),
-                                    /* @__PURE__ */ React.createElement("code", { style: { display: "block", overflowWrap: "anywhere" } }, k),
-                                    /* @__PURE__ */ React.createElement("div", { style: { marginTop: 5 } }, tr("Stored value:")),
-                                    /* @__PURE__ */ React.createElement("code", { style: { display: "block", whiteSpace: "pre-wrap", overflowWrap: "anywhere" } }, String(entry.rawText).slice(0, 12e3))
-                                  )
-                                ),
-                                /* @__PURE__ */ React.createElement(
-                                  "div",
-                                  { style: { display: "flex", gap: 6, flexShrink: 0, alignItems: "center" } },
-                                  /* @__PURE__ */ React.createElement("button", {
-                                    type: "button",
-                                    onClick: () => openManualScoreForm(idx, entry),
-                                    title: entry.requiresManualReview ? tr("Score this response yourself. It is not sent to the free-response AI grader.") : tr("Manually override or enter a teacher score for this response."),
-                                    style: { display: "inline-flex", alignItems: "center", padding: "3px 9px", borderRadius: 999, background: "#e0f2fe", color: "#075985", border: "1px solid #7dd3fc", fontWeight: 700, fontSize: "0.72rem", flexShrink: 0, whiteSpace: "nowrap", cursor: "pointer" }
-                                  }, g && (g.origin === "teacher-edit" || g.origin === "teacher-anchor" || siIsAnswerKeyOrigin(g.origin)) ? tr("Edit score") : entry.requiresManualReview ? tr("Score manually") : tr("Score")),
-                                  !entry.requiresManualReview && !entry.isSelfCheck && entry.answered && (isAnchored ? /* @__PURE__ */ React.createElement(
-                                    React.Fragment,
-                                    null,
-                                    /* @__PURE__ */ React.createElement(
-                                      "span",
-                                      { style: { display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 999, background: "#fde68a", color: "#92400e", fontWeight: 700, fontSize: "0.72rem", flexShrink: 0 } },
-                                      "\u{1F4CC} Anchor " + anchorScore + "/100"
+                                    { style: { flex: 1, minWidth: 0 } },
+                                    /* @__PURE__ */ React.createElement("div", { style: { color: "#0f172a", fontWeight: 700, lineHeight: 1.35 } }, assessmentReport ? tr("Quiz responses") : window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown ? window.AlloModules.QuizView.markdown.inline(entry.question) : entry.question),
+                                    entry.partLabel && /* @__PURE__ */ React.createElement(
+                                      "div",
+                                      { style: { color: "#475569", fontSize: "0.74rem", fontWeight: 600, marginTop: 2 } },
+                                      entry.partLabel + (entry.responseType ? " \xB7 " + entry.responseType.replace(/-/g, " ") : "")
                                     ),
+                                    entry.metadataUnverified && /* @__PURE__ */ React.createElement("span", { title: tr("This descriptive label came from the student file. Verify it against the original resource when needed."), style: { display: "inline-block", marginTop: 3, padding: "1px 5px", borderRadius: 999, background: "#f1f5f9", border: "1px solid #cbd5e1", color: "#475569", fontSize: "0.64rem", fontWeight: 600 } }, tr("student-file label")),
+                                    /* @__PURE__ */ React.createElement(
+                                      "div",
+                                      { style: { color: "#1e293b", marginTop: 4, whiteSpace: assessmentReport ? "normal" : "pre-wrap", overflowWrap: "anywhere" } },
+                                      assessmentReport ? /* @__PURE__ */ React.createElement(SiAssessmentReport, { report: assessmentReport }) : entry.answered ? String(entry.displayValue).slice(0, 12e3) : /* @__PURE__ */ React.createElement("em", { style: { color: "#9a3412", fontWeight: 700 } }, tr("No answer submitted"))
+                                    ),
+                                    !assessmentReport && entry.answered && String(entry.displayValue) !== String(entry.rawText) && /* @__PURE__ */ React.createElement(
+                                      "div",
+                                      { style: { color: "#64748b", marginTop: 3, fontSize: "0.7rem", overflowWrap: "anywhere" } },
+                                      tr("Stored value:") + " ",
+                                      /* @__PURE__ */ React.createElement("code", null, String(entry.rawText).slice(0, 12e3))
+                                    ),
+                                    /* @__PURE__ */ React.createElement(
+                                      "details",
+                                      { style: { marginTop: 4, color: "#64748b", fontSize: "0.7rem" } },
+                                      /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", width: "fit-content" } }, tr("Technical details")),
+                                      /* @__PURE__ */ React.createElement("div", { style: { marginTop: 3 } }, tr("Response key:")),
+                                      /* @__PURE__ */ React.createElement("code", { style: { display: "block", overflowWrap: "anywhere" } }, k),
+                                      /* @__PURE__ */ React.createElement("div", { style: { marginTop: 5 } }, tr("Stored value:")),
+                                      /* @__PURE__ */ React.createElement("code", { style: { display: "block", whiteSpace: "pre-wrap", overflowWrap: "anywhere" } }, String(entry.rawText).slice(0, 12e3))
+                                    )
+                                  ),
+                                  /* @__PURE__ */ React.createElement(
+                                    "div",
+                                    { style: { display: "flex", gap: 6, flexShrink: 0, alignItems: "center" } },
                                     /* @__PURE__ */ React.createElement("button", {
                                       type: "button",
-                                      "data-si-unanchor": "true",
-                                      onClick: () => unanchorEntry(idx, k, String(v)),
-                                      style: { padding: "2px 8px", background: "white", color: "#92400e", border: "1px solid #fcd34d", borderRadius: 999, fontSize: "0.7rem", fontWeight: 600, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }
-                                    }, tr("Un-anchor"))
-                                  ) : /* @__PURE__ */ React.createElement("button", {
-                                    type: "button",
-                                    onClick: () => openAnchorForm(idx, k, String(v)),
-                                    title: tr("Mark this response as a calibration anchor. The AI will use it as an example to match your scoring."),
-                                    style: { padding: "2px 8px", background: "#fffbeb", color: "#92400e", border: "1px solid #fcd34d", borderRadius: 999, fontSize: "0.72rem", fontWeight: 600, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }
-                                  }, tr("\u{1F4CC} Anchor")))
+                                      onClick: () => openManualScoreForm(idx, entry),
+                                      title: entry.requiresManualReview ? tr("Score this response yourself. It is not sent to the free-response AI grader.") : tr("Manually override or enter a teacher score for this response."),
+                                      style: { display: "inline-flex", alignItems: "center", padding: "3px 9px", borderRadius: 999, background: "#e0f2fe", color: "#075985", border: "1px solid #7dd3fc", fontWeight: 700, fontSize: "0.72rem", flexShrink: 0, whiteSpace: "nowrap", cursor: "pointer" }
+                                    }, g && (g.origin === "teacher-edit" || g.origin === "teacher-anchor" || siIsAnswerKeyOrigin(g.origin)) ? tr("Edit score") : entry.requiresManualReview ? tr("Score manually") : tr("Score")),
+                                    !entry.requiresManualReview && !entry.isSelfCheck && entry.answered && (isAnchored ? /* @__PURE__ */ React.createElement(
+                                      React.Fragment,
+                                      null,
+                                      /* @__PURE__ */ React.createElement(
+                                        "span",
+                                        { style: { display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 999, background: "#fde68a", color: "#92400e", fontWeight: 700, fontSize: "0.72rem", flexShrink: 0 } },
+                                        "\u{1F4CC} Anchor " + anchorScore + "/100"
+                                      ),
+                                      /* @__PURE__ */ React.createElement("button", {
+                                        type: "button",
+                                        "data-si-unanchor": "true",
+                                        onClick: () => unanchorEntry(idx, k, String(v)),
+                                        style: { padding: "2px 8px", background: "white", color: "#92400e", border: "1px solid #fcd34d", borderRadius: 999, fontSize: "0.7rem", fontWeight: 600, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }
+                                      }, tr("Un-anchor"))
+                                    ) : /* @__PURE__ */ React.createElement("button", {
+                                      type: "button",
+                                      onClick: () => openAnchorForm(idx, k, String(v)),
+                                      title: tr("Mark this response as a calibration anchor. The AI will use it as an example to match your scoring."),
+                                      style: { padding: "2px 8px", background: "#fffbeb", color: "#92400e", border: "1px solid #fcd34d", borderRadius: 999, fontSize: "0.72rem", fontWeight: 600, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }
+                                    }, tr("\u{1F4CC} Anchor")))
+                                  )
+                                ),
+                                g && /* @__PURE__ */ React.createElement(
+                                  "div",
+                                  { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 4, fontSize: "0.78rem" } },
+                                  /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "2px 8px", borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700 } }, (typeof g.score === "number" ? g.score : "\u2013") + "/100"),
+                                  /* @__PURE__ */ React.createElement("span", { style: { color: "#475569", fontStyle: "italic" } }, g.feedback || ""),
+                                  g.keySource === "student-file" && /* @__PURE__ */ React.createElement("span", { "data-si-key-source": "student-file", style: { color: "#7c2d12", fontWeight: 700 } }, tr("Checked with the answer key inside the student's file. This project has no copy of the activity."))
                                 )
-                              ),
-                              g && /* @__PURE__ */ React.createElement(
+                              );
+                            }),
+                            // Work evidence — what the student actually did, beyond what they typed.
+                            (function() {
+                              const ev = siWorkEvidence(row.payload, history);
+                              if (ev.isEmpty) return null;
+                              const shownActivities = ev.activities.slice(0, 12);
+                              const moreActivities = ev.activities.length - shownActivities.length;
+                              const chip = { display: "inline-flex", alignItems: "baseline", gap: 4, padding: "2px 8px", borderRadius: 999, background: "white", border: "1px solid #e2e8f0", fontSize: "0.75rem", color: "#1e293b" };
+                              const dim = { color: "#64748b", fontSize: "0.68rem" };
+                              const subheading = { fontSize: "0.72rem", fontWeight: 700, color: "#475569", marginBottom: 4 };
+                              const statBits = [];
+                              if (ev.totalXP !== null) statBits.push(tr("{n} XP", { n: ev.totalXP }));
+                              if (ev.quizzesTaken) statBits.push(tr("{n} quizzes taken", { n: ev.quizzesTaken }));
+                              if (ev.notebookEntries) statBits.push(tr("{n} notebook entries", { n: ev.notebookEntries }));
+                              return /* @__PURE__ */ React.createElement(
                                 "div",
-                                { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 4, fontSize: "0.78rem" } },
-                                /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "2px 8px", borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700 } }, (typeof g.score === "number" ? g.score : "\u2013") + "/100"),
-                                /* @__PURE__ */ React.createElement("span", { style: { color: "#475569", fontStyle: "italic" } }, g.feedback || ""),
-                                g.keySource === "student-file" && /* @__PURE__ */ React.createElement("span", { "data-si-key-source": "student-file", style: { color: "#7c2d12", fontWeight: 700 } }, tr("Checked with the answer key inside the student's file. This project has no copy of the activity."))
-                              )
-                            );
-                          }),
-                          // Work evidence — what the student actually did, beyond what they typed.
-                          (function() {
-                            const ev = siWorkEvidence(row.payload, history);
-                            if (ev.isEmpty) return null;
-                            const shownActivities = ev.activities.slice(0, 12);
-                            const moreActivities = ev.activities.length - shownActivities.length;
-                            const chip = { display: "inline-flex", alignItems: "baseline", gap: 4, padding: "2px 8px", borderRadius: 999, background: "white", border: "1px solid #e2e8f0", fontSize: "0.75rem", color: "#1e293b" };
-                            const dim = { color: "#64748b", fontSize: "0.68rem" };
-                            const subheading = { fontSize: "0.72rem", fontWeight: 700, color: "#475569", marginBottom: 4 };
-                            const statBits = [];
-                            if (ev.totalXP !== null) statBits.push(tr("{n} XP", { n: ev.totalXP }));
-                            if (ev.quizzesTaken) statBits.push(tr("{n} quizzes taken", { n: ev.quizzesTaken }));
-                            if (ev.notebookEntries) statBits.push(tr("{n} notebook entries", { n: ev.notebookEntries }));
-                            return /* @__PURE__ */ React.createElement(
+                                { style: { marginTop: 14, paddingTop: 12, borderTop: "1px dashed #cbd5e1" } },
+                                /* @__PURE__ */ React.createElement(
+                                  "div",
+                                  { style: { fontWeight: 700, color: "#475569", fontSize: "0.8rem", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" } },
+                                  tr("\u{1F9FE} Work in this submission")
+                                ),
+                                ev.activities.length > 0 && /* @__PURE__ */ React.createElement(
+                                  "div",
+                                  { style: { marginBottom: 8 } },
+                                  /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Activities included ({n})", { n: ev.activities.length })),
+                                  /* @__PURE__ */ React.createElement(
+                                    "div",
+                                    { style: { display: "flex", flexWrap: "wrap", gap: 6 } },
+                                    shownActivities.map(function(activity, i) {
+                                      return /* @__PURE__ */ React.createElement(
+                                        "span",
+                                        { key: "act-" + i, style: chip },
+                                        /* @__PURE__ */ React.createElement("span", null, activity.title),
+                                        /* @__PURE__ */ React.createElement("span", { style: dim }, activity.type)
+                                      );
+                                    }),
+                                    moreActivities > 0 && /* @__PURE__ */ React.createElement("span", { key: "act-more", style: Object.assign({}, chip, { color: "#64748b" }) }, tr("+{n} more", { n: moreActivities }))
+                                  )
+                                ),
+                                ev.annotations && ev.annotations.length > 0 && /* @__PURE__ */ React.createElement(
+                                  "div",
+                                  { style: { marginBottom: 8 } },
+                                  /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Highlights & notes ({n})", { n: ev.annotations.length })),
+                                  ev.annotations.slice(0, 50).map(function(anno, i) {
+                                    const annoLabel = anno.type === "highlight" ? tr("Highlight") : anno.type === "draw" ? tr("Drawing") : anno.type === "voice" ? tr("Voice note") : tr("Note");
+                                    const drawSvgSpec = (() => {
+                                      if (anno.type !== "draw" || !Array.isArray(anno.points) || anno.points.length < 2) return null;
+                                      let minX = anno.points[0].x, maxX = anno.points[0].x, minY = anno.points[0].y, maxY = anno.points[0].y;
+                                      for (let pi = 1; pi < anno.points.length; pi++) {
+                                        if (anno.points[pi].x < minX) minX = anno.points[pi].x;
+                                        if (anno.points[pi].x > maxX) maxX = anno.points[pi].x;
+                                        if (anno.points[pi].y < minY) minY = anno.points[pi].y;
+                                        if (anno.points[pi].y > maxY) maxY = anno.points[pi].y;
+                                      }
+                                      const pad = (anno.strokeWidth || 4) + 4;
+                                      const bx = minX - pad, by = minY - pad;
+                                      const bw = Math.max(20, maxX - minX + pad * 2), bh = Math.max(20, maxY - minY + pad * 2);
+                                      const d = anno.points.map((pt, idx2) => (idx2 === 0 ? "M" : "L") + Math.round((pt.x - bx) * 10) / 10 + " " + Math.round((pt.y - by) * 10) / 10).join(" ");
+                                      return { bw, bh, d };
+                                    })();
+                                    return /* @__PURE__ */ React.createElement(
+                                      "div",
+                                      { key: "anno-" + i, style: { marginBottom: 5, background: "white", border: "1px solid #fde68a", borderLeft: "4px solid #f59e0b", borderRadius: 6, padding: "6px 8px", fontSize: "0.8rem", color: "#1e293b" } },
+                                      /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.68rem", fontWeight: 700, color: "#92400e", textTransform: "uppercase", marginBottom: 2 } }, annoLabel),
+                                      anno.quote && /* @__PURE__ */ React.createElement("div", { style: { fontStyle: "italic", color: "#475569", marginBottom: anno.note ? 3 : 0 } }, "\u201C" + anno.quote + "\u201D"),
+                                      anno.note && /* @__PURE__ */ React.createElement("div", { style: { whiteSpace: "pre-wrap", overflowWrap: "anywhere" } }, anno.note),
+                                      drawSvgSpec && /* @__PURE__ */ React.createElement(
+                                        "svg",
+                                        { role: "img", "aria-label": tr("Student drawing"), viewBox: "0 0 " + drawSvgSpec.bw + " " + drawSvgSpec.bh, style: { display: "block", maxWidth: "100%", maxHeight: 160, background: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: 4, marginTop: 4 } },
+                                        /* @__PURE__ */ React.createElement("path", { d: drawSvgSpec.d, fill: "none", stroke: anno.strokeHex || "#dc2626", strokeWidth: anno.strokeWidth || 4, strokeLinecap: "round", strokeLinejoin: "round" })
+                                      ),
+                                      anno.type === "draw" && anno.dataUrl && !drawSvgSpec && /* @__PURE__ */ React.createElement("img", { src: anno.dataUrl, alt: tr("Student drawing"), style: { display: "block", maxWidth: "100%", maxHeight: 160, border: "1px solid #cbd5e1", borderRadius: 4, marginTop: 4 } }),
+                                      anno.type === "voice" && anno.audioSrc && /* @__PURE__ */ React.createElement("audio", { controls: true, preload: "metadata", src: anno.audioSrc, style: { width: "100%", maxWidth: 320, height: 32, marginTop: 4 } })
+                                    );
+                                  })
+                                ),
+                                (ev.interviews.length > 0 || ev.roleSwaps.length > 0) && /* @__PURE__ */ React.createElement(
+                                  "div",
+                                  { style: { marginBottom: 8 } },
+                                  /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Interview reflections ({n})", { n: ev.interviews.length + ev.roleSwaps.length })),
+                                  ev.interviews.map(function(entry, i) {
+                                    return /* @__PURE__ */ React.createElement(
+                                      "details",
+                                      { key: "interview-" + i, style: { marginBottom: 4, background: "white", border: "1px solid #e2e8f0", borderRadius: 6, padding: "4px 8px" } },
+                                      /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", fontSize: "0.8rem", fontWeight: 600, color: "#1e293b" } }, entry.title),
+                                      /* @__PURE__ */ React.createElement("div", { style: { marginTop: 4, fontSize: "0.8rem", color: "#1e293b", whiteSpace: "pre-wrap", overflowWrap: "anywhere", maxHeight: 360, overflowY: "auto" } }, entry.body)
+                                    );
+                                  }),
+                                  // Role Swap: readable answers + the same manual score form and grade row as responses.
+                                  ev.roleSwaps.map(function(rs, i) {
+                                    const g = (grades[idx] || {})[rs.key];
+                                    const sc = g ? scoreColor(g.score) : null;
+                                    const small = { fontSize: "0.7rem", fontWeight: 700, color: "#475569", marginTop: 4 };
+                                    return /* @__PURE__ */ React.createElement(
+                                      "div",
+                                      { key: "role-swap-" + i, "data-role-swap-key": rs.key, style: { marginBottom: 6, background: "white", border: "1px solid #c7d2fe", borderRadius: 6, padding: "6px 8px", fontSize: "0.8rem", color: "#1e293b" } },
+                                      /* @__PURE__ */ React.createElement(
+                                        "div",
+                                        { style: { display: "flex", alignItems: "flex-start", gap: 8 } },
+                                        /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0, fontWeight: 700, color: "#312e81" } }, rs.title),
+                                        /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openManualScoreForm(idx, { key: rs.key, rawText: rs.text }), title: tr("Score this response yourself. It is not sent to the free-response AI grader."), style: { display: "inline-flex", alignItems: "center", padding: "3px 9px", borderRadius: 999, background: "#e0f2fe", color: "#075985", border: "1px solid #7dd3fc", fontWeight: 700, fontSize: "0.72rem", flexShrink: 0, whiteSpace: "nowrap", cursor: "pointer" } }, g && g.origin === "teacher-edit" ? tr("Edit score") : tr("Score manually"))
+                                      ),
+                                      rs.entries.map(function(e, j) {
+                                        return /* @__PURE__ */ React.createElement(
+                                          "div",
+                                          { key: "rs-entry-" + j, "data-role-swap-entry": j, style: { marginTop: 6, paddingTop: 6, borderTop: j ? "1px solid #eef2ff" : "none", whiteSpace: "pre-wrap", overflowWrap: "anywhere" } },
+                                          /* @__PURE__ */ React.createElement("div", { style: small }, tr("Question")),
+                                          /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600 } }, e.question),
+                                          /* @__PURE__ */ React.createElement("div", { style: small }, tr("Answer as {name}", { name: e.speaker || rs.subject || "Role Swap" })),
+                                          /* @__PURE__ */ React.createElement("div", null, e.answer),
+                                          e.evidence && /* @__PURE__ */ React.createElement(
+                                            "div",
+                                            { style: small },
+                                            tr("Evidence from the source"),
+                                            e.evidenceInSource && /* @__PURE__ */ React.createElement("span", { "data-role-swap-evidence-found": "", style: { marginLeft: 6, padding: "1px 6px", borderRadius: 999, background: "#dcfce7", color: "#166534", border: "1px solid #86efac", fontSize: "0.66rem" } }, "\u2713 " + tr("Found in source"))
+                                          ),
+                                          e.evidence && /* @__PURE__ */ React.createElement("blockquote", { style: { margin: "2px 0 0 0", padding: "2px 8px", borderLeft: "3px solid #a5b4fc", color: "#334155", fontStyle: "italic" } }, e.evidence)
+                                        );
+                                      }),
+                                      /* @__PURE__ */ React.createElement("div", { style: Object.assign({}, small, { marginTop: 8 }) }, tr("Student self-check")),
+                                      /* @__PURE__ */ React.createElement(
+                                        "ul",
+                                        { style: { listStyle: "none", margin: "2px 0 0 0", padding: 0 } },
+                                        [["inCharacter", tr("Stayed in character")], ["usesEvidence", tr("Used evidence from the source")], ["accurate", tr("Historically accurate to the source")]].map(function(pair) {
+                                          return /* @__PURE__ */ React.createElement(
+                                            "li",
+                                            { key: pair[0] },
+                                            /* @__PURE__ */ React.createElement(
+                                              "label",
+                                              { style: { display: "inline-flex", alignItems: "center", gap: 6 } },
+                                              /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: rs.selfCheck[pair[0]], disabled: true, readOnly: true }),
+                                              pair[1]
+                                            )
+                                          );
+                                        })
+                                      ),
+                                      g && /* @__PURE__ */ React.createElement(
+                                        "div",
+                                        { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 6, fontSize: "0.78rem" } },
+                                        /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "2px 8px", borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700 } }, (typeof g.score === "number" ? g.score : "\u2013") + "/100"),
+                                        /* @__PURE__ */ React.createElement("span", { style: { color: "#475569", fontStyle: "italic" } }, g.feedback || "")
+                                      )
+                                    );
+                                  })
+                                ),
+                                // Student-written adventures: outline, Play preview, self-check, manual score.
+                                ev.stories.length > 0 && /* @__PURE__ */ React.createElement(
+                                  "div",
+                                  { style: { marginBottom: 8 } },
+                                  /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Student-written adventures ({n})", { n: ev.stories.length })),
+                                  ev.stories.map(function(story, i) {
+                                    const g = (grades[idx] || {})[story.key];
+                                    const sc = g ? scoreColor(g.score) : null;
+                                    const small = { fontSize: "0.7rem", fontWeight: 700, color: "#475569", marginTop: 4 };
+                                    const playKey = idx + "|" + story.key;
+                                    const playable = siStudentStoryPlayable(story);
+                                    const playing = playable && playingStoryKey === playKey;
+                                    const Player = playable ? window.AlloModules.AdventureOffline.Player : null;
+                                    const storyT = function(key, params) {
+                                      var v = null;
+                                      try {
+                                        v = typeof t === "function" ? t(key, params) : null;
+                                      } catch (e) {
+                                        v = null;
+                                      }
+                                      return typeof v === "string" ? v : key;
+                                    };
+                                    const pill = { display: "inline-flex", alignItems: "center", padding: "3px 9px", borderRadius: 999, fontWeight: 700, fontSize: "0.72rem", flexShrink: 0, whiteSpace: "nowrap", cursor: "pointer" };
+                                    return /* @__PURE__ */ React.createElement(
+                                      "div",
+                                      { key: "student-story-" + i, "data-student-story-key": story.key, style: { marginBottom: 6, background: "white", border: "1px solid #c7d2fe", borderRadius: 6, padding: "6px 8px", fontSize: "0.8rem", color: "#1e293b" } },
+                                      /* @__PURE__ */ React.createElement(
+                                        "div",
+                                        { style: { display: "flex", alignItems: "flex-start", gap: 8, flexWrap: "wrap" } },
+                                        /* @__PURE__ */ React.createElement(
+                                          "div",
+                                          { style: { flex: 1, minWidth: 0, fontWeight: 700, color: "#312e81" } },
+                                          story.title,
+                                          /* @__PURE__ */ React.createElement("span", { style: { marginLeft: 6, fontWeight: 400, color: "#64748b", fontSize: "0.72rem" } }, tr("{scenes} scenes \xB7 {endings} endings", { scenes: story.scenes.length, endings: story.endings }))
+                                        ),
+                                        /* @__PURE__ */ React.createElement("button", { type: "button", "data-student-story-play": "", "aria-pressed": !!playing, disabled: !playable, onClick: () => setPlayingStoryKey(playing ? null : playKey), title: playable ? void 0 : tr("This story is unfinished, so it cannot be played yet."), style: Object.assign({}, pill, { background: playing ? "#312e81" : "#eef2ff", color: playing ? "white" : "#312e81", border: "1px solid #a5b4fc", opacity: playable ? 1 : 0.6, cursor: playable ? "pointer" : "not-allowed" }) }, playing ? tr("Close player") : tr("\u25B6 Play")),
+                                        /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openManualScoreForm(idx, { key: story.key, rawText: story.text }), title: tr("Score this response yourself. It is not sent to the free-response AI grader."), style: Object.assign({}, pill, { background: "#e0f2fe", color: "#075985", border: "1px solid #7dd3fc" }) }, g && g.origin === "teacher-edit" ? tr("Edit score") : tr("Score manually"))
+                                      ),
+                                      playing && Player && /* @__PURE__ */ React.createElement("div", { "data-student-story-player": "", style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement(Player, { story: playable, t: storyT, theme: "light" })),
+                                      /* @__PURE__ */ React.createElement(
+                                        "ol",
+                                        { "data-student-story-outline": "", style: { listStyle: "none", margin: "6px 0 0 0", padding: 0 } },
+                                        story.scenes.map(function(scene, j) {
+                                          return /* @__PURE__ */ React.createElement(
+                                            "li",
+                                            { key: "scene-" + j, "data-student-story-scene": scene.id, style: { marginTop: 6, paddingTop: 6, borderTop: j ? "1px solid #eef2ff" : "none", whiteSpace: "pre-wrap", overflowWrap: "anywhere" } },
+                                            /* @__PURE__ */ React.createElement("div", { style: small }, tr("Scene {n}", { n: j + 1 }) + (scene.id === story.start ? " \xB7 " + tr("Start") : "") + (scene.ending ? " \xB7 " + tr("Ending") : "")),
+                                            /* @__PURE__ */ React.createElement("div", null, scene.text || "\u2014"),
+                                            scene.choices.length > 0 && /* @__PURE__ */ React.createElement(
+                                              "ul",
+                                              { style: { margin: "2px 0 0 0", paddingLeft: 18 } },
+                                              scene.choices.map(function(c, k) {
+                                                return /* @__PURE__ */ React.createElement("li", { key: "choice-" + k }, (c.label || "\u2014") + " \u2192 " + tr("Scene {n}", { n: story.number[c.to] || "?" }));
+                                              })
+                                            )
+                                          );
+                                        })
+                                      ),
+                                      /* @__PURE__ */ React.createElement("div", { style: Object.assign({}, small, { marginTop: 8 }) }, tr("Student self-check")),
+                                      /* @__PURE__ */ React.createElement(
+                                        "ul",
+                                        { style: { listStyle: "none", margin: "2px 0 0 0", padding: 0 } },
+                                        SI_STORY_CHECKS.map(function(pair) {
+                                          return /* @__PURE__ */ React.createElement(
+                                            "li",
+                                            { key: pair[0] },
+                                            /* @__PURE__ */ React.createElement(
+                                              "label",
+                                              { style: { display: "inline-flex", alignItems: "center", gap: 6 } },
+                                              /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: story.selfCheck[pair[0]], disabled: true, readOnly: true }),
+                                              tr(pair[1])
+                                            )
+                                          );
+                                        })
+                                      ),
+                                      g && /* @__PURE__ */ React.createElement(
+                                        "div",
+                                        { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 6, fontSize: "0.78rem" } },
+                                        /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "2px 8px", borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700 } }, (typeof g.score === "number" ? g.score : "\u2013") + "/100"),
+                                        /* @__PURE__ */ React.createElement("span", { style: { color: "#475569", fontStyle: "italic" } }, g.feedback || "")
+                                      )
+                                    );
+                                  })
+                                ),
+                                ev.reflections.length > 0 && /* @__PURE__ */ React.createElement(
+                                  "div",
+                                  { "data-adventure-reflections": "", style: { marginBottom: 8 } },
+                                  /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Adventure reflections ({n})", { n: ev.reflections.reduce(function(n, r) {
+                                    return n + r.entries.length;
+                                  }, 0) })),
+                                  ev.reflections.map(function(r, i) {
+                                    return /* @__PURE__ */ React.createElement(
+                                      "div",
+                                      { key: "adv-reflect-" + i, style: { marginBottom: 6, background: "white", border: "1px solid #e2e8f0", borderRadius: 6, padding: "6px 8px", fontSize: "0.8rem", color: "#1e293b" } },
+                                      /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 700, color: "#312e81" } }, r.title),
+                                      r.entries.map(function(e, j) {
+                                        return /* @__PURE__ */ React.createElement(
+                                          "div",
+                                          { key: "entry-" + j, "data-adventure-reflection": "", style: { marginTop: 6, paddingTop: j ? 6 : 0, borderTop: j ? "1px solid #eef2ff" : "none", whiteSpace: "pre-wrap", overflowWrap: "anywhere" } },
+                                          e.ending && /* @__PURE__ */ React.createElement("blockquote", { style: { margin: "0 0 2px 0", padding: "2px 8px", borderLeft: "3px solid #a5b4fc", color: "#475569", fontStyle: "italic" } }, tr("Ending") + ": " + e.ending),
+                                          /* @__PURE__ */ React.createElement("div", null, e.text)
+                                        );
+                                      })
+                                    );
+                                  })
+                                ),
+                                ev.games.length > 0 && /* @__PURE__ */ React.createElement(
+                                  "div",
+                                  { style: { marginBottom: 8 } },
+                                  /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Practice games completed")),
+                                  /* @__PURE__ */ React.createElement(
+                                    "div",
+                                    { style: { display: "flex", flexWrap: "wrap", gap: 6 } },
+                                    ev.games.map(function(game, i) {
+                                      return /* @__PURE__ */ React.createElement(
+                                        "span",
+                                        { key: "game-" + i, style: chip },
+                                        /* @__PURE__ */ React.createElement("span", null, game.gameType),
+                                        /* @__PURE__ */ React.createElement("span", { style: dim }, "\xD7" + game.plays)
+                                      );
+                                    })
+                                  )
+                                ),
+                                statBits.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.78rem", color: "#475569" } }, statBits.join(" \xB7 ")),
+                                // Deliberately phrased as a prompt for conversation. The device counts
+                                // pastes into writable answer fields; a pasted citation and a pasted
+                                // answer are indistinguishable from here, so this must not read as a finding.
+                                ev.pastesIntoAnswers ? /* @__PURE__ */ React.createElement(
+                                  "div",
+                                  { style: { marginTop: 6, fontSize: "0.75rem", color: "#92400e", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 6, padding: "4px 8px" } },
+                                  ev.pastesIntoAnswers === 1 ? tr("1 paste landed in an answer field. Worth asking about, not a conclusion.") : tr("{n} pastes landed in answer fields. Worth asking about, not a conclusion.", { n: ev.pastesIntoAnswers })
+                                ) : null
+                              );
+                            })(),
+                            // Rubric / Grade-with-AI section
+                            Object.keys(row.payload.responses || {}).length > 0 && /* @__PURE__ */ React.createElement(
                               "div",
                               { style: { marginTop: 14, paddingTop: 12, borderTop: "1px dashed #cbd5e1" } },
                               /* @__PURE__ */ React.createElement(
                                 "div",
                                 { style: { fontWeight: 700, color: "#475569", fontSize: "0.8rem", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" } },
-                                tr("\u{1F9FE} Work in this submission")
+                                tr("\u{1F3AF} AI Grade with rubric")
                               ),
-                              ev.activities.length > 0 && /* @__PURE__ */ React.createElement(
-                                "div",
-                                { style: { marginBottom: 8 } },
-                                /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Activities included ({n})", { n: ev.activities.length })),
-                                /* @__PURE__ */ React.createElement(
-                                  "div",
-                                  { style: { display: "flex", flexWrap: "wrap", gap: 6 } },
-                                  shownActivities.map(function(activity, i) {
-                                    return /* @__PURE__ */ React.createElement(
-                                      "span",
-                                      { key: "act-" + i, style: chip },
-                                      /* @__PURE__ */ React.createElement("span", null, activity.title),
-                                      /* @__PURE__ */ React.createElement("span", { style: dim }, activity.type)
-                                    );
-                                  }),
-                                  moreActivities > 0 && /* @__PURE__ */ React.createElement("span", { key: "act-more", style: Object.assign({}, chip, { color: "#64748b" }) }, tr("+{n} more", { n: moreActivities }))
-                                )
-                              ),
-                              ev.annotations && ev.annotations.length > 0 && /* @__PURE__ */ React.createElement(
-                                "div",
-                                { style: { marginBottom: 8 } },
-                                /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Highlights & notes ({n})", { n: ev.annotations.length })),
-                                ev.annotations.slice(0, 50).map(function(anno, i) {
-                                  const annoLabel = anno.type === "highlight" ? tr("Highlight") : anno.type === "draw" ? tr("Drawing") : anno.type === "voice" ? tr("Voice note") : tr("Note");
-                                  const drawSvgSpec = (() => {
-                                    if (anno.type !== "draw" || !Array.isArray(anno.points) || anno.points.length < 2) return null;
-                                    let minX = anno.points[0].x, maxX = anno.points[0].x, minY = anno.points[0].y, maxY = anno.points[0].y;
-                                    for (let pi = 1; pi < anno.points.length; pi++) {
-                                      if (anno.points[pi].x < minX) minX = anno.points[pi].x;
-                                      if (anno.points[pi].x > maxX) maxX = anno.points[pi].x;
-                                      if (anno.points[pi].y < minY) minY = anno.points[pi].y;
-                                      if (anno.points[pi].y > maxY) maxY = anno.points[pi].y;
-                                    }
-                                    const pad = (anno.strokeWidth || 4) + 4;
-                                    const bx = minX - pad, by = minY - pad;
-                                    const bw = Math.max(20, maxX - minX + pad * 2), bh = Math.max(20, maxY - minY + pad * 2);
-                                    const d = anno.points.map((pt, idx2) => (idx2 === 0 ? "M" : "L") + Math.round((pt.x - bx) * 10) / 10 + " " + Math.round((pt.y - by) * 10) / 10).join(" ");
-                                    return { bw, bh, d };
-                                  })();
-                                  return /* @__PURE__ */ React.createElement(
-                                    "div",
-                                    { key: "anno-" + i, style: { marginBottom: 5, background: "white", border: "1px solid #fde68a", borderLeft: "4px solid #f59e0b", borderRadius: 6, padding: "6px 8px", fontSize: "0.8rem", color: "#1e293b" } },
-                                    /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.68rem", fontWeight: 700, color: "#92400e", textTransform: "uppercase", marginBottom: 2 } }, annoLabel),
-                                    anno.quote && /* @__PURE__ */ React.createElement("div", { style: { fontStyle: "italic", color: "#475569", marginBottom: anno.note ? 3 : 0 } }, "\u201C" + anno.quote + "\u201D"),
-                                    anno.note && /* @__PURE__ */ React.createElement("div", { style: { whiteSpace: "pre-wrap", overflowWrap: "anywhere" } }, anno.note),
-                                    drawSvgSpec && /* @__PURE__ */ React.createElement(
-                                      "svg",
-                                      { role: "img", "aria-label": tr("Student drawing"), viewBox: "0 0 " + drawSvgSpec.bw + " " + drawSvgSpec.bh, style: { display: "block", maxWidth: "100%", maxHeight: 160, background: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: 4, marginTop: 4 } },
-                                      /* @__PURE__ */ React.createElement("path", { d: drawSvgSpec.d, fill: "none", stroke: anno.strokeHex || "#dc2626", strokeWidth: anno.strokeWidth || 4, strokeLinecap: "round", strokeLinejoin: "round" })
-                                    ),
-                                    anno.type === "draw" && anno.dataUrl && !drawSvgSpec && /* @__PURE__ */ React.createElement("img", { src: anno.dataUrl, alt: tr("Student drawing"), style: { display: "block", maxWidth: "100%", maxHeight: 160, border: "1px solid #cbd5e1", borderRadius: 4, marginTop: 4 } }),
-                                    anno.type === "voice" && anno.audioSrc && /* @__PURE__ */ React.createElement("audio", { controls: true, preload: "metadata", src: anno.audioSrc, style: { width: "100%", maxWidth: 320, height: 32, marginTop: 4 } })
-                                  );
-                                })
-                              ),
-                              (ev.interviews.length > 0 || ev.roleSwaps.length > 0) && /* @__PURE__ */ React.createElement(
-                                "div",
-                                { style: { marginBottom: 8 } },
-                                /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Interview reflections ({n})", { n: ev.interviews.length + ev.roleSwaps.length })),
-                                ev.interviews.map(function(entry, i) {
-                                  return /* @__PURE__ */ React.createElement(
-                                    "details",
-                                    { key: "interview-" + i, style: { marginBottom: 4, background: "white", border: "1px solid #e2e8f0", borderRadius: 6, padding: "4px 8px" } },
-                                    /* @__PURE__ */ React.createElement("summary", { style: { cursor: "pointer", fontSize: "0.8rem", fontWeight: 600, color: "#1e293b" } }, entry.title),
-                                    /* @__PURE__ */ React.createElement("div", { style: { marginTop: 4, fontSize: "0.8rem", color: "#1e293b", whiteSpace: "pre-wrap", overflowWrap: "anywhere", maxHeight: 360, overflowY: "auto" } }, entry.body)
-                                  );
-                                }),
-                                // Role Swap: readable answers + the same manual score form and grade row as responses.
-                                ev.roleSwaps.map(function(rs, i) {
-                                  const g = (grades[idx] || {})[rs.key];
-                                  const sc = g ? scoreColor(g.score) : null;
-                                  const small = { fontSize: "0.7rem", fontWeight: 700, color: "#475569", marginTop: 4 };
-                                  return /* @__PURE__ */ React.createElement(
-                                    "div",
-                                    { key: "role-swap-" + i, "data-role-swap-key": rs.key, style: { marginBottom: 6, background: "white", border: "1px solid #c7d2fe", borderRadius: 6, padding: "6px 8px", fontSize: "0.8rem", color: "#1e293b" } },
-                                    /* @__PURE__ */ React.createElement(
-                                      "div",
-                                      { style: { display: "flex", alignItems: "flex-start", gap: 8 } },
-                                      /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0, fontWeight: 700, color: "#312e81" } }, rs.title),
-                                      /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openManualScoreForm(idx, { key: rs.key, rawText: rs.text }), title: tr("Score this response yourself. It is not sent to the free-response AI grader."), style: { display: "inline-flex", alignItems: "center", padding: "3px 9px", borderRadius: 999, background: "#e0f2fe", color: "#075985", border: "1px solid #7dd3fc", fontWeight: 700, fontSize: "0.72rem", flexShrink: 0, whiteSpace: "nowrap", cursor: "pointer" } }, g && g.origin === "teacher-edit" ? tr("Edit score") : tr("Score manually"))
-                                    ),
-                                    rs.entries.map(function(e, j) {
-                                      return /* @__PURE__ */ React.createElement(
-                                        "div",
-                                        { key: "rs-entry-" + j, "data-role-swap-entry": j, style: { marginTop: 6, paddingTop: 6, borderTop: j ? "1px solid #eef2ff" : "none", whiteSpace: "pre-wrap", overflowWrap: "anywhere" } },
-                                        /* @__PURE__ */ React.createElement("div", { style: small }, tr("Question")),
-                                        /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 600 } }, e.question),
-                                        /* @__PURE__ */ React.createElement("div", { style: small }, tr("Answer as {name}", { name: e.speaker || rs.subject || "Role Swap" })),
-                                        /* @__PURE__ */ React.createElement("div", null, e.answer),
-                                        e.evidence && /* @__PURE__ */ React.createElement(
-                                          "div",
-                                          { style: small },
-                                          tr("Evidence from the source"),
-                                          e.evidenceInSource && /* @__PURE__ */ React.createElement("span", { "data-role-swap-evidence-found": "", style: { marginLeft: 6, padding: "1px 6px", borderRadius: 999, background: "#dcfce7", color: "#166534", border: "1px solid #86efac", fontSize: "0.66rem" } }, "\u2713 " + tr("Found in source"))
-                                        ),
-                                        e.evidence && /* @__PURE__ */ React.createElement("blockquote", { style: { margin: "2px 0 0 0", padding: "2px 8px", borderLeft: "3px solid #a5b4fc", color: "#334155", fontStyle: "italic" } }, e.evidence)
-                                      );
-                                    }),
-                                    /* @__PURE__ */ React.createElement("div", { style: Object.assign({}, small, { marginTop: 8 }) }, tr("Student self-check")),
-                                    /* @__PURE__ */ React.createElement(
-                                      "ul",
-                                      { style: { listStyle: "none", margin: "2px 0 0 0", padding: 0 } },
-                                      [["inCharacter", tr("Stayed in character")], ["usesEvidence", tr("Used evidence from the source")], ["accurate", tr("Historically accurate to the source")]].map(function(pair) {
-                                        return /* @__PURE__ */ React.createElement(
-                                          "li",
-                                          { key: pair[0] },
-                                          /* @__PURE__ */ React.createElement(
-                                            "label",
-                                            { style: { display: "inline-flex", alignItems: "center", gap: 6 } },
-                                            /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: rs.selfCheck[pair[0]], disabled: true, readOnly: true }),
-                                            pair[1]
-                                          )
-                                        );
-                                      })
-                                    ),
-                                    g && /* @__PURE__ */ React.createElement(
-                                      "div",
-                                      { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 6, fontSize: "0.78rem" } },
-                                      /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "2px 8px", borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700 } }, (typeof g.score === "number" ? g.score : "\u2013") + "/100"),
-                                      /* @__PURE__ */ React.createElement("span", { style: { color: "#475569", fontStyle: "italic" } }, g.feedback || "")
-                                    )
-                                  );
-                                })
-                              ),
-                              // Student-written adventures: outline, Play preview, self-check, manual score.
-                              ev.stories.length > 0 && /* @__PURE__ */ React.createElement(
-                                "div",
-                                { style: { marginBottom: 8 } },
-                                /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Student-written adventures ({n})", { n: ev.stories.length })),
-                                ev.stories.map(function(story, i) {
-                                  const g = (grades[idx] || {})[story.key];
-                                  const sc = g ? scoreColor(g.score) : null;
-                                  const small = { fontSize: "0.7rem", fontWeight: 700, color: "#475569", marginTop: 4 };
-                                  const playKey = idx + "|" + story.key;
-                                  const playable = siStudentStoryPlayable(story);
-                                  const playing = playable && playingStoryKey === playKey;
-                                  const Player = playable ? window.AlloModules.AdventureOffline.Player : null;
-                                  const storyT = function(key, params) {
-                                    var v = null;
-                                    try {
-                                      v = typeof t === "function" ? t(key, params) : null;
-                                    } catch (e) {
-                                      v = null;
-                                    }
-                                    return typeof v === "string" ? v : key;
-                                  };
-                                  const pill = { display: "inline-flex", alignItems: "center", padding: "3px 9px", borderRadius: 999, fontWeight: 700, fontSize: "0.72rem", flexShrink: 0, whiteSpace: "nowrap", cursor: "pointer" };
-                                  return /* @__PURE__ */ React.createElement(
-                                    "div",
-                                    { key: "student-story-" + i, "data-student-story-key": story.key, style: { marginBottom: 6, background: "white", border: "1px solid #c7d2fe", borderRadius: 6, padding: "6px 8px", fontSize: "0.8rem", color: "#1e293b" } },
-                                    /* @__PURE__ */ React.createElement(
-                                      "div",
-                                      { style: { display: "flex", alignItems: "flex-start", gap: 8, flexWrap: "wrap" } },
-                                      /* @__PURE__ */ React.createElement(
-                                        "div",
-                                        { style: { flex: 1, minWidth: 0, fontWeight: 700, color: "#312e81" } },
-                                        story.title,
-                                        /* @__PURE__ */ React.createElement("span", { style: { marginLeft: 6, fontWeight: 400, color: "#64748b", fontSize: "0.72rem" } }, tr("{scenes} scenes \xB7 {endings} endings", { scenes: story.scenes.length, endings: story.endings }))
-                                      ),
-                                      /* @__PURE__ */ React.createElement("button", { type: "button", "data-student-story-play": "", "aria-pressed": !!playing, disabled: !playable, onClick: () => setPlayingStoryKey(playing ? null : playKey), title: playable ? void 0 : tr("This story is unfinished, so it cannot be played yet."), style: Object.assign({}, pill, { background: playing ? "#312e81" : "#eef2ff", color: playing ? "white" : "#312e81", border: "1px solid #a5b4fc", opacity: playable ? 1 : 0.6, cursor: playable ? "pointer" : "not-allowed" }) }, playing ? tr("Close player") : tr("\u25B6 Play")),
-                                      /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openManualScoreForm(idx, { key: story.key, rawText: story.text }), title: tr("Score this response yourself. It is not sent to the free-response AI grader."), style: Object.assign({}, pill, { background: "#e0f2fe", color: "#075985", border: "1px solid #7dd3fc" }) }, g && g.origin === "teacher-edit" ? tr("Edit score") : tr("Score manually"))
-                                    ),
-                                    playing && Player && /* @__PURE__ */ React.createElement("div", { "data-student-story-player": "", style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement(Player, { story: playable, t: storyT, theme: "light" })),
-                                    /* @__PURE__ */ React.createElement(
-                                      "ol",
-                                      { "data-student-story-outline": "", style: { listStyle: "none", margin: "6px 0 0 0", padding: 0 } },
-                                      story.scenes.map(function(scene, j) {
-                                        return /* @__PURE__ */ React.createElement(
-                                          "li",
-                                          { key: "scene-" + j, "data-student-story-scene": scene.id, style: { marginTop: 6, paddingTop: 6, borderTop: j ? "1px solid #eef2ff" : "none", whiteSpace: "pre-wrap", overflowWrap: "anywhere" } },
-                                          /* @__PURE__ */ React.createElement("div", { style: small }, tr("Scene {n}", { n: j + 1 }) + (scene.id === story.start ? " \xB7 " + tr("Start") : "") + (scene.ending ? " \xB7 " + tr("Ending") : "")),
-                                          /* @__PURE__ */ React.createElement("div", null, scene.text || "\u2014"),
-                                          scene.choices.length > 0 && /* @__PURE__ */ React.createElement(
-                                            "ul",
-                                            { style: { margin: "2px 0 0 0", paddingLeft: 18 } },
-                                            scene.choices.map(function(c, k) {
-                                              return /* @__PURE__ */ React.createElement("li", { key: "choice-" + k }, (c.label || "\u2014") + " \u2192 " + tr("Scene {n}", { n: story.number[c.to] || "?" }));
-                                            })
-                                          )
-                                        );
-                                      })
-                                    ),
-                                    /* @__PURE__ */ React.createElement("div", { style: Object.assign({}, small, { marginTop: 8 }) }, tr("Student self-check")),
-                                    /* @__PURE__ */ React.createElement(
-                                      "ul",
-                                      { style: { listStyle: "none", margin: "2px 0 0 0", padding: 0 } },
-                                      SI_STORY_CHECKS.map(function(pair) {
-                                        return /* @__PURE__ */ React.createElement(
-                                          "li",
-                                          { key: pair[0] },
-                                          /* @__PURE__ */ React.createElement(
-                                            "label",
-                                            { style: { display: "inline-flex", alignItems: "center", gap: 6 } },
-                                            /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: story.selfCheck[pair[0]], disabled: true, readOnly: true }),
-                                            tr(pair[1])
-                                          )
-                                        );
-                                      })
-                                    ),
-                                    g && /* @__PURE__ */ React.createElement(
-                                      "div",
-                                      { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 6, fontSize: "0.78rem" } },
-                                      /* @__PURE__ */ React.createElement("span", { style: { display: "inline-block", padding: "2px 8px", borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700 } }, (typeof g.score === "number" ? g.score : "\u2013") + "/100"),
-                                      /* @__PURE__ */ React.createElement("span", { style: { color: "#475569", fontStyle: "italic" } }, g.feedback || "")
-                                    )
-                                  );
-                                })
-                              ),
-                              ev.reflections.length > 0 && /* @__PURE__ */ React.createElement(
-                                "div",
-                                { "data-adventure-reflections": "", style: { marginBottom: 8 } },
-                                /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Adventure reflections ({n})", { n: ev.reflections.reduce(function(n, r) {
-                                  return n + r.entries.length;
-                                }, 0) })),
-                                ev.reflections.map(function(r, i) {
-                                  return /* @__PURE__ */ React.createElement(
-                                    "div",
-                                    { key: "adv-reflect-" + i, style: { marginBottom: 6, background: "white", border: "1px solid #e2e8f0", borderRadius: 6, padding: "6px 8px", fontSize: "0.8rem", color: "#1e293b" } },
-                                    /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 700, color: "#312e81" } }, r.title),
-                                    r.entries.map(function(e, j) {
-                                      return /* @__PURE__ */ React.createElement(
-                                        "div",
-                                        { key: "entry-" + j, "data-adventure-reflection": "", style: { marginTop: 6, paddingTop: j ? 6 : 0, borderTop: j ? "1px solid #eef2ff" : "none", whiteSpace: "pre-wrap", overflowWrap: "anywhere" } },
-                                        e.ending && /* @__PURE__ */ React.createElement("blockquote", { style: { margin: "0 0 2px 0", padding: "2px 8px", borderLeft: "3px solid #a5b4fc", color: "#475569", fontStyle: "italic" } }, tr("Ending") + ": " + e.ending),
-                                        /* @__PURE__ */ React.createElement("div", null, e.text)
-                                      );
-                                    })
-                                  );
-                                })
-                              ),
-                              ev.games.length > 0 && /* @__PURE__ */ React.createElement(
-                                "div",
-                                { style: { marginBottom: 8 } },
-                                /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Practice games completed")),
-                                /* @__PURE__ */ React.createElement(
-                                  "div",
-                                  { style: { display: "flex", flexWrap: "wrap", gap: 6 } },
-                                  ev.games.map(function(game, i) {
-                                    return /* @__PURE__ */ React.createElement(
-                                      "span",
-                                      { key: "game-" + i, style: chip },
-                                      /* @__PURE__ */ React.createElement("span", null, game.gameType),
-                                      /* @__PURE__ */ React.createElement("span", { style: dim }, "\xD7" + game.plays)
-                                    );
-                                  })
-                                )
-                              ),
-                              statBits.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.78rem", color: "#475569" } }, statBits.join(" \xB7 ")),
-                              // Deliberately phrased as a prompt for conversation. The device counts
-                              // pastes into writable answer fields; a pasted citation and a pasted
-                              // answer are indistinguishable from here, so this must not read as a finding.
-                              ev.pastesIntoAnswers ? /* @__PURE__ */ React.createElement(
-                                "div",
-                                { style: { marginTop: 6, fontSize: "0.75rem", color: "#92400e", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 6, padding: "4px 8px" } },
-                                ev.pastesIntoAnswers === 1 ? tr("1 paste landed in an answer field. Worth asking about, not a conclusion.") : tr("{n} pastes landed in answer fields. Worth asking about, not a conclusion.", { n: ev.pastesIntoAnswers })
-                              ) : null
-                            );
-                          })(),
-                          // Rubric / Grade-with-AI section
-                          Object.keys(row.payload.responses || {}).length > 0 && /* @__PURE__ */ React.createElement(
-                            "div",
-                            { style: { marginTop: 14, paddingTop: 12, borderTop: "1px dashed #cbd5e1" } },
-                            /* @__PURE__ */ React.createElement(
-                              "div",
-                              { style: { fontWeight: 700, color: "#475569", fontSize: "0.8rem", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" } },
-                              tr("\u{1F3AF} AI Grade with rubric")
-                            ),
-                            /* @__PURE__ */ React.createElement(
-                              "label",
-                              { htmlFor: "submission-inbox-row-rubric-" + idx, style: { display: "block", fontSize: "0.78rem", color: "#475569", fontWeight: 600, marginBottom: 4 } },
-                              tr("Rubric (what full credit looks like)"),
-                              (globalRubric.rubric || "").trim() && !(rubrics[idx] && rubrics[idx].rubric || "").trim() ? /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 400, color: "#475569", marginLeft: 6, fontSize: "0.72rem" } }, tr("\u2014 using class rubric above (override here for this submission only)")) : null
-                            ),
-                            /* @__PURE__ */ React.createElement("textarea", {
-                              id: "submission-inbox-row-rubric-" + idx,
-                              value: rubrics[idx] && rubrics[idx].rubric || "",
-                              onChange: (e) => updateRubric(idx, { rubric: e.target.value }),
-                              placeholder: (globalRubric.rubric || "").trim() ? globalRubric.rubric : tr('e.g., "Explains the main idea in their own words, cites at least one detail from the text, uses complete sentences."'),
-                              rows: 3,
-                              style: { width: "100%", padding: "8px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: "0.85rem", fontFamily: "inherit", resize: "vertical", marginBottom: 8 }
-                            }),
-                            /* @__PURE__ */ React.createElement("label", { htmlFor: "submission-inbox-row-context-" + idx, style: { display: "block", fontSize: "0.78rem", color: "#475569", fontWeight: 600, marginBottom: 4 } }, tr("Assignment context (optional)")),
-                            /* @__PURE__ */ React.createElement("input", {
-                              id: "submission-inbox-row-context-" + idx,
-                              type: "text",
-                              value: rubrics[idx] && rubrics[idx].context || "",
-                              onChange: (e) => updateRubric(idx, { context: e.target.value }),
-                              placeholder: tr('e.g., "Reading response to chapter 3"'),
-                              style: { width: "100%", padding: "6px 8px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: "0.85rem", marginBottom: 8 }
-                            }),
-                            /* @__PURE__ */ React.createElement(
-                              "label",
-                              { htmlFor: "submission-inbox-row-exemplar-" + idx, style: { display: "block", fontSize: "0.78rem", color: "#475569", fontWeight: 600, marginBottom: 4 } },
-                              tr("Quick exemplar (optional) "),
                               /* @__PURE__ */ React.createElement(
-                                "span",
-                                { style: { fontWeight: 400, color: "#475569", fontSize: "0.75rem" } },
-                                anchors.length > 0 ? "\u2014 " + anchors.length + " calibration anchor" + (anchors.length === 1 ? "" : "s") + " active (\u{1F4CC} panel above). Anchors apply across all submissions; this exemplar adds one more locally." : tr("\u2014 or tap \u{1F4CC} on a real student response above to anchor it (multi-anchor calibration).")
+                                "label",
+                                { htmlFor: "submission-inbox-row-rubric-" + idx, style: { display: "block", fontSize: "0.78rem", color: "#475569", fontWeight: 600, marginBottom: 4 } },
+                                tr("Rubric (what full credit looks like)"),
+                                (globalRubric.rubric || "").trim() && !(rubrics[idx] && rubrics[idx].rubric || "").trim() ? /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 400, color: "#475569", marginLeft: 6, fontSize: "0.72rem" } }, tr("\u2014 using class rubric above (override here for this submission only)")) : null
+                              ),
+                              /* @__PURE__ */ React.createElement("textarea", {
+                                id: "submission-inbox-row-rubric-" + idx,
+                                value: rubrics[idx] && rubrics[idx].rubric || "",
+                                onChange: (e) => updateRubric(idx, { rubric: e.target.value }),
+                                placeholder: (globalRubric.rubric || "").trim() ? globalRubric.rubric : tr('e.g., "Explains the main idea in their own words, cites at least one detail from the text, uses complete sentences."'),
+                                rows: 3,
+                                style: { width: "100%", padding: "8px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: "0.85rem", fontFamily: "inherit", resize: "vertical", marginBottom: 8 }
+                              }),
+                              /* @__PURE__ */ React.createElement("label", { htmlFor: "submission-inbox-row-context-" + idx, style: { display: "block", fontSize: "0.78rem", color: "#475569", fontWeight: 600, marginBottom: 4 } }, tr("Assignment context (optional)")),
+                              /* @__PURE__ */ React.createElement("input", {
+                                id: "submission-inbox-row-context-" + idx,
+                                type: "text",
+                                value: rubrics[idx] && rubrics[idx].context || "",
+                                onChange: (e) => updateRubric(idx, { context: e.target.value }),
+                                placeholder: tr('e.g., "Reading response to chapter 3"'),
+                                style: { width: "100%", padding: "6px 8px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: "0.85rem", marginBottom: 8 }
+                              }),
+                              /* @__PURE__ */ React.createElement(
+                                "label",
+                                { htmlFor: "submission-inbox-row-exemplar-" + idx, style: { display: "block", fontSize: "0.78rem", color: "#475569", fontWeight: 600, marginBottom: 4 } },
+                                tr("Quick exemplar (optional) "),
+                                /* @__PURE__ */ React.createElement(
+                                  "span",
+                                  { style: { fontWeight: 400, color: "#475569", fontSize: "0.75rem" } },
+                                  anchors.length > 0 ? "\u2014 " + anchors.length + " calibration anchor" + (anchors.length === 1 ? "" : "s") + " active (\u{1F4CC} panel above). Anchors apply across all submissions; this exemplar adds one more locally." : tr("\u2014 or tap \u{1F4CC} on a real student response above to anchor it (multi-anchor calibration).")
+                                )
+                              ),
+                              /* @__PURE__ */ React.createElement("textarea", {
+                                id: "submission-inbox-row-exemplar-" + idx,
+                                value: rubrics[idx] && rubrics[idx].exemplar || "",
+                                onChange: (e) => updateRubric(idx, { exemplar: e.target.value }),
+                                placeholder: tr("Paste an example of a 95/100 response so the AI matches your scoring."),
+                                rows: 2,
+                                style: { width: "100%", padding: "8px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: "0.85rem", fontFamily: "inherit", resize: "vertical", marginBottom: 8 }
+                              }),
+                              /* @__PURE__ */ React.createElement(
+                                "div",
+                                { style: { display: "flex", gap: 8, alignItems: "center" } },
+                                /* @__PURE__ */ React.createElement("button", {
+                                  type: "button",
+                                  onClick: () => gradeRow(idx),
+                                  disabled: gradingRow === idx || !aiTextAvailable,
+                                  title: !aiTextAvailable ? tr("AI setup required for automatic grading. Score responses manually above.") : void 0,
+                                  style: { minHeight: 44, padding: "8px 16px", background: !aiTextAvailable ? "#cbd5e1" : "#7c3aed", color: !aiTextAvailable ? "#334155" : "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: gradingRow === idx ? "wait" : !aiTextAvailable ? "not-allowed" : "pointer", opacity: gradingRow === idx ? 0.6 : 1 }
+                                }, gradingRow === idx ? "Grading\u2026" : tr("\u{1F3AF} Grade responses")),
+                                ...renderRowGradeActions(idx)
                               )
                             ),
-                            /* @__PURE__ */ React.createElement("textarea", {
-                              id: "submission-inbox-row-exemplar-" + idx,
-                              value: rubrics[idx] && rubrics[idx].exemplar || "",
-                              onChange: (e) => updateRubric(idx, { exemplar: e.target.value }),
-                              placeholder: tr("Paste an example of a 95/100 response so the AI matches your scoring."),
-                              rows: 2,
-                              style: { width: "100%", padding: "8px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: "0.85rem", fontFamily: "inherit", resize: "vertical", marginBottom: 8 }
-                            }),
-                            /* @__PURE__ */ React.createElement(
+                            // A row with no typed responses (e.g. only a Role Swap) still needs review + save.
+                            Object.keys(row.payload.responses || {}).length === 0 && Object.keys(grades[idx] || {}).length > 0 && /* @__PURE__ */ React.createElement(
                               "div",
-                              { style: { display: "flex", gap: 8, alignItems: "center" } },
-                              /* @__PURE__ */ React.createElement("button", {
-                                type: "button",
-                                onClick: () => gradeRow(idx),
-                                disabled: gradingRow === idx || !aiTextAvailable,
-                                title: !aiTextAvailable ? tr("AI setup required for automatic grading. Score responses manually above.") : void 0,
-                                style: { padding: "8px 16px", background: !aiTextAvailable ? "#cbd5e1" : "#7c3aed", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: gradingRow === idx ? "wait" : !aiTextAvailable ? "not-allowed" : "pointer", opacity: gradingRow === idx ? 0.6 : 1 }
-                              }, gradingRow === idx ? "Grading\u2026" : tr("\u{1F3AF} Grade responses")),
+                              { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 14, paddingTop: 12, borderTop: "1px dashed #cbd5e1" } },
                               ...renderRowGradeActions(idx)
                             )
-                          ),
-                          // A row with no typed responses (e.g. only a Role Swap) still needs review + save.
-                          Object.keys(row.payload.responses || {}).length === 0 && Object.keys(grades[idx] || {}).length > 0 && /* @__PURE__ */ React.createElement(
-                            "div",
-                            { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 14, paddingTop: 12, borderTop: "1px dashed #cbd5e1" } },
-                            ...renderRowGradeActions(idx)
                           )
                         )
                       )
-                    )
-                  ))
+                    ))
+                  )
                 )
               )
-            )
-          )
+            );
+          })()
         ),
         // Footer
         /* @__PURE__ */ React.createElement(
           "div",
-          { style: { padding: "14px 22px", borderTop: "1px solid #e2e8f0", background: "#f8fafc", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 } },
+          { style: { padding: "14px 22px", borderTop: "1px solid #e2e8f0", background: "#f8fafc", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" } },
           /* @__PURE__ */ React.createElement(
             "div",
-            { style: { fontSize: "0.8rem", color: "#64748b" } },
+            { style: { fontSize: "0.8rem", color: "#475569" } },
             (counts.decrypted || 0) > 0 ? tr('Click "View" on a row to grade it with an AI rubric and save the result to your local gradebook.') : tr("Decrypt the queue to see student responses.")
           ),
           /* @__PURE__ */ React.createElement(
@@ -8173,7 +8226,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
             /* @__PURE__ */ React.createElement("button", {
               type: "button",
               onClick: onClose,
-              style: { padding: "8px 18px", background: "#f1f5f9", color: "#475569", border: "1px solid #cbd5e1", borderRadius: 8, fontWeight: 600, cursor: "pointer", fontSize: "0.9rem" }
+              style: { minHeight: 44, padding: "8px 18px", background: "#f1f5f9", color: "#334155", border: "1px solid #cbd5e1", borderRadius: 8, fontWeight: 600, cursor: "pointer", fontSize: "0.9rem" }
             }, tr("Close"))
           )
         ),

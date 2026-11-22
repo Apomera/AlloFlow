@@ -3,7 +3,22 @@ const fs=require('fs'),path=require('path'),archive=require('./remediation_epub_
 const cli=process.argv[2],args=process.argv.slice(3),controller=new AbortController();
 let cancelling=false,runner=null,expanded=null;
 const cleanupExpanded=()=>{if(expanded){const dir=expanded;expanded=null;try{fs.rmSync(dir,{recursive:true,force:true});}catch(_){}}};
-const shutdown=async(code)=>{if(cancelling)return;cancelling=true;controller.abort();try{await runner?.close();}catch(_){}cleanupExpanded();process.exit(code);};
+const shutdown=async(code)=>{
+  if(cancelling)return;
+  cancelling=true;
+  controller.abort();
+  try{
+    if(runner&&typeof runner.close==='function'){
+      let timer;
+      await Promise.race([
+        Promise.resolve().then(()=>runner.close()).finally(()=>{if(timer)clearTimeout(timer);}),
+        new Promise(resolve=>{timer=setTimeout(resolve,5000);if(typeof timer.unref==='function')timer.unref();}),
+      ]);
+    }
+  }catch(_){}
+  cleanupExpanded();
+  process.exit(code);
+};
 process.on('message',message=>{if(message?.type==='cancel')shutdown(130);});
 process.on('SIGTERM',()=>shutdown(143));
 process.on('SIGINT',()=>shutdown(130));
@@ -21,7 +36,10 @@ process.on('exit',cleanupExpanded);
   while(path.basename(trustedScriptRoot)!=='node_modules'&&path.dirname(trustedScriptRoot)!==trustedScriptRoot)trustedScriptRoot=path.dirname(trustedScriptRoot);
   if(path.basename(trustedScriptRoot)!=='node_modules')throw Error('Ace bundled script root is unavailable.');
   const puppeteer={...require(puppeteerPath)};
-  require('./remediation_ace_browser.cjs').install(puppeteer,{
+  const aceBrowser=require('./remediation_ace_browser.cjs');
+  const trustedCli=aceBrowser.containedFile(trustedScriptRoot,cli)||aceBrowser.containedFile(path.dirname(trustedScriptRoot),cli);
+  if(!trustedCli)throw Error('Ace CLI entry escaped its bundled runtime.');
+  aceBrowser.install(puppeteer,{
     epubRoot:expanded,trustedScriptRoot
   });
   // Puppeteer 25 exposes an immutable ESM namespace to require(). Ace imports
@@ -31,6 +49,6 @@ process.on('exit',cleanupExpanded);
   require.cache[puppeteerPath].exports=puppeteer;
   runner=require(runnerPath);
   runner.concurrency=1;
-  process.argv=[process.execPath,cli,...args];
-  require(cli);
-})().catch(error=>{process.stderr.write(String(error.message||error).slice(0,1000)+'\n');process.exitCode=1;});
+  process.argv=[process.execPath,trustedCli,...args];
+  require(trustedCli);
+})().catch(error=>{process.stderr.write(String(error.message||error).slice(0,1000)+'\n');shutdown(1);});

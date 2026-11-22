@@ -233,19 +233,30 @@ function _alloReviewCreateSession(input) {
 
 function _alloReviewHydrateSession(value, options) {
   var source = value;
-  if (typeof source === 'string') {
-    if (source.length > _alloReviewMaxJsonChars) source = {};
+  var fromString = typeof source === 'string';
+  if (fromString) {
+    if (source.length > _alloReviewMaxJsonChars) source = null;
     else {
       try {
         source = JSON.parse(source, function (k, v) {
           return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
         });
-      } catch (_) { source = {}; }
+      } catch (_) { source = null; }
     }
   }
-  if (_alloReviewIsSession(source) && (!options || !Object.keys(options).length)) return source;
+  var hasOptions = !!(options && Object.keys(options).length);
+  if (!fromString && !hasOptions && _alloReviewIsSession(source)
+      && Object.isFrozen(source) && Object.isFrozen(source.document)
+      && source.evidence && typeof source.evidence === 'object'
+      && source.workflow && typeof source.workflow === 'object'
+      && Array.isArray(source.ledger) && source.ledger.length <= _alloReviewMaxLedger
+      && Number.isSafeInteger(source.revision) && source.revision >= 0
+      && _alloReviewWorkspaceModes.indexOf(source.workspaceMode) !== -1) {
+    return source;
+  }
   if (_alloReviewIsSession(source)) return _alloReviewCreateSession(_alloReviewSafeAssign({}, source, options || {}));
-  return _alloReviewCreateSession(_alloReviewSafeAssign({}, options || {}, { remediationResult: source || null }));
+  var normalizedResult = (source && typeof source === 'object' && !Array.isArray(source)) ? source : null;
+  return _alloReviewCreateSession(_alloReviewSafeAssign({}, options || {}, { remediationResult: normalizedResult }));
 }
 
 function _alloReviewInvalidateSession(session, reason, options) {
@@ -390,11 +401,12 @@ function _alloReviewCommitTransaction(session, transaction, output) {
 }
 
 function _alloReviewApplyCommand(session, command, output) {
+  var current = _alloReviewHydrateSession(session);
   var transaction = _alloReviewAddCommand(
-    _alloReviewBeginTransaction(session, { label: command && (command.summary || command.type) }),
+    _alloReviewBeginTransaction(current, { label: command && (command.summary || command.type) }),
     command,
   );
-  return _alloReviewCommitTransaction(session, transaction, output);
+  return _alloReviewCommitTransaction(current, transaction, output);
 }
 
 function _alloReviewSummarize(value) {

@@ -47,7 +47,9 @@
     _st.id = 'cellularlab-css';
     _st.textContent = [
       '@keyframes cellularlab-pop { 0% { transform: scale(0.4); opacity: 0.2; } 100% { transform: scale(1); opacity: 1; } }',
+      '@keyframes cellularlab-beacon { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.92; } }',
       '.cellularlab-svg rect.born { animation: cellularlab-pop 220ms ease-out; transform-box: fill-box; transform-origin: center; }',
+      '.cellularlab-beacon-pulse { animation: cellularlab-beacon 2.1s ease-in-out infinite; }',
       '.cellularlab-tab:focus-visible, .cellularlab-route-button:focus-visible { outline: 3px solid #6366f1; outline-offset: 2px; }',
       '#cellularlab-stage:fullscreen { width: 100vw; height: 100vh; border-radius: 0 !important; padding: 24px !important; background: radial-gradient(circle at center, rgba(16,185,129,.18), #020617 70%) !important; }',
       '#cellularlab-stage:fullscreen .cellularlab-svg { max-width: min(92vw, 92vh) !important; max-height: 92vh !important; }',
@@ -58,7 +60,7 @@
       '[data-cell-life-row] > [data-cell-area="stage"] { grid-area: stage; } [data-cell-life-row] > [data-cell-area="transport"] { grid-area: transport; } [data-cell-life-row] > [data-cell-area="stats"] { grid-area: stats; } [data-cell-life-row] > [data-cell-area="cards"] { grid-area: cards; }',
       '@media (max-width: 720px) { [data-cell-life-row] { grid-template-columns: minmax(0, 1fr); grid-template-areas: "transport" "stage" "stats" "cards"; grid-template-rows: auto; } }',
       '[data-cellularlab-tool] summary { cursor: pointer; } [data-cellularlab-tool] summary:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }',
-      '@media (prefers-reduced-motion: reduce) { .cellularlab-svg rect.born { animation: none !important; } [data-cellularlab-tool] * { transition: none !important; } }'
+      '@media (prefers-reduced-motion: reduce) { .cellularlab-svg rect.born, .cellularlab-beacon-pulse { animation: none !important; } [data-cellularlab-tool] * { transition: none !important; } }'
     ].join('\n');
     if (document.head) document.head.appendChild(_st);
   }
@@ -1189,6 +1191,27 @@
     var challengeInitialRef = useRef(null), stageRef = useRef(null);
     var gridRef = useRef(grid), genRef = useRef(gen), historyRef = useRef([]), previousGridRef = useRef(null), rewindingRef = useRef(false);
     var transitionRef = useRef({ born: 0, survived: 0, died: 0 }), transitionHistoryRef = useRef([]);
+    // Zero-GC pre-allocated typed-array phosphor afterglow & age-heat pools
+    var ghostTrailRef = useRef(new Float32Array(ROWS * COLS));
+    var ageHeatRef = useRef(new Uint8Array(ROWS * COLS));
+    function ensureLifePools(total) {
+      if (!ghostTrailRef.current || ghostTrailRef.current.length !== total) ghostTrailRef.current = new Float32Array(total);
+      if (!ageHeatRef.current || ageHeatRef.current.length !== total) ageHeatRef.current = new Uint8Array(total);
+      return { ghost: ghostTrailRef.current, heat: ageHeatRef.current };
+    }
+    function syncLifeHeatFromAges(ages, rows, cols) {
+      var pools = ensureLifePools(rows * cols), heat = pools.heat;
+      for (var r = 0; r < rows; r++) {
+        var rowA = ages && ages[r], base = r * cols;
+        for (var c = 0; c < cols; c++) {
+          var a = rowA ? (rowA[c] | 0) : 0;
+          heat[base + c] = a > 255 ? 255 : (a < 0 ? 0 : a);
+        }
+      }
+    }
+    function clearLifeGhost() {
+      if (ghostTrailRef.current) ghostTrailRef.current.fill(0);
+    }
     gridRef.current = grid; genRef.current = gen;
     // Seeded soups: same seed + density + size = the same soup (re-roll for a new one).
     var sSoupSeed = useState(1); var soupSeed = sSoupSeed[0], setSoupSeed = sSoupSeed[1];
@@ -1494,7 +1517,7 @@
     }
 
     function cloneGrid(g) { return g.map(function (row) { return row.slice(); }); }
-    function resetTimeline() { historyRef.current = []; previousGridRef.current = null; transitionRef.current = { born: 0, survived: 0, died: 0 }; transitionHistoryRef.current = []; setPhaseCursor(null); }
+    function resetTimeline() { historyRef.current = []; previousGridRef.current = null; transitionRef.current = { born: 0, survived: 0, died: 0 }; transitionHistoryRef.current = []; clearLifeGhost(); setPhaseCursor(null); }
     function advanceOne(speakOnExtinction) {
       var current = gridRef.current, currentAges = agesRef.current, next = stepLifeDetailed(current, currentAges, wrap, birthRule, survivalRule);
       historyRef.current.push({ grid: cloneGrid(current), ages: cloneGrid(currentAges), gen: genRef.current, previousGrid: previousGridRef.current ? cloneGrid(previousGridRef.current) : null, transition: Object.assign({}, transitionRef.current), transitionHistory: transitionHistoryRef.current.slice(), popHist: popHistRef.current.slice(), maxPop: maxPopRef.current });
@@ -1502,6 +1525,28 @@
       previousGridRef.current = cloneGrid(current);
       transitionRef.current = { born: next.born, survived: next.survived, died: next.died };
       agesRef.current = next.ages; gridRef.current = next.grid;
+      // Zero-GC update of decaying ghost-afterglow & cell-age phosphor heat buffers
+      var nRows = next.grid.length, nCols = nRows ? next.grid[0].length : 0;
+      var pools = ensureLifePools(nRows * nCols), ghost = pools.ghost, heat = pools.heat;
+      for (var gr = 0; gr < nRows; gr++) {
+        var curRow = current[gr], nxtRow = next.grid[gr], ageRow = next.ages[gr], gBase = gr * nCols;
+        for (var gc = 0; gc < nCols; gc++) {
+          var idx = gBase + gc;
+          if (nxtRow[gc]) {
+            ghost[idx] = 0;
+            var aVal = ageRow[gc] | 0;
+            heat[idx] = aVal > 255 ? 255 : aVal;
+          } else {
+            heat[idx] = 0;
+            if (curRow && curRow[gc]) {
+              ghost[idx] = 1.0;
+            } else if (ghost[idx] > 0) {
+              var decayed = ghost[idx] * 0.66;
+              ghost[idx] = decayed < 0.12 ? 0 : decayed;
+            }
+          }
+        }
+      }
       var nextGen = genRef.current + 1;
       var spatial = populationBounds(next.grid), beforeShape = shapeFingerprint(current), afterShape = shapeFingerprint(next.grid);
       markLooked(startKeyOf(current, wrap, birthRule, survivalRule));
@@ -1523,6 +1568,7 @@
     function restoreLifeSnapshot(snapshot, message) {
       if (!snapshot) return;
       setRunning(false); rewindingRef.current = true; gridRef.current = snapshot.grid; agesRef.current = snapshot.ages; genRef.current = snapshot.gen;
+      clearLifeGhost(); syncLifeHeatFromAges(snapshot.ages, snapshot.grid.length, snapshot.grid[0] ? snapshot.grid[0].length : 0);
       previousGridRef.current = snapshot.previousGrid; transitionRef.current = snapshot.transition; transitionHistoryRef.current = snapshot.transitionHistory;
       popHistRef.current = snapshot.popHist; maxPopRef.current = snapshot.maxPop;
       setGrid(snapshot.grid); setGen(snapshot.gen); setPopHist(snapshot.popHist); setMaxPop(snapshot.maxPop);
@@ -1545,6 +1591,7 @@
       setRunning(false); resetTimeline(); cancelPredict(false);
       if (size) { setLifeSize(size); setCursor(function (cu) { return [Math.min(cu[0], size - 1), Math.min(cu[1], size - 1)]; }); }
       gridRef.current = next; setGrid(next); agesRef.current = ageGridFor(next);
+      syncLifeHeatFromAges(agesRef.current, next.length, next[0] ? next[0].length : 0);
       genRef.current = 0; setGen(0); setMaxPop(countPop(next)); setPopHist([]);
       challengeInitialRef.current = null; startInfoRef.current = info || { source: 'drawn' };
     }
@@ -1599,6 +1646,7 @@
       markLooked(lifeKey(gridRef.current));
       var jumped = lifeRun(gridRef.current, { exactSteps: Math.max(0, steps | 0), wrap: wrap, birth: birthRule, survive: survivalRule }), next = jumped.grid, nextGen = genRef.current + steps;
       setRunning(false); resetTimeline(); gridRef.current = next; agesRef.current = ageGridFor(next); genRef.current = nextGen;
+      syncLifeHeatFromAges(agesRef.current, next.length, next[0] ? next[0].length : 0);
       // The [gen] effect adds the last generation itself.
       maxPopRef.current = Math.max(maxPopRef.current, jumped.peakPop); popHistRef.current = popHistRef.current.concat(jumped.pops).slice(-300);
       setMaxPop(maxPopRef.current); setPopHist(popHistRef.current.slice(0, -1));
@@ -2021,8 +2069,8 @@
           if (gy > 0 && gy < ROWS && gy % majorStep === 0) majorLines += 'M0 ' + (gy * PX) + 'H' + W;
           else minorLines += 'M0 ' + (gy * PX) + 'H' + W;
         }
-        if (minorLines) rects.push(h('path', { key: 'grid', d: minorLines, stroke: contrast ? 'rgba(255,255,255,0.16)' : 'rgba(148,163,184,0.11)', strokeWidth: Math.max(0.4, PX / 18), fill: 'none', style: { pointerEvents: 'none' } }));
-        if (majorLines) rects.push(h('path', { key: 'gridMajor', d: majorLines, stroke: contrast ? 'rgba(255,255,255,0.34)' : 'rgba(52,211,153,0.22)', strokeWidth: Math.max(0.6, PX / 13), fill: 'none', style: { pointerEvents: 'none' } }));
+        if (minorLines) rects.push(h('path', { key: 'grid', d: minorLines, stroke: contrast ? 'rgba(255,255,255,0.28)' : 'rgba(148,163,184,0.11)', strokeWidth: Math.max(contrast ? 0.65 : 0.4, PX / (contrast ? 15 : 18)), fill: 'none', style: { pointerEvents: 'none' } }));
+        if (majorLines) rects.push(h('path', { key: 'gridMajor', d: majorLines, stroke: contrast ? 'rgba(255,255,0,0.62)' : 'rgba(52,211,153,0.22)', strokeWidth: Math.max(contrast ? 0.95 : 0.6, PX / (contrast ? 11 : 13)), fill: 'none', style: { pointerEvents: 'none' } }));
         if (!contrast && lifeSize <= 60 && PX >= 8) {
           var tickArm = Math.min(2.4, PX * 0.22);
           for (var tx = majorStep; tx < COLS; tx += majorStep) for (var ty = majorStep; ty < ROWS; ty += majorStep) {
@@ -2038,17 +2086,23 @@
         track.forEach(function (sample) { var tx = (sample.centerC + 0.5) * PX, ty = (sample.centerR + 0.5) * PX, jump = prior && (Math.abs(sample.centerR - prior.centerR) > ROWS / 3 || Math.abs(sample.centerC - prior.centerC) > COLS / 3); trail += (!prior || jump ? 'M' : 'L') + tx.toFixed(2) + ' ' + ty.toFixed(2); prior = sample; });
         if (track.length > 1) {
           if (!contrast) rects.push(h('path', { key: 'centroidTrailGlow', d: trail, fill: 'none', stroke: 'rgba(251,191,36,0.28)', strokeWidth: Math.max(3.4, PX / 2.2), strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke', style: { pointerEvents: 'none' } }));
-          rects.push(h('path', { key: 'centroidTrail', d: trail, fill: 'none', stroke: '#fbbf24', strokeWidth: Math.max(1.2, PX / 5), strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke', opacity: 0.9, style: { filter: 'drop-shadow(0 0 3px rgba(251,191,36,0.75))', pointerEvents: 'none' } }));
+          rects.push(h('path', { key: 'centroidTrail', d: trail, fill: 'none', stroke: contrast ? '#ffff00' : '#fbbf24', strokeWidth: Math.max(1.2, PX / 5), strokeLinecap: 'round', strokeLinejoin: 'round', vectorEffect: 'non-scaling-stroke', opacity: contrast ? 1 : 0.9, style: { filter: contrast ? 'none' : 'drop-shadow(0 0 3px rgba(251,191,36,0.75))', pointerEvents: 'none' } }));
         }
       }
       var liveBuckets = {}, bucketOrder = [], cellSide = Math.max(1, PX - 1.3), cellRadius = PX >= 9 ? Math.min(2.6, cellSide * 0.22) : (PX >= 7 ? 1.2 : 0), liveCoreD = [], liveLayerIndex = rects.length;
+      var ghostHiD = [], ghostMidD = [], ghostLowD = [], birthHaloD = [], birthCoreD = [], ageHeatD = [];
+      var ghostPool = (!contrast && !explainShown && vizMode !== 'xray' && ghostTrailRef.current && ghostTrailRef.current.length === ROWS * COLS) ? ghostTrailRef.current : null;
+      var heatPool = (!contrast && !explainShown && vizMode !== 'xray' && ageHeatRef.current && ageHeatRef.current.length === ROWS * COLS) ? ageHeatRef.current : null;
+      var ghostFill = lifeHue < 0 ? '#94a3b8' : 'hsl(' + ((lifeHue + 28) % 360) + ',85%,58%)';
+      var heatFill = lifeHue < 0 ? '#cbd5e1' : 'hsl(' + ((lifeHue - 26 + 360) % 360) + ',92%,58%)';
       var exView = explainShown && lifeExplain ? lifeExplain : null, exDie = '', exBorn = '', exNums = !!exView && lifeSize <= 60 && PX >= 8, exSide = Math.max(1, PX - 2);
       for (var r = 0; r < ROWS; r++) for (var c = 0; c < COLS; c++) {
+        var flatIdx = r * COLS + c;
         var n = neighborCount(grid, r, c, wrap), alive = !!grid[r][c], futureAlive = !!(forecastPreview && forecastPreview.grid[r][c]), residency = forecastResidency ? forecastResidency.grid[r][c] : 0;
         if (exView) {
           // Explaining the next step: solid cyan stays, rose outline dies, dashed green is born.
-          var fate = exView.fate[r * COLS + c];
-          if (alive && fate === 'stays') { if (!liveBuckets['ex|stay']) { liveBuckets['ex|stay'] = { fill: '#22d3ee', glow: '', d: [] }; bucketOrder.push('ex|stay'); } liveBuckets['ex|stay'].d.push(cellRectSubpath(c * PX + 0.65, r * PX + 0.65, cellSide, cellRadius)); }
+          var fate = exView.fate[flatIdx];
+          if (alive && fate === 'stays') { if (!liveBuckets['ex|stay']) { liveBuckets['ex|stay'] = { fill: contrast ? '#00ff00' : '#22d3ee', glow: '', d: [] }; bucketOrder.push('ex|stay'); } liveBuckets['ex|stay'].d.push(cellRectSubpath(c * PX + 0.65, r * PX + 0.65, cellSide, cellRadius)); }
           else if (alive) exDie += 'M' + (c * PX + 1) + ' ' + (r * PX + 1) + 'h' + exSide + 'v' + exSide + 'h-' + exSide + 'z';
           else if (fate === 'born') exBorn += 'M' + (c * PX + 1) + ' ' + (r * PX + 1) + 'h' + exSide + 'v' + exSide + 'h-' + exSide + 'z';
           if (exNums && (alive || fate === 'born')) rects.push(h('text', { key: 'ex' + r + '_' + c, x: c * PX + PX / 2, y: r * PX + PX * 0.7, textAnchor: 'middle', fill: alive && fate === 'stays' ? '#0f172a' : '#ffffff', style: { fontSize: Math.max(5, PX * 0.58) + 'px', fontWeight: 900, pointerEvents: 'none' } }, String(n)));
@@ -2056,13 +2110,13 @@
         }
         if (vizMode === 'forecast' && residency) {
           var residencyRatio = residency / forecastHorizon;
-          rects.push(h('rect', { key: 'forecastResidency' + r + '_' + c, 'data-life-forecast-residency': String(residency), x: c * PX + 0.18, y: r * PX + 0.18, width: Math.max(1, PX - 0.36), height: Math.max(1, PX - 0.36), rx: PX > 7 ? 2.4 : 0.8, fill: 'rgba(253,224,71,' + (0.025 + residencyRatio * 0.095).toFixed(3) + ')', stroke: 'rgba(253,224,71,' + (0.16 + residencyRatio * 0.5).toFixed(3) + ')', strokeWidth: Math.max(0.45, PX / 15), style: { filter: residencyRatio > 0.7 ? 'drop-shadow(0 0 ' + Math.max(1, PX / 4) + 'px rgba(253,224,71,0.5))' : 'none', pointerEvents: 'none' } }));
+          rects.push(h('rect', { key: 'forecastResidency' + r + '_' + c, 'data-life-forecast-residency': String(residency), x: c * PX + 0.18, y: r * PX + 0.18, width: Math.max(1, PX - 0.36), height: Math.max(1, PX - 0.36), rx: PX > 7 ? 2.4 : 0.8, fill: 'rgba(253,224,71,' + (0.025 + residencyRatio * 0.095).toFixed(3) + ')', stroke: 'rgba(253,224,71,' + (0.16 + residencyRatio * 0.5).toFixed(3) + ')', strokeWidth: Math.max(0.45, PX / 15), style: { filter: !contrast && residencyRatio > 0.7 ? 'drop-shadow(0 0 ' + Math.max(1, PX / 4) + 'px rgba(253,224,71,0.5))' : 'none', pointerEvents: 'none' } }));
         }
         if (alive) {
           // Live cells are batched into one path per colour (a 120 x 120 soup
           // used to be ~14,000 separate SVG rects, redrawn every generation).
           var cellAge = agesRef.current[r] && agesRef.current[r][c];
-          var fillKey = vizMode === 'forecast' ? (futureAlive ? '#22d3ee' : '#fb7185') : lifeFill(n, cellAge, r, c);
+          var fillKey = vizMode === 'forecast' ? (futureAlive ? (contrast ? '#00ff00' : '#22d3ee') : (contrast ? '#ffff00' : '#fb7185')) : lifeFill(n, cellAge, r, c);
           var glowKey = contrast ? '' : (vizMode === 'forecast' ? (futureAlive ? 'rgba(34,211,238,0.9)' : 'rgba(251,113,133,0.9)') : vizMode === 'field' ? 'rgba(103,232,249,0.9)' : vizMode === 'age' ? fillKey : vizMode === 'change' ? fillKey : vizMode === 'normal' && (n >= 2 && n <= 3 || (cellAge || 1) <= 2) ? stageAccent : '');
           var bucketKey = fillKey + '|' + glowKey;
           if (!liveBuckets[bucketKey]) { liveBuckets[bucketKey] = { fill: fillKey, glow: glowKey, d: [] }; bucketOrder.push(bucketKey); }
@@ -2073,19 +2127,51 @@
             var coreY = r * PX + 0.65 + cellSide * 0.14;
             liveCoreD.push('M' + coreX.toFixed(2) + ' ' + coreY.toFixed(2) + 'h' + coreSide.toFixed(2) + 'v' + (coreSide * 0.72).toFixed(2) + 'h-' + coreSide.toFixed(2) + 'z');
           }
+          // Subtle birth-sparkle micro-halos on newborn cells + cell-age phosphor heatglow on veteran cells
+          if (heatPool && lifeSize <= 80) {
+            var hAge = heatPool[flatIdx] || (cellAge || 0);
+            if (gen > 0 && hAge === 1 && PX >= 6) {
+              var bx0 = c * PX - 0.55, by0 = r * PX - 0.55, bSide = PX + 1.1;
+              birthHaloD.push(cellRectSubpath(bx0, by0, bSide, Math.min(3, bSide * 0.28)));
+              if (PX >= 8) {
+                var bcx = c * PX + PX * 0.5, bcy = r * PX + PX * 0.5, sp = Math.max(1.5, PX * 0.24);
+                birthCoreD.push('M' + (bcx - sp).toFixed(1) + ' ' + bcy.toFixed(1) + 'H' + (bcx + sp).toFixed(1) + 'M' + bcx.toFixed(1) + ' ' + (bcy - sp).toFixed(1) + 'V' + (bcy + sp).toFixed(1));
+              }
+            } else if (hAge >= 4 && (vizMode === 'normal' || vizMode === 'age') && PX >= 6) {
+              ageHeatD.push(cellRectSubpath(c * PX + 0.2, r * PX + 0.2, Math.max(1, PX - 0.4), Math.min(2.6, PX * 0.22)));
+            }
+          }
           if (vizMode === 'forecast' && !futureAlive && PX >= 7) rects.push(h('path', { key: 'forecastDeath' + r + '_' + c, d: 'M' + (c * PX + PX * 0.25) + ' ' + (r * PX + PX * 0.25) + 'L' + (c * PX + PX * 0.75) + ' ' + (r * PX + PX * 0.75) + 'M' + (c * PX + PX * 0.75) + ' ' + (r * PX + PX * 0.25) + 'L' + (c * PX + PX * 0.25) + ' ' + (r * PX + PX * 0.75), stroke: '#ffe4e6', strokeWidth: Math.max(0.8, PX / 9), strokeLinecap: 'round', style: { pointerEvents: 'none' } }));
           if (vizMode === 'xray' && lifeSize <= 60 && PX >= 8) rects.push(h('text', { key: 'n' + r + '_' + c, x: c * PX + PX / 2, y: r * PX + PX * 0.7, textAnchor: 'middle', fill: (parseLifeRule(survivalRule, '23')[n] ? '#ffffff' : '#fee2e2'), style: { fontSize: Math.max(5, PX * 0.58) + 'px', fontWeight: 900, pointerEvents: 'none' } }, String(n)));
-        } else if (vizMode === 'forecast' && futureAlive) {
-          rects.push(h('rect', { key: 'forecastBirth' + r + '_' + c, x: c * PX + 0.9, y: r * PX + 0.9, width: Math.max(1, PX - 1.8), height: Math.max(1, PX - 1.8), rx: PX > 7 ? 2 : 0.7, fill: 'rgba(74,222,128,0.24)', stroke: '#4ade80', strokeWidth: Math.max(0.75, PX / 10), strokeDasharray: PX >= 7 ? '2 1' : undefined, style: { filter: 'drop-shadow(0 0 ' + Math.max(1, PX / 4) + 'px rgba(74,222,128,0.85))', pointerEvents: 'none' } }));
-          if (PX >= 7) rects.push(h('path', { key: 'forecastPlus' + r + '_' + c, d: 'M' + (c * PX + PX * 0.28) + ' ' + (r * PX + PX * 0.5) + 'H' + (c * PX + PX * 0.72) + 'M' + (c * PX + PX * 0.5) + ' ' + (r * PX + PX * 0.28) + 'V' + (r * PX + PX * 0.72), stroke: '#dcfce7', strokeWidth: Math.max(0.8, PX / 9), strokeLinecap: 'round', style: { pointerEvents: 'none' } }));
-        } else if (vizMode === 'change' && previousGridRef.current && previousGridRef.current[r] && previousGridRef.current[r][c]) {
-          rects.push(h('rect', { key: 'gone' + r + '_' + c, x: c * PX + 0.9, y: r * PX + 0.9, width: Math.max(1, PX - 1.8), height: Math.max(1, PX - 1.8), rx: PX > 7 ? 2 : 0.7, fill: 'rgba(248,113,113,0.18)', stroke: '#fb7185', strokeWidth: Math.max(0.65, PX / 11), style: { filter: 'drop-shadow(0 0 ' + Math.max(1, PX / 5) + 'px rgba(251,113,133,0.7))' } }));
-          if (PX >= 7) { rects.push(h('path', { key: 'goneX' + r + '_' + c, d: 'M' + (c * PX + PX * 0.28) + ' ' + (r * PX + PX * 0.28) + 'L' + (c * PX + PX * 0.72) + ' ' + (r * PX + PX * 0.72) + 'M' + (c * PX + PX * 0.72) + ' ' + (r * PX + PX * 0.28) + 'L' + (c * PX + PX * 0.28) + ' ' + (r * PX + PX * 0.72), stroke: '#fecdd3', strokeWidth: Math.max(0.7, PX / 10), strokeLinecap: 'round' })); }
-        } else if (vizMode === 'xray' && lifeSize <= 60 && PX >= 8 && n > 0) {
-          rects.push(h('text', { key: 'd' + r + '_' + c, x: c * PX + PX / 2, y: r * PX + PX * 0.7, textAnchor: 'middle', fill: parseLifeRule(birthRule, '3')[n] ? '#86efac' : 'rgba(148,163,184,0.34)', style: { fontSize: Math.max(5, PX * 0.5) + 'px', fontWeight: 800, pointerEvents: 'none' } }, String(n)));
+        } else {
+          // Soft decaying ghost-afterglow trails for recently vacated cells (zero-GC typed array)
+          if (ghostPool) {
+            var gv = ghostPool[flatIdx];
+            if (gv >= 0.12) {
+              var gInset = gv >= 0.7 ? 1.1 : (gv >= 0.38 ? 1.5 : 1.9);
+              var gSide = Math.max(1, PX - gInset * 2);
+              var gSub = cellRectSubpath(c * PX + gInset, r * PX + gInset, gSide, PX >= 9 ? Math.min(2.2, gSide * 0.26) : 0);
+              if (gv >= 0.7) ghostHiD.push(gSub);
+              else if (gv >= 0.38) ghostMidD.push(gSub);
+              else ghostLowD.push(gSub);
+            }
+          }
+          if (vizMode === 'forecast' && futureAlive) {
+            rects.push(h('rect', { key: 'forecastBirth' + r + '_' + c, x: c * PX + 0.9, y: r * PX + 0.9, width: Math.max(1, PX - 1.8), height: Math.max(1, PX - 1.8), rx: PX > 7 ? 2 : 0.7, fill: 'rgba(74,222,128,0.24)', stroke: '#4ade80', strokeWidth: Math.max(0.75, PX / 10), strokeDasharray: PX >= 7 ? '2 1' : undefined, style: { filter: contrast ? 'none' : 'drop-shadow(0 0 ' + Math.max(1, PX / 4) + 'px rgba(74,222,128,0.85))', pointerEvents: 'none' } }));
+            if (PX >= 7) rects.push(h('path', { key: 'forecastPlus' + r + '_' + c, d: 'M' + (c * PX + PX * 0.28) + ' ' + (r * PX + PX * 0.5) + 'H' + (c * PX + PX * 0.72) + 'M' + (c * PX + PX * 0.5) + ' ' + (r * PX + PX * 0.28) + 'V' + (r * PX + PX * 0.72), stroke: '#dcfce7', strokeWidth: Math.max(0.8, PX / 9), strokeLinecap: 'round', style: { pointerEvents: 'none' } }));
+          } else if (vizMode === 'change' && previousGridRef.current && previousGridRef.current[r] && previousGridRef.current[r][c]) {
+            rects.push(h('rect', { key: 'gone' + r + '_' + c, x: c * PX + 0.9, y: r * PX + 0.9, width: Math.max(1, PX - 1.8), height: Math.max(1, PX - 1.8), rx: PX > 7 ? 2 : 0.7, fill: 'rgba(248,113,113,0.18)', stroke: '#fb7185', strokeWidth: Math.max(0.65, PX / 11), style: { filter: contrast ? 'none' : 'drop-shadow(0 0 ' + Math.max(1, PX / 5) + 'px rgba(251,113,133,0.7))' } }));
+            if (PX >= 7) { rects.push(h('path', { key: 'goneX' + r + '_' + c, d: 'M' + (c * PX + PX * 0.28) + ' ' + (r * PX + PX * 0.28) + 'L' + (c * PX + PX * 0.72) + ' ' + (r * PX + PX * 0.72) + 'M' + (c * PX + PX * 0.72) + ' ' + (r * PX + PX * 0.28) + 'L' + (c * PX + PX * 0.28) + ' ' + (r * PX + PX * 0.72), stroke: '#fecdd3', strokeWidth: Math.max(0.7, PX / 10), strokeLinecap: 'round' })); }
+          } else if (vizMode === 'xray' && lifeSize <= 60 && PX >= 8 && n > 0) {
+            rects.push(h('text', { key: 'd' + r + '_' + c, x: c * PX + PX / 2, y: r * PX + PX * 0.7, textAnchor: 'middle', fill: parseLifeRule(birthRule, '3')[n] ? '#86efac' : 'rgba(148,163,184,0.34)', style: { fontSize: Math.max(5, PX * 0.5) + 'px', fontWeight: 800, pointerEvents: 'none' } }, String(n)));
+          }
         }
       }
       var glowOk = !contrast && lifeSize <= 60 && !(running && lifeSize > 40), exLayers = [], liveLayers = [];
+      if (ghostLowD.length) liveLayers.push(h('path', { key: 'ghostLow', d: ghostLowD.join(''), fill: ghostFill, opacity: 0.11, style: { pointerEvents: 'none' } }));
+      if (ghostMidD.length) liveLayers.push(h('path', { key: 'ghostMid', d: ghostMidD.join(''), fill: ghostFill, opacity: 0.21, style: { pointerEvents: 'none' } }));
+      if (ghostHiD.length) liveLayers.push(h('path', { key: 'ghostHi', d: ghostHiD.join(''), fill: ghostFill, opacity: 0.34, style: { pointerEvents: 'none' } }));
+      if (ageHeatD.length) liveLayers.push(h('path', { key: 'ageHeatAura', d: ageHeatD.join(''), fill: 'none', stroke: heatFill, strokeWidth: Math.max(1.2, PX * 0.22), strokeLinejoin: 'round', opacity: 0.32, style: { pointerEvents: 'none' } }));
       if (exDie) exLayers.push(h('path', { key: 'exDie', 'data-life-explain-layer': 'die', d: exDie, fill: 'rgba(251,113,133,0.28)', stroke: '#fb7185', strokeWidth: Math.max(0.8, PX / 7), style: { pointerEvents: 'none' } }));
       if (exBorn) exLayers.push(h('path', { key: 'exBorn', 'data-life-explain-layer': 'born', d: exBorn, fill: 'rgba(74,222,128,0.18)', stroke: '#4ade80', strokeWidth: Math.max(0.8, PX / 7), strokeDasharray: PX >= 7 ? '2 1.5' : undefined, style: { pointerEvents: 'none' } }));
       bucketOrder.forEach(function (bk, bi) {
@@ -2097,6 +2183,12 @@
       });
       if (liveCoreD.length) {
         liveLayers.push(h('path', { key: 'liveSpecularCore', d: liveCoreD.join(''), fill: 'rgba(255,255,255,0.42)', style: { pointerEvents: 'none' } }));
+      }
+      if (birthHaloD.length) {
+        liveLayers.push(h('path', { key: 'birthSparkleHalo', d: birthHaloD.join(''), fill: 'none', stroke: '#ecfdf5', strokeWidth: Math.max(1.1, PX * 0.16), strokeLinejoin: 'round', opacity: 0.68, style: { pointerEvents: 'none' } }));
+      }
+      if (birthCoreD.length) {
+        liveLayers.push(h('path', { key: 'birthSparkleCore', d: birthCoreD.join(''), fill: 'none', stroke: '#ffffff', strokeWidth: Math.max(0.9, PX * 0.12), strokeLinecap: 'round', opacity: 0.85, style: { pointerEvents: 'none' } }));
       }
       rects.splice.apply(rects, [liveLayerIndex, 0].concat(liveLayers, exLayers));
       if (vizMode === 'forecast' && !exView && forecastMotion && forecastMotion.points.length) {
@@ -2120,15 +2212,16 @@
         });
       }      if (vizMode === 'field' && scan) {
         var bx = scan.minC * PX + 0.45, by = scan.minR * PX + 0.45, bw = scan.width * PX - 0.9, bh = scan.height * PX - 0.9, cx = (scan.centerC + 0.5) * PX, cy = (scan.centerR + 0.5) * PX, arm = Math.max(4, PX * 0.8);
-        rects.push(h('rect', { key: 'scanBounds', x: bx, y: by, width: bw, height: bh, rx: Math.max(2, PX / 2), fill: 'rgba(34,211,238,0.04)', stroke: '#22d3ee', strokeWidth: Math.max(1.1, PX / 7), strokeDasharray: Math.max(3, PX / 2) + ' ' + Math.max(2, PX / 3), vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 5px rgba(34,211,238,0.75))', pointerEvents: 'none' } }));
-        rects.push(h('circle', { key: 'scanCenterOuter', cx: cx, cy: cy, r: Math.max(3.5, PX * 0.55), fill: 'rgba(251,191,36,0.12)', stroke: '#fbbf24', strokeWidth: Math.max(1, PX / 8), vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 5px rgba(251,191,36,0.9))', pointerEvents: 'none' } }));
-        rects.push(h('path', { key: 'scanCenterCross', d: 'M' + (cx - arm) + ' ' + cy + 'H' + (cx + arm) + 'M' + cx + ' ' + (cy - arm) + 'V' + (cy + arm), stroke: '#fde68a', strokeWidth: Math.max(0.9, PX / 9), vectorEffect: 'non-scaling-stroke', style: { pointerEvents: 'none' } }));
-        if (PX >= 7) rects.push(h('text', { key: 'scanLabel', x: Math.min(W - 4, bx + 3), y: Math.max(8, by - 3), fill: '#a5f3fc', style: { fontSize: Math.max(6, PX * 0.55) + 'px', fontWeight: 900, pointerEvents: 'none', filter: 'drop-shadow(0 1px 2px #020617)' } }, scan.width + 'x' + scan.height + ' · ' + Math.round(scan.density * 100) + '%'));
+        rects.push(h('rect', { key: 'scanBounds', x: bx, y: by, width: bw, height: bh, rx: Math.max(2, PX / 2), fill: contrast ? 'none' : 'rgba(34,211,238,0.04)', stroke: contrast ? '#00ff00' : '#22d3ee', strokeWidth: Math.max(1.1, PX / 7), strokeDasharray: Math.max(3, PX / 2) + ' ' + Math.max(2, PX / 3), vectorEffect: 'non-scaling-stroke', style: { filter: contrast ? 'none' : 'drop-shadow(0 0 5px rgba(34,211,238,0.75))', pointerEvents: 'none' } }));
+        if (!contrast) rects.push(h('circle', { key: 'scanBeaconHalo', className: 'cellularlab-beacon-pulse', cx: cx, cy: cy, r: Math.max(7, PX * 1.15), fill: 'rgba(251,191,36,0.16)', stroke: 'rgba(253,224,71,0.55)', strokeWidth: Math.max(0.8, PX / 11), vectorEffect: 'non-scaling-stroke', style: { pointerEvents: 'none' } }));
+        rects.push(h('circle', { key: 'scanCenterOuter', cx: cx, cy: cy, r: Math.max(3.5, PX * 0.55), fill: contrast ? 'none' : 'rgba(251,191,36,0.12)', stroke: contrast ? '#ffff00' : '#fbbf24', strokeWidth: Math.max(1, PX / 8), vectorEffect: 'non-scaling-stroke', style: { filter: contrast ? 'none' : 'drop-shadow(0 0 5px rgba(251,191,36,0.9))', pointerEvents: 'none' } }));
+        rects.push(h('path', { key: 'scanCenterCross', d: 'M' + (cx - arm) + ' ' + cy + 'H' + (cx + arm) + 'M' + cx + ' ' + (cy - arm) + 'V' + (cy + arm), stroke: contrast ? '#ffff00' : '#fde68a', strokeWidth: Math.max(0.9, PX / 9), vectorEffect: 'non-scaling-stroke', style: { pointerEvents: 'none' } }));
+        if (PX >= 7) rects.push(h('text', { key: 'scanLabel', x: Math.min(W - 4, bx + 3), y: Math.max(8, by - 3), fill: contrast ? '#ffff00' : '#a5f3fc', style: { fontSize: Math.max(6, PX * 0.55) + 'px', fontWeight: 900, pointerEvents: 'none', filter: contrast ? 'none' : 'drop-shadow(0 1px 2px #020617)' } }, scan.width + 'x' + scan.height + ' · ' + Math.round(scan.density * 100) + '%'));
       }
-      if (pop === 0) rects.push(h('text', { key: 'empty', x: W / 2, y: H / 2, textAnchor: 'middle', fill: '#cbd5e1', style: { fontSize: Math.max(9, Math.min(14, W / 30)) + 'px', fontStyle: 'italic' } }, t('stem.cellular.grid_empty_hint', 'Draw cells, choose a pattern, or make a random soup')));
-      var curX = cursor[1] * PX, curY = cursor[0] * PX, curInk = contrast ? C.cursor : (brush === 0 ? '#fb7185' : C.cursor);
+      if (pop === 0) rects.push(h('text', { key: 'empty', x: W / 2, y: H / 2, textAnchor: 'middle', fill: contrast ? '#ffff00' : '#cbd5e1', style: { fontSize: Math.max(9, Math.min(14, W / 30)) + 'px', fontStyle: 'italic' } }, t('stem.cellular.grid_empty_hint', 'Draw cells, choose a pattern, or make a random soup')));
+      var curX = cursor[1] * PX, curY = cursor[0] * PX, curInk = contrast ? '#ffff00' : (brush === 0 ? '#fb7185' : C.cursor);
       if (!contrast) {
-        rects.push(h('circle', { key: 'cursorHalo', cx: curX + PX / 2, cy: curY + PX / 2, r: Math.max(PX * 1.15, 10), fill: 'url(#cell-cursor-halo)', style: { pointerEvents: 'none' } }));
+        rects.push(h('circle', { key: 'cursorHalo', className: 'cellularlab-beacon-pulse', cx: curX + PX / 2, cy: curY + PX / 2, r: Math.max(PX * 1.15, 10), fill: 'url(#cell-cursor-halo)', style: { pointerEvents: 'none' } }));
         if (PX >= 8) {
           var brk = Math.max(2.6, PX * 0.32), padB = 2.2;
           var brkD = 'M' + (curX - padB) + ' ' + (curY - padB + brk) + 'V' + (curY - padB) + 'H' + (curX - padB + brk)
@@ -2138,7 +2231,7 @@
           rects.push(h('path', { key: 'cursorBrackets', d: brkD, fill: 'none', stroke: curInk, strokeWidth: Math.max(1.0, PX / 10), strokeLinecap: 'round', opacity: 0.78, style: { pointerEvents: 'none' } }));
         }
       }
-      rects.push(h('rect', { key: 'cursor', x: curX, y: curY, width: PX, height: PX, fill: 'none', stroke: curInk, strokeWidth: Math.max(1.4, PX / 7), rx: 2, style: { pointerEvents: 'none', filter: 'drop-shadow(0 0 5px ' + curInk + ')' } }));
+      rects.push(h('rect', { key: 'cursor', x: curX, y: curY, width: PX, height: PX, fill: 'none', stroke: curInk, strokeWidth: Math.max(contrast ? 2.1 : 1.4, PX / 7), rx: contrast ? 0 : 2, style: { pointerEvents: 'none', filter: contrast ? 'none' : 'drop-shadow(0 0 5px ' + curInk + ')' } }));
       // The picture is aria-hidden; the focusable wrapper is a real grid whose
       // ONE rendered gridcell (the cursor cell) is its aria-activedescendant,
       // so the grid is one tab stop however large it is.
@@ -2607,9 +2700,9 @@
       causeParts.push(fmt(t('stem.cellular.ca_transition', 'This cell: {label}.'), { label: caTransitionWords(caSelectedTransition) }));
       var causeText = causeParts.join(' ');
       var rects = [h('desc', { key: 'desc', id: 'ca-diagram-desc' }, causeText + ' ' + t('stem.cellular.ca_keys', 'Arrow keys move between cells, Page Up and Page Down jump ten generations, and Home and End go to the first and last generation.')), caRowsEl];
-      if (caWrap) rects.push(h('path', { key: 'boundaryRails', d: 'M1 0V' + H + 'M' + (W - 1) + ' 0V' + H, fill: 'none', stroke: '#c4b5fd', strokeWidth: 1.5, strokeDasharray: '5 3', vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 4px rgba(196,181,253,0.75))', pointerEvents: 'none' } }));
-      else rects.push(h('path', { key: 'boundaryRails', d: 'M1 0V' + H + 'M' + (W - 1) + ' 0V' + H, fill: 'none', stroke: '#fb7185', strokeWidth: 1.3, vectorEffect: 'non-scaling-stroke', opacity: 0.75, style: { pointerEvents: 'none' } }));
-      rects.push(h('rect', { key: 'inspectRow', x: 0.7, y: caInspectRow * CA_PX + 0.7, width: W - 1.4, height: CA_PX - 1.4, fill: 'rgba(253,224,71,0.055)', stroke: 'none', style: { pointerEvents: 'none' } }));
+      if (caWrap) rects.push(h('path', { key: 'boundaryRails', d: 'M1 0V' + H + 'M' + (W - 1) + ' 0V' + H, fill: 'none', stroke: contrast ? '#ffff00' : '#c4b5fd', strokeWidth: 1.5, strokeDasharray: '5 3', vectorEffect: 'non-scaling-stroke', style: { filter: contrast ? 'none' : 'drop-shadow(0 0 4px rgba(196,181,253,0.75))', pointerEvents: 'none' } }));
+      else rects.push(h('path', { key: 'boundaryRails', d: 'M1 0V' + H + 'M' + (W - 1) + ' 0V' + H, fill: 'none', stroke: contrast ? '#ffff00' : '#fb7185', strokeWidth: 1.3, vectorEffect: 'non-scaling-stroke', opacity: contrast ? 1 : 0.75, style: { pointerEvents: 'none' } }));
+      rects.push(h('rect', { key: 'inspectRow', x: 0.7, y: caInspectRow * CA_PX + 0.7, width: W - 1.4, height: CA_PX - 1.4, fill: contrast ? 'rgba(255,255,0,0.14)' : 'rgba(253,224,71,0.065)', stroke: 'none', style: { pointerEvents: 'none' } }));
       if (caInspectRow > 0 && caTemporalChange.count) {
         rects.push(h('rect', { key: 'temporalChangeBand', 'data-ca-temporal-change-band': String(caTemporalChange.count), x: 0, y: caInspectRow * CA_PX, width: W, height: CA_PX, fill: 'rgba(251,113,133,' + (0.035 + caTemporalChange.rate * 0.11).toFixed(3) + ')', stroke: '#fb7185', strokeWidth: 0.65, vectorEffect: 'non-scaling-stroke', opacity: 0.82, style: { pointerEvents: 'none' } }));
         caTemporalChange.cells.forEach(function (col) { rects.push(h('rect', { key: 'temporalChange' + col, 'data-ca-temporal-change-cell': String(col), x: col * CA_PX + 0.55, y: caInspectRow * CA_PX + 0.55, width: CA_PX - 1.1, height: CA_PX - 1.1, rx: 1, fill: 'none', stroke: '#fb7185', strokeWidth: 1.05, vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 2px rgba(251,113,133,0.8))', pointerEvents: 'none' } })); });
@@ -2647,7 +2740,8 @@
       }
       rects.push(h('g', { key: 'selectedCellRow', role: 'row' },
         h('g', { id: 'ca-diagram-cell-' + caInspectRow + '-' + caInspectCol, role: 'gridcell', 'aria-selected': 'true', 'aria-label': causeText, 'data-ca-selected-row': String(caInspectRow), 'data-ca-selected-col': String(caInspectCol) },
-          h('circle', { cx: selectedX, cy: selectedY, r: CA_PX * 1.18, fill: 'rgba(253,224,71,0.12)', stroke: '#fde047', strokeWidth: 1.7, vectorEffect: 'non-scaling-stroke', style: { filter: 'drop-shadow(0 0 6px rgba(253,224,71,0.95))', pointerEvents: 'none' } }),
+          !contrast && h('circle', { className: 'cellularlab-beacon-pulse', cx: selectedX, cy: selectedY, r: CA_PX * 2.1, fill: 'rgba(253,224,71,0.14)', stroke: 'rgba(253,224,71,0.45)', strokeWidth: 0.9, vectorEffect: 'non-scaling-stroke', style: { pointerEvents: 'none' } }),
+          h('circle', { cx: selectedX, cy: selectedY, r: CA_PX * 1.18, fill: contrast ? 'none' : 'rgba(253,224,71,0.12)', stroke: contrast ? '#ffff00' : '#fde047', strokeWidth: contrast ? 2 : 1.7, vectorEffect: 'non-scaling-stroke', style: { filter: contrast ? 'none' : 'drop-shadow(0 0 6px rgba(253,224,71,0.95))', pointerEvents: 'none' } }),
           h('rect', { x: caInspectCol * CA_PX + 0.55, y: caInspectRow * CA_PX + 0.55, width: CA_PX - 1.1, height: CA_PX - 1.1, rx: 1, fill: caCause && caCause.output ? 'rgba(253,224,71,0.38)' : 'rgba(253,224,71,0.08)', stroke: '#fde047', strokeWidth: 1.6, vectorEffect: 'non-scaling-stroke', style: { pointerEvents: 'none' } }),
           h('g', { 'data-ca-selected-transition': caSelectedTransition.kind, 'data-from': caSelectedTransition.previous == null ? 'seed' : String(caSelectedTransition.previous), 'data-to': String(caSelectedTransition.current), 'aria-hidden': 'true', style: { pointerEvents: 'none' } },
             caSelectedTransition.kind === 'birth' ? h('path', { d: 'M' + (selectedX - 2) + ' ' + selectedY + 'H' + (selectedX + 2) + 'M' + selectedX + ' ' + (selectedY - 2) + 'V' + (selectedY + 2), stroke: '#4ade80', strokeWidth: 1.5, strokeLinecap: 'round', vectorEffect: 'non-scaling-stroke' }) :
@@ -3598,16 +3692,35 @@
       if (v.traffic) {
         var rows = v.traffic.rows, W2 = 80 * 5, H2 = rows.length * 5, d = '';
         rows.forEach(function (row, r) { row.forEach(function (x, c) { if (x) d += 'M' + (c * 5) + ' ' + (r * 5) + 'h5v5h-5z'; }); });
-        return h('figure', { style: { margin: 0 } }, h('svg', { viewBox: '0 0 ' + W2 + ' ' + H2, width: '100%', role: 'img', 'aria-label': fmt(t('stem.cellular.tf_svg_aria', 'Space-time diagram of {cars} cars on an 80-cell ring road over {n} steps; time runs downward and cars move right. Jams show as diagonal bands running left.'), { cars: v.traffic.cars, n: rows.length }), style: { maxWidth: '480px', display: 'block', background: dark ? '#020617' : '#f8fafc', border: '1px solid ' + C.border, borderRadius: '8px' } }, h('path', { d: d, fill: dark ? '#fbbf24' : '#b45309' })),
+        return h('figure', { style: { margin: 0 } }, h('svg', { viewBox: '0 0 ' + W2 + ' ' + H2, width: '100%', role: 'img', 'aria-label': fmt(t('stem.cellular.tf_svg_aria', 'Space-time diagram of {cars} cars on an 80-cell ring road over {n} steps; time runs downward and cars move right. Jams show as diagonal bands running left.'), { cars: v.traffic.cars, n: rows.length }), style: { maxWidth: '480px', display: 'block', background: contrast ? '#000000' : (dark ? '#020617' : '#f8fafc'), border: (contrast ? '2px solid #ffff00' : '1px solid ' + C.border), borderRadius: '8px' } },
+          !contrast && dark && d && h('path', { d: d, fill: 'none', stroke: 'rgba(251,191,36,0.34)', strokeWidth: 2.4, strokeLinejoin: 'round' }),
+          h('path', { d: d, fill: contrast ? '#ffff00' : (dark ? '#fbbf24' : '#b45309') })),
           h('figcaption', { style: { fontSize: '11px', color: C.sub, marginTop: '4px' } }, t('stem.cellular.tf_caption', 'Each row is one step; each dot is a car.')));
       }
-      var st = v.st, size = st.size, cellPx = 10, colours = st.model === 'forest' ? { 1: dark ? '#22c55e' : '#15803d', 2: '#f97316', 3: dark ? '#a8a29e' : '#78716c' } : { 1: '#ef4444', 2: dark ? '#60a5fa' : '#2563eb', 3: dark ? '#a3e635' : '#4d7c0f' };
-      var paths = {}; st.cells.forEach(function (x, i) { if (!x) return; var r = Math.floor(i / size), c = i % size; paths[x] = (paths[x] || '') + 'M' + (c * cellPx) + ' ' + (r * cellPx) + 'h' + cellPx + 'v' + cellPx + 'h-' + cellPx + 'z'; });
+      var st = v.st, size = st.size, cellPx = 10;
+      var colours = st.model === 'forest'
+        ? (contrast ? { 1: '#00ff00', 2: '#ffff00', 3: '#ffffff' } : { 1: dark ? '#22c55e' : '#15803d', 2: '#f97316', 3: dark ? '#a8a29e' : '#78716c' })
+        : (contrast ? { 1: '#ffff00', 2: '#00ff00', 3: '#ffffff' } : { 1: '#ef4444', 2: dark ? '#60a5fa' : '#2563eb', 3: dark ? '#a3e635' : '#4d7c0f' });
+      var paths = {}, emberCore = '';
+      st.cells.forEach(function (x, i) {
+        if (!x) return;
+        var r = Math.floor(i / size), c = i % size;
+        paths[x] = (paths[x] || '') + 'M' + (c * cellPx) + ' ' + (r * cellPx) + 'h' + cellPx + 'v' + cellPx + 'h-' + cellPx + 'z';
+        if (!contrast && ((st.model === 'forest' && x === 2) || (st.model === 'epidemic' && x === 1))) {
+          emberCore += 'M' + (c * cellPx + 2.8) + ' ' + (r * cellPx + 2.8) + 'h4.4v4.4h-4.4z';
+        }
+      });
       var sum = st.model === 'forest' ? forestSummary(st) : epidemicSummary(st);
       var desc = st.model === 'forest' ? fmt(t('stem.cellular.ff_desc', 'Step {step}: {burning} trees burning, {burnt} of {trees} trees burnt so far. {crossed}'), { step: st.step, burning: st.burning, burnt: sum.burnt, trees: sum.trees, crossed: sum.crossed ? t('stem.cellular.ff_reached', 'The fire has reached the right edge.') : t('stem.cellular.ff_not_reached', 'The fire has not reached the right edge.') }) : fmt(t('stem.cellular.ep_desc', 'Step {step}: {sick} sick now, {ever} caught it so far, {vacc} vaccinated.'), { step: st.step, sick: st.infected, ever: st.everInfected, vacc: st.vaccinated });
       var legend = st.model === 'forest' ? [[1, t('stem.cellular.ff_tree', 'tree')], [2, t('stem.cellular.ff_burning', 'burning')], [3, t('stem.cellular.ff_burnt', 'burnt')]] : [[1, t('stem.cellular.ep_sick', 'sick')], [2, t('stem.cellular.ep_recovered', 'recovered')], [3, t('stem.cellular.ep_vaccinated', 'vaccinated')]];
+      var activeKey = st.model === 'forest' ? '2' : '1';
+      var activeHalo = st.model === 'forest' ? 'rgba(251,146,60,0.46)' : 'rgba(248,113,113,0.44)';
+      var activeCore = st.model === 'forest' ? '#fef08a' : '#fecaca';
       return h('figure', { style: { margin: 0 } },
-        h('svg', { viewBox: '0 0 ' + (size * cellPx) + ' ' + (size * cellPx), width: '100%', 'aria-hidden': 'true', style: { maxWidth: '360px', display: 'block', background: dark ? '#0f172a' : '#fafaf9', border: '1px solid ' + C.border, borderRadius: '8px' } }, Object.keys(paths).map(function (k) { return h('path', { key: k, d: paths[k], fill: colours[k] }); })),
+        h('svg', { viewBox: '0 0 ' + (size * cellPx) + ' ' + (size * cellPx), width: '100%', 'aria-hidden': 'true', style: { maxWidth: '360px', display: 'block', background: contrast ? '#000000' : (dark ? '#0f172a' : '#fafaf9'), border: (contrast ? '2px solid #ffff00' : '1px solid ' + C.border), borderRadius: '8px' } },
+          !contrast && paths[activeKey] && h('path', { key: 'activeHalo', d: paths[activeKey], fill: 'none', stroke: activeHalo, strokeWidth: 4.5, strokeLinejoin: 'round' }),
+          Object.keys(paths).map(function (k) { return h('path', { key: k, d: paths[k], fill: colours[k] }); }),
+          !contrast && emberCore && h('path', { key: 'activeCore', d: emberCore, fill: activeCore, opacity: 0.85 })),
         h('figcaption', { style: { fontSize: '11px', color: C.text, marginTop: '4px' } },
           h('span', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '3px' } }, legend.map(function (l) { return h('span', { key: l[0], style: { display: 'inline-flex', gap: '4px', alignItems: 'center' } }, h('span', { 'aria-hidden': 'true', style: { width: '10px', height: '10px', borderRadius: '2px', background: colours[l[0]] } }), l[1]); })),
           h('span', { 'aria-live': modelPlaying ? 'off' : 'polite' }, desc)));
@@ -3737,6 +3850,16 @@
     var sFamSeed = useState(1); var famSeed = sFamSeed[0], setFamSeed = sFamSeed[1];
     var sFamCells = useState(function () { return famSoup(FAM_SIZE, FAM_SIZE, 8, 0.5, 1); }); var famCells = sFamCells[0], setFamCells = sFamCells[1];
     var famCellsRef = useRef(famCells); famCellsRef.current = famCells;
+    var famGhostRef = useRef(new Float32Array(FAM_SIZE * FAM_SIZE));
+    function updateFamGhost(prevCells, nextCells) {
+      var gh = famGhostRef.current;
+      if (!gh || gh.length !== nextCells.length) return;
+      for (var fi = 0; fi < nextCells.length; fi++) {
+        if (nextCells[fi]) { gh[fi] = 0; }
+        else if (prevCells && prevCells[fi]) { gh[fi] = 1.0; }
+        else if (gh[fi] > 0) { var dec = gh[fi] * 0.64; gh[fi] = dec < 0.14 ? 0 : dec; }
+      }
+    }
     var sFamGen = useState(0); var famGen = sFamGen[0], setFamGen = sFamGen[1];
     var sFamRun = useState(false); var famRunning = sFamRun[0], setFamRunning = sFamRun[1];
     var sFamCursor = useState([24, 24]); var famCursor = sFamCursor[0], setFamCursor = sFamCursor[1];
@@ -3749,7 +3872,9 @@
       var id = null, alive = true;
       function tick() {
         if (!alive) return;
-        var next = famStep(famCellsRef.current, FAM_SIZE, FAM_SIZE, famRef.current, true), ct = famCounts(next);
+        var prev = famCellsRef.current;
+        var next = famStep(prev, FAM_SIZE, FAM_SIZE, famRef.current, true), ct = famCounts(next);
+        updateFamGhost(prev, next);
         famCellsRef.current = next; setFamCells(next); setFamGen(function (g) { return g + 1; });
         if (!ct.alive && !ct.dying) { setFamRunning(false); announce(t('stem.cellular.sr_all_died_paused', 'All cells died. Paused.')); return; }
         id = setTimeout(tick, prefersReducedMotion() ? 1000 : 110);
@@ -3796,18 +3921,23 @@
     }
     function famLoadSeed(seed) {
       var s = normSeed(seed), c = famSoup(FAM_SIZE, FAM_SIZE, 8, 0.5, s);
+      if (famGhostRef.current) famGhostRef.current.fill(0);
       setFamSeed(s); famCellsRef.current = c; setFamCells(c); setFamGen(0); setFamRunning(false);
       return s;
     }
     function famNewPatch() { var s = famLoadSeed(freshSeed()); announce(fmt(t('stem.cellular.sr_fam_patch', 'New random 8 × 8 patch, seed {seed}.'), { seed: s })); }
-    function famClear() { var c = new Uint8Array(FAM_SIZE * FAM_SIZE); famCellsRef.current = c; setFamCells(c); setFamGen(0); setFamRunning(false); announce(t('stem.cellular.sr_cleared', 'Grid cleared.')); }
+    function famClear() { var c = new Uint8Array(FAM_SIZE * FAM_SIZE); if (famGhostRef.current) famGhostRef.current.fill(0); famCellsRef.current = c; setFamCells(c); setFamGen(0); setFamRunning(false); announce(t('stem.cellular.sr_cleared', 'Grid cleared.')); }
     function famWords(cells, g) {
       var ct = famCounts(cells);
       return famR.states > 2 ? fmt(t('stem.cellular.fam_words_dying', 'Generation {g}: {a} alive cells and {d} dying cells.'), { g: g, a: ct.alive, d: ct.dying }) : fmt(t('stem.cellular.fam_words', 'Generation {g}: {a} alive cells.'), { g: g, a: ct.alive });
     }
     function famAdvance(n) {
       var cur = famCellsRef.current;
-      for (var i = 0; i < n; i++) cur = famStep(cur, FAM_SIZE, FAM_SIZE, famR, true);
+      for (var i = 0; i < n; i++) {
+        var nxt = famStep(cur, FAM_SIZE, FAM_SIZE, famR, true);
+        updateFamGhost(cur, nxt);
+        cur = nxt;
+      }
       famCellsRef.current = cur; setFamCells(cur); setFamGen(famGen + n);
       announce(famWords(cur, famGen + n));
     }
@@ -3852,17 +3982,37 @@
       if (r < 0 || r >= FAM_SIZE || c < 0 || c >= FAM_SIZE) return;
       setFamCursor([r, c]); famSetCell(r, c, famCells[r * FAM_SIZE + c] ? 0 : 1);
     }
-    var FAM_COLOURS = contrast ? ['', dark ? '#ffffff' : '#ffffff', '#fde047', '#fb923c', '#f472b6'] : ['', '#34d399', '#60a5fa', '#a78bfa', '#f472b6'];
+    var FAM_COLOURS = contrast ? ['', '#ffffff', '#ffff00', '#00ff00', '#ff00ff'] : ['', '#34d399', '#60a5fa', '#a78bfa', '#f472b6'];
     function renderFamBoard() {
-      var W = FAM_SIZE * FAM_PX, paths = {}, side = FAM_PX - 1;
-      for (var i = 0; i < famCells.length; i++) { var s = famCells[i]; if (!s) continue; var x = (i % FAM_SIZE) * FAM_PX + 0.5, y = Math.floor(i / FAM_SIZE) * FAM_PX + 0.5; paths[s] = (paths[s] || '') + 'M' + x + ' ' + y + 'h' + side + 'v' + side + 'h-' + side + 'z'; }
-      var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: W, height: W, fill: '#020617' })];
+      var W = FAM_SIZE * FAM_PX, paths = {}, side = FAM_PX - 1, ghostHi = '', ghostLo = '', coreD = '';
+      var gh = !contrast ? famGhostRef.current : null;
+      for (var i = 0; i < famCells.length; i++) {
+        var s = famCells[i], x = (i % FAM_SIZE) * FAM_PX + 0.5, y = Math.floor(i / FAM_SIZE) * FAM_PX + 0.5;
+        if (s) {
+          paths[s] = (paths[s] || '') + 'M' + x + ' ' + y + 'h' + side + 'v' + side + 'h-' + side + 'z';
+          if (!contrast && s === 1) coreD += 'M' + (x + 2.2) + ' ' + (y + 2.2) + 'h3.4v2.6h-3.4z';
+        } else if (gh && gh[i] >= 0.14) {
+          var sub = 'M' + (x + 1.2) + ' ' + (y + 1.2) + 'h' + (side - 2.4) + 'v' + (side - 2.4) + 'h-' + (side - 2.4) + 'z';
+          if (gh[i] >= 0.5) ghostHi += sub; else ghostLo += sub;
+        }
+      }
+      var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: W, height: W, fill: contrast ? '#000000' : '#020617' })];
+      // Crisp grid guide lines (sharper in High-Contrast)
+      var famGridD = '';
+      for (var g = 4; g < FAM_SIZE; g += 4) {
+        famGridD += 'M' + (g * FAM_PX) + ' 0V' + W + 'M0 ' + (g * FAM_PX) + 'H' + W;
+      }
+      if (famGridD) kids.push(h('path', { key: 'fgrid', d: famGridD, stroke: contrast ? 'rgba(255,255,255,0.28)' : 'rgba(148,163,184,0.12)', strokeWidth: contrast ? 0.9 : 0.6, fill: 'none', style: { pointerEvents: 'none' } }));
+      if (ghostLo) kids.push(h('path', { key: 'fghLo', d: ghostLo, fill: '#38bdf8', opacity: 0.12, style: { pointerEvents: 'none' } }));
+      if (ghostHi) kids.push(h('path', { key: 'fghHi', d: ghostHi, fill: '#34d399', opacity: 0.24, style: { pointerEvents: 'none' } }));
+      if (!contrast && paths['1']) kids.push(h('path', { key: 's1glow', d: paths['1'], fill: 'none', stroke: 'rgba(52,211,153,0.34)', strokeWidth: 2.8, strokeLinejoin: 'round', style: { pointerEvents: 'none' } }));
       Object.keys(paths).forEach(function (k) { kids.push(h('path', { key: 's' + k, 'data-fam-state': k, d: paths[k], fill: FAM_COLOURS[Math.min(4, Number(k))] })); });
-      kids.push(h('rect', { key: 'cursor', x: famCursor[1] * FAM_PX, y: famCursor[0] * FAM_PX, width: FAM_PX, height: FAM_PX, fill: 'none', stroke: C.cursor, strokeWidth: 2, pointerEvents: 'none' }));
+      if (coreD) kids.push(h('path', { key: 'fcore', d: coreD, fill: 'rgba(255,255,255,0.45)', style: { pointerEvents: 'none' } }));
+      kids.push(h('rect', { key: 'cursor', x: famCursor[1] * FAM_PX, y: famCursor[0] * FAM_PX, width: FAM_PX, height: FAM_PX, fill: 'none', stroke: contrast ? '#ffff00' : C.cursor, strokeWidth: 2, pointerEvents: 'none' }));
       var activeId = 'cell-fam-active-cell';
       return h('div', { style: { maxWidth: '480px', width: '100%' } },
         h('div', { role: 'grid', tabIndex: 0, 'data-fam-grid': 'true', 'aria-label': fmt(t('stem.cellular.fam_grid_label', 'Rule-family grid, {n} by {n}, edges wrap. Arrow keys move the cursor; Space toggles a cell.'), { n: FAM_SIZE }), 'aria-describedby': 'cell-fam-desc', 'aria-rowcount': FAM_SIZE, 'aria-colcount': FAM_SIZE, 'aria-activedescendant': activeId, onKeyDown: onFamKeyDown, style: { width: '100%', borderRadius: '12px' } },
-          h('svg', { ref: famSvgRef, viewBox: '0 0 ' + W + ' ' + W, width: '100%', 'aria-hidden': 'true', focusable: 'false', onClick: onFamClick, style: { display: 'block', width: '100%', height: 'auto', borderRadius: '12px', border: '1px solid ' + C.border, cursor: 'crosshair' } }, kids),
+          h('svg', { ref: famSvgRef, viewBox: '0 0 ' + W + ' ' + W, width: '100%', 'aria-hidden': 'true', focusable: 'false', onClick: onFamClick, style: { display: 'block', width: '100%', height: 'auto', borderRadius: '12px', border: (contrast ? '2px solid #ffff00' : '1px solid ' + C.border), cursor: 'crosshair' } }, kids),
           h('div', { role: 'row', 'aria-rowindex': famCursor[0] + 1, style: SR_ONLY },
             h('div', { role: 'gridcell', id: activeId, 'aria-colindex': famCursor[1] + 1, 'aria-selected': 'true' }, famCellWords(famCursor[0], famCursor[1])))),
         h('p', { id: 'cell-fam-desc', style: { margin: '6px 0 0', fontSize: '12px', color: C.text } }, famWords(famCells, famGen) + ' ' + fmt(t('stem.cellular.fam_desc_rule', 'Rule {rule}, edges wrap.'), { rule: famName })));
@@ -4017,6 +4167,21 @@
 
     // ── Langton's ant ──
     var antRef = useRef(null); if (!antRef.current) antRef.current = antInit();
+    // Zero-GC pre-allocated ring buffer for recent ant wake trail (48 coordinates)
+    var ANT_TRAIL_CAP = 48;
+    var antTrailRef = useRef({ coords: new Int32Array(ANT_TRAIL_CAP * 2), head: 0, len: 0 });
+    function antTrailPush(c, r) {
+      var tr = antTrailRef.current;
+      var pos = tr.head * 2;
+      tr.coords[pos] = c;
+      tr.coords[pos + 1] = r;
+      tr.head = (tr.head + 1) % ANT_TRAIL_CAP;
+      if (tr.len < ANT_TRAIL_CAP) tr.len++;
+    }
+    function antTrailReset() {
+      var tr = antTrailRef.current;
+      tr.head = 0; tr.len = 0;
+    }
     var sAntTick = useState(0); var setAntTick = sAntTick[1];
     var sAntRun = useState(false); var antRunning = sAntRun[0], setAntRunning = sAntRun[1];
     var sAntLog = useState([]); var antLog = sAntLog[0], setAntLog = sAntLog[1];
@@ -4040,7 +4205,14 @@
     function antGo(n) {
       var st = antRef.current, cap = antCap(), room = cap - st.step;
       if (room <= 0) { setAntRunning(false); announce(antCapWords(cap)); return false; }
-      antAdvance(st, Math.min(n, room)); setAntTick(st.step);
+      var take = Math.min(n, room);
+      if (take <= 32) {
+        for (var ai = 0; ai < take; ai++) { antAdvance(st, 1); antTrailPush(st.c, st.r); }
+      } else {
+        antAdvance(st, take - 24);
+        for (var aj = 0; aj < 24; aj++) { antAdvance(st, 1); antTrailPush(st.c, st.r); }
+      }
+      setAntTick(st.step);
       if (antSoundRef.current) playFreq(antPitch(st), 0.08);
       if (n > room) { setAntRunning(false); announce(antCapWords(cap)); return false; }
       return true;
@@ -4064,7 +4236,7 @@
     function antStepAndLog(n) {
       if (antGo(n)) { var st = antRef.current; setAntLog(antLog.concat([{ step: st.step, c: st.c, r: st.r }]).slice(-12)); announce(antWhere(st)); }
     }
-    function antReset() { antRef.current = antInit(); setAntRunning(false); setAntLog([]); setAntTick(0); announce(t('stem.cellular.sr_ant_reset', 'The ant is back at the start on an all-white plane.')); }
+    function antReset() { antRef.current = antInit(); antTrailReset(); setAntRunning(false); setAntLog([]); setAntTick(0); announce(t('stem.cellular.sr_ant_reset', 'The ant is back at the start on an all-white plane.')); }
     function antLock() {
       if (!antPick) return;
       patchSaved(function (s) { var a = plainObj(s.ant); if (a.locked) return null; return { ant: Object.assign({}, a, { pick: antPick, locked: true }) }; });
@@ -4093,7 +4265,7 @@
     function antNewProblem() {
       var pr = makeAntProblem(freshSeed(), band);
       // Start from a fresh ant so no earlier run or log row shows the answer.
-      antRef.current = antInit(); setAntRunning(false); setAntLog([]); setAntTick(0);
+      antRef.current = antInit(); antTrailReset(); setAntRunning(false); setAntLog([]); setAntTick(0);
       setAntProb(pr); setAntAns({ col: '', row: '' }); setAntTry({ tries: 0, hint: 0, status: 'open', msg: '' });
       announce(fmt(t('stem.cellular.ant_prob_q', 'At step {base} the ant is at column {c}, row {r}. Where will it be at step {target}?'), { base: pr.base, c: pr.baseC, r: pr.baseR, target: pr.target }));
     }
@@ -4138,12 +4310,29 @@
       Object.keys(st.black).forEach(function (k) { var p = k.split(','), r = +p[0], c = +p[1]; if (r < minR) minR = r; if (r > maxR) maxR = r; if (c < minC) minC = c; if (c > maxC) maxC = c; d += 'M' + c + ' ' + r + 'h1v1h-1z'; });
       var span = Math.max(21, maxR - minR + 5, maxC - minC + 5), x0 = Math.floor((minC + maxC) / 2 - span / 2), y0 = Math.floor((minR + maxR) / 2 - span / 2);
       var ax = st.c + 0.5, ay = st.r + 0.5, tri = st.dir === 0 ? [[0, -0.45], [0.38, 0.35], [-0.38, 0.35]] : st.dir === 1 ? [[0.45, 0], [-0.35, 0.38], [-0.35, -0.38]] : st.dir === 2 ? [[0, 0.45], [-0.38, -0.35], [0.38, -0.35]] : [[-0.45, 0], [0.35, -0.38], [0.35, 0.38]];
-      var stroke = Math.max(0.04, span / 300);
+      var stroke = Math.max(0.04, span / 300), headScale = Math.max(1, span / 40);
+      var tr = antTrailRef.current, wakePath = '';
+      if (!contrast && tr.len > 1) {
+        var startIdx = (tr.head - tr.len + ANT_TRAIL_CAP) % ANT_TRAIL_CAP;
+        for (var ti = 0; ti < tr.len; ti++) {
+          var pIdx = ((startIdx + ti) % ANT_TRAIL_CAP) * 2;
+          wakePath += (ti === 0 ? 'M' : 'L') + (tr.coords[pIdx] + 0.5) + ' ' + (tr.coords[pIdx + 1] + 0.5);
+        }
+      }
       return h('figure', { style: { margin: 0 } },
-        h('svg', { viewBox: x0 + ' ' + y0 + ' ' + span + ' ' + span, width: '100%', 'aria-hidden': 'true', focusable: 'false', 'data-ant-view': 'true', style: { display: 'block', maxWidth: '420px', background: '#f8fafc', border: '1px solid ' + C.border, borderRadius: '10px' } },
-          h('path', { d: d, fill: '#0f172a' }),
-          h('circle', { cx: 0.5, cy: 0.5, r: 0.5, fill: 'none', stroke: '#2563eb', strokeWidth: stroke * 2 }),
-          h('polygon', { points: tri.map(function (p) { return (ax + p[0] * Math.max(1, span / 40)) + ',' + (ay + p[1] * Math.max(1, span / 40)); }).join(' '), fill: '#dc2626', stroke: '#ffffff', strokeWidth: stroke })),
+        h('svg', { viewBox: x0 + ' ' + y0 + ' ' + span + ' ' + span, width: '100%', 'aria-hidden': 'true', focusable: 'false', 'data-ant-view': 'true', style: { display: 'block', maxWidth: '420px', background: contrast ? '#000000' : (dark ? '#0f172a' : '#f8fafc'), border: (contrast ? '2px solid #ffff00' : '1px solid ' + C.border), borderRadius: '10px' } },
+          !contrast && h('defs', null,
+            h('radialGradient', { id: 'cell-ant-beacon', cx: '50%', cy: '50%', r: '50%' },
+              h('stop', { offset: '0%', stopColor: '#f87171', stopOpacity: 0.72 }),
+              h('stop', { offset: '55%', stopColor: '#ef4444', stopOpacity: 0.24 }),
+              h('stop', { offset: '100%', stopColor: '#ef4444', stopOpacity: 0 })
+            )
+          ),
+          h('path', { d: d, fill: contrast ? '#ffffff' : (dark ? '#38bdf8' : '#0f172a') }),
+          wakePath && h('path', { d: wakePath, fill: 'none', stroke: dark ? 'rgba(251,191,36,0.55)' : 'rgba(245,158,11,0.5)', strokeWidth: Math.max(0.28, span / 95), strokeLinecap: 'round', strokeLinejoin: 'round' }),
+          h('circle', { cx: 0.5, cy: 0.5, r: 0.5, fill: 'none', stroke: contrast ? '#00ff00' : '#2563eb', strokeWidth: stroke * 2 }),
+          !contrast && h('circle', { className: 'cellularlab-beacon-pulse', cx: ax, cy: ay, r: headScale * 1.45, fill: 'url(#cell-ant-beacon)' }),
+          h('polygon', { points: tri.map(function (p) { return (ax + p[0] * headScale) + ',' + (ay + p[1] * headScale); }).join(' '), fill: contrast ? '#ffff00' : '#dc2626', stroke: contrast ? '#000000' : '#ffffff', strokeWidth: stroke })),
         h('figcaption', { style: { fontSize: '12px', color: C.text, marginTop: '4px' } },
           h('span', { 'aria-live': antRunning ? 'off' : 'polite' }, antWhere(st) + ' ' + (antHighwayNow(st) ? fmt(t('stem.cellular.ant_on_highway', 'It is on its highway: every {p} steps it repeats the same moves.'), { p: antHw.period }) : t('stem.cellular.ant_no_highway', 'No repeating pattern yet.'))),
           h('span', { style: { display: 'block', color: C.sub, fontSize: '11px' } }, t('stem.cellular.ant_legend', 'Black squares are black; the red arrow is the ant; the blue ring marks where it started.'))));

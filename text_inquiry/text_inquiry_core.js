@@ -29,14 +29,14 @@
       .slice(0, maxChars);
   }
 
-  function tokenize(value) {
-    var text = cleanText(value).toLowerCase();
+  function tokenize(value, limit) {
+    var text = cleanText(value, limit).toLowerCase();
     try { return text.match(/[\p{L}\p{N}]+(?:['’][\p{L}\p{N}]+)*/gu) || []; }
     catch (_) { return text.match(/[a-z0-9]+(?:['’][a-z0-9]+)*/g) || []; }
   }
 
-  function splitSentences(value, segmenter) {
-    var text = cleanText(value);
+  function splitSentences(value, segmenter, limit) {
+    var text = cleanText(value, limit);
     if (typeof segmenter === 'function') {
       try {
         var enhanced = segmenter(text);
@@ -54,15 +54,16 @@
 
   function analyzeText(value, options) {
     options = options && typeof options === 'object' ? options : {};
-    var text = cleanText(value, clampInt(options.maxCharacters, 50000, 1, MAX_TEXT_LIMIT));
-    var tokens = tokenize(text);
+    var maxChars = clampInt(options.maxCharacters, 50000, 1, MAX_TEXT_LIMIT);
+    var text = cleanText(value, maxChars);
+    var tokens = tokenize(text, maxChars);
     var stopwords = Object.create(null);
     var stopList = Array.isArray(options.stopwords) ? options.stopwords : STOPWORDS;
     stopList.forEach(function (word) { stopwords[String(word).toLowerCase()] = true; });
     var contentTokens = tokens.filter(function (token) { return token.length > 1 && !stopwords[token] && !/^\d+$/.test(token); });
     var bigrams = [];
     for (var i = 0; i < contentTokens.length - 1; i++) bigrams.push(contentTokens[i] + ' ' + contentTokens[i + 1]);
-    var sentences = splitSentences(text, options.sentenceSegmenter);
+    var sentences = splitSentences(text, options.sentenceSegmenter, maxChars);
     var uniqueMap = Object.create(null);
     for (var t = 0; t < tokens.length; t++) uniqueMap[tokens[t]] = true;
     var uniqueCount = Object.keys(uniqueMap).length;

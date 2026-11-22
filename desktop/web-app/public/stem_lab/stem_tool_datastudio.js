@@ -41,6 +41,29 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // ── Scoped GPU-composited live-motion polish for Charts & Graphs SVG visualizers ──
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-datastudio-motion-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-datastudio-motion-css';
+    st.textContent = [
+      '@keyframes dsPhosphorBreathe{0%,100%{opacity:0.18}50%{opacity:0.42}}',
+      '@keyframes dsDashFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-24}}',
+      '@keyframes dsPointBeacon{0%,100%{opacity:0.16;transform:scale(0.88)}50%{opacity:0.44;transform:scale(1.24)}}',
+      '@keyframes dsBevelShimmer{0%,100%{opacity:0.22}50%{opacity:0.52}}',
+      '@keyframes dsRingOrbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}',
+      '[data-datastudio-chart] .ds-phosphor-glow{animation:dsPhosphorBreathe 3.6s ease-in-out infinite;will-change:opacity}',
+      '[data-datastudio-chart] .ds-dash-flow{animation:dsDashFlow 2.6s linear infinite;will-change:stroke-dashoffset}',
+      '[data-datastudio-chart] .ds-beacon-pulse{transform-box:fill-box;transform-origin:center;animation:dsPointBeacon 3.0s ease-in-out infinite;will-change:transform,opacity}',
+      '[data-datastudio-chart] .ds-bevel-sheen{animation:dsBevelShimmer 4.2s ease-in-out infinite;will-change:opacity}',
+      '[data-datastudio-chart] .ds-ring-orbit{transform-box:fill-box;transform-origin:center;animation:dsRingOrbit 38s linear infinite;will-change:transform}',
+      '.theme-contrast [data-datastudio-chart] .ds-phosphor-glow,.theme-contrast [data-datastudio-chart] .ds-bevel-sheen{display:none!important;animation:none!important}',
+      '.theme-contrast [data-datastudio-chart] .ds-dash-flow,.theme-contrast [data-datastudio-chart] .ds-beacon-pulse,.theme-contrast [data-datastudio-chart] .ds-ring-orbit{animation:none!important}',
+      '@media (prefers-reduced-motion:reduce){[data-datastudio-chart] .ds-phosphor-glow,[data-datastudio-chart] .ds-dash-flow,[data-datastudio-chart] .ds-beacon-pulse,[data-datastudio-chart] .ds-bevel-sheen,[data-datastudio-chart] .ds-ring-orbit{animation:none!important;transform:none!important}}'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _datastAC = null;
@@ -1044,7 +1067,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                         React.createElement("rect", { x: x, y: y, width: barW, height: Math.max(1, barH), rx: 4, fill: 'url(#ds-bar-' + ci + ')', stroke: isContrast ? '#ffff00' : COLORS[ci], strokeOpacity: isContrast ? 0.9 : 0.35, strokeWidth: 0.9 },
                           React.createElement("title", null, row.label + ': ' + row.value)),
 
-                        !isContrast && barH > 7 && barW >= 6 && React.createElement("rect", { x: x + 2, y: y + 1.5, width: Math.max(2, barW - 4), height: 3.2, rx: 1.6, fill: "#ffffff", opacity: 0.32 }),
+                        !isContrast && barH > 7 && barW >= 6 && React.createElement("rect", { x: x + 2, y: y + 1.5, width: Math.max(2, barW - 4), height: 3.2, rx: 1.6, fill: "#ffffff", opacity: 0.34, className: displayRows.length <= 36 ? "ds-bevel-sheen" : undefined, style: displayRows.length <= 36 ? { animationDelay: ((i % 8) * 0.32).toFixed(2) + 's' } : undefined }),
 
                         effectiveDataLabels && React.createElement("text", { x: x + barW / 2, y: valueLabelY, textAnchor: "middle", style: { fontSize: '10.5px', fontWeight: 'bold', fill: _text } }, row.value),
 
@@ -1053,14 +1076,15 @@ var d = (labToolData && labToolData._dataStudio) || {};
                       );
 
                     }),
-                    // Dual-pass luminous mean threshold reference line & calibrated badge
+                    // Dual-pass luminous mean threshold reference line, smooth dash flow & pulsing tracking beacon
                     showStats && displayRows.length > 1 && (function () {
                       var meanY = chartTop + ((barScaleMax - mean) / barScaleRange) * (H - pad - chartTop);
                       if (meanY < chartTop || meanY > H - pad) return null;
                       var badgeY = Math.max(chartTop + 3, meanY - 15);
                       return React.createElement("g", { key: "bar-mean-ref" },
-                        !isContrast && React.createElement("line", { x1: pad, y1: meanY, x2: W - 12, y2: meanY, stroke: _accent, strokeWidth: 4.5, strokeOpacity: 0.2 }),
-                        React.createElement("line", { x1: pad, y1: meanY, x2: W - 12, y2: meanY, stroke: _accent, strokeWidth: 1.5, strokeDasharray: "5 3", opacity: 0.92 }),
+                        !isContrast && React.createElement("line", { x1: pad, y1: meanY, x2: W - 12, y2: meanY, stroke: _accent, strokeWidth: 4.5, strokeOpacity: 0.22, className: "ds-phosphor-glow" }),
+                        React.createElement("line", { x1: pad, y1: meanY, x2: W - 12, y2: meanY, stroke: _accent, strokeWidth: 1.5, strokeDasharray: "5 3", opacity: 0.92, className: isContrast ? undefined : "ds-dash-flow" }),
+                        !isContrast && React.createElement("circle", { cx: pad + 3, cy: meanY, r: 6.4, fill: _accent, opacity: 0.28, className: "ds-beacon-pulse" }),
                         React.createElement("circle", { cx: pad + 3, cy: meanY, r: 3, fill: _accent, stroke: _svgBg, strokeWidth: 1.2 }),
                         React.createElement("rect", { x: W - 76, y: badgeY, width: 64, height: 14, rx: 7, fill: _svgBg, stroke: _accent, strokeWidth: 1 }),
                         React.createElement("text", { x: W - 44, y: badgeY + 10, textAnchor: "middle", style: { fontSize: '8.2px', fontWeight: 'bold', fill: _accent } }, 'Mean ' + mean.toFixed(1))
@@ -1085,7 +1109,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     !isContrast && React.createElement("circle", { cx: cx, cy: cy + 4, r: r + 3, fill: "#020617", opacity: isDark ? 0.36 : 0.08 }),
 
-                    React.createElement("circle", { cx: cx, cy: cy, r: r + 5, fill: "none", stroke: _border, strokeWidth: 1, strokeDasharray: "3 3", opacity: 0.6 }),
+                    React.createElement("circle", { cx: cx, cy: cy, r: r + 5, fill: "none", stroke: _border, strokeWidth: 1, strokeDasharray: "3 3", opacity: 0.6, className: isContrast ? undefined : "ds-ring-orbit" }),
 
                     displayRows.map(function (row, i) {
 
@@ -1146,8 +1170,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     }),
                     !isContrast && React.createElement("circle", { cx: cx, cy: cy, r: r, fill: "url(#ds-pie-sheen)", pointerEvents: "none" }),
-                    // Sculpted donut center summary medallion with subtle luminous halo
-                    !isContrast && React.createElement("circle", { key: "pie-hub-halo", cx: cx, cy: cy, r: Math.round(r * 0.42), fill: _accent, opacity: 0.14 }),
+                    // Sculpted donut center summary medallion with subtle pulsing luminous halo
+                    !isContrast && React.createElement("circle", { key: "pie-hub-halo", cx: cx, cy: cy, r: Math.round(r * 0.43), fill: _accent, opacity: 0.16, className: "ds-beacon-pulse" }),
                     React.createElement("circle", { key: "pie-hub", cx: cx, cy: cy, r: Math.round(r * 0.38), fill: _svgBg, stroke: _accent, strokeWidth: 1.8 }),
                     React.createElement("text", { key: "pie-hub-lbl", x: cx, y: cy - 3, textAnchor: "middle", style: { fontSize: '8.5px', fontWeight: 'bold', fill: _muted } }, "TOTAL"),
                     React.createElement("text", { key: "pie-hub-val", x: cx, y: cy + 12, textAnchor: "middle", style: { fontSize: '12px', fontWeight: '900', fill: _text } }, Number(total.toFixed(1)))
@@ -1198,9 +1222,9 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       var tlCol = isContrast ? '#00ff00' : '#ef4444';
 
-                      if (!isContrast) trendEls.push(React.createElement("line", { key: 'tl-glow', x1: pad, y1: tlY0, x2: pad + (displayRows.length - 1) * gap, y2: tlY1, stroke: tlCol, strokeWidth: 5.5, strokeOpacity: 0.2, strokeLinecap: 'round' }));
+                      if (!isContrast) trendEls.push(React.createElement("line", { key: 'tl-glow', x1: pad, y1: tlY0, x2: pad + (displayRows.length - 1) * gap, y2: tlY1, stroke: tlCol, strokeWidth: 5.5, strokeOpacity: 0.22, strokeLinecap: 'round', className: 'ds-phosphor-glow' }));
 
-                      trendEls.push(React.createElement("line", { key: 'tl', x1: pad, y1: tlY0, x2: pad + (displayRows.length - 1) * gap, y2: tlY1, stroke: tlCol, strokeWidth: 1.8, strokeDasharray: '6 3', opacity: 0.9 }));
+                      trendEls.push(React.createElement("line", { key: 'tl', x1: pad, y1: tlY0, x2: pad + (displayRows.length - 1) * gap, y2: tlY1, stroke: tlCol, strokeWidth: 1.8, strokeDasharray: '6 3', opacity: 0.9, className: isContrast ? undefined : 'ds-dash-flow' }));
 
                       trendEls.push(React.createElement("text", { key: 'tl-label', x: W - 14, y: Math.max(chartTop + 10, tlY1 - 6), textAnchor: "end", style: { fontSize: '8px', fontWeight: 'bold', fill: tlCol } }, 'y=' + tl.slope.toFixed(1) + 'x' + (tl.intercept >= 0 ? '+' : '-') + Math.abs(tl.intercept).toFixed(1)));
 
@@ -1231,11 +1255,13 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                     React.createElement("path", { d: areaD, fill: "url(#ds-line-area-grad)" }),
 
-                    // Dual-pass luminous series line
+                    // Dual-pass silky phosphor series line + subtle flowing signal highlight
 
-                    !isContrast && React.createElement("path", { d: pathD, fill: "none", stroke: _accent, strokeOpacity: 0.24, strokeWidth: 7.5, strokeLinecap: "round", strokeLinejoin: "round" }),
+                    !isContrast && React.createElement("path", { d: pathD, fill: "none", stroke: _accent, strokeOpacity: 0.26, strokeWidth: 7.5, strokeLinecap: "round", strokeLinejoin: "round", className: "ds-phosphor-glow" }),
 
                     React.createElement("path", { d: pathD, fill: "none", stroke: _accent, strokeWidth: 2.8, strokeLinecap: "round", strokeLinejoin: "round" }),
+
+                    !isContrast && pts.length > 1 && React.createElement("path", { d: pathD, fill: "none", stroke: "#ffffff", strokeOpacity: 0.56, strokeWidth: 1.3, strokeDasharray: "6 14", strokeLinecap: "round", strokeLinejoin: "round", className: "ds-dash-flow" }),
 
                     trendEls,
 
@@ -1243,7 +1269,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
 
                       return React.createElement("g", { key: 'lp' + i },
 
-                        !isContrast && React.createElement("circle", { cx: p.x, cy: p.y, r: 7.5, fill: _accent, opacity: 0.2 }),
+                        !isContrast && React.createElement("circle", { cx: p.x, cy: p.y, r: 7.5, fill: _accent, opacity: 0.2, className: pts.length <= 36 ? "ds-beacon-pulse" : undefined, style: pts.length <= 36 ? { animationDelay: ((i % 8) * 0.35).toFixed(2) + 's' } : undefined }),
 
                         React.createElement("circle", { cx: p.x, cy: p.y, r: 4.3, fill: _accent, stroke: _svgBg, strokeWidth: 2 }),
 
@@ -1280,8 +1306,8 @@ var d = (labToolData && labToolData._dataStudio) || {};
                       displayRows.forEach(function(row, i) { var pred = tl.slope * xValues[i] + tl.intercept; ssRes += Math.pow(row.value - pred, 2); ssTot += Math.pow(row.value - mean, 2); });
                       var rSquared = ssTot > 0 ? Math.max(0, 1 - ssRes / ssTot) : 0;
                       var tlCol = isContrast ? '#00ff00' : '#ef4444';
-                      if (!isContrast) trendEls.push(React.createElement("line", { key: 'tl-glow', x1: scaleX(minX), y1: scaleY(yAtMin), x2: scaleX(maxX), y2: scaleY(yAtMax), stroke: tlCol, strokeWidth: 6, strokeOpacity: 0.2, strokeLinecap: 'round' }));
-                      trendEls.push(React.createElement("line", { key: 'tl', x1: scaleX(minX), y1: scaleY(yAtMin), x2: scaleX(maxX), y2: scaleY(yAtMax), stroke: tlCol, strokeWidth: 1.8, strokeDasharray: '6 3', opacity: 0.9 }));
+                      if (!isContrast) trendEls.push(React.createElement("line", { key: 'tl-glow', x1: scaleX(minX), y1: scaleY(yAtMin), x2: scaleX(maxX), y2: scaleY(yAtMax), stroke: tlCol, strokeWidth: 6, strokeOpacity: 0.22, strokeLinecap: 'round', className: 'ds-phosphor-glow' }));
+                      trendEls.push(React.createElement("line", { key: 'tl', x1: scaleX(minX), y1: scaleY(yAtMin), x2: scaleX(maxX), y2: scaleY(yAtMax), stroke: tlCol, strokeWidth: 1.8, strokeDasharray: '6 3', opacity: 0.9, className: isContrast ? undefined : 'ds-dash-flow' }));
                       trendEls.push(React.createElement("rect", { key: 'tl-pill', x: W - 118, y: chartTop + 3, width: 104, height: 24, rx: 6, fill: _svgBg, fillOpacity: 0.92, stroke: tlCol, strokeWidth: 0.9 }));
                       trendEls.push(React.createElement("text", { key: 'tl-label', x: W - 18, y: chartTop + 13, textAnchor: "end", style: { fontSize: '8px', fontWeight: 'bold', fill: tlCol } }, 'y=' + tl.slope.toFixed(2) + 'x' + (tl.intercept >= 0 ? '+' : '') + tl.intercept.toFixed(2)));
                       trendEls.push(React.createElement("text", { key: 'r2', x: W - 18, y: chartTop + 23, textAnchor: "end", style: { fontSize: '8px', fontWeight: 'bold', fill: tlCol } }, 'R²=' + rSquared.toFixed(3)));
@@ -1307,7 +1333,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                     pts.map(function(point, i) {
                       var pCol = COLORS[i % COLORS.length];
                       return React.createElement("g", { key: 'sp' + i },
-                        !isContrast && React.createElement("circle", { cx: point.x, cy: point.y, r: 8.5, fill: pCol, opacity: 0.2 }),
+                        !isContrast && React.createElement("circle", { cx: point.x, cy: point.y, r: 8.5, fill: pCol, opacity: 0.2, className: pts.length <= 36 ? "ds-beacon-pulse" : undefined, style: pts.length <= 36 ? { animationDelay: ((i % 8) * 0.35).toFixed(2) + 's' } : undefined }),
                         React.createElement("circle", { cx: point.x, cy: point.y, r: 5.2, fill: pCol, stroke: _svgBg, strokeWidth: 2, opacity: 0.95 },
                           React.createElement("title", null, point.label + ': x ' + point.rawX + ', y ' + point.value)),
                         !isContrast && React.createElement("circle", { cx: point.x - 1.5, cy: point.y - 1.5, r: 1.3, fill: "#ffffff", opacity: 0.7 }),
@@ -1333,22 +1359,22 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   var medCol = isContrast ? '#00ff00' : '#dc2626';
                   return React.createElement("g", null,
                     // Subtle whisker range guide rail
-                    !isContrast && React.createElement("line", { x1: scaleBox(whiskerMin), y1: plotY, x2: scaleBox(whiskerMax), y2: plotY, stroke: _accent, strokeOpacity: 0.22, strokeWidth: 8, strokeLinecap: "round" }),
+                    !isContrast && React.createElement("line", { x1: scaleBox(whiskerMin), y1: plotY, x2: scaleBox(whiskerMax), y2: plotY, stroke: _accent, strokeOpacity: 0.22, strokeWidth: 8, strokeLinecap: "round", className: "ds-phosphor-glow" }),
                     React.createElement("line", { x1: scaleBox(whiskerMin), y1: plotY, x2: scaleBox(whiskerMax), y2: plotY, stroke: _accent, strokeWidth: 2.6 }),
                     React.createElement("line", { x1: scaleBox(whiskerMin), y1: plotY - 19, x2: scaleBox(whiskerMin), y2: plotY + 19, stroke: _accent, strokeWidth: 2.2, strokeLinecap: "round" }),
                     React.createElement("line", { x1: scaleBox(whiskerMax), y1: plotY - 19, x2: scaleBox(whiskerMax), y2: plotY + 19, stroke: _accent, strokeWidth: 2.2, strokeLinecap: "round" }),
                     // Sculpted IQR box with specular top sheen
                     React.createElement("rect", { x: scaleBox(q1), y: boxTop, width: boxW, height: boxHeight, rx: 6, fill: _accent, fillOpacity: isContrast ? 0.16 : 0.22, stroke: _accent, strokeWidth: 2.2 }),
-                    !isContrast && boxW > 8 && React.createElement("rect", { x: scaleBox(q1) + 3, y: boxTop + 3, width: boxW - 6, height: 6, rx: 3, fill: "#ffffff", opacity: 0.28 }),
+                    !isContrast && boxW > 8 && React.createElement("rect", { x: scaleBox(q1) + 3, y: boxTop + 3, width: boxW - 6, height: 6, rx: 3, fill: "#ffffff", opacity: 0.3, className: "ds-bevel-sheen" }),
                     // Dual-pass luminous median beam
-                    !isContrast && React.createElement("line", { x1: scaleBox(median), y1: boxTop, x2: scaleBox(median), y2: boxTop + boxHeight, stroke: medCol, strokeOpacity: 0.26, strokeWidth: 7.5 }),
+                    !isContrast && React.createElement("line", { x1: scaleBox(median), y1: boxTop, x2: scaleBox(median), y2: boxTop + boxHeight, stroke: medCol, strokeOpacity: 0.28, strokeWidth: 7.5, className: "ds-phosphor-glow" }),
                     React.createElement("line", { x1: scaleBox(median), y1: boxTop, x2: scaleBox(median), y2: boxTop + boxHeight, stroke: medCol, strokeWidth: 3 }),
-                    // Glowing mean diamond beacon
-                    !isContrast && React.createElement("circle", { cx: scaleBox(mean), cy: plotY, r: 10, fill: _accent, opacity: 0.22 }),
+                    // Pulsing mean diamond tracking beacon
+                    !isContrast && React.createElement("circle", { cx: scaleBox(mean), cy: plotY, r: 10.5, fill: _accent, opacity: 0.24, className: "ds-beacon-pulse" }),
                     React.createElement("polygon", { points: scaleBox(mean) + ',' + (plotY - 6.5) + ' ' + (scaleBox(mean) + 6.5) + ',' + plotY + ' ' + scaleBox(mean) + ',' + (plotY + 6.5) + ' ' + (scaleBox(mean) - 6.5) + ',' + plotY, fill: _accent, stroke: _svgBg, strokeWidth: 1.6 },
                       React.createElement("title", null, 'Mean: ' + mean.toFixed(2))),
                     outliers.map(function(row, i) { return React.createElement("g", { key: 'box-outlier-' + i },
-                      !isContrast && React.createElement("circle", { cx: scaleBox(row.value), cy: plotY, r: 8.5, fill: '#f59e0b', opacity: 0.24 }),
+                      !isContrast && React.createElement("circle", { cx: scaleBox(row.value), cy: plotY, r: 8.8, fill: '#f59e0b', opacity: 0.26, className: "ds-beacon-pulse", style: { animationDelay: (i * 0.35).toFixed(2) + 's' } }),
                       React.createElement("circle", { cx: scaleBox(row.value), cy: plotY, r: 5, fill: '#f59e0b', stroke: _svgBg, strokeWidth: 2 })
                     ); }),
                     React.createElement("line", { x1: plotLeft, y1: H - pad, x2: plotRight, y2: H - pad, stroke: _muted, strokeWidth: 1 }),
@@ -1417,7 +1443,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                         React.createElement("rect", { x: x, y: y, width: bw, height: bh, fill: 'url(#ds-bar-' + ci + ')', stroke: isContrast ? '#ffff00' : COLORS[ci], strokeOpacity: isContrast ? 0.9 : 0.35, strokeWidth: 0.9, rx: 3.5 },
                           React.createElement("title", null, bin.lo.toFixed(1) + '–' + bin.hi.toFixed(1) + ': ' + bin.count + ' items')),
 
-                        !isContrast && bh > 7 && bw >= 6 && React.createElement("rect", { x: x + 2, y: y + 1.5, width: Math.max(2, bw - 4), height: 3.2, rx: 1.6, fill: "#ffffff", opacity: 0.32 }),
+                        !isContrast && bh > 7 && bw >= 6 && React.createElement("rect", { x: x + 2, y: y + 1.5, width: Math.max(2, bw - 4), height: 3.2, rx: 1.6, fill: "#ffffff", opacity: 0.34, className: "ds-bevel-sheen", style: { animationDelay: (i * 0.32).toFixed(2) + 's' } }),
 
                         effectiveDataLabels && bin.count > 0 && React.createElement("text", { x: x + bw / 2, y: Math.max(chartTop - 4, y - 5), textAnchor: "middle", style: { fontSize: '10.5px', fontWeight: 'bold', fill: _text } }, bin.count),
 

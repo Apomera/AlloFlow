@@ -71,15 +71,17 @@ fs.mkdirSync(OUT, { recursive: true });
         results.push({ label, ...metrics });
         await page.screenshot({ path: path.join(OUT, label + '.png'), fullPage: true });
         if (name === 'GlossaryView') {
-          const regenerate = page.locator('[data-help-key="glossary_regen_image"]');
-          if (await regenerate.isVisible() !== edit) errors.push(label + ': incorrect edit control visibility');
+          const editControl = page.locator('[data-help-key="glossary_remove_words"]');
+          if (await editControl.isVisible() !== edit) errors.push(label + ': incorrect edit control visibility');
+          await page.locator('[data-glossary-tools-toggle]').click();
           await page.locator('[data-help-key="glossary_edit"]').click();
-          if (await regenerate.isVisible() !== !edit) errors.push(label + ': Edit toggle failed');
+          if (await editControl.isVisible() !== !edit) errors.push(label + ': Edit toggle failed');
           await page.locator('[data-help-key="glossary_edit"]').click();
           await page.getByRole('button', { name: 'More tools', exact: true }).click();
-          if (!await page.locator('[data-help-key="glossary_export_standard"]').isVisible()) errors.push(label + ': export unavailable');
           if (!await page.locator('[data-help-key="glossary_image_size"] input').isVisible()) errors.push(label + ': image-size control unavailable');
           await page.screenshot({ path: path.join(OUT, label + '-tools.png'), fullPage: true });
+          await page.locator('[data-glossary-export-toggle]').click();
+          if (!await page.locator('[data-help-key="glossary_export_standard"]').isVisible()) errors.push(label + ': export unavailable');
         }
         if (metrics.pageWidth > width + 2 || metrics.clippedControls.length) errors.push(label + ': content overflows');
       }

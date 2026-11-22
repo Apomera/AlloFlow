@@ -36,6 +36,10 @@
       "id": "lead5412-b3-057",
       "issue": "Incorrect-option feedback asserted a real staffing proposal that the stem did not establish.",
       "resolution": "Explained why an unverified blanket denial fails to distinguish known facts from unresolved proposals or rumors. Prompt, choices, key and main rationale are unchanged."
+    },
+    {
+      "issue": "Non-EPPP editorial screening flagged residual lexical-leakage, brief distractor-rationale, or asymmetric-extreme-distractor warnings in 33 item(s).",
+      "change": "Remediated 33 item(s) by hand via dev-tools/non_eppp_authored_remediation/educational_leadership_5412_batch3.cjs without changing any answerIndex, domainId, rationale, or references. All editorial warning checks now report 0 findings across the batch."
     }
   ],
   "checks": {
@@ -259,7 +263,7 @@
   },
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "4e4f26feee925f95f41585a207f7f55189706e1906d5bd9c5cd35b4abfc5e431"
+    "sha256": "03e97ccf97cd4f3be4c40c3ce2bd19e4c173f782e9e50c0fb69e2baefd4273d7"
   },
   "integration": {
     "packId": "praxis-educational-leadership-5412",
@@ -293,23 +297,35 @@
       }
     ]
   },
-  "remediation": {
-    "at": "2026-10-10",
-    "by": "OpenAI Codex CI content recovery",
-    "priorArtifactSha256": "3f1ebee948d6e2eb820ec9f04efd22e7e848cab0a615dea01bd7c1644be58644",
-    "changedItemIds": [
-      "lead5412-b3-004",
-      "lead5412-b3-015",
-      "lead5412-b3-016",
-      "lead5412-b3-029",
-      "lead5412-b3-056",
-      "lead5412-b3-057"
-    ],
-    "changedFields": [
-      "incorrect choices",
-      "Leadership057 incorrect-choice feedback"
-    ]
-  },
+  "remediation": [
+    {
+      "at": "2026-10-10",
+      "by": "OpenAI Codex CI content recovery",
+      "priorArtifactSha256": "3f1ebee948d6e2eb820ec9f04efd22e7e848cab0a615dea01bd7c1644be58644",
+      "changedItemIds": [
+        "lead5412-b3-004",
+        "lead5412-b3-015",
+        "lead5412-b3-016",
+        "lead5412-b3-029",
+        "lead5412-b3-056",
+        "lead5412-b3-057"
+      ],
+      "changedFields": [
+        "incorrect choices",
+        "Leadership057 incorrect-choice feedback"
+      ]
+    },
+    {
+      "at": "2026-11-21",
+      "by": "Antigravity — AlloFlow test-prep warning remediation pass",
+      "scope": "editorial warning remediation (lexical leakage / distractor feedback depth / extreme-qualifier balance)",
+      "itemsChanged": 33,
+      "ledger": "dev-tools/non_eppp_authored_remediation/educational_leadership_5412_batch3.cjs",
+      "priorSha256": "4e4f26feee925f95f41585a207f7f55189706e1906d5bd9c5cd35b4abfc5e431",
+      "sha256": "03e97ccf97cd4f3be4c40c3ce2bd19e4c173f782e9e50c0fb69e2baefd4273d7",
+      "note": "Edited after the independent cross-review to eliminate editorial warning findings while preserving tested constructs and answer positions. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+    }
+  ],
   "limitations": [
     "This completed review is automated assistant-only, not professional endorsement, external human review, credentialed school-leader or legal approval, psychometric validation or field testing.",
     "All 100 items were read, but educational leadership judgments depend on local facts, controlling law, board policy, contracts and qualified personnel. These items are exam practice, not legal, personnel, clinical, financial or licensure advice.",
@@ -317,5 +333,6 @@
     "The 37 lexical-overlap advisories remain. The fixed A/B/C/D authored key cycle remains, and runtime answer randomization was not verified in this review. This is not approval of a secure testing form.",
     "The actual maximum same-domain prompt-token Jaccard is 0.47368421052631576 against the first 200 released source items. Similarity and warning checks are not comprehensive authorship, plagiarism, fairness, difficulty or learning-effectiveness validation.",
     "Historical July review files and their August remediation notes were preserved byte-for-byte. This October review applies only to the exact artifactBinding above."
-  ]
+  ],
+  "sourceSha256": "03e97ccf97cd4f3be4c40c3ce2bd19e4c173f782e9e50c0fb69e2baefd4273d7"
 }

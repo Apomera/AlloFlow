@@ -10,7 +10,7 @@
     "early_childhood_5025": {
       "duplicateRate": 0,
       "frameShare": 0.41,
-      "crossPackItems": 50,
+      "crossPackItems": 42,
       "scaffoldPrompts": 0
     },
     "educational_leadership_5412": {
@@ -40,7 +40,7 @@
     "parapro": {
       "duplicateRate": 0,
       "frameShare": 0.04,
-      "crossPackItems": 26,
+      "crossPackItems": 22,
       "scaffoldPrompts": 0
     },
     "plt_5_9_5623": {
@@ -86,7 +86,7 @@
       "scaffoldPrompts": 0
     },
     "school_librarian_5312": {
-      "duplicateRate": 0.62,
+      "duplicateRate": 0.58,
       "frameShare": 0.26,
       "crossPackItems": 0,
       "scaffoldPrompts": 200

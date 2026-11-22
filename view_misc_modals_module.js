@@ -96,7 +96,8 @@ var Headphones = _lazyIcon('Headphones');
     },
     get: () => ({ ...choice }),
     set: (patch) => {
-      choice = { recent: patch.recent === true, excerpt: String(patch.excerpt || "").slice(0, 1500) };
+      const p = patch && typeof patch === "object" ? patch : {};
+      choice = { recent: p.recent === true, excerpt: String(p.excerpt || "").slice(0, 1500) };
       notify();
     },
     clear: () => {
@@ -167,24 +168,39 @@ function AllobotContextControls({ messages, busy, setInput, clearChat, t, theme 
   const recent = privacy.recentMessages(messages);
   const surface = theme === "dark" ? "border-slate-600 bg-slate-900 text-slate-100" : theme === "contrast" ? "border-white bg-black text-white" : "border-slate-300 bg-white text-slate-900";
   const field = theme === "dark" ? "border-slate-500 bg-slate-800 text-slate-100" : theme === "contrast" ? "border-white bg-black text-white" : "border-slate-400 bg-white text-slate-900";
-  const button = "min-h-11 border rounded px-2 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 " + field;
+  const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1";
+  const button = "min-h-11 border rounded px-3 py-2 transition-colors motion-reduce:transition-none " + focusRing + " disabled:opacity-50 disabled:cursor-not-allowed " + field;
+  const draftSearchTopic = () => {
+    if (busy || !topic.trim()) return;
+    setInput(`Search for ${topic.trim()}`);
+    setNotice(tx("chat_guide.research_topic_ready", "Search placed in the message box. Review it, then send."));
+  };
   const sections = [
     ["context", hasContext ? tx("chat_guide.extra_context_added", "Context added") : tx("chat_guide.add_context", "Add context")],
     ["search", tx("chat_guide.web_search", "Web search")],
     ["privacy", tx("chat_guide.privacy_details", "Privacy")]
   ];
-  return /* @__PURE__ */ React.createElement("section", { "aria-label": tx("chat_guide.send_privacy", "AI destination and context"), className: "border-t p-3 text-sm shrink-0 min-w-0 " + surface }, /* @__PURE__ */ React.createElement("p", { className: "break-words" }, destination.active ? tx("chat_guide.reply_ai", "Replying with") : tx("chat_guide.selected_ai", "Selected AI"), ": ", /* @__PURE__ */ React.createElement("strong", null, destination.label)), /* @__PURE__ */ React.createElement("p", { className: "mt-1 mb-2", role: "status" }, taskActive ? tx("chat_guide.task_context_summary", "Lesson plans and app actions use the information needed for that task.") : hasContext ? tx("chat_guide.next_chat_with_context", "Next chat reply: your message + added context.") : tx("chat_guide.next_chat_message_only", "Next chat reply: only your message is included.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, sections.map(([name, label]) => /* @__PURE__ */ React.createElement("button", { key: name, type: "button", "aria-expanded": panel === name, "aria-controls": panelId + "-" + name, onClick: () => {
+  return /* @__PURE__ */ React.createElement("section", { "aria-label": tx("chat_guide.send_privacy", "AI destination and context"), className: "border-t p-3 text-sm shrink-0 min-w-0 " + surface }, /* @__PURE__ */ React.createElement("p", { className: "break-words" }, destination.active ? tx("chat_guide.reply_ai", "Replying with") : tx("chat_guide.selected_ai", "Selected AI"), ": ", /* @__PURE__ */ React.createElement("strong", null, destination.label)), /* @__PURE__ */ React.createElement("p", { className: "mt-1 mb-2", role: "status", "aria-live": "polite", "aria-atomic": "true" }, taskActive ? tx("chat_guide.task_context_summary", "Lesson plans and app actions use the information needed for that task.") : hasContext ? tx("chat_guide.next_chat_with_context", "Next chat reply: your message + added context.") : tx("chat_guide.next_chat_message_only", "Next chat reply: only your message is included.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, sections.map(([name, label]) => /* @__PURE__ */ React.createElement("button", { key: name, type: "button", "aria-expanded": panel === name, "aria-controls": panelId + "-" + name, onClick: () => {
     setPanel(panel === name ? "" : name);
     setNotice("");
-  }, className: button + (panel === name ? " font-bold underline" : "") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, panel === name ? "\u2212 " : "+ "), label))), /* @__PURE__ */ React.createElement("div", { hidden: !panel, className: "mt-2 overflow-y-auto overscroll-contain", style: { maxHeight: "min(16rem, 30vh)" } }, /* @__PURE__ */ React.createElement("div", { id: panelId + "-context", hidden: panel !== "context" }, /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.extra_context_help", "Want to refer to an earlier reply or a piece of text? Choose what the AI can use below. These choices apply to one chat request, then clear.")), /* @__PURE__ */ React.createElement("label", { className: "flex gap-2 items-start my-2 min-h-11" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: choice.recent, disabled: busy, onChange: (e) => privacy.set({ ...choice, recent: e.target.checked }), className: "mt-1 h-4 w-4 shrink-0" }), /* @__PURE__ */ React.createElement("span", null, tx("chat_guide.include_recent_chat", "Include recent chat messages"), /* @__PURE__ */ React.createElement("span", { className: "block mt-1" }, tx("chat_guide.recent_chat_limit", "Up to 4 messages, shortened to 500 characters each. Preview below.")))), choice.recent && /* @__PURE__ */ React.createElement("pre", { className: "whitespace-pre-wrap break-words border rounded p-2 font-sans " + field, "aria-label": tx("chat_guide.context_preview", "Recent-message preview") }, recent.length ? recent.map((m) => `${m.role === "user" ? tx("chat_guide.context_you", "You") : "Allobot"}: ${m.text}`).join("\n") : tx("chat_guide.no_recent_chat", "No earlier chat messages to include yet.")), /* @__PURE__ */ React.createElement("label", { className: "block my-2" }, tx("chat_guide.paste_background", "Paste background text (optional)"), /* @__PURE__ */ React.createElement("textarea", { rows: 2, maxLength: 1500, value: choice.excerpt, disabled: busy, onChange: (e) => privacy.set({ ...choice, excerpt: e.target.value }), placeholder: tx("chat_guide.background_example", "For example, a paragraph you want help adapting."), className: "block w-full min-w-0 border rounded p-2 mt-1 " + field })), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.background_limit", "Up to 1,500 characters. Added context goes to your selected AI, never to web search.")), hasContext && /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy, onClick: () => privacy.clear(), className: button }, tx("chat_guide.remove_extra_context", "Remove added context"))), /* @__PURE__ */ React.createElement("div", { id: panelId + "-search", hidden: panel !== "search" }, /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.web_search_help", "Look up public sources about a general topic. Add the search to your message, review it, then send. Keep names and student details out of the topic.")), /* @__PURE__ */ React.createElement("label", { className: "block my-2" }, tx("chat_guide.public_topic", "Topic to search"), /* @__PURE__ */ React.createElement("input", { type: "text", maxLength: 200, value: topic, disabled: busy, onChange: (e) => setTopic(e.target.value), placeholder: tx("chat_guide.research_topic_hint", "For example: causes of the American Revolution"), className: "block w-full min-w-0 border rounded p-2 mt-1 " + field })), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy || !topic.trim(), onClick: () => {
-    setInput(`Search for ${topic.trim()}`);
-    setNotice(tx("chat_guide.research_topic_ready", "Search placed in the message box. Review it, then send."));
-  }, className: button }, tx("chat_guide.draft_web_search", "Add search to message")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.search_context_separate", "Web search receives the public topic, not your added context. Availability depends on your AI and search settings."))), /* @__PURE__ */ React.createElement("div", { id: panelId + "-privacy", hidden: panel !== "privacy" }, /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.chat_sharing_help", "Chat replies use your message and any context you choose. Lesson plans and app actions also use the inputs needed for that task. Some questions may look up public references.")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.student_data_connection", "Use a district-approved AI connection before including student information.")), /* @__PURE__ */ React.createElement("details", { className: "my-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer min-h-11 py-2" }, tx("chat_guide.connection_details", "AI connection details")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.connection_address_help", "This is the technical address the app uses to contact the AI. It is not a webpage to open.")), /* @__PURE__ */ React.createElement("p", { className: "break-words" }, /* @__PURE__ */ React.createElement("strong", null, tx("chat_guide.connection_address", "Service address"), ":"), " ", /* @__PURE__ */ React.createElement("code", { style: { overflowWrap: "anywhere" } }, destination.origin || tx("chat_guide.address_not_available", "Not available"))), destination.managed && /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.managed_checks", "Managed connection checks are enabled. This label does not verify district approval."))), /* @__PURE__ */ React.createElement("details", { className: "my-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer min-h-11 py-2" }, tx("chat_guide.chat_storage_details", "Chat history and saved copies")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.chat_storage", "Live chat stays in this session until you clear it or reload. Saving chat or advice adds a separate item to History and its configured storage or sync. Delete saved items in History. Recovery snapshots and exported files can retain separate copies; manage those separately. Clearing here does not delete saved copies or provider records.")), confirmClear ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy, onClick: () => {
+  }, className: button + (panel === name ? " font-bold underline" : "") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, panel === name ? "\u2212 " : "+ "), label))), /* @__PURE__ */ React.createElement("div", { hidden: !panel, className: "mt-2 overflow-y-auto overscroll-contain", style: { maxHeight: "min(16rem, 30vh)" }, onKeyDown: (e) => {
+    if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
+    if (e.key === "Escape" && panel) {
+      e.stopPropagation();
+      setPanel("");
+    }
+  } }, /* @__PURE__ */ React.createElement("div", { id: panelId + "-context", hidden: panel !== "context" }, /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.extra_context_help", "Want to refer to an earlier reply or a piece of text? Choose what the AI can use below. These choices apply to one chat request, then clear.")), /* @__PURE__ */ React.createElement("label", { className: "flex gap-2 items-start my-2 min-h-11 cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: choice.recent, disabled: busy, onChange: (e) => privacy.set({ ...choice, recent: e.target.checked }), className: "mt-1 h-4 w-4 shrink-0 " + focusRing }), /* @__PURE__ */ React.createElement("span", null, tx("chat_guide.include_recent_chat", "Include recent chat messages"), /* @__PURE__ */ React.createElement("span", { className: "block mt-1" }, tx("chat_guide.recent_chat_limit", "Up to 4 messages, shortened to 500 characters each. Preview below.")))), choice.recent && /* @__PURE__ */ React.createElement("pre", { className: "whitespace-pre-wrap break-words border rounded p-2 font-sans " + field, "aria-label": tx("chat_guide.context_preview", "Recent-message preview") }, recent.length ? recent.map((m) => `${m.role === "user" ? tx("chat_guide.context_you", "You") : "Allobot"}: ${m.text}`).join("\n") : tx("chat_guide.no_recent_chat", "No earlier chat messages to include yet.")), /* @__PURE__ */ React.createElement("label", { className: "block my-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", null, tx("chat_guide.paste_background", "Paste background text (optional)")), /* @__PURE__ */ React.createElement("span", { "data-allobot-excerpt-count": "true", className: "text-xs font-semibold tabular-nums opacity-80" }, (choice.excerpt || "").length, " / 1,500")), /* @__PURE__ */ React.createElement("textarea", { rows: 2, maxLength: 1500, value: choice.excerpt, disabled: busy, "aria-describedby": panelId + "-bg-limit", onChange: (e) => privacy.set({ ...choice, excerpt: e.target.value }), placeholder: tx("chat_guide.background_example", "For example, a paragraph you want help adapting."), className: "block w-full min-w-0 border rounded p-2 mt-1 " + focusRing + " " + field })), /* @__PURE__ */ React.createElement("p", { id: panelId + "-bg-limit", className: "my-2" }, tx("chat_guide.background_limit", "Up to 1,500 characters. Added context goes to your selected AI, never to web search.")), hasContext && /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy, onClick: () => privacy.clear(), className: button }, tx("chat_guide.remove_extra_context", "Remove added context"))), /* @__PURE__ */ React.createElement("div", { id: panelId + "-search", hidden: panel !== "search" }, /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.web_search_help", "Look up public sources about a general topic. Add the search to your message, review it, then send. Keep names and student details out of the topic.")), /* @__PURE__ */ React.createElement("label", { className: "block my-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", null, tx("chat_guide.public_topic", "Topic to search")), /* @__PURE__ */ React.createElement("span", { "data-allobot-topic-count": "true", className: "text-xs font-semibold tabular-nums opacity-80" }, topic.length, " / 200")), /* @__PURE__ */ React.createElement("input", { type: "text", maxLength: 200, value: topic, disabled: busy, onChange: (e) => setTopic(e.target.value), onKeyDown: (e) => {
+    if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
+    if (e.key === "Enter") {
+      e.preventDefault();
+      draftSearchTopic();
+    }
+  }, placeholder: tx("chat_guide.research_topic_hint", "For example: causes of the American Revolution"), className: "block w-full min-h-11 min-w-0 border rounded p-2 mt-1 " + focusRing + " " + field })), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy || !topic.trim(), onClick: draftSearchTopic, className: button }, tx("chat_guide.draft_web_search", "Add search to message")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.search_context_separate", "Web search receives the public topic, not your added context. Availability depends on your AI and search settings."))), /* @__PURE__ */ React.createElement("div", { id: panelId + "-privacy", hidden: panel !== "privacy" }, /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.chat_sharing_help", "Chat replies use your message and any context you choose. Lesson plans and app actions also use the inputs needed for that task. Some questions may look up public references.")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.student_data_connection", "Use a district-approved AI connection before including student information.")), /* @__PURE__ */ React.createElement("details", { className: "my-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer min-h-11 py-2 rounded " + focusRing }, tx("chat_guide.connection_details", "AI connection details")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.connection_address_help", "This is the technical address the app uses to contact the AI. It is not a webpage to open.")), /* @__PURE__ */ React.createElement("p", { className: "break-words" }, /* @__PURE__ */ React.createElement("strong", null, tx("chat_guide.connection_address", "Service address"), ":"), " ", /* @__PURE__ */ React.createElement("code", { style: { overflowWrap: "anywhere" } }, destination.origin || tx("chat_guide.address_not_available", "Not available"))), destination.managed && /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.managed_checks", "Managed connection checks are enabled. This label does not verify district approval."))), /* @__PURE__ */ React.createElement("details", { className: "my-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer min-h-11 py-2 rounded " + focusRing }, tx("chat_guide.chat_storage_details", "Chat history and saved copies")), /* @__PURE__ */ React.createElement("p", { className: "my-2" }, tx("chat_guide.chat_storage", "Live chat stays in this session until you clear it or reload. Saving chat or advice adds a separate item to History and its configured storage or sync. Delete saved items in History. Recovery snapshots and exported files can retain separate copies; manage those separately. Clearing here does not delete saved copies or provider records.")), confirmClear ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy, onClick: () => {
     setConfirmClear(false);
     privacy.clear();
     if (typeof clearChat === "function") clearChat();
     setNotice(tx("chat_guide.chat_cleared", "Live conversation and pending context cleared. Saved History items are unchanged."));
-  }, className: button + " font-bold" }, tx("chat_guide.confirm_clear_live_chat", "Confirm clear")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy, onClick: () => setConfirmClear(false), className: button }, tx("common.cancel", "Cancel"))) : /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy, onClick: () => setConfirmClear(true), className: button }, tx("chat_guide.clear_live_chat", "Clear live conversation")))), /* @__PURE__ */ React.createElement("p", { role: "status", className: notice ? "my-2" : "" }, notice)));
+  }, className: button + " font-bold" }, tx("chat_guide.confirm_clear_live_chat", "Confirm clear")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy, onClick: () => setConfirmClear(false), className: button }, tx("common.cancel", "Cancel"))) : /* @__PURE__ */ React.createElement("button", { type: "button", disabled: busy, onClick: () => setConfirmClear(true), className: button }, tx("chat_guide.clear_live_chat", "Clear live conversation")))), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: notice ? "my-2" : "" }, notice)));
 }
 function AllobotAdviceSave({ text, question, evidence, save, busy, t, className = "" }) {
   const tx = (key, fallback) => {
@@ -230,23 +246,15 @@ function AllobotAdviceSave({ text, question, evidence, save, busy, t, className 
   return /* @__PURE__ */ React.createElement("section", { className: "mt-2 text-xs", "aria-label": tx("chat_guide.save_advice_options", "Save advice options") }, /* @__PURE__ */ React.createElement("p", null, tx("chat_guide.save_as_shown", "Copies this answer and its source links to History as shown. No additional AI request.")), question && /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 items-start gap-2 my-2 py-1 cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", className: "mt-0.5 h-4 w-4 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600", checked: includeQuestion, disabled: busy || saving, onChange: (event) => {
     setIncludeQuestion(event.target.checked);
     setNotice("");
-  } }), tx("chat_guide.save_include_question", "Also save my preceding question")), includeQuestion && /* @__PURE__ */ React.createElement("pre", { className: "whitespace-pre-wrap break-words max-h-32 overflow-auto border p-2", "aria-label": tx("chat_guide.save_question_preview", "Question to be saved") }, question), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveAdvice, "data-help-key": "chat_save_advice_btn", disabled: busy || saving, className: "min-h-11 px-3 rounded border focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 " + className }, saving ? tx("chat_guide.saving_advice", "Saving\u2026") : tx("chat_guide.save_advice_history", "Save advice to History")), /* @__PURE__ */ React.createElement("p", { role: "status" }, notice));
+  } }), tx("chat_guide.save_include_question", "Also save my preceding question")), includeQuestion && /* @__PURE__ */ React.createElement("pre", { className: "whitespace-pre-wrap break-words max-h-32 overflow-auto border p-2", "aria-label": tx("chat_guide.save_question_preview", "Question to be saved") }, question), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: saveAdvice, "data-help-key": "chat_save_advice_btn", disabled: busy || saving, "aria-busy": saving ? "true" : void 0, className: "min-h-11 px-3 rounded border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed " + className }, saving ? tx("chat_guide.saving_advice", "Saving\u2026") : tx("chat_guide.save_advice_history", "Save advice to History")), /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", "aria-atomic": "true" }, notice));
 }
 function AllobotSearchSettings({ t }) {
   const tx = (key2, fallback) => {
     const value = typeof t === "function" ? t(key2) : "";
     return value && value !== key2 ? value : fallback;
   };
-  const isLocked = () => typeof window !== "undefined" && (window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window.__alloStudentAiDisabled === true);
+  const isLocked = () => typeof window !== "undefined" && (window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.__alloStudentAiDisabled === true);
   const [locked, setLocked] = React.useState(isLocked);
-  React.useEffect(() => {
-    const sync = () => setLocked(isLocked());
-    const events = ["alloflow:ai-key-lock-changed", "alloflow:student-ai-config-changed", "alloflow:ai-config-changed"];
-    events.forEach((ev) => window.addEventListener(ev, sync));
-    return () => {
-      events.forEach((ev) => window.removeEventListener(ev, sync));
-    };
-  }, []);
   const read = () => {
     try {
       const parsed = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
@@ -256,7 +264,7 @@ function AllobotSearchSettings({ t }) {
     }
   };
   const managed = typeof window !== "undefined" ? window.ALLOFLOW_MANAGED_AI_POLICY : null;
-  const managedSearchOff = managed != null && (managed.version !== 1 || managed.allowExternalSearch !== true);
+  const managedSearchOff = managed != null && (managed.version !== 1 || !Array.isArray(managed.connections) || managed.allowExternalSearch !== true);
   const [key, setKey] = React.useState(() => isLocked() ? "" : String(read().serperApiKey || ""));
   const [hasSavedKey, setHasSavedKey] = React.useState(() => !isLocked() && Boolean(String(read().serperApiKey || "").trim()));
   const [enabled, setEnabled] = React.useState(() => {
@@ -267,9 +275,35 @@ function AllobotSearchSettings({ t }) {
   const [saved, setSaved] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
   React.useEffect(() => {
+    const sync = () => {
+      const nextLocked = isLocked();
+      setLocked(nextLocked);
+      if (nextLocked) {
+        setKey("");
+        setHasSavedKey(false);
+        setEnabled(false);
+        setSaved(false);
+        setFailed(false);
+      } else {
+        const cfg = read();
+        const savedKey = String(cfg.serperApiKey || "");
+        setKey(savedKey);
+        setHasSavedKey(Boolean(savedKey.trim()));
+        setEnabled(cfg.allobotWebSearch === true || cfg.allobotWebSearch !== false && (!cfg.backend || cfg.backend === "gemini"));
+      }
+    };
+    const events = ["alloflow:ai-key-lock-changed", "alloflow:student-ai-config-changed", "alloflow:ai-config-changed", "storage"];
+    events.forEach((ev) => window.addEventListener(ev, sync));
+    return () => {
+      events.forEach((ev) => window.removeEventListener(ev, sync));
+    };
+  }, []);
+  React.useEffect(() => {
     if (locked) {
       setKey("");
       setHasSavedKey(false);
+      setSaved(false);
+      setFailed(false);
     }
   }, [locked]);
   if (locked) return null;
@@ -290,8 +324,9 @@ function AllobotSearchSettings({ t }) {
       setSaved(false);
     }
   };
-  const focusBtn = "min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-sm font-medium text-slate-800 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
-  return /* @__PURE__ */ React.createElement("section", { "aria-label": tx("chat_guide.search_settings", "Allobot web sources"), className: "border-t border-slate-200 pt-4 space-y-2 text-slate-800" }, managed != null && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs" }, tx("chat_guide.managed_policy", "Managed AI restrictions are active. Requests to unapproved endpoints or credentials are blocked. This policy currently permits approved text connections only; media generation is disabled. Your administrator controls external research access.")), /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-sm" }, tx("chat_guide.search_settings", "Allobot web sources")), /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 items-start gap-2 py-1 text-sm cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", className: "mt-1 h-4 w-4 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600", checked: !managedSearchOff && enabled, disabled: managedSearchOff, onChange: (event) => {
+  const helpId = React.useId();
+  const focusBtn = "min-h-11 px-3 rounded-lg border border-slate-300 bg-white text-sm font-medium text-slate-800 hover:bg-slate-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+  return /* @__PURE__ */ React.createElement("section", { "aria-label": tx("chat_guide.search_settings", "Allobot web sources"), className: "border-t border-slate-200 pt-4 space-y-2 text-slate-800" }, managed != null && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "text-xs" }, tx("chat_guide.managed_policy", "Managed AI restrictions are active. Requests to unapproved endpoints or credentials are blocked. This policy currently permits approved text connections only; media generation is disabled. Your administrator controls external research access.")), /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-sm" }, tx("chat_guide.search_settings", "Allobot web sources")), /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 items-start gap-2 py-1 text-sm cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", className: "mt-1 h-4 w-4 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600", checked: !managedSearchOff && enabled, disabled: managedSearchOff, onChange: (event) => {
     setEnabled(event.target.checked);
     save({ allobotWebSearch: event.target.checked });
   } }), tx("chat_guide.search_enabled", "Look up public sources for UDL, standards and research questions")), /* @__PURE__ */ React.createElement("label", { className: "block text-sm" }, /* @__PURE__ */ React.createElement("span", { className: "block font-medium mb-1" }, tx("chat_guide.personal_serper", "Your Serper API key (optional)")), /* @__PURE__ */ React.createElement(
@@ -303,16 +338,24 @@ function AllobotSearchSettings({ t }) {
       value: key,
       placeholder: "serper.dev",
       disabled: managedSearchOff,
+      "aria-describedby": helpId + "-key",
       onChange: (event) => {
         setKey(event.target.value);
         setSaved(false);
+      },
+      onKeyDown: (event) => {
+        if (event.nativeEvent && event.nativeEvent.isComposing || event.isComposing || event.keyCode === 229) return;
+        if (event.key === "Enter" && !managedSearchOff) {
+          event.preventDefault();
+          save({ serperApiKey: key.trim() });
+        }
       },
       className: "min-h-11 w-full min-w-0 rounded-lg border border-slate-300 p-2 text-slate-900 bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50"
     }
   )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: focusBtn, disabled: managedSearchOff, onClick: () => save({ serperApiKey: key.trim() }) }, tx("chat_guide.save_search_key", "Save search key")), /* @__PURE__ */ React.createElement("button", { type: "button", className: focusBtn, disabled: !hasSavedKey && !key.trim(), onClick: () => {
     setKey("");
     save({ serperApiKey: "" });
-  } }, tx("chat_guide.remove_search_key", "Remove personal key"))), /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs" }, failed ? tx("chat_guide.search_save_failed", "Could not save these settings in this browser.") : saved ? tx("chat_guide.search_saved", "Search settings saved.") : ""), /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-relaxed" }, tx("chat_guide.search_key_help", "Leave blank to use the configured search service or Gemini Google grounding when available. A saved personal key takes priority for Allobot lookups and Serper searches. It is stored in this browser and can be read by code running in the app; use a personal key, not a shared district secret.")), /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-relaxed" }, tx("chat_guide.search_privacy_help", "Serper is outside your district Google environment. Any topic can be searched. A search that looks like it contains an email address, phone number or ID number is not sent, with or without a personal key. Ordinary Allobot replies send your current question; you can include recent messages or a reviewed excerpt for one reply. Other generation workflows use their task inputs. Use a district-approved connection for student information. A Gemini API key alone does not establish district coverage. Local AI requires this lookup option to be enabled.")));
+  } }, tx("chat_guide.remove_search_key", "Remove personal key"))), /* @__PURE__ */ React.createElement("p", { role: failed ? "alert" : "status", "aria-live": failed ? "assertive" : "polite", "aria-atomic": "true", className: "text-xs " + (failed ? "font-semibold text-red-700" : "text-slate-700") }, failed ? tx("chat_guide.search_save_failed", "Could not save these settings in this browser.") : saved ? tx("chat_guide.search_saved", "Search settings saved.") : ""), /* @__PURE__ */ React.createElement("p", { id: helpId + "-key", className: "text-xs leading-relaxed" }, tx("chat_guide.search_key_help", "Leave blank to use the configured search service or Gemini Google grounding when available. A saved personal key takes priority for Allobot lookups and Serper searches. It is stored in this browser and can be read by code running in the app; use a personal key, not a shared district secret.")), /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-relaxed" }, tx("chat_guide.search_privacy_help", "Serper is outside your district Google environment. Any topic can be searched. A search that looks like it contains an email address, phone number or ID number is not sent, with or without a personal key. Ordinary Allobot replies send your current question; you can include recent messages or a reviewed excerpt for one reply. Other generation workflows use their task inputs. Use a district-approved connection for student information. A Gemini API key alone does not establish district coverage. Local AI requires this lookup option to be enabled.")));
 }
 const CANVAS_FALLBACK_URL = "https://alloflow-cdn.pages.dev/launch";
 const CANVAS_RELEASE_JSON_URL = "https://alloflow-cdn.pages.dev/release.json";
@@ -500,7 +543,7 @@ function AllobotLessonRevision({ revision, operationId, tx, disabled, styles, on
     return [responseType ? tx("chat_guide.revision_response_type", "Response type") + ": " + responseType : "", ...entries.map(([key, child]) => fieldLabel(key) + ": " + (child === "" ? tx("chat_guide.revision_blank_writing", "Blank writing field for the learner.") : (Array.isArray(child) ? "\n" : "") + display(child)))].filter(Boolean).join("\n\n");
   };
   const warningText = (warning) => typeof warning === "string" ? warning : warning?.message || warning?.label || "";
-  return /* @__PURE__ */ React.createElement("section", { className: "min-w-0 mt-3 space-y-3", "data-testid": "lesson-revision", "aria-label": tx("chat_guide.revision_title", "Revise existing lesson") }, /* @__PURE__ */ React.createElement("h3", { ref: headingRef, tabIndex: -1, className: "font-bold text-sm outline-none", "data-testid": "lesson-revision-heading" }, revision.mode === "review" ? tx("chat_guide.revision_review", "Review proposed edits") : revision.mode === "applied" ? tx("chat_guide.revision_applied", "Revision applied") : revision.mode === "undone" ? tx("chat_guide.revision_undone", "Revision undone") : tx("chat_guide.revision_title", "Revise existing lesson")), revision.error && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "text-sm break-words", style: { overflowWrap: "anywhere" } }, revision.error), revision.canUndo && /* @__PURE__ */ React.createElement("div", { className: "space-y-1", "data-testid": "lesson-revision-undo" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("section", { className: "min-w-0 mt-3 space-y-3", "data-testid": "lesson-revision", "aria-label": tx("chat_guide.revision_title", "Revise existing lesson") }, /* @__PURE__ */ React.createElement("h3", { ref: headingRef, tabIndex: -1, className: "font-bold text-sm rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1", "data-testid": "lesson-revision-heading" }, revision.mode === "review" ? tx("chat_guide.revision_review", "Review proposed edits") : revision.mode === "applied" ? tx("chat_guide.revision_applied", "Revision applied") : revision.mode === "undone" ? tx("chat_guide.revision_undone", "Revision undone") : tx("chat_guide.revision_title", "Revise existing lesson")), revision.error && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "text-sm break-words", style: { overflowWrap: "anywhere" } }, revision.error), revision.canUndo && /* @__PURE__ */ React.createElement("div", { className: "space-y-1", "data-testid": "lesson-revision-undo" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1071,9 +1114,9 @@ function UDLGuideModal(props) {
             handleToggleIsShowMeMode();
             setChatMenuOpen(false);
           },
-          className: "flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100"
+          className: "flex w-full min-h-11 items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
         },
-        /* @__PURE__ */ React.createElement(Eye, { size: 14, className: "mt-0.5 shrink-0" }),
+        /* @__PURE__ */ React.createElement(Eye, { size: 14, className: "mt-0.5 shrink-0", "aria-hidden": "true" }),
         /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("chat_guide.show_me", "Point things out on screen")), /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600" }, isShowMeMode ? t("common.on", "On") : t("common.off", "Off"), " \u2014 ", t("chat_guide.show_me_desc", "Asking \u201Cwhere is\u2026\u201D always points, with or without this.")))
       ),
       props.canReviseLesson === true && /* @__PURE__ */ React.createElement(
@@ -1087,7 +1130,7 @@ function UDLGuideModal(props) {
             handleSendUDLMessage({ action: "lesson-revision-start" });
             setChatMenuOpen(false);
           },
-          className: "flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100 disabled:opacity-40",
+          className: "flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-40",
           style: { minHeight: 44 }
         },
         /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, tx("chat_guide.revision_title", "Revise existing lesson"))
@@ -1101,34 +1144,34 @@ function UDLGuideModal(props) {
             saveFullChat();
             setChatMenuOpen(false);
           },
-          className: "flex w-full items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100"
+          className: "flex w-full min-h-11 items-start gap-2 rounded-lg px-2 py-2 text-left text-xs hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
         },
-        /* @__PURE__ */ React.createElement(Save, { size: 14, className: "mt-0.5 shrink-0" }),
+        /* @__PURE__ */ React.createElement(Save, { size: 14, className: "mt-0.5 shrink-0", "aria-hidden": "true" }),
         /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("chat_guide.save_chat", "Save this chat"))
       )
     )), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
-        "aria-label": isUDLGuideExpanded ? t("common.minimize") : t("common.maximize"),
+        "aria-label": isUDLGuideExpanded ? t("common.minimize") || "Minimize" : t("common.maximize") || "Maximize",
         "data-help-key": "chat_expand",
         onClick: handleToggleIsUDLGuideExpanded,
-        className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors",
-        title: isUDLGuideExpanded ? t("common.minimize") : t("common.maximize")
+        className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/90",
+        title: isUDLGuideExpanded ? t("common.minimize") || "Minimize" : t("common.maximize") || "Maximize"
       },
-      isUDLGuideExpanded ? /* @__PURE__ */ React.createElement(Minimize, { size: 18 }) : /* @__PURE__ */ React.createElement(Maximize, { size: 18 })
+      isUDLGuideExpanded ? /* @__PURE__ */ React.createElement(Minimize, { size: 18, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Maximize, { size: 18, "aria-hidden": "true" })
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         "data-help-key": "chat_collapse",
         onClick: () => setIsCollapsed(true),
-        className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors",
+        className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/90",
         title: t("chat_guide.collapse") || "Collapse to a bar (keeps the conversation)",
         "aria-label": t("chat_guide.collapse") || "Collapse to a bar (keeps the conversation)"
       },
-      /* @__PURE__ */ React.createElement(ChevronDown, { size: 18 })
-    ), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "chat_close", onClick: closeGuide, className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 18 })))),
+      /* @__PURE__ */ React.createElement(ChevronDown, { size: 18, "aria-hidden": "true" })
+    ), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "chat_close", onClick: closeGuide, className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-white/20 p-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/90", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 18, "aria-hidden": "true" })))),
     revisionOwnsComposer ? /* @__PURE__ */ React.createElement("section", { className: `rounded-lg border p-2 text-xs ${chatStyles.body}`, "data-testid": "lesson-revision-context", "aria-label": tx("chat_guide.revision_chat_context", "Proposal follow-up context") }, /* @__PURE__ */ React.createElement("p", null, tx("chat_guide.revision_chat_context_help", "Questions and refinement about this proposal include the selected authored fields, proposed edits, and recent questions and answers in this revision. They do not use your ordinary chat context choices.")), /* @__PURE__ */ React.createElement("p", { className: `mt-1 ${chatStyles.subText}` }, tx("chat_guide.revision_other_chat_context", "Unrelated questions and app commands still use their ordinary settings. Your ordinary chat context choice is unchanged."))) : /* @__PURE__ */ React.createElement(AllobotContextControls, { messages: udlMessages, busy: isChatProcessing, setInput: setUdlInput, clearChat: () => {
       setUdlMessages([]);
       setUdlInput("");
@@ -1151,7 +1194,7 @@ function UDLGuideModal(props) {
           type: "button",
           disabled: isChatProcessing || aiOff,
           title: aiTitle,
-          className: `block mt-2 px-3 py-1.5 rounded-lg ${chatStyles.secondaryButton}`,
+          className: `block mt-2 min-h-11 px-3 py-1.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${chatStyles.secondaryButton}`,
           onClick: () => handleSendUDLMessage({ action: "retry-chat", text: msg.retryText })
         },
         tx("chat_guide.retry_reply", "Retry response")
@@ -1171,7 +1214,7 @@ function UDLGuideModal(props) {
             }
             handleSendUDLMessage(choice.value);
           },
-          className: `px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${choice.tone === "secondary" ? chatStyles.secondaryButton : chatStyles.button}`
+          className: `min-h-11 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed ${choice.tone === "secondary" ? chatStyles.secondaryButton : chatStyles.button}`
         },
         choice.label
       ))), idx === udlMessages.length - 1 && /* @__PURE__ */ React.createElement("p", { className: `mt-2 text-xs italic ${chatStyles.subText}` }, t("chat_guide.chips.or_type") || "\u2026or just type your answer below.")), !msg.type && msg.role === "model" && msg.isActionable && idx > 0 && /* @__PURE__ */ React.createElement(
@@ -1426,7 +1469,7 @@ function UDLGuideModal(props) {
       {
         ref: previewRef,
         tabIndex: -1,
-        className: `absolute inset-0 z-20 flex flex-col outline-none ${theme === "dark" ? "bg-slate-900" : "bg-white"}`,
+        className: `absolute inset-0 z-20 flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 ${theme === "dark" ? "bg-slate-900" : "bg-white"}`,
         role: "dialog",
         "aria-modal": "true",
         "aria-labelledby": "bp-preview-title",
@@ -1438,10 +1481,10 @@ function UDLGuideModal(props) {
           type: "button",
           "data-testid": "bp-preview-close",
           onClick: closeBlueprintPreview,
-          "aria-label": t("common.close"),
-          className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-slate-500/20 p-1 rounded transition-colors"
+          "aria-label": t("common.close") || "Close",
+          className: "inline-flex items-center justify-center min-w-[24px] min-h-[24px] hover:bg-slate-500/20 p-1 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
         },
-        /* @__PURE__ */ React.createElement(X, { size: 18 })
+        /* @__PURE__ */ React.createElement(X, { size: 18, "aria-hidden": "true" })
       )),
       /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-auto p-4 custom-scrollbar" }, blueprintPreview.missing ? /* @__PURE__ */ React.createElement("p", { className: `text-sm ${chatStyles.subText}`, "data-testid": "bp-preview-missing" }, t("blueprint.preview_missing") || "That resource is no longer in this workspace. Rebuild the step to make it again.") : blueprintPreview.unsupported ? (
         // generateResourceHTML has no branch for some types and returns
@@ -1464,12 +1507,12 @@ function UDLGuideModal(props) {
         "aria-expanded": standardToolsOpen,
         "aria-controls": "udl-standard-tools",
         "data-help-key": "chat_standard_tools_toggle",
-        className: `w-full mb-2 flex items-center gap-1.5 px-1 py-1 min-h-[24px] rounded text-xs font-medium transition-colors ${chatStyles.subText}`
+        className: `w-full mb-2 flex items-center gap-1.5 px-2 py-1 min-h-11 rounded-lg text-xs font-medium transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${chatStyles.subText}`
       },
-      standardToolsOpen ? /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronRight, { size: 12 }),
-      /* @__PURE__ */ React.createElement(ShieldCheck, { size: 11 }),
+      standardToolsOpen ? /* @__PURE__ */ React.createElement(ChevronDown, { size: 12, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(ChevronRight, { size: 12, "aria-hidden": "true" }),
+      /* @__PURE__ */ React.createElement(ShieldCheck, { size: 11, "aria-hidden": "true" }),
       tx("chat_guide.curriculum_standards", "Find or discuss curriculum standards")
-    ), /* @__PURE__ */ React.createElement("div", { id: "udl-standard-tools", hidden: !standardToolsOpen }, /* @__PURE__ */ React.createElement("div", { className: `mb-3 p-2 rounded-lg border ${theme === "dark" ? "bg-slate-800 border-slate-700" : theme === "contrast" ? "bg-black border-white" : "bg-slate-50 border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}` }, /* @__PURE__ */ React.createElement(Search, { size: 10 }), " ", t("standards.finder_header"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { id: "udl-standard-tools", hidden: !standardToolsOpen }, /* @__PURE__ */ React.createElement("div", { className: `mb-3 p-2 rounded-lg border ${theme === "dark" ? "bg-slate-800 border-slate-700" : theme === "contrast" ? "bg-black border-white" : "bg-slate-50 border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}` }, /* @__PURE__ */ React.createElement(Search, { size: 10, "aria-hidden": "true" }), " ", t("standards.finder_header"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("standards.region_framework_placeholder"),
@@ -1478,7 +1521,7 @@ function UDLGuideModal(props) {
         onChange: (e) => setAiStandardRegion(e.target.value),
         "data-help-key": "standards_region_input",
         placeholder: t("standards.region_framework_placeholder"),
-        className: `w-1/3 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 ${chatStyles.input}`
+        className: `w-1/3 min-h-11 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow motion-reduce:transition-none duration-300 ${chatStyles.input}`
       }
     ), /* @__PURE__ */ React.createElement(
       "input",
@@ -1494,7 +1537,7 @@ function UDLGuideModal(props) {
           }
         },
         placeholder: isIndependentMode ? t("wizard.independent_learning_goal") : t("wizard.skill_search_placeholder"),
-        className: `flex-grow text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`
+        className: `flex-grow min-h-11 text-xs rounded p-1.5 focus:ring-2 focus:ring-indigo-500 outline-none ${chatStyles.input}`
       }
     ), /* @__PURE__ */ React.createElement(
       "button",
@@ -1502,7 +1545,8 @@ function UDLGuideModal(props) {
         type: "button",
         onClick: handleFindStandards,
         disabled: isFindingStandards || !aiStandardQuery.trim() || aiOff,
-        className: `p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm ${chatStyles.button}`,
+        "aria-busy": isFindingStandards ? "true" : void 0,
+        className: `min-w-11 min-h-11 inline-flex items-center justify-center p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 shadow-sm ${chatStyles.button}`,
         title: aiTitle || t("standards.search_button_title"),
         "aria-label": t("standards.search_button_title")
       },
@@ -1520,13 +1564,13 @@ function UDLGuideModal(props) {
       },
       /* @__PURE__ */ React.createElement("span", { className: "flex justify-between items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold px-1 rounded border ${theme === "dark" ? "bg-indigo-900 text-indigo-200 border-indigo-700" : theme === "contrast" ? "bg-black text-yellow-400 border-yellow-400" : "bg-indigo-50 text-indigo-700 border-indigo-100"}` }, std.code), /* @__PURE__ */ React.createElement("span", { className: `text-xs uppercase ml-auto ${chatStyles.subText}` }, std.framework)),
       /* @__PURE__ */ React.createElement("span", { className: `block text-xs leading-snug line-clamp-2 ${chatStyles.text}` }, std.description)
-    ))))), /* @__PURE__ */ React.createElement("div", { className: `mb-3 p-2 rounded-lg border ${theme === "dark" ? "bg-slate-800 border-slate-700" : theme === "contrast" ? "bg-black border-white" : "bg-slate-50 border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-1.5" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}` }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10 }), " ", t("standards.consult_header"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+    ))))), /* @__PURE__ */ React.createElement("div", { className: `mb-3 p-2 rounded-lg border ${theme === "dark" ? "bg-slate-800 border-slate-700" : theme === "contrast" ? "bg-black border-white" : "bg-slate-50 border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-1.5" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}` }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10, "aria-hidden": "true" }), " ", t("standards.consult_header"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
       "select",
       {
         "data-help-key": "chat_framework_select",
         value: udlStandardFramework,
         onChange: (e) => setUdlStandardFramework(e.target.value),
-        className: `flex-1 text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`,
+        className: `flex-1 min-h-11 text-xs rounded p-1.5 focus:ring-2 focus:ring-indigo-500 outline-none ${chatStyles.input}`,
         "aria-label": tx("standards.framework_aria", "Standards framework")
       },
       /* @__PURE__ */ React.createElement("option", { value: "Common Core ELA" }, t("standards.frameworks.ccss_ela")),
@@ -1543,7 +1587,7 @@ function UDLGuideModal(props) {
         "data-help-key": "chat_grade_select",
         value: udlStandardGrade,
         onChange: (e) => setUdlStandardGrade(e.target.value),
-        className: `w-28 text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`
+        className: `w-28 min-h-11 text-xs rounded p-1.5 focus:ring-2 focus:ring-indigo-500 outline-none ${chatStyles.input}`
       },
       /* @__PURE__ */ React.createElement("option", { value: "Kindergarten" }, t("standards.grades.k")),
       /* @__PURE__ */ React.createElement("option", { value: "1st Grade" }, t("standards.grades.1")),
@@ -1566,10 +1610,10 @@ function UDLGuideModal(props) {
         "data-help-key": "chat_consult_btn",
         disabled: aiOff,
         onClick: () => handleSendUDLMessage(t("standards.prompts.identify_key_standards", { framework: udlStandardFramework, grade: udlStandardGrade })),
-        className: `p-1.5 rounded transition-colors border disabled:opacity-50 disabled:cursor-not-allowed ${theme === "dark" ? "bg-indigo-900 border-indigo-700 text-indigo-300 hover:bg-indigo-800" : theme === "contrast" ? "bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900" : "bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-200"}`,
+        className: `min-w-11 min-h-11 inline-flex items-center justify-center p-1.5 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 border disabled:opacity-50 disabled:cursor-not-allowed ${theme === "dark" ? "bg-indigo-900 border-indigo-700 text-indigo-300 hover:bg-indigo-800" : theme === "contrast" ? "bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900" : "bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-200"}`,
         title: aiTitle || t("standards.consult_btn_title")
       },
-      /* @__PURE__ */ React.createElement(ArrowRight, { size: 14 })
+      /* @__PURE__ */ React.createElement(ArrowRight, { size: 14, "aria-hidden": "true" })
     )))), /* @__PURE__ */ React.createElement("div", { className: `flex items-start gap-2 mb-2 px-2 py-2 rounded-lg border ${theme === "dark" ? "border-slate-700 bg-slate-800" : theme === "contrast" ? "border-white bg-black" : "border-slate-200 bg-slate-50"}` }, /* @__PURE__ */ React.createElement(
       "input",
       {
@@ -1608,7 +1652,7 @@ function UDLGuideModal(props) {
           if (!isChatProcessing && udlInput.trim()) handleSendUDLMessage();
         },
         placeholder: isShowMeMode ? t("chat_guide.input_placeholder_showme") : t("chat_guide.input_placeholder_default"),
-        className: `flex-grow text-sm p-2 border rounded-lg focus:ring-2 outline-none ${chatStyles.input}`,
+        className: `flex-grow min-h-11 text-sm p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none ${chatStyles.input}`,
         "data-help-key": "chat_input"
       }
     ), /* @__PURE__ */ React.createElement(
@@ -1616,12 +1660,13 @@ function UDLGuideModal(props) {
       {
         type: "button",
         "aria-label": isShowMeMode ? tx("chat_guide.send_showme_aria", "Show me where this is on screen") : tx("chat_guide.send_aria", "Send message"),
+        "aria-busy": isChatProcessing ? "true" : void 0,
         onClick: () => handleSendUDLMessage(),
         disabled: !udlInput.trim() || isChatProcessing,
-        className: `p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${chatStyles.button}`,
+        className: `min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ${chatStyles.button}`,
         "data-help-key": "chat_send"
       },
-      isShowMeMode ? /* @__PURE__ */ React.createElement(Eye, { size: 18 }) : /* @__PURE__ */ React.createElement(Send, { size: 18 })
+      isShowMeMode ? /* @__PURE__ */ React.createElement(Eye, { size: 18, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Send, { size: 18, "aria-hidden": "true" })
     )))
   );
 }
@@ -2728,18 +2773,18 @@ function AIBackendModalBody(props) {
       setTimeout(refreshEngineStrip, 0);
     }
   } });
-  const guidedStepHeading = (text) => /* @__PURE__ */ React.createElement("p", { ref: guidedHeadingRef, tabIndex: -1, role: "status", "aria-live": "polite", className: "text-xs font-black text-violet-700 uppercase tracking-wider outline-none" }, text);
+  const guidedStepHeading = (text) => /* @__PURE__ */ React.createElement("p", { ref: guidedHeadingRef, tabIndex: -1, role: "status", "aria-live": "polite", className: "text-xs font-black text-violet-700 uppercase tracking-wider rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600" }, text);
   const guidedBackBtn = (target) => /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "ai_backend_guided_back_btn", onClick: () => {
     setGuidedReady(false);
     setGuidedView(target);
-  }, className: "text-xs font-bold text-slate-600 hover:text-violet-700 transition-colors" }, "\u25C0 ", t("ai_backend.guided_back") || "Back");
+  }, className: "min-h-11 inline-flex items-center gap-1 px-2 -ml-2 rounded-lg text-xs font-bold text-slate-700 hover:text-violet-700 hover:bg-violet-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u25C0"), /* @__PURE__ */ React.createElement("span", null, t("ai_backend.guided_back") || "Back"));
   const guidedCard = (keyProps, onClick, emoji, title, badge, body, req) => /* @__PURE__ */ React.createElement(
     "button",
     {
       ...keyProps,
       type: "button",
       onClick,
-      className: "w-full text-left border-2 border-slate-200 rounded-2xl p-4 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99] motion-reduce:transition-none motion-reduce:transform-none"
+      className: "w-full min-h-11 text-left border-2 border-slate-200 rounded-2xl p-4 hover:border-violet-400 hover:bg-violet-50/40 transition-all active:scale-[0.99] motion-reduce:transition-none motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-1"
     },
     /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, emoji), /* @__PURE__ */ React.createElement("span", { className: "font-black text-sm text-slate-800" }, title), badge && /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-xs font-black uppercase tracking-wider bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full" }, badge)),
     /* @__PURE__ */ React.createElement("span", { className: "block text-xs text-slate-600 mt-1 leading-relaxed" }, body),
@@ -2868,7 +2913,7 @@ function AIBackendModalBody(props) {
           if (e.target === e.currentTarget && allow) setShowAIBackendModal(false);
         }
       },
-      /* @__PURE__ */ React.createElement("div", { ref: aiBackendDialogRef, "data-help-key": "ai_backend_modal_panel", "data-student-ai-setup": "false", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-labelledby": "ai-backend-title", tabIndex: -1, onKeyDown: handleAIBackendDialogKeyDown, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-4 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { id: "ai-backend-title", className: "font-black text-lg" }, t("ai_backend.key_lock_locked_title") || "Saved AI key is locked")), /* @__PURE__ */ React.createElement("p", { className: "text-sm leading-relaxed text-slate-700" }, t("ai_backend.key_lock_locked_body") || "Enter your educator access code to use or change the AI key saved on this device."), /* @__PURE__ */ React.createElement("label", { htmlFor: "ai-backend-key-unlock-code", className: "mt-4 block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.key_lock_code_label") || "Educator access code"), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { ref: aiBackendDialogRef, "data-help-key": "ai_backend_modal_panel", "data-student-ai-setup": "false", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-labelledby": "ai-backend-title", tabIndex: -1, onKeyDown: handleAIBackendDialogKeyDown, onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowAIBackendModal(false), className: "absolute top-3 right-3 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-4 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("h3", { id: "ai-backend-title", className: "font-black text-lg" }, t("ai_backend.key_lock_locked_title") || "Saved AI key is locked")), /* @__PURE__ */ React.createElement("p", { className: "text-sm leading-relaxed text-slate-700" }, t("ai_backend.key_lock_locked_body") || "Enter your educator access code to use or change the AI key saved on this device."), /* @__PURE__ */ React.createElement("label", { htmlFor: "ai-backend-key-unlock-code", className: "mt-4 block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.key_lock_code_label") || "Educator access code"), /* @__PURE__ */ React.createElement(
         "input",
         {
           id: "ai-backend-key-unlock-code",
@@ -2885,12 +2930,12 @@ function AIBackendModalBody(props) {
           },
           className: "min-h-11 w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
         }
-      ), keyLockMessage && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-xs font-bold text-rose-800" }, keyLockMessage), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: keyLockBusy || !keyLockCode, onClick: unlock, className: "min-h-11 rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800 disabled:opacity-60" }, t("ai_backend.key_lock_unlock_btn") || "Unlock"), !confirmForgetKey ? /* @__PURE__ */ React.createElement(
+      ), keyLockMessage && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-xs font-bold text-rose-800" }, keyLockMessage), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: keyLockBusy || !keyLockCode, "aria-busy": keyLockBusy ? "true" : void 0, onClick: unlock, className: "min-h-11 rounded-xl bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2 disabled:opacity-60" }, t("ai_backend.key_lock_unlock_btn") || "Unlock"), !confirmForgetKey ? /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
           onClick: () => setConfirmForgetKey(true),
-          className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800"
+          className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-700"
         },
         t("ai_backend.key_lock_forget_btn") || "Forgot your code? Remove saved key"
       ) : /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-lg border border-rose-300 bg-rose-50 px-3 py-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-rose-900" }, t("ai_backend.key_lock_forget_confirm") || "Remove the saved AI key from this device? You can enter it again afterward."), /* @__PURE__ */ React.createElement(
@@ -2904,7 +2949,7 @@ function AIBackendModalBody(props) {
             setConfigRevision((revision) => revision + 1);
             setKeyLockTick((tick) => tick + 1);
           },
-          className: "min-h-9 rounded-lg bg-rose-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-800"
+          className: "min-h-11 rounded-lg bg-rose-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-1"
         },
         t("common.remove") || "Remove"
       ), /* @__PURE__ */ React.createElement(
@@ -2912,7 +2957,7 @@ function AIBackendModalBody(props) {
         {
           type: "button",
           onClick: () => setConfirmForgetKey(false),
-          className: "min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
+          className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700"
         },
         t("common.cancel") || "Cancel"
       ))))
@@ -2943,7 +2988,7 @@ function AIBackendModalBody(props) {
               [data-student-ai-setup="true"] #ai-backend-device-storage-section {
                 display: none !important;
               }
-            `), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { id: "ai-backend-title", className: "font-black text-lg" }, isStudentAiSetup ? t("ai_backend.personal_title") || "Connect Personal AI" : t("sidebar.ai_setup_name") || "AI setup")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, isStudentAiSetup && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" }, /* @__PURE__ */ React.createElement("p", { className: "font-black" }, t("ai_backend.personal_session_title") || "Personal AI for this session"), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, t("ai_backend.personal_storage_notice") || "Use only your own provider account. Your credential is stored only in this browser tab and transmitted only to the provider you choose; it is never placed in the QR, Class Mailbox, or student submission."), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, t("ai_backend.personal_privacy_notice") || "Your prompts and activity content are sent directly to the provider you choose and may create charges. Follow your school or district rules, do not include private student information, and use a restricted, low-budget key. Avoid shared devices.")), !advancedOpen && !isStudentAiSetup && renderGuidedStep(), !advancedOpen && !isStudentAiSetup && /* @__PURE__ */ React.createElement("section", { id: "ai-backend-guided-storage-shortcut", className: "rounded-xl border border-cyan-200 bg-cyan-50 p-3", "aria-labelledby": "ai-backend-guided-storage-title" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: "ai-backend-guided-storage-title", className: "text-xs font-black text-cyan-950" }, t("canvas_settings.local_storage_title") || "Saved work on this device"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-cyan-900" }, t("canvas_settings.local_storage_hint") || "Open your saved resource packs to restore, pin, export, or erase them. Also shows space used and the offline voice models such as Whisper and Kokoro.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "ai_backend_guided_storage_btn", onClick: openDeviceStorageManager, className: "min-h-11 shrink-0 rounded-xl border-2 border-cyan-600 bg-white px-4 py-2 text-sm font-black text-cyan-900 hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2" }, t("canvas_settings.local_storage_btn") || "Open saved work"))), advancedOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.provider_label") || "Provider"), /* @__PURE__ */ React.createElement(
+            `), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowAIBackendModal(false), className: "absolute top-3 right-3 min-w-11 min-h-11 inline-flex items-center justify-center p-2 rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("h3", { id: "ai-backend-title", className: "font-black text-lg" }, isStudentAiSetup ? t("ai_backend.personal_title") || "Connect Personal AI" : t("sidebar.ai_setup_name") || "AI setup")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, isStudentAiSetup && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" }, /* @__PURE__ */ React.createElement("p", { className: "font-black" }, t("ai_backend.personal_session_title") || "Personal AI for this session"), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, t("ai_backend.personal_storage_notice") || "Use only your own provider account. Your credential is stored only in this browser tab and transmitted only to the provider you choose; it is never placed in the QR, Class Mailbox, or student submission."), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, t("ai_backend.personal_privacy_notice") || "Your prompts and activity content are sent directly to the provider you choose and may create charges. Follow your school or district rules, do not include private student information, and use a restricted, low-budget key. Avoid shared devices.")), !advancedOpen && !isStudentAiSetup && renderGuidedStep(), !advancedOpen && !isStudentAiSetup && /* @__PURE__ */ React.createElement("section", { id: "ai-backend-guided-storage-shortcut", className: "rounded-xl border border-cyan-200 bg-cyan-50 p-3", "aria-labelledby": "ai-backend-guided-storage-title" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: "ai-backend-guided-storage-title", className: "text-xs font-black text-cyan-950" }, t("canvas_settings.local_storage_title") || "Saved work on this device"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-cyan-900" }, t("canvas_settings.local_storage_hint") || "Open your saved resource packs to restore, pin, export, or erase them. Also shows space used and the offline voice models such as Whisper and Kokoro.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "ai_backend_guided_storage_btn", onClick: openDeviceStorageManager, className: "min-h-11 shrink-0 rounded-xl border-2 border-cyan-600 bg-white px-4 py-2 text-sm font-black text-cyan-900 hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2" }, t("canvas_settings.local_storage_btn") || "Open saved work"))), advancedOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.provider_label") || "Provider"), /* @__PURE__ */ React.createElement(
       "select",
       {
         "data-help-key": "ai_backend_provider_select",
@@ -2978,7 +3023,7 @@ function AIBackendModalBody(props) {
         },
         className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
       }
-    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, t("ai_backend.wolfram_unused_note") || "No tool uses this yet. It is kept on this device only; clear the box to remove it.")) : null), !advancedOpen && guidedReady && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-green-200 bg-green-50 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-black text-green-900" }, "\u2705 ", (t("ai_backend.guided_ready") || "You're ready \u2014 AlloFlow is using") + " " + (GUIDED_BACKEND_LABELS[readAIBackendConfig().backend || "gemini"] || readAIBackendConfig().backend) + "."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-green-800 mt-1" }, t("ai_backend.guided_ready_note") || "Your choice is active now \u2014 close this window and start working."), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "ai_backend_guided_done_btn", onClick: () => setShowAIBackendModal(false), className: "mt-2 bg-green-700 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-800 transition-all active:scale-95" }, t("ai_backend.guided_done") || "Done")), guidedTestVisible && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 pt-1" }, /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, t("ai_backend.wolfram_unused_note") || "No tool uses this yet. It is kept on this device only; clear the box to remove it.")) : null), !advancedOpen && guidedReady && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-green-200 bg-green-50 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-black text-green-900" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2705 "), (t("ai_backend.guided_ready") || "You're ready \u2014 AlloFlow is using") + " " + (GUIDED_BACKEND_LABELS[readAIBackendConfig().backend || "gemini"] || readAIBackendConfig().backend) + "."), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-green-800 mt-1" }, t("ai_backend.guided_ready_note") || "Your choice is active now \u2014 close this window and start working."), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "ai_backend_guided_done_btn", onClick: () => setShowAIBackendModal(false), className: "mt-2 min-h-11 bg-green-700 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-800 transition-all motion-reduce:transition-none active:scale-95 motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2" }, t("ai_backend.guided_done") || "Done")), guidedTestVisible && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 pt-1" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -3078,7 +3123,7 @@ function AIBackendModalBody(props) {
           btn.removeAttribute("aria-busy");
           btn.textContent = "\u{1F50C} Test Connection";
         },
-        className: "flex-1 bg-violet-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-violet-700 transition-all shadow-lg shadow-violet-200 active:scale-95"
+        className: "flex-1 min-h-11 bg-violet-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-violet-800 transition-all motion-reduce:transition-none shadow-lg shadow-violet-200 active:scale-95 motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2"
       },
       "\u{1F50C} Test Connection"
     ), advancedOpen && /* @__PURE__ */ React.createElement(
@@ -3110,10 +3155,10 @@ function AIBackendModalBody(props) {
             s.className = "text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100";
           }
         },
-        className: "bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all active:scale-95"
+        className: "min-h-11 bg-slate-200 text-slate-800 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all motion-reduce:transition-none active:scale-95 motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2"
       },
       isStudentAiSetup ? "Disconnect & erase key" : "\u21A9 Reset"
-    )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-status", role: "status", "aria-live": "polite", "aria-atomic": "true" })), advancedOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-blue-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-blue-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.model_selection_header") || "Model Selection")), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.default_model_label") || "Default Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.default_model_hint") || "(text generation)")), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-status", role: "status", "aria-live": "polite", "aria-atomic": "true" })), advancedOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-blue-100 p-1.5 rounded-lg", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-blue-600", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.model_selection_header") || "Model Selection")), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "ai-backend-model-default", className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.default_model_label") || "Default Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.default_model_hint") || "(text generation)")), /* @__PURE__ */ React.createElement(
       "select",
       {
         "data-help-key": "ai_backend_model_select",
@@ -3126,10 +3171,10 @@ function AIBackendModalBody(props) {
           if (!e.target.value) delete models.default;
           writeAIBackendConfig({ ...current, models });
         },
-        className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
+        className: "w-full min-h-11 p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
       },
       /* @__PURE__ */ React.createElement("option", { value: "" }, t("ai_backend.auto_server_default") || "Auto (server default)")
-    )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.fallback_model_label") || "Fallback Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.fallback_model_hint") || "(rate-limit cascade)")), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "ai-backend-model-fallback", className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.fallback_model_label") || "Fallback Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.fallback_model_hint") || "(rate-limit cascade)")), /* @__PURE__ */ React.createElement(
       "select",
       {
         "aria-label": t("ai_backend.fallback_model_aria") || "Fallback AI model",
@@ -3141,10 +3186,10 @@ function AIBackendModalBody(props) {
           if (!e.target.value) delete models.fallback;
           writeAIBackendConfig({ ...current, models });
         },
-        className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
+        className: "w-full min-h-11 p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
       },
       /* @__PURE__ */ React.createElement("option", { value: "" }, t("ai_backend.same_as_default") || "Same as default")
-    )), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 italic" }, '\u{1F4A1} Click "Test Connection" above to auto-populate available models from your backend.'))), /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Headphones, { size: 14, className: "text-emerald-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, "Text-to-Speech")), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 italic" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1} "), 'Click "Test Connection" above to auto-populate available models from your backend.'))), /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-100 p-1.5 rounded-lg", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Headphones, { size: 14, className: "text-emerald-600", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, "Text-to-Speech")), /* @__PURE__ */ React.createElement(
       "select",
       {
         "data-help-key": "ai_backend_tts_provider_select",
@@ -3155,14 +3200,14 @@ function AIBackendModalBody(props) {
           const current = readAIBackendConfig();
           writeAIBackendConfig({ ...current, ttsProvider: e.target.value }, { preserveValidation: true });
         },
-        className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
+        className: "w-full min-h-11 p-2 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
       },
       /* @__PURE__ */ React.createElement("option", { value: "auto" }, "\u{1F504} Auto (match backend)"),
       /* @__PURE__ */ React.createElement("option", { value: "gemini" }, "\u2728 Gemini Cloud TTS"),
       /* @__PURE__ */ React.createElement("option", { value: "local" }, "\u{1F5A5}\uFE0F Local TTS (Kokoro \u2192 Edge TTS cascade)"),
       /* @__PURE__ */ React.createElement("option", { value: "browser" }, "\u{1F310} Browser Built-in (speechSynthesis)"),
       /* @__PURE__ */ React.createElement("option", { value: "off" }, "\u{1F507} Off (disable narration)")
-    ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-emerald-50 p-2 rounded-lg border border-emerald-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Auto:"), " Gemini voices for cloud backends, Edge TTS voices for local backends. Narrator voice selection is in the header bar (\u{1F3A7} button)."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-800 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, t("ai_backend.local_cascade_label") || "Local cascade:"), " Kokoro (:8880, 8 langs) \u2192 Edge TTS (:5500, 40+ langs) \u2192 Browser fallback"))), /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 14, className: "text-amber-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.image_generation_header") || "Image Generation")), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-emerald-50 p-2 rounded-lg border border-emerald-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-800 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Auto:"), " Gemini voices for cloud backends, Edge TTS voices for local backends. Narrator voice selection is in the header bar (\u{1F3A7} button)."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-800 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, t("ai_backend.local_cascade_label") || "Local cascade:"), " Kokoro (:8880, 8 langs) \u2192 Edge TTS (:5500, 40+ langs) \u2192 Browser fallback"))), /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 p-1.5 rounded-lg", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 14, className: "text-amber-600", "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.image_generation_header") || "Image Generation")), /* @__PURE__ */ React.createElement(
       "select",
       {
         "aria-label": t("ai_backend.image_provider_aria") || "Image generation provider",
@@ -3172,25 +3217,25 @@ function AIBackendModalBody(props) {
           const current = readAIBackendConfig();
           writeAIBackendConfig({ ...current, imageProvider: e.target.value }, { preserveValidation: true });
         },
-        className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
+        className: "w-full min-h-11 p-2 border-2 border-slate-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
       },
       /* @__PURE__ */ React.createElement("option", { value: "auto" }, "\u{1F504} Auto (match backend)"),
       /* @__PURE__ */ React.createElement("option", { value: "sd-local" }, "\u{1F3EB} SD-Turbo (this computer \u2014 no account)"),
       /* @__PURE__ */ React.createElement("option", { value: "imagen" }, "\u{1F3A8} Imagen 4.0 (Google Cloud)"),
       /* @__PURE__ */ React.createElement("option", { value: "flux" }, "\u{1F5BC}\uFE0F FLUX (Local \u2014 port 7860)"),
       /* @__PURE__ */ React.createElement("option", { value: "off" }, "\u{1F6AB} Off (disable image generation)")
-    ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), !isStudentAiSetup && !(typeof window !== "undefined" && (window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window.__alloStudentAiDisabled === true)) && /* @__PURE__ */ React.createElement(AllobotSearchSettings, { t }), !isStudentAiSetup && /* @__PURE__ */ React.createElement(ModelDiagnosticsSection, { t, _isCanvasEnv, GEMINI_MODELS }), !isStudentAiSetup && /* @__PURE__ */ React.createElement(PlatformDiagnosticsSection, { t, onCloseModal: () => {
+    ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-900 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), !isStudentAiSetup && !(typeof window !== "undefined" && (window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window.__alloStudentAiDisabled === true)) && /* @__PURE__ */ React.createElement(AllobotSearchSettings, { t }), !isStudentAiSetup && /* @__PURE__ */ React.createElement(ModelDiagnosticsSection, { t, _isCanvasEnv, GEMINI_MODELS }), !isStudentAiSetup && /* @__PURE__ */ React.createElement(PlatformDiagnosticsSection, { t, onCloseModal: () => {
       if (typeof setShowAIBackendModal === "function") setShowAIBackendModal(false);
-    } }), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-device-storage-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.device_storage_label") || "Device Storage"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, t("canvas_settings.device_storage_hint") || "Work and settings are saved on this device only \u2014 nothing goes to a server. Review, export, or erase what is stored here."), /* @__PURE__ */ React.createElement(
+    } }), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-device-storage-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.device_storage_label") || "Device Storage"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 mb-2" }, t("canvas_settings.device_storage_hint") || "Work and settings are saved on this device only \u2014 nothing goes to a server. Review, export, or erase what is stored here."), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         onClick: openDeviceStorageManager,
-        className: "bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
+        className: "min-h-11 bg-white text-violet-800 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors motion-reduce:transition-none active:scale-95 motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2"
       },
-      "\u{1F50C} ",
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50C} "),
       t("canvas_settings.device_storage_btn") || "Manage device storage"
-    )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-diagnostics-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.diagnostics_label") || "Diagnostics & Logs"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, t("canvas_settings.diagnostics_hint") || "View captured errors and the read-aloud (text-to-speech) activity trace \u2014 useful when audio stalls without a visible error."), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-diagnostics-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.diagnostics_label") || "Diagnostics & Logs"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 mb-2" }, t("canvas_settings.diagnostics_hint") || "View captured errors and the read-aloud (text-to-speech) activity trace \u2014 useful when audio stalls without a visible error."), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -3204,18 +3249,18 @@ function AIBackendModalBody(props) {
           if (typeof setShowAIBackendModal === "function") setShowAIBackendModal(false);
           window.__alloOpenDiagnosticsLog(hasErrors ? "errors" : "tts");
         },
-        className: "bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
+        className: "min-h-11 bg-white text-violet-800 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors motion-reduce:transition-none active:scale-95 motion-reduce:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2"
       },
-      "\u{1FA7A} ",
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1FA7A} "),
       t("canvas_settings.diagnostics_btn") || "Open error & read-aloud log"
-    )), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", { className: "text-slate-600" }, "Active:"), " ", (() => {
+    )), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", { className: "text-slate-800" }, "Active:"), " ", (() => {
       try {
         const c = readAIBackendConfig();
         return c.backend ? c.backend.charAt(0).toUpperCase() + c.backend.slice(1) + (c.baseUrl ? " \u2192 " + c.baseUrl : "") : "Gemini (default)";
       } catch {
         return "Gemini (default)";
       }
-    })()), !isStudentAiSetup && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-medium mt-1" }, "\u26A1 ", t("ai_backend.reload_after_change") || "Reload page after changing backend to apply."), isStudentAiSetup && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-medium mt-1" }, t("ai_backend.student_verified_note") || "Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified."))), !isStudentAiSetup && /* @__PURE__ */ React.createElement(
+    })()), !isStudentAiSetup && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 font-medium mt-1" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u26A1 "), t("ai_backend.reload_after_change") || "Reload page after changing backend to apply."), isStudentAiSetup && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700 font-medium mt-1" }, t("ai_backend.student_verified_note") || "Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified."))), !isStudentAiSetup && /* @__PURE__ */ React.createElement(
       "button",
       {
         "data-help-key": "ai_backend_advanced_toggle",
@@ -3225,9 +3270,9 @@ function AIBackendModalBody(props) {
           setGuidedReady(false);
           setAdvancedOpen((v) => !v);
         },
-        className: "w-full flex items-center justify-center gap-1.5 text-xs font-bold text-slate-600 hover:text-violet-700 border-t border-slate-100 pt-3 transition-colors"
+        className: "w-full min-h-11 flex items-center justify-center gap-1.5 rounded-xl text-xs font-bold text-slate-700 hover:text-violet-700 hover:bg-violet-50/50 border-t border-slate-100 pt-3 pb-2 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700"
       },
-      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "inline-block transition-transform " + (advancedOpen ? "rotate-180" : "") }, "\u25BC"),
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "inline-block transition-transform motion-reduce:transition-none " + (advancedOpen ? "rotate-180" : "") }, "\u25BC"),
       advancedOpen ? t("ai_backend.advanced_toggle_close") || "Back to guided setup" : t("ai_backend.advanced_toggle") || "Advanced settings"
     )))
   );

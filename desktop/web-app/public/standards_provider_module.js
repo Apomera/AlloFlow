@@ -40,20 +40,40 @@
     const MAX_DEPTH = 4;
     let registeredProvider = null;
 
+    const hasOwn = Object.prototype.hasOwnProperty;
+
     function isObject(value) {
         return value !== null && typeof value === 'object' && !Array.isArray(value);
     }
 
+    function own(obj, key) {
+        return isObject(obj) && hasOwn.call(obj, key) ? obj[key] : undefined;
+    }
+
     function text(value, limit) {
         if (value === null || value === undefined) return '';
-        return String(value).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, limit || MAX_TEXT);
+        let raw = '';
+        if (typeof value === 'string') raw = value;
+        else if (typeof value === 'number' || typeof value === 'boolean') raw = String(value);
+        else return '';
+        const maxLen = limit || MAX_TEXT;
+        const bounded = raw.length > maxLen * 4 ? raw.slice(0, maxLen * 4) : raw;
+        return bounded.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/\s+/g, ' ').trim().slice(0, maxLen);
     }
 
     function boundedInt(raw, fallback, min, max) {
-        if (raw === undefined || raw === null || raw === '' || typeof raw === 'boolean') return fallback;
-        const num = Number(raw);
-        if (!Number.isFinite(num)) return fallback;
-        return Math.max(min, Math.min(Math.floor(num), max));
+        if (typeof raw === 'number') {
+            if (!Number.isFinite(raw)) return fallback;
+            return Math.max(min, Math.min(Math.floor(raw), max));
+        }
+        if (typeof raw === 'string') {
+            const trimmed = raw.trim();
+            if (!trimmed) return fallback;
+            const num = Number(trimmed);
+            if (!Number.isFinite(num)) return fallback;
+            return Math.max(min, Math.min(Math.floor(num), max));
+        }
+        return fallback;
     }
 
     function safeUrl(value, limit) {
@@ -125,15 +145,16 @@
         const value = isObject(raw) ? raw : {};
         const out = {};
         for (const name of ['nodes', 'relationships']) {
-            if (!isObject(value[name])) continue;
-            const file = value[name];
-            const byteCount = Number(file.bytes);
+            const file = own(value, name);
+            if (!isObject(file)) continue;
+            const rawBytes = own(file, 'bytes');
+            const byteCount = (typeof rawBytes === 'number') ? rawBytes : (typeof rawBytes === 'string' && rawBytes.trim() ? Number(rawBytes.trim()) : NaN);
             out[name] = {
                 bytes: (Number.isSafeInteger(byteCount) && byteCount >= 0) ? byteCount : 0,
-                sha256: text(file.sha256, 128),
-                etag: text(file.etag, 240),
-                lastModified: text(file.lastModified, 80),
-                url: safeUrl(file.url, 800)
+                sha256: text(own(file, 'sha256'), 128),
+                etag: text(own(file, 'etag'), 240),
+                lastModified: text(own(file, 'lastModified'), 80),
+                url: safeUrl(own(file, 'url'), 800)
             };
         }
         return out;
@@ -141,24 +162,25 @@
 
     function normalizeRecord(raw, path) {
         const value = isObject(raw) ? raw : {};
-        const kind = text(value.kind || 'standard', 40).toLocaleLowerCase() || 'standard';
-        const resolvable = value.resolvable === undefined
+        const kind = text(own(value, 'kind') || 'standard', 40).toLocaleLowerCase() || 'standard';
+        const rawResolvable = own(value, 'resolvable');
+        const resolvable = rawResolvable === undefined
             ? kind === 'standard'
-            : value.resolvable !== false && value.resolvable !== 'false';
+            : rawResolvable !== false && rawResolvable !== 'false';
         return {
-            id: text(value.id, 240),
-            code: text(value.code, 240),
-            label: text(value.label, MAX_TEXT),
-            text: text(value.text || value.description, MAX_TEXT),
+            id: text(own(value, 'id'), 240),
+            code: text(own(value, 'code'), 240),
+            label: text(own(value, 'label'), MAX_TEXT),
+            text: text(own(value, 'text') || own(value, 'description'), MAX_TEXT),
             kind,
             resolvable,
-            framework: text(value.framework, 160),
-            frameworkId: text(value.frameworkId, 240),
-            jurisdiction: text(value.jurisdiction, 160),
-            grade: text(value.grade, 80),
-            subject: text(value.subject, 160),
-            sourceUrl: safeUrl(value.sourceUrl, 800),
-            sourceUrls: uniqueSafeUrls(value.sourceUrls, 10),
+            framework: text(own(value, 'framework'), 160),
+            frameworkId: text(own(value, 'frameworkId'), 240),
+            jurisdiction: text(own(value, 'jurisdiction'), 160),
+            grade: text(own(value, 'grade'), 80),
+            subject: text(own(value, 'subject'), 160),
+            sourceUrl: safeUrl(own(value, 'sourceUrl'), 800),
+            sourceUrls: uniqueSafeUrls(own(value, 'sourceUrls'), 10),
             _path: path
         };
     }
@@ -166,17 +188,19 @@
     function normalizeRelationship(raw, path) {
         const value = isObject(raw) ? raw : {};
         return {
-            fromId: text(value.fromId || value.sourceId || value.from, 240),
-            toId: text(value.toId || value.targetId || value.to, 240),
-            type: text(value.type || value.relation, 120),
-            source: text(value.source, 500),
+            fromId: text(own(value, 'fromId') || own(value, 'sourceId') || own(value, 'from'), 240),
+            toId: text(own(value, 'toId') || own(value, 'targetId') || own(value, 'to'), 240),
+            type: text(own(value, 'type') || own(value, 'relation'), 120),
+            source: text(own(value, 'source'), 500),
             _path: path
         };
     }
 
     function publicRecord(record) {
         if (!record) return null;
-        const out = Object.assign({}, record);
+        const out = Object.assign({}, record, {
+            sourceUrls: array(record.sourceUrls).slice()
+        });
         delete out._path;
         return out;
     }
@@ -233,7 +257,11 @@
     // search index still runs over the original text.
     function toPlainMath(value) {
         if (value == null) return '';
-        let out = String(value);
+        let out = '';
+        if (typeof value === 'string') out = value;
+        else if (typeof value === 'number' || typeof value === 'boolean') out = String(value);
+        else return '';
+        if (out.length > 8192) out = out.slice(0, 8192);
         if (out.indexOf('\\') < 0 && out.indexOf('$') < 0) return out;
         out = expandFractions(out);
         out = out.replace(/\\sqrt\s*\{([^{}]*)\}/g, (all, inner) => '\u221a' + inner.trim());
@@ -501,7 +529,7 @@
         }
 
         function contextFor(record, query) {
-            const links = (adjacency.get(idToken(record.id)) || []).map((entry) => {
+            const links = (adjacency.get(idToken(record.id)) || []).slice(0, MAX_RESULTS).map((entry) => {
                 const related = getRecord(entry.otherId);
                 if (!related) return null;
                 return {
@@ -838,11 +866,11 @@
         // CCSS puts the grade in the code and nowhere else, in three shapes:
         // leading (3.MD.A.1), embedded (RI.3.1), and banded (RST.11-12.7).
         function gradeOfCode(code) {
-            const text = String(code || '');
+            const s = typeof code === 'string' ? code.slice(0, 120) : '';
             // HSA-SSE.B.3.c is high-school algebra, not grade 3 — the embedded
             // number there is a sub-part index. Only the HS prefix says so.
-            if (/^HS/i.test(text)) return null;
-            const hit = text.match(/^(K|\d{1,2}(?:-\d{1,2})?)\./) || text.match(/\.(K|\d{1,2}(?:-\d{1,2})?)\./);
+            if (/^HS/i.test(s)) return null;
+            const hit = s.match(/^(K|\d{1,2}(?:-\d{1,2})?)\./) || s.match(/\.(K|\d{1,2}(?:-\d{1,2})?)\./);
             return hit ? hit[1].toUpperCase() : null;
         }
         function codeCoversGrade(code, wanted) {
@@ -859,13 +887,13 @@
         // The grade selector hands over free text: "Grade 3", "5th", "K",
         // "Kindergarten". Word boundaries alone do not cut those apart.
         function wantedGrade(raw) {
-            const text = String(raw || '');
-            if (/kinder/i.test(text) || /(^|\W)k(\W|$)/i.test(text)) return 'K';
-            const digits = text.match(/\d{1,2}/);
+            const s = (typeof raw === 'string' ? raw : (typeof raw === 'number' && Number.isFinite(raw) ? String(raw) : '')).slice(0, 80);
+            if (/kinder/i.test(s) || /(^|\W)k(\W|$)/i.test(s)) return 'K';
+            const digits = s.match(/\d{1,2}/);
             return digits ? digits[0] : null;
         }
         function sampleStandards(options) {
-            const opts = options || {};
+            const opts = isObject(options) ? options : {};
             const want = boundedInt(opts.count, 1, 1, 20);
             const wanted = wantedGrade(opts.gradeLevel);
             const usable = value.standards.filter((r) => r.resolvable !== false && String(r.code || '').trim());
@@ -943,13 +971,17 @@
             };
         }
 
-        return {
+        return Object.freeze({
             VERSION,
             getManifest: () => cloneManifest(value.dataset),
             // Contract name from the Learning Web plan; same object as
             // getManifest, kept as an alias rather than a second code path.
             getDatasetManifest: () => cloneManifest(value.dataset),
-            getValidationReport: () => ({ ok: report.ok, errors: report.errors.slice(), warnings: report.warnings.slice() }),
+            getValidationReport: () => ({
+                ok: report.ok,
+                errors: report.errors.map((e) => Object.assign({}, e)),
+                warnings: report.warnings.map((w) => Object.assign({}, w))
+            }),
             searchStandards,
             resolveStandard,
             getStandardContext,
@@ -960,7 +992,7 @@
             getPrerequisiteGaps,
             getComponentCoverage,
             sampleStandards
-        };
+        });
     }
 
     // Multi-snapshot registry.
@@ -984,6 +1016,7 @@
     let registeredProviderDirty = false;
 
     function rebuildRegisteredProvider() {
+        cancelIdleProviderRebuild();
         registeredProviderDirty = false;
         if (registeredSnapshots.size === 0) { registeredProvider = null; return null; }
         const snapshots = Array.from(registeredSnapshots.values());
@@ -1031,10 +1064,10 @@
         const withParts = (manifest) => Object.assign(manifest, {
             combinedFrom: combinedFrom.map((entry) => Object.assign({}, entry))
         });
-        registeredProvider = Object.assign({}, base, {
+        registeredProvider = Object.freeze(Object.assign({}, base, {
             getManifest: () => withParts(base.getManifest()),
             getDatasetManifest: () => withParts(base.getDatasetManifest())
-        });
+        }));
         return registeredProvider;
     }
 
@@ -1062,12 +1095,17 @@
             idleRebuildKind = '';
             try { if (registeredProviderDirty) rebuildRegisteredProvider(); } catch (_) {}
         };
-        if (root && typeof root.requestIdleCallback === 'function') {
-            idleRebuildKind = 'idle';
-            idleRebuildHandle = root.requestIdleCallback(run, { timeout: 10000 });
-        } else if (root && typeof root.setTimeout === 'function') {
-            idleRebuildKind = 'timeout';
-            idleRebuildHandle = root.setTimeout(run, 2000);
+        try {
+            if (root && typeof root.requestIdleCallback === 'function') {
+                idleRebuildHandle = root.requestIdleCallback(run, { timeout: 10000 });
+                idleRebuildKind = 'idle';
+            } else if (root && typeof root.setTimeout === 'function') {
+                idleRebuildHandle = root.setTimeout(run, 2000);
+                idleRebuildKind = 'timeout';
+            }
+        } catch (_) {
+            idleRebuildHandle = null;
+            idleRebuildKind = '';
         }
     }
 
@@ -1124,7 +1162,7 @@
     }
     drainInjectedSnapshots();
 
-    return {
+    return Object.freeze({
         VERSION,
         toPlainMath,
         validateSnapshot,
@@ -1133,5 +1171,5 @@
         getRegisteredProvider,
         getRegisteredSnapshotManifests,
         clearRegisteredProvider
-    };
+    });
 });

@@ -1345,15 +1345,15 @@
           "chapterId": "ap-stats-ch-01",
           "sectionId": "ap-stats-ch-01-section-01",
           "type": "single-choice",
-          "prompt": "Which study move best supports accurate reasoning in One-Variable Data and Collecting Data?",
+          "prompt": "A distribution of household incomes has a long right tail with several extreme high values. Which summary pair best describes center and spread?",
           "choices": [
-            "Identify the target, match the method, check conditions, and state the conclusion in context.",
-            "Choose a procedure because it is the most familiar one.",
-            "Treat a sample statistic as the population parameter.",
-            "Generalize beyond the population and design represented by the data."
+            "Median and interquartile range",
+            "Mean and full range of all reported values",
+            "Mean and standard deviation of the sample",
+            "Mode and maximum observed income figure"
           ],
           "answerIndex": 0,
-          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "rationale": "Because income is strongly right-skewed with high outliers, the median and IQR resist extreme pull better than the mean and standard deviation.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -1374,15 +1374,15 @@
           "chapterId": "ap-stats-ch-01",
           "sectionId": "ap-stats-ch-01-section-02",
           "type": "single-choice",
-          "prompt": "Which study move best supports accurate reasoning in One-Variable Data and Collecting Data?",
+          "prompt": "A school divides students by grade level and draws a simple random sample within each grade. Why might researchers choose this stratified design?",
           "choices": [
-            "Identify the target, match the method, check conditions, and state the conclusion in context.",
-            "Choose a procedure because it is the most familiar one.",
-            "Treat a sample statistic as the population parameter.",
-            "Generalize beyond the population and design represented by the data."
+            "It eliminates the need to contact selected students who decline to reply.",
+            "It ensures representation from every stratum and can cut estimate variability.",
+            "It allows causal claims without assigning treatments across experimental groups.",
+            "It surveys entire homerooms at once to avoid building a full student roster."
           ],
-          "answerIndex": 0,
-          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "answerIndex": 1,
+          "rationale": "Stratifying by a characteristic linked to the response ensures every subgroup is represented and often yields more precise population estimates.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -1403,15 +1403,15 @@
           "chapterId": "ap-stats-ch-01",
           "sectionId": "ap-stats-ch-01-section-03",
           "type": "single-choice",
-          "prompt": "Which study move best supports accurate reasoning in One-Variable Data and Collecting Data?",
+          "prompt": "Volunteers in a clinic trial are randomly assigned to a new sleep routine or usual habits, and the new routine group sleeps longer. What scope of inference applies?",
           "choices": [
-            "Identify the target, match the method, check conditions, and state the conclusion in context.",
-            "Choose a procedure because it is the most familiar one.",
-            "Treat a sample statistic as the population parameter.",
-            "Generalize beyond the population and design represented by the data."
+            "Generalization to all adults nationwide, without supporting any causal link",
+            "Neither causal inference nor generalization to the study’s own participants",
+            "Causal evidence for these participants, without broad generalization",
+            "Proof that the sample mean equals the exact population parameter nationwide"
           ],
-          "answerIndex": 0,
-          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "answerIndex": 2,
+          "rationale": "Random assignment supports cause-and-effect for the volunteers in the experiment, while lack of random sampling limits generalization to a wider population.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -1435,12 +1435,12 @@
           "type": "single-choice",
           "prompt": "Which summary pair is usually most resistant to outliers?",
           "choices": [
-            "Median and IQR",
             "Mean and range",
+            "Median and IQR",
             "Mean and standard deviation",
             "Maximum and minimum"
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Median and IQR are resistant summaries, so they are less affected by extreme observations.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -1464,12 +1464,12 @@
           "type": "single-choice",
           "prompt": "Which design feature supports a generalization to a sampled population?",
           "choices": [
-            "Random sampling",
             "Random assignment only",
             "A large convenience sample",
+            "Random sampling",
             "A placebo alone"
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Random sampling gives members of the target population a known chance of selection and supports generalization when the sample is representative.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -1493,12 +1493,12 @@
           "type": "single-choice",
           "prompt": "What can an observational study not establish by itself?",
           "choices": [
-            "That one variable caused another",
             "That the sample has measured variability",
             "That the variables can be described",
-            "That a statistic can estimate a parameter"
+            "That a statistic can estimate a parameter",
+            "That one variable caused another"
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Without imposed treatments and appropriate assignment, an observational study does not by itself establish causation.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -2274,15 +2274,15 @@
           "chapterId": "ap-stats-ch-02",
           "sectionId": "ap-stats-ch-02-section-01",
           "type": "single-choice",
-          "prompt": "Which study move best supports accurate reasoning in Probability and Random Variables?",
+          "prompt": "A two-way table shows transit mode across two campuses of very different sizes. Why use conditional proportions instead of raw counts to compare campuses?",
           "choices": [
-            "Identify the target, match the method, check conditions, and state the conclusion in context.",
-            "Choose a procedure because it is the most familiar one.",
-            "Treat a sample statistic as the population parameter.",
-            "Generalize beyond the population and design represented by the data."
+            "Raw counts cannot be added together to compute column or row totals.",
+            "Conditional proportions convert categorical variables into quantitative scores.",
+            "Raw counts automatically force every campus to show identical percentages.",
+            "Conditional proportions adjust for unequal campus totals when comparing rates."
           ],
-          "answerIndex": 0,
-          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "answerIndex": 3,
+          "rationale": "Dividing each cell count by its campus total puts unequal-sized groups on the same scale so patterns can be compared fairly.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -2303,15 +2303,15 @@
           "chapterId": "ap-stats-ch-02",
           "sectionId": "ap-stats-ch-02-section-02",
           "type": "single-choice",
-          "prompt": "Which study move best supports accurate reasoning in Probability and Random Variables?",
+          "prompt": "If two events A and B each have positive probability and are mutually exclusive, what must be true about P(A and B)?",
           "choices": [
-            "Identify the target, match the method, check conditions, and state the conclusion in context.",
-            "Choose a procedure because it is the most familiar one.",
-            "Treat a sample statistic as the population parameter.",
-            "Generalize beyond the population and design represented by the data."
+            "P(A and B) equals 0, so the two events cannot be independent.",
+            "P(A and B) equals P(A) times P(B), proving the events are independent.",
+            "P(A and B) equals P(A) plus P(B) whenever both probabilities are small.",
+            "P(A and B) equals 1 because one of the two events must always occur."
           ],
           "answerIndex": 0,
-          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "rationale": "Mutually exclusive events share no outcomes, so P(A and B) = 0; since P(A)P(B) > 0, they cannot be independent.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -2332,15 +2332,15 @@
           "chapterId": "ap-stats-ch-02",
           "sectionId": "ap-stats-ch-02-section-03",
           "type": "single-choice",
-          "prompt": "Which study move best supports accurate reasoning in Probability and Random Variables?",
+          "prompt": "When a constant $5 bonus is added to every payout in a game, how do the mean and standard deviation of payouts change?",
           "choices": [
-            "Identify the target, match the method, check conditions, and state the conclusion in context.",
-            "Choose a procedure because it is the most familiar one.",
-            "Treat a sample statistic as the population parameter.",
-            "Generalize beyond the population and design represented by the data."
+            "Both the mean and the standard deviation increase by $5.",
+            "The mean increases by $5, while the standard deviation stays unchanged.",
+            "The mean stays unchanged, while the standard deviation increases by $5.",
+            "Both the mean and the standard deviation are multiplied by five."
           ],
-          "answerIndex": 0,
-          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "answerIndex": 1,
+          "rationale": "Adding a constant shifts every value equally, moving the mean up by $5 without altering the spread among payouts.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -2363,7 +2363,7 @@
           "type": "single-choice",
           "prompt": "What should be compared across groups in a two-way categorical table?",
           "choices": [
-            "Conditional percentages using the group total as denominator",
+            "Conditional rates per group total",
             "Only the grand total",
             "The mean of category labels",
             "The largest raw count without group size"
@@ -2392,12 +2392,12 @@
           "type": "single-choice",
           "prompt": "In P(A given B), which group supplies the denominator?",
           "choices": [
-            "Outcomes in event B",
             "All outcomes outside B",
+            "Outcomes in event B",
             "Outcomes in event A only",
             "The number of variables"
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Conditioning on B restricts the sample space to event B.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -2421,12 +2421,12 @@
           "type": "single-choice",
           "prompt": "Which condition is required for a binomial model?",
           "choices": [
-            "A fixed number of independent trials with the same success probability",
             "A changing success probability on every trial",
             "More than two outcomes on each trial",
+            "Fixed independent trials with constant p",
             "A continuous response measured in units"
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "The fixed-trial, two-outcome, independent, constant-probability conditions define a binomial setting.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -3216,15 +3216,15 @@
           "chapterId": "ap-stats-ch-03",
           "sectionId": "ap-stats-ch-03-section-01",
           "type": "single-choice",
-          "prompt": "Which study move best supports accurate reasoning in Inference for Proportions?",
+          "prompt": "If sample size is quadrupled while the confidence level stays at 95%, how does the margin of error of a one-proportion z-interval change roughly?",
           "choices": [
-            "Identify the target, match the method, check conditions, and state the conclusion in context.",
-            "Choose a procedure because it is the most familiar one.",
-            "Treat a sample statistic as the population parameter.",
-            "Generalize beyond the population and design represented by the data."
+            "It quadruples because larger samples span more population variation.",
+            "It stays unchanged because the critical value z* remains identical.",
+            "It drops by about half because the width scales as 1/sqrt(n).",
+            "It drops to zero once expected successes and failures exceed ten."
           ],
-          "answerIndex": 0,
-          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "answerIndex": 2,
+          "rationale": "Because standard error has sqrt(n) in the denominator, multiplying n by 4 divides the margin of error by sqrt(4) = 2.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -3246,15 +3246,15 @@
           "chapterId": "ap-stats-ch-03",
           "sectionId": "ap-stats-ch-03-section-02",
           "type": "single-choice",
-          "prompt": "Which study move best supports accurate reasoning in Inference for Proportions?",
+          "prompt": "In a hypothesis test of H0: p = 0.50 versus Ha: p > 0.50, what does committing a Type I error mean in context?",
           "choices": [
-            "Identify the target, match the method, check conditions, and state the conclusion in context.",
-            "Choose a procedure because it is the most familiar one.",
-            "Treat a sample statistic as the population parameter.",
-            "Generalize beyond the population and design represented by the data."
+            "Failing to reject H0 when the true population proportion exceeds 0.50.",
+            "Using a sample proportion p-hat instead of p inside the null statement.",
+            "Computing a two-sided p-value when a one-sided alternative was planned.",
+            "Rejecting H0 and claiming p > 0.50 when the true proportion is 0.50."
           ],
-          "answerIndex": 0,
-          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "answerIndex": 3,
+          "rationale": "A Type I error occurs when sample evidence leads us to reject a null hypothesis that is actually true.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -3276,15 +3276,15 @@
           "chapterId": "ap-stats-ch-03",
           "sectionId": "ap-stats-ch-03-section-03",
           "type": "single-choice",
-          "prompt": "Which study move best supports accurate reasoning in Inference for Proportions?",
+          "prompt": "How does a chi-square test of homogeneity differ in study design from a chi-square test of independence?",
           "choices": [
-            "Identify the target, match the method, check conditions, and state the conclusion in context.",
-            "Choose a procedure because it is the most familiar one.",
-            "Treat a sample statistic as the population parameter.",
-            "Generalize beyond the population and design represented by the data."
+            "Homogeneity samples separate populations; independence samples one population.",
+            "Homogeneity requires quantitative responses; independence uses categorical counts.",
+            "Independence compares observed counts to zero; homogeneity compares sample means.",
+            "Homogeneity always uses one degree of freedom regardless of table dimensions."
           ],
           "answerIndex": 0,
-          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "rationale": "Homogeneity compares a categorical distribution across two or more independent samples, whereas independence tests association between two variables in one sample.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -3306,14 +3306,14 @@
           "chapterId": "ap-stats-ch-03",
           "sectionId": "ap-stats-ch-03-section-01",
           "type": "single-choice",
-          "prompt": "Which procedure matches one population proportion when conditions are met?",
+          "prompt": "Which inference procedure estimates a single population parameter p when conditions are met?",
           "choices": [
-            "A one-proportion z interval",
             "A one-sample t interval for a mean",
             "A two-sample t test",
-            "A chi-square test for a quantitative mean"
+            "A chi-square test for a quantitative mean",
+            "A one-proportion z interval"
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "One population proportion is the target of a one-proportion z interval.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -3368,12 +3368,12 @@
           "type": "single-choice",
           "prompt": "What does a chi-square procedure use to measure discrepancy?",
           "choices": [
-            "Observed counts compared with expected counts",
             "Means compared with standard deviations",
+            "Observed versus expected counts",
             "Slopes compared with intercepts",
             "Sample sizes compared with confidence levels"
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Chi-square statistics summarize observed-versus-expected count discrepancies under a categorical null model.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -4139,15 +4139,15 @@
           "chapterId": "ap-stats-ch-04",
           "sectionId": "ap-stats-ch-04-section-01",
           "type": "single-choice",
-          "prompt": "Which study move best supports accurate reasoning in Inference for Means?",
+          "prompt": "Why is the sampling distribution of x-bar less variable than the underlying population distribution of individual values?",
           "choices": [
-            "Identify the target, match the method, check conditions, and state the conclusion in context.",
-            "Choose a procedure because it is the most familiar one.",
-            "Treat a sample statistic as the population parameter.",
-            "Generalize beyond the population and design represented by the data."
+            "Averaging removes every outlier from the original population data set.",
+            "High and low sample values tend to offset each other, dividing spread by sqrt(n).",
+            "The Central Limit Theorem forces the population standard deviation toward zero.",
+            "Sample means are always computed without using the smallest observed values."
           ],
-          "answerIndex": 0,
-          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "answerIndex": 1,
+          "rationale": "Because extremes average out across n independent observations, the standard deviation of x-bar is sigma / sqrt(n), which shrinks as n grows.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -4167,15 +4167,15 @@
           "chapterId": "ap-stats-ch-04",
           "sectionId": "ap-stats-ch-04-section-02",
           "type": "single-choice",
-          "prompt": "Which study move best supports accurate reasoning in Inference for Means?",
+          "prompt": "Why do t-distributions have heavier tails than the standard normal distribution when sample size n is small?",
           "choices": [
-            "Identify the target, match the method, check conditions, and state the conclusion in context.",
-            "Choose a procedure because it is the most familiar one.",
-            "Treat a sample statistic as the population parameter.",
-            "Generalize beyond the population and design represented by the data."
+            "Sample means from small samples are biased away from the population mean.",
+            "Small samples are always drawn from heavily skewed categorical populations.",
+            "Estimating sigma with s adds extra uncertainty to the standardized statistic.",
+            "Degrees of freedom equal n + 1, which stretches the center of the curve."
           ],
-          "answerIndex": 0,
-          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "answerIndex": 2,
+          "rationale": "Replacing unknown population sigma with sample standard deviation s introduces extra variability, which widens the tails of the t-distribution especially for small df.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -4195,15 +4195,15 @@
           "chapterId": "ap-stats-ch-04",
           "sectionId": "ap-stats-ch-04-section-03",
           "type": "single-choice",
-          "prompt": "Which study move best supports accurate reasoning in Inference for Means?",
+          "prompt": "A 95% confidence interval for mean delivery time is (26.4, 31.6) minutes. Which interpretation accurately reflects 95% confidence?",
           "choices": [
-            "Identify the target, match the method, check conditions, and state the conclusion in context.",
-            "Choose a procedure because it is the most familiar one.",
-            "Treat a sample statistic as the population parameter.",
-            "Generalize beyond the population and design represented by the data."
+            "95% of individual deliveries take between 26.4 and 31.6 minutes.",
+            "There is a 95% chance that the next sample mean falls in this interval.",
+            "Exactly 95% of future customers will wait less than 31.6 minutes.",
+            "We are 95% confident the true mean wait lies in (26.4, 31.6) minutes."
           ],
-          "answerIndex": 0,
-          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "answerIndex": 3,
+          "rationale": "A confidence interval estimates the population parameter (the true mean), not individual observations or future sample means.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -4224,14 +4224,14 @@
           "chapterId": "ap-stats-ch-04",
           "sectionId": "ap-stats-ch-04-section-01",
           "type": "single-choice",
-          "prompt": "Where is the sampling distribution of a sample mean centered?",
+          "prompt": "Where is the sampling distribution of x-bar centered across repeated random samples?",
           "choices": [
-            "At the population mean",
             "At the sample standard deviation",
             "At zero for every population",
+            "At the population mean",
             "At the sample size"
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "The expected value of the sample mean is the population mean.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -4254,12 +4254,12 @@
           "type": "single-choice",
           "prompt": "When is a paired t procedure appropriate?",
           "choices": [
-            "When each unit contributes a meaningful within-pair difference",
             "When two unrelated groups have categorical responses",
             "When no response variable is measured",
-            "When the sample is selected voluntarily only"
+            "When the sample is selected voluntarily only",
+            "When each unit yields a within-pair difference"
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Paired analysis uses one difference per matched unit or repeated measurement.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -4282,7 +4282,7 @@
           "type": "single-choice",
           "prompt": "If a confidence interval for a mean difference includes zero, what remains plausible?",
           "choices": [
-            "No population mean difference",
+            "No true population difference",
             "Only a positive difference",
             "A guaranteed causal effect",
             "That every individual difference is zero"
@@ -5027,15 +5027,15 @@
           "chapterId": "ap-stats-ch-05",
           "sectionId": "ap-stats-ch-05-section-01",
           "type": "single-choice",
-          "prompt": "Which study move best supports accurate reasoning in Regression Analysis?",
+          "prompt": "What effect can a single high-leverage point that lies far off the overall linear trend have on a least-squares regression line?",
           "choices": [
-            "Identify the target, match the method, check conditions, and state the conclusion in context.",
-            "Choose a procedure because it is the most familiar one.",
-            "Treat a sample statistic as the population parameter.",
-            "Generalize beyond the population and design represented by the data."
+            "It can pull the slope strongly toward itself and shift correlation.",
+            "It leaves the slope unchanged because leverage affects only the y-intercept.",
+            "It turns the explanatory variable into a categorical grouping factor.",
+            "It forces every remaining residual in the data set to become positive."
           ],
           "answerIndex": 0,
-          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "rationale": "Points far from x-bar have high leverage; if they also depart from the pattern of the other points, they can dramatically tilt the regression slope and alter r.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -5053,15 +5053,15 @@
           "chapterId": "ap-stats-ch-05",
           "sectionId": "ap-stats-ch-05-section-02",
           "type": "single-choice",
-          "prompt": "Which study move best supports accurate reasoning in Regression Analysis?",
+          "prompt": "In least-squares regression, what is always true about the point (x-bar, y-bar) and the sum of the residuals?",
           "choices": [
-            "Identify the target, match the method, check conditions, and state the conclusion in context.",
-            "Choose a procedure because it is the most familiar one.",
-            "Treat a sample statistic as the population parameter.",
-            "Generalize beyond the population and design represented by the data."
+            "The line misses (x-bar, y-bar), and residuals sum to the correlation r.",
+            "The line passes through (x-bar, y-bar), and the residuals sum to zero.",
+            "The line passes through the origin, and every residual equals zero.",
+            "The residuals sum to the slope, while the intercept equals y-bar."
           ],
-          "answerIndex": 0,
-          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "answerIndex": 1,
+          "rationale": "By construction, the least-squares regression line always passes through the mean point (x-bar, y-bar), and its residuals balance to sum to 0.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -5080,15 +5080,15 @@
           "chapterId": "ap-stats-ch-05",
           "sectionId": "ap-stats-ch-05-section-03",
           "type": "single-choice",
-          "prompt": "Which study move best supports accurate reasoning in Regression Analysis?",
+          "prompt": "Why is a high correlation such as r = 0.94 insufficient by itself to confirm that a linear model is appropriate?",
           "choices": [
-            "Identify the target, match the method, check conditions, and state the conclusion in context.",
-            "Choose a procedure because it is the most familiar one.",
-            "Treat a sample statistic as the population parameter.",
-            "Generalize beyond the population and design represented by the data."
+            "Correlations above 0.90 indicate the variables must be categorical labels.",
+            "Correlation depends on measurement units and changes when x is rescaled.",
+            "A strongly curved monotone pattern can still yield a large r value.",
+            "Linear models require r to be negative before checking residual plots."
           ],
-          "answerIndex": 0,
-          "rationale": "Reliable AP Statistics reasoning connects the target, method, conditions, evidence, and scope of the conclusion.",
+          "answerIndex": 2,
+          "rationale": "A smooth curved trend can produce a very high r value, so inspecting the scatterplot and residual plot is essential to verify linear form.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
             "https://apcentral.collegeboard.org/courses/ap-statistics",
@@ -5109,12 +5109,12 @@
           "type": "single-choice",
           "prompt": "What does clear curvature in a scatterplot suggest?",
           "choices": [
-            "A linear model may miss the form of the relationship",
             "The correlation must be exactly one",
+            "A linear model may miss the curved form",
             "The response is categorical",
             "The sample has no outliers"
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Curvature indicates that a straight-line form may not adequately describe the association.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -5133,14 +5133,14 @@
           "chapterId": "ap-stats-ch-05",
           "sectionId": "ap-stats-ch-05-section-02",
           "type": "single-choice",
-          "prompt": "How is a residual calculated?",
+          "prompt": "In least-squares linear regression, how is a residual calculated for a data point?",
           "choices": [
-            "Observed response minus predicted response",
             "Predicted response minus explanatory variable",
             "Observed response divided by sample size",
+            "Observed response minus predicted response",
             "Slope minus intercept"
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Residual = y - y-hat, so it measures vertical deviation from the fitted line.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -5160,14 +5160,14 @@
           "chapterId": "ap-stats-ch-05",
           "sectionId": "ap-stats-ch-05-section-03",
           "type": "single-choice",
-          "prompt": "What does r-squared not establish?",
+          "prompt": "In a linear regression analysis, what does r-squared alone not establish?",
           "choices": [
-            "Causation",
             "The proportion of response variation explained by the fitted model",
             "A summary of linear model fit",
-            "A value between 0 and 1 for the usual regression setting"
+            "A value between 0 and 1 for the usual regression setting",
+            "Causation"
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "R-squared describes explained variation but is not a probability of causation.",
           "references": [
             "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",

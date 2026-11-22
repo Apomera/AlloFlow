@@ -57,6 +57,34 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     ].join('\n');
     document.head.appendChild(st);
   })();
+
+  // Scoped GPU-composited live-motion keyframes for GIS Studio SVG/Map visualizers
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-gisstudio-motion-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-gisstudio-motion-css';
+    st.textContent = [
+      '@keyframes gis-buffer-ripple { 0% { transform: scale(0.84); opacity: 0.65; } 76% { transform: scale(1.48); opacity: 0; } 100% { transform: scale(1.48); opacity: 0; } }',
+      '@keyframes gis-contour-glint { 0% { stroke-dashoffset: 0; opacity: 0.16; } 50% { opacity: 0.42; } 100% { stroke-dashoffset: -36; opacity: 0.16; } }',
+      '@keyframes gis-crosshair-pulse { 0%,100% { opacity: 0.28; } 50% { opacity: 0.72; } }',
+      '@keyframes gis-beacon-pulse { 0%,100% { transform: scale(0.9); opacity: 0.22; } 50% { transform: scale(1.34); opacity: 0.52; } }',
+      '@keyframes gis-compass-orbit { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -20; } }',
+      '@keyframes gis-flow-dash { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -24; } }',
+      '[data-gis-studio="true"] .gis-buffer-ripple { transform-box: fill-box; transform-origin: center; animation: gis-buffer-ripple 2.8s ease-out infinite; }',
+      '[data-gis-studio="true"] .gis-buffer-ripple-b { transform-box: fill-box; transform-origin: center; animation: gis-buffer-ripple 2.8s ease-out 1.4s infinite; }',
+      '[data-gis-studio="true"] .gis-contour-glint { animation: gis-contour-glint 4.6s linear infinite; }',
+      '[data-gis-studio="true"] .gis-crosshair-pulse { animation: gis-crosshair-pulse 3.2s ease-in-out infinite; }',
+      '[data-gis-studio="true"] .gis-beacon-pulse { transform-box: fill-box; transform-origin: center; animation: gis-beacon-pulse 2.5s ease-in-out infinite; }',
+      '[data-gis-studio="true"] .gis-compass-orbit { animation: gis-compass-orbit 5.4s linear infinite; }',
+      '[data-gis-studio="true"] .gis-flow-dash { animation: gis-flow-dash 2.4s linear infinite; }',
+      '[data-gis-studio="true"] .gis-choropleth-poly { transition: fill-opacity 180ms ease, stroke-width 180ms ease, filter 180ms ease; }',
+      '[data-gis-studio="true"] .gis-choropleth-poly:hover { fill-opacity: 0.92; stroke: #fde047; stroke-width: 2.3; filter: drop-shadow(0 0 6px rgba(94,234,212,0.55)); }',
+      '.theme-contrast [data-stem-tool-shell="gisStudio"] .gis-buffer-ripple, .theme-contrast [data-stem-tool-shell="gisStudio"] .gis-buffer-ripple-b, .theme-contrast [data-stem-tool-shell="gisStudio"] .gis-contour-glint, .theme-contrast [data-stem-tool-shell="gisStudio"] .gis-crosshair-pulse, .theme-contrast [data-stem-tool-shell="gisStudio"] .gis-beacon-pulse, .theme-contrast [data-stem-tool-shell="gisStudio"] .gis-compass-orbit, .theme-contrast [data-stem-tool-shell="gisStudio"] .gis-flow-dash { animation: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="gisStudio"] .gis-choropleth-poly:hover { filter: none !important; stroke: #00ff00 !important; stroke-width: 2.5 !important; }',
+      '@media (prefers-reduced-motion: reduce) { [data-gis-studio="true"] .gis-buffer-ripple, [data-gis-studio="true"] .gis-buffer-ripple-b, [data-gis-studio="true"] .gis-contour-glint, [data-gis-studio="true"] .gis-crosshair-pulse, [data-gis-studio="true"] .gis-beacon-pulse, [data-gis-studio="true"] .gis-compass-orbit, [data-gis-studio="true"] .gis-flow-dash { animation: none !important; } [data-gis-studio="true"] .gis-choropleth-poly { transition: none !important; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
   window.StemLab = window.StemLab || {
     _registry: {}, _order: [],
     registerTool: function (id, config) {
@@ -4620,11 +4648,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               style: { position: 'absolute', top: 10, right: 10, zIndex: 450, pointerEvents: 'none', filter: 'drop-shadow(0 2px 5px rgba(2,12,22,0.65))' }
             },
               h('circle', { cx: 23, cy: 23, r: 19, fill: 'rgba(6,24,36,0.82)', stroke: '#5eead4', strokeWidth: 1.2 }),
-              h('circle', { cx: 23, cy: 23, r: 14, fill: 'none', stroke: 'rgba(148,163,184,0.45)', strokeWidth: 0.7, strokeDasharray: '2 2' }),
+              h('circle', { className: 'gis-compass-orbit', cx: 23, cy: 23, r: 14, fill: 'none', stroke: 'rgba(148,163,184,0.52)', strokeWidth: 0.7, strokeDasharray: '2 2' }),
               h('polygon', { points: '23,7 26.2,20.5 23,18.2 19.8,20.5', fill: '#5eead4' }),
               h('polygon', { points: '23,39 26.2,25.5 23,27.8 19.8,25.5', fill: '#94a3b8' }),
               h('polygon', { points: '9,23 20.5,20.5 18.5,23 20.5,25.5', fill: '#94a3b8', opacity: 0.85 }),
               h('polygon', { points: '37,23 25.5,20.5 27.5,23 25.5,25.5', fill: '#94a3b8', opacity: 0.85 }),
+              h('circle', { className: 'gis-beacon-pulse', cx: 23, cy: 23, r: 4.5, fill: '#5eead4', opacity: 0.28 }),
               h('circle', { cx: 23, cy: 23, r: 2.2, fill: '#f8fafc' }),
               h('text', { x: 23, y: 12.2, textAnchor: 'middle', fill: '#f0fdfa', fontSize: 6.5, fontWeight: 900, fontFamily: 'system-ui,sans-serif' }, 'N')
             ),
@@ -6064,6 +6093,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             }, __alloT('stem.gisstudio.ui_no_mappable_coordinates_yet_import_points_or_a', 'No mappable coordinates yet. Import points or a GeoJSON layer, or use the data table below.'));
           }
           var grat = graticuleLines(proj.bounds);
+          var isHC = !!(ctx && ctx.isContrast);
           var kids = [];
           // Cartographic SVG definitions: bathymetric backdrop + luminous vector glow
           kids.push(h('defs', { key: 'gis-defs' },
@@ -6077,10 +6107,18 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               h('feMerge', null, h('feMergeNode', { in: 'blur' }), h('feMergeNode', { in: 'SourceGraphic' }))
             )
           ));
-          kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: SW, height: SH, fill: 'url(#gis-schem-bg)' }));
+          kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: SW, height: SH, fill: isHC ? '#000000' : 'url(#gis-schem-bg)' }));
+          // Subtle shimmering hydrographic & topographic elevation contour glints
+          if (!isHC) {
+            kids.push(h('g', { key: 'topo-contours', 'aria-hidden': 'true' },
+              h('path', { className: 'gis-contour-glint', d: 'M 42 316 Q 170 248 310 286 T 596 220', fill: 'none', stroke: '#38bdf8', strokeWidth: 1.1, strokeDasharray: '10 18', opacity: 0.24 }),
+              h('path', { className: 'gis-contour-glint', d: 'M 64 134 Q 220 92 372 146 T 588 106', fill: 'none', stroke: '#5eead4', strokeWidth: 1.0, strokeDasharray: '8 20', opacity: 0.22, style: { animationDelay: '-1.8s' } }),
+              h('ellipse', { className: 'gis-contour-glint', cx: SW * 0.52, cy: SH * 0.48, rx: 168, ry: 96, fill: 'none', stroke: '#5eead4', strokeWidth: 0.9, strokeDasharray: '12 24', opacity: 0.18, style: { animationDelay: '-2.7s' } })
+            ));
+          }
           // Cartographic neatline frame + subtle corner registration ticks
-          kids.push(h('rect', { key: 'neat-out', x: 6, y: 6, width: SW - 12, height: SH - 12, rx: 10, fill: 'none', stroke: 'rgba(94,234,212,0.34)', strokeWidth: 1.2 }));
-          kids.push(h('rect', { key: 'neat-in', x: 10, y: 10, width: SW - 20, height: SH - 20, rx: 7, fill: 'none', stroke: 'rgba(56,189,248,0.18)', strokeWidth: 0.8 }));
+          kids.push(h('rect', { key: 'neat-out', x: 6, y: 6, width: SW - 12, height: SH - 12, rx: 10, fill: 'none', stroke: isHC ? '#ffff00' : 'rgba(94,234,212,0.34)', strokeWidth: 1.2 }));
+          kids.push(h('rect', { key: 'neat-in', x: 10, y: 10, width: SW - 20, height: SH - 20, rx: 7, fill: 'none', stroke: isHC ? '#ffff00' : 'rgba(56,189,248,0.18)', strokeWidth: 0.8 }));
           if (layers.grid) {
             grat.lats.forEach(function (lat) {
               var a = proj.project(proj.bounds.minLon, lat), b = proj.project(proj.bounds.maxLon, lat);
@@ -6094,6 +6132,18 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               kids.push(h('line', { key: 'glonTk' + lon, x1: a.x, y1: SH - 12, x2: a.x, y2: SH - 6, stroke: '#5eead4', strokeWidth: 1.2, opacity: 0.65 }));
               kids.push(h('text', { key: 'glonT' + lon, x: a.x + 3, y: SH - 14, fill: '#9fb6c5', fontSize: 9, fontFamily: 'ui-monospace, SFMono-Regular, monospace' }, graticuleLabel(lon, 'E', 'W', grat.lonStep)));
             });
+            // Animated coordinate-grid intersection crosshairs
+            if (!isHC) {
+              grat.lats.forEach(function (lat, li) {
+                grat.lons.forEach(function (lon, lo) {
+                  var cp = proj.project(lon, lat);
+                  kids.push(h('g', { key: 'gx-' + li + '-' + lo, className: 'gis-crosshair-pulse', 'aria-hidden': 'true', style: { animationDelay: (((li + lo) % 4) * -0.6).toFixed(2) + 's' } },
+                    h('line', { x1: cp.x - 4, y1: cp.y, x2: cp.x + 4, y2: cp.y, stroke: '#5eead4', strokeWidth: 0.9 }),
+                    h('line', { x1: cp.x, y1: cp.y - 4, x2: cp.x, y2: cp.y + 4, stroke: '#5eead4', strokeWidth: 0.9 })
+                  ));
+                });
+              });
+            }
           }
           polygonParts.forEach(function (item) {
             var d = item.rings.map(function (ring) {
@@ -6104,9 +6154,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             }).join(' ');
             var value = (item.feature.properties || {})[geoMetric];
             kids.push(h('path', {
-              key: 'poly' + item.key, d: d, fillRule: 'evenodd',
+              key: 'poly' + item.key, className: 'gis-choropleth-poly', d: d, fillRule: 'evenodd',
               fill: geoMetric ? classColor(value, geoBreaks) : 'rgba(34,211,238,0.18)',
-              fillOpacity: 0.72, stroke: '#e2e8f0', strokeWidth: 1.35
+              fillOpacity: 0.72, stroke: isHC ? '#ffff00' : '#e2e8f0', strokeWidth: 1.35
             }));
           });
           lineParts.forEach(function (item) {
@@ -6118,14 +6168,36 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             var strokeCol = geoMetric ? classColor(value, geoBreaks) : '#22d3ee';
             kids.push(h('path', {
               key: 'line' + item.key, d: d, fill: 'none',
-              stroke: strokeCol, strokeWidth: 3.2, strokeLinecap: 'round', strokeLinejoin: 'round', filter: 'url(#gis-vec-glow)'
+              stroke: strokeCol, strokeWidth: 3.2, strokeLinecap: 'round', strokeLinejoin: 'round', filter: isHC ? undefined : 'url(#gis-vec-glow)'
             }));
           });
+          // Spatial analysis overlay: buffer-ring expansion ripples or measured geodesic path on schematic map
+          if (analysisPoints && analysisPoints.length > 0) {
+            if (analysisMode === 'buffer') {
+              var bp = proj.project(analysisPoints[0].lon, analysisPoints[0].lat);
+              var midLatB = (proj.bounds.minLat + proj.bounds.maxLat) / 2;
+              var spanKmB = Math.max(1, haversineKm({ lat: midLatB, lon: proj.bounds.minLon }, { lat: midLatB, lon: proj.bounds.maxLon }));
+              var sAB = proj.project(proj.bounds.minLon, midLatB), sBB = proj.project(proj.bounds.maxLon, midLatB);
+              var bufPx = Math.max(14, Math.min(175, Math.abs(sBB.x - sAB.x) * ((Number(bufferRadiusKm) || 25) / spanKmB)));
+              kids.push(h('g', { key: 'schem-buffer' },
+                !isHC && h('circle', { className: 'gis-buffer-ripple', cx: bp.x, cy: bp.y, r: bufPx, fill: 'none', stroke: '#fde047', strokeWidth: 1.6 }),
+                !isHC && h('circle', { className: 'gis-buffer-ripple-b', cx: bp.x, cy: bp.y, r: bufPx, fill: 'none', stroke: '#5eead4', strokeWidth: 1.2 }),
+                h('circle', { cx: bp.x, cy: bp.y, r: bufPx, fill: isHC ? 'none' : 'rgba(253,224,71,0.12)', stroke: isHC ? '#ffff00' : '#fde047', strokeWidth: 1.8, strokeDasharray: '5 4' }),
+                h('circle', { cx: bp.x, cy: bp.y, r: 4.5, fill: '#fde047', stroke: '#04101b', strokeWidth: 1.4 })
+              ));
+            } else if (analysisMode === 'distance' && analysisPoints.length > 1) {
+              var pathD = analysisPoints.map(function (pt, idx) {
+                var p = proj.project(pt.lon, pt.lat);
+                return (idx === 0 ? 'M' : 'L') + p.x.toFixed(1) + ' ' + p.y.toFixed(1);
+              }).join(' ');
+              kids.push(h('path', { key: 'schem-dist', className: !isHC ? 'gis-flow-dash' : undefined, d: pathD, fill: 'none', stroke: isHC ? '#00ff00' : '#fde047', strokeWidth: 2.4, strokeDasharray: '6 5', strokeLinecap: 'round' }));
+            }
+          }
           vectorPoints.forEach(function (item) {
             var p = proj.project(item.coordinate[0], item.coordinate[1]);
             var value = (item.feature.properties || {})[geoMetric];
             var col = geoMetric ? classColor(value, geoBreaks) : '#22d3ee';
-            kids.push(h('circle', { key: 'vp-halo-' + item.key, cx: p.x, cy: p.y, r: 9.5, fill: col, opacity: 0.22 }));
+            !isHC && kids.push(h('circle', { key: 'vp-halo-' + item.key, className: 'gis-beacon-pulse', cx: p.x, cy: p.y, r: 9.5, fill: col, opacity: 0.24 }));
             kids.push(h('circle', {
               key: 'vector-point-' + item.key, cx: p.x, cy: p.y, r: 6,
               fill: col, stroke: '#ffffff', strokeWidth: 2, fillOpacity: 0.94
@@ -6136,7 +6208,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             var value = valueOf(record, metric, imported);
             var col = color(value, min, max);
             var isSel = !!selectedLookup[index];
-            kids.push(h('circle', { key: 'pt-halo-' + index, cx: p.x, cy: p.y, r: isSel ? 13 : 10.5, fill: isSel ? '#fde047' : col, opacity: isSel ? 0.34 : 0.22 }));
+            !isHC && isSel && kids.push(h('circle', { key: 'pt-rip-' + index, className: 'gis-buffer-ripple', cx: p.x, cy: p.y, r: 11.5, fill: 'none', stroke: '#fde047', strokeWidth: 1.4 }));
+            !isHC && kids.push(h('circle', { key: 'pt-halo-' + index, className: 'gis-beacon-pulse', cx: p.x, cy: p.y, r: isSel ? 13 : 10.5, fill: isSel ? '#fde047' : col, opacity: isSel ? 0.34 : 0.22, style: { animationDelay: ((index % 5) * -0.45).toFixed(2) + 's' } }));
             kids.push(h('circle', {
               key: 'pt' + index, cx: p.x, cy: p.y, r: isSel ? 8.5 : 7,
               fill: col, stroke: isSel ? '#fde047' : '#ffffff', strokeWidth: isSel ? 2.8 : 2, fillOpacity: 0.92
@@ -6144,7 +6217,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           });
           annotationRows.forEach(function (annotation, index) {
             var p = proj.project(annotation.lon, annotation.lat);
-            kids.push(h('circle', { key: 'annotation-halo-' + index, cx: p.x, cy: p.y, r: 17, fill: '#fde047', opacity: 0.24 }));
+            !isHC && kids.push(h('circle', { key: 'annotation-rip-' + index, className: 'gis-buffer-ripple', cx: p.x, cy: p.y, r: 16, fill: 'none', stroke: '#fde047', strokeWidth: 1.4 }));
+            !isHC && kids.push(h('circle', { key: 'annotation-halo-' + index, className: 'gis-beacon-pulse', cx: p.x, cy: p.y, r: 17, fill: '#fde047', opacity: 0.24 }));
             kids.push(h('circle', { key: 'annotation-' + index, cx: p.x, cy: p.y, r: 13, fill: '#fde047', stroke: '#111827', strokeWidth: 3 }));
             kids.push(h('text', { key: 'annotation-label-' + index, x: p.x, y: p.y + 4, textAnchor: 'middle', fill: '#111827', fontSize: 10, fontWeight: 900 }, 'A' + (index + 1)));
           });
@@ -6167,7 +6241,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           // Finely drafted cartographic compass rose (top-right) + honesty label pill (top-left)
           kids.push(h('g', { key: 'compass-rose', transform: 'translate(' + (SW - 34) + ',34)' },
             h('circle', { cx: 0, cy: 0, r: 19, fill: 'rgba(4,16,27,0.82)', stroke: '#5eead4', strokeWidth: 1.2 }),
-            h('circle', { cx: 0, cy: 0, r: 14, fill: 'none', stroke: 'rgba(148,163,184,0.45)', strokeWidth: 0.7, strokeDasharray: '2 2' }),
+            h('circle', { className: !isHC ? 'gis-compass-orbit' : undefined, cx: 0, cy: 0, r: 14, fill: 'none', stroke: 'rgba(148,163,184,0.52)', strokeWidth: 0.7, strokeDasharray: '2 2' }),
             h('polygon', { points: '0,-15 3.4,-2 0,-4.5 -3.4,-2', fill: '#5eead4' }),
             h('polygon', { points: '0,15 3.4,2 0,4.5 -3.4,2', fill: '#64748b' }),
             h('polygon', { points: '-12,0 -2,-2.5 -4,0 -2,2.5', fill: '#64748b' }),
@@ -8537,11 +8611,13 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 [0, 1, 2, 3, 4, 5, 6].map(function (n) { return h('line', { key: 'v' + n, x1: 40 + n * 80, x2: 40 + n * 80, y1: 30, y2: 260, stroke: n === 3 ? '#3b6d85' : '#223e50', strokeDasharray: n === 3 ? undefined : '3 3' }); }),
                 [0, 1, 2, 3, 4].map(function (n) { return h('line', { key: 'h' + n, x1: 40, x2: 520, y1: 30 + n * 57.5, y2: 30 + n * 57.5, stroke: n === 2 ? '#3b6d85' : '#223e50', strokeDasharray: n === 2 ? undefined : '3 3' }); }),
                 // Reference undistorted equator unit circle
-                h('circle', { cx: 280, cy: 145, r: 20, fill: 'none', stroke: '#fde047', strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.78 }),
-                // Distorted Tissot ellipse with soft outer halo and principal axes
+                h('circle', { className: 'gis-compass-orbit', cx: 280, cy: 145, r: 20, fill: 'none', stroke: '#fde047', strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.82 }),
+                // Distorted Tissot ellipse with luminous expanding ripple halo and principal axes
+                h('ellipse', { className: 'gis-buffer-ripple', cx: 280, cy: 145, rx: Math.min(86, 20 * (projection === 'equalarea' ? 1 / Math.sqrt(scale) : scale)), ry: Math.min(86, 20 * (projection === 'equalarea' ? Math.sqrt(scale) : scale)), fill: 'none', stroke: '#67e8f9', strokeWidth: 1.4 }),
                 h('ellipse', { cx: 280, cy: 145, rx: Math.min(86, 20 * (projection === 'equalarea' ? 1 / Math.sqrt(scale) : scale)), ry: Math.min(86, 20 * (projection === 'equalarea' ? Math.sqrt(scale) : scale)), fill: 'url(#gis-tissot-fill)', stroke: '#67e8f9', strokeWidth: 3.5 }),
-                h('line', { x1: 280 - Math.min(86, 20 * (projection === 'equalarea' ? 1 / Math.sqrt(scale) : scale)), x2: 280 + Math.min(86, 20 * (projection === 'equalarea' ? 1 / Math.sqrt(scale) : scale)), y1: 145, y2: 145, stroke: '#5eead4', strokeWidth: 1.2, opacity: 0.75 }),
-                h('line', { x1: 280, x2: 280, y1: 145 - Math.min(86, 20 * (projection === 'equalarea' ? Math.sqrt(scale) : scale)), y2: 145 + Math.min(86, 20 * (projection === 'equalarea' ? Math.sqrt(scale) : scale)), stroke: '#5eead4', strokeWidth: 1.2, opacity: 0.75 }),
+                h('line', { className: 'gis-crosshair-pulse', x1: 280 - Math.min(86, 20 * (projection === 'equalarea' ? 1 / Math.sqrt(scale) : scale)), x2: 280 + Math.min(86, 20 * (projection === 'equalarea' ? 1 / Math.sqrt(scale) : scale)), y1: 145, y2: 145, stroke: '#5eead4', strokeWidth: 1.2, opacity: 0.78 }),
+                h('line', { className: 'gis-crosshair-pulse', x1: 280, x2: 280, y1: 145 - Math.min(86, 20 * (projection === 'equalarea' ? Math.sqrt(scale) : scale)), y2: 145 + Math.min(86, 20 * (projection === 'equalarea' ? Math.sqrt(scale) : scale)), stroke: '#5eead4', strokeWidth: 1.2, opacity: 0.78 }),
+                h('circle', { className: 'gis-beacon-pulse', cx: 280, cy: 145, r: 6.5, fill: '#5eead4', opacity: 0.28 }),
                 h('circle', { cx: 280, cy: 145, r: 3, fill: '#f0fdfa' }),
                 h('text', { x: 280, y: 286, textAnchor: 'middle', fill: '#a7c7d8', fontSize: 12 }, __alloT('stem.gisstudio.ui_tissot_indicatrix_one_equal_patch_of_ground', 'Tissot indicatrix: one equal patch of ground')))),
             h('p', { style: { color: '#b7d2df', fontSize: 12, lineHeight: 1.5 } },
@@ -8572,12 +8648,13 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     h('circle', { cx: 24, cy: 24, r: 19, fill: 'url(#gis-emblem-ocean)', stroke: '#5eead4', strokeWidth: 1.6, opacity: 0.95 }),
                     h('ellipse', { cx: 24, cy: 24, rx: 10, ry: 19, stroke: '#38bdf8', strokeWidth: 1.2, opacity: 0.78 }),
                     h('line', { x1: 5, y1: 24, x2: 43, y2: 24, stroke: '#38bdf8', strokeWidth: 1.2, opacity: 0.72 }),
-                    h('line', { x1: 8, y1: 15, x2: 40, y2: 15, stroke: '#5eead4', strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.55 }),
-                    h('line', { x1: 8, y1: 33, x2: 40, y2: 33, stroke: '#5eead4', strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.55 }),
+                    h('line', { className: 'gis-contour-glint', x1: 8, y1: 15, x2: 40, y2: 15, stroke: '#5eead4', strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.58 }),
+                    h('line', { className: 'gis-contour-glint', x1: 8, y1: 33, x2: 40, y2: 33, stroke: '#5eead4', strokeWidth: 1, strokeDasharray: '2 2', opacity: 0.58, style: { animationDelay: '-1.5s' } }),
                     h('polygon', { points: '24,7 27.5,20.5 24,24 20.5,20.5', fill: '#5eead4' }),
                     h('polygon', { points: '24,41 27.5,27.5 24,24 20.5,27.5', fill: '#38bdf8', opacity: 0.85 }),
                     h('polygon', { points: '9,24 20.5,21.5 24,24 20.5,26.5', fill: '#bae6fd', opacity: 0.7 }),
                     h('polygon', { points: '39,24 27.5,21.5 24,24 27.5,26.5', fill: '#bae6fd', opacity: 0.7 }),
+                    h('circle', { className: 'gis-beacon-pulse', cx: 24, cy: 24, r: 5, fill: '#5eead4', opacity: 0.3 }),
                     h('circle', { cx: 24, cy: 24, r: 2.5, fill: '#f0fdfa' })
                   )
                 ),
@@ -8608,15 +8685,21 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 'aria-label': __alloT('stem.gisstudio.a11y_spatial_workflow_diagram', 'GIS spatial analysis workflow: Acquire and project coordinates, map and classify layers across space and time, then analyze patterns and compose evidence reports'),
                 style: { width: '100%', maxHeight: 66, height: 'auto', display: 'block' }
               },
-                h('line', { x1: 174, y1: 31, x2: 208, y2: 31, stroke: '#5eead4', strokeWidth: 2 }),
-                h('line', { x1: 372, y1: 31, x2: 406, y2: 31, stroke: '#38bdf8', strokeWidth: 2 }),
+                h('line', { className: 'gis-flow-dash', x1: 174, y1: 31, x2: 208, y2: 31, stroke: '#5eead4', strokeWidth: 2, strokeDasharray: '5 4' }),
+                h('line', { className: 'gis-flow-dash', x1: 372, y1: 31, x2: 406, y2: 31, stroke: '#38bdf8', strokeWidth: 2, strokeDasharray: '5 4', style: { animationDelay: '-0.8s' } }),
                 h('rect', { x: 8, y: 9, width: 166, height: 44, rx: 10, fill: gisStage === 'acquire' ? 'rgba(20,184,166,0.34)' : 'rgba(15,48,64,0.6)', stroke: gisStage === 'acquire' ? '#5eead4' : '#3f6b82', strokeWidth: gisStage === 'acquire' ? 2 : 1.3 }),
+                gisStage === 'acquire' && h('circle', { className: 'gis-beacon-pulse', cx: 22, cy: 22, r: 4.5, fill: '#5eead4', opacity: 0.45 }),
+                gisStage === 'acquire' && h('circle', { cx: 22, cy: 22, r: 2.5, fill: '#5eead4' }),
                 h('text', { x: 91, y: 27, textAnchor: 'middle', fill: '#f0fdfa', fontSize: 11.5, fontWeight: 800 }, '1. Acquire & Project'),
                 h('text', { x: 91, y: 43, textAnchor: 'middle', fill: '#bae6fd', fontSize: 10.5 }, 'CRS · CSV · GeoJSON'),
                 h('rect', { x: 208, y: 9, width: 164, height: 44, rx: 10, fill: gisStage === 'map' ? 'rgba(14,165,233,0.32)' : 'rgba(15,48,64,0.6)', stroke: gisStage === 'map' ? '#38bdf8' : '#3f6b82', strokeWidth: gisStage === 'map' ? 2 : 1.3 }),
+                gisStage === 'map' && h('circle', { className: 'gis-beacon-pulse', cx: 222, cy: 22, r: 4.5, fill: '#38bdf8', opacity: 0.45 }),
+                gisStage === 'map' && h('circle', { cx: 222, cy: 22, r: 2.5, fill: '#38bdf8' }),
                 h('text', { x: 290, y: 27, textAnchor: 'middle', fill: '#f0fdfa', fontSize: 11.5, fontWeight: 800 }, '2. Map & Classify'),
                 h('text', { x: 290, y: 43, textAnchor: 'middle', fill: '#bae6fd', fontSize: 10.5 }, 'Layers · Compare · Raster'),
                 h('rect', { x: 406, y: 9, width: 166, height: 44, rx: 10, fill: gisStage === 'analyze' ? 'rgba(245,158,11,0.28)' : 'rgba(15,48,64,0.6)', stroke: gisStage === 'analyze' ? '#fbbf24' : '#3f6b82', strokeWidth: gisStage === 'analyze' ? 2 : 1.3 }),
+                gisStage === 'analyze' && h('circle', { className: 'gis-beacon-pulse', cx: 420, cy: 22, r: 4.5, fill: '#fbbf24', opacity: 0.45 }),
+                gisStage === 'analyze' && h('circle', { cx: 420, cy: 22, r: 2.5, fill: '#fbbf24' }),
                 h('text', { x: 489, y: 27, textAnchor: 'middle', fill: '#f0fdfa', fontSize: 11.5, fontWeight: 800 }, '3. Analyze & Compose'),
                 h('text', { x: 489, y: 43, textAnchor: 'middle', fill: '#fde68a', fontSize: 10.5 }, 'Missions · Story · Evidence')
               )

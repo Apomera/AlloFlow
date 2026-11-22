@@ -51,10 +51,23 @@
       '@keyframes accesslens-pulse { 0% { opacity: 0.55; } 50% { opacity: 1; } 100% { opacity: 0.55; } }',
       '@keyframes accesslens-scan { 0% { transform: translateY(-18px); opacity: 0.35; } 50% { transform: translateY(18px); opacity: 0.92; } 100% { transform: translateY(-18px); opacity: 0.35; } }',
       '@keyframes accesslens-ring { 0% { opacity: 0.45; } 50% { opacity: 0.95; } 100% { opacity: 0.45; } }',
+      '@keyframes accesslens-reticle-bloom { 0%, 100% { opacity: 0.78; transform: scale(0.994); } 50% { opacity: 1; transform: scale(1.012); } }',
+      '@keyframes accesslens-dash-flow { to { stroke-dashoffset: -16; } }',
+      '@keyframes accesslens-beacon-ring { 0% { opacity: 0.74; transform: scale(0.92); } 100% { opacity: 0.04; transform: scale(1.48); } }',
+      '@keyframes accesslens-aperture-spin { to { transform: rotate(360deg); } }',
+      '@keyframes accesslens-prism-shimmer { 0%, 100% { opacity: 0.68; } 50% { opacity: 1; } }',
       '.accesslens-busy { animation: accesslens-pulse 1.2s ease-in-out infinite; }',
       '.accesslens-scan-beam { animation: accesslens-scan 3.4s ease-in-out infinite; }',
       '.accesslens-ring-pulse { animation: accesslens-ring 2.6s ease-in-out infinite; }',
-      '@media (prefers-reduced-motion: reduce) { .accesslens-tab, .accesslens-btn, .accesslens-chip { transition: none !important; } .accesslens-busy, .accesslens-scan-beam, .accesslens-ring-pulse { animation: none !important; } }',
+      '.accesslens-reticle-bloom { transform-box: fill-box; transform-origin: center; animation: accesslens-reticle-bloom 3.2s ease-in-out infinite; }',
+      '.accesslens-dash-flow { animation: accesslens-dash-flow 1.45s linear infinite; }',
+      '.accesslens-beacon-ring { transform-box: fill-box; transform-origin: center; animation: accesslens-beacon-ring 2.4s ease-out infinite; }',
+      '.accesslens-aperture-spin { transform-box: fill-box; transform-origin: center; animation: accesslens-aperture-spin 26s linear infinite; }',
+      '.accesslens-prism-shimmer { animation: accesslens-prism-shimmer 2.8s ease-in-out infinite; }',
+      '.theme-contrast [data-accesslens-tool] .accesslens-tab:focus-visible, .theme-contrast [data-accesslens-tool] .accesslens-btn:focus-visible, .theme-contrast [data-accesslens-tool] .accesslens-chip:focus-visible, [data-accesslens-theme="contrast"] .accesslens-tab:focus-visible, [data-accesslens-theme="contrast"] .accesslens-btn:focus-visible, [data-accesslens-theme="contrast"] .accesslens-chip:focus-visible { outline: 3px solid #ffff00 !important; outline-offset: 2px !important; }',
+      '.theme-contrast [data-accesslens-tool] .accesslens-busy, .theme-contrast [data-accesslens-tool] .accesslens-scan-beam, .theme-contrast [data-accesslens-tool] .accesslens-ring-pulse, .theme-contrast [data-accesslens-tool] .accesslens-reticle-bloom, .theme-contrast [data-accesslens-tool] .accesslens-dash-flow, .theme-contrast [data-accesslens-tool] .accesslens-beacon-ring, .theme-contrast [data-accesslens-tool] .accesslens-aperture-spin, .theme-contrast [data-accesslens-tool] .accesslens-prism-shimmer, [data-accesslens-theme="contrast"] .accesslens-busy, [data-accesslens-theme="contrast"] .accesslens-scan-beam, [data-accesslens-theme="contrast"] .accesslens-ring-pulse, [data-accesslens-theme="contrast"] .accesslens-reticle-bloom, [data-accesslens-theme="contrast"] .accesslens-dash-flow, [data-accesslens-theme="contrast"] .accesslens-beacon-ring, [data-accesslens-theme="contrast"] .accesslens-aperture-spin, [data-accesslens-theme="contrast"] .accesslens-prism-shimmer { animation: none !important; }',
+      '.theme-contrast [data-accesslens-tool] .accesslens-fx-decor, [data-accesslens-theme="contrast"] .accesslens-fx-decor { opacity: 0 !important; }',
+      '@media (prefers-reduced-motion: reduce) { .accesslens-tab, .accesslens-btn, .accesslens-chip { transition: none !important; } .accesslens-busy, .accesslens-scan-beam, .accesslens-ring-pulse, .accesslens-reticle-bloom, .accesslens-dash-flow, .accesslens-beacon-ring, .accesslens-aperture-spin, .accesslens-prism-shimmer { animation: none !important; transform: none !important; } .accesslens-beacon-ring { opacity: 0.3 !important; } }',
       '@media (max-width: 720px) { [data-accesslens-columns] { grid-template-columns: 1fr !important; } }'
     ].join('\n');
     if (document.head) document.head.appendChild(_st);
@@ -1154,15 +1167,16 @@
             h('text', { x: 165, y: 54, fill: strokePrimary, fontSize: 9.5, fontWeight: 800, letterSpacing: '0.06em', textAnchor: 'middle' }, 'CENTER'),
             h('text', { x: 256, y: 54, fill: txtSub, fontSize: 9.5, fontWeight: 700, letterSpacing: '0.06em', textAnchor: 'middle' }, 'RIGHT'),
             // Optical lens bezel with subtle refraction glow
+            !contrast ? h('circle', { className: 'accesslens-beacon-ring accesslens-fx-decor', cx: 165, cy: 95, r: 30, fill: 'none', stroke: strokePrimary, strokeWidth: 1.2 }) : null,
             h('circle', { cx: 165, cy: 95, r: 30, fill: contrast ? 'none' : 'url(#al-lens-glass)', stroke: strokePrimary, strokeWidth: 1.4, opacity: 0.9 }),
             h('circle', { cx: 165, cy: 95, r: 23, fill: 'none', stroke: strokePrimary, strokeWidth: 2, filter: contrast ? undefined : 'url(#al-glow)' }),
-            h('circle', { cx: 165, cy: 95, r: 14, fill: 'none', stroke: strokeSecondary, strokeWidth: 1.2, strokeDasharray: '3 3', opacity: 0.8 }),
+            h('circle', { className: 'accesslens-aperture-spin', cx: 165, cy: 95, r: 14, fill: 'none', stroke: strokeSecondary, strokeWidth: 1.2, strokeDasharray: '3 3', opacity: 0.8 }),
             h('circle', { cx: 165, cy: 95, r: 7.5, fill: strokePrimary, opacity: 0.9 }),
             // Specular glass highlight crescent
             !contrast ? h('path', { d: 'M146 80 A23 23 0 0 1 174 73', fill: 'none', stroke: '#ffffff', strokeWidth: 2, strokeLinecap: 'round', opacity: 0.55 }) : null,
             // Acoustic read-aloud emission arcs
             h('path', { className: 'accesslens-ring-pulse', d: 'M203 82 Q216 95 203 108', fill: 'none', stroke: strokeSecondary, strokeWidth: 2.3, strokeLinecap: 'round', filter: contrast ? undefined : 'url(#al-glow)' }),
-            h('path', { className: 'accesslens-ring-pulse', d: 'M213 73 Q231 95 213 117', fill: 'none', stroke: strokeSecondary, strokeWidth: 1.8, strokeLinecap: 'round', opacity: 0.72 }),
+            h('path', { className: 'accesslens-ring-pulse', d: 'M213 73 Q231 95 213 117', fill: 'none', stroke: strokeSecondary, strokeWidth: 1.8, strokeLinecap: 'round', opacity: 0.72, style: { animationDelay: '-0.65s' } }),
             h('path', { d: 'M127 84 Q116 95 127 106', fill: 'none', stroke: strokePrimary, strokeWidth: 1.5, strokeLinecap: 'round', opacity: 0.5 })
           )
         : mode === 'read'
@@ -1184,7 +1198,8 @@
             h('line', { x1: 154, y1: 42, x2: 154, y2: 136, stroke: strokeSecondary, strokeWidth: 2.2, filter: contrast ? undefined : 'url(#al-glow)' }),
             h('circle', { cx: 154, cy: 89, r: 9.5, fill: cardStage, stroke: strokeSecondary, strokeWidth: 2 }),
             h('path', { d: 'M151 86 L148.5 89 L151 92 M157 86 L159.5 89 L157 92', fill: 'none', stroke: txtMain, strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-            // Animated optical OCR scan beam (reduced-motion gated)
+            // Animated optical OCR scan beam + soft bloom band (reduced-motion & contrast gated)
+            !contrast ? h('rect', { className: 'accesslens-scan-beam accesslens-fx-decor', x: 58, y: 83, width: 214, height: 12, rx: 4, fill: strokePrimary, opacity: 0.14 }) : null,
             h('line', { className: 'accesslens-scan-beam', x1: 58, y1: 89, x2: 272, y2: 89, stroke: strokePrimary, strokeWidth: 1.5, strokeDasharray: '5 4', opacity: 0.78 })
           )
         : mode === 'translate'
@@ -1194,7 +1209,7 @@
             h('text', { x: 95, y: 87, fill: txtMain, fontSize: 13.5, fontWeight: 800, textAnchor: 'middle' }, 'TEXT'),
             h('text', { x: 95, y: 107, fill: txtSub, fontSize: 9.5, fontWeight: 700, textAnchor: 'middle' }, 'SOURCE'),
             // Luminous optical translation bridge arcs
-            h('path', { d: 'M144 82 Q165 68 186 82', fill: 'none', stroke: strokePrimary, strokeWidth: 2, strokeLinecap: 'round', filter: contrast ? undefined : 'url(#al-glow)' }),
+            h('path', { className: 'accesslens-dash-flow', d: 'M144 82 Q165 68 186 82', fill: 'none', stroke: strokePrimary, strokeWidth: 2, strokeDasharray: '5 3', strokeLinecap: 'round', filter: contrast ? undefined : 'url(#al-glow)' }),
             h('path', { d: 'M146 92 L182 92 M176 86 L183 92 L176 98', fill: 'none', stroke: strokeSecondary, strokeWidth: 2.4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
             h('circle', { className: 'accesslens-ring-pulse', cx: 165, cy: 75, r: 3, fill: strokeAmber }),
             h('rect', { x: 188, y: 54, width: 94, height: 68, rx: 8, fill: contrast ? '#000000' : 'url(#al-card-tint)', stroke: strokePrimary, strokeWidth: 2 }),
@@ -1203,14 +1218,14 @@
           )
         : h('g', null,
             // Incident beam + glass optical dispersion prism + luminous spectral response curves
-            h('line', { x1: 58, y1: 88, x2: 136, y2: 88, stroke: txtMain, strokeWidth: 2.2, strokeDasharray: '5 3', opacity: 0.9 }),
+            h('line', { className: 'accesslens-dash-flow', x1: 58, y1: 88, x2: 136, y2: 88, stroke: txtMain, strokeWidth: 2.2, strokeDasharray: '5 3', opacity: 0.9 }),
             h('polygon', { points: '165,46 118,128 212,128', fill: contrast ? '#000000' : 'url(#al-lens-glass)', stroke: strokePrimary, strokeWidth: 2.2, strokeLinejoin: 'round' }),
             !contrast ? h('line', { x1: 165, y1: 52, x2: 130, y2: 118, stroke: '#ffffff', strokeWidth: 1.4, opacity: 0.42 }) : null,
             h('text', { x: 165, y: 109, fill: strokeSecondary, fontSize: 23, fontWeight: 800, textAnchor: 'middle' }, '?'),
             // Refracted spectral curves (S / M / L luminous optical bands)
-            h('path', { d: 'M194 78 Q228 62 272 64', fill: 'none', stroke: strokePrimary, strokeWidth: 2.4, strokeLinecap: 'round', filter: contrast ? undefined : 'url(#al-glow)' }),
-            h('path', { d: 'M198 94 Q232 90 272 92', fill: 'none', stroke: strokeSecondary, strokeWidth: 2.4, strokeLinecap: 'round', filter: contrast ? undefined : 'url(#al-glow)' }),
-            h('path', { d: 'M202 110 Q234 120 272 122', fill: 'none', stroke: strokeAmber, strokeWidth: 2.2, strokeLinecap: 'round' })
+            h('path', { className: 'accesslens-prism-shimmer', d: 'M194 78 Q228 62 272 64', fill: 'none', stroke: strokePrimary, strokeWidth: 2.4, strokeLinecap: 'round', filter: contrast ? undefined : 'url(#al-glow)' }),
+            h('path', { className: 'accesslens-prism-shimmer', d: 'M198 94 Q232 90 272 92', fill: 'none', stroke: strokeSecondary, strokeWidth: 2.4, strokeLinecap: 'round', filter: contrast ? undefined : 'url(#al-glow)', style: { animationDelay: '-0.5s' } }),
+            h('path', { className: 'accesslens-prism-shimmer', d: 'M202 110 Q234 120 272 122', fill: 'none', stroke: strokeAmber, strokeWidth: 2.2, strokeLinecap: 'round', style: { animationDelay: '-1.0s' } })
           );
 
       var stepFill = function (done, active) {
@@ -1286,33 +1301,44 @@
               );
             })
           ),
-          // Precision corner reticle brackets
-          h('path', { d: 'M36 42 L36 26 L52 26 M278 26 L294 26 L294 42 M36 134 L36 150 L52 150 M278 150 L294 150 L294 134', fill: 'none', stroke: hasPhoto ? strokeSecondary : strokePrimary, strokeWidth: 2.5, strokeLinecap: 'round', filter: contrast ? undefined : 'url(#al-glow)' }),
+          // Precision corner reticle brackets (smooth focus-ring bloom)
+          h('path', { className: 'accesslens-reticle-bloom', d: 'M36 42 L36 26 L52 26 M278 26 L294 26 L294 42 M36 134 L36 150 L52 150 M278 150 L294 150 L294 134', fill: 'none', stroke: hasPhoto ? strokeSecondary : strokePrimary, strokeWidth: 2.5, strokeLinecap: 'round', filter: contrast ? undefined : 'url(#al-glow)' }),
           lensGraphic,
           h('text', { x: 165, y: 150, fill: hasPhoto ? strokeSecondary : txtSub, fontSize: 10.2, fontWeight: 800, letterSpacing: '0.06em', textAnchor: 'middle' },
             hasPhoto ? _t('stem.accessLens.stage_locked', 'IMAGE READY IN MEMORY') : _t('stem.accessLens.stage_standby', 'VIEWFINDER STANDBY')),
           // Right pipeline panel
           h('text', { x: 332, y: 33, fill: strokePrimary, fontSize: 11, fontWeight: 800, letterSpacing: '0.05em' }, modeTitle.toUpperCase()),
           h('text', { x: 332, y: 49, fill: txtSub, fontSize: 11 }, modeDetail),
-          // Calibrated optical signal / contrast meter bar
+          // Calibrated optical signal / contrast meter bar + luminous threshold gauge beacon
           h('rect', { x: 332, y: 58, width: 282, height: 4, rx: 2, fill: strokeMuted, opacity: 0.45 }),
-          h('rect', { x: 332, y: 58, width: Math.max(46, Math.round(((lensesExploredCount + (hasPhoto ? 1 : 0)) / 5) * 282)), height: 4, rx: 2, fill: hasPhoto ? strokeSecondary : strokePrimary }),
-          // Connector track (base dashed + active luminous progress rail)
-          h('line', { x1: 364, y1: 94, x2: 590, y2: 94, stroke: strokeMuted, strokeWidth: 2, strokeDasharray: '4 4' }),
+          (function () {
+            var meterW = Math.max(46, Math.round(((lensesExploredCount + (hasPhoto ? 1 : 0)) / 5) * 282));
+            var meterColor = hasPhoto ? strokeSecondary : strokePrimary;
+            return h('g', null,
+              h('rect', { x: 332, y: 58, width: meterW, height: 4, rx: 2, fill: meterColor }),
+              !contrast ? h('circle', { className: 'accesslens-beacon-ring accesslens-fx-decor', cx: 332 + meterW, cy: 60, r: 4.5, fill: 'none', stroke: meterColor, strokeWidth: 1.3 }) : null,
+              h('circle', { cx: 332 + meterW, cy: 60, r: 3, fill: meterColor })
+            );
+          })(),
+          // Connector track (animated tab-order/workflow flow dashes + active luminous progress rail)
+          h('line', { className: 'accesslens-dash-flow', x1: 364, y1: 94, x2: 590, y2: 94, stroke: strokeMuted, strokeWidth: 2, strokeDasharray: '4 4' }),
           progressX > 364 ? h('line', { x1: 364, y1: 94, x2: progressX, y2: 94, stroke: strokeSecondary, strokeWidth: 2.6, strokeLinecap: 'round', filter: contrast ? undefined : 'url(#al-glow)' }) : null,
           // Step 1
+          !contrast && !step1Done ? h('circle', { className: 'accesslens-beacon-ring accesslens-fx-decor', cx: 364, cy: 94, r: 18, fill: 'none', stroke: strokePrimary, strokeWidth: 1.5 }) : null,
           h('circle', { cx: 364, cy: 94, r: 20, fill: 'none', stroke: stepFill(step1Done, !step1Done), strokeWidth: 1, opacity: 0.35 }),
           h('circle', { cx: 364, cy: 94, r: 16, fill: cardStage, stroke: stepFill(step1Done, !step1Done), strokeWidth: 2.5 }),
           h('text', { x: 364, y: 98, fill: txtMain, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, step1Done ? 'OK' : '1'),
           h('text', { x: 364, y: 128, fill: txtMain, fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, _t('stem.accessLens.step_capture', 'Capture')),
           h('text', { x: 364, y: 143, fill: txtSub, fontSize: 10, textAnchor: 'middle' }, hasPhoto ? _t('stem.accessLens.step_done', 'Loaded') : _t('stem.accessLens.step_local', 'Local only')),
           // Step 2
+          !contrast && step1Done && !step2Done ? h('circle', { className: 'accesslens-beacon-ring accesslens-fx-decor', cx: 477, cy: 94, r: 18, fill: 'none', stroke: strokePrimary, strokeWidth: 1.5 }) : null,
           h('circle', { cx: 477, cy: 94, r: 20, fill: 'none', stroke: stepFill(step2Done, step1Done && !step2Done), strokeWidth: 1, opacity: 0.35 }),
           h('circle', { cx: 477, cy: 94, r: 16, fill: cardStage, stroke: stepFill(step2Done, step1Done && !step2Done), strokeWidth: 2.5 }),
           h('text', { x: 477, y: 98, fill: txtMain, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, step2Done ? 'OK' : '2'),
           h('text', { x: 477, y: 128, fill: txtMain, fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, _t('stem.accessLens.step_lens', 'Analyze')),
           h('text', { x: 477, y: 143, fill: txtSub, fontSize: 10, textAnchor: 'middle' }, busy ? _t('stem.accessLens.step_working', 'Working') : (step2Done ? _t('stem.accessLens.step_ready', 'Ready') : _t('stem.accessLens.step_user', 'On click'))),
           // Step 3
+          !contrast && step2Done ? h('circle', { className: 'accesslens-beacon-ring accesslens-fx-decor', cx: 590, cy: 94, r: 18, fill: 'none', stroke: strokeSecondary, strokeWidth: 1.5 }) : null,
           h('circle', { cx: 590, cy: 94, r: 20, fill: 'none', stroke: stepFill(step3Done, step2Done), strokeWidth: 1, opacity: 0.35 }),
           h('circle', { cx: 590, cy: 94, r: 16, fill: cardStage, stroke: stepFill(step3Done, step2Done), strokeWidth: 2.5 }),
           h('text', { x: 590, y: 98, fill: txtMain, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, step3Done ? 'OK' : '3'),
@@ -1811,8 +1837,8 @@
                 h('path', { d: 'M18 11 L21 15 M26 20 L22 23 M18 29 L15 25 M10 20 L14 17', fill: 'none', stroke: contrast ? '#ffff00' : '#bae6fd', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.72 }),
                 h('circle', { cx: 18, cy: 20, r: 2.6, fill: contrast ? '#ffff00' : '#38bdf8' }),
                 !contrast ? h('path', { d: 'M11.5 14 A10 10 0 0 1 20 10.5', fill: 'none', stroke: '#ffffff', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.7 }) : null,
-                h('path', { d: 'M31 14 Q36 20 31 26', fill: 'none', stroke: contrast ? '#00ff00' : '#34d399', strokeWidth: 2.2, strokeLinecap: 'round' }),
-                h('path', { d: 'M34.5 10.5 Q40 20 34.5 29.5', fill: 'none', stroke: contrast ? '#ffff00' : '#bae6fd', strokeWidth: 1.8, strokeLinecap: 'round' })
+                h('path', { className: 'accesslens-ring-pulse', d: 'M31 14 Q36 20 31 26', fill: 'none', stroke: contrast ? '#00ff00' : '#34d399', strokeWidth: 2.2, strokeLinecap: 'round' }),
+                h('path', { className: 'accesslens-ring-pulse', d: 'M34.5 10.5 Q40 20 34.5 29.5', fill: 'none', stroke: contrast ? '#ffff00' : '#bae6fd', strokeWidth: 1.8, strokeLinecap: 'round', style: { animationDelay: '-0.65s' } })
               )
             ),
             h('div', { style: { minWidth: 0 } },

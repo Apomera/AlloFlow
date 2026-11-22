@@ -1412,7 +1412,7 @@ function buildAlloCommandContext(deps) {
           return started !== false && !!(window.__alloVoiceLoop.isActive && window.__alloVoiceLoop.isActive());
         } catch (error) {
           setAlloVoiceActive(false);
-          addToast((error && error.message) || 'Voice control could not start.', 'error');
+          addToast((error && error.message) || t('toasts.voice_start_failed') || 'Voice control could not start.', 'error');
           return false;
         }
       },

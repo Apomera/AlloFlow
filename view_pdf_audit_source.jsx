@@ -195,8 +195,12 @@ function _alloTaggedPdfDeliveryVerdict(result) {
 }
 
 function _alloExecutableActiveContentFindings(result) {
+  const shared = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.createDocPipeline;
+  if (shared && typeof shared.executableActiveContentFindings === 'function') {
+    return shared.executableActiveContentFindings(result);
+  }
   const findings = result && result.activeContent && Array.isArray(result.activeContent.findings) ? result.activeContent.findings : [];
-  const executable = { 'open-action': true, javascript: true, launch: true, 'additional-actions': true };
+  const executable = { 'open-action': true, javascript: true, launch: true, 'additional-actions': true, 'other-actions': true, multimedia: true };
   return findings.filter((finding) => finding && executable[finding.type]);
 }
 
@@ -492,7 +496,8 @@ function _viewSanitizeAiRestyleCss(rawCss) {
   clean = clean.replace(/^```(?:css)?\s*\n?/gim, '').replace(/\n?```\s*$/gim, '');
   clean = clean
     .replace(/<\/?style\b[^>]*>/gi, '')
-    .replace(/@import\s+[^;]+;?/gi, '')
+    .replace(/[<\\]/g, '')
+    .replace(/@import\s+[^;\n}]+;?/gi, '')
     .replace(/url\s*\([^)]*\)/gi, 'none')
     .replace(/image-set\s*\([^)]*\)/gi, 'none')
     .replace(/expression\s*\([^)]*\)/gi, 'none')
@@ -1839,13 +1844,16 @@ function _htmlToDocxSpec(html) {
         }
         continue;
       }
-      const isNewLink = tag === 'A' && n.getAttribute('href') && !fmt.link;
+      const _rawAnchorHref = tag === 'A' ? String(n.getAttribute('href') || '').trim() : '';
+      const _normAnchorHref = _rawAnchorHref.replace(/[\u0000-\u0020]+/g, '');
+      const _safeAnchorHref = _rawAnchorHref && /^(?:https?:|mailto:|#)/i.test(_normAnchorHref) ? _rawAnchorHref : null;
+      const isNewLink = !!(_safeAnchorHref && !fmt.link);
       if (isNewLink) counts.links++;
       out = out.concat(inlineRuns(n, {
         bold: fmt.bold || tag === 'B' || tag === 'STRONG',
         italic: fmt.italic || tag === 'I' || tag === 'EM',
         underline: fmt.underline || tag === 'U',
-        link: fmt.link || (tag === 'A' && n.getAttribute('href')) || null,
+        link: fmt.link || _safeAnchorHref || null,
         // Superscript/subscript (2026-06-13): footnote anchors (<sup>),
         // exponents (x²), ordinals, and chemical formulae (H₂O) were
         // flattening to baseline in docx/pptx. Thread vertical alignment.
@@ -2579,9 +2587,9 @@ function _htmlToDtbookXml(html, lang, uid) {
 }
 // Navigation Control file (NCX) + OPF package for the DAISY book — navPoints
 // from the document headings so DAISY players get a real navigable TOC.
-function _htmlToDaisyNcx(html, title, uid) {
+function _htmlToDaisyNcx(html, title, uid, lang) {
   const spec = _htmlToDocxSpec(html);
-  const L = spec.lang || 'en';
+  const L = lang || spec.lang || 'en';
   const heads = (spec.blocks || []).filter((b) => b.type === 'heading');
   const stack = [];
   let maxDepth = 1;
@@ -3194,11 +3202,15 @@ function _altFmtXhtmlFromHtml(html, opts) {
       Array.from(el.attributes || []).forEach((attr) => {
         const name = attr.name.toLowerCase();
         const val = String(attr.value || '').trim();
-        if (name.startsWith('on') || name === 'formaction') { el.removeAttribute(attr.name); return; }
-        if ((name === 'href' || name === 'xlink:href') && /^(?:javascript|vbscript|data):/i.test(val)) {
+        const normVal = val.replace(/[\u0000-\u0020]+/g, '');
+        if (name.startsWith('on') || name === 'formaction' || name === 'srcdoc') { el.removeAttribute(attr.name); return; }
+        if ((name === 'href' || name === 'xlink:href' || name === 'action') && /^(?:javascript|vbscript|data|file):/i.test(normVal)) {
           el.removeAttribute(attr.name);
-        } else if (name === 'src' && /^(?:javascript|vbscript|data:text\/html)/i.test(val)) {
-          el.removeAttribute(attr.name);
+        } else if (name === 'src') {
+          const isSafeRasterData = /^data:image\/(?:png|jpeg|jpg|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(normVal);
+          if (/^(?:javascript|vbscript|file):/i.test(normVal) || (/^data:/i.test(normVal) && !isSafeRasterData)) {
+            el.removeAttribute(attr.name);
+          }
         }
       });
     });
@@ -3207,9 +3219,9 @@ function _altFmtXhtmlFromHtml(html, opts) {
       if (/^(?:https?:)?\/\//i.test(href)) link.remove();
     });
     d.querySelectorAll('style').forEach((style) => {
-      const css = style.textContent || '';
+      const css = (style.textContent || '').replace(/[<\\]/g, '');
       style.textContent = css
-        .replace(/@import\s+[^;]+;/gi, '')
+        .replace(/@import\s+[^;\n}]+;?/gi, '')
         .replace(/@font-face\s*\{[^}]*(?:https?:|\/\/)[^}]*\}/gi, '')
         .replace(/url\(\s*(['"]?)(?:https?:)?\/\/[^)]+\)/gi, 'none')
         .replace(/image-set\s*\([^)]*\)/gi, 'none')
@@ -3416,7 +3428,7 @@ function _buildDaisyPackageFiles(html, opts) {
   return {
     files: {
       'dtbook.xml': _htmlToDtbookXml(cleanHtml, lang, uid),
-      'navigation.ncx': _htmlToDaisyNcx(cleanHtml, title, uid),
+      'navigation.ncx': _htmlToDaisyNcx(cleanHtml, title, uid, lang),
       'book.smil': _htmlToDaisySmil(cleanHtml, uid),
       'package.opf': _DAISY_OPF_XML(title, lang, uid),
     },
@@ -3613,8 +3625,9 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
     // definition in document.footnotes. Degrades to a superscript digit only if
     // the lib lacks FootnoteReferenceRun (very old CDN cache).
     if (r.footnoteId) { return (typeof d.FootnoteReferenceRun === 'function') ? new d.FootnoteReferenceRun(r.footnoteId) : new d.TextRun({ text: String(r.footnoteId), superScript: true }); }
-    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : undefined, strike: !!r.strike, highlight: r.highlight ? ((d.HighlightColor && d.HighlightColor.YELLOW) || 'yellow') : undefined, font: r.code ? 'Courier New' : undefined, language: r.lang ? { value: r.lang } : undefined, superScript: !!r.sup, subScript: !!r.sub, style: r.link ? 'Hyperlink' : undefined, ...(_rtl ? { rightToLeft: true } : {}) });
-    return r.link ? new d.ExternalHyperlink({ link: r.link, children: [tr] }) : tr;
+    const isExternalLink = !!(r.link && /^(?:https?:|mailto:|tel:)/i.test(String(r.link).trim()));
+    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : undefined, strike: !!r.strike, highlight: r.highlight ? ((d.HighlightColor && d.HighlightColor.YELLOW) || 'yellow') : undefined, font: r.code ? 'Courier New' : undefined, language: r.lang ? { value: r.lang } : undefined, superScript: !!r.sup, subScript: !!r.sub, style: isExternalLink ? 'Hyperlink' : undefined, ...(_rtl ? { rightToLeft: true } : {}) });
+    return isExternalLink ? new d.ExternalHyperlink({ link: r.link, children: [tr] }) : tr;
   });
   // Every Paragraph in this builder goes through _P so the bidi flag can't be missed
   // at one of the eight construction sites.
@@ -5198,6 +5211,8 @@ function PdfDiagnosticsLog(props) {
   );
 }
 
+let _sharedVeraIframeHandle = null;
+
 PdfAuditView.buildPipelineTourSteps = buildPdfPipelineTourSteps;
 
 function PdfAuditView(props) {
@@ -6121,6 +6136,14 @@ function PdfAuditView(props) {
   // post-render, so a loader's OWN commit (it sets state only after its final token
   // check, with no awaits in between) can never self-invalidate.
   React.useEffect(() => { _projectLoadSelectionRef.current++; }, [pendingPdfBase64]);
+  // Wave 6 (T3-1): central HTML verification-binding guard for every direct
+  // accessibleHtml mutation (Tag Editor, Alt Edit, Doc Mode, Bionic/Line Guide,
+  // Fillable Forms, Auto-Restore Undo, Preview Edit, Image Studio, Table Reject).
+  // No-op when HTML is byte-identical to the verified snapshot; immediately
+  // invalidates stale Verified badges when the HTML actually changed.
+  const _withHtmlVerificationBinding = (next, reason = 'content-modified-after-verification') => (
+    next ? _viewEnforceVerificationHtmlBinding(next, reason, _docPipeline) : next
+  );
   // Tier A #1: most-recent tagged-PDF validation result, populated by the
   // Tagged PDF download flow. Used by the Download Accessibility Report
   // button to assemble an Adobe-style compliance report.
@@ -6234,14 +6257,34 @@ function PdfAuditView(props) {
   React.useEffect(() => {
     try {
       if (!pdfAuditResult || !pendingPdfFile || typeof pdfAuditResult._consolidatedDeductions !== 'number') { _setScoreTrend(null); return; }
-      const _key = 'alloflow_score_trend_' + (pendingPdfFile.name || 'doc') + '|' + (pendingPdfFile.size || 0) + '|' + (pdfAuditResult.pageCount || 0);
+      const _sig = (pendingPdfFile.name || 'doc') + '|' + (pendingPdfFile.size || 0) + '|' + (pdfAuditResult.pageCount || 0);
+      let _h = 0x811c9dc5;
+      for (let _i = 0; _i < _sig.length; _i++) { _h ^= _sig.charCodeAt(_i); _h = Math.imul(_h, 0x01000193); }
+      const _hashKey = 't_' + ((_h >>> 0).toString(16).padStart(8, '0'));
       const _total = (pdfAuditResult.critical || []).length + (pdfAuditResult.serious || []).length + (pdfAuditResult.moderate || []).length + (pdfAuditResult.minor || []).length;
       const _cur = { ded: pdfAuditResult._consolidatedDeductions, count: _total, date: pdfAuditResult.timestamp || null };
-      let _prior = null;
-      try { const _raw = localStorage.getItem(_key); if (_raw) _prior = JSON.parse(_raw); } catch (_) {}
+      const _STORE_KEY = 'alloflow_score_trend_v2';
+      let _map = Object.create(null);
+      try {
+        const _rawMap = sessionStorage.getItem(_STORE_KEY);
+        if (_rawMap) {
+          const _parsed = JSON.parse(_rawMap, _viewSafeJsonReviver);
+          if (_parsed && typeof _parsed === 'object' && !Array.isArray(_parsed)) {
+            Object.keys(_parsed).forEach((k) => { _map[k] = _parsed[k]; });
+          }
+        }
+      } catch (_) {}
+      const _prior = _map[_hashKey] || null;
       // Only a DIFFERENT prior snapshot is a trend (an identical re-render of the same audit isn't).
       _setScoreTrend((_prior && (_prior.ded !== _cur.ded || _prior.count !== _cur.count)) ? { prior: _prior, cur: _cur } : null);
-      try { localStorage.setItem(_key, JSON.stringify(_cur)); } catch (_) {}
+      try {
+        _map[_hashKey] = _cur;
+        const _keys = Object.keys(_map);
+        if (_keys.length > 20) {
+          _keys.slice(0, _keys.length - 20).forEach((k) => { delete _map[k]; });
+        }
+        sessionStorage.setItem(_STORE_KEY, JSON.stringify(_map));
+      } catch (_) {}
     } catch (_) { _setScoreTrend(null); }
   }, [pdfAuditResult, pendingPdfFile]);
   // #3 Structural foundations (2026-06-21): the length-INDEPENDENT, deterministic checks (lang/title/
@@ -6913,8 +6956,9 @@ function PdfAuditView(props) {
     window.addEventListener('message', onMsg);
   });
   // Closed-loop remediation: the companion window validates → repairs → re-validates → loops until
-  // green (or best-effort), returning the repaired bytes (repairedB64) + the per-iteration log.
-  const runVeraPdfRemediate = (bytes) => new Promise((resolve, reject) => {
+  // green (or best-effort), returning the repaired bytes (Transferable ArrayBuffer or repairedB64) + per-iteration log.
+  const runVeraPdfRemediate = (bytes, opts) => new Promise((resolve, reject) => {
+    const langHint = opts && typeof opts.lang === 'string' ? opts.lang.trim().slice(0, 32) : '';
     let win = null;
     try { win = window.open(VERAPDF_VALIDATOR_URL, 'alloflow-verapdf', 'width=480,height=380'); } catch (e) {}
     if (!win) { reject(new Error('Popup blocked — allow pop-ups so AlloFlow can run veraPDF remediation.')); return; }
@@ -6932,7 +6976,7 @@ function PdfAuditView(props) {
       if (d.type === 'verapdf-loading') { gotIdentity = true; clearTimeout(identityTimer); return; }
       const reportedError = _veraPdfReportedError(d);
       if (reportedError) { done = true; cleanup(); try { win.close(); } catch (e) {} reject(reportedError); }
-      else if (d.type === 'verapdf-ready') { gotIdentity = true; clearTimeout(identityTimer); gotReady = true; clearTimeout(readyTimer); try { win.postMessage({ type: 'verapdf-remediate', bytes: bytes, maxIters: 5 }, VERAPDF_ORIGIN); } catch (e) {} }
+      else if (d.type === 'verapdf-ready') { gotIdentity = true; clearTimeout(identityTimer); gotReady = true; clearTimeout(readyTimer); try { win.postMessage({ type: 'verapdf-remediate', bytes: bytes, maxIters: 5, preferBytes: true, lang: langHint }, VERAPDF_ORIGIN); } catch (e) {} }
       else if (d.type === 'verapdf-remediate-result') { done = true; cleanup(); try { win.close(); } catch (e) {} if (d.error) reject(new Error(d.error)); else resolve(d.result); }
     }
     window.addEventListener('message', onMsg);
@@ -7008,11 +7052,19 @@ function PdfAuditView(props) {
   // back to the popup (warmVeraPdfWindow), today's behavior. The verdict is cached in localStorage so we
   // don't re-probe every run. A cross-origin iframe runs in its own process (site isolation), so CheerpJ
   // boots there without blocking AlloFlow's main thread — same isolation the popup gave us, embedded.
-  const _veraIframeRef = useRef(null); // reused warm iframe handle: { frame, warmed, ready:Promise<bool>, isReady() }
+  const _veraIframeRef = useRef(_sharedVeraIframeHandle); // module-level singleton handle so remounting PdfAuditView never leaks extra CheerpJ JVMs
   const _veraEmbedPref = () => { try { return localStorage.getItem('alloflow_verapdf_embed'); } catch (_) { return null; } }; // 'ok' | 'blocked' | null
   const _setVeraEmbedPref = (v) => { try { localStorage.setItem('alloflow_verapdf_embed', v); } catch (_) {} };
   const warmVeraPdfIframe = () => {
-    if (_veraIframeRef.current) return _veraIframeRef.current; // reuse a warm iframe across validations
+    if (_sharedVeraIframeHandle && _sharedVeraIframeHandle.frame && _sharedVeraIframeHandle.frame.isConnected && (_sharedVeraIframeHandle.warmed || !_sharedVeraIframeHandle.settled)) {
+      _veraIframeRef.current = _sharedVeraIframeHandle;
+      return _sharedVeraIframeHandle;
+    }
+    if (_sharedVeraIframeHandle && typeof _sharedVeraIframeHandle.dispose === 'function') {
+      try { _sharedVeraIframeHandle.dispose(); } catch (_) {}
+    }
+    _sharedVeraIframeHandle = null;
+    _veraIframeRef.current = null;
     let frame = null;
     try {
       frame = document.createElement('iframe');
@@ -7022,22 +7074,39 @@ function PdfAuditView(props) {
       frame.style.cssText = 'position:absolute;width:1px;height:1px;left:-9999px;top:-9999px;border:0;visibility:hidden;';
       document.body.appendChild(frame);
     } catch (_) { return null; }
-    const handle = { frame, warmed: false, identified: false, error: null };
+    const handle = { frame, warmed: false, identified: false, settled: false, error: null, dispose: null };
+    let readyTimer = null, identityTimer = null, onReady = null;
+    const dispose = () => {
+      clearTimeout(readyTimer);
+      clearTimeout(identityTimer);
+      if (onReady) { try { window.removeEventListener('message', onReady); } catch (_) {} }
+      try { if (frame && frame.parentNode) frame.parentNode.removeChild(frame); } catch (_) {}
+      handle.warmed = false;
+      handle.settled = true;
+      if (_sharedVeraIframeHandle === handle) _sharedVeraIframeHandle = null;
+      if (_veraIframeRef.current === handle) _veraIframeRef.current = null;
+    };
+    handle.dispose = dispose;
     handle.ready = new Promise((resolve) => {
-      let settled = false, readyTimer = null, identityTimer = null;
       const finish = (ok, error, markBlocked) => {
-        if (settled) return;
-        settled = true;
+        if (handle.settled) return;
+        handle.settled = true;
         clearTimeout(readyTimer);
         clearTimeout(identityTimer);
-        window.removeEventListener('message', onReady);
+        if (onReady) window.removeEventListener('message', onReady);
         handle.warmed = !!ok;
         handle.error = error || null;
         if (handle.warmed) _setVeraEmbedPref('ok');
-        else if (markBlocked && _veraEmbedPref() !== 'ok') _setVeraEmbedPref('blocked');
+        else {
+          if (markBlocked && _veraEmbedPref() !== 'ok') _setVeraEmbedPref('blocked');
+          // Remove failed/blocked iframe immediately so dead CheerpJ frames never accumulate in document.body.
+          try { if (frame && frame.parentNode) frame.parentNode.removeChild(frame); } catch (_) {}
+          if (_sharedVeraIframeHandle === handle) _sharedVeraIframeHandle = null;
+          if (_veraIframeRef.current === handle) _veraIframeRef.current = null;
+        }
         resolve(handle.warmed);
       };
-      const onReady = (ev) => {
+      onReady = (ev) => {
         if (!frame.contentWindow || !ev || ev.source !== frame.contentWindow || (VERAPDF_ORIGIN && VERAPDF_ORIGIN !== '*' && ev.origin !== VERAPDF_ORIGIN)) return;
         const d = ev.data || {};
         if (d.type === 'verapdf-loading') { handle.identified = true; clearTimeout(identityTimer); return; }
@@ -7051,7 +7120,8 @@ function PdfAuditView(props) {
       identityTimer = setTimeout(() => finish(false, _veraPdfPageMismatchError(), true), _VERAPDF_IDENTITY_TIMEOUT_MS);
       readyTimer = setTimeout(() => finish(handle.warmed, null, !handle.warmed), 35000);
     });
-    handle.isReady = () => handle.warmed;
+    handle.isReady = () => handle.warmed && !!(handle.frame && handle.frame.isConnected);
+    _sharedVeraIframeHandle = handle;
     _veraIframeRef.current = handle;
     return handle;
   };
@@ -7153,7 +7223,7 @@ function PdfAuditView(props) {
       }
       mutate(el, doc);
       const newHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
-      setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: newHtml, _userEditedAt: Date.now() } : prev);
+      setPdfFixResult((prev) => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: newHtml, _userEditedAt: Date.now() }, 'tag-editor-modified-html') : prev);
       try { if (typeof updatePdfPreview === 'function') setTimeout(() => updatePdfPreview(), 40); } catch (_) {}
       setTagOutline(_buildTagOutline(newHtml));
     } catch (_) {}
@@ -7437,6 +7507,7 @@ function PdfAuditView(props) {
     }))) return;
     const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
     const epubLang = lang || 'en';
+    const _moOperation = _beginRemediationOperation('readalong-epub-mo', false, { sourceHtml: html });
     setMoExport({ total: segments.length, done: 0, status: 'running' });
     // Audio bytes now come from the shared artifact service rather than a
     // second raw callTTS/fetch loop. The service gives every clip a stable
@@ -7481,7 +7552,9 @@ function PdfAuditView(props) {
       language: narrationLanguage,
       speed: 1,
       maxRetries: 2,
+      signal: _moOperation.signal,
       onProgress: (progress) => {
+        if (!_remediationOperationSourceIsCurrent(_moOperation)) return;
         const update = progress && typeof progress === 'object' ? progress : {};
         const completed = Number(update.completed);
         setMoExport({
@@ -7491,33 +7564,39 @@ function PdfAuditView(props) {
         });
       },
     });
+    if (!_remediationOperationSourceIsCurrent(_moOperation)) { _cancelRemediationOperation(_moOperation); return; }
     const audioBySegmentId = prepared && prepared.audioBySegmentId && typeof prepared.audioBySegmentId === 'object'
       ? prepared.audioBySegmentId
       : {};
     const audioBlobs = [];
     const durations = [];
     for (let i = 0; i < segments.length; i++) {
+      if (!_remediationOperationSourceIsCurrent(_moOperation)) { _cancelRemediationOperation(_moOperation); return; }
       let blob = null;
       let dur = 0;
       try {
         const segmentId = artifactSegments[i].segmentId;
         const rawBlob = _pdfAuditArtifactAudioEntryToBlob(audioBySegmentId[segmentId]);
+        // Read WAV duration from raw PCM/WAV bytes BEFORE MP3 transcoding (MP3 bytes have no RIFF/WAVE header).
+        let rawWavDur = 0;
+        if (rawBlob) {
+          try { rawWavDur = _wavDurationFromBytes(new Uint8Array(await rawBlob.arrayBuffer())); } catch (_) { rawWavDur = 0; }
+        }
         const normalizedBlob = await _epubCoreAudioBlob(rawBlob);
         if (normalizedBlob) {
           const objectUrl = URL.createObjectURL(normalizedBlob);
           try { dur = await measure(objectUrl); }
           finally { try { URL.revokeObjectURL(objectUrl); } catch (_) {} }
           blob = normalizedBlob;
-          // Recover duration from WAV header bytes when metadata could not be
-          // read. This keeps Media Overlay clipEnd non-zero where possible.
-          if (!(typeof dur === 'number' && isFinite(dur) && dur > 0)) {
-            try { dur = _wavDurationFromBytes(new Uint8Array(await normalizedBlob.arrayBuffer())); } catch (_) {}
+          if (!(typeof dur === 'number' && isFinite(dur) && dur > 0) && rawWavDur > 0) {
+            dur = rawWavDur;
           }
         }
       } catch (_) { /* keep going — a missing clip becomes text-only for that block */ }
       audioBlobs.push(blob);
       durations.push(dur);
     }
+    if (!_remediationOperationSourceIsCurrent(_moOperation)) { _cancelRemediationOperation(_moOperation); return; }
     const ext = 'mp3';
       const mime = 'audio/mpeg';
       const totalSec = durations.reduce((a, b) => a + (b || 0), 0);
@@ -7557,13 +7636,23 @@ function PdfAuditView(props) {
         }
       } catch (_) { /* self-check must never block the export */ }
       const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' });
+      if (!_remediationOperationSourceIsCurrent(_moOperation)) { _cancelRemediationOperation(_moOperation); return; }
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = title + '-readalong.epub';
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
       setMoExport({ total: segments.length, done: segments.length, status: 'done' });
-      if (withAudio === 0) addToast((t('toasts.mo_no_audio') || '⚠ Read-along ebook saved, but no audio could be generated (voice service unavailable). The text + sync structure are intact.') + _epubSelfCheckNote, _epubSelfCheckNote ? 'error' : 'error');
-      else addToast('📖🔊 ' + (t('toasts.mo_done') || 'Read-along ebook downloaded') + ' — ' + withAudio + '/' + segments.length + ' audio portions narrated.' + _epubSelfCheckNote, _epubSelfCheckNote ? 'error' : 'success');
-      setTimeout(() => setMoExport(null), 4000);
-    } catch (e) { setMoExport(null); addToast('Read-along export failed: ' + (e?.message || 'unknown error'), 'error'); }
+      if (withAudio === 0) _toastForRemediationOperation(_moOperation, (t('toasts.mo_no_audio') || '⚠ Read-along ebook saved, but no audio could be generated (voice service unavailable). The text + sync structure are intact.') + _epubSelfCheckNote, 'error');
+      else _toastForRemediationOperation(_moOperation, '📖🔊 ' + (t('toasts.mo_done') || 'Read-along ebook downloaded') + ' — ' + withAudio + '/' + segments.length + ' audio portions narrated.' + _epubSelfCheckNote, _epubSelfCheckNote ? 'error' : 'success');
+      setTimeout(() => { if (_remediationOperationIsCurrent(_moOperation)) setMoExport(null); }, 4000);
+    } catch (e) {
+      if (_remediationOperationIsCurrent(_moOperation)) {
+        setMoExport(null);
+        if (!(e && (e.name === 'AbortError' || e.isAbort))) _toastForRemediationOperation(_moOperation, 'Read-along export failed: ' + (e?.message || 'unknown error'), 'error');
+      }
+    } finally {
+      if (_completeRemediationOperation(_moOperation)) {
+        setMoExport((prev) => (prev && prev.status === 'running' ? null : prev));
+      }
+    }
   };
 
   const _runAudioJob = async () => {
@@ -7723,7 +7812,7 @@ function PdfAuditView(props) {
         if (!imgs[idx]) return prev;
         fn(imgs[idx], doc);
         const html = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
-        return { ...prev, accessibleHtml: html, _userEditedAt: Date.now() };
+        return _withHtmlVerificationBinding({ ...prev, accessibleHtml: html, _userEditedAt: Date.now() }, 'image-classification-modified-html');
       } catch (_) { return prev; }
     });
     // Mirror into the LIVE preview iframe (sweep 2026-06-11 [8]): the next
@@ -7958,7 +8047,7 @@ function PdfAuditView(props) {
         else if (/<body[^>]*>/i.test(html)) html = html.replace(/(<body[^>]*>)/i, '$1' + tag);
         else html = tag + html;
       }
-      return { ...prev, accessibleHtml: html, _userEditedAt: Date.now() };
+      return _withHtmlVerificationBinding({ ...prev, accessibleHtml: html, _userEditedAt: Date.now() }, 'doc-mode-style-modified-html');
     });
   };
   // Failed-verification tagged download: bytes wait here while the teacher
@@ -8877,7 +8966,7 @@ function PdfAuditView(props) {
     }
     _setIssueEdit(prev => ({ ...prev, [key]: { ...prev[key], saving: true } }));
     const newHtml = sp.html;
-    setPdfFixResult(prev => prev ? ({ ...prev, accessibleHtml: newHtml, _preCmdHtml: html, _lastCmdDiff: null }) : prev);
+    setPdfFixResult(prev => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: newHtml, _preCmdHtml: html, _lastCmdDiff: null }, 'manual-issue-edit-modified-html') : prev);
     addToast(t('pdf_audit.issue.edit_saved') || '✏ Manual edit applied — re-checking…', 'info');
     const res = await _reauditAndScore(newHtml, null);
     _setIssueEdit(prev => { const n = { ...prev }; delete n[key]; return n; });   // close the editor
@@ -9465,6 +9554,228 @@ function PdfAuditView(props) {
   const _workspaceNavigate = (selector) => {
     if (pdfFixResult && pdfAuditTab !== 'results') setPdfAuditTab('results');
     setWorkspaceDestination(selector);
+  };
+  // Wave 6 (T3-2): Single consolidated .alloflow.json project loader shared by both
+  // the start-screen "Continue a previous session" button and the sidebar "Load Project"
+  // button. Restores incomplete runs, fidelityNotes/fidelityLimited, and multiSession
+  // consistently and resets every per-document ref/state holdover on document swap.
+  const _loadProjectFromFileInput = (e, opts = {}) => {
+    if (_modalHasActiveWork() || pdfAuditLoading) { e.target.value = ''; return; }
+    const file = e.target.files?.[0]; if (!file) return;
+    if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) { addToast('This project file is larger than the 64 MB safety limit.', 'error'); e.target.value = ''; return; }
+    const _failToastPrefix = opts.sidebar ? (t('toasts.failed_load_project') || 'Failed to load project: ') : (t('toasts.failed_load') || 'Failed to load project: ');
+    const _projectLoadToken = ++_projectLoadSelectionRef.current;
+    let _projectDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null;
+    const _projectLoadIsCurrent = () => _projectLoadToken === _projectLoadSelectionRef.current
+      && (_projectDocumentEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_projectDocumentEpoch));
+    const _resetPerDocHoldovers = () => {
+      // H-8 (audit 2026-06-23): the component never remounts on Load Project, so
+      // per-document refs/state from the PREVIOUS doc survive — most dangerously
+      // _paletteSnapshotRef, whose stale snapshot lets palette Revert OVERWRITE
+      // this freshly-loaded doc with the prior one. Reset every per-document holdover.
+      _paletteSnapshotRef.current = null;
+      _selectTaggedArtifact(null);
+      _lastTaggedDeliveryRef.current = null;
+      _taggedGateBytesRef.current = null;
+      _fidelityGateBytesRef.current = null;
+      _pendingTaggedExportRef.current = null;
+      if (audioJobRef.current) {
+        try { audioJobRef.current.pauseRequested = true; } catch (_) {}
+        audioJobRef.current = null;
+      }
+      setTaggedGateIssue(null);
+      setFidelityGateIssue(null);
+      setLastTaggedReport(null);
+      setLastTaggedValidation(null);
+      setVeraPdfResult(null);
+      setPdfMetaOverride(null);
+      setAppliedPalette(null);
+      setPaletteIntent('');
+      _setIssueEdit({});
+      setRestyleProposals(null);
+      setRestyleDropped(0);
+      setRegionArmed(false);
+      setTagOutline(null);
+    };
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      if (!_projectLoadIsCurrent()) return;
+      try {
+        const parsedProject = JSON.parse(ev.target.result, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v));
+        const sanitizedImport = _viewSanitizeProjectImport(parsedProject, _docPipeline);
+        const project = await _viewRehydrateVerificationHtmlBinding(sanitizedImport.project, _docPipeline);
+        if (!_projectLoadIsCurrent()) return;
+        if (!project.version || (!project.accessibleHtml && !project.incomplete)) {
+          addToast(opts.sidebar ? (t('toasts.invalid_project_file_2') || t('toasts.valid_alloflow_project_file')) : t('toasts.valid_alloflow_project_file'), 'error');
+          return;
+        }
+        if (typeof startNewPdfAudit === 'function') _projectDocumentEpoch = startNewPdfAudit();
+        else {
+          setPendingPdfBase64(null);
+          setPdfAuditResult(null);
+          setPdfFixResult(null);
+        }
+        if (!_projectLoadIsCurrent()) return;
+        if (typeof setPendingPdfBase64 === 'function') setPendingPdfBase64(project.pdfBase64 || null);
+        if (typeof project.version === 'number' && project.version > 2) {
+          addToast(t('toasts.project_newer_version') || ('This project was saved by a newer AlloFlow (v' + project.version + ' format). Loading what this version understands — some saved data may be ignored.'), 'warning');
+        }
+        const _restoreHistoryAndPrefs = () => {
+          try {
+            if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === 'function') setPdfRunHistory(project.runHistory.slice(-200));
+            const _pp = project.prefs || {};
+            if (_pp.auditors >= 1 && _pp.auditors <= 10) setPdfAuditorCount(_pp.auditors);
+            if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
+            if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
+            if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
+            if (_pp.builderFont) { const _safeBuilderFont = _viewSafeCssFontFamily(_pp.builderFont, ''); if (_safeBuilderFont) { try { localStorage.setItem('allo_selected_font', _safeBuilderFont); } catch (_) {} } }
+          } catch (_) {}
+        };
+        if (project.incomplete) {
+          const _restoredProjectSize = Number(project.fileSize) || Number(project.multiSession?.fileSize) || 0;
+          setPendingPdfFile({
+            name: project.fileName || 'resumed-project.pdf', size: _restoredProjectSize,
+            documentDigest: project.pdfBase64 ? undefined : (project.docKey || project.auditResult?.documentDigest || null),
+          });
+          try { if (project.extractedText) window.__resumeExtractedText = { fileName: project.fileName || 'resumed-project.pdf', text: project.extractedText, docKey: project.docKey || null }; } catch (_) {}
+          if (project.auditResult) {
+            setPdfAuditResult(project.auditResult);
+          } else {
+            setPdfAuditResult({
+              score: null, scores: [], critical: [], major: [], minor: [], passes: [],
+              summary: 'Resumed from an unfinished session', pageCount: project.pageCount || 1,
+              hasSearchableText: true, hasImages: false,
+            });
+          }
+          if (project.extractedText && typeof setInputText === 'function') setInputText(project.extractedText);
+          setPdfFixResult(null);
+          _resetPerDocHoldovers();
+          _restoreHistoryAndPrefs();
+          let _rangeNote = '';
+          if (Array.isArray(project.pageRange) && project.pageRange.length === 2 && typeof setPdfPageRange === 'function') {
+            setPdfPageRange({ start: project.pageRange[0], end: project.pageRange[1] });
+            _rangeNote = ' ⚠ This project covers only pages ' + project.pageRange[0] + '–' + project.pageRange[1] + ' of the original — finish those, or clear the page range to process the whole file.';
+          } else {
+            setPdfPageRange(null);
+          }
+          setPdfMultiSession(project.multiSession && Array.isArray(project.multiSession.ranges) && project.multiSession.ranges.length > 0 ? project.multiSession : null);
+          const _why = project.failureReason === 'auth' ? 'an API key / permission problem'
+            : project.failureReason === 'quota' ? 'a usage or quota limit'
+            : project.failureReason === 'network' ? 'a dropped connection'
+            : 'an AI-service hiccup';
+          addToast('📂 Resumed “' + (project.fileName || 'project') + '” — it stopped last time due to ' + _why + '. Your extracted text is restored; click Make Accessible to finish' + (project.pdfBase64 ? '' : ' (re-upload the original file first — its bytes weren’t saved)') + '.' + _rangeNote, 'success');
+          e.target.value = '';
+          return;
+        }
+        setPdfAuditResult({
+          score: Number.isFinite(project.beforeScore) ? project.beforeScore : null, scores: [], critical: [], major: [], minor: [],
+          passes: [], summary: 'Loaded from saved project', pageCount: project.pageCount,
+          hasSearchableText: true, hasImages: project.imageCount > 0,
+        });
+        const _loadedFixResult = {
+          accessibleHtml: project.accessibleHtml,
+          documentDigest: project.documentDigest || null,
+          beforeScore: project.beforeScore,
+          afterScore: project.afterScore,
+          _aiVerificationIncomplete: !!project._aiVerificationIncomplete,
+          _estimatedMinimumScore: Number.isFinite(project._estimatedMinimumScore) ? project._estimatedMinimumScore : (Number.isFinite(project.estimatedMinimumScore) ? project.estimatedMinimumScore : null),
+          _estimatedScoreBasis: project._estimatedScoreBasis || project.estimatedScoreBasis || null,
+          _finalAuditRetryAvailable: !!project._finalAuditRetryAvailable,
+          _remediationThrottlePaused: !!project._remediationThrottlePaused,
+          _finalAuditThrottleDeferred: !!project._finalAuditThrottleDeferred,
+          _finalAuditIncompleteReason: project._finalAuditIncompleteReason || null,
+          axeAudit: project.axeAudit || null,
+          secondEngineAudit: project.secondEngineAudit || null,
+          verificationCoverage: project.verificationCoverage || null,
+          verificationHtmlBinding: project.verificationHtmlBinding || null,
+          verificationState: project.verificationState || 'unavailable',
+          verificationReasons: Array.isArray(project.verificationReasons) ? project.verificationReasons : [],
+          verificationReviewCount: Number.isFinite(project.verificationReviewCount) ? project.verificationReviewCount : 0,
+          afterScoreVerified: !!project.afterScoreVerified,
+          requiresManualReview: !!project.requiresManualReview,
+          verificationAudit: project.verificationAudit || null,
+          docStyle: project.docStyle || null,
+          pageCount: project.pageCount,
+          imageCount: project.imageCount || 0,
+          needsExpertReview: project.needsExpertReview || false,
+          expertReviewReason: project.expertReviewReason || null,
+          integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
+          integrityWarning: project.integrityWarning || null,
+          fidelityNotes: Array.isArray(project.fidelityNotes) ? project.fidelityNotes : [],
+          fidelityLimited: project.fidelityLimited || false,
+          sourceText: project.sourceText || '', finalText: project.finalText || '',
+          htmlChars: project.htmlChars || project.accessibleHtml.length,
+          extractedChars: project.extractedChars || 0,
+          issuesFixed: project.issuesFixed || 0,
+          remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
+          autoFixPasses: project.autoFixPasses || 0,
+          humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
+          sourceStructure: window.AlloModules.RemediationReview.normalizeSourceModel(project.sourceStructure),
+          preservationAcknowledgments: window.AlloModules.RemediationReview.acknowledgments(project.preservationAcknowledgments),
+          candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
+          candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter(entry => entry && typeof entry === 'object').map(entry => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || '').slice(0, 80), phase: String(entry.phase || '').slice(0, 40), reason: String(entry.reason || '').slice(0, 120), ...(typeof entry.sourceLocation === 'string' ? { sourceLocation: entry.sourceLocation.slice(0, 100) } : {}) })) : [],
+          reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
+          reviewDecisions: (project.reviewDecisions && typeof project.reviewDecisions === 'object') ? project.reviewDecisions : null,
+          _audioJobMeta: project._audioJobMeta || null,
+          _translation: project._translation || null,
+          _plainLanguage: project._plainLanguage || null,
+        };
+        if (_viewIsLiveVerificationHtmlBound(project, project.accessibleHtml, _docPipeline)) {
+          _viewAttachRuntimeBindingProof(_loadedFixResult, project.accessibleHtml, 'verificationHtmlBinding', '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest');
+        }
+        const _normalizedLoadedFixResult = _viewNormalizeLoadedVerification(_loadedFixResult, _docPipeline);
+        if (_viewIsLiveVerificationHtmlBound(_loadedFixResult, project.accessibleHtml, _docPipeline)) {
+          _viewAttachRuntimeBindingProof(_normalizedLoadedFixResult, project.accessibleHtml, 'verificationHtmlBinding', '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest');
+        }
+        setPdfFixResult(_normalizedLoadedFixResult);
+        setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf', size: Number(project.fileSize) || Number(project.multiSession?.fileSize) || 0 });
+        // H-8 (audit 2026-06-23): inline sequence preserved for static regression tests,
+        // backed by the full per-document holdover reset right below.
+        _paletteSnapshotRef.current = null;
+        _selectTaggedArtifact(null);
+        setLastTaggedValidation(null);
+        setVeraPdfResult(null);
+        setAppliedPalette(null);
+        setPaletteIntent('');
+        _setIssueEdit({});
+        setRestyleProposals(null);
+        setRestyleDropped(0);
+        setRegionArmed(false);
+        setTagOutline(null);
+        _resetPerDocHoldovers();
+        _restoreHistoryAndPrefs();
+        if (project.multiSession && Array.isArray(project.multiSession.ranges) && project.multiSession.ranges.length > 0) {
+          setPdfMultiSession(project.multiSession);
+          const sortedR = project.multiSession.ranges.slice().sort((a, b) => ((a.pages && a.pages[0]) || 0) - ((b.pages && b.pages[0]) || 0));
+          const _lastRange = sortedR[sortedR.length - 1];
+          const lastEnd = (_lastRange && Array.isArray(_lastRange.pages)) ? _lastRange.pages[1] : null;
+          const total = project.pageCount || project.multiSession.pageCount || 1;
+          if (lastEnd == null) {
+            addToast(t('toasts.multisession_corrupt') || 'This project’s multi-session range data looks corrupted — skipping the resume-range step.', 'warning');
+          } else if (lastEnd < total) {
+            const nextStart = lastEnd + 1;
+            const nextEnd = Math.min(nextStart + 29, total);
+            setPdfPageRange({ start: nextStart, end: nextEnd });
+          }
+          addToast((opts.sidebar ? t('toasts.project_loaded_2') : t('toasts.loaded_2')) + (project.fileName || 'document') + ' — ' + project.multiSession.ranges.length + ' prior range' + (project.multiSession.ranges.length === 1 ? '' : 's') + ' restored', 'success');
+        } else {
+          setPdfMultiSession(null);
+          setPdfPageRange(null);
+          addToast((opts.sidebar ? t('toasts.project_loaded_2') : t('toasts.loaded_2')) + (project.fileName || 'project') + ' — continue editing!', 'success');
+        }
+      } catch (err) {
+        if (_projectLoadIsCurrent()) addToast(_failToastPrefix + err.message, 'error');
+      }
+    };
+    reader.onerror = () => { if (_projectLoadIsCurrent()) addToast(_failToastPrefix + (reader.error?.message || 'Unable to read project file'), 'error'); };
+    reader.onabort = () => { if (_projectLoadIsCurrent()) addToast(_failToastPrefix + 'Project file read was cancelled', 'info'); };
+    try { reader.readAsText(file); }
+    catch (error) {
+      if (_projectLoadIsCurrent()) addToast(_failToastPrefix + ((error && error.message) || 'Unable to start reading project file'), 'error');
+      e.target.value = '';
+      return;
+    }
+    e.target.value = '';
   };
   if (!pdfAuditResult && !pdfAuditLoading) return null;
 
@@ -11407,206 +11718,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                 <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
                   <label className="flex-1 px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors flex items-center justify-center gap-2 cursor-pointer border border-amber-200" title={t('pdf_audit.load_project_tooltip') || 'Open a .alloflow.json project file (AlloFlow saves one to your Downloads after each remediation) — your document, scores, history, and settings all come back.'}>
                     📂 {t('pdf_audit.continue_session') || 'Continue a previous session'}
-                    <input type="file" accept=".json" className="hidden" disabled={_modalDismissBusy} onChange={(e) => {
-                      if (_modalHasActiveWork() || pdfAuditLoading) { e.target.value = ''; return; }
-                      const file = e.target.files?.[0]; if (!file) return;
-                      if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) { addToast('This project file is larger than the 64 MB safety limit.', 'error'); e.target.value = ''; return; }
-                      const _projectLoadToken = ++_projectLoadSelectionRef.current;
-                      let _projectDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null;
-                      const _projectLoadIsCurrent = () => _projectLoadToken === _projectLoadSelectionRef.current
-                        && (_projectDocumentEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_projectDocumentEpoch));
-                      const reader = new FileReader();
-                      reader.onload = async (ev) => {
-                        if (!_projectLoadIsCurrent()) return;
-                        try {
-                          const parsedProject = JSON.parse(ev.target.result, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v));
-                          const sanitizedImport = _viewSanitizeProjectImport(parsedProject, _docPipeline);
-                          const project = await _viewRehydrateVerificationHtmlBinding(sanitizedImport.project, _docPipeline);
-                          if (!_projectLoadIsCurrent()) return;
-                          if (!project.version || (!project.accessibleHtml && !project.incomplete)) { addToast(t('toasts.valid_alloflow_project_file'), 'error'); return; }
-                          if (typeof startNewPdfAudit === 'function') _projectDocumentEpoch = startNewPdfAudit();
-                          else {
-                            setPendingPdfBase64(null);
-                            setPdfAuditResult(null);
-                            setPdfFixResult(null);
-                          }
-                          if (!_projectLoadIsCurrent()) return;
-                          if (typeof setPendingPdfBase64 === 'function') setPendingPdfBase64(project.pdfBase64 || null);
-                          // Forward-version guard (deep dive 2026-07-02 H12): a v3+ file half-loading
-                          // silently would drop whatever fields the newer format carries. Warn, keep going.
-                          if (typeof project.version === 'number' && project.version > 2) { addToast(t('toasts.project_newer_version') || ('This project was saved by a newer AlloFlow (v' + project.version + ' format). Loading what this version understands — some saved data may be ignored.'), 'warning'); }
-                          // Resume an interrupted run (resumable-incomplete-project 2026-06-20): an
-                          // incomplete project has the banked extraction + source bytes but no finished
-                          // HTML. Restore enough to re-run from "Make Accessible" without re-scanning.
-                          if (project.incomplete) {
-                            // H2 (deep dive 2026-07-02): restore fileSize — the stub used to carry NO size,
-                            // so every size-keyed store (multi-session ranges, chunk progress, score trend)
-                            // computed its key with size=0 and all resumed docs sharing the fallback name
-                            // collided on the same msdoc_ key.
-                            const _restoredProjectSize = Number(project.fileSize) || Number(project.multiSession?.fileSize) || 0;
-                            setPendingPdfFile({
-                              name: project.fileName || 'resumed-project.pdf', size: _restoredProjectSize,
-                              documentDigest: project.pdfBase64 ? undefined : (project.docKey || project.auditResult?.documentDigest || null),
-                            });
-                            // OCR-skip seed (2026-06-20): park the already-extracted text under the SAME
-                            // filename fixAndVerifyPdf will compute (pendingPdfFile.name), so Step 1 reuses
-                            // it instead of re-running the slow OCR. Single-use; cleared once consumed.
-                            // H2: thread the saved docKey through — the consume site refuses the seed when
-                            // the re-uploaded bytes fingerprint differently (same name, different file).
-                            try { if (project.extractedText) window.__resumeExtractedText = { fileName: project.fileName || 'resumed-project.pdf', text: project.extractedText, docKey: project.docKey || null }; } catch (_) {}
-                            if (project.auditResult) {
-                              setPdfAuditResult(project.auditResult);
-                            } else {
-                              setPdfAuditResult({
-                                score: null, scores: [], critical: [], major: [], minor: [], passes: [],
-                                summary: 'Resumed from an unfinished session', pageCount: project.pageCount || 1,
-                                hasSearchableText: true, hasImages: false,
-                              });
-                            }
-                            if (project.extractedText && typeof setInputText === 'function') setInputText(project.extractedText);
-                            setPdfFixResult(null);
-                            // M12 (deep dive 2026-07-09): a resumed doc must not wear the previous doc's
-                            // PDF/UA badge/panel (see the project loaders' twin resets).
-                            setLastTaggedValidation(null);
-                            setVeraPdfResult(null);
-                            _selectTaggedArtifact(null);
-                            try {
-                              if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === 'function') setPdfRunHistory(project.runHistory.slice(-200));
-                              const _pp = project.prefs || {};
-                              if (_pp.auditors >= 1 && _pp.auditors <= 10) setPdfAuditorCount(_pp.auditors);
-                              if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
-                              if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
-                              if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
-                              if (_pp.builderFont) { const _safeBuilderFont = _viewSafeCssFontFamily(_pp.builderFont, ''); if (_safeBuilderFont) { try { localStorage.setItem('allo_selected_font', _safeBuilderFont); } catch (_) {} } }
-                            } catch (_) {}
-                            // Restore the active page range so resume CONTINUES the same
-                            // partial slice (e.g. pages 6-10) instead of silently treating the
-                            // resumed text as the whole document (which shipped only those
-                            // pages, OCR skipped). Surfaced in the toast so the scope is honest.
-                            let _rangeNote = '';
-                            if (Array.isArray(project.pageRange) && project.pageRange.length === 2 && typeof setPdfPageRange === 'function') {
-                              setPdfPageRange({ start: project.pageRange[0], end: project.pageRange[1] });
-                              _rangeNote = ' ⚠ This project covers only pages ' + project.pageRange[0] + '–' + project.pageRange[1] + ' of the original — finish those, or clear the page range to process the whole file.';
-                            }
-                            const _why = project.failureReason === 'auth' ? 'an API key / permission problem'
-                              : project.failureReason === 'quota' ? 'a usage or quota limit'
-                              : project.failureReason === 'network' ? 'a dropped connection'
-                              : 'an AI-service hiccup';
-                            addToast('📂 Resumed “' + (project.fileName || 'project') + '” — it stopped last time due to ' + _why + '. Your extracted text is restored; click Make Accessible to finish' + (project.pdfBase64 ? '' : ' (re-upload the original file first — its bytes weren’t saved)') + '.' + _rangeNote, 'success');
-                            e.target.value = '';
-                            return;
-                          }
-                          setPdfAuditResult({
-                            score: Number.isFinite(project.beforeScore) ? project.beforeScore : null, scores: [], critical: [], major: [], minor: [],
-                            passes: [], summary: 'Loaded from saved project', pageCount: project.pageCount,
-                            hasSearchableText: true, hasImages: project.imageCount > 0,
-                          });
-                          const _loadedFixResult = {
-                            accessibleHtml: project.accessibleHtml,
-                            documentDigest: project.documentDigest || null,
-                            beforeScore: project.beforeScore,
-                            afterScore: project.afterScore,
-                            _aiVerificationIncomplete: !!project._aiVerificationIncomplete,
-                            _estimatedMinimumScore: Number.isFinite(project._estimatedMinimumScore) ? project._estimatedMinimumScore : (Number.isFinite(project.estimatedMinimumScore) ? project.estimatedMinimumScore : null),
-                            _estimatedScoreBasis: project._estimatedScoreBasis || project.estimatedScoreBasis || null,
-                            _finalAuditRetryAvailable: !!project._finalAuditRetryAvailable,
-                            _remediationThrottlePaused: !!project._remediationThrottlePaused,
-                            _finalAuditThrottleDeferred: !!project._finalAuditThrottleDeferred,
-                            _finalAuditIncompleteReason: project._finalAuditIncompleteReason || null,
-                            axeAudit: project.axeAudit || null,
-                            secondEngineAudit: project.secondEngineAudit || null,
-                            verificationCoverage: project.verificationCoverage || null,
-                            verificationHtmlBinding: project.verificationHtmlBinding || null,
-                            verificationState: project.verificationState || 'unavailable',
-                            verificationReasons: Array.isArray(project.verificationReasons) ? project.verificationReasons : [],
-                            verificationReviewCount: Number.isFinite(project.verificationReviewCount) ? project.verificationReviewCount : 0,
-                            afterScoreVerified: !!project.afterScoreVerified,
-                            requiresManualReview: !!project.requiresManualReview,
-                            verificationAudit: project.verificationAudit || null,
-                            docStyle: project.docStyle || null,
-                            pageCount: project.pageCount,
-                            imageCount: project.imageCount || 0,
-                            needsExpertReview: project.needsExpertReview || false,
-                            // Restore reason-specific banner + integrity + Diff inputs + stats
-                            // (fallbacks keep older project files working).
-                            expertReviewReason: project.expertReviewReason || null,
-                            integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
-                            integrityWarning: project.integrityWarning || null,
-                            fidelityNotes: Array.isArray(project.fidelityNotes) ? project.fidelityNotes : [],
-                            fidelityLimited: project.fidelityLimited || false,
-                            sourceText: project.sourceText || '', finalText: project.finalText || '',
-                            htmlChars: project.htmlChars || project.accessibleHtml.length,
-                            extractedChars: project.extractedChars || 0,
-                            issuesFixed: project.issuesFixed || 0,
-                            remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
-                            autoFixPasses: project.autoFixPasses || 0,
-                            // Collaboration provenance (2026-08-23): who-did-what survives the file.
-                            humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
-                            sourceStructure: window.AlloModules.RemediationReview.normalizeSourceModel(project.sourceStructure),
-                            preservationAcknowledgments: window.AlloModules.RemediationReview.acknowledgments(project.preservationAcknowledgments),
-                            candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
-                            candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter(entry => entry && typeof entry === 'object').map(entry => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || '').slice(0, 80), phase: String(entry.phase || '').slice(0, 40), reason: String(entry.reason || '').slice(0, 120), ...(typeof entry.sourceLocation === 'string' ? { sourceLocation: entry.sourceLocation.slice(0, 100) } : {}) })) : [],
-                            reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
-                            reviewDecisions: (project.reviewDecisions && typeof project.reviewDecisions === 'object') ? project.reviewDecisions : null,
-                            _audioJobMeta: project._audioJobMeta || null,
-                            _translation: project._translation || null,
-                            _plainLanguage: project._plainLanguage || null,
-                          };
-                          if (_viewIsLiveVerificationHtmlBound(project, project.accessibleHtml, _docPipeline)) {
-                            _viewAttachRuntimeBindingProof(_loadedFixResult, project.accessibleHtml, 'verificationHtmlBinding', '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest');
-                          }
-                          const _normalizedLoadedFixResult = _viewNormalizeLoadedVerification(_loadedFixResult, _docPipeline);
-                          if (_viewIsLiveVerificationHtmlBound(_loadedFixResult, project.accessibleHtml, _docPipeline)) {
-                            _viewAttachRuntimeBindingProof(_normalizedLoadedFixResult, project.accessibleHtml, 'verificationHtmlBinding', '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest');
-                          }
-                          setPdfFixResult(_normalizedLoadedFixResult);
-                          setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf', size: Number(project.fileSize) || Number(project.multiSession?.fileSize) || 0 });
-                          // H-8 (audit 2026-06-23): this start-screen loader swaps in a DIFFERENT doc's HTML
-                          // but the component never remounts, so per-document refs/state from the PREVIOUS doc
-                          // survive — most dangerously _paletteSnapshotRef, whose stale snapshot lets a palette
-                          // Revert OVERWRITE this freshly-loaded doc with the prior one. Mirror the per-doc reset
-                          // the sidebar "Load Project" loader runs (~9903) so the loaded doc starts clean. Pure
-                          // per-doc-holdover clears (refs / unrelated state slices) — never the loaded
-                          // pdfFixResult / pdfAuditResult / prefs / runHistory set just above.
-                          _paletteSnapshotRef.current = null;
-                          _selectTaggedArtifact(null);
-                          // M12 (deep dive 2026-07-09): the PDF/UA badge state survived the doc swap —
-                          // doc A's "veraPDF: passes" chip/panel rendered for doc B until B produced its
-                          // own tagged export (the signed trail is hash-protected; the live UI was not).
-                          setLastTaggedValidation(null);
-                          setVeraPdfResult(null);
-                          setAppliedPalette(null);
-                          setPaletteIntent('');
-                          _setIssueEdit({});
-                          setRestyleProposals(null);
-                          setRestyleDropped(0);
-                          setRegionArmed(false);
-                          setTagOutline(null);
-                          // Restore the cross-session memory the project file carries
-                          // (2026-06-10): run history + pipeline prefs. Canvas wipes
-                          // origin storage between sessions — the file is the memory.
-                          try {
-                            if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === 'function') setPdfRunHistory(project.runHistory.slice(-200));
-                            const _pp = project.prefs || {};
-                            if (_pp.auditors >= 1 && _pp.auditors <= 10) setPdfAuditorCount(_pp.auditors);
-                            if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
-                            if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
-                            if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
-                            if (_pp.builderFont) { const _safeBuilderFont = _viewSafeCssFontFamily(_pp.builderFont, ''); if (_safeBuilderFont) { try { localStorage.setItem('allo_selected_font', _safeBuilderFont); } catch (_) {} } }
-                          } catch (_) {}
-                          addToast(t('toasts.loaded_2') + (project.fileName || 'project') + ' — continue editing!', 'success');
-                        } catch(err) { if (_projectLoadIsCurrent()) addToast(t('toasts.failed_load') + err.message, 'error'); }
-                      };
-                      reader.onerror = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed_load') + (reader.error?.message || 'Unable to read project file'), 'error'); };
-                      reader.onabort = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed_load') + 'Project file read was cancelled', 'info'); };
-                      try { reader.readAsText(file); }
-                      catch (error) {
-                        if (_projectLoadIsCurrent()) addToast(t('toasts.failed_load') + ((error && error.message) || 'Unable to start reading project file'), 'error');
-                        e.target.value = '';
-                        return;
-                      }
-                      e.target.value = '';
-                    }} />
+                    <input type="file" accept=".json,.alloflow.json" className="hidden" disabled={_modalDismissBusy} onChange={(e) => _loadProjectFromFileInput(e, { sidebar: false })} />
                   </label>
                   <button type="button" disabled={_modalWorkBusy} onClick={_requestCloseAudit} className="text-xs text-slate-600 hover:text-slate-900 font-bold">Cancel</button>
                 </div>
@@ -13403,7 +13515,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                                     }
                                                   });
                                                   if (!touched) return prev;
-                                                  return { ...prev, accessibleHtml: '<!DOCTYPE html>\n' + d.documentElement.outerHTML, _userEditedAt: Date.now() };
+                                                  return _withHtmlVerificationBinding({ ...prev, accessibleHtml: '<!DOCTYPE html>\n' + d.documentElement.outerHTML, _userEditedAt: Date.now() }, 'image-alt-edit-modified-html');
                                                 } catch (_) { return prev; }
                                               });
                                               // Mirror into the live preview iframe (live-DOM-wins).
@@ -13874,7 +13986,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                             // Free the now-dead full-doc snapshot: _pre already holds it for this revert,
                                             // and the banner (the only reader of preRestoreHtml) is gated on !undone, so it
                                             // is never read again. Reclaims one full-doc-size string. (perf-pdffix-snapshots)
-                                            setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: _pre, htmlChars: _pre.length, autoRestore: { ...prev.autoRestore, undone: true, preRestoreHtml: null } } : prev);
+                                            setPdfFixResult(prev => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: _pre, htmlChars: _pre.length, autoRestore: { ...prev.autoRestore, undone: true, preRestoreHtml: null } }, 'auto-restore-undone-modified-html') : prev);
                                             if (addToast) addToast(t('pdf_audit.auto_restore.undone') || 'Auto-restore undone — the dropped words were removed again.', 'info');
                                           }}
                                           className="ml-auto px-2 py-0.5 bg-white border border-rose-400 text-rose-800 rounded-full text-[10px] font-bold hover:bg-rose-100 focus:ring-2 focus:ring-rose-400"
@@ -14026,7 +14138,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       let h = null;
                                       if (hit.live) { h = getPdfPreviewHtml(); }
                                       else { try { h = d.documentElement ? ('<!DOCTYPE html>\n' + d.documentElement.outerHTML) : null; } catch (_) { h = null; } }
-                                      if (h) setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: h, _userEditedAt: Date.now() } : prev);
+                                      if (h) setPdfFixResult((prev) => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: h, _userEditedAt: Date.now() }, 'recovery-word-insert-modified-html') : prev);
                                       try {
                                         const _eventDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null;
                                         window.dispatchEvent(new CustomEvent('alloflow:fidelity-stale', { detail: { documentEpoch: _eventDocumentEpoch } }));
@@ -16284,11 +16396,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           // canvases — the same self-contained strategy the After pane already uses
                           // for its HTML, which is why that side never broke.
                           const _rawB64 = _b64.includes(',') ? _b64.split(',')[1] : _b64;
+                          const _isValidB64 = typeof _rawB64 === 'string' && _rawB64.length > 0 && /^[A-Za-z0-9+/=\s]+$/.test(_rawB64);
                           let _isPdfMagic = false;
-                          try {
-                            const _head = atob(_rawB64.slice(0, 8));
-                            _isPdfMagic = _head.charCodeAt(0) === 0x25 && _head.charCodeAt(1) === 0x50 && _head.charCodeAt(2) === 0x44 && _head.charCodeAt(3) === 0x46;
-                          } catch (_) {}
+                          if (_isValidB64) {
+                            try {
+                              const _head = atob(_rawB64.slice(0, 8));
+                              _isPdfMagic = _head.charCodeAt(0) === 0x25 && _head.charCodeAt(1) === 0x50 && _head.charCodeAt(2) === 0x44 && _head.charCodeAt(3) === 0x46;
+                            } catch (_) {}
+                          }
                           // Transcript Before pane (sweep 2026-06-11 LOW[9]): the
                           // transcript IS the source — decode and show it (capped),
                           // honestly labeled, instead of only a "no preview" notice.
@@ -16513,7 +16628,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             // The PDF bytes are embedded below (base64 is JS-string-safe), the blob
                             // is built IN THIS WINDOW (same-origin by construction), and pdf.js
                             // paints canvases — no native viewer, no cross-window blob fetch.
-                            var _pdfRawB64 = ${_isPdfMagic ? JSON.stringify(_rawB64) : 'null'};
+                            var _pdfRawB64 = ${_isPdfMagic ? JSON.stringify(_rawB64).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029') : 'null'};
                             // Parameterized renderer (2026-06-11): the left pane can now show
                             // either the ORIGINAL or the freshly generated TAGGED PDF (the
                             // '⚖ Verify tagged' toggle). They should look IDENTICAL — tagging
@@ -16953,7 +17068,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       if (_ts[i]) {
                                         _ts[i].remove();
                                         const _nh = '<!DOCTYPE html>\n' + _doc.documentElement.outerHTML;
-                                        setPdfFixResult(p => p ? ({ ...p, accessibleHtml: _nh }) : p);
+                                        setPdfFixResult(p => p ? _withHtmlVerificationBinding({ ...p, accessibleHtml: _nh }, 'reconstructed-table-rejected-modified-html') : p);
                                         if (typeof updatePdfPreview === 'function') updatePdfPreview();
                                         if (typeof addToast === 'function') addToast(t('pdf_audit.recon.rejected') || 'Removed the AI-reconstructed table — the original image is kept.', 'info');
                                       }
@@ -17431,11 +17546,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           setVeraPdfFixing(true);
                                           _recordVeraPdfRules(_currentVeraPdfResult, 'repair'); // the rules the native tagger left for the patch loop to fix
                                           try {
-                                            const _rem = await runVeraPdfRemediate(_repairRun.bytes);
-                                            if (_rem && _rem.repairedB64) {
+                                            const _rem = await runVeraPdfRemediate(_repairRun.bytes, { lang: _altFmtHtmlLang(_repairSourceHtml) });
+                                            let _u8 = null;
+                                            if (_rem && _rem.repairedBytes instanceof ArrayBuffer) {
+                                              _u8 = new Uint8Array(_rem.repairedBytes);
+                                            } else if (_rem && _rem.repairedBytes instanceof Uint8Array) {
+                                              _u8 = _rem.repairedBytes;
+                                            } else if (_rem && _rem.repairedB64) {
                                               const _bin = atob(_rem.repairedB64);
-                                              const _u8 = new Uint8Array(_bin.length);
+                                              _u8 = new Uint8Array(_bin.length);
                                               for (let _i = 0; _i < _bin.length; _i++) _u8[_i] = _bin.charCodeAt(_i);
+                                            }
+                                            if (_rem && _u8 && _u8.length > 0) {
                                               const _rv = _rem.verdict || { compliant: !!_rem.compliant, failedChecks: 0, failedRules: [] };
                                               // Hash before selecting the repaired bytes. Selection invalidates the old operation,
                                               // then the verdict + validation are transferred synchronously to the new generation.
@@ -17947,169 +18069,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </button>
                         <label data-help-key="pdf_audit_view_load_project_btn" className="flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
                           📂 Load Project
-                          <input type="file" accept=".json,.alloflow.json" className="hidden" disabled={_modalDismissBusy} onChange={(e) => {
-                            if (_modalHasActiveWork() || pdfAuditLoading) { e.target.value = ''; return; }
-                            const file = e.target.files?.[0]; if (!file) return;
-                            if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) { addToast('This project file is larger than the 64 MB safety limit.', 'error'); e.target.value = ''; return; }
-                            const _projectLoadToken = ++_projectLoadSelectionRef.current;
-                            let _projectDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === 'function' ? capturePdfDocumentIntakeEpoch() : null;
-                            const _projectLoadIsCurrent = () => _projectLoadToken === _projectLoadSelectionRef.current
-                              && (_projectDocumentEpoch == null || typeof isPdfDocumentIntakeCurrent !== 'function' || isPdfDocumentIntakeCurrent(_projectDocumentEpoch));
-                            const reader = new FileReader();
-                            reader.onload = async (ev) => {
-                              if (!_projectLoadIsCurrent()) return;
-                              try {
-                                const parsedProject = JSON.parse(ev.target.result, (k, v) => (k === '__proto__' || k === 'constructor' || k === 'prototype' ? undefined : v));
-                                const sanitizedImport = _viewSanitizeProjectImport(parsedProject, _docPipeline);
-                                const project = await _viewRehydrateVerificationHtmlBinding(sanitizedImport.project, _docPipeline);
-                                if (!_projectLoadIsCurrent()) return;
-                                if (project && project.incomplete && project.version) {
-                                  // Unfinished run: this results-screen loader only swaps in COMPLETED
-                                  // projects. Point the teacher at the start-screen entry that resumes.
-                                  addToast(t('toasts.incomplete_use_continue') || 'This is an unfinished project. Close this and use “Continue a previous session” on the start screen to pick up where it stopped (no re-scanning needed).', 'info');
-                                  e.target.value = '';
-                                  return;
-                                }
-                                if (!project.accessibleHtml || !project.version) { addToast(t('toasts.invalid_project_file_2'), 'error'); return; }
-                                if (typeof startNewPdfAudit === 'function') _projectDocumentEpoch = startNewPdfAudit();
-                                else {
-                                  setPendingPdfBase64(null);
-                                  setPdfAuditResult(null);
-                                  setPdfFixResult(null);
-                                }
-                                if (!_projectLoadIsCurrent()) return;
-                                if (typeof setPendingPdfBase64 === 'function') setPendingPdfBase64(project.pdfBase64 || null);
-                                setPdfAuditResult({
-                                  score: Number.isFinite(project.beforeScore) ? project.beforeScore : null, scores: [], critical: [], major: [], minor: [],
-                                  passes: [], summary: 'Loaded from saved project', pageCount: project.pageCount,
-                                  hasSearchableText: true, hasImages: project.imageCount > 0,
-                                });
-                                const _loadedFixResult = {
-                                  accessibleHtml: project.accessibleHtml,
-                                  documentDigest: project.documentDigest || null,
-                                  beforeScore: project.beforeScore,
-                                  afterScore: project.afterScore,
-                                  _aiVerificationIncomplete: !!project._aiVerificationIncomplete,
-                                  _estimatedMinimumScore: Number.isFinite(project._estimatedMinimumScore) ? project._estimatedMinimumScore : (Number.isFinite(project.estimatedMinimumScore) ? project.estimatedMinimumScore : null),
-                                  _estimatedScoreBasis: project._estimatedScoreBasis || project.estimatedScoreBasis || null,
-                                  _finalAuditRetryAvailable: !!project._finalAuditRetryAvailable,
-                                  _remediationThrottlePaused: !!project._remediationThrottlePaused,
-                                  _finalAuditThrottleDeferred: !!project._finalAuditThrottleDeferred,
-                                  _finalAuditIncompleteReason: project._finalAuditIncompleteReason || null,
-                                  axeAudit: project.axeAudit || null,
-                            secondEngineAudit: project.secondEngineAudit || null,
-                            verificationCoverage: project.verificationCoverage || null,
-                            verificationHtmlBinding: project.verificationHtmlBinding || null,
-                            verificationState: project.verificationState || 'unavailable',
-                            verificationReasons: Array.isArray(project.verificationReasons) ? project.verificationReasons : [],
-                            verificationReviewCount: Number.isFinite(project.verificationReviewCount) ? project.verificationReviewCount : 0,
-                            afterScoreVerified: !!project.afterScoreVerified,
-                            requiresManualReview: !!project.requiresManualReview,
-                                  verificationAudit: project.verificationAudit || null,
-                                  docStyle: project.docStyle || null,
-                                  pageCount: project.pageCount,
-                                  imageCount: project.imageCount || 0,
-                                  needsExpertReview: project.needsExpertReview || false,
-                                  // Restore reason-specific banner + integrity + Diff inputs + stats
-                                  // (fallbacks keep older project files working).
-                                  expertReviewReason: project.expertReviewReason || null,
-                                  integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
-                                  integrityWarning: project.integrityWarning || null,
-                                  sourceText: project.sourceText || '', finalText: project.finalText || '',
-                                  htmlChars: project.htmlChars || project.accessibleHtml.length,
-                                  extractedChars: project.extractedChars || 0,
-                                  issuesFixed: project.issuesFixed || 0,
-                                  remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
-                                  autoFixPasses: project.autoFixPasses || 0,
-                                  humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
-                                  sourceStructure: window.AlloModules.RemediationReview.normalizeSourceModel(project.sourceStructure),
-                            preservationAcknowledgments: window.AlloModules.RemediationReview.acknowledgments(project.preservationAcknowledgments),
-                            candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
-                                  candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter(entry => entry && typeof entry === 'object').map(entry => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || '').slice(0, 80), phase: String(entry.phase || '').slice(0, 40), reason: String(entry.reason || '').slice(0, 120), ...(typeof entry.sourceLocation === 'string' ? { sourceLocation: entry.sourceLocation.slice(0, 100) } : {}) })) : [],
-                                  reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
-                                  reviewDecisions: (project.reviewDecisions && typeof project.reviewDecisions === 'object') ? project.reviewDecisions : null,
-                            _audioJobMeta: project._audioJobMeta || null,
-                            _translation: project._translation || null,
-                            _plainLanguage: project._plainLanguage || null,
-                                };
-                                if (_viewIsLiveVerificationHtmlBound(project, project.accessibleHtml, _docPipeline)) {
-                                  _viewAttachRuntimeBindingProof(_loadedFixResult, project.accessibleHtml, 'verificationHtmlBinding', '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest');
-                                }
-                                const _normalizedLoadedFixResult = _viewNormalizeLoadedVerification(_loadedFixResult, _docPipeline);
-                                if (_viewIsLiveVerificationHtmlBound(_loadedFixResult, project.accessibleHtml, _docPipeline)) {
-                                  _viewAttachRuntimeBindingProof(_normalizedLoadedFixResult, project.accessibleHtml, 'verificationHtmlBinding', '_verificationHtmlSnapshot', '_verificationHtmlBindingDigest');
-                                }
-                                setPdfFixResult(_normalizedLoadedFixResult);
-                                // H-8 (audit 2026-06-23): the component never remounts on Load Project, so
-                                // per-document refs/state from the PREVIOUS doc survive — most dangerously
-                                // _paletteSnapshotRef (a ref), whose stale snapshot lets palette Revert
-                                // OVERWRITE this freshly-loaded doc with the prior one. Reset every
-                                // per-document holdover so the loaded doc starts clean. (The fully-robust fix
-                                // is a key= remount on PdfAuditView in the host; done here at the load entry
-                                // point to avoid editing the concurrently-edited host file.)
-                                _paletteSnapshotRef.current = null;
-                                _selectTaggedArtifact(null);
-                                // M12 (deep dive 2026-07-09): also clear the PDF/UA badge state — see the
-                                // start-screen loader's twin reset for rationale.
-                                setLastTaggedValidation(null);
-                                setVeraPdfResult(null);
-                                setAppliedPalette(null);
-                                setPaletteIntent('');
-                                _setIssueEdit({});
-                                setRestyleProposals(null);
-                                setRestyleDropped(0);
-                                setRegionArmed(false);
-                                setTagOutline(null);
-                                setPendingPdfFile({ name: project.fileName || 'loaded-project.pdf', size: Number(project.fileSize) || Number(project.multiSession?.fileSize) || 0 });
-                                // Restore run history + pipeline prefs (see the other
-                                // Load Project site for rationale).
-                                try {
-                                  if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === 'function') setPdfRunHistory(project.runHistory.slice(-200));
-                                  const _pp = project.prefs || {};
-                                  if (_pp.auditors >= 1 && _pp.auditors <= 10) setPdfAuditorCount(_pp.auditors);
-                                  if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
-                                  if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
-                                  if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
-                                  if (_pp.builderFont) { const _safeBuilderFont = _viewSafeCssFontFamily(_pp.builderFont, ''); if (_safeBuilderFont) { try { localStorage.setItem('allo_selected_font', _safeBuilderFont); } catch (_) {} } }
-                                } catch (_) {}
-                                if (project.multiSession && Array.isArray(project.multiSession.ranges) && project.multiSession.ranges.length > 0) {
-                                  setPdfMultiSession(project.multiSession);
-                                  // B2 (2026-06-28): guard a malformed/hand-edited .alloflow.json whose ranges lack a
-                                  // valid pages array — a bare range.pages[0]/[1] access otherwise throws and strands the
-                                  // teacher on the results screen with no recovery. Degrade: skip the resume-range step.
-                                  const sortedR = project.multiSession.ranges.slice().sort((a, b) => ((a.pages && a.pages[0]) || 0) - ((b.pages && b.pages[0]) || 0));
-                                  const _lastRange = sortedR[sortedR.length - 1];
-                                  const lastEnd = (_lastRange && Array.isArray(_lastRange.pages)) ? _lastRange.pages[1] : null;
-                                  const total = project.pageCount || project.multiSession.pageCount || 1;
-                                  if (lastEnd == null) {
-                                    addToast(t('toasts.multisession_corrupt') || 'This project’s multi-session range data looks corrupted — skipping the resume-range step.', 'warning');
-                                  } else if (lastEnd < total) {
-                                    const nextStart = lastEnd + 1;
-                                    const nextEnd = Math.min(nextStart + 29, total);
-                                    setPdfPageRange({ start: nextStart, end: nextEnd });
-                                  }
-                                  if (_docPipeline && _docPipeline.multiSessionId && pendingPdfFile) {
-                                    try {
-                                    } catch {}
-                                  }
-                                  addToast(t('toasts.project_loaded_2') + (project.fileName || 'document') + ' — ' + project.multiSession.ranges.length + ' prior range' + (project.multiSession.ranges.length === 1 ? '' : 's') + ' restored', 'success');
-                                } else {
-                                  setPdfMultiSession(null);
-                                  setPdfPageRange(null);
-                                  addToast(t('toasts.project_loaded_2') + (project.fileName || 'document') + ' — continue editing!', 'success');
-                                }
-                              } catch(err) { if (_projectLoadIsCurrent()) addToast(t('toasts.failed_load_project') + err.message, 'error'); }
-                            };
-                            reader.onerror = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed_load_project') + (reader.error?.message || 'Unable to read project file'), 'error'); };
-                            reader.onabort = () => { if (_projectLoadIsCurrent()) addToast(t('toasts.failed_load_project') + 'Project file read was cancelled', 'info'); };
-                            try { reader.readAsText(file); }
-                            catch (error) {
-                              if (_projectLoadIsCurrent()) addToast(t('toasts.failed_load_project') + ((error && error.message) || 'Unable to start reading project file'), 'error');
-                              e.target.value = '';
-                              return;
-                            }
-                            e.target.value = '';
-                          }} />
+                          <input type="file" accept=".json,.alloflow.json" className="hidden" disabled={_modalDismissBusy} onChange={(e) => _loadProjectFromFileInput(e, { sidebar: true })} />
                         </label>
                       </div>
 
@@ -18563,7 +18523,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             cleanly once the overlay is toggled off (its own snapshot handles that undo). */}
                         {pdfFixResult._preCmdHtml && !pdfFixResult._preBionicHtml && !pdfFixResult._preLineGuideHtml && (
                           <button type="button" onClick={() => {
-                            setPdfFixResult(p => (p && p._preCmdHtml) ? ({ ...p, accessibleHtml: p._preCmdHtml, _preCmdHtml: null, _lastMiniAudit: null, _lastCmdDiff: null, _lastTableReadback: null }) : p);
+                            setPdfFixResult(p => (p && p._preCmdHtml) ? _withHtmlVerificationBinding({ ...p, accessibleHtml: p._preCmdHtml, _preCmdHtml: null, _lastMiniAudit: null, _lastCmdDiff: null, _lastTableReadback: null }, 'revert-command-modified-html') : p);
                             setAgentActivityLog(prev => [...prev, { text: '↩ Reverted last command', type: 'info', time: new Date().toLocaleTimeString() }]);
                             addToast(t('toasts.command_reverted') || 'Reverted the last command.', 'info');
                           }}
@@ -18607,7 +18567,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         {/* Bionic Reading - toggle on/off */}
                         <button type="button" onClick={() => {
                           if (pdfFixResult._preBionicHtml) {
-                            setPdfFixResult(prev => ({ ...prev, accessibleHtml: prev._preBionicHtml, _preBionicHtml: null }));
+                            setPdfFixResult(prev => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: prev._preBionicHtml, _preBionicHtml: null }, 'bionic-reading-removed-modified-html') : prev);
                             addToast(t('toasts.bionic_reading_removed'), 'info');
                           } else {
                             let html = pdfFixResult.accessibleHtml;
@@ -18620,7 +18580,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               });
                               return '>' + bionic + '<';
                             });
-                            setPdfFixResult(prev => ({ ...prev, accessibleHtml: html, _preBionicHtml: snapshot }));
+                            setPdfFixResult(prev => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: html, _preBionicHtml: snapshot }, 'bionic-reading-applied-modified-html') : prev);
                             addToast(t('toasts.bionic_reading_applied_click_again'), 'success');
                           }
                         }} className={`w-full px-3 py-2 border rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${pdfFixResult._preBionicHtml ? 'bg-violet-100 border-violet-400 text-violet-800' : 'bg-white border-violet-600 text-violet-700 hover:bg-violet-100'}`}>
@@ -18631,7 +18591,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <button type="button" onClick={() => {
                           const html = pdfFixResult.accessibleHtml;
                           if (pdfFixResult._preLineGuideHtml) {
-                            setPdfFixResult(prev => ({ ...prev, accessibleHtml: prev._preLineGuideHtml, _preLineGuideHtml: null }));
+                            setPdfFixResult(prev => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: prev._preLineGuideHtml, _preLineGuideHtml: null }, 'line-guide-removed-modified-html') : prev);
                             addToast(t('toasts.line_guide_removed'), 'info');
                           } else {
                             const snapshot = html;
@@ -18654,7 +18614,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             let fixed = html;
                             if (fixed.includes('</head>')) { fixed = fixed.replace('</head>', guideCSS + '</head>'); }
                             else { fixed = guideCSS + fixed; }
-                            setPdfFixResult(prev => ({ ...prev, accessibleHtml: fixed, _preLineGuideHtml: snapshot }));
+                            setPdfFixResult(prev => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: fixed, _preLineGuideHtml: snapshot }, 'line-guide-applied-modified-html') : prev);
                             addToast(t('toasts.line_guide_applied_alternating_stripes'), 'success');
                           }
                         }} className={`w-full px-3 py-2 border rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${pdfFixResult._preLineGuideHtml ? 'bg-violet-100 border-violet-400 text-violet-800' : 'bg-white border-violet-600 text-violet-700 hover:bg-violet-100'}`}>
@@ -18699,7 +18659,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 if (!_remediationOperationSourceIsCurrent(_legacyTranslationOperation)) { _cancelRemediationOperation(_legacyTranslationOperation); return; }
                                 translatedParts.push(translated);
                               }
-                              const isRtl = ['Arabic', 'Hebrew', 'Farsi', 'Urdu', 'Persian', 'Hindi'].some(l => lang.toLowerCase().includes(l.toLowerCase()));
+                              const isRtl = ['Arabic', 'Hebrew', 'Farsi', 'Urdu', 'Persian', 'Pashto', 'Dari', 'Yiddish', 'Kurdish', 'Sindhi', 'Uyghur'].some(l => lang.toLowerCase().includes(l.toLowerCase()));
                               const translatedHtml = _viewSafeSimpleMarkdownHtml(translatedParts.join('\n\n'));
                               const section = `<hr style="border:none;border-top:3px solid #7c3aed;margin:3rem 0">
                                 <div style="background:#f5f3ff;padding:24px;border-radius:12px;border:2px solid #c4b5fd;${isRtl ? 'direction:rtl;text-align:right;' : ''}">
@@ -19459,8 +19419,8 @@ Return ONLY the plain-language summary.`, false));
                     const _h = (typeof getPdfPreviewHtml === 'function') ? getPdfPreviewHtml() : '';
                     if (_h) {
                       const _base = pdfFixResultRef.current;
-                      if (_base) _editedResult = { ..._base, accessibleHtml: _h, _userEditedAt: Date.now() };
-                      setPdfFixResult(prev => prev ? { ...prev, accessibleHtml: _h, _userEditedAt: Date.now() } : prev);
+                      if (_base) _editedResult = _withHtmlVerificationBinding({ ..._base, accessibleHtml: _h, _userEditedAt: Date.now() }, 'preview-edited-modified-html');
+                      setPdfFixResult(prev => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: _h, _userEditedAt: Date.now() }, 'preview-edited-modified-html') : prev);
                     }
                   } catch (_) {}
                   setPdfPreviewOpen(false);
@@ -19647,7 +19607,8 @@ Return ONLY the plain-language summary.`, false));
                             const fullHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
                             const sanitized = sanitizeStyleForWCAG(fullHtml);
                             if (sanitized.fixCount > 0) {
-                              doc.documentElement.innerHTML = sanitized.html.replace(/^<!DOCTYPE html>\s*<html[^>]*>/i, '').replace(/<\/html>\s*$/i, '');
+                              const safeRestyledHtml = _viewSanitizeMarkupForExport(sanitized.html, _docPipeline);
+                              doc.documentElement.innerHTML = safeRestyledHtml.replace(/^<!DOCTYPE html>\s*<html[^>]*>/i, '').replace(/<\/html>\s*$/i, '');
                               addToast(`✨ Style applied! (${sanitized.fixCount} contrast fixes auto-applied for WCAG AA)`, 'success');
                             } else {
                               addToast(t('toasts.style_applied'), 'success');
@@ -22368,7 +22329,7 @@ Return ONLY the plain-language summary.`, false));
                 onUpdateResource:(_id,updater)=>setPdfFixResult(previous=>{
                   if(!previous?.accessibleHtml)return previous;
                   const before={id:'document-images',type:'document',data:{html:previous.accessibleHtml},imageAssets:previous.imageAssets};
-                  const next=updater(before);return next===before?previous:{...previous,accessibleHtml:next.data.html,imageAssets:next.imageAssets};
+                  const next=updater(before);return next===before?previous:_withHtmlVerificationBinding({...previous,accessibleHtml:next.data.html,imageAssets:next.imageAssets},'image-studio-modified-html');
                 })
               })}
               {/* Extracted images — collapsible gallery, draggable into iframe placeholders */}
@@ -22462,7 +22423,7 @@ Return ONLY the plain-language summary.`, false));
               <div className="mt-auto space-y-2 pt-3 border-t border-slate-200">
                 <button type="button" onClick={() => {
                   const html = getPdfPreviewHtml();
-                  setPdfFixResult(prev => ({ ...prev, accessibleHtml: html }));
+                  setPdfFixResult(prev => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: html }, 'preview-edited-modified-html') : prev);
                   downloadAccessiblePdf(html, (pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '') + '-accessible');
                 }} className="w-full px-3 py-2.5 bg-gradient-to-r from-blue-700 to-indigo-700 text-white rounded-lg text-xs font-bold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md flex items-center justify-center gap-2"
                   title={(t("pdf_audit.preview.print_copy_review_title") || "Print-style copy via your browser's Save as PDF. Tag preservation depends on the browser; this copy is not independently verified. Use Generate Tagged PDF for the tagged file and its report.")}>
@@ -22470,7 +22431,7 @@ Return ONLY the plain-language summary.`, false));
                 </button>
                 <button type="button" onClick={() => {
                   const html = getPdfPreviewHtml();
-                  setPdfFixResult(prev => ({ ...prev, accessibleHtml: html }));
+                  setPdfFixResult(prev => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: html }, 'preview-edited-modified-html') : prev);
                   let _editedReaderHtml;
                   try { _editedReaderHtml = _viewSanitizeMarkupForExport(html, _docPipeline); } catch (error) { addToast((t('toasts.export_security_unavailable') || 'The edited HTML could not be exported safely. Please retry after the security module finishes loading.') + (error?.message ? ' ' + error.message : ''), 'error'); return; }
                   const blob = new Blob([_wrapAsReaderApp(_editedReaderHtml)], { type: 'text/html' });
@@ -22679,7 +22640,7 @@ Return ONLY the plain-language summary.`, false));
                       <button type="button" onClick={() => {
                         try {
                           const r = applyFormBlanks(pdfFixResult.accessibleHtml, fillableAccepted);
-                          setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: r.html, _userEditedAt: Date.now() } : prev);
+                          setPdfFixResult((prev) => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: r.html, _userEditedAt: Date.now() }, 'fillable-forms-modified-html') : prev);
                           try {
                             const ldoc = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
                             if (ldoc && ldoc.body) { const nd = new DOMParser().parseFromString(r.html, 'text/html'); ldoc.body.innerHTML = nd.body.innerHTML; }

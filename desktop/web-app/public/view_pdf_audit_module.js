@@ -115,28 +115,48 @@ var X = _lazyIcon('X');
   // No IDs/attributes are injected into the document being verified.
   async function inventory(doc, options) {
     var refs = [], tables = Array.from(doc.querySelectorAll('table')).slice(0, 100), images = Array.from(doc.querySelectorAll('img')).slice(0, 200);
-    for (var ti = 0; ti < tables.length && refs.length < MAX_REFERENCES; ti++) {
+    // Deduplicate identical payloads (e.g. repeated empty/numeric cells) and run
+    // WebCrypto SHA-256 digests concurrently instead of 700+ serial round-trips.
+    var hashCache = new Map();
+    var hashCached = function (payload) {
+      var key = String(payload);
+      if (hashCache.has(key)) return hashCache.get(key);
+      var p = hash(key, options);
+      hashCache.set(key, p);
+      return p;
+    };
+    var pending = [];
+    for (var ti = 0; ti < tables.length && pending.length < MAX_REFERENCES; ti++) {
       var table = tables[ti], rows = ownedRows(table), cellData = [];
       rows.forEach(function (row, ri) {
         Array.from(row.children).filter(function (cell) { return /^(TD|TH)$/.test(cell.tagName); }).forEach(function (cell, ci) {
           cellData.push({ node: cell, row: ri, column: ci, value: text(cell.textContent), rowSpan: cell.rowSpan || 1, colSpan: cell.colSpan || 1 });
         });
       });
-      var fingerprint = await hash(JSON.stringify(cellData.map(function (cell) { return [cell.row, cell.column, cell.value, cell.rowSpan, cell.colSpan]; })), options);
+      var tableFpPromise = hashCached(JSON.stringify(cellData.map(function (cell) { return [cell.row, cell.column, cell.value, cell.rowSpan, cell.colSpan]; })));
       var caption = Array.from(table.children).find(function (child) { return child.tagName === 'CAPTION'; });
-      refs.push({ kind: 'table', table: ti, fingerprint: fingerprint, label: 'Table ' + (ti + 1) + (caption ? ': ' + text(caption.textContent).slice(0, 120) : ''), node: table });
-      for (var ci = 0; ci < cellData.length && refs.length < MAX_REFERENCES; ci++) {
+      pending.push({ kind: 'table', table: ti, fpPromise: tableFpPromise, label: 'Table ' + (ti + 1) + (caption ? ': ' + text(caption.textContent).slice(0, 120) : ''), node: table });
+      for (var ci = 0; ci < cellData.length && pending.length < MAX_REFERENCES; ci++) {
         var cell = cellData[ci];
-        refs.push({ kind: 'cell', table: ti, row: cell.row, column: cell.column, tableFingerprint: fingerprint,
-          fingerprint: await hash(JSON.stringify([cell.value, cell.rowSpan, cell.colSpan]), options),
+        pending.push({ kind: 'cell', table: ti, row: cell.row, column: cell.column, tableFpPromise: tableFpPromise,
+          fpPromise: hashCached(JSON.stringify([cell.value, cell.rowSpan, cell.colSpan])),
           label: 'Table ' + (ti + 1) + ', row ' + (cell.row + 1) + ', cell ' + (cell.column + 1), node: cell.node });
       }
     }
-    for (var ii = 0; ii < images.length && refs.length < MAX_REFERENCES; ii++) {
+    for (var ii = 0; ii < images.length && pending.length < MAX_REFERENCES; ii++) {
       var img = images[ii];
-      refs.push({ kind: 'figure', index: ii, fingerprint: await hash(JSON.stringify([img.getAttribute('src') || '', img.getAttribute('srcset') || '']), options),
+      pending.push({ kind: 'figure', index: ii, fpPromise: hashCached(JSON.stringify([img.getAttribute('src') || '', img.getAttribute('srcset') || ''])),
         label: 'Image ' + (ii + 1) + (img.getAttribute('alt') ? ': ' + text(img.getAttribute('alt')).slice(0, 120) : ''), node: img });
     }
+    refs = await Promise.all(pending.map(async function (entry) {
+      if (entry.kind === 'cell') {
+        var pair = await Promise.all([entry.tableFpPromise, entry.fpPromise]);
+        return { kind: 'cell', table: entry.table, row: entry.row, column: entry.column, tableFingerprint: pair[0], fingerprint: pair[1], label: entry.label, node: entry.node };
+      }
+      var fp = await entry.fpPromise;
+      if (entry.kind === 'table') return { kind: 'table', table: entry.table, fingerprint: fp, label: entry.label, node: entry.node };
+      return { kind: 'figure', index: entry.index, fingerprint: fp, label: entry.label, node: entry.node };
+    }));
     var signature = await hash(JSON.stringify([text(doc.body && doc.body.textContent), refs.map(function (ref) { return [ref.kind, ref.fingerprint]; })]), options);
     return { refs: refs, signature: signature, truncated: refs.length >= MAX_REFERENCES || doc.querySelectorAll('table').length > tables.length || doc.querySelectorAll('img').length > images.length };
   }
@@ -813,7 +833,7 @@ function _PdfWorkspaceBatchStatus({ item, t }) {
   const result = item.result || {};
   const done = item.status === "done";
   const status = done ? say("processed", "Processed") : item.status === "failed" ? say("failed", "Failed") : item.status === "processing" ? say("running", "Running") : say("queued", "Queued");
-  const verification = _pdfWorkspaceBatchVerified(item) ? say("verified", "Verification complete") : result.verificationState === "partial" ? say("partial", "Verification partial") : result.verificationState === "review-required" ? say("needs_review", "Needs review") : say("unverified", "Verification unconfirmed");
+  const verification = _pdfWorkspaceBatchVerified(item) ? say("verified", "Verification complete") : result.verificationState === "complete-for-tested-scope" ? say("tested_scope", "Complete (static scope)") : result.verificationState === "partial" ? say("partial", "Verification partial") : result.verificationState === "review-required" ? say("needs_review", "Needs review") : say("unverified", "Verification unconfirmed");
   return /* @__PURE__ */ React.createElement("span", { className: "pdf-workspace-batch-status" }, /* @__PURE__ */ React.createElement("strong", null, status), done && /* @__PURE__ */ React.createElement("span", null, verification));
 }
 function _PdfPacingPreference({ value, onChange, disabled, t }) {
@@ -889,13 +909,20 @@ function _usePdfSavedBatch({ pipeline, batchMode, documentEpoch, occupied, ready
       clearTimeout(retry);
     };
   }, [pipeline, loader, batchMode, documentEpoch, occupied, ready, version]);
+  const lastAutoRefreshRef = React.useRef(0);
   React.useEffect(() => {
     if (!batchMode || occupied) return;
-    window.addEventListener("focus", refresh);
-    window.addEventListener("online", refresh);
+    const debouncedRefresh = () => {
+      const now = Date.now();
+      if (now - lastAutoRefreshRef.current < 1500) return;
+      lastAutoRefreshRef.current = now;
+      refresh();
+    };
+    window.addEventListener("focus", debouncedRefresh);
+    window.addEventListener("online", debouncedRefresh);
     return () => {
-      window.removeEventListener("focus", refresh);
-      window.removeEventListener("online", refresh);
+      window.removeEventListener("focus", debouncedRefresh);
+      window.removeEventListener("online", debouncedRefresh);
     };
   }, [batchMode, occupied, refresh]);
   return { saved, setSaved, status, refresh };
@@ -941,11 +968,12 @@ function _pdfWorkspaceBatchFindings(item) {
   const list = (values, engine) => (Array.isArray(values) ? values : []).map((value) => ({ engine, text: text(value) })).filter((value) => value.text);
   const axe = result.axeAudit || {};
   const equal = result.secondEngineAudit || {};
-  const expertReason = {
+  const expertReasons = {
     accessibility: "Accessibility barriers need expert review.",
     "content-fidelity": "Content preservation needs expert review.",
     both: "Accessibility and content preservation need expert review."
-  }[result.expertReviewReason] || result.expertReviewReason || "Expert review is required.";
+  };
+  const expertReason = (typeof result.expertReviewReason === "string" && Object.prototype.hasOwnProperty.call(expertReasons, result.expertReviewReason) ? expertReasons[result.expertReviewReason] : typeof result.expertReviewReason === "string" && result.expertReviewReason.trim() ? result.expertReviewReason : "") || "Expert review is required.";
   return [
     ...list(result.verificationAudit?.issues, "AI audit"),
     ...list([].concat(axe.critical || [], axe.serious || [], axe.moderate || [], axe.minor || []), "axe-core"),
@@ -1000,6 +1028,35 @@ const _PdfPreservationReview = ({ result, captureToken, commitMetadata, onWorkbe
       if (focusCleanup.current) focusCleanup.current();
     };
   }, [html]);
+  const previewCspContent = "default-src 'none'; img-src data: blob:; style-src 'unsafe-inline'; font-src data:;";
+  const previewCspMeta = '<meta http-equiv="Content-Security-Policy" content="' + previewCspContent + '">';
+  const previewHtml = React.useMemo(() => {
+    if (!expanded || !html) return "";
+    try {
+      if (typeof DOMParser === "function") {
+        const parsed = new DOMParser().parseFromString(html, "text/html");
+        if (parsed && parsed.documentElement) {
+          Array.from(parsed.querySelectorAll("meta[http-equiv]")).forEach((el) => {
+            if (/^\s*refresh\s*$/i.test(el.getAttribute("http-equiv") || "")) el.remove();
+          });
+          let head = parsed.head;
+          if (!head) {
+            head = parsed.createElement("head");
+            parsed.documentElement.insertBefore(head, parsed.documentElement.firstChild);
+          }
+          const meta = parsed.createElement("meta");
+          meta.setAttribute("http-equiv", "Content-Security-Policy");
+          meta.setAttribute("content", previewCspContent);
+          head.insertBefore(meta, head.firstChild);
+          return "<!DOCTYPE html>\n" + parsed.documentElement.outerHTML;
+        }
+      }
+    } catch (_) {
+    }
+    const withoutComments = html.replace(/<!--[\s\S]*?-->/g, "");
+    const strippedHtml = withoutComments.replace(/<meta\b[^>]*http-equiv\s*=\s*(?:"\s*refresh\s*"|'\s*refresh\s*'|refresh\b)[^>]*>/gi, "");
+    return /<head\b[^>]*>/i.test(strippedHtml) ? strippedHtml.replace(/<head\b[^>]*>/i, (match) => match + previewCspMeta) : previewCspMeta + strippedHtml;
+  }, [expanded, html]);
   if (!api || !result || !html) return null;
   const evidence = api.evidence(result);
   const items = api.reviewItems(result, result.preservationAcknowledgments);
@@ -1100,34 +1157,6 @@ const _PdfPreservationReview = ({ result, captureToken, commitMetadata, onWorkbe
       if (current()) setBusy(false);
     }
   };
-  const previewCspContent = "default-src 'none'; img-src data: blob:; style-src 'unsafe-inline'; font-src data:;";
-  const previewCspMeta = '<meta http-equiv="Content-Security-Policy" content="' + previewCspContent + '">';
-  const previewHtml = (() => {
-    try {
-      if (typeof DOMParser === "function") {
-        const parsed = new DOMParser().parseFromString(html, "text/html");
-        if (parsed && parsed.documentElement) {
-          Array.from(parsed.querySelectorAll("meta[http-equiv]")).forEach((el) => {
-            if (/^\s*refresh\s*$/i.test(el.getAttribute("http-equiv") || "")) el.remove();
-          });
-          let head = parsed.head;
-          if (!head) {
-            head = parsed.createElement("head");
-            parsed.documentElement.insertBefore(head, parsed.documentElement.firstChild);
-          }
-          const meta = parsed.createElement("meta");
-          meta.setAttribute("http-equiv", "Content-Security-Policy");
-          meta.setAttribute("content", previewCspContent);
-          head.insertBefore(meta, head.firstChild);
-          return "<!DOCTYPE html>\n" + parsed.documentElement.outerHTML;
-        }
-      }
-    } catch (_) {
-    }
-    const withoutComments = html.replace(/<!--[\s\S]*?-->/g, "");
-    const strippedHtml = withoutComments.replace(/<meta\b[^>]*http-equiv\s*=\s*(?:"\s*refresh\s*"|'\s*refresh\s*'|refresh\b)[^>]*>/gi, "");
-    return /<head\b[^>]*>/i.test(strippedHtml) ? strippedHtml.replace(/<head\b[^>]*>/i, (match) => match + previewCspMeta) : previewCspMeta + strippedHtml;
-  })();
   const actionBtnClass = "min-h-11 rounded border px-3 py-2 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1";
   return /* @__PURE__ */ React.createElement("section", { "aria-label": "Preservation review", className: "mt-3 rounded-lg border p-3", style: { background: "var(--pw-soft, #fffbeb)", borderColor: "var(--pw-line, #fcd34d)", color: "var(--pw-ink, #0f172a)" } }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold" }, "Preservation review"), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1" }, evidence.candidateRejectionCount ? `${evidence.candidateRejectionCount} suggestions were rejected to protect the document. ${pending} recorded items need acknowledgment.` : "Inspect stable references for tables, cells, and images.", " Acknowledging an item does not resolve accessibility findings or change verification."), items.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mt-2" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 inline-flex items-center cursor-pointer text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 rounded" }, "Review rejected suggestions (", items.length, ")"), /* @__PURE__ */ React.createElement("ol", { className: "mt-2 space-y-2" }, items.map((item) => /* @__PURE__ */ React.createElement("li", { key: item.key, className: "rounded border p-2 text-xs", style: { background: "var(--pw-bg, #ffffff)", borderColor: "var(--pw-line, #fde68a)", color: "var(--pw-ink, #0f172a)" } }, /* @__PURE__ */ React.createElement("p", null, item.description), item.locationLabel && /* @__PURE__ */ React.createElement("p", { className: "mt-1", style: { color: "var(--pw-muted, #475569)" } }, item.locationLabel), /* @__PURE__ */ React.createElement("p", { className: "mt-1", style: { color: "var(--pw-muted, #475569)" } }, item.pass ? `Pass ${item.pass} \xB7 ` : "", item.chunkId === "all" ? "Whole document" : `Section ${item.chunkId}`, " \xB7 ", item.phase), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", className: actionBtnClass, "aria-pressed": item.reviewed, onClick: () => {
     const token = captureToken();
@@ -1147,6 +1176,7 @@ const _PdfPreservationReview = ({ result, captureToken, commitMetadata, onWorkbe
     if (!busy) focusReference(event);
   } }, "Locate in preview"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ml-2 " + actionBtnClass, onClick: () => {
     cancelNavigation();
+    setFrameReady(false);
     setExpanded(false);
     setMessage("Reference preview closed.");
     if (inspectButton.current) inspectButton.current.focus();
@@ -1306,8 +1336,12 @@ function _alloTaggedPdfDeliveryVerdict(result) {
   return { ok: true, code: "verified", reason: "" };
 }
 function _alloExecutableActiveContentFindings(result) {
+  const shared = typeof window !== "undefined" && window.AlloModules && window.AlloModules.createDocPipeline;
+  if (shared && typeof shared.executableActiveContentFindings === "function") {
+    return shared.executableActiveContentFindings(result);
+  }
   const findings = result && result.activeContent && Array.isArray(result.activeContent.findings) ? result.activeContent.findings : [];
-  const executable = { "open-action": true, javascript: true, launch: true, "additional-actions": true };
+  const executable = { "open-action": true, javascript: true, launch: true, "additional-actions": true, "other-actions": true, multimedia: true };
   return findings.filter((finding) => finding && executable[finding.type]);
 }
 function _alloCreateRemediationOperationOwner(options) {
@@ -1610,7 +1644,7 @@ function _viewSanitizeAiRestyleCss(rawCss) {
   const fenced = clean.match(/^```(?:css)?\s*\n?([\s\S]*?)\n?```$/i);
   if (fenced) clean = fenced[1].trim();
   clean = clean.replace(/^```(?:css)?\s*\n?/gim, "").replace(/\n?```\s*$/gim, "");
-  clean = clean.replace(/<\/?style\b[^>]*>/gi, "").replace(/@import\s+[^;]+;?/gi, "").replace(/url\s*\([^)]*\)/gi, "none").replace(/image-set\s*\([^)]*\)/gi, "none").replace(/expression\s*\([^)]*\)/gi, "none").replace(/behavior\s*:\s*[^;}\n]+;?/gi, "").replace(/-moz-binding\s*:\s*[^;}\n]+;?/gi, "").replace(/(?:javascript|vbscript)\s*:/gi, "");
+  clean = clean.replace(/<\/?style\b[^>]*>/gi, "").replace(/[<\\]/g, "").replace(/@import\s+[^;\n}]+;?/gi, "").replace(/url\s*\([^)]*\)/gi, "none").replace(/image-set\s*\([^)]*\)/gi, "none").replace(/expression\s*\([^)]*\)/gi, "none").replace(/behavior\s*:\s*[^;}\n]+;?/gi, "").replace(/-moz-binding\s*:\s*[^;}\n]+;?/gi, "").replace(/(?:javascript|vbscript)\s*:/gi, "");
   return clean.trim();
 }
 function _viewSanitizeReconTableHtml(rawHtml) {
@@ -2912,13 +2946,16 @@ function _htmlToDocxSpec(html) {
         }
         continue;
       }
-      const isNewLink = tag === "A" && n.getAttribute("href") && !fmt.link;
+      const _rawAnchorHref = tag === "A" ? String(n.getAttribute("href") || "").trim() : "";
+      const _normAnchorHref = _rawAnchorHref.replace(/[\u0000-\u0020]+/g, "");
+      const _safeAnchorHref = _rawAnchorHref && /^(?:https?:|mailto:|#)/i.test(_normAnchorHref) ? _rawAnchorHref : null;
+      const isNewLink = !!(_safeAnchorHref && !fmt.link);
       if (isNewLink) counts.links++;
       out = out.concat(inlineRuns(n, {
         bold: fmt.bold || tag === "B" || tag === "STRONG",
         italic: fmt.italic || tag === "I" || tag === "EM",
         underline: fmt.underline || tag === "U",
-        link: fmt.link || tag === "A" && n.getAttribute("href") || null,
+        link: fmt.link || _safeAnchorHref || null,
         // Superscript/subscript (2026-06-13): footnote anchors (<sup>),
         // exponents (x²), ordinals, and chemical formulae (H₂O) were
         // flattening to baseline in docx/pptx. Thread vertical alignment.
@@ -3610,9 +3647,9 @@ function _htmlToDtbookXml(html, lang, uid) {
   const bodyInner = out.join("\n") || "<level1><h1>" + title + "</h1></level1>";
   return '<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE dtbook PUBLIC "-//NISO//DTD dtbook 2005-3//EN" "http://www.daisy.org/z3986/2005/dtbook-2005-3.dtd">\n<dtbook xmlns="http://www.daisy.org/z3986/2005/dtbook/" version="2005-3" xml:lang="' + _expXmlEsc(L) + '"' + (spec.rtl ? ' dir="rtl"' : "") + '>\n<head><meta name="dc:Title" content="' + title + '"/><meta name="dc:Language" content="' + _expXmlEsc(L) + '"/><meta name="dc:Publisher" content="AlloFlow"/><meta name="dc:Format" content="ANSI/NISO Z39.86-2005"/><meta name="dtb:uid" content="' + _expXmlEsc(uid || "alloflow-daisy") + '"/></head>\n<book><bodymatter>' + bodyInner + "</bodymatter></book>\n</dtbook>";
 }
-function _htmlToDaisyNcx(html, title, uid) {
+function _htmlToDaisyNcx(html, title, uid, lang) {
   const spec = _htmlToDocxSpec(html);
-  const L = spec.lang || "en";
+  const L = lang || spec.lang || "en";
   const heads = (spec.blocks || []).filter((b) => b.type === "heading");
   const stack = [];
   let maxDepth = 1;
@@ -4204,14 +4241,18 @@ function _altFmtXhtmlFromHtml(html, opts) {
       Array.from(el.attributes || []).forEach((attr) => {
         const name = attr.name.toLowerCase();
         const val = String(attr.value || "").trim();
-        if (name.startsWith("on") || name === "formaction") {
+        const normVal = val.replace(/[\u0000-\u0020]+/g, "");
+        if (name.startsWith("on") || name === "formaction" || name === "srcdoc") {
           el.removeAttribute(attr.name);
           return;
         }
-        if ((name === "href" || name === "xlink:href") && /^(?:javascript|vbscript|data):/i.test(val)) {
+        if ((name === "href" || name === "xlink:href" || name === "action") && /^(?:javascript|vbscript|data|file):/i.test(normVal)) {
           el.removeAttribute(attr.name);
-        } else if (name === "src" && /^(?:javascript|vbscript|data:text\/html)/i.test(val)) {
-          el.removeAttribute(attr.name);
+        } else if (name === "src") {
+          const isSafeRasterData = /^data:image\/(?:png|jpeg|jpg|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(normVal);
+          if (/^(?:javascript|vbscript|file):/i.test(normVal) || /^data:/i.test(normVal) && !isSafeRasterData) {
+            el.removeAttribute(attr.name);
+          }
         }
       });
     });
@@ -4220,8 +4261,8 @@ function _altFmtXhtmlFromHtml(html, opts) {
       if (/^(?:https?:)?\/\//i.test(href)) link.remove();
     });
     d.querySelectorAll("style").forEach((style) => {
-      const css = style.textContent || "";
-      style.textContent = css.replace(/@import\s+[^;]+;/gi, "").replace(/@font-face\s*\{[^}]*(?:https?:|\/\/)[^}]*\}/gi, "").replace(/url\(\s*(['"]?)(?:https?:)?\/\/[^)]+\)/gi, "none").replace(/image-set\s*\([^)]*\)/gi, "none").replace(/expression\s*\([^)]*\)/gi, "none").replace(/(?:javascript|vbscript)\s*:/gi, "");
+      const css = (style.textContent || "").replace(/[<\\]/g, "");
+      style.textContent = css.replace(/@import\s+[^;\n}]+;?/gi, "").replace(/@font-face\s*\{[^}]*(?:https?:|\/\/)[^}]*\}/gi, "").replace(/url\(\s*(['"]?)(?:https?:)?\/\/[^)]+\)/gi, "none").replace(/image-set\s*\([^)]*\)/gi, "none").replace(/expression\s*\([^)]*\)/gi, "none").replace(/(?:javascript|vbscript)\s*:/gi, "");
     });
     d.querySelectorAll("svg").forEach((svg) => {
       if ((!svg.namespaceURI || svg.namespaceURI === "http://www.w3.org/1999/xhtml") && !svg.getAttribute("xmlns")) {
@@ -4392,7 +4433,7 @@ function _buildDaisyPackageFiles(html, opts) {
   return {
     files: {
       "dtbook.xml": _htmlToDtbookXml(cleanHtml, lang, uid),
-      "navigation.ncx": _htmlToDaisyNcx(cleanHtml, title, uid),
+      "navigation.ncx": _htmlToDaisyNcx(cleanHtml, title, uid, lang),
       "book.smil": _htmlToDaisySmil(cleanHtml, uid),
       "package.opf": _DAISY_OPF_XML(title, lang, uid)
     },
@@ -4735,8 +4776,9 @@ async function _buildDocxBlobFromSpec(spec, d, mode) {
     if (r.footnoteId) {
       return typeof d.FootnoteReferenceRun === "function" ? new d.FootnoteReferenceRun(r.footnoteId) : new d.TextRun({ text: String(r.footnoteId), superScript: true });
     }
-    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : void 0, strike: !!r.strike, highlight: r.highlight ? d.HighlightColor && d.HighlightColor.YELLOW || "yellow" : void 0, font: r.code ? "Courier New" : void 0, language: r.lang ? { value: r.lang } : void 0, superScript: !!r.sup, subScript: !!r.sub, style: r.link ? "Hyperlink" : void 0, ..._rtl ? { rightToLeft: true } : {} });
-    return r.link ? new d.ExternalHyperlink({ link: r.link, children: [tr] }) : tr;
+    const isExternalLink = !!(r.link && /^(?:https?:|mailto:|tel:)/i.test(String(r.link).trim()));
+    const tr = new d.TextRun({ text: r.text, bold: !!r.bold, italics: !!r.italic, underline: r.underline ? {} : void 0, strike: !!r.strike, highlight: r.highlight ? d.HighlightColor && d.HighlightColor.YELLOW || "yellow" : void 0, font: r.code ? "Courier New" : void 0, language: r.lang ? { value: r.lang } : void 0, superScript: !!r.sup, subScript: !!r.sub, style: isExternalLink ? "Hyperlink" : void 0, ..._rtl ? { rightToLeft: true } : {} });
+    return isExternalLink ? new d.ExternalHyperlink({ link: r.link, children: [tr] }) : tr;
   });
   const _P = (opts) => new d.Paragraph(_rtl ? { bidirectional: true, ...opts } : opts);
   const children = [];
@@ -6347,6 +6389,7 @@ function PdfDiagnosticsLog(props) {
     }, "aria-label": "Diagnostic bundle JSON. Select all and copy.", className: "mt-1 w-full h-24 text-[10px] font-mono bg-slate-800 text-slate-100 rounded p-1" }))
   );
 }
+let _sharedVeraIframeHandle = null;
 PdfAuditView.buildPipelineTourSteps = buildPdfPipelineTourSteps;
 function PdfAuditView(props) {
   const {
@@ -7345,6 +7388,7 @@ function PdfAuditView(props) {
   React.useEffect(() => {
     _projectLoadSelectionRef.current++;
   }, [pendingPdfBase64]);
+  const _withHtmlVerificationBinding = (next, reason = "content-modified-after-verification") => next ? _viewEnforceVerificationHtmlBinding(next, reason, _docPipeline) : next;
   const [lastTaggedValidation, _setLastTaggedValidationRaw] = useState(null);
   const _lastTaggedValidationRef = useRef(null);
   const _taggedValidationGenerationRef = useRef(0);
@@ -7440,18 +7484,40 @@ function PdfAuditView(props) {
         _setScoreTrend(null);
         return;
       }
-      const _key = "alloflow_score_trend_" + (pendingPdfFile.name || "doc") + "|" + (pendingPdfFile.size || 0) + "|" + (pdfAuditResult.pageCount || 0);
+      const _sig = (pendingPdfFile.name || "doc") + "|" + (pendingPdfFile.size || 0) + "|" + (pdfAuditResult.pageCount || 0);
+      let _h = 2166136261;
+      for (let _i = 0; _i < _sig.length; _i++) {
+        _h ^= _sig.charCodeAt(_i);
+        _h = Math.imul(_h, 16777619);
+      }
+      const _hashKey = "t_" + (_h >>> 0).toString(16).padStart(8, "0");
       const _total = (pdfAuditResult.critical || []).length + (pdfAuditResult.serious || []).length + (pdfAuditResult.moderate || []).length + (pdfAuditResult.minor || []).length;
       const _cur = { ded: pdfAuditResult._consolidatedDeductions, count: _total, date: pdfAuditResult.timestamp || null };
-      let _prior = null;
+      const _STORE_KEY = "alloflow_score_trend_v2";
+      let _map = /* @__PURE__ */ Object.create(null);
       try {
-        const _raw = localStorage.getItem(_key);
-        if (_raw) _prior = JSON.parse(_raw);
+        const _rawMap = sessionStorage.getItem(_STORE_KEY);
+        if (_rawMap) {
+          const _parsed = JSON.parse(_rawMap, _viewSafeJsonReviver);
+          if (_parsed && typeof _parsed === "object" && !Array.isArray(_parsed)) {
+            Object.keys(_parsed).forEach((k) => {
+              _map[k] = _parsed[k];
+            });
+          }
+        }
       } catch (_) {
       }
+      const _prior = _map[_hashKey] || null;
       _setScoreTrend(_prior && (_prior.ded !== _cur.ded || _prior.count !== _cur.count) ? { prior: _prior, cur: _cur } : null);
       try {
-        localStorage.setItem(_key, JSON.stringify(_cur));
+        _map[_hashKey] = _cur;
+        const _keys = Object.keys(_map);
+        if (_keys.length > 20) {
+          _keys.slice(0, _keys.length - 20).forEach((k) => {
+            delete _map[k];
+          });
+        }
+        sessionStorage.setItem(_STORE_KEY, JSON.stringify(_map));
       } catch (_) {
       }
     } catch (_) {
@@ -8110,7 +8176,8 @@ function PdfAuditView(props) {
     }
     window.addEventListener("message", onMsg);
   });
-  const runVeraPdfRemediate = (bytes) => new Promise((resolve, reject) => {
+  const runVeraPdfRemediate = (bytes, opts) => new Promise((resolve, reject) => {
+    const langHint = opts && typeof opts.lang === "string" ? opts.lang.trim().slice(0, 32) : "";
     let win = null;
     try {
       win = window.open(VERAPDF_VALIDATOR_URL, "alloflow-verapdf", "width=480,height=380");
@@ -8191,7 +8258,7 @@ function PdfAuditView(props) {
         gotReady = true;
         clearTimeout(readyTimer);
         try {
-          win.postMessage({ type: "verapdf-remediate", bytes, maxIters: 5 }, VERAPDF_ORIGIN);
+          win.postMessage({ type: "verapdf-remediate", bytes, maxIters: 5, preferBytes: true, lang: langHint }, VERAPDF_ORIGIN);
         } catch (e) {
         }
       } else if (d.type === "verapdf-remediate-result") {
@@ -8320,7 +8387,7 @@ function PdfAuditView(props) {
       }
     });
   });
-  const _veraIframeRef = useRef(null);
+  const _veraIframeRef = useRef(_sharedVeraIframeHandle);
   const _veraEmbedPref = () => {
     try {
       return localStorage.getItem("alloflow_verapdf_embed");
@@ -8335,7 +8402,18 @@ function PdfAuditView(props) {
     }
   };
   const warmVeraPdfIframe = () => {
-    if (_veraIframeRef.current) return _veraIframeRef.current;
+    if (_sharedVeraIframeHandle && _sharedVeraIframeHandle.frame && _sharedVeraIframeHandle.frame.isConnected && (_sharedVeraIframeHandle.warmed || !_sharedVeraIframeHandle.settled)) {
+      _veraIframeRef.current = _sharedVeraIframeHandle;
+      return _sharedVeraIframeHandle;
+    }
+    if (_sharedVeraIframeHandle && typeof _sharedVeraIframeHandle.dispose === "function") {
+      try {
+        _sharedVeraIframeHandle.dispose();
+      } catch (_) {
+      }
+    }
+    _sharedVeraIframeHandle = null;
+    _veraIframeRef.current = null;
     let frame = null;
     try {
       frame = document.createElement("iframe");
@@ -8347,22 +8425,49 @@ function PdfAuditView(props) {
     } catch (_) {
       return null;
     }
-    const handle = { frame, warmed: false, identified: false, error: null };
+    const handle = { frame, warmed: false, identified: false, settled: false, error: null, dispose: null };
+    let readyTimer = null, identityTimer = null, onReady = null;
+    const dispose = () => {
+      clearTimeout(readyTimer);
+      clearTimeout(identityTimer);
+      if (onReady) {
+        try {
+          window.removeEventListener("message", onReady);
+        } catch (_) {
+        }
+      }
+      try {
+        if (frame && frame.parentNode) frame.parentNode.removeChild(frame);
+      } catch (_) {
+      }
+      handle.warmed = false;
+      handle.settled = true;
+      if (_sharedVeraIframeHandle === handle) _sharedVeraIframeHandle = null;
+      if (_veraIframeRef.current === handle) _veraIframeRef.current = null;
+    };
+    handle.dispose = dispose;
     handle.ready = new Promise((resolve) => {
-      let settled = false, readyTimer = null, identityTimer = null;
       const finish = (ok, error, markBlocked) => {
-        if (settled) return;
-        settled = true;
+        if (handle.settled) return;
+        handle.settled = true;
         clearTimeout(readyTimer);
         clearTimeout(identityTimer);
-        window.removeEventListener("message", onReady);
+        if (onReady) window.removeEventListener("message", onReady);
         handle.warmed = !!ok;
         handle.error = error || null;
         if (handle.warmed) _setVeraEmbedPref("ok");
-        else if (markBlocked && _veraEmbedPref() !== "ok") _setVeraEmbedPref("blocked");
+        else {
+          if (markBlocked && _veraEmbedPref() !== "ok") _setVeraEmbedPref("blocked");
+          try {
+            if (frame && frame.parentNode) frame.parentNode.removeChild(frame);
+          } catch (_) {
+          }
+          if (_sharedVeraIframeHandle === handle) _sharedVeraIframeHandle = null;
+          if (_veraIframeRef.current === handle) _veraIframeRef.current = null;
+        }
         resolve(handle.warmed);
       };
-      const onReady = (ev) => {
+      onReady = (ev) => {
         if (!frame.contentWindow || !ev || ev.source !== frame.contentWindow || VERAPDF_ORIGIN && VERAPDF_ORIGIN !== "*" && ev.origin !== VERAPDF_ORIGIN) return;
         const d = ev.data || {};
         if (d.type === "verapdf-loading") {
@@ -8382,7 +8487,8 @@ function PdfAuditView(props) {
       identityTimer = setTimeout(() => finish(false, _veraPdfPageMismatchError(), true), _VERAPDF_IDENTITY_TIMEOUT_MS);
       readyTimer = setTimeout(() => finish(handle.warmed, null, !handle.warmed), 35e3);
     });
-    handle.isReady = () => handle.warmed;
+    handle.isReady = () => handle.warmed && !!(handle.frame && handle.frame.isConnected);
+    _sharedVeraIframeHandle = handle;
     _veraIframeRef.current = handle;
     return handle;
   };
@@ -8493,7 +8599,7 @@ function PdfAuditView(props) {
       }
       mutate(el, doc);
       const newHtml = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
-      setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: newHtml, _userEditedAt: Date.now() } : prev);
+      setPdfFixResult((prev) => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: newHtml, _userEditedAt: Date.now() }, "tag-editor-modified-html") : prev);
       try {
         if (typeof updatePdfPreview === "function") setTimeout(() => updatePdfPreview(), 40);
       } catch (_) {
@@ -8814,6 +8920,7 @@ function PdfAuditView(props) {
     })) return;
     const title = (pendingPdfFile?.name || "document").replace(/\.\w+$/, "");
     const epubLang = lang || "en";
+    const _moOperation = _beginRemediationOperation("readalong-epub-mo", false, { sourceHtml: html });
     setMoExport({ total: segments.length, done: 0, status: "running" });
     const measure = (url) => new Promise((res) => {
       let finished = false;
@@ -8857,7 +8964,9 @@ function PdfAuditView(props) {
         language: narrationLanguage,
         speed: 1,
         maxRetries: 2,
+        signal: _moOperation.signal,
         onProgress: (progress) => {
+          if (!_remediationOperationSourceIsCurrent(_moOperation)) return;
           const update = progress && typeof progress === "object" ? progress : {};
           const completed = Number(update.completed);
           setMoExport({
@@ -8867,15 +8976,31 @@ function PdfAuditView(props) {
           });
         }
       });
+      if (!_remediationOperationSourceIsCurrent(_moOperation)) {
+        _cancelRemediationOperation(_moOperation);
+        return;
+      }
       const audioBySegmentId = prepared && prepared.audioBySegmentId && typeof prepared.audioBySegmentId === "object" ? prepared.audioBySegmentId : {};
       const audioBlobs = [];
       const durations = [];
       for (let i = 0; i < segments.length; i++) {
+        if (!_remediationOperationSourceIsCurrent(_moOperation)) {
+          _cancelRemediationOperation(_moOperation);
+          return;
+        }
         let blob2 = null;
         let dur = 0;
         try {
           const segmentId = artifactSegments[i].segmentId;
           const rawBlob = _pdfAuditArtifactAudioEntryToBlob(audioBySegmentId[segmentId]);
+          let rawWavDur = 0;
+          if (rawBlob) {
+            try {
+              rawWavDur = _wavDurationFromBytes(new Uint8Array(await rawBlob.arrayBuffer()));
+            } catch (_) {
+              rawWavDur = 0;
+            }
+          }
           const normalizedBlob = await _epubCoreAudioBlob(rawBlob);
           if (normalizedBlob) {
             const objectUrl = URL.createObjectURL(normalizedBlob);
@@ -8888,17 +9013,18 @@ function PdfAuditView(props) {
               }
             }
             blob2 = normalizedBlob;
-            if (!(typeof dur === "number" && isFinite(dur) && dur > 0)) {
-              try {
-                dur = _wavDurationFromBytes(new Uint8Array(await normalizedBlob.arrayBuffer()));
-              } catch (_) {
-              }
+            if (!(typeof dur === "number" && isFinite(dur) && dur > 0) && rawWavDur > 0) {
+              dur = rawWavDur;
             }
           }
         } catch (_) {
         }
         audioBlobs.push(blob2);
         durations.push(dur);
+      }
+      if (!_remediationOperationSourceIsCurrent(_moOperation)) {
+        _cancelRemediationOperation(_moOperation);
+        return;
       }
       const ext = "mp3";
       const mime = "audio/mpeg";
@@ -8944,6 +9070,10 @@ function PdfAuditView(props) {
       } catch (_) {
       }
       const blob = await zip.generateAsync({ type: "blob", mimeType: "application/epub+zip" });
+      if (!_remediationOperationSourceIsCurrent(_moOperation)) {
+        _cancelRemediationOperation(_moOperation);
+        return;
+      }
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = title + "-readalong.epub";
@@ -8952,12 +9082,20 @@ function PdfAuditView(props) {
       document.body.removeChild(a);
       URL.revokeObjectURL(a.href);
       setMoExport({ total: segments.length, done: segments.length, status: "done" });
-      if (withAudio === 0) addToast((t("toasts.mo_no_audio") || "\u26A0 Read-along ebook saved, but no audio could be generated (voice service unavailable). The text + sync structure are intact.") + _epubSelfCheckNote, _epubSelfCheckNote ? "error" : "error");
-      else addToast("\u{1F4D6}\u{1F50A} " + (t("toasts.mo_done") || "Read-along ebook downloaded") + " \u2014 " + withAudio + "/" + segments.length + " audio portions narrated." + _epubSelfCheckNote, _epubSelfCheckNote ? "error" : "success");
-      setTimeout(() => setMoExport(null), 4e3);
+      if (withAudio === 0) _toastForRemediationOperation(_moOperation, (t("toasts.mo_no_audio") || "\u26A0 Read-along ebook saved, but no audio could be generated (voice service unavailable). The text + sync structure are intact.") + _epubSelfCheckNote, "error");
+      else _toastForRemediationOperation(_moOperation, "\u{1F4D6}\u{1F50A} " + (t("toasts.mo_done") || "Read-along ebook downloaded") + " \u2014 " + withAudio + "/" + segments.length + " audio portions narrated." + _epubSelfCheckNote, _epubSelfCheckNote ? "error" : "success");
+      setTimeout(() => {
+        if (_remediationOperationIsCurrent(_moOperation)) setMoExport(null);
+      }, 4e3);
     } catch (e) {
-      setMoExport(null);
-      addToast("Read-along export failed: " + (e?.message || "unknown error"), "error");
+      if (_remediationOperationIsCurrent(_moOperation)) {
+        setMoExport(null);
+        if (!(e && (e.name === "AbortError" || e.isAbort))) _toastForRemediationOperation(_moOperation, "Read-along export failed: " + (e?.message || "unknown error"), "error");
+      }
+    } finally {
+      if (_completeRemediationOperation(_moOperation)) {
+        setMoExport((prev) => prev && prev.status === "running" ? null : prev);
+      }
     }
   };
   const _runAudioJob = async () => {
@@ -9144,7 +9282,7 @@ function PdfAuditView(props) {
         if (!imgs[idx]) return prev;
         fn(imgs[idx], doc);
         const html = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
-        return { ...prev, accessibleHtml: html, _userEditedAt: Date.now() };
+        return _withHtmlVerificationBinding({ ...prev, accessibleHtml: html, _userEditedAt: Date.now() }, "image-classification-modified-html");
       } catch (_) {
         return prev;
       }
@@ -9403,7 +9541,7 @@ function PdfAuditView(props) {
         else if (/<body[^>]*>/i.test(html)) html = html.replace(/(<body[^>]*>)/i, "$1" + tag);
         else html = tag + html;
       }
-      return { ...prev, accessibleHtml: html, _userEditedAt: Date.now() };
+      return _withHtmlVerificationBinding({ ...prev, accessibleHtml: html, _userEditedAt: Date.now() }, "doc-mode-style-modified-html");
     });
   };
   const [taggedGateIssue, setTaggedGateIssue] = useState(null);
@@ -10349,7 +10487,7 @@ function PdfAuditView(props) {
     }
     _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: true } }));
     const newHtml = sp.html;
-    setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: newHtml, _preCmdHtml: html, _lastCmdDiff: null } : prev);
+    setPdfFixResult((prev) => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: newHtml, _preCmdHtml: html, _lastCmdDiff: null }, "manual-issue-edit-modified-html") : prev);
     addToast(t("pdf_audit.issue.edit_saved") || "\u270F Manual edit applied \u2014 re-checking\u2026", "info");
     const res = await _reauditAndScore(newHtml, null);
     _setIssueEdit((prev) => {
@@ -11035,6 +11173,258 @@ function PdfAuditView(props) {
   const _workspaceNavigate = (selector) => {
     if (pdfFixResult && pdfAuditTab !== "results") setPdfAuditTab("results");
     setWorkspaceDestination(selector);
+  };
+  const _loadProjectFromFileInput = (e, opts = {}) => {
+    if (_modalHasActiveWork() || pdfAuditLoading) {
+      e.target.value = "";
+      return;
+    }
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) {
+      addToast("This project file is larger than the 64 MB safety limit.", "error");
+      e.target.value = "";
+      return;
+    }
+    const _failToastPrefix = opts.sidebar ? t("toasts.failed_load_project") || "Failed to load project: " : t("toasts.failed_load") || "Failed to load project: ";
+    const _projectLoadToken = ++_projectLoadSelectionRef.current;
+    let _projectDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : null;
+    const _projectLoadIsCurrent = () => _projectLoadToken === _projectLoadSelectionRef.current && (_projectDocumentEpoch == null || typeof isPdfDocumentIntakeCurrent !== "function" || isPdfDocumentIntakeCurrent(_projectDocumentEpoch));
+    const _resetPerDocHoldovers = () => {
+      _paletteSnapshotRef.current = null;
+      _selectTaggedArtifact(null);
+      _lastTaggedDeliveryRef.current = null;
+      _taggedGateBytesRef.current = null;
+      _fidelityGateBytesRef.current = null;
+      _pendingTaggedExportRef.current = null;
+      if (audioJobRef.current) {
+        try {
+          audioJobRef.current.pauseRequested = true;
+        } catch (_) {
+        }
+        audioJobRef.current = null;
+      }
+      setTaggedGateIssue(null);
+      setFidelityGateIssue(null);
+      setLastTaggedReport(null);
+      setLastTaggedValidation(null);
+      setVeraPdfResult(null);
+      setPdfMetaOverride(null);
+      setAppliedPalette(null);
+      setPaletteIntent("");
+      _setIssueEdit({});
+      setRestyleProposals(null);
+      setRestyleDropped(0);
+      setRegionArmed(false);
+      setTagOutline(null);
+    };
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      if (!_projectLoadIsCurrent()) return;
+      try {
+        const parsedProject = JSON.parse(ev.target.result, (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v);
+        const sanitizedImport = _viewSanitizeProjectImport(parsedProject, _docPipeline);
+        const project = await _viewRehydrateVerificationHtmlBinding(sanitizedImport.project, _docPipeline);
+        if (!_projectLoadIsCurrent()) return;
+        if (!project.version || !project.accessibleHtml && !project.incomplete) {
+          addToast(opts.sidebar ? t("toasts.invalid_project_file_2") || t("toasts.valid_alloflow_project_file") : t("toasts.valid_alloflow_project_file"), "error");
+          return;
+        }
+        if (typeof startNewPdfAudit === "function") _projectDocumentEpoch = startNewPdfAudit();
+        else {
+          setPendingPdfBase64(null);
+          setPdfAuditResult(null);
+          setPdfFixResult(null);
+        }
+        if (!_projectLoadIsCurrent()) return;
+        if (typeof setPendingPdfBase64 === "function") setPendingPdfBase64(project.pdfBase64 || null);
+        if (typeof project.version === "number" && project.version > 2) {
+          addToast(t("toasts.project_newer_version") || "This project was saved by a newer AlloFlow (v" + project.version + " format). Loading what this version understands \u2014 some saved data may be ignored.", "warning");
+        }
+        const _restoreHistoryAndPrefs = () => {
+          try {
+            if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === "function") setPdfRunHistory(project.runHistory.slice(-200));
+            const _pp = project.prefs || {};
+            if (_pp.auditors >= 1 && _pp.auditors <= 10) setPdfAuditorCount(_pp.auditors);
+            if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
+            if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
+            if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
+            if (_pp.builderFont) {
+              const _safeBuilderFont = _viewSafeCssFontFamily(_pp.builderFont, "");
+              if (_safeBuilderFont) {
+                try {
+                  localStorage.setItem("allo_selected_font", _safeBuilderFont);
+                } catch (_) {
+                }
+              }
+            }
+          } catch (_) {
+          }
+        };
+        if (project.incomplete) {
+          const _restoredProjectSize = Number(project.fileSize) || Number(project.multiSession?.fileSize) || 0;
+          setPendingPdfFile({
+            name: project.fileName || "resumed-project.pdf",
+            size: _restoredProjectSize,
+            documentDigest: project.pdfBase64 ? void 0 : project.docKey || project.auditResult?.documentDigest || null
+          });
+          try {
+            if (project.extractedText) window.__resumeExtractedText = { fileName: project.fileName || "resumed-project.pdf", text: project.extractedText, docKey: project.docKey || null };
+          } catch (_) {
+          }
+          if (project.auditResult) {
+            setPdfAuditResult(project.auditResult);
+          } else {
+            setPdfAuditResult({
+              score: null,
+              scores: [],
+              critical: [],
+              major: [],
+              minor: [],
+              passes: [],
+              summary: "Resumed from an unfinished session",
+              pageCount: project.pageCount || 1,
+              hasSearchableText: true,
+              hasImages: false
+            });
+          }
+          if (project.extractedText && typeof setInputText === "function") setInputText(project.extractedText);
+          setPdfFixResult(null);
+          _resetPerDocHoldovers();
+          _restoreHistoryAndPrefs();
+          let _rangeNote = "";
+          if (Array.isArray(project.pageRange) && project.pageRange.length === 2 && typeof setPdfPageRange === "function") {
+            setPdfPageRange({ start: project.pageRange[0], end: project.pageRange[1] });
+            _rangeNote = " \u26A0 This project covers only pages " + project.pageRange[0] + "\u2013" + project.pageRange[1] + " of the original \u2014 finish those, or clear the page range to process the whole file.";
+          } else {
+            setPdfPageRange(null);
+          }
+          setPdfMultiSession(project.multiSession && Array.isArray(project.multiSession.ranges) && project.multiSession.ranges.length > 0 ? project.multiSession : null);
+          const _why = project.failureReason === "auth" ? "an API key / permission problem" : project.failureReason === "quota" ? "a usage or quota limit" : project.failureReason === "network" ? "a dropped connection" : "an AI-service hiccup";
+          addToast("\u{1F4C2} Resumed \u201C" + (project.fileName || "project") + "\u201D \u2014 it stopped last time due to " + _why + ". Your extracted text is restored; click Make Accessible to finish" + (project.pdfBase64 ? "" : " (re-upload the original file first \u2014 its bytes weren\u2019t saved)") + "." + _rangeNote, "success");
+          e.target.value = "";
+          return;
+        }
+        setPdfAuditResult({
+          score: Number.isFinite(project.beforeScore) ? project.beforeScore : null,
+          scores: [],
+          critical: [],
+          major: [],
+          minor: [],
+          passes: [],
+          summary: "Loaded from saved project",
+          pageCount: project.pageCount,
+          hasSearchableText: true,
+          hasImages: project.imageCount > 0
+        });
+        const _loadedFixResult = {
+          accessibleHtml: project.accessibleHtml,
+          documentDigest: project.documentDigest || null,
+          beforeScore: project.beforeScore,
+          afterScore: project.afterScore,
+          _aiVerificationIncomplete: !!project._aiVerificationIncomplete,
+          _estimatedMinimumScore: Number.isFinite(project._estimatedMinimumScore) ? project._estimatedMinimumScore : Number.isFinite(project.estimatedMinimumScore) ? project.estimatedMinimumScore : null,
+          _estimatedScoreBasis: project._estimatedScoreBasis || project.estimatedScoreBasis || null,
+          _finalAuditRetryAvailable: !!project._finalAuditRetryAvailable,
+          _remediationThrottlePaused: !!project._remediationThrottlePaused,
+          _finalAuditThrottleDeferred: !!project._finalAuditThrottleDeferred,
+          _finalAuditIncompleteReason: project._finalAuditIncompleteReason || null,
+          axeAudit: project.axeAudit || null,
+          secondEngineAudit: project.secondEngineAudit || null,
+          verificationCoverage: project.verificationCoverage || null,
+          verificationHtmlBinding: project.verificationHtmlBinding || null,
+          verificationState: project.verificationState || "unavailable",
+          verificationReasons: Array.isArray(project.verificationReasons) ? project.verificationReasons : [],
+          verificationReviewCount: Number.isFinite(project.verificationReviewCount) ? project.verificationReviewCount : 0,
+          afterScoreVerified: !!project.afterScoreVerified,
+          requiresManualReview: !!project.requiresManualReview,
+          verificationAudit: project.verificationAudit || null,
+          docStyle: project.docStyle || null,
+          pageCount: project.pageCount,
+          imageCount: project.imageCount || 0,
+          needsExpertReview: project.needsExpertReview || false,
+          expertReviewReason: project.expertReviewReason || null,
+          integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
+          integrityWarning: project.integrityWarning || null,
+          fidelityNotes: Array.isArray(project.fidelityNotes) ? project.fidelityNotes : [],
+          fidelityLimited: project.fidelityLimited || false,
+          sourceText: project.sourceText || "",
+          finalText: project.finalText || "",
+          htmlChars: project.htmlChars || project.accessibleHtml.length,
+          extractedChars: project.extractedChars || 0,
+          issuesFixed: project.issuesFixed || 0,
+          remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
+          autoFixPasses: project.autoFixPasses || 0,
+          humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
+          sourceStructure: window.AlloModules.RemediationReview.normalizeSourceModel(project.sourceStructure),
+          preservationAcknowledgments: window.AlloModules.RemediationReview.acknowledgments(project.preservationAcknowledgments),
+          candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
+          candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter((entry) => entry && typeof entry === "object").map((entry) => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || "").slice(0, 80), phase: String(entry.phase || "").slice(0, 40), reason: String(entry.reason || "").slice(0, 120), ...typeof entry.sourceLocation === "string" ? { sourceLocation: entry.sourceLocation.slice(0, 100) } : {} })) : [],
+          reviewedFindings: project.reviewedFindings && typeof project.reviewedFindings === "object" ? project.reviewedFindings : null,
+          reviewDecisions: project.reviewDecisions && typeof project.reviewDecisions === "object" ? project.reviewDecisions : null,
+          _audioJobMeta: project._audioJobMeta || null,
+          _translation: project._translation || null,
+          _plainLanguage: project._plainLanguage || null
+        };
+        if (_viewIsLiveVerificationHtmlBound(project, project.accessibleHtml, _docPipeline)) {
+          _viewAttachRuntimeBindingProof(_loadedFixResult, project.accessibleHtml, "verificationHtmlBinding", "_verificationHtmlSnapshot", "_verificationHtmlBindingDigest");
+        }
+        const _normalizedLoadedFixResult = _viewNormalizeLoadedVerification(_loadedFixResult, _docPipeline);
+        if (_viewIsLiveVerificationHtmlBound(_loadedFixResult, project.accessibleHtml, _docPipeline)) {
+          _viewAttachRuntimeBindingProof(_normalizedLoadedFixResult, project.accessibleHtml, "verificationHtmlBinding", "_verificationHtmlSnapshot", "_verificationHtmlBindingDigest");
+        }
+        setPdfFixResult(_normalizedLoadedFixResult);
+        setPendingPdfFile({ name: project.fileName || "loaded-project.pdf", size: Number(project.fileSize) || Number(project.multiSession?.fileSize) || 0 });
+        _paletteSnapshotRef.current = null;
+        _selectTaggedArtifact(null);
+        setLastTaggedValidation(null);
+        setVeraPdfResult(null);
+        setAppliedPalette(null);
+        setPaletteIntent("");
+        _setIssueEdit({});
+        setRestyleProposals(null);
+        setRestyleDropped(0);
+        setRegionArmed(false);
+        setTagOutline(null);
+        _resetPerDocHoldovers();
+        _restoreHistoryAndPrefs();
+        if (project.multiSession && Array.isArray(project.multiSession.ranges) && project.multiSession.ranges.length > 0) {
+          setPdfMultiSession(project.multiSession);
+          const sortedR = project.multiSession.ranges.slice().sort((a, b) => (a.pages && a.pages[0] || 0) - (b.pages && b.pages[0] || 0));
+          const _lastRange = sortedR[sortedR.length - 1];
+          const lastEnd = _lastRange && Array.isArray(_lastRange.pages) ? _lastRange.pages[1] : null;
+          const total = project.pageCount || project.multiSession.pageCount || 1;
+          if (lastEnd == null) {
+            addToast(t("toasts.multisession_corrupt") || "This project\u2019s multi-session range data looks corrupted \u2014 skipping the resume-range step.", "warning");
+          } else if (lastEnd < total) {
+            const nextStart = lastEnd + 1;
+            const nextEnd = Math.min(nextStart + 29, total);
+            setPdfPageRange({ start: nextStart, end: nextEnd });
+          }
+          addToast((opts.sidebar ? t("toasts.project_loaded_2") : t("toasts.loaded_2")) + (project.fileName || "document") + " \u2014 " + project.multiSession.ranges.length + " prior range" + (project.multiSession.ranges.length === 1 ? "" : "s") + " restored", "success");
+        } else {
+          setPdfMultiSession(null);
+          setPdfPageRange(null);
+          addToast((opts.sidebar ? t("toasts.project_loaded_2") : t("toasts.loaded_2")) + (project.fileName || "project") + " \u2014 continue editing!", "success");
+        }
+      } catch (err) {
+        if (_projectLoadIsCurrent()) addToast(_failToastPrefix + err.message, "error");
+      }
+    };
+    reader.onerror = () => {
+      if (_projectLoadIsCurrent()) addToast(_failToastPrefix + (reader.error?.message || "Unable to read project file"), "error");
+    };
+    reader.onabort = () => {
+      if (_projectLoadIsCurrent()) addToast(_failToastPrefix + "Project file read was cancelled", "info");
+    };
+    try {
+      reader.readAsText(file);
+    } catch (error) {
+      if (_projectLoadIsCurrent()) addToast(_failToastPrefix + (error && error.message || "Unable to start reading project file"), "error");
+      e.target.value = "";
+      return;
+    }
+    e.target.value = "";
   };
   if (!pdfAuditResult && !pdfAuditLoading) return null;
   return /* @__PURE__ */ React.createElement(
@@ -12547,226 +12937,7 @@ Return ONLY JSON:
         "\u{1F4C4} ",
         t("pdf_audit.quick_downloads.tagged_pdf_label") || "Tagged PDF (quick \u2014 structure only, no AI cleanup)"
       ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("pdf_audit.quick_downloads.tagged_pdf_caption") || "Real tags from the original text layer \u2014 screen-reader navigable, but headings are font-size guesses and images get no descriptions. The full treatment (AI cleanup + image descriptions + verified structure) comes from Make Accessible above.")));
-    })()), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mt-3 pt-3 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("label", { className: "flex-1 px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors flex items-center justify-center gap-2 cursor-pointer border border-amber-200", title: t("pdf_audit.load_project_tooltip") || "Open a .alloflow.json project file (AlloFlow saves one to your Downloads after each remediation) \u2014 your document, scores, history, and settings all come back." }, "\u{1F4C2} ", t("pdf_audit.continue_session") || "Continue a previous session", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json", className: "hidden", disabled: _modalDismissBusy, onChange: (e) => {
-      if (_modalHasActiveWork() || pdfAuditLoading) {
-        e.target.value = "";
-        return;
-      }
-      const file = e.target.files?.[0];
-      if (!file) return;
-      if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) {
-        addToast("This project file is larger than the 64 MB safety limit.", "error");
-        e.target.value = "";
-        return;
-      }
-      const _projectLoadToken = ++_projectLoadSelectionRef.current;
-      let _projectDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : null;
-      const _projectLoadIsCurrent = () => _projectLoadToken === _projectLoadSelectionRef.current && (_projectDocumentEpoch == null || typeof isPdfDocumentIntakeCurrent !== "function" || isPdfDocumentIntakeCurrent(_projectDocumentEpoch));
-      const reader = new FileReader();
-      reader.onload = async (ev) => {
-        if (!_projectLoadIsCurrent()) return;
-        try {
-          const parsedProject = JSON.parse(ev.target.result, (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v);
-          const sanitizedImport = _viewSanitizeProjectImport(parsedProject, _docPipeline);
-          const project = await _viewRehydrateVerificationHtmlBinding(sanitizedImport.project, _docPipeline);
-          if (!_projectLoadIsCurrent()) return;
-          if (!project.version || !project.accessibleHtml && !project.incomplete) {
-            addToast(t("toasts.valid_alloflow_project_file"), "error");
-            return;
-          }
-          if (typeof startNewPdfAudit === "function") _projectDocumentEpoch = startNewPdfAudit();
-          else {
-            setPendingPdfBase64(null);
-            setPdfAuditResult(null);
-            setPdfFixResult(null);
-          }
-          if (!_projectLoadIsCurrent()) return;
-          if (typeof setPendingPdfBase64 === "function") setPendingPdfBase64(project.pdfBase64 || null);
-          if (typeof project.version === "number" && project.version > 2) {
-            addToast(t("toasts.project_newer_version") || "This project was saved by a newer AlloFlow (v" + project.version + " format). Loading what this version understands \u2014 some saved data may be ignored.", "warning");
-          }
-          if (project.incomplete) {
-            const _restoredProjectSize = Number(project.fileSize) || Number(project.multiSession?.fileSize) || 0;
-            setPendingPdfFile({
-              name: project.fileName || "resumed-project.pdf",
-              size: _restoredProjectSize,
-              documentDigest: project.pdfBase64 ? void 0 : project.docKey || project.auditResult?.documentDigest || null
-            });
-            try {
-              if (project.extractedText) window.__resumeExtractedText = { fileName: project.fileName || "resumed-project.pdf", text: project.extractedText, docKey: project.docKey || null };
-            } catch (_) {
-            }
-            if (project.auditResult) {
-              setPdfAuditResult(project.auditResult);
-            } else {
-              setPdfAuditResult({
-                score: null,
-                scores: [],
-                critical: [],
-                major: [],
-                minor: [],
-                passes: [],
-                summary: "Resumed from an unfinished session",
-                pageCount: project.pageCount || 1,
-                hasSearchableText: true,
-                hasImages: false
-              });
-            }
-            if (project.extractedText && typeof setInputText === "function") setInputText(project.extractedText);
-            setPdfFixResult(null);
-            setLastTaggedValidation(null);
-            setVeraPdfResult(null);
-            _selectTaggedArtifact(null);
-            try {
-              if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === "function") setPdfRunHistory(project.runHistory.slice(-200));
-              const _pp = project.prefs || {};
-              if (_pp.auditors >= 1 && _pp.auditors <= 10) setPdfAuditorCount(_pp.auditors);
-              if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
-              if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
-              if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
-              if (_pp.builderFont) {
-                const _safeBuilderFont = _viewSafeCssFontFamily(_pp.builderFont, "");
-                if (_safeBuilderFont) {
-                  try {
-                    localStorage.setItem("allo_selected_font", _safeBuilderFont);
-                  } catch (_) {
-                  }
-                }
-              }
-            } catch (_) {
-            }
-            let _rangeNote = "";
-            if (Array.isArray(project.pageRange) && project.pageRange.length === 2 && typeof setPdfPageRange === "function") {
-              setPdfPageRange({ start: project.pageRange[0], end: project.pageRange[1] });
-              _rangeNote = " \u26A0 This project covers only pages " + project.pageRange[0] + "\u2013" + project.pageRange[1] + " of the original \u2014 finish those, or clear the page range to process the whole file.";
-            }
-            const _why = project.failureReason === "auth" ? "an API key / permission problem" : project.failureReason === "quota" ? "a usage or quota limit" : project.failureReason === "network" ? "a dropped connection" : "an AI-service hiccup";
-            addToast("\u{1F4C2} Resumed \u201C" + (project.fileName || "project") + "\u201D \u2014 it stopped last time due to " + _why + ". Your extracted text is restored; click Make Accessible to finish" + (project.pdfBase64 ? "" : " (re-upload the original file first \u2014 its bytes weren\u2019t saved)") + "." + _rangeNote, "success");
-            e.target.value = "";
-            return;
-          }
-          setPdfAuditResult({
-            score: Number.isFinite(project.beforeScore) ? project.beforeScore : null,
-            scores: [],
-            critical: [],
-            major: [],
-            minor: [],
-            passes: [],
-            summary: "Loaded from saved project",
-            pageCount: project.pageCount,
-            hasSearchableText: true,
-            hasImages: project.imageCount > 0
-          });
-          const _loadedFixResult = {
-            accessibleHtml: project.accessibleHtml,
-            documentDigest: project.documentDigest || null,
-            beforeScore: project.beforeScore,
-            afterScore: project.afterScore,
-            _aiVerificationIncomplete: !!project._aiVerificationIncomplete,
-            _estimatedMinimumScore: Number.isFinite(project._estimatedMinimumScore) ? project._estimatedMinimumScore : Number.isFinite(project.estimatedMinimumScore) ? project.estimatedMinimumScore : null,
-            _estimatedScoreBasis: project._estimatedScoreBasis || project.estimatedScoreBasis || null,
-            _finalAuditRetryAvailable: !!project._finalAuditRetryAvailable,
-            _remediationThrottlePaused: !!project._remediationThrottlePaused,
-            _finalAuditThrottleDeferred: !!project._finalAuditThrottleDeferred,
-            _finalAuditIncompleteReason: project._finalAuditIncompleteReason || null,
-            axeAudit: project.axeAudit || null,
-            secondEngineAudit: project.secondEngineAudit || null,
-            verificationCoverage: project.verificationCoverage || null,
-            verificationHtmlBinding: project.verificationHtmlBinding || null,
-            verificationState: project.verificationState || "unavailable",
-            verificationReasons: Array.isArray(project.verificationReasons) ? project.verificationReasons : [],
-            verificationReviewCount: Number.isFinite(project.verificationReviewCount) ? project.verificationReviewCount : 0,
-            afterScoreVerified: !!project.afterScoreVerified,
-            requiresManualReview: !!project.requiresManualReview,
-            verificationAudit: project.verificationAudit || null,
-            docStyle: project.docStyle || null,
-            pageCount: project.pageCount,
-            imageCount: project.imageCount || 0,
-            needsExpertReview: project.needsExpertReview || false,
-            // Restore reason-specific banner + integrity + Diff inputs + stats
-            // (fallbacks keep older project files working).
-            expertReviewReason: project.expertReviewReason || null,
-            integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
-            integrityWarning: project.integrityWarning || null,
-            fidelityNotes: Array.isArray(project.fidelityNotes) ? project.fidelityNotes : [],
-            fidelityLimited: project.fidelityLimited || false,
-            sourceText: project.sourceText || "",
-            finalText: project.finalText || "",
-            htmlChars: project.htmlChars || project.accessibleHtml.length,
-            extractedChars: project.extractedChars || 0,
-            issuesFixed: project.issuesFixed || 0,
-            remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
-            autoFixPasses: project.autoFixPasses || 0,
-            // Collaboration provenance (2026-08-23): who-did-what survives the file.
-            humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
-            sourceStructure: window.AlloModules.RemediationReview.normalizeSourceModel(project.sourceStructure),
-            preservationAcknowledgments: window.AlloModules.RemediationReview.acknowledgments(project.preservationAcknowledgments),
-            candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
-            candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter((entry) => entry && typeof entry === "object").map((entry) => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || "").slice(0, 80), phase: String(entry.phase || "").slice(0, 40), reason: String(entry.reason || "").slice(0, 120), ...typeof entry.sourceLocation === "string" ? { sourceLocation: entry.sourceLocation.slice(0, 100) } : {} })) : [],
-            reviewedFindings: project.reviewedFindings && typeof project.reviewedFindings === "object" ? project.reviewedFindings : null,
-            reviewDecisions: project.reviewDecisions && typeof project.reviewDecisions === "object" ? project.reviewDecisions : null,
-            _audioJobMeta: project._audioJobMeta || null,
-            _translation: project._translation || null,
-            _plainLanguage: project._plainLanguage || null
-          };
-          if (_viewIsLiveVerificationHtmlBound(project, project.accessibleHtml, _docPipeline)) {
-            _viewAttachRuntimeBindingProof(_loadedFixResult, project.accessibleHtml, "verificationHtmlBinding", "_verificationHtmlSnapshot", "_verificationHtmlBindingDigest");
-          }
-          const _normalizedLoadedFixResult = _viewNormalizeLoadedVerification(_loadedFixResult, _docPipeline);
-          if (_viewIsLiveVerificationHtmlBound(_loadedFixResult, project.accessibleHtml, _docPipeline)) {
-            _viewAttachRuntimeBindingProof(_normalizedLoadedFixResult, project.accessibleHtml, "verificationHtmlBinding", "_verificationHtmlSnapshot", "_verificationHtmlBindingDigest");
-          }
-          setPdfFixResult(_normalizedLoadedFixResult);
-          setPendingPdfFile({ name: project.fileName || "loaded-project.pdf", size: Number(project.fileSize) || Number(project.multiSession?.fileSize) || 0 });
-          _paletteSnapshotRef.current = null;
-          _selectTaggedArtifact(null);
-          setLastTaggedValidation(null);
-          setVeraPdfResult(null);
-          setAppliedPalette(null);
-          setPaletteIntent("");
-          _setIssueEdit({});
-          setRestyleProposals(null);
-          setRestyleDropped(0);
-          setRegionArmed(false);
-          setTagOutline(null);
-          try {
-            if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === "function") setPdfRunHistory(project.runHistory.slice(-200));
-            const _pp = project.prefs || {};
-            if (_pp.auditors >= 1 && _pp.auditors <= 10) setPdfAuditorCount(_pp.auditors);
-            if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
-            if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
-            if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
-            if (_pp.builderFont) {
-              const _safeBuilderFont = _viewSafeCssFontFamily(_pp.builderFont, "");
-              if (_safeBuilderFont) {
-                try {
-                  localStorage.setItem("allo_selected_font", _safeBuilderFont);
-                } catch (_) {
-                }
-              }
-            }
-          } catch (_) {
-          }
-          addToast(t("toasts.loaded_2") + (project.fileName || "project") + " \u2014 continue editing!", "success");
-        } catch (err) {
-          if (_projectLoadIsCurrent()) addToast(t("toasts.failed_load") + err.message, "error");
-        }
-      };
-      reader.onerror = () => {
-        if (_projectLoadIsCurrent()) addToast(t("toasts.failed_load") + (reader.error?.message || "Unable to read project file"), "error");
-      };
-      reader.onabort = () => {
-        if (_projectLoadIsCurrent()) addToast(t("toasts.failed_load") + "Project file read was cancelled", "info");
-      };
-      try {
-        reader.readAsText(file);
-      } catch (error) {
-        if (_projectLoadIsCurrent()) addToast(t("toasts.failed_load") + (error && error.message || "Unable to start reading project file"), "error");
-        e.target.value = "";
-        return;
-      }
-      e.target.value = "";
-    } })), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: _modalWorkBusy, onClick: _requestCloseAudit, className: "text-xs text-slate-600 hover:text-slate-900 font-bold" }, "Cancel")), Array.isArray(pdfRunHistory) && pdfRunHistory.length > 0 && (() => {
+    })()), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mt-3 pt-3 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("label", { className: "flex-1 px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors flex items-center justify-center gap-2 cursor-pointer border border-amber-200", title: t("pdf_audit.load_project_tooltip") || "Open a .alloflow.json project file (AlloFlow saves one to your Downloads after each remediation) \u2014 your document, scores, history, and settings all come back." }, "\u{1F4C2} ", t("pdf_audit.continue_session") || "Continue a previous session", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json,.alloflow.json", className: "hidden", disabled: _modalDismissBusy, onChange: (e) => _loadProjectFromFileInput(e, { sidebar: false }) })), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: _modalWorkBusy, onClick: _requestCloseAudit, className: "text-xs text-slate-600 hover:text-slate-900 font-bold" }, "Cancel")), Array.isArray(pdfRunHistory) && pdfRunHistory.length > 0 && (() => {
       const _hist = pdfRunHistory;
       const _gains = _hist.filter((r) => r.beforeScore != null && r.afterScore != null);
       const _avgGain = _gains.length ? Math.round(_gains.reduce((s, r) => s + (r.afterScore - r.beforeScore), 0) / _gains.length) : null;
@@ -13623,7 +13794,7 @@ Return ONLY JSON:
                       }
                     });
                     if (!touched) return prev;
-                    return { ...prev, accessibleHtml: "<!DOCTYPE html>\n" + d.documentElement.outerHTML, _userEditedAt: Date.now() };
+                    return _withHtmlVerificationBinding({ ...prev, accessibleHtml: "<!DOCTYPE html>\n" + d.documentElement.outerHTML, _userEditedAt: Date.now() }, "image-alt-edit-modified-html");
                   } catch (_) {
                     return prev;
                   }
@@ -13964,7 +14135,7 @@ Return ONLY JSON:
             onClick: () => {
               const _pre = _ar.preRestoreHtml;
               if (!_pre) return;
-              setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: _pre, htmlChars: _pre.length, autoRestore: { ...prev.autoRestore, undone: true, preRestoreHtml: null } } : prev);
+              setPdfFixResult((prev) => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: _pre, htmlChars: _pre.length, autoRestore: { ...prev.autoRestore, undone: true, preRestoreHtml: null } }, "auto-restore-undone-modified-html") : prev);
               if (addToast) addToast(t("pdf_audit.auto_restore.undone") || "Auto-restore undone \u2014 the dropped words were removed again.", "info");
             },
             className: "ml-auto px-2 py-0.5 bg-white border border-rose-400 text-rose-800 rounded-full text-[10px] font-bold hover:bg-rose-100 focus:ring-2 focus:ring-rose-400",
@@ -14094,7 +14265,7 @@ Return ONLY JSON:
                 h = null;
               }
             }
-            if (h) setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: h, _userEditedAt: Date.now() } : prev);
+            if (h) setPdfFixResult((prev) => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: h, _userEditedAt: Date.now() }, "recovery-word-insert-modified-html") : prev);
             try {
               const _eventDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : null;
               window.dispatchEvent(new CustomEvent("alloflow:fidelity-stale", { detail: { documentEpoch: _eventDocumentEpoch } }));
@@ -15174,11 +15345,14 @@ Return ONLY JSON:
         return;
       }
       const _rawB64 = _b64.includes(",") ? _b64.split(",")[1] : _b64;
+      const _isValidB64 = typeof _rawB64 === "string" && _rawB64.length > 0 && /^[A-Za-z0-9+/=\s]+$/.test(_rawB64);
       let _isPdfMagic = false;
-      try {
-        const _head = atob(_rawB64.slice(0, 8));
-        _isPdfMagic = _head.charCodeAt(0) === 37 && _head.charCodeAt(1) === 80 && _head.charCodeAt(2) === 68 && _head.charCodeAt(3) === 70;
-      } catch (_) {
+      if (_isValidB64) {
+        try {
+          const _head = atob(_rawB64.slice(0, 8));
+          _isPdfMagic = _head.charCodeAt(0) === 37 && _head.charCodeAt(1) === 80 && _head.charCodeAt(2) === 68 && _head.charCodeAt(3) === 70;
+        } catch (_) {
+        }
       }
       let _transcriptPreviewHtml = "";
       if (!_isPdfMagic && _rawB64.startsWith("QUxMT1RSQU5TQ1JJUFQ6")) {
@@ -15398,7 +15572,7 @@ Return ONLY JSON:
                             // The PDF bytes are embedded below (base64 is JS-string-safe), the blob
                             // is built IN THIS WINDOW (same-origin by construction), and pdf.js
                             // paints canvases \u2014 no native viewer, no cross-window blob fetch.
-                            var _pdfRawB64 = ${_isPdfMagic ? JSON.stringify(_rawB64) : "null"};
+                            var _pdfRawB64 = ${_isPdfMagic ? JSON.stringify(_rawB64).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029") : "null"};
                             // Parameterized renderer (2026-06-11): the left pane can now show
                             // either the ORIGINAL or the freshly generated TAGGED PDF (the
                             // '\u2696 Verify tagged' toggle). They should look IDENTICAL \u2014 tagging
@@ -15823,7 +15997,7 @@ Return ONLY JSON:
         if (_ts[i]) {
           _ts[i].remove();
           const _nh = "<!DOCTYPE html>\n" + _doc.documentElement.outerHTML;
-          setPdfFixResult((p) => p ? { ...p, accessibleHtml: _nh } : p);
+          setPdfFixResult((p) => p ? _withHtmlVerificationBinding({ ...p, accessibleHtml: _nh }, "reconstructed-table-rejected-modified-html") : p);
           if (typeof updatePdfPreview === "function") updatePdfPreview();
           if (typeof addToast === "function") addToast(t("pdf_audit.recon.rejected") || "Removed the AI-reconstructed table \u2014 the original image is kept.", "info");
         }
@@ -16200,11 +16374,18 @@ Return ONLY JSON:
           setVeraPdfFixing(true);
           _recordVeraPdfRules(_currentVeraPdfResult, "repair");
           try {
-            const _rem = await runVeraPdfRemediate(_repairRun.bytes);
-            if (_rem && _rem.repairedB64) {
+            const _rem = await runVeraPdfRemediate(_repairRun.bytes, { lang: _altFmtHtmlLang(_repairSourceHtml) });
+            let _u8 = null;
+            if (_rem && _rem.repairedBytes instanceof ArrayBuffer) {
+              _u8 = new Uint8Array(_rem.repairedBytes);
+            } else if (_rem && _rem.repairedBytes instanceof Uint8Array) {
+              _u8 = _rem.repairedBytes;
+            } else if (_rem && _rem.repairedB64) {
               const _bin = atob(_rem.repairedB64);
-              const _u8 = new Uint8Array(_bin.length);
+              _u8 = new Uint8Array(_bin.length);
               for (let _i = 0; _i < _bin.length; _i++) _u8[_i] = _bin.charCodeAt(_i);
+            }
+            if (_rem && _u8 && _u8.length > 0) {
               const _rv = _rem.verdict || { compliant: !!_rem.compliant, failedChecks: 0, failedRules: [] };
               const _rvh = await _sha256OfBytes(_u8);
               if (!_veraPdfValidationIsCurrent(_repairRun)) return;
@@ -16698,188 +16879,7 @@ Return ONLY JSON:
       return /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, _lowPages.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mb-1.5 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800 flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", null, "\u26A0 ", t("pdf_audit.low_conf_ocr") || "Low OCR confidence on", " page", _lowPages.length === 1 ? "" : "s", " ", _lowPages.slice(0, 8).join(", "), _lowPages.length > 8 ? "\u2026" : "", ". ", t("pdf_audit.low_conf_ocr_hint") || "The text may be misread."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => _reRun({ pages: _lowPages }), disabled: _remediationBusy || pdfAutoContinueRunning, className: "ml-auto px-2 py-0.5 bg-white border border-amber-400 text-amber-800 rounded-full font-bold hover:bg-amber-100 disabled:opacity-40 shrink-0" }, "\u{1F504} Re-OCR ", _lowPages.length, " ", _lowPages.length === 1 ? t("pdf_audit.page") || "page" : t("pdf_audit.pages") || "pages")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => _reRun("all"), disabled: _remediationBusy || pdfAutoContinueRunning, title: t("pdf_audit.rescan_ocr_tooltip") || "Re-run OCR on the whole document, ignoring the embedded text layer and any saved text. Use this if the extracted text looks garbled.", className: "w-full px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40" }, "\u{1F504} ", t("pdf_audit.rescan_ocr") || "Re-scan with OCR (text looks wrong?)"));
     })(), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "pdf_audit_view_save_project_btn", onClick: () => {
       saveProjectToFile(false);
-    }, className: "flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5" }, "\u{1F4BE} Save Project"), /* @__PURE__ */ React.createElement("label", { "data-help-key": "pdf_audit_view_load_project_btn", className: "flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer" }, "\u{1F4C2} Load Project", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json,.alloflow.json", className: "hidden", disabled: _modalDismissBusy, onChange: (e) => {
-      if (_modalHasActiveWork() || pdfAuditLoading) {
-        e.target.value = "";
-        return;
-      }
-      const file = e.target.files?.[0];
-      if (!file) return;
-      if (file.size > _VIEW_MAX_PROJECT_FILE_BYTES) {
-        addToast("This project file is larger than the 64 MB safety limit.", "error");
-        e.target.value = "";
-        return;
-      }
-      const _projectLoadToken = ++_projectLoadSelectionRef.current;
-      let _projectDocumentEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : null;
-      const _projectLoadIsCurrent = () => _projectLoadToken === _projectLoadSelectionRef.current && (_projectDocumentEpoch == null || typeof isPdfDocumentIntakeCurrent !== "function" || isPdfDocumentIntakeCurrent(_projectDocumentEpoch));
-      const reader = new FileReader();
-      reader.onload = async (ev) => {
-        if (!_projectLoadIsCurrent()) return;
-        try {
-          const parsedProject = JSON.parse(ev.target.result, (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v);
-          const sanitizedImport = _viewSanitizeProjectImport(parsedProject, _docPipeline);
-          const project = await _viewRehydrateVerificationHtmlBinding(sanitizedImport.project, _docPipeline);
-          if (!_projectLoadIsCurrent()) return;
-          if (project && project.incomplete && project.version) {
-            addToast(t("toasts.incomplete_use_continue") || "This is an unfinished project. Close this and use \u201CContinue a previous session\u201D on the start screen to pick up where it stopped (no re-scanning needed).", "info");
-            e.target.value = "";
-            return;
-          }
-          if (!project.accessibleHtml || !project.version) {
-            addToast(t("toasts.invalid_project_file_2"), "error");
-            return;
-          }
-          if (typeof startNewPdfAudit === "function") _projectDocumentEpoch = startNewPdfAudit();
-          else {
-            setPendingPdfBase64(null);
-            setPdfAuditResult(null);
-            setPdfFixResult(null);
-          }
-          if (!_projectLoadIsCurrent()) return;
-          if (typeof setPendingPdfBase64 === "function") setPendingPdfBase64(project.pdfBase64 || null);
-          setPdfAuditResult({
-            score: Number.isFinite(project.beforeScore) ? project.beforeScore : null,
-            scores: [],
-            critical: [],
-            major: [],
-            minor: [],
-            passes: [],
-            summary: "Loaded from saved project",
-            pageCount: project.pageCount,
-            hasSearchableText: true,
-            hasImages: project.imageCount > 0
-          });
-          const _loadedFixResult = {
-            accessibleHtml: project.accessibleHtml,
-            documentDigest: project.documentDigest || null,
-            beforeScore: project.beforeScore,
-            afterScore: project.afterScore,
-            _aiVerificationIncomplete: !!project._aiVerificationIncomplete,
-            _estimatedMinimumScore: Number.isFinite(project._estimatedMinimumScore) ? project._estimatedMinimumScore : Number.isFinite(project.estimatedMinimumScore) ? project.estimatedMinimumScore : null,
-            _estimatedScoreBasis: project._estimatedScoreBasis || project.estimatedScoreBasis || null,
-            _finalAuditRetryAvailable: !!project._finalAuditRetryAvailable,
-            _remediationThrottlePaused: !!project._remediationThrottlePaused,
-            _finalAuditThrottleDeferred: !!project._finalAuditThrottleDeferred,
-            _finalAuditIncompleteReason: project._finalAuditIncompleteReason || null,
-            axeAudit: project.axeAudit || null,
-            secondEngineAudit: project.secondEngineAudit || null,
-            verificationCoverage: project.verificationCoverage || null,
-            verificationHtmlBinding: project.verificationHtmlBinding || null,
-            verificationState: project.verificationState || "unavailable",
-            verificationReasons: Array.isArray(project.verificationReasons) ? project.verificationReasons : [],
-            verificationReviewCount: Number.isFinite(project.verificationReviewCount) ? project.verificationReviewCount : 0,
-            afterScoreVerified: !!project.afterScoreVerified,
-            requiresManualReview: !!project.requiresManualReview,
-            verificationAudit: project.verificationAudit || null,
-            docStyle: project.docStyle || null,
-            pageCount: project.pageCount,
-            imageCount: project.imageCount || 0,
-            needsExpertReview: project.needsExpertReview || false,
-            // Restore reason-specific banner + integrity + Diff inputs + stats
-            // (fallbacks keep older project files working).
-            expertReviewReason: project.expertReviewReason || null,
-            integrityCoverage: project.integrityCoverage != null ? project.integrityCoverage : null,
-            integrityWarning: project.integrityWarning || null,
-            sourceText: project.sourceText || "",
-            finalText: project.finalText || "",
-            htmlChars: project.htmlChars || project.accessibleHtml.length,
-            extractedChars: project.extractedChars || 0,
-            issuesFixed: project.issuesFixed || 0,
-            remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
-            autoFixPasses: project.autoFixPasses || 0,
-            humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
-            sourceStructure: window.AlloModules.RemediationReview.normalizeSourceModel(project.sourceStructure),
-            preservationAcknowledgments: window.AlloModules.RemediationReview.acknowledgments(project.preservationAcknowledgments),
-            candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
-            candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter((entry) => entry && typeof entry === "object").map((entry) => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || "").slice(0, 80), phase: String(entry.phase || "").slice(0, 40), reason: String(entry.reason || "").slice(0, 120), ...typeof entry.sourceLocation === "string" ? { sourceLocation: entry.sourceLocation.slice(0, 100) } : {} })) : [],
-            reviewedFindings: project.reviewedFindings && typeof project.reviewedFindings === "object" ? project.reviewedFindings : null,
-            reviewDecisions: project.reviewDecisions && typeof project.reviewDecisions === "object" ? project.reviewDecisions : null,
-            _audioJobMeta: project._audioJobMeta || null,
-            _translation: project._translation || null,
-            _plainLanguage: project._plainLanguage || null
-          };
-          if (_viewIsLiveVerificationHtmlBound(project, project.accessibleHtml, _docPipeline)) {
-            _viewAttachRuntimeBindingProof(_loadedFixResult, project.accessibleHtml, "verificationHtmlBinding", "_verificationHtmlSnapshot", "_verificationHtmlBindingDigest");
-          }
-          const _normalizedLoadedFixResult = _viewNormalizeLoadedVerification(_loadedFixResult, _docPipeline);
-          if (_viewIsLiveVerificationHtmlBound(_loadedFixResult, project.accessibleHtml, _docPipeline)) {
-            _viewAttachRuntimeBindingProof(_normalizedLoadedFixResult, project.accessibleHtml, "verificationHtmlBinding", "_verificationHtmlSnapshot", "_verificationHtmlBindingDigest");
-          }
-          setPdfFixResult(_normalizedLoadedFixResult);
-          _paletteSnapshotRef.current = null;
-          _selectTaggedArtifact(null);
-          setLastTaggedValidation(null);
-          setVeraPdfResult(null);
-          setAppliedPalette(null);
-          setPaletteIntent("");
-          _setIssueEdit({});
-          setRestyleProposals(null);
-          setRestyleDropped(0);
-          setRegionArmed(false);
-          setTagOutline(null);
-          setPendingPdfFile({ name: project.fileName || "loaded-project.pdf", size: Number(project.fileSize) || Number(project.multiSession?.fileSize) || 0 });
-          try {
-            if (Array.isArray(project.runHistory) && typeof setPdfRunHistory === "function") setPdfRunHistory(project.runHistory.slice(-200));
-            const _pp = project.prefs || {};
-            if (_pp.auditors >= 1 && _pp.auditors <= 10) setPdfAuditorCount(_pp.auditors);
-            if (_pp.polishPasses != null && _pp.polishPasses >= 0 && _pp.polishPasses <= 5) setPdfPolishPasses(_pp.polishPasses);
-            if (_pp.maxFixPasses >= 0 && _pp.maxFixPasses <= 15) setPdfAutoFixPasses(_pp.maxFixPasses);
-            if (_pp.targetScore >= 60 && _pp.targetScore <= 100) setPdfTargetScore(_pp.targetScore);
-            if (_pp.builderFont) {
-              const _safeBuilderFont = _viewSafeCssFontFamily(_pp.builderFont, "");
-              if (_safeBuilderFont) {
-                try {
-                  localStorage.setItem("allo_selected_font", _safeBuilderFont);
-                } catch (_) {
-                }
-              }
-            }
-          } catch (_) {
-          }
-          if (project.multiSession && Array.isArray(project.multiSession.ranges) && project.multiSession.ranges.length > 0) {
-            setPdfMultiSession(project.multiSession);
-            const sortedR = project.multiSession.ranges.slice().sort((a, b) => (a.pages && a.pages[0] || 0) - (b.pages && b.pages[0] || 0));
-            const _lastRange = sortedR[sortedR.length - 1];
-            const lastEnd = _lastRange && Array.isArray(_lastRange.pages) ? _lastRange.pages[1] : null;
-            const total = project.pageCount || project.multiSession.pageCount || 1;
-            if (lastEnd == null) {
-              addToast(t("toasts.multisession_corrupt") || "This project\u2019s multi-session range data looks corrupted \u2014 skipping the resume-range step.", "warning");
-            } else if (lastEnd < total) {
-              const nextStart = lastEnd + 1;
-              const nextEnd = Math.min(nextStart + 29, total);
-              setPdfPageRange({ start: nextStart, end: nextEnd });
-            }
-            if (_docPipeline && _docPipeline.multiSessionId && pendingPdfFile) {
-              try {
-              } catch {
-              }
-            }
-            addToast(t("toasts.project_loaded_2") + (project.fileName || "document") + " \u2014 " + project.multiSession.ranges.length + " prior range" + (project.multiSession.ranges.length === 1 ? "" : "s") + " restored", "success");
-          } else {
-            setPdfMultiSession(null);
-            setPdfPageRange(null);
-            addToast(t("toasts.project_loaded_2") + (project.fileName || "document") + " \u2014 continue editing!", "success");
-          }
-        } catch (err) {
-          if (_projectLoadIsCurrent()) addToast(t("toasts.failed_load_project") + err.message, "error");
-        }
-      };
-      reader.onerror = () => {
-        if (_projectLoadIsCurrent()) addToast(t("toasts.failed_load_project") + (reader.error?.message || "Unable to read project file"), "error");
-      };
-      reader.onabort = () => {
-        if (_projectLoadIsCurrent()) addToast(t("toasts.failed_load_project") + "Project file read was cancelled", "info");
-      };
-      try {
-        reader.readAsText(file);
-      } catch (error) {
-        if (_projectLoadIsCurrent()) addToast(t("toasts.failed_load_project") + (error && error.message || "Unable to start reading project file"), "error");
-        e.target.value = "";
-        return;
-      }
-      e.target.value = "";
-    } }))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: async () => {
+    }, className: "flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5" }, "\u{1F4BE} Save Project"), /* @__PURE__ */ React.createElement("label", { "data-help-key": "pdf_audit_view_load_project_btn", className: "flex-1 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-[11px] font-bold border border-slate-400 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer" }, "\u{1F4C2} Load Project", /* @__PURE__ */ React.createElement("input", { type: "file", accept: ".json,.alloflow.json", className: "hidden", disabled: _modalDismissBusy, onChange: (e) => _loadProjectFromFileInput(e, { sidebar: true }) }))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: async () => {
       const html = pdfFixResult?.accessibleHtml;
       if (!html) return;
       const structure = [];
@@ -17253,7 +17253,7 @@ Return ONLY JSON:
       {
         type: "button",
         onClick: () => {
-          setPdfFixResult((p) => p && p._preCmdHtml ? { ...p, accessibleHtml: p._preCmdHtml, _preCmdHtml: null, _lastMiniAudit: null, _lastCmdDiff: null, _lastTableReadback: null } : p);
+          setPdfFixResult((p) => p && p._preCmdHtml ? _withHtmlVerificationBinding({ ...p, accessibleHtml: p._preCmdHtml, _preCmdHtml: null, _lastMiniAudit: null, _lastCmdDiff: null, _lastTableReadback: null }, "revert-command-modified-html") : p);
           setAgentActivityLog((prev) => [...prev, { text: "\u21A9 Reverted last command", type: "info", time: (/* @__PURE__ */ new Date()).toLocaleTimeString() }]);
           addToast(t("toasts.command_reverted") || "Reverted the last command.", "info");
         },
@@ -17295,7 +17295,7 @@ Return ONLY JSON:
       console.info("[ExpertWorkbench] log cleared");
     }, className: "text-[10px] text-slate-500 hover:text-slate-300 underline ml-auto" }, "Clear"))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-400" }, "Commands: ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "audit"), " \xB7 ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "auto"), " \xB7 ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "contrast"), " \xB7 ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "rebuild table N: \u2026"), " \xB7 or describe what to fix in plain language"))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-600 rounded-xl p-3 space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-violet-600 uppercase tracking-widest" }, "\u{1F4DA} Differentiate This Document"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       if (pdfFixResult._preBionicHtml) {
-        setPdfFixResult((prev) => ({ ...prev, accessibleHtml: prev._preBionicHtml, _preBionicHtml: null }));
+        setPdfFixResult((prev) => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: prev._preBionicHtml, _preBionicHtml: null }, "bionic-reading-removed-modified-html") : prev);
         addToast(t("toasts.bionic_reading_removed"), "info");
       } else {
         let html = pdfFixResult.accessibleHtml;
@@ -17308,13 +17308,13 @@ Return ONLY JSON:
           });
           return ">" + bionic + "<";
         });
-        setPdfFixResult((prev) => ({ ...prev, accessibleHtml: html, _preBionicHtml: snapshot }));
+        setPdfFixResult((prev) => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: html, _preBionicHtml: snapshot }, "bionic-reading-applied-modified-html") : prev);
         addToast(t("toasts.bionic_reading_applied_click_again"), "success");
       }
     }, className: `w-full px-3 py-2 border rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${pdfFixResult._preBionicHtml ? "bg-violet-100 border-violet-400 text-violet-800" : "bg-white border-violet-600 text-violet-700 hover:bg-violet-100"}` }, /* @__PURE__ */ React.createElement("b", null, "Bi"), "onic ", pdfFixResult._preBionicHtml ? "\u2713 ON (click to remove)" : "Reading"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       const html = pdfFixResult.accessibleHtml;
       if (pdfFixResult._preLineGuideHtml) {
-        setPdfFixResult((prev) => ({ ...prev, accessibleHtml: prev._preLineGuideHtml, _preLineGuideHtml: null }));
+        setPdfFixResult((prev) => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: prev._preLineGuideHtml, _preLineGuideHtml: null }, "line-guide-removed-modified-html") : prev);
         addToast(t("toasts.line_guide_removed"), "info");
       } else {
         const snapshot = html;
@@ -17340,7 +17340,7 @@ Return ONLY JSON:
         } else {
           fixed = guideCSS + fixed;
         }
-        setPdfFixResult((prev) => ({ ...prev, accessibleHtml: fixed, _preLineGuideHtml: snapshot }));
+        setPdfFixResult((prev) => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: fixed, _preLineGuideHtml: snapshot }, "line-guide-applied-modified-html") : prev);
         addToast(t("toasts.line_guide_applied_alternating_stripes"), "success");
       }
     }, className: `w-full px-3 py-2 border rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${pdfFixResult._preLineGuideHtml ? "bg-violet-100 border-violet-400 text-violet-800" : "bg-white border-violet-600 text-violet-700 hover:bg-violet-100"}` }, "\u{1F4CF} Line Guide ", pdfFixResult._preLineGuideHtml ? "\u2713 ON (click to remove)" : "(reading tracker)"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1.5" }, /* @__PURE__ */ React.createElement("input", { id: "pdf-translate-lang", list: "pdf-translate-suggestions", className: "flex-1 text-[11px] border border-violet-600 rounded-lg px-2 py-2 bg-white text-slate-700", "aria-label": t("pdf_audit.translate.lang_aria") || "Translation language \u2014 type any language or pick from suggestions", placeholder: t("pdf_audit.translate.lang_placeholder") || "\u{1F310} Type language (e.g. Spanish, Tagalog, Dari...)" }), /* @__PURE__ */ React.createElement("datalist", { id: "pdf-translate-suggestions" }, /* @__PURE__ */ React.createElement("option", { value: "Spanish" }), /* @__PURE__ */ React.createElement("option", { value: "French" }), /* @__PURE__ */ React.createElement("option", { value: "Arabic" }), /* @__PURE__ */ React.createElement("option", { value: "Somali" }), /* @__PURE__ */ React.createElement("option", { value: "Vietnamese" }), /* @__PURE__ */ React.createElement("option", { value: "Portuguese" }), /* @__PURE__ */ React.createElement("option", { value: "Mandarin Chinese" }), /* @__PURE__ */ React.createElement("option", { value: "Korean" }), /* @__PURE__ */ React.createElement("option", { value: "Japanese" }), /* @__PURE__ */ React.createElement("option", { value: "Russian" }), /* @__PURE__ */ React.createElement("option", { value: "Tagalog" }), /* @__PURE__ */ React.createElement("option", { value: "Haitian Creole" }), /* @__PURE__ */ React.createElement("option", { value: "German" }), /* @__PURE__ */ React.createElement("option", { value: "Italian" }), /* @__PURE__ */ React.createElement("option", { value: "Hindi" }), /* @__PURE__ */ React.createElement("option", { value: "Urdu" }), /* @__PURE__ */ React.createElement("option", { value: "Swahili" }), /* @__PURE__ */ React.createElement("option", { value: "Ukrainian" }), /* @__PURE__ */ React.createElement("option", { value: "Polish" }), /* @__PURE__ */ React.createElement("option", { value: "Thai" }), /* @__PURE__ */ React.createElement("option", { value: "Nepali" }), /* @__PURE__ */ React.createElement("option", { value: "Dari" }), /* @__PURE__ */ React.createElement("option", { value: "Pashto" }), /* @__PURE__ */ React.createElement("option", { value: "Burmese" }), /* @__PURE__ */ React.createElement("option", { value: "Amharic" }), /* @__PURE__ */ React.createElement("option", { value: "Tigrinya" }), /* @__PURE__ */ React.createElement("option", { value: "Marshallese" }), /* @__PURE__ */ React.createElement("option", { value: "Chuukese" }), /* @__PURE__ */ React.createElement("option", { value: "Karen" }), /* @__PURE__ */ React.createElement("option", { value: "Khmer" })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: async () => {
@@ -17387,7 +17387,7 @@ ${_viewNeutralizePromptFence(chunks[ci])}
           }
           translatedParts.push(translated);
         }
-        const isRtl = ["Arabic", "Hebrew", "Farsi", "Urdu", "Persian", "Hindi"].some((l) => lang.toLowerCase().includes(l.toLowerCase()));
+        const isRtl = ["Arabic", "Hebrew", "Farsi", "Urdu", "Persian", "Pashto", "Dari", "Yiddish", "Kurdish", "Sindhi", "Uyghur"].some((l) => lang.toLowerCase().includes(l.toLowerCase()));
         const translatedHtml = _viewSafeSimpleMarkdownHtml(translatedParts.join("\n\n"));
         const section = `<hr style="border:none;border-top:3px solid #7c3aed;margin:3rem 0">
                                 <div style="background:#f5f3ff;padding:24px;border-radius:12px;border:2px solid #c4b5fd;${isRtl ? "direction:rtl;text-align:right;" : ""}">
@@ -18135,8 +18135,8 @@ Return ONLY the plain-language summary.`, false));
               const _h = typeof getPdfPreviewHtml === "function" ? getPdfPreviewHtml() : "";
               if (_h) {
                 const _base = pdfFixResultRef.current;
-                if (_base) _editedResult = { ..._base, accessibleHtml: _h, _userEditedAt: Date.now() };
-                setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: _h, _userEditedAt: Date.now() } : prev);
+                if (_base) _editedResult = _withHtmlVerificationBinding({ ..._base, accessibleHtml: _h, _userEditedAt: Date.now() }, "preview-edited-modified-html");
+                setPdfFixResult((prev) => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: _h, _userEditedAt: Date.now() }, "preview-edited-modified-html") : prev);
               }
             } catch (_) {
             }
@@ -18350,7 +18350,8 @@ Return ONLY CSS \u2014 no explanation, no markdown fences.`, true);
                   const fullHtml = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
                   const sanitized = sanitizeStyleForWCAG(fullHtml);
                   if (sanitized.fixCount > 0) {
-                    doc.documentElement.innerHTML = sanitized.html.replace(/^<!DOCTYPE html>\s*<html[^>]*>/i, "").replace(/<\/html>\s*$/i, "");
+                    const safeRestyledHtml = _viewSanitizeMarkupForExport(sanitized.html, _docPipeline);
+                    doc.documentElement.innerHTML = safeRestyledHtml.replace(/^<!DOCTYPE html>\s*<html[^>]*>/i, "").replace(/<\/html>\s*$/i, "");
                     addToast(`\u2728 Style applied! (${sanitized.fixCount} contrast fixes auto-applied for WCAG AA)`, "success");
                   } else {
                     addToast(t("toasts.style_applied"), "success");
@@ -21546,7 +21547,7 @@ Return ONLY JSON:
           if (!previous?.accessibleHtml) return previous;
           const before = { id: "document-images", type: "document", data: { html: previous.accessibleHtml }, imageAssets: previous.imageAssets };
           const next = updater(before);
-          return next === before ? previous : { ...previous, accessibleHtml: next.data.html, imageAssets: next.imageAssets };
+          return next === before ? previous : _withHtmlVerificationBinding({ ...previous, accessibleHtml: next.data.html, imageAssets: next.imageAssets }, "image-studio-modified-html");
         })
       }), extractedImagesList.length > 0 && (() => {
         const _uniq = [];
@@ -21649,7 +21650,7 @@ Return ONLY JSON:
           type: "button",
           onClick: () => {
             const html = getPdfPreviewHtml();
-            setPdfFixResult((prev) => ({ ...prev, accessibleHtml: html }));
+            setPdfFixResult((prev) => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: html }, "preview-edited-modified-html") : prev);
             downloadAccessiblePdf(html, (pendingPdfFile?.name || "document").replace(/\.pdf$/i, "") + "-accessible");
           },
           className: "w-full px-3 py-2.5 bg-gradient-to-r from-blue-700 to-indigo-700 text-white rounded-lg text-xs font-bold hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md flex items-center justify-center gap-2",
@@ -21659,7 +21660,7 @@ Return ONLY JSON:
         t("pdf_audit.preview.print_style_label") || "Save as PDF (print-style, unverified)"
       ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
         const html = getPdfPreviewHtml();
-        setPdfFixResult((prev) => ({ ...prev, accessibleHtml: html }));
+        setPdfFixResult((prev) => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: html }, "preview-edited-modified-html") : prev);
         let _editedReaderHtml;
         try {
           _editedReaderHtml = _viewSanitizeMarkupForExport(html, _docPipeline);
@@ -22000,7 +22001,7 @@ Return ONLY JSON:
         /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 border-t border-slate-200 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
           try {
             const r = applyFormBlanks(pdfFixResult.accessibleHtml, fillableAccepted);
-            setPdfFixResult((prev) => prev ? { ...prev, accessibleHtml: r.html, _userEditedAt: Date.now() } : prev);
+            setPdfFixResult((prev) => prev ? _withHtmlVerificationBinding({ ...prev, accessibleHtml: r.html, _userEditedAt: Date.now() }, "fillable-forms-modified-html") : prev);
             try {
               const ldoc = pdfPreviewRef.current && (pdfPreviewRef.current.contentDocument || pdfPreviewRef.current.contentWindow?.document);
               if (ldoc && ldoc.body) {

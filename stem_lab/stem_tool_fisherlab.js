@@ -25,6 +25,7 @@
 // Category: science (marine biology + vocational/place-based)
 // ═══════════════════════════════════════════════════════════════
 
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {}, _order: [],
   registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
@@ -32,8 +33,9 @@ window.StemLab = window.StemLab || {
   getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
 };
+}
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) {
+if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) {
 
 (function() {
   // Translator reachable from module scope, IIFE-private so it is not a global.
@@ -50,7 +52,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
   // ─── Live region (ARIA polite announcements) ───
   (function() {
-    if (document.getElementById('allo-live-fl')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-fl')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-fl';
     lr.setAttribute('aria-live', 'polite');
@@ -60,9 +62,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(lr);
   })();
+  var _flAnnounceTimer = null;
   function flAnnounce(msg) {
+    if (typeof document === 'undefined') return;
     var lr = document.getElementById('allo-live-fl');
-    if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 30); }
+    if (lr) {
+      lr.textContent = '';
+      if (_flAnnounceTimer) clearTimeout(_flAnnounceTimer);
+      _flAnnounceTimer = setTimeout(function() { _flAnnounceTimer = null; lr.textContent = msg; }, 30);
+    }
+  }
+  function _flIsGlobalMuted() {
+    try {
+      if (typeof window === 'undefined') return false;
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+      if (window.__alloGlobalMuted === true || window._alloGlobalMute === true) return true;
+    } catch (_) {}
+    return false;
   }
 
   var FL_DIALOG_FOCUSABLE = [
@@ -266,7 +282,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
   // ─── Tool-scoped CSS (focus rings, reduced motion overrides) ───
   (function() {
-    if (document.getElementById('fisherlab-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('fisherlab-css')) return;
     var s = document.createElement('style');
     s.id = 'fisherlab-css';
     s.textContent = [
@@ -16371,7 +16387,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     function initAudio() {
-      if (audioCtx) return;
+      if (audioCtx || _flIsGlobalMuted()) return;
       try {
         var AudioContextClass = window.AudioContext || window.webkitAudioContext;
         audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)());
@@ -16451,6 +16467,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function updateAudioSynth(dt) {
       dt = (typeof dt === 'number' && dt > 0) ? dt : 1 / 60;
       if (!audioCtx || audioCtx.state === 'suspended') return;
+      var effectiveSound = soundEnabled && !_flIsGlobalMuted();
       
       var absSpeed = Math.abs(boatState.speed);
       var pitch = 25 + absSpeed * 10.0 + Math.abs(boatState.throttle) * 8.0;
@@ -16462,14 +16479,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var cutoff = 110 + absSpeed * 25.0 + Math.abs(boatState.throttle) * 20.0;
       filterNode.frequency.setTargetAtTime(cutoff, audioCtx.currentTime, 0.15);
 
-      var engineVol = soundEnabled ? (0.04 + Math.abs(boatState.throttle) * 0.08 + absSpeed * 0.03) : 0.0;
+      var engineVol = effectiveSound ? (0.04 + Math.abs(boatState.throttle) * 0.08 + absSpeed * 0.03) : 0.0;
       engineGain.gain.setTargetAtTime(engineVol, audioCtx.currentTime, 0.1);
 
-      var waveVol = soundEnabled ? (0.02 + Math.sin(elapsed * 0.5) * 0.015 + (boatState.weather === 'rainy' ? 0.03 : 0.0)) : 0.0;
+      var waveVol = effectiveSound ? (0.02 + Math.sin(elapsed * 0.5) * 0.015 + (boatState.weather === 'rainy' ? 0.03 : 0.0)) : 0.0;
       waveGain.gain.setTargetAtTime(waveVol, audioCtx.currentTime, 0.3);
 
       // Thunder rumbles
-      if (soundEnabled && boatState.weather === 'rainy' && Math.random() < dt * 0.02) {
+      if (effectiveSound && boatState.weather === 'rainy' && Math.random() < dt * 0.02) {
         var now = audioCtx.currentTime;
         thunderGain.gain.setValueAtTime(0.0, now);
         thunderGain.gain.linearRampToValueAtTime(0.3 + Math.random() * 0.3, now + 0.3);
@@ -16480,10 +16497,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     function toggleSound(on) {
       soundEnabled = !!on;
-      if (soundEnabled) {
+      if (soundEnabled && !_flIsGlobalMuted()) {
         if (!audioCtx) initAudio();
         if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      } else if (audioCtx) {
+        try {
+          if (engineGain) engineGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.02);
+          if (waveGain) waveGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.02);
+          if (thunderGain) thunderGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.02);
+        } catch (_) {}
       }
+    }
+    function onMuteChanged(ev) {
+      var muted = (ev && ev.detail && typeof ev.detail.muted === 'boolean') ? ev.detail.muted : _flIsGlobalMuted();
+      if (muted && audioCtx) {
+        try {
+          if (engineGain) engineGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.02);
+          if (waveGain) waveGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.02);
+          if (thunderGain) thunderGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.02);
+          if (audioCtx.state === 'running' && typeof audioCtx.suspend === 'function') audioCtx.suspend();
+        } catch (_) {}
+      } else if (!muted && soundEnabled && audioCtx && audioCtx.state === 'suspended') {
+        try { audioCtx.resume(); } catch (_) {}
+      }
+    }
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      window.addEventListener('alloflow-mute-changed', onMuteChanged);
     }
 
     // ─── Weather Rain Particle System
@@ -16553,7 +16592,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       haulTrapId = buoy.userData.id;
       
       // Creaking noise sweep
-      if (audioCtx && audioCtx.state !== 'suspended') {
+      if (soundEnabled && !_flIsGlobalMuted() && audioCtx && audioCtx.state !== 'suspended') {
         try {
           var creak = audioCtx.createOscillator();
           creak.type = 'triangle';
@@ -16792,6 +16831,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
     function onKeyDown(e) {
       if (document.activeElement !== canvas) return;
+      if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
       var pressedKey = String(e.key || '').toLowerCase();
       if (shouldIgnoreCoreRepeatedKey(pressedKey, e.repeat)) {
         e.preventDefault();
@@ -17249,7 +17289,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         return;
       }
       boatState.fogSignalMade = true;
-      if (soundEnabled) {
+      if (soundEnabled && !_flIsGlobalMuted()) {
         if (!audioCtx) initAudio();
         if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
         if (audioCtx) {
@@ -18076,6 +18116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         window.removeEventListener('resize', onResize);
         document.removeEventListener('visibilitychange', onVisibilityChange);
         window.removeEventListener('pagehide', onPageHide);
+        if (typeof onMuteChanged === 'function') window.removeEventListener('alloflow-mute-changed', onMuteChanged);
 
         var ambientStats = null;
         try { ambientStats = AF.dispose(); } catch (_) {}
@@ -18965,7 +19006,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     function pushStatus(ev) {
       setStatus(function(prev) {
-        var next = (prev || []).concat([ev]).slice(-8);
+        var next = (Array.isArray(prev) ? prev : []).concat([ev]).slice(-8);
         return next;
       });
       if (ev.type === 'lobster-haul') {
@@ -19821,6 +19862,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     function tabBar() {
       function onSectionTabKey(e) {
+        if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
         var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
         var current = Array.prototype.indexOf.call(tabs, e.currentTarget);
@@ -21444,7 +21486,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         }
       }
       function handleHeldControlKeyDown(key, event) {
-        if (!event || (event.key !== ' ' && event.key !== 'Enter')) return;
+        if (!event || event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey || (event.key !== ' ' && event.key !== 'Enter')) return;
         event.preventDefault();
         if (event.repeat) return;
         cancelHeldControlPulse(key);
@@ -23181,7 +23223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   var fb = correct ?
                     'Correct. This specimen matches the scenario’s harvest profile.' :
                     'This specimen falls outside the scenario’s harvest profile and should be released.';
-                  setCheckpointScore(function(prev) { return { correctCount: prev.correctCount + (correct ? 1 : 0), totalCount: prev.totalCount + 1 }; });
+                  setCheckpointScore(function(prev) { var p = (prev && typeof prev === 'object') ? prev : {}; return { correctCount: (Number(p.correctCount) || 0) + (correct ? 1 : 0), totalCount: (Number(p.totalCount) || 0) + 1 }; });
                   setCheckpointResult({ correct: correct, feedback: fb });
                 },
                 style: { flex: 1, padding: '8px', background: '#10b981', color: '#052e16', border: 'none', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer', fontSize: 11.5 } }, '📥 Keep Specimen'),
@@ -23191,7 +23233,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   var fb = correct ?
                     'Correct. This specimen falls outside the scenario’s harvest profile.' :
                     'Release is always permissible. For this scoring exercise, the profile would also have permitted harvest.';
-                  setCheckpointScore(function(prev) { return { correctCount: prev.correctCount + (correct ? 1 : 0), totalCount: prev.totalCount + 1 }; });
+                  setCheckpointScore(function(prev) { var p = (prev && typeof prev === 'object') ? prev : {}; return { correctCount: (Number(p.correctCount) || 0) + (correct ? 1 : 0), totalCount: (Number(p.totalCount) || 0) + 1 }; });
                   setCheckpointResult({ correct: correct, feedback: fb });
                 },
                 style: { flex: 1, padding: '8px', background: '#64748b', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold', cursor: 'pointer', fontSize: 11.5 } }, '🌊 Release Overboard')

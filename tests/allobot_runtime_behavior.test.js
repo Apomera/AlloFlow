@@ -157,6 +157,9 @@ async function advance(milliseconds) {
 function dispatch(target, event) {
   return React.act(async () => {
     target.dispatchEvent(event);
+    if (event && event.type === 'mousemove' && typeof vi.advanceTimersToNextFrame === 'function') {
+      vi.advanceTimersToNextFrame();
+    }
   });
 }
 
@@ -516,8 +519,8 @@ describe('AlloBot runtime motion behavior', () => {
     surface.getBoundingClientRect = () => ({ left: 0, top: 0, right: 100, bottom: 100, width: 100, height: 100, x: 0, y: 0, toJSON() {} });
 
     await dispatch(surface, pointerEvent('pointerover', { pointerType }));
-    // A real touch pointer flips the orbit to persistent and stops the glance.
-    expect(surface.getAttribute('data-allobot-control-visibility')).toBe('persistent');
+    // A real touch pointer enters touch-to-reveal mode (hidden until AlloBot is tapped) and stops the glance.
+    expect(surface.getAttribute('data-allobot-control-visibility')).toBe('touch-hidden');
     const addSpy = vi.spyOn(window, 'addEventListener');
     await dispatch(window, new MouseEvent('mousemove', { clientX: 1000, clientY: 50 }));
 
@@ -531,7 +534,7 @@ describe('AlloBot runtime motion behavior', () => {
     const surface = bot.container.querySelector('[data-allobot-control-surface="true"]');
     expect(surface.getAttribute('data-allobot-control-visibility')).toBe('reveal');
     await dispatch(surface, pointerEvent('pointerdown', { pointerType: 'touch' }));
-    expect(surface.getAttribute('data-allobot-control-visibility')).toBe('persistent');
+    expect(surface.getAttribute('data-allobot-control-visibility')).toBe('touch-hidden');
     await dispatch(surface, pointerEvent('pointerover', { pointerType: 'mouse' }));
     expect(surface.getAttribute('data-allobot-control-visibility')).toBe('reveal');
   });

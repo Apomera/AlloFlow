@@ -1095,6 +1095,25 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
         if (typeof addToast === 'function' && typeof t === 'function') addToast(t('toasts.ai_available'), 'error');
         return;
     }
+    // Synchronous self-harm crisis gate before narrating a student's custom action.
+    // Scoped to self_harm so adventure/RPG actions ("attack the dragon", "battle") never false-positive.
+    try {
+        const _advChecker = (SafetyContentChecker && typeof SafetyContentChecker.check === 'function')
+            ? SafetyContentChecker
+            : (typeof window !== 'undefined' ? ((window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker) : null);
+        const _advFlags = (_advChecker && typeof _advChecker.check === 'function') ? _advChecker.check(currentInput) : null;
+        const _advSelfHarm = Array.isArray(_advFlags) && _advFlags.find(f => f && f.category === 'self_harm');
+        if (_advSelfHarm) {
+            if (typeof handleAiSafetyFlag === 'function') {
+                try { handleAiSafetyFlag({ tool: 'adventure_text_submit', severity: 'critical', category: 'self_harm', timestamp: Date.now() }); } catch (_) {}
+            }
+            try { if (typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.showCrisisModal === 'function') window.SelHub.showCrisisModal(); } catch (_) {}
+            if (typeof addToast === 'function') {
+                addToast('We paused the adventure here. Your wellbeing matters more than any game — please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line).', 'warn');
+            }
+            return;
+        }
+    } catch (_) {}
     SafetyContentChecker.aiCheck(currentInput, 'adventure', apiKey, handleAiSafetyFlag);
     window.AlloModules?.AdventureSessionHandlers?.cancelAdventureSceneImage?.(setAdventureState);
     lastTurnSnapshot.current = structuredClone(adventureState);

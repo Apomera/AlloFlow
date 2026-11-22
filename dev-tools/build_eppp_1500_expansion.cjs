@@ -33,8 +33,27 @@ const runReplayScript=scriptPath=>{
 const runDistractorHalvingCampaign=()=>runReplayScript('./repair_eppp_distractor_halving_campaign.cjs').run({apply:true});
 const runFeedbackHalvingCampaign=()=>runReplayScript('./repair_eppp_feedback_halving_campaign.cjs').runCampaign(root,{write:true});
 const runCurrentQualityReplay=()=>{
+  if (existingBank.some((item) => item.lengthBalanceWave === 'eppp-length-balance-wave-55')) {
+    runReplayScript('./repair_eppp_length_balance_wave_55.cjs');
+    runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});
+    runReplayScript('./audit_eppp_distractor_quality.cjs');
+    runReplayScript('./audit_eppp_option_feedback.cjs');
+    runReplayScript('./build_eppp_distractor_action_docket.cjs');
+    return;
+  }
+  if (existingBank.some((item) => item.lengthBalanceWave === 'eppp-length-balance-wave-54')) {
+    runReplayScript('./repair_eppp_length_balance_wave_54.cjs');
+    runReplayScript('./repair_eppp_length_balance_wave_55.cjs');
+    runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});
+    runReplayScript('./audit_eppp_distractor_quality.cjs');
+    runReplayScript('./audit_eppp_option_feedback.cjs');
+    runReplayScript('./build_eppp_distractor_action_docket.cjs');
+    return;
+  }
   if (existingBank.some((item) => item.applicationRewriteWave === 'eppp-application-rewrite-wave-53')) {
     runReplayScript('./repair_eppp_application_rewrite_wave_53.cjs');
+    runReplayScript('./repair_eppp_length_balance_wave_54.cjs');
+    runReplayScript('./repair_eppp_length_balance_wave_55.cjs');
     runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});
     runReplayScript('./audit_eppp_distractor_quality.cjs');
     runReplayScript('./audit_eppp_option_feedback.cjs');
@@ -44,6 +63,8 @@ const runCurrentQualityReplay=()=>{
   if (existingBank.some((item) => item.applicationRewriteWave === 'eppp-application-rewrite-wave-52')) {
     runReplayScript('./repair_eppp_application_rewrite_wave_52.cjs');
     runReplayScript('./repair_eppp_application_rewrite_wave_53.cjs');
+    runReplayScript('./repair_eppp_length_balance_wave_54.cjs');
+    runReplayScript('./repair_eppp_length_balance_wave_55.cjs');
     runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});
     runReplayScript('./audit_eppp_distractor_quality.cjs');
     runReplayScript('./audit_eppp_option_feedback.cjs');
@@ -55,13 +76,17 @@ const runCurrentQualityReplay=()=>{
   runReplayScript('./repair_eppp_challenge_enhancement_wave_51.cjs');
   runReplayScript('./repair_eppp_application_rewrite_wave_52.cjs');
   runReplayScript('./repair_eppp_application_rewrite_wave_53.cjs');
+  runReplayScript('./repair_eppp_length_balance_wave_54.cjs');
+  runReplayScript('./repair_eppp_length_balance_wave_55.cjs');
   runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});
   runReplayScript('./audit_eppp_distractor_quality.cjs');
   runReplayScript('./audit_eppp_option_feedback.cjs');
   runReplayScript('./build_eppp_distractor_action_docket.cjs');
 };
 const runLatestEditorialReplay=()=>{
-  if (existingBank.some((item) => item.applicationRewriteWave === 'eppp-application-rewrite-wave-53')
+  if (existingBank.some((item) => item.lengthBalanceWave === 'eppp-length-balance-wave-55')
+    || existingBank.some((item) => item.lengthBalanceWave === 'eppp-length-balance-wave-54')
+    || existingBank.some((item) => item.applicationRewriteWave === 'eppp-application-rewrite-wave-53')
     || existingBank.some((item) => item.applicationRewriteWave === 'eppp-application-rewrite-wave-52')) {
     runCurrentQualityReplay();
     return;
@@ -122,6 +147,8 @@ const runLatestEditorialReplay=()=>{
   runReplayScript('./repair_eppp_challenge_enhancement_wave_51.cjs');
   runReplayScript('./repair_eppp_application_rewrite_wave_52.cjs');
   runReplayScript('./repair_eppp_application_rewrite_wave_53.cjs');
+  runReplayScript('./repair_eppp_length_balance_wave_54.cjs');
+  runReplayScript('./repair_eppp_length_balance_wave_55.cjs');
   runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});
   runReplayScript('./audit_eppp_distractor_quality.cjs');
   runReplayScript('./audit_eppp_option_feedback.cjs');

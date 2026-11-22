@@ -99,10 +99,18 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
     function validateSynthesizedAudioUrl(url) {
         const clean = String(url || '').trim();
         if (/^blob:/i.test(clean)) return { kind: 'blob', url: clean };
-        if (/^data:(?:audio\/[a-z0-9.+-]+|application\/octet-stream)(?:;[^,]*)?,/i.test(clean)) return { kind: 'data', url: clean };
+        if (/^data:/i.test(clean)) {
+            if (!/^data:(?:audio\/[a-z0-9.+-]+|application\/octet-stream)(?:;[^,]*)?,/i.test(clean)) {
+                throw artifactAudioError('tts-audio-unsafe-url', 'Refused to fetch narration from a non-audio data URL.');
+            }
+            if (clean.length > Math.ceil(MAX_ARTIFACT_AUDIO_BYTES * 1.4)) {
+                throw artifactAudioError('tts-audio-too-large', 'The generated narration clip exceeded the maximum allowed size.');
+            }
+            return { kind: 'data', url: clean };
+        }
         if (typeof dependencies.fetch === 'function') {
             // Custom test/host fetchers may resolve relative or virtual URLs; still forbid non-http(s)/unsafe schemes.
-            if (/^(?:javascript|file|vbscript|ftp):/i.test(clean)) {
+            if (/^(?:javascript|file|vbscript|ftp|data):/i.test(clean)) {
                 throw artifactAudioError('tts-audio-unsafe-url', 'Refused to fetch narration from an unsafe URL scheme.');
             }
             return { kind: 'http', url: clean };
@@ -151,7 +159,9 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
             timeoutId = setTimeout(() => controller.abort(), 30000);
         }
         try {
-            const baseInit = validated.kind === 'http' ? { redirect: 'error' } : {};
+            const baseInit = validated.kind === 'http'
+                ? { redirect: 'error', credentials: 'omit', referrerPolicy: 'no-referrer' }
+                : {};
             if (controller) baseInit.signal = controller.signal;
             else if (signal) baseInit.signal = signal;
             const fetchInit = Object.keys(baseInit).length ? baseInit : undefined;
@@ -388,7 +398,7 @@ const createReadAloudArtifactAudio = (dependencies = {}) => {
             const entries = serialized.entries && typeof serialized.entries === 'object'
                 ? serialized.entries
                 : {};
-            const audioBySegmentId = {};
+            const audioBySegmentId = Object.create(null);
             Object.keys(entries).sort().forEach((key) => {
                 const entry = entries[key];
                 const identity = entry && entry.identity;

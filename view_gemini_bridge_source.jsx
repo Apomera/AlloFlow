@@ -434,7 +434,7 @@ function BridgeSendModal(props) {
         return (
         <div
           ref={bridgeSendDialogRef} tabIndex={-1}
-          role="dialog" aria-modal="true" aria-label={t('common.bridge_mode_send_panel')}
+          role="dialog" aria-modal="true" aria-label={_bridgeCopy(t, 'common.bridge_mode_send_panel', 'Bridge Mode send panel')}
           style={{position:'fixed',inset:0,zIndex:99999,display:'flex',alignItems:'center',justifyContent:'center',background:_bt.overlay,backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)'}}
           onClick={(e) => { if (e.target === e.currentTarget) closeBridgeSendModal(); }}
           onKeyDown={(e) => { if (e.key === 'Escape') { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; e.preventDefault(); closeBridgeSendModal(); } }}
@@ -456,7 +456,7 @@ function BridgeSendModal(props) {
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'24px 28px 20px',borderBottom:_bt.headerBorder}}>
               <div>
                 <h2 style={{fontSize:'20px',fontWeight:800,margin:0,color:_bt.textAccent,display:'flex',alignItems:'center',gap:'10px',letterSpacing:'-0.02em'}}>
-                  <span style={{fontSize:'24px'}}>🌐</span> {_bridgeCopy(t, 'bridge.title', 'Bridge Mode')}
+                  <span style={{fontSize:'24px'}} aria-hidden="true">🌐</span> {_bridgeCopy(t, 'bridge.title', 'Bridge Mode')}
                 </h2>
                 <p style={{margin:'4px 0 0',fontSize:'13px',color:_bt.textMuted,fontWeight:400}}>
                   {_bridgeCopy(t, 'bridge.subtitle', 'Send bilingual content to student devices')}
@@ -465,21 +465,22 @@ function BridgeSendModal(props) {
               <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
                 <button type="button"
                   onClick={() => setBridgeFullscreen(f => !f)}
-                  aria-label={bridgeFullscreen ? (t('roster.bridge_exit_fullscreen') || 'Exit full screen') : (t('roster.bridge_fullscreen') || 'Full screen')}
-                  title={bridgeFullscreen ? (t('roster.bridge_exit_fullscreen') || 'Exit full screen') : (t('roster.bridge_fullscreen') || 'Full screen')}
+                  aria-pressed={bridgeFullscreen}
+                  aria-label={bridgeFullscreen ? _bridgeCopy(t, 'roster.bridge_exit_fullscreen', 'Exit full screen') : _bridgeCopy(t, 'roster.bridge_fullscreen', 'Full screen')}
+                  title={bridgeFullscreen ? _bridgeCopy(t, 'roster.bridge_exit_fullscreen', 'Exit full screen') : _bridgeCopy(t, 'roster.bridge_fullscreen', 'Full screen')}
                   style={{background:_bt.btnCloseBg,border:_bt.btnCloseBorder,color:_bt.btnCloseColor,width:'44px',height:'44px',minWidth:'44px',minHeight:'44px',borderRadius:'12px',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.2s'}}
-                >{bridgeFullscreen ? '🗗' : '⛶'}</button>
+                ><span aria-hidden="true">{bridgeFullscreen ? '🗗' : '⛶'}</span></button>
                 <button type="button"
                   onClick={closeBridgeSendModal}
-                  aria-label={t('common.close') || 'Close'}
+                  aria-label={_bridgeCopy(t, 'common.close', 'Close')}
                   style={{background:_bt.btnCloseBg,border:_bt.btnCloseBorder,color:_bt.btnCloseColor,width:'44px',height:'44px',minWidth:'44px',minHeight:'44px',borderRadius:'12px',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.2s'}}
-                >✕</button>
+                ><span aria-hidden="true">✕</span></button>
               </div>
             </div>
             <div style={{padding:'24px 28px'}}>
               <div data-help-key="bridge_send_quick_templates" style={{marginBottom:'14px'}}>
-                <div style={{fontSize:'12px',fontWeight:700,color:_bt.textSecondary,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:'8px'}}>{t('resource_builder.quick_templates')}</div>
-                <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
+                <div style={{fontSize:'12px',fontWeight:700,color:_bt.textSecondary,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:'8px'}}>{_bridgeCopy(t, 'resource_builder.quick_templates', 'Quick templates')}</div>
+                <div role="group" aria-label={_bridgeCopy(t, 'resource_builder.quick_templates', 'Quick templates')} style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
                   {[
                     {icon:'📖',label:'Vocabulary',prompt:'Introduce and explain the following vocabulary word to students: '},
                     {icon:'🎯',label:'Objective',prompt:'Today\'s learning objective is: '},
@@ -496,11 +497,11 @@ function BridgeSendModal(props) {
                         const counter = document.getElementById('bridge-char-count');
                         if (counter) counter.textContent = tmpl.prompt.length + ' chars';
                       }}
-                      style={{background:_bt.cardBg,border:_bt.cardBorder,borderRadius:'10px',padding:'6px 12px',color:_bt.textSecondary,fontSize:'12px',fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:'5px',transition:'all 0.2s',whiteSpace:'nowrap'}}
+                      style={{background:_bt.cardBg,border:_bt.cardBorder,borderRadius:'10px',minHeight:'44px',padding:'8px 12px',color:_bt.textSecondary,fontSize:'12px',fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:'5px',transition:'all 0.2s',whiteSpace:'nowrap'}}
                       aria-label={tmpl.label + ' template'}
                       onMouseEnter={(e) => { e.currentTarget.style.background = _bt.cardActiveBg; e.currentTarget.style.borderColor = _bt.cardActiveBorder; e.currentTarget.style.color = _bt.textAccent; }}
                       onMouseLeave={(e) => { e.currentTarget.style.background = _bt.cardBg; e.currentTarget.style.borderColor = _bt.cardBorder; e.currentTarget.style.color = _bt.textSecondary; }}
-                    ><span>{tmpl.icon}</span> {tmpl.label}</button>
+                    ><span aria-hidden="true">{tmpl.icon}</span> {tmpl.label}</button>
                   ))}
                 </div>
               </div>
@@ -551,8 +552,8 @@ function BridgeSendModal(props) {
                     else text = JSON.stringify(src).substring(0, 500);
                     if (text) { ta.value = text; const counter = document.getElementById('bridge-char-count'); if (counter) counter.textContent = text.length + ' chars'; addToast(_bridgeCopy(t, 'bridge.loaded_generated_content', 'Loaded current generated content'), 'info'); }
                   }}
-                  style={{background:'rgba(99,102,241,0.1)',border:'1px solid rgba(99,102,241,0.25)',borderRadius:'10px',padding:'8px 14px',color:_bt.secondaryAccent,fontSize:'12px',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',transition:'all 0.2s'}}
-                ><span>📎</span> {t('resource_builder.use_current_text')}</button>
+                  style={{background:'rgba(99,102,241,0.1)',border:'1px solid rgba(99,102,241,0.25)',borderRadius:'10px',minHeight:'44px',padding:'8px 14px',color:_bt.secondaryAccent,fontSize:'12px',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',transition:'all 0.2s'}}
+                ><span aria-hidden="true">📎</span> {_bridgeCopy(t, 'resource_builder.use_current_text', 'Use current text')}</button>
                 <input
                   type="file"
                   accept="image/*"
@@ -584,8 +585,8 @@ function BridgeSendModal(props) {
                   data-help-key="bridge_send_attach_image_btn"
                   id="bridge-attach-image-btn"
                   onClick={() => document.getElementById('bridge-image-file-input')?.click()}
-                  style={{background:'rgba(168,85,247,0.1)',border:'1px solid rgba(168,85,247,0.25)',borderRadius:'10px',padding:'8px 14px',color:_bt.purpleAccent,fontSize:'12px',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',transition:'all 0.2s'}}
-                ><span>🖼️</span> {t('resource_builder.attach_image')}</button>
+                  style={{background:'rgba(168,85,247,0.1)',border:'1px solid rgba(168,85,247,0.25)',borderRadius:'10px',minHeight:'44px',padding:'8px 14px',color:_bt.purpleAccent,fontSize:'12px',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',transition:'all 0.2s'}}
+                ><span aria-hidden="true">🖼️</span> {_bridgeCopy(t, 'resource_builder.attach_image', 'Attach image')}</button>
                 <button type="button"
                   id="bridge-remove-image-btn"
                   onClick={() => {
@@ -596,9 +597,9 @@ function BridgeSendModal(props) {
                     if (removeBtn) removeBtn.style.display = 'none';
                     addToast(_bridgeCopy(t, 'bridge.image_removed', 'Image removed'), 'info');
                   }}
-                  aria-label={t('common.remove_attached_image')}
-                  style={{display:'none',background:'rgba(239,68,68,0.1)',border:'1px solid rgba(239,68,68,0.25)',borderRadius:'10px',padding:'8px 10px',color:_bt.dangerText,fontSize:'12px',fontWeight:700,cursor:'pointer',alignItems:'center',gap:'4px',transition:'all 0.2s'}}
-                ><span>✕</span></button>
+                  aria-label={_bridgeCopy(t, 'common.remove_attached_image', 'Remove attached image')}
+                  style={{display:'none',minWidth:'44px',minHeight:'44px',background:'rgba(239,68,68,0.1)',border:'1px solid rgba(239,68,68,0.25)',borderRadius:'10px',padding:'8px 10px',color:_bt.dangerText,fontSize:'12px',fontWeight:700,cursor:'pointer',alignItems:'center',justifyContent:'center',gap:'4px',transition:'all 0.2s'}}
+                ><span aria-hidden="true">✕</span></button>
                 {generatedContent?.data?.imageUrl && (
                   <button type="button"
                     onClick={() => {
@@ -611,13 +612,13 @@ function BridgeSendModal(props) {
                       if (removeBtn) removeBtn.style.display = 'flex';
                       addToast(_bridgeCopy(t, 'bridge.generated_image_attached', 'Generated image attached'), 'success');
                     }}
-                    style={{background:'rgba(20,184,166,0.1)',border:'1px solid rgba(20,184,166,0.25)',borderRadius:'10px',padding:'8px 14px',color:_bt.textAccent,fontSize:'12px',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',transition:'all 0.2s'}}
-                  ><span>🎨</span> {t('bridge.use_generated_button') || 'Use Generated'}</button>
+                    style={{background:'rgba(20,184,166,0.1)',border:'1px solid rgba(20,184,166,0.25)',borderRadius:'10px',minHeight:'44px',padding:'8px 14px',color:_bt.textAccent,fontSize:'12px',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',transition:'all 0.2s'}}
+                  ><span aria-hidden="true">🎨</span> {t('bridge.use_generated_button') || 'Use Generated'}</button>
                 )}
               </div>
               <div style={{marginBottom:'20px'}}>
-                <div style={{fontSize:'12px',fontWeight:700,color:_bt.textSecondary,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:'10px'}}>{t('resource_builder.generation_mode')}</div>
-                <div data-help-key="bridge_send_mode_selector" id="bridge-mode-selector" data-card-bg={_bt.cardBg} data-card-border={_bt.cardBorder} data-card-active-bg={_bt.cardActiveBg} data-card-active-border={_bt.cardActiveBorder} data-text-secondary={_bt.textSecondary} data-text-accent={_bt.textAccent} data-dot-active={_bt.dotActive} data-dot-inactive={_bt.dotInactive} style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(120px, 1fr))',gap:'8px'}}>
+                <div style={{fontSize:'12px',fontWeight:700,color:_bt.textSecondary,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:'10px'}}>{_bridgeCopy(t, 'resource_builder.generation_mode', 'Generation mode')}</div>
+                <div role="group" aria-label={_bridgeCopy(t, 'resource_builder.generation_mode', 'Generation mode')} data-help-key="bridge_send_mode_selector" id="bridge-mode-selector" data-card-bg={_bt.cardBg} data-card-border={_bt.cardBorder} data-card-active-bg={_bt.cardActiveBg} data-card-active-border={_bt.cardActiveBorder} data-text-secondary={_bt.textSecondary} data-text-accent={_bt.textAccent} data-dot-active={_bt.dotActive} data-dot-inactive={_bt.dotInactive} style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(120px, 1fr))',gap:'8px'}}>
                   {[
                     {id:'explain', icon:'📝', title:'Explain', desc:'AI explains the concept bilingually'},
                     {id:'translate', icon:'🌐', title:'Translate', desc:'Direct translation to target language'},
@@ -692,14 +693,14 @@ function BridgeSendModal(props) {
                </div>
               <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit, minmax(160px, 1fr))',gap:'12px',marginBottom:'20px'}}>
                 <div style={{minWidth:0}}>
-                  <div style={{fontSize:'12px',fontWeight:700,color:_bt.textSecondary,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:'8px'}}>{t('resource_builder.target_group')}</div>
+                  <div style={{fontSize:'12px',fontWeight:700,color:_bt.textSecondary,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:'8px'}}>{_bridgeCopy(t, 'resource_builder.target_group', 'Target Group')}</div>
                   <select
                     data-help-key="bridge_send_target_select"
                     id="bridge-target-selector"
-                    aria-label={t('common.target_group_selector')}
+                    aria-label={_bridgeCopy(t, 'common.target_group_selector', 'Target group')}
                     defaultValue="all"
                     onChange={(e) => { window.__bridgeTarget = e.target.value; }}
-                    style={{width:'100%',minWidth:0,maxWidth:'100%',background:_bt.inputBg,border:_bt.inputBorder,borderRadius:'12px',padding:'12px 14px',color:_bt.inputText,fontSize:'13px',fontWeight:600,cursor:'pointer',appearance:'auto'}}
+                    style={{width:'100%',minWidth:0,maxWidth:'100%',minHeight:'44px',background:_bt.inputBg,border:_bt.inputBorder,borderRadius:'12px',padding:'12px 14px',color:_bt.inputText,fontSize:'13px',fontWeight:600,cursor:'pointer',appearance:'auto'}}
                   >
                     <option value="all" style={{background:_bt.selectBg,color:_bt.selectText}}>🎯 All Groups</option>
                     {rosterKey?.groups && Object.entries(rosterKey.groups).map(([gId, g]) => (
@@ -712,7 +713,7 @@ function BridgeSendModal(props) {
                   <select
                     data-help-key="bridge_send_language_select"
                     id="bridge-language-selector"
-                    aria-label={t('common.target_language_selector')}
+                    aria-label={_bridgeCopy(t, 'common.target_language_selector', 'Target language')}
                     defaultValue={leveledTextLanguage || 'English'}
                     onChange={(e) => {
                       const customInput = document.getElementById('bridge-custom-lang-input');
@@ -726,7 +727,7 @@ function BridgeSendModal(props) {
                         if (prev) prev.textContent = e.target.value;
                       }
                     }}
-                    style={{width:'100%',minWidth:0,maxWidth:'100%',background:_bt.inputBg,border:_bt.inputBorder,borderRadius:'12px',padding:'12px 14px',color:_bt.inputText,fontSize:'13px',fontWeight:600,cursor:'pointer',appearance:'auto'}}
+                    style={{width:'100%',minWidth:0,maxWidth:'100%',minHeight:'44px',background:_bt.inputBg,border:_bt.inputBorder,borderRadius:'12px',padding:'12px 14px',color:_bt.inputText,fontSize:'13px',fontWeight:600,cursor:'pointer',appearance:'auto'}}
                   >
                     {[
                       {v:'English',f:'🇺🇸'},{v:'Spanish',f:'🇪🇸'},{v:'French',f:'🇫🇷'},{v:'Arabic',f:'🇸🇦'},
@@ -741,13 +742,13 @@ function BridgeSendModal(props) {
                     id="bridge-custom-lang-input"
                     type="text"
                     aria-label={t('common.custom_language_input') || 'Custom language name'}
-                    placeholder={t('common.placeholder_type_a_language_name_e_g_hindi_swahili_haitian_cre')}
+                    placeholder={_bridgeCopy(t, 'common.placeholder_type_a_language_name_e_g_hindi_swahili_haitian_cre', 'Type a language name (e.g., Hindi, Swahili)...')}
                     onInput={(e) => {
                       window.__bridgeLang = e.target.value || 'English';
                       const prev = document.getElementById('bridge-settings-preview-lang');
                       if (prev) prev.textContent = e.target.value || 'Custom';
                     }}
-                    style={{display:'none',width:'100%',boxSizing:'border-box',marginTop:'8px',background:_bt.inputBg,border:_bt.inputBorder,borderRadius:'10px',padding:'10px 14px',color:_bt.inputText,fontSize:'13px',fontWeight:600,}}
+                    style={{display:'none',width:'100%',minHeight:'44px',boxSizing:'border-box',marginTop:'8px',background:_bt.inputBg,border:_bt.inputBorder,borderRadius:'10px',padding:'10px 14px',color:_bt.inputText,fontSize:'13px',fontWeight:600,}}
                   />
                 </div>
                 <div style={{minWidth:0}}>
@@ -755,10 +756,10 @@ function BridgeSendModal(props) {
                   <select
                     data-help-key="bridge_send_grade_select"
                     id="bridge-grade-selector"
-                    aria-label={t('common.grade_level_selector')}
+                    aria-label={_bridgeCopy(t, 'common.grade_level_selector', 'Reading level')}
                     defaultValue={gradeLevel || '5th Grade'}
                     onChange={(e) => { window.__bridgeGrade = e.target.value; const prev = document.getElementById('bridge-settings-preview-grade'); if (prev) prev.textContent = e.target.value; }}
-                    style={{width:'100%',minWidth:0,maxWidth:'100%',background:_bt.inputBg,border:_bt.inputBorder,borderRadius:'12px',padding:'12px 14px',color:_bt.inputText,fontSize:'13px',fontWeight:600,cursor:'pointer',appearance:'auto'}}
+                    style={{width:'100%',minWidth:0,maxWidth:'100%',minHeight:'44px',background:_bt.inputBg,border:_bt.inputBorder,borderRadius:'12px',padding:'12px 14px',color:_bt.inputText,fontSize:'13px',fontWeight:600,cursor:'pointer',appearance:'auto'}}
                   >
                     {['PreK','Kindergarten','1st Grade','2nd Grade','3rd Grade','4th Grade','5th Grade','6th Grade','7th Grade','8th Grade','9th Grade','10th Grade','11th Grade','12th Grade'].map(g => (
                       <option key={g} value={g} style={{background:_bt.selectBg,color:_bt.selectText}}>{g}</option>
@@ -1573,12 +1574,12 @@ function BridgeSendModal(props) {
                             )}
                             {msg.translated && (
                               <div style={{marginTop:'8px',display:'flex',gap:'6px'}}>
-                                <button type="button" onClick={() => handleAudio(msg.text, msg.sender === 'personA' ? _personALang : _personBLang)}
-                                  style={{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',color:_bt.textSecondary,padding:'4px 10px',borderRadius:'8px',fontSize:'11px',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px'}}
-                                >🔊 {msg.sender === 'personA' ? _personALang.slice(0,3) : _personBLang.slice(0,3)}</button>
-                                <button type="button" onClick={() => handleAudio(msg.translated, msg.sender === 'personA' ? _personBLang : _personALang)}
-                                  style={{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',color:_bt.textSecondary,padding:'4px 10px',borderRadius:'8px',fontSize:'11px',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px'}}
-                                >🔊 {msg.sender === 'personA' ? _personBLang.slice(0,3) : _personALang.slice(0,3)}</button>
+                                <button type="button" aria-label={`Play original in ${msg.sender === 'personA' ? _personALang : _personBLang}`} onClick={() => handleAudio(msg.text, msg.sender === 'personA' ? _personALang : _personBLang)}
+                                  style={{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',color:_bt.textSecondary,minHeight:'44px',padding:'8px 12px',borderRadius:'8px',fontSize:'11px',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px'}}
+                                ><span aria-hidden="true">🔊</span> {msg.sender === 'personA' ? _personALang.slice(0,3) : _personBLang.slice(0,3)}</button>
+                                <button type="button" aria-label={`Play translation in ${msg.sender === 'personA' ? _personBLang : _personALang}`} onClick={() => handleAudio(msg.translated, msg.sender === 'personA' ? _personBLang : _personALang)}
+                                  style={{background:'rgba(255,255,255,0.06)',border:'1px solid rgba(255,255,255,0.1)',color:_bt.textSecondary,minHeight:'44px',padding:'8px 12px',borderRadius:'8px',fontSize:'11px',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px'}}
+                                ><span aria-hidden="true">🔊</span> {msg.sender === 'personA' ? _personBLang.slice(0,3) : _personALang.slice(0,3)}</button>
                               </div>
                             )}
                           </div>
@@ -1660,8 +1661,8 @@ function BridgeSendModal(props) {
                       </div>
                     </div>
                   </div>
-                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'10px',padding:'0 4px'}}>
-                    <span style={{fontSize:'11px',color:typeof _bt!=='undefined'?_bt.textMuted:'#94a3b8'}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'10px',padding:'0 4px',flexWrap:'wrap',gap:'6px'}}>
+                    <span role="status" aria-live="polite" style={{fontSize:'11px',color:typeof _bt!=='undefined'?_bt.textMuted:'#94a3b8'}}>
                       🔒 {t('roster.bridge_f2f_local_only') || 'Not saved'} • {bridgeChatMessages.length} {t('roster.bridge_f2f_messages') || 'messages'} • {bridgeF2FTranslating ? '⏳ ' + (t('roster.bridge_f2f_translating') || 'Translating...') : '✅ ' + _bridgeCopy(t, 'roster.bridge_f2f_ready', 'Ready')}
                     </span>
                     <span style={{fontSize:'11px',color:typeof _bt!=='undefined'?_bt.textMuted:'#94a3b8'}}>
@@ -1692,6 +1693,9 @@ function BridgeMessageModal(props) {
   const activeAudioRef = React.useRef(null);
   const playGenRef = React.useRef(0);
   const karaokeTimerRef = React.useRef(null);
+  const [copiedBridgeText, setCopiedBridgeText] = React.useState(false);
+  const copyFeedbackTimerRef = React.useRef(null);
+  React.useEffect(() => () => { if (copyFeedbackTimerRef.current) clearTimeout(copyFeedbackTimerRef.current); }, []);
   const stopBridgePlayback = React.useCallback(() => {
     playGenRef.current += 1;
     if (karaokeTimerRef.current) {
@@ -1756,7 +1760,7 @@ function BridgeMessageModal(props) {
         return (
         <div
           ref={bridgeMessageDialogRef} tabIndex={-1}
-          role="dialog" aria-modal="true" aria-label={t('common.bridge_message_display')}
+          role="dialog" aria-modal="true" aria-label={_bridgeCopy(t, 'common.bridge_message_display', 'Bridge message')}
           style={{position:'fixed',inset:0,zIndex:99999,display:'flex',alignItems:'center',justifyContent:'center',background: bridgeProjectionMode ? 'rgba(0,0,0,0.95)' : _dt.overlay,backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)',transition:'background 0.3s'}}
           onClick={(e) => { if (e.target === e.currentTarget) closeBridgeMessageModal(); }}
           onKeyDown={(e) => { if (e.key === 'Escape') { if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return; e.preventDefault(); closeBridgeMessageModal(); } }}
@@ -1780,7 +1784,7 @@ function BridgeMessageModal(props) {
           >
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'24px 28px 20px',borderBottom:_dt.headerBorder}}>
               <h2 style={{fontSize: bridgeProjectionMode ? '28px' : '20px',fontWeight:800,margin:0,color:_dt.textAccent,display:'flex',alignItems:'center',gap:'10px',letterSpacing:'-0.02em'}}>
-                <span style={{fontSize: bridgeProjectionMode ? '32px' : '24px'}}>📩</span> {t('roster.bridge_title') || 'Message from your teacher'}
+                <span style={{fontSize: bridgeProjectionMode ? '32px' : '24px'}} aria-hidden="true">📩</span> {t('roster.bridge_title') || 'Message from your teacher'}
               </h2>
               <div style={{display:'flex',gap:'8px'}}>
                 <button type="button"
@@ -1790,12 +1794,12 @@ function BridgeMessageModal(props) {
                   aria-label={bridgeProjectionMode ? (t('roster.bridge_exit_projection_mode') || 'Exit projection mode') : (t('roster.bridge_enter_projection_mode') || 'Enter projection mode')}
                   title={bridgeProjectionMode ? (t('roster.bridge_exit_projection') || 'Exit Projection') : (t('roster.bridge_projection_mode') || 'Projection Mode')}
                   style={{background:_dt.btnBg,border:_dt.btnBorder,color:_dt.btnColor,width:'44px',height:'44px',minWidth:'44px',minHeight:'44px',borderRadius:'12px',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.2s'}}
-                >{bridgeProjectionMode ? '🖥️' : '📽️'}</button>
+                ><span aria-hidden="true">{bridgeProjectionMode ? '🖥️' : '📽️'}</span></button>
                 <button type="button"
                   onClick={closeBridgeMessageModal}
-                  aria-label={t('common.close_bridge_message')}
+                  aria-label={_bridgeCopy(t, 'common.close_bridge_message', 'Close message')}
                   style={{background:_dt.btnBg,border:_dt.btnBorder,color:_dt.btnColor,width:'44px',height:'44px',minWidth:'44px',minHeight:'44px',borderRadius:'12px',cursor:'pointer',fontSize:'16px',display:'flex',alignItems:'center',justifyContent:'center',transition:'all 0.2s'}}
-                >✕</button>
+                ><span aria-hidden="true">✕</span></button>
               </div>
             </div>
             <div style={{padding:'24px 28px'}}>
@@ -1880,13 +1884,18 @@ function BridgeMessageModal(props) {
                         setBridgeTtsPlaying(false);
                       }
                     }}
-                    style={{background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',color:_dt.textAccent,padding:'8px 16px',borderRadius:'10px',fontSize:'13px',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',transition:'all 0.2s',opacity: bridgeTtsPlaying ? 0.5 : 1}}
-                  >🔊 {t('roster.bridge_play_en') || 'Play English'}</button>
-                  {bridgeTtsPlaying && bridgeActiveLanguage === 'en' && (
-                    <div style={{flex:1,height:'4px',background:'rgba(255,255,255,0.06)',borderRadius:'2px',overflow:'hidden'}}>
-                      <div style={{height:'100%',background:'linear-gradient(90deg,#6366f1,#818cf8)',borderRadius:'2px',transition:'width 0.15s',width: bridgeKaraokeIndex >= 0 ? `${(bridgeKaraokeIndex / Math.max(1, bridgeMessage.english.split(/\s+/).length)) * 100}%` : '0%'}} />
+                    aria-busy={bridgeTtsPlaying && bridgeActiveLanguage === 'en'}
+                    style={{background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.3)',color:_dt.textAccent,minHeight:'44px',padding:'8px 16px',borderRadius:'10px',fontSize:'13px',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',transition:'all 0.2s',opacity: bridgeTtsPlaying ? 0.5 : 1}}
+                  ><span aria-hidden="true">🔊</span> {t('roster.bridge_play_en') || 'Play English'}</button>
+                  {bridgeTtsPlaying && bridgeActiveLanguage === 'en' && (() => {
+                    const _enTotal = Math.max(1, String(bridgeMessage.english || '').split(/\s+/).filter(Boolean).length);
+                    const _enPct = bridgeKaraokeIndex >= 0 ? Math.min(100, Math.round(((bridgeKaraokeIndex + 1) / _enTotal) * 100)) : 0;
+                    return (
+                    <div role="progressbar" aria-label={t('roster.bridge_play_en') || 'English narration progress'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={_enPct} aria-valuetext={bridgeKaraokeIndex >= 0 ? `Word ${Math.min(_enTotal, bridgeKaraokeIndex + 1)} of ${_enTotal} (${_enPct}%)` : '0%'} style={{flex:1,height:'4px',background:'rgba(255,255,255,0.06)',borderRadius:'2px',overflow:'hidden'}}>
+                      <div style={{height:'100%',background:'linear-gradient(90deg,#6366f1,#818cf8)',borderRadius:'2px',transition:'width 0.15s',width: `${_enPct}%`}} />
                     </div>
-                  )}
+                    );
+                  })()}
                 </div>
               </div>
               {bridgeMessage.translated && (
@@ -1962,13 +1971,18 @@ function BridgeMessageModal(props) {
                           setBridgeTtsPlaying(false);
                         }
                       }}
-                      style={{background:'rgba(20,184,166,0.15)',border:'1px solid rgba(20,184,166,0.3)',color:_dt.translatedAccent,padding:'8px 16px',borderRadius:'10px',fontSize:'13px',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',transition:'all 0.2s',opacity: bridgeTtsPlaying ? 0.5 : 1}}
-                    >🔊 {t('roster.bridge_play_translated') || 'Play Translation'}</button>
-                    {bridgeTtsPlaying && bridgeActiveLanguage === 'translated' && (
-                      <div style={{flex:1,height:'4px',background:'rgba(255,255,255,0.06)',borderRadius:'2px',overflow:'hidden'}}>
-                        <div style={{height:'100%',background:'linear-gradient(90deg,#0d9488,#14b8a6)',borderRadius:'2px',transition:'width 0.15s',width: bridgeKaraokeIndex >= 0 ? `${(bridgeKaraokeIndex / Math.max(1, bridgeMessage.translated.split(/\s+/).length)) * 100}%` : '0%'}} />
+                      aria-busy={bridgeTtsPlaying && bridgeActiveLanguage === 'translated'}
+                      style={{background:'rgba(20,184,166,0.15)',border:'1px solid rgba(20,184,166,0.3)',color:_dt.translatedAccent,minHeight:'44px',padding:'8px 16px',borderRadius:'10px',fontSize:'13px',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:'6px',transition:'all 0.2s',opacity: bridgeTtsPlaying ? 0.5 : 1}}
+                    ><span aria-hidden="true">🔊</span> {t('roster.bridge_play_translated') || 'Play Translation'}</button>
+                    {bridgeTtsPlaying && bridgeActiveLanguage === 'translated' && (() => {
+                      const _trTotal = Math.max(1, String(bridgeMessage.translated || '').split(/\s+/).filter(Boolean).length);
+                      const _trPct = bridgeKaraokeIndex >= 0 ? Math.min(100, Math.round(((bridgeKaraokeIndex + 1) / _trTotal) * 100)) : 0;
+                      return (
+                      <div role="progressbar" aria-label={t('roster.bridge_play_translated') || 'Translation narration progress'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={_trPct} aria-valuetext={bridgeKaraokeIndex >= 0 ? `Word ${Math.min(_trTotal, bridgeKaraokeIndex + 1)} of ${_trTotal} (${_trPct}%)` : '0%'} style={{flex:1,height:'4px',background:'rgba(255,255,255,0.06)',borderRadius:'2px',overflow:'hidden'}}>
+                        <div style={{height:'100%',background:'linear-gradient(90deg,#0d9488,#14b8a6)',borderRadius:'2px',transition:'width 0.15s',width: `${_trPct}%`}} />
                       </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 </div>
               )}
@@ -2006,7 +2020,7 @@ function BridgeMessageModal(props) {
                                   }
                                 }
                                 catch(err) { warnLog('Bridge term save failed:', err && err.message); }
-                              }} style={{background:'rgba(99,102,241,0.12)',border:'1px solid rgba(99,102,241,0.2)',color:_dt.textAccent,padding:'4px 12px',borderRadius:'8px',fontSize:'11px',cursor:'pointer',fontWeight:700,width:'100%',transition:'all 0.2s'}}>+ Save to Glossary</button>
+                              }} style={{background:'rgba(99,102,241,0.12)',border:'1px solid rgba(99,102,241,0.2)',color:_dt.textAccent,minHeight:'44px',padding:'8px 12px',borderRadius:'8px',fontSize:'12px',cursor:'pointer',fontWeight:700,width:'100%',transition:'all 0.2s'}}>+ Save to Glossary</button>
                             )}
                           </div>
                         );
@@ -2021,7 +2035,7 @@ function BridgeMessageModal(props) {
                         }}>
                           {word}
                           {!isSaved ? (
-                            <button type="button" onClick={async (e) => {
+                            <button type="button" aria-label={`Save ${word} to glossary`} onClick={async (e) => {
                               e.stopPropagation();
                               try {
                                 const ok = await handleQuickAddGlossary(word, true);
@@ -2031,7 +2045,7 @@ function BridgeMessageModal(props) {
                                 }
                               }
                               catch(err) { warnLog('Bridge term save failed:', err && err.message); }
-                            }} style={{background:'none',border:'1px solid rgba(165,180,252,0.3)',color:_dt.textAccent,padding:'2px 8px',borderRadius:'8px',fontSize:'11px',cursor:'pointer',fontWeight:700}}>+ Save</button>
+                            }} style={{background:'none',border:'1px solid rgba(165,180,252,0.3)',color:_dt.textAccent,minHeight:'44px',padding:'6px 10px',borderRadius:'8px',fontSize:'12px',cursor:'pointer',fontWeight:700}}>+ Save</button>
                           ) : (
                             <span style={{fontSize:'12px',opacity:0.8}}>✓</span>
                           )}
@@ -2076,12 +2090,13 @@ function BridgeMessageModal(props) {
                         addToast(_bridgeCopy(t, 'glossary.actions.add_failed', 'Could not save terms to glossary.'), 'error');
                       }
                     }}
-                    style={{background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.25)',color:_dt.textAccent,padding:'10px 18px',borderRadius:'12px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',flex:1}}
+                    style={{background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.25)',color:_dt.textAccent,minHeight:'44px',padding:'10px 18px',borderRadius:'12px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',flex:1}}
                   >{bridgeMessage.terms.every(t2 => bridgeTermsSaved.includes(String(t2 && typeof t2 === 'object' ? (t2.word ?? '') : (t2 ?? '')))) ? '✅ All Saved' : '📖 Save All Terms'}</button>
                 )}
                 <button type="button"
                   data-help-key="bridge_message_read_again_btn"
                   disabled={bridgeTtsPlaying}
+                  aria-busy={bridgeTtsPlaying}
                   onClick={async () => {
                     if (bridgeTtsPlaying) return;
                     stopBridgePlayback();
@@ -2125,8 +2140,8 @@ function BridgeMessageModal(props) {
                       }
                     }
                   }}
-                  style={{background:'rgba(20,184,166,0.15)',border:'1px solid rgba(20,184,166,0.25)',color:_dt.translatedAccent,padding:'10px 18px',borderRadius:'12px',fontSize:'13px',fontWeight:700,cursor:bridgeTtsPlaying ? 'not-allowed' : 'pointer',opacity:bridgeTtsPlaying ? 0.55 : 1,transition:'all 0.2s',flex:1}}
-                >🔄 Read Again</button>
+                  style={{background:'rgba(20,184,166,0.15)',border:'1px solid rgba(20,184,166,0.25)',color:_dt.translatedAccent,minHeight:'44px',padding:'10px 18px',borderRadius:'12px',fontSize:'13px',fontWeight:700,cursor:bridgeTtsPlaying ? 'not-allowed' : 'pointer',opacity:bridgeTtsPlaying ? 0.55 : 1,transition:'all 0.2s',flex:1}}
+                ><span aria-hidden="true">🔄 </span>Read Again</button>
                 <button type="button"
                   data-help-key="bridge_message_copy_btn"
                   onClick={() => {
@@ -2139,10 +2154,17 @@ function BridgeMessageModal(props) {
                       '',
                       Array.isArray(bridgeMessage.terms) && bridgeMessage.terms.length ? '📖 Key Terms: ' + bridgeMessage.terms.filter(Boolean).map(t2 => t2 && typeof t2 === 'object' ? String(t2.word ?? '') + (t2.definition ? ' - ' + String(t2.definition) : '') : String(t2)).join(', ') : ''
                     ].filter(Boolean).join('\n');
-                    (window.alloCopyText ? window.alloCopyText(text) : navigator.clipboard.writeText(text).then(() => true)).then((ok) => addToast(ok !== false ? _bridgeCopy(t, 'roster.bridge_copied', 'Copied to clipboard!') : _bridgeCopy(t, 'roster.bridge_copy_failed', 'Copy failed — select the text manually'), ok !== false ? 'success' : 'error')).catch(() => addToast(_bridgeCopy(t, 'roster.bridge_copy_failed', 'Copy failed — select the text manually'), 'error'));
+                    (window.alloCopyText ? window.alloCopyText(text) : (navigator.clipboard ? navigator.clipboard.writeText(text).then(() => true) : Promise.resolve(false))).then((ok) => {
+                      if (ok !== false) {
+                        setCopiedBridgeText(true);
+                        if (copyFeedbackTimerRef.current) clearTimeout(copyFeedbackTimerRef.current);
+                        copyFeedbackTimerRef.current = setTimeout(() => setCopiedBridgeText(false), 2200);
+                      }
+                      addToast(ok !== false ? _bridgeCopy(t, 'roster.bridge_copied', 'Copied to clipboard!') : _bridgeCopy(t, 'roster.bridge_copy_failed', 'Copy failed — select the text manually'), ok !== false ? 'success' : 'error');
+                    }).catch(() => addToast(_bridgeCopy(t, 'roster.bridge_copy_failed', 'Copy failed — select the text manually'), 'error'));
                   }}
-                  style={{background:'rgba(99,102,241,0.15)',border:'1px solid rgba(99,102,241,0.25)',color:_dt.textAccent,padding:'10px 18px',borderRadius:'12px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',flex:1}}
-                >📋 Copy</button>
+                  style={{background: copiedBridgeText ? 'rgba(34,197,94,0.16)' : 'rgba(99,102,241,0.15)',border: copiedBridgeText ? '1px solid rgba(34,197,94,0.4)' : '1px solid rgba(99,102,241,0.25)',color: copiedBridgeText ? _dt.successAccent : _dt.textAccent,minHeight:'44px',padding:'10px 18px',borderRadius:'12px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',flex:1}}
+                ><span aria-hidden="true">{copiedBridgeText ? '✓ ' : '📋 '}</span>{copiedBridgeText ? _bridgeCopy(t, 'common.copied', 'Copied!') : _bridgeCopy(t, 'common.copy', 'Copy')}</button>
                 <button type="button"
                   data-help-key="bridge_message_print_btn"
                   onClick={() => {
@@ -2179,13 +2201,18 @@ function BridgeMessageModal(props) {
                       printWin.print();
                     }
                   }}
-                  style={{background:'rgba(168,85,247,0.15)',border:'1px solid rgba(168,85,247,0.25)',color:_dt.purpleAccent,padding:'10px 18px',borderRadius:'12px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',flex:1}}
-                >🖨️ Print</button>
+                  style={{background:'rgba(168,85,247,0.15)',border:'1px solid rgba(168,85,247,0.25)',color:_dt.purpleAccent,minHeight:'44px',padding:'10px 18px',borderRadius:'12px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',flex:1}}
+                ><span aria-hidden="true">🖨️ </span>Print</button>
                 <button type="button"
                   onClick={closeBridgeMessageModal}
-                  style={{background:_dt.btnBg,border:_dt.btnBorder,color:_dt.btnColor,padding:'10px 18px',borderRadius:'12px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',flex:1}}
+                  style={{background:_dt.btnBg,border:_dt.btnBorder,color:_dt.btnColor,minHeight:'44px',padding:'10px 18px',borderRadius:'12px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',flex:1}}
                 >{t('roster.bridge_close') || 'Close'}</button>
               </div>
+              {copiedBridgeText && (
+                <p data-bridge-copy-status role="status" aria-live="polite" aria-atomic="true" style={{margin:'8px 0 0',fontSize:'12px',fontWeight:700,color:_dt.successAccent,textAlign:'center'}}>
+                  {_bridgeCopy(t, 'roster.bridge_copied', 'Copied to clipboard!')}
+                </p>
+              )}
               {activeSessionCode && isTeacherMode && (() => {
                 const _brx = sessionData?.bridgeReactions || {};
                 const _brCounts = {'👍':0,'🤔':0,'❓':0};
@@ -2215,7 +2242,7 @@ function BridgeMessageModal(props) {
                 return (
                   <div style={{marginTop:'20px',padding:'16px',background:'rgba(255,255,255,0.02)',border:'1px solid rgba(255,255,255,0.04)',borderRadius:'14px'}}>
                     <div style={{fontSize:'12px',fontWeight:700,color:_dt.textSecondary,textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:'12px'}}>{t('bridge.reaction_prompt') || 'How do you feel about this?'}</div>
-                    <div style={{display:'flex',gap:'10px',justifyContent:'center'}}>
+                    <div role="group" aria-label={t('bridge.reaction_prompt') || 'How do you feel about this?'} style={{display:'flex',gap:'10px',justifyContent:'center'}}>
                       {[
                         {emoji:'👍',label:'Got it!',color:'rgba(34,197,94,0.2)',border:'rgba(34,197,94,0.4)',text:'#86efac'},
                         {emoji:'🤔',label:'Confused',color:'rgba(251,191,36,0.2)',border:'rgba(251,191,36,0.4)',text:'#fcd34d'},
@@ -2231,13 +2258,13 @@ function BridgeMessageModal(props) {
                               ).catch(() => {});
                             }
                           }} aria-pressed={_sel} style={{
-                            flex:1,textAlign:'center',cursor:'pointer',padding:'10px 4px',borderRadius:'12px',
+                            flex:1,minHeight:'44px',textAlign:'center',cursor:'pointer',padding:'10px 4px',borderRadius:'12px',
                             background: _sel ? r.color : 'transparent',
                             border: `1px solid ${_sel ? r.border : 'transparent'}`,
                             transition:'all 0.2s'
                           }}>
                             <div style={{fontSize:'32px',marginBottom:'4px',transform:_sel?'scale(1.2)':'scale(1)',transition:'transform 0.2s'}} aria-hidden="true">{r.emoji}</div>
-                            <div style={{fontSize:'11px',color:_dReactionText[r.emoji],fontWeight:600}}>{r.label}</div>
+                            <div style={{fontSize:'11px',color:_dReactionText[r.emoji],fontWeight:600}}>{r.label}{_sel ? ' ✓' : ''}</div>
                           </button>
                         );
                       })}

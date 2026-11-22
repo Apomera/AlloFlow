@@ -51,12 +51,22 @@
       '.wheel-fire-flame-motion{animation:wheelFireFlame 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center bottom}',
       '.wheel-fire-flow-motion{animation:wheelFireFlow 1.6s linear infinite}',
       '.wheel-fire-heat-pulse{animation:wheelFireHeat 2.4s ease-in-out infinite}',
+      '.wf-spark-rise{transform-box:fill-box;transform-origin:center;animation:wfSparkRise 2.4s ease-out infinite}',
+      '.wf-ember-breathe{transform-box:fill-box;transform-origin:center;animation:wfEmberBreathe 2.8s ease-in-out infinite}',
+      '.wf-force-flow{animation:wfForceFlow 1.6s linear infinite}',
+      '.wf-beacon-pulse{transform-box:fill-box;transform-origin:center;animation:wfBeaconPulse 2.4s ease-in-out infinite}',
+      '.wf-sheen-drift{animation:wfSheenDrift 3.2s ease-in-out infinite}',
       '@keyframes wheelFireSpin{to{transform:rotate(360deg)}}',
       '@keyframes wheelFireDash{to{stroke-dashoffset:var(--wheel-fire-orbit-shift,-420)}}',
       '@keyframes wheelFireWobble{0%,100%{transform:translate(var(--wheel-fire-wobble,0px),0px)}12.5%{transform:translate(var(--wheel-fire-wobble-diag,0px),var(--wheel-fire-wobble-depth-diag,0px))}25%{transform:translate(0px,var(--wheel-fire-wobble-depth,0px))}37.5%{transform:translate(var(--wheel-fire-wobble-diag-neg,0px),var(--wheel-fire-wobble-depth-diag,0px))}50%{transform:translate(var(--wheel-fire-wobble-neg,0px),0px)}62.5%{transform:translate(var(--wheel-fire-wobble-diag-neg,0px),var(--wheel-fire-wobble-depth-diag-neg,0px))}75%{transform:translate(0px,var(--wheel-fire-wobble-depth-neg,0px))}87.5%{transform:translate(var(--wheel-fire-wobble-diag,0px),var(--wheel-fire-wobble-depth-diag-neg,0px))}}',
       '@keyframes wheelFireFlame{50%{transform:scaleY(.9) translateY(2px);opacity:.75}}',
       '@keyframes wheelFireFlow{to{stroke-dashoffset:-40}}',
       '@keyframes wheelFireHeat{50%{opacity:.68}}',
+      '@keyframes wfSparkRise{0%{transform:translate(0px,8px) scale(.65);opacity:0}22%{opacity:.95}100%{transform:translate(var(--wf-dx,5px),-28px) scale(.3);opacity:0}}',
+      '@keyframes wfEmberBreathe{0%,100%{opacity:.62;transform:scale(.98)}50%{opacity:1;transform:scale(1.03)}}',
+      '@keyframes wfForceFlow{to{stroke-dashoffset:-24}}',
+      '@keyframes wfBeaconPulse{0%,100%{transform:scale(.9);opacity:.44}50%{transform:scale(1.22);opacity:.96}}',
+      '@keyframes wfSheenDrift{0%,100%{opacity:.68}50%{opacity:1}}',
       '@container(max-width:760px){.wheel-fire-main{grid-template-columns:1fr}.wheel-fire-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.wheel-fire-stage-line{grid-template-columns:repeat(3,minmax(0,1fr))}.wf-hero-deck{padding:14px!important}}',
       '@media(max-width:480px){.wheel-fire-stats{grid-template-columns:1fr}}',
       '.wf-hero-deck{position:relative;overflow:hidden;border-radius:18px;padding:18px 20px;background:linear-gradient(135deg,#2a160f 0%,#4e2517 54%,#6b321b 100%);border:1px solid rgba(251,191,36,.36);box-shadow:0 16px 34px rgba(42,22,15,.28);color:#fff7ed}',
@@ -109,6 +119,7 @@
       '.wheel-fire-shell[data-wf-theme="contrast"] button[aria-selected="true"],.theme-contrast .wheel-fire-shell button[aria-selected="true"],.wheel-fire-shell[data-wf-theme="contrast"] button[aria-pressed="true"],.theme-contrast .wheel-fire-shell button[aria-pressed="true"]{background:#000000!important;color:#ffff00!important;border:2px solid #ffff00!important}',
       '.wheel-fire-shell[data-wf-theme="contrast"] a,.theme-contrast .wheel-fire-shell a,.wheel-fire-shell[data-wf-theme="contrast"] output,.theme-contrast .wheel-fire-shell output{color:#ffff00!important}',
       '.wheel-fire-shell[data-wf-theme="contrast"] *:focus-visible,.theme-contrast .wheel-fire-shell *:focus-visible{outline:3px solid #ffff00!important;outline-offset:2px!important}',
+      '.wheel-fire-shell[data-wf-theme="contrast"] .wf-spark-rise,.theme-contrast .wheel-fire-shell .wf-spark-rise,.wheel-fire-shell[data-wf-theme="contrast"] .wf-ember-breathe,.theme-contrast .wheel-fire-shell .wf-ember-breathe,.wheel-fire-shell[data-wf-theme="contrast"] .wf-force-flow,.theme-contrast .wheel-fire-shell .wf-force-flow,.wheel-fire-shell[data-wf-theme="contrast"] .wf-beacon-pulse,.theme-contrast .wheel-fire-shell .wf-beacon-pulse,.wheel-fire-shell[data-wf-theme="contrast"] .wf-sheen-drift,.theme-contrast .wheel-fire-shell .wf-sheen-drift,.wheel-fire-shell[data-wf-theme="contrast"] .wheel-fire-heat-pulse,.theme-contrast .wheel-fire-shell .wheel-fire-heat-pulse,.wheel-fire-shell[data-wf-theme="contrast"] .wheel-fire-flame-motion,.theme-contrast .wheel-fire-shell .wheel-fire-flame-motion{animation:none!important}',
       '@media(prefers-reduced-motion:reduce){.wheel-fire-shell *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}',
       '@media(forced-colors:active){.wheel-fire-shell button,.wheel-fire-shell input,.wheel-fire-shell select,.wheel-fire-shell textarea,.wheel-fire-shell svg,.wheel-fire-shell section{border:1px solid ButtonText!important;background:Canvas!important;color:CanvasText!important;box-shadow:none!important}.wheel-fire-shell *:focus-visible{outline:3px solid Highlight!important}}'
     ].join('');
@@ -3758,10 +3769,11 @@
             !isContrast ? h('ellipse', { cx: wheelDrive.wheelhead.cx, cy: wheelDrive.wheelhead.cy, rx: wheelDrive.wheelhead.rx * 0.72, ry: wheelDrive.wheelhead.ry * 0.72, fill: 'none', stroke: '#f5e7d6', strokeWidth: 0.9, opacity: .28 }) : null,
             !isContrast ? h('ellipse', { cx: wheelDrive.wheelhead.cx, cy: wheelDrive.wheelhead.cy, rx: wheelDrive.wheelhead.rx * 0.44, ry: wheelDrive.wheelhead.ry * 0.44, fill: 'none', stroke: '#2c2420', strokeWidth: 0.9, opacity: .26 }) : null,
             method === 'wheel' ? h('ellipse', { 'data-wheel-fire-rotation-track': 'true', cx: wheelDrive.rotation.cx, cy: wheelDrive.rotation.cy, rx: wheelDrive.rotation.rx, ry: wheelDrive.rotation.ry, fill: 'none', stroke: '#d0b99e', strokeWidth: 1.5, opacity: .24 }) : null,
-            method === 'wheel' && !isContrast && wheelDrive.rotation.periodSeconds !== null ? h('ellipse', { cx: wheelDrive.rotation.cx, cy: wheelDrive.rotation.cy, rx: wheelDrive.rotation.rx, ry: wheelDrive.rotation.ry, fill: 'none', stroke: '#fbbf24', strokeWidth: 8, opacity: .16 }) : null,
+            method === 'wheel' && !isContrast && wheelDrive.rotation.periodSeconds !== null ? h('ellipse', { className: 'wf-ember-breathe', cx: wheelDrive.rotation.cx, cy: wheelDrive.rotation.cy, rx: wheelDrive.rotation.rx, ry: wheelDrive.rotation.ry, fill: 'none', stroke: '#fbbf24', strokeWidth: 8, opacity: .16 }) : null,
             method === 'wheel' ? h('ellipse', { 'data-wheel-fire-rotation-marker': wheelDrive.rotation.state, 'data-wheel-fire-revolution-seconds': wheelDrive.rotation.periodSeconds === null ? 'stopped' : wheelDrive.rotation.periodSeconds.toFixed(3), className: wheelDrive.rotation.periodSeconds === null ? undefined : 'wheel-fire-wheel-motion', cx: wheelDrive.rotation.cx, cy: wheelDrive.rotation.cy, rx: wheelDrive.rotation.rx, ry: wheelDrive.rotation.ry, fill: 'none', stroke: '#f5d7a8', strokeWidth: 4, strokeLinecap: 'round', strokeDasharray: wheelDrive.rotation.dashArray, strokeDashoffset: 0, opacity: wheelDrive.rotation.periodSeconds === null ? .48 : .9, style: wheelDrive.rotation.periodSeconds === null ? undefined : { animationDuration: wheelDrive.rotation.periodSeconds.toFixed(3) + 's', '--wheel-fire-orbit-shift': wheelDrive.rotation.dashOffset.toFixed(1) } }) : null,
             h('g', { 'data-wheel-fire-spindle': 'true' },
               h('path', { d: wheelDrive.spindle.path, fill: '#433a34', stroke: '#171311', strokeWidth: 1.5 }),
+              method === 'wheel' && !isContrast && wheelDrive.rotation.periodSeconds !== null ? h('ellipse', { className: 'wf-beacon-pulse', cx: wheelDrive.spindle.hubCx, cy: wheelDrive.spindle.hubCy, rx: wheelDrive.spindle.hubRx + 5, ry: wheelDrive.spindle.hubRy + 3, fill: 'none', stroke: '#fbbf24', strokeWidth: 2, opacity: .45 }) : null,
               h('ellipse', { cx: wheelDrive.spindle.hubCx, cy: wheelDrive.spindle.hubCy, rx: wheelDrive.spindle.hubRx, ry: wheelDrive.spindle.hubRy, fill: '#a28e7d', stroke: '#211915', strokeWidth: 1.5 })
             ),
             method === 'wheel' ? h('g', { 'data-wheel-fire-speed-pedal': wheelDrive.pedal.travelPct, 'data-wheel-fire-pedal-state': wheelDrive.pedal.state },
@@ -3781,12 +3793,12 @@
           ),
           formingPreviewAvailable ? h('rect', { 'data-wheel-fire-contact-zone': contactGeometry.targetMode, x: 78, y: contactGeometry.outsidePad.cy - contactGeometry.contactHeightPx / 2, width: 364, height: contactGeometry.contactHeightPx, rx: 8, fill: '#22d3ee', opacity: .12, 'aria-hidden': 'true' }) : null,
           method === 'wheel' ? h('g', { 'data-wheel-fire-centering-axis': 'true', 'aria-hidden': 'true' },
-            h('line', { x1: geometry.center, x2: geometry.center, y1: Math.max(58, geometry.top - 18), y2: wheelDrive.wheelhead.cy + 4, stroke: '#fef3c7', strokeWidth: 1.5, strokeDasharray: '5 6', opacity: .28 }),
+            h('line', { className: !isContrast && wheelDrive.rotation.periodSeconds !== null ? 'wf-force-flow' : undefined, x1: geometry.center, x2: geometry.center, y1: Math.max(58, geometry.top - 18), y2: wheelDrive.wheelhead.cy + 4, stroke: '#fef3c7', strokeWidth: 1.5, strokeDasharray: '5 6', opacity: .28 }),
             h('circle', { cx: geometry.center, cy: wheelDrive.wheelhead.cy, r: 3.5, fill: '#fef3c7', opacity: .55 })
           ) : null,
-          method === 'wheel' && wobblePx > .6 ? h('ellipse', { 'data-wheel-fire-wobble-orbit': wheelWobble.motionState, 'data-wheel-fire-speed-load': wheelWobble.loadState, 'data-wheel-fire-wobble-cycle-seconds': wheelWobble.cycleSeconds === null ? 'stopped' : wheelWobble.cycleSeconds.toFixed(3), cx: geometry.center, cy: geometry.top, rx: rimOuterRx + wobblePx, ry: rimEllipseRy + wheelWobble.depthAmplitudePx, fill: 'none', stroke: '#fb7185', strokeWidth: 1.5, strokeDasharray: '6 6', opacity: .72, 'aria-hidden': 'true' }) : null,
+          method === 'wheel' && wobblePx > .6 ? h('ellipse', { className: !isContrast && wheelWobble.motionState === 'orbiting' ? 'wf-force-flow' : undefined, 'data-wheel-fire-wobble-orbit': wheelWobble.motionState, 'data-wheel-fire-speed-load': wheelWobble.loadState, 'data-wheel-fire-wobble-cycle-seconds': wheelWobble.cycleSeconds === null ? 'stopped' : wheelWobble.cycleSeconds.toFixed(3), cx: geometry.center, cy: geometry.top, rx: rimOuterRx + wobblePx, ry: rimEllipseRy + wheelWobble.depthAmplitudePx, fill: 'none', stroke: '#fb7185', strokeWidth: 1.5, strokeDasharray: '6 6', opacity: .72, 'aria-hidden': 'true' }) : null,
           method === 'wheel' && localRingTarget && wetFilm.contactFilmOpacity > .01 ? h('path', { 'data-wheel-fire-contact-film': 'rear', 'data-wheel-fire-film-state': wetFilm.state, d: selectedWorkRingRearPath, fill: 'none', stroke: '#bae6fd', strokeWidth: wetFilm.contactFilmWidthPx, strokeLinecap: 'round', opacity: wetFilm.contactFilmOpacity * .48, 'aria-hidden': 'true' }) : null,
-          method === 'wheel' && localRingTarget ? h('path', { 'data-wheel-fire-work-ring-arc': 'rear', d: selectedWorkRingRearPath, fill: 'none', stroke: '#67e8f9', strokeWidth: 2, strokeDasharray: '7 7', strokeLinecap: 'round', opacity: .42, 'aria-hidden': 'true' }) : null,
+          method === 'wheel' && localRingTarget ? h('path', { className: !isContrast && wheelDrive.rotation.periodSeconds !== null ? 'wf-force-flow' : undefined, 'data-wheel-fire-work-ring-arc': 'rear', d: selectedWorkRingRearPath, fill: 'none', stroke: '#67e8f9', strokeWidth: 2, strokeDasharray: '7 7', strokeLinecap: 'round', opacity: .42, 'aria-hidden': 'true' }) : null,
           h('g', { 'data-wheel-fire-clay-orbit': method === 'wheel' ? wheelWobble.motionState : undefined, 'data-wheel-fire-speed-load': method === 'wheel' ? wheelWobble.loadState : undefined, 'data-wheel-fire-wobble-cycle-seconds': method === 'wheel' ? (wheelWobble.cycleSeconds === null ? 'stopped' : wheelWobble.cycleSeconds.toFixed(3)) : undefined, className: method === 'wheel' && wheelWobble.motionState === 'orbiting' ? 'wheel-fire-wobble-motion' : undefined, style: method === 'wheel' ? { '--wheel-fire-wobble': wobblePx.toFixed(1) + 'px', '--wheel-fire-wobble-neg': (-wobblePx).toFixed(1) + 'px', '--wheel-fire-wobble-diag': wheelWobble.diagonalAmplitudePx.toFixed(1) + 'px', '--wheel-fire-wobble-diag-neg': (-wheelWobble.diagonalAmplitudePx).toFixed(1) + 'px', '--wheel-fire-wobble-depth': wheelWobble.depthAmplitudePx.toFixed(1) + 'px', '--wheel-fire-wobble-depth-neg': (-wheelWobble.depthAmplitudePx).toFixed(1) + 'px', '--wheel-fire-wobble-depth-diag': wheelWobble.diagonalDepthPx.toFixed(1) + 'px', '--wheel-fire-wobble-depth-diag-neg': (-wheelWobble.diagonalDepthPx).toFixed(1) + 'px', animationDuration: wheelWobble.cycleSeconds === null ? undefined : wheelWobble.cycleSeconds.toFixed(3) + 's', transform: wheelWobble.motionState === 'stationary-offset' ? 'translate(' + wobblePx.toFixed(1) + 'px, 0px)' : undefined } : undefined },
             h('path', { d: geometry.outer, fill: data.showCrossSection ? fillColor : 'url(#wheel-fire-clay-gradient)', stroke: '#e2aa82', strokeWidth: 2, filter: 'url(#wheel-fire-shadow)' }),
             h('path', { 'data-wheel-fire-clay-sheen': wetFilm.state, 'data-wheel-fire-body-moisture': wetFilm.bodyMoisturePct, d: geometry.outer, fill: 'url(#wheel-fire-wet-sheen)', opacity: wetFilm.sheenOpacity, pointerEvents: 'none', 'aria-hidden': 'true' }),
@@ -3804,8 +3816,8 @@
                 var statusId = ringRisk.risk >= .67 ? 'high' : (ringRisk.risk >= .4 ? 'watch' : 'lower');
                 return h('path', { key: 'wall-risk-' + ringRisk.index, 'data-wheel-fire-ring-risk': ringRisk.index + 1, 'data-wheel-fire-ring-risk-status': statusId, 'data-wheel-fire-ring-risk-pct': (ringRisk.risk * 100).toFixed(1), 'data-wheel-fire-ring-risk-signal': ringRisk.dominantSignalId, d: 'M' + x1.toFixed(1) + ' ' + y1.toFixed(1) + ' L' + x2.toFixed(1) + ' ' + y2.toFixed(1), fill: 'none', stroke: ringRiskColor(ringRisk), strokeWidth: ringRiskWidth(ringRisk), strokeDasharray: ringRiskDash(ringRisk), strokeLinecap: 'round', opacity: ringRisk.risk >= .4 ? .96 : .66 });
               }),
-              h('circle', { 'data-wheel-fire-risk-peak-marker': 'current', cx: criticalRiskX, cy: criticalRiskY, r: 8, fill: 'none', stroke: '#f8fafc', strokeWidth: 2.5 }),
-              showPredictedRiskPeak ? h('circle', { 'data-wheel-fire-risk-peak-marker': 'predicted', 'data-wheel-fire-risk-preview-ring': previewCriticalRisk.index + 1, 'data-wheel-fire-risk-preview-pct': (previewCriticalRisk.risk * 100).toFixed(1), cx: previewCriticalRiskX, cy: previewCriticalRiskY, r: 12, fill: 'none', stroke: '#facc15', strokeWidth: 2.5, strokeDasharray: '4 3' }) : null
+              h('circle', { className: !isContrast ? 'wf-beacon-pulse' : undefined, 'data-wheel-fire-risk-peak-marker': 'current', cx: criticalRiskX, cy: criticalRiskY, r: 8, fill: 'none', stroke: '#f8fafc', strokeWidth: 2.5 }),
+              showPredictedRiskPeak ? h('circle', { className: !isContrast ? 'wf-beacon-pulse' : undefined, 'data-wheel-fire-risk-peak-marker': 'predicted', 'data-wheel-fire-risk-preview-ring': previewCriticalRisk.index + 1, 'data-wheel-fire-risk-preview-pct': (previewCriticalRisk.risk * 100).toFixed(1), cx: previewCriticalRiskX, cy: previewCriticalRiskY, r: 12, fill: 'none', stroke: '#facc15', strokeWidth: 2.5, strokeDasharray: '4 3' }) : null
             ) : null,
             method === 'coil' ? h('g', { 'data-wheel-fire-coil-joint-map': 'true', 'data-wheel-fire-coil-joint-count': coilJointProfile.jointCount, 'data-wheel-fire-coil-joint-preview-count': showPredictedCoilJoints ? formingPreviewCoilJointChanges.length : 0, pointerEvents: 'none', 'aria-hidden': 'true' },
               coilJointProfile.joints.map(function (joint) {
@@ -3865,7 +3877,7 @@
           method === 'wheel' && localRingTarget && wetFilm.contactFilmOpacity > .01 ? h('path', { 'data-wheel-fire-contact-film': 'front', 'data-wheel-fire-film-state': wetFilm.state, d: selectedWorkRingFrontPath, fill: 'none', stroke: '#e0f2fe', strokeWidth: wetFilm.contactFilmWidthPx, strokeLinecap: 'round', opacity: wetFilm.contactFilmOpacity, 'aria-hidden': 'true' }) : null,
           localRingTarget ? (method === 'wheel' ? h('g', { 'data-wheel-fire-work-ring-kinematics': 'true', 'data-wheel-fire-surface-state': localSurface.state, 'data-wheel-fire-local-surface-speed': localSurface.surfaceSpeedCmPerSecond.toFixed(2), 'aria-hidden': 'true' },
             h('line', { x1: 71, x2: Math.max(71, selectedWorkRingLeft), y1: selectedY, y2: selectedY, stroke: '#67e8f9', strokeWidth: 2, strokeDasharray: '7 7', opacity: .9 }),
-            h('path', { 'data-wheel-fire-work-ring': 'true', 'data-wheel-fire-work-ring-arc': 'front', d: selectedWorkRingFrontPath, fill: 'none', stroke: '#67e8f9', strokeWidth: 2.5, strokeDasharray: '7 7', strokeLinecap: 'round', opacity: .95 })
+            h('path', { className: !isContrast && wheelDrive.rotation.periodSeconds !== null ? 'wf-force-flow' : undefined, 'data-wheel-fire-work-ring': 'true', 'data-wheel-fire-work-ring-arc': 'front', d: selectedWorkRingFrontPath, fill: 'none', stroke: '#67e8f9', strokeWidth: 2.5, strokeDasharray: '7 7', strokeLinecap: 'round', opacity: .95 })
           ) : h('line', { 'data-wheel-fire-work-ring': 'true', x1: 80, x2: 440, y1: selectedY, y2: selectedY, stroke: '#67e8f9', strokeWidth: 2, strokeDasharray: '7 7', opacity: .9 })) : null,
           formingPreviewAvailable ? h('g', { 'data-wheel-fire-contact-geometry': contactGeometry.id, 'data-wheel-fire-contact-tool': contactGeometry.tool, 'data-wheel-fire-contact-target': contactGeometry.targetMode, 'data-wheel-fire-contact-balance': contactGeometry.balanceState, 'data-wheel-fire-contact-span-rings': contactGeometry.modeledSpanRings, pointerEvents: 'none', 'aria-hidden': 'true' },
             h('path', { 'data-wheel-fire-contact-silhouette': 'outside', d: contactGeometry.outsideArmPath, fill: 'none', stroke: '#fdba74', strokeWidth: contactGeometry.outsideArmWidthPx, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: .48 }),
@@ -3880,24 +3892,27 @@
           ) : null,
           showTouchForces && formingPreviewAvailable ? h('g', { 'data-wheel-fire-touch-forces': 'true', 'data-wheel-fire-force-target': contactGeometry.targetMode, 'data-wheel-fire-inside-touch': contactGeometry.insideTouchPct, 'aria-hidden': 'true' },
             h('line', { x1: contactGeometry.outsidePad.cx + 8 + outsideForceLength, x2: contactGeometry.outsidePad.cx + 8, y1: contactGeometry.outsidePad.cy - 11, y2: contactGeometry.outsidePad.cy - 11, stroke: '#fb923c', strokeWidth: 2.4 + pressure * .025, strokeLinecap: 'round', markerEnd: 'url(#wheel-fire-force-outside)' }),
+            !isContrast ? h('line', { className: 'wf-force-flow', x1: contactGeometry.outsidePad.cx + 8 + outsideForceLength, x2: contactGeometry.outsidePad.cx + 8, y1: contactGeometry.outsidePad.cy - 11, y2: contactGeometry.outsidePad.cy - 11, stroke: '#fff7ed', strokeWidth: 1.5, strokeDasharray: '5 7', strokeLinecap: 'round', opacity: .72 }) : null,
             h('line', { x1: contactGeometry.insidePad.cx - 8 - insideForceLength, x2: contactGeometry.insidePad.cx - 8, y1: contactGeometry.insidePad.cy + 11, y2: contactGeometry.insidePad.cy + 11, stroke: '#2dd4bf', strokeWidth: 2.4 + modeledInsideTouch * .025, strokeLinecap: 'round', markerEnd: 'url(#wheel-fire-force-support)' }),
+            !isContrast ? h('line', { className: 'wf-force-flow', x1: contactGeometry.insidePad.cx - 8 - insideForceLength, x2: contactGeometry.insidePad.cx - 8, y1: contactGeometry.insidePad.cy + 11, y2: contactGeometry.insidePad.cy + 11, stroke: '#ecfeff', strokeWidth: 1.5, strokeDasharray: '5 7', strokeLinecap: 'round', opacity: .72 }) : null,
             h('text', { x: 20, y: 65, fill: '#fff7ed', fontSize: 11, fontWeight: 700 }, wholeFormTarget ? 'Matched centering brace · ' + Math.round(pressure) + '% each side · whole-form target' : (rimTarget ? 'Rim placement · pressure ' + Math.round(pressure) + '% · rim support ' + Math.round(handSupport) + '%' : (lowerZoneTarget ? 'Trim touch · tool pressure ' + Math.round(pressure) + '% · stabilizing support ' + Math.round(handSupport) + '%' : 'Relative touch: outside ' + Math.round(pressure) + '% · inside support ' + Math.round(handSupport) + '% · ' + touchRelationship)))
           ) : null,
           showFormingFlow ? h('g', { 'data-wheel-fire-forming-flow': 'true', 'aria-hidden': 'true' },
             Math.abs(formingFlow.outerDeltaCm) >= .005 ? h('g', null,
-              h('line', { x1: formingFlow.outerDeltaCm > 0 ? geometry.center + flowOuterRadius + 10 : geometry.center + flowOuterRadius + 10 + outerFlowLength, x2: formingFlow.outerDeltaCm > 0 ? geometry.center + flowOuterRadius + 10 + outerFlowLength : geometry.center + flowOuterRadius + 10, y1: clamp(flowY - 34, 88, 398), y2: clamp(flowY - 34, 88, 398), stroke: '#facc15', strokeWidth: 3, strokeDasharray: '6 4', markerEnd: 'url(#wheel-fire-clay-flow-arrow)' }),
+              h('line', { className: !isContrast ? 'wf-force-flow' : undefined, x1: formingFlow.outerDeltaCm > 0 ? geometry.center + flowOuterRadius + 10 : geometry.center + flowOuterRadius + 10 + outerFlowLength, x2: formingFlow.outerDeltaCm > 0 ? geometry.center + flowOuterRadius + 10 + outerFlowLength : geometry.center + flowOuterRadius + 10, y1: clamp(flowY - 34, 88, 398), y2: clamp(flowY - 34, 88, 398), stroke: '#facc15', strokeWidth: 3, strokeDasharray: '6 4', markerEnd: 'url(#wheel-fire-clay-flow-arrow)' }),
               h('text', { x: Math.min(496, geometry.center + flowOuterRadius + 14), y: clamp(flowY - 41, 80, 390), fill: '#fef08a', fontSize: 11, fontWeight: 700 }, 'outer ' + (formingFlow.outerDeltaCm > 0 ? '+' : '−') + Math.abs(formingFlow.outerDeltaCm).toFixed(2) + ' cm')
             ) : null,
             Math.abs(formingFlow.innerDeltaCm) >= .005 ? h('g', null,
-              h('line', { x1: formingFlow.innerDeltaCm > 0 ? geometry.center + flowInnerRadius - 10 - innerFlowLength : geometry.center + flowInnerRadius - 10, x2: formingFlow.innerDeltaCm > 0 ? geometry.center + flowInnerRadius - 10 : geometry.center + flowInnerRadius - 10 - innerFlowLength, y1: clamp(flowY + 34, 92, 402), y2: clamp(flowY + 34, 92, 402), stroke: '#facc15', strokeWidth: 3, strokeDasharray: '6 4', markerEnd: 'url(#wheel-fire-clay-flow-arrow)' }),
+              h('line', { className: !isContrast ? 'wf-force-flow' : undefined, x1: formingFlow.innerDeltaCm > 0 ? geometry.center + flowInnerRadius - 10 - innerFlowLength : geometry.center + flowInnerRadius - 10, x2: formingFlow.innerDeltaCm > 0 ? geometry.center + flowInnerRadius - 10 : geometry.center + flowInnerRadius - 10 - innerFlowLength, y1: clamp(flowY + 34, 92, 402), y2: clamp(flowY + 34, 92, 402), stroke: '#facc15', strokeWidth: 3, strokeDasharray: '6 4', markerEnd: 'url(#wheel-fire-clay-flow-arrow)' }),
               h('text', { x: geometry.center + flowInnerRadius - 14, y: clamp(flowY + 49, 106, 418), fill: '#fef08a', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'cavity ' + (formingFlow.innerDeltaCm > 0 ? '+' : '−') + Math.abs(formingFlow.innerDeltaCm).toFixed(2) + ' cm')
             ) : null,
             Math.abs(formingFlow.heightDeltaCm) >= .005 ? h('g', null,
-              h('line', { x1: 98, x2: 98, y1: formingFlow.heightDeltaCm > 0 ? geometry.top + 58 : geometry.top + 58 - heightFlowLength, y2: formingFlow.heightDeltaCm > 0 ? geometry.top + 58 - heightFlowLength : geometry.top + 58, stroke: '#facc15', strokeWidth: 3, strokeDasharray: '6 4', markerEnd: 'url(#wheel-fire-clay-flow-arrow)' }),
+              h('line', { className: !isContrast ? 'wf-force-flow' : undefined, x1: 98, x2: 98, y1: formingFlow.heightDeltaCm > 0 ? geometry.top + 58 : geometry.top + 58 - heightFlowLength, y2: formingFlow.heightDeltaCm > 0 ? geometry.top + 58 - heightFlowLength : geometry.top + 58, stroke: '#facc15', strokeWidth: 3, strokeDasharray: '6 4', markerEnd: 'url(#wheel-fire-clay-flow-arrow)' }),
               h('text', { x: 108, y: geometry.top + 52 - heightFlowLength / 2, fill: '#fef08a', fontSize: 11, fontWeight: 700 }, 'height ' + (formingFlow.heightDeltaCm > 0 ? '+' : '−') + Math.abs(formingFlow.heightDeltaCm).toFixed(2) + ' cm')
             ) : null,
             activeTool === 'trim' && formingFlow.clayVolumeDeltaCm3 < -.5 ? h('g', null, [0, 1, 2].map(function (chip) { return h('circle', { key: 'chip-' + chip, cx: geometry.center + flowOuterRadius + 22 + chip * 10, cy: flowY - 5 + chip * 7, r: 2.5 + chip * .5, fill: '#facc15' }); })) : null
           ) : null,
+          localRingTarget && !isContrast ? h('circle', { className: 'wf-beacon-pulse', cx: 62, cy: selectedY, r: 14, fill: '#06b6d4', opacity: .24, 'aria-hidden': 'true' }) : null,
           localRingTarget ? h('circle', { 'data-wheel-fire-work-ring-marker': 'true', cx: 62, cy: selectedY, r: 9, fill: '#06b6d4', stroke: '#cffafe', strokeWidth: 3 }) : null,
           h('text', { 'data-wheel-fire-surface-speed-label': method === 'wheel' ? 'true' : undefined, 'data-wheel-fire-surface-scope': method === 'wheel' ? (wholeFormTarget ? 'whole-form' : 'selected-ring') : undefined, 'data-wheel-fire-whole-form-kinematics': method === 'wheel' && wholeFormTarget ? 'true' : undefined, 'data-wheel-fire-min-surface-speed': method === 'wheel' && wholeFormTarget ? wholeFormSurface.minSurfaceSpeedCmPerSecond.toFixed(2) : undefined, 'data-wheel-fire-max-surface-speed': method === 'wheel' && wholeFormTarget ? wholeFormSurface.maxSurfaceSpeedCmPerSecond.toFixed(2) : undefined, x: 20, y: 25, fill: '#fef3c7', fontSize: 13, fontWeight: 800 }, method === 'wheel' ? displayedSurface.displayLabel : 'Handbuilding'),
           h('text', { x: 500, y: 25, fill: '#fef3c7', fontSize: 13, textAnchor: 'end' }, data.showCrossSection ? 'Material cutaway' : '3D wheel · ' + Math.round(cameraTilt) + '° tilt'),
@@ -4491,15 +4506,15 @@
                 ) : null,
                 h('line', { x1: 22, x2: 498, y1: 30, y2: 30, stroke: '#e2e8f0', strokeWidth: 0.8, strokeDasharray: '3 4' }),
                 h('line', { x1: 22, x2: 498, y1: 51, y2: 51, stroke: '#cbd5e1', strokeWidth: 1 }),
-                !isContrast && points.length >= 2 ? h('path', { d: path + ' L' + points[points.length - 1].x.toFixed(1) + ',51 L' + points[0].x.toFixed(1) + ',51 Z', fill: 'url(#wf-track-area-' + metric.key + ')' }) : null,
-                !isContrast ? h('path', { d: path, fill: 'none', stroke: metric.color, strokeWidth: 7, strokeLinejoin: 'round', strokeLinecap: 'round', opacity: 0.14 }) : null,
+                !isContrast && points.length >= 2 ? h('path', { className: 'wf-sheen-drift', d: path + ' L' + points[points.length - 1].x.toFixed(1) + ',51 L' + points[0].x.toFixed(1) + ',51 Z', fill: 'url(#wf-track-area-' + metric.key + ')' }) : null,
+                !isContrast ? h('path', { className: 'wf-ember-breathe', d: path, fill: 'none', stroke: metric.color, strokeWidth: 7, strokeLinejoin: 'round', strokeLinecap: 'round', opacity: 0.14 }) : null,
                 h('path', { d: path, fill: 'none', stroke: metric.color, strokeWidth: 3, strokeLinejoin: 'round', strokeLinecap: 'round' }),
                 points.map(function (point, index) {
                   var isReference = index === 0;
                   var isLatest = index === points.length - 1;
                   var showLabel = points.length <= 6 || isReference || isLatest;
                   return h('g', { key: point.trial },
-                    isLatest && !isContrast ? h('circle', { cx: point.x, cy: point.y, r: 9, fill: metric.color, opacity: 0.18 }) : null,
+                    isLatest && !isContrast ? h('circle', { className: 'wf-beacon-pulse', cx: point.x, cy: point.y, r: 9, fill: metric.color, opacity: 0.18 }) : null,
                     isReference ? h('rect', { x: point.x - 5, y: point.y - 5, width: 10, height: 10, rx: 1.5, fill: '#ffffff', stroke: metric.color, strokeWidth: 3 }) : h('circle', { cx: point.x, cy: point.y, r: isLatest ? 5 : 4, fill: isLatest ? '#ffffff' : metric.color, stroke: metric.color, strokeWidth: isLatest ? 3 : 1 }),
                     h('title', null, 'Trial ' + point.trial + ': ' + point.value.toFixed(metric.digits) + metric.unit + (isReference ? ', selected reference' : (isLatest ? ', latest trial' : ''))),
                     showLabel ? h('text', { x: point.x, y: 67, textAnchor: index === 0 ? 'start' : (index === points.length - 1 ? 'end' : 'middle'), fill: '#334155', fontSize: 10, fontWeight: 700 }, 'T' + point.trial) : null
@@ -4932,7 +4947,7 @@
                 );
               }),
               [44, 85, 126, 168].map(function (y) { return h('line', { key: y, x1: 28, x2: 472, y1: y, y2: y, stroke: '#fed7aa', strokeWidth: 1 }); }),
-              !isContrast ? h('path', { d: curve + ' Z', fill: 'url(#wf-sched-heat)', 'aria-hidden': 'true' }) : null,
+              !isContrast ? h('path', { className: 'wf-sheen-drift', d: curve + ' Z', fill: 'url(#wf-sched-heat)', 'aria-hidden': 'true' }) : null,
               transitionWindows.map(function (transitionWindow, index) {
                 var startX = plotStart + plotWidth * transitionWindow.startProgressPct / 100;
                 var endX = plotStart + plotWidth * transitionWindow.endProgressPct / 100;
@@ -4941,16 +4956,16 @@
                 var labelX = clamp(centerX, 70, 430);
                 return h('text', { key: transitionWindow.id + '-label', x: labelX, y: [36, 58, 80][index] || 80, textAnchor: textAnchor, fill: transitionWindow.id === 'low-silica-cool' ? '#5b21b6' : '#92400e', fontSize: 11, fontWeight: 700, 'aria-hidden': 'true' }, transitionWindow.shortLabel);
               }),
-              !isContrast ? h('path', { d: curve, fill: 'none', stroke: '#f97316', strokeWidth: 11, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.16, 'aria-hidden': 'true' }) : null,
+              !isContrast ? h('path', { className: 'wf-ember-breathe', d: curve, fill: 'none', stroke: '#f97316', strokeWidth: 11, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.16, 'aria-hidden': 'true' }) : null,
               h('path', { d: curve, fill: 'none', stroke: '#c2410c', strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-              !isContrast ? h('path', { d: coreCurve, fill: 'none', stroke: '#3b82f6', strokeWidth: 7, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.14, 'aria-hidden': 'true' }) : null,
-              h('path', { 'data-wheel-fire-core-trace': 'true', d: coreCurve, fill: 'none', stroke: '#1d4ed8', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round', strokeDasharray: '8 5' }),
+              !isContrast ? h('path', { className: 'wf-sheen-drift', d: coreCurve, fill: 'none', stroke: '#3b82f6', strokeWidth: 7, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.14, 'aria-hidden': 'true' }) : null,
+              h('path', { className: !isContrast ? 'wf-force-flow' : undefined, 'data-wheel-fire-core-trace': 'true', d: coreCurve, fill: 'none', stroke: '#1d4ed8', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round', strokeDasharray: '8 5' }),
               h('line', { x1: markerX, x2: markerX, y1: 24, y2: 168, stroke: '#0f766e', strokeWidth: 2, strokeDasharray: '5 5', opacity: .8, 'aria-hidden': 'true' }),
               h('line', { 'data-wheel-fire-current-core-gap': 'true', x1: markerX, x2: markerX, y1: markerY, y2: coreMarkerY, stroke: '#1e3a8a', strokeWidth: 4, strokeLinecap: 'round', 'aria-hidden': 'true' }),
-              !isContrast ? h('circle', { cx: peakStressX, cy: peakStressY, r: 12, fill: '#be123c', opacity: 0.16, 'aria-hidden': 'true' }) : null,
+              !isContrast ? h('circle', { className: 'wf-beacon-pulse', cx: peakStressX, cy: peakStressY, r: 12, fill: '#be123c', opacity: 0.16, 'aria-hidden': 'true' }) : null,
               h('path', { 'data-wheel-fire-peak-stress': 'true', d: peakStressDiamond, fill: '#be123c', stroke: '#fff7ed', strokeWidth: 2, 'aria-hidden': 'true' }),
               h('text', { x: clamp(peakStressX, 72, 428), y: peakStressLabelY, textAnchor: 'middle', fill: '#881337', fontSize: 11, fontWeight: 700 }, 'peak stress ' + Math.round(currentSchedule.thermalStress.peakStressPct) + '%'),
-              !isContrast ? h('circle', { cx: markerX, cy: markerY, r: 12, fill: '#0f766e', opacity: 0.18, 'aria-hidden': 'true' }) : null,
+              !isContrast ? h('circle', { className: 'wf-beacon-pulse', cx: markerX, cy: markerY, r: 12, fill: '#0f766e', opacity: 0.18, 'aria-hidden': 'true' }) : null,
               h('circle', { cx: markerX, cy: markerY, r: 7, fill: '#0f766e', stroke: '#ccfbf1', strokeWidth: 3, 'aria-hidden': 'true' }),
               h('circle', { 'data-wheel-fire-current-core': 'true', cx: markerX, cy: coreMarkerY, r: 5.5, fill: '#1d4ed8', stroke: '#dbeafe', strokeWidth: 2.5, 'aria-hidden': 'true' }),
               h('text', { 'data-wheel-fire-core-label': 'true', x: coreLabelX, y: coreLabelY, textAnchor: coreLabelAnchor, fill: '#1e3a8a', fontSize: 11, fontWeight: 700 }, 'ware core ' + Math.round(kilnWarePoint.coreTemperatureC) + '°C'),
@@ -5194,7 +5209,8 @@
               h('text', { x: wareLabelX, y: selectedWareCoreY - 19, fill: '#fff7ed', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'section ' + Math.round(wareCore.surfaceTemperatureC) + '° → ' + Math.round(wareCore.coreTemperatureC) + '°')
             ),
             h('g', { 'aria-hidden': 'true' },
-              h('path', { d: 'M476 ' + [118, 207, 296][probeIndex] + ' H350', fill: 'none', stroke: '#67e8f9', strokeWidth: 3, strokeDasharray: '7 5' }),
+              h('path', { className: !isContrast ? 'wf-force-flow' : undefined, d: 'M476 ' + [118, 207, 296][probeIndex] + ' H350', fill: 'none', stroke: '#67e8f9', strokeWidth: 3, strokeDasharray: '7 5' }),
+              !isContrast ? h('circle', { className: 'wf-beacon-pulse', cx: 350, cy: [118, 207, 296][probeIndex], r: 13, fill: '#67e8f9', opacity: .28 }) : null,
               h('circle', { 'data-wheel-fire-temperature-now': Math.round(probeTemperature), cx: 350, cy: [118, 207, 296][probeIndex], r: 7, fill: '#083344', stroke: '#a5f3fc', strokeWidth: 3 }),
               h('text', { x: 472, y: [106, 195, 284][probeIndex], fill: '#cffafe', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'T now')
             ),
@@ -5207,7 +5223,12 @@
             })) : h('g', { className: kilnSourceState.activeInput ? 'wheel-fire-flame-motion' : undefined, 'data-wheel-fire-heat-source': kilnType + '-source', 'data-wheel-fire-source-state': kilnSourceState.state, 'data-wheel-fire-source-active': String(kilnSourceState.activeInput), 'aria-hidden': 'true' },
               kilnType === 'wood' ? h('ellipse', { className: kilnSourceState.activeInput ? 'wheel-fire-heat-pulse' : undefined, 'data-wheel-fire-fuel-glow': 'wood-firebox', cx: 108, cy: 307, rx: 34, ry: 12, fill: '#fb923c', opacity: kilnSourceState.fuelBedGlowRatio.toFixed(2) }) : null,
               h('path', { 'data-wheel-fire-active-flame': String(kilnSourceState.activeInput), d: 'M90 310 C138 322 150 278 186 294 C224 310 192 252 238 266 C286 280 268 216 318 232 C370 248 354 168 414 182', fill: 'none', stroke: atmosphere === 'reduction' ? '#c084fc' : '#fb923c', strokeWidth: 16, strokeLinecap: 'round', opacity: kilnSourceState.activeInput ? (.18 + kilnSourceState.activeFlameOpacityRatio * .78).toFixed(2) : '0.00' }),
-              h('path', { d: 'M94 310 C150 318 158 280 196 292 C244 306 218 252 260 266 C312 280 298 224 344 234 C390 244 390 196 424 190', fill: 'none', stroke: '#fde68a', strokeWidth: 5, strokeLinecap: 'round', opacity: kilnSourceState.activeInput ? kilnSourceState.activeFlameOpacityRatio.toFixed(2) : '0.00' })
+              h('path', { d: 'M94 310 C150 318 158 280 196 292 C244 306 218 252 260 266 C312 280 298 224 344 234 C390 244 390 196 424 190', fill: 'none', stroke: '#fde68a', strokeWidth: 5, strokeLinecap: 'round', opacity: kilnSourceState.activeInput ? kilnSourceState.activeFlameOpacityRatio.toFixed(2) : '0.00' }),
+              !isContrast && kilnSourceState.activeInput ? h('g', { fill: '#fef08a', opacity: (.35 + kilnSourceState.activeFlameOpacityRatio * .55).toFixed(2) },
+                [[165, 275, 2.2, '0s', '4px'], [248, 245, 2.4, '0.6s', '-5px'], [328, 212, 2, '1.2s', '6px'], [388, 178, 2.1, '1.8s', '-4px']].map(function (sp, si) {
+                  return h('circle', { key: 'k-sp-' + si, className: 'wf-spark-rise', cx: sp[0], cy: sp[1], r: sp[2], style: { animationDelay: sp[3], '--wf-dx': sp[4] } });
+                })
+              ) : null
             ),
             h('path', { className: 'wheel-fire-flow-motion', style: { animationDuration: kilnSourceState.flowMotionSeconds + 's' }, 'data-wheel-fire-exhaust-mode': kilnSourceState.flowMode, d: 'M434 90 Q468 88 480 60', fill: 'none', stroke: atmosphere === 'reduction' ? '#a78bfa' : '#7dd3fc', strokeWidth: 7, strokeDasharray: '12 8', opacity: ((.45 + kilnAirAccess / 200) * kilnSourceState.flowVisibilityRatio).toFixed(2), 'aria-hidden': 'true' }),
             h('text', { x: 458, y: 48, fill: '#fff7ed', fontSize: 11, textAnchor: 'end' }, 'exhaust'),
@@ -5218,7 +5239,7 @@
             kilnShelfGeometries.map(function (shelf, index) { return witnessConePackVisual(zoneConePacks[index], 390, shelf.frontY - 5, 'zone-' + probeZoneIds[index], index === probeIndex); })
           );
           var openScene = h('g', null,
-            !isContrast && kilnSourceState.activeInput ? h('ellipse', { cx: 280, cy: 256, rx: 185, ry: 112, fill: 'url(#wheel-fire-ember-bloom)', opacity: (.22 + kilnSourceState.fuelBedGlowRatio * .55).toFixed(2), 'aria-hidden': 'true' }) : null,
+            !isContrast && kilnSourceState.activeInput ? h('ellipse', { className: 'wf-ember-breathe', cx: 280, cy: 256, rx: 185, ry: 112, fill: 'url(#wheel-fire-ember-bloom)', opacity: (.22 + kilnSourceState.fuelBedGlowRatio * .55).toFixed(2), 'aria-hidden': 'true' }) : null,
             h('path', { d: 'M20 330 Q150 300 280 326 T540 322 V380 H20 Z', fill: '#4a3023', stroke: '#24150f', strokeWidth: 4 }),
             h('ellipse', { cx: 280, cy: 322, rx: 190, ry: 38, fill: '#1e1410', stroke: '#8d6e57', strokeWidth: 4 }),
             h('ellipse', { className: kilnSourceState.activeInput ? 'wheel-fire-heat-pulse' : undefined, 'data-wheel-fire-fuel-glow': 'open-fuel-bed', cx: 280, cy: 318, rx: 128, ry: 24, fill: isContrast ? '#fb923c' : 'url(#wheel-fire-ember-bloom)', opacity: kilnSourceState.fuelBedGlowRatio.toFixed(2), 'aria-hidden': 'true' }),
@@ -5231,11 +5252,10 @@
             openLoadPieces.map(function (piece, index) { return miniaturePiece(piece.x, piece.baseY, piece.scale, 'open-piece-' + index); }),
             h('g', { className: kilnSourceState.activeInput ? 'wheel-fire-flame-motion' : undefined, 'data-wheel-fire-heat-source': 'open-fuel-bed', 'data-wheel-fire-source-state': kilnSourceState.state, 'data-wheel-fire-source-active': String(kilnSourceState.activeInput), 'aria-hidden': 'true' },
               h('path', { 'data-wheel-fire-active-flame': String(kilnSourceState.activeInput), d: 'M160 306 C138 248 190 238 178 182 C222 216 216 260 232 300 Z M248 310 C224 236 284 224 266 142 C330 206 286 246 326 306 Z M330 308 C322 258 370 244 352 190 C408 236 374 278 398 312 Z', fill: 'url(#wheel-fire-open-flame)', opacity: kilnSourceState.activeInput ? (.18 + kilnSourceState.activeFlameOpacityRatio * .78).toFixed(2) : '0.00' }),
-              !isContrast && kilnSourceState.activeInput ? h('g', { fill: '#fef08a', opacity: (.35 + kilnSourceState.activeFlameOpacityRatio * .5).toFixed(2) },
-                h('circle', { cx: 196, cy: 158, r: 2.2 }),
-                h('circle', { cx: 282, cy: 126, r: 2.6 }),
-                h('circle', { cx: 342, cy: 162, r: 2 }),
-                h('circle', { cx: 234, cy: 174, r: 1.8 })
+              !isContrast && kilnSourceState.activeInput ? h('g', { fill: '#fef08a', opacity: (.38 + kilnSourceState.activeFlameOpacityRatio * .55).toFixed(2) },
+                [[196, 178, 2.2, '0s', '-6px'], [282, 146, 2.6, '0.45s', '5px'], [342, 182, 2, '0.9s', '-5px'], [234, 194, 1.8, '1.35s', '7px'], [260, 168, 2.3, '1.8s', '-4px'], [316, 160, 2.1, '2.1s', '6px'], [178, 212, 1.9, '0.7s', '4px'], [370, 206, 2, '1.55s', '-6px']].map(function (sp, si) {
+                  return h('circle', { key: 'o-sp-' + si, className: 'wf-spark-rise', cx: sp[0], cy: sp[1], r: sp[2], style: { animationDelay: sp[3], '--wf-dx': sp[4] } });
+                })
               ) : null
             ),
             h('g', { 'data-wheel-fire-ware-core': 'true', 'data-wheel-fire-thermal-section': 'true', 'aria-hidden': 'true' },
@@ -5250,8 +5270,9 @@
             h('path', { className: 'wheel-fire-flow-motion', style: { animationDuration: kilnSourceState.flowMotionSeconds + 's' }, 'data-wheel-fire-air-path': 'true', 'data-wheel-fire-flow-mode': kilnSourceState.flowMode, d: 'M250 135 C210 90 286 72 250 28 M330 172 C382 118 310 94 352 42', fill: 'none', stroke: atmosphere === 'reduction' ? '#a78bfa' : '#cbd5e1', strokeWidth: 12, strokeLinecap: 'round', opacity: ((.08 + kilnAirAccess / 200) * kilnSourceState.flowVisibilityRatio).toFixed(2), strokeDasharray: '18 12' }),
             h('text', { x: 24, y: 28, fill: '#fff7ed', fontSize: 11 }, 'Load ' + Math.round(kilnLoadDensity) + '% | air access ' + Math.round(kilnAirAccess) + '%'),
             h('g', { 'aria-hidden': 'true' },
-              h('ellipse', { cx: 300, cy: [96, 220, 310][probeIndex], rx: 70, ry: probeIndex === 2 ? 22 : 28, fill: 'none', stroke: '#67e8f9', strokeWidth: 2, strokeDasharray: '7 5' }),
-              h('path', { d: 'M510 ' + [96, 220, 310][probeIndex] + ' H300', fill: 'none', stroke: '#67e8f9', strokeWidth: 3, strokeDasharray: '7 5' }),
+              h('ellipse', { className: !isContrast ? 'wf-force-flow' : undefined, cx: 300, cy: [96, 220, 310][probeIndex], rx: 70, ry: probeIndex === 2 ? 22 : 28, fill: 'none', stroke: '#67e8f9', strokeWidth: 2, strokeDasharray: '7 5' }),
+              h('path', { className: !isContrast ? 'wf-force-flow' : undefined, d: 'M510 ' + [96, 220, 310][probeIndex] + ' H300', fill: 'none', stroke: '#67e8f9', strokeWidth: 3, strokeDasharray: '7 5' }),
+              !isContrast ? h('circle', { className: 'wf-beacon-pulse', cx: 300, cy: [96, 220, 310][probeIndex], r: 13, fill: '#67e8f9', opacity: .28 }) : null,
               h('circle', { 'data-wheel-fire-temperature-now': Math.round(probeTemperature), cx: 300, cy: [96, 220, 310][probeIndex], r: 7, fill: '#083344', stroke: '#a5f3fc', strokeWidth: 3 }),
               h('text', { x: 500, y: [84, 208, 298][probeIndex], fill: '#cffafe', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'T now')
             ),
@@ -6080,13 +6101,13 @@
           )
         ),
         h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 16, fill: isContrast ? '#000000' : 'rgba(15,10,8,0.62)', stroke: isContrast ? '#00ff00' : 'rgba(251,191,36,0.58)', strokeWidth: 1.5 }),
-        !isContrast ? h('circle', { cx: 32, cy: 36, r: 24, fill: 'url(#wf-emblem-hearth)' }) : null,
-        !isContrast ? h('ellipse', { cx: 32, cy: 50, rx: 20, ry: 5, fill: 'none', stroke: '#fbbf24', strokeWidth: 5, opacity: 0.2 }) : null,
-        h('ellipse', { cx: 32, cy: 50, rx: 20, ry: 5, fill: 'none', stroke: isContrast ? '#ffff00' : '#fbbf24', strokeWidth: 2, strokeDasharray: '6 3' }),
+        !isContrast ? h('circle', { className: 'wf-ember-breathe', cx: 32, cy: 36, r: 24, fill: 'url(#wf-emblem-hearth)' }) : null,
+        !isContrast ? h('ellipse', { className: 'wf-ember-breathe', cx: 32, cy: 50, rx: 20, ry: 5, fill: 'none', stroke: '#fbbf24', strokeWidth: 5, opacity: 0.2 }) : null,
+        h('ellipse', { className: !isContrast ? 'wf-force-flow' : undefined, cx: 32, cy: 50, rx: 20, ry: 5, fill: 'none', stroke: isContrast ? '#ffff00' : '#fbbf24', strokeWidth: 2, strokeDasharray: '6 3' }),
         h('path', { d: 'M24 47 C19 41 18 30 22 23 C24 19 25 16 24 13 L40 13 C39 16 40 19 42 23 C46 30 45 41 40 47 Z', fill: isContrast ? '#000000' : 'url(#wf-emblem-clay)', stroke: isContrast ? '#ffffff' : '#fde68a', strokeWidth: 2 }),
-        !isContrast ? h('path', { d: 'M25.5 23 C23 29 23.5 38 27 43', fill: 'none', stroke: '#fef3c7', strokeWidth: 1.8, strokeLinecap: 'round', opacity: 0.52 }) : null,
+        !isContrast ? h('path', { className: 'wf-sheen-drift', d: 'M25.5 23 C23 29 23.5 38 27 43', fill: 'none', stroke: '#fef3c7', strokeWidth: 1.8, strokeLinecap: 'round', opacity: 0.52 }) : null,
         h('ellipse', { cx: 32, cy: 13, rx: 8, ry: 2.4, fill: isContrast ? '#000000' : '#451a03', stroke: isContrast ? '#ffff00' : '#fde68a', strokeWidth: 1.4 }),
-        h('path', { d: 'M14 26 Q11 21 15 16 M50 26 Q53 21 49 16', fill: 'none', stroke: isContrast ? '#00ff00' : '#fb923c', strokeWidth: 2, strokeLinecap: 'round' })
+        h('path', { className: !isContrast ? 'wf-sheen-drift' : undefined, d: 'M14 26 Q11 21 15 16 M50 26 Q53 21 49 16', fill: 'none', stroke: isContrast ? '#00ff00' : '#fb923c', strokeWidth: 2, strokeLinecap: 'round' })
       );
       var miniVesselSilhouetteSvg = (function () {
         var ptsL = [], ptsR = [];

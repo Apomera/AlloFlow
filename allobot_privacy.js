@@ -42,7 +42,7 @@
       return { data, ...(sources.length ? { evidence: { sources, checkedAt, basis: evidence.basis === 'google-grounding' ? 'google-grounding' : 'search-excerpts' } } : {}) };
     },
     get: () => ({ ...choice }),
-    set: patch => { choice = { recent: patch.recent === true, excerpt: String(patch.excerpt || '').slice(0, 1500) }; notify(); },
+    set: patch => { const p = patch && typeof patch === 'object' ? patch : {}; choice = { recent: p.recent === true, excerpt: String(p.excerpt || '').slice(0, 1500) }; notify(); },
     clear: () => { choice = { recent: false, excerpt: '' }; notify(); },
     consume: () => { const selected = { ...choice }; choice = { recent: false, excerpt: '' }; notify(); return selected; },
     recentMessages,

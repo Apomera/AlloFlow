@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
+const { applyParaproBatch1Overrides } = require('./parapro_batch_1/index.cjs');
 const path = require('path');
 const root = path.resolve(__dirname, '..');
 const sourcePack = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'parapro_pack.json'), 'utf8'));
@@ -15,9 +16,9 @@ const learningLibrary = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 
 const batch1SupplementById = new Map((Array.isArray(batch1Supplement) ? batch1Supplement : []).map((item) => [item.id, item]));
 const batch2ById = new Map((Array.isArray(batch2Items) ? batch2Items : []).map((item) => [item.id, item]));
 const batch1Source = sourceItems.slice(0, Math.min(sourceItems.length, 100));
-const mergedBatch1 = sourceItems.length === 90
+const mergedBatch1 = applyParaproBatch1Overrides(sourceItems.length === 90
   ? sourceItems.concat(Array.isArray(batch1Supplement) ? batch1Supplement : [])
-  : batch1Source.map((item) => batch1SupplementById.get(item.id) || item);
+  : batch1Source.map((item) => batch1SupplementById.get(item.id) || item));
 const mergedUntypedItems = mergedBatch1.concat(Array.isArray(batch2Items) ? batch2Items : []);
 const librarySkills = Array.isArray(learningLibrary.skills) ? learningLibrary.skills : [];
 const skillsByDomain = Object.fromEntries(['reading', 'mathematics', 'writing'].map((domainId) => [domainId, librarySkills.filter((skill) => skill.domainId === domainId)]));
@@ -81,7 +82,7 @@ if (learningLibrary.libraryId !== 'parapro-1755-learning-library' || librarySkil
 if (pack.learningLibraryUrl !== './test_prep/parapro_learning_library.json' || pack.simulationItemCount !== 90 || pack.simulationTimeMinutes !== 150 || JSON.stringify(pack.simulationDomainCounts) !== JSON.stringify(expectedSimulationDomainCounts)) add(null, 'learning-linkage', 'Pack learning or simulation metadata is invalid.');
 if (!Array.isArray(batch1Supplement) || batch1Supplement.length !== 10 || batch1SupplementById.size !== 10) add(null, 'provenance', 'Batch 1 supplement must contain 10 unique items.');
 if (!Array.isArray(batch2Items) || batch2Items.length !== 100 || batch2ById.size !== 100) add(null, 'provenance', 'Batch 2 must contain 100 unique items.');
-if (![90, 100, 200].includes(sourceItems.length)) add(null, 'provenance', 'Release source must contain the reviewed 90-item core, Batch 1, or the merged 200-item bank.');
+if (![90, 100, 200, 500].includes(sourceItems.length)) add(null, 'provenance', 'Release source must contain the reviewed 90-item core, Batch 1, or the merged 200-item bank.');
 if (!Array.isArray(pack.items) || pack.items.length !== 200) add(null, 'blueprint-alignment', 'Diagnostic bank must contain two 100-item batches.');
 if (pack.batchSize !== 100) add(null, 'blueprint-alignment', 'Pack must declare a 100-item batch size.');
 if (!Array.isArray(pack.sections) || pack.sections.length !== 2 || pack.sections.some((section, index) => section.id !== 'diagnostic-batch-' + (index + 1) || section.timeMinutes !== null)) add(null, 'blueprint-alignment', 'Pack must declare two untimed 100-item diagnostic sections.');
@@ -209,6 +210,7 @@ ${reports.map((item) => `| ${item.id} | ${item.domainId} | ${item.blueprintRole}
 for (const outputRoot of [path.join(root, 'test_prep'), path.join(root, 'desktop/web-app', 'public', 'test_prep')]) {
   fs.mkdirSync(outputRoot, { recursive: true });
   writeGeneratedFile(path.join(outputRoot, 'parapro_pack.json'), JSON.stringify(packForWrite, null, 2) + '\n', 'utf8');
+  writeGeneratedFile(path.join(outputRoot, 'parapro_items.json'), JSON.stringify(packForWrite.items, null, 2) + '\n', 'utf8');
   if (!expandedSourceMode) {
     writeGeneratedFile(path.join(outputRoot, 'parapro_native_qa.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
   }

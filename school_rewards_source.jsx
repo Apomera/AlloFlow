@@ -77,7 +77,7 @@ async function srCopyText(text) {
   } catch (_) {}
   try {
     const ta = document.createElement('textarea');
-    ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;left:-9999px;top:0';
+    ta.value = text; ta.setAttribute('readonly', ''); ta.setAttribute('aria-hidden', 'true'); ta.setAttribute('aria-label', 'Clipboard copy helper'); ta.style.cssText = 'position:fixed;left:-9999px;top:0';
     document.body.appendChild(ta); ta.select();
     const ok = document.execCommand('copy');
     document.body.removeChild(ta);
@@ -845,14 +845,29 @@ function SchoolRewardsPanel(props) {
   const panelMountedRef = React.useRef(true);
   const backdropDownRef = React.useRef(null);
   const safeClose = () => { if (typeof onClose === 'function') onClose(); };
+  const [urlCopied, setUrlCopied] = React.useState(false);
+  const urlCopyTimerRef = React.useRef(null);
   const snippetTimerRef = React.useRef(null);
   React.useEffect(() => {
     panelMountedRef.current = true;
     return () => {
       panelMountedRef.current = false;
       if (snippetTimerRef.current) { window.clearTimeout(snippetTimerRef.current); snippetTimerRef.current = null; }
+      if (urlCopyTimerRef.current) { window.clearTimeout(urlCopyTimerRef.current); urlCopyTimerRef.current = null; }
     };
   }, []);
+  const copySavedUrl = async () => {
+    if (!portalUrl) return;
+    if (await srCopyText(portalUrl)) {
+      if (!panelMountedRef.current) return;
+      setUrlCopied(true);
+      if (urlCopyTimerRef.current) window.clearTimeout(urlCopyTimerRef.current);
+      urlCopyTimerRef.current = window.setTimeout(() => {
+        urlCopyTimerRef.current = null;
+        if (panelMountedRef.current) setUrlCopied(false);
+      }, 2400);
+    }
+  };
   const copySnippet = async () => {
     if (await srCopyText(snippet)) {
       if (!panelMountedRef.current) return;
@@ -1017,7 +1032,7 @@ function SchoolRewardsPanel(props) {
     onMouseDown={(event) => { backdropDownRef.current = (event.target === event.currentTarget); }}
     onClick={(event) => { const allow = backdropDownRef.current !== false; backdropDownRef.current = null; if (event.target === event.currentTarget && allow) safeClose(); }}>
     <style>{SR_THEME_STYLES}</style>
-    <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="schoolrewards-title" aria-describedby="schoolrewards-subtitle" tabIndex={-1} onClick={(event) => event.stopPropagation()} className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl focus:outline-none">
+    <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="schoolrewards-title" aria-describedby="schoolrewards-subtitle" tabIndex={-1} onClick={(event) => event.stopPropagation()} className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">
       <header className="border-b border-slate-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 px-5 py-4">
         <div className="flex items-start justify-between gap-3">
           <h2 id="schoolrewards-title" className="flex items-center gap-2 text-xl font-black text-slate-900"><span aria-hidden="true">{'🎟️'}</span> {tt('schoolrewards.title', 'School Rewards & Store')}</h2>
@@ -1080,7 +1095,12 @@ function SchoolRewardsPanel(props) {
           </div>}
           {connected ? <div className="mt-3 space-y-3">
             <label htmlFor="schoolrewards-saved-url" className="block text-xs font-black text-slate-800">{tt('schoolrewards.saved_url', 'Saved deployment')}</label>
-            <input id="schoolrewards-saved-url" className={SR_INPUT + ' font-mono text-xs'} readOnly value={portalUrl} onFocus={(event) => event.target.select()} />
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input id="schoolrewards-saved-url" className={SR_INPUT + ' font-mono text-xs'} readOnly value={portalUrl} onFocus={(event) => event.target.select()} />
+              <button type="button" className={SR_BTN_QUIET + ' shrink-0'} onClick={copySavedUrl} disabled={urlDirty} data-testid="schoolrewards-copy-url">
+                {urlCopied ? tt('schoolrewards.copied_address', '✓ Copied') : tt('schoolrewards.copy_address', 'Copy address')}
+              </button>
+            </div>
             <div className="flex flex-wrap gap-2">
               <button type="button" className={SR_BTN_PRIMARY} onClick={openPortal} disabled={urlDirty} data-help-key="schoolrewards_open_portal">{tt('schoolrewards.open_portal', 'Open School Rewards portal')}</button>
               <button type="button" className={SR_BTN_SECONDARY} onClick={openRecognition} disabled={urlDirty} data-help-key="schoolrewards_open_recognition">{tt('schoolrewards.open_recognition', 'Open recognition')}</button>
@@ -1153,11 +1173,23 @@ function SchoolRewardsPanel(props) {
           {setupRoute === 'guided' && <>
 
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 id="schoolrewards-setup-title" className="text-base font-black text-slate-900">{tt('schoolrewards.setup_title', 'Setup checklist')}</h3>
-            <button type="button" className={SR_BTN_QUIET} aria-expanded={showSetup} aria-controls="schoolrewards-setup-body" onClick={() => setShowSetup((value) => !value)} data-help-key="schoolrewards_toggle_setup">{showSetup ? tt('schoolrewards.hide_setup', 'Hide checklist') : tt('schoolrewards.show_setup', 'Show checklist')}</button>
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 id="schoolrewards-setup-title" className="text-base font-black text-slate-900">{tt('schoolrewards.setup_title', 'Setup checklist')}</h3>
+              <span data-testid="schoolrewards-progress-pill" className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-black text-emerald-900">
+                {doneCount} / {SR_STEP_ORDER.length} ({Math.round((doneCount / SR_STEP_ORDER.length) * 100)}%)
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {nextStep && showSetup && (
+                <button type="button" className={SR_BTN_QUIET} onClick={() => setFocusTarget('sr-card-' + nextStep)} data-testid="schoolrewards-jump-next">
+                  {tt('schoolrewards.jump_next_step', 'Jump to next step')}
+                </button>
+              )}
+              <button type="button" className={SR_BTN_QUIET} aria-expanded={showSetup} aria-controls="schoolrewards-setup-body" onClick={() => setShowSetup((value) => !value)} data-help-key="schoolrewards_toggle_setup">{showSetup ? tt('schoolrewards.hide_setup', 'Hide checklist') : tt('schoolrewards.show_setup', 'Show checklist')}</button>
+            </div>
           </div>
           <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label={tt('schoolrewards.progress_label', 'School Rewards setup progress')} aria-valuemin={0} aria-valuemax={SR_STEP_ORDER.length} aria-valuenow={doneCount} aria-valuetext={doneCount + ' of ' + SR_STEP_ORDER.length}>
-            <div className="h-full rounded-full bg-emerald-700" style={{ width: Math.round((doneCount / SR_STEP_ORDER.length) * 100) + '%' }} />
+            <div className="h-full rounded-full bg-emerald-700 transition-all motion-reduce:transition-none" style={{ width: Math.round((doneCount / SR_STEP_ORDER.length) * 100) + '%' }} />
           </div>
           <p className="mt-2 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-950" role="status" data-help-key="schoolrewards_next_step">
             {nextStep ? <><strong>{tt('schoolrewards.next_step', 'Next step:')}</strong> {stepLabels[nextStep]}</> : <strong>{tt('schoolrewards.checklist_attested_complete', 'Your checklist is complete. These are your confirmations, not automatic deployment verification.')}</strong>}

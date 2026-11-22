@@ -12,7 +12,7 @@ function ConceptQuestTargetedPractice({quest,value,onChange,t}) {
   const heading=React.useRef(null),resume=React.useRef(null),[error,setError]=React.useState('');
   const bank=quest.solo.bank,targets=(value?.targets||[]).map(index=>bank.find(item=>item.sourceIndex===index)).filter(Boolean);
   const position=value?.entries?.length||0,item=targets[position],checked=!!value?.checked,lastItem=checked?targets[position-1]:null,last=lastItem?engine.grade(lastItem,value.entries[position-1]):null;
-  const start=()=>{const next=engine.coverage(quest).missedItems.slice(0,5).map(item=>item.sourceIndex);onChange({targets:next,entries:[],response:engine.initialResponse(bank.find(item=>item.sourceIndex===next[0])),checked:false});setError('');};
+  const start=()=>{const next=engine.coverage(quest).missedItems.slice(0,5).map(item=>item.sourceIndex);const first=next.length?bank.find(item=>item.sourceIndex===next[0]):null;if(!next.length||!first){setError(tr('solo_targeted_none','No missed items remain for focused practice.'));return;}onChange({targets:next,entries:[],response:engine.initialResponse(first),checked:false});setError('');};
   React.useEffect(()=>{if(value)(value.closed?resume.current:heading.current)?.focus();},[position,checked,!!value,!!value?.closed]);
   if(!value||value.closed)return <button ref={resume} type="button" data-start-targeted-practice onClick={()=>value?onChange({...value,closed:false}):start()} className="mt-3 min-h-11 rounded-lg bg-cyan-800 px-4 py-2 font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1">{value?tr('solo_targeted_resume','Resume focused practice'):tr('solo_targeted_start','Practice up to five missed ideas')}</button>;
   return <section data-targeted-practice className="mt-4 space-y-3 rounded-xl border-2 border-cyan-300 bg-white p-4"><h4 ref={heading} tabIndex={-1} className="font-bold">{tr('solo_targeted_title','Focused practice')}</h4><p className="text-sm">{tr('solo_targeted_help','These checks save with your adventure and stay separate from its original scores, health, and experience.')}</p><p role="status">{position+' / '+targets.length+' '+tr('solo_targeted_checked','practice items checked')}</p>{checked&&lastItem?<div><p role="status" className="font-bold">{last.gradable?(last.correct?tr('solo_targeted_correct','Correct practice response'):tr('solo_targeted_review','Review this idea again')):tr('solo_targeted_self_review','Self-review recorded; no automatic score.')}</p><p className="mt-2 whitespace-pre-wrap">{cqMd.inline(engine.answerGuide(lastItem))}</p>{lastItem.explanation&&<div className="mt-2">{cqExplanation(lastItem.explanation)}</div>}<button type="button" className="mt-3 min-h-11 rounded-lg border px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" onClick={()=>onChange({...value,checked:false,response:item?engine.initialResponse(item):{}})}>{tr('solo_targeted_continue','Continue practice')}</button></div>:item?<><ConceptQuestSoloQuestion item={item} response={value.response||{}} onChange={response=>{onChange({...value,response});setError('');}} guideOpen={value.response?.guideRevealed} onGuideOpen={()=>onChange({...value,response:{...value.response,guideRevealed:true}})} t={t}/><button type="button" className="min-h-11 rounded-lg bg-cyan-800 px-4 py-2 font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" onClick={()=>{const result=engine.grade(item,value.response||{});if(!result.complete){setError(tr('solo_targeted_incomplete','Complete the response and any self-review before checking.'));return;}onChange({...value,entries:[...value.entries,value.response],checked:true});}}>{tr('solo_targeted_check','Check practice response')}</button>{error&&<p role="alert">{error}</p>}</>:<><p>{tr('solo_targeted_complete','Focused practice complete. Explain one connection in your own words, or revisit an idea you still find difficult.')}</p><button type="button" className="min-h-11 rounded-lg border px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" onClick={start}>{tr('solo_targeted_again','Start another focused practice')}</button></>}<button type="button" className="ml-2 min-h-11 rounded-lg border px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1" onClick={()=>onChange({...value,closed:true})}>{tr('solo_targeted_close','Close practice')}</button></section>;
@@ -20,8 +20,16 @@ function ConceptQuestTargetedPractice({quest,value,onChange,t}) {
 function _cqAiUsable(fn) {
   try {
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn);
-  } catch (_) {}
-  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true));
+    if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
+    if (typeof window !== 'undefined') {
+      if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return false;
+      const qr = window.__alloQrStudentMode;
+      if (qr === true || (qr && typeof qr === 'object' && qr.active === true && qr.allowAi === false)) return false;
+    }
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 function ConceptQuestSolo({ generatedContent, inputText = '', callGemini, user, appId, t, onClose }) {
   // Item text uses the Assess view's light markdown (Concept Quest opens from it); plain text without it.
@@ -119,7 +127,9 @@ function ConceptQuestSolo({ generatedContent, inputText = '', callGemini, user, 
     const flush = () => { const value = latest.current; if (value?.active) value.saveRun(value.active); };
     const visibility = () => { if (document.visibilityState === 'hidden') flush(); };
     const external = event => {
-      if (event.key !== null && event.key !== saves.keyFor(context)) return;
+      let ownKey = null;
+      try { ownKey = saves.keyFor(context); } catch (_) { return; }
+      if (event.key !== null && event.key !== ownKey) return;
       const result = saves.read(getLocalStorage(),context);
       if (result.revision === revision.current) return;
       if (latest.current?.active) { saveBlocked.current = true; setSaveStatus({status:'conflict'}); }

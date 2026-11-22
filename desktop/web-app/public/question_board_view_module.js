@@ -43,11 +43,20 @@
     // Borrowed from annotation_suite NOTE_COLORS — already contrast-checked —
     // but re-keyed by MEANING. A board's colour answers "has this been dealt
     // with?", which is the question a sticky note cannot answer for you.
-    const STATE_COLORS = {
-        open:     { fill: '#fef9c3', border: '#a16207', text: '#713f12', label: 'Open' },
-        answered: { fill: '#dcfce7', border: '#15803d', text: '#14532d', label: 'Answered' },
-        pending:  { fill: '#dbeafe', border: '#1d4ed8', text: '#1e3a8a', label: 'Waiting for your teacher' }
-    };
+    const STATE_COLORS = Object.freeze({
+        open:     Object.freeze({ fill: '#fef9c3', border: '#a16207', text: '#713f12', label: 'Open' }),
+        answered: Object.freeze({ fill: '#dcfce7', border: '#15803d', text: '#14532d', label: 'Answered' }),
+        pending:  Object.freeze({ fill: '#dbeafe', border: '#1d4ed8', text: '#1e3a8a', label: 'Waiting for your teacher' })
+    });
+
+    function safeText(v) {
+        return typeof v === 'string' ? v : (typeof v === 'number' && Number.isFinite(v) ? String(v) : '');
+    }
+
+    function safePosInt(v, fallback) {
+        const n = Number(v);
+        return (Number.isFinite(n) && n >= 0) ? Math.floor(n) : fallback;
+    }
 
     // Never call a bare t(): a free t() is a ReferenceError inside a CDN module,
     // and a single-arg t() renders "undefined" on a miss. Always key + fallback.
@@ -63,8 +72,9 @@
     }
 
     function itemState(item) {
-        if (item && item.answered) return 'answered';
-        if (item && item.status !== 'approved') return 'pending';
+        if (!item || typeof item !== 'object') return 'pending';
+        if (item.answered) return 'answered';
+        if (item.status !== 'approved') return 'pending';
         return 'open';
     }
 
@@ -102,14 +112,19 @@
      * be tested without a DOM, and so visibility comes from ONE place.
      */
     function buildBoardViewModel(contract, board, actor, options) {
-        const opts = options || {};
-        const config = (board && board.config) || {};
-        const visible = contract.visibleItemsFor(actor, board) || [];
-        const isHost = actor && actor.role === 'host';
-        const mine = visible.filter(function (i) { return i.uid === (actor && actor.uid); });
-        const peers = visible.filter(function (i) { return i.uid !== (actor && actor.uid); });
-        const perStudent = config.itemsPerStudent || 0;
-        const expired = contract.isExpired(board);
+        const opts = (options && typeof options === 'object') ? options : {};
+        const rawCfg = board && board.config;
+        const config = (rawCfg && typeof rawCfg === 'object' && !Array.isArray(rawCfg)) ? rawCfg : {};
+        const rawVisible = (contract && typeof contract.visibleItemsFor === 'function')
+            ? contract.visibleItemsFor(actor, board)
+            : [];
+        const visible = Array.isArray(rawVisible) ? rawVisible.filter(function (i) { return !!(i && typeof i === 'object'); }) : [];
+        const isHost = !!(actor && actor.role === 'host');
+        const actorUid = (actor && typeof actor.uid === 'string' && actor.uid) ? actor.uid : null;
+        const mine = actorUid ? visible.filter(function (i) { return i.uid === actorUid; }) : [];
+        const peers = actorUid ? visible.filter(function (i) { return i.uid !== actorUid; }) : visible.slice();
+        const perStudent = safePosInt(config.itemsPerStudent, 0);
+        const expired = !!(contract && typeof contract.isExpired === 'function' && contract.isExpired(board));
         const capacity = boardCapacity(contract, board);
 
         const allItems = (board && Array.isArray(board.items)) ? board.items : [];
@@ -119,10 +134,10 @@
             ? Math.max(0, Math.floor(board.participantCount))
             : 0;
         const authorCount = Math.max(authors.size, reportedParticipants);
-        const floor = config.minParticipants || 3;
+        const floor = Math.max(1, safePosInt(config.minParticipants, 3) || 3);
 
         return {
-            prompt: config.prompt || '',
+            prompt: safeText(config.prompt),
             isHost: !!isHost,
             expired: expired,
             canPost: !expired && !isHost && mine.length < perStudent && !capacity.full,
@@ -144,11 +159,15 @@
 
     // A static card. Not draggable, not editable — see the header note.
     function QuestionCard(props) {
-        const item = props.item || {};
+        const p = (props && typeof props === 'object') ? props : {};
+        const item = (p.item && typeof p.item === 'object') ? p.item : {};
         const state = itemState(item);
         const palette = STATE_COLORS[state];
-        const tr = translator(props);
-        const isOwn = !!props.isOwn;
+        const tr = translator(p);
+        const isOwn = !!p.isOwn;
+        const text = safeText(item.text);
+        const displayName = safeText(item.displayName);
+        const answerNote = (item.answered && typeof item.answered === 'object') ? safeText(item.answered.note) : '';
         return h('li', {
             key: item.id,
             className: 'rounded-lg border p-3 text-sm',
@@ -156,16 +175,16 @@
             // The state is colour-coded, so it must also be readable without
             // colour — the label goes in the accessible name, not just the swatch.
             'aria-label': (isOwn ? tr('question_board.yours', 'Your question') : tr('question_board.classmate', 'Classmate question'))
-                + ': ' + (item.text || '') + '. ' + palette.label + '.'
+                + ': ' + text + '. ' + palette.label + '.'
         }, [
-            h('p', { key: 'text', className: 'font-medium' }, item.text || ''),
+            h('p', { key: 'text', className: 'font-medium' }, text),
             h('p', { key: 'meta', className: 'mt-1 text-xs opacity-80' }, [
                 h('span', { key: 'state' }, palette.label),
                 isOwn ? h('span', { key: 'own' }, ' · ' + tr('question_board.yours', 'Your question')) : null,
-                (!isOwn && item.displayName) ? h('span', { key: 'who' }, ' · ' + item.displayName) : null
+                (!isOwn && displayName) ? h('span', { key: 'who' }, ' · ' + displayName) : null
             ]),
-            (item.answered && item.answered.note)
-                ? h('p', { key: 'answer', className: 'mt-2 text-xs' }, item.answered.note)
+            answerNote
+                ? h('p', { key: 'answer', className: 'mt-2 text-xs' }, answerNote)
                 : null
         ]);
     }
@@ -265,9 +284,13 @@
         const items = (board && Array.isArray(board.items)) ? board.items : [];
         const rawCap = Number(((board && board.config) || {}).boardCap);
         const cap = (Number.isFinite(rawCap) && rawCap > 0) ? rawCap : 0;
-        const rawBytes = Number(contract.estimateBoardBytes(board));
-        const bytes = (Number.isFinite(rawBytes) && rawBytes >= 0) ? rawBytes : contract.LIMITS.DOC_BYTES;
-        const byteCap = contract.LIMITS.DOC_BYTES;
+        const byteCap = (contract && contract.LIMITS && Number.isFinite(Number(contract.LIMITS.DOC_BYTES)) && Number(contract.LIMITS.DOC_BYTES) > 0)
+            ? Number(contract.LIMITS.DOC_BYTES)
+            : 85 * 1024;
+        const rawBytes = (contract && typeof contract.estimateBoardBytes === 'function')
+            ? Number(contract.estimateBoardBytes(board))
+            : 0;
+        const bytes = (Number.isFinite(rawBytes) && rawBytes >= 0) ? rawBytes : byteCap;
         const byCount = cap ? items.length / cap : 0;
         const byBytes = byteCap ? bytes / byteCap : 0;
         const worst = Math.max(byCount, byBytes);
@@ -295,10 +318,11 @@
      * includeNames:false when the record is leaving the classroom.
      */
     function exportBoardRecord(contract, board, options) {
-        const opts = options || {};
+        const opts = (options && typeof options === 'object') ? options : {};
         const includeNames = opts.includeNames !== false;
-        const config = (board && board.config) || {};
-        const items = ((board && board.items) || []).filter(function (i) { return i && i.status === 'approved'; });
+        const config = (board && board.config && typeof board.config === 'object' && !Array.isArray(board.config)) ? board.config : {};
+        const rawItems = (board && Array.isArray(board.items)) ? board.items : [];
+        const items = rawItems.filter(function (i) { return i && i.status === 'approved'; });
         const answered = items.filter(function (i) { return !!i.answered; });
         const open = items.filter(function (i) { return !i.answered; });
         const who = function (i) { return (includeNames && i.displayName) ? ' — ' + escapeMarkdown(i.displayName) : ''; };
@@ -339,24 +363,27 @@
     // contract's sanitizer, so only the inline/leading markers need escaping.
     function escapeMarkdown(value) {
         return String(value == null ? '' : value)
-            .replace(/[\r\n\u0000-\u001f\u007f]+/g, ' ')
+            .replace(/[\r\n\u0000-\u001f\u007f\u2028\u2029]+/g, ' ')
             .replace(/([\\`*_\[\]()#<>!|~])/g, '\\$1')
-            .replace(/^(\s*)([-+])/, '$1\\$2');
+            .replace(/^(\s*)([-+])/, '$1\\$2')
+            .replace(/^(\s*)(\d+)\.\s/, '$1$2\\. ');
     }
 
     function countAuthors(items) {
         const seen = new Set();
-        (items || []).forEach(function (i) { if (i && i.uid) seen.add(String(i.uid)); });
+        (Array.isArray(items) ? items : []).forEach(function (i) { if (i && i.uid) seen.add(String(i.uid)); });
         return seen.size;
     }
 
     /** What to tell a student who cannot post right now, and why. */
     function postingBlockReason(contract, board, actor, capacity) {
-        if (contract.isExpired(board)) return 'closed';
+        if (contract && typeof contract.isExpired === 'function' && contract.isExpired(board)) return 'closed';
         if (capacity && capacity.full) return 'board-full';
-        const config = (board && board.config) || {};
-        const mine = ((board && board.items) || []).filter(function (i) { return i && i.uid === (actor && actor.uid); });
-        if (mine.length >= (config.itemsPerStudent || 0)) return 'own-cap';
+        const config = (board && board.config && typeof board.config === 'object') ? board.config : {};
+        const items = (board && Array.isArray(board.items)) ? board.items : [];
+        const actorUid = (actor && typeof actor.uid === 'string' && actor.uid) ? actor.uid : null;
+        const mine = actorUid ? items.filter(function (i) { return i && i.uid === actorUid; }) : [];
+        if (mine.length >= safePosInt(config.itemsPerStudent, 0)) return 'own-cap';
         return null;
     }
     // ── Phase 3: teacher surface ────────────────────────────────────────────
@@ -368,11 +395,15 @@
      * field-level reasons are produced here and the contract still has the final say.
      */
     function validateNewBoard(contract, draft) {
-        const d = draft || {};
+        const d = (draft && typeof draft === 'object' && !Array.isArray(draft)) ? draft : {};
         const errors = {};
-        const prompt = contract.sanitizeText(d.prompt, contract.LIMITS.PROMPT_CHARS);
+        if (!contract || typeof contract.sanitizeText !== 'function' || typeof contract.normalizeBoardConfig !== 'function') {
+            return { errors: { activityId: 'This board could not be created. Try again.' }, config: null };
+        }
+        const promptLimit = (contract.LIMITS && contract.LIMITS.PROMPT_CHARS) || 240;
+        const prompt = contract.sanitizeText(d.prompt, promptLimit);
         if (!prompt) errors.prompt = 'Give the board a driving question.';
-        const maxPer = (contract && contract.LIMITS && contract.LIMITS.ITEMS_PER_STUDENT_MAX) || 10;
+        const maxPer = (contract.LIMITS && contract.LIMITS.ITEMS_PER_STUDENT_MAX) || 10;
         const hasPer = d.itemsPerStudent !== undefined && d.itemsPerStudent !== null;
         const per = hasPer ? (String(d.itemsPerStudent).trim() === '' ? NaN : Number(d.itemsPerStudent)) : NaN;
         if (hasPer && (!Number.isInteger(per) || per < 1 || per > maxPer)) {
@@ -380,12 +411,15 @@
                 ? ('Students can add at most ' + maxPer + ' questions per board.')
                 : 'Each student needs at least one question.';
         }
-        if (d.expiresAt && isNaN(Date.parse(d.expiresAt))) {
-            errors.expiresAt = 'That end date is not a real date.';
-        } else if (d.expiresAt && Date.parse(d.expiresAt) <= Date.now()) {
-            // Without this a teacher can create a board that is closed the moment
-            // it exists — it would accept nothing and give no clue why.
-            errors.expiresAt = 'That end date has already passed, so the board would open closed.';
+        if (d.expiresAt != null && d.expiresAt !== '') {
+            const parsedExp = typeof d.expiresAt === 'string' ? Date.parse(d.expiresAt) : NaN;
+            if (isNaN(parsedExp)) {
+                errors.expiresAt = 'That end date is not a real date.';
+            } else if (parsedExp <= Date.now()) {
+                // Without this a teacher can create a board that is closed the moment
+                // it exists — it would accept nothing and give no clue why.
+                errors.expiresAt = 'That end date has already passed, so the board would open closed.';
+            }
         }
         if (Object.keys(errors).length) return { errors: errors, config: null };
         const config = contract.normalizeBoardConfig({
@@ -396,7 +430,7 @@
             minParticipants: d.minParticipants,
             itemsPerStudent: d.itemsPerStudent,
             boardCap: d.boardCap,
-            expiresAt: d.expiresAt
+            expiresAt: typeof d.expiresAt === 'string' ? d.expiresAt : ''
         });
         // A null here means the activityId was malformed — a caller bug, not a
         // teacher one, so it must not be reported as a form error.
@@ -410,12 +444,15 @@
      * computed here rather than left to the component.
      */
     function buildTeacherViewModel(contract, board, actor, options) {
-        const opts = options || {};
-        const config = (board && board.config) || {};
+        const opts = (options && typeof options === 'object') ? options : {};
+        const config = (board && board.config && typeof board.config === 'object' && !Array.isArray(board.config)) ? board.config : {};
         const isHost = !!(actor && actor.role === 'host');
         // Host visibility still comes from the contract, so the teacher panel
         // cannot invent a different answer from the student one.
-        const all = isHost ? (contract.visibleItemsFor(actor, board) || []) : [];
+        const rawAll = (isHost && contract && typeof contract.visibleItemsFor === 'function')
+            ? contract.visibleItemsFor(actor, board)
+            : [];
+        const all = Array.isArray(rawAll) ? rawAll.filter(function (i) { return !!(i && typeof i === 'object'); }) : [];
         const needsReview = all.filter(function (i) { return i && (i.status === 'held' || i.status === 'pending' || !i.status); });
         const hidden = all.filter(function (i) { return i && (i.status === 'hidden' || i.status === 'rejected'); });
         const approved = all.filter(function (i) { return i && i.status === 'approved'; });
@@ -425,8 +462,8 @@
         all.forEach(function (i) { if (i && i.uid) authors.add(String(i.uid)); });
         return {
             isHost: isHost,
-            prompt: config.prompt || '',
-            expired: contract.isExpired(board),
+            prompt: safeText(config.prompt),
+            expired: !!(contract && typeof contract.isExpired === 'function' && contract.isExpired(board)),
             needsReview: needsReview,
             hidden: hidden,
             open: open,
@@ -442,58 +479,66 @@
     }
 
     function ReviewRow(props) {
-        const item = props.item || {};
-        const tr = translator(props);
-        const snippet = String(item.text || '').slice(0, 60);
+        const p = (props && typeof props === 'object') ? props : {};
+        const item = (p.item && typeof p.item === 'object') ? p.item : {};
+        const tr = translator(p);
+        const text = safeText(item.text);
+        const displayName = safeText(item.displayName);
+        const snippet = text.slice(0, 60);
+        const disabled = !!p.disabled;
         return h('li', {
             key: item.id,
             className: 'flex items-start justify-between gap-2 rounded border border-slate-400 bg-white p-2 text-sm text-slate-900'
         }, [
             h('div', { key: 'text' }, [
-                h('p', { key: 'q', className: 'text-slate-900' }, item.text || ''),
-                h('p', { key: 'who', className: 'text-xs text-slate-700' }, item.displayName || '')
+                h('p', { key: 'q', className: 'text-slate-900' }, text),
+                h('p', { key: 'who', className: 'text-xs text-slate-700' }, displayName)
             ]),
             h('div', { key: 'actions', className: 'flex shrink-0 gap-1' }, [
                 h('button', {
-                    key: 'approve', type: 'button',
+                    key: 'approve', type: 'button', disabled: disabled,
                     'aria-label': tr('question_board.approve', 'Show to class') + (snippet ? ': ' + snippet : ''),
-                    onClick: function () { if (props.onApprove) props.onApprove(item); },
-                    className: 'min-h-11 rounded bg-emerald-700 px-3 py-1 text-xs font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2'
+                    onClick: function () { if (!disabled && p.onApprove) p.onApprove(item); },
+                    className: 'min-h-11 rounded bg-emerald-700 px-3 py-1 text-xs font-bold text-white disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2'
                 }, tr('question_board.approve', 'Show to class')),
                 h('button', {
-                    key: 'hide', type: 'button',
+                    key: 'hide', type: 'button', disabled: disabled,
                     'aria-label': tr('question_board.hide', 'Keep hidden') + (snippet ? ': ' + snippet : ''),
-                    onClick: function () { if (props.onHide) props.onHide(item); },
-                    className: 'min-h-11 rounded border border-slate-500 bg-white px-3 py-1 text-xs font-bold text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2'
+                    onClick: function () { if (!disabled && p.onHide) p.onHide(item); },
+                    className: 'min-h-11 rounded border border-slate-500 bg-white px-3 py-1 text-xs font-bold text-slate-900 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2'
                 }, tr('question_board.hide', 'Keep hidden'))
             ])
         ]);
     }
 
     function AnswerRow(props) {
-        const item = props.item || {};
-        const tr = translator(props);
+        const p = (props && typeof props === 'object') ? props : {};
+        const item = (p.item && typeof p.item === 'object') ? p.item : {};
+        const tr = translator(p);
         const done = !!item.answered;
         const palette = STATE_COLORS[done ? 'answered' : 'open'];
         const actionLabel = done ? tr('question_board.reopen', 'Reopen') : tr('question_board.mark_answered', 'Mark answered');
-        const snippet = String(item.text || '').slice(0, 60);
+        const text = safeText(item.text);
+        const note = (done && item.answered && typeof item.answered === 'object') ? safeText(item.answered.note) : '';
+        const snippet = text.slice(0, 60);
+        const disabled = !!p.disabled;
         return h('li', {
             key: item.id,
             className: 'flex items-start justify-between gap-2 rounded border p-2 text-sm',
             style: { background: palette.fill, borderColor: palette.border, color: palette.text },
-            'aria-label': (item.text || '') + '. ' + palette.label + '.'
+            'aria-label': text + '. ' + palette.label + '.'
         }, [
             h('div', { key: 'text' }, [
-                h('p', { key: 'q' }, item.text || ''),
-                (done && item.answered.note)
-                    ? h('p', { key: 'note', className: 'mt-1 text-xs' }, item.answered.note)
+                h('p', { key: 'q' }, text),
+                note
+                    ? h('p', { key: 'note', className: 'mt-1 text-xs' }, note)
                     : null
             ]),
             h('button', {
-                key: 'toggle', type: 'button',
+                key: 'toggle', type: 'button', disabled: disabled,
                 'aria-label': actionLabel + (snippet ? ': ' + snippet : ''),
-                onClick: function () { if (props.onToggleAnswered) props.onToggleAnswered(item, !done); },
-                className: 'shrink-0 min-h-11 rounded border px-3 py-1 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-800 focus-visible:ring-offset-2',
+                onClick: function () { if (!disabled && p.onToggleAnswered) p.onToggleAnswered(item, !done); },
+                className: 'shrink-0 min-h-11 rounded border px-3 py-1 text-xs font-bold disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-800 focus-visible:ring-offset-2',
                 style: { borderColor: palette.border }
             }, actionLabel)
         ]);
@@ -548,21 +593,21 @@
                 h('h3', { key: 'h', className: 'text-sm font-bold' },
                     tr('question_board.queue', 'Waiting for you') + ' (' + vm.needsReview.length + ')'),
                 h('ul', { key: 'list', className: 'mt-1 space-y-1' }, vm.needsReview.map(function (item) {
-                    return ReviewRow({ item: item, t: props.t, onApprove: props.onApprove, onHide: props.onHide });
+                    return ReviewRow({ item: item, t: props.t, disabled: vm.expired, onApprove: props.onApprove, onHide: props.onHide });
                 }))
             ]) : null,
 
             vm.open.length ? h('div', { key: 'open' }, [
                 h('h3', { key: 'h', className: 'text-sm font-bold' }, tr('question_board.open_heading', 'Open questions')),
                 h('ul', { key: 'list', className: 'mt-1 space-y-1' }, vm.open.map(function (item) {
-                    return AnswerRow({ item: item, t: props.t, onToggleAnswered: props.onToggleAnswered });
+                    return AnswerRow({ item: item, t: props.t, disabled: vm.expired, onToggleAnswered: props.onToggleAnswered });
                 }))
             ]) : null,
 
             vm.answered.length ? h('div', { key: 'answered' }, [
                 h('h3', { key: 'h', className: 'text-sm font-bold' }, tr('question_board.answered_heading', 'Answered')),
                 h('ul', { key: 'list', className: 'mt-1 space-y-1' }, vm.answered.map(function (item) {
-                    return AnswerRow({ item: item, t: props.t, onToggleAnswered: props.onToggleAnswered });
+                    return AnswerRow({ item: item, t: props.t, disabled: vm.expired, onToggleAnswered: props.onToggleAnswered });
                 }))
             ]) : null,
 

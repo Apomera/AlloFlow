@@ -271,7 +271,6 @@
   function withinDateRange(value, range, nowMs) {
     var time = timestamp(value);
     if (!Number.isFinite(time)) return false;
-    if (range === 'all') return true;
     var end = typeof nowMs === 'undefined' ? Date.now() : nowMs;
     if (typeof end !== 'number' || !Number.isFinite(end)) return false;
     var start = dateRangeStart(range, end);

@@ -26,11 +26,19 @@ var require_tmp_annotation_suite_entry = __commonJS({
       }
       function safeUrl(value, limit) {
         var cleaned = clip(value, limit || 500);
-        if (!cleaned) return "";
-        return /^https?:\/\/[^\s]+$/i.test(cleaned) ? cleaned : "";
+        if (!cleaned || /["'<>]/.test(cleaned)) return "";
+        try {
+          var parsed = new URL(cleaned);
+          if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
+          if (parsed.username || parsed.password) return "";
+          if (/["'<>]/.test(parsed.href)) return "";
+          return parsed.href.slice(0, limit || 500);
+        } catch (_) {
+          return "";
+        }
       }
       function redact(value) {
-        return clip(value, 1800).replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[email omitted]").replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[identifier omitted]").replace(/\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b/g, "[phone omitted]").replace(/\b[ACGTUN]{40,}\b/gi, "[nucleic-acid sequence omitted]").replace(/\b[ACDEFGHIKLMNPQRSTVWY]{40,}\b/gi, "[protein sequence omitted]");
+        return clip(value, 1800).replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, "[email omitted]").replace(/\b\d{3}-\d{2}-\d{4}\b/g, "[identifier omitted]").replace(/(?:\+?1[-.\s]?)?(?:\(\d{3}\)[-.\s]?|\b\d{3}[-.\s])\d{3}[-.\s]\d{4}\b/g, "[phone omitted]").replace(/\b[ACGTUN]{40,}\b/gi, "[nucleic-acid sequence omitted]").replace(/\b[ACDEFGHIKLMNPQRSTVWY]{40,}\b/gi, "[protein sequence omitted]");
       }
       function stableId(value) {
         var input = clip(value, 500).toLowerCase();
@@ -142,7 +150,28 @@ var require_tmp_annotation_suite_entry = __commonJS({
         var valid = (Array.isArray(annotations) ? annotations.slice(0, 200) : []).filter(function(annotation) {
           return validateAnnotation(handoff, annotation);
         }).slice(0, 20);
-        return { docTitle: baseTitle + " \u2014 close reading", annotations: valid };
+        return {
+          docTitle: baseTitle + " \u2014 close reading",
+          annotations: valid.map(function(annotation, idx) {
+            var stance = annotation.inquiryStance;
+            var rawX = Number(annotation.x);
+            var rawY = Number(annotation.y);
+            return {
+              id: clip(annotation.id, 120) || "inquiry-note-" + stableId(String(idx) + "|" + clip(annotation.content, 120)),
+              kind: "note",
+              type: "inquiry",
+              x: Number.isFinite(rawX) ? rawX : 32,
+              y: Number.isFinite(rawY) ? rawY : 64 + idx * 76,
+              content: redact(annotation.content).slice(0, 900),
+              color: hasOwn.call(COLORS, stance) ? COLORS[stance] : "yellow",
+              author: "student",
+              authorName: redact(annotation.authorName).slice(0, 80),
+              createdAt: clip(annotation.createdAt, 80),
+              inquiryStance: stance,
+              inquiryTarget: cloneTarget(annotation.inquiryTarget)
+            };
+          })
+        };
       }
       return Object.freeze({ version: VERSION, stances: STANCES.slice(), createHandoff, createAnnotation, validateAnnotation, summarizeForCapture, toAnnotationSuitePayload });
     });
@@ -502,7 +531,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
             className: "flex items-center justify-between gap-2 px-2 py-1 text-xs font-bold uppercase tracking-wide rounded-t-lg",
             style: { background: palette.border, color: palette.text }
           },
-          /* @__PURE__ */ React.createElement("span", null, "\u{1F4DD} ", a.author === "teacher" ? "Teacher note" : a.authorName || "Student note"),
+          /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4DD} "), a.author === "teacher" ? "Teacher note" : a.authorName || "Student note"),
           /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
             "button",
             {
@@ -545,7 +574,8 @@ var require_tmp_annotation_suite_entry = __commonJS({
               commit();
             },
             onKeyDown: function(e) {
-              if (e.key === "Escape") {
+              if (e && (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229)) return;
+              if (e.key === "Escape" || (e.ctrlKey || e.metaKey) && e.key === "Enter") {
                 e.preventDefault();
                 e.stopPropagation();
                 commit();
@@ -557,6 +587,16 @@ var require_tmp_annotation_suite_entry = __commonJS({
             style: { color: palette.text, minHeight: 60 },
             "aria-label": t("a11y.note_content")
           }
+        ),
+        isEditable && /* @__PURE__ */ React.createElement(
+          "div",
+          {
+            "data-allo-note-footer": "true",
+            className: "flex items-center justify-between gap-2 px-2 pb-1.5 text-xs opacity-80",
+            style: { color: palette.text }
+          },
+          /* @__PURE__ */ React.createElement("span", null, "Esc to save"),
+          draft.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "tabular-nums" }, draft.length, " chars")
         )
       );
     }
@@ -1880,13 +1920,42 @@ var require_tmp_annotation_suite_entry = __commonJS({
       };
       const onImport = typeof props.onImport === "function" ? props.onImport : null;
       const [filter, setFilter] = React.useState("all");
+      const [kindFilter, setKindFilter] = React.useState("all");
+      const [searchQuery, setSearchQuery] = React.useState("");
       const counts = countByAuthor(annotations);
+      const kindCounts = { note: 0, highlight: 0, sticker: 0, voice: 0, draw: 0 };
+      annotations.forEach(function(a) {
+        if (!a) return;
+        const k = a.kind || "sticker";
+        if (Object.prototype.hasOwnProperty.call(kindCounts, k)) kindCounts[k] += 1;
+      });
+      const activeKinds = ANNOTATION_KINDS.filter(function(k) {
+        return kindCounts[k] > 0;
+      });
+      const kindMeta = {
+        note: { icon: "\u{1F4DD}", label: "Notes" },
+        highlight: { icon: "\u{1F58D}", label: "Highlights" },
+        sticker: { icon: "\u2B50", label: "Stickers" },
+        voice: { icon: "\u{1F3A4}", label: "Voice" },
+        draw: { icon: "\u270F\uFE0F", label: "Drawings" }
+      };
+      const normalizedQuery = searchQuery.trim().toLowerCase();
       const visible = annotations.filter(function(a) {
         if (!a) return false;
-        if (filter === "teacher") return a.author === "teacher";
-        if (filter === "student") return a.author === "student";
-        if (filter === "mine") {
-          return isTeacher ? a.author === "teacher" : a.author === "student";
+        if (filter === "teacher" && a.author !== "teacher") return false;
+        if (filter === "student" && a.author !== "student") return false;
+        if (filter === "mine" && (isTeacher ? a.author !== "teacher" : a.author !== "student")) return false;
+        const k = a.kind || "sticker";
+        if (kindFilter !== "all" && k !== kindFilter) return false;
+        if (normalizedQuery) {
+          const hay = [
+            annotationPreview(a),
+            buildStickerTitle(a),
+            a.content || "",
+            a.text || "",
+            k
+          ].join(" ").toLowerCase();
+          if (hay.indexOf(normalizedQuery) === -1) return false;
         }
         return true;
       });
@@ -1896,6 +1965,12 @@ var require_tmp_annotation_suite_entry = __commonJS({
         }
         return (b.createdAt || "").localeCompare(a.createdAt || "");
       });
+      const hasSidebarFilters = filter !== "all" || kindFilter !== "all" || !!normalizedQuery;
+      const resetSidebarFilters = function() {
+        setFilter("all");
+        setKindFilter("all");
+        setSearchQuery("");
+      };
       const Pill = function(key, label, count) {
         const active = filter === key;
         return /* @__PURE__ */ React.createElement(
@@ -1906,7 +1981,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
             onClick: function() {
               setFilter(key);
             },
-            className: "min-h-6 px-2 py-0.5 rounded-full text-xs font-bold transition-colors motion-reduce:transition-none " + (active ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"),
+            className: "min-h-6 px-2 py-0.5 rounded-full text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 " + (active ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"),
             "aria-pressed": active
           },
           label,
@@ -1921,31 +1996,98 @@ var require_tmp_annotation_suite_entry = __commonJS({
           className: "fixed top-16 right-3 z-[60] bg-white border border-slate-300 rounded-xl shadow-2xl flex flex-col",
           style: { width: 300, maxHeight: "calc(100vh - 120px)" },
           role: "region",
-          "aria-labelledby": "annotation-list-title"
+          "aria-labelledby": "annotation-list-title",
+          onKeyDown: function(e) {
+            if (e && (e.isComposing || e.nativeEvent && e.nativeEvent.isComposing || e.keyCode === 229)) return;
+            if (e.key === "Escape") {
+              e.preventDefault();
+              e.stopPropagation();
+              if (searchQuery) setSearchQuery("");
+              else onClose();
+            }
+          }
         },
-        /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-200 bg-slate-50 rounded-t-xl" }, /* @__PURE__ */ React.createElement("h2", { id: "annotation-list-title", className: "text-xs font-bold text-slate-700" }, "\u{1F4CB} Annotations ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-normal" }, "(", counts.total, ")")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, onImport && /* @__PURE__ */ React.createElement(
+        /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-200 bg-slate-50 rounded-t-xl" }, /* @__PURE__ */ React.createElement("h2", { id: "annotation-list-title", className: "text-xs font-bold text-slate-700" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4CB} "), "Annotations ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-normal" }, "(", hasSidebarFilters ? visible.length + "/" + counts.total : counts.total, ")")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, onImport && /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
             onClick: onImport,
-            className: "min-h-6 px-2 py-0.5 text-xs font-bold text-slate-600 hover:text-indigo-700 rounded hover:bg-white border border-slate-300",
+            className: "min-h-6 px-2 py-0.5 text-xs font-bold text-slate-600 hover:text-indigo-700 rounded hover:bg-white border border-slate-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600",
             "aria-label": "Import annotations from a saved file",
             title: "Import annotations from a file (e.g., a student's downloaded annotations)"
           },
-          "\u{1F4C2} Import"
+          /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4C2} "),
+          "Import"
         ), /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
             onClick: onClose,
-            className: "inline-flex min-h-6 min-w-6 items-center justify-center p-1 text-slate-600 hover:text-red-500 rounded-full hover:bg-white",
+            className: "inline-flex min-h-6 min-w-6 items-center justify-center p-1 text-slate-600 hover:text-red-500 rounded-full hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600",
             "aria-label": "Close annotation list",
             title: "Close"
           },
-          X ? /* @__PURE__ */ React.createElement(X, { size: 14 }) : /* @__PURE__ */ React.createElement("span", null, "\u2715")
+          X ? /* @__PURE__ */ React.createElement(X, { size: 14, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2715")
         ))),
-        /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-3 py-2 border-b border-slate-200", role: "group", "aria-label": "Filter annotations" }, Pill("all", "All", counts.total), Pill("teacher", "Teacher", counts.teacher), isTeacher ? Pill("student", "Students", counts.student) : Pill("mine", "Mine", mineCount)),
-        /* @__PURE__ */ React.createElement("div", { className: "overflow-y-auto flex-1 px-1 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-indigo-600", style: { minHeight: 100 }, role: "list", "aria-label": "Annotations", tabIndex: 0 }, visible.length === 0 && /* @__PURE__ */ React.createElement("div", { role: "listitem", className: "px-3 py-6 text-center text-xs text-slate-600 italic" }, "No annotations match this filter."), visible.map(function(a) {
+        /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1 px-3 py-2 border-b border-slate-200", role: "group", "aria-label": "Filter annotations" }, Pill("all", "All", counts.total), Pill("teacher", "Teacher", counts.teacher), isTeacher ? Pill("student", "Students", counts.student) : Pill("mine", "Mine", mineCount)),
+        activeKinds.length >= 2 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1 px-3 py-1.5 border-b border-slate-200 bg-slate-50/70", role: "group", "aria-label": "Filter by annotation type", "data-anno-kind-filters": "true" }, activeKinds.map(function(k) {
+          const info = kindMeta[k];
+          const active = kindFilter === k;
+          return /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              key: k,
+              type: "button",
+              "data-anno-kind-filter": k,
+              onClick: function() {
+                setKindFilter(active ? "all" : k);
+              },
+              "aria-pressed": active,
+              className: "min-h-6 px-2 py-0.5 rounded-full text-xs font-semibold transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 " + (active ? "bg-indigo-100 text-indigo-800 border border-indigo-300" : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-100")
+            },
+            /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, info.icon, " "),
+            info.label,
+            " (",
+            kindCounts[k],
+            ")"
+          );
+        })),
+        annotations.length >= 4 && /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 border-b border-slate-200 bg-white" }, /* @__PURE__ */ React.createElement("div", { className: "relative flex items-center" }, /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            type: "search",
+            "data-anno-sidebar-search": "true",
+            value: searchQuery,
+            onChange: function(e) {
+              setSearchQuery(e.target.value);
+            },
+            placeholder: "Find annotation\u2026",
+            "aria-label": "Search annotations",
+            className: "w-full min-h-8 rounded-lg border border-slate-300 bg-white px-2.5 pr-8 text-xs text-slate-800 placeholder:text-slate-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+          }
+        ), searchQuery && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            "data-anno-sidebar-search-clear": "true",
+            onClick: function() {
+              setSearchQuery("");
+            },
+            "aria-label": "Clear annotation search",
+            className: "absolute right-1 inline-flex min-h-6 min-w-6 items-center justify-center rounded text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
+          },
+          X ? /* @__PURE__ */ React.createElement(X, { size: 12, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2715")
+        ))),
+        /* @__PURE__ */ React.createElement("div", { className: "overflow-y-auto flex-1 px-1 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-indigo-600", style: { minHeight: 100 }, role: "list", "aria-label": "Annotations", tabIndex: 0 }, visible.length === 0 && /* @__PURE__ */ React.createElement("div", { role: "listitem", className: "px-3 py-6 text-center text-xs text-slate-600 italic" }, /* @__PURE__ */ React.createElement("div", null, "No annotations match this filter."), hasSidebarFilters && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            "data-anno-sidebar-reset": "true",
+            onClick: resetSidebarFilters,
+            className: "mt-2 inline-flex min-h-8 items-center justify-center rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-bold not-italic text-indigo-700 hover:bg-indigo-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600"
+          },
+          "Reset filters"
+        )), visible.map(function(a) {
           const isTeacherAnno = a.author === "teacher";
           const canDelete = isTeacher || a.author === "student";
           const title = buildStickerTitle(a);
@@ -1976,11 +2118,11 @@ var require_tmp_annotation_suite_entry = __commonJS({
                   e.stopPropagation();
                   onDelete(a.id);
                 },
-                className: "inline-flex min-h-6 min-w-6 items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none p-0.5 text-slate-600 hover:text-red-500 rounded",
+                className: "inline-flex min-h-6 min-w-6 items-center justify-center opacity-70 group-hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 transition-opacity motion-reduce:transition-none p-0.5 text-slate-600 hover:text-red-500 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600",
                 "aria-label": "Delete " + annotationPreview(a),
                 title: "Delete"
               },
-              X ? /* @__PURE__ */ React.createElement(X, { size: 12 }) : /* @__PURE__ */ React.createElement("span", null, "\u2715")
+              X ? /* @__PURE__ */ React.createElement(X, { size: 12, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2715")
             ))
           );
         }))
@@ -2618,7 +2760,7 @@ var require_tmp_annotation_suite_entry = __commonJS({
           "data-allo-undo-btn": "true",
           onClick: undoCount ? undo : void 0,
           disabled: !undoCount,
-          className: "min-h-11 min-w-11 py-2 rounded-full flex items-center justify-center gap-1 text-xs font-bold px-2.5 " + (undoCount ? "text-slate-600 hover:bg-slate-100" : "text-slate-300 cursor-not-allowed"),
+          className: "min-h-11 min-w-11 py-2 rounded-full flex items-center justify-center gap-1 text-xs font-bold px-2.5 " + (undoCount ? "text-slate-600 hover:bg-slate-100" : "text-slate-500 cursor-not-allowed"),
           "aria-label": say("annotation.undo_aria", "Undo last annotation")
         },
         say("annotation.undo_button", "\u21A9 Undo")

@@ -261,12 +261,12 @@ function prepareHtmlForChromiumPdf(rawHtml, opts) {
     });
     if (!/<title\b/i.test(html)) {
       if (/<head\b[^>]*>/i.test(html)) {
-        html = html.replace(/<head\b([^>]*)>/i, `<head$1><title>${xmlEscape(finalTitle)}</title>`);
+        html = html.replace(/<head\b([^>]*)>/i, (_m, attrs) => `<head${attrs}><title>${xmlEscape(finalTitle)}</title>`);
       } else {
-        html = html.replace(/<html\b([^>]*)>/i, `<html$1><head><meta charset="utf-8"><title>${xmlEscape(finalTitle)}</title></head>`);
+        html = html.replace(/<html\b([^>]*)>/i, (_m, attrs) => `<html${attrs}><head><meta charset="utf-8"><title>${xmlEscape(finalTitle)}</title></head>`);
       }
     } else if ((!existingTitle || /^Accessible Document\b/i.test(existingTitle)) && requestedTitle) {
-      html = html.replace(/<title[^>]*>[\s\S]*?<\/title>/i, `<title>${xmlEscape(finalTitle)}</title>`);
+      html = html.replace(/<title[^>]*>[\s\S]*?<\/title>/i, () => `<title>${xmlEscape(finalTitle)}</title>`);
     }
   }
 
@@ -460,16 +460,42 @@ function finalizeTaggedPdfBytes(originalBuffer, opts) {
   const rootNum = Number(rootMatch[1]);
 
   const objectSpans = new Map();
-  const headerPattern = /(?:^|[\r\n])(\d+)\s+0\s+obj\b/g;
+  const headerPattern = /(?:^|[\r\n])(\d+)\s+0\s+obj(?:\s|(?=[<\[(/%]))/g;
   let header;
   while ((header = headerPattern.exec(text)) !== null) {
     const num = Number(header[1]);
     const start = header.index + (/^[\r\n]/.test(header[0]) ? 1 : 0);
-    const endIdx = text.indexOf('endobj', headerPattern.lastIndex);
-    if (endIdx < 0) throw new Error(`Finalize found no endobj for object ${num}.`);
+    const searchFrom = headerPattern.lastIndex;
+    const nextEndobj = text.indexOf('endobj', searchFrom);
+    if (nextEndobj < 0) throw new Error(`Finalize found no endobj for object ${num}.`);
+    const dictSlice = text.slice(searchFrom, nextEndobj);
+    const streamMatch = /(?:^|[\r\n\s>])stream\r?\n/.exec(dictSlice);
+    let endIdx = nextEndobj;
+    if (streamMatch) {
+      const streamDataStart = searchFrom + streamMatch.index + streamMatch[0].length;
+      const dictPrefix = dictSlice.slice(0, streamMatch.index);
+      const lenMatch = /\/Length\s+(\d+)\b(?!\s+\d+\s+R)/.exec(dictPrefix);
+      const minEndstreamPos = lenMatch ? (streamDataStart + Number(lenMatch[1])) : streamDataStart;
+      let endstreamIdx = text.indexOf('endstream', minEndstreamPos);
+      if (endstreamIdx < 0) endstreamIdx = text.indexOf('endstream', streamDataStart);
+      if (endstreamIdx >= 0) {
+        const afterStreamEndobj = text.indexOf('endobj', endstreamIdx + 'endstream'.length);
+        if (afterStreamEndobj >= 0) endIdx = afterStreamEndobj;
+      }
+    }
     objectSpans.set(num, { start, end: endIdx + 'endobj'.length });
-    headerPattern.lastIndex = endIdx;
+    headerPattern.lastIndex = endIdx + 'endobj'.length;
   }
+
+  const replacementMap = new Map();
+  const setReplacement = (num, bodyBuf) => {
+    replacementMap.set(num, Buffer.isBuffer(bodyBuf) ? bodyBuf : Buffer.from(String(bodyBuf), 'latin1'));
+  };
+  const getObjectText = (num) => {
+    if (replacementMap.has(num)) return replacementMap.get(num).toString('latin1');
+    const span = objectSpans.get(num);
+    return span ? text.slice(span.start, span.end) : '';
+  };
 
   const catalogSpan = objectSpans.get(rootNum);
   if (!catalogSpan) throw new Error('Finalize could not locate the Catalog object.');
@@ -480,11 +506,14 @@ function finalizeTaggedPdfBytes(originalBuffer, opts) {
 
   const contentNums = new Set();
   const toUnicodeNums = new Set();
-  for (const [, span] of objectSpans) {
+  const pageStructParents = new Map();
+  for (const [objNum, span] of objectSpans) {
     const body = text.slice(span.start, span.end);
     const tuRef = /\/ToUnicode\s+(\d+)\s+0\s+R\b/.exec(body);
     if (tuRef) toUnicodeNums.add(Number(tuRef[1]));
     if (!/\/Type\s*\/Page\b/.test(body) || /\/Type\s*\/Pages\b/.test(body)) continue;
+    const spMatch = /\/StructParents\s+(\d+)\b/.exec(body);
+    if (spMatch) pageStructParents.set(objNum, Number(spMatch[1]));
     const direct = /\/Contents\s+(\d+)\s+0\s+R/.exec(body);
     if (direct) {
       contentNums.add(Number(direct[1]));
@@ -497,7 +526,6 @@ function finalizeTaggedPdfBytes(originalBuffer, opts) {
   }
   if (!contentNums.size) throw new Error('Finalize found no page content streams.');
 
-  const replacements = [];
   let wrappedStreams = 0;
   for (const num of contentNums) {
     const span = objectSpans.get(num);
@@ -512,18 +540,15 @@ function finalizeTaggedPdfBytes(originalBuffer, opts) {
     const dataEnd = body.lastIndexOf('endstream');
     if (dataEnd < 0) continue;
     const raw = original.subarray(span.start + dataStart, span.start + dataEnd);
-    const inflated = zlib.inflateSync(raw).toString('latin1');
+    const inflated = zlib.inflateSync(raw, { maxOutputLength: 64 * 1024 * 1024 }).toString('latin1');
     const rewritten = wrapUntaggedPrefix(inflated);
     if (rewritten === null) continue;
     const deflated = zlib.deflateSync(Buffer.from(rewritten, 'latin1'));
-    replacements.push({
-      num,
-      body: Buffer.concat([
-        Buffer.from(`${num} 0 obj\n<</Filter /FlateDecode /Length ${deflated.length}>>\nstream\n`, 'latin1'),
-        deflated,
-        Buffer.from('\nendstream\nendobj\n', 'latin1'),
-      ]),
-    });
+    setReplacement(num, Buffer.concat([
+      Buffer.from(`${num} 0 obj\n<</Filter /FlateDecode /Length ${deflated.length}>>\nstream\n`, 'latin1'),
+      deflated,
+      Buffer.from('\nendstream\nendobj\n', 'latin1'),
+    ]));
     wrappedStreams += 1;
   }
 
@@ -543,7 +568,7 @@ function finalizeTaggedPdfBytes(originalBuffer, opts) {
     let cmapStr;
     try {
       const raw = original.subarray(span.start + dataStart, span.start + dataEnd);
-      cmapStr = isFlate ? zlib.inflateSync(raw).toString('latin1') : raw.toString('latin1');
+      cmapStr = isFlate ? zlib.inflateSync(raw, { maxOutputLength: 16 * 1024 * 1024 }).toString('latin1') : raw.toString('latin1');
     } catch (_) {
       continue;
     }
@@ -556,25 +581,22 @@ function finalizeTaggedPdfBytes(originalBuffer, opts) {
     const dictHeader = isFlate
       ? `<</Filter /FlateDecode /Length ${outStream.length}>>`
       : `<</Length ${outStream.length}>>`;
-    replacements.push({
-      num,
-      body: Buffer.concat([
-        Buffer.from(`${num} 0 obj\n${dictHeader}\nstream\n`, 'latin1'),
-        outStream,
-        Buffer.from('\nendstream\nendobj\n', 'latin1'),
-      ]),
-    });
+    setReplacement(num, Buffer.concat([
+      Buffer.from(`${num} 0 obj\n${dictHeader}\nstream\n`, 'latin1'),
+      outStream,
+      Buffer.from('\nendstream\nendobj\n', 'latin1'),
+    ]));
   }
 
   let linkContentsAdded = 0;
-  for (const [num, span] of objectSpans) {
-    const body = text.slice(span.start, span.end);
+  for (const [num] of objectSpans) {
+    const body = getObjectText(num);
     if (!/\/Subtype\s*\/Link\b/.test(body) || /\/Contents\b/.test(body)) continue;
     let actionText = body;
     const actionRef = /\/A\s+(\d+)\s+0\s+R\b/.exec(body);
     if (actionRef) {
-      const aSpan = objectSpans.get(Number(actionRef[1]));
-      if (aSpan) actionText += '\n' + text.slice(aSpan.start, aSpan.end);
+      const aBody = getObjectText(Number(actionRef[1]));
+      if (aBody) actionText += '\n' + aBody;
     }
     const uri = /\/URI\s*\(((?:[^()\\]|\\.)*)\)/.exec(actionText);
     const uriText = uri ? uri[1].replace(/\\([()\\])/g, '$1') : '';
@@ -593,50 +615,69 @@ function finalizeTaggedPdfBytes(originalBuffer, opts) {
       }
     }
     description = description || 'Link';
-    replacements.push({
-      num,
-      body: Buffer.from(
-        body.replace(/\/Subtype\s*\/Link\b/, (m) => m + '\n/Contents ' + pdfTextString(description)) + '\n',
-        'latin1',
-      ),
-    });
+    setReplacement(num, Buffer.from(
+      body.replace(/\/Subtype\s*\/Link\b/, (m) => m + '\n/Contents ' + pdfTextString(description)) + '\n',
+      'latin1',
+    ));
     linkContentsAdded += 1;
   }
 
+  const structRef = /\/StructTreeRoot\s+(\d+)\s+0\s+R/.exec(catalogSource);
+  const structNum = structRef ? Number(structRef[1]) : null;
   const rolesPresent = Object.keys(NON_STANDARD_ROLES).filter(
     (role) => new RegExp(`/S\\s*/${role}\\b`).test(text),
   );
   if (rolesPresent.length) {
-    const structRef = /\/StructTreeRoot\s+(\d+)\s+0\s+R/.exec(catalogSource);
-    if (!structRef) throw new Error('Finalize found non-standard roles but no StructTreeRoot.');
-    const structNum = Number(structRef[1]);
-    const structSpan = objectSpans.get(structNum);
-    if (!structSpan) throw new Error('Finalize could not locate the StructTreeRoot object.');
-    const structSource = text.slice(structSpan.start, structSpan.end);
-    if (!/\/RoleMap\b/.test(structSource)) {
-      const roleMap = rolesPresent.map((role) => `/${role} /${NON_STANDARD_ROLES[role]}`).join(' ');
-      replacements.push({
-        num: structNum,
-        body: Buffer.from(
-          structSource.replace('/Type /StructTreeRoot', `/Type /StructTreeRoot\n/RoleMap <<${roleMap}>>`) + '\n',
+    if (structNum === null) throw new Error('Finalize found non-standard roles but no StructTreeRoot.');
+    const structSource = getObjectText(structNum);
+    if (!structSource) throw new Error('Finalize could not locate the StructTreeRoot object.');
+    const inlineRoleMap = /\/RoleMap\s*<<([\s\S]*?)>>/.exec(structSource);
+    const indirectRoleMap = !inlineRoleMap ? /\/RoleMap\s+(\d+)\s+0\s+R\b/.exec(structSource) : null;
+    if (inlineRoleMap) {
+      const missing = rolesPresent.filter((role) => !new RegExp(`/${role}\\b`).test(inlineRoleMap[1]));
+      if (missing.length) {
+        const extra = missing.map((role) => `/${role} /${NON_STANDARD_ROLES[role]}`).join(' ');
+        setReplacement(structNum, Buffer.from(
+          structSource.replace(/\/RoleMap\s*<<([\s\S]*?)>>/, (_, inner) => `/RoleMap <<${inner.trim()} ${extra}>>`) + '\n',
           'latin1',
-        ),
-      });
+        ));
+      }
+    } else if (indirectRoleMap) {
+      const rmNum = Number(indirectRoleMap[1]);
+      const rmSource = getObjectText(rmNum);
+      if (rmSource) {
+        const missing = rolesPresent.filter((role) => !new RegExp(`/${role}\\b`).test(rmSource));
+        if (missing.length) {
+          const extra = missing.map((role) => `/${role} /${NON_STANDARD_ROLES[role]}`).join(' ');
+          setReplacement(rmNum, Buffer.from(
+            rmSource.replace(/>>\s*endobj/, ` ${extra}>>\nendobj`) + '\n',
+            'latin1',
+          ));
+        }
+      }
+    } else {
+      const roleMap = rolesPresent.map((role) => `/${role} /${NON_STANDARD_ROLES[role]}`).join(' ');
+      setReplacement(structNum, Buffer.from(
+        structSource.replace('/Type /StructTreeRoot', `/Type /StructTreeRoot\n/RoleMap <<${roleMap}>>`) + '\n',
+        'latin1',
+      ));
     }
   }
 
   let nextObjectNumber = size;
   const structTypeOf = (objNum) => {
-    const span = objectSpans.get(objNum);
-    if (!span) return null;
-    const found = /\/S\s*\/(\w+)/.exec(text.slice(span.start, span.end));
+    const src = getObjectText(objNum);
+    if (!src) return null;
+    const found = /\/S\s*\/(\w+)/.exec(src);
     return found ? found[1] : null;
   };
-  for (const [num, span] of objectSpans) {
-    const body = text.slice(span.start, span.end);
+  const movedMcids = [];
+  for (const [num] of objectSpans) {
+    const body = getObjectText(num);
     if (!/\/S\s*\/LI\b/.test(body)) continue;
-    const pgMatch = /\/Pg\s+(\d+\s+0\s+R)/.exec(body);
-    const pgClause = pgMatch ? `\n/Pg ${pgMatch[1]}` : '';
+    const pgMatch = /\/Pg\s+(\d+)\s+0\s+R/.exec(body);
+    const pgNum = pgMatch ? Number(pgMatch[1]) : null;
+    const pgClause = pgMatch ? `\n/Pg ${pgMatch[1]} 0 R` : '';
     const arrayKids = /\/K\s*\[([^\]]*)\]/.exec(body);
     if (arrayKids) {
       if (arrayKids[1].includes('<<')) continue;
@@ -647,7 +688,7 @@ function finalizeTaggedPdfBytes(originalBuffer, opts) {
         if (tok[1] !== undefined) {
           tokens.push({ kind: 'ref', ref: Number(tok[1]), raw: `${tok[1]} 0 R` });
         } else {
-          tokens.push({ kind: 'mcid', raw: tok[2] });
+          tokens.push({ kind: 'mcid', mcid: Number(tok[2]), raw: tok[2] });
         }
       }
       const labels = [];
@@ -670,28 +711,25 @@ function finalizeTaggedPdfBytes(originalBuffer, opts) {
       const needsWrap = hasNonLblRef || (labels.length > 0 && existingBodies.length === 0 && restTokens.length > 0);
       if (!needsWrap || !restTokens.length) continue;
       const bodyNum = nextObjectNumber++;
-      replacements.push({
-        num: bodyNum,
-        body: Buffer.from(
-          `${bodyNum} 0 obj\n<</Type /StructElem\n/S /LBody\n/P ${num} 0 R${pgClause}\n`
-            + `/K [${restTokens.map((item) => item.raw).join(' ')}]>>\nendobj\n`,
-          'latin1',
-        ),
-      });
+      setReplacement(bodyNum, Buffer.from(
+        `${bodyNum} 0 obj\n<</Type /StructElem\n/S /LBody\n/P ${num} 0 R${pgClause}\n`
+          + `/K [${restTokens.map((item) => item.raw).join(' ')}]>>\nendobj\n`,
+        'latin1',
+      ));
       const newKids = [...labels, ...existingBodies, `${bodyNum} 0 R`].join(' ');
-      replacements.push({
-        num,
-        body: Buffer.from(body.replace(/\/K\s*\[[^\]]*\]/, `/K [${newKids}]`) + '\n', 'latin1'),
-      });
+      setReplacement(num, Buffer.from(body.replace(/\/K\s*\[[^\]]*\]/, `/K [${newKids}]`) + '\n', 'latin1'));
+      const mcidSet = new Set();
       for (const item of restTokens) {
-        if (item.kind !== 'ref') continue;
-        const childSpan = objectSpans.get(item.ref);
-        if (!childSpan) continue;
-        const childBody = text.slice(childSpan.start, childSpan.end);
-        replacements.push({
-          num: item.ref,
-          body: Buffer.from(childBody.replace(/\/P\s+\d+\s+0\s+R/, `/P ${bodyNum} 0 R`) + '\n', 'latin1'),
-        });
+        if (item.kind === 'mcid') {
+          mcidSet.add(item.mcid);
+          continue;
+        }
+        const childBody = getObjectText(item.ref);
+        if (!childBody) continue;
+        setReplacement(item.ref, Buffer.from(childBody.replace(/\/P\s+\d+\s+0\s+R/, `/P ${bodyNum} 0 R`) + '\n', 'latin1'));
+      }
+      if (mcidSet.size && pgNum !== null) {
+        movedMcids.push({ pgNum, liNum: num, bodyNum, mcids: mcidSet });
       }
       continue;
     }
@@ -701,46 +739,122 @@ function finalizeTaggedPdfBytes(originalBuffer, opts) {
     const type = structTypeOf(ref);
     if (type === 'Lbl' || type === 'LBody') continue;
     const bodyNum = nextObjectNumber++;
-    replacements.push({
-      num: bodyNum,
-      body: Buffer.from(
-        `${bodyNum} 0 obj\n<</Type /StructElem\n/S /LBody\n/P ${num} 0 R${pgClause}\n`
-          + `/K ${ref} 0 R>>\nendobj\n`,
-        'latin1',
-      ),
-    });
-    replacements.push({
-      num,
-      body: Buffer.from(body.replace(/\/K\s+\d+\s+0\s+R\b/, `/K ${bodyNum} 0 R`) + '\n', 'latin1'),
-    });
-    const childSpan = objectSpans.get(ref);
-    if (childSpan) {
-      const childBody = text.slice(childSpan.start, childSpan.end);
-      replacements.push({
-        num: ref,
-        body: Buffer.from(childBody.replace(/\/P\s+\d+\s+0\s+R/, `/P ${bodyNum} 0 R`) + '\n', 'latin1'),
-      });
+    setReplacement(bodyNum, Buffer.from(
+      `${bodyNum} 0 obj\n<</Type /StructElem\n/S /LBody\n/P ${num} 0 R${pgClause}\n`
+        + `/K ${ref} 0 R>>\nendobj\n`,
+      'latin1',
+    ));
+    setReplacement(num, Buffer.from(body.replace(/\/K\s+\d+\s+0\s+R\b/, `/K ${bodyNum} 0 R`) + '\n', 'latin1'));
+    const childBody = getObjectText(ref);
+    if (childBody) {
+      setReplacement(ref, Buffer.from(childBody.replace(/\/P\s+\d+\s+0\s+R/, `/P ${bodyNum} 0 R`) + '\n', 'latin1'));
+    }
+  }
+
+  // Keep /ParentTree synchronized with direct integer MCIDs moved from /LI into synthesized /LBody (ISO 32000-1 §14.7.4.4).
+  if (movedMcids.length && structNum !== null) {
+    const movesByStructParents = new Map();
+    for (const move of movedMcids) {
+      const spKey = pageStructParents.get(move.pgNum);
+      if (spKey === undefined) continue;
+      if (!movesByStructParents.has(spKey)) movesByStructParents.set(spKey, []);
+      movesByStructParents.get(spKey).push(move);
+    }
+    if (movesByStructParents.size) {
+      const patchMcidArrayText = (arrText, moves) => {
+        const entries = [];
+        const entryRe = /(\d+\s+0\s+R|\bnull\b)/g;
+        let em;
+        while ((em = entryRe.exec(arrText)) !== null) entries.push(em[1]);
+        let changed = false;
+        for (const move of moves) {
+          const fromRef = `${move.liNum} 0 R`;
+          const toRef = `${move.bodyNum} 0 R`;
+          for (const mcid of move.mcids) {
+            if (mcid >= 0 && mcid < entries.length && entries[mcid] === fromRef) {
+              entries[mcid] = toRef;
+              changed = true;
+            }
+          }
+        }
+        return changed ? entries.join(' ') : null;
+      };
+      const structSource = getObjectText(structNum);
+      const ptRef = /\/ParentTree\s+(\d+)\s+0\s+R\b/.exec(structSource);
+      const queue = ptRef ? [Number(ptRef[1])] : [];
+      const visited = new Set();
+      while (queue.length) {
+        const nodeNum = queue.shift();
+        if (visited.has(nodeNum)) continue;
+        visited.add(nodeNum);
+        let nodeText = getObjectText(nodeNum);
+        if (!nodeText) continue;
+        const kidsM = /\/Kids\s*\[([^\]]*)\]/.exec(nodeText);
+        if (kidsM) {
+          for (const km of kidsM[1].matchAll(/(\d+)\s+0\s+R/g)) queue.push(Number(km[1]));
+        }
+        const numsIdx = nodeText.search(/\/Nums\s*\[/);
+        if (numsIdx < 0) continue;
+        const openBracket = nodeText.indexOf('[', numsIdx);
+        if (openBracket < 0) continue;
+        let depth = 0;
+        let closeBracket = -1;
+        for (let ci = openBracket; ci < nodeText.length; ci += 1) {
+          if (nodeText[ci] === '[') depth += 1;
+          else if (nodeText[ci] === ']') {
+            depth -= 1;
+            if (depth === 0) { closeBracket = ci; break; }
+          }
+        }
+        if (closeBracket < 0) continue;
+        const numsInner = nodeText.slice(openBracket + 1, closeBracket);
+        const pairRe = /(\d+)\s+(?:(\d+)\s+0\s+R|\[([^\]]*)\])/g;
+        let nodeChanged = false;
+        const updatedNumsInner = numsInner.replace(pairRe, (full, keyStr, refStr, inlineArr) => {
+          const spKey = Number(keyStr);
+          const moves = movesByStructParents.get(spKey);
+          if (!moves) return full;
+          if (refStr !== undefined) {
+            const arrNum = Number(refStr);
+            const arrObjText = getObjectText(arrNum);
+            const arrMatch = /\[([^\]]*)\]/.exec(arrObjText);
+            if (arrMatch) {
+              const patched = patchMcidArrayText(arrMatch[1], moves);
+              if (patched !== null) {
+                setReplacement(arrNum, Buffer.from(arrObjText.replace(/\[[^\]]*\]/, `[${patched}]`) + '\n', 'latin1'));
+              }
+            }
+            return full;
+          }
+          if (inlineArr !== undefined) {
+            const patched = patchMcidArrayText(inlineArr, moves);
+            if (patched !== null) {
+              nodeChanged = true;
+              return `${keyStr} [${patched}]`;
+            }
+          }
+          return full;
+        });
+        if (nodeChanged) {
+          nodeText = nodeText.slice(0, openBracket + 1) + updatedNumsInner + nodeText.slice(closeBracket);
+          setReplacement(nodeNum, Buffer.from(nodeText + '\n', 'latin1'));
+        }
+      }
     }
   }
 
   const metadataNum = nextObjectNumber++;
   const xmp = buildXmpPacket(title, pdfuaPart);
-  replacements.push({
-    num: metadataNum,
-    body: Buffer.concat([
-      Buffer.from(`${metadataNum} 0 obj\n<</Type /Metadata /Subtype /XML /Length ${xmp.length}>>\nstream\n`, 'latin1'),
-      xmp,
-      Buffer.from('\nendstream\nendobj\n', 'latin1'),
-    ]),
-  });
-  let updatedCatalog = catalogSource.replace('/Type /Catalog', `/Type /Catalog\n/Metadata ${metadataNum} 0 R`);
+  setReplacement(metadataNum, Buffer.concat([
+    Buffer.from(`${metadataNum} 0 obj\n<</Type /Metadata /Subtype /XML /Length ${xmp.length}>>\nstream\n`, 'latin1'),
+    xmp,
+    Buffer.from('\nendstream\nendobj\n', 'latin1'),
+  ]));
+  let updatedCatalog = getObjectText(rootNum).replace('/Type /Catalog', `/Type /Catalog\n/Metadata ${metadataNum} 0 R`);
   if (!/\/ViewerPreferences\b/.test(updatedCatalog)) {
     updatedCatalog = updatedCatalog.replace('/Type /Catalog', '/Type /Catalog\n/ViewerPreferences <</DisplayDocTitle true>>');
   }
-  replacements.push({
-    num: rootNum,
-    body: Buffer.from(updatedCatalog + '\n', 'latin1'),
-  });
+  setReplacement(rootNum, Buffer.from(updatedCatalog + '\n', 'latin1'));
 
   const pieces = [original];
   let cursor = original.length;
@@ -749,10 +863,10 @@ function finalizeTaggedPdfBytes(originalBuffer, opts) {
     cursor += 1;
   }
   const offsets = new Map();
-  for (const replacement of replacements.sort((a, b) => a.num - b.num)) {
-    offsets.set(replacement.num, cursor);
-    pieces.push(replacement.body);
-    cursor += replacement.body.length;
+  for (const [num, body] of [...replacementMap.entries()].sort((a, b) => a[0] - b[0])) {
+    offsets.set(num, cursor);
+    pieces.push(body);
+    cursor += body.length;
   }
 
   const numbers = [...offsets.keys()].sort((a, b) => a - b);
@@ -848,12 +962,19 @@ async function renderHtmlToTaggedPdf(browser, html, opts) {
     });
   };
 
+  let renderSettled = false;
   try {
+    const contextPromise = browser.newContext({
+      javaScriptEnabled: false,
+      serviceWorkers: 'block',
+    }).then((ctx) => {
+      if (renderSettled) {
+        try { ctx.close().catch(() => {}); } catch (_) {}
+      }
+      return ctx;
+    });
     context = await raceBounded(
-      browser.newContext({
-        javaScriptEnabled: false,
-        serviceWorkers: 'block',
-      }),
+      contextPromise,
       'context creation',
     );
     await context.route('**/*', async (route) => {
@@ -880,6 +1001,7 @@ async function renderHtmlToTaggedPdf(browser, html, opts) {
       'page.pdf',
     );
   } finally {
+    renderSettled = true;
     if (signal && onAbort) {
       try { signal.removeEventListener('abort', onAbort); } catch (_) {}
     }

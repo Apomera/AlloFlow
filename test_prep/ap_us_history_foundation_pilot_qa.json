@@ -152,7 +152,7 @@
     "testWiseness": {
       "keyedItemCount": 600,
       "keyCycleSharePercent": 100,
-      "keyLongestSharePercent": 78.7,
+      "keyLongestSharePercent": 0,
       "keyLongerByQuarterSharePercent": 0,
       "distractorRationaleCount": 1800,
       "distinctDistractorRationaleCount": 1800,
@@ -208,13 +208,13 @@
   "inputs": {
     "pack": {
       "path": "test_prep/ap_us_history_foundation_pilot.json",
-      "byteLength": 2852557,
-      "sha256": "5b6257faf6913f5fcf3e6cdb487bc10883d10923f0ed7fac0314e0b659579303"
+      "byteLength": 3087022,
+      "sha256": "27e5bf1a43bc99910ad8abb1cd2d827da9a30a20ca65e410dcc04e0e7b613f7f"
     },
     "learningLibrary": {
       "path": "test_prep/ap_us_history_foundation_pilot_learning_library.json",
-      "byteLength": 535847,
-      "sha256": "89087bdf218c00d4bd45ab7ac9e3e057a15249a5b04dc58baaf02169411dd610"
+      "byteLength": 535372,
+      "sha256": "c488dbb8e642493969a7755d03dfd2f272820c4bf165eee79d43396a8fe36199"
     }
   },
   "standard": {
@@ -485,16 +485,16 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "5b6257faf6913f5fcf3e6cdb487bc10883d10923f0ed7fac0314e0b659579303",
-      "deploySha256": "5b6257faf6913f5fcf3e6cdb487bc10883d10923f0ed7fac0314e0b659579303",
+      "sourceSha256": "27e5bf1a43bc99910ad8abb1cd2d827da9a30a20ca65e410dcc04e0e7b613f7f",
+      "deploySha256": "27e5bf1a43bc99910ad8abb1cd2d827da9a30a20ca65e410dcc04e0e7b613f7f",
       "note": "Source and deployment bytes are identical."
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "89087bdf218c00d4bd45ab7ac9e3e057a15249a5b04dc58baaf02169411dd610",
-      "deploySha256": "89087bdf218c00d4bd45ab7ac9e3e057a15249a5b04dc58baaf02169411dd610",
+      "sourceSha256": "c488dbb8e642493969a7755d03dfd2f272820c4bf165eee79d43396a8fe36199",
+      "deploySha256": "c488dbb8e642493969a7755d03dfd2f272820c4bf165eee79d43396a8fe36199",
       "note": "Source and deployment bytes are identical."
     }
   ],

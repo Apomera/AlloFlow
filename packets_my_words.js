@@ -166,33 +166,41 @@
     if (text.indexOf('\\') >= 0) return 'an escape character';
     if (/<!(?:doctype|entity)/i.test(text)) return 'a document type or entity declaration';
     if (/<\?(?!xml\s)/i.test(text)) return 'a processing instruction';
-    // Read character references the way a browser does, so a spelled-out "s" in "script" is seen.
+    // Read character references the way a browser does, so "java&#115;cript:" is seen.
     var plain = text.replace(/&#x([0-9a-f]+);?/gi, function (m, hex) { return String.fromCharCode(parseInt(hex, 16) & 0xFFFF); })
       .replace(/&#(\d+);?/g, function (m, dec) { return String.fromCharCode(Number(dec) & 0xFFFF); })
       .replace(/&(colon|newline|tab);/gi, function (m, name) { return name.toLowerCase() === 'colon' ? ':' : ''; });
     // A browser ignores spaces and control characters inside an address.
     var packed = plain.replace(/[\x00-\x20]+/g, '');
     var bare = function (value) { return String(value || '').replace(/[\x00-\x20]+/g, ''); };
-    if (/<\s*(?:[\w-]+:)?script\b/i.test(plain)) return 'a script';
-    if (/<\s*(?:[\w-]+:)?foreignObject\b/i.test(plain)) return 'a foreignObject';
-    if (/<\s*(?:[\w-]+:)?(?:iframe|embed|object|audio|video|animate\w*|set|handler|listener)\b/i.test(plain)) return 'an element that is not a drawing';
+    if (/<\s*(?:[^\s<>"'=/:]+:)?script\b/i.test(plain)) return 'a script';
+    if (/<\s*(?:[^\s<>"'=/:]+:)?foreignObject\b/i.test(plain)) return 'a foreignObject';
+    if (/<\s*(?:[^\s<>"'=/:]+:)?(?:iframe|embed|object|audio|video|animate\w*|set|handler|listener)\b/i.test(plain)) return 'an element that is not a drawing';
     if (/[\s"'\/]on[a-z]+\s*=/i.test(plain)) return 'an event handler';
     if (/(?:java|vb|live)script:/i.test(packed)) return 'a script address';
     if (/xml:base\s*=/i.test(plain)) return 'a base address';
     // Every link must point inside the drawing itself ("#name"): no other file, no site, no data: address.
-    var m, href = /(?:[\s"'\/])(?:[\w-]+:)?href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*))/gi;
+    var m, href = /(?:[\s"'\/])(?:[^\s<>"'=/:]+:)?href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*))/gi;
     while ((m = href.exec(plain))) {
       if (bare(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).charAt(0) !== '#') return 'a link to something outside the drawing';
     }
-    if (/[\s"'\/]src\s*=/i.test(plain)) return 'a link to something outside the drawing';
-    // A style block may not load anything: no @import, no url(), no font.
-    var style = /<\s*(?:[\w-]+:)?style\b[^>]*>/gi;
-    while ((m = style.exec(plain))) {
-      if (/\/\s*>$/.test(m[0])) continue;
-      var end = plain.slice(style.lastIndex).search(/<\s*\/\s*(?:[\w-]+:)?style\s*>/i);
-      var css = end < 0 ? plain.slice(style.lastIndex) : plain.slice(style.lastIndex, style.lastIndex + end);
-      if (end < 0 || /@import|@font-face|@namespace|url\s*\(|expression\s*\(/i.test(css)) return 'a style block that loads something';
-    }
+    if (/[\s"'\/]src(?:doc)?\s*=/i.test(plain)) return 'a link to something outside the drawing';
+    if (/(?:-[a-z]+-)?image-set\s*\(|expression\s*\(/i.test(plain)) return 'a style block that loads something';
+    // A style block may not load anything: no @import, no url(), no font. Check both raw and decoded text so entity-encoded quotes cannot fake "/>".
+    var checkStyleIn = function (src) {
+      var style = /<\s*(?:[^\s<>"'=/:]+:)?style\b(?:"[^"]*"|'[^']*'|[^>"'])*>/gi;
+      var sm;
+      while ((sm = style.exec(src))) {
+        var rest = src.slice(style.lastIndex);
+        var end = rest.search(/<\s*\/\s*(?:[^\s<>"'=/:]+:)?style\s*>/i);
+        if (/\/\s*>$/.test(sm[0]) && end < 0) continue;
+        var css = end < 0 ? rest : rest.slice(0, end);
+        if (end < 0 || /@import|@font-face|@namespace|url\s*\(|(?:-[a-z]+-)?image-set\s*\(|expression\s*\(/i.test(css)) return 'a style block that loads something';
+      }
+      return '';
+    };
+    var styleBad = checkStyleIn(text) || checkStyleIn(plain);
+    if (styleBad) return styleBad;
     // Anywhere else, url(...) may only name something inside the drawing: fill="url(#a)".
     var url = /url\s*\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))/gi;
     while ((m = url.exec(plain))) {

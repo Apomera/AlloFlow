@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
 const { distractorFeedbackFor } = require('./ap_us_history_distractor_feedback/index.cjs');
+const { applyApUsHistoryChoiceOverride } = require('./ap_us_history_choice_overrides/index.cjs');
 const extensionSpecs = require('./ap_us_history_extension_specs.cjs');
 
 const root = path.resolve(__dirname, '..');
@@ -87,7 +88,9 @@ function normalizedSkillId(spec, extensionIndex) {
   return fallback;
 }
 
-function makeItem(pack, spec, extensionIndex) {
+function makeItem(pack, rawSpec, extensionIndex) {
+  const itemId = `apush-foundation-${String(extensionIndex + 1).padStart(3, '0')}`;
+  const spec = applyApUsHistoryChoiceOverride(itemId, rawSpec);
   const unit = unitSources[spec.unit];
   const learningSectionIndex = ((spec.section % 3) + 3) % 3;
   const objective = pack.blueprint.learningObjectiveCatalog.find((candidate) => candidate.id === `apush-lo-${spec.unit}-${learningSectionIndex + 1}`);
@@ -98,7 +101,6 @@ function makeItem(pack, spec, extensionIndex) {
   const skillId = normalizedSkillId(spec, extensionIndex);
   const sourceUrl = spec.sourceUrl || unit.url;
   const references = [...new Set([CED_URL, CLARIFICATIONS_URL, sourceUrl])];
-  const itemId = `apush-foundation-${String(extensionIndex + 1).padStart(3, '0')}`;
   // Every distractor carries its own explanation, authored per item in
   // ap_us_history_distractor_feedback/. A missing entry fails the build rather
   // than falling back to a generic sentence.

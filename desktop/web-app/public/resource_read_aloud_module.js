@@ -1,13 +1,16 @@
 /* Resource adapters and accessible controls for the shared durable audio service. */
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
   const adapters = new Map();
+  const isBlockedKey = key => key === '__proto__' || key === 'constructor' || key === 'prototype';
   const text = value => typeof value === 'string' ? value.trim() : '';
   const token = value => encodeURIComponent(String(value));
   const modules = () => window.AlloModules || {};
   const spoken = value => {
     const clean = modules().PhaseKHelpers?.toSpokenText;
-    return text(typeof clean === 'function' ? clean(String(value || '')) : String(value || '').replace(/\s+/g, ' '));
+    const raw = String(value || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '');
+    return text(typeof clean === 'function' ? clean(raw) : raw.replace(/\s+/g, ' '));
   };
   const speechSetting = (value, min, max, fallback = 1) => {
     const number = value == null || value === '' ? fallback : Number(value);
@@ -57,11 +60,11 @@
   }
   function fingerprint(value) { let hash = 2166136261; for (let i = 0; i < value.length; i++) { hash ^= value.charCodeAt(i); hash = Math.imul(hash, 16777619); } return 'txt-' + value.length.toString(36) + '-' + (hash >>> 0).toString(36); }
   function register(type, enumerate) {
-    if (!type || typeof enumerate !== 'function') throw new Error('A resource adapter needs a type and enumerator.');
+    if (typeof type !== 'string' || !type.trim() || isBlockedKey(type) || typeof enumerate !== 'function') throw new Error('A resource adapter needs a type and enumerator.');
     adapters.set(type, enumerate);
   }
   function enumerate(resource, options = {}) {
-    if (!resource || !adapters.has(resource.type)) return [];
+    if (!resource || typeof resource !== 'object' || typeof resource.type !== 'string' || !adapters.has(resource.type)) return [];
     const savedLanguage = modules().TextPipelineHelpers?.getArtifactPrimaryLanguage;
     const language = typeof savedLanguage === 'function'
       ? savedLanguage(resource, options.defaultLanguage || 'English')
@@ -120,9 +123,10 @@
   // semantically identified reference clips can leave the teacher project.
   const deliveryLimits = Object.freeze({ local: 12 * 1024 * 1024, 'student-pack': 384 * 1024, live: 384 * 1024, qr: 128 * 1024, submission: 0 });
   function portableAudio(resource, channel = 'student-pack', maxBytes) {
-    const limit = Math.min(deliveryLimits[channel] || 0, Number.isFinite(maxBytes) ? Math.max(0, maxBytes) : Infinity);
+    const channelLimit = (typeof channel === 'string' && Object.prototype.hasOwnProperty.call(deliveryLimits, channel)) ? deliveryLimits[channel] : 0;
+    const limit = Math.min(channelLimit, Number.isFinite(maxBytes) ? Math.max(0, maxBytes) : Infinity);
     const store = modules().KaraokeAudioStore;
-    if (!limit || !store?.validateAudioPayload || !adapters.has(resource?.type)) return null;
+    if (!limit || !store?.validateAudioPayload || !resource || typeof resource !== 'object' || !adapters.has(resource.type)) return null;
     const raw = resource.karaokeAudio;
     if (raw?.version !== 4 || raw.format !== 'per-entry' || !raw.entries || typeof raw.entries !== 'object') return null;
     const current = new Map(enumerate(resource).map(segment => [segment.scopeId + ':' + segment.segmentId, segment]));
@@ -138,8 +142,9 @@
       if (!audio.ok || audio.bytes.length > Math.min(limit, 2 * 1024 * 1024) || bytes + audio.bytes.length > limit) continue;
       const profile = store.normalizeSynthesisProfile(entry.synthesisProfile);
       if (profile?.language && profile.language !== segment.language) continue;
-      bytes += audio.bytes.length;
       const key = store.portableKeyForIdentity(identity);
+      if (typeof key !== 'string' || !key || isBlockedKey(key)) continue;
+      bytes += audio.bytes.length;
       entries[key] = { identity, audio: audio.clean, mime: audio.mime, source: entry.source, synthesisProfile: profile, createdAt: text(entry.createdAt).slice(0, 80) };
     }
     return Object.keys(entries).length ? { format: 'per-entry', version: 4, entries, legacy: {} } : null;
@@ -210,7 +215,7 @@
       e('summary', { className: 'min-h-11 cursor-pointer font-bold rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-1' }, tr('heading', 'Ready to share') + ' · ' + report.issues.length + ' ' + tr('items', 'items to review')),
       e('label', { className: 'mt-2 flex flex-wrap items-center gap-2 text-sm' }, tr('channel', 'Sharing method'), e('select', { value: channel, onChange: event => setChannel(event.target.value), className: 'min-h-11 rounded-lg border bg-white text-slate-900 px-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-1' }, e('option', { value: 'qr' }, tr('qr', 'Homework / QR')), e('option', { value: 'live' }, tr('live', 'Live / student pack')))),
       e('p', { role: 'status', className: 'my-2 text-sm' }, report.issues.length ? tr('review_note', 'Review these items before sharing. You decide when the resource is ready.') : tr('clear', 'No issues found by these checks. Review the content as a teacher before sharing.')),
-      report.issues.length > 0 && e('ul', { className: 'space-y-2' }, report.issues.map((issue, index) => e('li', { key: index }, e('button', { type: 'button', className: 'min-h-11 rounded-lg border border-amber-400 bg-white text-slate-900 px-3 py-2 text-start text-sm underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-1', onClick: () => review(issue) }, descriptions[issue.code] + (issue.count ? ' (' + issue.count + ')' : '') + (issue.label ? ': ' + issue.label : ''))))),
+      report.issues.length > 0 && e('ul', { className: 'space-y-2' }, report.issues.map((issue, index) => e('li', { key: index }, e('button', { type: 'button', className: 'min-h-11 rounded-lg border border-amber-400 bg-white text-slate-900 px-3 py-2 text-start text-sm underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-1', onClick: () => review(issue) }, (Object.prototype.hasOwnProperty.call(descriptions, issue.code) ? descriptions[issue.code] : '') + (issue.count ? ' (' + issue.count + ')' : '') + (issue.label ? ': ' + issue.label : ''))))),
       e('p', { className: 'mt-2 text-xs' }, report.included + ' ' + tr('clips', 'current reference clips included. Missing clips can use a device voice.')));
   }
 
@@ -231,7 +236,7 @@
     const [playing, setPlaying] = React.useState(false), [paused, setPaused] = React.useState(false);
     const current = React.useRef(null), id = React.useRef('local-' + Math.random().toString(36).slice(2));
     const tr = (key, fallback) => { const value = props.t?.('resource_read_aloud.' + key); return value && value !== 'resource_read_aloud.' + key ? value : fallback; };
-    const stop = () => { if (current.current) { current.current.onend = current.current.onerror = null; window.speechSynthesis?.cancel(); current.current = null; } };
+    const stop = () => { if (current.current) { current.current.onend = current.current.onerror = null; try { window.speechSynthesis?.cancel(); } catch (_) {} current.current = null; } };
     React.useEffect(() => {
       const other = event => { if (event.detail !== id.current) { stop(); setPlaying(false); setPaused(false); } };
       window.addEventListener('alloflow:resource-read-aloud-start', other);
@@ -243,11 +248,12 @@
       if (playing) { stop(); setPlaying(false); setPaused(false); return; }
       props.stopPlayback?.();
       window.dispatchEvent(new CustomEvent('alloflow:resource-read-aloud-start', { detail: id.current }));
-      const utterance = new SpeechSynthesisUtterance(spoken(props.text)); current.current = utterance;
+      const utterance = new SpeechSynthesisUtterance(spoken(props.text).slice(0, 12000)); current.current = utterance;
       utterance.onend = utterance.onerror = () => { current.current = null; setPlaying(false); setPaused(false); };
       configureDeviceSpeech(utterance, props.language || props.resource?.language || props.resource?.data?.language || props.resource?.data?.lessonRef?.language || 'English', props.voiceSpeed, props.voiceVolume);
-      setPlaying(true); setPaused(false); window.speechSynthesis.speak(utterance);
-    } }, playing ? tr('stop', 'Stop reading') : props.cue ? tr('read_cue', 'Read cue aloud') : tr('read_work', 'Read my writing')), playing && e('button', { type: 'button', className: 'ms-2 min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:ring-2 focus-visible:ring-teal-600', onClick: () => { if (!current.current) return; if (paused) window.speechSynthesis.resume(); else window.speechSynthesis.pause(); setPaused(!paused); } }, paused ? tr('resume', 'Resume reading') : tr('pause', 'Pause reading')));
+      setPlaying(true); setPaused(false);
+      try { window.speechSynthesis.speak(utterance); } catch (_) { current.current = null; setPlaying(false); setPaused(false); }
+    } }, playing ? tr('stop', 'Stop reading') : props.cue ? tr('read_cue', 'Read cue aloud') : tr('read_work', 'Read my writing')), playing && e('button', { type: 'button', className: 'ms-2 min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:ring-2 focus-visible:ring-teal-600', onClick: () => { if (!current.current) return; try { if (paused) window.speechSynthesis.resume(); else window.speechSynthesis.pause(); setPaused(!paused); } catch (_) {} } }, paused ? tr('resume', 'Resume reading') : tr('pause', 'Pause reading')));
   }
   function CueControls(props) {
     const segment = enumerate(props.resource, { cardId: props.cardId, mode: 'cue' })[0];
@@ -266,13 +272,18 @@
     const instance = React.useRef('read-' + Math.random().toString(36).slice(2));
     const segments = enumerate(resource, { cardId, mode });
     const signature = JSON.stringify([resource?.id, segments]);
+    const aiUsableOk = (() => {
+      if (typeof window.__alloAiUsable !== 'function') return true;
+      try { return Boolean(window.__alloAiUsable('tts')); } catch (_) { return false; }
+    })();
     const effectiveRuntimeAi = Boolean(allowRuntimeAi)
       && !window._alloQrBlocked
       && !window.__alloQrStudentMode
       && !window.__alloStudentAiDisabled
       && !window.__alloAiSecretsLocked
+      && !window.__alloOfflineOnly
       && !(window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false)
-      && (typeof window.__alloAiUsable !== 'function' || Boolean(window.__alloAiUsable('tts')));
+      && aiUsableOk;
     const current = React.useRef(null);
     current.current = { signature, allowRuntimeAi: effectiveRuntimeAi, canPrepare, resourceId: resource?.id, pauseBetween, followFocus };
     const bridge = () => window.__alloGetReadAloudAudioBridge?.();
@@ -283,7 +294,7 @@
     const stop = () => {
       const state = runtime.current; state.token += 1; state.playController?.abort();
       if (state.audio) { state.audio.pause(); state.audio.onended = state.audio.onerror = null; state.audio = null; }
-      if (state.utterance) { window.speechSynthesis?.cancel(); state.utterance = null; }
+      if (state.utterance) { try { window.speechSynthesis?.cancel(); } catch (_) {} state.utterance = null; }
       if (state.finish) { state.finish(); state.finish = null; }
       state.paused = false; state.resume?.(); state.resume = null;
       if (mounted.current) { setActive(-1); setPaused(false); }
@@ -339,10 +350,10 @@
     const togglePause = () => {
       const state = runtime.current;
       state.paused = !state.paused; setPaused(state.paused);
-      if (state.paused) { state.audio?.pause(); if (state.utterance) window.speechSynthesis?.pause(); }
+      if (state.paused) { state.audio?.pause(); if (state.utterance) { try { window.speechSynthesis?.pause(); } catch (_) {} } }
       else {
         if (state.audio) Promise.resolve(state.audio.play()).catch(() => { setMessage(tr('play_failed', 'This audio could not play. Save or regenerate the clip, or use a device voice.')); stop(); });
-        if (state.utterance) window.speechSynthesis?.resume();
+        if (state.utterance) { try { window.speechSynthesis?.resume(); } catch (_) {} }
         state.resume?.(); state.resume = null;
       }
     };
@@ -380,7 +391,8 @@
             } else if (window.speechSynthesis && typeof SpeechSynthesisUtterance === 'function') {
               const utterance = new SpeechSynthesisUtterance(segment.text); runtime.current.utterance = utterance;
               configureDeviceSpeech(utterance, segment.language, voiceSpeed, voiceVolume);
-              utterance.onend = finish; utterance.onerror = reject; window.speechSynthesis.speak(utterance);
+              utterance.onend = finish; utterance.onerror = reject;
+              try { window.speechSynthesis.speak(utterance); } catch (err) { reject(err); }
             } else reject(new Error('No saved clip or device voice available'));
           });
           if (valid() && i + 1 < end && current.current.pauseBetween) { runtime.current.paused = true; setPaused(true); }
@@ -412,6 +424,6 @@
       })));
   }
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.ResourceReadAloud = { register, supports: type => adapters.has(type), enumerate, portableAudio, deliveryLimits, sharingReview, SharingCheck, Controls, CueControls, LocalText };
+  window.AlloModules.ResourceReadAloud = Object.freeze({ register, supports: type => adapters.has(type), enumerate, portableAudio, deliveryLimits, sharingReview, SharingCheck, Controls, CueControls, LocalText });
   window.AlloModules.ResourceReadAloudModule = true;
 })();

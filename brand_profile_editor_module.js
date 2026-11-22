@@ -55,6 +55,57 @@ const COLOR_FIELDS = [{
   key: 'cardBorder',
   label: 'Card border'
 }];
+const BRAND_PALETTE_PRESETS = [{
+  id: 'classic_navy',
+  label: 'Classic Navy',
+  colors: {
+    heading: '#1e3a5f',
+    accent: '#1d4ed8',
+    body: '#1f2937',
+    bg: '#ffffff',
+    cardBg: '#f8fafc',
+    cardBorder: '#cbd5e1'
+  }
+}, {
+  id: 'forest_slate',
+  label: 'Forest Slate',
+  colors: {
+    heading: '#14532d',
+    accent: '#0f766e',
+    body: '#1e293b',
+    bg: '#ffffff',
+    cardBg: '#f0fdf4',
+    cardBorder: '#bbf7d0'
+  }
+}, {
+  id: 'warm_burgundy',
+  label: 'Warm Heritage',
+  colors: {
+    heading: '#7f1d1d',
+    accent: '#9a3412',
+    body: '#292524',
+    bg: '#fffdf9',
+    cardBg: '#fef7ed',
+    cardBorder: '#fed7aa'
+  }
+}, {
+  id: 'high_contrast_ink',
+  label: 'High-Contrast Ink',
+  colors: {
+    heading: '#0f172a',
+    accent: '#4338ca',
+    body: '#000000',
+    bg: '#ffffff',
+    cardBg: '#f1f5f9',
+    cardBorder: '#94a3b8'
+  }
+}];
+function paletteMatches(current, presetColors) {
+  if (!current || !presetColors) return false;
+  return COLOR_FIELDS.every(function (f) {
+    return normHex(current[f.key]).toLowerCase() === normHex(presetColors[f.key]).toLowerCase();
+  });
+}
 
 // Access the data module lazily (load-order safe).
 function BP() {
@@ -113,6 +164,8 @@ function BrandProfileEditor(props) {
   const [profiles, setProfiles] = React.useState([]);
   const [activeId, setActiveId] = React.useState(null);
   const [draft, setDraft] = React.useState(blankDraft);
+  const [profileQuery, setProfileQuery] = React.useState('');
+  const profileComposingRef = React.useRef(false);
   const fileInputRef = React.useRef(null);
   const importInputRef = React.useRef(null);
   const dialogRef = React.useRef(null);
@@ -374,6 +427,15 @@ function BrandProfileEditor(props) {
       });
     });
   }
+  function applyPreset(preset) {
+    if (!preset || !preset.colors) return;
+    setDraft(function (d) {
+      return Object.assign({}, d, {
+        colors: Object.assign({}, d.colors, preset.colors)
+      });
+    });
+    addToast(t('brand.preset_applied', 'Applied ' + preset.label + ' palette'), 'info');
+  }
   function setField(key, value) {
     setDraft(function (d) {
       return Object.assign({}, d, {
@@ -609,6 +671,41 @@ function BrandProfileEditor(props) {
   const c = draft.colors || {};
   const headingFont = draft.fonts && draft.fonts.heading || draft.fonts && draft.fonts.body || 'inherit';
   const bodyFont = draft.fonts && draft.fonts.body || 'inherit';
+  const contrastPairs = React.useMemo(function () {
+    if (!api || typeof api.contrastRatio !== 'function') return [];
+    const bgHex = normHex(c.bg);
+    if (!api.isValidHex(bgHex)) return [];
+    return [{
+      key: 'heading',
+      label: t('brand.contrast_heading', 'Heading'),
+      hex: normHex(c.heading)
+    }, {
+      key: 'body',
+      label: t('brand.contrast_body', 'Body'),
+      hex: normHex(c.body)
+    }, {
+      key: 'accent',
+      label: t('brand.contrast_accent', 'Accent'),
+      hex: normHex(c.accent)
+    }].map(function (item) {
+      const ratio = api.isValidHex(item.hex) ? api.contrastRatio(item.hex, bgHex) : 0;
+      return {
+        key: item.key,
+        label: item.label,
+        ratio: ratio,
+        formatted: ratio > 0 ? ratio.toFixed(1) + ':1' : '—',
+        passesAA: ratio >= 4.5,
+        passesAAA: ratio >= 7
+      };
+    });
+  }, [api, c.heading, c.body, c.accent, c.bg]);
+  const normalizedProfileQuery = profileQuery.trim().toLowerCase();
+  const visibleProfiles = React.useMemo(function () {
+    if (!normalizedProfileQuery) return profiles;
+    return profiles.filter(function (p) {
+      return String(p && p.name || '').toLowerCase().indexOf(normalizedProfileQuery) !== -1;
+    });
+  }, [profiles, normalizedProfileQuery]);
   return /*#__PURE__*/React.createElement("div", {
     className: "fixed inset-0 z-[260] bg-black/50 flex items-center justify-center p-4",
     role: "presentation",
@@ -650,13 +747,13 @@ function BrandProfileEditor(props) {
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: newProfile,
-    className: "w-full min-h-11 px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors motion-reduce:transition-none"
+    className: "w-full min-h-11 px-3 py-2 rounded-lg bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors motion-reduce:transition-none"
   }, "+ ", t('brand.new', 'New profile')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
       importInputRef.current && importInputRef.current.click();
     },
-    className: "w-full min-h-11 px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-100 transition-colors motion-reduce:transition-none"
+    className: "w-full min-h-11 px-3 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors motion-reduce:transition-none"
   }, "\u2B06 ", t('brand.import', 'Import JSON')), /*#__PURE__*/React.createElement("input", {
     ref: importInputRef,
     "aria-label": t('brand.import_file', 'Import brand profile JSON file'),
@@ -664,11 +761,52 @@ function BrandProfileEditor(props) {
     accept: ".json,application/json",
     onChange: onImportFile,
     className: "hidden"
-  })), /*#__PURE__*/React.createElement("div", {
+  })), profiles.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "px-3 pt-2 pb-1 flex flex-col gap-1.5 border-b border-slate-200/70"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between text-xs font-bold uppercase tracking-wide text-slate-600"
+  }, /*#__PURE__*/React.createElement("span", null, t('brand.saved_count', 'Saved')), /*#__PURE__*/React.createElement("span", {
+    className: "rounded-full bg-slate-200 px-1.5 py-0.5 text-xs font-bold text-slate-700"
+  }, visibleProfiles.length, normalizedProfileQuery ? '/' + profiles.length : '')), profiles.length >= 5 && /*#__PURE__*/React.createElement("div", {
+    className: "relative"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "search",
+    value: profileQuery,
+    "aria-label": t('brand.search_profiles', 'Filter saved brand profiles'),
+    placeholder: t('brand.search_profiles_ph', 'Find profile…'),
+    onCompositionStart: function () {
+      profileComposingRef.current = true;
+    },
+    onCompositionEnd: function () {
+      profileComposingRef.current = false;
+    },
+    onChange: function (e) {
+      setProfileQuery(e.target.value);
+    },
+    onKeyDown: function (e) {
+      if (profileComposingRef.current || e.isComposing || e.keyCode === 229) return;
+      if (e.key === 'Escape' && profileQuery) {
+        e.preventDefault();
+        e.stopPropagation();
+        setProfileQuery('');
+      }
+    },
+    className: "w-full min-h-11 px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-xs text-slate-900 focus:ring-2 focus:ring-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600"
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 overflow-y-auto p-2"
   }, profiles.length === 0 ? /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 p-2"
-  }, t('brand.empty', 'No brand profiles yet. Create one to brand your documents and PDFs.')) : profiles.map(function (p) {
+  }, t('brand.empty', 'No brand profiles yet. Create one to brand your documents and PDFs.')) : visibleProfiles.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "p-2 text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-600"
+  }, t('brand.no_profile_match', 'No saved profiles match your search.')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      setProfileQuery('');
+    },
+    className: "mt-2 min-h-11 px-3 py-1 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-700 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors motion-reduce:transition-none"
+  }, t('brand.clear_filter', 'Show all'))) : visibleProfiles.map(function (p) {
     const isActive = p.id === activeId;
     const isEditing = p.id === draft.id;
     return /*#__PURE__*/React.createElement("div", {
@@ -736,9 +874,46 @@ function BrandProfileEditor(props) {
     className: "mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-600"
   })), /*#__PURE__*/React.createElement("div", {
     className: "mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center justify-between gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold uppercase tracking-wide text-slate-600"
-  }, t('brand.colors', 'Colors')), /*#__PURE__*/React.createElement("div", {
+  }, t('brand.colors', 'Colors')), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-slate-600"
+  }, t('brand.presets_hint', 'WCAG AA starter palettes'))), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-1.5 mt-1.5 mb-2.5",
+    role: "group",
+    "aria-label": t('brand.presets_group', 'Accessible color palette presets')
+  }, BRAND_PALETTE_PRESETS.map(function (preset) {
+    const isMatch = paletteMatches(c, preset.colors);
+    return /*#__PURE__*/React.createElement("button", {
+      key: preset.id,
+      type: "button",
+      "aria-pressed": isMatch,
+      onClick: function () {
+        applyPreset(preset);
+      },
+      className: 'min-h-11 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-blue-500 ' + (isMatch ? 'border-blue-600 bg-blue-50 text-blue-900' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50')
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "inline-flex items-center gap-0.5 shrink-0",
+      "aria-hidden": "true"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "w-3 h-3 rounded-full border border-slate-300",
+      style: {
+        background: preset.colors.heading
+      }
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "w-3 h-3 rounded-full border border-slate-300",
+      style: {
+        background: preset.colors.accent
+      }
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "w-3 h-3 rounded-full border border-slate-300",
+      style: {
+        background: preset.colors.cardBg
+      }
+    })), /*#__PURE__*/React.createElement("span", null, preset.label));
+  })), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 gap-2 mt-1"
   }, COLOR_FIELDS.map(function (f) {
     const val = normHex(c[f.key]);
@@ -973,7 +1148,25 @@ function BrandProfileEditor(props) {
       display: 'flex',
       justifyContent: 'space-between'
     }
-  }, /*#__PURE__*/React.createElement("span", null, draft.footer.text), draft.footer.showPageNumber && /*#__PURE__*/React.createElement("span", null, t('brand.preview_page', 'Page 1')))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", null, draft.footer.text), draft.footer.showPageNumber && /*#__PURE__*/React.createElement("span", null, t('brand.preview_page', 'Page 1')))), contrastPairs.length > 0 && /*#__PURE__*/React.createElement("div", {
+    "data-testid": "brand-contrast-readout",
+    className: "mt-2.5 rounded-lg border border-slate-200 bg-slate-50 p-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-xs font-bold uppercase tracking-wide text-slate-600 mb-1"
+  }, t('brand.contrast_ratios', 'Contrast vs. background')), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-3 gap-1"
+  }, contrastPairs.map(function (item) {
+    return /*#__PURE__*/React.createElement("div", {
+      key: item.key,
+      className: 'rounded border px-1.5 py-1 text-center ' + (item.passesAA ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-amber-300 bg-amber-50 text-amber-900')
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-xs font-semibold truncate"
+    }, item.label), /*#__PURE__*/React.createElement("div", {
+      className: "text-xs font-extrabold font-mono"
+    }, item.formatted), /*#__PURE__*/React.createElement("div", {
+      className: "text-xs font-bold"
+    }, item.passesAAA ? 'AAA' : item.passesAA ? 'AA ✓' : 'Low'));
+  }))), /*#__PURE__*/React.createElement("div", {
     id: "brand-validation-status",
     className: "mt-3 space-y-1",
     role: "status",

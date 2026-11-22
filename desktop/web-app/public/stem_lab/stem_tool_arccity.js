@@ -1444,7 +1444,7 @@
     document.head.appendChild(st);
   })();
   (function () {
-    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
@@ -1452,7 +1452,7 @@
   })();
 
   (function () {
-    if (document.getElementById('allo-live-arccity')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-arccity')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-arccity';
     lr.setAttribute('aria-live', 'polite');
@@ -1474,7 +1474,7 @@
   // 1.07-1.23:1, the tool title among them. A tool that does not paint its own
   // ground must not read the themed ink. One inherited definition fixes all 52.
   (function () {
-    if (document.getElementById('allo-arccity-palette-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-arccity-palette-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-arccity-palette-css';
     // ★ The `html:not(.theme-contrast)` guard this rule used to carry never
@@ -1500,7 +1500,7 @@
   })();
 
   (function () {
-    if (document.getElementById('allo-arccity-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-arccity-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-arccity-css';
     st.textContent =
@@ -1664,6 +1664,11 @@
       el.style.strokeDashoffset = String(len);
       var start = null, dur = 850;
       function step(ts) {
+        if (!el || !el.isConnected) {
+          el._arcAnimId = null;
+          _arcActiveBeams = _arcActiveBeams.filter(function (beam) { return beam !== el; });
+          return;
+        }
         if (start === null) start = ts;
         var prog = Math.min(1, (ts - start) / dur);
         el.style.strokeDashoffset = String(len * (1 - prog));
@@ -1686,6 +1691,8 @@
   var _arcAC = null;
   function getArcAC() {
     try {
+      if (typeof window === 'undefined') return null;
+      if ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || !!window._alloGlobalMute) return null;
       if (!_arcAC && (window.AudioContext || window.webkitAudioContext)) _arcAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)());
       if (_arcAC && _arcAC.state === 'suspended') { try { _arcAC.resume(); } catch (e) { } }
     } catch (e) { _arcAC = null; }
@@ -3682,7 +3689,10 @@
           // Capture the pointer so a fast or touch drag that leaves the small handle
           // keeps delivering move events (prevents the drag "dropping" on mobile).
           try { if (handleEl.setPointerCapture && evt.pointerId != null) handleEl.setPointerCapture(evt.pointerId); } catch (e) { }
-          function move(ev) { var w = svgWorldFromEvent(svgEl, ev); if (w) setParamsMulti(computeParams(w.x, w.y)); }
+          function move(ev) {
+            if (!handleEl || handleEl.isConnected === false) { up(ev); return; }
+            var w = svgWorldFromEvent(svgEl, ev); if (w) setParamsMulti(computeParams(w.x, w.y));
+          }
           function up(ev) {
             try { if (handleEl.releasePointerCapture && ev && ev.pointerId != null) handleEl.releasePointerCapture(ev.pointerId); } catch (e) { }
             try {
@@ -4339,7 +4349,10 @@
             if (e.preventDefault) e.preventDefault();
             try { if (trackEl.focus) trackEl.focus(); } catch (e2) { }          // pointer use should also move focus
             try { if (trackEl.setPointerCapture && e.pointerId != null) trackEl.setPointerCapture(e.pointerId); } catch (e2) { }
-            function apply(ev) { var v = valueAtClientX(trackEl, ev.clientX); if (v != null) setParam(name, v); }
+            function apply(ev) {
+              if (!trackEl || trackEl.isConnected === false) { up(ev); return; }
+              var v = valueAtClientX(trackEl, ev.clientX); if (v != null) setParam(name, v);
+            }
             apply(e);
             function up(ev) {
               try { if (trackEl.releasePointerCapture && ev && ev.pointerId != null) trackEl.releasePointerCapture(ev.pointerId); } catch (e2) { }
@@ -4750,10 +4763,38 @@
               }))));
 
         // ── View toggle (Play ↔ Circuit Clash ↔ Teacher) as WAI-ARIA tablist ──
+        var VIEW_IDS = ['battle', 'play', 'teacher'];
+        function onViewTabKeyDown(ev, v) {
+          if (!ev || ev.altKey || ev.ctrlKey || ev.metaKey || ev.shiftKey) return;
+          if (ev.isComposing || (ev.nativeEvent && ev.nativeEvent.isComposing) || ev.keyCode === 229) return;
+          var idx = VIEW_IDS.indexOf(v);
+          if (idx < 0) return;
+          var nextIdx = -1;
+          if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') nextIdx = (idx + 1) % VIEW_IDS.length;
+          else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') nextIdx = (idx - 1 + VIEW_IDS.length) % VIEW_IDS.length;
+          else if (ev.key === 'Home') nextIdx = 0;
+          else if (ev.key === 'End') nextIdx = VIEW_IDS.length - 1;
+          if (nextIdx >= 0) {
+            ev.preventDefault();
+            var nextView = VIEW_IDS[nextIdx];
+            setView(nextView);
+            if (typeof document !== 'undefined' && typeof window !== 'undefined' && window.setTimeout) {
+              window.setTimeout(function () {
+                var el = document.getElementById('arccity-tab-' + nextView);
+                if (el && typeof el.focus === 'function') el.focus();
+              }, 0);
+            }
+          }
+        }
         function viewBtn(v, label) {
           var active = view === v;
           return h('button', {
-            key: 'view-' + v, type: 'button', role: 'tab', 'aria-selected': active ? 'true' : 'false', onClick: function () { setView(v); },
+            key: 'view-' + v, id: 'arccity-tab-' + v, type: 'button', role: 'tab',
+            'aria-selected': active ? 'true' : 'false',
+            'aria-controls': 'arccity-panel-' + v,
+            tabIndex: active ? 0 : -1,
+            onKeyDown: function (ev) { onViewTabKeyDown(ev, v); },
+            onClick: function () { setView(v); },
             style: {
               padding: '7px 13px', borderRadius: 10, fontSize: 12.5, fontWeight: active ? 800 : 600,
               border: '1px solid ' + (active ? BEAM : GRID),
@@ -5258,10 +5299,11 @@
           // var(--allo-stem-canvas) so the value is verifiable in the harness;
           // the literals match app_styles' canvas token per theme.
           style: { padding: 16, maxWidth: view === 'play' ? 1180 : 760, margin: '0 auto', color: INK, background: THEME === 'contrast' ? '#000000' : (THEME === 'dark' ? '#0f172a' : 'transparent'), borderRadius: 14 }
-        }, header, viewToggle, body);
+        }, header, viewToggle, h('div', { id: 'arccity-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'arccity-tab-' + view }, body));
 
       } catch (e) {
-        return h('div', { style: { padding: 16, color: '#fca5a5', fontSize: 14 } },
+        var _errTheme = arcTheme();
+        return h('div', { style: { padding: 16, color: (_errTheme === 'dark' || _errTheme === 'contrast') ? '#fca5a5' : '#b91c1c', fontSize: 14 } },
           'Arc City could not render: ' + (e && e.message ? e.message : String(e)));
       }
     }

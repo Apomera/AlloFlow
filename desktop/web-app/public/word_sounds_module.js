@@ -16430,7 +16430,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                   ),
               ),
             ];
-            if (uniqueDistractors.length < 5 && typeof callGemini === "function") {
+            if (uniqueDistractors.length < 5 && wsAiUsable("text", callGemini)) {
               debugLog("⚠️ Insufficient unique distractors. Repairing...");
               try {
                 const safeTarget = wsFencePromptText(targetToCheck, 80);
@@ -16950,7 +16950,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               };
             }
             try {
-              if (typeof callGemini !== "function") {
+              if (!wsAiUsable("text", callGemini)) {
                 throw new Error("Gemini unavailable");
               }
               const safeTargetWord = wsFencePromptText(targetWord, 80);
@@ -17268,7 +17268,7 @@ EXAMPLES:
                 );
                 for (
                   let retryAttempt = 1;
-                  retryAttempt <= 3 && phonemeCount === 0 && typeof callGemini === "function";
+                  retryAttempt <= 3 && phonemeCount === 0 && wsAiUsable("text", callGemini);
                   retryAttempt++
                 ) {
                   debugLog(

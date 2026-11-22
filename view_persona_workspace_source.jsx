@@ -51,6 +51,8 @@ function PersonaWorkspaceView({
       return true;
     });
   };
+  const candidateList = Array.isArray(generatedContent?.data) ? generatedContent.data : [];
+  const selectedPanelList = Array.isArray(personaState?.selectedCharacters) ? personaState.selectedCharacters : [];
   return (
 <ErrorBoundary fallbackMessage={t('persona.error_boundary_fallback')}>
                     <div className="h-full min-h-0 min-w-0 flex flex-col relative" data-help-key="persona_panel" aria-busy={isProcessing || isGeneratingPersona}>
@@ -60,7 +62,15 @@ function PersonaWorkspaceView({
                                     <History size={20} />
                                 </div>
                                 <div className="text-start flex-grow">
-                                    <h2 className="text-lg font-black text-slate-800 leading-tight">{t('persona.setup_title')}</h2>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <h2 className="text-lg font-black text-slate-800 leading-tight">{t('persona.setup_title')}</h2>
+                                        {candidateList.length > 0 && (
+                                            <span data-persona-roster-count className="inline-flex items-center rounded-full border border-yellow-300 bg-white px-2.5 py-0.5 text-xs font-bold text-yellow-900">
+                                                {candidateList.length} {candidateList.length === 1 ? workspaceLabel('figure_one', 'figure') : workspaceLabel('figure_many', 'figures')}
+                                                {personaState.mode === 'panel' ? ` · ${selectedPanelList.length}/2` : ''}
+                                            </span>
+                                        )}
+                                    </div>
                                     <p data-persona-mode-guide className="text-slate-600 text-xs leading-relaxed max-w-lg mt-1">
                                         {personaState.mode === 'single'
                                             ? workspaceLabel('single_guide', 'Choose one figure to explore their ideas and ask follow-up questions.')
@@ -78,7 +88,7 @@ function PersonaWorkspaceView({
                                         if (isProcessing || isGeneratingPersona) return;
                                         setPersonaState(prev => ({ ...prev, mode: 'single', selectedCharacters: [] }));
                                     }}
-                                    className={`min-h-11 px-3 py-1.5 rounded-md text-xs font-bold transition-all motion-reduce:transition-none ${personaState.mode === 'single' ? 'bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200' : 'text-yellow-700 hover:bg-yellow-100'}`}
+                                    className={`min-h-11 px-3 py-1.5 rounded-md text-xs font-bold transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${personaState.mode === 'single' ? 'bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200' : 'text-yellow-800 hover:bg-yellow-100'}`}
                                 >
                                     {t('persona.mode_single')}
                                 </button>
@@ -90,13 +100,13 @@ function PersonaWorkspaceView({
                                         if (isProcessing || isGeneratingPersona) return;
                                         setPersonaState(prev => ({ ...prev, mode: 'panel' }));
                                     }}
-                                    className={`min-h-11 px-3 py-1.5 rounded-md text-xs font-bold transition-all motion-reduce:transition-none ${personaState.mode === 'panel' ? 'bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200' : 'text-yellow-700 hover:bg-yellow-100'}`}
+                                    className={`min-h-11 px-3 py-1.5 rounded-md text-xs font-bold transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${personaState.mode === 'panel' ? 'bg-white text-yellow-900 shadow-sm ring-1 ring-yellow-200' : 'text-yellow-800 hover:bg-yellow-100'}`}
                                 >
                                     {t('persona.mode_panel')}
                                 </button>
                             </div>
                             {isTeacherMode && (
-                                <label className="min-h-11 flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-2 py-1 text-[11px] font-bold text-slate-700">
+                                <label className="min-h-11 flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-2 py-1 text-xs font-bold text-slate-700">
                                     <span>{t('persona.resume_retention')}</span>
                                     <select
                                         aria-label={t('persona.resume_retention')}
@@ -147,7 +157,7 @@ function PersonaWorkspaceView({
                                         <div className="mt-2 rounded-md border border-sky-100 bg-white/70 p-2">
                                             {sourceTopic && <p className="font-bold text-slate-800">{sourceTopic}</p>}
                                             {sourceFingerprint && (
-                                                <p role="group" className="mt-1 break-all font-mono text-[10px] text-slate-500" aria-label={t('persona.source_fingerprint') || 'Source fingerprint'}>
+                                                <p role="group" className="mt-1 break-all font-mono text-xs text-slate-600" aria-label={t('persona.source_fingerprint') || 'Source fingerprint'}>
                                                     {sourceFingerprint}
                                                 </p>
                                             )}
@@ -216,11 +226,11 @@ function PersonaWorkspaceView({
                                     </div>
                                     <div className="mb-4 relative z-10">
                                         <div className="flex justify-between items-start mb-2">
-                                            <span className="inline-block bg-yellow-100 text-yellow-800 text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-yellow-200">
+                                            <span className="inline-block bg-yellow-100 text-yellow-900 text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded border border-yellow-200">
                                                 {persona.year}
                                             </span>
                                             {isTeacherMode && (
-                                                <button type="button" disabled={isProcessing || isGeneratingPersona} className="min-h-11 rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50" onClick={(e) => {
+                                                <button type="button" disabled={isProcessing || isGeneratingPersona} className="min-h-11 rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-800 hover:bg-indigo-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50" onClick={(e) => {
                                                     e.stopPropagation();
                                                     if (isProcessing || isGeneratingPersona) return;
                                                     openPersonaTeacherEditor(persona, idx);
@@ -277,15 +287,30 @@ function PersonaWorkspaceView({
                         {personaState.mode === 'panel' && (
                             <div data-persona-panel-selection className="shrink-0 border-t border-purple-200 bg-purple-50 p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                                 <div className="flex-1 min-w-0 text-sm text-purple-900" role="status" aria-live="polite">
-                                    <p className="font-bold">{t('persona.instruction_panel', { current: personaState.selectedCharacters.length })}</p>
-                                    {personaState.selectedCharacters.length > 0 && <p className="mt-1 text-xs leading-relaxed break-words">{personaState.selectedCharacters.map(person => person.name).join(' · ')}</p>}
+                                    <p className="font-bold">{t('persona.instruction_panel', { current: selectedPanelList.length })}</p>
+                                    <div data-persona-panel-slots className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                        {[0, 1].map((slotIdx) => {
+                                            const chosen = selectedPanelList[slotIdx];
+                                            return (
+                                                <span key={slotIdx} className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-bold ${chosen ? 'border-purple-400 bg-white text-purple-900' : 'border-dashed border-purple-300 bg-purple-100/50 text-purple-700'}`}>
+                                                    {chosen ? `${slotIdx + 1}. ${chosen.name}` : workspaceLabel('panel_slot_empty', `Figure ${slotIdx + 1}`)}
+                                                </span>
+                                            );
+                                        })}
+                                        {selectedPanelList.length === 2 && (
+                                            <span className="inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-900">
+                                                ✓ {workspaceLabel('panel_ready', 'Ready')}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {selectedPanelList.length > 0 && <p className="mt-1 text-xs leading-relaxed break-words">{selectedPanelList.map(person => person.name).join(' · ')}</p>}
                                 </div>
                                 <button type="button"
                                     onClick={handleStartPanelChat}
-                                    disabled={personaState.selectedCharacters.length !== 2 || isProcessing || isGeneratingPersona} aria-busy={isProcessing || isGeneratingPersona}
-                                    className="min-h-11 bg-purple-600 text-white px-5 py-3 rounded-xl font-bold text-sm shadow-sm hover:bg-purple-700 transition-all motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 active:scale-95 shrink-0"
+                                    disabled={selectedPanelList.length !== 2 || isProcessing || isGeneratingPersona} aria-busy={isProcessing || isGeneratingPersona}
+                                    className="min-h-11 bg-purple-600 text-white px-5 py-3 rounded-xl font-bold text-sm shadow-sm hover:bg-purple-700 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 active:scale-95 motion-reduce:transform-none shrink-0"
                                 >
-                                    {(isProcessing || isGeneratingPersona) ? <RefreshCw className="animate-spin motion-reduce:animate-none"/> : <Users size={24}/>}
+                                    {(isProcessing || isGeneratingPersona) ? <RefreshCw aria-hidden="true" className="animate-spin motion-reduce:animate-none"/> : <Users aria-hidden="true" size={24}/>}
                                     {t('persona.start_panel')}
                                 </button>
                             </div>
@@ -341,7 +366,7 @@ function PersonaWorkspaceView({
                                             autoFocus
                                             aria-label={t('common.close')}
                                             onClick={() => setPersonaTeacherEditor(null)}
-                                            className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg border border-slate-200 px-3 py-2 text-lg font-bold text-slate-600 hover:bg-slate-100"
+                                            className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg border border-slate-200 px-3 py-2 text-lg font-bold text-slate-600 hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1"
                                         >×</button>
                                     </div>
                                     <div className="space-y-5 p-5">
@@ -352,7 +377,7 @@ function PersonaWorkspaceView({
                                                     value={personaTeacherEditor.role}
                                                     maxLength={200}
                                                     onChange={(event) => updatePersonaTeacherEditor({ role: event.target.value })}
-                                                    className="min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+                                                    className="min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                 />
                                             </label>
                                             <label className="space-y-1 text-sm font-bold text-slate-700">
@@ -361,7 +386,7 @@ function PersonaWorkspaceView({
                                                     value={personaTeacherEditor.voice}
                                                     onChange={(event) => updatePersonaTeacherEditor({ voice: event.target.value })}
                                                     disabled={getPersonaVoiceOptions().length === 0}
-                                                    className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900 disabled:bg-slate-100"
+                                                    className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900 disabled:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                 >
                                                     {getPersonaVoiceOptions().length === 0
                                                         ? <option value={personaTeacherEditor.voice}>{personaTeacherEditor.voice || t('persona.no_voice_available') || 'Use the default voice'}</option>
@@ -371,27 +396,36 @@ function PersonaWorkspaceView({
                                             </label>
                                         </div>
                                         <label className="block space-y-1 text-sm font-bold text-slate-700">
-                                            <span>{t('persona.edit_context') || 'Character context'}</span>
+                                            <span className="flex items-center justify-between gap-2">
+                                                <span>{t('persona.edit_context') || 'Character context'}</span>
+                                                <span data-persona-context-count className="text-xs font-normal text-slate-600">{String(personaTeacherEditor.context || '').length}/2000</span>
+                                            </span>
                                             <textarea
                                                 value={personaTeacherEditor.context}
                                                 maxLength={2000}
                                                 rows={4}
                                                 onChange={(event) => updatePersonaTeacherEditor({ context: event.target.value })}
-                                                className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+                                                className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                             />
                                         </label>
                                         <label className="block space-y-1 text-sm font-bold text-slate-700">
-                                            <span>{t('persona.edit_guardrails') || 'Interview guardrails'}</span>
+                                            <span className="flex items-center justify-between gap-2">
+                                                <span>{t('persona.edit_guardrails') || 'Interview guardrails'}</span>
+                                                <span data-persona-guardrails-count className="text-xs font-normal text-slate-600">{String(personaTeacherEditor.guardrails || '').length}/1500</span>
+                                            </span>
                                             <textarea
                                                 value={personaTeacherEditor.guardrails}
                                                 maxLength={1500}
                                                 rows={3}
                                                 onChange={(event) => updatePersonaTeacherEditor({ guardrails: event.target.value })}
-                                                className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900"
+                                                className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 font-normal text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                             />
                                         </label>
                                         <fieldset className="space-y-3">
-                                            <legend className="text-sm font-black text-slate-800">{t('persona.edit_quests') || 'Quest objectives'}</legend>
+                                            <legend className="text-sm font-black text-slate-800">
+                                                {t('persona.edit_quests') || 'Quest objectives'}{' '}
+                                                <span className="ml-1 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700">{(personaTeacherEditor.quests || []).length}/6</span>
+                                            </legend>
                                             {(personaTeacherEditor.quests || []).map((quest, questIndex) => (
                                                 <div key={quest.id || questIndex} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 md:grid-cols-[1fr_150px_auto] md:items-end">
                                                     <label className="space-y-1 text-xs font-bold text-slate-700">

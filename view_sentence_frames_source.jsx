@@ -16,16 +16,16 @@ function isScaffoldParagraphComplete(text, responses) {
 }
 
 function _scaffoldTranslationTarget(artifact) {
-  const api = window.AlloModules?.TextPipelineHelpers;
+  const api = typeof window !== 'undefined' ? window.AlloModules?.TextPipelineHelpers : null;
   if (typeof api?.getArtifactTranslationTarget === 'function') return api.getArtifactTranslationTarget(artifact);
   return [artifact?.config?.translationPolicy?.target, artifact?.translationPolicy?.target, artifact?.translationTarget, artifact?.config?.translationTarget, artifact?.config?.attachedTranslationTarget].find(value => typeof value === 'string' && value.trim()) || 'English';
 }
 function _scaffoldTranslationAttributes(artifact) {
-  const api = window.AlloModules?.TextPipelineHelpers;
+  const api = typeof window !== 'undefined' ? window.AlloModules?.TextPipelineHelpers : null;
   if (typeof api?.getArtifactTranslationTextAttributes === 'function') return api.getArtifactTranslationTextAttributes(artifact);
   const target = _scaffoldTranslationTarget(artifact);
-  const helpers = window.AlloModules?.ModuleScopeExtras;
-  const lang = helpers?.getSpeechLangCode?.(target) || window.AlloFlowLang?.bcp47Full?.(target) || (/^[a-z]{2,3}(?:-[a-z0-9]+)*$/i.test(target) ? target : target === 'English' ? 'en' : 'und');
+  const helpers = typeof window !== 'undefined' ? window.AlloModules?.ModuleScopeExtras : null;
+  const lang = helpers?.getSpeechLangCode?.(target) || (typeof window !== 'undefined' ? window.AlloFlowLang?.bcp47Full?.(target) : null) || (/^[a-z]{2,3}(?:-[a-z0-9]+)*$/i.test(target) ? target : target === 'English' ? 'en' : 'und');
   return { lang, dir: helpers?.getContentDirection?.(target) || 'auto', style: { textAlign: 'start' } };
 }
 
@@ -77,13 +77,28 @@ function SentenceFramesView(props) {
   const activeFieldRef = React.useRef(null);
   const gradingTriggerRef = React.useRef(null);
   const draftOpenerRef = React.useRef(null);
+  const scaffoldMountedRef = React.useRef(true);
+  const speakingDraftRef = React.useRef(false);
+  const restoreFocusRafRef = React.useRef(null);
+  const [draftCrisisNotice, setDraftCrisisNotice] = React.useState('');
+  const safeGetRows = (val) => (typeof getRows === 'function' ? getRows(val) : Math.max(2, String(val || '').split('\n').length));
+  const safeRenderFormatted = (val) => (typeof renderFormattedText === 'function' ? renderFormattedText(val) : String(val || ''));
+  const isScaffoldGlobalMuted = () => {
+    if (typeof window === 'undefined') return false;
+    try {
+      if (window.__alloMuted === true || window._alloGlobalMute === true || window._alloGlobalMuted === true) return true;
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+    } catch (_) {}
+    return false;
+  };
   const scaffoldData = generatedContent?.data;
+  const effectiveEditingScaffolds = Boolean(isTeacherMode && isEditingScaffolds);
   const usableItems = Array.isArray(scaffoldData?.items) ? scaffoldData.items : [];
   const isUsableItem = item => Boolean(
     item
     && typeof item.text === 'string'
-    && (isEditingScaffolds || item.text.trim())
-    && (isTeacherMode || isEditingScaffolds || (item.isSelected !== false && item.selected !== false))
+    && (effectiveEditingScaffolds || item.text.trim())
+    && (isTeacherMode || effectiveEditingScaffolds || (item.isSelected !== false && item.selected !== false))
   );
   const isAssessmentLockdown = !isTeacherMode && !isIndependentMode && Boolean(
     props.assessmentMode
@@ -98,16 +113,16 @@ function SentenceFramesView(props) {
     : null;
   const textAiUsable = (() => {
     try {
-      if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
+      if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true)) return false;
+      if (typeof window !== 'undefined' && typeof window.callGemini === 'function' && window.callGemini._alloQrBlocked === true) return false;
       if (textAiDoor && textAiDoor.disabled) return false;
-      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable('text');
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable('text', window.callGemini);
     } catch (_) {}
     return true;
   })();
   // A Mastery Check draft belongs to the scaffold it was started on.
   const sessionResourceId = gradingSession.resourceId;
   const ownsSession = prev => !!prev && String(prev.resourceId) === String(sessionResourceId);
-  const effectiveEditingScaffolds = Boolean(isTeacherMode && isEditingScaffolds);
   const isSessionOpen = !!gradingSession.isOpen && textAiUsable && (sessionResourceId == null || String(sessionResourceId) === String(generatedContent?.id));
   const wasSessionOpenRef = React.useRef(isSessionOpen);
   const restoreDraftOpenerFocus = () => {
@@ -131,14 +146,35 @@ function SentenceFramesView(props) {
       draftSpeechListenerRef.current = null;
     }
   };
-  React.useEffect(() => () => {
-    if (draftCopiedTimerRef.current) { clearTimeout(draftCopiedTimerRef.current); draftCopiedTimerRef.current = null; }
+  const stopActiveDraftSpeech = () => {
+    stopDraftSpeechListener();
+    if (speakingDraftRef.current) {
+      speakingDraftRef.current = false;
+      try {
+        const player = typeof window !== 'undefined' ? window.AlloSpeechPlayer : null;
+        if (player && typeof player.stop === 'function') player.stop();
+        else if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
+      } catch (_) {}
+    }
+  };
+  React.useEffect(() => {
+    scaffoldMountedRef.current = true;
+    return () => {
+      scaffoldMountedRef.current = false;
+      stopActiveDraftSpeech();
+      if (draftCopiedTimerRef.current) { clearTimeout(draftCopiedTimerRef.current); draftCopiedTimerRef.current = null; }
+      if (restoreFocusRafRef.current != null && typeof window !== 'undefined' && typeof window.cancelAnimationFrame === 'function') {
+        window.cancelAnimationFrame(restoreFocusRafRef.current);
+        restoreFocusRafRef.current = null;
+      }
+    };
   }, []);
   React.useEffect(() => {
     setActiveTierFilter('all');
-    stopDraftSpeechListener();
+    setDraftCrisisNotice('');
+    stopActiveDraftSpeech();
     setSpeakingDraft(false);
-    return () => { stopDraftSpeechListener(); };
+    return () => { stopActiveDraftSpeech(); };
   }, [generatedContent?.id]);
   React.useEffect(() => {
     if (wasSessionOpenRef.current && !isSessionOpen) {
@@ -161,7 +197,12 @@ function SentenceFramesView(props) {
   // Optional generator extras (absent on older scaffolds, which render as before).
   const TIER_LABELS = { emerging: ['scaffolds.tier_emerging', 'Emerging'], expanding: ['scaffolds.tier_expanding', 'Expanding'], bridging: ['scaffolds.tier_bridging', 'Bridging'] };
   const TIER_CLASSES = { emerging: 'bg-sky-50 text-sky-800 border-sky-300', expanding: 'bg-violet-50 text-violet-800 border-violet-300', bridging: 'bg-emerald-50 text-emerald-800 border-emerald-300' };
-  const tierOf = item => item && typeof item.tier === 'string' && TIER_LABELS[item.tier] ? item.tier : null;
+  const tierOf = item => item && typeof item.tier === 'string' && Object.prototype.hasOwnProperty.call(TIER_LABELS, item.tier) ? item.tier : null;
+  const safeRespBucket = (key) => {
+    if (key == null || !studentResponses || typeof studentResponses !== 'object') return {};
+    return Object.prototype.hasOwnProperty.call(studentResponses, key) && studentResponses[key] && typeof studentResponses[key] === 'object' ? studentResponses[key] : {};
+  };
+  const safeRespVal = (bucket, k) => (bucket && k != null && Object.prototype.hasOwnProperty.call(bucket, k) ? bucket[k] : '');
   const wordBank = (Array.isArray(scaffoldData.wordBank) ? scaffoldData.wordBank : []).filter(w => typeof w === 'string' && w.trim()).map(w => w.trim()).slice(0, 40);
   const wordBankHeadingId = `scaffold-word-bank-${generatedContent?.id}`;
   const isDiscussionPrompts = scaffoldData.frameType === 'Discussion Prompts' || /^Discussion Prompts\b/.test(String(generatedContent?.meta || ''));
@@ -181,7 +222,7 @@ function SentenceFramesView(props) {
       if (firstBlank) targetKey = firstBlank.responseKey;
     }
     if (targetKey == null) return;
-    const currentVal = String((studentResponses[resId] && studentResponses[resId][targetKey]) || '');
+    const currentVal = String(safeRespVal(safeRespBucket(resId), targetKey) || '');
     const el = tracked && tracked.el && tracked.el.isConnected ? tracked.el : null;
     const hasSelection = el && typeof el.selectionStart === 'number' && typeof el.selectionEnd === 'number';
     const start = hasSelection ? Math.max(0, Math.min(currentVal.length, el.selectionStart)) : currentVal.length;
@@ -196,13 +237,15 @@ function SentenceFramesView(props) {
     if (el) {
       const caretPos = before.length + (needsLeadingSpace ? 1 : 0) + word.length;
       const restoreFocus = () => {
+        restoreFocusRafRef.current = null;
         try {
           el.focus();
           if (typeof el.setSelectionRange === 'function') el.setSelectionRange(caretPos, caretPos);
         } catch (_) {}
       };
       if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
-        window.requestAnimationFrame(restoreFocus);
+        if (restoreFocusRafRef.current != null && typeof window.cancelAnimationFrame === 'function') window.cancelAnimationFrame(restoreFocusRafRef.current);
+        restoreFocusRafRef.current = window.requestAnimationFrame(restoreFocus);
       } else {
         restoreFocus();
       }
@@ -210,17 +253,17 @@ function SentenceFramesView(props) {
   };
   const assembleStudentDraft = () => {
     const resKey = generatedContent?.id || 'current';
-    const respMap = studentResponses[resKey] || {};
+    const respMap = safeRespBucket(resKey);
     if (scaffoldData?.mode === 'paragraph' && typeof scaffoldData?.text === 'string') {
       return serializeScaffoldParagraph(scaffoldData.text, respMap, '_____').trim();
     }
     return usableItems
       .map((item, idx) => {
         if (!isUsableItem(item)) return '';
-        const ans = String(respMap[idx] || '').trim();
+        const ans = String(safeRespVal(respMap, idx) || '').trim();
         if (!ans) return '';
         const stem = String(item.text || '').trim();
-        return stem.includes('___') ? stem.replace(/_{2,}/, ans) : (stem ? stem + ' ' + ans : ans);
+        return stem.includes('___') ? stem.replace(/_{2,}/, () => ans) : (stem ? stem + ' ' + ans : ans);
       })
       .filter(Boolean)
       .join('\n\n');
@@ -229,9 +272,10 @@ function SentenceFramesView(props) {
     const assembled = assembleStudentDraft();
     if (!assembled) return;
     const markCopied = () => {
+      if (!scaffoldMountedRef.current) return;
       setDraftCopied(true);
       if (draftCopiedTimerRef.current) clearTimeout(draftCopiedTimerRef.current);
-      draftCopiedTimerRef.current = setTimeout(() => { draftCopiedTimerRef.current = null; setDraftCopied(false); }, 2000);
+      draftCopiedTimerRef.current = setTimeout(() => { draftCopiedTimerRef.current = null; if (scaffoldMountedRef.current) setDraftCopied(false); }, 2000);
     };
     if (typeof copyToClipboard === 'function') {
       copyToClipboard(assembled);
@@ -245,14 +289,20 @@ function SentenceFramesView(props) {
   };
   const handleListenAssembledDraft = () => {
     const player = typeof window !== 'undefined' ? window.AlloSpeechPlayer : null;
-    const finished = () => { stopDraftSpeechListener(); setSpeakingDraft(false); };
+    const finished = () => {
+      stopDraftSpeechListener();
+      speakingDraftRef.current = false;
+      if (scaffoldMountedRef.current) setSpeakingDraft(false);
+    };
     stopDraftSpeechListener();
     if (speakingDraft) {
+      speakingDraftRef.current = false;
       if (player && typeof player.stop === 'function') player.stop();
       else if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel();
       setSpeakingDraft(false);
       return;
     }
+    if (isScaffoldGlobalMuted()) return;
     const spoken = assembleStudentDraft().replace(/_{2,}/g, ' blank ').replace(/\s+/g, ' ').trim();
     if (!spoken) return;
     if (player && typeof player.speak === 'function') {
@@ -264,10 +314,12 @@ function SentenceFramesView(props) {
       };
       draftSpeechListenerRef.current = onState;
       window.addEventListener('allo-speech-state', onState);
+      speakingDraftRef.current = true;
       setSpeakingDraft(true);
       const langOpt = leveledTextLanguage && leveledTextLanguage !== 'English' ? { language: leveledTextLanguage } : {};
       Promise.resolve(player.speak(spoken, langOpt)).then(res => { if (res === null && ourId === null) finished(); }, finished);
     } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+      speakingDraftRef.current = true;
       setSpeakingDraft(true);
       window.speechSynthesis.cancel();
       const u = new window.SpeechSynthesisUtterance(spoken);
@@ -281,12 +333,12 @@ function SentenceFramesView(props) {
   };
   const assembledDraftText = !isTeacherMode ? assembleStudentDraft() : '';
   const hasAssembledDraft = !isTeacherMode && Boolean(assembledDraftText);
-  const currentRespMap = studentResponses[generatedContent?.id] || {};
+  const currentRespMap = safeRespBucket(generatedContent?.id);
   const draftStats = (() => {
     if (scaffoldData?.mode === 'paragraph' && typeof scaffoldData?.text === 'string') {
       const blanks = scaffoldParagraphParts(scaffoldData.text).filter(p => p.responseKey);
-      const filled = blanks.filter(p => String(currentRespMap[p.responseKey] || '').trim()).length;
-      const words = blanks.map(p => String(currentRespMap[p.responseKey] || '')).join(' ').split(/\s+/).filter(Boolean).length;
+      const filled = blanks.filter(p => String(safeRespVal(currentRespMap, p.responseKey) || '').trim()).length;
+      const words = blanks.map(p => String(safeRespVal(currentRespMap, p.responseKey) || '')).join(' ').split(/\s+/).filter(Boolean).length;
       return { filled, total: blanks.length, words, isParagraph: true };
     }
     let total = 0, filled = 0;
@@ -294,7 +346,7 @@ function SentenceFramesView(props) {
     usableItems.forEach((item, idx) => {
       if (!isUsableItem(item)) return;
       total += 1;
-      const v = String(currentRespMap[idx] || '').trim();
+      const v = String(safeRespVal(currentRespMap, idx) || '').trim();
       if (v) { filled += 1; chunks.push(v); }
     });
     return { filled, total, words: chunks.join(' ').split(/\s+/).filter(Boolean).length, isParagraph: false };
@@ -310,7 +362,7 @@ function SentenceFramesView(props) {
     }
     return studentCombinedLower.indexOf(needle) !== -1;
   };
-  const usedWordBankCount = (!isTeacherMode && !isEditingScaffolds && wordBank.length > 0)
+  const usedWordBankCount = (!isTeacherMode && !effectiveEditingScaffolds && wordBank.length > 0)
     ? wordBank.reduce((n, w) => n + (isWordBankTermUsed(w) ? 1 : 0), 0)
     : 0;
   const tierCounts = { emerging: 0, expanding: 0, bridging: 0 };
@@ -322,8 +374,25 @@ function SentenceFramesView(props) {
     });
   }
   const presentTiers = ['emerging', 'expanding', 'bridging'].filter(k => tierCounts[k] > 0);
-  const showTierFilter = scaffoldData?.mode === 'list' && !isEditingScaffolds && !isSessionOpen && presentTiers.length >= 2;
+  const showTierFilter = scaffoldData?.mode === 'list' && !effectiveEditingScaffolds && !isSessionOpen && presentTiers.length >= 2;
   const effectiveTierFilter = (showTierFilter && presentTiers.includes(activeTierFilter)) ? activeTierFilter : 'all';
+  const checkDraftCrisis = (text) => {
+    const clean = String(text || '').trim();
+    if (!clean || typeof window === 'undefined') return false;
+    try {
+      const selHub = window.SelHub;
+      const safetyChecker = window.SafetyContentChecker;
+      const res = (selHub && typeof selHub.safeRehearseCheck === 'function')
+        ? selHub.safeRehearseCheck(clean, { toolId: 'sentence_frames' })
+        : (safetyChecker && typeof safetyChecker.check === 'function' ? safetyChecker.check(clean) : null);
+      if (res && (res.action === 'block' || res.tier >= 3 || res.blocked === true)) {
+        setDraftCrisisNotice(label('scaffolds.crisis_support', 'It sounds like you may be going through a difficult time. Please talk with a trusted adult, school counselor, or call/text 988 (Suicide & Crisis Lifeline) or text HOME to 741741 (Crisis Text Line).'));
+        return true;
+      }
+    } catch (_) {}
+    if (draftCrisisNotice) setDraftCrisisNotice('');
+    return false;
+  };
   const bt = s => (bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function') ? window.__alloBionicReact(s) : s;
   return (
                   <div className="space-y-6">
@@ -396,7 +465,7 @@ function SentenceFramesView(props) {
                                         } else {
                                             draftOpenerRef.current = gradingTriggerRef.current;
                                         }
-                                        launchGradingSession();
+                                        if (typeof launchGradingSession === 'function') launchGradingSession();
                                     }}
                                     data-help-key="scaffolds_grading"
                                     className={`min-h-11 flex items-center gap-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-full transition-all motion-reduce:transition-none shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2 ${isScaffoldComplete ? 'animate-pulse motion-reduce:animate-none ring-4 ring-rose-300 shadow-lg scale-105' : ''}`}
@@ -422,6 +491,11 @@ function SentenceFramesView(props) {
                             )}
                         </div>
                     </div>
+                    {draftCrisisNotice && (
+                        <div role="alert" data-scaffolds-crisis-notice className="rounded-xl border-2 border-rose-500 bg-rose-50 p-3 text-sm font-semibold text-rose-900">
+                            {draftCrisisNotice}
+                        </div>
+                    )}
                     {isTeacherMode && !textAiUsable && typeof window !== 'undefined' && window.AlloAiSetupNotice && (
                         <window.AlloAiSetupNotice kind="text" t={t} />
                     )}
@@ -431,22 +505,22 @@ function SentenceFramesView(props) {
                             <div className="flex flex-wrap items-baseline justify-between gap-2 mb-2">
                                 <div className="flex items-center gap-2">
                                     <h4 id={wordBankHeadingId} className="text-xs font-bold text-amber-900 uppercase tracking-wider">{label('scaffolds.word_bank', 'Word bank')}</h4>
-                                    {!isTeacherMode && !isEditingScaffolds && (
+                                    {!isTeacherMode && !effectiveEditingScaffolds && (
                                         <span data-scaffold-word-bank-count className={`text-xs font-bold px-2 py-0.5 rounded-full border ${usedWordBankCount === wordBank.length ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : 'bg-white text-amber-900 border-amber-300'}`}>
                                             {label('scaffolds.word_bank_used_count', '{used}/{total} used').replace('{used}', String(usedWordBankCount)).replace('{total}', String(wordBank.length))}
                                         </span>
                                     )}
                                 </div>
-                                {!isTeacherMode && !isEditingScaffolds && (
+                                {!isTeacherMode && !effectiveEditingScaffolds && (
                                     <span className="text-xs font-medium text-amber-800">{label('scaffolds.word_bank_hint', 'Click a word to insert it')}</span>
                                 )}
                             </div>
                             <ul className="flex flex-wrap gap-2">
                                 {wordBank.map((word, i) => {
-                                    const used = !isTeacherMode && !isEditingScaffolds && isWordBankTermUsed(word);
+                                    const used = !isTeacherMode && !effectiveEditingScaffolds && isWordBankTermUsed(word);
                                     return (
                                     <li key={i}>
-                                        {(!isTeacherMode && !isEditingScaffolds) ? (
+                                        {(!isTeacherMode && !effectiveEditingScaffolds) ? (
                                             <button
                                                 type="button"
                                                 dir="auto"
@@ -487,24 +561,32 @@ function SentenceFramesView(props) {
                             ))}
                         </div>
                     )}
-                    {isSessionOpen ? (<ErrorBoundary fallbackMessage={label('scaffolds.draft_feedback_error', 'Draft feedback encountered an error. Please try again.')}>
+                    {isSessionOpen && typeof DraftFeedbackInterface === 'function' ? (() => {
+                        const feedbackNode = (
                         <DraftFeedbackInterface
                             status={gradingSession.status}
                             draftText={gradingSession.draftText}
-                            setDraftText={(val) => setGradingSession(prev => ownsSession(prev) ? { ...prev, draftText: val } : prev)}
+                            setDraftText={(val) => { if (typeof setGradingSession === 'function') setGradingSession(prev => ownsSession(prev) ? { ...prev, draftText: val } : prev); }}
                             previousDraft={gradingSession.previousDraft}
                             gradingDetails={gradingSession.feedback}
                             draftCount={gradingSession.draftCount}
                             finalScore={gradingSession.finalScore}
                             xpEarned={gradingSession.xpAwarded}
-                            onSubmit={submitGradingSession}
+                            onSubmit={(...args) => {
+                                if (checkDraftCrisis(gradingSession.draftText || assembleStudentDraft())) return;
+                                if (typeof submitGradingSession === 'function') submitGradingSession(...args);
+                            }}
                             onCancel={() => {
-                                setGradingSession(prev => ownsSession(prev) ? { ...prev, isOpen: false } : prev);
+                                if (typeof setGradingSession === 'function') setGradingSession(prev => ownsSession(prev) ? { ...prev, isOpen: false } : prev);
                                 restoreDraftOpenerFocus();
                             }}
                         />
-                    </ErrorBoundary>
-                    ) : generatedContent?.data?.mode === 'list' ? (
+                        );
+                        return typeof ErrorBoundary === 'function'
+                            ? <ErrorBoundary fallbackMessage={label('scaffolds.draft_feedback_error', 'Draft feedback encountered an error. Please try again.')}>{feedbackNode}</ErrorBoundary>
+                            : feedbackNode;
+                    })()
+                    : generatedContent?.data?.mode === 'list' ? (
                         <div className="grid grid-cols-1 gap-4">
                              {usableItems.map((item, idx) => (isUsableItem(item) && (effectiveTierFilter === 'all' || tierOf(item) === effectiveTierFilter)) ? (
                                  <div key={idx} className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:border-indigo-200 transition-colors motion-reduce:transition-none" data-help-key="scaffolds_item">
@@ -517,18 +599,18 @@ function SentenceFramesView(props) {
                                                     <textarea
                                                         aria-label={t('scaffolds.edit_item') || `Edit scaffold item ${idx + 1}`}
                                                         value={item.text}
-                                                        onChange={(e) => handleScaffoldChange(idx, 'text', e.target.value)}
+                                                        onChange={(e) => { if (typeof handleScaffoldChange === 'function') handleScaffoldChange(idx, 'text', e.target.value); }}
                                                         className="w-full text-lg font-medium text-slate-800 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none font-serif"
-                                                        rows={getRows(item.text)}
+                                                        rows={safeGetRows(item.text)}
                                                     />
-                                                    {(item.text_en !== undefined || leveledTextLanguage !== 'English') && (
+                                                    {(item.text_en !== undefined || Boolean(leveledTextLanguage && leveledTextLanguage !== 'English')) && (
                                                         <textarea
                                                             {..._scaffoldTranslationAttributes(generatedContent)}
                                                             aria-label={t('scaffolds.edit_item_translation') || `Edit scaffold item ${idx + 1} translation`}
                                                             value={item.text_en || ''}
-                                                            onChange={(e) => handleScaffoldChange(idx, 'text_en', e.target.value, true)}
+                                                            onChange={(e) => { if (typeof handleScaffoldChange === 'function') handleScaffoldChange(idx, 'text_en', e.target.value, true); }}
                                                             className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none"
-                                                            rows={getRows(item.text_en || '')}
+                                                            rows={safeGetRows(item.text_en || '')}
                                                             placeholder={t('common.placeholder_translation')}
                                                         />
                                                     )}
@@ -573,13 +655,13 @@ function SentenceFramesView(props) {
                     ) : (
                         <div className="bg-white p-4 sm:p-8 rounded-xl border border-slate-400 shadow-sm" data-help-key="scaffolds_paragraph_frame">
                             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4">{t('scaffolds.paragraph_frame') || 'Paragraph Frame'}</h4>
-                            {isEditingScaffolds ? (
+                            {effectiveEditingScaffolds ? (
                                 <textarea
                                     aria-label={t('scaffolds.edit_paragraph_frame') || 'Edit paragraph frame text'}
-                                    value={generatedContent?.data?.text}
-                                    onChange={(e) => handleScaffoldTextChange('text', e.target.value)}
+                                    value={generatedContent?.data?.text ?? ''}
+                                    onChange={(e) => { if (typeof handleScaffoldTextChange === 'function') handleScaffoldTextChange('text', e.target.value); }}
                                     className="w-full text-lg leading-loose text-slate-800 font-serif bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus:outline-none resize-none transition-all motion-reduce:transition-none"
-                                    rows={getRows(generatedContent?.data?.text)}
+                                    rows={safeGetRows(generatedContent?.data?.text)}
                                 />
                             ) : (
                                 <div lang={leveledTextLanguage && leveledTextLanguage !== 'English' && typeof window !== 'undefined' && typeof window.languageToTTSCode === 'function' ? window.languageToTTSCode(leveledTextLanguage) : undefined} className="text-lg leading-loose text-slate-800 font-serif px-2 py-1">
@@ -588,9 +670,9 @@ function SentenceFramesView(props) {
                                         <input aria-label={`${label('common.enter_student_responses', 'Student response')} ${(i + 1) / 2}: ${part.replace(/[\[\]]/g, '')}`}
                                             key={i}
                                             type="text"
-                                            value={studentResponses[generatedContent.id]?.[responseKey] || ''}
-                                            onFocus={(e) => { activeFieldRef.current = { resourceId: generatedContent.id, key: responseKey, el: e.currentTarget }; }}
-                                            onChange={(e) => handleStudentInput(generatedContent.id, responseKey, e.target.value)}
+                                            value={safeRespVal(safeRespBucket(generatedContent?.id), responseKey) || ''}
+                                            onFocus={(e) => { activeFieldRef.current = { resourceId: generatedContent?.id, key: responseKey, el: e.currentTarget }; }}
+                                            onChange={(e) => { if (typeof handleStudentInput === 'function') handleStudentInput(generatedContent?.id, responseKey, e.target.value); }}
                                             dir="auto" className="placeholder:text-current placeholder:opacity-100 placeholder:font-normal inline-block w-44 max-w-full min-h-11 border-b-2 border-slate-500 mx-1 text-center text-indigo-700 font-bold focus:border-indigo-600 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-indigo-600 bg-transparent min-w-[100px] px-1 focus:bg-indigo-50 rounded transition-colors motion-reduce:transition-none"
                                             placeholder={part.replace(/[\[\]]/g, '')}
                                         /> :
@@ -598,17 +680,17 @@ function SentenceFramesView(props) {
                                     ))}
                                 </div>
                             )}
-                            {((isEditingScaffolds && (leveledTextLanguage !== 'English' || generatedContent?.data?.text_en !== undefined)) || generatedContent?.data?.text_en) && (
+                            {((effectiveEditingScaffolds && (Boolean(leveledTextLanguage && leveledTextLanguage !== 'English') || generatedContent?.data?.text_en !== undefined)) || generatedContent?.data?.text_en) && (
                                 <div className="mt-8 pt-6 border-t border-slate-100">
                                     <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{/^english$/i.test(_scaffoldTranslationTarget(generatedContent)) ? t('common.english_translation') : label('translate.companion_label', 'Companion translation') + ' (' + _scaffoldTranslationTarget(generatedContent) + ')'}</h4>
-                                    {isEditingScaffolds ? (
+                                    {effectiveEditingScaffolds ? (
                                         <textarea
                                             {..._scaffoldTranslationAttributes(generatedContent)}
                                             aria-label={t('scaffolds.edit_paragraph_translation') || 'Edit paragraph frame translation'}
                                             value={generatedContent?.data?.text_en || ''}
-                                            onChange={(e) => handleScaffoldTextChange('text_en', e.target.value)}
+                                            onChange={(e) => { if (typeof handleScaffoldTextChange === 'function') handleScaffoldTextChange('text_en', e.target.value); }}
                                             className="w-full text-slate-600 italic leading-relaxed bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-600 focus:bg-white focus:ring-2 focus:ring-indigo-600 rounded px-2 py-1 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 resize-none transition-all motion-reduce:transition-none"
-                                            rows={getRows(generatedContent?.data?.text_en || '')}
+                                            rows={safeGetRows(generatedContent?.data?.text_en || '')}
                                             placeholder={t('common.placeholder_translation')}
                                         />
                                     ) : (
@@ -654,8 +736,7 @@ function SentenceFramesView(props) {
                                             </button>
                                             <button
                                                 type="button"
-                                                aria-label={t('common.copy')}
-                                                onClick={() => copyToClipboard(generatedContent?.data?.rubric)}
+                                                onClick={() => { if (typeof copyToClipboard === 'function') copyToClipboard(generatedContent?.data?.rubric); }}
                                                 className="min-h-11 text-xs flex items-center gap-1 bg-white text-slate-700 hover:text-indigo-700 border border-slate-400 hover:border-indigo-400 px-3 py-1.5 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                 title={t('scaffolds.rubric_copy_tooltip')}
                                             >
@@ -672,18 +753,18 @@ function SentenceFramesView(props) {
                                     .rubric-container h1, .rubric-container h2, .rubric-container h3 { font-size: 1em !important; margin: 0.5em 0 !important; }
                                     .rubric-container p { margin-bottom: 0.5em !important; }
                                 ` : ''}</style>
-                                {isEditingScaffolds ? (
+                                {effectiveEditingScaffolds ? (
                                     <textarea
                                         aria-label={t('scaffolds.edit_rubric') || 'Edit rubric'}
-                                        value={generatedContent?.data?.rubric}
-                                        onChange={(e) => handleScaffoldTextChange('rubric', e.target.value)}
+                                        value={generatedContent?.data?.rubric ?? ''}
+                                        onChange={(e) => { if (typeof handleScaffoldTextChange === 'function') handleScaffoldTextChange('rubric', e.target.value); }}
                                         className="w-full text-sm bg-transparent border border-slate-400 hover:border-indigo-400 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600 focus:bg-slate-50 rounded p-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 resize-y font-medium text-slate-700 transition-all motion-reduce:transition-none font-mono"
-                                        rows={getRows(generatedContent?.data?.rubric)}
+                                        rows={safeGetRows(generatedContent?.data?.rubric)}
                                         placeholder={t('scaffolds.rubric_placeholder')}
                                     />
                                 ) : (
                                     <div tabIndex={0} role="region" aria-label={t('scaffolds.rubric') || 'Rubric'} className="rubric-container prose prose-sm max-w-none text-slate-700 leading-relaxed overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                                        {renderFormattedText(generatedContent?.data?.rubric)}
+                                        {safeRenderFormatted(generatedContent?.data?.rubric)}
                                     </div>
                                 )}
                             </div>
@@ -734,11 +815,11 @@ function SentenceFramesView(props) {
                                             </div>
                                             <div className="grid grid-cols-1 gap-3 text-sm">
                                                 <div className="bg-green-50 p-3 rounded border border-green-200">
-                                                    <strong className="text-green-800 block mb-1 flex items-center gap-1"><Sparkles size={12} aria-hidden="true"/> {t('dashboard.grading.glow_label')}</strong>
+                                                    <strong className="text-green-800 mb-1 flex items-center gap-1"><Sparkles size={12} aria-hidden="true"/> {t('dashboard.grading.glow_label')}</strong>
                                                     <p className="text-green-800">{bt(gradeText(gradeFeedback.glow))}</p>
                                                 </div>
                                                 <div className="bg-orange-50 p-3 rounded border border-orange-200">
-                                                    <strong className="text-orange-800 block mb-1 flex items-center gap-1"><ArrowUpRight size={12} aria-hidden="true"/> {t('dashboard.grading.grow_label')}</strong>
+                                                    <strong className="text-orange-800 mb-1 flex items-center gap-1"><ArrowUpRight size={12} aria-hidden="true"/> {t('dashboard.grading.grow_label')}</strong>
                                                     <p className="text-orange-800">{bt(gradeText(gradeFeedback.grow))}</p>
                                                 </div>
                                             </div>

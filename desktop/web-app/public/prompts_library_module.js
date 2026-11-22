@@ -71,12 +71,19 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
       } catch (_) { /* keep the snapshot */ }
       return live
         .filter((t) => t && typeof t === 'object' && typeof t.id === 'string' && t.id)
-        .map((t) => ({ id: t.id, name: t.name, subjects: t.subjects, tags: t.tags }));
+        .slice(0, TOOL_CATALOG_LIMIT)
+        .map((t) => ({
+          id: _cleanInlineMeta(t.id, ''),
+          name: _cleanInlineMeta(t.name, ''),
+          subjects: Array.isArray(t.subjects) ? t.subjects.slice(0, 8).map((x) => _cleanInlineMeta(x, '')).filter(Boolean) : undefined,
+          tags: Array.isArray(t.tags) ? t.tags.slice(0, 12).map((x) => _cleanInlineMeta(x, '')).filter(Boolean) : undefined
+        }));
     }
-    const terms = String(topic || '').toLowerCase().match(/[a-z][a-z0-9-]{2,}/g) || [];
-    const query = terms.filter((w) => !STOPISH.test(w));
+    const terms = String(topic || '').slice(0, 500).toLowerCase().match(/[a-z][a-z0-9-]{2,}/g) || [];
+    const query = Array.from(new Set(terms.filter((w) => !STOPISH.test(w)))).slice(0, 32);
     const scored = idx
       .filter((t) => t && typeof t === 'object' && typeof t.id === 'string' && t.id)
+      .slice(0, 500)
       .map((t) => {
         const topicsArr = Array.isArray(t.topics) ? t.topics : [];
         const keywordsArr = Array.isArray(t.keywords) ? t.keywords : [];
@@ -93,13 +100,13 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
     // With no usable topic every score is 0; the slice still yields a stable,
     // bounded sample instead of the whole catalog.
     return scored.slice(0, TOOL_CATALOG_LIMIT).map((s) => ({
-      id: s.t.id,
-      name: s.t.label,
-      section: s.t.section || undefined,
+      id: _cleanInlineMeta(s.t.id, ''),
+      name: _cleanInlineMeta(s.t.label, ''),
+      section: s.t.section ? _cleanInlineMeta(s.t.section, '') : undefined,
       // The tool's OWN description, trimmed — this is the part that was
       // missing entirely, and it is what lets the model match on capability.
-      about: String(s.t.desc || '').slice(0, 200),
-      covers: (Array.isArray(s.t.topics) ? s.t.topics : []).slice(0, 6)
+      about: _stripUntrustedFence(s.t.desc, 200),
+      covers: (Array.isArray(s.t.topics) ? s.t.topics : []).slice(0, 6).map((x) => _cleanInlineMeta(x, '')).filter(Boolean)
     }));
   };
 
@@ -116,23 +123,27 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
     const on = !!lang && lang !== 'English' && lang !== 'All Selected Languages';
     return { enabled: on, target: on ? 'English' : '', mode: 'auto' };
   };
-  const _stripUntrustedFence = (val) => String(val == null ? '' : val)
-    .replace(/<\/?UNTRUSTED_[A-Z0-9_-]*>/gi, '[REDACTED_TAG]')
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
-  const _cleanInlineMeta = (val, fallback = '') => {
+  const _stripUntrustedFence = (val, maxLen = 60000) => String(val == null ? '' : val)
+    .slice(0, maxLen)
+    .replace(/<\s*\/?\s*UNTRUSTED_[A-Z0-9_-]*\s*>/gi, '[REDACTED_TAG]')
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F\u202A-\u202E\u2066-\u2069]/g, '');
+  const _cleanInlineMeta = (val, fallback = '', maxLen = 160) => {
     const cleaned = String(val == null ? '' : val)
-      .replace(/[\r\n\x00-\x1F\x7F<>]/g, ' ')
+      .slice(0, maxLen)
+      .replace(/[\r\n\x00-\x1F\x7F\u202A-\u202E\u2066-\u2069<>`"\\]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
     return cleaned || fallback;
   };
 
-  const buildLessonPlanPrompt = ({ context, assetManifest, language, customAdditions, gradeLevel, sourceTopic, translationPolicy }) => {
+  const buildLessonPlanPrompt = (opts) => {
+    const { context, assetManifest, language, customAdditions, gradeLevel, sourceTopic, translationPolicy } = (opts && typeof opts === 'object') ? opts : {};
     const _x = _xlateFor(translationPolicy, language);
-    const hasCustom = customAdditions && customAdditions.trim().length > 0;
-    const cleanCustom = hasCustom ? _stripUntrustedFence(customAdditions) : '';
-    const safeContext = _stripUntrustedFence(context);
-    const safeManifest = _stripUntrustedFence(assetManifest || "No specific asset inventory provided.");
+    const rawCustom = typeof customAdditions === 'string' ? customAdditions : '';
+    const hasCustom = rawCustom.trim().length > 0;
+    const cleanCustom = hasCustom ? _stripUntrustedFence(rawCustom, 4000) : '';
+    const safeContext = _stripUntrustedFence(context, 60000);
+    const safeManifest = _stripUntrustedFence(assetManifest || "No specific asset inventory provided.", 60000);
     const cleanTopic = _cleanInlineMeta(sourceTopic, "General");
     const cleanGrade = _cleanInlineMeta(gradeLevel, "");
     const cleanLang = _cleanInlineMeta(language, "English");
@@ -238,14 +249,16 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
       `;
   };
 
-  const buildParentGuidePrompt = ({ context, language, gradeLevel, sourceTopic, customAdditions, translationPolicy }) => {
+  const buildParentGuidePrompt = (opts) => {
+    const { context, language, gradeLevel, sourceTopic, customAdditions, translationPolicy } = (opts && typeof opts === 'object') ? opts : {};
     const _x = _xlateFor(translationPolicy, language);
     // customAdditions added 2026-07-28: the Lesson Plan panel's instructions box
     // is one field, but only the default mode's builder read it, so the same box
     // silently did nothing once a teacher switched to Family or Study Guide.
-    const hasCustom = customAdditions && customAdditions.trim().length > 0;
-    const cleanCustom = hasCustom ? _stripUntrustedFence(customAdditions) : '';
-    const safeContext = _stripUntrustedFence(context);
+    const rawCustom = typeof customAdditions === 'string' ? customAdditions : '';
+    const hasCustom = rawCustom.trim().length > 0;
+    const cleanCustom = hasCustom ? _stripUntrustedFence(rawCustom, 4000) : '';
+    const safeContext = _stripUntrustedFence(context, 60000);
     const cleanTopic = _cleanInlineMeta(sourceTopic, "General");
     const cleanGrade = _cleanInlineMeta(gradeLevel, "");
     const cleanLang = _cleanInlineMeta(language, "English");
@@ -294,12 +307,14 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
       `;
   };
 
-  const buildStudyGuidePrompt = ({ context, language, gradeLevel, sourceTopic, customAdditions, translationPolicy }) => {
+  const buildStudyGuidePrompt = (opts) => {
+    const { context, language, gradeLevel, sourceTopic, customAdditions, translationPolicy } = (opts && typeof opts === 'object') ? opts : {};
     const _x = _xlateFor(translationPolicy, language);
     // See buildParentGuidePrompt — same one-field/three-builders gap.
-    const hasCustom = customAdditions && customAdditions.trim().length > 0;
-    const cleanCustom = hasCustom ? _stripUntrustedFence(customAdditions) : '';
-    const safeContext = _stripUntrustedFence(context);
+    const rawCustom = typeof customAdditions === 'string' ? customAdditions : '';
+    const hasCustom = rawCustom.trim().length > 0;
+    const cleanCustom = hasCustom ? _stripUntrustedFence(rawCustom, 4000) : '';
+    const safeContext = _stripUntrustedFence(context, 60000);
     const cleanTopic = _cleanInlineMeta(sourceTopic, "General");
     const cleanGrade = _cleanInlineMeta(gradeLevel, "");
     const cleanLang = _cleanInlineMeta(language, "English");
@@ -348,7 +363,7 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
       `;
   };
 
-  return { buildLessonPlanPrompt, buildParentGuidePrompt, buildStudyGuidePrompt };
+  return Object.freeze({ buildLessonPlanPrompt, buildParentGuidePrompt, buildStudyGuidePrompt });
 };
 
 // Window registration — the build script wraps this in an IIFE so window

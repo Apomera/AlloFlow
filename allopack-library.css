@@ -3,7 +3,7 @@
 .pack-directory p { line-height:1.65; }
 .pack-review-note, .pack-gemini-help { max-width:900px; color:#475569; margin:14px 0; }
 .pack-gemini-help { padding:14px 18px; border:1px solid #cbd5e1; border-radius:12px; background:#f8fafc; }
-.pack-gemini-help summary, .pack-other-versions summary { cursor:pointer; font-weight:650; padding:8px 0; }
+.pack-gemini-help summary, .pack-other-versions summary { cursor:pointer; font-weight:650; min-height:44px; display:flex; align-items:center; padding:8px 0; }
 .pack-directory a { color:#3730a3; text-decoration:underline; text-underline-offset:3px; }
 .pack-filters { display:grid; grid-template-columns:minmax(200px,2fr) 1fr 110px auto; gap:14px; align-items:end; padding:20px; margin:24px 0 12px; background:#eef2ff; border-radius:14px; }
 .pack-filters label { display:flex; flex-direction:column; gap:6px; font-weight:650; font-size:14px; }
@@ -23,7 +23,7 @@
 .pack-version .pack-core-route { color:#0f5132; background:#f0fdf4; padding:9px 11px; border-radius:7px; margin:8px 0; }
 .pack-version .pack-audience, .pack-version .pack-purpose { margin:12px 0; }
 .pack-resource-list { font-size:13px; margin-bottom:12px; }
-.pack-resource-list summary { cursor:pointer; padding:9px 0; font-weight:650; }
+.pack-resource-list summary { cursor:pointer; min-height:44px; display:flex; align-items:center; padding:9px 0; font-weight:650; }
 .pack-resource-list ul { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px 15px; margin:4px 0 12px; padding-left:18px; line-height:1.5; }
 .pack-resource-list li { padding-left:2px; overflow-wrap:anywhere; }
 .pack-resource-list li span { color:#475569; white-space:nowrap; }

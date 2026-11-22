@@ -42,7 +42,7 @@ const discovery = makeRoom(); discovery.nodes[5].requires.push('wall-found');
   expect(await page.evaluate(() => flowCalls[3])).toContain('one use-tool discovery');
   await button('Play solo').click(); await expect(page.locator('[data-room-flow]')).toHaveCount(0); await expect(page.locator('[data-submit-object="lens"]')).toBeVisible(); await button('Back to room setup').click();
   const before = await flow.innerText(); await page.evaluate(() => { replies = [serial, serial]; }); await button('Generate another room').click();
-  await expect(page.getByRole('alert')).toContainText('independent reasoning paths'); expect(await flow.innerText()).toBe(before); await expect(button('Play solo')).toBeEnabled(); expect(await page.evaluate(() => flowCalls.length)).toBe(6);
+  await expect(page.getByRole('alert')).toContainText(/playability checks|independent reasoning paths/i); expect(await flow.innerText()).toBe(before); await expect(button('Play solo')).toBeEnabled(); expect(await page.evaluate(() => flowCalls.length)).toBe(6);
   // Import a structurally valid v1 sequential room. New quality rules apply only to new AI generation.
   await page.locator('[data-room-transfer] > summary').click();
   const file = { format: 'alloflow-connected-escape', version: 1, language: 'English', source, room: serial };

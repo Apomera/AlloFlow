@@ -14,7 +14,15 @@ const isTrustedLoopbackFrame = (() => {
   }
 })();
 
-if (isMainFrame) {
+const isDirectAppSubframe = (() => {
+  try {
+    return !isMainFrame && typeof window !== 'undefined' && window.parent === window.top && isTrustedLoopbackFrame;
+  } catch (_) {
+    return false;
+  }
+})();
+
+if (isMainFrame && isTrustedLoopbackFrame) {
   contextBridge.exposeInMainWorld('alloflowDesktop', {
     getRuntimeInfo: () => ipcRenderer.invoke('alloflow-desktop:runtime-info'),
     getUpdateStatus: () => ipcRenderer.invoke('alloflow-desktop:update-status'),
@@ -39,7 +47,7 @@ if (isMainFrame) {
       return () => ipcRenderer.removeListener('alloflow-desktop:update-status', listener);
     },
   });
-} else if (isTrustedLoopbackFrame) {
+} else if (isDirectAppSubframe) {
   // Embedded app subframes only need the video coach overlay controls, never updater or shell IPC.
   contextBridge.exposeInMainWorld('alloflowDesktop', {
     updateCoachOverlay: (payload) => ipcRenderer.invoke('alloflow-desktop:coach-overlay-update', payload),
@@ -50,8 +58,8 @@ if (isMainFrame) {
 // Ported from the AlloFlow Admin app: the doc pipeline's batch export checks
 // window.alloAPI.remediation.saveFiles and, when present, saves the artifact
 // set to a user-chosen local folder instead of a browser ZIP download.
-// Runs in the same-origin #app-frame too (nodeIntegrationInSubFrames), never in opaque/cross-origin subframes.
-if (isMainFrame || isTrustedLoopbackFrame) {
+// Runs in the direct #app-frame too (nodeIntegrationInSubFrames), never in nested or opaque/cross-origin subframes.
+if ((isMainFrame && isTrustedLoopbackFrame) || isDirectAppSubframe) {
   contextBridge.exposeInMainWorld('alloAPI', {
     remediation: {
       saveFiles: (payload) => ipcRenderer.invoke('remediation:save-files', payload),

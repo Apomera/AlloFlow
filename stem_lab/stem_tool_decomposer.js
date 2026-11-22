@@ -15,7 +15,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     document.head.appendChild(st);
   })();
   (function() {
-    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
@@ -24,7 +24,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
-    if (document.getElementById('allo-live-decomposer')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-decomposer')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-decomposer';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -172,6 +172,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   }
 
   function playTone(freq, dur, type, vol) {
+    try {
+      if ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMute) return;
+    } catch (_) {}
     var ac = getAudioCtx();
     if (!ac) return;
     try {
@@ -527,6 +530,54 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
 
   /* ═══════════════════════════════════════════════════════════
+     Zero-GC Canvas Helpers & Accessibility Guards
+     ═══════════════════════════════════════════════════════════ */
+  function dcIsHighContrast(flag) {
+    if (flag) return true;
+    try {
+      if (typeof document === 'undefined') return false;
+      return !!((document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) ||
+                (document.body && document.body.classList && document.body.classList.contains('theme-contrast')));
+    } catch (e) { return false; }
+  }
+  function dcPrefersReducedMotion() {
+    try { return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+    catch (e) { return false; }
+  }
+  function dcEllipse(ctx2d, cx, cy, rx, ry, rot, a0, a1) {
+    if (!ctx2d || rx <= 0 || ry <= 0) return;
+    if (typeof ctx2d.ellipse === 'function') {
+      ctx2d.ellipse(cx, cy, rx, ry, rot || 0, a0, a1);
+    } else {
+      ctx2d.save();
+      ctx2d.translate(cx, cy);
+      if (rot) ctx2d.rotate(rot);
+      ctx2d.scale(rx, ry);
+      ctx2d.arc(0, 0, 1, a0, a1);
+      ctx2d.restore();
+    }
+  }
+  function dcRoundRectPath(ctx2d, rx, ry, rw, rh, rr) {
+    var rad = Math.min(rr, rw / 2, rh / 2);
+    ctx2d.moveTo(rx + rad, ry);
+    ctx2d.lineTo(rx + rw - rad, ry);
+    ctx2d.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rad);
+    ctx2d.lineTo(rx + rw, ry + rh - rad);
+    ctx2d.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rad, ry + rh);
+    ctx2d.lineTo(rx + rad, ry + rh);
+    ctx2d.quadraticCurveTo(rx, ry + rh, rx, ry + rh - rad);
+    ctx2d.lineTo(rx, ry + rad);
+    ctx2d.quadraticCurveTo(rx, ry, rx + rad, ry);
+  }
+  var DC_STATE_BG = { solid: ['#dbeafe', '#eff6ff'], liquid: ['#cffafe', '#ecfeff'], gas: ['#fee2e2', '#fef2f2'] };
+  var DC_STATE_LABELS = {
+    solid: 'SOLID \u2014 Particles vibrate in fixed lattice',
+    liquid: 'LIQUID \u2014 Particles slide past each other',
+    gas: 'GAS \u2014 Particles fly freely, fill container'
+  };
+
+
+  /* ═══════════════════════════════════════════════════════════
      Register Tool
      ═══════════════════════════════════════════════════════════ */
   window.StemLab.registerTool('decomposer', {
@@ -551,25 +602,30 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       var onHostInk = (isContrast || ctx.isDark) ? ' text-white' : '';
       var labToolData = ctx.toolData;
       var setLabToolData = ctx.setToolData;
-      var setStemLabTool = ctx.setStemLabTool;
+      var setStemLabTool = typeof ctx.setStemLabTool === 'function' ? ctx.setStemLabTool : function() {};
       var setStemLabTab = ctx.setStemLabTab;
       var stemLabTab = ctx.stemLabTab || 'explore';
       var stemLabTool = ctx.stemLabTool;
       var toolSnapshots = ctx.toolSnapshots;
-      var setToolSnapshots = ctx.setToolSnapshots;
-      var addToast = ctx.addToast;
-      var ArrowLeft = ctx.icons.ArrowLeft;
-      var Calculator = ctx.icons.Calculator;
-      var Sparkles = ctx.icons.Sparkles;
-      var X = ctx.icons.X;
-      var GripVertical = ctx.icons.GripVertical;
+      var setToolSnapshots = typeof ctx.setToolSnapshots === 'function' ? ctx.setToolSnapshots : function() {};
+      var addToast = typeof ctx.addToast === 'function' ? ctx.addToast : function() {};
+      var icons = (ctx.icons && typeof ctx.icons === 'object') ? ctx.icons : {};
+      var _fallbackIcon = function() { return null; };
+      var ArrowLeft = icons.ArrowLeft || _fallbackIcon;
+      var Calculator = icons.Calculator || _fallbackIcon;
+      var Sparkles = icons.Sparkles || _fallbackIcon;
+      var X = icons.X || _fallbackIcon;
+      var GripVertical = icons.GripVertical || _fallbackIcon;
       var announceToSR = ctx.announceToSR;
       var awardStemXP = ctx.awardXP;
       var getStemXP = ctx.getXP;
       var stemCelebrate = ctx.celebrate;
       var stemBeep = ctx.beep;
       // null unless text AI is usable: the AI Tutor tab is then not offered.
-      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked) ? ctx.callGemini : null;
+      var _aiUsable = typeof window.__alloAiUsable === 'function'
+        ? function(cap, fn) { try { return !!window.__alloAiUsable(cap, fn); } catch (_) { return false; } }
+        : function(_cap, fn) { return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true && window._alloQrBlocked !== true; };
+      var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && _aiUsable('text', ctx.callGemini)) ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
@@ -602,18 +658,22 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }
 
         var upd = function(key, val) {
+          if (typeof setLabToolData !== 'function') return;
           setLabToolData(function(prev) {
-            var next = Object.assign({}, prev);
-            next.decomposer = Object.assign({}, prev.decomposer);
+            var safePrev = _isPlainObj(prev) ? prev : {};
+            var next = Object.assign({}, safePrev);
+            next.decomposer = Object.assign({}, _isPlainObj(safePrev.decomposer) ? safePrev.decomposer : {});
             next.decomposer[key] = val;
             return next;
           });
         };
 
         var updMulti = function(obj) {
+          if (typeof setLabToolData !== 'function') return;
           setLabToolData(function(prev) {
-            var next = Object.assign({}, prev);
-            next.decomposer = Object.assign({}, prev.decomposer, obj);
+            var safePrev = _isPlainObj(prev) ? prev : {};
+            var next = Object.assign({}, safePrev);
+            next.decomposer = Object.assign({}, _isPlainObj(safePrev.decomposer) ? safePrev.decomposer : {}, obj);
             return next;
           });
         };
@@ -723,7 +783,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         };
 
         var studyDecomposerVocab = function(word) {
-          var current = d.vocabWordsStudied || [];
+          var current = Array.isArray(d.vocabWordsStudied) ? d.vocabWordsStudied : [];
           if (current.indexOf(word) === -1) {
             var next = current.concat([word]);
             var nextState = Object.assign({}, d, { vocabWordsStudied: next });
@@ -1036,6 +1096,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         /* ═══════════════════════════════════════════════════
            Track material exploration  (for badges)
            ═══════════════════════════════════════════════════ */
+        var _deferSideEffect = function(fn) {
+          if (typeof queueMicrotask === 'function') queueMicrotask(fn);
+          else setTimeout(fn, 0);
+        };
         var explored = Array.isArray(d.materialsExplored) ? d.materialsExplored : [];
         if (explored.indexOf(sel.name) < 0) {
           var next = explored.concat([sel.name]);
@@ -1047,10 +1111,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             totalAtomsViewed: atoms,
             bondsSeen: bonds
           });
-          updMulti({
-            materialsExplored: next,
-            totalAtomsViewed: atoms,
-            bondsSeen: bonds
+          _deferSideEffect(function() {
+            updMulti({
+              materialsExplored: next,
+              totalAtomsViewed: atoms,
+              bondsSeen: bonds
+            });
           });
           setTimeout(function() { checkDecomposerChallenges(nextState); }, 50);
         }
@@ -1081,8 +1147,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           }
         }
 
-        // Check badges inline (no useEffect)
-        checkBadges();
+        // Check badges asynchronously after render (hookless tool)
+        _deferSideEffect(function() { checkBadges(); });
 
 
         /* ═══════════════════════════════════════════════════
@@ -1247,9 +1313,23 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
            AI Tutor Handler
            ═══════════════════════════════════════════════════ */
         function handleAiQuestion(question) {
-          if (!question || !question.trim() || !callGemini || aiLoading) return;
+          if (!question || !String(question).trim() || !callGemini || aiLoading) return;
+          var qText = String(question).trim();
+          var srCheck = (typeof ctx.safeRehearseCheck === 'function')
+            ? ctx.safeRehearseCheck
+            : (window.AlloSafeRehearse && typeof window.AlloSafeRehearse.check === 'function' ? window.AlloSafeRehearse.check : null);
+          if (srCheck) {
+            try {
+              var verdict = srCheck(qText, 'decomposer_ai_tutor');
+              if (verdict && verdict.blocked) {
+                var safetyMsg = verdict.message || 'Let\'s pause here — if you need support, please talk with a trusted adult or call/text 988.';
+                updMulti({ aiMessages: aiMessages.concat([{ role: 'ai', text: safetyMsg }]), aiInput: '', aiLoading: false, aiStatus: safetyMsg });
+                return;
+              }
+            } catch (_) {}
+          }
           SOUNDS.aiTutor();
-          var msgs = aiMessages.concat([{ role: 'user', text: question }]);
+          var msgs = aiMessages.concat([{ role: 'user', text: qText }]);
           updMulti({ aiMessages: msgs, aiInput: '', aiLoading: true,
             aiStatus: __alloT('stem.decomposer.tutor_thinking', 'The tutor is preparing an answer.') });
           focusDecomposerElement('stem-decomposer-tutor-input');
@@ -1258,14 +1338,16 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             + 'They are exploring the Material Decomposer tool and currently looking at '
             + sel.name + ' (' + sel.formula + '). '
             + 'Answer their question briefly and clearly in 2-3 sentences. '
-            + 'Question: ' + question;
+            + 'Question: ' + qText;
 
           Promise.resolve().then(function() { return callGemini(prompt, true, false, 0.8); }).then(function(reply) {
-            var updated = msgs.concat([{ role: 'ai', text: reply }]);
+            var replyText = (typeof reply === 'string') ? reply : (reply && typeof reply.text === 'string' ? reply.text : String(reply || ''));
+            if (!replyText.trim()) replyText = __alloT('stem.decomposer.tutor_error', 'The tutor could not get an answer. Please try again.');
+            var updated = msgs.concat([{ role: 'ai', text: replyText }]);
             updMulti({
               aiMessages: updated,
               aiLoading: false,
-              aiStatus: __alloT('stem.decomposer.tutor_reply', 'Tutor: {reply}').replace('{reply}', String(reply)),
+              aiStatus: __alloT('stem.decomposer.tutor_reply', 'Tutor: {reply}').replace('{reply}', replyText),
               aiQuestions: (d.aiQuestions || 0) + 1
             });
           }).catch(function() {
@@ -1292,6 +1374,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         function speakText(text, onDevice) {
           if (!onDevice) SOUNDS.tts();
           if (callTTS && !onDevice) { raHostSpeak(callTTS, text, function () { speakText(text, true); }); return; }
+          try {
+            if ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window._alloGlobalMute) return;
+          } catch (_) {}
           if (window._kokoroTTS && window._kokoroTTS.speak) {
             window._kokoroTTS.speak(String(text),'af_heart',1).then(function(url){if(url){var a=new Audio(url);a.playbackRate=0.95;a.play();}}).catch(function(){});
             return;
@@ -1325,7 +1410,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           canvas._dcAnimRunning = true;
           canvas._dcPaintKey = null;
 
-          var c = canvas.getContext('2d');
+          var c = canvas._dcCtx || (canvas._dcCtx = canvas.getContext && canvas.getContext('2d'));
           if (!c) { canvas._dcAnimRunning = false; return; }
           var dpr = ratio;
           var w = width;
@@ -1334,202 +1419,232 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           canvas.width = w * dpr;
           canvas.height = ht * dpr;
           canvas.style.height = ht + 'px';
-          c.scale(dpr, dpr);
-          function safeRoundRect(ctx2d, rx, ry, rw, rh, rr) {
-            if (typeof ctx2d.roundRect === 'function') { ctx2d.roundRect(rx, ry, rw, rh, rr); return; }
-            var rad = Math.min(rr, rw / 2, rh / 2);
-            ctx2d.moveTo(rx + rad, ry); ctx2d.lineTo(rx + rw - rad, ry);
-            ctx2d.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rad);
-            ctx2d.lineTo(rx + rw, ry + rh - rad);
-            ctx2d.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rad, ry + rh);
-            ctx2d.lineTo(rx + rad, ry + rh);
-            ctx2d.quadraticCurveTo(rx, ry + rh, rx, ry + rh - rad);
-            ctx2d.lineTo(rx, ry + rad);
-            ctx2d.quadraticCurveTo(rx, ry, rx + rad, ry);
+          c.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+          // Pre-allocated zero-GC rising CO2/nitrogen mineralization & organic humification motes
+          var MOTE_N = 24;
+          var mX = new Float32Array(MOTE_N);
+          var mY = new Float32Array(MOTE_N);
+          var mR = new Float32Array(MOTE_N);
+          var mSp = new Float32Array(MOTE_N);
+          var mPh = new Float32Array(MOTE_N);
+          var mKind = new Uint8Array(MOTE_N); // 0=mineralization mote, 1=bioluminescent nutrient mote
+          for (var am = 0; am < MOTE_N; am++) {
+            mX[am] = ((Math.sin(am * 37.3 + 1.1) * 4375.5) % 1 + 1) % 1;
+            mY[am] = ((Math.sin(am * 89.1 + 2.3) * 2917.3) % 1 + 1) % 1;
+            mR[am] = 1.0 + (am % 3) * 0.65;
+            mSp[am] = 0.28 + (am % 4) * 0.16;
+            mPh[am] = am * 1.17;
+            mKind[am] = am % 2;
           }
 
-          // Ambient nutrient / molecular motes
-          var ambMotes = [];
-          for (var am = 0; am < 18; am++) {
-            ambMotes.push({
-              x: ((Math.sin(am * 37.3) * 4375.5) % 1 + 1) % 1,
-              y: ((Math.sin(am * 89.1) * 2917.3) % 1 + 1) % 1,
-              r: 1 + (am % 3) * 0.7,
-              sp: 0.25 + (am % 4) * 0.14,
-              ph: am * 1.17
-            });
-          }
+          // Pre-allocated zero-GC node coordinate scratch arrays (up to 16 elements)
+          var MAX_ELS = 16;
+          var curX = new Float32Array(MAX_ELS);
+          var curY = new Float32Array(MAX_ELS);
+          var tgtX = new Float32Array(MAX_ELS);
+          var tgtY = new Float32Array(MAX_ELS);
 
-          // Animation state
-          var curPositions = [];
+          // Pre-allocated zero-GC decomposition burst particle pool (48 slots)
+          var BURST_N = 48;
+          var bpX = new Float32Array(BURST_N);
+          var bpY = new Float32Array(BURST_N);
+          var bpVx = new Float32Array(BURST_N);
+          var bpVy = new Float32Array(BURST_N);
+          var bpLife = new Float32Array(BURST_N);
+          var bpSize = new Float32Array(BURST_N);
+          var bpColIdx = new Uint8Array(BURST_N);
+          var burstRingR = 0, burstRingAlpha = 0;
+
+          var cachedElsJson = '';
+          var cachedEls = [];
           var curFormula = '';
           var frame = 0;
           var animId;
+          var wasDecomposed = false;
 
-          function calcPositions(n, cx, cy, radius) {
-            var pos = [];
+          function syncEls() {
+            var raw = canvas.dataset.elementsJson || '[]';
+            if (raw !== cachedElsJson) {
+              cachedElsJson = raw;
+              try { cachedEls = JSON.parse(raw); } catch (e) { cachedEls = []; }
+              if (!Array.isArray(cachedEls)) cachedEls = [];
+            }
+            return cachedEls;
+          }
+
+          function writeTargets(n, cx, cy, radius, outX, outY) {
             if (n === 1) {
-              pos.push({ x: cx, y: cy });
+              outX[0] = cx; outY[0] = cy;
             } else if (n === 2) {
-              pos.push({ x: cx - radius, y: cy });
-              pos.push({ x: cx + radius, y: cy });
+              outX[0] = cx - radius; outY[0] = cy;
+              outX[1] = cx + radius; outY[1] = cy;
             } else {
-              for (var i = 0; i < n; i++) {
+              for (var i = 0; i < n && i < MAX_ELS; i++) {
                 var angle = (i / n) * Math.PI * 2 - Math.PI / 2;
-                pos.push({
-                  x: cx + Math.cos(angle) * radius,
-                  y: cy + Math.sin(angle) * radius
-                });
+                outX[i] = cx + Math.cos(angle) * radius;
+                outY[i] = cy + Math.sin(angle) * radius;
               }
             }
-            return pos;
           }
 
           function rebuildPositions() {
-            var els;
-            try { els = JSON.parse(canvas.dataset.elementsJson || '[]'); } catch (e) { els = []; }
-            var n = els.length;
-            var cx = w / 2;
-            var cy = ht / 2;
-            var assembled = calcPositions(n, cx, cy, Math.min(w, ht) * 0.15);
-            curPositions = [];
-            for (var i = 0; i < n; i++) {
-              curPositions.push({ x: assembled[i].x, y: assembled[i].y });
-            }
+            var els = syncEls();
+            var n = Math.min(MAX_ELS, els.length);
+            writeTargets(n, w / 2, ht / 2, Math.min(w, ht) * 0.15, curX, curY);
             curFormula = canvas.dataset.formula;
           }
 
           rebuildPositions();
 
-          // Particle burst state
-          var particles = [];
-          var wasDecomposed = false;
-
           function draw() {
             if (!canvas.isConnected) { cancelAnimationFrame(animId); canvas._dcAnimRunning = false; releaseDecomposerCanvasSize(canvas, 'Atoms'); return; }
-            var pausedMotion = canvas.dataset.motionPaused === 'true';
-            var paintKey = canvas.dataset.formula + '|' + canvas.dataset.decomposed + '|' + canvas.dataset.materialName + '|' + canvas.dataset.elementsJson;
+            var pausedMotion = canvas.dataset.motionPaused === 'true' || dcPrefersReducedMotion();
+            var isHC = dcIsHighContrast(isContrast);
+            var paintKey = canvas.dataset.formula + '|' + canvas.dataset.decomposed + '|' + canvas.dataset.materialName + '|' + canvas.dataset.elementsJson + '|' + (isHC ? '1' : '0');
             if (pausedMotion && canvas._dcPaintKey === paintKey) {
               animId = requestAnimationFrame(draw);
               canvas._dcAnimId = animId;
               return;
             }
             canvas._dcPaintKey = paintKey;
-            // Check for material change
             if (canvas.dataset.formula !== curFormula) {
               rebuildPositions();
-              particles = [];
+              for (var rbi = 0; rbi < BURST_N; rbi++) bpLife[rbi] = 0;
+              burstRingAlpha = 0;
             }
 
             var isDecomposed = canvas.dataset.decomposed === 'true';
-            var els;
-            try { els = JSON.parse(canvas.dataset.elementsJson || '[]'); } catch (e) { els = []; }
-            var n = els.length;
+            var els = syncEls();
+            var n = Math.min(MAX_ELS, els.length);
             var cx = w / 2;
             var cy = ht / 2;
             var assembledR = Math.min(w, ht) * 0.15;
             var decomposedR = Math.min(w, ht) * 0.35;
             var targetR = isDecomposed ? decomposedR : assembledR;
-            var targets = calcPositions(n, cx, cy, targetR);
+            writeTargets(n, cx, cy, targetR, tgtX, tgtY);
 
-            // Spawn particles on decompose transition
-            if (isDecomposed && !wasDecomposed && !pausedMotion) {
-              for (var pi = 0; pi < 40; pi++) {
-                var angle = Math.random() * Math.PI * 2;
-                var speed = 1 + Math.random() * 3;
-                particles.push({ x: cx, y: cy, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 1, color: els.length > 0 ? els[Math.floor(Math.random() * els.length)].color : '#f59e0b', size: 2 + Math.random() * 4 });
+            // Trigger zero-GC particle burst & harmonic ripple on decompose transition
+            if (isDecomposed !== wasDecomposed && !pausedMotion) {
+              burstRingR = 14;
+              burstRingAlpha = 0.85;
+              if (isDecomposed) {
+                for (var pi = 0; pi < BURST_N; pi++) {
+                  var angle = (pi / BURST_N) * Math.PI * 2 + Math.random() * 0.3;
+                  var speed = 1.1 + Math.random() * 3.1;
+                  bpX[pi] = cx; bpY[pi] = cy;
+                  bpVx[pi] = Math.cos(angle) * speed;
+                  bpVy[pi] = Math.sin(angle) * speed;
+                  bpLife[pi] = 1.0;
+                  bpSize[pi] = 2.0 + Math.random() * 3.8;
+                  bpColIdx[pi] = n > 0 ? (pi % n) : 0;
+                }
               }
             }
             wasDecomposed = isDecomposed;
 
-            // Clear
             c.clearRect(0, 0, w, ht);
 
-            // Background — deep dark chemistry studio with live state aura
+            // Background — deep studio with warm organic humification / molecular state aura
             var hasGrad = typeof c.createRadialGradient === 'function';
-            if (hasGrad) {
+            if (!isHC && hasGrad) {
               var bgGrad = c.createRadialGradient(cx, cy, 16, cx, cy, Math.max(w, ht) * 0.72);
-              bgGrad.addColorStop(0, isDecomposed ? '#1f1b38' : '#162842');
+              bgGrad.addColorStop(0, isDecomposed ? '#261d34' : '#162842');
               bgGrad.addColorStop(0.55, '#0f172a');
               bgGrad.addColorStop(1, '#040814');
               c.fillStyle = bgGrad;
             } else {
-              c.fillStyle = '#0f172a';
+              c.fillStyle = isHC ? '#000000' : '#0f172a';
             }
             c.fillRect(0, 0, w, ht);
 
             // Subtle dot grid + concentric reaction chamber rings
-            c.fillStyle = 'rgba(129,140,248,0.10)';
+            c.fillStyle = isHC ? 'rgba(255,255,255,0.22)' : 'rgba(129,140,248,0.10)';
             for (var gx = 20; gx < w; gx += 20) {
               for (var gy = 20; gy < ht; gy += 20) {
                 c.beginPath(); c.arc(gx, gy, 0.55, 0, Math.PI * 2); c.fill();
               }
             }
             c.save();
-            c.strokeStyle = isDecomposed ? 'rgba(251,191,36,0.14)' : 'rgba(56,189,248,0.14)';
+            c.strokeStyle = isHC ? '#ffffff' : (isDecomposed ? 'rgba(251,191,36,0.16)' : 'rgba(56,189,248,0.16)');
             c.lineWidth = 1;
             c.beginPath(); c.arc(cx, cy, targetR + 28, 0, Math.PI * 2); c.stroke();
             c.setLineDash([3, 6]);
             c.beginPath(); c.arc(cx, cy, targetR + 48, 0, Math.PI * 2); c.stroke();
             c.setLineDash([]);
-            // Floating luminous nutrient / energy motes
-            for (var ami = 0; ami < ambMotes.length; ami++) {
-              var amP = ambMotes[ami];
-              var amX = amP.x * w + Math.sin(frame * 0.014 * amP.sp + amP.ph) * 8;
-              var amY = ((amP.y - frame * 0.00055 * amP.sp) % 1 + 1) % 1 * ht;
-              c.fillStyle = isDecomposed ? 'rgba(253,224,71,0.22)' : 'rgba(125,211,252,0.22)';
-              c.beginPath(); c.arc(amX, amY, amP.r * 2.2, 0, Math.PI * 2); c.fill();
-              c.fillStyle = isDecomposed ? 'rgba(254,240,138,0.62)' : 'rgba(186,230,253,0.62)';
-              c.beginPath(); c.arc(amX, amY, amP.r, 0, Math.PI * 2); c.fill();
+
+            // Organic-matter humification / decomposition ambient glow & rising CO2/nitrogen mineralization motes
+            if (!isHC) {
+              if (hasGrad && isDecomposed) {
+                var humPulse = pausedMotion ? 1 : (0.85 + 0.15 * Math.sin(frame * 0.04));
+                var humG = c.createRadialGradient(cx, cy, 6, cx, cy, targetR * 1.4 * humPulse);
+                humG.addColorStop(0, 'rgba(251,191,36,0.14)');
+                humG.addColorStop(0.55, 'rgba(52,211,153,0.06)');
+                humG.addColorStop(1, 'rgba(0,0,0,0)');
+                c.fillStyle = humG;
+                c.beginPath(); c.arc(cx, cy, targetR * 1.4 * humPulse, 0, Math.PI * 2); c.fill();
+              }
+              var mf = pausedMotion ? 0 : frame;
+              for (var ami = 0; ami < MOTE_N; ami++) {
+                var amX = mX[ami] * w + Math.sin(mf * 0.014 * mSp[ami] + mPh[ami]) * 9;
+                var amY = ((mY[ami] - mf * 0.00062 * mSp[ami]) % 1 + 1) % 1 * ht;
+                var mWarm = isDecomposed || mKind[ami] === 1;
+                c.fillStyle = mWarm ? 'rgba(253,224,71,0.22)' : 'rgba(110,231,183,0.22)';
+                c.beginPath(); c.arc(amX, amY, mR[ami] * 2.4, 0, Math.PI * 2); c.fill();
+                c.fillStyle = mWarm ? 'rgba(254,240,138,0.68)' : 'rgba(167,243,208,0.68)';
+                c.beginPath(); c.arc(amX, amY, mR[ami], 0, Math.PI * 2); c.fill();
+              }
+            }
+            // Harmonic decomposition transition shockwave ring
+            if (burstRingAlpha > 0.02) {
+              if (!pausedMotion) { burstRingR += 2.6; burstRingAlpha *= 0.92; }
+              c.strokeStyle = isHC ? '#ffff00' : ('rgba(251,191,36,' + burstRingAlpha.toFixed(2) + ')');
+              c.lineWidth = 1.8;
+              c.beginPath(); c.arc(cx, cy, burstRingR, 0, Math.PI * 2); c.stroke();
             }
             c.restore();
 
-            // Lerp positions toward targets
+            // Lerp positions toward targets (zero-GC)
             for (var i = 0; i < n; i++) {
-              if (curPositions[i]) {
-                if (pausedMotion) {
-                  curPositions[i].x = targets[i].x;
-                  curPositions[i].y = targets[i].y;
-                } else {
-                  curPositions[i].x += (targets[i].x - curPositions[i].x) * 0.06;
-                  curPositions[i].y += (targets[i].y - curPositions[i].y) * 0.06;
-                }
+              if (pausedMotion) {
+                curX[i] = tgtX[i];
+                curY[i] = tgtY[i];
+              } else {
+                curX[i] += (tgtX[i] - curX[i]) * 0.07;
+                curY[i] += (tgtY[i] - curY[i]) * 0.07;
               }
             }
 
-            // Draw bond lines (when assembled) — dual-pass luminous energy channels
+            // Draw bond channels (when assembled) — dual-pass luminous energy channels + bioluminescent transport pulses
             if (!isDecomposed && n > 1) {
               for (var bi = 0; bi < n; bi++) {
                 for (var bj = bi + 1; bj < n; bj++) {
-                  if (curPositions[bi] && curPositions[bj]) {
-                    c.save();
-                    c.strokeStyle = 'rgba(56,189,248,0.20)';
+                  var x1 = curX[bi], y1 = curY[bi], x2 = curX[bj], y2 = curY[bj];
+                  c.save();
+                  if (!isHC) {
+                    c.strokeStyle = 'rgba(56,189,248,0.22)';
                     c.lineWidth = 8; c.lineCap = 'round';
-                    c.beginPath();
-                    c.moveTo(curPositions[bi].x, curPositions[bi].y);
-                    c.lineTo(curPositions[bj].x, curPositions[bj].y);
-                    c.stroke();
+                    c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
                     c.shadowColor = 'rgba(165,180,252,0.55)';
                     c.shadowBlur = 10;
-                    c.strokeStyle = 'rgba(199,210,254,0.78)';
-                    c.lineWidth = 2.6;
-                    c.setLineDash([]);
-                    c.beginPath();
-                    c.moveTo(curPositions[bi].x, curPositions[bi].y);
-                    c.lineTo(curPositions[bj].x, curPositions[bj].y);
-                    c.stroke();
-                    c.restore();
-                    // Twin counter-traveling luminous shared-electron dots along bond
-                    for (var bd = 0; bd < 2; bd++) {
-                      var bondT = ((frame * 0.02 + bi * 0.3 + bj * 0.7 + bd * 0.5) % 1);
-                      var tDir = bd === 0 ? bondT : (1 - bondT);
-                      var edx = curPositions[bi].x + (curPositions[bj].x - curPositions[bi].x) * tDir;
-                      var edy = curPositions[bi].y + (curPositions[bj].y - curPositions[bi].y) * tDir;
-                      c.fillStyle = 'rgba(103,232,249,0.35)';
-                      c.beginPath(); c.arc(edx, edy, 5, 0, Math.PI * 2); c.fill();
-                      c.fillStyle = '#e0f2fe';
-                      c.beginPath(); c.arc(edx, edy, 2.2, 0, Math.PI * 2); c.fill();
+                  }
+                  c.strokeStyle = isHC ? '#ffff00' : 'rgba(199,210,254,0.82)';
+                  c.lineWidth = isHC ? 2.4 : 2.6;
+                  c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+                  c.restore();
+                  // Twin counter-traveling warm/cyan bioluminescent transport pulses along bond filament
+                  var bf = pausedMotion ? 12 : frame;
+                  for (var bd = 0; bd < 2; bd++) {
+                    var bondT = ((bf * 0.018 + bi * 0.31 + bj * 0.67 + bd * 0.5) % 1);
+                    var tDir = bd === 0 ? bondT : (1 - bondT);
+                    var edx = x1 + (x2 - x1) * tDir;
+                    var edy = y1 + (y2 - y1) * tDir;
+                    if (!isHC) {
+                      c.fillStyle = bd === 0 ? 'rgba(103,232,249,0.38)' : 'rgba(253,224,71,0.36)';
+                      c.beginPath(); c.arc(edx, edy, 5.4, 0, Math.PI * 2); c.fill();
                     }
+                    c.fillStyle = isHC ? '#00ff00' : (bd === 0 ? '#e0f2fe' : '#fef9c3');
+                    c.beginPath(); c.arc(edx, edy, 2.2, 0, Math.PI * 2); c.fill();
                   }
                 }
               }
@@ -1537,51 +1652,51 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
             // Draw ghost bonds when decomposed
             if (isDecomposed && n > 1) {
-              c.strokeStyle = 'rgba(148,163,184,0.28)';
+              c.strokeStyle = isHC ? '#ffffff' : 'rgba(148,163,184,0.30)';
               c.lineWidth = 1.2;
               c.setLineDash([4, 6]);
               for (var di = 0; di < n; di++) {
                 for (var dj = di + 1; dj < n; dj++) {
-                  if (curPositions[di] && curPositions[dj]) {
-                    c.beginPath();
-                    c.moveTo(curPositions[di].x, curPositions[di].y);
-                    c.lineTo(curPositions[dj].x, curPositions[dj].y);
-                    c.stroke();
-                  }
+                  c.beginPath();
+                  c.moveTo(curX[di], curY[di]);
+                  c.lineTo(curX[dj], curY[dj]);
+                  c.stroke();
                 }
               }
               c.setLineDash([]);
             }
 
-            // Draw particles
-            for (var pk = particles.length - 1; pk >= 0; pk--) {
-              var p = particles[pk];
+            // Update & render zero-GC burst particles
+            for (var pk = 0; pk < BURST_N; pk++) {
+              var lf = bpLife[pk];
+              if (lf <= 0) continue;
               if (!pausedMotion) {
-                p.x += p.vx; p.y += p.vy;
-                p.vx *= 0.97; p.vy *= 0.97;
-                p.life -= 0.015;
+                bpX[pk] += bpVx[pk]; bpY[pk] += bpVy[pk];
+                bpVx[pk] *= 0.965; bpVy[pk] *= 0.965;
+                lf -= 0.016;
+                bpLife[pk] = lf > 0 ? lf : 0;
               }
-              if (p.life <= 0) { particles.splice(pk, 1); continue; }
-              c.globalAlpha = p.life * 0.85;
-              c.fillStyle = p.color;
-              c.beginPath(); c.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2); c.fill();
+              if (bpLife[pk] <= 0) continue;
+              c.globalAlpha = bpLife[pk] * 0.88;
+              var colEl = els[bpColIdx[pk]];
+              c.fillStyle = isHC ? '#ffff00' : (colEl ? colEl.color : '#f59e0b');
+              c.beginPath(); c.arc(bpX[pk], bpY[pk], Math.max(0.5, bpSize[pk] * bpLife[pk]), 0, Math.PI * 2); c.fill();
             }
             c.globalAlpha = 1;
 
             // Draw element spheres
             for (var ei = 0; ei < n; ei++) {
               var el = els[ei];
-              if (!curPositions[ei]) continue;
               var wobbleX = pausedMotion ? 0 : Math.sin(frame * 0.03 + ei * 2.1) * (isDecomposed ? 4 : 1.5);
               var wobbleY = pausedMotion ? 0 : Math.cos(frame * 0.025 + ei * 1.8) * (isDecomposed ? 4 : 1.5);
-              var px = curPositions[ei].x + wobbleX;
-              var py = curPositions[ei].y + wobbleY;
+              var px = curX[ei] + wobbleX;
+              var py = curY[ei] + wobbleY;
               var atomR = 22 + Math.min(el.count, 15) * 1.5;
               var pulse = pausedMotion ? 1 : (1 + Math.sin(frame * 0.04 + ei) * 0.03);
               atomR *= pulse;
 
-              // Luminous electron cloud halo
-              if (hasGrad) {
+              // Luminous electron cloud halo (bypassed in High-Contrast)
+              if (!isHC && hasGrad) {
                 c.save();
                 var cloudGrad = c.createRadialGradient(px, py, atomR * 0.4, px, py, atomR * 2.2);
                 cloudGrad.addColorStop(0, el.color + '40');
@@ -1592,47 +1707,51 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 c.restore();
               }
 
-              // Dual-axis orbiting electron shells
+              // Dual-axis orbiting electron shells (safe dcEllipse)
               c.save();
-              var rotA = frame * 0.01 + ei * 0.5;
-              c.strokeStyle = el.color + '44';
+              var rotA = (pausedMotion ? 0 : frame * 0.01) + ei * 0.5;
+              c.strokeStyle = isHC ? '#ffffff' : (el.color + '48');
               c.lineWidth = 1.1;
-              if (typeof c.ellipse === 'function') {
-                c.beginPath(); c.ellipse(px, py, atomR * 1.55, atomR * 0.62, rotA, 0, Math.PI * 2); c.stroke();
-                c.strokeStyle = el.color + '28';
-                c.beginPath(); c.ellipse(px, py, atomR * 1.45, atomR * 0.55, -rotA + 1.1, 0, Math.PI * 2); c.stroke();
-              }
+              c.beginPath(); dcEllipse(c, px, py, atomR * 1.55, atomR * 0.62, rotA, 0, Math.PI * 2); c.stroke();
+              c.strokeStyle = isHC ? 'rgba(255,255,0,0.65)' : (el.color + '28');
+              c.beginPath(); dcEllipse(c, px, py, atomR * 1.45, atomR * 0.55, -rotA + 1.1, 0, Math.PI * 2); c.stroke();
               // Orbiting electron dot rotated cleanly onto the shell
-              var orbitA = frame * 0.05 + ei * 1.2;
+              var orbitA = (pausedMotion ? 0.6 : frame * 0.05) + ei * 1.2;
               var lx = Math.cos(orbitA) * atomR * 1.55, ly = Math.sin(orbitA) * atomR * 0.62;
               var orbX = px + lx * Math.cos(rotA) - ly * Math.sin(rotA);
               var orbY = py + lx * Math.sin(rotA) + ly * Math.cos(rotA);
-              c.fillStyle = el.color + '66';
-              c.beginPath(); c.arc(orbX, orbY, 4.5, 0, Math.PI * 2); c.fill();
-              c.fillStyle = '#f8fafc';
+              if (!isHC) {
+                c.fillStyle = el.color + '66';
+                c.beginPath(); c.arc(orbX, orbY, 4.5, 0, Math.PI * 2); c.fill();
+              }
+              c.fillStyle = isHC ? '#00ff00' : '#f8fafc';
               c.beginPath(); c.arc(orbX, orbY, 2.2, 0, Math.PI * 2); c.fill();
               c.restore();
 
               // Drop shadow
-              c.fillStyle = 'rgba(0,0,0,0.38)';
-              c.beginPath(); c.arc(px + 2, py + 4, atomR, 0, Math.PI * 2); c.fill();
+              if (!isHC) {
+                c.fillStyle = 'rgba(0,0,0,0.38)';
+                c.beginPath(); c.arc(px + 2, py + 4, atomR, 0, Math.PI * 2); c.fill();
+              }
 
               // Main 3D sphere gradient with Fresnel rim glow
-              if (hasGrad) {
+              if (!isHC && hasGrad) {
                 var grad = c.createRadialGradient(px - atomR * 0.32, py - atomR * 0.32, atomR * 0.1, px, py, atomR);
                 grad.addColorStop(0, lightenColor(el.color, 72));
                 grad.addColorStop(0.62, el.color);
                 grad.addColorStop(1, lightenColor(el.color, -38));
                 c.fillStyle = grad;
               } else {
-                c.fillStyle = el.color;
+                c.fillStyle = isHC ? '#000000' : el.color;
               }
               c.beginPath(); c.arc(px, py, atomR, 0, Math.PI * 2); c.fill();
-              c.strokeStyle = 'rgba(255,255,255,0.24)'; c.lineWidth = 1.2; c.stroke();
+              c.strokeStyle = isHC ? '#ffff00' : 'rgba(255,255,255,0.24)'; c.lineWidth = isHC ? 2.2 : 1.2; c.stroke();
 
               // Crisp specular highlight
-              c.fillStyle = 'rgba(255,255,255,0.30)';
-              c.beginPath(); c.arc(px - atomR * 0.28, py - atomR * 0.28, atomR * 0.32, 0, Math.PI * 2); c.fill();
+              if (!isHC) {
+                c.fillStyle = 'rgba(255,255,255,0.30)';
+                c.beginPath(); c.arc(px - atomR * 0.28, py - atomR * 0.28, atomR * 0.32, 0, Math.PI * 2); c.fill();
+              }
 
               // Element symbol
               var symbolSize = Math.round(atomR * 0.65);
@@ -1640,30 +1759,30 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               c.textAlign = 'center'; c.textBaseline = 'middle';
               c.shadowBlur = 0;
               var symbolWidth = c.measureText(el.sym).width + 8;
-              c.fillStyle = 'rgba(15,23,42,0.92)';
-              c.beginPath(); safeRoundRect(c, px - symbolWidth / 2, py - symbolSize / 2 - 2, symbolWidth, symbolSize + 4, 4); c.fill();
-              c.fillStyle = '#ffffff';
+              c.fillStyle = isHC ? '#000000' : 'rgba(15,23,42,0.92)';
+              c.beginPath(); dcRoundRectPath(c, px - symbolWidth / 2, py - symbolSize / 2 - 2, symbolWidth, symbolSize + 4, 4); c.fill();
+              c.fillStyle = isHC ? '#ffff00' : '#ffffff';
               c.fillText(el.sym, px, py);
 
               // Count badge
               if (el.count > 1) {
                 var bx = px + atomR * 0.65;
                 var by = py - atomR * 0.65;
-                c.fillStyle = '#f59e0b';
+                c.fillStyle = isHC ? '#ffff00' : '#f59e0b';
                 c.beginPath(); c.arc(bx, by, 11, 0, Math.PI * 2); c.fill();
-                c.strokeStyle = '#fff'; c.lineWidth = 1.5; c.stroke();
-                c.fillStyle = '#0f172a'; c.font = 'bold 10px system-ui, sans-serif';
+                c.strokeStyle = isHC ? '#000000' : '#fff'; c.lineWidth = 1.5; c.stroke();
+                c.fillStyle = '#000000'; c.font = 'bold 10px system-ui, sans-serif';
                 c.fillText('\u00D7' + el.count, bx, by);
               }
 
               // Element name below
-              c.fillStyle = '#cbd5e1';
+              c.fillStyle = isHC ? '#ffffff' : '#cbd5e1';
               c.font = '10px system-ui, sans-serif';
               c.fillText(el.name, px, py + atomR + 14);
             }
 
             // Title
-            c.fillStyle = '#f1f5f9';
+            c.fillStyle = isHC ? '#ffff00' : '#f1f5f9';
             c.font = 'bold 14px system-ui, sans-serif';
             c.textAlign = 'center'; c.textBaseline = 'alphabetic';
             c.fillText((canvas.dataset.materialName || '') + '  (' + (canvas.dataset.formula || '') + ')', w / 2, 22);
@@ -1671,14 +1790,14 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             // Status badge
             c.save();
             var stLabel = isDecomposed ? '\u26A1 DECOMPOSED' : '\u269B ASSEMBLED';
-            var stColor = isDecomposed ? '#fca5a5' : '#86efac';
+            var stColor = isHC ? '#ffff00' : (isDecomposed ? '#fca5a5' : '#86efac');
             c.font = 'bold 10px system-ui, sans-serif';
             var stW = c.measureText(stLabel).width + 16;
-            c.fillStyle = stColor + '25';
+            c.fillStyle = isHC ? '#000000' : (stColor + '25');
             c.beginPath();
-            safeRoundRect(c, w / 2 - stW / 2, ht - 24, stW, 18, 9);
+            dcRoundRectPath(c, w / 2 - stW / 2, ht - 24, stW, 18, 9);
             c.fill();
-            c.strokeStyle = stColor + '66'; c.lineWidth = 1; c.stroke();
+            c.strokeStyle = isHC ? '#ffff00' : (stColor + '66'); c.lineWidth = 1; c.stroke();
             c.fillStyle = stColor;
             c.fillText(stLabel, w / 2, ht - 12);
             c.restore();
@@ -1700,12 +1819,16 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           canvas._dcAnimId = animId;
         };
 
-        // Lighten a hex color
+        // Lighten or darken a hex color safely (clamped 0..255)
         function lightenColor(hex, amt) {
-          var num = parseInt(hex.replace('#', ''), 16);
-          var r = Math.min(255, (num >> 16) + amt);
-          var g = Math.min(255, ((num >> 8) & 0x00FF) + amt);
-          var b = Math.min(255, (num & 0x0000FF) + amt);
+          var clean = String(hex || '#64748b').replace('#', '');
+          if (clean.length === 3) clean = clean[0] + clean[0] + clean[1] + clean[1] + clean[2] + clean[2];
+          var num = parseInt(clean, 16);
+          if (!isFinite(num)) num = 0x64748b;
+          var delta = Number(amt) || 0;
+          var r = Math.max(0, Math.min(255, ((num >> 16) & 0xFF) + delta));
+          var g = Math.max(0, Math.min(255, ((num >> 8) & 0xFF) + delta));
+          var b = Math.max(0, Math.min(255, (num & 0xFF) + delta));
           return '#' + (0x1000000 + (r << 16) + (g << 8) + b).toString(16).slice(1);
         }
 
@@ -1816,7 +1939,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             }
           },
             h('div', { className: 'flex flex-wrap items-center gap-3' },
-              h('button', {
+              h('button', { type: 'button',
                 onClick: function() { setStemLabTool(null); },
                 className: 'transition-colors p-2 rounded-xl active:scale-[0.97]',
                 style: {
@@ -1929,7 +2052,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           /* ── Grade-band intro ── */
           h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3 mb-3' },
             h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, gradeBandIntro()),
-            h('button', { 'aria-label': __alloT('stem.decomposer.a11y_read_aloud', 'Read aloud'),
+            h('button', { type: 'button', 'aria-label': __alloT('stem.decomposer.a11y_read_aloud', 'Read aloud'),
               onClick: function() { speakText(gradeBandIntro()); },
               className: 'transition-colors mt-1 text-[0.6875rem] text-amber-600 hover:text-amber-800 font-bold'
             }, '\uD83D\uDD0A Read aloud')
@@ -1969,7 +2092,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           h('div', { className: 'flex flex-wrap gap-1 mb-4 bg-slate-100 rounded-xl p-1', role: 'tablist', 'aria-label': __alloT('stem.decomposer.a11y_decomposer_lab_sections', 'Decomposer Lab sections') },
             TABS.map(function(t, tabIndex) {
               var active = tab === t.id;
-              return h('button', { key: t.id,
+              return h('button', { type: 'button', key: t.id,
                 id: 'stem-decomposer-tab-' + t.id,
                 onClick: function() { upd('tab', t.id); },
                 role: 'tab', 'aria-selected': active,
@@ -2023,7 +2146,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           /* ── Material selector chips (always visible) ── */
           h('div', { className: 'flex flex-wrap gap-1.5 mb-4' },
             MATERIALS.map(function(m) {
-              return h('button', { key: m.name, 'data-decomposer-material': m.name,
+              return h('button', { type: 'button', key: m.name, 'data-decomposer-material': m.name,
                 'aria-pressed': sel.name === m.name,
                 onClick: function() {
                   SOUNDS.selectMaterial();
@@ -2307,7 +2430,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               })(),
 
               /* Decompose / reassemble button */
-              h('button', { onClick: function() {
+              h('button', { type: 'button', onClick: function() {
                   var next = !decomposed;
                   if (next) {
                     SOUNDS.decompose();
@@ -2405,7 +2528,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
               if (!cmpMode) {
                 return h('div', { className: 'mb-3' },
-                  h('button', { id: 'stem-decomposer-compare-open', 'aria-label': __alloT('stem.decomposer.a11y_compare_molecules', 'Compare Molecules'),
+                  h('button', { type: 'button', id: 'stem-decomposer-compare-open', 'aria-label': __alloT('stem.decomposer.a11y_compare_molecules', 'Compare Molecules'),
                     onClick: function() {
                       SOUNDS.compare();
                       updMulti({ compareMode: true, compareTo: cmpMat.name });
@@ -2494,7 +2617,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             h('div', { className: 'bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl border border-cyan-200 p-3 mb-3' },
               h('div', { className: 'flex items-center justify-between' },
                 h('p', { className: 'text-[0.6875rem] font-bold text-cyan-600 uppercase tracking-wider mb-1' }, '\uD83C\uDF0D Real World'),
-                h('button', { 'aria-label': __alloT('stem.decomposer.a11y_speak_text', 'Speak Text'),
+                h('button', { type: 'button', 'aria-label': __alloT('stem.decomposer.a11y_speak_text', 'Speak Text'),
                   onClick: function() { speakText(sel.realUse); },
                   className: 'transition-colors text-[0.6875rem] text-cyan-500 hover:text-cyan-700 font-bold'
                 }, '\uD83D\uDD0A')
@@ -2518,7 +2641,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               return facts.length > 0 ? h('div', { className: 'bg-gradient-to-r from-violet-50 to-fuchsia-50 rounded-xl border border-violet-200 p-3 mb-3' },
                 h('div', { className: 'flex items-center justify-between mb-1' },
                   h('span', { className: 'text-[0.6875rem] font-bold text-violet-600 uppercase tracking-wider' }, '\uD83D\uDCA1 Did You Know?'),
-                  h('button', { 'aria-label': __alloT('stem.decomposer.a11y_next', 'Next'),
+                  h('button', { type: 'button', 'aria-label': __alloT('stem.decomposer.a11y_next', 'Next'),
                     onClick: function() { upd('_factIdx', factIdx + 1); },
                     className: 'transition-colors text-[0.6875rem] text-violet-700 hover:text-violet-900 font-bold'
                   }, 'Next \u2192')
@@ -2619,7 +2742,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   scene.objects.forEach(function(obj) { if (foundObjects[obj.id]) sceneFound++; });
                   var complete = sceneFound === scene.objects.length;
                   var pct = Math.round(sceneFound / scene.objects.length * 100);
-                  return h('button', { key: scene.id, id: 'stem-decomposer-scene-' + scene.id, 'data-decomposer-scene': scene.id,
+                  return h('button', { type: 'button', key: scene.id, id: 'stem-decomposer-scene-' + scene.id, 'data-decomposer-scene': scene.id,
                     onClick: function() {
                       SOUNDS.sceneSwitch();
                       var visited = Object.assign({}, scenesVisited);
@@ -2733,7 +2856,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               return h('div', null,
                 // Scene header
                 h('div', { className: 'flex flex-wrap items-center gap-3 mb-4 rounded-2xl p-3', style: { background: 'linear-gradient(135deg, ' + scene.bgColor + ', ' + scene.accent + '15)' } },
-                  h('button', { 'data-decomposer-scene-exit': true, 'aria-label': __alloT('stem.decomposer.a11y_exit_decomposition_scene', 'Exit decomposition scene'), onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null, huntTarget: null, huntWrongGuess: null }); focusDecomposerElement('stem-decomposer-scene-' + scene.id); }, className: 'p-2 hover:bg-white/60 rounded-xl transition-colors active:scale-[0.97]' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
+                  h('button', { type: 'button', 'data-decomposer-scene-exit': true, 'aria-label': __alloT('stem.decomposer.a11y_exit_decomposition_scene', 'Exit decomposition scene'), onClick: function() { updMulti({ activeScene: null, selectedSceneObj: null, huntTarget: null, huntWrongGuess: null }); focusDecomposerElement('stem-decomposer-scene-' + scene.id); }, className: 'p-2 hover:bg-white/60 rounded-xl transition-colors active:scale-[0.97]' }, h(ArrowLeft, { size: 18, className: 'text-slate-600' })),
                   h('div', {
                     className: 'flex items-center justify-center shrink-0 rounded-xl',
                     style: { width: 44, height: 44, background: 'white', border: '2px solid ' + scene.accent + '40', boxShadow: '0 2px 8px ' + scene.accent + '20' }
@@ -2849,35 +2972,56 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   h('canvas', { role: 'img', 'aria-label': __alloT('stem.decomposer.a11y_decomposer_visualization', 'Decomposer visualization'), 
                     ref: function(canvas) {
                       if (!canvas) return;
-                      if (canvas._sceneDrawn === scene.id) return;
-                      canvas._sceneDrawn = scene.id;
-                      var c = canvas.getContext('2d');
+                      var isHCScene = dcIsHighContrast(isContrast);
+                      var sceneSig = scene.id + '|' + (isHCScene ? 'hc' : 'std') + '|' + (motionPaused ? 'p' : 'm');
+                      if (canvas._sceneDrawn === sceneSig) return;
+                      canvas._sceneDrawn = sceneSig;
+                      if (canvas._sceneAnimId) { cancelAnimationFrame(canvas._sceneAnimId); canvas._sceneAnimId = null; }
+                      var c = canvas._sceneCtx || (canvas._sceneCtx = canvas.getContext && canvas.getContext('2d'));
                       if (!c) return;
                       var hasRG = typeof c.createRadialGradient === 'function';
+                      var hasLG = typeof c.createLinearGradient === 'function';
                       var dpr = window.devicePixelRatio || 1;
                       var cw = canvas.offsetWidth || 500;
                       var ch = 320;
-                      canvas.width = cw * dpr; canvas.height = ch * dpr; canvas.style.height = ch + 'px'; c.scale(dpr, dpr);
-                      var bgGrad = c.createLinearGradient(0, 0, 0, ch);
-                      bgGrad.addColorStop(0, scene.bgColor); bgGrad.addColorStop(1, scene.accent + '18');
-                      c.fillStyle = bgGrad; c.fillRect(0, 0, cw, ch);
+                      canvas.width = cw * dpr; canvas.height = ch * dpr; canvas.style.height = ch + 'px';
+                      c.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                      function drawSceneBase() {
+                      if (hasLG) {
+                        var bgGrad = c.createLinearGradient(0, 0, 0, ch);
+                        bgGrad.addColorStop(0, scene.bgColor); bgGrad.addColorStop(1, scene.accent + '18');
+                        c.fillStyle = bgGrad;
+                      } else {
+                        c.fillStyle = scene.bgColor;
+                      }
+                      c.fillRect(0, 0, cw, ch);
                       if (scene.id === 'kitchen') {
                         // Wall
-                        var wallGrad = c.createLinearGradient(0, 0, 0, ch * 0.5);
-                        wallGrad.addColorStop(0, '#fffbeb'); wallGrad.addColorStop(1, '#fde68a');
-                        c.fillStyle = wallGrad; c.fillRect(0, 0, cw, ch * 0.5);
+                        if (hasLG) {
+                          var wallGrad = c.createLinearGradient(0, 0, 0, ch * 0.5);
+                          wallGrad.addColorStop(0, '#fffbeb'); wallGrad.addColorStop(1, '#fde68a');
+                          c.fillStyle = wallGrad;
+                        } else { c.fillStyle = '#fef3c7'; }
+                        c.fillRect(0, 0, cw, ch * 0.5);
                         // Backsplash tiles
                         c.strokeStyle = 'rgba(245,158,11,0.28)'; c.lineWidth = 0.5;
                         for (var bx = 0; bx < cw; bx += 22) { for (var by = ch * 0.28; by < ch * 0.5; by += 16) { c.strokeRect(bx, by, 22, 16); } }
                         // Countertop with subtle specular bevel
-                        var ctrGrad = c.createLinearGradient(0, ch * 0.48, 0, ch * 0.54);
-                        ctrGrad.addColorStop(0, '#f5e6cc'); ctrGrad.addColorStop(0.45, '#d4a574'); ctrGrad.addColorStop(1, '#a97e52');
-                        c.fillStyle = ctrGrad; c.fillRect(0, ch * 0.48, cw, ch * 0.06);
+                        if (hasLG) {
+                          var ctrGrad = c.createLinearGradient(0, ch * 0.48, 0, ch * 0.54);
+                          ctrGrad.addColorStop(0, '#f5e6cc'); ctrGrad.addColorStop(0.45, '#d4a574'); ctrGrad.addColorStop(1, '#a97e52');
+                          c.fillStyle = ctrGrad;
+                        } else { c.fillStyle = '#d4a574'; }
+                        c.fillRect(0, ch * 0.48, cw, ch * 0.06);
                         c.strokeStyle = 'rgba(255,255,255,0.55)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(0, ch * 0.483); c.lineTo(cw, ch * 0.483); c.stroke();
                         // Lower cabinets
-                        var cabGrad = c.createLinearGradient(0, ch * 0.54, 0, ch);
-                        cabGrad.addColorStop(0, '#c8a882'); cabGrad.addColorStop(1, '#a6825c');
-                        c.fillStyle = cabGrad; c.fillRect(0, ch * 0.54, cw, ch * 0.46);
+                        if (hasLG) {
+                          var cabGrad = c.createLinearGradient(0, ch * 0.54, 0, ch);
+                          cabGrad.addColorStop(0, '#c8a882'); cabGrad.addColorStop(1, '#a6825c');
+                          c.fillStyle = cabGrad;
+                        } else { c.fillStyle = '#b8946d'; }
+                        c.fillRect(0, ch * 0.54, cw, ch * 0.46);
                         c.strokeStyle = '#8b6a47'; c.lineWidth = 1;
                         var cabW = cw / 5;
                         for (var ci = 0; ci < 5; ci++) {
@@ -2892,16 +3036,21 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                         c.beginPath(); c.arc(cw * 0.145, ch * 0.15, 3, 0, Math.PI * 2); c.fill();
                         c.beginPath(); c.arc(cw * 0.855, ch * 0.15, 3, 0, Math.PI * 2); c.fill();
                         // Window with sunlit sky gradient & diagonal sunbeam shaft
-                        var winSky = c.createLinearGradient(0, ch * 0.03, 0, ch * 0.27);
-                        winSky.addColorStop(0, '#7dd3fc'); winSky.addColorStop(1, '#e0f2fe');
-                        c.fillStyle = winSky; c.fillRect(cw * 0.36, ch * 0.03, cw * 0.28, ch * 0.24);
+                        if (hasLG) {
+                          var winSky = c.createLinearGradient(0, ch * 0.03, 0, ch * 0.27);
+                          winSky.addColorStop(0, '#7dd3fc'); winSky.addColorStop(1, '#e0f2fe');
+                          c.fillStyle = winSky;
+                        } else { c.fillStyle = '#bae6fd'; }
+                        c.fillRect(cw * 0.36, ch * 0.03, cw * 0.28, ch * 0.24);
                         c.strokeStyle = '#f8fafc'; c.lineWidth = 4; c.strokeRect(cw * 0.36, ch * 0.03, cw * 0.28, ch * 0.24);
                         c.lineWidth = 2; c.beginPath(); c.moveTo(cw * 0.50, ch * 0.03); c.lineTo(cw * 0.50, ch * 0.27); c.stroke();
                         c.beginPath(); c.moveTo(cw * 0.36, ch * 0.15); c.lineTo(cw * 0.64, ch * 0.15); c.stroke();
-                        var beamG = c.createLinearGradient(cw * 0.48, ch * 0.27, cw * 0.42, ch * 0.56);
-                        beamG.addColorStop(0, 'rgba(254,240,138,0.30)'); beamG.addColorStop(1, 'rgba(254,240,138,0)');
-                        c.fillStyle = beamG;
-                        c.beginPath(); c.moveTo(cw * 0.37, ch * 0.27); c.lineTo(cw * 0.63, ch * 0.27); c.lineTo(cw * 0.56, ch * 0.54); c.lineTo(cw * 0.30, ch * 0.54); c.closePath(); c.fill();
+                        if (!isHCScene && hasLG) {
+                          var beamG = c.createLinearGradient(cw * 0.48, ch * 0.27, cw * 0.42, ch * 0.56);
+                          beamG.addColorStop(0, 'rgba(254,240,138,0.30)'); beamG.addColorStop(1, 'rgba(254,240,138,0)');
+                          c.fillStyle = beamG;
+                          c.beginPath(); c.moveTo(cw * 0.37, ch * 0.27); c.lineTo(cw * 0.63, ch * 0.27); c.lineTo(cw * 0.56, ch * 0.54); c.lineTo(cw * 0.30, ch * 0.54); c.closePath(); c.fill();
+                        }
                         // Stove burner outlines
                         c.strokeStyle = '#78716c'; c.lineWidth = 1.5;
                         c.beginPath(); c.arc(cw * 0.40, ch * 0.50, 8, 0, Math.PI * 2); c.stroke();
@@ -2916,21 +3065,24 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                         c.fillStyle = '#93c5fd';
                         for (var atx = 0; atx < cw; atx += 28) { c.fillRect(atx + 1, ch * 0.28, 26, 26); }
                         // Floor
-                        var floorGrad = c.createLinearGradient(0, ch * 0.65, 0, ch);
-                        floorGrad.addColorStop(0, '#e2e8f0'); floorGrad.addColorStop(1, '#cbd5e1');
-                        c.fillStyle = floorGrad; c.fillRect(0, ch * 0.65, cw, ch * 0.35);
+                        if (hasLG) {
+                          var floorGrad = c.createLinearGradient(0, ch * 0.65, 0, ch);
+                          floorGrad.addColorStop(0, '#e2e8f0'); floorGrad.addColorStop(1, '#cbd5e1');
+                          c.fillStyle = floorGrad;
+                        } else { c.fillStyle = '#cbd5e1'; }
+                        c.fillRect(0, ch * 0.65, cw, ch * 0.35);
                         // Floor tile pattern
                         c.strokeStyle = '#94a3b8'; c.lineWidth = 0.3;
                         for (var ftx = 0; ftx < cw; ftx += 40) { c.strokeRect(ftx, ch * 0.65, 40, 40); }
                         // Mirror (oval with shine)
-                        c.fillStyle = '#c7d2fe'; c.beginPath(); c.ellipse(cw * 0.55, ch * 0.18, cw * 0.11, ch * 0.13, 0, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = '#c7d2fe'; c.beginPath(); dcEllipse(c, cw * 0.55, ch * 0.18, cw * 0.11, ch * 0.13, 0, 0, Math.PI * 2); c.fill();
                         c.strokeStyle = '#818cf8'; c.lineWidth = 4; c.stroke();
-                        c.fillStyle = 'rgba(255,255,255,0.3)'; c.beginPath(); c.ellipse(cw * 0.52, ch * 0.14, cw * 0.04, ch * 0.06, -0.3, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = 'rgba(255,255,255,0.3)'; c.beginPath(); dcEllipse(c, cw * 0.52, ch * 0.14, cw * 0.04, ch * 0.06, -0.3, 0, Math.PI * 2); c.fill();
                         // Sink vanity
                         c.fillStyle = '#f1f5f9'; c.fillRect(cw * 0.10, ch * 0.38, cw * 0.34, ch * 0.18);
                         c.strokeStyle = '#94a3b8'; c.lineWidth = 2; c.strokeRect(cw * 0.10, ch * 0.38, cw * 0.34, ch * 0.18);
                         // Sink bowl
-                        c.fillStyle = '#e0f2fe'; c.beginPath(); c.ellipse(cw * 0.27, ch * 0.45, cw * 0.08, ch * 0.04, 0, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = '#e0f2fe'; c.beginPath(); dcEllipse(c, cw * 0.27, ch * 0.45, cw * 0.08, ch * 0.04, 0, 0, Math.PI * 2); c.fill();
                         c.strokeStyle = '#94a3b8'; c.lineWidth = 1; c.stroke();
                         // Bathtub
                         c.fillStyle = '#f8fafc';
@@ -2958,11 +3110,14 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                           for (var brx = bOff; brx < cw; brx += 32) { c.strokeRect(brx, bry, 30, 10); }
                         }
                         // Concrete floor
-                        var flGrad = c.createLinearGradient(0, ch * 0.6, 0, ch);
-                        flGrad.addColorStop(0, '#9ca3af'); flGrad.addColorStop(1, '#94a3b8');
-                        c.fillStyle = flGrad; c.fillRect(0, ch * 0.6, cw, ch * 0.4);
+                        if (hasLG) {
+                          var flGrad = c.createLinearGradient(0, ch * 0.6, 0, ch);
+                          flGrad.addColorStop(0, '#9ca3af'); flGrad.addColorStop(1, '#94a3b8');
+                          c.fillStyle = flGrad;
+                        } else { c.fillStyle = '#94a3b8'; }
+                        c.fillRect(0, ch * 0.6, cw, ch * 0.4);
                         // Oil stain
-                        c.fillStyle = 'rgba(55,48,42,0.15)'; c.beginPath(); c.ellipse(cw * 0.35, ch * 0.78, 30, 12, 0, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = 'rgba(55,48,42,0.15)'; c.beginPath(); dcEllipse(c, cw * 0.35, ch * 0.78, 30, 12, 0, 0, Math.PI * 2); c.fill();
                         // Pegboard with pegs
                         c.fillStyle = '#c8b89a'; c.fillRect(cw * 0.58, ch * 0.08, cw * 0.38, ch * 0.45);
                         c.strokeStyle = '#a0845c'; c.lineWidth = 2; c.strokeRect(cw * 0.58, ch * 0.08, cw * 0.38, ch * 0.45);
@@ -2984,7 +3139,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                         c.beginPath(); c.moveTo(cw * 0.03, ch * 0.38); c.lineTo(cw * 0.53, ch * 0.38); c.stroke();
                         // Light bulb
                         c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(cw * 0.28, ch * 0.03, 6, 0, Math.PI); c.fill();
-                        c.fillStyle = 'rgba(251,191,36,0.1)'; c.beginPath(); c.arc(cw * 0.28, ch * 0.05, 30, 0, Math.PI * 2); c.fill();
+                        if (!isHCScene) { c.fillStyle = 'rgba(251,191,36,0.1)'; c.beginPath(); c.arc(cw * 0.28, ch * 0.05, 30, 0, Math.PI * 2); c.fill(); }
                         // Workbench
                         c.fillStyle = '#a0845c'; c.fillRect(cw * 0.04, ch * 0.58, cw * 0.48, ch * 0.04);
                         c.fillStyle = '#78716c'; c.fillRect(cw * 0.08, ch * 0.62, cw * 0.03, ch * 0.18);
@@ -2993,9 +3148,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                         // Wall
                         c.fillStyle = '#fdf4ff'; c.fillRect(0, 0, cw, ch);
                         // Chalkboard
-                        var boardGrad = c.createLinearGradient(cw * 0.08, ch * 0.04, cw * 0.08, ch * 0.36);
-                        boardGrad.addColorStop(0, '#14532d'); boardGrad.addColorStop(1, '#166534');
-                        c.fillStyle = boardGrad; c.fillRect(cw * 0.08, ch * 0.04, cw * 0.84, ch * 0.32);
+                        if (hasLG) {
+                          var boardGrad = c.createLinearGradient(cw * 0.08, ch * 0.04, cw * 0.08, ch * 0.36);
+                          boardGrad.addColorStop(0, '#14532d'); boardGrad.addColorStop(1, '#166534');
+                          c.fillStyle = boardGrad;
+                        } else { c.fillStyle = '#14532d'; }
+                        c.fillRect(cw * 0.08, ch * 0.04, cw * 0.84, ch * 0.32);
                         // Chalk tray
                         c.fillStyle = '#a16207'; c.fillRect(cw * 0.08, ch * 0.36, cw * 0.84, ch * 0.03);
                         // Board frame
@@ -3005,9 +3163,13 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                         c.fillText('H\u2082O    NaCl    CO\u2082    CaCO\u2083', cw * 0.5, ch * 0.18);
                         c.font = '11px serif'; c.fillStyle = 'rgba(255,255,255,0.4)';
                         c.fillText('Chemistry is everywhere!', cw * 0.5, ch * 0.30);
-                        // Chalk dust marks
+                        // Chalk dust marks (deterministic)
                         c.fillStyle = 'rgba(255,255,255,0.12)';
-                        for (var di = 0; di < 8; di++) { c.beginPath(); c.arc(cw * (0.15 + Math.random() * 0.7), ch * (0.08 + Math.random() * 0.24), 3 + Math.random() * 5, 0, Math.PI * 2); c.fill(); }
+                        for (var di = 0; di < 8; di++) {
+                          var dxC = 0.15 + ((Math.sin(di * 19.3) * 0.5 + 0.5) * 0.7);
+                          var dyC = 0.08 + ((Math.cos(di * 31.7) * 0.5 + 0.5) * 0.24);
+                          c.beginPath(); c.arc(cw * dxC, ch * dyC, 3 + (di % 4) * 1.4, 0, Math.PI * 2); c.fill();
+                        }
                         // Lab table
                         c.fillStyle = '#1c1917'; c.fillRect(cw * 0.05, ch * 0.44, cw * 0.9, ch * 0.05);
                         c.fillStyle = '#78716c';
@@ -3027,27 +3189,32 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                         c.fillRect(cw * 0.247, ch * 0.67, 3, ch * 0.10);
                       } else if (scene.id === 'outdoors') {
                         // Atmospheric sky gradient with warm horizon glow
-                        var skyGrad = c.createLinearGradient(0, 0, 0, ch * 0.55);
-                        skyGrad.addColorStop(0, '#0284c7'); skyGrad.addColorStop(0.5, '#38bdf8'); skyGrad.addColorStop(1, '#e0f2fe');
-                        c.fillStyle = skyGrad; c.fillRect(0, 0, cw, ch * 0.55);
+                        if (hasLG) {
+                          var skyGrad = c.createLinearGradient(0, 0, 0, ch * 0.55);
+                          skyGrad.addColorStop(0, '#0284c7'); skyGrad.addColorStop(0.5, '#38bdf8'); skyGrad.addColorStop(1, '#e0f2fe');
+                          c.fillStyle = skyGrad;
+                        } else { c.fillStyle = '#38bdf8'; }
+                        c.fillRect(0, 0, cw, ch * 0.55);
                         // Sun corona + dappled canopy sunlight beams
-                        if (hasRG) {
+                        if (!isHCScene && hasRG) {
                           var sunG = c.createRadialGradient(cw * 0.85, ch * 0.12, 4, cw * 0.85, ch * 0.12, 68);
                           sunG.addColorStop(0, 'rgba(254,249,195,0.92)'); sunG.addColorStop(0.32, 'rgba(251,191,36,0.42)'); sunG.addColorStop(1, 'rgba(251,191,36,0)');
                           c.fillStyle = sunG; c.beginPath(); c.arc(cw * 0.85, ch * 0.12, 68, 0, Math.PI * 2); c.fill();
                         }
                         c.fillStyle = '#fde047'; c.beginPath(); c.arc(cw * 0.85, ch * 0.12, 16, 0, Math.PI * 2); c.fill();
                         // Soft sun shafts filtering diagonally onto foliage & leaf litter
-                        for (var sr = 0; sr < 3; sr++) {
-                          var rayG = c.createLinearGradient(cw * (0.78 - sr * 0.16), ch * 0.14, cw * (0.52 - sr * 0.18), ch * 0.68);
-                          rayG.addColorStop(0, 'rgba(254,249,195,0.22)'); rayG.addColorStop(1, 'rgba(254,249,195,0)');
-                          c.fillStyle = rayG;
-                          c.beginPath();
-                          c.moveTo(cw * (0.80 - sr * 0.16), ch * 0.12);
-                          c.lineTo(cw * (0.86 - sr * 0.16), ch * 0.12);
-                          c.lineTo(cw * (0.58 - sr * 0.17), ch * 0.72);
-                          c.lineTo(cw * (0.46 - sr * 0.17), ch * 0.72);
-                          c.closePath(); c.fill();
+                        if (!isHCScene && hasLG) {
+                          for (var sr = 0; sr < 3; sr++) {
+                            var rayG = c.createLinearGradient(cw * (0.78 - sr * 0.16), ch * 0.14, cw * (0.52 - sr * 0.18), ch * 0.68);
+                            rayG.addColorStop(0, 'rgba(254,249,195,0.22)'); rayG.addColorStop(1, 'rgba(254,249,195,0)');
+                            c.fillStyle = rayG;
+                            c.beginPath();
+                            c.moveTo(cw * (0.80 - sr * 0.16), ch * 0.12);
+                            c.lineTo(cw * (0.86 - sr * 0.16), ch * 0.12);
+                            c.lineTo(cw * (0.58 - sr * 0.17), ch * 0.72);
+                            c.lineTo(cw * (0.46 - sr * 0.17), ch * 0.72);
+                            c.closePath(); c.fill();
+                          }
                         }
                         // Clouds (fluffy)
                         c.fillStyle = 'rgba(255,255,255,0.88)';
@@ -3058,31 +3225,25 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                         c.beginPath(); c.arc(cw * 0.59, ch * 0.12, 16, 0, Math.PI * 2); c.fill();
                         c.beginPath(); c.arc(cw * 0.63, ch * 0.14, 12, 0, Math.PI * 2); c.fill();
                         // Distant atmospheric hills behind grass
-                        var hillGrad = c.createLinearGradient(0, ch * 0.42, 0, ch * 0.56);
-                        hillGrad.addColorStop(0, '#86efac'); hillGrad.addColorStop(1, '#22c55e');
-                        c.fillStyle = hillGrad;
+                        if (hasLG) {
+                          var hillGrad = c.createLinearGradient(0, ch * 0.42, 0, ch * 0.56);
+                          hillGrad.addColorStop(0, '#86efac'); hillGrad.addColorStop(1, '#22c55e');
+                          c.fillStyle = hillGrad;
+                        } else { c.fillStyle = '#4ade80'; }
                         c.beginPath(); c.moveTo(0, ch * 0.55); c.quadraticCurveTo(cw * 0.25, ch * 0.42, cw * 0.5, ch * 0.52); c.quadraticCurveTo(cw * 0.75, ch * 0.44, cw, ch * 0.55); c.lineTo(cw, ch * 0.55); c.closePath(); c.fill();
                         // Grass meadow + layered forest-floor humus & soil-horizon depth cutaway at base
-                        var grassGrad = c.createLinearGradient(0, ch * 0.55, 0, ch * 0.84);
-                        grassGrad.addColorStop(0, '#22c55e'); grassGrad.addColorStop(0.65, '#16a34a'); grassGrad.addColorStop(1, '#14532d');
-                        c.fillStyle = grassGrad; c.fillRect(0, ch * 0.55, cw, ch * 0.29);
-                        var soilGrad = c.createLinearGradient(0, ch * 0.82, 0, ch);
-                        soilGrad.addColorStop(0, '#451a03'); soilGrad.addColorStop(0.42, '#2e1508'); soilGrad.addColorStop(1, '#1c0f08');
-                        c.fillStyle = soilGrad; c.fillRect(0, ch * 0.82, cw, ch * 0.18);
-                        // Subtle subterranean fungal hyphae & microbial glow filaments in humus horizon
-                        c.save();
-                        c.strokeStyle = 'rgba(253,230,138,0.28)'; c.lineWidth = 1.1;
-                        for (var hy = 0; hy < 6; hy++) {
-                          var hx0 = cw * (0.08 + hy * 0.16);
-                          c.beginPath(); c.moveTo(hx0, ch * 0.84);
-                          c.quadraticCurveTo(hx0 + 18, ch * 0.90, hx0 + 36, ch * 0.95);
-                          c.moveTo(hx0 + 14, ch * 0.89);
-                          c.quadraticCurveTo(hx0 + 6, ch * 0.94, hx0 - 8, ch * 0.97);
-                          c.stroke();
-                          c.fillStyle = 'rgba(134,239,172,0.45)';
-                          c.beginPath(); c.arc(hx0 + 16, ch * 0.89, 2.2, 0, Math.PI * 2); c.fill();
-                        }
-                        c.restore();
+                        if (hasLG) {
+                          var grassGrad = c.createLinearGradient(0, ch * 0.55, 0, ch * 0.84);
+                          grassGrad.addColorStop(0, '#22c55e'); grassGrad.addColorStop(0.65, '#16a34a'); grassGrad.addColorStop(1, '#14532d');
+                          c.fillStyle = grassGrad;
+                        } else { c.fillStyle = '#16a34a'; }
+                        c.fillRect(0, ch * 0.55, cw, ch * 0.29);
+                        if (hasLG) {
+                          var soilGrad = c.createLinearGradient(0, ch * 0.82, 0, ch);
+                          soilGrad.addColorStop(0, '#451a03'); soilGrad.addColorStop(0.42, '#2e1508'); soilGrad.addColorStop(1, '#1c0f08');
+                          c.fillStyle = soilGrad;
+                        } else { c.fillStyle = '#2e1508'; }
+                        c.fillRect(0, ch * 0.82, cw, ch * 0.18);
                         // Grass blades + fallen autumn leaf litter flecks
                         c.strokeStyle = '#15803d'; c.lineWidth = 1;
                         for (var gi = 0; gi < 30; gi++) {
@@ -3094,7 +3255,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                         for (var lf = 0; lf < 10; lf++) {
                           var lx = cw * (0.12 + lf * 0.085), ly = ch * (0.79 + (lf % 3) * 0.015);
                           c.fillStyle = lf % 2 === 0 ? '#b45309' : '#d97706';
-                          c.beginPath(); c.ellipse(lx, ly, 4.5, 2, lf * 0.5, 0, Math.PI * 2); c.fill();
+                          c.beginPath(); dcEllipse(c, lx, ly, 4.5, 2, lf * 0.5, 0, Math.PI * 2); c.fill();
                         }
                         // Tree trunk (textured)
                         c.fillStyle = '#78350f'; c.fillRect(cw * 0.24, ch * 0.22, cw * 0.05, ch * 0.34);
@@ -3108,7 +3269,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                         // Path / stone walkway
                         c.fillStyle = '#d6d3d1'; c.lineWidth = 1;
                         var pathPts = [[0.45, 0.60], [0.47, 0.68], [0.50, 0.76], [0.52, 0.84], [0.54, 0.92]];
-                        pathPts.forEach(function(p) { c.beginPath(); c.ellipse(cw * p[0], ch * p[1], 12, 6, 0.2, 0, Math.PI * 2); c.fill(); c.strokeStyle = '#a8a29e'; c.stroke(); });
+                        for (var ppi = 0; ppi < pathPts.length; ppi++) {
+                          c.beginPath(); dcEllipse(c, cw * pathPts[ppi][0], ch * pathPts[ppi][1], 12, 6, 0.2, 0, Math.PI * 2); c.fill(); c.strokeStyle = '#a8a29e'; c.stroke();
+                        }
                         // Fence in background
                         c.strokeStyle = '#a0845c'; c.lineWidth = 2;
                         c.beginPath(); c.moveTo(0, ch * 0.50); c.lineTo(cw * 0.18, ch * 0.50); c.stroke();
@@ -3124,6 +3287,152 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                       c.fillStyle = scene.accent; c.globalAlpha = 0.25;
                       c.font = 'bold 10px system-ui, sans-serif'; c.textAlign = 'left';
                       c.fillText(scene.name.toUpperCase(), 8, 16); c.globalAlpha = 1;
+                      } // end drawSceneBase
+
+                      if (scene.id !== 'outdoors') {
+                        drawSceneBase();
+                        return;
+                      }
+
+                      // Living Soil Ecology Zero-GC Animation Layer for Backyard / Compost Scene:
+                      // warm bioluminescent mycelium pulses, rising CO2/N mineralization motes,
+                      // crawling detritivore soil-disturbance wakes, moisture percolation glints, humification glow
+                      var SOIL_MOTE_N = 18;
+                      var smX = new Float32Array(SOIL_MOTE_N);
+                      var smY = new Float32Array(SOIL_MOTE_N);
+                      var smSp = new Float32Array(SOIL_MOTE_N);
+                      var smPh = new Float32Array(SOIL_MOTE_N);
+                      var smKind = new Uint8Array(SOIL_MOTE_N); // 0=CO2 mineralization, 1=nitrogen/humus
+                      for (var smi = 0; smi < SOIL_MOTE_N; smi++) {
+                        smX[smi] = smi < 8 ? (0.76 + (smi / 8) * 0.18) : (0.08 + ((smi - 8) / 10) * 0.84);
+                        smY[smi] = (smi * 0.19) % 1;
+                        smSp[smi] = 0.0022 + (smi % 4) * 0.0009;
+                        smPh[smi] = smi * 1.43;
+                        smKind[smi] = smi % 2;
+                      }
+                      var PERC_N = 12;
+                      var pcX = new Float32Array(PERC_N);
+                      var pcY = new Float32Array(PERC_N);
+                      var pcSp = new Float32Array(PERC_N);
+                      for (var pci = 0; pci < PERC_N; pci++) {
+                        pcX[pci] = 0.43 + ((pci * 0.13) % 0.15);
+                        pcY[pci] = (pci / PERC_N);
+                        pcSp[pci] = 0.0045 + (pci % 3) * 0.0018;
+                      }
+                      var DET_N = 3;
+                      var detX = new Float32Array(DET_N);
+                      var detY = new Float32Array(DET_N);
+                      var detDir = new Float32Array(DET_N);
+                      for (var dti = 0; dti < DET_N; dti++) {
+                        detX[dti] = cw * (0.18 + dti * 0.28);
+                        detY[dti] = ch * (0.86 + (dti % 2) * 0.06);
+                        detDir[dti] = (dti % 2 === 0 ? 1 : -1) * (0.28 + dti * 0.06);
+                      }
+                      var soilTick = 0;
+                      function drawOutdoorsLivingSoil() {
+                        if (!canvas.isConnected || canvas._sceneDrawn !== sceneSig) {
+                          if (canvas._sceneAnimId) { cancelAnimationFrame(canvas._sceneAnimId); canvas._sceneAnimId = null; }
+                          return;
+                        }
+                        var staticSoil = motionPaused || dcPrefersReducedMotion();
+                        var isHCNow = dcIsHighContrast(isContrast);
+                        drawSceneBase();
+
+                        // 1. Warm organic-matter humification glow under compost pile & leaf litter
+                        if (!isHCNow && hasRG) {
+                          var humBreath = staticSoil ? 1 : (0.86 + 0.14 * Math.sin(soilTick * 0.035));
+                          var compG = c.createRadialGradient(cw * 0.84, ch * 0.82, 4, cw * 0.84, ch * 0.82, 54 * humBreath);
+                          compG.addColorStop(0, 'rgba(251,191,36,0.34)');
+                          compG.addColorStop(0.55, 'rgba(217,119,6,0.14)');
+                          compG.addColorStop(1, 'rgba(217,119,6,0)');
+                          c.fillStyle = compG;
+                          c.beginPath(); c.arc(cw * 0.84, ch * 0.82, 54 * humBreath, 0, Math.PI * 2); c.fill();
+                        }
+
+                        // 2. Subterranean fungal mycelium network + warm bioluminescent nutrient-transport pulses
+                        c.save();
+                        for (var hy = 0; hy < 6; hy++) {
+                          var hx0 = cw * (0.08 + hy * 0.16);
+                          var hy0 = ch * 0.84, hcx = hx0 + 18, hcy = ch * 0.90, hx1 = hx0 + 36, hy1 = ch * 0.96;
+                          c.strokeStyle = isHCNow ? '#ffff00' : 'rgba(253,230,138,0.34)';
+                          c.lineWidth = isHCNow ? 1.4 : 1.15;
+                          c.beginPath();
+                          c.moveTo(hx0, hy0); c.quadraticCurveTo(hcx, hcy, hx1, hy1);
+                          c.moveTo(hx0 + 14, ch * 0.89); c.quadraticCurveTo(hx0 + 6, ch * 0.94, hx0 - 8, ch * 0.97);
+                          c.stroke();
+                          // Bioluminescent nutrient pulse traveling along quadratic hyphal filament
+                          var hu = staticSoil ? 0.48 : (((soilTick * 0.011 + hy * 0.19) % 1));
+                          var hmu = 1 - hu;
+                          var npx = hmu * hmu * hx0 + 2 * hmu * hu * hcx + hu * hu * hx1;
+                          var npy = hmu * hmu * hy0 + 2 * hmu * hu * hcy + hu * hu * hy1;
+                          if (!isHCNow) {
+                            c.fillStyle = 'rgba(253,224,71,0.34)';
+                            c.beginPath(); c.arc(npx, npy, 5.2, 0, Math.PI * 2); c.fill();
+                          }
+                          c.fillStyle = isHCNow ? '#00ff00' : '#fef08a';
+                          c.beginPath(); c.arc(npx, npy, 2.1, 0, Math.PI * 2); c.fill();
+                          // Secondary branching hyphal node glint
+                          c.fillStyle = isHCNow ? '#ffffff' : 'rgba(134,239,172,0.62)';
+                          c.beginPath(); c.arc(hx0 + 16, ch * 0.89, 1.8, 0, Math.PI * 2); c.fill();
+                        }
+
+                        // 3. Crawling detritivore soil-disturbance wakes in humus horizon
+                        for (var dtj = 0; dtj < DET_N; dtj++) {
+                          if (!staticSoil) {
+                            detX[dtj] += detDir[dtj];
+                            if (detX[dtj] < cw * 0.08 || detX[dtj] > cw * 0.92) detDir[dtj] = -detDir[dtj];
+                          }
+                          var dxW = detX[dtj], dyW = detY[dtj] + (staticSoil ? 0 : Math.sin(soilTick * 0.08 + dtj * 2) * 1.4);
+                          var signD = detDir[dtj] >= 0 ? 1 : -1;
+                          // Soft soil-disturbance wake behind detritivore
+                          c.strokeStyle = isHCNow ? '#ffffff' : 'rgba(180,130,85,0.48)';
+                          c.lineWidth = 2.2;
+                          c.beginPath();
+                          c.moveTo(dxW - signD * 14, dyW);
+                          c.quadraticCurveTo(dxW - signD * 7, dyW - 2.2, dxW, dyW);
+                          c.stroke();
+                          // Segmented detritivore body
+                          c.strokeStyle = isHCNow ? '#ffff00' : '#d97706';
+                          c.lineWidth = 2.0;
+                          c.beginPath();
+                          c.moveTo(dxW - signD * 5, dyW + 0.6);
+                          c.quadraticCurveTo(dxW, dyW - 1.5, dxW + signD * 5, dyW);
+                          c.stroke();
+                        }
+
+                        // 4. Moisture percolation glints trickling down beneath the rain puddle
+                        for (var pcj = 0; pcj < PERC_N; pcj++) {
+                          var pyNorm = staticSoil ? pcY[pcj] : ((pcY[pcj] + soilTick * pcSp[pcj]) % 1);
+                          var pxPos = cw * pcX[pcj] + Math.sin(pyNorm * 8 + pcj) * 3;
+                          var pyPos = ch * (0.78 + pyNorm * 0.19);
+                          var pFade = Math.sin(pyNorm * Math.PI);
+                          c.fillStyle = isHCNow ? '#00ff00' : ('rgba(125,211,252,' + (0.28 + pFade * 0.58).toFixed(2) + ')');
+                          c.beginPath(); c.arc(pxPos, pyPos, 1.6, 0, Math.PI * 2); c.fill();
+                        }
+
+                        // 5. Rising CO2 / nitrogen mineralization motes above humus & compost pile
+                        for (var smj = 0; smj < SOIL_MOTE_N; smj++) {
+                          var syNorm = staticSoil ? smY[smj] : ((smY[smj] + soilTick * smSp[smj]) % 1);
+                          var sxPos = cw * smX[smj] + Math.sin(syNorm * 6 + smPh[smj]) * 5;
+                          var syPos = ch * (0.83 - syNorm * 0.34);
+                          var sFade = Math.sin(syNorm * Math.PI);
+                          if (!isHCNow) {
+                            c.fillStyle = smKind[smj] === 0
+                              ? ('rgba(224,242,254,' + (sFade * 0.42).toFixed(2) + ')')
+                              : ('rgba(167,243,208,' + (sFade * 0.45).toFixed(2) + ')');
+                            c.beginPath(); c.arc(sxPos, syPos, 3.2, 0, Math.PI * 2); c.fill();
+                          }
+                          c.fillStyle = isHCNow ? '#ffff00' : (smKind[smj] === 0 ? ('rgba(248,250,252,' + (sFade * 0.78).toFixed(2) + ')') : ('rgba(110,231,183,' + (sFade * 0.82).toFixed(2) + ')'));
+                          c.beginPath(); c.arc(sxPos, syPos, 1.4, 0, Math.PI * 2); c.fill();
+                        }
+                        c.restore();
+
+                        if (!staticSoil) {
+                          soilTick++;
+                          canvas._sceneAnimId = requestAnimationFrame(drawOutdoorsLivingSoil);
+                        }
+                      }
+                      drawOutdoorsLivingSoil();
                     },
                     className: 'w-full block', style: { height: '320px' }
                   }),
@@ -3293,9 +3602,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                       })
                     ),
                     h('div', { className: 'flex flex-wrap gap-2 mt-3' },
-                      h('button', { 'data-decomposer-detail-action': 'explore', 'aria-label': __alloT('stem.decomposer.a11y_explore', 'Explore'), onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); focusDecomposerElement('stem-decomposer-panel-explore'); }, className: 'flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-800 transition-all active:scale-[0.97]' }, '\u2697\uFE0F Explore'),
-                      h('button', { 'data-decomposer-detail-action': 'visualize', 'aria-label': __alloT('stem.decomposer.a11y_visualize', 'Visualize'), onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' }); focusDecomposerElement('stem-decomposer-panel-visualize'); }, className: 'flex-1 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg hover:bg-indigo-700 transition-all active:scale-[0.97]' }, '\uD83C\uDFA8 Visualize'),
-                      h('button', { 'aria-label': __alloT('stem.decomposer.a11y_speak_text', 'Speak Text'), onClick: function() { speakText(selObj.name + ' contains ' + linkedMat.name + '. ' + linkedMat.desc); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition-all active:scale-[0.97]' }, '\uD83D\uDD0A')
+                      h('button', { type: 'button', 'data-decomposer-detail-action': 'explore', 'aria-label': __alloT('stem.decomposer.a11y_explore', 'Explore'), onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); focusDecomposerElement('stem-decomposer-panel-explore'); }, className: 'flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-800 transition-all active:scale-[0.97]' }, '\u2697\uFE0F Explore'),
+                      h('button', { type: 'button', 'data-decomposer-detail-action': 'visualize', 'aria-label': __alloT('stem.decomposer.a11y_visualize', 'Visualize'), onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' }); focusDecomposerElement('stem-decomposer-panel-visualize'); }, className: 'flex-1 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg hover:bg-indigo-700 transition-all active:scale-[0.97]' }, '\uD83C\uDFA8 Visualize'),
+                      h('button', { type: 'button', 'aria-label': __alloT('stem.decomposer.a11y_speak_text', 'Speak Text'), onClick: function() { speakText(selObj.name + ' contains ' + linkedMat.name + '. ' + linkedMat.desc); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition-all active:scale-[0.97]' }, '\uD83D\uDD0A')
                     )
                   )
                 ) : null,
@@ -3306,7 +3615,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   h('div', { className: 'flex flex-wrap gap-1.5' },
                     scene.objects.filter(function(obj) { return foundObjects[obj.id]; }).map(function(obj) {
                       var mat = MATERIALS.find(function(m) { return m.name === obj.material; });
-                      return h('button', { key: obj.id,
+                      return h('button', { type: 'button', key: obj.id,
                         'aria-expanded': selectedSceneObj === obj.id,
                         'aria-controls': selectedSceneObj === obj.id ? 'stem-decomposer-object-details' : undefined,
                         onClick: function() { SOUNDS.elementClick(); upd('selectedSceneObj', selectedSceneObj === obj.id ? null : obj.id); },
@@ -3338,7 +3647,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 reactantA ? h('div', { className: 'text-center' },
                   h('span', { className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantA; }) || {}).emoji || '?'),
                   h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, reactantA),
-                  h('button', { 'data-decomposer-remove': 'a', 'aria-label': __alloT('stem.decomposer.remove_material_a', 'Remove Material A: {material}').replace('{material}', reactantA), onClick: function() { updMulti({ reactantA: null, activeReaction: null }); focusDecomposerElement('stem-decomposer-reactant-' + Math.max(0, MATERIALS.findIndex(function(material) { return material.name === reactantA; }))); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
+                  h('button', { type: 'button', 'data-decomposer-remove': 'a', 'aria-label': __alloT('stem.decomposer.remove_material_a', 'Remove Material A: {material}').replace('{material}', reactantA), onClick: function() { updMulti({ reactantA: null, activeReaction: null }); focusDecomposerElement('stem-decomposer-reactant-' + Math.max(0, MATERIALS.findIndex(function(material) { return material.name === reactantA; }))); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
                 ) : h('p', { className: 'text-xs text-indigo-400 text-center py-4' }, 'Select below \u2193')
               ),
               // Slot B
@@ -3347,7 +3656,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 reactantB ? h('div', { className: 'text-center' },
                   h('span', { className: 'text-3xl' }, (MATERIALS.find(function(m) { return m.name === reactantB; }) || {}).emoji || '?'),
                   h('p', { className: 'text-xs font-bold text-slate-800 mt-1' }, reactantB),
-                  h('button', { 'data-decomposer-remove': 'b', 'aria-label': __alloT('stem.decomposer.remove_material_b', 'Remove Material B: {material}').replace('{material}', reactantB), onClick: function() { updMulti({ reactantB: null, activeReaction: null }); focusDecomposerElement('stem-decomposer-reactant-' + Math.max(0, MATERIALS.findIndex(function(material) { return material.name === reactantB; }))); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
+                  h('button', { type: 'button', 'data-decomposer-remove': 'b', 'aria-label': __alloT('stem.decomposer.remove_material_b', 'Remove Material B: {material}').replace('{material}', reactantB), onClick: function() { updMulti({ reactantB: null, activeReaction: null }); focusDecomposerElement('stem-decomposer-reactant-' + Math.max(0, MATERIALS.findIndex(function(material) { return material.name === reactantB; }))); }, className: 'text-[0.6875rem] text-red-500 font-bold mt-1' }, '\u2715 Remove')
                 ) : h('p', { className: 'text-xs text-rose-700 text-center py-4' }, 'Select below \u2193')
               )
             ),
@@ -3357,7 +3666,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               MATERIALS.map(function(m, materialIndex) {
                 var isA = reactantA === m.name;
                 var isB = reactantB === m.name;
-                return h('button', { key: m.name, id: 'stem-decomposer-reactant-' + materialIndex,
+                return h('button', { type: 'button', key: m.name, id: 'stem-decomposer-reactant-' + materialIndex,
                   'data-decomposer-reactant': m.name, 'aria-pressed': isA || isB,
                   onClick: function() {
                     SOUNDS.selectMaterial();
@@ -3427,11 +3736,11 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   ) : null,
                   // TTS + try another
                   h('div', { className: 'flex gap-2' },
-                    h('button', { 'aria-label': __alloT('stem.decomposer.a11y_listen', 'Listen'),
+                    h('button', { type: 'button', 'aria-label': __alloT('stem.decomposer.a11y_listen', 'Listen'),
                       onClick: function() { speakText(activeReaction.name + '. ' + activeReaction.desc); },
                       className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 active:scale-[0.97]'
                     }, '\uD83D\uDD0A Listen'),
-                    h('button', { 'aria-label': __alloT('stem.decomposer.a11y_try_another_combo', 'Try Another Combo'),
+                    h('button', { type: 'button', 'aria-label': __alloT('stem.decomposer.a11y_try_another_combo', 'Try Another Combo'),
                       onClick: function() { updMulti({ reactantA: null, reactantB: null, activeReaction: null }); focusDecomposerElement('stem-decomposer-reactant-0'); },
                       className: 'transition-colors flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-800 active:scale-[0.97]'
                     }, '\uD83D\uDD04 Try Another Combo')
@@ -3506,21 +3815,26 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                   if (!canvas) return;
                   watchDecomposerCanvasSize(canvas, 'States', stateCanvasRef);
                   canvas.dataset.motionPaused = motionPaused ? 'true' : 'false';
-                  var c2 = canvas.getContext('2d');
+                  var c2 = canvas._stateCtx || (canvas._stateCtx = canvas.getContext && canvas.getContext('2d'));
                   if (!c2) return;
-                  var hasGrad2 = typeof c2.createLinearGradient === 'function' && typeof c2.createRadialGradient === 'function';
+                  var hasLG2 = typeof c2.createLinearGradient === 'function';
+                  var hasRG2 = typeof c2.createRadialGradient === 'function';
+                  var hasGrad2 = hasLG2 && hasRG2;
                   var dpr = window.devicePixelRatio || 1;
                   var cw = canvas.offsetWidth || 500;
                   var ch2 = 240;
-                  canvas.width = cw * dpr; canvas.height = ch2 * dpr;
-                  canvas.style.height = ch2 + 'px'; c2.scale(dpr, dpr);
+                  var targetW2 = cw * dpr, targetH2 = ch2 * dpr;
+                  if (canvas.width !== targetW2) canvas.width = targetW2;
+                  if (canvas.height !== targetH2) canvas.height = targetH2;
+                  canvas.style.height = ch2 + 'px';
+                  c2.setTransform(dpr, 0, 0, dpr, 0, 0);
 
                   var state = modeledPhase;
 
                   // Kill previous animation
                   if (canvas._stateAnimId) cancelAnimationFrame(canvas._stateAnimId);
 
-                  // Init particles if needed or state changed
+                  // Init particles if needed or state changed (preserve _particles/_prevState/_prevMaterial/_prevStateWidth for tests)
                   if (!canvas._particles || canvas._prevState !== state || canvas._prevMaterial !== sel.name) {
                     canvas._prevState = state;
                     canvas._prevMaterial = sel.name;
@@ -3540,6 +3854,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                         });
                       }
                     }
+                    canvas._stateTrailInit = false;
                   } else if (canvas._prevStateWidth && canvas._prevStateWidth !== cw) {
                     var widthScale = cw / canvas._prevStateWidth;
                     canvas._particles.forEach(function(particle) {
@@ -3547,15 +3862,42 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                       particle.homeX *= widthScale;
                       particle.vx *= widthScale;
                     });
+                    canvas._stateTrailInit = false;
                   }
                   canvas._prevStateWidth = cw;
                   var parts = canvas._particles;
+                  var pCount = parts.length;
+                  // Zero-GC pre-allocated kinetic trail ring buffer & convection/percolation glints
+                  var ST_TRAIL = 5;
+                  if (!canvas._stTrailX || canvas._stTrailX.length !== pCount * ST_TRAIL) {
+                    canvas._stTrailX = new Float32Array(pCount * ST_TRAIL);
+                    canvas._stTrailY = new Float32Array(pCount * ST_TRAIL);
+                  }
+                  var stTX = canvas._stTrailX, stTY = canvas._stTrailY;
+                  if (!canvas._stateTrailInit) {
+                    for (var ti0 = 0; ti0 < pCount; ti0++) {
+                      for (var tk0 = 0; tk0 < ST_TRAIL; tk0++) {
+                        stTX[ti0 * ST_TRAIL + tk0] = parts[ti0].x;
+                        stTY[ti0 * ST_TRAIL + tk0] = parts[ti0].y;
+                      }
+                    }
+                    canvas._stateTrailInit = true;
+                  }
+                  var stHead = 0, stFilled = 1;
+                  var CONV_N = 14;
+                  var cvX = new Float32Array(CONV_N), cvY = new Float32Array(CONV_N), cvSp = new Float32Array(CONV_N);
+                  for (var cvi = 0; cvi < CONV_N; cvi++) {
+                    cvX[cvi] = 0.14 + ((cvi * 0.17) % 0.72);
+                    cvY[cvi] = cvi / CONV_N;
+                    cvSp[cvi] = 0.004 + (cvi % 3) * 0.002;
+                  }
                   var tick = 0;
                   var firstStatePaint = true;
 
                   function drawState() {
                     if (!canvas.isConnected) { cancelAnimationFrame(canvas._stateAnimId); releaseDecomposerCanvasSize(canvas, 'States'); return; }
-                    var pausedMotion = canvas.dataset.motionPaused === 'true';
+                    var pausedMotion = canvas.dataset.motionPaused === 'true' || dcPrefersReducedMotion();
+                    var isHCSt = dcIsHighContrast(isContrast);
                     if (pausedMotion && !firstStatePaint) {
                       canvas._stateAnimId = requestAnimationFrame(drawState);
                       return;
@@ -3564,46 +3906,68 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     if (!pausedMotion) tick++;
                     c2.clearRect(0, 0, cw, ch2);
 
-                    // Phase-tinted thermal chamber background gradient
-                    var bgColors = { solid: ['#dbeafe', '#eff6ff'], liquid: ['#cffafe', '#ecfeff'], gas: ['#fee2e2', '#fef2f2'] };
-                    var pair = bgColors[state] || ['#e2e8f0', '#f8fafc'];
-                    if (hasGrad2) {
+                    // Phase-tinted thermal chamber background gradient (solid #000 in High-Contrast)
+                    var pair = DC_STATE_BG[state] || ['#e2e8f0', '#f8fafc'];
+                    if (!isHCSt && hasLG2) {
                       var chBg = c2.createLinearGradient(0, 0, 0, ch2);
                       chBg.addColorStop(0, pair[1]); chBg.addColorStop(1, pair[0]);
                       c2.fillStyle = chBg;
                     } else {
-                      c2.fillStyle = pair[1];
+                      c2.fillStyle = isHCSt ? '#000000' : pair[1];
                     }
                     c2.fillRect(0, 0, cw, ch2);
 
-                    // Translucent liquid volume & subtle surface meniscus in liquid state
-                    if (state === 'liquid' && hasGrad2) {
+                    // Translucent liquid volume, undulating surface meniscus & percolation glints
+                    if (state === 'liquid' && !isHCSt && hasLG2) {
                       var liqTop = ch2 * 0.46;
                       var liqG = c2.createLinearGradient(0, liqTop, 0, ch2 * 0.92);
                       liqG.addColorStop(0, 'rgba(6,182,212,0.18)'); liqG.addColorStop(1, 'rgba(14,116,144,0.28)');
                       c2.fillStyle = liqG;
+                      var waveH = pausedMotion ? 0 : Math.sin(tick * 0.05) * 4;
                       c2.beginPath();
                       c2.moveTo(cw * 0.1, ch2 * 0.92); c2.lineTo(cw * 0.1, liqTop);
-                      c2.quadraticCurveTo(cw * 0.5, liqTop + (pausedMotion ? 0 : Math.sin(tick * 0.05) * 4), cw * 0.9, liqTop);
+                      c2.quadraticCurveTo(cw * 0.5, liqTop + waveH, cw * 0.9, liqTop);
                       c2.lineTo(cw * 0.9, ch2 * 0.92); c2.closePath(); c2.fill();
+                      // Specular moisture percolation glints along liquid meniscus
+                      c2.strokeStyle = 'rgba(224,242,254,0.72)'; c2.lineWidth = 1.4;
+                      c2.beginPath();
+                      c2.moveTo(cw * 0.12, liqTop + 1);
+                      c2.quadraticCurveTo(cw * 0.5, liqTop + waveH + 1, cw * 0.88, liqTop + 1);
+                      c2.stroke();
+                    }
+
+                    // Rising thermal / mineralization convection motes in gas or liquid chamber
+                    if (!isHCSt && (state === 'gas' || state === 'liquid')) {
+                      for (var cmj = 0; cmj < CONV_N; cmj++) {
+                        var cyNorm = pausedMotion ? cvY[cmj] : ((cvY[cmj] + tick * cvSp[cmj] * (state === 'gas' ? 1.8 : 0.7)) % 1);
+                        var mxC = cw * cvX[cmj] + Math.sin(cyNorm * 7 + cmj) * 5;
+                        var myC = state === 'liquid' ? (ch2 * (0.89 - cyNorm * 0.40)) : (ch2 * (0.88 - cyNorm * 0.76));
+                        var fadeC = Math.sin(cyNorm * Math.PI);
+                        c2.fillStyle = state === 'gas'
+                          ? ('rgba(251,146,60,' + (fadeC * 0.34).toFixed(2) + ')')
+                          : ('rgba(56,189,248,' + (fadeC * 0.38).toFixed(2) + ')');
+                        c2.beginPath(); c2.arc(mxC, myC, state === 'gas' ? 2.1 : 1.7, 0, Math.PI * 2); c2.fill();
+                      }
                     }
 
                     // Glass laboratory chamber walls with specular rim
-                    c2.strokeStyle = state === 'gas' ? '#f87171' : state === 'liquid' ? '#0891b2' : '#3b82f6';
+                    c2.strokeStyle = isHCSt ? '#ffffff' : (state === 'gas' ? '#f87171' : state === 'liquid' ? '#0891b2' : '#3b82f6');
                     c2.lineWidth = 2;
                     c2.strokeRect(cw * 0.1, ch2 * 0.08, cw * 0.8, ch2 * 0.84);
-                    c2.strokeStyle = 'rgba(255,255,255,0.65)'; c2.lineWidth = 1.2;
-                    c2.beginPath(); c2.moveTo(cw * 0.115, ch2 * 0.12); c2.lineTo(cw * 0.115, ch2 * 0.86); c2.stroke();
+                    if (!isHCSt) {
+                      c2.strokeStyle = 'rgba(255,255,255,0.65)'; c2.lineWidth = 1.2;
+                      c2.beginPath(); c2.moveTo(cw * 0.115, ch2 * 0.12); c2.lineTo(cw * 0.115, ch2 * 0.86); c2.stroke();
+                    }
 
                     var energy = state === 'solid' ? 0.3 : state === 'liquid' ? 1.5 : 4;
                     var wallL = cw * 0.12; var wallR = cw * 0.88;
                     var wallT = ch2 * 0.10; var wallB = ch2 * 0.90;
 
-                    // Draw crystalline lattice bonds behind solid particles
+                    // Draw crystalline lattice bonds & harmonic energy pulses behind solid particles
                     if (state === 'solid') {
-                      c2.strokeStyle = 'rgba(59,130,246,0.34)'; c2.lineWidth = 1.6;
-                      for (var si = 0; si < parts.length; si++) {
-                        for (var sj = si + 1; sj < parts.length; sj++) {
+                      c2.strokeStyle = isHCSt ? '#ffff00' : 'rgba(59,130,246,0.34)'; c2.lineWidth = 1.6;
+                      for (var si = 0; si < pCount; si++) {
+                        for (var sj = si + 1; sj < pCount; sj++) {
                           var ddx = parts[si].x - parts[sj].x;
                           var ddy = parts[si].y - parts[sj].y;
                           if (ddx * ddx + ddy * ddy < 3000) {
@@ -3616,7 +3980,13 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                       }
                     }
 
-                    for (var i = 0; i < parts.length; i++) {
+                    var recStTrail = !pausedMotion && (tick & 1) === 0;
+                    if (recStTrail) {
+                      stHead = (stHead + 1) % ST_TRAIL;
+                      if (stFilled < ST_TRAIL) stFilled++;
+                    }
+
+                    for (var i = 0; i < pCount; i++) {
                       var pp = parts[i];
                       if (!pausedMotion) {
                       if (state === 'solid') {
@@ -3651,15 +4021,35 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                       if (pp.y < wallT + pp.r) { pp.y = wallT + pp.r; pp.vy = Math.abs(pp.vy); }
                       if (pp.y > wallB - pp.r) { pp.y = wallB - pp.r; pp.vy = -Math.abs(pp.vy); }
 
-                      // Subtle kinetic wake trail for energetic gas particles
-                      if (state === 'gas' && !pausedMotion) {
-                        c2.strokeStyle = 'rgba(239,68,68,0.28)'; c2.lineWidth = 2.2;
-                        c2.beginPath(); c2.moveTo(pp.x, pp.y); c2.lineTo(pp.x - pp.vx * 5, pp.y - pp.vy * 5); c2.stroke();
+                      if (recStTrail) {
+                        stTX[i * ST_TRAIL + stHead] = pp.x;
+                        stTY[i * ST_TRAIL + stHead] = pp.y;
                       }
 
-                      // Draw 3D shaded particle with soft aura halo
+                      // Zero-GC velocity-scaled kinetic wake trail for liquid & gas particles
+                      if (!isHCSt && !pausedMotion && state !== 'solid' && stFilled > 1) {
+                        var baseIdx = i * ST_TRAIL;
+                        var oldIdx = (stHead - stFilled + 1 + ST_TRAIL) % ST_TRAIL;
+                        var prevTx = stTX[baseIdx + oldIdx], prevTy = stTY[baseIdx + oldIdx];
+                        c2.lineCap = 'round';
+                        for (var tStep = 1; tStep < stFilled; tStep++) {
+                          var curIdx = (oldIdx + tStep) % ST_TRAIL;
+                          var curTx = stTX[baseIdx + curIdx], curTy = stTY[baseIdx + curIdx];
+                          if (Math.abs(curTx - prevTx) < 36 && Math.abs(curTy - prevTy) < 36) {
+                            var tf = tStep / stFilled;
+                            c2.strokeStyle = state === 'gas'
+                              ? ('rgba(239,68,68,' + (tf * tf * 0.38).toFixed(2) + ')')
+                              : ('rgba(6,182,212,' + (tf * tf * 0.28).toFixed(2) + ')');
+                            c2.lineWidth = (state === 'gas' ? 1.2 : 0.9) + tf * 2.1;
+                            c2.beginPath(); c2.moveTo(prevTx, prevTy); c2.lineTo(curTx, curTy); c2.stroke();
+                          }
+                          prevTx = curTx; prevTy = curTy;
+                        }
+                      }
+
+                      // Draw 3D shaded particle with soft aura halo (crisp high-contrast circle in HC)
                       c2.save();
-                      if (hasGrad2) {
+                      if (!isHCSt && hasGrad2) {
                         var pAura = c2.createRadialGradient(pp.x, pp.y, pp.r * 0.5, pp.x, pp.y, pp.r * 1.8);
                         pAura.addColorStop(0, pp.color + '44'); pAura.addColorStop(1, 'rgba(0,0,0,0)');
                         c2.fillStyle = pAura;
@@ -3670,19 +4060,20 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                         pGrad.addColorStop(1, lightenColor(pp.color, -25));
                         c2.fillStyle = pGrad;
                       } else {
-                        c2.fillStyle = pp.color;
+                        c2.fillStyle = isHCSt ? '#000000' : pp.color;
                       }
                       c2.beginPath(); c2.arc(pp.x, pp.y, pp.r, 0, Math.PI * 2); c2.fill();
-                      c2.strokeStyle = '#1e3a8a'; c2.lineWidth = 1.4; c2.stroke();
-                      c2.fillStyle = 'rgba(255,255,255,0.42)';
-                      c2.beginPath(); c2.arc(pp.x - 2.2, pp.y - 2.2, pp.r * 0.34, 0, Math.PI * 2); c2.fill();
+                      c2.strokeStyle = isHCSt ? '#00ff00' : '#1e3a8a'; c2.lineWidth = isHCSt ? 2 : 1.4; c2.stroke();
+                      if (!isHCSt) {
+                        c2.fillStyle = 'rgba(255,255,255,0.42)';
+                        c2.beginPath(); c2.arc(pp.x - 2.2, pp.y - 2.2, pp.r * 0.34, 0, Math.PI * 2); c2.fill();
+                      }
                       c2.restore();
                     }
 
                     // State label in corner
-                    var stLabels = { solid: 'SOLID \u2014 Particles vibrate in fixed lattice', liquid: 'LIQUID \u2014 Particles slide past each other', gas: 'GAS \u2014 Particles fly freely, fill container' };
-                    c2.fillStyle = '#475569'; c2.font = 'bold 9px system-ui, sans-serif'; c2.textAlign = 'left';
-                    c2.fillText(stLabels[state] || '', cw * 0.12, ch2 * 0.97);
+                    c2.fillStyle = isHCSt ? '#ffff00' : '#475569'; c2.font = 'bold 9px system-ui, sans-serif'; c2.textAlign = 'left';
+                    c2.fillText(DC_STATE_LABELS[state] || '', cw * 0.12, ch2 * 0.97);
 
                     canvas._stateAnimId = requestAnimationFrame(drawState);
                   }
@@ -3726,7 +4117,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               h('p', { className: 'text-xs text-slate-600 leading-relaxed' },
                 'All matter is made of particles (atoms or molecules) that are always moving. In a solid, particles vibrate in a fixed arrangement held by strong bonds. As temperature increases, particles gain energy. At the melting point, they break free and flow as a liquid. At the boiling point, they escape into the air as gas.'
               ),
-              h('button', { 'aria-label': __alloT('stem.decomposer.a11y_listen', 'Listen'),
+              h('button', { type: 'button', 'aria-label': __alloT('stem.decomposer.a11y_listen', 'Listen'),
                 onClick: function() { speakText('In a solid, particles vibrate in fixed positions. In a liquid, they slide past each other. In a gas, they fly freely and fill the container. Temperature controls how fast they move.'); },
                 className: 'transition-colors mt-2 text-[0.6875rem] text-sky-700 hover:text-sky-900 font-bold'
               }, '\uD83D\uDD0A Listen')
@@ -3771,7 +4162,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     ? 'transition-colors bg-red-700 text-white shadow-lg hover:bg-red-600 active:scale-[0.97]'
                     : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-600 shadow-md')
               }, decomposed ? '\uD83D\uDD04 Reassemble' : '\u26A1 Decompose'),
-              h('button', { 'aria-label': __alloT('stem.decomposer.a11y_describe', 'Describe'),
+              h('button', { type: 'button', 'aria-label': __alloT('stem.decomposer.a11y_describe', 'Describe'),
                 onClick: function() { speakText(atomDescription); },
                 className: 'transition-colors px-4 py-2.5 bg-indigo-50 text-indigo-700 font-bold text-sm rounded-xl border border-indigo-200 hover:bg-indigo-100 active:scale-[0.97]'
               }, '\uD83D\uDD0A Describe')
@@ -3851,7 +4242,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             (!quizMode || !quizQ) && h('div', { className: 'text-center py-8' },
               h('div', { className: 'text-5xl mb-3' }, '\uD83E\uDDEA'),
               h('p', { className: 'text-sm text-slate-600 mb-4' + onHostInk }, 'Ready to test your chemistry knowledge?'),
-              h('button', { id: 'stem-decomposer-quiz-start', 'aria-label': __alloT('stem.decomposer.a11y_start_quiz', 'Start Quiz'),
+              h('button', { type: 'button', id: 'stem-decomposer-quiz-start', 'aria-label': __alloT('stem.decomposer.a11y_start_quiz', 'Start Quiz'),
                 onClick: function() {
                   updMulti({ quizMode: true, quizQ: makeQuiz() });
                   focusDecomposerElement('stem-decomposer-quiz-question');
@@ -3869,7 +4260,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
               /* Answer grid */
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4' },
-                quizQ.opts.map(function(opt) {
+                (Array.isArray(quizQ.opts) ? quizQ.opts : []).map(function(opt) {
                   var isCorrect = opt === quizQ.answer;
                   var wasChosen = quizQ.chosen === opt;
                   var cls = !quizQ.answered
@@ -3880,7 +4271,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                         ? 'bg-red-100 text-red-800 border-red-600'
                         : 'bg-slate-50 text-slate-600 border-slate-200';
 
-                  return h('button', { key: opt,
+                  return h('button', { type: 'button', key: opt,
                     'data-decomposer-quiz-option': opt,
                     disabled: quizQ.answered,
                     onClick: function() {
@@ -3940,7 +4331,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 quizQ.concept && DECOMPOSER_VOCAB[quizQ.concept] && (function() {
                   var concept = quizQ.concept;
                   var definition = DECOMPOSER_VOCAB[concept];
-                  var studied = (d.vocabWordsStudied || []).indexOf(concept) !== -1;
+                  var studied = (Array.isArray(d.vocabWordsStudied) ? d.vocabWordsStudied : []).indexOf(concept) !== -1;
                   return h('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in' },
                     h('div', { className: 'flex-1 min-w-0' },
                       h('h5', { id: 'stem-decomposer-concept-title', tabIndex: -1, 'data-decomposer-focus': 'true',
@@ -3950,7 +4341,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                       h('p', { id: 'stem-decomposer-concept-study-status', className: 'text-[0.6875rem] text-indigo-800 mt-1 font-bold' },
                         studied ? __alloT('stem.decomposer.concept_studied', 'Term studied.') : __alloT('stem.decomposer.concept_study_hint', 'Study this term to add it to your vocabulary.'))
                     ),
-                    !studied && h('button', {
+                    !studied && h('button', { type: 'button',
                       onClick: function() {
                         studyDecomposerVocab(concept);
                         focusDecomposerElement('stem-decomposer-concept-title');
@@ -3962,7 +4353,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               ),
 
               /* Next question button (after answer) */
-              quizQ.answered && h('button', { 'aria-label': __alloT('stem.decomposer.a11y_next_question', 'Next Question'),
+              quizQ.answered && h('button', { type: 'button', 'aria-label': __alloT('stem.decomposer.a11y_next_question', 'Next Question'),
                 onClick: function() { upd('quizQ', makeQuiz()); focusDecomposerElement('stem-decomposer-quiz-question'); },
                 className: 'w-full py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition-all active:scale-[0.97]'
               }, '\u27A1 Next Question')
@@ -3985,7 +4376,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             ),
 
             /* Reset quiz */
-            quizScore > 0 && h('button', { 'aria-label': __alloT('stem.decomposer.a11y_reset_quiz', 'Reset Quiz'),
+            quizScore > 0 && h('button', { type: 'button', 'aria-label': __alloT('stem.decomposer.a11y_reset_quiz', 'Reset Quiz'),
               onClick: function() {
                 updMulti({ quizScore: 0, quizStreak: 0, quizQ: null, quizMode: false });
                 focusDecomposerElement('stem-decomposer-quiz-start');
@@ -4028,7 +4419,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                     style: { minWidth: 0, overflowWrap: 'anywhere' }
                   },
                     h('span', { className: 'sr-only' }, isUser ? __alloT('stem.decomposer.tutor_you', 'You: ') : __alloT('stem.decomposer.tutor_speaker', 'Tutor: ')), msg.text,
-                    !isUser && h('button', { 'aria-label': __alloT('stem.decomposer.a11y_speak_text', 'Speak Text'),
+                    !isUser && h('button', { type: 'button', 'aria-label': __alloT('stem.decomposer.a11y_speak_text', 'Speak Text'),
                       onClick: function() { speakText(msg.text); },
                       className: 'transition-colors ml-2 text-[0.6875rem] text-purple-400 hover:text-purple-600'
                     }, '\uD83D\uDD0A')
@@ -4246,11 +4637,12 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           /* ═══════════════════════════════════════════════════
              Snapshot Button
              ═══════════════════════════════════════════════════ */
-          h('button', { 'data-decomposer-snapshot': true, 'aria-label': __alloT('stem.decomposer.a11y_snapshot', 'Snapshot'),
+          h('button', { type: 'button', 'data-decomposer-snapshot': true, 'aria-label': __alloT('stem.decomposer.a11y_snapshot', 'Snapshot'),
             onClick: function() {
               SOUNDS.snapshot();
               setToolSnapshots(function(prev) {
-                return prev.concat([{
+                var list = Array.isArray(prev) ? prev : [];
+                return list.concat([{
                   id: 'dc-' + Date.now(),
                   tool: 'decomposer',
                   label: sel.name + ' (' + sel.formula + ')',

@@ -211,16 +211,37 @@ function createReadingPlaceStore(options) {
   }
   function accept(entry, patch) {
     var flat = flatten(entry.draft);
-    if (patch.paragraph !== undefined || patch.resume !== undefined) {
-      flat.position = { ...(flat.position || { paragraph: 0, snippet: '', resume: false }), ...patch };
-      delete flat.position.responses; delete flat.position.bookmark; delete flat.position.listeningSentence;
+    if (patch.paragraph !== undefined || patch.resume !== undefined || patch.snippet !== undefined) {
+      var prevPos = flat.position || { paragraph: 0, snippet: '', resume: false };
+      var nextPos = {
+        paragraph: index(patch.paragraph) ? patch.paragraph : prevPos.paragraph,
+        snippet: typeof patch.snippet === 'string' ? patch.snippet : prevPos.snippet,
+        resume: typeof patch.resume === 'boolean' ? patch.resume : prevPos.resume
+      };
+      flat.position = nextPos;
       entry.dirty.add('position');
     }
-    if (patch.bookmark !== undefined) { flat.bookmark = copy(patch.bookmark); entry.dirty.add('bookmark'); }
-    if (patch.listeningSentence !== undefined) { flat.listeningSentence = patch.listeningSentence; entry.dirty.add('listeningSentence'); }
-    Object.keys(patch.responses || {}).forEach(section => fields.forEach(field => {
-      if (typeof patch.responses[section][field] === 'string') { var key = section + ':' + field; flat[key] = patch.responses[section][field]; entry.dirty.add(key); }
-    }));
+    if (patch.bookmark !== undefined) {
+      if (patch.bookmark === null) {
+        flat.bookmark = null;
+        entry.dirty.add('bookmark');
+      } else if (object(patch.bookmark) && index(patch.bookmark.paragraph) && typeof patch.bookmark.snippet === 'string') {
+        flat.bookmark = { paragraph: patch.bookmark.paragraph, snippet: patch.bookmark.snippet };
+        entry.dirty.add('bookmark');
+      }
+    }
+    if (patch.listeningSentence !== undefined && (patch.listeningSentence === null || index(patch.listeningSentence))) {
+      flat.listeningSentence = patch.listeningSentence;
+      entry.dirty.add('listeningSentence');
+    }
+    if (object(patch.responses)) {
+      Object.keys(patch.responses).forEach(section => {
+        if (!/^(0|[1-9]\d*)$/.test(section) || !index(Number(section)) || !object(patch.responses[section])) return;
+        fields.forEach(field => {
+          if (typeof patch.responses[section][field] === 'string') { var key = section + ':' + field; flat[key] = patch.responses[section][field]; entry.dirty.add(key); }
+        });
+      });
+    }
     entry.draft = expand(flat, { at: now(), sourceCheck: textCheck(String(entry.scope.text || '')) });
     entry.revision++;
   }
@@ -354,10 +375,12 @@ function createReadingPlaceStore(options) {
       local: copy(entry.draft), recovered: copy(selected.place), rawRow: selected.rawRow || null, canRestore: hasWork(selected.place) };
   }
   function changeRecovery(scope, reviewed, action) {
-    var entry = entryFor(scope), selected = reviewed && entry.recoveryCopies[reviewed.index];
+    var entry = entryFor(scope);
+    var safeIdx = reviewed && Number.isSafeInteger(reviewed.index) && reviewed.index >= 0 ? reviewed.index : -1;
+    var selected = safeIdx >= 0 ? entry.recoveryCopies[safeIdx] : null;
     if (!reviewed || reviewed.scopeKey !== memoryKey(scope) || !selected || JSON.stringify(selected) !== reviewed.token || !['restore', 'remove'].includes(action)) return fail(entry, 'recovery-changed');
     if (action === 'remove') {
-      entry.recoveryCopies.splice(reviewed.index, 1);
+      entry.recoveryCopies.splice(safeIdx, 1);
       if (!entry.dirty.size && ['recovery-changed', 'recovery-empty'].includes(entry.reason)) return load(scope);
       return result(entry);
     }

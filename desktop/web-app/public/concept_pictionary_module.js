@@ -1786,7 +1786,7 @@ const RoundCountdown = React.memo((props) => {
   const isDone = remaining <= 0;
   const barColor = isDone ? "bg-slate-400" : isUrgent ? "bg-red-500" : "bg-emerald-500";
   const textColor = isDone ? "text-slate-600" : isUrgent ? "text-red-700" : "text-slate-700";
-  return /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 text-xs font-bold", role: "timer", "aria-live": "off", "aria-label": isPaused ? `Timer paused at ${secs} seconds` : `Time remaining: ${secs} seconds` }, /* @__PURE__ */ React.createElement("span", { className: textColor }, isPaused ? "Paused \xB7 " : "", "\u23F1 ", isDone ? "0s" : secs + "s"), /* @__PURE__ */ React.createElement("div", { className: "w-20 h-1.5 bg-slate-200 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full transition-all duration-200 motion-reduce:transition-none ${barColor}`, style: { width: `${pct}%` } })));
+  return /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 text-xs font-bold", role: "timer", "aria-live": "off", "aria-label": isPaused ? `Timer paused at ${secs} seconds` : `Time remaining: ${secs} seconds` }, /* @__PURE__ */ React.createElement("span", { className: textColor }, isPaused ? "Paused \xB7 " : "", /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u23F1 "), isDone ? "0s" : secs + "s", isUrgent && !isPaused ? " \xB7 low" : ""), /* @__PURE__ */ React.createElement("div", { className: "w-20 h-1.5 bg-slate-200 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full transition-all duration-200 motion-reduce:transition-none ${barColor}`, style: { width: `${pct}%` } })));
 });
 const DrawerToolbox = React.memo((props) => {
   const color = props.color || PEN_COLORS[0].hex;
@@ -1797,57 +1797,73 @@ const DrawerToolbox = React.memo((props) => {
   });
   const onClear = props.onClear || null;
   const onUndo = props.onUndo || null;
-  return /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 mt-3 mb-2 px-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, PEN_COLORS.map((c) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      key: c.name,
-      onClick: () => {
-        setColor(c.hex);
-        setMode("pen");
+  const activeColorName = (PEN_COLORS.find((c) => c.hex === color) || PEN_COLORS[0]).name;
+  const toolBtnFocus = "min-h-11 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2";
+  return /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 mt-3 mb-2 px-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-label": "Pen colors" }, PEN_COLORS.map((c) => {
+    const isSelected = mode === "pen" && color === c.hex;
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        key: c.name,
+        onClick: () => {
+          setColor(c.hex);
+          setMode("pen");
+        },
+        "aria-pressed": isSelected,
+        "aria-label": `Pen color ${c.name}`,
+        title: c.name,
+        className: `min-w-11 min-h-11 inline-flex items-center justify-center rounded-full border ${toolBtnFocus} ${isSelected ? "border-slate-900 bg-slate-100" : "border-transparent hover:bg-slate-100"}`
       },
-      "aria-pressed": mode === "pen" && color === c.hex,
-      "aria-label": `Pen color ${c.name}`,
-      title: c.name,
-      style: {
-        width: 32,
-        height: 32,
-        borderRadius: "50%",
-        background: c.hex,
-        border: mode === "pen" && color === c.hex ? "3px solid #1a202c" : "2px solid #fff",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-        cursor: "pointer"
-      }
-    }
-  ))), /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement(
+        "span",
+        {
+          "aria-hidden": "true",
+          style: {
+            width: 26,
+            height: 26,
+            borderRadius: "50%",
+            display: "block",
+            background: c.hex,
+            border: isSelected ? "3px solid #1a202c" : "2px solid #fff",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.22)"
+          }
+        }
+      )
+    );
+  })), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: () => setMode(mode === "eraser" ? "pen" : "eraser"),
       "aria-pressed": mode === "eraser",
       "aria-label": "Eraser",
-      className: `px-3 py-1.5 text-xs font-bold rounded-full border ${mode === "eraser" ? "bg-slate-700 text-white border-slate-800" : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"}`
+      className: `px-3 py-2 text-xs font-bold rounded-full border ${toolBtnFocus} ${mode === "eraser" ? "bg-slate-800 text-white border-slate-900" : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"}`
     },
-    "\u{1F9FD} Eraser"
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F9FD} "),
+    "Eraser"
   ), onUndo ? /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: onUndo,
-      className: "px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-50",
-      "aria-label": "Undo last stroke"
+      className: `px-3 py-2 text-xs font-bold rounded-full border bg-white text-slate-700 border-slate-300 hover:bg-slate-50 ${toolBtnFocus}`,
+      "aria-label": "Undo last stroke",
+      title: "Undo last stroke (Ctrl+Z)"
     },
-    "\u21B6 Undo"
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u21B6 "),
+    "Undo"
   ) : null, onClear ? /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: onClear,
-      className: "px-3 py-1.5 text-xs font-bold rounded-full border bg-white text-red-700 border-red-300 hover:bg-red-50",
+      className: `px-3 py-2 text-xs font-bold rounded-full border bg-white text-red-700 border-red-300 hover:bg-red-50 ${toolBtnFocus}`,
       "aria-label": "Clear canvas"
     },
-    "\u2715 Clear"
-  ) : null);
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2715 "),
+    "Clear"
+  ) : null, /* @__PURE__ */ React.createElement("span", { "data-active-draw-tool": mode === "eraser" ? "eraser" : activeColorName, className: "ml-auto rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700" }, mode === "eraser" ? "Tool: Eraser" : `Tool: ${activeColorName} pen`));
 });
 const SketchResponseGallery = React.memo((props) => {
   const participants = Array.isArray(props.participants) ? props.participants : [];
@@ -1896,9 +1912,22 @@ const SketchResponseGallery = React.memo((props) => {
     statuses,
     moderation
   );
+  const [galleryFilter, setGalleryFilter] = React.useState("all");
   const submittedCount = submissions.filter((entry) => entry.status === "submitted").length;
   const approvedCount = submissions.filter((entry) => entry.moderation === "approved").length;
   const eligibleCount = submissions.filter((entry) => entry.revealable).length;
+  const submittedPct = participants.length ? Math.round(submittedCount / participants.length * 100) : 0;
+  const showGalleryFilter = participants.length >= 4;
+  const activeGalleryFilter = showGalleryFilter ? galleryFilter : "all";
+  const visibleParticipants = activeGalleryFilter === "all" ? participants : participants.filter((participant) => {
+    const st = _cpOwnGet(statuses, participant.uid) === "submitted" ? "submitted" : "drawing";
+    const mod = _cpOwnGet(moderation, participant.uid);
+    if (activeGalleryFilter === "submitted") return st === "submitted";
+    if (activeGalleryFilter === "approved") return mod === "approved";
+    if (activeGalleryFilter === "pending") return st !== "submitted";
+    return true;
+  });
+  const galBtnFocus = "min-h-11 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2";
   const votesCast = showcaseResults ? Number(showcaseResults.votesCast) || 0 : Object.keys(votesByUid).length;
   const resultByCandidateId = /* @__PURE__ */ Object.create(null);
   (showcaseResults && Array.isArray(showcaseResults.candidates) ? showcaseResults.candidates : []).forEach((candidate) => {
@@ -1908,22 +1937,50 @@ const SketchResponseGallery = React.memo((props) => {
   (showcaseRound && Array.isArray(showcaseRound.candidates) ? showcaseRound.candidates : []).forEach((candidate) => {
     if (candidate && typeof candidate.ownerUid === "string" && candidate.ownerUid && !_cpIsUnsafeKey(candidate.ownerUid)) candidateByOwnerUid[candidate.ownerUid] = candidate;
   });
-  return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-900" }, submittedCount, "/", participants.length, " submitted"), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, "\xB7 ", approvedCount, " approved"), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-900" }, submittedCount, "/", participants.length, " submitted (", submittedPct, "%)"), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, "\xB7 ", approvedCount, " approved"), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: onApproveSubmitted,
       disabled: submittedCount === 0,
-      className: "ml-auto px-2 py-1 text-xs font-bold rounded border border-emerald-300 text-emerald-800 bg-white hover:bg-emerald-50 disabled:opacity-40"
+      className: `ml-auto px-3 py-2 text-xs font-bold rounded-lg border border-emerald-300 text-emerald-800 bg-white hover:bg-emerald-50 disabled:opacity-40 ${galBtnFocus}`
     },
     "Approve submitted"
-  )), /* @__PURE__ */ React.createElement("p", { className: "m-0 text-xs text-slate-600 leading-snug" }, "Boards remain private to the teacher. Feedback returns directly over WebRTC. Anonymous reveal and voting use only teacher-approved frozen sketches."), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-indigo-200 bg-indigo-50 p-2 text-xs text-indigo-950" }, /* @__PURE__ */ React.createElement("strong", null, "Success criterion:"), " ", criterion), showcaseResults ? /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded-lg border border-violet-300 bg-violet-50 p-2 text-xs text-violet-950" }, "Anonymous sketch vote closed \xB7 ", votesCast, " vote", votesCast === 1 ? "" : "s", " cast.") : showcaseRound ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 rounded-lg border border-violet-300 bg-violet-50 p-2" }, /* @__PURE__ */ React.createElement("span", { role: "status", className: "text-xs font-bold text-violet-950" }, showcaseRound.candidates.length, " sketches \xB7 ", votesCast, " votes received"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onCloseShowcase, className: "ml-auto px-2 py-1 text-xs font-black rounded bg-violet-700 text-white" }, "Close and reveal totals")) : /* @__PURE__ */ React.createElement(
+  )), participants.length > 0 ? /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      role: "progressbar",
+      "aria-label": "Sketch submissions progress",
+      "aria-valuemin": 0,
+      "aria-valuemax": participants.length,
+      "aria-valuenow": submittedCount,
+      "aria-valuetext": `${submittedCount} of ${participants.length} sketches submitted (${submittedPct}%)`,
+      className: "h-2 w-full overflow-hidden rounded-full bg-slate-200"
+    },
+    /* @__PURE__ */ React.createElement("div", { className: "h-full rounded-full bg-indigo-600 transition-all motion-reduce:transition-none", style: { width: `${submittedPct}%` } })
+  ) : null, showGalleryFilter ? /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": "Filter sketch gallery", className: "flex flex-wrap gap-1.5" }, [
+    ["all", `All (${participants.length})`],
+    ["submitted", `Submitted (${submittedCount})`],
+    ["pending", `Drawing (${participants.length - submittedCount})`],
+    ["approved", `Approved (${approvedCount})`]
+  ].map(([key, label]) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      key,
+      type: "button",
+      "data-sketch-gallery-filter": key,
+      "aria-pressed": activeGalleryFilter === key,
+      onClick: () => setGalleryFilter(key),
+      className: `rounded-full border px-3 py-1.5 text-xs font-bold ${galBtnFocus} ${activeGalleryFilter === key ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100"}`
+    },
+    label
+  ))) : null, /* @__PURE__ */ React.createElement("p", { className: "m-0 text-xs text-slate-600 leading-snug" }, "Boards remain private to the teacher. Feedback returns directly over WebRTC. Anonymous reveal and voting use only teacher-approved frozen sketches."), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-indigo-200 bg-indigo-50 p-2 text-xs text-indigo-950" }, /* @__PURE__ */ React.createElement("strong", null, "Success criterion:"), " ", criterion), showcaseResults ? /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded-lg border border-violet-300 bg-violet-50 p-2 text-xs text-violet-950" }, "Anonymous sketch vote closed \xB7 ", votesCast, " vote", votesCast === 1 ? "" : "s", " cast.") : showcaseRound ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 rounded-lg border border-violet-300 bg-violet-50 p-2" }, /* @__PURE__ */ React.createElement("span", { role: "status", className: "text-xs font-bold text-violet-950" }, showcaseRound.candidates.length, " sketches \xB7 ", votesCast, " votes received"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onCloseShowcase, className: `ml-auto px-3 py-2 text-xs font-black rounded-lg bg-violet-700 text-white hover:bg-violet-800 ${galBtnFocus}` }, "Close and reveal totals")) : /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: onStartShowcase,
       disabled: !props.canStartShowcase || eligibleCount < SKETCH_VOTE_MIN_CANDIDATES,
-      className: "w-full rounded-lg border border-violet-300 bg-violet-700 px-3 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-40"
+      className: `w-full rounded-lg border border-violet-300 bg-violet-700 px-3 py-2 text-xs font-black text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-40 ${galBtnFocus}`
     },
     "Start anonymous sketch vote (",
     eligibleCount,
@@ -1933,12 +1990,12 @@ const SketchResponseGallery = React.memo((props) => {
     {
       value: followUpResourceId,
       onChange: (event) => onSetFollowUpResourceId(event.target.value),
-      className: "block w-full mt-1 text-xs border border-slate-300 rounded p-1.5 bg-white",
+      className: "block w-full min-h-11 mt-1 text-xs border border-slate-300 rounded-lg p-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-600",
       "aria-label": "Choose a follow-up resource for sketch responses"
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, "Choose a lesson resource\u2026"),
     resources.map((resource) => /* @__PURE__ */ React.createElement("option", { key: resource.id, value: resource.id }, resource.title || resource.label || resource.type || "Resource"))
-  )) : null, participants.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "p-3 text-sm text-slate-600 bg-white border border-slate-200 rounded-lg" }, "Choose participants to begin collecting private sketches.") : /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3", role: "list", "aria-label": "Private sketch response gallery" }, participants.map((participant) => {
+  )) : null, participants.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "p-3 text-sm text-slate-600 bg-white border border-slate-200 rounded-lg" }, "Choose participants to begin collecting private sketches.") : visibleParticipants.length === 0 ? /* @__PURE__ */ React.createElement("div", { role: "status", className: "p-4 text-center text-xs text-slate-700 bg-white border border-dashed border-slate-300 rounded-lg" }, /* @__PURE__ */ React.createElement("p", { className: "m-0 font-bold" }, "No sketches match this filter."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setGalleryFilter("all"), className: `mt-2 rounded-lg bg-indigo-700 px-3 py-2 text-xs font-bold text-white hover:bg-indigo-800 ${galBtnFocus}` }, "Show all (", participants.length, ")")) : /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3", role: "list", "aria-label": "Private sketch response gallery" }, visibleParticipants.map((participant) => {
     const strokes = Array.isArray(_cpOwnGet(strokesByUid, participant.uid)) ? _cpOwnGet(strokesByUid, participant.uid) : [];
     const status = _cpOwnGet(statuses, participant.uid) === "submitted" ? "submitted" : "drawing";
     const modVal = _cpOwnGet(moderation, participant.uid);
@@ -1956,7 +2013,7 @@ const SketchResponseGallery = React.memo((props) => {
     const revealable = strokes.length > 0 && status === "submitted" && review === "approved";
     const candidate = candidateByOwnerUid[participant.uid] || null;
     const result = candidate ? resultByCandidateId[candidate.candidateId] : null;
-    return /* @__PURE__ */ React.createElement("article", { key: participant.uid, role: "listitem", className: "p-2 bg-white border border-slate-200 rounded-lg" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("strong", { className: "text-xs text-slate-800" }, participant.name), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-xs font-bold text-slate-600" }, status === "submitted" ? attempt > 1 ? "\u2713 revision submitted" : "\u2713 submitted" : strokes.length > 0 ? attempt > 1 ? "revising" : "drawing" : "waiting")), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { key: participant.uid, role: "listitem", className: "p-2 bg-white border border-slate-200 rounded-lg" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("strong", { className: "text-xs text-slate-800" }, participant.name), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-xs font-bold text-slate-600" }, status === "submitted" ? attempt > 1 ? "\u2713 revision submitted" : "\u2713 submitted" : strokes.length > 0 ? attempt > 1 ? "revising" : "drawing" : "waiting")), /* @__PURE__ */ React.createElement(
       PictionaryCanvas,
       {
         strokes,
@@ -1970,7 +2027,7 @@ const SketchResponseGallery = React.memo((props) => {
         value: review,
         onChange: (event) => onModerationChange(participant.uid, event.target.value),
         "aria-label": "Moderation for " + participant.name,
-        className: "text-xs border border-slate-300 rounded p-1 bg-white"
+        className: "min-h-11 text-xs border border-slate-300 rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-600"
       },
       /* @__PURE__ */ React.createElement("option", { value: "hold" }, "Hold"),
       /* @__PURE__ */ React.createElement("option", { value: "approved" }, "Approve"),
@@ -1981,10 +2038,10 @@ const SketchResponseGallery = React.memo((props) => {
         type: "button",
         onClick: () => onReveal(participant.uid),
         disabled: !revealable,
-        className: "px-2 py-1 text-xs font-bold rounded bg-indigo-600 text-white disabled:opacity-40"
+        className: `px-3 py-2 text-xs font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 ${galBtnFocus}`
       },
       "Reveal anonymously"
-    )), status === "submitted" ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2" }, feedback ? /* @__PURE__ */ React.createElement("div", { className: "mb-2 rounded border border-emerald-200 bg-white p-1.5 text-xs text-emerald-950" }, /* @__PURE__ */ React.createElement("strong", null, "Feedback sent:"), " ", feedback.text) : null, /* @__PURE__ */ React.createElement(
+    )), status === "submitted" ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2" }, feedback ? /* @__PURE__ */ React.createElement("div", { className: "mb-2 rounded border border-emerald-200 bg-white p-1.5 text-xs text-emerald-950" }, /* @__PURE__ */ React.createElement("strong", null, "Feedback sent:"), " ", feedback.text) : null, /* @__PURE__ */ React.createElement("div", { className: "mb-1 flex items-center justify-between text-[11px] font-semibold text-amber-950" }, /* @__PURE__ */ React.createElement("span", null, "Private feedback note"), /* @__PURE__ */ React.createElement("span", null, feedbackDraft.length, "/", SKETCH_FEEDBACK_MAX_LENGTH)), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: feedbackDraft,
@@ -1993,15 +2050,15 @@ const SketchResponseGallery = React.memo((props) => {
         rows: 3,
         "aria-label": "Feedback draft for " + participant.name,
         placeholder: "Teacher observation or feedback\u2026",
-        className: "w-full resize-y rounded border border-amber-300 bg-white p-1.5 text-xs text-slate-900"
+        className: "w-full resize-y rounded border border-amber-300 bg-white p-2 text-xs text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-1" }, props.canPolishFeedback ? /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 flex flex-wrap gap-1.5" }, props.canPolishFeedback ? /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         onClick: () => onPolishFeedback(participant.uid),
         disabled: !feedbackDraft.trim() || feedbackBusy,
-        className: "px-2 py-1 text-xs font-bold rounded border border-fuchsia-300 bg-white text-fuchsia-800 disabled:opacity-40"
+        className: `px-2.5 py-2 text-xs font-bold rounded-lg border border-fuchsia-300 bg-white text-fuchsia-800 hover:bg-fuchsia-50 disabled:opacity-40 ${galBtnFocus}`
       },
       feedbackBusyKind === "text" ? "Polishing\u2026" : "AI polish \xB7 text only"
     ) : null, props.canAnalyzeSketch ? /* @__PURE__ */ React.createElement(
@@ -2010,7 +2067,7 @@ const SketchResponseGallery = React.memo((props) => {
         type: "button",
         onClick: () => onAnalyzeSketch(participant.uid),
         disabled: strokes.length === 0 || feedbackBusy,
-        className: "px-2 py-1 text-xs font-bold rounded border border-rose-300 bg-white text-rose-800 disabled:opacity-40"
+        className: `px-2.5 py-2 text-xs font-bold rounded-lg border border-rose-300 bg-white text-rose-800 hover:bg-rose-50 disabled:opacity-40 ${galBtnFocus}`
       },
       feedbackBusyKind === "vision" ? "Analyzing sketch\u2026" : "Analyze sketch with AI"
     ) : null, /* @__PURE__ */ React.createElement(
@@ -2019,15 +2076,15 @@ const SketchResponseGallery = React.memo((props) => {
         type: "button",
         onClick: () => onSendFeedback(participant.uid),
         disabled: !feedbackDraft.trim() || feedbackBusy,
-        className: "ml-auto px-2 py-1 text-xs font-black rounded bg-amber-700 text-white disabled:opacity-40"
+        className: `ml-auto px-3 py-2 text-xs font-black rounded-lg bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-40 ${galBtnFocus}`
       },
       attempt < 2 && props.collectionActive ? "Send + allow one revision" : "Send final feedback"
-    )), visionNotice ? /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "m-0 mt-1 text-xs leading-snug text-slate-700" }, visionNotice) : null) : null, followUpResourceId ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 mt-2" }, onSendToStudent ? /* @__PURE__ */ React.createElement(
+    )), visionNotice ? /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "m-0 mt-1 text-xs leading-snug text-slate-700" }, visionNotice) : null) : null, followUpResourceId ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-2" }, onSendToStudent ? /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         onClick: () => onSendToStudent(participant.uid, followUpResourceId),
-        className: "px-2 py-1 text-xs font-bold rounded border border-blue-300 text-blue-800 bg-blue-50"
+        className: `px-3 py-2 text-xs font-bold rounded-lg border border-blue-300 text-blue-800 bg-blue-50 hover:bg-blue-100 ${galBtnFocus}`
       },
       "Send resource to student"
     ) : null, groupId && onSendToGroup ? /* @__PURE__ */ React.createElement(
@@ -2035,7 +2092,7 @@ const SketchResponseGallery = React.memo((props) => {
       {
         type: "button",
         onClick: () => onSendToGroup(groupId, followUpResourceId),
-        className: "px-2 py-1 text-xs font-bold rounded border border-violet-300 text-violet-800 bg-violet-50"
+        className: `px-3 py-2 text-xs font-bold rounded-lg border border-violet-300 text-violet-800 bg-violet-50 hover:bg-violet-100 ${galBtnFocus}`
       },
       "Send to ",
       groupName || "group"
@@ -2735,13 +2792,13 @@ Return ONLY a JSON object: { "concepts": ["concept 1", "concept 2", ...] }`;
       {
         type: "button",
         onClick: toggleFullscreen,
-        className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-800 text-lg leading-none p-1.5 rounded hover:bg-slate-100",
+        className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-800 text-lg leading-none p-1.5 rounded hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
         "aria-label": isFullscreen ? _cpTr(props.t, "common.exit_fullscreen", "Exit fullscreen") : _cpTr(props.t, "common.enter_fullscreen", "Enter fullscreen"),
         title: isFullscreen ? "Exit fullscreen (Esc)" : "Fullscreen the dashboard"
       },
-      isFullscreen ? "\u2199" : "\u26F6"
-    ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100", "aria-label": _cpTr(props.t, "common.close", "Close") }, "\u2715"))),
-    /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-5" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700" }, activityMode === SKETCH_RESPONSE_ACTIVITY_MODE ? "Private response gallery" : "Canvas"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, roundActive && activeRoundMeta ? /* @__PURE__ */ React.createElement(RoundCountdown, { startedAt: activeRoundMeta.startedAt, durationMs: activeRoundMeta.durationMs, isPaused: activeRoundMeta.isPaused, pausedAt: activeRoundMeta.pausedAt, pausedTotalMs: activeRoundMeta.pausedTotalMs }) : null, roundActive ? /* @__PURE__ */ React.createElement("span", { role: "status", className: "px-2 py-0.5 text-xs font-bold rounded-full bg-rose-100 text-rose-800 border border-rose-300" }, activeRoundMeta && activeRoundMeta.isPaused ? "Round paused" : "Round live") : roundResolved ? /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300" }, "Resolved") : /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-300" }, "Idle"), roundActive && activeRoundMeta ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleTogglePause, "aria-pressed": !!activeRoundMeta.isPaused, className: "px-2 py-1 text-xs font-bold rounded bg-amber-100 hover:bg-amber-200 text-amber-900" }, activeRoundMeta.isPaused ? "Resume timer" : "Pause timer") : null, roundActive ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleEndRound, className: "px-2 py-1 text-xs font-bold rounded bg-slate-200 hover:bg-slate-300 text-slate-800" }, "End round") : null)), activityMode === SKETCH_RESPONSE_ACTIVITY_MODE ? /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, isFullscreen ? "\u2199" : "\u26F6")
+    ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2", "aria-label": _cpTr(props.t, "common.close", "Close") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2715")))),
+    /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 p-5" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-slate-700" }, activityMode === SKETCH_RESPONSE_ACTIVITY_MODE ? "Private response gallery" : "Canvas"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, roundActive && activeRoundMeta ? /* @__PURE__ */ React.createElement(RoundCountdown, { startedAt: activeRoundMeta.startedAt, durationMs: activeRoundMeta.durationMs, isPaused: activeRoundMeta.isPaused, pausedAt: activeRoundMeta.pausedAt, pausedTotalMs: activeRoundMeta.pausedTotalMs }) : null, roundActive ? /* @__PURE__ */ React.createElement("span", { role: "status", className: "px-2 py-0.5 text-xs font-bold rounded-full bg-rose-100 text-rose-800 border border-rose-300" }, activeRoundMeta && activeRoundMeta.isPaused ? "Round paused" : "Round live") : roundResolved ? /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300" }, "Resolved") : /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-300" }, "Idle"), roundActive && activeRoundMeta ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleTogglePause, "aria-pressed": !!activeRoundMeta.isPaused, className: "min-h-11 px-3 py-2 text-xs font-bold rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-2" }, activeRoundMeta.isPaused ? "Resume timer" : "Pause timer") : null, roundActive ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleEndRound, className: "min-h-11 px-3 py-2 text-xs font-bold rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" }, "End round") : null)), activityMode === SKETCH_RESPONSE_ACTIVITY_MODE ? /* @__PURE__ */ React.createElement(
       SketchResponseGallery,
       {
         participants: sketchParticipants,
@@ -2933,13 +2990,14 @@ const SketchVotePanel = React.memo((props) => {
   return /* @__PURE__ */ React.createElement("section", { className: "mb-3 rounded-xl border border-violet-300 bg-violet-50 p-3", "aria-label": results ? "Anonymous sketch voting results" : "Anonymous sketch vote" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black uppercase tracking-wider text-violet-800" }, "Anonymous sketch showcase"), /* @__PURE__ */ React.createElement("h3", { className: "m-0 mt-1 text-sm font-black text-violet-950" }, results && results.criterion || round && round.criterion), results ? /* @__PURE__ */ React.createElement("p", { role: "status", className: "my-2 text-xs text-violet-900" }, Number(results.votesCast) || 0, " votes cast. Discuss the drawing choices, not who created them.") : /* @__PURE__ */ React.createElement("p", { className: "my-2 text-xs text-violet-900" }, "Choose the sketch that best meets the criterion. You cannot vote for your own sketch."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2", role: results ? "list" : "radiogroup", "aria-label": "Anonymous sketches" }, candidates.map((candidate, idx) => {
     const selected = selection === candidate.candidateId;
     if (results) {
-      return /* @__PURE__ */ React.createElement("article", { key: candidate.candidateId, role: "listitem", className: "rounded-lg border border-violet-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "mb-1 flex items-center gap-2 text-xs font-bold text-violet-950" }, /* @__PURE__ */ React.createElement("span", null, candidate.label), /* @__PURE__ */ React.createElement("span", { className: "ml-auto" }, candidate.count, " \xB7 ", candidate.percent, "%")), /* @__PURE__ */ React.createElement(PictionaryCanvas, { strokes: candidate.strokes || [], drawingEnabled: false, showWatchingBadge: false, ariaLabel: candidate.label + " voting result" }));
+      return /* @__PURE__ */ React.createElement("div", { key: candidate.candidateId, role: "listitem", className: "rounded-lg border border-violet-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "mb-1 flex items-center gap-2 text-xs font-bold text-violet-950" }, /* @__PURE__ */ React.createElement("span", null, candidate.label), /* @__PURE__ */ React.createElement("span", { className: "ml-auto" }, candidate.count, " \xB7 ", candidate.percent, "%")), /* @__PURE__ */ React.createElement(PictionaryCanvas, { strokes: candidate.strokes || [], drawingEnabled: false, showWatchingBadge: false, ariaLabel: candidate.label + " voting result" }));
     }
     const selectableIndices = candidates.map((c, i) => c && !c.own ? i : -1).filter((i) => i >= 0);
     const firstSelectableIdx = selectableIndices.length ? selectableIndices[0] : -1;
     const hasValidSelection = selectableIndices.some((i) => candidates[i].candidateId === selection);
     const tabIndex = candidate.own ? -1 : selected || !hasValidSelection && idx === firstSelectableIdx ? 0 : -1;
     const onRadioKeyDown = (event) => {
+      if (_cpIsImeComposing(event)) return;
       if (!["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(event.key)) return;
       if (!selectableIndices.length) return;
       event.preventDefault();
@@ -2968,9 +3026,9 @@ const SketchVotePanel = React.memo((props) => {
         disabled: candidate.own,
         onClick: () => onSelect(candidate.candidateId),
         onKeyDown: onRadioKeyDown,
-        className: "rounded-lg border-2 p-2 text-left " + (candidate.own ? "cursor-not-allowed border-slate-200 bg-slate-100 opacity-70" : selected ? "border-violet-600 bg-white" : "border-violet-200 bg-white")
+        className: "rounded-lg border-2 p-2 text-left transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2 " + (candidate.own ? "cursor-not-allowed border-slate-200 bg-slate-100 opacity-70" : selected ? "border-violet-600 bg-white ring-2 ring-violet-200" : "border-violet-200 bg-white hover:border-violet-400")
       },
-      /* @__PURE__ */ React.createElement("span", { className: "mb-1 block text-xs font-black text-violet-950" }, candidate.label, candidate.own ? " \xB7 your sketch" : ""),
+      /* @__PURE__ */ React.createElement("span", { className: "mb-1 flex items-center justify-between gap-2 text-xs font-black text-violet-950" }, /* @__PURE__ */ React.createElement("span", null, candidate.label, candidate.own ? " \xB7 your sketch" : ""), selected ? /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-violet-700 px-2 py-0.5 text-[11px] font-black text-white" }, "Selected") : null),
       /* @__PURE__ */ React.createElement(PictionaryCanvas, { strokes: candidate.strokes || [], drawingEnabled: false, showWatchingBadge: false, ariaLabel: candidate.label + " anonymous voting candidate" })
     );
   })), !results ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
@@ -2979,7 +3037,7 @@ const SketchVotePanel = React.memo((props) => {
       type: "button",
       onClick: onSubmit,
       disabled: !selection || !connectionReady,
-      className: "mt-3 w-full rounded-lg bg-violet-700 px-3 py-2 text-xs font-black text-white disabled:opacity-40"
+      className: "mt-3 min-h-11 w-full rounded-lg bg-violet-700 px-3 py-2 text-xs font-black text-white hover:bg-violet-800 disabled:opacity-40 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
     },
     submitted ? "Update vote" : "Submit vote"
   ), submitted ? /* @__PURE__ */ React.createElement("p", { role: "status", className: "m-0 mt-2 text-xs font-bold text-emerald-800" }, "Vote recorded. You may update it until the teacher closes voting.") : null) : null);
@@ -3231,101 +3289,126 @@ const PictionaryGuestOverlay = React.memo((props) => {
       setGuessNotice(null);
     }
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] flex items-start justify-center p-2 sm:p-4 overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-label": _cpTr(props.t, "pictionary.guest_dialog_title", "Concept Pictionary") }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-slate-900/70 backdrop-blur-sm", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement(
     "div",
     {
-      ref: guestContainerRef,
-      tabIndex: -1,
-      className: "allo-docsuite relative bg-white shadow-2xl w-full max-w-3xl overflow-y-auto border border-slate-200",
-      style: isGuestFullscreen ? { width: "100vw", height: "100vh", maxWidth: "none", margin: 0, borderRadius: 0 } : { borderRadius: "1rem", marginTop: "2rem", marginBottom: "2rem" }
+      className: "fixed inset-0 z-[260] flex items-start justify-center p-2 sm:p-4 overflow-y-auto",
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-label": _cpTr(props.t, "pictionary.guest_dialog_title", "Concept Pictionary"),
+      onKeyDown: (e) => {
+        if (_cpIsImeComposing(e)) return;
+        const tag = e.target && e.target.tagName ? e.target.tagName.toUpperCase() : "";
+        if ((e.ctrlKey || e.metaKey) && !e.shiftKey && String(e.key || "").toLowerCase() === "z" && tag !== "INPUT" && tag !== "TEXTAREA") {
+          if (isDrawer && connState === "connected" && activeRound && !activeRound.isPaused && !(isSketchResponse && sketchSubmitted) && myStrokeIds.length > 0) {
+            e.preventDefault();
+            handleUndo();
+          }
+        }
+      }
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-3 sm:p-4 border-b border-slate-200 bg-gradient-to-r from-rose-50 to-amber-50 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-rose-700 uppercase tracking-wider" }, isSketchResponse ? "\u{1F3A8} Private sketch response" : isDrawer ? "\u{1F3A8} You are a drawer" : "\u{1F440} You are a guesser"), /* @__PURE__ */ React.createElement("h2", { className: "text-lg sm:text-xl font-black text-slate-800 mt-0.5" }, isSketchResponse ? "Sketch Response" : "Concept Pictionary"), connState === "connecting" ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-amber-700 mt-1" }, "Connecting\u2026") : null, connState === "reconnecting" ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-amber-700 mt-1", role: "status" }, "Connection lost \u2014 reconnecting\u2026") : null, connState === "failed" ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-red-700 mt-1 flex items-center gap-2", role: "status" }, /* @__PURE__ */ React.createElement("span", null, "Can't reach the teacher's device."), /* @__PURE__ */ React.createElement(
-      "button",
+    /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-slate-900/70 backdrop-blur-sm", "aria-hidden": "true" }),
+    /* @__PURE__ */ React.createElement(
+      "div",
       {
-        type: "button",
-        onClick: handleManualRetry,
-        className: "px-2 py-0.5 text-xs font-bold rounded border border-red-300 bg-white text-red-700 hover:bg-red-50"
+        ref: guestContainerRef,
+        tabIndex: -1,
+        className: "allo-docsuite relative bg-white shadow-2xl w-full max-w-3xl overflow-y-auto border border-slate-200",
+        style: isGuestFullscreen ? { width: "100vw", height: "100vh", maxWidth: "none", margin: 0, borderRadius: 0 } : { borderRadius: "1rem", marginTop: "2rem", marginBottom: "2rem" }
       },
-      "Retry"
-    )) : null), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 sm:gap-3 flex-shrink-0" }, activeRound && activeRound.durationMs && activeRound.startedAt ? /* @__PURE__ */ React.createElement(RoundCountdown, { startedAt: activeRound.startedAt, durationMs: activeRound.durationMs, clockOffsetMs: activeRound.clockOffsetMs || 0, isPaused: activeRound.isPaused, pausedAt: activeRound.pausedAt, pausedTotalMs: activeRound.pausedTotalMs }) : null, /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: toggleGuestFullscreen,
-        className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-800 text-lg leading-none p-1.5 rounded hover:bg-slate-100",
-        "aria-label": isGuestFullscreen ? _cpTr(props.t, "common.exit_fullscreen", "Exit fullscreen") : _cpTr(props.t, "common.enter_fullscreen", "Enter fullscreen"),
-        title: isGuestFullscreen ? "Exit fullscreen (Esc)" : "Fullscreen"
-      },
-      isGuestFullscreen ? "\u2199" : "\u26F6"
-    ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100", "aria-label": _cpTr(props.t, "common.close", "Close") }, "\u2715"))),
-    /* @__PURE__ */ React.createElement("div", { className: "p-3 sm:p-4" }, sharedSketch ? /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border border-indigo-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-indigo-700" }, sharedSketch.label || "Anonymous sketch"), /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-indigo-950" }, sharedSketch.prompt || "Class sketch response")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setSharedSketch(null), className: "ml-auto px-2 py-1 text-xs font-bold rounded border border-indigo-300 bg-white text-indigo-800" }, "Dismiss")), /* @__PURE__ */ React.createElement(
-      PictionaryCanvas,
-      {
-        strokes: sharedSketch.strokes || [],
-        drawingEnabled: false,
-        showWatchingBadge: false,
-        ariaLabel: "Anonymously shared sketch response"
-      }
-    )) : null, /* @__PURE__ */ React.createElement(
-      SketchVotePanel,
-      {
-        round: sketchVoteRound,
-        results: sketchVoteResults,
-        selection: sketchVoteSelection,
-        submitted: sketchVoteSubmitted,
-        connectionReady: connState === "connected",
-        onSelect: (candidateId) => {
-          setSketchVoteSelection(candidateId);
-          setSketchVoteSubmitted(false);
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between p-3 sm:p-4 border-b border-slate-200 bg-gradient-to-r from-rose-50 to-amber-50 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-rose-700 uppercase tracking-wider" }, isSketchResponse ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F3A8} "), "Private sketch response") : isDrawer ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F3A8} "), "You are a drawer") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F440} "), "You are a guesser")), /* @__PURE__ */ React.createElement("h2", { className: "text-lg sm:text-xl font-black text-slate-800 mt-0.5" }, isSketchResponse ? "Sketch Response" : "Concept Pictionary"), connState === "connecting" ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-amber-700 mt-1" }, "Connecting\u2026") : null, connState === "reconnecting" ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-amber-700 mt-1", role: "status" }, "Connection lost \u2014 reconnecting\u2026") : null, connState === "failed" ? /* @__PURE__ */ React.createElement("div", { className: "text-xs text-red-700 mt-1 flex items-center gap-2", role: "status" }, /* @__PURE__ */ React.createElement("span", null, "Can't reach the teacher's device."), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: handleManualRetry,
+          className: "min-h-11 px-3 py-1.5 text-xs font-bold rounded-lg border border-red-300 bg-white text-red-700 hover:bg-red-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
         },
-        onSubmit: handleSketchVoteSubmit
-      }
-    ), activeRound && connState !== "connected" && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm font-bold text-amber-900" }, "Reconnecting. Drawing and submitting will resume when the connection is ready."), activeRound && activeRound.isPaused ? /* @__PURE__ */ React.createElement("div", { role: "status", className: "bg-amber-100 border border-amber-300 rounded-lg p-3 mb-3 text-sm font-bold text-amber-900" }, "Round paused by the teacher. Drawing and guessing will resume with the timer.") : null, activeRound && isDrawer ? /* @__PURE__ */ React.createElement("div", { className: "bg-rose-50 border border-rose-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-rose-700" }, isSketchResponse ? "Drawing prompt" : "Concept to draw together"), /* @__PURE__ */ React.createElement("div", { className: "text-xl font-black text-rose-900 mt-1" }, activeRound.concept), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-rose-700 italic mt-1" }, isSketchResponse ? "Your board stays private to the teacher until an approved anonymous reveal." : "No letters or numbers \u2014 just the picture. Other drawers can add to your sketch."), isSketchResponse && activeRound.criterion ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded border border-indigo-200 bg-white p-2 text-xs text-indigo-950" }, /* @__PURE__ */ React.createElement("strong", null, "Success criterion:"), " ", activeRound.criterion) : null) : null, activeRound && !isDrawer && !isSketchResponse ? /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-800" }, "Watch the drawing and guess what concept they're representing.")) : null, !activeRound && !resolved ? /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-lg p-3 mb-3 text-center text-sm text-slate-600" }, "Waiting for the teacher to start a round\u2026") : null, resolved ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-emerald-800" }, isSketchResponse ? "Sketch collection ended" : "Round resolved"), /* @__PURE__ */ React.createElement("div", { className: "text-base font-black text-emerald-900 mt-1" }, isSketchResponse ? "Prompt: " : "Concept was: ", resolved.concept || "(not revealed)")) : null, sketchFeedback ? /* @__PURE__ */ React.createElement("div", { className: "mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black uppercase tracking-wider text-amber-800" }, "Teacher feedback"), /* @__PURE__ */ React.createElement("p", { className: "m-0 mt-1 whitespace-pre-wrap" }, sketchFeedback.text), activeRound && sketchFeedback.allowRevision && sketchAttempt < 2 && sketchSubmitted ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSketchRevision, disabled: connState !== "connected" || !!activeRound?.isPaused, className: "mt-2 w-full rounded border border-amber-400 bg-white px-3 py-2 text-xs font-black text-amber-900" }, "Revise with feedback") : null) : null, /* @__PURE__ */ React.createElement(
-      PictionaryCanvas,
-      {
-        strokes,
-        drawingEnabled: !!(connState === "connected" && activeRound && isDrawer && activeRound.status === "drawing" && !activeRound.isPaused && !(isSketchResponse && sketchSubmitted)),
-        ariaLabel: isSketchResponse ? "Your private sketch response canvas" : "Pictionary drawing canvas",
-        color,
-        mode,
-        onStrokeBatch: handleStrokeBatch,
-        fullscreenMode: isGuestFullscreen
-      }
-    ), activeRound && isDrawer && connState === "connected" && !activeRound.isPaused && !(isSketchResponse && sketchSubmitted) ? /* @__PURE__ */ React.createElement(
-      DrawerToolbox,
-      {
-        color,
-        setColor,
-        mode,
-        setMode,
-        onUndo: myStrokeIds.length > 0 ? handleUndo : null
-      }
-    ) : null, activeRound && isSketchResponse && isDrawer && !activeRound.isPaused ? /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, sketchSubmitted ? /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900" }, /* @__PURE__ */ React.createElement("strong", null, sketchAttempt > 1 ? "Revision submitted." : "Drawing submitted."), " It remains private until the teacher approves and reveals it.", !sketchFeedback && sketchAttempt < 2 ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSketchEdit, disabled: connState !== "connected" || !!activeRound?.isPaused, className: "block w-full mt-2 px-3 py-2 text-xs font-bold rounded border border-emerald-300 bg-white text-emerald-800" }, "Edit drawing") : null) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSketchSubmit, disabled: strokes.length === 0 || connState !== "connected", className: "w-full px-4 py-2 text-sm font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40" }, "Submit drawing")) : null, activeRound && !isDrawer && !isSketchResponse ? /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-3" }, /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        type: "text",
-        value: guessText,
-        onChange: (e) => setGuessText(e.target.value),
-        disabled: !!activeRound.isPaused || connState !== "connected",
-        onKeyDown: (e) => {
-          if (_cpIsImeComposing(e)) return;
-          if (e.key === "Enter") handleSubmitGuess();
+        "Retry"
+      )) : null), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 sm:gap-3 flex-shrink-0" }, activeRound && activeRound.durationMs && activeRound.startedAt ? /* @__PURE__ */ React.createElement(RoundCountdown, { startedAt: activeRound.startedAt, durationMs: activeRound.durationMs, clockOffsetMs: activeRound.clockOffsetMs || 0, isPaused: activeRound.isPaused, pausedAt: activeRound.pausedAt, pausedTotalMs: activeRound.pausedTotalMs }) : null, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: toggleGuestFullscreen,
+          className: "min-h-11 min-w-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-800 text-lg leading-none p-1.5 rounded hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
+          "aria-label": isGuestFullscreen ? _cpTr(props.t, "common.exit_fullscreen", "Exit fullscreen") : _cpTr(props.t, "common.enter_fullscreen", "Enter fullscreen"),
+          title: isGuestFullscreen ? "Exit fullscreen (Esc)" : "Fullscreen"
         },
-        placeholder: typeof window !== "undefined" && window.__alloT && window.__alloT("placeholders.type_guess") || "Type your guess\u2026",
-        className: "flex-1 min-h-11 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-amber-300",
-        "aria-label": _cpTr(props.t, "pictionary.your_guess", "Your guess")
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: handleSubmitGuess,
-        disabled: !guessText.trim() || !!activeRound.isPaused || connState !== "connected",
-        className: "min-h-11 px-4 py-2 text-sm font-bold rounded-lg bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-40"
-      },
-      _cpTr(props.t, "common.send", "Send")
-    )) : null, activeRound && !isDrawer && guessNotice ? /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 mt-1", role: "status" }, guessNotice) : null)
-  ));
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, isGuestFullscreen ? "\u2199" : "\u26F6")
+      ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "min-w-11 min-h-11 inline-flex items-center justify-center text-slate-600 hover:text-slate-700 text-2xl leading-none p-1 rounded hover:bg-slate-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2", "aria-label": _cpTr(props.t, "common.close", "Close") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2715")))),
+      /* @__PURE__ */ React.createElement("div", { className: "p-3 sm:p-4" }, sharedSketch ? /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border border-indigo-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-indigo-700" }, sharedSketch.label || "Anonymous sketch"), /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-indigo-950" }, sharedSketch.prompt || "Class sketch response")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setSharedSketch(null), className: "ml-auto min-h-11 px-3 py-2 text-xs font-bold rounded-lg border border-indigo-300 bg-white text-indigo-800 hover:bg-indigo-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" }, "Dismiss")), /* @__PURE__ */ React.createElement(
+        PictionaryCanvas,
+        {
+          strokes: sharedSketch.strokes || [],
+          drawingEnabled: false,
+          showWatchingBadge: false,
+          ariaLabel: "Anonymously shared sketch response"
+        }
+      )) : null, /* @__PURE__ */ React.createElement(
+        SketchVotePanel,
+        {
+          round: sketchVoteRound,
+          results: sketchVoteResults,
+          selection: sketchVoteSelection,
+          submitted: sketchVoteSubmitted,
+          connectionReady: connState === "connected",
+          onSelect: (candidateId) => {
+            setSketchVoteSelection(candidateId);
+            setSketchVoteSubmitted(false);
+          },
+          onSubmit: handleSketchVoteSubmit
+        }
+      ), activeRound && connState !== "connected" && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm font-bold text-amber-900" }, "Reconnecting. Drawing and submitting will resume when the connection is ready."), activeRound && activeRound.isPaused ? /* @__PURE__ */ React.createElement("div", { role: "status", className: "bg-amber-100 border border-amber-300 rounded-lg p-3 mb-3 text-sm font-bold text-amber-900" }, "Round paused by the teacher. Drawing and guessing will resume with the timer.") : null, activeRound && isDrawer ? /* @__PURE__ */ React.createElement("div", { className: "bg-rose-50 border border-rose-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-rose-700" }, isSketchResponse ? "Drawing prompt" : "Concept to draw together"), /* @__PURE__ */ React.createElement("div", { className: "text-xl font-black text-rose-900 mt-1" }, activeRound.concept), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-rose-700 italic mt-1" }, isSketchResponse ? "Your board stays private to the teacher until an approved anonymous reveal." : "No letters or numbers \u2014 just the picture. Other drawers can add to your sketch."), isSketchResponse && activeRound.criterion ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded border border-indigo-200 bg-white p-2 text-xs text-indigo-950" }, /* @__PURE__ */ React.createElement("strong", null, "Success criterion:"), " ", activeRound.criterion) : null) : null, activeRound && !isDrawer && !isSketchResponse ? /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-800" }, "Watch the drawing and guess what concept they're representing.")) : null, !activeRound && !resolved ? /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-lg p-3 mb-3 text-center text-sm text-slate-600" }, "Waiting for the teacher to start a round\u2026") : null, resolved ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-emerald-800" }, isSketchResponse ? "Sketch collection ended" : "Round resolved"), /* @__PURE__ */ React.createElement("div", { className: "text-base font-black text-emerald-900 mt-1" }, isSketchResponse ? "Prompt: " : "Concept was: ", resolved.concept || "(not revealed)")) : null, sketchFeedback ? /* @__PURE__ */ React.createElement("div", { className: "mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black uppercase tracking-wider text-amber-800" }, "Teacher feedback"), /* @__PURE__ */ React.createElement("p", { className: "m-0 mt-1 whitespace-pre-wrap" }, sketchFeedback.text), activeRound && sketchFeedback.allowRevision && sketchAttempt < 2 && sketchSubmitted ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSketchRevision, disabled: connState !== "connected" || !!activeRound?.isPaused, className: "mt-2 min-h-11 w-full rounded-lg border border-amber-400 bg-white px-3 py-2 text-xs font-black text-amber-900 hover:bg-amber-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-2" }, "Revise with feedback") : null) : null, /* @__PURE__ */ React.createElement(
+        PictionaryCanvas,
+        {
+          strokes,
+          drawingEnabled: !!(connState === "connected" && activeRound && isDrawer && activeRound.status === "drawing" && !activeRound.isPaused && !(isSketchResponse && sketchSubmitted)),
+          ariaLabel: isSketchResponse ? "Your private sketch response canvas" : "Pictionary drawing canvas",
+          color,
+          mode,
+          onStrokeBatch: handleStrokeBatch,
+          fullscreenMode: isGuestFullscreen
+        }
+      ), activeRound && isDrawer && connState === "connected" && !activeRound.isPaused && !(isSketchResponse && sketchSubmitted) ? /* @__PURE__ */ React.createElement(
+        DrawerToolbox,
+        {
+          color,
+          setColor,
+          mode,
+          setMode,
+          onUndo: myStrokeIds.length > 0 ? handleUndo : null
+        }
+      ) : null, activeRound && isSketchResponse && isDrawer && !activeRound.isPaused ? /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, sketchSubmitted ? /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900" }, /* @__PURE__ */ React.createElement("strong", null, sketchAttempt > 1 ? "Revision submitted." : "Drawing submitted."), " It remains private until the teacher approves and reveals it.", !sketchFeedback && sketchAttempt < 2 ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSketchEdit, disabled: connState !== "connected" || !!activeRound?.isPaused, className: "block min-h-11 w-full mt-2 px-3 py-2 text-xs font-bold rounded-lg border border-emerald-300 bg-white text-emerald-800 hover:bg-emerald-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2" }, "Edit drawing") : null) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSketchSubmit, disabled: strokes.length === 0 || connState !== "connected", className: "min-h-11 w-full px-4 py-2 text-sm font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" }, "Submit drawing")) : null, activeRound && !isDrawer && !isSketchResponse ? /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-3" }, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "text",
+          value: guessText,
+          onChange: (e) => setGuessText(e.target.value),
+          disabled: !!activeRound.isPaused || connState !== "connected",
+          onKeyDown: (e) => {
+            if (_cpIsImeComposing(e)) return;
+            if (e.key === "Enter") handleSubmitGuess();
+            else if (e.key === "Escape" && guessText) {
+              e.preventDefault();
+              e.stopPropagation();
+              setGuessText("");
+            }
+          },
+          placeholder: typeof window !== "undefined" && window.__alloT && window.__alloT("placeholders.type_guess") || "Type your guess\u2026",
+          className: "flex-1 min-h-11 text-sm border border-slate-300 rounded-lg p-2 placeholder:text-slate-600 outline-none focus:ring-2 focus:ring-amber-500",
+          "aria-label": _cpTr(props.t, "pictionary.your_guess", "Your guess")
+        }
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: handleSubmitGuess,
+          disabled: !guessText.trim() || !!activeRound.isPaused || connState !== "connected",
+          className: "min-h-11 px-4 py-2 text-sm font-bold rounded-lg bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-40 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-2"
+        },
+        _cpTr(props.t, "common.send", "Send")
+      )) : null, activeRound && !isDrawer && guessNotice ? /* @__PURE__ */ React.createElement("p", { className: "text-xs text-amber-700 mt-1", role: "status" }, guessNotice) : null)
+    )
+  );
 });
 
 

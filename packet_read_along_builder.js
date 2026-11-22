@@ -422,7 +422,8 @@
   }
   function svgRefusal(svg) {
     var s = typeof svg === 'string' ? svg : '';
-    if (!/^\s*<svg[\s>]/i.test(s) || !/<\/svg>\s*$/i.test(s)) return 'not an SVG drawing';
+    var stripped = s.replace(/^\s*<\?xml\s[^>]*\?>/i, '').replace(/^(?:\s*<!--[\s\S]*?-->)+/, '').trim();
+    if (!/^\s*<svg[\s>]/i.test(stripped) || !/<\/svg>\s*$/i.test(stripped)) return 'not an SVG drawing';
     if (s.length > 300000) return 'the drawing is too large';
     if (s.indexOf('\\') >= 0) return 'an escape character';
     if (/<!(?:doctype|entity)/i.test(s)) return 'a document type or entity declaration';
@@ -432,23 +433,24 @@
       .replace(/&(colon|newline|tab);/gi, function (_, name) { return name.toLowerCase() === 'colon' ? ':' : ''; });
     var packed = plain.replace(/[\x00-\x20]+/g, '');
     var bare = function (value) { return String(value || '').replace(/[\x00-\x20]+/g, ''); };
-    if (/<\s*(?:[\w-]+:)?script\b/i.test(plain)) return 'a script';
-    if (/<\s*(?:[\w-]+:)?foreignObject\b/i.test(plain)) return 'a foreignObject';
-    if (/<\s*(?:[\w-]+:)?(?:iframe|embed|object|audio|video|animate\w*|set|handler|listener)\b/i.test(plain)) return 'an element that is not a drawing';
+    if (/<\s*(?:[^\s<>"'=/:]+:)?script\b/i.test(plain)) return 'a script';
+    if (/<\s*(?:[^\s<>"'=/:]+:)?foreignObject\b/i.test(plain)) return 'a foreignObject';
+    if (/<\s*(?:[^\s<>"'=/:]+:)?(?:iframe|embed|object|audio|video|animate\w*|set|handler|listener)\b/i.test(plain)) return 'an element that is not a drawing';
     if (/[\s"'\/]on[a-z]+\s*=/i.test(plain)) return 'an event handler';
     if (/(?:java|vb|live)script:/i.test(packed)) return 'a script address';
     if (/xml:base\s*=/i.test(plain)) return 'a base address';
-    var m, href = /(?:[\s"'\/])(?:[\w-]+:)?href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*))/gi;
+    var m, href = /(?:[\s"'\/])(?:[^\s<>"'=/:]+:)?href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*))/gi;
     while ((m = href.exec(plain))) {
       if (bare(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).charAt(0) !== '#') return 'a link to something outside the drawing';
     }
-    if (/[\s"'\/]src\s*=/i.test(plain)) return 'a link to something outside the drawing';
-    var style = /<\s*(?:[\w-]+:)?style\b[^>]*>/gi;
+    if (/[\s"'\/]src(?:doc)?\s*=/i.test(plain)) return 'a link to something outside the drawing';
+    if (/(?:-(?:webkit|moz)-)?image-set\s*\(/i.test(plain)) return 'a link to something outside the drawing';
+    var style = /<\s*(?:[^\s<>"'=/:]+:)?style\b(?:"[^"]*"|'[^']*'|[^>"'])*>/gi;
     while ((m = style.exec(plain))) {
       if (/\/\s*>$/.test(m[0])) continue;
-      var end = plain.slice(style.lastIndex).search(/<\s*\/\s*(?:[\w-]+:)?style\s*>/i);
+      var end = plain.slice(style.lastIndex).search(/<\s*\/\s*(?:[^\s<>"'=/:]+:)?style\s*>/i);
       var css = end < 0 ? plain.slice(style.lastIndex) : plain.slice(style.lastIndex, style.lastIndex + end);
-      if (end < 0 || /@import|@font-face|@namespace|url\s*\(|expression\s*\(/i.test(css)) return 'a style block that loads something';
+      if (end < 0 || /@import|@font-face|@namespace|url\s*\(|(?:-(?:webkit|moz)-)?image-set\s*\(|expression\s*\(/i.test(css)) return 'a style block that loads something';
     }
     var url = /url\s*\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))/gi;
     while ((m = url.exec(plain))) {

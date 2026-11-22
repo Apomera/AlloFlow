@@ -1,6 +1,6 @@
 (function() {
 'use strict';
-if (window.AlloModules && window.AlloModules.SubmissionCrypto) {
+if (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SubmissionCrypto) {
   console.log('[CDN] SubmissionCrypto already loaded, skipping');
   return;
 }
@@ -58,19 +58,31 @@ function _validatePublicJwk(jwk) {
   if (!_isPlainObject(jwk) || jwk.kty !== 'RSA' || typeof jwk.n !== 'string' || !jwk.n || typeof jwk.e !== 'string' || !jwk.e) {
     throw new Error('Invalid class public key: expected an RSA JWK.');
   }
-  if (jwk.d !== undefined || jwk.p !== undefined || jwk.q !== undefined || jwk.dp !== undefined || jwk.dq !== undefined || jwk.qi !== undefined) {
+  if (jwk.d !== undefined || jwk.p !== undefined || jwk.q !== undefined || jwk.dp !== undefined || jwk.dq !== undefined || jwk.qi !== undefined || jwk.oth !== undefined) {
     throw new Error('Invalid class public key: private key parameters must not be supplied for encryption.');
   }
+}
+function _cleanPublicJwk(jwk) {
+  return { kty: 'RSA', n: jwk.n, e: jwk.e };
 }
 function _validatePrivateJwk(jwk) {
   if (!_isPlainObject(jwk) || jwk.kty !== 'RSA' || typeof jwk.n !== 'string' || !jwk.n || typeof jwk.e !== 'string' || !jwk.e || typeof jwk.d !== 'string' || !jwk.d) {
     throw new Error('Invalid class private key: expected an RSA private JWK.');
   }
 }
+function _cleanPrivateJwk(jwk) {
+  var out = { kty: 'RSA', n: jwk.n, e: jwk.e, d: jwk.d };
+  var optKeys = ['p', 'q', 'dp', 'dq', 'qi', 'oth'];
+  for (var i = 0; i < optKeys.length; i++) {
+    var k = optKeys[i];
+    if (Object.prototype.hasOwnProperty.call(jwk, k) && jwk[k] !== undefined) out[k] = jwk[k];
+  }
+  return out;
+}
 function _getCrypto() {
   var c = (typeof window !== 'undefined' && window.crypto) ? window.crypto
     : (typeof globalThis !== 'undefined' && globalThis.crypto ? globalThis.crypto : null);
-  if (!c || !c.subtle) {
+  if (!c || !c.subtle || typeof c.getRandomValues !== 'function') {
     throw new Error('Web Crypto API not available (crypto.subtle missing). Submissions require a secure context (HTTPS or localhost).');
   }
   return c;
@@ -79,7 +91,7 @@ function _getSubtle() {
   return _getCrypto().subtle;
 }
 var _enc = new TextEncoder();
-var _dec = new TextDecoder();
+var _dec = new TextDecoder('utf-8', { fatal: true });
 
 // ── Public API ────────────────────────────────────────────────────────
 
@@ -107,7 +119,14 @@ async function encryptSubmission(payloadObj, publicJwk) {
   _validatePublicJwk(publicJwk);
   var cryptoObj = _getCrypto();
   var subtle = cryptoObj.subtle;
-  var payloadBytes = _enc.encode(JSON.stringify(payloadObj));
+  var jsonStr;
+  try { jsonStr = JSON.stringify(payloadObj); } catch (_) {
+    throw new Error('Invalid submission payload: expected a serializable plain object.');
+  }
+  if (typeof jsonStr !== 'string') {
+    throw new Error('Invalid submission payload: expected a plain object.');
+  }
+  var payloadBytes = _enc.encode(jsonStr);
   if (payloadBytes.byteLength > MAX_PLAINTEXT_BYTES) {
     throw new Error('Submission payload exceeds maximum supported size.');
   }
@@ -118,7 +137,7 @@ async function encryptSubmission(payloadObj, publicJwk) {
   var ciphertextBuf = await subtle.encrypt({ name: 'AES-GCM', iv: iv, tagLength: 128 }, aesKey, payloadBytes);
 
   // Wrap the AES key with the class RSA public key
-  var publicKey = await subtle.importKey('jwk', publicJwk, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
+  var publicKey = await subtle.importKey('jwk', _cleanPublicJwk(publicJwk), { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
   var aesKeyRaw = await subtle.exportKey('raw', aesKey);
   var wrappedKeyBuf;
   try {
@@ -138,7 +157,12 @@ async function encryptSubmission(payloadObj, publicJwk) {
 // Returns the original payload object.
 async function decryptSubmission(blob, privateJwk) {
   var subtle = _getSubtle();
-  if (!blob || typeof blob.wrappedKey !== 'string' || typeof blob.iv !== 'string' || typeof blob.ciphertext !== 'string' || !blob.wrappedKey || !blob.iv || !blob.ciphertext) {
+  if (!_isPlainObject(blob) ||
+      !Object.prototype.hasOwnProperty.call(blob, 'wrappedKey') ||
+      !Object.prototype.hasOwnProperty.call(blob, 'iv') ||
+      !Object.prototype.hasOwnProperty.call(blob, 'ciphertext') ||
+      typeof blob.wrappedKey !== 'string' || typeof blob.iv !== 'string' || typeof blob.ciphertext !== 'string' ||
+      !blob.wrappedKey || !blob.iv || !blob.ciphertext) {
     throw new Error('Malformed submission blob: missing wrappedKey, iv, or ciphertext.');
   }
   if (blob.wrappedKey.length > MAX_WRAPPED_KEY_B64 || blob.iv.length > MAX_IV_B64 || blob.ciphertext.length > MAX_CIPHERTEXT_B64) {
@@ -146,8 +170,18 @@ async function decryptSubmission(blob, privateJwk) {
   }
   _validatePrivateJwk(privateJwk);
 
-  var privateKey = await subtle.importKey('jwk', privateJwk, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt']);
+  // Validate IV, ciphertext, and wrappedKey framing before incurring RSA private-key work.
+  var iv = _b64decode(blob.iv);
+  if (iv.byteLength !== 12) {
+    throw new Error('Malformed submission blob: AES-GCM IV must be 12 bytes.');
+  }
+  var ciphertext = _b64decode(blob.ciphertext);
+  if (ciphertext.byteLength < 16) {
+    throw new Error('Malformed submission blob: ciphertext too short for AES-GCM tag.');
+  }
   var wrappedKeyBytes = _b64decode(blob.wrappedKey);
+
+  var privateKey = await subtle.importKey('jwk', _cleanPrivateJwk(privateJwk), { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt']);
   var aesKeyRaw;
   try {
     aesKeyRaw = await subtle.decrypt({ name: 'RSA-OAEP' }, privateKey, wrappedKeyBytes);
@@ -164,25 +198,22 @@ async function decryptSubmission(blob, privateJwk) {
   } finally {
     try { if (aesKeyRaw) new Uint8Array(aesKeyRaw).fill(0); } catch (_) {}
   }
-  var iv = _b64decode(blob.iv);
-  if (iv.byteLength !== 12) {
-    throw new Error('Malformed submission blob: AES-GCM IV must be 12 bytes.');
-  }
-  var ciphertext = _b64decode(blob.ciphertext);
-  if (ciphertext.byteLength < 16) {
-    throw new Error('Malformed submission blob: ciphertext too short for AES-GCM tag.');
-  }
   var payloadBuf;
   try {
     payloadBuf = await subtle.decrypt({ name: 'AES-GCM', iv: iv, tagLength: 128 }, aesKey, ciphertext);
   } catch (_) {
     throw new Error('Could not decrypt the submission payload. The file may be corrupted or tampered with.');
   }
-  var payloadJson = _dec.decode(payloadBuf);
-  var parsed = JSON.parse(payloadJson, function (key, value) {
-    if (key === '__proto__' || key === 'constructor' || key === 'prototype') return undefined;
-    return value;
-  });
+  var parsed;
+  try {
+    var payloadJson = _dec.decode(payloadBuf);
+    parsed = JSON.parse(payloadJson, function (key, value) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') return undefined;
+      return value;
+    });
+  } catch (_) {
+    throw new Error('Malformed submission payload: invalid UTF-8 or JSON.');
+  }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
     throw new Error('Malformed submission payload: expected JSON object.');
   }
@@ -206,17 +237,19 @@ var INLINE_ENCRYPT_SCRIPT = [
   '// AlloFlow inline submission encryptor (generated from submission_crypto_module.js)',
   'window.__alloflowEncryptSubmission = async function(payloadObj, publicJwk) {',
   '  var subtle = window.crypto && window.crypto.subtle;',
-  '  if (!subtle) throw new Error("Web Crypto not available. This worksheet needs a modern browser to save.");',
+  '  if (!subtle || typeof window.crypto.getRandomValues !== "function") throw new Error("Web Crypto not available. This worksheet needs a modern browser to save.");',
   '  if (!payloadObj || typeof payloadObj !== "object" || Array.isArray(payloadObj)) throw new Error("Invalid submission payload.");',
-  '  if (!publicJwk || typeof publicJwk !== "object" || Array.isArray(publicJwk) || publicJwk.kty !== "RSA" || typeof publicJwk.n !== "string" || !publicJwk.n || typeof publicJwk.e !== "string" || !publicJwk.e || publicJwk.d !== undefined || publicJwk.p !== undefined || publicJwk.q !== undefined || publicJwk.dp !== undefined || publicJwk.dq !== undefined || publicJwk.qi !== undefined) throw new Error("Invalid class public key.");',
+  '  if (!publicJwk || typeof publicJwk !== "object" || Array.isArray(publicJwk) || publicJwk.kty !== "RSA" || typeof publicJwk.n !== "string" || !publicJwk.n || typeof publicJwk.e !== "string" || !publicJwk.e || publicJwk.d !== undefined || publicJwk.p !== undefined || publicJwk.q !== undefined || publicJwk.dp !== undefined || publicJwk.dq !== undefined || publicJwk.qi !== undefined || publicJwk.oth !== undefined) throw new Error("Invalid class public key.");',
   '  var enc = new TextEncoder();',
   '  function b64(bytes) { var parts=[]; for (var i=0;i<bytes.byteLength;i+=8192) parts.push(String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i+8192, bytes.byteLength)))); return btoa(parts.join("")); }',
-  '  var payloadBytes = enc.encode(JSON.stringify(payloadObj));',
+  '  var jsonStr = JSON.stringify(payloadObj);',
+  '  if (typeof jsonStr !== "string") throw new Error("Invalid submission payload.");',
+  '  var payloadBytes = enc.encode(jsonStr);',
   '  if (payloadBytes.byteLength > ' + MAX_PLAINTEXT_BYTES + ') throw new Error("Submission payload exceeds maximum supported size.");',
   '  var aesKey = await subtle.generateKey({name:"AES-GCM",length:256}, true, ["encrypt"]);',
   '  var iv = window.crypto.getRandomValues(new Uint8Array(12));',
   '  var ctBuf = await subtle.encrypt({name:"AES-GCM",iv:iv,tagLength:128}, aesKey, payloadBytes);',
-  '  var pub = await subtle.importKey("jwk", publicJwk, {name:"RSA-OAEP",hash:"SHA-256"}, false, ["encrypt"]);',
+  '  var pub = await subtle.importKey("jwk", {kty:"RSA",n:publicJwk.n,e:publicJwk.e}, {name:"RSA-OAEP",hash:"SHA-256"}, false, ["encrypt"]);',
   '  var aesRaw = await subtle.exportKey("raw", aesKey);',
   '  var wrappedBuf;',
   '  try { wrappedBuf = await subtle.encrypt({name:"RSA-OAEP"}, pub, aesRaw); } finally { try { new Uint8Array(aesRaw).fill(0); } catch (_) {} }',
@@ -224,13 +257,17 @@ var INLINE_ENCRYPT_SCRIPT = [
   '};',
 ].join('\n');
 
-if (!window.AlloModules) window.AlloModules = {};
-window.AlloModules.SubmissionCrypto = {
+var api = {
   generateClassKeypair: generateClassKeypair,
   encryptSubmission: encryptSubmission,
   decryptSubmission: decryptSubmission,
   INLINE_ENCRYPT_SCRIPT: INLINE_ENCRYPT_SCRIPT,
 };
+if (typeof module !== 'undefined' && module.exports) module.exports = api;
+if (typeof window !== 'undefined') {
+  if (!window.AlloModules) window.AlloModules = {};
+  window.AlloModules.SubmissionCrypto = api;
+}
 
 console.log('[SubmissionCrypto] Loaded: RSA-OAEP 2048 + AES-GCM 256 hybrid');
 })();

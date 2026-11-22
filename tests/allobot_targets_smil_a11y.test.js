@@ -66,17 +66,16 @@ describe('AlloBot target, speech, and SMIL accessibility', () => {
     // still have to clear 24px AFTER scaling, so assert each one — a size class
     // counted on its own says nothing once a scale- class can sit beside it.
     const [, mouse] = source.match(/\n\s*:\s*('inline-flex min-h-8[^']*')/) || [];
-    const [, touch] = source.match(/\n\s*\?\s*('inline-flex min-h-9[^']*')/) || [];
+    const [, touch] = source.match(/\n\s*\?\s*(`inline-flex min-h-11[^`]*`)/) || [];
     expect(mouse, 'mouse-pointer satellite class').toBeTruthy();
     expect(touch, 'coarse-pointer satellite class').toBeTruthy();
     // 32px * scale-75 == 24px exactly.
     expect(mouse).toContain('min-h-8 min-w-8');
     expect(mouse).toContain('scale-75');
-    // 36px unscaled — a scale- class here would drop it back under the floor.
-    expect(touch).toContain('min-h-9 min-w-9');
+    // 44px unscaled touch targets (WCAG 2.5.8) — hidden until AlloBot is tapped.
+    expect(touch).toContain('min-h-11 min-w-11');
     expect(touch).not.toMatch(/\bscale-(?!100\b)\d+/);
-    // Touch has no hover to reveal them with, so they must not start invisible.
-    expect(touch).not.toContain('opacity-0');
+    expect(touch).toContain('touchControlsOpen');
     // All four controls must draw from that shared definition.
     expect(source.match(/\$\{satelliteBase\}/g)).toHaveLength(4);
     expect(source).toContain('inline-flex min-h-6 items-center');
@@ -90,9 +89,9 @@ describe('AlloBot target, speech, and SMIL accessibility', () => {
     }
     expect(source).toContain('width: 32px;');
     expect(source).toContain('min-height: 32px;');
-    expect(source).toContain('[data-allobot-control-visibility="persistent"] .allobot-satellite-control {');
-    expect(source).toContain('width: 36px;');
-    expect(source).toContain('min-height: 36px;');
+    expect(source).toContain('[data-allobot-control-surface="true"][data-allobot-control-visibility="touch-open"] .allobot-satellite-control[data-help-key] {');
+    expect(source).toContain('width: 44px !important;');
+    expect(source).toContain('min-height: 44px !important;');
     expect(source).toContain('data-allobot-satellite-kind="hide"');
     expect(source).toContain("data-allobot-satellite-state={isListening ? 'listening' : 'idle'}");
   });
@@ -117,7 +116,7 @@ describe('AlloBot target, speech, and SMIL accessibility', () => {
   it('groups satellite controls in a theme-aware visual orbit', () => {
     expect(source).toContain('data-allobot-control-surface="true"');
     expect(source).toContain('data-allobot-control-theme={theme}');
-    expect(source).toContain("data-allobot-control-visibility={coarsePointer ? 'persistent' : 'reveal'}");
+    expect(source).toContain('data-allobot-control-visibility={controlVisibilityMode}');
     expect(source).toContain("data-allobot-control-live={isListening ? 'true' : 'false'}");
     expect(source).toContain('className="allobot-control-orbit"');
     expect(source).toContain("data-allobot-control-orbit-state={isListening ? 'listening' : 'idle'}");

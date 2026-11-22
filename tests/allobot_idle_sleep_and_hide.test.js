@@ -163,17 +163,17 @@ describe('AlloBot orbit controls on touch', () => {
     expect(source).not.toContain('(any-pointer: coarse)');
     expect(source).toContain("const next = type === 'touch';");
     expect(source).toContain('return coarse || touchActive;');
-    expect(source).toContain('[data-allobot-control-visibility="persistent"] .allobot-satellite-control {');
+    expect(source).toContain('[data-allobot-control-surface="true"][data-allobot-control-visibility="touch-open"] .allobot-satellite-control[data-help-key] {');
     expect(source).toContain('const coarsePointer = useAlloCoarsePointer();');
   });
 
   it('pushes the controls apart far enough not to overlap at touch size', () => {
-    // Four 36px targets around a 64px avatar: at a -10px offset the top pair
-    // spans y -10..26 and the bottom pair 38..74, so they clear each other.
+    // Four 44px targets fanned out around a 64px avatar on tap (-22px CSS / -top-5)
+    // leave a clear center tap target on AlloBot and zero button overlap.
     const pos = source.slice(source.indexOf('const satellitePos = {'), source.indexOf('const stopTouch'));
     for (const corner of ['tl', 'tr', 'bl', 'br']) {
       expect(pos).toContain(`${corner}: coarsePointer ?`);
-      expect(pos).toContain('-2.5');
+      expect(pos).toContain('-5');
     }
   });
 });

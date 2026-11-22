@@ -47,7 +47,7 @@ function SpotlightTourView(props) {
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
-        setIsSpotlightMode(false);
+        if (typeof setIsSpotlightMode === 'function') setIsSpotlightMode(false);
       }
     };
     var onDocumentPointerDown = function (e) {
@@ -63,7 +63,7 @@ function SpotlightTourView(props) {
         }
       }
       if (typeof debugLog === 'function') debugLog('Backdrop Dismiss');
-      setIsSpotlightMode(false);
+      if (typeof setIsSpotlightMode === 'function') setIsSpotlightMode(false);
     };
     document.addEventListener('keydown', onDocumentKeyDown);
     document.addEventListener('pointerdown', onDocumentPointerDown);
@@ -175,17 +175,28 @@ function SpotlightTourView(props) {
     updateViewport();
     return function () { window.removeEventListener('resize', updateViewport); };
   }, []);
+  var _rect = tourRect || { top: 48, left: 48, right: 96, bottom: 96, width: 48, height: 48 };
   var viewportWidth = viewport.width;
   var viewportHeight = viewport.height;
   var popupWidth = Math.max(0, Math.min(380, viewportWidth - 32));
-  var preferredLeft = tourRect.left > viewportWidth / 2
-    ? tourRect.left - popupWidth - 24
-    : tourRect.right + 24;
+  var preferredLeft = _rect.left > viewportWidth / 2
+    ? _rect.left - popupWidth - 24
+    : _rect.right + 24;
   var popupLeft = Math.max(16, Math.min(Math.max(16, viewportWidth - popupWidth - 16), preferredLeft));
   var estimatedHeight = Math.min(400, Math.max(0, viewportHeight - 32));
-  var popupTop = Math.max(16, Math.min(Math.max(16, viewportHeight - estimatedHeight - 16), tourRect.top));
-  var _rawHelpLabel = typeof t === 'function' ? t('common.help', { defaultValue: 'Help' }) : '';
-  var _helpTitleFallback = _rawHelpLabel && _rawHelpLabel !== 'common.help' ? _rawHelpLabel : 'Help';
+  var popupTop = Math.max(16, Math.min(Math.max(16, viewportHeight - estimatedHeight - 16), _rect.top));
+  var _label = function (key, fallback) {
+    var val = typeof t === 'function' ? t(key, { defaultValue: fallback }) : '';
+    return val && val !== key ? val : fallback;
+  };
+  var _helpTitleFallback = _label('common.help', 'Help');
+  var _ttsStatusText = ttsState === 'loading'
+    ? _label('common.loading_voice', 'Loading voice…')
+    : ttsState === 'playing'
+      ? (readingLineIndex >= 0 && _readableLines.length > 0
+        ? ('Reading line ' + (readingLineIndex + 1) + ' of ' + _readableLines.length)
+        : _label('common.reading_aloud', 'Reading aloud…'))
+      : '';
   return (
         <>
             <style>{SPOTLIGHT_TOUR_ANIMATION_CSS}</style>
@@ -196,9 +207,9 @@ function SpotlightTourView(props) {
                 onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (spotlightOpenTimeRef.current && (Date.now() - spotlightOpenTimeRef.current < 500)) return;
-                    debugLog("Backdrop Dismiss");
-                    setIsSpotlightMode(false);
+                    if (spotlightOpenTimeRef && spotlightOpenTimeRef.current && (Date.now() - spotlightOpenTimeRef.current < 500)) return;
+                    if (typeof debugLog === 'function') debugLog("Backdrop Dismiss");
+                    if (typeof setIsSpotlightMode === 'function') setIsSpotlightMode(false);
                 }}
             />
             <div
@@ -210,7 +221,7 @@ function SpotlightTourView(props) {
                      width: popupWidth + 'px',
                  }}
             >
-                <div id="spotlight-message-panel" ref={panelRef} role="dialog" aria-modal="false" aria-labelledby="spotlight-message-title" aria-describedby="spotlight-message-body" onKeyDown={function (e) { if (e.defaultPrevented || (e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setIsSpotlightMode(false); } }} className="bg-slate-900/95 backdrop-blur-2xl p-6 rounded-2xl shadow-[0_0_40px_rgba(139,92,246,0.3)] border border-white/10 ring-1 ring-white/20 relative overflow-visible group transition-all duration-300 hover:shadow-[0_0_60px_rgba(139,92,246,0.5)] motion-reduce:transition-none" style={{ backgroundColor: 'rgba(15, 23, 42, 0.96)', color: '#f8fafc' }}>
+                <div id="spotlight-message-panel" ref={panelRef} role="dialog" aria-modal="false" aria-labelledby="spotlight-message-title" aria-describedby="spotlight-message-body" onKeyDown={function (e) { if (e.defaultPrevented || (e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); if (typeof setIsSpotlightMode === 'function') setIsSpotlightMode(false); } }} className="bg-slate-900/95 backdrop-blur-2xl p-6 rounded-2xl shadow-[0_0_40px_rgba(139,92,246,0.3)] border border-white/10 ring-1 ring-white/20 relative overflow-visible group transition-all duration-300 hover:shadow-[0_0_60px_rgba(139,92,246,0.5)] motion-reduce:transition-none" style={{ backgroundColor: 'rgba(15, 23, 42, 0.96)', color: '#f8fafc' }}>
                      <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none" aria-hidden="true">
                        <div className="absolute -top-20 -right-20 w-40 h-40 bg-violet-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse motion-reduce:animate-none"></div>
                        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse motion-reduce:animate-none" style={{animationDelay: '1s'}}></div>
@@ -220,7 +231,7 @@ function SpotlightTourView(props) {
                             <div aria-hidden="true" className="p-2 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-lg shadow-lg shadow-violet-500/20">
                                  <Sparkles aria-hidden="true" size={18} className="text-white fill-white/20"/>
                             </div>
-                            {spotlightMessage.title || _helpTitleFallback}
+                            {_msgTitle || _helpTitleFallback}
                          </h3>
                          <div className="flex items-center gap-1 shrink-0">
                            {typeof window !== 'undefined' && typeof window.callTTS === 'function' && (
@@ -229,9 +240,10 @@ function SpotlightTourView(props) {
                                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); playAloud(); }}
                                  disabled={ttsState === 'loading'}
                                  aria-busy={ttsState === 'loading'}
+                                 aria-pressed={ttsState === 'playing'}
                                  data-help-ignore="true"
-                                 aria-label={ttsState === 'playing' ? t('common.stop_reading', { defaultValue: 'Stop reading aloud' }) : t('common.read_aloud', { defaultValue: 'Read this aloud' })}
-                                 title={ttsState === 'playing' ? t('common.stop_reading', { defaultValue: 'Stop reading aloud' }) : t('common.read_aloud', { defaultValue: 'Read this aloud' })}
+                                 aria-label={ttsState === 'playing' ? _label('common.stop_reading', 'Stop reading aloud') : _label('common.read_aloud', 'Read this aloud')}
+                                 title={ttsState === 'playing' ? _label('common.stop_reading', 'Stop reading aloud') : _label('common.read_aloud', 'Read this aloud')}
                                  className={`min-w-11 min-h-11 inline-flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${ttsState === 'playing' ? 'text-white bg-violet-600/60 hover:bg-violet-600/80' : 'text-slate-100 bg-white/10 hover:text-white hover:bg-white/20'} ${ttsState === 'loading' ? 'cursor-wait opacity-70' : ''}`}
                                  style={{ color: '#f8fafc' }}
                              >
@@ -241,10 +253,10 @@ function SpotlightTourView(props) {
                            <button
                                ref={closeButtonRef}
                                type="button"
-                               aria-label={t('common.close') || 'Close'}
+                               aria-label={_label('common.close', 'Close')}
                               onClick={(e) => {
                                   e.stopPropagation();
-                                  setIsSpotlightMode(false);
+                                  if (typeof setIsSpotlightMode === 'function') setIsSpotlightMode(false);
                               }}
                               data-help-ignore="true" className="text-slate-100 bg-white/10 hover:text-white hover:bg-white/20 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                               style={{ color: '#f8fafc' }}
@@ -254,7 +266,7 @@ function SpotlightTourView(props) {
                          </div>
                      </div>
                      <div id="spotlight-message-body" className="text-slate-200 text-sm leading-relaxed space-y-3 relative z-10 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar-dark">
-                          {(spotlightMessage.text || '').split(/\r?\n/).map((line, i) => {
+                          {_msgText.split(/\r?\n/).map((line, i) => {
                                     const cleanLine = line.trim();
                                     if (!cleanLine) return <div key={i} className="h-2" />;
                                     const lineReadIndex = ++_readableLineCounter;
@@ -288,7 +300,7 @@ function SpotlightTourView(props) {
                                         const bulletText = cleanLine.substring(bulletMarker.length).trim();
                                         return (
                                             <div key={i} className={`grid grid-cols-[16px_1fr] gap-2 mb-1.5 items-start rounded-lg px-2 py-1 -mx-2 transition-colors duration-300 motion-reduce:transition-none ${readLineClass}`}>
-                                                <div className="mt-2 h-1.5 w-1.5 rounded-full bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.6)] mx-auto shrink-0" />
+                                                <div aria-hidden="true" className="mt-2 h-1.5 w-1.5 rounded-full bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.6)] mx-auto shrink-0" />
                                                 <span className="text-slate-200 text-sm font-medium">{formatText(bulletText)}</span>
                                             </div>
                                         );
@@ -300,11 +312,25 @@ function SpotlightTourView(props) {
                                     );
                                 })}
                      </div>
+                     <div className="mt-4 pt-2.5 border-t border-white/10 flex items-center justify-between gap-3 text-xs text-slate-300 relative z-10">
+                        <span role="status" aria-live="polite" aria-atomic="true" data-spotlight-tts-status={ttsState} className="inline-flex items-center gap-1.5 text-slate-200 font-medium min-h-[1rem]">
+                           {_ttsStatusText ? (
+                              <>
+                                 <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${ttsState === 'playing' ? 'bg-amber-300 animate-pulse motion-reduce:animate-none' : 'bg-violet-300'}`} />
+                                 <span>{_ttsStatusText}</span>
+                              </>
+                           ) : null}
+                        </span>
+                        <span className="ml-auto inline-flex items-center gap-1.5 text-slate-300 shrink-0">
+                           <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/20 text-[11px] font-mono text-slate-100">Esc</kbd>
+                           <span>to close</span>
+                        </span>
+                     </div>
                      <svg className="absolute w-8 h-8 pointer-events-none text-slate-900/95 filter drop-shadow opacity-95" aria-hidden="true"
                           style={{
                               top: '24px',
-                              [tourRect.left > viewportWidth / 2 ? 'right' : 'left']: '-24px',
-                              transform: tourRect.left > viewportWidth / 2 ? 'rotate(-90deg)' : 'rotate(90deg)',
+                              [_rect.left > viewportWidth / 2 ? 'right' : 'left']: '-24px',
+                              transform: _rect.left > viewportWidth / 2 ? 'rotate(-90deg)' : 'rotate(90deg)',
                           }}
                           viewBox="0 0 24 24"
                           fill="currentColor"
@@ -314,10 +340,10 @@ function SpotlightTourView(props) {
                 </div>
                  <div aria-hidden="true" data-spotlight-glow-ring="true" className="fixed pointer-events-none z-[10999] motion-reduce:!animate-none"
                       style={{
-                          top: tourRect.top - 6,
-                          left: tourRect.left - 6,
-                          width: tourRect.width + 12,
-                          height: tourRect.height + 12,
+                          top: _rect.top - 6,
+                          left: _rect.left - 6,
+                          width: _rect.width + 12,
+                          height: _rect.height + 12,
                           borderRadius: '12px',
                           animation: 'spotlight-tour-glow-ring 2s ease-in-out infinite',
                           boxShadow: '0 0 0 2px rgba(139, 92, 246, 0.6), 0 0 30px rgba(139, 92, 246, 0.4), inset 0 0 20px rgba(139, 92, 246, 0.1)',

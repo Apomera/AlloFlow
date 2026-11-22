@@ -37,14 +37,14 @@ module.exports = {
     'Direct democracy in the national legislature': 'Congress is a representative body; an override vote by members is a check on the executive, not direct citizen lawmaking.',
   },
   'ap-usg-u1-007': {
-    'The Tenth Amendment automatically invalidates every federal law affecting a state.': 'The Tenth Amendment reserves undelegated powers to the states; it does not cancel valid federal laws that touch state interests.',
+    'The Tenth Amendment routinely invalidates any federal statute affecting a state.': 'The Tenth Amendment reserves undelegated powers to the states; it does not cancel valid federal laws that touch state interests.',
     'The Senate decides which state laws are constitutional without judicial review.': 'Constitutional conflicts between state and federal law are resolved in courts under the Supremacy Clause, not by a Senate vote.',
-    'State law always prevails because states existed before the federal government.': 'Article VI makes valid federal law supreme regardless of which government came first.',
+    'State law generally prevails because states predated the federal government.': 'Article VI makes valid federal law supreme regardless of which government came first.',
   },
   'ap-usg-u1-008': {
-    'Congress may exercise only the powers listed word-for-word in Article I, so implied powers are never valid.': 'McCulloch rejected this strict reading, holding that the Necessary and Proper Clause supports implied powers such as chartering a bank.',
+    'Congress is limited to powers listed word-for-word in Article I, leaving implied powers outside its scope.': 'McCulloch rejected this strict reading, holding that the Necessary and Proper Clause supports implied powers such as chartering a bank.',
     'States may tax or veto any federal institution that operates within their borders whenever they object to it.': 'The Court held the opposite: Maryland could not tax the national bank because the power to tax is the power to destroy.',
-    'The Supreme Court may review only state cases involving criminal law, leaving federal questions to Congress.': 'McCulloch was a civil case about a bank tax; it says nothing limiting the Court to criminal matters.',
+    'The Supreme Court reviews state criminal disputes while leaving federal constitutional questions to Congress.': 'McCulloch was a civil case about a bank tax; it says nothing limiting the Court to criminal matters.',
   },
   'ap-usg-u1-009': {
     'Federalism requires every policy change to be approved separately by every level of government before it takes effect.': 'Levels of government act within their own authority; a policy does not need approval from all of them, which is what creates alternative venues.',
@@ -152,9 +152,9 @@ module.exports = {
     'Judicial democracy in which courts set the city budget': 'No court is involved, and courts do not set budgets; the scenario is about participation within representation.',
   },
   'ap-usg-u1-112': {
-    'Federalist No. 10 rejects representation entirely, while Brutus No. 1 calls for direct democracy on every public question.': 'Federalist No. 10 relies on representation to refine public views; Brutus favored small republics, not voting on everything.',
-    'Both of the sources argue that state governments should be eliminated entirely from the constitutional system under debate.': 'Neither source proposed abolishing states; Brutus defended state authority and Madison kept states within the union.',
-    'Both of the sources claim that a large republic guarantees lasting agreement among citizens on every public question at issue.': 'Madison expected persistent disagreement among factions; Brutus doubted a large republic could represent citizens at all.',
+    'Federalist No. 10 rejects representation outright, while Brutus No. 1 calls for direct democracy on every public question.': 'Federalist No. 10 relies on representation to refine public views; Brutus favored small republics, not voting on everything.',
+    'Both of the sources argue that state governments should be phased out of the constitutional system under debate.': 'Neither source proposed abolishing states; Brutus defended state authority and Madison kept states within the union.',
+    'Both of the sources claim that a large republic ensures lasting agreement among citizens on every public question at issue.': 'Madison expected persistent disagreement among factions; Brutus doubted a large republic could represent citizens at all.',
   },
   'ap-usg-u1-113': {
     'The table proves that the national government held unlimited taxing authority over states.': 'Requesting funds and receiving less than half shows Congress had to ask; a government with taxing power would collect.',
@@ -172,9 +172,9 @@ module.exports = {
     'The sequence demonstrates that states control the federal judiciary.': 'States play no role in the sequence; federal courts are part of the national government.',
   },
   'ap-usg-u1-116': {
-    'Only the national government conducts diplomacy with foreign countries.': 'Diplomacy is an exclusive national power, so it is the opposite of a concurrent one.',
-    'Only state governments establish local school districts.': 'Creating school districts is a reserved state function, not a power both levels exercise.',
-    'Only the Supreme Court may review the constitutionality of a statute.': 'This describes judicial review and is also inaccurate, since lower courts review constitutionality too; it is not a shared federal-state power.',
+    'Foreign diplomacy rests exclusively with the national government.': 'Diplomacy is an exclusive national power, so it is the opposite of a concurrent one.',
+    'Local school districts are chartered exclusively by states.': 'Creating school districts is a reserved state function, not a power both levels exercise.',
+    'Constitutional review belongs exclusively to the Supreme Court.': 'This describes judicial review and is also inaccurate, since lower courts review constitutionality too; it is not a shared federal-state power.',
   },
   'ap-usg-u1-117': {
     'The Court held that Congress may regulate every local activity even without any connection at all to commerce.': 'Lopez did the reverse: it struck down a law because gun possession near a school lacked a sufficient link to interstate commerce.',

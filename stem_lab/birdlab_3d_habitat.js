@@ -16,6 +16,17 @@
     var clock = { value: 0 }, cyclePhase = { value: 0 }, breeze = { value: new THREE.Vector3(0.12, 0, 0.05) };
     // Cloud shadows drift on the shared clock; held still under reduced motion.
     var cloudMotion = { value: options.reducedMotion ? 0 : 1 };
+    var highContrastMode = !!options.highContrast;
+    if (!highContrastMode) {
+      try {
+        if (typeof document !== 'undefined') {
+          var docEl = document.documentElement, bodyEl = document.body;
+          if ((docEl && (docEl.classList.contains('theme-contrast') || docEl.classList.contains('high-contrast') || docEl.getAttribute('data-theme') === 'high-contrast')) ||
+              (bodyEl && (bodyEl.classList.contains('theme-contrast') || bodyEl.classList.contains('high-contrast')))) highContrastMode = true;
+        }
+      } catch (ignore) {}
+    }
+    var pondMesh = null, pondUniforms = null, motePoints = null, moteShaderUniforms = null;
     var dummy = new THREE.Object3D(), up = new THREE.Vector3(0, 1, 0);
     var direction = new THREE.Vector3(), a = new THREE.Vector3(), b = new THREE.Vector3();
     function random() { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; }
@@ -1240,8 +1251,9 @@
         'float gust=.64+.24*sin(blHabitatPhase*6.+origin.x*.17+origin.z*.13)+.12*sin(blHabitatPhase*11.+origin.z*.43);',
         'float waveA=blHabitatPhase*23.+origin.x*.61+origin.z*.47-weight*.9;',
         'float waveB=blHabitatPhase*37.-origin.x*.43+origin.z*.69-weight*1.3;',
-        'float flutter=.6*sin(waveA)+.4*sin(waveB);',
-        'float df=(-.54*cos(waveA)-.52*cos(waveB))*dw;',
+        'float waveC=blHabitatPhase*53.+origin.x*.91-origin.z*.77-weight*1.8;',
+        'float flutter=.54*sin(waveA)+.34*sin(waveB)+.12*sin(waveC);',
+        'float df=(-.486*cos(waveA)-.442*cos(waveB)-.216*cos(waveC))*dw;',
         'float flex=' + (bough ? '.52' : '.65') + ';',
         'float bend=flex*weight*(gust+' + flutter + '*flutter);',
         'float db=flex*(dw*(gust+' + flutter + '*flutter)+weight*' + flutter + '*df);',
@@ -1287,11 +1299,12 @@
     }
     function applyLeafTransmission(mat, grass) {
       if (!detailed) return;
-      // A thin living lamina passes some filtered sunlight through its back.
-      // Use Three's shadowed incident light, so shaded leaves cannot glow and
-      // front-lit surfaces retain their existing diffuse/specular response.
+      // A thin living lamina passes filtered warm chlorophyll sunlight through its back
+      // and catches forward-scattered backlit rim glow. Use Three's shadowed incident light,
+      // so shaded leaves cannot glow and front-lit surfaces retain their diffuse/specular response.
       var previous = mat.onBeforeCompile, previousKey = mat.customProgramCacheKey.call(mat);
-      var transmissionTint = grass ? 'vec3(.18,.24,.115)' : 'vec3(.36,.48,.23)';
+      var transmissionTint = grass ? 'vec3(.22,.30,.125)' : 'vec3(.42,.54,.24)';
+      var chlorophyllEdge = grass ? 'vec3(.26,.34,.11)' : 'vec3(.46,.56,.18)';
       mat.onBeforeCompile = function (shader, renderer) {
         previous.call(this, shader, renderer);
         shader.fragmentShader = shader.fragmentShader.replace('#include <lights_physical_pars_fragment>', [
@@ -1299,11 +1312,15 @@
           'void blLeafDirect(const in IncidentLight directLight,const in GeometricContext geometry,const in PhysicalMaterial material,inout ReflectedLight reflectedLight){',
           'RE_Direct_Physical(directLight,geometry,material,reflectedLight);',
           'float through=max(0.,-dot(geometry.normal,directLight.direction));',
-          'vec3 irradiance=through*directLight.color;',
+          'float backScatter=pow(max(0.,dot(geometry.viewDir,-directLight.direction)),2.8)*(.35+.65*through);',
+          'float leafRim=pow(1.-abs(dot(geometry.normal,geometry.viewDir)),2.2)*max(0.,dot(geometry.normal,directLight.direction)*.5+.5);',
+          'vec3 irradiance=(through+backScatter*.55)*directLight.color;',
+          'vec3 rimIrradiance=leafRim*directLight.color;',
           '#ifndef PHYSICALLY_CORRECT_LIGHTS',
           'irradiance*=PI;',
+          'rimIrradiance*=PI;',
           '#endif',
-          'reflectedLight.directDiffuse+=irradiance*BRDF_Diffuse_Lambert(material.diffuseColor*' + transmissionTint + ');',
+          'reflectedLight.directDiffuse+=irradiance*BRDF_Diffuse_Lambert(material.diffuseColor*' + transmissionTint + ')+rimIrradiance*BRDF_Diffuse_Lambert(material.diffuseColor*' + chlorophyllEdge + '*.26);',
           '}',
           '#undef RE_Direct',
           '#define RE_Direct blLeafDirect'
@@ -1851,44 +1868,216 @@
       falling.instanceMatrix.needsUpdate = true; falling.frustumCulled = false; root.add(falling);
     }
 
-    // Pollen and dust drift slowly through the clearing and glint as they
-    // turn. Placed by the vertex shader from the shared clock; omitted under
-    // reduced motion, like the falling leaves.
-    if (!options.reducedMotion) {
-      var moteCount = detailed ? 140 : 60, motePositions = new Float32Array(moteCount * 3), moteSeeds = new Float32Array(moteCount);
+    // Shimmering woodland vernal pond / forest stream basin with Gerstner ripples,
+    // Schlick Fresnel sky & canopy reflections, and seasonal winter frost.
+    // Built with hash-only coordinates so seeded tree/plant placement stays untouched.
+    if (typeof THREE.ShaderMaterial === 'function') {
+      var pondCx = -4.35, pondCz = 4.55, pondRx = 1.65, pondRz = 1.12;
+      var pondRings = detailed ? 14 : 9, pondSegs = detailed ? 36 : 24;
+      var pondPos = [], pondUvs = [], pondEdges = [], pondIdx = [];
+      var pondCenterY = groundSurfaceAt(pondCx, pondCz).height + 0.018;
+      pondPos.push(pondCx, pondCenterY, pondCz);
+      pondUvs.push(0.5, 0.5);
+      pondEdges.push(0.0);
+      for (var pr = 1; pr <= pondRings; pr++) {
+        var frac = pr / pondRings;
+        for (var ps = 0; ps < pondSegs; ps++) {
+          var theta = (ps / pondSegs) * Math.PI * 2;
+          var lobe = 1.0 + 0.18 * Math.sin(theta * 2.0 + 0.7) + 0.11 * Math.cos(theta * 3.0 - 0.5) + 0.05 * Math.sin(theta * 5.0 + 1.4);
+          var wx = pondCx + Math.cos(theta) * pondRx * lobe * frac;
+          var wz = pondCz + Math.sin(theta) * pondRz * lobe * frac;
+          var wy = groundSurfaceAt(wx, wz).height + 0.018 * (1.0 - frac * 0.45);
+          pondPos.push(wx, wy, wz);
+          pondUvs.push(0.5 + (wx - pondCx) / (pondRx * 2.4), 0.5 + (wz - pondCz) / (pondRz * 2.4));
+          pondEdges.push(frac);
+        }
+      }
+      for (var ps0 = 0; ps0 < pondSegs; ps0++) {
+        var next0 = (ps0 + 1) % pondSegs;
+        pondIdx.push(0, 1 + next0, 1 + ps0);
+      }
+      for (var pr1 = 1; pr1 < pondRings; pr1++) {
+        var ringA = 1 + (pr1 - 1) * pondSegs, ringB = 1 + pr1 * pondSegs;
+        for (var ps1 = 0; ps1 < pondSegs; ps1++) {
+          var n1 = (ps1 + 1) % pondSegs;
+          pondIdx.push(ringA + ps1, ringA + n1, ringB + n1, ringA + ps1, ringB + n1, ringB + ps1);
+        }
+      }
+      var pondGeo = geometry(new THREE.BufferGeometry());
+      pondGeo.setAttribute('position', new THREE.Float32BufferAttribute(pondPos, 3));
+      pondGeo.setAttribute('uv', new THREE.Float32BufferAttribute(pondUvs, 2));
+      pondGeo.setAttribute('blPondEdge', new THREE.Float32BufferAttribute(pondEdges, 1));
+      pondGeo.setIndex(pondIdx);
+      pondGeo.computeVertexNormals();
+      pondUniforms = {
+        uTime: { value: options.reducedMotion ? 2.8 : 0.0 },
+        uSunDir: { value: new THREE.Vector3(-18, 31, 14).normalize() },
+        uSunColor: { value: new THREE.Color('#fff0d7') },
+        uSkyColor: { value: new THREE.Color('#749bb4') },
+        uFogColor: { value: new THREE.Color('#bac9c6') },
+        uFogDensity: { value: 0.0165 },
+        uRain: { value: 0.0 },
+        uWinter: { value: 0.0 },
+        uGolden: { value: 0.0 }
+      };
+      var pondMat = keep(new THREE.ShaderMaterial({
+        uniforms: pondUniforms,
+        transparent: true,
+        depthWrite: false,
+        fog: false,
+        vertexShader: [
+          'uniform float uTime; uniform float uWinter;',
+          'attribute float blPondEdge;',
+          'varying vec3 vWorldPos; varying vec2 vUv; varying float vEdge; varying float vWaveH;',
+          'void main(){',
+          '  vUv = uv; vEdge = blPondEdge;',
+          '  vec3 p = position;',
+          '  float rippleMask = (1.0 - smoothstep(0.68, 1.0, blPondEdge)) * (1.0 - uWinter * 0.92);',
+          '  float w1 = sin(p.x * 5.2 + p.z * 3.1 + uTime * 1.45) * 0.0042;',
+          '  float w2 = sin(p.x * -3.8 + p.z * 6.4 - uTime * 1.18) * 0.0032;',
+          '  float w3 = sin(p.x * 9.5 + p.z * -7.2 + uTime * 2.15) * 0.0016;',
+          '  float disp = (w1 + w2 + w3) * rippleMask;',
+          '  p.y += disp; vWaveH = disp;',
+          '  vec4 wp = modelMatrix * vec4(p, 1.0);',
+          '  vWorldPos = wp.xyz;',
+          '  gl_Position = projectionMatrix * viewMatrix * wp;',
+          '}'
+        ].join('\n'),
+        fragmentShader: [
+          'uniform float uTime; uniform vec3 uSunDir; uniform vec3 uSunColor; uniform vec3 uSkyColor;',
+          'uniform vec3 uFogColor; uniform float uFogDensity; uniform float uRain; uniform float uWinter; uniform float uGolden;',
+          'varying vec3 vWorldPos; varying vec2 vUv; varying float vEdge; varying float vWaveH;',
+          'float blPondHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+          'void main(){',
+          '  float shoreAlpha = 1.0 - smoothstep(0.66, 0.99, vEdge);',
+          '  if (shoreAlpha <= 0.004) discard;',
+          '  vec2 wp = vWorldPos.xz;',
+          '  float rippleFlow = 1.0 - uWinter * 0.92;',
+          // 4-component Gerstner wave normal gradient for crisp woodland stream & pond ripples.
+          '  float p1 = wp.x * 5.2 + wp.y * 3.1 + uTime * 1.45;',
+          '  float p2 = wp.x * -3.8 + wp.y * 6.4 - uTime * 1.18;',
+          '  float p3 = wp.x * 9.5 + wp.y * -7.2 + uTime * 2.15;',
+          '  float p4 = wp.x * -13.0 + wp.y * -10.5 + uTime * 2.85;',
+          '  vec2 grad = (vec2(5.2, 3.1) * cos(p1) * 0.016 + vec2(-3.8, 6.4) * cos(p2) * 0.013 + vec2(9.5, -7.2) * cos(p3) * 0.0075 + vec2(-13.0, -10.5) * cos(p4) * 0.0045) * rippleFlow;',
+          // Concentric raindrop ring ripples when raining.
+          '  if (uRain > 0.01 && uWinter < 0.5) {',
+          '    vec2 cell = floor(wp * 1.7);',
+          '    vec2 local = fract(wp * 1.7) - 0.5;',
+          '    float seed = blPondHash(cell);',
+          '    float phase = fract(uTime * 0.85 + seed * 7.1);',
+          '    float dist = length(local - (vec2(seed, fract(seed * 13.7)) - 0.5) * 0.45);',
+          '    float ring = sin((dist - phase * 0.48) * 42.0) * exp(-abs(dist - phase * 0.48) * 18.0) * (1.0 - phase);',
+          '    grad += normalize(local + vec2(0.0001)) * ring * 0.085 * uRain;',
+          '  }',
+          '  vec3 N = normalize(vec3(-grad.x, 1.0, -grad.y));',
+          '  vec3 V = normalize(cameraPosition - vWorldPos);',
+          '  float ndv = max(0.02, dot(N, V));',
+          '  float fresnel = 0.04 + 0.96 * pow(1.0 - ndv, 4.2);',
+          // Deep mossy emerald-amber woodland water bed fading to clear amber shallows at edge.
+          '  vec3 shallowCol = vec3(0.18, 0.21, 0.14);',
+          '  vec3 deepCol = vec3(0.06, 0.12, 0.11);',
+          '  vec3 waterBody = mix(deepCol, shallowCol, smoothstep(0.20, 0.88, vEdge));',
+          // Subtle sunlit canopy reflection mixed into the sky reflection.
+          '  vec3 canopyRefl = vec3(0.13, 0.19, 0.11) * (0.75 + 0.25 * sin(wp.x * 2.4 + wp.y * 1.9));',
+          '  vec3 skyRefl = mix(uSkyColor * 0.82, mix(uSkyColor, uSunColor, 0.45), uGolden * 0.65);',
+          '  vec3 reflCol = mix(canopyRefl, skyRefl, clamp(0.42 + fresnel * 0.58, 0.0, 1.0));',
+          '  vec3 col = mix(waterBody, reflCol, clamp(fresnel * 0.88 + 0.14, 0.0, 0.94));',
+          // Crisp sun specular sparkle glints across the Gerstner wave crests.
+          '  vec3 H = normalize(uSunDir + V);',
+          '  float spec = pow(max(0.0, dot(N, H)), 96.0) * (1.0 - uRain * 0.72) * (1.0 - uWinter * 0.45);',
+          '  float shimmer = pow(max(0.0, dot(N, H)), 18.0) * 0.14 * (1.0 - uRain * 0.65);',
+          '  col += uSunColor * (spec * 1.35 + shimmer);',
+          // Winter frost turns the vernal pool into pale crystalline translucent ice.
+          '  vec3 iceCol = mix(vec3(0.64, 0.71, 0.76), uSkyColor * 0.95, 0.35 + fresnel * 0.35);',
+          '  col = mix(col, iceCol, uWinter * 0.78);',
+          // Distance exponential fog matching the woodland clearing haze.
+          '  float camDist = length(cameraPosition - vWorldPos);',
+          '  float fogFactor = 1.0 - exp(-uFogDensity * uFogDensity * camDist * camDist);',
+          '  col = mix(col, uFogColor, clamp(fogFactor, 0.0, 1.0));',
+          '  float alpha = shoreAlpha * mix(0.68, 0.92, clamp(fresnel + uWinter * 0.22, 0.0, 1.0));',
+          '  gl_FragColor = vec4(col, alpha);',
+          '}'
+        ].join('\n')
+      }));
+      pondMesh = new THREE.Mesh(pondGeo, pondMat);
+      pondMesh.name = 'woodland-vernal-pond';
+      pondMesh.renderOrder = 1;
+      pondMesh.visible = !highContrastMode;
+      root.add(pondMesh);
+    }
+
+    // Sunlit meadow pollen & golden dust motes drifting through the clearing on a
+    // dedicated WebGL1 ShaderMaterial. Frozen at a static beauty frame under reduced motion,
+    // and cleanly bypassed in High-Contrast mode or winter snow cover.
+    (function () {
+      var moteCount = detailed ? 168 : 72, motePositions = new Float32Array(moteCount * 3), moteSeeds = new Float32Array(moteCount);
       for (var mote = 0; mote < moteCount; mote++) {
-        var moteAngle = hash(mote, 911) * Math.PI * 2, moteRange = Math.sqrt(hash(mote + 3, 913)) * 7.5;
+        var moteAngle = hash(mote, 911) * Math.PI * 2, moteRange = Math.sqrt(hash(mote + 3, 913)) * 8.2;
         var moteX = Math.cos(moteAngle) * moteRange, moteZ = Math.sin(moteAngle) * moteRange;
-        motePositions[mote * 3] = moteX; motePositions[mote * 3 + 1] = groundHeight(moteX, moteZ) + .25 + hash(mote + 7, 917) * 2.6; motePositions[mote * 3 + 2] = moteZ;
+        motePositions[mote * 3] = moteX; motePositions[mote * 3 + 1] = groundHeight(moteX, moteZ) + .22 + hash(mote + 7, 917) * 2.9; motePositions[mote * 3 + 2] = moteZ;
         moteSeeds[mote] = hash(mote + 13, 919);
       }
       var moteGeo = geometry(new THREE.BufferGeometry());
       moteGeo.setAttribute('position', new THREE.BufferAttribute(motePositions, 3));
       moteGeo.setAttribute('blMoteSeed', new THREE.BufferAttribute(moteSeeds, 1));
-      var moteMat = keep(new THREE.PointsMaterial({ color: 0xffecc0, size: .052, sizeAttenuation: true, transparent: true, opacity: .78, depthWrite: false, blending: THREE.AdditiveBlending }));
-      moteMat.onBeforeCompile = function (shader) {
-        shader.uniforms.blMoteClock = clock;
-        shader.vertexShader = 'uniform float blMoteClock;\nattribute float blMoteSeed;\nvarying float blMoteGlint;\nvarying float blMoteWarm;\n' + shader.vertexShader;
-        shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', [
-          '#include <begin_vertex>',
-          'float blMoteT = blMoteClock + blMoteSeed * 97.;',
-          'transformed += vec3(sin(blMoteT * .21 + blMoteSeed * 6.3) * .35 + breezeSway(blMoteT), sin(blMoteT * .13 + blMoteSeed * 11.) * .22 + .06 * cos(blMoteT * .09 + blMoteSeed * 5.), cos(blMoteT * .17 + blMoteSeed * 4.1) * .35);',
-          'blMoteGlint = .38 + .62 * pow(max(0., sin(blMoteT * 1.5 + blMoteSeed * 30.)), 5.);',
-          'blMoteWarm = blMoteSeed;'
-        ].join('\n')).replace('void main() {', 'float breezeSway(float t) { return sin(t * .05) * .4; }\nvoid main() {')
-          .replace('#include <logdepthbuf_vertex>', '#include <logdepthbuf_vertex>\ngl_PointSize *= .65 + .90 * blMoteSeed;');
-        shader.fragmentShader = 'varying float blMoteGlint;\nvarying float blMoteWarm;\n' + shader.fragmentShader.replace('#include <color_fragment>', [
-          '#include <color_fragment>',
-          'vec2 blMc = gl_PointCoord * 2.0 - 1.0; float blMr = dot(blMc, blMc); if (blMr > 1.0) discard;',
-          'float blHalo = pow(1.0 - blMr, 2.2); float blCore = exp(-blMr * 7.5);',
-          'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.98, 0.90), blCore * 0.65 + blMoteWarm * 0.15);',
-          'diffuseColor.a *= (blHalo * 0.72 + blCore * 0.55) * blMoteGlint;'
-        ].join('\n'));
-      };
-      moteMat.customProgramCacheKey = function () { return 'birdlab-clearing-motes-v2'; };
-      var motes = new THREE.Points(moteGeo, moteMat);
-      motes.name = 'drifting-clearing-motes'; motes.frustumCulled = false; root.add(motes);
-    }
+      var moteMat;
+      if (typeof THREE.ShaderMaterial === 'function') {
+        moteShaderUniforms = {
+          uTime: { value: options.reducedMotion ? 4.2 : 0.0 },
+          uPixelRatio: { value: Math.min((typeof global !== 'undefined' && global.devicePixelRatio) || 1, detailed ? 1.65 : 1.25) },
+          uSunColor: { value: new THREE.Color('#ffefc4') },
+          uOpacity: { value: 0.76 },
+          uGolden: { value: 0.0 }
+        };
+        moteMat = keep(new THREE.ShaderMaterial({
+          uniforms: moteShaderUniforms,
+          transparent: true,
+          depthWrite: false,
+          fog: false,
+          blending: THREE.AdditiveBlending,
+          vertexShader: [
+            'uniform float uTime; uniform float uPixelRatio;',
+            'attribute float blMoteSeed;',
+            'varying float vGlint; varying float vWarm; varying float vFade;',
+            'void main(){',
+            '  float t = uTime + blMoteSeed * 97.0;',
+            '  vec3 p = position;',
+            '  p.x += sin(t * 0.21 + blMoteSeed * 6.283) * 0.38 + sin(t * 0.065) * 0.42;',
+            '  p.y += sin(t * 0.14 + blMoteSeed * 11.3) * 0.24 + 0.07 * cos(t * 0.09 + blMoteSeed * 5.1);',
+            '  p.z += cos(t * 0.18 + blMoteSeed * 4.17) * 0.36 + cos(t * 0.055) * 0.24;',
+            '  vec4 mvPosition = modelViewMatrix * vec4(p, 1.0);',
+            '  float depth = max(0.6, -mvPosition.z);',
+            '  vGlint = 0.36 + 0.64 * pow(max(0.0, sin(t * 1.45 + blMoteSeed * 31.4)), 4.0);',
+            '  vWarm = blMoteSeed;',
+            '  vFade = smoothstep(0.65, 2.2, depth) * (1.0 - smoothstep(13.0, 24.0, depth));',
+            '  gl_PointSize = clamp((13.0 + 16.0 * blMoteSeed) * uPixelRatio / depth, 1.5, 18.0);',
+            '  gl_Position = projectionMatrix * mvPosition;',
+            '}'
+          ].join('\n'),
+          fragmentShader: [
+            'uniform vec3 uSunColor; uniform float uOpacity; uniform float uGolden;',
+            'varying float vGlint; varying float vWarm; varying float vFade;',
+            'void main(){',
+            '  vec2 c = gl_PointCoord * 2.0 - 1.0;',
+            '  float r2 = dot(c, c);',
+            '  if (r2 > 1.0) discard;',
+            '  float halo = pow(1.0 - r2, 2.3);',
+            '  float core = exp(-r2 * 8.0);',
+            '  vec3 pollenTint = mix(vec3(0.97, 0.95, 0.78), vec3(1.0, 0.87, 0.56), vWarm * 0.75 + uGolden * 0.25);',
+            '  vec3 col = mix(pollenTint * uSunColor, vec3(1.0, 0.99, 0.92), core * 0.68);',
+            '  float alpha = (halo * 0.64 + core * 0.62) * vGlint * vFade * uOpacity;',
+            '  gl_FragColor = vec4(col, alpha);',
+            '}'
+          ].join('\n')
+        }));
+      } else {
+        moteMat = keep(new THREE.PointsMaterial({ color: 0xffecc0, size: .052, sizeAttenuation: true, transparent: true, opacity: .72, depthWrite: false, blending: THREE.AdditiveBlending }));
+      }
+      motePoints = new THREE.Points(moteGeo, moteMat);
+      motePoints.name = 'drifting-clearing-motes'; motePoints.frustumCulled = false;
+      motePoints.visible = !highContrastMode;
+      root.add(motePoints);
+    })();
 
     root.userData = { habitat: 'woodland-edge', deterministicSeed: 972031, sharedTerrainSampler: true, perch: [0, 3.2, 0] };
     function update(time, wind) {
@@ -1896,6 +2085,9 @@
       clock.value = Number.isFinite(time) ? time : 0;
       var period = global.BirdLab3D && global.BirdLab3D.courseDuration || 44;
       cyclePhase.value = ((clock.value % period) + period) % period / period * Math.PI * 2;
+      var frozenTime = typeof options !== 'undefined' && options && options.reducedMotion;
+      if (typeof pondUniforms !== 'undefined' && pondUniforms) pondUniforms.uTime.value = frozenTime ? 2.8 : clock.value;
+      if (typeof moteShaderUniforms !== 'undefined' && moteShaderUniforms) moteShaderUniforms.uTime.value = frozenTime ? 4.2 : clock.value;
       if (typeof wind === 'number') {
         var strength = Math.max(0, Math.min(2, wind)); breeze.value.set(strength * 0.22, 0, strength * 0.085);
       } else if (wind && Number.isFinite(wind.x) && Number.isFinite(wind.z)) {
@@ -2216,7 +2408,10 @@
         rain = new THREE.Group(); rain.name = 'rain-shower'; rain.userData.motion = motion; rain.add(lines, rings); root.add(rain);
       }
       if (rain) rain.visible = !!value && season !== 'winter';
-      wetWeather = !!value; syncSnowfall();
+      wetWeather = !!value;
+      if (pondUniforms) pondUniforms.uRain.value = wetWeather ? 1.0 : 0.0;
+      if (moteShaderUniforms) moteShaderUniforms.uOpacity.value = wetWeather ? 0.18 : 0.76;
+      syncSnowfall();
     }
 
     // ── Seasons (opt-in). Summer is the woodland as built. Autumn turns the
@@ -2396,11 +2591,33 @@
       if (wildflowers) wildflowers.visible = value === 'spring';
       seasonUniforms.blSnow.value = value === 'winter' ? 1 : 0;
       WINTER_HIDDEN.forEach(function (name) { var part = root.getObjectByName(name); if (part) part.visible = value !== 'winter'; });
+      if (motePoints && highContrastMode) motePoints.visible = false;
+      if (pondUniforms) pondUniforms.uWinter.value = value === 'winter' ? 1.0 : 0.0;
       if (rain) rain.visible = wetWeather && value !== 'winter';
       syncSnowfall();
     }
+    function setLightState(state) {
+      if (disposed || !state) return;
+      if (typeof state.highContrast === 'boolean') {
+        highContrastMode = state.highContrast;
+        if (pondMesh) pondMesh.visible = !highContrastMode;
+        if (motePoints) motePoints.visible = !highContrastMode && season !== 'winter';
+      }
+      if (pondUniforms) {
+        if (state.sunDir) pondUniforms.uSunDir.value.copy(state.sunDir);
+        if (state.sunColor) pondUniforms.uSunColor.value.copy(state.sunColor);
+        if (state.skyColor) pondUniforms.uSkyColor.value.copy(state.skyColor);
+        if (state.fogColor) pondUniforms.uFogColor.value.copy(state.fogColor);
+        if (typeof state.fogDensity === 'number') pondUniforms.uFogDensity.value = state.fogDensity;
+        if (typeof state.golden === 'number') pondUniforms.uGolden.value = state.golden;
+      }
+      if (moteShaderUniforms) {
+        if (state.sunColor) moteShaderUniforms.uSunColor.value.copy(state.sunColor);
+        if (typeof state.golden === 'number') moteShaderUniforms.uGolden.value = state.golden;
+      }
+    }
     return { root: root, perch: new THREE.Vector3(0, 3.2, 0), perches:observationPerches, isBlocked:isBlocked, groundHeight: groundHeight, setSeason: setSeason,
-      groundSurfaceHeight: function(x,z) { return groundSurfaceAt(x,z).height; }, update: update, dispose: dispose,
+      groundSurfaceHeight: function(x,z) { return groundSurfaceAt(x,z).height; }, update: update, dispose: dispose, setLightState: setLightState,
       getFoodSources: getFoodSources, setFoodVisible: setFoodVisible, setFoodLevels: setFoodLevels, setGuidedFood: setGuidedFood, setMist: setMist, setRain: setRain };
   }
   global.BirdLab3DHabitat = { create: create };

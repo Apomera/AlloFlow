@@ -169,6 +169,12 @@
       if (activeRunner && typeof activeRunner.setWordAudio === 'function') {
         activeRunner.setWordAudio(mergedWordAudio(wordAudio));
       }
+    }).then(function (out) {
+      if (!Object.keys(wordAudio).length) wordsJsonPromise = null;
+      return out;
+    }).catch(function () {
+      wordsJsonPromise = null;
+      return wordAudio;
     });
     return wordsJsonPromise;
   }
@@ -228,8 +234,12 @@
           shardIndexData = data;
           return data;
         }
+        shardIndexPromise = null;
         return null;
-      }).catch(function () { return null; });
+      }).catch(function () {
+        shardIndexPromise = null;
+        return null;
+      });
     }
     return shardIndexPromise;
   }
@@ -319,11 +329,12 @@
 
   // Transcodes any WebM clips to WAV via loader.portableAudio (Safari/iPad compatibility) and shrinks WAV to 48 kbps MP3 when available.
   function makeClipsPortable(clipMap) {
-    if (!clipMap || typeof clipMap !== 'object') return Promise.resolve(clipMap || {});
-    var out = {};
-    var todoAudio = {};
+    if (!clipMap || typeof clipMap !== 'object') return Promise.resolve(clipMap || Object.create(null));
+    var out = Object.create(null);
+    var todoAudio = Object.create(null);
     var todoKeys = [];
     Object.keys(clipMap).forEach(function (k) {
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
       var uri = clipMap[k];
       if (typeof uri !== 'string' || !/^data:audio\//i.test(uri)) return;
       if (portableClipCache[uri]) {
@@ -378,7 +389,7 @@
       return stillMissing ? loadWordAudio() : wordAudio;
     }).then(function () {
       if (!convertToPortable) return wordAudio;
-      var todo = {};
+      var todo = Object.create(null);
       targets.forEach(function (w) {
         if (typeof wordAudio[w] === 'string' && /^data:audio\//i.test(wordAudio[w])) todo[w] = wordAudio[w];
       });
@@ -562,7 +573,7 @@
     if (!symbols) return Promise.resolve(null);
     if (!symbolReadyPromise) {
       symbolReadyPromise = typeof symbols.ready === 'function'
-        ? Promise.resolve(symbols.ready()).then(function () { return symbols; }).catch(function () { return null; })
+        ? Promise.resolve(symbols.ready()).then(function () { return symbols; }).catch(function () { symbolReadyPromise = null; return null; })
         : Promise.resolve(symbols);
     }
     return symbolReadyPromise;
@@ -593,6 +604,36 @@
     }
     if (/@import|@font-face|@namespace|expression\s*\(/i.test(plain)) return 'unsafe style';
     return '';
+  }
+
+  function isAllowedPictureUri(uri) {
+    if (typeof uri !== 'string') return false;
+    var s = uri.trim();
+    if (!s || s.length > 620000) return false;
+    if (!/^data:image\/(?:png|jpeg|jpg|gif|webp|svg\+xml)[;,]/i.test(s)) return false;
+    if (/^data:image\/svg\+xml[;,]/i.test(s)) {
+      var comma = s.indexOf(',');
+      if (comma < 0) return false;
+      var meta = s.slice(0, comma);
+      var payload = s.slice(comma + 1);
+      var decoded = '';
+      try {
+        if (/;base64\b/i.test(meta)) {
+          decoded = typeof root.atob === 'function' ? root.atob(payload.replace(/\s+/g, '')) : '';
+          if (typeof root.TextDecoder === 'function' && decoded) {
+            var bytes = new Uint8Array(decoded.length);
+            for (var i = 0; i < decoded.length; i++) bytes[i] = decoded.charCodeAt(i) & 0xff;
+            decoded = new root.TextDecoder('utf-8').decode(bytes);
+          }
+        } else {
+          decoded = decodeURIComponent(payload);
+        }
+      } catch (_) {
+        return false;
+      }
+      if (!decoded || localSvgRefusal(decoded)) return false;
+    }
+    return true;
   }
 
   function downscaleImageUri(dataUri) {
@@ -782,7 +823,7 @@
         var mk = typeof myWords.normalizeMediaKey === 'function' ? myWords.normalizeMediaKey(sym.answer) : String(sym.answer).toLowerCase();
         var ansLower = String(sym.answer).toLowerCase();
         var entry = found[mk] || found[ansLower] || null;
-        var hasPic = !!(entry && entry.picture && !entry.picture.none && typeof entry.picture.dataUri === 'string' && entry.picture.dataUri);
+        var hasPic = !!(entry && entry.picture && !entry.picture.none && isAllowedPictureUri(entry.picture.dataUri));
         if (hasPic) {
           var creditText = typeof myWords.creditLine === 'function' && entry.picture.credit ? myWords.creditLine(entry.picture.credit) : "The teacher's own picture.";
           pictures[sym.answer] = {
@@ -928,7 +969,7 @@
     doc.body.appendChild(a);
     a.click();
     doc.body.removeChild(a);
-    setTimeout(function () { root.URL.revokeObjectURL(url); }, 1000);
+    setTimeout(function () { root.URL.revokeObjectURL(url); }, 15000);
   }
 
   function slug(textVal, fallback) {
@@ -946,7 +987,7 @@
   }
 
   function resolvePoolClips(pool, resolvedMode, pBank, lBank, wBank) {
-    var clipMap = {};
+    var clipMap = Object.create(null);
     var aMode = audioModeValue();
     var allWords = mergedWordAudio(wBank);
     (pool || []).forEach(function (item) {
@@ -1029,11 +1070,12 @@
     var customVal = customInput ? customInput.value.trim() : '';
     var resolvedMode = customVal ? 'custom' : modeId;
     var knownList = pMode === 'check' ? undefined : (knownInput && knownInput.value.trim() ? knownInput.value.trim() : undefined);
-    var picMap = {};
+    var picMap = Object.create(null);
     Object.keys(pictures).forEach(function (k) {
-      if (pictures[k] && pictures[k].src) picMap[k] = pictures[k];
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
+      if (pictures[k] && isAllowedPictureUri(pictures[k].src)) picMap[k] = pictures[k];
     });
-    var clipMap = {};
+    var clipMap = Object.create(null);
     if (wantAudio) {
       clipMap = portableClips || resolvePoolClips(currentPool(), resolvedMode, pBank, lBank, wBank);
     }
@@ -1548,11 +1590,11 @@
         customInput.value = '';
       }
     }
-    if (back.control) {
+    if (back.control === 'direct' || back.control === 'lockon') {
       var cr = doc.querySelector('input[name="sr-control"][value="' + back.control + '"]');
       if (cr) cr.checked = true;
     }
-    if (back.viewMode) {
+    if (back.viewMode === '3d' || back.viewMode === '2d' || back.viewMode === 'grid') {
       var vr = doc.querySelector('input[name="sr-view"][value="' + back.viewMode + '"]');
       if (vr) vr.checked = true;
     }
@@ -1581,11 +1623,12 @@
       if (back.learner && $('sr-batch')) $('sr-batch').open = true;
     }
     var reopenedPool = currentPool();
-    pictures = {};
+    pictures = Object.create(null);
     if (back.pictures && typeof back.pictures === 'object') {
       Object.keys(back.pictures).forEach(function (k) {
+        if (k === '__proto__' || k === 'constructor' || k === 'prototype') return;
         var pic = back.pictures[k];
-        if (pic && pic.src) {
+        if (pic && isAllowedPictureUri(pic.src)) {
           var entry = {
             src: pic.src,
             alt: pic.alt || k,
@@ -1595,7 +1638,7 @@
           pictures[k] = entry;
           var lowerKey = k.toLowerCase();
           reopenedPool.forEach(function (s) {
-            if (s && s.answer && String(s.answer).toLowerCase() === lowerKey) {
+            if (s && s.answer && s.answer !== '__proto__' && s.answer !== 'constructor' && s.answer !== 'prototype' && String(s.answer).toLowerCase() === lowerKey) {
               pictures[s.answer] = entry;
             }
           });
@@ -1849,7 +1892,7 @@
           if (includeAudioCheck) includeAudioCheck.checked = true;
           if (audioModeSelect) audioModeSelect.value = 'auto';
           if (hcCheck) hcCheck.checked = false;
-          pictures = {};
+          pictures = Object.create(null);
           syncPacketModeUi();
           drawModeLine();
           markChoices();
@@ -1909,7 +1952,8 @@
     var match = /^#rehearse=(.+)$/i.exec(hash);
     if (!match) return false;
     var raw = '';
-    try { raw = decodeURIComponent(match[1]); } catch (_) { raw = match[1]; }
+    var sliced = match[1].slice(0, 4000);
+    try { raw = decodeURIComponent(sliced); } catch (_) { raw = sliced; }
     var seen = Object.create(null);
     var missed = [];
     raw.split(/[,;\s]+/).forEach(function (tok) {
@@ -1977,7 +2021,8 @@
     var match = /^#symbols=(.+)$/i.exec(hash);
     if (!match) return false;
     var raw = '';
-    try { raw = decodeURIComponent(match[1]); } catch (_) { raw = match[1]; }
+    var sliced = match[1].slice(0, 4000);
+    try { raw = decodeURIComponent(sliced); } catch (_) { raw = sliced; }
     var seen = Object.create(null);
     var items = [];
     raw.split(/[,;\s]+/).forEach(function (tok) {
@@ -2075,6 +2120,19 @@
   takeHanded().then(function (opened) {
     if (!opened) autoFillPictures(true);
   });
+
+  if (typeof root.addEventListener === 'function') {
+    root.addEventListener('pagehide', function () {
+      if (previewBlobUrl && root.URL && typeof root.URL.revokeObjectURL === 'function') {
+        try { root.URL.revokeObjectURL(previewBlobUrl); } catch (_) {}
+        previewBlobUrl = '';
+      }
+      if (previewSession && typeof previewSession.close === 'function') {
+        try { previewSession.close(); } catch (_) {}
+      }
+      previewSession = null;
+    });
+  }
 
   root.AlloPacketsSymbolRunner = {
     startLive: startLive,

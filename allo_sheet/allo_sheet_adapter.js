@@ -24,8 +24,9 @@
   }
 
   function isSafeFieldName(value) {
-    var text = safeText(value, 160).trim();
-    return !!text && !BLOCKED_KEYS[text] && !/[\/\\\u0000-\u001f]/.test(text);
+    if (typeof value !== 'string' || !value || value.length > 160) return false;
+    if (value !== value.trim() || safeText(value, 160) !== value) return false;
+    return !BLOCKED_KEYS[value] && !/[\/\\\u0000-\u001f\u007f]/.test(value);
   }
 
   function isScalar(value) {
@@ -54,7 +55,12 @@
       Object.keys(inputFields).slice(0, MAX_COLUMNS).forEach(function (field) {
         if (!isSafeFieldName(field)) return;
         var value = inputFields[field];
-        fields[field] = isScalar(value) ? sanitizeScalar(value) : safeText(JSON.stringify(value), MAX_CELL_CHARS);
+        if (isScalar(value)) {
+          fields[field] = sanitizeScalar(value);
+        } else {
+          try { fields[field] = safeText(JSON.stringify(value), MAX_CELL_CHARS); }
+          catch (_) { fields[field] = '[value]'; }
+        }
       });
       return { id: id, fields: fields };
     });
@@ -130,17 +136,30 @@
     return snapshot;
   }
 
+  function isPlainJsonObject(candidate) {
+    return !!candidate && typeof candidate === 'object' && !Array.isArray(candidate);
+  }
+
   function parseJsonObject(value) {
-    if (value && typeof value === 'object') return value;
+    if (isPlainJsonObject(value)) return value;
+    if (value && typeof value === 'object') {
+      throw new Error('The assistant response was not valid JSON.');
+    }
     var text = safeText(value, 100000)
       .replace(/```json\s*/gi, '')
       .replace(/```\s*/g, '')
       .trim();
-    try { return JSON.parse(text); } catch (_) {}
+    try {
+      var direct = JSON.parse(text);
+      if (isPlainJsonObject(direct)) return direct;
+    } catch (_) {}
     var start = text.indexOf('{');
     var end = text.lastIndexOf('}');
     if (start >= 0 && end > start) {
-      try { return JSON.parse(text.slice(start, end + 1)); } catch (_) {}
+      try {
+        var sliced = JSON.parse(text.slice(start, end + 1));
+        if (isPlainJsonObject(sliced)) return sliced;
+      } catch (_) {}
     }
     throw new Error('The assistant response was not valid JSON.');
   }
@@ -214,7 +233,7 @@
 
   function runLocalAudit(inputRecords, inputColumns) {
     var records = normalizeRecords(inputRecords || []);
-    var columns = Array.isArray(inputColumns) ? inputColumns.filter(isSafeFieldName) : deriveColumns(records);
+    var columns = Array.isArray(inputColumns) ? inputColumns.filter(isSafeFieldName).slice(0, MAX_COLUMNS) : deriveColumns(records);
     var blankCounts = Object.create(null);
     var duplicateCounts = Object.create(null);
     var trimChanges = [];

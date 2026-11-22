@@ -183,15 +183,25 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
 
   const [value, setValue] = React.useState(promptDialog.defaultValue != null ? String(promptDialog.defaultValue) : '');
   const [error, setError] = React.useState(null);
+  const [choiceQuery, setChoiceQuery] = React.useState('');
   const inputRef = React.useRef(null);
   const dialogRef = React.useRef(null);
   const backdropDownRef = React.useRef(null);
   const settledRef = React.useRef(false);
   const choiceMode = Array.isArray(promptDialog.choices);
   const choices = choiceMode ? promptDialog.choices.filter(choice => choice && choice.value != null && String(choice.value)) : [];
+  const normalizedChoiceQuery = choices.length >= 6 ? choiceQuery.trim().toLowerCase() : '';
+  const visibleChoices = normalizedChoiceQuery
+    ? choices.filter(choice => {
+        const hay = (String(choice.label || choice.value) + ' ' + String(choice.description || '')).toLowerCase();
+        return hay.includes(normalizedChoiceQuery) || String(choice.value) === value;
+      })
+    : choices;
   const validChoice = choices.some(choice => String(choice.value) === value);
-  const checkedChoiceIndex = choices.findIndex(choice => String(choice.value) === value);
+  const checkedChoiceIndex = visibleChoices.findIndex(choice => String(choice.value) === value);
   const initialChoiceFocusIndex = checkedChoiceIndex >= 0 ? checkedChoiceIndex : 0;
+  const maxLen = Number.isFinite(Number(promptDialog.maxLength)) && Number(promptDialog.maxLength) > 0 ? Math.trunc(Number(promptDialog.maxLength)) : 0;
+  const nearMaxLen = maxLen > 0 && value.length >= Math.floor(maxLen * 0.9);
 
   const handleCancel = React.useCallback(() => {
     if (settledRef.current) return;
@@ -226,6 +236,7 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
     settledRef.current = false;
     const nextValue = promptDialog.defaultValue != null ? String(promptDialog.defaultValue) : '';
     setValue(nextValue);
+    setChoiceQuery('');
     setError(null);
     try {
       if (Array.isArray(promptDialog.choices) && dialogRef.current) {
@@ -241,9 +252,9 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
 
   const handleDialogKeyDown = React.useCallback((e) => {
     if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229 || e.nativeEvent?.keyCode === 229) return;
-    // Buttons (Cancel, Close, Submit, Choice cards) use native button activation:
-    // Enter on Cancel or Close must never submit the prompt through this shortcut.
-    if (e.target?.closest?.('button')) return;
+    // Buttons (Cancel, Close, Submit, Choice cards) and choice search input use native activation:
+    // Enter on Cancel, Close, or a filter box must never submit the prompt through this shortcut.
+    if (e.target?.closest?.('button') || e.target?.getAttribute?.('data-prompt-choice-filter') === 'true') return;
     if (e.key === 'Enter' && !promptDialog.multiline) { e.preventDefault(); handleSubmit(); }
     else if (e.key === 'Enter' && promptDialog.multiline && (e.ctrlKey || e.metaKey)) { e.preventDefault(); handleSubmit(); }
   }, [handleSubmit, promptDialog.multiline, choiceMode]);
@@ -311,7 +322,33 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
         {choiceMode ? (
           <fieldset className="min-w-0 space-y-3" aria-describedby={error ? 'alloflow-prompt-error' : undefined}>
             <legend className="sr-only">{promptDialog.message}</legend>
-            {choices.map((choice, index) => {
+            <div data-testid="prompt-dialog-choice-status" className="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-slate-600">
+              <span>{choices.length} {_promptCopy(t, 'prompt_dialog.options_count', choices.length === 1 ? 'option' : 'options')}</span>
+              <span className={'rounded-full px-2 py-0.5 font-bold ' + (validChoice ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-slate-700')}>
+                {validChoice ? _promptCopy(t, 'prompt_dialog.selected_badge', '✓ Selected') : _promptCopy(t, 'prompt_dialog.select_one_badge', 'Select one')}
+              </span>
+            </div>
+            {choices.length >= 6 && (
+              <input
+                type="search"
+                data-prompt-choice-filter="true"
+                value={choiceQuery}
+                aria-label={_promptCopy(t, 'prompt_dialog.filter_options', 'Filter options')}
+                placeholder={_promptCopy(t, 'prompt_dialog.filter_options_ph', 'Find option…')}
+                onChange={(e) => setChoiceQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+                  if (e.key === 'Escape' && choiceQuery) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setChoiceQuery('');
+                  }
+                }}
+                style={{ minHeight: '44px' }}
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800 placeholder:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+              />
+            )}
+            {visibleChoices.map((choice, index) => {
               const choiceValue = String(choice.value);
               const checked = value === choiceValue;
               return <label key={choiceValue} className={'flex min-w-0 cursor-pointer items-start gap-3 rounded-xl border-2 p-3 transition-colors motion-reduce:transition-none focus-within:ring-4 focus-within:ring-indigo-500/20 ' + (checked ? 'border-indigo-600 bg-indigo-50' : 'border-slate-300 bg-white hover:border-indigo-400')}>
@@ -334,10 +371,23 @@ function _PromptDialogInner({ promptDialog, setPromptDialog, t: _rawT }) {
               </label>;
             })}
           </fieldset>
-        ) : promptDialog.multiline
-          ? <textarea {...inputCommonProps} rows={4} />
-          : <input {...inputCommonProps} type={promptDialog.inputType || 'text'} />
-        }
+        ) : (
+          <div>
+            {promptDialog.multiline
+              ? <textarea {...inputCommonProps} rows={4} />
+              : <input {...inputCommonProps} type={promptDialog.inputType || 'text'} />}
+            {(maxLen > 0 || promptDialog.multiline) && (
+              <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+                <span>{promptDialog.multiline ? _promptCopy(t, 'prompt_dialog.multiline_hint', 'Ctrl/Cmd + Enter to submit') : ''}</span>
+                {maxLen > 0 && (
+                  <span data-testid="prompt-dialog-char-count" className={'font-mono font-semibold ' + (nearMaxLen ? 'text-amber-800' : 'text-slate-600')}>
+                    {value.length} / {maxLen}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         {error && (
           <p id="alloflow-prompt-error" role="alert" className="text-xs text-red-600 mt-2 font-semibold">{error}</p>
         )}

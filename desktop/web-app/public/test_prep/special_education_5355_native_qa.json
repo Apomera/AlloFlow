@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-21T03:01:51.389Z",
+  "generatedAt": "2026-11-21T22:11:27.920Z",
   "packId": "praxis-special-education-5355",
   "standard": {
     "label": "AlloFlow independent 5355 source, structure, feedback, and linkage QA v1",
@@ -99,13 +99,13 @@
     "sourceItems": 200,
     "assistantAuthoredIndependentItems": 0,
     "independentPracticeItems": 200,
-    "distinctSourceContentKernels": 100,
-    "parallelSourceVariants": 100,
-    "distinctIndependentContentKernels": 100,
-    "parallelIndependentVariants": 100,
+    "distinctSourceContentKernels": 109,
+    "parallelSourceVariants": 91,
+    "distinctIndependentContentKernels": 109,
+    "parallelIndependentVariants": 91,
     "guidedReasoningItems": 300,
     "independentQuestionTarget": 500,
-    "newIndependentItemsNeeded": 400,
+    "newIndependentItemsNeeded": 391,
     "structuralStatus": "pass",
     "contentDistinctnessStatus": "target-not-met",
     "assistantReviewVerdict": "reviewed-target-not-met",
@@ -11076,6 +11076,15 @@
       ]
     }
   ],
+  "contentBinding": {
+    "schemaVersion": 1,
+    "algorithm": "sha256",
+    "reviewedAt": "2026-07-18",
+    "sourceItemCount": 200,
+    "sourceItemsSha256": "f647cb4e8a471aeb782b963a0131979955a29b49e638349f06fd23733a279a97",
+    "learningLibrarySha256": "10d302a8d13c4fb4b0811d3e019cc672f51d871321ac1b4068000bca5eead277",
+    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
+  },
   "expansion": {
     "independentQuestionTarget": 500,
     "totalLearningActivities": 500,
@@ -11084,12 +11093,12 @@
     "sourceItems": 200,
     "assistantAuthoredIndependentItems": 0,
     "independentPracticeItems": 200,
-    "distinctSourceContentKernels": 100,
-    "parallelSourceVariants": 100,
-    "distinctIndependentContentKernels": 100,
-    "parallelIndependentVariants": 100,
+    "distinctSourceContentKernels": 109,
+    "parallelSourceVariants": 91,
+    "distinctIndependentContentKernels": 109,
+    "parallelIndependentVariants": 91,
     "guidedReasoningItems": 300,
-    "newIndependentItemsNeeded": 400,
+    "newIndependentItemsNeeded": 391,
     "structurallyReviewedItems": 500,
     "reviewer": "OpenAI Codex",
     "examItemReview": "reviewed-target-not-met",
@@ -11100,14 +11109,5 @@
     ],
     "method": "Manifest-backed independent additions passed exact artifact review, blueprint, key, distractor, feedback, source, learning-link, originality, balance, and structural validation. Remaining transformations are guided practice only.",
     "findings": []
-  },
-  "contentBinding": {
-    "schemaVersion": 1,
-    "algorithm": "sha256",
-    "reviewedAt": "2026-07-18",
-    "sourceItemCount": 200,
-    "sourceItemsSha256": "0b36467e41d3289cbf136db127e502104eee38f3a74e150c3d2f0435f71b1609",
-    "learningLibrarySha256": "21040085abbab213aaaca12fbba6e9b47c44414232b24f87e032ec229cb319e7",
-    "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

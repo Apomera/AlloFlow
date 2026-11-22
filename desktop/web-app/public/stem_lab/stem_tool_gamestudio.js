@@ -62,11 +62,31 @@ window.StemLab = window.StemLab || {
       '#allo-game-studio .gs-card-hover:hover { transform: translateY(-1px); box-shadow: 0 8px 18px -10px rgba(136,19,55,0.28); }',
       '#allo-game-studio button:focus-visible, #allo-game-studio select:focus-visible, #allo-game-studio input:focus-visible, #allo-game-studio textarea:focus-visible { outline: 3px solid #be123c !important; outline-offset: 2px !important; }',
       '@keyframes gs-halo-pulse { 0%, 100% { filter: drop-shadow(0 2px 3px rgba(2,6,23,0.75)) drop-shadow(0 0 4px rgba(251,191,36,0.55)); } 50% { filter: drop-shadow(0 2px 3px rgba(2,6,23,0.75)) drop-shadow(0 0 9px rgba(251,191,36,0.9)); } }',
+      '@keyframes gs-cursor-pulse { 0%, 100% { box-shadow: inset 0 0 0 2px rgba(251,191,36,0.92), 0 0 0 1px rgba(251,191,36,0.35); } 50% { box-shadow: inset 0 0 0 2.5px rgba(253,224,71,1), 0 0 10px rgba(251,191,36,0.65); } }',
+      '@keyframes gs-player-aura { 0%, 100% { transform: scale(1); filter: drop-shadow(0 2px 3px rgba(2,6,23,0.85)) drop-shadow(0 0 5px rgba(196,181,253,0.78)); } 50% { transform: scale(1.06); filter: drop-shadow(0 3px 4px rgba(2,6,23,0.85)) drop-shadow(0 0 10px rgba(167,139,250,0.98)); } }',
+      '@keyframes gs-portal-pulse { 0%, 100% { transform: scale(0.95) rotate(-4deg); opacity: 0.9; } 50% { transform: scale(1.08) rotate(4deg); opacity: 1; } }',
+      '@keyframes gs-lava-shimmer { 0%, 100% { opacity: 0.9; } 50% { opacity: 1; filter: brightness(1.12); } }',
+      '@keyframes gs-sprite-bob { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-1.2px); } }',
+      '@keyframes gs-loop-flow { to { stroke-dashoffset: -14; } }',
+      '@keyframes gs-curve-beacon { 0% { opacity: 0.72; transform: scale(0.9); } 100% { opacity: 0.05; transform: scale(2.15); } }',
       '#allo-game-studio .gs-glow-collect { animation: gs-halo-pulse 2.2s ease-in-out infinite; }',
+      '#allo-game-studio .gs-tile-cell { transition: transform 0.1s ease, filter 0.12s ease; }',
+      '#allo-game-studio .gs-tile-cell:hover { filter: brightness(1.12); z-index: 2; }',
+      '#allo-game-studio .gs-tile-cell-cur { position: relative; z-index: 3; animation: gs-cursor-pulse 1.5s ease-in-out infinite; }',
+      '#allo-game-studio .gs-pixel-cell-cur { position: relative; z-index: 3; outline: 2px solid #be123c; outline-offset: -2px; animation: gs-cursor-pulse 1.6s ease-in-out infinite; }',
+      '#allo-game-studio .gs-player-aura { display: inline-block; animation: gs-player-aura 1.9s ease-in-out infinite; }',
+      '#allo-game-studio .gs-portal-pulse { display: inline-block; animation: gs-portal-pulse 2.4s ease-in-out infinite; }',
+      '#allo-game-studio .gs-lava-shimmer { animation: gs-lava-shimmer 2.1s ease-in-out infinite; }',
+      '#allo-game-studio .gs-sprite-bob { animation: gs-sprite-bob 2.2s ease-in-out infinite; }',
+      '#allo-game-studio .gs-loop-flow { animation: gs-loop-flow 1.4s linear infinite; }',
+      '#allo-game-studio .gs-curve-beacon { transform-box: fill-box; transform-origin: center; animation: gs-curve-beacon 2.2s ease-out infinite; }',
       '.theme-contrast #allo-game-studio .gs-hero, .theme-contrast #allo-game-studio .gs-panel, .theme-contrast #allo-game-studio .gs-bezel { background: #000000 !important; color: #ffffff !important; border-color: #fbbf24 !important; box-shadow: none !important; }',
-      '.theme-contrast #allo-game-studio .gs-glow-collect { animation: none !important; filter: none !important; }',
+      '.theme-contrast #allo-game-studio .gs-glow-collect, .theme-contrast #allo-game-studio .gs-player-aura, .theme-contrast #allo-game-studio .gs-portal-pulse, .theme-contrast #allo-game-studio .gs-lava-shimmer, .theme-contrast #allo-game-studio .gs-sprite-bob, .theme-contrast #allo-game-studio .gs-loop-flow, .theme-contrast #allo-game-studio .gs-curve-beacon, .theme-contrast #allo-game-studio .gs-tile-cell-cur, .theme-contrast #allo-game-studio .gs-pixel-cell-cur { animation: none !important; filter: none !important; }',
+      '.theme-contrast #allo-game-studio .gs-tile-cell-cur, .theme-contrast #allo-game-studio .gs-pixel-cell-cur { outline: 2px solid #ffff00 !important; outline-offset: -2px !important; box-shadow: none !important; }',
+      '.theme-contrast #allo-game-studio .gs-fx-canvas { display: none !important; }',
+      '.theme-contrast #allo-game-studio .gs-curve-beacon { opacity: 0 !important; }',
       '.theme-contrast #allo-game-studio button:focus-visible { outline-color: #ffff00 !important; }',
-      '@media (prefers-reduced-motion: reduce) { #allo-game-studio .gs-card-hover, #allo-game-studio .gs-panel { transition: none !important; transform: none !important; } #allo-game-studio .gs-glow-collect { animation: none !important; } }'
+      '@media (prefers-reduced-motion: reduce) { #allo-game-studio .gs-card-hover, #allo-game-studio .gs-panel, #allo-game-studio .gs-tile-cell { transition: none !important; transform: none !important; } #allo-game-studio .gs-glow-collect, #allo-game-studio .gs-player-aura, #allo-game-studio .gs-portal-pulse, #allo-game-studio .gs-lava-shimmer, #allo-game-studio .gs-sprite-bob, #allo-game-studio .gs-loop-flow, #allo-game-studio .gs-curve-beacon, #allo-game-studio .gs-tile-cell-cur, #allo-game-studio .gs-pixel-cell-cur { animation: none !important; } #allo-game-studio .gs-curve-beacon { opacity: 0.25 !important; transform: none !important; } #allo-game-studio .gs-fx-canvas { display: none !important; } }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -476,6 +496,303 @@ window.StemLab = window.StemLab || {
   }
 
   // ============================================================
+  // ZERO-GC PLAYTEST 2D CANVAS FX ENGINE (pre-allocated typed arrays)
+  // ============================================================
+  var GS_MAX_DUST = 48;
+  var GS_MAX_RINGS = 12;
+  var GS_MAX_TRAIL = 8;
+  var _gsDustX = new Float32Array(GS_MAX_DUST);
+  var _gsDustY = new Float32Array(GS_MAX_DUST);
+  var _gsDustVX = new Float32Array(GS_MAX_DUST);
+  var _gsDustVY = new Float32Array(GS_MAX_DUST);
+  var _gsDustR = new Float32Array(GS_MAX_DUST);
+  var _gsDustLife = new Float32Array(GS_MAX_DUST);
+  var _gsDustMax = new Float32Array(GS_MAX_DUST);
+  var _gsDustKind = new Uint8Array(GS_MAX_DUST);
+  var _gsDustHead = 0;
+
+  var _gsRingX = new Float32Array(GS_MAX_RINGS);
+  var _gsRingY = new Float32Array(GS_MAX_RINGS);
+  var _gsRingR = new Float32Array(GS_MAX_RINGS);
+  var _gsRingMaxR = new Float32Array(GS_MAX_RINGS);
+  var _gsRingLife = new Float32Array(GS_MAX_RINGS);
+  var _gsRingMax = new Float32Array(GS_MAX_RINGS);
+  var _gsRingKind = new Uint8Array(GS_MAX_RINGS);
+  var _gsRingHead = 0;
+
+  var _gsTrailX = new Float32Array(GS_MAX_TRAIL);
+  var _gsTrailY = new Float32Array(GS_MAX_TRAIL);
+  var _gsTrailLife = new Float32Array(GS_MAX_TRAIL);
+  var _gsTrailMax = new Float32Array(GS_MAX_TRAIL);
+  var _gsTrailHead = 0;
+
+  var _gsFxSeq = 0;
+  var _gsFxSeed = 1337;
+  function _gsRand() {
+    _gsFxSeed = (_gsFxSeed * 1664525 + 1013904223) >>> 0;
+    return (_gsFxSeed & 0xffff) / 65536;
+  }
+
+  function _gsSpawnDust(nx, ny, vx, vy, r, life, kind) {
+    var i = _gsDustHead;
+    _gsDustHead = (i + 1) % GS_MAX_DUST;
+    _gsDustX[i] = nx;
+    _gsDustY[i] = ny;
+    _gsDustVX[i] = vx;
+    _gsDustVY[i] = vy;
+    _gsDustR[i] = r;
+    _gsDustLife[i] = life;
+    _gsDustMax[i] = life;
+    _gsDustKind[i] = kind;
+  }
+
+  function _gsSpawnRing(nx, ny, maxR, life, kind) {
+    var i = _gsRingHead;
+    _gsRingHead = (i + 1) % GS_MAX_RINGS;
+    _gsRingX[i] = nx;
+    _gsRingY[i] = ny;
+    _gsRingR[i] = 0.008;
+    _gsRingMaxR[i] = maxR;
+    _gsRingLife[i] = life;
+    _gsRingMax[i] = life;
+    _gsRingKind[i] = kind;
+  }
+
+  function _gsSpawnTrail(nx, ny) {
+    var i = _gsTrailHead;
+    _gsTrailHead = (i + 1) % GS_MAX_TRAIL;
+    _gsTrailX[i] = nx;
+    _gsTrailY[i] = ny;
+    _gsTrailLife[i] = 0.28;
+    _gsTrailMax[i] = 0.28;
+  }
+
+  // Emit normalized (0..1) playtest movement dust, motion trail & collectible/goal shockwave rings
+  function gsEmitPlayFx(fromX, fromY, toX, toY, gridW, gridH, kind) {
+    if (!gridW || !gridH) return;
+    var fx = (fromX + 0.5) / gridW;
+    var fy = (fromY + 0.5) / gridH;
+    var tx = (toX + 0.5) / gridW;
+    var ty = (toY + 0.5) / gridH;
+    var dvx = (fx - tx) * 0.45;
+    var dvy = (fy - ty) * 0.45;
+    var i, ang, spd;
+    // Motion-blur afterimage trail on departing cell + midpoint
+    _gsSpawnTrail(fx, fy);
+    _gsSpawnTrail((fx + tx) * 0.5, (fy + ty) * 0.5);
+    // Velocity/step dust puffs kicked back behind player
+    var dustCount = kind === 'ice' ? 7 : 5;
+    var dustKind = kind === 'ice' ? 1 : 0;
+    for (i = 0; i < dustCount; i++) {
+      ang = _gsRand() * 6.2831853;
+      spd = 0.04 + _gsRand() * 0.09;
+      _gsSpawnDust(
+        fx + (_gsRand() - 0.5) * (0.4 / gridW),
+        fy + (_gsRand() - 0.5) * (0.4 / gridH),
+        dvx + Math.cos(ang) * spd,
+        dvy + Math.sin(ang) * spd - 0.015,
+        2.2 + _gsRand() * 2.4,
+        0.34 + _gsRand() * 0.22,
+        dustKind
+      );
+    }
+    // Event-specific shockwave rings & burst particles
+    if (kind === 'collect' || kind === 'key') {
+      _gsSpawnRing(tx, ty, 1.35 / Math.min(gridW, gridH), 0.48, kind === 'key' ? 4 : 0);
+      for (i = 0; i < 8; i++) {
+        ang = (i / 8) * 6.2831853 + _gsRand() * 0.35;
+        spd = 0.09 + _gsRand() * 0.09;
+        _gsSpawnDust(tx, ty, Math.cos(ang) * spd, Math.sin(ang) * spd, 2.0 + _gsRand() * 1.8, 0.45, 3);
+      }
+    } else if (kind === 'goal') {
+      _gsSpawnRing(tx, ty, 2.4 / Math.min(gridW, gridH), 0.72, 1);
+      _gsSpawnRing(tx, ty, 1.55 / Math.min(gridW, gridH), 0.52, 0);
+      for (i = 0; i < 14; i++) {
+        ang = (i / 14) * 6.2831853;
+        spd = 0.11 + _gsRand() * 0.12;
+        _gsSpawnDust(tx, ty, Math.cos(ang) * spd, Math.sin(ang) * spd, 2.4 + _gsRand() * 2.2, 0.68, i % 2 === 0 ? 4 : 3);
+      }
+    } else if (kind === 'portal') {
+      _gsSpawnRing(fx, fy, 1.4 / Math.min(gridW, gridH), 0.46, 2);
+      _gsSpawnRing(tx, ty, 1.65 / Math.min(gridW, gridH), 0.54, 2);
+      for (i = 0; i < 10; i++) {
+        ang = (i / 10) * 6.2831853;
+        spd = 0.08 + _gsRand() * 0.08;
+        _gsSpawnDust(tx, ty, Math.cos(ang) * spd, Math.sin(ang) * spd, 2.2 + _gsRand() * 1.8, 0.5, 4);
+      }
+    } else if (kind === 'hazard') {
+      _gsSpawnRing(tx, ty, 1.5 / Math.min(gridW, gridH), 0.44, 3);
+      for (i = 0; i < 9; i++) {
+        ang = _gsRand() * 6.2831853;
+        spd = 0.1 + _gsRand() * 0.11;
+        _gsSpawnDust(tx, ty, Math.cos(ang) * spd, Math.sin(ang) * spd, 2.3 + _gsRand() * 2.0, 0.44, 2);
+      }
+    } else if (kind === 'ice') {
+      _gsSpawnRing(tx, ty, 1.05 / Math.min(gridW, gridH), 0.36, 4);
+    }
+    _gsFxSeq++;
+  }
+
+  function _gsResetFxPools() {
+    _gsDustLife.fill(0);
+    _gsRingLife.fill(0);
+    _gsTrailLife.fill(0);
+  }
+
+  function GsPlayFxOverlay(props) {
+    var React = props.React;
+    var canvasRef = React.useRef(null);
+    var rafRef = React.useRef(0);
+    React.useEffect(function() {
+      var canvas = canvasRef.current;
+      if (!canvas || typeof canvas.getContext !== 'function') return;
+      if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+        try {
+          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        } catch (_) {}
+      }
+      if (typeof canvas.closest === 'function' && canvas.closest('.theme-contrast')) return;
+      var c2d = null;
+      try { c2d = canvas.getContext('2d'); } catch (_) { return; }
+      if (!c2d) return;
+
+      var lastTs = 0;
+      var running = true;
+
+      function syncSize() {
+        var rect = typeof canvas.getBoundingClientRect === 'function' ? canvas.getBoundingClientRect() : null;
+        var w = rect && rect.width > 8 ? Math.round(rect.width) : 320;
+        var h = rect && rect.height > 8 ? Math.round(rect.height) : 240;
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
+        return [w, h];
+      }
+
+      function step(ts) {
+        if (!running) return;
+        if (typeof canvas.closest === 'function' && canvas.closest('.theme-contrast')) {
+          c2d.clearRect(0, 0, canvas.width || 1, canvas.height || 1);
+          rafRef.current = 0;
+          return;
+        }
+        var dt = lastTs ? Math.min(0.05, Math.max(0.004, (ts - lastTs) / 1000)) : 0.016;
+        lastTs = ts;
+        var dims = syncSize();
+        var w = dims[0], h = dims[1];
+        c2d.clearRect(0, 0, w, h);
+
+        var active = 0;
+        var i, t, alpha, px, py, rad;
+        var cellR = Math.max(5, Math.min(w / Math.max(1, props.gridW), h / Math.max(1, props.gridH)) * 0.42);
+        var hasRadial = typeof c2d.createRadialGradient === 'function';
+        var hasEllipse = typeof c2d.ellipse === 'function';
+
+        // 1. Subtle player motion-blur afterimage trail
+        for (i = 0; i < GS_MAX_TRAIL; i++) {
+          if (_gsTrailLife[i] <= 0) continue;
+          _gsTrailLife[i] -= dt;
+          if (_gsTrailLife[i] <= 0) continue;
+          active++;
+          t = _gsTrailLife[i] / _gsTrailMax[i];
+          px = _gsTrailX[i] * w;
+          py = _gsTrailY[i] * h;
+          rad = cellR * (0.65 + t * 0.42);
+          alpha = t * 0.34;
+          if (hasRadial) {
+            var tg = c2d.createRadialGradient(px, py, 0, px, py, rad);
+            tg.addColorStop(0, 'rgba(196,181,253,' + alpha.toFixed(3) + ')');
+            tg.addColorStop(1, 'rgba(139,92,246,0)');
+            c2d.fillStyle = tg;
+          } else {
+            c2d.fillStyle = 'rgba(167,139,250,' + (alpha * 0.65).toFixed(3) + ')';
+          }
+          c2d.beginPath();
+          if (hasEllipse) c2d.ellipse(px, py, rad, rad * 0.85, 0, 0, 6.2831853);
+          else c2d.arc(px, py, rad, 0, 6.2831853);
+          c2d.fill();
+        }
+
+        // 2. Glowing collectible / goal / portal / hazard shockwave rings
+        for (i = 0; i < GS_MAX_RINGS; i++) {
+          if (_gsRingLife[i] <= 0) continue;
+          _gsRingLife[i] -= dt;
+          if (_gsRingLife[i] <= 0) continue;
+          active++;
+          t = 1 - (_gsRingLife[i] / _gsRingMax[i]);
+          var ease = 1 - (1 - t) * (1 - t);
+          px = _gsRingX[i] * w;
+          py = _gsRingY[i] * h;
+          rad = (_gsRingR[i] + (_gsRingMaxR[i] - _gsRingR[i]) * ease) * Math.min(w, h);
+          alpha = (1 - t) * 0.82;
+          var rk = _gsRingKind[i];
+          var strokeRgb = rk === 1 ? '52,211,153' : rk === 2 ? '192,132,252' : rk === 3 ? '251,113,133' : rk === 4 ? '103,232,249' : '251,191,36';
+          c2d.strokeStyle = 'rgba(' + strokeRgb + ',' + alpha.toFixed(3) + ')';
+          c2d.lineWidth = Math.max(1.2, (1 - t) * 3.4);
+          c2d.beginPath();
+          c2d.arc(px, py, Math.max(2, rad), 0, 6.2831853);
+          c2d.stroke();
+        }
+
+        // 3. Velocity / jump dust puffs & burst motes
+        for (i = 0; i < GS_MAX_DUST; i++) {
+          if (_gsDustLife[i] <= 0) continue;
+          _gsDustLife[i] -= dt;
+          if (_gsDustLife[i] <= 0) continue;
+          active++;
+          _gsDustX[i] += _gsDustVX[i] * dt;
+          _gsDustY[i] += _gsDustVY[i] * dt;
+          _gsDustVX[i] *= 0.92;
+          _gsDustVY[i] *= 0.92;
+          t = _gsDustLife[i] / _gsDustMax[i];
+          px = _gsDustX[i] * w;
+          py = _gsDustY[i] * h;
+          rad = _gsDustR[i] * (0.45 + (1 - t) * 0.85);
+          alpha = t * 0.72;
+          var dk = _gsDustKind[i];
+          var dustRgb = dk === 1 ? '186,230,253' : dk === 2 ? '251,146,60' : dk === 3 ? '253,224,71' : dk === 4 ? '167,139,250' : '226,232,240';
+          c2d.fillStyle = 'rgba(' + dustRgb + ',' + alpha.toFixed(3) + ')';
+          c2d.beginPath();
+          c2d.arc(px, py, Math.max(1, rad), 0, 6.2831853);
+          c2d.fill();
+        }
+
+        if (active > 0 && typeof requestAnimationFrame === 'function') {
+          rafRef.current = requestAnimationFrame(step);
+        } else {
+          rafRef.current = 0;
+        }
+      }
+
+      if (typeof requestAnimationFrame === 'function') {
+        rafRef.current = requestAnimationFrame(step);
+      }
+      return function() {
+        running = false;
+        if (rafRef.current && typeof cancelAnimationFrame === 'function') {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = 0;
+        }
+      };
+    }, [props.fxSeq, props.gridW, props.gridH, props.isPlaying]);
+
+    return React.createElement('canvas', {
+      ref: canvasRef,
+      className: 'gs-fx-canvas',
+      'aria-hidden': 'true',
+      style: {
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        zIndex: 5
+      }
+    });
+  }
+
+  // ============================================================
   // REGISTER TOOL
   // ============================================================
 
@@ -697,6 +1014,7 @@ window.StemLab = window.StemLab || {
               }
               if (!landed) newT[portals[0]] = 'player';
               msg = '\uD83C\uDF00 Teleported!';
+              gsEmitPlayFx(pp[0], pp[1], tp[0], tp[1], gridW, gridH, 'portal');
               upd({ tiles: newT, playScore: nScore, playLives: nLives, playKeys: nKeys, playMoves: nMoves, playCoinsCollected: nCoins, playMessage: msg });
               return;
             }
@@ -739,6 +1057,13 @@ window.StemLab = window.StemLab || {
           // Move player
           delete newT[pKey];
           if (!dead) newT[nk] = 'player';
+          var fxEndX = nx, fxEndY = ny;
+          var fxKind = won ? 'goal'
+            : (dest === 'lava' || dest === 'spikes' || dest === 'enemy') ? 'hazard'
+            : (dest === 'coin' || dest === 'gem' || dest === 'treasure' || dest === 'heart') ? 'collect'
+            : dest === 'key' ? 'key'
+            : dest === 'ice' ? 'ice'
+            : 'step';
 
           // Ice sliding: if destination is ice, keep moving in same direction
           if (dest === 'ice' && !won && !dead) {
@@ -752,31 +1077,36 @@ window.StemLab = window.StemLab || {
               if (sDest === 'wall' || sDest === 'platform' || sDest === 'door' || sDest === 'enemy') break;
               // Slide onto this tile
               delete newT[(slideX + ',' + slideY)];
-              if (sDest === 'coin') { nScore += 10; nCoins++; }
-              if (sDest === 'gem') { nScore += 50; }
-              if (sDest === 'key') { nKeys++; }
-              if (sDest === 'heart') { nLives++; }
+              if (sDest === 'coin') { nScore += 10; nCoins++; fxKind = 'collect'; }
+              if (sDest === 'gem') { nScore += 50; fxKind = 'collect'; }
+              if (sDest === 'key') { nKeys++; fxKind = 'key'; }
+              if (sDest === 'heart') { nLives++; fxKind = 'collect'; }
               if (sDest === 'flag') {
                 won = true;
+                fxKind = 'goal';
                 var sBonus = Math.max(0, 500 - nMoves * 2);
                 nScore += 100 + sBonus;
                 msg = '\uD83C\uDFC6 You Win! Score: ' + nScore + ' (efficiency bonus: +' + sBonus + ')';
                 newT[snx + ',' + sny] = 'player';
+                fxEndX = snx; fxEndY = sny;
                 if (typeof awardStemXP === 'function') awardStemXP('gameStudio', 10, 'completed game');
                 if (addToast) addToast('\uD83C\uDFC6 You Win! Score: ' + nScore, 'success');
                 break;
               }
               if (sDest === 'lava' || sDest === 'spikes') {
                 nLives--;
+                fxKind = 'hazard';
                 if (nLives <= 0) { dead = true; msg = '\uD83D\uDC80 Game Over!'; break; }
               }
               slideX = snx; slideY = sny;
+              fxEndX = snx; fxEndY = sny;
               newT[snx + ',' + sny] = 'player';
               if (sDest !== 'ice') break; // stop sliding when leaving ice
               nMoves++;
             }
             if (!msg) msg = '\uD83E\uDEF5 Wheee! Ice slide!';
           }
+          gsEmitPlayFx(pp[0], pp[1], fxEndX, fxEndY, gridW, gridH, fxKind);
 
           // Enemy patrol AI (turn-based: enemies move after player)
           if (!won && !dead) {
@@ -999,6 +1329,19 @@ window.StemLab = window.StemLab || {
               ),
               // AI Map Gen
               callGemini && h('button', { onClick: function() {
+                  if (aiPrompt && String(aiPrompt).trim()) {
+                    var _gsChecker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+                    var _gsFlags = null;
+                    try { _gsFlags = (_gsChecker && _gsChecker.check) ? _gsChecker.check(String(aiPrompt)) : null; } catch (_) { _gsFlags = null; }
+                    var _gsCrit = Array.isArray(_gsFlags) && _gsFlags.find(function(f) { return f && f.severity === 'critical' && !(f.category === 'harm_to_others' && /^(attack|shoot)$/i.test(String(f.match || '').trim())); });
+                    if (_gsCrit) {
+                      if (typeof ctx.onSafetyFlag === 'function') {
+                        try { ctx.onSafetyFlag(Object.assign({}, _gsCrit, { source: 'stem_gameStudio_map_prompt', context: String(aiPrompt).slice(0, 100), aiGenerated: false })); } catch (_) {}
+                      }
+                      upd({ aiLoading: false, aiResult: 'Paused for safety — please talk to a trusted adult, call or text 988, or text HOME to 741741. You are not alone.' });
+                      return;
+                    }
+                  }
                   upd({ aiLoading: true });
                   var prompt = 'Generate a ' + gridW + 'x' + gridH + ' tile map for a ' + gameType + ' game as JSON. ' +
                     'Use ONLY these tile IDs: empty, grass, water, wall, lava, ice, sand, path, door, key, coin, gem, flag, spikes, heart, portal, platform, player, enemy, npc, treasure. ' +
@@ -1125,6 +1468,7 @@ window.StemLab = window.StemLab || {
                   };
                   return h('div', {
                     key: k, role: 'button', tabIndex: i === tileCur ? 0 : -1,
+                    className: 'gs-tile-cell' + (i === tileCur ? ' gs-tile-cell-cur' : ''),
                     'aria-label': __alloT('stem.gamestudio.tile_cell', 'Column {x}, row {y}: {tile}').replace('{x}', x + 1).replace('{y}', y + 1).replace('{tile}', tInfo.label),
                     onKeyDown: function(e) { gsGridKey(e, i, gridW, gridH, 'tileCur', paintTile); },
                     onFocus: function() { if (i !== tileCur) upd({ tileCur: i }); },
@@ -1219,6 +1563,7 @@ window.StemLab = window.StemLab || {
                     };
                     return h('div', {
                       key: sk, role: 'button', tabIndex: i === spriteCur ? 0 : -1,
+                      className: i === spriteCur ? 'gs-pixel-cell-cur' : undefined,
                       'aria-label': __alloT('stem.gamestudio.pixel_cell', 'Pixel column {x}, row {y}: {color}').replace('{x}', sx + 1).replace('{y}', sy + 1).replace('{color}', px || __alloT('stem.gamestudio.pixel_empty', 'empty')),
                       onKeyDown: function(e) { gsGridKey(e, i, 16, 16, 'spriteCur', paintPixel); },
                       onFocus: function() { if (i !== spriteCur) upd({ spriteCur: i }); },
@@ -1267,7 +1612,7 @@ window.StemLab = window.StemLab || {
                       h('div', { className: 'p-1.5 rounded-lg border border-slate-600 flex items-center justify-center', style: { background: 'radial-gradient(circle at 50% 42%, #1e293b 0%, #090e1c 100%)', boxShadow: 'inset 0 0 12px rgba(2,6,23,0.85)' }, title: __alloT('stem.gamestudio.preview_3x_dark', '3× dark arcade preview') },
                         h('svg', { viewBox: '0 0 16 18', width: 48, height: 54, style: { shapeRendering: 'crispEdges', display: 'block' }, 'aria-hidden': 'true' },
                           keys.length > 0 && h('ellipse', { cx: 8, cy: 16.4, rx: 5.5, ry: 1.2, fill: 'rgba(0,0,0,0.55)', style: { shapeRendering: 'auto' } }),
-                          rects, specTop
+                          h('g', { className: keys.length > 0 ? 'gs-sprite-bob' : undefined }, rects, specTop)
                         )
                       )
                     )
@@ -1549,6 +1894,7 @@ window.StemLab = window.StemLab || {
             },
               h('div', {
                 style: {
+                  position: 'relative',
                   display: 'grid',
                   gridTemplateColumns: 'repeat(' + gridW + ', 1fr)',
                   gap: '1px', background: 'rgba(30,41,59,0.55)', borderRadius: '8px', overflow: 'hidden'
@@ -1579,8 +1925,13 @@ window.StemLab = window.StemLab || {
                     : tId === 'lava' ? 'inset 0 0 8px rgba(254,215,170,0.65)'
                     : isSolid ? 'inset 0 2px 0 rgba(255,255,255,0.28), inset 0 -2px 0 rgba(2,6,23,0.45)'
                     : undefined;
+                  var spriteClass = tId === 'player' ? 'gs-player-aura'
+                    : tId === 'portal' ? 'gs-portal-pulse'
+                    : isCollect ? 'gs-glow-collect'
+                    : undefined;
                   return h('div', {
                     key: k,
+                    className: tId === 'lava' ? 'gs-lava-shimmer' : undefined,
                     style: {
                       aspectRatio: '1',
                       background: playCellBg,
@@ -1590,10 +1941,11 @@ window.StemLab = window.StemLab || {
                       boxShadow: playShadow
                     }
                   }, tInfo.emoji ? h('span', {
-                    className: isCollect ? 'gs-glow-collect' : undefined,
+                    className: spriteClass,
                     style: { filter: tId === 'player' ? 'drop-shadow(0 2px 3px rgba(2,6,23,0.85)) drop-shadow(0 0 5px rgba(196,181,253,0.85))' : 'drop-shadow(0 2px 2px rgba(2,6,23,0.72))' }
                   }, tInfo.emoji) : '');
-                })
+                }),
+                h(GsPlayFxOverlay, { React: React, gridW: gridW, gridH: gridH, fxSeq: _gsFxSeq, isPlaying: isPlaying })
               )
             ),
 
@@ -1615,6 +1967,7 @@ window.StemLab = window.StemLab || {
             // Controls
             h('div', { className: 'flex gap-2 justify-center flex-wrap' },
               h('button', { onClick: function() {
+                  _gsResetFxPools();
                   if (isPlaying) {
                     var restored = _gs.playBackupTiles ? Object.assign({}, _gs.playBackupTiles) : tiles;
                     upd({ isPlaying: false, tiles: restored, playBackupTiles: null, playMessage: null, playWon: false, playDead: false });
@@ -1628,6 +1981,7 @@ window.StemLab = window.StemLab || {
               }, isPlaying ? '\u23F9 Stop' : '\u25B6\uFE0F Start Game'),
               (playWon || playDead) && h('button', { 'aria-label': __alloT('stem.gamestudio.play_again', 'Play Again'),
                 onClick: function() {
+                  _gsResetFxPools();
                   var resetTiles = _gs.playBackupTiles ? Object.assign({}, _gs.playBackupTiles) : Object.assign({}, tiles);
                   upd({ isPlaying: true, tiles: resetTiles, playBackupTiles: Object.assign({}, resetTiles), playScore: 0, playLives: 3, playKeys: 0, playMoves: 0, playMessage: null, playWon: false, playDead: false, playCoinsCollected: 0, enemyDirs: {} });
                 },
@@ -1709,7 +2063,7 @@ window.StemLab = window.StemLab || {
                     h('stop', { offset: '100%', stopColor: '#eef2ff' })
                   )
                 ),
-                h('path', { d: 'M308 36 C308 49, 53 49, 53 38', fill: 'none', stroke: '#6366f1', strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.72 }),
+                h('path', { className: 'gs-loop-flow', d: 'M308 36 C308 49, 53 49, 53 38', fill: 'none', stroke: '#6366f1', strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.78 }),
                 h('polygon', { points: '49,40 53,34 57,40', fill: '#6366f1', opacity: 0.85 }),
                 h('rect', { x: 6, y: 6, width: 94, height: 28, rx: 8, fill: 'url(#gs-loop-node)', stroke: '#4f46e5', strokeWidth: 1.6 }),
                 h('text', { x: 53, y: 24, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#312e81' }, '1. INPUT'),
@@ -2185,7 +2539,8 @@ window.StemLab = window.StemLab || {
                     // Area under curve + smooth stroke
                     h('path', { d: areaStr, fill: sm.color, opacity: 0.16 }),
                     h('path', { d: pathStr, stroke: sm.color, strokeWidth: 3, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
-                    // Curve point markers
+                    // Curve point markers + luminous endpoint beacon
+                    curvePoints.length > 0 && h('circle', { className: 'gs-curve-beacon', cx: curvePoints[curvePoints.length - 1][0], cy: curvePoints[curvePoints.length - 1][1], r: 5.2, fill: 'none', stroke: sm.color, strokeWidth: 1.4, 'aria-hidden': 'true' }),
                     curvePoints.filter(function(_, i) { return i % 2 === 0; }).map(function(pt, i) {
                       return h('circle', { key: 'cp' + i, cx: pt[0], cy: pt[1], r: 3.5, fill: '#ffffff', stroke: sm.color, strokeWidth: 2 });
                     }),

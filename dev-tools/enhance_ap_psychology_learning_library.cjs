@@ -8,6 +8,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
+const { applyApPsychLibraryCheckOverride } = require('./ap_psychology_choice_overrides/index.cjs');
 
 const root = path.resolve(__dirname, '..');
 const libraryPath = path.join(root, 'test_prep', 'ap_psychology_pilot_learning_library.json');
@@ -789,7 +790,9 @@ function main() {
       reviewStatus: 'source-reviewed-editorial-pass',
       expertReviewStatus: 'pending',
     };
-    const retainedChecks = (chapter.knowledgeChecks || []).filter((check) => !String(check.id || '').endsWith('-retrieval-check'));
+    const retainedChecks = (chapter.knowledgeChecks || [])
+      .filter((check) => !String(check.id || '').endsWith('-retrieval-check'))
+      .map(applyApPsychLibraryCheckOverride);
     chapter.knowledgeChecks = retainedChecks;
     for (const section of chapter.sections || []) {
       const detail = enhancements[section.id];
@@ -797,7 +800,7 @@ function main() {
       assert(!sectionIds.has(section.id), `Duplicate section ${section.id}.`);
       sectionIds.add(section.id);
       applySectionEnhancement(section, detail);
-      const check = buildSectionCheck(section, chapter, detail);
+      const check = applyApPsychLibraryCheckOverride(buildSectionCheck(section, chapter, detail));
       chapter.knowledgeChecks.push(check);
       newChecks.push(check);
       newCards.push(buildSectionCard(section, chapter, detail, sectionIndex));

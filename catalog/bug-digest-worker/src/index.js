@@ -182,10 +182,19 @@ export class BugDigest extends DurableObject {
   }
 
   async deliver(batchId, operationId) {
-    // This explicit durability barrier precedes the external side effect.
-    await this.ctx.storage.sync();
-    const batch = this.batch(batchId);
     const attempt = this.sql('SELECT * FROM attempts WHERE operation_id = ?', operationId).one();
+    // This explicit durability barrier precedes the external side effect.
+    try {
+      await this.ctx.storage.sync();
+    } catch (_) {
+      const failedAt = Date.now();
+      this.ctx.storage.transactionSync(() => {
+        this.sql('UPDATE attempts SET status = ?, finished_at = ?, problem = ? WHERE operation_id = ?', 'failed', failedAt, 'storage-sync-failed', operationId);
+        this.sql('UPDATE batches SET status = ?, updated_at = ?, problem = ? WHERE id = ? AND attempts = ?', 'failed', failedAt, 'storage-sync-failed', batchId, attempt.attempt_number);
+      });
+      return { ok: true, batch: this.batch(batchId) };
+    }
+    const batch = this.batch(batchId);
     let status = 'uncertain'; let problem = null; let providerId = null;
     let timer;
     try {
@@ -289,7 +298,7 @@ export class BugDigest extends DurableObject {
         this.sql("DELETE FROM attempts WHERE batch_id IN (SELECT id FROM batches WHERE status IN ('accepted', 'failed') AND updated_at < ?)", cutoff90);
         this.sql("DELETE FROM batches WHERE status IN ('accepted', 'failed') AND updated_at < ?", cutoff90);
       });
-      return batchId ? this.deliver(batchId, scanId) : { ok: true, empty: true };
+      return batchId ? await this.deliver(batchId, scanId) : { ok: true, empty: true };
     } catch (_) {
       this.sql('UPDATE settings SET scan_id = NULL, scan_started = NULL, last_error = ? WHERE id = 1 AND scan_id = ?', 'scan-or-storage-failed', scanId);
       return errorResult('Digest scan failed; no partial batch was sent.', 502);

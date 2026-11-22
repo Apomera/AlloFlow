@@ -335,7 +335,7 @@ const handleFileUpload = async (e, deps) => {
             } catch (err) {
                 if (!intakeIsCurrent()) return;
                 warnLog('[Spreadsheet→Pipeline] failed:', _miscDiagnosticErrorSummary(err));
-                setError((t('toasts.spreadsheet_failed') || 'Could not read the spreadsheet: ') + (err?.message || 'unknown') + ' — export it as CSV and try again.');
+                setError((t('toasts.spreadsheet_failed') || 'Could not read the spreadsheet. ') + 'Export it as CSV and try again.');
                 finishExtraction();
             }
         };
@@ -771,6 +771,12 @@ const handleLoadProject = (e, deps) => {
                     try { localStorage.setItem('alloflow_student_progress_summary', JSON.stringify(rawData.studentProgressSummary)); } catch (e) {}
                     window.dispatchEvent(new CustomEvent('alloflow-student-progress-summary-restored'));
                 } catch (e) { warnLog && warnLog('Student progress summary restore failed:', _projectDiagnosticErrorSummary(e)); }
+            } else {
+                try {
+                    window.__alloflowStudentProgressSummary = null;
+                    try { localStorage.removeItem('alloflow_student_progress_summary'); } catch (e) {}
+                    window.dispatchEvent(new CustomEvent('alloflow-student-progress-summary-restored'));
+                } catch (_) {}
             }
             // Guided-tour resume: a teacher who saved mid-tutorial drops back in at their
             // step (Canvas has no cross-session storage, so progress rides the project file).
@@ -893,6 +899,9 @@ const handleLoadProject = (e, deps) => {
                     setStudentNickname(savedNickname);
                     setStudentProjectSettings(prev => ({ ...prev, nickname: savedNickname }));
                     addToast(`Welcome back, ${savedNickname}!`, "success");
+                } else {
+                    setStudentNickname('');
+                    setStudentProjectSettings(prev => ({ ...prev, nickname: '' }));
                 }
                 if (isStudentSave) {
                      if (rawData.adventureSnapshot && (rawData.adventureSnapshot.turnCount > 0 || rawData.adventureSnapshot.currentScene || rawData.adventureSnapshot.xp > 0 || rawData.adventureSnapshot.isGameOver)) {
@@ -980,6 +989,33 @@ const handleLoadProject = (e, deps) => {
                 if (rawData.externalCBMScores) setExternalCBMScores(rawData.externalCBMScores);
                 if (rawData.settings?.researchMode) setResearchMode(rawData.settings.researchMode);
             }
+            // FERPA shared-device isolation: clear prior learner-scoped SEL & STEAM lab slots
+            // before rehydrating the newly loaded project so Student A's records never persist
+            // when loading Student B's or a teacher's file.
+            [
+                ['__alloflowSelEngagement', ['alloflow_sel_streak'], 'alloflow-sel-engagement-restored', !rawData.selEngagement],
+                ['__alloflowBirdLab', ['birdLab.lifeList.v1', 'birdLab.badges.v1'], 'alloflow-birdlab-restored', !rawData.birdLab],
+                ['__alloflowOpticsLab', ['opticsLab.state.v1'], 'alloflow-opticslab-restored', !rawData.opticsLab],
+                ['__alloflowStatsLab', ['statsLab.state.v1'], 'alloflow-statslab-restored', !rawData.statsLab],
+                ['__alloflowWeldLab', ['weldLab.defectCatalog.v1', 'weldLab.badges.v1'], 'alloflow-weldlab-restored', !rawData.weldLab],
+                ['__alloflowRenewablesLab', ['renewablesLab.state.v1'], 'alloflow-renewableslab-restored', !rawData.renewablesLab],
+                ['__alloflowFirstResponse', ['firstResponse.state.v1'], 'alloflow-firstresponse-restored', !rawData.firstResponse],
+                ['__alloflowThrowLab', ['throwlab.state.v1'], 'alloflow-throwlab-restored', !rawData.throwlab],
+                ['__alloflowPlayLab', ['playlab.state.v1'], 'alloflow-playlab-restored', !rawData.playlab],
+                ['__alloflowAssessmentLiteracy', ['assessmentLiteracy.state.v1'], 'alloflow-assessmentliteracy-restored', !rawData.assessmentLiteracy],
+                ['__alloflowRoadReady', ['roadReady.permitMastery.v1', 'roadReady.permitStats.v1', 'roadReady.parkingBest.v1'], 'alloflow-roadready-restored', !rawData.roadReady],
+                ['__alloflowSelStations', ['alloflow_sel_stations'], 'alloflow-sel-stations-restored', !rawData.selStations],
+                ['__alloflowSelProgress', ['alloflow_sel_station_progress'], 'alloflow-sel-progress-restored', !rawData.selProgress],
+                ['__alloflowSelToolData', [], 'alloflow-sel-tooldata-restored', !rawData.selToolData],
+                ['__alloflowSelSnapshots', ['alloflow_sel_snapshots'], 'alloflow-sel-snapshots-restored', !Array.isArray(rawData.selSnapshots)],
+            ].forEach(([winKey, lsKeys, evName, shouldClear]) => {
+                if (!shouldClear) return;
+                try {
+                    window[winKey] = null;
+                    lsKeys.forEach((k) => { try { localStorage.removeItem(k); } catch (_) {} });
+                    window.dispatchEvent(new CustomEvent(evName));
+                } catch (_) {}
+            });
             // SEL Hub engagement (streak, per-tool usage). The hub itself
             // listens for the custom event so a load mid-session refreshes
             // its UI without remount.
@@ -1425,11 +1461,14 @@ function handleRestoreView(item, options = {}, deps = {}) {
     // up as students travel the web). Reserved '_visited' key in the progress store — NOT a
     // per-directions record. Device-local like everything else here.
     if (!isTeacherMode && item && item.id) {
-        setDirectionsProgress(prev => {
-            const vis = (prev._visited && typeof prev._visited === 'object') ? prev._visited : {};
-            if (vis[item.id]) return prev;
-            return { ...prev, _visited: { ...vis, [item.id]: true } };
-        });
+        const visitKey = String(item.id);
+        if (visitKey !== '__proto__' && visitKey !== 'constructor' && visitKey !== 'prototype') {
+            setDirectionsProgress(prev => {
+                const vis = (prev._visited && typeof prev._visited === 'object') ? prev._visited : {};
+                if (Object.prototype.hasOwnProperty.call(vis, visitKey) && vis[visitKey]) return prev;
+                return { ...prev, _visited: { ...vis, [visitKey]: true } };
+            });
+        }
     }
     // Phase 2 SOFT gate: a once-per-resource friendly tip when the teacher asked students to
     // finish goals first. Purely informational — the open proceeds unconditionally below
@@ -2057,7 +2096,7 @@ async function runAutoFixLoop(maxRounds, deps) {
         _toastIfOwned(t('toasts.auto_continue_stopped') || 'Auto-continue stopped.', 'info');
       } else {
         warnLog('[AutoContinue] Loop failed:', _safeDiagnosticError(error));
-        _toastIfOwned((t('toasts.auto_continue_failed') || 'Auto-remediation stopped after an unexpected error: ') + String((error && error.message) || error || 'unknown error'), 'error');
+        _toastIfOwned(t('toasts.auto_continue_failed') || 'Auto-remediation stopped after an unexpected error.', 'error');
       }
     } finally {
       const _staleAtExit = _genStale();

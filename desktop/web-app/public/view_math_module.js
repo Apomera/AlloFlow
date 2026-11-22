@@ -1429,7 +1429,7 @@ function MathView(props) {
       "aria-label": _mathT(t, 'math.jump_to_problem_nav', 'Jump to problem')
     }, mathProblems.map((prob, idx) => {
       var st = statuses[idx];
-      var pillTone = st === 'correct' ? 'bg-emerald-600 text-white border-emerald-700' : st === 'partial' ? 'bg-amber-100 text-amber-900 border-amber-400' : st === 'incorrect' ? 'bg-rose-100 text-rose-900 border-rose-400' : st === 'started' ? 'bg-indigo-100 text-indigo-900 border-indigo-400' : 'bg-white text-slate-700 border-slate-300 hover:bg-indigo-50';
+      var pillTone = st === 'correct' ? 'bg-emerald-700 text-white border-emerald-800' : st === 'partial' ? 'bg-amber-100 text-amber-900 border-amber-400' : st === 'incorrect' ? 'bg-rose-100 text-rose-900 border-rose-400' : st === 'started' ? 'bg-indigo-100 text-indigo-900 border-indigo-400' : 'bg-white text-slate-700 border-slate-300 hover:bg-indigo-50';
       return /*#__PURE__*/React.createElement("a", {
         key: prob.__viewKey,
         href: `#math-problem-${idx}`,

@@ -123,7 +123,7 @@ if (!hasSingleInstanceLock) {
   app.quit();
 }
 
-const DEFAULT_HOST = process.env.ALLOFLOW_DESKTOP_HOST || '127.0.0.1';
+const DEFAULT_HOST = app.isPackaged ? '127.0.0.1' : (process.env.ALLOFLOW_DESKTOP_HOST || '127.0.0.1');
 const DEFAULT_PORT = Number(process.env.ALLOFLOW_DESKTOP_PORT || 32170);
 const MAX_PORT_ATTEMPTS = 20;
 const PRIVATE_API_TOKEN = crypto.randomBytes(32).toString('base64url');
@@ -135,6 +135,8 @@ let coachTrackedHandle = '';
 let coachTrackedBounds = null;
 let coachTrackedSourceLabel = '';
 let coachTrackedActive = false;
+let coachTrackerInitPromise = null;
+let coachTrackerLastStartAt = 0;
 let coachOverlayEpoch = 0;
 let focusRequestedBySecondInstance = false;
 const trustedAlloSheetWebContents = new Map();
@@ -189,7 +191,8 @@ function getCommandCenterUrl() {
 }
 
 function getBundledAppOrigin() {
-  return 'http://localhost:' + runtimePort;
+  const host = String(DEFAULT_HOST || '').toLowerCase() === 'localhost' ? '127.0.0.1' : 'localhost';
+  return 'http://' + host + ':' + runtimePort;
 }
 function setRuntimePort(port) {
 
@@ -322,7 +325,7 @@ function configureUpdates(force = false) {
     });
   }
 
-  const genericFeed = process.env.ALLOFLOW_UPDATE_FEED_URL || '';
+  const genericFeed = app.isPackaged ? '' : (process.env.ALLOFLOW_UPDATE_FEED_URL || '');
   if (!app.isPackaged && !genericFeed) {
     return publishUpdateState({
       configured: false,
@@ -518,19 +521,22 @@ async function autoStartAlloFlowApp() {
 function openExternalIfSafe(url) {
   try {
     const raw = String(url == null ? '' : url);
-    if (!raw || /[\u0000-\u001f\u007f]/.test(raw)) throw new Error('Control character in external URL');
+    if (!raw || raw.length > 4096 || /[\u0000-\u001f\u007f]/.test(raw)) throw new Error('Invalid external URL');
     const parsed = new URL(raw);
     const scheme = parsed.protocol;
+    if ((scheme === 'http:' || scheme === 'https:') && (parsed.username || parsed.password)) {
+      throw new Error('Credentials not allowed in external URL');
+    }
     if (scheme === 'http:' || scheme === 'https:' || scheme === 'mailto:') {
       Promise.resolve(shell.openExternal(parsed.href)).catch((err) => {
-        logLine('External open failed: ' + String((err && err.message) || err));
+        logLine('External open failed: ' + String((err && err.message) || err).replace(/[\r\n]+/g, ' '));
       });
       return true;
     }
   } catch (_) {
     // Not a parseable absolute URL — fall through to the block path.
   }
-  logLine('Blocked external open for non-web URL: ' + String(url).slice(0, 200));
+  logLine('Blocked external open for non-web URL: ' + String(url == null ? '' : url).replace(/[\r\n]+/g, ' ').slice(0, 200));
   return false;
 }
 
@@ -660,11 +666,12 @@ app.on('browser-window-created', (_event, targetWindow) => {
 function isAllowedAlloSheetPopup(url) {
   try {
     const parsed = new URL(url);
-    const allowedOrigins = new Set([
-      new URL(getCommandCenterUrl()).origin,
-      new URL(getBundledAppOrigin()).origin,
-    ]);
-    if (!allowedOrigins.has(parsed.origin)) return false;
+    const commandOrigin = new URL(getCommandCenterUrl()).origin;
+    const bundledOrigin = new URL(getBundledAppOrigin()).origin;
+    if (!commandOrigin || commandOrigin === bundledOrigin) return false;
+    // AlloSheet must stay strictly on the Command Center origin so untrusted
+    // #app-frame content (bundledOrigin) can never open a same-origin popup.
+    if (parsed.origin !== commandOrigin) return false;
     if (parsed.pathname !== '/app/allo_sheet/allo_sheet.html') return false;
     if (parsed.username || parsed.password) return false;
 
@@ -675,11 +682,17 @@ function isAllowedAlloSheetPopup(url) {
     const theme = parsed.searchParams.get('theme');
     if (theme && theme !== 'light' && theme !== 'dark' && theme !== 'contrast') return false;
 
+    const allowedHostOrigins = new Set([commandOrigin, bundledOrigin]);
     const bootstrap = new URLSearchParams(parsed.hash.replace(/^#/, ''));
+    for (const key of bootstrap.keys()) {
+      if (key !== 'bridgeToken' && key !== 'hostOrigin') return false;
+    }
     const token = bootstrap.get('bridgeToken') || '';
     const hostOrigin = bootstrap.get('hostOrigin') || '';
     if (!/^[a-f0-9]{32}$/i.test(token)) return false;
-    if (!allowedOrigins.has(new URL(hostOrigin).origin)) return false;
+    const parsedHost = new URL(hostOrigin);
+    if (parsedHost.username || parsedHost.password || parsedHost.origin !== hostOrigin) return false;
+    if (!allowedHostOrigins.has(parsedHost.origin)) return false;
     return true;
   } catch (_) {
     return false;
@@ -729,6 +742,7 @@ function configurePrivateApiRequestHeaders(targetWindow) {
       'wss://127.0.0.1/*',
     ],
   };
+  const mainWebContentsId = targetWindow.webContents.id;
   targetWindow.webContents.session.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
     let requestHeaders = { ...(details.requestHeaders || {}) };
     for (const key of Object.keys(requestHeaders)) {
@@ -739,30 +753,43 @@ function configurePrivateApiRequestHeaders(targetWindow) {
     let fromAlloSheetMainFrame = false;
     try {
       fromCommandCenterMainFrame = Boolean(
-        details.webContentsId === targetWindow.webContents.id &&
+        details.webContentsId === mainWebContentsId &&
         details.frame &&
         details.frame.parent === null &&
         isSameOrigin(details.frame.url, getCommandCenterUrl())
       );
       const frameUrl = String(
-        details.frame && details.frame.url
-        || details.initiator
+        (details.frame && details.frame.url)
         || ''
       );
-      const isMainFrame = details.frameId === 0
-        || Boolean(details.frame && details.frame.parent === null);
-      fromAlloSheetMainFrame = Boolean(
-        trustedCompanionOrigin
-        && isMainFrame
-        && isSameOrigin(frameUrl, trustedCompanionOrigin)
-      );
+      const isMainFrame = Boolean(details.frame && details.frame.parent === null);
+      let isExactAlloSheetPage = false;
+      if (trustedCompanionOrigin && isMainFrame && isSameOrigin(frameUrl, trustedCompanionOrigin)) {
+        try {
+          isExactAlloSheetPage = new URL(frameUrl).pathname === '/app/allo_sheet/allo_sheet.html';
+        } catch (_) {
+          isExactAlloSheetPage = false;
+        }
+      }
+      fromAlloSheetMainFrame = isExactAlloSheetPage;
     } catch (_) {
       fromCommandCenterMainFrame = false;
       fromAlloSheetMainFrame = false;
     }
+    let isAlloSheetApi = false;
+    if (fromAlloSheetMainFrame) {
+      try {
+        const target = new URL(details.url);
+        isAlloSheetApi = target.origin === trustedCompanionOrigin
+          && !target.username && !target.password
+          && target.pathname.startsWith('/api/allosheet/');
+      } catch (_) {
+        isAlloSheetApi = false;
+      }
+    }
     if (
-      (fromCommandCenterMainFrame || fromAlloSheetMainFrame)
-      && isAllowedPrivateApiRequest(details.url, privateApiOrigins)
+      (fromCommandCenterMainFrame && isAllowedPrivateApiRequest(details.url, privateApiOrigins))
+      || (fromAlloSheetMainFrame && isAlloSheetApi && isAllowedPrivateApiRequest(details.url, [trustedCompanionOrigin]))
     ) {
       requestHeaders['X-Allo-Desktop-Token'] = PRIVATE_API_TOKEN;
     }
@@ -829,6 +856,7 @@ function stopCoachWindowTracker() {
   coachTrackedBounds = null;
   coachTrackedSourceLabel = '';
   coachTrackedActive = false;
+  coachTrackerInitPromise = null;
   if (child && !child.killed) {
     try { child.kill(); } catch (_) {}
   }
@@ -847,7 +875,12 @@ function closeCoachOverlay() {
 function startCoachWindowTracker(handle, requestEpoch) {
   if (process.platform !== 'win32' || !/^[0-9]+$/.test(String(handle || ''))) return Promise.resolve(null);
   if (requestEpoch != null && requestEpoch !== coachOverlayEpoch) return Promise.resolve(null);
-  if (coachWindowTracker && coachTrackedHandle === handle) return Promise.resolve(coachTrackedBounds);
+  if (coachWindowTracker && coachTrackedHandle === handle) {
+    return coachTrackedBounds ? Promise.resolve(coachTrackedBounds) : (coachTrackerInitPromise || Promise.resolve(null));
+  }
+  const now = Date.now();
+  if (now - coachTrackerLastStartAt < 350) return Promise.resolve(null);
+  coachTrackerLastStartAt = now;
   stopCoachWindowTracker();
   const powershell = path.join(String(process.env.SystemRoot || 'C:\\Windows'),
     'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
@@ -871,6 +904,7 @@ function startCoachWindowTracker(handle, requestEpoch) {
   coachTrackedHandle = handle;
   let buffer = '', settled = false, settleFirst;
   const firstBounds = new Promise((resolve) => { settleFirst = resolve; });
+  coachTrackerInitPromise = firstBounds;
   const settle = (bounds) => {
     if (settled) return;
     settled = true;
@@ -917,6 +951,7 @@ function startCoachWindowTracker(handle, requestEpoch) {
       coachTrackedBounds = null;
       coachTrackedSourceLabel = '';
       coachTrackedActive = false;
+      coachTrackerInitPromise = null;
       if (coachOverlayWindow && !coachOverlayWindow.isDestroyed()) coachOverlayWindow.hide();
     }
   });
@@ -1150,6 +1185,9 @@ function createMainWindow() {
   });
 
   mainWindow.webContents.on('did-create-window', (childWindow, details) => {
+    childWindow.webContents.on('will-attach-webview', (event) => {
+      event.preventDefault();
+    });
     if (isAllowedWhiteboardPage(details && details.url)) {
       // Excalidraw's help/library links leave for the OS browser; the window
       // itself may only move between the allowed Whiteboard pages.
@@ -1157,7 +1195,11 @@ function createMainWindow() {
         openExternalIfSafe(url);
         return { action: 'deny' };
       });
-      const guardWhiteboardUrl = (event, url) => {
+      const guardWhiteboardUrl = (event, url, _isInPlace, isMainFrame) => {
+        if (isMainFrame === false) {
+          event.preventDefault();
+          return;
+        }
         if (isAllowedWhiteboardPage(url)) return;
         event.preventDefault();
         openExternalIfSafe(url);
@@ -1178,7 +1220,13 @@ function createMainWindow() {
         openExternalIfSafe(url);
         return { action: 'deny' };
       });
-      const guardAlloSheetUrl = (event, url) => {
+      const guardAlloSheetUrl = (event, url, _isInPlace, isMainFrame) => {
+        if (isMainFrame === false) {
+          const managedOrigin = cachedAlloSheetPrivateAuth && cachedAlloSheetPrivateAuth.origin;
+          if (managedOrigin && isSameOrigin(url, managedOrigin)) return;
+          event.preventDefault();
+          return;
+        }
         try {
           const parsed = new URL(url);
           if (parsed.origin === companionOrigin && parsed.pathname === '/app/allo_sheet/allo_sheet.html') return;
@@ -1194,7 +1242,11 @@ function createMainWindow() {
       openExternalIfSafe(nextUrl);
       return { action: 'deny' };
     });
-    const guardChildUrl = (event, nextUrl) => {
+    const guardChildUrl = (event, nextUrl, _isInPlace, isMainFrame) => {
+      if (isMainFrame === false) {
+        event.preventDefault();
+        return;
+      }
       let commandOrigin = '';
       let bundledOrigin = '';
       try {
@@ -1219,7 +1271,12 @@ function createMainWindow() {
     event.preventDefault();
   });
 
-  const guardMainWindowUrl = (event, url) => {
+  const guardMainWindowUrl = (event, url, _isInPlace, isMainFrame) => {
+    if (isMainFrame === false) {
+      if (isSameOrigin(url, getBundledAppOrigin()) || isSameOrigin(url, getCommandCenterUrl())) return;
+      event.preventDefault();
+      return;
+    }
     if (!isSameOrigin(url, getCommandCenterUrl())) {
       event.preventDefault();
       openExternalIfSafe(url);
@@ -1246,6 +1303,10 @@ function assertMainWindowSender(event, requireMainFrame = false) {
   const senderUrl = getIpcSenderUrl(event);
   if (!isSameOrigin(senderUrl, getCommandCenterUrl()) && !isSameOrigin(senderUrl, getBundledAppOrigin())) {
     throw new Error('Blocked desktop IPC request from an untrusted renderer origin.');
+  }
+  const frame = event.senderFrame;
+  if (!frame || (frame.parent !== null && frame.parent !== mainWindow.webContents.mainFrame)) {
+    throw new Error('Blocked desktop IPC request from a nested subframe.');
   }
 }
 
@@ -1495,14 +1556,16 @@ const REMEDIATION_MIME_BY_EXT = Object.freeze({
 const REMEDIATION_EXTS = new Set(Object.keys(REMEDIATION_MIME_BY_EXT));
 const MAX_REMEDIATION_READ_BYTES = 64 * 1024 * 1024;
 const approvedRemediationRoots = new Set();
+const approvedRemediationFiles = new Set();
 
 function resolveApprovedRemediationFile(filePath) {
-  if (typeof filePath !== 'string' || !filePath || approvedRemediationRoots.size === 0) return '';
+  if (typeof filePath !== 'string' || !filePath || approvedRemediationRoots.size === 0 || approvedRemediationFiles.size === 0) return '';
   try {
     const lstat = fs.lstatSync(filePath);
     if (lstat.isSymbolicLink() || !lstat.isFile()) return '';
     if (lstat.size > MAX_REMEDIATION_READ_BYTES) return '';
     const realTarget = fs.realpathSync(filePath);
+    if (!approvedRemediationFiles.has(realTarget)) return '';
     for (const root of approvedRemediationRoots) {
       const rel = path.relative(root, realTarget);
       if (rel && rel !== '..' && !rel.startsWith('..' + path.sep) && !path.isAbsolute(rel)) return realTarget;
@@ -1527,6 +1590,8 @@ handleTrustedIpc('remediation:select-folder', async () => {
     if (result.canceled || !result.filePaths[0]) return { canceled: true };
 
     const root = fs.realpathSync(result.filePaths[0]);
+    approvedRemediationRoots.clear();
+    approvedRemediationFiles.clear();
     approvedRemediationRoots.add(root);
     const files = [];
     const MAX_FILES = 1000; // safety cap
@@ -1549,6 +1614,12 @@ handleTrustedIpc('remediation:select-folder', async () => {
           let sizeBytes = 0;
           try { sizeBytes = fs.statSync(full).size; } catch (_) {}
           if (sizeBytes > MAX_REMEDIATION_READ_BYTES) continue;
+          try {
+            const realFile = fs.realpathSync(full);
+            approvedRemediationFiles.add(realFile);
+          } catch (_) {
+            continue;
+          }
           files.push({ name: entry.name, path: full, relPath: path.relative(root, full), sizeBytes, mimeType: REMEDIATION_MIME_BY_EXT[ext] });
         }
       }
@@ -1625,7 +1696,8 @@ app.whenReady().then(async () => {
   if (!hasSingleInstanceLock) return;
   configureDesktopSecretStorage();
   runtime.configurePrivateApiToken(PRIVATE_API_TOKEN);
-  const allowedPermissions = new Set(['media', 'clipboard-read', 'clipboard-sanitized-write', 'fullscreen']);
+  const allowedPermissions = new Set(['media', 'clipboard-sanitized-write', 'fullscreen']);
+  const isMainWindowContents = (wc) => Boolean(wc && mainWindow && !mainWindow.isDestroyed() && wc === mainWindow.webContents);
   const isAllowedPermissionOrigin = (requestingUrl) => {
     try {
       const targetUrl = String(requestingUrl || '');
@@ -1637,12 +1709,12 @@ app.whenReady().then(async () => {
     } catch (_) {}
     return false;
   };
-  session.defaultSession.setPermissionCheckHandler((_webContents, permission, requestingOrigin) => {
-    if (!allowedPermissions.has(permission)) return false;
+  session.defaultSession.setPermissionCheckHandler((webContents, permission, requestingOrigin) => {
+    if (!allowedPermissions.has(permission) || !isMainWindowContents(webContents)) return false;
     return isAllowedPermissionOrigin(requestingOrigin);
   });
-  session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback, details) => {
-    if (!allowedPermissions.has(permission)) {
+  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback, details) => {
+    if (!allowedPermissions.has(permission) || !isMainWindowContents(webContents)) {
       callback(false);
       return;
     }
@@ -1685,7 +1757,10 @@ app.on('before-quit', (event) => {
     if (typeof runtime.stopLocalEngine === 'function') teardowns.push(Promise.resolve(runtime.stopLocalEngine()).catch(() => {}));
     if (typeof runtime.stopLocalAsr === 'function') teardowns.push(Promise.resolve(runtime.stopLocalAsr()).catch(() => {}));
     if (typeof runtime.stopAlloSheetEngine === 'function') teardowns.push(Promise.resolve(runtime.stopAlloSheetEngine()).catch(() => {}));
-    Promise.allSettled(teardowns).finally(() => {
+    Promise.race([
+      Promise.allSettled(teardowns),
+      new Promise((resolve) => setTimeout(resolve, 5000)),
+    ]).finally(() => {
       if (runtimeServer) {
         runtimeServer.close();
         runtimeServer = null;

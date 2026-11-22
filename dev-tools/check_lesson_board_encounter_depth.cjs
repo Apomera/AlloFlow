@@ -141,7 +141,8 @@ const amounts = (board, values) => values.map((value, index) => value + ' ' + bo
       await expect(page.locator('[data-field-encounter] h4')).toHaveText(expectedStory.title);
       await expect(page.locator('[data-field-encounter]')).toContainText(expectedStory.text);
       await expect(page.locator('[data-tabletop-encounters] h4')).toHaveText(expectedStory.title);
-      await expect(page.locator('[data-field-choice]')).toHaveCount(3);
+      for (const id of ['collect', 'prepare', 'crew']) await expect(page.locator('[data-field-approach="' + id + '"]')).toBeEnabled();
+      await expect(page.locator('[data-field-choice]')).toHaveCount(1);
       await expect(page.locator('[data-board-next]')).toBeDisabled();
       await expect(page.locator('[data-encounter-milestone="2"]')).toHaveAttribute('data-milestone-state', 'pending');
       await openDeck('pending');
@@ -169,6 +170,8 @@ const amounts = (board, values) => values.map((value, index) => value + ' ' + bo
       expect(await page.evaluate(() => [...document.querySelectorAll('[data-tabletop-encounters], [data-tabletop-encounters] *, [data-tabletop-encounter-token], [data-tabletop-encounter-token] *')].every(node => getComputedStyle(node).animationName === 'none'))).toBe(true);
       await resume();
       await openDeck('pending');
+      await page.locator('[data-field-approach="' + choice + '"]').focus();
+      await page.keyboard.press('Enter');
       await page.locator('[data-field-choice="' + choice + '"]').focus();
       await page.keyboard.press('Enter');
       const chosen = await page.evaluate(() => snapshot());
@@ -221,7 +224,7 @@ const amounts = (board, values) => values.map((value, index) => value + ' ' + bo
         const expectedBalance = ready.progress.balance.map((n, i) => n - project.cost[i] + reward[i]);
         await page.locator('[data-ready-move="research"]').click();
         await expect(page.locator('.lb-current [data-funding-option="standard"]')).toContainText(amounts(base, project.cost));
-        await expect(page.locator('[data-tabletop-forecast]')).toContainText(amounts(base, expectedBalance));
+        for (const [i, value] of expectedBalance.entries()) await expect(page.locator('[data-tabletop-forecast] [data-resource-after="' + i + '"]')).toHaveText(String(value));
         await expect(page.locator('[data-forecast-crew]')).toBeVisible();
         expect(await page.evaluate(() => snapshot())).toEqual(ready);
         await scan('construction forecast includes refund after full payment');

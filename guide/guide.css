@@ -424,15 +424,17 @@ li + li {
 
 .tool-reference-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
   gap: 1rem;
 }
 
 .tool-reference-card {
+  min-width: 0;
   padding: 1rem;
   border: 1px solid var(--line);
   border-radius: 0.6rem;
   background: var(--surface);
+  overflow-wrap: anywhere;
 }
 
 .tool-reference-card[hidden] {
@@ -443,6 +445,10 @@ li + li {
   display: flex;
   align-items: flex-start;
   gap: 0.7rem;
+}
+
+.tool-reference-card__heading > div {
+  min-width: 0;
 }
 
 .tool-reference-card__icon {
@@ -490,7 +496,7 @@ li + li {
 
 .tool-reference-card__meta > div {
   display: grid;
-  grid-template-columns: 5.5rem 1fr;
+  grid-template-columns: minmax(4.5rem, 5.5rem) minmax(0, 1fr);
   gap: 0.55rem;
   padding: 0.3rem 0;
   border-top: 1px solid var(--line);
@@ -504,7 +510,9 @@ li + li {
 }
 
 .tool-reference-card__meta dd {
+  min-width: 0;
   margin: 0;
+  overflow-wrap: anywhere;
 }
 .section-nav {
   margin: 1.25rem 0 1.5rem;
@@ -1000,6 +1008,19 @@ hr {
   .brand__mark {
     background: #d0ecff;
     color: #10273a;
+  }
+
+  .button--primary,
+  .button--primary:visited,
+  .guide-search button {
+    background: var(--brand);
+    color: #0b1b29;
+  }
+
+  .button--primary:hover,
+  .guide-search button:hover {
+    background: var(--brand-strong);
+    color: #0b1b29;
   }
 }
 

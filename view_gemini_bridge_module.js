@@ -619,7 +619,7 @@ function BridgeSendModal(props) {
       tabIndex: -1,
       role: "dialog",
       "aria-modal": "true",
-      "aria-label": t("common.bridge_mode_send_panel"),
+      "aria-label": _bridgeCopy(t, "common.bridge_mode_send_panel", "Bridge Mode send panel"),
       style: { position: "fixed", inset: 0, zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", background: _bt.overlay, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" },
       onClick: (e) => {
         if (e.target === e.currentTarget) closeBridgeSendModal();
@@ -654,27 +654,28 @@ function BridgeSendModal(props) {
           zIndex: 1e5
         }
       },
-      /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "24px 28px 20px", borderBottom: _bt.headerBorder } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { style: { fontSize: "20px", fontWeight: 800, margin: 0, color: _bt.textAccent, display: "flex", alignItems: "center", gap: "10px", letterSpacing: "-0.02em" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "24px" } }, "\u{1F310}"), " ", _bridgeCopy(t, "bridge.title", "Bridge Mode")), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 0", fontSize: "13px", color: _bt.textMuted, fontWeight: 400 } }, _bridgeCopy(t, "bridge.subtitle", "Send bilingual content to student devices"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "8px", alignItems: "center" } }, /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "24px 28px 20px", borderBottom: _bt.headerBorder } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { style: { fontSize: "20px", fontWeight: 800, margin: 0, color: _bt.textAccent, display: "flex", alignItems: "center", gap: "10px", letterSpacing: "-0.02em" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "24px" }, "aria-hidden": "true" }, "\u{1F310}"), " ", _bridgeCopy(t, "bridge.title", "Bridge Mode")), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 0", fontSize: "13px", color: _bt.textMuted, fontWeight: 400 } }, _bridgeCopy(t, "bridge.subtitle", "Send bilingual content to student devices"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "8px", alignItems: "center" } }, /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
           onClick: () => setBridgeFullscreen((f) => !f),
-          "aria-label": bridgeFullscreen ? t("roster.bridge_exit_fullscreen") || "Exit full screen" : t("roster.bridge_fullscreen") || "Full screen",
-          title: bridgeFullscreen ? t("roster.bridge_exit_fullscreen") || "Exit full screen" : t("roster.bridge_fullscreen") || "Full screen",
+          "aria-pressed": bridgeFullscreen,
+          "aria-label": bridgeFullscreen ? _bridgeCopy(t, "roster.bridge_exit_fullscreen", "Exit full screen") : _bridgeCopy(t, "roster.bridge_fullscreen", "Full screen"),
+          title: bridgeFullscreen ? _bridgeCopy(t, "roster.bridge_exit_fullscreen", "Exit full screen") : _bridgeCopy(t, "roster.bridge_fullscreen", "Full screen"),
           style: { background: _bt.btnCloseBg, border: _bt.btnCloseBorder, color: _bt.btnCloseColor, width: "44px", height: "44px", minWidth: "44px", minHeight: "44px", borderRadius: "12px", cursor: "pointer", fontSize: "16px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" }
         },
-        bridgeFullscreen ? "\u{1F5D7}" : "\u26F6"
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, bridgeFullscreen ? "\u{1F5D7}" : "\u26F6")
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
           onClick: closeBridgeSendModal,
-          "aria-label": t("common.close") || "Close",
+          "aria-label": _bridgeCopy(t, "common.close", "Close"),
           style: { background: _bt.btnCloseBg, border: _bt.btnCloseBorder, color: _bt.btnCloseColor, width: "44px", height: "44px", minWidth: "44px", minHeight: "44px", borderRadius: "12px", cursor: "pointer", fontSize: "16px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" }
         },
-        "\u2715"
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2715")
       ))),
-      /* @__PURE__ */ React.createElement("div", { style: { padding: "24px 28px" } }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "bridge_send_quick_templates", style: { marginBottom: "14px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _bt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "8px" } }, t("resource_builder.quick_templates")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap" } }, [
+      /* @__PURE__ */ React.createElement("div", { style: { padding: "24px 28px" } }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "bridge_send_quick_templates", style: { marginBottom: "14px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _bt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "8px" } }, _bridgeCopy(t, "resource_builder.quick_templates", "Quick templates")), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": _bridgeCopy(t, "resource_builder.quick_templates", "Quick templates"), style: { display: "flex", gap: "8px", flexWrap: "wrap" } }, [
         { icon: "\u{1F4D6}", label: "Vocabulary", prompt: "Introduce and explain the following vocabulary word to students: " },
         { icon: "\u{1F3AF}", label: "Objective", prompt: "Today's learning objective is: " },
         { icon: "\u{1F4CB}", label: "Instructions", prompt: "Instructions for this activity: " },
@@ -696,7 +697,7 @@ function BridgeSendModal(props) {
             const counter = document.getElementById("bridge-char-count");
             if (counter) counter.textContent = tmpl.prompt.length + " chars";
           },
-          style: { background: _bt.cardBg, border: _bt.cardBorder, borderRadius: "10px", padding: "6px 12px", color: _bt.textSecondary, fontSize: "12px", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", transition: "all 0.2s", whiteSpace: "nowrap" },
+          style: { background: _bt.cardBg, border: _bt.cardBorder, borderRadius: "10px", minHeight: "44px", padding: "8px 12px", color: _bt.textSecondary, fontSize: "12px", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", transition: "all 0.2s", whiteSpace: "nowrap" },
           "aria-label": tmpl.label + " template",
           onMouseEnter: (e) => {
             e.currentTarget.style.background = _bt.cardActiveBg;
@@ -709,7 +710,7 @@ function BridgeSendModal(props) {
             e.currentTarget.style.color = _bt.textSecondary;
           }
         },
-        /* @__PURE__ */ React.createElement("span", null, tmpl.icon),
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, tmpl.icon),
         " ",
         tmpl.label
       )))), !activeSessionCode && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px", marginBottom: "14px", background: "rgba(234,179,8,0.08)", border: "1px solid rgba(234,179,8,0.2)", borderRadius: "12px", fontSize: "13px", color: _bt.warningText } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "18px" } }, "\u{1F4E1}"), /* @__PURE__ */ React.createElement("span", null, t("roster.bridge_offline_info") || "No live session \u2014 content will preview on this device only")), /* @__PURE__ */ React.createElement("div", { style: { position: "relative", marginBottom: "12px" } }, /* @__PURE__ */ React.createElement(
@@ -775,11 +776,11 @@ function BridgeSendModal(props) {
               addToast(_bridgeCopy(t, "bridge.loaded_generated_content", "Loaded current generated content"), "info");
             }
           },
-          style: { background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.25)", borderRadius: "10px", padding: "8px 14px", color: _bt.secondaryAccent, fontSize: "12px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "all 0.2s" }
+          style: { background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.25)", borderRadius: "10px", minHeight: "44px", padding: "8px 14px", color: _bt.secondaryAccent, fontSize: "12px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "all 0.2s" }
         },
-        /* @__PURE__ */ React.createElement("span", null, "\u{1F4CE}"),
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4CE}"),
         " ",
-        t("resource_builder.use_current_text")
+        _bridgeCopy(t, "resource_builder.use_current_text", "Use current text")
       ), /* @__PURE__ */ React.createElement(
         "input",
         {
@@ -828,11 +829,11 @@ function BridgeSendModal(props) {
           "data-help-key": "bridge_send_attach_image_btn",
           id: "bridge-attach-image-btn",
           onClick: () => document.getElementById("bridge-image-file-input")?.click(),
-          style: { background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.25)", borderRadius: "10px", padding: "8px 14px", color: _bt.purpleAccent, fontSize: "12px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "all 0.2s" }
+          style: { background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.25)", borderRadius: "10px", minHeight: "44px", padding: "8px 14px", color: _bt.purpleAccent, fontSize: "12px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "all 0.2s" }
         },
-        /* @__PURE__ */ React.createElement("span", null, "\u{1F5BC}\uFE0F"),
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F5BC}\uFE0F"),
         " ",
-        t("resource_builder.attach_image")
+        _bridgeCopy(t, "resource_builder.attach_image", "Attach image")
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -846,10 +847,10 @@ function BridgeSendModal(props) {
             if (removeBtn) removeBtn.style.display = "none";
             addToast(_bridgeCopy(t, "bridge.image_removed", "Image removed"), "info");
           },
-          "aria-label": t("common.remove_attached_image"),
-          style: { display: "none", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: "10px", padding: "8px 10px", color: _bt.dangerText, fontSize: "12px", fontWeight: 700, cursor: "pointer", alignItems: "center", gap: "4px", transition: "all 0.2s" }
+          "aria-label": _bridgeCopy(t, "common.remove_attached_image", "Remove attached image"),
+          style: { display: "none", minWidth: "44px", minHeight: "44px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: "10px", padding: "8px 10px", color: _bt.dangerText, fontSize: "12px", fontWeight: 700, cursor: "pointer", alignItems: "center", justifyContent: "center", gap: "4px", transition: "all 0.2s" }
         },
-        /* @__PURE__ */ React.createElement("span", null, "\u2715")
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2715")
       ), generatedContent?.data?.imageUrl && /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -867,12 +868,12 @@ function BridgeSendModal(props) {
             if (removeBtn) removeBtn.style.display = "flex";
             addToast(_bridgeCopy(t, "bridge.generated_image_attached", "Generated image attached"), "success");
           },
-          style: { background: "rgba(20,184,166,0.1)", border: "1px solid rgba(20,184,166,0.25)", borderRadius: "10px", padding: "8px 14px", color: _bt.textAccent, fontSize: "12px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "all 0.2s" }
+          style: { background: "rgba(20,184,166,0.1)", border: "1px solid rgba(20,184,166,0.25)", borderRadius: "10px", minHeight: "44px", padding: "8px 14px", color: _bt.textAccent, fontSize: "12px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "all 0.2s" }
         },
-        /* @__PURE__ */ React.createElement("span", null, "\u{1F3A8}"),
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F3A8}"),
         " ",
         t("bridge.use_generated_button") || "Use Generated"
-      )), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "20px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _bt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" } }, t("resource_builder.generation_mode")), /* @__PURE__ */ React.createElement("div", { "data-help-key": "bridge_send_mode_selector", id: "bridge-mode-selector", "data-card-bg": _bt.cardBg, "data-card-border": _bt.cardBorder, "data-card-active-bg": _bt.cardActiveBg, "data-card-active-border": _bt.cardActiveBorder, "data-text-secondary": _bt.textSecondary, "data-text-accent": _bt.textAccent, "data-dot-active": _bt.dotActive, "data-dot-inactive": _bt.dotInactive, style: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: "8px" } }, [
+      )), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "20px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _bt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" } }, _bridgeCopy(t, "resource_builder.generation_mode", "Generation mode")), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": _bridgeCopy(t, "resource_builder.generation_mode", "Generation mode"), "data-help-key": "bridge_send_mode_selector", id: "bridge-mode-selector", "data-card-bg": _bt.cardBg, "data-card-border": _bt.cardBorder, "data-card-active-bg": _bt.cardActiveBg, "data-card-active-border": _bt.cardActiveBorder, "data-text-secondary": _bt.textSecondary, "data-text-accent": _bt.textAccent, "data-dot-active": _bt.dotActive, "data-dot-inactive": _bt.dotInactive, style: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: "8px" } }, [
         { id: "explain", icon: "\u{1F4DD}", title: "Explain", desc: "AI explains the concept bilingually" },
         { id: "translate", icon: "\u{1F310}", title: "Translate", desc: "Direct translation to target language" },
         { id: "visual", icon: "\u{1F5BC}\uFE0F", title: "Visual + Explain", desc: "Explanation with AI-generated visual" },
@@ -938,17 +939,17 @@ function BridgeSendModal(props) {
           onChange: (e) => setBridgeOverrideGroups(e.target.checked),
           style: { width: "16px", height: "16px", accentColor: "#f59e0b", cursor: "pointer" }
         }
-      ), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "13px", fontWeight: 700, color: bridgeOverrideGroups ? _bt.warningText : _bt.textSecondary } }, bridgeOverrideGroups ? "\u{1F512} Override group settings" : "\u{1F513} Use group settings (default)")), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: _bt.textMuted, maxWidth: "280px" } }, bridgeOverrideGroups ? "All students will receive this exact language & reading level" : "Each group auto-translates to its own language & level")), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px", marginBottom: "20px" } }, /* @__PURE__ */ React.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _bt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "8px" } }, t("resource_builder.target_group")), /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "13px", fontWeight: 700, color: bridgeOverrideGroups ? _bt.warningText : _bt.textSecondary } }, bridgeOverrideGroups ? "\u{1F512} Override group settings" : "\u{1F513} Use group settings (default)")), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: _bt.textMuted, maxWidth: "280px" } }, bridgeOverrideGroups ? "All students will receive this exact language & reading level" : "Each group auto-translates to its own language & level")), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px", marginBottom: "20px" } }, /* @__PURE__ */ React.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _bt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "8px" } }, _bridgeCopy(t, "resource_builder.target_group", "Target Group")), /* @__PURE__ */ React.createElement(
         "select",
         {
           "data-help-key": "bridge_send_target_select",
           id: "bridge-target-selector",
-          "aria-label": t("common.target_group_selector"),
+          "aria-label": _bridgeCopy(t, "common.target_group_selector", "Target group"),
           defaultValue: "all",
           onChange: (e) => {
             window.__bridgeTarget = e.target.value;
           },
-          style: { width: "100%", minWidth: 0, maxWidth: "100%", background: _bt.inputBg, border: _bt.inputBorder, borderRadius: "12px", padding: "12px 14px", color: _bt.inputText, fontSize: "13px", fontWeight: 600, cursor: "pointer", appearance: "auto" }
+          style: { width: "100%", minWidth: 0, maxWidth: "100%", minHeight: "44px", background: _bt.inputBg, border: _bt.inputBorder, borderRadius: "12px", padding: "12px 14px", color: _bt.inputText, fontSize: "13px", fontWeight: 600, cursor: "pointer", appearance: "auto" }
         },
         /* @__PURE__ */ React.createElement("option", { value: "all", style: { background: _bt.selectBg, color: _bt.selectText } }, "\u{1F3AF} All Groups"),
         rosterKey?.groups && Object.entries(rosterKey.groups).map(([gId, g]) => /* @__PURE__ */ React.createElement("option", { key: gId, value: gId, style: { background: _bt.selectBg, color: _bt.selectText } }, g.name))
@@ -957,7 +958,7 @@ function BridgeSendModal(props) {
         {
           "data-help-key": "bridge_send_language_select",
           id: "bridge-language-selector",
-          "aria-label": t("common.target_language_selector"),
+          "aria-label": _bridgeCopy(t, "common.target_language_selector", "Target language"),
           defaultValue: leveledTextLanguage || "English",
           onChange: (e) => {
             const customInput = document.getElementById("bridge-custom-lang-input");
@@ -974,7 +975,7 @@ function BridgeSendModal(props) {
               if (prev) prev.textContent = e.target.value;
             }
           },
-          style: { width: "100%", minWidth: 0, maxWidth: "100%", background: _bt.inputBg, border: _bt.inputBorder, borderRadius: "12px", padding: "12px 14px", color: _bt.inputText, fontSize: "13px", fontWeight: 600, cursor: "pointer", appearance: "auto" }
+          style: { width: "100%", minWidth: 0, maxWidth: "100%", minHeight: "44px", background: _bt.inputBg, border: _bt.inputBorder, borderRadius: "12px", padding: "12px 14px", color: _bt.inputText, fontSize: "13px", fontWeight: 600, cursor: "pointer", appearance: "auto" }
         },
         [
           { v: "English", f: "\u{1F1FA}\u{1F1F8}" },
@@ -997,27 +998,27 @@ function BridgeSendModal(props) {
           id: "bridge-custom-lang-input",
           type: "text",
           "aria-label": t("common.custom_language_input") || "Custom language name",
-          placeholder: t("common.placeholder_type_a_language_name_e_g_hindi_swahili_haitian_cre"),
+          placeholder: _bridgeCopy(t, "common.placeholder_type_a_language_name_e_g_hindi_swahili_haitian_cre", "Type a language name (e.g., Hindi, Swahili)..."),
           onInput: (e) => {
             window.__bridgeLang = e.target.value || "English";
             const prev = document.getElementById("bridge-settings-preview-lang");
             if (prev) prev.textContent = e.target.value || "Custom";
           },
-          style: { display: "none", width: "100%", boxSizing: "border-box", marginTop: "8px", background: _bt.inputBg, border: _bt.inputBorder, borderRadius: "10px", padding: "10px 14px", color: _bt.inputText, fontSize: "13px", fontWeight: 600 }
+          style: { display: "none", width: "100%", minHeight: "44px", boxSizing: "border-box", marginTop: "8px", background: _bt.inputBg, border: _bt.inputBorder, borderRadius: "10px", padding: "10px 14px", color: _bt.inputText, fontSize: "13px", fontWeight: 600 }
         }
       )), /* @__PURE__ */ React.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _bt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "8px" } }, t("bridge.reading_level_label") || "Reading Level", " ", /* @__PURE__ */ React.createElement("span", { style: { fontSize: "9px", fontWeight: 400, color: bridgeOverrideGroups ? _bt.warningText : _bt.textMuted, textTransform: "none" } }, bridgeOverrideGroups ? "(all students)" : "(your preview)")), /* @__PURE__ */ React.createElement(
         "select",
         {
           "data-help-key": "bridge_send_grade_select",
           id: "bridge-grade-selector",
-          "aria-label": t("common.grade_level_selector"),
+          "aria-label": _bridgeCopy(t, "common.grade_level_selector", "Reading level"),
           defaultValue: gradeLevel || "5th Grade",
           onChange: (e) => {
             window.__bridgeGrade = e.target.value;
             const prev = document.getElementById("bridge-settings-preview-grade");
             if (prev) prev.textContent = e.target.value;
           },
-          style: { width: "100%", minWidth: 0, maxWidth: "100%", background: _bt.inputBg, border: _bt.inputBorder, borderRadius: "12px", padding: "12px 14px", color: _bt.inputText, fontSize: "13px", fontWeight: 600, cursor: "pointer", appearance: "auto" }
+          style: { width: "100%", minWidth: 0, maxWidth: "100%", minHeight: "44px", background: _bt.inputBg, border: _bt.inputBorder, borderRadius: "12px", padding: "12px 14px", color: _bt.inputText, fontSize: "13px", fontWeight: 600, cursor: "pointer", appearance: "auto" }
         },
         ["PreK", "Kindergarten", "1st Grade", "2nd Grade", "3rd Grade", "4th Grade", "5th Grade", "6th Grade", "7th Grade", "8th Grade", "9th Grade", "10th Grade", "11th Grade", "12th Grade"].map((g) => /* @__PURE__ */ React.createElement("option", { key: g, value: g, style: { background: _bt.selectBg, color: _bt.selectText } }, g))
       ))), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "12px 16px", marginBottom: "20px", background: _bt.cardBg, border: _bt.cardBorder, borderRadius: "14px", padding: "14px 18px" } }, /* @__PURE__ */ React.createElement("div", { style: { minWidth: 0, display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "16px" } }, "\u{1F5E3}\uFE0F"), /* @__PURE__ */ React.createElement("span", { style: { color: _bt.textMuted } }, "Language:"), /* @__PURE__ */ React.createElement("span", { id: "bridge-settings-preview-lang", style: { color: _bt.textAccent, fontWeight: 700 } }, leveledTextLanguage || "English")), /* @__PURE__ */ React.createElement("div", { style: { minWidth: 0, display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "16px" } }, "\u{1F4DA}"), /* @__PURE__ */ React.createElement("span", { style: { color: _bt.textMuted } }, "Grade:"), /* @__PURE__ */ React.createElement("span", { id: "bridge-settings-preview-grade", style: { color: _bt.textAccent, fontWeight: 700 } }, gradeLevel || "5th Grade")), /* @__PURE__ */ React.createElement("div", { style: { minWidth: 0, display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", flexWrap: "wrap" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "16px" } }, "\u{1F4E1}"), /* @__PURE__ */ React.createElement("span", { style: { color: _bt.textMuted } }, "Session:"), /* @__PURE__ */ React.createElement("span", { style: { color: activeSessionCode ? _bt.successText : _bt.warningText, fontWeight: 700 } }, activeSessionCode ? "Live" : "Preview only"))), rosterKey?.groups && Object.keys(rosterKey.groups).length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "20px", background: _bt.cardBg, border: _bt.cardBorder, borderRadius: "14px", padding: "14px 16px" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _bt.textAccent, textTransform: "uppercase", letterSpacing: "0.08em", display: "flex", alignItems: "center", gap: "6px" } }, /* @__PURE__ */ React.createElement("span", null, "\u{1F310}"), " Language Blast Preview"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: _bt.textMuted } }, t("bridge.autotranslate_hint") || "Each student device auto-translates to its group's language & reading level"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "10px", color: _bt.textAccent, background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.15)", borderRadius: "8px", padding: "6px 10px", marginTop: "8px", lineHeight: 1.5 } }, "\u{1F4A1} ", /* @__PURE__ */ React.createElement("strong", null, t("bridge.how_it_works_label") || "How it works:"), " ", t("bridge.how_it_works_desc") || "In a live session, each student device automatically generates the translation using its group's configured language and reading level. The language/grade selectors above only affect your teacher preview unless you enable 'Override group settings'.")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap" } }, Object.entries(rosterKey.groups).map(([gId, g]) => {
@@ -1863,19 +1864,23 @@ ${fencedTermPrompt}`);
           "button",
           {
             type: "button",
+            "aria-label": `Play original in ${msg.sender === "personA" ? _personALang : _personBLang}`,
             onClick: () => handleAudio(msg.text, msg.sender === "personA" ? _personALang : _personBLang),
-            style: { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: _bt.textSecondary, padding: "4px 10px", borderRadius: "8px", fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }
+            style: { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: _bt.textSecondary, minHeight: "44px", padding: "8px 12px", borderRadius: "8px", fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }
           },
-          "\u{1F50A} ",
+          /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A}"),
+          " ",
           msg.sender === "personA" ? _personALang.slice(0, 3) : _personBLang.slice(0, 3)
         ), /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
+            "aria-label": `Play translation in ${msg.sender === "personA" ? _personBLang : _personALang}`,
             onClick: () => handleAudio(msg.translated, msg.sender === "personA" ? _personBLang : _personALang),
-            style: { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: _bt.textSecondary, padding: "4px 10px", borderRadius: "8px", fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }
+            style: { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: _bt.textSecondary, minHeight: "44px", padding: "8px 12px", borderRadius: "8px", fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }
           },
-          "\u{1F50A} ",
+          /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A}"),
+          " ",
           msg.sender === "personA" ? _personBLang.slice(0, 3) : _personALang.slice(0, 3)
         )))))), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px" } }, /* @__PURE__ */ React.createElement("div", { style: { minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "6px", minWidth: 0 } }, /* @__PURE__ */ React.createElement(
           "input",
@@ -1973,7 +1978,7 @@ ${fencedTermPrompt}`);
             style: { minWidth: "44px", minHeight: "44px", background: bridgeF2FListening === "personB" ? "rgba(239,68,68,0.3)" : "rgba(99,102,241,0.15)", border: "1px solid " + (bridgeF2FListening === "personB" ? "rgba(239,68,68,0.4)" : "rgba(99,102,241,0.25)"), borderRadius: "12px", padding: "10px 12px", cursor: "pointer", fontSize: "18px", display: "flex", alignItems: "center", justifyContent: "center", animation: !bridgeReducedMotion && bridgeF2FListening === "personB" ? "pulse 1.5s infinite" : "none" }
           },
           bridgeF2FListening === "personB" ? "\u{1F534}" : "\u{1F3A4}"
-        )))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px", padding: "0 4px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: typeof _bt !== "undefined" ? _bt.textMuted : "#94a3b8" } }, "\u{1F512} ", t("roster.bridge_f2f_local_only") || "Not saved", " \u2022 ", bridgeChatMessages.length, " ", t("roster.bridge_f2f_messages") || "messages", " \u2022 ", bridgeF2FTranslating ? "\u23F3 " + (t("roster.bridge_f2f_translating") || "Translating...") : "\u2705 " + _bridgeCopy(t, "roster.bridge_f2f_ready", "Ready")), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: typeof _bt !== "undefined" ? _bt.textMuted : "#94a3b8" } }, "\u{1F50A} ", t("roster.bridge_f2f_tts_auto") || "TTS auto-plays", " \u2022 \u{1F3A4} ", t("roster.bridge_f2f_mic_speak") || "Hold mic to speak", " \u2022 ", t("roster.bridge_f2f_enter_send") || "Enter to send")));
+        )))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px", padding: "0 4px", flexWrap: "wrap", gap: "6px" } }, /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", style: { fontSize: "11px", color: typeof _bt !== "undefined" ? _bt.textMuted : "#94a3b8" } }, "\u{1F512} ", t("roster.bridge_f2f_local_only") || "Not saved", " \u2022 ", bridgeChatMessages.length, " ", t("roster.bridge_f2f_messages") || "messages", " \u2022 ", bridgeF2FTranslating ? "\u23F3 " + (t("roster.bridge_f2f_translating") || "Translating...") : "\u2705 " + _bridgeCopy(t, "roster.bridge_f2f_ready", "Ready")), /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: typeof _bt !== "undefined" ? _bt.textMuted : "#94a3b8" } }, "\u{1F50A} ", t("roster.bridge_f2f_tts_auto") || "TTS auto-plays", " \u2022 \u{1F3A4} ", t("roster.bridge_f2f_mic_speak") || "Hold mic to speak", " \u2022 ", t("roster.bridge_f2f_enter_send") || "Enter to send")));
       })())
     )
   );
@@ -2013,6 +2018,11 @@ function BridgeMessageModal(props) {
   const activeAudioRef = React.useRef(null);
   const playGenRef = React.useRef(0);
   const karaokeTimerRef = React.useRef(null);
+  const [copiedBridgeText, setCopiedBridgeText] = React.useState(false);
+  const copyFeedbackTimerRef = React.useRef(null);
+  React.useEffect(() => () => {
+    if (copyFeedbackTimerRef.current) clearTimeout(copyFeedbackTimerRef.current);
+  }, []);
   const stopBridgePlayback = React.useCallback(() => {
     playGenRef.current += 1;
     if (karaokeTimerRef.current) {
@@ -2090,7 +2100,7 @@ function BridgeMessageModal(props) {
       tabIndex: -1,
       role: "dialog",
       "aria-modal": "true",
-      "aria-label": t("common.bridge_message_display"),
+      "aria-label": _bridgeCopy(t, "common.bridge_message_display", "Bridge message"),
       style: { position: "fixed", inset: 0, zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", background: bridgeProjectionMode ? "rgba(0,0,0,0.95)" : _dt.overlay, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", transition: "background 0.3s" },
       onClick: (e) => {
         if (e.target === e.currentTarget) closeBridgeMessageModal();
@@ -2124,7 +2134,7 @@ function BridgeMessageModal(props) {
           zIndex: 1e5
         }
       },
-      /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "24px 28px 20px", borderBottom: _dt.headerBorder } }, /* @__PURE__ */ React.createElement("h2", { style: { fontSize: bridgeProjectionMode ? "28px" : "20px", fontWeight: 800, margin: 0, color: _dt.textAccent, display: "flex", alignItems: "center", gap: "10px", letterSpacing: "-0.02em" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: bridgeProjectionMode ? "32px" : "24px" } }, "\u{1F4E9}"), " ", t("roster.bridge_title") || "Message from your teacher"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "8px" } }, /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "24px 28px 20px", borderBottom: _dt.headerBorder } }, /* @__PURE__ */ React.createElement("h2", { style: { fontSize: bridgeProjectionMode ? "28px" : "20px", fontWeight: 800, margin: 0, color: _dt.textAccent, display: "flex", alignItems: "center", gap: "10px", letterSpacing: "-0.02em" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: bridgeProjectionMode ? "32px" : "24px" }, "aria-hidden": "true" }, "\u{1F4E9}"), " ", t("roster.bridge_title") || "Message from your teacher"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "8px" } }, /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -2135,16 +2145,16 @@ function BridgeMessageModal(props) {
           title: bridgeProjectionMode ? t("roster.bridge_exit_projection") || "Exit Projection" : t("roster.bridge_projection_mode") || "Projection Mode",
           style: { background: _dt.btnBg, border: _dt.btnBorder, color: _dt.btnColor, width: "44px", height: "44px", minWidth: "44px", minHeight: "44px", borderRadius: "12px", cursor: "pointer", fontSize: "16px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" }
         },
-        bridgeProjectionMode ? "\u{1F5A5}\uFE0F" : "\u{1F4FD}\uFE0F"
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, bridgeProjectionMode ? "\u{1F5A5}\uFE0F" : "\u{1F4FD}\uFE0F")
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
           onClick: closeBridgeMessageModal,
-          "aria-label": t("common.close_bridge_message"),
+          "aria-label": _bridgeCopy(t, "common.close_bridge_message", "Close message"),
           style: { background: _dt.btnBg, border: _dt.btnBorder, color: _dt.btnColor, width: "44px", height: "44px", minWidth: "44px", minHeight: "44px", borderRadius: "12px", cursor: "pointer", fontSize: "16px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" }
         },
-        "\u2715"
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2715")
       ))),
       /* @__PURE__ */ React.createElement("div", { style: { padding: "24px 28px" } }, (() => {
         const _safeMainImg = _bridgeSafeImageUrl(bridgeMessage.imageUrl);
@@ -2242,11 +2252,17 @@ function BridgeMessageModal(props) {
               setBridgeTtsPlaying(false);
             }
           },
-          style: { background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: _dt.textAccent, padding: "8px 16px", borderRadius: "10px", fontSize: "13px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "all 0.2s", opacity: bridgeTtsPlaying ? 0.5 : 1 }
+          "aria-busy": bridgeTtsPlaying && bridgeActiveLanguage === "en",
+          style: { background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: _dt.textAccent, minHeight: "44px", padding: "8px 16px", borderRadius: "10px", fontSize: "13px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "all 0.2s", opacity: bridgeTtsPlaying ? 0.5 : 1 }
         },
-        "\u{1F50A} ",
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A}"),
+        " ",
         t("roster.bridge_play_en") || "Play English"
-      ), bridgeTtsPlaying && bridgeActiveLanguage === "en" && /* @__PURE__ */ React.createElement("div", { style: { flex: 1, height: "4px", background: "rgba(255,255,255,0.06)", borderRadius: "2px", overflow: "hidden" } }, /* @__PURE__ */ React.createElement("div", { style: { height: "100%", background: "linear-gradient(90deg,#6366f1,#818cf8)", borderRadius: "2px", transition: "width 0.15s", width: bridgeKaraokeIndex >= 0 ? `${bridgeKaraokeIndex / Math.max(1, bridgeMessage.english.split(/\s+/).length) * 100}%` : "0%" } })))), bridgeMessage.translated && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "20px", background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.18)", borderRadius: "16px", padding: "20px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _dt.translatedAccent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" } }, "\u{1F310} ", bridgeMessage.languageName || bridgeMessage.language), /* @__PURE__ */ React.createElement("div", { dir: "auto", style: { fontSize: bridgeProjectionMode ? "24px" : "16px", lineHeight: 1.8, letterSpacing: "0.01em" } }, bridgeMessage.translated.split(/\s+/).map((word, idx) => {
+      ), bridgeTtsPlaying && bridgeActiveLanguage === "en" && (() => {
+        const _enTotal = Math.max(1, String(bridgeMessage.english || "").split(/\s+/).filter(Boolean).length);
+        const _enPct = bridgeKaraokeIndex >= 0 ? Math.min(100, Math.round((bridgeKaraokeIndex + 1) / _enTotal * 100)) : 0;
+        return /* @__PURE__ */ React.createElement("div", { role: "progressbar", "aria-label": t("roster.bridge_play_en") || "English narration progress", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": _enPct, "aria-valuetext": bridgeKaraokeIndex >= 0 ? `Word ${Math.min(_enTotal, bridgeKaraokeIndex + 1)} of ${_enTotal} (${_enPct}%)` : "0%", style: { flex: 1, height: "4px", background: "rgba(255,255,255,0.06)", borderRadius: "2px", overflow: "hidden" } }, /* @__PURE__ */ React.createElement("div", { style: { height: "100%", background: "linear-gradient(90deg,#6366f1,#818cf8)", borderRadius: "2px", transition: "width 0.15s", width: `${_enPct}%` } }));
+      })())), bridgeMessage.translated && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "20px", background: "rgba(20,184,166,0.08)", border: "1px solid rgba(20,184,166,0.18)", borderRadius: "16px", padding: "20px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _dt.translatedAccent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" } }, "\u{1F310} ", bridgeMessage.languageName || bridgeMessage.language), /* @__PURE__ */ React.createElement("div", { dir: "auto", style: { fontSize: bridgeProjectionMode ? "24px" : "16px", lineHeight: 1.8, letterSpacing: "0.01em" } }, bridgeMessage.translated.split(/\s+/).map((word, idx) => {
         const isBold = /^\*\*(.*?)\*\*$/.test(word.trim());
         const cleanWord = word.replace(/\*\*/g, "");
         return /* @__PURE__ */ React.createElement("span", { key: idx, style: {
@@ -2338,11 +2354,17 @@ function BridgeMessageModal(props) {
               setBridgeTtsPlaying(false);
             }
           },
-          style: { background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.3)", color: _dt.translatedAccent, padding: "8px 16px", borderRadius: "10px", fontSize: "13px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "all 0.2s", opacity: bridgeTtsPlaying ? 0.5 : 1 }
+          "aria-busy": bridgeTtsPlaying && bridgeActiveLanguage === "translated",
+          style: { background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.3)", color: _dt.translatedAccent, minHeight: "44px", padding: "8px 16px", borderRadius: "10px", fontSize: "13px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "all 0.2s", opacity: bridgeTtsPlaying ? 0.5 : 1 }
         },
-        "\u{1F50A} ",
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A}"),
+        " ",
         t("roster.bridge_play_translated") || "Play Translation"
-      ), bridgeTtsPlaying && bridgeActiveLanguage === "translated" && /* @__PURE__ */ React.createElement("div", { style: { flex: 1, height: "4px", background: "rgba(255,255,255,0.06)", borderRadius: "2px", overflow: "hidden" } }, /* @__PURE__ */ React.createElement("div", { style: { height: "100%", background: "linear-gradient(90deg,#0d9488,#14b8a6)", borderRadius: "2px", transition: "width 0.15s", width: bridgeKaraokeIndex >= 0 ? `${bridgeKaraokeIndex / Math.max(1, bridgeMessage.translated.split(/\s+/).length) * 100}%` : "0%" } })))), Array.isArray(bridgeMessage.terms) && bridgeMessage.terms.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "20px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _dt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" } }, "\u{1F4D6} Key Vocabulary"), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: bridgeMessage.terms.some((t2) => t2 && typeof t2 === "object" && t2.definition) ? "repeat(auto-fill, minmax(200px, 1fr))" : "none", gap: bridgeMessage.terms.some((t2) => t2 && typeof t2 === "object" && t2.definition) ? "12px" : "8px", flexWrap: "wrap", flexDirection: "row" } }, bridgeMessage.terms.map((termRaw, ti) => {
+      ), bridgeTtsPlaying && bridgeActiveLanguage === "translated" && (() => {
+        const _trTotal = Math.max(1, String(bridgeMessage.translated || "").split(/\s+/).filter(Boolean).length);
+        const _trPct = bridgeKaraokeIndex >= 0 ? Math.min(100, Math.round((bridgeKaraokeIndex + 1) / _trTotal * 100)) : 0;
+        return /* @__PURE__ */ React.createElement("div", { role: "progressbar", "aria-label": t("roster.bridge_play_translated") || "Translation narration progress", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": _trPct, "aria-valuetext": bridgeKaraokeIndex >= 0 ? `Word ${Math.min(_trTotal, bridgeKaraokeIndex + 1)} of ${_trTotal} (${_trPct}%)` : "0%", style: { flex: 1, height: "4px", background: "rgba(255,255,255,0.06)", borderRadius: "2px", overflow: "hidden" } }, /* @__PURE__ */ React.createElement("div", { style: { height: "100%", background: "linear-gradient(90deg,#0d9488,#14b8a6)", borderRadius: "2px", transition: "width 0.15s", width: `${_trPct}%` } }));
+      })())), Array.isArray(bridgeMessage.terms) && bridgeMessage.terms.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: "20px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _dt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" } }, "\u{1F4D6} Key Vocabulary"), /* @__PURE__ */ React.createElement("div", { style: { display: "grid", gridTemplateColumns: bridgeMessage.terms.some((t2) => t2 && typeof t2 === "object" && t2.definition) ? "repeat(auto-fill, minmax(200px, 1fr))" : "none", gap: bridgeMessage.terms.some((t2) => t2 && typeof t2 === "object" && t2.definition) ? "12px" : "8px", flexWrap: "wrap", flexDirection: "row" } }, bridgeMessage.terms.map((termRaw, ti) => {
         const isObj = !!(termRaw && typeof termRaw === "object");
         const word = String(isObj ? termRaw.word ?? "" : termRaw ?? "");
         const def = isObj && termRaw.definition != null ? String(termRaw.definition) : null;
@@ -2366,7 +2388,7 @@ function BridgeMessageModal(props) {
             } catch (err) {
               warnLog("Bridge term save failed:", err && err.message);
             }
-          }, style: { background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.2)", color: _dt.textAccent, padding: "4px 12px", borderRadius: "8px", fontSize: "11px", cursor: "pointer", fontWeight: 700, width: "100%", transition: "all 0.2s" } }, "+ Save to Glossary"));
+          }, style: { background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.2)", color: _dt.textAccent, minHeight: "44px", padding: "8px 12px", borderRadius: "8px", fontSize: "12px", cursor: "pointer", fontWeight: 700, width: "100%", transition: "all 0.2s" } }, "+ Save to Glossary"));
         }
         return /* @__PURE__ */ React.createElement("span", { key: ti, style: {
           background: isSaved ? "rgba(34,197,94,0.15)" : "rgba(99,102,241,0.12)",
@@ -2380,7 +2402,7 @@ function BridgeMessageModal(props) {
           alignItems: "center",
           gap: "8px",
           transition: "all 0.2s"
-        } }, word, !isSaved ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: async (e) => {
+        } }, word, !isSaved ? /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": `Save ${word} to glossary`, onClick: async (e) => {
           e.stopPropagation();
           try {
             const ok = await handleQuickAddGlossary(word, true);
@@ -2391,7 +2413,7 @@ function BridgeMessageModal(props) {
           } catch (err) {
             warnLog("Bridge term save failed:", err && err.message);
           }
-        }, style: { background: "none", border: "1px solid rgba(165,180,252,0.3)", color: _dt.textAccent, padding: "2px 8px", borderRadius: "8px", fontSize: "11px", cursor: "pointer", fontWeight: 700 } }, "+ Save") : /* @__PURE__ */ React.createElement("span", { style: { fontSize: "12px", opacity: 0.8 } }, "\u2713"));
+        }, style: { background: "none", border: "1px solid rgba(165,180,252,0.3)", color: _dt.textAccent, minHeight: "44px", padding: "6px 10px", borderRadius: "8px", fontSize: "12px", cursor: "pointer", fontWeight: 700 } }, "+ Save") : /* @__PURE__ */ React.createElement("span", { style: { fontSize: "12px", opacity: 0.8 } }, "\u2713"));
       }))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap" } }, Array.isArray(bridgeMessage.terms) && bridgeMessage.terms.length > 0 && /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -2428,7 +2450,7 @@ function BridgeMessageModal(props) {
               addToast(_bridgeCopy(t, "glossary.actions.add_failed", "Could not save terms to glossary."), "error");
             }
           },
-          style: { background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.25)", color: _dt.textAccent, padding: "10px 18px", borderRadius: "12px", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", flex: 1 }
+          style: { background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.25)", color: _dt.textAccent, minHeight: "44px", padding: "10px 18px", borderRadius: "12px", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", flex: 1 }
         },
         bridgeMessage.terms.every((t2) => bridgeTermsSaved.includes(String(t2 && typeof t2 === "object" ? t2.word ?? "" : t2 ?? ""))) ? "\u2705 All Saved" : "\u{1F4D6} Save All Terms"
       ), /* @__PURE__ */ React.createElement(
@@ -2437,6 +2459,7 @@ function BridgeMessageModal(props) {
           type: "button",
           "data-help-key": "bridge_message_read_again_btn",
           disabled: bridgeTtsPlaying,
+          "aria-busy": bridgeTtsPlaying,
           onClick: async () => {
             if (bridgeTtsPlaying) return;
             stopBridgePlayback();
@@ -2483,9 +2506,10 @@ function BridgeMessageModal(props) {
               }
             }
           },
-          style: { background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.25)", color: _dt.translatedAccent, padding: "10px 18px", borderRadius: "12px", fontSize: "13px", fontWeight: 700, cursor: bridgeTtsPlaying ? "not-allowed" : "pointer", opacity: bridgeTtsPlaying ? 0.55 : 1, transition: "all 0.2s", flex: 1 }
+          style: { background: "rgba(20,184,166,0.15)", border: "1px solid rgba(20,184,166,0.25)", color: _dt.translatedAccent, minHeight: "44px", padding: "10px 18px", borderRadius: "12px", fontSize: "13px", fontWeight: 700, cursor: bridgeTtsPlaying ? "not-allowed" : "pointer", opacity: bridgeTtsPlaying ? 0.55 : 1, transition: "all 0.2s", flex: 1 }
         },
-        "\u{1F504} Read Again"
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F504} "),
+        "Read Again"
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -2501,11 +2525,19 @@ function BridgeMessageModal(props) {
               "",
               Array.isArray(bridgeMessage.terms) && bridgeMessage.terms.length ? "\u{1F4D6} Key Terms: " + bridgeMessage.terms.filter(Boolean).map((t2) => t2 && typeof t2 === "object" ? String(t2.word ?? "") + (t2.definition ? " - " + String(t2.definition) : "") : String(t2)).join(", ") : ""
             ].filter(Boolean).join("\n");
-            (window.alloCopyText ? window.alloCopyText(text) : navigator.clipboard.writeText(text).then(() => true)).then((ok) => addToast(ok !== false ? _bridgeCopy(t, "roster.bridge_copied", "Copied to clipboard!") : _bridgeCopy(t, "roster.bridge_copy_failed", "Copy failed \u2014 select the text manually"), ok !== false ? "success" : "error")).catch(() => addToast(_bridgeCopy(t, "roster.bridge_copy_failed", "Copy failed \u2014 select the text manually"), "error"));
+            (window.alloCopyText ? window.alloCopyText(text) : navigator.clipboard ? navigator.clipboard.writeText(text).then(() => true) : Promise.resolve(false)).then((ok) => {
+              if (ok !== false) {
+                setCopiedBridgeText(true);
+                if (copyFeedbackTimerRef.current) clearTimeout(copyFeedbackTimerRef.current);
+                copyFeedbackTimerRef.current = setTimeout(() => setCopiedBridgeText(false), 2200);
+              }
+              addToast(ok !== false ? _bridgeCopy(t, "roster.bridge_copied", "Copied to clipboard!") : _bridgeCopy(t, "roster.bridge_copy_failed", "Copy failed \u2014 select the text manually"), ok !== false ? "success" : "error");
+            }).catch(() => addToast(_bridgeCopy(t, "roster.bridge_copy_failed", "Copy failed \u2014 select the text manually"), "error"));
           },
-          style: { background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.25)", color: _dt.textAccent, padding: "10px 18px", borderRadius: "12px", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", flex: 1 }
+          style: { background: copiedBridgeText ? "rgba(34,197,94,0.16)" : "rgba(99,102,241,0.15)", border: copiedBridgeText ? "1px solid rgba(34,197,94,0.4)" : "1px solid rgba(99,102,241,0.25)", color: copiedBridgeText ? _dt.successAccent : _dt.textAccent, minHeight: "44px", padding: "10px 18px", borderRadius: "12px", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", flex: 1 }
         },
-        "\u{1F4CB} Copy"
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, copiedBridgeText ? "\u2713 " : "\u{1F4CB} "),
+        copiedBridgeText ? _bridgeCopy(t, "common.copied", "Copied!") : _bridgeCopy(t, "common.copy", "Copy")
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -2549,18 +2581,19 @@ function BridgeMessageModal(props) {
               printWin.print();
             }
           },
-          style: { background: "rgba(168,85,247,0.15)", border: "1px solid rgba(168,85,247,0.25)", color: _dt.purpleAccent, padding: "10px 18px", borderRadius: "12px", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", flex: 1 }
+          style: { background: "rgba(168,85,247,0.15)", border: "1px solid rgba(168,85,247,0.25)", color: _dt.purpleAccent, minHeight: "44px", padding: "10px 18px", borderRadius: "12px", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", flex: 1 }
         },
-        "\u{1F5A8}\uFE0F Print"
+        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F5A8}\uFE0F "),
+        "Print"
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
           onClick: closeBridgeMessageModal,
-          style: { background: _dt.btnBg, border: _dt.btnBorder, color: _dt.btnColor, padding: "10px 18px", borderRadius: "12px", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", flex: 1 }
+          style: { background: _dt.btnBg, border: _dt.btnBorder, color: _dt.btnColor, minHeight: "44px", padding: "10px 18px", borderRadius: "12px", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s", flex: 1 }
         },
         t("roster.bridge_close") || "Close"
-      )), activeSessionCode && isTeacherMode && (() => {
+      )), copiedBridgeText && /* @__PURE__ */ React.createElement("p", { "data-bridge-copy-status": true, role: "status", "aria-live": "polite", "aria-atomic": "true", style: { margin: "8px 0 0", fontSize: "12px", fontWeight: 700, color: _dt.successAccent, textAlign: "center" } }, _bridgeCopy(t, "roster.bridge_copied", "Copied to clipboard!")), activeSessionCode && isTeacherMode && (() => {
         const _brx = sessionData?.bridgeReactions || {};
         const _brCounts = { "\u{1F44D}": 0, "\u{1F914}": 0, "\u2753": 0 };
         Object.values(_brx).forEach((r) => {
@@ -2571,7 +2604,7 @@ function BridgeMessageModal(props) {
         return /* @__PURE__ */ React.createElement("div", { style: { marginTop: "20px", padding: "16px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", borderRadius: "14px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _dt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" } }, "\u{1F4CA} Student Reactions"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "10px", justifyContent: "center" } }, [{ emoji: "\u{1F44D}", label: "Got it!", text: "#86efac" }, { emoji: "\u{1F914}", label: "Confused", text: "#fcd34d" }, { emoji: "\u2753", label: "Question", text: "#a5b4fc" }].map((r, ri) => /* @__PURE__ */ React.createElement("div", { key: ri, style: { textAlign: "center", flex: 1 } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "32px", marginBottom: "4px" } }, r.emoji), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: _dReactionText[r.emoji], fontWeight: 600 } }, r.label), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "28px", fontWeight: 900, color: _dReactionText[r.emoji], marginTop: "4px" } }, _brCounts[r.emoji])))), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: _dt.textSecondary, textAlign: "center", marginTop: "8px" } }, _brTotal, " ", _rosterSize > 0 ? `of ${_rosterSize}` : "", " student", _brTotal !== 1 ? "s" : "", " responded"));
       })(), activeSessionCode && !isTeacherMode && (() => {
         const _myRxn = sessionData?.bridgeReactions?.[user?.uid]?.emoji;
-        return /* @__PURE__ */ React.createElement("div", { style: { marginTop: "20px", padding: "16px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", borderRadius: "14px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _dt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "12px" } }, t("bridge.reaction_prompt") || "How do you feel about this?"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "10px", justifyContent: "center" } }, [
+        return /* @__PURE__ */ React.createElement("div", { style: { marginTop: "20px", padding: "16px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", borderRadius: "14px" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", fontWeight: 700, color: _dt.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "12px" } }, t("bridge.reaction_prompt") || "How do you feel about this?"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("bridge.reaction_prompt") || "How do you feel about this?", style: { display: "flex", gap: "10px", justifyContent: "center" } }, [
           { emoji: "\u{1F44D}", label: "Got it!", color: "rgba(34,197,94,0.2)", border: "rgba(34,197,94,0.4)", text: "#86efac" },
           { emoji: "\u{1F914}", label: "Confused", color: "rgba(251,191,36,0.2)", border: "rgba(251,191,36,0.4)", text: "#fcd34d" },
           { emoji: "\u2753", label: "Question", color: "rgba(99,102,241,0.2)", border: "rgba(99,102,241,0.4)", text: "#a5b4fc" }
@@ -2587,6 +2620,7 @@ function BridgeMessageModal(props) {
             }
           }, "aria-pressed": _sel, style: {
             flex: 1,
+            minHeight: "44px",
             textAlign: "center",
             cursor: "pointer",
             padding: "10px 4px",
@@ -2594,7 +2628,7 @@ function BridgeMessageModal(props) {
             background: _sel ? r.color : "transparent",
             border: `1px solid ${_sel ? r.border : "transparent"}`,
             transition: "all 0.2s"
-          } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "32px", marginBottom: "4px", transform: _sel ? "scale(1.2)" : "scale(1)", transition: "transform 0.2s" }, "aria-hidden": "true" }, r.emoji), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: _dReactionText[r.emoji], fontWeight: 600 } }, r.label));
+          } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "32px", marginBottom: "4px", transform: _sel ? "scale(1.2)" : "scale(1)", transition: "transform 0.2s" }, "aria-hidden": "true" }, r.emoji), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: _dReactionText[r.emoji], fontWeight: 600 } }, r.label, _sel ? " \u2713" : ""));
         })), _myRxn && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", style: { fontSize: "11px", color: _dt.textSecondary, textAlign: "center", marginTop: "8px" } }, t("bridge.response_sent_confirmation") || "Response sent \u2713"));
       })())
     )

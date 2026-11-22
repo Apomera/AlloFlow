@@ -615,11 +615,12 @@
     weather.name='birdlab-seamless-cloud-field';weather.wrapS=weather.wrapT=THREE.RepeatWrapping;
     weather.magFilter=THREE.LinearFilter;weather.minFilter=THREE.LinearMipmapLinearFilter;
     weather.generateMipmaps=true;weather.needsUpdate=true;
-    var sky=new THREE.Mesh(new THREE.SphereGeometry(190,24,12),new THREE.ShaderMaterial({
+    var skyMat=typeof THREE.ShaderMaterial==='function'?new THREE.ShaderMaterial({
       uniforms:{top:{value:new THREE.Color('#739bb4')},bottom:{value:new THREE.Color('#e3e7df')},
         cloudField:{value:weather},cloudOffset:{value:new THREE.Vector2()},
         cloudLight:{value:new THREE.Color('#fff8e9')},cloudShade:{value:new THREE.Color('#bbcbd3')},
-        sunDirection:{value:new THREE.Vector3(-18,31,14).normalize()},sunTint:{value:new THREE.Color('#fff1d6')}},
+        sunDirection:{value:new THREE.Vector3(-18,31,14).normalize()},sunTint:{value:new THREE.Color('#fff1d6')},
+        uAtmosphere:{value:1.0}},
       // Camera-relative sightlines keep the distant sun and clouds from
       // sliding against the horizon when the observer walks around the wood.
       vertexShader:'varying vec3 vPosition; void main(){vPosition=(modelMatrix*vec4(position,1.0)).xyz-cameraPosition;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
@@ -627,37 +628,55 @@
       // in that same space and all weather fades into the matched horizon.
       fragmentShader:[
         'uniform vec3 top; uniform vec3 bottom; uniform sampler2D cloudField; uniform vec2 cloudOffset;',
-        'uniform vec3 cloudLight; uniform vec3 cloudShade; uniform vec3 sunDirection; uniform vec3 sunTint;',
+        'uniform vec3 cloudLight; uniform vec3 cloudShade; uniform vec3 sunDirection; uniform vec3 sunTint; uniform float uAtmosphere;',
         'varying vec3 vPosition;',
         'void main(){',
         'vec3 ray=normalize(vPosition); float altitude=max(0.0,ray.y);',
         'float horizon=smoothstep(.025,.20,altitude);',
-        'vec3 sky=mix(bottom,top,smoothstep(.04,.78,altitude));',
+        // Rayleigh optical-depth gradient deepens zenith blues and warms low-sun horizons.
+        'float rayleighCurve=pow(smoothstep(.03,.82,altitude),0.84);',
+        'vec3 sky=mix(bottom,top,rayleighCurve);',
         'float sunward=max(0.0,dot(ray,sunDirection));',
-        // Soft Rayleigh/Mie atmospheric horizon airglow warms the low woodland sky toward the sun.
-        'float airglow=exp(-altitude*6.2)*(0.26+0.74*pow(sunward,3.0))*smoothstep(.01,.14,altitude);',
-        'sky=mix(sky,mix(bottom,sunTint,.58),airglow*.34);',
-        'float glow=pow(sunward,8.0)*.14+pow(sunward,22.0)*.15+pow(sunward,160.0)*.26;',
-        'sky=mix(sky,sunTint,glow*horizon);',
+        'float sunElev=clamp(sunDirection.y,0.0,1.0);',
+        'float lowSun=smoothstep(0.58,0.14,sunElev);',
+        'float airmass=1.0/(altitude+0.16);',
+        // Rayleigh + Mie forward-scattering golden-hour aureole & horizon glow band.
+        'float mieG=0.72;',
+        'float mieDenom=max(0.08,1.0+mieG*mieG-2.0*mieG*sunward);',
+        'float miePhase=(1.0-mieG*mieG)/(4.0*3.14159*pow(mieDenom,1.5));',
+        'float airglow=exp(-altitude*(5.6-lowSun*1.6))*(0.24+0.76*pow(sunward,2.6))*smoothstep(.01,.14,altitude);',
+        'vec3 goldenHorizon=mix(bottom,sunTint,0.62+lowSun*0.24);',
+        'sky=mix(sky,goldenHorizon,clamp(airglow*(0.32+lowSun*0.24),0.0,0.68)*uAtmosphere);',
+        // Subtle anti-solar Belt of Venus twilight band opposite low golden/dawn sun.
+        'float antiSun=max(0.0,dot(ray,-sunDirection));',
+        'float venusBand=exp(-pow((altitude-0.11)*7.5,2.0))*pow(antiSun,1.8)*lowSun*horizon*uAtmosphere;',
+        'sky=mix(sky,mix(top,cloudShade,0.55)+vec3(0.08,0.03,0.05),venusBand*0.26);',
+        'float glow=(pow(sunward,7.0)*0.15+pow(sunward,22.0)*0.16+pow(sunward,150.0)*0.28+min(0.24,miePhase*0.038*(1.0+lowSun*0.7)))*uAtmosphere;',
+        'sky=mix(sky,sunTint,clamp(glow*horizon,0.0,0.88));',
         'vec2 uv=ray.xz/max(.09,altitude)*.085+vec2(.38,.22)-cloudOffset;',
         'float density=texture2D(cloudField,uv).r;',
         'float cover=smoothstep(.45,.68,density);',
         'float sunSide=texture2D(cloudField,uv+sunDirection.xz*.024).r;',
         'float deepSide=texture2D(cloudField,uv+sunDirection.xz*.052).r;',
         'float relief=clamp(.86+(density-sunSide)*3.4+(density-deepSide)*1.2-cover*.32,0.0,1.0);',
-        'vec3 cloud=mix(cloudShade,cloudLight,relief);',
-        'float silver=(pow(sunward,12.0)*.24+pow(sunward,32.0)*.38)*(1.0-cover*.82)*smoothstep(.12,.62,density);',
-        'cloud=mix(cloud,sunTint,clamp(silver,0.0,0.85));',
+        'float cloudUnderWarm=smoothstep(0.18,0.65,1.0-relief)*lowSun*pow(sunward,1.4)*uAtmosphere;',
+        'vec3 warmShade=mix(cloudShade,mix(cloudShade,sunTint,0.42),cloudUnderWarm*0.55);',
+        'vec3 cloud=mix(warmShade,cloudLight,relief);',
+        'float silver=(pow(sunward,10.0)*0.24+pow(sunward,30.0)*0.42)*(1.0-cover*0.80)*smoothstep(.12,.62,density)*uAtmosphere;',
+        'cloud=mix(cloud,sunTint,clamp(silver*(1.0+lowSun*0.35),0.0,0.90));',
         'float wisps=texture2D(cloudField,uv*vec2(.48,1.8)+vec2(.26,.47)-cloudOffset*.16).g;',
         'float highVeil=texture2D(cloudField,uv*vec2(1.25,.55)+vec2(.61,.13)-cloudOffset*.09).g;',
-        'sky=mix(sky,cloudLight,(smoothstep(.60,.81,wisps)*.16+smoothstep(.64,.85,highVeil)*.10)*horizon);',
+        'float veilWarm=smoothstep(.60,.81,wisps)*.16+smoothstep(.64,.85,highVeil)*.10;',
+        'vec3 veilColor=mix(cloudLight,sunTint,lowSun*0.42*uAtmosphere);',
+        'sky=mix(sky,veilColor,veilWarm*horizon);',
         'sky=mix(sky,cloud,cover*.92*horizon);',
         'float disc=smoothstep(.99972,.99993,sunward)*(1.0-cover*.94)*horizon;',
         'gl_FragColor=vec4(mix(sky,sunTint,disc),1.0);',
         '}'
       ].join('\n'),
       side:THREE.BackSide,depthWrite:false,fog:false,toneMapped:false
-    }));
+    }):new THREE.MeshBasicMaterial({color:'#b9ccd0',side:THREE.BackSide,depthWrite:false,fog:false});
+    var sky=new THREE.Mesh(new THREE.SphereGeometry(190,24,12),skyMat);
     sky.name='birdlab-sky';return sky;
   }
 
@@ -744,19 +763,34 @@
       sun.shadow.bias=-.00035; sun.shadow.normalBias=.025; sun.shadow.radius=2;
       scene.add(sun); scene.add(sun.target);
       var rim=new THREE.DirectionalLight('#d3e6f2',.75); rim.position.set(12,15,-24); scene.add(rim);
+      var isHighContrast=function(){
+        try{
+          if(typeof document!=='undefined'){
+            var docEl=document.documentElement,body=document.body;
+            if((docEl&&(docEl.classList.contains('theme-contrast')||docEl.classList.contains('high-contrast')||docEl.getAttribute('data-theme')==='high-contrast'))||
+               (body&&(body.classList.contains('theme-contrast')||body.classList.contains('high-contrast'))))return true;
+          }
+          if(typeof global!=='undefined'&&typeof global.matchMedia==='function'){
+            if(global.matchMedia('(forced-colors: active)').matches||global.matchMedia('(prefers-contrast: more)').matches)return true;
+          }
+        }catch(ignore){}
+        return false;
+      };
       var sky=createWoodlandSky(THREE,quality);scene.add(sky);
-      // Soft dappled woodland canopy sunbeams aligned dynamically to the live sun vector.
+      // Volumetric dappled woodland canopy god-rays aligned dynamically to the live sun vector.
       var sunbeams=(function(){
+        if(typeof THREE.ShaderMaterial!=='function')return null;
         var specs=quality==='low'
-          ?[[-3.2,-2.4,2.4,15.5,0.2],[4.6,-3.8,2.8,16.5,1.9],[-1.0,4.2,2.2,14.5,3.7]]
-          :[[-4.4,-3.1,2.6,16.0,0.2],[3.8,-4.2,2.9,17.0,1.4],[-2.1,3.6,2.3,15.0,2.7],[6.2,1.8,3.1,16.5,4.0],[-6.8,1.2,2.7,15.5,5.1],[1.4,-0.8,2.0,14.5,0.9]];
-        var pos=[],uvs=[],seeds=[],idx=[];
+          ?[[-3.2,-2.4,2.6,15.8,0.2],[4.6,-3.8,3.0,16.8,1.9],[-1.0,4.2,2.4,14.8,3.7]]
+          :[[-4.4,-3.1,2.8,16.4,0.2],[3.8,-4.2,3.1,17.4,1.4],[-2.1,3.6,2.5,15.4,2.7],[6.2,1.8,3.2,16.8,4.0],[-6.8,1.2,2.9,15.8,5.1],[1.4,-0.8,2.2,14.8,0.9],[-4.9,4.3,2.7,15.6,2.2]];
+        var pos=[],norms=[],uvs=[],seeds=[],idx=[];
         for(var si=0;si<specs.length;si++){
           var sp=specs[si],bx=sp[0],bz=sp[1],bw=sp[2],bh=sp[3],sd=sp[4];
-          // Two crossed planes per shaft so beams stay volumetric from every orbit angle.
+          // Two crossed planes per shaft with view-angle Fresnel softening so beams stay volumetric from every orbit angle.
           for(var p=0;p<2;p++){
-            var a=p*Math.PI*.5+sd*.6,ca=Math.cos(a)*bw*.5,sa=Math.sin(a)*bw*.5,base=pos.length/3;
+            var a=p*Math.PI*.5+sd*.6,ca=Math.cos(a)*bw*.5,sa=Math.sin(a)*bw*.5,nx=-Math.sin(a),nz=Math.cos(a),base=pos.length/3;
             pos.push(bx-ca,0,bz-sa, bx+ca,0,bz+sa, bx+ca,bh,bz+sa, bx-ca,bh,bz-sa);
+            norms.push(nx,0,nz, nx,0,nz, nx,0,nz, nx,0,nz);
             uvs.push(0,0, 1,0, 1,1, 0,1);
             seeds.push(sd,sd,sd,sd);
             idx.push(base,base+1,base+2, base,base+2,base+3);
@@ -764,6 +798,7 @@
         }
         var geo=new THREE.BufferGeometry();
         geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+        geo.setAttribute('normal',new THREE.Float32BufferAttribute(norms,3));
         geo.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));
         geo.setAttribute('blShaftSeed',new THREE.Float32BufferAttribute(seeds,1));
         geo.setIndex(idx);
@@ -772,30 +807,37 @@
           blending:THREE.AdditiveBlending,
           uniforms:{
             uColor:{value:new THREE.Color('#fff2d6')},
-            uOpacity:{value:.065},
-            uTime:{value:0},
+            uOpacity:{value:.068},
+            uTime:{value:options.reducedMotion?3.6:0},
+            uGolden:{value:0.0},
             uSunDir:{value:new THREE.Vector3(-18,31,14).normalize()}
           },
           vertexShader:[
-            'attribute float blShaftSeed; uniform vec3 uSunDir; varying vec2 vUv; varying float vSeed; varying float vDist;',
+            'attribute float blShaftSeed; uniform vec3 uSunDir; varying vec2 vUv; varying float vSeed; varying float vDist; varying vec3 vWorldPos; varying vec3 vWorldNormal;',
             'void main(){',
             '  vUv=uv; vSeed=blShaftSeed;',
             // Shear each vertical shaft along the live solar direction so beams tilt with Daylight, Golden Hour, Dawn and Light Study.
             '  vec3 p=position; float slant=p.y/max(0.28,uSunDir.y);',
             '  p.x+=uSunDir.x*slant; p.z+=uSunDir.z*slant;',
-            '  vec4 wp=modelMatrix*vec4(p,1.0); vDist=length(wp.xyz-cameraPosition);',
+            '  vec4 wp=modelMatrix*vec4(p,1.0); vWorldPos=wp.xyz; vDist=length(wp.xyz-cameraPosition);',
+            '  vWorldNormal=normalize((modelMatrix*vec4(normal,0.0)).xyz);',
             '  gl_Position=projectionMatrix*viewMatrix*wp;',
             '}'
           ].join('\n'),
           fragmentShader:[
-            'uniform vec3 uColor; uniform float uOpacity; uniform float uTime; varying vec2 vUv; varying float vSeed; varying float vDist;',
+            'uniform vec3 uColor; uniform float uOpacity; uniform float uTime; uniform float uGolden; varying vec2 vUv; varying float vSeed; varying float vDist; varying vec3 vWorldPos; varying vec3 vWorldNormal;',
             'void main(){',
             '  float across=abs(vUv.x*2.0-1.0);',
-            '  float edge=exp(-3.2*across*across)*(1.0-smoothstep(0.62,1.0,across));',
-            '  float vert=smoothstep(0.0,0.34,vUv.y)*(1.0-smoothstep(0.76,1.0,vUv.y));',
-            '  float dapple=0.74+0.26*sin(vUv.x*11.0+vSeed*3.7+uTime*0.18)*cos(vUv.y*4.5-uTime*0.11+vSeed);',
-            '  float fade=smoothstep(2.4,5.8,vDist)*(1.0-smoothstep(26.0,46.0,vDist));',
-            '  gl_FragColor=vec4(uColor,uOpacity*edge*vert*dapple*fade);',
+            '  float edge=exp(-3.0*across*across)*(1.0-smoothstep(0.60,1.0,across));',
+            '  float vert=smoothstep(0.0,0.30,vUv.y)*(1.0-smoothstep(0.74,1.0,vUv.y));',
+            '  float groundBloom=1.0+0.32*(1.0-smoothstep(0.0,0.45,vUv.y));',
+            '  float dapple=0.72+0.28*sin(vUv.x*11.0+vSeed*3.7+uTime*0.18)*cos(vUv.y*4.5-uTime*0.11+vSeed);',
+            '  float fineDapple=0.84+0.16*sin(vUv.x*23.0-uTime*0.24+vSeed*6.1)*sin(vUv.y*9.0+uTime*0.09);',
+            '  vec3 viewDir=normalize(cameraPosition-vWorldPos);',
+            '  float edgeView=pow(abs(dot(normalize(vWorldNormal),viewDir)),1.2);',
+            '  float fade=smoothstep(2.2,5.6,vDist)*(1.0-smoothstep(26.0,48.0,vDist));',
+            '  vec3 tint=mix(uColor,vec3(1.0,0.88,0.62),uGolden*0.36);',
+            '  gl_FragColor=vec4(tint,uOpacity*edge*vert*groundBloom*dapple*fineDapple*edgeView*fade);',
             '}'
           ].join('\n')
         });
@@ -804,18 +846,35 @@
         scene.add(mesh);return mesh;
       })();
       var syncSunbeams=function(){
+        var hc=isHighContrast();
+        if(sky&&sky.material&&sky.material.uniforms&&sky.material.uniforms.uAtmosphere){
+          sky.material.uniforms.uAtmosphere.value=hc?0.0:1.0;
+        }
+        if(habitat&&habitat.setLightState){
+          habitat.setLightState({
+            sunDir:sun.position.clone().sub(sun.target.position).normalize(),
+            sunColor:sun.color,
+            skyColor:sky&&sky.material&&sky.material.uniforms&&sky.material.uniforms.top?sky.material.uniforms.top.value:scene.fog.color,
+            fogColor:scene.fog.color,
+            fogDensity:scene.fog.density,
+            golden:lighting==='golden'?1.0:lighting==='dawn'?0.65:0.0,
+            highContrast:hc
+          });
+        }
         if(!sunbeams)return;
         var u=sunbeams.material.uniforms;
         u.uSunDir.value.copy(sun.position).sub(sun.target.position).normalize();
         u.uColor.value.copy(sun.color);
-        u.uOpacity.value=raining?0:(lighting==='golden'?.115:lighting==='dawn'?.095:.062);
-        sunbeams.visible=!raining;
+        u.uGolden.value=lighting==='golden'?1.0:lighting==='dawn'?0.65:0.0;
+        u.uOpacity.value=(raining||hc)?0:(lighting==='golden'?.125:lighting==='dawn'?.102:.068);
+        sunbeams.visible=!raining&&!hc;
       };
-      habitat=global.BirdLab3DHabitat.create(THREE,scene,{quality:quality,reducedMotion:!!options.reducedMotion});
+      var initialHC=isHighContrast();
+      habitat=global.BirdLab3DHabitat.create(THREE,scene,{quality:quality,reducedMotion:!!options.reducedMotion,highContrast:initialHC});
       if(habitat.root&&!habitat.root.parent) scene.add(habitat.root);
       bird=global.BirdLab3DBird.create(THREE); bird.root.name='birdlab-red-tailed-hawk'; scene.add(bird.root);
-      wildlife=global.BirdLab3DWildlife.create(THREE,scene,{quality:quality,groundHeight:habitat.groundSurfaceHeight||habitat.groundHeight,isBlocked:habitat.isBlocked});
-      if(global.BirdLab3DMammals&&global.BirdLab3DMammals.create)mammals=global.BirdLab3DMammals.create(THREE,scene,{quality:quality,groundHeight:habitat.groundSurfaceHeight||habitat.groundHeight,isBlocked:habitat.isBlocked});
+      wildlife=global.BirdLab3DWildlife.create(THREE,scene,{quality:quality,highContrast:initialHC,groundHeight:habitat.groundSurfaceHeight||habitat.groundHeight,isBlocked:habitat.isBlocked});
+      if(global.BirdLab3DMammals&&global.BirdLab3DMammals.create)mammals=global.BirdLab3DMammals.create(THREE,scene,{quality:quality,highContrast:initialHC,groundHeight:habitat.groundSurfaceHeight||habitat.groundHeight,isBlocked:habitat.isBlocked});
       if(!habitat.perch) habitat.perch=new THREE.Vector3(0,3.2,0);
       ground=habitat.perch.y-(Number.isFinite(bird.footOffsetY)?bird.footOffsetY:-.185);
       // Study geometry samples the existing course; it never drives the bird.
@@ -1800,8 +1859,8 @@
       // Use the simulation clock: pause, seek, restart and hidden-tab handling
       // all work without an independent timer. Reduced motion stays still.
       var weatherTime=options.reducedMotion?0:time;
-      sky.material.uniforms.cloudOffset.value.set((weatherTime*.00045)%1,(weatherTime*.00019)%1);
-      if(sunbeams)sunbeams.material.uniforms.uTime.value=weatherTime;
+      if(sky.material.uniforms&&sky.material.uniforms.cloudOffset)sky.material.uniforms.cloudOffset.value.set((weatherTime*.00045)%1,(weatherTime*.00019)%1);
+      if(sunbeams)sunbeams.material.uniforms.uTime.value=options.reducedMotion?3.6:weatherTime;
       // The hawk in the air over the woodland is what small birds react to.
       if(wildlife.setPredator)wildlife.setPredator(mode==='free'?{x:poseState.position[0],y:poseState.position[1],z:poseState.position[2],flying:['takeoff','gliding','landing'].indexOf(poseState.phase)>=0}:null);
       wildlife.update(time,dt,mode==='free'?observer:null);

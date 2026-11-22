@@ -160,7 +160,7 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
       if (alive.current) setStatus(tr('print_opened', 'The script print view is open.'));
     } catch (error) { if (alive.current) setStatus(_ltsText(error?.message || error) || tr('export_failed', 'The script could not be exported. Please try again.')); }
   };
-  const button = 'min-h-11 rounded-lg border border-indigo-600 bg-white px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50';
+  const button = 'min-h-11 rounded-lg border border-indigo-600 bg-white px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:opacity-50';
   const bionicOn = (typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function') ? window.__alloUseBionic() : false;
   const bt = s => (bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function') ? window.__alloBionicReact(s) : s;
   const step = version.steps[stepIndex];
@@ -209,7 +209,7 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
     </details>
     {draft && <p role="status" className="rounded-lg bg-amber-50 p-3 text-amber-950">{tr('audio_save_edits', 'Save script edits before preparing audio.')}</p>}
     <div className="flex flex-wrap items-center gap-3">
-      <button type="button" className={button} disabled={!!draft || !!working || !segments.length} onClick={saveAudio}>{tr('save_tts', 'Save TTS')}</button>
+      <button type="button" className={button} disabled={!!draft || !!working || !segments.length} aria-busy={working === 'save' ? 'true' : undefined} onClick={saveAudio}>{tr('save_tts', 'Save TTS')}</button>
       {working && <button type="button" className={button} onClick={() => { stop(); refresh(); setStatus(tr('audio_stopped', 'Stopped. Saved clips are kept; Save TTS resumes missing clips.')); }}>{tr('stop_audio', 'Stop audio')}</button>}
       {summary && <span className="text-sm">{summary.ready}/{summary.total} {tr('audio_clips_saved', 'spoken clips saved')}</span>}
       {working === 'save' && progress && <span role="status">{progress.completed}/{progress.total}</span>}
@@ -220,7 +220,24 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
       <span className="font-bold">{stepIndex + 1} / {version.steps.length}</span>
       <button type="button" className={button} disabled={stepIndex >= version.steps.length - 1} onClick={() => move(stepIndex + 1)}>{tr('next_step', 'Next step')}</button>
     </nav>
-    <p className="text-xs text-slate-600">{tr('spoken_keyboard_hint', 'Tip: Press Left/Right arrow keys or Space to move between steps.')}</p>
+    {version.steps.length > 1 && (() => {
+      const pct = Math.round(((stepIndex + 1) / version.steps.length) * 100);
+      return (
+        <div
+          data-spoken-step-progress="true"
+          role="progressbar"
+          aria-label={tr('spoken_progress', 'Spoken step progress')}
+          aria-valuemin={1}
+          aria-valuemax={version.steps.length}
+          aria-valuenow={stepIndex + 1}
+          aria-valuetext={`Step ${stepIndex + 1} of ${version.steps.length} (${pct}%)`}
+          className="h-2 w-full rounded-full bg-indigo-100 overflow-hidden"
+        >
+          <div className="h-full rounded-full bg-indigo-600 transition-all motion-reduce:transition-none" style={{ width: pct + '%' }} />
+        </div>
+      );
+    })()}
+    <p className="text-xs text-slate-700">{tr('spoken_keyboard_hint', 'Tip: Press Left/Right arrow keys or Space to move between steps.')}</p>
     <label className="block text-sm font-bold">{tr('jump_step', 'Go to step')}
       <select aria-label={tr('jump_step', 'Go to step')} className="mt-1 block min-h-11 w-full min-w-0 max-w-full rounded-lg border border-slate-400 bg-white p-2 text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600" value={stepIndex} onChange={event => move(Number(event.target.value))}>
         {version.steps.map((item, index) => <option key={item.id || index} value={index}>{index + 1}. {_ltsText(item.title)}</option>)}
@@ -229,9 +246,17 @@ function LessonSpokenDirections({ planId, version, draft, onBack, createAudio, t
     <h4 aria-live="polite" aria-atomic="true" className="break-words text-lg font-bold">{stepIndex + 1}. {_ltsText(step?.title)}</h4>
     {!segments.some(segment => segment.stepIndex === stepIndex) && <p className="rounded-lg bg-slate-100 p-3 text-slate-700">{tr('spoken_step_empty', 'This step has no spoken directions. Choose another step or edit the full script.')}</p>}
     {segments.filter(segment => segment.stepIndex === stepIndex).map(segment => <div key={segment.id} data-spoken-block={segment.field} className={'space-y-3 rounded-xl border-2 p-4 ' + (active === segment.id ? 'border-indigo-700 bg-indigo-100' : 'border-indigo-300 bg-indigo-50')}>
-      <p className="text-sm font-bold"><span aria-hidden="true">❝ </span>{segment.field === 'checkQuestion' ? tr('ask_aloud', 'Ask aloud') : tr('say_aloud', 'Say aloud')}</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm font-bold"><span aria-hidden="true">❝ </span>{segment.field === 'checkQuestion' ? tr('ask_aloud', 'Ask aloud') : tr('say_aloud', 'Say aloud')}</p>
+        {active === segment.id && (
+          <span data-spoken-active-badge="true" className="inline-flex items-center gap-1 rounded-full bg-indigo-700 px-2.5 py-0.5 text-xs font-bold text-white">
+            <span aria-hidden="true">▶</span>
+            <span>{tr('playing_now', 'Playing')}</span>
+          </span>
+        )}
+      </div>
       <p dir="auto" className={'whitespace-pre-wrap break-words leading-relaxed ' + (large ? 'text-2xl' : 'text-xl')}>{bt(segment.spokenText)}</p>
-      <button type="button" className={button} disabled={!!draft || working === 'save'} onClick={() => play(segment)} aria-label={tr('play_block', 'Play spoken block') + ': ' + (segment.field === 'checkQuestion' ? tr('ask_aloud', 'Ask aloud') : tr('say_aloud', 'Say aloud'))}>{tr('play_block', 'Play spoken block')}</button>
+      <button type="button" className={button} disabled={!!draft || working === 'save'} aria-busy={working === 'play' && active === segment.id ? 'true' : undefined} onClick={() => play(segment)} aria-label={tr('play_block', 'Play spoken block') + ': ' + (segment.field === 'checkQuestion' ? tr('ask_aloud', 'Ask aloud') : tr('say_aloud', 'Say aloud'))}>{tr('play_block', 'Play spoken block')}</button>
     </div>)}
   </dialog>;
 }
@@ -946,8 +971,8 @@ function LessonTeachingScriptPanel(props) {
     } catch (error) { if (mounted.current) setLocalError(_ltsText(error?.message || error) || tr('delete_failed', 'The version could not be deleted. Try again.')); }
     finally { deletingRequest.current = false; if (mounted.current) setDeleting(false); }
   };
-  const fieldClass = 'min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:bg-slate-100';
-  const buttonClass = 'min-h-11 rounded-lg border border-indigo-600 px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50';
+  const fieldClass = 'min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:bg-slate-100';
+  const buttonClass = 'min-h-11 rounded-lg border border-indigo-600 px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:opacity-50';
   const stepFields = [
     ['teacherSays', tr('teacher_says', 'Teacher says')],
     ['studentDoes', tr('student_does', 'Learners do')],
@@ -1136,7 +1161,7 @@ function LessonTeachingScriptPanel(props) {
           <p className="text-xs text-slate-600">{tr('history_retention', 'Script versions are kept until you delete them. Deleting a version also removes its saved audio.')}</p>
           {generationRecovery && <p role="status" className="rounded-lg bg-indigo-50 p-3 text-sm text-indigo-950">{generationRecovery.completedChunks === generationRecovery.totalChunks ? tr('resume_save_progress', 'All sections are ready. Finish saving to add the completed script to this lesson.') : generationRecovery.completedChunks === 0 ? tr('resume_setup_progress', 'Your lesson setup is ready. Resume to write the script.') : tr('resume_progress', '{completed} of {total} sections are ready. Resume to finish the remaining sections.').replace('{completed}', String(generationRecovery.completedChunks)).replace('{total}', String(generationRecovery.totalChunks))}</p>}
           <div className="flex flex-wrap gap-2">
-            <button type="submit" className={buttonClass + ' bg-indigo-50'} disabled={!canContinueGeneration || busy || saving || deleting || !!draft || !formReady}>{generationRecovery ? generationRecovery.completedChunks === generationRecovery.totalChunks ? tr('finish_saving', 'Finish saving') : tr('resume', 'Resume script') : error ? tr('retry', 'Try generating again') : tr('generate', 'Generate script')}</button>
+            <button type="submit" aria-busy={busy ? 'true' : undefined} className={buttonClass + ' bg-indigo-50'} disabled={!canContinueGeneration || busy || saving || deleting || !!draft || !formReady}>{generationRecovery ? generationRecovery.completedChunks === generationRecovery.totalChunks ? tr('finish_saving', 'Finish saving') : tr('resume', 'Resume script') : error ? tr('retry', 'Try generating again') : tr('generate', 'Generate script')}</button>
             {generationRecovery && typeof onDiscardTeachingScriptRecovery === 'function' && <button type="button" className={buttonClass} disabled={!canGenerate || (researchEnabled && !canResearch) || busy || saving || deleting || !!draft || !formReady} onClick={event => generate(event, true)}>{tr('start_over', 'Start over')}</button>}
           </div>
         </form>
@@ -1165,7 +1190,7 @@ function LessonTeachingScriptPanel(props) {
           {!draft && typeof props.onDeleteTeachingScript === 'function' && <div className="no-print space-y-2">
             {deleteCandidate ? <div role="group" aria-label={tr('delete_confirm', 'Delete this script version and its saved audio?')} className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950" onKeyDown={event => { if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return; if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); keepVersion(); } }}>
               <p>{tr('delete_confirm', 'Delete this script version and its saved audio?')} {_ltsText(deleteCandidate.title)}</p>
-              <div className="mt-2 flex flex-wrap gap-2"><button type="button" className={buttonClass} disabled={deleting || busy} onClick={deleteScript}>{tr('confirm_delete', 'Delete version and audio')}</button><button autoFocus type="button" className={buttonClass} disabled={deleting} onClick={keepVersion}>{tr('keep_version', 'Keep version')}</button></div>
+              <div className="mt-2 flex flex-wrap gap-2"><button type="button" aria-busy={deleting ? 'true' : undefined} className={buttonClass} disabled={deleting || busy} onClick={deleteScript}>{tr('confirm_delete', 'Delete version and audio')}</button><button autoFocus type="button" className={buttonClass} disabled={deleting} onClick={keepVersion}>{tr('keep_version', 'Keep version')}</button></div>
             </div> : <button ref={deleteToggle} type="button" className={buttonClass} disabled={saving || busy || deleting} onClick={() => { setLocalError(''); setNotice(''); setDeleteCandidate(JSON.parse(JSON.stringify(version))); }}>{tr('delete_version', 'Delete this version')}</button>}
           </div>}
           <div>
@@ -1192,25 +1217,39 @@ function LessonTeachingScriptPanel(props) {
           </div>}
           {steps.length > 1 && <nav className="no-print" aria-label={tr('script_navigation', 'Script step navigation')}><label className="block text-sm font-bold text-slate-900">{tr('jump_script_step', 'Go to script step')}<select aria-label={tr('jump_script_step', 'Go to script step')} className={fieldClass + ' mt-1 min-h-11 min-w-0 max-w-full'} value="" onChange={event => jumpToStep(event.target.value)}><option value="">{tr('choose_step', 'Choose a step…')}</option>{steps.map((step, index) => <option key={step.id || index} value={index}>{index + 1}. {_ltsText(step.title)}</option>)}</select></label></nav>}
           {!draft && steps.length >= 2 && (
-            <div data-script-delivery-bar="true" className="no-print flex flex-wrap items-center justify-between gap-2 rounded-xl border border-indigo-200 bg-indigo-50/70 px-3 py-2 text-sm text-indigo-950">
-              <span className="font-bold" data-script-pacing-status="true" aria-live="polite">
-                {doneStepCount === steps.length
-                  ? tr('delivery_all_done', '✓ All {total} steps delivered').replace('{total}', String(steps.length))
-                  : tr('delivery_pacing', '✓ {done}/{total} steps · {mins} min remaining')
-                      .replace('{done}', String(doneStepCount))
-                      .replace('{total}', String(steps.length))
-                      .replace('{mins}', String(remainingMinutes))}
-              </span>
-              {doneStepCount > 0 && (
-                <button
-                  type="button"
-                  data-script-delivery-reset="true"
-                  onClick={resetCompletedSteps}
-                  className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-900 hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
-                >
-                  {tr('delivery_reset', 'Reset pacing')}
-                </button>
-              )}
+            <div data-script-delivery-bar="true" className="no-print space-y-2 rounded-xl border border-indigo-200 bg-indigo-50/70 px-3 py-2 text-sm text-indigo-950">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-bold" data-script-pacing-status="true" aria-live="polite">
+                  {doneStepCount === steps.length
+                    ? tr('delivery_all_done', '✓ All {total} steps delivered').replace('{total}', String(steps.length))
+                    : tr('delivery_pacing', '✓ {done}/{total} steps · {mins} min remaining')
+                        .replace('{done}', String(doneStepCount))
+                        .replace('{total}', String(steps.length))
+                        .replace('{mins}', String(remainingMinutes))}
+                </span>
+                {doneStepCount > 0 && (
+                  <button
+                    type="button"
+                    data-script-delivery-reset="true"
+                    onClick={resetCompletedSteps}
+                    className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-900 hover:bg-indigo-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+                  >
+                    {tr('delivery_reset', 'Reset pacing')}
+                  </button>
+                )}
+              </div>
+              <div
+                data-script-delivery-progress="true"
+                role="progressbar"
+                aria-label={tr('delivery_progress_label', 'Lesson script delivery progress')}
+                aria-valuemin={0}
+                aria-valuemax={steps.length}
+                aria-valuenow={doneStepCount}
+                aria-valuetext={`${doneStepCount} of ${steps.length} steps delivered (${remainingMinutes} min remaining)`}
+                className="h-1.5 w-full rounded-full bg-indigo-200 overflow-hidden"
+              >
+                <div className="h-full rounded-full bg-emerald-600 transition-all motion-reduce:transition-none" style={{ width: Math.round((doneStepCount / steps.length) * 100) + '%' }} />
+              </div>
             </div>
           )}
           <ol id={id + '-steps'} className="space-y-4">
@@ -1232,7 +1271,7 @@ function LessonTeachingScriptPanel(props) {
                     aria-pressed={isStepDone}
                     aria-label={(isStepDone ? tr('mark_step_undone', 'Mark step {number} as not done') : tr('mark_step_done', 'Mark step {number} as done')).replace('{number}', String(index + 1))}
                     onClick={() => toggleStepDone(stepKey)}
-                    className={'min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (isStepDone ? 'border-emerald-500 bg-emerald-100 text-emerald-950 hover:bg-emerald-200' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50')}
+                    className={'min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (isStepDone ? 'border-emerald-500 bg-emerald-100 text-emerald-950 hover:bg-emerald-200' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50')}
                   >
                     {isStepDone ? tr('step_done_checked', '✓ Done') : tr('step_done_unchecked', 'Mark done')}
                   </button>
@@ -1243,7 +1282,7 @@ function LessonTeachingScriptPanel(props) {
                       aria-pressed={isStepSpeaking}
                       aria-label={(isStepSpeaking ? tr('stop_rehearse_step', 'Stop rehearsing step {number}') : tr('rehearse_step', 'Rehearse step {number} aloud')).replace('{number}', String(index + 1))}
                       onClick={() => toggleRehearseStep(step, index)}
-                      className={'min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (isStepSpeaking ? 'border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800' : 'border-indigo-300 bg-indigo-50 text-indigo-900 hover:bg-indigo-100')}
+                      className={'min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (isStepSpeaking ? 'border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800' : 'border-indigo-300 bg-indigo-50 text-indigo-900 hover:bg-indigo-100')}
                     >
                       {isStepSpeaking ? tr('stop_rehearse_label', '⏹ Stop') : tr('rehearse_label', '🔊 Rehearse')}
                     </button>
@@ -1299,7 +1338,7 @@ function LessonTeachingScriptPanel(props) {
             {invalidDraftLength && <p role="alert" className="text-sm text-red-900">{tr('step_too_long', 'Keep each teaching field within 16,000 characters before saving.')}</p>}
             {staleDraft && <p role="alert" className="text-sm text-red-900">{tr('stale_edits', 'This saved version changed while you were editing. Copy your draft if needed, then discard edits to review the current version.')}</p>}
             <div className="flex flex-wrap gap-2">
-              <button type="button" className={buttonClass} disabled={saving || busy || invalidTiming || invalidDraftText || invalidDraftLength || staleDraft} onClick={saveEdits}>{saving ? tr('saving', 'Adding edits…') : tr('save', 'Save edits')}</button>
+              <button type="button" aria-busy={saving ? 'true' : undefined} className={buttonClass} disabled={saving || busy || invalidTiming || invalidDraftText || invalidDraftLength || staleDraft} onClick={saveEdits}>{saving ? tr('saving', 'Adding edits…') : tr('save', 'Save edits')}</button>
               {!confirmDiscard && <button ref={discardToggle} type="button" className={buttonClass} disabled={saving || busy} onClick={() => draftChanged ? setConfirmDiscard(true) : discardEdits()}>{tr('discard', 'Discard edits')}</button>}
               {confirmDiscard && <div role="group" aria-label={tr('discard_question', 'Discard your unsaved script changes?')} className="w-full space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950" onKeyDown={event => { if (event.nativeEvent?.isComposing || event.isComposing || event.keyCode === 229) return; if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); keepEditing(); } }}>
                 <p className="text-sm">{tr('discard_question', 'Discard your unsaved script changes?')}</p>

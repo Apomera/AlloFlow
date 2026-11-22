@@ -2058,7 +2058,7 @@
           "type": "single-choice-retrieval",
           "prompt": "Archaeological evidence shows that some Indigenous communities in the Southwest developed irrigation and settled agricultural villages before European contact. Which conclusion is best supported?",
           "choices": [
-            "Indigenous societies adapted political and economic practices to local environments.",
+            "Indigenous groups adapted politics and economies to environments.",
             "All Indigenous societies depended on irrigation agriculture.",
             "European colonization introduced agriculture to the Southwest.",
             "Environmental conditions prevented large settlements in the Americas."
@@ -2104,7 +2104,7 @@
           "choices": [
             "The report was written before the invention of printing.",
             "The report could not describe any geographic feature accurately.",
-            "The author had an incentive to portray the expedition as useful to the sponsor.",
+            "The author had an incentive to flatter a patron in the report.",
             "The author necessarily opposed all future European voyages."
           ],
           "answerIndex": 2,
@@ -2930,7 +2930,7 @@
           "prompt": "Which factor best explains why Chesapeake colonies and New England colonies developed different settlement patterns in the seventeenth century?",
           "choices": [
             "Only New England had access to Atlantic markets.",
-            "Their environments, migration patterns, and labor demands differed.",
+            "Their environments, migrant streams, and labor demands differed.",
             "The Chesapeake prohibited agriculture while New England required plantations.",
             "The regions were governed by different European empires."
           ],
@@ -2953,7 +2953,7 @@
           "choices": [
             "The region became a single-crop plantation society dominated by one church.",
             "The region ended all trade with Europe to protect local farms.",
-            "The region developed greater cultural diversity and a mixed commercial economy.",
+            "The region developed cultural diversity and a mixed commercial economy.",
             "The region prohibited migration by people outside the dominant English church."
           ],
           "answerIndex": 2,
@@ -2976,7 +2976,7 @@
             "It guaranteed that every colonist would receive equal profits from trade.",
             "It ended the use of enslaved labor in Atlantic commerce.",
             "It made colonial governments independent of British regulation.",
-            "It attempted to channel colonial commerce toward the interests of the British Empire."
+            "It sought to direct colonial trade toward British imperial interests."
           ],
           "answerIndex": 3,
           "rationale": "Mercantilist policy sought to direct colonial production and trade toward imperial economic and strategic goals, even when enforcement was incomplete.",
@@ -3802,7 +3802,7 @@
           "choices": [
             "The United States had already adopted the federal Constitution by that point in time.",
             "France had ended all of its competition for North American territory before the war began.",
-            "Britain’s victory in the Seven Years’ War left it with war debt and new costs of administering its empire.",
+            "Britain’s Seven Years’ War victory left war debt and new imperial administration costs.",
             "The colonial assemblies had ceased debating both taxation and representation altogether."
           ],
           "answerIndex": 2,
@@ -3822,10 +3822,10 @@
           "type": "single-choice-retrieval",
           "prompt": "Colonial protesters argued that Parliament could not tax them without their consent. Which larger issue did that argument raise?",
           "choices": [
-            "Whether the colonies should eliminate all of their elected assemblies entirely.",
+            "Whether the colonies should dissolve their own locally elected assemblies soon.",
             "Whether Britain should expand its hereditary monarchy further into North America.",
-            "Whether the taxation could be collected only during periods of open warfare.",
-            "Whether legitimate political authority required representation by the people being governed."
+            "Whether imperial taxes could be collected in wartime rather than during peace.",
+            "Whether legitimate authority required representation by those being governed."
           ],
           "answerIndex": 3,
           "rationale": "The protest used a tax dispute to challenge the constitutional relationship between the colonies and the British government.",
@@ -3844,7 +3844,7 @@
           "type": "single-choice-retrieval",
           "prompt": "A revolutionary pamphlet uses universal language about natural rights while seeking support for independence. Which limitation is most important when using it to study social equality in 1776?",
           "choices": [
-            "The political goals of the authors may not represent the rights available to women, enslaved people, or Indigenous peoples.",
+            "The authors’ political goals may not reflect rights held by women, enslaved people, or Native peoples.",
             "The pamphlet could not have been read by any colonist anywhere at the time when it was first written.",
             "The language of rights proves that legal equality already existed in all of the colonies well before 1776.",
             "The authors necessarily opposed every possible form of representative government of any kind at the time."
@@ -4671,7 +4671,7 @@
           "type": "single-choice-retrieval",
           "prompt": "Canals and steamboats lowered transportation costs between interior farms and Atlantic ports. Which effect was most likely?",
           "choices": [
-            "Farmers could participate more fully in commercial markets and regional specialization increased.",
+            "Farmers entered commercial markets more widely and regional specialization grew.",
             "The United States became economically identical across every one of its regions.",
             "The new technologies ended the use of wage labor throughout all manufacturing.",
             "Transportation improvements prevented the cities from growing in any region at all."
@@ -4694,9 +4694,9 @@
           "prompt": "A historian argues that Jacksonian democracy expanded political participation but also strengthened executive power. Which evidence best supports the claim?",
           "choices": [
             "Women and enslaved people gained fully equal voting rights during the same period.",
-            "More white men voted while the president used federal authority in the Bank War and Indian Removal.",
-            "The president surrendered all of his policy authority to the Congress entirely here.",
-            "The expansion of voting ended political parties and popular campaigning entirely."
+            "More white men voted while Jackson asserted authority in the Bank War and Removal.",
+            "The president surrendered most of his executive policy authority directly to Congress.",
+            "The expansion of voting brought an end to political parties and popular campaigning."
           ],
           "answerIndex": 1,
           "rationale": "The claim is supported by the simultaneous expansion of white male electoral participation and forceful use of presidential and federal power.",
@@ -4717,7 +4717,7 @@
           "choices": [
             "The complete end of all religious disagreement across the United States during that whole period of time.",
             "The restoration of hereditary aristocratic privilege in the years right after independence was won.",
-            "Democratic and individualistic ideas, mobility, and market changes encouraged people to organize around moral improvement.",
+            "Democratic ideas, mobility, and market shifts encouraged Americans to organize for moral improvement.",
             "The complete collapse of voluntary associations and of print culture across the whole of the nation."
           ],
           "answerIndex": 2,
@@ -5544,7 +5544,7 @@
           "choices": [
             "The war ended all debate over the powers of Congress.",
             "The new territory had no connection to labor or political representation.",
-            "The acquisition of western territory reopened the question of whether slavery would expand.",
+            "New western lands reopened national disputes over slavery’s expansion.",
             "The war immediately granted citizenship to every person in North America."
           ],
           "answerIndex": 2,
@@ -5564,10 +5564,10 @@
           "type": "single-choice-retrieval",
           "prompt": "Why did congressional compromises over slavery fail to resolve the sectional crisis permanently?",
           "choices": [
-            "They abolished slavery in every one of the states immediately and permanently everywhere at once.",
-            "They removed the issue of slavery from all of the western territorial politics entirely and at once.",
+            "They abolished slavery across all states right away and settled the issue permanently everywhere.",
+            "They removed the issue of slavery from all western territorial politics across the nation right away.",
             "They ended the political importance of sectional identity across the whole of the country at once.",
-            "They managed political balance temporarily while leaving the underlying conflict over slavery’s expansion intact."
+            "They held political balance briefly while leaving core conflict about slavery’s expansion intact."
           ],
           "answerIndex": 3,
           "rationale": "Compromise could postpone conflict, but each new territory and political crisis reopened the question of slavery’s future.",
@@ -5586,9 +5586,9 @@
           "type": "single-choice-retrieval",
           "prompt": "Which change most directly distinguished the Emancipation Proclamation from the Thirteenth Amendment?",
           "choices": [
-            "The proclamation was a wartime executive measure with a defined scope, while the amendment abolished slavery nationally.",
-            "The amendment applied only to territories and the proclamation applied everywhere.",
-            "The proclamation created permanent citizenship while the amendment addressed military enlistment only.",
+            "The proclamation was a wartime executive order, while the amendment abolished slavery nationwide.",
+            "The amendment applied to western territories while the proclamation applied nationwide.",
+            "The proclamation granted permanent citizenship while the amendment governed wartime military enlistment.",
             "The two measures had identical legal scope and purpose."
           ],
           "answerIndex": 0,
@@ -6413,7 +6413,7 @@
           "type": "single-choice-retrieval",
           "prompt": "Which policy and technology combination most directly accelerated settlement of the trans-Mississippi West after the Civil War?",
           "choices": [
-            "Federal land and railroad support encouraged migration, extraction, and connection to national markets.",
+            "Federal land and rail subsidies spurred migration, extraction, and market ties.",
             "A policy that returned western lands to Indigenous nations without reservation boundaries.",
             "A ban on national investment in transportation infrastructure.",
             "The elimination of commercial agriculture from western territories."
@@ -6436,7 +6436,7 @@
           "prompt": "Why did federal western policy often produce conflict with Indigenous nations?",
           "choices": [
             "Indigenous nations had no established governments and no territorial claims of any kind at all.",
-            "Settlement and resource extraction required the United States to restrict Indigenous land, sovereignty, and mobility.",
+            "Settlement and resource extraction led federal policy to restrict Indigenous land and sovereignty.",
             "Federal policy sought to prevent all non-Indigenous settlement west of the Mississippi River entirely.",
             "Railroads and mining together reduced the pressure on western land and on all of its resources."
           ],
@@ -6459,7 +6459,7 @@
           "choices": [
             "Collective bargaining, which transfers all management of the firm to a labor union.",
             "A tariff, which places a tax on imported goods at the national border of a country.",
-            "Vertical integration, which combines multiple stages of production or distribution under one company.",
+            "Vertical integration, combining supply, production, and sales stages in one firm.",
             "Sharecropping, which organizes agricultural labor in the years after emancipation."
           ],
           "answerIndex": 2,
@@ -7286,7 +7286,7 @@
           "choices": [
             "The complete disappearance of large corporations and of city governments during the whole period.",
             "The complete end of immigration and of urban growth during the whole of the industrial period.",
-            "Industrial and urban conditions exposed consumers and workers to risks that private markets did not reliably control.",
+            "Industrial and urban conditions exposed workers and consumers to risks markets left unchecked.",
             "The belief that government had already solved every public-health problem in the growing cities."
           ],
           "answerIndex": 2,
@@ -7309,7 +7309,7 @@
             "The complete withdrawal of the United States from all world trade during the whole of that period.",
             "The complete absence of any domestic disagreement about overseas expansion during that entire time.",
             "The end of all anticolonial resistance in the years after the end of the Spanish-American War itself.",
-            "The growth of U.S. commercial and strategic interests and debates over imperialism at the end of the nineteenth century."
+            "Growing U.S. commercial and strategic interests alongside late-nineteenth-century imperial debates."
           ],
           "answerIndex": 3,
           "rationale": "Foreign-policy rhetoric should be situated within strategic, economic, ideological, and domestic debates rather than accepted as a complete explanation.",
@@ -7328,7 +7328,7 @@
           "type": "single-choice-retrieval",
           "prompt": "How did World War I and the Great Migration connect to one another?",
           "choices": [
-            "War production increased demand for labor, encouraging African American migration to industrial cities while also producing racial tensions.",
+            "Wartime industry raised labor demand, drawing Black migrants to industrial cities while sparking racial tensions.",
             "The war ended racial discrimination in every one of the industrial cities of the northern states altogether now.",
             "The Great Migration moved workers away from all of the northern manufacturing centers during those same war years.",
             "World War I prevented African Americans from entering any of the northern labor markets during all those war years."
@@ -8155,7 +8155,7 @@
           "type": "single-choice-retrieval",
           "prompt": "Which development provides the clearest context for the creation of postwar containment policies?",
           "choices": [
-            "The wartime alliance with the Soviet Union broke down amid ideological rivalry and disputes over the postwar order.",
+            "The U.S.-Soviet wartime alliance fractured over ideology and competing visions of global order.",
             "The United States and the Soviet Union had become one single shared political system after the war.",
             "The United States had abandoned all of the international economic institutions after the war.",
             "The Cold War began before World War II ended because of a direct U.S.-Soviet battle between the two."
@@ -8178,7 +8178,7 @@
           "prompt": "A U.S. policy document describes aid as support for free nations, while a recipient describes the same aid as pressure to align with Washington. What does the comparison show?",
           "choices": [
             "Only the U.S. policy source can provide any useful historical evidence about the whole aid program.",
-            "Foreign-policy consequences can differ from the policy’s stated purpose and can be interpreted differently by participants.",
+            "Foreign policy effects can diverge from stated aims and be interpreted differently by participants.",
             "Economic aid has no connection at all to any form of geopolitical competition between the two powers.",
             "The two sources cannot describe the same event, because their accounts of it differ from each other so sharply."
           ],
@@ -8201,7 +8201,7 @@
           "choices": [
             "Federal policy changed without any organizing, any protest, or any litigation of any kind at all.",
             "Grassroots movements rejected the use of courts and legislation of every kind in their campaigns.",
-            "Local campaigns and legal challenges helped create pressure for federal court decisions and civil-rights legislation.",
+            "Local campaigns and lawsuits built pressure for federal court rulings and civil-rights laws.",
             "Civil-rights laws were enacted long before segregation and disenfranchisement had ever appeared."
           ],
           "answerIndex": 2,
@@ -9027,7 +9027,7 @@
           "prompt": "Which policy combination was associated with the conservative resurgence of the 1980s?",
           "choices": [
             "Nationalization of most private industries and a rejection of global trade.",
-            "Tax cuts, deregulation, and a stronger anticommunist foreign-policy posture.",
+            "Tax cuts, deregulation, and a tougher anticommunist foreign stance.",
             "Abolition of all federal social programs and the end of presidential power.",
             "A return to colonial mercantilism and state churches."
           ],
@@ -9050,7 +9050,7 @@
           "choices": [
             "Globalization affected only the foreign economies and never touched any workers within the United States itself.",
             "Technology eliminated every regional difference in employment across the whole of the United States as well.",
-            "Trade and technology reorganized production and employment, creating gains in some sectors and displacement or insecurity in others.",
+            "Trade and technology reshaped production and jobs, bringing gains in some sectors and displacement in others.",
             "Globalization ended the importance of both immigration and of internal migration within the whole country."
           ],
           "answerIndex": 2,
@@ -9070,10 +9070,10 @@
           "type": "single-choice-retrieval",
           "prompt": "A historian compares census data with local oral histories to study late-twentieth-century migration. Why is using both kinds of evidence useful?",
           "choices": [
-            "Oral histories make all quantitative data completely unnecessary for any historian studying migration.",
+            "Oral histories make quantitative data unnecessary for historians who study twentieth-century migration.",
             "Census data alone can explain every individual motivation without any other kind of evidence at all.",
-            "The two kinds of source cannot be compared at all, because they rely on entirely different methods of study.",
-            "Statistics show patterns of movement while oral histories can reveal how migrants experienced and interpreted those changes."
+            "The two kinds of source cannot be compared at all, because they rely on incompatible methods of research.",
+            "Statistics trace broad migration patterns while oral histories reveal how migrants experienced change."
           ],
           "answerIndex": 3,
           "rationale": "Different sources answer different questions; corroboration can connect demographic scale with lived experience while preserving each source’s limits.",

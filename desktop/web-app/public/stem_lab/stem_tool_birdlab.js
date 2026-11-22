@@ -8,25 +8,36 @@
 // to spatial-search gameplay; reduced-motion fallback to static scenes.
 // ═══════════════════════════════════════════
 
-window.StemLab = window.StemLab || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
-};
+if (typeof window !== 'undefined') {
+  window.StemLab = window.StemLab || {
+    _registry: {}, _order: [],
+    registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
+    isRegistered: function(id) { return !!this._registry[id]; },
+    getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
+    renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
+  };
+}
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
+if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
 (function() {
   'use strict';
 
+  function _birdIsGlobalMuted() {
+    try {
+      if (typeof window === 'undefined') return true;
+      if (typeof window.__alloIsGlobalMuted === 'function') return !!window.__alloIsGlobalMuted();
+      return window.__alloMuted === true || window.__alloGlobalMuted === true;
+    } catch (e) { return false; }
+  }
+
   // Resolve beside the module so packaged desktop, nested hosting and the
   // standalone field preview all use the same bundled, offline habitat art.
   var BIRDLAB_HABITAT_ASSET_BASE = (function() {
+    if (typeof document === 'undefined') return 'stem_lab/assets/birdlab/habitats/';
     var script = document.currentScript;
     if (!script || !script.src || script.src.indexOf('stem_tool_birdlab') === -1) {
-      script = document.querySelector('script[src*="stem_tool_birdlab.js"]');
+      script = document.querySelector && document.querySelector('script[src*="stem_tool_birdlab.js"]');
     }
     try {
       return new URL(script && script.src ? './assets/birdlab/habitats/' : 'stem_lab/assets/birdlab/habitats/', script && script.src ? script.src : document.baseURI).href;
@@ -378,6 +389,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     var soundRef = React.useRef(null);
     function toggleSound() {
       if (soundOn) { setSoundOn(false); setHeard(null); if (soundRef.current) try { soundRef.current.ctx.suspend(); } catch (e) {} return; }
+      if (_birdIsGlobalMuted()) return;
       var Ctx = window.AudioContext || window.webkitAudioContext;
       if (!Ctx) return;
       if (!soundRef.current) { var ctx = new Ctx(), master = ctx.createGain(); master.gain.value = .55; master.connect(ctx.destination); soundRef.current = { ctx: ctx, master: master }; }
@@ -387,7 +399,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     // Rain hiss: looped, low-passed noise under the calls while it rains.
     React.useEffect(function() {
       var audio = soundRef.current;
-      if (!soundOn || state.weather !== 'rain' || !audio || !audio.ctx.createBufferSource || !audio.ctx.createBuffer) return;
+      if (!soundOn || _birdIsGlobalMuted() || state.weather !== 'rain' || !audio || !audio.ctx.createBufferSource || !audio.ctx.createBuffer) return;
       var ctx = audio.ctx, length = Math.floor(ctx.sampleRate * 2), buffer = ctx.createBuffer(1, length, ctx.sampleRate), data = buffer.getChannelData(0), last = 0;
       for (var i = 0; i < length; i++) { last = last * .6 + (Math.random() * 2 - 1) * .4; data[i] = last; }
       var source = ctx.createBufferSource(), filter = ctx.createBiquadFilter(), gain = ctx.createGain();
@@ -395,11 +407,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       source.connect(filter); filter.connect(gain); gain.connect(audio.master); source.start();
       return function() { try { source.stop(); } catch (e) {} try { gain.disconnect(); } catch (e) {} };
     }, [soundOn, state.weather]);
-    React.useEffect(function() { return function() { if (soundRef.current) try { soundRef.current.ctx.close(); } catch (e) {} soundRef.current = null; }; }, []);
+    React.useEffect(function() {
+      function onMuteChange() {
+        if (_birdIsGlobalMuted()) {
+          if (soundRef.current) try { soundRef.current.ctx.suspend(); } catch (e) {}
+          setSoundOn(false);
+        }
+      }
+      if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('alloflow-mute-changed', onMuteChange);
+      return function() {
+        if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('alloflow-mute-changed', onMuteChange);
+        if (soundRef.current) try { soundRef.current.ctx.close(); } catch (e) {}
+        soundRef.current = null;
+      };
+    }, []);
     React.useEffect(function() {
       if (!soundOn || !soundRef.current) return;
       var next = {}, voices = 0, began = Date.now(), alarmed = {};
       var timer = window.setInterval(function() {
+        if (_birdIsGlobalMuted() || (typeof document !== 'undefined' && document.hidden)) return;
         var current = liveState.current, now = (Date.now() - began) / 1000;
         if (!current.ready || current.paused || !current.wildlife || !current.cameraPosition || !current.cameraTarget) return;
         current.wildlife.forEach(function(row) {
@@ -7840,6 +7866,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     }, [playing]);
     async function preview() {
       if (audio === 'playing' || audio === 'starting') { stopAudio(); return; }
+      if (_birdIsGlobalMuted()) return;
       stopAll();
       var Constructor = window.AudioContext || window.webkitAudioContext;
       if (!Constructor) { setAudio('unavailable'); return; }
@@ -7847,7 +7874,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       try {
         context = new Constructor(); audioRef.current = {context:context,source:null}; setAudio('starting');
         await context.resume();
-        if (!mounted.current || token !== audioToken.current || document.hidden) { if(context.state!=='closed')await context.close(); return; }
+        if (!mounted.current || token !== audioToken.current || document.hidden || _birdIsGlobalMuted()) { if(context.state!=='closed')await context.close(); return; }
         var count = Math.round(context.sampleRate * 1.2), buffer = context.createBuffer(1,count,context.sampleRate), channel = buffer.getChannelData(0);
         for(var i=0;i<count;i++) {
           var seconds=i/context.sampleRate, fade=Math.max(0,Math.min(1,seconds/.02,(1.2-seconds)/.04));
@@ -23090,7 +23117,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       }, []);
 
       // Photo ID needs text + vision AI; when the host says either is unusable the card, its view and its badge slot hide.
-      var _birdPhotoAiOn = !!(ctx.aiAvailable !== false && ctx.aiVisionAvailable !== false && typeof ctx.callGeminiVision === 'function');
+      var _birdPhotoAiOn = !!(ctx.aiAvailable !== false && ctx.aiVisionAvailable !== false && (function(fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('vision', fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked && (typeof window === 'undefined' || (window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true));
+      })(ctx.callGeminiVision));
       var viewState = useState((d.view === 'photoId' && !_birdPhotoAiOn) ? 'menu' : (d.view || 'menu'));
       var view = viewState[0], setView = viewState[1];
       // ── Stable view identities ──
@@ -23565,6 +23595,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         function atlasLabel(id) { return __alloT('stem.birdlab.atlas_habitat_' + id, HABITATS[id].name); }
         function chooseAtlasHabitat(id) { setAtlasHabitatId(id); setAtlasResidentIndex(0); }
         function atlasTabKey(event, id) {
+          if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
           var ids = Object.keys(HABITATS), index = ids.indexOf(id), next;
           if (event.key === 'ArrowRight') next = (index + 1) % ids.length;
           else if (event.key === 'ArrowLeft') next = (index + ids.length - 1) % ids.length;
@@ -26104,7 +26135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var soundOn_state = useState(d.blSpotSounds !== false); // default true
         var soundOn = soundOn_state[0], setSoundOn = soundOn_state[1];
         function playChirp(frequencies, durations, gain) {
-          if (!soundOn) return;
+          if (!soundOn || _birdIsGlobalMuted()) return;
           if (typeof getBirdAudioCtx !== 'function') return;
           var ctx = getBirdAudioCtx();
           if (!ctx) return;
@@ -29108,6 +29139,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         }
 
         function fieldSpeciesKey(event,id) {
+          if (event.isComposing || event.keyCode === 229 || event.ctrlKey || event.metaKey || event.altKey) return;
           var ids = SPECIES_OPTIONS.map(function(species) { return species.id; }), index = ids.indexOf(id), next;
           if (event.key === 'ArrowRight') next = (index + 1) % ids.length;
           else if (event.key === 'ArrowLeft') next = (index + ids.length - 1) % ids.length;
@@ -30146,6 +30178,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       var __birdAudioCtx = null;
       var __birdAudioStop = null;
       function getBirdAudioCtx() {
+        if (_birdIsGlobalMuted()) return null;
         if (__birdAudioCtx) return __birdAudioCtx;
         try {
           var Ctx = window.AudioContext || window.webkitAudioContext;
@@ -30155,6 +30188,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         } catch (_) { return null; }
       }
       function playToneSketch(call, onDone) {
+        if (_birdIsGlobalMuted()) { if (onDone) onDone(); return; }
         var ctx = getBirdAudioCtx();
         if (!ctx) { if (onDone) onDone(); return; }
         // Stop any previous playback
@@ -30684,7 +30718,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 );
               })(),
               quizComplete && (function() {
-                var pct = Math.round((quizScore / quizPool.length) * 100);
+                var pct = quizPool.length > 0 ? Math.round((quizScore / quizPool.length) * 100) : 0;
                 var tier = quizScore === quizPool.length ? 'perfect' : pct >= 70 ? 'strong' : 'learning';
                 var tierColor = tier === 'perfect' ? '#d97706' : tier === 'strong' ? '#16a34a' : '#7c3aed';
                 var tierBg = tier === 'perfect' ? 'from-amber-50 to-yellow-100' : tier === 'strong' ? 'from-emerald-50 to-teal-100' : 'from-violet-50 to-indigo-100';
@@ -34562,6 +34596,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               b.vx *= 0.97;
               b.vy *= 0.97;
             }
+            if (typeof document !== 'undefined' && document.hidden) {
+              rafId.current = requestAnimationFrame(tick);
+              return;
+            }
             b.x += calm ? b.vx * 0.5 : b.vx;
             b.y += calm ? b.vy * 0.5 : b.vy;
             if (b.x < 30) { b.x = 30; b.vx = Math.abs(b.vx); }
@@ -34604,11 +34642,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               x = transformed.x; y = transformed.y;
             } else {
               var rect = svgEl.getBoundingClientRect();
+              if (!rect.width || !rect.height) return;
               x = (e.clientX - rect.left) * (FIELD_W / rect.width);
               y = (e.clientY - rect.top) * (FIELD_H / rect.height);
             }
           } else {
             var rect2 = svgEl.getBoundingClientRect();
+            if (!rect2.width || !rect2.height) return;
             x = (e.clientX - rect2.left) * (FIELD_W / rect2.width);
             y = (e.clientY - rect2.top) * (FIELD_H / rect2.height);
           }
@@ -36041,6 +36081,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           if (!photo) return;
           if (!_birdPhotoAiOn) {
             setError('The Vision API isn\'t available in this build. Try opening the app in the deployed version.');
+            return;
+          }
+          if (!_birdPhotoAiOn) {
+            setError('Vision AI is not currently available.');
             return;
           }
           setLoading(true); setError(null); setResult(null);

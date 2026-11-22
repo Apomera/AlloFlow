@@ -34,6 +34,37 @@
     }
   };
 
+  if (typeof document !== 'undefined' && document.head) {
+    if (!document.getElementById('allo-stem-motion-reduce-css')) {
+      var apReduceStyle = document.createElement('style');
+      apReduceStyle.id = 'allo-stem-motion-reduce-css';
+      apReduceStyle.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+      document.head.appendChild(apReduceStyle);
+    }
+    if (!document.getElementById('allo-ap-motion-css')) {
+      var apMotionStyle = document.createElement('style');
+      apMotionStyle.id = 'allo-ap-motion-css';
+      apMotionStyle.textContent = [
+        '@keyframes allo-ap-march { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -22; } }',
+        '@keyframes allo-ap-shimmer { 0%, 100% { opacity: 0.46; } 50% { opacity: 0.94; } }',
+        '@keyframes allo-ap-bevel-glint { 0%, 100% { stroke-opacity: 0.24; } 50% { stroke-opacity: 0.52; } }',
+        '@keyframes allo-ap-focus-ripple { 0% { opacity: 0.72; transform: scale(0.86); } 72% { opacity: 0.14; transform: scale(1.48); } 100% { opacity: 0; transform: scale(1.72); } }',
+        '@keyframes allo-ap-beacon-pulse { 0%, 100% { opacity: 0.22; transform: scale(0.92); } 50% { opacity: 0.56; transform: scale(1.2); } }',
+        '@keyframes allo-ap-dim-halo { 0%, 100% { opacity: 0.52; } 50% { opacity: 0.96; } }',
+        '.allo-ap-march { animation: allo-ap-march 1.9s linear infinite; pointer-events: none; }',
+        '.allo-ap-shimmer { animation: allo-ap-shimmer 4.2s ease-in-out infinite; pointer-events: none; }',
+        '.allo-ap-bevel-glint { animation: allo-ap-bevel-glint 3.6s ease-in-out infinite; pointer-events: none; }',
+        '.allo-ap-focus-ripple { transform-box: fill-box; transform-origin: center; animation: allo-ap-focus-ripple 2.1s cubic-bezier(0.22, 0.61, 0.36, 1) infinite; pointer-events: none; }',
+        '.allo-ap-beacon-pulse { transform-box: fill-box; transform-origin: center; animation: allo-ap-beacon-pulse 2.5s ease-in-out infinite; pointer-events: none; }',
+        '.allo-ap-dim-halo { animation: allo-ap-dim-halo 2.8s ease-in-out infinite; pointer-events: none; }',
+        '.theme-contrast .allo-ap-march, .theme-contrast .allo-ap-shimmer, .theme-contrast .allo-ap-bevel-glint, .theme-contrast .allo-ap-focus-ripple, .theme-contrast .allo-ap-beacon-pulse, .theme-contrast .allo-ap-dim-halo { animation: none !important; }',
+        '.theme-contrast .allo-ap-shimmer, .theme-contrast .allo-ap-bevel-glint, .theme-contrast .allo-ap-focus-ripple, .theme-contrast .allo-ap-beacon-pulse, .theme-contrast .allo-ap-dim-halo { display: none !important; }',
+        '@media (prefers-reduced-motion: reduce) { .allo-ap-march, .allo-ap-shimmer, .allo-ap-bevel-glint, .allo-ap-focus-ripple, .allo-ap-beacon-pulse, .allo-ap-dim-halo { animation: none !important; } .allo-ap-focus-ripple { opacity: 0.26; } .allo-ap-beacon-pulse { opacity: 0.28; } }'
+      ].join('\n');
+      document.head.appendChild(apMotionStyle);
+    }
+  }
+
   function questData(data) {
     return (data && data._areaPerimeter) || data || {};
   }
@@ -1426,11 +1457,12 @@
             h('stop', { key: 's0', offset: '0%', stopColor: dk ? '#15803d' : '#bbf7d0', stopOpacity: dk ? 0.78 : 0.82 }),
             h('stop', { key: 's1', offset: '100%', stopColor: dk ? '#14532d' : '#dcfce7', stopOpacity: dk ? 0.9 : 0.92 })
           ]),
-          // Top-left specular sheen
+          // Top-left specular sheen with luminous diagonal band
           h('linearGradient', { key: 'sheen', id: 'ap-sheen-' + id, x1: '0%', y1: '0%', x2: '100%', y2: '100%' }, [
-            h('stop', { key: 's0', offset: '0%', stopColor: '#ffffff', stopOpacity: dk ? 0.16 : 0.42 }),
-            h('stop', { key: 's1', offset: '45%', stopColor: '#ffffff', stopOpacity: 0.03 }),
-            h('stop', { key: 's2', offset: '100%', stopColor: '#000000', stopOpacity: dk ? 0.12 : 0.03 })
+            h('stop', { key: 's0', offset: '0%', stopColor: '#ffffff', stopOpacity: dk ? 0.18 : 0.44 }),
+            h('stop', { key: 's0b', offset: '34%', stopColor: '#ffffff', stopOpacity: dk ? 0.1 : 0.24 }),
+            h('stop', { key: 's1', offset: '52%', stopColor: '#ffffff', stopOpacity: 0.02 }),
+            h('stop', { key: 's2', offset: '100%', stopColor: '#000000', stopOpacity: dk ? 0.14 : 0.04 })
           ]),
           // Grounded studio drop shadow
           h('filter', { key: 'sh', id: 'ap-sh-' + id, x: '-15%', y: '-15%', width: '130%', height: '130%' }, [
@@ -1467,7 +1499,7 @@
         var rr = r || 4.2, grad = 'url(#ap-beacon-' + (kind || 'teal') + '-' + id + ')';
         return h('g', { key: key, 'aria-hidden': 'true', pointerEvents: 'none' }, pts.map(function(pt, i) {
           return h('g', { key: 'cb' + i }, [
-            h('circle', { key: 'h', cx: pt[0], cy: pt[1], r: rr + 3, fill: kind === 'blue' ? COLORS.blue : (kind === 'amber' ? COLORS.amber : COLORS.teal), fillOpacity: isDark ? 0.24 : 0.16 }),
+            h('circle', { key: 'h', className: 'allo-ap-beacon-pulse', style: { animationDelay: (i * 0.28).toFixed(2) + 's' }, cx: pt[0], cy: pt[1], r: rr + 3.4, fill: kind === 'blue' ? COLORS.blue : (kind === 'amber' ? COLORS.amber : COLORS.teal), fillOpacity: isDark ? 0.26 : 0.18 }),
             h('circle', { key: 'c', cx: pt[0], cy: pt[1], r: rr, fill: grad, stroke: COLORS.panel, strokeWidth: 1.4 })
           ]);
         }));
@@ -2428,7 +2460,8 @@
               }));
               if (apRich && shown) {
                 var tx = originX + c * cell, ty = originY + r * cell;
-                cells.push(h('path', { key: 'bev-' + key, 'aria-hidden': 'true', pointerEvents: 'none', d: 'M ' + (tx + 1.5) + ' ' + (ty + cell - 1.5) + ' V ' + (ty + 1.5) + ' H ' + (tx + cell - 1.5), fill: 'none', stroke: '#ffffff', strokeOpacity: isDark ? 0.28 : 0.34, strokeWidth: 1.5, strokeLinecap: 'square' }));
+                cells.push(h('path', { key: 'bev-' + key, className: 'allo-ap-bevel-glint', style: { animationDelay: (((c + r) * 0.12) % 2.4).toFixed(2) + 's' }, 'aria-hidden': 'true', pointerEvents: 'none', d: 'M ' + (tx + 1.5) + ' ' + (ty + cell - 1.5) + ' V ' + (ty + 1.5) + ' H ' + (tx + cell - 1.5), fill: 'none', stroke: '#ffffff', strokeOpacity: isDark ? 0.3 : 0.38, strokeWidth: 1.5, strokeLinecap: 'square' }));
+                cells.push(h('path', { key: 'bsh-' + key, 'aria-hidden': 'true', pointerEvents: 'none', d: 'M ' + (tx + 1.5) + ' ' + (ty + cell - 1.5) + ' H ' + (tx + cell - 1.5) + ' V ' + (ty + 1.5), fill: 'none', stroke: '#0f172a', strokeOpacity: isDark ? 0.32 : 0.14, strokeWidth: 1.3, strokeLinecap: 'square' }));
               }
             })(column, row);
           }
@@ -2535,7 +2568,7 @@
           // Grounded mat drop shadow under the tile grid
           apRich ? h('rect', { key: 'shape-shadow', 'aria-hidden': 'true', pointerEvents: 'none', x: originX, y: originY, width: shapeW, height: shapeH, fill: COLORS.panel, filter: 'url(#ap-sh-ex)' }) : null,
           // Architectural dimension brackets along top & left
-          h('g', { key: 'dim-brackets', 'aria-hidden': 'true', pointerEvents: 'none', stroke: COLORS.teal, strokeWidth: 1.5, opacity: isContrast ? 1 : 0.78 }, [
+          h('g', { key: 'dim-brackets', className: apRich ? 'allo-ap-dim-halo' : undefined, 'aria-hidden': 'true', pointerEvents: 'none', stroke: COLORS.teal, strokeWidth: 1.5, opacity: isContrast ? 1 : 0.78 }, [
             h('line', { key: 't-bar', x1: originX, y1: originY - 22, x2: originX + shapeW, y2: originY - 22 }),
             h('line', { key: 't-l', x1: originX, y1: originY - 27, x2: originX, y2: originY - 17 }),
             h('line', { key: 't-r', x1: originX + shapeW, y1: originY - 27, x2: originX + shapeW, y2: originY - 17 }),
@@ -2546,22 +2579,26 @@
           h('text', { key: 'top', x: originX + shapeW / 2, y: originY - 32, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800 }, nUnits(width)),
           h('text', { key: 'side', x: originX - 38, y: originY + shapeH / 2, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800, transform: 'rotate(-90 ' + (originX - 38) + ' ' + (originY + shapeH / 2) + ')' }, nUnits(height))
         ].concat(cells).concat([
-          apRich ? h('rect', { key: 'tile-sheen', 'aria-hidden': 'true', pointerEvents: 'none', x: originX, y: originY, width: shapeW, height: shapeH, fill: 'url(#ap-sheen-ex)', stroke: COLORS.teal, strokeWidth: 2 }) : null,
-          apRich && (state.boundaryStep || 0) > 0 ? h('polyline', { key: 'boundary-glow', 'aria-hidden': 'true', points: boundaryPts, fill: 'none', stroke: COLORS.blue, strokeWidth: 11, strokeOpacity: isDark ? 0.28 : 0.2, strokeLinecap: 'round', strokeLinejoin: 'round', pointerEvents: 'none' }) : null,
+          apRich ? h('rect', { key: 'tile-sheen', className: 'allo-ap-shimmer', 'aria-hidden': 'true', pointerEvents: 'none', x: originX, y: originY, width: shapeW, height: shapeH, fill: 'url(#ap-sheen-ex)', stroke: COLORS.teal, strokeWidth: 2 }) : null,
+          apRich && (state.boundaryStep || 0) > 0 ? h('polyline', { key: 'boundary-glow', className: 'allo-ap-dim-halo', 'aria-hidden': 'true', points: boundaryPts, fill: 'none', stroke: COLORS.blue, strokeWidth: 11, strokeOpacity: isDark ? 0.3 : 0.22, strokeLinecap: 'round', strokeLinejoin: 'round', pointerEvents: 'none' }) : null,
           h('polyline', { key: 'boundary-trace', points: boundaryPts, fill: 'none', stroke: COLORS.blue, strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round', pointerEvents: 'none' }),
+          apRich && (state.boundaryStep || 0) > 0 ? h('polyline', { key: 'boundary-flow', className: 'allo-ap-march', 'aria-hidden': 'true', points: boundaryPts, fill: 'none', stroke: '#ffffff', strokeWidth: 1.8, strokeDasharray: '6 16', strokeOpacity: 0.72, strokeLinecap: 'round', strokeLinejoin: 'round', pointerEvents: 'none' }) : null,
           apCornerBeacons('ex-corners', rectCorners, 'ex', (state.boundaryStep || 0) > 0 ? 'blue' : 'teal', 4),
-          h('rect', { key: 'walk-guide', x: originX - off, y: originY - off, width: shapeW + 2 * off, height: shapeH + 2 * off, rx: apRich ? 6 : 0, fill: 'none', stroke: COLORS.muted, strokeWidth: 1.5, strokeDasharray: '5 6', pointerEvents: 'none', 'aria-hidden': 'true' }),
-          apRich && walkN > 0 ? h('polyline', { key: 'walked-glow', 'aria-hidden': 'true', points: walkedStr, fill: 'none', stroke: COLORS.amber, strokeWidth: 12, strokeOpacity: isDark ? 0.28 : 0.2, strokeLinecap: 'round', strokeLinejoin: 'round', pointerEvents: 'none' }) : null,
+          h('rect', { key: 'walk-guide', className: apRich ? 'allo-ap-march' : undefined, x: originX - off, y: originY - off, width: shapeW + 2 * off, height: shapeH + 2 * off, rx: apRich ? 6 : 0, fill: 'none', stroke: COLORS.muted, strokeWidth: 1.5, strokeDasharray: '5 6', pointerEvents: 'none', 'aria-hidden': 'true' }),
+          apRich && walkN > 0 ? h('polyline', { key: 'walked-glow', className: 'allo-ap-dim-halo', 'aria-hidden': 'true', points: walkedStr, fill: 'none', stroke: COLORS.amber, strokeWidth: 12, strokeOpacity: isDark ? 0.3 : 0.22, strokeLinecap: 'round', strokeLinejoin: 'round', pointerEvents: 'none' }) : null,
           walkN > 0 ? h('polyline', { key: 'walked', 'data-ap-walked': walkN, points: walkedStr, fill: 'none', stroke: COLORS.amber, strokeWidth: 6, strokeLinecap: 'round', strokeLinejoin: 'round', pointerEvents: 'none', 'aria-hidden': 'true' }) : null,
+          apRich && walkN > 0 ? h('polyline', { key: 'walked-flow', className: 'allo-ap-march', 'aria-hidden': 'true', points: walkedStr, fill: 'none', stroke: '#ffffff', strokeWidth: 1.8, strokeDasharray: '6 16', strokeOpacity: 0.74, strokeLinecap: 'round', strokeLinejoin: 'round', pointerEvents: 'none' }) : null,
           h('g', { key: 'walk-marks', 'aria-hidden': 'true', pointerEvents: 'none' }, walkedPoints.slice(1).map(function(p, i) { return h('circle', { key: i, cx: p[0], cy: p[1], r: 3.5, fill: COLORS.panel, stroke: COLORS.amber, strokeWidth: 2 }); })),
-          apRich ? h('circle', { key: 'walker-halo', 'aria-hidden': 'true', cx: walker[0], cy: walker[1], r: 16, fill: COLORS.amber, fillOpacity: isDark ? 0.24 : 0.16, pointerEvents: 'none' }) : null,
+          apRich ? h('circle', { key: 'walker-ripple', className: 'allo-ap-focus-ripple', 'aria-hidden': 'true', cx: walker[0], cy: walker[1], r: 15, fill: 'none', stroke: COLORS.amber, strokeWidth: apWalk.active ? 2.6 : 1.8, pointerEvents: 'none' }) : null,
+          apRich ? h('circle', { key: 'walker-halo', className: 'allo-ap-beacon-pulse', 'aria-hidden': 'true', cx: walker[0], cy: walker[1], r: 16, fill: COLORS.amber, fillOpacity: isDark ? 0.26 : 0.18, pointerEvents: 'none' }) : null,
           h('circle', { key: 'walker', 'data-ap-walker': walkN, cx: walker[0], cy: walker[1], r: 11, fill: apRich ? 'url(#ap-beacon-amber-ex)' : COLORS.amber, stroke: COLORS.panel, strokeWidth: 3, filter: apRich ? 'url(#ap-sh-ex)' : undefined, pointerEvents: 'none', 'aria-hidden': 'true' }),
           walkN > 0 ? h('text', { key: 'walk-n', x: walker[0], y: walker[1] + 5, textAnchor: 'middle', fill: COLORS.onTeal === '#000000' ? '#000000' : (isDark ? '#0f172a' : '#ffffff'), fontSize: 12, fontWeight: 900, pointerEvents: 'none', 'aria-hidden': 'true' }, String(walkN)) : null,
           h('rect', { key: 'walk-track', 'data-ap-walk-track': true, x: originX - off, y: originY - off, width: shapeW + 2 * off, height: shapeH + 2 * off, fill: 'none', stroke: 'transparent', strokeWidth: 26, pointerEvents: 'stroke', 'aria-hidden': 'true',
             onClick: tappable, onPointerDown: walkDown, onPointerMove: walkMove, onPointerUp: walkUp, onPointerCancel: walkUp, style: Object.assign({ cursor: 'grab' }, NO_PAN) }),
           showHandle ? h('g', { key: 'resize', 'data-ap-resize-handle': true, 'aria-hidden': 'true', onClick: tappable, onPointerDown: resizeDown, onPointerMove: resizeMove, onPointerUp: resizeUp, onPointerCancel: resizeUp, style: Object.assign({ cursor: 'nwse-resize' }, NO_PAN) }, [
             h('circle', { key: 'hit', cx: cornerX + 10, cy: cornerY + 10, r: 22, fill: 'transparent', style: NO_PAN }),
-            apRich ? h('circle', { key: 'halo', cx: cornerX + 10, cy: cornerY + 10, r: 16, fill: COLORS.blue, fillOpacity: isDark ? 0.24 : 0.16, pointerEvents: 'none', style: NO_PAN }) : null,
+            apRich ? h('circle', { key: 'ripple', className: 'allo-ap-focus-ripple', style: { animationDelay: '0.7s' }, cx: cornerX + 10, cy: cornerY + 10, r: 15, fill: 'none', stroke: COLORS.blue, strokeWidth: apResize.active ? 2.6 : 1.8, pointerEvents: 'none' }) : null,
+            apRich ? h('circle', { key: 'halo', className: 'allo-ap-beacon-pulse', style: { animationDelay: '0.4s' }, cx: cornerX + 10, cy: cornerY + 10, r: 16, fill: COLORS.blue, fillOpacity: isDark ? 0.26 : 0.18, pointerEvents: 'none' }) : null,
             h('circle', { key: 'dot', cx: cornerX + 10, cy: cornerY + 10, r: 11, fill: apRich ? 'url(#ap-beacon-blue-ex)' : COLORS.blue, stroke: COLORS.panel, strokeWidth: 3, filter: apRich ? 'url(#ap-sh-ex)' : undefined, style: NO_PAN }),
             // A two-headed diagonal arrow: "drag to resize".
             h('path', { key: 'arrow', d: (function(x, y) {
@@ -2771,13 +2808,15 @@
           apDefs('cmp'),
           apMat('cmp', 640, 310),
           h('text', { key: 'la', x: 165, y: 37, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800 }, t('stem.areaperimeter.rectangle_a', "Rectangle A")),
+          apRich ? h('rect', { key: 'ag', className: 'allo-ap-dim-halo', 'aria-hidden': 'true', pointerEvents: 'none', x: ax0 - 4, y: y1 - 4, width: firstW + 8, height: firstH + 8, rx: 7, fill: 'none', stroke: area === compareArea ? COLORS.green : COLORS.teal, strokeWidth: 5, strokeOpacity: isDark ? 0.28 : 0.2 }) : null,
           h('rect', { key: 'a', x: ax0, y: y1, width: firstW, height: firstH, rx: 4, fill: apRich ? 'url(#ap-fill-teal-cmp)' : COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4, filter: apRich ? 'url(#ap-sh-cmp)' : undefined }),
-          apRich ? h('rect', { key: 'as', 'aria-hidden': 'true', pointerEvents: 'none', x: ax0 + 2, y: y1 + 2, width: Math.max(0, firstW - 4), height: Math.max(0, firstH - 4), rx: 2, fill: 'url(#ap-sheen-cmp)' }) : null,
+          apRich ? h('rect', { key: 'as', className: 'allo-ap-shimmer', 'aria-hidden': 'true', pointerEvents: 'none', x: ax0 + 2, y: y1 + 2, width: Math.max(0, firstW - 4), height: Math.max(0, firstH - 4), rx: 2, fill: 'url(#ap-sheen-cmp)' }) : null,
           apCornerBeacons('ca', [[ax0, y1], [ax0 + firstW, y1], [ax0 + firstW, y1 + firstH], [ax0, y1 + firstH]], 'cmp', 'teal', 3.6),
           h('text', { key: 'ad', x: 165, y: 250, textAnchor: 'middle', fill: COLORS.text, fontSize: 15, fontWeight: 700 }, width + ' × ' + height),
           h('text', { key: 'lb', x: 475, y: 37, textAnchor: 'middle', fill: COLORS.text, fontSize: 18, fontWeight: 800 }, t('stem.areaperimeter.rectangle_b', "Rectangle B")),
-          h('rect', { key: 'b', x: bx0, y: y2, width: secondW, height: secondH, rx: 4, fill: apRich ? 'url(#ap-fill-blue-cmp)' : COLORS.shapeB, stroke: COLORS.blue, strokeWidth: 4, strokeDasharray: '10 4', filter: apRich ? 'url(#ap-sh-cmp)' : undefined }),
-          apRich ? h('rect', { key: 'bs', 'aria-hidden': 'true', pointerEvents: 'none', x: bx0 + 2, y: y2 + 2, width: Math.max(0, secondW - 4), height: Math.max(0, secondH - 4), rx: 2, fill: 'url(#ap-sheen-cmp)' }) : null,
+          apRich ? h('rect', { key: 'bg', className: 'allo-ap-dim-halo', style: { animationDelay: '0.6s' }, 'aria-hidden': 'true', pointerEvents: 'none', x: bx0 - 4, y: y2 - 4, width: secondW + 8, height: secondH + 8, rx: 7, fill: 'none', stroke: perimeter === comparePerimeter ? COLORS.green : COLORS.blue, strokeWidth: 5, strokeOpacity: isDark ? 0.28 : 0.2 }) : null,
+          h('rect', { key: 'b', className: apRich ? 'allo-ap-march' : undefined, x: bx0, y: y2, width: secondW, height: secondH, rx: 4, fill: apRich ? 'url(#ap-fill-blue-cmp)' : COLORS.shapeB, stroke: COLORS.blue, strokeWidth: 4, strokeDasharray: '10 4', filter: apRich ? 'url(#ap-sh-cmp)' : undefined }),
+          apRich ? h('rect', { key: 'bs', className: 'allo-ap-shimmer', style: { animationDelay: '0.8s' }, 'aria-hidden': 'true', pointerEvents: 'none', x: bx0 + 2, y: y2 + 2, width: Math.max(0, secondW - 4), height: Math.max(0, secondH - 4), rx: 2, fill: 'url(#ap-sheen-cmp)' }) : null,
           apCornerBeacons('cb', [[bx0, y2], [bx0 + secondW, y2], [bx0 + secondW, y2 + secondH], [bx0, y2 + secondH]], 'cmp', 'blue', 3.6),
           h('text', { key: 'bd', x: 475, y: 250, textAnchor: 'middle', fill: COLORS.text, fontSize: 15, fontWeight: 700 }, compareWidth + ' × ' + compareHeight),
           h('line', { key: 'divider', x1: 320, y1: 30, x2: 320, y2: 270, stroke: COLORS.border, strokeDasharray: '7 7' }),
@@ -2865,13 +2904,13 @@
           }
         }
         var overlay = decomposition === 'add' ? [
-          apRich ? h('line', { key: 'split-glow', 'aria-hidden': 'true', x1: x + leftWidth * scale, y1: y + notchHeight * scale, x2: x + leftWidth * scale, y2: y + outerHeight * scale, stroke: COLORS.red, strokeWidth: 9, strokeOpacity: isDark ? 0.28 : 0.2, strokeLinecap: 'round' }) : null,
-          h('line', { key: 'split', x1: x + leftWidth * scale, y1: y + notchHeight * scale, x2: x + leftWidth * scale, y2: y + outerHeight * scale, stroke: COLORS.red, strokeWidth: 3.2, strokeDasharray: '8 5', strokeLinecap: 'round' }),
+          apRich ? h('line', { key: 'split-glow', className: 'allo-ap-dim-halo', 'aria-hidden': 'true', x1: x + leftWidth * scale, y1: y + notchHeight * scale, x2: x + leftWidth * scale, y2: y + outerHeight * scale, stroke: COLORS.red, strokeWidth: 9, strokeOpacity: isDark ? 0.3 : 0.22, strokeLinecap: 'round' }) : null,
+          h('line', { key: 'split', className: apRich ? 'allo-ap-march' : undefined, x1: x + leftWidth * scale, y1: y + notchHeight * scale, x2: x + leftWidth * scale, y2: y + outerHeight * scale, stroke: COLORS.red, strokeWidth: 3.2, strokeDasharray: '8 5', strokeLinecap: 'round' }),
           h('text', { key: 'one', x: x + leftWidth * scale / 2, y: y + outerHeight * scale / 2, fill: COLORS.text, textAnchor: 'middle', fontSize: 17, fontWeight: 800 }, 'A'),
           h('text', { key: 'two', x: x + (leftWidth + outerWidth) * scale / 2, y: y + (notchHeight + outerHeight) * scale / 2, fill: COLORS.text, textAnchor: 'middle', fontSize: 17, fontWeight: 800 }, 'B')
         ] : [
-          apRich ? h('rect', { key: 'cut-tint', 'aria-hidden': 'true', x: x + leftWidth * scale, y: y, width: cutWidth * scale, height: notchHeight * scale, fill: COLORS.red, fillOpacity: isDark ? 0.14 : 0.08 }) : null,
-          h('rect', { key: 'cut', x: x + leftWidth * scale, y: y, width: cutWidth * scale, height: notchHeight * scale, fill: 'none', stroke: COLORS.red, strokeWidth: 3, strokeDasharray: '8 5' }),
+          apRich ? h('rect', { key: 'cut-tint', className: 'allo-ap-dim-halo', 'aria-hidden': 'true', x: x + leftWidth * scale, y: y, width: cutWidth * scale, height: notchHeight * scale, fill: COLORS.red, fillOpacity: isDark ? 0.16 : 0.1 }) : null,
+          h('rect', { key: 'cut', className: apRich ? 'allo-ap-march' : undefined, x: x + leftWidth * scale, y: y, width: cutWidth * scale, height: notchHeight * scale, fill: 'none', stroke: COLORS.red, strokeWidth: 3, strokeDasharray: '8 5' }),
           h('text', { key: 'minus', x: x + (leftWidth + outerWidth) * scale / 2, y: y + notchHeight * scale / 2 + 6, fill: COLORS.red, textAnchor: 'middle', fontSize: 16, fontWeight: 800 }, t('stem.areaperimeter.subtract', "subtract"))
         ];
         return h('svg', {
@@ -2886,10 +2925,11 @@
           apMat('comp', 640, 390),
           h('polygon', { key: 'base', points: points, fill: COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4, filter: apRich ? 'url(#ap-sh-comp)' : undefined })
         ].concat(grid).concat([
-          apRich ? h('polygon', { key: 'sheen', 'aria-hidden': 'true', pointerEvents: 'none', points: points, fill: 'url(#ap-sheen-comp)', stroke: 'none' }) : null,
-          apRich ? h('polygon', { key: 'outline-glow', 'aria-hidden': 'true', pointerEvents: 'none', points: points, fill: 'none', stroke: COLORS.teal, strokeWidth: 10, strokeOpacity: isDark ? 0.24 : 0.16, strokeLinejoin: 'round' }) : null
+          apRich ? h('polygon', { key: 'sheen', className: 'allo-ap-shimmer', 'aria-hidden': 'true', pointerEvents: 'none', points: points, fill: 'url(#ap-sheen-comp)', stroke: 'none' }) : null,
+          apRich ? h('polygon', { key: 'outline-glow', className: 'allo-ap-dim-halo', 'aria-hidden': 'true', pointerEvents: 'none', points: points, fill: 'none', stroke: COLORS.teal, strokeWidth: 10, strokeOpacity: isDark ? 0.26 : 0.18, strokeLinejoin: 'round' }) : null
         ]).concat(overlay).concat([
           h('polygon', { key: 'outline', points: points, fill: 'none', stroke: COLORS.tealDark, strokeWidth: 4, strokeLinejoin: 'round' }),
+          apRich ? h('polygon', { key: 'outline-flow', className: 'allo-ap-march', 'aria-hidden': 'true', pointerEvents: 'none', points: points, fill: 'none', stroke: '#ffffff', strokeWidth: 1.5, strokeDasharray: '6 16', strokeOpacity: 0.62, strokeLinejoin: 'round' }) : null,
           apCornerBeacons('comp-c', ptArr, 'comp', 'teal', 3.8),
           h('text', { key: 'w', x: x + outerWidth * scale / 2, y: y + outerHeight * scale + 28, fill: COLORS.text, textAnchor: 'middle', fontSize: 17, fontWeight: 800 }, nUnits(outerWidth)),
           h('text', { key: 'h', x: x - 27, y: y + outerHeight * scale / 2, fill: COLORS.text, textAnchor: 'middle', fontSize: 17, fontWeight: 800, transform: 'rotate(-90 ' + (x - 27) + ' ' + (y + outerHeight * scale / 2) + ')' }, nUnits(outerHeight))
@@ -2964,9 +3004,10 @@
           var least = pair.p === minP;
           shapes.push(h('g', { key: pair.w + 'x' + pair.h }, [
             h('text', { key: 'name', x: 18, y: 28 + index * rowHeight + 32, fill: COLORS.text, fontSize: 16, fontWeight: 800 }, pair.w + ' × ' + pair.h),
-            apRich && least ? h('rect', { key: 'glow', 'aria-hidden': 'true', x: 117, y: y - 3, width: w + 6, height: hgt + 6, rx: 5, fill: 'none', stroke: COLORS.green, strokeWidth: 5, strokeOpacity: isDark ? 0.28 : 0.2 }) : null,
+            apRich && least ? h('rect', { key: 'glow', className: 'allo-ap-dim-halo', 'aria-hidden': 'true', x: 117, y: y - 3, width: w + 6, height: hgt + 6, rx: 5, fill: 'none', stroke: COLORS.green, strokeWidth: 5, strokeOpacity: isDark ? 0.3 : 0.22 }) : null,
             h('rect', { key: 'rect', x: 120, y: y, width: w, height: hgt, rx: apRich ? 3 : 0, 'data-factor-pair': pair.w + 'x' + pair.h, 'data-square-unit': unit, fill: least ? (apRich ? 'url(#ap-fill-green-fac)' : (isContrast ? '#000000' : (isDark ? '#14532d' : '#dcfce7'))) : (apRich ? 'url(#ap-fill-teal-fac)' : COLORS.tileSoft), stroke: least ? COLORS.green : COLORS.teal, strokeWidth: 3, filter: apRich ? 'url(#ap-sh-fac)' : undefined }),
-            apRich ? h('rect', { key: 'shn', 'aria-hidden': 'true', x: 121, y: y + 1, width: Math.max(0, w - 2), height: Math.max(0, hgt - 2), rx: 2, fill: 'url(#ap-sheen-fac)' }) : null,
+            apRich && least ? h('rect', { key: 'flow', className: 'allo-ap-march', 'aria-hidden': 'true', x: 120, y: y, width: w, height: hgt, rx: 3, fill: 'none', stroke: '#ffffff', strokeWidth: 1.4, strokeDasharray: '6 16', strokeOpacity: 0.65 }) : null,
+            apRich ? h('rect', { key: 'shn', className: 'allo-ap-shimmer', style: { animationDelay: (index * 0.35).toFixed(2) + 's' }, 'aria-hidden': 'true', x: 121, y: y + 1, width: Math.max(0, w - 2), height: Math.max(0, hgt - 2), rx: 2, fill: 'url(#ap-sheen-fac)' }) : null,
             h('text', { key: 'p', x: 500, y: 28 + index * rowHeight + 32, fill: least ? COLORS.green : COLORS.muted, fontSize: 15, fontWeight: 700 }, least
               ? fill(t('stem.areaperimeter.p_value_least', 'P = {p} (least)'), { p: pair.p })
               : fill(t('stem.areaperimeter.p_value', 'P = {p}'), { p: pair.p }))
@@ -3032,8 +3073,9 @@
             h('svg', { viewBox: '0 0 ' + (w * unit + 65) + ' ' + (ht * unit + 55), role: 'img', 'aria-label': equation, style: { display: 'block', width: '100%', maxHeight: 330 }, 'data-built-rectangle': true },
               apDefs('bld', h('pattern', { key: 'pgrid', id: 'ap-build-grid', width: unit, height: unit, patternUnits: 'userSpaceOnUse', x: 35, y: 30 }, h('rect', { width: unit, height: unit, fill: COLORS.tileSoft, stroke: COLORS.tealDark, strokeWidth: .6 }))),
               apMat('bld', w * unit + 65, ht * unit + 55),
-              h('rect', { x: 35, y: 30, width: w * unit, height: ht * unit, fill: 'url(#ap-build-grid)', stroke: COLORS.tealDark, strokeWidth: 2.2, filter: apRich ? 'url(#ap-sh-bld)' : undefined }),
-              apRich && h('rect', { 'aria-hidden': 'true', x: 35, y: 30, width: w * unit, height: ht * unit, fill: 'url(#ap-sheen-bld)', pointerEvents: 'none' }),
+              apRich && builtArea === targetArea && h('rect', { className: 'allo-ap-dim-halo', 'aria-hidden': 'true', x: 32, y: 27, width: w * unit + 6, height: ht * unit + 6, rx: 4, fill: 'none', stroke: COLORS.green, strokeWidth: 5, strokeOpacity: isDark ? 0.3 : 0.22, pointerEvents: 'none' }),
+              h('rect', { x: 35, y: 30, width: w * unit, height: ht * unit, fill: 'url(#ap-build-grid)', stroke: builtArea === targetArea ? COLORS.green : COLORS.tealDark, strokeWidth: 2.2, filter: apRich ? 'url(#ap-sh-bld)' : undefined }),
+              apRich && h('rect', { className: 'allo-ap-shimmer', 'aria-hidden': 'true', x: 35, y: 30, width: w * unit, height: ht * unit, fill: 'url(#ap-sheen-bld)', pointerEvents: 'none' }),
               apCornerBeacons('bld-c', [[35, 30], [35 + w * unit, 30], [35 + w * unit, 30 + ht * unit], [35, 30 + ht * unit]], 'bld', 'teal', 3.4),
               h('text', { x: 35 + w * unit / 2, y: 20, textAnchor: 'middle', fill: COLORS.text, fontSize: 16, fontWeight: 800 }, w),
               h('text', { x: 23, y: 35 + ht * unit / 2, textAnchor: 'end', fill: COLORS.text, fontSize: 16, fontWeight: 800 }, ht))),
@@ -3140,8 +3182,8 @@
         }
         var edgeMarks = opts.highlight ? newEdges.reduce(function(acc, edge, i) {
           var a = edge[0].split(','), b = edge[1].split(',');
-          if (apRich) acc.push(h('line', { key: 'new-g-' + i, 'aria-hidden': 'true', x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: COLORS.ghost, strokeWidth: 13, strokeOpacity: isDark ? 0.28 : 0.2, strokeLinecap: 'round' }));
-          acc.push(h('line', { key: 'new-' + i, x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: COLORS.ghost, strokeWidth: 7, strokeDasharray: '10 5', strokeLinecap: 'round', 'data-ap-new-edge': true }));
+          if (apRich) acc.push(h('line', { key: 'new-g-' + i, className: 'allo-ap-dim-halo', 'aria-hidden': 'true', x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: COLORS.ghost, strokeWidth: 13, strokeOpacity: isDark ? 0.3 : 0.22, strokeLinecap: 'round' }));
+          acc.push(h('line', { key: 'new-' + i, className: apRich ? 'allo-ap-march' : undefined, x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: COLORS.ghost, strokeWidth: 7, strokeDasharray: '10 5', strokeLinecap: 'round', 'data-ap-new-edge': true }));
           return acc;
         }, []) : [];
         var gsId = 'gs-' + String(opts.key || 'f').replace(/[^a-z0-9]/gi, '');
@@ -3154,9 +3196,10 @@
           apMat(gsId, 640, gsH),
           apRich ? h('polygon', { key: 'sh-poly', 'aria-hidden': 'true', points: outline, fill: COLORS.panel, filter: 'url(#ap-sh-' + gsId + ')' }) : null
         ].concat(cells).concat([
-          apRich ? h('polygon', { key: 'sheen', 'aria-hidden': 'true', pointerEvents: 'none', points: outline, fill: 'url(#ap-sheen-' + gsId + ')', stroke: 'none' }) : null,
-          apRich ? h('polygon', { key: 'outline-glow', 'aria-hidden': 'true', pointerEvents: 'none', points: outline, fill: 'none', stroke: COLORS.blue, strokeWidth: 10, strokeOpacity: isDark ? 0.26 : 0.18, strokeLinejoin: 'round' }) : null,
+          apRich ? h('polygon', { key: 'sheen', className: 'allo-ap-shimmer', 'aria-hidden': 'true', pointerEvents: 'none', points: outline, fill: 'url(#ap-sheen-' + gsId + ')', stroke: 'none' }) : null,
+          apRich ? h('polygon', { key: 'outline-glow', className: 'allo-ap-dim-halo', 'aria-hidden': 'true', pointerEvents: 'none', points: outline, fill: 'none', stroke: COLORS.blue, strokeWidth: 10, strokeOpacity: isDark ? 0.28 : 0.2, strokeLinejoin: 'round' }) : null,
           h('polygon', { key: 'outline', points: outline, fill: 'none', stroke: COLORS.blue, strokeWidth: 4, strokeLinejoin: 'round' }),
+          apRich ? h('polygon', { key: 'outline-flow', className: 'allo-ap-march', 'aria-hidden': 'true', pointerEvents: 'none', points: outline, fill: 'none', stroke: '#ffffff', strokeWidth: 1.6, strokeDasharray: '6 16', strokeOpacity: 0.65, strokeLinejoin: 'round' }) : null,
           apCornerBeacons('gs-c', gsPts, gsId, 'blue', 3.6)
         ]).concat(edgeMarks).concat([
           h('text', { key: 'wl', x: x0 + W * scale / 2, y: y0 + H * scale + 28, textAnchor: 'middle', fill: COLORS.text, fontSize: 17, fontWeight: 800 }, nUnits(W)),
@@ -3341,13 +3384,13 @@
         }
         function heightMark(key, x, yTop, yBottom, text) {
           return [
-            apRich ? h('line', { key: key + '-glow', 'aria-hidden': 'true', x1: x, y1: yTop, x2: x, y2: yBottom, stroke: COLORS.blue, strokeWidth: 8, strokeOpacity: isDark ? 0.25 : 0.16, strokeLinecap: 'round' }) : null,
-            h('line', { key: key + '-line', x1: x, y1: yTop, x2: x, y2: yBottom, stroke: COLORS.blue, strokeWidth: 3, strokeDasharray: '7 5', strokeLinecap: 'round' }),
+            apRich ? h('line', { key: key + '-glow', className: 'allo-ap-dim-halo', 'aria-hidden': 'true', x1: x, y1: yTop, x2: x, y2: yBottom, stroke: COLORS.blue, strokeWidth: 8, strokeOpacity: isDark ? 0.26 : 0.18, strokeLinecap: 'round' }) : null,
+            h('line', { key: key + '-line', className: apRich ? 'allo-ap-march' : undefined, x1: x, y1: yTop, x2: x, y2: yBottom, stroke: COLORS.blue, strokeWidth: 3, strokeDasharray: '7 5', strokeLinecap: 'round' }),
             h('polyline', { key: key + '-right', points: x + ',' + (yBottom - 12) + ' ' + (x + 12) + ',' + (yBottom - 12) + ' ' + (x + 12) + ',' + yBottom, fill: 'none', stroke: COLORS.blue, strokeWidth: 2 }),
             label(key + '-label', x + 16, (yTop + yBottom) / 2, text, { textAnchor: 'start', fill: COLORS.blue })
           ];
         }
-        var ghostStyle = { fill: 'none', stroke: COLORS.ghost, strokeWidth: 3, strokeDasharray: '9 6', 'data-ap-ghost': true };
+        var ghostStyle = { fill: 'none', stroke: COLORS.ghost, strokeWidth: 3, strokeDasharray: '9 6', className: apRich ? 'allo-ap-march' : undefined, 'data-ap-ghost': true };
         if (p.type === 'tile_area') {
           var cell = Math.min(420 / p.w, 220 / p.h, 44);
           var ox = (640 - cell * p.w) / 2, oy = 30;
@@ -3365,7 +3408,7 @@
           var sc = Math.min(380 / L, 170 / Wd);
           var dw = L * sc, dh = Wd * sc, dx = (640 - dw) / 2, dy = 40 + (170 - dh) / 2;
           els.push(h('rect', { key: 'r', x: dx, y: dy, width: dw, height: dh, rx: apRich ? 3 : 0, 'data-challenge-shape': 'rectangle', 'data-square-unit': sc, fill: apRich ? 'url(#ap-fill-teal-pr)' : COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4, filter: apRich ? 'url(#ap-sh-pr)' : undefined }));
-          if (apRich) els.push(h('rect', { key: 'rs', 'aria-hidden': 'true', x: dx + 2, y: dy + 2, width: Math.max(0, dw - 4), height: Math.max(0, dh - 4), fill: 'url(#ap-sheen-pr)', pointerEvents: 'none' }));
+          if (apRich) els.push(h('rect', { key: 'rs', className: 'allo-ap-shimmer', 'aria-hidden': 'true', x: dx + 2, y: dy + 2, width: Math.max(0, dw - 4), height: Math.max(0, dh - 4), fill: 'url(#ap-sheen-pr)', pointerEvents: 'none' }));
           els.push(apCornerBeacons('rc', [[dx, dy], [dx + dw, dy], [dx + dw, dy + dh], [dx, dy + dh]], 'pr', 'teal', 3.5));
           els.push(label('top', 320, dy - 12, top));
           els.push(label('side', dx - 14, dy + dh / 2 + 6, side, { textAnchor: 'end' }));
@@ -4953,8 +4996,9 @@
             h('desc', { key: 'desc', id: 'ap-garden-desc' }, fill(t('stem.areaperimeter.garden_desc', 'A rectangular garden {L} m long and {W} m wide.'), { L: L, W: W })),
             apDefs('gdn'),
             apMat('gdn', 640, gH),
-            apRich ? h('rect', { key: 'gg', 'aria-hidden': 'true', x: dx, y: dy, width: L * sc, height: W * sc, rx: 4, fill: 'none', stroke: COLORS.green, strokeWidth: 9, strokeOpacity: isDark ? 0.24 : 0.16 }) : null,
-            h('rect', { key: 'g', x: dx, y: dy, width: L * sc, height: W * sc, rx: apRich ? 4 : 0, fill: apRich ? 'url(#ap-fill-green-gdn)' : COLORS.tileSoft, stroke: COLORS.green, strokeWidth: 4, strokeDasharray: '2 6', strokeLinecap: 'round', filter: apRich ? 'url(#ap-sh-gdn)' : undefined }),
+            apRich ? h('rect', { key: 'gg', className: 'allo-ap-dim-halo', 'aria-hidden': 'true', x: dx, y: dy, width: L * sc, height: W * sc, rx: 4, fill: 'none', stroke: COLORS.green, strokeWidth: 9, strokeOpacity: isDark ? 0.26 : 0.18 }) : null,
+            h('rect', { key: 'g', className: apRich ? 'allo-ap-march' : undefined, x: dx, y: dy, width: L * sc, height: W * sc, rx: apRich ? 4 : 0, fill: apRich ? 'url(#ap-fill-green-gdn)' : COLORS.tileSoft, stroke: COLORS.green, strokeWidth: 4, strokeDasharray: '2 6', strokeLinecap: 'round', filter: apRich ? 'url(#ap-sh-gdn)' : undefined }),
+            apRich ? h('rect', { key: 'gs', className: 'allo-ap-shimmer', 'aria-hidden': 'true', x: dx + 2, y: dy + 2, width: Math.max(0, L * sc - 4), height: Math.max(0, W * sc - 4), rx: 2, fill: 'url(#ap-sheen-gdn)', pointerEvents: 'none' }) : null,
             apCornerBeacons('gdn-c', [[dx, dy], [dx + L * sc, dy], [dx + L * sc, dy + W * sc], [dx, dy + W * sc]], 'gdn', 'teal', 3.6),
             h('text', { key: 'lt', x: 320, y: dy - 12, textAnchor: 'middle', fill: COLORS.text, fontSize: 17, fontWeight: 800 }, fill(t('stem.areaperimeter.n_m', '{n} m'), { n: L })),
             h('text', { key: 'wt', x: dx - 12, y: dy + W * sc / 2 + 6, textAnchor: 'end', fill: COLORS.text, fontSize: 17, fontWeight: 800 }, fill(t('stem.areaperimeter.n_m', '{n} m'), { n: W }))
@@ -4978,9 +5022,9 @@
             : [[fx, fy], [fx + m.W * fs, fy], [fx + m.W * fs, fy + m.H * fs], [fx, fy + m.H * fs]];
           var ptsStr = pts.map(function(pt) { return round1(pt[0]) + ',' + round1(pt[1]); }).join(' ');
           var planEls = [
-            apRich ? h('polygon', { key: 'room-g', 'aria-hidden': 'true', points: ptsStr, fill: 'none', stroke: COLORS.teal, strokeWidth: 10, strokeOpacity: isDark ? 0.24 : 0.16, strokeLinejoin: 'round' }) : null,
+            apRich ? h('polygon', { key: 'room-g', className: 'allo-ap-dim-halo', 'aria-hidden': 'true', points: ptsStr, fill: 'none', stroke: COLORS.teal, strokeWidth: 10, strokeOpacity: isDark ? 0.26 : 0.18, strokeLinejoin: 'round' }) : null,
             h('polygon', { key: 'room', points: ptsStr, fill: apRich ? 'url(#ap-fill-teal-flr)' : COLORS.tileSoft, stroke: COLORS.teal, strokeWidth: 4, strokeLinejoin: 'round', filter: apRich ? 'url(#ap-sh-flr)' : undefined }),
-            apRich ? h('polygon', { key: 'room-s', 'aria-hidden': 'true', points: ptsStr, fill: 'url(#ap-sheen-flr)', pointerEvents: 'none' }) : null,
+            apRich ? h('polygon', { key: 'room-s', className: 'allo-ap-shimmer', 'aria-hidden': 'true', points: ptsStr, fill: 'url(#ap-sheen-flr)', pointerEvents: 'none' }) : null,
             apCornerBeacons('flr-c', pts, 'flr', 'teal', 3.6)
           ];
           planEls.push(h('text', { key: 'w', x: fx + m.W * fs / 2, y: fy + m.H * fs + 26, textAnchor: 'middle', fill: COLORS.text, fontSize: 17, fontWeight: 800 }, fill(t('stem.areaperimeter.n_ft', '{n} ft'), { n: m.W })));
@@ -5302,7 +5346,9 @@
         h('line', { key: 'v1', x1: 17, y1: 11, x2: 17, y2: 31, stroke: isContrast ? '#ffff00' : '#99f6e4', strokeWidth: 1, strokeDasharray: '2 2' }),
         h('line', { key: 'v2', x1: 25, y1: 11, x2: 25, y2: 31, stroke: isContrast ? '#ffff00' : '#99f6e4', strokeWidth: 1, strokeDasharray: '2 2' }),
         h('line', { key: 'h1', x1: 9, y1: 21, x2: 33, y2: 21, stroke: isContrast ? '#ffff00' : '#99f6e4', strokeWidth: 1, strokeDasharray: '2 2' }),
+        apRich ? h('circle', { key: 'c1h', className: 'allo-ap-beacon-pulse', cx: 9, cy: 11, r: 4.4, fill: '#fbbf24', opacity: 0.3 }) : null,
         h('circle', { key: 'c1', cx: 9, cy: 11, r: 2.5, fill: isContrast ? '#00ff66' : '#fbbf24' }),
+        apRich ? h('circle', { key: 'c2h', className: 'allo-ap-beacon-pulse', style: { animationDelay: '0.6s' }, cx: 33, cy: 31, r: 4.4, fill: '#fbbf24', opacity: 0.3 }) : null,
         h('circle', { key: 'c2', cx: 33, cy: 31, r: 2.5, fill: isContrast ? '#00ff66' : '#fbbf24' })
       ]);
       var heroPill = isContrast

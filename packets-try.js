@@ -20,6 +20,7 @@
   var snapItems = Object.create(null);
   var MAX_SNAP_KEYS = 64;
   var MAX_SNAP_VALUE = 512 * 1024;
+  var MAX_HTML_CHARS = 60 * 1024 * 1024;
   function isSafeSnapKey(key) {
     return typeof key === 'string' && key.length > 0 && key.length <= 256
       && key !== '__proto__' && key !== 'constructor' && key !== 'prototype';
@@ -53,7 +54,13 @@
     blobUrl = URL.createObjectURL(new Blob([withSnapshot(html, snapItems)], { type: 'text/html' }));
     frame.src = blobUrl;
   }
-  window.addEventListener('pagehide', revokeBlob);
+  window.addEventListener('pagehide', function () {
+    revokeBlob();
+    if (channel && typeof channel.close === 'function') {
+      try { channel.close(); } catch (_) {}
+      channel = null;
+    }
+  });
 
   // 2026-11-18: "Hide answers" leaves the question's word out of the bar (the word is the answer in Word Sounds and
   // vocabulary), for a preview shown to a class. Off when a preview opens; this page keeps nothing in the browser.
@@ -209,7 +216,7 @@
       if (!msg || typeof msg !== 'object' || msg.id !== address) return;
       if (msg.type === 'preview-bar') { renderBar(msg.bar || msg); return; }
       if (msg.type === 'preview-reload') {
-        if (typeof msg.html !== 'string' || !/^<!doctype html>/i.test(msg.html) || msg.html.indexOf('id="packet-manifest"') < 0) return;
+        if (typeof msg.html !== 'string' || msg.html.length > MAX_HTML_CHARS || !/^<!doctype html>/i.test(msg.html) || msg.html.indexOf('id="packet-manifest"') < 0) return;
         if (msg.snapshot && typeof msg.snapshot === 'object' && !Array.isArray(msg.snapshot)) {
           var nextSnap = Object.create(null);
           var snapKeys = Object.keys(msg.snapshot);
@@ -244,11 +251,15 @@
     channel.postMessage({ type: 'preview-hello', id: address });
   }
 
-  window.fetch(address).then(function (reply) {
+  var fetchCtrl = typeof window.AbortController === 'function' ? new window.AbortController() : null;
+  var fetchTimer = fetchCtrl ? setTimeout(function () { try { fetchCtrl.abort(); } catch (_) {} }, 15000) : null;
+  var clearFetchTimer = function () { if (fetchTimer !== null) { clearTimeout(fetchTimer); fetchTimer = null; } };
+  window.fetch(address, fetchCtrl ? { signal: fetchCtrl.signal } : undefined).then(function (reply) {
+    clearFetchTimer();
     if (!reply.ok) throw new Error('gone');
     return reply.text();
   }).then(function (html) {
-    if (!/^<!doctype html>/i.test(html) || html.indexOf('id="packet-manifest"') < 0) throw new Error('not a file from a maker');
+    if (typeof html !== 'string' || html.length > MAX_HTML_CHARS || !/^<!doctype html>/i.test(html) || html.indexOf('id="packet-manifest"') < 0) throw new Error('not a file from a maker');
     frame = doc.createElement('iframe');
     frame.className = 'try-frame';
     frame.title = 'The file a student gets';
@@ -258,5 +269,8 @@
     doc.getElementById('try-main').appendChild(frame);
     if (presentBtn) presentBtn.hidden = false;
     wireChannel();
-  }).catch(fail);
+  }).catch(function () {
+    clearFetchTimer();
+    fail();
+  });
 })();

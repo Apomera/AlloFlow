@@ -1,6 +1,6 @@
 # Praxis School Counselor (5422) learning library QA report
 
-Generated: 2026-08-20T07:00:04.619Z
+Generated: 2026-11-21T15:38:23.361Z
 
 ## Result
 

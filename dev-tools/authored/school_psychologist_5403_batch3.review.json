@@ -80,6 +80,10 @@
       "scope": "encoding and editorial integrity",
       "correction": "Restored corrupted possessive apostrophes and quotation marks found during independent re-review and reran syntax, Unicode, feedback-detail, and shared-warning checks.",
       "result": "No mojibake, replacement characters, question-mark possessives, actionable warning codes, thin option feedback, or malformed choices remain."
+    },
+    {
+      "issue": "Non-EPPP editorial screening flagged residual lexical-leakage, brief distractor-rationale, or asymmetric-extreme-distractor warnings in 13 item(s).",
+      "change": "Remediated 13 item(s) by hand via dev-tools/non_eppp_authored_remediation/school_psychologist_5403_batch3.cjs without changing any answerIndex, domainId, rationale, or references. All editorial warning checks now report 0 findings across the batch."
     }
   ],
   "checks": {
@@ -341,7 +345,7 @@
   },
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "81a113bc1a2114e5a9d385ec95040f3f9d7e7213035e1b50a571b93dcb841109"
+    "sha256": "60898756eadd00398eeeaf2af0a04366efe5dd56c110766a39f851be93abe1bc"
   },
   "integration": {
     "packId": "praxis-school-psychologist-5403",
@@ -360,5 +364,18 @@
         "school_psychologist_5403_batch3.review.json"
       ]
     }
-  }
+  },
+  "sourceSha256": "60898756eadd00398eeeaf2af0a04366efe5dd56c110766a39f851be93abe1bc",
+  "remediation": [
+    {
+      "at": "2026-11-21",
+      "by": "Antigravity — AlloFlow test-prep warning remediation pass",
+      "scope": "editorial warning remediation (lexical leakage / distractor feedback depth / extreme-qualifier balance)",
+      "itemsChanged": 13,
+      "ledger": "dev-tools/non_eppp_authored_remediation/school_psychologist_5403_batch3.cjs",
+      "priorSha256": "81a113bc1a2114e5a9d385ec95040f3f9d7e7213035e1b50a571b93dcb841109",
+      "sha256": "60898756eadd00398eeeaf2af0a04366efe5dd56c110766a39f851be93abe1bc",
+      "note": "Edited after the independent cross-review to eliminate editorial warning findings while preserving tested constructs and answer positions. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+    }
+  ]
 }

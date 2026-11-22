@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Scale Explorer — AlloFlow</title>
 <meta name="description" content="Zoom smoothly across 42 powers of ten, from the observable universe down to a proton, seeing what lives at every scale. Equal steps across the screen mean equal ratios, so &quot;ten times bigger&quot; always looks the same distance. Compare any two things and find out how many of one fit across the other. Fully keyboard-drivable">
@@ -17,6 +18,7 @@
 <meta name="twitter:description" content="Zoom smoothly across 42 powers of ten, from the observable universe down to a proton, seeing what lives at every scale. Equal steps across the screen mean equal ratios, so &quot;ten times bigger&quot; always looks the same distance. Compare any two things and find out how many of one fit across the other. Fully keyboard-drivable">
 <link rel="stylesheet" href="shared.css">
 <link rel="stylesheet" href="tool-page.css">
+<script src="tool-page.js" defer></script>
 <script type="application/ld+json">{
  "@context": "https://schema.org",
  "@type": "SoftwareApplication",
@@ -50,7 +52,7 @@
         </div>
     </div>
 </nav>
-<main id="tool-main" class="tool-page">
+<main id="tool-main" tabindex="-1" class="tool-page">
     <nav class="tool-page-crumbs" aria-label="Breadcrumb">
         <ol>
             <li><a href="./">AlloFlow</a></li>

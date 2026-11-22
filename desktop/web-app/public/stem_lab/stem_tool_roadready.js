@@ -32,20 +32,23 @@
 // 2D canvas HUD overlay. Three.js is loaded on demand from a CDN at scenario start.
 // ═══════════════════════════════════════════
 
-window.StemLab = window.StemLab || {
-  _registry: {}, _order: [],
-  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
-  isRegistered: function(id) { return !!this._registry[id]; },
-  getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
-  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
-};
+if (typeof window !== 'undefined') {
+  window.StemLab = window.StemLab || {
+    _registry: {}, _order: [],
+    registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); console.log('[StemLab] Registered tool: ' + id); },
+    isRegistered: function(id) { return !!this._registry[id]; },
+    getRegisteredTools: function() { var self = this; return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean); },
+    renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
+  };
+}
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) {
+if (typeof window !== 'undefined' && window.StemLab && !(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) {
 
 (function() {
   'use strict';
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-roadready')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-roadready';
@@ -11893,7 +11896,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var state = React.useState(function() { return parkingPracticeMetrics(props.carRef.current, props.scenario); });
     var readings = state[0], setReadings = state[1];
     React.useEffect(function() {
-      var timer = setInterval(function() { setReadings(parkingPracticeMetrics(props.carRef.current, props.scenario)); }, 200);
+      var timer = setInterval(function() { if (typeof document !== 'undefined' && document.hidden) return; setReadings(parkingPracticeMetrics(props.carRef.current, props.scenario)); }, 200);
       return function() { clearInterval(timer); };
     }, [props.carRef, props.scenario]);
     var metric = function(label, value, hint, wide) { return h('div', { key: label, style: wide ? { gridColumn: '1 / -1' } : undefined }, h('dt', null, label), h('dd', null, value), h('small', null, hint)); };
@@ -11969,7 +11972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       return attachParkingInterruption(props.carRef, keysRef, props.doneRef);
     }, [props.carRef, keysRef, props.doneRef]);
     React.useEffect(function() {
-      var timer = setInterval(function() { state[1](readState()); }, 100);
+      var timer = setInterval(function() { if (typeof document !== 'undefined' && document.hidden) return; state[1](readState()); }, 100);
       return function() { clearInterval(timer); };
     }, [props.carRef, props.doneRef]);
     var paused = flags[0] === '1', settings = flags[1] === '1', finished = flags[2] === '1', waiting = flags[3] === '1';
@@ -12699,7 +12702,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   function ThreePointLiveCoach(props) {
     var React = props.React, state = React.useState(function() { return threePointCue(props.carRef.current, props.stageRef.current, props.doneRef.current); });
     React.useEffect(function() {
-      var timer = setInterval(function() { state[1](threePointCue(props.carRef.current, props.stageRef.current, props.doneRef.current)); }, 100);
+      var timer = setInterval(function() { if (typeof document !== 'undefined' && document.hidden) return; state[1](threePointCue(props.carRef.current, props.stageRef.current, props.doneRef.current)); }, 100);
       return function() { clearInterval(timer); };
     }, [props.carRef, props.stageRef, props.doneRef]);
     return props.h('p', { role: 'status', 'aria-label': __alloRRT('stem.roadready.drill2_next_maneuver_action', 'Next maneuver action'), style: { margin: '10px 0', padding: '10px 12px', borderLeft: '3px solid #fbbf24', background: '#1e293b', color: '#fff', fontSize: '14px', lineHeight: 1.5 } }, state[0]);
@@ -12963,7 +12966,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var React = props.React, read = function() { return backingDrillCoachState(props.carRef.current, props.doneRef.current); };
     var state = React.useState(read);
     React.useEffect(function() {
-      var timer = setInterval(function() { var next = read(); state[1](function(old) { return old.cue === next.cue && old.progress === next.progress ? old : next; }); }, 100);
+      var timer = setInterval(function() { if (typeof document !== 'undefined' && document.hidden) return; var next = read(); state[1](function(old) { return old.cue === next.cue && old.progress === next.progress ? old : next; }); }, 100);
       return function() { clearInterval(timer); };
     }, [props.carRef, props.doneRef]);
     return props.h('div', { style: { margin: '10px 0', padding: '10px 12px', borderLeft: '3px solid #fbbf24', background: '#1e293b', color: '#fff' } },
@@ -13634,6 +13637,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           : { onClick: handler, role: 'button', tabIndex: 0 };
         if (!props.onKeyDown) {
           props.onKeyDown = function(e) {
+            if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
             if (e.key !== 'Enter' && e.key !== ' ') return;
             e.preventDefault();
             handler(e);
@@ -13654,12 +13658,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var rrUpdBase = upd, rrUpdMultiBase = updMulti;
       upd = function(key, val) { rrLivePatchRef.current[key] = val; rrUpdBase(key, val); };
       updMulti = function(obj) { if (obj) Object.assign(rrLivePatchRef.current, obj); rrUpdMultiBase(obj); };
-      // Hydrate persisted state from localStorage on first render only. Gated by a ref so
-      // we don't loop: the upd() schedules a re-render, on which the ref is already true
-      // and we skip. Each persisted slice has its own gate to avoid clobbering live state
-      // if the user already started interacting before hydration completes.
+      // Hydrate persisted state from localStorage on mount (useEffect avoids setState-during-render).
       var _hydratedRef = useRef(false);
-      if (!_hydratedRef.current) {
+      useEffect(function() {
+        if (_hydratedRef.current) return;
         _hydratedRef.current = true;
         // Retire the old badge that rewarded reaching 80+ mph. Keeping it in
         // imported/local state would preserve an unsafe incentive and inflate
@@ -13689,7 +13691,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         } catch (e) {}
         if (!savedMastery) savedMastery = lsGet('roadReady.permitMastery.v1', null);
         if (savedMastery && d.permitMastery === undefined) upd('permitMastery', savedMastery);
-      }
+      }, []);
 
       // First-correct celebration state (auto-clears after 3.5s).
       var _rrCeleb = React.useState(null);
@@ -13892,9 +13894,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         instructorAbortRef.current = null;
         if (ctl) { try { ctl.abort(); } catch (e) {} }
         if (ctx && typeof ctx.stopTTS === 'function') { try { ctx.stopTTS(); } catch (e) {} }
-        if (!(ctx && typeof ctx.stopTTS === 'function') && window.__alloStudentAiDisabled === true && Date.now() - (_lastSpokenRef.current.anyAt || 0) < 20000) {
+        if (!(ctx && typeof ctx.stopTTS === 'function') && typeof window !== 'undefined' && window.__alloStudentAiDisabled === true && Date.now() - (_lastSpokenRef.current.anyAt || 0) < 20000) {
           try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
         }
+      };
+      var _rrIsGlobalMuted = function() {
+        try {
+          if (typeof window === 'undefined') return false;
+          if (typeof window.__alloIsGlobalMuted === 'function') return !!window.__alloIsGlobalMuted();
+          return window.__alloMuted === true || window.__alloGlobalMuted === true || !!window._alloGlobalMute;
+        } catch (e) { return false; }
       };
       var setInstructorVoice = function(on) {
         instructorVoiceRef.current = !!on;
@@ -13902,8 +13911,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         upd('instructorVoice', !!on);
       };
       useEffect(function() {
+        if (typeof window === 'undefined' || !window.addEventListener) return undefined;
         var onMute = function(e) {
-          if (e && e.detail && e.detail.muted) stopInstructorVoice();
+          if (e && e.detail && e.detail.muted) {
+            stopInstructorVoice();
+            try { stopRadio(); } catch (eRad) {}
+            try { if (audioRef.current && audioRef.current.ctx && audioRef.current.ctx.state === 'running') audioRef.current.ctx.suspend(); } catch (eSus) {}
+          }
           // Unmuted: ask for the drive's sound back now (the frame loop only asks once a second).
           else if (e && e.detail && e.detail.muted === false) requestDriveAudioResume(true);
         };
@@ -13943,7 +13957,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var speak = function(text, category, priority) {
         if (!callTTS || !text || !instructorVoiceRef.current) return;
         // Global mute: the host's device-voice fallback does not check it.
-        try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return; } catch (e) {}
+        if (_rrIsGlobalMuted()) return;
         // Emoji and other pictographs are for the toast, not the voice.
         text = String(text).replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF]|[\uFE00-\uFE0F]|[\u200D]/gu, '').replace(/\s{2,}/g, ' ').trim();
         if (!text) return;
@@ -14418,7 +14432,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var a = audioRef.current;
           if (!a || !a.ctx || a.ctx.state !== 'suspended') return false;
           if (pausedRef.current || !drivingRef.current) return false;
-          if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return false;
+          if ((typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || window.__alloMuted === true || window.__alloGlobalMuted === true || !!window._alloGlobalMute) return false;
           var t = Date.now();
           if (now !== true && a._resumeAskedAt && Math.abs(t - a._resumeAskedAt) < 1000) return false;
           a._resumeAskedAt = t;
@@ -14431,6 +14445,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Two-tone horn: major-third stack (≈400 + ≈500 Hz) with a square wave for
       // bite and a tiny attack ramp. Closer to a real car than a single beep.
       var playHorn = function(dur) {
+        if (_rrIsGlobalMuted()) return;
         try {
           var ac = audioRef.current && audioRef.current.ctx;
           if (!ac) return;
@@ -14454,6 +14469,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       };
       // Tire splash — quick high-band noise burst, used when crossing a puddle.
       var playSplash = function(intensity) {
+        if (_rrIsGlobalMuted()) return;
         try {
           var ac = audioRef.current && audioRef.current.ctx;
           if (!ac) return;
@@ -14491,7 +14507,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         try {
           stopRadio();
           var ac = audioRef.current && audioRef.current.ctx;
-          if (!ac || !stationId) { radioRef.current.station = stationId || null; return; }
+          if (!ac || !stationId || _rrIsGlobalMuted()) { radioRef.current.station = stationId || null; return; }
           var r = radioRef.current;
           r.station = stationId;
           var master = ac.createGain();
@@ -14553,6 +14569,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       };
       // Pothole thump — short low filtered impulse with body resonance.
       var playThump = function(intensity) {
+        if (_rrIsGlobalMuted()) return;
         try {
           var ac = audioRef.current && audioRef.current.ctx;
           if (!ac) return;
@@ -14588,6 +14605,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Gear-shift clunk: brief filtered noise pop with a faint pitched click.
       // Mechanical-feeling without overstaying its welcome.
       var playGearShift = function() {
+        if (_rrIsGlobalMuted()) return;
         try {
           var ac = audioRef.current && audioRef.current.ctx;
           if (!ac) return;
@@ -14623,6 +14641,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // then a rising pitch glide as the engine catches. Plays once at session
       // start before the persistent engine layer ramps up.
       var playEngineStart = function() {
+        if (_rrIsGlobalMuted()) return;
         try {
           var ac = audioRef.current && audioRef.current.ctx;
           if (!ac) return;
@@ -14659,6 +14678,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       };
       // Door-close thud: short filtered noise burst. Fires when drivingRef flips on.
       var playDoorClose = function() {
+        if (_rrIsGlobalMuted()) return;
         try {
           var ac = audioRef.current && audioRef.current.ctx;
           if (!ac) return;
@@ -15138,6 +15158,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       useEffect(function() {
         if (view !== 'driving') return;
         var onKeyDown = function(e) {
+          if (e.isComposing || e.keyCode === 229) return;
           var keyName = String(e.key || '').toLowerCase();
           // Escape is the advertised, explicit end-drive shortcut. Handle it
           // before the interactive-target guard so it works from the dock and
@@ -15280,7 +15301,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       useEffect(function() {
         if (view !== 'driving') return;
         var onDriveKeyCapture = function(e) {
-          if (!e || (e.key !== 'Escape' && e.key !== 'Tab')) return;
+          if (!e || e.isComposing || e.keyCode === 229 || (e.key !== 'Escape' && e.key !== 'Tab')) return;
           var capShell = driveShellRef.current;
           if (!capShell || !drivingRef.current) return;
           var capActive = document.activeElement;
@@ -17477,6 +17498,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var DRIVE_FAULT_LIMIT = 3;
         var step = function(now) {
           if (loopDisposed || !drivingRef.current) return;
+          if (typeof document !== 'undefined' && document.hidden) {
+            animRef.current = requestAnimationFrame(step);
+            return;
+          }
           var fault = driveFaultRef.current;
           try {
             stepFrame(now);
@@ -17564,7 +17589,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (sbElapsed > 2000 && sbCycle !== seatbeltRef.current._lastChimeCycle) {
                 seatbeltRef.current._lastChimeCycle = sbCycle;
                 try {
-                  var sbAc = audioRef.current.ctx;
+                  var sbAc = !_rrIsGlobalMuted() && audioRef.current && audioRef.current.ctx;
                   if (sbAc) {
                     var chime = sbAc.createOscillator();
                     var chimeG = sbAc.createGain();
@@ -20300,7 +20325,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     addToast('📢 Car behind you is honking — you\'re going too slow!');
                     // Play honk sound
                     try {
-                      var ac = audioRef.current.ctx;
+                      var ac = !_rrIsGlobalMuted() && audioRef.current && audioRef.current.ctx;
                       if (ac) {
                         var honk = ac.createOscillator();
                         var hg = ac.createGain();
@@ -24147,14 +24172,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // A context lost mid-drive left a black road with no way back. Stop the
           // loop and raise the paused panel; the effect cleanup (webglError is a
           // dep) tears down and its Restart mounts a fresh canvas.
-          cnv.addEventListener('webglcontextlost', function(ev) {
+          var onRrContextLost = function(ev) {
             if (!cnv.isConnected) return;
             ev.preventDefault();
             if (cnv._rrTearingDown || loopDisposed) return;
             if (animRef.current) cancelAnimationFrame(animRef.current);
             animRef.current = null;
             setTimeout(function() { if (!loopDisposed) setWebglError('lost'); }, 0);
-          });
+          };
+          cnv._rrContextLostHandler = onRrContextLost;
+          cnv.addEventListener('webglcontextlost', onRrContextLost);
           // Keep layout ownership in React/CSS. Three's default updateStyle=true
           // writes fixed pixel dimensions onto the canvas, so a phone rotation or
           // modal resize leaves the WebGL scene stranded at its old width.
@@ -36806,7 +36833,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (threeRef.current._gfxMirrorBlit) threeRef.current._gfxMirrorBlit.mesh.geometry.dispose();
             } catch (eGfx) {}
             // Our own loss below must not raise the paused panel.
-            try { threeRef.current.renderer.domElement._rrTearingDown = true; } catch (eFlag) {}
+            try {
+              var rrDomEl = threeRef.current.renderer.domElement;
+              rrDomEl._rrTearingDown = true;
+              if (rrDomEl._rrContextLostHandler) {
+                rrDomEl.removeEventListener('webglcontextlost', rrDomEl._rrContextLostHandler);
+                rrDomEl._rrContextLostHandler = null;
+              }
+            } catch (eFlag) {}
             threeRef.current.renderer.dispose();
             // dispose() alone doesn't reliably release the WebGL context, and this
             // effect re-runs on every scenario/vehicle switch. Browsers cap live

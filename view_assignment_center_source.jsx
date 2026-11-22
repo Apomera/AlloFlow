@@ -58,7 +58,10 @@ function useFocusTrap(dialogRef, isOpen, onEscape) {
     const trapStack = window.__alloFocusTrapStack || (window.__alloFocusTrapStack = []);
     const trap = { root: dialog };
     trapStack.push(trap);
-    const isTopTrap = () => trapStack[trapStack.length - 1] === trap;
+    const isTopTrap = () => {
+      const top = trapStack[trapStack.length - 1];
+      return top === trap || Boolean(top && top.root && typeof top.root.contains === 'function' && top.root.contains(dialog));
+    };
 
     const getFocusable = () => Array.from(dialog.querySelectorAll([
       'button:not([disabled])',
@@ -181,7 +184,31 @@ function AssignmentCenterModal({
 }) {
   const dialogRef = React.useRef(null);
   const backdropPressRef = React.useRef(false);
-  useFocusTrap(dialogRef, isOpen, onClose);
+  const useSafeState = initial => (typeof React.useState === 'function'
+    ? React.useState(initial)
+    : [typeof initial === 'function' ? initial() : initial, assignmentCenterNoop]);
+  const [confirmRemoveKey, setConfirmRemoveKey] = useSafeState('');
+  const [copiedRowKey, setCopiedRowKey] = useSafeState('');
+  const [rowQuery, setRowQuery] = useSafeState('');
+  const copyTimerRef = React.useRef(null);
+  const removeFocusTimerRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!isOpen) {
+      setConfirmRemoveKey('');
+      setCopiedRowKey('');
+      setRowQuery('');
+    }
+    return () => {
+      if (copyTimerRef.current) { clearTimeout(copyTimerRef.current); copyTimerRef.current = null; }
+      if (removeFocusTimerRef.current) { clearTimeout(removeFocusTimerRef.current); removeFocusTimerRef.current = null; }
+    };
+  }, [isOpen]);
+  const handleDialogEscape = () => {
+    if (confirmRemoveKey) { setConfirmRemoveKey(''); return; }
+    if (rowQuery) { setRowQuery(''); return; }
+    onClose();
+  };
+  useFocusTrap(dialogRef, isOpen, handleDialogEscape);
 
   if (!isOpen) return null;
 
@@ -189,17 +216,25 @@ function AssignmentCenterModal({
   const safeRows = Array.isArray(rowViews) ? rowViews : [];
   const safeVisibleRows = Array.isArray(visibleRowViews) ? visibleRowViews : safeRows;
   const safeSurveyItems = Array.isArray(surveyItems) ? surveyItems : [];
-  const [confirmRemoveKey, setConfirmRemoveKey] = React.useState('');
-  React.useEffect(() => {
-    if (!isOpen) setConfirmRemoveKey('');
-  }, [isOpen]);
+  const showRowSearch = safeVisibleRows.length >= 4 || Boolean(rowQuery);
+  const normalizedRowQuery = rowQuery.trim().toLocaleLowerCase();
+  const displayedRows = normalizedRowQuery
+    ? safeVisibleRows.filter(row => {
+        const titleText = String((row && row.title) || '').toLocaleLowerCase();
+        const typeText = String((row && row.activityType) || '').toLocaleLowerCase();
+        const lifeText = String((row && (row.lifecycleLabel || row.lifecycle)) || '').toLocaleLowerCase();
+        return titleText.includes(normalizedRowQuery) || typeText.includes(normalizedRowQuery) || lifeText.includes(normalizedRowQuery);
+      })
+    : safeVisibleRows;
+  const focusBtn = 'transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2';
   const activeCount = safeRows.filter(row => row && row.lifecycle === 'active').length;
   const awaitingCount = safeRows.reduce((sum, row) => sum + Math.max(0, Number(row && row.pendingCount) || 0), 0);
   const responseCount = safeRows.reduce((sum, row) => sum + Math.max(0, Number(row && row.participantCount) || 0), 0);
   const closedCount = safeRows.filter(row => row && row.lifecycle !== 'active').length;
-  const hasPollOptionLines = String(activityOptionsText || '')
+  const pollOptionCount = String(activityOptionsText || '')
     .split(/\r?\n/)
-    .some(line => line.trim());
+    .filter(line => line.trim()).length;
+  const hasPollOptionLines = pollOptionCount > 0;
   const surveyHasNamedQuestion = safeSurveyItems.some(item => String((item && item.text) || '').trim());
   const surveyInvalidChoice = safeSurveyItems.some(item => item && String(item.text || '').trim() && item.type === 'choice' && !String(item.optionsText || '').split(/\r?\n/).some(line => line.trim()));
   const surveyInvalidRange = safeSurveyItems.some(item => {
@@ -232,13 +267,15 @@ function AssignmentCenterModal({
     onActivityChange({
       enabled: Boolean(nextType),
       type: nextType || activityType,
-      prompt: nextType ? (prompts[nextType] || activityPrompt) : activityPrompt,
+      prompt: nextType && Object.prototype.hasOwnProperty.call(prompts, nextType) ? prompts[nextType] : activityPrompt,
     });
   };
 
   const handleSurveyItemRemove = surveyIndex => {
     onSurveyItemRemove(surveyIndex);
-    setTimeout(() => {
+    if (removeFocusTimerRef.current) clearTimeout(removeFocusTimerRef.current);
+    removeFocusTimerRef.current = setTimeout(() => {
+      removeFocusTimerRef.current = null;
       const dialog = dialogRef.current;
       if (!dialog || !dialog.isConnected) return;
       const remainingQuestions = Array.from(dialog.querySelectorAll('[data-assignment-survey-question]'));
@@ -275,7 +312,7 @@ function AssignmentCenterModal({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-3 top-3 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+          className={`absolute right-3 top-3 min-w-11 min-h-11 inline-flex items-center justify-center rounded-full p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 ${focusBtn}`}
           aria-label={tx('share_collect.close_aria', 'Close Share & Collect')}
         >
           <XIcon size={20} aria-hidden="true" />
@@ -317,20 +354,25 @@ function AssignmentCenterModal({
             {activityEnabled && (
               <>
                 <label className="mt-3 block text-xs font-black text-slate-700">
-                  {tx('share_collect.prompt_label', 'What people see')}
+                  <span className="flex items-center justify-between gap-2">
+                    <span>{tx('share_collect.prompt_label', 'What people see')}</span>
+                    <span className="font-semibold text-slate-600">{String(activityPrompt || '').length}/240</span>
+                  </span>
                   <input
                     type="text"
                     value={String(activityPrompt || '')}
                     onChange={event => onActivityChange({ prompt: event.target.value.slice(0, 240) })}
-                    className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
+                    className="mt-1 min-h-11 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-600"
                   />
                 </label>
 
                 {(activityType === 'availability' || activityType === 'signup') && (() => {
-                  const acTextAiReady = typeof window !== 'undefined' && (
+                  const acTextAiReady = typeof window !== 'undefined' && !window._alloQrBlocked && !window.__alloStudentAiDisabled && !window.__alloAiSecretsLocked && (
                     typeof window.__alloAiUsable === 'function'
-                      ? !!window.__alloAiUsable('text', window.callGemini)
-                      : Boolean(typeof window.callGemini === 'function' && !window.callGemini._alloQrBlocked && !window._alloQrBlocked && !window.__alloStudentAiDisabled && !window.__alloAiSecretsLocked)
+                      ? !!window.__alloAiUsable('text')
+                      : (typeof window.__alloAiSetupDoorway === 'function'
+                        ? !(window.__alloAiSetupDoorway('text', t) && window.__alloAiSetupDoorway('text', t).disabled)
+                        : true)
                   );
                   return (
                   <>
@@ -343,7 +385,7 @@ function AssignmentCenterModal({
                           onChange={event => onPollAskChange(event.target.value.slice(0, 160))}
                           placeholder={tx('share_collect.window_placeholder', '45 minutes next week, weekday afternoons')}
                           disabled={!acTextAiReady}
-                          className="mt-1 w-full rounded-md border border-sky-300 px-2 py-2 text-sm font-semibold text-slate-800 disabled:bg-slate-50 disabled:text-slate-500"
+                          className="mt-1 min-h-11 w-full rounded-md border border-sky-300 px-2 py-2 text-sm font-semibold text-slate-800 placeholder:text-slate-600 disabled:bg-slate-50 disabled:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-600"
                         />
                       </label>
                       <button
@@ -351,7 +393,7 @@ function AssignmentCenterModal({
                         onClick={onSuggestPollTimes}
                         disabled={!acTextAiReady || pollSuggestionBusy || !String(pollAsk || '').trim()}
                         title={!acTextAiReady ? tx('share_collect.suggest_ai_off', 'AI setup is required to auto-suggest times. Type your own options below.') : undefined}
-                        className="mt-2 rounded-md bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        className={`mt-2 min-h-11 rounded-md bg-sky-700 px-3 py-2 text-xs font-black text-white hover:bg-sky-800 disabled:opacity-50 disabled:cursor-not-allowed ${focusBtn}`}
                       >
                         {pollSuggestionBusy ? tx('share_collect.thinking', 'Thinking...') : tx('share_collect.suggest_options', 'Suggest options')}
                       </button>
@@ -367,13 +409,16 @@ function AssignmentCenterModal({
                 {(activityType === 'availability' || activityType === 'signup') && (
                   <>
                     <label className="mt-3 block text-xs font-black text-slate-700">
-                      {tx('share_collect.options_label', 'Options, one per line')}
+                      <span className="flex items-center justify-between gap-2">
+                        <span>{tx('share_collect.options_label', 'Options, one per line')}</span>
+                        <span className="font-semibold text-slate-600">{pollOptionCount} {pollOptionCount === 1 ? 'option' : 'options'}</span>
+                      </span>
                       <textarea
                         value={String(activityOptionsText || '')}
                         onChange={event => onActivityChange({ optionsText: event.target.value })}
                         rows={6}
                         placeholder={tx('share_collect.options_placeholder', 'Tue Mar 4, 3:15pm\nWed Mar 5, 3:15pm\nThu Mar 6, 3:15pm')}
-                        className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
+                        className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-600"
                       />
                     </label>
                     {!hasPollOptionLines && (
@@ -441,7 +486,9 @@ function AssignmentCenterModal({
                 {activityType === 'survey' && (
                   <>
                     <div className="mt-3 space-y-2">
-                      {safeSurveyItems.map((surveyItem, surveyIndex) => (
+                      {safeSurveyItems.map((rawSurveyItem, surveyIndex) => {
+                        const surveyItem = rawSurveyItem && typeof rawSurveyItem === 'object' ? rawSurveyItem : {};
+                        return (
                         <div key={surveyItem.viewKey || surveyIndex} data-assignment-survey-question="true" className="min-w-0 rounded-lg border border-sky-200 bg-white p-2">
                           <div className="flex items-start gap-2">
                             <input
@@ -456,9 +503,9 @@ function AssignmentCenterModal({
                               type="button"
                               aria-label={tx('share_collect.q_remove_aria', 'Remove question ' + (surveyIndex + 1), { n: surveyIndex + 1 })}
                               onClick={() => handleSurveyItemRemove(surveyIndex)}
-                              className="shrink-0 rounded-md border border-rose-200 px-2 py-1 text-xs font-black text-rose-700"
+                              className={`shrink-0 min-h-11 min-w-11 inline-flex items-center justify-center rounded-md border border-rose-200 px-2 py-1 text-xs font-black text-rose-700 hover:bg-rose-50 ${focusBtn}`}
                             >
-                              ✖
+                              <span aria-hidden="true">✖</span>
                             </button>
                           </div>
                           <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -547,18 +594,22 @@ function AssignmentCenterModal({
                             </div>
                           )}
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
-                    {safeSurveyItems.length < 12 && (
-                      <button
-                        type="button"
-                        data-assignment-add-question="true"
-                        onClick={() => onSurveyItemAdd({ type: 'likert', text: '', steps: 5, required: false })}
-                        className="mt-2 rounded-md border border-sky-300 bg-white px-3 py-1.5 text-xs font-black text-sky-800"
-                      >
-                        {tx('share_collect.add_question', '+ Add question')}
-                      </button>
-                    )}
+                    <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                      {safeSurveyItems.length < 12 && (
+                        <button
+                          type="button"
+                          data-assignment-add-question="true"
+                          onClick={() => onSurveyItemAdd({ type: 'likert', text: '', steps: 5, required: false })}
+                          className={`min-h-11 rounded-md border border-sky-300 bg-white px-3 py-2 text-xs font-black text-sky-800 hover:bg-sky-50 ${focusBtn}`}
+                        >
+                          {tx('share_collect.add_question', '+ Add question')}
+                        </button>
+                      )}
+                      <span className="text-xs font-semibold text-slate-600">{safeSurveyItems.length}/12 questions</span>
+                    </div>
                     {!surveyHasNamedQuestion && (
                       <p role="status" aria-live="polite" className="mt-2 text-xs font-bold text-amber-800">
                         {tx('share_collect.survey_question_required', 'Add at least one survey question with text before creating a link.')}
@@ -575,14 +626,17 @@ function AssignmentCenterModal({
                       </p>
                     )}
                     <label className="mt-3 block text-xs font-black text-slate-700">
-                      {tx('share_collect.about_survey_label', 'About this survey (optional, shown to respondents)')}
+                      <span className="flex items-center justify-between gap-2">
+                        <span>{tx('share_collect.about_survey_label', 'About this survey (optional, shown to respondents)')}</span>
+                        <span className="font-semibold text-slate-600">{String(surveyInfo || '').length}/600</span>
+                      </span>
                       <textarea
                         value={String(surveyInfo || '')}
                         onChange={event => onActivityChange({ surveyInfo: event.target.value.slice(0, 600) })}
                         rows={3}
                         maxLength={600}
                         placeholder={tx('share_collect.intro_placeholder', 'Who is asking, what the answers are for, and that taking part is voluntary.')}
-                        className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-xs text-slate-800"
+                        className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-xs text-slate-800 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-sky-600"
                       />
                     </label>
                     <label className="mt-3 block text-xs font-black text-slate-700">
@@ -626,7 +680,7 @@ function AssignmentCenterModal({
                   type="button"
                   onClick={onCreateLink}
                   disabled={createDisabled}
-                  className="mt-4 w-full rounded-lg bg-sky-700 px-3 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  className={`mt-4 min-h-11 w-full rounded-lg bg-sky-700 px-3 py-2 text-sm font-black text-white hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-50 ${focusBtn}`}
                 >
                   {tx('share_collect.create_link', 'Create the link and QR code')}
                 </button>
@@ -653,17 +707,17 @@ function AssignmentCenterModal({
           </div>
         </div>
 
-        <div className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2">
+        <div className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50 px-3 py-2.5">
           <p className="text-xs text-indigo-900">
             {tx('share_collect.privacy_note', 'Only aggregate counts and moderation totals are cached or exported; response text, links, private keys, and participant tokens stay out of reports.')}
           </p>
-          <div className="mt-2 flex flex-wrap items-end gap-2">
-            <label className="text-xs font-black uppercase text-indigo-900">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <label className="text-xs font-black uppercase text-indigo-900 inline-flex items-center">
               {tx('share_collect.show_label', 'Show')}
               <select
                 value={filter}
                 onChange={event => onFilterChange(event.target.value)}
-                className="ml-2 min-h-9 rounded-lg border border-indigo-300 bg-white px-2 text-xs normal-case text-slate-900"
+                className="ml-2 min-h-11 rounded-lg border border-indigo-300 bg-white px-2.5 text-xs normal-case text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600"
               >
                 <option value="all">{tx('share_collect.filter_all', 'All assignments')}</option>
                 <option value="needs_review">{tx('share_collect.filter_needs_review', 'Needs review')}</option>
@@ -677,7 +731,7 @@ function AssignmentCenterModal({
               onClick={onRefresh}
               disabled={refreshing}
               aria-busy={refreshing}
-              className="min-h-9 rounded-lg border border-indigo-300 bg-white px-3 text-xs font-black text-indigo-900 disabled:opacity-60"
+              className={`min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-xs font-black text-indigo-900 hover:bg-indigo-100 disabled:opacity-60 ${focusBtn}`}
             >
               {refreshing ? tx('share_collect.refreshing', 'Refreshing…') : tx('share_collect.refresh_status', 'Refresh status')}
             </button>
@@ -685,7 +739,7 @@ function AssignmentCenterModal({
               type="button"
               onClick={onExportCsv}
               disabled={!safeRows.length}
-              className="min-h-9 rounded-lg border border-indigo-300 bg-white px-3 text-xs font-black text-indigo-900 disabled:opacity-60"
+              className={`min-h-11 rounded-lg border border-indigo-300 bg-white px-3 text-xs font-black text-indigo-900 hover:bg-indigo-100 disabled:opacity-60 ${focusBtn}`}
             >
               {tx('share_collect.export_csv', 'Export aggregate CSV')}
             </button>
@@ -694,13 +748,53 @@ function AssignmentCenterModal({
                 type="button"
                 data-assignment-open-inbox=""
                 onClick={onOpenSubmissionInbox}
-                className="min-h-9 rounded-lg border border-emerald-300 bg-emerald-50 px-3 text-xs font-black text-emerald-900 hover:bg-emerald-100"
+                className={`min-h-11 rounded-lg border border-emerald-300 bg-emerald-50 px-3 text-xs font-black text-emerald-900 hover:bg-emerald-100 ${focusBtn}`}
               >
                 {tx('share_collect.open_submission_inbox', 'Open Submission Inbox')}
               </button>
             )}
           </div>
+          {showRowSearch && (
+            <div className="mt-2.5 flex items-center gap-2" role="search" aria-label={tx('share_collect.search_assignments_aria', 'Search assignments')}>
+              <label htmlFor="assignment-center-search" className="sr-only">{tx('share_collect.search_assignments_aria', 'Search assignments')}</label>
+              <input
+                id="assignment-center-search"
+                type="search"
+                value={rowQuery}
+                onChange={event => setRowQuery(event.target.value)}
+                onKeyDown={event => {
+                  if (event.key === 'Escape' && rowQuery) {
+                    if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setRowQuery('');
+                  }
+                }}
+                placeholder={tx('share_collect.search_assignments_placeholder', 'Search assignments by title or type…')}
+                className="min-h-11 flex-1 rounded-lg border border-indigo-300 bg-white px-3 py-2 text-xs text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+              />
+              {rowQuery && (
+                <button
+                  type="button"
+                  onClick={() => setRowQuery('')}
+                  className={`min-h-11 shrink-0 rounded-lg border border-indigo-300 bg-white px-3 text-xs font-bold text-indigo-900 hover:bg-indigo-100 ${focusBtn}`}
+                >
+                  {tx('common.clear', 'Clear')}
+                </button>
+              )}
+            </div>
+          )}
+          {normalizedRowQuery && (
+            <p role="status" aria-live="polite" className="mt-1.5 text-xs font-semibold text-indigo-900">
+              Showing {displayedRows.length} of {safeVisibleRows.length} assignments
+            </p>
+          )}
         </div>
+        {copiedRowKey && (
+          <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+            {tx('share_collect.link_copied_announce', 'Assignment link copied to clipboard.')}
+          </p>
+        )}
 
         {showHostedMutationUpgradeNotice && (
           <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-900">
@@ -719,8 +813,21 @@ function AssignmentCenterModal({
               {tx('share_collect.none_match', 'No assignments match this filter.')}
             </p>
           )}
-          {safeVisibleRows.map((row, index) => {
+          {safeVisibleRows.length > 0 && !displayedRows.length && (
+            <div role="status" aria-live="polite" className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-center">
+              <p className="text-sm font-bold text-slate-700">{tx('share_collect.none_match_search', 'No assignments match your search.')}</p>
+              <button
+                type="button"
+                onClick={() => setRowQuery('')}
+                className={`mt-2 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-800 ${focusBtn}`}
+              >
+                {tx('share_collect.reset_search', 'Reset search')}
+              </button>
+            </div>
+          )}
+          {displayedRows.map((row, index) => {
             const view = row || {};
+            const rowKey = view.viewKey || ('row-' + index);
             const closed = view.lifecycle !== 'active';
             const actionBusy = Boolean(view.actionKind);
             const activityLabel = view.activityType === 'rating'
@@ -755,7 +862,7 @@ function AssignmentCenterModal({
             const invoke = callback => { if (typeof callback === 'function') callback(); };
 
             return (
-              <article key={view.viewKey || index} aria-labelledby={'assignment-center-row-title-' + index} data-assignment-lifecycle={view.lifecycle} className="rounded-xl border border-slate-200 p-3">
+              <article key={rowKey} aria-labelledby={'assignment-center-row-title-' + index} data-assignment-lifecycle={view.lifecycle} className="rounded-xl border border-slate-200 p-3">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <h3 id={'assignment-center-row-title-' + index} className="break-words text-sm font-black text-slate-900">
@@ -813,43 +920,68 @@ function AssignmentCenterModal({
                     type="button"
                     disabled={closed || actionBusy || typeof view.onManage !== 'function'}
                     onClick={() => { invoke(view.onManage); onClose(); }}
-                    className="min-h-10 rounded-lg border border-violet-300 bg-violet-50 px-2 text-xs font-bold text-violet-900 disabled:opacity-50"
+                    className={`min-h-11 rounded-lg border border-violet-300 bg-violet-50 px-2 text-xs font-bold text-violet-900 hover:bg-violet-100 disabled:opacity-50 ${focusBtn}`}
                   >
                     {tx('share_collect.action_manage', 'Manage')}
                   </button>
                   <button
                     type="button"
                     disabled={closed || actionBusy || typeof view.onCopyLink !== 'function'}
-                    onClick={() => invoke(view.onCopyLink)}
-                    className="min-h-10 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-800 disabled:opacity-50"
+                    onClick={() => {
+                      invoke(view.onCopyLink);
+                      setCopiedRowKey(rowKey);
+                      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+                      copyTimerRef.current = setTimeout(() => setCopiedRowKey(''), 2200);
+                    }}
+                    className={`min-h-11 rounded-lg border px-2 text-xs font-bold disabled:opacity-50 ${focusBtn} ${copiedRowKey === rowKey ? 'border-emerald-400 bg-emerald-50 text-emerald-900' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50'}`}
                   >
-                    {tx('share_collect.action_copy_link', 'Copy active link')}
+                    {copiedRowKey === rowKey ? tx('share_collect.action_copied', 'Copied!') : tx('share_collect.action_copy_link', 'Copy active link')}
                   </button>
                   {view.canImportResearch && (
-                    <button type="button" disabled={actionBusy || typeof view.onImportResearch !== 'function'} onClick={() => invoke(view.onImportResearch)} className="min-h-10 rounded-lg border border-purple-300 bg-white px-3 text-xs font-bold text-purple-800 hover:bg-purple-50 disabled:opacity-50">
+                    <button type="button" disabled={actionBusy || typeof view.onImportResearch !== 'function'} onClick={() => invoke(view.onImportResearch)} className={`min-h-11 rounded-lg border border-purple-300 bg-white px-3 text-xs font-bold text-purple-800 hover:bg-purple-50 disabled:opacity-50 ${focusBtn}`}>
                       {tx('share_collect.action_import_research', 'Import results to Research Suite')}
                     </button>
                   )}
                   {view.canExtend && (
-                    <button type="button" disabled={actionBusy || !hostedMutationAvailable || typeof view.onExtend !== 'function'} onClick={() => invoke(view.onExtend)} className="min-h-10 rounded-lg border border-sky-300 bg-sky-50 px-2 text-xs font-bold text-sky-900 disabled:opacity-50">
+                    <button type="button" disabled={actionBusy || !hostedMutationAvailable || typeof view.onExtend !== 'function'} onClick={() => invoke(view.onExtend)} className={`min-h-11 rounded-lg border border-sky-300 bg-sky-50 px-2 text-xs font-bold text-sky-900 hover:bg-sky-100 disabled:opacity-50 ${focusBtn}`}>
                       {view.actionKind === 'extending' ? tx('share_collect.action_extending', 'Extending…') : tx('share_collect.action_extend_days', 'Extend ' + homeworkExpiryDays + ' days', { days: homeworkExpiryDays })}
                     </button>
                   )}
                   {view.canDuplicate && (
-                    <button type="button" disabled={actionBusy || !hostedMutationAvailable || typeof view.onDuplicate !== 'function'} onClick={() => invoke(view.onDuplicate)} className="min-h-10 rounded-lg border border-emerald-300 bg-emerald-50 px-2 text-xs font-bold text-emerald-900 disabled:opacity-50">
+                    <button type="button" disabled={actionBusy || !hostedMutationAvailable || typeof view.onDuplicate !== 'function'} onClick={() => invoke(view.onDuplicate)} className={`min-h-11 rounded-lg border border-emerald-300 bg-emerald-50 px-2 text-xs font-bold text-emerald-900 hover:bg-emerald-100 disabled:opacity-50 ${focusBtn}`}>
                       {view.actionKind === 'duplicating' ? tx('share_collect.action_duplicating', 'Creating copy…') : tx('share_collect.action_create_copy', 'Create fresh copy')}
                     </button>
                   )}
                   {view.canRevoke && (
-                    <button type="button" disabled={actionBusy || typeof view.onRevoke !== 'function'} onClick={() => invoke(view.onRevoke)} className="min-h-10 rounded-lg border border-rose-300 bg-rose-50 px-2 text-xs font-bold text-rose-800 disabled:opacity-50">
+                    <button type="button" disabled={actionBusy || typeof view.onRevoke !== 'function'} onClick={() => invoke(view.onRevoke)} className={`min-h-11 rounded-lg border border-rose-300 bg-rose-50 px-2 text-xs font-bold text-rose-800 hover:bg-rose-100 disabled:opacity-50 ${focusBtn}`}>
                       {view.actionKind === 'revoking' ? tx('share_collect.action_revoking', 'Revoking…') : tx('share_collect.action_revoke', 'Revoke now')}
                     </button>
                   )}
                   {(() => {
-                    const rowKey = view.viewKey || ('row-' + index);
                     const needsConfirm = !closed && confirmRemoveKey !== rowKey;
                     const confirming = !closed && confirmRemoveKey === rowKey;
-                    return (
+                    return confirming ? (
+                      <>
+                        <button
+                          type="button"
+                          disabled={actionBusy || typeof view.onRemoveRecord !== 'function'}
+                          onClick={() => {
+                            setConfirmRemoveKey('');
+                            invoke(view.onRemoveRecord);
+                          }}
+                          className={`min-h-11 rounded-lg border border-rose-700 bg-rose-700 px-2 text-xs font-bold text-white hover:bg-rose-800 disabled:opacity-50 ${focusBtn}`}
+                        >
+                          {tx('share_collect.action_confirm_remove_record', 'Confirm remove')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmRemoveKey('')}
+                          className={`min-h-11 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-700 hover:bg-slate-100 ${focusBtn}`}
+                        >
+                          {tx('common.cancel', 'Cancel')}
+                        </button>
+                      </>
+                    ) : (
                       <button
                         type="button"
                         disabled={actionBusy || typeof view.onRemoveRecord !== 'function'}
@@ -861,10 +993,9 @@ function AssignmentCenterModal({
                           setConfirmRemoveKey('');
                           invoke(view.onRemoveRecord);
                         }}
-                        onBlur={() => { if (confirming) setConfirmRemoveKey(''); }}
-                        className={`min-h-10 rounded-lg border px-2 text-xs font-bold disabled:opacity-50 ${confirming ? 'border-rose-500 bg-rose-50 text-rose-800' : 'border-slate-300 bg-white text-slate-700'}`}
+                        className={`min-h-11 rounded-lg border border-slate-300 bg-white px-2 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 ${focusBtn}`}
                       >
-                        {confirming ? tx('share_collect.action_confirm_remove_record', 'Confirm remove') : tx('share_collect.action_remove_record', 'Remove record')}
+                        {tx('share_collect.action_remove_record', 'Remove record')}
                       </button>
                     );
                   })()}

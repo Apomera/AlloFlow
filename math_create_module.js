@@ -15,12 +15,26 @@
  */
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.MathCreate) {
     console.log('[CDN] MathCreateModule already loaded, skipping');
     return;
   }
   var React = window.React;
   if (!React) { console.error('[MathCreateModule] React not found on window'); return; }
+
+  function _safeSignature(value) {
+    try { return JSON.stringify(value); } catch (_) { return ''; }
+  }
+  function _isAiTextBlocked(callGemini) {
+    if (callGemini && callGemini._alloQrBlocked) return true;
+    if (window._alloQrBlocked === true || window.__alloQrStudentMode === true || window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloOfflineOnly === true) return true;
+    if (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) return true;
+    if (typeof window.__alloAiUsable === 'function') {
+      try { if (!window.__alloAiUsable('text', callGemini)) return true; } catch (_) { return true; }
+    }
+    return false;
+  }
 
   var _lazyIcon = function (name) {
     return function (p) {
@@ -37,7 +51,7 @@
     var t = props.t || function (k, f) { return typeof f === 'string' ? f : k; };
     var onCloseProp = props.onClose || function () {};
     var addToast = props.addToast || function () {};
-    var mathInput = props.mathInput || '';
+    var mathInput = typeof props.mathInput === 'string' ? props.mathInput : '';
     var setMathInput = props.setMathInput || function () {};
     var mathMode = props.mathMode;
     var setMathMode = props.setMathMode || function () {};
@@ -48,11 +62,12 @@
     var setStemLabCreateMode = props.setStemLabCreateMode || function () {};
     var showAssessmentBuilder = props.showAssessmentBuilder || false;
     var setShowAssessmentBuilder = props.setShowAssessmentBuilder || function () {};
-    var assessmentBlocks = props.assessmentBlocks || [];
+    var assessmentBlocks = Array.isArray(props.assessmentBlocks) ? props.assessmentBlocks : [];
     var assessmentRunRef = React.useRef(false);
     var assessmentCacheRef = React.useRef(null);
     var assessmentMountedRef = React.useRef(true);
     var srTimerRef = React.useRef(null);
+    var focusTimerRef = React.useRef(null);
     var onCloseRef = React.useRef(onCloseProp);
     onCloseRef.current = onCloseProp;
     var onClose = function () { return onCloseRef.current(); };
@@ -63,6 +78,7 @@
       return function () {
         assessmentMountedRef.current = false;
         if (srTimerRef.current) { clearTimeout(srTimerRef.current); srTimerRef.current = null; }
+        if (focusTimerRef.current) { clearTimeout(focusTimerRef.current); focusTimerRef.current = null; }
       };
     }, []);
     var setAssessmentBlocks = props.setAssessmentBlocks || function () {};
@@ -100,7 +116,7 @@
     var keyboardContextRef = React.useRef({ signature: '', revision: 0, props: props });
     var keyboardRequestRef = React.useRef(0);
     var _keyboardBusy = React.useState(false), keyboardBusy = _keyboardBusy[0], setKeyboardBusy = _keyboardBusy[1];
-    var keyboardSignature = JSON.stringify([mathInput, stemLabCreateMode, mathMode, mathSubject, gradeLevel, showAssessmentBuilder, assessmentBlocks]);
+    var keyboardSignature = _safeSignature([mathInput, stemLabCreateMode, mathMode, mathSubject, gradeLevel, showAssessmentBuilder, assessmentBlocks]);
     React.useLayoutEffect(function () {
       var previous = keyboardContextRef.current;
       keyboardContextRef.current = {
@@ -166,7 +182,9 @@
           // MathLive restores focus before its promise settles. The launcher
           // was disabled then, so retry once React has re-enabled it. Do not
           // steal focus after a context switch or from another active control.
-          setTimeout(function () {
+          if (focusTimerRef.current) clearTimeout(focusTimerRef.current);
+          focusTimerRef.current = setTimeout(function () {
+            focusTimerRef.current = null;
             if (assessmentMountedRef.current && keyboardRequestRef.current === requestId
                 && launchElement && launchElement.isConnected && !launchElement.disabled
                 && document.activeElement === document.body) launchElement.focus();
@@ -208,7 +226,7 @@
       };
     }, []);
 
-    var assessmentSignature = JSON.stringify([assessmentBlocks.filter(block => block.type !== 'fluency'), gradeLevel, mathSubject, props.leveledTextLanguage, props.translationMode, props.currentUiLanguage]);
+    var assessmentSignature = _safeSignature([assessmentBlocks.filter(block => block && block.type !== 'fluency'), gradeLevel, mathSubject, props.leveledTextLanguage, props.translationMode, props.currentUiLanguage]);
     var assessmentMatchesSettings = !!assessmentResult && assessmentCacheRef.current?.result === assessmentResult
       && assessmentCacheRef.current.signature === assessmentSignature;
     function isPreparedForReview(section) {
@@ -255,11 +273,12 @@
           key: block.id,
           className: "bg-white rounded-xl border-2 border-slate-200 hover:border-indigo-300 p-3 flex items-start gap-2 transition-all group",
           draggable: true,
-          onDragStart: e => e.dataTransfer.setData('blockIdx', idx.toString()),
+          onDragStart: e => { if (e && e.dataTransfer && typeof e.dataTransfer.setData === 'function') e.dataTransfer.setData('blockIdx', idx.toString()); },
           onDragOver: e => e.preventDefault(),
           onDrop: e => {
             e.preventDefault();
-            const fromIdx = parseInt(e.dataTransfer.getData('blockIdx'), 10);
+            const rawIdx = e && e.dataTransfer && typeof e.dataTransfer.getData === 'function' ? e.dataTransfer.getData('blockIdx') : '';
+            const fromIdx = parseInt(rawIdx, 10);
             if (!Number.isInteger(fromIdx) || fromIdx < 0 || fromIdx >= assessmentBlocks.length || fromIdx === idx) return;
             const newBlocks = [...assessmentBlocks];
             const [moved] = newBlocks.splice(fromIdx, 1);
@@ -465,6 +484,7 @@
               addToast(t('stem.fluency.mixed_blocks_note') || ('Note: ' + fluencyBlocks.length + ' fluency block(s) are not part of the generated document. Run them from the Math panel’s Fluency Probes mode.'), 'warning');
             }
             if (assessmentRunRef.current) return;
+            if (_isAiTextBlocked(callGemini)) { addToast('AI text generation is disabled or locked right now.', 'warning'); return; }
             if (nonFluencyBlocks.reduce((sum, block) => sum + Number(block.quantity || 0), 0) > 200) { addToast('An assessment can contain up to 200 problems. Reduce the section quantities and try again.', 'warning'); return; }
             const helpers = window.AlloModules && window.AlloModules.GenerationHelpers;
             if (!helpers || typeof helpers.generateMathAssessment !== 'function') { addToast('Math preparation is still loading. Please try again.', 'warning'); return; }
@@ -722,5 +742,6 @@
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.MathCreate = { MathCreateModal: MathCreateModal };
+  Object.freeze(window.AlloModules.MathCreate);
   window.AlloModules.MathCreateModule = true;
 })();

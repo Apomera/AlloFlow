@@ -142,6 +142,32 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // ── Scoped GPU-composited live-motion keyframes for StatsLab SVG visualizers ──
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-statslab-motion-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-statslab-motion-css';
+    st.textContent = [
+      '@keyframes sl-curve-phosphor{0%,100%{opacity:.16}50%{opacity:.36}}',
+      '@keyframes sl-sigma-shimmer{0%,100%{opacity:.72}50%{opacity:.95}}',
+      '@keyframes sl-beacon-ripple{0%{transform:scale(.85);opacity:.62}75%{transform:scale(1.85);opacity:0}100%{transform:scale(1.85);opacity:0}}',
+      '@keyframes sl-beacon-pulse{0%,100%{transform:scale(.92);opacity:.20}50%{transform:scale(1.26);opacity:.44}}',
+      '@keyframes sl-dash-flow{0%{stroke-dashoffset:0}100%{stroke-dashoffset:-28}}',
+      '@keyframes sl-residual-glow{0%,100%{opacity:.30}50%{opacity:.66}}',
+      '@keyframes sl-ci-span-pulse{0%,100%{opacity:.16}50%{opacity:.38}}',
+      '.statslab-tool-shell .sl-curve-phosphor{animation:sl-curve-phosphor 3.4s ease-in-out infinite}',
+      '.statslab-tool-shell .sl-sigma-shimmer{animation:sl-sigma-shimmer 3.8s ease-in-out infinite}',
+      '.statslab-tool-shell .sl-beacon-ripple{transform-box:fill-box;transform-origin:center;animation:sl-beacon-ripple 2.6s ease-out infinite}',
+      '.statslab-tool-shell .sl-beacon-pulse{transform-box:fill-box;transform-origin:center;animation:sl-beacon-pulse 2.4s ease-in-out infinite}',
+      '.statslab-tool-shell .sl-dash-flow{animation:sl-dash-flow 3.2s linear infinite}',
+      '.statslab-tool-shell .sl-residual-glow{animation:sl-residual-glow 3.0s ease-in-out infinite}',
+      '.statslab-tool-shell .sl-ci-span-pulse{animation:sl-ci-span-pulse 2.8s ease-in-out infinite}',
+      '[data-stem-theme="contrast"] .statslab-tool-shell .sl-curve-phosphor,[data-stem-theme="contrast"] .statslab-tool-shell .sl-sigma-shimmer,[data-stem-theme="contrast"] .statslab-tool-shell .sl-beacon-ripple,[data-stem-theme="contrast"] .statslab-tool-shell .sl-beacon-pulse,[data-stem-theme="contrast"] .statslab-tool-shell .sl-dash-flow,[data-stem-theme="contrast"] .statslab-tool-shell .sl-residual-glow,[data-stem-theme="contrast"] .statslab-tool-shell .sl-ci-span-pulse,.theme-contrast [data-stem-tool-shell="statsLab"] .sl-curve-phosphor,.theme-contrast [data-stem-tool-shell="statsLab"] .sl-sigma-shimmer,.theme-contrast [data-stem-tool-shell="statsLab"] .sl-beacon-ripple,.theme-contrast [data-stem-tool-shell="statsLab"] .sl-beacon-pulse,.theme-contrast [data-stem-tool-shell="statsLab"] .sl-dash-flow,.theme-contrast [data-stem-tool-shell="statsLab"] .sl-residual-glow,.theme-contrast [data-stem-tool-shell="statsLab"] .sl-ci-span-pulse{animation:none!important}',
+      '@media (prefers-reduced-motion: reduce){.statslab-tool-shell .sl-curve-phosphor,.statslab-tool-shell .sl-sigma-shimmer,.statslab-tool-shell .sl-beacon-ripple,.statslab-tool-shell .sl-beacon-pulse,.statslab-tool-shell .sl-dash-flow,.statslab-tool-shell .sl-residual-glow,.statslab-tool-shell .sl-ci-span-pulse{animation:none!important}}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
   // ── Aria-live region (WCAG 4.1.3) ──
   (function() {
     if (document.getElementById('allo-live-statslab')) return;
@@ -2148,13 +2174,14 @@ window.StemLab = window.StemLab || {
               _slDefs(h, 'em'),
               h('rect', { x: 2, y: 2, width: 60, height: 60, rx: 14, fill: 'var(--sl-surface)', stroke: 'var(--sl-accent-border)', strokeWidth: 2 }),
               _slRich() && h('rect', { x: 4, y: 4, width: 56, height: 56, rx: 12, fill: 'url(#sl-well-em)' }),
-              h('path', { d: 'M8 48 C16 48 22 14 32 14 C42 14 48 48 56 48 Z', fill: _slRich() ? 'url(#sl-area-pri-em)' : 'var(--sl-accent-soft)', opacity: _slRich() ? 0.42 : 1 }),
-              h('path', { d: 'M8 48 C13 48 16 44 18 39 L18 48 Z', fill: _slRich() ? 'url(#sl-area-dan-em)' : 'var(--sl-chart-danger)', opacity: _slRich() ? 0.92 : 0.72 }),
-              h('path', { d: 'M46 39 C48 44 51 48 56 48 L46 48 Z', fill: _slRich() ? 'url(#sl-area-dan-em)' : 'var(--sl-chart-danger)', opacity: _slRich() ? 0.92 : 0.72 }),
-              _slRich() && h('path', { d: 'M8 48 C16 48 22 14 32 14 C42 14 48 48 56 48', fill: 'none', stroke: 'var(--sl-chart-primary)', strokeWidth: 6, strokeOpacity: 0.22, strokeLinecap: 'round' }),
+              h('path', { className: _slRich() ? 'sl-sigma-shimmer' : undefined, d: 'M8 48 C16 48 22 14 32 14 C42 14 48 48 56 48 Z', fill: _slRich() ? 'url(#sl-area-pri-em)' : 'var(--sl-accent-soft)', opacity: _slRich() ? 0.42 : 1 }),
+              h('path', { className: _slRich() ? 'sl-sigma-shimmer' : undefined, d: 'M8 48 C13 48 16 44 18 39 L18 48 Z', fill: _slRich() ? 'url(#sl-area-dan-em)' : 'var(--sl-chart-danger)', opacity: _slRich() ? 0.92 : 0.72 }),
+              h('path', { className: _slRich() ? 'sl-sigma-shimmer' : undefined, d: 'M46 39 C48 44 51 48 56 48 L46 48 Z', fill: _slRich() ? 'url(#sl-area-dan-em)' : 'var(--sl-chart-danger)', opacity: _slRich() ? 0.92 : 0.72 }),
+              _slRich() && h('path', { className: 'sl-curve-phosphor', d: 'M8 48 C16 48 22 14 32 14 C42 14 48 48 56 48', fill: 'none', stroke: 'var(--sl-chart-primary)', strokeWidth: 6, strokeOpacity: 0.24, strokeLinecap: 'round' }),
               h('path', { d: 'M8 48 C16 48 22 14 32 14 C42 14 48 48 56 48', fill: 'none', stroke: 'var(--sl-chart-primary)', strokeWidth: 2.5, strokeLinecap: 'round' }),
-              _slRich() && h('line', { x1: 32, y1: 14, x2: 32, y2: 48, stroke: 'var(--sl-chart-secondary)', strokeWidth: 5, strokeOpacity: 0.22 }),
-              h('line', { x1: 32, y1: 14, x2: 32, y2: 48, stroke: 'var(--sl-chart-secondary)', strokeWidth: 1.8, strokeDasharray: '3 2' }),
+              _slRich() && h('line', { className: 'sl-curve-phosphor', x1: 32, y1: 14, x2: 32, y2: 48, stroke: 'var(--sl-chart-secondary)', strokeWidth: 5, strokeOpacity: 0.22 }),
+              h('line', { className: _slRich() ? 'sl-dash-flow' : undefined, x1: 32, y1: 14, x2: 32, y2: 48, stroke: 'var(--sl-chart-secondary)', strokeWidth: 1.8, strokeDasharray: '3 2' }),
+              _slRich() && h('circle', { className: 'sl-beacon-ripple', cx: 32, cy: 14, r: 4.5, fill: 'none', stroke: 'var(--sl-chart-secondary)', strokeWidth: 1.2 }),
               _slRich() && h('circle', { cx: 32, cy: 14, r: 2.6, fill: 'var(--sl-chart-secondary)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
               h('line', { x1: 8, y1: 48, x2: 56, y2: 48, stroke: 'var(--sl-chart-axis)', strokeWidth: 1.8 })
             ),
@@ -2195,16 +2222,19 @@ window.StemLab = window.StemLab || {
                     h('stop', { offset: '100%', stopColor: '#ef4444', stopOpacity: 0.25 })
                   )
                 ),
-                h('path', { d: 'M12 52 C48 52 84 12 130 12 C176 12 212 52 248 52 Z', fill: _slRich() ? 'url(#sl-mini-bell)' : 'rgba(99,102,241,0.22)' }),
-                h('path', { d: 'M12 52 C28 52 40 47 48 42 L48 52 Z', fill: _slRich() ? 'url(#sl-mini-tail)' : 'rgba(248,113,113,0.55)' }),
-                h('path', { d: 'M212 42 C220 47 232 52 248 52 L212 52 Z', fill: _slRich() ? 'url(#sl-mini-tail)' : 'rgba(248,113,113,0.55)' }),
-                _slRich() && h('path', { d: 'M12 52 C48 52 84 12 130 12 C176 12 212 52 248 52', fill: 'none', stroke: '#38bdf8', strokeWidth: 6.5, strokeOpacity: 0.22, strokeLinecap: 'round' }),
+                h('path', { className: _slRich() ? 'sl-sigma-shimmer' : undefined, d: 'M12 52 C48 52 84 12 130 12 C176 12 212 52 248 52 Z', fill: _slRich() ? 'url(#sl-mini-bell)' : 'rgba(99,102,241,0.22)' }),
+                h('path', { className: _slRich() ? 'sl-sigma-shimmer' : undefined, d: 'M12 52 C28 52 40 47 48 42 L48 52 Z', fill: _slRich() ? 'url(#sl-mini-tail)' : 'rgba(248,113,113,0.55)' }),
+                h('path', { className: _slRich() ? 'sl-sigma-shimmer' : undefined, d: 'M212 42 C220 47 232 52 248 52 L212 52 Z', fill: _slRich() ? 'url(#sl-mini-tail)' : 'rgba(248,113,113,0.55)' }),
+                _slRich() && h('path', { className: 'sl-curve-phosphor', d: 'M12 52 C48 52 84 12 130 12 C176 12 212 52 248 52', fill: 'none', stroke: '#38bdf8', strokeWidth: 6.5, strokeOpacity: 0.24, strokeLinecap: 'round' }),
                 h('path', { d: 'M12 52 C48 52 84 12 130 12 C176 12 212 52 248 52', fill: 'none', stroke: '#38bdf8', strokeWidth: 2.2, strokeLinecap: 'round' }),
                 h('line', { x1: 12, y1: 52, x2: 248, y2: 52, stroke: 'rgba(226,232,240,0.45)', strokeWidth: 1.4 }),
-                _slRich() && h('line', { x1: 130, y1: 10, x2: 130, y2: 52, stroke: '#34d399', strokeWidth: 5, strokeOpacity: 0.22 }),
-                h('line', { x1: 130, y1: 10, x2: 130, y2: 52, stroke: '#34d399', strokeWidth: 1.5, strokeDasharray: '3 3' }),
+                _slRich() && h('line', { className: 'sl-curve-phosphor', x1: 130, y1: 10, x2: 130, y2: 52, stroke: '#34d399', strokeWidth: 5, strokeOpacity: 0.22 }),
+                h('line', { className: _slRich() ? 'sl-dash-flow' : undefined, x1: 130, y1: 10, x2: 130, y2: 52, stroke: '#34d399', strokeWidth: 1.5, strokeDasharray: '3 3' }),
+                _slRich() && h('circle', { className: 'sl-beacon-ripple', cx: 130, cy: 12, r: 5, fill: 'none', stroke: '#34d399', strokeWidth: 1.2 }),
                 _slRich() && h('circle', { cx: 130, cy: 12, r: 2.8, fill: '#34d399', stroke: '#0f172a', strokeWidth: 1 }),
+                _slRich() && h('circle', { className: 'sl-beacon-pulse', cx: 48, cy: 42, r: 4.5, fill: '#fb7185', fillOpacity: 0.28 }),
                 _slRich() && h('circle', { cx: 48, cy: 42, r: 2.4, fill: '#fb7185', stroke: '#0f172a', strokeWidth: 0.9 }),
+                _slRich() && h('circle', { className: 'sl-beacon-pulse', cx: 212, cy: 42, r: 4.5, fill: '#fb7185', fillOpacity: 0.28 }),
                 _slRich() && h('circle', { cx: 212, cy: 42, r: 2.4, fill: '#fb7185', stroke: '#0f172a', strokeWidth: 0.9 }),
                 h('text', { x: 130, y: 63, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 700 }, __alloT('stem.statslab.mini_curve_label', 'H₀ sampling distribution (two-tailed α = 0.05)'))
               ),
@@ -2464,16 +2494,17 @@ window.StemLab = window.StemLab || {
               _slRich() && [0.25, 0.5, 0.75, 1.0].map(function(p, i) { return h('line', { key: 'ig' + i, x1: 36, y1: 130 - p * 110, x2: 296, y2: 130 - p * 110, stroke: 'var(--sl-chart-grid)', strokeOpacity: 0.25, strokeDasharray: '2 4' }); }),
               h('line', { x1: 36, y1: 130, x2: 296, y2: 130, stroke: 'var(--sl-chart-axis)' }),
               h('line', { x1: 36, y1: 18, x2: 36, y2: 130, stroke: 'var(--sl-chart-axis)' }),
-              _slRich() && h('line', { x1: 36, y1: 42, x2: 296, y2: 42, stroke: 'var(--sl-chart-secondary)', strokeWidth: 5, strokeOpacity: 0.16 }),
-              h('line', { x1: 36, y1: 42, x2: 296, y2: 42, stroke: 'var(--sl-chart-secondary)', strokeWidth: 1.5, strokeDasharray: '3 3' }),
+              _slRich() && h('line', { className: 'sl-curve-phosphor', x1: 36, y1: 42, x2: 296, y2: 42, stroke: 'var(--sl-chart-secondary)', strokeWidth: 5, strokeOpacity: 0.16 }),
+              h('line', { className: _slRich() ? 'sl-dash-flow' : undefined, x1: 36, y1: 42, x2: 296, y2: 42, stroke: 'var(--sl-chart-secondary)', strokeWidth: 1.5, strokeDasharray: '3 3' }),
               h('text', { x: 296, y: 39, fill: 'var(--sl-chart-secondary)', fontSize: 8, textAnchor: 'end' }, __alloT('stem.statslab.common_planning_reference', '80% planning reference')),
               [5, 50, 100, 150, 200].map(function(nv, i) { return h('text', { key: 'nx' + i, x: 36 + ((nv - 5) / 195) * 260, y: 145, fill: 'var(--sl-chart-label)', fontSize: 8, textAnchor: 'middle' }, 'n=' + nv); }),
               [0, 0.25, 0.5, 0.75, 1.0].map(function(p, i) { return h('text', { key: 'py' + i, x: 30, y: 132 - p * 110, fill: 'var(--sl-chart-label)', fontSize: 8, textAnchor: 'end' }, (p * 100).toFixed(0) + '%'); }),
-              _slRich() && h('polygon', { points: '36,130 ' + pts + ' 296,130', fill: sm.color, fillOpacity: _slDark() ? 0.16 : 0.12 }),
-              _slRich() && h('polyline', { points: pts, fill: 'none', stroke: sm.color, strokeWidth: 6, strokeOpacity: 0.2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+              _slRich() && h('polygon', { className: 'sl-sigma-shimmer', points: '36,130 ' + pts + ' 296,130', fill: sm.color, fillOpacity: _slDark() ? 0.16 : 0.12 }),
+              _slRich() && h('polyline', { className: 'sl-curve-phosphor', points: pts, fill: 'none', stroke: sm.color, strokeWidth: 6, strokeOpacity: 0.22, strokeLinecap: 'round', strokeLinejoin: 'round' }),
               h('polyline', { points: pts, fill: 'none', stroke: sm.color, strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-              _slRich() && h('line', { x1: hereX, y1: hereY, x2: hereX, y2: 130, stroke: sm.color, strokeWidth: 1.2, strokeDasharray: '2 3', strokeOpacity: 0.55 }),
-              _slRich() && h('circle', { cx: hereX, cy: hereY, r: 9.5, fill: sm.color, fillOpacity: 0.22 }),
+              _slRich() && h('line', { className: 'sl-dash-flow', x1: hereX, y1: hereY, x2: hereX, y2: 130, stroke: sm.color, strokeWidth: 1.2, strokeDasharray: '2 3', strokeOpacity: 0.62 }),
+              _slRich() && h('circle', { className: 'sl-beacon-ripple', cx: hereX, cy: hereY, r: 8.5, fill: 'none', stroke: sm.color, strokeWidth: 1.4 }),
+              _slRich() && h('circle', { className: 'sl-beacon-pulse', cx: hereX, cy: hereY, r: 9.5, fill: sm.color, fillOpacity: 0.22 }),
               h('circle', { cx: hereX, cy: hereY, r: 5, fill: sm.color, stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1.5, filter: _slRich() ? 'url(#sl-sh-iqp)' : undefined }),
               h('text', { x: 160, y: 156, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'middle' }, 'Power vs n at assumed d=' + iq.effect.toFixed(2) + ', two-sided alpha=' + iq.alpha.toFixed(3))
             ),
@@ -4908,25 +4939,32 @@ window.StemLab = window.StemLab || {
       _slWell(h, 'pv', pad.l, pad.t - 6, W - pad.l - pad.r, H - pad.b - pad.t + 6),
       // Axis
       h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)', strokeWidth: 1.2 }),
+      // Subtle ±1σ reference band shimmer under H₀
+      _slRich() && h('path', { className: 'sl-sigma-shimmer', d: pathFill(-1, 1, 0, 1), fill: 'url(#sl-band-pv)', opacity: 0.55 }),
       // β (Type II) region: under H₁ between −crit and +crit (failed to reject)
-      h('path', { d: pathFill(-crit, crit, ncp, 1), fill: _slRich() ? 'url(#sl-area-pri-pv)' : 'var(--sl-chart-primary)', opacity: 0.78, stroke: 'var(--sl-chart-primary)', strokeWidth: 0.8 }),
+      h('path', { className: _slRich() ? 'sl-sigma-shimmer' : undefined, d: pathFill(-crit, crit, ncp, 1), fill: _slRich() ? 'url(#sl-area-pri-pv)' : 'var(--sl-chart-primary)', opacity: 0.78, stroke: 'var(--sl-chart-primary)', strokeWidth: 0.8 }),
       // Power region: under H₁ beyond either critical value (correctly rejected)
-      h('path', { d: pathFill(crit, xMax, ncp, 1), fill: _slRich() ? 'url(#sl-area-sec-pv)' : 'var(--sl-chart-secondary)', opacity: 0.78, stroke: 'var(--sl-chart-secondary)', strokeWidth: 0.8 }),
-      h('path', { d: pathFill(xMin, -crit, ncp, 1), fill: _slRich() ? 'url(#sl-area-sec-pv)' : 'var(--sl-chart-secondary)', opacity: 0.78, stroke: 'var(--sl-chart-secondary)', strokeWidth: 0.8 }),
+      h('path', { className: _slRich() ? 'sl-sigma-shimmer' : undefined, d: pathFill(crit, xMax, ncp, 1), fill: _slRich() ? 'url(#sl-area-sec-pv)' : 'var(--sl-chart-secondary)', opacity: 0.78, stroke: 'var(--sl-chart-secondary)', strokeWidth: 0.8 }),
+      h('path', { className: _slRich() ? 'sl-sigma-shimmer' : undefined, d: pathFill(xMin, -crit, ncp, 1), fill: _slRich() ? 'url(#sl-area-sec-pv)' : 'var(--sl-chart-secondary)', opacity: 0.78, stroke: 'var(--sl-chart-secondary)', strokeWidth: 0.8 }),
       // α (Type I) regions: under H₀ beyond either critical value, α/2 each (false alarm)
-      h('path', { d: pathFill(crit, xMax, 0, 1), fill: _slRich() ? 'url(#sl-area-dan-pv)' : 'var(--sl-chart-danger)', opacity: 0.78, stroke: 'var(--sl-chart-danger)', strokeWidth: 0.8 }),
-      h('path', { d: pathFill(xMin, -crit, 0, 1), fill: _slRich() ? 'url(#sl-area-dan-pv)' : 'var(--sl-chart-danger)', opacity: 0.78, stroke: 'var(--sl-chart-danger)', strokeWidth: 0.8 }),
+      h('path', { className: _slRich() ? 'sl-sigma-shimmer' : undefined, d: pathFill(crit, xMax, 0, 1), fill: _slRich() ? 'url(#sl-area-dan-pv)' : 'var(--sl-chart-danger)', opacity: 0.78, stroke: 'var(--sl-chart-danger)', strokeWidth: 0.8 }),
+      h('path', { className: _slRich() ? 'sl-sigma-shimmer' : undefined, d: pathFill(xMin, -crit, 0, 1), fill: _slRich() ? 'url(#sl-area-dan-pv)' : 'var(--sl-chart-danger)', opacity: 0.78, stroke: 'var(--sl-chart-danger)', strokeWidth: 0.8 }),
       // Curve outlines (dual-pass luminous PDF curves drawn AFTER fills)
-      _slRich() && h('path', { d: curveLine(0, 1), fill: 'none', stroke: 'var(--sl-chart-label)', strokeWidth: 5.5, strokeOpacity: 0.16, strokeLinecap: 'round' }),
+      _slRich() && h('path', { className: 'sl-curve-phosphor', d: curveLine(0, 1), fill: 'none', stroke: 'var(--sl-chart-label)', strokeWidth: 5.5, strokeOpacity: 0.18, strokeLinecap: 'round' }),
       h('path', { d: curveLine(0, 1), fill: 'none', stroke: 'var(--sl-chart-label)', strokeWidth: 1.9, strokeLinecap: 'round' }),
-      _slRich() && h('path', { d: curveLine(ncp, 1), fill: 'none', stroke: 'var(--sl-chart-warning)', strokeWidth: 6, strokeOpacity: 0.22, strokeLinecap: 'round' }),
+      _slRich() && h('path', { className: 'sl-curve-phosphor', d: curveLine(ncp, 1), fill: 'none', stroke: 'var(--sl-chart-warning)', strokeWidth: 6, strokeOpacity: 0.24, strokeLinecap: 'round' }),
       h('path', { d: curveLine(ncp, 1), fill: 'none', stroke: 'var(--sl-chart-warning)', strokeWidth: 2, strokeLinecap: 'round' }),
+      // Peak tracking beacons for H₀ and H₁
+      _slRich() && h('circle', { className: 'sl-beacon-pulse', cx: sx(0), cy: sy(_normalPdf(0, 0, 1)), r: 5.5, fill: 'var(--sl-chart-label)', fillOpacity: 0.22 }),
+      _slRich() && h('circle', { className: 'sl-beacon-ripple', cx: sx(ncp), cy: sy(_normalPdf(ncp, ncp, 1)), r: 6, fill: 'none', stroke: 'var(--sl-chart-warning)', strokeWidth: 1.3 }),
       // Critical value vertical laser lines (two-sided)
-      _slRich() && h('line', { x1: sx(-crit), y1: pad.t - 8, x2: sx(-crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 5.5, strokeOpacity: 0.18 }),
-      h('line', { x1: sx(-crit), y1: pad.t - 8, x2: sx(-crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 1.6, strokeDasharray: '4 3' }),
-      _slRich() && h('line', { x1: sx(crit), y1: pad.t - 8, x2: sx(crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 5.5, strokeOpacity: 0.18 }),
-      h('line', { x1: sx(crit), y1: pad.t - 8, x2: sx(crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 1.6, strokeDasharray: '4 3' }),
+      _slRich() && h('line', { className: 'sl-curve-phosphor', x1: sx(-crit), y1: pad.t - 8, x2: sx(-crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 5.5, strokeOpacity: 0.18 }),
+      h('line', { className: _slRich() ? 'sl-dash-flow' : undefined, x1: sx(-crit), y1: pad.t - 8, x2: sx(-crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 1.6, strokeDasharray: '4 3' }),
+      _slRich() && h('line', { className: 'sl-curve-phosphor', x1: sx(crit), y1: pad.t - 8, x2: sx(crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 5.5, strokeOpacity: 0.18 }),
+      h('line', { className: _slRich() ? 'sl-dash-flow' : undefined, x1: sx(crit), y1: pad.t - 8, x2: sx(crit), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 1.6, strokeDasharray: '4 3' }),
+      _slRich() && h('circle', { className: 'sl-beacon-ripple', cx: sx(-crit), cy: pad.t - 6, r: 5, fill: 'none', stroke: 'var(--sl-chart-warning)', strokeWidth: 1.1 }),
       _slRich() && h('circle', { cx: sx(-crit), cy: pad.t - 6, r: 2.8, fill: 'var(--sl-chart-warning)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
+      _slRich() && h('circle', { className: 'sl-beacon-ripple', cx: sx(crit), cy: pad.t - 6, r: 5, fill: 'none', stroke: 'var(--sl-chart-warning)', strokeWidth: 1.1 }),
       _slRich() && h('circle', { cx: sx(crit), cy: pad.t - 6, r: 2.8, fill: 'var(--sl-chart-warning)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
       h('text', { x: sx(crit), y: pad.t - 12, fill: 'var(--sl-chart-warning)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'crit z = ±' + crit.toFixed(2)),
       // Distribution labels
@@ -5323,7 +5361,9 @@ window.StemLab = window.StemLab || {
     var sx = _scaleLinear(min, max, pad.l, W - pad.r);
     var sy = _scaleLinear(0, maxCount, H - pad.b, pad.t);
     var ticks = _niceTicks(min, max, 5);
-    var m = mean(x), md = median(x);
+    var m = mean(x), md = median(x), sdH = stdDev(x);
+    var sigLoX = _isNum(sdH) && sdH > 0 ? Math.max(pad.l, Math.min(W - pad.r, sx(m - sdH))) : sx(m);
+    var sigHiX = _isNum(sdH) && sdH > 0 ? Math.max(pad.l, Math.min(W - pad.r, sx(m + sdH))) : sx(m);
     return h('svg', {
       width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
       role: 'img',
@@ -5332,6 +5372,8 @@ window.StemLab = window.StemLab || {
     },
       _slDefs(h, 'hist'),
       _slWell(h, 'hist', pad.l, pad.t, W - pad.l - pad.r, H - pad.b - pad.t),
+      // Shaded M ± 1 SD sigma-band shimmer
+      _slRich() && sigHiX > sigLoX + 2 && h('rect', { className: 'sl-sigma-shimmer', x: sigLoX, y: pad.t, width: sigHiX - sigLoX, height: H - pad.b - pad.t, fill: 'url(#sl-band-hist)', opacity: 0.72 }),
       // Grid + axes
       h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)', strokeWidth: 1.2 }),
       h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)', strokeWidth: 1.2 }),
@@ -5347,14 +5389,17 @@ window.StemLab = window.StemLab || {
           stroke: _slRich() ? 'var(--sl-chart-primary)' : undefined, strokeWidth: _slRich() ? 0.6 : undefined
         });
       }),
-      // Mean laser line
-      _slRich() && h('line', { x1: sx(m), y1: pad.t, x2: sx(m), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 6, strokeOpacity: 0.2 }),
-      h('line', { x1: sx(m), y1: pad.t, x2: sx(m), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 2, strokeDasharray: '4 3' }),
+      // Mean laser line + animated tracking beacon
+      _slRich() && h('line', { className: 'sl-curve-phosphor', x1: sx(m), y1: pad.t, x2: sx(m), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 6, strokeOpacity: 0.22 }),
+      h('line', { className: _slRich() ? 'sl-dash-flow' : undefined, x1: sx(m), y1: pad.t, x2: sx(m), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 2, strokeDasharray: '4 3' }),
+      _slRich() && h('circle', { className: 'sl-beacon-ripple', cx: sx(m), cy: pad.t + 2, r: 5.2, fill: 'none', stroke: 'var(--sl-chart-warning)', strokeWidth: 1.2 }),
       _slRich() && h('circle', { cx: sx(m), cy: pad.t + 2, r: 2.8, fill: 'var(--sl-chart-warning)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
       h('text', { x: sx(m), y: pad.t - 4, fill: 'var(--sl-chart-warning)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'M=' + m.toFixed(1)),
-      // Median laser line — the gap between this and the mean reveals skew at a glance
-      _slRich() && h('line', { x1: sx(md), y1: pad.t, x2: sx(md), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 6, strokeOpacity: 0.18 }),
-      h('line', { x1: sx(md), y1: pad.t, x2: sx(md), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 2, strokeDasharray: '2 3' }),
+      // Median laser line + tracking beacon — the gap between this and the mean reveals skew at a glance
+      _slRich() && h('line', { className: 'sl-curve-phosphor', x1: sx(md), y1: pad.t, x2: sx(md), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 6, strokeOpacity: 0.2 }),
+      h('line', { className: _slRich() ? 'sl-dash-flow' : undefined, x1: sx(md), y1: pad.t, x2: sx(md), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 2, strokeDasharray: '2 3' }),
+      _slRich() && h('circle', { className: 'sl-beacon-pulse', cx: sx(md), cy: H - pad.b - 3, r: 5, fill: 'var(--sl-chart-secondary)', fillOpacity: 0.28 }),
+      _slRich() && h('circle', { cx: sx(md), cy: H - pad.b - 3, r: 2.5, fill: 'var(--sl-chart-secondary)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
       h('text', { x: sx(md), y: pad.t + 10, fill: 'var(--sl-chart-secondary)', fontSize: 10, fontWeight: 700, textAnchor: 'middle' }, 'Mdn=' + md.toFixed(1)),
       // X axis ticks
       ticks.map(function(t, ti) {
@@ -5403,11 +5448,11 @@ window.StemLab = window.StemLab || {
       h('line', { key: 'ax', x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       h('line', { key: 'ay', x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       // Reference line (dual-pass luminous normal reference)
-      _slRich() && h('line', { key: 'ref-g',
+      _slRich() && h('line', { key: 'ref-g', className: 'sl-curve-phosphor',
         x1: sx(lineX1), y1: sy(lineY1), x2: sx(lineX2), y2: sy(lineY2),
-        stroke: 'var(--sl-chart-warning)', strokeWidth: 5.5, strokeOpacity: 0.18
+        stroke: 'var(--sl-chart-warning)', strokeWidth: 5.5, strokeOpacity: 0.2
       }),
-      h('line', { key: 'ref',
+      h('line', { key: 'ref', className: _slRich() ? 'sl-dash-flow' : undefined,
         x1: sx(lineX1), y1: sy(lineY1), x2: sx(lineX2), y2: sy(lineY2),
         stroke: 'var(--sl-chart-warning)', strokeWidth: 1.7, strokeDasharray: '4 3', opacity: 0.85
       })
@@ -5489,10 +5534,10 @@ window.StemLab = window.StemLab || {
           h('line', { x1: cx, y1: sy(whiskerLow), x2: cx, y2: sy(whiskerHigh), stroke: color, strokeWidth: 1.7, strokeLinecap: 'round' }),
           h('line', { x1: cx - bw / 4, y1: sy(whiskerLow), x2: cx + bw / 4, y2: sy(whiskerLow), stroke: color, strokeWidth: 1.8, strokeLinecap: 'round' }),
           h('line', { x1: cx - bw / 4, y1: sy(whiskerHigh), x2: cx + bw / 4, y2: sy(whiskerHigh), stroke: color, strokeWidth: 1.8, strokeLinecap: 'round' }),
-          // Box
-          h('rect', { x: cx - bw / 2, y: sy(q.q3), width: bw, height: Math.max(2, sy(q.q1) - sy(q.q3)), rx: _slRich() ? 4 : 0, fill: color, fillOpacity: _slRich() ? 0.28 : 0.30, stroke: color, strokeWidth: 1.7, filter: _slRich() ? 'url(#sl-sh-bp)' : undefined }),
+          // Box + luminous IQR shimmer sheen
+          h('rect', { className: _slRich() ? 'sl-sigma-shimmer' : undefined, x: cx - bw / 2, y: sy(q.q3), width: bw, height: Math.max(2, sy(q.q1) - sy(q.q3)), rx: _slRich() ? 4 : 0, fill: color, fillOpacity: _slRich() ? 0.28 : 0.30, stroke: color, strokeWidth: 1.7, filter: _slRich() ? 'url(#sl-sh-bp)' : undefined }),
           // Median laser bar
-          _slRich() && h('line', { x1: cx - bw / 2, y1: sy(q.q2), x2: cx + bw / 2, y2: sy(q.q2), stroke: 'var(--sl-chart-warning)', strokeWidth: 6, strokeOpacity: 0.24, strokeLinecap: 'round' }),
+          _slRich() && h('line', { className: 'sl-curve-phosphor', x1: cx - bw / 2, y1: sy(q.q2), x2: cx + bw / 2, y2: sy(q.q2), stroke: 'var(--sl-chart-warning)', strokeWidth: 6, strokeOpacity: 0.26, strokeLinecap: 'round' }),
           h('line', { x1: cx - bw / 2, y1: sy(q.q2), x2: cx + bw / 2, y2: sy(q.q2), stroke: 'var(--sl-chart-warning)', strokeWidth: 2.5, strokeLinecap: 'round' }),
           // Quartile value annotations (Q3 / Md / Q1) beside the box — only when
           // there are few groups, so the labels never crowd adjacent boxes.
@@ -5501,13 +5546,14 @@ window.StemLab = window.StemLab || {
             h('text', { x: cx + bw / 2 + 4, y: sy(q.q2) + 3, fill: 'var(--sl-chart-warning)', fontSize: 8, fontWeight: 700 }, 'Md ' + q.q2.toFixed(1)),
             h('text', { x: cx + bw / 2 + 4, y: sy(q.q1) + 3, fill: 'var(--sl-chart-label)', fontSize: 8 }, 'Q1 ' + q.q1.toFixed(1))
           ) : null,
-          // Mean beacon
-          _slRich() && h('circle', { cx: cx, cy: sy(mean(x)), r: 6, fill: 'var(--sl-chart-warning)', fillOpacity: 0.22 }),
+          // Mean tracking beacon + ripple halo
+          _slRich() && h('circle', { className: 'sl-beacon-ripple', cx: cx, cy: sy(mean(x)), r: 6.2, fill: 'none', stroke: 'var(--sl-chart-warning)', strokeWidth: 1.2 }),
+          _slRich() && h('circle', { className: 'sl-beacon-pulse', cx: cx, cy: sy(mean(x)), r: 6, fill: 'var(--sl-chart-warning)', fillOpacity: 0.22 }),
           h('circle', { cx: cx, cy: sy(mean(x)), r: 3.3, fill: 'var(--sl-chart-warning)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1.1 }),
           // Outliers
           outliers.map(function(o, oi) {
             return h('g', { key: 'o' + oi },
-              _slRich() && h('circle', { cx: cx, cy: sy(o), r: 5.5, fill: 'var(--sl-chart-danger)', fillOpacity: 0.22 }),
+              _slRich() && h('circle', { className: 'sl-beacon-pulse', cx: cx, cy: sy(o), r: 5.8, fill: 'var(--sl-chart-danger)', fillOpacity: 0.24 }),
               h('circle', { cx: cx, cy: sy(o), r: 2.8, fill: 'var(--sl-chart-danger)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 })
             );
           }),
@@ -5558,16 +5604,35 @@ window.StemLab = window.StemLab || {
       children.push(h('line', { key: 'gx' + ti, x1: sx(t), y1: H - pad.b, x2: sx(t), y2: H - pad.b + 4, stroke: 'var(--sl-chart-axis)' }));
       children.push(h('text', { key: 'txl' + ti, x: sx(t), y: H - pad.b + 14, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'middle' }, '' + t));
     });
-    // Regression line (dual-pass luminous trend)
+    // Regression line (dual-pass luminous trend + glowing residual stems + centroid beacon)
     if (hasFit) {
       var lineX1 = xMin - px, lineX2 = xMax + px;
       var lineY1 = lr.intercept + lr.slope * lineX1;
       var lineY2 = lr.intercept + lr.slope * lineX2;
-      if (_slRich()) children.push(h('line', { key: 'fit-g', x1: sx(lineX1), y1: sy(lineY1), x2: sx(lineX2), y2: sy(lineY2), stroke: 'var(--sl-chart-warning)', strokeWidth: 6, strokeOpacity: 0.2 }));
-      children.push(h('line', { key: 'fit',
+      if (_slRich()) {
+        // Luminous vertical residual stems showing observed-to-predicted distance
+        for (var rdi = 0; rdi < x.length && rdi < 60; rdi++) {
+          var predY = lr.intercept + lr.slope * x[rdi];
+          if (Math.abs(sy(y[rdi]) - sy(predY)) >= 2) {
+            children.push(h('line', {
+              key: 'res-' + rdi,
+              className: 'sl-residual-glow',
+              x1: sx(x[rdi]), y1: sy(y[rdi]), x2: sx(x[rdi]), y2: sy(predY),
+              stroke: 'var(--sl-chart-primary)', strokeWidth: 1.25, strokeDasharray: '2 2', strokeOpacity: 0.48
+            }));
+          }
+        }
+        children.push(h('line', { key: 'fit-g', className: 'sl-curve-phosphor', x1: sx(lineX1), y1: sy(lineY1), x2: sx(lineX2), y2: sy(lineY2), stroke: 'var(--sl-chart-warning)', strokeWidth: 6.5, strokeOpacity: 0.22 }));
+      }
+      children.push(h('line', { key: 'fit', className: _slRich() ? 'sl-dash-flow' : undefined,
         x1: sx(lineX1), y1: sy(lineY1), x2: sx(lineX2), y2: sy(lineY2),
         stroke: 'var(--sl-chart-warning)', strokeWidth: 2.2, strokeDasharray: '5 3', opacity: 0.92
       }));
+      if (_slRich()) {
+        var meanX = mean(x), meanY = mean(y);
+        children.push(h('circle', { key: 'cen-r', className: 'sl-beacon-ripple', cx: sx(meanX), cy: sy(meanY), r: 7, fill: 'none', stroke: 'var(--sl-chart-warning)', strokeWidth: 1.2 }));
+        children.push(h('circle', { key: 'cen-p', cx: sx(meanX), cy: sy(meanY), r: 3.2, fill: 'var(--sl-chart-warning)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1.1 }));
+      }
     }
     // Points
     for (var pi = 0; pi < x.length; pi++) {
@@ -5685,12 +5750,12 @@ window.StemLab = window.StemLab || {
       var color = palette[ri % palette.length];
       // Lines (dual-pass luminous interaction profiles)
       for (var pp = 0; pp < pts.length - 1; pp++) {
-        if (_slRich()) children.push(h('line', { key: 'lg_' + ri + '_' + pp, x1: pts[pp].x, y1: pts[pp].y, x2: pts[pp + 1].x, y2: pts[pp + 1].y, stroke: color, strokeWidth: 6.5, strokeOpacity: 0.18, strokeLinecap: 'round' }));
+        if (_slRich()) children.push(h('line', { key: 'lg_' + ri + '_' + pp, className: 'sl-curve-phosphor', x1: pts[pp].x, y1: pts[pp].y, x2: pts[pp + 1].x, y2: pts[pp + 1].y, stroke: color, strokeWidth: 6.5, strokeOpacity: 0.2, strokeLinecap: 'round' }));
         children.push(h('line', { key: 'l_' + ri + '_' + pp, x1: pts[pp].x, y1: pts[pp].y, x2: pts[pp + 1].x, y2: pts[pp + 1].y, stroke: color, strokeWidth: 2.3, strokeLinecap: 'round' }));
       }
       // Dots
       pts.forEach(function(p, pi) {
-        if (_slRich()) children.push(h('circle', { key: 'dg_' + ri + '_' + pi, cx: p.x, cy: p.y, r: 7.5, fill: color, fillOpacity: 0.18 }));
+        if (_slRich()) children.push(h('circle', { key: 'dg_' + ri + '_' + pi, className: 'sl-beacon-pulse', cx: p.x, cy: p.y, r: 7.5, fill: color, fillOpacity: 0.2 }));
         children.push(h('circle', { key: 'd_' + ri + '_' + pi, cx: p.x, cy: p.y, r: 4.2, fill: color, stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1.2, filter: _slRich() ? 'url(#sl-sh-int)' : undefined }));
       });
       // Series legend on right edge (fits inside pad.r)
@@ -6340,8 +6405,8 @@ window.StemLab = window.StemLab || {
       _slWell(h, 'boot', pad.l, pad.t, W - pad.l - pad.r, H - pad.b - pad.t),
       h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
       h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: 'var(--sl-chart-axis)' }),
-      // Shaded CI band background
-      h('rect', { x: sx(boot.ci[0]), y: pad.t, width: Math.max(2, sx(boot.ci[1]) - sx(boot.ci[0])), height: H - pad.b - pad.t, fill: _slRich() ? 'url(#sl-band-boot)' : 'var(--sl-chart-secondary)', opacity: _slRich() ? 1 : 0.15 }),
+      // Shaded CI band background with subtle shimmer
+      h('rect', { className: _slRich() ? 'sl-sigma-shimmer' : undefined, x: sx(boot.ci[0]), y: pad.t, width: Math.max(2, sx(boot.ci[1]) - sx(boot.ci[0])), height: H - pad.b - pad.t, fill: _slRich() ? 'url(#sl-band-boot)' : 'var(--sl-chart-secondary)', opacity: _slRich() ? 1 : 0.15 }),
       // Histogram bars
       bins.map(function(c, bi) {
         var x0 = sx(min + bi * binW), x1 = sx(min + (bi + 1) * binW);
@@ -6354,17 +6419,21 @@ window.StemLab = window.StemLab || {
           fill: _slRich() ? (inCI ? 'url(#sl-sec-boot)' : 'url(#sl-lbl-boot)') : (inCI ? 'var(--sl-chart-secondary)' : 'var(--sl-chart-label)'), opacity: _slRich() ? 0.94 : 0.85
         });
       }),
-      // CI bracket laser lines + CI span error bar with endpoint beacons
-      _slRich() && h('line', { x1: sx(boot.ci[0]), y1: pad.t, x2: sx(boot.ci[0]), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 5.5, strokeOpacity: 0.2 }),
+      // CI bracket laser lines + CI span error bar with ripple endpoint beacons
+      _slRich() && h('line', { className: 'sl-ci-span-pulse', x1: sx(boot.ci[0]), y1: pad.t, x2: sx(boot.ci[0]), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 5.5, strokeOpacity: 0.22 }),
       h('line', { x1: sx(boot.ci[0]), y1: pad.t, x2: sx(boot.ci[0]), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 2 }),
-      _slRich() && h('line', { x1: sx(boot.ci[1]), y1: pad.t, x2: sx(boot.ci[1]), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 5.5, strokeOpacity: 0.2 }),
+      _slRich() && h('line', { className: 'sl-ci-span-pulse', x1: sx(boot.ci[1]), y1: pad.t, x2: sx(boot.ci[1]), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 5.5, strokeOpacity: 0.22 }),
       h('line', { x1: sx(boot.ci[1]), y1: pad.t, x2: sx(boot.ci[1]), y2: H - pad.b, stroke: 'var(--sl-chart-secondary)', strokeWidth: 2 }),
+      _slRich() && h('line', { className: 'sl-ci-span-pulse', x1: sx(boot.ci[0]), y1: H - pad.b - 6, x2: sx(boot.ci[1]), y2: H - pad.b - 6, stroke: 'var(--sl-chart-secondary)', strokeWidth: 6, strokeOpacity: 0.22 }),
       _slRich() && h('line', { x1: sx(boot.ci[0]), y1: H - pad.b - 6, x2: sx(boot.ci[1]), y2: H - pad.b - 6, stroke: 'var(--sl-chart-secondary)', strokeWidth: 2.5 }),
+      _slRich() && h('circle', { className: 'sl-beacon-ripple', cx: sx(boot.ci[0]), cy: H - pad.b - 6, r: 5.5, fill: 'none', stroke: 'var(--sl-chart-secondary)', strokeWidth: 1.2 }),
       _slRich() && h('circle', { cx: sx(boot.ci[0]), cy: H - pad.b - 6, r: 3.2, fill: 'var(--sl-chart-secondary)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
+      _slRich() && h('circle', { className: 'sl-beacon-ripple', cx: sx(boot.ci[1]), cy: H - pad.b - 6, r: 5.5, fill: 'none', stroke: 'var(--sl-chart-secondary)', strokeWidth: 1.2 }),
       _slRich() && h('circle', { cx: sx(boot.ci[1]), cy: H - pad.b - 6, r: 3.2, fill: 'var(--sl-chart-secondary)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
-      // Observed laser marker
-      _slRich() && h('line', { x1: sx(boot.observed), y1: pad.t - 4, x2: sx(boot.observed), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 6.5, strokeOpacity: 0.24 }),
+      // Observed laser marker + sample-drop ripple beacon
+      _slRich() && h('line', { className: 'sl-curve-phosphor', x1: sx(boot.observed), y1: pad.t - 4, x2: sx(boot.observed), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 6.5, strokeOpacity: 0.24 }),
       h('line', { x1: sx(boot.observed), y1: pad.t - 4, x2: sx(boot.observed), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 2.5 }),
+      _slRich() && h('circle', { className: 'sl-beacon-ripple', cx: sx(boot.observed), cy: pad.t - 2, r: 5.8, fill: 'none', stroke: 'var(--sl-chart-warning)', strokeWidth: 1.3 }),
       _slRich() && h('circle', { cx: sx(boot.observed), cy: pad.t - 2, r: 3.2, fill: 'var(--sl-chart-warning)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
       h('text', { x: sx(boot.observed), y: pad.t - 6, fill: 'var(--sl-chart-warning)', fontSize: 10, fontWeight: 800, textAnchor: 'middle' },
         '↓ ' + boot.observed.toFixed(2)
@@ -6549,9 +6618,10 @@ window.StemLab = window.StemLab || {
           fill: _slRich() ? (inExtreme ? 'url(#sl-dan-perm)' : 'url(#sl-lbl-perm)') : (inExtreme ? 'var(--sl-chart-danger)' : 'var(--sl-chart-label)'), opacity: _slRich() ? 0.92 : 0.7
         });
       }),
-      // Observed laser marker
-      _slRich() && h('line', { x1: sx(perm.observed), y1: pad.t - 4, x2: sx(perm.observed), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 6.5, strokeOpacity: 0.24 }),
+      // Observed laser marker + sample-drop ripple beacon
+      _slRich() && h('line', { className: 'sl-curve-phosphor', x1: sx(perm.observed), y1: pad.t - 4, x2: sx(perm.observed), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 6.5, strokeOpacity: 0.24 }),
       h('line', { x1: sx(perm.observed), y1: pad.t - 4, x2: sx(perm.observed), y2: H - pad.b, stroke: 'var(--sl-chart-warning)', strokeWidth: 2.5 }),
+      _slRich() && h('circle', { className: 'sl-beacon-ripple', cx: sx(perm.observed), cy: pad.t - 2, r: 5.8, fill: 'none', stroke: 'var(--sl-chart-warning)', strokeWidth: 1.3 }),
       _slRich() && h('circle', { cx: sx(perm.observed), cy: pad.t - 2, r: 3.2, fill: 'var(--sl-chart-warning)', stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1 }),
       h('text', { x: sx(perm.observed), y: pad.t - 6, fill: 'var(--sl-chart-warning)', fontSize: 10, fontWeight: 800, textAnchor: 'middle' },
         '↓ Observed = ' + perm.observed.toFixed(2)

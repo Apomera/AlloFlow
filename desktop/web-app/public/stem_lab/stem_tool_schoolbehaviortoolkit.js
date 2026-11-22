@@ -35,6 +35,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
   'use strict';
 
   (function() {
+    if (typeof document === 'undefined' || !document.body) return;
     if (document.getElementById('allo-live-sbt')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-sbt';
@@ -745,12 +746,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       if (!autoPlay) return;
       var t = setInterval(function() {
         setCurrentPhase(function(p) {
-          if (p >= 7) { setAutoPlay(false); return 7; }
-          return p + 1;
+          return p >= 7 ? 7 : p + 1;
         });
       }, 2200);
       return function() { clearInterval(t); };
     }, [autoPlay]);
+
+    R.useEffect(function() {
+      if (autoPlay && currentPhase >= 7) setAutoPlay(false);
+    }, [autoPlay, currentPhase]);
 
     R.useEffect(function() {
       if (currentPhase === 7 && !hasWalked) {
@@ -793,10 +797,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
 
       // Phase chip strip
       h('div', { role: 'tablist', 'aria-label': __alloSBTT('stem.schoolbehaviortoolkit.a11y_acting_out_cycle_phases', 'Acting-out cycle phases'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
-        phases.map(function(p) {
+        phases.map(function(p, idx) {
           var active = p.phase === currentPhase;
           return h('button', {
-            key: 'chip-' + p.phase, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+            type: 'button',
+            key: 'chip-' + p.phase, role: 'tab', id: 'sbt-cycle-tab-' + p.phase,
+            'aria-controls': 'sbt-cycle-panel',
+            'aria-selected': active ? 'true' : 'false',
+            tabIndex: active ? 0 : -1,
+            onKeyDown: function(e) {
+              if (e.ctrlKey || e.altKey || e.metaKey) return;
+              var nextIdx = -1;
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (idx + 1) % phases.length;
+              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (idx + phases.length - 1) % phases.length;
+              else if (e.key === 'Home') nextIdx = 0;
+              else if (e.key === 'End') nextIdx = phases.length - 1;
+              if (nextIdx < 0) return;
+              e.preventDefault();
+              var nextPhase = phases[nextIdx];
+              if (nextPhase) setCurrentPhase(nextPhase.phase);
+              var tabEls = e.currentTarget.parentNode && e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+              if (tabEls && tabEls[nextIdx]) tabEls[nextIdx].focus();
+            },
             onClick: function() { setCurrentPhase(p.phase); },
             title: p.name,
             style: {
@@ -857,22 +879,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             [178, 316, 388].map(function(dx, di) {
               return h('line', { key: 'pd-' + di, x1: dx, y1: 12, x2: dx, y2: 130, stroke: hc ? '#ffff00' : 'rgba(148,163,184,0.28)', strokeWidth: 0.9, strokeDasharray: '2 3' });
             }),
-            // Horizontal reference gridlines
-            h('line', { x1: 56, y1: 22, x2: 518, y2: 22, stroke: hc ? '#ffff00' : 'rgba(239,68,68,0.34)', strokeWidth: 1, strokeDasharray: '4 4' }),
-            h('line', { x1: 56, y1: 72, x2: 518, y2: 72, stroke: hc ? '#ffff00' : 'rgba(251,191,36,0.28)', strokeWidth: 1, strokeDasharray: '4 4' }),
+            // Horizontal reference gridlines (calm goal-line dash flow)
+            h('line', { className: !hc ? 'sbt-goal-flow-slow' : undefined, x1: 56, y1: 22, x2: 518, y2: 22, stroke: hc ? '#ffff00' : 'rgba(239,68,68,0.34)', strokeWidth: 1, strokeDasharray: '4 4' }),
+            h('line', { className: !hc ? 'sbt-goal-flow-slow' : undefined, x1: 56, y1: 72, x2: 518, y2: 72, stroke: hc ? '#ffff00' : 'rgba(251,191,36,0.28)', strokeWidth: 1, strokeDasharray: '4 4' }),
             h('line', { x1: 56, y1: 130, x2: 518, y2: 130, stroke: hc ? '#ffffff' : 'rgba(148,163,184,0.50)', strokeWidth: 1.3 }),
             // Y-axis labels (>=10px)
             h('text', { x: 50, y: 26, textAnchor: 'end', fontSize: 10.5, fontWeight: 800, fill: hc ? '#ffff00' : '#f87171', fontFamily: 'ui-monospace, Menlo, monospace' }, 'PEAK'),
             h('text', { x: 50, y: 76, textAnchor: 'end', fontSize: 10, fontWeight: 700, fill: hc ? '#ffffff' : '#fbbf24', fontFamily: 'ui-monospace, Menlo, monospace' }, 'MID'),
             h('text', { x: 50, y: 128, textAnchor: 'end', fontSize: 10.5, fontWeight: 800, fill: hc ? '#00ff00' : '#4ade80', fontFamily: 'ui-monospace, Menlo, monospace' }, 'CALM'),
-            // Gradient fill + dual-pass luminous escalation curve
+            // Gradient fill + dual-pass luminous escalation curve + silky flow trace
             !hc && h('polygon', { className: 'sbt-svg-fx', points: areaPoints, fill: 'url(#sbt-esc-area)', stroke: 'none' }),
-            !hc && h('polyline', { className: 'sbt-svg-fx', points: arcPoints, fill: 'none', stroke: '#2dd4bf', strokeWidth: 8, strokeOpacity: 0.18, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+            !hc && h('polyline', { className: 'sbt-svg-fx sbt-curve-glow', points: arcPoints, fill: 'none', stroke: '#2dd4bf', strokeWidth: 8, strokeOpacity: 0.2, strokeLinejoin: 'round', strokeLinecap: 'round' }),
             h('polyline', {
               points: arcPoints,
               fill: 'none', stroke: hc ? '#ffff00' : 'url(#sbt-esc-stroke)', strokeWidth: 3.2,
               strokeLinejoin: 'round', strokeLinecap: 'round'
             }),
+            !hc && h('polyline', { className: 'sbt-svg-fx sbt-goal-flow', points: arcPoints, fill: 'none', stroke: '#ffffff', strokeWidth: 1.4, strokeDasharray: '6 18', strokeOpacity: 0.58, strokeLinejoin: 'round', strokeLinecap: 'round' }),
             // Phase markers and P1..P7 axis labels
             phases.map(function(p, i) {
               var isCur = p.phase === currentPhase;
@@ -882,8 +905,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 h('text', { x: xs[i], y: 147, textAnchor: 'middle', fontSize: 10.5, fontWeight: isCur ? 800 : 600, fill: isCur ? (hc ? '#00ff00' : p.color) : (hc ? '#ffffff' : '#94a3b8'), fontFamily: 'ui-monospace, Menlo, monospace' }, 'P' + p.phase)
               );
             }),
-            // Active phase concentric beacon halo + specular highlight
-            !hc && h('circle', { className: 'sbt-svg-fx', cx: dotX, cy: dotY, r: 14, fill: ph.color, opacity: 0.24 }),
+            // Active phase concentric beacon halo + specular highlight (calm, zero flicker)
+            !hc && h('circle', { className: 'sbt-svg-fx sbt-beacon-calm', cx: dotX, cy: dotY, r: 16, fill: 'none', stroke: ph.color, strokeWidth: 1.5, opacity: 0.44 }),
+            !hc && h('circle', { className: 'sbt-svg-fx sbt-beacon-calm', cx: dotX, cy: dotY, r: 13.5, fill: ph.color, opacity: 0.24 }),
             h('circle', { cx: dotX, cy: dotY, r: 7, fill: hc ? '#00ff00' : ph.color, stroke: '#ffffff', strokeWidth: 2 }),
             !hc && h('circle', { className: 'sbt-svg-fx', cx: dotX - 2, cy: dotY - 2, r: 2, fill: '#ffffff', opacity: 0.85 })
           );
@@ -899,6 +923,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           style: { flex: 1, minWidth: 160, accentColor: ph.color }
         }),
         h('button', {
+          type: 'button',
           onClick: function() {
             if (currentPhase >= 7) setCurrentPhase(1);
             setAutoPlay(function(prev) { return !prev; });
@@ -914,6 +939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           }
         }, autoPlay ? '⏸ Pause' : '▶ Play'),
         h('button', {
+          type: 'button',
           onClick: function() { setCurrentPhase(1); setAutoPlay(false); },
           'aria-label': __alloSBTT('stem.schoolbehaviortoolkit.a11y_reset_to_phase_1_calm', 'Reset to Phase 1 Calm'),
           style: {
@@ -927,6 +953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
 
       // Active phase callout — large, styled to dominate visually
       h('div', {
+        role: 'tabpanel', id: 'sbt-cycle-panel', 'aria-labelledby': 'sbt-cycle-tab-' + ph.phase,
         style: {
           background: 'linear-gradient(135deg, ' + ph.color + '18, rgba(15,23,42,0.7))',
           borderRadius: 10, padding: '14px 16px',
@@ -1030,6 +1057,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } }, 'Score: ' + score + ' / ' + attempts + ' (' + pct + '%)'),
           h('div', { style: { fontSize: 12, color: '#5eead4', fontWeight: 700, marginBottom: 12 } }, grade),
           h('button', {
+            type: 'button',
             onClick: reset,
             style: {
               padding: '10px 18px', borderRadius: 8,
@@ -1091,6 +1119,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           else { bg = f.color + '12'; color = f.color; borderC = f.color + '60'; }
 
           return h('button', {
+            type: 'button',
             key: 'fn-' + f.code,
             onClick: function() { choose(f.code); },
             disabled: picked,
@@ -1133,6 +1162,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, sc.why),
             h('div', { style: { marginTop: 10, textAlign: 'right' } },
               h('button', {
+                type: 'button',
                 onClick: next,
                 style: {
                   padding: '8px 16px', borderRadius: 8,
@@ -1216,11 +1246,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
 
       // Scenario picker
       h('div', { role: 'tablist', 'aria-label': __alloSBTT('stem.schoolbehaviortoolkit.a11y_scenario_picker', 'Scenario picker'), style: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' } },
-        scenarios.map(function(s) {
+        scenarios.map(function(s, sIdx) {
           var active = s.id === scenarioId;
           var done = completed.has(s.id);
           return h('button', {
-            key: 's-' + s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+            type: 'button',
+            key: 's-' + s.id, role: 'tab', id: 'sbt-decision-tab-' + s.id,
+            'aria-controls': 'sbt-decision-panel',
+            'aria-selected': active ? 'true' : 'false',
+            tabIndex: active ? 0 : -1,
+            onKeyDown: function(e) {
+              if (e.ctrlKey || e.altKey || e.metaKey) return;
+              var nextIdx = -1;
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (sIdx + 1) % scenarios.length;
+              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (sIdx + scenarios.length - 1) % scenarios.length;
+              else if (e.key === 'Home') nextIdx = 0;
+              else if (e.key === 'End') nextIdx = scenarios.length - 1;
+              if (nextIdx < 0) return;
+              e.preventDefault();
+              if (scenarios[nextIdx]) pickScenario(scenarios[nextIdx].id);
+              var tabEls = e.currentTarget.parentNode && e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+              if (tabEls && tabEls[nextIdx]) tabEls[nextIdx].focus();
+            },
             onClick: function() { pickScenario(s.id); },
             style: {
               padding: '8px 12px', borderRadius: 8,
@@ -1240,6 +1287,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
 
       // Stem
       h('div', {
+        role: 'tabpanel', id: 'sbt-decision-panel', 'aria-labelledby': 'sbt-decision-tab-' + scenario.id,
         style: {
           background: 'rgba(2,6,23,0.5)', borderRadius: 8, padding: '12px 14px', marginBottom: 12,
           borderLeft: '3px solid ' + scenario.color
@@ -1308,6 +1356,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 12 } }, node.summary),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' } },
               h('button', {
+                type: 'button',
                 onClick: restart,
                 style: {
                   padding: '8px 14px', borderRadius: 8,
@@ -1318,6 +1367,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               }, '↺ Restart this scenario'),
               scenarios.length > 1
                 ? h('button', {
+                    type: 'button',
                     onClick: function() {
                       var nextS = scenarios.filter(function(s) { return s.id !== scenarioId; })[0];
                       if (nextS) pickScenario(nextS.id);
@@ -1336,6 +1386,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               node.choices.map(function(ch, i) {
                 return h('button', {
+                  type: 'button',
                   key: 'ch-' + nodeId + '-' + i,
                   onClick: function() { choose(i); },
                   style: {
@@ -1348,8 +1399,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                     cursor: 'pointer',
                     transition: 'all 160ms ease'
                   },
-                  onMouseEnter: function(e) { e.currentTarget.style.background = 'rgba(167,139,250,0.12)'; e.currentTarget.style.borderColor = '#a78bfa'; },
-                  onMouseLeave: function(e) { e.currentTarget.style.background = 'rgba(15,23,42,0.6)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.30)'; }
+                  onMouseEnter: function(e) { if (!_sbtIsHC()) { e.currentTarget.style.background = 'rgba(167,139,250,0.12)'; e.currentTarget.style.borderColor = '#a78bfa'; } },
+                  onMouseLeave: function(e) { if (!_sbtIsHC()) { e.currentTarget.style.background = 'rgba(15,23,42,0.6)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.30)'; } }
                 },
                   h('span', { style: { color: '#a78bfa', fontWeight: 800, marginRight: 8, fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11 } }, String.fromCharCode(65 + i) + '.'),
                   ch.label
@@ -1407,13 +1458,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       '.sbt-preset-chip:hover:not(:disabled) { background: rgba(20,184,166,0.18); border-color: #2dd4bf; color: #f0fdfa; }',
       '.sbt-preset-chip[data-active="true"] { background: rgba(20,184,166,0.22); border-color: #5eead4; color: #5eead4; box-shadow: 0 2px 10px rgba(20,184,166,0.20); }',
       '.sbt-preset-chip:disabled { opacity: 0.45; cursor: not-allowed; }',
+      '@keyframes sbtCurveGlow { 0%, 100% { stroke-opacity: 0.14; } 50% { stroke-opacity: 0.34; } }',
+      '@keyframes sbtGoalFlow { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }',
+      '@keyframes sbtBeaconCalm { 0%, 100% { opacity: 0.22; transform: scale(0.93); } 50% { opacity: 0.50; transform: scale(1.16); } }',
+      '@keyframes sbtBarSheen { 0%, 24% { transform: translateX(-60px); opacity: 0; } 50% { opacity: 0.36; } 76% { transform: translateX(130px); opacity: 0; } 100% { transform: translateX(130px); opacity: 0; } }',
+      '@keyframes sbtOrbitCalm { from { stroke-dashoffset: 28; } to { stroke-dashoffset: 0; } }',
+      '.sbt-workbench .sbt-curve-glow { animation: sbtCurveGlow 4.6s ease-in-out infinite; }',
+      '.sbt-workbench .sbt-goal-flow { animation: sbtGoalFlow 3.6s linear infinite; }',
+      '.sbt-workbench .sbt-goal-flow-slow { animation: sbtGoalFlow 6.4s linear infinite; }',
+      '.sbt-workbench .sbt-beacon-calm { transform-box: fill-box; transform-origin: center; animation: sbtBeaconCalm 3.8s ease-in-out infinite; }',
+      '.sbt-workbench .sbt-sheen-bar { animation: sbtBarSheen 6.2s ease-in-out infinite; }',
+      '.sbt-workbench .sbt-orbit-calm { animation: sbtOrbitCalm 10s linear infinite; }',
+      '@media (prefers-reduced-motion: reduce) { .sbt-workbench * { animation: none !important; transition: none !important; } .sbt-workbench .sbt-sheen-bar { display: none !important; } }',
+      '.sbt-workbench[data-sbt-rm="1"] * { animation: none !important; transition: none !important; }',
+      '.sbt-workbench[data-sbt-rm="1"] .sbt-sheen-bar { display: none !important; }',
       '.theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-workbench { background: #000000 !important; border: 2px solid #ffff00 !important; color: #ffff00 !important; box-shadow: none !important; --allo-stem-canvas: #000000; --allo-stem-text: #ffff00; --allo-stem-text-soft: #ffff00; --allo-stem-border: #ffff00; }',
       '.theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-hero { background: #000000 !important; border-bottom: 2px solid #ffff00 !important; }',
       '.theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-telemetry-pill { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
       '.theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-preset-chip { background: #000000 !important; border: 1.5px solid #ffff00 !important; color: #ffff00 !important; }',
       '.theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-preset-chip[data-active="true"], .theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-preset-chip:hover:not(:disabled) { background: #00ff00 !important; border-color: #ffff00 !important; color: #000000 !important; }',
       '.theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-workbench button:focus-visible, .theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-workbench [tabindex]:focus-visible { outline: 3px solid #ffff00 !important; outline-offset: 2px; }',
-      '.theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-svg-fx { display: none !important; }'
+      '.theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-workbench *, .sbt-workbench[data-sbt-hc="1"] * { animation: none !important; transition: none !important; }',
+      '.theme-contrast [data-stem-tool-shell="schoolBehaviorToolkit"] .sbt-svg-fx, .sbt-workbench[data-sbt-hc="1"] .sbt-svg-fx { display: none !important; }',
+      '@media (forced-colors: active) { .sbt-workbench * { animation: none !important; transition: none !important; } .sbt-workbench .sbt-svg-fx { display: none !important; } }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -1554,7 +1621,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         ];
         return h('div', { className: 'sbt-hero', style: { padding: '20px 24px 16px' } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': __alloT('stem.schoolbehaviortoolkit.back_to_stem_lab', 'Back to STEAM Lab'),
+            h('button', { type: 'button', onClick: function() { if (setStemLabTool) setStemLabTool(null); }, 'aria-label': __alloT('stem.schoolbehaviortoolkit.back_to_stem_lab', 'Back to STEAM Lab'),
               style: { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(148,163,184,0.28)', borderRadius: 10, minWidth: 44, minHeight: 44, padding: '6px 10px', cursor: 'pointer', color: '#e2e8f0', fontSize: 16, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '←'),
             // Bespoke PBIS & Applied Behavior Science Studio SVG Emblem
             h('div', { 'aria-hidden': 'true',
@@ -1588,15 +1655,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                       h('stop', { offset: '100%', stopColor: '#15803d' })
                     )
                   ),
-                  h('circle', { cx: 28, cy: 28, r: 25.5, fill: hc ? '#000000' : 'url(#sbt-emb-well)', stroke: hc ? '#ffff00' : '#2dd4bf', strokeWidth: 1.6, strokeDasharray: '4 3' }),
+                  h('circle', { className: !hc ? 'sbt-orbit-calm' : undefined, cx: 28, cy: 28, r: 25.5, fill: hc ? '#000000' : 'url(#sbt-emb-well)', stroke: hc ? '#ffff00' : '#2dd4bf', strokeWidth: 1.6, strokeDasharray: '4 3' }),
                   // 3-tier sculpted PBIS pyramid
                   h('polygon', { points: '28,9 35,20 21,20', fill: hc ? '#ffff00' : 'url(#sbt-emb-t3)', stroke: '#0f172a', strokeWidth: 1.2, strokeLinejoin: 'round' }),
                   h('polygon', { points: '20,22 36,22 41,31 15,31', fill: hc ? '#ffffff' : 'url(#sbt-emb-t2)', stroke: '#0f172a', strokeWidth: 1.2, strokeLinejoin: 'round' }),
                   h('polygon', { points: '14,33 42,33 47,43 9,43', fill: hc ? '#00ff00' : 'url(#sbt-emb-t1)', stroke: '#0f172a', strokeWidth: 1.2, strokeLinejoin: 'round' }),
                   // Dual-pass calm-recovery signal wave along base
-                  !hc && h('polyline', { className: 'sbt-svg-fx', points: '12,48 20,48 25,44 31,49 37,46 44,48', fill: 'none', stroke: '#2dd4bf', strokeWidth: 4.5, strokeOpacity: 0.28, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                  !hc && h('polyline', { className: 'sbt-svg-fx sbt-curve-glow', points: '12,48 20,48 25,44 31,49 37,46 44,48', fill: 'none', stroke: '#2dd4bf', strokeWidth: 4.5, strokeOpacity: 0.28, strokeLinecap: 'round', strokeLinejoin: 'round' }),
                   h('polyline', { points: '12,48 20,48 25,44 31,49 37,46 44,48', fill: 'none', stroke: hc ? '#ffff00' : '#5eead4', strokeWidth: 1.9, strokeLinecap: 'round', strokeLinejoin: 'round' }),
-                  !hc && h('circle', { className: 'sbt-svg-fx', cx: 28, cy: 9, r: 4.5, fill: '#fef08a', opacity: 0.3 }),
+                  !hc && h('circle', { className: 'sbt-svg-fx sbt-beacon-calm', cx: 28, cy: 9, r: 5, fill: '#fef08a', opacity: 0.3 }),
                   h('circle', { cx: 28, cy: 9, r: 2.3, fill: '#fef08a' })
                 );
               })()
@@ -1679,6 +1746,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           { id: 'inquiry', label: __alloT('stem.schoolbehaviortoolkit.behavior_inquiry', 'Behavior Inquiry'), icon: '🧪' }
         ];
         var schoolBehaviorTabKeyDown = function(e, index) {
+          if (e.ctrlKey || e.altKey || e.metaKey) return;
           var nextIndex = -1;
           // Derived from the array, not a literal. This was `% 12`, so adding a tab
           // would have made Right-arrow skip the last one and Left-arrow land wrong.
@@ -1689,8 +1757,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           else if (e.key === 'End') nextIndex = tabCount - 1;
           if (nextIndex < 0) return;
           e.preventDefault();
-          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
-          var nextTab = tabs[nextIndex];
+          var tabEls = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabEls[nextIndex];
           if (nextTab) { nextTab.focus(); nextTab.click(); }
         };
         return h('div', { role: 'tablist', 'aria-label': __alloT('stem.schoolbehaviortoolkit.school_behavior_toolkit_sections', 'School Behavior Toolkit sections'),
@@ -1698,6 +1766,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           tabs.map(function(t, tabIndex) {
             var active = section === t.id;
             return h('button', {
+              type: 'button',
               key: t.id, role: 'tab', id: 'school-behavior-tab-' + t.id,
               'aria-controls': 'school-behavior-panel-' + t.id,
               'aria-selected': active ? 'true' : 'false', tabIndex: active ? 0 : -1,
@@ -1831,8 +1900,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                     i === 2 && h('text', { x: cx, y: y1 + 4, textAnchor: 'middle', fill: '#ffffff', fontSize: 13, fontWeight: 900, style: { paintOrder: 'stroke', stroke: '#0f172a', strokeWidth: 2.8, strokeLinejoin: 'round' } }, '80%'),
                     i === 1 && h('text', { x: cx, y: y2 + 4, textAnchor: 'middle', fill: '#ffffff', fontSize: 11, fontWeight: 900, style: { paintOrder: 'stroke', stroke: '#0f172a', strokeWidth: 2.4, strokeLinejoin: 'round' } }, '15%'),
                     !hcP && h('line', { className: 'sbt-svg-fx', x1: bd.anchorX, y1: bd.anchorY, x2: 286, y2: calloutY, stroke: bd.stroke, strokeWidth: 4, strokeOpacity: 0.16 }),
-                    h('line', { x1: bd.anchorX, y1: bd.anchorY, x2: 286, y2: calloutY, stroke: hcP ? '#ffff00' : bd.stroke, strokeWidth: 1.5, strokeDasharray: '3 3', opacity: 0.9 }),
-                    !hcP && h('circle', { className: 'sbt-svg-fx', cx: bd.anchorX, cy: bd.anchorY, r: 6.5, fill: bd.stroke, opacity: 0.24 }),
+                    h('line', { className: !hcP ? 'sbt-goal-flow-slow' : undefined, x1: bd.anchorX, y1: bd.anchorY, x2: 286, y2: calloutY, stroke: hcP ? '#ffff00' : bd.stroke, strokeWidth: 1.5, strokeDasharray: '3 3', opacity: 0.9 }),
+                    !hcP && h('circle', { className: 'sbt-svg-fx sbt-beacon-calm', cx: bd.anchorX, cy: bd.anchorY, r: 7, fill: bd.stroke, opacity: 0.26, style: { animationDelay: (i * 0.6) + 's' } }),
                     h('circle', { cx: bd.anchorX, cy: bd.anchorY, r: 3.5, fill: hcP ? '#00ff00' : bd.stroke, stroke: '#0f172a', strokeWidth: 1 }),
                     h('rect', { x: 288, y: calloutY - 17, width: W - 298, height: 38, rx: 7, fill: hcP ? '#000000' : 'rgba(15,23,42,0.72)', stroke: hcP ? '#ffff00' : 'rgba(148,163,184,0.22)', strokeWidth: 0.9 }),
                     h('rect', { x: 288, y: calloutY - 17, width: 3.5, height: 38, rx: 1.5, fill: hcP ? '#ffff00' : bd.stroke }),
@@ -2246,7 +2315,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               __alloT('stem.schoolbehaviortoolkit.tk_earn', 'Earn tokens')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 6, marginBottom: 14 } },
               TOKEN_ITEMS.map(function (item) {
-                return h('button', { key: 'earn-' + item.id,
+                return h('button', { type: 'button', key: 'earn-' + item.id,
                   'aria-label': item.name + ', ' + item.tokens + ' tokens',
                   onClick: function () {
                     setSBT({
@@ -2268,7 +2337,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 6 } },
               TOKEN_REWARDS.map(function (rew) {
                 var afford = balance >= rew.cost;
-                return h('button', { key: 'spend-' + rew.id,
+                return h('button', { type: 'button', key: 'spend-' + rew.id,
                   'aria-label': rew.name + ', costs ' + rew.cost + ' tokens' + (afford ? '' : ', not enough tokens yet'),
                   onClick: function () {
                     if (!afford) {
@@ -2303,6 +2372,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 })
               ),
               h('button', {
+                type: 'button',
                 onClick: function () { setSBT({ tokenBalance: 0, tokenLog: [] }); },
                 'aria-label': __alloT('stem.schoolbehaviortoolkit.tk_reset', 'Reset the token board'),
                 style: { marginTop: 8, padding: '7px 12px', minHeight: 36, borderRadius: 8, border: '1px solid rgba(100,116,139,0.4)', background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
@@ -2409,6 +2479,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               __alloT('stem.schoolbehaviortoolkit.function_sleuth_sub', 'Read the vignette and name what the behaviour is getting or avoiding. On a real case this is a hypothesis you then test with ABC data \u2014 here the answer is knowable from the paragraph, which is exactly what makes it practice rather than assessment.')),
 
             !v ? h('button', {
+              type: 'button',
               onClick: nextVignette,
               'aria-label': __alloT('stem.schoolbehaviortoolkit.start_function_sleuth', 'Start Function Sleuth'),
               style: { padding: '9px 16px', borderRadius: 9, border: '1px solid #14b8a6', background: 'rgba(20,184,166,0.18)', color: '#5eead4', fontSize: 12, fontWeight: 800, cursor: 'pointer', minHeight: 40 }
@@ -2419,15 +2490,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
               h('p', { style: { margin: '0 0 12px', fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, v.scenario),
               h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.schoolbehaviortoolkit.pick_the_function', 'Pick the function'),
                 style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
-                FOUR_FUNCTIONS.map(function(ff) {
+                FOUR_FUNCTIONS.map(function(ff, ffIdx) {
                   var picked = fnAnswered && fnPick === ff.abbrev;
                   var right = fnAnswered && ff.abbrev === FN_ANSWER_TO_ABBREV[v.correct];
                   var bg = !fnAnswered ? 'rgba(15,23,42,0.7)' : right ? 'rgba(16,185,129,0.18)' : picked ? 'rgba(248,113,113,0.18)' : 'rgba(15,23,42,0.4)';
                   var bd = !fnAnswered ? 'rgba(100,116,139,0.4)' : right ? '#34d399' : picked ? '#f87171' : 'rgba(100,116,139,0.3)';
+                  var focusableRadio = picked || (!fnAnswered && ffIdx === 0);
                   return h('button', {
+                    type: 'button',
                     key: 'pick-' + ff.abbrev, role: 'radio',
                     'aria-checked': picked ? 'true' : 'false',
+                    tabIndex: fnAnswered ? -1 : (focusableRadio ? 0 : -1),
                     disabled: fnAnswered,
+                    onKeyDown: function(e) {
+                      if (fnAnswered || e.ctrlKey || e.altKey || e.metaKey) return;
+                      var nextIdx = -1;
+                      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIdx = (ffIdx + 1) % FOUR_FUNCTIONS.length;
+                      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIdx = (ffIdx + FOUR_FUNCTIONS.length - 1) % FOUR_FUNCTIONS.length;
+                      else if (e.key === 'Home') nextIdx = 0;
+                      else if (e.key === 'End') nextIdx = FOUR_FUNCTIONS.length - 1;
+                      if (nextIdx < 0) return;
+                      e.preventDefault();
+                      var radios = e.currentTarget.parentNode && e.currentTarget.parentNode.querySelectorAll('[role="radio"]');
+                      if (radios && radios[nextIdx]) radios[nextIdx].focus();
+                    },
                     onClick: function() {
                       if (fnAnswered) return;
                       var correct = ff.abbrev === FN_ANSWER_TO_ABBREV[v.correct];
@@ -2471,6 +2557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                         : __alloT('stem.schoolbehaviortoolkit.fn_res_more', ' \u2014 these distinctions take many examples. Re-read the four reference cards above, then the reasoning on each miss, and run it again.'))
               ),
               fnAnswered && h('button', {
+                type: 'button',
                 onClick: nextVignette,
                 style: { marginTop: 10, padding: '9px 16px', borderRadius: 9, border: '1px solid #14b8a6', background: 'rgba(20,184,166,0.18)', color: '#5eead4', fontSize: 12, fontWeight: 800, cursor: 'pointer', minHeight: 40 }
               }, fnDone
@@ -2580,13 +2667,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   }),
                   h('div', { style: { display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' } },
                     step > 0 && h('button', {
+                      type: 'button',
                       onClick: function () { setSBT({ bipStep: step - 1 }); },
                       'aria-label': __alloT('stem.schoolbehaviortoolkit.bip_back', 'Back a step'),
                       style: { padding: '8px 14px', minHeight: 40, borderRadius: 8, border: '1px solid rgba(100,116,139,0.4)', background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11.5, fontWeight: 700, cursor: 'pointer' }
                     }, __alloT('stem.schoolbehaviortoolkit.bip_back_label', '← Back')),
                     h('button', {
+                      type: 'button',
                       onClick: function () {
-                        if (!(data[st.key] || '').trim()) {
+                        if (!String(data[st.key] || '').trim()) {
                           if (addToast) addToast(__alloT('stem.schoolbehaviortoolkit.bip_fill_first', '✏️ Fill in this step first.'), 'info');
                           return;
                         }
@@ -2619,10 +2708,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   })),
                 h('div', { style: { display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' } },
                   h('button', {
+                    type: 'button',
                     onClick: function () { setSBT({ bipStep: 0 }); },
                     style: { padding: '8px 14px', minHeight: 40, borderRadius: 8, border: '1px solid rgba(100,116,139,0.4)', background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11.5, fontWeight: 700, cursor: 'pointer' }
                   }, __alloT('stem.schoolbehaviortoolkit.bip_edit', '✏️ Edit')),
                   h('button', {
+                    type: 'button',
                     onClick: function () { setSBT({ bipStep: 0, bipData: {} }); },
                     style: { padding: '8px 14px', minHeight: 40, borderRadius: 8, border: '1px solid rgba(248,113,113,0.5)', background: 'rgba(248,113,113,0.12)', color: '#fca5a5', fontSize: 11.5, fontWeight: 700, cursor: 'pointer' }
                   }, __alloT('stem.schoolbehaviortoolkit.bip_new', '↻ Start over'))
@@ -2881,12 +2972,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 h('linearGradient', { id: 'sbt-iq-bar-2', x1: '0', y1: '0', x2: '1', y2: '0' },
                   h('stop', { offset: '0%', stopColor: '#16a34a' }),
                   h('stop', { offset: '100%', stopColor: '#4ade80' })
-                )
+                ),
+                h('linearGradient', { id: 'sbt-iq-sheen', x1: '0', y1: '0', x2: '1', y2: '0' },
+                  h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
+                  h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.45 }),
+                  h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+                ),
+                [
+                  { val: iq.intensity, y: 24 },
+                  { val: iq.functionConfidence, y: 50 },
+                  { val: iq.environmentStability, y: 76 }
+                ].map(function(m, idx) {
+                  var cbw = Math.max(4, Math.round((m.val / 10) * 92));
+                  return h('clipPath', { key: 'bc-' + idx, id: 'sbt-iq-clip-' + idx },
+                    h('rect', { x: 358, y: m.y, width: cbw, height: 13, rx: 6.5 })
+                  );
+                })
               ),
               h('rect', { x: 0, y: 0, width: 480, height: 124, rx: 10, fill: hcI ? '#000000' : 'url(#sbt-iq-well)' }),
-              // Phase escalation chevron links between tiers
+              // Phase escalation connector dashes + chevron links between tiers
               [100, 190].map(function(cx, ci) {
-                return h('polygon', { key: 'ch-' + ci, points: (cx - 2) + ',46 ' + (cx + 4) + ',50 ' + (cx - 2) + ',54', fill: hcI ? '#ffff00' : '#64748b' });
+                return h('g', { key: 'ch-' + ci },
+                  !hcI && h('line', { className: 'sbt-svg-fx sbt-goal-flow', x1: cx - 5, y1: 50, x2: cx + 6, y2: 50, stroke: sm.color, strokeWidth: 1.8, strokeDasharray: '3 3', opacity: 0.72 }),
+                  h('polygon', { points: (cx - 2) + ',46 ' + (cx + 4) + ',50 ' + (cx - 2) + ',54', fill: hcI ? '#ffff00' : '#64748b' })
+                );
               }),
               [1, 2, 3].map(function(tier) {
                 var x = 16 + (tier - 1) * 90;
@@ -2894,7 +3003,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 var active = iq.tier === tier;
                 var tAcc = tier === 1 ? '#22c55e' : tier === 2 ? '#fbbf24' : '#f87171';
                 return h('g', { key: 't' + tier },
-                  !hcI && active && h('rect', { className: 'sbt-svg-fx', x: x - 3, y: 15, width: w + 6, height: 70, rx: 11, fill: sm.color, opacity: 0.22 }),
+                  !hcI && active && h('rect', { className: 'sbt-svg-fx sbt-beacon-calm', x: x - 3, y: 15, width: w + 6, height: 70, rx: 11, fill: sm.color, opacity: 0.24 }),
                   h('rect', { x: x, y: 18, width: w, height: 64, rx: 9, fill: active ? (hcI ? '#00ff00' : sm.color) : (hcI ? '#000000' : '#111827'), stroke: active ? (hcI ? '#ffff00' : '#ffffff') : (hcI ? '#ffff00' : '#334155'), strokeWidth: active ? 2 : 1.2 }),
                   !active && h('rect', { x: x + 10, y: 18, width: w - 20, height: 3, rx: 1.5, fill: hcI ? '#ffff00' : tAcc }),
                   !hcI && active && h('rect', { className: 'sbt-svg-fx', x: x + 4, y: 20, width: w - 8, height: 6, rx: 3, fill: '#ffffff', opacity: 0.28 }),
@@ -2915,6 +3024,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   h('text', { x: 294, y: m.y + 10, fill: hcI ? '#ffffff' : '#cbd5e1', fontSize: 10.5, fontWeight: 700 }, m.label),
                   h('rect', { x: 358, y: m.y, width: 92, height: 13, rx: 6.5, fill: hcI ? '#000000' : '#0f172a', stroke: hcI ? '#ffff00' : '#334155', strokeWidth: 0.9 }),
                   h('rect', { x: 358, y: m.y, width: bw, height: 13, rx: 6.5, fill: hcI ? '#00ff00' : 'url(#sbt-iq-bar-' + idx + ')' }),
+                  !hcI && bw > 10 && h('g', { clipPath: 'url(#sbt-iq-clip-' + idx + ')', className: 'sbt-svg-fx' },
+                    h('rect', { className: 'sbt-sheen-bar', x: 358, y: m.y, width: 28, height: 13, fill: 'url(#sbt-iq-sheen)', style: { animationDelay: (idx * 0.7) + 's' } })
+                  ),
                   !hcI && bw > 10 && h('rect', { className: 'sbt-svg-fx', x: 361, y: m.y + 2, width: bw - 6, height: 3, rx: 1.5, fill: '#ffffff', opacity: 0.35 }),
                   h('text', { x: 456, y: m.y + 10.5, fill: hcI ? '#ffff00' : m.col, fontSize: 10.5, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace' }, String(m.val))
                 );
@@ -2941,18 +3053,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             )
           ),
           h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
-            h('button', { onClick: function() {
+            h('button', { type: 'button', onClick: function() {
               var t = new Date().toISOString().slice(11, 19);
               setIQ({ log: iq.log.concat([{ t: t, tr: iq.tier, i: iq.intensity, fc: iq.functionConfidence, es: iq.environmentStability, state: sm.label }]) });
             }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.schoolbehaviortoolkit.log_this_case', '📋 Log this case')),
-            h('button', { onClick: function() { setIQ({ tier: 2, intensity: 5, functionConfidence: 5, environmentStability: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.schoolbehaviortoolkit.reset', 'Reset'))
+            h('button', { type: 'button', onClick: function() { setIQ({ tier: 2, intensity: 5, functionConfidence: 5, environmentStability: 5 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.schoolbehaviortoolkit.reset', 'Reset'))
           ),
           iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
             iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · T' + e.tr + ' int' + e.i + ' fc' + e.fc + ' env' + e.es); })
           ),
-          h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.schoolbehaviortoolkit.your_hypothesis_when_does_an_unstable_', 'Your hypothesis (when does an unstable environment matter MORE than function knowledge?)')),
-          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': __alloT('stem.schoolbehaviortoolkit.hypothesis_input', 'Behavior plan readiness hypothesis'), rows: 2, placeholder: __alloT('stem.schoolbehaviortoolkit.e_g_if_setting_events_are_dominant_eve', 'e.g., if setting events are dominant, even a perfect function-based plan fails because the antecedent context keeps changing...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.schoolbehaviortoolkit.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
+          h('label', { htmlFor: 'sbt-iq-hypothesis', style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.schoolbehaviortoolkit.your_hypothesis_when_does_an_unstable_', 'Your hypothesis (when does an unstable environment matter MORE than function knowledge?)')),
+          h('textarea', { id: 'sbt-iq-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': __alloT('stem.schoolbehaviortoolkit.hypothesis_input', 'Behavior plan readiness hypothesis'), rows: 2, placeholder: __alloT('stem.schoolbehaviortoolkit.e_g_if_setting_events_are_dominant_eve', 'e.g., if setting events are dominant, even a perfect function-based plan fails because the antecedent context keeps changing...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.schoolbehaviortoolkit.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
           iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
             h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.schoolbehaviortoolkit.open_questions_no_answer_key', 'Open questions (no answer key)')),
             h('ul', { style: { margin: 0, paddingLeft: 16 } },
@@ -2971,7 +3083,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         );
       }
 
-      return h('div', { className: 'sbt-workbench', style: rootStyle, role: 'region', 'aria-label': __alloT('stem.schoolbehaviortoolkit.school_behavior_toolkit_2', 'School Behavior Toolkit') },
+      return h('div', { className: 'sbt-workbench', 'data-sbt-hc': _sbtIsHC() ? '1' : '0', 'data-sbt-rm': ctx.reduceMotion ? '1' : '0', style: rootStyle, role: 'region', 'aria-label': __alloT('stem.schoolbehaviortoolkit.school_behavior_toolkit_2', 'School Behavior Toolkit') },
         renderHeader(),
         renderTabs(),
         h('div', { role: 'tabpanel', id: 'school-behavior-panel-' + section,

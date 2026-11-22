@@ -32,6 +32,7 @@
  */
 (function () {
   'use strict';
+  if (typeof window === 'undefined') return;
   if (window.AlloModules && window.AlloModules.ErrorReporter) {
     console.log('[ErrorReporter] Already loaded, skipping');
     return;
@@ -125,7 +126,7 @@
   // it in localStorage and every bug report sent it. Scrub wherever a URL
   // or message is stored or sent.
   function isCredentialField(key) {
-    return /^(?:authorization|proxy[-_]authorization|x[-_](?:goog[-_])?api[-_]key|(?:[a-z]+[-_]?)?api[-_]?key|(?:access|refresh|id|auth|bearer)[-_]?token|token|secret|(?:client|pack|join)[-_]?secret|password|passwd|passphrase|recovery[-_]?(?:code|key)|access[-_]?code|credential|private[-_]?key|session[-_]?(?:id|token|secret)|cookie|set[-_]cookie)$/i.test(key);
+    return /^(?:authorization|proxy[-_]authorization|x[-_](?:goog[-_])?api[-_]key|(?:[a-z]+[-_]?)?api[-_]?(?:key|secret)|(?:access|refresh|id|auth|bearer)[-_]?token|token|secret|(?:client|pack|join|webhook|signing)[-_]?secret|allo[-_]?(?:mbp?|pack)|(?:mailbox|encryption|vault)[-_]?key|password|passwd|passphrase|recovery[-_]?(?:code|key)|access[-_]?code|credential|private[-_]?key|session[-_]?(?:id|token|secret)|cookie|set[-_]cookie)$/i.test(key);
   }
   function redactSecrets(s, nesting) {
     if (!s) return s || '';
@@ -171,7 +172,7 @@
         return scheme + ' [redacted]';
       })
       .replace(/\beyJ[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\.[A-Za-z0-9_-]{5,}\b/g, '[redacted]')
-      .replace(/(?:sk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{16,}|AIza[0-9A-Za-z_-]{20,}|ya29\.[0-9A-Za-z._-]{20,}|gsk_[A-Za-z0-9_-]{20,}|xai-[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{16,})\b/g, '[redacted]')
+      .replace(/(?:sk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{16,}|AIza[0-9A-Za-z_-]{20,}|ya29\.[0-9A-Za-z._-]{20,}|gsk_[A-Za-z0-9_-]{20,}|xai-[A-Za-z0-9_-]{20,}|(?:AKIA|ASIA)[0-9A-Z]{16}|GOCSPX-[A-Za-z0-9_-]{20,}|hf_[A-Za-z0-9]{20,}|gh[pousr]_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{16,})\b/g, '[redacted]')
       .replace(/(\b(?:cookie|set-cookie)\s*:\s*)(?!["'])[^\r\n]*/gi, '$1[redacted]')
       .replace(/(^|[^A-Za-z0-9_-])(["']?)([A-Za-z][A-Za-z0-9_-]*)(\2\s*[:=]\s*)(\[redacted\]|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^\s,;&}\]]+)/g, function (whole, prefix, keyQuote, key, separator, value) {
         if (!isCredentialField(key)) return whole;
@@ -180,10 +181,14 @@
       })
       .replace(/\b([A-Za-z][A-Za-z0-9+.-]{0,31}:\/\/)[^\s\/?#@]+@/g, '$1')
       .replace(/\b(?:https?|wss?|ftp):\/\/[^\s"'<>]+/gi, function (raw) {
-        var ending = raw.match(/[),.;}]+$/);
-        var suffix = ending ? ending[0] : '';
+        var trimmed = raw;
+        var suffix = '';
+        while (trimmed.length > 0 && !/\[redacted\]$/i.test(trimmed) && /[),.;}\]]$/.test(trimmed)) {
+          suffix = trimmed.slice(-1) + suffix;
+          trimmed = trimmed.slice(0, -1);
+        }
         try {
-          var url = new URL(suffix ? raw.slice(0, -suffix.length) : raw);
+          var url = new URL(trimmed);
           url.username = ''; url.password = '';
           var seenParamKeys = Object.create(null);
           Array.from(url.searchParams.keys()).forEach(function (key) {
@@ -221,7 +226,7 @@
   function scrubPersonalInfo(s) {
     if (!s) return s || '';
     return String(s)
-      .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[email]')
+      .replace(/\b[A-Z0-9._%+-]{1,64}@[A-Z0-9.-]{1,253}\.[A-Z]{2,24}\b/gi, '[email]')
       .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[ssn]')
       .replace(/(?:\+?1[\s.-]?)?(?:\(\d{3}\)\s?|\b\d{3}[\s.-])\d{3}[\s.-]\d{4}\b/g, '[phone]')
       .replace(/\b(student\s*id|district\s*id|medicaid|case\s*(?:no|number)|dob|date\s+of\s+birth|birth\s*date)(\s*[:#-]?\s*)[A-Z0-9][A-Z0-9\/.-]*/gi, '$1$2[id]')
@@ -718,7 +723,7 @@
       if (e.source && e.line) line += '\n  at ' + String(e.source).split(/[?#]/)[0].split(/[\/\\]/).pop() + ':' + e.line;
     } else if (marker) {
       // An app diagnostic: only its tag and the module it names ("[CDN-FAIL] MiscModals").
-      var named = marker[2] && window.AlloModules && window.AlloModules[marker[2]] ? marker[2] : maskLikelyNames(scrubPersonalInfo(marker[2] || ''));
+      var named = marker[2] && window.AlloModules && Object.prototype.hasOwnProperty.call(window.AlloModules, marker[2]) && window.AlloModules[marker[2]] ? marker[2] : maskLikelyNames(scrubPersonalInfo(marker[2] || ''));
       line += '\n  ' + marker[1] + (named ? ' ' + named : '') + ' (rest of the message not included)';
     } else {
       line += '\n  (message text from the app is not included)';
@@ -971,9 +976,9 @@
     var m = /^\[CDN-(?:TIMEOUT|FAIL)\] (\S+) (?:did not settle|network error)/.exec((e && e.message) || '');
     if (!m) return '';
     try {
-      if (window.AlloModules && window.AlloModules[m[1]]) return m[1];
+      if (window.AlloModules && Object.prototype.hasOwnProperty.call(window.AlloModules, m[1]) && window.AlloModules[m[1]]) return m[1];
       var reg = window.__alloModuleRegistry;
-      if (reg && reg[m[1]] && reg[m[1]].status === 'loaded') return m[1];
+      if (reg && Object.prototype.hasOwnProperty.call(reg, m[1]) && reg[m[1]] && reg[m[1]].status === 'loaded') return m[1];
     } catch (_) {}
     return '';
   }
@@ -1270,9 +1275,22 @@
       else { row.status = 'ok'; row.detail = 'Allowed here; the browser will ask the first time.'; }
       return row;
     };
+    function withTimeout(promise, ms, fallbackVal) {
+      return new Promise(function (resolve) {
+        var settled = false;
+        var timer = setTimeout(function () {
+          if (!settled) { settled = true; resolve(fallbackVal); }
+        }, ms);
+        Promise.resolve(promise).then(function (val) {
+          if (!settled) { settled = true; clearTimeout(timer); resolve(val); }
+        }, function () {
+          if (!settled) { settled = true; clearTimeout(timer); resolve(fallbackVal); }
+        });
+      });
+    }
     try {
       if (navigator.permissions && typeof navigator.permissions.query === 'function') {
-        return navigator.permissions.query({ name: feature }).then(function (s) { return done(s && s.state); }, function () { return done(''); });
+        return withTimeout(navigator.permissions.query({ name: feature }).then(function (s) { return done(s && s.state); }, function () { return done(''); }), 5000, done(''));
       }
     } catch (_) {}
     return Promise.resolve(done(''));
@@ -1331,11 +1349,21 @@
   function compatStorageFactsRow() {
     var row = compatRow('persist', 'Keep saved work when the browser needs space', 'info', 'This host does not say.');
     if (!navigator.storage || typeof navigator.storage.persisted !== 'function') return Promise.resolve(row);
-    return Promise.resolve(navigator.storage.persisted()).then(function (persisted) {
-      row.status = persisted ? 'ok' : 'warn';
-      row.detail = persisted ? 'Saved work is kept until someone clears it.' : 'The browser may clear saved work if the device runs low on space.';
-      return row;
-    }, function () { return row; });
+    return new Promise(function (resolve) {
+      var settled = false;
+      var timer = setTimeout(function () { if (!settled) { settled = true; resolve(row); } }, 5000);
+      Promise.resolve(navigator.storage.persisted()).then(function (persisted) {
+        if (settled) return;
+        settled = true; clearTimeout(timer);
+        row.status = persisted ? 'ok' : 'warn';
+        row.detail = persisted ? 'Saved work is kept until someone clears it.' : 'The browser may clear saved work if the device runs low on space.';
+        resolve(row);
+      }, function () {
+        if (settled) return;
+        settled = true; clearTimeout(timer);
+        resolve(row);
+      });
+    });
   }
 
   // Must run inside the click: browsers allow a new window and clipboard writes
@@ -1382,10 +1410,24 @@
     rows.push(clipRow);
     try {
       if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-        pending.push(Promise.resolve(navigator.clipboard.writeText('AlloFlow compatibility check')).then(function () {
-          clipRow.status = 'ok';
-          clipRow.detail = 'Copied a test line (your clipboard now holds it).';
-        }, function (e) { clipRow.detail = 'Refused: ' + String(e && e.name || e); }));
+        pending.push(new Promise(function (resolve) {
+          var settled = false;
+          var timer = setTimeout(function () {
+            if (!settled) { settled = true; clipRow.detail = 'Timed out waiting for clipboard response.'; resolve(); }
+          }, 5000);
+          Promise.resolve(navigator.clipboard.writeText('AlloFlow compatibility check')).then(function () {
+            if (settled) return;
+            settled = true; clearTimeout(timer);
+            clipRow.status = 'ok';
+            clipRow.detail = 'Copied a test line (your clipboard now holds it).';
+            resolve();
+          }, function (e) {
+            if (settled) return;
+            settled = true; clearTimeout(timer);
+            clipRow.detail = 'Refused: ' + String(e && e.name || e);
+            resolve();
+          });
+        }));
       }
     } catch (e) { clipRow.detail = 'Refused: ' + String(e && e.name || e); }
 
@@ -1484,17 +1526,22 @@
 
   // Reuses the device-storage probe (popup and embedded-frame channels). Its
   // popup half needs this click, so it runs inline when the module is loaded.
+  var compatStorageRunning = false;
   function runCompatDeviceStorage() {
+    if (compatStorageRunning) return;
     var ds = window.alloDeviceStorage;
     if (ds && typeof ds.probe === 'function') {
+      compatStorageRunning = true;
       setCompatRow(compatRow('device-storage', 'Device storage connection', 'info', 'Checking (up to about 15 seconds)…'));
       Promise.resolve().then(function () { return ds.probe(); }).then(function (res) {
+        compatStorageRunning = false;
         var s = (res && res.summary) || {};
         var bad = function (v) { return /^FAILED/.test(String(v || '')); };
         var status = bad(s.popup) && bad(s.iframe) ? 'no' : (bad(s.popup) || bad(s.iframe) ? 'warn' : 'ok');
         setCompatRow(compatRow('device-storage', 'Device storage connection', status,
           'Separate window: ' + String(s.popup || 'no answer') + '. Embedded frame: ' + String(s.iframe || 'no answer') + '.'));
       }, function (e) {
+        compatStorageRunning = false;
         setCompatRow(compatRow('device-storage', 'Device storage connection', 'no', 'Check failed: ' + String(e && (e.code || e.message) || e)));
       });
       return;
@@ -1875,13 +1922,15 @@
     panelTrigger = document.activeElement;
     panelBackgroundNodes = [];
     Array.prototype.slice.call(document.body.children).forEach(function (child) {
-      if (child.tagName === 'SCRIPT' || child.tagName === 'STYLE' || child.tagName === 'LINK') return;
+      if (child.tagName === 'SCRIPT' || child.tagName === 'STYLE' || child.tagName === 'LINK' || child.tagName === 'TEMPLATE') return;
+      if (typeof child.matches === 'function' && child.matches('[aria-live], [role="status"], [role="alert"], [data-toast-region]')) return;
       panelBackgroundNodes.push({ node: child, inert: child.hasAttribute('inert'), ariaHidden: child.getAttribute('aria-hidden') });
       child.setAttribute('inert', '');
       child.setAttribute('aria-hidden', 'true');
     });
     panel = document.createElement('div');
     panel.id = 'allo-err-panel';
+    panel.tabIndex = -1;
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-modal', 'true');
     panel.setAttribute('aria-label', quietStudentView() ? _errT('error_reporter_student_title', 'Report a problem') : 'AlloFlow Error Reporter');
@@ -1892,7 +1941,13 @@
       'padding:20px', 'box-sizing:border-box'
     ].join(';');
     panel.innerHTML = panelHtml();
-    panel.onclick = function (ev) { if (ev.target === panel) closePanel(); };
+    var panelBackdropDown = null;
+    panel.addEventListener('pointerdown', function (ev) { panelBackdropDown = ev.target === panel; }, true);
+    panel.onclick = function (ev) {
+      var shouldClose = ev.target === panel && panelBackdropDown !== false;
+      panelBackdropDown = null;
+      if (shouldClose) closePanel();
+    };
     panel.addEventListener('pointerdown', holdPanelPress, true);
     panel.addEventListener('keydown', holdPanelPress, true);
     ['pointerup', 'pointercancel', 'keyup'].forEach(function (type) { document.addEventListener(type, releasePanelPress, true); });
@@ -1910,8 +1965,8 @@
         closePanel();
       }
       if (ev.key === 'Tab') {
-        var controls = Array.prototype.slice.call(panel.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]'))
-          .filter(function (node) { return node.tabIndex >= 0 && !node.hidden && !node.closest('[hidden]'); });
+        var controls = Array.prototype.slice.call(panel.querySelectorAll('button:not([disabled]), summary, a[href], input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [contenteditable="true"], [tabindex]'))
+          .filter(function (node) { return node.tabIndex >= 0 && !node.hidden && !node.closest('[hidden], [inert], [aria-hidden="true"]'); });
         var first = controls[0], last = controls[controls.length - 1];
         if (!first) { ev.preventDefault(); return; }
         var active = document.activeElement;
@@ -1938,9 +1993,9 @@
     });
     panelBackgroundNodes = [];
     if (panel) { panel.remove(); panel = null; }
-    var target = panelTrigger && panelTrigger.isConnected ? panelTrigger : badge;
+    var target = panelTrigger && panelTrigger !== document.body && panelTrigger !== document.documentElement && panelTrigger.isConnected ? panelTrigger : (badge && badge.isConnected && badge.style.display !== 'none' ? badge : null);
     panelTrigger = null;
-    if (target) target.focus();
+    if (target && typeof target.focus === 'function') target.focus();
   }
 
   // Incoming log entries rebuild the panel. A rebuild between press and release
@@ -2096,31 +2151,7 @@
     };
     if ($('aer-sess-refresh')) $('aer-sess-refresh').onclick = refreshPanelIfOpen;
     if ($('aer-sess-copy')) $('aer-sess-copy').onclick = function () {
-      var text = redactOutgoing(buildSessionDiagText());
-      var btn = $('aer-sess-copy');
-      var flash = function (label) {
-        if (!btn) return;
-        btn.textContent = label;
-        setTimeout(function () { var b = $('aer-sess-copy'); if (b) b.textContent = 'Copy diagnostics'; }, 1500);
-      };
-      var fallback = function () {
-        try {
-          var ta = document.createElement('textarea');
-          ta.setAttribute('aria-label', 'Temporary field for copying session diagnostics');
-          ta.value = text;
-          ta.style.position = 'fixed'; ta.style.opacity = '0';
-          document.body.appendChild(ta);
-          ta.select();
-          var ok = document.execCommand('copy');
-          document.body.removeChild(ta);
-          flash(ok ? 'Copied ✓' : 'Copy failed');
-        } catch (_) { flash('Copy failed'); }
-      };
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(function () { flash('Copied ✓'); }).catch(fallback);
-        } else fallback();
-      } catch (_) { fallback(); }
+      copyDiagnosticsText(buildSessionDiagText(), 'aer-sess-copy', 'Copy diagnostics');
     };
     if ($('aer-tts-refresh')) $('aer-tts-refresh').onclick = refreshPanelIfOpen;
     if ($('aer-tts-clear')) $('aer-tts-clear').onclick = function () {
@@ -2128,31 +2159,7 @@
       refreshPanelIfOpen();
     };
     if ($('aer-tts-copy')) $('aer-tts-copy').onclick = function () {
-      var text = redactOutgoing(buildTtsDiagText());
-      var btn = $('aer-tts-copy');
-      var flash = function (label) {
-        if (!btn) return;
-        btn.textContent = label;
-        setTimeout(function () { var b = $('aer-tts-copy'); if (b) b.textContent = 'Copy diagnostics'; }, 1500);
-      };
-      var fallback = function () {
-        try {
-          var ta = document.createElement('textarea');
-          ta.setAttribute('aria-label', 'Temporary field for copying text-to-speech diagnostics');
-          ta.value = text;
-          ta.style.position = 'fixed'; ta.style.opacity = '0';
-          document.body.appendChild(ta);
-          ta.select();
-          var ok = document.execCommand('copy');
-          document.body.removeChild(ta);
-          flash(ok ? 'Copied ✓' : 'Copy failed');
-        } catch (_) { flash('Copy failed'); }
-      };
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(function () { flash('Copied ✓'); }).catch(fallback);
-        } else fallback();
-      } catch (_) { fallback(); }
+      copyDiagnosticsText(buildTtsDiagText(), 'aer-tts-copy', 'Copy diagnostics');
     };
     if ($('aer-filter')) $('aer-filter').onchange = function (ev) {
       prefs.filter = ev.target.value;
@@ -2230,7 +2237,16 @@
         if (this !== $('aer-description')) return;
         descriptionComposing = false;
         captureDescriptionDraft();
+        updateReviewControls();
         if (descriptionRefreshPending) { descriptionRefreshPending = false; refreshPanelIfOpen(); }
+      };
+      $('aer-description').onblur = function () {
+        if (descriptionComposing) {
+          descriptionComposing = false;
+          captureDescriptionDraft();
+          updateReviewControls();
+          if (descriptionRefreshPending) { descriptionRefreshPending = false; refreshPanelIfOpen(); }
+        }
       };
     }
     OUTGOING_FIELDS.forEach(function (spec) {
@@ -2241,12 +2257,21 @@
         captureOutgoingDraft();
         updateReviewControls();
       };
-      field.oncompositionstart = function () { if (!this.readOnly) descriptionComposing = true; };
+      field.oncompositionstart = function () { if (this === $(spec[0]) && !this.readOnly) descriptionComposing = true; };
       field.oncompositionend = function () {
+        if (this !== $(spec[0])) return;
         descriptionComposing = false;
         captureOutgoingDraft();
         updateReviewControls();
         if (descriptionRefreshPending) { descriptionRefreshPending = false; refreshPanelIfOpen(); }
+      };
+      field.onblur = function () {
+        if (descriptionComposing) {
+          descriptionComposing = false;
+          captureOutgoingDraft();
+          updateReviewControls();
+          if (descriptionRefreshPending) { descriptionRefreshPending = false; refreshPanelIfOpen(); }
+        }
       };
     });
     if ($('aer-review-confirm')) $('aer-review-confirm').onchange = function () {

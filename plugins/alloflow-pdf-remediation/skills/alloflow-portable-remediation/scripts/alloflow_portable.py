@@ -1362,7 +1362,8 @@ code {{ font-family: Consolas, "Courier New", monospace; }}
 @media print {{
   body {{ max-width: none; padding: 0; }}
   .skip-link {{ display: none; }}
-  h1, blockquote, th, td, pre, .alloflow-figure-fallback, .alloflow-formula {{ border: 0; }}
+  h1, blockquote, pre, .alloflow-figure-fallback, .alloflow-formula {{ border: 0; }}
+  th, td {{ border: 1px solid #9ca3af; }}
   th, pre, .alloflow-formula {{ background: #ffffff; }}
 }}
 </style>
@@ -1944,13 +1945,23 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
             3,
         )
 
+    source_bytes = source.read_bytes() if source_receipt["kind"] == "pdf" else b""
+    source_is_encrypted = bool(
+        source_bytes and re.search(rb"/Encrypt\s*(?:\d+\s+0\s+R|<<)", source_bytes)
+    )
+    if source_is_encrypted:
+        validated["warnings"].append(
+            "The source PDF contains an /Encrypt dictionary; deterministic text, annotation, "
+            "and interactive-form inspection cannot read encrypted streams reliably."
+        )
+
     # The blocked-type gate reads document_type, which the plan author supplies.
     # Cross-check it against the source itself so a mislabelled interactive form
     # cannot slip through: relabelling a fillable form as "report" bypassed the
     # gate entirely until this check existed (corpus round 4). This catches
     # digital forms only - a SCANNED form carries no machine-detectable fields,
     # so classifying those still depends on the reader.
-    if source_receipt["kind"] == "pdf" and _has_interactive_fields(source.read_bytes()):
+    if source_receipt["kind"] == "pdf" and _has_interactive_fields(source_bytes):
         raise PortableError(
             "The source contains interactive form fields but the plan declares document_type '"
             + str(validated["document"]["document_type"])
@@ -1964,9 +1975,9 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
     # plan. Catches a GoTo-linked footnote apparatus flattened to plain text
     # and a written-out URL rebuilt under a different scheme than the source
     # annotation actually carried.
-    if source_receipt["kind"] == "pdf":
+    if source_receipt["kind"] == "pdf" and not source_is_encrypted:
         try:
-            source_annotations = _pdf_extract_annotations(source.read_bytes())
+            source_annotations = _pdf_extract_annotations(source_bytes)
             validated["warnings"].extend(
                 _annotation_link_warnings(source_annotations, validated)
             )
@@ -1996,44 +2007,51 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
     source_recall: Optional[float] = None
     source_recall_detail: Dict[str, Any] = {"status": "not_run"}
     if source_receipt["kind"] == "pdf":
-        try:
-            extraction = _pdf_extract_text(source.read_bytes())
-            source_tokens = _tokens(extraction["text"])
-            token_total = sum(source_tokens.values())
-            if token_total >= MIN_RECALL_TOKENS:
-                plan_tokens = _tokens(_plan_text(validated))
-                source_recall = _token_recall(source_tokens, plan_tokens)
-                # Show WHAT is missing, so a reviewer can tell disclosed page
-                # furniture (running footers, repeated footnotes) from real
-                # content loss at a glance (corpus round 3: a 0.76 recall was
-                # entirely an every-page footnote consolidated by design).
-                missing = sorted(
-                    ((token, count - plan_tokens.get(token, 0))
-                     for token, count in source_tokens.items()
-                     if count > plan_tokens.get(token, 0)),
-                    key=lambda item: -item[1],
-                )
-                source_recall_detail = {
-                    "status": "completed",
-                    "sourceTokens": token_total,
-                    "recall": source_recall,
-                    "missingTokens": sum(count for _, count in missing),
-                    "topMissingTokens": [
-                        {"token": token, "count": count} for token, count in missing[:20]
-                    ],
-                }
-            else:
-                source_recall_detail = {
-                    "status": "not_measurable",
-                    "sourceTokens": token_total,
-                    "reason": (
-                        "The source has no usable extractable text layer (scanned pages or an "
-                        "encoding outside deterministic scope); fidelity rests on the plan "
-                        "author's reading plus independent verification."
-                    ),
-                }
-        except Exception as exc:  # extraction must never sink a remediation
-            source_recall_detail = {"status": "failed", "reason": compact_error(exc)}
+        if source_is_encrypted:
+            source_recall_detail = {
+                "status": "not_measurable",
+                "sourceTokens": 0,
+                "reason": "The source PDF is encrypted; deterministic text extraction cannot verify recall.",
+            }
+        else:
+            try:
+                extraction = _pdf_extract_text(source_bytes)
+                source_tokens = _tokens(extraction["text"])
+                token_total = sum(source_tokens.values())
+                if token_total >= MIN_RECALL_TOKENS:
+                    plan_tokens = _tokens(_plan_text(validated))
+                    source_recall = _token_recall(source_tokens, plan_tokens)
+                    # Show WHAT is missing, so a reviewer can tell disclosed page
+                    # furniture (running footers, repeated footnotes) from real
+                    # content loss at a glance (corpus round 3: a 0.76 recall was
+                    # entirely an every-page footnote consolidated by design).
+                    missing = sorted(
+                        ((token, count - plan_tokens.get(token, 0))
+                         for token, count in source_tokens.items()
+                         if count > plan_tokens.get(token, 0)),
+                        key=lambda item: -item[1],
+                    )
+                    source_recall_detail = {
+                        "status": "completed",
+                        "sourceTokens": token_total,
+                        "recall": source_recall,
+                        "missingTokens": sum(count for _, count in missing),
+                        "topMissingTokens": [
+                            {"token": token, "count": count} for token, count in missing[:20]
+                        ],
+                    }
+                else:
+                    source_recall_detail = {
+                        "status": "not_measurable",
+                        "sourceTokens": token_total,
+                        "reason": (
+                            "The source has no usable extractable text layer (scanned pages or an "
+                            "encoding outside deterministic scope); fidelity rests on the plan "
+                            "author's reading plus independent verification."
+                        ),
+                    }
+            except Exception as exc:  # extraction must never sink a remediation
+                source_recall_detail = {"status": "failed", "reason": compact_error(exc)}
 
     rendered = render_html(validated)
     if len(rendered.encode("utf-8")) > MAX_HTML_BYTES:
@@ -2062,10 +2080,12 @@ def remediate(args: argparse.Namespace) -> Dict[str, Any]:
         else:
             # The actual render is the authoritative capability check. A separate
             # launch/close probe both duplicated startup work and could time out
-            # before a render that would succeed. The helper still verifies the
-            # tagged bytes; explicit capability discovery retains its own probe.
+            # before a render that would succeed. Still check lightweight
+            # veraPDF availability before rendering so we don't render twice
+            # through Chromium when veraPDF is absent and pdfuaid must be withheld.
+            can_validate_pdfua = args.verapdf != "never" and verapdf_capability().get("available") is True
             pdf_result = render_pdf(staged_paths["html"], staged_paths["pdf"],
-                                    pdfua_id="none" if args.verapdf == "never" else "1")
+                                    pdfua_id="1" if can_validate_pdfua else "none")
             if args.pdf == "required" and pdf_result.get("status") != "completed":
                 raise PortableError(
                     "Tagged-PDF generation failed: " + compact_error(pdf_result.get("reason")),
@@ -2349,17 +2369,30 @@ def _pdf_iter_stream_objects(data: bytes):
             start += 1
         if data[start:start + 1] == b"\n":
             start += 1
-        end = data.find(b"endstream", start)
-        if end < 0:
-            return
-        raw = data[start:end]
         length_match = re.search(rb"/Length\s+(\d+)(?![\d\s]*0\s+R)", dictionary)
+        raw: Optional[bytes] = None
+        end = -1
         if length_match:
             declared = int(length_match.group(1))
-            if 0 < declared <= len(raw):
-                raw = raw[:declared]
-        else:
-            raw = raw.rstrip(b"\r\n")
+            if 0 <= declared <= length - start:
+                after_len = start + declared
+                # Prefer direct /Length when endstream follows (survives literal
+                # 'endstream' bytes inside compressed or JPEG stream payloads).
+                probe_end = data.find(b"endstream", after_len, min(length, after_len + 64))
+                if probe_end >= 0 and not data[after_len:probe_end].strip():
+                    raw = data[start:after_len]
+                    end = probe_end
+        if raw is None:
+            end = data.find(b"endstream", start)
+            if end < 0:
+                return
+            raw = data[start:end]
+            if length_match:
+                declared = int(length_match.group(1))
+                if 0 < declared <= len(raw):
+                    raw = raw[:declared]
+            else:
+                raw = raw.rstrip(b"\r\n")
         yield number, dictionary, raw
         # PDF 1.5+ object streams: non-stream objects (page dicts, fonts,
         # the catalog) can live compressed inside /ObjStm containers, where a
@@ -2567,7 +2600,7 @@ def _resolve_color_space(
             + " (decoded as inverted gray, naive tint)"
         ), None, "invert"
     indexed = re.search(
-        rb"/Indexed\s*(/\w+|\[[^\]]*\]|\d+\s+0\s+R)\s+(\d+)\s+(\d+\s+0\s+R|\([^)]*\)|<[0-9A-Fa-f\s]*>)",
+        rb"/Indexed\s*(/\w+|\[[^\]]*\]|\d+\s+0\s+R)\s+(\d+)\s+(\d+\s+0\s+R|\(|<[0-9A-Fa-f\s]*>)",
         blob,
     )
     if indexed:
@@ -2582,8 +2615,58 @@ def _resolve_color_space(
         elif lookup_blob.startswith(b"<"):
             digits = re.sub(rb"[^0-9A-Fa-f]", b"", lookup_blob)
             palette = bytes.fromhex(digits.decode("ascii"))
-        elif lookup_blob.startswith(b"("):
-            palette = lookup_blob[1:-1]
+        elif lookup_blob == b"(":
+            # Parse balanced PDF literal string with escape sequences (\n, \r, \t,
+            # \b, \f, \(, \), \\, line continuations, and 1-3 digit octal \ddd).
+            out_bytes = bytearray()
+            pos = indexed.end(3)
+            depth = 1
+            n_blob = len(blob)
+            while pos < n_blob and depth > 0:
+                ch = blob[pos]
+                if ch == 0x5C:  # backslash escape
+                    pos += 1
+                    if pos >= n_blob:
+                        break
+                    esc_b = blob[pos]
+                    if esc_b == ord("n"):
+                        out_bytes.append(0x0A); pos += 1
+                    elif esc_b == ord("r"):
+                        out_bytes.append(0x0D); pos += 1
+                    elif esc_b == ord("t"):
+                        out_bytes.append(0x09); pos += 1
+                    elif esc_b == ord("b"):
+                        out_bytes.append(0x08); pos += 1
+                    elif esc_b == ord("f"):
+                        out_bytes.append(0x0C); pos += 1
+                    elif esc_b in (0x0D, 0x0A):
+                        pos += 2 if (esc_b == 0x0D and pos + 1 < n_blob and blob[pos + 1] == 0x0A) else 1
+                    elif 0x30 <= esc_b <= 0x37:
+                        oct_digits = bytes([esc_b])
+                        pos += 1
+                        for _ in range(2):
+                            if pos < n_blob and 0x30 <= blob[pos] <= 0x37:
+                                oct_digits += bytes([blob[pos]])
+                                pos += 1
+                            else:
+                                break
+                        out_bytes.append(int(oct_digits, 8) & 0xFF)
+                    else:
+                        out_bytes.append(esc_b); pos += 1
+                elif ch == 0x28:  # '('
+                    depth += 1
+                    out_bytes.append(ch)
+                    pos += 1
+                elif ch == 0x29:  # ')'
+                    depth -= 1
+                    if depth > 0:
+                        out_bytes.append(ch)
+                    pos += 1
+                else:
+                    out_bytes.append(ch)
+                    pos += 1
+            if depth == 0:
+                palette = bytes(out_bytes)
         # The base may be inline OR an indirect ref ([/Indexed 590 0 R 255
         # 305 0 R] - Artemis objs 309/376/409); resolve it and normalise the
         # palette to RGB triplets whatever the base's component count.
@@ -2658,6 +2741,10 @@ def extract_images_command(args: argparse.Namespace) -> Dict[str, Any]:
         }
         if re.search(rb"/ImageMask\s+true", dictionary):
             entry["reason"] = "Stencil image mask (no standalone pixel data)."
+            skipped.append(entry)
+            continue
+        if width <= 0 or height <= 0 or width * height > MAX_IMAGE_PIXELS:
+            entry["reason"] = "Image dimensions exceed the safety pixel cap."
             skipped.append(entry)
             continue
         if width * height < min_pixels:
@@ -3689,6 +3776,78 @@ def _fonts_from_resources(
     return fonts
 
 
+def _pdf_ordered_page_objects(
+    index: Dict[int, Tuple[bytes, Optional[bytes]]],
+    data: Optional[bytes] = None,
+) -> List[Tuple[int, bytes, Optional[bytes]]]:
+    """Return /Page objects in true /Catalog -> /Pages -> /Kids reading order.
+
+    Falls back to sorted object numbers if no valid page tree is reachable, and
+    appends any orphan /Page objects not reached via /Kids so no text is lost.
+    """
+    ordered_nums: List[int] = []
+    seen_nodes: set = set()
+    seen_pages: set = set()
+
+    def _kids_array_bytes(d: bytes) -> bytes:
+        inline_arr = re.search(rb"/Kids\s*\[([^\]]*)\]", d)
+        if inline_arr:
+            return inline_arr.group(1)
+        indirect_ref = re.search(rb"/Kids\s+(\d+)\s+0\s+R", d)
+        if indirect_ref:
+            ref_num = int(indirect_ref.group(1))
+            entry = index.get(ref_num)
+            if entry:
+                return entry[0]
+            if data:
+                arr_obj = re.search(
+                    rb"(?:^|[\r\n])" + str(ref_num).encode("ascii") + rb"\s+0\s+obj\s*\[([^\]]*)\]",
+                    data,
+                )
+                if arr_obj:
+                    return arr_obj.group(1)
+        return b""
+
+    def walk_node(obj_num: int, depth: int) -> None:
+        if depth > 64 or obj_num in seen_nodes:
+            return
+        seen_nodes.add(obj_num)
+        entry = index.get(obj_num)
+        if not entry:
+            return
+        d = entry[0]
+        if re.search(rb"/Type\s*/Pages\b", d):
+            kids_blob = _kids_array_bytes(d)
+            for ref in re.findall(rb"(\d+)\s+0\s+R", kids_blob):
+                walk_node(int(ref), depth + 1)
+        elif re.search(rb"/Type\s*/Page\b", d):
+            if obj_num not in seen_pages:
+                seen_pages.add(obj_num)
+                ordered_nums.append(obj_num)
+
+    # Find /Catalog -> /Pages root (if multiple catalogs from incremental updates, prefer highest obj num)
+    catalog_nums = [
+        num for num, (d, _) in sorted(index.items(), reverse=True)
+        if re.search(rb"/Type\s*/Catalog\b", d)
+    ]
+    for cat_num in catalog_nums:
+        pages_ref = re.search(rb"/Pages\s+(\d+)\s+0\s+R", index[cat_num][0])
+        if pages_ref:
+            walk_node(int(pages_ref.group(1)), 0)
+            if ordered_nums:
+                break
+
+    # Append any remaining /Page objects not visited via /Kids (e.g. truncated/headless PDFs)
+    for num, (d, _) in sorted(index.items(), key=lambda item: item[0]):
+        if num in seen_pages:
+            continue
+        if re.search(rb"/Type\s*/Page\b", d) and not re.search(rb"/Type\s*/Pages\b", d):
+            seen_pages.add(num)
+            ordered_nums.append(num)
+
+    return [(num, index[num][0], index[num][1]) for num in ordered_nums if num in index]
+
+
 def _pdf_extract_text(data: bytes) -> Dict[str, Any]:
     index: Dict[int, Tuple[bytes, Optional[bytes]]] = {}
     for number, dictionary, raw in _pdf_iter_stream_objects(data):
@@ -3711,9 +3870,7 @@ def _pdf_extract_text(data: bytes) -> Dict[str, Any]:
         return _fonts_from_resources(index, resources)
 
     pages: List[str] = []
-    for number, (dictionary, raw) in sorted(index.items(), key=lambda item: item[0]):
-        if not re.search(rb"/Type\s*/Page\b", dictionary) or re.search(rb"/Type\s*/Pages\b", dictionary):
-            continue
+    for number, dictionary, raw in _pdf_ordered_page_objects(index, data):
         content_refs: List[int] = []
         direct = re.search(rb"/Contents\s+(\d+)\s+0\s+R", dictionary)
         if direct:
@@ -3868,9 +4025,7 @@ def _pdf_extract_text_ordered(data: bytes) -> Dict[str, Any]:
         return _fonts_from_resources(index, resources)
 
     pages: List[List[str]] = []
-    for number, (dictionary, raw) in sorted(index.items(), key=lambda item: item[0]):
-        if not re.search(rb"/Type\s*/Page\b", dictionary) or re.search(rb"/Type\s*/Pages\b", dictionary):
-            continue
+    for number, dictionary, raw in _pdf_ordered_page_objects(index, data):
         content_refs: List[int] = []
         direct = re.search(rb"/Contents\s+(\d+)\s+0\s+R", dictionary)
         if direct:

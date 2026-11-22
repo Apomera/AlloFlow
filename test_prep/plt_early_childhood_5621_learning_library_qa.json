@@ -25,7 +25,7 @@
       "expectedCode": "5621",
       "expectedPackId": "praxis-plt-early-childhood-5621",
       "sourceItemsReviewed": 200,
-      "allItemsReviewed": 500,
+      "allItemsReviewed": 200,
       "packIdentityMisses": 0,
       "sourceItemIdentityMisses": 0,
       "foreignCodeOccurrences": 0,
@@ -55,8 +55,8 @@
     "algorithm": "sha256",
     "reviewedAt": "2026-07-18",
     "sourceItemCount": 200,
-    "sourceItemsSha256": "6ba54c4dcf7e61501a229ab921f8c0a5d1a62ef2e860fe83b9b4f096866b1e04",
-    "learningLibrarySha256": "ebe27d95cc0197ec048160100d2c44d425fad4f8a747083c3fcf396edef9d5e5",
+    "sourceItemsSha256": "c34776da65c02af06e040dfa81a7eb328784f45c8974d4fccfa39e99ab73a748",
+    "learningLibrarySha256": "1a56af553a2e382b84873f41880ba6e31fb5308d3028fe0ff5f14cba39013628",
     "meaning": "Credential-specific native and learning-library QA passed against exactly these 200 source items and this learning-library artifact; final expansion activities are reviewed separately by the consolidated release QA."
   }
 }

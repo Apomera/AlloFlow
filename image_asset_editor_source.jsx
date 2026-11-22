@@ -331,6 +331,7 @@ async function renderImageAsset(value, settingsValue, options) {
     const attempt = attempts[index];
     const target = computeImageAssetTargetSize(decoded.width, decoded.height, settings, attempt);
     const canvas = document.createElement('canvas');
+    canvas.setAttribute('aria-hidden', 'true');
     try {
       canvas.width = target.width;
       canvas.height = target.height;
@@ -479,6 +480,16 @@ function ImageAssetEditor(props) {
   }
 
   const aspect = settings.mode === 'crop' ? IMAGE_ASSET_ASPECTS[settings.aspect].ratio : 4 / 3;
+  const framingSummary = settings.mode === 'crop'
+    ? 'Crop · ' + IMAGE_ASSET_ASPECTS[settings.aspect].label + ' · ' + settings.zoom + '%'
+    : 'Fit · Original';
+  const focalPresets = [
+    { id: 'center', label: 'Center', focalX: 50, focalY: 50 },
+    { id: 'top', label: 'Top', focalX: 50, focalY: 15 },
+    { id: 'bottom', label: 'Bottom', focalX: 50, focalY: 85 },
+    { id: 'left', label: 'Left', focalX: 15, focalY: 50 },
+    { id: 'right', label: 'Right', focalX: 85, focalY: 50 },
+  ];
   const previewImageStyle = settings.mode === 'crop'
     ? {
         width: '100%',
@@ -509,12 +520,27 @@ function ImageAssetEditor(props) {
           <h4 id={headingRef.current} className="text-sm font-black text-fuchsia-950">Position your visual</h4>
           <p className="mt-1 text-xs leading-relaxed text-slate-600">Fit keeps the whole image. Crop fills a chosen frame and lets you move the point of focus.</p>
         </div>
-        {props.sourceName && <span className="max-w-full truncate rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-700">{_iaeString(props.sourceName, 120)}</span>}
+        <div className="flex flex-wrap items-center gap-1.5 max-w-full">
+          <span data-testid="image-asset-summary" className="rounded-full bg-fuchsia-50 border border-fuchsia-200 px-2.5 py-1 text-xs font-bold text-fuchsia-950">{framingSummary}</span>
+          {props.sourceName && <span className="max-w-full truncate rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700">{_iaeString(props.sourceName, 120)}</span>}
+        </div>
       </div>
 
       <div className="mt-3 grid gap-4 md:grid-cols-2">
-        <div className="overflow-hidden rounded-xl border border-slate-300 bg-slate-100" style={{ aspectRatio: String(aspect) }}>
+        <div className="relative overflow-hidden rounded-xl border border-slate-300 bg-slate-100" style={{ aspectRatio: String(aspect) }}>
           <img src={source} alt={props.previewAlt || 'Preview of the image being positioned'} className="block" style={previewImageStyle} />
+          {settings.mode === 'crop' && (
+            <div aria-hidden="true" data-testid="image-asset-focal-indicator" className="pointer-events-none absolute inset-0">
+              <div className="absolute inset-x-0 top-1/3 h-px bg-white/50 shadow-sm" />
+              <div className="absolute inset-x-0 top-2/3 h-px bg-white/50 shadow-sm" />
+              <div className="absolute inset-y-0 left-1/3 w-px bg-white/50 shadow-sm" />
+              <div className="absolute inset-y-0 left-2/3 w-px bg-white/50 shadow-sm" />
+              <span
+                className="absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-fuchsia-700/80 shadow"
+                style={{ left: settings.focalX + '%', top: settings.focalY + '%' }}
+              />
+            </div>
+          )}
         </div>
 
         <div className="space-y-3">
@@ -548,7 +574,27 @@ function ImageAssetEditor(props) {
               <label className="block text-xs font-black text-slate-700">Vertical focus <output className="font-medium">{settings.focalY}%</output>
                 <input type="range" min="0" max="100" step="5" value={settings.focalY} disabled={busy} onChange={(event) => patchSettings({ focalY: event.target.value })} aria-label="Vertical image focus" className="mt-1 block min-h-11 w-full accent-fuchsia-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 rounded" />
               </label>
-              <button type="button" disabled={busy} onClick={() => setSettings(normalizeImageAssetSettings({ mode: 'crop', aspect: settings.aspect }))} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600">Center and reset zoom</button>
+              <div>
+                <div className="text-xs font-black text-slate-700 mb-1">Quick focus</div>
+                <div className="flex flex-wrap gap-1.5" role="group" aria-label="Quick focal point presets">
+                  {focalPresets.map(preset => {
+                    const active = settings.focalX === preset.focalX && settings.focalY === preset.focalY;
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        disabled={busy}
+                        aria-pressed={active}
+                        onClick={() => patchSettings({ focalX: preset.focalX, focalY: preset.focalY })}
+                        className={'min-h-11 rounded-xl border px-3 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 ' + (active ? 'border-fuchsia-700 bg-fuchsia-700 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50')}
+                      >
+                        {preset.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <button type="button" disabled={busy} onClick={() => setSettings(normalizeImageAssetSettings({ mode: 'crop', aspect: settings.aspect }))} className="min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors motion-reduce:transition-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600">Center and reset zoom</button>
             </React.Fragment>
           )}
         </div>
@@ -556,8 +602,8 @@ function ImageAssetEditor(props) {
 
       {error && <p role="alert" className="mt-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-bold text-red-800">{error}</p>}
       <div className="mt-4 flex flex-wrap gap-2">
-        <button type="button" onClick={apply} disabled={busy} className="min-h-11 rounded-xl bg-fuchsia-700 px-4 py-2 text-sm font-black text-white hover:bg-fuchsia-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 focus-visible:ring-offset-2">{busy ? 'Preparing image…' : 'Use edited image'}</button>
-        <button type="button" onClick={() => typeof props.onCancel === 'function' && props.onCancel()} disabled={busy} className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500">Cancel</button>
+        <button type="button" onClick={apply} disabled={busy} className="min-h-11 rounded-xl bg-fuchsia-700 px-4 py-2 text-sm font-black text-white hover:bg-fuchsia-800 transition-colors motion-reduce:transition-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-600 focus-visible:ring-offset-2">{busy ? 'Preparing image…' : 'Use edited image'}</button>
+        <button type="button" onClick={() => typeof props.onCancel === 'function' && props.onCancel()} disabled={busy} className="min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors motion-reduce:transition-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500">Cancel</button>
       </div>
     </section>
   );

@@ -39,7 +39,7 @@ const WolframProvider = (() => {
         if (_isBlockedByPolicy()) return '';
         try {
             const config = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-            return typeof config.wolframAppId === 'string' ? config.wolframAppId : '';
+            return typeof config.wolframAppId === 'string' ? config.wolframAppId.trim() : '';
         } catch { return ''; }
     }
 
@@ -50,6 +50,14 @@ const WolframProvider = (() => {
         // Canvas, bundled Desktop offline builds, secrets lock, student AI lock, or restrictive managed policy block external APIs
         if (_isBlockedByPolicy()) return false;
         return !!getApiKey();
+    }
+
+    function _bytesToAsciiFallback(bytes) {
+        const parts = [];
+        for (let i = 0; i < bytes.length; i += 8192) {
+            parts.push(String.fromCharCode.apply(null, bytes.subarray(i, i + 8192)));
+        }
+        return parts.join('');
     }
 
     async function _readBoundedText(res, maxBytes) {
@@ -72,7 +80,7 @@ const WolframProvider = (() => {
                     try { await reader.cancel(); } catch (_) {}
                     throw new Error('Response exceeded size limit');
                 }
-                chunks.push(decoder ? decoder.decode(bytes, { stream: true }) : String.fromCharCode.apply(null, bytes));
+                chunks.push(decoder ? decoder.decode(bytes, { stream: true }) : _bytesToAsciiFallback(bytes));
             }
             if (decoder) chunks.push(decoder.decode());
             return chunks.join('');
@@ -95,7 +103,7 @@ const WolframProvider = (() => {
                 return { ok: false, status: res.status, value: null };
             }
             if (asJson) {
-                if (!res.body || typeof res.body.getReader !== 'function') {
+                if ((!res.body || typeof res.body.getReader !== 'function') && typeof res.text !== 'function') {
                     return { ok: true, status: res.status, value: await res.json() };
                 }
                 const text = await _readBoundedText(res, MAX_RESPONSE_BYTES);
@@ -131,9 +139,12 @@ const WolframProvider = (() => {
      */
     async function query(input) {
         if (!isAvailable()) return null;
+        if (typeof input !== 'string') return null;
+        const cleanInput = input.trim();
+        if (!cleanInput || cleanInput.length > 500) return null;
         const appId = getApiKey();
         try {
-            const url = `${SHORT_URL}?appid=${encodeURIComponent(appId)}&i=${encodeURIComponent(input)}`;
+            const url = `${SHORT_URL}?appid=${encodeURIComponent(appId)}&i=${encodeURIComponent(cleanInput)}`;
             const res = await fetchWolframBody(url, false);
             if (!res.ok) {
                 console.warn('[Wolfram] Query failed:', res.status);
@@ -152,9 +163,12 @@ const WolframProvider = (() => {
      */
     async function fullQuery(input) {
         if (!isAvailable()) return null;
+        if (typeof input !== 'string') return null;
+        const cleanInput = input.trim();
+        if (!cleanInput || cleanInput.length > 500) return null;
         const appId = getApiKey();
         try {
-            const url = `${BASE_URL}/query?appid=${encodeURIComponent(appId)}&input=${encodeURIComponent(input)}&format=plaintext&output=json`;
+            const url = `${BASE_URL}/query?appid=${encodeURIComponent(appId)}&input=${encodeURIComponent(cleanInput)}&format=plaintext&output=json`;
             const res = await fetchWolframBody(url, true);
             if (!res.ok || !res.value || typeof res.value !== 'object') return null;
             return res.value.queryresult || null;
@@ -170,12 +184,15 @@ const WolframProvider = (() => {
      */
     async function verify(problem, studentAnswer) {
         if (!isAvailable()) return { verified: false, reason: 'unavailable' };
+        if (studentAnswer === null || studentAnswer === undefined || typeof studentAnswer === 'object') {
+            return { verified: true, correct: false, wolframAnswer: null, studentAnswer: '' };
+        }
         try {
             const wolframAnswer = await query(`solve ${problem}`);
             if (!wolframAnswer) return { verified: false, reason: 'no_response' };
 
-            // Normalize both answers for comparison
-            const normalize = (s) => String(s).replace(/\s+/g, '').toLowerCase().replace(/[^0-9a-z.+\-*/=]/g, '');
+            // Normalize both answers for comparison (preserving exponent ^)
+            const normalize = (s) => String(s).replace(/\s+/g, '').toLowerCase().replace(/[^0-9a-z.+\-*/=^]/g, '');
             const studentNorm = normalize(studentAnswer);
             const wolframNorm = normalize(wolframAnswer);
 
@@ -189,7 +206,8 @@ const WolframProvider = (() => {
             } else if (Number.isFinite(studentNum) && Number.isFinite(wolframNum)) {
                 correct = Math.abs(studentNum - wolframNum) < 0.01;
             } else {
-                correct = studentNorm === wolframNorm || (wolframNorm.includes('=') && wolframNorm.split('=').pop() === studentNorm);
+                const eqParts = wolframNorm.split('=');
+                correct = studentNorm === wolframNorm || (eqParts.length === 2 && eqParts[1] === studentNorm);
             }
 
             return {
@@ -269,7 +287,7 @@ const WolframProvider = (() => {
             if (result === '4' || result === '4\n' || (result && result.trim() === '4')) {
                 return { success: true, response: result.trim() };
             }
-            return { success: false, error: `Unexpected response: ${result}` };
+            return { success: false, error: _redactSecrets(`Unexpected response: ${result}`) };
         } catch (e) {
             return { success: false, error: _redactSecrets(e && e.message) };
         }

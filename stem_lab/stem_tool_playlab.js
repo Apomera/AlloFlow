@@ -23,7 +23,7 @@
 })();
 
 // ═══ Defensive StemLab guard ═══
-window.StemLab = window.StemLab || {
+if (typeof window !== 'undefined') window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
   registerTool: function(id, config) {
@@ -48,6 +48,7 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  if (typeof window === 'undefined' || !window.StemLab) return;
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
@@ -65,7 +66,7 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
   (function() {
-    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-stem-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-stem-motion-reduce-css';
     st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
@@ -74,7 +75,7 @@ window.StemLab = window.StemLab || {
 
   // ── Focus-visible outline (WCAG 2.4.7) ──
   (function() {
-    if (document.getElementById('allo-playlab-focus-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-playlab-focus-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-playlab-focus-css';
     st.textContent = '[data-pl-focusable]:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;border-radius:6px}';
@@ -84,7 +85,7 @@ window.StemLab = window.StemLab || {
   // ── ARIA live region ──
   // PlayLab field-first polish: stronger live surface, responsive layout, stable controls.
   (function() {
-    if (document.getElementById('allo-playlab-field-polish-css')) return;
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-playlab-field-polish-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-playlab-field-polish-css';
     st.textContent = [
@@ -165,7 +166,7 @@ window.StemLab = window.StemLab || {
   })();
 
   (function() {
-    if (document.getElementById('allo-live-playlab')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-playlab')) return;
     var liveRegion = document.createElement('div');
     liveRegion.id = 'allo-live-playlab';
     liveRegion.setAttribute('aria-live', 'polite');
@@ -176,9 +177,46 @@ window.StemLab = window.StemLab || {
     document.body.appendChild(liveRegion);
   })();
   function plAnnounce(msg) {
+    if (typeof document === 'undefined') return;
     var lr = document.getElementById('allo-live-playlab');
     if (lr) lr.textContent = msg;
   }
+
+  // ── Zero-GC Canvas Primitives & Pre-Allocated Motion Pools ──
+  function _plIsHighContrast() {
+    if (typeof document === 'undefined') return false;
+    var root = document.documentElement;
+    if (root && root.classList && root.classList.contains('theme-contrast')) return true;
+    return !!(document.body && document.body.classList && document.body.classList.contains('theme-contrast'));
+  }
+  function _plSafeEllipse(g, x, y, rx, ry, rot, sAng, eAng) {
+    if (!g) return;
+    if (typeof g.ellipse === 'function') {
+      g.ellipse(x, y, Math.max(0.1, rx), Math.max(0.1, ry), rot || 0, sAng == null ? 0 : sAng, eAng == null ? Math.PI * 2 : eAng);
+      return;
+    }
+    g.arc(x, y, Math.max(0.1, (rx + ry) * 0.5), sAng == null ? 0 : sAng, eAng == null ? Math.PI * 2 : eAng);
+  }
+  var _PL_FLOOD_NORM_X = new Float32Array([0, 1, 0, 1]);
+  var _PL_FLOOD_NORM_Y = new Float32Array([0, 0, 1, 1]);
+  var _PL_YARD_LABELS = new Uint8Array([10, 20, 30, 40, 50, 40, 30, 20, 10]);
+  var _PL_XG_LEGEND = ['rgba(30,80,200,0.8)', 'rgba(60,180,60,0.8)', 'rgba(230,200,30,0.8)', 'rgba(230,50,30,0.8)'];
+  var _PL_DUST_COUNT = 6;
+  var _PL_DUST_ANG = new Float32Array(_PL_DUST_COUNT);
+  var _PL_DUST_RAD = new Float32Array(_PL_DUST_COUNT);
+  var _PL_BURST_COUNT = 10;
+  var _PL_BURST_ANG = new Float32Array(_PL_BURST_COUNT);
+  var _PL_BURST_SPD = new Float32Array(_PL_BURST_COUNT);
+  (function _initPlPools() {
+    for (var di = 0; di < _PL_DUST_COUNT; di++) {
+      _PL_DUST_ANG[di] = (di / _PL_DUST_COUNT) * Math.PI * 2 + 0.35;
+      _PL_DUST_RAD[di] = 0.65 + (di % 3) * 0.28;
+    }
+    for (var bi = 0; bi < _PL_BURST_COUNT; bi++) {
+      _PL_BURST_ANG[bi] = (bi / _PL_BURST_COUNT) * Math.PI * 2 + 0.18;
+      _PL_BURST_SPD[bi] = 0.72 + (bi % 4) * 0.18;
+    }
+  })();
 
   // ═══════════════════════════════════════════
   // FIELD MODEL — football (yards) + soccer (meters)
@@ -1847,14 +1885,44 @@ window.StemLab = window.StemLab || {
   var PLAYLAB_LIGHT_INK = {
     '#fbbf24': '#b45309', '#f59e0b': '#b45309', '#10b981': '#047857',
     '#34d399': '#047857', '#a78bfa': '#6d28d9', '#16a34a': '#166534',
-    '#dc2626': '#b91c1c', '#22c55e': '#166534', '#a5b4fc': '#4338ca'
+    '#dc2626': '#b91c1c', '#22c55e': '#166534', '#a5b4fc': '#4338ca',
+    '#d946ef': '#a21caf', '#ef4444': '#b91c1c'
   };
-  var PLAYLAB_DARK_INK = { '#dc2626': '#f87171' };
+  var PLAYLAB_DARK_INK = { '#dc2626': '#f87171', '#d946ef': '#f0abfc', '#ef4444': '#fca5a5' };
   function playlabInk(hex, isDark, isContrast) {
     if (isContrast) return '#ffff00';
     if (typeof hex !== 'string') return hex;
     if (isDark) return PLAYLAB_DARK_INK[hex.toLowerCase()] || hex;
     return PLAYLAB_LIGHT_INK[hex.toLowerCase()] || hex;
+  }
+
+  function _plAiUsable(kind, fn) {
+    if (typeof fn !== 'function') return false;
+    if (fn._alloQrBlocked) return false;
+    if (typeof window !== 'undefined') {
+      if (window.__alloStudentAiDisabled || window.__alloAiSecretsLocked) return false;
+      if (typeof window.__alloAiUsable === 'function') {
+        try { if (!window.__alloAiUsable(kind || 'text', fn)) return false; } catch (e) { return false; }
+      }
+    }
+    return true;
+  }
+
+  function _plExtractAiText(resp) {
+    if (resp == null) return '';
+    if (typeof resp === 'string') return resp.trim();
+    if (typeof resp === 'object') {
+      if (typeof resp.text === 'string') return resp.text.trim();
+      if (resp.candidates && resp.candidates[0] && resp.candidates[0].content && Array.isArray(resp.candidates[0].content.parts)) {
+        var joined = resp.candidates[0].content.parts.map(function(part) {
+          return (part && typeof part.text === 'string') ? part.text : '';
+        }).join('').trim();
+        if (joined) return joined;
+      }
+      if (typeof resp.output === 'string') return resp.output.trim();
+      if (typeof resp.message === 'string') return resp.message.trim();
+    }
+    return '';
   }
 
   window.StemLab.registerTool('playlab', {
@@ -1976,23 +2044,25 @@ window.StemLab = window.StemLab || {
             }
           };
       var rawPl = (labToolData && typeof labToolData === 'object') ? labToolData.playlab : null;
-      if (!rawPl || typeof rawPl !== 'object' || Array.isArray(rawPl)) {
-        if (typeof setLabToolData === 'function') {
-          setLabToolData(function(prev) {
-            var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
-            return Object.assign({}, basePrev, { playlab: PLAYLAB_DEFAULTS });
-          });
-        }
-      }
-      var d = (rawPl && typeof rawPl === 'object' && !Array.isArray(rawPl)) ? rawPl : PLAYLAB_DEFAULTS;
+      var needsSeed = !rawPl || typeof rawPl !== 'object' || Array.isArray(rawPl);
+      var d = !needsSeed ? rawPl : PLAYLAB_DEFAULTS;
       var workspaceTab = (d.workspaceTab === 'scout' || d.workspaceTab === 'field') ? d.workspaceTab : 'field';
-      var upd = function(key, val) {
+      var plAiOn = ctx.aiAvailable !== false && _plAiUsable('text', callGemini);
+      var patchPlayLab = function(updaterOrPatch) {
         if (typeof setLabToolData !== 'function') return;
         setLabToolData(function(prev) {
           var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
           var prevPl = (basePrev.playlab && typeof basePrev.playlab === 'object' && !Array.isArray(basePrev.playlab)) ? basePrev.playlab : PLAYLAB_DEFAULTS;
+          var nextPl = (typeof updaterOrPatch === 'function')
+            ? updaterOrPatch(prevPl)
+            : Object.assign({}, prevPl, updaterOrPatch);
+          return Object.assign({}, basePrev, { playlab: nextPl });
+        });
+      };
+      var upd = function(key, val) {
+        patchPlayLab(function(prevPl) {
           var next = Object.assign({}, prevPl); next[key] = val;
-          return Object.assign({}, basePrev, { playlab: next });
+          return next;
         });
       };
 
@@ -2001,22 +2071,48 @@ window.StemLab = window.StemLab || {
       // sessions. First-completion of each play (by id) locks it in with a
       // timestamp + sport tag. Subsequent completions increment counts but
       // don't re-fire the celebration.
-      var React = ctx.React;
       var _plHydrated = React.useRef(false);
-      if (!_plHydrated.current) {
-        _plHydrated.current = true;
-        try {
-          var winSt = (typeof window !== 'undefined' && window.__alloflowPlayLab) || null;
-          var lsSt = null;
-          try { lsSt = JSON.parse(localStorage.getItem('playlab.state.v1') || 'null'); } catch (e) {}
-          var seed = winSt || lsSt || null;
-          if (seed && typeof seed === 'object' && seed.playCatalog && !d.playCatalog) {
-            setLabToolData(function (prev) {
-              return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, { playCatalog: seed.playCatalog }) });
-            });
-          }
-        } catch (e) {}
+      var mountedRef = React.useRef(true);
+      var plTimersRef = React.useRef([]);
+      var hypePhraseRef = React.useRef(null);
+      if (hypePhraseRef.current === null) hypePhraseRef.current = pickHypePhrase();
+      function schedulePlTimer(fn, ms) {
+        var id = setTimeout(function() {
+          var idx = plTimersRef.current.indexOf(id);
+          if (idx !== -1) plTimersRef.current.splice(idx, 1);
+          if (!mountedRef.current) return;
+          fn();
+        }, ms);
+        plTimersRef.current.push(id);
+        return id;
       }
+      React.useEffect(function() {
+        mountedRef.current = true;
+        return function() {
+          mountedRef.current = false;
+          plTimersRef.current.forEach(function(id) { clearTimeout(id); });
+          plTimersRef.current = [];
+        };
+      }, []);
+      React.useEffect(function() {
+        if (needsSeed) {
+          patchPlayLab(function(prevPl) {
+            return (prevPl && prevPl !== PLAYLAB_DEFAULTS) ? prevPl : PLAYLAB_DEFAULTS;
+          });
+        }
+        if (!_plHydrated.current) {
+          _plHydrated.current = true;
+          try {
+            var winSt = (typeof window !== 'undefined' && window.__alloflowPlayLab) || null;
+            var lsSt = null;
+            try { lsSt = JSON.parse(localStorage.getItem('playlab.state.v1') || 'null'); } catch (e) {}
+            var seed = winSt || lsSt || null;
+            if (seed && typeof seed === 'object' && seed.playCatalog && !d.playCatalog) {
+              patchPlayLab({ playCatalog: seed.playCatalog });
+            }
+          } catch (e) {}
+        }
+      }, []);
       // First-completion celebration state.
       var _plCeleb = React.useState(null);
       var plCeleb = _plCeleb[0];
@@ -2035,9 +2131,7 @@ window.StemLab = window.StemLab || {
           try {
             var w = window.__alloflowPlayLab || {};
             if (w.playCatalog) {
-              setLabToolData(function (prev) {
-                return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, { playCatalog: w.playCatalog }) });
-              });
+              patchPlayLab({ playCatalog: w.playCatalog });
             }
           } catch (e) {}
         }
@@ -2054,19 +2148,28 @@ window.StemLab = window.StemLab || {
       var soccerShape = SOCCER_SHAPES.find(function(s) { return s.id === d.shapeId; }) || SOCCER_SHAPES[0];
       var play = PLAYS.find(function(p) { return p.id === d.playId; }) || PLAYS[0];
       var coverage = COVERAGES.find(function(c) { return c.id === d.coverageId; }) || COVERAGES[0];
+      var safeLosX = Number.isFinite(Number(d.losX))
+        ? Math.max(END_ZONE_DEPTH, Math.min(FIELD_LENGTH - END_ZONE_DEPTH, Number(d.losX)))
+        : LOS_DEFAULT;
       // Build the base formation, apply any custom drag overrides FIRST,
       // then run the play's routes against the (possibly moved) snap
       // positions — so a dragged WR's route still starts from where they
       // are now.
-      var rawFormation = defaultFormation(d.losX).map(function(p) {
-        var override = (d.customPositions || {})[p.id];
-        if (override) return Object.assign({}, p, { x: override.x, y: override.y });
+      var safeCustomPositions = (d.customPositions && typeof d.customPositions === 'object' && !Array.isArray(d.customPositions)) ? d.customPositions : {};
+      var rawFormation = defaultFormation(safeLosX).map(function(p) {
+        var override = safeCustomPositions[p.id];
+        if (override && typeof override === 'object' && Number.isFinite(Number(override.x)) && Number.isFinite(Number(override.y))) {
+          return Object.assign({}, p, {
+            x: Math.max(0.5, Math.min(FIELD_LENGTH - 0.5, Number(override.x))),
+            y: Math.max(0.5, Math.min(FIELD_WIDTH - 0.5, Number(override.y)))
+          });
+        }
         return p;
       });
       var formation = isSoccer ? formationDef.build() : applyPlayToFormation(rawFormation, play);
-      var zones = isSoccer ? [] : buildZones(d.coverageId, d.losX);
+      var zones = isSoccer ? [] : buildZones(d.coverageId, safeLosX);
       var defenders = isSoccer ? buildSoccerDefenders(d.shapeId)
-                               : buildDefenders(d.coverageId, d.losX, formation);
+                               : buildDefenders(d.coverageId, safeLosX, formation);
       var analysis = isSoccer ? [] : openReceiverAnalysis(formation, defenders);
       var openReceiverId = analysis.length ? analysis[0].id : null;
 
@@ -2102,9 +2205,7 @@ window.StemLab = window.StemLab || {
           if (name === null) { plAnnounce(__alloT('stem.playlab.sr_trading_card_export_cancelled', 'Trading card export cancelled.')); return; }
           name = String(name).trim().slice(0, 30);
           if (!name) { plAnnounce(__alloT('stem.playlab.sr_enter_a_player_name_to_create_the_trading_card', 'Enter a player name to create the trading card.')); return; }
-          setLabToolData(function(prev) {
-            return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, { playerName: name })});
-          });
+          patchPlayLab({ playerName: name });
         }
         var stats = d.drillStats || {};
         var sportLbl = isSoccer ? 'Soccer Coach' : 'Offensive Coordinator';
@@ -2272,8 +2373,8 @@ window.StemLab = window.StemLab || {
       function applyPlayLabScenario(scenarioId) {
         var s = PLAYLAB_SCENARIOS.find(function(sc) { return sc.id === scenarioId; });
         if (!s) return;
-        setLabToolData(function(prev) {
-          var nextPlaylab = Object.assign({}, prev.playlab, {
+        patchPlayLab(function(prevPl) {
+          var nextPlaylab = Object.assign({}, prevPl, {
             sport: s.sport,
             customPositions: {},
             runActive: false,
@@ -2292,7 +2393,7 @@ window.StemLab = window.StemLab || {
             nextPlaylab.coverageId = s.coverageId;
             if (s.losX != null) nextPlaylab.losX = s.losX;
           }
-          return Object.assign({}, prev, { playlab: nextPlaylab });
+          return nextPlaylab;
         });
         plAnnounce('Scenario loaded: ' + s.label + '. ' + s.teach);
         setScenarioIntro({
@@ -2306,20 +2407,14 @@ window.StemLab = window.StemLab || {
         // Loading a new preset wipes any custom drag positions — students
         // get a clean slate for the new play. Their previous edits are
         // gone unless they save first (future feature).
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-            playId: pid, playsViewed: seen, customPositions: {}
-          })});
+        patchPlayLab({
+          playId: pid, playsViewed: seen, customPositions: {}
         });
         var p = PLAYS.find(function(P) { return P.id === pid; });
         plAnnounce('Loaded play: ' + (p ? p.label : pid) + '. ' + (p ? p.teach : ''));
       }
       function resetPositions() {
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-            customPositions: {}
-          })});
-        });
+        patchPlayLab({ customPositions: {} });
         plAnnounce(__alloT('stem.playlab.sr_player_positions_reset_to_preset', 'Player positions reset to preset.'));
       }
 
@@ -2335,17 +2430,13 @@ window.StemLab = window.StemLab || {
           : play.label;
         var customCount = Object.keys(d.customPositions || {}).length;
         var defaultName = basePresetLabel + (customCount ? ' (' + customCount + ' edit' + (customCount === 1 ? '' : 's') + ')' : '');
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-            savePromptOpen: true, savePromptName: defaultName
-          })});
+        patchPlayLab({
+          savePromptOpen: true, savePromptName: defaultName
         });
       }
       function cancelSavePrompt() {
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-            savePromptOpen: false, savePromptName: ''
-          })});
+        patchPlayLab({
+          savePromptOpen: false, savePromptName: ''
         });
       }
       function commitSavePlay() {
@@ -2372,10 +2463,8 @@ window.StemLab = window.StemLab || {
         var saved = (Array.isArray(d.savedPlays) ? d.savedPlays : []).concat([entry]);
         // FIFO eviction at 24 entries
         if (saved.length > 24) saved = saved.slice(saved.length - 24);
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-            savedPlays: saved, savePromptOpen: false, savePromptName: ''
-          })});
+        patchPlayLab({
+          savedPlays: saved, savePromptOpen: false, savePromptName: ''
         });
         plAnnounce('Saved play: ' + name + '.');
         if (addToast) addToast('💾 Saved: ' + name);
@@ -2383,8 +2472,8 @@ window.StemLab = window.StemLab || {
       }
       function loadSavedPlay(entry) {
         if (!entry) return;
-        setLabToolData(function(prev) {
-          var next = Object.assign({}, prev.playlab, {
+        patchPlayLab(function(prevPl) {
+          var next = Object.assign({}, prevPl, {
             sport: entry.sport,
             customPositions: Object.assign({}, entry.customPositions || {}),
             workspaceTab: 'field',
@@ -2399,14 +2488,14 @@ window.StemLab = window.StemLab || {
             if (entry.playId) next.playId = entry.playId;
             if (entry.coverageId) next.coverageId = entry.coverageId;
           }
-          return Object.assign({}, prev, { playlab: next });
+          return next;
         });
         plAnnounce('Loaded saved play: ' + entry.name + '.');
       }
       function deleteSavedPlay(id) {
-        setLabToolData(function(prev) {
-          var saved = (prev.playlab.savedPlays || []).filter(function(e) { return e.id !== id; });
-          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, { savedPlays: saved })});
+        patchPlayLab(function(prevPl) {
+          var saved = (Array.isArray(prevPl.savedPlays) ? prevPl.savedPlays : []).filter(function(e) { return e && e.id !== id; });
+          return Object.assign({}, prevPl, { savedPlays: saved });
         });
         plAnnounce(__alloT('stem.playlab.sr_deleted_saved_play', 'Deleted saved play.'));
       }
@@ -2417,19 +2506,15 @@ window.StemLab = window.StemLab || {
       // feedback. Coaches a specific adjustment for THIS play vs THIS
       // defense, not generic advice.
       function askCoach() {
-        if (typeof callGemini !== 'function') {
-          setLabToolData(function(prev) {
-            return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-              coachError: 'Coach is offline (AI not available in this build).'
-            })});
+        if (!plAiOn) {
+          patchPlayLab({
+            coachError: 'Coach is offline (AI not available in this build).'
           });
           plAnnounce(__alloT('stem.playlab.sr_coach_is_offline', 'Coach is offline.'));
           return;
         }
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-            coachLoading: true, coachReply: '', coachError: ''
-          })});
+        patchPlayLab({
+          coachLoading: true, coachReply: '', coachError: ''
         });
         // Compact representation of the formation so the prompt is small.
         // Round to whole units (yd or m) to keep numbers human-readable.
@@ -2509,29 +2594,33 @@ window.StemLab = window.StemLab || {
             + 'Give 3-4 sentences of warm, specific coaching: (1) ACKNOWLEDGE the matchup grade (don\'t contradict it — if it\'s tough, agree it\'s tough and explain WHY geometrically), (2) name the most-open receiver and explain WHY they\'re open in geometric terms (not just "no defender nearby"), (3) suggest ONE concrete adjustment (move a player N yards, change a route depth, OR pick one of the suggested alternative plays above), (4) tie the suggestion to the math the student can see on the field. '
             + 'Plain prose, no markdown, no bullets, no headings.';
         }
-        callGemini(prompt, false, false, 0.7).then(function(resp) {
-          var reply = String(resp || '').trim();
-          setLabToolData(function(prev) {
-            return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-              coachLoading: false, coachReply: reply, coachError: ''
-            })});
+        Promise.resolve().then(function() {
+          return callGemini(prompt, false, false, 0.7);
+        }).then(function(resp) {
+          if (!mountedRef.current) return;
+          var reply = _plExtractAiText(resp);
+          if (!reply) {
+            patchPlayLab({
+              coachLoading: false, coachError: 'Could not reach the coach. Try again in a moment.'
+            });
+            return;
+          }
+          patchPlayLab({
+            coachLoading: false, coachReply: reply, coachError: ''
           });
           plAnnounce('Coach: ' + reply);
           if (awardXP) awardXP('playlab', 5, 'Asked the coach');
         }).catch(function() {
-          setLabToolData(function(prev) {
-            return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-              coachLoading: false, coachError: 'Could not reach the coach. Try again in a moment.'
-            })});
+          if (!mountedRef.current) return;
+          patchPlayLab({
+            coachLoading: false, coachError: 'Could not reach the coach. Try again in a moment.'
           });
         });
       }
       function loadCoverage(cid) {
         var seen = Object.assign({}, d.coveragesViewed || {}); seen[cid] = true;
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-            coverageId: cid, coveragesViewed: seen
-          })});
+        patchPlayLab({
+          coverageId: cid, coveragesViewed: seen
         });
         var cv = COVERAGES.find(function(c) { return c.id === cid; });
         plAnnounce('Defense changed to: ' + (cv ? cv.label : cid) + '. ' + (cv ? cv.teach : ''));
@@ -2605,10 +2694,8 @@ window.StemLab = window.StemLab || {
 
       function startRun() {
         if (d.runActive) return;
-        setLabToolData(function(prev) {
-          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-            runActive: true, runT: 0, runOutcome: null
-          })});
+        patchPlayLab({
+          runActive: true, runT: 0, runOutcome: null
         });
         if (isSoccer) {
           plAnnounce('Running sequence. ' + concept.label + ' from ' + formationDef.label + '.');
@@ -2634,10 +2721,8 @@ window.StemLab = window.StemLab || {
           var finalXG = finalReceiver ? computeXG(finalReceiver.x, finalReceiver.y) : 0;
           var soccerOutcome = { sport: 'soccer', xG: finalXG, finalReceiverId: finalReceiver ? finalReceiver.id : null };
           if (prefersReduced) {
-            setLabToolData(function(prev) {
-              return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-                runActive: false, runT: SOCCER_TOTAL, runOutcome: soccerOutcome
-              })});
+            patchPlayLab({
+              runActive: false, runT: SOCCER_TOTAL, runOutcome: soccerOutcome
             });
             plAnnounce('Sequence complete. Final position xG ' + finalXG.toFixed(2) + '.');
             return;
@@ -2755,20 +2840,18 @@ window.StemLab = window.StemLab || {
                   _sFiredNew = { key: _sKey, label: _sLabel, icon: _sIcon, sport: 'soccer', total: Object.keys(_sCatalogNext).length };
                 }
               }
-              setLabToolData(function(prev) {
-                return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-                  runActive: false, runT: SOCCER_TOTAL, runOutcome: soccerOutcome,
-                  drillStats: sStats, drillTaskIdx: sNewTaskIdx,
-                  badgesEarned: sNewEarned,
-                  dailyCompleted: newDailyCompletedS,
-                  personalBests: newPersonalBestsS,
-                  playCatalog: _sCatalogNext
-                })});
+              patchPlayLab({
+                runActive: false, runT: SOCCER_TOTAL, runOutcome: soccerOutcome,
+                drillStats: sStats, drillTaskIdx: sNewTaskIdx,
+                badgesEarned: sNewEarned,
+                dailyCompleted: newDailyCompletedS,
+                personalBests: newPersonalBestsS,
+                playCatalog: _sCatalogNext
               });
               if (_sFiredNew) {
                 try {
                   setPlCeleb(Object.assign({}, _sFiredNew, { at: Date.now() }));
-                  setTimeout(function () { setPlCeleb(null); }, 3500);
+                  schedulePlTimer(function () { setPlCeleb(null); }, 3500);
                 } catch (e) {}
                 if (addToast) addToast('🏅 Play Catalog: ' + _sFiredNew.label + ' added (' + _sFiredNew.total + ')');
               }
@@ -2776,7 +2859,7 @@ window.StemLab = window.StemLab || {
               plAnnounce('Sequence complete. ' + (finalReceiver ? finalReceiver.id : 'Final attacker') + ' arrives at xG ' + finalXG.toFixed(2) + ' — a ' + qualLabel + '.');
               if (finalXG > 0.20 && awardXP) awardXP('playlab', 8, 'High-xG sequence');
               sNewlyEarnedBadges.forEach(function(b, i) {
-                setTimeout(function() {
+                schedulePlTimer(function() {
                   plAnnounce('Badge unlocked: ' + b.label + '. ' + b.hint + '.');
                   if (addToast) addToast('🏅 ' + b.emoji + ' ' + b.label + '!');
                   if (awardXP) awardXP('playlab', 8, 'Badge: ' + b.label);
@@ -2785,7 +2868,7 @@ window.StemLab = window.StemLab || {
               });
               // Personal Best announcements (soccer)
               newPbRecordsS.forEach(function(r, i) {
-                setTimeout(function() {
+                schedulePlTimer(function() {
                   plAnnounce('NEW PERSONAL BEST: ' + r.label + ' — ' + r.value);
                   if (addToast) addToast('🏆 New PB: ' + r.label + ' (' + r.value + ')');
                   if (awardXP) awardXP('playlab', 12, 'Personal Best: ' + r.label);
@@ -2794,7 +2877,7 @@ window.StemLab = window.StemLab || {
               });
               if (dailyJustCompletedS) {
                 var dailyNameS = (getPlayLabDailyChallenge('soccer') || {}).label || 'Today\'s Challenge';
-                setTimeout(function() {
+                schedulePlTimer(function() {
                   plAnnounce('Daily Challenge complete: ' + dailyNameS + '!');
                   if (addToast) addToast('🌟 Daily Challenge done!');
                   if (awardXP) awardXP('playlab', 15, 'Daily Challenge');
@@ -2803,7 +2886,7 @@ window.StemLab = window.StemLab || {
               }
               if (sTaskJustCompleted) {
                 var sAllDone = sNewTaskIdx >= PLAYLAB_SOCCER_DRILLS.tasks.length;
-                setTimeout(function() {
+                schedulePlTimer(function() {
                   if (sAllDone) {
                     plAnnounce('Tactical Drills complete! All ' + PLAYLAB_SOCCER_DRILLS.tasks.length + ' tasks finished.');
                     if (addToast) addToast('🏆 Tactical Drills complete!');
@@ -2817,10 +2900,8 @@ window.StemLab = window.StemLab || {
               }
               return;
             }
-            setLabToolData(function(prev) {
-              return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-                runT: sElapsed
-              })});
+            patchPlayLab({
+              runT: sElapsed
             });
             sRaf = requestAnimationFrame(sStep);
           }
@@ -2832,10 +2913,8 @@ window.StemLab = window.StemLab || {
         if (prefersReduced) {
           var targetId = pickThrowTarget();
           var outcome = targetId ? { receiverId: targetId, location: 'caught' } : { location: 'incomplete' };
-          setLabToolData(function(prev) {
-            return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-              runActive: false, runT: TOTAL_DURATION, runOutcome: outcome
-            })});
+          patchPlayLab({
+            runActive: false, runT: TOTAL_DURATION, runOutcome: outcome
           });
           plAnnounce(targetId ? 'Pass complete to ' + targetId + '.' : 'Incomplete pass.');
           return;
@@ -2964,20 +3043,18 @@ window.StemLab = window.StemLab || {
                 newDrillTaskIdx = newDrillTaskIdx + 1;
               }
             }
-            setLabToolData(function(prev) {
-              return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-                runActive: false, runT: TOTAL_DURATION, runOutcome: outcome,
-                drillStats: newStats, drillTaskIdx: newDrillTaskIdx,
-                badgesEarned: newEarned,
-                dailyCompleted: newDailyCompletedF,
-                personalBests: newPersonalBestsF,
-                playCatalog: _plCatalogNext
-              })});
+            patchPlayLab({
+              runActive: false, runT: TOTAL_DURATION, runOutcome: outcome,
+              drillStats: newStats, drillTaskIdx: newDrillTaskIdx,
+              badgesEarned: newEarned,
+              dailyCompleted: newDailyCompletedF,
+              personalBests: newPersonalBestsF,
+              playCatalog: _plCatalogNext
             });
             if (_plFiredNew) {
               try {
                 setPlCeleb(Object.assign({}, _plFiredNew, { at: Date.now() }));
-                setTimeout(function () { setPlCeleb(null); }, 3500);
+                schedulePlTimer(function () { setPlCeleb(null); }, 3500);
               } catch (e) {}
               if (addToast) addToast('🏅 Play Catalog: ' + _plFiredNew.label + ' added (' + _plFiredNew.total + ')');
             }
@@ -2988,7 +3065,7 @@ window.StemLab = window.StemLab || {
             if (loc === 'caught' && awardXP) awardXP('playlab', 8, 'Completion');
             // Newly-earned badges — toast + announce + XP each
             newlyEarnedBadges.forEach(function(b, i) {
-              setTimeout(function() {
+              schedulePlTimer(function() {
                 plAnnounce('Badge unlocked: ' + b.label + '. ' + b.hint + '.');
                 if (addToast) addToast('🏅 ' + b.emoji + ' ' + b.label + '!');
                 if (awardXP) awardXP('playlab', 8, 'Badge: ' + b.label);
@@ -2997,7 +3074,7 @@ window.StemLab = window.StemLab || {
             });
             // Personal Best announcements — staggered after badges
             newPbRecordsF.forEach(function(r, i) {
-              setTimeout(function() {
+              schedulePlTimer(function() {
                 plAnnounce('NEW PERSONAL BEST: ' + r.label + ' — ' + r.value);
                 if (addToast) addToast('🏆 New PB: ' + r.label + ' (' + r.value + ')');
                 if (awardXP) awardXP('playlab', 12, 'Personal Best: ' + r.label);
@@ -3006,7 +3083,7 @@ window.StemLab = window.StemLab || {
             });
             if (dailyJustCompletedF) {
               var dailyNameF = (getPlayLabDailyChallenge('football') || {}).label || 'Today\'s Challenge';
-              setTimeout(function() {
+              schedulePlTimer(function() {
                 plAnnounce('Daily Challenge complete: ' + dailyNameF + '!');
                 if (addToast) addToast('🌟 Daily Challenge done!');
                 if (awardXP) awardXP('playlab', 15, 'Daily Challenge');
@@ -3015,7 +3092,7 @@ window.StemLab = window.StemLab || {
             }
             if (taskJustCompleted) {
               var allDone = newDrillTaskIdx >= PLAYLAB_DRILLS.tasks.length;
-              setTimeout(function() {
+              schedulePlTimer(function() {
                 if (allDone) {
                   plAnnounce('Drill complete! All ' + PLAYLAB_DRILLS.tasks.length + ' coordinator tasks finished.');
                   if (addToast) addToast('🏆 Coordinator Drills complete!');
@@ -3029,10 +3106,8 @@ window.StemLab = window.StemLab || {
             }
             return;
           }
-          setLabToolData(function(prev) {
-            return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-              runT: elapsed
-            })});
+          patchPlayLab({
+            runT: elapsed
           });
           raf = requestAnimationFrame(step);
         }
@@ -3058,20 +3133,20 @@ window.StemLab = window.StemLab || {
       var setKeyMovePid = _plKeyMoveState[1];
       function plWithPlayer(text, pid) { return String(text).split('{player}').join(String(pid)); }
       function placePlayerAt(pid, yardX, yardY) {
+        if (!Number.isFinite(yardX) || !Number.isFinite(yardY)) return null;
         var snappedX = Math.max(0.5, Math.min(FIELD_LENGTH - 0.5, Math.round(yardX)));
         var snappedY = Math.max(0.5, Math.min(FIELD_WIDTH - 0.5, Math.round(yardY)));
-        setLabToolData(function(prev) {
-          var existing = Object.assign({}, prev.playlab.customPositions || {});
+        patchPlayLab(function(prevPl) {
+          var existing = Object.assign({}, (prevPl && prevPl.customPositions && typeof prevPl.customPositions === 'object') ? prevPl.customPositions : {});
           existing[pid] = { x: snappedX, y: snappedY };
-          return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-            customPositions: existing
-          })});
+          return Object.assign({}, prevPl, { customPositions: existing });
         });
         return { x: snappedX, y: snappedY };
       }
       function canvasYardCoords(evt) {
         var canvas = canvasRef.current; if (!canvas) return null;
         var rect = canvas.getBoundingClientRect();
+        if (!rect || !rect.width || !rect.height) return null;
         // Match the marginL/marginR/marginT/marginB used by the renderer
         var marginL = 30, marginR = 30, marginT = 18, marginB = 32;
         // Canvas may be CSS-resized vs its native 720x360 — scale by the
@@ -3081,12 +3156,14 @@ window.StemLab = window.StemLab || {
         // DPR-scaled internal pixel buffer.
         var lW = canvas._plLogicalW || canvas.width;
         var lH = canvas._plLogicalH || canvas.height;
-        var nx = (evt.clientX - rect.left) * (lW / rect.width);
-        var ny = (evt.clientY - rect.top) * (lH / rect.height);
         var fieldPxW = lW - marginL - marginR;
         var fieldPxH = lH - marginT - marginB;
+        if (fieldPxW <= 0 || fieldPxH <= 0) return null;
+        var nx = (evt.clientX - rect.left) * (lW / rect.width);
+        var ny = (evt.clientY - rect.top) * (lH / rect.height);
         var yardX = (nx - marginL) / fieldPxW * FIELD_LENGTH;
         var yardY = (ny - marginT) / fieldPxH * FIELD_WIDTH;
+        if (!Number.isFinite(yardX) || !Number.isFinite(yardY)) return null;
         return { yardX: yardX, yardY: yardY };
       }
       function nearestPlayer(yardX, yardY, players) {
@@ -3159,6 +3236,18 @@ window.StemLab = window.StemLab || {
       var _plScenarioIntroState = React.useState(null);
       var scenarioIntro = _plScenarioIntroState[0];
       var setScenarioIntro = _plScenarioIntroState[1];
+      React.useEffect(function() {
+        if (!scenarioIntro || typeof window === 'undefined') return;
+        function onEsc(e) {
+          if (e.isComposing || e.keyCode === 229) return;
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            setScenarioIntro(null);
+          }
+        }
+        window.addEventListener('keydown', onEsc);
+        return function() { window.removeEventListener('keydown', onEsc); };
+      }, [scenarioIntro]);
 
       // ── Field canvas ──
       var canvasRef = React.useRef(null);
@@ -3193,33 +3282,54 @@ window.StemLab = window.StemLab || {
         if ('imageSmoothingQuality' in gfx) gfx.imageSmoothingQuality = 'high';
         var W = canvas._plLogicalW;
         var H = canvas._plLogicalH;
-        var hasRadial = typeof gfx.createRadialGradient === 'function';
-        var hasLinear = typeof gfx.createLinearGradient === 'function';
+        var plIsContrast = _plIsHighContrast();
+        var hasRadial = !plIsContrast && typeof gfx.createRadialGradient === 'function';
+        var hasLinear = !plIsContrast && typeof gfx.createLinearGradient === 'function';
         var plReduced = false;
         try {
           plReduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
         } catch (e) {}
+        var plMotionOn = !plReduced && !plIsContrast;
+        var runT = d.runT || 0;
+        var isAnimating = !!d.runActive || (d.runT > 0 && d.runT < TOTAL_DURATION);
         function _plRoundRectPath(x, y, rw, rh, rad) {
           var r = Math.min(rad, rw / 2, rh / 2);
           gfx.beginPath();
           gfx.moveTo(x + r, y);
           gfx.lineTo(x + rw - r, y);
-          gfx.arcTo(x + rw, y, x + rw, y + r, r);
-          gfx.lineTo(x + rw, y + rh - r);
-          gfx.arcTo(x + rw, y + rh, x + rw - r, y + rh, r);
-          gfx.lineTo(x + r, y + rh);
-          gfx.arcTo(x, y + rh, x, y + rh - r, r);
-          gfx.lineTo(x, y + r);
-          gfx.arcTo(x, y, x + r, y, r);
+          if (typeof gfx.arcTo === 'function') {
+            gfx.arcTo(x + rw, y, x + rw, y + r, r);
+            gfx.lineTo(x + rw, y + rh - r);
+            gfx.arcTo(x + rw, y + rh, x + rw - r, y + rh, r);
+            gfx.lineTo(x + r, y + rh);
+            gfx.arcTo(x, y + rh, x, y + rh - r, r);
+            gfx.lineTo(x, y + r);
+            gfx.arcTo(x, y, x + r, y, r);
+          } else {
+            gfx.lineTo(x + rw, y + rh);
+            gfx.lineTo(x, y + rh);
+            gfx.lineTo(x, y);
+          }
           gfx.closePath();
         }
-        function _plDrawActorToken(ax, ay, rad, baseColor, highlightColor, strokeColor, label, textColor, fontPx) {
-          // Grounded elliptical contact shadow
+        function _plDrawActorToken(ax, ay, rad, baseColor, highlightColor, strokeColor, label, textColor, fontPx, stretchAng, stretchAmt) {
           gfx.save();
-          gfx.fillStyle = 'rgba(2,6,23,0.42)';
-          gfx.beginPath();
-          gfx.ellipse(ax + 1.4, ay + rad * 0.62, rad * 0.96, rad * 0.48, 0, 0, Math.PI * 2);
-          gfx.fill();
+          // Grounded elliptical contact shadow (bypassed in high contrast)
+          if (!plIsContrast) {
+            gfx.fillStyle = 'rgba(2,6,23,0.42)';
+            gfx.beginPath();
+            _plSafeEllipse(gfx, ax + 1.4, ay + rad * 0.62, rad * 0.96, rad * 0.48, 0, 0, Math.PI * 2);
+            gfx.fill();
+          }
+          // Subtle velocity-scaled sprint squash-and-stretch during live play
+          var doStretch = plMotionOn && stretchAmt && stretchAmt > 0.015;
+          if (doStretch) {
+            gfx.save();
+            gfx.translate(ax, ay);
+            gfx.rotate(stretchAng || 0);
+            gfx.scale(1 + stretchAmt, 1 / (1 + stretchAmt * 0.72));
+            gfx.translate(-ax, -ay);
+          }
           // 3D specular radial jersey shading
           if (hasRadial) {
             var sg = gfx.createRadialGradient(ax - rad * 0.34, ay - rad * 0.34, rad * 0.12, ax, ay, rad);
@@ -3233,15 +3343,18 @@ window.StemLab = window.StemLab || {
           gfx.beginPath();
           gfx.arc(ax, ay, rad, 0, Math.PI * 2);
           gfx.fill();
-          gfx.strokeStyle = strokeColor;
-          gfx.lineWidth = 1.25;
+          gfx.strokeStyle = plIsContrast ? '#ffffff' : strokeColor;
+          gfx.lineWidth = plIsContrast ? 1.8 : 1.25;
           gfx.stroke();
           // Subtle top-left specular crescent
-          gfx.strokeStyle = 'rgba(255,255,255,0.45)';
-          gfx.lineWidth = 1;
-          gfx.beginPath();
-          gfx.arc(ax, ay, rad - 1.4, -Math.PI * 0.85, -Math.PI * 0.25);
-          gfx.stroke();
+          if (!plIsContrast) {
+            gfx.strokeStyle = 'rgba(255,255,255,0.45)';
+            gfx.lineWidth = 1;
+            gfx.beginPath();
+            gfx.arc(ax, ay, rad - 1.4, -Math.PI * 0.85, -Math.PI * 0.25);
+            gfx.stroke();
+          }
+          if (doStretch) gfx.restore();
           gfx.fillStyle = textColor;
           gfx.font = 'bold ' + fontPx + 'px system-ui';
           gfx.textAlign = 'center';
@@ -3269,7 +3382,9 @@ window.StemLab = window.StemLab || {
 
         if (isSoccer) {
           // ── Soccer pitch render (FIFA spec) with stadium floodlight atmosphere ──
-          if (hasLinear) {
+          if (plIsContrast) {
+            gfx.fillStyle = '#000000';
+          } else if (hasLinear) {
             var sApron = gfx.createLinearGradient(0, 0, 0, H);
             sApron.addColorStop(0, '#10351b');
             sApron.addColorStop(0.5, '#194d27');
@@ -3279,7 +3394,9 @@ window.StemLab = window.StemLab || {
             gfx.fillStyle = '#1e5d2e';
           }
           gfx.fillRect(0, 0, W, H);
-          if (hasRadial) {
+          if (plIsContrast) {
+            gfx.fillStyle = '#000000';
+          } else if (hasRadial) {
             var sTurf = gfx.createRadialGradient(W * 0.5, H * 0.46, 30, W * 0.5, H * 0.5, W * 0.62);
             sTurf.addColorStop(0, '#339448');
             sTurf.addColorStop(0.62, '#277738');
@@ -3290,19 +3407,33 @@ window.StemLab = window.StemLab || {
           }
           gfx.fillRect(fx(0), fy(0), fx(PITCH_LENGTH) - fx(0), fy(PITCH_WIDTH) - fy(0));
           // Mowing stripes (low contrast bands every 7m)
-          gfx.fillStyle = 'rgba(0,0,0,0.07)';
-          for (var ms = 0; ms < PITCH_LENGTH; ms += 14) {
-            gfx.fillRect(fx(ms), fy(0), fx(ms + 7) - fx(ms), fy(PITCH_WIDTH) - fy(0));
+          if (!plIsContrast) {
+            gfx.fillStyle = 'rgba(0,0,0,0.07)';
+            for (var ms = 0; ms < PITCH_LENGTH; ms += 14) {
+              gfx.fillRect(fx(ms), fy(0), fx(ms + 7) - fx(ms), fy(PITCH_WIDTH) - fy(0));
+            }
           }
-          // Subtle corner stadium floodlight blooms
+          // Subtle corner stadium floodlight blooms + dynamic parallax sweep during live run
           if (hasRadial) {
-            [[0, 0], [W, 0], [0, H], [W, H]].forEach(function(fc) {
-              var fg = gfx.createRadialGradient(fc[0], fc[1], 4, fc[0], fc[1], 130);
-              fg.addColorStop(0, 'rgba(255,253,235,0.12)');
+            var sFloodAlpha = (plMotionOn && d.runActive) ? (0.11 + 0.03 * Math.sin(runT * 2.4)) : 0.12;
+            for (var fli = 0; fli < 4; fli++) {
+              var flx = _PL_FLOOD_NORM_X[fli] * W;
+              var fly = _PL_FLOOD_NORM_Y[fli] * H;
+              var fg = gfx.createRadialGradient(flx, fly, 4, flx, fly, 130);
+              fg.addColorStop(0, 'rgba(255,253,235,' + sFloodAlpha.toFixed(3) + ')');
               fg.addColorStop(1, 'rgba(255,253,235,0)');
               gfx.fillStyle = fg;
               gfx.fillRect(0, 0, W, H);
-            });
+            }
+            if (plMotionOn && d.runActive && hasLinear) {
+              var sweepX = ((runT * 90) % (W + 160)) - 80;
+              var sSweep = gfx.createLinearGradient(sweepX - 55, 0, sweepX + 55, H);
+              sSweep.addColorStop(0, 'rgba(255,255,255,0)');
+              sSweep.addColorStop(0.5, 'rgba(255,253,235,0.055)');
+              sSweep.addColorStop(1, 'rgba(255,255,255,0)');
+              gfx.fillStyle = sSweep;
+              gfx.fillRect(fx(0), fy(0), fx(PITCH_LENGTH) - fx(0), fy(PITCH_WIDTH) - fy(0));
+            }
           }
           gfx.strokeStyle = '#fafafa';
           gfx.lineWidth = 2;
@@ -3320,10 +3451,10 @@ window.StemLab = window.StemLab || {
           gfx.stroke();
           gfx.fillStyle = '#fafafa';
           gfx.beginPath(); gfx.arc(ccCx, ccCy, 2, 0, Math.PI * 2); gfx.fill();
-          // Penalty + goal areas (each end)
-          [0, PITCH_LENGTH].forEach(function(goalLineX) {
+          // Penalty + goal areas (each end, zero-GC)
+          for (var glIdx = 0; glIdx < 2; glIdx++) {
+            var goalLineX = glIdx === 0 ? 0 : PITCH_LENGTH;
             var dirSign = goalLineX === 0 ? 1 : -1;
-            // Penalty area
             var paLeft = goalLineX;
             var paRight = goalLineX + dirSign * PENALTY_AREA_DEPTH;
             var paTop = (PITCH_WIDTH - PENALTY_AREA_WIDTH) / 2;
@@ -3334,7 +3465,6 @@ window.StemLab = window.StemLab || {
               Math.abs(fx(paRight) - fx(paLeft)),
               fy(paBot) - fy(paTop)
             );
-            // Goal area
             var gaRight = goalLineX + dirSign * GOAL_AREA_DEPTH;
             var gaTop = (PITCH_WIDTH - GOAL_AREA_WIDTH) / 2;
             var gaBot = gaTop + GOAL_AREA_WIDTH;
@@ -3344,47 +3474,39 @@ window.StemLab = window.StemLab || {
               Math.abs(fx(gaRight) - fx(goalLineX)),
               fy(gaBot) - fy(gaTop)
             );
-            // Penalty spot
             var psX = goalLineX + dirSign * PENALTY_SPOT_X;
             gfx.fillStyle = '#fafafa';
             gfx.beginPath(); gfx.arc(fx(psX), fy(PITCH_WIDTH / 2), 2, 0, Math.PI * 2); gfx.fill();
-            // Penalty arc — only the portion outside the penalty area
             var arcRpx = (PENALTY_ARC_R / fLen) * fieldPxW;
             gfx.beginPath();
-            // Sweep facing AWAY from the goal line
             var startAng = goalLineX === 0 ? -Math.PI / 3 : Math.PI - Math.PI / 3;
             var endAng = goalLineX === 0 ? Math.PI / 3 : Math.PI + Math.PI / 3;
             gfx.arc(fx(psX), fy(PITCH_WIDTH / 2), arcRpx, startAng, endAng);
             gfx.stroke();
-            // Goal markers (the 7.32 m wide goal mouth — small black bars
-            // outside the goal line so the goal direction reads clearly)
             var gmTop = (PITCH_WIDTH - SOCCER_GOAL_WIDTH) / 2;
             var gmBot = gmTop + SOCCER_GOAL_WIDTH;
             gfx.fillStyle = '#fafafa';
             gfx.fillRect(fx(goalLineX) - dirSign * 4, fy(gmTop), 4, fy(gmBot) - fy(gmTop));
-          });
-          // Corner arcs
-          [[0, 0], [PITCH_LENGTH, 0], [0, PITCH_WIDTH], [PITCH_LENGTH, PITCH_WIDTH]].forEach(function(c) {
-            var sx = c[0] === 0 ? 0 : Math.PI;
-            var ex = sx + Math.PI / 2 * (c[1] === 0 ? 1 : -1);
+          }
+          // Corner arcs (zero-GC)
+          for (var cai = 0; cai < 4; cai++) {
+            var caX = _PL_FLOOD_NORM_X[cai] * PITCH_LENGTH;
+            var caY = _PL_FLOOD_NORM_Y[cai] * PITCH_WIDTH;
+            var sx = caX === 0 ? 0 : Math.PI;
+            var ex = sx + Math.PI / 2 * (caY === 0 ? 1 : -1);
             gfx.beginPath();
-            gfx.arc(fx(c[0]), fy(c[1]), 6, sx, ex);
+            gfx.arc(fx(caX), fy(caY), 6, sx, ex);
             gfx.stroke();
-          });
+          }
           // ── xG (expected goals) heatmap ──
-          // Sample a 1m grid inside the attacking third + the area in front
-          // of the goal, compute xG per cell, draw colored squares with
-          // alpha proportional to xG. Higher = more red. Centered on the
-          // attacking goal (x=105). Skipped when toggle is off.
           if (d.showXG) {
-            var xgStartX = PITCH_LENGTH - 35;  // attacking third + a bit
-            var xgStep = 1.5;                   // m
+            var xgStartX = PITCH_LENGTH - 35;
+            var xgStep = 1.5;
             for (var gx = xgStartX; gx < PITCH_LENGTH - 0.5; gx += xgStep) {
               for (var gy = 5; gy < PITCH_WIDTH - 5; gy += xgStep) {
                 var xg = computeXG(gx, gy);
-                if (xg < 0.01) continue; // skip near-zero cells for performance
+                if (xg < 0.01) continue;
                 var alpha = Math.min(0.62, xg * 1.4);
-                // Color ramp: dark blue (low) → green → yellow → red (high)
                 var red, green, blue;
                 if (xg < 0.10) { red = 30; green = 80; blue = 200; }
                 else if (xg < 0.25) { red = 60; green = 180; blue = 60; }
@@ -3398,17 +3520,16 @@ window.StemLab = window.StemLab || {
                 gfx.fillRect(cellX, cellY, cellW, cellH);
               }
             }
-            // Legend strip in the bottom-right corner of the canvas
             gfx.fillStyle = 'rgba(15,23,42,0.75)';
             gfx.fillRect(W - 110, H - 36, 100, 24);
             gfx.fillStyle = '#fafafa';
             gfx.font = 'bold 9px system-ui';
             gfx.textAlign = 'left';
             gfx.fillText('xG: ', W - 105, H - 22);
-            ['rgba(30,80,200,0.8)', 'rgba(60,180,60,0.8)', 'rgba(230,200,30,0.8)', 'rgba(230,50,30,0.8)'].forEach(function(c, i) {
-              gfx.fillStyle = c;
-              gfx.fillRect(W - 80 + i * 16, H - 28, 14, 12);
-            });
+            for (var xli = 0; xli < _PL_XG_LEGEND.length; xli++) {
+              gfx.fillStyle = _PL_XG_LEGEND[xli];
+              gfx.fillRect(W - 80 + xli * 16, H - 28, 14, 12);
+            }
             gfx.fillStyle = '#cbd5e1';
             gfx.font = '8px system-ui';
             gfx.fillText('low ← → high', W - 80, H - 14);
@@ -3416,7 +3537,9 @@ window.StemLab = window.StemLab || {
           // Skip the football-specific scene entirely
         } else {
         // Stadium apron + floodlit football turf with mowed 5-yard stripes
-        if (hasLinear) {
+        if (plIsContrast) {
+          gfx.fillStyle = '#000000';
+        } else if (hasLinear) {
           var fApron = gfx.createLinearGradient(0, 0, 0, H);
           fApron.addColorStop(0, '#0f2317');
           fApron.addColorStop(0.5, '#193724');
@@ -3428,7 +3551,9 @@ window.StemLab = window.StemLab || {
         gfx.fillRect(0, 0, W, H);
         // Field of play (between end zones) with soft center floodlight illumination
         var playX0 = fx(END_ZONE_DEPTH), playW = fx(FIELD_LENGTH - END_ZONE_DEPTH) - playX0;
-        if (hasRadial) {
+        if (plIsContrast) {
+          gfx.fillStyle = '#000000';
+        } else if (hasRadial) {
           var fTurf = gfx.createRadialGradient(W * 0.5, H * 0.46, 28, W * 0.5, H * 0.5, W * 0.6);
           fTurf.addColorStop(0, '#347347');
           fTurf.addColorStop(0.65, '#285c39');
@@ -3438,34 +3563,48 @@ window.StemLab = window.StemLab || {
           gfx.fillStyle = '#2a5a3a';
         }
         gfx.fillRect(playX0, marginT, playW, fieldPxH);
-        // Subtle 5-yard mowed turf bands
-        gfx.fillStyle = 'rgba(0,0,0,0.065)';
-        for (var bandY = 10; bandY < 110; bandY += 10) {
-          gfx.fillRect(fx(bandY), marginT, fx(bandY + 5) - fx(bandY), fieldPxH);
+        // Subtle 5-yard mowed turf bands + dynamic ambient parallax shimmer during live run
+        if (!plIsContrast) {
+          gfx.fillStyle = 'rgba(0,0,0,0.065)';
+          for (var bandY = 10; bandY < 110; bandY += 10) {
+            gfx.fillRect(fx(bandY), marginT, fx(bandY + 5) - fx(bandY), fieldPxH);
+          }
+          if (plMotionOn && d.runActive && hasLinear) {
+            var fSweepX = ((runT * 105) % (W + 180)) - 90;
+            var fSweep = gfx.createLinearGradient(fSweepX - 60, marginT, fSweepX + 60, marginT + fieldPxH);
+            fSweep.addColorStop(0, 'rgba(255,255,255,0)');
+            fSweep.addColorStop(0.5, 'rgba(255,253,235,0.05)');
+            fSweep.addColorStop(1, 'rgba(255,255,255,0)');
+            gfx.fillStyle = fSweep;
+            gfx.fillRect(playX0, marginT, playW, fieldPxH);
+          }
         }
         // End zones — rich deeper stadium shade with subtle diagonal athletic stripes
-        gfx.fillStyle = '#163421';
+        gfx.fillStyle = plIsContrast ? '#000000' : '#163421';
         gfx.fillRect(fx(0), marginT, fx(END_ZONE_DEPTH) - fx(0), fieldPxH);
         gfx.fillRect(fx(FIELD_LENGTH - END_ZONE_DEPTH), marginT, fx(FIELD_LENGTH) - fx(FIELD_LENGTH - END_ZONE_DEPTH), fieldPxH);
-        gfx.save();
-        gfx.strokeStyle = 'rgba(255,255,255,0.07)';
-        gfx.lineWidth = 4;
-        [0, FIELD_LENGTH - END_ZONE_DEPTH].forEach(function(ezStart) {
-          var ex0 = fx(ezStart), ew = fx(ezStart + END_ZONE_DEPTH) - ex0;
+        if (!plIsContrast) {
           gfx.save();
-          gfx.beginPath(); gfx.rect(ex0, marginT, ew, fieldPxH); gfx.clip();
-          for (var dOff = -fieldPxH; dOff < ew + fieldPxH; dOff += 18) {
-            gfx.beginPath(); gfx.moveTo(ex0 + dOff, marginT); gfx.lineTo(ex0 + dOff + 42, marginT + fieldPxH); gfx.stroke();
+          gfx.strokeStyle = 'rgba(255,255,255,0.07)';
+          gfx.lineWidth = 4;
+          for (var ezi = 0; ezi < 2; ezi++) {
+            var ezStart = ezi === 0 ? 0 : FIELD_LENGTH - END_ZONE_DEPTH;
+            var ex0 = fx(ezStart), ew = fx(ezStart + END_ZONE_DEPTH) - ex0;
+            gfx.save();
+            gfx.beginPath(); gfx.rect(ex0, marginT, ew, fieldPxH); gfx.clip();
+            for (var dOff = -fieldPxH; dOff < ew + fieldPxH; dOff += 18) {
+              gfx.beginPath(); gfx.moveTo(ex0 + dOff, marginT); gfx.lineTo(ex0 + dOff + 42, marginT + fieldPxH); gfx.stroke();
+            }
+            gfx.restore();
           }
           gfx.restore();
-        });
-        gfx.restore();
+        }
         // Crisp field outer sideline border
-        gfx.strokeStyle = 'rgba(255,255,255,0.65)';
+        gfx.strokeStyle = plIsContrast ? '#ffffff' : 'rgba(255,255,255,0.65)';
         gfx.lineWidth = 1.6;
         gfx.strokeRect(fx(0), marginT, fx(FIELD_LENGTH) - fx(0), fieldPxH);
         // Yard lines every 5 yards, with 10-yard lines bolder + numbered
-        gfx.strokeStyle = 'rgba(255,255,255,0.35)';
+        gfx.strokeStyle = plIsContrast ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.35)';
         gfx.lineWidth = 1;
         for (var yd = 10; yd <= 110; yd += 5) {
           var px = fx(yd);
@@ -3473,14 +3612,13 @@ window.StemLab = window.StemLab || {
           gfx.beginPath(); gfx.moveTo(px, marginT); gfx.lineTo(px, marginT + fieldPxH); gfx.stroke();
         }
         // Yard numbers every 10 yards (NFL: 10, 20, 30, 40, 50, 40, 30, 20, 10)
-        gfx.fillStyle = 'rgba(255,255,255,0.55)';
+        gfx.fillStyle = plIsContrast ? '#ffffff' : 'rgba(255,255,255,0.55)';
         gfx.font = 'bold 11px system-ui';
         gfx.textAlign = 'center';
-        var yardLabels = [10, 20, 30, 40, 50, 40, 30, 20, 10];
-        for (var i = 0; i < yardLabels.length; i++) {
+        for (var i = 0; i < _PL_YARD_LABELS.length; i++) {
           var lblX = fx(20 + i * 10);
-          gfx.fillText(String(yardLabels[i]), lblX, marginT + 12);
-          gfx.fillText(String(yardLabels[i]), lblX, marginT + fieldPxH - 4);
+          gfx.fillText(String(_PL_YARD_LABELS[i]), lblX, marginT + 12);
+          gfx.fillText(String(_PL_YARD_LABELS[i]), lblX, marginT + fieldPxH - 4);
         }
         // Hash marks — small ticks at every yard line on the two hashes
         gfx.strokeStyle = 'rgba(255,255,255,0.25)';
@@ -3493,14 +3631,16 @@ window.StemLab = window.StemLab || {
         // Line of scrimmage — dual-pass luminous blue laser at d.losX
         var losPx = fx(d.losX);
         gfx.save();
-        gfx.strokeStyle = 'rgba(96,165,250,0.28)';
-        gfx.lineWidth = 7;
-        gfx.beginPath(); gfx.moveTo(losPx, marginT); gfx.lineTo(losPx, marginT + fieldPxH); gfx.stroke();
-        gfx.strokeStyle = '#60a5fa';
+        if (!plIsContrast) {
+          gfx.strokeStyle = 'rgba(96,165,250,0.28)';
+          gfx.lineWidth = 7;
+          gfx.beginPath(); gfx.moveTo(losPx, marginT); gfx.lineTo(losPx, marginT + fieldPxH); gfx.stroke();
+        }
+        gfx.strokeStyle = plIsContrast ? '#00ff00' : '#60a5fa';
         gfx.lineWidth = 2.2;
         gfx.beginPath(); gfx.moveTo(losPx, marginT); gfx.lineTo(losPx, marginT + fieldPxH); gfx.stroke();
         gfx.restore();
-        gfx.fillStyle = '#93c5fd';
+        gfx.fillStyle = plIsContrast ? '#00ff00' : '#93c5fd';
         gfx.font = 'bold 10px system-ui';
         gfx.fillText('LOS', losPx, marginT + fieldPxH + 14);
 
@@ -3512,8 +3652,9 @@ window.StemLab = window.StemLab || {
           var full = '🏈 ' + ord + ' down · ' + ytg + ' yd to goal';
           gfx.font = 'bold 10px system-ui'; gfx.textAlign = 'left'; gfx.textBaseline = 'middle';
           var tw = gfx.measureText(full).width;
-          gfx.fillStyle = 'rgba(15,23,42,0.72)';
+          gfx.fillStyle = plIsContrast ? '#000000' : 'rgba(15,23,42,0.72)';
           gfx.fillRect(marginL + 4, marginT + 4, tw + 12, 18);
+          if (plIsContrast) { gfx.strokeStyle = '#ffff00'; gfx.lineWidth = 1; gfx.strokeRect(marginL + 4, marginT + 4, tw + 12, 18); }
           gfx.fillStyle = '#fde68a';
           gfx.fillText(full, marginL + 9, marginT + 13);
           gfx.textBaseline = 'alphabetic';
@@ -3521,81 +3662,90 @@ window.StemLab = window.StemLab || {
 
         // ── Coverage zones ──
         if (d.showZones) {
-          zones.forEach(function(z) {
-            gfx.fillStyle = z.color;
+          for (var zi = 0; zi < zones.length; zi++) {
+            var z = zones[zi];
+            gfx.fillStyle = plIsContrast ? 'rgba(255,255,0,0.14)' : z.color;
             gfx.beginPath();
-            z.poly.forEach(function(pt, idx) {
-              var px = fx(pt[0]), py = fy(pt[1]);
-              if (idx === 0) gfx.moveTo(px, py); else gfx.lineTo(px, py);
-            });
+            for (var zpi = 0; zpi < z.poly.length; zpi++) {
+              var zpt = z.poly[zpi];
+              var zpx = fx(zpt[0]), zpy = fy(zpt[1]);
+              if (zpi === 0) gfx.moveTo(zpx, zpy); else gfx.lineTo(zpx, zpy);
+            }
             gfx.closePath();
             gfx.fill();
-            gfx.strokeStyle = z.color.replace(/[\d.]+\)$/, '0.55)');
-            gfx.lineWidth = 1;
+            gfx.strokeStyle = plIsContrast ? '#ffff00' : z.color.replace(/[\d.]+\)$/, '0.55)');
+            gfx.lineWidth = plIsContrast ? 1.5 : 1;
             gfx.stroke();
-            // Zone label at centroid
             var c = polyCentroid(z.poly);
-            gfx.fillStyle = 'rgba(255,255,255,0.9)';
+            gfx.fillStyle = plIsContrast ? '#ffff00' : 'rgba(255,255,255,0.9)';
             gfx.font = 'bold 9px system-ui';
             gfx.fillText(z.label, fx(c.x), fy(c.y));
-          });
+          }
         }
 
         // ── Routes (dual-pass luminous amber trajectory + subtle turf shadow) ──
         if (d.showRoutes) {
-          formation.forEach(function(p) {
-            if (!p.route || p.route.length < 2) return;
+          for (var rfi = 0; rfi < formation.length; rfi++) {
+            var p = formation[rfi];
+            if (!p.route || p.route.length < 2) continue;
             gfx.save();
             gfx.lineCap = 'round';
             gfx.lineJoin = 'round';
-            gfx.strokeStyle = 'rgba(251,191,36,0.24)';
-            gfx.lineWidth = 5.5;
-            gfx.beginPath();
-            p.route.forEach(function(pt, idx) {
-              var px = fx(pt.x), py = fy(pt.y);
-              if (idx === 0) gfx.moveTo(px, py); else gfx.lineTo(px, py);
-            });
-            gfx.stroke();
-            gfx.strokeStyle = '#fbbf24';
+            if (!plIsContrast) {
+              gfx.strokeStyle = 'rgba(251,191,36,0.24)';
+              gfx.lineWidth = 5.5;
+              gfx.beginPath();
+              for (var rpi = 0; rpi < p.route.length; rpi++) {
+                var rpt = p.route[rpi];
+                if (rpi === 0) gfx.moveTo(fx(rpt.x), fy(rpt.y)); else gfx.lineTo(fx(rpt.x), fy(rpt.y));
+              }
+              gfx.stroke();
+            }
+            gfx.strokeStyle = plIsContrast ? '#ffff00' : '#fbbf24';
             gfx.lineWidth = 2.2;
+            gfx.beginPath();
+            for (var rpi2 = 0; rpi2 < p.route.length; rpi2++) {
+              var rpt2 = p.route[rpi2];
+              if (rpi2 === 0) gfx.moveTo(fx(rpt2.x), fy(rpt2.y)); else gfx.lineTo(fx(rpt2.x), fy(rpt2.y));
+            }
             gfx.stroke();
             gfx.restore();
             // Arrowhead at end
-            if (p.route.length >= 2) {
-              var a = p.route[p.route.length - 2];
-              var b = p.route[p.route.length - 1];
-              var ang = Math.atan2(fy(b.y) - fy(a.y), fx(b.x) - fx(a.x));
-              gfx.fillStyle = '#fde047';
-              gfx.beginPath();
-              gfx.moveTo(fx(b.x), fy(b.y));
-              gfx.lineTo(fx(b.x) - 8 * Math.cos(ang - 0.4), fy(b.y) - 8 * Math.sin(ang - 0.4));
-              gfx.lineTo(fx(b.x) - 8 * Math.cos(ang + 0.4), fy(b.y) - 8 * Math.sin(ang + 0.4));
-              gfx.closePath();
-              gfx.fill();
-            }
-          });
+            var a = p.route[p.route.length - 2];
+            var b = p.route[p.route.length - 1];
+            var ang = Math.atan2(fy(b.y) - fy(a.y), fx(b.x) - fx(a.x));
+            gfx.fillStyle = plIsContrast ? '#ffff00' : '#fde047';
+            gfx.beginPath();
+            gfx.moveTo(fx(b.x), fy(b.y));
+            gfx.lineTo(fx(b.x) - 8 * Math.cos(ang - 0.4), fy(b.y) - 8 * Math.sin(ang - 0.4));
+            gfx.lineTo(fx(b.x) - 8 * Math.cos(ang + 0.4), fy(b.y) - 8 * Math.sin(ang + 0.4));
+            gfx.closePath();
+            gfx.fill();
+          }
         }
         } // end !isSoccer (football scene)
 
         // ── Soccer passing-network arrows (dual-pass golden luminous vectors) ──
         if (isSoccer && concept && concept.passes && d.showRoutes !== false) {
-          concept.passes.forEach(function(pair) {
+          for (var spi = 0; spi < concept.passes.length; spi++) {
+            var pair = concept.passes[spi];
             var from = formation.find(function(p) { return p.id === pair[0]; });
             var to = formation.find(function(p) { return p.id === pair[1]; });
-            if (!from || !to) return;
+            if (!from || !to) continue;
             var ax = fx(from.x), ay = fy(from.y);
             var bx = fx(to.x), by = fy(to.y);
             gfx.save();
             gfx.lineCap = 'round';
-            gfx.strokeStyle = 'rgba(251,191,36,0.22)';
-            gfx.lineWidth = 5.5;
-            gfx.beginPath(); gfx.moveTo(ax, ay); gfx.lineTo(bx, by); gfx.stroke();
-            gfx.strokeStyle = '#fbbf24';
+            if (!plIsContrast) {
+              gfx.strokeStyle = 'rgba(251,191,36,0.22)';
+              gfx.lineWidth = 5.5;
+              gfx.beginPath(); gfx.moveTo(ax, ay); gfx.lineTo(bx, by); gfx.stroke();
+            }
+            gfx.strokeStyle = plIsContrast ? '#ffff00' : '#fbbf24';
             gfx.lineWidth = 2.1;
-            gfx.stroke();
-            // Arrowhead
+            gfx.beginPath(); gfx.moveTo(ax, ay); gfx.lineTo(bx, by); gfx.stroke();
             var ang = Math.atan2(by - ay, bx - ax);
-            gfx.fillStyle = '#fde047';
+            gfx.fillStyle = plIsContrast ? '#ffff00' : '#fde047';
             gfx.beginPath();
             gfx.moveTo(bx, by);
             gfx.lineTo(bx - 7 * Math.cos(ang - 0.4), by - 7 * Math.sin(ang - 0.4));
@@ -3603,41 +3753,90 @@ window.StemLab = window.StemLab || {
             gfx.closePath();
             gfx.fill();
             gfx.restore();
-          });
+          }
         }
 
         // ── Defenders (3D specular radial-shaded tokens with grounded shadows) ──
-        defenders.forEach(function(D) {
+        for (var dfi = 0; dfi < defenders.length; dfi++) {
+          var D = defenders[dfi];
           var dpx = fx(D.x), dpy = fy(D.y);
-          _plDrawActorToken(dpx, dpy, 5.8, '#ef4444', '#fca5a5', '#0f172a', D.role, '#fafafa', 7);
-        });
+          _plDrawActorToken(dpx, dpy, 5.8, '#ef4444', '#fca5a5', '#0f172a', D.role, '#fafafa', 7, 0, 0);
+        }
 
-        // ── Players (with grounded shadows, specular depth & live route motion trails) ──
-        var runT = d.runT || 0;
-        var isAnimating = !!d.runActive || (d.runT > 0 && d.runT < TOTAL_DURATION);
-        formation.forEach(function(p) {
-          var pos;
+        // ── Players (with grounded shadows, specular depth, velocity-scaled trails & turf cut dust puffs) ──
+        for (var fi = 0; fi < formation.length; fi++) {
+          var p = formation[fi];
+          var posX = p.x, posY = p.y;
+          var stretchAng = 0, stretchAmt = 0;
           if (isAnimating && p.route && p.route.length >= 2) {
-            pos = positionAtTime(p, Math.min(runT, ROUTE_DURATION));
-            // Luminous fading motion trail behind active route runner
-            if (!plReduced && runT > 0.05) {
-              var trEnd = Math.min(runT, ROUTE_DURATION);
+            var curRouteT = Math.min(runT, ROUTE_DURATION);
+            var curPos = positionAtTime(p, curRouteT);
+            posX = curPos.x; posY = curPos.y;
+            // Velocity-scaled actor motion trail + sprint squash-and-stretch + deterministic cut-dust puffs
+            if (plMotionOn && runT > 0.04) {
+              var prevSampleT = Math.max(0, curRouteT - 0.05);
+              var prevPos = positionAtTime(p, prevSampleT);
+              var dvx = fx(posX) - fx(prevPos.x);
+              var dvy = fy(posY) - fy(prevPos.y);
+              var speedPx = Math.sqrt(dvx * dvx + dvy * dvy);
+              if (speedPx > 0.35 && curRouteT < ROUTE_DURATION) {
+                stretchAng = Math.atan2(dvy, dvx);
+                stretchAmt = Math.min(0.16, speedPx * 0.018);
+              }
+              // Smooth velocity-scaled tapered luminous ribbon + wake droplets
+              var velScale = Math.min(1.45, Math.max(0.55, speedPx * 0.14));
               gfx.save();
-              for (var rti = 1; rti <= 5; rti++) {
-                var rt = trEnd - rti * 0.08;
+              gfx.lineCap = 'round';
+              for (var rti = 1; rti <= 6; rti++) {
+                var rt = curRouteT - rti * 0.072;
                 if (rt < 0) break;
                 var rp = positionAtTime(p, rt);
-                gfx.fillStyle = 'rgba(253,224,71,' + ((1 - rti / 6) * 0.34).toFixed(2) + ')';
+                var rAlpha = (1 - rti / 7) * 0.36 * Math.min(1, velScale);
+                gfx.fillStyle = _onFire
+                  ? ('rgba(251,146,60,' + rAlpha.toFixed(3) + ')')
+                  : ('rgba(253,224,71,' + rAlpha.toFixed(3) + ')');
                 gfx.beginPath();
-                gfx.arc(fx(rp.x), fy(rp.y), Math.max(1.5, 4.6 - rti * 0.65), 0, Math.PI * 2);
+                gfx.arc(fx(rp.x), fy(rp.y), Math.max(1.3, (4.8 - rti * 0.6) * Math.min(1.15, velScale)), 0, Math.PI * 2);
                 gfx.fill();
+              }
+              // Deterministic turf-kick dust puffs when cutting around intermediate route breaks
+              if (p.route.length >= 3) {
+                var totalRouteLen = 0;
+                for (var sgi = 1; sgi < p.route.length; sgi++) {
+                  var sdx = p.route[sgi].x - p.route[sgi - 1].x;
+                  var sdy = p.route[sgi].y - p.route[sgi - 1].y;
+                  totalRouteLen += Math.sqrt(sdx * sdx + sdy * sdy);
+                }
+                if (totalRouteLen > 0.1) {
+                  var accLen = 0;
+                  for (var wpi = 1; wpi < p.route.length - 1; wpi++) {
+                    var wdx = p.route[wpi].x - p.route[wpi - 1].x;
+                    var wdy = p.route[wpi].y - p.route[wpi - 1].y;
+                    accLen += Math.sqrt(wdx * wdx + wdy * wdy);
+                    var cutTime = (accLen / totalRouteLen) * ROUTE_DURATION;
+                    var dustAge = runT - cutTime;
+                    if (dustAge >= 0 && dustAge < 0.55) {
+                      var dProg = dustAge / 0.55;
+                      var cutPx = fx(p.route[wpi].x), cutPy = fy(p.route[wpi].y);
+                      for (var dpi = 0; dpi < _PL_DUST_COUNT; dpi++) {
+                        var distD = (3.5 + dProg * 12) * _PL_DUST_RAD[dpi];
+                        var dxP = cutPx + Math.cos(_PL_DUST_ANG[dpi] + wpi) * distD;
+                        var dyP = cutPy + Math.sin(_PL_DUST_ANG[dpi] + wpi) * distD * 0.72;
+                        gfx.fillStyle = dpi % 2 === 0
+                          ? ('rgba(226,232,240,' + ((1 - dProg) * 0.42).toFixed(3) + ')')
+                          : ('rgba(187,247,208,' + ((1 - dProg) * 0.36).toFixed(3) + ')');
+                        gfx.beginPath();
+                        gfx.arc(dxP, dyP, Math.max(0.8, (2.6 - dProg * 1.4) * _PL_DUST_RAD[dpi]), 0, Math.PI * 2);
+                        gfx.fill();
+                      }
+                    }
+                  }
+                }
               }
               gfx.restore();
             }
-          } else {
-            pos = { x: p.x, y: p.y };
           }
-          var px = fx(pos.x), py = fy(pos.y);
+          var px = fx(posX), py = fy(posY);
           var isOpen = d.showOpen && p.id === openReceiverId && !isAnimating;
           var fill = p.role === 'QB' ? '#fbbf24'
                    : p.role === 'OL' ? '#94a3b8'
@@ -3654,28 +3853,30 @@ window.StemLab = window.StemLab || {
               og.addColorStop(1, 'rgba(16,185,129,0)');
               gfx.fillStyle = og;
               gfx.beginPath(); gfx.arc(px, py, 16, 0, Math.PI * 2); gfx.fill();
-            } else {
+            } else if (!plIsContrast) {
               gfx.fillStyle = 'rgba(16,185,129,0.35)';
               gfx.beginPath(); gfx.arc(px, py, 12, 0, Math.PI * 2); gfx.fill();
             }
-            gfx.strokeStyle = 'rgba(110,231,183,0.85)';
-            gfx.lineWidth = 1.6;
+            gfx.strokeStyle = plIsContrast ? '#00ff00' : 'rgba(110,231,183,0.85)';
+            gfx.lineWidth = plIsContrast ? 2.2 : 1.6;
             gfx.beginPath(); gfx.arc(px, py, 11.5, 0, Math.PI * 2); gfx.stroke();
           }
           if (!isSoccer && p.id === pickedPlayerId && !isAnimating) {
             gfx.save();
-            gfx.strokeStyle = 'rgba(250,204,21,0.34)';
-            gfx.lineWidth = 5.5;
-            gfx.beginPath(); gfx.arc(px, py, 10.5, 0, Math.PI * 2); gfx.stroke();
+            if (!plIsContrast) {
+              gfx.strokeStyle = 'rgba(250,204,21,0.34)';
+              gfx.lineWidth = 5.5;
+              gfx.beginPath(); gfx.arc(px, py, 10.5, 0, Math.PI * 2); gfx.stroke();
+            }
             gfx.strokeStyle = '#facc15';
             gfx.lineWidth = 2.2;
             gfx.beginPath(); gfx.arc(px, py, 10.5, 0, Math.PI * 2); gfx.stroke();
             gfx.restore();
           }
-          _plDrawActorToken(px, py, 6.4, fill, hiCol, '#0f172a', p.id, '#0f172a', 8);
-        });
+          _plDrawActorToken(px, py, 6.4, fill, hiCol, '#0f172a', p.id, '#0f172a', 8, stretchAng, stretchAmt);
+        }
 
-        // ── Soccer ball traveling along the passing sequence (with luminous trail + arrival halo) ──
+        // ── Soccer ball traveling along the passing sequence (with luminous wake + launch/arrival shockwaves) ──
         if (isSoccer && d.runActive && concept && concept.passes && concept.passes.length) {
           var passes = concept.passes;
           var sIdx = Math.min(passes.length - 1, Math.floor(runT / SOCCER_PASS_DURATION));
@@ -3691,157 +3892,201 @@ window.StemLab = window.StemLab || {
             // Highlight the active pass segment (dual-pass glow)
             gfx.save();
             gfx.lineCap = 'round';
-            gfx.strokeStyle = 'rgba(251,191,36,0.28)';
-            gfx.lineWidth = 8;
-            gfx.beginPath(); gfx.moveTo(fx(fromP.x), fy(fromP.y)); gfx.lineTo(fx(toP.x), fy(toP.y)); gfx.stroke();
-            gfx.strokeStyle = 'rgba(253,224,71,0.92)';
+            if (!plIsContrast) {
+              gfx.strokeStyle = 'rgba(251,191,36,0.28)';
+              gfx.lineWidth = 8;
+              gfx.beginPath(); gfx.moveTo(fx(fromP.x), fy(fromP.y)); gfx.lineTo(fx(toP.x), fy(toP.y)); gfx.stroke();
+            }
+            gfx.strokeStyle = plIsContrast ? '#ffff00' : 'rgba(253,224,71,0.92)';
             gfx.lineWidth = 3;
-            gfx.stroke();
+            gfx.beginPath(); gfx.moveTo(fx(fromP.x), fy(fromP.y)); gfx.lineTo(fx(toP.x), fy(toP.y)); gfx.stroke();
             gfx.restore();
+            // Pass-launch shockwave + turf dust ring at passer
+            if (plMotionOn && sFrac < 0.28) {
+              var kickProg = sFrac / 0.28;
+              gfx.strokeStyle = 'rgba(253,224,71,' + ((1 - kickProg) * 0.72).toFixed(3) + ')';
+              gfx.lineWidth = Math.max(0.8, 2.2 * (1 - kickProg));
+              gfx.beginPath(); gfx.arc(fx(fromP.x), fy(fromP.y), 6 + kickProg * 14, 0, Math.PI * 2); gfx.stroke();
+            }
             // Luminous motion trail behind the traveling soccer ball
-            if (!plReduced) {
-              for (var sti = 1; sti <= 6; sti++) {
-                var sf = sFrac - sti * 0.055;
+            if (plMotionOn) {
+              for (var sti = 1; sti <= 7; sti++) {
+                var sf = sFrac - sti * 0.048;
                 if (sf < 0) break;
                 var stx = fx(fromP.x + (toP.x - fromP.x) * sf);
                 var sty = fy(fromP.y + (toP.y - fromP.y) * sf);
-                gfx.fillStyle = 'rgba(255,255,255,' + ((1 - sti / 7) * 0.48).toFixed(2) + ')';
-                gfx.beginPath(); gfx.arc(stx, sty, Math.max(1.4, 4.4 - sti * 0.55), 0, Math.PI * 2); gfx.fill();
+                gfx.fillStyle = _onFire
+                  ? ('rgba(251,146,60,' + ((1 - sti / 8) * 0.56).toFixed(3) + ')')
+                  : ('rgba(255,255,255,' + ((1 - sti / 8) * 0.52).toFixed(3) + ')');
+                gfx.beginPath(); gfx.arc(stx, sty, Math.max(1.3, 4.6 - sti * 0.52), 0, Math.PI * 2); gfx.fill();
               }
             }
             // Grounded shadow beneath ball
-            gfx.fillStyle = 'rgba(2,6,23,0.38)';
-            gfx.beginPath(); gfx.ellipse(bpx + 1.5, bpy + 4.2, 4.8, 2.3, 0, 0, Math.PI * 2); gfx.fill();
+            if (!plIsContrast) {
+              gfx.fillStyle = 'rgba(2,6,23,0.38)';
+              gfx.beginPath(); _plSafeEllipse(gfx, bpx + 1.5, bpy + 4.2, 4.8, 2.3, 0, 0, Math.PI * 2); gfx.fill();
+            }
             // Soccer ball with specular highlight
             gfx.save();
-            gfx.shadowColor = 'rgba(250,250,250,0.95)';
-            gfx.shadowBlur = 11;
+            if (!plIsContrast) {
+              gfx.shadowColor = _onFire ? 'rgba(251,146,60,0.95)' : 'rgba(250,250,250,0.95)';
+              gfx.shadowBlur = 11;
+            }
             gfx.fillStyle = '#fafafa';
             gfx.beginPath(); gfx.arc(bpx, bpy, 5.2, 0, Math.PI * 2); gfx.fill();
             gfx.restore();
             gfx.strokeStyle = '#1a1a1a';
             gfx.lineWidth = 1.1;
             gfx.stroke();
-            // Arrival burst ring near receiver
-            if (!plReduced && sFrac > 0.78) {
-              var arriveProg = (sFrac - 0.78) / 0.22;
-              gfx.strokeStyle = 'rgba(74,222,128,' + ((1 - arriveProg) * 0.85).toFixed(2) + ')';
-              gfx.lineWidth = 2;
-              gfx.beginPath(); gfx.arc(fx(toP.x), fy(toP.y), 7 + arriveProg * 14, 0, Math.PI * 2); gfx.stroke();
+            // Dual-ring arrival shockwave near receiver
+            if (plMotionOn && sFrac > 0.74) {
+              var arriveProg = (sFrac - 0.74) / 0.26;
+              gfx.strokeStyle = 'rgba(74,222,128,' + ((1 - arriveProg) * 0.85).toFixed(3) + ')';
+              gfx.lineWidth = 2.1;
+              gfx.beginPath(); gfx.arc(fx(toP.x), fy(toP.y), 7 + arriveProg * 15, 0, Math.PI * 2); gfx.stroke();
+              gfx.strokeStyle = 'rgba(255,255,255,' + ((1 - arriveProg) * 0.55).toFixed(3) + ')';
+              gfx.lineWidth = 1.1;
+              gfx.beginPath(); gfx.arc(fx(toP.x), fy(toP.y), 4 + arriveProg * 9, 0, Math.PI * 2); gfx.stroke();
             }
           }
         }
 
         // ── Football in flight ──
-        // After the route phase, the ball travels from the QB to the
-        // designated target receiver over THROW_DURATION. We use a simple
-        // parabolic arc — peak at midpoint, equal to ~3 yards above ground
-        // visually (rendered as a vertical Y offset on the canvas, since
-        // the field view is top-down 2D).
-        // PL6: Without a visible curve or trail, short throws (Slant ~7yd)
-        // looked "cut off" — the ball flashed past too fast to register
-        // the parabola. Now we draw the FULL arc as a faint dotted line
-        // for the entire throw phase + a fading motion trail behind the
-        // ball, so the parabolic flight is visually unmistakable.
         if (runT > ROUTE_DURATION && runT <= ROUTE_DURATION + THROW_DURATION) {
           var throwT = (runT - ROUTE_DURATION) / THROW_DURATION;
           var qb = formation.find(function(p) { return p.id === 'QB'; });
           var targetId = pickThrowTarget();
           var target = formation.find(function(p) { return p.id === targetId; });
           if (qb && target) {
-            // Receiver is at end-of-route during throw phase
             var rx = target.route ? target.route[target.route.length - 1].x : target.x;
             var ry = target.route ? target.route[target.route.length - 1].y : target.y;
-            // Helper: parabolic position at parametric t in [0, 1]
-            function _ballAt(t) {
-              var bx = qb.x + (rx - qb.x) * t;
-              var by = qb.y + (ry - qb.y) * t;
-              var lift = Math.sin(t * Math.PI) * 14;
-              return { px: fx(bx), py: fy(by) - lift };
-            }
-            // PL6: Full-arc preview line — dashed parabola from QB to
-            // target. Drawn under the trail/ball so the leading edge
-            // always sits on top of the guide.
+            function _ballAtX(t) { return fx(qb.x + (rx - qb.x) * t); }
+            function _ballAtY(t) { return fy(qb.y + (ry - qb.y) * t) - Math.sin(t * Math.PI) * 14; }
+            // Full-arc preview line — dashed parabola from QB to target
             gfx.save();
-            gfx.strokeStyle = 'rgba(251,191,36,0.4)';
+            gfx.strokeStyle = plIsContrast ? '#ffff00' : 'rgba(251,191,36,0.42)';
             gfx.lineWidth = 1.5;
-            gfx.setLineDash([4, 4]);
+            if (typeof gfx.setLineDash === 'function') gfx.setLineDash([4, 4]);
             gfx.beginPath();
             for (var pt = 0; pt <= 1.001; pt += 0.05) {
-              var pp = _ballAt(Math.min(1, pt));
-              if (pt === 0) gfx.moveTo(pp.px, pp.py); else gfx.lineTo(pp.px, pp.py);
+              var ct = Math.min(1, pt);
+              var ppx = _ballAtX(ct), ppy = _ballAtY(ct);
+              if (pt === 0) gfx.moveTo(ppx, ppy); else gfx.lineTo(ppx, ppy);
             }
             gfx.stroke();
-            gfx.setLineDash([]);
+            if (typeof gfx.setLineDash === 'function') gfx.setLineDash([]);
             gfx.restore();
-            // PL6: Motion trail — 8 fading circles trailing the current
-            // ball position. Each is 0.04t back from the leading edge.
-            for (var ti = 1; ti <= 8; ti++) {
-              var trailT = throwT - ti * 0.04;
-              if (trailT <= 0) break;
-              var tpos = _ballAt(trailT);
-              var alpha = (1 - ti / 9) * 0.55;
-              var trad = 4 - ti * 0.35;
-              // ON FIRE → ember-orange trail; otherwise the default warm cream.
-              gfx.fillStyle = (_onFire ? 'rgba(251,146,60,' : 'rgba(254,226,182,') + alpha.toFixed(2) + ')';
-              gfx.beginPath();
-              gfx.arc(tpos.px, tpos.py, Math.max(1.2, trad), 0, Math.PI * 2);
-              gfx.fill();
+            // QB release shockwave ring at launch
+            if (plMotionOn && throwT < 0.28) {
+              var relProg = throwT / 0.28;
+              gfx.strokeStyle = 'rgba(251,191,36,' + ((1 - relProg) * 0.78).toFixed(3) + ')';
+              gfx.lineWidth = Math.max(0.8, 2.2 * (1 - relProg));
+              gfx.beginPath(); gfx.arc(fx(qb.x), fy(qb.y), 7 + relProg * 16, 0, Math.PI * 2); gfx.stroke();
             }
-            // Leading edge — grounded turf shadow beneath parabolic arc + football sprite
-            var current = _ballAt(throwT);
-            var bpx = current.px;
-            var bpy = current.py;
+            // Target catch-window anticipation ring near end of throw
+            if (plMotionOn && throwT > 0.72) {
+              var antProg = (throwT - 0.72) / 0.28;
+              gfx.strokeStyle = 'rgba(52,211,153,' + (antProg * 0.75).toFixed(3) + ')';
+              gfx.lineWidth = 1.8;
+              gfx.beginPath(); gfx.arc(fx(rx), fy(ry), 18 - antProg * 8, 0, Math.PI * 2); gfx.stroke();
+            }
+            // Motion trail — 9 fading circles + subtle spiral wake particles trailing the ball
+            if (plMotionOn) {
+              for (var ti = 1; ti <= 9; ti++) {
+                var trailT = throwT - ti * 0.036;
+                if (trailT <= 0) break;
+                var tpx = _ballAtX(trailT), tpy = _ballAtY(trailT);
+                var alpha = (1 - ti / 10) * 0.58;
+                var trad = 4.2 - ti * 0.34;
+                gfx.fillStyle = (_onFire ? 'rgba(251,146,60,' : 'rgba(254,226,182,') + alpha.toFixed(3) + ')';
+                gfx.beginPath();
+                gfx.arc(tpx, tpy, Math.max(1.1, trad), 0, Math.PI * 2);
+                gfx.fill();
+              }
+            }
+            // Leading edge — grounded turf shadow beneath parabolic arc + football sprite aligned with flight tangent
+            var bpx = _ballAtX(throwT);
+            var bpy = _ballAtY(throwT);
+            var prevT = Math.max(0, throwT - 0.02);
+            var flightAng = Math.atan2(bpy - _ballAtY(prevT), bpx - _ballAtX(prevT));
             var groundShadowY = fy(qb.y + (ry - qb.y) * throwT);
             var altNorm = Math.sin(throwT * Math.PI);
-            gfx.fillStyle = 'rgba(2,6,23,' + (0.36 - altNorm * 0.16).toFixed(2) + ')';
-            gfx.beginPath();
-            gfx.ellipse(bpx, groundShadowY + 2, 5.2 - altNorm * 1.4, 2.4 - altNorm * 0.6, 0, 0, Math.PI * 2);
-            gfx.fill();
-            // Draw the football — small brown ellipse with warm specular glow
+            if (!plIsContrast) {
+              gfx.fillStyle = 'rgba(2,6,23,' + (0.36 - altNorm * 0.16).toFixed(3) + ')';
+              gfx.beginPath();
+              _plSafeEllipse(gfx, bpx, groundShadowY + 2, 5.2 - altNorm * 1.4, 2.4 - altNorm * 0.6, 0, 0, Math.PI * 2);
+              gfx.fill();
+            }
             gfx.save();
-            gfx.shadowColor = _onFire ? 'rgba(239,68,68,0.95)' : 'rgba(251,191,36,0.9)';
-            gfx.shadowBlur = _onFire ? 15 : 11;
+            if (!plIsContrast) {
+              gfx.shadowColor = _onFire ? 'rgba(239,68,68,0.95)' : 'rgba(251,191,36,0.9)';
+              gfx.shadowBlur = _onFire ? 15 : 11;
+            }
             gfx.fillStyle = '#92400e';
             gfx.beginPath();
-            gfx.ellipse(bpx, bpy, 5.4, 3.2, 0, 0, Math.PI * 2);
+            _plSafeEllipse(gfx, bpx, bpy, 5.6, 3.2, flightAng, 0, Math.PI * 2);
             gfx.fill();
             gfx.restore();
+            // White spiral laces aligned along football axis
+            gfx.save();
+            gfx.translate(bpx, bpy);
+            gfx.rotate(flightAng);
             gfx.strokeStyle = '#fafafa';
             gfx.lineWidth = 1.1;
-            gfx.beginPath(); gfx.moveTo(bpx - 3, bpy); gfx.lineTo(bpx + 3, bpy); gfx.stroke();
+            gfx.beginPath(); gfx.moveTo(-3, 0); gfx.lineTo(3, 0); gfx.stroke();
+            gfx.restore();
           }
         }
 
-        // ── Outcome callout + radial catch/collision burst halo ──
+        // ── Outcome callout + radial catch/collision shockwave rings & burst sparks ──
         var soccerBannerVisible = isSoccer && d.runOutcome && d.runOutcome.sport === 'soccer'
           && (!d.runActive) && runT >= soccerPassesCount * SOCCER_PASS_DURATION;
         var footballBannerVisible = !isSoccer && d.runOutcome && runT > ROUTE_DURATION + THROW_DURATION;
         if (soccerBannerVisible) {
           var sro = d.runOutcome;
           var sxg = sro.xG || 0;
-          var sAccent = sxg > 0.30 ? '#10b981' : sxg > 0.10 ? '#fbbf24' : '#ef4444';
-          var sBannerColor = sxg > 0.30 ? 'rgba(16,185,129,0.92)'
+          var sBannerColor = plIsContrast ? '#000000'
+                           : sxg > 0.30 ? 'rgba(16,185,129,0.92)'
                            : sxg > 0.10 ? 'rgba(251,191,36,0.92)'
                            : 'rgba(239,68,68,0.92)';
-          // Luminous arrival burst halo on final soccer attacker
+          // Luminous arrival shockwave halo + burst rays on final soccer attacker
           var sFinalP = formation.find(function(p) { return p.id === sro.finalReceiverId; });
-          if (sFinalP && hasRadial) {
+          if (sFinalP) {
             var sbx = fx(sFinalP.x), sby = fy(sFinalP.y);
-            var sBurst = gfx.createRadialGradient(sbx, sby, 3, sbx, sby, 24);
-            sBurst.addColorStop(0, sxg > 0.30 ? 'rgba(52,211,153,0.62)' : 'rgba(251,191,36,0.52)');
-            sBurst.addColorStop(1, 'rgba(52,211,153,0)');
-            gfx.fillStyle = sBurst;
-            gfx.beginPath(); gfx.arc(sbx, sby, 24, 0, Math.PI * 2); gfx.fill();
+            var sRgb = sxg > 0.30 ? '52,211,153' : sxg > 0.10 ? '251,191,36' : '248,113,113';
+            if (hasRadial) {
+              var sBurst = gfx.createRadialGradient(sbx, sby, 3, sbx, sby, 26);
+              sBurst.addColorStop(0, 'rgba(' + sRgb + ',0.62)');
+              sBurst.addColorStop(1, 'rgba(' + sRgb + ',0)');
+              gfx.fillStyle = sBurst;
+              gfx.beginPath(); gfx.arc(sbx, sby, 26, 0, Math.PI * 2); gfx.fill();
+            }
+            if (!plIsContrast) {
+              gfx.strokeStyle = 'rgba(' + sRgb + ',0.85)';
+              gfx.lineWidth = 1.8;
+              gfx.beginPath(); gfx.arc(sbx, sby, 14, 0, Math.PI * 2); gfx.stroke();
+              gfx.strokeStyle = 'rgba(' + sRgb + ',0.45)';
+              gfx.lineWidth = 1.1;
+              gfx.beginPath(); gfx.arc(sbx, sby, 21, 0, Math.PI * 2); gfx.stroke();
+              if (!plReduced) {
+                for (var sbi = 0; sbi < _PL_BURST_COUNT; sbi++) {
+                  var br = 12 + _PL_BURST_SPD[sbi] * 11;
+                  gfx.fillStyle = sbi % 2 === 0 ? 'rgba(255,255,255,0.75)' : ('rgba(' + sRgb + ',0.8)');
+                  gfx.beginPath();
+                  gfx.arc(sbx + Math.cos(_PL_BURST_ANG[sbi]) * br, sby + Math.sin(_PL_BURST_ANG[sbi]) * br, 1.5, 0, Math.PI * 2);
+                  gfx.fill();
+                }
+              }
+            }
           }
           var sBannerText = '⚽ ' + (sro.finalReceiverId || 'Final attacker') + ' arrives · xG ' + sxg.toFixed(2);
           _plRoundRectPath(W / 2 - 156, marginT + fieldPxH / 2 - 20, 312, 40, 12);
           gfx.fillStyle = sBannerColor;
           gfx.fill();
-          gfx.strokeStyle = '#ffffff';
-          gfx.lineWidth = 1.5;
+          gfx.strokeStyle = plIsContrast ? '#ffff00' : '#ffffff';
+          gfx.lineWidth = plIsContrast ? 2 : 1.5;
           gfx.stroke();
-          gfx.fillStyle = '#0f172a';
+          gfx.fillStyle = plIsContrast ? '#ffff00' : '#0f172a';
           gfx.font = 'bold 14px system-ui';
           gfx.textAlign = 'center';
           gfx.textBaseline = 'middle';
@@ -3857,22 +4102,37 @@ window.StemLab = window.StemLab || {
           var rcvId = ro.receiverId;
           var rcv = formation.find(function(p) { return p.id === rcvId; });
           var rcvEP = rcv ? receiverEndPoint(rcv) : null;
-          // Radial catch / pass-breakup interaction burst halo at target point
+          // Radial catch / pass-breakup interaction shockwave rings & radial sparks at target point
           if (rcvEP) {
             var ibx = fx(rcvEP.x), iby = fy(rcvEP.y);
             var burstRgb = ro.location === 'caught' ? '52,211,153' : ro.location === 'brokenup' ? '251,191,36' : '248,113,113';
             if (hasRadial) {
-              var ibg = gfx.createRadialGradient(ibx, iby, 4, ibx, iby, 26);
+              var ibg = gfx.createRadialGradient(ibx, iby, 4, ibx, iby, 28);
               ibg.addColorStop(0, 'rgba(' + burstRgb + ',0.68)');
               ibg.addColorStop(1, 'rgba(' + burstRgb + ',0)');
               gfx.fillStyle = ibg;
-              gfx.beginPath(); gfx.arc(ibx, iby, 26, 0, Math.PI * 2); gfx.fill();
+              gfx.beginPath(); gfx.arc(ibx, iby, 28, 0, Math.PI * 2); gfx.fill();
             }
-            gfx.strokeStyle = 'rgba(' + burstRgb + ',0.88)';
+            gfx.strokeStyle = plIsContrast ? '#00ff00' : ('rgba(' + burstRgb + ',0.88)');
             gfx.lineWidth = 2;
             gfx.beginPath(); gfx.arc(ibx, iby, 15, 0, Math.PI * 2); gfx.stroke();
+            if (!plIsContrast) {
+              gfx.strokeStyle = 'rgba(' + burstRgb + ',0.45)';
+              gfx.lineWidth = 1.2;
+              gfx.beginPath(); gfx.arc(ibx, iby, 22.5, 0, Math.PI * 2); gfx.stroke();
+              if (!plReduced) {
+                for (var fbi = 0; fbi < _PL_BURST_COUNT; fbi++) {
+                  var fbr = 13 + _PL_BURST_SPD[fbi] * 12;
+                  gfx.fillStyle = fbi % 2 === 0 ? 'rgba(255,255,255,0.8)' : ('rgba(' + burstRgb + ',0.85)');
+                  gfx.beginPath();
+                  gfx.arc(ibx + Math.cos(_PL_BURST_ANG[fbi]) * fbr, iby + Math.sin(_PL_BURST_ANG[fbi]) * fbr, 1.6, 0, Math.PI * 2);
+                  gfx.fill();
+                }
+              }
+            }
           }
-          var bannerColor = ro.location === 'caught' ? 'rgba(16,185,129,0.92)'
+          var bannerColor = plIsContrast ? '#000000'
+                          : ro.location === 'caught' ? 'rgba(16,185,129,0.92)'
                           : ro.location === 'brokenup' ? 'rgba(251,191,36,0.92)'
                           : 'rgba(239,68,68,0.92)';
           var bannerText = ro.location === 'caught' ? '✅ COMPLETE to ' + ro.receiverId
@@ -3881,10 +4141,10 @@ window.StemLab = window.StemLab || {
           _plRoundRectPath(W / 2 - 138, marginT + fieldPxH / 2 - 20, 276, 40, 12);
           gfx.fillStyle = bannerColor;
           gfx.fill();
-          gfx.strokeStyle = '#ffffff';
-          gfx.lineWidth = 1.5;
+          gfx.strokeStyle = plIsContrast ? '#ffff00' : '#ffffff';
+          gfx.lineWidth = plIsContrast ? 2 : 1.5;
           gfx.stroke();
-          gfx.fillStyle = '#0f172a';
+          gfx.fillStyle = plIsContrast ? '#ffff00' : '#0f172a';
           gfx.font = 'bold 14px system-ui';
           gfx.textAlign = 'center';
           gfx.textBaseline = 'middle';
@@ -3904,11 +4164,8 @@ window.StemLab = window.StemLab || {
                        W / 2, marginT + fieldPxH / 2 + 46);
         }
         // ── "ON FIRE" warm vignette ──
-        // Ember frame around the field on a 3+ streak. Pulses subtly with
-        // runT during an active play, steady otherwise. Drawn last so it
-        // overlays the field edges but leaves the central outcome banner clear.
-        if (_onFire) {
-          var _emberPulse = d.runActive ? (0.42 + 0.26 * Math.abs(Math.sin((runT || 0) * 3))) : 0.5;
+        if (_onFire && !plIsContrast) {
+          var _emberPulse = (d.runActive && !plReduced) ? (0.42 + 0.26 * Math.abs(Math.sin((runT || 0) * 3))) : 0.5;
           gfx.save();
           gfx.lineWidth = _hotStreak >= 5 ? 6 : 4;
           gfx.strokeStyle = 'rgba(239,68,68,' + _emberPulse.toFixed(2) + ')';
@@ -3969,6 +4226,7 @@ window.StemLab = window.StemLab || {
 
       var PLAYLAB_SPORT_TABS = ['football', 'soccer'];
       function playLabSportTabKeyDown(e, index) {
+        if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
         var key = e.key;
         if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
         e.preventDefault();
@@ -3984,6 +4242,7 @@ window.StemLab = window.StemLab || {
 
       var PLAYLAB_WORKSPACE_TABS = ['field', 'scout'];
       function playLabWorkspaceTabKeyDown(e, index) {
+        if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
         var key = e.key;
         if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
         e.preventDefault();
@@ -4001,6 +4260,7 @@ window.StemLab = window.StemLab || {
         opts = opts || {};
         return h('button', {
           key: opts.key,
+          type: 'button',
           onClick: onClick, 'aria-pressed': sel, 'data-pl-focusable': 'true',
           style: playLabChoiceButtonStyle(sel, opts)
         }, label);
@@ -4015,6 +4275,10 @@ window.StemLab = window.StemLab || {
         scenarioIntro && h('div', {
           role: 'dialog', 'aria-modal': 'true',
           'aria-labelledby': 'pl-scenario-intro-title',
+          onKeyDown: function(e) {
+            if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setScenarioIntro(null); }
+          },
           onClick: function(e) { if (e.target === e.currentTarget) setScenarioIntro(null); },
           style: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
                    zIndex: 9998, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -4031,6 +4295,7 @@ window.StemLab = window.StemLab || {
                 style: { flex: 1, margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--allo-stem-text, #f1f5f9)' } },
                 scenarioIntro.label),
               h('button', {
+                type: 'button',
                 onClick: function() { setScenarioIntro(null); },
                 'aria-label': __alloT('stem.playlab.close_scenario_intro', 'Close scenario intro'),
                 style: { background: '#0f172a', border: '1px solid #94a3b8', color: '#f8fafc',
@@ -4059,6 +4324,7 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 } },
               h('button', {
+                type: 'button',
                 onClick: function() { setScenarioIntro(null); startRun(); },
                 'data-pl-focusable': 'true',
                 style: { flex: '1 1 200px', padding: '10px 14px', borderRadius: 8,
@@ -4067,6 +4333,7 @@ window.StemLab = window.StemLab || {
                          boxShadow: '0 4px 12px rgba(34,197,94,0.25)' }
               }, __alloT('stem.playlab.run_it_now', '▶ Run it now')),
               h('button', {
+                type: 'button',
                 onClick: function() { setScenarioIntro(null); },
                 'data-pl-focusable': 'true',
                 style: playLabSecondaryButtonStyle({ flex: '1 1 160px', padding: '10px 14px', borderRadius: 8, fontSize: 13 })
@@ -4102,6 +4369,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'playlab-hero-row' },
             h('div', { className: 'playlab-hero-main' },
               ArrowLeft && h('button', {
+                type: 'button',
                 onClick: function() { setStemLabTool && setStemLabTool(null); },
                 'data-pl-focusable': 'true', 'aria-label': __alloT('stem.playlab.back_to_stem_lab', 'Back to STEAM Lab'),
                 style: playLabSecondaryButtonStyle({ padding: '6px 10px', minHeight: 40 })
@@ -4212,6 +4480,7 @@ window.StemLab = window.StemLab || {
           ].map(function(sp) {
             var sel = (d.sport || 'football') === sp.id;
             return h('button', {
+              type: 'button',
               key: 'sport-' + sp.id,
               id: 'playlab-sport-tab-' + sp.id,
               role: 'tab',
@@ -4246,6 +4515,7 @@ window.StemLab = window.StemLab || {
           ].map(function(wt) {
             var sel = workspaceTab === wt.id;
             return h('button', {
+              type: 'button',
               key: 'pl-workspace-' + wt.id,
               id: 'playlab-workspace-tab-' + wt.id,
               role: 'tab',
@@ -4316,6 +4586,7 @@ window.StemLab = window.StemLab || {
               return sc.sport === (d.sport || 'football');
             }).map(function(sc) {
               return h('button', {
+                type: 'button',
                 key: 'plsc-' + sc.id,
                 onClick: function() { applyPlayLabScenario(sc.id); },
                 'aria-label': sc.label + ' scenario: ' + sc.teach,
@@ -4339,6 +4610,7 @@ window.StemLab = window.StemLab || {
                     style: { display: 'inline-flex', alignItems: 'stretch', borderRadius: 6, overflow: 'hidden' }
                   },
                     h('button', {
+                      type: 'button',
                       onClick: function() { loadSavedPlay(sp); },
                       'aria-label': sp.name + ' (custom scenario)',
                       'data-pl-focusable': 'true',
@@ -4352,6 +4624,7 @@ window.StemLab = window.StemLab || {
                       }
                     }, '⭐ ' + (sp.name.length > 22 ? sp.name.slice(0, 22) + '…' : sp.name)),
                     h('button', {
+                      type: 'button',
                       onClick: function() { deleteSavedPlay(sp.id); },
                       'aria-label': 'Delete custom scenario: ' + sp.name,
                       'data-pl-focusable': 'true',
@@ -4368,6 +4641,7 @@ window.StemLab = window.StemLab || {
             ).concat([
               // Quick-Play — random scenario, one click
               h('button', {
+                type: 'button',
                 key: 'plsc-random',
                 onClick: runRandomPlayLabScenario,
                 'aria-label': __alloT('stem.playlab.run_a_random_scenario_go_straight_to_e', 'Run a random scenario — go straight to executing without reading setup'),
@@ -4380,6 +4654,7 @@ window.StemLab = window.StemLab || {
                 }
               }, __alloT('stem.playlab.run_something_cool', '🎲 Run something cool')),
               h('button', {
+                type: 'button',
                 key: 'plsc-save',
                 onClick: openSavePrompt,
                 'aria-label': __alloT('stem.playlab.save_current_setup_as_a_custom_scenari', 'Save current setup as a custom scenario'),
@@ -4392,6 +4667,7 @@ window.StemLab = window.StemLab || {
                 }
               }, __alloT('stem.playlab.save_current', '⭐ Save current')),
               h('button', {
+                type: 'button',
                 key: 'plsc-print',
                 onClick: printPlayLabActivitySheet,
                 'aria-label': 'Print activity sheet for ' + (isSoccer ? 'soccer' : 'football') + ' scenarios',
@@ -4404,6 +4680,7 @@ window.StemLab = window.StemLab || {
                 }
               }, __alloT('stem.playlab.print_activity_sheet', '📄 Print activity sheet')),
               h('button', {
+                type: 'button',
                 key: 'plsc-card',
                 onClick: exportPlayLabTradingCard,
                 'aria-label': __alloT('stem.playlab.export_the_current_play_concept_as_a_p', 'Export the current play / concept as a printable trading card'),
@@ -4434,6 +4711,7 @@ window.StemLab = window.StemLab || {
           var border = done ? '#22c55e' : loaded ? '#fbbf24' : '#a78bfa';
           var label = done ? '✅ Today\'s Challenge complete!' : loaded ? '🎯 In progress: ' + daily.label : '🌟 Today\'s Challenge: ' + daily.label;
           return h('button', {
+            type: 'button',
             onClick: function() {
               if (done) {
                 plAnnounce(__alloT('stem.playlab.sr_daily_challenge_already_complete_come_back_tomorr', 'Daily Challenge already complete. Come back tomorrow.'));
@@ -4545,7 +4823,7 @@ window.StemLab = window.StemLab || {
             hot ? h('span', { style: { color: hot.text, fontWeight: 700 } },
               hot.emoji + ' ' + hot.label + ' (streak: ' + d.drillStats.hotStreak + ')'
             ) : h('span', { style: { color: tint('#a78bfa'), fontStyle: 'italic' } },
-              '🎙️ ' + pickHypePhrase()
+              '🎙️ ' + hypePhraseRef.current
             )
           );
         })(),
@@ -4578,6 +4856,7 @@ window.StemLab = window.StemLab || {
                 h('div', null, active.teach)
               ),
               h('button', {
+                type: 'button',
                 onClick: function() { upd('activeScenarioId', null); },
                 'aria-label': __alloT('stem.playlab.dismiss_scenario_briefing', 'Dismiss scenario briefing'),
                 'data-pl-focusable': 'true',
@@ -4648,12 +4927,8 @@ window.StemLab = window.StemLab || {
                 'data-pl-focusable': 'true',
                 onClick: function() {
                   if (isSoccer) {
-                    setLabToolData(function(prev) {
-                      var basePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
-                      var prevPl = (basePrev.playlab && typeof basePrev.playlab === 'object' && !Array.isArray(basePrev.playlab)) ? basePrev.playlab : PLAYLAB_DEFAULTS;
-                      return Object.assign({}, basePrev, { playlab: Object.assign({}, prevPl, {
-                        formationId: st.formationId, conceptId: st.conceptId, shapeId: st.shapeId, customPositions: {}
-                      }) });
+                    patchPlayLab({
+                      formationId: st.formationId, conceptId: st.conceptId, shapeId: st.shapeId, customPositions: {}
                     });
                     plAnnounce('Loaded soccer matchup: ' + st.label);
                   } else {
@@ -4790,6 +5065,7 @@ window.StemLab = window.StemLab || {
                       var m = matchupFn(r, c);
                       var isActive = (r.id === activeRowId && c.id === activeColId);
                       return h('button', {
+                        type: 'button',
                         key: 'cell-' + r.id + '-' + c.id,
                         role: 'cell',
                         onClick: function() {
@@ -4879,6 +5155,7 @@ window.StemLab = window.StemLab || {
               h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginRight: 4 } }, __alloT('stem.playlab.try_instead', '💡 Try instead:')),
               suggestions.map(function(s) {
                 return h('button', {
+                  type: 'button',
                   key: 'sug-' + s.id,
                   onClick: function() {
                     if (isSoccer) {
@@ -4918,17 +5195,16 @@ window.StemLab = window.StemLab || {
           if (!d.drillActive) {
             return h('div', { style: { marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
               h('button', {
+                type: 'button',
                 onClick: function() {
-                  setLabToolData(function(prev) {
-                    return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-                      drillActive: true, drillTaskIdx: 0,
-                      drillStats: {
-                        coveragesBeaten: 0, coveragesBeatenSet: {},
-                        completionsByPlay: {}, smashVsCover2: false, completedCustomPlay: false,
-                        highXgShot: false, conceptsRun: {}, shapesPlayed: {}, customHighXg: false,
-                        setPieceRun: false, setPieceTypesRun: {}
-                      }
-                    })});
+                  patchPlayLab({
+                    drillActive: true, drillTaskIdx: 0,
+                    drillStats: {
+                      coveragesBeaten: 0, coveragesBeatenSet: {},
+                      completionsByPlay: {}, smashVsCover2: false, completedCustomPlay: false,
+                      highXgShot: false, conceptsRun: {}, shapesPlayed: {}, customHighXg: false,
+                      setPieceRun: false, setPieceTypesRun: {}
+                    }
                   });
                   plAnnounce('Drill started: ' + DRILL_SET.tasks[0].goal);
                 },
@@ -4952,11 +5228,10 @@ window.StemLab = window.StemLab || {
               h('h3', { id: 'pl-drill-heading', style: { margin: 0, fontSize: 12, color: tint('#10b981'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 } },
                 allDone ? '🏆 Drill complete · ' + DRILL_SET.label : '🎯 ' + DRILL_SET.label + ' · Task ' + (taskIdx + 1) + ' of ' + DRILL_SET.tasks.length),
               h('button', {
+                type: 'button',
                 onClick: function() {
-                  setLabToolData(function(prev) {
-                    return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
-                      drillActive: false, drillTaskIdx: 0
-                    })});
+                  patchPlayLab({
+                    drillActive: false, drillTaskIdx: 0
                   });
                   plAnnounce(__alloT('stem.playlab.sr_drill_stopped', 'Drill stopped.'));
                 },
@@ -5166,6 +5441,7 @@ window.StemLab = window.StemLab || {
             // outcome (no animation) — handled in the rAF effect.
             h('div', { className: 'playlab-run-rack' },
               h('button', {
+                type: 'button',
                 onClick: startRun,
                 disabled: !!d.runActive,
                 'aria-busy': !!d.runActive,
@@ -5210,6 +5486,7 @@ window.StemLab = window.StemLab || {
                 style: { marginLeft: 'auto', fontSize: 11, color: tint('#fbbf24'), fontStyle: 'italic' }
               }, '✎ ' + Object.keys(d.customPositions).length + ' custom position' + (Object.keys(d.customPositions).length === 1 ? '' : 's')) : null,
               Object.keys(d.customPositions || {}).length > 0 ? h('button', {
+                type: 'button',
                 onClick: resetPositions,
                 'data-pl-focusable': 'true',
                 'aria-label': __alloT('stem.playlab.reset_all_custom_player_positions_to_t', 'Reset all custom player positions to the play preset'),
@@ -5217,6 +5494,7 @@ window.StemLab = window.StemLab || {
               }, __alloT('stem.playlab.reset_positions', 'Reset positions')) : null,
               // Save play — only renders when there's something custom to save
               Object.keys(d.customPositions || {}).length > 0 ? h('button', {
+                type: 'button',
                 onClick: openSavePrompt,
                 'data-pl-focusable': 'true',
                 'aria-label': __alloT('stem.playlab.save_the_current_custom_play_with_a_na', 'Save the current custom play with a name'),
@@ -5252,10 +5530,12 @@ window.StemLab = window.StemLab || {
                 style: playLabNativeControlStyle({ flex: 1, minWidth: 200 })
               }),
               h('button', {
+                type: 'button',
                 onClick: commitSavePlay, 'data-pl-focusable': 'true',
                 style: { padding: '6px 12px', minHeight: 30, borderRadius: 4, cursor: 'pointer', border: '1px solid #d946ef', background: 'rgba(217,70,239,0.18)', color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 11, fontWeight: 600 }
               }, __alloT('stem.playlab.save', 'Save')),
               h('button', {
+                type: 'button',
                 onClick: cancelSavePrompt, 'data-pl-focusable': 'true',
                 style: playLabSecondaryButtonStyle({ padding: '6px 12px', minHeight: 30, borderRadius: 4, fontSize: 11 })
               }, __alloT('stem.playlab.cancel', 'Cancel'))
@@ -5277,12 +5557,12 @@ window.StemLab = window.StemLab || {
               style: { marginTop: 10, padding: 12, background: 'linear-gradient(135deg, rgba(217,70,239,0.10), rgba(124,58,237,0.10))', border: '1px solid #d946ef', borderRadius: 10 }
             },
               h('h3', { id: 'pl-coach-heading',
-                style: { fontSize: 12, margin: 0, marginBottom: 6, color: '#d946ef', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
+                style: { fontSize: 12, margin: 0, marginBottom: 6, color: tint('#d946ef'), textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
               }, __alloT('stem.playlab.coach_analysis', '🤖 Coach analysis')),
               d.coachLoading
                 ? h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, fontStyle: 'italic' } }, __alloT('stem.playlab.analyzing_the_play_vs_the_coverage', 'Analyzing the play vs the coverage…'))
                 : d.coachError
-                ? h('div', { style: { color: '#ef4444', fontSize: 12 } }, typeof d.coachError === 'string' ? d.coachError : '')
+                ? h('div', { style: { color: tint('#ef4444'), fontSize: 12 } }, typeof d.coachError === 'string' ? d.coachError : '')
                 : h('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontSize: 13, lineHeight: 1.5 } }, typeof d.coachReply === 'string' ? d.coachReply : '')
             ) : null,
 
@@ -5353,13 +5633,14 @@ window.StemLab = window.StemLab || {
             // Coach button — only renders if Gemini is available. The
             // analysis itself appears in the bubble under the field canvas
             // (left column) so it doesn't squeeze the narrow right column.
-            typeof callGemini === 'function' ? h('div', { style: { marginBottom: 10 } },
+            plAiOn ? h('div', { style: { marginBottom: 10 } },
               // Coach persona picker — pill row of 4 voice options
               h('div', { role: 'group', 'aria-label': __alloT('stem.playlab.coach_voice', 'Coach voice'),
                 style: { display: 'flex', gap: 4, marginBottom: 6, flexWrap: 'wrap' } },
                 COACH_PERSONAS.map(function(p) {
                   var sel = (d.coachPersona || 'analyst') === p.id;
                   return h('button', {
+                    type: 'button',
                     key: 'plcoachp-' + p.id,
                     onClick: function() {
                       upd('coachPersona', p.id);
@@ -5379,6 +5660,7 @@ window.StemLab = window.StemLab || {
                 })
               ),
               h('button', {
+                type: 'button',
                 onClick: askCoach,
                 disabled: !!d.coachLoading,
                 'aria-busy': !!d.coachLoading,
@@ -5413,6 +5695,7 @@ window.StemLab = window.StemLab || {
                   },
                     h('span', { style: { fontSize: 14 } }, entry.sport === 'soccer' ? '⚽' : '🏈'),
                     h('button', {
+                      type: 'button',
                       onClick: function() { loadSavedPlay(entry); },
                       'aria-label': 'Load saved play ' + entry.name,
                       'data-pl-focusable': 'true',
@@ -5421,6 +5704,7 @@ window.StemLab = window.StemLab || {
                         color: '#f8fafc', fontSize: 12, textAlign: 'left' }
                     }, entry.name),
                     h('button', {
+                      type: 'button',
                       onClick: async function() {
                         var confirmModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
                         var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;

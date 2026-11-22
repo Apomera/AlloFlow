@@ -17,8 +17,8 @@
     "choiceRationales": [
       "This is correct because both partial products, 8,760 and 3,066, are included and their sum is 11,826.",
       "This includes only 438 times 20 and omits the additional 7 groups represented by the ones digit in 27.",
-      "This includes only 438 times 7 and omits the 20 groups represented by the tens digit in 27.",
-      "This adds 438 and 27 rather than finding 27 equal groups of 438 covers."
+      "Multiplying 438 by 7 produces only the ones-place partial product and leaves out the 20 additional classrooms represented by the tens digit.",
+      "Combining 438 and 27 by addition treats the two numbers as like quantities instead of finding 27 equal groups of 438 book covers."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -55,7 +55,7 @@
     "answerIndex": 1,
     "rationale": "The amount present is 3/5 of the full capacity. Multiplying 4.5 by 3/5 gives 13.5/5, or 2.7 liters, which is appropriately less than the full amount.",
     "choiceRationales": [
-      "This divides 4.5 by 3 and does not apply the full fraction 3/5 to the capacity.",
+      "Dividing 4.5 liters by 3 yields one third of the tank rather than applying the full fraction 3/5 to determine the current volume.",
       "This is correct because 4.5 times 0.6 equals 2.7 liters, the same as finding 3/5 of 4.5.",
       "This subtracts 3/5 as though it were 0.6 liter rather than using it as a fraction of the total capacity.",
       "This divides by 3/5, producing an amount greater than capacity even though the dispenser is only partly full."
@@ -98,7 +98,7 @@
       "This places the decimal one position too far left; 475 times 6 has three total decimal places, not four.",
       "This places the decimal one position too far right and is unreasonable because covering 0.6 of the edge must use less than 4.75 meters.",
       "This is correct because 4.75 times 0.6 equals 2.85 meters of the exposed edge.",
-      "This adds 4.75 and 0.6 instead of finding the specified fractional part of the edge."
+      "Adding 4.75 and 0.6 creates a length longer than the entire display edge instead of finding six tenths of the 4.75-meter border."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -135,9 +135,9 @@
     "answerIndex": 3,
     "rationale": "The completed fraction is 156/240. Dividing both numbers by 12 gives 13/20, and 13 divided by 20 equals 0.65, or 65%.",
     "choiceRationales": [
-      "This is the percent still incomplete because 84 of 240 panels remain and 84/240 = 35%.",
+      "Thirty-five percent reflects the 84 mosaic panels still unfinished (84/240), not the 156 panels the students have already completed.",
       "This value does not result from dividing the completed count by the total count and converting to percent.",
-      "This treats the number of uncompleted panels, 84, as a percent without comparing it with the total.",
+      "Using 84 directly as a percentage mistakes the raw count of remaining panels for a ratio compared against the full 240-panel mural.",
       "This is correct because 156 divided by 240 equals 0.65, which is 65%."
     ],
     "skillIds": [
@@ -176,9 +176,9 @@
     "rationale": "A drop of 4 degrees is a change of -4. Three equal drops total 3(-4) = -12, and combining that change with the starting temperature gives -7 + (-12) = -19 degrees Celsius.",
     "choiceRationales": [
       "This is correct because three 4-degree drops lower -7 by 12 more degrees, producing -19 degrees Celsius.",
-      "This treats the three drops as a positive 12-degree rise, calculating -7 + 12 instead of -7 - 12.",
+      "Adding 12 to -7 treats three 4-degree drops as warming instead of cooling, reversing the direction of temperature change in the freezer.",
       "This uses the correct magnitude of 19 but loses the negative sign even though the temperature falls farther below zero.",
-      "This replaces the multiplication 3(-4) with the addition 3 + (-4), then combines -1 with -7."
+      "Combining 3 + (-4) to get -1 and adding that to -7 misapplies addition where three equal hourly drops require multiplying 3 by -4."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -215,10 +215,10 @@
     "answerIndex": 1,
     "rationale": "The unit cost is the total cost divided by the number of notebooks. Dividing $12.25 by 7 gives $1.75, and 7 times $1.75 checks to $12.25.",
     "choiceRationales": [
-      "This underestimates the unit price; seven notebooks at $1.25 would cost only $8.75.",
+      "At $1.25 apiece, seven identical notebooks would total only $8.75, falling well short of the $12.25 purchase price stated in the problem.",
       "This is correct because $12.25 divided equally among seven notebooks is $1.75 per notebook.",
-      "This subtracts the number of notebooks from the numerical cost rather than finding a unit rate.",
-      "This adds seven dollars to the total rather than dividing the total cost into seven equal parts."
+      "Subtracting the count of 7 notebooks from $12.25 mixes unlike units instead of dividing the total bill equally across the seven items.",
+      "Adding 7 dollars to $12.25 inflates the amount past the entire group cost rather than splitting $12.25 into seven equal unit prices."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -255,7 +255,7 @@
     "answerIndex": 2,
     "rationale": "Thirty-five posters are seven groups of five posters. Multiplying the corresponding eight sheets by seven gives 56 sheets while preserving the ratio 8:5.",
     "choiceRationales": [
-      "This adds the 5 posters to the 35 posters but does not scale the corresponding paper quantity.",
+      "Summing 5 posters and 35 posters combines two poster counts without scaling the matching ratio of 8 sheets per 5-poster batch.",
       "This adds the original 8 sheets to 35 posters even though quantities with different units should not be combined.",
       "This is correct because multiplying both parts of 8 sheets for 5 posters by 7 gives 56 sheets for 35 posters.",
       "This multiplies 8 by 35 without accounting for the fact that 8 sheets correspond to each group of 5 posters."
@@ -295,9 +295,9 @@
     "answerIndex": 3,
     "rationale": "There are four factors of 3: cabinets, shelves per cabinet, bins per shelf, and folders per bin. Thus the total is 3 x 3 x 3 x 3 = 3^4 = 81 folders.",
     "choiceRationales": [
-      "This reverses the base and exponent; the repeated factor is 3, not 4.",
+      "Writing 4^3 swaps the base and exponent: four nested storage levels each hold 3 items, so the repeated factor must be 3 rather than 4.",
       "This multiplies the repeated factor by the number of factors instead of multiplying four factors of 3.",
-      "This uses only three factors of 3 and omits one level of the storage system.",
+      "Stopping at 3^3 includes only three multipliers of 3 and omits one of the four storage levels from cabinets down to folders.",
       "This is correct because four nested groups of 3 produce 3 x 3 x 3 x 3, or 81."
     ],
     "skillIds": [
@@ -336,7 +336,7 @@
     "rationale": "The equation adds 18 to the original number of chairs. Subtracting 18 from both sides gives c = 47 - 18 = 29, and 29 + 18 = 47 verifies the solution.",
     "choiceRationales": [
       "This is correct because reversing the addition gives the original count: 47 - 18 = 29 chairs.",
-      "This adds 18 to 47 instead of reversing the stated addition to find the unknown starting count.",
+      "Adding 18 to 47 repeats the addition instead of undoing it with subtraction, producing a starting count larger than the final 47 chairs.",
       "This repeats the number of chairs added rather than finding how many chairs were present originally.",
       "This uses the final total as the starting count and does not account for the 18 chairs that were added."
     ],
@@ -415,10 +415,10 @@
     "answerIndex": 2,
     "rationale": "Substituting 5 for x gives y = 3(5) - 2. Multiplication gives 15, and subtracting 2 gives y = 13, so the ordered input-output relationship is preserved.",
     "choiceRationales": [
-      "This subtracts 2 from 3 before multiplying by 5 rather than following the stated rule.",
-      "This doubles 5 or otherwise omits the multiplication by 3 specified in the rule.",
+      "Computing (3 - 2) times 5 subtracts before multiplying, violating the order of operations required by the rule y = 3x - 2.",
+      "Doubling the input 5 ignores the coefficient 3 and the constant subtraction, failing to evaluate the linear rule accurately.",
       "This is correct because 3 times 5 is 15 and 15 - 2 equals 13.",
-      "This adds 2 after multiplying instead of subtracting 2 as the rule requires."
+      "Adding 2 to 15 instead of subtracting 2 reverses the constant operation in y = 3x - 2 and overshoots the correct output by 4."
     ],
     "skillIds": [
       "mathematics-ratio-algebra"
@@ -455,9 +455,9 @@
     "answerIndex": 3,
     "rationale": "Each term is three times the preceding term: 2 times 3 = 6, 6 times 3 = 18, and 18 times 3 = 54. Therefore, 54 times 3 = 162.",
     "choiceRationales": [
-      "This adds 4 to 54 even though the differences between consecutive terms are not constant.",
-      "This doubles 54, but the established multiplicative rule uses a factor of 3.",
-      "This adds 100 without applying a rule that is supported across all the given transitions.",
+      "Adding 4 to 54 assumes a constant difference, yet the gaps between consecutive terms grow rapidly from 4 to 12 to 36.",
+      "Doubling 54 uses a multiplier of 2, whereas every earlier step in the sequence multiplies the preceding term by a factor of 3.",
+      "Adding 100 to 54 invents an unsupported jump that fails to match the consistent times-3 relationship across the first four terms.",
       "This is correct because every term is obtained by multiplying the previous term by 3."
     ],
     "skillIds": [
@@ -496,9 +496,9 @@
     "rationale": "A right angle measures 90 degrees, and the ratio contains 2 + 3 = 5 equal parts. Each part is 90/5 = 18 degrees, so the smaller angle measures 2 times 18 = 36 degrees.",
     "choiceRationales": [
       "This is correct because two of the five equal 18-degree parts make the smaller angle, 36 degrees.",
-      "This divides the right angle into two equal halves, ignoring the unequal 2:3 ratio.",
-      "This is the larger angle, formed by three of the five equal 18-degree parts.",
-      "This treats the smaller angle as two thirds of 90 rather than as two fifths of the total."
+      "Splitting the 90-degree right angle evenly into two 45-degree halves disregards the given 2:3 ratio between the smaller and larger parts.",
+      "Fifty-four degrees equals three of the five 18-degree parts, which gives the larger angle rather than the requested smaller angle.",
+      "Taking two thirds of 90 degrees misreads the 2:3 part-to-part ratio as a fraction of the whole instead of dividing 90 into five equal parts."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -535,10 +535,10 @@
     "answerIndex": 1,
     "rationale": "Perimeter is the distance around the figure. Adding all four side lengths gives 8.5 + 6.2 + 8.5 + 4.8 = 28 meters.",
     "choiceRationales": [
-      "This omits the 4.8-meter side, so it does not include the entire boundary of the garden.",
+      "Summing only three edges leaves out the 4.8-meter side, so the result fails to measure the full outer boundary of the garden.",
       "This is correct because the sum of all four boundary lengths is exactly 28 meters.",
-      "This rounds or combines the side lengths inaccurately rather than adding their exact decimal values.",
-      "This multiplies the side lengths and uses square units, neither of which represents perimeter."
+      "Rounding or misaligning the decimal digits inflates the perimeter above the exact four-side sum of 8.5 + 6.2 + 8.5 + 4.8 meters.",
+      "Multiplying dimensions to produce square meters computes an area-style product rather than adding linear edge lengths for perimeter."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -578,7 +578,7 @@
       "This subtracts 5 from the x-coordinate and describes a horizontal move left rather than a vertical move down.",
       "This adds 5 to the x-coordinate and describes a horizontal move right while leaving the height unchanged.",
       "This is correct because the x-coordinate remains -2 and the y-coordinate decreases from 4 to -1.",
-      "This adds 5 to the y-coordinate, representing a move upward instead of downward."
+      "Adding 5 to the y-coordinate shifts the point vertically upward to 9 instead of lowering it 5 units downward from 4."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -616,8 +616,8 @@
     "rationale": "One gallon equals four quarts. Multiplying 2.75 gallons by 4 quarts per gallon gives 11 quarts, with gallons canceling in the conversion.",
     "choiceRationales": [
       "This divides by 4 and makes the numerical amount smaller even though each gallon contains four quarts.",
-      "This adds 4 to 2.75 rather than applying the multiplicative conversion factor.",
-      "This multiplies by 3, which is not the number of quarts in one gallon.",
+      "Adding 4 to 2.75 misapplies addition to a unit conversion instead of multiplying each gallon by the 4 quarts it contains.",
+      "Multiplying 2.75 by 3 applies an incorrect conversion factor because one gallon equals four quarts, not three quarts.",
       "This is correct because 2.75 times 4 equals 11 and the result is expressed in quarts."
     ],
     "skillIds": [
@@ -656,9 +656,9 @@
     "rationale": "A non-equilateral isosceles triangle has one line of symmetry through its vertex angle and the midpoint of its base. The other listed figures have two, zero, or infinitely many lines.",
     "choiceRationales": [
       "This is correct because exactly one reflection line maps the two equal sides and equal base angles onto each other.",
-      "A nonsquare rectangle has two lines of symmetry, one through each pair of opposite-side midpoints.",
-      "A scalene triangle has no line of symmetry because all three sides and angles differ.",
-      "A circle has infinitely many lines of symmetry because every diameter defines one."
+      "Folding a nonsquare rectangle across either pair of opposite-side midpoints reveals two distinct lines of symmetry rather than just one.",
+      "Because all three sides and interior angles of a scalene triangle are unequal, no fold can map one half cleanly onto the other.",
+      "Every diameter drawn through the center of a circle acts as a valid reflection axis, giving the figure infinitely many lines of symmetry."
     ],
     "skillIds": [
       "mathematics-geometry-measurement"
@@ -695,10 +695,10 @@
     "answerIndex": 1,
     "rationale": "A mean of 17 for six scores corresponds to a total of 6 times 17 = 102. Adding 24 gives 126, and 126 divided by 7 is 18.",
     "choiceRationales": [
-      "The mean must increase because the added score of 24 is above the original mean of 17.",
+      "Adding a seventh score of 24—seven points above the prior average—must pull the overall mean upward rather than leaving it at 17.",
       "This is correct because the new total, 126, divided by seven scores equals 18.",
       "This averages only 17 and 24, treating the original mean as one score rather than representing six scores.",
-      "This does not follow from the total of all seven scores and is too close to the added score."
+      "Twenty-one overstates the shift because spreading the 7-point surplus across all seven quiz scores raises the average by only 1 point."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -775,9 +775,9 @@
     "answerIndex": 3,
     "rationale": "Each value must be counted according to its frequency. The total is 2(10) + 3(15) + 1(20) = 20 + 45 + 20 = 85 minutes.",
     "choiceRationales": [
-      "This adds the three distinct session lengths once each and ignores their frequencies.",
-      "This multiplies 10 by the total frequency but treats every session as if it lasted 10 minutes.",
-      "This counts the 10-minute session only once instead of twice, giving 10 + 45 + 20 = 75 minutes.",
+      "Summing 10 + 15 + 20 counts each listed duration only once and ignores that 10 minutes happened twice and 15 minutes happened three times.",
+      "Multiplying 10 minutes by the 6 total sessions assumes every reading block lasted 10 minutes, overlooking the longer 15- and 20-minute blocks.",
+      "Omitting one of the two 10-minute sessions produces 10 + 45 + 20 = 75 minutes, falling 10 minutes short of the full frequency-weighted sum.",
       "This is correct because weighting each session length by its frequency gives a total of 85 minutes."
     ],
     "skillIds": [
@@ -818,7 +818,7 @@
       "This is correct because the graph associates horizontal week 4 with the vertical value of 30 pages.",
       "This reverses the meanings of the two coordinates and invents a week 30 from the vertical page count.",
       "Adding the coordinates does not give a cumulative total, and the point supplies no information about weeks 1 through 3.",
-      "A change from week 3 cannot be determined without the plotted value for week 3."
+      "Comparing week 4 against week 3 requires knowing the plotted value for week 3, which a single coordinate pair at (4, 30) does not provide."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -855,10 +855,10 @@
     "answerIndex": 1,
     "rationale": "The original range is 18 - 12 = 6. After the replacement, the range is 30 - 12 = 18, so the range increases by 18 - 6 = 12.",
     "choiceRationales": [
-      "This is the original range, not the amount by which the range changes after replacing the maximum.",
+      "Six is the initial spread (18 - 12) before the replacement rather than the extra amount gained once 30 becomes the new maximum.",
       "This is correct because the range changes from 6 to 18, an increase of 12.",
-      "This is the new range itself rather than the difference between the new and original ranges.",
-      "This adds the old and new ranges instead of subtracting them to find the increase."
+      "Eighteen represents the updated range (30 - 12) after swapping the maximum, not how much the range increased beyond the original 6.",
+      "Adding the old range of 6 to the new range of 18 combines both spreads instead of subtracting them to measure the exact increase."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -889,7 +889,7 @@
     "choices": [
       "Tell the student that every fraction with a denominator greater than 1 is less than 1.",
       "Replace 7/6 with 6/7, because proper fractions are the only kind of fractions that can ever be modeled visually.",
-      "Build one whole with six sixth-size pieces, then add a seventh piece to show 7/6 = 1 1/6 on a number line.",
+      "Build one unit with six sixth-size pieces, then add a seventh piece to show 7/6 = 1 1/6 on a number line.",
       "Round both 7 and 6 to 10 and conclude that the fraction equals exactly 1."
     ],
     "answerIndex": 2,
@@ -898,7 +898,7 @@
       "A fraction's size depends on the relationship between numerator and denominator, not merely on whether the denominator exceeds 1.",
       "Reversing the fraction changes its value and avoids representing an improper fraction rather than explaining it.",
       "This is correct because a concrete model and number-line location both show the whole plus the remaining one sixth.",
-      "Rounding destroys the exact relationship and cannot distinguish 7/6 from a value equal to 1."
+      "Rounding both the numerator and denominator to 10 erases the true ratio and makes an improper fraction above 1 look equal to 1."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -937,7 +937,7 @@
     "choiceRationales": [
       "The whole-number product supplies the digits but not the place value; 7.2 is ten times the correct result.",
       "Multiplication by 0.3 makes a positive number smaller, so moving the decimal right contradicts magnitude reasoning.",
-      "Adding the factors changes the operation and does not explain the place value in the product.",
+      "Summing 2.4 and 0.3 switches from multiplication to addition and offers no explanation for why the product carries hundredths place value.",
       "This is correct because it links the whole-number product to tenths times tenths and obtains 0.72 with units of hundredths."
     ],
     "skillIds": [
@@ -967,7 +967,7 @@
     "difficulty": "application",
     "prompt": "Three supply bins hold enough markers for 18 students. A student says 42 students need 27 bins because both numbers increased by 24. Which response best develops proportional reasoning?",
     "choices": [
-      "Find that each bin serves 6 students, then divide 42 by 6 to obtain 7 bins and verify that 7/42 equals 3/18.",
+      "Find that each bin serves 6 learners, then divide 42 by 6 to obtain 7 bins and verify that 7/42 equals 3/18.",
       "Accept 27 bins, because equivalent ratios are always formed by adding the same number to both of the quantities.",
       "Subtract 3 from 18 and 27 from 42 to check whether both differences are 15.",
       "Multiply 42 by 18 and divide by 3 to obtain 252 bins."
@@ -977,7 +977,7 @@
     "choiceRationales": [
       "This is correct because the unit rate and equivalent-ratio check both preserve the relationship of one bin per six students.",
       "Adding 24 to both quantities changes their ratio; equal additive changes do not generally create equivalent ratios.",
-      "Comparing unrelated differences does not test whether the bins-per-student rates are equal.",
+      "Checking whether 18 - 3 matches 42 - 27 compares additive gaps rather than verifying whether the bins-per-learner rate stays proportional.",
       "This sets up the proportional calculation in the wrong direction and yields far more bins than students."
     ],
     "skillIds": [
@@ -1008,7 +1008,7 @@
     "prompt": "A student says 4.07 and 4.7 are equal because zeros do not affect a number's value. Which support best addresses the place-value misconception?",
     "choices": [
       "Delete the zero from every decimal and then tell the student that matching nonzero digits will always make any two decimal numbers exactly equal to each other.",
-      "Place both numbers in a place-value chart and model them on hundred grids, showing 4.07 as 4 ones and 7 hundredths and 4.7 as 4 ones and 7 tenths.",
+      "Align both decimals in a base-ten column chart and model them on hundred grids, showing 4.07 as 4 ones and 7 hundredths and 4.7 as 4 ones and 7 tenths.",
       "Multiply both numbers by zero and use the equal products as proof that the original numbers are equal.",
       "Round both numbers to 4 and conclude that numbers with the same rounded value are exactly equal."
     ],
@@ -1018,7 +1018,7 @@
       "A zero can hold a place that changes the value of later digits, so deleting zeros is not a valid general rule.",
       "This is correct because both representations make the unequal place values of the two 7s visible and comparable.",
       "Multiplying any numbers by zero gives equal products and therefore cannot establish that the original numbers were equal.",
-      "Rounding can produce the same approximation for unequal values, so it cannot prove exact equality."
+      "Two distinct decimals can share the same rounded whole number, so rounding 4.07 and 4.7 down to 4 cannot establish that they are equal."
     ],
     "skillIds": [
       "mathematics-number-operations"
@@ -1049,8 +1049,8 @@
     "choices": [
       "Agree because side lengths are the only properties used to classify quadrilaterals.",
       "Show a rectangle with unequal adjacent sides and call it a rhombus.",
-      "Draw a rhombus with four equal sides but two acute and two obtuse angles, and compare its angles with a square's four right angles.",
-      "Explain that no square can ever be a rhombus, because the two shapes are simply given entirely different names in geometry textbooks."
+      "Draw a rhombus with congruent sides plus two acute and two obtuse angles, and compare those corners with a square's right angles.",
+      "Explain that no square can ever be a rhombus, because the two shapes are simply given separate technical names in geometry textbooks."
     ],
     "answerIndex": 2,
     "rationale": "A counterexample with equal sides but nonright angles satisfies the definition of a rhombus while failing the additional square requirement. It identifies precisely which property the student's classification omitted.",
@@ -1090,13 +1090,13 @@
       "Tell the student to add the inner-scale and outer-scale readings together.",
       "Accept 135 degrees because every protractor reading names the larger angle.",
       "Place the protractor’s center point anywhere along one of the rays, as long as some number on the scale remains visible to the student.",
-      "Align the center with the vertex and one ray with zero, then follow that zero scale to 45 degrees and check that the drawing is acute."
+      "Align the center with the vertex and one ray with zero, then follow that zero scale to 45 degrees and verify the opening is under 90."
     ],
     "answerIndex": 3,
     "rationale": "A protractor's two scales run in opposite directions. Starting with the scale whose zero lies on the aligned baseline gives 45 degrees, and classifying the drawn angle as acute provides an independent reasonableness check.",
     "choiceRationales": [
       "The two scale readings describe supplementary angles and should not be added to measure the drawn angle.",
-      "The drawing is acute, so a 135-degree obtuse measure conflicts with its visible classification.",
+      "Because the drawn angle opens less than a right angle, accepting an obtuse measure of 135 degrees contradicts its visible size.",
       "The protractor's center must coincide with the angle's vertex for its scale to measure the opening accurately.",
       "This is correct because it establishes proper alignment, selects the scale from zero, and checks the result against the angle type."
     ],
@@ -1175,10 +1175,10 @@
     "answerIndex": 1,
     "rationale": "Finding a median requires ordering the values. With six observations, there are two central positions, so the median is the mean of 10 and 11, which is 10.5.",
     "choiceRationales": [
-      "The original recording order has no role in the median; values must first be arranged by magnitude.",
+      "The arbitrary sequence in which quiz scores were written down never determines the median; values must first be sorted from least to greatest.",
       "This is correct because it explicitly performs both required steps for an even-sized data set: ordering and averaging the central pair.",
-      "The sum is used when calculating a mean, but by itself it is neither the mean nor the median.",
-      "The greatest value is the maximum; it is not the center of this ordered data set."
+      "Totalling all six scores yields the raw sum needed as a first step for a mean, yet that sum represents neither the mean nor the median.",
+      "Picking 20 identifies the maximum value in the distribution rather than locating the central value after sorting all six scores."
     ],
     "skillIds": [
       "mathematics-data-support"
@@ -1208,15 +1208,15 @@
     "prompt": "A student compares two line graphs of reading-fluency scores. Class A's vertical scale runs from 0 to 20, while Class B's runs from 0 to 100. The student says Class A improved more because its line looks steeper. Which response is best?",
     "choices": [
       "Agree, because visual steepness can always be compared directly across two graphs that happen to have different scales.",
-      "Ignore the numerical labels and compare only the angles formed by the lines.",
-      "Compute each class's numerical change or redraw both data sets on the same scale before comparing improvement.",
+      "Ignore the numerical labels and compare just the angles formed by the lines.",
+      "Compute each class's numerical change or redraw both data sets using matching axis intervals before comparing.",
       "Multiply every Class A score by 5 and treat the changed scores as the original data."
     ],
     "answerIndex": 2,
     "rationale": "Apparent steepness depends on the scale used for each vertical axis. Comparing numerical changes or placing both data sets on one common scale permits a valid comparison without altering the recorded scores.",
     "choiceRationales": [
       "Different scales can make equal changes look different, so unadjusted visual steepness is not reliable evidence.",
-      "Line angles inherit the scale distortion and cannot replace reading and comparing the numerical values.",
+      "Relying on visual line angles carries over the axis distortion from unequal ranges and cannot substitute for reading the actual plotted numbers.",
       "This is correct because a common scale or direct numerical differences makes the two improvements comparable.",
       "Rescaling an axis changes its display, but multiplying the data themselves would change the measured scores and invalidate the comparison."
     ],
@@ -1249,8 +1249,8 @@
     "choices": [
       "Count each full symbol as 1 and simply ignore the half symbol, because partial symbols carry no value at all on a pictograph.",
       "Add 4 to 3.5 because the key is used only once for the entire pictograph.",
-      "Multiply only the half symbol by 4 and leave the full symbols unscaled.",
-      "Apply the key to every symbol: 3 full symbols represent 12 books and the half symbol represents 2, for a total of 14 books."
+      "Multiply just the half symbol by 4 and leave the full symbols unscaled.",
+      "Apply the key to every icon: 3 full symbols stand for 12 volumes and the half symbol adds 2 more, giving 14 altogether."
     ],
     "answerIndex": 3,
     "rationale": "The key assigns a value of four books to every full symbol, so three symbols represent 12. A half symbol represents half of four, or 2, giving 14 books altogether.",
@@ -1289,7 +1289,7 @@
     "choices": [
       "Divide 37 by 10 first and disregard the number of classes and damaged cans.",
       "Add all three numbers because every number in a word problem represents an amount to combine.",
-      "Find 4 times 37 = 148 total cans, subtract 28 to get 120 usable cans, and then divide by 10 to get 12 full boxes.",
+      "Find 4 times 37 = 148 total cans, subtract 28 to get 120 usable cans, and then divide by 10 to get 12 full cartons.",
       "Subtract 37 from 28, because the word ‘removed’ means that the first number stated must always be the one subtracted."
     ],
     "answerIndex": 2,

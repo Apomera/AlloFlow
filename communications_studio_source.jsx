@@ -1059,14 +1059,26 @@ function CommunicationsStudioPanel(props) {
     return parts.filter(Boolean).join('\n\n');
   };
 
-  const copyText = async (text, success, exported) => {
+  const [batchQuery, setBatchQuery] = React.useState('');
+  const [copiedAction, setCopiedAction] = React.useState('');
+  const copyActionTimerRef = React.useRef(null);
+  React.useEffect(() => () => {
+    if (copyActionTimerRef.current) { clearTimeout(copyActionTimerRef.current); copyActionTimerRef.current = null; }
+  }, []);
+
+  const copyText = async (text, success, exported, actionKey) => {
     try {
       const ok = typeof window.alloCopyText === 'function' ? await window.alloCopyText(text) : false;
       if (ok && exported) markExported();
+      if (ok && actionKey && mountedRef.current) {
+        setCopiedAction(actionKey);
+        if (copyActionTimerRef.current) clearTimeout(copyActionTimerRef.current);
+        copyActionTimerRef.current = setTimeout(() => { if (mountedRef.current) setCopiedAction(''); }, 2200);
+      }
       toast(ok ? success : tr('toasts.copy_failed', 'Copy failed.'), ok ? 'success' : 'error');
     } catch (_) { toast(tr('toasts.copy_failed', 'Copy failed.'), 'error'); }
   };
-  const copyAll = () => copyText(fullText(), tr('toasts.copied', 'Copied.'), true);
+  const copyAll = () => copyText(fullText(), tr('toasts.copied', 'Copied.'), true, 'all');
   // Same hidden-frame print as the Seating Chart: works inside Canvas, where
   // a new window may be blocked.
   const printCopies = () => {
@@ -1086,7 +1098,7 @@ function CommunicationsStudioPanel(props) {
     frame.srcdoc = csPrintHtml(template.label, pages, { nameLine: batchMode, disclosure });
     markExported();
   };
-  const copyTable = () => copyText(csBatchTable(rows, rows.some(r => csRowTranslation(r, language)) ? language : ''),tr('comms.table_copied', 'Copied as a table. Paste it into a spreadsheet and look up names by codename there.'), true);
+  const copyTable = () => copyText(csBatchTable(rows, rows.some(r => csRowTranslation(r, language)) ? language : ''), tr('comms.table_copied', 'Copied as a table. Paste it into a spreadsheet and look up names by codename there.'), true, 'table');
 
   const sendToDrive = async () => {
     const dd = window.AlloModules && window.AlloModules.DriveDelivery;
@@ -1173,7 +1185,13 @@ function CommunicationsStudioPanel(props) {
     return { r, st, over, hard, attention: over || hard || trStale || st.gaps.numbers.length > 0 || st.gaps.pronouns.length > 0 };
   });
   const attentionCount = rowView.filter(v => v.attention).length;
-  const shownRows = attentionOnly ? rowView.filter(v => v.attention) : rowView;
+  const normalizedBatchQuery = batchQuery.trim().toLowerCase();
+  const shownRows = (attentionOnly ? rowView.filter(v => v.attention) : rowView).filter(v => {
+    if (!normalizedBatchQuery) return true;
+    return (String(v.r.codename || '') + ' ' + String(v.r.comment || '')).toLowerCase().indexOf(normalizedBatchQuery) !== -1;
+  });
+  const draftWordCount = draft && draft.trim() ? draft.trim().split(/\s+/).length : 0;
+  const draftReadMin = draftWordCount > 0 ? Math.max(1, Math.round(draftWordCount / 200)) : 0;
   // Stable references for CommsRow's memo: the handlers change every render,
   // so rows call through a ref that always holds the current ones.
   const trRef = React.useRef(tr);
@@ -1379,7 +1397,24 @@ function CommunicationsStudioPanel(props) {
               <div className="flex flex-col gap-2">
                 {batchMode ? (
                   <div className="flex flex-col gap-2" data-comms-batch-list="true">
-                    <h3 className="text-xs font-bold text-slate-700">{tr('comms.comments_label', 'Comments (edit freely)')}</h3>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="text-xs font-bold text-slate-700">{tr('comms.comments_label', 'Comments (edit freely)')}</h3>
+                      {rows.length >= 6 && (
+                        <input
+                          id="comms-batch-search"
+                          type="search"
+                          value={batchQuery}
+                          onChange={(e) => setBatchQuery(e.target.value)}
+                          onKeyDown={(e) => {
+                            if ((e.nativeEvent && e.nativeEvent.isComposing) || e.isComposing || e.keyCode === 229) return;
+                            if (e.key === 'Escape' && batchQuery) { e.preventDefault(); e.stopPropagation(); setBatchQuery(''); }
+                          }}
+                          aria-label={tr('comms.batch_search_aria', 'Filter report-card comments by codename or text')}
+                          placeholder={tr('comms.batch_search_placeholder', 'Find codename…')}
+                          className="min-h-11 w-40 rounded-lg border border-slate-300 bg-white px-2.5 text-xs text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
+                        />
+                      )}
+                    </div>
                     <p className="text-xs text-slate-700" data-comms-batch-summary="true">
                       {rows.length} {tr('comms.comments', 'comments')}.
                       {overLimit.length > 0 && <> <strong className="text-red-800">{overLimit.length} {tr('comms.over_limit', 'over')} {charLimit} {tr('comms.characters', 'characters')}:</strong> {listOf(overLimit)}.</>}
@@ -1388,7 +1423,13 @@ function CommunicationsStudioPanel(props) {
                       {' '}{tr('comms.grade_rough', 'Reading level is a rough estimate on short text.')}
                       {(attentionCount > 0 || attentionOnly) && <> <button type="button" onClick={() => setAttentionOnly(v => !v)} aria-pressed={attentionOnly} className="ml-1 min-h-11 inline-flex items-center rounded border border-slate-300 bg-white px-2 py-0.5 font-bold text-slate-800 hover:bg-slate-50" data-comms-attention-toggle="true">{attentionOnly ? `${tr('comms.show_all', 'Show all')} ${rows.length}` : `${tr('comms.show_attention', 'Show only the ones to check')} (${attentionCount})`}</button></>}
                     </p>
-                    {attentionOnly && shownRows.length === 0 && <p className="text-xs font-bold text-emerald-800" data-comms-attention-empty="true">{tr('comms.nothing_to_check', 'Nothing left to check.')}</p>}
+                    {attentionOnly && !normalizedBatchQuery && shownRows.length === 0 && <p className="text-xs font-bold text-emerald-800" data-comms-attention-empty="true">{tr('comms.nothing_to_check', 'Nothing left to check.')}</p>}
+                    {normalizedBatchQuery && shownRows.length === 0 && (
+                      <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700">
+                        <span>{tr('comms.no_matching_rows', 'No comments match your filter.')}</span>
+                        <button type="button" data-comms-batch-clear="true" onClick={() => setBatchQuery('')} className="min-h-11 px-2.5 py-1 rounded border border-slate-300 bg-slate-50 font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600 transition-colors motion-reduce:transition-none">{tr('comms.clear_search', 'Clear')}</button>
+                      </div>
+                    )}
                     <ol className="flex max-h-[60vh] flex-col gap-2 overflow-y-auto pr-1" aria-label={tr('comms.comments_by_student', 'Comments by student')}>
                       {shownRows.map(({ r, st, over, hard }) => (
                         <CommsRow key={r.index} r={r} st={st} over={over} hard={hard} charLimit={charLimit} language={language} busy={busy} tr={stableTr} actions={rowActions} />
@@ -1396,9 +1437,16 @@ function CommunicationsStudioPanel(props) {
                     </ol>
                   </div>
                 ) : (
-                  <label className="block text-xs font-bold text-slate-700">{tr('comms.draft_label', 'Draft (edit freely)')}
-                    <textarea value={draft} readOnly={busy === 'draft' || busy === 'simplify'} onChange={(e) => setDraft(e.target.value)} rows={templateId === 'report-card' ? 14 : 10} className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-normal text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none" data-comms-output="true" />
-                  </label>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700">{tr('comms.draft_label', 'Draft (edit freely)')}
+                      <textarea value={draft} readOnly={busy === 'draft' || busy === 'simplify'} onChange={(e) => setDraft(e.target.value)} rows={templateId === 'report-card' ? 14 : 10} className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-normal text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none" data-comms-output="true" />
+                    </label>
+                    {draftWordCount > 0 && (
+                      <p data-comms-draft-meta="true" className="mt-1 text-xs font-medium text-slate-600 tabular-nums">
+                        {draftWordCount} {draftWordCount === 1 ? tr('comms.word_singular', 'word') : tr('comms.word_plural', 'words')} · {draft.length} {tr('comms.chars_short', 'chars')} · ~{draftReadMin} {tr('comms.min_read', 'min read')}
+                      </p>
+                    )}
+                  </div>
                 )}
                 {draftNames.length > 0 && (
                   <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs text-amber-900" data-comms-draft-names="true">
@@ -1473,17 +1521,17 @@ function CommunicationsStudioPanel(props) {
                 )}
                 {draft && (
                   <div className="flex flex-wrap gap-2">
-                    <button type="button" onClick={copyAll} className="min-h-11 inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold hover:bg-slate-50">{tr('comms.copy', 'Copy all')}</button>
-                    <button type="button" onClick={printCopies} disabled={!!busy} className="min-h-11 inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold hover:bg-slate-50 disabled:opacity-50" data-comms-print="true">{batchMode ? tr('comms.print_pages', 'Print, one page per student') : tr('comms.print', 'Print')}</button>
-                    {batchMode && <button type="button" onClick={copyTable} className="min-h-11 inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold hover:bg-slate-50" data-comms-copy-table="true">{tr('comms.copy_table', 'Copy as a table (for a spreadsheet)')}</button>}
-                    <button type="button" onClick={sendToDrive} disabled={!!busy} className="min-h-11 inline-flex items-center rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50" data-comms-drive="true">{busy === 'drive' ? tr('comms.sending', 'Sending…') : tr('comms.send_drive', 'Send to my Drive as a Google Doc')}</button>
+                    <button type="button" data-comms-copy-all="true" onClick={copyAll} className={'min-h-11 inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-bold focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none ' + (copiedAction === 'all' ? 'border-emerald-400 bg-emerald-50 text-emerald-800' : 'border-slate-300 bg-white hover:bg-slate-50')}>{tr('comms.copy', 'Copy all')}{copiedAction === 'all' ? <span data-comms-copied-badge="all"> · ✓ {tr('comms.copied_short', 'Copied')}</span> : null}</button>
+                    <button type="button" onClick={printCopies} disabled={!!busy} className="min-h-11 inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold hover:bg-slate-50 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none" data-comms-print="true">{batchMode ? tr('comms.print_pages', 'Print, one page per student') : tr('comms.print', 'Print')}</button>
+                    {batchMode && <button type="button" onClick={copyTable} className={'min-h-11 inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-bold focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none ' + (copiedAction === 'table' ? 'border-emerald-400 bg-emerald-50 text-emerald-800' : 'border-slate-300 bg-white hover:bg-slate-50')} data-comms-copy-table="true">{tr('comms.copy_table', 'Copy as a table (for a spreadsheet)')}{copiedAction === 'table' ? <span data-comms-copied-badge="table"> · ✓ {tr('comms.copied_short', 'Copied')}</span> : null}</button>}
+                    <button type="button" onClick={sendToDrive} disabled={!!busy} className="min-h-11 inline-flex items-center rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none" data-comms-drive="true">{busy === 'drive' ? tr('comms.sending', 'Sending…') : tr('comms.send_drive', 'Send to my Drive as a Google Doc')}</button>
                     {driveLink && <a href={driveLink} target="_blank" rel="noopener noreferrer" className="self-center text-xs font-semibold text-emerald-800 underline">{tr('comms.open_doc', 'Open the Google Doc ↗')}</a>}
                   </div>
                 )}
               </div>
             </div>
           </div>
-          <p className="text-[11px] text-slate-500">{tr('comms.footer', 'Drafts use only the notes you enter and are not saved. Nothing is emailed from AlloFlow: copy it into your district mail, print it, or send it to your own Drive. Merge real names outside AlloFlow.')}</p>
+          <p className="text-xs text-slate-600">{tr('comms.footer', 'Drafts use only the notes you enter and are not saved. Nothing is emailed from AlloFlow: copy it into your district mail, print it, or send it to your own Drive. Merge real names outside AlloFlow.')}</p>
         </div>
       </div>
     </div>

@@ -223,9 +223,9 @@
           "prompt": "A teacher says a student is “unmotivated.” What should the school psychologist do first?",
           "choices": [
             "Define the concern in observable, measurable terms and identify when, where, and under what conditions it occurs.",
-            "Select an intelligence test immediately.",
-            "Accept the label as the problem definition.",
-            "Recommend special education before gathering data."
+            "Select an intelligence battery right away to determine whether low cognitive ability explains the classroom lack of effort.",
+            "Accept the teacher’s description of poor motivation as the formal problem definition and plan an incentive chart first.",
+            "Recommend a special education referral before collecting classroom data so the student receives formal eligibility testing sooner."
           ],
           "answerIndex": 0,
           "rationale": "A useful problem definition names an observable performance, context, baseline, and desired change so assessment and intervention can be aligned.",
@@ -241,10 +241,10 @@
           "id": "sp5403-ch-01-check-02",
           "prompt": "Which assessment plan best represents RIOT?",
           "choices": [
-            "Administer one norm-referenced test and stop.",
-            "Review records, interview relevant people, observe directly, and test or otherwise measure the target as appropriate.",
-            "Rely only on a teacher rating scale.",
-            "Collect records without observing current performance."
+            "Administer one broad norm-referenced test in a quiet office and finalize eligibility recommendations from those standard scores.",
+            "Review records, interview key people, observe directly across contexts, and test or measure the target appropriately.",
+            "Rely on a teacher behavior rating scale alone because classroom ratings capture daily functioning efficiently across subjects.",
+            "Compile cumulative attendance and grade records without conducting direct observations or sampling the student’s current work."
           ],
           "answerIndex": 1,
           "rationale": "RIOT organizes record review, interviews, observations, and tests; sources should be selected because they answer the referral question.",
@@ -260,10 +260,10 @@
           "id": "sp5403-ch-01-check-03",
           "prompt": "A newly enrolled student is referred for reading difficulty. Which background information is most useful before selecting measures?",
           "choices": [
-            "Only the student’s current grade.",
-            "The disability category of a sibling.",
-            "Instructional history, language exposure, attendance, prior interventions and response, health or sensory information, and developmental and family context.",
-            "A national reading average without local opportunity data."
+            "The student’s current grade placement and chronological age alone, which identify the exact subtests to administer.",
+            "The special education eligibility category of an older sibling, which helps predict the student’s likely profile.",
+            "Instructional history, language exposure, attendance, prior interventions, health or sensory status, and family context.",
+            "A national grade-level achievement average reviewed without examining the student’s prior instruction or language access."
           ],
           "answerIndex": 2,
           "rationale": "Background evidence helps distinguish skill need, access, opportunity, language, health, and contextual explanations and guides efficient assessment.",
@@ -279,10 +279,10 @@
           "id": "sp5403-ch-01-check-04",
           "prompt": "A universal screener identifies a student as at risk. What is the most defensible interpretation?",
           "choices": [
-            "The student has a confirmed disability.",
-            "The score must be ignored because screeners are brief.",
-            "The student should be retained automatically.",
-            "The result signals need for follow-up and support; it is not by itself a diagnosis or special-education eligibility decision."
+            "The screening score confirms a learning disability, so the team should draft an individualized education program promptly.",
+            "The score should be disregarded during team planning because brief universal screeners lack meaningful diagnostic precision.",
+            "The student should be scheduled for grade retention because early risk scores predict ongoing failure without repeating the grade.",
+            "The score signals a need for follow-up and support rather than establishing a diagnosis or eligibility decision."
           ],
           "answerIndex": 3,
           "rationale": "Screening prioritizes further assessment or prevention; classification requires additional, appropriate evidence and lawful team procedures.",
@@ -298,10 +298,10 @@
           "id": "sp5403-ch-01-check-05",
           "prompt": "After defining a math-fluency problem, what should the team do next in a problem-solving model?",
           "choices": [
-            "Analyze likely skill, performance, instructional, and contextual contributors and develop testable hypotheses.",
-            "Choose the most familiar intervention without analysis.",
-            "Wait for the problem to become severe.",
-            "Assign a fixed trait label as the cause."
+            "Analyze likely skill, performance, instructional, and environmental contributors and form testable hypotheses.",
+            "Select the intervention program teachers know best right away so support starts without extra planning meetings.",
+            "Wait several grading periods to see whether the concern widens into a severe classroom failure before intervening.",
+            "Attribute the classroom concern to a fixed internal deficit before testing instructional or environmental variables."
           ],
           "answerIndex": 0,
           "rationale": "Problem analysis links plausible, alterable causes to evidence and produces hypotheses that can guide intervention selection.",
@@ -412,12 +412,12 @@
           "id": "sp5403-ch-02-check-01",
           "prompt": "A test produces highly inconsistent scores under similar conditions. Which property is weak?",
           "choices": [
-            "Reliability, because the scores lack sufficient consistency or precision for the intended decision.",
-            "Face validity, because the test may look unfamiliar.",
-            "Percentile rank, because norms are unnecessary.",
-            "Fidelity, because the intervention was not measured."
+            "Treatment fidelity, because the instrument was given without tracking whether a classroom intervention was delivered.",
+            "Reliability, because the scores lack adequate stability or precision across repeated administrations.",
+            "Face validity, because students or teachers may perceive the test format as unfamiliar during administration.",
+            "Percentile rank, because converting scores against a norm sample introduces unnecessary variation across sessions."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Reliability concerns consistency and measurement precision; unreliable scores limit the defensibility of subsequent interpretations.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -431,12 +431,12 @@
           "id": "sp5403-ch-02-check-02",
           "prompt": "What does a standard error of measurement communicate?",
           "choices": [
-            "The percentage of items answered incorrectly.",
-            "Expected score imprecision, supporting a range of plausible values rather than false precision from one obtained score.",
-            "Proof that the test is culturally fair.",
-            "The student’s exact future score."
+            "A precise forecast of the exact standard score the student will earn when retested the following school year.",
+            "The exact percentage of test items the student answered incorrectly during the standardized administration.",
+            "Expected score imprecision, supporting a plausible confidence band rather than treating one score as exact.",
+            "Statistical proof that the test items are free of cultural or linguistic bias across diverse student populations."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "SEM and confidence intervals reflect measurement error and discourage treating an obtained score as a perfectly precise trait value.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -450,12 +450,12 @@
           "id": "sp5403-ch-02-check-03",
           "prompt": "A reliable vocabulary test is used to infer fine-motor ability. What is the problem?",
           "choices": [
-            "Reliability guarantees all interpretations.",
-            "The score should be converted to a percentile.",
-            "Validity evidence does not support that interpretation and use for the different construct.",
-            "Norms eliminate construct mismatch."
+            "Comparing the student with a large representative norm group removes construct mismatch when interpreting results.",
+            "High reliability across administrations ensures that an instrument yields valid inferences for related school skills.",
+            "Converting the vocabulary raw total into a national percentile rank resolves the mismatch across developmental areas.",
+            "Validity evidence does not support interpreting vocabulary scores as indicators of manual dexterity."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Validity concerns evidence for a specific interpretation, purpose, population, and context; it is not guaranteed by consistency.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -469,12 +469,12 @@
           "id": "sp5403-ch-02-check-04",
           "prompt": "A student earns the 70th percentile on a norm-referenced measure. What does this mean?",
           "choices": [
-            "The student answered exactly that percentage correctly.",
-            "The student mastered that percentage of the curriculum.",
-            "The score is a diagnostic probability.",
-            "The score is at or above the performance of that percentage of the relevant norm group, not a percent-correct score."
+            "The student performed at or above that percentage of same-age peers rather than earning that percent right.",
+            "The student answered exactly that percentage of the test items correctly during the standardized session.",
+            "The student has mastered exactly that percentage of the grade-level curriculum standards across the year.",
+            "There is that exact percentage of clinical probability that the student meets criteria for a designation."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Percentile rank describes relative standing in a specified norm group and should be explained with norm relevance and uncertainty.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -488,12 +488,12 @@
           "id": "sp5403-ch-02-check-05",
           "prompt": "What is the most appropriate role of a cognitive measure in an evaluation?",
           "choices": [
-            "Use it only when it answers a referral question, interpret patterns cautiously, and integrate it with achievement, context, observation, and other evidence.",
-            "Use the full-scale score as the sole eligibility criterion.",
-            "Treat cognitive scores as fixed and culture free.",
-            "Administer it automatically in every referral."
+            "Administer a full cognitive battery in every referral so every psychoeducational file contains identical scores.",
+            "Use it when it fits a referral question, interpret cautiously, and integrate it with achievement and context.",
+            "Rely on the full-scale cognitive composite as the decisive single criterion for special education eligibility.",
+            "Interpret cognitive subtest scores as fixed, culture-free indicators of innate biological learning potential."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Cognitive assessment is one possible source; IDEA requires varied tools and prohibits a single measure as the sole criterion.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -602,12 +602,12 @@
           "id": "sp5403-ch-03-check-01",
           "prompt": "What is the first task in behavioral consultation?",
           "choices": [
-            "Build a collaborative relationship and define the concern, context, baseline, and desired change in observable terms.",
-            "Prescribe a plan before hearing the teacher’s perspective.",
-            "Assume the student is the sole cause.",
-            "Take permanent control of the classroom."
+            "Frame the problem around deficits inside the student as the sole source of the classroom difficulty.",
+            "Step into the classroom to take ongoing direct control of behavior management while the teacher observes.",
+            "Build a collaborative partnership and define the concern, context, baseline, and goal in observable terms.",
+            "Prescribe a detailed classroom behavior plan right away before gathering the teacher’s observations or priorities."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Consultation begins with rapport and shared problem identification so the plan is relevant, feasible, and measurable.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -621,12 +621,12 @@
           "id": "sp5403-ch-03-check-02",
           "prompt": "A teacher agrees with a plan but doubts it can fit the class routine. What is the best response?",
           "choices": [
-            "Insist on the original plan without discussion.",
-            "Explore the barrier, preserve essential components, simplify delivery collaboratively, and define supports and fidelity checks.",
-            "Document noncompliance and end consultation.",
-            "Remove all measurement requirements."
+            "Document teacher reluctance as noncompliance and close the consultation file until staff are ready to follow plans.",
+            "Drop progress monitoring and fidelity checks from the plan so the classroom routine feels easier to manage.",
+            "Insist on running the original protocol unchanged because altering steps could reduce published effect sizes.",
+            "Explore the routine barrier, protect core elements, simplify delivery together, and set support and fidelity checks."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Feasibility and acceptability affect implementation; collaborative adaptation should retain the mechanism while responding to context.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -640,12 +640,12 @@
           "id": "sp5403-ch-03-check-03",
           "prompt": "A consultation goal is “the student will behave better.” How should it be revised?",
           "choices": [
-            "Keep it broad so any change counts.",
-            "Choose a goal without the student or family.",
-            "Specify the observable behavior, condition, baseline, achievable target, measurement method, and review date.",
-            "Use a diagnostic label as the goal."
+            "Specify the observable target behavior, setting conditions, baseline, realistic goal, measurement, and review date.",
+            "Write the consultation goal around reducing a clinical diagnostic category rather than specific daily behaviors.",
+            "Keep the goal broadly worded so almost any positive shift in classroom mood counts as measurable success.",
+            "Finalize the revised behavioral goal privately between adults without seeking input from the student or family."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Operational goals permit shared implementation and evaluation and should be meaningful to the student and stakeholders.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -659,12 +659,12 @@
           "id": "sp5403-ch-03-check-04",
           "prompt": "A parent and teacher offer different explanations for a student’s avoidance. What should the psychologist do?",
           "choices": [
-            "Declare the school perspective more objective.",
-            "Average the explanations without analysis.",
-            "Exclude the student from further discussion.",
-            "Validate both perspectives, compare contexts and evidence, identify common goals, and test a hypothesis rather than choosing sides."
+            "Keep the student out of follow-up conversations so adult disagreements do not confuse the problem-solving plan.",
+            "Validate both views, compare contexts and evidence, find shared goals, and test a hypothesis together.",
+            "Explain that school staff observations are more objective because teachers compare the student with same-age peers.",
+            "Blend the two conflicting explanations into a middle-ground summary without checking classroom or home evidence."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Collaborative problem solving uses discrepancies as ecological information and builds a shared, testable understanding.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -678,12 +678,12 @@
           "id": "sp5403-ch-03-check-05",
           "prompt": "A meeting becomes dominated by technical assessment language. How can the psychologist improve collaboration?",
           "choices": [
-            "Pause, use plain language and accessible visuals, check understanding, invite questions, and connect evidence to decisions.",
-            "Continue to preserve the agenda.",
-            "Ask the family to read the report later.",
-            "Use more acronyms to demonstrate precision."
+            "Ask the family to review the full written report quietly at home and email questions later in the week.",
+            "Introduce more exact psychometric acronyms so team members appreciate the technical rigor of the evaluation.",
+            "Pause, use plain wording and visuals, check clarity, invite questions, and connect results to next steps.",
+            "Keep moving briskly through the technical agenda so every scheduled report section finishes within the hour."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Effective communication is reciprocal, accessible, culturally responsive, and tied to meaningful choices rather than professional display.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -792,12 +792,12 @@
           "id": "sp5403-ch-04-check-01",
           "prompt": "A student has not mastered a multi-step computation procedure. Which instruction is strongest?",
           "choices": [
-            "Explicit modeling, guided practice with many responses, immediate feedback, cumulative review, and gradual release based on data.",
-            "Independent worksheets without instruction.",
-            "A reward for correct answers without teaching.",
-            "A lower-grade placement based on one error sample."
+            "Daily timed independent computation worksheets assigned without modeling so repeated exposure builds procedure speed.",
+            "Classroom reward points for accurate homework answers provided without reteaching the missed computation steps.",
+            "Reassignment to a lower-grade math class based on a single error sample collected during one classroom quiz.",
+            "Explicit modeling, guided practice with frequent responses, immediate feedback, review, and data-based release."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Explicit instruction makes the strategy visible and shifts responsibility only when evidence shows readiness.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -811,12 +811,12 @@
           "id": "sp5403-ch-04-check-02",
           "prompt": "Students in one class vary widely in background knowledge. What is appropriate differentiation?",
           "choices": [
-            "Assign unrelated easier goals to any struggling student.",
-            "Preserve the core goal while adjusting examples, grouping, scaffolds, pacing, and response options based on need.",
-            "Use identical delivery because fairness requires sameness.",
-            "Remove students needing support from core instruction."
+            "Preserve the core objective while adjusting examples, grouping, scaffolds, pacing, and response modes to need.",
+            "Deliver identical unadapted instruction to every learner because classroom fairness requires exact procedural sameness.",
+            "Remove students who need extra background scaffolds from core classroom instruction for the entire curriculum unit.",
+            "Assign unrelated lower-grade objectives to struggling learners so every student finishes independent tasks rapidly."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Differentiation varies access and support while maintaining meaningful expectations and monitoring learning.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -830,12 +830,12 @@
           "id": "sp5403-ch-04-check-03",
           "prompt": "Which statement best distinguishes an accommodation from a modification?",
           "choices": [
-            "Both terms mean any helpful strategy.",
-            "An accommodation always lowers standards.",
-            "An accommodation removes an irrelevant barrier while preserving the target; a modification changes content, complexity, or expected performance.",
-            "A modification can never be documented in an IEP."
+            "An accommodation lowers grade-level academic standards slightly so students with disabilities can pass core classes.",
+            "An accommodation removes an irrelevant barrier while keeping the target; a modification alters content or rigor.",
+            "A modification changes curriculum demands and therefore cannot be written into a student’s individualized education plan.",
+            "Both terms refer interchangeably to any classroom instructional strategy that helps a student earn higher marks."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "The key distinction is whether the learning or measurement target remains the same. This answer applies the complete school-psychology principle while preserving assessment, access, safety, and decision quality.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -849,12 +849,12 @@
           "id": "sp5403-ch-04-check-04",
           "prompt": "Which instructional goal is most measurable?",
           "choices": [
-            "The student will try harder in reading.",
-            "The teacher will provide ten lessons.",
-            "Reading will become age appropriate soon.",
-            "Given comparable grade-level passages, the student will increase an identified reading measure from baseline to a defined criterion by a stated date."
+            "The classroom teacher will deliver ten structured small-group reading lessons using grade-level decodable texts.",
+            "The student’s oral reading accuracy and comprehension will progress toward age-appropriate levels soon this year.",
+            "On grade-level passages, increase the named reading measure from baseline to a defined criterion by a set date.",
+            "The student will show stronger effort, attention, and persistence during daily reading lessons across the semester."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Measurable goals include condition, observable behavior, baseline, criterion, timeframe, and measurement method.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -868,12 +868,12 @@
           "id": "sp5403-ch-04-check-05",
           "prompt": "How can a psychologist promote student self-regulation?",
           "choices": [
-            "Teach goal setting, self-monitoring, strategy selection, and self-evaluation, then fade prompts as accurate use grows.",
-            "Keep continuous adult prompts indefinitely.",
-            "Punish every missed step.",
-            "Remove all challenging work."
+            "Maintain continuous adult verbal prompts throughout the semester so the student avoids making independent errors.",
+            "Apply a classroom penalty each time the student misses a checklist step so self-monitoring becomes consistent.",
+            "Remove demanding multi-step assignments from the student’s schedule so frustration does not disrupt regulation.",
+            "Teach goal setting, self-monitoring, strategy choice, and self-evaluation, fading prompts as accuracy grows."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Self-regulated learning requires explicit strategy instruction, feedback, practice, and planned transfer of control.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -983,9 +983,9 @@
           "prompt": "Which service is a primary prevention example?",
           "choices": [
             "Teach a universal evidence-informed coping and help-seeking curriculum and monitor schoolwide reach and outcomes.",
-            "Provide individual therapy only after crisis.",
-            "Create an intensive plan for one student.",
-            "Wait for diagnoses before offering support."
+            "Offer individual mental-health counseling strictly after students experience an acute behavioral or emotional crisis.",
+            "Design an intensive individualized behavior intervention plan for one student showing chronic classroom disruption.",
+            "Hold off on mental-health skill lessons until students receive formal clinical diagnoses from outside providers."
           ],
           "answerIndex": 0,
           "rationale": "Primary prevention is broadly available and aims to reduce risk or build protective skills before severe concerns develop.",
@@ -1001,10 +1001,10 @@
           "id": "sp5403-ch-05-check-02",
           "prompt": "A classroom has frequent transitions and unclear expectations. What is the best initial behavioral support?",
           "choices": [
-            "Remove recess from the entire class.",
-            "Clarify and teach routines, improve prompts and pacing, increase active engagement, and reinforce expected behavior consistently.",
-            "Refer every student for evaluation.",
-            "Ignore the environment and counsel one student."
+            "Suspend recess privileges for the entire class until transition behavior improves across every school day.",
+            "Clarify and teach routines, sharpen prompts and pacing, increase active engagement, and reinforce target skills.",
+            "Refer multiple students from the classroom for individual psychological evaluations to identify underlying disorders.",
+            "Leave classroom routines unchanged and schedule pull-out counseling for the single most vocal student in class."
           ],
           "answerIndex": 1,
           "rationale": "Proactive classroom management changes predictable antecedents, teaches expectations, and reinforces engagement.",
@@ -1020,10 +1020,10 @@
           "id": "sp5403-ch-05-check-03",
           "prompt": "Which set best illustrates protective factors?",
           "choices": [
-            "Exposure to violence and family conflict.",
-            "Chronic absence and social isolation.",
-            "Supportive adult relationships, belonging, coping and problem-solving skills, safe routines, and access to effective services.",
-            "Repeated academic failure without support."
+            "Chronic exposure to neighborhood violence, ongoing family conflict, and unstable housing across the school year.",
+            "Persistent chronic school absence paired with peer rejection and social isolation during unstructured periods.",
+            "Supportive adult relationships, belonging, coping and problem-solving skills, safe routines, and service access.",
+            "Repeated academic course failure across core subjects without timely instructional scaffolding or mentoring support."
           ],
           "answerIndex": 2,
           "rationale": "Protective factors reduce risk impact and can be strengthened at student, family, school, and community levels.",
@@ -1039,10 +1039,10 @@
           "id": "sp5403-ch-05-check-04",
           "prompt": "A student becomes hypervigilant after a frightening event. What is trauma-informed support?",
           "choices": [
-            "Require a detailed public retelling.",
-            "Treat avoidance as deliberate defiance.",
-            "Suspend all expectations indefinitely.",
-            "Increase safety, predictability, choice, regulation, and connection; avoid forced disclosure and coordinate additional support as needed."
+            "Ask the student to recount every detail of the frightening event aloud in front of supportive classroom peers.",
+            "Treat classroom withdrawal and alertness as willful noncompliance and apply standard progressive disciplinary steps.",
+            "Suspend academic expectations indefinitely across every class so the student experiences zero daily school demands.",
+            "Build safety, predictability, choice, regulation, and connection; avoid forced disclosure and coordinate care."
           ],
           "answerIndex": 3,
           "rationale": "Trauma-informed practice supports regulation and agency without coercion, blame, or assumptions about diagnosis.",
@@ -1058,10 +1058,10 @@
           "id": "sp5403-ch-05-check-05",
           "prompt": "A student says, “One mistake means I am a total failure.” Which approach fits CBT?",
           "choices": [
-            "Identify the thought, examine evidence and effects, develop a balanced alternative, and practice a useful behavior.",
-            "Treat the belief as factual.",
-            "Focus only on rewards without cognition.",
-            "Avoid all situations that evoke discomfort."
+            "Identify the thought, examine evidence and impact, form a balanced alternative, and practice a helpful action.",
+            "Accept the student’s negative conclusion as factual and shift attention toward avoiding challenging future tasks.",
+            "Use tangible behavioral rewards alone for task completion while avoiding discussion of the student’s thoughts.",
+            "Arrange to remove every classroom situation that triggers mild embarrassment or discomfort for the student."
           ],
           "answerIndex": 0,
           "rationale": "CBT links cognitions, emotion, physiology, and behavior and uses collaborative reappraisal and practice.",
@@ -1172,12 +1172,12 @@
           "id": "sp5403-ch-06-check-01",
           "prompt": "Which definition of aggression is most useful for observation?",
           "choices": [
-            "A description of visible actions with clear examples and nonexamples that independent observers can identify.",
-            "Behavior that is bad or disrespectful.",
-            "Any action caused by anger.",
-            "Whatever the teacher dislikes."
+            "Whichever classroom incidents a teacher personally finds most frustrating during independent seatwork periods.",
+            "Visible, observable actions with clear examples and nonexamples that independent observers can record reliably.",
+            "Any classroom behavior that adults judge to be disrespectful, disruptive, or inappropriate for the grade level.",
+            "Any physical or verbal action motivated internally by student anger, frustration, or hostility toward classmates."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Operational definitions improve reliability, baseline measurement, hypothesis testing, and intervention evaluation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1191,12 +1191,12 @@
           "id": "sp5403-ch-06-check-02",
           "prompt": "A student calls out mainly when independent work begins and teacher help follows. What should an FBA examine?",
           "choices": [
-            "Assume attention is always the function.",
-            "Compare antecedents and consequences across occurrences and nonoccurrences to test whether help or task escape maintains behavior.",
-            "Use the disability label as the functional analysis.",
-            "Select punishment before collecting data."
+            "Choose a firm punitive consequence first so calling out stops quickly before conducting functional observation.",
+            "Assume peer or adult attention maintains calling out because vocal behaviors typically seek social reactions.",
+            "Compare antecedents and consequences across occurrences and nonoccurrences to test assistance or escape.",
+            "Use the student’s existing educational disability category to infer the behavioral function before observing."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "FBA tests relations among context, antecedents, observable behavior, and consequences rather than guessing intent.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1210,12 +1210,12 @@
           "id": "sp5403-ch-06-check-03",
           "prompt": "An FBA suggests escape from difficult work. Which replacement behavior is best?",
           "choices": [
-            "A generic rule to be good.",
-            "A behavior unrelated to escape or support.",
-            "An efficient, acceptable request for help or a brief break while instruction and task difficulty are also adjusted.",
-            "Silence without access to assistance."
+            "Expecting quiet, silent seatwork for the entire block without giving the student any way to request help.",
+            "A general classroom expectation reminding the student to stay respectful and follow directions during seatwork.",
+            "A polite greeting routine taught during morning arrival that does not address difficult independent assignments.",
+            "An efficient, acceptable request for help or a brief break paired with instructional and task-level adjustments."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "A replacement response should serve the same function efficiently while prevention, instruction, and reinforcement change the broader context.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1227,14 +1227,14 @@
         },
         {
           "id": "sp5403-ch-06-check-04",
-          "prompt": "What is positive reinforcement?",
+          "prompt": "What is positive reinforcement in behavioral support?",
           "choices": [
-            "Anything the adult intends as a reward.",
-            "Removing an unpleasant stimulus regardless of effect.",
-            "Adding a penalty to reduce behavior.",
-            "A consequence is presented after behavior and the future frequency of that behavior increases."
+            "A consequence is presented after a behavior and the future frequency of that behavior increases over time.",
+            "Any praise statement or tangible sticker that an adult intends as a pleasant classroom reward for effort.",
+            "Removing an unpleasant classroom assignment right after a behavior regardless of how behavior changes later.",
+            "Adding a brief reprimand or loss-of-point penalty right after a behavior to decrease its future occurrence."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Reinforcement is defined by an increase in future behavior, not by the provider’s intention or the pleasantness of the event.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1248,12 +1248,12 @@
           "id": "sp5403-ch-06-check-05",
           "prompt": "Which small-group plan is most appropriate for social problem solving?",
           "choices": [
-            "Screening for fit, explicit modeling, rehearsal, feedback, real-setting practice, progress data, and privacy expectations.",
-            "Unstructured disclosure without a skill target.",
-            "One lecture with no rehearsal.",
-            "Placement based only on schedule convenience."
+            "Grouping students solely because their schedules align during lunch without checking goals, needs, or peer dynamics.",
+            "Fit screening, explicit modeling, rehearsal, feedback, natural-setting practice, progress data, and privacy norms.",
+            "Open-ended unstructured student discussion with no defined skill target so peers choose weekly topics freely.",
+            "A single informational lecture explaining social steps without guided role-play, coaching, or classroom carryover."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Effective skill groups select compatible needs and provide active teaching, generalization, and outcome monitoring.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1362,12 +1362,12 @@
           "id": "sp5403-ch-07-check-01",
           "prompt": "A district is selecting a schoolwide priority. What should occur first?",
           "choices": [
-            "Conduct a needs assessment using disaggregated outcomes, screening, stakeholder voice, resource mapping, and current-practice evidence.",
-            "Choose the most marketed program.",
-            "Rely on one administrator’s impression.",
-            "Wait until every student is failing."
+            "Base the district’s multi-year priority on one central-office administrator’s informal impression of school needs.",
+            "Wait until a large majority of students fail state accountability exams before setting a schoolwide focus area.",
+            "Run a needs assessment using disaggregated outcomes, screening, stakeholder voice, resource maps, and practice data.",
+            "Select the commercial intervention package with the strongest national marketing presence and vendor demonstrations."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Systems planning begins with a defined need, existing assets, access patterns, stakeholder evidence, and implementation context.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1381,12 +1381,12 @@
           "id": "sp5403-ch-07-check-02",
           "prompt": "What makes MTSS an integrated framework?",
           "choices": [
-            "Assign each student a permanent tier label.",
-            "Align universal, targeted, and intensive supports through common problem solving, screening, progress data, fidelity, and coordinated teams.",
-            "Use tiers only for special-education eligibility.",
-            "Eliminate individualized supports."
+            "Use multi-tiered service levels strictly as a procedural waiting stage required before special education referral.",
+            "Replace individualized disability accommodations with uniform schoolwide group interventions across every classroom.",
+            "Assign each student a permanent instructional tier label in fall that stays fixed across the entire school year.",
+            "Align universal, targeted, and intensive tiers via common problem solving, screening, progress data, and fidelity."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "MTSS integrates prevention and increasing intensity across domains through data and coordinated implementation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1400,12 +1400,12 @@
           "id": "sp5403-ch-07-check-03",
           "prompt": "How should a universal screener be evaluated at the system level?",
           "choices": [
-            "The number of colorful reports produced.",
-            "Whether every score is normally distributed.",
-            "Technical adequacy, participation, subgroup fairness, decision rules, follow-up capacity, false positives and negatives, and outcomes.",
-            "Only the vendor’s national claims."
+            "Technical adequacy, participation, subgroup fairness, decision rules, follow-up capacity, errors, and outcomes.",
+            "The publisher’s national promotional claims alone without checking local false-positive rates or service capacity.",
+            "How many visually appealing color-coded dashboard reports the screening vendor’s portal generates each quarter.",
+            "Whether raw screening scores across every grade level form an exact symmetrical bell curve on each benchmark."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Screening is useful only when scores support equitable decisions and the system can respond appropriately to identified needs.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1419,12 +1419,12 @@
           "id": "sp5403-ch-07-check-04",
           "prompt": "A retention policy is associated with poor outcomes for several groups. What should the psychologist recommend?",
           "choices": [
-            "Preserve the policy because it is traditional.",
-            "End it immediately without implementation planning.",
-            "Report only the schoolwide average.",
-            "Review credible research and local disaggregated evidence, engage affected stakeholders, test alternatives, and monitor intended and unintended effects."
+            "Share the schoolwide average promotion rate alone so subgroup outcome disparities do not complicate board debates.",
+            "Review credible research and local disaggregated data, engage affected voices, test alternatives, and monitor effects.",
+            "Keep the current grade-retention policy unchanged because long-standing local tradition reassures community members.",
+            "Rescind the policy overnight without training staff, funding evidence-based academic supports, or planning transition."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Systems decisions integrate evidence, equity, stakeholder context, feasibility, and evaluation rather than tradition or abrupt unsupported change.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1438,12 +1438,12 @@
           "id": "sp5403-ch-07-check-05",
           "prompt": "A schoolwide intervention works in the pilot but not after expansion. What should be examined?",
           "choices": [
-            "Whether core components, training, coaching, leadership, resources, fidelity, and contextual adaptations were supported at scale.",
-            "Whether students became less motivated everywhere.",
-            "Whether the program logo changed.",
-            "Whether all local adaptation should be prohibited."
+            "Investigate whether updating the intervention’s binder covers and branding weakened student enthusiasm across sites.",
+            "Prohibit every form of local scheduling or cultural adaptation across district buildings during future rollouts.",
+            "Check whether core elements, training, coaching, leadership, resources, fidelity, and local fit held at scale.",
+            "Conclude that students outside the pilot school are broadly less motivated to benefit from the intervention."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Implementation systems determine whether an evidence-based practice can be delivered with quality and fit across settings.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1552,12 +1552,12 @@
           "id": "sp5403-ch-08-check-01",
           "prompt": "How should school climate be assessed?",
           "choices": [
-            "Combine anonymous stakeholder surveys, attendance and discipline patterns, observations, focus groups, referral data, and responsible subgroup analysis.",
-            "Use one administrator rating.",
-            "Count cameras as the climate outcome.",
-            "Treat absence of reports as proof of safety."
+            "Rely on a single annual climate rating completed by the building principal to summarize daily school safety.",
+            "Count the total number of hallway security cameras installed across campus as the main climate outcome measure.",
+            "Interpret a low number of formal bullying incident reports as reliable proof that every student feels safe.",
+            "Combine anonymous surveys, attendance and discipline data, observations, focus groups, referrals, and subgroup checks."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Climate is multidimensional and requires converging perception, participation, behavioral, and outcome evidence.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1571,12 +1571,12 @@
           "id": "sp5403-ch-08-check-02",
           "prompt": "What is a core feature of schoolwide positive behavioral support?",
           "choices": [
-            "Rely on exclusion after problems occur.",
-            "Define and teach a small set of expectations, acknowledge them, respond instructionally and consistently, and use data for improvement.",
-            "Assume expectations are already understood.",
-            "Use one consequence for every function and context."
+            "Define and teach a few clear expectations, acknowledge them, respond instructionally, and use data to improve.",
+            "Assume students arrive knowing every schoolwide behavioral norm and reserve instruction for academic subjects.",
+            "Apply one identical disciplinary consequence for a given infraction regardless of behavioral function or context.",
+            "Rely primarily on exclusionary suspensions after severe rule violations occur so expectations stay unmistakable."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "Schoolwide support explicitly teaches behavior, improves environments, reinforces expectations, and uses data to refine implementation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1590,12 +1590,12 @@
           "id": "sp5403-ch-08-check-03",
           "prompt": "Why is peer mediation often inappropriate for bullying?",
           "choices": [
-            "Require equal compromise from both sides.",
-            "Ask the targeted student to ignore it.",
-            "The power imbalance undermines safe voluntary negotiation; use protection, authorized investigation, accountability, and systemic prevention.",
-            "Keep the report confidential from required responders."
+            "Coach the targeted student to ignore repeated teasing until the aggressive peers lose social interest.",
+            "Power imbalance prevents safe voluntary negotiation; use protection, investigation, accountability, and prevention.",
+            "Keep bullying disclosures strictly private inside counseling sessions rather than alerting required responders.",
+            "Bring both students together to negotiate equal behavioral compromises so peer conflict ends quickly."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "Bullying differs from balanced conflict and requires safety, policy-based response, and attention to power.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1609,12 +1609,12 @@
           "id": "sp5403-ch-08-check-04",
           "prompt": "What is the purpose of behavioral threat assessment?",
           "choices": [
-            "Automatically expel anyone who uses threatening words.",
-            "Use a checklist score as the sole decision.",
-            "Assume no risk if the student denies intent.",
-            "Use a trained multidisciplinary process to investigate context, intent, capability, stressors, protective factors, and needed supports rather than profile or predict from one trait."
+            "Use a numerical threat-checklist cutoff score as the sole determinant of suspension or law-enforcement referral.",
+            "Close the safety review right away without follow-up whenever the student denies intending to harm anyone.",
+            "A trained team examines context, intent, capability, stressors, buffers, and supports rather than profiling.",
+            "Automatically expel any student who makes a threatening remark so the school enforces a uniform zero-tolerance rule."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "Threat assessment is a structured, context-based prevention process focused on facts, supports, management, and ongoing monitoring.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1628,12 +1628,12 @@
           "id": "sp5403-ch-08-check-05",
           "prompt": "What belongs in a comprehensive suicide-prevention system?",
           "choices": [
-            "Promotion and prevention, staff and student education, identification and referral pathways, trained risk response, caregiver and community coordination, postvention, and evaluation.",
-            "Only an annual assembly.",
-            "Screening without follow-up capacity.",
-            "A promise that every disclosure remains secret."
+            "Holding one brief annual grade-level assembly on mental health without building referral or crisis pathways.",
+            "Administering universal suicide screening across classrooms before establishing trained staff capacity for same-day follow-up.",
+            "Assuring students that all peer or self-disclosures of suicidal thoughts will stay strictly private from caregivers.",
+            "Upstream promotion, staff and student training, referral paths, trained triage, family linkage, postvention, and review."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "A comprehensive system connects prevention, identification, immediate response, continuity, postvention, training, and evaluation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1742,10 +1742,10 @@
           "id": "sp5403-ch-09-check-01",
           "prompt": "What does a family-systems perspective add to intervention planning?",
           "choices": [
-            "Behavior is understood within reciprocal relationships, strengths, culture, stressors, boundaries, and transitions rather than blaming one member.",
-            "The child is always the sole cause.",
-            "Family patterns are fixed and cannot change.",
-            "School evidence makes family information unnecessary."
+            "Behavior is viewed within reciprocal relationships, strengths, culture, stressors, and transitions without blame.",
+            "The referred child’s internal traits remain the sole cause of family stress regardless of household patterns.",
+            "Interactional family patterns are largely fixed over generations and rarely change through school collaboration.",
+            "Detailed school behavioral observations make caregiver perspectives and family routines unnecessary during planning."
           ],
           "answerIndex": 0,
           "rationale": "Family-systems thinking identifies interactions and supports that can be changed while respecting strengths and culture.",
@@ -1761,10 +1761,10 @@
           "id": "sp5403-ch-09-check-02",
           "prompt": "A school has low family participation in meetings scheduled during work hours. What is the best response?",
           "choices": [
-            "Conclude families do not value education.",
-            "Ask families about barriers and preferred roles, vary time and format, provide language and access supports, and share decision-making power.",
-            "Require attendance before services are offered.",
-            "Send more technical notices in the same format."
+            "Conclude from low daytime turnout that working families place lower priority on their children’s school progress.",
+            "Ask families about barriers and roles, vary times and formats, ensure language access, and share decisions.",
+            "Require caregivers to attend an in-person school conference before offering tiered academic support to students.",
+            "Send more frequent technical policy letters in the exact same daytime format to emphasize meeting importance."
           ],
           "answerIndex": 1,
           "rationale": "Authentic engagement removes access barriers and makes participation relevant, reciprocal, and influential.",
@@ -1780,10 +1780,10 @@
           "id": "sp5403-ch-09-check-03",
           "prompt": "Which interpretation practice is most appropriate?",
           "choices": [
-            "Use a child as interpreter.",
-            "Proceed without interpretation to avoid delay.",
-            "Use a qualified interpreter, protect confidentiality, provide translated materials when possible, and communicate directly with the family.",
-            "Ask an untrained neighbor to interpret private data."
+            "Ask the student’s bilingual cousin or sibling to interpret because a familiar child puts caregivers at ease.",
+            "Proceed in English without interpretation so evaluation timelines finish promptly without waiting to schedule staff.",
+            "Use a qualified interpreter, guard confidentiality, offer translated records when available, and address the family.",
+            "Invite an untrained bilingual neighbor waiting outside the office to translate sensitive psychological findings."
           ],
           "answerIndex": 2,
           "rationale": "Qualified interpretation protects accuracy, privacy, dignity, and meaningful participation. This answer applies the complete school-psychology principle while preserving assessment, access, safety, and decision quality.",
@@ -1799,10 +1799,10 @@
           "id": "sp5403-ch-09-check-04",
           "prompt": "A family wants a home strategy for homework conflict. What is the best plan?",
           "choices": [
-            "Prescribe a complex plan without family input.",
-            "Assume school procedures transfer unchanged to home.",
-            "Focus on parent blame rather than alterable routines.",
-            "Co-design a simple culturally acceptable routine, teach and model it, define feasible reinforcement and data, and review burden and outcomes."
+            "Prescribe a detailed multi-step behavior chart designed at school without asking about evening family routines.",
+            "Expect classroom token rules to transfer unchanged into the home without adapting to siblings or parent schedules.",
+            "Focus the consultation on pointing out parental inconsistencies rather than building manageable daily habits.",
+            "Co-design a simple culturally fit routine, model it, set feasible reinforcement and tracking, and check burden."
           ],
           "answerIndex": 3,
           "rationale": "Home interventions should fit family priorities, resources, culture, and routines and be evaluated collaboratively.",
@@ -1818,10 +1818,10 @@
           "id": "sp5403-ch-09-check-05",
           "prompt": "What characterizes wraparound or interagency collaboration?",
           "choices": [
-            "A family-driven team develops shared strengths-based goals, defined roles, coordinated services, consent boundaries, and regular outcome review.",
-            "Each agency works independently.",
-            "The school transfers all obligations to one provider.",
-            "All information is shared without authorization."
+            "A family-driven team sets shared strengths-based goals, clear roles, coordinated care, consent limits, and review.",
+            "Each school and community agency runs its own separate treatment plan without sharing goals or review timelines.",
+            "The school team delegates all educational and behavioral monitoring responsibilities to the lead community clinic.",
+            "Participating agencies share every school and medical record freely across staff without written family consent."
           ],
           "answerIndex": 0,
           "rationale": "Wraparound coordination is individualized, strengths based, family centered, team driven, privacy aware, and outcome focused.",
@@ -1932,12 +1932,12 @@
           "id": "sp5403-ch-10-check-01",
           "prompt": "How should culture enter assessment and intervention?",
           "choices": [
-            "Examine language, identity, values, opportunity, power, context, and within-group variation while avoiding stereotypes and preserving individual evidence.",
-            "Ignore culture in all decisions.",
-            "Assume group membership predicts behavior.",
-            "Use one cultural norm as universal."
+            "Apply one mainstream developmental norm as a universal benchmark for interpreting behavior across all communities.",
+            "Consider language, identity, values, opportunity, power, and within-group variation without stereotyping individuals.",
+            "Set cultural background aside during assessment and intervention so every student is evaluated by identical rules.",
+            "Use a student’s cultural or racial group membership to predict their preferred learning style and family values."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Culturally responsive practice treats context as relevant evidence without reducing an individual to group assumptions.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1951,12 +1951,12 @@
           "id": "sp5403-ch-10-check-02",
           "prompt": "A psychologist notices a stronger referral reaction to behavior from one racial group. What should happen?",
           "choices": [
-            "Rely on good intentions as proof of fairness.",
-            "Pause, operationalize the behavior, review disaggregated decision data, seek perspective and consultation, and change biased procedures.",
-            "Stop collecting demographic data.",
-            "Treat every referral as equally objective."
+            "Accept each incoming referral at face value as equally objective without reviewing schoolwide pattern data.",
+            "Reassure the team that caring professional intentions guarantee fair referral decisions across every student group.",
+            "Pause, define the concern objectively, check disaggregated referral data, seek consultation, and fix bias.",
+            "Stop recording student race and ethnicity on referral forms so future decisions appear fully neutral."
           ],
-          "answerIndex": 1,
+          "answerIndex": 2,
           "rationale": "Bias mitigation requires reflective and systemic action, clear definitions, data, affected voices, and accountability.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1970,12 +1970,12 @@
           "id": "sp5403-ch-10-check-03",
           "prompt": "What does social justice require in school psychology?",
           "choices": [
-            "Provide identical resources regardless of need.",
-            "Counsel individuals to tolerate the barrier.",
-            "Identify and remove systemic barriers, advocate with affected communities, and monitor whether resources and outcomes become more equitable.",
-            "Avoid policy issues as outside practice."
+            "Leave district policies untouched because systemic advocacy lies outside the clinical duties of school psychologists.",
+            "Distribute identical funding and staff hours to every classroom regardless of differences in student need.",
+            "Limit services to coaching marginalized students individually on how to cope with unfair building policies.",
+            "Spot and remove systemic barriers, advocate alongside affected communities, and monitor whether equity improves."
           ],
-          "answerIndex": 2,
+          "answerIndex": 3,
           "rationale": "Equity and social justice address structures, access, power, and outcomes, not just equal wording or individual coping.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -1989,12 +1989,12 @@
           "id": "sp5403-ch-10-check-04",
           "prompt": "A multilingual learner struggles academically. Which evidence is essential?",
           "choices": [
-            "English test scores alone.",
-            "A nonverbal score as proof of no language influence.",
-            "The teacher’s diagnosis.",
-            "Language proficiency in relevant languages, quality and duration of instruction, opportunity, mobility, cultural context, intervention response, and appropriate assessment."
+            "Proficiency across relevant languages, instructional quality and duration, opportunity, mobility, context, and response.",
+            "Standardized English achievement scores reviewed alone because English is the main language of state accountability.",
+            "A single nonverbal intelligence score interpreted as proof that language differences had no effect on learning.",
+            "The classroom teacher’s informal diagnostic judgment that the student’s slow progress reflects a learning disability."
           ],
-          "answerIndex": 3,
+          "answerIndex": 0,
           "rationale": "Difference from monolingual norms may reflect language and opportunity; comprehensive evidence is required.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -2008,12 +2008,12 @@
           "id": "sp5403-ch-10-check-05",
           "prompt": "A student with a sensory disability is evaluated. What is the central fairness question?",
           "choices": [
-            "Determine how to provide access so results reflect the intended construct, document deviations, and interpret limitations honestly.",
-            "Use standard administration even if it measures the disability.",
-            "Exclude the student from assessment.",
-            "Change scores to match peers."
+            "Adjust the obtained standard scores upward informally so the student’s numbers look comparable to seeing peers.",
+            "Provide access so scores reflect the intended construct, document deviations, and interpret limitations candidly.",
+            "Enforce strict standardized administration even when sensory barriers prevent the student from perceiving test items.",
+            "Exclude the student from formal evaluation altogether because standardized norms do not match sensory disabilities."
           ],
-          "answerIndex": 0,
+          "answerIndex": 1,
           "rationale": "Fair assessment minimizes construct-irrelevant barriers while maintaining transparency about standardization and inference.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -2122,12 +2122,12 @@
           "id": "sp5403-ch-11-check-01",
           "prompt": "What feature most strengthens causal inference in a randomized experiment?",
           "choices": [
-            "Random assignment helps balance known and unknown preexisting differences between conditions.",
-            "It guarantees perfect implementation.",
-            "It eliminates attrition.",
-            "It makes measurement validity unnecessary."
+            "Random assignment prevents participating students from transferring schools or dropping out before posttesting.",
+            "Random assignment removes the need to verify reliability and validity evidence for the outcome measures used.",
+            "Random assignment helps balance both known and unknown preexisting differences across study conditions.",
+            "Random assignment ensures that teachers implement every intervention component with high classroom fidelity."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Random assignment reduces selection bias, but fidelity, attrition, measurement, ethics, and generalizability still matter.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -2141,12 +2141,12 @@
           "id": "sp5403-ch-11-check-02",
           "prompt": "A school cannot randomize but compares matched schools before and after implementation. What design is this?",
           "choices": [
-            "A randomized controlled trial.",
-            "A quasi-experimental design that can strengthen inference but remains vulnerable to selection and other group differences.",
-            "A purely qualitative case study.",
-            "A meta-analysis."
+            "A purely qualitative case study focused on describing lived school experiences without numerical outcome comparisons.",
+            "A statistical meta-analysis synthesizing effect sizes pooled across many previously published independent studies.",
+            "A true randomized controlled trial because matching schools beforehand eliminates all preexisting group differences.",
+            "A quasi-experimental approach that strengthens comparison yet remains vulnerable to selection and group bias."
           ],
-          "answerIndex": 1,
+          "answerIndex": 3,
           "rationale": "Quasi-experiments use comparison or time structures without random assignment and require cautious treatment of alternative explanations.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -2160,12 +2160,12 @@
           "id": "sp5403-ch-11-check-03",
           "prompt": "Which single-case feature demonstrates experimental control?",
           "choices": [
-            "One pretest and one posttest.",
-            "A large norm group.",
-            "Repeated demonstration that behavior changes systematically when the intervention is introduced, withdrawn when ethical, or staggered across tiers.",
-            "A satisfaction survey alone."
+            "Repeated demonstrations that behavior shifts systematically when intervention is introduced, withdrawn, or staggered.",
+            "A brief post-intervention satisfaction survey confirming that the teacher and student liked using the strategy.",
+            "One single pretest measurement collected in fall compared with one posttest score collected at the end of spring.",
+            "A large nationally representative norm group showing where the student ranks relative to same-age classmates."
           ],
-          "answerIndex": 2,
+          "answerIndex": 0,
           "rationale": "Single-case designs rely on repeated measurement and replicated phase relations rather than sample size alone.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -2179,12 +2179,12 @@
           "id": "sp5403-ch-11-check-04",
           "prompt": "Aggression declines over three years without a comparison condition. Which validity threat is especially plausible?",
           "choices": [
-            "Interrater reliability only.",
-            "Face validity only.",
-            "Restriction of range only.",
-            "Maturation, because normal development over time may account for some change."
+            "Restriction of range alone, because scores clustered tightly near the middle of the distribution at baseline.",
+            "Maturation, because normal developmental growth over time may explain much of the observed change.",
+            "Interrater reliability alone, because multiple observers scoring behavior could differ slightly in strictness.",
+            "Face validity alone, because older students may view the behavior checklist format as less engaging over time."
           ],
-          "answerIndex": 3,
+          "answerIndex": 1,
           "rationale": "Maturation is change due to development or time rather than the intervention and is important in long uncontrolled studies.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -2198,12 +2198,12 @@
           "id": "sp5403-ch-11-check-05",
           "prompt": "A result is statistically significant but has a tiny effect. What should the psychologist conclude?",
           "choices": [
-            "Examine effect size, confidence interval, practical importance, costs, equity, and study quality rather than equating significance with usefulness.",
-            "The intervention is automatically important.",
-            "The null hypothesis is certainly false in every setting.",
-            "Effect size is irrelevant after significance."
+            "Conclude that the null hypothesis is proved false across every future school setting with near-complete certainty.",
+            "Set aside effect size estimates because statistical significance already establishes how strongly the program helps.",
+            "Weigh effect size, confidence intervals, practical value, costs, equity, and quality beyond p-values alone.",
+            "Conclude that the intervention has major practical importance because the p-value crossed the significance cutoff."
           ],
-          "answerIndex": 0,
+          "answerIndex": 2,
           "rationale": "Statistical significance does not establish magnitude, precision, practical value, causal validity, or relevance.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -2332,12 +2332,12 @@
           "id": "sp5403-ch-12-check-01",
           "prompt": "Before an initial special-education evaluation, what is generally required?",
           "choices": [
-            "Provide required notice and obtain informed parent consent for evaluation; consent to evaluate is not consent for initial services.",
-            "Assume a teacher referral is consent.",
-            "Treat consent for evaluation as automatic placement consent.",
-            "Skip notice when the team expects eligibility."
+            "Treat a written classroom teacher referral as sufficient authorization to begin standardized psychological testing.",
+            "Use the signed initial evaluation consent form as automatic authorization to begin special education placement.",
+            "Bypass formal prior written notice when screening data make the team confident that the student will qualify.",
+            "Provide written notice and informed parent consent for evaluation; evaluation consent is not service consent."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "IDEA distinguishes informed consent for initial evaluation from consent for initial provision of services; current jurisdictional procedures must be followed.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -2355,12 +2355,12 @@
           "id": "sp5403-ch-12-check-02",
           "prompt": "A staff member requests a full psychological record without a stated educational need. What should the psychologist do?",
           "choices": [
-            "Share because all employees have equal access.",
-            "Apply FERPA, current law and policy, consent and legitimate-interest rules, and disclose only authorized necessary information securely.",
-            "Post a summary in a shared channel.",
-            "Refuse all disclosure even during a lawful emergency exception."
+            "Apply FERPA, law, policy, consent, and legitimate-interest rules, sharing only authorized necessary data.",
+            "Post a brief diagnostic summary in the shared building staff channel so colleagues stay informed efficiently.",
+            "Refuse all information sharing permanently even if a lawful health or safety emergency exception arises later.",
+            "Provide the full psychological file promptly because employed district staff hold equal access to student records."
           ],
-          "answerIndex": 1,
+          "answerIndex": 0,
           "rationale": "School employment does not create unlimited access; privacy decisions require authority, purpose, minimum necessary information, and documentation.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -2378,12 +2378,12 @@
           "id": "sp5403-ch-12-check-03",
           "prompt": "What does IDEA require of evaluation procedures?",
           "choices": [
-            "Use one IQ score as the sole criterion.",
-            "Assess only the suspected label area.",
-            "Use varied, technically sound, nondiscriminatory tools administered appropriately and never rely on one measure as the sole criterion.",
-            "Use English measures regardless of native language."
+            "Assess only the single academic or behavioral area named on the initial referral form to save testing time.",
+            "Use varied, sound, nondiscriminatory tools properly and never rely on one measure as the sole criterion.",
+            "Administer standardized tests in English for all students regardless of native language or communication mode.",
+            "Rely on one comprehensive intelligence composite score as the decisive single criterion for disability eligibility."
           ],
-          "answerIndex": 2,
+          "answerIndex": 1,
           "rationale": "IDEA requires comprehensive, relevant, nondiscriminatory evaluation using multiple tools and sources.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -2401,12 +2401,12 @@
           "id": "sp5403-ch-12-check-04",
           "prompt": "A family disagrees with the district evaluation and requests an independent educational evaluation at public expense. What must the agency generally do?",
           "choices": [
-            "Require the family to prove why it disagrees before responding.",
-            "Ignore the request until the next reevaluation.",
-            "Choose an examiner based on criteria that defeat the right.",
-            "Without unnecessary delay, provide the IEE at public expense or file due process to defend the agency evaluation, subject to governing criteria."
+            "Defer action on the parent’s request until the student’s next scheduled triennial reevaluation meeting arrives.",
+            "Impose restrictive agency examiner criteria designed to disqualify independent local evaluators from participating.",
+            "Without unnecessary delay, fund the IEE at no cost to parents or file due process to defend the agency report.",
+            "Require the family to submit formal written proof explaining why they disagree before processing the IEE request."
           ],
-          "answerIndex": 3,
+          "answerIndex": 2,
           "rationale": "IDEA provides a specific IEE process; the agency may ask but cannot require an explanation or unreasonably delay its response.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",
@@ -2424,12 +2424,12 @@
           "id": "sp5403-ch-12-check-05",
           "prompt": "A student has a disability that substantially limits a major life activity but does not need special education. What should the team consider?",
           "choices": [
-            "An individualized Section 504 evaluation and plan for equal access, using current procedures rather than an automatic diagnosis-based package.",
-            "IDEA eligibility is the only disability protection.",
-            "Every diagnosis requires the same accommodation.",
-            "A psychologist may create the plan unilaterally."
+            "Conclude that no legal protection applies because IDEA special education is the sole federal school disability law.",
+            "Assign a preset checklist of standard accommodations linked automatically to the student’s medical diagnosis.",
+            "Allow the school psychologist to write and enact a binding Section 504 plan alone without a team review.",
+            "An individualized Section 504 evaluation and plan for equal access under current rules, not a preset package."
           ],
-          "answerIndex": 0,
+          "answerIndex": 3,
           "rationale": "Section 504 is a civil-rights protection that can require individualized aids or services even without IDEA eligibility.",
           "references": [
             "https://praxis.ets.org/on/demandware.static/-/Library-Sites-ets-praxisLibrary/default/pdfs/5403.pdf",

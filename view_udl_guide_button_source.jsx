@@ -15,9 +15,20 @@
  *
  * Icons (from window globals): MessageSquare, ChevronDown, ArrowRight
  */
-function UDLGuideButton({ handleToggleShowUDLGuide, showUDLGuide, t, subtitle, panelId = 'udl-guide-panel' }) {
+function UDLGuideButton({ handleToggleShowUDLGuide, showUDLGuide, t: rawT, subtitle, panelId = 'udl-guide-panel' } = {}) {
+  if (typeof window !== 'undefined' && (window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.__alloStudentAiDisabled === true || (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.studentAiDisabled === true))) {
+    return null;
+  }
+  const t = typeof rawT === 'function' ? rawT : (k) => k;
   const noop = () => null;
-  const icon = (name) => (window.AlloIcons && window.AlloIcons[name]) || window[name] || noop;
+  const isComp = (c) => typeof c === 'function' || (c != null && typeof c === 'object' && !!c.$$typeof);
+  const icon = (name) => {
+    if (typeof window === 'undefined') return noop;
+    const fromAllo = window.AlloIcons && Object.prototype.hasOwnProperty.call(window.AlloIcons, name) ? window.AlloIcons[name] : null;
+    if (isComp(fromAllo)) return fromAllo;
+    const fromWin = Object.prototype.hasOwnProperty.call(window, name) ? window[name] : null;
+    return isComp(fromWin) ? fromWin : noop;
+  };
   const MessageSquare = icon('MessageSquare');
   const ChevronDown = icon('ChevronDown');
   const ArrowRight = icon('ArrowRight');
@@ -29,7 +40,7 @@ function UDLGuideButton({ handleToggleShowUDLGuide, showUDLGuide, t, subtitle, p
       aria-controls={panelId || undefined}
       id="tour-tool-udl"
       data-help-key="tool_udl"
-      onClick={handleToggleShowUDLGuide}
+      onClick={typeof handleToggleShowUDLGuide === 'function' ? handleToggleShowUDLGuide : undefined}
       className={`min-h-11 w-full p-4 rounded-3xl shadow-lg shadow-indigo-500/10 flex items-center justify-between gap-2 transition-all motion-reduce:transition-none group border-2 mb-4 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 ${showUDLGuide ? 'bg-indigo-800 text-white border-indigo-600 shadow-indigo-500/30' : 'bg-white text-indigo-900 border-indigo-100 hover:border-indigo-300 hover:shadow-indigo-500/20'}`}
     >
       <div className="flex items-center gap-3 min-w-0 flex-1">

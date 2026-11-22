@@ -10,7 +10,10 @@ function _alloDeriveVerificationState(input) {
     return _sharedEvidence.deriveVerificationState((input && typeof input === 'object') ? input : {});
   }
   input = (input && typeof input === 'object') ? input : {};
-  var _stripCtl = function (v) { return String(v == null ? '' : v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ''); };
+  var _stripCtl = function (v) {
+    if (v == null || typeof v === 'symbol') return '';
+    try { return String(v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ''); } catch (_) { return ''; }
+  };
   var ai = input.ai || input.verificationAudit || null;
   var axe = input.axe || input.axeAudit || null;
   var ea = input.equalAccess || input.secondEngineAudit || null;
@@ -38,16 +41,18 @@ function _alloDeriveVerificationState(input) {
   var aiIssues = Array.isArray(ai && ai.issues)
     ? ai.issues.filter(function (issue) { return issue != null && issue !== ''; })
     : null;
-  var aiFindingCount = aiIssues
-    ? aiIssues.length
-    : (_count(ai && ai.issueCount) !== null ? _count(ai && ai.issueCount) : _count(ai && ai.totalIssues));
-  var aiReviewCount = aiIssues
-    ? aiIssues.filter(function (issue) { return !!(issue && issue.requiresManualReview === true); }).length
-    : 0;
-  if (aiReviewCount > 0) reasons.push('ai-manual-review:' + aiReviewCount);
+  var aiFindingCount = null;
+  var aiReviewCount = 0;
   if (!_finite(ai && ai.score)) {
     reasons.push('ai-unavailable');
   } else {
+    aiFindingCount = aiIssues
+      ? aiIssues.length
+      : (_count(ai && ai.issueCount) !== null ? _count(ai && ai.issueCount) : _count(ai && ai.totalIssues));
+    aiReviewCount = aiIssues
+      ? aiIssues.filter(function (issue) { return !!(issue && issue.requiresManualReview === true); }).length
+      : 0;
+    if (aiReviewCount > 0) reasons.push('ai-manual-review:' + aiReviewCount);
     var _aiPartial = !!(input.aiIncomplete || input.aiVerificationIncomplete || ai._partialAudit || ai.partial || ai._scoreDegraded || ai.scoreDegraded || ai.synthesized);
     if (_aiPartial) {
       aiStatus = 'partial';
@@ -67,10 +72,11 @@ function _alloDeriveVerificationState(input) {
 
   var axeStatus = 'unavailable';
   var axeReviewCount = 0;
-  var axeFindingCount = _count(axe && axe.totalViolations);
+  var axeFindingCount = null;
   if (!_finite(axe && axe.score)) {
     reasons.push('axe-unavailable');
   } else {
+    axeFindingCount = _count(axe && axe.totalViolations);
     var _axeIncomplete = _count(axe.totalIncomplete);
     if (axeFindingCount === null || _axeIncomplete === null) {
       axeStatus = 'partial';
@@ -91,10 +97,11 @@ function _alloDeriveVerificationState(input) {
 
   var eaStatus = 'unavailable';
   var eaReviewCount = 0;
-  var eaFindingCount = _count(ea && ea.failViolations);
+  var eaFindingCount = null;
   if (!_finite(ea && ea.score)) {
     reasons.push('equal-access-unavailable');
   } else {
+    eaFindingCount = _count(ea && ea.failViolations);
     var _eaPotential = _count(ea.potentialViolations);
     var _eaManual = _count(ea.manualViolations);
     var _eaAggregate = _count(ea.reviewFindingCount);
@@ -202,34 +209,38 @@ function _alloDeriveVerificationState(input) {
 }
 
 function _alloFormatVerificationReason(reason) {
-    const value = String(reason == null ? '' : reason).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim().slice(0, 500);
+    let rawReason = '';
+    if (reason != null && typeof reason !== 'symbol') {
+      try { rawReason = String(reason); } catch (_) { rawReason = ''; }
+    }
+    const value = rawReason.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim().slice(0, 500);
     let match;
     if (!value) return '';
     if (value === 'ai-unavailable') return 'AI semantic verification was unavailable.';
     if (value === 'ai-verification-incomplete' || value === 'ai-partial-audit' || value === 'ai-score-degraded' || value === 'ai-synthesized') return 'AI semantic verification was incomplete.';
     match = value.match(/^ai-manual-review:(\d+)$/);
-    if (match) return match[1] + ' AI semantic finding' + (match[1] === '1' ? ' needs' : 's need') + ' manual review.';
+    if (match) return match[1] + ' AI semantic finding' + (Number(match[1]) === 1 ? ' needs' : 's need') + ' manual review.';
     if (value === 'axe-unavailable') return 'axe-core verification was unavailable.';
     if (value === 'axe-review-count-unknown') return 'axe-core returned findings with an unknown review count.';
     match = value.match(/^axe-incomplete:(\d+)$/);
-    if (match) return match[1] + ' axe-core rule' + (match[1] === '1' ? ' needs' : 's need') + ' manual review.';
+    if (match) return match[1] + ' axe-core rule' + (Number(match[1]) === 1 ? ' needs' : 's need') + ' manual review.';
     if (value === 'equal-access-unavailable') return 'IBM Equal Access verification was unavailable.';
     if (value === 'equal-access-review-count-unknown') return 'IBM Equal Access returned findings with an unknown review count.';
     match = value.match(/^equal-access-(?:potential|manual|review-findings):(\d+)$/);
-    if (match) return match[1] + ' IBM Equal Access item' + (match[1] === '1' ? ' needs' : 's need') + ' manual review.';
+    if (match) return match[1] + ' IBM Equal Access item' + (Number(match[1]) === 1 ? ' needs' : 's need') + ' manual review.';
     if (value === 'document-language-needs-review') return 'The document language needs manual confirmation.';
     if (value === 'verification-html-binding-missing-or-stale') return 'The document changed after verification, or its saved verification binding could not be confirmed. Run verification again.';
     if (value === 'verification-html-binding-unavailable') return 'A cryptographic link to the verified document could not be created. Run verification again in a supported browser.';
     if (value === 'verification-html-binding-mismatch') return 'The saved verification evidence does not match this document. Run verification again.';
     if (value === 'ai-finding-count-unknown') return 'AI verification did not report a complete issue count.';
     match = value.match(/^ai-confirmed-issues:(\d+)$/);
-    if (match) return match[1] + ' AI-confirmed accessibility issue' + (match[1] === '1' ? '' : 's') + ' remain.';
+    if (match) return match[1] + ' AI-confirmed accessibility issue' + (Number(match[1]) === 1 ? '' : 's') + ' remain.';
     if (value === 'axe-violation-count-unknown') return 'axe-core verification did not report a complete violation count.';
     match = value.match(/^axe-confirmed-violations:(\d+)$/);
-    if (match) return match[1] + ' confirmed axe-core violation' + (match[1] === '1' ? '' : 's') + ' remain.';
+    if (match) return match[1] + ' confirmed axe-core violation' + (Number(match[1]) === 1 ? '' : 's') + ' remain.';
     if (value === 'equal-access-failure-count-unknown') return 'IBM Equal Access did not report a complete failure count.';
     match = value.match(/^equal-access-confirmed-failures:(\d+)$/);
-    if (match) return match[1] + ' confirmed IBM Equal Access failure' + (match[1] === '1' ? '' : 's') + ' remain.';
+    if (match) return match[1] + ' confirmed IBM Equal Access failure' + (Number(match[1]) === 1 ? '' : 's') + ' remain.';
     if (value === 'secondary-action-requires-canonical-verification') return 'This edit needs a fresh three-engine verification before its score can be certified.';
     if (/^[a-z0-9-]+(?::\d+)?$/i.test(value)) return 'Verification evidence needs manual review.';
     return value;
@@ -240,7 +251,11 @@ function _alloUnavailableVerificationState(reason) {
   if (_sharedEvidence && typeof _sharedEvidence.unavailableVerificationState === 'function') {
     return _sharedEvidence.unavailableVerificationState(reason);
   }
-  var why = String(reason || 'verification-policy-module-unavailable').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim().slice(0, 400) || 'verification-policy-module-unavailable';
+  var _rawWhy = 'verification-policy-module-unavailable';
+  if (reason != null && typeof reason !== 'symbol') {
+    try { _rawWhy = String(reason) || _rawWhy; } catch (_) {}
+  }
+  var why = _rawWhy.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim().slice(0, 400) || 'verification-policy-module-unavailable';
   var coverage = {
     standard: 'WCAG 2.2 AA',
     ai: 'unavailable',

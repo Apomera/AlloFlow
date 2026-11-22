@@ -1075,6 +1075,37 @@ function parseAdminListLimit(url) {
   return Number.isFinite(requested) ? Math.max(1, Math.min(Math.floor(requested), 200)) : 50;
 }
 
+// KV returns keys oldest-first. Paginate up to MAX_BUG_SCAN_PAGES to collect
+// the newest `limit` keys so submissions beyond the first 50 are never hidden.
+async function listNewestKvKeys(kv, prefix, limit) {
+  const selected = [];
+  const seen = new Set();
+  const seenCursors = new Set();
+  let storageCursor;
+  let scanComplete = false;
+  for (let pageNumber = 0; pageNumber < MAX_BUG_SCAN_PAGES; pageNumber++) {
+    const listed = await kv.list({ prefix, limit: 1000, ...(storageCursor ? { cursor: storageCursor } : {}) });
+    if (!listed || !Array.isArray(listed.keys)) throw new Error('Invalid storage page');
+    for (const key of listed.keys) {
+      const name = key && key.name;
+      if (typeof name !== 'string' || !name || seen.has(name)) continue;
+      seen.add(name);
+      selected.push(name);
+      selected.sort();
+      if (selected.length > limit) selected.shift();
+    }
+    if (listed.list_complete !== false || !listed.cursor) {
+      scanComplete = true;
+      break;
+    }
+    if (typeof listed.cursor !== 'string' || seenCursors.has(listed.cursor)) throw new Error('Invalid storage cursor');
+    seenCursors.add(listed.cursor);
+    storageCursor = listed.cursor;
+  }
+  if (!scanComplete) throw new Error('Storage scan bound exceeded');
+  return selected.reverse();
+}
+
 async function handlePdList(request, env, url) {
   if (!env.ADMIN_TOKEN) return adminBugResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pdSubmissions (or use `wrangler kv key list`).' }, 501);
   if (await checkAdminAuthRateLimit(request, env, 'admin')) return adminBugResponse({ ok: false, error: 'Too many authentication attempts.' }, 429);
@@ -1088,8 +1119,7 @@ async function handlePdList(request, env, url) {
   if (!env.PD_SUBMISSIONS) return adminBugResponse({ ok: false, error: 'Missing PD_SUBMISSIONS KV binding.' }, 500);
   const limit = parseAdminListLimit(url);
   try {
-    const listed = await env.PD_SUBMISSIONS.list({ prefix: 'pd:', limit });
-    const keys = listed.keys.map(k => k.name).sort().reverse().slice(0, limit); // newest first
+    const keys = await listNewestKvKeys(env.PD_SUBMISSIONS, 'pd:', limit);
     const submissions = [];
     for (const k of keys) { const v = await env.PD_SUBMISSIONS.get(k); if (v) { try { submissions.push({ ...JSON.parse(v), id: k }); } catch (_) {} } }
     return adminBugResponse({ ok: true, count: submissions.length, submissions }, 200);
@@ -1226,8 +1256,7 @@ async function handlePluginList(request, env, url) {
   const limit = parseAdminListLimit(url);
   const includeSource = url.searchParams.get('source') === '1'; // omit the (large) source unless explicitly requested
   try {
-    const listed = await env.PLUGIN_SUBMISSIONS.list({ prefix: 'plugin:', limit });
-    const keys = listed.keys.map(k => k.name).sort().reverse().slice(0, limit); // newest first
+    const keys = await listNewestKvKeys(env.PLUGIN_SUBMISSIONS, 'plugin:', limit);
     const submissions = [];
     for (const k of keys) {
       const v = await env.PLUGIN_SUBMISSIONS.get(k);
@@ -2082,11 +2111,32 @@ function sourceMetadataIdentifier(value, type) {
 
 function sourceMetadataJsonLd(html) {
   const items = [];
-  const pattern = /<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
-  let match;
-  while ((match = pattern.exec(String(html || '')))) {
+  const text = String(html || '');
+  const lower = text.toLowerCase();
+  const len = text.length;
+  let pos = 0;
+  while (pos < len) {
+    const start = lower.indexOf('<script', pos);
+    if (start < 0) break;
+    const afterName = start + 7;
+    const boundary = afterName < len ? lower[afterName] : '';
+    if (boundary !== '>' && boundary !== '/' && !/\s/.test(boundary)) {
+      pos = afterName;
+      continue;
+    }
+    const openEnd = text.indexOf('>', afterName);
+    if (openEnd < 0) break;
+    const openTag = text.slice(start, openEnd + 1);
+    const closeIdx = lower.indexOf('</script', openEnd + 1);
+    if (closeIdx < 0) break;
+    let closeEnd = text.indexOf('>', closeIdx + 8);
+    if (closeEnd < 0) break;
+    pos = closeEnd + 1;
+    const attrs = sourceMetadataAttributes(openTag);
+    const scriptType = String(attrs.type || '').split(';', 1)[0].trim().toLowerCase();
+    if (scriptType !== 'application/ld+json') continue;
     try {
-      const parsed = parseJsonSafe(match[1].trim());
+      const parsed = parseJsonSafe(text.slice(openEnd + 1, closeIdx).trim());
       const values = Array.isArray(parsed) ? parsed : [parsed];
       values.forEach((value) => {
         if (value && Array.isArray(value['@graph'])) items.push(...value['@graph']);
@@ -2095,6 +2145,28 @@ function sourceMetadataJsonLd(html) {
     } catch (_) { /* malformed JSON-LD is ignored */ }
   }
   return items;
+}
+
+function sourceMetadataTitleTag(html) {
+  const text = String(html || '');
+  const lower = text.toLowerCase();
+  let pos = 0;
+  while (pos < text.length) {
+    const start = lower.indexOf('<title', pos);
+    if (start < 0) return '';
+    const afterName = start + 6;
+    const boundary = afterName < text.length ? lower[afterName] : '';
+    if (boundary !== '>' && boundary !== '/' && !/\s/.test(boundary)) {
+      pos = afterName;
+      continue;
+    }
+    const openEnd = text.indexOf('>', afterName);
+    if (openEnd < 0) return '';
+    const closeIdx = lower.indexOf('</title', openEnd + 1);
+    if (closeIdx < 0) return '';
+    return text.slice(openEnd + 1, closeIdx);
+  }
+  return '';
 }
 
 function sourceMetadataFromHtml(html, fallbackUrl) {
@@ -2112,8 +2184,8 @@ function sourceMetadataFromHtml(html, fallbackUrl) {
     }
     return '';
   };
-  const titleMatch = String(html || '').match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
-  const title = decodeSourceMetadata(ldValue('name', 'headline') || found['og:title'] || found['citation_title'] || found['dc.title'] || (titleMatch && titleMatch[1]) || '').slice(0, 500);
+  const rawTitle = sourceMetadataTitleTag(html);
+  const title = decodeSourceMetadata(ldValue('name', 'headline') || found['og:title'] || found['citation_title'] || found['dc.title'] || rawTitle || '').slice(0, 500);
   const creator = decodeSourceMetadata(ldValue('author', 'creator', 'byline') || found['citation_author'] || found['dc.creator'] || found.author || found['article:author'] || found['og:author'] || '').slice(0, 500);
   const date = decodeSourceMetadata(ldValue('datePublished', 'dateCreated', 'dateIssued', 'copyrightYear') || found['citation_publication_date'] || found['article:published_time'] || found['dc.date'] || found.date || '').slice(0, 120);
   const description = decodeSourceMetadata(ldValue('description') || found['og:description'] || found.description || '').slice(0, 1000);
@@ -2217,7 +2289,7 @@ async function handleSourceMetadata(request, env, url) {
   const cached = await cache.match(cacheKey);
   if (cached) return jsonResponse({ ...(await cached.json()), cached: true });
 
-  const refusal = await searchBudgetRefusal(request, env, { failClosedOnError: true });
+  const refusal = await searchBudgetRefusal(request, env, { failClosedOnError: true, scope: 'metadata' });
   if (refusal) return jsonResponse({ ok: false, error: refusal }, 429);
 
   const fetched = await fetchSourceMetadataResponse(target);
@@ -2247,13 +2319,14 @@ async function handleSourceMetadata(request, env, url) {
   return jsonResponse(payload);
 }
 
-async function searchClientKey(request) {
+async function searchClientKey(request, scope = 'search') {
   const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
   const cleanIp = String(ip).split(',')[0].trim();
   const data = new TextEncoder().encode('alloflow-search-rate:' + cleanIp);
   const digest = await crypto.subtle.digest('SHA-256', data);
   const hex = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
-  return `searchrate:${hex.slice(0, 32)}`;
+  const prefix = scope === 'metadata' ? 'metadatarate' : 'searchrate';
+  return `${prefix}:${hex.slice(0, 32)}`;
 }
 
 // Fixed-window counters in the SEARCH_RATE KV namespace. Approximate by
@@ -2265,12 +2338,22 @@ async function searchClientKey(request) {
 async function searchBudgetRefusal(request, env, options = {}) {
   if (!env.SEARCH_RATE) return null; // namespace not bound — fail open; cache still applies
 
-  const perMinute = searchLimit(env, 'RATE_PER_MINUTE', SEARCH_DEFAULTS.ratePerMinute);
-  const perDay = searchLimit(env, 'DAILY_BUDGET', SEARCH_DEFAULTS.dailyBudget);
+  const scope = options.scope === 'metadata' ? 'metadata' : 'search';
+  const perMinute = scope === 'metadata'
+    ? (Number(env.METADATA_RATE_PER_MINUTE) > 0 && Number.isFinite(Number(env.METADATA_RATE_PER_MINUTE))
+      ? Math.floor(Number(env.METADATA_RATE_PER_MINUTE))
+      : searchLimit(env, 'RATE_PER_MINUTE', SEARCH_DEFAULTS.ratePerMinute))
+    : searchLimit(env, 'RATE_PER_MINUTE', SEARCH_DEFAULTS.ratePerMinute);
+  const perDay = scope === 'metadata'
+    ? (Number(env.METADATA_DAILY_BUDGET) > 0 && Number.isFinite(Number(env.METADATA_DAILY_BUDGET))
+      ? Math.floor(Number(env.METADATA_DAILY_BUDGET))
+      : searchLimit(env, 'DAILY_BUDGET', SEARCH_DEFAULTS.dailyBudget))
+    : searchLimit(env, 'DAILY_BUDGET', SEARCH_DEFAULTS.dailyBudget);
 
-  const clientKey = await searchClientKey(request);
+  const clientKey = await searchClientKey(request, scope);
   const minuteKey = `${clientKey}:${Math.floor(Date.now() / 60000)}`;
-  const dayKey = `searchday:${new Date().toISOString().slice(0, 10)}`;
+  const dayPrefix = scope === 'metadata' ? 'metadataday' : 'searchday';
+  const dayKey = `${dayPrefix}:${new Date().toISOString().slice(0, 10)}`;
 
   let minuteCount = 0;
   let dayCount = 0;

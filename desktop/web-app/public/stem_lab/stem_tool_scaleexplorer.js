@@ -16339,9 +16339,15 @@ return plaza;
         var refPx = Math.min(cssW, cssH) * 0.42;
         var axisY = cssH - 26;
         var midY = (cssH - 46) / 2 + 8;
+        var isHC = P.stage === '#000000';
+        var hasRad = typeof g.createRadialGradient === 'function';
+        var prevE = typeof cv._sePrevE === 'number' ? cv._sePrevE : e;
+        var zoomDelta = e - prevE;
+        cv._sePrevE = e;
+        var zoomVel = reduceMotion ? 0 : clamp(Math.abs(zoomDelta) * 22 + (filmRef.current.dir !== 0 ? 0.45 : 0), 0, 1);
 
-        // Silky logarithmic depth vignette & subtle realm atmosphere (skipped in pure black high-contrast).
-        if (P.stage !== '#000000' && typeof g.createRadialGradient === 'function') {
+        // Silky logarithmic depth vignette, scale-realm micro-dynamics & optical warp parallax (skipped in high-contrast).
+        if (!isHC && hasRad) {
           var realm2d = realmAt(e);
           var vigR = Math.hypot(cssW * 0.55, cssH * 0.58);
           var depthGrad = g.createRadialGradient(cssW / 2, midY, Math.min(cssW, cssH) * 0.04, cssW / 2, midY, vigR);
@@ -16356,9 +16362,123 @@ return plaza;
           var coreGrad = g.createRadialGradient(cssW / 2, midY, 2, cssW / 2, midY, Math.min(cssW, cssH) * 0.34);
           coreGrad.addColorStop(0, realm2d && realm2d.color ? realm2d.color : P.ring);
           coreGrad.addColorStop(1, 'rgba(0,0,0,0)');
-          g.globalAlpha = 0.09;
+          g.globalAlpha = 0.11;
           g.fillStyle = coreGrad;
           g.fillRect(0, 0, cssW, cssH);
+
+          // 1. Optical zoom-warp parallax depth tunnel rings (continuous fractional decade phase)
+          var fracE = ((e % 1) + 1) % 1;
+          var cx0 = cssW * 0.5;
+          var maxTunnelR = Math.hypot(cssW * 0.52, cssH * 0.52);
+          for (var pr = 0; pr < 4; pr++) {
+            var pNorm = ((pr / 4) - fracE * 0.25 + 1) % 1;
+            var pRad = 22 + pNorm * pNorm * maxTunnelR;
+            var pAlpha = Math.sin(pNorm * Math.PI) * (0.065 + zoomVel * 0.08);
+            g.strokeStyle = realm2d && realm2d.color ? realm2d.color : P.ring;
+            g.globalAlpha = pAlpha;
+            g.lineWidth = 0.9 + zoomVel * 0.7;
+            g.beginPath(); g.arc(cx0, midY, pRad, 0, Math.PI * 2); g.stroke();
+          }
+          // Radial optical warp-streak cues during active logarithmic zoom / film playback
+          if (zoomVel > 0.04 && !reduceMotion) {
+            var warpDir = zoomDelta !== 0 ? (zoomDelta > 0 ? 1 : -1) : (filmRef.current.dir || 1);
+            g.strokeStyle = realm2d && realm2d.color ? realm2d.color : P.ringHot;
+            g.lineCap = 'round';
+            for (var ws = 0; ws < 16; ws++) {
+              var wAng = (ws / 16) * Math.PI * 2 + e * 0.35;
+              var wPhase = ((fracE * warpDir + ws * 0.37) % 1 + 1) % 1;
+              var rIn = refPx * (0.58 + wPhase * 0.52);
+              var rOut = rIn + (12 + zoomVel * 32) * (0.4 + wPhase * 0.6);
+              g.globalAlpha = Math.sin(wPhase * Math.PI) * zoomVel * 0.22;
+              g.lineWidth = 1.0 + wPhase * 0.6;
+              g.beginPath();
+              g.moveTo(cx0 + Math.cos(wAng) * rIn, midY + Math.sin(wAng) * rIn);
+              g.lineTo(cx0 + Math.cos(wAng) * rOut, midY + Math.sin(wAng) * rOut);
+              g.stroke();
+            }
+            g.lineCap = 'butt';
+          }
+
+          // 2. Quantum / Subatomic scale (e <= -8.5): sparkling vacuum & orbital probability shimmer
+          var quantumW = clamp((-8.5 - e) / 3.0, 0, 1);
+          if (quantumW > 0.02) {
+            var qPhase = reduceMotion ? 0.5 : (e * 2.4);
+            for (var qo = 0; qo < 3; qo++) {
+              var qoR = refPx * (0.56 + qo * 0.24);
+              g.strokeStyle = qo % 2 === 0 ? '#a78bfa' : '#38bdf8';
+              g.globalAlpha = quantumW * (0.14 - qo * 0.03);
+              g.lineWidth = 1.1;
+              g.setLineDash([4, 6]);
+              g.beginPath(); g.ellipse(cx0, midY, qoR, qoR * (0.52 + qo * 0.14), qPhase * (qo % 2 ? -0.25 : 0.2) + qo * 0.9, 0, Math.PI * 2); g.stroke();
+              g.setLineDash([]);
+            }
+            for (var qm = 0; qm < 18; qm++) {
+              var qa = qm * 2.399963 + qPhase * 0.35;
+              var qr = refPx * (0.34 + ((qm * 0.31 + (reduceMotion ? 0 : fracE * 0.4)) % 1) * 0.92);
+              var qx = cx0 + Math.cos(qa) * qr, qy = midY + Math.sin(qa) * qr * 0.72;
+              var qTwinkle = reduceMotion ? 0.72 : (0.35 + 0.65 * Math.abs(Math.sin(qPhase * 1.3 + qm * 1.7)));
+              g.fillStyle = qm % 3 === 0 ? '#c4b5fd' : '#7dd3fc';
+              g.globalAlpha = quantumW * qTwinkle * 0.42;
+              g.beginPath(); g.arc(qx, qy, 1.3 + (qm % 3) * 0.55, 0, Math.PI * 2); g.fill();
+            }
+          }
+
+          // 3. Cellular / Molecular micro scale (-9.5 < e < -2.5): translucent optical catchlights
+          var microW = clamp(1 - Math.abs(e + 6.0) / 3.5, 0, 1);
+          if (microW > 0.02) {
+            var mShift = reduceMotion ? 0 : e * 38;
+            for (var mc = 0; mc < 10; mc++) {
+              var mx = ((mc * 137.5 + mShift * (0.5 + (mc % 3) * 0.25)) % (cssW + 60) + cssW + 60) % (cssW + 60) - 30;
+              var my = 28 + ((mc * 73.1) % Math.max(80, axisY - 56));
+              var mr = 7 + (mc % 4) * 5;
+              var mGrad = g.createRadialGradient(mx - mr * 0.3, my - mr * 0.3, 0.5, mx, my, mr);
+              mGrad.addColorStop(0, mc % 2 === 0 ? 'rgba(165,243,252,0.22)' : 'rgba(167,243,208,0.20)');
+              mGrad.addColorStop(0.7, 'rgba(56,189,248,0.05)');
+              mGrad.addColorStop(1, 'rgba(56,189,248,0)');
+              g.globalAlpha = microW * 0.78;
+              g.fillStyle = mGrad;
+              g.beginPath(); g.arc(mx, my, mr, 0, Math.PI * 2); g.fill();
+            }
+          }
+
+          // 4. Galactic / Cosmic scale (e >= 14): volumetric nebula washes, star parallax & gravitational-lensing halo
+          var cosmicW = clamp((e - 14.0) / 4.5, 0, 1);
+          if (cosmicW > 0.02) {
+            var nShift = reduceMotion ? 0 : (e - 14.0) * 18;
+            var nebA = g.createRadialGradient(cx0 - cssW * 0.22, midY - cssH * 0.14, 10, cx0 - cssW * 0.22, midY - cssH * 0.14, cssW * 0.42);
+            nebA.addColorStop(0, 'rgba(56,189,248,0.12)');
+            nebA.addColorStop(0.55, 'rgba(99,102,241,0.06)');
+            nebA.addColorStop(1, 'rgba(15,23,42,0)');
+            g.globalAlpha = cosmicW; g.fillStyle = nebA; g.fillRect(0, 0, cssW, cssH);
+            var nebB = g.createRadialGradient(cx0 + cssW * 0.24, midY + cssH * 0.12, 10, cx0 + cssW * 0.24, midY + cssH * 0.12, cssW * 0.38);
+            nebB.addColorStop(0, 'rgba(244,114,182,0.10)');
+            nebB.addColorStop(0.55, 'rgba(139,92,246,0.05)');
+            nebB.addColorStop(1, 'rgba(15,23,42,0)');
+            g.fillStyle = nebB; g.fillRect(0, 0, cssW, cssH);
+            // Multi-depth cosmic starfield motes
+            for (var cs = 0; cs < 24; cs++) {
+              var depthL = 0.4 + (cs % 3) * 0.35;
+              var csx = ((cs * 97.3 - nShift * depthL) % cssW + cssW) % cssW;
+              var csy = 14 + ((cs * 53.7) % Math.max(60, axisY - 28));
+              g.fillStyle = cs % 5 === 0 ? '#bae6fd' : cs % 7 === 0 ? '#fde68a' : '#f8fafc';
+              g.globalAlpha = cosmicW * (0.28 + depthL * 0.36);
+              g.beginPath(); g.arc(csx, csy, 0.75 + (cs % 3) * 0.45, 0, Math.PI * 2); g.fill();
+            }
+            // Gravitational-lensing Einstein-ring halo arcs around the central cosmic reticle
+            var lensR = refPx * 0.56;
+            var lensRot = reduceMotion ? 0.35 : (e * 0.32);
+            var lensHalo = g.createRadialGradient(cx0, midY, lensR * 0.86, cx0, midY, lensR * 1.18);
+            lensHalo.addColorStop(0, 'rgba(125,211,252,0)');
+            lensHalo.addColorStop(0.5, 'rgba(186,230,253,0.16)');
+            lensHalo.addColorStop(1, 'rgba(125,211,252,0)');
+            g.globalAlpha = cosmicW; g.fillStyle = lensHalo;
+            g.beginPath(); g.arc(cx0, midY, lensR * 1.18, 0, Math.PI * 2); g.fill();
+            g.strokeStyle = '#bae6fd'; g.lineWidth = 1.6; g.lineCap = 'round';
+            g.globalAlpha = cosmicW * 0.42;
+            g.beginPath(); g.arc(cx0, midY, lensR, lensRot - 0.55, lensRot + 0.55); g.stroke();
+            g.beginPath(); g.arc(cx0, midY, lensR, lensRot + Math.PI - 0.55, lensRot + Math.PI + 0.55); g.stroke();
+            g.lineCap = 'butt';
+          }
           g.restore();
         }
 
@@ -16444,6 +16564,18 @@ return plaza;
 
           // Pictures may fade with distance, but a ring is a graphic that carries the
           // size (WCAG 1.4.11, 3:1): at .5 the faintest ring is still 3.5:1 on the stage.
+          if (isFocus && !isHC && hasRad && c.dia >= 24 && c.dia <= maxGlyph * 1.6) {
+            var ringR = c.dia / 2;
+            var focusHalo = g.createRadialGradient(c.x, c.y, Math.max(1, ringR * 0.82), c.x, c.y, ringR + 14);
+            focusHalo.addColorStop(0, 'rgba(56,189,248,0)');
+            focusHalo.addColorStop(0.55, 'rgba(125,211,252,0.18)');
+            focusHalo.addColorStop(1, 'rgba(56,189,248,0)');
+            g.save();
+            g.globalAlpha = 1;
+            g.fillStyle = focusHalo;
+            g.beginPath(); g.arc(c.x, c.y, ringR + 14, 0, Math.PI * 2); g.fill();
+            g.restore();
+          }
           g.globalAlpha = Math.max(alpha, 0.5);
           g.strokeStyle = isFocus ? P.ringHot : P.ring;
           g.lineWidth = isFocus ? 2.5 : 1.25;

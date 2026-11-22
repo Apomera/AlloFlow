@@ -200,4 +200,23 @@ describe('crisis resources — regression pins', () => {
     expect(html).toContain('988');
     expect(html).toContain('741741');
   });
+
+  it('scanForCrisis catches expanded self-harm phrases + obfuscation without false-positiving on history/war', () => {
+    for (const phrase of [
+      'I wish I were dead',
+      'I do not want to be alive',
+      'I want to take my own life',
+      'I want to end it all',
+      'I want to k\u200bill myself',
+    ]) {
+      expect(window.SelHub.scanForCrisis(phrase).triggered, phrase).toBe(true);
+    }
+    for (const safe of [
+      'We studied World War II and genocide prevention in social studies.',
+      'The atomic bomb was dropped in 1945.',
+      'I had a panic attack before my presentation.',
+    ]) {
+      expect(window.SelHub.scanForCrisis(safe).triggered, safe).toBe(false);
+    }
+  });
 });

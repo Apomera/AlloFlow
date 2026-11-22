@@ -274,9 +274,9 @@ function AdventureSetupEditor(props) {
   const resourcesLocked = resourceConfigLocked || typeof props.setAdventureState !== 'function';
   React.useEffect(() => {
     const target = pendingResourceFocus.current;
-    if (target) {
-      const control = resourceEditorRef.current?.querySelector('[id="' + target + '"]');
-      if (control) { control.focus(); pendingResourceFocus.current = null; }
+    if (target && typeof document !== 'undefined') {
+      const control = document.getElementById(target);
+      if (control && resourceEditorRef.current?.contains(control)) { control.focus(); pendingResourceFocus.current = null; }
     }
   }, [state.systemResources]);
   React.useEffect(() => { setRemovedResource(null); setResourceAnnouncement(''); setResourceQtyDrafts({}); pendingResourceFocus.current = null; }, [state.currentScene]);
@@ -342,7 +342,7 @@ function AdventureSetupEditor(props) {
       <div style={{ marginTop: 16 }} data-help-key="adventure_setting_episode"><AdventureEpisodeSettings state={state} onChange={props.setAdventureState} t={props.t} theme={props.theme} locked={locked()} id={id + '-episode-length'} freeResponse={props.adventureFreeResponseEnabled} includeFinale /></div>
       {toggle('isSocialStoryMode', 'setIsSocialStoryMode', label('adventure.social_story_mode_label', 'Social scenario mode'), label('social_mode_hint', 'Show a target social skill in Essential setup.'), 'allowModeSwitch')}
       {props.isSocialStoryMode && <label className="as-field" htmlFor={id + '-social-focus'} data-help-key="adventure_setting_social_focus">{label('social_focus', 'Social skill to practise')}
-        <input id={id + '-social-focus'} className="as-control" type="text" aria-describedby={describedBy('allowModeSwitch', 'social-focus')} value={props.socialStoryFocus || ''} disabled={locked('allowModeSwitch') || typeof props.setSocialStoryFocus !== 'function'} onChange={e => change('setSocialStoryFocus', e.target.value, 'allowModeSwitch')} placeholder={label('adventure.social_story_focus_placeholder', 'e.g., Sharing toys, Dealing with frustration')} />
+        <input id={id + '-social-focus'} className="as-control" type="text" maxLength={240} aria-describedby={describedBy('allowModeSwitch', 'social-focus')} value={props.socialStoryFocus || ''} disabled={locked('allowModeSwitch') || typeof props.setSocialStoryFocus !== 'function'} onChange={e => change('setSocialStoryFocus', e.target.value, 'allowModeSwitch')} placeholder={label('adventure.social_story_focus_placeholder', 'e.g., Sharing toys, Dealing with frustration')} />
         {fixedHint('allowModeSwitch', 'social-focus')}
       </label>}
       {props.adventureInputMode === 'system' && <div>
@@ -399,7 +399,7 @@ function AdventureSetupEditor(props) {
     </AdventureSettingSection>
     <AdventureSettingSection title={label('story_guidance', 'Story guidance')} summary={props.adventureCustomInstructions?.trim() ? label('guidance_added', 'Custom instructions added') : label('guidance_empty', 'No custom instructions')}>
       <label className="as-field" htmlFor={id + '-custom-instructions'} data-help-key="adventure_setting_custom_instructions">{label('input.custom_instructions', 'Custom instructions')}
-        <textarea id={id + '-custom-instructions'} aria-label={label('input.custom_instructions', 'Custom instructions')} aria-describedby={describedBy('allowCustomInstructions', 'custom-instructions')} className="as-control" value={props.adventureCustomInstructions || ''} disabled={locked('allowCustomInstructions')} onChange={e => change('setAdventureCustomInstructions', e.target.value, 'allowCustomInstructions')} placeholder={label('adventure.placeholder_custom', 'Add guidance for this adventure.')} />{fixedHint('allowCustomInstructions', 'custom-instructions')}
+        <textarea id={id + '-custom-instructions'} aria-label={label('input.custom_instructions', 'Custom instructions')} aria-describedby={describedBy('allowCustomInstructions', 'custom-instructions')} className="as-control" maxLength={2000} value={props.adventureCustomInstructions || ''} disabled={locked('allowCustomInstructions')} onChange={e => change('setAdventureCustomInstructions', e.target.value, 'allowCustomInstructions')} placeholder={label('adventure.placeholder_custom', 'Add guidance for this adventure.')} />{fixedHint('allowCustomInstructions', 'custom-instructions')}
       </label>
     </AdventureSettingSection>
     {(hasCloud || (props.isTeacherMode && props.setStudentProjectSettings)) && <AdventureSettingSection title={label('saving_permissions', 'Saving & permissions')} summary={[label('cloud_images', 'Cloud images') + ': ' + onOff(props.isAdventureCloudEnabled), permissions.lockAllSettings ? label('student_setup_fixed', 'Student setup fixed') : label('student_setup_adjustable', 'Student setup adjustable')].join(' · ')}>

@@ -124,15 +124,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       // ── Host theme remap (INVERSE: dark-base) — dark = identity, +light/high-contrast ──
       var _viaT = (ctx && ctx.theme) || {};
       var _viaHC = !!_viaT.isContrast, _viaL = !_viaHC && !_viaT.isDark;
-      var _via_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _via_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#d97706':'#000000'};
-      var _via_FGL = {'#cbd5e1':'#334155','#fcd34d':'#78350f','#94a3b8':'#64748b','#fde68a':'#92400e','#e2e8f0':'#1e293b'}, _via_FGH = {'#cbd5e1':'#ffff00','#fcd34d':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
-      var _via_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _via_BDH = {'#334155':'#ffff00','#f59e0b':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#d97706':'#ffff00'};
+      var _via_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _via_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#d97706':'#000000','#92400e':'#000000'};
+      var _via_FGL = {'#cbd5e1':'#334155','#fcd34d':'#78350f','#94a3b8':'#475569','#fde68a':'#92400e','#e2e8f0':'#1e293b'}, _via_FGH = {'#cbd5e1':'#ffff00','#fcd34d':'#ffff00','#94a3b8':'#ffff00','#fde68a':'#ffff00','#fff':'#ffff00','#e2e8f0':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00'};
+      var _via_BDL = {'#334155':'#cbd5e1','#1e293b':'#e2e8f0','#475569':'#94a3b8','#fcd34d':'#b45309'}, _via_BDH = {'#334155':'#ffff00','#f59e0b':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#d97706':'#ffff00','#fcd34d':'#ffff00','#92400e':'#ffff00'};
       var _viaBg = function(h){ return _viaHC ? (_via_BGH[h]||h) : (_viaL ? (_via_BGL[h]||h) : h); };
       var _viaFg = function(h){ return _viaHC ? (_via_FGH[h]||h) : (_viaL ? (_via_FGL[h]||h) : h); };
       var _viaBd = function(h){ return _viaHC ? (_via_BDH[h]||h) : (_viaL ? (_via_BDL[h]||h) : h); };
       var React = ctx.React;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
+      var labToolData = (ctx && ctx.toolData && typeof ctx.toolData === 'object' && !Array.isArray(ctx.toolData)) ? ctx.toolData : {};
       var setLabToolData = ctx.setToolData;
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
@@ -140,13 +140,48 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       var onSafetyFlag = ctx.onSafetyFlag || null;
       var _viaBand = (ctx && ctx.gradeBand) || 'high';
 
-      var d = labToolData.viaStrengths || defaultState();
-      function setVS(patch) {
+      var VIA_VIEWS = ['overview', 'sort', 'reflect', 'print', 'about'];
+      var STRENGTH_IDS = {};
+      STRENGTHS.forEach(function(s) { STRENGTH_IDS[s.id] = true; });
+      function cleanRatings(raw) {
+        var out = {};
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
+        STRENGTHS.forEach(function(s) {
+          var v = Number(raw[s.id]);
+          if (Number.isFinite(v) && v >= 1 && v <= 5) out[s.id] = Math.round(v);
+        });
+        return out;
+      }
+      function cleanTopFive(raw) {
+        if (!Array.isArray(raw)) return [];
+        var seen = {};
+        var out = [];
+        raw.forEach(function(id) {
+          if (typeof id === 'string' && STRENGTH_IDS[id] && !seen[id] && out.length < 5) {
+            seen[id] = true;
+            out.push(id);
+          }
+        });
+        return out;
+      }
+      function cleanReflections(raw) {
+        return (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {};
+      }
+      var rawVS = (labToolData.viaStrengths && typeof labToolData.viaStrengths === 'object' && !Array.isArray(labToolData.viaStrengths)) ? labToolData.viaStrengths : {};
+      var d = Object.assign(defaultState(), rawVS);
+      d.ratings = cleanRatings(rawVS.ratings);
+      d.topFive = cleanTopFive(rawVS.topFive);
+      d.reflections = cleanReflections(rawVS.reflections);
+      function setVS(patchOrFn) {
+        if (typeof setLabToolData !== 'function') return;
         setLabToolData(function(prev) {
-          var prior = (prev && prev.viaStrengths) || defaultState();
+          var safePrev = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var rawPrior = (safePrev.viaStrengths && typeof safePrev.viaStrengths === 'object' && !Array.isArray(safePrev.viaStrengths)) ? safePrev.viaStrengths : {};
+          var prior = Object.assign(defaultState(), rawPrior);
+          var patch = typeof patchOrFn === 'function' ? patchOrFn(prior) : patchOrFn;
           var next = Object.assign({}, prior, patch);
-          if (patch.ratings || patch.topFive || patch.reflections) next.lastUpdated = todayISO();
-          return Object.assign({}, prev, { viaStrengths: next });
+          if (patch && (patch.ratings || patch.topFive || patch.reflections)) next.lastUpdated = todayISO();
+          return Object.assign({}, safePrev, { viaStrengths: next });
         });
       }
       function scanViaText(text) {
@@ -174,18 +209,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
         }
         return blocked;
       }
-      var view = d.view || 'overview';
+      var view = VIA_VIEWS.indexOf(d.view) !== -1 ? d.view : 'overview';
       var VIA_VIEW_LABELS = { overview: 'Overview', sort: 'Self-Sort', reflect: 'Reflect', print: 'Print view', about: 'About' };
       function goto(v) {
-        setVS({ view: v });
-        if (announceToSR) announceToSR((VIA_VIEW_LABELS[v] || v) + ' section selected');
+        var nextView = VIA_VIEWS.indexOf(v) !== -1 ? v : 'overview';
+        setVS({ view: nextView });
+        if (announceToSR) announceToSR((VIA_VIEW_LABELS[nextView] || nextView) + ' section selected');
       }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
         return h('div', { className: 'no-print', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           h('button', { onClick: function() { setSelHubTool(null); }, 'aria-label': 'Back to SEL Hub',
-            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _viaFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid ' + _viaBd('#334155'), borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: _viaFg('#cbd5e1'), fontSize: 14 } }, '← Back'),
           h('div', { style: { flex: 1, minWidth: 260 } },
             h('h2', { style: { margin: 0, color: _viaFg('#fcd34d'), fontSize: 22, fontWeight: 900 } }, '🌟 VIA Strengths'),
             h('div', { style: { fontSize: 12, color: _viaFg('#94a3b8'), marginTop: 4, lineHeight: 1.5 } }, 'A reflection on the 24 VIA Character Strengths.')
@@ -195,11 +231,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
 
       function navTabs() {
         var tabs = [
-          { id: 'overview', label: 'Overview', icon: 'ðŸŒŸ' },
-          { id: 'sort', label: 'Self-Sort', icon: 'âœï¸' },
-          { id: 'reflect', label: 'Reflect', icon: 'ðŸ’­' },
-          { id: 'print', label: 'Print view', icon: 'ðŸ–¨' },
-          { id: 'about', label: 'About', icon: 'â„¹' }
+          { id: 'overview', label: 'Overview', icon: '🌟' },
+          { id: 'sort', label: 'Self-Sort', icon: '✏️' },
+          { id: 'reflect', label: 'Reflect', icon: '💭' },
+          { id: 'print', label: 'Print view', icon: '🖨' },
+          { id: 'about', label: 'About', icon: 'ℹ' }
         ];
         return h('div', { className: 'no-print', style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           h('div', {
@@ -234,8 +270,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
                     if (target) target.focus();
                   }, 0);
                 },
-                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? '#f59e0b' : '#334155'),
-                  background: active ? 'rgba(245,158,11,0.18)' : _viaBg('#1e293b'),
+                style: { padding: '6px 12px', borderRadius: 8, border: '1px solid ' + (active ? _viaBd('#f59e0b') : _viaBd('#334155')),
+                  background: active ? (_viaHC ? '#000000' : 'rgba(245,158,11,0.18)') : _viaBg('#1e293b'),
                   color: active ? _viaFg('#fde68a') : _viaFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 }
               }, t.icon + ' ' + t.label);
             })
@@ -243,7 +279,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
         );
       }
       function authoritativeBanner() {
-        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.4)', borderRight: '1px solid rgba(245,158,11,0.4)', borderBottom: '1px solid rgba(245,158,11,0.4)', borderLeft: '3px solid #f59e0b', marginBottom: 12, fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.65 } },
+        return h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: _viaHC ? '#000000' : 'rgba(245,158,11,0.10)', borderTop: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), borderRight: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), borderBottom: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), borderLeft: '3px solid ' + _viaBd('#f59e0b'), marginBottom: 12, fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.65 } },
           h('strong', null, '📚 The authoritative VIA Survey is free at '),
           h('a', { href: 'https://www.viacharacter.org/', target: '_blank', rel: 'noopener noreferrer',
             style: { color: _viaFg('#fcd34d'), textDecoration: 'underline', fontWeight: 800 } }, 'viacharacter.org'),
@@ -253,48 +289,48 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
 
       function softPointer() {
         return h('div', { className: 'no-print',
-          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid #334155', fontSize: 11, color: _viaFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
+          style: { marginTop: 16, padding: '8px 12px', borderRadius: 8, background: _viaBg('#0f172a'), border: '1px solid ' + _viaBd('#334155'), fontSize: 11, color: _viaFg('#94a3b8'), lineHeight: 1.5, fontStyle: 'italic' }
         },
           'Strengths-spotting is a reflective practice. It is not a psychological diagnosis and it does not replace counseling or therapy. Crisis Text Line: text HOME to 741741.'
         );
       }
 
-      function ratingOf(id) { return (d.ratings || {})[id] || 0; }
+      function ratingOf(id) { return d.ratings[id] || 0; }
 
       // ═══════════════════════════════════════════════════════════
       // OVERVIEW
       // ═══════════════════════════════════════════════════════════
       function renderOverview() {
-        var rated = Object.keys(d.ratings || {}).filter(function(k) { return d.ratings[k] > 0; }).length;
-        var topFive = (Array.isArray(d.topFive) ? d.topFive : []);
+        var rated = STRENGTHS.filter(function(s) { return ratingOf(s.id) > 0; }).length;
+        var topFive = d.topFive;
 
         return h('div', null,
           authoritativeBanner(),
-          h('div', { style: { padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(245,158,11,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(245,158,11,0.4)', marginBottom: 14 } },
+          h('div', { style: { padding: 14, borderRadius: 12, background: _viaHC ? '#000000' : (_viaL ? '#fffbeb' : 'linear-gradient(135deg, rgba(245,158,11,0.16) 0%, rgba(15,23,42,0.4) 60%)'), border: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.4)'), marginBottom: 14 } },
             h('div', { style: { fontSize: 22, fontWeight: 900, color: _viaFg('#fde68a') } }, 'My Strengths'),
             h('div', { style: { fontSize: 12, color: _viaFg('#94a3b8'), marginTop: 4 } },
               rated + ' of 24 rated',
               d.lastUpdated ? ' · updated ' + d.lastUpdated : '')
           ),
 
-          topFive.length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: _viaBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #f59e0b', marginBottom: 14 } },
+          topFive.length > 0 ? h('div', { style: { padding: 14, borderRadius: 10, background: _viaBg('#0f172a'), borderTop: '1px solid ' + _viaBd('#1e293b'), borderRight: '1px solid ' + _viaBd('#1e293b'), borderBottom: '1px solid ' + _viaBd('#1e293b'), borderLeft: '3px solid ' + _viaBd('#f59e0b'), marginBottom: 14 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _viaFg('#fcd34d'), marginBottom: 10 } }, '✨ My signature strengths'),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
               topFive.map(function(id) {
                 var s = STRENGTHS.find(function(x) { return x.id === id; });
                 if (!s) return null;
-                return h('div', { key: id, style: { padding: 10, borderRadius: 8, background: _viaBg('#1e293b'), border: '1px solid #f59e0b66' } },
+                return h('div', { key: id, style: { padding: 10, borderRadius: 8, background: _viaBg('#1e293b'), border: '1px solid ' + (_viaHC ? '#ffff00' : '#f59e0b66') } },
                   h('div', { style: { fontSize: 26, marginBottom: 4 } }, s.icon),
                   h('div', { style: { fontSize: 13, fontWeight: 800, color: _viaFg('#fde68a') } }, s.label),
                   h('div', { style: { fontSize: 10, color: _viaFg('#94a3b8'), textTransform: 'uppercase', letterSpacing: 0.5 } }, s.virtue)
                 );
               })
             )
-          ) : h('div', { style: { padding: 14, borderRadius: 10, background: _viaBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 14, textAlign: 'center' } },
+          ) : h('div', { style: { padding: 14, borderRadius: 10, background: _viaBg('#0f172a'), border: '1px solid ' + _viaBd('#1e293b'), marginBottom: 14, textAlign: 'center' } },
             h('p', { style: { margin: '0 0 10px', color: _viaFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
               'Rate the 24 strengths to identify your top 5 signature strengths.'),
             h('button', { onClick: function() { goto('sort'); }, 'aria-label': 'Start the self-sort',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _viaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '→ Start the self-sort')
+              style: { padding: '8px 18px', borderRadius: 8, border: _viaHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _viaHC ? '#000000' : 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _viaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '→ Start the self-sort')
           ),
 
           // Brief overview of all 24 by virtue
@@ -334,24 +370,30 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       // ═══════════════════════════════════════════════════════════
       function renderSort() {
         function rate(id, value) {
-          var ratings = Object.assign({}, (d.ratings || {}));
-          ratings[id] = value;
-          setVS({ ratings: ratings });
+          setVS(function(prior) {
+            var ratings = cleanRatings(prior.ratings);
+            ratings[id] = value;
+            return { ratings: ratings };
+          });
           var strength = STRENGTHS.find(function(item) { return item.id === id; });
           if (announceToSR && strength) announceToSR(strength.label + ' rated ' + value + ' out of 5');
         }
         function toggleTop(id) {
-          var top = ((Array.isArray(d.topFive) ? d.topFive : [])).slice();
-          var idx = top.indexOf(id);
-          if (idx >= 0) {
-            top.splice(idx, 1);
-          } else if (top.length < 5) {
-            top.push(id);
-          } else {
-            if (addToast) addToast('You already have 5 signature strengths. Remove one to add another.', 'info');
-            return;
-          }
-          setVS({ topFive: top });
+          var hitLimit = false;
+          setVS(function(prior) {
+            var top = cleanTopFive(prior.topFive);
+            var idx = top.indexOf(id);
+            if (idx >= 0) {
+              top.splice(idx, 1);
+            } else if (top.length < 5) {
+              top.push(id);
+            } else {
+              hitLimit = true;
+              return {};
+            }
+            return { topFive: top };
+          });
+          if (hitLimit && addToast) addToast('You already have 5 signature strengths. Remove one to add another.', 'info');
         }
 
         var virtues = {};
@@ -359,27 +401,27 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
           virtues[s.virtue] = virtues[s.virtue] || [];
           virtues[s.virtue].push(s);
         });
-        var ratedCount = Object.keys(d.ratings || {}).filter(function(k) { return d.ratings[k] > 0; }).length;
+        var ratedCount = STRENGTHS.filter(function(s) { return ratingOf(s.id) > 0; }).length;
 
         return h('div', null,
           authoritativeBanner(),
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: _viaHC ? '#000000' : 'rgba(245,158,11,0.10)', borderTop: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderRight: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderBottom: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)'), borderLeft: '3px solid ' + _viaBd('#f59e0b'), marginBottom: 14, fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.65 } },
             h('strong', null, '✏️ How this works: '),
             'For each of the 24 strengths, rate how much it sounds like you (1 = not really me, 5 = really me). Then click the star icon on up to 5 strengths to mark them as your signature strengths.'
           ),
 
-          h('div', { style: { padding: 10, borderRadius: 8, background: _viaBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
-            h('div', { role: 'progressbar', 'aria-label': 'Self-sort progress', 'aria-valuemin': 0, 'aria-valuemax': 24, 'aria-valuenow': ratedCount, 'aria-valuetext': ratedCount + ' of 24 strengths rated', style: { height: 7, borderRadius: 4, background: _viaBg('#1e293b'), overflow: 'hidden' } },
-              h('div', { style: { height: '100%', width: Math.round((ratedCount / 24) * 100) + '%', borderRadius: 4, background: '#f59e0b', transition: 'width 0.2s' } })
+          h('div', { style: { padding: 10, borderRadius: 8, background: _viaBg('#0f172a'), border: '1px solid ' + _viaBd('#1e293b'), marginBottom: 12 } },
+            h('div', { role: 'progressbar', 'aria-label': 'Self-sort progress', 'aria-valuemin': 0, 'aria-valuemax': 24, 'aria-valuenow': ratedCount, 'aria-valuetext': ratedCount + ' of 24 strengths rated', style: { height: 7, borderRadius: 4, background: _viaBg('#1e293b'), overflow: 'hidden', border: _viaHC ? '1px solid #ffff00' : 'none' } },
+              h('div', { style: { height: '100%', width: Math.round((ratedCount / 24) * 100) + '%', borderRadius: 4, background: _viaHC ? '#ffff00' : '#f59e0b', transition: 'width 0.2s' } })
             ),
             h('div', { role: 'status', style: { marginTop: 5, color: _viaFg('#fcd34d'), fontSize: 11, fontWeight: 700 } }, ratedCount + ' of 24 strengths rated')
           ),
           Object.keys(virtues).map(function(v) {
-            return h('div', { key: v, style: { padding: 12, borderRadius: 10, background: _viaBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 10 } },
+            return h('div', { key: v, style: { padding: 12, borderRadius: 10, background: _viaBg('#0f172a'), border: '1px solid ' + _viaBd('#1e293b'), marginBottom: 10 } },
               h('div', { style: { fontSize: 11, color: _viaFg('#fcd34d'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 } }, v),
               virtues[v].map(function(s) {
                 var r = ratingOf(s.id);
-                var isTop = ((Array.isArray(d.topFive) ? d.topFive : [])).indexOf(s.id) !== -1;
+                var isTop = d.topFive.indexOf(s.id) !== -1;
                 return h('div', { key: s.id, style: { padding: 8, borderRadius: 6, background: _viaBg('#1e293b'), marginBottom: 4 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
                     h('span', { style: { fontSize: 22 } }, s.icon),
@@ -390,12 +432,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
                     h('div', { style: { display: 'flex', gap: 2 }, role: 'radiogroup', 'aria-label': 'Rate ' + s.label },
                       [1, 2, 3, 4, 5].map(function(n) {
                         var active = r === n;
-                        return h('button', { key: n, onClick: function() { rate(s.id, n); }, role: 'radio', 'aria-checked': active, 'aria-label': 'Rate ' + n,
-                          style: { padding: '4px 8px', borderRadius: 4, border: '1px solid ' + (active ? '#f59e0b' : _viaFg('#475569')), background: active ? '#f59e0b' : 'transparent', color: active ? '#0f172a' : _viaFg('#94a3b8'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, n);
+                        return h('button', { key: n, onClick: function() { rate(s.id, n); }, role: 'radio', 'aria-checked': active, 'aria-label': 'Rate ' + s.label + ' ' + n + ' out of 5',
+                          style: { padding: '4px 8px', borderRadius: 4, border: '1px solid ' + (active ? _viaBd('#f59e0b') : _viaBd('#475569')), background: active ? (_viaHC ? '#000000' : '#f59e0b') : 'transparent', color: active ? (_viaHC ? '#ffff00' : '#0f172a') : _viaFg('#94a3b8'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, n);
                       })
                     ),
-                    h('button', { onClick: function() { toggleTop(s.id); }, 'aria-label': isTop ? 'Remove from top 5' : 'Add to top 5', 'aria-pressed': isTop,
-                      style: { padding: '4px 8px', borderRadius: 4, border: '1px solid ' + (isTop ? _viaFg('#fcd34d') : _viaFg('#475569')), background: isTop ? 'rgba(252,211,77,0.18)' : 'transparent', color: isTop ? _viaFg('#fcd34d') : _viaFg('#94a3b8'), cursor: 'pointer', fontSize: 14 } }, isTop ? '⭐' : '☆')
+                    h('button', { onClick: function() { toggleTop(s.id); }, 'aria-label': (isTop ? 'Remove ' : 'Add ') + s.label + (isTop ? ' from top 5' : ' to top 5'), 'aria-pressed': isTop,
+                      style: { padding: '4px 8px', borderRadius: 4, border: '1px solid ' + (isTop ? _viaBd('#fcd34d') : _viaBd('#475569')), background: isTop ? (_viaHC ? '#000000' : 'rgba(252,211,77,0.18)') : 'transparent', color: isTop ? _viaFg('#fcd34d') : _viaFg('#94a3b8'), cursor: 'pointer', fontSize: 14 } }, isTop ? '⭐' : '☆')
                   )
                 );
               })
@@ -410,23 +452,25 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       // REFLECT — write notes on top 5
       // ═══════════════════════════════════════════════════════════
       function renderReflect() {
-        var topFive = (Array.isArray(d.topFive) ? d.topFive : []);
+        var topFive = d.topFive;
         if (topFive.length === 0) {
           return h('div', null,
-            h('div', { style: { padding: 20, borderRadius: 12, background: _viaBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
+            h('div', { style: { padding: 20, borderRadius: 12, background: _viaBg('#0f172a'), border: '1px solid ' + _viaBd('#1e293b'), textAlign: 'center' } },
               h('div', { style: { fontSize: 36, marginBottom: 8 } }, '⭐'),
               h('div', { style: { color: _viaFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Pick your top 5 first'),
               h('div', { style: { color: _viaFg('#94a3b8'), fontSize: 12 } }, 'In the Self-Sort view, star up to 5 strengths to mark them as signature.'),
               h('button', { onClick: function() { goto('sort'); }, 'aria-label': 'Go to self-sort',
-                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.18)', color: _viaFg('#fde68a'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Self-Sort')
+                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid ' + _viaBd('#f59e0b'), background: _viaHC ? '#000000' : 'rgba(245,158,11,0.18)', color: _viaFg('#fde68a'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Self-Sort')
             )
           );
         }
 
         function setReflection(id, val) {
-          var ref = Object.assign({}, (d.reflections || {}));
-          ref[id] = val;
-          setVS({ reflections: ref });
+          setVS(function(prior) {
+            var ref = Object.assign({}, cleanReflections(prior.reflections));
+            ref[id] = val;
+            return { reflections: ref };
+          });
         }
 
         return h('div', null,
@@ -465,30 +509,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
       // PRINT
       // ═══════════════════════════════════════════════════════════
       function renderPrintView() {
-        var topFive = (Array.isArray(d.topFive) ? d.topFive : []);
+        var topFive = d.topFive;
         return h('div', null,
-          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(245,158,11,0.10)', borderRadius: 8, border: '1px solid rgba(245,158,11,0.3)' } },
+          h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: _viaHC ? '#000000' : 'rgba(245,158,11,0.10)', borderRadius: 8, border: '1px solid ' + (_viaHC ? '#ffff00' : 'rgba(245,158,11,0.3)') } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _viaFg('#fde68a'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _viaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: _viaHC ? '1px solid #ffff00' : 'none', cursor: 'pointer', background: _viaHC ? '#000000' : 'linear-gradient(135deg, #92400e 0%, #b45309 100%)', color: _viaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('overview'); }, 'aria-label': 'Back',
-              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _viaBg('#1e293b'), color: _viaFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
+              style: { padding: '8px 18px', borderRadius: 8, border: '1px solid ' + _viaBd('#475569'), background: _viaBg('#1e293b'), color: _viaFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),
 
           h('div', {
             id: 'via-print-region',
-            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _viaBg('#fff'), color: _viaFg('#0f172a'), borderRadius: 8, border: '1px solid #cbd5e1', fontFamily: '"Helvetica Neue", Arial, sans-serif' }
+            style: { maxWidth: 760, margin: '0 auto', padding: 32, background: _viaBg('#fff'), color: _viaFg('#0f172a'), borderRadius: 8, border: '1px solid ' + _viaBd('#cbd5e1'), fontFamily: '"Helvetica Neue", Arial, sans-serif' }
           },
             h('style', null,
               '@media print { body * { visibility: hidden !important; } ' +
               '#via-print-region, #via-print-region * { visibility: visible !important; } ' +
-              '#via-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; } ' +
+              '#via-print-region { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; border: none !important; padding: 0 !important; background: #ffffff !important; color: #0f172a !important; } ' +
+              '#via-print-region * { color: inherit !important; border-color: #cbd5e1 !important; } ' +
               '.no-print { display: none !important; } ' +
               '@page { margin: 0.5in; } }'
             ),
 
-            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid #d97706' } },
+            h('div', { style: { paddingBottom: 14, marginBottom: 20, borderBottom: '3px solid ' + _viaBd('#92400e') } },
               h('div', { style: { fontSize: 10, color: _viaFg('#64748b'), textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, marginBottom: 2 } }, 'VIA Character Strengths · Self-Reflection'),
               h('h1', { style: { margin: 0, fontSize: 28, fontWeight: 900 } }, 'My Signature Strengths'),
               d.lastUpdated ? h('div', { style: { fontSize: 12, color: _viaFg('#475569'), marginTop: 4 } }, 'Updated ' + d.lastUpdated) : null
@@ -498,9 +543,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('viaStrengths')))
               ? topFive.map(function(id) {
                   var s = STRENGTHS.find(function(x) { return x.id === id; });
                   if (!s) return null;
-                  var ref = (d.reflections || {})[id] || '';
+                  var ref = d.reflections[id] || '';
                   return h('div', { key: id, style: { marginBottom: 18, pageBreakInside: 'avoid' } },
-                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 4, marginBottom: 8, background: _viaBg('#d97706'), color: _viaFg('#fff') } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 4, marginBottom: 8, background: _viaBg('#92400e'), color: _viaFg('#fff'), border: _viaHC ? '1px solid #ffff00' : 'none' } },
                       h('span', { style: { fontSize: 18 } }, s.icon),
                       h('span', { style: { fontSize: 14, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5 } }, s.label),
                       h('span', { style: { fontSize: 10, marginLeft: 'auto', opacity: 0.85 } }, s.virtue)

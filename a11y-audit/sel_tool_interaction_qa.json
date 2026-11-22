@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-21T11:57:51.346Z",
+  "generatedAt": "2026-11-21T21:08:52.994Z",
   "scope": [
     "zones",
     "coping",
@@ -48,10 +48,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 2919,
+                "textLength": 2944,
                 "hasHeading": true,
                 "controlCount": 56,
-                "selectedToolText": "Opened Emotion Zones ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🚦 Self awareness Emotion Zones 5-8 min Private checkpoint Share Packet eligible Export now"
+                "selectedToolText": "Opened Emotion Zones ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🚦 Self-Awareness Emotion Zones 5-8 min Private checkpoint Share Packet eligible Export now"
               }
             },
             {
@@ -125,10 +125,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 34170,
+                "textLength": 34079,
                 "hasHeading": true,
-                "controlCount": 367,
-                "selectedToolText": "Opened Coping Toolkit ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🧨 Self regulation Coping Toolkit 3-10 min Private checkpoint Share Packet eligible Export"
+                "controlCount": 365,
+                "selectedToolText": "Opened Coping Toolkit ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🧨 Self-Regulation Coping Toolkit 3-10 min Private checkpoint Share Packet eligible Export"
               }
             },
             {
@@ -202,10 +202,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 1566,
+                "textLength": 1591,
                 "hasHeading": true,
                 "controlCount": 37,
-                "selectedToolText": "Opened Feelings Journal ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 📓 Responsible decision making Feelings Journal 5-12 min Private checkpoint Share Packet"
+                "selectedToolText": "Opened Feelings Journal ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 📓 Responsible Decision-Making Feelings Journal 5-12 min Private checkpoint Share Packet"
               }
             },
             {
@@ -226,7 +226,7 @@
               "pass": true,
               "activeAfterTabs": {
                 "tag": "button",
-                "id": "",
+                "id": "journal-tab-checkin",
                 "text": "🙂 Check-In",
                 "aria": "🙂 Check-In",
                 "toolCardId": "",
@@ -279,10 +279,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 2101,
+                "textLength": 2613,
                 "hasHeading": true,
                 "controlCount": 51,
-                "selectedToolText": "Opened Emotion Explorer ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 😊 Self awareness Emotions Explorer 4-8 min Private checkpoint Share Packet eligible Exp"
+                "selectedToolText": "Opened Emotion Explorer ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 😊 Self-Awareness Emotions Explorer 4-8 min Private checkpoint Share Packet eligible Exp"
               }
             },
             {
@@ -304,8 +304,8 @@
               "activeAfterTabs": {
                 "tag": "button",
                 "id": "",
-                "text": "🌈 Emotion Wheel",
-                "aria": "🌈 Emotion Wheel",
+                "text": "🌈 sel.emotions.tabbar_wheel",
+                "aria": "🌈 sel.emotions.tabbar_wheel",
                 "toolCardId": "",
                 "inSelDialog": true
               }
@@ -356,10 +356,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 3711,
+                "textLength": 3770,
                 "hasHeading": true,
                 "controlCount": 37,
-                "selectedToolText": "Opened CBT Thought Record ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 📓 Inner work CBT Thought Record 8-15 min Private checkpoint Share Packet eligible Exp"
+                "selectedToolText": "Opened CBT Thought Record ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 📓 Inner Work CBT Thought Record 8-15 min Private checkpoint Share Packet eligible Exp"
               }
             },
             {
@@ -433,10 +433,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 1244,
+                "textLength": 1269,
                 "hasHeading": true,
                 "controlCount": 21,
-                "selectedToolText": "Opened Anxiety Toolkit ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🫧 Self regulation Anxiety Toolkit 5-12 min Private checkpoint Share Packet eligible Expo"
+                "selectedToolText": "Opened Anxiety Toolkit ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🫧 Self-Regulation Anxiety Toolkit 5-12 min Private checkpoint Share Packet eligible Expo"
               }
             },
             {
@@ -510,10 +510,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 2820,
+                "textLength": 2920,
                 "hasHeading": true,
                 "controlCount": 40,
-                "selectedToolText": "Opened Safety & Boundaries ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🛡️ Responsible decision making Safety & Boundaries 8-15 min Private checkpoint Share"
+                "selectedToolText": "Opened Safety & Boundaries ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🛡️ Responsible Decision-Making Safety & Boundaries 8-15 min Private checkpoint Share"
               }
             },
             {
@@ -587,10 +587,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 2611,
+                "textLength": 2622,
                 "hasHeading": true,
-                "controlCount": 35,
-                "selectedToolText": "Opened Conflict Resolution ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🤝 Relationship skills Conflict Resolution Lab 6-12 min Private checkpoint Share Pack"
+                "controlCount": 34,
+                "selectedToolText": "Opened Conflict Resolution ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🤝 Relationship Skills Conflict Resolution Lab 6-12 min Private checkpoint Share Pack"
               }
             },
             {
@@ -664,10 +664,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 1601,
+                "textLength": 1624,
                 "hasHeading": true,
-                "controlCount": 49,
-                "selectedToolText": "Opened Strengths Finder ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← ⭐ Self awareness Strengths Finder 5-10 min Private checkpoint Share Packet eligible Expo"
+                "controlCount": 48,
+                "selectedToolText": "Opened Strengths Finder ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← ⭐ Self-Awareness Strengths Finder 5-10 min Private checkpoint Share Packet eligible Expo"
               }
             },
             {
@@ -741,10 +741,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 1018,
+                "textLength": 1043,
                 "hasHeading": true,
                 "controlCount": 25,
-                "selectedToolText": "Opened Social Skills Lab ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🗣️ Relationship skills Social Skills Lab SEL practice Private checkpoint Share Packet "
+                "selectedToolText": "Opened Social Skills Lab ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🗣️ Relationship Skills Social Skills Lab SEL practice Private checkpoint Share Packet "
               }
             },
             {
@@ -765,7 +765,7 @@
               "pass": true,
               "activeAfterTabs": {
                 "tag": "button",
-                "id": "",
+                "id": "soc-tab-convo",
                 "text": "🗣️ Conversation",
                 "aria": "",
                 "toolCardId": "",
@@ -818,10 +818,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 2457,
+                "textLength": 3487,
                 "hasHeading": true,
-                "controlCount": 15,
-                "selectedToolText": "Opened Peer Support Coach ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🤝 Relationship skills Peer Support Coach 5-10 min Private checkpoint Share Packet eli"
+                "controlCount": 20,
+                "selectedToolText": "Opened Peer Support Coach ❤️‍🔥 SEL Hub Elementary Unsaved 🎓 For Educators ☀️ Light ✨ 0 XP ← 🤝 Relationship Skills Peer Support Coach 5-10 min Private checkpoint Share Packet eli"
               }
             },
             {
@@ -906,10 +906,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 2847,
+                "textLength": 2872,
                 "hasHeading": true,
                 "controlCount": 56,
-                "selectedToolText": "Opened Emotion Zones ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🚦 Self awareness Emotion Zones 5-8 min Export now PurposeName your current zone and choose a regulation strategy that fit"
+                "selectedToolText": "Opened Emotion Zones ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🚦 Self-Awareness Emotion Zones 5-8 min Export now PurposeName your current zone and choose a regulation strategy that fit"
               }
             },
             {
@@ -983,10 +983,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 1494,
+                "textLength": 1519,
                 "hasHeading": true,
                 "controlCount": 37,
-                "selectedToolText": "Opened Feelings Journal ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 📓 Responsible decision making Feelings Journal 5-12 min Export now PurposeWrite a private reflection and notice patter"
+                "selectedToolText": "Opened Feelings Journal ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 📓 Responsible Decision-Making Feelings Journal 5-12 min Export now PurposeWrite a private reflection and notice patter"
               }
             },
             {
@@ -1007,7 +1007,7 @@
               "pass": true,
               "activeAfterTabs": {
                 "tag": "button",
-                "id": "",
+                "id": "journal-tab-checkin",
                 "text": "🙂 Check-In",
                 "aria": "🙂 Check-In",
                 "toolCardId": "",
@@ -1060,10 +1060,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 1172,
+                "textLength": 1197,
                 "hasHeading": true,
                 "controlCount": 21,
-                "selectedToolText": "Opened Anxiety Toolkit ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🫧 Self regulation Anxiety Toolkit 5-12 min Export now PurposeSort worry, reduce anxiety intensity, and choose a practic"
+                "selectedToolText": "Opened Anxiety Toolkit ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🫧 Self-Regulation Anxiety Toolkit 5-12 min Export now PurposeSort worry, reduce anxiety intensity, and choose a practic"
               }
             },
             {
@@ -1137,10 +1137,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 2748,
+                "textLength": 2848,
                 "hasHeading": true,
                 "controlCount": 40,
-                "selectedToolText": "Opened Safety & Boundaries ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🛡️ Responsible decision making Safety & Boundaries 8-15 min Export now PurposeCreate a practical safety plan and id"
+                "selectedToolText": "Opened Safety & Boundaries ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🛡️ Responsible Decision-Making Safety & Boundaries 8-15 min Export now PurposeCreate a practical safety plan and id"
               }
             },
             {
@@ -1214,10 +1214,10 @@
               "id": "tool-readable-interactive",
               "pass": true,
               "details": {
-                "textLength": 946,
+                "textLength": 971,
                 "hasHeading": true,
                 "controlCount": 25,
-                "selectedToolText": "Opened Social Skills Lab ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🗣️ Relationship skills Social Skills Lab SEL practice Export now PurposePractice conversation, listening, body langua"
+                "selectedToolText": "Opened Social Skills Lab ❤️‍🔥 SEL Hub Unsaved 🎓 👁 ✨ 0 XP ← 🗣️ Relationship Skills Social Skills Lab SEL practice Export now PurposePractice conversation, listening, body langua"
               }
             },
             {
@@ -1238,7 +1238,7 @@
               "pass": true,
               "activeAfterTabs": {
                 "tag": "button",
-                "id": "",
+                "id": "soc-tab-convo",
                 "text": "🗣️ Conversation",
                 "aria": "",
                 "toolCardId": "",

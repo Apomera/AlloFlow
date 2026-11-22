@@ -136,9 +136,15 @@ function replaceResourceImage(resource, slot, result) {
 }
 
 function validResourceDrawingScene(scene) {
-  if (!scene || !Array.isArray(scene.elements) || scene.elements.length > 5000) return false;
-  if (scene.elements.some(element => !element || ['embeddable', 'iframe', 'magicframe'].includes(element.type))) return false;
-  if (Object.values(scene.files || {}).some(file => !file || !normalizeRasterDataUrl(file.dataURL, 2 * 1024 * 1024))) return false;
+  if (!scene || typeof scene !== 'object' || Array.isArray(scene) || !Array.isArray(scene.elements) || scene.elements.length > 5000) return false;
+  const badKey = obj => !obj || typeof obj !== 'object' ? false : Object.keys(obj).some(k => k === '__proto__' || k === 'constructor' || k === 'prototype');
+  if (badKey(scene) || badKey(scene.files)) return false;
+  if (scene.elements.some(element => {
+    if (!element || typeof element !== 'object' || badKey(element) || ['embeddable', 'iframe', 'magicframe'].includes(element.type)) return true;
+    if (typeof element.link === 'string' && element.link.trim() && !/^https?:\/\//i.test(element.link.trim())) return true;
+    return false;
+  })) return false;
+  if (Object.values(scene.files || {}).some(file => !file || badKey(file) || !normalizeRasterDataUrl(file.dataURL, 2 * 1024 * 1024))) return false;
   try { return JSON.stringify(scene).length <= 2 * 1024 * 1024; } catch (_) { return false; }
 }
 
@@ -246,8 +252,8 @@ function ResourceImagesPanel({ resource, onUpdateResource, disabled = false, ins
   const [open, setOpen] = React.useState(false);
   const current = React.useRef(resource); current.current = resource;
   const slots = resourceImageSlots(resource);
-  const [enabled, setEnabled] = React.useState(window.AlloImageGeneration.isEnabled);
-  React.useEffect(() => window.AlloImageGeneration.subscribe(setEnabled), []);
+  const [enabled, setEnabled] = React.useState(() => (typeof window !== 'undefined' && window.AlloImageGeneration?.isEnabled) ? window.AlloImageGeneration.isEnabled() : false);
+  React.useEffect(() => (typeof window !== 'undefined' && typeof window.AlloImageGeneration?.subscribe === 'function') ? window.AlloImageGeneration.subscribe(setEnabled) : undefined, []);
   if (!slots.length) return null;
   return <div className="no-print mb-4 rounded-xl border border-slate-300 bg-slate-50 p-3 text-slate-900" data-resource-images>
     <button type="button" aria-expanded={open} onClick={() => setOpen(!open)} className="min-h-11 rounded px-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">Resource images ({slots.length}) — upload or draw</button>

@@ -44,7 +44,7 @@
 (function () {
   if (typeof document !== 'undefined') {
     // WCAG 4.1.3: status live region for dynamic announcements
-    if (!document.getElementById('allo-live-allostudio')) {
+    if (document.body && !document.getElementById('allo-live-allostudio')) {
       var stLive = document.createElement('div');
       stLive.id = 'allo-live-allostudio';
       stLive.setAttribute('aria-live', 'polite');
@@ -54,7 +54,7 @@
       document.body.appendChild(stLive);
     }
     // WCAG 2.1 AA: reduced motion + visible focus (module-scoped, mirrors Video Studio)
-    if (!document.getElementById('st-a11y-css')) {
+    if (document.head && !document.getElementById('st-a11y-css')) {
       var stA11y = document.createElement('style');
       stA11y.id = 'st-a11y-css';
       stA11y.textContent = [
@@ -66,7 +66,7 @@
     }
   }
   var stAnnounce = function (msg) {
-    try { var el = document.getElementById('allo-live-allostudio'); if (el) el.textContent = msg; } catch (_) {}
+    try { if (typeof document === 'undefined') return; var el = document.getElementById('allo-live-allostudio'); if (el) el.textContent = msg; } catch (_) {}
   };
 
   // ═══════════════════════════ [ST_PURE_BEGIN] ═══════════════════════════
@@ -80,7 +80,7 @@
   }
   function _stFenceUntrusted(tag, text, maxLen) {
     var clean = String(text == null ? '' : text)
-      .replace(/<\/?UNTRUSTED_[A-Z0-9_]*>/gi, '')
+      .replace(/<\s*\/?\s*UNTRUSTED_[A-Z0-9_]*[^>]*>/gi, '')
       .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, ' ')
       .trim()
       .slice(0, maxLen || 600);
@@ -92,11 +92,33 @@
       var qrMode = window.__alloQrStudentMode;
       var qrBlocked = qrMode === true || (qrMode && typeof qrMode === 'object' && (qrMode.aiDisabled === true || qrMode.aiPolicy === 'off'));
       if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true || qrBlocked) return false;
+      var managedPolicy = window.ALLOFLOW_MANAGED_AI_POLICY;
+      if (managedPolicy && typeof managedPolicy === 'object' && (managedPolicy.disabled === true || managedPolicy.aiDisabled === true || managedPolicy.allowAi === false || managedPolicy.aiPolicy === 'off')) return false;
+      var sp = window.StudentPolicy || (window.AlloModules && window.AlloModules.StudentPolicy);
+      if (sp && typeof sp.isAiAllowed === 'function') {
+        try { if (sp.isAiAllowed(kind || 'text') === false) return false; } catch (_) { return false; }
+      }
       if (typeof window.__alloAiUsable === 'function') {
         try { return !!window.__alloAiUsable(kind, fn); } catch (_) { return false; }
       }
     }
     return true;
+  }
+  function _stCrisisBlocked(text) {
+    var s = String(text == null ? '' : text).trim();
+    if (!s) return false;
+    try {
+      if (typeof window !== 'undefined' && typeof window.safeRehearseCheck === 'function') {
+        var r = window.safeRehearseCheck(s);
+        if (r && (r.blocked || r.crisis || r.isCrisis || r.safe === false)) return true;
+      }
+      var checker = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SafetyContentChecker;
+      if (checker && typeof checker.check === 'function') {
+        var cr = checker.check(s);
+        if (cr && (cr.blocked || cr.crisis || cr.isCrisis || cr.safe === false)) return true;
+      }
+    } catch (_) {}
+    return /\b(kill\s+myself|end\s+my\s+life|want\s+to\s+die|commit\s+suicide|self[\s-]?harm|hurt\s+myself|shoot\s+up\s+the\s+school)\b/i.test(s);
   }
   function _stInjectExportCsp(html) {
     var csp = '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src data:; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\'">';
@@ -4903,6 +4925,7 @@
       onChange: function (e) { setDraft(e.target.value); },
       onBlur: function (e) { commit(e.currentTarget); },
       onKeyDown: function (e) {
+        if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
         if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); commit(e.currentTarget); }
         else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setDraft(String(props.value)); }
       }
@@ -5275,7 +5298,8 @@
       } else {
         if (node && node.firstElementChild) {
           var rect = node.getBoundingClientRect(), pageRect = node.firstElementChild.getBoundingClientRect();
-          zoomAnchorRef.current = { x: (rect.left + node.clientWidth / 2 - pageRect.left) / SCALE, y: (rect.top + node.clientHeight / 2 - pageRect.top) / SCALE };
+          var safeScale = (Number.isFinite(SCALE) && SCALE > 0) ? SCALE : 1;
+          zoomAnchorRef.current = { x: (rect.left + node.clientWidth / 2 - pageRect.left) / safeScale, y: (rect.top + node.clientHeight / 2 - pageRect.top) / safeScale };
         }
         setCanvasZoom(function (z) { return stAdjustCanvasZoom(z, action, fitScale); });
       }
@@ -5873,6 +5897,7 @@
       var prompt = String(aiGenPrompt || '').trim();
       if (!prompt) { addToast(TT('studio.ai_need_prompt', 'Describe the image you want first.'), 'info'); return; }
       if (!_stAiUsable('images', props.onGenerateImage) || aiBusy) return;
+      if (_stCrisisBlocked(prompt)) { addToast('If you or someone you know is in crisis, call or text 988 (or 911) or talk to a trusted adult right away.', 'error'); return; }
       var startDoc = _docRef.current;
       setAiBusy('generate');
       Promise.resolve(props.onGenerateImage(prompt)).then(function (dataUrl) {
@@ -5919,9 +5944,11 @@
     var requestAgentPlan = function (promptText, refineOf, scopeOverride) {
       var liveDoc = _docRef.current;
       if (!liveDoc || !_stAiUsable('text', props.onAgentEdit) || role === 'student' || aiBusy) return;
+      if (_stCrisisBlocked(promptText)) { addToast('If you or someone you know is in crisis, call or text 988 (or 911) or talk to a trusted adult right away.', 'error'); return; }
       clearAgentPreview();
       var scope = stBuildAgentScope(liveDoc, scopeOverride || agentEffectiveScope, scopeOverride ? [] : selectionIds);
-      var request = { prompt: promptText, scope: scope.scope, selectionIds: scope.selectedIds, document: scope };
+      var fencedPrompt = String(promptText || '').indexOf('<UNTRUSTED_') >= 0 ? promptText : _stFenceUntrusted('USER_REQUEST', promptText, 1200);
+      var request = { prompt: fencedPrompt, scope: scope.scope, selectionIds: scope.selectedIds, document: scope };
       var brandKit = stBrandStyleKit(brandProfile);
       if (brandKit) request.brand = { heading: brandKit.heading, body: brandKit.body, background: brandKit.background, shape: brandKit.shape };
       if (refineOf) request.priorPlan = { prompt: refineOf.prompt || '', summary: refineOf.summary || '', ops: refineOf.ops || [] };
@@ -6049,6 +6076,7 @@
       if (!selected || selected.type !== 'image' || !selected.src || !_stAiUsable('images', props.onEditImage) || role === 'student' || aiBusy) return;
       var instruction = String(imgEditPrompt || '').trim();
       if (!instruction) { addToast(TT('studio.ai_edit_need_prompt', 'Describe how the image should change first.'), 'info'); return; }
+      if (_stCrisisBlocked(instruction)) { addToast('If you or someone you know is in crisis, call or text 988 (or 911) or talk to a trusted adult right away.', 'error'); return; }
       var id = selected.id;
       var startDoc = _docRef.current;
       var priorOrigin = (selected.provenance && selected.provenance.origin) || 'unknown';
@@ -6170,6 +6198,7 @@
       var text = String(composePrompt || '').trim();
       if (!text) { addToast(TT('studio.compose_need_prompt', 'Describe the page you want first.'), 'info'); return; }
       if (!_stAiUsable('text', props.onAgentEdit) || role === 'student' || aiBusy) return;
+      if (_stCrisisBlocked(text)) { addToast('If you or someone you know is in crisis, call or text 988 (or 911) or talk to a trusted adult right away.', 'error'); return; }
       var blank = stTemplates().filter(function (tpl) { return tpl.key === 'blank'; })[0];
       _docRef.current = blank ? blank.make(Date.now(), composePreset) : stCreateDoc(composePreset, 'Untitled', Date.now());
       setPageIndex(0);
@@ -6297,6 +6326,7 @@
       try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (_) {}
     };
     var onGroupResizeKeyDown = function (ev) {
+      if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
       var moves = { ArrowLeft: [-4, 0], ArrowRight: [4, 0], ArrowUp: [0, -4], ArrowDown: [0, 4] };
       if (!moves[ev.key] || !selectionCanResize) return;
       ev.preventDefault(); ev.stopPropagation();
@@ -6342,7 +6372,8 @@
       var d = _drag.current; if (!d) return;
       if (!d.moved && Math.hypot(ev.clientX - d.startX, ev.clientY - d.startY) < 3) return;
       d.moved = true;
-      var dx = (ev.clientX - d.startX) / (d.scale || SCALE), dy = (ev.clientY - d.startY) / (d.scale || SCALE);
+      var dragScale = (d.scale && Number.isFinite(d.scale) && d.scale > 0) ? d.scale : ((Number.isFinite(SCALE) && SCALE > 0) ? SCALE : 1);
+      var dx = (ev.clientX - d.startX) / dragScale, dy = (ev.clientY - d.startY) / dragScale;
       if (d.mode === 'group-resize') {
         var resizePreview = stResizeFramesAsGroup(_docRef.current.objects, d.ids, dx, dy, _docRef.current.canvas, { minSize: 24, keepRatio: d.keepRatio });
         setSnapGuides([]);
@@ -6403,6 +6434,7 @@
     // builder crop modal — arrows move 4px, Shift+arrows resize, Delete removes.
     var onObjectKeyDown = function (o) {
       return function (ev) {
+        if (ev.isComposing || ev.keyCode === 229 || ev.ctrlKey || ev.metaKey || ev.altKey) return;
         if (ev.key === 'Escape' && _drag.current) { ev.preventDefault(); ev.stopPropagation(); onCanvasPointerCancel(); return; }
         if (multiMode && (ev.key === ' ' || ev.key === 'Enter')) { ev.preventDefault(); ev.stopPropagation(); toggleSelection(o.id); return; }
         var f = o.frame;
@@ -6873,7 +6905,7 @@
       var templateFavorites = templateFavoritesTick >= 0 ? stReadTemplateFavorites() : [];
       var shownTemplates = stFilterTemplates(allTemplates, { category: templateFilter, query: templateSearch, useCase: templateUseCase, favorites: templateFavorites });
       return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'Page Designer'),
-        onKeyDown: function (ev) { trapTab(ev); if (ev.key === 'Escape') { ev.preventDefault(); requestClose(); } } },
+        onKeyDown: function (ev) { if (ev.isComposing || ev.keyCode === 229) return; trapTab(ev); if (ev.key === 'Escape' && !ev.ctrlKey && !ev.metaKey && !ev.altKey) { ev.preventDefault(); requestClose(); } } },
         h('div', { ref: _shellRef, style: fullscreen ? S.shell : Object.assign({}, S.shell, { width: layout.stacked ? layout.shellWidth : 'min(860px, 96vw)', height: 'auto', maxHeight: layout.stacked ? layout.shellHeight : '92vh' }) },
           h('div', { style: S.header },
             h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
@@ -7012,7 +7044,7 @@
         ? Math.max(0.34, Math.min(0.45, ((viewport.w || 920) - (layout.canvasPadding * 2) - 18) / Math.max(1, doc.canvas.w)))
         : 0.45;
       return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.process_title_teacher', 'Process timeline'),
-        onKeyDown: function (ev) { trapTab(ev); if (ev.key === 'Escape') { ev.preventDefault(); setScrubSeq(null); setView('edit'); } } },
+        onKeyDown: function (ev) { if (ev.isComposing || ev.keyCode === 229) return; trapTab(ev); if (ev.key === 'Escape' && !ev.ctrlKey && !ev.metaKey && !ev.altKey) { ev.preventDefault(); setScrubSeq(null); setView('edit'); } } },
         h('div', { ref: _shellRef, style: S.shell },
           h('div', { style: S.header },
             h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎞️'),
@@ -7597,13 +7629,14 @@
     // the browser's native text undo keeps working inside inputs/textareas
     // (the object-level keyboard grammar stays on the objects themselves).
     var onShellKeyDown = function (ev) {
+      if (ev.isComposing || ev.keyCode === 229) return;
       var tag = (ev.target && ev.target.tagName || '').toUpperCase();
       // Escape: deselect if something is selected, otherwise close the modal.
       // A focused object handles (and stops) its own Escape; text fields keep
       // their native Escape. This only fires from panels/canvas chrome.
       var inField = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
       // Escape: close the shortcuts overlay first, then deselect, then close.
-      if (ev.key === 'Escape') {
+      if (ev.key === 'Escape' && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
         if (_drag.current) { ev.preventDefault(); onCanvasPointerCancel(); return; }
         if (multiMode) { ev.preventDefault(); setMultiMode(false); return; }
         if (commandOpen) { ev.preventDefault(); setCommandOpen(false); setCommandQuery(''); setCommandIndex(0); return; }
@@ -7622,7 +7655,7 @@
       if (ev.key === '?' && !inField && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
         ev.preventDefault(); setShortcutsOpen(function (v) { return !v; }); return;
       }
-      if (!(ev.ctrlKey || ev.metaKey)) return;
+      if (!(ev.ctrlKey || ev.metaKey) || ev.altKey) return;
       var k = (ev.key || '').toLowerCase();
       if (k === 's') { ev.preventDefault(); saveDoc(); return; }
       if (inField) return;
@@ -7726,6 +7759,7 @@
           h('input', { autoFocus: true, value: commandQuery, placeholder: TT('studio.command_search_placeholder', 'Search commands or objects'), 'aria-label': TT('studio.command_search', 'Search quick actions'), style: Object.assign({}, S.input, { fontSize: '13px' }),
             onChange: function (e) { setCommandQuery(e.target.value); setCommandIndex(0); },
             onKeyDown: function (e) {
+              if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
               if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeCommandPalette(); return; }
               if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); if (commandPaletteResults.length) setCommandIndex(function (n) { return (Math.max(0, n) + 1) % commandPaletteResults.length; }); return; }
               if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); if (commandPaletteResults.length) setCommandIndex(function (n) { return (Math.max(0, n) + commandPaletteResults.length - 1) % commandPaletteResults.length; }); return; }
@@ -7767,9 +7801,9 @@
         h('div', { style: S.header }, h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
           h('input', { key: 'title-' + ((doc && doc.createdAt) || 0) + '-' + doc.title, defaultValue: doc.title, 'aria-label': TT('studio.doc_title', 'Document title'), style: S.titleInput,
             onBlur: function (e) { if (e.target.value !== doc.title) dispatch({ type: 'doc.retitle', title: e.target.value }, 'user'); },
-            onKeyDown: function (e) { if (e.key === 'Enter') e.target.blur(); } }),
+            onKeyDown: function (e) { if (!e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Enter') e.target.blur(); } }),
           h('button', { style: Object.assign({}, S.hBtn, ops.length ? null : { opacity: 0.45, cursor: 'default' }), disabled: !ops.length, onClick: function () { historyAction(false); }, 'aria-label': TT('studio.undo', 'Undo') }, '↩ ' + TT('studio.undo', 'Undo')),
-          h('details', { ref: headerMoreRef, style: { position: 'relative' }, onKeyDown: function (e) { if (e.key === 'Escape' && e.currentTarget.open) { e.preventDefault(); e.stopPropagation(); e.currentTarget.open = false; e.currentTarget.querySelector('summary').focus(); } } }, h('summary', { style: Object.assign({}, S.hBtn, { display: 'flex', alignItems: 'center', listStyle: 'none' }) }, TT('studio.more_actions', 'More')), h('div', { style: { position: layout.stacked ? 'fixed' : 'absolute', top: layout.stacked ? '110px' : '100%', left: layout.stacked ? '16px' : 0, right: layout.stacked ? '16px' : 'auto', width: layout.stacked ? 'auto' : '240px', maxHeight: '60dvh', overflowY: 'auto', padding: '10px', zIndex: 100, display: 'grid', gap: '6px', background: C.headerBg, border: '1px solid ' + C.hBtnBorder, borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,.3)' }, onClick: function (e) { if (e.target.closest('button')) { headerMoreRef.current.open = false; } } }, h('button', { style: Object.assign({}, S.hBtn, (doc._redo && doc._redo.length) ? null : { opacity: 0.45, cursor: 'default' }), disabled: !(doc._redo && doc._redo.length), onClick: function () { historyAction(true); }, 'aria-label': TT('studio.redo', 'Redo') }, '↪ ' + TT('studio.redo', 'Redo')), h('button', { style: S.hBtn, onClick: function () { setView('process'); } }, '🎞️ ' + (student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline'))), h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { var next = student ? 'teacher' : 'student'; if (next === 'student') { setAgentOpen(false); setAgentPlan(null); setAgentSelectedOps([]); setAgentFollowUp(''); setDesignFeedback(null); setImgEditOpen(false); } setRole(next); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')), h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { border: '1px solid #fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal), h('button', { style: Object.assign({}, S.hBtn, shortcutsOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setShortcutsOpen(!shortcutsOpen); }, 'aria-expanded': shortcutsOpen, 'aria-label': TT('studio.shortcuts', 'Keyboard shortcuts'), title: TT('studio.shortcuts_hint', 'Keyboard shortcuts (press ?)') }, '⌨'), h('button', { style: Object.assign({}, S.hBtn, commandOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setCommandOpen(true); setCommandQuery(''); setCommandIndex(0); setShortcutsOpen(false); }, 'aria-expanded': commandOpen, 'aria-label': TT('studio.quick_actions', 'Quick actions'), title: TT('studio.quick_actions_hint', 'Quick actions ({key}+K)').split('{key}').join(modLabel) }, modLabel + '+K'), h('button', { style: Object.assign({}, S.hBtn, fullscreen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setFullscreen(!fullscreen); }, 'aria-pressed': fullscreen, 'aria-label': fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen'), title: fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen') }, '⛶'), h('button', { style: S.hBtn, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.add_portfolio', 'Add to portfolio')), layout.stacked ? h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.download_project', 'Download project')) : null)),
+          h('details', { ref: headerMoreRef, style: { position: 'relative' }, onKeyDown: function (e) { if (!e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Escape' && e.currentTarget.open) { e.preventDefault(); e.stopPropagation(); e.currentTarget.open = false; e.currentTarget.querySelector('summary').focus(); } } }, h('summary', { style: Object.assign({}, S.hBtn, { display: 'flex', alignItems: 'center', listStyle: 'none' }) }, TT('studio.more_actions', 'More')), h('div', { style: { position: layout.stacked ? 'fixed' : 'absolute', top: layout.stacked ? '110px' : '100%', left: layout.stacked ? '16px' : 0, right: layout.stacked ? '16px' : 'auto', width: layout.stacked ? 'auto' : '240px', maxHeight: '60dvh', overflowY: 'auto', padding: '10px', zIndex: 100, display: 'grid', gap: '6px', background: C.headerBg, border: '1px solid ' + C.hBtnBorder, borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,.3)' }, onClick: function (e) { if (e.target.closest('button')) { headerMoreRef.current.open = false; } } }, h('button', { style: Object.assign({}, S.hBtn, (doc._redo && doc._redo.length) ? null : { opacity: 0.45, cursor: 'default' }), disabled: !(doc._redo && doc._redo.length), onClick: function () { historyAction(true); }, 'aria-label': TT('studio.redo', 'Redo') }, '↪ ' + TT('studio.redo', 'Redo')), h('button', { style: S.hBtn, onClick: function () { setView('process'); } }, '🎞️ ' + (student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline'))), h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { var next = student ? 'teacher' : 'student'; if (next === 'student') { setAgentOpen(false); setAgentPlan(null); setAgentSelectedOps([]); setAgentFollowUp(''); setDesignFeedback(null); setImgEditOpen(false); } setRole(next); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')), h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { border: '1px solid #fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal), h('button', { style: Object.assign({}, S.hBtn, shortcutsOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setShortcutsOpen(!shortcutsOpen); }, 'aria-expanded': shortcutsOpen, 'aria-label': TT('studio.shortcuts', 'Keyboard shortcuts'), title: TT('studio.shortcuts_hint', 'Keyboard shortcuts (press ?)') }, '⌨'), h('button', { style: Object.assign({}, S.hBtn, commandOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setCommandOpen(true); setCommandQuery(''); setCommandIndex(0); setShortcutsOpen(false); }, 'aria-expanded': commandOpen, 'aria-label': TT('studio.quick_actions', 'Quick actions'), title: TT('studio.quick_actions_hint', 'Quick actions ({key}+K)').split('{key}').join(modLabel) }, modLabel + '+K'), h('button', { style: Object.assign({}, S.hBtn, fullscreen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setFullscreen(!fullscreen); }, 'aria-pressed': fullscreen, 'aria-label': fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen'), title: fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen') }, '⛶'), h('button', { style: S.hBtn, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.add_portfolio', 'Add to portfolio')), layout.stacked ? h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.download_project', 'Download project')) : null)),
           h('span', { style: S.headerSpacer }),
           hasLinkedActivityWorksheet ? h('span', { role: 'status', style: { fontSize: '10px', color: linkedSaveState === 'conflict' ? '#b91c1c' : C.muted, whiteSpace: 'nowrap' }, title: 'This document is linked to an Activity worksheet.' }, linkedStatusLabel) : null,
           hasLinkedActivityWorksheet ? h('button', { style: Object.assign({}, S.hBtn, { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text, opacity: linkedSaveState === 'saving' || linkedSaveState === 'conflict' ? 0.55 : 1 }), disabled: linkedSaveState === 'saving' || linkedSaveState === 'conflict', onClick: saveLinkedArtifact, title: linkedSaveState === 'conflict' ? 'Reopen the worksheet to refresh its source revision' : 'Save edits back to the originating Activity worksheet' }, '↩ Save to Activity') : null,
@@ -8054,7 +8088,7 @@
                 ST_CANVAS_PRESETS[doc.canvas.preset] ? null : h('option', { value: 'custom', disabled: true }, TT('studio.orient_custom', 'Custom')))),
             h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.doc_language', 'Document language'),
               h('input', { key: 'doc-lang-' + (doc.lang || ''), defaultValue: doc.lang || '', placeholder: docLanguage.lang, spellCheck: false, autoComplete: 'off', style: S.input, 'aria-label': TT('studio.doc_language', 'Document language'), 'aria-describedby': 'st-doc-language-hint',
-                onKeyDown: function (e) { e.stopPropagation(); if (e.key === 'Enter') e.target.blur(); },
+                onKeyDown: function (e) { e.stopPropagation(); if (!e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Enter') e.target.blur(); },
                 onBlur: function (e) { if (!setDocLanguageField('lang', e.target.value)) e.target.value = (_docRef.current && _docRef.current.lang) || ''; } })),
             h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.doc_direction', 'Text direction'),
               h('select', { value: doc.dir || '', style: S.input, 'aria-label': TT('studio.doc_direction', 'Text direction'), onChange: function (e) { setDocLanguageField('dir', e.target.value); } },
@@ -8186,6 +8220,7 @@
               h('input', { ref: findInputRef, type: 'search', value: findQuery, placeholder: TT('studio.find_text_placeholder', 'Find text in design'), 'aria-label': TT('studio.find_text', 'Find text in design'), style: Object.assign({}, S.input, { flex: '1 1 auto' }),
                 onKeyDown: function (e) {
                   e.stopPropagation();
+                  if (e.isComposing || e.keyCode === 229 || e.ctrlKey || e.metaKey || e.altKey) return;
                   if (e.key === 'Enter') { e.preventDefault(); stepFindResult(e.shiftKey ? -1 : 1); }
                   else if (e.key === 'Escape') { e.preventDefault(); setFindQuery(''); setFindResultIndex(0); }
                 },
@@ -8204,7 +8239,7 @@
               })) : null,
             findMatches.length > 12 ? h('div', { style: { fontSize: '9.5px', color: C.soft } }, '+' + (findMatches.length - 12) + ' ' + TT('studio.find_more', 'more text blocks')) : null,
             replaceOpen ? h('div', { style: { display: 'grid', gap: '4px', padding: '5px 0', borderTop: '1px solid ' + C.border, borderBottom: '1px solid ' + C.border } },
-              h('input', { type: 'text', value: replaceQuery, placeholder: TT('studio.replace_placeholder', 'Replace with'), 'aria-label': TT('studio.replace_with', 'Replace with'), style: S.input, onKeyDown: function (e) { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); replaceCurrentText(); } }, onChange: function (e) { setReplaceQuery(e.target.value); } }),
+              h('input', { type: 'text', value: replaceQuery, placeholder: TT('studio.replace_placeholder', 'Replace with'), 'aria-label': TT('studio.replace_with', 'Replace with'), style: S.input, onKeyDown: function (e) { e.stopPropagation(); if (!e.isComposing && e.keyCode !== 229 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key === 'Enter') { e.preventDefault(); replaceCurrentText(); } }, onChange: function (e) { setReplaceQuery(e.target.value); } }),
               h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                 h('button', { type: 'button', disabled: !findMatches.length, style: Object.assign({}, S.tool, { flex: '1 1 130px', fontSize: '10px' }), onClick: replaceCurrentText, title: TT('studio.replace_current_hint', 'Replace the selected text block; this is undoable') }, TT('studio.replace_current', 'Replace selected')),
                 h('button', { type: 'button', disabled: !findMatches.length, style: Object.assign({}, S.tool, { flex: '1 1 100px', fontSize: '10px' }), onClick: replaceAllText, title: TT('studio.replace_all_hint', 'Replace all editable matches; this is undoable') }, TT('studio.replace_all', 'Replace all')))) : null,
@@ -8255,7 +8290,7 @@
           if (!co || !co.src) return null;
           var r = cropRect || { x: 0, y: 0, w: 0, h: 0 };
           return h('div', { ref: _cropDialogRef, tabIndex: -1, style: { position: 'fixed', inset: 0, zIndex: 9500, background: 'rgba(2,6,23,0.82)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px' }, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.crop_title', 'Crop image'),
-            onKeyDown: function (e) { e.stopPropagation(); if (e.key === 'Escape') { e.preventDefault(); setCropId(null); setCropRect(null); return; } trapTabWithin(_cropDialogRef.current, e); } },
+            onKeyDown: function (e) { e.stopPropagation(); if (e.isComposing || e.keyCode === 229) return; if (e.key === 'Escape' && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); setCropId(null); setCropRect(null); return; } trapTabWithin(_cropDialogRef.current, e); } },
             h('div', { style: { color: '#fff', fontSize: '13px', fontWeight: 700, marginBottom: '8px', maxWidth: '80vw', textAlign: 'center' } }, '✂ ' + TT('studio.crop_drag', 'Drag on the image to choose the area to keep.'),
               h('div', { style: { fontSize: '11px', fontWeight: 400, color: '#fca5a5', marginTop: '2px' } }, TT('studio.crop_permanent', 'The trimmed-away pixels are permanently removed — including from your saved file.'))),
             h('div', { style: { position: 'relative', maxWidth: '80vw', maxHeight: '68vh', touchAction: 'none' }, onPointerMove: cropPointerMove, onPointerUp: cropPointerUp },
@@ -8277,7 +8312,7 @@
   }
 
   // ── registration + pure helpers for tests ──
-  window.AlloModules = window.AlloModules || {};
+  if (typeof window !== 'undefined') window.AlloModules = window.AlloModules || {};
   AlloStudio.stCreateDoc = stCreateDoc;
   AlloStudio.stApplyOp = stApplyOp;
   AlloStudio.stAppend = stAppend;
@@ -8428,5 +8463,5 @@
   AlloStudio.ST_HONESTY_LINE = ST_HONESTY_LINE;
   AlloStudio.ST_CANVAS_PRESETS = ST_CANVAS_PRESETS;
   AlloStudio.ST_CHECKPOINT_EVERY = ST_CHECKPOINT_EVERY;
-  window.AlloModules.AlloStudio = AlloStudio;
+  if (typeof window !== 'undefined') window.AlloModules.AlloStudio = AlloStudio;
 })();

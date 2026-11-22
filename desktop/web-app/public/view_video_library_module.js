@@ -41,11 +41,22 @@ const formatDuration = (totalSeconds) => {
 };
 function VideoLibraryOverlay({ onClose, t }) {
   const noop = () => null;
-  const MonitorPlay = window.MonitorPlay || noop;
-  const X = window.X || noop;
-  const PlayCircle = window.PlayCircle || noop;
-  const ExternalLink = window.ExternalLink || noop;
-  const AlertTriangle = window.AlertTriangle || noop;
+  const _w = typeof window !== "undefined" ? window : {};
+  const _icons = _w.AlloIcons || {};
+  const MonitorPlay = _icons.MonitorPlay || _w.MonitorPlay || noop;
+  const X = _icons.X || _w.X || noop;
+  const PlayCircle = _icons.PlayCircle || _w.PlayCircle || noop;
+  const ExternalLink = _icons.ExternalLink || _w.ExternalLink || noop;
+  const AlertTriangle = _icons.AlertTriangle || _w.AlertTriangle || noop;
+  const isGlobalMuted = () => {
+    if (typeof window === "undefined") return false;
+    try {
+      if (window.__alloMuted === true || window._alloGlobalMute === true || window._alloGlobalMuted === true) return true;
+      if (typeof window.__alloIsGlobalMuted === "function" && window.__alloIsGlobalMuted()) return true;
+    } catch (_) {
+    }
+    return false;
+  };
   const tr = (key, fallback) => {
     if (typeof t === "function") {
       try {
@@ -90,11 +101,32 @@ function VideoLibraryOverlay({ onClose, t }) {
         if (mountedRef.current) setIsSpeakingTranscript(false);
       }
     };
-    if (typeof window !== "undefined") window.addEventListener("allo-speech-state", onSpeechState);
+    const onMuteChanged = () => {
+      const muted = isGlobalMuted();
+      const video = videoRef.current || rootRef.current && rootRef.current.querySelector("video");
+      if (video) {
+        try {
+          video.muted = muted;
+        } catch (_) {
+        }
+      }
+      if (muted) stopTranscriptSpeech();
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("allo-speech-state", onSpeechState);
+      window.addEventListener("alloflow-mute-changed", onMuteChanged);
+    }
     return () => {
       mountedRef.current = false;
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
-      if (typeof window !== "undefined") window.removeEventListener("allo-speech-state", onSpeechState);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("allo-speech-state", onSpeechState);
+        window.removeEventListener("alloflow-mute-changed", onMuteChanged);
+      }
+      try {
+        videoRef.current?.pause();
+      } catch (_) {
+      }
       stopTranscriptSpeech();
     };
   }, [stopTranscriptSpeech]);
@@ -108,6 +140,10 @@ function VideoLibraryOverlay({ onClose, t }) {
     if (!video) return;
     try {
       video.playbackRate = playbackRate;
+    } catch (_) {
+    }
+    try {
+      if (isGlobalMuted()) video.muted = true;
     } catch (_) {
     }
   }, [activeId, playbackRate, failed]);
@@ -126,6 +162,7 @@ function VideoLibraryOverlay({ onClose, t }) {
       stopTranscriptSpeech();
       return;
     }
+    if (isGlobalMuted()) return;
     const speechText = (Array.isArray(lines) ? lines : []).map((s) => String(s || "").trim()).filter(Boolean).join(" ");
     if (!speechText || typeof window === "undefined") return;
     const token = ++speechTokenRef.current;
@@ -212,13 +249,14 @@ function VideoLibraryOverlay({ onClose, t }) {
       cursor = parent;
     }
     const body = document.body;
-    const scrollLock = typeof window !== "undefined" ? window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "" }) : null;
+    const scrollLock = typeof window !== "undefined" ? window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: "", overflow: "" }) : null;
     let scrollLocked = false;
     try {
       if (body && scrollLock) {
         scrollLocked = true;
         if (++scrollLock.count === 1) {
           scrollLock.prev = body.style.overflow;
+          scrollLock.overflow = scrollLock.prev;
           body.style.overflow = "hidden";
         }
       }
@@ -290,7 +328,7 @@ function VideoLibraryOverlay({ onClose, t }) {
       try {
         if (scrollLocked && body && scrollLock) {
           scrollLock.count = Math.max(0, scrollLock.count - 1);
-          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev ?? scrollLock.overflow ?? "";
         }
       } catch (_) {
       }
@@ -398,7 +436,7 @@ function VideoLibraryOverlay({ onClose, t }) {
           type: "button",
           "data-video-library-speed": String(rate),
           "aria-pressed": selected,
-          "aria-label": tr("video_library.speed_aria", "Playback speed " + rate + "x"),
+          "aria-label": tr("video_library.speed_aria", "Playback speed {rate}x").replace("{rate}", String(rate)),
           onClick: () => setPlaybackRate(rate),
           className: "min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-indigo-600 " + (selected ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-300 bg-white text-slate-800 hover:bg-slate-100")
         },
@@ -412,15 +450,16 @@ function VideoLibraryOverlay({ onClose, t }) {
     {
       className: "fixed inset-0 z-[210] flex items-center justify-center p-4",
       style: { background: "rgba(15,23,42,0.72)" },
-      role: "dialog",
-      "aria-modal": "true",
-      "aria-labelledby": "video-library-title"
+      role: "presentation"
     },
     /* @__PURE__ */ React.createElement(
       "div",
       {
         ref: rootRef,
         tabIndex: -1,
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-labelledby": "video-library-title",
         className: "allo-docsuite flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-600 focus-visible:outline-offset-2"
       },
       /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-indigo-50 to-violet-50 px-5 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 items-center gap-2" }, /* @__PURE__ */ React.createElement(MonitorPlay, { size: 20, className: "shrink-0 text-violet-700", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("h2", { id: "video-library-title", className: "truncate text-base font-bold text-slate-800" }, tr("video_library.title", "Video library"))), /* @__PURE__ */ React.createElement(

@@ -32,17 +32,23 @@
         link.setAttribute('aria-label', accessibleLabel);
     }
 
-    function configureFeedbackLinks() {
-        var params = new URLSearchParams(window.location.search);
-        var tool = normalizedToolName(params.get('tool'));
+    function applyFeedbackTool(rawTool) {
+        var tool = normalizedToolName(rawTool);
         var subjectName = tool || 'AlloFlow tool or workflow';
         var toolLine = tool ? tool : '[Name the tool or workflow]';
         var context = document.getElementById('feedbackContext');
+        var clearBtn = document.getElementById('feedbackToolClear');
 
-        if (tool && context) {
-            context.textContent = 'You are sharing feedback about: ' + tool + '.';
-            context.hidden = false;
+        if (context) {
+            if (tool) {
+                context.textContent = 'You are sharing feedback about: ' + tool + '.';
+                context.hidden = false;
+            } else {
+                context.textContent = '';
+                context.hidden = true;
+            }
         }
+        if (clearBtn) clearBtn.hidden = !tool;
 
         var privacyReminder = [
             'Privacy reminder: Do not include student names or records, health or disability information,',
@@ -109,6 +115,37 @@
             emailUrl('Private AlloFlow feedback: ' + subjectName, privateBody),
             'Draft a private email about ' + subjectName
         );
+    }
+
+    function configureFeedbackLinks() {
+        var params = new URLSearchParams(window.location.search);
+        var initialTool = normalizedToolName(params.get('tool'));
+        var input = document.getElementById('feedbackToolInput');
+        var clearBtn = document.getElementById('feedbackToolClear');
+
+        if (input && initialTool && !input.value) input.value = initialTool;
+        applyFeedbackTool(input ? input.value : initialTool);
+
+        if (input) {
+            input.addEventListener('input', function () {
+                applyFeedbackTool(input.value);
+            });
+            input.addEventListener('keydown', function (event) {
+                if (event.isComposing || event.keyCode === 229) return;
+                if (event.key === 'Escape' && input.value) {
+                    event.preventDefault();
+                    input.value = '';
+                    applyFeedbackTool('');
+                }
+            });
+        }
+        if (clearBtn && input) {
+            clearBtn.addEventListener('click', function () {
+                input.value = '';
+                applyFeedbackTool('');
+                input.focus();
+            });
+        }
     }
 
     function configureBackToTop() {

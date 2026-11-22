@@ -8,9 +8,9 @@ module.exports = {
     'The Constitution restored a hereditary monarchy in order to prevent disagreements among the elected officials of the new nation.': 'The Constitution created an elected presidency and forbade titles of nobility.',
   },
   'item-102': {
-    'Independence produced complete social equality, because the revolutionary language immediately changed every existing law.': 'Slavery and coverture survived independence; law changed slowly and unevenly.',
+    'Independence produced full social equality, because revolutionary language directly rewrote every existing state statute.': 'Slavery and coverture survived independence; law changed slowly and unevenly.',
     'The early republic rejected all of the national institutions and simply returned to the old colonial political system.': 'The Constitution built new national institutions rather than restoring colonial ones.',
-    'The Revolution changed only foreign policy and had no effect at all on any debates over representation or over rights.': 'Representation and rights were the central debates of the Revolution and the new republic.',
+    'The Revolution altered foreign policy alone and had no effect at all on debates over representation or political rights.': 'Representation and rights were the central debates of the Revolution and the new republic.',
   },
   'item-103': {
     'The two senators belonged to different countries and therefore had no shared constitutional system.': 'Both served in the same Senate under the same Constitution; their regions, not their nations, differed.',
@@ -19,8 +19,8 @@ module.exports = {
   },
   'item-104': {
     'The United States prohibited all literature and art from drawing on European traditions or on any of the local cultures.': 'American writers borrowed European forms freely while adding local subjects; nothing was prohibited.',
-    'A national culture developed because all regional identities disappeared entirely from political and social life alike.': 'Regional identities persisted and even strengthened alongside national symbols.',
-    'The growth of a national culture depended entirely on the end of both immigration and of all internal migration alike.': 'Immigration and westward migration continued and fed cultural exchange.',
+    'A national culture developed because distinct regional identities vanished from political and social life nationwide.': 'Regional identities persisted and even strengthened alongside national symbols.',
+    'The growth of a national culture depended heavily on halting both foreign immigration and internal migration alike.': 'Immigration and westward migration continued and fed cultural exchange.',
   },
   'item-105': {
     'Economic and political changes eliminated all sectional interests by making every region dependent on exactly the same institutions.': 'Market integration linked regions while their labor systems and interests diverged.',
@@ -48,9 +48,9 @@ module.exports = {
     'Political machines opposed all public works because they rejected any relationship with city government.': 'Machines thrived on public works contracts and controlled city government.',
   },
   'item-110': {
-    'The period produced only continuity, because railroads, corporations, and cities did not alter American life at all.': 'Railroads, corporations, and cities transformed work and settlement across the period.',
+    'The period produced pure continuity, because railroads, corporations, and cities did not alter American life at all.': 'Railroads, corporations, and cities transformed work and settlement across the period.',
     'Industrialization ended all racial inequality and gave workers fully equal control over all industrial production.': 'Segregation hardened and employers kept control, as strikes and injunctions show.',
-    'The period changed only foreign policy but left work, migration, and all of the social structures entirely untouched.': 'Work and migration changed most; foreign policy changed least until the 1890s.',
+    'The period altered foreign policy alone while leaving work, migration, and all of the social structures untouched.': 'Work and migration changed most; foreign policy changed least until the 1890s.',
   },
   'item-111': {
     'The United States withdrew completely from all international commerce and diplomacy after the First World War.': 'The 1920s saw expanding trade, naval treaties, and debt diplomacy.',
@@ -58,14 +58,14 @@ module.exports = {
     'Interwar foreign policy had no relationship at all to World War I or to any debates over national sovereignty.': 'Rejecting the League while favoring trade grew directly out of the war and sovereignty debates.',
   },
   'item-112': {
-    'The United States avoided all military production and relied entirely on its European allies to defeat all of the Axis powers alone.': 'American factories produced a huge share of Allied war material.',
+    'The United States avoided wartime military production and relied upon its European allies to defeat all of the Axis powers alone.': 'American factories produced a huge share of Allied war material.',
     'World War II had no effect at all on American industry, on migration, on technology, or on any kind of international influence at all.': 'The war spurred industrial growth, mass migration, atomic research, and superpower status.',
-    'The United States entered the war only to restore the prewar isolationist balance without accepting any new responsibilities at all.': 'The United States emerged leading new global institutions and alliances.',
+    'The United States entered the war simply to restore the prewar isolationist balance without accepting any new responsibilities.': 'The United States emerged leading new global institutions and alliances.',
   },
   'item-113': {
-    'To return Europe to its nineteenth-century imperial isolation and to end all American trade with it entirely.': 'Aid and collective security aimed at integration and open trade.',
-    'To dissolve all of the international institutions, because postwar diplomacy had become entirely unnecessary.': 'The memo advocates building institutions, not dissolving them.',
-    'To transfer all responsibility for global security entirely to the private business corporations instead.': 'Collective security rested on governments and alliances such as NATO.',
+    'To return Europe to its nineteenth-century imperial isolation and cut off all American trade across the Atlantic.': 'Aid and collective security aimed at integration and open trade.',
+    'To dissolve all of the international institutions, because postwar diplomacy had become wholly unnecessary.': 'The memo advocates building institutions, not dissolving them.',
+    'To transfer all responsibility for global security directly over to private business corporations instead.': 'Collective security rested on governments and alliances such as NATO.',
   },
   'item-114': {
     'Neither of the two wars changed federal economic policy or the whole organization of civilian work in any way at all here.': 'Both wars brought federal boards and reorganized labor and production.',
@@ -108,9 +108,9 @@ module.exports = {
     'One universal environment caused all Indigenous societies to adopt exactly the same institutions everywhere.': 'North America’s varied ecologies produced varied institutions.',
   },
   'item-122': {
-    'The sources cannot both contain useful evidence because historical accounts must agree completely.': 'Disagreement between sources is normal and is what reveals different perspectives.',
+    'The sources cannot both contain useful evidence because historical accounts must match in full.': 'Disagreement between sources is normal and is what reveals different perspectives.',
     'The mission record proves that conversion was universally accepted by Indigenous communities.': 'The Indigenous account of resistance shows acceptance was not universal.',
-    'The Indigenous account is irrelevant because only colonial officials recorded political events.': 'Indigenous accounts are essential evidence of Indigenous choices.',
+    'The Indigenous account is irrelevant because colonial officials alone recorded political events.': 'Indigenous accounts are essential evidence of Indigenous choices.',
   },
   'item-123': {
     'Atlantic contact produced only voluntary trade and had no lasting effect at all on population or on any of the labor systems anywhere.': 'Epidemics and forced labor were lasting and involuntary consequences.',
@@ -123,13 +123,13 @@ module.exports = {
     'To provide a complete census of every community living inland from the coast.': 'A map of coastal claims made before settlement could not census inland communities.',
   },
   'item-125': {
-    'Both of the empires imposed identical labor systems and made all of the Indigenous diplomacy entirely irrelevant here.': 'Spanish encomienda and French fur-trade alliances were very different, and diplomacy mattered to both.',
-    'French trade created no cultural change at all, while Spanish conquest affected only the European settlers themselves.': 'Trade reshaped Indigenous economies, and conquest fell hardest on Indigenous peoples.',
-    'Spanish and French expansion both occurred after Indigenous political institutions had already disappeared entirely.': 'Indigenous institutions persisted and shaped both empires’ strategies.',
+    'Both of the empires imposed identical labor systems and made all Indigenous diplomacy wholly irrelevant across the region.': 'Spanish encomienda and French fur-trade alliances were very different, and diplomacy mattered to both.',
+    'French trade created no cultural change at all, while Spanish conquest affected European settlers alone in the region.': 'Trade reshaped Indigenous economies, and conquest fell hardest on Indigenous peoples.',
+    'Spanish and French expansion both occurred after Indigenous political institutions had already vanished across the continent.': 'Indigenous institutions persisted and shaped both empires’ strategies.',
   },
   'item-126': {
-    'Spanish authorities avoided all settlement and left local political power entirely unchanged everywhere in the Americas.': 'Spain founded cities and imposed royal officials over local power.',
-    'Colonial control depended only on voluntary European migration and never on any Indigenous or African labor at all.': 'Coerced Indigenous and African labor underpinned Spanish wealth.',
+    'Spanish authorities avoided all settlement and left local political power largely unchanged everywhere in the Americas.': 'Spain founded cities and imposed royal officials over local power.',
+    'Colonial control depended upon voluntary European migration rather than upon Indigenous or African labor in any region.': 'Coerced Indigenous and African labor underpinned Spanish wealth.',
     'Spanish officials prohibited all religious conversion, because it conflicted with their own imperial expansion.': 'Missions were an instrument of expansion, not its opponent.',
   },
   'item-127': {
@@ -154,8 +154,8 @@ module.exports = {
   },
   'item-131': {
     'Both of the regions used identical settlements, because the colonial assemblies prevented any kind of local variation whatsoever at all.': 'Assemblies did not standardize settlement; towns and plantations diverged.',
-    'New England had no elected institutions at all, while the Chesapeake planters rejected every single form of local government entirely.': 'New England town meetings and Virginia’s burgesses were both elected bodies.',
-    'The Chesapeake developed without any agriculture at all, while New England depended entirely on its tobacco exports for all its wealth.': 'Tobacco was the Chesapeake staple; New England farmed grain and livestock.',
+    'New England had no elected assemblies at all, while the Chesapeake planters rejected every single form of local government in practice.': 'New England town meetings and Virginia’s burgesses were both elected bodies.',
+    'The Chesapeake developed without any agriculture at all, while New England depended heavily on its tobacco exports for all its wealth.': 'Tobacco was the Chesapeake staple; New England farmed grain and livestock.',
   },
   'item-132': {
     'The colonists had no experience at all with elected assemblies or with any kind of local political decision-making.': 'Colonial assemblies had governed for generations, which is why new controls provoked resistance.',
@@ -169,13 +169,13 @@ module.exports = {
   },
   'item-134': {
     'French officials who wanted the colonies to accept all British policies without any protest at all.': 'France had no interest in colonial submission to Britain, and the argument urges resistance.',
-    'Enslaved workers who were being asked to draft an entirely new imperial tax code for Britain.': 'Enslaved people had no role in tax policy; the appeal addresses free colonists.',
-    'British merchants who believed that all colonial assemblies should be abolished immediately and entirely.': 'The argument defends colonial rights against Parliament; it is not aimed at merchants seeking to abolish assemblies.',
+    'Enslaved workers who were being asked to draft a brand new imperial tax code for Great Britain.': 'Enslaved people had no role in tax policy; the appeal addresses free colonists.',
+    'British merchants who believed that all colonial assemblies should be abolished across North America.': 'The argument defends colonial rights against Parliament; it is not aimed at merchants seeking to abolish assemblies.',
   },
   'item-135': {
     'Revolutionary ideals had no effect at all on political debates, because independence restored the colonial institutions unchanged.': 'New state constitutions and expanded suffrage debates show real change.',
-    'Political practice immediately matched the broadest language of equality in each one of the new states right after independence.': 'Slavery and limits on women’s rights persisted in every state.',
-    'The revolutionary leaders rejected all written rights claims and relied only on their own military authority alone instead of them.': 'Bills of rights in state constitutions show written claims were central.',
+    'Political practice quickly matched the broadest language of equality in each one of the new states right after independence.': 'Slavery and limits on women’s rights persisted in every state.',
+    'The revolutionary leaders rejected all written rights claims and relied upon their own military authority alone instead of them.': 'Bills of rights in state constitutions show written claims were central.',
   },
   'item-136': {
     'The Articles created a stronger executive than the Constitution did and limited state authority much more extensively than it.': 'The Articles had no executive and left states nearly sovereign.',
@@ -183,9 +183,9 @@ module.exports = {
     'The Constitution eliminated federalism entirely by placing all of the authority in the hands of the state legislatures alone.': 'The Constitution strengthened national institutions while preserving federalism.',
   },
   'item-137': {
-    'The existence of a single written Constitution proves that all of the residents immediately received fully equal political rights at that same time.': 'The Constitution counted enslaved people as three-fifths and protected the slave trade until 1808.',
-    'The early republic had no new institutions at all, because political debates remained entirely local and informal everywhere in the whole country.': 'The presidency, federal courts, and national parties were new institutions.',
-    'All of the social inequality had ended entirely as soon as the revolutionary leaders used the language of natural rights in their own public writing.': 'Natural-rights language coexisted with slavery and legal exclusion.',
+    'The existence of a single written Constitution proves that all of the residents swiftly received fully equal political rights at that same time.': 'The Constitution counted enslaved people as three-fifths and protected the slave trade until 1808.',
+    'The early republic had no new institutions at all, because political debates remained strictly local and informal everywhere in the whole country.': 'The presidency, federal courts, and national parties were new institutions.',
+    'All of the social inequality had ended altogether as soon as the revolutionary leaders used the language of natural rights in their public writing.': 'Natural-rights language coexisted with slavery and legal exclusion.',
   },
   'item-138': {
     'The Constitution had already ended all disagreement about both federalism and about economic policy everywhere at once.': 'Fights over the national bank and tariffs show disagreement continued.',
@@ -218,14 +218,14 @@ module.exports = {
     'Territorial growth had no connection at all to labor, to citizenship, to diplomacy, or to any kind of political balance at all here.': 'Expansion raised questions of slavery, citizenship, and war with Mexico.',
   },
   'item-144': {
-    'The United States had renounced all of its claims to any of the territory lying west of the Mississippi River entirely.': 'The nation was actively pursuing western claims in the 1840s.',
+    'The United States had renounced all of its territorial claims to any lands lying west of the Mississippi River in full.': 'The nation was actively pursuing western claims in the 1840s.',
     'Manifest Destiny was based on ending all migration and on preserving all of the existing territorial boundaries instead.': 'The ideology promoted migration and expanding boundaries.',
-    'Western expansion occurred entirely without any conflict at all with Mexico or with any of the Indigenous nations here.': 'War with Mexico and conflict with Indigenous nations accompanied expansion.',
+    'Western expansion unfolded peacefully without any conflict at all with Mexico or with any of the Indigenous nations.': 'War with Mexico and conflict with Indigenous nations accompanied expansion.',
   },
   'item-145': {
-    'Both of the speakers seek to expand slavery into the western territories but disagree only about the level of the tariff rates.': 'The abolitionist opposes slavery, and tariffs are not the subject.',
+    'Both of the speakers seek to expand slavery into the western territories while disagreeing mainly about federal tariff rates.': 'The abolitionist opposes slavery, and tariffs are not the subject.',
     'The abolitionist wants to preserve the Union by strengthening the Fugitive Slave Act even further than the current law already does now.': 'Abolitionists condemned the Fugitive Slave Act as the compromise’s worst feature.',
-    'The senator argues that the Congress should immediately abolish all of the state governments across the whole of the country now.': 'The senator defends a legislative compromise, not the abolition of states.',
+    'The senator argues that the Congress should promptly abolish all of the state governments across the whole of the country now.': 'The senator defends a legislative compromise, not the abolition of states.',
   },
   'item-146': {
     'Economic development, reform, and expansion were entirely isolated processes with no shared consequences at all.': 'Markets funded reform networks and expansion, and all three intensified disputes over slavery.',
@@ -233,9 +233,9 @@ module.exports = {
     'Expansion reduced all conflict by protecting Indigenous sovereignty and permanently settling the status of slavery.': 'Removal violated sovereignty, and slavery’s status stayed unresolved.',
   },
   'item-147': {
-    'The existence of the amendments alone proves that all of the local officials enforced them entirely equally everywhere.': 'Enforcement varied sharply, and violence undermined it.',
+    'The existence of the amendments alone proves that all of the local officials enforced them equally across every county.': 'Enforcement varied sharply, and violence undermined it.',
     'Black communities did not organize politically or establish any institutions of their own at all after emancipation came.': 'Freedpeople built churches, schools, and political organizations quickly.',
-    'Reconstruction ended because the Congress repealed the Thirteenth, the Fourteenth, and the Fifteenth Amendments entirely.': 'The amendments were never repealed.',
+    'Reconstruction ended because the Congress formally repealed the Thirteenth, the Fourteenth, and the Fifteenth Amendments.': 'The amendments were never repealed.',
   },
   'item-148': {
     'Both of the periods were limited to military battles alone and produced no constitutional or social change of any kind at all.': 'Emancipation and three amendments were sweeping constitutional changes.',
@@ -248,9 +248,9 @@ module.exports = {
     'The federal government prohibited all private investment and all western settlement throughout the whole period.': 'Homestead grants and railroad subsidies encouraged both.',
   },
   'item-150': {
-    'The replacement of all of the national markets with entirely isolated household production everywhere.': 'Production moved toward larger factories serving national markets.',
+    'The replacement of all of the national markets with strictly isolated household production everywhere.': 'Production moved toward larger factories serving national markets.',
     'A ban on all mechanized production that required every single factory to use nothing but hand tools.': 'Mechanization expanded; no such ban existed.',
-    'The complete disappearance of the railroads and the telegraphs from all commercial life entirely.': 'Railroads and telegraphs were essential to coordinating larger firms.',
+    'The total disappearance of the railroads and the telegraphs from all commercial life across the nation.': 'Railroads and telegraphs were essential to coordinating larger firms.',
   },
   'item-151': {
     'The two sources must first be averaged into one neutral account before either one of them can be used by a historian.': 'Historians analyze each source’s perspective; averaging erases what makes them useful.',
@@ -258,9 +258,9 @@ module.exports = {
     'The pamphlet is useful only for learning about immigration policy and never about any of the public attitudes at all.': 'A nativist pamphlet is above all evidence of public attitudes.',
   },
   'item-152': {
-    'Corporate consolidation made government entirely unnecessary, because the markets always distributed all of the benefits equally.': 'Concentration produced unequal outcomes that provoked demands for regulation.',
+    'Corporate consolidation made government wholly unnecessary, because unregulated markets distributed all economic benefits equally.': 'Concentration produced unequal outcomes that provoked demands for regulation.',
     'The industrial firms had no influence at all over the workers, over the consumers, or over any of the transportation networks.': 'Trusts set prices, wages, and shipping rates.',
-    'The regulation debates focused only on religious institutions rather than on any kind of economic relationships at all here.': 'The debates concerned railroads, trusts, and labor.',
+    'The regulation debates focused mainly on religious institutions rather than on any kind of economic relationships at all here.': 'The debates concerned railroads, trusts, and labor.',
   },
   'item-153': {
     'Industrialization changed nothing at all, because all workers retained their prewar occupations and their political power.': 'Factory and rail work replaced many prewar occupations.',
@@ -288,14 +288,14 @@ module.exports = {
     'Both of the wars produced identical treatment of every racial group, ethnic group, and political group in the whole country.': 'Japanese American incarceration and 1919 riots show different treatment.',
   },
   'item-158': {
-    'The United States completely withdrew from all global commerce and from all diplomacy after the First World War ended.': 'Trade, naval treaties, and Latin American interventions continued.',
+    'The United States withdrew across the board from all global commerce and diplomacy after the First World War ended.': 'Trade, naval treaties, and Latin American interventions continued.',
     'The United States joined every international alliance and accepted unlimited collective obligations of every kind at all.': 'It stayed out of the League and avoided binding alliances.',
-    'Foreign policy was determined only by domestic agricultural policy and never by any of the world events at all here.': 'Aggression in Europe and Asia shaped policy debates in the 1930s.',
+    'Foreign policy was driven by domestic agricultural policy rather than by any international crises or world events.': 'Aggression in Europe and Asia shaped policy debates in the 1930s.',
   },
   'item-159': {
-    'The period changed only foreign policy and left domestic government and all social structures untouched everywhere across the country.': 'The New Deal transformed domestic government.',
+    'The period changed foreign policy alone while leaving domestic government and all social structures untouched across the country.': 'The New Deal transformed domestic government.',
     'Industrialization and war together eliminated all racial conflict, all gender conflict, and all class conflict in the whole country.': 'Segregation and labor conflict persisted through 1945.',
-    'The United States remained entirely outside of all global affairs and never developed any larger federal role of any kind at all here.': 'Two world wars and the New Deal expanded both.',
+    'The United States remained aloof from all global affairs and avoided developing any larger federal role of any kind at all here.': 'Two world wars and the New Deal expanded both.',
   },
   'item-160': {
     'Postwar prosperity affected every group equally and removed debates over race, work, and foreign policy.': 'Unequal access fueled civil-rights and labor conflict.',
@@ -303,9 +303,9 @@ module.exports = {
     'Domestic politics stopped changing because economic growth ended social movements and political disagreement.': 'Social movements grew during prosperity.',
   },
   'item-161': {
-    'The United States had abandoned containment entirely and no longer debated any communist influence at all here.': 'Containment was policy, and communist influence was hotly debated.',
+    'The United States had abandoned containment policies and no longer debated any communist influence at all here.': 'Containment was policy, and communist influence was hotly debated.',
     'The hearing occurred before World War II and therefore reflected no postwar political pressure of any kind.': 'Such hearings were a postwar phenomenon driven by Cold War fears.',
-    'Domestic anticommunism was entirely unrelated to foreign policy or to any kind of partisan competition at all.': 'Anticommunism drew on foreign-policy fears and partisan advantage.',
+    'Domestic anticommunism was wholly unrelated to foreign policy or to any kind of partisan competition at all.': 'Anticommunism drew on foreign-policy fears and partisan advantage.',
   },
   'item-162': {
     'Mass culture isolated households from one another and prevented any kind of shared national discussion of any kind at all.': 'Television created shared national audiences.',
@@ -323,9 +323,9 @@ module.exports = {
     'The earlier reformers had no relationship at all to religion, to education, or to any of the changing social expectations here.': 'Revivals and schooling were central to earlier reform.',
   },
   'item-165': {
-    'The passage of the civil-rights laws automatically ended every form of discrimination and every form of unequal access at once.': 'Housing and employment discrimination persisted after the laws.',
+    'The passage of the civil-rights laws instantly ended every form of discrimination and every form of unequal access at once.': 'Housing and employment discrimination persisted after the laws.',
     'Postwar growth left no institutional changes and no demographic changes at all in the whole of American life at any point at all.': 'Suburbs and the baby boom were major changes.',
-    'Older inequalities disappeared entirely, because all groups gained the same education, housing, and employment opportunities.': 'Redlining and unequal schools show opportunity remained unequal.',
+    'Older inequalities vanished across the country, because all groups gained the same education, housing, and job opportunities.': 'Redlining and unequal schools show opportunity remained unequal.',
   },
   'item-166': {
     'The period began with no economic restructuring and no international change at all from any of the previous decades.': 'Deindustrialization and Cold War shifts were already underway.',
@@ -378,9 +378,9 @@ module.exports = {
     'Economic policy was determined only by foreign governments rather than American voters and leaders.': 'Congress and voters decided tariffs and improvements.',
   },
   'item-176': {
-    'It discouraged all organized reform, because religious belief was limited entirely to private worship in the home only.': 'Revivals encouraged public moral campaigns.',
+    'It discouraged all organized reform, because religious belief was confined strictly to quiet private worship at home.': 'Revivals encouraged public moral campaigns.',
     'It required all of the reformers to support slavery and to oppose all public education in every region of the country.': 'Many revival-inspired reformers opposed slavery and promoted schools.',
-    'It ended all religious diversity by creating one single national church that was controlled entirely by the Congress.': 'Revivals multiplied denominations, and the First Amendment forbids a national church.',
+    'It ended all religious diversity by creating one single national church that was governed directly by the Congress.': 'Revivals multiplied denominations, and the First Amendment forbids a national church.',
   },
   'item-177': {
     'The United States permanently abandoned diplomacy and refused to communicate with European governments.': 'The Monroe Doctrine was itself a diplomatic statement to Europe.',
@@ -398,9 +398,9 @@ module.exports = {
     'Political participation declined because most of the states added new property requirements after 1820.': 'States removed property requirements in these years.',
   },
   'item-180': {
-    'Social conditions were fixed by fate, so organized reform could never produce change.': 'Revivalists believed people could perfect themselves and society.',
+    'Social conditions were fixed by fate, so organized reform could not produce lasting change.': 'Revivalists believed people could perfect themselves and society.',
     'Religious revival required reformers to avoid public schools, prisons, and voluntary associations.': 'Reformers targeted schools and prisons through associations.',
-    'Reform movements succeeded only when they rejected all religious language and organization.': 'Religious language and church networks powered reform.',
+    'Reform movements succeeded mainly when they rejected all religious language and organization.': 'Religious language and church networks powered reform.',
   },
   'item-181': {
     'All of the reformers agreed on one single program and rejected every difference over race, over gender, and over class.': 'Reformers split over women’s roles and racial equality.',
@@ -418,9 +418,9 @@ module.exports = {
     'Cotton expansion ended all regional inequality by giving small farmers the same wealth as all of the large planters.': 'Wealth concentrated among large planters.',
   },
   'item-184': {
-    'The treaty immediately gave every Mexican American equal political power and protected all land claims without dispute.': 'Land claims were widely disputed and often lost in court.',
+    'The treaty promptly gave every Mexican American equal political power and protected all land claims without dispute.': 'Land claims were widely disputed and often lost in court.',
     'Mexican American communities disappeared because no residents remained in the territories transferred to the United States.': 'Tens of thousands of residents remained and became U.S. residents.',
-    'The war changed only the international border and had no effect on local law, labor, or cultural institutions.': 'New courts, land law, and labor relations transformed local life.',
+    'The war shifted the international border alone and had no effect on local law, labor, or cultural institutions.': 'New courts, land law, and labor relations transformed local life.',
   },
   'item-185': {
     'The two sources must agree with each other, because both of the writers lived in the very same country at the time.': 'Shared nationality does not produce agreement between opposed regional interests.',
@@ -458,9 +458,9 @@ module.exports = {
     'Indigenous communities disappeared from the West entirely, because resistance and adaptation were both impossible there.': 'Communities survived through resistance and adaptation.',
   },
   'item-192': {
-    'The South became fully industrialized, because cotton and agriculture both disappeared immediately after emancipation had come.': 'Cotton remained dominant under sharecropping.',
+    'The South became fully industrialized, because cotton and commercial farming both vanished right after emancipation had come.': 'Cotton remained dominant under sharecropping.',
     'The New South rejected railroads, factories, and all outside investment in favor of a complete economic isolation instead here.': 'New South promoters courted railroads and northern capital.',
-    'Modernization ended all racial inequality and made sharecropping entirely unnecessary throughout the entire region all at once.': 'Sharecropping and segregation persisted.',
+    'Modernization ended all racial inequality and made sharecropping largely unnecessary throughout the entire region all at once.': 'Sharecropping and segregation persisted.',
   },
   'item-193': {
     'Industrial capitalism grew because firms abandoned all national markets and returned to simple household production.': 'Firms expanded to serve national markets.',
@@ -469,13 +469,13 @@ module.exports = {
   },
   'item-194': {
     'Employers routinely accepted collective bargaining, and the courts prohibited all use of injunctions against any of the unions here.': 'Employers resisted unions, and courts issued injunctions against strikes.',
-    'Labor unions were entirely unnecessary, because the industrial workers controlled the factories and set all of their own wages here.': 'Employers set wages and controlled production.',
-    'Gilded Age strikes involved only the farmers and had no connection at all to any of the factories, railroads, or mines of that day.': 'Strikes centered on railroads, steel, and mines.',
+    'Labor unions were wholly unnecessary, because the industrial workers controlled the factories and set all of their own wages here.': 'Employers set wages and controlled production.',
+    'Gilded Age strikes involved rural farmers alone and had no connection at all to the factories, railroads, or mines of that day.': 'Strikes centered on railroads, steel, and mines.',
   },
   'item-195': {
-    'Cities offered no employment, no transportation, and no community networks, so migrants avoided them all entirely.': 'Cities offered jobs and ethnic networks, and migrants flocked to them.',
-    'Immigration declined because industrial employers preferred only rural household labor everywhere at the time.': 'Employers recruited immigrants for factory work.',
-    'Urban migration occurred only because the federal government required every family to move into a city at once.': 'No such requirement existed; migration was a response to opportunity.',
+    'Cities offered no employment, no transportation, and no community networks, so migrants avoided them in large numbers.': 'Cities offered jobs and ethnic networks, and migrants flocked to them.',
+    'Immigration declined because industrial employers preferred rural household labor across the country at the time.': 'Employers recruited immigrants for factory work.',
+    'Urban migration occurred chiefly because the federal government required every family to move into a city at once.': 'No such requirement existed; migration was a response to opportunity.',
   },
   'item-196': {
     'The middle class grew because professional and clerical work disappeared from expanding corporations.': 'Corporations created the clerical and managerial jobs that grew the middle class.',
@@ -488,14 +488,14 @@ module.exports = {
     'Reform organizations all rejected religion, settlement work, and public campaigns as tools for any kind of social change here.': 'Churches and settlement houses were core reform institutions.',
   },
   'item-198': {
-    'Political parties disappeared entirely, because industrialization ended all elections and all patronage networks of every kind at all.': 'Parties and patronage flourished with high turnout.',
-    'Gilded Age politics focused only on foreign affairs and avoided all economic questions and all local government questions here now.': 'Tariffs, currency, and city government dominated politics.',
+    'Political parties vanished nationwide, because industrialization ended all elections and all patronage networks of every kind at all.': 'Parties and patronage flourished with high turnout.',
+    'Gilded Age politics focused narrowly on foreign affairs and avoided all economic questions and all local government questions here.': 'Tariffs, currency, and city government dominated politics.',
     'The era had no disputes at all over currency, over tariffs, over corruption, or over the role of the whole government in the economy.': 'Those were the era’s defining disputes.',
   },
   'item-199': {
-    'The United States abandoned all overseas trade and returned all of the island territories back to Spain almost immediately.': 'The United States kept Puerto Rico, Guam, and the Philippines.',
+    'The United States abandoned all overseas trade and returned all of the island territories back to Spain within a few weeks.': 'The United States kept Puerto Rico, Guam, and the Philippines.',
     'The war ended all debates over imperialism, because every American supported permanent colonial rule everywhere at once.': 'The Anti-Imperialist League fought colonial rule.',
-    'The conflict reduced United States involvement in Asia and eliminated all questions about self determination entirely too.': 'Acquiring the Philippines deepened Asian involvement and raised self-determination questions.',
+    'The conflict reduced United States involvement in Asia and eliminated all questions about self determination across the board.': 'Acquiring the Philippines deepened Asian involvement and raised self-determination questions.',
   },
   'item-200': {
     'The Senate rejected the treaty because the United States had never participated in the First World War at all.': 'The United States fought in the war from 1917.',

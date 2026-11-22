@@ -112,6 +112,18 @@
       } catch (e) { return false; }
     }
 
+    function isHighContrast(el) {
+      try {
+        if (el && el.closest && (el.closest('.theme-contrast') || el.closest('[data-theme="contrast"]') || el.closest('[data-theme="high-contrast"]'))) return true;
+        var root = typeof document !== 'undefined' && document.documentElement;
+        if (root && (root.classList.contains('theme-contrast') || root.getAttribute('data-theme') === 'contrast' || root.getAttribute('data-theme') === 'high-contrast')) return true;
+        if (typeof document !== 'undefined' && document.body && document.body.classList.contains('theme-contrast')) return true;
+        if (typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
+            (window.matchMedia('(forced-colors: active)').matches || window.matchMedia('(prefers-contrast: more)').matches)) return true;
+      } catch (e) {}
+      return false;
+    }
+
     function disposeWalkTextures() {
       if (!walkTextures) return;
       Object.keys(walkTextures).forEach(function (k) {
@@ -224,10 +236,47 @@
     function build(THREE, S, data) {
       var materials = {}, flatMaterials = {}, solids = [], parallaxLabels = [], parallaxMeshes = [], panelLabels = [], changeLabels = [], rotationLabels = [], reliefLabels = [], shapeLabels = [], motionLabels = [], weaveLabels = [], landingLabels = [], silhouetteLabels = [], referenceLabels = [], anamorphosisLabels = [];
       var tex = ensureWalkTextures(THREE);
-      var dustPoints = null, dustBase = null, dustSeeds = null;
+      var dustPoints = null;
+      var walkTimeUniforms = [], walkDecorMeshes = [], walkRimUniforms = [];
+      var STATIC_BEAUTY_TIME = 2.4;
+      var hcInitial = isHighContrast(S.renderer && S.renderer.domElement);
       var parallaxRound = Math.floor(clamp(number(data.parallaxRound, 0), 0, 2));
       var collected = Array.isArray(data.collected) ? data.collected : [];
       var activity = ['ring', 'scale', 'occlusion', 'parallax', 'contour', 'context', 'continuity', 'shadow', 'change', 'rotation', 'relief', 'shape', 'motion', 'frame', 'weave', 'landing', 'aperture', 'length', 'silhouette', 'anamorphosis'].indexOf(data.activity) >= 0 ? data.activity : 'ring';
+
+      function applyArchRim(mat, baseStrength, rimHex, cacheId) {
+        if (!mat || typeof mat.onBeforeCompile !== 'function' || mat.userData.walkArchRimApplied) return mat;
+        mat.userData.walkArchRimApplied = true;
+        var strengthUniform = { value: hcInitial ? 0.0 : baseStrength };
+        var colorVec = new THREE.Color(rimHex);
+        if (typeof colorVec.convertSRGBToLinear === 'function') colorVec.convertSRGBToLinear();
+        var colorUniform = { value: colorVec };
+        walkRimUniforms.push({ uniform: strengthUniform, base: baseStrength });
+        var prevCompile = mat.onBeforeCompile;
+        var prevKey = mat.customProgramCacheKey;
+        mat.onBeforeCompile = function (shader, rCtx) {
+          if (typeof prevCompile === 'function') prevCompile.call(this, shader, rCtx);
+          shader.uniforms.uWalkRimStrength = strengthUniform;
+          shader.uniforms.uWalkRimColor = colorUniform;
+          shader.fragmentShader = shader.fragmentShader
+            .replace('#include <common>', '#include <common>\nuniform float uWalkRimStrength;\nuniform vec3 uWalkRimColor;')
+            .replace('#include <dithering_fragment>', [
+              'if (uWalkRimStrength > 0.001) {',
+              '  vec3 pwN = normalize(normal);',
+              '  vec3 pwV = normalize(vViewPosition);',
+              '  float pwFres = pow(1.0 - clamp(dot(pwN, pwV), 0.0, 1.0), 3.1);',
+              '  float pwUp = 0.45 + 0.55 * clamp(pwN.y * 0.5 + 0.5, 0.0, 1.0);',
+              '  gl_FragColor.rgb += uWalkRimColor * pwFres * pwUp * uWalkRimStrength;',
+              '}',
+              '#include <dithering_fragment>'
+            ].join('\n'));
+        };
+        mat.customProgramCacheKey = function () {
+          var base = typeof prevKey === 'function' ? prevKey.call(this) : '';
+          return (base ? base + '|' : '') + 'walk-arch-rim-' + cacheId;
+        };
+        return mat;
+      }
 
       function material(color, extra) {
         var tag = extra && extra.tag ? ':' + extra.tag : '';
@@ -244,6 +293,9 @@
           materials[key] = new THREE.MeshStandardMaterial(cfg);
           materials[key].color.convertSRGBToLinear();
           if (extra && extra.emissive != null && materials[key].emissive) materials[key].emissive.convertSRGBToLinear();
+          if (extra && extra.archRim) {
+            applyArchRim(materials[key], extra.archRim.strength, extra.archRim.color, extra.archRim.id || tag || 'std');
+          }
         }
         return materials[key];
       }
@@ -331,8 +383,9 @@
       }
 
       function architecture() {
-        var floorMat = { tag: 'walk-floor', map: tex.floorMap, bumpMap: tex.floorBump, bumpScale: 0.012, roughness: 0.52, metalness: 0.05 };
+        var floorMat = { tag: 'walk-floor', map: tex.floorMap, bumpMap: tex.floorBump, bumpScale: 0.012, roughness: 0.50, metalness: 0.06, archRim: { strength: 0.14, color: 0xfff8ea, id: 'floor' } };
         var wallMat = { tag: 'walk-wall', map: tex.wallMap, roughness: 0.86, metalness: 0.02 };
+        var pilasterMat = { tag: 'walk-pilaster', roughness: 0.64, metalness: 0.08, archRim: { strength: 0.11, color: 0xfff4df, id: 'pilaster' } };
         var skylightMat = { tag: 'walk-skylight', roughness: 0.18, metalness: 0.06, emissive: 0xfff6e2, emissiveIntensity: 0.72 };
         var trackMat = { tag: 'walk-track', roughness: 0.34, metalness: 0.65 };
 
@@ -342,16 +395,16 @@
         box(-20.2, 2.8, 3, 0.4, 5.6, 22.4, 0xe1e8e4, null, wallMat);
         box(224.2, 2.8, 3, 0.4, 5.6, 22.4, 0xe1e8e4, null, wallMat);
         box(102, 5.65, 3, 244.4, 0.2, 22.4, 0xf8faf7);
-        box(102, 0.12, -7.96, 244, 0.24, 0.06, 0x3b4d52, null, { tag: 'walk-baseboard', roughness: 0.54, metalness: 0.16 });
-        box(102, 0.12, 13.96, 244, 0.24, 0.06, 0x3b4d52, null, { tag: 'walk-baseboard', roughness: 0.54, metalness: 0.16 });
+        box(102, 0.12, -7.96, 244, 0.24, 0.06, 0x3b4d52, null, { tag: 'walk-baseboard', roughness: 0.54, metalness: 0.16, archRim: { strength: 0.10, color: 0xe6f2ee, id: 'baseboard' } });
+        box(102, 0.12, 13.96, 244, 0.24, 0.06, 0x3b4d52, null, { tag: 'walk-baseboard', roughness: 0.54, metalness: 0.16, archRim: { strength: 0.10, color: 0xe6f2ee, id: 'baseboard' } });
         // Continuous anodized overhead gallery lighting track rails.
         box(102, 5.50, -2.5, 242, 0.07, 0.10, 0x2d3b3f, null, trackMat);
         box(102, 5.50, 8.5, 242, 0.07, 0.10, 0x2d3b3f, null, trackMat);
         for (var gx = -20; gx <= 224; gx += 2) box(gx, 0.003, 3, 0.012, 0.006, 22, 0xcbd6cf);
         for (var gz = -8; gz <= 14; gz += 2) box(102, 0.004, gz, 244, 0.006, 0.012, 0xcbd6cf);
         [-18, -6, 6, 18, 30, 42, 54, 66, 78, 90, 102, 114, 126, 138, 150, 162, 174, 186, 198, 210, 222].forEach(function (x) {
-          box(x, 2.75, -7.76, 0.24, 5.5, 0.25, 0xd2ded6);
-          box(x, 5.35, 2.8, 0.19, 0.25, 21.4, 0xd6e0da);
+          box(x, 2.75, -7.76, 0.24, 5.5, 0.25, 0xd2ded6, null, pilasterMat);
+          box(x, 5.35, 2.8, 0.19, 0.25, 21.4, 0xd6e0da, null, pilasterMat);
         });
         var bayXs = [-12, 0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216];
         bayXs.forEach(function (x, index) {
@@ -368,50 +421,255 @@
           box(x, 5.48, -2.5, 6.5, 0.06, 0.55, 0xffffff, null, skylightMat);
           box(x, 5.48, 8.5, 6.5, 0.06, 0.55, 0xffffff, null, skylightMat);
         });
-        // Single-draw-call instanced soft volumetric skylight washes above each bay (excluded from solids so picking stays unobstructed).
-        if (THREE.InstancedMesh && THREE.ConeGeometry && THREE.MeshBasicMaterial) {
-          var coneGeo = new THREE.ConeGeometry(2.85, 3.4, 18, 1, true);
-          var coneMat = new THREE.MeshBasicMaterial({
-            color: 0xfff8e6, map: tex.beamMap || null, transparent: true, opacity: 0.055,
-            depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending || THREE.NormalBlending
+        // GLSL ES 1.00 Rayleigh atmospheric sky dome + overhead clerestory skylight cloud panes (excluded from solids; bypassed in High-Contrast).
+        if (typeof THREE.ShaderMaterial === 'function' && typeof THREE.SphereGeometry === 'function') {
+          var skyTime = { value: STATIC_BEAUTY_TIME };
+          walkTimeUniforms.push(skyTime);
+          var skyDomeMat = new THREE.ShaderMaterial({
+            side: THREE.BackSide, depthWrite: false, fog: false, toneMapped: false,
+            uniforms: {
+              uTime: skyTime,
+              uZenith: { value: new THREE.Color(0x5f96cc) },
+              uHorizon: { value: new THREE.Color(0xeae6d9) },
+              uWarmGlow: { value: new THREE.Color(0xfff1cf) },
+              uSunDir: { value: new THREE.Vector3(0.38, 0.62, -0.68).normalize() }
+            },
+            vertexShader: 'varying vec3 vSkyDir; void main(){ vSkyDir = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+            fragmentShader: [
+              'uniform float uTime; uniform vec3 uZenith; uniform vec3 uHorizon; uniform vec3 uWarmGlow; uniform vec3 uSunDir;',
+              'varying vec3 vSkyDir;',
+              'float pwHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }',
+              'float pwNoise(vec2 p){ vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);',
+              '  return mix(mix(pwHash(i), pwHash(i + vec2(1.0, 0.0)), f.x), mix(pwHash(i + vec2(0.0, 1.0)), pwHash(i + vec2(1.0, 1.0)), f.x), f.y); }',
+              'float pwFbm(vec2 p){ float v = 0.0; float a = 0.52; for(int i = 0; i < 4; i++){ v += a * pwNoise(p); p = p * 2.04 + vec2(3.7, 1.9); a *= 0.5; } return v; }',
+              'void main(){',
+              '  vec3 d = normalize(vSkyDir); float alt = clamp(d.y, 0.0, 1.0);',
+              '  float rayleigh = pow(1.0 - alt, 2.35);',
+              '  vec3 col = mix(uZenith, uHorizon, rayleigh);',
+              '  float sunDot = max(0.0, dot(d, normalize(uSunDir)));',
+              '  float mie = pow(sunDot, 7.0) * 0.24 + pow(sunDot, 48.0) * 0.28;',
+              '  col += uWarmGlow * mie * (0.35 + 0.65 * rayleigh);',
+              '  vec2 cuv = d.xz / max(0.18, alt + 0.14) * 0.52 + vec2(uTime * 0.012, uTime * 0.004);',
+              '  float cloud = pwFbm(cuv);',
+              '  float puff = smoothstep(0.48, 0.78, cloud) * smoothstep(0.04, 0.24, alt) * (1.0 - smoothstep(0.68, 0.96, alt));',
+              '  vec3 cloudCol = mix(vec3(0.96, 0.98, 1.0), uWarmGlow, 0.28 * pow(sunDot, 2.0));',
+              '  col = mix(col, cloudCol, puff * 0.52);',
+              '  gl_FragColor = vec4(col, 1.0);',
+              '}'
+            ].join('\n')
           });
-          var cones = new THREE.InstancedMesh(coneGeo, coneMat, bayXs.length);
-          var dm = new THREE.Object3D();
-          for (var bi = 0; bi < bayXs.length; bi++) {
-            dm.position.set(bayXs[bi], 3.72, -1.8);
-            dm.rotation.set(0.16, 0, 0);
-            dm.updateMatrix();
-            cones.setMatrixAt(bi, dm.matrix);
-          }
-          cones.instanceMatrix.needsUpdate = true;
-          cones.renderOrder = 3;
-          S.model.add(cones);
+          var skyDome = new THREE.Mesh(new THREE.SphereGeometry(250, 24, 14), skyDomeMat);
+          skyDome.position.set(102, 0, 3);
+          skyDome.renderOrder = -1;
+          skyDome.visible = !hcInitial;
+          walkDecorMeshes.push(skyDome);
+          S.model.add(skyDome);
         }
-        // Subtle sunlit promenade dust motes floating in the museum air (excluded from solids; frozen in static / reduced-motion).
-        if (THREE.Points && THREE.PointsMaterial) {
-          var moteCount = 180;
+        if (typeof THREE.ShaderMaterial === 'function' && typeof THREE.InstancedMesh === 'function' && typeof THREE.PlaneGeometry === 'function') {
+          var paneTime = { value: STATIC_BEAUTY_TIME };
+          walkTimeUniforms.push(paneTime);
+          var paneGeo = new THREE.PlaneGeometry(6.25, 0.48);
+          var paneMat = new THREE.ShaderMaterial({
+            transparent: false, depthWrite: true, fog: false, toneMapped: false, side: THREE.DoubleSide,
+            uniforms: {
+              uTime: paneTime,
+              uZenith: { value: new THREE.Color(0x9bc4e6) },
+              uHorizon: { value: new THREE.Color(0xfdf5e2) },
+              uCloud: { value: new THREE.Color(0xffffff) }
+            },
+            vertexShader: [
+              'varying vec2 vUv; varying vec3 vWorldPos;',
+              'void main(){',
+              '  vUv = uv;',
+              '  vec4 lp = vec4(position, 1.0);',
+              '  #ifdef USE_INSTANCING',
+              '    lp = instanceMatrix * lp;',
+              '  #endif',
+              '  vec4 wp = modelMatrix * lp;',
+              '  vWorldPos = wp.xyz;',
+              '  gl_Position = projectionMatrix * viewMatrix * wp;',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform float uTime; uniform vec3 uZenith; uniform vec3 uHorizon; uniform vec3 uCloud;',
+              'varying vec2 vUv; varying vec3 vWorldPos;',
+              'float skHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }',
+              'float skNoise(vec2 p){ vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);',
+              '  return mix(mix(skHash(i), skHash(i + vec2(1.0, 0.0)), f.x), mix(skHash(i + vec2(0.0, 1.0)), skHash(i + vec2(1.0, 1.0)), f.x), f.y); }',
+              'float skFbm(vec2 p){ float v = 0.0; float a = 0.54; for(int i = 0; i < 3; i++){ v += a * skNoise(p); p = p * 2.08 + vec2(2.3, 4.1); a *= 0.48; } return v; }',
+              'void main(){',
+              '  float rayGrad = clamp(0.25 + 0.55 * vUv.y + 0.15 * sin(vWorldPos.x * 0.025), 0.0, 1.0);',
+              '  vec3 sky = mix(uHorizon, uZenith, rayGrad);',
+              '  vec2 cuv = vWorldPos.xz * 0.075 + vec2(uTime * 0.045, uTime * 0.014);',
+              '  float cl = smoothstep(0.42, 0.78, skFbm(cuv));',
+              '  sky = mix(sky, uCloud, cl * 0.65);',
+              '  float edgeX = smoothstep(0.0, 0.06, vUv.x) * smoothstep(1.0, 0.94, vUv.x);',
+              '  float edgeY = smoothstep(0.0, 0.14, vUv.y) * smoothstep(1.0, 0.86, vUv.y);',
+              '  sky = mix(vec3(0.95, 0.96, 0.95), sky, edgeX * edgeY);',
+              '  gl_FragColor = vec4(sky, 1.0);',
+              '}'
+            ].join('\n')
+          });
+          var panes = new THREE.InstancedMesh(paneGeo, paneMat, bayXs.length * 2);
+          var pm = new THREE.Object3D();
+          for (var pi = 0; pi < bayXs.length; pi++) {
+            pm.position.set(bayXs[pi], 5.442, -2.5);
+            pm.rotation.set(Math.PI / 2, 0, 0);
+            pm.updateMatrix();
+            panes.setMatrixAt(pi * 2, pm.matrix);
+            pm.position.set(bayXs[pi], 5.442, 8.5);
+            pm.updateMatrix();
+            panes.setMatrixAt(pi * 2 + 1, pm.matrix);
+          }
+          panes.instanceMatrix.needsUpdate = true;
+          panes.visible = !hcInitial;
+          walkDecorMeshes.push(panes);
+          S.model.add(panes);
+        }
+        // Single-draw-call instanced GLSL volumetric skylight washes above each bay (excluded from solids; optical-safe subtle veil).
+        if (typeof THREE.InstancedMesh === 'function' && typeof THREE.ConeGeometry === 'function') {
+          var coneGeo = new THREE.ConeGeometry(2.85, 3.4, 20, 1, true);
+          var coneMat = null;
+          if (typeof THREE.ShaderMaterial === 'function') {
+            var beamTime = { value: STATIC_BEAUTY_TIME };
+            walkTimeUniforms.push(beamTime);
+            coneMat = new THREE.ShaderMaterial({
+              transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, toneMapped: false,
+              blending: THREE.AdditiveBlending || THREE.NormalBlending,
+              uniforms: {
+                uTime: beamTime,
+                uColor: { value: new THREE.Color(0xfff5dc) },
+                uOpacity: { value: 0.048 }
+              },
+              vertexShader: [
+                'varying vec2 vUv; varying vec3 vViewNormal; varying vec3 vViewDir; varying float vWorldX;',
+                'void main(){',
+                '  vUv = uv;',
+                '  vec4 lp = vec4(position, 1.0);',
+                '  vec3 ln = normal;',
+                '  #ifdef USE_INSTANCING',
+                '    lp = instanceMatrix * lp;',
+                '    ln = mat3(instanceMatrix) * ln;',
+                '  #endif',
+                '  vec4 wp = modelMatrix * lp;',
+                '  vWorldX = wp.x;',
+                '  vec4 mv = viewMatrix * wp;',
+                '  vViewNormal = normalize(normalMatrix * ln);',
+                '  vViewDir = normalize(-mv.xyz);',
+                '  gl_Position = projectionMatrix * mv;',
+                '}'
+              ].join('\n'),
+              fragmentShader: [
+                'uniform float uTime; uniform vec3 uColor; uniform float uOpacity;',
+                'varying vec2 vUv; varying vec3 vViewNormal; varying vec3 vViewDir; varying float vWorldX;',
+                'void main(){',
+                '  float edge = pow(abs(dot(normalize(vViewNormal), normalize(vViewDir))), 1.55);',
+                '  float vFade = smoothstep(0.0, 0.42, vUv.y) * smoothstep(1.0, 0.72, vUv.y);',
+                '  float rayWave = 0.80 + 0.20 * sin(vUv.x * 18.8495 + uTime * 0.32 + vWorldX * 0.14);',
+                '  float alpha = edge * vFade * rayWave * uOpacity;',
+                '  if (alpha < 0.001) discard;',
+                '  gl_FragColor = vec4(uColor, alpha);',
+                '}'
+              ].join('\n')
+            });
+          } else if (typeof THREE.MeshBasicMaterial === 'function') {
+            coneMat = new THREE.MeshBasicMaterial({
+              color: 0xfff8e6, map: tex.beamMap || null, transparent: true, opacity: 0.05,
+              depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending || THREE.NormalBlending
+            });
+          }
+          if (coneMat) {
+            var cones = new THREE.InstancedMesh(coneGeo, coneMat, bayXs.length);
+            var dm = new THREE.Object3D();
+            for (var bi = 0; bi < bayXs.length; bi++) {
+              dm.position.set(bayXs[bi], 3.72, -1.8);
+              dm.rotation.set(0.16, 0, 0);
+              dm.updateMatrix();
+              cones.setMatrixAt(bi, dm.matrix);
+            }
+            cones.instanceMatrix.needsUpdate = true;
+            cones.renderOrder = 3;
+            cones.visible = !hcInitial;
+            walkDecorMeshes.push(cones);
+            S.model.add(cones);
+          }
+        }
+        // Subtle sunlit promenade dust motes floating in the museum air (GPU ShaderMaterial; excluded from solids; frozen in static/reduced-motion).
+        if (typeof THREE.Points === 'function' && typeof THREE.BufferGeometry === 'function') {
+          var moteCount = 200;
           var pos = new Float32Array(moteCount * 3);
-          dustBase = new Float32Array(moteCount * 3);
-          dustSeeds = new Float32Array(moteCount);
+          var seeds = new Float32Array(moteCount);
+          var sizes = new Float32Array(moteCount);
           for (var mi = 0; mi < moteCount; mi++) {
             var bayX = bayXs[mi % bayXs.length];
             var hA = Math.sin(mi * 12.9898 + 2.31) * 43758.5453; hA -= Math.floor(hA);
             var hB = Math.sin(mi * 78.233 + 5.17) * 43758.5453; hB -= Math.floor(hB);
             var hC = Math.sin(mi * 39.425 + 8.43) * 43758.5453; hC -= Math.floor(hC);
-            pos[mi * 3] = dustBase[mi * 3] = bayX + (hA - 0.5) * 9.5;
-            pos[mi * 3 + 1] = dustBase[mi * 3 + 1] = 1.4 + hB * 3.6;
-            pos[mi * 3 + 2] = dustBase[mi * 3 + 2] = -3.8 + hC * 11.5;
-            dustSeeds[mi] = hA * 6.283 + hB * 3.14;
+            pos[mi * 3] = bayX + (hA - 0.5) * 9.5;
+            pos[mi * 3 + 1] = 1.45 + hB * 3.55;
+            pos[mi * 3 + 2] = -3.6 + hC * 11.2;
+            seeds[mi] = hA * 6.28318 + hB * 3.14159;
+            sizes[mi] = 0.65 + hC * 0.95;
           }
           var dustGeo = new THREE.BufferGeometry();
           dustGeo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-          var dustMat = new THREE.PointsMaterial({
-            color: 0xfff6dc, map: tex.dustMap || null, size: 0.065, sizeAttenuation: true,
-            transparent: true, opacity: 0.34, depthWrite: false, blending: THREE.AdditiveBlending || THREE.NormalBlending
-          });
-          dustPoints = new THREE.Points(dustGeo, dustMat);
-          dustPoints.renderOrder = 4;
-          S.model.add(dustPoints);
+          dustGeo.setAttribute('aSeed', new THREE.Float32BufferAttribute(seeds, 1));
+          dustGeo.setAttribute('aSize', new THREE.Float32BufferAttribute(sizes, 1));
+          var dustMat = null;
+          if (typeof THREE.ShaderMaterial === 'function') {
+            var dustTime = { value: STATIC_BEAUTY_TIME };
+            walkTimeUniforms.push(dustTime);
+            var dpr = (S.renderer && typeof S.renderer.getPixelRatio === 'function') ? Math.min(2, S.renderer.getPixelRatio() || 1) : 1;
+            dustMat = new THREE.ShaderMaterial({
+              transparent: true, depthWrite: false, fog: false, toneMapped: false,
+              blending: THREE.AdditiveBlending || THREE.NormalBlending,
+              uniforms: {
+                uTime: dustTime,
+                uPixelRatio: { value: dpr },
+                uColor: { value: new THREE.Color(0xfff5d8) }
+              },
+              vertexShader: [
+                'attribute float aSeed; attribute float aSize;',
+                'uniform float uTime; uniform float uPixelRatio;',
+                'varying float vTwinkle;',
+                'void main(){',
+                '  vec3 p = position;',
+                '  float t = uTime * 0.45;',
+                '  p.x += sin(t + aSeed) * 0.14;',
+                '  p.y += sin(t * 0.72 + aSeed * 1.4) * 0.10;',
+                '  p.z += cos(t * 0.84 + aSeed * 0.9) * 0.12;',
+                '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
+                '  float dist = max(1.0, -mv.z);',
+                '  gl_PointSize = clamp(aSize * uPixelRatio * (52.0 / dist), 1.5, 11.0);',
+                '  float distFade = smoothstep(42.0, 8.0, dist) * smoothstep(0.6, 2.2, dist);',
+                '  vTwinkle = (0.58 + 0.42 * sin(uTime * 1.15 + aSeed * 2.7)) * distFade;',
+                '  gl_Position = projectionMatrix * mv;',
+                '}'
+              ].join('\n'),
+              fragmentShader: [
+                'uniform vec3 uColor; varying float vTwinkle;',
+                'void main(){',
+                '  vec2 c = gl_PointCoord - vec2(0.5);',
+                '  float r2 = dot(c, c);',
+                '  if (r2 > 0.25) discard;',
+                '  float glow = exp(-r2 * 14.0);',
+                '  gl_FragColor = vec4(uColor, glow * vTwinkle * 0.36);',
+                '}'
+              ].join('\n')
+            });
+          } else if (typeof THREE.PointsMaterial === 'function') {
+            dustMat = new THREE.PointsMaterial({
+              color: 0xfff6dc, map: tex.dustMap || null, size: 0.065, sizeAttenuation: true,
+              transparent: true, opacity: 0.34, depthWrite: false, blending: THREE.AdditiveBlending || THREE.NormalBlending
+            });
+          }
+          if (dustMat) {
+            dustPoints = new THREE.Points(dustGeo, dustMat);
+            dustPoints.renderOrder = 4;
+            dustPoints.visible = !hcInitial;
+            walkDecorMeshes.push(dustPoints);
+            S.model.add(dustPoints);
+          }
         }
         // Shallow wall reliefs keep the exhibits legible while turning around.
         bayXs.forEach(function (x, index) {
@@ -1404,18 +1662,15 @@
       S.walk = { ring: ring.parts, ringGeometry: ring, blocks: objects, tokens: tokens, parallax: parallax, parallaxRound: parallaxRound, parallaxMeshes: parallaxMeshes, contour: contour,
         context: context.objects, contextSwitch: context.toggle, continuity: continuity, shadow: shadow, change: change, rotation: rotation, relief: relief, shape: shape, motion: motion, frame: frame, weave: weave, landing: landing, aperture: aperture, length: length, silhouette: silhouette, anamorphosis: anamorphosis,
         labels: parallaxLabels, panelLabels: panelLabels, changeLabels: changeLabels, rotationLabels: rotationLabels, reliefLabels: reliefLabels, shapeLabels: shapeLabels, motionLabels: motionLabels, weaveLabels: weaveLabels, landingLabels: landingLabels, silhouetteLabels: silhouetteLabels, referenceLabels: referenceLabels, anamorphosisLabels: anamorphosisLabels, solids: solids };
-      S.tick = dustPoints ? function (now) {
-        if ((S.data && S.data.static) || prefersReducedMotion()) return;
-        var attr = dustPoints.geometry && dustPoints.geometry.attributes && dustPoints.geometry.attributes.position;
-        if (!attr || !dustBase || !dustSeeds) return;
-        var t = (now || 0) * 0.00042, arr = attr.array;
-        for (var i = 0; i < dustSeeds.length; i++) {
-          var s = dustSeeds[i], j = i * 3;
-          arr[j] = dustBase[j] + Math.sin(t + s) * 0.12;
-          arr[j + 1] = dustBase[j + 1] + Math.sin(t * 0.72 + s * 1.4) * 0.09;
-          arr[j + 2] = dustBase[j + 2] + Math.cos(t * 0.84 + s * 0.9) * 0.11;
+      S.tick = (walkTimeUniforms.length || walkDecorMeshes.length || walkRimUniforms.length) ? function (now) {
+        var hc = isHighContrast(S.renderer && S.renderer.domElement);
+        for (var di = 0; di < walkDecorMeshes.length; di++) walkDecorMeshes[di].visible = !hc;
+        for (var ri = 0; ri < walkRimUniforms.length; ri++) {
+          walkRimUniforms[ri].uniform.value = hc ? 0.0 : walkRimUniforms[ri].base;
         }
-        attr.needsUpdate = true;
+        var frozen = (S.data && S.data.static) || prefersReducedMotion();
+        var t = frozen ? STATIC_BEAUTY_TIME : (now || 0) * 0.001;
+        for (var ui = 0; ui < walkTimeUniforms.length; ui++) walkTimeUniforms[ui].value = t;
       } : null;
       S.target.set(0, EYE_Y, 0);
       S.fitPts = [];

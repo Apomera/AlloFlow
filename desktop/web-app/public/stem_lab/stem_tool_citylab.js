@@ -1161,7 +1161,24 @@
     };
   }
 
-  function clonePlan(plan) { return JSON.parse(JSON.stringify(plan)); }
+  function _citySafeJsonParse(text) {
+    return JSON.parse(text, function (k, v) {
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') return undefined;
+      return v;
+    });
+  }
+
+  function _cityIsGlobalMuted() {
+    if (typeof window === 'undefined') return false;
+    try {
+      if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true;
+      if (window.__alloGlobalMuted || window._alloGlobalMute || window.__alloMuted) return true;
+      if (window.localStorage && window.localStorage.getItem('alloflow_global_mute') === 'true') return true;
+    } catch (_) {}
+    return false;
+  }
+
+  function clonePlan(plan) { return _citySafeJsonParse(JSON.stringify(plan)); }
 
   // Import is MERGE-ONLY: it starts from the named town's baseline and lays
   // the imported choices on top, keeping only keys it recognises. A plan file
@@ -1172,7 +1189,7 @@
   // Returns { ok, plan, error, warnings } and never throws.
   function importPlan(raw) {
     var data;
-    try { data = typeof raw === 'string' ? JSON.parse(raw) : raw; }
+    try { data = typeof raw === 'string' ? _citySafeJsonParse(raw) : raw; }
     catch (e) { return { ok: false, error: __alloT('stem.citylab.import_not_json', 'That file is not valid JSON.') }; }
     if (!data || typeof data !== 'object') return { ok: false, error: __alloT('stem.citylab.import_not_plan', 'That file is not a plan.') };
     if (data.v !== 1) return { ok: false, error: __alloT('stem.citylab.import_wrong_version', 'That plan was saved by a different version of this tool.') };
@@ -3113,7 +3130,7 @@
   // Returns null for anything that is not a plan, never throws.
   function restorePlan(raw) {
     var data = raw;
-    try { if (typeof raw === 'string') data = JSON.parse(raw); } catch (e) { return null; }
+    try { if (typeof raw === 'string') data = _citySafeJsonParse(raw); } catch (e) { return null; }
     if (!data || typeof data !== 'object') return null;
     var res = importPlan(data);
     if (!res.ok) return null;
@@ -3991,6 +4008,7 @@
   // Exposed before the StemLab guard so the suite can load this file
   // without the lab shell present.
   // ===================================================================
+  if (typeof window !== 'undefined') {
   window.__alloCityLabPure = {
     COLS: COLS, N_COLS: N_COLS, N_ROWS: N_ROWS, MIN_PER_HOP: MIN_PER_HOP,
     USES: USES, USE_BY_ID: USE_BY_ID, PALETTE_IDS: PALETTE_IDS,
@@ -4083,6 +4101,7 @@
     // W8 (2026-11-04).
     followPoint: followPoint, cityAim: cityAim, FOLLOW_MARGIN: FOLLOW_MARGIN, FOLLOW_MS: FOLLOW_MS
   };
+  }
 
   // ===================================================================
   // THE 3D SCENE
@@ -5356,7 +5375,7 @@
     return moved ? Object.assign({}, f, { kind: 'follow', id: id }) : null;
   }
 
-  if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
+  if (typeof window === 'undefined' || !window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
   // ===================================================================
   // THE 3D VIEWER
@@ -6206,8 +6225,10 @@
 
       function upd(patch) {
         setToolData(function (prev) {
-          var cur = Object.assign({}, (prev && prev._cityLab) || {}, patch);
-          var next = Object.assign({}, prev);
+          var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var prevCity = (base._cityLab && typeof base._cityLab === 'object' && !Array.isArray(base._cityLab)) ? base._cityLab : {};
+          var cur = Object.assign({}, prevCity, patch);
+          var next = Object.assign({}, base);
           next._cityLab = cur;
           return next;
         });
@@ -6216,9 +6237,11 @@
       // from the latest stored value, never from this render's copy.
       function updWith(fn) {
         setToolData(function (prev) {
-          var cur = Object.assign({}, (prev && prev._cityLab) || {});
+          var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var prevCity = (base._cityLab && typeof base._cityLab === 'object' && !Array.isArray(base._cityLab)) ? base._cityLab : {};
+          var cur = Object.assign({}, prevCity);
           Object.assign(cur, fn(cur) || {});
-          var next = Object.assign({}, prev);
+          var next = Object.assign({}, base);
           next._cityLab = cur;
           return next;
         });
@@ -6255,8 +6278,19 @@
         a.nodes.forEach(function (n) { try { n.stop(); } catch (_) {} });
         try { if (a.ctx && typeof a.ctx.close === 'function') a.ctx.close(); } catch (_) {}
       }
+      React.useEffect(function () {
+        if (typeof window === 'undefined' || !window.addEventListener) return;
+        var onMute = function (ev) {
+          var muted = (ev && ev.detail && typeof ev.detail.muted === 'boolean') ? ev.detail.muted : _cityIsGlobalMuted();
+          if (muted) { stopTones(); closeCueAudio(); }
+        };
+        window.addEventListener('alloflow-mute-changed', onMute);
+        return function () { window.removeEventListener('alloflow-mute-changed', onMute); };
+      }, []);
+
       function playTones(seq, startMsg) {
         stopTones();
+        if (_cityIsGlobalMuted()) return false;
         var AC = typeof window !== 'undefined' ? (window.AudioContext || window.webkitAudioContext) : null;
         var ac = null;
         try { ac = AC ? new AC() : null; } catch (_) { ac = null; }
@@ -6801,6 +6835,8 @@
       }
 
       function boardKeyDown(e, id) {
+        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+        if (e.altKey || e.ctrlKey || e.metaKey) return;
         var col = parcelCol(id), row = parcelRow(id), target = null;
         // W1: Shift + arrow builds (or removes) a connection to the next
         // parcel, the keyboard twin of a road drawn on the 3D board, then
@@ -7189,6 +7225,8 @@
         }
       }
       function lensKeyDown(e) {
+        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+        if (e.altKey || e.ctrlKey || e.metaKey) return;
         var k = e.key;
         if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].indexOf(k) === -1) return;
         var items = Array.prototype.slice.call(e.currentTarget.querySelectorAll('[data-citylab-lens]'));
@@ -7328,6 +7366,7 @@
             'data-citylab-options': optionsOpen ? 'open' : 'closed',
             hidden: !optionsOpen, style: optionsOpen ? undefined : { display: 'none' },
             onKeyDown: function (e) {
+              if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
               if (e.key !== 'Escape') return;
               e.preventDefault(); e.stopPropagation();
               setOptionsOpen(false);
@@ -7715,6 +7754,7 @@
         return (2.4 * Math.max(f.hx, f.hz)) / (Math.max(0.5, cam.zoom) * w);
       }
       function stageKeyDown(e) {
+        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
         if (e.altKey || e.ctrlKey || e.metaKey) return;
         var k = e.key;
         // W3: Shift + arrows slide the view one parcel; plain arrows turn it.
@@ -7839,6 +7879,8 @@
       // the tool in use, the arrow keys move along it (a toolbar). K-2 and
       // 3-5 see a picture above each word. Every tool is still here.
       function paletteKeyDown(e) {
+        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+        if (e.altKey || e.ctrlKey || e.metaKey) return;
         var k = e.key;
         if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].indexOf(k) === -1) return;
         var items = Array.prototype.slice.call(e.currentTarget.querySelectorAll('[data-citylab-palette-item]'));
@@ -8005,6 +8047,7 @@
         // (Escape clearing a road start) is left to that control.
         function fsKeyDown(e) {
           if (!fullscreen) return;
+          if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
           if (e.key === 'Escape') {
             e.stopPropagation();
             if (e.defaultPrevented) return;
@@ -10195,6 +10238,8 @@
       };
 
       function tabKeyDown(e, idx) {
+        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+        if (e.altKey || e.ctrlKey || e.metaKey) return;
         var next = null;
         if (e.key === 'ArrowRight') next = (idx + 1) % TABS.length;
         else if (e.key === 'ArrowLeft') next = (idx - 1 + TABS.length) % TABS.length;
@@ -10610,7 +10655,7 @@
           'aria-labelledby': 'citylab-coach-title', 'data-citylab-coach': String(n),
           className: 'rounded-lg border mb-2 ' + (narrowUi ? 'p-2' : 'p-2.5'),
           style: { background: softBlue, borderColor: '#1f5eb0' },
-          onKeyDown: function (e) { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeCoach(); } }
+          onKeyDown: function (e) { if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return; if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeCoach(); } }
         },
           // W6: the coach and the strip share this one slot. While the coach
           // runs, the folded strip is a button beside Close, not a box of its own.
@@ -10662,9 +10707,10 @@
       }
       // The first press or key anywhere in the tool after Sounds is on makes
       // the context (browsers only start audio from a gesture).
-      function cueGesture() { if (d.soundOn && !cueAudio()) makeCueAudio(); }
+      function cueGesture() { if (d.soundOn && !_cityIsGlobalMuted() && !cueAudio()) makeCueAudio(); }
       var CUE_TONES = { row: [660], pass: [523, 659, 784], on: [587] };
       function playCue(kind, acIn) {
+        if (_cityIsGlobalMuted()) return false;
         if (!acIn && !d.soundOn) return false;
         var ac = acIn || cueAudio();
         if (!ac || typeof ac.createOscillator !== 'function') return false;
@@ -10688,8 +10734,10 @@
         upd({ soundOn: on });
         if (on) {
           // This press IS the first gesture with Sounds on.
-          var ac = cueAudio() || makeCueAudio();
-          playCue('on', ac);
+          if (!_cityIsGlobalMuted()) {
+            var ac = cueAudio() || makeCueAudio();
+            playCue('on', ac);
+          }
           announceToSR(t('stem.citylab.sr_sound_on', 'Sounds on: a soft tone when a requirement turns met and when a mission passes. Every sound is also written on screen.'));
         } else {
           closeCueAudio();
@@ -10733,6 +10781,8 @@
       // brief. Each row of buttons is a toolbar: ONE tab stop (its first
       // button, or the one last used), and the arrow keys move along it.
       function stripRoveKeyDown(e) {
+        if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+        if (e.altKey || e.ctrlKey || e.metaKey) return;
         var k = e.key;
         if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].indexOf(k) === -1) return;
         var items = Array.prototype.slice.call(e.currentTarget.querySelectorAll('[data-citylab-rove]'));

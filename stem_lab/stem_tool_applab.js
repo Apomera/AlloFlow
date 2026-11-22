@@ -34,6 +34,63 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // Cinema-grade AppLab event-signal pulse packets, telemetry beacons & tactile stage polish
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-applab-motion-polish-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-applab-motion-polish-css';
+    st.textContent = [
+      '@keyframes applabBusDash{0%{stroke-dashoffset:24}100%{stroke-dashoffset:0}}',
+      '@keyframes applabPacketSlide{0%{transform:translateX(-6px);opacity:0.25}50%{transform:translateX(0px);opacity:1}100%{transform:translateX(6px);opacity:0.25}}',
+      '@keyframes applabBeaconBreath{0%,100%{opacity:0.22;transform:scale(1)}50%{opacity:0.56;transform:scale(1.28)}}',
+      '@keyframes applabThumbPulse{0%,100%{opacity:0.35;transform:scale(1)}50%{opacity:0.8;transform:scale(1.35)}}',
+      '[data-applab-workbench] .applab-bus-flow{animation:applabBusDash 1.6s linear infinite}',
+      '[data-applab-workbench] .applab-sig-packet{transform-box:fill-box;transform-origin:center;animation:applabPacketSlide 1.5s ease-in-out infinite}',
+      '[data-applab-workbench] .applab-node-beacon{transform-box:fill-box;transform-origin:center;animation:applabBeaconBreath 2.2s ease-in-out infinite}',
+      '[data-applab-workbench] .applab-meter-halo{transform-box:fill-box;transform-origin:center;animation:applabThumbPulse 2.4s ease-in-out infinite}',
+      '.theme-contrast [data-applab-workbench] .applab-bus-flow,.theme-contrast [data-applab-workbench] .applab-sig-packet,.theme-contrast [data-applab-workbench] .applab-node-beacon,.theme-contrast [data-applab-workbench] .applab-meter-halo{animation:none!important}',
+      '@media (prefers-reduced-motion: reduce){[data-applab-workbench] .applab-bus-flow,[data-applab-workbench] .applab-sig-packet,[data-applab-workbench] .applab-node-beacon,[data-applab-workbench] .applab-meter-halo{animation:none!important}}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
+  // ── Zero-GC Live Signal & Tactile Ripple Pools (VM-sandbox & JSDOM safe) ──
+  function _applabIsHighContrast() {
+    if (typeof document === 'undefined') return false;
+    var root = document.documentElement;
+    if (root && root.classList && root.classList.contains('theme-contrast')) return true;
+    return !!(document.body && document.body.classList && document.body.classList.contains('theme-contrast'));
+  }
+  function _applabPrefersReducedMotion() {
+    try { return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; }
+  }
+  function _applabAllocF32(n) {
+    if (typeof Float32Array === 'function') return new Float32Array(n);
+    var a = new Array(n);
+    for (var i = 0; i < n; i++) a[i] = 0;
+    return a;
+  }
+  var _APPLAB_PACKET_COUNT = 12;
+  var _applabPktPhase = _applabAllocF32(_APPLAB_PACKET_COUNT);
+  var _applabPktSpeed = _applabAllocF32(_APPLAB_PACKET_COUNT);
+  var _applabPktLane = _applabAllocF32(_APPLAB_PACKET_COUNT);
+  var _APPLAB_RIPPLE_MAX = 8;
+  var _applabRipX = _applabAllocF32(_APPLAB_RIPPLE_MAX);
+  var _applabRipY = _applabAllocF32(_APPLAB_RIPPLE_MAX);
+  var _applabRipT = _applabAllocF32(_APPLAB_RIPPLE_MAX);
+  var _applabRipHead = 0;
+  var _applabPktColors = ['#38bdf8', '#818cf8', '#34d399', '#fbbf24', '#f87171', '#22c55e'];
+  (function _initAppLabPools() {
+    for (var i = 0; i < _APPLAB_PACKET_COUNT; i++) {
+      _applabPktPhase[i] = i / _APPLAB_PACKET_COUNT;
+      _applabPktSpeed[i] = 0.16 + (i % 4) * 0.045;
+      _applabPktLane[i] = (i % 3 === 0) ? 0.5 : (i % 3 === 1 ? 0.28 : 0.72);
+    }
+    for (var r = 0; r < _APPLAB_RIPPLE_MAX; r++) {
+      _applabRipT[r] = -1;
+    }
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _applabAC = null;
@@ -19052,6 +19109,33 @@ test('no a11y violations', async () => {
           return;
         }
         if (!userPrompt.trim()) return;
+        // Safety gate: App Lab sends the student's free-text app description to
+        // the AI architect. Block critical self-harm/violence disclosures first.
+        var _alBlocked = (function(msg) {
+          var onFlag = typeof ctx.onSafetyFlag === 'function' ? ctx.onSafetyFlag : null;
+          if (window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+            try {
+              var r = window.SelHub.safeRehearseCheck(msg, { toolId: 'appLab_prompt', onSafetyFlag: onFlag });
+              if (r && r.action === 'block') return true;
+            } catch (_) {}
+          }
+          var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+          var flags = null;
+          try { flags = (checker && checker.check) ? checker.check(msg) : null; } catch (_) { flags = null; }
+          var crit = Array.isArray(flags) && flags.find(function(f) { return f && f.severity === 'critical'; });
+          if (crit) {
+            if (onFlag) { try { onFlag(Object.assign({}, crit, { source: 'stem_appLab_prompt', context: msg.slice(0, 100), aiGenerated: false })); } catch (_) {} }
+            return true;
+          }
+          return false;
+        })(userPrompt.trim());
+        if (_alBlocked) {
+          addToast && addToast('Paused for safety — your wellbeing matters more than this project. Please talk to a trusted adult, call or text 988, or text HOME to 741741.', 'warn');
+          if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') {
+            try { window.SelHub.showCrisisModal({ toolName: 'App Lab', contentSnippet: userPrompt.trim() }); } catch (_) {}
+          }
+          return;
+        }
         cancelRef.current = false;
         setIsGenerating(true);
         setShowCode(false);
@@ -20482,10 +20566,22 @@ test('no a11y violations', async () => {
         activeTab === 'build' && h('div', { id: 'applab-panel-build', role: 'tabpanel', 'aria-labelledby': 'applab-tab-build', tabIndex: 0, style: { flex: 1, minHeight: 0, overflowY: 'auto' } },
           !html && h('div', { style: { maxWidth: '760px', margin: '0 auto', width: '100%' } },
 
-          // ── Visual Stage: Live Multi-Agent Pipeline Topology SVG ──
+          // ── Visual Stage: Live Multi-Agent Pipeline Topology SVG + Zero-GC Event-Signal Canvas ──
           h('div', {
             'data-applab-pipeline-stage': 'true',
+            onPointerDown: function(ev) {
+              if (isContrast || _applabIsHighContrast() || _applabPrefersReducedMotion()) return;
+              var rect = ev.currentTarget && typeof ev.currentTarget.getBoundingClientRect === 'function' ? ev.currentTarget.getBoundingClientRect() : null;
+              if (!rect || !rect.width || !rect.height) return;
+              var nowMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+              _applabRipX[_applabRipHead] = (ev.clientX - rect.left) / rect.width;
+              _applabRipY[_applabRipHead] = (ev.clientY - rect.top) / rect.height;
+              _applabRipT[_applabRipHead] = nowMs;
+              _applabRipHead = (_applabRipHead + 1) % _APPLAB_RIPPLE_MAX;
+            },
             style: {
+              position: 'relative',
+              overflow: 'hidden',
               marginBottom: '12px',
               padding: '12px 14px',
               borderRadius: '14px',
@@ -20494,7 +20590,97 @@ test('no a11y violations', async () => {
               color: '#f8fafc'
             }
           },
-            h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '6px' } },
+            !isContrast && h('canvas', {
+              'aria-hidden': 'true',
+              ref: function(cv) {
+                if (!cv) return;
+                cv._alActiveCount = activeAgentCount;
+                cv._alGenerating = !!isGenerating;
+                if (cv._alAnim) return;
+                var c2 = cv.getContext ? cv.getContext('2d') : null;
+                if (!c2) return;
+                var startMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+                var drawSignals = function(ts) {
+                  if (!cv.isConnected) {
+                    if (cv._alAnim && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(cv._alAnim);
+                    cv._alAnim = null;
+                    return;
+                  }
+                  var isHC = _applabIsHighContrast();
+                  var reduced = _applabPrefersReducedMotion();
+                  var W = cv.offsetWidth || 660;
+                  var H = cv.offsetHeight || 118;
+                  var tw = W * 2, th = H * 2;
+                  if (cv.width !== tw) cv.width = tw;
+                  if (cv.height !== th) cv.height = th;
+                  if (typeof c2.setTransform === 'function') c2.setTransform(2, 0, 0, 2, 0, 0);
+                  c2.clearRect(0, 0, W, H);
+                  if (!isHC && !reduced) {
+                    var tSec = (ts - startMs) * 0.001;
+                    var speedMul = cv._alGenerating ? 1.85 : 1.0;
+                    var busY = H * 0.62;
+                    // Zero-GC glowing event-signal packets + tapered telemetry wakes across pipeline bus
+                    for (var pi = 0; pi < _APPLAB_PACKET_COUNT; pi++) {
+                      var u = (_applabPktPhase[pi] + tSec * _applabPktSpeed[pi] * speedMul) % 1;
+                      var px = 18 + u * (W - 36);
+                      var py = busY + (_applabPktLane[pi] - 0.5) * 34;
+                      var col = _applabPktColors[pi % _applabPktColors.length];
+                      var edgeFade = Math.sin(u * Math.PI);
+                      if (edgeFade < 0.04) continue;
+                      c2.save();
+                      c2.globalAlpha = edgeFade * (cv._alGenerating ? 0.52 : 0.30);
+                      c2.strokeStyle = col;
+                      c2.lineWidth = 1.6;
+                      c2.beginPath();
+                      c2.moveTo(Math.max(12, px - 18), py);
+                      c2.lineTo(px, py);
+                      c2.stroke();
+                      c2.fillStyle = '#ffffff';
+                      c2.globalAlpha = edgeFade * (cv._alGenerating ? 0.80 : 0.48);
+                      c2.beginPath();
+                      c2.arc(px, py, 1.8, 0, Math.PI * 2);
+                      c2.fill();
+                      c2.restore();
+                    }
+                    // Zero-GC tactile pointer ripple rings on click/tap
+                    for (var ri = 0; ri < _APPLAB_RIPPLE_MAX; ri++) {
+                      var rt0 = _applabRipT[ri];
+                      if (rt0 < 0) continue;
+                      var age = (ts - rt0) * 0.001;
+                      if (age < 0 || age > 0.72) {
+                        if (age > 0.72) _applabRipT[ri] = -1;
+                        continue;
+                      }
+                      var rp = age / 0.72;
+                      var rx = _applabRipX[ri] * W;
+                      var ry = _applabRipY[ri] * H;
+                      c2.save();
+                      c2.globalAlpha = (1 - rp) * 0.65;
+                      c2.strokeStyle = '#a78bfa';
+                      c2.lineWidth = Math.max(0.7, 2.2 * (1 - rp));
+                      c2.beginPath();
+                      c2.arc(rx, ry, 6 + rp * 38, 0, Math.PI * 2);
+                      c2.stroke();
+                      c2.globalAlpha = (1 - rp) * 0.42;
+                      c2.strokeStyle = '#38bdf8';
+                      c2.lineWidth = Math.max(0.5, 1.4 * (1 - rp));
+                      c2.beginPath();
+                      c2.arc(rx, ry, 3 + rp * 22, 0, Math.PI * 2);
+                      c2.stroke();
+                      c2.restore();
+                    }
+                  }
+                  if (!reduced && typeof requestAnimationFrame === 'function') {
+                    cv._alAnim = requestAnimationFrame(drawSignals);
+                  } else {
+                    cv._alAnim = null;
+                  }
+                };
+                drawSignals(startMs);
+              },
+              style: { position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }
+            }),
+            h('div', { style: { position: 'relative', zIndex: 1, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '8px', marginBottom: '6px' } },
               h('span', { style: { fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: isContrast ? '#ffff00' : '#c4b5fd' } },
                 __alloT('stem.applab.svg_stage_title', 'Build Pipeline Architecture')),
               h('span', { style: { fontSize: '11px', fontWeight: 600, color: '#cbd5e1' } },
@@ -20504,15 +20690,15 @@ test('no a11y violations', async () => {
             ),
             h('svg', {
               viewBox: '0 0 660 88',
-              style: { width: '100%', height: 'auto', display: 'block' },
+              style: { position: 'relative', zIndex: 1, width: '100%', height: 'auto', display: 'block' },
               role: 'img',
               'aria-label': __alloT('stem.applab.svg_pipeline_aria', 'Diagram of active AI build pipeline stages from prompt to live app')
             },
               !isContrast && h('defs', null,
                 h('linearGradient', { id: 'applabStageBg', x1: '0', y1: '0', x2: '1', y2: '1' },
-                  h('stop', { offset: '0%', stopColor: '#090e1c' }),
-                  h('stop', { offset: '55%', stopColor: '#111936' }),
-                  h('stop', { offset: '100%', stopColor: '#090e1c' })
+                  h('stop', { offset: '0%', stopColor: 'rgba(9,14,28,0.82)' }),
+                  h('stop', { offset: '55%', stopColor: 'rgba(17,25,54,0.80)' }),
+                  h('stop', { offset: '100%', stopColor: 'rgba(9,14,28,0.82)' })
                 ),
                 h('linearGradient', { id: 'applabBusGrad', x1: '0', y1: '0', x2: '1', y2: '0' },
                   h('stop', { offset: '0%', stopColor: '#38bdf8' }),
@@ -20525,8 +20711,8 @@ test('no a11y violations', async () => {
               ),
               h('rect', { x: 1, y: 1, width: 658, height: 86, rx: 10, fill: isContrast ? '#000000' : 'url(#applabStageBg)', stroke: isContrast ? '#666666' : 'rgba(99,102,241,0.22)', strokeWidth: 1 }),
               !isContrast && h('rect', { x: 2, y: 2, width: 656, height: 84, rx: 9, fill: 'url(#applabGridPat)' }),
-              // Subtle stage signal spine behind nodes
-              !isContrast && h('line', { x1: 24, y1: 42, x2: 636, y2: 42, stroke: 'url(#applabBusGrad)', strokeWidth: 1, opacity: 0.2 }),
+              // Animated stage signal spine behind nodes
+              !isContrast && h('line', { x1: 24, y1: 42, x2: 636, y2: 42, stroke: 'url(#applabBusGrad)', strokeWidth: 1.4, strokeDasharray: '6 6', opacity: 0.34, className: 'applab-bus-flow' }),
               pipelineSvgStages.map(function(st, idx) {
                 var x = 10 + idx * 108;
                 var nextX = x + 92;
@@ -20552,8 +20738,10 @@ test('no a11y violations', async () => {
                       fill: linkActive ? (isContrast ? '#ffff00' : st.color) : '#475569'
                     }),
                     linkActive && !isContrast && h('circle', {
-                      cx: nextX + 6, cy: 42, r: st.running ? 2.6 : 1.8,
-                      fill: '#ffffff', opacity: st.running ? 0.95 : 0.72
+                      cx: nextX + 6, cy: 42, r: st.running ? 2.8 : 2.0,
+                      fill: '#ffffff', opacity: st.running ? 0.95 : 0.78,
+                      className: 'applab-sig-packet',
+                      style: { animationDelay: (idx * 0.22) + 's' }
                     })
                   ),
                   (st.running || st.active) && !isContrast && h('rect', {
@@ -20571,7 +20759,12 @@ test('no a11y violations', async () => {
                     x: x + 10, y: 14.5, width: 72, height: 2.5, rx: 1.25,
                     fill: strokeCol, opacity: st.running ? 0.95 : 0.65
                   }),
-                  !isContrast && st.active && h('circle', { cx: x + 16, cy: 31, r: 8, fill: st.running ? '#22c55e' : strokeCol, opacity: 0.2 }),
+                  !isContrast && st.active && h('circle', {
+                    cx: x + 16, cy: 31, r: 8,
+                    fill: st.running ? '#22c55e' : strokeCol, opacity: 0.24,
+                    className: 'applab-node-beacon',
+                    style: { animationDelay: (idx * 0.28) + 's' }
+                  }),
                   h('circle', { cx: x + 16, cy: 31, r: 4.5, fill: st.running ? '#22c55e' : (st.active ? strokeCol : '#475569') }),
                   h('text', { x: x + 26, y: 35, fill: st.active ? '#ffffff' : '#94a3b8', fontSize: 11, fontWeight: 700 }, st.label),
                   h('text', { x: x + 12, y: 55, fill: st.active ? (isContrast ? '#ffff00' : '#cbd5e1') : '#94a3b8', fontSize: 10 },
@@ -21057,11 +21250,15 @@ test('no a11y violations', async () => {
               h('text', { x: 8, y: 18, fill: '#f8fafc', fontSize: 11, fontWeight: 700 }, 'Reliability'),
               h('rect', { x: 86, y: 8, width: 190, height: 12, rx: 6, fill: '#0f172a', stroke: '#475569', strokeWidth: 1 }),
               h('rect', { x: 86, y: 8, width: Math.max(4, qualBarW), height: 12, rx: 6, fill: isContrast ? sm.color : 'url(#applabQualGrad)' }),
+              !isContrast && h('rect', { x: 88, y: 9.5, width: Math.max(2, qualBarW - 4), height: 3.2, rx: 1.6, fill: 'rgba(255,255,255,0.36)' }),
+              !isContrast && h('circle', { cx: 86 + Math.max(6, qualBarW), cy: 14, r: 8, fill: sm.color, fillOpacity: 0.25, className: 'applab-meter-halo' }),
               !isContrast && h('circle', { cx: 86 + Math.max(6, qualBarW), cy: 14, r: 4, fill: '#ffffff', stroke: sm.color, strokeWidth: 1.6 }),
               h('text', { x: 288, y: 18, fill: sm.color, fontSize: 11, fontWeight: 700 }, promptQuality.toFixed(1) + ' / 12.5'),
               h('text', { x: 8, y: 42, fill: '#f8fafc', fontSize: 11, fontWeight: 700 }, 'Brittleness'),
               h('rect', { x: 86, y: 32, width: 190, height: 12, rx: 6, fill: '#0f172a', stroke: '#475569', strokeWidth: 1 }),
               h('rect', { x: 86, y: 32, width: Math.max(4, britBarW), height: 12, rx: 6, fill: isContrast ? '#00ffff' : 'url(#applabBritGrad)' }),
+              !isContrast && h('rect', { x: 88, y: 33.5, width: Math.max(2, britBarW - 4), height: 3.2, rx: 1.6, fill: 'rgba(255,255,255,0.34)' }),
+              !isContrast && h('circle', { cx: 86 + Math.max(6, britBarW), cy: 38, r: 8, fill: '#fb923c', fillOpacity: 0.25, className: 'applab-meter-halo', style: { animationDelay: '0.6s' } }),
               !isContrast && h('circle', { cx: 86 + Math.max(6, britBarW), cy: 38, r: 4, fill: '#ffffff', stroke: '#fb923c', strokeWidth: 1.6 }),
               h('text', { x: 288, y: 42, fill: isContrast ? '#00ffff' : '#fdba74', fontSize: 11, fontWeight: 700 }, brittleness.toFixed(1) + ' / 10.0')
             ),

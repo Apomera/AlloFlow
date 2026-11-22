@@ -20,7 +20,7 @@ parts.forEach((part) => {
   Object.keys(part).forEach((shortId) => {
     const fullId = shortId.startsWith(ID_PREFIX) ? shortId : ID_PREFIX + shortId.replace(/^item-/, '');
     if (AP_US_HISTORY_DISTRACTOR_FEEDBACK[fullId]) throw new Error('Duplicate distractor feedback entry for ' + fullId);
-    AP_US_HISTORY_DISTRACTOR_FEEDBACK[fullId] = part[shortId];
+    AP_US_HISTORY_DISTRACTOR_FEEDBACK[fullId] = { ...part[shortId] };
   });
 });
 
@@ -29,6 +29,30 @@ parts.forEach((part) => {
 function normalizeChoiceText(value) {
   return String(value || '').replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[−–—]/g, '-').replace(/\s+/g, ' ').trim();
 }
+
+const enrichmentParts = [
+  require('../ap_us_history_choice_overrides/feedback_enrichment_p1.cjs'),
+  require('../ap_us_history_choice_overrides/feedback_enrichment_p2.cjs'),
+  require('../ap_us_history_choice_overrides/feedback_enrichment_p3.cjs'),
+  require('../ap_us_history_choice_overrides/feedback_enrichment_p4.cjs'),
+  require('../ap_us_history_choice_overrides/feedback_enrichment_p5.cjs'),
+  require('../ap_us_history_choice_overrides/feedback_enrichment_p6.cjs'),
+];
+
+enrichmentParts.forEach((enrichmentPart) => {
+  Object.entries(enrichmentPart).forEach(([itemId, feedbackMap]) => {
+    const entry = AP_US_HISTORY_DISTRACTOR_FEEDBACK[itemId];
+    if (!entry) throw new Error('Unknown APUSH distractor feedback item id in enrichment: ' + itemId);
+    Object.entries(feedbackMap).forEach(([choiceText, note]) => {
+      const wanted = normalizeChoiceText(choiceText);
+      const existingKey = Object.keys(entry).find((candidate) => normalizeChoiceText(candidate) === wanted);
+      if (!existingKey) {
+        throw new Error('Unmatched APUSH distractor feedback key for ' + itemId + ': ' + choiceText);
+      }
+      entry[existingKey] = note;
+    });
+  });
+});
 
 function distractorFeedbackFor(itemId, choiceText) {
   const entry = AP_US_HISTORY_DISTRACTOR_FEEDBACK[itemId];

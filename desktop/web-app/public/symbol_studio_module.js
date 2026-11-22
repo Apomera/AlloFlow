@@ -2296,7 +2296,7 @@
         if (attempt > 0) await new Promise(function (r) { setTimeout(r, 1000 * Math.pow(2, attempt)); });
         return await promiseWithTimeout(genImage(prompt, onCallImagen, onCallGeminiImageEdit, autoClean, avatarBase64, width), 90000, 'Image generation timed out. Please try again.');
       } catch (e) {
-        if (attempt === MAX_RETRIES - 1) throw e;
+        if ((e && e.message === 'safety-paused') || attempt === MAX_RETRIES - 1) throw e;
       }
     }
   }
@@ -2665,9 +2665,49 @@
   }
 
   var SymbolStudio = React.memo(function SymbolStudio(props) {
-    var onCallImagen = props.onCallImagen;
-    var onCallGeminiImageEdit = props.onCallGeminiImageEdit;
-    var onCallGemini = props.onCallGemini;
+    var _rawOnCallImagen = props.onCallImagen;
+    var _rawOnCallGeminiImageEdit = props.onCallGeminiImageEdit;
+    var _rawOnCallGemini = props.onCallGemini;
+    var onSafetyFlag = typeof props.onSafetyFlag === 'function' ? props.onSafetyFlag : null;
+    var _ssToast = props.addToast;
+    var _ssCheckSelfHarm = useCallback(function (prompt, surface) {
+      if (typeof prompt === 'string' && prompt.trim() && typeof window !== 'undefined' && window.SafetyContentChecker && typeof window.SafetyContentChecker.check === 'function') {
+        try {
+          var _sfFlags = window.SafetyContentChecker.check(prompt);
+          var _sf = Array.isArray(_sfFlags) && _sfFlags.find(function (f) { return f && f.category === 'self_harm'; });
+          if (_sf) {
+            if (onSafetyFlag) {
+              try { onSafetyFlag({ tool: 'symbol_studio_' + surface, severity: 'critical', category: 'self_harm', timestamp: Date.now() }); } catch (_) {}
+            }
+            try { if (window.SelHub && typeof window.SelHub.showCrisisModal === 'function') window.SelHub.showCrisisModal(); } catch (_) {}
+            if (typeof _ssToast === 'function') _ssToast('We paused generating that here. Your wellbeing matters more than any project — please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line).', 'warn');
+            return true;
+          }
+        } catch (_) {}
+      }
+      return false;
+    }, [onSafetyFlag, _ssToast]);
+    var onCallImagen = useMemo(function () {
+      if (typeof _rawOnCallImagen !== 'function') return _rawOnCallImagen;
+      return function (prompt) {
+        if (_ssCheckSelfHarm(prompt, 'imagen')) return Promise.reject(new Error('safety-paused'));
+        return _rawOnCallImagen.apply(this, arguments);
+      };
+    }, [_rawOnCallImagen, _ssCheckSelfHarm]);
+    var onCallGeminiImageEdit = useMemo(function () {
+      if (typeof _rawOnCallGeminiImageEdit !== 'function') return _rawOnCallGeminiImageEdit;
+      return function (prompt) {
+        if (_ssCheckSelfHarm(prompt, 'image_edit')) return Promise.reject(new Error('safety-paused'));
+        return _rawOnCallGeminiImageEdit.apply(this, arguments);
+      };
+    }, [_rawOnCallGeminiImageEdit, _ssCheckSelfHarm]);
+    var onCallGemini = useMemo(function () {
+      if (typeof _rawOnCallGemini !== 'function') return _rawOnCallGemini;
+      return function (prompt) {
+        if (_ssCheckSelfHarm(prompt, 'gemini')) return Promise.reject(new Error('safety-paused'));
+        return _rawOnCallGemini.apply(this, arguments);
+      };
+    }, [_rawOnCallGemini, _ssCheckSelfHarm]);
     var onCallTTS = props.onCallTTS;
     var selectedVoice = props.selectedVoice;
     var voiceSpeed = Number(props.voiceSpeed || window.__alloPlaybackRate || 1);

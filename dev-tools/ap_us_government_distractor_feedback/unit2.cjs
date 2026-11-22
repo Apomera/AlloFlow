@@ -104,9 +104,9 @@ module.exports = {
     'Recognizing a newly formed foreign government diplomatically': 'Recognition is an executive power exercised without Senate consent.',
   },
   'ap-usg-u2-039': {
-    'The president can never direct executive agencies to act without first obtaining a new constitutional amendment.': 'Directing agencies is a core executive function that needs no amendment; the limits come from statutes and courts.',
-    'Unilateral actions become automatically permanent once they are published in the Federal Register for public notice.': 'Orders can be revoked by a later president, overridden by statute, or struck down by courts.',
-    'Only state courts, and never Congress or a federal judge, have any authority to review an executive action.': 'Federal courts review federal executive actions; state courts are not the primary forum.',
+    'The president cannot direct executive agencies to act without first obtaining a new constitutional amendment.': 'Directing agencies is a core executive function that needs no amendment; the limits come from statutes and courts.',
+    'Unilateral actions become permanently binding once they are published in the Federal Register for public notice.': 'Orders can be revoked by a later president, overridden by statute, or struck down by courts.',
+    'State courts, rather than Congress or federal judges, hold exclusive authority to review an executive action.': 'Federal courts review federal executive actions; state courts are not the primary forum.',
   },
   'ap-usg-u2-040': {
     'The number of Supreme Court justices seated in the audience during the speech': 'Who happens to attend reveals nothing about how the speech persuades.',
@@ -314,9 +314,9 @@ module.exports = {
     'The committee is replacing state legislatures in every policy area.': 'A congressional committee works on federal bills and displaces no state legislature.',
   },
   'ap-usg-u2-212': {
-    'Representatives act only on their own personal ideology and never respond to constituents in any way at all.': 'The member negotiated changes for the district, which is a direct response to constituents.',
+    'Representatives act strictly on their own personal ideology without responding to district voters.': 'The member negotiated changes for the district, which is a direct response to constituents.',
     'Party leaders can command every single vote, because the members have no independent incentives of any kind.': 'The member extracted district concessions first, showing independent incentives alongside party loyalty.',
-    'District concerns become entirely irrelevant once a member has joined any standing congressional committee.': 'Committee service often strengthens district influence; here district concerns shaped the negotiation.',
+    'District concerns fade from view once a member has joined any standing congressional committee.': 'Committee service often strengthens district influence; here district concerns shaped the negotiation.',
   },
   'ap-usg-u2-213': {
     'The president is acting as chief justice by deciding a constitutional case.': 'Coordinating relief is administration, not adjudication, and the president is not a judge.',
@@ -360,8 +360,8 @@ module.exports = {
   },
   'ap-usg-u2-221': {
     'Delegation eliminates all need for Congress to enact any statutory policy whatsoever.': 'Delegation begins with a statute setting the goal; agencies fill in details, not the policy itself.',
-    'Delegation makes agency decisions entirely immune from judicial and political review.': 'Delegated rules remain subject to court review, oversight, and new legislation.',
-    'Delegation requires agencies to exercise only those powers held by the state governments.': 'Agencies exercise authority Congress grants under federal power, not state powers.',
+    'Delegation shields agency decisions broadly from judicial and political review.': 'Delegated rules remain subject to court review, oversight, and new legislation.',
+    'Delegation limits agencies strictly to powers reserved for state governments.': 'Agencies exercise authority Congress grants under federal power, not state powers.',
   },
   'ap-usg-u2-222': {
     'The agency is conducting a presidential impeachment trial in the place of the United States Senate.': 'Impeachment trials are held by the Senate; a proposed rule is administrative rulemaking.',
@@ -374,8 +374,8 @@ module.exports = {
     'The committee is exercising the state police power over the conduct of local elections in the district.': 'Police powers belong to states, and elections are not involved in an agency audit.',
   },
   'ap-usg-u2-224': {
-    'Only the federal judiciary can propose, implement, and fund a national policy of any kind.': 'Courts do none of those things; proposing, implementing, and funding belong to Congress and the executive.',
+    'The federal judiciary alone can propose, implement, and fund national policy.': 'Courts do none of those things; proposing, implementing, and funding belong to Congress and the executive.',
     'The branches of government cannot influence one another after a law has been enacted at all.': 'Implementation and judicial review both happen after enactment, which is why the coalition works all three branches.',
-    'Policy coalitions must choose one single branch and then avoid every other institution entirely.': 'Nothing requires a single venue; the coalition’s strategy uses several at once.',
+    'Policy coalitions must target one single branch while bypassing other institutions.': 'Nothing requires a single venue; the coalition’s strategy uses several at once.',
   },
 };

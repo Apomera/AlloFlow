@@ -37,9 +37,33 @@
   // AI-off sweep: blocked fns are truthy; ask the host whether AI is usable.
   function _aiUsable(kind, fn) {
     try {
-      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
-    } catch (_) {}
-    return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return Boolean(window.__alloAiUsable(kind, fn));
+      if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
+      if (typeof window !== 'undefined') {
+        if (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window._alloQrBlocked === true) return false;
+        var qr = window.__alloQrStudentMode;
+        if (qr === true || (qr && typeof qr === 'object' && qr.active === true && qr.allowAi === false)) return false;
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+  function _isSafeClassImage(url) {
+    return typeof url === 'string' && /^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(url.trim());
+  }
+  function _isSafeGlossaryImage(url) {
+    if (typeof url !== 'string') return false;
+    var trimmed = url.trim();
+    if (!trimmed) return false;
+    if (_isSafeClassImage(trimmed)) return true;
+    if (/^https:\/\//i.test(trimmed)) {
+      try {
+        var parsed = new URL(trimmed);
+        return parsed.protocol === 'https:' && !parsed.username && !parsed.password;
+      } catch (_) { return false; }
+    }
+    return false;
   }
 
   var __alloT = function (key, fallback) {
@@ -689,9 +713,14 @@
     var setVoiceError = voiceErrorTuple[1];
     var voiceRecorderRef = useRef(null);
     var voiceLiveRef = useRef(null);
+    var voiceMountedRef = useRef(true);
+    var voiceTokenRef = useRef(0);
     // Cleanup on unmount: stop any active capture so the mic releases.
     useEffect(function () {
+      voiceMountedRef.current = true;
       return function () {
+        voiceMountedRef.current = false;
+        voiceTokenRef.current++;
         if (voiceRecorderRef.current) {
           try { voiceRecorderRef.current.cancel(); } catch (e) { /* ignore */ }
           voiceRecorderRef.current = null;
@@ -793,7 +822,7 @@
     // when ending a class realm. Each student claims once per key via
     // metadata-based dedupe — checking ctx.getEarnings() for a prior
     // entry with the same realm-* key.
-    var claimedRewardRef = useRef({});
+    var claimedRewardRef = useRef(Object.create(null));
     useEffect(function () {
       if (!isClassStudent) return;
       if (!sessionState || !sessionState.realmBuilder) return;
@@ -872,7 +901,7 @@
     // Each graded play arrives as a private document (older hosts: in
     // session.realmBuilder.submissions). The host applies each one as a zone,
     // then clears it so the queue stays bounded.
-    var processedSubsRef = useRef({});
+    var processedSubsRef = useRef(Object.create(null));
     useEffect(function () {
       if (!isClassHost) return;
       var subs = classSubs;
@@ -908,7 +937,7 @@
 
     // AI-off class play: the teacher's score is the first real result. The zone
     // lands once the session write succeeds, so a failed write can be retried.
-    var scoringRef = useRef({});
+    var scoringRef = useRef(Object.create(null));
     function scoreSubmission(subId, sub, band, note) {
       if (!isClassHost || !selfCheck || scoringRef.current[subId]) return;
       if (typeof ctx.sessionUpdate !== 'function') return;
@@ -930,7 +959,7 @@
     }
 
     // Class student: pick up the teacher's scores for this student's work.
-    var teacherSeenRef = useRef({});
+    var teacherSeenRef = useRef(Object.create(null));
     useEffect(function () {
       if (!isClassStudent || !selfCheck) return;
       var rb = sessionState && sessionState.realmBuilder;
@@ -963,7 +992,7 @@
         cardId: sub.cardId,
         cardName: sub.cardName,
         cardSource: sub.cardSource,
-        cardImageBase64: sub.cardImageBase64 || null,
+        cardImageBase64: _isSafeClassImage(sub.cardImageBase64) ? sub.cardImageBase64.trim() : null,
         verb: sub.verb,
         verbLabel: sub.verbLabel,
         partnerCardId: sub.partnerCardId || null,
@@ -1049,11 +1078,12 @@
                  + 'No text, no labels, no characters, no boss creature. Inviting and open, room for new elements to be added.';
       Promise.resolve(ctx.callImagen(prompt))
         .then(function (result) {
-          var b64 = (typeof result === 'string') ? result
-                  : (result && result.imageBase64) ? result.imageBase64
+          var b64 = (typeof result === 'string') ? result.trim()
+                  : (result && typeof result.imageBase64 === 'string') ? result.imageBase64.trim()
                   : null;
           if (!b64) throw new Error('empty result');
-          var img = (b64.indexOf('data:') === 0) ? b64 : ('data:image/png;base64,' + b64);
+          var img = (b64.indexOf('data:') === 0) ? b64 : (/^[A-Za-z0-9+/=\s]+$/.test(b64) ? ('data:image/png;base64,' + b64) : '');
+          if (!_isSafeClassImage(img)) throw new Error('unsafe image');
           setRealm(function (prev) { return Object.assign({}, prev, { canvas: img, updatedAt: new Date().toISOString() }); });
           setCanvasLoading(false);
           setPhase('play');
@@ -1103,6 +1133,9 @@
         ctx.addToast('Voice capture not supported in this browser.');
         return;
       }
+      if (voiceRecorderRef.current) { try { voiceRecorderRef.current.cancel(); } catch (e) {} voiceRecorderRef.current = null; }
+      if (voiceLiveRef.current) { try { voiceLiveRef.current.stop(); } catch (e) {} voiceLiveRef.current = null; }
+      voiceTokenRef.current++;
       var lastFinal = '';
       var controller = window.AlloFlowVoice.initWebSpeechCapture({
         lang: 'en-US',
@@ -1155,12 +1188,16 @@
         ctx.addToast('Audio recording not available.');
         return;
       }
+      if (voiceLiveRef.current) { try { voiceLiveRef.current.stop(); } catch (e) {} voiceLiveRef.current = null; }
+      if (voiceRecorderRef.current) { try { voiceRecorderRef.current.cancel(); } catch (e) {} voiceRecorderRef.current = null; }
+      var myVoiceToken = ++voiceTokenRef.current;
       setVoiceError(null);
       setVoiceElapsed(0);
       var controller = window.AlloFlowVoice.recordAudioBlob({
         maxDurationMs: 60 * 1000,
-        onTick: function (ms) { setVoiceElapsed(ms); },
+        onTick: function (ms) { if (voiceMountedRef.current && voiceTokenRef.current === myVoiceToken) setVoiceElapsed(ms); },
         onError: function (err) {
+          if (!voiceMountedRef.current || voiceTokenRef.current !== myVoiceToken) return;
           setVoiceError((err && err.message) || 'Recording failed');
           voiceRecorderRef.current = null;
           setVoiceMode('idle');
@@ -1173,8 +1210,9 @@
       voiceRecorderRef.current = controller;
       setVoiceMode('recording');
       controller.result.then(function (rec) {
-        voiceRecorderRef.current = null;
-        if (!rec || !rec.base64) { setVoiceMode('idle'); return; }
+        if (voiceRecorderRef.current === controller) voiceRecorderRef.current = null;
+        if (!voiceMountedRef.current || voiceTokenRef.current !== myVoiceToken) return null;
+        if (!rec || !rec.base64) { setVoiceMode('idle'); return null; }
         setVoiceMode('transcribing');
         var transOpts = {
           engine: engine,
@@ -1183,7 +1221,7 @@
         };
         return window.AlloFlowVoice.transcribeAudio(rec.base64, transOpts);
       }).then(function (out) {
-        if (!out) return;
+        if (!voiceMountedRef.current || voiceTokenRef.current !== myVoiceToken || !out) return;
         var transcript = (out.transcript || '').trim();
         if (!transcript) {
           setVoiceError('No speech detected — try recording again.');
@@ -1196,6 +1234,7 @@
         });
         setVoiceMode('idle');
       }).catch(function (err) {
+        if (!voiceMountedRef.current || voiceTokenRef.current !== myVoiceToken) return;
         if (err && err.message === 'cancelled') {
           setVoiceMode('idle');
           return;
@@ -1531,18 +1570,21 @@
                      : (result && result.imageBase64) ? result.imageBase64
                      : null;
           if (newImg) {
-            if (newImg.indexOf('data:') !== 0) newImg = 'data:image/png;base64,' + newImg;
-            setRealm(function (prev) {
-              // Mark the just-added zone as transformed
-              var zones = prev.zones.map(function (z) {
-                return z.id === zone.id ? Object.assign({}, z, { transformed: true }) : z;
+            newImg = newImg.trim();
+            if (newImg.indexOf('data:') !== 0 && /^[A-Za-z0-9+/=\s]+$/.test(newImg)) newImg = 'data:image/png;base64,' + newImg;
+            if (_isSafeClassImage(newImg)) {
+              setRealm(function (prev) {
+                // Mark the just-added zone as transformed
+                var zones = prev.zones.map(function (z) {
+                  return z.id === zone.id ? Object.assign({}, z, { transformed: true }) : z;
+                });
+                return Object.assign({}, prev, {
+                  canvas: newImg,
+                  zones: zones,
+                  updatedAt: new Date().toISOString()
+                });
               });
-              return Object.assign({}, prev, {
-                canvas: newImg,
-                zones: zones,
-                updatedAt: new Date().toISOString()
-              });
-            });
+            }
           }
           visualInFlightRef.current = false;
           setTransforming(false);
@@ -1707,8 +1749,8 @@
           flexShrink: 0
         }
       },
-        card.imageBase64 ? h('img', {
-          src: card.imageBase64, alt: '', 'aria-hidden': 'true',
+        _isSafeGlossaryImage(card.imageBase64) ? h('img', {
+          src: card.imageBase64.trim(), alt: '', 'aria-hidden': 'true', referrerPolicy: 'no-referrer',
           style: { width: '64px', height: '64px', objectFit: 'cover', borderRadius: '4px', border: '1px solid ' + (palette.border || '#334155') }
         }) : h('div', { 'aria-hidden': 'true', style: { width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', background: palette.bg || '#0f172a', borderRadius: '4px', border: '1px solid ' + (palette.border || '#334155') } }, card.source === 'glossary' ? '📖' : '🎴'),
         tierShort ? h('span', {
@@ -1741,8 +1783,8 @@
               role: 'listitem',
               style: { listStyle: 'none', width: '92px', padding: '6px', textAlign: 'center', fontSize: '10px', borderRadius: '8px', background: palette.bg || '#0f172a', border: '1px solid ' + (palette.border || '#334155') }
             },
-              z.cardImageBase64 ? h('img', {
-                src: z.cardImageBase64, alt: '', 'aria-hidden': 'true',
+              _isSafeGlossaryImage(z.cardImageBase64) ? h('img', {
+                src: z.cardImageBase64.trim(), alt: '', 'aria-hidden': 'true', referrerPolicy: 'no-referrer',
                 style: { width: '56px', height: '56px', objectFit: 'cover', borderRadius: '4px' }
               }) : h('div', { 'aria-hidden': 'true', style: { fontSize: '28px' } }, z.cardSource === 'glossary' ? '📖' : '🎴'),
               h('div', { style: { fontWeight: 700, color: palette.text || '#e2e8f0', overflowWrap: 'anywhere' } }, z.cardName),
@@ -1773,8 +1815,8 @@
           className: 'ah-realm-canvas',
           style: { position: 'relative', marginBottom: '12px', borderRadius: '10px', overflow: 'hidden', border: '1px solid ' + (palette.border || '#334155'), boxShadow: '0 6px 20px rgba(0,0,0,0.28)' }
         },
-          realm.canvas ? h('img', {
-            src: realm.canvas, alt: 'Your realm: ' + realm.topic,
+          _isSafeClassImage(realm.canvas) ? h('img', {
+            src: realm.canvas.trim(), alt: 'Your realm: ' + realm.topic,
             style: { display: 'block', width: '100%', maxHeight: '320px', objectFit: 'cover' }
           }) : renderRealmMap(),
           transforming ? h('div', {
@@ -2019,8 +2061,8 @@
                 z.resonant ? h('span', { style: { fontSize: '12px' } }, '🌟') : h('span', { style: { color: palette.textMute || '#94a3b8' } }, '·'),
                 // Inline thumbnail: card image clipped to a small circle so
                 // the feed reads as a stream of placements, not just text.
-                z.cardImageBase64 ? h('img', {
-                  src: z.cardImageBase64, alt: '', 'aria-hidden': 'true',
+                _isSafeGlossaryImage(z.cardImageBase64) ? h('img', {
+                  src: z.cardImageBase64.trim(), alt: '', 'aria-hidden': 'true', referrerPolicy: 'no-referrer',
                   style: { width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover', border: '1px solid ' + (palette.border || '#334155'), flexShrink: 0 }
                 }) : h('span', { 'aria-hidden': 'true', style: { width: '20px', height: '20px', borderRadius: '50%', background: palette.bg || '#0f172a', border: '1px solid ' + (palette.border || '#334155'), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', flexShrink: 0 } }, z.cardSource === 'glossary' ? '📖' : '🎴'),
                 h('strong', { style: { color: palette.text || '#e2e8f0' } }, z.cardName),
@@ -2577,9 +2619,9 @@
     var activeLoci = palace ? palace.loci.filter(function(locus) { return locus.groupId === activeGroupId; }) : [];
     // Student work and join requests live on private documents; only approved anchors reach the group.
     var palaceActivityId = palace ? palace.activityId : '';
-    var palaceDocsCurrent = {};
+    var palaceDocsCurrent = Object.create(null);
     Object.keys(palaceDocs).forEach(function(id) { if (palaceDocs[id].activityId === palaceActivityId) palaceDocsCurrent[id] = palaceDocs[id]; });
-    var replacedDocs = {};
+    var replacedDocs = Object.create(null);
     Object.keys(palaceDocsCurrent).forEach(function(id) { if (palaceDocsCurrent[id].replaces) replacedDocs[palaceDocsCurrent[id].replaces] = true; });
     var submissions = Object.assign({}, palace ? palace.submissions : {});
     Object.keys(palaceDocsCurrent).forEach(function(id) {
@@ -2662,7 +2704,7 @@
     }, [isHost, isOpen, palace && palace.activityId, participant && participant.participantId, participantId, participantCapacityReached, palaceDocsLoaded]);
 
     // Host: place join requests into groups and drop the drafts a revision replaced.
-    var palaceDrainRef = useRef({});
+    var palaceDrainRef = useRef(Object.create(null));
     useEffect(function() {
       if (!isHost || !palace || !isOpen) return;
       var chan = palaceChannel();

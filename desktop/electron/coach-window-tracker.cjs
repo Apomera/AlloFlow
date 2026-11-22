@@ -3,7 +3,10 @@
 const MAX_INT64_HANDLE = 0x7fffffffffffffffn;
 
 function parseWindowHandle(sourceId) {
-  const match = /^window:(0x[0-9a-f]+|[0-9]+):[0-9]+$/i.exec(String(sourceId || '').trim());
+  if (typeof sourceId !== 'string') return '';
+  const trimmed = sourceId.trim();
+  if (!trimmed || trimmed.length > 128) return '';
+  const match = /^window:(0x[0-9a-f]+|[0-9]+):[0-9]+$/i.exec(trimmed);
   if (!match) return '';
   try {
     const value = BigInt(match[1]);
@@ -15,6 +18,7 @@ function parseWindowHandle(sourceId) {
 
 function normalizeWindowTitle(value) {
   return String(value || '')
+    .slice(0, 1024)
     .normalize('NFKC')
     .replace(/[\u0000-\u001F\u007F]+/g, ' ')
     .replace(/^window\s*:\s*(?![0-9]+:)/i, '')
@@ -24,6 +28,7 @@ function normalizeWindowTitle(value) {
 }
 
 function selectUniqueWindowSource(sources, trackLabel) {
+  if (typeof trackLabel !== 'string') return null;
   const list = Array.isArray(sources) ? sources : [];
   const directHandle = parseWindowHandle(trackLabel);
   if (directHandle) {

@@ -29,11 +29,12 @@ const feedbackCode = String.raw`
     return output;
   }
   const collapseRepeatedWords = value => String(value || '').replace(/\b([A-Za-z]+)(?:\s+\1)+\b/gi, '$1');
+  const canonicalTokenRegex = token => escapeFeedbackRegex(token).split('').join("['’]?");
   function replaceCanonicalPhrase(text, phrase, replacement) {
     const normalized = feedbackCanonical(phrase);
     const tokens = normalized.split(' ').filter(Boolean);
     if (tokens.length < 2 || normalized.length < 25) return text;
-    const pattern = new RegExp('\\b' + tokens.map(escapeFeedbackRegex).join('\\W+') + '\\b', 'ig');
+    const pattern = new RegExp('\\b' + tokens.map(canonicalTokenRegex).join('\\W+') + '\\b', 'ig');
     return text.replace(pattern, replacement);
   }
   function replaceQuotedEchoes(text, item, choiceIndex) {
@@ -102,7 +103,7 @@ const feedbackCode = String.raw`
     const key = feedbackCanonical(item.choices?.[item.answerIndex] || '');
     if (key.length >= 25) {
       const tokens = key.split(' ').filter(Boolean);
-      const pattern = new RegExp('\\b' + tokens.map(escapeFeedbackRegex).join('\\W+') + '\\b', 'ig');
+      const pattern = new RegExp('\\b' + tokens.map(canonicalTokenRegex).join('\\W+') + '\\b', 'ig');
       const finalRationales = choiceRationales.map((feedback, index) => {
         if (index === item.answerIndex) return feedback;
         const next = String(feedback).replace(pattern, 'the selected feedback');

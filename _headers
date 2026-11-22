@@ -201,3 +201,7 @@
   X-Frame-Options: SAMEORIGIN
   Referrer-Policy: no-referrer
   Content-Security-Policy: frame-ancestors 'self'; object-src 'none'; base-uri 'self'
+# veraPDF validator runs in a hidden iframe or popup opened by AlloFlow hosts (including Gemini Canvas / desktop loopback).
+/verapdf/*
+  Referrer-Policy: no-referrer
+  Content-Security-Policy: frame-ancestors 'self' https://alloflow-cdn.pages.dev https://*.alloflow-cdn.pages.dev https://alloflow.app https://*.alloflow.app https://alloflow.com https://*.alloflow.com https://alloflow.org https://*.alloflow.org https://*.usercontent.goog https://*.idx.google.com http://localhost:* http://127.0.0.1:*; object-src 'none'; base-uri 'none'

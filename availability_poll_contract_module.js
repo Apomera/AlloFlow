@@ -28,37 +28,48 @@
     // Deliberately the MAILBOX's limits, not Firestore's: a poll built to the
     // tighter ceiling runs unmodified on both transports, and the reverse
     // silently breaks. Sources are apps_script/session_mailbox/Code.gs.
-    const LIMITS = {
+    const LIMITS = Object.freeze({
         OPTIONS: 50,               // MAX_POLL_OPTIONS
         PARTICIPANTS: 250,         // MAX_ACTIVITY_PARTICIPANTS
         OPTION_LABEL_CHARS: 80,
         NAME_CHARS: 40
-    };
+    });
 
-    const MARKS = ['yes', 'maybe', 'no'];
-    const IDENTITY_MODES = ['anonymous', 'codename', 'real_name'];
+    const MARKS = Object.freeze(['yes', 'maybe', 'no']);
+    const IDENTITY_MODES = Object.freeze(['anonymous', 'codename', 'real_name']);
+
+    function isSafeKey(key) {
+        return typeof key === 'string' && key.length > 0 && key !== '__proto__' && key !== 'constructor' && key !== 'prototype';
+    }
+    function safeTimestamp(val) {
+        if (typeof val !== 'string' && typeof val !== 'number') return NaN;
+        return Date.parse(val);
+    }
+    function resolveNow(now) {
+        return (typeof now === 'number' && Number.isFinite(now)) ? now : Date.now();
+    }
 
     // ── Tally ────────────────────────────────────────────────────────────────
     // Counts per option. A row with no picks is not a participant: someone who
     // opened the link and left must not dilute minParticipants.
     function tally(config, responses) {
-        const rows = responses && typeof responses === 'object' ? responses : {};
-        const rawOptions = Array.isArray(config && config.options) ? config.options : [];
-        const options = rawOptions.filter(function (opt) { return opt && typeof opt === 'object' && typeof opt.id === 'string' && opt.id; }).map(function (opt) {
-            return { id: opt.id, label: opt.label, yes: 0, maybe: 0, no: 0 };
-        });
+        const rows = responses && typeof responses === 'object' && !Array.isArray(responses) ? responses : {};
+        const rawOptions = Array.isArray(config && config.options) ? config.options.slice(0, LIMITS.OPTIONS) : [];
         const byId = Object.create(null);
-        options.forEach(function (opt) {
-            if (opt.id !== '__proto__' && opt.id !== 'constructor' && opt.id !== 'prototype') {
-                byId[opt.id] = opt;
-            }
+        const options = [];
+        rawOptions.forEach(function (opt) {
+            if (!opt || typeof opt !== 'object' || !isSafeKey(opt.id) || Object.prototype.hasOwnProperty.call(byId, opt.id)) return;
+            const slot = { id: opt.id, label: opt.label, yes: 0, maybe: 0, no: 0 };
+            byId[opt.id] = slot;
+            options.push(slot);
         });
         let participantCount = 0;
-        Object.keys(rows).forEach(function (uid) {
+        Object.keys(rows).slice(0, LIMITS.PARTICIPANTS).forEach(function (uid) {
+            if (!isSafeKey(uid)) return;
             const picks = rows[uid] && rows[uid].picks;
             if (!picks || typeof picks !== 'object' || Array.isArray(picks)) return;
             let matchedValid = false;
-            Object.keys(picks).forEach(function (optionId) {
+            Object.keys(picks).slice(0, LIMITS.OPTIONS).forEach(function (optionId) {
                 if (!Object.prototype.hasOwnProperty.call(byId, optionId)) return;
                 const slot = byId[optionId];
                 const mark = picks[optionId];
@@ -81,14 +92,16 @@
         let best = [];
         let bestYes = -1;
         let bestMaybe = -1;
-        const opts = Array.isArray(counted && counted.options) ? counted.options : [];
+        const opts = Array.isArray(counted && counted.options) ? counted.options.slice(0, LIMITS.OPTIONS) : [];
         opts.forEach(function (opt) {
-            if (!opt || typeof opt !== 'object') return;
-            if (opt.yes > bestYes || (opt.yes === bestYes && opt.maybe > bestMaybe)) {
-                bestYes = opt.yes;
-                bestMaybe = opt.maybe;
+            if (!opt || typeof opt !== 'object' || !isSafeKey(opt.id)) return;
+            const yes = Number.isFinite(Number(opt.yes)) ? Math.max(0, Number(opt.yes)) : 0;
+            const maybe = Number.isFinite(Number(opt.maybe)) ? Math.max(0, Number(opt.maybe)) : 0;
+            if (yes > bestYes || (yes === bestYes && maybe > bestMaybe)) {
+                bestYes = yes;
+                bestMaybe = maybe;
                 best = [opt.id];
-            } else if (opt.yes === bestYes && opt.maybe === bestMaybe) {
+            } else if (yes === bestYes && maybe === bestMaybe) {
                 best.push(opt.id);
             }
         });
@@ -103,7 +116,8 @@
     function visibilityFor(config, counted, isHost, now) {
         const parsedMin = parseInt(config && config.minParticipants, 10);
         const minParticipants = Number.isFinite(parsedMin) && parsedMin >= 1 ? parsedMin : 3;
-        const count = Number(counted && counted.participantCount) || 0;
+        const rawCount = Number(counted && counted.participantCount);
+        const count = Number.isFinite(rawCount) && rawCount > 0 ? rawCount : 0;
         const revealed = count >= minParticipants;
         // Retention outranks permission. Past deleteAt the rows do not exist, so
         // no audience can be shown them however permissive the mode is. The
@@ -122,16 +136,16 @@
 
     // ── Lifecycle ────────────────────────────────────────────────────────────
     function isClosed(config, now) {
-        const closesAt = Date.parse(config && config.closesAt);
-        return isFinite(closesAt) && (now == null ? Date.now() : now) >= closesAt;
+        const closesAt = safeTimestamp(config && config.closesAt);
+        return isFinite(closesAt) && resolveNow(now) >= closesAt;
     }
 
     // Past deleteAt the rows go and the tally stays. The tally must be
     // MATERIALISED, because afterwards there is nothing left to recompute it
     // from, and the decision has to outlive the people who made it.
     function retentionDue(config, now) {
-        const deleteAt = Date.parse(config && config.deleteAt);
-        return isFinite(deleteAt) && (now == null ? Date.now() : now) >= deleteAt;
+        const deleteAt = safeTimestamp(config && config.deleteAt);
+        return isFinite(deleteAt) && resolveNow(now) >= deleteAt;
     }
 
     // ── Conformance ──────────────────────────────────────────────────────────
@@ -204,6 +218,9 @@
     })();
 
     function runConformanceSuite(adapter) {
+        if (!adapter || typeof adapter !== 'object') {
+            return { ok: false, failures: [{ fixture: '*', check: 'adapter', expected: 'object', actual: String(adapter) }], fixtures: FIXTURES.length };
+        }
         const failures = [];
         const note = function (fixture, what, expected, actual) {
             failures.push({
@@ -242,11 +259,12 @@
         return { ok: failures.length === 0, failures: failures, fixtures: FIXTURES.length };
     }
 
-    return {
+    Object.freeze(FIXTURES);
+    return Object.freeze({
         VERSION: VERSION,
         LIMITS: LIMITS,
-        MARKS: MARKS.slice(),
-        IDENTITY_MODES: IDENTITY_MODES.slice(),
+        MARKS: Object.freeze(MARKS.slice()),
+        IDENTITY_MODES: Object.freeze(IDENTITY_MODES.slice()),
         tally: tally,
         bestOptionIds: bestOptionIds,
         visibilityFor: visibilityFor,
@@ -254,5 +272,5 @@
         retentionDue: retentionDue,
         FIXTURES: FIXTURES,
         runConformanceSuite: runConformanceSuite
-    };
+    });
 });

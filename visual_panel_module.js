@@ -468,8 +468,9 @@ const VisualPanelGrid = React.memo(({ visualPlan, onRefinePanel, onAnimatePanel,
     if (!isTeacherMode || !Field || typeof onUpdatePanel !== "function" || !panel || !panel.imageUrl) return null;
     const poster = panelDescribedImage(panel, imageOverrides[panelIdx]);
     const stale = panelDescriptionStale(panel, imageOverrides[panelIdx], A);
-    const visionFn = typeof window !== "undefined" && typeof window.callGeminiVision === "function" ? window.callGeminiVision : null;
-    const canRegenerateAlt = _vpAiUsable("vision", visionFn);
+    const rawVisionFn = typeof window !== "undefined" ? window.callGeminiVision : null;
+    const canRegenerateAlt = _vpAiUsable("vision", rawVisionFn);
+    const visionFn = canRegenerateAlt ? rawVisionFn : null;
     const regenerate = async () => {
       if (!A || !canRegenerateAlt || !visionFn || altRequestsRef.current[panelIdx]) return;
       const before = { alt: panel.alt, altSource: panel.altSource, altHash: panel.altHash, decorative: panel.decorative, imageUrl: panel.imageUrl };

@@ -39,6 +39,18 @@ function LaunchPadView(props) {
   var _reportLoad = useState('idle');
   var reportLoadStatus = _reportLoad[0];
   var setReportLoadStatus = _reportLoad[1];
+  var launchPadRef = React.useRef(null);
+  var mountedRef = React.useRef(true);
+  var timersRef = React.useRef(new Set());
+  var activeVoiceUnsubRef = React.useRef(null);
+  var scheduleTimer = function (fn, ms) {
+    var id = setTimeout(function () {
+      timersRef.current.delete(id);
+      fn();
+    }, ms);
+    timersRef.current.add(id);
+    return id;
+  };
   var runLaunchTransition = function (work, event) {
     // Keep the pre-rendered workspace concealed for this input frame. The host
     // effect reveals it when the transition commits. Always restore the button
@@ -46,8 +58,7 @@ function LaunchPadView(props) {
     // so controls can never be permanently stranded disabled.
     var button = event && event.currentTarget;
     var restoreButton = function () {
-      if (!button || !button.isConnected) return;
-      if (!mountedRef.current || !button.isConnected) return;
+      if (!mountedRef.current || !button || !button.isConnected) return;
       button.disabled = false;
       button.removeAttribute('aria-busy');
       button.style.opacity = '';
@@ -57,25 +68,25 @@ function LaunchPadView(props) {
       button.setAttribute('aria-busy', 'true');
       button.style.opacity = '0.72';
     }
-    setTimeout(function () {
+    scheduleTimer(function () {
+      if (!mountedRef.current) return;
       var run = function () {
         try {
           return work();
         } finally {
-          setTimeout(restoreButton, 300);
+          scheduleTimer(restoreButton, 300);
         }
       };
       if (typeof React.startTransition === 'function') React.startTransition(run);
       else run();
     }, 40);
   };
-  var launchPadRef = React.useRef(null);
-  var mountedRef = React.useRef(true);
-  var activeVoiceUnsubRef = React.useRef(null);
   React.useEffect(function() {
     mountedRef.current = true;
     return function() {
       mountedRef.current = false;
+      timersRef.current.forEach(function (id) { clearTimeout(id); });
+      timersRef.current.clear();
       if (typeof activeVoiceUnsubRef.current === 'function') {
         try { activeVoiceUnsubRef.current(); } catch (_) {}
         activeVoiceUnsubRef.current = null;
@@ -193,8 +204,8 @@ function LaunchPadView(props) {
     setReportLoadStatus('loading');
     ensureLaunchPadUtilityModule('ErrorReporter', 'error_reporter_module.js', 'ErrorReporter', '__alloLaunchPadErrorReporterPromise', 'data-alloflow-launchpad-error-reporter').then(function(reporter) {
       if (!launchPadRef.current || !launchPadRef.current.isConnected) return;
-      if (typeof reporter.openManualReport === 'function') reporter.openManualReport();
-      else if (typeof reporter.openPanel === 'function') {
+      if (reporter && typeof reporter.openManualReport === 'function') reporter.openManualReport();
+      else if (reporter && typeof reporter.openPanel === 'function') {
         reporter.openPanel('errors');
         var description = document.getElementById('aer-description');
         if (description) description.focus();
@@ -312,14 +323,14 @@ function LaunchPadView(props) {
       var whisperCheck = anySizeReady
         ? Promise.resolve(true)
         : typeof mc.hasWhisper === 'function' && whisperSupported
-          ? Promise.resolve(mc.hasWhisper(profile || selectedVoiceLanguageTag())).catch(function() { return false; })
+          ? Promise.resolve().then(function() { return mc.hasWhisper(profile || selectedVoiceLanguageTag()); }).catch(function() { return false; })
           : Promise.resolve(false);
       var kokoroCheck = typeof mc.hasKokoro === 'function'
-        ? Promise.resolve(mc.hasKokoro()).catch(function() { return false; })
+        ? Promise.resolve().then(function() { return mc.hasKokoro(); }).catch(function() { return false; })
         : Promise.resolve(false);
       Promise.all([whisperCheck, kokoroCheck]).then(function(result) {
         applyCachedStatus(result[0], result[1], whisperSupported);
-      });
+      }).catch(function() {});
     }
     function onModuleRegistryChanged() { refreshCachedStatus(); }
     window.addEventListener('alloflow:module-registry-changed', onModuleRegistryChanged);
@@ -486,10 +497,11 @@ function LaunchPadView(props) {
   var closeLanguageMenu = function() {
     setLangMenuOpen(false);
     if (typeof window !== 'undefined') {
-      window.setTimeout(function() {
+      scheduleTimer(function() {
+        if (!mountedRef.current) return;
         var trigger = langTriggerRef.current;
         if (trigger && trigger !== document.body && trigger !== document.documentElement && trigger.isConnected && typeof trigger.focus === 'function') {
-          if (langTriggerRef.current) langTriggerRef.current.focus();
+          trigger.focus();
         }
       }, 0);
     }
@@ -589,7 +601,7 @@ function LaunchPadView(props) {
             // Keep the endonym next to the English display name. The VALUE handed to
             // setUiLanguage stays the English name; only the label changes.
             var displays = m.available
-              .filter(function(e) { return e && e.display; })
+              .filter(function(e) { return e && typeof e.display === 'string' && e.display.trim(); })
               .map(function(e) { return {
                 value: e.display,
                 endonym: e.endonym || e.display,
@@ -712,6 +724,7 @@ function LaunchPadView(props) {
       var items = Array.prototype.slice.call(listEl.querySelectorAll('button:not([disabled])'));
       if (!items.length) return;
       var currentIdx = items.indexOf(document.activeElement);
+      if (event.ctrlKey || event.altKey || event.metaKey) return;
       if (event.key === 'ArrowDown') {
         event.preventDefault();
         items[currentIdx < 0 ? 0 : (currentIdx + 1) % items.length].focus();
@@ -902,6 +915,9 @@ function LaunchPadView(props) {
             @media (prefers-reduced-motion: reduce) {
               .lp-root, .lp-card, .lp-card:hover, .lp-card:active, .lp-card-icon, .lp-badge, .lp-lang-item, .lp-lang-trigger, .lp-mic-actions button, .lp-download-button, .lp-download-button:hover, .lp-ai-settings { animation: none !important; transition: none !important; transform: none !important; }
             }
+            @media (forced-colors: active) {
+              .lp-root h1 { background: none !important; color: CanvasText !important; -webkit-text-fill-color: CanvasText !important; }
+            }
           `}</style>
           {/* ── Compact Language Switcher (top-right) ── */}
           <div className="lp-utility-bar" role="group" aria-label={copy('launch_pad.utilities_label', 'Launch Pad settings')}>
@@ -932,7 +948,7 @@ function LaunchPadView(props) {
               ref={langTriggerRef}
               className="lp-lang-trigger"
               onClick={() => { if (!isTranslating) setLangMenuOpen(!langMenuOpen); }}
-              aria-label={(t('launch_pad.change_language') || 'Change language') + '. ' + (t('launch_pad.current_language') || 'Current') + ': ' + currentUiLanguage}
+              aria-label={copy('launch_pad.change_language', 'Change language') + '. ' + copy('launch_pad.current_language', 'Current') + ': ' + currentUiLanguage}
               aria-expanded={langMenuOpen}
               aria-controls="launch-pad-language-list"
               aria-disabled={isTranslating}
@@ -945,7 +961,7 @@ function LaunchPadView(props) {
             {langMenuOpen && (
               <>
                 <div onClick={closeLanguageMenu} aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 99999 }} />
-                <ul id="launch-pad-language-list" ref={langListRef} aria-label={t('launch_pad.available_languages') || 'Available languages'} style={{
+                <ul id="launch-pad-language-list" ref={langListRef} aria-label={copy('launch_pad.available_languages', 'Available languages')} style={{
                   position: 'absolute', top: 'calc(100% + 6px)', right: 0,
                   background: 'rgba(15,23,42,0.96)', backdropFilter: 'blur(20px)',
                   border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px',
@@ -1026,7 +1042,7 @@ function LaunchPadView(props) {
                 <span id="launch-pad-learning-desc" className="lp-card-desc">{learningToolsDesc}</span>
               </span>
             </button>
-            <button type="button" className="lp-card" data-pathway="educator" aria-labelledby="launch-pad-educator-title" aria-describedby="launch-pad-educator-desc" onClick={(event) => runLaunchTransition(() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); if ((typeof window._alloEducatorAccessCodeRequired === 'function' ? window._alloEducatorAccessCodeRequired() : !!APP_CONFIG._cfg_validation_key)) { setPendingRole('educator_hub'); setIsGateOpen(true); } else { setIsTeacherMode(true); setShowEducatorHub(true); } }, event)}>
+            <button type="button" className="lp-card" data-pathway="educator" aria-labelledby="launch-pad-educator-title" aria-describedby="launch-pad-educator-desc" onClick={(event) => runLaunchTransition(() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); if ((typeof window._alloEducatorAccessCodeRequired === 'function' ? window._alloEducatorAccessCodeRequired() : !!(APP_CONFIG && APP_CONFIG._cfg_validation_key))) { setPendingRole('educator_hub'); setIsGateOpen(true); } else { setIsTeacherMode(true); setShowEducatorHub(true); } }, event)}>
               <LaunchPadIcon className="lp-card-icon" name="GraduationCap" size={22} />
               <span className="lp-direct-copy">
                 <span id="launch-pad-educator-title" className="lp-card-title">{educatorToolsTitle}</span>
@@ -1062,7 +1078,7 @@ function LaunchPadView(props) {
               </div>
               {studentOpen && (
                 <div id="launch-pad-student-panel" className="lp-student-panel" onKeyDown={function(event) {
-                  if (event.isComposing || event.keyCode === 229) return;
+                  if (event.isComposing || (event.nativeEvent && event.nativeEvent.isComposing) || event.keyCode === 229) return;
                   if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeStudentPanel(); }
                 }}>
                   <div className="lp-student-options">

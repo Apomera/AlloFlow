@@ -59,6 +59,7 @@
       stateName(state);const record=input.byState[state];
       if(!isObject(record)||!Array.isArray(record.sources)||record.sources.length>LIMITS.sourcesPerState)throw new Error('Keep at most four references for each state.');
       const sources=record.sources.map(source=>{
+        if(!isObject(source))throw new Error('Each reference must be a source record.');
         if(input.version===VERSION && (!Number.isSafeInteger(source.revision)||source.revision<1))throw new Error('A version 2 source has an invalid revision. Your current workspace is unchanged.');
         const normalized=normalizeSource(source);if(input.version===1)normalized.revision=1;return normalized;
       });

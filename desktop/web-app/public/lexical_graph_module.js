@@ -53,15 +53,17 @@
         'pronunciationSimilar'
     ];
     const VERIFICATION_TYPES = ['reviewed', 'source-backed', 'teacher-confirmed', 'ai-suggested', 'unverified'];
-    const SYMMETRIC_RELATIONS = {
+    const isBlockedKey = (key) => key === '__proto__' || key === 'constructor' || key === 'prototype';
+    const nullMap = (obj) => Object.freeze(Object.assign(Object.create(null), obj));
+    const SYMMETRIC_RELATIONS = nullMap({
         cognateWith: true,
         translationEquivalent: true,
         sharesRoot: true,
         falseFriendOf: true,
         sharesRime: true,
         pronunciationSimilar: true
-    };
-    const RELATION_LABELS = {
+    });
+    const RELATION_LABELS = nullMap({
         hasSense: 'has the sense',
         containsMorpheme: 'contains the morpheme',
         inflectedFormOf: 'is an inflected form of',
@@ -75,8 +77,8 @@
         falseFriendOf: 'is a false friend of',
         sharesRime: 'shares a rime with',
         pronunciationSimilar: 'has a similar pronunciation to'
-    };
-    const RELATION_PRIORITY = {
+    });
+    const RELATION_PRIORITY = nullMap({
         hasSense: 0,
         translationEquivalent: 1,
         containsMorpheme: 2,
@@ -90,19 +92,19 @@
         semanticShiftFrom: 10,
         sharesRime: 11,
         pronunciationSimilar: 12
-    };
-    const TYPE_PRIORITY = { lexeme: 0, sense: 1, morpheme: 2, etymon: 3, form: 4 };
-    const LANGUAGE_NAMES = {
+    });
+    const TYPE_PRIORITY = nullMap({ lexeme: 0, sense: 1, morpheme: 2, etymon: 3, form: 4 });
+    const LANGUAGE_NAMES = nullMap({
         en: 'English', fr: 'French', es: 'Spanish', la: 'Latin', frm: 'Middle French', fro: 'Old French'
-    };
-    const LANGUAGE_ALIASES = {
+    });
+    const LANGUAGE_ALIASES = nullMap({
         en: 'en', eng: 'en', english: 'en', anglais: 'en', ingles: 'en', 'inglés': 'en',
         fr: 'fr', fra: 'fr', fre: 'fr', french: 'fr', francais: 'fr', 'français': 'fr', frances: 'fr', 'francés': 'fr',
         es: 'es', spa: 'es', spanish: 'es', espanol: 'es', 'español': 'es', espagnol: 'es',
         la: 'la', lat: 'la', latin: 'la', latino: 'la',
         frm: 'frm', 'middle french': 'frm', fro: 'fro', 'old french': 'fro'
-    };
-    const ACG_EDGE_TYPE = {
+    });
+    const ACG_EDGE_TYPE = nullMap({
         hasSense: 'contains',
         containsMorpheme: 'contains',
         inflectedFormOf: 'elaborates',
@@ -116,14 +118,14 @@
         falseFriendOf: 'contrast',
         sharesRime: 'associates',
         pronunciationSimilar: 'associates'
-    };
+    });
 
     function isObject(value) {
         return value !== null && typeof value === 'object' && !Array.isArray(value);
     }
 
     function clone(value) {
-        return value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+        return value === undefined ? undefined : JSON.parse(JSON.stringify(value), (key, val) => (isBlockedKey(key) ? undefined : val));
     }
 
     function cleanText(value, limit) {
@@ -187,11 +189,20 @@
         return typeof value === 'string'
             && value.length > 0
             && value.length <= MAX_ID
+            && !isBlockedKey(value)
             && /^[A-Za-z0-9][A-Za-z0-9:._~-]*$/.test(value);
     }
 
     function validSourceUrl(value) {
-        return typeof value === 'string' && /^https:\/\/[A-Za-z0-9.-]+(?:[\/:?#].*)?$/.test(value) && value.length <= 1000;
+        if (typeof value !== 'string' || value.length > 1000 || /[\u0000-\u001f\u007f]/.test(value)) return false;
+        if (!/^https:\/\/[A-Za-z0-9.-]+(?:[\/:?#].*)?$/.test(value)) return false;
+        if (typeof URL === 'function') {
+            try {
+                const parsed = new URL(value);
+                if (parsed.protocol !== 'https:' || parsed.username || parsed.password || !parsed.hostname) return false;
+            } catch (_) { return false; }
+        }
+        return true;
     }
 
     function expectedDirection(relationType) {
@@ -367,7 +378,7 @@
         const edgeList = Array.isArray(edges) ? edges : [];
         if (nodeList.length > limits.nodes) errors.push(issue('node-bound-exceeded', 'nodes', `At most ${limits.nodes} nodes are allowed.`));
         if (edgeList.length > limits.edges) errors.push(issue('edge-bound-exceeded', 'edges', `At most ${limits.edges} edges are allowed.`));
-        const nodeById = {};
+        const nodeById = Object.create(null);
         nodeList.forEach((node, index) => {
             validateNode(node, `nodes[${index}]`, errors);
             if (node && validId(node.id)) {
@@ -406,7 +417,7 @@
         if (!isObject(snapshot)) return { ok: false, errors: [issue('snapshot-invalid', '', 'Snapshot must be an object.')], warnings, value: null };
         if (snapshot.schemaVersion !== SNAPSHOT_VERSION) errors.push(issue('snapshot-version-invalid', 'schemaVersion', `Expected ${SNAPSHOT_VERSION}.`));
         validateManifest(snapshot.dataset, 'dataset', errors);
-        const sourceById = {};
+        const sourceById = Object.create(null);
         if (isObject(snapshot.dataset) && Array.isArray(snapshot.dataset.sources)) {
             snapshot.dataset.sources.forEach((source) => { if (source && validId(source.id)) sourceById[source.id] = source; });
         }
@@ -426,7 +437,7 @@
         if (graph.version !== VERSION) errors.push(issue('graph-version-invalid', 'version', `Expected ${VERSION}.`));
         if (!validId(graph.focusId)) errors.push(issue('graph-focus-required', 'focusId', 'A valid focusId is required.'));
         validateManifest(graph.manifest, 'manifest', errors);
-        const sourceById = {};
+        const sourceById = Object.create(null);
         if (isObject(graph.manifest) && Array.isArray(graph.manifest.sources)) {
             graph.manifest.sources.forEach((source) => { if (source && validId(source.id)) sourceById[source.id] = source; });
         }
@@ -495,9 +506,9 @@
             throw error;
         }
         const value = report.value;
-        const nodeById = {};
+        const nodeById = Object.create(null);
         value.nodes.forEach((node) => { nodeById[node.id] = node; });
-        const adjacency = {};
+        const adjacency = Object.create(null);
         value.nodes.forEach((node) => { adjacency[node.id] = []; });
         value.edges.slice().sort(edgeSort).forEach((edge) => {
             if (adjacency[edge.fromId]) adjacency[edge.fromId].push(edge);
@@ -509,8 +520,8 @@
             return nodeSort(nodeById[edgeOtherId(a, id)], nodeById[edgeOtherId(b, id)]);
         }));
         const order = [];
-        const depthById = {};
-        const parentEdgeById = {};
+        const depthById = Object.create(null);
+        const parentEdgeById = Object.create(null);
         const seen = new Set([value.focusId]);
         const queue = [value.focusId];
         depthById[value.focusId] = 0;
@@ -580,9 +591,9 @@
         }
         const value = report.value;
         const outline = deriveAccessibleOutline(value);
-        const orderIndex = {};
+        const orderIndex = Object.create(null);
         outline.order.forEach((id, index) => { orderIndex[id] = index; });
-        const depthById = {};
+        const depthById = Object.create(null);
         outline.items.forEach((item) => { depthById[item.id] = item.depth === null ? MAX_DEPTH + 1 : item.depth; });
         const languageCategories = [];
         value.nodes.forEach((node) => {
@@ -653,9 +664,9 @@
         }
         const value = report.value;
         const manifest = clone(value.dataset);
-        const nodeById = {};
+        const nodeById = Object.create(null);
         const lexemes = [];
-        const sensesByLexeme = {};
+        const sensesByLexeme = Object.create(null);
         value.nodes.forEach((node) => {
             nodeById[node.id] = node;
             if (node.type === 'lexeme') lexemes.push(node);
@@ -667,7 +678,7 @@
         lexemes.sort(nodeSort);
         Object.keys(sensesByLexeme).forEach((id) => sensesByLexeme[id].sort(nodeSort));
         const sortedEdges = value.relationships.slice().sort(edgeSort);
-        const adjacency = {};
+        const adjacency = Object.create(null);
         value.nodes.forEach((node) => { adjacency[node.id] = []; });
         sortedEdges.forEach((edge) => {
             adjacency[edge.fromId].push(edge);
@@ -768,7 +779,8 @@
                 || node.type === 'etymon'
                 || languageFilter.has(normalizeLanguage(node.language));
             const included = new Set([focusId]);
-            const distance = { [focusId]: 0 };
+            const distance = Object.create(null);
+            distance[focusId] = 0;
             const queue = [focusId];
             let candidateOverflow = false;
             while (queue.length) {
@@ -814,14 +826,14 @@
             };
         }
 
-        return {
+        return Object.freeze({
             version: VERSION,
             getManifest,
             resolveLexeme,
             getNeighborhood,
             deriveAccessibleOutline(graph) { return deriveAccessibleOutline(graph); },
             toACG(graph) { return toACG(graph); }
-        };
+        });
     }
 
     function createPilotSnapshot() {
@@ -862,7 +874,7 @@
             scopeNote: 'Small pedagogical pilot; not an exhaustive dictionary or a claim that translation, cognacy, borrowing, and spelling similarity are equivalent.',
             sources
         };
-        const sourceById = {};
+        const sourceById = Object.create(null);
         sources.forEach((source) => { sourceById[source.id] = source; });
         const provenance = (sourceIds) => ({
             provider: dataset.provider,
@@ -1062,21 +1074,21 @@
 
     const PILOT_SNAPSHOT = createPilotSnapshot();
 
-    return {
+    return Object.freeze({
         VERSION,
         SNAPSHOT_VERSION,
         OUTLINE_VERSION,
         ACG_VERSION,
-        NODE_TYPES: NODE_TYPES.slice(),
-        RELATION_TYPES: RELATION_TYPES.slice(),
-        VERIFICATION_TYPES: VERIFICATION_TYPES.slice(),
-        LIMITS: {
+        NODE_TYPES: Object.freeze(NODE_TYPES.slice()),
+        RELATION_TYPES: Object.freeze(RELATION_TYPES.slice()),
+        VERIFICATION_TYPES: Object.freeze(VERIFICATION_TYPES.slice()),
+        LIMITS: Object.freeze({
             maxGraphNodes: MAX_GRAPH_NODES,
             maxGraphEdges: MAX_GRAPH_EDGES,
             maxDepth: MAX_DEPTH,
             maxSnapshotNodes: MAX_SNAPSHOT_NODES,
             maxSnapshotEdges: MAX_SNAPSHOT_EDGES
-        },
+        }),
         PILOT_SNAPSHOT,
         normalizeLanguage,
         languageName,
@@ -1089,5 +1101,5 @@
         deriveAccessibleOutline,
         toACG,
         toConceptGraph: toACG
-    };
+    });
 });

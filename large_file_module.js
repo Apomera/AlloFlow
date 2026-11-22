@@ -14,7 +14,11 @@ var getGlobalAudioContext = typeof window !== "undefined" && window.getGlobalAud
     return _cachedFallbackAudioCtx;
   }
   var Ctx = typeof window !== "undefined" && (window.AudioContext || window.webkitAudioContext);
-  _cachedFallbackAudioCtx = Ctx ? new Ctx() : null;
+  try {
+    _cachedFallbackAudioCtx = Ctx ? new Ctx() : null;
+  } catch (_) {
+    _cachedFallbackAudioCtx = null;
+  }
   return _cachedFallbackAudioCtx;
 });
 const LargeFileHandler = {
@@ -75,8 +79,14 @@ const LargeFileHandler = {
     if (typeof file.size === "number" && (!Number.isFinite(file.size) || file.size < 0 || file.size > this.MAX_FILE_SIZE_BYTES)) {
       throw new Error("File exceeds the 500 MB large-file safety limit.");
     }
+    if (this.cancelRequested) {
+      throw new Error("Cancelled");
+    }
     reportProgress(0, 1, readMessage);
     const arrayBuffer = await this.readFileAsArrayBuffer(file);
+    if (this.cancelRequested) {
+      throw new Error("Cancelled");
+    }
     if (!arrayBuffer || typeof arrayBuffer.byteLength !== "number" || arrayBuffer.byteLength > this.MAX_FILE_SIZE_BYTES) {
       throw new Error("File exceeds the 500 MB large-file safety limit.");
     }
@@ -85,7 +95,13 @@ const LargeFileHandler = {
       throw new Error("Web Audio API not supported");
     }
     reportProgress(0, 1, "Decoding audio...");
-    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+    if (this.cancelRequested) {
+      throw new Error("Cancelled");
+    }
+    if (!audioBuffer || typeof audioBuffer.duration !== "number") {
+      throw new Error("Invalid audio buffer.");
+    }
     const totalDuration = audioBuffer.duration;
     if (!Number.isFinite(totalDuration) || totalDuration < 0 || totalDuration > this.MAX_AUDIO_DURATION_SECONDS) {
       throw new Error("Audio duration exceeds the 4-hour processing limit.");
@@ -96,6 +112,9 @@ const LargeFileHandler = {
   }) {
     if (typeof transcribeChunk !== "function") {
       throw new Error("Transcription handler is required.");
+    }
+    if (transcribeChunk._alloQrBlocked === true || typeof window !== "undefined" && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true || window.__alloQrStudentMode === true || window._alloQrBlocked === true || window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false || typeof window.__alloAiUsable === "function" && !window.__alloAiUsable("audio", transcribeChunk))) {
+      throw new Error("AI transcription is unavailable right now.");
     }
     const reportProgress = (cur, tot, msg) => {
       if (typeof onProgress === "function") {
@@ -141,8 +160,14 @@ const LargeFileHandler = {
       }
       const wavBlob = this.audioBufferToWav(chunkBuffer);
       const base64 = await this.blobToBase64(wavBlob);
+      if (this.cancelRequested) {
+        throw new Error("Cancelled");
+      }
       const chunkTranscript = await transcribeChunk(base64, "audio/wav");
-      transcripts.push(chunkTranscript);
+      if (this.cancelRequested) {
+        throw new Error("Cancelled");
+      }
+      transcripts.push(typeof chunkTranscript === "string" ? chunkTranscript : String(chunkTranscript || ""));
     }
     const fullTranscript = transcripts.join(" ");
     return {
@@ -285,8 +310,10 @@ const LargeFileHandler = {
 const LargeFileTranscriptionModal = React.memo(({
   isOpen,
   file,
-  onClose,
-  onConfirm,
+  onClose = () => {
+  },
+  onConfirm = () => {
+  },
   progress,
   totalChunks,
   status,
@@ -298,8 +325,9 @@ const LargeFileTranscriptionModal = React.memo(({
   const closeRef = React.useRef(onClose);
   processingRef.current = isProcessing;
   closeRef.current = onClose;
+  const isVisible = Boolean(isOpen && file);
   React.useEffect(() => {
-    if (!isOpen) return void 0;
+    if (!isVisible || typeof document === "undefined" || typeof window === "undefined") return void 0;
     const dialog = dialogRef.current;
     if (!dialog) return void 0;
     const previousFocus = document.activeElement;
@@ -313,8 +341,12 @@ const LargeFileTranscriptionModal = React.memo(({
       if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
       const closedDetails = element.closest("details:not([open])");
       if (closedDetails && !(element.tagName === "SUMMARY" && element.parentElement === closedDetails)) return false;
-      const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(element) : null;
-      if (style && (style.display === "none" || style.visibility === "hidden")) return false;
+      if (typeof window.getComputedStyle === "function") {
+        for (let node = element; node && node !== dialog.parentElement; node = node.parentElement) {
+          const style = window.getComputedStyle(node);
+          if (style && (style.display === "none" || style.visibility === "hidden")) return false;
+        }
+      }
       const hasLayout = typeof dialog.getBoundingClientRect === "function" && (dialog.getBoundingClientRect().width > 0 || dialog.getBoundingClientRect().height > 0);
       if (hasLayout && typeof element.getClientRects === "function" && element.getClientRects().length === 0) return false;
       return true;
@@ -359,11 +391,11 @@ const LargeFileTranscriptionModal = React.memo(({
       if (trapIndex !== -1) trapStack.splice(trapIndex, 1);
       if (wasTopTrap && previousFocus && previousFocus !== document.body && previousFocus !== document.documentElement && previousFocus.isConnected && typeof previousFocus.focus === "function") previousFocus.focus();
     };
-  }, [isOpen]);
-  if (!isOpen || !file) return null;
+  }, [isVisible]);
+  if (!isVisible) return null;
   const safeFileSize = typeof file.size === "number" && Number.isFinite(file.size) && file.size >= 0 ? file.size : 0;
   const fileSizeMB = (safeFileSize / (1024 * 1024)).toFixed(1);
-  const estimatedChunks = Math.ceil(safeFileSize / (15 * 1024 * 1024));
+  const estimatedChunks = Math.max(1, Math.ceil(safeFileSize / (15 * 1024 * 1024)));
   const chunkTotal = Math.max(0, Number(totalChunks) || 0);
   const chunkProgress = Math.max(0, Math.min(chunkTotal, Number(progress) || 0));
   const progressPercent = chunkTotal > 0 ? Math.round(chunkProgress / chunkTotal * 100) : 0;
@@ -403,7 +435,7 @@ const LargeFileTranscriptionModal = React.memo(({
         },
         /* @__PURE__ */ React.createElement("span", { className: "text-xl", "aria-hidden": "true" }, "\xD7")
       ),
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4 pr-10" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 p-3 rounded-full" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, isVideo ? "\u{1F3AC}" : "\u{1F3B5}")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "large-file-modal-title", className: "text-lg font-black text-slate-800" }, isVideo ? t?.("large_file.title_video") || "Large Video File Detected" : t?.("large_file.title") || "Large Audio File Detected"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 font-medium break-words" }, file.name))),
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-4 pr-10" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 p-3 rounded-full" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, isVideo ? "\u{1F3AC}" : "\u{1F3B5}")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "large-file-modal-title", className: "text-lg font-black text-slate-800" }, isVideo ? t?.("large_file.title_video") || "Large Video File Detected" : t?.("large_file.title") || "Large Audio File Detected"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 font-medium break-words" }, file.name || "Untitled media file"))),
       /* @__PURE__ */ React.createElement("div", { id: "large-file-description", className: "bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-amber-800 leading-relaxed" }, isVideo ? t?.("large_file.description_video") || `This video is ${fileSizeMB} MB. The audio will be extracted and split into ~${estimatedChunks} smaller chunks for transcription, then combined.` : t?.("large_file.description") || `This file is ${fileSizeMB} MB and exceeds the 20MB limit for direct transcription. It will be split into ~${estimatedChunks} smaller chunks and transcribed separately, then combined.`)),
       isProcessing && /* @__PURE__ */ React.createElement("div", { className: "mb-4", role: "status", "aria-live": "polite", "aria-atomic": "true" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, status || "Processing..."), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700" }, chunkProgress, "/", chunkTotal, " (", progressPercent, "%)")), /* @__PURE__ */ React.createElement("div", { className: "h-3 bg-slate-100 rounded-full overflow-hidden", role: "progressbar", "aria-label": status || "Transcription progress", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": chunkTotal > 0 ? progressPercent : void 0, "aria-valuetext": progressValueText }, /* @__PURE__ */ React.createElement(
         "div",
@@ -437,9 +469,11 @@ const LargeFileTranscriptionModal = React.memo(({
     )
   );
 });
-window.AlloModules = window.AlloModules || {};
-window.AlloModules.LargeFileHandler = LargeFileHandler;
-window.AlloModules.LargeFileTranscriptionModal = LargeFileTranscriptionModal;
+if (typeof window !== "undefined") {
+  window.AlloModules = window.AlloModules || {};
+  window.AlloModules.LargeFileHandler = LargeFileHandler;
+  window.AlloModules.LargeFileTranscriptionModal = LargeFileTranscriptionModal;
+}
 console.log("[LargeFileModule] LargeFileHandler + LargeFileTranscriptionModal registered.");
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.LargeFileHandler = (typeof LargeFileHandler !== 'undefined') ? LargeFileHandler : null;

@@ -39,7 +39,7 @@
       "prompt": "A revised personality inventory keeps the same score scale and standard deviation but raises its reliability estimate from .75 to .90. Under the conventional classical-test-theory SEM formula, which change follows?",
       "choices": [
         "The SEM increases from .50 SD to about .68 SD because a larger share of observed variance is true-score variance.",
-        "The SEM decreases from .50 SD to about .32 SD, so otherwise comparable conventional score intervals become narrower.",
+        "The SEM decreases from .50 SD to about .32 SD, so otherwise comparable confidence intervals become narrower.",
         "The SEM remains unchanged because only the number of items, not reliability, can alter measurement error.",
         "The SEM becomes zero because a reliability coefficient of .90 is sufficient for error-free individual scores."
       ],
@@ -73,7 +73,7 @@
       "prompt": "A school team combines interviews, record review, and direct observation to develop a hypothesis about why a student's behavior occurs. A specialist then proposes controlled test and comparison conditions. Which distinction is most accurate?",
       "choices": [
         "The first is an indirect FBA, whereas the second is a descriptive assessment because antecedents and consequences are recorded in their natural sequence.",
-        "The first is a broader functional behavioral assessment process; the second is an experimental functional analysis that manipulates conditions to test causal hypotheses and is not automatically required in every case.",
+        "The first is a broader functional behavioral assessment; the second is an experimental functional analysis manipulating variables to evaluate causal hypotheses, and it is not mandatory in every case.",
         "For a school-based FBA, federal requirements generally make experimental functional analysis the preferred evidentiary minimum before a behavior plan is implemented.",
         "Because experimental functional analysis tests causal hypotheses, it should usually take priority over descriptive assessment even when severe behavior could be evoked and the added benefit is uncertain."
       ],
@@ -115,7 +115,7 @@
       "choices": [
         "The trainee bears primary responsibility for administration, so the supervisor's ethical duty is limited to confirming that a credentialed trainee signed the report.",
         "The clinic's general disclosure that trainees provide services substantially satisfies the supervisor's delegation duty unless the client objects.",
-        "The facts directly raise a Standard 2.05 concern about competent delegation and oversight; any civil liability still depends on governing law and facts such as duty, breach, causation, harm, and agency.",
+        "These facts raise a Standard 2.05 concern regarding competent delegation and oversight, whereas civil liability still depends on governing law, duty, breach, causation, and harm.",
         "The supervisory relationship is ordinarily sufficient to establish civil liability if the assessment later contributes to an adverse decision, even without a separate causation-and-harm analysis."
       ],
       "answerIndex": 2,
@@ -145,12 +145,12 @@
       "sectionId": "ch-9-section-3",
       "domainId": 2,
       "domain": "Ethical, Legal & Professional Issues",
-      "prompt": "A psychologist leaves a client's labeled intake folder in a waiting room. Another patient sees the folder but reportedly does not open it before staff retrieve it. The client alleges malpractice. Which conclusion is most defensible from these facts alone?",
+      "prompt": "A psychologist leaves a client's labeled intake folder in a waiting room. Another patient sees the folder but reportedly does not open it before staff retrieve it. The client alleges malpractice. Which conclusion is most defensible on these facts?",
       "choices": [
-        "The lapse warrants ethical, privacy, mitigation, and documentation analysis, but malpractice cannot be decided from the exposure alone; governing law and proof of duty, breach, legally cognizable injury, and causation still matter.",
-        "The privacy lapse and a potential regulatory violation are sufficient to establish both breach and damages for a malpractice claim.",
-        "No confidentiality or security concern exists unless the psychologist intended another person to read the records.",
-        "Because the folder reportedly was not opened, the incident may warrant internal documentation but cannot support a negligence claim or an external response."
+        "The lapse requires ethical, privacy, and mitigation review, but malpractice cannot be decided from the exposure alone without governing law, injury, and causation.",
+        "An unintended privacy lapse and potential HIPAA violation establish both breach of duty and compensable damages in a civil malpractice suit.",
+        "No confidentiality violation or security duty is triggered unless the clinician intentionally disclosed protected material to an unauthorized party.",
+        "Because the waiting-room patient reportedly did not open the folder, the event merits internal documentation yet forecloses any external privacy notice or civil claim."
       ],
       "answerIndex": 0,
       "rationale": "Leaving identifiable intake material accessible can raise serious confidentiality, record-security, notification, mitigation, documentation, ethics, licensing, contractual, or regulatory issues even if the exposure was brief and unintended. A professional-negligence claim is a separate legal question. Generally described elements include duty, breach of the applicable standard, causation, and legally cognizable damages, but their definitions, evidentiary rules, available remedies, and related causes of action vary by jurisdiction. The vignette does not establish what information was perceived, what injury occurred, or which law controls, so neither automatic success nor categorical failure follows. The psychologist should protect the record, assess and document the incident, follow applicable law and policy, and obtain qualified legal or risk-management guidance rather than offer the client a guaranteed litigation prediction.",
@@ -229,9 +229,9 @@
       "domain": "Treatment, Intervention & Prevention",
       "prompt": "A trainee presents Lambert's often-repeated 40/30/15/15 psychotherapy graphic as a replicated causal partition of outcome variance that applies to every disorder. Which correction is strongest?",
       "choices": [
-        "Treat the graphic as a historical heuristic emphasizing multiple contributors, not a universal causal decomposition; categories overlap and estimates depend on constructs, designs, populations, therapists, and outcomes.",
-        "Retain the percentages as approximate empirical variance estimates because summing to 100% indicates that the four components were modeled as mutually exclusive.",
-        "Use the graphic to conclude that common factors generally account for outcome, while specific methods add meaningful benefit mainly when alliance is weak.",
+        "View the graphic as a historical heuristic highlighting multiple influences rather than an empirical decomposition, since categories overlap across designs and samples.",
+        "Retain the published percentages as approximate empirical variance estimates because summing to 100% reflects an additive statistical model of mutually exclusive components.",
+        "Use the graphic to conclude that common relationship factors account for most outcome variance, whereas specific interventions add benefit primarily when alliance is weak.",
         "Use the percentages as prior weights in an individual treatment algorithm, with alliance scores determining whether to change modality or dose."
       ],
       "answerIndex": 0,
@@ -270,10 +270,10 @@
       "domain": "Biological Bases of Behavior",
       "prompt": "After a dominant-hemisphere stroke, a patient has fluent but often meaningless speech with paraphasias and neologisms, markedly impaired auditory comprehension, and poor repetition. Which answer gives the best exam-level association without overstating localization?",
       "choices": [
-        "A classic Broca pattern caused specifically and exclusively by the left inferior frontal gyrus",
-        "A classic fluent or Wernicke aphasia pattern associated with a dominant posterior temporal language network, with lesion localization requiring full language assessment and imaging",
-        "Conduction aphasia proven to arise from an isolated arcuate-fasciculus lesion because repetition is impaired",
-        "A right parietal neglect syndrome because the patient appears unaware of some speech errors"
+        "A classic Broca aphasia profile localized specifically to the left inferior frontal gyrus, accounting for the paraphasic output and poor repetition",
+        "A classic Wernicke aphasia profile tied to posterior temporal language networks, with exact lesion mapping requiring full assessment and imaging",
+        "Conduction aphasia confirmed as an isolated arcuate-fasciculus lesion because impaired repetition overrides comprehension deficits",
+        "A right parietal hemineglect syndrome with anosognosia because reduced awareness of verbal errors points to nondominant injury"
       ],
       "answerIndex": 1,
       "rationale": "The combination of fluent output, semantic or phonemic errors, neologisms, poor auditory comprehension, and impaired repetition best matches the classic fluent or Wernicke aphasia syndrome among the choices. The traditional high-yield association is injury involving the dominant posterior temporal language network. It is not a one-to-one lesion map: aphasia profiles vary, vascular lesions often affect distributed cortical and white-matter networks, and awareness of errors is neither required nor sufficient for the label. Poor repetition alone does not prove an isolated arcuate-fasciculus lesion, and fluent aphasia should not be localized from a short vignette without neurological, hearing, language, reading, writing, cultural-linguistic, and imaging assessment.",
@@ -311,10 +311,10 @@
       "domain": "Biological Bases of Behavior",
       "prompt": "Which medication class is best characterized by inhibition of a presynaptic serotonin transporter as an initial pharmacodynamic action, while not implying that an immediate cleft-level change fully explains therapeutic response?",
       "choices": [
-        "Monoamine oxidase inhibitors, through inhibition of monoamine catabolism",
-        "Typical antipsychotics, through antagonism at dopamine D2 receptors",
-        "Benzodiazepines, through positive allosteric modulation of GABA-A receptors",
-        "Selective serotonin reuptake inhibitors, through inhibition of SERT and reduction of serotonin reuptake"
+        "Monoamine oxidase inhibitors, by suppressing enzymatic breakdown of serotonin, norepinephrine, and dopamine",
+        "Typical antipsychotics, by exerting postsynaptic antagonism primarily at striatal dopamine D2 receptors",
+        "Benzodiazepines, by enhancing chloride influx via positive allosteric modulation at postsynaptic GABA-A receptors",
+        "Selective serotonin reuptake inhibitors, by blocking SERT and slowing synaptic serotonin clearance"
       ],
       "answerIndex": 3,
       "rationale": "Selective serotonin reuptake inhibitors are named for inhibiting the serotonin transporter, thereby reducing neuronal reuptake of serotonin as an early pharmacodynamic action. The fluoxetine prescribing information describes inhibition of central neuronal serotonin uptake while also stating that the precise mechanism of antidepressant action is unknown. Thus transporter inhibition is a valid class-recognition distinction, but it does not establish the entire therapeutic mechanism, an instantaneous clinical effect, a simple serotonin-deficiency account of depression, or equivalent actions and risks across all agents. Clinical response and adverse effects reflect dose, time, downstream receptor and circuit adaptations, metabolism, interactions, diagnosis, comorbidity, and individual variation.",
@@ -345,10 +345,10 @@
       "domain": "Cognitive-Affective Bases of Behavior",
       "prompt": "Candy has repeatedly followed a child's grocery-store tantrums. When the parent first withholds candy, the tantrum becomes temporarily longer and more intense. Assuming candy was maintaining the behavior, what is the best description?",
       "choices": [
-        "A possible extinction burst, meaning an early increase or change after reinforcement is withheld; the pattern is not inevitable and does not replace function-based safety planning",
-        "Spontaneous recovery, because the behavior has returned after a period without exposure following successful extinction",
-        "Stimulus generalization, because withholding candy has transferred the response to other settings with similar cues",
-        "Negative punishment, because withholding candy has already demonstrated a reduction in future tantrums"
+        "A possible extinction burst—a brief early escalation when reinforcement stops—though bursting is not inevitable and still needs safety planning",
+        "Spontaneous recovery, because a previously extinguished operant response has reemerged after an extended interval without exposure to the store setting",
+        "Stimulus generalization, because removing the preferred item broadened tantrums to novel retail settings sharing store cues",
+        "Negative punishment, because withholding a valued consequence already established a reliable decrease in future tantrums"
       ],
       "answerIndex": 0,
       "rationale": "An extinction burst is a possible early increase in frequency, duration, intensity, or variability when the consequence that previously maintained a response is withheld. The temporal pattern and stated reinforcement history make it the best answer, but a single escalation does not prove behavioral function, and bursting is possible, not inevitable. Empirical work found bursts in only a minority of reviewed treatment cases and less often when extinction was combined with alternative procedures. In practice, clinicians should confirm function, teach and reinforce a feasible replacement response, evaluate setting events and communication needs, monitor data, prepare caregivers consistently, and avoid extinction alone when escalation, self-injury, aggression, elopement, or other risks cannot be managed safely.",
@@ -386,10 +386,10 @@
       "domain": "Cognitive-Affective Bases of Behavior",
       "prompt": "In Dutton and Aron's classic field comparison, men crossed either a fear-arousing suspension bridge or a more stable bridge before interacting with a female interviewer. Which theoretical inference is most defensible?",
       "choices": [
-        "The study primarily supports a James-Lange account because bodily feedback is the most direct explanation for the attraction-relevant responses.",
-        "The study primarily supports a Cannon-Bard account because arousal and interpretation were measured as parallel but independent responses.",
-        "The study favors a Lazarus-style account in which conscious appraisal was shown to precede physiological arousal on the bridge.",
-        "The pattern is compatible with context-dependent labeling or misattribution emphasized by two-factor accounts, but the field comparison does not uniquely establish that mechanism or each participant's attribution."
+        "The findings primarily validate a James-Lange account because autonomic feedback directly generated the attraction-relevant responses.",
+        "The findings primarily validate a Cannon-Bard account because autonomic arousal and romantic interpretation were measured as independent parallel streams.",
+        "The findings favor a Lazarus appraisal account because researchers demonstrated conscious threat evaluation preceded arousal on the bridge.",
+        "Findings fit context-dependent labeling emphasized by two-factor models, yet the nonrandomized design does not uniquely confirm that mechanism."
       ],
       "answerIndex": 3,
       "rationale": "Dutton and Aron reported condition-related differences in attraction-relevant measures after encounters on fear-arousing versus comparison bridges, a pattern commonly interpreted as compatible with misattribution of arousal and the broader two-factor emphasis on situational interpretation. The field comparison does not uniquely establish that account: participants were not randomly assigned to which bridge they had chosen to cross, the outcomes were indirect and context-specific, and selection, timing, interviewer effects, arousal intensity, or other differences can contribute. Schachter and Singer's influential theory likewise should be taught as a historical model, not proof that undifferentiated arousal plus one conscious label is the complete mechanism of every emotion.",
@@ -495,10 +495,10 @@
       "domain": "Growth & Lifespan Development",
       "prompt": "A newborn has a low 1-minute Apgar score after a difficult delivery. Which interpretation is most accurate?",
       "choices": [
-        "The low score is strong presumptive evidence of intrapartum asphyxia unless a congenital condition is documented.",
-        "The score can provide an individual neurologic prognosis when it is obtained at 1 minute and the delivery was difficult.",
-        "Initial stabilization can begin immediately, but definitive resuscitation decisions should generally wait for the standardized 1-minute score.",
-        "It describes the newborn's condition at that time and should be interpreted with serial scores, interventions, clinical course, and other evidence rather than used alone as a diagnosis or prognosis."
+        "A depressed 1-minute score constitutes presumptive evidence of intrapartum asphyxia unless a major anomaly is documented.",
+        "An abnormally low 1-minute score yields a reliable individual neurodevelopmental prognosis when paired with a documented complicated labor course.",
+        "Basic warming and drying begin at birth, whereas definitive neonatal resuscitation decisions should await the 1-minute rating.",
+        "It captures status at that moment and must be weighed with serial ratings, interventions, and clinical course rather than used as prognosis."
       ],
       "answerIndex": 3,
       "rationale": "The Apgar score communicates a newborn's condition at specified times and response to resuscitative efforts using heart rate, respiratory effort, muscle tone, reflex irritability, and color. A low 1-minute score does not diagnose asphyxia, identify an etiology, or by itself produce a reliable individual neurologic prognosis. Interpretation belongs with the 5-minute and later scores when indicated, interventions, gestational age, medications, congenital conditions, blood gases, neurologic findings, placental and obstetric evidence, and the subsequent clinical course. Needed resuscitation begins from immediate clinical assessment and should not be delayed until the 1-minute score. Group-level associations at later time points do not turn one early score into deterministic prediction.",
@@ -529,10 +529,10 @@
       "domain": "Growth & Lifespan Development",
       "prompt": "A child fails one verbally complex explicit false-belief task. What is the strongest conclusion?",
       "choices": [
-        "The child lacks empathy across emotional, cognitive, and behavioral contexts.",
-        "The result is sufficient for an autism diagnosis because false-belief failure is autism-specific.",
-        "Performance may reflect mental-state reasoning together with language, memory, inhibition, task format, experience, and cultural context; broader evidence is needed.",
-        "Theory of mind cannot be studied scientifically because every false-belief task has demands."
+        "The child demonstrates a pervasive deficit in affective and cognitive empathy generalizing across interpersonal settings.",
+        "Failing a structured false-belief procedure is diagnostically sufficient for autism spectrum disorder because perspective-taking errors are specific to ASD.",
+        "Performance reflects mental-state reasoning alongside language, memory, inhibition, format, and cultural context, requiring broader evidence.",
+        "Mental-state reasoning cannot be investigated empirically because laboratory false-belief paradigms are confounded by linguistic demands."
       ],
       "answerIndex": 2,
       "rationale": "An explicit false-belief task samples a bounded form of mental-state reasoning while also requiring comprehension of the narrative and question, working memory, inhibition of one's own knowledge, response selection, familiarity with the task format, and culturally situated communication. Failure can therefore generate a hypothesis for further assessment, not a global verdict about empathy or theory of mind. It is not an autism diagnosis and is not specific to autism; diagnostic evaluation requires developmental history, functioning, social-communication and restricted or repetitive behavior evidence, multiple methods, and appropriate cultural-linguistic interpretation. Cross-cultural and task-comparison research also shows that the age and pattern of success can change with elicited versus spontaneous formats and sociocultural experience.",
@@ -570,7 +570,7 @@
       "domain": "Research Methods & Statistics",
       "prompt": "A behavior analyst wants to evaluate a treatment for dangerous self-injury across three feasible participants or settings, but withdrawing an effective treatment would be unsafe. Which listed single-case design is most appropriate?",
       "choices": [
-        "A multiple-baseline design with adequate repeated measurement and staggered introduction across credible tiers",
+        "A multiple-baseline design using adequate repeated measurement and staggered introduction over independent tiers",
         "An ABA reversal, because one withdrawal can provide a planned replication while limiting the duration of renewed risk",
         "An ABAB reversal, because repeated phase changes provide stronger experimental control when the target behavior is severe",
         "An alternating-treatments design, because rapid alternation can substitute for a no-treatment comparison without carryover concerns"

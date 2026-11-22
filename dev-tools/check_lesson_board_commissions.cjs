@@ -143,7 +143,7 @@ const scenarios = [
       const deck = page.locator('[data-open-tabletop-deck]');
       await deck.focus(); await page.keyboard.press('Enter');
       await expect(page.locator('[data-field-panel]')).toBeFocused();
-      await page.locator('[data-field-commission-offer]>summary').click();
+      await page.locator('[data-field-approach="commission"]').click();
       for (const option of initial.offer.commissions) {
         const radio = page.locator('[data-field-commission-option="' + option.projectId + '"]');
         await radio.focus(); await page.keyboard.press('Space'); await expect(radio).toBeChecked();
@@ -156,7 +156,7 @@ const scenarios = [
       await expect(page.locator('[data-field-commission-preview="' + target + '"] [data-commission-position]')).toHaveAttribute('data-commission-position', 'travel');
       await expect(page.locator('[data-field-commission-preview="' + target + '"] [data-commission-crew]')).toBeVisible();
       const rewardAmountGeometry = await page.locator('[data-field-commission-offer] .lb-commission-options .lb-token').evaluateAll(tokens => tokens.map(token => {
-        const nodes = [...token.childNodes].filter(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+        const nodes = [...(token.querySelector('bdi') || token).childNodes].filter(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
         const rects = nodes.flatMap(node => {const range = document.createRange(); range.selectNodeContents(node); return [...range.getClientRects()].filter(rect => rect.width > 0 && rect.height > 0);});
         const lines = [];
         for (const rect of rects) if (!lines.some(top => Math.abs(top - rect.top) <= 1)) lines.push(rect.top);

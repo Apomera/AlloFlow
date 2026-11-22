@@ -4845,6 +4845,32 @@ useEffect(function(){
       var text=chatInput.trim();
       if(!text||chatBusy)return;
       var history=chatMessages.concat([{role:'you',target:text}]);
+      // Safety gate: check learner conversation turns before sending to AI.
+      if(typeof window!=='undefined'){
+        var onFlag=typeof props.onSafetyFlag==='function'?props.onSafetyFlag:null;
+        var blocked=false;
+        if(window.SelHub&&typeof window.SelHub.safeRehearseCheck==='function'){
+          try{var r=window.SelHub.safeRehearseCheck(text,{toolId:'lingua_practice_chat',onSafetyFlag:onFlag});if(r&&r.action==='block')blocked=true;}catch(_){}
+        }else{
+          var checker=(window.__alloShared&&window.__alloShared.SafetyContentChecker)||window.SafetyContentChecker||null;
+          var flags=null;
+          try{flags=(checker&&typeof checker.check==='function')?checker.check(text):null;}catch(_){flags=null;}
+          var crit=Array.isArray(flags)&&flags.find(function(f){return f&&f.severity==='critical';});
+          if(crit){
+            blocked=true;
+            if(onFlag){try{onFlag(Object.assign({},crit,{source:'lingua_practice_chat',context:text.slice(0,100),aiGenerated:false}));}catch(_){}}
+          }
+        }
+        if(blocked){
+          var pauseReply={role:'coach',target:'Let us pause our practice for a second. Your wellbeing matters more than any lesson.',known:'Please talk to a trusted adult, call or text 988 (Suicide & Crisis Lifeline), or text HOME to 741741 (Crisis Text Line). You are not alone.'};
+          var nextMsgs=history.concat([pauseReply]);
+          setChatMessages(nextMsgs);setChatInput('');persistChat(profile.target,nextMsgs);
+          if(window.SelHub&&typeof window.SelHub.showCrisisModal==='function'){
+            try{window.SelHub.showCrisisModal({toolName:'Lingua Practice',contentSnippet:text.slice(0,200)});}catch(_){}
+          }
+          return;
+        }
+      }
       setChatMessages(history);setChatInput('');persistChat(profile.target,history);
       progressWith(function(old){return trackLanguageActivity(old,profile.target,{chatTurns:1},Date.now(),currentActivityContext());});
       runCoachTurn(history);

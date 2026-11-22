@@ -3169,10 +3169,11 @@ class ErrorBoundary extends React.Component {
     console.error("ErrorBoundary caught an error:", error, errorInfo);
   }
   render() {
-    const t = this.context?.t || ((key) => {
+    const fallbackT = (key) => {
       const f = { "errors.component_title": "Something went wrong", "errors.default_desc": "This component encountered an error. Please try again.", "errors.try_again": "Try Again", "common.refresh": "Refresh", "common.error_details": "Error Details" };
-      return f[key] || key;
-    });
+      return Object.prototype.hasOwnProperty.call(f, key) ? f[key] : key;
+    };
+    const t = this.context && typeof this.context.t === "function" ? this.context.t : fallbackT;
     if (this.state.hasError) {
       const safeErrorText = (() => {
         try {
@@ -3188,7 +3189,11 @@ class ErrorBoundary extends React.Component {
         {
           type: "button",
           onClick: () => {
-            if (this.props.onRetry) this.props.onRetry();
+            try {
+              if (typeof this.props.onRetry === "function") this.props.onRetry();
+            } catch (retryErr) {
+              console.error("ErrorBoundary onRetry failed:", retryErr);
+            }
             this.setState({ hasError: false, error: null });
           },
           className: "min-h-11 px-6 py-3 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none shadow-lg flex items-center gap-2 active:scale-95 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
@@ -3239,14 +3244,21 @@ const makeSessionAssetId = (prefix, parts) => {
   }
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 };
+const _resolveFirestoreDep = (name, localVal) => typeof window !== "undefined" && window[name] || localVal;
+const _safeSessionJsonParse = (raw) => JSON.parse(raw, (k, v) => k === "__proto__" || k === "constructor" || k === "prototype" ? void 0 : v);
 const getSessionAssetRef = (appId, assetId) => {
+  if (typeof appId !== "string" || !/^[a-zA-Z0-9._-]{1,160}$/.test(appId) || appId === "." || appId === "..") {
+    throw createSessionAssetHydrationError(assetId, "invalid-app-id");
+  }
   if (typeof assetId !== "string" || !/^[a-zA-Z0-9_-]{1,420}$/.test(assetId)) {
     throw createSessionAssetHydrationError(assetId, "invalid-asset-id");
   }
-  return doc(db, "artifacts", appId, "public", "data", "session_assets", assetId);
+  const docFn = _resolveFirestoreDep("doc", typeof doc !== "undefined" ? doc : null);
+  const dbRef = _resolveFirestoreDep("db", typeof db !== "undefined" ? db : null);
+  return docFn(dbRef, "artifacts", appId, "public", "data", "session_assets", assetId);
 };
 const getSessionAssetSecurityMetadata = (sessionCode) => {
-  const ownerUid = window.__alloFirebase && window.__alloFirebase.auth && window.__alloFirebase.auth.currentUser && window.__alloFirebase.auth.currentUser.uid;
+  const ownerUid = typeof window !== "undefined" && window.__alloFirebase && window.__alloFirebase.auth && window.__alloFirebase.auth.currentUser && window.__alloFirebase.auth.currentUser.uid;
   const parentId = sanitizeSessionAssetIdPart(sessionCode);
   if (!ownerUid) throw new Error("Firebase Authentication must be ready before uploading session assets.");
   if (!sessionCode || parentId !== String(sessionCode)) throw new Error("A valid session or assignment ID is required for asset upload.");
@@ -3262,26 +3274,56 @@ const getSessionAssetSecurityMetadata = (sessionCode) => {
   };
 };
 const _sessionAssetUploadMemo = /* @__PURE__ */ new Set();
+const _MAX_SESSION_ASSET_MEMO = 2e3;
+const _splitStringByUtf8Bytes = (text, maxBytes) => {
+  const chunks = [];
+  let start = 0;
+  let bytes = 0;
+  for (let i = 0; i < text.length; i++) {
+    const cp = text.codePointAt(i);
+    const charUnits = cp > 65535 ? 2 : 1;
+    const charBytes = cp <= 127 ? 1 : cp <= 2047 ? 2 : cp <= 65535 ? 3 : 4;
+    if (bytes + charBytes > maxBytes && i > start) {
+      chunks.push(text.slice(start, i));
+      start = i;
+      bytes = 0;
+    }
+    bytes += charBytes;
+    if (charUnits === 2) i++;
+  }
+  if (start < text.length || chunks.length === 0) chunks.push(text.slice(start));
+  return chunks;
+};
 const enqueueChunkedStringAsset = (appId, assetId, kind, data, writeTasks, metadata = {}, options = {}) => {
   const memoWrites = !!options.contentAddressed;
   const pushSetDoc = (docId, payload) => {
     const memoKey = `${appId}|${docId}`;
     if (memoWrites && _sessionAssetUploadMemo.has(memoKey)) return;
-    writeTasks.push(() => Promise.resolve(setDoc(getSessionAssetRef(appId, docId), payload)).then(() => {
-      if (memoWrites) _sessionAssetUploadMemo.add(memoKey);
-    }));
+    writeTasks.push(() => {
+      const setDocFn = _resolveFirestoreDep("setDoc", typeof setDoc !== "undefined" ? setDoc : null);
+      return Promise.resolve(setDocFn(getSessionAssetRef(appId, docId), payload)).then(() => {
+        if (memoWrites) {
+          if (_sessionAssetUploadMemo.size >= _MAX_SESSION_ASSET_MEMO) {
+            const oldest = _sessionAssetUploadMemo.values().next().value;
+            if (oldest !== void 0) _sessionAssetUploadMemo.delete(oldest);
+          }
+          _sessionAssetUploadMemo.add(memoKey);
+        }
+      });
+    });
   };
   const text = typeof data === "string" ? data : JSON.stringify(data);
   if (jsonByteLength(text) > SESSION_RESOURCE_CHUNK_SIZE) {
+    const chunkParts = _splitStringByUtf8Bytes(text, SESSION_RESOURCE_CHUNK_SIZE);
     const chunkIds = [];
-    for (let offset = 0; offset < text.length; offset += SESSION_RESOURCE_CHUNK_SIZE) {
+    for (let idx = 0; idx < chunkParts.length; idx++) {
       const chunkId = `${assetId}_chunk_${chunkIds.length}`;
       chunkIds.push(chunkId);
       pushSetDoc(chunkId, stripUndefinedForFirestore({
         kind: `${kind}Chunk`,
         parent: assetId,
         index: chunkIds.length - 1,
-        data: text.slice(offset, offset + SESSION_RESOURCE_CHUNK_SIZE),
+        data: chunkParts[idx],
         ...metadata
       }));
     }
@@ -3309,12 +3351,15 @@ const enqueueSessionResourceAsset = (appId, assetId, item, itemJson, writeTasks,
       ...metadata
     });
   } else {
-    writeTasks.push(() => setDoc(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
-      kind: "sessionResource",
-      resource: item,
-      byteLength: jsonByteLength(itemJson),
-      ...metadata
-    })));
+    writeTasks.push(() => {
+      const setDocFn = _resolveFirestoreDep("setDoc", typeof setDoc !== "undefined" ? setDoc : null);
+      return setDocFn(getSessionAssetRef(appId, assetId), stripUndefinedForFirestore({
+        kind: "sessionResource",
+        resource: item,
+        byteLength: jsonByteLength(itemJson),
+        ...metadata
+      }));
+    });
   }
 };
 const sanitizePortableAacImage = (value) => {
@@ -3325,7 +3370,7 @@ const sanitizePortableAacImage = (value) => {
   try {
     const svg = atob(match[1]);
     if (!/<svg(?:\s|>)/i.test(svg)) return null;
-    if (/<\s*(?:script|foreignObject|iframe|object|embed|link|style|image|audio|video)\b/i.test(svg) || /<!\s*(?:DOCTYPE|ENTITY)\b|<\?xml-stylesheet\b/i.test(svg) || /\son[a-z]+\s*=/i.test(svg) || /(?:href|xlink:href)\s*=\s*['"]\s*(?:https?:|\/\/|blob:|data:|javascript:)/i.test(svg) || /(?:url\s*\(|@import|javascript:|expression\s*\()/i.test(svg)) return null;
+    if (/<\s*(?:script|foreignObject|iframe|object|embed|link|style|image|audio|video|animate|set|use|a|feImage)\b/i.test(svg) || /<!\s*(?:DOCTYPE|ENTITY)\b|<\?xml-stylesheet\b/i.test(svg) || /[\s/>]on[a-z]+\s*=/i.test(svg) || /&#(?:x[0-9a-f]+|\d+);/i.test(svg) || /(?:href|xlink:href)\s*=\s*['"]\s*(?:https?:|\/\/|blob:|data:|javascript:|vbscript:)/i.test(svg) || /(?:url\s*\(|@import|javascript:|vbscript:|expression\s*\()/i.test(svg)) return null;
     return value;
   } catch (_) {
     return null;
@@ -3356,9 +3401,13 @@ const sanitizePortableAacResource = (item) => {
   if (!item || item.type !== "aac-board" || !item.data || typeof item.data !== "object") return item;
   const source = item.data;
   const privacy = source.metadata && source.metadata.privacy && typeof source.metadata.privacy === "object" ? source.metadata.privacy : {};
-  let omittedImages = Math.max(0, Number(source.metadata && source.metadata.omittedNonportableImages) || 0);
-  let omittedCustom = Math.max(0, Number(source.metadata && source.metadata.omittedCustomAudio) || 0);
-  let omittedPrepared = Math.max(0, Number(source.metadata && source.metadata.omittedPreparedAudio) || 0);
+  const _safeCount = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+  };
+  let omittedImages = _safeCount(source.metadata && source.metadata.omittedNonportableImages);
+  let omittedCustom = _safeCount(source.metadata && source.metadata.omittedCustomAudio);
+  let omittedPrepared = _safeCount(source.metadata && source.metadata.omittedPreparedAudio);
   let preparedIncluded = false;
   const pages = (Array.isArray(source.pages) ? source.pages : []).slice(0, 12).map((page, pageIndex) => {
     const cells = (Array.isArray(page && page.cells) ? page.cells : []).slice(0, 64).map((cell, cellIndex) => {
@@ -3421,7 +3470,7 @@ const sanitizePortableAacResource = (item) => {
     }
   };
 };
-const stripUnsafeLiveSessionFields = (value, keyName = "", options = {}) => {
+const stripUnsafeLiveSessionFields = (value, keyName = "", options = {}, seen = /* @__PURE__ */ new WeakSet()) => {
   if (value == null) return value;
   const isValidatedPrepared = typeof value === "object" && _validatedPortablePreparedAudio.has(value);
   const allowPreparedAudio = options.allowPreparedAudio === true || isValidatedPrepared;
@@ -3429,14 +3478,18 @@ const stripUnsafeLiveSessionFields = (value, keyName = "", options = {}) => {
     if (/^(audioRecording|rawAudio|voiceClip|recording|karaokeStudentAudio)$/i.test(keyName) || /^data:audio/i.test(value) && !allowPreparedAudio) return null;
     return value;
   }
-  if (Array.isArray(value)) return value.map((entry) => stripUnsafeLiveSessionFields(entry, keyName, options));
+  if (typeof value === "object" && !(value instanceof Date)) {
+    if (seen.has(value)) return null;
+    seen.add(value);
+  }
+  if (Array.isArray(value)) return value.map((entry) => stripUnsafeLiveSessionFields(entry, keyName, options, seen));
   if (typeof value === "object" && !(value instanceof Date)) {
     const out = {};
     Object.keys(value).forEach((key) => {
       if (/^(audioRecording|rawAudio|voiceClip|recording|mimeType|karaokeStudentAudio)$/i.test(key) || key === "__alloPortablePreparedAudio") return;
       const childVal = value[key];
       const childOptions = key === "audio" && childVal && typeof childVal === "object" && _validatedPortablePreparedAudio.has(childVal) ? { ...options, allowPreparedAudio: true } : options;
-      out[key] = stripUnsafeLiveSessionFields(childVal, key, childOptions);
+      out[key] = stripUnsafeLiveSessionFields(childVal, key, childOptions, seen);
     });
     return out;
   }
@@ -3512,7 +3565,8 @@ const compactLargeSessionResources = (appId, resources, writeTasks, options = {}
 };
 const runFirestoreWriteTasks = async (writeTasks, concurrency = SESSION_ASSET_WRITE_CONCURRENCY) => {
   if (!Array.isArray(writeTasks) || writeTasks.length === 0) return;
-  const workerCount = Math.max(1, Math.min(concurrency, writeTasks.length));
+  const safeConcurrency = Number.isFinite(Number(concurrency)) ? Math.floor(Number(concurrency)) : SESSION_ASSET_WRITE_CONCURRENCY;
+  const workerCount = Math.max(1, Math.min(safeConcurrency, writeTasks.length));
   let nextIndex = 0;
   const workers = Array.from({ length: workerCount }, async () => {
     while (nextIndex < writeTasks.length) {
@@ -3557,13 +3611,13 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
   const securityMetadata = getSessionAssetSecurityMetadata(sessionCode);
   const portableResources = resources.map((item) => {
     if (!item || item.type !== "word-sounds") return sanitizePortableAacResource(item);
-    const readiness = window.AlloModules && window.AlloModules.WordSoundsReadiness;
+    const readiness = typeof window !== "undefined" && window.AlloModules && window.AlloModules.WordSoundsReadiness;
     if (!readiness || typeof readiness.portable !== "function") throw new Error("Word Sounds audio preparation is unavailable. Reload and retry.");
     return readiness.portable(item);
   });
   const safeResources = structuredClone(stripUnsafeLiveSessionFields(portableResources));
   portableResources.forEach((item, index) => {
-    const readiness = window.AlloModules && window.AlloModules.WordSoundsReadiness;
+    const readiness = typeof window !== "undefined" && window.AlloModules && window.AlloModules.WordSoundsReadiness;
     if (item?.type === "word-sounds" && typeof readiness?.restoreReviewedSyllables === "function") {
       readiness.restoreReviewedSyllables(item, safeResources[index]);
     }
@@ -3578,6 +3632,7 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
         if (!assets || !target || typeof target !== "object") return;
         ["__proto__", "constructor", "prototype"].forEach((key) => {
           if (!Object.prototype.hasOwnProperty.call(assets, key)) return;
+          if (!assets[key] || typeof assets[key] !== "object") return;
           if (!target._ttsAssets || typeof target._ttsAssets !== "object" || Array.isArray(target._ttsAssets)) target._ttsAssets = /* @__PURE__ */ Object.create(null);
           Object.defineProperty(target._ttsAssets, key, { value: { mime: assets[key].mime, base64: assets[key].base64, ...sanitizeWordSoundsAudioProvenance(assets[key].provenance) ? { provenance: sanitizeWordSoundsAudioProvenance(assets[key].provenance) } : {} }, enumerable: true, configurable: true, writable: true });
         });
@@ -3673,7 +3728,8 @@ const getSessionAssetSnapshotWithRetry = async (appId, assetId, options = {}) =>
   let lastError = null;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
-      const snap = await getDoc(getSessionAssetRef(appId, assetId));
+      const getDocFn = _resolveFirestoreDep("getDoc", typeof getDoc !== "undefined" ? getDoc : null);
+      const snap = await getDocFn(getSessionAssetRef(appId, assetId));
       if (snap && snap.exists()) return snap;
       lastError = createSessionAssetHydrationError(assetId, "missing");
     } catch (error) {
@@ -3683,9 +3739,13 @@ const getSessionAssetSnapshotWithRetry = async (appId, assetId, options = {}) =>
   }
   throw lastError || createSessionAssetHydrationError(assetId, "unavailable");
 };
+const MAX_SESSION_ASSET_CHUNKS = 256;
 const loadChunkedAssetString = async (appId, payload) => {
   if (!payload || !Array.isArray(payload.chunks) || payload.chunks.length === 0) {
     throw createSessionAssetHydrationError("", "invalid-chunk-manifest");
+  }
+  if (payload.chunks.length > MAX_SESSION_ASSET_CHUNKS) {
+    throw createSessionAssetHydrationError("", "chunk-manifest-too-large");
   }
   const chunkSnaps = await Promise.all(payload.chunks.map((chunkId) => getSessionAssetSnapshotWithRetry(appId, chunkId)));
   return chunkSnaps.map((chunkSnap, index) => {
@@ -3714,7 +3774,7 @@ const hydrateResourcesManifest = async (appId, resources) => {
     if (!manifestJson) throw createSessionAssetHydrationError(manifestId, "invalid-manifest");
     let manifestItems;
     try {
-      manifestItems = JSON.parse(manifestJson);
+      manifestItems = _safeSessionJsonParse(manifestJson);
     } catch (error) {
       throw createSessionAssetHydrationError(manifestId, "invalid-manifest-json", error);
     }
@@ -3738,7 +3798,7 @@ const hydrateSessionAssets = async (appId, resources) => {
     if (payload.kind === "sessionResourceChunks" && Array.isArray(payload.chunks)) {
       const json = await loadChunkedAssetString(appId, payload);
       try {
-        hydrated[index] = JSON.parse(json);
+        hydrated[index] = _safeSessionJsonParse(json);
       } catch (error) {
         throw createSessionAssetHydrationError(resourceId, "invalid-resource-json", error);
       }
@@ -3769,8 +3829,9 @@ const hydrateSessionAssets = async (appId, resources) => {
         const snap = await getSessionAssetSnapshotWithRetry(appId, assetId);
         const payload = snap.data() || {};
         const json = Array.isArray(payload.chunks) ? await loadChunkedAssetString(appId, payload) : payload.data;
+        if (typeof json !== "string") throw createSessionAssetHydrationError(assetId, "invalid-json-asset");
         try {
-          obj[key] = JSON.parse(json || "null");
+          obj[key] = _safeSessionJsonParse(json);
         } catch (error) {
           throw createSessionAssetHydrationError(assetId, "invalid-json-asset", error);
         }

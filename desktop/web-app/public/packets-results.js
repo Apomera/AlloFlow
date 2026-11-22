@@ -341,6 +341,7 @@
     // 2026-11-17: goal dates and paper scores, kept the way goals are. A paper score already on the page is not added twice.
     (bundle.goalDates || []).forEach(function (row) { var key = row.learner + '\n' + row.measure; if (!(key in state.goalDates)) state.goalDates[key] = row.date; });
     (bundle.paper || []).forEach(function (row) {
+      if (state.paper.length >= 500) return;
       var same = state.paper.some(function (p) { return p.learner === row.learner && p.measure === row.measure && p.date === row.date && p.value === row.value && p.note === row.note; });
       if (!same) addPaper(row);
     });
@@ -1121,6 +1122,7 @@
     var paperDays = paper.map(function (p) { return dayNumber(p.date); });
     var allDays = days.concat(paperDays, aim ? [dayNumber(aim.date)] : []);
     var d0 = Math.min.apply(null, allDays), d1 = Math.max.apply(null, allDays);
+    if (!(d1 > d0)) return null;
     var most = Math.max.apply(null, points.concat(paper).map(function (p) { return p.value; }).concat(goal === null ? [] : [goal]));
     var scale = series.percent ? { step: 25, top: 100 } : niceTop(most);
     var x = function (day) { return Math.round((left + inset + (W - left - right - inset * 2) * (day - d0) / (d1 - d0)) * 10) / 10; };
@@ -1690,7 +1692,7 @@
     doc.body.appendChild(link);
     link.click();
     doc.body.removeChild(link);
-    setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) { /* already gone */ } }, 1500);
+    setTimeout(function () { try { URL.revokeObjectURL(url); } catch (_) { /* already gone */ } }, 15000);
     return true;
   }
   function saveSummary() {

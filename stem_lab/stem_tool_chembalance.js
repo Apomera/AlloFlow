@@ -16,6 +16,31 @@
     document.head.appendChild(st);
   })();
 
+  // Cinema-grade GPU-composited conservation-of-mass, orbital catchlight & stoichiometry animations
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-chem-motion-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-chem-motion-css';
+    st.textContent = [
+      '@keyframes allo-cb-eq-beam { 0%, 100% { opacity: 0.46; } 50% { opacity: 0.96; } }',
+      '@keyframes allo-cb-pivot-lock { 0% { opacity: 0.78; transform: scale(0.84); } 70% { opacity: 0.16; transform: scale(1.62); } 100% { opacity: 0; transform: scale(1.92); } }',
+      '@keyframes allo-cb-catchlight { 0%, 100% { opacity: 0.48; } 50% { opacity: 0.94; } }',
+      '@keyframes allo-cb-arrow-flow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -18; } }',
+      '@keyframes allo-cb-coeff-ripple { 0% { opacity: 0.74; transform: scale(0.86); } 100% { opacity: 0; transform: scale(1.34); } }',
+      '@keyframes allo-cb-orbital-breathe { 0%, 100% { opacity: 0.48; } 50% { opacity: 0.92; } }',
+      '.allo-cb-eq-beam { animation: allo-cb-eq-beam 2.6s ease-in-out infinite; pointer-events: none; }',
+      '.allo-cb-pivot-lock { transform-box: fill-box; transform-origin: center; animation: allo-cb-pivot-lock 2.2s cubic-bezier(0.22, 0.61, 0.36, 1) infinite; pointer-events: none; }',
+      '.allo-cb-catchlight { animation: allo-cb-catchlight 3.6s ease-in-out infinite; pointer-events: none; }',
+      '.allo-cb-arrow-flow { animation: allo-cb-arrow-flow 1.5s linear infinite; pointer-events: none; }',
+      '.allo-cb-coeff-ripple { transform-box: fill-box; transform-origin: center; animation: allo-cb-coeff-ripple 0.62s cubic-bezier(0.22, 0.61, 0.36, 1) 1 forwards; pointer-events: none; }',
+      '.allo-cb-orbital-breathe { animation: allo-cb-orbital-breathe 3.4s ease-in-out infinite; pointer-events: none; }',
+      '.theme-contrast .allo-cb-eq-beam, .theme-contrast .allo-cb-pivot-lock, .theme-contrast .allo-cb-catchlight, .theme-contrast .allo-cb-arrow-flow, .theme-contrast .allo-cb-coeff-ripple, .theme-contrast .allo-cb-orbital-breathe { animation: none !important; }',
+      '.theme-contrast .allo-cb-eq-beam, .theme-contrast .allo-cb-pivot-lock, .theme-contrast .allo-cb-catchlight, .theme-contrast .allo-cb-coeff-ripple, .theme-contrast .allo-cb-orbital-breathe { display: none !important; }',
+      '@media (prefers-reduced-motion: reduce) { .allo-cb-eq-beam, .allo-cb-pivot-lock, .allo-cb-catchlight, .allo-cb-arrow-flow, .allo-cb-coeff-ripple, .allo-cb-orbital-breathe { animation: none !important; } .allo-cb-pivot-lock { opacity: 0.28; } .allo-cb-coeff-ripple { opacity: 0; } }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-chembalance')) return;
@@ -4067,7 +4092,7 @@
                 for (var bi = 0; bi < g.length - 1; bi++) {
                   var bx1 = x + R + bi * STEP, bx2 = x + R + (bi + 1) * STEP;
                   kids.push(h('line', { key: side + gi + 'b' + bi, x1: bx1, y1: Hh / 2, x2: bx2, y2: Hh / 2, stroke: ctx.isContrast ? '#ffffff' : '#64748b', strokeWidth: 4, strokeLinecap: 'round' }));
-                  if (!ctx.isContrast) kids.push(h('line', { key: side + gi + 'bh' + bi, x1: bx1, y1: Hh / 2 - 1, x2: bx2, y2: Hh / 2 - 1, stroke: '#e2e8f0', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.8 }));
+                  if (!ctx.isContrast) kids.push(h('line', { key: side + gi + 'bh' + bi, className: 'allo-cb-catchlight', style: { animationDelay: ((gi * 0.3 + bi * 0.2) % 2).toFixed(2) + 's' }, x1: bx1, y1: Hh / 2 - 1, x2: bx2, y2: Hh / 2 - 1, stroke: '#e2e8f0', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.8 }));
                 }
               }
               g.forEach(function(letter, li) {
@@ -4079,7 +4104,7 @@
                 kids.push(h('circle', { key: side + gi + 'c' + li, cx: cx, cy: Hh / 2, r: R, fill: baseFill, stroke: ctx.isContrast ? '#ffffff' : '#1e293b', strokeWidth: 1 }));
                 if (!ctx.isContrast) {
                   kids.push(h('circle', { key: side + gi + 'g' + li, cx: cx, cy: Hh / 2, r: R - 0.5, fill: 'url(#' + glossId + ')', style: { pointerEvents: 'none' } }));
-                  kids.push(h('ellipse', { key: side + gi + 'sp' + li, cx: cx - R * 0.3, cy: Hh / 2 - R * 0.32, rx: R * 0.28, ry: R * 0.16, fill: '#ffffff', opacity: 0.65, transform: 'rotate(-28 ' + (cx - R * 0.3) + ' ' + (Hh / 2 - R * 0.32) + ')' }));
+                  kids.push(h('ellipse', { key: side + gi + 'sp' + li, className: 'allo-cb-catchlight', style: { animationDelay: ((gi * 0.35 + li * 0.2) % 2.4).toFixed(2) + 's' }, cx: cx - R * 0.3, cy: Hh / 2 - R * 0.32, rx: R * 0.28, ry: R * 0.16, fill: '#ffffff', opacity: 0.65, transform: 'rotate(-28 ' + (cx - R * 0.3) + ' ' + (Hh / 2 - R * 0.32) + ')' }));
                 }
                 kids.push(h('text', { key: side + gi + 't' + li, x: cx, y: Hh / 2 + 3.5, textAnchor: 'middle', fill: pvInk(baseFill), style: { fontSize: '9px', fontWeight: 'bold' } }, letter));
               });
@@ -4087,6 +4112,7 @@
             });
           };
           draw(spec.left, 'l');
+          if (!ctx.isContrast) kids.push(h('path', { key: 'arrow-g', className: 'allo-cb-eq-beam', d: 'M' + (x + 5) + ' ' + (Hh / 2) + ' H' + (x + GAP_ARROW - 7) + ' M' + (x + GAP_ARROW - 12) + ' ' + (Hh / 2 - 4.5) + ' L' + (x + GAP_ARROW - 6) + ' ' + (Hh / 2) + ' L' + (x + GAP_ARROW - 12) + ' ' + (Hh / 2 + 4.5), fill: 'none', stroke: '#84cc16', strokeWidth: 5.5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.24 }));
           kids.push(h('path', { key: 'arrow', d: 'M' + (x + 5) + ' ' + (Hh / 2) + ' H' + (x + GAP_ARROW - 7) + ' M' + (x + GAP_ARROW - 12) + ' ' + (Hh / 2 - 4.5) + ' L' + (x + GAP_ARROW - 6) + ' ' + (Hh / 2) + ' L' + (x + GAP_ARROW - 12) + ' ' + (Hh / 2 + 4.5), fill: 'none', stroke: ctx.isContrast ? '#fde047' : '#65a30d', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }));
           x += GAP_ARROW;
           draw(spec.right, 'r');
@@ -4752,7 +4778,7 @@
                 )
               ),
               React.createElement('rect', { x: 1, y: 1, width: 62, height: 62, rx: 12, fill: ctx.isContrast ? '#000000' : 'url(#chem-logo-bg)', stroke: ctx.isContrast ? '#fde047' : '#84cc16', strokeWidth: 2 }),
-              !ctx.isContrast && React.createElement('circle', { cx: 32, cy: 42, r: 22, fill: 'url(#chem-logo-glow)' }),
+              !ctx.isContrast && React.createElement('circle', { className: 'allo-cb-orbital-breathe', cx: 32, cy: 42, r: 22, fill: 'url(#chem-logo-glow)' }),
               // Liquid reaction fill + meniscus
               React.createElement('path', { d: 'M21 38 H43 L47 46 C48 48.5 46.5 50.5 44 50.5 H20 C17.5 50.5 16 48.5 17 46 Z', fill: ctx.isContrast ? '#fde047' : 'url(#chem-logo-liq)', opacity: ctx.isContrast ? 0.92 : 0.9 }),
               !ctx.isContrast && React.createElement('ellipse', { cx: 32, cy: 38, rx: 11, ry: 2, fill: '#bbf7d0', opacity: 0.72 }),
@@ -4763,8 +4789,8 @@
               React.createElement('circle', { cx: 28, cy: 43, r: 2.6, fill: ctx.isContrast ? '#000000' : '#ecfccb' }),
               React.createElement('circle', { cx: 36, cy: 45, r: 2, fill: ctx.isContrast ? '#000000' : '#38bdf8' }),
               React.createElement('circle', { cx: 32, cy: 31, r: 2.6, fill: ctx.isContrast ? '#fde047' : '#38bdf8' }),
-              !ctx.isContrast && React.createElement('circle', { cx: 31.1, cy: 30.1, r: 0.9, fill: '#ffffff', opacity: 0.9 }),
-              React.createElement('ellipse', { cx: 32, cy: 20, rx: 14, ry: 4.8, fill: 'none', stroke: ctx.isContrast ? '#fde047' : '#38bdf8', strokeWidth: 1.2, opacity: 0.78 })
+              !ctx.isContrast && React.createElement('circle', { className: 'allo-cb-catchlight', cx: 31.1, cy: 30.1, r: 0.9, fill: '#ffffff', opacity: 0.9 }),
+              React.createElement('ellipse', { className: !ctx.isContrast ? 'allo-cb-orbital-breathe' : undefined, cx: 32, cy: 20, rx: 14, ry: 4.8, fill: 'none', stroke: ctx.isContrast ? '#fde047' : '#38bdf8', strokeWidth: 1.2, opacity: 0.78 })
             ),
             h('div', { className: 'min-w-0' },
               h('div', { className: 'flex items-center gap-2 flex-wrap' },
@@ -5121,8 +5147,8 @@
                             React.createElement('line', { x1: 28, y1: hy - 1, x2: 50, y2: hy - 1, stroke: '#e2e8f0', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.85 }),
                             React.createElement('circle', { cx: 28, cy: hy, r: 9.2, fill: ctx.isContrast ? '#38bdf8' : 'url(#chem-hub-h)', stroke: '#e0f2fe', strokeWidth: 1 }),
                             React.createElement('circle', { cx: 50, cy: hy, r: 9.2, fill: ctx.isContrast ? '#38bdf8' : 'url(#chem-hub-h)', stroke: '#e0f2fe', strokeWidth: 1 }),
-                            !ctx.isContrast && React.createElement('ellipse', { cx: 25, cy: hy - 3.2, rx: 2.8, ry: 1.5, fill: '#ffffff', opacity: 0.72 }),
-                            !ctx.isContrast && React.createElement('ellipse', { cx: 47, cy: hy - 3.2, rx: 2.8, ry: 1.5, fill: '#ffffff', opacity: 0.72 }),
+                            !ctx.isContrast && React.createElement('ellipse', { className: 'allo-cb-catchlight', style: { animationDelay: (hi * 0.4).toFixed(2) + 's' }, cx: 25, cy: hy - 3.2, rx: 2.8, ry: 1.5, fill: '#ffffff', opacity: 0.72 }),
+                            !ctx.isContrast && React.createElement('ellipse', { className: 'allo-cb-catchlight', style: { animationDelay: (hi * 0.4 + 0.25).toFixed(2) + 's' }, cx: 47, cy: hy - 3.2, rx: 2.8, ry: 1.5, fill: '#ffffff', opacity: 0.72 }),
                             React.createElement('text', { x: 28, y: hy + 3.8, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H'),
                             React.createElement('text', { x: 50, y: hy + 3.8, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H')
                           );
@@ -5130,19 +5156,20 @@
                         React.createElement('text', { x: 76, y: 57, textAnchor: 'middle', fill: '#cbd5e1', style: { fontSize: '15px', fontWeight: 900 } }, '+'),
                         // 1 O2 molecule with shaded double covalent bond cylinders
                         React.createElement('line', { x1: 102, y1: 48.5, x2: 128, y2: 48.5, stroke: '#64748b', strokeWidth: 3.2, strokeLinecap: 'round' }),
-                        React.createElement('line', { x1: 102, y1: 47.8, x2: 128, y2: 47.8, stroke: '#f1f5f9', strokeWidth: 1, opacity: 0.85 }),
+                        React.createElement('line', { className: !ctx.isContrast ? 'allo-cb-catchlight' : undefined, x1: 102, y1: 47.8, x2: 128, y2: 47.8, stroke: '#f1f5f9', strokeWidth: 1, opacity: 0.85 }),
                         React.createElement('line', { x1: 102, y1: 55.5, x2: 128, y2: 55.5, stroke: '#64748b', strokeWidth: 3.2, strokeLinecap: 'round' }),
-                        React.createElement('line', { x1: 102, y1: 54.8, x2: 128, y2: 54.8, stroke: '#f1f5f9', strokeWidth: 1, opacity: 0.85 }),
+                        React.createElement('line', { className: !ctx.isContrast ? 'allo-cb-catchlight' : undefined, style: !ctx.isContrast ? { animationDelay: '0.5s' } : undefined, x1: 102, y1: 54.8, x2: 128, y2: 54.8, stroke: '#f1f5f9', strokeWidth: 1, opacity: 0.85 }),
                         React.createElement('circle', { cx: 102, cy: 52, r: 12.2, fill: ctx.isContrast ? '#f87171' : 'url(#chem-hub-o)', stroke: '#fee2e2', strokeWidth: 1.2 }),
                         React.createElement('circle', { cx: 128, cy: 52, r: 12.2, fill: ctx.isContrast ? '#f87171' : 'url(#chem-hub-o)', stroke: '#fee2e2', strokeWidth: 1.2 }),
-                        !ctx.isContrast && React.createElement('ellipse', { cx: 98.2, cy: 47.5, rx: 3.6, ry: 2, fill: '#ffffff', opacity: 0.65 }),
-                        !ctx.isContrast && React.createElement('ellipse', { cx: 124.2, cy: 47.5, rx: 3.6, ry: 2, fill: '#ffffff', opacity: 0.65 }),
+                        !ctx.isContrast && React.createElement('ellipse', { className: 'allo-cb-catchlight', style: { animationDelay: '0.2s' }, cx: 98.2, cy: 47.5, rx: 3.6, ry: 2, fill: '#ffffff', opacity: 0.65 }),
+                        !ctx.isContrast && React.createElement('ellipse', { className: 'allo-cb-catchlight', style: { animationDelay: '0.6s' }, cx: 124.2, cy: 47.5, rx: 3.6, ry: 2, fill: '#ffffff', opacity: 0.65 }),
                         React.createElement('text', { x: 102, y: 56, textAnchor: 'middle', fill: '#ffffff', style: { fontSize: '10.5px', fontWeight: 900 } }, 'O'),
                         React.createElement('text', { x: 128, y: 56, textAnchor: 'middle', fill: '#ffffff', style: { fontSize: '10.5px', fontWeight: 900 } }, 'O'),
                         React.createElement('text', { x: 77, y: 98, textAnchor: 'middle', fill: '#bae6fd', style: { fontSize: '11px', fontWeight: 800 } }, '2 H\u2082 + O\u2082'),
-                        // Luminous Reaction Arrow
-                        !ctx.isContrast && React.createElement('path', { d: 'M160 54 H196 M189 47 L197 54 L189 61', fill: 'none', stroke: '#fbbf24', strokeWidth: 7, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.22 }),
+                        // Luminous Reaction Arrow with animated energy pulse flow
+                        !ctx.isContrast && React.createElement('path', { className: 'allo-cb-eq-beam', d: 'M160 54 H196 M189 47 L197 54 L189 61', fill: 'none', stroke: '#fbbf24', strokeWidth: 7, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.24 }),
                         React.createElement('path', { d: 'M160 54 H196 M189 47 L197 54 L189 61', fill: 'none', stroke: '#fbbf24', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                        !ctx.isContrast && React.createElement('line', { className: 'allo-cb-arrow-flow', x1: 160, y1: 54, x2: 193, y2: 54, stroke: '#ffffff', strokeWidth: 1.8, strokeDasharray: '5 13', strokeLinecap: 'round', opacity: 0.85 }),
                         // Products box
                         React.createElement('rect', { x: 206, y: 4, width: 152, height: 104, rx: 12, fill: ctx.isContrast ? '#000000' : 'url(#chem-hub-rbox)', stroke: ctx.isContrast ? '#fde047' : '#34d399', strokeWidth: 1.5 }),
                         !ctx.isContrast && React.createElement('line', { x1: 218, y1: 6.5, x2: 346, y2: 6.5, stroke: '#a7f3d0', strokeWidth: 1, opacity: 0.4 }),
@@ -5157,9 +5184,9 @@
                             React.createElement('circle', { cx: ox, cy: 42, r: 12.2, fill: ctx.isContrast ? '#f87171' : 'url(#chem-hub-o)', stroke: '#fee2e2', strokeWidth: 1.2 }),
                             React.createElement('circle', { cx: ox - 16, cy: 64, r: 9.2, fill: ctx.isContrast ? '#38bdf8' : 'url(#chem-hub-h)', stroke: '#e0f2fe', strokeWidth: 1 }),
                             React.createElement('circle', { cx: ox + 16, cy: 64, r: 9.2, fill: ctx.isContrast ? '#38bdf8' : 'url(#chem-hub-h)', stroke: '#e0f2fe', strokeWidth: 1 }),
-                            !ctx.isContrast && React.createElement('ellipse', { cx: ox - 3.6, cy: 37.5, rx: 3.5, ry: 1.9, fill: '#ffffff', opacity: 0.65 }),
-                            !ctx.isContrast && React.createElement('ellipse', { cx: ox - 18.8, cy: 60.8, rx: 2.6, ry: 1.4, fill: '#ffffff', opacity: 0.7 }),
-                            !ctx.isContrast && React.createElement('ellipse', { cx: ox + 13.2, cy: 60.8, rx: 2.6, ry: 1.4, fill: '#ffffff', opacity: 0.7 }),
+                            !ctx.isContrast && React.createElement('ellipse', { className: 'allo-cb-catchlight', style: { animationDelay: (wi * 0.45).toFixed(2) + 's' }, cx: ox - 3.6, cy: 37.5, rx: 3.5, ry: 1.9, fill: '#ffffff', opacity: 0.65 }),
+                            !ctx.isContrast && React.createElement('ellipse', { className: 'allo-cb-catchlight', style: { animationDelay: (wi * 0.45 + 0.25).toFixed(2) + 's' }, cx: ox - 18.8, cy: 60.8, rx: 2.6, ry: 1.4, fill: '#ffffff', opacity: 0.7 }),
+                            !ctx.isContrast && React.createElement('ellipse', { className: 'allo-cb-catchlight', style: { animationDelay: (wi * 0.45 + 0.5).toFixed(2) + 's' }, cx: ox + 13.2, cy: 60.8, rx: 2.6, ry: 1.4, fill: '#ffffff', opacity: 0.7 }),
                             React.createElement('text', { x: ox, y: 46, textAnchor: 'middle', fill: '#ffffff', style: { fontSize: '10.5px', fontWeight: 900 } }, 'O'),
                             React.createElement('text', { x: ox - 16, y: 67.8, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H'),
                             React.createElement('text', { x: ox + 16, y: 67.8, textAnchor: 'middle', fill: '#020617', style: { fontSize: '10px', fontWeight: 900 } }, 'H')
@@ -5350,7 +5377,7 @@
                 )
               ),
               // Balanced-state luminous aura
-              isBalanced && !ctx.isContrast && h('ellipse', { cx: 200, cy: 62, rx: 165, ry: 34, fill: 'url(#chem-bal-aura)' }),
+              isBalanced && !ctx.isContrast && h('ellipse', { className: 'allo-cb-eq-beam', cx: 200, cy: 62, rx: 165, ry: 34, fill: 'url(#chem-bal-aura)' }),
               // Grounded pedestal shadow + brushed metallic fulcrum
               !ctx.isContrast && h('ellipse', { cx: 200, cy: 96, rx: 28, ry: 3, fill: 'rgba(15,23,42,0.18)' }),
               h('rect', { x: 180, y: 92, width: 40, height: 5, rx: 2.5, fill: ctx.isContrast ? '#ffffff' : 'url(#chem-bal-metal)', stroke: ctx.isContrast ? '#ffffff' : '#475569', strokeWidth: 0.7 }),
@@ -5358,11 +5385,14 @@
               // Pan support stems
               h('line', { x1: 100, y1: 75 + tilt * 8, x2: 100, y2: 80 + tilt * 8, stroke: ctx.isContrast ? '#ffffff' : '#64748b', strokeWidth: 2, style: { transition: 'all 0.3s' } }),
               h('line', { x1: 300, y1: 75 - tilt * 8, x2: 300, y2: 80 - tilt * 8, stroke: ctx.isContrast ? '#ffffff' : '#64748b', strokeWidth: 2, style: { transition: 'all 0.3s' } }),
-              // Sculpted balance beam + specular ridge
-              isBalanced && !ctx.isContrast && h('line', { x1: 60, y1: 75 + tilt * 8, x2: 340, y2: 75 - tilt * 8, stroke: '#22c55e', strokeWidth: 8, strokeLinecap: 'round', opacity: 0.22, style: { transition: 'all 0.3s' } }),
+              // Sculpted balance beam + specular ridge + equilibrium energy flow when balanced
+              isBalanced && !ctx.isContrast && h('line', { className: 'allo-cb-eq-beam', x1: 60, y1: 75 + tilt * 8, x2: 340, y2: 75 - tilt * 8, stroke: '#22c55e', strokeWidth: 9, strokeLinecap: 'round', opacity: 0.26, style: { transition: 'all 0.3s' } }),
               h('line', { x1: 60, y1: 75 + tilt * 8, x2: 340, y2: 75 - tilt * 8, stroke: ctx.isContrast ? (isBalanced ? '#fde047' : '#ffffff') : (isBalanced ? 'url(#chem-bal-beam-ok)' : 'url(#chem-bal-metal)'), strokeWidth: 4.2, strokeLinecap: 'round', style: { transition: 'all 0.3s' } }),
               !ctx.isContrast && h('line', { x1: 64, y1: 73.9 + tilt * 8, x2: 336, y2: 73.9 - tilt * 8, stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', opacity: 0.65, style: { transition: 'all 0.3s' } }),
-              // Center fulcrum pivot pin
+              isBalanced && !ctx.isContrast && h('line', { className: 'allo-cb-arrow-flow', x1: 64, y1: 75, x2: 336, y2: 75, stroke: '#ffffff', strokeWidth: 1.5, strokeDasharray: '6 12', strokeLinecap: 'round', opacity: 0.72 }),
+              // Center fulcrum pivot pin + equilibrium pivot-lock resonance halo when balanced
+              isBalanced && !ctx.isContrast && h('circle', { className: 'allo-cb-pivot-lock', cx: 200, cy: 75, r: 9, fill: 'none', stroke: '#22c55e', strokeWidth: 2 }),
+              isBalanced && !ctx.isContrast && h('circle', { className: 'allo-cb-eq-beam', cx: 200, cy: 75, r: 7.2, fill: '#4ade80', opacity: 0.28 }),
               h('circle', { cx: 200, cy: 75, r: 4.2, fill: isBalanced ? (ctx.isContrast ? '#fde047' : '#22c55e') : (ctx.isContrast ? '#ffffff' : '#cbd5e1'), stroke: '#334155', strokeWidth: 1 }),
               !ctx.isContrast && h('circle', { cx: 198.8, cy: 73.8, r: 1.2, fill: '#ffffff', opacity: 0.85 }),
               // Sculpted pans with rim specular highlight
@@ -5375,7 +5405,7 @@
                   balls.push(h('g', { key: atom + b },
                     h('circle', { cx: bx, cy: by, r: 5.2, fill: atomColors[atom] || '#94a3b8', stroke: ctx.isContrast ? '#ffffff' : '#1e293b', strokeWidth: 0.6 }),
                     !ctx.isContrast && h('circle', { cx: bx, cy: by, r: 4.8, fill: 'url(#chem-bal-gloss)' }),
-                    !ctx.isContrast && h('circle', { cx: bx - 1.6, cy: by - 1.6, r: 1.2, fill: '#ffffff', opacity: 0.72 })
+                    !ctx.isContrast && h('circle', { className: 'allo-cb-catchlight', style: { animationDelay: (((idx * 0.28 + b * 0.16) % 2.4)).toFixed(2) + 's' }, cx: bx - 1.6, cy: by - 1.6, r: 1.2, fill: '#ffffff', opacity: 0.72 })
                   ));
                 }
                 return h('g', { key: 'l' + atom }, balls, h('text', { x: 70 + idx * 18, y: 42 + tilt * 8, textAnchor: 'middle', style: { fontSize: '10px', fontWeight: 'bold' }, fill: atomColors[atom] || '#94a3b8' }, atom + '\u00D7' + count));
@@ -5387,7 +5417,7 @@
                   balls.push(h('g', { key: atom + b },
                     h('circle', { cx: bx, cy: by, r: 5.2, fill: atomColors[atom] || '#94a3b8', stroke: ctx.isContrast ? '#ffffff' : '#1e293b', strokeWidth: 0.6 }),
                     !ctx.isContrast && h('circle', { cx: bx, cy: by, r: 4.8, fill: 'url(#chem-bal-gloss)' }),
-                    !ctx.isContrast && h('circle', { cx: bx - 1.6, cy: by - 1.6, r: 1.2, fill: '#ffffff', opacity: 0.72 })
+                    !ctx.isContrast && h('circle', { className: 'allo-cb-catchlight', style: { animationDelay: (((idx * 0.28 + b * 0.16 + 0.35) % 2.4)).toFixed(2) + 's' }, cx: bx - 1.6, cy: by - 1.6, r: 1.2, fill: '#ffffff', opacity: 0.72 })
                   ));
                 }
                 return h('g', { key: 'r' + atom }, balls, h('text', { x: 270 + idx * 18, y: 42 - tilt * 8, textAnchor: 'middle', style: { fontSize: '10px', fontWeight: 'bold' }, fill: atomColors[atom] || '#94a3b8' }, atom + '\u00D7' + count));
@@ -5441,7 +5471,13 @@
                   var sepW = isArrow ? GAP_ARROW : GAP_PLUS;
                   var midY = (maxRows * CELL) / 2;
                   if (isArrow) {
-                    kids.push(h('path', { key: 'sep' + gi, d: 'M' + (x + 6) + ' ' + midY + ' H' + (x + sepW - 8) + ' M' + (x + sepW - 14) + ' ' + (midY - 5.5) + ' L' + (x + sepW - 7) + ' ' + midY + ' L' + (x + sepW - 14) + ' ' + (midY + 5.5), fill: 'none', stroke: ctx.isContrast ? '#fde047' : '#65a30d', strokeWidth: 2.6, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+                    if (isBalanced && !ctx.isContrast) {
+                      kids.push(h('path', { key: 'sep-g' + gi, className: 'allo-cb-eq-beam', d: 'M' + (x + 6) + ' ' + midY + ' H' + (x + sepW - 8) + ' M' + (x + sepW - 14) + ' ' + (midY - 5.5) + ' L' + (x + sepW - 7) + ' ' + midY + ' L' + (x + sepW - 14) + ' ' + (midY + 5.5), fill: 'none', stroke: '#22c55e', strokeWidth: 7.5, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: 0.28 }));
+                    }
+                    kids.push(h('path', { key: 'sep' + gi, d: 'M' + (x + 6) + ' ' + midY + ' H' + (x + sepW - 8) + ' M' + (x + sepW - 14) + ' ' + (midY - 5.5) + ' L' + (x + sepW - 7) + ' ' + midY + ' L' + (x + sepW - 14) + ' ' + (midY + 5.5), fill: 'none', stroke: ctx.isContrast ? '#fde047' : (isBalanced ? '#16a34a' : '#65a30d'), strokeWidth: 2.6, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+                    if (isBalanced && !ctx.isContrast) {
+                      kids.push(h('line', { key: 'sep-f' + gi, className: 'allo-cb-arrow-flow', x1: x + 6, y1: midY, x2: x + sepW - 10, y2: midY, stroke: '#ffffff', strokeWidth: 1.6, strokeDasharray: '5 13', strokeLinecap: 'round', opacity: 0.85 }));
+                    }
                   } else {
                     kids.push(h('text', { key: 'sep' + gi, x: x + sepW / 2, y: midY + 6, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '18px', fontWeight: 'bold' } }, '+'));
                   }
@@ -5457,14 +5493,15 @@
                   var cx = gx + (c % 3) * CELL + CELL / 2;
                   var cy = gy + Math.floor(c / 3) * CELL + CELL / 2;
                   kids.push(h('g', { key: 'm' + g.slot + '_' + c, 'data-pv-slot': g.slot, 'data-pv-copy': c, 'data-pv-atoms': k },
-                    h('circle', { cx: cx, cy: cy, r: CELL / 2 - 1, fill: ctx.isContrast ? 'transparent' : (g.side === 'left' ? 'rgba(14,165,233,0.08)' : 'rgba(34,197,94,0.09)'), stroke: ctx.isContrast ? '#ffffff' : (g.side === 'left' ? 'rgba(14,116,144,0.34)' : 'rgba(21,128,61,0.38)'), strokeWidth: 1.1, strokeDasharray: '3,2' }),
+                    !ctx.isContrast && h('circle', { key: 'rip-' + g.copies, className: 'allo-cb-coeff-ripple', cx: cx, cy: cy, r: CELL / 2 - 1, fill: 'none', stroke: g.side === 'left' ? '#0ea5e9' : '#22c55e', strokeWidth: 1.8 }),
+                    h('circle', { className: isBalanced && !ctx.isContrast ? 'allo-cb-orbital-breathe' : undefined, cx: cx, cy: cy, r: CELL / 2 - 1, fill: ctx.isContrast ? 'transparent' : (g.side === 'left' ? 'rgba(14,165,233,0.08)' : 'rgba(34,197,94,0.09)'), stroke: ctx.isContrast ? '#ffffff' : (g.side === 'left' ? 'rgba(14,116,144,0.34)' : 'rgba(21,128,61,0.38)'), strokeWidth: 1.1, strokeDasharray: '3,2' }),
                     pos.map(function(p, pi) {
                       var el = g.els[pi];
                       var ax = cx + p[0] * r, ay = cy + p[1] * r;
                       return h('g', { key: pi },
                         h('circle', { cx: ax, cy: ay, r: r, fill: atomColors[el] || '#94a3b8', stroke: ctx.isContrast ? '#ffffff' : '#1e293b', strokeWidth: 0.8 }),
                         !ctx.isContrast && h('circle', { cx: ax, cy: ay, r: Math.max(1, r - 0.4), fill: 'url(#chem-pv-gloss)' }),
-                        !ctx.isContrast && r >= 5 && h('circle', { cx: ax - r * 0.28, cy: ay - r * 0.28, r: Math.max(1, r * 0.22), fill: '#ffffff', opacity: 0.68 }),
+                        !ctx.isContrast && r >= 5 && h('circle', { className: 'allo-cb-catchlight', style: { animationDelay: (((g.slot * 0.35 + c * 0.22 + pi * 0.16) % 2.4)).toFixed(2) + 's' }, cx: ax - r * 0.28, cy: ay - r * 0.28, r: Math.max(1, r * 0.22), fill: '#ffffff', opacity: 0.68 }),
                         r >= 6 ? h('text', { x: ax, y: ay + r * 0.4, textAnchor: 'middle', fill: pvInk(atomColors[el]), style: { fontSize: (r * 1.1) + 'px', fontWeight: 'bold' } }, el) : null
                       );
                     })
@@ -5530,7 +5567,7 @@
                       ),
                       React.createElement('text', { x: midX - 24, y: 13, textAnchor: 'end', fill: ctx.isContrast ? '#ffffff' : '#0369a1', style: { fontSize: '10.5px', fontWeight: 800 } }, __alloT('stem.chembalance.reactants', 'Reactants')),
                       React.createElement('text', { x: midX + 24, y: 13, textAnchor: 'start', fill: ctx.isContrast ? '#fde047' : '#047857', style: { fontSize: '10.5px', fontWeight: 800 } }, __alloT('stem.chembalance.products', 'Products')),
-                      React.createElement('line', { x1: midX, y1: 16, x2: midX, y2: svgH - 4, stroke: ctx.isContrast ? '#ffffff' : '#cbd5e1', strokeWidth: 1.2, strokeDasharray: '3 3' }),
+                      React.createElement('line', { className: isBalanced && !ctx.isContrast ? 'allo-cb-eq-beam' : undefined, x1: midX, y1: 16, x2: midX, y2: svgH - 4, stroke: ctx.isContrast ? '#ffffff' : (isBalanced ? '#22c55e' : '#cbd5e1'), strokeWidth: isBalanced ? 1.8 : 1.2, strokeDasharray: '3 3' }),
                       elems.map(function (el, idx) {
                         var lc = leftAtoms[el] || 0, rc = rightAtoms[el] || 0, eq = lc === rc;
                         var y = topPad + idx * rowH;
@@ -5541,12 +5578,12 @@
                           !ctx.isContrast && React.createElement('rect', { x: midX - 22 - maxBar, y: y + 4, width: maxBar, height: 14, rx: 4, fill: '#f1f5f9' }),
                           !ctx.isContrast && React.createElement('rect', { x: midX + 22, y: y + 4, width: maxBar, height: 14, rx: 4, fill: '#f1f5f9' }),
                           React.createElement('rect', { x: midX - 22 - lw, y: y + 4, width: lw, height: 14, rx: 4, fill: leftFill }),
-                          !ctx.isContrast && lw > 8 && React.createElement('rect', { x: midX - 20 - lw, y: y + 5.5, width: lw - 4, height: 2.5, rx: 1.2, fill: '#ffffff', opacity: 0.35 }),
+                          !ctx.isContrast && lw > 8 && React.createElement('rect', { className: eq ? 'allo-cb-catchlight' : undefined, style: eq ? { animationDelay: (idx * 0.25).toFixed(2) + 's' } : undefined, x: midX - 20 - lw, y: y + 5.5, width: lw - 4, height: 2.5, rx: 1.2, fill: '#ffffff', opacity: 0.42 }),
                           React.createElement('text', { x: midX - 27 - lw, y: y + 15, textAnchor: 'end', fill: ctx.isContrast ? '#ffffff' : '#334155', style: { fontSize: '10.5px', fontWeight: 800 } }, String(lc)),
                           React.createElement('rect', { x: midX - 18, y: y + 2, width: 36, height: 18, rx: 5, fill: eq ? (ctx.isContrast ? '#fde047' : '#dcfce7') : (ctx.isContrast ? '#000000' : '#fef3c7'), stroke: eq ? (ctx.isContrast ? '#ffffff' : '#16a34a') : (ctx.isContrast ? '#fde047' : '#d97706'), strokeWidth: 1.2 }),
                           React.createElement('text', { x: midX, y: y + 15, textAnchor: 'middle', fill: eq ? (ctx.isContrast ? '#000000' : '#14532d') : (ctx.isContrast ? '#fde047' : '#92400e'), style: { fontSize: '10.5px', fontWeight: 900 } }, el),
                           React.createElement('rect', { x: midX + 22, y: y + 4, width: rw, height: 14, rx: 4, fill: rightFill }),
-                          !ctx.isContrast && rw > 8 && React.createElement('rect', { x: midX + 24, y: y + 5.5, width: rw - 4, height: 2.5, rx: 1.2, fill: '#ffffff', opacity: 0.35 }),
+                          !ctx.isContrast && rw > 8 && React.createElement('rect', { className: eq ? 'allo-cb-catchlight' : undefined, style: eq ? { animationDelay: (idx * 0.25 + 0.3).toFixed(2) + 's' } : undefined, x: midX + 24, y: y + 5.5, width: rw - 4, height: 2.5, rx: 1.2, fill: '#ffffff', opacity: 0.42 }),
                           React.createElement('text', { x: midX + 27 + rw, y: y + 15, textAnchor: 'start', fill: ctx.isContrast ? '#ffffff' : '#334155', style: { fontSize: '10.5px', fontWeight: 800 } }, String(rc))
                         );
                       })
@@ -5598,7 +5635,10 @@
                       },
                       className: 'w-11 h-11 bg-lime-100 rounded-lg font-bold text-lime-800 hover:bg-lime-200 transition-colors text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-700 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-40'
                     }, '+'),
-                    h('output', { 'aria-labelledby': coefficientLabelId, className: 'text-2xl font-black text-slate-700 w-11 text-center' }, String(c)),
+                    h('span', { className: 'relative inline-flex items-center justify-center w-11' },
+                      !ctx.isContrast && h('span', { key: 'rip-' + i + '-' + c, 'aria-hidden': 'true', className: 'allo-cb-coeff-ripple', style: { position: 'absolute', inset: '-3px', borderRadius: '10px', border: '2px solid ' + (isBalanced ? '#22c55e' : '#84cc16') } }),
+                      h('output', { 'aria-labelledby': coefficientLabelId, className: 'text-2xl font-black text-slate-700 w-11 text-center' }, String(c))
+                    ),
                     h('button', {
                       type: 'button',
                       disabled: c <= 1,
@@ -6035,14 +6075,14 @@
                       h('line', { key: keyPrefix + 's', x1: x1 + 1, y1: y1 + 2.5, x2: x2 + 1, y2: y2 + 2.5, stroke: 'rgba(15,23,42,0.14)', strokeWidth: w + 1, strokeLinecap: 'round' }),
                       h('line', { key: keyPrefix + 'o', x1: x1, y1: y1, x2: x2, y2: y2, stroke: '#475569', strokeWidth: w + 1.6, strokeLinecap: 'round' }),
                       h('line', { key: keyPrefix + 'm', x1: x1, y1: y1, x2: x2, y2: y2, stroke: '#94a3b8', strokeWidth: w, strokeLinecap: 'round' }),
-                      h('line', { key: keyPrefix + 'h', x1: x1 + ux * (w * 0.22), y1: y1 + uy * (w * 0.22), x2: x2 + ux * (w * 0.22), y2: y2 + uy * (w * 0.22), stroke: '#f8fafc', strokeWidth: Math.max(1, w * 0.34), strokeLinecap: 'round', opacity: 0.88 })
+                      h('line', { key: keyPrefix + 'h', className: 'allo-cb-catchlight', style: { animationDelay: ((bi * 0.32) % 2.2).toFixed(2) + 's' }, x1: x1 + ux * (w * 0.22), y1: y1 + uy * (w * 0.22), x2: x2 + ux * (w * 0.22), y2: y2 + uy * (w * 0.22), stroke: '#f8fafc', strokeWidth: Math.max(1, w * 0.34), strokeLinecap: 'round', opacity: 0.88 })
                     ];
                   };
                   var els = [];
                   if (order === 0) {
                     // Ionic electrostatic dashed bridge
-                    if (!ctx.isContrast) els.push(h('line', { key: 'b' + bi + 'gl', x1: a1.x, y1: a1.y, x2: a2.x, y2: a2.y, stroke: '#38bdf8', strokeWidth: 5, strokeDasharray: '6,4', opacity: 0.22 }));
-                    els.push(h('line', { key: 'b' + bi, x1: a1.x, y1: a1.y, x2: a2.x, y2: a2.y, stroke: ctx.isContrast ? '#fde047' : '#64748b', strokeWidth: 2.2, strokeDasharray: '6,4', strokeLinecap: 'round' }));
+                    if (!ctx.isContrast) els.push(h('line', { key: 'b' + bi + 'gl', className: 'allo-cb-orbital-breathe', x1: a1.x, y1: a1.y, x2: a2.x, y2: a2.y, stroke: '#38bdf8', strokeWidth: 5, strokeDasharray: '6,4', opacity: 0.24 }));
+                    els.push(h('line', { key: 'b' + bi, className: !ctx.isContrast ? 'allo-cb-arrow-flow' : undefined, x1: a1.x, y1: a1.y, x2: a2.x, y2: a2.y, stroke: ctx.isContrast ? '#fde047' : '#64748b', strokeWidth: 2.2, strokeDasharray: '6,4', strokeLinecap: 'round' }));
                   } else if (order === 2) {
                     els = els.concat(drawCylinder('b' + bi + 'a', ux * 3.4, uy * 3.4, 3.2), drawCylinder('b' + bi + 'b', -ux * 3.4, -uy * 3.4, 3.2));
                   } else if (order === 3) {
@@ -6052,15 +6092,16 @@
                   }
                   return els;
                 }),
-                // Glossy 3D radial-shaded CPK atom spheres with specular catchlights
+                // Glossy 3D radial-shaded CPK atom spheres with shimmering orbital halos & specular catchlights
                 currentMol.atoms.map(function(atom, ai) {
                   var r = atom.el === 'H' ? 12.5 : 16.5;
                   var col = ATOM_COLORS[atom.el] || '#94a3b8';
                   var textCol = atom.el === 'H' || atom.el === 'Ag' || atom.el === 'Ca' ? '#1e293b' : '#ffffff';
                   return h('g', { key: 'a' + ai },
+                    !ctx.isContrast && h('circle', { className: 'allo-cb-orbital-breathe', style: { animationDelay: ((ai * 0.35) % 2.4).toFixed(2) + 's' }, cx: atom.x, cy: atom.y, r: r + 3.2, fill: 'none', stroke: col, strokeWidth: 1.5, strokeOpacity: 0.32 }),
                     h('circle', { cx: atom.x, cy: atom.y, r: r, fill: col, stroke: ctx.isContrast ? '#ffffff' : '#1e293b', strokeWidth: 1.4 }),
                     !ctx.isContrast && h('circle', { cx: atom.x, cy: atom.y, r: r - 0.6, fill: 'url(#chem-mol-gloss)' }),
-                    !ctx.isContrast && h('ellipse', { cx: atom.x - r * 0.3, cy: atom.y - r * 0.34, rx: r * 0.3, ry: r * 0.17, fill: '#ffffff', opacity: 0.72, transform: 'rotate(-28 ' + (atom.x - r * 0.3) + ' ' + (atom.y - r * 0.34) + ')' }),
+                    !ctx.isContrast && h('ellipse', { className: 'allo-cb-catchlight', style: { animationDelay: ((ai * 0.3) % 2.4).toFixed(2) + 's' }, cx: atom.x - r * 0.3, cy: atom.y - r * 0.34, rx: r * 0.3, ry: r * 0.17, fill: '#ffffff', opacity: 0.72, transform: 'rotate(-28 ' + (atom.x - r * 0.3) + ' ' + (atom.y - r * 0.34) + ')' }),
                     !ctx.isContrast && h('circle', { cx: atom.x + r * 0.32, cy: atom.y + r * 0.34, r: r * 0.1, fill: '#ffffff', opacity: 0.25 }),
                     h('text', { x: atom.x, y: atom.y + 4, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold', fill: textCol } }, atom.el)
                   );

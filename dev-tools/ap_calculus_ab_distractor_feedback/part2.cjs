@@ -137,9 +137,9 @@ module.exports = {
     '3x^2/(x^2+1)': 'This multiplies by x^2 instead of d/dx(x^2+1)=2x when differentiating 3 ln(x^2+1).',
   },
   'item-108': {
-    'Only the power rule is needed for it': 'The power rule differentiates x^2, but cannot handle the product or the composite factor sin(e^x).',
-    'Only the quotient rule is needed here': 'There is no quotient in x^2 sin(e^x); it is a product containing a nested composition.',
-    'Only implicit differentiation is needed': 'The expression is an explicit function of x, so implicit differentiation does not replace product and chain rules.',
+    'The power rule alone suffices for it': 'The power rule differentiates x^2, but cannot handle the product or the composite factor sin(e^x).',
+    'The quotient rule alone suffices here': 'There is no quotient in x^2 sin(e^x); it is a product containing a nested composition.',
+    'Implicit differentiation alone suffices': 'The expression is an explicit function of x, so implicit differentiation does not replace product and chain rules.',
   },
   'item-109': {
     '1/x^2': 'Differentiating x^(-1) brings down -1 as a coefficient, so omitting the negative sign flips the concavity.',
@@ -168,8 +168,8 @@ module.exports = {
   },
   'item-114': {
     't=0 and t=2': 'At t=0 velocity is 9, and t=2 is where acceleration 6t-12=0 rather than where velocity is zero.',
-    't=2 only': 'Solving a(t)=6t-12=0 finds zero acceleration, not the times when the particle is momentarily at rest (v=0).',
-    't=3 only': 'This catches one root of 3(t-1)(t-3)=0 while missing the earlier positive rest time t=1.',
+    't=2 alone': 'Solving a(t)=6t-12=0 finds zero acceleration, not the times when the particle is momentarily at rest (v=0).',
+    't=3 alone': 'This catches one root of 3(t-1)(t-3)=0 while missing the earlier positive rest time t=1.',
   },
   'item-115': {
     '12 pi cubic centimeters per second': 'Using 4 pi r dr/dt instead of 4 pi r^2 dr/dt forgets to square the radius r=2.',
@@ -212,9 +212,9 @@ module.exports = {
     'The given interval contains negative inputs.': 'Intervals spanning negative and positive x-values work fine for MVT whenever continuity and differentiability hold.',
   },
   'item-123': {
-    'x=-3, 0, and 3 only': 'This checks endpoints and x=0 but omits the other two interior critical numbers x=-sqrt(2) and x=sqrt(2).',
-    'x=-sqrt(2) and sqrt(2) only': 'Checking only the two local minima misses both the interior critical point x=0 and the endpoints x=-3 and x=3.',
-    'x=-2, 0, and 2 only': 'Solving x^2-4=0 instead of f prime(x)=4x(x^2-2)=0 finds roots of f rather than critical numbers, and omits endpoints.',
+    'Endpoints and x=0 alone': 'This checks endpoints and x=0 but omits the other two interior critical numbers x=-sqrt(2) and x=sqrt(2).',
+    'x=-sqrt(2) and sqrt(2) alone': 'Checking only the two local minima misses both the interior critical point x=0 and the endpoints x=-3 and x=3.',
+    'x=-2, 0, and 2 alone': 'Solving x^2-4=0 instead of f prime(x)=4x(x^2-2)=0 finds roots of f rather than critical numbers, and omits endpoints.',
   },
   'item-124': {
     'It has exactly one critical point on the interval [a,b].': 'A continuous function on [a,b] can have zero, one, or infinitely many critical points and still satisfy EVT.',
@@ -287,8 +287,8 @@ module.exports = {
     '14': 'Doubling 7 does not follow from swapping limits; reversing limits negates the integral to -7.',
   },
   'item-138': {
-    '0, because symmetric limits always cancel each other': 'Symmetric cancellation to 0 applies to odd functions, whereas even functions mirror identically across the y-axis.',
-    'The integral from 0 to 3 of f(x)dx only': 'Keeping only the [0,3] piece drops the equal contribution from [-3,0], halving the total integral.',
+    '0, because symmetric limits cancel each other out': 'Symmetric cancellation to 0 applies to odd functions, whereas even functions mirror identically across the y-axis.',
+    'The integral from 0 to 3 of f(x)dx alone': 'Keeping only the [0,3] piece drops the equal contribution from [-3,0], halving the total integral.',
     '-2 times the integral from 0 to 3 of f(x)dx': 'Because f(-x)=f(x) for an even function, both halves carry the same sign rather than negating.',
   },
   'item-139': {

@@ -155,7 +155,7 @@ nav.toc a:hover{border-bottom-color:var(--accent);}
   flex-wrap:wrap;gap:8px 14px;align-items:center;}
 .rtools-toggle{font:700 12.5px/1 ui-sans-serif,system-ui,sans-serif;color:var(--accent-ink);
   background:var(--accent-soft);border:1px solid var(--accent-bd);border-radius:999px;
-  padding:6px 12px;cursor:pointer;}
+  min-height:44px;padding:8px 14px;cursor:pointer;}
 .rtools-toggle:hover{border-color:var(--accent);}
 .rtools-panel{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;
   font:600 12.5px/1 ui-sans-serif,system-ui,sans-serif;color:var(--soft);}
@@ -163,13 +163,15 @@ nav.toc a:hover{border-bottom-color:var(--accent);}
 .rtools-panel label{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
 .rtools select,.rtools input[type=range],.rtools-panel button{font:inherit;}
 .rtools select{color:var(--body);background:var(--bg);border:1px solid var(--line);
-  border-radius:7px;padding:3px 5px;}
+  border-radius:7px;min-height:36px;padding:4px 8px;}
 .rtools input[type=range]{width:86px;accent-color:var(--accent);padding:0;}
 .rtools-panel button{color:var(--body);background:var(--bg);border:1px solid var(--line);
-  border-radius:7px;padding:5px 9px;cursor:pointer;}
+  border-radius:7px;min-height:44px;padding:6px 11px;cursor:pointer;}
 .rtools-panel button[aria-pressed="true"]{background:var(--accent-soft);
   border-color:var(--accent);color:var(--accent-ink);}
+.rtools-status{font:600 12px/1.3 ui-sans-serif,system-ui,sans-serif;color:var(--accent-ink);}
 .rtools :focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+@media (prefers-reduced-motion:reduce){.listen{transition:none;}}
 #rtools-ruler{position:fixed;left:0;width:100%;height:2.4em;
   background:rgba(250,204,21,.16);border-top:2px solid rgba(250,204,21,.65);
   border-bottom:2px solid rgba(250,204,21,.65);pointer-events:none;z-index:49;display:none;}
@@ -757,6 +759,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
   }
   function $(id) { return d.getElementById(id); }
 
+  var status = el('span', { id: 'rt-status', class: 'rtools-status', role: 'status', 'aria-live': 'polite' });
   var panel = el('div', { class: 'rtools-panel', id: 'rtools-panel', hidden: '' }, [
     select('rt-font', 'Font', FONTS),
     range('rt-size', 'Size', '0.85', '1.6', '0.05'),
@@ -764,7 +767,8 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
     range('rt-letter', 'Letter', '0', '0.14', '0.01'),
     select('rt-theme', 'Theme', THEMES),
     el('button', { type: 'button', id: 'rt-ruler', 'aria-pressed': 'false', 'aria-keyshortcuts': 'ArrowUp ArrowDown', text: 'Reading ruler' }),
-    el('button', { type: 'button', id: 'rt-reset', text: 'Reset' })
+    el('button', { type: 'button', id: 'rt-reset', text: 'Reset' }),
+    status
   ]);
   var toggle = el('button', {
     type: 'button', id: 'rt-toggle', class: 'rtools-toggle',
@@ -787,6 +791,9 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
     wrap.setAttribute('aria-label', (caption && caption.textContent ? caption.textContent.trim() : 'Scrollable table ' + (index + 1)) + '. Scroll horizontally if needed.');
   });
 
+  function announce(msg) {
+    if (status) status.textContent = msg;
+  }
   function apply() {
     var b = d.body;
     b.style.fontFamily = prefs.font || '';
@@ -800,10 +807,16 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
     else root.removeAttribute('data-allo-theme');
     if (prefs.ruler) root.setAttribute('data-allo-ruler', '1');
     else root.removeAttribute('data-allo-ruler');
+    var sizeVal = prefs.size || 1;
+    var lineVal = prefs.line || 1.65;
+    var letterVal = prefs.letter || 0;
     $('rt-font').value = prefs.font || '';
-    $('rt-size').value = prefs.size || 1;
-    $('rt-line').value = prefs.line || 1.65;
-    $('rt-letter').value = prefs.letter || 0;
+    $('rt-size').value = sizeVal;
+    $('rt-size').setAttribute('aria-valuetext', Math.round(sizeVal * 100) + '% text size');
+    $('rt-line').value = lineVal;
+    $('rt-line').setAttribute('aria-valuetext', Number(lineVal).toFixed(2).replace(/\.?0+$/, '') + ' line spacing');
+    $('rt-letter').value = letterVal;
+    $('rt-letter').setAttribute('aria-valuetext', letterVal > 0 ? '+' + Number(letterVal).toFixed(2) + ' em letter spacing' : 'Default letter spacing');
     $('rt-theme').value = prefs.theme || 'default';
     $('rt-ruler').setAttribute('aria-pressed', prefs.ruler ? 'true' : 'false');
   }
@@ -813,13 +826,34 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
   on('rt-line', 'input', function (e) { prefs.line = parseFloat(e.target.value); save(); apply(); });
   on('rt-letter', 'input', function (e) { prefs.letter = parseFloat(e.target.value); save(); apply(); });
   on('rt-theme', 'change', function (e) { prefs.theme = e.target.value; save(); apply(); });
-  on('rt-ruler', 'click', function () { prefs.ruler = !prefs.ruler; save(); apply(); if (prefs.ruler) moveRuler(rulerTop); });
-  on('rt-reset', 'click', function () { prefs = {}; save(); apply(); });
+  on('rt-ruler', 'click', function () {
+    prefs.ruler = !prefs.ruler;
+    save();
+    apply();
+    if (prefs.ruler) moveRuler(rulerTop);
+    announce(prefs.ruler ? 'Reading ruler on. Use Up and Down arrows to move.' : 'Reading ruler off.');
+  });
+  on('rt-reset', 'click', function () {
+    prefs = {};
+    save();
+    apply();
+    announce('Reading tools reset to defaults.');
+  });
   on('rt-toggle', 'click', function () {
     var open = panel.hasAttribute('hidden');
     if (open) panel.removeAttribute('hidden'); else panel.setAttribute('hidden', '');
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     updateAnchorOffset();
+  });
+  panel.addEventListener('keydown', function (e) {
+    if (e.isComposing || e.keyCode === 229) return;
+    if (e.key === 'Escape' && !panel.hasAttribute('hidden')) {
+      e.preventDefault();
+      panel.setAttribute('hidden', '');
+      toggle.setAttribute('aria-expanded', 'false');
+      updateAnchorOffset();
+      toggle.focus();
+    }
   });
 
   var ruler = $('rtools-ruler');

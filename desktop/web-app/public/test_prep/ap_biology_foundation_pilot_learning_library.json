@@ -3025,7 +3025,7 @@
           "type": "single-choice",
           "prompt": "Which property of water most directly explains why a small amount of heat causes relatively little change in water temperature?",
           "choices": [
-            "Hydrogen bonding allows water to absorb substantial energy before molecules move faster",
+            "Hydrogen bonds absorb much heat before motion rises",
             "Water contains no covalent bonds",
             "Water is nonpolar and cannot interact with itself",
             "Water has a lower specific heat than most substances"
@@ -3049,7 +3049,7 @@
           "choices": [
             "Starch is made of fructose and cellulose is made of glucose",
             "Cellulose is a lipid rather than a carbohydrate",
-            "The two polymers differ in the geometry of the linkages between glucose units, which enzymes recognize",
+            "Active sites distinguish their different bond geometries",
             "Starch molecules are far smaller than cellulose molecules"
           ],
           "answerIndex": 2,
@@ -4279,7 +4279,7 @@
           "prompt": "A cell placed in a hypertonic solution loses water. Which process best describes the water movement?",
           "choices": [
             "Active transport of water through ATP-powered pumps",
-            "Osmosis toward the region with greater effective solute concentration",
+            "Osmosis toward higher solute concentration",
             "Transcription of water-channel genes",
             "Exocytosis of the entire cytoplasm"
           ],
@@ -4303,7 +4303,7 @@
             "sixteen times larger",
             "four times larger",
             "the same, because both are spheres",
-            "one quarter as large"
+            "four times smaller"
           ],
           "answerIndex": 3,
           "rationale": "For a sphere the ratio is 3 divided by the radius, so multiplying the radius by four divides the ratio by four.",
@@ -5600,7 +5600,7 @@
           "choices": [
             "The enzyme becomes a nucleic acid",
             "The reaction equilibrium disappears from the cell",
-            "The active site shape changes so the substrate no longer binds as effectively",
+            "The active site loses shape, reducing substrate binding",
             "The substrate is permanently removed from the environment"
           ],
           "answerIndex": 2,
@@ -5621,7 +5621,7 @@
           "prompt": "A student supplies a plant with water containing a heavy isotope of oxygen and later detects that isotope in the oxygen gas the plant releases. This result supports the claim that",
           "choices": [
             "the Calvin cycle produces oxygen directly",
-            "the released oxygen comes from water split during the light reactions",
+            "photolysis of H2O generates the released oxygen",
             "carbon dioxide is the source of the released oxygen",
             "the plant is not carrying out photosynthesis"
           ],
@@ -5642,7 +5642,7 @@
           "type": "single-choice",
           "prompt": "A drug allows protons to cross the inner mitochondrial membrane freely without passing through ATP synthase. Which result is expected?",
           "choices": [
-            "ATP production falls even though oxygen consumption continues",
+            "ATP synthesis drops while oxygen use continues",
             "Glycolysis stops immediately",
             "ATP production increases because electrons flow faster",
             "The citric acid cycle switches to producing lactate"
@@ -6922,7 +6922,7 @@
             "Platelet activation recruits more platelets to a wound",
             "A signal causes an unlimited increase in cell division",
             "A mutation is copied during DNA replication",
-            "A rise in blood glucose stimulates insulin release that lowers blood glucose"
+            "High blood glucose triggers insulin that lowers it"
           ],
           "answerIndex": 3,
           "rationale": "Negative feedback counteracts the initial change and moves a regulated variable back toward its range.",
@@ -6944,7 +6944,7 @@
             "positive feedback amplifying the glucose rise",
             "a failure of homeostasis",
             "a feedforward reflex with no sensor",
-            "negative feedback restoring a variable to its range"
+            "negative feedback restoring a target range"
           ],
           "answerIndex": 3,
           "rationale": "The response opposes the initial change and returns the variable toward its set point, which defines negative feedback.",
@@ -8239,7 +8239,7 @@
           "type": "single-choice",
           "prompt": "Which meiotic event produces chromosomes with new combinations of alleles?",
           "choices": [
-            "Crossing over between homologous chromosomes",
+            "Crossing over between nonsister chromatids",
             "Replication of one chromosome without recombination",
             "Translation of an mRNA molecule",
             "Binary fission of a bacterial cell"
@@ -8285,7 +8285,7 @@
           "choices": [
             "The plants have different alleles for height",
             "The plants at higher altitude experienced more mutations",
-            "The environment influences the expression of the same genotype",
+            "Environment shapes how one genotype is expressed",
             "Height is controlled by a single dominant allele"
           ],
           "answerIndex": 2,
@@ -9563,7 +9563,7 @@
           "prompt": "A mutation changes a promoter so transcription factors bind less often. What is the most direct expected result?",
           "choices": [
             "Immediate doubling of the protein sequence length",
-            "Reduced transcription of the associated gene",
+            "Lower rate of mRNA synthesis from the gene",
             "Conversion of RNA into a lipid",
             "Removal of every copy of the gene from the genome"
           ],
@@ -9585,7 +9585,7 @@
           "prompt": "A mutation destroys the binding site for a transcription factor that normally activates a gene. The most direct expected result is",
           "choices": [
             "a protein with a different amino-acid sequence",
-            "transcription of the gene at a reduced rate",
+            "mRNA synthesis from the gene at a lower rate",
             "failure of the ribosome to bind the mRNA",
             "removal of the introns from the gene"
           ],
@@ -10891,7 +10891,7 @@
           "choices": [
             "A helpful inherited trait increases offspring number",
             "A population receives migrants carrying an allele",
-            "A bottleneck leaves a small random sample of a population",
+            "A bottleneck leaves a small random sample",
             "A mutation creates a new allele"
           ],
           "answerIndex": 2,
@@ -10933,7 +10933,7 @@
           "type": "single-choice",
           "prompt": "On a phylogenetic tree, species A and B share a node that is more recent than the node A shares with species C. This indicates that",
           "choices": [
-            "A and B share a more recent common ancestor than A and C",
+            "A and B have a closer ancestor",
             "B evolved from A",
             "C is more advanced than A and B",
             "A and C cannot interbreed"
@@ -12214,7 +12214,7 @@
             "Energy is created only by consumers and not by producers",
             "Every trophic transfer destroys all matter in the ecosystem",
             "Consumers convert all food energy into new plant tissue",
-            "Organisms use much of the captured energy for metabolism and release heat"
+            "Metabolism uses captured energy and loses heat"
           ],
           "answerIndex": 3,
           "rationale": "Metabolism and heat loss mean only a fraction of energy becomes biomass available to the next level.",
@@ -12257,7 +12257,7 @@
           "choices": [
             "secondary succession, because soil was already present",
             "a keystone species effect",
-            "primary succession, beginning on bare substrate without soil",
+            "primary succession starting on bare rock without soil",
             "an invasive-species outbreak"
           ],
           "answerIndex": 2,

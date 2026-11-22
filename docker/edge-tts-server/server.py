@@ -88,7 +88,7 @@ def guard_browser_origin():
     if not is_allowed_origin(request.headers.get("Origin")):
         return jsonify({"error": "Browser origin is not allowed; configure ALLOFLOW_TTS_ALLOWED_ORIGINS for your school app."}), 403
     if request.method != "OPTIONS" and request.path != "/health":
-        if os.environ.get("ALLOFLOW_OFFLINE_ONLY", "").strip() == "1" and os.environ.get("ALLOFLOW_ALLOW_CLOUD_EDGE_TTS", "").strip() != "1":
+        if str(os.environ.get("ALLOFLOW_OFFLINE_ONLY", "")).strip().lower() in ("1", "true", "yes", "on") and os.environ.get("ALLOFLOW_ALLOW_CLOUD_EDGE_TTS", "").strip() != "1":
             return jsonify({"error": "Cloud Edge TTS is disabled in ALLOFLOW_OFFLINE_ONLY mode; use local Piper TTS or set ALLOFLOW_ALLOW_CLOUD_EDGE_TTS=1."}), 403
         expected_token = os.environ.get("ALLOFLOW_TTS_API_TOKEN", "").strip()
         extra_origins = [v.strip() for v in os.environ.get("ALLOFLOW_TTS_ALLOWED_ORIGINS", "").split(",") if v.strip()]

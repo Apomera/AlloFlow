@@ -372,12 +372,12 @@
                                 <div style="text-align:center;color:#fff;padding:0 24px">
                                     <div
                                         style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;backdrop-filter:blur(8px)">
-                                        <i data-lucide="play" style="width:32px;height:32px;fill:white"></i>
+                                        <i data-lucide="play" aria-hidden="true" style="width:32px;height:32px;fill:white"></i>
                                     </div>
                                     <p id="tutorial-poster-title" style="font-size:0.9rem;font-weight:600">Resource
                                         Generation</p>
                                     <p id="tutorial-poster-blurb"
-                                        style="font-size:0.7rem;opacity:0.75;margin-top:4px;max-width:44ch;margin-left:auto;margin-right:auto;line-height:1.5">
+                                        style="font-size:0.75rem;opacity:0.92;margin-top:4px;max-width:44ch;margin-left:auto;margin-right:auto;line-height:1.5">
                                         Build a differentiated lesson from a single source · 12 min</p>
                                 </div>
                             </div>
@@ -414,10 +414,10 @@
                             <div style="text-align:center;color:#fff">
                                 <div
                                     style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;backdrop-filter:blur(8px)">
-                                    <i data-lucide="play" style="width:32px;height:32px;fill:white"></i>
+                                    <i data-lucide="play" aria-hidden="true" style="width:32px;height:32px;fill:white"></i>
                                 </div>
                                 <p style="font-size:0.9rem;font-weight:600">Administrator Overview</p>
-                                <p style="font-size:0.7rem;opacity:0.6;margin-top:4px">See how AlloFlow supports
+                                <p style="font-size:0.75rem;opacity:0.92;margin-top:4px">See how AlloFlow supports
                                     district-wide goals
                                 </p>
                             </div>
@@ -4067,11 +4067,11 @@
                                 </div>
                                 <div class="slide-title-label" id="slide-title">Equity First, Local-First Architecture
                                 </div>
-                                <span class="slide-counter" id="slide-counter">Slide 1 of 26</span>
+                                <span class="slide-counter" id="slide-counter" role="status" aria-live="polite" aria-atomic="true">Slide 1 of 26</span>
                             </div>
 
                             <div style="display:flex;align-items:center;gap:12px;">
-                                <button type="button" class="btn" id="autoplay-toggle" aria-label="Auto-play slides"
+                                <button type="button" class="btn" id="autoplay-toggle" aria-pressed="false" aria-label="Auto-play slides"
                                     title="Auto-play slides">
                                     <svg id="play-icon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"
                                         stroke="none">
@@ -4091,8 +4091,8 @@
                                 </button>
                             </div>
                         </div>
-                        <div id="progress-bar-container">
-                            <div id="progress-bar" style="width: 5.26%"></div>
+                        <div id="progress-bar-container" role="progressbar" aria-label="Architecture slide deck progress" aria-valuemin="1" aria-valuemax="26" aria-valuenow="1" aria-valuetext="Slide 1 of 26">
+                            <div id="progress-bar" style="width: 3.8%"></div>
                         </div>
                     </div>
                 </div>
@@ -4119,6 +4119,9 @@
                     });
                     let cur = 0;
                     let autoplayInterval = null;
+                    const prevBtnEl = document.getElementById('prev');
+                    const nextBtnEl = document.getElementById('next');
+                    const progressTrackEl = document.getElementById('progress-bar-container');
 
                     function update() {
                         s.forEach((slide, i) => {
@@ -4133,33 +4136,48 @@
                         if (titleLabel && slideTitles[cur]) {
                             titleLabel.textContent = slideTitles[cur];
                         }
+                        const counterText = 'Slide ' + (cur + 1) + ' of ' + s.length;
                         const counter = document.getElementById('slide-counter');
-                        if (counter) counter.textContent = 'Slide ' + (cur + 1) + ' of ' + s.length;
+                        if (counter) counter.textContent = counterText;
                         const progress = document.getElementById('progress-bar');
-                        if (progress) progress.style.width = ((cur + 1) / s.length * 100).toFixed(1) + '%';
+                        if (progress) progress.style.width = ((cur + 1) / Math.max(1, s.length) * 100).toFixed(1) + '%';
+                        if (progressTrackEl) {
+                            progressTrackEl.setAttribute('aria-valuemax', String(s.length));
+                            progressTrackEl.setAttribute('aria-valuenow', String(cur + 1));
+                            progressTrackEl.setAttribute('aria-valuetext', counterText + (slideTitles[cur] ? ': ' + slideTitles[cur] : ''));
+                        }
+                        if (prevBtnEl) prevBtnEl.disabled = cur <= 0;
+                        if (nextBtnEl) nextBtnEl.disabled = cur >= s.length - 1;
                     }
 
                     // Dot click handlers
                     dots.forEach(dot => {
                         dot.addEventListener('click', () => {
-                            cur = parseInt(dot.dataset.slide);
+                            cur = parseInt(dot.dataset.slide, 10);
                             update();
                         });
                     });
 
                     // Prev / Next
-                    document.getElementById('prev').onclick = () => { if (cur > 0) { cur--; update(); } };
-                    document.getElementById('next').onclick = () => { if (cur < s.length - 1) { cur++; update(); } };
+                    if (prevBtnEl) prevBtnEl.onclick = () => { if (cur > 0) { cur--; update(); } };
+                    if (nextBtnEl) nextBtnEl.onclick = () => { if (cur < s.length - 1) { cur++; update(); } };
 
-                    // Keyboard navigation
-                    document.addEventListener('keydown', e => {
-                        if (e.key === 'ArrowRight' && cur < s.length - 1) { cur++; update(); }
-                        if (e.key === 'ArrowLeft' && cur > 0) { cur--; update(); }
-                    });
+                    // Keyboard navigation scoped strictly to #slider-container (never hijacks inputs or tabs)
+                    const sliderEl = document.getElementById('slider-container');
+                    if (sliderEl) {
+                        sliderEl.addEventListener('keydown', e => {
+                            if (e.isComposing || e.keyCode === 229) return;
+                            const tag = e.target && e.target.tagName ? e.target.tagName.toUpperCase() : '';
+                            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target && e.target.isContentEditable)) return;
+                            if (e.key === 'ArrowRight' && cur < s.length - 1) { e.preventDefault(); cur++; update(); }
+                            else if (e.key === 'ArrowLeft' && cur > 0) { e.preventDefault(); cur--; update(); }
+                            else if (e.key === 'Home' && cur !== 0) { e.preventDefault(); cur = 0; update(); }
+                            else if (e.key === 'End' && cur !== s.length - 1) { e.preventDefault(); cur = s.length - 1; update(); }
+                        });
+                    }
 
                     // Touch swipe support
                     let touchStartX = 0;
-                    const sliderEl = document.querySelector('.architecture-slider');
                     if (sliderEl) {
                         sliderEl.addEventListener('touchstart', e => {
                             touchStartX = e.changedTouches[0].screenX;
@@ -4183,6 +4201,9 @@
                             autoplayInterval = null;
                             playIcon.style.display = '';
                             pauseIcon.style.display = 'none';
+                            autoplayBtn.setAttribute('aria-pressed', 'false');
+                            autoplayBtn.setAttribute('aria-label', 'Auto-play slides');
+                            autoplayBtn.title = 'Auto-play slides';
                         } else {
                             autoplayInterval = setInterval(() => {
                                 cur = (cur + 1) % s.length;
@@ -4190,8 +4211,12 @@
                             }, 8000);
                             playIcon.style.display = 'none';
                             pauseIcon.style.display = '';
+                            autoplayBtn.setAttribute('aria-pressed', 'true');
+                            autoplayBtn.setAttribute('aria-label', 'Pause slide auto-play');
+                            autoplayBtn.title = 'Pause slide auto-play';
                         }
                     };
+                    update();
                 </script>
             </div>
             </div>
@@ -4569,8 +4594,8 @@
     </footer>
 
     <!-- Back to Top Button -->
-    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
-        <i data-lucide="chevron-up" style="width:20px;height:20px"></i>
+    <button type="button" class="back-to-top" onclick="window.scrollTo({top:0,behavior:window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})" aria-label="Back to top">
+        <i data-lucide="chevron-up" aria-hidden="true" style="width:20px;height:20px"></i>
     </button>
 
 
@@ -4579,37 +4604,49 @@
         if (window.lucide) window.lucide.createIcons();
         document.getElementById('year').innerText = new Date().getFullYear();
 
-        // Scroll Reveal
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
-        }, { threshold: 0.1 });
-        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        const prefersReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-        // Animated Stat Counters
-        const statObserver = new IntersectionObserver((entries) => {
-            entries.forEach(e => {
-                if (e.isIntersecting) {
-                    e.target.querySelectorAll('.stat-number[data-target]').forEach(el => {
-                        const target = parseInt(el.dataset.target);
-                        const prefix = el.dataset.prefix || '';
-                        const suffix = el.dataset.suffix || '';
-                        const duration = 1200;
-                        const start = performance.now();
-                        const animate = (now) => {
-                            const elapsed = now - start;
-                            const progress = Math.min(elapsed / duration, 1);
-                            const eased = 1 - Math.pow(1 - progress, 3);
-                            const current = Math.round(target * eased);
-                            el.textContent = prefix + current + suffix;
-                            if (progress < 1) requestAnimationFrame(animate);
-                        };
-                        requestAnimationFrame(animate);
-                    });
-                    statObserver.unobserve(e.target);
-                }
+        // Scroll Reveal
+        if (prefersReducedMotion || typeof IntersectionObserver !== 'function') {
+            document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+        } else {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        }
+
+        // Animated Stat Counters (respects prefers-reduced-motion)
+        if (prefersReducedMotion || typeof IntersectionObserver !== 'function') {
+            document.querySelectorAll('.stat-number[data-target]').forEach(el => {
+                el.textContent = (el.dataset.prefix || '') + parseInt(el.dataset.target, 10) + (el.dataset.suffix || '');
             });
-        }, { threshold: 0.3 });
-        document.querySelectorAll('.stats-row').forEach(el => statObserver.observe(el));
+        } else {
+            const statObserver = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        e.target.querySelectorAll('.stat-number[data-target]').forEach(el => {
+                            const target = parseInt(el.dataset.target, 10);
+                            const prefix = el.dataset.prefix || '';
+                            const suffix = el.dataset.suffix || '';
+                            const duration = 1200;
+                            const start = performance.now();
+                            const animate = (now) => {
+                                const elapsed = now - start;
+                                const progress = Math.min(elapsed / duration, 1);
+                                const eased = 1 - Math.pow(1 - progress, 3);
+                                const current = Math.round(target * eased);
+                                el.textContent = prefix + current + suffix;
+                                if (progress < 1) requestAnimationFrame(animate);
+                            };
+                            requestAnimationFrame(animate);
+                        });
+                        statObserver.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.3 });
+            document.querySelectorAll('.stats-row').forEach(el => statObserver.observe(el));
+        }
 
         // Back to Top Button
         const backBtn = document.querySelector('.back-to-top');
@@ -4716,6 +4753,7 @@
             list.querySelectorAll('[role="tab"]').forEach((tab, i) => {
                 tab.addEventListener('click', () => selectTutorial(i));
                 tab.addEventListener('keydown', (e) => {
+                    if (e.isComposing || e.keyCode === 229) return;
                     // WAI-ARIA tabs pattern: arrows move between tabs, Home/End jump.
                     let next = null;
                     if (e.key === 'ArrowRight') next = (i + 1) % TUTORIALS.length;

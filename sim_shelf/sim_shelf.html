@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; frame-src https://phet.colorado.edu; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AlloFlow Sim Shelf</title>
 <!--
@@ -36,37 +37,79 @@
     document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
     return theme;
   }
+  function isTrustedThemeOrigin(origin) {
+    var o = String(origin || '');
+    if (!o || o === 'null') return false;
+    try {
+      if (window.location && window.location.origin && o === window.location.origin) return true;
+      var u = new URL(o), host = (u.hostname || '').toLowerCase();
+      if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(host) && (u.protocol === 'http:' || u.protocol === 'https:')) return true;
+      if (u.protocol !== 'https:') return false;
+      if (host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) || host === 'alloflow.org' || /\.alloflow\.org$/.test(host)) return true;
+      if (/\.usercontent\.goog$/.test(host)) {
+        var declared = window.location && window.location.search ? new URLSearchParams(window.location.search).get('host') : '';
+        return !!declared && o === declared;
+      }
+      return false;
+    } catch (_) { return false; }
+  }
   window.applyAlloFlowTheme = applyAlloFlowTheme;
   applyAlloFlowTheme(new URLSearchParams(window.location.search).get('theme'));
+  window.addEventListener('message', function (event) {
+    if (!window.opener || event.source !== window.opener) return;
+    if (!isTrustedThemeOrigin(event.origin)) return;
+    var data = event && event.data;
+    if (!data || data.type !== 'alloflow-theme-change') return;
+    applyAlloFlowTheme(data.theme);
+  });
 })();
 </script>
 <style>
   :root {
-    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
-    --text: #e2e8f0; --dim: #94a3b8; --accent: #f59e0b; --accent2: #6366f1; --ok: #4ade80; --warn: #fbbf24;
+    --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155; --control-line: #64748b;
+    --text: #e2e8f0; --dim: #94a3b8; --heading: #fcd34d; --focus: #fbbf24;
+    --accent: #f59e0b; --accent2: #4f46e5; --btn-fg: #ffffff; --ok: #4ade80; --warn: #fbbf24;
+    --tab-active-bg: #78350f; --tab-active-fg: #fde68a; --backbar-bg: #0f172a; --backbar-fg: #f8fafc;
   }
   :root[data-theme="light"] {
     --bg: #f8fafc; --panel: #ffffff; --panel2: #f1f5f9; --stage: #e2e8f0;
-    --line: #64748b; --line2: #475569; --text: #0f172a; --dim: #475569;
+    --line: #64748b; --control-line: #64748b; --line2: #475569; --text: #0f172a; --dim: #475569;
+    --heading: #92400e; --focus: #1d4ed8; --btn-fg: #ffffff;
     --muted: #475569; --soft: #334155; --accent: #1d4ed8; --accent2: #4338ca;
     --teal: #0f766e; --teal2: #115e59; --sky: #0369a1; --amber: #92400e;
     --red: #b91c1c; --green: #047857; --violet: #6d28d9; --ok: #047857; --warn: #92400e;
+    --tab-active-bg: #1e3a8a; --tab-active-fg: #ffffff; --backbar-bg: #0f172a; --backbar-fg: #f8fafc;
   }
   :root[data-theme="contrast"] {
     --bg: #000000; --panel: #000000; --panel2: #0a0a0a; --stage: #000000;
-    --line: #fbbf24; --line2: #ffff00; --text: #ffffff; --dim: #ffffff;
+    --line: #fbbf24; --control-line: #fbbf24; --line2: #ffff00; --text: #ffffff; --dim: #ffffff;
+    --heading: #ffff00; --focus: #ffff00; --btn-fg: #000000;
     --muted: #ffffff; --soft: #ffffff; --accent: #fbbf24; --accent2: #fbbf24;
     --teal: #00ffff; --teal2: #00ffff; --sky: #00ffff; --amber: #ffff00;
     --red: #ff6b6b; --green: #00ff66; --violet: #ffff00; --ok: #00ff66; --warn: #ffff00;
+    --tab-active-bg: #fbbf24; --tab-active-fg: #000000; --backbar-bg: #000000; --backbar-fg: #ffffff;
   }
   :root[data-theme="contrast"] * { box-shadow: none !important; text-shadow: none !important; }
   :root[data-theme="contrast"] button,
   :root[data-theme="contrast"] input,
   :root[data-theme="contrast"] select,
   :root[data-theme="contrast"] textarea { border-color: var(--line) !important; }
-  :focus-visible { outline: 3px solid var(--line); outline-offset: 2px; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   @media (forced-colors: active) {
+    :root, :root[data-theme] {
+      --bg: Canvas; --panel: Canvas; --panel2: Canvas; --stage: Canvas;
+      --line: CanvasText; --control-line: CanvasText; --line2: CanvasText;
+      --text: CanvasText; --dim: CanvasText; --heading: CanvasText; --focus: Highlight;
+      --accent: LinkText; --accent2: Highlight; --btn-fg: HighlightText;
+      --ok: CanvasText; --warn: CanvasText; --tab-active-bg: Highlight; --tab-active-fg: HighlightText;
+      --backbar-bg: Canvas; --backbar-fg: CanvasText;
+    }
+    button.go, .skip-link:focus { background: Highlight !important; color: HighlightText !important; border: 1px solid Highlight !important; }
     button, input, select, textarea, a { forced-color-adjust: auto; }
+    :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -74,37 +117,41 @@
   header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; flex-wrap: wrap; }
   header h1 { font-size: 15px; margin: 0; font-weight: 700; }
   header .sub { color: var(--dim); font-size: 11.5px; }
-  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 13px; max-width: 46vw; }
+  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--control-line); border-radius: 8px; padding: 6px 8px; font-size: 13px; max-width: 46vw; min-height: 36px; }
   .wrap { flex: 1 1 auto; display: flex; min-height: 0; }
   .coach { flex: 0 0 330px; display: flex; flex-direction: column; background: var(--panel); border-right: 1px solid var(--line); min-width: 0; overflow-y: auto; }
-  .coach h2 { font-size: 12px; margin: 0; padding: 10px 12px 4px; color: #fcd34d; text-transform: uppercase; letter-spacing: 0.06em; }
+  .coach h2 { font-size: 12px; margin: 0; padding: 10px 12px 4px; color: var(--heading); text-transform: uppercase; letter-spacing: 0.06em; }
   .ai-state { padding: 0 12px 6px; font-size: 11.5px; color: var(--dim); }
   .ai-state .on { color: var(--ok); font-weight: 700; }
   .ai-state .off { color: var(--warn); font-weight: 700; }
   .steps { display: flex; gap: 4px; padding: 4px 12px 8px; }
-  .steps button { flex: 1; background: var(--panel2); color: var(--dim); border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; font-size: 11.5px; font-weight: 700; cursor: pointer; }
-  .steps button[aria-selected="true"] { background: #78350f; color: #fde68a; border-color: var(--accent); }
+  .steps button { flex: 1; background: var(--panel2); color: var(--dim); border: 1px solid var(--control-line); border-radius: 8px; padding: 6px 4px; min-height: 36px; font-size: 11.5px; font-weight: 700; cursor: pointer; }
   .steps button.done { color: var(--ok); }
+  .steps button[aria-selected="true"], .steps button.done[aria-selected="true"] { background: var(--tab-active-bg); color: var(--tab-active-fg); border-color: var(--accent); }
+  .steps button[aria-disabled="true"] { opacity: 0.6; cursor: not-allowed; }
   .body { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
   .qcard { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; font-size: 13px; line-height: 1.5; }
-  textarea { width: 100%; min-height: 84px; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical; }
-  button.go { background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
-  button.go:disabled { background: #3f3f5a; color: #7d7da0; cursor: not-allowed; }
+  textarea { width: 100%; min-height: 84px; background: var(--bg); border: 1px solid var(--control-line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical; }
+  button.go { background: var(--accent2); color: var(--btn-fg); border: none; border-radius: 8px; padding: 9px 14px; min-height: 44px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  button.go:disabled, button.go[aria-disabled="true"] { opacity: 0.6; cursor: not-allowed; }
+  .valerr { color: var(--warn); font-size: 12px; font-weight: 700; margin: 0; }
   .locked { background: rgba(74, 222, 128, 0.08); border: 1px solid rgba(74, 222, 128, 0.35); border-radius: 10px; padding: 8px 11px; font-size: 12.5px; white-space: pre-wrap; }
   .locked b { color: var(--ok); }
   ul.hints { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--dim); line-height: 1.6; }
-  .feedback { background: var(--panel2); border: 1px solid #4c1d95; border-radius: 10px; padding: 9px 11px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
-  .privacy { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 10.5px; color: #94a3b8; line-height: 1.45; margin-top: auto; }
+  .feedback { background: var(--panel2); border: 1px solid var(--accent); border-radius: 10px; padding: 9px 11px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+  .privacy { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 10.5px; color: var(--dim); line-height: 1.45; margin-top: auto; }
   .sim { flex: 1 1 auto; min-width: 0; background: #000; position: relative; }
   .sim iframe { width: 100%; height: 100%; border: 0; display: block; background: #fff; }
   .picker { position: absolute; inset: 0; overflow-y: auto; background: var(--bg); padding: 16px; }
   .picker h2 { font-size: 14px; margin: 0 0 10px; color: var(--dim); }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
-  .simcard { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; cursor: pointer; text-align: left; color: var(--text); font: inherit; }
+  .simcard { background: var(--panel); border: 1px solid var(--control-line); border-radius: 12px; padding: 12px; cursor: pointer; text-align: left; color: var(--text); font: inherit; }
   .simcard:hover { border-color: var(--accent); }
   .simcard .emoji { font-size: 26px; }
   .simcard .name { font-weight: 700; font-size: 13px; margin: 6px 0 3px; }
   .simcard .meta { font-size: 11px; color: var(--dim); line-height: 1.4; }
+  .backbar { position: absolute; top: 8px; left: 8px; z-index: 5; }
+  .backbar button { background: var(--backbar-bg); color: var(--backbar-fg); border: 1px solid var(--control-line); border-radius: 8px; padding: 6px 10px; min-height: 36px; font-size: 12px; font-weight: 700; cursor: pointer; }
   @media (max-width: 760px) { .wrap { flex-direction: column; } .coach { flex: 0 0 46%; border-right: 0; border-bottom: 1px solid var(--line); } }
   .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 10000; }
   .skip-link:focus { position: fixed; left: 8px; top: 8px; width: auto; height: auto; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
@@ -113,28 +160,29 @@
 <body>
 <a class="skip-link" href="#main">Skip to simulation</a>
 <header>
-  <h1>🧪 Sim Shelf</h1>
+  <h1><span aria-hidden="true">🧪 </span>Sim Shelf</h1>
   <span class="sub">PhET Interactive Simulations (University of Colorado Boulder) + AlloFlow Predict-Explore-Explain coach</span>
   <select id="simSelect" aria-label="Choose a simulation"><option value="">Choose a simulation…</option></select>
 </header>
 <div class="wrap">
   <aside class="coach" aria-label="Predict Explore Explain coach">
     <h2>Lab coach</h2>
-    <div class="ai-state" id="aiState">Connecting to AlloFlow…</div>
+    <div class="ai-state" id="aiState" role="status" aria-live="polite">Connecting to AlloFlow…</div>
     <div class="steps" role="tablist" aria-label="Lab steps">
-      <button id="tabPredict" role="tab" aria-selected="true">1 · Predict</button>
-      <button id="tabExplore" role="tab" aria-selected="false">2 · Explore</button>
-      <button id="tabExplain" role="tab" aria-selected="false">3 · Explain</button>
+      <button id="tabPredict" type="button" role="tab" aria-selected="true" aria-controls="coachBody" tabindex="0" aria-disabled="true">1 · Predict</button>
+      <button id="tabExplore" type="button" role="tab" aria-selected="false" aria-controls="coachBody" tabindex="-1" aria-disabled="true">2 · Explore</button>
+      <button id="tabExplain" type="button" role="tab" aria-selected="false" aria-controls="coachBody" tabindex="-1" aria-disabled="true">3 · Explain</button>
     </div>
-    <div class="body" id="coachBody">
+    <div class="body" id="coachBody" role="tabpanel" aria-labelledby="tabPredict">
       <div class="qcard">Pick a simulation to start. The coach will ask you to <b>predict before you touch anything</b> — that’s where the learning hides.</div>
     </div>
     <div class="privacy">Predictions and explanations live in this window only — nothing is saved or graded. AI feedback flows only when your teacher has AI hints on, and only when you ask for it.</div>
   </aside>
   <main id="main" tabindex="-1" class="sim" aria-label="Simulation">
-    <iframe id="simFrame" title="PhET simulation" allow="fullscreen"></iframe>
+    <div class="backbar" id="backbar" style="display:none"><button id="backBtn" type="button">← Simulations</button></div>
+    <iframe id="simFrame" title="PhET simulation" allow="fullscreen" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-downloads allow-popups" hidden aria-hidden="true" tabindex="-1"></iframe>
     <div class="picker" id="picker">
-      <h2>Pick a simulation — each one is a tiny laboratory. Predict first, then play.</h2>
+      <h2 id="pickerHeading" tabindex="-1">Pick a simulation — each one is a tiny laboratory. Predict first, then play.</h2>
       <div class="grid" id="pickerGrid"></div>
     </div>
   </main>
@@ -236,11 +284,16 @@
   var simSelect = document.getElementById('simSelect');
   var coachBody = document.getElementById('coachBody');
   var aiStateEl = document.getElementById('aiState');
+  var backbar = document.getElementById('backbar');
+  var backBtn = document.getElementById('backBtn');
   var tabs = { predict: document.getElementById('tabPredict'), explore: document.getElementById('tabExplore'), explain: document.getElementById('tabExplain') };
 
   // ── Opener AI bridge (Video Studio / Data Lab pattern) ──────────────
   var pending = Object.create(null);
   var verifiedOpenerOrigin = '';
+  var askSeq = 0;
+  var bootTimers = [];
+  var lastSelectedSlug = '';
   function isTrustedOrigin(origin) {
     var o = String(origin || '');
     if (!o || o === 'null') return false;
@@ -248,11 +301,15 @@
       if (window.location && window.location.origin && o === window.location.origin) return true;
       var u = new URL(o);
       var host = (u.hostname || '').toLowerCase();
-      if (/^(localhost|127\.0\.0\.1)$/.test(host)) return true;
+      if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(host) && (u.protocol === 'http:' || u.protocol === 'https:')) return true;
       if (u.protocol !== 'https:') return false;
-      return host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
-             host === 'alloflow.org' || /\.alloflow\.org$/.test(host) ||
-             /\.usercontent\.goog$/.test(host);
+      if (host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
+          host === 'alloflow.org' || /\.alloflow\.org$/.test(host)) return true;
+      if (/\.usercontent\.goog$/.test(host)) {
+        var declared = window.location && window.location.search ? new URLSearchParams(window.location.search).get('host') : '';
+        return !!declared && o === declared;
+      }
+      return false;
     } catch (_) { return false; }
   }
   function isTrustedOpenerMessage(event) {
@@ -315,14 +372,32 @@
     return node;
   }
 
-  function setStep(next) {
+  var tabOrder = ['predict', 'explore', 'explain'];
+  function syncTabs() {
+    tabOrder.forEach(function (k) {
+      var sel = k === step;
+      tabs[k].setAttribute('aria-selected', String(sel));
+      tabs[k].setAttribute('tabindex', sel ? '0' : '-1');
+      if (current) tabs[k].removeAttribute('aria-disabled');
+      else tabs[k].setAttribute('aria-disabled', 'true');
+      if (sel) coachBody.setAttribute('aria-labelledby', tabs[k].id);
+    });
+  }
+  function setStep(next, moveFocus) {
     step = next;
-    Object.keys(tabs).forEach(function (k) { tabs[k].setAttribute('aria-selected', String(k === next)); });
+    syncTabs();
     renderCoach();
+    if (moveFocus) {
+      try {
+        var target = next === 'predict' ? document.getElementById('predictText') : (next === 'explain' ? document.getElementById('explainText') : coachBody.querySelector('button.go'));
+        if (target) target.focus();
+      } catch (_) {}
+    }
   }
 
   function renderCoach() {
     coachBody.innerHTML = '';
+    syncTabs();
     if (!current) {
       coachBody.appendChild(el('div', { class: 'qcard' }, 'Pick a simulation to start. The coach will ask you to predict before you touch anything — that’s where the learning hides.'));
       return;
@@ -337,20 +412,22 @@
         lockedBox.innerHTML = '<b>Your prediction is locked in:</b>\n';
         lockedBox.appendChild(document.createTextNode(mem.prediction));
         coachBody.appendChild(lockedBox);
-        var toExplore = el('button', { class: 'go' }, 'On to Explore →');
-        toExplore.addEventListener('click', function () { setStep('explore'); });
+        var toExplore = el('button', { class: 'go', type: 'button' }, 'On to Explore →');
+        toExplore.addEventListener('click', function () { setStep('explore', true); });
         coachBody.appendChild(toExplore);
       } else {
-        var ta = el('textarea', { id: 'predictText', 'aria-label': 'Your prediction', placeholder: 'I predict… because…' });
+        var ta = el('textarea', { id: 'predictText', 'aria-label': 'Your prediction', placeholder: 'I predict… because…', maxlength: '2000' });
         ta.value = mem.prediction;
-        ta.addEventListener('input', function () { mem.prediction = ta.value; });
+        var valErr = el('p', { class: 'valerr', role: 'alert', hidden: '' }, '');
+        ta.addEventListener('input', function () { mem.prediction = ta.value; valErr.hidden = true; valErr.textContent = ''; });
         coachBody.appendChild(ta);
-        var lock = el('button', { class: 'go' }, '🔒 Lock in my prediction');
+        coachBody.appendChild(valErr);
+        var lock = el('button', { class: 'go', type: 'button' }, '🔒 Lock in my prediction');
         lock.addEventListener('click', function () {
-          if (!mem.prediction.trim()) { ta.focus(); return; }
+          if (!mem.prediction.trim()) { valErr.textContent = 'Write a short prediction first.'; valErr.hidden = false; ta.focus(); return; }
           mem.locked = true;
           toOpener({ type: 'allosimshelf-predicted' });
-          setStep('explore');
+          setStep('explore', true);
         });
         coachBody.appendChild(lock);
         coachBody.appendChild(el('div', { class: 'qcard' }, 'Why lock it? Committing to a guess BEFORE you experiment is what turns playing into science.'));
@@ -366,73 +443,133 @@
         remind.appendChild(document.createTextNode(mem.prediction));
         coachBody.appendChild(remind);
       }
-      var toExplain = el('button', { class: 'go' }, 'I’ve explored — Explain →');
-      toExplain.addEventListener('click', function () { setStep('explain'); });
+      var toExplain = el('button', { class: 'go', type: 'button' }, 'I’ve explored — Explain →');
+      toExplain.addEventListener('click', function () { setStep('explain', true); });
       coachBody.appendChild(toExplain);
     } else {
       coachBody.appendChild(el('div', { class: 'qcard' }, '📝 ' + current.explain));
-      var ta2 = el('textarea', { id: 'explainText', 'aria-label': 'What actually happened', placeholder: 'What actually happened was…' });
+      var ta2 = el('textarea', { id: 'explainText', 'aria-label': 'What actually happened', placeholder: 'What actually happened was…', maxlength: '2000' });
       ta2.value = mem.explanation;
-      ta2.addEventListener('input', function () { mem.explanation = ta2.value; });
+      var valErr2 = el('p', { class: 'valerr', role: 'alert', hidden: '' }, '');
+      ta2.addEventListener('input', function () { mem.explanation = ta2.value; valErr2.hidden = true; valErr2.textContent = ''; });
       coachBody.appendChild(ta2);
-      var askBtn = el('button', { class: 'go', id: 'debriefBtn' }, aiAvailable && openerOk ? '✨ Compare with my prediction' : '🤔 Give me a reflection prompt');
+      coachBody.appendChild(valErr2);
+      var askBtn = el('button', { class: 'go', id: 'debriefBtn', type: 'button' }, busy ? 'thinking…' : (aiAvailable && openerOk ? '✨ Compare with my prediction' : '🤔 Give me a reflection prompt'));
+      if (busy) { askBtn.setAttribute('aria-disabled', 'true'); askBtn.setAttribute('aria-busy', 'true'); }
       askBtn.addEventListener('click', function () {
         if (busy) return;
         if (!(aiAvailable && openerOk)) {
           mem.feedback = nextReflect();
           renderCoach();
+          var fbLocal = coachBody.querySelector('.feedback');
+          if (fbLocal) { fbLocal.setAttribute('tabindex', '-1'); fbLocal.focus(); }
           return;
         }
-        if (!mem.explanation.trim()) { ta2.focus(); return; }
-        busy = true; askBtn.disabled = true; askBtn.textContent = 'thinking…';
-        askAi(current.name, mem.prediction, mem.explanation).then(function (res) {
+        if (!mem.explanation.trim()) { valErr2.textContent = 'Describe what you observed before comparing.'; valErr2.hidden = false; ta2.focus(); return; }
+        var targetSim = current;
+        var reqSeq = ++askSeq;
+        busy = true;
+        askBtn.setAttribute('aria-disabled', 'true');
+        askBtn.setAttribute('aria-busy', 'true');
+        askBtn.textContent = 'thinking…';
+        askAi(targetSim.name, mem.prediction, mem.explanation).then(function (res) {
           var text = res && !res.error && res.text ? String(res.text).trim() : '';
           mem.feedback = text || ('The AI coach didn’t answer' + (res && res.error ? ' (' + res.error + ')' : '') + '. Meanwhile: ' + nextReflect());
+        }).catch(function () {
+          mem.feedback = 'The AI coach didn’t answer. Meanwhile: ' + nextReflect();
+        }).finally(function () {
+          if (reqSeq !== askSeq) return;
           busy = false;
-          renderCoach();
+          if (current && current.slug === targetSim.slug) {
+            renderCoach();
+            var fbEl = coachBody.querySelector('.feedback');
+            if (fbEl) { fbEl.setAttribute('tabindex', '-1'); fbEl.focus(); }
+          }
         });
       });
       coachBody.appendChild(askBtn);
-      if (mem.feedback) coachBody.appendChild(el('div', { class: 'feedback' }, mem.feedback));
+      if (mem.feedback) coachBody.appendChild(el('div', { class: 'feedback', role: 'status', 'aria-live': 'polite' }, mem.feedback));
     }
   }
 
-  Object.keys(tabs).forEach(function (k) {
+  tabOrder.forEach(function (k, idx) {
     tabs[k].addEventListener('click', function () { if (current) setStep(k); });
+    tabs[k].addEventListener('keydown', function (e) {
+      if (!current) return;
+      var nextIdx = -1;
+      if (e.key === 'ArrowRight') nextIdx = (idx + 1) % tabOrder.length;
+      else if (e.key === 'ArrowLeft') nextIdx = (idx + tabOrder.length - 1) % tabOrder.length;
+      else if (e.key === 'Home') nextIdx = 0;
+      else if (e.key === 'End') nextIdx = tabOrder.length - 1;
+      if (nextIdx === -1) return;
+      e.preventDefault();
+      var nextKey = tabOrder[nextIdx];
+      setStep(nextKey);
+      try { tabs[nextKey].focus(); } catch (_) {}
+    });
   });
 
   // ── Sim picker ──────────────────────────────────────────────────────
   function loadSim(slug) {
     current = SIMS.find(function (s) { return s.slug === slug; }) || null;
     if (!current) return;
+    lastSelectedSlug = current.slug;
+    busy = false;
+    ++askSeq;
     picker.style.display = 'none';
+    backbar.style.display = 'block';
+    simFrame.hidden = false;
+    simFrame.removeAttribute('aria-hidden');
+    simFrame.removeAttribute('tabindex');
     simFrame.src = simUrl(current.slug);
     simSelect.value = current.slug;
     document.title = 'AlloFlow Sim Shelf — ' + current.name;
     toOpener({ type: 'allosimshelf-simopened', sim: current.slug });
-    setStep(perSim[current.slug] && perSim[current.slug].locked ? 'explore' : 'predict');
+    setStep(perSim[current.slug] && perSim[current.slug].locked ? 'explore' : 'predict', true);
+  }
+  function showPicker() {
+    busy = false;
+    ++askSeq;
+    current = null;
+    simSelect.value = '';
+    picker.style.display = 'block';
+    backbar.style.display = 'none';
+    simFrame.hidden = true;
+    simFrame.setAttribute('aria-hidden', 'true');
+    simFrame.setAttribute('tabindex', '-1');
+    renderCoach();
+    try {
+      var prevCard = lastSelectedSlug ? pickerGrid.querySelector('button[data-sim-slug="' + lastSelectedSlug + '"]') : null;
+      var fallback = prevCard || pickerGrid.querySelector('.simcard') || document.getElementById('pickerHeading');
+      if (fallback) fallback.focus();
+    } catch (_) {}
   }
 
   SIMS.forEach(function (sim) {
     var opt = el('option', { value: sim.slug }, sim.emoji + ' ' + sim.name);
     simSelect.appendChild(opt);
-    var card = el('button', { class: 'simcard', type: 'button' });
-    card.appendChild(el('div', { class: 'emoji' }, sim.emoji));
+    var card = el('button', { class: 'simcard', type: 'button', 'data-sim-slug': sim.slug });
+    card.appendChild(el('div', { class: 'emoji', 'aria-hidden': 'true' }, sim.emoji));
     card.appendChild(el('div', { class: 'name' }, sim.name));
     card.appendChild(el('div', { class: 'meta' }, sim.topics + ' · grades ' + sim.grades));
     card.addEventListener('click', function () { loadSim(sim.slug); });
     pickerGrid.appendChild(card);
   });
   simSelect.addEventListener('change', function () { if (simSelect.value) loadSim(simSelect.value); });
+  backBtn.addEventListener('click', showPicker);
 
   // ── Boot ────────────────────────────────────────────────────────────
   var requested = params.get('sim');
   if (requested && SIMS.some(function (s) { return s.slug === requested; })) loadSim(requested);
   var hello = function () { toOpener({ type: 'allosimshelf-hello' }); };
   hello();
-  setTimeout(hello, 900);
-  setTimeout(renderAiState, 2600);
-  window.addEventListener('beforeunload', function () { toOpener({ type: 'allosimshelf-closed' }); });
+  bootTimers.push(setTimeout(hello, 900));
+  bootTimers.push(setTimeout(renderAiState, 2600));
+  window.addEventListener('beforeunload', function () {
+    bootTimers.forEach(clearTimeout);
+    Object.keys(pending).forEach(function (id) { clearTimeout(pending[id].timer); delete pending[id]; });
+    toOpener({ type: 'allosimshelf-closed' });
+  });
 })();
 </script>
 </body>

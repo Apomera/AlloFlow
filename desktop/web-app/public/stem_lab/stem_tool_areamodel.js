@@ -55,10 +55,24 @@ window.StemLab = window.StemLab || {
     st.id = 'allo-areamodel-v4-css';
     st.textContent = [
       '@keyframes allo-am-cell-pulse { 0% { transform: scale(0.92); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }',
+      '@keyframes allo-am-tile-shimmer { 0%, 100% { opacity: 0.55; } 50% { opacity: 0.92; } }',
+      '@keyframes allo-am-focus-aura { 0%, 100% { stroke-opacity: 0.24; } 50% { stroke-opacity: 0.52; } }',
+      '@keyframes allo-am-focus-ripple { 0% { opacity: 0.72; transform: scale(0.96); } 70% { opacity: 0.14; transform: scale(1.06); } 100% { opacity: 0; transform: scale(1.1); } }',
+      '@keyframes allo-am-split-glow { 0%, 100% { stroke-opacity: 0.18; } 50% { stroke-opacity: 0.42; } }',
+      '@keyframes allo-am-split-flow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -22; } }',
+      '@keyframes allo-am-bracket-pulse { 0%, 100% { opacity: 0.72; } 50% { opacity: 1; } }',
       '.allo-am-cell { transition: background-color 0.22s ease, border-color 0.22s ease; }',
       '.allo-am-cell-fill { animation: allo-am-cell-pulse 0.32s ease-out; }',
+      '.allo-am-tile-shimmer { animation: allo-am-tile-shimmer 4.4s ease-in-out infinite; pointer-events: none; }',
+      '.allo-am-focus-aura { animation: allo-am-focus-aura 2.2s ease-in-out infinite; pointer-events: none; }',
+      '.allo-am-focus-ripple { transform-box: fill-box; transform-origin: center; animation: allo-am-focus-ripple 2.1s cubic-bezier(0.22, 0.61, 0.36, 1) infinite; pointer-events: none; }',
+      '.allo-am-split-glow { animation: allo-am-split-glow 2.6s ease-in-out infinite; pointer-events: none; }',
+      '.allo-am-split-flow { animation: allo-am-split-flow 1.9s linear infinite; pointer-events: none; }',
+      '.allo-am-bracket-pulse { animation: allo-am-bracket-pulse 2.2s ease-in-out infinite; pointer-events: none; }',
+      '.theme-contrast .allo-am-tile-shimmer, .theme-contrast .allo-am-focus-aura, .theme-contrast .allo-am-focus-ripple, .theme-contrast .allo-am-split-glow, .theme-contrast .allo-am-split-flow, .theme-contrast .allo-am-bracket-pulse { animation: none !important; }',
+      '.theme-contrast .allo-am-tile-shimmer, .theme-contrast .allo-am-focus-ripple, .theme-contrast .allo-am-split-glow { display: none !important; }',
       '[data-areamodel-root] .allo-am-cell:focus-visible, [data-areamodel-root] button:focus-visible, [data-areamodel-root] input:focus-visible, [data-areamodel-root] select:focus-visible, [data-areamodel-root] textarea:focus-visible, [data-areamodel-root] [tabindex="0"]:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; box-shadow: 0 0 0 5px #1e293b; }',
-      '@media (prefers-reduced-motion: reduce) { .allo-am-cell, .allo-am-cell-fill { transition: none !important; animation: none !important; } }'
+      '@media (prefers-reduced-motion: reduce) { .allo-am-cell, .allo-am-cell-fill, .allo-am-tile-shimmer, .allo-am-focus-aura, .allo-am-focus-ripple, .allo-am-split-glow, .allo-am-split-flow, .allo-am-bracket-pulse { transition: none !important; animation: none !important; } .allo-am-focus-ripple { opacity: 0.22; } }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -1941,6 +1955,15 @@ window.StemLab = window.StemLab || {
         var looks = opts.regionLook ? bm.boxes.map(function(bx) { return opts.regionLook(bx); }) : null;
         var tickColor = isContrast ? '#ffff00' : C.ctrl;
         var glossId = pre + '-tile-gloss';
+        var shimmerId = pre + '-tile-shimmer';
+        var activeCols = {}, activeRows = {};
+        bm.boxes.forEach(function(bx) {
+          var isAct = sel === bx.index || (opts.litBoxes && opts.litBoxes.indexOf(bx.index) >= 0);
+          if (!isAct) return;
+          var ci = g.across ? bx.r : bx.c, ri = g.across ? bx.c : bx.r;
+          activeCols[ci] = true; activeRows[ri] = true;
+        });
+        var bracketHi = isContrast ? '#00ff00' : (isDark ? '#fbbf24' : '#d97706');
         return h('svg', { viewBox: '0 0 ' + g.vbW + ' ' + g.vbH, role: 'img', 'aria-labelledby': pre + '-title ' + pre + '-desc',
             style: opts.fit ? { width: '100%', height: 'auto', display: 'block', background: C.svgBg, borderRadius: 10 } : { width: '100%', maxHeight: 340, background: C.svgBg, borderRadius: 10 },
             'data-partial-model': true, 'data-across': g.across ? 'true' : undefined },
@@ -1951,6 +1974,11 @@ window.StemLab = window.StemLab || {
               h('stop', { offset: '0%', stopColor: 'rgba(255,255,255,0.44)' }),
               h('stop', { offset: '38%', stopColor: 'rgba(255,255,255,0.08)' }),
               h('stop', { offset: '100%', stopColor: 'rgba(15,23,42,0.16)' })
+            ),
+            h('linearGradient', { id: shimmerId, x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+              h('stop', { offset: '0%', stopColor: 'rgba(255,255,255,0.26)' }),
+              h('stop', { offset: '48%', stopColor: 'rgba(255,255,255,0.04)' }),
+              h('stop', { offset: '100%', stopColor: 'rgba(255,255,255,0.20)' })
             )
           ),
           // Grounded mat drop shadow beneath the partial-product tile assembly
@@ -1965,6 +1993,27 @@ window.StemLab = window.StemLab || {
           h('line', { x1: 55, y1: 40, x2: 63, y2: 40, stroke: tickColor, strokeWidth: 1.35 }),
           h('line', { x1: 55, y1: 40 + g.totH, x2: 63, y2: 40 + g.totH, stroke: tickColor, strokeWidth: 1.35 }),
           g.ys.slice(1).map(function(yv, yi) { return h('line', { key: 'bl' + yi, x1: 56, y1: 40 + yv, x2: 62, y2: 40 + yv, stroke: tickColor, strokeWidth: 1.2 }); }),
+          // Smooth dimension-bracket pulse highlights linking active factors to selected/lit partial areas
+          g.xParts.map(function(p, j) {
+            if (!activeCols[j] || !g.xw[j]) return null;
+            var bx1 = 65 + g.xs[j], bx2 = bx1 + g.xw[j];
+            return h('g', { key: 'bth' + j, className: isContrast ? undefined : 'allo-am-bracket-pulse', pointerEvents: 'none' },
+              !isContrast && h('line', { x1: bx1, y1: 32, x2: bx2, y2: 32, stroke: bracketHi, strokeWidth: 6.5, strokeOpacity: 0.24, strokeLinecap: 'round' }),
+              h('line', { x1: bx1, y1: 32, x2: bx2, y2: 32, stroke: bracketHi, strokeWidth: 2.8, strokeLinecap: 'round' }),
+              h('line', { x1: bx1, y1: 27, x2: bx1, y2: 37, stroke: bracketHi, strokeWidth: 2.2 }),
+              h('line', { x1: bx2, y1: 27, x2: bx2, y2: 37, stroke: bracketHi, strokeWidth: 2.2 })
+            );
+          }),
+          g.yParts.map(function(p, i) {
+            if (!activeRows[i] || !g.yh[i]) return null;
+            var by1 = 40 + g.ys[i], by2 = by1 + g.yh[i];
+            return h('g', { key: 'blh' + i, className: isContrast ? undefined : 'allo-am-bracket-pulse', pointerEvents: 'none' },
+              !isContrast && h('line', { x1: 59, y1: by1, x2: 59, y2: by2, stroke: bracketHi, strokeWidth: 6.5, strokeOpacity: 0.24, strokeLinecap: 'round' }),
+              h('line', { x1: 59, y1: by1, x2: 59, y2: by2, stroke: bracketHi, strokeWidth: 2.8, strokeLinecap: 'round' }),
+              h('line', { x1: 54, y1: by1, x2: 64, y2: by1, stroke: bracketHi, strokeWidth: 2.2 }),
+              h('line', { x1: 54, y1: by2, x2: 64, y2: by2, stroke: bracketHi, strokeWidth: 2.2 })
+            );
+          }),
           bm.boxes.map(function(bx) {
             var r = g.box(bx);
             if (!r.w || !r.h) return null;
@@ -1976,22 +2025,25 @@ window.StemLab = window.StemLab || {
               'data-partial-region': bx.index, 'data-selected': sel === bx.index, 'data-region-state': lk ? lk.state : undefined,
               onClick: opts.onSelect ? function() { opts.onSelect(bx.index); } : undefined, style: { cursor: opts.onSelect ? 'pointer' : 'default' } });
           }),
-          // Tactile 3D-bevel top specular sheen over each tile + luminous active selection border
+          // Tactile 3D-bevel top & left specular sheen + luminous fill shimmer over each partial-product tile
           !isContrast && bm.boxes.map(function(bx) {
             var r = g.box(bx);
             if (!r.w || !r.h || r.w < 6 || r.h < 6) return null;
             return h('g', { key: 'rg' + bx.index, pointerEvents: 'none' },
               h('rect', { x: r.x + 1, y: r.y + 1, width: Math.max(0, r.w - 2), height: Math.max(0, r.h - 2), rx: 2, fill: 'url(#' + glossId + ')' }),
-              r.w >= 14 && h('line', { x1: r.x + 4, y1: r.y + 2.2, x2: r.x + r.w - 4, y2: r.y + 2.2, stroke: 'rgba(255,255,255,0.62)', strokeWidth: 1.2, strokeLinecap: 'round' })
+              h('rect', { className: 'allo-am-tile-shimmer', x: r.x + 1, y: r.y + 1, width: Math.max(0, r.w - 2), height: Math.max(0, r.h - 2), rx: 2, fill: 'url(#' + shimmerId + ')' }),
+              r.w >= 14 && h('line', { x1: r.x + 4, y1: r.y + 2.2, x2: r.x + r.w - 4, y2: r.y + 2.2, stroke: 'rgba(255,255,255,0.68)', strokeWidth: 1.25, strokeLinecap: 'round' }),
+              r.h >= 14 && h('line', { x1: r.x + 2.2, y1: r.y + 4, x2: r.x + 2.2, y2: r.y + r.h - 4, stroke: 'rgba(255,255,255,0.44)', strokeWidth: 1, strokeLinecap: 'round' })
             );
           }),
-          // Luminous active partial-product selection highlight aura + crisp inner bevel border
+          // Luminous active partial-product selection focus ripple halo + pulsing aura + crisp inner bevel border
           bm.boxes.map(function(bx) {
             var r = g.box(bx);
             var lit = opts.litBoxes && opts.litBoxes.indexOf(bx.index) >= 0;
             if (!r.w || !r.h || (sel !== bx.index && !lit) || r.w < 12 || r.h < 12) return null;
             return h('g', { key: 'rh' + bx.index, pointerEvents: 'none' },
-              !isContrast && h('rect', { x: r.x - 1, y: r.y - 1, width: r.w + 2, height: r.h + 2, rx: 4, fill: 'none', stroke: isDark ? '#fbbf24' : '#f59e0b', strokeWidth: 6, strokeOpacity: 0.28 }),
+              !isContrast && h('rect', { className: 'allo-am-focus-ripple', x: r.x - 2, y: r.y - 2, width: r.w + 4, height: r.h + 4, rx: 5, fill: 'none', stroke: bracketHi, strokeWidth: 2 }),
+              !isContrast && h('rect', { className: 'allo-am-focus-aura', x: r.x - 1, y: r.y - 1, width: r.w + 2, height: r.h + 2, rx: 4, fill: 'none', stroke: bracketHi, strokeWidth: 6, strokeOpacity: 0.30 }),
               h('rect', { x: r.x + 3, y: r.y + 3, width: r.w - 6, height: r.h - 6, rx: 2, fill: 'none', stroke: isContrast ? '#00ff00' : '#ffffff', strokeWidth: 1.8, opacity: 0.92 })
             );
           }),
@@ -2165,9 +2217,12 @@ window.StemLab = window.StemLab || {
                 return h('button', { key: 'sp' + sp.val, type: 'button', 'aria-pressed': isPicked, onClick: function() { sfxClick(); upd(clearDone({ splitAt: sp.val })); }, style: presetChipStyle(isPicked, false) }, sp.label);
               }))),
           h('div', { style: Object.assign({}, cardStyle, { background: C.bg }) },
-            h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', alignItems: 'flex-start' } },
+            h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', alignItems: 'stretch' } },
               piece('L', leftCols, leftProduct, FILLS[0]),
-              h('div', { 'aria-hidden': 'true', style: { alignSelf: 'center', fontSize: 22, fontWeight: 900, color: C.accent } }, '+'),
+              h('div', { 'aria-hidden': 'true', style: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, padding: '0 2px' } },
+                !isContrast && h('span', { className: 'allo-am-bracket-pulse', style: { width: 3, flex: 1, minHeight: 16, borderRadius: 999, background: isDark ? 'linear-gradient(180deg, rgba(251,191,36,0.12), rgba(251,191,36,0.75))' : 'linear-gradient(180deg, rgba(217,119,6,0.12), rgba(217,119,6,0.68))' } }),
+                h('span', { style: { fontSize: 22, fontWeight: 900, color: C.accent, lineHeight: 1 } }, '+'),
+                !isContrast && h('span', { className: 'allo-am-bracket-pulse', style: { width: 3, flex: 1, minHeight: 16, borderRadius: 999, background: isDark ? 'linear-gradient(0deg, rgba(251,191,36,0.12), rgba(251,191,36,0.75))' : 'linear-gradient(0deg, rgba(217,119,6,0.12), rgba(217,119,6,0.68))' } })),
               piece('R', rightCols, rightProduct, FILLS[1])),
             h('p', { style: { marginTop: 8, fontSize: 13, color: C.sub, textAlign: 'center' } },
               fill(t('stem.areamodel.dist_desc', 'A rectangle {a} rows tall and {b} columns wide, cut into a {a} by {l} piece and a {a} by {r} piece.'), { a: a, b: bAll, l: leftCols, r: rightCols })),
@@ -2405,9 +2460,11 @@ window.StemLab = window.StemLab || {
             var pos = cutPos(ge.parts, ge.widths, c);
             var vx = sd.axis === 'x' ? 65 + pos : 65 + geom.totW, vy = sd.axis === 'x' ? 40 + geom.totH : 40 + pos;
             var lineAttrs = sd.axis === 'x' ? { x1: vx, x2: vx, y1: 34, y2: 46 + geom.totH } : { x1: 59, x2: 71 + geom.totW, y1: vy, y2: vy };
-            // The dark casing keeps the line visible over the pale regions in dark and contrast.
+            // Luminous decomposition split-line glow + dark casing + animated energy filament
+            if (!isContrast) lines.push(h('line', Object.assign({ key: 'cg' + sd.f + i, className: 'allo-am-split-glow', stroke: C.accent, strokeWidth: 9.5, strokeOpacity: 0.24, strokeLinecap: 'round' }, lineAttrs)));
             lines.push(h('line', Object.assign({ key: 'cc' + sd.f + i, stroke: '#0f172a', strokeWidth: 5, 'data-cut-casing': sd.f + i }, lineAttrs)));
             lines.push(h('line', Object.assign({ key: 'cl' + sd.f + i, stroke: C.accent, strokeWidth: 3, 'data-cut-line': sd.f + i }, lineAttrs)));
+            if (!isContrast) lines.push(h('line', Object.assign({ key: 'cf' + sd.f + i, className: 'allo-am-split-flow', stroke: '#ffffff', strokeWidth: 1.25, strokeDasharray: '6 5', strokeOpacity: 0.72, strokeLinecap: 'round' }, lineAttrs)));
             // display:block: Chromium ignores touch-action on an inline SVG child, so a finger drag was cancelled and scrolled the page.
             lines.push(h('line', Object.assign({ key: 'ch' + sd.f + i, stroke: 'transparent', strokeWidth: 20, 'data-cut-strip': sd.f + i, style: { display: 'block', cursor: sd.axis === 'x' ? 'ew-resize' : 'ns-resize', touchAction: 'none' } }, lineAttrs, dragProps(sd, i, false))));
             var lo = i > 0 ? sd.cuts[i - 1] + 1 : 1, hi = i < sd.cuts.length - 1 ? sd.cuts[i + 1] - 1 : sc.n - 1;
@@ -3094,12 +3151,13 @@ window.StemLab = window.StemLab || {
           if (both) cells.push(h('circle', { key: 'd' + r + '-' + c, cx: ox + c * S + S / 2, cy: oy + r * S + S / 2, r: 3.5, fill: '#ffffff' }));
         }
         var colsW = ca * S, rowsH = rb * S;
-        return h('svg', { viewBox: '0 0 ' + (ox + 10 * S + 20) + ' ' + (oy + 10 * S + 30), role: 'img', 'aria-labelledby': pre + '-title ' + pre + '-desc', style: { width: '100%', maxWidth: 420, maxHeight: 380, background: C.svgBg, display: 'block', margin: '0 auto' }, 'data-g100-model': true },
+        return h('svg', { viewBox: '0 0 ' + (ox + 10 * S + 20) + ' ' + (oy + 10 * S + 30), role: 'img', 'aria-labelledby': pre + '-title ' + pre + '-desc', style: { width: '100%', maxWidth: 420, maxHeight: 380, background: C.svgBg, display: 'block', margin: '0 auto', borderRadius: 10 }, 'data-g100-model': true },
           h('title', { id: pre + '-title' }, opts.title || t('stem.areamodel.g100_svg_title', 'Hundred grid area model')),
           h('desc', { id: pre + '-desc' }, opts.desc || ''),
           cells,
           h('rect', { x: ox, y: oy, width: colsW, height: 10 * S, fill: 'none', stroke: C.stroke, strokeWidth: 3 }),
           h('rect', { x: ox, y: oy, width: 10 * S, height: rowsH, fill: 'none', stroke: C.stroke, strokeWidth: 3, strokeDasharray: '8 5' }),
+          !isContrast && colsW > 0 && rowsH > 0 && h('rect', { className: 'allo-am-focus-aura', x: ox - 1, y: oy - 1, width: colsW + 2, height: rowsH + 2, rx: 2, fill: 'none', stroke: '#22c55e', strokeWidth: 5, strokeOpacity: 0.30, pointerEvents: 'none' }),
           h('text', { x: ox + colsW / 2, y: oy - 10, textAnchor: 'middle', fill: C.ink, fontSize: 15, fontWeight: 800 }, opts.labelA || ''),
           h('text', { x: ox - 8, y: oy + rowsH / 2 + 5, textAnchor: 'end', fill: C.ink, fontSize: 15, fontWeight: 800 }, opts.labelB || ''));
       }
@@ -3366,6 +3424,10 @@ window.StemLab = window.StemLab || {
         addTiles(colsW[0], rowsH[0], colsW[1], rowsH[1], U, U, '#fde68a', 'cc');
         var tickCol = isContrast ? '#ffff00' : C.ctrl;
         var labels = [
+          !isContrast && colsW[0] > 0 && colsW[1] > 0 && h('line', { key: 'alg-spv-g', className: 'allo-am-split-glow', x1: 50 + colsW[0], y1: 37, x2: 50 + colsW[0], y2: 43 + H, stroke: C.accent, strokeWidth: 6.5, strokeOpacity: 0.22, pointerEvents: 'none' }),
+          !isContrast && colsW[0] > 0 && colsW[1] > 0 && h('line', { key: 'alg-spv', className: 'allo-am-split-flow', x1: 50 + colsW[0], y1: 37, x2: 50 + colsW[0], y2: 43 + H, stroke: C.accent, strokeWidth: 1.6, strokeDasharray: '6 5', pointerEvents: 'none' }),
+          !isContrast && rowsH[0] > 0 && rowsH[1] > 0 && h('line', { key: 'alg-sph-g', className: 'allo-am-split-glow', x1: 47, y1: 40 + rowsH[0], x2: 53 + W, y2: 40 + rowsH[0], stroke: C.accent, strokeWidth: 6.5, strokeOpacity: 0.22, pointerEvents: 'none' }),
+          !isContrast && rowsH[0] > 0 && rowsH[1] > 0 && h('line', { key: 'alg-sph', className: 'allo-am-split-flow', x1: 47, y1: 40 + rowsH[0], x2: 53 + W, y2: 40 + rowsH[0], stroke: C.accent, strokeWidth: 1.6, strokeDasharray: '6 5', pointerEvents: 'none' }),
           h('line', { key: 'bt-l', x1: 50, y1: 34, x2: 50 + W, y2: 34, stroke: tickCol, strokeWidth: 1.2 }),
           h('line', { key: 'bt-0', x1: 50, y1: 31, x2: 50, y2: 37, stroke: tickCol, strokeWidth: 1.2 }),
           colsW[0] > 0 && colsW[1] > 0 && h('line', { key: 'bt-m', x1: 50 + colsW[0], y1: 31, x2: 50 + colsW[0], y2: 37, stroke: tickCol, strokeWidth: 1.2 }),
@@ -3507,6 +3569,10 @@ window.StemLab = window.StemLab || {
         addTiles(colsW[0], rowsH[0], colsW[1], rowsH[1], U, U, '#fde68a', 'cc');
         var tickCol = isContrast ? '#ffff00' : C.ctrl;
         var labels = [
+          !isContrast && colsW[0] > 0 && colsW[1] > 0 && h('line', { key: 'alg-spv-g', className: 'allo-am-split-glow', x1: 50 + colsW[0], y1: 37, x2: 50 + colsW[0], y2: 43 + H, stroke: C.accent, strokeWidth: 6.5, strokeOpacity: 0.22, pointerEvents: 'none' }),
+          !isContrast && colsW[0] > 0 && colsW[1] > 0 && h('line', { key: 'alg-spv', className: 'allo-am-split-flow', x1: 50 + colsW[0], y1: 37, x2: 50 + colsW[0], y2: 43 + H, stroke: C.accent, strokeWidth: 1.6, strokeDasharray: '6 5', pointerEvents: 'none' }),
+          !isContrast && rowsH[0] > 0 && rowsH[1] > 0 && h('line', { key: 'alg-sph-g', className: 'allo-am-split-glow', x1: 47, y1: 40 + rowsH[0], x2: 53 + W, y2: 40 + rowsH[0], stroke: C.accent, strokeWidth: 6.5, strokeOpacity: 0.22, pointerEvents: 'none' }),
+          !isContrast && rowsH[0] > 0 && rowsH[1] > 0 && h('line', { key: 'alg-sph', className: 'allo-am-split-flow', x1: 47, y1: 40 + rowsH[0], x2: 53 + W, y2: 40 + rowsH[0], stroke: C.accent, strokeWidth: 1.6, strokeDasharray: '6 5', pointerEvents: 'none' }),
           h('line', { key: 'bt-l', x1: 50, y1: 34, x2: 50 + W, y2: 34, stroke: tickCol, strokeWidth: 1.2 }),
           h('line', { key: 'bt-0', x1: 50, y1: 31, x2: 50, y2: 37, stroke: tickCol, strokeWidth: 1.2 }),
           colsW[0] > 0 && colsW[1] > 0 && h('line', { key: 'bt-m', x1: 50 + colsW[0], y1: 31, x2: 50 + colsW[0], y2: 37, stroke: tickCol, strokeWidth: 1.2 }),

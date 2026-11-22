@@ -73,12 +73,12 @@ function EndSessionPreview({
       cursor = parent;
     }
     const body = document.body;
-    const scrollLock = typeof window !== 'undefined' ? (window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '' })) : null;
+    const scrollLock = typeof window !== 'undefined' ? (window.__alloScrollLockState || (window.__alloScrollLockState = { count: 0, prev: '', overflow: '' })) : null;
     let scrollLocked = false;
     try {
       if (body && scrollLock) {
         scrollLocked = true;
-        if (++scrollLock.count === 1) { scrollLock.prev = body.style.overflow; body.style.overflow = 'hidden'; }
+        if (++scrollLock.count === 1) { scrollLock.prev = body.style.overflow; scrollLock.overflow = scrollLock.prev; body.style.overflow = 'hidden'; }
       }
     } catch (_) {}
     try {
@@ -108,6 +108,7 @@ function EndSessionPreview({
       if (event.key === 'Escape') {
         if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229) return;
         event.preventDefault();
+        event.stopPropagation();
         const latest = endPreviewStateRef.current;
         if (!(latest.preview && (latest.preview.busy || latest.preview.followUpBusy)) && typeof latest.onKeepOpen === 'function') {
           latest.onKeepOpen();
@@ -140,7 +141,7 @@ function EndSessionPreview({
       try {
         if (scrollLocked && body && scrollLock) {
           scrollLock.count = Math.max(0, scrollLock.count - 1);
-          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev;
+          if (scrollLock.count === 0) body.style.overflow = scrollLock.prev ?? scrollLock.overflow ?? '';
         }
       } catch (_) {}
       isolated.forEach(({ sibling, hadInert, prevInert, ariaHidden }) => {
@@ -168,22 +169,30 @@ function EndSessionPreview({
   // Keep the extracted markup readable while exposing only the minimum host
   // controller surface. No roster identities or session transport objects cross
   // this presentation boundary.
-  const endSessionPreview = preview;
-  const endSessionNote = note;
+  const endSessionPreview = preview && typeof preview === 'object' ? preview : null;
+  const endSessionNote = typeof note === 'string' ? note : String(note ?? '');
   const endSessionPreviewRef = effectiveDialogRef;
   const setEndSessionNote = onNoteChange;
   const sendEndSessionEvidenceCohort = onSendCohort;
   const completeLiveSessionEnd = onComplete;
   const onKeepSessionOpen = onKeepOpen;
-  const rosterKey = canSaveSummary ? {
-    groups: Object.fromEntries(Object.entries(groupNamesById || {}).map(([id, name]) => [id, { name }]))
-  } : null;
+  const rosterKey = canSaveSummary ? (() => {
+    const groups = Object.create(null);
+    if (groupNamesById && typeof groupNamesById === 'object') {
+      Object.keys(groupNamesById).forEach((id) => {
+        if (id === '__proto__' || id === 'constructor' || id === 'prototype') return;
+        groups[id] = { name: groupNamesById[id] };
+      });
+    }
+    return { groups };
+  })() : null;
   const resolveEndSessionCohortUids = codenames => ({
-    length: Math.max(0, Number(getConnectedCount(codenames)) || 0)
+    length: Math.max(0, Number(typeof getConnectedCount === 'function' ? getConnectedCount(codenames) : 0) || 0)
   });
   const setEndSessionPreview = updater => {
-    const next = typeof updater === 'function' ? updater(preview) : updater;
-    if (next && next.followUpResourceId !== preview.followUpResourceId) {
+    if (!endSessionPreview) return;
+    const next = typeof updater === 'function' ? updater(endSessionPreview) : updater;
+    if (next && next.followUpResourceId !== endSessionPreview.followUpResourceId && typeof onFollowUpResourceChange === 'function') {
       onFollowUpResourceChange(next.followUpResourceId || '');
     }
   };
@@ -198,12 +207,15 @@ function EndSessionPreview({
     };
   }, []);
   const handleCopyBrief = text => {
-    try { copyToClipboard(text); } catch (_) {}
-    if (briefMountedRef.current) setBriefCopied(true);
-    if (briefCopyTimerRef.current) clearTimeout(briefCopyTimerRef.current);
-    briefCopyTimerRef.current = setTimeout(() => {
-      if (briefMountedRef.current) setBriefCopied(false);
-    }, 2000);
+    if (typeof copyToClipboard !== 'function') return;
+    try {
+      copyToClipboard(text);
+      if (briefMountedRef.current) setBriefCopied(true);
+      if (briefCopyTimerRef.current) clearTimeout(briefCopyTimerRef.current);
+      briefCopyTimerRef.current = setTimeout(() => {
+        if (briefMountedRef.current) setBriefCopied(false);
+      }, 2000);
+    } catch (_) {}
   };
   const noteStarters = [
     { id: 'small-group', label: tx('end_session.note_chip_small_group', '+ Small-group follow-up'), snippet: tx('end_session.note_snippet_small_group', 'Plan small-group follow-up for: ') },
@@ -220,6 +232,8 @@ function EndSessionPreview({
       if (box && typeof box.focus === 'function') box.focus();
     } catch (_) {}
   };
+  if (!endSessionPreview) return null;
+  const summary = endSessionPreview.summary && typeof endSessionPreview.summary === 'object' ? endSessionPreview.summary : {};
 
   return (
     <div className="fixed inset-0 z-[10020] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4" role="presentation">
@@ -227,12 +241,12 @@ function EndSessionPreview({
         <h2 id="end-session-summary-title" className="text-xl font-black text-slate-800">{tx('end_session.title', 'End session')}</h2>
         <p id="end-session-summary-description" className="text-sm text-slate-600 mt-1">{tx('end_session.review_summary', 'Review the privacy-limited roster summary before temporary live-session data is deleted.')}</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 my-4">
-          <div className="rounded-xl bg-emerald-50 p-3 text-center"><div className="text-2xl font-black text-emerald-700">{Object.keys(endSessionPreview.summary.participants || {}).length}</div><div className="text-xs font-bold text-emerald-800">{tx('end_session.roster_matched', 'Roster matched')}</div></div>
-          <div className="rounded-xl bg-amber-50 p-3 text-center"><div className="text-2xl font-black text-amber-700">{(endSessionPreview.summary.absentCodenames || []).length}</div><div className="text-xs font-bold text-amber-800">{tx('end_session.not_present', 'Not present')}</div></div>
-          <div className="rounded-xl bg-rose-50 p-3 text-center"><div className="text-2xl font-black text-rose-700">{(endSessionPreview.summary.unmatchedCodenames || []).length}</div><div className="text-xs font-bold text-rose-800">{tx('end_session.unmatched', 'Unmatched')}</div></div>
+          <div className="rounded-xl bg-emerald-50 p-3 text-center"><div className="text-2xl font-black text-emerald-700">{Object.keys(summary.participants || {}).length}</div><div className="text-xs font-bold text-emerald-800">{tx('end_session.roster_matched', 'Roster matched')}</div></div>
+          <div className="rounded-xl bg-amber-50 p-3 text-center"><div className="text-2xl font-black text-amber-700">{(summary.absentCodenames || []).length}</div><div className="text-xs font-bold text-amber-800">{tx('end_session.not_present', 'Not present')}</div></div>
+          <div className="rounded-xl bg-rose-50 p-3 text-center"><div className="text-2xl font-black text-rose-700">{(summary.unmatchedCodenames || []).length}</div><div className="text-xs font-bold text-rose-800">{tx('end_session.unmatched', 'Unmatched')}</div></div>
         </div>
-        {endSessionPreview.summary.organizerActivity && (() => {
-          const organizer = endSessionPreview.summary.organizerActivity;
+        {summary.organizerActivity && (() => {
+          const organizer = summary.organizerActivity;
           const counts = organizer.statusCounts || {};
           const labels = [
             ['complete', tx('end_session.status_complete', 'complete')], ['attempted', tx('end_session.status_attempted', 'attempted')], ['working', tx('end_session.status_working', 'working')],
@@ -254,7 +268,7 @@ function EndSessionPreview({
             </section>
           );
         })()}
-        {endSessionPreview.summary.insightBrief && (
+        {summary.insightBrief && (
           <section className="rounded-2xl border border-indigo-200 bg-indigo-50/60 p-4 mb-4" aria-labelledby="end-session-insight-title">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
@@ -263,23 +277,23 @@ function EndSessionPreview({
               </div>
               <button type="button" data-end-session-copy-brief="true" onClick={() => handleCopyBrief([
                 tx('end_session.brief_heading', 'Live session insight brief'),
-                tx('end_session.brief_counts', '{activities} activities · {submissions} submissions · {revisions} revisions', { activities: endSessionPreview.summary.insightBrief.activityCount || 0, submissions: endSessionPreview.summary.insightBrief.submissions || 0, revisions: endSessionPreview.summary.insightBrief.revisions || 0 }),
-                ...(endSessionPreview.summary.insightBrief.nextMoves || []).map(move => `${move.count}: ${move.label}`),
+                tx('end_session.brief_counts', '{activities} activities · {submissions} submissions · {revisions} revisions', { activities: summary.insightBrief.activityCount || 0, submissions: summary.insightBrief.submissions || 0, revisions: summary.insightBrief.revisions || 0 }),
+                ...(summary.insightBrief.nextMoves || []).map(move => `${move.count}: ${move.label}`),
                 tx('end_session.brief_privacy', 'Privacy: aggregate participation evidence only; no raw answers or account IDs.'),
               ].join('\n'))} className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-800 hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-600">{briefCopied ? tx('end_session.brief_copied', '✓ Brief copied') : tx('end_session.copy_brief', 'Copy brief')}</button>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
-              <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{endSessionPreview.summary.insightBrief.activityCount || 0}</div><div className="text-xs font-bold text-slate-600">{tx('end_session.activities', 'Activities')}</div></div>
-              <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{endSessionPreview.summary.insightBrief.submissions || 0}</div><div className="text-xs font-bold text-slate-600">{tx('end_session.submissions', 'Submissions')}</div></div>
-              <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{endSessionPreview.summary.insightBrief.revisions || 0}</div><div className="text-xs font-bold text-slate-600">{tx('end_session.revisions', 'Revisions')}</div></div>
-              <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{(endSessionPreview.summary.insightBrief.followUpCodenames || []).length}</div><div className="text-xs font-bold text-slate-600">{tx('end_session.follow_up', 'Follow-up')}</div></div>
+              <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{summary.insightBrief.activityCount || 0}</div><div className="text-xs font-bold text-slate-600">{tx('end_session.activities', 'Activities')}</div></div>
+              <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{summary.insightBrief.submissions || 0}</div><div className="text-xs font-bold text-slate-600">{tx('end_session.submissions', 'Submissions')}</div></div>
+              <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{summary.insightBrief.revisions || 0}</div><div className="text-xs font-bold text-slate-600">{tx('end_session.revisions', 'Revisions')}</div></div>
+              <div className="rounded-lg bg-white p-2 text-center"><div className="text-lg font-black text-indigo-800">{(summary.insightBrief.followUpCodenames || []).length}</div><div className="text-xs font-bold text-slate-600">{tx('end_session.follow_up', 'Follow-up')}</div></div>
             </div>
-            {(endSessionPreview.summary.insightBrief.byKind || []).length > 0 && (
+            {(summary.insightBrief.byKind || []).length > 0 && (
               <div role="group" className="mt-3 flex flex-wrap gap-1.5" aria-label={tx('end_session.activity_participation_by_type', 'Activity participation by type')}>
-                {endSessionPreview.summary.insightBrief.byKind.map(item => <span key={item.kind} className="rounded-full border border-indigo-200 bg-white px-2 py-1 text-xs font-bold text-indigo-800">{tx('end_session.kind_' + item.kind, item.kind.replace(/_/g, ' ').replace(/^./, first => first.toUpperCase()))} · {item.submitted}/{item.invited}</span>)}
+                {summary.insightBrief.byKind.filter(item => item && typeof item === 'object').map((item, kIdx) => { const safeKind = String(item.kind || 'activity'); return <span key={safeKind + '-' + kIdx} className="rounded-full border border-indigo-200 bg-white px-2 py-1 text-xs font-bold text-indigo-800">{tx('end_session.kind_' + safeKind, safeKind.replace(/_/g, ' ').replace(/^./, first => first.toUpperCase()))} · {item.submitted}/{item.invited}</span>; })}
               </div>
             )}
-            {(endSessionPreview.summary.insightBrief.evidenceCohorts || []).length > 0 && (
+            {(summary.insightBrief.evidenceCohorts || []).length > 0 && (
               <div role="group" className="mt-3 rounded-xl border border-violet-200 bg-white p-3" aria-label={tx('end_session.evidence_cohorts_follow_up', 'Evidence cohorts and targeted follow-up')}>
                 <div className="text-xs font-black uppercase tracking-wide text-violet-900">{tx('end_session.evidence_cohorts', 'Evidence cohorts')}</div>
                 <p className="mt-1 text-xs text-slate-600">{tx('end_session.participation_signals_disclaimer', 'Participation signals are review suggestions, not automatic mastery or misconception labels.')}</p>
@@ -297,7 +311,7 @@ function EndSessionPreview({
                   </label>
                 )}
                 <div className="mt-2 space-y-2">
-                  {endSessionPreview.summary.insightBrief.evidenceCohorts.map(cohort => {
+                  {summary.insightBrief.evidenceCohorts.map(cohort => {
                     const connectedCount = resolveEndSessionCohortUids(cohort.codenames).length;
                     const supportCohort = cohort.intent === 'support';
                     const sending = endSessionPreview.followUpBusy === cohort.code;
@@ -316,16 +330,16 @@ function EndSessionPreview({
                             <button
                               type="button"
                               disabled={!!endSessionPreview.followUpBusy || endSessionPreview.busy}
-                              onClick={() => sendEndSessionEvidenceCohort(cohort)}
+                              onClick={() => { if (typeof sendEndSessionEvidenceCohort === 'function') sendEndSessionEvidenceCohort(cohort); }}
                               aria-label={sendActionLabel + '. ' + sendActionDescription}
-                              className="min-h-11 shrink-0 rounded-lg bg-violet-700 px-2.5 py-1.5 text-xs font-black text-white hover:bg-violet-800 disabled:opacity-50"
+                              className="min-h-11 shrink-0 rounded-lg bg-violet-700 px-2.5 py-1.5 text-xs font-black text-white hover:bg-violet-800 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
                             >
                               {sendActionLabel}
                             </button>
                           )}
                         </div>
                         <details className="mt-1">
-                          <summary tabIndex={0} className="cursor-pointer rounded text-xs font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">{tx('end_session.review_codenames', 'Review codenames')}</summary>
+                          <summary tabIndex={0} className="min-h-11 inline-flex items-center cursor-pointer rounded text-xs font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">{tx('end_session.review_codenames', 'Review codenames')}</summary>
                           <div className="mt-1 text-xs text-slate-600">{(cohort.codenames || []).join(', ')}</div>
                         </details>
                       </div>
@@ -335,26 +349,29 @@ function EndSessionPreview({
                 {endSessionPreview.followUpStatus && <p role="status" aria-live="polite" className="mt-2 rounded-lg bg-violet-50 p-2 text-xs font-bold text-violet-900">{endSessionPreview.followUpStatus}</p>}
               </div>
             )}
-            {(endSessionPreview.summary.insightBrief.groups || []).some(group => group.followUpCount > 0) && (
+            {(summary.insightBrief.groups || []).some(group => group.followUpCount > 0) && (
               <div className="mt-3">
                 <div className="text-xs font-black uppercase tracking-wide text-indigo-900">{tx('end_session.group_patterns', 'Group patterns')}</div>
                 <div className="mt-1 flex flex-wrap gap-1.5">
-                  {endSessionPreview.summary.insightBrief.groups.filter(group => group.followUpCount > 0).map(group => <span key={group.groupId} className="rounded-full bg-amber-100 px-2 py-1 text-xs font-bold text-amber-900">{tx('end_session.group_follow_up', '{name}: {count} follow-up', { name: rosterKey?.groups?.[group.groupId]?.name || group.groupId, count: group.followUpCount })}</span>)}
+                  {summary.insightBrief.groups.filter(group => group.followUpCount > 0).map(group => {
+                    const groupEntry = rosterKey && rosterKey.groups && Object.prototype.hasOwnProperty.call(rosterKey.groups, group.groupId) ? rosterKey.groups[group.groupId] : null;
+                    return <span key={group.groupId} className="rounded-full bg-amber-100 px-2 py-1 text-xs font-bold text-amber-900">{tx('end_session.group_follow_up', '{name}: {count} follow-up', { name: (groupEntry && groupEntry.name) || group.groupId, count: group.followUpCount })}</span>;
+                  })}
                 </div>
               </div>
             )}
-            {(endSessionPreview.summary.insightBrief.nextMoves || []).length > 0 && (
+            {(summary.insightBrief.nextMoves || []).length > 0 && (
               <div className="mt-3">
                 <div className="text-xs font-black uppercase tracking-wide text-indigo-900">{tx('end_session.suggested_next_moves', 'Suggested next moves')}</div>
                 <ul className="mt-1 space-y-1 text-xs text-slate-700">
-                  {endSessionPreview.summary.insightBrief.nextMoves.map(move => <li key={move.code} className="flex gap-2"><span className="font-black text-indigo-700">{move.count}</span><span>{move.label}</span></li>)}
+                  {summary.insightBrief.nextMoves.map(move => <li key={move.code} className="flex gap-2"><span className="font-black text-indigo-700">{move.count}</span><span>{move.label}</span></li>)}
                 </ul>
               </div>
             )}
-            {(endSessionPreview.summary.insightBrief.followUpCodenames || []).length > 0 && <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs font-semibold text-amber-900">{tx('end_session.connections_active_disclaimer', 'Connections remain active during this review. Use the cohort controls above or the companion view before ending; ending removes temporary student connections.')}</p>}
+            {(summary.insightBrief.followUpCodenames || []).length > 0 && <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs font-semibold text-amber-900">{tx('end_session.connections_active_disclaimer', 'Connections remain active during this review. Use the cohort controls above or the companion view before ending; ending removes temporary student connections.')}</p>}
           </section>
         )}
-        {(endSessionPreview.summary.unmatchedCodenames || []).length > 0 && <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 mb-4"><div className="text-xs font-black text-rose-800">{tx('end_session.unmatched_codenames_notice', 'Unmatched codenames are not added automatically')}</div><div className="text-xs text-rose-700 mt-1">{endSessionPreview.summary.unmatchedCodenames.join(', ')}</div></div>}
+        {(summary.unmatchedCodenames || []).length > 0 && <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 mb-4"><div className="text-xs font-black text-rose-800">{tx('end_session.unmatched_codenames_notice', 'Unmatched codenames are not added automatically')}</div><div className="text-xs text-rose-700 mt-1">{summary.unmatchedCodenames.join(', ')}</div></div>}
         {endSessionPreview.deliverySummary?.pending > 0 && (
           <div role="alert" className="rounded-xl border border-amber-300 bg-amber-50 p-3 mb-4">
             <div className="text-xs font-black text-amber-900">{tx('end_session.resource_delivery_status', 'Resource delivery status')}</div>
@@ -362,7 +379,7 @@ function EndSessionPreview({
             <p className="mt-1 text-xs text-amber-800">{tx('end_session.delivery_keep_open', 'The session can stay open while learners receive the resource. Ending removes temporary connections.')}</p>
           </div>
         )}
-        <details className="rounded-xl border border-slate-200 p-3 mb-4"><summary tabIndex={0} className="cursor-pointer rounded text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">{tx('end_session.what_will_be_saved', 'What will be saved?')}</summary><p className="text-xs text-slate-600 mt-2">{tx('end_session.saved_summary_details', 'Date, duration, matched codenames, groups, response counts, organizer status and bounded score totals, and whether a resource was opened. A codename-only teacher note is saved if provided. Raw answers, organizer card text, resource IDs, account IDs, mailbox tokens, chat, and real names are not otherwise saved.')}</p></details>
+        <details className="rounded-xl border border-slate-200 p-3 mb-4"><summary tabIndex={0} className="min-h-11 inline-flex items-center cursor-pointer rounded text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">{tx('end_session.what_will_be_saved', 'What will be saved?')}</summary><p className="text-xs text-slate-600 mt-2">{tx('end_session.saved_summary_details', 'Date, duration, matched codenames, groups, response counts, organizer status and bounded score totals, and whether a resource was opened. A codename-only teacher note is saved if provided. Raw answers, organizer card text, resource IDs, account IDs, mailbox tokens, chat, and real names are not otherwise saved.')}</p></details>
         <label className="block text-xs font-bold text-slate-700 mb-1" htmlFor="end-session-note">{tx('end_session.optional_codename_note', 'Optional codename-only teacher note')}</label>
         {typeof setEndSessionNote === 'function' && (
           <div data-end-session-note-chips="true" className="mb-2 flex flex-wrap gap-1.5" role="group" aria-label={tx('end_session.note_starters_aria', 'Quick codename-only note starters')}>
@@ -379,20 +396,20 @@ function EndSessionPreview({
             ))}
           </div>
         )}
-        <textarea id="end-session-note" aria-describedby="end-session-note-privacy" value={endSessionNote} maxLength={500} onChange={event => setEndSessionNote(event.target.value.slice(0, 500))} rows={3} placeholder={tx('end_session.teacher_note_placeholder', 'Example: Azure Fox may benefit from a fractions review')} className="w-full rounded-xl border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
+        <textarea id="end-session-note" aria-describedby="end-session-note-privacy" value={endSessionNote} maxLength={500} onChange={event => { if (typeof setEndSessionNote === 'function') setEndSessionNote(event.target.value.slice(0, 500)); }} rows={3} placeholder={tx('end_session.teacher_note_placeholder', 'Example: Azure Fox may benefit from a fractions review')} className="w-full rounded-xl border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
         <div className="flex items-start justify-between gap-3 text-xs text-slate-600"><span id="end-session-note-privacy">{tx('end_session.note_privacy_guidance', 'Use codenames only. This note is stored with the roster summary and included in roster backups.')}</span><span className="shrink-0">{endSessionNote.length}/500</span></div>
         {!rosterKey && <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">{tx('end_session.roster_required_notice', 'Create or import a class roster to save longitudinal summaries. You can still end this session normally.')}</p>}
         <div className="flex flex-col sm:flex-row gap-2 mt-5 justify-end">
-          <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} onClick={onKeepSessionOpen} className="min-h-11 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50">{tx('end_session.keep_open', 'Keep session open')}</button>
+          <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} onClick={() => { if (typeof onKeepSessionOpen === 'function') onKeepSessionOpen(); }} className="min-h-11 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50">{tx('end_session.keep_open', 'Keep session open')}</button>
           {endSessionPreview.deliveryGuard ? (
             <>
-              <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} aria-busy={!!endSessionPreview.busy} onClick={() => completeLiveSessionEnd(false, true)} className="min-h-11 px-4 py-2.5 rounded-xl border border-rose-300 bg-rose-100 text-rose-800 font-bold hover:bg-rose-200 focus-visible:ring-2 focus-visible:ring-rose-600 disabled:opacity-50">{endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.end_without_saving_anyway', 'End without saving anyway')}</button>
-              {rosterKey && <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} aria-busy={!!endSessionPreview.busy} onClick={() => completeLiveSessionEnd(true, true)} className="min-h-11 px-4 py-2.5 rounded-xl bg-amber-700 text-white font-bold shadow-lg hover:bg-amber-800 focus-visible:ring-2 focus-visible:ring-amber-600 disabled:opacity-50">{endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.save_summary_end_anyway', 'Save summary & end anyway')}</button>}
+              <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} aria-busy={!!endSessionPreview.busy} onClick={() => { if (typeof completeLiveSessionEnd === 'function') completeLiveSessionEnd(false, true); }} className="min-h-11 px-4 py-2.5 rounded-xl border border-rose-300 bg-rose-100 text-rose-800 font-bold hover:bg-rose-200 focus-visible:ring-2 focus-visible:ring-rose-600 disabled:opacity-50">{endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.end_without_saving_anyway', 'End without saving anyway')}</button>
+              {rosterKey && <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} aria-busy={!!endSessionPreview.busy} onClick={() => { if (typeof completeLiveSessionEnd === 'function') completeLiveSessionEnd(true, true); }} className="min-h-11 px-4 py-2.5 rounded-xl bg-amber-700 text-white font-bold shadow-lg hover:bg-amber-800 focus-visible:ring-2 focus-visible:ring-amber-600 disabled:opacity-50">{endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.save_summary_end_anyway', 'Save summary & end anyway')}</button>}
             </>
           ) : (
             <>
-              <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} aria-busy={!!endSessionPreview.busy} onClick={() => completeLiveSessionEnd(false)} className="min-h-11 px-4 py-2.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 font-bold hover:bg-rose-100 focus-visible:ring-2 focus-visible:ring-rose-600 disabled:opacity-50">{endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.end_without_saving', 'End without saving')}</button>
-              {rosterKey && <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} aria-busy={!!endSessionPreview.busy} onClick={() => completeLiveSessionEnd(true)} className="min-h-11 px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold shadow-lg hover:bg-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50">{endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.save_summary_end', 'Save summary & end')}</button>}
+              <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} aria-busy={!!endSessionPreview.busy} onClick={() => { if (typeof completeLiveSessionEnd === 'function') completeLiveSessionEnd(false); }} className="min-h-11 px-4 py-2.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 font-bold hover:bg-rose-100 focus-visible:ring-2 focus-visible:ring-rose-600 disabled:opacity-50">{endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.end_without_saving', 'End without saving')}</button>
+              {rosterKey && <button type="button" disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} aria-busy={!!endSessionPreview.busy} onClick={() => { if (typeof completeLiveSessionEnd === 'function') completeLiveSessionEnd(true); }} className="min-h-11 px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold shadow-lg hover:bg-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50">{endSessionPreview.busy ? tx('end_session.ending', 'Ending…') : tx('end_session.save_summary_end', 'Save summary & end')}</button>}
             </>
           )}
         </div>

@@ -74,7 +74,7 @@
       allowed.forEach(function (key) { allowedMap[key] = true; });
       Object.keys(value).forEach(function (key) {
         if (isBlockedKey(key)) fail(label + ' contains a blocked property name.');
-        if (!allowedMap[key]) fail(label + ' contains an unsupported property named "' + key + '".');
+        if (!allowedMap[key]) fail(label + ' contains an unsupported property named "' + String(key).replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 64) + '".');
       });
       required.forEach(function (key) {
         if (!hasOwn(value, key)) fail(label + ' is missing the required "' + key + '" property.');
@@ -104,6 +104,9 @@
     }
 
     function assertByteLimit(value) {
+      if (typeof value === 'string' && value.length > LIMITS.maxWorkspaceBytes) {
+        fail('The AlloSheet workspace exceeds the 8 MiB UTF-8 size limit.');
+      }
       if (byteLength(value) > LIMITS.maxWorkspaceBytes) {
         fail('The AlloSheet workspace exceeds the 8 MiB UTF-8 size limit.');
       }

@@ -47,6 +47,18 @@
     --transit-warn: #854d0e;
     --transit-danger: #9f1239;
   }
+  :root[data-theme="contrast"] {
+    --transit-bg: #000000;
+    --transit-panel: #000000;
+    --transit-panel-2: #0d0d0d;
+    --transit-line: #ffffff;
+    --transit-text: #ffffff;
+    --transit-muted: #f8fafc;
+    --transit-accent: #00ffff;
+    --transit-good: #00ff66;
+    --transit-warn: #ffff00;
+    --transit-danger: #ff6b81;
+  }
   * { box-sizing: border-box; }
   html, body { margin: 0; min-height: 100%; background: var(--transit-bg); color: var(--transit-text); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
   body { min-height: 100vh; }
@@ -178,7 +190,7 @@
   .transit-header > * { position: relative; z-index: 1; }
   .scene-panel { background: linear-gradient(145deg, var(--transit-panel), var(--transit-panel-2)); box-shadow: 0 18px 48px rgba(0,0,0,.24); }
   .scene-panel::before { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(135deg, rgba(255,255,255,.10), transparent 34%, transparent 70%, rgba(0,0,0,.14)); }
-  .scene-panel::after { content: '3D PRACTICE'; position: absolute; top: 12px; right: 12px; z-index: 3; padding: 5px 8px; border: 1px solid rgba(255,255,255,.28); border-radius: 999px; background: rgba(7,18,36,.58); color: var(--transit-muted); font-size: 9px; font-weight: 900; letter-spacing: .1em; pointer-events: none; }
+  .scene-panel::after { content: '3D PRACTICE'; position: absolute; top: 12px; right: 12px; z-index: 3; padding: 5px 8px; border: 1px solid rgba(255,255,255,.28); border-radius: 999px; background: rgba(7,18,36,.78); color: #e7f2ff; font-size: 9px; font-weight: 900; letter-spacing: .1em; pointer-events: none; }
   .scene-panel > a-scene { position: relative; z-index: 1; }
   .coach-panel { background: linear-gradient(160deg, var(--transit-panel), var(--transit-panel-2)); box-shadow: 0 18px 42px rgba(0,0,0,.20); }
   .progress-line { border: 1px solid var(--transit-line); border-radius: 11px; box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 8px 18px rgba(0,0,0,.10); }
@@ -193,6 +205,12 @@
   }
   .skip-link { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; z-index: 10000; }
   .skip-link:focus { position: fixed; left: 8px; top: 8px; width: auto; height: auto; padding: 10px 18px; background: #0f172a; color: #f8fafc; font: 700 14px system-ui, sans-serif; border-radius: 8px; outline: 3px solid #facc15; text-decoration: none; }
+  @media (forced-colors: active) {
+    :root, :root[data-theme] { --transit-bg: Canvas; --transit-panel: Canvas; --transit-panel-2: Canvas; --transit-line: CanvasText; --transit-text: CanvasText; --transit-muted: CanvasText; --transit-accent: LinkText; --transit-good: CanvasText; --transit-warn: CanvasText; --transit-danger: CanvasText; }
+    html, body, .transit-header, .transit-header p, .header-mark, .scene-panel, .scene-help, .coach-panel, .progress-line, .prompt, .feedback, .scenario-panel, .reflection-panel, .replay-panel, .scene-fallback, .skip-link:focus { background: Canvas !important; color: CanvasText !important; border-color: CanvasText !important; box-shadow: none !important; }
+    button, select, textarea, a { forced-color-adjust: auto; }
+    :focus-visible { outline: 3px solid Highlight !important; outline-offset: 2px !important; }
+  }
 </style>
 </head>
 <body>
@@ -373,6 +391,7 @@
         <button class="confidence-button" type="button" data-confidence="ready" aria-pressed="false">Ready to try</button>
       </div>
       <p id="confidenceFeedback" class="confidence-feedback" role="status" aria-live="polite">Optional: choose a readiness level. It does not change progress.</p>
+    </div>
     <div class="next-step-check" role="group" aria-labelledby="nextStepTitle">
       <p class="reflection-label" id="nextStepTitle">What would help you practice travel safety next?</p>
       <div class="next-step-actions">
@@ -382,7 +401,7 @@
       </div>
       <p id="nextStepFeedback" class="next-step-feedback" role="status" aria-live="polite">Optional: choose one small next step.</p>
     </div>
-    </div>
+
     <div class="reflection-actions">
       <button class="reflection-button" id="saveReflectionButton" type="button">Save reflection</button>
       <span id="reflectionCount" class="reflection-count" aria-live="polite">0 / 180</span>
@@ -714,7 +733,7 @@
         || host === 'alloflow.org' || host.endsWith('.alloflow.org')
         || host === 'alloflow.app' || host.endsWith('.alloflow.app')
         || host === 'alloflow.com' || host.endsWith('.alloflow.com')
-        || host.endsWith('.usercontent.goog')
+        || host === 'scf.usercontent.goog' || host.endsWith('.scf.usercontent.goog')
         || host.endsWith('.googleusercontent.com')
         || host.endsWith('.idx.google.com')
         || host.endsWith('.idx.google');
@@ -724,6 +743,15 @@
   }
   function resolveOpenerTargetOrigin() {
     if (verifiedOpenerOrigin) return verifiedOpenerOrigin;
+    var declared = params.get('parentOrigin') || params.get('host') || '';
+    if (declared) {
+      try {
+        var declaredOrigin = new URL(declared).origin;
+        if (declaredOrigin && declaredOrigin !== 'null' && isTrustedOpenerOrigin(declaredOrigin)) {
+          return declaredOrigin;
+        }
+      } catch (_) {}
+    }
     if (typeof document !== 'undefined' && document.referrer) {
       try {
         var refOrigin = new URL(document.referrer).origin;
@@ -732,6 +760,12 @@
         }
       } catch (_) { return ''; }
     }
+    try {
+      var selfOrigin = window.location && window.location.origin;
+      if (selfOrigin && selfOrigin !== 'null' && /^https?:\/\//i.test(selfOrigin)) {
+        return selfOrigin;
+      }
+    } catch (_) {}
     return '';
   }
   function postToOpener(payload) {
@@ -745,7 +779,7 @@
   }
   function say(message) {
     srStatus.textContent = '';
-    window.setTimeout(function () { srStatus.textContent = message; }, 20);
+    window.setTimeout(function () { srStatus.textContent = adaptRoleCopy(message); }, 20);
   }
   scenarioHint.addEventListener('click', function () {
     if (!state.hintShown) state.scenarioHintsUsed += 1;
@@ -818,6 +852,7 @@
         if (done) label.setAttribute('value', 'DONE\\n' + task.label);
         else if (focused && state.mode === 'guided') label.setAttribute('value', 'NEXT\\n' + task.label);
         else if (state.mode === 'challenge') label.setAttribute('value', 'Travel item');
+        else label.setAttribute('value', task.label);
       }
     });
     var sceneNote = document.getElementById('sceneNote');
@@ -977,20 +1012,20 @@
   window.addEventListener('message', function (event) {
     var expectedHost = (window.opener && !window.opener.closed) ? window.opener : ((window.parent && window.parent !== window) ? window.parent : null);
     if (!expectedHost || event.source !== expectedHost) return;
-    if (event.origin && event.origin !== 'null') {
-      if (!isTrustedOpenerOrigin(event.origin)) return;
-      verifiedOpenerOrigin = event.origin;
-    }
+    if (!event.origin || event.origin === 'null' || !isTrustedOpenerOrigin(event.origin)) return;
+    if (verifiedOpenerOrigin && event.origin !== verifiedOpenerOrigin) return;
+    if (!verifiedOpenerOrigin) verifiedOpenerOrigin = event.origin;
     var data = event && event.data;
     if (!data || typeof data !== 'object') return;
     if (data.type === 'alloflow-theme-change') setTheme(data.theme);
   });
   window.lifeSkillsTransit3D = { activate: activateTask, focus: focusTask };
   function showSceneFallback() { if (sceneFallback) sceneFallback.style.display = 'block'; }
+  function onSceneReady() { sceneFallback.style.display = 'none'; try { if (scene && scene.canvas) scene.canvas.setAttribute('tabindex', '-1'); } catch (_) {} }
   if (!window.AFRAME || !scene) showSceneFallback();
-  else if (scene.hasLoaded) sceneFallback.style.display = 'none';
+  else if (scene.hasLoaded) onSceneReady();
   else {
-    scene.addEventListener('loaded', function () { sceneFallback.style.display = 'none'; }, { once: true });
+    scene.addEventListener('loaded', onSceneReady, { once: true });
     window.setTimeout(function () { if (!scene.canvas) showSceneFallback(); }, 1800);
   }
   render();

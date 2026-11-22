@@ -97,6 +97,106 @@ window.StemLab = window.StemLab || {
     document.head.appendChild(st);
   })();
 
+  // Cinema-grade coin/bill specular glint & landing impact ring polish (zero DOM bloat; respects reduced-motion & high-contrast)
+  (function() {
+    if (typeof document === 'undefined' || !document.head || document.getElementById('allo-money-motion-polish-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-money-motion-polish-css';
+    st.textContent = [
+      '@keyframes allo-money-coin-land{0%{transform:translateY(-6px) scale(1.09);box-shadow:0 0 0 0 rgba(251,191,36,0.68),0 10px 18px rgba(15,23,42,0.28)}55%{transform:translateY(1px) scale(0.96);box-shadow:0 0 0 9px rgba(251,191,36,0),0 3px 7px rgba(15,23,42,0.24)}100%{transform:translateY(0) scale(1);box-shadow:0 0 0 0 rgba(251,191,36,0),0 4px 9px rgba(15,23,42,0.22)}}',
+      '@keyframes allo-money-beacon-pulse{0%,100%{opacity:0.42;transform:scale(1)}50%{opacity:0.86;transform:scale(1.22)}}',
+      '[data-stem-tool-shell="moneyMath"] .allo-money-placed-piece{animation:allo-money-coin-land 360ms cubic-bezier(0.22,1,0.36,1) both}',
+      '[data-stem-tool-shell="moneyMath"] .allo-money-art{transition:box-shadow 180ms ease,transform 180ms ease}',
+      '[data-stem-tool-shell="moneyMath"] button:hover .allo-money-art{box-shadow:0 7px 15px rgba(15,23,42,0.30),0 2px 4px rgba(15,23,42,0.18),inset 0 1px 1.5px rgba(255,255,255,0.88),inset 0 -1px 2px rgba(15,23,42,0.26)!important}',
+      '[data-stem-tool-shell="moneyMath"] .allo-money-beacon-halo{transform-box:fill-box;transform-origin:center;animation:allo-money-beacon-pulse 2.6s ease-in-out infinite}',
+      '.theme-contrast [data-stem-tool-shell="moneyMath"] .allo-money-placed-piece,.theme-contrast [data-stem-tool-shell="moneyMath"] .allo-money-beacon-halo{animation:none!important}',
+      '.theme-contrast [data-stem-tool-shell="moneyMath"] button:hover .allo-money-art{box-shadow:none!important}',
+      '@media (prefers-reduced-motion: reduce){[data-stem-tool-shell="moneyMath"] .allo-money-placed-piece,[data-stem-tool-shell="moneyMath"] .allo-money-beacon-halo{animation:none!important}}'
+    ].join('');
+    document.head.appendChild(st);
+  })();
+
+  // ── Zero-GC Canvas Primitives & Pre-Allocated Particle Pools ──
+  function _moneyIsHighContrast() {
+    if (typeof document === 'undefined') return false;
+    var root = document.documentElement;
+    if (root && root.classList && root.classList.contains('theme-contrast')) return true;
+    return !!(document.body && document.body.classList && document.body.classList.contains('theme-contrast'));
+  }
+  function _moneyPrefersReducedMotion() {
+    try { return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; }
+  }
+  function _moneySafeEllipse(c, x, y, rx, ry, rot, sAng, eAng) {
+    if (!c) return;
+    if (typeof c.ellipse === 'function') {
+      c.ellipse(x, y, Math.max(0.1, rx), Math.max(0.1, ry), rot || 0, sAng == null ? 0 : sAng, eAng == null ? Math.PI * 2 : eAng);
+      return;
+    }
+    var r = Math.max(0.1, (rx + ry) * 0.5);
+    c.arc(x, y, r, sAng == null ? 0 : sAng, eAng == null ? Math.PI * 2 : eAng);
+  }
+  function _moneyRoundRectPath(c, x, y, w, h, rad) {
+    var r = Math.max(0, Math.min(rad || 0, w * 0.5, h * 0.5));
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.lineTo(x + w - r, y);
+    if (typeof c.arcTo === 'function') {
+      c.arcTo(x + w, y, x + w, y + r, r);
+      c.lineTo(x + w, y + h - r);
+      c.arcTo(x + w, y + h, x + w - r, y + h, r);
+      c.lineTo(x + r, y + h);
+      c.arcTo(x, y + h, x, y + h - r, r);
+      c.lineTo(x, y + r);
+      c.arcTo(x, y, x + r, y, r);
+    } else {
+      c.lineTo(x + w, y + h);
+      c.lineTo(x, y + h);
+      c.lineTo(x, y);
+    }
+    c.closePath();
+  }
+
+  // Pre-allocated typed-array buffers for Cashier Rush live canvas (zero per-frame GC)
+  var _CR_MOTE_COUNT = 14;
+  var _crMoteXNorm = new Float32Array(_CR_MOTE_COUNT);
+  var _crMoteYNorm = new Float32Array(_CR_MOTE_COUNT);
+  var _crMoteSpeed = new Float32Array(_CR_MOTE_COUNT);
+  var _crMoteSize = new Float32Array(_CR_MOTE_COUNT);
+  var _crMotePhase = new Float32Array(_CR_MOTE_COUNT);
+  var _crShelfPalette = ['#7c2d12', '#164e63', '#365314', '#713f12'];
+  (function initCrPools() {
+    for (var i = 0; i < _CR_MOTE_COUNT; i++) {
+      _crMoteXNorm[i] = ((i * 37 + 13) % 100) / 100;
+      _crMoteYNorm[i] = ((i * 53 + 7) % 100) / 100;
+      _crMoteSpeed[i] = 0.035 + ((i * 19) % 10) * 0.004;
+      _crMoteSize[i] = 0.9 + ((i * 7) % 5) * 0.28;
+      _crMotePhase[i] = i * 0.78;
+    }
+  })();
+
+  // Pre-allocated typed-array buffers for Dollar Note Lab live canvas (zero per-frame GC)
+  var _DB_FIBER_COUNT = 9;
+  var _dbFiberX = new Float32Array([0.08, 0.17, 0.29, 0.38, 0.52, 0.61, 0.74, 0.83, 0.91]);
+  var _dbFiberY = new Float32Array([0.28, 0.73, 0.19, 0.82, 0.25, 0.70, 0.17, 0.61, 0.34]);
+  var _dbFiberIsRed = new Uint8Array([1, 0, 1, 0, 0, 1, 0, 1, 0]);
+  var _dbFrontAnchorX = new Float32Array([0.50, 0.40, 0.17, 0.20, 0.26, 0.74]);
+  var _dbFrontAnchorY = new Float32Array([0.00, 0.88, 0.73, 0.30, 0.55, 0.55]); // index 0 uses fixed y+18
+  var _dbBackAnchorX = new Float32Array([0.27, 0.27, 0.27, 0.73, 0.73, 0.73]);
+  var _dbBackAnchorY = new Float32Array([0.61, 0.33, 0.77, 0.53, 0.72, 0.35]);
+  var _dbCornerX = new Float32Array(4);
+  var _dbCornerY = new Float32Array(4);
+  var _DB_SPARK_COUNT = 10;
+  var _dbSparkAng = new Float32Array(_DB_SPARK_COUNT);
+  var _dbSparkRad = new Float32Array(_DB_SPARK_COUNT);
+  var _dbSparkSpd = new Float32Array(_DB_SPARK_COUNT);
+  (function initDbPools() {
+    for (var i = 0; i < _DB_SPARK_COUNT; i++) {
+      _dbSparkAng[i] = (i / _DB_SPARK_COUNT) * Math.PI * 2;
+      _dbSparkRad[i] = 13 + (i % 3) * 4.5;
+      _dbSparkSpd[i] = (i % 2 === 0 ? 1 : -1) * (0.65 + (i % 4) * 0.22);
+    }
+  })();
+
 
   // ── Audio (auto-injected) ──
   var _moneyAC = null;
@@ -1330,364 +1430,512 @@ window.StemLab = window.StemLab || {
               return drawGeneric;
             };
 
-            // Draw the entire cashier scene onto a canvas. Called once per React render.
+            // Draw the entire cashier scene onto a canvas with zero-GC live motion loop.
             var drawCashierScene = function (canvas) {
               if (!canvas) return;
-              var W = canvas.offsetWidth || 600;
-              var H = 280;
-              var _tw = W * 2, _th = H * 2;
-              if (canvas.width !== _tw) canvas.width = _tw;
-              if (canvas.height !== _th) canvas.height = _th;
-              var c = canvas.getContext('2d');
+              var prevFbOk = !!(canvas._crState && canvas._crState.fb && canvas._crState.fb.ok);
+              var nowMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+              canvas._crState = {
+                customer: crCustomer,
+                patiencePct: crPatiencePct,
+                wave: crWave,
+                fb: crFb,
+                fmt: fmt,
+                thankYouText: __alloT('stem.money.thank_you', 'Thank you!'),
+                totalPleaseText: __alloT('stem.money.total_please', 'Total, please!')
+              };
+              if (crFb && crFb.ok && !prevFbOk) {
+                canvas._crBurstAt = nowMs;
+              }
+              if (!canvas._crCtx) {
+                canvas._crCtx = canvas.getContext ? canvas.getContext('2d') : null;
+              }
+              var c = canvas._crCtx;
               if (!c) return;
-              // setTransform (absolute) not scale (relative): the realloc that
-              // used to reset the transform is conditional now, so a relative
-              // scale() would COMPOUND on every re-render.
-              c.setTransform(2, 0, 0, 2, 0, 0);
-              c.clearRect(0, 0, W, H); // 2x backing store — the scene was rendering blurry at 1x
 
-              // Power-outage backdrop — deep moody store interior with warm overhead pool
-              var hasLinearGrad = typeof c.createLinearGradient === 'function';
-              var hasRadialGrad = typeof c.createRadialGradient === 'function';
-              if (hasLinearGrad) {
-                var bgGrad = c.createLinearGradient(0, 0, 0, H);
-                bgGrad.addColorStop(0, '#090f1d');
-                bgGrad.addColorStop(0.55, '#111c30');
-                bgGrad.addColorStop(1, '#1e293b');
-                c.fillStyle = bgGrad;
-              } else {
-                c.fillStyle = '#0f172a';
-              }
-              c.fillRect(0, 0, W, H);
+              var paintCashierFrame = function (ts) {
+                var st = canvas._crState;
+                if (!st) return;
+                var W = canvas.offsetWidth || 600;
+                var H = 280;
+                var _tw = W * 2, _th = H * 2;
+                if (canvas.width !== _tw) canvas.width = _tw;
+                if (canvas.height !== _th) canvas.height = _th;
+                if (typeof c.setTransform === 'function') c.setTransform(2, 0, 0, 2, 0, 0);
+                c.clearRect(0, 0, W, H);
 
-              // Subtle tiled store backwall texture
-              c.strokeStyle = 'rgba(148,163,184,0.06)'; c.lineWidth = 1;
-              for (var tw = 24; tw < W; tw += 32) {
-                c.beginPath(); c.moveTo(tw, 0); c.lineTo(tw, H - 50); c.stroke();
-              }
+                var isHC = _moneyIsHighContrast();
+                var reduced = _moneyPrefersReducedMotion();
+                var tSec = reduced ? 0 : ((ts - (canvas._crStart || ts)) * 0.001);
+                var hasLinearGrad = !isHC && typeof c.createLinearGradient === 'function';
+                var hasRadialGrad = !isHC && typeof c.createRadialGradient === 'function';
+                var sCustomer = st.customer;
+                var sPatience = st.patiencePct;
+                var sWave = st.wave;
+                var sFb = st.fb;
+                var sFmt = st.fmt;
 
-              // Dim grocery shelves establish the checkout setting without competing with the items.
-              for (var shelfRow = 0; shelfRow < 2; shelfRow++) {
-                var shelfY = 48 + shelfRow * 46;
-                c.fillStyle = 'rgba(30,41,59,0.82)';
-                c.fillRect(12, shelfY, W * 0.48, 30);
-                c.fillStyle = 'rgba(148,163,184,0.18)';
-                c.fillRect(12, shelfY + 27, W * 0.48, 3);
-                c.strokeStyle = 'rgba(148,163,184,0.28)'; c.lineWidth = 1;
-                c.strokeRect(12, shelfY, W * 0.48, 30);
-                for (var shelfItem = 0; shelfItem < 9; shelfItem++) {
-                  var shelfX = 18 + shelfItem * ((W * 0.46) / 9);
-                  var shelfColors = ['#7c2d12', '#164e63', '#365314', '#713f12'];
-                  var shW = Math.max(10, W * 0.026);
-                  var shY = shelfY + 7 + (shelfItem % 2) * 3;
-                  var shH = 20 - (shelfItem % 2) * 3;
-                  c.fillStyle = shelfColors[(shelfItem + shelfRow) % shelfColors.length];
-                  c.fillRect(shelfX, shY, shW, shH);
-                  c.fillStyle = 'rgba(255,255,255,0.12)';
-                  c.fillRect(shelfX + 1, shY + 1, shW * 0.35, shH - 2);
+                // Power-outage backdrop — deep moody store interior with warm overhead pool
+                if (isHC) {
+                  c.fillStyle = '#000000';
+                } else if (hasLinearGrad) {
+                  var bgGrad = c.createLinearGradient(0, 0, 0, H);
+                  bgGrad.addColorStop(0, '#090f1d');
+                  bgGrad.addColorStop(0.55, '#111c30');
+                  bgGrad.addColorStop(1, '#1e293b');
+                  c.fillStyle = bgGrad;
+                } else {
+                  c.fillStyle = '#0f172a';
                 }
-              }
-
-              // Hanging brass-framed lane marker remains readable in the power-outage scene.
-              var laneSignX = Math.min(W - 122, Math.max(W * 0.5, 160));
-              c.strokeStyle = 'rgba(203,213,225,0.45)'; c.lineWidth = 1.5;
-              c.beginPath(); c.moveTo(laneSignX + 14, 0); c.lineTo(laneSignX + 14, 8); c.moveTo(laneSignX + 98, 0); c.lineTo(laneSignX + 98, 8); c.stroke();
-              c.fillStyle = hasLinearGrad ? (function() { var sg = c.createLinearGradient(laneSignX, 8, laneSignX, 42); sg.addColorStop(0, '#fde68a'); sg.addColorStop(0.5, '#fbbf24'); sg.addColorStop(1, '#d97706'); return sg; })() : '#fbbf24';
-              c.fillRect(laneSignX, 8, 112, 34);
-              c.strokeStyle = '#fef3c7'; c.lineWidth = 1.2;
-              c.strokeRect(laneSignX + 1, 9, 110, 32);
-              c.fillStyle = '#111827';
-              c.font = 'bold 12px sans-serif';
-              c.textAlign = 'center'; c.textBaseline = 'middle';
-              c.fillText('CHECKOUT 3', laneSignX + 56, 20);
-              c.font = 'bold 8px sans-serif';
-              c.fillText('MANUAL TOTALS', laneSignX + 56, 33);
-
-              // Candle glow centered on the register (right side). Patience drives the radius.
-              var registerX = W < 420 ? W * 0.68 : W * 0.78, registerY = H * 0.55;
-              var glowRadius = (46 + (crPatiencePct / 100) * 130);
-              if (hasRadialGrad) {
-                var glow = c.createRadialGradient(registerX, registerY - 12, 4, registerX, registerY, glowRadius);
-                glow.addColorStop(0, 'rgba(254, 240, 138, 0.65)');
-                glow.addColorStop(0.35, 'rgba(251, 191, 36, 0.28)');
-                glow.addColorStop(0.7, 'rgba(245, 158, 11, 0.08)');
-                glow.addColorStop(1, 'rgba(252, 211, 77, 0)');
-                c.fillStyle = glow;
                 c.fillRect(0, 0, W, H);
-              }
 
-              // Counter (warm polished mahogany shop-counter mat at bottom)
-              if (hasLinearGrad) {
-                var counterGrad = c.createLinearGradient(0, H - 52, 0, H);
-                counterGrad.addColorStop(0, '#9a4a1a');
-                counterGrad.addColorStop(0.14, '#78350f');
-                counterGrad.addColorStop(0.65, '#592308');
-                counterGrad.addColorStop(1, '#3b1503');
-                c.fillStyle = counterGrad;
-              } else {
-                c.fillStyle = '#78350f';
-              }
-              c.fillRect(0, H - 50, W, 50);
-              // Polished wood top bevel sheen
-              c.fillStyle = 'rgba(254, 215, 170, 0.28)';
-              c.fillRect(0, H - 50, W, 2.5);
-              // Wood grain lines
-              c.strokeStyle = 'rgba(0,0,0,0.22)'; c.lineWidth = 0.7;
-              for (var wg = 0; wg < 5; wg++) {
-                c.beginPath();
-                c.moveTo(0, H - 44 + wg * 8.5);
-                c.lineTo(W, H - 44 + wg * 8.5 + (wg % 2 === 0 ? 2 : -2));
-                c.stroke();
-              }
+                // Subtle tiled store backwall texture
+                if (!isHC) {
+                  c.strokeStyle = 'rgba(148,163,184,0.06)'; c.lineWidth = 1;
+                  for (var tw = 24; tw < W; tw += 32) {
+                    c.beginPath(); c.moveTo(tw, 0); c.lineTo(tw, H - 50); c.stroke();
+                  }
+                }
 
-              // Conveyor belt, rollers, and direction chevrons create a readable scan path.
-              var beltX = 10, beltY = H - 76, beltRight = registerX - 62, beltH = 28;
-              // Grounded contact shadow under conveyor
-              c.fillStyle = 'rgba(0,0,0,0.34)';
-              c.fillRect(beltX + 2, beltY + beltH, beltRight - beltX, 4);
-              if (hasLinearGrad) {
-                var beltGrad = c.createLinearGradient(0, beltY, 0, beltY + beltH);
-                beltGrad.addColorStop(0, '#64748b');
-                beltGrad.addColorStop(0.2, '#475569');
-                beltGrad.addColorStop(0.55, '#1e293b');
-                beltGrad.addColorStop(1, '#0f172a');
-                c.fillStyle = beltGrad;
-              } else {
-                c.fillStyle = '#334155';
-              }
-              c.fillRect(beltX, beltY, beltRight - beltX, beltH);
-              // Subtle top metallic lip on conveyor frame
-              c.fillStyle = 'rgba(226,232,240,0.32)';
-              c.fillRect(beltX, beltY, beltRight - beltX, 2);
-              c.strokeStyle = '#94a3b8'; c.lineWidth = 1.5;
-              c.strokeRect(beltX, beltY, beltRight - beltX, beltH);
-              c.fillStyle = 'rgba(148,163,184,0.45)';
-              for (var rollerX = beltX + 14; rollerX < beltRight - 6; rollerX += 28) {
-                c.beginPath(); c.arc(rollerX, beltY + beltH / 2, 5, 0, Math.PI * 2); c.fill();
-                c.fillStyle = 'rgba(255,255,255,0.28)';
-                c.beginPath(); c.arc(rollerX - 1.5, beltY + beltH / 2 - 1.5, 1.8, 0, Math.PI * 2); c.fill();
-                c.fillStyle = 'rgba(148,163,184,0.45)';
-              }
-              c.strokeStyle = 'rgba(251,191,36,0.68)'; c.lineWidth = 2;
-              for (var chevronX = beltX + 24; chevronX < beltRight - 16; chevronX += 54) {
-                c.beginPath();
-                c.moveTo(chevronX, beltY + 7); c.lineTo(chevronX + 10, beltY + 14); c.lineTo(chevronX, beltY + 21);
-                c.stroke();
-              }
+                // Dim grocery shelves establish the checkout setting without competing with the items.
+                for (var shelfRow = 0; shelfRow < 2; shelfRow++) {
+                  var shelfY = 48 + shelfRow * 46;
+                  c.fillStyle = isHC ? '#000000' : 'rgba(30,41,59,0.82)';
+                  c.fillRect(12, shelfY, W * 0.48, 30);
+                  if (!isHC) {
+                    c.fillStyle = 'rgba(148,163,184,0.18)';
+                    c.fillRect(12, shelfY + 27, W * 0.48, 3);
+                  }
+                  c.strokeStyle = isHC ? '#ffffff' : 'rgba(148,163,184,0.28)'; c.lineWidth = 1;
+                  c.strokeRect(12, shelfY, W * 0.48, 30);
+                  for (var shelfItem = 0; shelfItem < 9; shelfItem++) {
+                    var shelfX = 18 + shelfItem * ((W * 0.46) / 9);
+                    var shW = Math.max(10, W * 0.026);
+                    var shY = shelfY + 7 + (shelfItem % 2) * 3;
+                    var shH = 20 - (shelfItem % 2) * 3;
+                    c.fillStyle = isHC ? '#1f2937' : _crShelfPalette[(shelfItem + shelfRow) % _crShelfPalette.length];
+                    c.fillRect(shelfX, shY, shW, shH);
+                    if (!isHC) {
+                      c.fillStyle = 'rgba(255,255,255,0.12)';
+                      c.fillRect(shelfX + 1, shY + 1, shW * 0.35, shH - 2);
+                    }
+                  }
+                }
 
-              // Items on counter — line them up left-of-register with grounded shadows
-              var items = (crCustomer && crCustomer.items) || [];
-              var itemSlotW = 54;
-              var itemSpacing = Math.min(itemSlotW, (beltRight - 28) / Math.max(1, items.length));
-              var startX = 18;
-              items.forEach(function (it, idx) {
-                var ix = startX + idx * itemSpacing;
-                var iy = H - 50 - 56;
-                var drawW = Math.max(18, Math.min(itemSlotW * 0.82, itemSpacing - 4));
-                // Grounded contact shadow on conveyor belt
-                c.fillStyle = 'rgba(2,6,23,0.38)';
-                c.beginPath();
-                if (typeof c.ellipse === 'function') c.ellipse(ix + drawW / 2, iy + 54, drawW * 0.46, 4.5, 0, 0, Math.PI * 2);
-                else c.arc(ix + drawW / 2, iy + 54, drawW * 0.3, 0, Math.PI * 2);
-                c.fill();
-                var drawer = pickItemDrawer(it.name);
-                drawer(c, ix, iy, drawW, 56, it.name);
-
-                // Numbered scan-order badge stays visible even when item shapes are similar.
-                c.fillStyle = '#fbbf24';
-                c.beginPath(); c.arc(ix + 5, iy + 5, 8, 0, Math.PI * 2); c.fill();
-                c.strokeStyle = '#fef3c7'; c.lineWidth = 1; c.stroke();
+                // Hanging brass-framed lane marker remains readable in the power-outage scene.
+                var laneSignX = Math.min(W - 122, Math.max(W * 0.5, 160));
+                c.strokeStyle = isHC ? '#ffffff' : 'rgba(203,213,225,0.45)'; c.lineWidth = 1.5;
+                c.beginPath(); c.moveTo(laneSignX + 14, 0); c.lineTo(laneSignX + 14, 8); c.moveTo(laneSignX + 98, 0); c.lineTo(laneSignX + 98, 8); c.stroke();
+                if (hasLinearGrad) {
+                  var sg = c.createLinearGradient(laneSignX, 8, laneSignX, 42);
+                  sg.addColorStop(0, '#fde68a'); sg.addColorStop(0.5, '#fbbf24'); sg.addColorStop(1, '#d97706');
+                  c.fillStyle = sg;
+                } else {
+                  c.fillStyle = isHC ? '#ffff00' : '#fbbf24';
+                }
+                c.fillRect(laneSignX, 8, 112, 34);
+                c.strokeStyle = isHC ? '#ffffff' : '#fef3c7'; c.lineWidth = 1.2;
+                c.strokeRect(laneSignX + 1, 9, 110, 32);
                 c.fillStyle = '#111827';
-                c.font = 'bold 9px sans-serif';
+                c.font = 'bold 12px sans-serif';
                 c.textAlign = 'center'; c.textBaseline = 'middle';
-                c.fillText(String(idx + 1), ix + 5, iy + 5);
+                c.fillText('CHECKOUT 3', laneSignX + 56, 20);
+                c.font = 'bold 8px sans-serif';
+                c.fillText('MANUAL TOTALS', laneSignX + 56, 33);
 
-                // A compact price ticket exposes the multiplication students must perform.
-                var priceTag = it.weight
-                  ? it.weight + 'lb \u00D7 ' + fmt(it.price)
-                  : (it.qty || 1) + ' \u00D7 ' + fmt(it.price);
-                var priceTicketW = Math.max(18, itemSpacing - 4);
-                c.fillStyle = 'rgba(15,23,42,0.28)';
-                c.fillRect(ix + 1.5, H - 43.5, priceTicketW, 16);
-                c.fillStyle = '#fefce8';
-                c.fillRect(ix, H - 45, priceTicketW, 16);
-                c.strokeStyle = '#ca8a04'; c.lineWidth = 1;
-                c.strokeRect(ix, H - 45, priceTicketW, 16);
-                c.fillStyle = '#713f12';
-                c.font = 'bold 8px monospace';
-                c.textAlign = 'center'; c.textBaseline = 'middle';
-                c.fillText(priceTag, ix + priceTicketW / 2, H - 37, priceTicketW - 4);
-              });
-
-              // Scanner glass and luminous scan beam mark the handoff into the register.
-              var scannerX = registerX - 98, scannerY = H - 68;
-              c.fillStyle = '#111827'; c.fillRect(scannerX, scannerY, 38, 20);
-              c.fillStyle = '#1e3a5f'; c.fillRect(scannerX + 4, scannerY + 4, 30, 12);
-              c.strokeStyle = '#60a5fa'; c.lineWidth = 1; c.strokeRect(scannerX + 4, scannerY + 4, 30, 12);
-              c.save();
-              var beamColor = crFb && crFb.ok ? '#4ade80' : '#ef4444';
-              c.shadowColor = beamColor; c.shadowBlur = 8;
-              c.strokeStyle = beamColor; c.lineWidth = 2.2;
-              c.beginPath(); c.moveTo(scannerX + 7, scannerY + 10); c.lineTo(scannerX + 31, scannerY + 10); c.stroke();
-              c.restore();
-
-              // Cash register — brushed metallic chassis with beveled bezel and glowing candle
-              var rW = 100, rH = 80;
-              var rx = registerX - rW/2, ry = registerY - rH/2;
-              // Grounded shadow beneath cash register
-              c.fillStyle = 'rgba(2,6,23,0.45)';
-              c.fillRect(rx + 4, ry + rH - 2, rW, 8);
-              // Metallic brushed body
-              if (hasLinearGrad) {
-                var regBody = c.createLinearGradient(rx, ry, rx + rW, ry + rH);
-                regBody.addColorStop(0, '#525f73');
-                regBody.addColorStop(0.35, '#374151');
-                regBody.addColorStop(0.75, '#1f2937');
-                regBody.addColorStop(1, '#111827');
-                c.fillStyle = regBody;
-              } else {
-                c.fillStyle = '#374151';
-              }
-              c.fillRect(rx, ry, rW, rH);
-              // Brushed steel top edge highlight
-              c.fillStyle = 'rgba(226,232,240,0.34)';
-              c.fillRect(rx + 1, ry + 1, rW - 2, 2.5);
-              c.strokeStyle = '#111827'; c.lineWidth = 2; c.strokeRect(rx, ry, rW, rH);
-              // LCD screen (dim — power outage) with glossy glass highlight
-              c.fillStyle = '#0f172a'; c.fillRect(rx + 7, ry + 7, rW - 14, 26);
-              c.fillStyle = '#1e1b4b'; c.fillRect(rx + 8, ry + 8, rW - 16, 24);
-              c.fillStyle = 'rgba(255,255,255,0.08)'; c.fillRect(rx + 8, ry + 8, rW - 16, 8);
-              c.strokeStyle = '#4338ca'; c.lineWidth = 1; c.strokeRect(rx + 8, ry + 8, rW - 16, 24);
-              // LCD text — show "OFFLINE" since the power is out
-              c.save();
-              c.shadowColor = 'rgba(252, 211, 77, 0.9)'; c.shadowBlur = 9;
-              c.fillStyle = 'rgba(252, 211, 77, 0.78)';
-              c.font = 'bold 12px monospace';
-              c.textAlign = 'center'; c.textBaseline = 'middle';
-              c.fillText('OFFLINE', rx + rW/2, ry + 20);
-              c.restore();
-              // Tactile sculpted keypad pattern
-              for (var kr = 0; kr < 3; kr++) for (var kc = 0; kc < 3; kc++) {
-                var kx = rx + 12 + kc * 26, ky = ry + 40 + kr * 12;
-                c.fillStyle = '#4b5563';
-                c.fillRect(kx, ky, 22, 8);
-                c.fillStyle = 'rgba(255,255,255,0.22)';
-                c.fillRect(kx, ky, 22, 1.5);
-                c.fillStyle = 'rgba(0,0,0,0.35)';
-                c.fillRect(kx, ky + 7, 22, 1);
-              }
-              // Candle on top of register with warm concentric flame halo
-              c.fillStyle = '#fef3c7';
-              c.fillRect(rx + rW/2 - 4, ry - 16, 8, 14);
-              c.strokeStyle = '#92400e'; c.strokeRect(rx + rW/2 - 4, ry - 16, 8, 14);
-              if (hasRadialGrad && crPatiencePct > 0) {
-                var flameHalo = c.createRadialGradient(rx + rW/2, ry - 22, 1, rx + rW/2, ry - 22, 20);
-                flameHalo.addColorStop(0, 'rgba(254, 243, 199, 0.75)');
-                flameHalo.addColorStop(0.45, 'rgba(251, 191, 36, 0.35)');
-                flameHalo.addColorStop(1, 'rgba(251, 191, 36, 0)');
-                c.fillStyle = flameHalo;
-                c.beginPath(); c.arc(rx + rW/2, ry - 22, 20, 0, Math.PI * 2); c.fill();
-              }
-              // Flame (animated by CSS overlay below; this is the static base)
-              c.fillStyle = '#fbbf24';
-              c.beginPath();
-              c.moveTo(rx + rW/2, ry - 16);
-              c.quadraticCurveTo(rx + rW/2 + 4.5, ry - 22, rx + rW/2, ry - 29);
-              c.quadraticCurveTo(rx + rW/2 - 4.5, ry - 22, rx + rW/2, ry - 16);
-              c.fill();
-              if (crPatiencePct > 0) {
-                c.fillStyle = 'rgba(255, 251, 235, 0.9)';
-                c.beginPath();
-                c.moveTo(rx + rW/2, ry - 18);
-                c.quadraticCurveTo(rx + rW/2 + 2, ry - 22, rx + rW/2, ry - 25.5);
-                c.quadraticCurveTo(rx + rW/2 - 2, ry - 22, rx + rW/2, ry - 18);
-                c.fill();
-              }
-
-              // Customer, speech bubble, and basket make the transaction feel active.
-              if (crCustomer) {
-                var cuX = W - 48, cuY = H - 60;
-
-                // Speech bubble
-                var bubbleX = Math.min(W - 132, Math.max(registerX + 8, W - 150)), bubbleY = 54;
-                c.fillStyle = 'rgba(248,250,252,0.94)';
-                c.fillRect(bubbleX, bubbleY, 124, 34);
-                c.beginPath();
-                c.moveTo(bubbleX + 94, bubbleY + 34); c.lineTo(bubbleX + 106, bubbleY + 44); c.lineTo(bubbleX + 108, bubbleY + 34); c.closePath(); c.fill();
-                c.fillStyle = '#334155';
-                c.font = 'bold 9px sans-serif';
-                c.textAlign = 'center'; c.textBaseline = 'middle';
-                c.fillText(crFb ? __alloT('stem.money.thank_you', 'Thank you!') : __alloT('stem.money.total_please', 'Total, please!'), bubbleX + 62, bubbleY + 17, 116);
-
-                // Customer silhouette
-                c.fillStyle = '#64748b';
-                c.beginPath();
-                c.arc(cuX, cuY - 30, 12, 0, Math.PI * 2);
-                c.fill();
-                c.fillStyle = '#475569';
-                c.fillRect(cuX - 17, cuY - 18, 34, 38);
-                c.fillStyle = 'rgba(255,255,255,0.88)';
-                c.font = '16px sans-serif';
-                c.textAlign = 'center'; c.textBaseline = 'bottom';
-                c.fillText(crCustomer.emoji || '🙂', cuX, cuY - 44);
-
-                // Small wire basket at the customer's feet
-                var basketX = W - 125, basketY = H - 42;
-                c.strokeStyle = '#94a3b8'; c.lineWidth = 1.5;
-                c.strokeRect(basketX, basketY, 42, 22);
-                c.beginPath(); c.arc(basketX + 10, basketY + 24, 3, 0, Math.PI * 2); c.arc(basketX + 34, basketY + 24, 3, 0, Math.PI * 2); c.stroke();
-                for (var basketLine = 1; basketLine < 4; basketLine++) {
-                  c.beginPath(); c.moveTo(basketX + basketLine * 10, basketY + 2); c.lineTo(basketX + basketLine * 10, basketY + 20); c.stroke();
+                // Candle glow centered on the register (right side). Patience + subtle flicker harmonics drive radius.
+                var registerX = W < 420 ? W * 0.68 : W * 0.78, registerY = H * 0.55;
+                var candleFlicker = reduced ? 0 : (Math.sin(tSec * 6.3) * 0.65 + Math.sin(tSec * 13.7) * 0.35);
+                var glowRadius = Math.max(24, (46 + (sPatience / 100) * 130) + candleFlicker * 5.5);
+                if (hasRadialGrad) {
+                  var glow = c.createRadialGradient(registerX, registerY - 12, 4, registerX, registerY, glowRadius);
+                  glow.addColorStop(0, 'rgba(254, 240, 138, 0.65)');
+                  glow.addColorStop(0.35, 'rgba(251, 191, 36, 0.28)');
+                  glow.addColorStop(0.7, 'rgba(245, 158, 11, 0.08)');
+                  glow.addColorStop(1, 'rgba(252, 211, 77, 0)');
+                  c.fillStyle = glow;
+                  c.fillRect(0, 0, W, H);
                 }
-              }
 
-              // "Code Black" overlay text top-left
-              c.fillStyle = 'rgba(239, 68, 68, 0.8)';
-              c.font = 'bold 11px sans-serif';
-              c.textAlign = 'left'; c.textBaseline = 'top';
-              c.fillText('⚡ CODE BLACK — POWER OUT', 10, 8);
-              c.fillStyle = 'rgba(252, 211, 77, 0.6)';
-              c.font = '10px sans-serif';
-              c.fillText('Wave ' + crWave + ' · ' + items.length + ' items on counter', 10, 24);
+                // Zero-GC drifting warm dust/ember motes within candlelight cone (bypassed in HC / reduced motion)
+                if (!isHC && !reduced && sPatience > 0) {
+                  for (var mi = 0; mi < _CR_MOTE_COUNT; mi++) {
+                    var mx = registerX - glowRadius * 0.75 + (((_crMoteXNorm[mi] + tSec * _crMoteSpeed[mi] * 0.45) % 1) * glowRadius * 1.5);
+                    var my = registerY + 18 - (((_crMoteYNorm[mi] + tSec * _crMoteSpeed[mi]) % 1) * (glowRadius * 0.92 + 24));
+                    var mdx = mx - registerX, mdy = my - (registerY - 12);
+                    var mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+                    if (mDist < glowRadius * 0.88 && my > 12 && my < H - 54) {
+                      var mAlpha = (1 - mDist / (glowRadius * 0.88)) * (0.28 + 0.18 * Math.sin(tSec * 2.8 + _crMotePhase[mi]));
+                      c.fillStyle = 'rgba(254,240,138,' + mAlpha.toFixed(3) + ')';
+                      c.beginPath();
+                      c.arc(mx, my, _crMoteSize[mi], 0, Math.PI * 2);
+                      c.fill();
+                    }
+                  }
+                }
 
-              // Scan flash overlay (drawn on top of items when feedback is fresh + correct)
-              if (crFb && crFb.ok) {
-                c.fillStyle = 'rgba(34, 197, 94, 0.18)';
-                c.fillRect(0, 0, W, H);
-              } else if (crFb && !crFb.ok) {
-                c.fillStyle = 'rgba(239, 68, 68, 0.12)';
-                c.fillRect(0, 0, W, H);
+                // Counter (warm polished mahogany shop-counter mat at bottom)
+                if (isHC) {
+                  c.fillStyle = '#000000';
+                } else if (hasLinearGrad) {
+                  var counterGrad = c.createLinearGradient(0, H - 52, 0, H);
+                  counterGrad.addColorStop(0, '#9a4a1a');
+                  counterGrad.addColorStop(0.14, '#78350f');
+                  counterGrad.addColorStop(0.65, '#592308');
+                  counterGrad.addColorStop(1, '#3b1503');
+                  c.fillStyle = counterGrad;
+                } else {
+                  c.fillStyle = '#78350f';
+                }
+                c.fillRect(0, H - 50, W, 50);
+                // Polished wood top bevel sheen
+                c.fillStyle = isHC ? '#ffffff' : 'rgba(254, 215, 170, 0.28)';
+                c.fillRect(0, H - 50, W, isHC ? 2 : 2.5);
+                if (!isHC) {
+                  c.strokeStyle = 'rgba(0,0,0,0.22)'; c.lineWidth = 0.7;
+                  for (var wg = 0; wg < 5; wg++) {
+                    c.beginPath();
+                    c.moveTo(0, H - 44 + wg * 8.5);
+                    c.lineTo(W, H - 44 + wg * 8.5 + (wg % 2 === 0 ? 2 : -2));
+                    c.stroke();
+                  }
+                }
+
+                // Conveyor belt, rollers, and live scrolling direction chevrons create a readable scan path.
+                var beltX = 10, beltY = H - 76, beltRight = registerX - 62, beltH = 28;
+                if (!isHC) {
+                  c.fillStyle = 'rgba(0,0,0,0.34)';
+                  c.fillRect(beltX + 2, beltY + beltH, beltRight - beltX, 4);
+                }
+                if (isHC) {
+                  c.fillStyle = '#000000';
+                } else if (hasLinearGrad) {
+                  var beltGrad = c.createLinearGradient(0, beltY, 0, beltY + beltH);
+                  beltGrad.addColorStop(0, '#64748b');
+                  beltGrad.addColorStop(0.2, '#475569');
+                  beltGrad.addColorStop(0.55, '#1e293b');
+                  beltGrad.addColorStop(1, '#0f172a');
+                  c.fillStyle = beltGrad;
+                } else {
+                  c.fillStyle = '#334155';
+                }
+                c.fillRect(beltX, beltY, beltRight - beltX, beltH);
+                if (!isHC) {
+                  c.fillStyle = 'rgba(226,232,240,0.32)';
+                  c.fillRect(beltX, beltY, beltRight - beltX, 2);
+                }
+                c.strokeStyle = isHC ? '#ffffff' : '#94a3b8'; c.lineWidth = 1.5;
+                c.strokeRect(beltX, beltY, beltRight - beltX, beltH);
+                c.fillStyle = isHC ? '#94a3b8' : 'rgba(148,163,184,0.45)';
+                for (var rollerX = beltX + 14; rollerX < beltRight - 6; rollerX += 28) {
+                  c.beginPath(); c.arc(rollerX, beltY + beltH / 2, 5, 0, Math.PI * 2); c.fill();
+                  if (!isHC) {
+                    c.fillStyle = 'rgba(255,255,255,0.28)';
+                    c.beginPath(); c.arc(rollerX - 1.5, beltY + beltH / 2 - 1.5, 1.8, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = 'rgba(148,163,184,0.45)';
+                  }
+                }
+                var chevronShift = reduced ? 0 : ((tSec * 22) % 54);
+                c.strokeStyle = isHC ? '#ffff00' : 'rgba(251,191,36,0.68)'; c.lineWidth = 2;
+                for (var chevronX = beltX + 12 + chevronShift; chevronX < beltRight - 14; chevronX += 54) {
+                  c.beginPath();
+                  c.moveTo(chevronX, beltY + 7); c.lineTo(chevronX + 10, beltY + 14); c.lineTo(chevronX, beltY + 21);
+                  c.stroke();
+                }
+
+                // Items on counter — line them up left-of-register with grounded shadows
+                var items = (sCustomer && sCustomer.items) || [];
+                var itemSlotW = 54;
+                var itemSpacing = Math.min(itemSlotW, (beltRight - 28) / Math.max(1, items.length));
+                var startX = 18;
+                for (var idx = 0; idx < items.length; idx++) {
+                  var it = items[idx];
+                  var ix = startX + idx * itemSpacing;
+                  var iy = H - 50 - 56;
+                  var drawW = Math.max(18, Math.min(itemSlotW * 0.82, itemSpacing - 4));
+                  if (!isHC) {
+                    c.fillStyle = 'rgba(2,6,23,0.38)';
+                    c.beginPath();
+                    _moneySafeEllipse(c, ix + drawW / 2, iy + 54, drawW * 0.46, 4.5, 0, 0, Math.PI * 2);
+                    c.fill();
+                  }
+                  var drawer = pickItemDrawer(it.name);
+                  drawer(c, ix, iy, drawW, 56, it.name);
+
+                  // Numbered scan-order badge stays visible even when item shapes are similar.
+                  c.fillStyle = isHC ? '#ffff00' : '#fbbf24';
+                  c.beginPath(); c.arc(ix + 5, iy + 5, 8, 0, Math.PI * 2); c.fill();
+                  c.strokeStyle = isHC ? '#000000' : '#fef3c7'; c.lineWidth = 1; c.stroke();
+                  c.fillStyle = '#111827';
+                  c.font = 'bold 9px sans-serif';
+                  c.textAlign = 'center'; c.textBaseline = 'middle';
+                  c.fillText(String(idx + 1), ix + 5, iy + 5);
+
+                  // A compact price ticket exposes the multiplication students must perform.
+                  var priceTag = it.weight
+                    ? it.weight + 'lb \u00D7 ' + sFmt(it.price)
+                    : (it.qty || 1) + ' \u00D7 ' + sFmt(it.price);
+                  var priceTicketW = Math.max(18, itemSpacing - 4);
+                  if (!isHC) {
+                    c.fillStyle = 'rgba(15,23,42,0.28)';
+                    c.fillRect(ix + 1.5, H - 43.5, priceTicketW, 16);
+                  }
+                  c.fillStyle = isHC ? '#000000' : '#fefce8';
+                  c.fillRect(ix, H - 45, priceTicketW, 16);
+                  c.strokeStyle = isHC ? '#ffff00' : '#ca8a04'; c.lineWidth = 1;
+                  c.strokeRect(ix, H - 45, priceTicketW, 16);
+                  c.fillStyle = isHC ? '#ffffff' : '#713f12';
+                  c.font = 'bold 8px monospace';
+                  c.textAlign = 'center'; c.textBaseline = 'middle';
+                  c.fillText(priceTag, ix + priceTicketW / 2, H - 37, priceTicketW - 4);
+                }
+
+                // Scanner glass and live pulsing scan beam mark the handoff into the register.
+                var scannerX = registerX - 98, scannerY = H - 68;
+                c.fillStyle = '#111827'; c.fillRect(scannerX, scannerY, 38, 20);
+                c.fillStyle = isHC ? '#000000' : '#1e3a5f'; c.fillRect(scannerX + 4, scannerY + 4, 30, 12);
+                c.strokeStyle = isHC ? '#ffffff' : '#60a5fa'; c.lineWidth = 1; c.strokeRect(scannerX + 4, scannerY + 4, 30, 12);
+                c.save();
+                var beamColor = sFb && sFb.ok ? '#4ade80' : '#ef4444';
+                var scanPulse = reduced ? 0.5 : (0.5 + 0.5 * Math.sin(tSec * 4.5));
+                if (!isHC) {
+                  c.shadowColor = beamColor; c.shadowBlur = 5 + scanPulse * 6;
+                }
+                c.strokeStyle = beamColor; c.lineWidth = 2.2;
+                c.beginPath(); c.moveTo(scannerX + 7, scannerY + 10); c.lineTo(scannerX + 31, scannerY + 10); c.stroke();
+                c.restore();
+
+                // Metallic coin tray with subtle specular glint beside register
+                var trayX = registerX - 42, trayY = H - 31;
+                if (!isHC) {
+                  c.fillStyle = 'rgba(2,6,23,0.42)';
+                  c.beginPath(); _moneySafeEllipse(c, trayX, trayY + 2, 16, 5.5, 0, 0, Math.PI * 2); c.fill();
+                }
+                for (var ci = 0; ci < 3; ci++) {
+                  var cy = trayY - ci * 3.2;
+                  c.fillStyle = isHC ? '#ffff00' : (ci === 2 ? '#fbbf24' : ci === 1 ? '#d97706' : '#b45309');
+                  c.beginPath(); _moneySafeEllipse(c, trayX, cy, 11.5, 4.2, 0, 0, Math.PI * 2); c.fill();
+                  c.strokeStyle = isHC ? '#000000' : '#fef3c7'; c.lineWidth = 0.9; c.stroke();
+                }
+                if (!isHC && !reduced) {
+                  var glintPos = ((tSec * 0.75) % 1);
+                  var glintX = trayX - 9 + glintPos * 18;
+                  c.fillStyle = 'rgba(255,255,255,' + (Math.sin(glintPos * Math.PI) * 0.72).toFixed(3) + ')';
+                  c.beginPath(); c.arc(glintX, trayY - 6.4, 2.2, 0, Math.PI * 2); c.fill();
+                }
+                // Crisp landing impact ring burst on correct total confirmation
+                if (!isHC && !reduced && canvas._crBurstAt) {
+                  var burstAge = (ts - canvas._crBurstAt) * 0.001;
+                  if (burstAge >= 0 && burstAge < 0.85) {
+                    var bProg = burstAge / 0.85;
+                    var bAlpha = (1 - bProg) * 0.85;
+                    c.strokeStyle = 'rgba(74,222,128,' + bAlpha.toFixed(3) + ')';
+                    c.lineWidth = Math.max(0.8, 2.5 * (1 - bProg));
+                    c.beginPath();
+                    _moneySafeEllipse(c, trayX, trayY - 4, 10 + bProg * 28, 4 + bProg * 11, 0, 0, Math.PI * 2);
+                    c.stroke();
+                    c.strokeStyle = 'rgba(254,240,138,' + (bAlpha * 0.75).toFixed(3) + ')';
+                    c.lineWidth = Math.max(0.6, 1.6 * (1 - bProg));
+                    c.beginPath();
+                    _moneySafeEllipse(c, trayX, trayY - 4, 6 + bProg * 18, 2.5 + bProg * 7, 0, 0, Math.PI * 2);
+                    c.stroke();
+                  }
+                }
+
+                // Cash register — brushed metallic chassis with beveled bezel and glowing candle
+                var rW = 100, rH = 80;
+                var rx = registerX - rW / 2, ry = registerY - rH / 2;
+                if (!isHC) {
+                  c.fillStyle = 'rgba(2,6,23,0.45)';
+                  c.fillRect(rx + 4, ry + rH - 2, rW, 8);
+                }
+                if (isHC) {
+                  c.fillStyle = '#000000';
+                } else if (hasLinearGrad) {
+                  var regBody = c.createLinearGradient(rx, ry, rx + rW, ry + rH);
+                  regBody.addColorStop(0, '#525f73');
+                  regBody.addColorStop(0.35, '#374151');
+                  regBody.addColorStop(0.75, '#1f2937');
+                  regBody.addColorStop(1, '#111827');
+                  c.fillStyle = regBody;
+                } else {
+                  c.fillStyle = '#374151';
+                }
+                c.fillRect(rx, ry, rW, rH);
+                if (!isHC) {
+                  c.fillStyle = 'rgba(226,232,240,0.34)';
+                  c.fillRect(rx + 1, ry + 1, rW - 2, 2.5);
+                }
+                c.strokeStyle = isHC ? '#ffffff' : '#111827'; c.lineWidth = 2; c.strokeRect(rx, ry, rW, rH);
+                // LCD screen (dim — power outage) with glossy glass highlight
+                c.fillStyle = '#0f172a'; c.fillRect(rx + 7, ry + 7, rW - 14, 26);
+                c.fillStyle = isHC ? '#000000' : '#1e1b4b'; c.fillRect(rx + 8, ry + 8, rW - 16, 24);
+                if (!isHC) {
+                  c.fillStyle = 'rgba(255,255,255,0.08)'; c.fillRect(rx + 8, ry + 8, rW - 16, 8);
+                }
+                c.strokeStyle = isHC ? '#ffff00' : '#4338ca'; c.lineWidth = 1; c.strokeRect(rx + 8, ry + 8, rW - 16, 24);
+                // LCD text — show "OFFLINE" since the power is out
+                c.save();
+                if (!isHC) { c.shadowColor = 'rgba(252, 211, 77, 0.9)'; c.shadowBlur = 9; }
+                c.fillStyle = isHC ? '#ffff00' : 'rgba(252, 211, 77, 0.78)';
+                c.font = 'bold 12px monospace';
+                c.textAlign = 'center'; c.textBaseline = 'middle';
+                c.fillText('OFFLINE', rx + rW / 2, ry + 20);
+                c.restore();
+                // Tactile sculpted keypad pattern
+                for (var kr = 0; kr < 3; kr++) for (var kc = 0; kc < 3; kc++) {
+                  var kx = rx + 12 + kc * 26, ky = ry + 40 + kr * 12;
+                  c.fillStyle = isHC ? '#1f2937' : '#4b5563';
+                  c.fillRect(kx, ky, 22, 8);
+                  if (isHC) {
+                    c.strokeStyle = '#ffffff'; c.lineWidth = 0.8; c.strokeRect(kx, ky, 22, 8);
+                  } else {
+                    c.fillStyle = 'rgba(255,255,255,0.22)'; c.fillRect(kx, ky, 22, 1.5);
+                    c.fillStyle = 'rgba(0,0,0,0.35)'; c.fillRect(kx, ky + 7, 22, 1);
+                  }
+                }
+                // Candle on top of register with warm concentric flame halo
+                c.fillStyle = '#fef3c7';
+                c.fillRect(rx + rW / 2 - 4, ry - 16, 8, 14);
+                c.strokeStyle = '#92400e'; c.strokeRect(rx + rW / 2 - 4, ry - 16, 8, 14);
+                var flameSway = reduced ? 0 : (candleFlicker * 1.35);
+                var flameTipY = ry - 29 + (reduced ? 0 : Math.sin(tSec * 9.1) * 1.1);
+                if (hasRadialGrad && sPatience > 0) {
+                  var flameHalo = c.createRadialGradient(rx + rW / 2 + flameSway * 0.5, ry - 22, 1, rx + rW / 2, ry - 22, 20 + candleFlicker * 2.5);
+                  flameHalo.addColorStop(0, 'rgba(254, 243, 199, 0.75)');
+                  flameHalo.addColorStop(0.45, 'rgba(251, 191, 36, 0.35)');
+                  flameHalo.addColorStop(1, 'rgba(251, 191, 36, 0)');
+                  c.fillStyle = flameHalo;
+                  c.beginPath(); c.arc(rx + rW / 2, ry - 22, 22, 0, Math.PI * 2); c.fill();
+                }
+                c.fillStyle = '#fbbf24';
+                c.beginPath();
+                c.moveTo(rx + rW / 2, ry - 16);
+                c.quadraticCurveTo(rx + rW / 2 + 4.5 + flameSway * 0.4, ry - 22, rx + rW / 2 + flameSway, flameTipY);
+                c.quadraticCurveTo(rx + rW / 2 - 4.5 + flameSway * 0.4, ry - 22, rx + rW / 2, ry - 16);
+                c.fill();
+                if (sPatience > 0) {
+                  c.fillStyle = 'rgba(255, 251, 235, 0.9)';
+                  c.beginPath();
+                  c.moveTo(rx + rW / 2, ry - 18);
+                  c.quadraticCurveTo(rx + rW / 2 + 2 + flameSway * 0.25, ry - 22, rx + rW / 2 + flameSway * 0.6, flameTipY + 3.5);
+                  c.quadraticCurveTo(rx + rW / 2 - 2 + flameSway * 0.25, ry - 22, rx + rW / 2, ry - 18);
+                  c.fill();
+                }
+
+                // Customer, speech bubble, and basket make the transaction feel active.
+                if (sCustomer) {
+                  var cuX = W - 48, cuY = H - 60;
+                  var bubbleX = Math.min(W - 132, Math.max(registerX + 8, W - 150)), bubbleY = 54;
+                  c.fillStyle = isHC ? '#000000' : 'rgba(248,250,252,0.94)';
+                  c.fillRect(bubbleX, bubbleY, 124, 34);
+                  if (isHC) { c.strokeStyle = '#ffffff'; c.lineWidth = 1.5; c.strokeRect(bubbleX, bubbleY, 124, 34); }
+                  c.beginPath();
+                  c.moveTo(bubbleX + 94, bubbleY + 34); c.lineTo(bubbleX + 106, bubbleY + 44); c.lineTo(bubbleX + 108, bubbleY + 34); c.closePath(); c.fill();
+                  c.fillStyle = isHC ? '#ffff00' : '#334155';
+                  c.font = 'bold 9px sans-serif';
+                  c.textAlign = 'center'; c.textBaseline = 'middle';
+                  c.fillText(sFb ? st.thankYouText : st.totalPleaseText, bubbleX + 62, bubbleY + 17, 116);
+
+                  c.fillStyle = '#64748b';
+                  c.beginPath();
+                  c.arc(cuX, cuY - 30, 12, 0, Math.PI * 2);
+                  c.fill();
+                  c.fillStyle = '#475569';
+                  c.fillRect(cuX - 17, cuY - 18, 34, 38);
+                  c.fillStyle = 'rgba(255,255,255,0.88)';
+                  c.font = '16px sans-serif';
+                  c.textAlign = 'center'; c.textBaseline = 'bottom';
+                  c.fillText(sCustomer.emoji || '🙂', cuX, cuY - 44);
+
+                  var basketX = W - 125, basketY = H - 42;
+                  c.strokeStyle = isHC ? '#ffffff' : '#94a3b8'; c.lineWidth = 1.5;
+                  c.strokeRect(basketX, basketY, 42, 22);
+                  c.beginPath(); c.arc(basketX + 10, basketY + 24, 3, 0, Math.PI * 2); c.arc(basketX + 34, basketY + 24, 3, 0, Math.PI * 2); c.stroke();
+                  for (var basketLine = 1; basketLine < 4; basketLine++) {
+                    c.beginPath(); c.moveTo(basketX + basketLine * 10, basketY + 2); c.lineTo(basketX + basketLine * 10, basketY + 20); c.stroke();
+                  }
+                }
+
+                // "Code Black" overlay text top-left
+                c.fillStyle = isHC ? '#ffff00' : 'rgba(239, 68, 68, 0.8)';
+                c.font = 'bold 11px sans-serif';
+                c.textAlign = 'left'; c.textBaseline = 'top';
+                c.fillText('⚡ CODE BLACK — POWER OUT', 10, 8);
+                c.fillStyle = isHC ? '#ffffff' : 'rgba(252, 211, 77, 0.6)';
+                c.font = '10px sans-serif';
+                c.fillText('Wave ' + sWave + ' · ' + items.length + ' items on counter', 10, 24);
+
+                // Scan flash overlay (drawn on top of items when feedback is fresh + correct)
+                if (!isHC && sFb && sFb.ok) {
+                  c.fillStyle = 'rgba(34, 197, 94, 0.18)';
+                  c.fillRect(0, 0, W, H);
+                } else if (!isHC && sFb && !sFb.ok) {
+                  c.fillStyle = 'rgba(239, 68, 68, 0.12)';
+                  c.fillRect(0, 0, W, H);
+                }
+              };
+
+              if (!canvas._crStart) canvas._crStart = nowMs;
+              paintCashierFrame(nowMs);
+
+              if (!canvas._crAnim && !_moneyPrefersReducedMotion() && typeof requestAnimationFrame === 'function') {
+                var crTick = function (ts) {
+                  if (!canvas.isConnected) {
+                    canvas._crAnim = null;
+                    return;
+                  }
+                  if (_moneyPrefersReducedMotion()) {
+                    paintCashierFrame(ts);
+                    canvas._crAnim = null;
+                    return;
+                  }
+                  paintCashierFrame(ts);
+                  canvas._crAnim = requestAnimationFrame(crTick);
+                };
+                canvas._crAnim = requestAnimationFrame(crTick);
               }
             };
 
             // AlloBot avatar (inline, no external dep). Mood drives expression.
             var drawAlloBotAvatar = function (canvas, mood) {
               if (!canvas) return;
-              var W = canvas.width = 80;
-              var H = canvas.height = 80;
-              var c = canvas.getContext('2d');
+              var W = 80, H = 80;
+              if (canvas.width !== W) canvas.width = W;
+              if (canvas.height !== H) canvas.height = H;
+              var c = canvas.getContext ? canvas.getContext('2d') : null;
               if (!c) return;
+              var isHC = _moneyIsHighContrast();
+              var hasLin = !isHC && typeof c.createLinearGradient === 'function';
               c.clearRect(0, 0, W, H);
-              // Head (rounded square)
-              c.fillStyle = '#6366f1';
-              c.beginPath();
-              if (typeof c.roundRect === 'function') {
-                c.roundRect(10, 14, 60, 50, 12);
-                c.fill();
+              // Head (rounded square via safe path helper — zero bare roundRect)
+              if (hasLin) {
+                var headGrad = c.createLinearGradient(10, 14, 70, 64);
+                headGrad.addColorStop(0, '#818cf8');
+                headGrad.addColorStop(0.55, '#6366f1');
+                headGrad.addColorStop(1, '#4338ca');
+                c.fillStyle = headGrad;
               } else {
-                c.fillRect(10, 14, 60, 50);
+                c.fillStyle = isHC ? '#000000' : '#6366f1';
               }
+              _moneyRoundRectPath(c, 10, 14, 60, 50, 12);
+              c.fill();
+              if (isHC) { c.strokeStyle = '#ffffff'; c.lineWidth = 2; c.stroke(); }
               // Antenna
-              c.strokeStyle = '#a5b4fc'; c.lineWidth = 2;
+              c.strokeStyle = isHC ? '#ffffff' : '#a5b4fc'; c.lineWidth = 2;
               c.beginPath(); c.moveTo(40, 14); c.lineTo(40, 6); c.stroke();
-              c.fillStyle = '#fbbf24';
+              c.fillStyle = isHC ? '#ffff00' : '#fbbf24';
               c.beginPath(); c.arc(40, 4, 3, 0, Math.PI * 2); c.fill();
               // Visor
-              c.fillStyle = '#1e1b4b';
-              if (typeof c.roundRect === 'function') {
-                c.beginPath(); c.roundRect(16, 26, 48, 20, 8); c.fill();
+              c.fillStyle = isHC ? '#000000' : '#1e1b4b';
+              _moneyRoundRectPath(c, 16, 26, 48, 20, 8);
+              c.fill();
+              if (isHC) {
+                c.strokeStyle = '#ffff00'; c.lineWidth = 1.4; c.stroke();
               } else {
-                c.fillRect(16, 26, 48, 20);
+                c.fillStyle = 'rgba(255,255,255,0.12)';
+                _moneyRoundRectPath(c, 18, 28, 44, 6, 3);
+                c.fill();
               }
               // Eyes — shape by mood
               c.fillStyle = mood === 'concerned' ? '#fca5a5' : (mood === 'cheering' ? '#fde68a' : '#67e8f9');
@@ -3380,7 +3628,7 @@ window.StemLab = window.StemLab || {
                               upd('placed', placed.filter(function (_, idx) { return idx !== pi; }));
                               upd('coinGuess', null); upd('coinGuessFb', null);
                             }, title: 'Remove ' + p.name,
-                            className: "transition-all hover:scale-110 hover:opacity-70 cursor-pointer animate-in zoom-in fade-in duration-300"
+                            className: "allo-money-placed-piece transition-all hover:scale-110 hover:opacity-70 cursor-pointer animate-in zoom-in fade-in duration-300"
                           },
                             isBill
                               ? (function () { var bd = cur.bills.find(function (k) { return k.name === p.name; }) || { name: p.name, value: p.value, color: '#85bb65' }; return renderBillVisual(bd, true); })()
@@ -5454,13 +5702,31 @@ window.StemLab = window.StemLab || {
                 // contribMonthly=0 → final balance=0 → /0 yields NaN, polyline silently
                 // breaks). Matches the defensive pattern in skatelab + statslab.
                 var maxY = Math.max(1, pts[pts.length - 1].y);
-                var svgPts = pts.map(function(p) { return (30 + (p.x / n) * 280) + ',' + (130 - (p.y / maxY) * 110); }).join(' ');
+                var safeDen = Math.max(1, n);
+                var curveCoords = pts.map(function(p) {
+                  return { sx: 30 + (p.x / safeDen) * 280, sy: 130 - (p.y / maxY) * 110 };
+                });
+                var svgPts = curveCoords.map(function(p) { return p.sx.toFixed(2) + ',' + p.sy.toFixed(2); }).join(' ');
                 // Contribution-only line
+                var contribCoords = [];
                 var contribPts = [];
                 for (var yr2 = 0; yr2 <= n; yr2++) {
-                  var c = iq.principal + iq.contribMonthly * 12 * yr2;
-                  contribPts.push((30 + (yr2 / n) * 280) + ',' + (130 - (c / maxY) * 110));
+                  var cVal = iq.principal + iq.contribMonthly * 12 * yr2;
+                  var csx = 30 + (yr2 / safeDen) * 280;
+                  var csy = 130 - (cVal / maxY) * 110;
+                  contribCoords.push({ sx: csx, sy: csy });
+                  contribPts.push(csx.toFixed(2) + ',' + csy.toFixed(2));
                 }
+                // Principal-vs-interest luminous area fills + glowing ribbon path (keeps exactly 2 <polyline> elements)
+                var contribAreaD = 'M 30,130 ' + contribCoords.map(function(p) { return 'L ' + p.sx.toFixed(2) + ',' + p.sy.toFixed(2); }).join(' ') + ' L 310,130 Z';
+                var interestRibbonD = 'M ' + curveCoords[0].sx.toFixed(2) + ',' + curveCoords[0].sy.toFixed(2) + ' ' +
+                  curveCoords.slice(1).map(function(p) { return 'L ' + p.sx.toFixed(2) + ',' + p.sy.toFixed(2); }).join(' ') + ' ' +
+                  contribCoords.slice().reverse().map(function(p) { return 'L ' + p.sx.toFixed(2) + ',' + p.sy.toFixed(2); }).join(' ') + ' Z';
+                var glowCurveD = 'M ' + curveCoords.map(function(p) { return p.sx.toFixed(2) + ',' + p.sy.toFixed(2); }).join(' L ');
+                var milestoneIndices = [Math.round(n * 0.25), Math.round(n * 0.5), Math.round(n * 0.75), n].filter(function(idx, pos, arr) {
+                  return idx >= 0 && idx < curveCoords.length && arr.indexOf(idx) === pos;
+                });
+                var iqIsContrast = !!ctx.isContrast || _moneyIsHighContrast();
                 return React.createElement("div", Object.assign(moneyPanelProps("p-3 rounded-xl"), { style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } }),
                   React.createElement("h4", { className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, __alloT('stem.money.compound_interest_inquiry_2', '🔬 Compound Interest Inquiry')),
                   React.createElement("p", { className: "text-xs opacity-85 mb-2 leading-snug" }, __alloT('stem.money.deep_inquiry_intro', 'Change one setting at a time, then compare the balance with the money contributed. The results update immediately. Record what you notice.')),
@@ -5478,13 +5744,52 @@ window.StemLab = window.StemLab || {
                       );
                     })
                   ),
-                  React.createElement("svg", { role: 'img', 'aria-label': __alloT('stem.money.deep_growth_chart', 'Modeled balance and contributions over time'), 'aria-describedby': 'money-inquiry-chart-description', width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
-                    React.createElement("line", { x1: 30, y1: 130, x2: 310, y2: 130, stroke: '#94a3b8' }),
-                    React.createElement("line", { x1: 30, y1: 18, x2: 30, y2: 130, stroke: '#94a3b8' }),
-                    React.createElement("polyline", { points: contribPts.join(' '), fill: 'none', stroke: '#94a3b8', strokeWidth: 1.5, strokeDasharray: '4 3' }),
-                    React.createElement("polyline", { points: svgPts, fill: 'none', stroke: sm.color, strokeWidth: 2.5 }),
-                    React.createElement("text", { x: 30, y: 14, fill: '#94a3b8', fontSize: 12 }, fmt(maxY)),
-                    React.createElement("text", { x: 160, y: 154, fill: '#94a3b8', fontSize: 12, textAnchor: 'middle' }, '0 → ' + n + ' ' + __alloT('stem.money.deep_years', 'years'))
+                  React.createElement("svg", { role: 'img', 'aria-label': __alloT('stem.money.deep_growth_chart', 'Modeled balance and contributions over time'), 'aria-describedby': 'money-inquiry-chart-description', width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: iqIsContrast ? '#000000' : '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+                    !iqIsContrast && React.createElement("defs", null,
+                      React.createElement("linearGradient", { id: "moneyIqPrincipalFill", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+                        React.createElement("stop", { offset: "0%", stopColor: "#94a3b8", stopOpacity: 0.24 }),
+                        React.createElement("stop", { offset: "100%", stopColor: "#94a3b8", stopOpacity: 0.03 })
+                      ),
+                      React.createElement("linearGradient", { id: "moneyIqInterestFill", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+                        React.createElement("stop", { offset: "0%", stopColor: sm.color, stopOpacity: 0.42 }),
+                        React.createElement("stop", { offset: "100%", stopColor: sm.color, stopOpacity: 0.05 })
+                      )
+                    ),
+                    // Subtle reference gridlines
+                    !iqIsContrast && [46, 74, 102].map(function(gy) {
+                      return React.createElement("line", { key: 'iq-grid-' + gy, x1: 30, y1: gy, x2: 310, y2: gy, stroke: 'rgba(148,163,184,0.14)', strokeDasharray: '2 3' });
+                    }),
+                    // Principal vs Compound Interest luminous layered regions (bypassed in high contrast)
+                    !iqIsContrast && React.createElement("path", { d: contribAreaD, fill: 'url(#moneyIqPrincipalFill)' }),
+                    !iqIsContrast && interest > 0 && React.createElement("path", { d: interestRibbonD, fill: 'url(#moneyIqInterestFill)' }),
+                    // Axes
+                    React.createElement("line", { x1: 30, y1: 130, x2: 310, y2: 130, stroke: iqIsContrast ? '#ffffff' : '#94a3b8' }),
+                    React.createElement("line", { x1: 30, y1: 18, x2: 30, y2: 130, stroke: iqIsContrast ? '#ffffff' : '#94a3b8' }),
+                    // Soft luminous ribbon halo under compound curve
+                    !iqIsContrast && React.createElement("path", { d: glowCurveD, fill: 'none', stroke: sm.color, strokeWidth: 7, strokeOpacity: 0.18, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                    // Exact 2 polylines preserved for chart semantics & test parity
+                    React.createElement("polyline", { points: contribPts.join(' '), fill: 'none', stroke: iqIsContrast ? '#ffffff' : '#94a3b8', strokeWidth: 1.5, strokeDasharray: '4 3' }),
+                    React.createElement("polyline", { points: svgPts, fill: 'none', stroke: iqIsContrast ? '#ffff00' : sm.color, strokeWidth: 2.5 }),
+                    // Pulsing milestone beacons at 25%, 50%, 75%, 100%
+                    milestoneIndices.map(function(mi, mPos) {
+                      var pt = curveCoords[mi];
+                      var isFinal = mPos === milestoneIndices.length - 1;
+                      return React.createElement("g", { key: 'iq-ms-' + mi },
+                        !iqIsContrast && React.createElement("circle", {
+                          cx: pt.sx.toFixed(2), cy: pt.sy.toFixed(2), r: isFinal ? 7.5 : 5.2,
+                          fill: sm.color, fillOpacity: isFinal ? 0.24 : 0.15,
+                          className: 'allo-money-beacon-halo'
+                        }),
+                        React.createElement("circle", {
+                          cx: pt.sx.toFixed(2), cy: pt.sy.toFixed(2), r: isFinal ? 3.8 : 2.5,
+                          fill: iqIsContrast ? '#ffff00' : sm.color,
+                          stroke: iqIsContrast ? '#000000' : '#0a0a1a',
+                          strokeWidth: 1.2
+                        })
+                      );
+                    }),
+                    React.createElement("text", { x: 30, y: 14, fill: iqIsContrast ? '#ffffff' : '#94a3b8', fontSize: 12 }, fmt(maxY)),
+                    React.createElement("text", { x: 160, y: 154, fill: iqIsContrast ? '#ffffff' : '#94a3b8', fontSize: 12, textAnchor: 'middle' }, '0 → ' + n + ' ' + __alloT('stem.money.deep_years', 'years'))
                   ),
                   h('p', { id:'money-inquiry-chart-description', className:'text-xs mb-3' }, __alloT('stem.money.deep_growth_description','Both lines use the same zero-based money scale. Dashed: money contributed. Solid: modeled balance, including interest. At the final year: ') + fmt(totalContrib) + ' + ' + fmt(interest) + ' = ' + fmt(fv)),
                   React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3" },
@@ -5608,67 +5913,78 @@ window.StemLab = window.StemLab || {
                       cvEl.width = W * 2; cvEl.height = H * 2;
                       if (typeof c2.setTransform === 'function') c2.setTransform(2, 0, 0, 2, 0, 0);
                       else c2.scale(2, 2);
-                      var start = performance.now();
+                      var start = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
                       var lastBlink = -1;
                       var lastSide = '';
+                      var lastHC = null;
+                      var blinkChangedAt = 0;
+                      function fitText(text, x, y, maxWidth, size, weight, align) {
+                        var fitted = size;
+                        c2.textAlign = align || 'left';
+                        do { c2.font = (weight ? weight + ' ' : '') + fitted + 'px sans-serif'; fitted -= 0.5; }
+                        while (c2.measureText(text).width > maxWidth && fitted > 6);
+                        c2.fillText(text, x, y);
+                      }
+                      function drawSeal(x, y, radius, fill, top, center, bottom) {
+                        // Scalloped metallic-ink outer gear ring
+                        c2.save();
+                        c2.strokeStyle = fill; c2.lineWidth = 1.4;
+                        c2.beginPath();
+                        var teeth = 24;
+                        for (var ti = 0; ti <= teeth; ti++) {
+                          var ang = (ti / teeth) * Math.PI * 2;
+                          var rr = ti % 2 === 0 ? radius + 2.2 : radius - 0.5;
+                          var tx = x + Math.cos(ang) * rr, ty = y + Math.sin(ang) * rr;
+                          if (ti === 0) c2.moveTo(tx, ty); else c2.lineTo(tx, ty);
+                        }
+                        c2.closePath(); c2.stroke();
+                        c2.restore();
+                        c2.fillStyle = fill; c2.beginPath(); c2.arc(x, y, radius, 0, Math.PI * 2); c2.fill();
+                        c2.strokeStyle = '#eef3e9'; c2.lineWidth = 1; c2.beginPath(); c2.arc(x, y, radius - 3, 0, Math.PI * 2); c2.stroke();
+                        c2.fillStyle = '#eef3e9'; c2.textAlign = 'center'; c2.font = 'bold ' + Math.max(5, radius * 0.27) + 'px serif'; c2.fillText(top, x, y - radius * 0.28);
+                        c2.font = 'bold ' + (radius * 0.58) + 'px serif'; c2.fillText(center, x, y + radius * 0.2);
+                        c2.font = 'bold ' + Math.max(4, radius * 0.22) + 'px serif'; c2.fillText(bottom, x, y + radius * 0.55);
+                      }
                       function drawDb() {
-                        if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._dbAnim); if (cvEl._dbRO) cvEl._dbRO.disconnect(); return; }
-                        var t = (performance.now() - start) / 1000;
+                        if (!cvEl.isConnected) { if (cvEl._dbAnim) cancelAnimationFrame(cvEl._dbAnim); if (cvEl._dbRO) cvEl._dbRO.disconnect(); return; }
+                        var now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+                        var t = (now - start) / 1000;
                         var side = cvEl._dbSide || 'front';
                         var features = cvEl._dbFeatures || [];
                         var manualFeature = Math.max(0, Math.min(features.length - 1, Number(cvEl._dbFeatureIndex) || 0));
-                        var reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                        var reduceMotion = _moneyPrefersReducedMotion();
+                        var isHC = _moneyIsHighContrast();
                         var animatePulse = !!(cvEl._dbAutoPlay && !reduceMotion);
-                        var blink = animatePulse ? Math.floor((t * 0.42) % features.length) : manualFeature;
-                        // Repaint when the highlighted feature or selected side changes, or smoothly pulse when animating.
+                        var blink = (animatePulse && features.length > 0) ? Math.floor((t * 0.42) % features.length) : manualFeature;
                         if (side !== lastSide) { lastSide = side; lastBlink = -1; }
-                        if (!animatePulse && blink === lastBlink && !cvEl._dbForcePaint) { cvEl._dbAnim = requestAnimationFrame(drawDb); return; }
+                        if (isHC !== lastHC) { lastHC = isHC; cvEl._dbForcePaint = true; }
+                        if (blink !== lastBlink) { blinkChangedAt = t; }
+                        // Repaint when the highlighted feature or selected side changes, or smoothly pulse when animating.
+                        if (!animatePulse && blink === lastBlink && !cvEl._dbForcePaint) {
+                          if (typeof requestAnimationFrame === 'function') cvEl._dbAnim = requestAnimationFrame(drawDb);
+                          return;
+                        }
                         cvEl._dbForcePaint = false;
                         lastBlink = blink;
-                        var hasLin = typeof c2.createLinearGradient === 'function';
-                        var hasRad = typeof c2.createRadialGradient === 'function';
+                        var hasLin = !isHC && typeof c2.createLinearGradient === 'function';
+                        var hasRad = !isHC && typeof c2.createRadialGradient === 'function';
                         var compact = W < 620;
                         var bx = compact ? W * 0.08 : W * 0.045;
                         var bw = compact ? W * 0.84 : W * 0.62;
                         var bh = bw / 2.35; // A U.S. note is about 6.14 x 2.61 inches.
                         var by = compact ? 28 : Math.max(48, (H - bh) * 0.34);
-                        var ink = '#173f34';
-                        var fineInk = 'rgba(23,63,52,0.58)';
-                        var paper = '#e5edd9';
+                        var ink = isHC ? '#000000' : '#173f34';
+                        var fineInk = isHC ? '#111827' : 'rgba(23,63,52,0.58)';
+                        var paper = isHC ? '#ffffff' : '#e5edd9';
                         if (hasLin) {
                           paper = c2.createLinearGradient(bx, by, bx + bw, by + bh);
                           paper.addColorStop(0, '#f1f5ea'); paper.addColorStop(0.42, '#e2ebd9'); paper.addColorStop(0.68, '#d9e5cf'); paper.addColorStop(1, '#eef3e8');
                         }
-                        function fitText(text, x, y, maxWidth, size, weight, align) {
-                          var fitted = size;
-                          c2.textAlign = align || 'left';
-                          do { c2.font = (weight ? weight + ' ' : '') + fitted + 'px sans-serif'; fitted -= 0.5; }
-                          while (c2.measureText(text).width > maxWidth && fitted > 6);
-                          c2.fillText(text, x, y);
-                        }
-                        function drawSeal(x, y, radius, fill, top, center, bottom) {
-                          // Scalloped metallic-ink outer gear ring
-                          c2.save();
-                          c2.strokeStyle = fill; c2.lineWidth = 1.4;
-                          c2.beginPath();
-                          var teeth = 24;
-                          for (var ti = 0; ti <= teeth; ti++) {
-                            var ang = (ti / teeth) * Math.PI * 2;
-                            var rr = ti % 2 === 0 ? radius + 2.2 : radius - 0.5;
-                            var tx = x + Math.cos(ang) * rr, ty = y + Math.sin(ang) * rr;
-                            if (ti === 0) c2.moveTo(tx, ty); else c2.lineTo(tx, ty);
-                          }
-                          c2.closePath(); c2.stroke();
-                          c2.restore();
-                          c2.fillStyle = fill; c2.beginPath(); c2.arc(x, y, radius, 0, Math.PI * 2); c2.fill();
-                          c2.strokeStyle = '#eef3e9'; c2.lineWidth = 1; c2.beginPath(); c2.arc(x, y, radius - 3, 0, Math.PI * 2); c2.stroke();
-                          c2.fillStyle = '#eef3e9'; c2.textAlign = 'center'; c2.font = 'bold ' + Math.max(5, radius * 0.27) + 'px serif'; c2.fillText(top, x, y - radius * 0.28);
-                          c2.font = 'bold ' + (radius * 0.58) + 'px serif'; c2.fillText(center, x, y + radius * 0.2);
-                          c2.font = 'bold ' + Math.max(4, radius * 0.22) + 'px serif'; c2.fillText(bottom, x, y + radius * 0.55);
-                        }
 
                         // Rich emerald baize studio backdrop with radial spotlight pool
-                        if (hasRad) {
+                        if (isHC) {
+                          c2.fillStyle = '#000000';
+                        } else if (hasRad) {
                           var matBg = c2.createRadialGradient(bx + bw * 0.5, by + bh * 0.5, 20, bx + bw * 0.5, by + bh * 0.5, Math.max(W, H) * 0.78);
                           matBg.addColorStop(0, '#0a4a39');
                           matBg.addColorStop(0.58, '#042f24');
@@ -5678,21 +5994,28 @@ window.StemLab = window.StemLab || {
                           c2.fillStyle = '#022c22';
                         }
                         c2.fillRect(0, 0, W, H);
-                        c2.fillStyle = '#a7f3d0'; fitText(side === 'back' ? __alloT('stem.money.back_educational_illustration', 'BACK - EDUCATIONAL ILLUSTRATION') : __alloT('stem.money.front_educational_illustration', 'FRONT - EDUCATIONAL ILLUSTRATION'), bx, 17, bw, compact ? 10 : 12, 'bold');
+                        c2.fillStyle = isHC ? '#ffff00' : '#a7f3d0'; fitText(side === 'back' ? __alloT('stem.money.back_educational_illustration', 'BACK - EDUCATIONAL ILLUSTRATION') : __alloT('stem.money.front_educational_illustration', 'FRONT - EDUCATIONAL ILLUSTRATION'), bx, 17, bw, compact ? 10 : 12, 'bold');
 
                         // Grounded lifted-paper drop shadow beneath the engraved banknote
                         c2.save();
-                        c2.shadowColor = 'rgba(0, 0, 0, 0.52)';
-                        c2.shadowBlur = 18;
-                        c2.shadowOffsetX = 0;
-                        c2.shadowOffsetY = 8;
+                        if (!isHC) {
+                          c2.shadowColor = 'rgba(0, 0, 0, 0.54)';
+                          c2.shadowBlur = 20;
+                          c2.shadowOffsetX = 0;
+                          c2.shadowOffsetY = 9;
+                        }
                         c2.fillStyle = paper; c2.fillRect(bx, by, bw, bh);
                         c2.restore();
+                        // Crisp paper-edge tactile bevel highlight (top/left edge)
+                        if (!isHC) {
+                          c2.fillStyle = 'rgba(255,255,255,0.55)';
+                          c2.fillRect(bx + 1, by + 1, bw - 2, 1.5);
+                        }
 
                         c2.strokeStyle = ink; c2.lineWidth = 2; c2.strokeRect(bx, by, bw, bh);
                         c2.strokeStyle = fineInk; c2.lineWidth = 0.85; c2.strokeRect(bx + 5, by + 5, bw - 10, bh - 10); c2.strokeRect(bx + 10, by + 10, bw - 20, bh - 20);
 
-                        // Double-wave guilloche filigree border along all 4 edges + embedded security fibers
+                        // Double-wave guilloche filigree border along all 4 edges + embedded security fibers (zero-GC)
                         for (var i = 0; i < 22; i++) {
                           var gx = bx + 12 + i * ((bw - 24) / 21);
                           c2.beginPath(); c2.moveTo(gx, by + 7); c2.quadraticCurveTo(gx + 5, by + 14, gx + 10, by + 7); c2.stroke();
@@ -5705,22 +6028,30 @@ window.StemLab = window.StemLab || {
                           c2.beginPath(); c2.moveTo(bx + 7, gy); c2.quadraticCurveTo(bx + 13, gy + 5, bx + 7, gy + 10); c2.stroke();
                           c2.beginPath(); c2.moveTo(bx + bw - 7, gy); c2.quadraticCurveTo(bx + bw - 13, gy + 5, bx + bw - 7, gy + 10); c2.stroke();
                         }
-                        // Corner rosette medallions behind corner denominations
-                        [[bx + 19, by + 22], [bx + bw - 19, by + 22], [bx + 19, by + bh - 18], [bx + bw - 19, by + bh - 18]].forEach(function(cp) {
-                          c2.strokeStyle = 'rgba(23,63,52,0.34)'; c2.lineWidth = 0.8;
-                          c2.beginPath(); c2.arc(cp[0], cp[1], 11, 0, Math.PI * 2); c2.stroke();
-                          c2.beginPath(); c2.arc(cp[0], cp[1], 8.5, 0, Math.PI * 2); c2.stroke();
-                        });
-                        [[.08,.28,'#dc2626'],[.17,.73,'#2563eb'],[.29,.19,'#dc2626'],[.38,.82,'#2563eb'],[.52,.25,'#2563eb'],[.61,.70,'#dc2626'],[.74,.17,'#2563eb'],[.83,.61,'#dc2626'],[.91,.34,'#2563eb']].forEach(function(fp) {
-                          c2.strokeStyle = fp[2]; c2.lineWidth = 1.1; c2.beginPath(); c2.moveTo(bx + bw * fp[0], by + bh * fp[1]); c2.lineTo(bx + bw * fp[0] + 4, by + bh * fp[1] + 2); c2.stroke();
-                        });
+                        // Corner rosette medallions behind corner denominations (pre-allocated buffer)
+                        _dbCornerX[0] = bx + 19; _dbCornerY[0] = by + 22;
+                        _dbCornerX[1] = bx + bw - 19; _dbCornerY[1] = by + 22;
+                        _dbCornerX[2] = bx + 19; _dbCornerY[2] = by + bh - 18;
+                        _dbCornerX[3] = bx + bw - 19; _dbCornerY[3] = by + bh - 18;
+                        c2.strokeStyle = isHC ? '#000000' : 'rgba(23,63,52,0.34)'; c2.lineWidth = 0.8;
+                        for (var ci = 0; ci < 4; ci++) {
+                          c2.beginPath(); c2.arc(_dbCornerX[ci], _dbCornerY[ci], 11, 0, Math.PI * 2); c2.stroke();
+                          c2.beginPath(); c2.arc(_dbCornerX[ci], _dbCornerY[ci], 8.5, 0, Math.PI * 2); c2.stroke();
+                        }
+                        for (var fi2 = 0; fi2 < _DB_FIBER_COUNT; fi2++) {
+                          c2.strokeStyle = _dbFiberIsRed[fi2] ? '#dc2626' : '#2563eb';
+                          c2.lineWidth = 1.1;
+                          var fx2 = bx + bw * _dbFiberX[fi2];
+                          var fy2 = by + bh * _dbFiberY[fi2];
+                          c2.beginPath(); c2.moveTo(fx2, fy2); c2.lineTo(fx2 + 4, fy2 + 2); c2.stroke();
+                        }
 
                         // Note typography, identifiers, seals, and a stylized portrait vignette.
                         if (side === 'back') {
                           // Reverse: both sides of the Great Seal and their major symbols.
                           var backFs = Math.max(6, Math.min(11, bw / 54));
                           c2.fillStyle = ink; c2.textAlign = 'center'; c2.font = 'bold ' + (backFs * 1.15) + 'px serif'; c2.fillText('THE UNITED STATES OF AMERICA', bx + bw / 2, by + 22);
-                          c2.font = 'bold ' + Math.max(22, bh * 0.22) + 'px serif'; c2.fillStyle = 'rgba(23,63,52,.16)'; c2.fillText('ONE', bx + bw / 2, by + bh * 0.63);
+                          c2.font = 'bold ' + Math.max(22, bh * 0.22) + 'px serif'; c2.fillStyle = isHC ? 'rgba(0,0,0,0.12)' : 'rgba(23,63,52,.16)'; c2.fillText('ONE', bx + bw / 2, by + bh * 0.63);
                           c2.fillStyle = ink; c2.font = 'bold ' + (backFs * 0.9) + 'px serif'; c2.fillText('IN GOD WE TRUST', bx + bw / 2, by + 39);
                           var leftX = bx + bw * 0.27, rightX = bx + bw * 0.73, sealY = by + bh * 0.54, sealR = Math.min(bw * 0.16, bh * 0.34);
                           c2.strokeStyle = ink; c2.lineWidth = 1.4; c2.beginPath(); c2.arc(leftX, sealY, sealR, 0, Math.PI * 2); c2.stroke(); c2.beginPath(); c2.arc(rightX, sealY, sealR, 0, Math.PI * 2); c2.stroke();
@@ -5734,7 +6065,7 @@ window.StemLab = window.StemLab || {
                             c2.beginPath(); c2.moveTo(leftX - half, sy); c2.lineTo(leftX + half, sy); c2.stroke();
                           }
                           c2.beginPath(); c2.moveTo(leftX - sealR * .67, pyramidBase); c2.lineTo(leftX, pyramidTop); c2.lineTo(leftX + sealR * .67, pyramidBase); c2.stroke();
-                          c2.beginPath(); c2.ellipse(leftX, sealY - sealR * .62, sealR * .24, sealR * .12, 0, 0, Math.PI * 2); c2.stroke();
+                          c2.beginPath(); _moneySafeEllipse(c2, leftX, sealY - sealR * .62, sealR * .24, sealR * .12, 0, 0, Math.PI * 2); c2.stroke();
                           c2.fillStyle = ink; c2.beginPath(); c2.arc(leftX, sealY - sealR * .62, 1.8, 0, Math.PI * 2); c2.fill();
                           c2.font = 'bold ' + (backFs * .62) + 'px serif'; c2.fillText('ANNUIT COEPTIS', leftX, sealY - sealR * .82); c2.fillText('NOVUS ORDO SECLORUM', leftX, sealY + sealR * .78);
                           c2.font = 'bold ' + (backFs * .68) + 'px serif'; c2.fillText('MDCCLXXVI', leftX, pyramidBase + backFs);
@@ -5743,14 +6074,14 @@ window.StemLab = window.StemLab || {
                           c2.fillStyle = '#b8c9b2'; c2.strokeStyle = ink; c2.lineWidth = 1.1;
                           c2.beginPath(); c2.moveTo(rightX, sealY - sealR * .12); c2.bezierCurveTo(rightX - sealR * .25, sealY - sealR * .62, rightX - sealR * .78, sealY - sealR * .58, rightX - sealR * .72, sealY - sealR * .05); c2.bezierCurveTo(rightX - sealR * .42, sealY - sealR * .28, rightX - sealR * .25, sealY + sealR * .05, rightX, sealY + sealR * .24); c2.fill(); c2.stroke();
                           c2.beginPath(); c2.moveTo(rightX, sealY - sealR * .12); c2.bezierCurveTo(rightX + sealR * .25, sealY - sealR * .62, rightX + sealR * .78, sealY - sealR * .58, rightX + sealR * .72, sealY - sealR * .05); c2.bezierCurveTo(rightX + sealR * .42, sealY - sealR * .28, rightX + sealR * .25, sealY + sealR * .05, rightX, sealY + sealR * .24); c2.fill(); c2.stroke();
-                          c2.beginPath(); c2.ellipse(rightX, sealY, sealR * .23, sealR * .39, 0, 0, Math.PI * 2); c2.fill(); c2.stroke();
+                          c2.beginPath(); _moneySafeEllipse(c2, rightX, sealY, sealR * .23, sealR * .39, 0, 0, Math.PI * 2); c2.fill(); c2.stroke();
                           c2.beginPath(); c2.arc(rightX + sealR * .12, sealY - sealR * .36, sealR * .13, 0, Math.PI * 2); c2.fill(); c2.stroke();
                           c2.fillStyle = '#dfe8d8'; c2.fillRect(rightX - sealR * .21, sealY - sealR * .05, sealR * .42, sealR * .43); c2.strokeRect(rightX - sealR * .21, sealY - sealR * .05, sealR * .42, sealR * .43);
                           for (var stripe = 1; stripe < 7; stripe++) { c2.beginPath(); c2.moveTo(rightX - sealR * .21 + stripe * sealR * .06, sealY + sealR * .10); c2.lineTo(rightX - sealR * .21 + stripe * sealR * .06, sealY + sealR * .38); c2.stroke(); }
                           c2.beginPath(); c2.moveTo(rightX - sealR * .62, sealY + sealR * .47); c2.lineTo(rightX - sealR * .18, sealY + sealR * .31); c2.stroke();
-                          for (var leaf = 0; leaf < 4; leaf++) { c2.beginPath(); c2.ellipse(rightX - sealR * (.55 - leaf * .11), sealY + sealR * (.42 - leaf * .04), sealR * .07, sealR * .035, -.45, 0, Math.PI * 2); c2.stroke(); }
+                          for (var leaf = 0; leaf < 4; leaf++) { c2.beginPath(); _moneySafeEllipse(c2, rightX - sealR * (.55 - leaf * .11), sealY + sealR * (.42 - leaf * .04), sealR * .07, sealR * .035, -.45, 0, Math.PI * 2); c2.stroke(); }
                           for (var arrow = 0; arrow < 3; arrow++) { var ay = sealY + sealR * (.37 + arrow * .055); c2.beginPath(); c2.moveTo(rightX + sealR * .20, ay); c2.lineTo(rightX + sealR * .63, ay + sealR * .10); c2.stroke(); }
-                          c2.fillStyle = '#eef3e9'; c2.beginPath(); c2.ellipse(rightX, sealY - sealR * .54, sealR * .51, sealR * .12, 0, 0, Math.PI * 2); c2.fill(); c2.stroke();
+                          c2.fillStyle = '#eef3e9'; c2.beginPath(); _moneySafeEllipse(c2, rightX, sealY - sealR * .54, sealR * .51, sealR * .12, 0, 0, Math.PI * 2); c2.fill(); c2.stroke();
                           c2.fillStyle = ink; c2.font = 'bold ' + (backFs * .62) + 'px serif'; c2.fillText('E PLURIBUS UNUM', rightX, sealY - sealR * .51);
                           c2.font = 'bold ' + (backFs * .55) + 'px serif'; c2.fillText('THE GREAT SEAL', leftX, by + bh - 19); c2.fillText('OF THE UNITED STATES', rightX, by + bh - 19);
                           c2.font = 'bold ' + (backFs * 1.15) + 'px serif'; c2.fillText('ONE DOLLAR', bx + bw / 2, by + bh - 6);
@@ -5761,9 +6092,9 @@ window.StemLab = window.StemLab || {
                           c2.font = 'bold ' + (fs * 1.12) + 'px serif'; c2.fillText('THE UNITED STATES OF AMERICA', bx + bw / 2, by + 33);
                           fitText('THIS NOTE IS LEGAL TENDER FOR ALL DEBTS, PUBLIC AND PRIVATE', bx + bw / 2, by + 44, bw * 0.62, fs * 0.72, '', 'center');
                           var px = bx + bw * 0.5, py = by + bh * 0.54, prx = bw * 0.115, pry = bh * 0.34;
-                          c2.strokeStyle = ink; c2.lineWidth = 1.4; c2.beginPath(); c2.ellipse(px, py, prx, pry, 0, 0, Math.PI * 2); c2.stroke();
+                          c2.strokeStyle = ink; c2.lineWidth = 1.4; c2.beginPath(); _moneySafeEllipse(c2, px, py, prx, pry, 0, 0, Math.PI * 2); c2.stroke();
                           c2.fillStyle = '#b8c9b2'; c2.beginPath(); c2.arc(px, py - pry * 0.22, pry * 0.25, 0, Math.PI * 2); c2.fill();
-                          c2.beginPath(); c2.ellipse(px, py + pry * 0.34, prx * 0.55, pry * 0.38, 0, Math.PI, Math.PI * 2); c2.fill();
+                          c2.beginPath(); _moneySafeEllipse(c2, px, py + pry * 0.34, prx * 0.55, pry * 0.38, 0, Math.PI, Math.PI * 2); c2.fill();
                           c2.fillStyle = ink; c2.font = 'bold ' + (fs * 0.72) + 'px serif'; c2.fillText('WASHINGTON', px, by + bh - 17);
                           drawSeal(bx + bw * 0.26, by + bh * 0.55, Math.max(14, bh * 0.18), '#202923', 'FEDERAL', 'B', 'RESERVE');
                           drawSeal(bx + bw * 0.74, by + bh * 0.55, Math.max(14, bh * 0.18), '#207149', 'TREASURY', '1789', 'SEAL');
@@ -5773,63 +6104,114 @@ window.StemLab = window.StemLab || {
                           c2.font = 'bold ' + Math.max(18, bh * 0.20) + 'px serif'; c2.fillText('1', bx + 19, by + 29); c2.fillText('1', bx + bw - 19, by + 29); c2.fillText('1', bx + 19, by + bh - 10); c2.fillText('1', bx + bw - 19, by + bh - 10);
                         }
 
-                        var anchors = side === 'back' ? [[bx + bw * .27, by + bh * .61],[bx + bw * .27, by + bh * .33],[bx + bw * .27, by + bh * .77],[bx + bw * .73, by + bh * .53],[bx + bw * .73, by + bh * .72],[bx + bw * .73, by + bh * .35]] : [[bx + bw * .5, by + 18],[bx + bw * .4, by + bh * .88],[bx + bw * .17, by + bh * .73],[bx + bw * .2, by + bh * .3],[bx + bw * .26, by + bh * .55],[bx + bw * .74, by + bh * .55]];
+                        // Smooth diagonal specular sheen sweep across engraved banknote surface (bypassed in HC / reduced motion)
+                        if (animatePulse && !isHC && hasLin) {
+                          var sheenCycle = ((t * 0.24) % 1.45) - 0.22;
+                          if (sheenCycle >= -0.2 && sheenCycle <= 1.2) {
+                            var sx0 = bx + bw * sheenCycle;
+                            c2.save();
+                            c2.beginPath(); c2.rect(bx + 2, by + 2, bw - 4, bh - 4); c2.clip();
+                            var sheenGrad = c2.createLinearGradient(sx0 - 44, by, sx0 + 44, by + bh);
+                            sheenGrad.addColorStop(0, 'rgba(255,255,255,0)');
+                            sheenGrad.addColorStop(0.5, 'rgba(255,255,255,0.20)');
+                            sheenGrad.addColorStop(1, 'rgba(255,255,255,0)');
+                            c2.fillStyle = sheenGrad;
+                            c2.fillRect(bx, by, bw, bh);
+                            c2.restore();
+                          }
+                        }
+
                         var pulsePhase = animatePulse ? (0.5 + 0.5 * Math.sin(t * 4.2)) : 0.65;
-                        anchors.forEach(function(a, ai) {
+                        var anchorCount = Math.min(6, features.length);
+                        for (var ai = 0; ai < anchorCount; ai++) {
+                          var ax = side === 'back' ? (bx + bw * _dbBackAnchorX[ai]) : (bx + bw * _dbFrontAnchorX[ai]);
+                          var ay2 = side === 'back' ? (by + bh * _dbBackAnchorY[ai]) : (ai === 0 ? (by + 18) : (by + bh * _dbFrontAnchorY[ai]));
                           var selected = ai === blink;
+                          var featColor = features[ai].color;
                           if (selected) {
                             c2.save();
                             if (hasRad) {
                               var haloR = 16 + pulsePhase * 7;
-                              var halo = c2.createRadialGradient(a[0], a[1], 4, a[0], a[1], haloR);
-                              halo.addColorStop(0, features[ai].color);
+                              var halo = c2.createRadialGradient(ax, ay2, 4, ax, ay2, haloR);
+                              halo.addColorStop(0, featColor);
                               halo.addColorStop(0.5, 'rgba(255,255,255,0.22)');
                               halo.addColorStop(1, 'rgba(255,255,255,0)');
                               c2.globalAlpha = 0.55;
                               c2.fillStyle = halo;
-                              c2.beginPath(); c2.arc(a[0], a[1], haloR, 0, Math.PI * 2); c2.fill();
+                              c2.beginPath(); c2.arc(ax, ay2, haloR, 0, Math.PI * 2); c2.fill();
                             }
-                            c2.globalAlpha = 0.72 - pulsePhase * 0.28;
-                            c2.strokeStyle = features[ai].color;
-                            c2.lineWidth = 1.6;
-                            c2.beginPath(); c2.arc(a[0], a[1], 11 + pulsePhase * 4.5, 0, Math.PI * 2); c2.stroke();
+                            c2.globalAlpha = isHC ? 1 : (0.72 - pulsePhase * 0.28);
+                            c2.strokeStyle = isHC ? '#ffff00' : featColor;
+                            c2.lineWidth = isHC ? 2.2 : 1.6;
+                            c2.beginPath(); c2.arc(ax, ay2, 11 + pulsePhase * 4.5, 0, Math.PI * 2); c2.stroke();
+                            // Crisp feature-transition impact ripple + zero-GC orbiting micro-glints
+                            if (animatePulse && !isHC) {
+                              var ringAge = t - blinkChangedAt;
+                              if (ringAge >= 0 && ringAge < 0.75) {
+                                var rProg = ringAge / 0.75;
+                                c2.globalAlpha = (1 - rProg) * 0.72;
+                                c2.strokeStyle = '#ffffff';
+                                c2.lineWidth = 1.6 * (1 - rProg) + 0.5;
+                                c2.beginPath(); c2.arc(ax, ay2, 10 + rProg * 22, 0, Math.PI * 2); c2.stroke();
+                              }
+                              for (var sp = 0; sp < _DB_SPARK_COUNT; sp++) {
+                                var spAng = _dbSparkAng[sp] + t * _dbSparkSpd[sp];
+                                var spR = _dbSparkRad[sp] + Math.sin(t * 3.1 + sp) * 2.2;
+                                var spX = ax + Math.cos(spAng) * spR;
+                                var spY = ay2 + Math.sin(spAng) * spR;
+                                c2.globalAlpha = 0.28 + 0.42 * (0.5 + 0.5 * Math.sin(t * 5.2 + sp * 1.4));
+                                c2.fillStyle = sp % 2 === 0 ? '#ffffff' : featColor;
+                                c2.beginPath(); c2.arc(spX, spY, 1.35, 0, Math.PI * 2); c2.fill();
+                              }
+                            }
                             c2.restore();
                           }
                           c2.save();
-                          if (selected) { c2.shadowColor = features[ai].color; c2.shadowBlur = 10; }
-                          c2.fillStyle = features[ai].color; c2.strokeStyle = selected ? '#fff' : '#064e3b'; c2.lineWidth = selected ? 2.5 : 1;
-                          c2.beginPath(); c2.arc(a[0], a[1], selected ? 8.5 : 6, 0, Math.PI * 2); c2.fill(); c2.stroke();
+                          if (selected && !isHC) { c2.shadowColor = featColor; c2.shadowBlur = 10; }
+                          c2.fillStyle = isHC ? (selected ? '#ffff00' : '#ffffff') : featColor;
+                          c2.strokeStyle = selected ? (isHC ? '#000000' : '#fff') : '#064e3b';
+                          c2.lineWidth = selected ? 2.5 : 1;
+                          c2.beginPath(); c2.arc(ax, ay2, selected ? 8.5 : 6, 0, Math.PI * 2); c2.fill(); c2.stroke();
                           c2.restore();
-                          c2.fillStyle = '#052e2b'; c2.font = 'bold 8px sans-serif'; c2.textAlign = 'center'; c2.fillText(String(ai + 1), a[0], a[1] + 3);
-                        });
+                          c2.fillStyle = '#052e2b'; c2.font = 'bold 8px sans-serif'; c2.textAlign = 'center'; c2.fillText(String(ai + 1), ax, ay2 + 3);
+                        }
 
                         var panelX = compact ? 10 : W * 0.70;
                         var labelTop = compact ? by + bh + 20 : 38;
                         var colW = compact ? W / 2 : W * 0.285;
-                        var rowH = compact ? 32 : Math.max(35, (H - 104) / features.length);
-                        features.forEach(function(f, fi) {
-                          var selected = fi === blink;
+                        var rowH = compact ? 32 : Math.max(35, (H - 104) / Math.max(1, features.length));
+                        for (var fi = 0; fi < features.length; fi++) {
+                          var f = features[fi];
+                          var selF = fi === blink;
                           var lx = compact ? panelX + (fi % 2) * colW : panelX;
                           var ly = compact ? labelTop + Math.floor(fi / 2) * rowH : labelTop + fi * rowH;
-                          c2.fillStyle = selected ? 'rgba(255,255,255,.12)' : 'rgba(255,255,255,.04)'; c2.fillRect(lx, ly - 14, colW - 8, 24);
-                          c2.fillStyle = f.color; c2.beginPath(); c2.arc(lx + 10, ly - 2, 8, 0, Math.PI * 2); c2.fill();
+                          c2.fillStyle = isHC ? (selF ? '#1f2937' : '#000000') : (selF ? 'rgba(255,255,255,.12)' : 'rgba(255,255,255,.04)');
+                          c2.fillRect(lx, ly - 14, colW - 8, 24);
+                          if (isHC && selF) { c2.strokeStyle = '#ffff00'; c2.lineWidth = 1.2; c2.strokeRect(lx, ly - 14, colW - 8, 24); }
+                          c2.fillStyle = isHC ? (selF ? '#ffff00' : '#ffffff') : f.color; c2.beginPath(); c2.arc(lx + 10, ly - 2, 8, 0, Math.PI * 2); c2.fill();
                           c2.fillStyle = '#052e2b'; c2.font = 'bold 8px sans-serif'; c2.textAlign = 'center'; c2.fillText(String(fi + 1), lx + 10, ly + 1);
-                          c2.fillStyle = selected ? f.color : '#d1fae5'; fitText(f.label, lx + 23, ly + 2, colW - 34, compact ? 9 : 11, selected ? 'bold' : '');
-                        });
-                        c2.fillStyle = 'rgba(0,0,0,.76)'; c2.fillRect(8, H - 50, W - 16, 42);
-                        c2.fillStyle = features[blink].color; fitText(features[blink].label + ': ' + features[blink].detail, W / 2, H - 31, W - 30, compact ? 9 : 11, 'bold', 'center');
-                        c2.fillStyle = '#a7f3d0'; fitText(side === 'back' ? __alloT('stem.money.great_seal_1935_fact', 'Both sides of the Great Seal first appeared together on $1 paper money in 1935.') : __alloT('stem.money.one_dollar_no_modern_features', 'Important: the $1 note has no watermark, security thread, or color-shifting ink.'), W / 2, H - 15, W - 30, compact ? 8 : 10, '', 'center');
-                        cvEl._dbAnim = requestAnimationFrame(drawDb);
+                          c2.fillStyle = isHC ? (selF ? '#ffff00' : '#ffffff') : (selF ? f.color : '#d1fae5'); fitText(f.label, lx + 23, ly + 2, colW - 34, compact ? 9 : 11, selF ? 'bold' : '');
+                        }
+                        if (features[blink]) {
+                          c2.fillStyle = isHC ? '#000000' : 'rgba(0,0,0,.76)'; c2.fillRect(8, H - 50, W - 16, 42);
+                          if (isHC) { c2.strokeStyle = '#ffffff'; c2.lineWidth = 1; c2.strokeRect(8, H - 50, W - 16, 42); }
+                          c2.fillStyle = isHC ? '#ffff00' : features[blink].color; fitText(features[blink].label + ': ' + features[blink].detail, W / 2, H - 31, W - 30, compact ? 9 : 11, 'bold', 'center');
+                          c2.fillStyle = isHC ? '#ffffff' : '#a7f3d0'; fitText(side === 'back' ? __alloT('stem.money.great_seal_1935_fact', 'Both sides of the Great Seal first appeared together on $1 paper money in 1935.') : __alloT('stem.money.one_dollar_no_modern_features', 'Important: the $1 note has no watermark, security thread, or color-shifting ink.'), W / 2, H - 15, W - 30, compact ? 8 : 10, '', 'center');
+                        }
+                        if (typeof requestAnimationFrame === 'function') cvEl._dbAnim = requestAnimationFrame(drawDb);
                       }
                       drawDb();
-                      var ro = new ResizeObserver(function() {
-                        W = cvEl.offsetWidth; H = cvEl.offsetHeight;
-                        cvEl.width = W * 2; cvEl.height = H * 2;
-                        c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2); // reset first — scale() is cumulative, repeated resizes blew up the transform
-                        lastBlink = -1; // force a repaint at the new size
-                      });
-                      cvEl._dbRO = ro; // stored so the rAF teardown can disconnect it (was leaking on unmount)
-                      ro.observe(cvEl);
+                      if (typeof ResizeObserver === 'function') {
+                        var ro = new ResizeObserver(function() {
+                          W = cvEl.offsetWidth || 600; H = cvEl.offsetHeight || 180;
+                          cvEl.width = W * 2; cvEl.height = H * 2;
+                          if (typeof c2.setTransform === 'function') c2.setTransform(2, 0, 0, 2, 0, 0);
+                          else c2.scale(2, 2);
+                          lastBlink = -1; // force a repaint at the new size
+                        });
+                        cvEl._dbRO = ro; // stored so the rAF teardown can disconnect it (was leaking on unmount)
+                        ro.observe(cvEl);
+                      }
                     },
                     style: { width: '100%', height: '100%', display: 'block' }
                   })

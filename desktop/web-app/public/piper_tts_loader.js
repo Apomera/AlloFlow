@@ -321,6 +321,17 @@
         return picked;
     }
 
+    function _isRemoteBlocked() {
+        return typeof window !== 'undefined' && (
+            window._isDesktopBundledApp === true ||
+            window.__alloOfflineOnly === true ||
+            window.__ALLO_LOCAL_BOX === true ||
+            !!window.__alloQrStudentMode ||
+            window._alloQrBlocked === true ||
+            window.__alloStudentAiDisabled === true
+        );
+    }
+
     // Returns 'ok' | 'invalid' | 'transient'. Only permanent bad configs (404/410
     // or non-JSON 200 error pages) are 'invalid' and evict/blacklist the voice;
     // transient network/5xx/timeout errors return 'transient' so offline/flaky
@@ -329,7 +340,7 @@
         let controller = null;
         let timer = null;
         try {
-            if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) return 'invalid';
+            if (_isRemoteBlocked()) return 'transient';
             // Without PATH_MAP we cannot build the URL the library will use, so
             // there is nothing to pre-flight. Do not fail closed on a library
             // shape we do not recognise: the eviction, purge and corrupt-error
@@ -444,8 +455,11 @@
                     }
                     _fireProgress('Downloading ' + voiceInfo.name + ' voice', 0.2);
 
-                    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+                    const tryStoredVoice = async () => {
                         const storedList = typeof lib.stored === 'function' ? await lib.stored().catch(() => []) : [];
+                        if (generation !== _generation) {
+                            throw _abortError('Piper TTS was disposed while checking cached voices');
+                        }
                         if (Array.isArray(storedList) && storedList.includes(voiceId)) {
                             _loadedVoices.add(baseLang);
                             _currentLang = baseLang;
@@ -453,7 +467,12 @@
                             _fireProgress('Ready', 1.0);
                             return true;
                         }
-                        _unavailableLangs.add(baseLang);
+                        return false;
+                    };
+
+                    if (_isRemoteBlocked() || (typeof navigator !== 'undefined' && navigator.onLine === false)) {
+                        if (await tryStoredVoice()) return true;
+                        if (_isRemoteBlocked()) _unavailableLangs.add(baseLang);
                         return false;
                     }
 
@@ -464,8 +483,10 @@
                             // from the same bad response, so throw it out too.
                             await _evictVoice(lib, voiceId, baseLang);
                             _unavailableLangs.add(baseLang);
+                            return false;
                         }
-                        return false;
+                        // Transient network failure: reuse an already-downloaded OPFS voice if present.
+                        return tryStoredVoice();
                     }
 
                     // Pre-download the voice model into the OPFS cache.

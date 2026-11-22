@@ -1166,29 +1166,64 @@
     var activeStage = props.activeStage, onJump = props.onJump;
     var journalStageNotes = props.journalStageNotes || {};
     var sourceCount = props.sourceCount || 0;
+    var stageFlags = STAGES.map(function (s) {
+      var sn = journalStageNotes[s.key] || {};
+      return !!(sn.contestabilityRationale || sn.text || (s.key === 'sift_triage' && sourceCount > 0));
+    });
+    var startedCount = stageFlags.filter(Boolean).length;
+    var activeObj = STAGE_BY_KEY[activeStage] || STAGES[0];
+    var pct = Math.round((startedCount / STAGES.length) * 100);
+    function onTabKeyDown(e, idx) {
+      if (e.isComposing || (e.nativeEvent && e.nativeEvent.isComposing) || e.keyCode === 229) return;
+      var nextIdx = null;
+      if (e.key === 'ArrowRight') nextIdx = (idx + 1) % STAGES.length;
+      else if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + STAGES.length) % STAGES.length;
+      else if (e.key === 'Home') nextIdx = 0;
+      else if (e.key === 'End') nextIdx = STAGES.length - 1;
+      if (nextIdx === null) return;
+      e.preventDefault();
+      if (typeof onJump === 'function') onJump(STAGES[nextIdx].key);
+      var parent = e.currentTarget && e.currentTarget.parentElement;
+      if (parent) {
+        var tabs = parent.querySelectorAll('[role="tab"]');
+        if (tabs[nextIdx]) tabs[nextIdx].focus();
+      }
+    }
     return (
-      <div role="tablist" aria-label={t('humanities.aria_stage_nav') || "Stage navigation"}
-        style={{ display: 'flex', flexWrap: 'wrap', gap: '6px',
-          padding: '6px 0', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
-        {STAGES.map(function (s, idx) {
-          var isActive = activeStage === s.key;
-          var sn = journalStageNotes[s.key] || {};
-          var hasWork = !!(sn.contestabilityRationale || sn.text || (s.key === 'sift_triage' && sourceCount > 0));
-          return (
-            <button key={s.key} type="button" role="tab" aria-selected={isActive}
-              onClick={function () { if (typeof onJump === 'function') onJump(s.key); }}
-              style={{ minHeight: '44px', padding: '6px 12px', borderRadius: '999px',
-                background: isActive ? s.color : '#ffffff',
-                color: isActive ? '#ffffff' : '#475569',
-                border: '1px solid ' + (isActive ? s.color : '#cbd5e1'),
-                fontWeight: 700, fontSize: '11px', cursor: 'pointer',
-                display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <span aria-hidden="true">{(idx + 1) + '. '}</span>
-              <span>{s.shortLabel}</span>
-              {hasWork && <span aria-hidden="true">{'\u{2713}'}</span>}
-            </button>
-          );
-        })}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div role="tablist" aria-label={t('humanities.aria_stage_nav') || "Stage navigation"}
+          style={{ display: 'flex', flexWrap: 'wrap', gap: '6px',
+            padding: '6px 0', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
+          {STAGES.map(function (s, idx) {
+            var isActive = activeStage === s.key;
+            var hasWork = stageFlags[idx];
+            return (
+              <button key={s.key} type="button" role="tab" aria-selected={isActive}
+                tabIndex={isActive ? 0 : -1}
+                onKeyDown={function (e) { onTabKeyDown(e, idx); }}
+                onClick={function () { if (typeof onJump === 'function') onJump(s.key); }}
+                style={{ minHeight: '44px', padding: '6px 12px', borderRadius: '999px',
+                  background: isActive ? s.color : '#ffffff',
+                  color: isActive ? '#ffffff' : '#334155',
+                  border: '1px solid ' + (isActive ? s.color : '#cbd5e1'),
+                  fontWeight: 700, fontSize: '11px', cursor: 'pointer',
+                  display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                <span aria-hidden="true">{(idx + 1) + '. '}</span>
+                <span>{s.shortLabel}</span>
+                {hasWork && <span aria-hidden="true">{'\u{2713}'}</span>}
+                {hasWork && <span className="sr-only"> (has work)</span>}
+              </button>
+            );
+          })}
+        </div>
+        <div data-lane-stage-progress="true" role="progressbar"
+          aria-label={t('humanities.stage_progress_aria') || 'Inquiry cycle progress'}
+          aria-valuemin={0} aria-valuemax={STAGES.length} aria-valuenow={startedCount}
+          aria-valuetext={startedCount + ' of ' + STAGES.length + ' stages started, currently on ' + (activeObj ? activeObj.label : activeStage)}
+          style={{ height: '6px', width: '100%', borderRadius: '999px', background: '#e2e8f0', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: pct + '%', background: '#be185d',
+            transition: (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'none' : 'width 0.2s ease' }} />
+        </div>
       </div>
     );
   }
@@ -1202,14 +1237,17 @@
     var _other = useState(''); var otherText = _other[0]; var setOtherText = _other[1];
     var canCommit = !!chipId && (chipId !== 'other' || otherText.trim().length >= 10);
     var modalRef = useRef(null);
+    var backdropDownRef = useRef(false);
     useFocusTrap(modalRef, true, onCancel);
     return (
       <div ref={modalRef} role="dialog" aria-modal="true"
         aria-label={t('humanities.loopback_modal_title') || 'Why are you looping back?'}
+        aria-describedby="hum-loopback-help"
         style={{ position: 'fixed', inset: 0, zIndex: 80,
           background: 'rgba(15,23,42,0.7)', backdropFilter: 'blur(4px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
-        onClick={function (e) { if (e.target === e.currentTarget) onCancel(); }}>
+        onMouseDown={function (e) { backdropDownRef.current = (e.target === e.currentTarget); }}
+        onClick={function (e) { var ok = backdropDownRef.current; backdropDownRef.current = false; if (ok && e.target === e.currentTarget) onCancel(); }}>
         <div onClick={function (e) { e.stopPropagation(); }}
           style={{ background: '#fff', borderRadius: '16px', maxWidth: '480px', width: '100%',
             padding: '20px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)', maxHeight: '90vh', overflowY: 'auto' }}>
@@ -1217,7 +1255,7 @@
             <span aria-hidden="true">{'\u{1F501} '}</span>
             {t('humanities.loopback_modal_title') || 'Why are you looping back?'}
           </h3>
-          <p style={{ margin: '4px 0 12px', fontSize: '11px', color: '#64748b', lineHeight: 1.5 }}>
+          <p id="hum-loopback-help" style={{ margin: '4px 0 12px', fontSize: '11px', color: '#475569', lineHeight: 1.5 }}>
             {t('humanities.loopback_modal_help') ||
               'Loops are how rigor accumulates in humanities work. Your downstream work is preserved; you can return.'}
           </p>
@@ -1311,13 +1349,20 @@
   }
 
   function TextareaCard(props) {
+    var val = String(props.value || '');
+    var maxLen = props.max || 800;
     return (
       <div style={{ padding: '12px', borderRadius: '12px', background: '#fff', border: '1px solid #e2e8f0' }}>
         <label style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', display: 'block' }}>
-          {props.label}
+          <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' }}>
+            <span>{props.label}</span>
+            <span data-textarea-char-count="true" style={{ fontSize: '11px', fontWeight: 600, color: '#475569', fontVariantNumeric: 'tabular-nums' }}>
+              {val.length} / {maxLen}
+            </span>
+          </span>
           {props.help && (<span style={{ display: 'block', margin: '4px 0', fontSize: '11px', fontWeight: 400, color: '#475569', lineHeight: 1.5 }}>{props.help}</span>)}
-          <textarea value={props.value || ''} onChange={function (e) { props.onChange(e.target.value); }}
-            rows={props.rows || 3} maxLength={props.max || 800}
+          <textarea value={val} onChange={function (e) { props.onChange(e.target.value); }}
+            rows={props.rows || 3} maxLength={maxLen}
             placeholder={props.placeholder || ''}
             style={{ marginTop: '4px', width: '100%', boxSizing: 'border-box',
               padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1',
@@ -1339,6 +1384,7 @@
     var pair = props.pair;
     var floors = devFloors(journal.devLevel || '6_8');
     var _open = useState(false); var open = _open[0]; var setOpen = _open[1];
+    var _reasonHint = useState(''); var reasonHint = _reasonHint[0]; var setReasonHint = _reasonHint[1];
     if (!pair || !ExemplarPair) return null;
 
     function tokenBoundReasoning(reasoning) {
@@ -1374,9 +1420,10 @@
           <ExemplarPair t={t} criterion={pair.criterion} strongExample={pair.strongExample} weakExample={pair.weakExample}
             onJudgment={function (j) {
               if (!tokenBoundReasoning(j.reasoning)) {
-                // reject silently — let primitive's internal state hold
+                setReasonHint(t('humanities.exemplar_reasoning_feedback') || ('Write at least ' + floors.exemplarReason + ' characters referencing both the criterion and the strong example.'));
                 return;
               }
+              setReasonHint('');
               setJournal(function (prev) {
                 var next = Object.assign({}, prev);
                 next.stageNotes = Object.assign({}, prev.stageNotes || {});
@@ -1385,7 +1432,12 @@
                 next.stageNotes[stageKey] = sn; return next;
               });
             }} />
-          <p style={{ margin: '6px 0 0', fontSize: '10px', color: '#a16207', fontStyle: 'italic' }}>
+          {reasonHint && (
+            <p data-exemplar-feedback="true" role="status" aria-live="polite" style={{ margin: '6px 0 0', fontSize: '11px', fontWeight: 700, color: '#b91c1c' }}>
+              {reasonHint}
+            </p>
+          )}
+          <p style={{ margin: '6px 0 0', fontSize: '11px', color: '#78350f', fontStyle: 'italic' }}>
             Reasoning must be ≥{floors.exemplarReason} chars AND mention something from the criterion AND the strong example.
           </p>
           <button type="button"
@@ -1640,15 +1692,20 @@
       <div style={{ padding: '14px', borderRadius: '14px',
         background: '#fdf2f8', border: '1px solid #f9a8d4',
         display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 800, color: '#9d174d' }}>
-          <span aria-hidden="true">{'\u{1F9ED} '}</span>
-          {t('humanities.positionality_edit_title') || 'Your standpoint — material relationship to the question'}
-        </h4>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' }}>
+          <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 800, color: '#9d174d' }}>
+            <span aria-hidden="true">{'\u{1F9ED} '}</span>
+            {t('humanities.positionality_edit_title') || 'Your standpoint — material relationship to the question'}
+          </h4>
+          <span data-positionality-char-count="true" role="status" aria-live="polite" style={{ fontSize: '11px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: draftLenOk ? '#166534' : '#9d174d' }}>
+            {draft.trim().length} / {floors.positionality}+
+          </span>
+        </div>
         <p style={{ margin: 0, fontSize: '11px', color: '#831843', lineHeight: 1.5 }}>
           {t('humanities.positionality_edit_help', { min: floors.positionality }) ||
             ('Name your MATERIAL relationship to this question, not a generic identity. ≥' + floors.positionality + ' chars or 5s+ voice. Generic-identity statements ("as a student", "an observer") are refused.')}
         </p>
-        <textarea aria-label={t('humanities.positionality_edit_title') || 'Your standpoint — material relationship to the question'} value={draft} rows={4} maxLength={1500}
+        <textarea aria-label={t('humanities.positionality_edit_title') || 'Your standpoint — material relationship to the question'} aria-invalid={draftDenied ? 'true' : undefined} value={draft} rows={4} maxLength={1500}
           onChange={function (e) { setDraft(e.target.value); }}
           placeholder={t('humanities.positionality_edit_ph') || 'I am [specific relationship to this question]. This question matters to me because [material stake].'}
           style={{ width: '100%', boxSizing: 'border-box',
@@ -1656,7 +1713,7 @@
             border: '1px solid ' + (draftDenied ? '#dc2626' : '#f9a8d4'),
             fontSize: '12px', fontFamily: 'inherit', resize: 'vertical', minHeight: '70px' }} />
         {draftDenied && (
-          <p style={{ margin: 0, fontSize: '10px', color: '#dc2626' }}>
+          <p role="alert" style={{ margin: 0, fontSize: '11px', color: '#b91c1c', fontWeight: 600 }}>
             {t('humanities.positionality_denied') || 'This reads as boilerplate identity. Name your material relationship to this question, not a generic category.'}
           </p>
         )}

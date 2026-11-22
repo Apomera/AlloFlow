@@ -15,11 +15,14 @@
   var originalEmissive = new WeakMap();
   var requestSerial = 0, pendingController = null, busy = false, selectedContentId = null;
   var contentNotice = '', sceneReady = false, textSerial = 0, eventSerial = 0, latestView;
-  var ACTIVE_KEY = 'alloflow-life-outing-active:v1';
-  var REFLECTION_PREFIX = 'alloflow-life-outing-reflection:v1:';
-  var COMPARISON_PREFIX = 'alloflow-life-outing-comparison:v1:';
-  var PLAN_PREFIX = 'alloflow-life-outing-plan:v1:';
-  var VIEW_KEY = 'alloflow-life-outing-view:v1';
+  var urlParams = new URLSearchParams(window.location && window.location.search ? window.location.search : '');
+  var learnerScope = String(urlParams.get('learner') || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 48);
+  var scopeTag = learnerScope ? ':' + learnerScope : '';
+  var ACTIVE_KEY = 'alloflow-life-outing-active:v1' + scopeTag;
+  var REFLECTION_PREFIX = 'alloflow-life-outing-reflection:v1' + scopeTag + ':';
+  var COMPARISON_PREFIX = 'alloflow-life-outing-comparison:v1' + scopeTag + ':';
+  var PLAN_PREFIX = 'alloflow-life-outing-plan:v1' + scopeTag + ':';
+  var VIEW_KEY = 'alloflow-life-outing-view:v1' + scopeTag;
   var simpleView = false, extraTools = false, presentationDisposed = false, readService = null, readUtterance = null, readScope = null, readText = '', readSerial = 0, readStartTimer = null, readButtonId = null;
   try { simpleView = !!storage && storage.getItem(VIEW_KEY) === 'simple'; } catch (_) {}
   try { if (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') readService = window.speechSynthesis; } catch (_) {}
@@ -49,7 +52,7 @@
     return el;
   }
   function announce(value) { text('announcer', value); }
-  function savedRuns() { try { return storage ? E.listRuns(storage) : []; } catch (_) { return []; } }
+  function savedRuns() { try { return storage ? E.listRuns(storage, learnerScope) : []; } catch (_) { return []; } }
   function configToControls() {
     byId('contextSelect').value = current.config.context;
     byId('supportSelect').value = current.config.support;
@@ -169,10 +172,10 @@
   }
   function persist() {
     var result;
-    try { result = storage ? E.saveRun(storage, current) : { ok: false, message: 'Device storage is unavailable.' }; }
+    try { result = storage ? E.saveRun(storage, current, learnerScope) : { ok: false, message: 'Device storage is unavailable.' }; }
     catch (_) { result = { ok: false, message: 'This practice could not be saved on this device.' }; }
     if (result.ok) {
-      try { storage.setItem(ACTIVE_KEY, E.saveKey(current)); } catch (_) {}
+      try { storage.setItem(ACTIVE_KEY, E.saveKey(current, learnerScope)); } catch (_) {}
       text('saveStatus', 'Saved on this device · ' + current.commands.length + ' practice steps');
       try {
         storage.setItem(REFLECTION_PREFIX + current.runId, byId('reflection').value.slice(0,600));
@@ -2166,7 +2169,7 @@
     // The canvas can regain focus when the original pointer event finishes.
     if (window.requestAnimationFrame) window.requestAnimationFrame(function () {
       var active = document.activeElement, scene = byId('outingScene');
-      if (owner === current && selection === selectedObject && focused.isConnected && (active === document.body || active === scene.canvas)) focused.focus();
+      if (owner === current && selection === selectedObject && focused && focused.isConnected && (active === document.body || active === scene.canvas)) focused.focus();
     });
   }
 
@@ -2391,8 +2394,12 @@
   window.addEventListener('pageshow',function(){presentationDisposed=false;if(latestView)renderPresentation();});
   window.addEventListener('beforeunload',function(){stopReading();presentationDisposed=true;abortStory();clearWaterMotion();if(motionPreference&&motionPreference.removeEventListener)motionPreference.removeEventListener('change',motionPreferenceChanged);if(client)client.destroy();});
   var restored;
-  try{var key=storage&&storage.getItem(ACTIVE_KEY);if(key)restored=E.readRun(storage,key);}catch(_){}
+  try{var key=storage&&storage.getItem(ACTIVE_KEY);if(key)restored=E.readRun(storage,key,learnerScope);}catch(_){}
   if(!restored){var valid=savedRuns().find(function(entry){return entry.run;});if(valid)restored=valid.run;}
   try { buildScene(); } catch (_) { sceneReady = false; byId('sceneContainer').hidden = true; byId('sceneUnavailable').hidden = false; byId('sceneToggle').disabled = true; byId('focusView').disabled = true; }
-  changeRun(restored||E.createRun({context:'community',support:'guided',language:'plain',variation:'rain'}));
+  var initContext = ['community', 'work'].indexOf(urlParams.get('context')) >= 0 ? urlParams.get('context') : 'community';
+  var initSupport = ['guided', 'try', 'independent'].indexOf(urlParams.get('support')) >= 0 ? urlParams.get('support') : 'guided';
+  var initLanguage = ['plain', 'standard'].indexOf(urlParams.get('language')) >= 0 ? urlParams.get('language') : 'plain';
+  var initVariation = ['rain', 'warm', 'bus-delay'].indexOf(urlParams.get('variation')) >= 0 ? urlParams.get('variation') : 'rain';
+  changeRun(restored||E.createRun({context:initContext,support:initSupport,language:initLanguage,variation:initVariation}));
 }());

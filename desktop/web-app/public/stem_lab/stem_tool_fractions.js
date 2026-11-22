@@ -413,6 +413,13 @@ window.StemLab = window.StemLab || {
       '.fraction-lab-equivalence-canvas-wrap:after{content:"";position:absolute;inset:0;border-radius:16px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);pointer-events:none}',
       '.fraction-lab-equivalence-canvas{width:100%;height:100%;display:block}',
       '.fraction-lab-equivalence-canvas:focus-visible{outline:3px solid #0ea5e9;outline-offset:-4px}',
+      '@keyframes fracSliceRipple{0%{transform:scale(0.84);opacity:0.74}100%{transform:scale(1.14);opacity:0}}',
+      '@keyframes fracBeaconPulse{0%,100%{opacity:0.2}50%{opacity:0.54}}',
+      '@keyframes fracBridgeGlow{0%,100%{opacity:0.55}50%{opacity:0.96}}',
+      '.frac-ripple{animation:fracSliceRipple 480ms ease-out forwards;transform-box:fill-box;transform-origin:center}',
+      '.frac-beacon-pulse{animation:fracBeaconPulse 2.2s ease-in-out infinite}',
+      '.frac-bridge-glow{animation:fracBridgeGlow 2.4s ease-in-out infinite}',
+      '@media (prefers-reduced-motion:reduce){.frac-ripple,.frac-beacon-pulse,.frac-bridge-glow{animation:none!important}}',
       ".fraction-lab-navigation,.fraction-lab-guidance{padding:12px;border:1px solid var(--fraction-nav-border);border-radius:14px;background:var(--fraction-nav-bg);color:var(--fraction-nav-ink)}",
       ".fraction-lab-nav-label{font-size:12px;font-weight:700;margin:0 0 8px;color:var(--fraction-nav-muted)}",
       ".fraction-lab-goals,.fraction-lab-activities{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}",
@@ -2034,20 +2041,42 @@ window.StemLab = window.StemLab || {
       else if (typeof c2.scale === 'function') c2.scale(2, 2);
       var ro = null;
       var unsubTheme = null;
+      var efRaf = null;
+      var efStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      // Zero-GC pre-allocated metadata & alignment-pulse phase pool
+      var EF_FRACS = [
+        { num: 1, den: 2, color: '#f472b6', deep: '#9d174d', label: '1/2' },
+        { num: 2, den: 4, color: '#a78bfa', deep: '#5b21b6', label: '2/4' },
+        { num: 4, den: 8, color: '#38bdf8', deep: '#0369a1', label: '4/8' },
+        { num: 8, den: 16, color: '#34d399', deep: '#047857', label: '8/16' }
+      ];
+      var EF_PULSE_PHASES = new Float32Array([0.0, 0.333, 0.667]);
+      function efIsHc() {
+        return !!(typeof document !== 'undefined' && document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast'));
+      }
+      function efReducedMotion() {
+        try { return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; }
+      }
       function cleanupEf() {
+        if (efRaf != null) { try { cancelAnimationFrame(efRaf); } catch (e) {} efRaf = null; }
         if (ro) { try { ro.disconnect(); } catch (e) {} ro = null; }
         if (typeof unsubTheme === 'function') { try { unsubTheme(); } catch (e) {} unsubTheme = null; }
         cvEl._efRO = null;
         cvEl._efThemeUnsub = null;
         cvEl._efDone = false;
       }
-      function drawEf() {
+      function drawEf(nowMs) {
         if (!cvEl.isConnected) { cleanupEf(); return; }
+        var hc = efIsHc();
+        var rm = efReducedMotion();
+        var tSec = rm ? 0 : (((typeof nowMs === 'number' ? nowMs : (typeof performance !== 'undefined' ? performance.now() : Date.now())) - efStart) / 1000);
         var astP2 = (window.AlloStemTheme && window.AlloStemTheme.palette) ? window.AlloStemTheme.palette() : { deeper: '#020210', panel: '#1e293b', textSoft: '#cbd5e1' };
-        var hasRad = typeof c2.createRadialGradient === 'function';
-        var hasLin = typeof c2.createLinearGradient === 'function';
-        // Studio dark backdrop with subtle radial spotlight
-        if (hasRad) {
+        var hasRad = !hc && typeof c2.createRadialGradient === 'function';
+        var hasLin = !hc && typeof c2.createLinearGradient === 'function';
+        // Studio dark backdrop with subtle radial spotlight (pure black in High-Contrast)
+        if (hc) {
+          c2.fillStyle = '#000000';
+        } else if (hasRad) {
           var bgGrad = c2.createRadialGradient(W * 0.5, H * 0.42, 12, W * 0.5, H * 0.45, Math.max(W, H) * 0.72);
           bgGrad.addColorStop(0, '#131633');
           bgGrad.addColorStop(0.55, astP2.deeper || '#06081d');
@@ -2057,61 +2086,98 @@ window.StemLab = window.StemLab || {
           c2.fillStyle = astP2.deeper || '#020210';
         }
         c2.fillRect(0, 0, W, H);
-        // Subtle technical studio grid lines
-        c2.save();
-        c2.strokeStyle = 'rgba(148,163,184,0.08)';
-        c2.lineWidth = 0.75;
-        for (var gx = 24; gx < W; gx += 28) {
-          c2.beginPath(); c2.moveTo(gx, 0); c2.lineTo(gx, H - 16); c2.stroke();
+        // Subtle technical studio grid lines (bypassed in High-Contrast)
+        if (!hc) {
+          c2.save();
+          c2.strokeStyle = 'rgba(148,163,184,0.08)';
+          c2.lineWidth = 0.75;
+          for (var gx = 24; gx < W; gx += 28) {
+            c2.beginPath(); c2.moveTo(gx, 0); c2.lineTo(gx, H - 16); c2.stroke();
+          }
+          for (var gy = 20; gy < H - 16; gy += 28) {
+            c2.beginPath(); c2.moveTo(0, gy); c2.lineTo(W, gy); c2.stroke();
+          }
+          c2.restore();
         }
-        for (var gy = 20; gy < H - 16; gy += 28) {
-          c2.beginPath(); c2.moveTo(0, gy); c2.lineTo(W, gy); c2.stroke();
-        }
-        c2.restore();
 
-        var fracs = [
-          { num: 1, den: 2, color: '#f472b6', deep: '#9d174d' },
-          { num: 2, den: 4, color: '#a78bfa', deep: '#5b21b6' },
-          { num: 4, den: 8, color: '#38bdf8', deep: '#0369a1' },
-          { num: 8, den: 16, color: '#34d399', deep: '#047857' }
-        ];
-        var cellW = W / fracs.length;
+        var cellW = W / EF_FRACS.length;
         var pieCy = H * 0.37;
         var R = Math.min(34, Math.max(20, Math.min(cellW * 0.28, H * 0.24)));
+        var bridgeX0 = cellW * 0.5;
+        var bridgeX1 = W - cellW * 0.5;
 
-        // Luminous equivalence-alignment horizontal laser beam connecting all 4 pies
+        // Luminous equivalency-bridge alignment glow + smooth traveling energy pulses
         c2.save();
-        if (hasLin) {
-          var beamGrad = c2.createLinearGradient(cellW * 0.5, pieCy, W - cellW * 0.5, pieCy);
-          beamGrad.addColorStop(0, 'rgba(244,114,182,0.55)');
-          beamGrad.addColorStop(0.35, 'rgba(167,139,250,0.55)');
-          beamGrad.addColorStop(0.68, 'rgba(56,189,248,0.55)');
-          beamGrad.addColorStop(1, 'rgba(52,211,153,0.55)');
+        if (!hc) {
+          if (hasLin) {
+            var bridgeAura = c2.createLinearGradient(bridgeX0, pieCy, bridgeX1, pieCy);
+            bridgeAura.addColorStop(0, 'rgba(244,114,182,0.22)');
+            bridgeAura.addColorStop(0.35, 'rgba(167,139,250,0.22)');
+            bridgeAura.addColorStop(0.68, 'rgba(56,189,248,0.22)');
+            bridgeAura.addColorStop(1, 'rgba(52,211,153,0.22)');
+            c2.strokeStyle = bridgeAura;
+          } else {
+            c2.strokeStyle = 'rgba(244,114,182,0.2)';
+          }
+          c2.lineWidth = 7;
+          c2.lineCap = 'round';
+          c2.beginPath(); c2.moveTo(bridgeX0, pieCy); c2.lineTo(bridgeX1, pieCy); c2.stroke();
+        }
+        if (hc) {
+          c2.strokeStyle = '#ffff00';
+        } else if (hasLin) {
+          var beamGrad = c2.createLinearGradient(bridgeX0, pieCy, bridgeX1, pieCy);
+          beamGrad.addColorStop(0, 'rgba(244,114,182,0.75)');
+          beamGrad.addColorStop(0.35, 'rgba(167,139,250,0.75)');
+          beamGrad.addColorStop(0.68, 'rgba(56,189,248,0.75)');
+          beamGrad.addColorStop(1, 'rgba(52,211,153,0.75)');
           c2.strokeStyle = beamGrad;
         } else {
-          c2.strokeStyle = 'rgba(244,114,182,0.45)';
+          c2.strokeStyle = 'rgba(244,114,182,0.55)';
         }
         c2.lineWidth = 1.6;
         if (typeof c2.setLineDash === 'function') c2.setLineDash([4, 4]);
         c2.beginPath();
-        c2.moveTo(cellW * 0.5, pieCy);
-        c2.lineTo(W - cellW * 0.5, pieCy);
+        c2.moveTo(bridgeX0, pieCy);
+        c2.lineTo(bridgeX1, pieCy);
         c2.stroke();
         if (typeof c2.setLineDash === 'function') c2.setLineDash([]);
+        if (!hc && !rm) {
+          var bSpan = bridgeX1 - bridgeX0;
+          for (var pi = 0; pi < EF_PULSE_PHASES.length; pi++) {
+            var pu = (tSec * 0.24 + EF_PULSE_PHASES[pi]) % 1;
+            var px = bridgeX0 + pu * bSpan;
+            if (hasRad) {
+              var pg = c2.createRadialGradient(px, pieCy, 0.5, px, pieCy, 8);
+              pg.addColorStop(0, '#ffffff');
+              pg.addColorStop(0.45, 'rgba(167,139,250,0.72)');
+              pg.addColorStop(1, 'rgba(167,139,250,0)');
+              c2.fillStyle = pg;
+              c2.beginPath(); c2.arc(px, pieCy, 8, 0, Math.PI * 2); c2.fill();
+            }
+            c2.fillStyle = '#ffffff';
+            c2.beginPath(); c2.arc(px, pieCy, 2.1, 0, Math.PI * 2); c2.fill();
+          }
+        }
         c2.restore();
 
-        fracs.forEach(function(f, fi) {
+        var sheenSweep = rm ? 0 : (Math.sin(tSec * 1.15) * 0.14);
+        var beaconPulse = rm ? 1.0 : (0.8 + 0.2 * Math.sin(tSec * 3.1));
+
+        for (var fi = 0; fi < EF_FRACS.length; fi++) {
+          var f = EF_FRACS[fi];
+          var fCol = hc ? '#00ff00' : f.color;
           var cx = fi * cellW + cellW / 2;
           var cy = pieCy;
-          // Grounded ambient glow halo behind each pie
+          // Grounded ambient glow halo behind each pie (bypassed in High-Contrast)
           if (hasRad) {
             c2.save();
-            var pieAura = c2.createRadialGradient(cx, cy, R * 0.3, cx, cy, R * 1.42);
+            var pieAura = c2.createRadialGradient(cx, cy, R * 0.3, cx, cy, R * 1.44);
             pieAura.addColorStop(0, f.color);
             pieAura.addColorStop(1, 'rgba(2,2,16,0)');
-            c2.globalAlpha = 0.22;
+            c2.globalAlpha = 0.22 * beaconPulse;
             c2.fillStyle = pieAura;
-            c2.beginPath(); c2.arc(cx, cy, R * 1.42, 0, Math.PI * 2); c2.fill();
+            c2.beginPath(); c2.arc(cx, cy, R * 1.44, 0, Math.PI * 2); c2.fill();
             c2.restore();
           }
           // Bevel-shaded pie wedges
@@ -2121,18 +2187,18 @@ window.StemLab = window.StemLab || {
             var filled = slc < f.num;
             c2.save();
             if (filled) {
-              c2.shadowColor = f.color; c2.shadowBlur = 9;
+              if (!hc) { c2.shadowColor = f.color; c2.shadowBlur = 9; }
               if (hasRad) {
-                var wGrad = c2.createRadialGradient(cx - R * 0.22, cy - R * 0.25, 2, cx, cy, R * 1.05);
+                var wGrad = c2.createRadialGradient(cx - R * (0.22 - sheenSweep * 0.5), cy - R * 0.25, 2, cx, cy, R * 1.05);
                 wGrad.addColorStop(0, '#ffffff');
                 wGrad.addColorStop(0.18, f.color);
                 wGrad.addColorStop(1, f.deep);
                 c2.fillStyle = wGrad;
               } else {
-                c2.fillStyle = f.color;
+                c2.fillStyle = fCol;
               }
             } else {
-              c2.fillStyle = astP2.panel || '#1e293b';
+              c2.fillStyle = hc ? '#000000' : (astP2.panel || '#1e293b');
             }
             c2.beginPath();
             c2.moveTo(cx, cy);
@@ -2140,14 +2206,16 @@ window.StemLab = window.StemLab || {
             c2.closePath();
             c2.fill();
             c2.restore();
-            c2.strokeStyle = 'rgba(255,255,255,0.22)'; c2.lineWidth = 0.7; c2.stroke();
+            c2.strokeStyle = hc ? '#ffff00' : 'rgba(255,255,255,0.22)'; c2.lineWidth = hc ? 1.1 : 0.7; c2.stroke();
           }
-          // Glossy glass dome specular crescent clipped to the pie
+          // Silky animated glass dome specular crescent clipped to the pie
           if (hasRad && typeof c2.clip === 'function') {
             c2.save();
             c2.beginPath(); c2.arc(cx, cy, R, 0, Math.PI * 2); c2.clip();
-            var glossF = c2.createRadialGradient(cx - R * 0.35, cy - R * 0.42, 1, cx - R * 0.35, cy - R * 0.42, R * 1.15);
-            glossF.addColorStop(0, 'rgba(255,255,255,0.42)');
+            var sxOff = cx - R * (0.35 - sheenSweep);
+            var syOff = cy - R * 0.42;
+            var glossF = c2.createRadialGradient(sxOff, syOff, 1, sxOff, syOff, R * 1.15);
+            glossF.addColorStop(0, 'rgba(255,255,255,0.44)');
             glossF.addColorStop(0.35, 'rgba(255,255,255,0.12)');
             glossF.addColorStop(0.6, 'rgba(255,255,255,0)');
             c2.fillStyle = glossF;
@@ -2155,12 +2223,20 @@ window.StemLab = window.StemLab || {
             c2.restore();
           }
           // Outer chamfer rim + glowing 1/2 equivalence-alignment partition beacons (12 & 6 o'clock)
-          c2.strokeStyle = f.color; c2.lineWidth = 1.6;
+          c2.strokeStyle = hc ? '#ffff00' : f.color; c2.lineWidth = hc ? 2 : 1.6;
           c2.beginPath(); c2.arc(cx, cy, R, 0, Math.PI * 2); c2.stroke();
           c2.save();
-          c2.strokeStyle = '#ffffff'; c2.lineWidth = 1.2; c2.shadowColor = f.color; c2.shadowBlur = 6;
+          c2.strokeStyle = hc ? '#ffff00' : '#ffffff'; c2.lineWidth = 1.2;
+          if (!hc) { c2.shadowColor = f.color; c2.shadowBlur = 7; }
           c2.beginPath(); c2.moveTo(cx, cy - R - 2); c2.lineTo(cx, cy + R + 2); c2.stroke();
-          c2.fillStyle = '#ffffff';
+          if (!hc) {
+            c2.fillStyle = f.color;
+            c2.globalAlpha = 0.34 * beaconPulse;
+            c2.beginPath(); c2.arc(cx, cy - R, 4.6, 0, Math.PI * 2); c2.fill();
+            c2.beginPath(); c2.arc(cx, cy + R, 4.6, 0, Math.PI * 2); c2.fill();
+            c2.globalAlpha = 1;
+          }
+          c2.fillStyle = hc ? '#ffff00' : '#ffffff';
           c2.beginPath(); c2.arc(cx, cy - R, 2.4, 0, Math.PI * 2); c2.fill();
           c2.beginPath(); c2.arc(cx, cy + R, 2.4, 0, Math.PI * 2); c2.fill();
           c2.restore();
@@ -2170,52 +2246,64 @@ window.StemLab = window.StemLab || {
           var barH = 10;
           var bx = cx - barW / 2;
           var by = cy + R + 7;
-          c2.fillStyle = 'rgba(30,41,59,0.88)';
+          c2.fillStyle = hc ? '#000000' : 'rgba(30,41,59,0.88)';
           c2.fillRect(bx, by, barW, barH);
-          c2.fillStyle = f.color;
-          c2.fillRect(bx, by, barW * (f.num / f.den), barH);
+          c2.fillStyle = fCol;
+          var fillW = barW * (f.num / f.den);
+          c2.fillRect(bx, by, fillW, barH);
           if (hasLin) {
             var bSheen = c2.createLinearGradient(bx, by, bx, by + barH);
-            bSheen.addColorStop(0, 'rgba(255,255,255,0.45)');
+            bSheen.addColorStop(0, 'rgba(255,255,255,0.48)');
             bSheen.addColorStop(0.5, 'rgba(255,255,255,0.05)');
             bSheen.addColorStop(1, 'rgba(0,0,0,0.22)');
             c2.fillStyle = bSheen;
-            c2.fillRect(bx, by, barW * (f.num / f.den), barH);
+            c2.fillRect(bx, by, fillW, barH);
           }
-          c2.strokeStyle = 'rgba(255,255,255,0.28)'; c2.lineWidth = 0.6;
+          c2.strokeStyle = hc ? '#ffff00' : 'rgba(255,255,255,0.28)'; c2.lineWidth = 0.6;
           for (var seg = 1; seg < f.den; seg++) {
             var sx = bx + (seg / f.den) * barW;
             c2.beginPath(); c2.moveTo(sx, by); c2.lineTo(sx, by + barH); c2.stroke();
           }
-          c2.strokeStyle = f.color; c2.lineWidth = 1;
+          c2.strokeStyle = hc ? '#ffff00' : f.color; c2.lineWidth = 1;
           c2.strokeRect(bx, by, barW, barH);
           // Luminous midpoint alignment tick on the strip
-          c2.fillStyle = '#ffffff';
+          c2.fillStyle = hc ? '#ffff00' : '#ffffff';
           c2.fillRect(cx - 0.8, by - 2, 1.6, barH + 4);
 
-          c2.font = 'bold 12px monospace'; c2.fillStyle = f.color; c2.textAlign = 'center';
-          c2.fillText(f.num + '/' + f.den, cx, by + barH + 14);
-          c2.font = '8px monospace'; c2.fillStyle = astP2.textSoft || '#cbd5e1';
+          c2.font = 'bold 12px monospace'; c2.fillStyle = hc ? '#ffff00' : f.color; c2.textAlign = 'center';
+          c2.fillText(f.label, cx, by + barH + 14);
+          c2.font = '8px monospace'; c2.fillStyle = hc ? '#00ff00' : (astP2.textSoft || '#cbd5e1');
           c2.fillText('= 0.5', cx, by + barH + 24);
-        });
-        c2.fillStyle = 'rgba(0,0,0,0.85)';
+        }
+        c2.fillStyle = hc ? '#000000' : 'rgba(0,0,0,0.85)';
         c2.fillRect(8, H - 14, W - 16, 12);
-        c2.font = 'bold 8px sans-serif'; c2.fillStyle = '#f472b6'; c2.textAlign = 'center';
+        c2.font = 'bold 8px sans-serif'; c2.fillStyle = hc ? '#ffff00' : '#f472b6'; c2.textAlign = 'center';
         c2.fillText('Multiply numerator & denominator by same number \u2192 same value, different form', W / 2, H - 5);
+        if (!hc && !rm && typeof requestAnimationFrame === 'function') {
+          efRaf = requestAnimationFrame(drawEf);
+        } else {
+          efRaf = null;
+        }
       }
-      drawEf();
+      function startEf() {
+        if (efRaf != null) { try { cancelAnimationFrame(efRaf); } catch (e) {} efRaf = null; }
+        drawEf();
+      }
+      startEf();
       if (typeof ResizeObserver === 'function') {
         ro = new ResizeObserver(function() {
           if (!cvEl.isConnected) { cleanupEf(); return; }
           W = cvEl.offsetWidth || 600; H = cvEl.offsetHeight || 180;
-          cvEl.width = W * 2; cvEl.height = H * 2; c2.setTransform(1, 0, 0, 1, 0, 0); c2.scale(2, 2);
-          drawEf();
+          cvEl.width = W * 2; cvEl.height = H * 2;
+          if (typeof c2.setTransform === 'function') c2.setTransform(2, 0, 0, 2, 0, 0);
+          else if (typeof c2.scale === 'function') c2.scale(2, 2);
+          startEf();
         });
         cvEl._efRO = ro;
         ro.observe(cvEl);
       }
       if (window.AlloStemTheme && window.AlloStemTheme.onChange) {
-        unsubTheme = window.AlloStemTheme.onChange(drawEf);
+        unsubTheme = window.AlloStemTheme.onChange(startEf);
         cvEl._efThemeUnsub = unsubTheme;
       }
       efCleanupRef.current = cleanupEf;
@@ -2538,6 +2626,12 @@ window.StemLab = window.StemLab || {
           )
         ),
         slices,
+        !isContrast && !unlabeled && num > 0 && h('circle', {
+          key: 'ripple-' + num + '-' + den,
+          className: 'frac-ripple',
+          cx: size / 2, cy: size / 2, r: Math.max(4, radius - 1),
+          fill: 'none', stroke: color || '#f43f5e', strokeWidth: 2.6, pointerEvents: 'none'
+        }),
         !isContrast && h('circle', { cx: size / 2, cy: size / 2, r: radius, fill: 'url(#' + pieGlossId + ')', pointerEvents: 'none' }),
         !isContrast && h('circle', { cx: size / 2, cy: size / 2, r: Math.max(1, radius - 1), fill: 'none', stroke: 'url(#' + pieRimId + ')', strokeWidth: 2, pointerEvents: 'none' }),
         sliceLabels,
@@ -2669,8 +2763,27 @@ window.StemLab = window.StemLab || {
         }
       }
 
+      // Smooth equivalency-bridge alignment glow when 2+ plotted fractions share the same value
+      var plottedList = fractions || [];
+      if (!isContrast && !options.hideEquivalence && plottedList.length >= 2) {
+        for (var ei = 0; ei < plottedList.length; ei++) {
+          var vA = plottedList[ei].d > 0 ? plottedList[ei].n / plottedList[ei].d : 0;
+          for (var ej = ei + 1; ej < plottedList.length; ej++) {
+            var vB = plottedList[ej].d > 0 ? plottedList[ej].n / plottedList[ej].d : 0;
+            if (Math.abs(vA - vB) < 1e-9) {
+              var bxEq = margin + (vA / maxVal) * (width - 2 * margin);
+              elements.push(h('g', { key: 'eq-bridge-' + ei + '-' + ej, className: 'frac-bridge-glow', pointerEvents: 'none' },
+                h('line', { x1: bxEq, y1: 12, x2: bxEq, y2: lineY + 10, stroke: '#10b981', strokeWidth: 9, strokeOpacity: 0.22, strokeLinecap: 'round' }),
+                h('line', { x1: bxEq, y1: 12, x2: bxEq, y2: lineY + 10, stroke: '#059669', strokeWidth: 2, strokeDasharray: '4 3' }),
+                h('circle', { cx: bxEq, cy: lineY, r: 10.5, fill: '#10b981', fillOpacity: 0.2 })
+              ));
+            }
+          }
+        }
+      }
+
       // Plot each fraction with glowing partition beacons and specular markers
-      (fractions || []).forEach(function(f, i) {
+      plottedList.forEach(function(f, i) {
         var val = f.d > 0 ? f.n / f.d : 0;
         var px = margin + (val / maxVal) * (width - 2 * margin);
         var col = f.color || palMain;
@@ -2701,12 +2814,18 @@ window.StemLab = window.StemLab || {
           x1: px, y1: lineY - pin, x2: px, y2: lineY,
           stroke: col, strokeWidth: 2, strokeDasharray: '3,2'
         }));
-        // Glowing beacon aura + dot at top
+        // Glowing active fraction-marker beacon aura + dot at top
         if (!isContrast) {
           elements.push(h('circle', {
+            key: 'p-' + i + '-halo-outer',
+            className: 'frac-beacon-pulse',
+            cx: px, cy: lineY - pin, r: 12.5,
+            fill: col, fillOpacity: 0.16
+          }));
+          elements.push(h('circle', {
             key: 'p-' + i + '-halo',
-            cx: px, cy: lineY - pin, r: 9.5,
-            fill: col, fillOpacity: 0.20
+            cx: px, cy: lineY - pin, r: 8.8,
+            fill: col, fillOpacity: 0.22
           }));
         }
         elements.push(h('circle', {
@@ -2731,7 +2850,8 @@ window.StemLab = window.StemLab || {
         if (!isContrast) {
           elements.push(h('circle', {
             key: 'p-' + i + '-mark-ring',
-            cx: px, cy: lineY, r: 7, fill: col, fillOpacity: 0.22
+            className: 'frac-beacon-pulse',
+            cx: px, cy: lineY, r: 8.5, fill: col, fillOpacity: 0.24
           }));
         }
         elements.push(h('circle', {
@@ -3724,10 +3844,10 @@ window.StemLab = window.StemLab || {
             h('svg', { role: 'img', 'aria-label': 'A: ' + num1 + '/' + den1 + '; B: ' + num2 + '/' + den2 + '. ' + __alloT('stem.fractions.compare_line_direction', 'Numbers increase from left to right.'), viewBox: '0 0 640 140', style: { width: '100%', display: 'block', background: '#fff' }, 'data-compare-line': true },
               !isContrast && Math.abs(val1 - val2) < 1e-9 && !(quiz && !quiz.answered) && (function() {
                 var eqX = 50 + (val1 - nlMin) * 540 / (nlMax - nlMin);
-                return h('g', { key: 'eq-laser', pointerEvents: 'none' },
-                  h('line', { x1: eqX, y1: 22, x2: eqX, y2: 118, stroke: '#10b981', strokeWidth: 9, strokeOpacity: 0.16, strokeLinecap: 'round' }),
-                  h('line', { x1: eqX, y1: 22, x2: eqX, y2: 118, stroke: '#059669', strokeWidth: 2, strokeDasharray: '4 3' }),
-                  h('circle', { cx: eqX, cy: 65, r: 13, fill: '#10b981', fillOpacity: 0.16 })
+                return h('g', { key: 'eq-laser', className: 'frac-bridge-glow', pointerEvents: 'none' },
+                  h('line', { x1: eqX, y1: 18, x2: eqX, y2: 122, stroke: '#10b981', strokeWidth: 13, strokeOpacity: 0.16, strokeLinecap: 'round' }),
+                  h('line', { x1: eqX, y1: 22, x2: eqX, y2: 118, stroke: '#059669', strokeWidth: 2.2, strokeDasharray: '4 3' }),
+                  h('circle', { cx: eqX, cy: 65, r: 16, fill: '#10b981', fillOpacity: 0.18 })
                 );
               })(),
               h('line', { x1: 50, y1: 65, x2: 590, y2: 65, stroke: '#475569', strokeWidth: 2.4, strokeLinecap: 'round' }),
@@ -3736,7 +3856,7 @@ window.StemLab = window.StemLab || {
               [{ value:val1, label:'A: '+num1+'/'+den1, color:'#1d4ed8', y:30 }, { value:val2, label:'B: '+num2+'/'+den2, color:'#b91c1c', y:126 }].map(function(point, index) { var x = 50 + (point.value - nlMin) * 540 / (nlMax - nlMin); return h('g', { key:index },
                 !isContrast && h('line', { x1:x, y1:65, x2:x, y2:index ? 108 : 35, stroke:point.color, strokeWidth:6, strokeOpacity:0.14, strokeLinecap:'round' }),
                 h('line', { x1:x, y1:65, x2:x, y2:index ? 108 : 35, stroke:point.color, strokeWidth:2.2, strokeDasharray:index ? '3 2' : undefined }),
-                !isContrast && h('circle', { cx:x, cy:65, r:11, fill:point.color, fillOpacity:0.16 }),
+                !isContrast && h('circle', { className:'frac-beacon-pulse', cx:x, cy:65, r:13, fill:point.color, fillOpacity:0.18 }),
                 index ? h('path', { d:'M '+x+' 57 l 8 8 l -8 8 l -8 -8 Z', fill:point.color, stroke:'#fff', strokeWidth:1.4 }) : h('circle', { cx:x, cy:65, r:7.5, fill:point.color, stroke:'#fff', strokeWidth:1.4 }),
                 h('text', { x:x, y:point.y, textAnchor:'middle', fill:point.color, fontSize:26, fontWeight:800 }, index ? 'B' : 'A')); }))
           ),
@@ -4482,15 +4602,16 @@ window.StemLab = window.StemLab || {
           h('div', { role: 'group', 'aria-label': __alloT('stem.fractions.wall_img_label', 'Interactive fraction wall comparing equivalent fraction lengths'), className: 'relative space-y-1', style: { minWidth: '360px' } },
             !isContrast && wallHighlight && wallHighlight.d > 0 && wallHighlight.n > 0 && wallHighlight.n < wallHighlight.d && h('div', {
               'aria-hidden': 'true',
+              className: 'frac-bridge-glow',
               style: {
                 position: 'absolute',
                 top: 0,
                 bottom: 0,
                 left: 'calc(40px + (100% - 40px) * ' + (wallHighlight.n / wallHighlight.d) + ')',
-                width: '3px',
-                transform: 'translateX(-1.5px)',
-                background: 'linear-gradient(180deg, #a855f7 0%, #f59e0b 50%, #a855f7 100%)',
-                boxShadow: '0 0 10px rgba(168,85,247,0.75), 0 0 4px rgba(245,158,11,0.85)',
+                width: '3.5px',
+                transform: 'translateX(-1.75px)',
+                background: 'linear-gradient(180deg, #a855f7 0%, #f59e0b 50%, #10b981 100%)',
+                boxShadow: '0 0 12px rgba(168,85,247,0.82), 0 0 6px rgba(245,158,11,0.9)',
                 borderRadius: '999px',
                 pointerEvents: 'none',
                 zIndex: 4
@@ -6468,13 +6589,20 @@ window.StemLab = window.StemLab || {
               if (!cv.isConnected) { cancelAnimationFrame(cv._prAnim); cv._prAnim = 0; return; }
               var L = window._prLive || {};
               W = cv.offsetWidth || W; H = cv.offsetHeight || H;
+              var hc = !!(typeof document !== 'undefined' && document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast'));
               c2.clearRect(0, 0, W, H);
               var astP1 = (window.AlloStemTheme && window.AlloStemTheme.palette) ? window.AlloStemTheme.palette() : { deeper: '#0f1f17', panel: '#1f3b2c' };
-              c2.fillStyle = astP1.deeper || '#0f1f17'; c2.fillRect(0, 0, W, H);
-              // belt band
-              c2.fillStyle = astP1.panel || '#1f3b2c'; c2.fillRect(0, H * 0.55, W, H * 0.25);
+              c2.fillStyle = hc ? '#000000' : (astP1.deeper || '#0f1f17'); c2.fillRect(0, 0, W, H);
+              // belt band + smooth zero-GC moving conveyor slats
+              var beltY = H * 0.55, beltH = H * 0.25;
+              c2.fillStyle = hc ? '#111111' : (astP1.panel || '#1f3b2c'); c2.fillRect(0, beltY, W, beltH);
+              var slatOffset = (L.reducedMotion || hc) ? 0 : (((now - cv._prStart) * 0.045) % 24);
+              c2.strokeStyle = hc ? '#ffff00' : 'rgba(134,239,172,0.22)'; c2.lineWidth = 1.2;
+              for (var sx = W - slatOffset; sx >= 64; sx -= 24) {
+                c2.beginPath(); c2.moveTo(sx, beltY + 2); c2.lineTo(sx, beltY + beltH - 2); c2.stroke();
+              }
               // pass window (left)
-              c2.fillStyle = 'rgba(250,204,21,0.18)'; c2.fillRect(0, 0, 64, H);
+              c2.fillStyle = hc ? '#000000' : 'rgba(250,204,21,0.18)'; c2.fillRect(0, 0, 64, H);
               c2.strokeStyle = '#facc15'; c2.lineWidth = 2; c2.strokeRect(2, 2, 60, H - 4);
               c2.fillStyle = '#facc15'; c2.font = 'bold 9px sans-serif'; c2.textAlign = 'center';
               c2.fillText('PASS', 32, H / 2 - 4); c2.fillText('WINDOW', 32, H / 2 + 8);
@@ -6492,17 +6620,29 @@ window.StemLab = window.StemLab || {
                 }
                 var x = (W - 40) - p * (W - 40 - 84);
                 var cy = H * 0.42;
+                if (!hc && typeof c2.createRadialGradient === 'function') {
+                  var pAura = c2.createRadialGradient(x, cy - 6, 3, x, cy - 6, 26);
+                  pAura.addColorStop(0, p >= 0.75 ? 'rgba(250,204,21,0.34)' : 'rgba(74,222,128,0.28)');
+                  pAura.addColorStop(1, 'rgba(0,0,0,0)');
+                  c2.fillStyle = pAura;
+                  c2.beginPath(); c2.arc(x, cy - 6, 26, 0, Math.PI * 2); c2.fill();
+                }
                 c2.font = '30px serif'; c2.textAlign = 'center';
                 c2.fillText((ac.food && ac.food.e) || '🍽️', x, cy);
-                c2.fillStyle = '#bbf7d0'; c2.font = 'bold 11px sans-serif';
+                c2.fillStyle = hc ? '#00ff00' : '#bbf7d0'; c2.font = 'bold 11px sans-serif';
                 c2.fillText('Table ' + ac.table, x, cy + 26);
               }
-              // on-deck previews parked at right
-              (L.deck || []).slice(0, 2).forEach(function(d, di) {
-                c2.font = '18px serif'; c2.globalAlpha = 0.5; c2.textAlign = 'center';
-                c2.fillText((d.food && d.food.e) || '🍽️', W - 22 - di * 26, H * 0.40);
-                c2.globalAlpha = 1;
-              });
+              // on-deck previews parked at right (zero-GC loop)
+              var deck = L.deck;
+              if (deck && deck.length) {
+                var deckCount = deck.length < 2 ? deck.length : 2;
+                for (var di = 0; di < deckCount; di++) {
+                  var dk = deck[di];
+                  c2.font = '18px serif'; c2.globalAlpha = 0.5; c2.textAlign = 'center';
+                  c2.fillText((dk && dk.food && dk.food.e) || '🍽️', W - 22 - di * 26, H * 0.40);
+                  c2.globalAlpha = 1;
+                }
+              }
               cv._prAnim = requestAnimationFrame(frame);
             }
             frame(performance.now());

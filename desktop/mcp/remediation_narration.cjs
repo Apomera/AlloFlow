@@ -167,16 +167,28 @@ async function preflight(o) {
       }catch(error){if(o.signal?.aborted)throw Error('Narration cancelled');rows.push({file,ready:false,error:error.message||String(error),modelsTested:false});}
     }
     return {epubVerification:EpubValidation.capabilities(),files:rows,total:rows.length,ready:rows.filter(row=>row.ready).length,blocked:rows.filter(row=>!row.ready).length,note:'Local planning only: no model downloads, synthesis or accessibility certification. Language selection relies on document metadata, not automatic language detection. Processing time is not estimated.'};
-  }finally{o.signal?.removeEventListener('abort',abort);await browser.close();}
+  }finally{o.signal?.removeEventListener('abort',abort);await browser.close().catch(()=>{});}
 }
 // Runs in Chromium. Web Audio resamples each provider's PCM to a common rate.
 async function normalizeClip(base64) {
   const input=Uint8Array.from(atob(base64),c=>c.charCodeAt(0));
   const context=new OfflineAudioContext(1,1,24000);
   const decoded=await context.decodeAudioData(input.buffer);
-  if(decoded.numberOfChannels!==1||!decoded.length)throw Error('Expected nonempty mono narration');
-  const samples=decoded.getChannelData(0),bytes=new Uint8Array(samples.length*2),view=new DataView(bytes.buffer);
-  for(let i=0;i<samples.length;i++){const value=Math.max(-1,Math.min(1,samples[i]));view.setInt16(i*2,Math.round(value*(value<0?32768:32767)),true);}
+  if(decoded.numberOfChannels<1||!decoded.length)throw Error('Expected nonempty mono narration');
+  const chCount=decoded.numberOfChannels,len=decoded.length;
+  let samples;
+  if(chCount===1){
+    samples=decoded.getChannelData(0);
+  }else{
+    // Downmix multi-channel (e.g. stereo) TTS output cleanly to mono.
+    samples=new Float32Array(len);
+    for(let c=0;c<chCount;c++){
+      const ch=decoded.getChannelData(c);
+      for(let i=0;i<len;i++)samples[i]+=ch[i]/chCount;
+    }
+  }
+  const bytes=new Uint8Array(len*2),view=new DataView(bytes.buffer);
+  for(let i=0;i<len;i++){const value=Math.max(-1,Math.min(1,samples[i]));view.setInt16(i*2,Math.round(value*(value<0?32768:32767)),true);}
   const wav=window.AlloModules.AudioHelpers.pcmToWav(bytes,24000);
   const u=new Uint8Array(wav);let binary='';for(let i=0;i<u.length;i+=8192)binary+=String.fromCharCode(...u.subarray(i,i+8192));
   return btoa(binary);
@@ -192,29 +204,38 @@ async function narrate(o) {
   const fingerprint=o.outputDir?completionFingerprint(o,sourceHash,runtimeHash):null;
   const completionFile=fingerprint?path.join(o.stateDir,'narration-completions',fingerprint+'.json'):null;
   const prior=completionFile&&loadCompletion(completionFile,fingerprint,o.outputDir,o.epub!==false);
-  if(prior){if(o.signal?.aborted)throw Error('Narration cancelled');if(hashFile(o.filePath)!==sourceHash)throw Error('Source changed while checking saved narration; retry');log('narration: reused hash-verified completed outputs');o.onProgress?.({total:prior.totalSections,completed:prior.completedSections,mode,reused:true});return prior;}
+  if(prior){if(o.signal?.aborted)throw Error('Narration cancelled');const currentReuseBytes=typeof o.readSource==='function'?o.readSource(o.filePath):readRegularBounded(o.filePath,MAX_SOURCE_HTML_BYTES);if(hash(currentReuseBytes)!==sourceHash)throw Error('Source changed while checking saved narration; retry');log('narration: reused hash-verified completed outputs');o.onProgress?.({total:prior.totalSections,completed:prior.completedSections,mode,reused:true});return prior;}
   const checked=await preflight({...o,filePaths:[o.filePath],includePlan:true});
   if(!checked.files[0].ready)throw Error(checked.files[0].error);
   const {plan,routing}=checked.files[0];
   if(sourceHash!==checked.files[0].sourceSha256)throw Error('Source changed during narration preflight; retry');
   const res=o.resolveChromium();
   if(!res.installed) throw Error('Chromium is not installed; run remediation_setup');
-  const profile=path.join(o.stateDir,'kokoro-browser'); fs.mkdirSync(profile,{recursive:true});
-  const context=await res.chromium.launchPersistentContext(profile,{headless:true,serviceWorkers:'block',args:['--disable-background-timer-throttling','--disable-renderer-backgrounding']});
+  const needsSynthesis=plan.segments.some((seg,idx)=>!readClipCache(clipCachePath(o.stateDir,runtimeHash,mode,seg,routing.routes[idx])));
+  let browser=null,context=null;
+  if(needsSynthesis){
+    const profile=path.join(o.stateDir,'kokoro-browser'); fs.mkdirSync(profile,{recursive:true});
+    context=await res.chromium.launchPersistentContext(profile,{headless:true,serviceWorkers:'block',args:['--disable-background-timer-throttling','--disable-renderer-backgrounding']});
+  }else{
+    // All clips already hit the verified local cache: skip persistent profile and remote CDN dependencies.
+    browser=await res.chromium.launch({headless:true});
+    context=await browser.newContext({serviceWorkers:'block'});
+  }
   const wallController=typeof AbortController==='function'?new AbortController():null;
-  const abort=()=>{try{wallController?.abort();}catch(_){}context.close().catch(()=>{});};
+  const abort=()=>{try{wallController?.abort();}catch(_){}(browser?browser.close():context.close()).catch(()=>{});};
   o.signal?.addEventListener('abort',abort,{once:true});
   const wallTimer=setTimeout(abort,Math.min(180,Math.max(1,Number(o.maxRunMinutes)||180))*60000);wallTimer.unref?.();
   try {
     if(o.signal?.aborted) throw Error('Narration cancelled');
     const boot='http://127.0.0.1/__alloflow_narration__';
-    // Only dependency GETs can leave this browser. Source HTML is parsed inertly,
-    // never navigated to, and cannot introduce a remote request or script.
+    // Only dependency GETs can leave this browser (and none at all when all clips are cached).
+    // Source HTML is parsed inertly, never navigated to, and cannot introduce a remote request or script.
     await context.route('**/*',route=>{
       const request=route.request();
       let url;
       try{url=new URL(request.url());}catch(_){return route.abort();}
       if(url.href===boot) return route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="en"><head></head><body></body></html>'});
+      if(!needsSynthesis) return route.abort();
       const allowed=['cdn.jsdelivr.net','unpkg.com','huggingface.co','hf.co','cdn-lfs.huggingface.co','cdn-lfs-us-1.hf.co','cas-bridge.xethub.hf.co'];
       if(request.method()==='GET' && url.protocol==='https:' && (allowed.includes(url.hostname) || (url.hostname==='cdnjs.cloudflare.com' && url.pathname.startsWith('/ajax/libs/onnxruntime-web/')))) return route.continue();
       log('narration: blocked dependency origin '+url.origin);
@@ -223,9 +244,15 @@ async function narrate(o) {
     const page=await context.newPage();
     page.on('requestfailed',request=>{let origin;try{origin=new URL(request.url()).origin;}catch(_){origin='dependency';}log('narration: dependency request failed at '+origin+': '+(request.failure()?.errorText||'unknown'));});
     await page.goto(boot);
-    for(const url of DEPENDENCIES) await page.addScriptTag({url});
-    for(const asset of ASSETS) await page.addScriptTag({path:path.join(o.assetsRoot,asset)});
-    await page.evaluate(fn=>{window.normalizeNarrationClip=(0,eval)('('+fn+')');},normalizeClip.toString());
+    if(needsSynthesis){
+      for(const url of DEPENDENCIES) await page.addScriptTag({url});
+      for(const asset of ASSETS) await page.addScriptTag({path:path.join(o.assetsRoot,asset)});
+      await page.evaluate(fn=>{window.normalizeNarrationClip=(0,eval)('('+fn+')');},normalizeClip.toString());
+    }else if(o.epub!==false){
+      for(const asset of ['accessibility_evidence_module.js','verification_policy_module.js','doc_builder_renderer_module.js','doc_pipeline_module.js','view_pdf_audit_module.js','document_narration_text_module.js']){
+        await page.addScriptTag({path:path.join(o.assetsRoot,asset)});
+      }
+    }
     const selected=routing.voices;const providers=[...new Set(selected.map(v=>v.provider))];
     const provider=providers.length===1?providers[0]:'mixed-local';const voice=selected.length===1?selected[0].voice:'multiple';
     for(const warning of plan.warnings)log('narration: '+warning);
@@ -233,6 +260,7 @@ async function narrate(o) {
     log('narration: '+plan.segments.length+' sections; '+mode+' narration using '+voice);
     for(let i=0;i<plan.segments.length;i++) {
       if(o.signal?.aborted)throw Error('Narration cancelled');
+      if(wallController?.signal?.aborted)throw Error('Narration timed out');
       const seg=plan.segments[i];const route=routing.routes[i];const stem=clipCachePath(o.stateDir,runtimeHash,mode,seg,route);fs.mkdirSync(path.dirname(stem),{recursive:true});const wav=stem+'.wav', mp3=stem+'.mp3',meta=stem+'.json';
       let info=readClipCache(stem);const reused=!!info;
       if(!reused) {
@@ -257,7 +285,7 @@ async function narrate(o) {
             const w=Buffer.from(clip.wav,'base64'),m=Buffer.from(clip.mp3,'base64');info=wavInfo(w);
             if(m.length<32)throw Error('Empty MP3 narration');
             atomic(wav,w);atomic(mp3,m);atomic(meta,JSON.stringify({wav:hash(w),mp3:hash(m)}));last=null;break;
-          }catch(error){last=error;if(o.signal?.aborted)throw error;log('narration: retrying section '+(i+1)+' ('+(attempt+1)+'/3)');}
+          }catch(error){last=error;if(o.signal?.aborted)throw error;if(wallController?.signal?.aborted)throw Error('Narration timed out');log('narration: retrying section '+(i+1)+' ('+(attempt+1)+'/3)');}
         }
         if(last)throw Error('Narration incomplete at section '+(i+1)+'/'+plan.segments.length+'. Completed sections are saved; resume to retry. '+last.message);
       }
@@ -283,14 +311,16 @@ async function narrate(o) {
     const safeLabels=Object.prototype.hasOwnProperty.call(Planner.LABELS,langKey)?Planner.LABELS[langKey]:undefined;
     const player=await page.evaluate(({html,audio,mode,labels})=>{
       const doc=new DOMParser().parseFromString(html,'text/html');
-      doc.querySelectorAll('script,iframe,object,embed').forEach(el=>el.remove());
+      doc.querySelectorAll('script,iframe,object,embed,base,template,meta[http-equiv="refresh" i]').forEach(el=>el.remove());
       doc.querySelectorAll('*').forEach(el=>{
         for(const attr of Array.from(el.attributes)){
           const n=attr.name.toLowerCase();
-          if(n.startsWith('on')||((n==='href'||n==='src'||n==='xlink:href'||n==='formaction')&&/^\s*(?:javascript|vbscript):/i.test(attr.value)))el.removeAttribute(attr.name);
+          const norm=String(attr.value||'').replace(/[\u0000-\u0020]+/g,'');
+          if(n.startsWith('on')||n==='srcdoc'){el.removeAttribute(attr.name);continue;}
+          if((n==='href'||n==='src'||n==='xlink:href'||n==='formaction'||n==='action')&&(/^(?:javascript|vbscript|file):/i.test(norm)||/^data:(?!image\/(?:png|jpeg|jpg|gif|webp|avif);)/i.test(norm)))el.removeAttribute(attr.name);
         }
       });
-      const section=doc.createElement('section');const label=doc.createElement('p');label.textContent=(mode==='accessible'?(labels?.playerAccessible||'Accessible narration'):(labels?.playerNatural||'Natural narration'))+' — '+(labels?.complete||'complete document');section.setAttribute('aria-label',label.textContent);if(!labels)section.lang='en';const player=doc.createElement('audio');player.controls=true;player.preload='none';player.src=audio;player.setAttribute('aria-label',label.textContent);section.append(label,player);doc.body.prepend(section);const csp=doc.createElement('meta');csp.httpEquiv='Content-Security-Policy';csp.content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; media-src 'self'; font-src data:";doc.head.prepend(csp);return '<!doctype html>\n'+doc.documentElement.outerHTML;
+      const section=doc.createElement('section');const label=doc.createElement('p');label.textContent=(mode==='accessible'?(labels?.playerAccessible||'Accessible narration'):(labels?.playerNatural||'Natural narration'))+' — '+(labels?.complete||'complete document');section.setAttribute('aria-label',label.textContent);if(!labels)section.lang='en';const player=doc.createElement('audio');player.controls=true;player.preload='none';player.src=audio;player.setAttribute('aria-label',label.textContent);section.append(label,player);doc.body.prepend(section);const csp=doc.createElement('meta');csp.httpEquiv='Content-Security-Policy';csp.content="default-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; img-src data:; style-src 'unsafe-inline'; media-src 'self'; font-src data:";doc.head.prepend(csp);return '<!doctype html>\n'+doc.documentElement.outerHTML;
     },{html:plan.html,audio:encodeURIComponent(path.basename(mp3Out)),mode,labels:safeLabels});
     atomic(htmlOut,player);
     const files={audioWav:wavOut,audioMp3:mp3Out,narratedHtml:htmlOut};
@@ -308,11 +338,13 @@ async function narrate(o) {
         // Clean plan.bodyHtml for XHTML/EPUB3 while preserving every narration segment id,
         // then sync nav.xhtml links against the exact heading ids present in content.xhtml.
         const bodyDoc=new DOMParser().parseFromString('<!doctype html><html><body>'+plan.bodyHtml+'</body></html>','text/html');
-        bodyDoc.querySelectorAll('script,iframe,object,embed,annotation,annotation-xml,button,select,input,textarea').forEach(el=>el.remove());
+        bodyDoc.querySelectorAll('script,iframe,object,embed,base,template,meta[http-equiv="refresh" i],annotation,annotation-xml,button,select,input,textarea').forEach(el=>el.remove());
         bodyDoc.querySelectorAll('*').forEach(el=>{
           for(const attr of Array.from(el.attributes)){
             const n=attr.name.toLowerCase();
-            if(n.startsWith('on')||((n==='href'||n==='src'||n==='xlink:href'||n==='formaction')&&/^\s*(?:javascript|vbscript):/i.test(attr.value)))el.removeAttribute(attr.name);
+            const norm=String(attr.value||'').replace(/[\u0000-\u0020]+/g,'');
+            if(n.startsWith('on')||n==='srcdoc'){el.removeAttribute(attr.name);continue;}
+            if((n==='href'||n==='src'||n==='xlink:href'||n==='formaction'||n==='action')&&(/^(?:javascript|vbscript|file):/i.test(norm)||/^data:(?!image\/(?:png|jpeg|jpg|gif|webp|avif);)/i.test(norm)))el.removeAttribute(attr.name);
           }
         });
         bodyDoc.querySelectorAll('svg').forEach(svg=>{
@@ -346,12 +378,13 @@ async function narrate(o) {
     }
     // Release synthesis models before starting another browser/JVM for verification.
     await context.close();
+    if(browser){await browser.close().catch(()=>{});browser=null;}
     const epubValidation=files.readalongEpub?await EpubValidation.validate(files.readalongEpub,{stateDir:o.stateDir,resolveChromium:o.resolveChromium,claimPath:o.claimPath,onLog:o.onLog,signal:wallController?wallController.signal:o.signal}):undefined;
     if(epubValidation)Object.assign(files,epubValidation.files);
     const result={status:'completed',deliveryStatus:epubValidation?.status||'complete-for-tested-scope',reviewRequired:epubValidation?.reviewRequired||false,audioAuditVerified:false,sourceCoverage:o.sourceCoverage||null,contentCoverage:plan.contentCoverage,reusedSections:coverage.filter(section=>section.reused).length,generatedSections:coverage.filter(section=>!section.reused).length,provider:provider==='mixed-local'?provider:provider+'-browser',mode,voice,language:plan.lang,languages:plan.languages,voices:selected,sampleRate:24000,coverage,warnings:plan.warnings,sourceSha256:sourceHash,totalSections:plan.segments.length,completedSections:completed.length,durationSeconds:duration,files,epubValidation};
     files.narrationReport=o.claimPath(title+'-'+mode+'-narration.json');
     result.artifacts=Object.entries(files).filter(([role])=>role!=='narrationReport').map(([role,file])=>({role,path:file,sizeBytes:fs.statSync(file).size,sha256:hashFile(file)}));
     atomic(files.narrationReport,JSON.stringify(result,null,2));if(completionFile)saveCompletion(completionFile,fingerprint,result);return result;
-  } finally {clearTimeout(wallTimer);o.signal?.removeEventListener('abort',abort);await context.close().catch(()=>{});}
+  } finally {clearTimeout(wallTimer);o.signal?.removeEventListener('abort',abort);await context.close().catch(()=>{});if(browser)await browser.close().catch(()=>{});}
 }
 module.exports={narrate,preflight,clipCachePath,readClipCache,narrationRuntimeHash,completionFingerprint,loadCompletion,saveCompletion,normalizeClip,ASSETS,wavInfo,mergeWavs,voiceCatalog:Planner.voiceCatalog,normalizeLanguage:Planner.normalizeLanguage,accessibleLanguages:Object.keys(Planner.LABELS)};

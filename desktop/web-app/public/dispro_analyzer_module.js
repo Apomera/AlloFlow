@@ -376,7 +376,8 @@ function DisproTrendChart({ trend, tt }) {
 }
 function DisproResults({ analysis, result, tt }) {
   const flagged = result.rows.filter((r) => r.flags.length > 0);
-  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "overflow-x-auto bg-white border border-slate-300 rounded-xl p-2 mt-2" }, /* @__PURE__ */ React.createElement("table", { className: "w-full text-xs border-collapse" }, /* @__PURE__ */ React.createElement("caption", { className: "text-left text-sm font-bold text-slate-700 p-1" }, analysis.outcomeLabel || tt("dispro.results_caption", "Results"), " — ", analysis.date), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1.5 text-slate-600" }, tt("dispro.col_group", "Group")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-600" }, tt("dispro.col_enrollment", "Enrollment")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-600" }, tt("dispro.col_students", "Students w/ outcome")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-600" }, tt("dispro.col_risk", "Risk index")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-600" }, tt("dispro.col_rr", "Risk ratio")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-600" }, tt("dispro.col_composition", "Outcome share vs enrollment share")))), /* @__PURE__ */ React.createElement("tbody", null, result.rows.map((r) => /* @__PURE__ */ React.createElement("tr", { key: r.name, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "text-left p-1.5 font-normal text-slate-800" }, r.name, r.flags.length > 0 && /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " †")), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center text-slate-700" }, r.enrollment), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center text-slate-700" }, r.students), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center text-slate-700" }, disproFmtPct(r.risk)), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center font-bold " + (r.riskRatio != null && r.riskRatio >= 2 ? "text-rose-800" : "text-slate-800") }, disproFmtRatio(r.riskRatio), r.altRiskRatio != null && (r.flags.indexOf("small_comparison") !== -1 || r.flags.indexOf("zero_comparison_risk") !== -1) && /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-normal text-slate-600" }, tt("dispro.alt_short", "alt"), " ", r.altRiskRatio.toFixed(2))), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center text-slate-700" }, disproFmtPct(r.outcomeShare), " vs ", disproFmtPct(r.enrollShare)))), /* @__PURE__ */ React.createElement("tr", { className: "border-t-2 border-slate-300" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "text-left p-1.5 font-bold text-slate-700" }, tt("dispro.total", "Total")), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center font-bold text-slate-700" }, result.totals.enrollment), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center font-bold text-slate-700" }, result.totals.students), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center text-slate-700" }, result.totals.enrollment > 0 ? disproFmtPct(result.totals.students / result.totals.enrollment) : "—"), /* @__PURE__ */ React.createElement("td", { className: "p-1.5" }), /* @__PURE__ */ React.createElement("td", { className: "p-1.5" }))))), /* @__PURE__ */ React.createElement(DisproChart, { rows: result.rows, tt }), result.altComparison && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-600 bg-slate-100 border border-slate-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, tt("dispro.alt_note_title", "Alternate comparison on file:")), " ", result.altComparison.label, " — ", result.altComparison.students, "/", result.altComparison.enrollment, " (", disproFmtPct(result.altComparison.risk, 2), ").", " ", tt("dispro.alt_note", "Where the in-district comparison is flagged unstable, the table shows the alternate risk ratio (group risk ÷ this risk) beneath the standard one — the 34 CFR 300.647 pattern for small comparison groups.")), flagged.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 border border-amber-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-amber-900" }, tt("dispro.flags_title", "† Stability cautions")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-0.5 text-xs text-amber-900 list-disc pl-4" }, flagged.map((r) => r.flags.map((f) => /* @__PURE__ */ React.createElement("li", { key: r.name + f }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, r.name, ":"), " ", tt("dispro.flag_" + f, DISPRO_FLAG_TEXT[f])))))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-600" }, tt("dispro.integrity_note", "Risk ratios compare each group to all other students (the federal comparison method) and describe patterns in this data — they do not establish causes, and no threshold here constitutes a formal finding: states set their own risk-ratio thresholds and minimum cell/n-sizes under 34 CFR 300.647, typically over multiple years. Elevated numbers are a prompt for root-cause review (referral practices, policy application, climate), not a verdict. Counts must be unduplicated students. All computation happens on this device.")));
+  const overallRate = result.totals.enrollment > 0 ? disproFmtPct(result.totals.students / result.totals.enrollment) : "—";
+  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { "data-dispro-highlights": "true", className: "mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white px-3 py-2" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-bold uppercase tracking-wide text-slate-600" }, tt("dispro.hl_enrollment", "Total enrolled")), /* @__PURE__ */ React.createElement("span", { className: "block text-base font-bold text-slate-900 tabular-nums" }, result.totals.enrollment.toLocaleString())), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white px-3 py-2" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-bold uppercase tracking-wide text-slate-600" }, tt("dispro.hl_overall", "Overall outcome rate")), /* @__PURE__ */ React.createElement("span", { className: "block text-base font-bold text-slate-900 tabular-nums" }, overallRate, " ", /* @__PURE__ */ React.createElement("span", { className: "text-xs font-normal text-slate-600" }, "(", result.totals.students.toLocaleString(), ")"))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border px-3 py-2 " + (flagged.length > 0 ? "border-amber-300 bg-amber-50" : "border-emerald-200 bg-emerald-50") }, /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-bold uppercase tracking-wide " + (flagged.length > 0 ? "text-amber-900" : "text-emerald-900") }, tt("dispro.hl_stability", "Cell stability")), /* @__PURE__ */ React.createElement("span", { className: "block text-sm font-bold " + (flagged.length > 0 ? "text-amber-900" : "text-emerald-900") }, flagged.length > 0 ? flagged.length + " " + tt("dispro.hl_flagged", "group(s) with caution †") : tt("dispro.hl_stable", "All cells meet floor")))), /* @__PURE__ */ React.createElement("div", { className: "overflow-x-auto bg-white border border-slate-300 rounded-xl p-2 mt-2" }, /* @__PURE__ */ React.createElement("table", { className: "w-full text-xs border-collapse" }, /* @__PURE__ */ React.createElement("caption", { className: "text-left text-sm font-bold text-slate-700 p-1" }, analysis.outcomeLabel || tt("dispro.results_caption", "Results"), " — ", analysis.date), /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", { scope: "col", className: "text-left p-1.5 text-slate-600" }, tt("dispro.col_group", "Group")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-600" }, tt("dispro.col_enrollment", "Enrollment")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-600" }, tt("dispro.col_students", "Students w/ outcome")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-600" }, tt("dispro.col_risk", "Risk index")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-600" }, tt("dispro.col_rr", "Risk ratio")), /* @__PURE__ */ React.createElement("th", { scope: "col", className: "p-1.5 text-slate-600" }, tt("dispro.col_composition", "Outcome share vs enrollment share")))), /* @__PURE__ */ React.createElement("tbody", null, result.rows.map((r) => /* @__PURE__ */ React.createElement("tr", { key: r.name, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "text-left p-1.5 font-normal text-slate-800" }, r.name, r.flags.length > 0 && /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " †")), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center text-slate-700" }, r.enrollment), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center text-slate-700" }, r.students), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center text-slate-700" }, disproFmtPct(r.risk)), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center font-bold " + (r.riskRatio != null && r.riskRatio >= 2 ? "text-rose-800" : "text-slate-800") }, disproFmtRatio(r.riskRatio), r.altRiskRatio != null && (r.flags.indexOf("small_comparison") !== -1 || r.flags.indexOf("zero_comparison_risk") !== -1) && /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-normal text-slate-600" }, tt("dispro.alt_short", "alt"), " ", r.altRiskRatio.toFixed(2))), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center text-slate-700" }, disproFmtPct(r.outcomeShare), " vs ", disproFmtPct(r.enrollShare)))), /* @__PURE__ */ React.createElement("tr", { className: "border-t-2 border-slate-300" }, /* @__PURE__ */ React.createElement("th", { scope: "row", className: "text-left p-1.5 font-bold text-slate-700" }, tt("dispro.total", "Total")), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center font-bold text-slate-700" }, result.totals.enrollment), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center font-bold text-slate-700" }, result.totals.students), /* @__PURE__ */ React.createElement("td", { className: "p-1.5 text-center text-slate-700" }, result.totals.enrollment > 0 ? disproFmtPct(result.totals.students / result.totals.enrollment) : "—"), /* @__PURE__ */ React.createElement("td", { className: "p-1.5" }), /* @__PURE__ */ React.createElement("td", { className: "p-1.5" }))))), /* @__PURE__ */ React.createElement(DisproChart, { rows: result.rows, tt }), result.altComparison && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-600 bg-slate-100 border border-slate-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, tt("dispro.alt_note_title", "Alternate comparison on file:")), " ", result.altComparison.label, " — ", result.altComparison.students, "/", result.altComparison.enrollment, " (", disproFmtPct(result.altComparison.risk, 2), ").", " ", tt("dispro.alt_note", "Where the in-district comparison is flagged unstable, the table shows the alternate risk ratio (group risk ÷ this risk) beneath the standard one — the 34 CFR 300.647 pattern for small comparison groups.")), flagged.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 border border-amber-300 rounded-xl p-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-amber-900" }, tt("dispro.flags_title", "† Stability cautions")), /* @__PURE__ */ React.createElement("ul", { className: "mt-1 space-y-0.5 text-xs text-amber-900 list-disc pl-4" }, flagged.map((r) => r.flags.map((f) => /* @__PURE__ */ React.createElement("li", { key: r.name + f }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, r.name, ":"), " ", tt("dispro.flag_" + f, DISPRO_FLAG_TEXT[f])))))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-600" }, tt("dispro.integrity_note", "Risk ratios compare each group to all other students (the federal comparison method) and describe patterns in this data — they do not establish causes, and no threshold here constitutes a formal finding: states set their own risk-ratio thresholds and minimum cell/n-sizes under 34 CFR 300.647, typically over multiple years. Elevated numbers are a prompt for root-cause review (referral practices, policy application, climate), not a verdict. Counts must be unduplicated students. All computation happens on this device.")));
 }
 function DisproAnalyzerPanel(props) {
   const { onClose, t, addToast = (() => {
@@ -621,6 +622,86 @@ function DisproAnalyzerPanel(props) {
     );
   };
   const viewAnalysis = viewId ? analyses.find((a) => a.id === viewId) : null;
+  const [copiedSummaryKey, setCopiedSummaryKey] = React.useState(null);
+  const [savedQuery, setSavedQuery] = React.useState("");
+  const copyTimerRef = React.useRef(null);
+  const mountedRef = React.useRef(true);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (copyTimerRef.current) {
+        clearTimeout(copyTimerRef.current);
+        copyTimerRef.current = null;
+      }
+    };
+  }, []);
+  const hasDraftData = (draft.groups || []).some((g) => g && (String(g.name || "").trim() || String(g.enrollment || "").trim() || String(g.students || "").trim()));
+  const loadSampleCounts = () => {
+    setArmClear(false);
+    setDraft((d) => ({
+      ...d,
+      title: d.title || tt("dispro.sample_title", "Sample — Review counts"),
+      groups: [
+        { name: "Students with IEPs", enrollment: "120", students: "18" },
+        { name: "All other students", enrollment: "880", students: "44" }
+      ]
+    }));
+    disproAnnounce(tt("dispro.sample_loaded_announce", "Sample aggregate counts loaded. Replace with your school’s counts before saving."));
+  };
+  const copySummaryFor = React.useCallback((key, analysis, res) => {
+    if (!res || !res.valid) return;
+    const lines = [];
+    lines.push((analysis.title || analysis.outcomeLabel || tt("dispro.results_caption", "Disproportionality analysis")) + (analysis.date ? " (" + analysis.date + ")" : ""));
+    lines.push(tt("dispro.outcome_label", "Outcome") + ": " + (analysis.outcomeLabel || "—"));
+    lines.push("");
+    res.rows.forEach((r) => {
+      const rrText = disproFmtRatio(r.riskRatio);
+      const altText = r.altRiskRatio != null && (r.flags.indexOf("small_comparison") !== -1 || r.flags.indexOf("zero_comparison_risk") !== -1) ? " (alt " + r.altRiskRatio.toFixed(2) + ")" : "";
+      lines.push("- " + r.name + (r.flags.length ? " †" : "") + ": " + r.students + "/" + r.enrollment + " (" + disproFmtPct(r.risk) + "), RR " + rrText + altText);
+    });
+    lines.push("Total: " + res.totals.students + "/" + res.totals.enrollment + " (" + (res.totals.enrollment > 0 ? disproFmtPct(res.totals.students / res.totals.enrollment) : "—") + ")");
+    lines.push("");
+    lines.push("Descriptive risk ratios only (34 CFR 300.647 comparison vs. all other students; unduplicated student counts). States set their own thresholds and cell minimums; verify locally.");
+    const payload = lines.join("\n");
+    const markCopied = () => {
+      if (!mountedRef.current) return;
+      setCopiedSummaryKey(key);
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => {
+        if (mountedRef.current) setCopiedSummaryKey(null);
+      }, 2200);
+      disproAnnounce(tt("dispro.copied_announce", "Analysis summary copied."));
+    };
+    const fallbackCopy = () => {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = payload;
+        ta.setAttribute("readonly", "");
+        ta.setAttribute("aria-hidden", "true");
+        ta.setAttribute("aria-label", "Clipboard copy helper");
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand && document.execCommand("copy");
+        document.body.removeChild(ta);
+        if (ok) {
+          markCopied();
+          return;
+        }
+      } catch (_) {
+      }
+      addToast(tt("dispro.copy_failed", "Could not copy automatically — use Export results (CSV) instead."), "warning");
+    };
+    if (typeof navigator !== "undefined" && navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      Promise.resolve(navigator.clipboard.writeText(payload)).then(markCopied, fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+  }, [addToast, tt]);
+  const normalizedSavedQuery = savedQuery.trim().toLowerCase();
+  const filteredAnalyses = normalizedSavedQuery ? analyses.filter((a) => (String(a.title || "") + " " + String(a.outcomeLabel || "") + " " + String(a.date || "")).toLowerCase().indexOf(normalizedSavedQuery) !== -1) : analyses;
   const tabs = [
     { id: "analyze", label: tt("dispro.tab_analyze", "Analyze"), icon: "⚖️" },
     { id: "saved", label: tt("dispro.tab_saved", "Saved"), icon: "🗂️" },
@@ -735,9 +816,19 @@ function DisproAnalyzerPanel(props) {
         className: "min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-rose-700 hover:bg-rose-50"
       },
       "✕"
-    ))))))), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addRow, className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, "+ ", tt("dispro.add_row", "Add group")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-expanded": pasteOpen, onClick: () => setPasteOpen((v) => !v), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "📋"), " ", tt("dispro.paste_toggle", "Paste rows")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
-      const hasData = (draft.groups || []).some((g) => g && (String(g.name || "").trim() || String(g.enrollment || "").trim() || String(g.students || "").trim()));
-      if (hasData && !armClear) {
+    ))))))), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: addRow, className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, "+ ", tt("dispro.add_row", "Add group")), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-expanded": pasteOpen, onClick: () => setPasteOpen((v) => !v), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "📋"), " ", tt("dispro.paste_toggle", "Paste rows")), !hasDraftData && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-dispro-load-sample": "true",
+        onClick: loadSampleCounts,
+        className: "min-h-11 px-3 py-2 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-800 text-sm font-bold hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none"
+      },
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "✨"),
+      " ",
+      tt("dispro.load_sample", "Load example")
+    ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+      if (hasDraftData && !armClear) {
         setArmClear(true);
         disproAnnounce(tt("dispro.clear_arm_announce", "Activate Clear again to erase all entered counts."));
         return;
@@ -783,28 +874,69 @@ function DisproAnalyzerPanel(props) {
         onChange: (e) => setDraft((d) => ({ ...d, altComparison: { ...d.altComparison || {}, students: e.target.value } })),
         className: "w-full min-h-11 border border-slate-300 rounded-lg px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
       }
-    ))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tt("dispro.alt_hint", "When a comparison group inside the building is too small to be reliable, states compare against all other students statewide (the 34 CFR 300.647 alternate risk ratio). Enter those statewide counts here; the alternate ratio appears beneath any flagged standard ratio."))), result.errors.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-2 space-y-0.5 text-xs text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 list-disc pl-5", role: "alert" }, result.errors.map((e, i) => /* @__PURE__ */ React.createElement("li", { key: i }, e.message)))), result.rows.length >= 2 && result.errors.length === 0 ? /* @__PURE__ */ React.createElement(DisproResults, { analysis: draft, result, tt }) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-600" }, tt("dispro.need_rows", "Enter at least two groups (e.g. the group of interest and everyone else, or every demographic group) — results appear automatically.")), result.valid && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => exportCsvFor({ ...draft }), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("dispro.export_csv", "Export results (CSV)")))), tab === "saved" && viewAnalysis && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setViewId(null), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "←"), " ", tt("dispro.back_saved", "All analyses")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => exportCsvFor(viewAnalysis), className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("dispro.export_csv", "Export results (CSV)")), /* @__PURE__ */ React.createElement(
+    ))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, tt("dispro.alt_hint", "When a comparison group inside the building is too small to be reliable, states compare against all other students statewide (the 34 CFR 300.647 alternate risk ratio). Enter those statewide counts here; the alternate ratio appears beneath any flagged standard ratio."))), result.errors.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-2 space-y-0.5 text-xs text-rose-800 bg-rose-50 border border-rose-200 rounded-lg p-2 list-disc pl-5", role: "alert" }, result.errors.map((e, i) => /* @__PURE__ */ React.createElement("li", { key: i }, e.message)))), result.rows.length >= 2 && result.errors.length === 0 ? /* @__PURE__ */ React.createElement(DisproResults, { analysis: draft, result, tt }) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-600" }, tt("dispro.need_rows", "Enter at least two groups (e.g. the group of interest and everyone else, or every demographic group) — results appear automatically.")), result.valid && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
-        onClick: () => {
-          if (armDelete === viewAnalysis.id) {
-            setAnalyses((a) => a.filter((x) => x.id !== viewAnalysis.id));
-            setViewId(null);
-            setArmDelete(null);
-            addToast(tt("dispro.deleted_toast", "Analysis deleted."), "info");
-          } else {
-            setArmDelete(viewAnalysis.id);
-            disproAnnounce(tt("dispro.delete_arm_announce", "Activate delete again to permanently remove this analysis."));
-          }
-        },
-        className: "min-h-11 px-3 py-2 rounded-lg border text-sm font-bold " + (armDelete === viewAnalysis.id ? "bg-rose-600 text-white border-rose-700" : "bg-white text-rose-700 border-rose-300 hover:bg-rose-50")
+        "data-dispro-copy-summary": "draft",
+        onClick: () => copySummaryFor("draft", draft, result),
+        className: "min-h-11 px-3 py-2 rounded-lg border text-sm font-bold focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none " + (copiedSummaryKey === "draft" ? "border-emerald-400 bg-emerald-50 text-emerald-800" : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100")
       },
-      armDelete === viewAnalysis.id ? tt("dispro.delete_confirm", "Tap again to delete") : tt("dispro.delete", "Delete")
-    ))), /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-800" }, viewAnalysis.title), /* @__PURE__ */ React.createElement(DisproResults, { analysis: viewAnalysis, result: disproCompute(viewAnalysis.groups, viewAnalysis.altComparison), tt })), tab === "trends" && (() => {
+      copiedSummaryKey === "draft" ? "✓ " + tt("dispro.copied_short", "Copied") : "📋 " + tt("dispro.copy_summary", "Copy summary")
+    ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => exportCsvFor({ ...draft }), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-100" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("dispro.export_csv", "Export results (CSV)")))), tab === "saved" && viewAnalysis && (() => {
+      const savedRes = disproCompute(viewAnalysis.groups, viewAnalysis.altComparison);
+      const savedCopyKey = "saved:" + viewAnalysis.id;
+      return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setViewId(null), className: "min-h-11 px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "←"), " ", tt("dispro.back_saved", "All analyses")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, savedRes.valid && /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "data-dispro-copy-summary": "saved",
+          onClick: () => copySummaryFor(savedCopyKey, viewAnalysis, savedRes),
+          className: "min-h-11 px-3 py-2 rounded-lg border text-sm font-bold focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none " + (copiedSummaryKey === savedCopyKey ? "border-emerald-400 bg-emerald-50 text-emerald-800" : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100")
+        },
+        copiedSummaryKey === savedCopyKey ? "✓ " + tt("dispro.copied_short", "Copied") : "📋 " + tt("dispro.copy_summary", "Copy summary")
+      ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => exportCsvFor(viewAnalysis), className: "min-h-11 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "⬇️"), " ", tt("dispro.export_csv", "Export results (CSV)")), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => {
+            if (armDelete === viewAnalysis.id) {
+              setAnalyses((a) => a.filter((x) => x.id !== viewAnalysis.id));
+              setViewId(null);
+              setArmDelete(null);
+              addToast(tt("dispro.deleted_toast", "Analysis deleted."), "info");
+            } else {
+              setArmDelete(viewAnalysis.id);
+              disproAnnounce(tt("dispro.delete_arm_announce", "Activate delete again to permanently remove this analysis."));
+            }
+          },
+          className: "min-h-11 px-3 py-2 rounded-lg border text-sm font-bold " + (armDelete === viewAnalysis.id ? "bg-rose-600 text-white border-rose-700" : "bg-white text-rose-700 border-rose-300 hover:bg-rose-50")
+        },
+        armDelete === viewAnalysis.id ? tt("dispro.delete_confirm", "Tap again to delete") : tt("dispro.delete", "Delete")
+      ))), /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-800" }, viewAnalysis.title), /* @__PURE__ */ React.createElement(DisproResults, { analysis: viewAnalysis, result: savedRes, tt }));
+    })(), tab === "trends" && (() => {
       const trends = disproTrendSeries(analyses);
       return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-1" }, tt("dispro.trends_title", "Risk ratios over time")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, tt("dispro.trends_hint", "Save analyses of the same outcome across periods (semesters, years) with matching group names — each outcome with two or more saved analyses charts here. States typically evaluate significant disproportionality over multiple years, so a single elevated point is a prompt to keep measuring, not a pattern.")), trends.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("dispro.trends_empty", "No outcome has two or more saved analyses yet. Save at least two (same outcome label, different dates) on the Analyze tab.")), trends.map((trend) => /* @__PURE__ */ React.createElement("div", { key: trend.outcomeLabel, className: "bg-white border border-slate-300 rounded-xl p-3 mb-3" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-800" }, trend.outcomeLabel), /* @__PURE__ */ React.createElement(DisproTrendChart, { trend, tt }))));
-    })(), tab === "saved" && !viewAnalysis && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700 mb-2" }, tt("dispro.saved_title", "Saved analyses")), analyses.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("dispro.no_saved", "Nothing saved yet. Build an analysis on the Analyze tab and save it.")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5" }, analyses.map((a) => /* @__PURE__ */ React.createElement("li", { key: a.id }, /* @__PURE__ */ React.createElement(
+    })(), tab === "saved" && !viewAnalysis && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-700" }, tt("dispro.saved_title", "Saved analyses"), " (", analyses.length, ")"), analyses.length >= 4 && /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        id: "dispro-saved-search",
+        type: "search",
+        value: savedQuery,
+        onChange: (e) => setSavedQuery(e.target.value),
+        onKeyDown: (e) => {
+          if (e.nativeEvent && e.nativeEvent.isComposing || e.isComposing || e.keyCode === 229) return;
+          if (e.key === "Escape" && savedQuery) {
+            e.preventDefault();
+            e.stopPropagation();
+            setSavedQuery("");
+          }
+        },
+        "aria-label": tt("dispro.saved_search_aria", "Filter saved analyses by title or outcome"),
+        placeholder: tt("dispro.saved_search_placeholder", "Find analysis or outcome…"),
+        className: "min-h-11 w-48 rounded-lg border border-slate-300 bg-white px-2.5 text-xs text-slate-800 focus-visible:ring-2 focus-visible:ring-indigo-600"
+      }
+    )), analyses.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 bg-white border border-slate-300 rounded-xl p-3" }, tt("dispro.no_saved", "Nothing saved yet. Build an analysis on the Analyze tab and save it.")), analyses.length > 0 && filteredAnalyses.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white border border-slate-300 rounded-xl p-3 mb-2 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-700" }, tt("dispro.no_matching_saved", "No saved analyses match your search.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setSavedQuery(""), className: "min-h-11 px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 text-xs font-bold text-slate-800 hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 transition-colors motion-reduce:transition-none" }, tt("dispro.clear_search", "Clear"))), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1.5" }, filteredAnalyses.map((a) => /* @__PURE__ */ React.createElement("li", { key: a.id }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",

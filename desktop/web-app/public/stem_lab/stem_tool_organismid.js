@@ -789,9 +789,10 @@
             var kcol = kid.tier ? tierColor(kid.tier) : acc;
             var dBranch = 'M106 68 C132 68 134 ' + ky + ' 156 ' + ky;
             return h('g', { key: kid.name },
-              !contrast ? h('path', { d: dBranch, fill: 'none', stroke: kcol, strokeWidth: 5, strokeLinecap: 'round', opacity: 0.16 }) : null,
+              !contrast ? h('path', { d: dBranch, fill: 'none', stroke: kcol, strokeWidth: 5, strokeLinecap: 'round', opacity: 0.16, className: 'oid-specimen-shimmer oid-motion-deco' }) : null,
               h('path', { d: dBranch, fill: 'none', stroke: kcol, strokeWidth: 1.9, strokeLinecap: 'round' }),
-              !contrast ? h('circle', { cx: 158, cy: ky, r: 7.5, fill: kcol, opacity: 0.18 }) : null,
+              !contrast ? h('path', { d: dBranch, fill: 'none', stroke: '#ffffff', strokeWidth: 1.1, strokeLinecap: 'round', strokeDasharray: '4 10', opacity: 0.65, className: 'oid-branch-flow oid-motion-deco', style: { animationDelay: (ki * 0.35) + 's' } }) : null,
+              !contrast ? h('circle', { cx: 158, cy: ky, r: 7.5, fill: kcol, opacity: 0.2, className: 'oid-beacon oid-motion-deco', style: { animationDelay: (ki * 0.42) + 's' } }) : null,
               h('circle', { cx: 158, cy: ky, r: 4.2, fill: kcol, stroke: C.panel, strokeWidth: 1.2 }),
               !contrast ? h('circle', { cx: 156.8, cy: ky - 1.2, r: 1.1, fill: '#ffffff', opacity: 0.65 }) : null,
               h('text', { x: 168, y: ky + 3, fill: stroke, fontSize: 9.5, fontWeight: '700' }, kid.name.slice(0, 15))
@@ -815,14 +816,17 @@
             )
           ) : null,
           h('rect', { x: 1, y: 1, width: 278, height: 142, rx: 8, fill: contrast ? C.panel : 'url(#oid-plate-bg)', stroke: C.border, strokeWidth: 1 }),
-          !contrast ? h('rect', { x: 2, y: 2, width: 276, height: 140, rx: 7, fill: 'url(#oid-plate-spot)' }) : null,
-          // Naturalist optical-loupe corner brackets & subtle plate reticle
-          !contrast ? h('g', { fill: 'none', stroke: col, strokeWidth: 1.1, opacity: 0.35 },
-            h('path', { d: 'M8 18 L8 8 L18 8' }),
-            h('path', { d: 'M262 8 L272 8 L272 18' }),
-            h('path', { d: 'M8 126 L8 136 L18 136' }),
-            h('path', { d: 'M262 136 L272 136 L272 126' }),
-            h('circle', { cx: 140, cy: 68, r: 54, strokeDasharray: '3 5', opacity: 0.55 })
+          !contrast ? h('rect', { x: 2, y: 2, width: 276, height: 140, rx: 7, fill: 'url(#oid-plate-spot)', className: 'oid-lens-bloom oid-motion-deco' }) : null,
+          // Naturalist optical-loupe corner focus-lock brackets & reticle bloom
+          !contrast ? h('g', { fill: 'none', stroke: col, strokeWidth: 1.1, opacity: 0.38, className: 'oid-motion-deco' },
+            h('g', { className: 'oid-focus-lock' },
+              h('path', { d: 'M8 18 L8 8 L18 8' }),
+              h('path', { d: 'M262 8 L272 8 L272 18' }),
+              h('path', { d: 'M8 126 L8 136 L18 136' }),
+              h('path', { d: 'M262 136 L272 136 L272 126' })
+            ),
+            h('circle', { cx: 140, cy: 68, r: 58, strokeWidth: 0.8, opacity: 0.24, className: 'oid-lens-bloom' }),
+            h('circle', { cx: 140, cy: 68, r: 54, strokeDasharray: '3 5', opacity: 0.58, className: 'oid-reticle-orbit' })
           ) : null,
           inner
         ),
@@ -856,11 +860,12 @@
           )
         ) : null,
         h('rect', { x: 1, y: 1, width: 358, height: 64, rx: 8, fill: C.raised, stroke: C.border, strokeWidth: 1 }),
-        !contrast ? h('rect', { x: 2, y: 2, width: 177, height: 62, rx: 7, fill: 'url(#' + safeGradId + ')' }) : null,
-        !contrast ? h('rect', { x: 181, y: 2, width: 177, height: 62, rx: 7, fill: 'url(#' + riskGradId + ')' }) : null,
-        // Optical loupe rings framing left & right specimens
-        !contrast ? h('circle', { cx: 60, cy: 33, r: 24, fill: 'none', stroke: C.accent, strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.4 }) : null,
-        !contrast ? h('circle', { cx: 236, cy: 33, r: 24, fill: 'none', stroke: col, strokeWidth: 1.2, strokeDasharray: '3 2', opacity: 0.55 }) : null,
+        !contrast ? h('rect', { x: 2, y: 2, width: 177, height: 62, rx: 7, fill: 'url(#' + safeGradId + ')', className: 'oid-specimen-shimmer oid-motion-deco' }) : null,
+        !contrast ? h('rect', { x: 181, y: 2, width: 177, height: 62, rx: 7, fill: 'url(#' + riskGradId + ')', className: 'oid-specimen-shimmer oid-motion-deco', style: { animationDelay: '1.1s' } }) : null,
+        // Optical loupe rings & focus-lock bloom framing left & right specimens
+        !contrast ? h('circle', { cx: 60, cy: 33, r: 24, fill: 'none', stroke: C.accent, strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.42, className: 'oid-reticle-orbit oid-motion-deco' }) : null,
+        !contrast ? h('circle', { cx: 236, cy: 33, r: 26.5, fill: 'none', stroke: col, strokeWidth: 0.9, opacity: 0.25, className: 'oid-lens-bloom oid-motion-deco' }) : null,
+        !contrast ? h('circle', { cx: 236, cy: 33, r: 24, fill: 'none', stroke: col, strokeWidth: 1.2, strokeDasharray: '3 2', opacity: 0.58, className: 'oid-reticle-orbit oid-motion-deco', style: { animationDelay: '0.6s' } }) : null,
         // Left specimen glyph
         isButterfly ? h('g', null,
           h('path', { d: 'M58 34 C44 16 26 18 32 34 C30 46 46 48 58 38 Z', fill: '#f97316', fillOpacity: 0.45, stroke: C.text, strokeWidth: 1.4 }),
@@ -971,9 +976,16 @@
           )
         ) : null,
         h('rect', { x: 1, y: 1, width: 108, height: 86, rx: 10, fill: contrast ? C.raised : 'url(#' + exGradId + ')', stroke: C.border, strokeWidth: 1 }),
-        // Optical loupe circular specimen bezel & specular glass arc
-        !contrast ? h('circle', { cx: 55, cy: 44, r: 36, fill: 'none', stroke: C.accent, strokeWidth: 1.1, strokeDasharray: '4 3', opacity: 0.35 }) : null,
-        !contrast ? h('path', { d: 'M 26 28 A 34 34 0 0 1 54 10', fill: 'none', stroke: '#ffffff', strokeWidth: 1.4, strokeLinecap: 'round', opacity: dark ? 0.22 : 0.6 }) : null,
+        // Optical magnifying-lens reticle bloom, focus-lock ticks & specular glass arc (zero spoilers)
+        !contrast ? h('g', { fill: 'none', stroke: C.accent, strokeWidth: 1, opacity: 0.34, className: 'oid-focus-lock oid-motion-deco' },
+          h('path', { d: 'M7 15 L7 7 L15 7' }),
+          h('path', { d: 'M95 7 L103 7 L103 15' }),
+          h('path', { d: 'M7 73 L7 81 L15 81' }),
+          h('path', { d: 'M95 81 L103 81 L103 73' })
+        ) : null,
+        !contrast ? h('circle', { cx: 55, cy: 44, r: 39, fill: 'none', stroke: C.accent, strokeWidth: 0.9, opacity: 0.22, className: 'oid-lens-bloom oid-motion-deco' }) : null,
+        !contrast ? h('circle', { cx: 55, cy: 44, r: 36, fill: 'none', stroke: C.accent, strokeWidth: 1.1, strokeDasharray: '4 3', opacity: 0.4, className: 'oid-reticle-orbit oid-motion-deco' }) : null,
+        !contrast ? h('path', { d: 'M 26 28 A 34 34 0 0 1 54 10', fill: 'none', stroke: '#ffffff', strokeWidth: 1.4, strokeLinecap: 'round', opacity: dark ? 0.24 : 0.62, className: 'oid-specimen-shimmer oid-motion-deco' }) : null,
         inner
       );
     }
@@ -1002,21 +1014,22 @@
               h('stop', { offset: '100%', stopColor: C.raised })
             ),
             h('linearGradient', { id: 'oid-key-sheen', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
-              h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.32 }),
+              h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0.34 }),
               h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
             )
           ) : null,
           // Recessed naturalist key stage well
           h('rect', { x: 2, y: 4, width: 556, height: 132, rx: 10, fill: contrast ? C.panel : 'url(#oid-key-well)', stroke: C.border, strokeWidth: 1 }),
-          // Connecting horizontal "No" spine (dual-pass luminous active pathway)
+          // Connecting horizontal "No" spine (animated dichotomous-branch decision flow dashes on chosen path)
           steps.slice(0, -1).map(function (st, idx) {
             var next = steps[idx + 1];
             var q = OBSERVATION_KEY[st.id].question;
             var wentNo = answered[q] === 'no';
             var xStart = st.x + 42, xEnd = next.x - 42;
             return h('g', { key: 'sp-' + st.id },
-              (wentNo && !contrast) ? h('line', { x1: xStart, y1: 42, x2: xEnd, y2: 42, stroke: C.accent, strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.22 }) : null,
+              (wentNo && !contrast) ? h('line', { x1: xStart, y1: 42, x2: xEnd, y2: 42, stroke: C.accent, strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.22, className: 'oid-specimen-shimmer oid-motion-deco' }) : null,
               h('line', { x1: xStart, y1: 42, x2: xEnd, y2: 42, stroke: wentNo ? C.accent : C.border, strokeWidth: wentNo ? 2.6 : 1.5, strokeLinecap: 'round' }),
+              (wentNo && !contrast) ? h('line', { x1: xStart, y1: 42, x2: xEnd, y2: 42, stroke: '#ffffff', strokeWidth: 1.2, strokeDasharray: '4 8', strokeLinecap: 'round', opacity: 0.72, className: 'oid-branch-flow oid-motion-deco' }) : null,
               h('polygon', { points: xEnd + ',42 ' + (xEnd - 6) + ',38.5 ' + (xEnd - 6) + ',45.5', fill: wentNo ? C.accent : C.border }),
               h('text', { x: (st.x + next.x) / 2, y: 33, textAnchor: 'middle', fill: wentNo ? C.accent : C.muted, fontSize: 8.5, fontWeight: '800' }, 'No')
             );
@@ -1034,21 +1047,22 @@
               : st.id === 'legs' && route.result === 'Arachnid example' ? 'Arachnid'
               : st.yesOut;
             return h('g', { key: st.id },
-              // Active decision beacon halo
-              (isCur && !contrast) ? h('rect', { x: st.x - 46, y: 20, width: 92, height: 44, rx: 11, fill: C.accent, opacity: 0.18 }) : null,
+              // Active decision crisp focus-lock halo
+              (isCur && !contrast) ? h('rect', { x: st.x - 46, y: 20, width: 92, height: 44, rx: 11, fill: C.accent, opacity: 0.22, className: 'oid-focus-lock oid-motion-deco' }) : null,
               !contrast ? h('rect', { x: st.x - 42, y: 26, width: 84, height: 36, rx: 8, fill: nodeStroke, opacity: 0.14 }) : null,
               h('rect', { x: st.x - 42, y: 24, width: 84, height: 36, rx: 8, fill: nodeFill, stroke: nodeStroke, strokeWidth: isCur ? 2.4 : 1.4 }),
-              (!contrast && isCur) ? h('rect', { x: st.x - 40, y: 25.5, width: 80, height: 14, rx: 6, fill: 'url(#oid-key-sheen)' }) : null,
+              (!contrast && isCur) ? h('rect', { x: st.x - 40, y: 25.5, width: 80, height: 14, rx: 6, fill: 'url(#oid-key-sheen)', className: 'oid-specimen-shimmer oid-motion-deco' }) : null,
               h('text', { x: st.x, y: 45, textAnchor: 'middle', fill: labelFill, fontSize: 9.5, fontWeight: '800' }, st.label),
-              // Downward Yes branch (dual-pass luminous when active)
-              (outActive && !contrast) ? h('line', { x1: st.x, y1: 60, x2: st.x, y2: 92, stroke: C.accent, strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.22 }) : null,
+              // Downward Yes branch (dual-pass luminous flow when chosen)
+              (outActive && !contrast) ? h('line', { x1: st.x, y1: 60, x2: st.x, y2: 92, stroke: C.accent, strokeWidth: 6.5, strokeLinecap: 'round', opacity: 0.22, className: 'oid-specimen-shimmer oid-motion-deco' }) : null,
               h('line', { x1: st.x, y1: 60, x2: st.x, y2: 92, stroke: outActive ? C.accent : C.border, strokeWidth: outActive ? 2.6 : 1.3, strokeDasharray: outActive ? undefined : '3 3', strokeLinecap: 'round' }),
+              (outActive && !contrast) ? h('line', { x1: st.x, y1: 60, x2: st.x, y2: 92, stroke: '#ffffff', strokeWidth: 1.2, strokeDasharray: '4 8', strokeLinecap: 'round', opacity: 0.72, className: 'oid-branch-flow oid-motion-deco' }) : null,
               h('polygon', { points: st.x + ',92 ' + (st.x - 3.5) + ',86 ' + (st.x + 3.5) + ',86', fill: outActive ? C.accent : C.border }),
               h('text', { x: st.x + 12, y: 79, fill: outActive ? C.accent : C.muted, fontSize: 8.5, fontWeight: '800' }, 'Yes'),
-              // Endpoint outcome pill with glowing halo when reached
-              (outActive && !contrast) ? h('rect', { x: st.x - 40, y: 88, width: 80, height: 36, rx: 18, fill: C.accent, opacity: 0.2 }) : null,
+              // Endpoint outcome pill with crisp focus-lock halo when reached
+              (outActive && !contrast) ? h('rect', { x: st.x - 40, y: 88, width: 80, height: 36, rx: 18, fill: C.accent, opacity: 0.24, className: 'oid-focus-lock oid-motion-deco' }) : null,
               h('rect', { x: st.x - 36, y: 92, width: 72, height: 28, rx: 14, fill: outActive ? C.accent : C.panel, stroke: outActive ? C.accent : C.border, strokeWidth: outActive ? 2 : 1.2 }),
-              (!contrast && outActive) ? h('rect', { x: st.x - 33, y: 93.5, width: 66, height: 11, rx: 5.5, fill: 'url(#oid-key-sheen)' }) : null,
+              (!contrast && outActive) ? h('rect', { x: st.x - 33, y: 93.5, width: 66, height: 11, rx: 5.5, fill: 'url(#oid-key-sheen)', className: 'oid-specimen-shimmer oid-motion-deco' }) : null,
               h('text', { x: st.x, y: 109, textAnchor: 'middle', fill: outActive ? C.accentText : C.muted, fontSize: 9.5, fontWeight: '800' }, outText)
             );
           })
@@ -1615,7 +1629,21 @@
       '.oid-footer{margin:16px 0 0;text-align:center;font-size:10px}',
       '@media(max-width:900px){.oid-explorer{grid-template-columns:1fr}.oid-detail{position:static}}',
       '@media(max-width:620px){.organism-id-lab{padding:11px}.oid-hero{align-items:flex-start;padding:15px}.oid-edge{grid-template-columns:1fr}.oid-edge-vs{justify-items:start}.oid-lineage li{flex-wrap:wrap}.oid-node{grid-template-columns:9px minmax(0,1fr)}.oid-node-rank{grid-column:2}}',
-      '@media(prefers-reduced-motion:reduce){.organism-id-lab *{transition:none!important}}',
+      '@keyframes oidReticleOrbit{from{stroke-dashoffset:32}to{stroke-dashoffset:0}}',
+      '@keyframes oidLensBloom{0%,100%{opacity:.52;transform:scale(.985)}50%{opacity:1;transform:scale(1.018)}}',
+      '@keyframes oidFocusLock{0%,100%{opacity:.22;transform:scale(.975)}50%{opacity:.58;transform:scale(1.025)}}',
+      '@keyframes oidBranchFlow{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}',
+      '@keyframes oidSpecimenShimmer{0%,100%{opacity:.34}50%{opacity:.76}}',
+      '@keyframes oidBeaconPulse{0%,100%{opacity:.16;transform:scale(.92)}50%{opacity:.52;transform:scale(1.24)}}',
+      '.organism-id-lab .oid-reticle-orbit{animation:oidReticleOrbit 5.6s linear infinite}',
+      '.organism-id-lab .oid-lens-bloom{transform-box:fill-box;transform-origin:center;animation:oidLensBloom 3.8s ease-in-out infinite}',
+      '.organism-id-lab .oid-focus-lock{transform-box:fill-box;transform-origin:center;animation:oidFocusLock 2.8s ease-in-out infinite}',
+      '.organism-id-lab .oid-branch-flow{animation:oidBranchFlow 2.2s linear infinite}',
+      '.organism-id-lab .oid-specimen-shimmer{animation:oidSpecimenShimmer 3.4s ease-in-out infinite}',
+      '.organism-id-lab .oid-beacon{transform-box:fill-box;transform-origin:center;animation:oidBeaconPulse 2.6s ease-in-out infinite}',
+      '@media(prefers-reduced-motion:reduce){.organism-id-lab *{animation:none!important;transition:none!important}}',
+      '.theme-contrast .organism-id-lab .oid-reticle-orbit,.theme-contrast .organism-id-lab .oid-lens-bloom,.theme-contrast .organism-id-lab .oid-focus-lock,.theme-contrast .organism-id-lab .oid-branch-flow,.theme-contrast .organism-id-lab .oid-specimen-shimmer,.theme-contrast .organism-id-lab .oid-beacon{animation:none!important}',
+      '.theme-contrast .organism-id-lab .oid-motion-deco{opacity:0!important;display:none!important}',
       '.theme-contrast .oid-hero{background:#000000!important;border:2px solid #facc15;box-shadow:none;color:#ffff00}',
       '.theme-contrast .oid-hero-pill{background:#000000!important;border-color:#facc15;color:#ffff00}',
       '@media(forced-colors:active){.organism-id-lab *{forced-color-adjust:auto}.oid-hero{background:Canvas;color:CanvasText}.oid-tier-dot,.oid-swatch{border:1px solid CanvasText}}'

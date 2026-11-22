@@ -300,7 +300,7 @@ function LessonSpokenDirections({
       if (alive.current) setStatus(_ltsText(error?.message || error) || tr('export_failed', 'The script could not be exported. Please try again.'));
     }
   };
-  const button = 'min-h-11 rounded-lg border border-indigo-600 bg-white px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50';
+  const button = 'min-h-11 rounded-lg border border-indigo-600 bg-white px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:opacity-50';
   const bionicOn = typeof window !== 'undefined' && typeof window.__alloUseBionic === 'function' ? window.__alloUseBionic() : false;
   const bt = s => bionicOn && typeof s === 'string' && typeof window !== 'undefined' && typeof window.__alloBionicReact === 'function' ? window.__alloBionicReact(s) : s;
   const step = version.steps[stepIndex];
@@ -436,6 +436,7 @@ function LessonSpokenDirections({
     type: "button",
     className: button,
     disabled: !!draft || !!working || !segments.length,
+    "aria-busy": working === 'save' ? 'true' : undefined,
     onClick: saveAudio
   }, tr('save_tts', 'Save TTS')), working && /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -467,8 +468,25 @@ function LessonSpokenDirections({
     className: button,
     disabled: stepIndex >= version.steps.length - 1,
     onClick: () => move(stepIndex + 1)
-  }, tr('next_step', 'Next step'))), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-600"
+  }, tr('next_step', 'Next step'))), version.steps.length > 1 && (() => {
+    const pct = Math.round((stepIndex + 1) / version.steps.length * 100);
+    return /*#__PURE__*/React.createElement("div", {
+      "data-spoken-step-progress": "true",
+      role: "progressbar",
+      "aria-label": tr('spoken_progress', 'Spoken step progress'),
+      "aria-valuemin": 1,
+      "aria-valuemax": version.steps.length,
+      "aria-valuenow": stepIndex + 1,
+      "aria-valuetext": `Step ${stepIndex + 1} of ${version.steps.length} (${pct}%)`,
+      className: "h-2 w-full rounded-full bg-indigo-100 overflow-hidden"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "h-full rounded-full bg-indigo-600 transition-all motion-reduce:transition-none",
+      style: {
+        width: pct + '%'
+      }
+    }));
+  })(), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-700"
   }, tr('spoken_keyboard_hint', 'Tip: Press Left/Right arrow keys or Space to move between steps.')), /*#__PURE__*/React.createElement("label", {
     className: "block text-sm font-bold"
   }, tr('jump_step', 'Go to step'), /*#__PURE__*/React.createElement("select", {
@@ -489,17 +507,25 @@ function LessonSpokenDirections({
     key: segment.id,
     "data-spoken-block": segment.field,
     className: 'space-y-3 rounded-xl border-2 p-4 ' + (active === segment.id ? 'border-indigo-700 bg-indigo-100' : 'border-indigo-300 bg-indigo-50')
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center justify-between gap-2"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm font-bold"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "❝ "), segment.field === 'checkQuestion' ? tr('ask_aloud', 'Ask aloud') : tr('say_aloud', 'Say aloud')), /*#__PURE__*/React.createElement("p", {
+  }, "❝ "), segment.field === 'checkQuestion' ? tr('ask_aloud', 'Ask aloud') : tr('say_aloud', 'Say aloud')), active === segment.id && /*#__PURE__*/React.createElement("span", {
+    "data-spoken-active-badge": "true",
+    className: "inline-flex items-center gap-1 rounded-full bg-indigo-700 px-2.5 py-0.5 text-xs font-bold text-white"
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "▶"), /*#__PURE__*/React.createElement("span", null, tr('playing_now', 'Playing')))), /*#__PURE__*/React.createElement("p", {
     dir: "auto",
     className: 'whitespace-pre-wrap break-words leading-relaxed ' + (large ? 'text-2xl' : 'text-xl')
   }, bt(segment.spokenText)), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: button,
     disabled: !!draft || working === 'save',
+    "aria-busy": working === 'play' && active === segment.id ? 'true' : undefined,
     onClick: () => play(segment),
     "aria-label": tr('play_block', 'Play spoken block') + ': ' + (segment.field === 'checkQuestion' ? tr('ask_aloud', 'Ask aloud') : tr('say_aloud', 'Say aloud'))
   }, tr('play_block', 'Play spoken block')))));
@@ -1491,8 +1517,8 @@ function LessonTeachingScriptPanel(props) {
       if (mounted.current) setDeleting(false);
     }
   };
-  const fieldClass = 'min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:bg-slate-100';
-  const buttonClass = 'min-h-11 rounded-lg border border-indigo-600 px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-600 disabled:opacity-50';
+  const fieldClass = 'min-h-11 w-full rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:bg-slate-100';
+  const buttonClass = 'min-h-11 rounded-lg border border-indigo-600 px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:opacity-50';
   const stepFields = [['teacherSays', tr('teacher_says', 'Teacher says')], ['studentDoes', tr('student_does', 'Learners do')], ['checkQuestion', tr('check_question', 'Check for understanding')], ['possibleResponse', tr('possible_response', 'Possible learner response')], ['ifStruggling', tr('if_struggling', 'If learners need support (likely misconception)')], ['ifReady', tr('if_ready', 'If learners are ready to go further')]];
   const fieldIssue = (step, key) => {
     if (key === 'minutes') return Number.isInteger(Number(step.minutes)) && Number(step.minutes) >= 1 && Number(step.minutes) <= versionRules.maxStepMinutes ? '' : tr('field_minutes', 'Use whole minutes from 1 to {max}.').replace('{max}', String(versionRules.maxStepMinutes));
@@ -1908,6 +1934,7 @@ function LessonTeachingScriptPanel(props) {
     className: "flex flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "submit",
+    "aria-busy": busy ? 'true' : undefined,
     className: buttonClass + ' bg-indigo-50',
     disabled: !canContinueGeneration || busy || saving || deleting || !!draft || !formReady
   }, generationRecovery ? generationRecovery.completedChunks === generationRecovery.totalChunks ? tr('finish_saving', 'Finish saving') : tr('resume', 'Resume script') : error ? tr('retry', 'Try generating again') : tr('generate', 'Generate script')), generationRecovery && typeof onDiscardTeachingScriptRecovery === 'function' && /*#__PURE__*/React.createElement("button", {
@@ -2004,6 +2031,7 @@ function LessonTeachingScriptPanel(props) {
     className: "mt-2 flex flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
+    "aria-busy": deleting ? 'true' : undefined,
     className: buttonClass,
     disabled: deleting || busy,
     onClick: deleteScript
@@ -2098,7 +2126,9 @@ function LessonTeachingScriptPanel(props) {
     value: index
   }, index + 1, ". ", _ltsText(step.title)))))), !draft && steps.length >= 2 && /*#__PURE__*/React.createElement("div", {
     "data-script-delivery-bar": "true",
-    className: "no-print flex flex-wrap items-center justify-between gap-2 rounded-xl border border-indigo-200 bg-indigo-50/70 px-3 py-2 text-sm text-indigo-950"
+    className: "no-print space-y-2 rounded-xl border border-indigo-200 bg-indigo-50/70 px-3 py-2 text-sm text-indigo-950"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center justify-between gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-bold",
     "data-script-pacing-status": "true",
@@ -2107,8 +2137,22 @@ function LessonTeachingScriptPanel(props) {
     type: "button",
     "data-script-delivery-reset": "true",
     onClick: resetCompletedSteps,
-    className: "min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-900 hover:bg-indigo-100 focus-visible:ring-2 focus-visible:ring-indigo-600"
-  }, tr('delivery_reset', 'Reset pacing'))), /*#__PURE__*/React.createElement("ol", {
+    className: "min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-bold text-indigo-900 hover:bg-indigo-100 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600"
+  }, tr('delivery_reset', 'Reset pacing'))), /*#__PURE__*/React.createElement("div", {
+    "data-script-delivery-progress": "true",
+    role: "progressbar",
+    "aria-label": tr('delivery_progress_label', 'Lesson script delivery progress'),
+    "aria-valuemin": 0,
+    "aria-valuemax": steps.length,
+    "aria-valuenow": doneStepCount,
+    "aria-valuetext": `${doneStepCount} of ${steps.length} steps delivered (${remainingMinutes} min remaining)`,
+    className: "h-1.5 w-full rounded-full bg-indigo-200 overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-full rounded-full bg-emerald-600 transition-all motion-reduce:transition-none",
+    style: {
+      width: Math.round(doneStepCount / steps.length * 100) + '%'
+    }
+  }))), /*#__PURE__*/React.createElement("ol", {
     id: id + '-steps',
     className: "space-y-4"
   }, steps.map((step, index) => {
@@ -2161,14 +2205,14 @@ function LessonTeachingScriptPanel(props) {
       "aria-pressed": isStepDone,
       "aria-label": (isStepDone ? tr('mark_step_undone', 'Mark step {number} as not done') : tr('mark_step_done', 'Mark step {number} as done')).replace('{number}', String(index + 1)),
       onClick: () => toggleStepDone(stepKey),
-      className: 'min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (isStepDone ? 'border-emerald-500 bg-emerald-100 text-emerald-950 hover:bg-emerald-200' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50')
+      className: 'min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (isStepDone ? 'border-emerald-500 bg-emerald-100 text-emerald-950 hover:bg-emerald-200' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50')
     }, isStepDone ? tr('step_done_checked', '✓ Done') : tr('step_done_unchecked', 'Mark done')), canRehearse && /*#__PURE__*/React.createElement("button", {
       type: "button",
       "data-script-step-listen": index,
       "aria-pressed": isStepSpeaking,
       "aria-label": (isStepSpeaking ? tr('stop_rehearse_step', 'Stop rehearsing step {number}') : tr('rehearse_step', 'Rehearse step {number} aloud')).replace('{number}', String(index + 1)),
       onClick: () => toggleRehearseStep(step, index),
-      className: 'min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (isStepSpeaking ? 'border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800' : 'border-indigo-300 bg-indigo-50 text-indigo-900 hover:bg-indigo-100')
+      className: 'min-h-11 rounded-lg border px-2.5 py-1.5 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + (isStepSpeaking ? 'border-indigo-700 bg-indigo-700 text-white hover:bg-indigo-800' : 'border-indigo-300 bg-indigo-50 text-indigo-900 hover:bg-indigo-100')
     }, isStepSpeaking ? tr('stop_rehearse_label', '⏹ Stop') : tr('rehearse_label', '🔊 Rehearse')))), canGenerate && typeof onRegenerateTeachingStep === 'function' && typeof onUpdateTeachingScript === 'function' && /*#__PURE__*/React.createElement("div", {
       className: "space-y-2 no-print"
     }, regenerateIndex === index ? /*#__PURE__*/React.createElement("div", {
@@ -2324,6 +2368,7 @@ function LessonTeachingScriptPanel(props) {
     className: "flex flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
+    "aria-busy": saving ? 'true' : undefined,
     className: buttonClass,
     disabled: saving || busy || invalidTiming || invalidDraftText || invalidDraftLength || staleDraft,
     onClick: saveEdits

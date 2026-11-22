@@ -254,6 +254,7 @@ const LiveAdvancedQuizResponse = React.memo(({
       clickedPairIdx: null,
       partnerAnswer: ''
   });
+  const [sequenceStatus, setSequenceStatus] = useState('');
   useEffect(() => {
       setDraft({
           text: '',
@@ -269,6 +270,7 @@ const LiveAdvancedQuizResponse = React.memo(({
           clickedPairIdx: null,
           partnerAnswer: ''
       });
+      setSequenceStatus('');
   }, [questionKey]);
   const patchDraft = (patch) => setDraft((previous) => ({ ...previous, ...patch }));
   const isDisabled = hasAnswered || phase !== 'answering';
@@ -330,7 +332,22 @@ const LiveAdvancedQuizResponse = React.memo(({
                       className="w-full resize-y rounded-xl border-2 border-white/30 bg-white px-4 py-3 text-base text-slate-900"
                   />
               )}
-              <div className="mt-3 flex justify-end">
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                      <span data-live-written-count="true" className="text-xs font-semibold text-indigo-100">
+                          {draft.text.length} / {maxLength}
+                      </span>
+                      {!isDisabled && draft.text.trim().length > 0 && (
+                          <button
+                              type="button"
+                              data-live-written-clear="true"
+                              onClick={() => patchDraft({ text: '' })}
+                              className="min-h-11 rounded-xl border border-white/40 bg-white/10 px-3 py-2 text-xs font-bold text-white hover:bg-white/20"
+                          >
+                              {t('common.clear') || 'Clear'}
+                          </button>
+                      )}
+                  </div>
                   <button type="button" onClick={submitText} disabled={isDisabled || !draft.text.trim()} className={submitButtonClass}>
                       {(t('quiz.live_student.submit_response') || 'Submit response')}
                   </button>
@@ -481,7 +498,7 @@ const LiveAdvancedQuizResponse = React.memo(({
                       onClick={() => patchDraft({ [field]: index })}
                       className={`${sharedButtonClass} ${selectedIndex === index ? 'border-yellow-300 bg-yellow-300 text-indigo-950' : 'border-white/30 bg-white text-slate-900'}`}
                   >
-                      {String.fromCharCode(65 + index)}. {liveQuizMd().inline(option)}
+                      {selectedIndex === index && <span aria-hidden="true" className="mr-1.5">✓</span>}{String.fromCharCode(65 + index)}. {liveQuizMd().inline(option)}
                   </button>
               ))}
           </div>
@@ -541,6 +558,8 @@ const LiveAdvancedQuizResponse = React.memo(({
           next[position] = orderAnswer[target];
           next[target] = orderAnswer[position];
           patchDraft({ orderAnswer: next });
+          const movedText = liveQuizMd().plain(items[orderAnswer[position]]) || `Item ${position + 1}`;
+          setSequenceStatus(`Moved ${movedText} to position ${target + 1} of ${orderAnswer.length}.`);
       };
       const principleOptions = boundedLiveQuizStrings(question?.principleOptions, 12);
       const principles = principleOptions.length >= 2
@@ -598,13 +617,14 @@ const LiveAdvancedQuizResponse = React.memo(({
               {draft.sequenceStep === 3 && (
                   <fieldset className="mt-4">
                       <legend className="mb-2 text-sm font-black text-white">{(t('quiz.live_student.arrange_instructions') || 'Put the items in the correct order. If they are already right, leave them.')}</legend>
+                      <div data-live-sequence-status="true" role="status" aria-live="polite" aria-atomic="true" className="sr-only">{sequenceStatus}</div>
                       <ol className="space-y-2" aria-label={(t('quiz.live_student.your_order') || 'Your order')} data-live-sequence-arrange="true">
                           {orderAnswer.map((canonicalIndex, position) => (
                               <li key={canonicalIndex} className="flex items-center gap-2 rounded-2xl border border-white/30 bg-white px-3 py-2 text-slate-900">
                                   <span className="w-6 text-xs font-black">{position + 1}.</span>
                                   <span className="min-w-0 flex-1 text-sm font-bold">{liveQuizMd().inline(items[canonicalIndex])}</span>
-                                  <button type="button" disabled={isDisabled || position === 0} aria-label={fillLiveCopy(t('quiz.live_student.move_up', { item: liveQuizMd().plain(items[canonicalIndex]) }) || 'Move up: {item}', { item: liveQuizMd().plain(items[canonicalIndex]) })} onClick={() => moveItem(position, -1)} className="rounded-lg border border-slate-300 px-2 py-1 text-xs font-black disabled:opacity-40">▲</button>
-                                  <button type="button" disabled={isDisabled || position === orderAnswer.length - 1} aria-label={fillLiveCopy(t('quiz.live_student.move_down', { item: liveQuizMd().plain(items[canonicalIndex]) }) || 'Move down: {item}', { item: liveQuizMd().plain(items[canonicalIndex]) })} onClick={() => moveItem(position, 1)} className="rounded-lg border border-slate-300 px-2 py-1 text-xs font-black disabled:opacity-40">▼</button>
+                                  <button type="button" disabled={isDisabled || position === 0} aria-label={fillLiveCopy(t('quiz.live_student.move_up', { item: liveQuizMd().plain(items[canonicalIndex]) }) || 'Move up: {item}', { item: liveQuizMd().plain(items[canonicalIndex]) })} onClick={() => moveItem(position, -1)} className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg border border-slate-300 px-2 py-1 text-xs font-black disabled:opacity-40"><span aria-hidden="true">▲</span></button>
+                                  <button type="button" disabled={isDisabled || position === orderAnswer.length - 1} aria-label={fillLiveCopy(t('quiz.live_student.move_down', { item: liveQuizMd().plain(items[canonicalIndex]) }) || 'Move down: {item}', { item: liveQuizMd().plain(items[canonicalIndex]) })} onClick={() => moveItem(position, 1)} className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-lg border border-slate-300 px-2 py-1 text-xs font-black disabled:opacity-40"><span aria-hidden="true">▼</span></button>
                               </li>
                           ))}
                       </ol>
@@ -667,7 +687,7 @@ const LiveAdvancedQuizResponse = React.memo(({
                           onClick={() => choosePair(index)}
                           className={`${sharedButtonClass} grid w-full grid-cols-2 gap-4 ${draft.clickedPairIdx === index ? 'border-yellow-300 bg-yellow-300 text-indigo-950' : 'border-white/30 bg-white text-slate-900'}`}
                       >
-                          <span>{liveQuizMd().inline(pair.left)}</span><span>↔ {liveQuizMd().inline(pair.right)}</span>
+                          <span>{draft.clickedPairIdx === index && <span aria-hidden="true" className="mr-1.5">✓</span>}{liveQuizMd().inline(pair.left)}</span><span><span aria-hidden="true">↔ </span>{liveQuizMd().inline(pair.right)}</span>
                       </button>
                   ))}
               </div>
@@ -693,6 +713,7 @@ const LiveAdvancedQuizResponse = React.memo(({
                                       maxLength="500"
                                       disabled={isDisabled}
                                       onChange={(event) => patchDraft({ partnerAnswer: event.target.value })}
+                                      onKeyDown={(event) => { if (event.isComposing || event.nativeEvent?.isComposing || event.keyCode === 229 || event.nativeEvent?.keyCode === 229) return; if (event.key === 'Enter' && draft.partnerAnswer.trim()) { event.preventDefault(); submitPartner(draft.partnerAnswer); } }}
                                       className="mt-2 min-h-12 w-full rounded-xl border-2 border-white/30 bg-white px-4 py-3 text-base text-slate-900"
                                   />
                               </label>
@@ -1118,6 +1139,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                                 aria-valuemin="0"
                                 aria-valuemax={bossStats.maxHP || 1}
                                 aria-valuenow={Math.min(bossStats.maxHP || 1, Math.max(0, Math.round(bossStats.currentHP || 0)))}
+                                aria-valuetext={`${Math.min(bossStats.maxHP || 1, Math.max(0, Math.round(bossStats.currentHP || 0)))} of ${bossStats.maxHP || 1} HP (${Math.min(100, Math.max(0, Math.round(((bossStats.currentHP || 0) / (bossStats.maxHP || 1)) * 100)))}%)`}
                                 className="h-full bg-gradient-to-r from-red-600 to-red-500 transition-all duration-500 ease-out motion-reduce:transition-none"
                                 style={{ width: `${Math.min(100, Math.max(0, ((bossStats.currentHP || 0) / (bossStats.maxHP || 1)) * 100))}%` }}
                              ></div>
@@ -1125,16 +1147,17 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                      </div>
                      <div className="w-full mt-3">
                          <div className="flex justify-between text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider">
-                             <span>{t('quiz.boss.class_hp')}</span>
+                             <span>{t('quiz.boss.class_hp') || 'Class HP'}</span>
                              <span>{Math.round(bossStats.classHP ?? 100)} / {bossStats.classMaxHP || 100}</span>
                          </div>
                          <div className="w-full h-5 bg-slate-800 rounded-full overflow-hidden border-2 border-slate-700 relative shadow-inner">
                              <div
                                 role="progressbar"
-                                aria-label={t('quiz.boss.class_hp')}
+                                aria-label={t('quiz.boss.class_hp') || 'Class HP'}
                                 aria-valuemin="0"
                                 aria-valuemax={bossStats.classMaxHP || 100}
                                 aria-valuenow={Math.min(bossStats.classMaxHP || 100, Math.max(0, Math.round(bossStats.classHP ?? 100)))}
+                                aria-valuetext={`${Math.min(bossStats.classMaxHP || 100, Math.max(0, Math.round(bossStats.classHP ?? 100)))} of ${bossStats.classMaxHP || 100} HP (${Math.min(100, Math.max(0, Math.round(((bossStats.classHP ?? 100) / (bossStats.classMaxHP || 100)) * 100)))}%)`}
                                 className="h-full bg-gradient-to-r from-green-600 to-emerald-500 transition-all duration-500 ease-out motion-reduce:transition-none"
                                 style={{ width: `${Math.min(100, Math.max(0, ((bossStats.classHP ?? 100) / (bossStats.classMaxHP || 100)) * 100))}%` }}
                              ></div>
@@ -1144,8 +1167,8 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                                  {t('quiz.boss.counter_attack_msg', { damage: bossStats.lastClassDamage })}
                              </div>
                          )}
-                         {bossGmEventText && <p role="status" aria-live="polite" className="mt-2 rounded-lg border border-amber-400/40 bg-amber-950/70 p-2 text-center text-xs font-bold text-amber-100">🎲 {t('concept_quest.boss_teacher_gm', { event: bossGmEventText })}</p>}
-                         {isRevealed && bossStats.roundFeedback && <details className="mt-2 rounded-lg bg-slate-800 p-2 text-left text-xs text-slate-200"><summary className="cursor-pointer font-bold">{bossStats.roundFeedback.scoringPaused ? (t('quiz.live_student.battle_scoring_paused') || 'Battle scoring paused') : t('concept_quest.boss_round_recap', { accuracy: bossStats.roundFeedback.accuracy })}</summary>{bossStats.roundFeedback.explanation ? <div className="mt-1">{liveQuizMd().block(bossStats.roundFeedback.explanation)}</div> : <p className="mt-1">{t('concept_quest.boss_discuss_evidence')}</p>}</details>}
+                         {bossGmEventText && <p role="status" aria-live="polite" className="mt-2 rounded-lg border border-amber-400/40 bg-amber-950/70 p-2 text-center text-xs font-bold text-amber-100"><span aria-hidden="true">🎲 </span>{t('concept_quest.boss_teacher_gm', { event: bossGmEventText })}</p>}
+                         {isRevealed && bossStats.roundFeedback && <details className="mt-2 rounded-lg bg-slate-800 p-2 text-left text-xs text-slate-200"><summary className="min-h-11 flex items-center cursor-pointer font-bold">{bossStats.roundFeedback.scoringPaused ? (t('quiz.live_student.battle_scoring_paused') || 'Battle scoring paused') : t('concept_quest.boss_round_recap', { accuracy: bossStats.roundFeedback.accuracy })}</summary>{bossStats.roundFeedback.explanation ? <div className="mt-1">{liveQuizMd().block(bossStats.roundFeedback.explanation)}</div> : <p className="mt-1">{t('concept_quest.boss_discuss_evidence')}</p>}</details>}
                      </div>
                 </div>
             )}
@@ -1209,8 +1232,9 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                         data-autofocus={idx === 0 && !isDisabled ? 'true' : undefined}
                         onClick={() => submitQuizResponse(idx)}
                         disabled={isDisabled}
+                        aria-pressed={isSelected}
                         aria-label={fillLiveCopy(t('quiz.live_student.tick_of', { value: tickLabel, total: liveOptions.length }) || '{value} of {total}', { value: tickLabel, total: liveOptions.length })}
-                        className={`relative p-4 md:p-6 rounded-2xl font-black text-2xl md:text-3xl transition-all transform duration-200 shadow-xl border-b-4 active:border-b-0 active:translate-y-1 ${btnClass}`}
+                        className={`relative min-h-11 p-4 md:p-6 rounded-2xl font-black text-2xl md:text-3xl transition-all transform duration-200 motion-reduce:transition-none motion-reduce:transform-none shadow-xl border-b-4 active:border-b-0 active:translate-y-1 ${btnClass}`}
                       >
                         {tickLabel}
                       </button>
@@ -1269,7 +1293,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                             aria-label={liveQuizMd().plain(option) + (showTranslated && currentQuestion?.options_en?.[idx] ? '. ' + liveQuizMd().plain(currentQuestion.options_en[idx]) : '')}
                             aria-pressed={isSelected}
                             className={`
-                                relative group overflow-hidden p-6 rounded-2xl font-bold text-lg md:text-xl transition-all transform duration-300 shadow-xl border-b-4 active:border-b-0 active:translate-y-1
+                                relative group overflow-hidden p-6 rounded-2xl font-bold text-lg md:text-xl transition-all transform duration-300 motion-reduce:transition-none motion-reduce:transform-none shadow-xl border-b-4 active:border-b-0 active:translate-y-1
                                 ${btnClass}
                             `}
                         >
@@ -1287,7 +1311,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                             )}
                             <div className="flex items-center gap-4 relative z-10">
                                 <div className={`
-                                    w-12 h-12 rounded-full flex items-center justify-center font-black text-lg shrink-0 border-2 transition-colors
+                                    w-12 h-12 rounded-full flex items-center justify-center font-black text-lg shrink-0 border-2 transition-colors motion-reduce:transition-none
                                     ${letterClass}
                                 `}>
                                     {letter}
@@ -1302,18 +1326,20 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                                 </div>
                             </div>
                             {isSelected && !isRevealed && (
-                                <div className="absolute top-2 right-2 text-indigo-900 animate-in motion-reduce:animate-none zoom-in duration-300">
-                                    <CheckCircle2 size={24} className="fill-white"/>
+                                <div className="absolute top-2 right-2 text-indigo-900 animate-in motion-reduce:animate-none zoom-in duration-300" aria-hidden="true">
+                                    <CheckCircle2 size={24} aria-hidden="true" className="fill-white"/>
                                 </div>
                             )}
                             {isRevealed && !isUnscoredLiveQuestion && idx === correctAnswerIndex && (
-                                <div className="absolute top-2 right-2 text-white animate-in motion-reduce:animate-none zoom-in duration-300">
-                                    <CheckCircle2 size={24} />
+                                <div data-option-reveal-state="correct" className="absolute top-2 right-2 text-white animate-in motion-reduce:animate-none zoom-in duration-300">
+                                    <CheckCircle2 size={24} aria-hidden="true" />
+                                    {deliveryStatus !== 'receipt' && <span className="sr-only">{t('quiz.live_student.response_correct') || 'Correct response.'}</span>}
                                 </div>
                             )}
                              {isRevealed && !isUnscoredLiveQuestion && isSelected && idx !== correctAnswerIndex && (
-                                <div className="absolute top-2 right-2 text-white animate-in motion-reduce:animate-none zoom-in duration-300">
-                                    <XCircle size={24} />
+                                <div data-option-reveal-state="incorrect" className="absolute top-2 right-2 text-white animate-in motion-reduce:animate-none zoom-in duration-300">
+                                    <XCircle size={24} aria-hidden="true" />
+                                    {deliveryStatus !== 'receipt' && <span className="sr-only">{t('quiz.live_student.response_incorrect') || 'This response needs another look.'}</span>}
                                 </div>
                             )}
                         </button>
@@ -1344,7 +1370,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                                         : 'border-white/30 bg-white text-slate-900 hover:border-cyan-300'
                                 }`}
                             >
-                                {label}
+                                <span aria-hidden="true" className="mr-1.5">{selectedConfidence === value ? '✓' : '○'}</span>{label}
                             </button>
                         ))}
                     </div>
@@ -1439,8 +1465,8 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                 {isRevealed && hasAnswered && deliveryStatus !== 'receipt' && !isUnscoredLiveQuestion && !isAdvancedLiveQuestion && liveExplanation && (
                              <div className="bg-white/95 backdrop-blur-xl text-slate-800 p-6 rounded-3xl border border-white/20 shadow-2xl w-full max-w-2xl text-left relative overflow-hidden" data-quiz-explanation="true">
                                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-                                 <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-3 flex items-center gap-2 border-b border-slate-100 pb-2">
-                                     <Sparkles size={14} className="fill-yellow-400 text-yellow-500"/> {(t('quiz.live_student.explanation') || 'Explanation')}
+                                 <h4 className="text-xs font-black text-indigo-700 uppercase tracking-widest mb-3 flex items-center gap-2 border-b border-slate-100 pb-2">
+                                     <Sparkles size={14} aria-hidden="true" className="fill-yellow-400 text-yellow-500"/> {(t('quiz.live_student.explanation') || 'Explanation')}
                                  </h4>
                                  {/* Shared light markdown when loaded. XSS guard on the fallback: factCheck is AI-generated; escape <,>,& BEFORE the bold replacement so injected tags can't echo through. */}
                                  {window.AlloModules?.QuizView?.markdown ? <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed">{liveQuizMd().block(liveExplanation)}</div> : <div
@@ -1469,6 +1495,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
 const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
   const { t } = useContext(LanguageContext);
   const [passwordInput, setPasswordInput] = useState('');
+  const [showCode, setShowCode] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [blockedUntil, setBlockedUntil] = useState(0);
@@ -1480,6 +1507,7 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
     attemptRef.current += 1;
     gateOpenRef.current = false;
     setBusy(false);
+    setShowCode(false);
     onClose();
   };
   useFocusTrap(gateRef, isOpen, closeGate);
@@ -1488,6 +1516,7 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
     if (!isOpen) {
       attemptRef.current += 1;
       setPasswordInput('');
+      setShowCode(false);
       setError('');
       setBusy(false);
       setBlockedUntil(0);
@@ -1551,31 +1580,44 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-red-200 shadow-sm">
             <Lock aria-hidden="true" size={32} className="text-red-600" />
         </div>
-        <h2 id="teacher-gate-title" className="text-2xl font-black text-slate-800 mb-2">{t('modals.teacher_gate.title')}</h2>
-        <p id="teacher-gate-helper" className="text-slate-600 mb-6 text-sm font-medium">{t('modals.teacher_gate.helper')}</p>
+        <h2 id="teacher-gate-title" className="text-2xl font-black text-slate-800 mb-2">{t('modals.teacher_gate.title') || 'Educator Access'}</h2>
+        <p id="teacher-gate-helper" className="text-slate-600 mb-6 text-sm font-medium">{t('modals.teacher_gate.helper') || 'Enter your educator access code to continue.'}</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
                 <label id="teacher-gate-access-code-label" htmlFor="teacher-gate-access-code" className="mb-2 block text-sm font-bold text-slate-700">
-                    {t('modals.teacher_gate.access_code_placeholder')}
+                    {t('modals.teacher_gate.access_code_placeholder') || 'Access code'}
                 </label>
-                <input
-                    id="teacher-gate-access-code"
-                    type="password"
-                    autoComplete="current-password"
-                    value={passwordInput}
-                    onChange={(e) => {
-                        setPasswordInput(e.target.value);
-                        setError('');
-                    }}
-                    placeholder={t('modals.teacher_gate.access_code_placeholder')}
-                    className={`w-full text-center text-lg p-3 border-2 rounded-xl outline-none focus:ring-4 transition-all placeholder:text-slate-600 ${error ? 'border-red-400 bg-red-50 focus:ring-red-200 text-red-900' : 'border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 text-indigo-900'}`}
-                    autoFocus
-                    disabled={busy || retrySeconds > 0}
-                    aria-invalid={Boolean(error)}
-                    aria-labelledby="teacher-gate-access-code-label"
-                    aria-describedby={error ? 'teacher-gate-helper teacher-gate-error' : 'teacher-gate-helper'}
-                    data-help-key="teacher_gate_input"
-                />
+                <div className="flex items-stretch gap-2">
+                    <input
+                        id="teacher-gate-access-code"
+                        type={showCode ? 'text' : 'password'}
+                        autoComplete="current-password"
+                        value={passwordInput}
+                        onChange={(e) => {
+                            setPasswordInput(e.target.value);
+                            setError('');
+                        }}
+                        placeholder={t('modals.teacher_gate.access_code_placeholder') || 'Access code'}
+                        className={`min-h-11 flex-1 min-w-0 text-center text-lg p-3 border-2 rounded-xl focus:ring-4 transition-all motion-reduce:transition-none placeholder:text-slate-600 ${error ? 'border-red-400 bg-red-50 focus:ring-red-200 text-red-900' : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/20 text-indigo-900'}`}
+                        autoFocus
+                        disabled={busy || retrySeconds > 0}
+                        aria-invalid={Boolean(error)}
+                        aria-labelledby="teacher-gate-access-code-label"
+                        aria-describedby={error ? 'teacher-gate-helper teacher-gate-error' : 'teacher-gate-helper'}
+                        data-help-key="teacher_gate_input"
+                    />
+                    <button
+                        type="button"
+                        data-teacher-gate-toggle-visibility="true"
+                        aria-pressed={showCode}
+                        aria-label={showCode ? (t('modals.teacher_gate.hide_code') || 'Hide access code') : (t('modals.teacher_gate.show_code') || 'Show access code')}
+                        disabled={busy || retrySeconds > 0}
+                        onClick={() => setShowCode((prev) => !prev)}
+                        className="min-h-11 min-w-11 shrink-0 px-3 rounded-xl border-2 border-slate-300 bg-slate-50 text-xs font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
+                    >
+                        {showCode ? (t('common.hide') || 'Hide') : (t('common.show') || 'Show')}
+                    </button>
+                </div>
                 {error && (
                     <p id="teacher-gate-error" role="alert" className="text-xs font-bold text-red-700 mt-2 flex items-center justify-center gap-1">
                         <XCircle aria-hidden="true" size={12} /> {error}{retrySeconds > 0 ? ` (${retrySeconds}s)` : ''}
@@ -1585,17 +1627,19 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
             <button
                 type="submit"
                 disabled={busy || retrySeconds > 0 || !passwordInput}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+                aria-busy={busy ? 'true' : undefined}
+                className="w-full min-h-11 bg-indigo-600 hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 text-white font-bold py-3 rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2"
                 data-help-key="teacher_gate_unlock"
             >
-                {busy ? 'Checking…' : retrySeconds > 0 ? `Try again in ${retrySeconds}s` : t('modals.teacher_gate.unlock')}
+                {busy ? 'Checking…' : retrySeconds > 0 ? `Try again in ${retrySeconds}s` : (t('modals.teacher_gate.unlock') || 'Unlock')}
             </button>
         </form>
         <button
             type="button"
             onClick={closeGate}
-            className="absolute top-4 right-4 min-h-6 min-w-6 text-slate-600 hover:text-slate-900 transition-colors p-1 rounded-full hover:bg-slate-100"
-            aria-label={t('common.cancel')}
+            className="absolute top-4 right-4 min-h-11 min-w-11 inline-flex items-center justify-center text-slate-700 hover:text-slate-900 transition-colors motion-reduce:transition-none p-2 rounded-full hover:bg-slate-100"
+            style={{ minHeight: '44px', minWidth: '44px' }}
+            aria-label={t('common.cancel') || 'Cancel'}
             data-alloflow-close-on-escape="true"
         >
             <X aria-hidden="true" size={20} />
@@ -1762,8 +1806,8 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
           <UiLanguageSelector />
       </div>
       <div className="flex justify-center mb-6">
-        <div className="bg-indigo-100 p-4 rounded-full shadow-inner">
-           <Layers size={48} className="text-indigo-600" />
+        <div className="bg-indigo-100 p-4 rounded-full shadow-inner" aria-hidden="true">
+           <Layers size={48} aria-hidden="true" className="text-indigo-700" />
         </div>
       </div>
       <h2 id="role-selection-title" className="text-3xl font-black text-slate-800 mb-2 tracking-tight">{roleCopy('roles.title', 'Welcome to AlloFlow')}</h2>
@@ -1772,11 +1816,11 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
         <button
             type="button"
             onClick={(event) => handleRoleClick('student', event)}
-            className="flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-teal-400 hover:bg-teal-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
+            className="flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-teal-400 hover:bg-teal-50 transition-all motion-reduce:transition-none group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
             data-help-key="role_student"
         >
-            <div className="bg-teal-100 text-teal-700 p-4 rounded-full group-hover:scale-110 transition-transform group-hover:rotate-12">
-                <GraduationCap size={32} />
+            <div className="bg-teal-100 text-teal-700 p-4 rounded-full group-hover:scale-110 transition-transform motion-reduce:transition-none motion-reduce:transform-none group-hover:rotate-12" aria-hidden="true">
+                <GraduationCap size={32} aria-hidden="true" />
             </div>
             <span className="font-bold text-slate-700 group-hover:text-teal-700">{roleCopy('roles.student', 'Student')}</span>
             {roleDescription('roles.student_description', 'Join your class and learn with a private codename.')}
@@ -1785,11 +1829,11 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
         <button
             type="button"
             onClick={(event) => handleRoleClick('teacher', event)}
-            className="flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-indigo-400 hover:bg-indigo-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
+            className="flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-indigo-400 hover:bg-indigo-50 transition-all motion-reduce:transition-none group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
             data-help-key="role_teacher"
         >
-            <div className="bg-indigo-100 text-indigo-600 p-4 rounded-full group-hover:scale-110 transition-transform group-hover:-rotate-12">
-                <School size={32} />
+            <div className="bg-indigo-100 text-indigo-700 p-4 rounded-full group-hover:scale-110 transition-transform motion-reduce:transition-none motion-reduce:transform-none group-hover:-rotate-12" aria-hidden="true">
+                <School size={32} aria-hidden="true" />
             </div>
             <span className="font-bold text-slate-700 group-hover:text-indigo-700">{roleCopy('roles.teacher', 'Teacher')}</span>
             {roleDescription('roles.teacher_description', 'Build accessible lessons and adapt materials for your class.')}
@@ -1798,11 +1842,11 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
         <button
             type="button"
             onClick={(event) => handleRoleClick('parent', event)}
-            className="flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
+            className="flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-all motion-reduce:transition-none group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
             data-help-key="role_parent"
         >
-            <div className="bg-orange-100 text-orange-800 p-4 rounded-full group-hover:scale-110 transition-transform group-hover:rotate-12">
-                <Heart size={32} />
+            <div className="bg-orange-100 text-orange-800 p-4 rounded-full group-hover:scale-110 transition-transform motion-reduce:transition-none motion-reduce:transform-none group-hover:rotate-12" aria-hidden="true">
+                <Heart size={32} aria-hidden="true" />
             </div>
             <span className="font-bold text-slate-700 group-hover:text-orange-700">{roleCopy('roles.parent', 'Parent')}</span>
             {roleDescription('parent_mode.role_description', 'Support learning at home with family-friendly tools.')}
@@ -1811,11 +1855,11 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
         <button
             type="button"
             onClick={(event) => handleRoleClick('independent', event)}
-            className="flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-cyan-400 hover:bg-cyan-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-cyan-500 focus:ring-offset-2 focus:outline-none"
+            className="flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-cyan-400 hover:bg-cyan-50 transition-all motion-reduce:transition-none group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-cyan-500 focus:ring-offset-2 focus:outline-none"
             data-help-key="role_independent"
         >
-            <div className="bg-cyan-100 text-cyan-800 p-4 rounded-full group-hover:scale-110 transition-transform group-hover:rotate-12">
-                <UserCircle2 size={32} />
+            <div className="bg-cyan-100 text-cyan-800 p-4 rounded-full group-hover:scale-110 transition-transform motion-reduce:transition-none motion-reduce:transform-none group-hover:rotate-12" aria-hidden="true">
+                <UserCircle2 size={32} aria-hidden="true" />
             </div>
             <span className="font-bold text-slate-700 group-hover:text-cyan-700">{roleCopy('roles.independent', 'Independent Learner')}</span>
             {roleDescription('roles.independent_description', 'Study at your own pace with progress tracking and no class to join.')}
@@ -1831,11 +1875,11 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
             aria-busy={micStatus === 'requesting'}
             aria-describedby="role-mic-status"
             data-help-key="role_voice_access"
-            className={`flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs font-bold transition-all ${
-                micStatus === 'granted' ? 'bg-green-100 text-green-700 cursor-default' :
-                micStatus === 'denied' || micStatus === 'unsupported' ? 'bg-red-50 text-red-700 border border-red-200' :
-                micStatus === 'requesting' ? 'bg-slate-100 text-slate-600' :
-                'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50 hover:text-indigo-600'
+            className={`min-h-11 flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-lg text-xs font-bold transition-all motion-reduce:transition-none ${
+                micStatus === 'granted' ? 'bg-green-100 text-green-800 cursor-default' :
+                micStatus === 'denied' || micStatus === 'unsupported' ? 'bg-red-50 text-red-800 border border-red-200' :
+                micStatus === 'requesting' ? 'bg-slate-100 text-slate-700' :
+                'bg-white border border-slate-400 text-slate-700 hover:bg-slate-50 hover:text-indigo-700'
             }`}
           >
               {micStatus === 'granted' ? <CheckCircle aria-hidden="true" size={14} /> :
@@ -1991,9 +2035,9 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
         <button
             type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 min-h-6 min-w-6 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+            className="absolute top-4 right-4 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none"
             style={{ minHeight: '44px', minWidth: '44px' }}
-            aria-label={t('common.close')}
+            aria-label={t('common.close') || 'Close'}
             data-alloflow-close-on-escape="true"
         >
             <X aria-hidden="true" size={20} />
@@ -2003,13 +2047,13 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
         <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 mb-6">
             <div className="grid grid-cols-1 gap-3 mb-4 sm:grid-cols-2">
                 <label className="text-left text-xs font-bold text-indigo-900">
-                    <span className="mb-1 block">{t('modals.entry.select_adjective')}</span>
+                    <span className="mb-1 block">{t('modals.entry.select_adjective') || 'Select adjective'}</span>
                     <select
                         value={selectedAdj}
                         data-autofocus="true"
                         onChange={(e) => setSelectedAdj(e.target.value)}
                         className="w-full min-h-11 p-2 rounded-lg border border-indigo-200 text-indigo-900 font-bold text-sm cursor-pointer"
-                        aria-label={t('modals.entry.select_adjective')}
+                        aria-label={t('modals.entry.select_adjective') || 'Select adjective'}
                         data-help-key="entry_adjective"
                     >
                         {adjectives.map((adj, i) => (
@@ -2018,12 +2062,12 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
                     </select>
                 </label>
                 <label className="text-left text-xs font-bold text-indigo-900">
-                    <span className="mb-1 block">{t('modals.entry.select_animal')}</span>
+                    <span className="mb-1 block">{t('modals.entry.select_animal') || 'Select animal'}</span>
                     <select
                         value={selectedAnimal}
                         onChange={(e) => setSelectedAnimal(e.target.value)}
                         className="w-full min-h-11 p-2 rounded-lg border border-indigo-200 text-indigo-900 font-bold text-sm cursor-pointer"
-                        aria-label={t('modals.entry.select_animal')}
+                        aria-label={t('modals.entry.select_animal') || 'Select animal'}
                         data-help-key="entry_animal"
                     >
                         {animals.map((anim, i) => (
@@ -2034,46 +2078,46 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
             </div>
             <p className="m-0 mb-1 text-start text-xs font-bold text-indigo-900">{entryFresh('modals.entry.your_codename', '', '', 'Your codename')}</p>
             <div className="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-indigo-100">
-                <div className="min-w-0 flex-grow break-words text-start text-xl font-black text-indigo-600 tracking-tight me-2" role="status" aria-live="polite" aria-atomic="true">
+                <div className="min-w-0 flex-grow break-words text-start text-xl font-black text-indigo-700 tracking-tight me-2" role="status" aria-live="polite" aria-atomic="true">
                     {selectedAdj} {selectedAnimal}
                 </div>
                 <button
                     type="button"
                     onClick={randomizeName}
-                    className="min-h-6 min-w-6 inline-flex items-center justify-center p-2 bg-indigo-100 text-indigo-600 rounded-full hover:bg-indigo-200 hover:scale-110 motion-reduce:hover:scale-100 transition-all shrink-0"
+                    className="min-h-11 min-w-11 inline-flex items-center justify-center p-2 bg-indigo-100 text-indigo-700 rounded-full hover:bg-indigo-200 hover:scale-110 motion-reduce:hover:scale-100 transition-all motion-reduce:transition-none shrink-0"
                     style={{ minHeight: '44px', minWidth: '44px' }}
-                    title={t('modals.entry.randomize_codename')}
-                    aria-label={t('modals.entry.randomize_codename')}
+                    title={t('modals.entry.randomize_codename') || 'Randomize codename'}
+                    aria-label={t('modals.entry.randomize_codename') || 'Randomize codename'}
                     data-help-key="entry_randomize_btn"
                 >
                     <RefreshCw aria-hidden="true" size={18} />
                 </button>
             </div>
         </div>
-        <p className="text-xs text-slate-600 font-bold flex items-center justify-center gap-1 mb-6">
-            <ShieldCheck aria-hidden="true" size={12} className="text-green-500"/> {t('entry.warning')}
+        <p className="text-xs text-slate-700 font-bold flex items-center justify-center gap-1 mb-6">
+            <ShieldCheck aria-hidden="true" size={12} className="text-green-600"/> {t('entry.warning') || 'Private codename — never enter your real name.'}
         </p>
         <div className="flex flex-col gap-3">
             <button
                 type="button"
                 onClick={() => handleConfirm('new')}
                 disabled={!selectedAdj || !selectedAnimal}
-                className="w-full min-h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full min-h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 data-help-key="entry_start_new"
             >
-                <Sparkles size={18} className="text-yellow-400 fill-current" /> {entryFresh('entry.start_plain', 'entry.start', 'Start New Adventure', 'Start')}
+                <Sparkles aria-hidden="true" size={18} className="text-yellow-400 fill-current" /> {entryFresh('entry.start_plain', 'entry.start', 'Start New Adventure', 'Start')}
             </button>
             <button
                 type="button"
                 onClick={() => handleConfirm('load')}
                 disabled={!selectedAdj || !selectedAnimal}
-                className="w-full min-h-11 bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600 font-bold py-2.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full min-h-11 bg-white border-2 border-slate-300 text-slate-700 hover:border-indigo-400 hover:text-indigo-700 font-bold py-2.5 rounded-xl transition-all motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 data-help-key="entry_load_exist"
             >
-                <Upload size={16} /> {t('entry.load')}
+                <Upload aria-hidden="true" size={16} /> {t('entry.load') || 'Load Saved Work'}
             </button>
         </div>
-        <button type="button" onClick={onClose} className="mt-4 min-h-6 inline-flex items-center px-3 text-sm text-slate-600 hover:text-slate-900 underline rounded" style={{ minHeight: '44px' }}>{t('common.cancel')}</button>
+        <button type="button" onClick={onClose} className="mt-4 min-h-6 inline-flex items-center px-3 text-sm text-slate-700 hover:text-slate-900 underline rounded" style={{ minHeight: '44px' }}>{t('common.cancel') || 'Cancel'}</button>
       </div>
     </div>
   );
@@ -2099,20 +2143,20 @@ const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
         <button
             type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 min-h-6 min-w-6 inline-flex items-center justify-center p-2 rounded-full text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+            className="absolute top-4 right-4 min-h-11 min-w-11 inline-flex items-center justify-center p-2 rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors motion-reduce:transition-none"
             style={{ minHeight: '44px', minWidth: '44px' }}
-            aria-label={t('welcome.close_aria')}
+            aria-label={t('welcome.close_aria') || 'Close welcome dialog'}
             data-alloflow-close-on-escape="true"
         >
             <X aria-hidden="true" size={20} />
         </button>
         <div className="flex justify-center mb-6">
-          <div className="bg-teal-100 p-4 rounded-full shadow-inner">
-             <FolderOpen aria-hidden="true" size={48} className="text-teal-600" />
+          <div className="bg-teal-100 p-4 rounded-full shadow-inner" aria-hidden="true">
+             <FolderOpen aria-hidden="true" size={48} className="text-teal-700" />
           </div>
         </div>
-        <h2 id="student-welcome-title" className="text-2xl font-black text-slate-800 mb-2">{t('modals.student_welcome')}</h2>
-        <p id="student-welcome-description" className="text-slate-600 mb-8 font-medium">{t('welcome.prompt')}</p>
+        <h2 id="student-welcome-title" className="text-2xl font-black text-slate-800 mb-2">{t('modals.student_welcome') || 'Welcome Back!'}</h2>
+        <p id="student-welcome-description" className="text-slate-600 mb-8 font-medium">{t('welcome.prompt') || 'Load a saved project file or jump right in.'}</p>
         <div className="space-y-3">
             <button
                 type="button"
@@ -2121,18 +2165,18 @@ const StudentWelcomeModal = React.memo(({ isOpen, onClose, onUpload }) => {
                     onUpload();
                     onClose();
                 }}
-                className="w-full min-h-11 flex items-center justify-center gap-3 p-4 rounded-xl bg-teal-700 text-white font-bold hover:bg-teal-800 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
+                className="w-full min-h-11 flex items-center justify-center gap-3 p-4 rounded-xl bg-teal-700 text-white font-bold hover:bg-teal-800 transition-all motion-reduce:transition-none motion-reduce:transform-none shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
                 data-help-key="welcome_load_btn"
             >
-                <Upload size={20} /> {t('welcome.load')}
+                <Upload aria-hidden="true" size={20} /> {t('welcome.load') || 'Load Saved Project'}
             </button>
             <button
                 type="button"
                 onClick={onClose}
-                className="w-full min-h-11 p-3 rounded-xl text-slate-600 font-bold hover:bg-slate-100 transition-colors active:scale-95"
+                className="w-full min-h-11 p-3 rounded-xl text-slate-700 font-bold hover:bg-slate-100 transition-colors motion-reduce:transition-none active:scale-95"
                 data-help-key="welcome_skip_btn"
             >
-                {t('welcome.skip')}
+                {t('welcome.skip') || 'Start Fresh'}
             </button>
         </div>
       </div>

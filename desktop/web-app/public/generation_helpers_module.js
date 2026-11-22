@@ -5488,7 +5488,7 @@ const handleApproveFullPack = async (priorRun, deps) => {
     appLanguage: snapshot.appLanguage || snapshot.currentUiLanguage || 'English',
     currentUiLanguage: snapshot.currentUiLanguage || snapshot.appLanguage || 'English',
     selectedLanguages: Array.isArray(snapshot.selectedLanguages) ? snapshot.selectedLanguages.slice() : [],
-    isProcessing: false,
+    isProcessing: Boolean(deps && deps.isProcessing),
     fullPackTargetGroup: run.targetMode === 'all-groups' ? 'all' : 'none',
   });
   return handleGenerateFullPack({ __fullPackApprovedRun: run }, approvedDeps);
@@ -5529,7 +5529,7 @@ const handleRetryFailedFullPack = async (priorRun, deps) => {
       appLanguage: rootSnapshot.appLanguage || rootSnapshot.currentUiLanguage || 'English',
       currentUiLanguage: rootSnapshot.currentUiLanguage || rootSnapshot.appLanguage || 'English',
       selectedLanguages: Array.isArray(rootSnapshot.selectedLanguages) ? rootSnapshot.selectedLanguages.slice() : [],
-      isProcessing: false,
+      isProcessing: Boolean(deps && deps.isProcessing),
       fullPackTargetGroup: 'all',
       rosterKey: Object.assign({}, deps && deps.rosterKey || {}, { groups: rosterGroups }),
     });
@@ -5545,7 +5545,7 @@ const handleRetryFailedFullPack = async (priorRun, deps) => {
     appLanguage: snapshot.appLanguage || snapshot.currentUiLanguage || 'English',
     currentUiLanguage: snapshot.currentUiLanguage || snapshot.appLanguage || 'English',
     selectedLanguages: Array.isArray(snapshot.selectedLanguages) ? snapshot.selectedLanguages.slice() : [],
-    isProcessing: false, fullPackTargetGroup: 'none'
+    isProcessing: Boolean(deps && deps.isProcessing), fullPackTargetGroup: 'none'
   });
   return handleGenerateFullPack({ __fullPackRetryRun: run }, retryDeps);
 };window.AlloModules = window.AlloModules || {};

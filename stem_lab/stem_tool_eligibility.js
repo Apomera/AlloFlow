@@ -446,12 +446,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
     try { var el = document.getElementById('allo-live-elig'); if (el) { el.textContent = ''; el.textContent = msg; } } catch (_) {}
   }
   (function() {
-    if (typeof document === 'undefined' || document.getElementById('allo-live-elig')) return;
-    var lr = document.createElement('div');
-    lr.id = 'allo-live-elig';
-    lr.setAttribute('aria-live', 'polite'); lr.setAttribute('aria-atomic', 'true'); lr.setAttribute('role', 'status');
-    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
-    document.body.appendChild(lr);
+    if (typeof document === 'undefined') return;
+    if (!document.getElementById('allo-live-elig') && document.body) {
+      var lr = document.createElement('div');
+      lr.id = 'allo-live-elig';
+      lr.setAttribute('aria-live', 'polite'); lr.setAttribute('aria-atomic', 'true'); lr.setAttribute('role', 'status');
+      lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+      document.body.appendChild(lr);
+    }
+    if (!document.getElementById('allo-eligibility-motion-css') && document.head) {
+      var st = document.createElement('style');
+      st.id = 'allo-eligibility-motion-css';
+      st.textContent = [
+        '@keyframes eligDashFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-16}}',
+        '@keyframes eligRailFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-24}}',
+        '@keyframes eligHaloBreath{0%,100%{transform:scale(.92);opacity:.14}50%{transform:scale(1.18);opacity:.34}}',
+        '@keyframes eligCoreBreath{0%,100%{transform:scale(.95);opacity:.82}50%{transform:scale(1.08);opacity:1}}',
+        '@keyframes eligChevronPulse{0%,100%{opacity:.45}50%{opacity:.95}}',
+        '@keyframes eligRailSheen{0%,100%{transform:translateX(-72px);opacity:0}18%{opacity:.34}50%{transform:translateX(560px);opacity:.44}82%{opacity:0}}',
+        '@keyframes eligCardSheen{0%,100%{opacity:.18}50%{opacity:.44}}',
+        '.elig-conn-flow{animation:eligDashFlow 3.6s linear infinite;}',
+        '.elig-rail-flow{animation:eligRailFlow 4.4s linear infinite;pointer-events:none;}',
+        '.elig-node-halo,.elig-hub-aura,.elig-emblem-halo{transform-box:fill-box;transform-origin:center;animation:eligHaloBreath 4.2s ease-in-out infinite;pointer-events:none;}',
+        '.elig-endpoint-dot{transform-box:fill-box;transform-origin:center;animation:eligCoreBreath 3.8s ease-in-out infinite;}',
+        '.elig-chevron{animation:eligChevronPulse 3.6s ease-in-out infinite;pointer-events:none;}',
+        '.elig-rail-sheen{animation:eligRailSheen 6.8s ease-in-out infinite;pointer-events:none;}',
+        '.elig-card-sheen{animation:eligCardSheen 4.8s ease-in-out infinite;pointer-events:none;}',
+        '@media(prefers-reduced-motion:reduce){.elig-conn-flow,.elig-rail-flow,.elig-node-halo,.elig-hub-aura,.elig-emblem-halo,.elig-endpoint-dot,.elig-chevron,.elig-rail-sheen,.elig-card-sheen{animation:none!important;}}',
+        '.theme-contrast :is(.elig-node-halo,.elig-hub-aura,.elig-emblem-halo,.elig-rail-sheen,.elig-card-sheen){display:none!important;}',
+        '.theme-contrast :is(.elig-conn-flow,.elig-rail-flow,.elig-endpoint-dot,.elig-chevron){animation:none!important;}',
+        '@media(forced-colors:active){.elig-node-halo,.elig-hub-aura,.elig-emblem-halo,.elig-rail-sheen,.elig-card-sheen{display:none!important;}.elig-conn-flow,.elig-rail-flow,.elig-endpoint-dot,.elig-chevron{animation:none!important;}}'
+      ].join('\n');
+      document.head.appendChild(st);
+    }
   })();
 
   window.StemLab.registerTool('diagnosisEligibility', {
@@ -625,8 +652,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
           !isContrast && h('circle', { cx: 29.5, cy: 29.5, r: 9.5, fill: 'none', stroke: pal.svgAccent4, strokeOpacity: 0.22, strokeWidth: 5 }),
           h('circle', { cx: 29.5, cy: 29.5, r: 9.5, fill: 'none', stroke: pal.svgAccent4, strokeWidth: 2 }),
           // Central glowing Student-Need core beacon
-          !isContrast && h('circle', { cx: 24, cy: 24, r: 6.5, fill: pal.accent, opacity: 0.2 }),
-          h('circle', { cx: 24, cy: 24, r: 3.6, fill: pal.accent, stroke: pal.svgCard, strokeWidth: 1.2 })
+          !isContrast && h('circle', { className: 'elig-emblem-halo', cx: 24, cy: 24, r: 7.4, fill: pal.accent, opacity: 0.22 }),
+          h('circle', { className: 'elig-endpoint-dot', cx: 24, cy: 24, r: 3.6, fill: pal.accent, stroke: pal.svgCard, strokeWidth: 1.2 })
         );
       }
 
@@ -661,17 +688,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
           ),
           // Recessed clinical/educational studio stage
           h('rect', { x: 2, y: 2, width: 676, height: 152, rx: 13, fill: 'url(#elig-stage-bg)', stroke: pal.border, strokeWidth: 1.5 }),
-          !isContrast && h('ellipse', { cx: 340, cy: 78, rx: 120, ry: 62, fill: 'url(#elig-hub-aura)' }),
+          !isContrast && h('ellipse', { className: 'elig-hub-aura', cx: 340, cy: 78, rx: 120, ry: 62, fill: 'url(#elig-hub-aura)' }),
           // Dual-pass luminous curved criterion-flow connectors
           connectors.map(function (cn, i) {
             return h('g', { key: 'cn' + i },
               !isContrast && h('path', { d: cn.d, fill: 'none', stroke: cn.col, strokeOpacity: 0.24, strokeWidth: 6.5, strokeLinecap: 'round' }),
-              h('path', { d: cn.d, fill: 'none', stroke: cn.col, strokeWidth: 2, strokeDasharray: '5 3', strokeLinecap: 'round' }),
-              h('circle', { cx: cn.tx, cy: cn.ty, r: 3.4, fill: cn.col, stroke: pal.svgCard, strokeWidth: 1.2 })
+              h('path', { className: 'elig-conn-flow', d: cn.d, fill: 'none', stroke: cn.col, strokeWidth: 2, strokeDasharray: '5 3', strokeLinecap: 'round', style: { animationDelay: (i * 0.45) + 's' } }),
+              !isContrast && h('circle', { className: 'elig-node-halo', cx: cn.tx, cy: cn.ty, r: 6.2, fill: cn.col, opacity: 0.2, style: { animationDelay: (i * 0.5) + 's' } }),
+              h('circle', { className: 'elig-endpoint-dot', cx: cn.tx, cy: cn.ty, r: 3.4, fill: cn.col, stroke: pal.svgCard, strokeWidth: 1.2, style: { animationDelay: (i * 0.5) + 's' } })
             );
           }),
           // Sculpted Central Student Need Hub
-          !isContrast && h('rect', { x: 263, y: 37, width: 156, height: 84, rx: 15, fill: pal.accent, opacity: 0.14 }),
+          !isContrast && h('rect', { className: 'elig-hub-aura', x: 263, y: 37, width: 156, height: 84, rx: 15, fill: pal.accent, opacity: 0.14 }),
           h('rect', { x: 261, y: 35, width: 158, height: 86, rx: 15, fill: pal.svgCard, stroke: pal.accent, strokeWidth: 2.1 }),
           h('rect', { x: 264, y: 38, width: 152, height: 80, rx: 12, fill: pal.badgeBg, stroke: pal.border, strokeWidth: 1 }),
           h('text', { x: 340, y: 63, fontSize: 12, fontWeight: 900, textAnchor: 'middle', fill: pal.badgeText }, __alloT('stem.elig.svg_hub1', 'Student Need &')),
@@ -683,8 +711,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
               !isContrast && h('rect', { x: c.x + 1.5, y: c.y + 2.5, width: 196, height: 54, rx: 11, fill: '#020617', opacity: isDark ? 0.34 : 0.08 }),
               h('rect', { x: c.x, y: c.y, width: 196, height: 54, rx: 11, fill: pal.svgCard, stroke: c.col, strokeWidth: 1.7 }),
               h('rect', { x: c.x + 1, y: c.y + 1, width: 7.5, height: 52, rx: 4, fill: c.col }),
-              !isContrast && h('rect', { x: c.x + 14, y: c.y + 2, width: 172, height: 3, rx: 1.5, fill: c.col, opacity: 0.25 }),
-              h('circle', { cx: c.side === 'L' ? c.x + 184 : c.x + 184, cy: c.y + 15, r: 3.2, fill: c.col }),
+              !isContrast && h('rect', { className: 'elig-card-sheen', x: c.x + 14, y: c.y + 2, width: 172, height: 3, rx: 1.5, fill: c.col, opacity: 0.25, style: { animationDelay: (i * 0.65) + 's' } }),
+              h('circle', { className: 'elig-endpoint-dot', cx: c.side === 'L' ? c.x + 184 : c.x + 184, cy: c.y + 15, r: 3.2, fill: c.col, style: { animationDelay: (i * 0.6) + 's' } }),
               h('text', { x: c.x + 18, y: c.y + 23, fontSize: 11.5, fontWeight: 800, fill: c.col }, c.title),
               h('text', { x: c.x + 18, y: c.y + 41, fontSize: 10, fontWeight: 600, fill: pal.muted }, c.sub)
             );
@@ -713,22 +741,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
               h('stop', { offset: '40%', stopColor: pal.svgAccent2 }),
               h('stop', { offset: '75%', stopColor: pal.svgAccent4 }),
               h('stop', { offset: '100%', stopColor: pal.svgAccent3 })
+            ),
+            h('linearGradient', { id: 'elig-sheen-grad', x1: '0', y1: '0', x2: '1', y2: '0' },
+              h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
+              h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.9 }),
+              h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+            ),
+            h('clipPath', { id: 'elig-rail-clip' },
+              h('rect', { x: 60, y: 28, width: 560, height: 8, rx: 4 })
             )
           ),
           h('rect', { x: 2, y: 2, width: 676, height: 82, rx: 13, fill: pal.svgSurface, stroke: pal.border, strokeWidth: 1.5 }),
           // Dual-pass luminous progression rail
           !isContrast && h('line', { x1: 60, y1: 32, x2: 620, y2: 32, stroke: 'url(#elig-pipe-rail)', strokeOpacity: 0.24, strokeWidth: 8, strokeLinecap: 'round' }),
           h('line', { x1: 60, y1: 32, x2: 620, y2: 32, stroke: 'url(#elig-pipe-rail)', strokeWidth: 2.6, strokeLinecap: 'round' }),
+          h('line', { className: 'elig-rail-flow', x1: 60, y1: 32, x2: 620, y2: 32, stroke: isContrast ? '#ffff00' : '#ffffff', strokeOpacity: isContrast ? 0.5 : 0.45, strokeWidth: 1.3, strokeDasharray: '6 18', strokeLinecap: 'round' }),
+          !isContrast && h('g', { clipPath: 'url(#elig-rail-clip)' },
+            h('rect', { className: 'elig-rail-sheen', x: 60, y: 28, width: 78, height: 8, rx: 4, fill: 'url(#elig-sheen-grad)' })
+          ),
           // Directional micro-chevrons between evaluation gates
           [0, 1, 2, 3, 4].map(function (i) {
             var mx = 116 + i * 112;
-            return h('polygon', { key: 'ch' + i, points: (mx - 3) + ',28.5 ' + (mx + 3.5) + ',32 ' + (mx - 3) + ',35.5', fill: pal.accent });
+            return h('polygon', { key: 'ch' + i, className: 'elig-chevron', points: (mx - 3) + ',28.5 ' + (mx + 3.5) + ',32 ' + (mx - 3) + ',35.5', fill: pal.accent, style: { animationDelay: (i * 0.55) + 's' } });
           }),
           nodes.map(function(node, idx) {
             var cx = 60 + idx * 112;
             return h('g', { key: node.n },
               // Calibrated decision-gate beacon halo
-              !isContrast && h('circle', { cx: cx, cy: 32, r: 19, fill: node.col, opacity: 0.16 }),
+              !isContrast && h('circle', { className: 'elig-node-halo', cx: cx, cy: 32, r: 19, fill: node.col, opacity: 0.16, style: { animationDelay: (idx * 0.55) + 's' } }),
               h('circle', { cx: cx, cy: 32, r: 15, fill: pal.svgCard, stroke: node.col, strokeWidth: 2 }),
               h('circle', { cx: cx, cy: 32, r: 11.5, fill: pal.btn }),
               h('text', { x: cx, y: 36, fontSize: 11.5, fontWeight: 900, textAnchor: 'middle', fill: pal.btnText }, node.n),

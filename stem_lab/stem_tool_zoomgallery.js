@@ -534,10 +534,31 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
     st.textContent = [
       '#allo-zoom-gallery .zg-card { transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease; }',
       '#allo-zoom-gallery .zg-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px -10px rgba(14,165,233,0.32), 0 4px 12px rgba(2,6,23,0.38); }',
-      '@keyframes zg-reticle-pulse { 0% { opacity: 0.52; } 50% { opacity: 0.96; } 100% { opacity: 0.52; } }',
+      '@keyframes zg-reticle-pulse { 0%, 100% { opacity: 0.56; } 50% { opacity: 0.96; } }',
+      '@keyframes zg-reticle-bloom { 0%, 100% { opacity: 0.24; transform: scale(0.92); } 50% { opacity: 0.58; transform: scale(1.12); } }',
+      '@keyframes zg-vernier-drift { from { stroke-dashoffset: 32; } to { stroke-dashoffset: 0; } }',
+      '@keyframes zg-lens-sheen { 0%, 20% { transform: translateX(-160px); opacity: 0; } 42% { opacity: 0.34; } 64% { transform: translateX(280px); opacity: 0; } 100% { transform: translateX(280px); opacity: 0; } }',
+      '@keyframes zg-measure-dash { from { stroke-dashoffset: 20; } to { stroke-dashoffset: 0; } }',
+      '@keyframes zg-hotspot-beacon { 0%, 100% { opacity: 0.65; transform: scale(0.92); } 50% { opacity: 0.12; transform: scale(1.48); } }',
+      '@keyframes zg-center-beacon { 0%, 100% { opacity: 0.28; transform: scale(0.85); } 50% { opacity: 0.72; transform: scale(1.3); } }',
+      '@keyframes zg-gauge-sheen { 0%, 24% { transform: translateX(-60px); opacity: 0; } 48% { opacity: 0.42; } 72% { transform: translateX(175px); opacity: 0; } 100% { transform: translateX(175px); opacity: 0; } }',
       '#allo-zoom-gallery .zg-reticle-active { animation: zg-reticle-pulse 2.4s ease-in-out infinite; }',
+      '#allo-zoom-gallery .zg-reticle-bloom, #allo-zoom-gallery .zg-measure-beacon, #allo-zoom-gallery .zg-center-beacon { transform-box: fill-box; transform-origin: center; }',
+      '#allo-zoom-gallery .zg-reticle-bloom { animation: zg-reticle-bloom 2.8s ease-in-out infinite; }',
+      '#allo-zoom-gallery .zg-vernier-drift { animation: zg-vernier-drift 9s linear infinite; }',
+      '#allo-zoom-gallery .zg-lens-sweep { animation: zg-lens-sheen 6.4s ease-in-out infinite; }',
+      '#allo-zoom-gallery .zg-measure-dash { animation: zg-measure-dash 1.35s linear infinite; }',
+      '#allo-zoom-gallery .zg-measure-beacon { animation: zg-hotspot-beacon 2.3s ease-in-out infinite; }',
+      '#allo-zoom-gallery .zg-center-beacon { animation: zg-center-beacon 3.2s ease-in-out infinite; }',
+      '#allo-zoom-gallery .zg-gauge-sheen { animation: zg-gauge-sheen 4.8s ease-in-out infinite; }',
+      '#allo-zoom-gallery .zg-pin-marker::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid rgba(251,191,36,0.78); pointer-events: none; animation: zg-hotspot-beacon 2.4s ease-in-out infinite; }',
       '#allo-zoom-gallery button:focus-visible, #allo-zoom-gallery select:focus-visible, #allo-zoom-gallery input:focus-visible, #allo-zoom-gallery textarea:focus-visible { outline: 3px solid #f59e0b !important; outline-offset: 2px !important; }',
-      '@media (prefers-reduced-motion: reduce) { #allo-zoom-gallery .zg-card { transition: none !important; transform: none !important; } #allo-zoom-gallery .zg-reticle-active { animation: none !important; } }'
+      '@media (prefers-reduced-motion: reduce) { #allo-zoom-gallery .zg-card { transition: none !important; transform: none !important; } #allo-zoom-gallery *, #allo-zoom-gallery .zg-pin-marker::after { animation: none !important; } #allo-zoom-gallery .zg-lens-sweep, #allo-zoom-gallery .zg-gauge-sheen { display: none !important; } }',
+      '#allo-zoom-gallery[data-zg-rm="1"] *, #allo-zoom-gallery[data-zg-rm="1"] .zg-pin-marker::after { animation: none !important; transition: none !important; }',
+      '#allo-zoom-gallery[data-zg-rm="1"] .zg-lens-sweep, #allo-zoom-gallery[data-zg-rm="1"] .zg-gauge-sheen { display: none !important; }',
+      '.theme-contrast #allo-zoom-gallery *, .theme-contrast #allo-zoom-gallery .zg-pin-marker::after, #allo-zoom-gallery[data-zg-theme="contrast"] *, #allo-zoom-gallery[data-zg-theme="contrast"] .zg-pin-marker::after { animation: none !important; transition: none !important; }',
+      '.theme-contrast #allo-zoom-gallery .zg-decor-only, .theme-contrast #allo-zoom-gallery .zg-pin-marker::after, #allo-zoom-gallery[data-zg-theme="contrast"] .zg-decor-only, #allo-zoom-gallery[data-zg-theme="contrast"] .zg-pin-marker::after { display: none !important; }',
+      '@media (forced-colors: active) { #allo-zoom-gallery *, #allo-zoom-gallery .zg-pin-marker::after { animation: none !important; transition: none !important; } #allo-zoom-gallery .zg-decor-only, #allo-zoom-gallery .zg-pin-marker::after { display: none !important; } }'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -790,23 +811,45 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         if (chalLocked != null && measuredM) {
           var vals = [chalLocked, measuredM, ch.answerMetres];
           var maxV = Math.max.apply(null, vals) || 1;
-          var barRow = function (lbl, val, col, y) {
+          var barRow = function (lbl, val, col, y, idx) {
             var w = Math.max(8, Math.min(148, (val / maxV) * 148));
+            var clipId = 'zg-gauge-clip-' + idx;
             return h('g', { key: lbl },
               h('text', { x: 4, y: y + 9, fill: P.dim, fontSize: 9, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }, lbl),
               h('rect', { x: 64, y: y, width: 148, height: 11, rx: 4, fill: P.bg, stroke: P.softLine, strokeWidth: 1 }),
               h('rect', { x: 64, y: y, width: w, height: 11, rx: 4, fill: col }),
-              theme !== 'contrast' ? h('rect', { x: 64, y: y, width: w, height: 4.5, rx: 3, fill: '#ffffff', opacity: 0.22 }) : null,
+              theme !== 'contrast' ? h('rect', { className: 'zg-decor-only', x: 64, y: y, width: w, height: 4.5, rx: 3, fill: '#ffffff', opacity: 0.22 }) : null,
+              theme !== 'contrast' ? h('g', { clipPath: 'url(#' + clipId + ')', className: 'zg-decor-only' },
+                h('rect', { className: 'zg-gauge-sheen', x: 64, y: y, width: 34, height: 11, fill: 'url(#zg-gauge-sheen-grad)', style: { animationDelay: (idx * 0.55) + 's' } })
+              ) : null,
+              theme !== 'contrast' ? h('circle', { className: 'zg-decor-only zg-center-beacon', cx: 64 + w, cy: y + 5.5, r: 5.2, fill: col, opacity: 0.34 }) : null,
               h('circle', { cx: 64 + w, cy: y + 5.5, r: 2.3, fill: theme === 'contrast' ? '#000000' : '#ffffff', stroke: col, strokeWidth: 1.4 })
             );
           };
           gaugeEl = h('svg', { viewBox: '0 0 220 56', style: { width: '100%', height: 'auto', display: 'block', marginTop: 6 }, role: 'img', 'aria-label': t('stem.zoomGallery.scale_comparison_aria', 'Scale comparison: estimate, measurement, and accepted value') },
+            theme !== 'contrast' ? h('defs', null,
+              h('linearGradient', { id: 'zg-gauge-sheen-grad', x1: '0', y1: '0', x2: '1', y2: '0' },
+                h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: 0 }),
+                h('stop', { offset: '50%', stopColor: '#ffffff', stopOpacity: 0.55 }),
+                h('stop', { offset: '100%', stopColor: '#ffffff', stopOpacity: 0 })
+              ),
+              [
+                { idx: 0, val: chalLocked, y: 4 },
+                { idx: 1, val: measuredM, y: 22 },
+                { idx: 2, val: ch.answerMetres, y: 40 }
+              ].map(function (r) {
+                var rw = Math.max(8, Math.min(148, (r.val / maxV) * 148));
+                return h('clipPath', { key: 'c' + r.idx, id: 'zg-gauge-clip-' + r.idx },
+                  h('rect', { x: 64, y: r.y, width: rw, height: 11, rx: 4 })
+                );
+              })
+            ) : null,
             [101, 138, 175].map(function (gx) {
               return h('line', { key: 'g' + gx, x1: gx, y1: 2, x2: gx, y2: 53, stroke: P.softLine, strokeWidth: 0.8, strokeDasharray: '2 2', opacity: 0.55 });
             }),
-            barRow('Estimate', chalLocked, P.pin, 4),
-            barRow('Measured', measuredM, P.accent, 22),
-            barRow('Accepted', ch.answerMetres, P.ok, 40)
+            barRow('Estimate', chalLocked, P.pin, 4, 0),
+            barRow('Measured', measuredM, P.accent, 22, 1),
+            barRow('Accepted', ch.answerMetres, P.ok, 40, 2)
           );
         }
         return h('div', { style: { marginTop: 4 } },
@@ -842,19 +885,21 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           var P0 = v.viewport.imageToViewerElementCoordinates(new window.OpenSeadragon.Point(pts[0].x, pts[0].y));
           var P1 = pts[1] ? v.viewport.imageToViewerElementCoordinates(new window.OpenSeadragon.Point(pts[1].x, pts[1].y)) : null;
           svg.style.display = 'block';
-          var c0 = svg.querySelector('[data-m="a"]'), c1 = svg.querySelector('[data-m="b"]'), lns = svg.querySelectorAll('[data-m="line"]'), tx = svg.querySelector('[data-m="text"]'), bg = svg.querySelector('[data-m="bg"]');
+          var c0 = svg.querySelector('[data-m="a"]'), c1 = svg.querySelector('[data-m="b"]'), r0 = svg.querySelector('[data-m="a-ring"]'), r1 = svg.querySelector('[data-m="b-ring"]'), lns = svg.querySelectorAll('[data-m="line"]'), tx = svg.querySelector('[data-m="text"]'), bg = svg.querySelector('[data-m="bg"]');
           var ln = { setAttribute: function (k, val) { lns.forEach(function (l) { l.setAttribute(k, val); }); }, style: { set display(d) { lns.forEach(function (l) { l.style.display = d; }); } } };
           c0.setAttribute('cx', P0.x); c0.setAttribute('cy', P0.y);
+          if (r0) { r0.setAttribute('cx', P0.x); r0.setAttribute('cy', P0.y); }
           if (P1) {
             c1.style.display = ''; ln.style.display = ''; tx.style.display = ''; bg.style.display = '';
             c1.setAttribute('cx', P1.x); c1.setAttribute('cy', P1.y);
+            if (r1) { r1.style.display = ''; r1.setAttribute('cx', P1.x); r1.setAttribute('cy', P1.y); }
             ln.setAttribute('x1', P0.x); ln.setAttribute('y1', P0.y); ln.setAttribute('x2', P1.x); ln.setAttribute('y2', P1.y);
             var mx = (P0.x + P1.x) / 2, my = (P0.y + P1.y) / 2 - 10;
             tx.textContent = measureDistance(pts) || '';
             tx.setAttribute('x', mx); tx.setAttribute('y', my);
             var w = tx.getBBox ? tx.getBBox().width : 60;
             bg.setAttribute('x', mx - w / 2 - 6); bg.setAttribute('y', my - 13); bg.setAttribute('width', w + 12); bg.setAttribute('height', 18);
-          } else { c1.style.display = 'none'; ln.style.display = 'none'; tx.style.display = 'none'; bg.style.display = 'none'; }
+          } else { c1.style.display = 'none'; if (r1) r1.style.display = 'none'; ln.style.display = 'none'; tx.style.display = 'none'; bg.style.display = 'none'; }
         } catch (_) { svg.style.display = 'none'; }
       }
       function addMeasurePoint(vpPoint) {
@@ -1013,7 +1058,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       function openPopout(imgId) {
         var existing = _win.current;
         if (existing && !existing.closed) { try { existing.focus(); } catch (_) {} return; }
-        var url = ZOOM_GALLERY_URL + '&theme=' + encodeURIComponent(ctx.theme || 'dark') + (imgId && imgId !== 'custom' ? '&img=' + encodeURIComponent(imgId) : '');
+        var hostParam = (window.location && window.location.origin && window.location.origin !== 'null') ? '&host=' + encodeURIComponent(window.location.origin) : '';
+        var url = ZOOM_GALLERY_URL + '&theme=' + encodeURIComponent(ctx.theme || 'dark') + hostParam + (imgId && imgId !== 'custom' ? '&img=' + encodeURIComponent(imgId) : '');
         var w = null;
         try { w = window.open(url, 'alloflow-zoom-gallery', 'width=1280,height=860'); } catch (_) { w = null; }
         if (!w) { setPopupState('blocked'); say(I('popup_blocked')); return; }
@@ -1154,6 +1200,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         var size = item.getContentSize();
         mem.pins.forEach(function (p, i) {
           var d = document.createElement('div');
+          d.className = 'zg-pin-marker';
           d.setAttribute('aria-hidden', 'true');
           d.textContent = String(i + 1);
           d.style.cssText = 'width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:' + P.pin + ';color:' + (theme === 'light' ? '#fff' : '#000') + ';font:800 0.75rem/22px system-ui,sans-serif;text-align:center;border:2px solid #fff;box-shadow:0 0 0 4px rgba(245,158,11,0.35), 0 2px 6px rgba(0,0,0,0.72);pointer-events:none;';
@@ -1316,7 +1363,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         var ringMain = hc ? '#fbbf24' : 'rgba(56,189,248,0.34)';
         var ringSub = hc ? '#ffffff' : 'rgba(148,163,184,0.24)';
         var bracketCol = hc ? '#fbbf24' : 'rgba(125,211,252,0.48)';
-        var vigId = 'zg-thumb-vig-' + String(idSuffix == null ? 'card' : idSuffix).replace(/[^a-z0-9_-]/gi, '');
+        var safeId = String(idSuffix == null ? 'card' : idSuffix).replace(/[^a-z0-9_-]/gi, '');
+        var vigId = 'zg-thumb-vig-' + safeId;
+        var sheenId = 'zg-thumb-sheen-' + safeId;
+        var clipId = 'zg-thumb-clip-' + safeId;
         return h('svg', {
           viewBox: '0 0 240 124', 'aria-hidden': 'true', focusable: 'false',
           style: { position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', pointerEvents: 'none' }
@@ -1326,13 +1376,25 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               h('stop', { offset: '0%', stopColor: '#13213c' }),
               h('stop', { offset: '68%', stopColor: '#090f1d' }),
               h('stop', { offset: '100%', stopColor: '#040711' })
+            ),
+            h('linearGradient', { id: sheenId, x1: '0', y1: '0', x2: '1', y2: '0.28' },
+              h('stop', { offset: '0%', stopColor: '#bae6fd', stopOpacity: 0 }),
+              h('stop', { offset: '50%', stopColor: '#bae6fd', stopOpacity: 0.22 }),
+              h('stop', { offset: '100%', stopColor: '#bae6fd', stopOpacity: 0 })
+            ),
+            h('clipPath', { id: clipId },
+              h('rect', { width: 240, height: 124 })
             )
           ) : null,
           h('rect', { width: 240, height: 124, fill: hc ? '#000000' : 'url(#' + vigId + ')' }),
+          // Subtle optical lens specular sweep (clipped, decorative only)
+          !hc ? h('g', { clipPath: 'url(#' + clipId + ')', className: 'zg-decor-only' },
+            h('rect', { className: 'zg-lens-sweep', x: -40, y: -12, width: 74, height: 148, fill: 'url(#' + sheenId + ')' })
+          ) : null,
           // Corner laser optical reticle brackets
           h('path', { d: 'M12 26 L12 12 L26 12 M214 12 L228 12 L228 26 M12 98 L12 112 L26 112 M214 112 L228 112 L228 98', fill: 'none', stroke: bracketCol, strokeWidth: 1.4, strokeLinecap: 'round' }),
           // Concentric vernier optical lens rings
-          h('circle', { cx: 120, cy: 62, r: 44, fill: 'none', stroke: ringMain, strokeWidth: 1.1, strokeDasharray: '4 4' }),
+          h('circle', { className: !hc ? 'zg-vernier-drift' : undefined, cx: 120, cy: 62, r: 44, fill: 'none', stroke: ringMain, strokeWidth: 1.1, strokeDasharray: '4 4' }),
           h('circle', { cx: 120, cy: 62, r: 28, fill: 'none', stroke: ringSub, strokeWidth: 0.9 }),
           h('circle', { cx: 120, cy: 62, r: 12, fill: 'none', stroke: ringMain, strokeWidth: 1, opacity: 0.7 }),
           // Precision center-gapped crosshairs
@@ -1340,6 +1402,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           h('line', { x1: 132, y1: 62, x2: 182, y2: 62, stroke: ringSub, strokeWidth: 1 }),
           h('line', { x1: 120, y1: 12, x2: 120, y2: 50, stroke: ringSub, strokeWidth: 1 }),
           h('line', { x1: 120, y1: 74, x2: 120, y2: 112, stroke: ringSub, strokeWidth: 1 }),
+          !hc ? h('circle', { className: 'zg-decor-only zg-center-beacon', cx: 120, cy: 62, r: 6.5, fill: 'none', stroke: '#38bdf8', strokeWidth: 1, opacity: 0.5 }) : null,
           h('circle', { cx: 120, cy: 62, r: 2.2, fill: hc ? '#fbbf24' : '#38bdf8', opacity: 0.75 }),
           // Calibrated scale ruler indicator for scale-enabled artifacts
           hasScale ? h('g', null,
@@ -1529,6 +1592,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       }
 
       return h('div', { id: 'allo-zoom-gallery', ref: wrapRef, className: 'flex flex-col gap-3 animate-in fade-in duration-300',
+        'data-zg-theme': theme,
+        'data-zg-rm': ctx.reduceMotion ? '1' : '0',
         // The fullscreen target the gallery's button resolves with closest().
         'data-allo-fs-stage': 'true',
         // Painted ground: the host card is white in both themes, and these inks assume slate.
@@ -1603,7 +1668,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 vectorEffect: 'non-scaling-stroke'
               }),
               (pinMode || measureMode) ? h('g', { className: 'zg-reticle-active', stroke: '#fbbf24', strokeWidth: 1.4, fill: 'none', vectorEffect: 'non-scaling-stroke' },
-                h('circle', { cx: 500, cy: 300, r: 22, strokeDasharray: '4 4' }),
+                theme !== 'contrast' ? h('circle', { className: 'zg-decor-only zg-reticle-bloom', cx: 500, cy: 300, r: 30, stroke: 'rgba(251,191,36,0.48)', strokeWidth: 2.2, vectorEffect: 'non-scaling-stroke' }) : null,
+                h('circle', { className: theme !== 'contrast' ? 'zg-vernier-drift' : undefined, cx: 500, cy: 300, r: 22, strokeDasharray: '4 4' }),
                 h('line', { x1: 468, y1: 300, x2: 488, y2: 300 }),
                 h('line', { x1: 512, y1: 300, x2: 532, y2: 300 }),
                 h('line', { x1: 500, y1: 274, x2: 500, y2: 290 }),
@@ -1619,7 +1685,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
                 )
               ) : null,
               h('line', { 'data-m': 'line', stroke: '#0b1220', strokeWidth: 5.5, strokeLinecap: 'round', opacity: 0.7 }),
-              h('line', { 'data-m': 'line', stroke: '#fbbf24', strokeWidth: 2.5, strokeLinecap: 'round', strokeDasharray: '6 4', filter: theme !== 'contrast' ? 'url(#zg-measure-glow)' : undefined }),
+              h('line', { 'data-m': 'line', className: theme !== 'contrast' ? 'zg-measure-dash' : undefined, stroke: '#fbbf24', strokeWidth: 2.5, strokeLinecap: 'round', strokeDasharray: '6 4', filter: theme !== 'contrast' ? 'url(#zg-measure-glow)' : undefined }),
+              theme !== 'contrast' ? h('circle', { 'data-m': 'a-ring', className: 'zg-decor-only zg-measure-beacon', r: 11.5, fill: 'none', stroke: '#fbbf24', strokeWidth: 1.8 }) : null,
+              theme !== 'contrast' ? h('circle', { 'data-m': 'b-ring', className: 'zg-decor-only zg-measure-beacon', r: 11.5, fill: 'none', stroke: '#fbbf24', strokeWidth: 1.8 }) : null,
               h('circle', { 'data-m': 'a', r: 6.5, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 2 }),
               h('circle', { 'data-m': 'b', r: 6.5, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 2 }),
               h('rect', { 'data-m': 'bg', rx: 6, fill: '#0b1220', stroke: '#fbbf24', strokeWidth: 1.1, opacity: 0.92 }),

@@ -1,23 +1,31 @@
 import * as engine from './connected_escape_room_engine.js';
 const React = window.React;
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
 const tr = (t, key, fallback, params = {}) => {
   const full = 'connected_escape.' + key, value = typeof t === 'function' ? t(full, params) : '';
   return Object.entries(params).reduce((s, [k, v]) => s.replaceAll('{' + k + '}', String(v)), typeof value === 'string' && value && value !== full ? value : fallback);
 };
 // AI text uses the Assess view's light markdown when it is loaded; plain text otherwise.
 const cerMd = () => (window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown) || { inline: v => v == null ? '' : String(v), block: v => v == null ? '' : String(v), plain: v => v == null ? '' : String(v) };
+function loadRoomWorkspace(room, storageKey) {
+  try { const saved = storageKey && sessionStorage.getItem(storageKey); if (saved && saved.length < 10000) return engine.restoreWorkspace(room, JSON.parse(saved)); } catch (_) {}
+  return engine.restoreWorkspace(room, null);
+}
 export function useRoomWorkspace(room, storageKey) {
-  const [workspace, setWorkspace] = useState(() => {
-    try { const saved = storageKey && sessionStorage.getItem(storageKey); if (saved && saved.length < 10000) return engine.restoreWorkspace(room, JSON.parse(saved)); } catch (_) {}
-    return engine.restoreWorkspace(room, null);
-  });
+  const [workspace, setWorkspace] = useState(() => loadRoomWorkspace(room, storageKey));
   const [storageStatus, setStorageStatus] = useState('');
+  const loadedKeyRef = useRef(storageKey);
   useEffect(() => {
+    if (loadedKeyRef.current !== storageKey) {
+      loadedKeyRef.current = storageKey;
+      setWorkspace(loadRoomWorkspace(room, storageKey));
+      setStorageStatus('');
+      return;
+    }
     if (!storageKey) return;
     try { sessionStorage.setItem(storageKey, JSON.stringify(workspace)); setStorageStatus('saved'); }
     catch (_) { setStorageStatus('unavailable'); }
-  }, [storageKey, workspace]);
+  }, [storageKey, workspace, room]);
   return [workspace, setWorkspace, storageStatus];
 }
 export function TeamActivityBoard({ room, progress, actions, attemptId, uid, roster, onSelect, t }) {

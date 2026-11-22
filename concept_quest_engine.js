@@ -18,6 +18,16 @@
 
   var VERSION = 2;
   var logSequence = 0;
+  function _hasOwn(obj, key) { return !!obj && typeof key === 'string' && Object.prototype.hasOwnProperty.call(obj, key); }
+  function _isBlockedKey(key) { return key === '__proto__' || key === 'constructor' || key === 'prototype'; }
+  function _safeImageUrl(raw) {
+    if (typeof raw !== 'string') return '';
+    var s = raw.trim();
+    if (!s || /[\u0000-\u001f\u007f]/.test(s)) return '';
+    if (/^(?:javascript|vbscript|data:text\/html|data:image\/svg\+xml)/i.test(s)) return '';
+    if (/^(?:https?:\/\/|data:image\/(?:png|jpeg|jpg|gif|webp|avif);base64,|blob:|\/(?!\/))/i.test(s)) return s;
+    return '';
+  }
   var LOCALIZED_LABELS = {
     ability_analyze_name: 'Analyze',
     ability_analyze_description: 'Use evidence to deal 3 damage.',
@@ -140,7 +150,10 @@
   }
 
   function textFromStrings(strings, key, params) {
-    return interpolate(strings && strings[key] || LOCALIZED_DEFAULTS[key] || key, params);
+    var template = (_hasOwn(strings, key) && typeof strings[key] === 'string' && strings[key])
+      || (_hasOwn(LOCALIZED_DEFAULTS, key) ? LOCALIZED_DEFAULTS[key] : '')
+      || String(key == null ? '' : key);
+    return interpolate(template, params);
   }
 
   function questText(quest, key, params) {
@@ -198,7 +211,8 @@
     var room = getRoom(quest, quest && quest.currentRoomId);
     var challenge = room && room.challenge || {};
     if (challenge.correctIndex == null && quest && typeof quest.turnKey === 'string' && quest.turnKey) return quest.turnKey;
-    var value = JSON.stringify([challenge.id, challenge.prompt, challenge.options, challenge.correctIndex]);
+    var value = '';
+    try { value = JSON.stringify([challenge.id, challenge.prompt, challenge.options, challenge.correctIndex]); } catch (_) { value = String(challenge.id || ''); }
     var hash = 2166136261;
     for (var i = 0; i < value.length; i++) hash = Math.imul(hash ^ value.charCodeAt(i), 16777619);
     return (quest && quest.sessionId ? quest.sessionId + ':' : '') + String(quest && quest.turn || 0) + ':' + String(quest && quest.currentRoomId || '') + ':' + (hash >>> 0).toString(36);
@@ -263,10 +277,13 @@
     };
     if (challenge.sourceIndex != null) clean.sourceIndex = challenge.sourceIndex;
     if (challenge.question_en) clean.question_en = challenge.question_en;
-    if (challenge.imageUrl) clean.imageUrl = challenge.imageUrl;
+    if (challenge.imageUrl) {
+      var safeImg = _safeImageUrl(challenge.imageUrl);
+      if (safeImg) clean.imageUrl = safeImg;
+    }
     if (challenge.imageAltText) clean.imageAltText = challenge.imageAltText;
     if (Array.isArray(challenge.options_en)) clean.options_en = challenge.options_en.slice();
-    if (Array.isArray(challenge.optionImageUrls)) clean.optionImageUrls = challenge.optionImageUrls.slice();
+    if (Array.isArray(challenge.optionImageUrls)) clean.optionImageUrls = challenge.optionImageUrls.map(function(u) { return u ? _safeImageUrl(u) : ''; });
     if (Array.isArray(challenge.optionImageAltTexts)) clean.optionImageAltTexts = challenge.optionImageAltTexts.slice();
     return clean;
   }
@@ -344,9 +361,11 @@
     if (round.enemyDefeated && cleared.indexOf(concept) < 0) cleared.push(concept);
     var learners = Object.assign(Object.create(null), totals.learners || {});
     (round.learnerEvidence || []).forEach(function(evidence) {
-      var previousLearner = learners[evidence.uid] || { uid: evidence.uid, responses: 0, correct: 0, firstResponses: 0, firstCorrect: 0, repeatResponses: 0, repeatCorrect: 0, peerSupportReceived: 0, seen: {} };
-      var first = !Object.prototype.hasOwnProperty.call(previousLearner.seen || {}, round.itemEvidenceKey);
-      var seen = Object.assign(Object.create(null), previousLearner.seen || {}); seen[round.itemEvidenceKey] = true;
+      if (!evidence || typeof evidence !== 'object' || typeof evidence.uid !== 'string' || !evidence.uid || _isBlockedKey(evidence.uid)) return;
+      var previousLearner = _hasOwn(learners, evidence.uid) ? learners[evidence.uid] : { uid: evidence.uid, responses: 0, correct: 0, firstResponses: 0, firstCorrect: 0, repeatResponses: 0, repeatCorrect: 0, peerSupportReceived: 0, seen: {} };
+      var evKey = typeof round.itemEvidenceKey === 'string' && !_isBlockedKey(round.itemEvidenceKey) ? round.itemEvidenceKey : '';
+      var first = !evKey || !Object.prototype.hasOwnProperty.call(previousLearner.seen || {}, evKey);
+      var seen = Object.assign(Object.create(null), previousLearner.seen || {}); if (evKey) seen[evKey] = true;
       learners[evidence.uid] = Object.assign({}, previousLearner, { seen: seen, responses: previousLearner.responses + 1, correct: previousLearner.correct + Number(evidence.correct), firstResponses: previousLearner.firstResponses + Number(first), firstCorrect: previousLearner.firstCorrect + Number(first && evidence.correct), repeatResponses: previousLearner.repeatResponses + Number(!first), repeatCorrect: previousLearner.repeatCorrect + Number(!first && evidence.correct), peerSupportReceived: previousLearner.peerSupportReceived + Number(evidence.peerSupportReceived) });
     });
     return Object.assign({}, totals, {
@@ -513,10 +532,12 @@
   }
 
   function tallyVotes(votes, allowedRoomIds) {
-    var counts = {};
+    if (!Array.isArray(allowedRoomIds) || !allowedRoomIds.length) return null;
+    var counts = Object.create(null);
     Object.keys(votes || {}).sort().forEach(function(uid) {
+      if (_isBlockedKey(uid)) return;
       var roomId = votes[uid];
-      if (allowedRoomIds.indexOf(roomId) >= 0) counts[roomId] = (counts[roomId] || 0) + 1;
+      if (typeof roomId === 'string' && !_isBlockedKey(roomId) && allowedRoomIds.indexOf(roomId) >= 0) counts[roomId] = (counts[roomId] || 0) + 1;
     });
     return allowedRoomIds.filter(function(id) { return counts[id] > 0; }).sort(function(a, b) {
       return (counts[b] || 0) - (counts[a] || 0) || a.localeCompare(b);
@@ -524,6 +545,7 @@
   }
 
   function resolveTravel(quest, votes, selectedRoomId) {
+    if (!quest || typeof quest !== 'object') return questError(quest, 'travel_not_ready');
     var current = getRoom(quest, quest.currentRoomId);
     if (!current || quest.phase !== 'explore') return questError(quest, 'travel_not_ready');
     var destinationId = selectedRoomId || tallyVotes(votes, current.neighbors || []);
@@ -559,6 +581,7 @@
   }
 
   function resolveBattle(quest, actions, roles) {
+    if (!quest || typeof quest !== 'object' || !quest.party) return questError(quest, 'encounter_none');
     var room = getRoom(quest, quest.currentRoomId);
     if (!room || !room.enemy || room.enemy.hp <= 0 || quest.party.hp <= 0 || quest.phase !== 'battle') return questError(quest, 'encounter_none');
     var challenge = room.challenge || {};
@@ -639,7 +662,7 @@
     var bank = classAssessmentBank(quest);
     var sourceIndex = bank ? bank.items.findIndex(function(item) { return item.sourceIndex === challenge.sourceIndex; }) : -1;
     if (sourceIndex >= 0) {
-      var attempts = Object.assign({}, bank.attempts);
+      var attempts = Object.assign(Object.create(null), bank.attempts);
       var previous = attempts[challenge.sourceIndex] || { rounds: 0, correct: 0, total: 0 };
       attempts[challenge.sourceIndex] = { rounds: previous.rounds + 1, correct: previous.correct + correct, total: previous.total + total };
       bank = Object.assign({}, bank, { attempts: attempts });
@@ -688,7 +711,8 @@
     if (!quest.solo) {
       // Retain first-versus-repeat evidence independently of the capped visual log.
       // Peer support is a game event, not proof that it caused a correct answer.
-      var itemText = JSON.stringify([challenge.sourceIndex, challenge.prompt || challenge.question, challenge.options, challenge.correctIndex]);
+      var itemText = '';
+      try { itemText = JSON.stringify([challenge.sourceIndex, challenge.prompt || challenge.question, challenge.options, challenge.correctIndex]); } catch (_) { itemText = String(challenge.sourceIndex || ''); }
       var itemHash = 2166136261;
       for (var hashIndex = 0; hashIndex < itemText.length; hashIndex++) itemHash = Math.imul(itemHash ^ itemText.charCodeAt(hashIndex), 16777619);
       roundRecord.itemEvidenceKey = 'item-' + (itemHash >>> 0).toString(16);
@@ -931,11 +955,11 @@
     };
   }
 
-  return {
+  return Object.freeze({
     VERSION: VERSION,
-    ABILITIES: ABILITIES,
-    ROLES: ROLES,
-    SUPPORTS: SUPPORTS,
+    ABILITIES: Object.freeze(ABILITIES.map(function(x) { return Object.freeze(Object.assign({}, x)); })),
+    ROLES: Object.freeze(ROLES.map(function(x) { return Object.freeze(Object.assign({}, x)); })),
+    SUPPORTS: Object.freeze(SUPPORTS.map(function(x) { return Object.freeze(Object.assign({}, x)); })),
     createSession: function(options) { return sealQuest(createSession(options)); },
     getTurnKey: getTurnKey,
     currentActions: currentActions,
@@ -956,5 +980,5 @@
     createDebrief: createDebrief,
     coverage: coverage,
     publicQuestState: publicQuestState
-  };
+  });
 });

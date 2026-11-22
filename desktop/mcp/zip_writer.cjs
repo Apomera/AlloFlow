@@ -46,7 +46,7 @@ const FIXED_DOS_DATE = ((2020 - 1980) << 9) | (1 << 5) | 1;  // 2020-01-01
 const MAX_ZIP32_ENTRIES = 0xFFFE;
 const MAX_ZIP32_NAME = 0xFFFF;
 const MAX_ZIP32_UINT32 = 0xFFFFFFFE;
-const WINDOWS_RESERVED_SEG = /^(?:con|prn|aux|nul|clock\$|com[0-9]|lpt[0-9])(?:[ .]|$)/i;
+const WINDOWS_RESERVED_SEG = /^(?:con|prn|aux|nul|clock\$|com[0-9\u00b9\u00b2\u00b3]|lpt[0-9\u00b9\u00b2\u00b3])(?:[ .]|$)/i;
 
 function validateArchiveEntryNames(names, caller) {
   const seenExact = new Set();
@@ -77,12 +77,15 @@ function validateArchiveEntryNames(names, caller) {
 }
 
 function toEntryBuffer(data) {
-  if (Buffer.isBuffer(data)) return data;
+  const isShared = (buf) => !!(utilTypes && typeof utilTypes.isSharedArrayBuffer === 'function' && utilTypes.isSharedArrayBuffer(buf));
+  if (Buffer.isBuffer(data)) return isShared(data.buffer) ? Buffer.from(data) : data;
   if (ArrayBuffer.isView(data)) {
-    return Buffer.from(data.buffer, data.byteOffset, data.byteLength);
+    const view = Buffer.from(data.buffer, data.byteOffset, data.byteLength);
+    return isShared(data.buffer) ? Buffer.from(view) : view;
   }
   if (data instanceof ArrayBuffer || (utilTypes && typeof utilTypes.isAnyArrayBuffer === 'function' && utilTypes.isAnyArrayBuffer(data))) {
-    return Buffer.from(data);
+    const view = Buffer.from(data);
+    return isShared(data) ? Buffer.from(view) : view;
   }
   if (data == null) return Buffer.alloc(0);
   if (typeof data === 'string') return Buffer.from(data, 'utf8');
@@ -179,7 +182,8 @@ function makeZip(entries, opts) {
  * whole file exists to prevent.
  */
 function zipFileMap(files, storeFirst) {
-  const names = Object.keys(files || {});
+  if (!files || typeof files !== 'object' || Array.isArray(files)) throw new Error('zipFileMap: files must be an object map');
+  const names = Object.keys(files);
   if (!names.length) throw new Error('zipFileMap: no files');
   if (names.length > MAX_ZIP32_ENTRIES) throw new Error('zipFileMap: too many files');
   validateArchiveEntryNames(names, 'zipFileMap');

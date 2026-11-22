@@ -18,11 +18,24 @@
 
   function list(value) { return Array.isArray(value) ? value : []; }
   function clip(value, limit) { return String(value == null ? '' : value).replace(/\s+/g, ' ').trim().slice(0, limit || 1200); }
+  function safeUrl(value, limit) {
+    var s = clip(value, limit || 500);
+    if (!s || /^[\s]*\/\//.test(s) || s.indexOf('\\') !== -1) return '';
+    try {
+      var parsed = new URL(s);
+      if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && !parsed.username && !parsed.password) {
+        return parsed.href.slice(0, limit || 500);
+      }
+      return '';
+    } catch (_) {
+      return '';
+    }
+  }
   function redact(value, limit) {
     return clip(value, limit || 1600)
       .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, '[email omitted]')
       .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[identifier omitted]')
-      .replace(/\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b/g, '[phone omitted]')
+      .replace(/(^|[^\w])(?:\+?1[-.\s]?)?(?:\(\d{3}\)[-.\s]?|\d{3}[-.\s])\d{3}[-.\s]\d{4}\b/g, '$1[phone omitted]')
       .replace(/\b[ACGTUN]{40,}\b/gi, '[nucleic-acid sequence omitted]')
       .replace(/\b[ACDEFGHIKLMNPQRSTVWY]{40,}\b/gi, '[protein sequence omitted]');
   }
@@ -47,16 +60,16 @@
     var date = new Date(value);
     return Number.isNaN(date.getTime()) ? '' : date.toISOString();
   }
+  var RELATION_MAP = Object.assign(Object.create(null), {
+    supports: 'supports', support: 'supports', corroborates: 'supports',
+    complicates: 'complicates', complicate: 'complicates', challenges: 'complicates', challenge: 'complicates',
+    contradicts: 'contradicts', contradict: 'contradicts', refutes: 'contradicts',
+    contextualizes: 'contextualizes', context: 'contextualizes', providescontext: 'contextualizes',
+    derivedfrom: 'derivedFrom', requireswarrant: 'requiresWarrant', frames: 'frames'
+  });
   function relation(value, fallback) {
     var normalized = clip(value, 40).replace(/[\s_-]+/g, '').toLowerCase();
-    var map = {
-      supports: 'supports', support: 'supports', corroborates: 'supports',
-      complicates: 'complicates', complicate: 'complicates', challenges: 'complicates', challenge: 'complicates',
-      contradicts: 'contradicts', contradict: 'contradicts', refutes: 'contradicts',
-      contextualizes: 'contextualizes', context: 'contextualizes', providescontext: 'contextualizes',
-      derivedfrom: 'derivedFrom', requireswarrant: 'requiresWarrant', frames: 'frames'
-    };
-    return map[normalized] || fallback || 'supports';
+    return RELATION_MAP[normalized] || fallback || 'supports';
   }
   function nodeLabel(raw, fallback) {
     return redact(raw && (raw.title || raw.label || raw.name || raw.text || raw.citation || raw.summary || raw.observationText), 180) || fallback;
@@ -66,8 +79,8 @@
     var j = journal || {};
     var nodes = [];
     var edges = [];
-    var byId = {};
-    var aliases = {};
+    var byId = Object.create(null);
+    var aliases = Object.create(null);
     var integrityIssues = [];
 
     function addNode(node, rawAliases) {
@@ -93,9 +106,11 @@
     function resolve(value) {
       if (value && typeof value === 'object') value = value.id || value.claimId || value.text;
       var key = String(value == null ? '' : value);
+      if (!key) return null;
       if (aliases[key]) return aliases[key];
       if (Object.prototype.hasOwnProperty.call(aliases, key) && aliases[key] === null) return null;
       var normalized = clip(key, 500).toLowerCase();
+      if (!normalized) return null;
       var matches = nodes.filter(function (node) {
         return clip(node.label, 500).toLowerCase() === normalized || clip(node.description, 500).toLowerCase() === normalized;
       });
@@ -112,7 +127,7 @@
       if (!byId[fromId] || !byId[toId]) {
         integrityIssues.push({
           severity: 'action', code: 'dangling_graph_reference',
-          reference: !byId[fromId] ? clip(from, 180) : clip(to, 180),
+          reference: redact(!byId[fromId] ? from : to, 180),
           declaredBy: clip(info.declaredBy, 160),
           message: 'A relationship from ' + (info.declaredBy || 'the portfolio') + ' points to a missing or ambiguous record.'
         });
@@ -180,7 +195,7 @@
         id: identifier('source', source, source && source.citation), type: 'source', record: recordRef('sources', source, source && source.citation), discipline: source && source.domain || 'cross-disciplinary',
         label: nodeLabel(source, 'Recorded source'),
         description: redact(source && (source.notes || source.context || source.historicalContext || source.humanitiesContext && source.humanitiesContext.historicalContext), 1500),
-        url: clip(source && (source.url || source.stableUrl), 500), createdAt: timestamp(source && source.ts),
+        url: safeUrl(source && (source.url || source.stableUrl), 500), createdAt: timestamp(source && source.ts),
         provenance: { citation: redact(source && source.citation, 900), kind: clip(source && source.kind, 80), sift: source && source.sift || null }
       }, [source && source.id, source && source.citation]);
     });
@@ -212,7 +227,7 @@
         id: identifier('artifact', artifact, artifact && artifact.captureFingerprint), type: 'tool_artifact', record: recordRef('capturedArtifacts', artifact, artifact && artifact.captureFingerprint),
         discipline: artifact && artifact.integrationContract && artifact.integrationContract.supportedMethodPacks || [],
         label: nodeLabel(artifact, 'Tool artifact'), description: redact(artifact && (artifact.learnerNote || artifact.summary), 1500),
-        url: clip(artifact && artifact.sourceUrl, 500), createdAt: timestamp(artifact && (artifact.acceptedAt || artifact.generatedAt || artifact.queuedAt)),
+        url: safeUrl(artifact && artifact.sourceUrl, 500), createdAt: timestamp(artifact && (artifact.acceptedAt || artifact.generatedAt || artifact.queuedAt)),
         provenance: {
           sourceToolId: clip(artifact && artifact.sourceToolId, 120), sourceToolName: clip(artifact && artifact.sourceToolName, 180),
           sourceToolVersion: clip(artifact && artifact.sourceToolVersion, 80), sourceRecordId: clip(artifact && artifact.sourceRecordId, 180),
@@ -234,7 +249,7 @@
             sourceRecordId: clip(target.sourceRecordId || annotationBundle.sourceRecordId, 180),
             queryTerm: clip(target.queryTerm || annotationBundle.queryTerm, 80),
             excerpt: redact(target.excerpt, 500), sentenceIndex: target.sentenceIndex || null,
-            stableUrl: clip(target.stableUrl || annotationBundle.stableUrl, 500)
+            stableUrl: safeUrl(target.stableUrl || annotationBundle.stableUrl, 500)
           }
         }, [annotation && annotation.id]);
         addEdge(annotationNode.id, 'derivedFrom', artifactNode.id, { declaredBy: 'tool annotation bundle' });
@@ -244,7 +259,7 @@
     });
 
     list(j.evidenceCards).forEach(function (card) {
-      if (card && card.toolArtifactId) addEdge(card.id, 'derivedFrom', card.toolArtifactId, { declaredBy: 'evidenceCard.toolArtifactId' });
+      if (card && card.toolArtifactId) addEdge(identifier('evidence', card, card && card.text), 'derivedFrom', card.toolArtifactId, { declaredBy: 'evidenceCard.toolArtifactId' });
     });
     list(j.claimEvidenceLinks).forEach(function (link) {
       var claimId = link && (link.claimId || link.claim);
@@ -262,18 +277,18 @@
     list(j.sources).forEach(function (source) {
       var relationship = source && source.humanitiesContext && source.humanitiesContext.inquiryRelationship;
       if (!relationship || !humanitiesTarget) return;
-      addEdge(source.id, relation(relationship, 'contextualizes'), humanitiesTarget.id, {
+      addEdge(identifier('source', source, source && source.citation), relation(relationship, 'contextualizes'), humanitiesTarget.id, {
         warrant: source.notes || source.humanitiesContext.historicalContext, declaredBy: 'source.humanitiesContext.inquiryRelationship'
       });
     });
     list(j.designClaims).forEach(function (claim) {
-      var claimId = claim && claim.id;
+      var claimId = identifier('design-claim', claim, claim && claim.text);
       list(claim && claim.claimEvidenceRunIds).forEach(function (runId) {
         addEdge(runId, 'supports', claimId, { warrant: claim.text, declaredBy: 'designClaim.claimEvidenceRunIds' });
       });
     });
 
-    var citationKeys = {};
+    var citationKeys = Object.create(null);
     list(j.sources).forEach(function (source) {
       var bibliographic = source && (source.citationData || source.bibliography) || {};
       var key = clip(bibliographic.DOI || bibliographic.doi || source && source.doi, 300).toLowerCase() ||
@@ -284,13 +299,13 @@
       else citationKeys[key] = true;
     });
 
-    var derivedAdjacency = {};
+    var derivedAdjacency = Object.create(null);
     edges.filter(function (edge) { return edge.type === 'derivedFrom'; }).forEach(function (edge) {
       if (!derivedAdjacency[edge.from]) derivedAdjacency[edge.from] = [];
       derivedAdjacency[edge.from].push(edge.to);
     });
-    var visitState = {};
-    var cycleNodes = {};
+    var visitState = Object.create(null);
+    var cycleNodes = Object.create(null);
     function visitDerived(nodeId, trail) {
       if (visitState[nodeId] === 1) {
         trail.slice(Math.max(0, trail.indexOf(nodeId))).forEach(function (id) { cycleNodes[id] = true; });
@@ -304,7 +319,7 @@
     Object.keys(derivedAdjacency).forEach(function (nodeId) { visitDerived(nodeId, []); });
     if (Object.keys(cycleNodes).length) integrityIssues.push({ severity: 'action', code: 'cyclic_graph_provenance', nodeIds: Object.keys(cycleNodes), message: 'Derived-from relationships contain a cycle, so provenance order is not trustworthy.' });
 
-    var incomingByClaim = {};
+    var incomingByClaim = Object.create(null);
     claimNodes.filter(Boolean).forEach(function (claim) { incomingByClaim[claim.id] = []; });
     edges.forEach(function (edge) {
       if (incomingByClaim[edge.to] && ARGUMENT_RELATIONS.indexOf(edge.type) !== -1) incomingByClaim[edge.to].push(edge);
@@ -320,7 +335,7 @@
     if (claimNodes.length && !edges.some(function (edge) { return edge.type === 'complicates' || edge.type === 'contradicts'; })) {
       diagnostics.push({ severity: 'review', code: 'graph_without_counterevidence', message: 'No evidence relationship complicates or contradicts a current claim or position.' });
     }
-    var argumentNodeIds = {};
+    var argumentNodeIds = Object.create(null);
     edges.filter(function (edge) { return ARGUMENT_RELATIONS.indexOf(edge.type) !== -1; }).forEach(function (edge) { argumentNodeIds[edge.from] = true; argumentNodeIds[edge.to] = true; });
     nodes.filter(function (node) { return ['source', 'evidence', 'annotation', 'test_result'].indexOf(node.type) !== -1 && !argumentNodeIds[node.id]; }).forEach(function (node) {
       diagnostics.push({ severity: 'review', code: 'unlinked_graph_evidence', nodeId: node.id, message: node.label + ' is recorded but not linked to a claim or position.' });
@@ -334,7 +349,7 @@
         }).filter(function (row) { return !!row.evidence; })
       };
     });
-    var counts = {};
+    var counts = Object.create(null);
     nodes.forEach(function (node) { counts[node.type] = (counts[node.type] || 0) + 1; });
     var snapshotId = 'snapshot:' + hash(JSON.stringify({ nodes: nodes.map(function (node) { return [node.id, node.type, node.label, node.description, node.createdAt, node.provenance, node.record]; }), edges: edges }));
     return {
@@ -355,7 +370,7 @@
       generated: evidenceGraph.generatedAt,
       items: annotations.map(function (node) {
         var p = node.provenance || {};
-        var source = p.stableUrl || (p.sourceRecordId ? 'urn:alloflow:source:' + encodeURIComponent(p.sourceRecordId) : 'urn:alloflow:source:unrecorded');
+        var source = safeUrl(p.stableUrl, 500) || (p.sourceRecordId ? 'urn:alloflow:source:' + encodeURIComponent(p.sourceRecordId) : 'urn:alloflow:source:unrecorded');
         var bodies = [{ type: 'TextualBody', value: node.description, purpose: 'commenting', format: 'text/plain' }];
         if (p.rawStance) bodies.push({ type: 'TextualBody', value: 'stance:' + p.rawStance, purpose: 'tagging' });
         var target = { source: source };
@@ -397,7 +412,7 @@
   }
   function toCslJson(journal) {
     var rows = [];
-    var seen = {};
+    var seen = Object.create(null);
     list(journal && journal.sources).forEach(function (source, index) {
       var meta = source && (source.citationData || source.bibliography) || {};
       var creator = meta.author || source && (source.creator || source.author);
@@ -408,7 +423,7 @@
         'container-title': redact(meta['container-title'] || meta.containerTitle, 300) || undefined,
         publisher: redact(meta.publisher, 240) || undefined,
         'publisher-place': redact(meta['publisher-place'] || meta.publisherPlace, 180) || undefined,
-        URL: clip(meta.URL || meta.url || source && (source.url || source.stableUrl), 500) || undefined,
+        URL: safeUrl(meta.URL || meta.url || source && (source.url || source.stableUrl), 500) || undefined,
         DOI: clip(meta.DOI || meta.doi || source && source.doi, 200) || undefined,
         ISBN: clip(meta.ISBN || meta.isbn || source && source.isbn, 80) || undefined,
         ISSN: clip(meta.ISSN || meta.issn, 80) || undefined,
@@ -427,11 +442,11 @@
     });
     list(journal && journal.capturedArtifacts).forEach(function (artifact, index) {
       var citation = artifact && artifact.integrationContract && artifact.integrationContract.citation || {};
-      if (!clip(citation.text, 500) && !clip(citation.url, 500)) return;
+      if (!clip(citation.text, 500) && !safeUrl(citation.url, 500)) return;
       rows.push(cleanUndefined({
         id: 'alloflow-tool-artifact-' + (clip(artifact.id, 120) || index + 1), type: 'dataset',
         title: redact(artifact.title, 500) || 'AlloFlow tool artifact',
-        URL: clip(citation.url || artifact.sourceUrl, 500) || undefined,
+        URL: safeUrl(citation.url || artifact.sourceUrl, 500) || undefined,
         author: artifact.sourceToolName ? [{ literal: redact(artifact.sourceToolName, 180) }] : undefined,
         version: clip(artifact.sourceToolVersion, 80) || undefined,
         issued: normalizeCslDate(artifact.acceptedAt || artifact.generatedAt),
@@ -465,7 +480,7 @@
         '@id': 'urn:alloflow:' + node.id, '@type': type, name: node.label,
         description: node.description || undefined, dateCreated: node.createdAt || undefined,
         additionalType: 'https://alloflow.org/evidence-node/' + node.type,
-        isPartOf: { '@id': rootId }, url: node.url || undefined,
+        isPartOf: { '@id': rootId }, url: safeUrl(node.url, 500) || undefined,
         identifier: node.id, additionalProperty: [{ '@type': 'PropertyValue', name: 'discipline', value: Array.isArray(node.discipline) ? node.discipline.join(', ') : node.discipline }]
       };
       Object.keys(entity).forEach(function (key) { if (entity[key] === undefined) delete entity[key]; });
@@ -491,15 +506,16 @@
       if (depth > 18) return '[depth limit reached]';
       if (value == null || typeof value === 'number' || typeof value === 'boolean') return value;
       if (typeof value === 'string') {
-        if (/Ref$/.test(key || '') && value.indexOf('media:') === 0) return undefined;
-        if (/^(audioBase64|sketchDataUrl|rawFile|fileBytes)$/i.test(key || '') || /^data:(audio|image|video)\//i.test(value)) return undefined;
+        var trimmedVal = value.trim();
+        if (/Ref$/.test(key || '') && trimmedVal.indexOf('media:') === 0) return undefined;
+        if (/^(audioBase64|sketchDataUrl|rawFile|fileBytes)$/i.test(key || '') || /^data:(audio|image|video)\//i.test(trimmedVal)) return undefined;
         return redact(value, 12000);
       }
       if (Array.isArray(value)) return value.slice(0, 3000).map(function (item) { return walk(item, '', depth + 1); }).filter(function (item) { return item !== undefined; });
       if (typeof value !== 'object') return undefined;
       var out = {};
       Object.keys(value).slice(0, 500).forEach(function (childKey) {
-        if (childKey === 'loadWarning' || childKey === 'originalSchemaVersion') return;
+        if (childKey === 'loadWarning' || childKey === 'originalSchemaVersion' || childKey === '__proto__' || childKey === 'constructor' || childKey === 'prototype') return;
         var child = walk(value[childKey], childKey, depth + 1);
         if (child !== undefined) out[childKey] = child;
       });
@@ -514,13 +530,13 @@
     if (graph.schemaVersion !== SCHEMA_VERSION) errors.push('unsupported evidence graph schemaVersion');
     if (!Array.isArray(graph.nodes)) errors.push('nodes must be an array');
     if (!Array.isArray(graph.edges)) errors.push('edges must be an array');
-    var ids = {};
+    var ids = Object.create(null);
     list(graph.nodes).forEach(function (node, index) {
       if (!node || !clip(node.id, 200) || !clip(node.type, 80)) errors.push('node ' + index + ' requires id and type');
       else if (ids[node.id]) errors.push('duplicate node id: ' + node.id);
       else ids[node.id] = true;
     });
-    var edgeIds = {};
+    var edgeIds = Object.create(null);
     list(graph.edges).forEach(function (edge, index) {
       if (!edge || !clip(edge.id, 200) || RELATION_TYPES.indexOf(edge.type) === -1) errors.push('edge ' + index + ' has an invalid id or relationship type');
       else if (edgeIds[edge.id]) errors.push('duplicate edge id: ' + edge.id);
@@ -537,7 +553,7 @@
     if (bundle.schemaVersion !== SCHEMA_VERSION) errors.push('unsupported bundle schemaVersion');
     var graphResult = validateEvidenceGraph(bundle.evidenceGraph);
     if (!graphResult.ok) errors = errors.concat(graphResult.errors.map(function (error) { return 'evidenceGraph: ' + error; }));
-    if (!bundle.portfolio || typeof bundle.portfolio !== 'object') errors.push('portable portfolio is required');
+    if (!bundle.portfolio || typeof bundle.portfolio !== 'object' || Array.isArray(bundle.portfolio)) errors.push('portable portfolio is required');
     if (!bundle.webAnnotations || bundle.webAnnotations.type !== 'AnnotationPage' || !Array.isArray(bundle.webAnnotations.items)) errors.push('W3C AnnotationPage is invalid');
     if (!Array.isArray(bundle.cslJson)) errors.push('cslJson must be an array');
     if (!bundle.roCrateMetadata || !Array.isArray(bundle.roCrateMetadata['@graph'])) errors.push('RO-Crate @graph is required');
@@ -547,7 +563,15 @@
   function importPortableBundle(bundle) {
     var validation = validateInteroperabilityBundle(bundle);
     if (!validation.ok) return { ok: false, errors: validation.errors, portfolio: null };
-    return { ok: true, errors: [], portfolio: JSON.parse(JSON.stringify(bundle.portfolio)) };
+    try {
+      var sanitized = sanitizePortableJournal(bundle.portfolio);
+      var cloned = JSON.parse(JSON.stringify(sanitized), function (k, v) {
+        return (k === '__proto__' || k === 'constructor' || k === 'prototype') ? undefined : v;
+      });
+      return { ok: true, errors: [], portfolio: cloned };
+    } catch (_) {
+      return { ok: false, errors: ['portable portfolio could not be serialized'], portfolio: null };
+    }
   }
 
   function buildInteroperabilityBundle(journal, options) {

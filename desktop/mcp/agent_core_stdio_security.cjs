@@ -41,6 +41,7 @@ function readConfigurationJson(filePath, limits = LIMITS) {
       const [item, depth] = stack.pop();
       if (depth > limits.configDepth) throw new Error();
       if (item && typeof item === 'object') for (const key of Object.keys(item)) {
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') throw new Error();
         if (++count > limits.configValues) throw new Error();
         stack.push([item[key], depth + 1]);
       }
@@ -49,7 +50,7 @@ function readConfigurationJson(filePath, limits = LIMITS) {
   } catch (_) {
     const error = new Error('Configuration must be a bounded regular UTF-8 JSON file within the local structure limits.');
     error.code = 'ALLOFLOW_CONFIG_INVALID'; throw error;
-  } finally { if (fd !== undefined) fs.closeSync(fd); }
+  } finally { if (fd !== undefined) { try { fs.closeSync(fd); } catch (_) {} } }
 }
 
 // Byte accounting includes the complete stored record, not just its result.
@@ -86,7 +87,12 @@ class BoundedOutput {
   fail() { if (this.closed) return; this.closed = true; this.queue.length = 0; this.bytes = 0; this.fatal(); }
   send(message) {
     if (this.closed) return;
-    let line = JSON.stringify(message) + '\n';
+    let line;
+    try {
+      line = JSON.stringify(message) + '\n';
+    } catch (_) {
+      line = JSON.stringify({ jsonrpc: '2.0', id: message && message.id !== undefined ? message.id : null, error: { code: -32603, message: 'Response serialization failed.' } }) + '\n';
+    }
     let bytes = Buffer.byteLength(line, 'utf8');
     if (bytes > this.limits.responseBytes) {
       line = JSON.stringify({ jsonrpc: '2.0', id: message.id ?? null, error: { code: -32005, message: 'Response exceeds the local transport limit.' } }) + '\n';
@@ -123,14 +129,15 @@ class BoundedInput {
     this.decoder = utf8Decoder(); this.discarding = false; this.tail = null; this.outputBlocked = false; this.ended = false; this.pumping = false; this.closed = false;
     stream.on('data', chunk => {
       if (this.closed) return;
-      const nextLen = (this.tail ? this.tail.length : 0) + chunk.length;
+      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk), 'utf8');
+      const nextLen = (this.tail ? this.tail.length : 0) + buf.length;
       const maxTail = this.limits.lineBytes + this.limits.queuedBytes;
       if (nextLen > maxTail) {
         this.close();
         this.failure(new Error('Input buffer exceeded local transport limit.'));
         return;
       }
-      this.tail = this.tail ? Buffer.concat([this.tail, chunk]) : chunk;
+      this.tail = this.tail ? Buffer.concat([this.tail, buf]) : buf;
       this.pump();
     });
     stream.on('end', () => { this.ended = true; this.pump(); });
@@ -195,7 +202,11 @@ function boundedDiagnostics(items, limits = LIMITS) {
   if (!Array.isArray(items)) return [];
   const result = items.slice(0, limits.diagnostics).map(item => {
     if (!item || typeof item !== 'object') return String(item).slice(0, limits.diagnosticChars);
-    return Object.fromEntries(Object.entries(item).slice(0, 8).map(([key, value]) => [key.slice(0, 64), typeof value === 'string' ? value.slice(0, limits.diagnosticChars) : (typeof value === 'number' || typeof value === 'boolean' ? value : null)]));
+    const entries = Object.entries(item)
+      .filter(([key]) => key !== '__proto__' && key !== 'constructor' && key !== 'prototype')
+      .slice(0, 8)
+      .map(([key, value]) => [key.slice(0, 64), typeof value === 'string' ? value.slice(0, limits.diagnosticChars) : ((typeof value === 'number' && Number.isFinite(value)) || typeof value === 'boolean' ? value : null)]);
+    return Object.fromEntries(entries);
   });
   if (items.length > limits.diagnostics) result.push({ code: 'diagnostics-truncated', message: 'Additional diagnostics omitted; correct these errors and validate again.' });
   return result;

@@ -232,13 +232,13 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
         },
         readOnly: status === "success",
         className: `
-                  min-h-11 text-center border-b-2 px-1 py-0.5 text-sm font-bold transition-all motion-reduce:transition-none outline-none focus:ring-2 focus-visible:ring-2 focus:ring-indigo-400 rounded-t
+                  min-h-11 text-center border-b-2 px-1 py-0.5 text-sm font-bold transition-all motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-600 focus:ring-2 focus-visible:ring-2 focus:ring-indigo-400 rounded-t
                   ${status === "success" ? "border-green-500 bg-green-50 text-green-800" : status === "error" ? "border-red-500 bg-red-50 animate-pulse motion-reduce:animate-none" : status === "active" || armed ? "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200" : "border-indigo-300 bg-white focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200"}
               `,
         style: { width },
         placeholder: "?",
         autoComplete: "off",
-        "aria-label": t("games.fill_blank.input_label"),
+        "aria-label": t("games.fill_blank.input_label") || "Fill in the blank",
         "aria-invalid": status === "error"
       }
     ),
@@ -361,6 +361,7 @@ const WordSoundsReviewPanel = ({
   const _AlloAiSetupNotice = typeof window !== "undefined" ? window.AlloModules && (window.AlloModules.AlloAiSetupNotice || window.AlloModules.AiSetupNotice) || window.AlloAiSetupNotice : null;
   const [imageLoadErrors, setImageLoadErrors] = React.useState({});
   const [expandedIndex, setExpandedIndex] = React.useState(null);
+  const [wordFilterQuery, setWordFilterQuery] = React.useState("");
   React.useEffect(() => {
     if (!syllableReviewRequest || !Number.isInteger(syllableReviewRequest.index)) return;
     setExpandedIndex(syllableReviewRequest.index);
@@ -891,7 +892,28 @@ const WordSoundsReviewPanel = ({
       className: "min-w-11 min-h-11 inline-flex items-center justify-center rounded-full text-white/90 hover:text-white hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-violet-500 text-base"
     },
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2139\uFE0F")
-  ), isCountingGuideOpen && /* @__PURE__ */ React.createElement("div", { id: "word-sounds-counting-guide", role: "note", className: "absolute right-0 sm:left-0 sm:right-auto top-full mt-2 w-[min(18rem,calc(100vw-2rem))] p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl z-50" }, /* @__PURE__ */ React.createElement("strong", { className: "block mb-1" }, t("word_sounds.phonics_counting_guide_title") || "\u{1F4D6} Phonics Counting Guide"), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, t("word_sounds.r_controlled_explanation_prefix") || "R-controlled vowels (ar, er, ir, or, ur) are counted as ", /* @__PURE__ */ React.createElement("strong", null, t("word_sounds.single_sounds") || "single sounds"), t("word_sounds.r_controlled_explanation_suffix") || " because the vowel and R blend together."), /* @__PURE__ */ React.createElement("p", { className: "text-slate-200" }, t("word_sounds.r_controlled_example") || 'Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.')))), /* @__PURE__ */ React.createElement("p", { id: "word-sounds-review-description", className: "text-sm text-white/95 mt-1 flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", null, t("word_sounds.review_and_edit_words") || "Review and edit words", " \u2022 ", preloadedWords.length, " ", t("word_sounds.words_ready") || "words ready"), isLoading && /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: "flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 bg-white rounded-full animate-bounce motion-reduce:animate-none" }), " ", t("word_sounds.generating_more") || "Generating more..."), !isLoading && preloadedWords.some((w) => wordAudioState(w) === "failed") && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 bg-red-500/30 border border-red-200/60 px-3 py-1 rounded-full text-xs" }, /* @__PURE__ */ React.createElement("span", null, reviewText("review_missing_audio", "Words missing audio: {count}", { count: preloadedWords.filter((w) => wordAudioState(w) === "failed").length })), typeof onRetryFailedTTS === "function" && (() => {
+  ), isCountingGuideOpen && /* @__PURE__ */ React.createElement("div", { id: "word-sounds-counting-guide", role: "note", className: "absolute right-0 sm:left-0 sm:right-auto top-full mt-2 w-[min(18rem,calc(100vw-2rem))] p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl z-50" }, /* @__PURE__ */ React.createElement("strong", { className: "block mb-1" }, t("word_sounds.phonics_counting_guide_title") || "\u{1F4D6} Phonics Counting Guide"), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, t("word_sounds.r_controlled_explanation_prefix") || "R-controlled vowels (ar, er, ir, or, ur) are counted as ", /* @__PURE__ */ React.createElement("strong", null, t("word_sounds.single_sounds") || "single sounds"), t("word_sounds.r_controlled_explanation_suffix") || " because the vowel and R blend together."), /* @__PURE__ */ React.createElement("p", { className: "text-slate-200" }, t("word_sounds.r_controlled_example") || 'Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.')))), /* @__PURE__ */ React.createElement("p", { id: "word-sounds-review-description", className: "text-sm text-white/95 mt-1 flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", null, t("word_sounds.review_and_edit_words") || "Review and edit words", " \u2022 ", preloadedWords.length, " ", t("word_sounds.words_ready") || "words ready"), !isLoading && preloadedWords.length > 0 && (() => {
+    const readyCount = preloadedWords.filter((w) => {
+      const st = wordAudioState(w);
+      return st === "ready" || st === "teacher";
+    }).length;
+    const pct = Math.round(readyCount / preloadedWords.length * 100);
+    return /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        "data-ws-review-readiness-bar": "true",
+        role: "progressbar",
+        "aria-label": t("word_sounds.audio_readiness_label") || "Student audio readiness",
+        "aria-valuemin": 0,
+        "aria-valuemax": preloadedWords.length,
+        "aria-valuenow": readyCount,
+        "aria-valuetext": `${readyCount} of ${preloadedWords.length} words ready for student devices (${pct}%)`,
+        className: "inline-flex items-center gap-2 bg-white/15 border border-white/25 rounded-full px-2.5 py-0.5 text-xs font-semibold text-white"
+      },
+      /* @__PURE__ */ React.createElement("span", null, readyCount, "/", preloadedWords.length, " ", t("word_sounds.audio_ready_short") || "audio ready"),
+      /* @__PURE__ */ React.createElement("span", { className: "w-12 h-1.5 rounded-full bg-white/25 overflow-hidden", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("span", { className: "block h-full bg-emerald-300 transition-all motion-reduce:transition-none", style: { width: `${pct}%` } }))
+    );
+  })(), isLoading && /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: "flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 bg-white rounded-full animate-bounce motion-reduce:animate-none" }), " ", t("word_sounds.generating_more") || "Generating more..."), !isLoading && preloadedWords.some((w) => wordAudioState(w) === "failed") && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 bg-red-500/30 border border-red-200/60 px-3 py-1 rounded-full text-xs" }, /* @__PURE__ */ React.createElement("span", null, reviewText("review_missing_audio", "Words missing audio: {count}", { count: preloadedWords.filter((w) => wordAudioState(w) === "failed").length })), typeof onRetryFailedTTS === "function" && (() => {
     const _retryAudioBlocked = !(typeof window !== "undefined" && window._kokoroTTS && window._kokoroTTS.ready || _wsAiUsable("audio", onRetryFailedTTS));
     return /* @__PURE__ */ React.createElement(
       "button",
@@ -1168,103 +1190,163 @@ const WordSoundsReviewPanel = ({
         className: `shrink-0 min-h-11 px-3 py-1 rounded-full font-bold border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 ${busy || _gapAiBlocked(g) ? "bg-white/60 text-amber-900 border-amber-200 disabled:opacity-50 disabled:cursor-not-allowed" : "bg-white text-amber-900 border-amber-400 hover:bg-amber-100"}`,
         title: g.needsNetwork ? t("word_sounds.fix_needs_connection") || "Needs an internet connection" : void 0
       },
-      fixingGap === g.key ? t("word_sounds.fixing") || "Fixing\u2026" : `${g.needsNetwork ? "\u2601\uFE0F " : ""}${g.label} (${g.indices.length})`
+      fixingGap === g.key ? t("word_sounds.fixing") || "Fixing\u2026" : /* @__PURE__ */ React.createElement(React.Fragment, null, g.needsNetwork ? /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2601\uFE0F ") : null, `${g.label} (${g.indices.length})`)
     )))), gapFixResult && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "mt-2 font-semibold" }, gapFixResult));
-  })(), preloadedWords.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2" }, "\u23F3"), isLoading ? /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "animate-pulse motion-reduce:animate-none" }, t("word_sounds.generating_new_words") || "Generating new words... this may take a moment") : /* @__PURE__ */ React.createElement("p", null, t("word_sounds.no_words_preloaded") || "No words preloaded yet. Start the activity to generate words.")) : (preloadedWords || []).map((word, idx) => /* @__PURE__ */ React.createElement(
-    "div",
-    {
-      key: word.id || `word-${word.targetWord || word.word}-${idx}`,
-      className: `border-2 rounded-2xl transition-all motion-reduce:transition-none ${expandedIndex === idx ? "border-pink-300 bg-pink-50/50" : "border-slate-100 hover:border-pink-200"}`
-    },
-    /* @__PURE__ */ React.createElement(
+  })(), preloadedWords.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-center py-12 text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "text-4xl mb-2", "aria-hidden": "true" }, "\u23F3"), isLoading ? /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "animate-pulse motion-reduce:animate-none" }, t("word_sounds.generating_new_words") || "Generating new words... this may take a moment") : /* @__PURE__ */ React.createElement("p", null, t("word_sounds.no_words_preloaded") || "No words preloaded yet. Start the activity to generate words.")) : (() => {
+    const normalizedFilter = String(wordFilterQuery || "").trim().toLowerCase();
+    const indexedWords = (preloadedWords || []).map((word, idx) => ({ word, idx }));
+    const visibleWords = normalizedFilter ? indexedWords.filter(({ word }) => String(word?.targetWord || word?.word || "").toLowerCase().includes(normalizedFilter)) : indexedWords;
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, preloadedWords.length >= 6 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2" }, /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "search",
+        "data-ws-review-filter": "true",
+        value: wordFilterQuery,
+        onChange: (e) => setWordFilterQuery(e.target.value),
+        onKeyDown: (e) => {
+          if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+          if (e.key === "Escape" && wordFilterQuery) {
+            e.preventDefault();
+            e.stopPropagation();
+            setWordFilterQuery("");
+          }
+        },
+        "aria-label": t("word_sounds.filter_words_label") || "Filter review words",
+        placeholder: t("word_sounds.filter_words_placeholder") || "Filter words\u2026",
+        className: "flex-1 min-w-[10rem] min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700"
+      }
+    ), wordFilterQuery && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-ws-review-filter-clear": "true",
+        onClick: () => setWordFilterQuery(""),
+        className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700"
+      },
+      t("common.clear") || "Clear"
+    ), /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: "text-xs font-semibold text-slate-700" }, visibleWords.length, " / ", preloadedWords.length, " ", t("word_sounds.words_shown") || "words")), visibleWords.length === 0 ? /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: "rounded-xl border border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-700" }, t("word_sounds.no_matching_words") || "No words match your filter.") : visibleWords.map(({ word, idx }) => /* @__PURE__ */ React.createElement(
       "div",
       {
-        className: "p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3 cursor-pointer",
-        onClick: (event) => {
-          if (event.target.closest("button, input, select, textarea, a, label, img")) return;
-          setExpandedIndex(expandedIndex === idx ? null : idx);
-        }
+        key: word.id || `word-${word.targetWord || word.word}-${idx}`,
+        className: `border-2 rounded-2xl transition-all motion-reduce:transition-none ${expandedIndex === idx ? "border-pink-300 bg-pink-50/50" : "border-slate-100 hover:border-pink-200"}`
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono text-slate-600 w-6" }, idx + 1, "."), /* @__PURE__ */ React.createElement(
-        "button",
+      /* @__PURE__ */ React.createElement(
+        "div",
         {
-          type: "button",
-          "data-help-key": "word_sounds_review_play_word",
-          onClick: async (e) => {
-            e.stopPropagation();
-            if (!onPlayAudio || playingWordIndex !== null) return;
-            setPlayingWordIndex(idx);
-            try {
-              const timeoutPromise = new Promise(
-                (_, reject) => setTimeout(() => reject(new Error("Audio timeout")), 5e3)
-              );
-              await Promise.race([
-                onPlayAudio(word.targetWord || word.word),
-                timeoutPromise
-              ]);
-            } catch (e2) {
-              warnLog("Play audio error or timeout:", e2);
-            } finally {
-              setPlayingWordIndex(null);
-            }
-          },
-          disabled: isTeacherSpoken(word) || playingWordIndex !== null,
-          className: `min-w-11 min-h-11 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 ${playingWordIndex === idx ? "bg-pink-200 text-pink-800 animate-pulse motion-reduce:animate-none" : wordAudioState(word) === "failed" ? "bg-red-100 hover:bg-red-200 text-red-700 border-2 border-red-300" : playingWordIndex !== null ? "bg-pink-50 text-pink-500 cursor-not-allowed" : "bg-pink-100 hover:bg-pink-200 text-pink-800"}`,
-          title: isTeacherSpoken(word) ? reviewText("review_teacher_says_word", "Teacher says this word aloud") : playingWordIndex === idx ? t("word_sounds.playing") || "Playing..." : wordAudioState(word) === "failed" ? reviewText("review_audio_failed_try_again", "Audio failed: try again") : wordAudioState(word) === "none" && word._audioRequested ? t("word_sounds.loading_audio") || "Loading audio..." : t("word_sounds.play_word") || "Play word",
-          "aria-busy": !isTeacherSpoken(word) && (playingWordIndex === idx || wordAudioState(word) === "none" && !!word._audioRequested),
-          "aria-label": isTeacherSpoken(word) ? reviewText("review_teacher_says_word", "Teacher says this word aloud") : playingWordIndex === idx ? t("word_sounds.playing") || "Playing" : wordAudioState(word) === "failed" ? reviewText("review_audio_failed_try_again", "Audio failed: try again") : wordAudioState(word) === "none" && word._audioRequested ? t("word_sounds.loading_audio") || "Loading audio" : t("word_sounds.play_word") || "Play word"
+          className: "p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3 cursor-pointer",
+          onClick: (event) => {
+            if (event.target.closest("button, input, select, textarea, a, label, img")) return;
+            setExpandedIndex(expandedIndex === idx ? null : idx);
+          }
         },
-        playingWordIndex === idx ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 18, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : wordAudioState(word) === "failed" ? /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F507}") : /* @__PURE__ */ React.createElement(Volume2, { size: 18, "aria-hidden": "true" })
-      ), wordAudioState(word) !== "teacher" && (() => {
-        const audioState = wordAudioState(word);
-        const look = audioState === "ready" ? { icon: "\u2713", tone: "bg-emerald-50 text-emerald-800 border-emerald-200", text: reviewText("review_audio_state_ready", "Ready") } : audioState === "device" ? { icon: "\u{1F4BB}", tone: "bg-amber-50 text-amber-900 border-amber-200", text: reviewText("review_audio_state_device", "Plays on this device; not saved for student devices") } : audioState === "failed" ? { icon: "\u26A0", tone: "bg-red-50 text-red-800 border-red-200", text: reviewText("review_audio_failed_try_again", "Audio failed: try again") } : { icon: "\u25CB", tone: "bg-slate-50 text-slate-700 border-slate-200", text: reviewText("review_audio_state_none", "No audio yet") };
-        return /* @__PURE__ */ React.createElement("span", { "data-ws-audio-state": audioState, className: `inline-flex max-w-[14rem] items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-bold leading-tight ${look.tone}` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, look.icon), /* @__PURE__ */ React.createElement("span", null, look.text));
-      })(), word.phonemes && Array.isArray(word.phonemes) && word.phonemes.length > 0 && /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          "aria-label": t("common.play_phoneme_sequence"),
-          onClick: async (e) => {
-            e.stopPropagation();
-            if (onPlayAudio) {
-              const seqId = Date.now();
-              window._currentPhonemeSeqId = seqId;
-              for (const phoneme of word.phonemes) {
-                if (unmountedRef.current || window._currentPhonemeSeqId !== seqId) {
-                  debugLog("Phoneme sequence cancelled");
-                  break;
-                }
-                try {
-                  await onPlayAudio(phonemeLabel(phoneme));
-                } catch (err) {
-                  warnLog("Play phoneme error:", err);
-                }
-                if (unmountedRef.current || window._currentPhonemeSeqId !== seqId) break;
-                await new Promise((r) => setTimeout(r, 900));
+        /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono text-slate-600 w-6" }, idx + 1, "."), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            "data-help-key": "word_sounds_review_play_word",
+            onClick: async (e) => {
+              e.stopPropagation();
+              if (!onPlayAudio || playingWordIndex !== null) return;
+              setPlayingWordIndex(idx);
+              try {
+                const timeoutPromise = new Promise(
+                  (_, reject) => setTimeout(() => reject(new Error("Audio timeout")), 5e3)
+                );
+                await Promise.race([
+                  onPlayAudio(word.targetWord || word.word),
+                  timeoutPromise
+                ]);
+              } catch (e2) {
+                warnLog("Play audio error or timeout:", e2);
+              } finally {
+                setPlayingWordIndex(null);
               }
-            }
+            },
+            disabled: isTeacherSpoken(word) || playingWordIndex !== null,
+            className: `min-w-11 min-h-11 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 ${playingWordIndex === idx ? "bg-pink-200 text-pink-800 animate-pulse motion-reduce:animate-none" : wordAudioState(word) === "failed" ? "bg-red-100 hover:bg-red-200 text-red-700 border-2 border-red-300" : playingWordIndex !== null ? "bg-pink-50 text-pink-500 cursor-not-allowed" : "bg-pink-100 hover:bg-pink-200 text-pink-800"}`,
+            title: isTeacherSpoken(word) ? reviewText("review_teacher_says_word", "Teacher says this word aloud") : playingWordIndex === idx ? t("word_sounds.playing") || "Playing..." : wordAudioState(word) === "failed" ? reviewText("review_audio_failed_try_again", "Audio failed: try again") : wordAudioState(word) === "none" && word._audioRequested ? t("word_sounds.loading_audio") || "Loading audio..." : t("word_sounds.play_word") || "Play word",
+            "aria-busy": !isTeacherSpoken(word) && (playingWordIndex === idx || wordAudioState(word) === "none" && !!word._audioRequested),
+            "aria-label": isTeacherSpoken(word) ? reviewText("review_teacher_says_word", "Teacher says this word aloud") : playingWordIndex === idx ? t("word_sounds.playing") || "Playing" : wordAudioState(word) === "failed" ? reviewText("review_audio_failed_try_again", "Audio failed: try again") : wordAudioState(word) === "none" && word._audioRequested ? t("word_sounds.loading_audio") || "Loading audio" : t("word_sounds.play_word") || "Play word"
           },
-          className: "min-w-11 min-h-11 bg-violet-100 hover:bg-violet-200 text-violet-800 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700",
-          "data-help-key": "word_sounds_review_play_phonemes",
-          title: t("common.play_phoneme_sequence")
-        },
-        /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold", "aria-hidden": "true" }, "\u{1F524}")
-      ), /* @__PURE__ */ React.createElement("div", { className: "relative group/img" }, (() => {
-        const safeThumbImg = _safeMiscImageUrl(word.image);
-        const thumbFailed = Boolean(safeThumbImg && imageLoadErrors[idx] === word.image);
-        if (safeThumbImg && !word.imageFailed) {
-          return /* @__PURE__ */ React.createElement("div", { className: "relative" }, !thumbFailed ? /* @__PURE__ */ React.createElement(
-            "img",
-            {
-              loading: "lazy",
-              src: safeThumbImg,
-              alt: word.targetWord || word.word,
-              className: "w-12 h-12 rounded-lg object-cover border-2 border-indigo-200 shadow-sm",
-              onError: () => {
-                setImageLoadErrors((prev) => ({ ...prev, [idx]: word.image }));
+          playingWordIndex === idx ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 18, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : wordAudioState(word) === "failed" ? /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F507}") : /* @__PURE__ */ React.createElement(Volume2, { size: 18, "aria-hidden": "true" })
+        ), wordAudioState(word) !== "teacher" && (() => {
+          const audioState = wordAudioState(word);
+          const look = audioState === "ready" ? { icon: "\u2713", tone: "bg-emerald-50 text-emerald-800 border-emerald-200", text: reviewText("review_audio_state_ready", "Ready") } : audioState === "device" ? { icon: "\u{1F4BB}", tone: "bg-amber-50 text-amber-900 border-amber-200", text: reviewText("review_audio_state_device", "Plays on this device; not saved for student devices") } : audioState === "failed" ? { icon: "\u26A0", tone: "bg-red-50 text-red-800 border-red-200", text: reviewText("review_audio_failed_try_again", "Audio failed: try again") } : { icon: "\u25CB", tone: "bg-slate-50 text-slate-700 border-slate-200", text: reviewText("review_audio_state_none", "No audio yet") };
+          return /* @__PURE__ */ React.createElement("span", { "data-ws-audio-state": audioState, className: `inline-flex max-w-[14rem] items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-bold leading-tight ${look.tone}` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, look.icon), /* @__PURE__ */ React.createElement("span", null, look.text));
+        })(), word.phonemes && Array.isArray(word.phonemes) && word.phonemes.length > 0 && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            "aria-label": t("common.play_phoneme_sequence") || "Play phoneme sequence",
+            onClick: async (e) => {
+              e.stopPropagation();
+              if (onPlayAudio) {
+                const seqId = Date.now();
+                window._currentPhonemeSeqId = seqId;
+                for (const phoneme of word.phonemes) {
+                  if (unmountedRef.current || window._currentPhonemeSeqId !== seqId) {
+                    debugLog("Phoneme sequence cancelled");
+                    break;
+                  }
+                  try {
+                    await onPlayAudio(phonemeLabel(phoneme));
+                  } catch (err) {
+                    warnLog("Play phoneme error:", err);
+                  }
+                  if (unmountedRef.current || window._currentPhonemeSeqId !== seqId) break;
+                  await new Promise((r) => setTimeout(r, 900));
+                }
               }
-            }
-          ) : /* @__PURE__ */ React.createElement("span", { className: "text-red-700 text-xs font-semibold" }, "\u26A0\uFE0F Error"), /* @__PURE__ */ React.createElement(
+            },
+            className: "min-w-11 min-h-11 bg-violet-100 hover:bg-violet-200 text-violet-800 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700",
+            "data-help-key": "word_sounds_review_play_phonemes",
+            title: t("common.play_phoneme_sequence") || "Play phoneme sequence"
+          },
+          /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold", "aria-hidden": "true" }, "\u{1F524}")
+        ), /* @__PURE__ */ React.createElement("div", { className: "relative group/img" }, (() => {
+          const safeThumbImg = _safeMiscImageUrl(word.image);
+          const thumbFailed = Boolean(safeThumbImg && imageLoadErrors[idx] === word.image);
+          if (safeThumbImg && !word.imageFailed) {
+            return /* @__PURE__ */ React.createElement("div", { className: "relative" }, !thumbFailed ? /* @__PURE__ */ React.createElement(
+              "img",
+              {
+                loading: "lazy",
+                src: safeThumbImg,
+                alt: word.targetWord || word.word,
+                className: "w-12 h-12 rounded-lg object-cover border-2 border-indigo-200 shadow-sm",
+                onError: () => {
+                  setImageLoadErrors((prev) => ({ ...prev, [idx]: word.image }));
+                }
+              }
+            ) : /* @__PURE__ */ React.createElement("span", { className: "text-red-700 text-xs font-semibold" }, "\u26A0\uFE0F Error"), /* @__PURE__ */ React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: (e) => {
+                  e.stopPropagation();
+                  if (!_wsAiUsable("images", onGenerateImage)) {
+                    setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
+                    return;
+                  }
+                  setImageLoadErrors((prev) => {
+                    if (!prev[idx]) return prev;
+                    const n = { ...prev };
+                    delete n[idx];
+                    return n;
+                  });
+                  onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
+                },
+                disabled: isGeneratingImage(idx) || !_wsImageAiReady,
+                "aria-busy": isGeneratingImage(idx),
+                "aria-label": isGeneratingImage(idx) ? t("word_sounds.generating_image_aria") || "Generating image" : t("common.regenerate_image") || "Regenerate image",
+                className: "absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full min-w-11 min-h-11 shadow-lg flex items-center justify-center opacity-0 group-hover/img:opacity-100 group-focus-within/img:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none border border-indigo-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed",
+                "data-help-key": "word_sounds_review_image_gen",
+                title: t("common.regenerate_image") || "Regenerate image"
+              },
+              isGeneratingImage(idx) ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin motion-reduce:animate-none text-indigo-700", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "text-indigo-700", "aria-hidden": "true" })
+            ));
+          }
+          return /* @__PURE__ */ React.createElement(
             "button",
             {
               type: "button",
@@ -1284,20 +1366,621 @@ const WordSoundsReviewPanel = ({
               },
               disabled: isGeneratingImage(idx) || !_wsImageAiReady,
               "aria-busy": isGeneratingImage(idx),
-              "aria-label": isGeneratingImage(idx) ? t("word_sounds.generating_image_aria") || "Generating image" : t("common.regenerate_image"),
-              className: "absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full min-w-11 min-h-11 shadow-lg flex items-center justify-center opacity-0 group-hover/img:opacity-100 group-focus-within/img:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none border border-indigo-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed",
+              "aria-label": isGeneratingImage(idx) ? t("word_sounds.generating_image_aria") || "Generating image" : void 0,
+              className: `min-h-11 px-3 py-2 rounded-lg border-2 flex items-center gap-2 text-sm font-bold transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed ${isGeneratingImage(idx) ? "border-indigo-400 bg-indigo-100 text-indigo-800 animate-pulse motion-reduce:animate-none" : "border-dashed border-indigo-300 text-indigo-700 hover:border-indigo-500 hover:bg-indigo-50 hover:scale-105 motion-reduce:hover:scale-100"}`,
               "data-help-key": "word_sounds_review_image_gen",
-              title: t("common.regenerate_image")
+              title: t("common.generate_image_for_this_word")
             },
-            isGeneratingImage(idx) ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin motion-reduce:animate-none text-indigo-700", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "text-indigo-700", "aria-hidden": "true" })
-          ));
-        }
-        return /* @__PURE__ */ React.createElement(
+            isGeneratingImage(idx) ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("word_sounds.generating_image") || "Generating...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(ImageIcon, { size: 16, "aria-hidden": "true" }), " ", t("word_sounds.add_image_button") || "+ Image")
+          );
+        })()), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 break-words text-xl font-bold text-slate-800" }, word.targetWord || word.word), /* @__PURE__ */ React.createElement(
+          "select",
+          {
+            "aria-label": (t("word_sounds.difficulty") || "Difficulty") + ": " + (word.targetWord || word.word || (t("common.word") || "Word") + " " + (idx + 1)),
+            value: word.difficulty || "medium",
+            onClick: (e) => e.stopPropagation(),
+            onChange: (e) => onUpdateWord(idx, { ...word, difficulty: e.target.value }),
+            className: `min-h-11 text-xs font-bold px-2.5 py-1 rounded-full border cursor-pointer appearance-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 ${word.difficulty === "easy" ? "bg-green-100 text-green-800 border-green-300" : word.difficulty === "hard" ? "bg-red-100 text-red-800 border-red-300" : "bg-yellow-100 text-yellow-900 border-yellow-300"}`
+          },
+          /* @__PURE__ */ React.createElement("option", { value: "easy" }, "\u{1F7E2} Easy"),
+          /* @__PURE__ */ React.createElement("option", { value: "medium" }, "\u{1F7E1} Medium"),
+          /* @__PURE__ */ React.createElement("option", { value: "hard" }, "\u{1F534} Hard")
+        ), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full" }, word.phonemes?.length || 0, " sounds")),
+        /* @__PURE__ */ React.createElement("div", { className: "flex shrink-0 items-center gap-1 sm:gap-2", "data-ws-review-row-actions": "true" }, /* @__PURE__ */ React.createElement("div", { className: "relative z-50" }, /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
             onClick: (e) => {
               e.stopPropagation();
+              e.preventDefault();
+              if (!_wsAiUsable("text", onRegenerateWord)) {
+                setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
+                return;
+              }
+              if (regeneratingIndex !== null) {
+                debugLog("\u23F3 Already regenerating, ignoring click");
+                return;
+              }
+              debugLog("\u{1F504} FORCE CLICK regen idx:", idx);
+              if (typeof onRegenerateWord === "function") {
+                debugLog("\u2705 Calling onRegenerateWord for idx:", idx);
+                setReviewError(null);
+                onRegenerateWord(idx);
+              } else {
+                warnLog("\u274C onRegenerateWord is not a function:", typeof onRegenerateWord);
+                setReviewError({ index: idx, message: t("word_sounds.regenerate_unavailable") || "Regeneration is unavailable right now. Please close this review and try again." });
+              }
+            },
+            disabled: regeneratingIndex === idx || !_wsTextAiReady,
+            "aria-busy": regeneratingIndex === idx,
+            "aria-describedby": reviewError?.index === idx ? "word-sounds-review-error" : void 0,
+            "aria-label": regeneratingIndex === idx ? t("common.regenerating_word_aria") || "Regenerating word" : t("common.regenerate_this_word") || "Regenerate this word",
+            className: `min-w-11 min-h-11 flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none text-base font-bold border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700 disabled:opacity-50 disabled:cursor-not-allowed
+                                                    ${regeneratingIndex === idx ? "bg-orange-200 border-orange-400 animate-spin motion-reduce:animate-none text-orange-800" : "bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100 hover:border-orange-300 hover:scale-110 motion-reduce:hover:scale-100 shadow-sm"}`,
+            "data-help-key": "word_sounds_review_regen_word",
+            title: t("common.regenerate_this_word") || "Regenerate this word",
+            style: { pointerEvents: "auto", cursor: "pointer" }
+          },
+          /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, regeneratingIndex === idx ? "\u23F3" : "\u{1F504}")
+        )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-0.5" }, /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            "aria-label": (t("common.move_up") || "Move up") + ": " + (word.targetWord || word.word || (t("common.word") || "Word") + " " + (idx + 1)),
+            onClick: (e) => {
+              e.stopPropagation();
+              moveWord(idx, "up");
+            },
+            disabled: idx === 0,
+            className: `min-w-11 min-h-11 flex items-center justify-center rounded text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 ${idx === 0 ? "text-slate-400" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"}`,
+            "data-help-key": "word_sounds_review_move_word",
+            title: t("common.move_up") || "Move up"
+          },
+          /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u25B2")
+        ), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            "aria-label": (t("common.move_down") || "Move down") + ": " + (word.targetWord || word.word || (t("common.word") || "Word") + " " + (idx + 1)),
+            onClick: (e) => {
+              e.stopPropagation();
+              moveWord(idx, "down");
+            },
+            disabled: idx === preloadedWords.length - 1,
+            className: `min-w-11 min-h-11 flex items-center justify-center rounded text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 ${idx === preloadedWords.length - 1 ? "text-slate-400" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"}`,
+            "data-help-key": "word_sounds_review_move_word",
+            title: t("common.move_down") || "Move down"
+          },
+          /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u25BC")
+        )), /* @__PURE__ */ React.createElement("div", { className: "relative z-50", style: { pointerEvents: "auto" } }, /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: (event) => deleteReviewWord(event, word, idx),
+            "aria-label": (t("common.delete_word") || "Delete word") + ": " + (word.targetWord || word.word || (t("common.word") || "Word") + " " + (idx + 1)),
+            className: "min-w-11 min-h-11 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-700 hover:text-red-800 transition-colors motion-reduce:transition-none border-2 border-red-200 hover:border-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2",
+            style: { pointerEvents: "auto", cursor: "pointer", position: "relative", zIndex: 100 },
+            "data-word-delete-button": "true",
+            "data-help-key": "word_sounds_review_delete_word",
+            title: t("common.delete_word") || "Delete word"
+          },
+          /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F5D1}\uFE0F")
+        )), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => setExpandedIndex(expandedIndex === idx ? null : idx),
+            "aria-expanded": expandedIndex === idx,
+            "aria-controls": `word-sounds-details-${idx}`,
+            "aria-label": expandedIndex === idx ? t("common.collapse") || "Collapse word details" : t("common.expand") || "Expand word details",
+            className: "min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-600"
+          },
+          /* @__PURE__ */ React.createElement(ChevronDown, { size: 20, "aria-hidden": "true", className: `transition-transform motion-reduce:transition-none ${expandedIndex === idx ? "rotate-180" : ""}` })
+        ))
+      ),
+      expandedIndex === idx && /* @__PURE__ */ React.createElement("div", { id: `word-sounds-details-${idx}`, className: "border-t border-slate-100 p-4 space-y-4 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, typeof renderSyllableEditor === "function" && renderSyllableEditor(word, idx), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("word_sounds.phonemes") || "Phonemes"), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => {
+            const checkFn = onCheckPhonemes || onRegenerateWord;
+            if (!_wsAiUsable("text", checkFn)) {
+              setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
+              return;
+            }
+            checkFn && checkFn(idx);
+          },
+          disabled: regeneratingIndex === idx || !_wsTextAiReady,
+          "aria-busy": regeneratingIndex === idx,
+          className: `min-h-11 text-[11px] px-3 py-1 rounded-full flex items-center gap-1 font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 disabled:opacity-50 disabled:cursor-not-allowed ${regeneratingIndex === idx ? "bg-slate-100 text-slate-700" : "bg-violet-100 text-violet-800 hover:bg-violet-200"}`,
+          title: t("word_sounds.recheck_phonemes_tooltip") || "Re-check phonemes with Gemini"
+        },
+        regeneratingIndex === idx ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none h-3 w-3 border-2 border-current border-t-transparent rounded-full", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2728"),
+        t("word_sounds.recheck_phonemes_button") || "Check"
+      ))), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "aria-expanded": showPhonemeBank === idx,
+          "data-help-key": "word_sounds_review_phoneme_bank",
+          onClick: () => setShowPhonemeBank(showPhonemeBank === idx ? null : idx),
+          className: `min-h-11 text-xs px-3 py-1 rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 ${showPhonemeBank === idx ? "bg-pink-700 text-white" : "bg-pink-100 text-pink-800 hover:bg-pink-200"}`
+        },
+        showPhonemeBank === idx ? t("word_sounds.close_bank") || "\u2715 Close Bank" : t("word_sounds.add_sound") || "+ Add Sound"
+      )), /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          dir: wordDir || "ltr",
+          className: `flex flex-wrap gap-2 mb-2 min-h-[40px] p-2 rounded-lg border-2 border-dashed transition-colors motion-reduce:transition-none ${draggedPhoneme ? "border-pink-300 bg-pink-50" : "border-transparent"}`,
+          onDragOver: (e) => e.preventDefault(),
+          onDrop: (e) => handleDrop(e, idx)
+        },
+        (Array.isArray(word.phonemes) ? word.phonemes : []).map((p, i) => /* @__PURE__ */ React.createElement(
+          "div",
+          {
+            key: i,
+            className: `group relative cursor-grab active:cursor-grabbing ${dragOverIndex === i ? "ring-2 ring-pink-400" : ""}`,
+            role: "group",
+            "aria-label": `${phonemeLabel(p) || "Phoneme"}, position ${i + 1} of ${(word.phonemes || []).length}`,
+            draggable: true,
+            onDragStart: (e) => handleDragStart(e, p, "word", idx, i),
+            "data-keyboard-alternative": "Use the Move earlier and Move later buttons",
+            onDragOver: (e) => handleDragOver(e, i),
+            onDrop: (e) => {
+              e.stopPropagation();
+              handleDrop(e, idx, i);
+            },
+            onDragEnd: handleDragEnd
+          },
+          /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-800 font-bold rounded-lg border-2 border-violet-200", title: typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[phonemeLabel(p)] ? `${PHONEME_GUIDE[phonemeLabel(p)].label} (${PHONEME_GUIDE[phonemeLabel(p)].ipa}) \u2014 ${PHONEME_GUIDE[phonemeLabel(p)].examples}` : phonemeLabel(p) }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs mr-1", "aria-hidden": "true" }, "\u283F"), phonemeLabel(p), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handlePhonemeReorder(idx, i, i - 1), disabled: i === 0, "aria-label": `Move ${phonemeLabel(p) || "phoneme"} earlier`, className: "min-w-11 min-h-11 flex items-center justify-center rounded-full bg-violet-100 text-violet-800 hover:bg-violet-200 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700", title: "Move earlier" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u25C0")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handlePhonemeReorder(idx, i, i + 1), disabled: i === (word.phonemes || []).length - 1, "aria-label": `Move ${phonemeLabel(p) || "phoneme"} later`, className: "min-w-11 min-h-11 flex items-center justify-center rounded-full bg-violet-100 text-violet-800 hover:bg-violet-200 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700", title: "Move later" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u25B6")), /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              type: "button",
+              "aria-label": t("common.remove") || "Remove sound",
+              onClick: () => removePhoneme(idx, i),
+              className: "w-6 h-6 flex items-center justify-center rounded-full bg-red-100 min-w-11 min-h-11 text-red-700 hover:bg-red-200 text-xs opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700",
+              title: t("common.remove")
+            },
+            "\xD7"
+          ))
+        )),
+        (() => {
+          const p = word.phonemes;
+          const a = Array.isArray(p) ? p : p?.phonemes && Array.isArray(p.phonemes) ? p.phonemes : [];
+          return a.length === 0;
+        })() && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-sm italic" }, t("word_sounds.no_phonemes_hint") || 'No phonemes - click "Add Sound" to build')
+      ), showPhonemeBank === idx && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-2 border-slate-200 rounded-xl p-3 mt-2 animate-in motion-reduce:animate-none slide-in-from-top-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2 gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("word_sounds.phoneme_bank_hover_hint") || "\u{1F4A1} Hover any sound for teaching tips"), /* @__PURE__ */ React.createElement("div", { className: "inline-flex rounded-lg border border-slate-300 overflow-hidden text-[11px] font-bold shrink-0", role: "group", "aria-label": t("word_sounds.bank_label_mode") || "Sound label style" }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setBankLabelModePersist("ipa"),
+          "aria-pressed": bankLabelMode === "ipa",
+          title: t("word_sounds.bank_show_ipa") || "Show the sound in IPA (international phonetic symbols) first",
+          className: `min-h-11 px-3 py-1 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 ${bankLabelMode === "ipa" ? "bg-pink-700 text-white" : "bg-white text-slate-700 hover:bg-pink-50"}`
+        },
+        "/\u0283/ IPA"
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => setBankLabelModePersist("letters"),
+          "aria-pressed": bankLabelMode === "letters",
+          title: t("word_sounds.bank_show_letters") || "Show the letters (graphemes) first",
+          className: `min-h-11 px-3 py-1 border-l border-slate-300 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 ${bankLabelMode === "letters" ? "bg-pink-700 text-white" : "bg-white text-slate-700 hover:bg-pink-50"}`
+        },
+        "Aa letters"
+      ))), Object.entries(PHONEME_BANK).map(([category, phonemes]) => /* @__PURE__ */ React.createElement("div", { key: category, className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase mb-1", title: category === "Consonants" ? "Single consonant sounds \u2014 pair voiced (b,d,g) with unvoiced (p,t,k)" : category === "Vowels (Short)" ? "Quick vowel sounds \u2014 cat, pet, sit, hot, cup, book" : category === "Vowels (Long)" ? "Longer vowel sounds \u2014 see, moon, cue, saw + vowel teams ai, ea, oa" : category === "Digraphs" ? "Two letters that make ONE sound \u2014 sh, ch, th, wh, ng" : category === "R-Controlled" ? "Bossy R changes the vowel sound \u2014 ar, er, ir, or, ur, air, ear" : category === "Diphthongs" ? "Vowel sounds that glide \u2014 ay (day), ie (tie), ow (cow), oy (boy)" : category }, category), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, (Array.isArray(phonemes) ? phonemes : []).map((p) => {
+        const _disp = resolvePhonemeDisplay(p);
+        const _graph = _bankDisplayGrapheme(p);
+        const _ipaLabel = "/" + _disp.ipa + "/";
+        const _lead = bankLabelMode === "ipa" ? _ipaLabel : _graph;
+        const _caption = bankLabelMode === "ipa" ? _graph : _ipaLabel;
+        const _bankKey = idx + ":" + p;
+        const _isExp = expandedBankKey === _bankKey;
+        const _hasSpellings = Array.isArray(_disp.graphemes) && _disp.graphemes.length > 1;
+        const _addTitle = typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[p] ? `${PHONEME_GUIDE[p].label}: ${PHONEME_GUIDE[p].tip}${PHONEME_GUIDE[p].confusesWith?.length ? "\n\u26A0\uFE0F Often confused with: " + PHONEME_GUIDE[p].confusesWith.join(", ") : ""}` : `Click or drag to add the ${_ipaLabel} sound (${_graph})`;
+        return /* @__PURE__ */ React.createElement("div", { key: p, className: "inline-flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex rounded overflow-hidden border border-slate-400 hover:border-pink-400 transition-colors motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            "aria-label": (typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[p] ? PHONEME_GUIDE[p].label : _ipaLabel) + " \u2014 " + (t("common.play_tts") || "Play sound"),
+            onClick: () => onPlayAudio && onPlayAudio(p),
+            className: "min-w-11 min-h-11 px-2 py-1 bg-slate-100 hover:bg-pink-200 text-slate-700 hover:text-pink-800 transition-colors motion-reduce:transition-none border-r border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700",
+            title: typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[p] ? `\u{1F50A} ${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) \u2014 ${PHONEME_GUIDE[p].examples}` : `Play the ${_ipaLabel} sound`
+          },
+          /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A}")
+        ), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => addPhoneme(idx, p),
+            draggable: true,
+            onDragStart: (e) => handleDragStart(e, p, "bank"),
+            "data-keyboard-alternative": "Activate this button to add the sound",
+            onDragEnd: handleDragEnd,
+            className: "min-h-11 px-2.5 py-1 bg-white hover:bg-pink-100 transition-colors motion-reduce:transition-none cursor-grab active:cursor-grabbing flex flex-col items-center justify-center leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700",
+            title: _addTitle
+          },
+          /* @__PURE__ */ React.createElement("span", { className: bankLabelMode === "ipa" ? "text-sm font-bold text-slate-800" : "text-sm font-mono text-slate-800" }, _lead),
+          /* @__PURE__ */ React.createElement("span", { className: bankLabelMode === "ipa" ? "text-[10px] font-mono text-slate-600 mt-0.5" : "text-[10px] text-slate-600 mt-0.5" }, _caption)
+        ), _hasSpellings && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => setExpandedBankKey(_isExp ? null : _bankKey),
+            "aria-expanded": _isExp,
+            "aria-label": (t("word_sounds.bank_show_spellings") || "Show spellings for") + " " + _ipaLabel,
+            className: "min-w-11 min-h-11 px-1.5 py-1 bg-slate-50 hover:bg-pink-100 text-slate-700 hover:text-pink-800 transition-colors motion-reduce:transition-none border-l border-slate-300 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700",
+            title: t("word_sounds.bank_show_spellings") || "Show the letters that spell this sound"
+          },
+          /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, _isExp ? "\u25B4" : "\u22EF")
+        )), _isExp && /* @__PURE__ */ React.createElement("div", { className: "mt-1 mb-1 px-2 py-1 bg-white border border-pink-200 rounded-lg text-[11px] text-slate-700 max-w-[220px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-pink-800" }, _ipaLabel), _disp.keyWord ? /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, " \xB7 as in ", _disp.keyWord) : null, /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 flex flex-wrap gap-1" }, _disp.graphemes.map((g, gi) => /* @__PURE__ */ React.createElement("span", { key: gi, className: "px-1.5 py-0.5 bg-slate-100 rounded font-mono text-slate-700" }, g)))));
+      })))))), /* @__PURE__ */ React.createElement("div", { hidden: !reviewsActivity("rhyming"), "data-ws-review-part": "rhyming" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-orange-700 uppercase tracking-wider mb-2 block" }, t("word_sounds.rhyme_options") || "Rhyme Options"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          "aria-label": t("common.rhyme_time_options") || "Correct rhyming word",
+          value: word.rhymeWord || "",
+          onChange: (e) => onUpdateWord(idx, { ...word, rhymeWord: e.target.value }, { reviewedRhyme: true }),
+          className: "flex-1 min-w-0 min-h-11 px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-400 focus:ring-offset-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600",
+          "data-help-key": "word_sounds_review_distractor_input",
+          placeholder: t("common.placeholder_correct_rhyme") || "Correct rhyme"
+        }
+      ), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 rounded-md bg-green-100 px-2 py-1 text-xs font-bold text-green-800" }, t("word_sounds.review_answer_tag") || "\u2713 Answer")), (word.rhymeDistractors || []).map((d, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          "aria-label": t("common.enter_d") || `Rhyme distractor ${i + 1}`,
+          value: d,
+          onChange: (e) => {
+            const newDist = [...word.rhymeDistractors || []];
+            newDist[i] = e.target.value;
+            onUpdateWord(idx, { ...word, rhymeDistractors: newDist }, { reviewedRhyme: true });
+          },
+          className: "flex-1 min-h-11 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-orange-400 focus:ring-2 focus:ring-orange-300 focus:ring-offset-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600",
+          "data-help-key": "word_sounds_review_distractor_input",
+          placeholder: t("common.placeholder_distractor") || "Distractor"
+        }
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "aria-label": (t("common.play_tts") || "Play") + ": " + d,
+          "aria-busy": playingAudioKey === `${idx}-rhyme-${i}` ? "true" : void 0,
+          onClick: async (e) => {
+            e.stopPropagation();
+            const key = `${idx}-rhyme-${i}`;
+            if (playingAudioKey) return;
+            setPlayingAudioKey(key);
+            try {
+              await onPlayAudio(d);
+            } finally {
+              setPlayingAudioKey(null);
+            }
+          },
+          className: "p-2 rounded-lg bg-slate-100 hover:bg-orange-100 text-slate-700 hover:text-orange-800 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700",
+          "data-help-key": "word_sounds_review_play_distractor",
+          title: t("common.play_tts") || "Play"
+        },
+        playingAudioKey === `${idx}-rhyme-${i}` ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A}")
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "aria-label": t("word_sounds.refresh_audio") || "Refresh audio",
+          "aria-busy": regeneratingOptions[`${idx}-rhyme-${i}`] ? "true" : void 0,
+          onClick: async () => {
+            if (!_wsAiUsable("audio", onRegenerateOption)) {
+              setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
+              return;
+            }
+            if (!onRegenerateOption) return;
+            const key = `${idx}-rhyme-${i}`;
+            setRegeneratingOptions((prev) => ({ ...prev, [key]: true }));
+            try {
+              await onRegenerateOption(idx, "rhymeDistractors", i, d);
+            } finally {
+              setRegeneratingOptions((prev) => {
+                const n = { ...prev };
+                delete n[key];
+                return n;
+              });
+            }
+          },
+          disabled: !!regeneratingOptions[`${idx}-rhyme-${i}`] || !_wsAiUsable("audio", onRegenerateOption),
+          className: `${regeneratingOptions[`${idx}-rhyme-${i}`] ? "w-auto px-2 gap-1 bg-orange-200 text-orange-800" : "min-w-11 bg-orange-50 hover:bg-orange-100 text-orange-700 hover:text-orange-900"} min-h-11 rounded-lg transition-colors motion-reduce:transition-none flex items-center justify-center text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700 disabled:opacity-50 disabled:cursor-not-allowed`,
+          title: t("word_sounds.refresh_audio_tooltip") || "Refresh audio (re-synthesize TTS for this word)"
+        },
+        regeneratingOptions[`${idx}-rhyme-${i}`] ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, t("word_sounds.refreshing") || "Refreshing\u2026")) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F504}")
+      ))), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => {
+            const newDist = [...word.rhymeDistractors || [], ""];
+            onUpdateWord(idx, { ...word, rhymeDistractors: newDist }, { reviewedRhyme: true });
+          },
+          className: "justify-self-start min-h-11 px-3 py-1.5 bg-orange-100 text-orange-900 rounded-lg border-2 border-dashed border-orange-300 hover:bg-orange-200 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700"
+        },
+        t("word_sounds.add_distractor") || "+ Add"
+      ))), /* @__PURE__ */ React.createElement("div", { hidden: !reviewsActivity("blending"), "data-ws-review-part": "blending" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-violet-700 uppercase tracking-wider mb-2 block" }, t("word_sounds.blend_options") || "Blend Options"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center justify-between gap-2 px-3 py-1.5 font-bold bg-green-100 text-green-800 rounded-lg border-2 border-green-300" }, /* @__PURE__ */ React.createElement("span", { className: "min-w-0 break-words" }, word.targetWord || word.word), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-xs" }, t("word_sounds.review_answer_tag") || "\u2713 Answer")), (word.blendingDistractors || []).map((d, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          "aria-label": t("common.enter_d") || `Blend distractor ${i + 1}`,
+          value: d,
+          onChange: (e) => {
+            const newDist = [...word.blendingDistractors];
+            newDist[i] = e.target.value;
+            onUpdateWord(idx, { ...word, blendingDistractors: newDist });
+          },
+          className: "flex-1 min-h-11 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-violet-400 focus:ring-2 focus:ring-violet-300 focus:ring-offset-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600"
+        }
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "aria-label": (t("common.play_tts") || "Play") + ": " + d,
+          "aria-busy": playingAudioKey === `${idx}-blend-${i}` ? "true" : void 0,
+          onClick: async (e) => {
+            e.stopPropagation();
+            const key = `${idx}-blend-${i}`;
+            if (playingAudioKey) return;
+            setPlayingAudioKey(key);
+            try {
+              await onPlayAudio(d);
+            } finally {
+              setPlayingAudioKey(null);
+            }
+          },
+          className: "p-2 rounded-lg bg-slate-100 hover:bg-violet-100 text-slate-700 hover:text-violet-800 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700",
+          "data-help-key": "word_sounds_review_play_distractor",
+          title: t("common.play_tts") || "Play"
+        },
+        playingAudioKey === `${idx}-blend-${i}` ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A}")
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "aria-label": t("word_sounds.refresh_audio") || "Refresh audio",
+          "aria-busy": regeneratingOptions[`${idx}-blend-${i}`] ? "true" : void 0,
+          onClick: async () => {
+            if (!_wsAiUsable("audio", onRegenerateOption)) {
+              setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
+              return;
+            }
+            if (!onRegenerateOption) return;
+            const key = `${idx}-blend-${i}`;
+            setRegeneratingOptions((prev) => ({ ...prev, [key]: true }));
+            try {
+              await onRegenerateOption(idx, "blendingDistractors", i, d);
+            } finally {
+              setRegeneratingOptions((prev) => {
+                const n = { ...prev };
+                delete n[key];
+                return n;
+              });
+            }
+          },
+          disabled: !!regeneratingOptions[`${idx}-blend-${i}`] || !_wsAiUsable("audio", onRegenerateOption),
+          className: `${regeneratingOptions[`${idx}-blend-${i}`] ? "w-auto px-2 gap-1 bg-violet-200 text-violet-800" : "min-w-11 bg-violet-50 hover:bg-violet-100 text-violet-700 hover:text-violet-900"} min-h-11 rounded-lg transition-colors motion-reduce:transition-none flex items-center justify-center text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 disabled:opacity-50 disabled:cursor-not-allowed`,
+          title: t("word_sounds.refresh_audio_tooltip") || "Refresh audio (re-synthesize TTS for this word)"
+        },
+        regeneratingOptions[`${idx}-blend-${i}`] ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, t("word_sounds.refreshing") || "Refreshing\u2026")) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F504}")
+      ))), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => {
+            const newDist = [...word.blendingDistractors || [], ""];
+            onUpdateWord(idx, { ...word, blendingDistractors: newDist });
+          },
+          className: "justify-self-start min-h-11 px-3 py-1.5 bg-violet-100 text-violet-800 rounded-lg border-2 border-dashed border-violet-300 hover:bg-violet-200 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700"
+        },
+        t("word_sounds.add_distractor") || "+ Add"
+      ))), (() => {
+        {
+        }
+        const _ct = word.activityItems || {};
+        const _ctWord = word.targetWord || word.word || word.term;
+        const _ctLines = [
+          reviewsActivity("read_sentence") && _ct.read_sentence && _ct.read_sentence.sentence && { key: "sent", icon: "\u{1F4AC}", label: t("word_sounds.activity_read_sentence") || "Finish the Sentence", text: _ct.read_sentence.sentence },
+          reviewsActivity("read_passage") && _ct.read_passage && _ct.read_passage.story && { key: "story", icon: "\u{1F4DA}", label: t("word_sounds.activity_read_passage") || "Read the Story", text: _ct.read_passage.story },
+          reviewsActivity("sentence_match") && _ct.sentence_match && _ct.sentence_match.sentence && { key: "pair", icon: "\u{1F5BC}\uFE0F", label: t("word_sounds.activity_sentence_match") || "Picture the Sentence", text: _ct.sentence_match.sentence }
+        ].filter(Boolean);
+        if (!_ctLines.length) return null;
+        return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-sky-800 uppercase tracking-wider mb-2 block" }, t("word_sounds.connected_text_label") || "Connected Text (sentence activities)"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5 p-3 bg-sky-50 border-2 border-sky-200 rounded-lg" }, _ctLines.map((line) => /* @__PURE__ */ React.createElement("div", { key: line.key, className: "flex items-center gap-2 text-sm text-slate-700" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, line.icon), /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, line.label, ":"), /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, wsHighlightTarget(line.text, _ctWord)), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            "aria-label": (t("common.play_tts") || "Play") + " \u2014 " + line.label,
+            "aria-busy": playingAudioKey === `${idx}-ct-${line.key}` ? "true" : void 0,
+            onClick: async (e) => {
+              e.stopPropagation();
+              const key = `${idx}-ct-${line.key}`;
+              if (playingAudioKey) return;
+              setPlayingAudioKey(key);
+              try {
+                await onPlayAudio(line.text);
+              } finally {
+                setPlayingAudioKey(null);
+              }
+            },
+            className: "p-2 rounded-lg bg-white hover:bg-sky-100 text-slate-700 hover:text-sky-800 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700",
+            title: t("common.play_tts") || "Play"
+          },
+          playingAudioKey === `${idx}-ct-${line.key}` ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A}")
+        )))));
+      })(), /* @__PURE__ */ React.createElement("div", { hidden: !reviewsActivity("manipulation"), "data-ws-review-part": "manipulation" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-amber-700 uppercase tracking-wider block" }, t("word_sounds.sound_swap_label") || "Sound Swap (Manipulation Activity)"), word.manipulationTask?.type && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300" }, word.manipulationTask.type)), word.manipulationTask ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 p-3 bg-amber-50 border-2 border-amber-200 rounded-lg" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-amber-900 uppercase tracking-wider block mb-1" }, t("word_sounds.instruction_label") || "Instruction (spoken to student)"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          "aria-label": t("word_sounds.sound_swap_instruction_aria") || "Sound Swap instruction",
+          value: word.manipulationTask.instruction || "",
+          onChange: (e) => onUpdateWord(idx, { ...word, manipulationTask: { ...word.manipulationTask, instruction: e.target.value } }),
+          className: "flex-1 min-h-11 px-3 py-1.5 text-sm font-medium border-2 border-amber-200 rounded-lg focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white",
+          placeholder: t("word_sounds.sound_swap_instruction_placeholder") || "Say 'word'. Now say it again, but leave out the /x/ sound."
+        }
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "aria-label": t("word_sounds.preview_instruction_tts_aria") || "Preview instruction TTS",
+          "aria-busy": playingAudioKey === `${idx}-manip-instruction` ? "true" : void 0,
+          onClick: async (e) => {
+            e.stopPropagation();
+            const key = `${idx}-manip-instruction`;
+            if (playingAudioKey) return;
+            setPlayingAudioKey(key);
+            try {
+              await onPlayAudio(word.manipulationTask.instruction);
+            } finally {
+              setPlayingAudioKey(null);
+            }
+          },
+          className: "p-2 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700",
+          title: t("word_sounds.preview_instruction_tooltip") || "Preview instruction"
+        },
+        playingAudioKey === `${idx}-manip-instruction` ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A}")
+      ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-amber-900 uppercase tracking-wider block mb-1" }, t("word_sounds.answer_distractors_label") || "Answer (correct) + Distractors"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          "aria-label": t("word_sounds.correct_answer_aria") || "Correct answer",
+          value: word.manipulationTask.answer || "",
+          onChange: (e) => onUpdateWord(idx, { ...word, manipulationTask: { ...word.manipulationTask, answer: e.target.value } }),
+          className: "flex-1 min-w-0 min-h-11 px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-300",
+          placeholder: t("word_sounds.answer_placeholder") || "answer"
+        }
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "aria-label": t("word_sounds.preview_answer_aria") || "Preview answer",
+          "aria-busy": playingAudioKey === `${idx}-manip-answer` ? "true" : void 0,
+          onClick: async (e) => {
+            e.stopPropagation();
+            const key = `${idx}-manip-answer`;
+            if (playingAudioKey) return;
+            setPlayingAudioKey(key);
+            try {
+              await onPlayAudio(word.manipulationTask.answer);
+            } finally {
+              setPlayingAudioKey(null);
+            }
+          },
+          className: "p-2 rounded-lg bg-slate-100 hover:bg-green-100 text-slate-700 hover:text-green-800 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700",
+          title: t("word_sounds.preview_answer_tooltip") || "Preview answer"
+        },
+        playingAudioKey === `${idx}-manip-answer` ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A}")
+      )), (word.manipulationTask.distractors || []).map((d, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          "aria-label": `Distractor ${i + 1}`,
+          value: d,
+          onChange: (e) => {
+            const newDist = [...word.manipulationTask.distractors || []];
+            newDist[i] = e.target.value;
+            onUpdateWord(idx, { ...word, manipulationTask: { ...word.manipulationTask, distractors: newDist } });
+          },
+          className: "flex-1 min-h-11 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white",
+          placeholder: t("word_sounds.distractor_placeholder") || "distractor"
+        }
+      ), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          "aria-label": t("word_sounds.preview_distractor_aria") || "Preview distractor",
+          "aria-busy": playingAudioKey === `${idx}-manip-d-${i}` ? "true" : void 0,
+          onClick: async (e) => {
+            e.stopPropagation();
+            const key = `${idx}-manip-d-${i}`;
+            if (playingAudioKey) return;
+            setPlayingAudioKey(key);
+            try {
+              await onPlayAudio(d);
+            } finally {
+              setPlayingAudioKey(null);
+            }
+          },
+          className: "p-2 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700",
+          title: t("word_sounds.preview_distractor_tooltip") || "Preview distractor"
+        },
+        playingAudioKey === `${idx}-manip-d-${i}` ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A}")
+      ))))), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          disabled: Boolean(regeneratingOptions[`${idx}-manip-regen`]) || !_wsTextAiReady,
+          "aria-busy": regeneratingOptions[`${idx}-manip-regen`] ? "true" : void 0,
+          onClick: async () => {
+            if (!_wsAiUsable("text", onRegenerateManipulationTask)) {
+              setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
+              return;
+            }
+            if (onRegenerateManipulationTask) {
+              const key = `${idx}-manip-regen`;
+              setRegeneratingOptions((prev) => ({ ...prev, [key]: true }));
+              try {
+                await onRegenerateManipulationTask(idx);
+              } finally {
+                setRegeneratingOptions((prev) => {
+                  const n = { ...prev };
+                  delete n[key];
+                  return n;
+                });
+              }
+            }
+          },
+          className: "w-full min-h-11 flex items-center justify-center gap-2 px-3 py-2 bg-amber-100 text-amber-900 hover:bg-amber-200 border-2 border-amber-300 rounded-lg text-sm font-bold transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 disabled:opacity-50 disabled:cursor-not-allowed",
+          title: t("word_sounds.regenerate_sound_swap_tooltip") || "Generate a fresh Sound Swap task for this word"
+        },
+        regeneratingOptions[`${idx}-manip-regen`] ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("word_sounds.regenerating") || "Regenerating\u2026") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, "aria-hidden": "true" }), " ", t("word_sounds.regenerate_task") || "Regenerate Task")
+      )) : /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 italic" }, t("word_sounds.no_sound_swap_yet") || "No Sound Swap task generated for this word yet."), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          disabled: Boolean(regeneratingOptions[`${idx}-manip-regen`]) || !_wsTextAiReady,
+          onClick: async () => {
+            if (!_wsAiUsable("text", onRegenerateManipulationTask)) {
+              setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
+              return;
+            }
+            if (onRegenerateManipulationTask) {
+              const key = `${idx}-manip-regen`;
+              setRegeneratingOptions((prev) => ({ ...prev, [key]: true }));
+              try {
+                await onRegenerateManipulationTask(idx);
+              } finally {
+                setRegeneratingOptions((prev) => {
+                  const n = { ...prev };
+                  delete n[key];
+                  return n;
+                });
+              }
+            }
+          },
+          className: "min-h-11 flex items-center gap-2 px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg text-sm font-bold shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        },
+        regeneratingOptions[`${idx}-manip-regen`] ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("word_sounds.generating") || "Generating\u2026") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Sparkles, { size: 14, "aria-hidden": "true" }), " ", t("word_sounds.generate") || "Generate")
+      ))), /* @__PURE__ */ React.createElement("div", { hidden: !reviewsActivity("isolation"), "data-ws-review-part": "isolation" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 block" }, t("word_sounds.sound_positions_label") || "Sound Positions (Find Sounds Activity)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, (() => {
+        const phonemesRaw = word.phonemes;
+        const phonemeArray = Array.isArray(phonemesRaw) ? phonemesRaw : phonemesRaw?.phonemes && Array.isArray(phonemesRaw.phonemes) ? phonemesRaw.phonemes : [];
+        return phonemeArray;
+      })().map((phoneme, soundIdx) => {
+        const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"];
+        const ordinalLabel = ordinals[soundIdx] || `${soundIdx + 1}th`;
+        return /* @__PURE__ */ React.createElement("div", { key: soundIdx, className: "flex items-center gap-1 bg-gradient-to-r from-violet-50 to-pink-50 border-2 border-violet-200 rounded-lg px-2 py-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, ordinalLabel, ":"), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-violet-700 text-lg" }, phonemeLabel(phoneme)));
+      }), (!word.phonemes || word.phonemes.length === 0) && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-sm italic" }, t("word_sounds.no_phonemes")))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-4 border-t border-slate-200" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-indigo-700 uppercase tracking-wider mb-2 block flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12, "aria-hidden": "true" }), " ", t("word_sounds.word_image_label") || "Word Image"), (() => {
+        const safeFullImg = _safeMiscImageUrl(word.image);
+        return /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex-shrink-0" }, safeFullImg ? /* @__PURE__ */ React.createElement(
+          "img",
+          {
+            loading: "lazy",
+            src: safeFullImg,
+            alt: word.targetWord || word.word,
+            className: "w-24 h-24 rounded-xl object-cover border-2 border-indigo-200 shadow-md"
+          }
+        ) : /* @__PURE__ */ React.createElement("div", { className: "w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-600 bg-slate-50" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 32, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-2" }, /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
               if (!_wsAiUsable("images", onGenerateImage)) {
                 setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
                 return;
@@ -1311,665 +1994,14 @@ const WordSoundsReviewPanel = ({
               onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
             },
             disabled: isGeneratingImage(idx) || !_wsImageAiReady,
-            "aria-busy": isGeneratingImage(idx),
-            "aria-label": isGeneratingImage(idx) ? t("word_sounds.generating_image_aria") || "Generating image" : void 0,
-            className: `min-h-11 px-3 py-2 rounded-lg border-2 flex items-center gap-2 text-sm font-bold transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed ${isGeneratingImage(idx) ? "border-indigo-400 bg-indigo-100 text-indigo-800 animate-pulse motion-reduce:animate-none" : "border-dashed border-indigo-300 text-indigo-700 hover:border-indigo-500 hover:bg-indigo-50 hover:scale-105 motion-reduce:hover:scale-100"}`,
-            "data-help-key": "word_sounds_review_image_gen",
-            title: t("common.generate_image_for_this_word")
+            className: `w-full min-h-11 flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-bold text-sm transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed ${safeFullImg ? "bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border border-indigo-200" : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md"}`
           },
-          isGeneratingImage(idx) ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("word_sounds.generating_image") || "Generating...") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(ImageIcon, { size: 16, "aria-hidden": "true" }), " ", t("word_sounds.add_image_button") || "+ Image")
-        );
-      })()), /* @__PURE__ */ React.createElement("span", { className: "min-w-0 break-words text-xl font-bold text-slate-800" }, word.targetWord || word.word), /* @__PURE__ */ React.createElement(
-        "select",
-        {
-          "aria-label": (t("word_sounds.difficulty") || "Difficulty") + ": " + (word.targetWord || word.word || (t("common.word") || "Word") + " " + (idx + 1)),
-          value: word.difficulty || "medium",
-          onClick: (e) => e.stopPropagation(),
-          onChange: (e) => onUpdateWord(idx, { ...word, difficulty: e.target.value }),
-          className: `min-h-11 text-xs font-bold px-2.5 py-1 rounded-full border cursor-pointer appearance-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 ${word.difficulty === "easy" ? "bg-green-100 text-green-800 border-green-300" : word.difficulty === "hard" ? "bg-red-100 text-red-800 border-red-300" : "bg-yellow-100 text-yellow-900 border-yellow-300"}`
-        },
-        /* @__PURE__ */ React.createElement("option", { value: "easy" }, "\u{1F7E2} Easy"),
-        /* @__PURE__ */ React.createElement("option", { value: "medium" }, "\u{1F7E1} Medium"),
-        /* @__PURE__ */ React.createElement("option", { value: "hard" }, "\u{1F534} Hard")
-      ), /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full" }, word.phonemes?.length || 0, " sounds")),
-      /* @__PURE__ */ React.createElement("div", { className: "flex shrink-0 items-center gap-1 sm:gap-2", "data-ws-review-row-actions": "true" }, /* @__PURE__ */ React.createElement("div", { className: "relative z-50" }, /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            if (!_wsAiUsable("text", onRegenerateWord)) {
-              setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
-              return;
-            }
-            if (regeneratingIndex !== null) {
-              debugLog("\u23F3 Already regenerating, ignoring click");
-              return;
-            }
-            debugLog("\u{1F504} FORCE CLICK regen idx:", idx);
-            if (typeof onRegenerateWord === "function") {
-              debugLog("\u2705 Calling onRegenerateWord for idx:", idx);
-              setReviewError(null);
-              onRegenerateWord(idx);
-            } else {
-              warnLog("\u274C onRegenerateWord is not a function:", typeof onRegenerateWord);
-              setReviewError({ index: idx, message: t("word_sounds.regenerate_unavailable") || "Regeneration is unavailable right now. Please close this review and try again." });
-            }
-          },
-          disabled: regeneratingIndex === idx || !_wsTextAiReady,
-          "aria-busy": regeneratingIndex === idx,
-          "aria-describedby": reviewError?.index === idx ? "word-sounds-review-error" : void 0,
-          "aria-label": regeneratingIndex === idx ? t("common.regenerating_word_aria") || "Regenerating word" : t("common.regenerate_this_word"),
-          className: `min-w-11 min-h-11 flex items-center justify-center rounded-full transition-colors motion-reduce:transition-none text-base font-bold border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700 disabled:opacity-50 disabled:cursor-not-allowed
-                                                    ${regeneratingIndex === idx ? "bg-orange-200 border-orange-400 animate-spin motion-reduce:animate-none text-orange-800" : "bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100 hover:border-orange-300 hover:scale-110 motion-reduce:hover:scale-100 shadow-sm"}`,
-          "data-help-key": "word_sounds_review_regen_word",
-          title: t("common.regenerate_this_word"),
-          style: { pointerEvents: "auto", cursor: "pointer" }
-        },
-        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, regeneratingIndex === idx ? "\u23F3" : "\u{1F504}")
-      )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-0.5" }, /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          "aria-label": t("common.move_up"),
-          onClick: (e) => {
-            e.stopPropagation();
-            moveWord(idx, "up");
-          },
-          disabled: idx === 0,
-          className: `min-w-11 min-h-11 flex items-center justify-center rounded text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 ${idx === 0 ? "text-slate-400" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"}`,
-          "data-help-key": "word_sounds_review_move_word",
-          title: t("common.move_up")
-        },
-        "\u25B2"
-      ), /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          "aria-label": t("common.move_down"),
-          onClick: (e) => {
-            e.stopPropagation();
-            moveWord(idx, "down");
-          },
-          disabled: idx === preloadedWords.length - 1,
-          className: `min-w-11 min-h-11 flex items-center justify-center rounded text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-600 ${idx === preloadedWords.length - 1 ? "text-slate-400" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"}`,
-          "data-help-key": "word_sounds_review_move_word",
-          title: t("common.move_down")
-        },
-        "\u25BC"
-      )), /* @__PURE__ */ React.createElement("div", { className: "relative z-50", style: { pointerEvents: "auto" } }, /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: (event) => deleteReviewWord(event, word, idx),
-          "aria-label": (t("common.delete_word") || "Delete word") + ": " + (word.targetWord || word.word || (t("common.word") || "Word") + " " + (idx + 1)),
-          className: "min-w-11 min-h-11 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-700 hover:text-red-800 transition-colors motion-reduce:transition-none border-2 border-red-200 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2",
-          style: { pointerEvents: "auto", cursor: "pointer", position: "relative", zIndex: 100 },
-          "data-word-delete-button": "true",
-          "data-help-key": "word_sounds_review_delete_word",
-          title: t("common.delete_word")
-        },
-        "\u{1F5D1}\uFE0F"
-      )), /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => setExpandedIndex(expandedIndex === idx ? null : idx),
-          "aria-expanded": expandedIndex === idx,
-          "aria-controls": `word-sounds-details-${idx}`,
-          "aria-label": expandedIndex === idx ? t("common.collapse") || "Collapse word details" : t("common.expand") || "Expand word details",
-          className: "min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500"
-        },
-        /* @__PURE__ */ React.createElement(ChevronDown, { size: 20, "aria-hidden": "true", className: `transition-transform motion-reduce:transition-none ${expandedIndex === idx ? "rotate-180" : ""}` })
-      ))
-    ),
-    expandedIndex === idx && /* @__PURE__ */ React.createElement("div", { id: `word-sounds-details-${idx}`, className: "border-t border-slate-100 p-4 space-y-4 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, typeof renderSyllableEditor === "function" && renderSyllableEditor(word, idx), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("word_sounds.phonemes")), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => {
-          const checkFn = onCheckPhonemes || onRegenerateWord;
-          if (!_wsAiUsable("text", checkFn)) {
-            setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
-            return;
-          }
-          checkFn && checkFn(idx);
-        },
-        disabled: regeneratingIndex === idx || !_wsTextAiReady,
-        "aria-busy": regeneratingIndex === idx,
-        className: `min-h-11 text-[11px] px-3 py-1 rounded-full flex items-center gap-1 font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 disabled:opacity-50 disabled:cursor-not-allowed ${regeneratingIndex === idx ? "bg-slate-100 text-slate-700" : "bg-violet-100 text-violet-800 hover:bg-violet-200"}`,
-        title: t("word_sounds.recheck_phonemes_tooltip") || "Re-check phonemes with Gemini"
-      },
-      regeneratingIndex === idx ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none h-3 w-3 border-2 border-current border-t-transparent rounded-full", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2728"),
-      t("word_sounds.recheck_phonemes_button") || "Check"
-    ))), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        "data-help-key": "word_sounds_review_phoneme_bank",
-        onClick: () => setShowPhonemeBank(showPhonemeBank === idx ? null : idx),
-        className: `min-h-11 text-xs px-3 py-1 rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 ${showPhonemeBank === idx ? "bg-pink-700 text-white" : "bg-pink-100 text-pink-800 hover:bg-pink-200"}`
-      },
-      showPhonemeBank === idx ? t("word_sounds.close_bank") || "\u2715 Close Bank" : t("word_sounds.add_sound") || "+ Add Sound"
-    )), /* @__PURE__ */ React.createElement(
-      "div",
-      {
-        dir: wordDir || "ltr",
-        className: `flex flex-wrap gap-2 mb-2 min-h-[40px] p-2 rounded-lg border-2 border-dashed transition-colors motion-reduce:transition-none ${draggedPhoneme ? "border-pink-300 bg-pink-50" : "border-transparent"}`,
-        onDragOver: (e) => e.preventDefault(),
-        onDrop: (e) => handleDrop(e, idx)
-      },
-      (Array.isArray(word.phonemes) ? word.phonemes : []).map((p, i) => /* @__PURE__ */ React.createElement(
-        "div",
-        {
-          key: i,
-          className: `group relative cursor-grab active:cursor-grabbing ${dragOverIndex === i ? "ring-2 ring-pink-400" : ""}`,
-          role: "group",
-          "aria-label": `${phonemeLabel(p) || "Phoneme"}, position ${i + 1} of ${(word.phonemes || []).length}`,
-          draggable: true,
-          onDragStart: (e) => handleDragStart(e, p, "word", idx, i),
-          "data-keyboard-alternative": "Use the Move earlier and Move later buttons",
-          onDragOver: (e) => handleDragOver(e, i),
-          onDrop: (e) => {
-            e.stopPropagation();
-            handleDrop(e, idx, i);
-          },
-          onDragEnd: handleDragEnd
-        },
-        /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-800 font-bold rounded-lg border-2 border-violet-200", title: typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[phonemeLabel(p)] ? `${PHONEME_GUIDE[phonemeLabel(p)].label} (${PHONEME_GUIDE[phonemeLabel(p)].ipa}) \u2014 ${PHONEME_GUIDE[phonemeLabel(p)].examples}` : phonemeLabel(p) }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs mr-1", "aria-hidden": "true" }, "\u283F"), phonemeLabel(p), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handlePhonemeReorder(idx, i, i - 1), disabled: i === 0, "aria-label": `Move ${phonemeLabel(p) || "phoneme"} earlier`, className: "min-w-11 min-h-11 flex items-center justify-center rounded-full bg-violet-100 text-violet-800 hover:bg-violet-200 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700", title: "Move earlier" }, "\u25C0"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handlePhonemeReorder(idx, i, i + 1), disabled: i === (word.phonemes || []).length - 1, "aria-label": `Move ${phonemeLabel(p) || "phoneme"} later`, className: "min-w-11 min-h-11 flex items-center justify-center rounded-full bg-violet-100 text-violet-800 hover:bg-violet-200 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700", title: "Move later" }, "\u25B6"), /* @__PURE__ */ React.createElement(
+          isGeneratingImage(idx) ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("word_sounds.generating_image") || "Generating...") : safeFullImg ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, "aria-hidden": "true" }), " ", t("word_sounds.regenerate_image_button") || "Regenerate Image") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Sparkles, { size: 14, "aria-hidden": "true" }), " ", t("word_sounds.generate_image_button") || "Generate Image")
+        ), safeFullImg && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
-            "aria-label": t("common.remove"),
-            onClick: () => removePhoneme(idx, i),
-            className: "w-6 h-6 flex items-center justify-center rounded-full bg-red-100 min-w-11 min-h-11 text-red-700 hover:bg-red-200 text-xs opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus:opacity-100 transition-opacity motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700",
-            title: t("common.remove")
-          },
-          "\xD7"
-        ))
-      )),
-      (() => {
-        const p = word.phonemes;
-        const a = Array.isArray(p) ? p : p?.phonemes && Array.isArray(p.phonemes) ? p.phonemes : [];
-        return a.length === 0;
-      })() && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-sm italic" }, t("word_sounds.no_phonemes_hint") || 'No phonemes - click "Add Sound" to build')
-    ), showPhonemeBank === idx && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-2 border-slate-200 rounded-xl p-3 mt-2 animate-in motion-reduce:animate-none slide-in-from-top-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2 gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("word_sounds.phoneme_bank_hover_hint") || "\u{1F4A1} Hover any sound for teaching tips"), /* @__PURE__ */ React.createElement("div", { className: "inline-flex rounded-lg border border-slate-300 overflow-hidden text-[11px] font-bold shrink-0", role: "group", "aria-label": t("word_sounds.bank_label_mode") || "Sound label style" }, /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => setBankLabelModePersist("ipa"),
-        "aria-pressed": bankLabelMode === "ipa",
-        title: t("word_sounds.bank_show_ipa") || "Show the sound in IPA (international phonetic symbols) first",
-        className: `min-h-11 px-3 py-1 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 ${bankLabelMode === "ipa" ? "bg-pink-700 text-white" : "bg-white text-slate-700 hover:bg-pink-50"}`
-      },
-      "/\u0283/ IPA"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => setBankLabelModePersist("letters"),
-        "aria-pressed": bankLabelMode === "letters",
-        title: t("word_sounds.bank_show_letters") || "Show the letters (graphemes) first",
-        className: `min-h-11 px-3 py-1 border-l border-slate-300 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700 ${bankLabelMode === "letters" ? "bg-pink-700 text-white" : "bg-white text-slate-700 hover:bg-pink-50"}`
-      },
-      "Aa letters"
-    ))), Object.entries(PHONEME_BANK).map(([category, phonemes]) => /* @__PURE__ */ React.createElement("div", { key: category, className: "mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase mb-1", title: category === "Consonants" ? "Single consonant sounds \u2014 pair voiced (b,d,g) with unvoiced (p,t,k)" : category === "Vowels (Short)" ? "Quick vowel sounds \u2014 cat, pet, sit, hot, cup, book" : category === "Vowels (Long)" ? "Longer vowel sounds \u2014 see, moon, cue, saw + vowel teams ai, ea, oa" : category === "Digraphs" ? "Two letters that make ONE sound \u2014 sh, ch, th, wh, ng" : category === "R-Controlled" ? "Bossy R changes the vowel sound \u2014 ar, er, ir, or, ur, air, ear" : category === "Diphthongs" ? "Vowel sounds that glide \u2014 ay (day), ie (tie), ow (cow), oy (boy)" : category }, category), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, (Array.isArray(phonemes) ? phonemes : []).map((p) => {
-      const _disp = resolvePhonemeDisplay(p);
-      const _graph = _bankDisplayGrapheme(p);
-      const _ipaLabel = "/" + _disp.ipa + "/";
-      const _lead = bankLabelMode === "ipa" ? _ipaLabel : _graph;
-      const _caption = bankLabelMode === "ipa" ? _graph : _ipaLabel;
-      const _bankKey = idx + ":" + p;
-      const _isExp = expandedBankKey === _bankKey;
-      const _hasSpellings = Array.isArray(_disp.graphemes) && _disp.graphemes.length > 1;
-      const _addTitle = typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[p] ? `${PHONEME_GUIDE[p].label}: ${PHONEME_GUIDE[p].tip}${PHONEME_GUIDE[p].confusesWith?.length ? "\n\u26A0\uFE0F Often confused with: " + PHONEME_GUIDE[p].confusesWith.join(", ") : ""}` : `Click or drag to add the ${_ipaLabel} sound (${_graph})`;
-      return /* @__PURE__ */ React.createElement("div", { key: p, className: "inline-flex flex-col" }, /* @__PURE__ */ React.createElement("div", { className: "inline-flex rounded overflow-hidden border border-slate-400 hover:border-pink-400 transition-colors motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          "aria-label": (typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[p] ? PHONEME_GUIDE[p].label : _ipaLabel) + " \u2014 " + (t("common.play_tts") || "Play sound"),
-          onClick: () => onPlayAudio && onPlayAudio(p),
-          className: "min-w-11 min-h-11 px-2 py-1 bg-slate-100 hover:bg-pink-200 text-slate-700 hover:text-pink-800 transition-colors motion-reduce:transition-none border-r border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700",
-          title: typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[p] ? `\u{1F50A} ${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) \u2014 ${PHONEME_GUIDE[p].examples}` : `Play the ${_ipaLabel} sound`
-        },
-        /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F50A}")
-      ), /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => addPhoneme(idx, p),
-          draggable: true,
-          onDragStart: (e) => handleDragStart(e, p, "bank"),
-          "data-keyboard-alternative": "Activate this button to add the sound",
-          onDragEnd: handleDragEnd,
-          className: "min-h-11 px-2.5 py-1 bg-white hover:bg-pink-100 transition-colors motion-reduce:transition-none cursor-grab active:cursor-grabbing flex flex-col items-center justify-center leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700",
-          title: _addTitle
-        },
-        /* @__PURE__ */ React.createElement("span", { className: bankLabelMode === "ipa" ? "text-sm font-bold text-slate-800" : "text-sm font-mono text-slate-800" }, _lead),
-        /* @__PURE__ */ React.createElement("span", { className: bankLabelMode === "ipa" ? "text-[10px] font-mono text-slate-600 mt-0.5" : "text-[10px] text-slate-600 mt-0.5" }, _caption)
-      ), _hasSpellings && /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => setExpandedBankKey(_isExp ? null : _bankKey),
-          "aria-expanded": _isExp,
-          "aria-label": (t("word_sounds.bank_show_spellings") || "Show spellings for") + " " + _ipaLabel,
-          className: "min-w-11 min-h-11 px-1.5 py-1 bg-slate-50 hover:bg-pink-100 text-slate-700 hover:text-pink-800 transition-colors motion-reduce:transition-none border-l border-slate-300 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-700",
-          title: t("word_sounds.bank_show_spellings") || "Show the letters that spell this sound"
-        },
-        _isExp ? "\u25B4" : "\u22EF"
-      )), _isExp && /* @__PURE__ */ React.createElement("div", { className: "mt-1 mb-1 px-2 py-1 bg-white border border-pink-200 rounded-lg text-[11px] text-slate-700 max-w-[220px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-pink-800" }, _ipaLabel), _disp.keyWord ? /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, " \xB7 as in ", _disp.keyWord) : null, /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 flex flex-wrap gap-1" }, _disp.graphemes.map((g, gi) => /* @__PURE__ */ React.createElement("span", { key: gi, className: "px-1.5 py-0.5 bg-slate-100 rounded font-mono text-slate-700" }, g)))));
-    })))))), /* @__PURE__ */ React.createElement("div", { hidden: !reviewsActivity("rhyming"), "data-ws-review-part": "rhyming" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-orange-700 uppercase tracking-wider mb-2 block" }, t("word_sounds.rhyme_options")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        "aria-label": t("common.rhyme_time_options"),
-        value: word.rhymeWord || "",
-        onChange: (e) => onUpdateWord(idx, { ...word, rhymeWord: e.target.value }, { reviewedRhyme: true }),
-        className: "flex-1 min-w-0 min-h-11 px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-400 focus:ring-offset-1 outline-none",
-        "data-help-key": "word_sounds_review_distractor_input",
-        placeholder: t("common.placeholder_correct_rhyme")
-      }
-    ), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 rounded-md bg-green-100 px-2 py-1 text-xs font-bold text-green-800" }, t("word_sounds.review_answer_tag") || "\u2713 Answer")), (word.rhymeDistractors || []).map((d, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        "aria-label": t("common.enter_d"),
-        value: d,
-        onChange: (e) => {
-          const newDist = [...word.rhymeDistractors || []];
-          newDist[i] = e.target.value;
-          onUpdateWord(idx, { ...word, rhymeDistractors: newDist }, { reviewedRhyme: true });
-        },
-        className: "flex-1 min-h-11 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-orange-400 focus:ring-2 focus:ring-orange-300 focus:ring-offset-1 outline-none",
-        "data-help-key": "word_sounds_review_distractor_input",
-        placeholder: t("common.placeholder_distractor")
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        "aria-label": (t("common.play_tts") || "Play") + ": " + d,
-        onClick: async (e) => {
-          e.stopPropagation();
-          const key = `${idx}-rhyme-${i}`;
-          if (playingAudioKey) return;
-          setPlayingAudioKey(key);
-          try {
-            await onPlayAudio(d);
-          } finally {
-            setPlayingAudioKey(null);
-          }
-        },
-        className: "p-2 rounded-lg bg-slate-100 hover:bg-orange-100 text-slate-700 hover:text-orange-800 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700",
-        "data-help-key": "word_sounds_review_play_distractor",
-        title: t("common.play_tts")
-      },
-      playingAudioKey === `${idx}-rhyme-${i}` ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" }) : "\u{1F50A}"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        "aria-label": t("word_sounds.refresh_audio") || "Refresh audio",
-        onClick: async () => {
-          if (!_wsAiUsable("audio", onRegenerateOption)) {
-            setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
-            return;
-          }
-          if (!onRegenerateOption) return;
-          const key = `${idx}-rhyme-${i}`;
-          setRegeneratingOptions((prev) => ({ ...prev, [key]: true }));
-          try {
-            await onRegenerateOption(idx, "rhymeDistractors", i, d);
-          } finally {
-            setRegeneratingOptions((prev) => {
-              const n = { ...prev };
-              delete n[key];
-              return n;
-            });
-          }
-        },
-        disabled: !!regeneratingOptions[`${idx}-rhyme-${i}`] || !_wsAiUsable("audio", onRegenerateOption),
-        className: `${regeneratingOptions[`${idx}-rhyme-${i}`] ? "w-auto px-2 gap-1 bg-orange-200 text-orange-800" : "min-w-11 bg-orange-50 hover:bg-orange-100 text-orange-700 hover:text-orange-900"} min-h-11 rounded-lg transition-colors motion-reduce:transition-none flex items-center justify-center text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700 disabled:opacity-50 disabled:cursor-not-allowed`,
-        title: t("word_sounds.refresh_audio_tooltip") || "Refresh audio (re-synthesize TTS for this word)"
-      },
-      regeneratingOptions[`${idx}-rhyme-${i}`] ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, t("word_sounds.refreshing") || "Refreshing\u2026")) : "\u{1F504}"
-    ))), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => {
-          const newDist = [...word.rhymeDistractors || [], ""];
-          onUpdateWord(idx, { ...word, rhymeDistractors: newDist }, { reviewedRhyme: true });
-        },
-        className: "justify-self-start min-h-11 px-3 py-1.5 bg-orange-100 text-orange-900 rounded-lg border-2 border-dashed border-orange-300 hover:bg-orange-200 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700"
-      },
-      t("word_sounds.add_distractor") || "+ Add"
-    ))), /* @__PURE__ */ React.createElement("div", { hidden: !reviewsActivity("blending"), "data-ws-review-part": "blending" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-violet-700 uppercase tracking-wider mb-2 block" }, t("word_sounds.blend_options")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center justify-between gap-2 px-3 py-1.5 font-bold bg-green-100 text-green-800 rounded-lg border-2 border-green-300" }, /* @__PURE__ */ React.createElement("span", { className: "min-w-0 break-words" }, word.targetWord || word.word), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-xs" }, t("word_sounds.review_answer_tag") || "\u2713 Answer")), (word.blendingDistractors || []).map((d, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        "aria-label": t("common.enter_d"),
-        value: d,
-        onChange: (e) => {
-          const newDist = [...word.blendingDistractors];
-          newDist[i] = e.target.value;
-          onUpdateWord(idx, { ...word, blendingDistractors: newDist });
-        },
-        className: "flex-1 min-h-11 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-violet-400 focus:ring-2 focus:ring-violet-300 focus:ring-offset-1 outline-none"
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        "aria-label": (t("common.play_tts") || "Play") + ": " + d,
-        onClick: async (e) => {
-          e.stopPropagation();
-          const key = `${idx}-blend-${i}`;
-          if (playingAudioKey) return;
-          setPlayingAudioKey(key);
-          try {
-            await onPlayAudio(d);
-          } finally {
-            setPlayingAudioKey(null);
-          }
-        },
-        className: "p-2 rounded-lg bg-slate-100 hover:bg-violet-100 text-slate-700 hover:text-violet-800 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700",
-        "data-help-key": "word_sounds_review_play_distractor",
-        title: t("common.play_tts")
-      },
-      playingAudioKey === `${idx}-blend-${i}` ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" }) : "\u{1F50A}"
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        "aria-label": t("word_sounds.refresh_audio") || "Refresh audio",
-        onClick: async () => {
-          if (!_wsAiUsable("audio", onRegenerateOption)) {
-            setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
-            return;
-          }
-          if (!onRegenerateOption) return;
-          const key = `${idx}-blend-${i}`;
-          setRegeneratingOptions((prev) => ({ ...prev, [key]: true }));
-          try {
-            await onRegenerateOption(idx, "blendingDistractors", i, d);
-          } finally {
-            setRegeneratingOptions((prev) => {
-              const n = { ...prev };
-              delete n[key];
-              return n;
-            });
-          }
-        },
-        disabled: !!regeneratingOptions[`${idx}-blend-${i}`] || !_wsAiUsable("audio", onRegenerateOption),
-        className: `${regeneratingOptions[`${idx}-blend-${i}`] ? "w-auto px-2 gap-1 bg-violet-200 text-violet-800" : "min-w-11 bg-violet-50 hover:bg-violet-100 text-violet-700 hover:text-violet-900"} min-h-11 rounded-lg transition-colors motion-reduce:transition-none flex items-center justify-center text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 disabled:opacity-50 disabled:cursor-not-allowed`,
-        title: t("word_sounds.refresh_audio_tooltip") || "Refresh audio (re-synthesize TTS for this word)"
-      },
-      regeneratingOptions[`${idx}-blend-${i}`] ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, t("word_sounds.refreshing") || "Refreshing\u2026")) : "\u{1F504}"
-    ))), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        onClick: () => {
-          const newDist = [...word.blendingDistractors || [], ""];
-          onUpdateWord(idx, { ...word, blendingDistractors: newDist });
-        },
-        className: "justify-self-start min-h-11 px-3 py-1.5 bg-violet-100 text-violet-800 rounded-lg border-2 border-dashed border-violet-300 hover:bg-violet-200 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700"
-      },
-      t("word_sounds.add_distractor") || "+ Add"
-    ))), (() => {
-      {
-      }
-      const _ct = word.activityItems || {};
-      const _ctWord = word.targetWord || word.word || word.term;
-      const _ctLines = [
-        reviewsActivity("read_sentence") && _ct.read_sentence && _ct.read_sentence.sentence && { key: "sent", icon: "\u{1F4AC}", label: t("word_sounds.activity_read_sentence") || "Finish the Sentence", text: _ct.read_sentence.sentence },
-        reviewsActivity("read_passage") && _ct.read_passage && _ct.read_passage.story && { key: "story", icon: "\u{1F4DA}", label: t("word_sounds.activity_read_passage") || "Read the Story", text: _ct.read_passage.story },
-        reviewsActivity("sentence_match") && _ct.sentence_match && _ct.sentence_match.sentence && { key: "pair", icon: "\u{1F5BC}\uFE0F", label: t("word_sounds.activity_sentence_match") || "Picture the Sentence", text: _ct.sentence_match.sentence }
-      ].filter(Boolean);
-      if (!_ctLines.length) return null;
-      return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-sky-800 uppercase tracking-wider mb-2 block" }, t("word_sounds.connected_text_label") || "Connected Text (sentence activities)"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5 p-3 bg-sky-50 border-2 border-sky-200 rounded-lg" }, _ctLines.map((line) => /* @__PURE__ */ React.createElement("div", { key: line.key, className: "flex items-center gap-2 text-sm text-slate-700" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, line.icon), /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, line.label, ":"), /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, wsHighlightTarget(line.text, _ctWord)), /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          "aria-label": (t("common.play_tts") || "Play") + " \u2014 " + line.label,
-          onClick: async (e) => {
-            e.stopPropagation();
-            const key = `${idx}-ct-${line.key}`;
-            if (playingAudioKey) return;
-            setPlayingAudioKey(key);
-            try {
-              await onPlayAudio(line.text);
-            } finally {
-              setPlayingAudioKey(null);
-            }
-          },
-          className: "p-2 rounded-lg bg-white hover:bg-sky-100 text-slate-700 hover:text-sky-800 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700",
-          title: t("common.play_tts") || "Play"
-        },
-        playingAudioKey === `${idx}-ct-${line.key}` ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" }) : "\u{1F50A}"
-      )))));
-    })(), /* @__PURE__ */ React.createElement("div", { hidden: !reviewsActivity("manipulation"), "data-ws-review-part": "manipulation" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-amber-700 uppercase tracking-wider block" }, t("word_sounds.sound_swap_label") || "Sound Swap (Manipulation Activity)"), word.manipulationTask?.type && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300" }, word.manipulationTask.type)), word.manipulationTask ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 p-3 bg-amber-50 border-2 border-amber-200 rounded-lg" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-amber-900 uppercase tracking-wider block mb-1" }, t("word_sounds.instruction_label") || "Instruction (spoken to student)"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        "aria-label": t("word_sounds.sound_swap_instruction_aria") || "Sound Swap instruction",
-        value: word.manipulationTask.instruction || "",
-        onChange: (e) => onUpdateWord(idx, { ...word, manipulationTask: { ...word.manipulationTask, instruction: e.target.value } }),
-        className: "flex-1 min-h-11 px-3 py-1.5 text-sm font-medium border-2 border-amber-200 rounded-lg focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white",
-        placeholder: t("word_sounds.sound_swap_instruction_placeholder") || "Say 'word'. Now say it again, but leave out the /x/ sound."
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        "aria-label": t("word_sounds.preview_instruction_tts_aria") || "Preview instruction TTS",
-        onClick: async (e) => {
-          e.stopPropagation();
-          const key = `${idx}-manip-instruction`;
-          if (playingAudioKey) return;
-          setPlayingAudioKey(key);
-          try {
-            await onPlayAudio(word.manipulationTask.instruction);
-          } finally {
-            setPlayingAudioKey(null);
-          }
-        },
-        className: "p-2 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700",
-        title: t("word_sounds.preview_instruction_tooltip") || "Preview instruction"
-      },
-      playingAudioKey === `${idx}-manip-instruction` ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" }) : "\u{1F50A}"
-    ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-amber-900 uppercase tracking-wider block mb-1" }, t("word_sounds.answer_distractors_label") || "Answer (correct) + Distractors"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        "aria-label": t("word_sounds.correct_answer_aria") || "Correct answer",
-        value: word.manipulationTask.answer || "",
-        onChange: (e) => onUpdateWord(idx, { ...word, manipulationTask: { ...word.manipulationTask, answer: e.target.value } }),
-        className: "flex-1 min-w-0 min-h-11 px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-300",
-        placeholder: t("word_sounds.answer_placeholder") || "answer"
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        "aria-label": t("word_sounds.preview_answer_aria") || "Preview answer",
-        onClick: async (e) => {
-          e.stopPropagation();
-          const key = `${idx}-manip-answer`;
-          if (playingAudioKey) return;
-          setPlayingAudioKey(key);
-          try {
-            await onPlayAudio(word.manipulationTask.answer);
-          } finally {
-            setPlayingAudioKey(null);
-          }
-        },
-        className: "p-2 rounded-lg bg-slate-100 hover:bg-green-100 text-slate-700 hover:text-green-800 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700",
-        title: t("word_sounds.preview_answer_tooltip") || "Preview answer"
-      },
-      playingAudioKey === `${idx}-manip-answer` ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" }) : "\u{1F50A}"
-    )), (word.manipulationTask.distractors || []).map((d, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
-      "input",
-      {
-        "aria-label": `Distractor ${i + 1}`,
-        value: d,
-        onChange: (e) => {
-          const newDist = [...word.manipulationTask.distractors || []];
-          newDist[i] = e.target.value;
-          onUpdateWord(idx, { ...word, manipulationTask: { ...word.manipulationTask, distractors: newDist } });
-        },
-        className: "flex-1 min-h-11 px-3 py-1.5 font-medium border-2 border-slate-200 rounded-lg focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-300 bg-white",
-        placeholder: t("word_sounds.distractor_placeholder") || "distractor"
-      }
-    ), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        "aria-label": t("word_sounds.preview_distractor_aria") || "Preview distractor",
-        onClick: async (e) => {
-          e.stopPropagation();
-          const key = `${idx}-manip-d-${i}`;
-          if (playingAudioKey) return;
-          setPlayingAudioKey(key);
-          try {
-            await onPlayAudio(d);
-          } finally {
-            setPlayingAudioKey(null);
-          }
-        },
-        className: "p-2 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 transition-colors motion-reduce:transition-none min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700",
-        title: t("word_sounds.preview_distractor_tooltip") || "Preview distractor"
-      },
-      playingAudioKey === `${idx}-manip-d-${i}` ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" }) : "\u{1F50A}"
-    ))))), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        disabled: Boolean(regeneratingOptions[`${idx}-manip-regen`]) || !_wsTextAiReady,
-        onClick: async () => {
-          if (!_wsAiUsable("text", onRegenerateManipulationTask)) {
-            setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
-            return;
-          }
-          if (onRegenerateManipulationTask) {
-            const key = `${idx}-manip-regen`;
-            setRegeneratingOptions((prev) => ({ ...prev, [key]: true }));
-            try {
-              await onRegenerateManipulationTask(idx);
-            } finally {
-              setRegeneratingOptions((prev) => {
-                const n = { ...prev };
-                delete n[key];
-                return n;
-              });
-            }
-          }
-        },
-        className: "w-full min-h-11 flex items-center justify-center gap-2 px-3 py-2 bg-amber-100 text-amber-900 hover:bg-amber-200 border-2 border-amber-300 rounded-lg text-sm font-bold transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 disabled:opacity-50 disabled:cursor-not-allowed",
-        title: t("word_sounds.regenerate_sound_swap_tooltip") || "Generate a fresh Sound Swap task for this word"
-      },
-      regeneratingOptions[`${idx}-manip-regen`] ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("word_sounds.regenerating") || "Regenerating\u2026") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, "aria-hidden": "true" }), " ", t("word_sounds.regenerate_task") || "Regenerate Task")
-    )) : /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 italic" }, t("word_sounds.no_sound_swap_yet") || "No Sound Swap task generated for this word yet."), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        type: "button",
-        disabled: Boolean(regeneratingOptions[`${idx}-manip-regen`]) || !_wsTextAiReady,
-        onClick: async () => {
-          if (!_wsAiUsable("text", onRegenerateManipulationTask)) {
-            setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
-            return;
-          }
-          if (onRegenerateManipulationTask) {
-            const key = `${idx}-manip-regen`;
-            setRegeneratingOptions((prev) => ({ ...prev, [key]: true }));
-            try {
-              await onRegenerateManipulationTask(idx);
-            } finally {
-              setRegeneratingOptions((prev) => {
-                const n = { ...prev };
-                delete n[key];
-                return n;
-              });
-            }
-          }
-        },
-        className: "min-h-11 flex items-center gap-2 px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg text-sm font-bold shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
-      },
-      regeneratingOptions[`${idx}-manip-regen`] ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("word_sounds.generating") || "Generating\u2026") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Sparkles, { size: 14, "aria-hidden": "true" }), " ", t("word_sounds.generate") || "Generate")
-    ))), /* @__PURE__ */ React.createElement("div", { hidden: !reviewsActivity("isolation"), "data-ws-review-part": "isolation" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 block" }, t("word_sounds.sound_positions_label") || "Sound Positions (Find Sounds Activity)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, (() => {
-      const phonemesRaw = word.phonemes;
-      const phonemeArray = Array.isArray(phonemesRaw) ? phonemesRaw : phonemesRaw?.phonemes && Array.isArray(phonemesRaw.phonemes) ? phonemesRaw.phonemes : [];
-      return phonemeArray;
-    })().map((phoneme, soundIdx) => {
-      const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"];
-      const ordinalLabel = ordinals[soundIdx] || `${soundIdx + 1}th`;
-      return /* @__PURE__ */ React.createElement("div", { key: soundIdx, className: "flex items-center gap-1 bg-gradient-to-r from-violet-50 to-pink-50 border-2 border-violet-200 rounded-lg px-2 py-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, ordinalLabel, ":"), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-violet-700 text-lg" }, phonemeLabel(phoneme)));
-    }), (!word.phonemes || word.phonemes.length === 0) && /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-sm italic" }, t("word_sounds.no_phonemes")))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-4 border-t border-slate-200" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-indigo-700 uppercase tracking-wider mb-2 block flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 12, "aria-hidden": "true" }), " ", t("word_sounds.word_image_label") || "Word Image"), (() => {
-      const safeFullImg = _safeMiscImageUrl(word.image);
-      return /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex-shrink-0" }, safeFullImg ? /* @__PURE__ */ React.createElement(
-        "img",
-        {
-          loading: "lazy",
-          src: safeFullImg,
-          alt: word.targetWord || word.word,
-          className: "w-24 h-24 rounded-xl object-cover border-2 border-indigo-200 shadow-md"
-        }
-      ) : /* @__PURE__ */ React.createElement("div", { className: "w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-600 bg-slate-50" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 32, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-2" }, /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => {
-            if (!_wsAiUsable("images", onGenerateImage)) {
-              setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
-              return;
-            }
-            setImageLoadErrors((prev) => {
-              if (!prev[idx]) return prev;
-              const n = { ...prev };
-              delete n[idx];
-              return n;
-            });
-            onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
-          },
-          disabled: isGeneratingImage(idx) || !_wsImageAiReady,
-          className: `w-full min-h-11 flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-bold text-sm transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed ${safeFullImg ? "bg-indigo-100 text-indigo-800 hover:bg-indigo-200 border border-indigo-200" : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md"}`
-        },
-        isGeneratingImage(idx) ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }), " ", t("word_sounds.generating_image") || "Generating...") : safeFullImg ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, "aria-hidden": "true" }), " ", t("word_sounds.regenerate_image_button") || "Regenerate Image") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Sparkles, { size: 14, "aria-hidden": "true" }), " ", t("word_sounds.generate_image_button") || "Generate Image")
-      ), safeFullImg && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: () => {
-            if (!_wsAiUsable("images", onRefineImage)) {
-              setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
-              return;
-            }
-            setImageLoadErrors((prev) => {
-              if (!prev[idx]) return prev;
-              const n = { ...prev };
-              delete n[idx];
-              return n;
-            });
-            onRefineImage && onRefineImage(idx, "Remove all text, labels, letters, and words from the image. Keep the illustration clean.");
-          },
-          disabled: isGeneratingImage(idx) || !_wsImageAiReady,
-          className: "w-full min-h-11 flex items-center justify-center gap-1 px-2 py-1.5 bg-red-50 text-red-800 hover:bg-red-100 border border-red-200 rounded-lg text-xs font-bold transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-        },
-        /* @__PURE__ */ React.createElement(Ban, { size: 12, "aria-hidden": "true" }),
-        " ",
-        t("word_sounds.remove_text_from_image") || "Remove Text from Image"
-      ), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          "aria-label": t("common.e_g_make_it_cuter_add_a_banana"),
-          type: "text",
-          maxLength: 500,
-          value: imageRefinementInputs[idx] || "",
-          onChange: (e) => setImageRefinementInputs((prev) => ({ ...prev, [idx]: String(e.target.value || "").slice(0, 500) })),
-          placeholder: t("word_sounds.image_refine_placeholder") || "e.g., make it cuter, add a banana",
-          className: "flex-1 min-h-11 text-xs border border-yellow-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-400",
-          onKeyDown: (e) => {
-            if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
-            const promptText = String(imageRefinementInputs[idx] || "").trim();
-            if (e.key === "Enter" && onRefineImage && promptText && !isGeneratingImage(idx)) {
+            onClick: () => {
               if (!_wsAiUsable("images", onRefineImage)) {
                 setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
                 return;
@@ -1980,41 +2012,74 @@ const WordSoundsReviewPanel = ({
                 delete n[idx];
                 return n;
               });
-              onRefineImage(idx, promptText);
-              setImageRefinementInputs((prev) => ({ ...prev, [idx]: "" }));
+              onRefineImage && onRefineImage(idx, "Remove all text, labels, letters, and words from the image. Keep the illustration clean.");
+            },
+            disabled: isGeneratingImage(idx) || !_wsImageAiReady,
+            className: "w-full min-h-11 flex items-center justify-center gap-1 px-2 py-1.5 bg-red-50 text-red-800 hover:bg-red-100 border border-red-200 rounded-lg text-xs font-bold transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          },
+          /* @__PURE__ */ React.createElement(Ban, { size: 12, "aria-hidden": "true" }),
+          " ",
+          t("word_sounds.remove_text_from_image") || "Remove Text from Image"
+        ), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, /* @__PURE__ */ React.createElement(
+          "input",
+          {
+            "aria-label": t("common.e_g_make_it_cuter_add_a_banana") || "Describe image edit",
+            type: "text",
+            maxLength: 500,
+            value: imageRefinementInputs[idx] || "",
+            onChange: (e) => setImageRefinementInputs((prev) => ({ ...prev, [idx]: String(e.target.value || "").slice(0, 500) })),
+            placeholder: t("word_sounds.image_refine_placeholder") || "e.g., make it cuter, add a banana",
+            className: "flex-1 min-h-11 text-xs border border-yellow-300 rounded-lg px-2 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus:ring-2 focus:ring-yellow-400",
+            onKeyDown: (e) => {
+              if (e.isComposing || e.nativeEvent?.isComposing || e.keyCode === 229) return;
+              const promptText = String(imageRefinementInputs[idx] || "").trim();
+              if (e.key === "Enter" && onRefineImage && promptText && !isGeneratingImage(idx)) {
+                if (!_wsAiUsable("images", onRefineImage)) {
+                  setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
+                  return;
+                }
+                setImageLoadErrors((prev) => {
+                  if (!prev[idx]) return prev;
+                  const n = { ...prev };
+                  delete n[idx];
+                  return n;
+                });
+                onRefineImage(idx, promptText);
+                setImageRefinementInputs((prev) => ({ ...prev, [idx]: "" }));
+              }
             }
           }
-        }
-      ), /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          "aria-label": t("common.refresh"),
-          onClick: () => {
-            if (isGeneratingImage(idx)) return;
-            const promptText = String(imageRefinementInputs[idx] || "").trim();
-            if (!_wsAiUsable("images", onRefineImage)) {
-              setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
-              return;
-            }
-            if (onRefineImage && promptText) {
-              setImageLoadErrors((prev) => {
-                if (!prev[idx]) return prev;
-                const n = { ...prev };
-                delete n[idx];
-                return n;
-              });
-              onRefineImage(idx, promptText);
-              setImageRefinementInputs((prev) => ({ ...prev, [idx]: "" }));
-            }
+        ), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            "aria-label": t("common.refresh") || "Apply image edit",
+            onClick: () => {
+              if (isGeneratingImage(idx)) return;
+              const promptText = String(imageRefinementInputs[idx] || "").trim();
+              if (!_wsAiUsable("images", onRefineImage)) {
+                setReviewError({ index: idx, message: t("toasts.ai_available") || "AI is not available right now." });
+                return;
+              }
+              if (onRefineImage && promptText) {
+                setImageLoadErrors((prev) => {
+                  if (!prev[idx]) return prev;
+                  const n = { ...prev };
+                  delete n[idx];
+                  return n;
+                });
+                onRefineImage(idx, promptText);
+                setImageRefinementInputs((prev) => ({ ...prev, [idx]: "" }));
+              }
+            },
+            disabled: !String(imageRefinementInputs[idx] || "").trim() || isGeneratingImage(idx) || !_wsImageAiReady,
+            className: "min-w-11 min-h-11 px-3 py-1.5 bg-yellow-400 text-yellow-900 rounded-lg hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-xs transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-800 flex items-center justify-center"
           },
-          disabled: !String(imageRefinementInputs[idx] || "").trim() || isGeneratingImage(idx) || !_wsImageAiReady,
-          className: "min-w-11 min-h-11 px-3 py-1.5 bg-yellow-400 text-yellow-900 rounded-lg hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-xs transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-800 flex items-center justify-center"
-        },
-        isGeneratingImage(idx) ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Send, { size: 12, "aria-hidden": "true" })
-      )), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 italic" }, t("word_sounds.nano_mode_hint") || '\u2728 Nano Mode: Type custom edits like "make it blue" or "add a hat"'))));
-    })()))
-  ))), /* @__PURE__ */ React.createElement("div", { className: "p-3 sm:p-4 border-t bg-slate-50 flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 flex-shrink-0" }, /* @__PURE__ */ React.createElement(
+          isGeneratingImage(idx) ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Send, { size: 12, "aria-hidden": "true" })
+        )), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-700 italic" }, t("word_sounds.nano_mode_hint") || '\u2728 Nano Mode: Type custom edits like "make it blue" or "add a hat"'))));
+      })()))
+    )));
+  })()), /* @__PURE__ */ React.createElement("div", { className: "p-3 sm:p-4 border-t bg-slate-50 flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 flex-shrink-0" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       ref: reviewBackRef,
@@ -2022,7 +2087,7 @@ const WordSoundsReviewPanel = ({
       "aria-label": t("word_sounds.back_to_setup") || "Back to Setup",
       onClick: requestBackToSetup,
       "data-help-key": "word_sounds_review_back",
-      className: "w-full sm:w-auto min-h-11 px-4 py-2 text-slate-600 hover:text-slate-800 font-medium flex items-center justify-center gap-2 hover:bg-slate-100 rounded-lg transition-colors motion-reduce:transition-none"
+      className: "w-full sm:w-auto min-h-11 px-4 py-2 text-slate-700 hover:text-slate-900 font-medium flex items-center justify-center gap-2 hover:bg-slate-100 rounded-lg transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-1"
     },
     /* @__PURE__ */ React.createElement(ChevronLeft, { size: 18, "aria-hidden": "true" }),
     t("word_sounds.back_to_setup") || "Back to Setup"
@@ -2033,7 +2098,7 @@ const WordSoundsReviewPanel = ({
       "aria-label": t("word_sounds.start_activity") || "Start Activity",
       onClick: onStartActivity,
       "data-help-key": "word_sounds_review_start",
-      className: "w-full sm:w-auto min-h-11 px-6 py-3 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all motion-reduce:transition-none flex items-center justify-center gap-2"
+      className: "w-full sm:w-auto min-h-11 px-6 py-3 bg-gradient-to-r from-green-700 to-emerald-700 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 motion-reduce:hover:scale-100 transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 flex items-center justify-center gap-2"
     },
     /* @__PURE__ */ React.createElement(Play, { size: 18, "aria-hidden": "true" }),
     " ",
@@ -2175,7 +2240,7 @@ const DictationButton = ({ onTranscript, language, disabled = false, label, stop
     },
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, listening ? "\u23F9\uFE0F" : "\u{1F399}\uFE0F"),
     /* @__PURE__ */ React.createElement("span", null, listening ? stopText : startText)
-  ), statusNote && /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: "text-xs text-slate-600" }, statusNote));
+  ), statusNote && /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: "text-xs text-slate-700" }, statusNote));
 };
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.AnimatedNumber = AnimatedNumber;

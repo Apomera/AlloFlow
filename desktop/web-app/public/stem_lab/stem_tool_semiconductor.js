@@ -75,6 +75,16 @@ window.StemLab = window.StemLab || {
     try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
     catch (e) { return false; }
   }
+  function semiHighContrast() {
+    try {
+      if (typeof document !== 'undefined') {
+        var de = document.documentElement, bd = document.body;
+        if ((de && de.classList && de.classList.contains('theme-contrast')) || (bd && bd.classList && bd.classList.contains('theme-contrast'))) return true;
+      }
+      if (typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(forced-colors: active)').matches) return true;
+    } catch (e) {}
+    return false;
+  }
   // High-contrast, lab-specific interaction layer. Keeping this scoped to the
   // Semiconductor Lab prevents the richer controls from changing other tools.
   if (!document.getElementById('semi-contrast-ui')) {
@@ -1872,8 +1882,9 @@ window.StemLab = window.StemLab || {
           if (!cx) return;
           cx.clearRect(0, 0, W, H);
           var semiStatic = !!(d.motionPaused || semiReducedMotion());
+          var semiHC = semiHighContrast();
           var nowMs = semiStatic ? 0 : Date.now();
-          var hasGrad = typeof cx.createLinearGradient === 'function' && typeof cx.createRadialGradient === 'function';
+          var hasGrad = !semiHC && typeof cx.createLinearGradient === 'function' && typeof cx.createRadialGradient === 'function';
 
           var midY = H / 2;
           var gapPx = Math.min(H * 0.40, Math.max(10, Eg * 28));
@@ -2478,8 +2489,9 @@ window.StemLab = window.StemLab || {
           if (!cx) return;
           cx.clearRect(0, 0, W, H);
           var semiStatic = !!(d.motionPaused || semiReducedMotion());
+          var semiHC = semiHighContrast();
           var nowMs = semiStatic ? 0 : Date.now();
-          var hasGrad = typeof cx.createLinearGradient === 'function' && typeof cx.createRadialGradient === 'function';
+          var hasGrad = !semiHC && typeof cx.createLinearGradient === 'function' && typeof cx.createRadialGradient === 'function';
 
           if (hasGrad) {
             var pnBg = cx.createLinearGradient(0, 0, 0, H);
@@ -2498,9 +2510,13 @@ window.StemLab = window.StemLab || {
 
           // P-side semiconductor slab with glossy top rim
           var pW = Math.max(0, midX - 10 - depletionW / 2);
-          var pGrad = cx.createLinearGradient(10, junctionY, midX - depletionW / 2, junctionY + junctionH);
-          pGrad.addColorStop(0, '#172554'); pGrad.addColorStop(0.55, '#1D4ED8'); pGrad.addColorStop(1, '#2563EB');
-          cx.fillStyle = pGrad;
+          if (hasGrad) {
+            var pGrad = cx.createLinearGradient(10, junctionY, midX - depletionW / 2, junctionY + junctionH);
+            pGrad.addColorStop(0, '#172554'); pGrad.addColorStop(0.55, '#1D4ED8'); pGrad.addColorStop(1, '#2563EB');
+            cx.fillStyle = pGrad;
+          } else {
+            cx.fillStyle = '#1D4ED8';
+          }
           cx.fillRect(10, junctionY, pW, junctionH);
           cx.strokeStyle = 'rgba(147,197,253,0.45)'; cx.lineWidth = 1;
           cx.strokeRect(10, junctionY, pW, junctionH);
@@ -2509,9 +2525,13 @@ window.StemLab = window.StemLab || {
 
           // N-side semiconductor slab with glossy top rim
           var nX = midX + depletionW / 2, nW = Math.max(0, W - 10 - nX);
-          var nGrad = cx.createLinearGradient(nX, junctionY, W - 10, junctionY + junctionH);
-          nGrad.addColorStop(0, '#DC2626'); nGrad.addColorStop(0.5, '#B91C1C'); nGrad.addColorStop(1, '#450A0A');
-          cx.fillStyle = nGrad;
+          if (hasGrad) {
+            var nGrad = cx.createLinearGradient(nX, junctionY, W - 10, junctionY + junctionH);
+            nGrad.addColorStop(0, '#DC2626'); nGrad.addColorStop(0.5, '#B91C1C'); nGrad.addColorStop(1, '#450A0A');
+            cx.fillStyle = nGrad;
+          } else {
+            cx.fillStyle = '#B91C1C';
+          }
           cx.fillRect(nX, junctionY, nW, junctionH);
           cx.strokeStyle = 'rgba(252,165,165,0.45)'; cx.lineWidth = 1;
           cx.strokeRect(nX, junctionY, nW, junctionH);
@@ -2565,28 +2585,49 @@ window.StemLab = window.StemLab || {
               cx.fillStyle = '#fca5a5'; cx.fillText('\u2295', midX + depletionW / 4, iy);
             }
           }
-          // Glowing E-field lines across the depletion barrier
+          // Glowing E-field lines across the depletion barrier with bias-scaled animated vector pulses
           if (showField && pnModelValid && depletionW > 15) {
             var arrowCount = Math.floor(junctionH / 35);
+            var fieldStrength = Math.max(0.25, Math.min(1.6, (0.7 - bias) / 1.4));
+            var fieldPulseT = semiStatic ? 0.5 : ((nowMs * (0.00055 + fieldStrength * 0.00045)) % 1);
             for (var ai = 0; ai < arrowCount; ai++) {
               var ay = junctionY + 30 + ai * 35;
               var ax1 = midX - depletionW / 3, ax2 = midX + depletionW / 3;
-              cx.save();
-              cx.strokeStyle = 'rgba(251,191,36,0.34)'; cx.lineWidth = 5; cx.lineCap = 'round';
-              cx.beginPath(); cx.moveTo(ax2, ay); cx.lineTo(ax1, ay); cx.stroke();
-              cx.restore();
-              cx.strokeStyle = '#FDE047'; cx.lineWidth = 2;
+              if (!semiHC) {
+                cx.save();
+                cx.strokeStyle = 'rgba(251,191,36,' + (0.20 + Math.min(0.32, fieldStrength * 0.2)).toFixed(3) + ')';
+                cx.lineWidth = 4 + fieldStrength * 1.8; cx.lineCap = 'round';
+                cx.beginPath(); cx.moveTo(ax2, ay); cx.lineTo(ax1, ay); cx.stroke();
+                cx.restore();
+              }
+              cx.strokeStyle = '#FDE047'; cx.lineWidth = 1.6 + Math.min(1.2, fieldStrength * 0.6);
               cx.beginPath(); cx.moveTo(ax2, ay); cx.lineTo(ax1, ay); cx.stroke();
               cx.beginPath(); cx.moveTo(ax1 + 5, ay - 4); cx.lineTo(ax1, ay); cx.lineTo(ax1 + 5, ay + 4); cx.stroke();
+              // Animated E-field vector flux bead streaming N -> P, scaling smoothly with bias voltage
+              if (!semiStatic && !semiHC) {
+                var fp = (fieldPulseT + ai * 0.23) % 1;
+                var fx = ax2 - fp * (ax2 - ax1);
+                var fAlpha = Math.sin(fp * Math.PI) * Math.min(1, 0.55 + fieldStrength * 0.35);
+                if (hasGrad) {
+                  var fGlow = cx.createRadialGradient(fx, ay, 0.5, fx, ay, 6.5);
+                  fGlow.addColorStop(0, 'rgba(254,249,195,' + fAlpha.toFixed(3) + ')');
+                  fGlow.addColorStop(1, 'rgba(251,191,36,0)');
+                  cx.fillStyle = fGlow;
+                  cx.beginPath(); cx.arc(fx, ay, 6.5, 0, Math.PI * 2); cx.fill();
+                }
+                cx.fillStyle = 'rgba(254,249,195,' + fAlpha.toFixed(3) + ')';
+                cx.beginPath(); cx.arc(fx, ay, 2.2, 0, Math.PI * 2); cx.fill();
+              }
             }
             cx.fillStyle = '#FDE047'; cx.font = 'bold 11px sans-serif'; cx.fillText('\u2190 E field', midX, junctionY + junctionH - 8);
           }
 
-          // Carrier animation with luminous halos & velocity trails
+          // Carrier animation with luminous halos, velocity trails & forward-bias photon-emission recombination flashes
           if (showCarriers) {
             var t = semiStatic ? 0.35 : (nowMs % 3000) / 3000;
             if (bias > 0) {
               var flowSpeed = t;
+              var recombIntensity = Math.min(1, Math.max(0.25, bias / 1.4));
               // Hollow cyan/blue holes drifting left-to-right with wake trail
               for (var hi = 0; hi < 6; hi++) {
                 var hx = 40 + ((flowSpeed * W + hi * 70) % (W - 80));
@@ -2619,8 +2660,42 @@ window.StemLab = window.StemLab || {
                 cx.fillStyle = '#FCA5A5';
                 cx.beginPath(); cx.arc(exx, ey, 3.4, 0, Math.PI * 2); cx.fill();
               }
+              // Glowing photon-emission recombination flashes where electrons & holes meet at the junction
+              if (!semiHC) {
+                for (var ri = 0; ri < 3; ri++) {
+                  var rCycle = semiStatic ? 0.32 : ((nowMs * (0.0009 + recombIntensity * 0.0007) + ri * 0.33) % 1);
+                  var rY = junctionY + 48 + ri * (junctionH / 4);
+                  var rX = midX + Math.sin(ri * 2.4) * 6;
+                  var flashAlpha = semiStatic ? 0.55 : Math.pow(1 - rCycle, 1.5) * recombIntensity;
+                  var flashR = semiStatic ? 9 : (4 + rCycle * (16 + recombIntensity * 10));
+                  var isLed = !!(d.pnLedMode && bias > 0.6);
+                  var coreRgb = isLed ? '254,240,138' : '110,231,183';
+                  var rimRgb = isLed ? '251,191,36' : '56,189,248';
+                  if (hasGrad && flashAlpha > 0.04) {
+                    var recGrad = cx.createRadialGradient(rX, rY, 0.5, rX, rY, flashR);
+                    recGrad.addColorStop(0, 'rgba(255,255,255,' + (flashAlpha * 0.95).toFixed(3) + ')');
+                    recGrad.addColorStop(0.4, 'rgba(' + coreRgb + ',' + (flashAlpha * 0.72).toFixed(3) + ')');
+                    recGrad.addColorStop(1, 'rgba(' + rimRgb + ',0)');
+                    cx.fillStyle = recGrad;
+                    cx.beginPath(); cx.arc(rX, rY, flashR, 0, Math.PI * 2); cx.fill();
+                  }
+                  if (!semiStatic && flashAlpha > 0.06) {
+                    // Expanding recombination ring + escaping photon wave packet
+                    cx.strokeStyle = 'rgba(' + coreRgb + ',' + (flashAlpha * 0.75).toFixed(3) + ')';
+                    cx.lineWidth = 1.2;
+                    cx.beginPath(); cx.arc(rX, rY, flashR * 0.85, 0, Math.PI * 2); cx.stroke();
+                    if (isLed) {
+                      var pDist = 8 + rCycle * 34;
+                      var pAng = -Math.PI * 0.5 + (ri - 1) * 0.42;
+                      var px = rX + Math.cos(pAng) * pDist, py = rY + Math.sin(pAng) * pDist;
+                      cx.fillStyle = 'rgba(254,249,195,' + (flashAlpha * 0.9).toFixed(3) + ')';
+                      cx.beginPath(); cx.arc(px, py, 2.2, 0, Math.PI * 2); cx.fill();
+                    }
+                  }
+                }
+              }
               // Current indicator with glow
-              cx.shadowColor = '#34D399'; cx.shadowBlur = 10;
+              if (!semiHC) { cx.shadowColor = '#34D399'; cx.shadowBlur = 10; }
               cx.fillStyle = '#34D399'; cx.font = 'bold 12px sans-serif';
               cx.fillText('Forward bias: conventional current \u2192', midX, junctionY - 10);
               cx.shadowBlur = 0;
@@ -2798,8 +2873,9 @@ window.StemLab = window.StemLab || {
           if (!cx) return;
           cx.clearRect(0, 0, W, H);
           var semiStatic = !!(d.motionPaused || semiReducedMotion());
+          var semiHC = semiHighContrast();
           var nowMs = semiStatic ? 0 : Date.now();
-          var hasGrad = typeof cx.createLinearGradient === 'function' && typeof cx.createRadialGradient === 'function';
+          var hasGrad = !semiHC && typeof cx.createLinearGradient === 'function' && typeof cx.createRadialGradient === 'function';
           if (hasGrad) {
             var trBg = cx.createLinearGradient(0, 0, 0, H);
             trBg.addColorStop(0, '#040a1a'); trBg.addColorStop(1, '#0b162c');
@@ -2872,9 +2948,38 @@ window.StemLab = window.StemLab || {
             cx.fillStyle = '#FBBF24'; cx.font = 'bold 13px sans-serif'; cx.textAlign = 'right';
             cx.fillText('IN = ' + Vg.toFixed(1) + 'V', 28, 92);
 
-            // Current flow animation
+            // Current flow & luminous CMOS inversion-channel shimmer
+            var cmosPulse = semiStatic ? 0.5 : (nowMs % 1200) / 1200;
+            if (!semiHC) {
+              if (pmosOn && hasGrad) {
+                var pShim = cx.createLinearGradient(midX - 28, 37, midX + 28, 73);
+                var pAlpha = semiStatic ? 0.28 : (0.18 + 0.16 * Math.sin(nowMs * 0.006));
+                pShim.addColorStop(0, 'rgba(96,165,250,0)');
+                pShim.addColorStop(0.5, 'rgba(147,197,253,' + pAlpha.toFixed(3) + ')');
+                pShim.addColorStop(1, 'rgba(96,165,250,0)');
+                cx.fillStyle = pShim;
+                cx.fillRect(midX - 28, 37, 56, 36);
+                if (!semiStatic) {
+                  cx.fillStyle = 'rgba(147,197,253,0.85)';
+                  cx.beginPath(); cx.arc(midX, 18 + cmosPulse * 72, 3.0, 0, Math.PI * 2); cx.fill();
+                }
+              }
+              if (nmosOn && hasGrad) {
+                var nShim = cx.createLinearGradient(midX - 28, 107, midX + 28, 143);
+                var nAlpha = semiStatic ? 0.28 : (0.18 + 0.16 * Math.sin(nowMs * 0.006 + 1.4));
+                nShim.addColorStop(0, 'rgba(248,113,113,0)');
+                nShim.addColorStop(0.5, 'rgba(252,165,165,' + nAlpha.toFixed(3) + ')');
+                nShim.addColorStop(1, 'rgba(248,113,113,0)');
+                cx.fillStyle = nShim;
+                cx.fillRect(midX - 28, 107, 56, 36);
+                if (!semiStatic) {
+                  cx.fillStyle = 'rgba(252,165,165,0.85)';
+                  cx.beginPath(); cx.arc(midX, 98 + cmosPulse * 64, 3.0, 0, Math.PI * 2); cx.fill();
+                }
+              }
+            }
             if (nmosOn && pmosOn) {
-              var ft = semiStatic ? 0.5 : (nowMs % 1200) / 1200;
+              var ft = cmosPulse;
               cx.fillStyle = 'rgba(52, 211, 153, 0.75)';
               cx.beginPath(); cx.arc(midX, 125 + ft * 40, 3.5, 0, Math.PI * 2); cx.fill();
               cx.beginPath(); cx.arc(midX, 35 + ft * 40, 3.5, 0, Math.PI * 2); cx.fill();
@@ -2926,25 +3031,77 @@ window.StemLab = window.StemLab || {
             cx.fillStyle = '#94A3B8'; cx.font = '10px sans-serif';
             cx.fillText(type === 'mosfet-n' ? 'p-substrate' : 'n-substrate', midX, midY + 25);
 
-            // Glowing inversion channel with luminous carrier pulses
-            if (isOn) {
-              var channelAlpha = Math.min(1, .35 + mos.overdrive / 3.5);
-              if (hasGrad) {
-                var chGlow = cx.createLinearGradient(0, midY - 14, 0, midY + 14);
-                chGlow.addColorStop(0, 'rgba(16,185,129,0)');
-                chGlow.addColorStop(0.5, 'rgba(52,211,153,' + (channelAlpha * 0.45).toFixed(2) + ')');
-                chGlow.addColorStop(1, 'rgba(16,185,129,0)');
-                cx.fillStyle = chGlow;
-                cx.fillRect(midX - 55, midY - 14, 110, 28);
+            // Gate electric-field fringe lines through SiO2 oxide proportional to gate voltage
+            if (!semiHC && Math.abs(Vg) > 0.15) {
+              var gFieldAlpha = Math.min(0.7, Math.abs(Vg) / 5);
+              cx.strokeStyle = 'rgba(253, 224, 71, ' + gFieldAlpha.toFixed(3) + ')';
+              cx.lineWidth = 1;
+              cx.setLineDash([2, 2]);
+              for (var gfi = -3; gfi <= 3; gfi++) {
+                var gfx = midX + gfi * 10;
+                cx.beginPath(); cx.moveTo(gfx, midY - 37); cx.lineTo(gfx, midY - 12); cx.stroke();
               }
-              cx.fillStyle = 'rgba(52, 211, 153, ' + channelAlpha.toFixed(2) + ')';
-              cx.fillRect(midX - 55, midY - 5, 110, 10);
-              cx.strokeStyle = '#6EE7B7'; cx.lineWidth = 2;
-              var flowOffset = semiStatic ? 12 : (nowMs % 1000) / 1000 * 30;
-              for (var fi = 0; fi < (Math.abs(mos.currentA || 0) > 0 ? 5 : 0); fi++) {
-                var fx = midX - 50 + (fi * 25 + flowOffset) % 105;
-                cx.beginPath(); cx.moveTo(fx, midY); cx.lineTo(fx + 8, midY); cx.stroke();
-                cx.beginPath(); cx.moveTo(fx + 6, midY - 3); cx.lineTo(fx + 8, midY); cx.lineTo(fx + 6, midY + 3); cx.stroke();
+              cx.setLineDash([]);
+            }
+
+            // Glowing tapered MOSFET inversion channel (depicts pinch-off in saturation) & carrier density shimmer
+            if (isOn) {
+              var od = Math.max(0.15, mos.overdrive || 0);
+              var absVd = Math.abs(Vd || 0);
+              var pinchRatio = Math.max(0.14, 1 - Math.min(0.86, absVd / Math.max(0.4, od * 1.15)));
+              var chTopY = midY - 10;
+              var chHSource = Math.min(18, 7 + od * 2.6);
+              var chHDrain = Math.max(2.2, chHSource * pinchRatio);
+              var channelAlpha = Math.min(1, .35 + od / 3.5);
+              var shimmerPhase = semiStatic ? 0 : (nowMs * 0.0045);
+
+              if (hasGrad) {
+                var chGlow = cx.createLinearGradient(midX - 55, chTopY, midX + 55, chTopY + chHSource + 6);
+                chGlow.addColorStop(0, 'rgba(52,211,153,' + (channelAlpha * 0.58).toFixed(3) + ')');
+                chGlow.addColorStop(0.65, 'rgba(34,211,238,' + (channelAlpha * 0.42).toFixed(3) + ')');
+                chGlow.addColorStop(1, 'rgba(16,185,129,' + (channelAlpha * 0.22 * pinchRatio).toFixed(3) + ')');
+                cx.fillStyle = chGlow;
+              } else {
+                cx.fillStyle = 'rgba(52, 211, 153, ' + channelAlpha.toFixed(2) + ')';
+              }
+              // Tapered polygon from full inversion thickness at Source to pinched neck at Drain
+              cx.beginPath();
+              cx.moveTo(midX - 55, chTopY);
+              cx.lineTo(midX + 55, chTopY);
+              cx.lineTo(midX + 55, chTopY + chHDrain);
+              cx.quadraticCurveTo(midX + 10, chTopY + (chHSource + chHDrain) * 0.56, midX - 55, chTopY + chHSource);
+              cx.closePath();
+              cx.fill();
+              cx.strokeStyle = 'rgba(110, 231, 183, 0.72)';
+              cx.lineWidth = 1.1;
+              cx.stroke();
+
+              // Luminous carrier-density shimmer wave & drift pulses along the inversion channel
+              if (!semiHC && Math.abs(mos.currentA || 0) > 0) {
+                var flowOffset = semiStatic ? 12 : (nowMs % 1000) / 1000 * 30;
+                for (var fi = 0; fi < 6; fi++) {
+                  var frac = ((fi * 18 + flowOffset) % 106) / 106;
+                  var fx = midX - 52 + frac * 104;
+                  var localH = chHSource + (chHDrain - chHSource) * frac;
+                  var fy = chTopY + localH * 0.48 + (semiStatic ? 0 : Math.sin(shimmerPhase + fi * 1.3) * Math.min(2.2, localH * 0.22));
+                  if (hasGrad) {
+                    var cGlow = cx.createRadialGradient(fx, fy, 0.5, fx, fy, 6);
+                    cGlow.addColorStop(0, 'rgba(209,250,229,0.92)');
+                    cGlow.addColorStop(1, 'rgba(16,185,129,0)');
+                    cx.fillStyle = cGlow;
+                    cx.beginPath(); cx.arc(fx, fy, 6, 0, Math.PI * 2); cx.fill();
+                  }
+                  cx.strokeStyle = '#A7F3D0'; cx.lineWidth = 1.8;
+                  cx.beginPath(); cx.moveTo(fx - 3, fy); cx.lineTo(fx + 5, fy); cx.stroke();
+                  cx.beginPath(); cx.moveTo(fx + 3, fy - 2.4); cx.lineTo(fx + 5, fy); cx.lineTo(fx + 3, fy + 2.4); cx.stroke();
+                }
+                // Pinch-off neck highlight marker when in saturation
+                if (pinchRatio < 0.35) {
+                  cx.fillStyle = 'rgba(251, 191, 36, 0.85)';
+                  cx.font = 'bold 8.5px sans-serif';
+                  cx.textAlign = 'right';
+                  cx.fillText('pinch-off', midX + 53, chTopY + chHSource + 11);
+                }
               }
             }
 
@@ -3415,27 +3572,66 @@ window.StemLab = window.StemLab || {
             cx.fillText('1 kΩ ref.', W - 10, originY - 5);
           }
 
-          // Current sweep marker — live glowing operating-point beacon
+          // Current sweep marker — live glowing operating-point beacon + zero-GC phosphor trail
+          var semiStaticIV = !!(d.motionPaused || semiReducedMotion());
+          var semiHCIV = semiHighContrast();
           var markerX = originX + sweepV * scaleX;
           var markerI = calcCurrent(sweepV);
           var markerY = originY - markerI * 1000 * scaleY;
           var markerOffScale = markerY < plotTop || markerY > H - 15;
           var aboveScale = markerY < plotTop;
           markerY = Math.max(plotTop, Math.min(H - 15, markerY));
+          // Maintain pre-allocated circular phosphor trail buffer on the canvas node
+          if (!canvasEl._ivTrail || canvasEl._ivTrailDevice !== device) {
+            canvasEl._ivTrailDevice = device;
+            canvasEl._ivTrailLen = 0;
+            canvasEl._ivTrail = [];
+            for (var ti0 = 0; ti0 < 16; ti0++) canvasEl._ivTrail.push({ x: markerX, y: markerY, off: markerOffScale, at: 0 });
+          }
+          var trailBuf = canvasEl._ivTrail;
+          var nowIV = Date.now();
+          if (canvasEl._ivLastSweepV !== sweepV) {
+            canvasEl._ivLastSweepV = sweepV;
+            for (var ts = trailBuf.length - 1; ts > 0; ts--) {
+              trailBuf[ts].x = trailBuf[ts - 1].x;
+              trailBuf[ts].y = trailBuf[ts - 1].y;
+              trailBuf[ts].off = trailBuf[ts - 1].off;
+              trailBuf[ts].at = trailBuf[ts - 1].at;
+            }
+            trailBuf[0].x = markerX; trailBuf[0].y = markerY; trailBuf[0].off = markerOffScale; trailBuf[0].at = nowIV;
+            if (canvasEl._ivTrailLen < trailBuf.length) canvasEl._ivTrailLen++;
+          }
+          // Render fading CRT phosphor persistence trail behind operating-point beacon
+          if (!semiStaticIV && !semiHCIV && canvasEl._ivTrailLen > 1) {
+            cx.save();
+            cx.lineCap = 'round';
+            for (var tp = 1; tp < canvasEl._ivTrailLen; tp++) {
+              var pA = trailBuf[tp - 1], pB = trailBuf[tp];
+              if (pA.off || pB.off) continue;
+              var ageFade = Math.max(0, 1 - (nowIV - pB.at) / 1400);
+              var segAlpha = (1 - tp / canvasEl._ivTrailLen) * 0.62 * Math.max(0.18, ageFade);
+              if (segAlpha <= 0.02) continue;
+              cx.strokeStyle = 'rgba(251, 191, 36, ' + segAlpha.toFixed(3) + ')';
+              cx.lineWidth = Math.max(1.2, 5.2 * (1 - tp / canvasEl._ivTrailLen));
+              cx.beginPath(); cx.moveTo(pA.x, pA.y); cx.lineTo(pB.x, pB.y); cx.stroke();
+            }
+            cx.restore();
+          }
           // Crosshairs
           cx.strokeStyle = 'rgba(251, 191, 36, 0.36)'; cx.lineWidth = 1.2; cx.setLineDash([3, 3]);
           cx.beginPath(); cx.moveTo(markerX, originY); cx.lineTo(markerX, markerY); cx.stroke();
           cx.beginPath(); cx.moveTo(originX, markerY); cx.lineTo(markerX, markerY); cx.stroke();
           cx.setLineDash([]);
-          if (!markerOffScale && hasGrad) {
-            var bHalo = cx.createRadialGradient(markerX, markerY, 2, markerX, markerY, 15);
-            bHalo.addColorStop(0, 'rgba(251,191,36,0.75)'); bHalo.addColorStop(0.55, 'rgba(245,158,11,0.22)'); bHalo.addColorStop(1, 'rgba(245,158,11,0)');
-            cx.fillStyle = bHalo; cx.beginPath(); cx.arc(markerX, markerY, 15, 0, Math.PI * 2); cx.fill();
+          if (!markerOffScale && hasGrad && !semiHCIV) {
+            var bPulse = semiStaticIV ? 1 : (1 + 0.14 * Math.sin(nowIV * 0.006));
+            var bHalo = cx.createRadialGradient(markerX, markerY, 2, markerX, markerY, 16 * bPulse);
+            bHalo.addColorStop(0, 'rgba(251,191,36,0.78)'); bHalo.addColorStop(0.55, 'rgba(245,158,11,0.24)'); bHalo.addColorStop(1, 'rgba(245,158,11,0)');
+            cx.fillStyle = bHalo; cx.beginPath(); cx.arc(markerX, markerY, 16 * bPulse, 0, Math.PI * 2); cx.fill();
             cx.strokeStyle = 'rgba(254,240,138,0.85)'; cx.lineWidth = 1.2;
-            cx.beginPath(); cx.arc(markerX, markerY, 8.5, 0, Math.PI * 2); cx.stroke();
+            cx.beginPath(); cx.arc(markerX, markerY, 8.5 * bPulse, 0, Math.PI * 2); cx.stroke();
           }
           cx.fillStyle = '#FBBF24';
-          cx.shadowColor = '#F59E0B'; cx.shadowBlur = 10;
+          if (!semiHCIV) { cx.shadowColor = '#F59E0B'; cx.shadowBlur = 10; }
           cx.beginPath();
           if (markerOffScale) { var direction = aboveScale ? 1 : -1; cx.moveTo(markerX, markerY); cx.lineTo(markerX - 5, markerY + direction * 9); cx.lineTo(markerX + 5, markerY + direction * 9); cx.closePath(); } else cx.arc(markerX, markerY, 4.8, 0, Math.PI * 2);
           cx.fill();
@@ -3470,7 +3666,21 @@ window.StemLab = window.StemLab || {
         React.useEffect(function() {
           var canvas = document.getElementById('semi-iv-canvas');
           if (!canvas) return;
-          return bindStaticCanvas(canvas, canvasRef);
+          var cleanupStatic = bindStaticCanvas(canvas, canvasRef);
+          if (d.motionPaused || semiReducedMotion() || semiHighContrast()) return cleanupStatic;
+          var ivRaf = null;
+          function tickIV() {
+            if (!canvas.isConnected) return;
+            canvasRef(canvas);
+            if (!d.motionPaused && !semiReducedMotion() && !semiHighContrast()) {
+              ivRaf = requestAnimationFrame(tickIV);
+            }
+          }
+          ivRaf = requestAnimationFrame(tickIV);
+          return function() {
+            if (ivRaf != null) cancelAnimationFrame(ivRaf);
+            if (typeof cleanupStatic === 'function') cleanupStatic();
+          };
         }, [tab, subtool, d.motionPaused, d.ivDevice, d.ivSweepV, d.ivShowIdeal, d.ivTemp]);
 
         var iDisplay = Math.abs(currentI) < 0.001 ? (currentI * 1e6).toFixed(1) + ' \u03BCA' : (currentI * 1000).toFixed(2) + ' mA';
@@ -3701,6 +3911,9 @@ window.StemLab = window.StemLab || {
         var canvasRef=function(canvasEl){
           if(!canvasEl)return;
           var surface=prepareCanvas(canvasEl, 440, 290),cx=surface.cx,W=surface.W,H=surface.H;
+          if(!cx)return;
+          var semiHC=semiHighContrast();
+          var hasGrad=!semiHC && typeof cx.createLinearGradient==='function' && typeof cx.createRadialGradient==='function';
           cx.fillStyle='#0F172A';cx.fillRect(0,0,W,H);
           var L=48,R=18,T=48,B=54,gW=W-L-R,gH=H-T-B,yMax=mixMode?1.1:2.5;
           var x=function(nm){return L+(nm-350)/650*gW;},y=function(v){return T+gH-v/yMax*gH;};
@@ -3713,6 +3926,18 @@ window.StemLab = window.StemLab || {
           function curve(sample,color,dash){
             cx.save();cx.beginPath();cx.rect(L,T,gW,gH);cx.clip();cx.strokeStyle=color;cx.lineWidth=2;cx.setLineDash(dash||[]);
             cx.beginPath();for(var nm=350;nm<=1000;nm+=1){var yy=y(sample(nm));if(nm===350)cx.moveTo(x(nm),yy);else cx.lineTo(x(nm),yy);}cx.stroke();cx.restore();
+          }
+          // Subtle luminous emission fill under active LED spectral peaks
+          if(hasGrad && model.active && model.components.length){
+            model.components.forEach(function(p){
+              if(p.weight<=0.01)return;
+              var pxCenter=x(p.nm),pyPeak=y(p.weight);
+              cx.save();cx.beginPath();cx.rect(L,T,gW,gH);cx.clip();
+              var peakGlow=cx.createRadialGradient(pxCenter,pyPeak,2,pxCenter,T+gH,gH*0.85);
+              peakGlow.addColorStop(0,p.color);peakGlow.addColorStop(1,'rgba(15,23,42,0)');
+              cx.globalAlpha=0.26;cx.fillStyle=peakGlow;cx.fillRect(L,T,gW,gH);
+              cx.restore();
+            });
           }
           if(model.components.length>1)model.components.forEach(function(p){curve(function(nm){return p.weight*Math.exp(-.5*Math.pow((nm-p.nm)/p.sigma,2));},p.color,[4,3]);});
           curve(function(nm){return semiLedSpectrum(model,nm);},'#F8FAFC');
@@ -3807,11 +4032,16 @@ window.StemLab = window.StemLab || {
           if (!canvasEl) return;
           var surface = prepareCanvas(canvasEl, 440, 230);
           var cx = surface.cx, W = surface.W, H = surface.H;
+          if (!cx) return;
+          var semiStatic = !!(d.motionPaused || semiReducedMotion());
+          var semiHC = semiHighContrast();
+          var nowMs = semiStatic ? 0 : Date.now();
           cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
 
           // Sun
-          var sunPulse = 1 + (irradiance>0?Math.sin(Date.now() / 800)*.1:0);
-          cx.fillStyle = irradiance>0?'#FBBF24':'#334155'; cx.shadowColor = '#FBBF24'; cx.shadowBlur = 20 * irradianceFactor;
+          var sunPulse = 1 + (irradiance>0 && !semiStatic ? Math.sin(nowMs / 800)*.1 : 0);
+          cx.fillStyle = irradiance>0?'#FBBF24':'#334155';
+          if (!semiHC) { cx.shadowColor = '#FBBF24'; cx.shadowBlur = 20 * irradianceFactor; }
           cx.beginPath(); cx.arc(60, 30, 18 * sunPulse, 0, Math.PI * 2); cx.fill();
           cx.shadowBlur = 0;
           cx.fillStyle = '#FCD34D'; cx.font = '10px sans-serif'; cx.textAlign = 'center';
@@ -3820,7 +4050,7 @@ window.StemLab = window.StemLab || {
           // Photon rays
           cx.strokeStyle = '#FCD34D'; cx.lineWidth = 1; cx.globalAlpha = 0.4;
           for (var ray = 0; ray < (irradiance>0?5:0); ray++) {
-            var rayT = ((Date.now() / 400 + ray * 200) % 1000) / 1000;
+            var rayT = semiStatic ? (ray * 0.18) : (((nowMs / 400 + ray * 200) % 1000) / 1000);
             var rx1 = 80 + ray * 15;
             var ry1 = 45 + rayT * 50;
             cx.beginPath(); cx.moveTo(rx1, ry1); cx.lineTo(rx1 + 40, ry1 + 40); cx.stroke();
@@ -3840,7 +4070,7 @@ window.StemLab = window.StemLab || {
           cx.fillText(sMat.name, panelX + panelW / 2, panelY + panelH / 2 + 4);
 
           // Electron-hole pairs generated inside
-          var tick = Date.now();
+          var tick = nowMs;
           var pairCount = Math.floor(irradianceFactor * 6);
           for (var ep = 0; ep < pairCount; ep++) {
             var epx = panelX + 15 + (ep * panelW / pairCount);

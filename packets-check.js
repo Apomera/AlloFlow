@@ -732,7 +732,7 @@
     return s;
   }
   function batchList() {
-    var seen = {}, out = { names: [], twice: [], unusable: [], over: 0 };
+    var seen = Object.create(null), out = { names: [], twice: [], unusable: [], over: 0 };
     String(($('f-batch-names') && $('f-batch-names').value) || '').split(/\r?\n/).forEach(function (line) {
       var cleaned = cleanRosterLine(line);
       if (!cleaned) return;

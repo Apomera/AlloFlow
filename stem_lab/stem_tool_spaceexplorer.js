@@ -24,6 +24,7 @@
 // ═══════════════════════════════════════════
 
 // ═══ Defensive StemLab guard ═══
+if (typeof window !== 'undefined') {
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -45,16 +46,20 @@ window.StemLab = window.StemLab || {
     try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
   }
 };
+}
 // ═══ End Guard ═══
 
-if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'))) {
+if (typeof window !== 'undefined' && !(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'))) {
 
 (function() {
   'use strict';
 
+  var _seReqGen = 0;
+  var _seRetryTimer = null;
+
   // ── Space Explorer Audio System ──
   var _seAC = null;
-  function getSEAC() { if (!_seAC) { try { _seAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_seAC && _seAC.state === 'suspended') { try { _seAC.resume(); } catch(e) {} } return _seAC; }
+  function getSEAC() { if (typeof window === 'undefined' || (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || !!window._alloGlobalMute) return null; if (!_seAC) { try { _seAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_seAC && _seAC.state === 'suspended') { try { _seAC.resume(); } catch(e) {} } return _seAC; }
   function seTone(f, d, t, v) { var ac = getSEAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = t||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function seNoise(dur, vol, hz) { var ac = getSEAC(); if (!ac) return; try { var bs = Math.floor(ac.sampleRate*(dur||0.05)); var b = ac.createBuffer(1,bs,ac.sampleRate); var d2 = b.getChannelData(0); for(var i=0;i<bs;i++) d2[i]=(Math.random()*2-1)*(1-i/bs); var s = ac.createBufferSource(); s.buffer=b; var f = ac.createBiquadFilter(); f.type='lowpass'; f.frequency.value=hz||600; var g = ac.createGain(); g.gain.setValueAtTime(vol||0.04,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(dur||0.05)); s.connect(f); f.connect(g); g.connect(ac.destination); s.start(); } catch(e) {} }
   function sfxSELaunch() { seNoise(0.5, 0.08, 200); seTone(80, 0.4, 'sawtooth', 0.06); setTimeout(function() { seTone(120, 0.3, 'sawtooth', 0.05); }, 150); }
@@ -64,12 +69,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   function sfxSEClick() { seTone(600, 0.03, 'sine', 0.04); }
 
   // WCAG 2.1 AA: Accessibility CSS
-  if (!document.getElementById('se-a11y-css')) { var _s = document.createElement('style'); _s.id = 'se-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }'; document.head.appendChild(_s); }
+  if (typeof document !== 'undefined' && document.head && !document.getElementById('se-a11y-css')) { var _s = document.createElement('style'); _s.id = 'se-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }'; document.head.appendChild(_s); }
 
   // Space Explorer usability layer. The tool intentionally uses a dark flight-
   // deck palette, so these scoped rules keep small labels, boundaries, focus,
   // and touch targets readable without changing the rest of STEAM Lab.
-  if (!document.getElementById('se-usability-css')) {
+  if (typeof document !== 'undefined' && document.head && !document.getElementById('se-usability-css')) {
     var _seUx = document.createElement('style');
     _seUx.id = 'se-usability-css';
     _seUx.textContent = [
@@ -107,7 +112,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
 
   // WCAG live region
   (function() {
-    if (document.getElementById('allo-live-spaceexplorer')) return;
+    if (typeof document === 'undefined' || !document.body || document.getElementById('allo-live-spaceexplorer')) return;
     var lr = document.createElement('div');
     lr.id = 'allo-live-spaceexplorer';
     lr.setAttribute('aria-live', 'polite');
@@ -119,8 +124,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   })();
 
   function announceToSR(msg) {
+    if (typeof document === 'undefined') return;
     var el = document.getElementById('allo-live-spaceexplorer');
-    if (el) { el.textContent = ''; setTimeout(function() { el.textContent = msg; }, 50); }
+    if (el) { el.textContent = ''; setTimeout(function() { if (el.isConnected) el.textContent = msg; }, 50); }
   }
 
   // WCAG 2.3.3: Reduced motion preference
@@ -1691,16 +1697,176 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     return { compound: compound.id, bands: bands };
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // ZERO-GC CANVAS HELPERS, PARALLAX STARFIELD & ORBITAL FX PRIMITIVES
+  // ═══════════════════════════════════════════════════════════════
+  function sePrefersReducedMotion() {
+    if (_prefersReducedMotion) return true;
+    try { return !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+    catch (e) { return false; }
+  }
+  function seIsHighContrast() {
+    try {
+      if (typeof document === 'undefined') return false;
+      return !!((document.documentElement && document.documentElement.classList && document.documentElement.classList.contains('theme-contrast')) ||
+                (document.body && document.body.classList && document.body.classList.contains('theme-contrast')));
+    } catch (e) { return false; }
+  }
+  function seEllipse(ctx, cx, cy, rx, ry, rot, a0, a1) {
+    if (!ctx || rx <= 0 || ry <= 0) return;
+    if (typeof ctx.ellipse === 'function') {
+      ctx.ellipse(cx, cy, rx, ry, rot || 0, a0, a1);
+    } else {
+      ctx.save();
+      ctx.translate(cx, cy);
+      if (rot) ctx.rotate(rot);
+      ctx.scale(rx, ry);
+      ctx.arc(0, 0, 1, a0, a1);
+      ctx.restore();
+    }
+  }
+  // Pre-allocated zero-GC starfield catalog (120 stars across 3 parallax layers)
+  var _SE_STAR_MAX = 120;
+  var _SE_STAR_COLORS = ['#ffffff', '#ffffff', '#ffffff', '#f8fafc', '#bae6fd', '#b8c8ff', '#c7d2fe', '#fff5d0', '#ffd8b0'];
+  var _SE_STAR_X = new Float32Array(_SE_STAR_MAX);
+  var _SE_STAR_Y = new Float32Array(_SE_STAR_MAX);
+  var _SE_STAR_R = new Float32Array(_SE_STAR_MAX);
+  var _SE_STAR_LAYER = new Uint8Array(_SE_STAR_MAX);
+  var _SE_STAR_COL = new Uint8Array(_SE_STAR_MAX);
+  var _SE_STAR_PHASE = new Float32Array(_SE_STAR_MAX);
+  (function initSeStarCatalog() {
+    var s = 7919;
+    function nextR() { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }
+    for (var i = 0; i < _SE_STAR_MAX; i++) {
+      var layer = i % 3;
+      _SE_STAR_LAYER[i] = layer;
+      _SE_STAR_X[i] = nextR();
+      _SE_STAR_Y[i] = nextR();
+      _SE_STAR_R[i] = (0.35 + nextR() * 0.95) * (0.72 + layer * 0.28);
+      _SE_STAR_COL[i] = Math.floor(nextR() * _SE_STAR_COLORS.length);
+      _SE_STAR_PHASE[i] = i * 1.73 + nextR() * 6.28;
+    }
+  })();
+  // Pre-allocated scratch buffer for drawSpectrum (avoids per-call point-array GC)
+  var _SE_SPEC_MAX_W = 1024;
+  var _SE_SPEC_Y = new Float32Array(_SE_SPEC_MAX_W);
+
+  // Shared gravitational-well contour ripples around a star or planet (zero-GC)
+  function drawGravityWellRipples(ctx, cx, cy, innerR, outerR, tick, rgbStr, isHC, reduced) {
+    if (!ctx || outerR <= innerR) return;
+    ctx.save();
+    var ringCount = 4;
+    var span = outerR - innerR;
+    for (var ri = 0; ri < ringCount; ri++) {
+      var phase = reduced ? ((ri + 0.5) / ringCount) : (((ri / ringCount) + ((tick || 0) * 0.0042)) % 1);
+      var rad = innerR + phase * span;
+      var fade = Math.sin(phase * Math.PI);
+      if (isHC) {
+        ctx.strokeStyle = ri % 2 === 0 ? '#ffffff' : '#ffff00';
+        ctx.globalAlpha = 0.55;
+        ctx.lineWidth = 1;
+      } else {
+        ctx.strokeStyle = 'rgba(' + rgbStr + ',' + (0.06 + fade * 0.24).toFixed(3) + ')';
+        ctx.lineWidth = 1.25 - phase * 0.55;
+      }
+      ctx.beginPath();
+      seEllipse(ctx, cx, cy, rad, rad * 0.86, -0.18, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  // Shared tangent-oriented spacecraft + multi-band ion-thruster plasma plume (zero-GC)
+  function drawSpacecraftWithPlume(ctx, x, y, angle, thrust, burnLevel, isHC, reduced, tick) {
+    if (!ctx) return;
+    var hasRG = typeof ctx.createRadialGradient === 'function';
+    var hasLG = typeof ctx.createLinearGradient === 'function';
+    var pulse = reduced ? 1 : (0.86 + 0.24 * Math.sin((tick || 0) * 0.26));
+    var plumeLen = (11 + thrust * 10 + burnLevel * 16) * pulse;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    // Ion-thruster plasma cone + delta-v burn burst flare
+    if (!isHC) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      if (hasRG) {
+        var coreR = 7 + burnLevel * 11;
+        var pGlow = ctx.createRadialGradient(-6, 0, 0.5, -8, 0, coreR);
+        if (burnLevel > 0.25) {
+          pGlow.addColorStop(0, 'rgba(254,249,195,' + (0.75 * burnLevel + 0.2).toFixed(2) + ')');
+          pGlow.addColorStop(0.4, 'rgba(251,191,36,' + (0.55 * burnLevel).toFixed(2) + ')');
+          pGlow.addColorStop(0.75, 'rgba(56,189,248,0.28)');
+          pGlow.addColorStop(1, 'rgba(56,189,248,0)');
+        } else {
+          pGlow.addColorStop(0, 'rgba(186,230,253,0.85)');
+          pGlow.addColorStop(0.45, 'rgba(56,189,248,0.38)');
+          pGlow.addColorStop(1, 'rgba(56,189,248,0)');
+        }
+        ctx.fillStyle = pGlow;
+        ctx.beginPath(); ctx.arc(-8, 0, coreR, 0, Math.PI * 2); ctx.fill();
+      }
+      if (hasLG) {
+        var coneG = ctx.createLinearGradient(-5, 0, -5 - plumeLen, 0);
+        if (burnLevel > 0.25) {
+          coneG.addColorStop(0, 'rgba(254,240,138,0.92)');
+          coneG.addColorStop(0.45, 'rgba(249,115,22,0.52)');
+          coneG.addColorStop(1, 'rgba(56,189,248,0)');
+        } else {
+          coneG.addColorStop(0, 'rgba(224,242,254,0.90)');
+          coneG.addColorStop(0.45, 'rgba(56,189,248,0.45)');
+          coneG.addColorStop(1, 'rgba(56,189,248,0)');
+        }
+        ctx.fillStyle = coneG;
+      } else {
+        ctx.fillStyle = burnLevel > 0.25 ? 'rgba(251,191,36,0.75)' : 'rgba(56,189,248,0.65)';
+      }
+      var coneHalf = 2.4 + burnLevel * 2.2;
+      ctx.beginPath();
+      ctx.moveTo(-5, -coneHalf * 0.55);
+      ctx.lineTo(-5 - plumeLen, 0);
+      ctx.lineTo(-5, coneHalf * 0.55);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    } else {
+      // High-contrast crisp exhaust triangle
+      ctx.strokeStyle = '#ffff00'; ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(-5, -2.5); ctx.lineTo(-5 - plumeLen * 0.7, 0); ctx.lineTo(-5, 2.5);
+      ctx.stroke();
+    }
+    // Solar array wings
+    ctx.fillStyle = isHC ? '#ffffff' : '#38bdf8';
+    ctx.strokeStyle = isHC ? '#ffff00' : '#0284c7';
+    ctx.lineWidth = 0.8;
+    ctx.fillRect(-3.5, -8.2, 4.2, 5.2);
+    ctx.fillRect(-3.5, 3.0, 4.2, 5.2);
+    // Spacecraft bus & nose cone
+    ctx.fillStyle = isHC ? '#ffff00' : '#cbd5e1';
+    ctx.fillRect(-5.2, -2.2, 8.2, 4.4);
+    ctx.fillStyle = isHC ? '#ffffff' : '#f8fafc';
+    ctx.beginPath();
+    ctx.moveTo(3, -2.6); ctx.lineTo(8.2, 0); ctx.lineTo(3, 2.6);
+    ctx.closePath(); ctx.fill();
+    // Glowing engine bell
+    ctx.fillStyle = isHC ? '#00ff00' : (burnLevel > 0.25 ? '#fef08a' : '#67e8f9');
+    ctx.beginPath(); ctx.arc(-5.4, 0, 1.8, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
   function drawSpectrum(ctx, W, H, bands) {
     if (!ctx) return;
+    var isHC = seIsHighContrast();
     var hasLG = typeof ctx.createLinearGradient === 'function';
     var hasRG = typeof ctx.createRadialGradient === 'function';
-    if (hasLG) {
+    if (!isHC && hasLG) {
       var spBg = ctx.createLinearGradient(0, 0, 0, H);
       spBg.addColorStop(0, '#02081c'); spBg.addColorStop(0.55, '#071430'); spBg.addColorStop(1, '#030a1e');
       ctx.fillStyle = spBg;
     } else {
-      ctx.fillStyle = '#020a20';
+      ctx.fillStyle = isHC ? '#000000' : '#020a20';
     }
     ctx.fillRect(0, 0, W, H);
     // Wavelength range: we plot 1-5 μm (the near-IR window most compounds
@@ -1708,9 +1874,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     // it sits off-scale — teaches students that real spectra span huge ranges.
     var minLam = 1, maxLam = 5;
     var padL = 28, padR = 16, padT = 14, padB = 20;
-    var plotX = padL, plotY = padT, plotW = W - padL - padR, plotH = H - padT - padB;
+    var plotX = padL, plotY = padT, plotW = Math.max(10, W - padL - padR), plotH = Math.max(10, H - padT - padB);
     // Spectral false-color IR shimmer bar along bottom of plot well
-    if (hasLG) {
+    if (!isHC && hasLG) {
       var irBar = ctx.createLinearGradient(plotX, 0, plotX + plotW, 0);
       irBar.addColorStop(0, 'rgba(56,189,248,0.22)');
       irBar.addColorStop(0.32, 'rgba(99,102,241,0.20)');
@@ -1720,40 +1886,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       ctx.fillRect(plotX, plotY + plotH - 5, plotW, 5);
     }
     // Subtle horizontal observatory gridlines
-    ctx.strokeStyle = 'rgba(148,163,184,0.14)'; ctx.lineWidth = 0.8;
+    ctx.strokeStyle = isHC ? 'rgba(255,255,255,0.35)' : 'rgba(148,163,184,0.14)'; ctx.lineWidth = 0.8;
     for (var gy = 1; gy <= 3; gy++) {
       var gpy = plotY + (gy / 4) * plotH;
       ctx.beginPath(); ctx.moveTo(plotX, gpy); ctx.lineTo(plotX + plotW, gpy); ctx.stroke();
     }
     // Axes
-    ctx.strokeStyle = 'rgba(148,163,184,0.52)'; ctx.lineWidth = 1;
+    ctx.strokeStyle = isHC ? '#ffffff' : 'rgba(148,163,184,0.52)'; ctx.lineWidth = isHC ? 1.5 : 1;
     ctx.beginPath();
     ctx.moveTo(plotX, plotY); ctx.lineTo(plotX, plotY + plotH);
     ctx.lineTo(plotX + plotW, plotY + plotH);
     ctx.stroke();
     // Tick marks every 1 μm
-    ctx.fillStyle = '#cbd5e1'; ctx.font = '9px ui-monospace, monospace'; ctx.textAlign = 'center';
+    ctx.fillStyle = isHC ? '#ffffff' : '#cbd5e1'; ctx.font = '9px ui-monospace, monospace'; ctx.textAlign = 'center';
     for (var lam = minLam; lam <= maxLam; lam++) {
       var tx = plotX + ((lam - minLam) / (maxLam - minLam)) * plotW;
       ctx.beginPath(); ctx.moveTo(tx, plotY + plotH); ctx.lineTo(tx, plotY + plotH + 3); ctx.stroke();
       ctx.fillText(lam + '\u03BCm', tx, plotY + plotH + 13);
     }
-    // Compute continuum + absorption troughs once for gradient fill & dual-pass luminous trace
-    var pts = [];
-    for (var px = 0; px <= plotW; px++) {
-      var frac = px / plotW;
+    // Compute continuum + absorption troughs into pre-allocated scratch buffer (zero-GC)
+    var sampleN = Math.min(_SE_SPEC_MAX_W - 1, Math.max(2, Math.floor(plotW)));
+    var bandCount = bands ? bands.length : 0;
+    for (var px = 0; px <= sampleN; px++) {
+      var frac = px / sampleN;
+      var xPx = frac * plotW;
       var baseY = plotY + plotH * 0.25 + Math.sin(frac * 3.2) * 4;
       var absorb = 0;
-      bands.forEach(function(b) {
-        if (b > maxLam) return;
-        var bx = ((b - minLam) / (maxLam - minLam)) * plotW;
-        var d = Math.abs(px - bx);
-        var sigma = 10;
-        absorb += Math.exp(-(d * d) / (2 * sigma * sigma)) * plotH * 0.55;
-      });
-      pts.push([plotX + px, baseY + absorb]);
+      for (var bi = 0; bi < bandCount; bi++) {
+        var bv = bands[bi];
+        if (bv > maxLam) continue;
+        var bxv = ((bv - minLam) / (maxLam - minLam)) * plotW;
+        var dv = xPx - bxv;
+        absorb += Math.exp(-(dv * dv) / 200) * plotH * 0.55;
+      }
+      _SE_SPEC_Y[px] = baseY + absorb;
     }
-    if (hasLG && pts.length > 1) {
+    if (!isHC && hasLG && sampleN > 1) {
       var areaG = ctx.createLinearGradient(0, plotY, 0, plotY + plotH);
       areaG.addColorStop(0, 'rgba(56,189,248,0.28)');
       areaG.addColorStop(0.65, 'rgba(99,102,241,0.10)');
@@ -1761,24 +1929,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       ctx.fillStyle = areaG;
       ctx.beginPath();
       ctx.moveTo(plotX, plotY + plotH);
-      for (var ai = 0; ai < pts.length; ai++) ctx.lineTo(pts[ai][0], pts[ai][1]);
+      for (var ai = 0; ai <= sampleN; ai++) ctx.lineTo(plotX + (ai / sampleN) * plotW, _SE_SPEC_Y[ai]);
       ctx.lineTo(plotX + plotW, plotY + plotH); ctx.closePath(); ctx.fill();
     }
-    // Dual-pass luminous continuum trace
+    // Dual-pass luminous continuum trace (single razor-sharp pass in high-contrast)
     ctx.save();
-    ctx.strokeStyle = 'rgba(56,189,248,0.28)'; ctx.lineWidth = 5; ctx.lineJoin = 'round';
+    ctx.lineJoin = 'round';
+    if (!isHC) {
+      ctx.strokeStyle = 'rgba(56,189,248,0.28)'; ctx.lineWidth = 5;
+      ctx.beginPath();
+      for (var g1 = 0; g1 <= sampleN; g1++) {
+        var gx1 = plotX + (g1 / sampleN) * plotW;
+        if (g1 === 0) ctx.moveTo(gx1, _SE_SPEC_Y[g1]); else ctx.lineTo(gx1, _SE_SPEC_Y[g1]);
+      }
+      ctx.stroke();
+    }
+    ctx.strokeStyle = isHC ? '#ffff00' : '#7dd3fc'; ctx.lineWidth = isHC ? 2.2 : 1.8;
     ctx.beginPath();
-    for (var g1 = 0; g1 < pts.length; g1++) { if (g1 === 0) ctx.moveTo(pts[g1][0], pts[g1][1]); else ctx.lineTo(pts[g1][0], pts[g1][1]); }
-    ctx.stroke();
-    ctx.strokeStyle = '#7dd3fc'; ctx.lineWidth = 1.8;
-    ctx.beginPath();
-    for (var g2 = 0; g2 < pts.length; g2++) { if (g2 === 0) ctx.moveTo(pts[g2][0], pts[g2][1]); else ctx.lineTo(pts[g2][0], pts[g2][1]); }
+    for (var g2 = 0; g2 <= sampleN; g2++) {
+      var gx2 = plotX + (g2 / sampleN) * plotW;
+      if (g2 === 0) ctx.moveTo(gx2, _SE_SPEC_Y[g2]); else ctx.lineTo(gx2, _SE_SPEC_Y[g2]);
+    }
     ctx.stroke();
     ctx.restore();
     // Mark each absorption dip with glowing trough halo + dashed beacon
-    bands.forEach(function(b) {
+    for (var bj = 0; bj < bandCount; bj++) {
+      var b = bands[bj];
       if (b > maxLam) {
-        ctx.fillStyle = '#fbbf24';
+        ctx.fillStyle = isHC ? '#ffff00' : '#fbbf24';
         ctx.beginPath();
         ctx.moveTo(plotX + plotW - 2, plotY + plotH * 0.5);
         ctx.lineTo(plotX + plotW - 10, plotY + plotH * 0.5 - 5);
@@ -1786,24 +1964,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         ctx.closePath(); ctx.fill();
         ctx.font = '8px ui-monospace, monospace'; ctx.textAlign = 'right';
         ctx.fillText(b.toFixed(1) + '\u03BCm\u2192', plotX + plotW - 2, plotY + plotH * 0.5 - 8);
-        return;
+        continue;
       }
       var bx = plotX + ((b - minLam) / (maxLam - minLam)) * plotW;
       var dipY = plotY + plotH * 0.80;
-      if (hasRG) {
+      if (!isHC && hasRG) {
         var dipH = ctx.createRadialGradient(bx, dipY, 1, bx, dipY, 12);
         dipH.addColorStop(0, 'rgba(251,191,36,0.55)'); dipH.addColorStop(1, 'rgba(251,191,36,0)');
         ctx.fillStyle = dipH; ctx.beginPath(); ctx.arc(bx, dipY, 12, 0, Math.PI * 2); ctx.fill();
       }
-      ctx.strokeStyle = 'rgba(251,191,36,0.5)'; ctx.setLineDash([2, 3]);
+      ctx.strokeStyle = isHC ? '#ffffff' : 'rgba(251,191,36,0.5)'; ctx.setLineDash([2, 3]);
       ctx.beginPath(); ctx.moveTo(bx, plotY); ctx.lineTo(bx, plotY + plotH); ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = '#fde047'; ctx.beginPath(); ctx.arc(bx, dipY, 2.5, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#fbbf24'; ctx.font = '9px ui-monospace, monospace'; ctx.textAlign = 'center';
+      ctx.fillStyle = isHC ? '#00ff00' : '#fde047'; ctx.beginPath(); ctx.arc(bx, dipY, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = isHC ? '#ffff00' : '#fbbf24'; ctx.font = '9px ui-monospace, monospace'; ctx.textAlign = 'center';
       ctx.fillText(b.toFixed(2), bx, plotY + 10);
-    });
+    }
     // Y-axis label
-    ctx.fillStyle = '#94a3b8'; ctx.font = '8px ui-sans-serif'; ctx.textAlign = 'left';
+    ctx.fillStyle = isHC ? '#ffffff' : '#94a3b8'; ctx.font = '8px ui-sans-serif'; ctx.textAlign = 'left';
     ctx.save(); ctx.translate(6, plotY + plotH / 2); ctx.rotate(-Math.PI / 2);
     ctx.textAlign = 'center'; ctx.fillText('absorption', 0, 0);
     ctx.restore();
@@ -1812,26 +1990,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   // ═══════════════════════════════════════════════════════════════
   // PROCEDURAL PLANET CANVAS DRAWING
   // ═══════════════════════════════════════════════════════════════
+  var _SE_LAVA_COLORS = ['rgba(255,100,20,0.4)', 'rgba(255,200,0,0.3)', 'rgba(200,50,0,0.35)'];
   function drawPlanet(ctx, cx, cy, r, dest, tick) {
-    if (r < 5) return;
+    if (!ctx || r < 5) return;
+    var isHC = seIsHighContrast();
+    var hasRG = typeof ctx.createRadialGradient === 'function';
+    var hasLG = typeof ctx.createLinearGradient === 'function';
     ctx.save();
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
     // Base color gradient
-    var pg = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, 0, cx, cy, r);
-    pg.addColorStop(0, lightenColor(dest.color, 40));
-    pg.addColorStop(0.7, dest.color);
-    pg.addColorStop(1, darkenColor(dest.color, 40));
-    ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    if (!isHC && hasRG) {
+      var pg = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, 0, cx, cy, r);
+      pg.addColorStop(0, lightenColor(dest.color, 40));
+      pg.addColorStop(0.7, dest.color);
+      pg.addColorStop(1, darkenColor(dest.color, 40));
+      ctx.fillStyle = pg;
+    } else {
+      ctx.fillStyle = isHC ? '#111111' : dest.color;
+    }
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
     // Surface detail based on destination
     if (dest.id === 'mars') {
       // Canyons + polar caps
-      ctx.fillStyle = 'rgba(180,100,60,0.3)';
-      ctx.beginPath(); ctx.ellipse(cx + r * 0.1, cy - r * 0.1, r * 0.5, r * 0.08, -0.3, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.5)';
-      ctx.beginPath(); ctx.ellipse(cx, cy - r * 0.85, r * 0.25, r * 0.08, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = isHC ? 'rgba(255,255,0,0.35)' : 'rgba(180,100,60,0.3)';
+      ctx.beginPath(); seEllipse(ctx, cx + r * 0.1, cy - r * 0.1, r * 0.5, r * 0.08, -0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = isHC ? '#ffffff' : 'rgba(255,255,255,0.5)';
+      ctx.beginPath(); seEllipse(ctx, cx, cy - r * 0.85, r * 0.25, r * 0.08, 0, 0, Math.PI * 2); ctx.fill();
     } else if (dest.id === 'europa' || dest.id === 'enceladus') {
       // Ice cracks
-      ctx.strokeStyle = 'rgba(100,80,60,0.2)'; ctx.lineWidth = Math.max(0.5, r * 0.02);
+      ctx.strokeStyle = isHC ? '#ffffff' : 'rgba(100,80,60,0.22)'; ctx.lineWidth = Math.max(0.5, r * 0.02);
       for (var ci = 0; ci < 8; ci++) {
         var a = ci * 0.8 + 0.2;
         ctx.beginPath();
@@ -1841,17 +2028,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       }
     } else if (dest.id === 'titan') {
       // Methane lakes
-      ctx.fillStyle = 'rgba(50,40,20,0.25)';
-      ctx.beginPath(); ctx.ellipse(cx - r * 0.2, cy + r * 0.3, r * 0.2, r * 0.12, 0.5, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(cx + r * 0.3, cy - r * 0.1, r * 0.15, r * 0.1, -0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = isHC ? 'rgba(255,255,0,0.35)' : 'rgba(50,40,20,0.25)';
+      ctx.beginPath(); seEllipse(ctx, cx - r * 0.2, cy + r * 0.3, r * 0.2, r * 0.12, 0.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); seEllipse(ctx, cx + r * 0.3, cy - r * 0.1, r * 0.15, r * 0.1, -0.3, 0, Math.PI * 2); ctx.fill();
       // Haze
-      ctx.globalAlpha = 0.15;
-      ctx.fillStyle = '#d4a017';
-      ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-      ctx.globalAlpha = 1;
+      if (!isHC) {
+        ctx.globalAlpha = 0.15;
+        ctx.fillStyle = '#d4a017';
+        ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+        ctx.globalAlpha = 1;
+      }
     } else if (dest.id === 'venus_cloud') {
       // Swirling cloud bands
-      ctx.globalAlpha = 0.2; ctx.strokeStyle = '#fff'; ctx.lineWidth = r * 0.06;
+      ctx.globalAlpha = isHC ? 0.65 : 0.2; ctx.strokeStyle = '#fff'; ctx.lineWidth = r * 0.06;
       for (var vi = 0; vi < 5; vi++) {
         var va = vi * 0.6 + (tick || 0) * 0.0005;
         ctx.beginPath();
@@ -1861,14 +2050,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       ctx.globalAlpha = 1;
     } else if (dest.id === 'proxima') {
       // Mysterious glow
-      ctx.globalAlpha = 0.3;
-      var pxg = ctx.createRadialGradient(cx - r * 0.4, cy, r * 0.2, cx, cy, r);
-      pxg.addColorStop(0, '#ff6b9d'); pxg.addColorStop(1, 'transparent');
-      ctx.fillStyle = pxg; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-      ctx.globalAlpha = 1;
+      if (!isHC && hasRG) {
+        ctx.globalAlpha = 0.3;
+        var pxg = ctx.createRadialGradient(cx - r * 0.4, cy, r * 0.2, cx, cy, r);
+        pxg.addColorStop(0, '#ff6b9d'); pxg.addColorStop(1, 'transparent');
+        ctx.fillStyle = pxg; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+        ctx.globalAlpha = 1;
+      }
     } else if (dest.id === 'moon_base') {
       // Craters + Shackleton rim shadow
-      ctx.fillStyle = 'rgba(80,80,90,0.3)';
+      ctx.fillStyle = isHC ? 'rgba(255,255,255,0.3)' : 'rgba(80,80,90,0.3)';
       for (var mi = 0; mi < 12; mi++) {
         var mcx = cx + (mi * 31 % 7 - 3) * r * 0.12;
         var mcy = cy + (mi * 17 % 5 - 2) * r * 0.15;
@@ -1876,20 +2067,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         ctx.beginPath(); ctx.arc(mcx, mcy, mcr, 0, Math.PI * 2); ctx.fill();
       }
       // Base marker
-      ctx.fillStyle = 'rgba(96,165,250,0.6)'; ctx.beginPath();
+      ctx.fillStyle = isHC ? '#00ff00' : 'rgba(96,165,250,0.6)'; ctx.beginPath();
       ctx.arc(cx - r * 0.3, cy + r * 0.4, r * 0.04, 0, Math.PI * 2); ctx.fill();
     } else if (dest.id === 'io') {
       // Volcanic surface: lava spots + sulfur deposits
-      var lavaColors = ['rgba(255,100,20,0.4)', 'rgba(255,200,0,0.3)', 'rgba(200,50,0,0.35)'];
       for (var ioi = 0; ioi < 10; ioi++) {
-        ctx.fillStyle = lavaColors[ioi % 3];
+        ctx.fillStyle = isHC ? '#ffff00' : _SE_LAVA_COLORS[ioi % 3];
         var ix = cx + Math.cos(ioi * 2.1) * r * (0.2 + (ioi % 3) * 0.2);
         var iy = cy + Math.sin(ioi * 1.7) * r * (0.3 + (ioi % 2) * 0.15);
         ctx.beginPath(); ctx.arc(ix, iy, r * (0.03 + (ioi % 4) * 0.015), 0, Math.PI * 2); ctx.fill();
       }
       // Plume eruption
       if (tick && (tick % 120) < 40) {
-        ctx.fillStyle = 'rgba(255,255,100,0.2)';
+        ctx.fillStyle = isHC ? '#ffff00' : 'rgba(255,255,100,0.2)';
         ctx.beginPath(); ctx.moveTo(cx + r * 0.2, cy - r * 0.6);
         ctx.lineTo(cx + r * 0.15, cy - r * 1.1); ctx.lineTo(cx + r * 0.25, cy - r * 1.1);
         ctx.closePath(); ctx.fill();
@@ -1898,7 +2088,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       // Irregular metallic shape (draw as jagged polygon instead of circle)
       ctx.restore(); // undo clip to draw non-circular
       ctx.save();
-      ctx.fillStyle = dest.color;
+      ctx.fillStyle = isHC ? '#111111' : dest.color;
       ctx.beginPath();
       for (var ai = 0; ai < 12; ai++) {
         var aa = ai * Math.PI * 2 / 12;
@@ -1908,13 +2098,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         if (ai === 0) ctx.moveTo(ax, ay); else ctx.lineTo(ax, ay);
       }
       ctx.closePath(); ctx.fill();
-      // Metallic sheen
-      var mg = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
-      mg.addColorStop(0, 'rgba(200,200,220,0.15)'); mg.addColorStop(0.5, 'rgba(255,255,255,0.08)'); mg.addColorStop(1, 'rgba(100,100,120,0.1)');
-      ctx.fillStyle = mg; ctx.fill();
+      if (isHC) {
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+      } else if (hasLG) {
+        var mg = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+        mg.addColorStop(0, 'rgba(200,200,220,0.15)'); mg.addColorStop(0.5, 'rgba(255,255,255,0.08)'); mg.addColorStop(1, 'rgba(100,100,120,0.1)');
+        ctx.fillStyle = mg; ctx.fill();
+      }
     }
     // Spherical night-side terminator shadow for crisp 3D depth (non-asteroid worlds)
-    if (dest.id !== 'asteroid' && typeof ctx.createRadialGradient === 'function') {
+    if (!isHC && dest.id !== 'asteroid' && hasRG) {
       var termG = ctx.createRadialGradient(cx - r * 0.45, cy - r * 0.35, r * 0.35, cx + r * 0.25, cy + r * 0.2, r * 1.15);
       termG.addColorStop(0, 'rgba(0,0,0,0)');
       termG.addColorStop(0.68, 'rgba(2,6,23,0.18)');
@@ -1923,22 +2116,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
-    // Multi-band luminous atmospheric limb scattering & exoplanet rim halo
+    // Multi-band luminous atmospheric limb scattering & exoplanet rim halo (bypassed in High-Contrast)
     ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
-    if (typeof ctx.createRadialGradient === 'function') {
-      ctx.globalAlpha = 0.28;
-      var ag = ctx.createRadialGradient(cx, cy, r * 0.92, cx, cy, r * 1.32);
-      ag.addColorStop(0, lightenColor(dest.color, 45));
-      ag.addColorStop(0.45, dest.color);
-      ag.addColorStop(1, 'transparent');
-      ctx.fillStyle = ag; ctx.beginPath(); ctx.arc(cx, cy, r * 1.32, 0, Math.PI * 2); ctx.fill();
-    }
-    if (dest.id !== 'asteroid') {
-      ctx.globalAlpha = 0.52;
-      ctx.strokeStyle = lightenColor(dest.color, 65);
-      ctx.lineWidth = Math.max(1.2, r * 0.045);
-      ctx.beginPath(); ctx.arc(cx, cy, r - 0.5, Math.PI * 0.85, Math.PI * 1.65); ctx.stroke();
+    if (isHC) {
+      if (dest.id !== 'asteroid') {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+      }
+    } else {
+      ctx.globalCompositeOperation = 'lighter';
+      if (hasRG) {
+        ctx.globalAlpha = 0.28;
+        var ag = ctx.createRadialGradient(cx, cy, r * 0.92, cx, cy, r * 1.32);
+        ag.addColorStop(0, lightenColor(dest.color, 45));
+        ag.addColorStop(0.45, dest.color);
+        ag.addColorStop(1, 'transparent');
+        ctx.fillStyle = ag; ctx.beginPath(); ctx.arc(cx, cy, r * 1.32, 0, Math.PI * 2); ctx.fill();
+      }
+      if (dest.id !== 'asteroid') {
+        ctx.globalAlpha = 0.52;
+        ctx.strokeStyle = lightenColor(dest.color, 65);
+        ctx.lineWidth = Math.max(1.2, r * 0.045);
+        ctx.beginPath(); ctx.arc(cx, cy, r - 0.5, Math.PI * 0.85, Math.PI * 1.65); ctx.stroke();
+      }
     }
     ctx.restore();
   }
@@ -1955,17 +2156,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // STARFIELD HELPER (shared with Moon Mission) — layered cosmic nebula & parallax stars
+  // STARFIELD HELPER — Zero-GC multi-layer parallax stars & deep-space nebula
   // ═══════════════════════════════════════════════════════════════
   function drawStarfield(ctx, W, H, tick, count) {
     if (!ctx) return;
-    // Soft deep-space nebula clouds & distant stellar corona glow
-    if (typeof ctx.createRadialGradient === 'function') {
+    var isHC = seIsHighContrast();
+    var reduced = sePrefersReducedMotion();
+    var t = reduced ? 0 : (tick || 0);
+    // Soft deep-space nebula clouds & distant stellar corona glow (bypassed in High-Contrast)
+    if (!isHC && typeof ctx.createRadialGradient === 'function') {
       ctx.save();
-      var neb1 = ctx.createRadialGradient(W * 0.22, H * 0.34, 4, W * 0.22, H * 0.34, Math.max(W, H) * 0.45);
+      var nebDrift = Math.sin(t * 0.002) * W * 0.025;
+      var neb1 = ctx.createRadialGradient(W * 0.22 + nebDrift, H * 0.34, 4, W * 0.22 + nebDrift, H * 0.34, Math.max(W, H) * 0.45);
       neb1.addColorStop(0, 'rgba(99,102,241,0.18)'); neb1.addColorStop(0.5, 'rgba(56,189,248,0.07)'); neb1.addColorStop(1, 'rgba(2,0,16,0)');
       ctx.fillStyle = neb1; ctx.fillRect(0, 0, W, H);
-      var neb2 = ctx.createRadialGradient(W * 0.78, H * 0.68, 4, W * 0.78, H * 0.68, Math.max(W, H) * 0.42);
+      var neb2 = ctx.createRadialGradient(W * 0.78 - nebDrift, H * 0.68, 4, W * 0.78 - nebDrift, H * 0.68, Math.max(W, H) * 0.42);
       neb2.addColorStop(0, 'rgba(168,85,247,0.15)'); neb2.addColorStop(0.55, 'rgba(236,72,153,0.05)'); neb2.addColorStop(1, 'rgba(2,0,16,0)');
       ctx.fillStyle = neb2; ctx.fillRect(0, 0, W, H);
       var sunC = ctx.createRadialGradient(W * 0.08, H * 0.14, 1, W * 0.08, H * 0.14, Math.min(W, H) * 0.34);
@@ -1973,26 +2178,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       ctx.fillStyle = sunC; ctx.fillRect(0, 0, W, H);
       ctx.restore();
     }
-    var seed = 7919;
-    var s = seed;
-    function rng() { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }
-    var colors = ['#fff','#fff','#fff','#fff','#bae6fd','#b8c8ff','#c7d2fe','#fff5d0','#ffd8b0'];
-    var t = tick || 0;
-    for (var i = 0; i < (count || 80); i++) {
-      var layer = i % 3;
-      var drift = (t * (0.015 + layer * 0.018)) % W;
-      var sx = (rng() * W - drift + W) % W, sy = rng() * H;
-      var sr = (0.3 + rng() * 0.9) * (0.75 + layer * 0.25);
-      var sc = colors[Math.floor(rng() * colors.length)];
-      var tw = 0.32 + 0.68 * Math.abs(Math.sin(t * 0.0025 + i * 1.7));
-      ctx.globalAlpha = tw;
+    var n = Math.min(_SE_STAR_MAX, count || 80);
+    for (var i = 0; i < n; i++) {
+      var layer = _SE_STAR_LAYER[i];
+      var speed = layer === 0 ? 0.04 : layer === 1 ? 0.11 : 0.24;
+      var sx = (_SE_STAR_X[i] * W - ((t * speed) % W) + W) % W;
+      var sy = _SE_STAR_Y[i] * H;
+      var sr = _SE_STAR_R[i];
+      var sc = isHC ? (layer === 2 ? '#ffff00' : '#ffffff') : _SE_STAR_COLORS[_SE_STAR_COL[i]];
+      var tw = reduced ? (0.55 + layer * 0.18) : (0.32 + 0.68 * Math.abs(Math.sin(t * 0.018 + _SE_STAR_PHASE[i])));
+      ctx.globalAlpha = isHC ? (0.45 + layer * 0.25) : tw;
       ctx.fillStyle = sc;
       ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2); ctx.fill();
       // Subtle diffraction cross-glint on brightest foreground stars
-      if (layer === 2 && sr > 1.25 && tw > 0.72) {
-        ctx.strokeStyle = sc; ctx.lineWidth = 0.5; ctx.globalAlpha = tw * 0.45;
-        ctx.beginPath(); ctx.moveTo(sx - sr * 3, sy); ctx.lineTo(sx + sr * 3, sy);
-        ctx.moveTo(sx, sy - sr * 3); ctx.lineTo(sx, sy + sr * 3); ctx.stroke();
+      if (!isHC && layer === 2 && sr > 1.15 && tw > 0.72) {
+        ctx.strokeStyle = sc; ctx.lineWidth = 0.55; ctx.globalAlpha = tw * 0.48;
+        ctx.beginPath(); ctx.moveTo(sx - sr * 3.2, sy); ctx.lineTo(sx + sr * 3.2, sy);
+        ctx.moveTo(sx, sy - sr * 3.2); ctx.lineTo(sx, sy + sr * 3.2); ctx.stroke();
       }
     }
     ctx.globalAlpha = 1;
@@ -2018,9 +2220,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     ],
     render: function(ctx) {
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
-      var React = window.React;
+      var React = (ctx && ctx.React) || (typeof window !== 'undefined' && window.React);
+      if (!React) return null;
       var h = React.createElement;
-      var labToolData = ctx.toolData || {};
+      var labToolData = (ctx && ctx.toolData && typeof ctx.toolData === 'object') ? ctx.toolData : {};
       var setLabToolData = ctx.setToolData;
       var addToast = ctx.addToast;
       var callGemini = ctx.callGemini;
@@ -2031,8 +2234,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
 
       var rawD = labToolData.spaceExplorer;
       var d = (rawD && typeof rawD === 'object' && !Array.isArray(rawD)) ? rawD : {};
-      var upd = function(key, val) { if (typeof setLabToolData !== 'function') return; setLabToolData(function(prev) { return Object.assign({}, prev, { spaceExplorer: Object.assign({}, prev.spaceExplorer || {}, (typeof key === 'object' ? key : (function() { var o = {}; o[key] = val; return o; })() )) }); }); };
-      var updAll = function(patch) { if (typeof setLabToolData !== 'function') return; setLabToolData(function(prev) { return Object.assign({}, prev, { spaceExplorer: Object.assign({}, prev.spaceExplorer || {}, patch) }); }); };
+      var upd = function(key, val) { if (typeof setLabToolData !== 'function') return; setLabToolData(function(prev) { if (!prev || typeof prev !== 'object' || Array.isArray(prev)) prev = {}; var current = prev.spaceExplorer || {}; var prevSE = (current && typeof current === 'object' && !Array.isArray(current)) ? current : {}; return Object.assign({}, prev, { spaceExplorer: Object.assign({}, prevSE, (typeof key === 'object' && key !== null ? key : (function() { var o = {}; o[key] = val; return o; })() )) }); }); };
+      var updAll = function(patch) { if (typeof setLabToolData !== 'function') return; setLabToolData(function(prev) { if (!prev || typeof prev !== 'object' || Array.isArray(prev)) prev = {}; var current = prev.spaceExplorer || {}; var prevSE = (current && typeof current === 'object' && !Array.isArray(current)) ? current : {}; return Object.assign({}, prev, { spaceExplorer: Object.assign({}, prevSE, patch) }); }); };
 
       // ── Persistent progression ──
       var completedMissions = (typeof d.completedMissions === 'number' && isFinite(d.completedMissions) && d.completedMissions > 0) ? Math.floor(d.completedMissions) : 0;
@@ -2081,7 +2284,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       var viewportWidth = ctx.viewportWidth || (typeof window !== 'undefined' ? window.innerWidth : 1024);
       var isCompactViewport = viewportWidth < 640;
       var confirmAbort = !!d.confirmAbort;
-      var interiorOrientation = d.interiorOrientation || createInteriorOrientation();
+      var interiorOrientation = (d.interiorOrientation && typeof d.interiorOrientation === 'object' && !Array.isArray(d.interiorOrientation)) ? d.interiorOrientation : createInteriorOrientation();
 
       var MISSION_STEPS = [
         { id: 'destination', label: t('stem.spaceexplorer.step_destination', 'Destination') },
@@ -2130,6 +2333,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       }
 
       function clearCurrentMission(message) {
+        _seReqGen++;
+        if (_seRetryTimer) { clearTimeout(_seRetryTimer); _seRetryTimer = null; }
         updAll({
           missionPhase: 'select', destination: null, resources: null, crew: [], turn: 0,
           missionLog: [], activeEvent: null, eventOutcome: null, decisionLog: [],
@@ -3268,12 +3473,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       }
 
       function log(msg) {
+        if (typeof setLabToolData !== 'function') return;
         setLabToolData(function(prev) {
-          var current = prev.spaceExplorer || {};
-          var nl = (current.missionLog || []).slice();
+          var base = (prev && typeof prev === 'object' && !Array.isArray(prev)) ? prev : {};
+          var current = (base.spaceExplorer && typeof base.spaceExplorer === 'object' && !Array.isArray(base.spaceExplorer)) ? base.spaceExplorer : {};
+          var nl = (Array.isArray(current.missionLog) ? current.missionLog : []).slice();
           nl.push({ text: msg, time: new Date().toLocaleTimeString() });
           if (nl.length > 20) nl = nl.slice(-20);
-          return Object.assign({}, prev, { spaceExplorer: Object.assign({}, current, { missionLog: nl }) });
+          return Object.assign({}, base, { spaceExplorer: Object.assign({}, current, { missionLog: nl }) });
         });
       }
 
@@ -3283,6 +3490,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
 
       // ── Start a mission ──
       function startMission(dest) {
+        _seReqGen++;
+        if (_seRetryTimer) { clearTimeout(_seRetryTimer); _seRetryTimer = null; }
         sfxSELaunch();
         var missionCrew = selectCrew(dest);
         var res = getInitialResources(dest, unlockedTech, missionCrew);
@@ -3382,9 +3591,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           announceToSR((note ? note + ' ' : '') + srResMsg + ' ' + (isLocal ? 'Local mission event: ' : 'Mission event: ') + event.title + '. ' + event.description + (minigame ? ' Spectral analysis required before choosing a response.' : ''));
         }
 
-        if (!callGemini) {
+        var _seAiUsable = (function() {
+          if (ctx.aiAvailable === false || typeof callGemini !== 'function' || callGemini._alloQrBlocked) return false;
+          if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
+          try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' && window.__alloAiUsable('text', callGemini) === false) return false; } catch (_) {}
+          return true;
+        })();
+        if (!_seAiUsable) {
           showEvent(localEvent, true, null, null);
           return;
+        }
+        var safeMissionIntent = (missionIntent || '').slice(0, 220);
+        if (safeMissionIntent && typeof window !== 'undefined' && window.SelHub && typeof window.SelHub.safeRehearseCheck === 'function') {
+          var _seCheck = window.SelHub.safeRehearseCheck(safeMissionIntent, { toolId: 'spaceExplorer_intent', onSafetyFlag: ctx.onSafetyFlag });
+          if (_seCheck && _seCheck.blocked) {
+            announceToSR(_seCheck.message || 'If you are going through a hard time, please reach out to a trusted adult or call/text 988.');
+            showEvent(localEvent, true, null, null);
+            return;
+          }
         }
 
         // Build rich context for the AI
@@ -3409,7 +3633,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         //    category wasn't logged.
         var modifier = MISSION_MODIFIERS[Math.floor(Math.random() * MISSION_MODIFIERS.length)];
         var protocolLens = buildProtocolEventLens(missionProtocol, missionDossier, turn, decisionLog);
-        var protocolPromptLine = protocolLens ? protocolLens.promptLine + ' Mission hypothesis: "' + (missionIntent || '').slice(0, 220) + '". Bounded protocol rule: ' + missionProtocol.ruleText + '\n' : '';
+        var protocolPromptLine = protocolLens ? protocolLens.promptLine + ' Mission hypothesis: "' + safeMissionIntent + '". Bounded protocol rule: ' + missionProtocol.ruleText + '\n' : '';
         var recentCategories = decisionLog.slice(-2).map(function(dl) { return dl.category; }).filter(Boolean);
         var avoidCatsLine = recentCategories.length > 0
           ? 'AVOID these categories this turn (too recent): ' + recentCategories.join(', ') + '.\n'
@@ -3451,8 +3675,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
 
         // At most one retry on an unreadable reply; a network error, or a second
         // bad reply, falls back to the offline mission deck at once.
+        var myReqGen = ++_seReqGen;
+        if (_seRetryTimer) { clearTimeout(_seRetryTimer); _seRetryTimer = null; }
         function requestAiEvent(attempt) {
+          if (myReqGen !== _seReqGen) return;
           callGemini(prompt, true).then(function(result) {
+            if (myReqGen !== _seReqGen) return;
             var event = null;
             try {
               var cleaned = (typeof result === 'string' ? result : (result && result.text ? result.text : String(result || '{}')));
@@ -3478,11 +3706,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               showEvent(event, false, minigame, null);
             } else if (attempt < 1) {
               if (addToast) addToast('Generating scenario... (retrying)', 'info');
-              setTimeout(function() { requestAiEvent(attempt + 1); }, 1500);
+              _seRetryTimer = setTimeout(function() { _seRetryTimer = null; requestAiEvent(attempt + 1); }, 1500);
             } else {
               showEvent(localEvent, true, null, 'The AI scenario could not be read, so this turn uses the offline mission deck.');
             }
           }).catch(function(err) {
+            if (myReqGen !== _seReqGen) return;
             console.warn('[SpaceExplorer] Gemini error:', err);
             showEvent(localEvent, true, null, 'AI connection issue, so this turn uses the offline mission deck.');
           });
@@ -3978,44 +4207,211 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 ref: function(cvEl) {
                   if (!cvEl || cvEl._briefInit) return;
                   cvEl._briefInit = true;
-                  var ctx2 = cvEl.getContext('2d');
+                  var ctx2 = cvEl.getContext && cvEl.getContext('2d');
                   if (!ctx2) return;
                   var W = cvEl.offsetWidth || 400, H = cvEl.offsetHeight || 200;
-                  cvEl.width = W * 2; cvEl.height = H * 2; ctx2.scale(2, 2);
+                  cvEl.width = W * 2; cvEl.height = H * 2;
+                  ctx2.setTransform(2, 0, 0, 2, 0, 0);
                   var tick = 0;
+                  var hasRG = typeof ctx2.createRadialGradient === 'function';
+                  // Zero-GC pre-allocated phosphor comet trail ring buffer & ion/delta-v plume particle pool
+                  var TRAIL_N = 32;
+                  var trailX = new Float32Array(TRAIL_N);
+                  var trailY = new Float32Array(TRAIL_N);
+                  var trailLen = 0;
+                  var PLUME_N = 44;
+                  var pX = new Float32Array(PLUME_N);
+                  var pY = new Float32Array(PLUME_N);
+                  var pVx = new Float32Array(PLUME_N);
+                  var pVy = new Float32Array(PLUME_N);
+                  var pLife = new Float32Array(PLUME_N);
+                  var pMax = new Float32Array(PLUME_N);
+                  var pSize = new Float32Array(PLUME_N);
+                  var pKind = new Uint8Array(PLUME_N); // 0=cyan ion plasma, 1=amber delta-v burn burst
+                  var plumeCursor = 0;
+                  var rngS = 4219;
+                  function fastRng() { rngS = (rngS * 16807) % 2147483647; return (rngS - 1) / 2147483646; }
+                  function spawnPlume(x, y, vx, vy, size, life, kind) {
+                    var idx = plumeCursor;
+                    plumeCursor = (plumeCursor + 1) % PLUME_N;
+                    pX[idx] = x; pY[idx] = y;
+                    pVx[idx] = vx; pVy[idx] = vy;
+                    pSize[idx] = size; pLife[idx] = life; pMax[idx] = life;
+                    pKind[idx] = kind;
+                  }
+                  var pR = Math.min(W, H) * 0.34;
+                  var planetX = W * 0.64, planetY = H * 0.52;
+                  var depX = W * 0.10, depY = H * 0.72;
+                  var ctrlX = W * 0.34, ctrlY = H * 0.14;
+                  var capX = planetX - pR * 1.18, capY = planetY - pR * 0.22;
+                  var orbRx = pR * 1.38, orbRy = pR * 0.64;
+
                   function draw() {
-                    if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._briefAnim); return; } // self-terminate if the canvas detached (fail-safe beyond the MutationObserver)
-                    if (!_prefersReducedMotion) cvEl._briefAnim = requestAnimationFrame(draw);
-                    if (!_prefersReducedMotion) tick++;
-                    ctx2.fillStyle = '#020010'; ctx2.fillRect(0, 0, W, H);
-                    drawStarfield(ctx2, W, H, tick, 100);
-                    var pR = Math.min(W, H) * 0.35;
-                    // Luminous curved orbital transfer trajectory into planetary capture
-                    var shipX = W * 0.15 + Math.sin(tick * 0.008) * W * 0.05;
-                    var shipY = H * 0.5 + Math.cos(tick * 0.006) * H * 0.08;
-                    var tgtX = W * 0.6 - pR * 0.95, tgtY = H * 0.5 - pR * 0.18;
+                    if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._briefAnim); return; }
+                    var reduced = sePrefersReducedMotion();
+                    var isHC = seIsHighContrast();
+                    if (!reduced) cvEl._briefAnim = requestAnimationFrame(draw);
+                    if (typeof document !== 'undefined' && document.hidden) return;
+                    if (!reduced) tick++;
+                    ctx2.fillStyle = isHC ? '#000000' : '#020010';
+                    ctx2.fillRect(0, 0, W, H);
+                    drawStarfield(ctx2, W, H, tick, 110);
+
+                    // Concentric gravitational-well contour ripples around destination planet
+                    drawGravityWellRipples(ctx2, planetX, planetY, pR * 1.06, pR * 2.15, tick, '99,102,241', isHC, reduced);
+
+                    // Hohmann transfer ellipse + capture orbit guide track
                     ctx2.save();
-                    ctx2.strokeStyle = 'rgba(56,189,248,0.18)'; ctx2.lineWidth = 4.5;
-                    ctx2.beginPath(); ctx2.moveTo(shipX, shipY); ctx2.quadraticCurveTo(W * 0.36, H * 0.24, tgtX, tgtY); ctx2.stroke();
-                    ctx2.strokeStyle = 'rgba(125,211,252,0.58)'; ctx2.lineWidth = 1.2; ctx2.setLineDash([4, 4]);
-                    ctx2.beginPath(); ctx2.moveTo(shipX, shipY); ctx2.quadraticCurveTo(W * 0.36, H * 0.24, tgtX, tgtY); ctx2.stroke();
+                    if (!isHC) {
+                      ctx2.strokeStyle = 'rgba(56,189,248,0.16)'; ctx2.lineWidth = 4.5;
+                      ctx2.beginPath(); ctx2.moveTo(depX, depY); ctx2.quadraticCurveTo(ctrlX, ctrlY, capX, capY); ctx2.stroke();
+                    }
+                    ctx2.strokeStyle = isHC ? '#ffffff' : 'rgba(125,211,252,0.52)';
+                    ctx2.lineWidth = isHC ? 1.6 : 1.15;
+                    ctx2.setLineDash([4, 4]);
+                    ctx2.beginPath(); ctx2.moveTo(depX, depY); ctx2.quadraticCurveTo(ctrlX, ctrlY, capX, capY); ctx2.stroke();
+                    // Planetary capture orbit guide ellipse
+                    ctx2.strokeStyle = isHC ? '#ffff00' : 'rgba(167,139,250,0.34)';
+                    ctx2.lineWidth = isHC ? 1.4 : 1.0;
+                    ctx2.setLineDash([3, 4]);
+                    ctx2.beginPath(); seEllipse(ctx2, planetX, planetY, orbRx, orbRy, -0.22, 0, Math.PI * 2); ctx2.stroke();
                     ctx2.setLineDash([]);
                     ctx2.restore();
-                    drawPlanet(ctx2, W * 0.6, H * 0.5, pR, destination, tick);
-                    // Ship approach beacon with glowing ion plume
-                    ctx2.save();
-                    if (typeof ctx2.createRadialGradient === 'function') {
-                      var ionG = ctx2.createRadialGradient(shipX - 7, shipY + 2, 1, shipX - 7, shipY + 2, 11);
-                      ionG.addColorStop(0, 'rgba(56,189,248,0.75)'); ionG.addColorStop(1, 'rgba(56,189,248,0)');
-                      ctx2.fillStyle = ionG; ctx2.beginPath(); ctx2.arc(shipX - 7, shipY + 2, 11, 0, Math.PI * 2); ctx2.fill();
+
+                    // Compute spacecraft kinematics: 0..0.62 = Hohmann transfer arc, 0.62..1.0 = Keplerian capture sweep
+                    var cycle = reduced ? 0.44 : ((tick * 0.0032) % 1);
+                    var shipX, shipY, tx, ty, burnLevel = 0;
+                    if (cycle < 0.62) {
+                      var u = cycle / 0.62;
+                      var mu = 1 - u;
+                      shipX = mu * mu * depX + 2 * mu * u * ctrlX + u * u * capX;
+                      shipY = mu * mu * depY + 2 * mu * u * ctrlY + u * u * capY;
+                      tx = 2 * mu * (ctrlX - depX) + 2 * u * (capX - ctrlX);
+                      ty = 2 * mu * (ctrlY - depY) + 2 * u * (capY - ctrlY);
+                      // Delta-v burn bursts at TPI departure (u < 0.14) and MOI capture (u > 0.86)
+                      if (u < 0.14) burnLevel = Math.sin((u / 0.14) * Math.PI);
+                      else if (u > 0.86) burnLevel = Math.sin(((u - 0.86) / 0.14) * Math.PI);
+                      if (u < 0.015 && !reduced) trailLen = 0;
+                    } else {
+                      var ou = (cycle - 0.62) / 0.38;
+                      var ang = Math.PI + 0.32 + ou * Math.PI * 2;
+                      var cosA = Math.cos(ang), sinA = Math.sin(ang);
+                      var rot = -0.22, cr = Math.cos(rot), sr = Math.sin(rot);
+                      var lx = orbRx * cosA, ly = orbRy * sinA;
+                      shipX = planetX + lx * cr - ly * sr;
+                      shipY = planetY + lx * sr + ly * cr;
+                      var dlx = -orbRx * sinA, dly = orbRy * cosA;
+                      tx = dlx * cr - dly * sr;
+                      ty = dlx * sr + dly * cr;
+                      if (ou < 0.12) burnLevel = 1 - ou / 0.12;
                     }
-                    ctx2.shadowColor = 'rgba(125,211,252,0.95)'; ctx2.shadowBlur = 10;
-                    ctx2.fillStyle = '#e0f2fe'; ctx2.beginPath(); ctx2.arc(shipX, shipY, 2.8, 0, Math.PI * 2); ctx2.fill();
+                    var shipAng = Math.atan2(ty, tx);
+
+                    // Update zero-GC phosphor comet trail & ion/delta-v plume particles
+                    if (!reduced) {
+                      if (trailLen < TRAIL_N) {
+                        trailX[trailLen] = shipX; trailY[trailLen] = shipY; trailLen++;
+                      } else {
+                        for (var ti = 0; ti < TRAIL_N - 1; ti++) {
+                          trailX[ti] = trailX[ti + 1]; trailY[ti] = trailY[ti + 1];
+                        }
+                        trailX[TRAIL_N - 1] = shipX; trailY[TRAIL_N - 1] = shipY;
+                      }
+                      var backX = -Math.cos(shipAng), backY = -Math.sin(shipAng);
+                      var emitCount = burnLevel > 0.25 ? 3 : (tick % 2 === 0 ? 1 : 0);
+                      for (var ei = 0; ei < emitCount; ei++) {
+                        var spread = (fastRng() - 0.5) * (burnLevel > 0.25 ? 0.62 : 0.28);
+                        var spd = (burnLevel > 0.25 ? 1.5 : 0.75) + fastRng() * 0.9;
+                        var ca = Math.cos(spread), sa = Math.sin(spread);
+                        var pvx = (backX * ca - backY * sa) * spd;
+                        var pvy = (backX * sa + backY * ca) * spd;
+                        spawnPlume(shipX + backX * 5, shipY + backY * 5, pvx, pvy,
+                          burnLevel > 0.25 ? (1.4 + fastRng() * 1.6) : (0.9 + fastRng() * 1.1),
+                          burnLevel > 0.25 ? (16 + fastRng() * 12) : (18 + fastRng() * 12),
+                          burnLevel > 0.25 ? 1 : 0);
+                      }
+                      for (var pi = 0; pi < PLUME_N; pi++) {
+                        if (pLife[pi] > 0) {
+                          pX[pi] += pVx[pi]; pY[pi] += pVy[pi];
+                          pVx[pi] *= 0.96; pVy[pi] *= 0.96;
+                          pLife[pi] -= 1;
+                        }
+                      }
+                    }
+
+                    // Hohmann delta-v burn node beacons (TPI departure & MOI capture)
+                    ctx2.save();
+                    for (var ni = 0; ni < 2; ni++) {
+                      var nx = ni === 0 ? depX : capX;
+                      var ny = ni === 0 ? depY : capY;
+                      var nPulse = reduced ? 1 : (0.8 + 0.25 * Math.sin(tick * 0.08 + ni * 2.1));
+                      if (!isHC && hasRG) {
+                        var ng = ctx2.createRadialGradient(nx, ny, 0.5, nx, ny, 10 * nPulse);
+                        ng.addColorStop(0, ni === 0 ? 'rgba(56,189,248,0.65)' : 'rgba(251,191,36,0.72)');
+                        ng.addColorStop(1, 'rgba(251,191,36,0)');
+                        ctx2.fillStyle = ng; ctx2.beginPath(); ctx2.arc(nx, ny, 10 * nPulse, 0, Math.PI * 2); ctx2.fill();
+                      }
+                      ctx2.strokeStyle = isHC ? '#ffff00' : (ni === 0 ? '#7dd3fc' : '#fde047');
+                      ctx2.lineWidth = 1.2;
+                      ctx2.beginPath(); ctx2.arc(nx, ny, 3.2 * nPulse, 0, Math.PI * 2); ctx2.stroke();
+                    }
                     ctx2.restore();
-                    // Vignette
-                    var vg = ctx2.createRadialGradient(W * 0.5, H * 0.5, Math.min(W, H) * 0.3, W * 0.5, H * 0.5, Math.max(W, H) * 0.7);
-                    vg.addColorStop(0, 'transparent'); vg.addColorStop(1, 'rgba(0,0,0,0.4)');
-                    ctx2.fillStyle = vg; ctx2.fillRect(0, 0, W, H);
+
+                    // Destination planet
+                    drawPlanet(ctx2, planetX, planetY, pR, destination, tick);
+
+                    // Render smooth tapered phosphor comet trail
+                    ctx2.save();
+                    if (!isHC) ctx2.globalCompositeOperation = 'lighter';
+                    if (reduced) {
+                      // Clean static illuminated transfer wake behind spacecraft
+                      ctx2.strokeStyle = isHC ? '#ffff00' : 'rgba(103,232,249,0.72)';
+                      ctx2.lineWidth = isHC ? 2.2 : 2.8;
+                      ctx2.beginPath(); ctx2.moveTo(depX, depY);
+                      ctx2.quadraticCurveTo(W * 0.21, H * 0.48, shipX, shipY);
+                      ctx2.stroke();
+                    } else if (trailLen > 2) {
+                      ctx2.lineCap = 'round';
+                      for (var tj = 1; tj < trailLen; tj++) {
+                        var tf = tj / trailLen;
+                        ctx2.strokeStyle = isHC ? '#ffff00' : ('rgba(103,232,249,' + (tf * tf * 0.72).toFixed(3) + ')');
+                        ctx2.lineWidth = 0.7 + tf * 2.8;
+                        ctx2.beginPath();
+                        ctx2.moveTo(trailX[tj - 1], trailY[tj - 1]);
+                        ctx2.lineTo(trailX[tj], trailY[tj]);
+                        ctx2.stroke();
+                      }
+                    }
+                    // Render zero-GC ion-thruster plasma & delta-v burn burst particles
+                    if (!reduced) {
+                      for (var pj = 0; pj < PLUME_N; pj++) {
+                        if (pLife[pj] <= 0) continue;
+                        var pf = pLife[pj] / pMax[pj];
+                        if (isHC) {
+                          ctx2.fillStyle = pKind[pj] === 1 ? '#ffff00' : '#00ff00';
+                          ctx2.globalAlpha = Math.max(0.35, pf);
+                        } else if (pKind[pj] === 1) {
+                          ctx2.fillStyle = 'rgba(253,224,71,' + (pf * 0.85).toFixed(2) + ')';
+                        } else {
+                          ctx2.fillStyle = 'rgba(103,232,249,' + (pf * 0.72).toFixed(2) + ')';
+                        }
+                        ctx2.beginPath();
+                        ctx2.arc(pX[pj], pY[pj], Math.max(0.5, pSize[pj] * pf), 0, Math.PI * 2);
+                        ctx2.fill();
+                      }
+                      ctx2.globalAlpha = 1;
+                    }
+                    ctx2.restore();
+
+                    // Spacecraft silhouette + ion-thruster plasma plume
+                    drawSpacecraftWithPlume(ctx2, shipX, shipY, shipAng, 0.75, burnLevel, isHC, reduced, tick);
+
+                    // Vignette (bypassed in High-Contrast)
+                    if (!isHC && hasRG) {
+                      var vg = ctx2.createRadialGradient(W * 0.5, H * 0.5, Math.min(W, H) * 0.3, W * 0.5, H * 0.5, Math.max(W, H) * 0.7);
+                      vg.addColorStop(0, 'transparent'); vg.addColorStop(1, 'rgba(0,0,0,0.42)');
+                      ctx2.fillStyle = vg; ctx2.fillRect(0, 0, W, H);
+                    }
                   }
                   draw();
                   // Cancel animation when canvas leaves DOM
@@ -4490,8 +4886,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 (turn < maxTurns * 0.3 ? 'Arrival phase.' : turn < maxTurns * 0.7 ? 'Exploration phase.' : 'Departure phase.'),
               ref: function(cvEl) {
                 if (!cvEl) return;
-                var ctx = cvEl.getContext('2d');
+                var ctx = cvEl._seCtx || (cvEl._seCtx = cvEl.getContext && cvEl.getContext('2d'));
                 if (!ctx) return;
+                var isHC = seIsHighContrast();
+                var reduced = sePrefersReducedMotion();
+                var hasRG = typeof ctx.createRadialGradient === 'function';
                 var W = cvEl.offsetWidth || 400, H = cvEl.offsetHeight || 120;
                 var _tw = W * 2, _th = H * 2;
                 if (cvEl.width !== _tw) cvEl.width = _tw;
@@ -4500,37 +4899,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 // reset the transform is conditional now, so scale() would COMPOUND.
                 ctx.setTransform(2, 0, 0, 2, 0, 0);
                 ctx.clearRect(0, 0, W, H);
-                // Static render (no animation loop needed — redraws on each React render)
-                ctx.fillStyle = '#020010'; ctx.fillRect(0, 0, W, H);
-                drawStarfield(ctx, W, H, turn * 100, 80);
-                // Planet (size based on mission progress) + luminous approach trajectory
+                ctx.fillStyle = isHC ? '#000000' : '#020010'; ctx.fillRect(0, 0, W, H);
+                drawStarfield(ctx, W, H, turn * 100, 84);
+                // Planet (size based on mission progress) + gravitational-well contour ripples
                 var progress = Math.min(1, turn / maxTurns);
                 var planetR = 15 + progress * 35;
-                var shipX = W * 0.15 + progress * W * 0.35;
-                var shipY = H * 0.5 + Math.sin(turn * 0.5) * 5;
+                var pCx = W * 0.75, pCy = H * 0.5;
+                var gravScale = Math.max(1.3, Math.min(2.1, 1.35 + (destination.gravity || 3.7) * 0.06));
+                drawGravityWellRipples(ctx, pCx, pCy, planetR * 1.08, planetR * gravScale, turn * 22, '99,102,241', isHC, true);
+                // Hohmann transfer curve & instantaneous spacecraft position/tangent along the curve
+                var x0 = W * 0.08, y0 = H * 0.58;
+                var xc = W * 0.42, yc = H * 0.22;
+                var x1 = pCx - planetR * 1.12, y1 = pCy - planetR * 0.14;
+                var u = Math.max(0.06, Math.min(0.94, 0.08 + progress * 0.82));
+                var mu = 1 - u;
+                var shipX = mu * mu * x0 + 2 * mu * u * xc + u * u * x1;
+                var shipY = mu * mu * y0 + 2 * mu * u * yc + u * u * y1;
+                var tx = 2 * mu * (xc - x0) + 2 * u * (x1 - xc);
+                var ty = 2 * mu * (yc - y0) + 2 * u * (y1 - yc);
+                var shipAng = Math.atan2(ty, tx);
                 ctx.save();
-                ctx.strokeStyle = 'rgba(56,189,248,0.22)'; ctx.lineWidth = 3.5;
-                ctx.beginPath(); ctx.moveTo(W * 0.08, H * 0.54); ctx.quadraticCurveTo(W * 0.42, H * 0.28, W * 0.75 - planetR, H * 0.5); ctx.stroke();
-                ctx.strokeStyle = 'rgba(125,211,252,0.52)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
-                ctx.beginPath(); ctx.moveTo(W * 0.08, H * 0.54); ctx.quadraticCurveTo(W * 0.42, H * 0.28, W * 0.75 - planetR, H * 0.5); ctx.stroke();
-                ctx.setLineDash([]);
-                ctx.restore();
-                drawPlanet(ctx, W * 0.75, H * 0.5, planetR, destination, turn * 50);
-                // Ship silhouette with glowing ion exhaust cone
-                if (typeof ctx.createRadialGradient === 'function') {
-                  var exh = ctx.createRadialGradient(shipX - 11, shipY, 1, shipX - 11, shipY, 12);
-                  exh.addColorStop(0, 'rgba(103,232,249,0.85)'); exh.addColorStop(0.5, 'rgba(56,189,248,0.28)'); exh.addColorStop(1, 'rgba(56,189,248,0)');
-                  ctx.fillStyle = exh; ctx.beginPath(); ctx.arc(shipX - 11, shipY, 12, 0, Math.PI * 2); ctx.fill();
+                if (!isHC) {
+                  ctx.strokeStyle = 'rgba(56,189,248,0.18)'; ctx.lineWidth = 3.6;
+                  ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(xc, yc, x1, y1); ctx.stroke();
                 }
-                ctx.fillStyle = '#c0c8d0';
-                ctx.fillRect(shipX - 8, shipY - 2, 12, 4);
-                ctx.fillStyle = '#f8fafc';
-                ctx.beginPath(); ctx.moveTo(shipX + 4, shipY); ctx.lineTo(shipX + 8, shipY - 3); ctx.lineTo(shipX + 8, shipY + 3); ctx.closePath(); ctx.fill();
-                ctx.fillStyle = 'rgba(103,232,249,0.75)';
-                ctx.beginPath(); ctx.arc(shipX - 9, shipY, 2.6, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = isHC ? '#ffffff' : 'rgba(125,211,252,0.52)'; ctx.lineWidth = isHC ? 1.5 : 1; ctx.setLineDash([3, 3]);
+                ctx.beginPath(); ctx.moveTo(x0, y0); ctx.quadraticCurveTo(xc, yc, x1, y1); ctx.stroke();
+                ctx.setLineDash([]);
+                // Phosphor comet wake along completed portion of Hohmann arc
+                if (!isHC) ctx.globalCompositeOperation = 'lighter';
+                ctx.lineCap = 'round';
+                var wakeSteps = 16;
+                var uStart = Math.max(0, u - 0.34);
+                var prevWx = 0, prevWy = 0;
+                for (var wi = 0; wi <= wakeSteps; wi++) {
+                  var wf = wi / wakeSteps;
+                  var wu = uStart + wf * (u - uStart);
+                  var wmu = 1 - wu;
+                  var wx = wmu * wmu * x0 + 2 * wmu * wu * xc + wu * wu * x1;
+                  var wy = wmu * wmu * y0 + 2 * wmu * wu * yc + wu * wu * y1;
+                  if (wi > 0) {
+                    ctx.strokeStyle = isHC ? '#ffff00' : ('rgba(103,232,249,' + (wf * wf * 0.78).toFixed(2) + ')');
+                    ctx.lineWidth = 0.8 + wf * 2.4;
+                    ctx.beginPath(); ctx.moveTo(prevWx, prevWy); ctx.lineTo(wx, wy); ctx.stroke();
+                  }
+                  prevWx = wx; prevWy = wy;
+                }
+                // Departure & capture delta-v node beacons
+                ctx.strokeStyle = isHC ? '#ffff00' : '#fde047'; ctx.lineWidth = 1.1;
+                ctx.beginPath(); ctx.arc(x0, y0, 2.8, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(x1, y1, 3.0, 0, Math.PI * 2); ctx.stroke();
+                ctx.restore();
+                drawPlanet(ctx, pCx, pCy, planetR, destination, turn * 50);
+                // Tangent-oriented spacecraft with ion-thruster plasma plume
+                var burnNode = (progress < 0.2 || progress > 0.78) ? 0.65 : 0.1;
+                drawSpacecraftWithPlume(ctx, shipX, shipY, shipAng, 0.65, burnNode, isHC, reduced, turn * 17);
                 // Crew avatars (bottom strip)
                 if (crew.length > 0) {
-                  ctx.font = '8px system-ui'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                  ctx.font = '8px system-ui'; ctx.textAlign = 'center'; ctx.fillStyle = isHC ? '#ffffff' : 'rgba(255,255,255,0.5)';
                   crew.forEach(function(c, ci) {
                     var cx2 = 25 + ci * 30;
                     ctx.font = '12px serif'; ctx.fillText(c.emoji, cx2, H - 10);
@@ -4538,12 +4964,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 }
                 // Mission stage label
                 var stageLabel = turn < maxTurns * 0.3 ? 'Arrival Phase' : turn < maxTurns * 0.7 ? 'Exploration Phase' : 'Departure Phase';
-                ctx.font = 'bold 8px monospace'; ctx.textAlign = 'right'; ctx.fillStyle = '#94a3b8';
+                ctx.font = 'bold 8px monospace'; ctx.textAlign = 'right'; ctx.fillStyle = isHC ? '#ffff00' : '#94a3b8';
                 ctx.fillText(stageLabel + ' \u2022 Turn ' + turn + '/' + maxTurns, W - 8, 12);
-                // Vignette
-                var vg = ctx.createRadialGradient(W * 0.5, H * 0.5, Math.min(W, H) * 0.3, W * 0.5, H * 0.5, Math.max(W, H) * 0.6);
-                vg.addColorStop(0, 'transparent'); vg.addColorStop(1, 'rgba(0,0,0,0.5)');
-                ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+                // Vignette (bypassed in High-Contrast)
+                if (!isHC && hasRG) {
+                  var vg = ctx.createRadialGradient(W * 0.5, H * 0.5, Math.min(W, H) * 0.3, W * 0.5, H * 0.5, Math.max(W, H) * 0.6);
+                  vg.addColorStop(0, 'transparent'); vg.addColorStop(1, 'rgba(0,0,0,0.5)');
+                  ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+                }
               }
             })
           ),
@@ -4629,7 +5057,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   })(),
                   ref: function(cvEl) {
                     if (!cvEl) return;
-                    var cx2 = cvEl.getContext('2d');
+                    var cx2 = cvEl._specCtx || (cvEl._specCtx = cvEl.getContext && cvEl.getContext('2d'));
                     if (!cx2) return;
                     var W2 = cvEl.offsetWidth || 360, H2 = cvEl.offsetHeight || 110;
                     var _tw2 = W2 * 2, _th2 = H2 * 2;
@@ -4729,6 +5157,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   var canConsult = !consultUsed;
                   return h('button', {
                     key: member.name,
+                    type: 'button',
                     onClick: function() { if (canConsult) consultSpecialist(member); },
                     disabled: !canConsult,
                     'aria-label': 'Consult ' + member.name + ', ' + (member.role || '') + (member.specialty ? ', specialty ' + member.specialty : ''),
@@ -4877,10 +5306,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               eventOutcome.protocolResult && eventOutcome.protocolResult.applied && h('span', { 'data-spaceexplorer-protocol-payoff': 'true', className: 'px-2 py-0.5 rounded bg-purple-500/15 text-purple-200 border border-purple-500/30' }, (eventOutcome.missionProtocol ? eventOutcome.missionProtocol.icon + ' ' + eventOutcome.missionProtocol.label : 'Protocol') + ' applied')
             ),
             turn >= maxTurns ? h('p', { className: 'text-xs text-green-300 font-bold text-center mb-2' }, t('stem.spaceexplorer.mission_complete_preparing_debrief', '\uD83C\uDF89 Mission complete! Preparing debrief...')) :
-            (resources.o2 <= 0 || resources.hull <= 0) ? h('p', { className: 'text-xs text-red-300 font-bold text-center mb-2' }, t('stem.spaceexplorer.critical_failure_mission_ending', '\u26A0\uFE0F Critical failure! Mission ending...')) :
+            (resources && (resources.o2 <= 0 || resources.hull <= 0)) ? h('p', { className: 'text-xs text-red-300 font-bold text-center mb-2' }, t('stem.spaceexplorer.critical_failure_mission_ending', '\u26A0\uFE0F Critical failure! Mission ending...')) :
             h('button', {
+              type: 'button',
               onClick: function() { updAll({ eventOutcome: null, missionPhase: 'allocate' }); },
-              ref: function(el) { if (el) setTimeout(function() { el.focus(); }, 100); },
+              ref: function(el) { if (el && !el._seFocused) { el._seFocused = true; setTimeout(function() { if (!el.isConnected) return; var act = typeof document !== 'undefined' && document.activeElement; if (act && (act.tagName === 'INPUT' || act.tagName === 'TEXTAREA')) return; el.focus(); }, 100); } },
               className: 'w-full py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md transition-all focus:ring-2 focus:ring-purple-400 focus:outline-none'
             }, '\u26A1 Allocate Power \u2192 Turn ' + (turn + 1) + '/' + maxTurns)
           )
@@ -5221,7 +5651,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             h('button', {
               type: 'button',
               onClick: function() { clearCurrentMission('Debrief complete. Choose your next destination.'); },
-              ref: function(el) { if (el) setTimeout(function() { el.focus(); }, 200); },
+              ref: function(el) { if (el && !el._seFocused) { el._seFocused = true; setTimeout(function() { if (!el.isConnected) return; var act = typeof document !== 'undefined' && document.activeElement; if (act && (act.tagName === 'INPUT' || act.tagName === 'TEXTAREA')) return; el.focus(); }, 200); } },
               className: 'flex-1 py-3 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-md focus:ring-2 focus:ring-purple-400 focus:outline-none'
             }, t('stem.spaceexplorer.new_mission', '\uD83C\uDF0C New Mission')),
             success && totalScience >= 50 && h('button', {
@@ -5279,19 +5709,267 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             h('div', { className: 'text-xs text-slate-100 mt-1' }, sm.desc),
             h('div', { className: 'text-xs text-slate-200 mt-1 font-mono' }, 'Periapsis \u2248 ' + perihelion.toFixed(2) + ' AU, Apoapsis \u2248 ' + aphelion.toFixed(2) + ' AU')
           ),
-          // Live Keplerian Orbit Diagram SVG
-          h('div', { className: 'rounded-xl border border-slate-600 bg-slate-950 p-2' },
-            h('svg', { viewBox: '0 0 380 168', 'aria-hidden': 'true', focusable: 'false', className: 'block w-full h-auto', style: { maxHeight: 176 } },
-              h('rect', { x: 0, y: 0, width: 380, height: 168, rx: 8, fill: isContrast ? '#000000' : '#020617' }),
-              h('circle', { cx: starX, cy: starY, r: dragR, fill: isContrast ? 'none' : 'rgba(251,191,36,0.12)', stroke: isContrast ? '#ffffff' : 'rgba(251,191,36,0.45)', strokeWidth: 1.2, strokeDasharray: '3 3' }),
-              h('ellipse', { cx: Math.min(250, ellCX), cy: starY, rx: aPx, ry: bPx, fill: 'none', stroke: sm.color, strokeWidth: 2.5, strokeDasharray: ohState === 'escape' ? '7 4' : ohState === 'decay' ? '4 3' : undefined }),
-              h('circle', { cx: starX, cy: starY, r: 10, fill: isContrast ? '#ffff00' : '#f59e0b', stroke: '#fef08a', strokeWidth: 1.5 }),
-              h('circle', { cx: Math.max(16, Math.min(250, ellCX) - aPx), cy: starY, r: 4, fill: isContrast ? '#ffffff' : '#f472b6' }),
-              h('circle', { cx: Math.min(364, Math.min(250, ellCX) + aPx), cy: starY, r: 4, fill: isContrast ? '#ffff00' : '#38bdf8' }),
-              h('text', { x: 14, y: 156, fontSize: 10, fontWeight: 700, fill: '#cbd5e1' }, 'r_p=' + perihelion.toFixed(2) + ' AU'),
-              h('text', { x: 190, y: 156, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: sm.color }, 'e=' + iqOh.ecc.toFixed(2) + ' · drag ' + iqOh.drag + '%'),
-              h('text', { x: 366, y: 156, textAnchor: 'end', fontSize: 10, fontWeight: 700, fill: '#cbd5e1' }, 'r_a=' + aphelion.toFixed(2) + ' AU')
-            )
+          // Live-rAF Zero-GC Keplerian Orbit, Hohmann Delta-V & Gravitational Slingshot Canvas
+          h('div', { className: 'rounded-xl border border-slate-600 bg-slate-950 p-2 overflow-hidden' },
+            h('canvas', {
+              role: 'img',
+              'aria-label': 'Keplerian orbital trajectory diagram: periapsis ' + perihelion.toFixed(2) + ' AU, apoapsis ' + aphelion.toFixed(2) + ' AU, eccentricity ' + iqOh.ecc.toFixed(2) + ', drag ' + iqOh.drag + ' percent.',
+              className: 'block w-full rounded-lg',
+              style: { width: '100%', height: '176px', display: 'block' },
+              ref: function(cvEl) {
+                if (!cvEl) return;
+                var nextSig = iqOh.sma.toFixed(2) + '|' + iqOh.ecc.toFixed(2) + '|' + iqOh.drag + '|' + ohState + '|' + (isContrast ? '1' : '0');
+                var prevSig = cvEl._ohSig;
+                cvEl._ohParams = {
+                  sma: iqOh.sma, ecc: iqOh.ecc, drag: iqOh.drag,
+                  ohState: ohState, color: sm.color, isContrast: isContrast,
+                  perihelion: perihelion, aphelion: aphelion,
+                  starX: starX, starY: starY, aPx: aPx, bPx: bPx, ellCX: Math.min(250, ellCX), dragR: dragR,
+                  resetTrail: prevSig !== nextSig
+                };
+                cvEl._ohSig = nextSig;
+                if (cvEl._ohInit) {
+                  if (typeof cvEl._ohRedraw === 'function' && sePrefersReducedMotion()) cvEl._ohRedraw();
+                  return;
+                }
+                cvEl._ohInit = true;
+                var ctxO = cvEl.getContext && cvEl.getContext('2d');
+                if (!ctxO) return;
+                var W = 380, H = 168;
+                var dpr = Math.max(1, Math.min(2, (typeof window !== 'undefined' && window.devicePixelRatio) || 1));
+                cvEl.width = Math.round(W * dpr);
+                cvEl.height = Math.round(H * dpr);
+                ctxO.setTransform(dpr, 0, 0, dpr, 0, 0);
+                var hasRG = typeof ctxO.createRadialGradient === 'function';
+                // Zero-GC pre-allocated Keplerian phosphor comet trail & delta-v burn particle pool
+                var TRAIL_N = 44;
+                var trailX = new Float32Array(TRAIL_N);
+                var trailY = new Float32Array(TRAIL_N);
+                var trailLen = 0;
+                var BURST_N = 44;
+                var bX = new Float32Array(BURST_N);
+                var bY = new Float32Array(BURST_N);
+                var bVx = new Float32Array(BURST_N);
+                var bVy = new Float32Array(BURST_N);
+                var bLife = new Float32Array(BURST_N);
+                var bMax = new Float32Array(BURST_N);
+                var bSize = new Float32Array(BURST_N);
+                var bKind = new Uint8Array(BURST_N); // 0=cyan ion, 1=gold delta-v burn, 2=orange drag/slingshot spark
+                var bCur = 0;
+                var rngS = 9187;
+                function nextRand() { rngS = (rngS * 16807) % 2147483647; return (rngS - 1) / 2147483646; }
+                function spawnBurst(x, y, vx, vy, sz, lf, kind) {
+                  var idx = bCur;
+                  bCur = (bCur + 1) % BURST_N;
+                  bX[idx] = x; bY[idx] = y; bVx[idx] = vx; bVy[idx] = vy;
+                  bSize[idx] = sz; bLife[idx] = lf; bMax[idx] = lf; bKind[idx] = kind;
+                }
+                var theta = Math.PI * 0.82;
+                var tick = 0;
+
+                function renderFrame() {
+                  if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._ohAnim); return; }
+                  var P = cvEl._ohParams;
+                  if (!P) return;
+                  var reduced = sePrefersReducedMotion();
+                  var isHC = P.isContrast || seIsHighContrast();
+                  if (!reduced) cvEl._ohAnim = requestAnimationFrame(renderFrame);
+                  if (P.resetTrail) {
+                    trailLen = 0;
+                    P.resetTrail = false;
+                  }
+                  if (!reduced) tick++;
+
+                  var cxE = P.ellCX, cyE = P.starY, rxE = P.aPx, ryE = P.bPx;
+                  var sx = P.starX, sy = P.starY;
+                  // Background + multi-layer parallax starfield
+                  ctxO.fillStyle = isHC ? '#000000' : '#020617';
+                  ctxO.fillRect(0, 0, W, H);
+                  drawStarfield(ctxO, W, H, tick * 0.65, 76);
+
+                  // Gravitational-well contour ripples centered on primary star
+                  drawGravityWellRipples(ctxO, sx, sy, 14, Math.max(P.dragR + 28, 72), tick, '56,189,248', isHC, reduced);
+
+                  // Atmospheric drag envelope
+                  ctxO.save();
+                  if (!isHC && hasRG) {
+                    var dg = ctxO.createRadialGradient(sx, sy, 8, sx, sy, P.dragR);
+                    dg.addColorStop(0, 'rgba(251,191,36,0.22)');
+                    dg.addColorStop(0.75, 'rgba(251,191,36,0.09)');
+                    dg.addColorStop(1, 'rgba(251,191,36,0)');
+                    ctxO.fillStyle = dg;
+                    ctxO.beginPath(); ctxO.arc(sx, sy, P.dragR, 0, Math.PI * 2); ctxO.fill();
+                  }
+                  ctxO.strokeStyle = isHC ? '#ffffff' : 'rgba(251,191,36,0.48)';
+                  ctxO.lineWidth = 1.2;
+                  ctxO.setLineDash([3, 3]);
+                  ctxO.beginPath(); ctxO.arc(sx, sy, P.dragR, 0, Math.PI * 2); ctxO.stroke();
+                  ctxO.setLineDash([]);
+                  ctxO.restore();
+
+                  // Keplerian orbit guide ellipse (soft outer glow + crisp orbit curve)
+                  ctxO.save();
+                  if (!isHC) {
+                    ctxO.strokeStyle = P.color;
+                    ctxO.globalAlpha = 0.2;
+                    ctxO.lineWidth = 5.5;
+                    ctxO.beginPath(); seEllipse(ctxO, cxE, cyE, rxE, ryE, 0, 0, Math.PI * 2); ctxO.stroke();
+                    ctxO.globalAlpha = 1;
+                  }
+                  ctxO.strokeStyle = isHC ? '#ffff00' : P.color;
+                  ctxO.lineWidth = isHC ? 2.2 : 1.9;
+                  if (P.ohState === 'escape') ctxO.setLineDash([7, 4]);
+                  else if (P.ohState === 'decay') ctxO.setLineDash([4, 3]);
+                  ctxO.beginPath(); seEllipse(ctxO, cxE, cyE, rxE, ryE, 0, 0, Math.PI * 2); ctxO.stroke();
+                  ctxO.setLineDash([]);
+                  ctxO.restore();
+
+                  // Periapsis & apoapsis orbital nodes
+                  var periX = Math.max(14, cxE - rxE);
+                  var apoX = Math.min(W - 14, cxE + rxE);
+                  ctxO.fillStyle = isHC ? '#ffffff' : '#f472b6';
+                  ctxO.beginPath(); ctxO.arc(periX, sy, 3.6, 0, Math.PI * 2); ctxO.fill();
+                  ctxO.fillStyle = isHC ? '#ffff00' : '#38bdf8';
+                  ctxO.beginPath(); ctxO.arc(apoX, sy, 3.6, 0, Math.PI * 2); ctxO.fill();
+
+                  // Advance spacecraft along Keplerian orbit with Kepler's 2nd Law speed scaling
+                  var curTheta = reduced ? (Math.PI * 0.84) : theta;
+                  var decayScale = (!reduced && P.ohState === 'decay') ? (1 - ((tick * 0.0014) % 0.36)) : 1;
+                  var shipX = cxE + Math.cos(curTheta) * rxE * decayScale;
+                  var shipY = cyE + Math.sin(curTheta) * ryE * decayScale;
+                  var dxStar = shipX - sx, dyStar = shipY - sy;
+                  var distStar = Math.max(12, Math.sqrt(dxStar * dxStar + dyStar * dyStar));
+                  var tanX = -Math.sin(curTheta) * rxE;
+                  var tanY = Math.cos(curTheta) * ryE;
+                  var shipAng = Math.atan2(tanY, tanX);
+                  var speedRatio = Math.min(3.4, Math.max(0.45, Math.pow(rxE / distStar, 1.32)));
+                  if (!reduced) {
+                    theta += 0.022 * speedRatio;
+                    if (theta > Math.PI * 2) theta -= Math.PI * 2;
+                  }
+                  // Near periapsis (gravitational slingshot / Hohmann delta-v burn window)
+                  var nearPeri = Math.max(0, 1 - Math.abs(Math.sin((curTheta - Math.PI) * 0.5)) * 4.2);
+                  var inDrag = distStar < P.dragR + 4 && P.drag > 25;
+                  var burnLevel = P.ohState === 'escape' ? Math.max(0.45, nearPeri) : nearPeri;
+
+                  // Record zero-GC phosphor comet trail & emit delta-v / ion / drag particles
+                  if (!reduced) {
+                    if (trailLen < TRAIL_N) {
+                      trailX[trailLen] = shipX; trailY[trailLen] = shipY; trailLen++;
+                    } else {
+                      for (var ti = 0; ti < TRAIL_N - 1; ti++) {
+                        trailX[ti] = trailX[ti + 1]; trailY[ti] = trailY[ti + 1];
+                      }
+                      trailX[TRAIL_N - 1] = shipX; trailY[TRAIL_N - 1] = shipY;
+                    }
+                    var bxDir = -Math.cos(shipAng), byDir = -Math.sin(shipAng);
+                    var emitN = (burnLevel > 0.3 || inDrag) ? 2 : (tick % 2 === 0 ? 1 : 0);
+                    for (var ei = 0; ei < emitN; ei++) {
+                      var spr = (nextRand() - 0.5) * (burnLevel > 0.3 ? 0.65 : 0.32);
+                      var spd = (burnLevel > 0.3 ? 1.45 : 0.72) + nextRand() * 0.85;
+                      var ca = Math.cos(spr), sa = Math.sin(spr);
+                      var vx = (bxDir * ca - byDir * sa) * spd;
+                      var vy = (bxDir * sa + byDir * ca) * spd;
+                      var kind = inDrag ? 2 : (burnLevel > 0.3 ? 1 : 0);
+                      spawnBurst(shipX + bxDir * 4.5, shipY + byDir * 4.5, vx, vy,
+                        kind === 0 ? (0.85 + nextRand() * 0.9) : (1.2 + nextRand() * 1.4),
+                        kind === 0 ? (15 + nextRand() * 10) : (14 + nextRand() * 11), kind);
+                    }
+                    for (var bi = 0; bi < BURST_N; bi++) {
+                      if (bLife[bi] > 0) {
+                        bX[bi] += bVx[bi]; bY[bi] += bVy[bi];
+                        bVx[bi] *= 0.95; bVy[bi] *= 0.95;
+                        bLife[bi] -= 1;
+                      }
+                    }
+                  }
+
+                  // Central Star with luminous corona (bypassed in High-Contrast)
+                  ctxO.save();
+                  if (!isHC && hasRG) {
+                    var coronaR = 24 + (reduced ? 0 : Math.sin(tick * 0.06) * 2.5);
+                    var stG = ctxO.createRadialGradient(sx, sy, 3, sx, sy, coronaR);
+                    stG.addColorStop(0, '#fef9c3');
+                    stG.addColorStop(0.38, 'rgba(251,191,36,0.75)');
+                    stG.addColorStop(0.72, 'rgba(245,158,11,0.22)');
+                    stG.addColorStop(1, 'rgba(245,158,11,0)');
+                    ctxO.fillStyle = stG;
+                    ctxO.beginPath(); ctxO.arc(sx, sy, coronaR, 0, Math.PI * 2); ctxO.fill();
+                  }
+                  ctxO.fillStyle = isHC ? '#ffff00' : '#f59e0b';
+                  ctxO.strokeStyle = isHC ? '#ffffff' : '#fef08a';
+                  ctxO.lineWidth = 1.5;
+                  ctxO.beginPath(); ctxO.arc(sx, sy, 10, 0, Math.PI * 2); ctxO.fill(); ctxO.stroke();
+                  ctxO.restore();
+
+                  // Keplerian phosphor comet trail & plume particles
+                  ctxO.save();
+                  if (!isHC) ctxO.globalCompositeOperation = 'lighter';
+                  if (reduced) {
+                    // Clean static trailing phosphor arc behind spacecraft
+                    ctxO.strokeStyle = isHC ? '#ffff00' : 'rgba(103,232,249,0.75)';
+                    ctxO.lineWidth = 2.6;
+                    ctxO.beginPath(); seEllipse(ctxO, cxE, cyE, rxE, ryE, 0, curTheta - 0.9, curTheta); ctxO.stroke();
+                  } else if (trailLen > 2) {
+                    ctxO.lineCap = 'round';
+                    for (var tj = 1; tj < trailLen; tj++) {
+                      var tf = tj / trailLen;
+                      ctxO.strokeStyle = isHC ? '#ffff00' : ('rgba(103,232,249,' + (tf * tf * 0.78).toFixed(3) + ')');
+                      ctxO.lineWidth = 0.65 + tf * 2.8;
+                      ctxO.beginPath();
+                      ctxO.moveTo(trailX[tj - 1], trailY[tj - 1]);
+                      ctxO.lineTo(trailX[tj], trailY[tj]);
+                      ctxO.stroke();
+                    }
+                  }
+                  if (!reduced) {
+                    for (var bj = 0; bj < BURST_N; bj++) {
+                      if (bLife[bj] <= 0) continue;
+                      var bf = bLife[bj] / bMax[bj];
+                      if (isHC) {
+                        ctxO.fillStyle = bKind[bj] === 0 ? '#00ff00' : '#ffff00';
+                        ctxO.globalAlpha = Math.max(0.35, bf);
+                      } else if (bKind[bj] === 2) {
+                        ctxO.fillStyle = 'rgba(251,146,60,' + (bf * 0.88).toFixed(2) + ')';
+                      } else if (bKind[bj] === 1) {
+                        ctxO.fillStyle = 'rgba(253,224,71,' + (bf * 0.86).toFixed(2) + ')';
+                      } else {
+                        ctxO.fillStyle = 'rgba(103,232,249,' + (bf * 0.74).toFixed(2) + ')';
+                      }
+                      ctxO.beginPath();
+                      ctxO.arc(bX[bj], bY[bj], Math.max(0.5, bSize[bj] * bf), 0, Math.PI * 2);
+                      ctxO.fill();
+                    }
+                    ctxO.globalAlpha = 1;
+                  }
+                  ctxO.restore();
+
+                  // Orbiting spacecraft with ion-thruster plasma plume & periapsis delta-v flare
+                  drawSpacecraftWithPlume(ctxO, shipX, shipY, shipAng, 0.45 + speedRatio * 0.2, burnLevel, isHC, reduced, tick);
+
+                  // Dynamic numeric orbital parameter readouts (preserving exact existing telemetry)
+                  ctxO.save();
+                  ctxO.font = 'bold 10px ui-monospace, monospace';
+                  ctxO.fillStyle = isHC ? '#ffffff' : '#cbd5e1';
+                  ctxO.textAlign = 'left';
+                  ctxO.fillText('r_p=' + P.perihelion.toFixed(2) + ' AU', 12, 157);
+                  ctxO.fillStyle = isHC ? '#ffff00' : P.color;
+                  ctxO.textAlign = 'center';
+                  ctxO.fillText('e=' + P.ecc.toFixed(2) + ' \u00B7 drag ' + P.drag + '%', 190, 157);
+                  ctxO.fillStyle = isHC ? '#ffffff' : '#cbd5e1';
+                  ctxO.textAlign = 'right';
+                  ctxO.fillText('r_a=' + P.aphelion.toFixed(2) + ' AU', 368, 157);
+                  ctxO.restore();
+                }
+
+                cvEl._ohRedraw = renderFrame;
+                renderFrame();
+                var obs = new MutationObserver(function() {
+                  if (!document.contains(cvEl)) { cancelAnimationFrame(cvEl._ohAnim); obs.disconnect(); }
+                });
+                obs.observe(document.body, { childList: true, subtree: true });
+              }
+            })
           ),
           // One-click Orbit Presets
           h('div', { className: 'flex flex-wrap items-center gap-1.5', role: 'group', 'aria-label': t('stem.spaceexplorer.orbit_presets_group', 'Orbital presets') },
@@ -5321,12 +5999,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             })
           ),
           h('div', { className: 'flex gap-2 items-center flex-wrap' },
-            h('button', { onClick: function() { setOh({ log: (iqOh.log || []).concat([{ s: iqOh.sma, e: iqOh.ecc, d: iqOh.drag, st: ohState }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-800 text-[0.6875rem] font-bold text-slate-200 border border-slate-600' }, t('stem.spaceexplorer.log', '📋 Log')),
-            h('button', { onClick: function() { setOh({ sma: 2, ecc: 0.1, drag: 10, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-transparent text-[0.6875rem] font-semibold text-slate-400 border border-slate-600' }, t('stem.spaceexplorer.reset', '↺ Reset'))
+            h('button', { type: 'button', onClick: function() { setOh({ log: (iqOh.log || []).concat([{ s: iqOh.sma, e: iqOh.ecc, d: iqOh.drag, st: ohState }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-800 text-[0.6875rem] font-bold text-slate-200 border border-slate-600' }, t('stem.spaceexplorer.log', '📋 Log')),
+            h('button', { type: 'button', onClick: function() { setOh({ sma: 2, ecc: 0.1, drag: 10, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-transparent text-[0.6875rem] font-semibold text-slate-400 border border-slate-600' }, t('stem.spaceexplorer.reset', '↺ Reset'))
           ),
           h('textarea', { 'aria-label': t('stem.spaceexplorer.hypothesis_input', 'Orbit hypothesis'), value: iqOh.hypothesis || '', onChange: function(e) { setOh({ hypothesis: e.target.value }); }, placeholder: t('stem.spaceexplorer.hypothesis_what_combination_produces_e', 'Hypothesis: What combination produces escape?'),
             className: 'w-full text-[0.75rem] bg-slate-800 text-slate-100 border border-slate-500 rounded p-2 font-mono leading-snug', rows: 3 }),
-          !iqOh.stuckRevealed && h('button', { onClick: function() { setOh({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-700/30 text-[0.6875rem] font-bold text-amber-300 border border-amber-700' }, t('stem.spaceexplorer.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
+          !iqOh.stuckRevealed && h('button', { type: 'button', onClick: function() { setOh({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-700/30 text-[0.6875rem] font-bold text-amber-300 border border-amber-700' }, t('stem.spaceexplorer.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
           iqOh.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[0.6875rem] text-slate-200 leading-relaxed' },
             h('ul', { className: 'list-disc pl-5 space-y-1' },
               h('li', null, t('stem.spaceexplorer.find_two_stable_orbits_with_very_diffe', 'Find two stable orbits with very different SMA.')),
@@ -5334,7 +6012,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           h('label', { className: 'flex items-center gap-2 text-[0.75rem] font-bold text-emerald-300 cursor-pointer' },
             h('input', { type: 'checkbox', checked: !!iqOh.understood, onChange: function(e) { setOh({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
             t('stem.spaceexplorer.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-          iqOh.understood && h('textarea', { value: iqOh.explanation || '', onChange: function(e) { setOh({ explanation: e.target.value }); }, placeholder: t('stem.spaceexplorer.explain_how_sma_eccentricity_and_drag_', 'Explain how SMA, eccentricity, and drag jointly determine orbital fate.'),
+          iqOh.understood && h('textarea', { 'aria-label': 'Explain how SMA, eccentricity, and drag jointly determine orbital fate', value: iqOh.explanation || '', onChange: function(e) { setOh({ explanation: e.target.value }); }, placeholder: t('stem.spaceexplorer.explain_how_sma_eccentricity_and_drag_', 'Explain how SMA, eccentricity, and drag jointly determine orbital fate.'),
             className: 'w-full text-[0.75rem] bg-slate-800 text-slate-100 border border-emerald-600 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
           h('div', { className: 'text-[0.625rem] italic text-slate-500' }, t('stem.spaceexplorer.design_note_discrete_4_state_orbital_m', 'Design note: discrete 4-state orbital marker; no fuel-efficiency score; no reveal — by design.'))
         );

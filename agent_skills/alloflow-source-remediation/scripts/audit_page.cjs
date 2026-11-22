@@ -297,8 +297,36 @@ async function main() {
       for (const count of radioGroupCounts.values()) {
         if (count > 1) extraGroupedRadios += (count - 1);
       }
+      // ARIA roving-tabindex composite widgets (tablist/radiogroup/menu/menubar/listbox/toolbar/tree):
+      // when a composite container has an active tabindex="0" member, sibling tabindex="-1" peers
+      // are arrow-key targets rather than Tab stops (matching WAI-ARIA APG & native radio groups).
+      const rovingGroups = await page.evaluate(() => {
+        const COMPOSITE_SEL = '[role="tablist"],[role="radiogroup"],[role="menu"],[role="menubar"],[role="listbox"],[role="toolbar"],[role="tree"]';
+        const groups = [];
+        document.querySelectorAll(COMPOSITE_SEL).forEach((container) => {
+          const members = Array.from(container.querySelectorAll('[data-allo-kb]'))
+            .filter((el) => el.closest(COMPOSITE_SEL) === container);
+          if (members.length < 2) return;
+          const tabbable = members.filter((el) => {
+            const raw = el.getAttribute('tabindex');
+            return raw === null ? ['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName) : Number(raw) >= 0;
+          });
+          const rovingNeg = members.filter((el) => el.hasAttribute('tabindex') && Number(el.getAttribute('tabindex')) < 0);
+          if (tabbable.length >= 1 && rovingNeg.length >= 1) {
+            groups.push({
+              tabbableMarks: tabbable.map((el) => el.getAttribute('data-allo-kb')),
+              rovingMarks: rovingNeg.map((el) => el.getAttribute('data-allo-kb')),
+            });
+          }
+        });
+        return groups;
+      });
+      const rovingNegSet = new Set();
+      for (const g of rovingGroups) {
+        for (const m of g.rovingMarks) rovingNegSet.add(m);
+      }
       const expectedTabStops = interactive.length > 0
-        ? Math.max(1, interactive.length - extraGroupedRadios)
+        ? Math.max(1, interactive.length - extraGroupedRadios - rovingNegSet.size)
         : 0;
 
       await page.evaluate(() => { document.body.focus(); });
@@ -314,13 +342,18 @@ async function main() {
         for (let step = 0; step < cap; step += 1) {
           steps = step + 1;
           await page.keyboard.press('Tab');
-          const mark = await page.evaluate(() => {
+          const focusInfo = await page.evaluate(() => {
             const el = document.activeElement;
-            return el && el.getAttribute ? el.getAttribute('data-allo-kb') : null;
+            const mark = el && el.getAttribute ? el.getAttribute('data-allo-kb') : null;
+            const wrapped = !el || el === document.body || el === document.documentElement;
+            return { mark, wrapped };
           });
+          const mark = focusInfo.mark;
           if (mark === null) {
-            // Focus left the tracked set (browser chrome wrap-around) — one full cycle done.
-            if (sequence.length) break;
+            // Focus on an untracked native focusable (<summary>, audio/video controls,
+            // [contenteditable], or a scrollable container) must NOT abort the Tab walk
+            // prematurely — only genuine wrap-around to document/body ends the cycle.
+            if (focusInfo.wrapped && sequence.length) break;
             continue;
           }
           if (mark === lastMark) {
@@ -358,6 +391,11 @@ async function main() {
       }
       const reachedRadioNames = new Set(radios.filter((r) => r.name && reached.has(r.mark)).map((r) => r.name));
       radios.forEach((r) => { if (r.name && reachedRadioNames.has(r.name)) reached.add(r.mark); });
+      for (const g of rovingGroups) {
+        if (g.tabbableMarks.some((m) => reached.has(m))) {
+          g.rovingMarks.forEach((m) => reached.add(m));
+        }
+      }
       const unreachable = interactive.filter((el) => !reached.has(el.index)).map((el) => el.brief);
       const suspectedTrap = interactive.length > 0 && (
         cycleTrapDetected

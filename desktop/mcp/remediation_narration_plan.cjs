@@ -47,7 +47,8 @@ function selectVoice({language,provider='auto',voice='auto',mode='accessible'}, 
   const engine=provider==='auto'?(base==='en'?'kokoro':'piper'):provider;
   if(engine==='kokoro') {
     if(base!=='en')throw Error('This Kokoro adapter supports English; use narration_provider: auto or piper for '+lang);
-    return {provider:engine,language:lang,voice:voice==='auto'?'af_heart':voice};
+    if(voice!=='auto'&&(typeof voice!=='string'||!voice.trim()))throw Error('Kokoro voice must be auto or a valid voice id');
+    return {provider:engine,language:lang,voice:voice==='auto'?'af_heart':voice.trim()};
   }
   const entry=catalog.find(v=>v.language===base);
   if(!entry)throw Error('No local Piper voice for '+lang+'. Call document_narration_voices for supported languages');
@@ -115,7 +116,8 @@ function planDocument({html,mode,language='auto',labels={}}, helpers) {
     const blockLanguage=(el.closest('[lang]')?.lang||canonical);
     const blockBase=new Intl.Locale(blockLanguage).language;
     const options={languageRuns:true,language:blockLanguage,labelsByLanguage:labels};
-    let runs=mode==='accessible'?A.accessibleText(el.outerHTML,labels[blockBase],options):A.naturalText(el.outerHTML,options);
+    const blockLabels=labels&&Object.prototype.hasOwnProperty.call(labels,blockBase)?labels[blockBase]:undefined;
+    let runs=mode==='accessible'?A.accessibleText(el.outerHTML,blockLabels,options):A.naturalText(el.outerHTML,options);
     if(!runs.length&&mode==='accessible')runs=A.naturalText(el.outerHTML,options);
     if(!el.id){let id;do{id='narration-'+(++seq);}while(used.has(id));el.id=id;used.add(id);}
     const units=[];inventory(el,units,el.id);const spoken=normalize(runs.map(run=>run.text).join(' '));let cursor=0;
@@ -158,7 +160,7 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
   if(Array.isArray(figureText)&&figureText.length){sourceText=String(sourceText||'');
     const fEsc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
     const fDrop=t=>{if(!t)return false;const re=new RegExp('(^|\\s)'+fEsc(t)+'(?=\\s|$)','u');if(!re.test(sourceText))return false;sourceText=sourceText.replace(re,(m,s)=>s+' ');return true;};
-    for(const f of figureText){const it=(f&&Array.isArray(f.items)?f.items:[]).map(x=>String(x).normalize('NFKC').trim()).filter(x=>x&&x.split(/\s+/).length<=4).slice(0,5000); // labels only: a line of prose a loose crop reaches is never credited
+    for(const f of figureText.slice(0,200)){const it=(f&&Array.isArray(f.items)?f.items:[]).map(x=>String(x).normalize('NFKC').trim()).filter(x=>x&&x.split(/\s+/).length<=4).slice(0,5000); // labels only: a line of prose a loose crop reaches is never credited
       for(let i=0;i<it.length;){
         // the glued run first: dropping a lone copy elsewhere would leave the glued word behind
         let k=Math.min(6,it.length-i);for(;k>=2;k--)if(fDrop(it.slice(i,i+k).join('')))break;
@@ -357,7 +359,13 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
     // A math font's text layer repeats each glyph ("VV mmmmmm", "ssssssssss", "mmmmssmmmmmmssss": NIST HB44
     // formulas, 2026-10-28): a 4+ letter token made only of runs of at most two letters, absent from the output, is
     // not text. (Two-letter runs like "ii" stay: roman numerals.)
-    sourceText=sourceText.replace(/(?<![\p{L}\p{N}])((\p{L})\2+(?:(\p{L})\3+)*)(?![\p{L}\p{N}])/gu,(m)=>m.length>=4&&new Set(m.toLowerCase()).size<=2&&!outWords.has(m.toLowerCase())?' ':m);
+    sourceText=sourceText.replace(/(?<![\p{L}\p{N}])(\p{L}{4,})(?![\p{L}\p{N}])/gu,(m)=>{
+      const low=m.toLowerCase();
+      if(outWords.has(low)||new Set(low).size>2)return m;
+      const chars=[...m];
+      for(let i=0;i<chars.length;){let j=i+1;while(j<chars.length&&chars[j]===chars[i])j++;if(j-i<2)return m;i=j;}
+      return ' ';
+    });
     // A URL scheme split by a vertical banner's text runs ("http" / "s" / "://doi.org/...": NIST SP 800-63,
     // 2026-10-28) rejoins: the page prints one word, https.
     sourceText=sourceText.replace(/(?<![\p{L}\p{N}])http\s+s(?=\s*:\/\/)/giu,'https');
@@ -496,7 +504,7 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
     const hidesSubtree=declarations.some(value=>value.property==='display'&&value.value==='none'||value.property==='visibility'&&['hidden','collapse'].includes(value.value));
     if(!suppressesItem&&!hidesSubtree)continue;
     try{for(const node of doc.querySelectorAll(rule[1].trim())){
-      if(node.tagName==='LI'&&node.parentElement.tagName==='OL')blockedLists.add(node.parentElement);
+      if(node.tagName==='LI'&&node.parentElement&&node.parentElement.tagName==='OL')blockedLists.add(node.parentElement);
       if(hidesSubtree){if(node.tagName==='OL')blockedLists.add(node);for(const ol of node.querySelectorAll('ol'))blockedLists.add(ol);}
     }}catch(_){customListNumbering=true;}
   }
@@ -528,7 +536,7 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
     const validInteger=value=>/^[+-]?\d+$/.test(String(value).trim())&&Number(value)>=-2147483648&&Number(value)<=2147483647;
     // The marker an item draws: 'decimal', 'lower-alpha' or 'upper-alpha' ('' = unknown, no credit). The nearest
     // list-style-type wins, an element's own style before its type attribute; counters and images opt out.
-    const KINDS={decimal:'decimal','lower-alpha':'lower-alpha','lower-latin':'lower-alpha','upper-alpha':'upper-alpha','upper-latin':'upper-alpha'},TYPES={'1':'decimal',a:'lower-alpha',A:'upper-alpha'};
+    const KINDS=Object.assign(Object.create(null),{decimal:'decimal','lower-alpha':'lower-alpha','lower-latin':'lower-alpha','upper-alpha':'upper-alpha','upper-latin':'upper-alpha'}),TYPES=Object.assign(Object.create(null),{'1':'decimal',a:'lower-alpha',A:'upper-alpha'});
     const markerStyle=node=>{
       let kind=null;
       for(let current=node;current;current=current.parentElement){
@@ -657,9 +665,9 @@ function assessSourceCoverage({sourceText,outputHtml,pages,method,pageErrors,low
   // completes it into an unclaimed output word; a glued remainder must be an unclaimed output word too.
   {const heads=new Set();for(const m of String(sourceText||'').normalize('NFKC').matchAll(/(\p{L}{2,})-(?=\s|\p{Ll})/gu))heads.add(m[1].toLowerCase());
     const open=[];for(let k=0;k<source.length;k++)if(miss[k]&&/^\p{L}+$/u.test(source[k]))open.push(k);
-    for(const k of open){
+    for(const k of open.slice(0,200)){
       if(!miss[k]||!heads.has(source[k]))continue;
-      const order=open.filter(j=>j!==k&&miss[j]).sort((a,b)=>Math.abs(a-k)-Math.abs(b-k)||b-a);
+      const order=open.filter(j=>j!==k&&miss[j]).sort((a,b)=>Math.abs(a-k)-Math.abs(b-k)||b-a).slice(0,200);
       for(const j of order){
         const z=source[j],opts=[[z,'']];for(let c=2;c<=z.length-2;c++)opts.push([z.slice(0,c),z.slice(c)],[z.slice(c),z.slice(0,c)]);
         const hit=opts.find(([y,r])=>(available.get(source[k]+y)||0)>0&&take(r?[source[k]+y,r]:[source[k]+y]));
